@@ -37,9 +37,11 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
-import java.awt.peer.*;
+
+import java.awt.Adjustable;
+import java.awt.Scrollbar;
 import java.awt.event.AdjustmentEvent;
+import java.awt.peer.ScrollbarPeer;
 
 public class GtkScrollbarPeer extends GtkComponentPeer
     implements ScrollbarPeer

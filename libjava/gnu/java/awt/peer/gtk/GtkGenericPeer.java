@@ -37,8 +37,9 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
-import java.awt.event.*;
+
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 
 public class GtkGenericPeer
 {

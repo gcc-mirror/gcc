@@ -38,7 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.FontMetrics;
 
 public class GdkFontMetrics extends FontMetrics
 {

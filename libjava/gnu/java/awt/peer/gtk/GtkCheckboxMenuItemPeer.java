@@ -37,7 +37,8 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
+
+import java.awt.CheckboxMenuItem;
 import java.awt.peer.CheckboxMenuItemPeer;
 import java.awt.peer.MenuItemPeer;
 

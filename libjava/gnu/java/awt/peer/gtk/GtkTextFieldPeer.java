@@ -37,9 +37,13 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
+
+import java.awt.AWTEvent;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.TextField;
 import java.awt.event.KeyEvent;
-import java.awt.peer.*;
-import java.awt.*;
+import java.awt.peer.TextFieldPeer;
 
 public class GtkTextFieldPeer extends GtkTextComponentPeer
   implements TextFieldPeer

@@ -35,11 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.awt.peer.gtk;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.image.ColorModel;
+import java.awt.image.ImageConsumer;
+import java.util.Hashtable;
 
 public class GtkImagePainter implements Runnable, ImageConsumer
 {

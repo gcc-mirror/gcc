@@ -37,8 +37,10 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
-import java.awt.peer.*;
+
+import java.awt.Component;
+import java.awt.Label;
+import java.awt.peer.LabelPeer;
 
 public class GtkLabelPeer extends GtkComponentPeer
     implements LabelPeer

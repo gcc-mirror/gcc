@@ -1,5 +1,37 @@
 2003-07-13  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/awt/peer/gtk/GdkFontMetrics.java
+	* gnu/java/awt/peer/gtk/GdkGraphics.java
+	* gnu/java/awt/peer/gtk/GtkButtonPeer.java
+	* gnu/java/awt/peer/gtk/GtkCanvasPeer.java
+	* gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java
+	* gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java
+	* gnu/java/awt/peer/gtk/GtkCheckboxPeer.java
+	* gnu/java/awt/peer/gtk/GtkChoicePeer.java
+	* gnu/java/awt/peer/gtk/GtkClipboard.java
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java
+	* gnu/java/awt/peer/gtk/GtkFileDialogPeer.java
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java
+	* gnu/java/awt/peer/gtk/GtkGenericPeer.java
+	* gnu/java/awt/peer/gtk/GtkImage.java
+	* gnu/java/awt/peer/gtk/GtkImagePainter.java
+	* gnu/java/awt/peer/gtk/GtkLabelPeer.java
+	* gnu/java/awt/peer/gtk/GtkListPeer.java
+	* gnu/java/awt/peer/gtk/GtkMenuBarPeer.java
+	* gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java
+	* gnu/java/awt/peer/gtk/GtkMenuItemPeer.java
+	* gnu/java/awt/peer/gtk/GtkMenuPeer.java
+	* gnu/java/awt/peer/gtk/GtkOffScreenImage.java
+	* gnu/java/awt/peer/gtk/GtkPanelPeer.java
+	* gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java
+	* gnu/java/awt/peer/gtk/GtkScrollPanePeer.java
+	* gnu/java/awt/peer/gtk/GtkScrollbarPeer.java
+	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java
+	* gnu/java/awt/peer/gtk/GtkTextComponentPeer.java
+	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java
+
+2003-07-13  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/locale/LocaleInformation_de.java
 	* gnu/java/locale/LocaleInformation_en.java
 	* gnu/java/locale/LocaleInformation_nl.java

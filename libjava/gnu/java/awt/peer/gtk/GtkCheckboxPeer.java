@@ -37,8 +37,11 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.peer.*;
-import java.awt.*;
+
+import java.awt.Checkbox;
+import java.awt.CheckboxGroup;
+import java.awt.Component;
+import java.awt.peer.CheckboxPeer;
 
 public class GtkCheckboxPeer extends GtkComponentPeer
   implements CheckboxPeer
