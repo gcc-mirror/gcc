@@ -1,0 +1,4 @@
+Wed Aug 20 23:18:46 1997  Mumit Khan  (khan@xraylith.wisc.edu)
+
+	* Makefile.in (UOBJ): Include mclock. 
+

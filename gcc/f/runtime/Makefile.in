@@ -132,7 +132,8 @@ UOBJ =  libU77/VersionU.o libU77/gerror_.o libU77/perror_.o libU77/ierrno_.o \
 	libU77/bes.o libU77/dbes.o libU77/chdir_.o libU77/chmod_.o \
 	libU77/lnblnk_.o libU77/hostnm_.o libU77/rename_.o libU77/fgetc_.o \
 	libU77/fputc_.o libU77/umask_.o libU77/system_clock_.o libU77/date_.o \
-	libU77/second_.o libU77/flush1_.o libU77/alarm_.o
+	libU77/second_.o libU77/flush1_.o libU77/alarm_.o \
+	libU77/mclock_.o
 
 F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	signal system flush ftell fseek access besj0 besj1 besjn besy0 besy1 \
