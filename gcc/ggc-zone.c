@@ -1127,7 +1127,7 @@ ggc_get_size (const void *p)
 
 /* Initialize the ggc-zone-mmap allocator.  */
 void
-init_ggc ()
+init_ggc (void)
 {
   /* Create the zones.  */
   main_zone.name = "Main zone";
@@ -1195,7 +1195,7 @@ init_ggc ()
    are never freed, eliminating the need to register their roots.  */
 
 void
-ggc_push_context ()
+ggc_push_context (void)
 {
   struct alloc_zone *zone;
   for (zone = G.zones; zone; zone = zone->next_zone)
@@ -1236,7 +1236,7 @@ ggc_pop_context_1 (struct alloc_zone *zone)
 /* Pop all the zone contexts.  */
 
 void
-ggc_pop_context ()
+ggc_pop_context (void)
 {
   struct alloc_zone *zone;
   for (zone = G.zones; zone; zone = zone->next_zone)
@@ -1430,10 +1430,12 @@ calculate_average_page_survival (struct alloc_zone *zone)
    structures.  */
 
 static inline void
-check_cookies ()
+check_cookies (void)
 {
 #ifdef COOKIE_CHECKING
   page_entry *p;
+  struct alloc_zone *zone;
+
   for (zone = G.zones; zone; zone = zone->next_zone)
     {
       for (p = zone->pages; p; p = p->next)
@@ -1459,7 +1461,7 @@ check_cookies ()
 /* Top level collection routine.  */
 
 void
-ggc_collect ()
+ggc_collect (void)
 {
   struct alloc_zone *zone;
   bool marked = false;
@@ -1558,7 +1560,7 @@ ggc_collect ()
 /* Print allocation statistics.  */
 
 void
-ggc_print_statistics ()
+ggc_print_statistics (void)
 {
 }
 
