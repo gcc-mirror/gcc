@@ -354,7 +354,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
 
   /* Ensure we get no confusion between cached files and directories.  */
   if (start_dir == NULL)
-    cpp_error (pfile, DL_ICE, "NULL directory in find_file");
+    cpp_error (pfile, CPP_DL_ICE, "NULL directory in find_file");
 
   hash_slot = (struct file_hash_entry **)
     htab_find_slot (pfile->file_hash, fname, INSERT);
@@ -432,7 +432,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
   
   if (S_ISBLK (file->st.st_mode))
     {
-      cpp_error (pfile, DL_ERROR, "%s is a block device", file->path);
+      cpp_error (pfile, CPP_DL_ERROR, "%s is a block device", file->path);
       return false;
     }
 
@@ -449,7 +449,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
 	 does not bite us.  */
       if (file->st.st_size > INTTYPE_MAXIMUM (ssize_t))
 	{
-	  cpp_error (pfile, DL_ERROR, "%s is too large", file->path);
+	  cpp_error (pfile, CPP_DL_ERROR, "%s is too large", file->path);
 	  return false;
 	}
 
@@ -478,12 +478,13 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
 
   if (count < 0)
     {
-      cpp_errno (pfile, DL_ERROR, file->path);
+      cpp_errno (pfile, CPP_DL_ERROR, file->path);
       return false;
     }
 
   if (regular && total != size && STAT_SIZE_RELIABLE (file->st))
-    cpp_error (pfile, DL_WARNING, "%s is shorter than expected", file->path);
+    cpp_error (pfile, CPP_DL_WARNING,
+	       "%s is shorter than expected", file->path);
 
   /* Shrink buffer if we allocated substantially too much.  */
   if (total + 4096 < size)
@@ -675,7 +676,7 @@ search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
     return make_cpp_dir (pfile, dir_name_of_file (file), pfile->map->sysp);
 
   if (dir == NULL)
-    cpp_error (pfile, DL_ERROR,
+    cpp_error (pfile, CPP_DL_ERROR,
 	       "no include path in which to search for %s", fname);
 
   return dir;
@@ -732,9 +733,9 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file)
       /* If we are outputting dependencies but not for this file then
 	 don't error because we can still produce correct output.  */
       if (CPP_OPTION (pfile, deps.style) && ! print_dep)
-	cpp_errno (pfile, DL_WARNING, file->path);
+	cpp_errno (pfile, CPP_DL_WARNING, file->path);
       else
-	cpp_errno (pfile, DL_ERROR, file->path);
+	cpp_errno (pfile, CPP_DL_ERROR, file->path);
     }
 }
 

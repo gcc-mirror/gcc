@@ -158,7 +158,7 @@ copy_comment (cpp_reader *pfile, const uchar *cur, int in_define)
     unterminated = _cpp_skip_block_comment (pfile);
     
   if (unterminated)
-    cpp_error_with_line (pfile, DL_ERROR, from_line, 0,
+    cpp_error_with_line (pfile, CPP_DL_ERROR, from_line, 0,
 			 "unterminated comment");
 
   /* Comments in directives become spaces so that tokens are properly
@@ -667,7 +667,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
     _cpp_release_buff (pfile, fmacro.buff);
 
   if (lex_state == ls_fun_close)
-    cpp_error_with_line (pfile, DL_ERROR, fmacro.line, 0,
+    cpp_error_with_line (pfile, CPP_DL_ERROR, fmacro.line, 0,
 			 "unterminated argument list invoking macro \"%s\"",
 			 NODE_NAME (fmacro.node));
   return result;
@@ -736,7 +736,7 @@ recursive_macro (cpp_reader *pfile, cpp_hashnode *node)
     }
 
   if (recursing)
-    cpp_error (pfile, DL_ERROR,
+    cpp_error (pfile, CPP_DL_ERROR,
 	       "detected recursion whilst expanding macro \"%s\"",
 	       NODE_NAME (node));
 

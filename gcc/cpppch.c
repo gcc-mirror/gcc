@@ -80,7 +80,8 @@ write_macdef (cpp_reader *pfile, cpp_hashnode *hn, void *file_p)
 	if (fwrite (&s, sizeof (s), 1, f) != 1
 	    || fwrite (defn, 1, s.definition_length, f) != s.definition_length)
 	  {
-	    cpp_errno (pfile, DL_ERROR, "while writing precompiled header");
+	    cpp_errno (pfile, CPP_DL_ERROR,
+		       "while writing precompiled header");
 	    return 0;
 	  }
       }
@@ -328,7 +329,7 @@ cpp_write_pch_deps (cpp_reader *r, FILE *f)
   if (fwrite (&z, sizeof (z), 1, f) != 1
       || fwrite (ss->definedstrs, ss->hashsize, 1, f) != 1)
     {
-      cpp_errno (r, DL_ERROR, "while writing precompiled header");
+      cpp_errno (r, CPP_DL_ERROR, "while writing precompiled header");
       return -1;
     }
   free (ss->definedstrs);
@@ -352,7 +353,7 @@ cpp_write_pch_state (cpp_reader *r, FILE *f)
   memset (&z, 0, sizeof (z));
   if (fwrite (&z, sizeof (z), 1, f) != 1)
     {
-      cpp_errno (r, DL_ERROR, "while writing precompiled header");
+      cpp_errno (r, CPP_DL_ERROR, "while writing precompiled header");
       return -1;
     }
 
@@ -361,7 +362,7 @@ cpp_write_pch_state (cpp_reader *r, FILE *f)
 
   if (deps_save (r->deps, f) != 0)
     {
-      cpp_errno (r, DL_ERROR, "while writing precompiled header");
+      cpp_errno (r, CPP_DL_ERROR, "while writing precompiled header");
       return -1;
     }
 
@@ -458,7 +459,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	  || h->flags & NODE_POISONED)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, DL_WARNING_SYSHDR,
+	    cpp_error (r, CPP_DL_WARNING_SYSHDR,
 		       "%s: not used because `%.*s' not defined",
 		       name, m.name_length, namebuf);
 	  goto fail;
@@ -470,7 +471,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	  || memcmp (namebuf, newdefn, m.definition_length) != 0)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, DL_WARNING_SYSHDR,
+	    cpp_error (r, CPP_DL_WARNING_SYSHDR,
 	       "%s: not used because `%.*s' defined as `%s' not `%.*s'",
 		       name, m.name_length, namebuf, newdefn + m.name_length,
 		       m.definition_length - m.name_length,
@@ -511,7 +512,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
       else
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, DL_WARNING_SYSHDR, 
+	    cpp_error (r, CPP_DL_WARNING_SYSHDR, 
 		       "%s: not used because `%s' is defined",
 		       name, first);
 	  goto fail;
@@ -525,7 +526,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
   return 0;
 
  error:
-  cpp_errno (r, DL_ERROR, "while reading precompiled header");
+  cpp_errno (r, CPP_DL_ERROR, "while reading precompiled header");
   return -1;
 
  fail:
@@ -711,6 +712,6 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
   return 0;
   
  error:
-  cpp_errno (r, DL_ERROR, "while reading precompiled header");
+  cpp_errno (r, CPP_DL_ERROR, "while reading precompiled header");
   return -1;
 }

@@ -225,15 +225,15 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 	  if (memcmp (ident, pch_ident, 5) == 0)
 	    /* It's a PCH, for the right language, but has the wrong version.
 	     */
-	    cpp_error (pfile, DL_WARNING, 
+	    cpp_error (pfile, CPP_DL_WARNING, 
 		       "%s: not compatible with this GCC version", name);
 	  else if (memcmp (ident, pch_ident, 4) == 0)
 	    /* It's a PCH for the wrong language.  */
-	    cpp_error (pfile, DL_WARNING, "%s: not for %s", name,
+	    cpp_error (pfile, CPP_DL_WARNING, "%s: not for %s", name,
 		       lang_hooks.name);
 	  else 
 	    /* Not any kind of PCH.  */
-	    cpp_error (pfile, DL_WARNING, "%s: not a PCH file", name);
+	    cpp_error (pfile, CPP_DL_WARNING, "%s: not a PCH file", name);
 	}
       return 2;
     }
@@ -251,7 +251,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
       || memcmp (host_machine, short_strings, strlen (host_machine)) != 0)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, DL_WARNING, 
+	cpp_error (pfile, CPP_DL_WARNING, 
 		   "%s: created on host `%.*s', but used on host `%s'", name,
 		   v.host_machine_length, short_strings, host_machine);
       return 2;
@@ -261,7 +261,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 		 strlen (target_machine)) != 0)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, DL_WARNING, 
+	cpp_error (pfile, CPP_DL_WARNING, 
 		   "%s: created for target `%.*s', but used for target `%s'", 
 		   name, v.target_machine_length, 
 		   short_strings + v.host_machine_length, target_machine);
@@ -274,7 +274,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 		 v.version_length) != 0)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, DL_WARNING,
+	cpp_error (pfile, CPP_DL_WARNING,
 		   "%s: created by version `%.*s', but this is version `%s'", 
 		   name, v.version_length, 
 		   (short_strings + v.host_machine_length 
@@ -290,7 +290,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
       && write_symbols != NO_DEBUG)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, DL_WARNING, 
+	cpp_error (pfile, CPP_DL_WARNING, 
 		   "%s: created with -g%s, but used with -g%s", name,
 		   debug_type_names[v.debug_info_type],
 		   debug_type_names[write_symbols]);
@@ -304,7 +304,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   if (v.pch_init != &pch_init)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
-	cpp_error (pfile, DL_WARNING, 
+	cpp_error (pfile, CPP_DL_WARNING, 
 		   "%s: had text segment at different address", name);
       return 2;
     }
@@ -322,7 +322,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
     if (msg != NULL)
       {
 	if (cpp_get_options (pfile)->warn_invalid_pch)
-	  cpp_error (pfile, DL_WARNING, "%s: %s", name, msg);
+	  cpp_error (pfile, CPP_DL_WARNING, "%s: %s", name, msg);
 	return 2;
       }
   }
@@ -353,7 +353,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   f = fdopen (fd, "rb");
   if (f == NULL)
     {
-      cpp_errno (pfile, DL_ERROR, "calling fdopen");
+      cpp_errno (pfile, CPP_DL_ERROR, "calling fdopen");
       return;
     }
 
@@ -361,7 +361,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
 
   if (fread (&h, sizeof (h), 1, f) != 1)
     {
-      cpp_errno (pfile, DL_ERROR, "reading");
+      cpp_errno (pfile, CPP_DL_ERROR, "reading");
       return;
     }
 
@@ -373,7 +373,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
 	size = 16384;
       if (fread (buf, size, 1, f) != 1
 	  || fwrite (buf, size, 1, asm_out_file) != 1)
-	cpp_errno (pfile, DL_ERROR, "reading");
+	cpp_errno (pfile, CPP_DL_ERROR, "reading");
       written += size;
     }
   free (buf);
