@@ -3,6 +3,16 @@ Thu Feb 12 16:29:49 1998  Ian Lance Taylor  <ian@cygnus.com>
 	* getopt.c: Update to latest FSF version.
 	* getopt1.c: Likewise.
 
+Tue Feb 10 16:58:33 1998  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* cplus-dem.c (gnu_special): Don't get confused by .<digits>
+	strings that are not actually lengths.
+
+Thu Feb  5 18:48:56 1998  Geoffrey Noer  <noer@cygnus.com>
+
+        * config/mh-cygwin32: remove vasprintf.o from EXTRA_OFILES
+        since it gets built automatically
+
 Fri Feb  6 01:35:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (FLAGS_TO_PASS): Don't pass PICFLAG.
@@ -13,6 +23,11 @@ Sun Feb  1 02:52:32 1998  Mike Stump  <mrs@wrs.com>
 
 	* config.table (vxworks configs): Default to VxWorks 5.x, as that is
 	the currently shipping OS.
+
+Sun Jan 18 15:57:28 1998  Michael Snyder  <msnyder@cleaver.cygnus.com>
+
+	* vasprintf.c (int_vasprintf): Increase buffer size for float/double
+	values.
 
 Sat Jan 17 22:32:38 1998  Mumit Khan  <khan@xraylith.wisc.edu>
                           J.J. VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
@@ -39,7 +54,7 @@ Thu Dec  4 17:25:19 1997  Jeffrey A Law  (law@cygnus.com)
 Wed Nov 19 13:37:06 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* alloca-norm.h (alloca, GCC case): Don't redefine alloca if it
-	was alr	eady defined previously.
+	was already defined previously.
 
 Mon Nov 10 12:48:03 1997  Philippe De Muyter  <phdm@macqel.be>
 
@@ -79,13 +94,6 @@ Mon Sep 29 12:28:41 1997  Ian Lance Taylor  <ian@cygnus.com>
         * pexecute.c (fix_argv): New function.
         (pexecute): Win32 but not Cygwin32 needs its arguments fixed.
         Add underscore to cwait function call.
-
-Sun Sep 28 12:00:52 1997  Mark Mitchell  <mmitchell@usa.net>
-
-        * cplus-dem.c (demangle_template): Add new parameter.  Handle new
-        template-function mangling.
-        (consume_count_with_underscores): New function.
-        (demangle_signature): Handle new name-mangling scheme.
 
 Sun Sep 28 12:00:52 1997  Mark Mitchell  <mmitchell@usa.net>
 

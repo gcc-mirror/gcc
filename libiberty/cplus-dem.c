@@ -1692,6 +1692,15 @@ gnu_special (work, mangled, declp)
 	      if (isdigit(*mangled[0]))
 		{
 		  n = consume_count(mangled);
+		  /* We may be seeing a too-large size, or else a
+		     ".<digits>" indicating a static local symbol.  In
+		     any case, declare victory and move on; *don't* try
+		     to use n to allocate.  */
+		  if (n >= strlen (*mangled))
+		    {
+		      success = 1;
+		      break;
+		    }
 		}
 	      else
 		{
