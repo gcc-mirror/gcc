@@ -1,3 +1,7 @@
+2002-01-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/20020122-1.c: New test.
+
 2001-01-22  David.Billinghurst <David.Billinghurst@riotinto.com>
 
 	* g++.old-deja/g++.ext/attrib5.C: XFAIL cygwin too
