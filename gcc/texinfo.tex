@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.244 1998/06/24 21:46:43 karl Exp $
+% $Id: texinfo.tex,v 2.249 1998/06/27 19:04:37 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.244 $
+\deftexinfoversion$Revision: 2.249 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -553,7 +553,7 @@ where each line of input produces a line of output.}
 %% This method tries to make TeX break the page naturally
 %% if the depth of the box does not fit.
 %{\baselineskip=0pt%
-%\vtop to #1\mil{\vfil}\kern -#1\mil\penalty 10000
+%\vtop to #1\mil{\vfil}\kern -#1\mil\nobreak
 %\prevdepth=-1000pt
 %}}
 
@@ -1087,7 +1087,6 @@ where each line of input produces a line of output.}
 \def\setfilename{%
    \iflinks 
      \readauxfile
-     \opencontents
    \fi % \openindices needs to do some work in any case.
    \openindices
    \fixbackslash  % Turn off hack to swallow `\input texinfo'.
@@ -1382,7 +1381,9 @@ where each line of input produces a line of output.}
 %\def\key #1{{\ttsl \nohyphenation \uppercase{#1}}\null}
 \def\ctrl #1{{\tt \rawbackslash \hat}#1}
 
+% @file, @option are the same as @samp.
 \let\file=\samp
+\let\option=\samp
 
 % @code is a modification of @t,
 % which makes spaces the same size as normal in the surrounding text.
@@ -1471,8 +1472,10 @@ where each line of input produces a line of output.}
 \else{\tclose{\kbdfont\look}}\fi
 \else{\tclose{\kbdfont\look}}\fi}
 
-% @url.  Quotes do not seem necessary, so use \code.
+% For @url, @env, @command quotes seem unnecessary, so use \code.
 \let\url=\code
+\let\env=\code
+\let\command=\code
 
 % @uref (abbreviation for `urlref') takes an optional second argument
 % specifying the text to display.  First (mandatory) arg is the url.
@@ -1533,15 +1536,20 @@ where each line of input produces a line of output.}
 \newif\ifseenauthor
 \newif\iffinishedtitlepage
 
+% Do an implicit @contents or @shortcontents after @end titlepage if the
+% user says @contentsaftertitlepage or @shortcontentsaftertitlepage.
+% 
+\newif\ifsetcontentsaftertitlepage
+ \let\setcontentsaftertitlepage = \setcontentsaftertitlepagetrue
+\newif\ifsetshortcontentsaftertitlepage
+ \let\setshortcontentsaftertitlepage = \setshortcontentsaftertitlepagetrue
+
 \def\shorttitlepage{\parsearg\shorttitlepagezzz}
 \def\shorttitlepagezzz #1{\begingroup\hbox{}\vskip 1.5in \chaprm \centerline{#1}%
         \endgroup\page\hbox{}\page}
 
 \def\titlepage{\begingroup \parindent=0pt \textfonts
    \let\subtitlerm=\tenrm
-% I deinstalled the following change because \cmr12 is undefined.
-% This change was not in the ChangeLog anyway.  --rms.
-%   \let\subtitlerm=\cmr12
    \def\subtitlefont{\subtitlerm \normalbaselineskip = 13pt \normalbaselines}%
    %
    \def\authorfont{\authorrm \normalbaselineskip = 16pt \normalbaselines}%
@@ -1590,6 +1598,21 @@ where each line of input produces a line of output.}
    % after the title page, which we certainly don't want.
    \oldpage
    \endgroup
+   %
+   % If they want short, they certainly want long too.
+   \ifsetshortcontentsaftertitlepage
+     \shortcontents
+     \contents
+     \global\let\shortcontents = \relax
+     \global\let\contents = \relax
+   \fi
+   %
+   \ifsetcontentsaftertitlepage
+     \contents
+     \global\let\contents = \relax
+     \global\let\shortcontents = \relax
+   \fi
+   %
    \HEADINGSon
 }
 
@@ -1603,10 +1626,10 @@ where each line of input produces a line of output.}
 
 \let\thispage=\folio
 
-\newtoks \evenheadline    % Token sequence for heading line of even pages
-\newtoks \oddheadline     % Token sequence for heading line of odd pages
-\newtoks \evenfootline    % Token sequence for footing line of even pages
-\newtoks \oddfootline     % Token sequence for footing line of odd pages
+\newtoks\evenheadline    % headline on even pages
+\newtoks\oddheadline     % headline on odd pages
+\newtoks\evenfootline    % footline on even pages
+\newtoks\oddfootline     % footline on odd pages
 
 % Now make Tex use those variables
 \headline={{\textfonts\rm \ifodd\pageno \the\oddheadline
@@ -2894,56 +2917,10 @@ width0pt\relax} \fi
 \newcount\appendixno  \appendixno = `\@
 \def\appendixletter{\char\the\appendixno}
 
-\newwrite\contentsfile
-% This is called from \setfilename.
-\def\opencontents{\openout\contentsfile = \jobname.toc }
-
 % Each @chapter defines this as the name of the chapter.
-% page headings and footings can use it.  @section does likewise
-
-\def\thischapter{} \def\thissection{}
-\def\seccheck#1{\ifnum \pageno<0
-  \errmessage{@#1 not allowed after generating table of contents}%
-\fi}
-
-\def\chapternofonts{%
-  \let\rawbackslash=\relax
-  \let\frenchspacing=\relax
-  \def\result{\realbackslash result}%
-  \def\equiv{\realbackslash equiv}%
-  \def\expansion{\realbackslash expansion}%
-  \def\print{\realbackslash print}%
-  \def\TeX{\realbackslash TeX}%
-  \def\dots{\realbackslash dots}%
-  \def\result{\realbackslash result}%
-  \def\equiv{\realbackslash equiv}%
-  \def\expansion{\realbackslash expansion}%
-  \def\print{\realbackslash print}%
-  \def\error{\realbackslash error}%
-  \def\point{\realbackslash point}%
-  \def\copyright{\realbackslash copyright}%
-  \def\tt{\realbackslash tt}%
-  \def\bf{\realbackslash bf}%
-  \def\w{\realbackslash w}%
-  \def\less{\realbackslash less}%
-  \def\gtr{\realbackslash gtr}%
-  \def\hat{\realbackslash hat}%
-  \def\char{\realbackslash char}%
-  \def\tclose##1{\realbackslash tclose{##1}}%
-  \def\code##1{\realbackslash code{##1}}%
-  \def\samp##1{\realbackslash samp{##1}}%
-  \def\r##1{\realbackslash r{##1}}%
-  \def\b##1{\realbackslash b{##1}}%
-  \def\key##1{\realbackslash key{##1}}%
-  \def\file##1{\realbackslash file{##1}}%
-  \def\kbd##1{\realbackslash kbd{##1}}%
-  % These are redefined because @smartitalic wouldn't work inside xdef.
-  \def\i##1{\realbackslash i{##1}}%
-  \def\cite##1{\realbackslash cite{##1}}%
-  \def\var##1{\realbackslash var{##1}}%
-  \def\emph##1{\realbackslash emph{##1}}%
-  \def\dfn##1{\realbackslash dfn{##1}}%
-}
+% page headings and footings can use it.  @section does likewise.
+\def\thischapter{}
+\def\thissection{}
 
 \newcount\absseclevel % used to calculate proper heading level
 \newcount\secbase\secbase=0 % @raise/lowersections modify this count
@@ -3015,11 +2992,11 @@ width0pt\relax} \fi
 \fi
 }
 
-
+% @chapter, @appendix, @unnumbered.
 \def\thischaptername{No Chapter Title}
 \outer\def\chapter{\parsearg\chapteryyy}
 \def\chapteryyy #1{\numhead0{#1}} % normally numhead0 calls chapterzzz
-\def\chapterzzz #1{\seccheck{chapter}%
+\def\chapterzzz #1{%
 \secno=0 \subsecno=0 \subsubsecno=0
 \global\advance \chapno by 1 \message{\putwordChapter \the\chapno}%
 \chapmacro {#1}{\the\chapno}%
@@ -3028,46 +3005,45 @@ width0pt\relax} \fi
 % We don't substitute the actual chapter name into \thischapter
 % because we don't want its macros evaluated now.
 \xdef\thischapter{\putwordChapter{} \the\chapno: \noexpand\thischaptername}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash chapentry{\the\toks0}{\the\chapno}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\donoderef %
+\edef\temp{\noexpand\writetocentry{\realbackslash chapentry{\the\toks0}%
+                                  {\the\chapno}}}%
+\temp
+\donoderef
 \global\let\section = \numberedsec
 \global\let\subsection = \numberedsubsec
 \global\let\subsubsection = \numberedsubsubsec
-}}
+}
 
 \outer\def\appendix{\parsearg\appendixyyy}
 \def\appendixyyy #1{\apphead0{#1}} % normally apphead0 calls appendixzzz
-\def\appendixzzz #1{\seccheck{appendix}%
+\def\appendixzzz #1{%
 \secno=0 \subsecno=0 \subsubsecno=0
 \global\advance \appendixno by 1 \message{Appendix \appendixletter}%
 \chapmacro {#1}{\putwordAppendix{} \appendixletter}%
 \gdef\thissection{#1}%
 \gdef\thischaptername{#1}%
 \xdef\thischapter{\putwordAppendix{} \appendixletter: \noexpand\thischaptername}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash chapentry{\the\toks0}%
-  {\putwordAppendix{} \appendixletter}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\appendixnoderef %
+\edef\temp{\noexpand\writetocentry{\realbackslash chapentry{\the\toks0}%
+                       {\putwordAppendix{} \appendixletter}}}%
+\temp
+\appendixnoderef
 \global\let\section = \appendixsec
 \global\let\subsection = \appendixsubsec
 \global\let\subsubsection = \appendixsubsubsec
-}}
+}
 
 % @centerchap is like @unnumbered, but the heading is centered.
 \outer\def\centerchap{\parsearg\centerchapyyy}
 \def\centerchapyyy #1{{\let\unnumbchapmacro=\centerchapmacro \unnumberedyyy{#1}}}
 
+% @top is like @unnumbered.
 \outer\def\top{\parsearg\unnumberedyyy}
+
 \outer\def\unnumbered{\parsearg\unnumberedyyy}
 \def\unnumberedyyy #1{\unnmhead0{#1}} % normally unnmhead0 calls unnumberedzzz
-\def\unnumberedzzz #1{\seccheck{unnumbered}%
+\def\unnumberedzzz #1{%
 \secno=0 \subsecno=0 \subsubsecno=0
 %
 % This used to be simply \message{#1}, but TeX fully expands the
@@ -3079,155 +3055,139 @@ width0pt\relax} \fi
 % Anyway, we don't want the fully-expanded definition of @cite to appear
 % as a result of the \message, we just want `@cite' itself.  We use
 % \the<toks register> to achieve this: TeX expands \the<toks> only once,
-% simply yielding the contents of the <toks register>.
+% simply yielding the contents of <toks register>.  (We also do this for
+% the toc entries.)
 \toks0 = {#1}\message{(\the\toks0)}%
 %
 \unnumbchapmacro {#1}%
 \gdef\thischapter{#1}\gdef\thissection{#1}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash unnumbchapentry{\the\toks0}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\unnumbnoderef %
+\edef\temp{\noexpand\writetocentry{\realbackslash unnumbchapentry{\the\toks0}}}%
+\temp
+\unnumbnoderef
 \global\let\section = \unnumberedsec
 \global\let\subsection = \unnumberedsubsec
 \global\let\subsubsection = \unnumberedsubsubsec
-}}
+}
 
+% Sections.
 \outer\def\numberedsec{\parsearg\secyyy}
 \def\secyyy #1{\numhead1{#1}} % normally calls seczzz
-\def\seczzz #1{\seccheck{section}%
+\def\seczzz #1{%
 \subsecno=0 \subsubsecno=0 \global\advance \secno by 1 %
 \gdef\thissection{#1}\secheading {#1}{\the\chapno}{\the\secno}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash secentry %
-{\the\toks0}{\the\chapno}{\the\secno}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\donoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash secentry{\the\toks0}%
+                                  {\the\chapno}{\the\secno}}}%
+\temp
+\donoderef
+\nobreak
+}
 
 \outer\def\appendixsection{\parsearg\appendixsecyyy}
 \outer\def\appendixsec{\parsearg\appendixsecyyy}
 \def\appendixsecyyy #1{\apphead1{#1}} % normally calls appendixsectionzzz
-\def\appendixsectionzzz #1{\seccheck{appendixsection}%
+\def\appendixsectionzzz #1{%
 \subsecno=0 \subsubsecno=0 \global\advance \secno by 1 %
 \gdef\thissection{#1}\secheading {#1}{\appendixletter}{\the\secno}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash secentry %
-{\the\toks0}{\appendixletter}{\the\secno}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\appendixnoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash secentry{\the\toks0}%
+                                  {\appendixletter}{\the\secno}}}%
+\temp
+\appendixnoderef
+\nobreak
+}
 
 \outer\def\unnumberedsec{\parsearg\unnumberedsecyyy}
 \def\unnumberedsecyyy #1{\unnmhead1{#1}} % normally calls unnumberedseczzz
-\def\unnumberedseczzz #1{\seccheck{unnumberedsec}%
+\def\unnumberedseczzz #1{%
 \plainsecheading {#1}\gdef\thissection{#1}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash unnumbsecentry{\the\toks0}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\unnumbnoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash unnumbsecentry{\the\toks0}}}%
+\temp
+\unnumbnoderef
+\nobreak
+}
 
+% Subsections.
 \outer\def\numberedsubsec{\parsearg\numberedsubsecyyy}
 \def\numberedsubsecyyy #1{\numhead2{#1}} % normally calls numberedsubseczzz
-\def\numberedsubseczzz #1{\seccheck{subsection}%
+\def\numberedsubseczzz #1{%
 \gdef\thissection{#1}\subsubsecno=0 \global\advance \subsecno by 1 %
 \subsecheading {#1}{\the\chapno}{\the\secno}{\the\subsecno}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash subsecentry %
-{\the\toks0}{\the\chapno}{\the\secno}{\the\subsecno}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\donoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash subsecentry{\the\toks0}%
+                                    {\the\chapno}{\the\secno}{\the\subsecno}}}%
+\temp
+\donoderef
+\nobreak
+}
 
 \outer\def\appendixsubsec{\parsearg\appendixsubsecyyy}
 \def\appendixsubsecyyy #1{\apphead2{#1}} % normally calls appendixsubseczzz
-\def\appendixsubseczzz #1{\seccheck{appendixsubsec}%
+\def\appendixsubseczzz #1{%
 \gdef\thissection{#1}\subsubsecno=0 \global\advance \subsecno by 1 %
 \subsecheading {#1}{\appendixletter}{\the\secno}{\the\subsecno}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash subsecentry %
-{\the\toks0}{\appendixletter}{\the\secno}{\the\subsecno}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\appendixnoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash subsecentry{\the\toks0}%
+                                {\appendixletter}{\the\secno}{\the\subsecno}}}%
+\temp
+\appendixnoderef
+\nobreak
+}
 
 \outer\def\unnumberedsubsec{\parsearg\unnumberedsubsecyyy}
 \def\unnumberedsubsecyyy #1{\unnmhead2{#1}} %normally calls unnumberedsubseczzz
-\def\unnumberedsubseczzz #1{\seccheck{unnumberedsubsec}%
+\def\unnumberedsubseczzz #1{%
 \plainsubsecheading {#1}\gdef\thissection{#1}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash unnumbsubsecentry{\the\toks0}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\unnumbnoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash unnumbsubsecentry%
+                                    {\the\toks0}}}%
+\temp
+\unnumbnoderef
+\nobreak
+}
 
+% Subsubsections.
 \outer\def\numberedsubsubsec{\parsearg\numberedsubsubsecyyy}
 \def\numberedsubsubsecyyy #1{\numhead3{#1}} % normally numberedsubsubseczzz
-\def\numberedsubsubseczzz #1{\seccheck{subsubsection}%
+\def\numberedsubsubseczzz #1{%
 \gdef\thissection{#1}\global\advance \subsubsecno by 1 %
 \subsubsecheading {#1}
   {\the\chapno}{\the\secno}{\the\subsecno}{\the\subsubsecno}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash subsubsecentry{\the\toks0}
-  {\the\chapno}{\the\secno}{\the\subsecno}{\the\subsubsecno}
-  {\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\donoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash subsubsecentry{\the\toks0}%
+  {\the\chapno}{\the\secno}{\the\subsecno}{\the\subsubsecno}}}%
+\temp
+\donoderef
+\nobreak
+}
 
 \outer\def\appendixsubsubsec{\parsearg\appendixsubsubsecyyy}
 \def\appendixsubsubsecyyy #1{\apphead3{#1}} % normally appendixsubsubseczzz
-\def\appendixsubsubseczzz #1{\seccheck{appendixsubsubsec}%
+\def\appendixsubsubseczzz #1{%
 \gdef\thissection{#1}\global\advance \subsubsecno by 1 %
 \subsubsecheading {#1}
   {\appendixletter}{\the\secno}{\the\subsecno}{\the\subsubsecno}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash subsubsecentry{\the\toks0}%
-  {\appendixletter}
-  {\the\secno}{\the\subsecno}{\the\subsubsecno}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\appendixnoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash subsubsecentry{\the\toks0}%
+  {\appendixletter}{\the\secno}{\the\subsecno}{\the\subsubsecno}}}%
+\temp
+\appendixnoderef
+\nobreak
+}
 
 \outer\def\unnumberedsubsubsec{\parsearg\unnumberedsubsubsecyyy}
 \def\unnumberedsubsubsecyyy #1{\unnmhead3{#1}} %normally unnumberedsubsubseczzz
-\def\unnumberedsubsubseczzz #1{\seccheck{unnumberedsubsubsec}%
+\def\unnumberedsubsubseczzz #1{%
 \plainsubsubsecheading {#1}\gdef\thissection{#1}%
-{\chapternofonts%
 \toks0 = {#1}%
-\edef\temp{{\realbackslash unnumbsubsubsecentry{\the\toks0}{\noexpand\folio}}}%
-\escapechar=`\\%
-\iflinks \write\contentsfile\temp \fi
-\unnumbnoderef %
-\penalty 10000 %
-}}
+\edef\temp{\noexpand\writetocentry{\realbackslash unnumbsubsubsecentry%
+                                    {\the\toks0}}}%
+\temp
+\unnumbnoderef
+\nobreak
+}
 
 % These are variants which are not "outer", so they can appear in @ifinfo.
 % Actually, they should now be obsolete; ordinary section commands should work.
@@ -3256,8 +3216,7 @@ width0pt\relax} \fi
 
 % Define @majorheading, @heading and @subheading
 
-% NOTE on use of \vbox for chapter headings, section headings, and
-% such:
+% NOTE on use of \vbox for chapter headings, section headings, and such:
 %       1) We use \vbox rather than the earlier \line to permit
 %          overlong headings to fold.
 %       2) \hyphenpenalty is set to 10000 because hyphenation in a
@@ -3304,12 +3263,12 @@ width0pt\relax} \fi
 
 \def\setchapternewpage #1 {\csname CHAPPAG#1\endcsname}
 
-\def\CHAPPAGoff{
+\def\CHAPPAGoff{%
 \global\let\contentsalignmacro = \chappager
 \global\let\pchapsepmacro=\chapbreak
 \global\let\pagealignmacro=\chappager}
 
-\def\CHAPPAGon{
+\def\CHAPPAGon{%
 \global\let\contentsalignmacro = \chappager
 \global\let\pchapsepmacro=\chappager
 \global\let\pagealignmacro=\chappager
@@ -3363,7 +3322,7 @@ width0pt\relax} \fi
 \def\unnchfopen #1{%
 \chapoddpage {\chapfonts \vbox{\hyphenpenalty=10000\tolerance=5000
                        \parindent=0pt\raggedright
-                       \rm #1\hfill}}\bigskip \par\penalty 10000 %
+                       \rm #1\hfill}}\bigskip \par\nobreak
 }
 
 \def\chfopen #1#2{\chapoddpage {\chapfonts
@@ -3374,7 +3333,7 @@ width0pt\relax} \fi
 \def\centerchfopen #1{%
 \chapoddpage {\chapfonts \vbox{\hyphenpenalty=10000\tolerance=5000
                        \parindent=0pt
-                       \hfill {\rm #1}\hfill}}\bigskip \par\penalty 10000 %
+                       \hfill {\rm #1}\hfill}}\bigskip \par\nobreak
 }
 
 \def\CHAPFopen{
@@ -3427,9 +3386,27 @@ width0pt\relax} \fi
 }
 
 
-\message{toc printing,}
+\message{toc,}
+\newwrite\tocfile
+
+% Write an entry to the toc file, opening it if necessary.
+% Called from @chapter, etc.  We supply {\folio} at the end of the
+% argument, which will end up as the last argument to the \...entry macro.
+% 
+% We open the .toc file here instead of at @setfilename or any other
+% given time so that @contents can be put in the document anywhere.
+% 
+\newif\iftocfileopened
+\def\writetocentry#1{%
+  \iftocfileopened\else
+    \immediate\openout\tocfile = \jobname.toc
+    \global\tocfileopenedtrue
+  \fi
+  \iflinks \write\tocfile{#1{\folio}}\fi
+}
+
 % Finish up the main text and prepare to read what we've written
-% to \contentsfile.
+% to \tocfile.
 
 \newskip\contentsrightmargin \contentsrightmargin=1in
 \def\startcontents#1{%
@@ -3438,7 +3415,7 @@ width0pt\relax} \fi
    % \contentsalignmacro in parallel with \pagealignmacro.
    % From: Torbjorn Granlund <tege@matematik.su.se>
    \contentsalignmacro
-   \immediate\closeout \contentsfile
+   \immediate\closeout\tocfile
    \ifnum \pageno>0
       \pageno = -1              % Request roman numbered pages.
    \fi
@@ -4178,7 +4155,7 @@ width0pt\relax} \fi
 \ifnum\parencount=0 \else \errmessage{Unbalanced parentheses in @def}\fi%
 \interlinepenalty=10000
 \advance\rightskip by 0pt plus 1fil
-\endgraf\penalty 10000\vskip -\parskip\penalty 10000%
+\endgraf\nobreak\vskip -\parskip\nobreak
 }
 
 \def\deftypefunargs #1{%
@@ -4189,7 +4166,7 @@ width0pt\relax} \fi
 \tclose{#1}% avoid \code because of side effects on active chars
 \interlinepenalty=10000
 \advance\rightskip by 0pt plus 1fil
-\endgraf\penalty 10000\vskip -\parskip\penalty 10000%
+\endgraf\nobreak\vskip -\parskip\nobreak
 }
 
 % Do complete processing of one @defun or @defunx line already parsed.
@@ -4355,7 +4332,7 @@ width0pt\relax} \fi
 % This must expand the args and terminate the paragraph they make up
 \def\defvarargs #1{\normalparens #1%
 \interlinepenalty=10000
-\endgraf\penalty 10000\vskip -\parskip\penalty 10000}
+\endgraf\nobreak\vskip -\parskip\nobreak}
 
 % @defvr Counter foo-count
 
@@ -4392,7 +4369,7 @@ width0pt\relax} \fi
 \dovarind#2 \relax% Make entry in variables index
 \begingroup\defname {\defheaderxcond#1\relax$$$#2}{Variable}%
 \interlinepenalty=10000
-\endgraf\penalty 10000\vskip -\parskip\penalty 10000
+\endgraf\nobreak\vskip -\parskip\nobreak
 \endgroup}
 \def\dovarind#1 #2\relax{\doind{vr}{\code{#1}}}
 
@@ -4403,7 +4380,7 @@ width0pt\relax} \fi
 \def\deftypevrheader #1#2#3{\dovarind#3 \relax%
 \begingroup\defname {\defheaderxcond#2\relax$$$#3}{#1}
 \interlinepenalty=10000
-\endgraf\penalty 10000\vskip -\parskip\penalty 10000
+\endgraf\nobreak\vskip -\parskip\nobreak
 \endgroup}
 
 % This definition is run if you use @defvarx
@@ -5164,7 +5141,7 @@ width0pt\relax} \fi
   \setleading{12pt}%
   \parskip = 3pt plus 2pt minus 1pt
   %
-  \internalpagesizes{53\baselineskip}{6.5in}{\voffset}{.25in}{\bindingoffset}{44pt}%
+  \internalpagesizes{53\baselineskip}{160mm}{\voffset}{4mm}{\bindingoffset}{44pt}%
   %
   \tolerance = 700
   \hfuzz = 1pt
