@@ -1,3 +1,8 @@
+2001-05-16  Dean Wakerley  <dean@wakerley.com>
+
+	* doc/install.texi: New file. Converted to texinfo from the HTML
+	documentation in wwwdocs/htdocs/install.
+
 2001-05-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README.ALTOS: Remove obsolete file.
