@@ -1,5 +1,26 @@
 2004-10-21  Michael Koch  <konqueror@gmx.de>
 
+	* javax/naming/directory/BasicAttribute.java,
+	javax/naming/directory/BasicAttributes.java,
+	javax/naming/directory/InitialDirContext.java,
+	javax/naming/event/NamingEvent.java,
+	javax/naming/ldap/ControlFactory.java,
+	javax/naming/ldap/ExtendedRequest.java,
+	javax/naming/ldap/InitialLdapContext.java,
+	javax/naming/ldap/LdapReferralException.java,
+	javax/naming/spi/DirObjectFactory.java,
+	javax/naming/spi/DirStateFactory.java,
+	javax/naming/spi/DirectoryManager.java,
+	javax/naming/spi/InitialContextFactory.java,
+	javax/naming/spi/InitialContextFactoryBuilder.java,
+	javax/naming/spi/NamingManager.java,
+	javax/naming/spi/ObjectFactory.java,
+	javax/naming/spi/ObjectFactoryBuilder.java,
+	javax/naming/spi/StateFactory.java:
+	Import cleanup.
+
+2004-10-21  Michael Koch  <konqueror@gmx.de>
+
 	* javax/crypto/Cipher.java,
 	javax/crypto/EncryptedPrivateKeyInfo.java,
 	javax/crypto/ExemptionMechanism.java,
