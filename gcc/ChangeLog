@@ -1,3 +1,7 @@
+2000-11-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README.FRESCO: Remove obsolete file.
+
 2000-11-30  Mark Kettenis  <kettenis@gnu.org>
 
 	* configure.in: Reorganize handling of *-*-gnu*, to share target
