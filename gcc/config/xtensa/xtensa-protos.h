@@ -43,7 +43,7 @@ extern int add_operand PARAMS ((rtx, enum machine_mode));
 extern int arith_operand PARAMS ((rtx, enum machine_mode));
 extern int nonimmed_operand PARAMS ((rtx, enum machine_mode));
 extern int mem_operand PARAMS ((rtx, enum machine_mode));
-extern int non_acc_reg_operand PARAMS ((rtx, enum machine_mode));
+extern int xtensa_valid_move PARAMS ((enum machine_mode, rtx *operands));
 extern int mask_operand PARAMS ((rtx, enum machine_mode));
 extern int extui_fldsz_operand PARAMS ((rtx, enum machine_mode));
 extern int sext_operand PARAMS ((rtx, enum machine_mode));
@@ -87,6 +87,8 @@ extern void xtensa_output_literal
   PARAMS ((FILE *, rtx, enum machine_mode, int labelno));
 extern void xtensa_reorg PARAMS ((rtx));
 extern rtx xtensa_builtin_saveregs PARAMS ((void));
+extern enum reg_class xtensa_preferred_reload_class
+  PARAMS ((rtx, enum reg_class));
 extern enum reg_class xtensa_secondary_reload_class
   PARAMS ((enum reg_class, enum machine_mode, rtx, int));
 extern int a7_overlap_mentioned_p PARAMS ((rtx x));
