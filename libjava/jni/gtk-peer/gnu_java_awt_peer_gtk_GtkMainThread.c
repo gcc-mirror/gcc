@@ -155,7 +155,7 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
   postExposeEventID = (*env)->GetMethodID (env, gtkcomponentpeer, 
 					  "postExposeEvent", "(IIII)V");
   postKeyEventID = (*env)->GetMethodID (env, gtkcomponentpeer,
-					"postKeyEvent", "(IJIIC)V");
+					"postKeyEvent", "(IJIICI)V");
   postFocusEventID = (*env)->GetMethodID (env, gtkcomponentpeer,
 					  "postFocusEvent", "(IZ)V");
   postAdjustmentEventID = (*env)->GetMethodID (env, gtkscrollbarpeer,

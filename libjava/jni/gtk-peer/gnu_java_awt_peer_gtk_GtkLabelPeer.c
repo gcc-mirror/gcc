@@ -39,7 +39,7 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkLabelPeer.h"
 
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
   (JNIEnv *env, jobject obj)
 {

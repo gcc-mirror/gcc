@@ -47,6 +47,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
   GtkWidget *text, *sw;
 
   gdk_threads_enter ();
+
   text = gtk_text_view_new ();
   gtk_widget_show (text);
 
@@ -159,7 +160,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_replaceRange
   (*env)->ReleaseStringUTFChars (env, contents, str);
 }
 
-JNIEXPORT void JNICALL 
+JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkSetFont
   (JNIEnv *env, jobject obj, jstring jname, jint size)
 {
@@ -169,6 +170,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkSetFont
   PangoFontDescription *font_desc;
 
   ptr = NSA_GET_PTR (env, obj);
+
   text = GTK_WIDGET (TEXT_FROM_SW (ptr));
 
   font_name = (*env)->GetStringUTFChars (env, jname, NULL);
