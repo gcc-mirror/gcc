@@ -1,3 +1,11 @@
+1999-11-01  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (gctest_LDADD): Added THREADLIB.
+	(TESTS): New macro.
+	* configure: Rebuilt.
+	* configure.in (INCLUDES): New subst.
+
 1999-09-29  Steve Chamberlain  <sac@pobox.com>
 
 	* config.h: Added picoJava target.

@@ -25,7 +25,7 @@
 # include "gc.h"
 # include "gc_typed.h"
 # include "gc_priv.h"	/* For output, locking,  and some statistics	*/
-# include "config.h"
+# include "gcconfig.h"
 
 # ifdef MSWIN32
 #   include <windows.h>
@@ -45,16 +45,13 @@
 #   include <synch.h>
 # endif
 
-# if defined(IRIX_THREADS) || defined(LINUX_THREADS)
+# if defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
 #   include <pthread.h>
 # endif
 
 # ifdef WIN32_THREADS
 #   include <process.h>
     static CRITICAL_SECTION incr_cs;
-# endif
-# if defined(PCR) || defined(SOLARIS_THREADS) || defined(WIN32_THREADS)
-#   define THREADS
 # endif
 
 # ifdef AMIGA
@@ -266,6 +263,72 @@ struct {
 #define a A.aa
 
 /*
+ * A tiny list reversal test to check thread creation.
+ */
+#ifdef THREADS
+
+# ifdef WIN32_THREADS
+    unsigned __stdcall tiny_reverse_test(void * arg)
+# else
+    void * tiny_reverse_test(void * arg)
+# endif
+{
+    check_ints(reverse(reverse(ints(1,10))), 1, 10);
+    return 0;
+}
+
+# if defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+     || defined(SOLARIS_PTHREADS) || defined(HPUX_THREADS)
+    void fork_a_thread()
+    {
+      pthread_t t;
+      int code;
+      if ((code = pthread_create(&t, 0, tiny_reverse_test, 0)) != 0) {
+    	(void)GC_printf1("Small thread creation failed %lu\n",
+		         (unsigned long)code);
+    	FAIL;
+      }
+      if ((code = pthread_join(t, 0)) != 0) {
+        (void)GC_printf1("Small thread join failed %lu\n",
+	(unsigned long)code);
+        FAIL;
+      }
+    }
+
+# elif defined(WIN32_THREADS)
+    void fork_a_thread()
+    {
+  	unsigned thread_id;
+	HANDLE h;
+    	h = (HANDLE)_beginthreadex(NULL, 0, tiny_reverse_test,
+				   0, 0, &thread_id);
+        if (h == (HANDLE)-1) {
+            (void)GC_printf1("Small thread creation failed %lu\n",
+			     (unsigned long)GetLastError());
+      	    FAIL;
+        }
+    	if (WaitForSingleObject(h, INFINITE) != WAIT_OBJECT_0) {
+      	    (void)GC_printf1("Small thread wait failed %lu\n",
+			     (unsigned long)GetLastError());
+      	    FAIL;
+    	}
+    }
+
+/* # elif defined(SOLARIS_THREADS) */
+
+# else
+
+#   define fork_a_thread()
+
+# endif
+
+#else
+
+# define fork_a_thread()
+
+#endif 
+
+/*
  * Repeatedly reverse lists built out of very different sized cons cells.
  * Check that we didn't lose anything.
  */
@@ -296,14 +359,14 @@ void reverse_test()
     d = uncollectable_ints(1, 100);
     e = uncollectable_ints(1, 1);
     /* Check that realloc updates object descriptors correctly */
-    f = (sexpr *)GC_malloc(4 * sizeof(sexpr));
-    f = (sexpr *)GC_realloc((GC_PTR)f, 6 * sizeof(sexpr));
+    f = (sexpr *)GC_MALLOC(4 * sizeof(sexpr));
+    f = (sexpr *)GC_REALLOC((GC_PTR)f, 6 * sizeof(sexpr));
     f[5] = ints(1,17);
-    g = (sexpr *)GC_malloc(513 * sizeof(sexpr));
-    g = (sexpr *)GC_realloc((GC_PTR)g, 800 * sizeof(sexpr));
+    g = (sexpr *)GC_MALLOC(513 * sizeof(sexpr));
+    g = (sexpr *)GC_REALLOC((GC_PTR)g, 800 * sizeof(sexpr));
     g[799] = ints(1,18);
-    h = (sexpr *)GC_malloc(1025 * sizeof(sexpr));
-    h = (sexpr *)GC_realloc((GC_PTR)h, 2000 * sizeof(sexpr));
+    h = (sexpr *)GC_MALLOC(1025 * sizeof(sexpr));
+    h = (sexpr *)GC_REALLOC((GC_PTR)h, 2000 * sizeof(sexpr));
     h[1999] = ints(1,19);
     /* Try to force some collections and reuse of small list elements */
       for (i = 0; i < 10; i++) {
@@ -327,6 +390,7 @@ void reverse_test()
     check_ints(b,1,50);
     check_ints(a,1,49);
     for (i = 0; i < 60; i++) {
+	if (i % 10 == 0) fork_a_thread();
     	/* This maintains the invariant that a always points to a list of */
     	/* 49 integers.  Thus this is thread safe without locks,	  */
     	/* assuming atomic pointer assignments.				  */
@@ -386,7 +450,7 @@ VOLATILE int dropped_something = 0;
     static mutex_t incr_lock;
     mutex_lock(&incr_lock);
 # endif
-# if  defined(IRIX_THREADS) || defined(LINUX_THREADS)
+# if  defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
     static pthread_mutex_t incr_lock = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_lock(&incr_lock);
 # endif
@@ -404,7 +468,7 @@ VOLATILE int dropped_something = 0;
 # ifdef SOLARIS_THREADS
     mutex_unlock(&incr_lock);
 # endif
-# if defined(IRIX_THREADS) || defined(LINUX_THREADS)
+# if defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
     pthread_mutex_unlock(&incr_lock);
 # endif
 # ifdef WIN32_THREADS
@@ -465,7 +529,8 @@ int n;
 	    static mutex_t incr_lock;
 	    mutex_lock(&incr_lock);
 #	  endif
-#         if defined(IRIX_THREADS) || defined(LINUX_THREADS)
+#         if defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+	     || defined(HPUX_THREADS)
             static pthread_mutex_t incr_lock = PTHREAD_MUTEX_INITIALIZER;
             pthread_mutex_lock(&incr_lock);
 #         endif
@@ -481,7 +546,8 @@ int n;
 #	  ifdef SOLARIS_THREADS
 	    mutex_unlock(&incr_lock);
 #	  endif
-#	  if defined(IRIX_THREADS) || defined(LINUX_THREADS)
+#	  if defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+	     || defined(HPUX_THREADS)
 	    pthread_mutex_unlock(&incr_lock);
 #	  endif
 #         ifdef WIN32_THREADS
@@ -538,13 +604,13 @@ int n;
     chktree(t -> rchild, n-1);
 }
 
-# ifdef SOLARIS_THREADS
+# if defined(SOLARIS_THREADS) && !defined(_SOLARIS_PTHREADS)
 thread_key_t fl_key;
 
 void * alloc8bytes()
 {
-# ifdef SMALL_CONFIG
-    return(GC_malloc(8));
+# if defined(SMALL_CONFIG) || defined(GC_DEBUG)
+    return(GC_MALLOC(8));
 # else
     void ** my_free_list_ptr;
     void * my_free_list;
@@ -575,7 +641,44 @@ void * alloc8bytes()
 }
 
 #else
-# define alloc8bytes() GC_MALLOC_ATOMIC(8)
+
+# if defined(_SOLARIS_PTHREADS) || defined(IRIX_THREADS) \
+     || defined(LINUX_THREADS) || defined(HPUX_THREADS)
+pthread_key_t fl_key;
+
+void * alloc8bytes()
+{
+# ifdef SMALL_CONFIG
+    return(GC_malloc(8));
+# else
+    void ** my_free_list_ptr;
+    void * my_free_list;
+    
+    my_free_list_ptr = (void **)pthread_getspecific(fl_key);
+    if (my_free_list_ptr == 0) {
+        my_free_list_ptr = GC_NEW_UNCOLLECTABLE(void *);
+        if (pthread_setspecific(fl_key, my_free_list_ptr) != 0) {
+    	    (void)GC_printf0("pthread_setspecific failed\n");
+    	    FAIL;
+        }
+    }
+    my_free_list = *my_free_list_ptr;
+    if (my_free_list == 0) {
+        my_free_list = GC_malloc_many(8);
+        if (my_free_list == 0) {
+            (void)GC_printf0("alloc8bytes out of memory\n");
+    	    FAIL;
+        }
+    }
+    *my_free_list_ptr = GC_NEXT(my_free_list);
+    GC_NEXT(my_free_list) = 0;
+    return(my_free_list);
+# endif
+}
+
+# else
+#   define alloc8bytes() GC_MALLOC_ATOMIC(8)
+# endif
 #endif
 
 void alloc_small(n)
@@ -753,6 +856,7 @@ void run_one_test()
     	(void)GC_printf0("GC_malloc_uncollectable(0) failed\n");
 	    FAIL;
     }
+    GC_FREE(0);
     GC_is_valid_displacement_print_proc = fail_proc1;
     GC_is_visible_print_proc = fail_proc1;
     x = GC_malloc(16);
@@ -775,7 +879,7 @@ void run_one_test()
 	FAIL;
     }
     if (!TEST_FAIL_COUNT(1)) {
-#	if!(defined(RS6000) || defined(POWERPC))
+#	if!(defined(RS6000) || defined(POWERPC) || defined(IA64))
 	  /* ON RS6000s function pointers point to a descriptor in the	*/
 	  /* data segment, so there should have been no failures.	*/
     	  (void)GC_printf0("GC_is_visible produced wrong failure indication\n");
@@ -826,7 +930,7 @@ void check_heap_stats()
     int late_finalize_count = 0;
     
     if (sizeof(char *) > 4) {
-        max_heap_sz = 13000000;
+        max_heap_sz = 15000000;
     } else {
     	max_heap_sz = 11000000;
     }
@@ -926,7 +1030,8 @@ void SetMinimumStack(long minSize)
 
 
 #if !defined(PCR) && !defined(SOLARIS_THREADS) && !defined(WIN32_THREADS) \
-  && !defined(IRIX_THREADS) && !defined(LINUX_THREADS) || defined(LINT)
+  && !defined(IRIX_THREADS) && !defined(LINUX_THREADS) \
+  && !defined(HPUX_THREADS) || defined(LINT)
 #ifdef MSWIN32
   int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmd, int n)
 #else
@@ -979,6 +1084,9 @@ void SetMinimumStack(long minSize)
 		GC_malloc_ignore_off_page, GC_malloc_atomic_ignore_off_page,
 		GC_set_max_heap_size, GC_get_bytes_since_gc,
 		GC_pre_incr, GC_post_incr);
+#   endif
+#   ifdef MSWIN32
+      GC_win32_free_heap();
 #   endif
     return(0);
 }
@@ -1054,7 +1162,8 @@ test()
 }
 #endif
 
-#if defined(SOLARIS_THREADS) || defined(IRIX_THREADS) || defined(LINUX_THREADS)
+#if defined(SOLARIS_THREADS) || defined(IRIX_THREADS) \
+ || defined(HPUX_THREADS) || defined(LINUX_THREADS)
 void * thr_run_one_test(void * arg)
 {
     run_one_test();
@@ -1115,7 +1224,7 @@ main()
 	*((volatile char *)&code - 1024*1024) = 0;      /* Require 1 Mb */
 #   endif /* IRIX_THREADS */
     pthread_attr_init(&attr);
-#   ifdef IRIX_THREADS
+#   if defined(IRIX_THREADS) || defined(HPUX_THREADS)
     	pthread_attr_setstacksize(&attr, 1000000);
 #   endif
     n_tests = 0;
@@ -1125,6 +1234,10 @@ main()
 	(void) GC_printf0("Emulating dirty bits with mprotect/signals\n");
 #   endif
     (void) GC_set_warn_proc(warn_proc);
+    if ((code = pthread_key_create(&fl_key, 0)) != 0) {
+        (void)GC_printf1("Key creation failed %lu\n", (unsigned long)code);
+    	FAIL;
+    }
     if ((code = pthread_create(&th1, &attr, thr_run_one_test, 0)) != 0) {
     	(void)GC_printf1("Thread 1 creation failed %lu\n", (unsigned long)code);
     	FAIL;
@@ -1149,4 +1262,4 @@ main()
     return(0);
 }
 #endif /* pthreads */
-#endif /* SOLARIS_THREADS || IRIX_THREADS || LINUX_THREADS */
+#endif /* SOLARIS_THREADS || IRIX_THREADS || LINUX_THREADS || HPUX_THREADS */

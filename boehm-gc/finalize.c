@@ -1,6 +1,7 @@
 /*
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
+ * Copyright (c) 1996-1999 by Silicon Graphics.  All rights reserved.
 
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -15,6 +16,18 @@
 # define I_HIDE_POINTERS
 # include "gc_priv.h"
 # include "gc_mark.h"
+
+# ifdef FINALIZE_ON_DEMAND
+    int GC_finalize_on_demand = 1;
+# else
+    int GC_finalize_on_demand = 0;
+# endif
+
+# ifdef JAVA_FINALIZATION
+    int GC_java_finalization = 1;
+# else
+    int GC_java_finalization = 0;
+# endif
 
 /* Type of mark procedure used for marking from finalizable object.	*/
 /* This procedure normally does not mark the object, only its		*/
@@ -249,7 +262,7 @@ out:
 
 /* Possible finalization_marker procedures.  Note that mark stack	*/
 /* overflow is handled by the caller, and is not a disaster.		*/
-void GC_normal_finalize_mark_proc(p)
+GC_API void GC_normal_finalize_mark_proc(p)
 ptr_t p;
 {
     hdr * hhdr = HDR(p);
@@ -261,7 +274,7 @@ ptr_t p;
 /* This only pays very partial attention to the mark descriptor.	*/
 /* It does the right thing for normal and atomic objects, and treats	*/
 /* most others as normal.						*/
-void GC_ignore_self_finalize_mark_proc(p)
+GC_API void GC_ignore_self_finalize_mark_proc(p)
 ptr_t p;
 {
     hdr * hhdr = HDR(p);
@@ -278,13 +291,13 @@ ptr_t p;
     for (q = p; q <= scan_limit; q += ALIGNMENT) {
     	r = *(ptr_t *)q;
     	if (r < p || r > target_limit) {
-    	    GC_PUSH_ONE_HEAP((word)r);
+    	    GC_PUSH_ONE_HEAP((word)r, q);
     	}
     }
 }
 
 /*ARGSUSED*/
-void GC_null_finalize_mark_proc(p)
+GC_API void GC_null_finalize_mark_proc(p)
 ptr_t p;
 {
 }
@@ -295,7 +308,11 @@ ptr_t p;
 /* in the nonthreads case, we try to avoid disabling signals,	*/
 /* since it can be expensive.  Threads packages typically	*/
 /* make it cheaper.						*/
-void GC_register_finalizer_inner(obj, fn, cd, ofn, ocd, mp)
+/* The last parameter is a procedure that determines		*/
+/* marking for finalization ordering.  Any objects marked	*/
+/* by that procedure will be guaranteed to not have been	*/
+/* finalized when this finalizer is invoked.			*/
+GC_API void GC_register_finalizer_inner(obj, fn, cd, ofn, ocd, mp)
 GC_PTR obj;
 GC_finalization_proc fn;
 GC_PTR cd;
@@ -505,6 +522,7 @@ void GC_finalize()
       for (curr_fo = fo_head[i]; curr_fo != 0; curr_fo = fo_next(curr_fo)) {
         real_ptr = (ptr_t)REVEAL_POINTER(curr_fo -> fo_hidden_base);
         if (!GC_is_marked(real_ptr)) {
+	    GC_MARKED_FOR_FINALIZATION(real_ptr);
             GC_MARK_FO(real_ptr, curr_fo -> fo_mark_proc);
             if (GC_is_marked(real_ptr)) {
                 WARN("Finalization cycle involving %lx\n", real_ptr);
@@ -521,9 +539,9 @@ void GC_finalize()
       while (curr_fo != 0) {
         real_ptr = (ptr_t)REVEAL_POINTER(curr_fo -> fo_hidden_base);
         if (!GC_is_marked(real_ptr)) {
-#         ifndef JAVA_FINALIZATION
-            GC_set_mark_bit(real_ptr);
-#         endif
+	    if (!GC_java_finalization) {
+              GC_set_mark_bit(real_ptr);
+	    }
             /* Delete from hash table */
               next_fo = fo_next(curr_fo);
               if (prev_fo == 0) {
@@ -555,20 +573,20 @@ void GC_finalize()
       }
     }
 
-# ifdef JAVA_FINALIZATION
-  /* make sure we mark everything reachable from objects finalized
-     using the no_order mark_proc */
-    for (curr_fo = GC_finalize_now; 
-	 curr_fo != NULL; curr_fo = fo_next(curr_fo)) {
-	real_ptr = (ptr_t)curr_fo -> fo_hidden_base;
-	if (!GC_is_marked(real_ptr)) {
-	    if (curr_fo -> fo_mark_proc == GC_null_finalize_mark_proc) {
-	        GC_MARK_FO(real_ptr, GC_normal_finalize_mark_proc);
-	    }
-	    GC_set_mark_bit(real_ptr);
-	}
-    }
-# endif
+  if (GC_java_finalization) {
+    /* make sure we mark everything reachable from objects finalized
+       using the no_order mark_proc */
+      for (curr_fo = GC_finalize_now; 
+  	 curr_fo != NULL; curr_fo = fo_next(curr_fo)) {
+  	real_ptr = (ptr_t)curr_fo -> fo_hidden_base;
+  	if (!GC_is_marked(real_ptr)) {
+  	    if (curr_fo -> fo_mark_proc == GC_null_finalize_mark_proc) {
+  	        GC_MARK_FO(real_ptr, GC_normal_finalize_mark_proc);
+  	    }
+  	    GC_set_mark_bit(real_ptr);
+  	}
+      }
+  }
 
   /* Remove dangling disappearing links. */
     for (i = 0; i < dl_size; i++) {
@@ -594,7 +612,7 @@ void GC_finalize()
     }
 }
 
-#ifdef JAVA_FINALIZATION
+#ifndef JAVA_FINALIZATION_NOT_NEEDED
 
 /* Enqueue all remaining finalizers to be run - Assumes lock is
  * held, and signals are disabled */
@@ -648,10 +666,16 @@ void GC_enqueue_all_finalizers()
  * which can make the runtime guarantee that all finalizers are run.
  * Unfortunately, the Java standard implies we have to keep running
  * finalizers until there are no more left, a potential infinite loop.
- * YUCK.  * This routine is externally callable, so is called without 
- * the allocation lock 
+ * YUCK.
+ * Note that this is even more dangerous than the usual Java
+ * finalizers, in that objects reachable from static variables
+ * may have been finalized when these finalizers are run.
+ * Finalizers run at this point must be prepared to deal with a
+ * mostly broken world.
+ * This routine is externally callable, so is called without 
+ * the allocation lock. 
  */
-void GC_finalize_all()
+GC_API void GC_finalize_all()
 {
     DCL_LOCK_STATE;
 

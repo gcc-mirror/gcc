@@ -632,7 +632,7 @@ ptr_t GC_clear_stack();
     (GC_PTR)GC_clear_stack(GC_generic_malloc((word)lb, k))
     
 #define GENERAL_MALLOC_IOP(lb,k) \
-    (GC_PTR)GC_clear_stack(GC_generic_malloc_ignore_off_page((word)lb, k))
+    (GC_PTR)GC_clear_stack(GC_generic_malloc_ignore_off_page(lb, k))
 
 #if defined(__STDC__) || defined(__cplusplus)
   void * GC_malloc_explicitly_typed(size_t lb, GC_descr d)
@@ -702,7 +702,7 @@ DCL_LOCK_STATE;
 	FASTLOCK();
         if( !FASTLOCK_SUCCEEDED() || (op = *opp) == 0 ) {
             FASTUNLOCK();
-            op = (ptr_t)GENERAL_MALLOC_IOP((word)lb, GC_explicit_kind);
+            op = (ptr_t)GENERAL_MALLOC_IOP(lb, GC_explicit_kind);
 #	    ifdef MERGE_SIZES
 		lw = GC_size_map[lb];	/* May have been uninitialized.	*/            
 #	    endif
@@ -712,7 +712,7 @@ DCL_LOCK_STATE;
             FASTUNLOCK();
         }
    } else {
-       op = (ptr_t)GENERAL_MALLOC_IOP((word)lb, GC_explicit_kind);
+       op = (ptr_t)GENERAL_MALLOC_IOP(lb, GC_explicit_kind);
        if (op != NULL)
        lw = BYTES_TO_WORDS(GC_size(op));
    }

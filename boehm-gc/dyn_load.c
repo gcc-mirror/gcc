@@ -47,7 +47,7 @@
 #if (defined(DYNAMIC_LOADING) || defined(MSWIN32)) && !defined(PCR)
 #if !defined(SUNOS4) && !defined(SUNOS5DL) && !defined(IRIX5) && \
     !defined(MSWIN32) && !(defined(ALPHA) && defined(OSF1)) && \
-    !defined(HP_PA) && (!defined(LINUX) && !defined(__ELF__)) && \
+    !defined(HPUX) && !(defined(LINUX) && defined(__ELF__)) && \
     !defined(RS6000) && !defined(SCO_ELF)
  --> We only know how to find data segments of dynamic libraries for the
  --> above.  Additional SVR4 variants might not be too
@@ -284,11 +284,9 @@ void GC_register_dynamic_libraries()
 static struct link_map *
 GC_FirstDLOpenedLinkMap()
 {
-#ifdef __GNUC__
-  /* On some Linux systems, `_DYNAMIC' will not be defined when a
-     static link is done.  */
-# pragma weak _DYNAMIC
-#endif
+#   ifdef __GNUC__
+#     pragma weak _DYNAMIC
+#   endif
     extern ElfW(Dyn) _DYNAMIC[];
     ElfW(Dyn) *dp;
     struct r_debug *r;
@@ -356,6 +354,8 @@ void GC_register_dynamic_libraries()
 #include <errno.h>
 
 extern void * GC_roots_present();
+	/* The type is a lie, since the real type doesn't make sense here, */
+	/* and we only test for NULL.					   */
 
 extern ptr_t GC_scratch_last_end_ptr; /* End of GC_scratch_alloc arena	*/
 
@@ -382,6 +382,8 @@ void GC_register_dynamic_libraries()
 
     if (fd < 0) {
       sprintf(buf, "/proc/%d", getpid());
+	/* The above generates a lint complaint, since pid_t varies.	*/
+	/* It's unclear how to improve this.				*/
       fd = open(buf, O_RDONLY);
       if (fd < 0) {
     	ABORT("/proc open failed");
@@ -394,7 +396,8 @@ void GC_register_dynamic_libraries()
     if (needed_sz >= current_sz) {
         current_sz = needed_sz * 2 + 1;
         		/* Expansion, plus room for 0 record */
-        addr_map = (prmap_t *)GC_scratch_alloc(current_sz * sizeof(prmap_t));
+        addr_map = (prmap_t *)GC_scratch_alloc((word)
+						(current_sz * sizeof(prmap_t)));
     }
     if (ioctl(fd, PIOCMAP, addr_map) < 0) {
         GC_err_printf4("fd = %d, errno = %d, needed_sz = %d, addr_map = 0x%X\n",
@@ -656,7 +659,7 @@ void GC_register_dynamic_libraries()
 }
 #endif
 
-#if defined(HP_PA)
+#if defined(HPUX)
 
 #include <errno.h>
 #include <dl.h>
@@ -679,6 +682,11 @@ void GC_register_dynamic_libraries()
 
       /* Check if this is the end of the list or if some error occured */
         if (status != 0) {
+#	 ifdef HPUX_THREADS
+	   /* I've seen errno values of 0.  The man page is not clear	*/
+	   /* as to whether errno should get set on a -1 return.	*/
+	   break;
+#	 else
           if (errno == EINVAL) {
               break; /* Moved past end of shared library list --> finished */
           } else {
@@ -689,6 +697,7 @@ void GC_register_dynamic_libraries()
 	      }
               ABORT("shl_get failed");
           }
+#	 endif
         }
 
 #     ifdef VERBOSE
@@ -711,7 +720,7 @@ void GC_register_dynamic_libraries()
         index++;
     }
 }
-#endif /* HP_PA */
+#endif /* HPUX */
 
 #ifdef RS6000
 #pragma alloca

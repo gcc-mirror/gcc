@@ -1,6 +1,6 @@
 OBJS= alloc.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o headers.o mark.o obj_map.o blacklst.o finalize.o new_hblk.o real_malloc.o dyn_load.o dbg_mlc.o malloc.o stubborn.o checksums.o typd_mlc.o ptr_chck.o
 
-INC=  gc_private.h gc_hdrs.h gc.h config.h
+INC=  gc_private.h gc_hdrs.h gc.h gcconfig.h
 
 all: gctest setjmp_t
 

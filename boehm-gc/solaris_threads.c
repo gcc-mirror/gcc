@@ -616,6 +616,25 @@ GC_thread GC_lookup_thread(thread_t id)
     return(p);
 }
 
+# define MAX_ORIG_STACK_SIZE (8 * 1024 * 1024)
+
+word GC_get_orig_stack_size() {
+    struct rlimit rl;
+    static int warned = 0;
+    int result;
+
+    if (getrlimit(RLIMIT_STACK, &rl) != 0) ABORT("getrlimit failed");
+    result = (word)rl.rlim_cur & ~(HBLKSIZE-1);
+    if (result > MAX_ORIG_STACK_SIZE) {
+	if (!warned) {
+	    WARN("Large stack limit(%ld): only scanning 8 MB", result);
+	    warned = 1;
+	}
+	result = MAX_ORIG_STACK_SIZE;
+    }
+    return result;
+}
+
 /* Notify dirty bit implementation of unused parts of my stack. */
 /* Caller holds allocation lock.				*/
 void GC_my_stack_limits()
@@ -628,12 +647,9 @@ void GC_my_stack_limits()
     
     if (stack_size == 0) {
       /* original thread */
-        struct rlimit rl;
-         
-        if (getrlimit(RLIMIT_STACK, &rl) != 0) ABORT("getrlimit failed");
         /* Empirically, what should be the stack page with lowest	*/
         /* address is actually inaccessible.				*/
-        stack_size = ((word)rl.rlim_cur & ~(HBLKSIZE-1)) - GC_page_sz;
+        stack_size = GC_get_orig_stack_size() - GC_page_sz;
         stack = GC_stackbottom - stack_size + GC_page_sz;
     } else {
         stack = me -> stack;
@@ -671,8 +687,7 @@ void GC_push_all_stacks()
             top = p -> stack + p -> stack_size;
         } else {
             /* The original stack. */
-            if (getrlimit(RLIMIT_STACK, &rl) != 0) ABORT("getrlimit failed");
-            bottom = GC_stackbottom - rl.rlim_cur + GC_page_sz;
+            bottom = GC_stackbottom - GC_get_orig_stack_size() + GC_page_sz;
             top = GC_stackbottom;
         }
         if ((word)sp > (word)bottom && (word)sp < (word)top) bottom = sp;

@@ -72,7 +72,7 @@ SPECIALCFLAGS =
 all: gc.a gctest.exe
 
 $(OBJS) test.o: $(srcdir)/gc_priv.h $(srcdir)/gc_hdrs.h $(srcdir)/gc.h \
-    $(srcdir)/config.h $(srcdir)/gc_typed.h
+    $(srcdir)/gcconfig.h $(srcdir)/gc_typed.h
 # The dependency on Makefile is needed.  Changing
 # options such as -DSILENT affects the size of GC_arrays,
 # invalidating all .o files that rely on gc_priv.h

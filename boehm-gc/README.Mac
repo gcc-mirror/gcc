@@ -320,7 +320,7 @@ Very few. Just one tiny in the GC, not strictly needed.
    alloc dummy_to_fool_the_compiler_into_doing_things_it_currently_cant_handle;
   ------------
 
-- config.h
+- config.h [now gcconfig.h]
   __MWERKS__ does not have to mean MACOS. You can use Codewarrior to
   build a Win32 or BeOS library and soon a Rhapsody library. You may
   have to change that #if...

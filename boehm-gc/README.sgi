@@ -35,3 +35,7 @@ The garbage collector uses signals to stop threads.)
 initiated.  Applications with many such threads may not exhibit acceptable
 performance with the collector.  (Increasing the heap size may help.)
 
+6) The collector should not be compiled with -DREDIRECT_MALLOC.  This
+confuses some library calls made by the pthreads implementation, which
+expect the standard malloc.
+

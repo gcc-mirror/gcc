@@ -13,7 +13,7 @@
 
 //
 // This is a C++ header file that is intended to replace the SGI STL
-// alloc.h.
+// alloc.h.  This assumes SGI STL version < 3.0.
 //
 // This assumes the collector has been compiled with -DATOMIC_UNCOLLECTABLE
 // and -DALL_INTERIOR_POINTERS.  We also recommend
