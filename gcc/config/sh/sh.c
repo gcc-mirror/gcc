@@ -5940,8 +5940,9 @@ sh_va_arg (valist, type)
   HOST_WIDE_INT size, rsize;
   tree tmp, pptr_type_node;
   rtx addr_rtx, r;
-  rtx result;
+  rtx result_ptr, result = NULL_RTX;
   int pass_by_ref = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
+  rtx lab_over;
 
   size = int_size_in_bytes (type);
   rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
@@ -5955,7 +5956,7 @@ sh_va_arg (valist, type)
       tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
       tree next_o, next_o_limit, next_fp, next_fp_limit, next_stack;
       int pass_as_float;
-      rtx lab_false, lab_over;
+      rtx lab_false;
 
       f_next_o = TYPE_FIELDS (va_list_type_node);
       f_next_o_limit = TREE_CHAIN (f_next_o);
@@ -5973,6 +5974,16 @@ sh_va_arg (valist, type)
       next_stack = build (COMPONENT_REF, TREE_TYPE (f_next_stack),
 			  valist, f_next_stack);
 
+      /* Structures with a single member with a distinct mode are passed
+	 like their member.  This is relevant if the latter has a REAL_TYPE
+	 or COMPLEX_TYPE type.  */
+      if (TREE_CODE (type) == RECORD_TYPE
+	  && TYPE_FIELDS (type)
+	  && TREE_CODE (TYPE_FIELDS (type)) == FIELD_DECL
+	  && (TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == REAL_TYPE
+	      || TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == COMPLEX_TYPE)
+          && TREE_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
+	type = TREE_TYPE (TYPE_FIELDS (type));
       if (TARGET_SH4)
 	{
 	  pass_as_float = ((TREE_CODE (type) == REAL_TYPE && size <= 8)
@@ -5988,6 +5999,9 @@ sh_va_arg (valist, type)
       addr_rtx = gen_reg_rtx (Pmode);
       lab_false = gen_label_rtx ();
       lab_over = gen_label_rtx ();
+
+      tmp = make_tree (pptr_type_node, addr_rtx);
+      valist = build1 (INDIRECT_REF, ptr_type_node, tmp);
 
       if (pass_as_float)
 	{
@@ -6017,6 +6031,37 @@ sh_va_arg (valist, type)
 	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
 	  if (r != addr_rtx)
 	    emit_move_insn (addr_rtx, r);
+
+#ifdef FUNCTION_ARG_SCmode_WART
+	  if (TYPE_MODE (type) == SCmode && TARGET_SH4 && TARGET_LITTLE_ENDIAN)
+	    {
+	      rtx addr, real, imag, result_value, slot;
+	      tree subtype = TREE_TYPE (type);
+
+	      addr = std_expand_builtin_va_arg (valist, subtype);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      if (GET_MODE (addr) != Pmode)
+		addr = convert_memory_address (Pmode, addr);
+#endif
+	      imag = gen_rtx_MEM (TYPE_MODE (type), addr);
+	      set_mem_alias_set (imag, get_varargs_alias_set ());
+
+	      addr = std_expand_builtin_va_arg (valist, subtype);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      if (GET_MODE (addr) != Pmode)
+		addr = convert_memory_address (Pmode, addr);
+#endif
+	      real = gen_rtx_MEM (TYPE_MODE (type), addr);
+	      set_mem_alias_set (real, get_varargs_alias_set ());
+
+	      result_value = gen_rtx_CONCAT (SCmode, real, imag);
+	      /* ??? this interface is stupid - why require a pointer?  */
+	      result = gen_reg_rtx (Pmode);
+	      slot = assign_stack_temp (SCmode, 8, 0);
+	      emit_move_insn (slot, result_value);
+	      emit_move_insn (result, XEXP (slot, 0));
+	    }
+#endif /* FUNCTION_ARG_SCmode_WART */
 
 	  emit_jump_insn (gen_jump (lab_over));
 	  emit_barrier ();
@@ -6060,16 +6105,22 @@ sh_va_arg (valist, type)
 	    emit_move_insn (addr_rtx, r);
 	}
 
-      emit_label (lab_over);
-
-      tmp = make_tree (pptr_type_node, addr_rtx);
-      valist = build1 (INDIRECT_REF, ptr_type_node, tmp);
+      if (! result)
+        emit_label (lab_over);
     }
 
   /* ??? In va-sh.h, there had been code to make values larger than
      size 8 indirect.  This does not match the FUNCTION_ARG macros.  */
 
-  result = std_expand_builtin_va_arg (valist, type);
+  result_ptr = std_expand_builtin_va_arg (valist, type);
+  if (result)
+    {
+      emit_move_insn (result, result_ptr);
+      emit_label (lab_over);
+    }
+  else
+    result = result_ptr;
+
   if (pass_by_ref)
     {
 #ifdef POINTERS_EXTEND_UNSIGNED
