@@ -641,7 +641,8 @@ CLEAN_X11_MODULES = \
 	clean-gdb \
 	clean-expect \
 	clean-guile \
-	clean-tk 
+	clean-tk \
+	clean-tix 
 
 # The target built for a native build.
 # This list only includes modules actually being configured and built.
@@ -5402,6 +5403,73 @@ install-tk: installdirs
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	$(SET_LIB_PATH) \
 	(cd tk && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install)
+
+
+.PHONY: configure-tix maybe-configure-tix
+maybe-configure-tix:
+configure-tix:
+	@test ! -f tix/Makefile || exit 0; \
+	[ -d tix ] || mkdir tix; \
+	r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	CC="$(CC)"; export CC; \
+	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CXX="$(CXX)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
+	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
+	  AR="$(AR)"; export AR; \
+	  AS="$(AS)"; export AS; \
+	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	  LD="$(LD)"; export LD; \
+	  NM="$(NM)"; export NM; \
+	  RANLIB="$(RANLIB)"; export RANLIB; \
+	  WINDRES="$(WINDRES)"; export WINDRES; \
+	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	fi; \
+	echo Configuring in tix; \
+	cd tix || exit 1; \
+	case $(srcdir) in \
+	  \.) \
+	    srcdiroption="--srcdir=."; \
+	    libsrcdir=".";; \
+	  /* | [A-Za-z]:[\\/]*) \
+	    srcdiroption="--srcdir=$(srcdir)/tix"; \
+	    libsrcdir="$$s/tix";; \
+	  *) \
+	    srcdiroption="--srcdir=../$(srcdir)/tix"; \
+	    libsrcdir="$$s/tix";; \
+	esac; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  || exit 1
+
+.PHONY: all-tix maybe-all-tix
+maybe-all-tix:
+all-tix: configure-tix
+	@r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd tix && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) all)
+
+
+.PHONY: check-tix
+check-tix:
+	@r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd tix && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) check)
+
+
+
+.PHONY: install-tix maybe-install-tix
+maybe-install-tix:
+install-tix: installdirs
+	@r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd tix && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install)
 
 
 .PHONY: configure-libtermcap maybe-configure-libtermcap
