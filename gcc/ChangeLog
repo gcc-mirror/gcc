@@ -1,3 +1,8 @@
+2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (abs_docdir, abs_srcdir): Define.
+	(doc/%.dvi, doc/gccinstall.dvi): Use $(abs_docdir).
+
 2004-01-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR optimization/12147

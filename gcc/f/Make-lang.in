@@ -174,7 +174,7 @@ doc/g77.info: $(TEXI_G77_FILES)
 	else true; fi
 
 doc/g77.dvi: $(TEXI_G77_FILES)
-	$(TEXI2DVI) -I $(srcdir)/f -I $(docdir)/include -I $(objdir)/f -o $@ $<
+	$(TEXI2DVI) -I $(srcdir)/f -I $(abs_docdir)/include -I $(objdir)/f -o $@ $<
 
 .INTERMEDIATE: g77.pod
 g77.pod: f/invoke.texi

@@ -1,3 +1,7 @@
+2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (doc/treelang.dvi): Use $(abs_docdir). 
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Replace $(docdir) with doc.

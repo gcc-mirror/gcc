@@ -71,7 +71,11 @@ program_transform_name := @program_transform_name@
 
 # Directory where sources are, from where we are.
 srcdir = @srcdir@
-docdir = $(srcdir)/doc
+docdir = @srcdir@/doc
+
+# Directory where sources are, absolute.
+abs_srcdir = @abs_srcdir@
+abs_docdir = @abs_srcdir@/doc
 
 # Top build directory, relative to here.
 top_builddir = ..
@@ -2667,11 +2671,11 @@ dvi:: doc/gcc.dvi doc/gccint.dvi doc/gccinstall.dvi doc/cpp.dvi \
       doc/cppinternals.dvi
 
 doc/%.dvi: %.texi
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 # Duplicate entry to handle renaming of gccinstall.dvi
 doc/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 doc/fsf-funding.7
 
