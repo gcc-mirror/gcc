@@ -1,3 +1,7 @@
+2003-10-22  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* mingw32.h: New file.
+
 2003-10-21  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* 3psoccon.ads, 3veacodu.adb, 3vexpect.adb, 3vsoccon.ads,
