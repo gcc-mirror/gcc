@@ -1,3 +1,9 @@
+2000-11-21  Mike Stump  <mrs@wrs.com>
+
+	* fixinc/fixtests.c (TEST_FOR_FIX_PROC_HEAD): Fix to allow
+	compilation with older compilers, such as /bin/cc on SunOS.
+	* fixinc/fixfixes.c (FIX_PROC_HEAD): Ditto.
+
 2000-11-21  Richard Henderson  <rth@redhat.com>
 
 	* varasm.c (record_constant): Pad the constructed
