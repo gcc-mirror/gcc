@@ -1048,6 +1048,46 @@ comp_target_types (ttl, ttr, nptrs)
   return 0;
 }
 
+/* Returns 1 if TYPE1 is more cv-qualified than TYPE2, -1 if TYPE2 is
+   more cv-qualified that TYPE1, and 0 otherwise.  */
+
+int
+comp_cv_qualification (type1, type2)
+     tree type1;
+     tree type2;
+{
+  if (TYPE_READONLY (type1) == TYPE_READONLY (type2)
+      && TYPE_VOLATILE (type1) == TYPE_VOLATILE (type2))
+    return 0;
+
+  if (TYPE_READONLY (type1) >= TYPE_READONLY (type2)
+      && TYPE_VOLATILE (type1) >= TYPE_VOLATILE (type2))
+    return 1;
+
+  if (TYPE_READONLY (type2) >= TYPE_READONLY (type1)
+      && TYPE_VOLATILE (type2) >= TYPE_VOLATILE (type1))
+    return -1;
+
+  return 0;
+}
+
+/* Returns 1 if the cv-qualification signature of TYPE1 is a proper
+   subset of the cv-qualification signature of TYPE2, and the types
+   are similar.  Returns -1 if the other way 'round, and 0 otherwise.  */
+
+int
+comp_cv_qual_signature (type1, type2)
+     tree type1;
+     tree type2;
+{
+  if (comp_ptr_ttypes_real (type2, type1, -1))
+    return 1;
+  else if (comp_ptr_ttypes_real (type1, type2, -1))
+    return -1;
+  else
+    return 0;
+}
+
 /* If two types share a common base type, return that basetype.
    If there is not a unique most-derived base type, this function
    returns ERROR_MARK_NODE.  */
@@ -7409,14 +7449,21 @@ c_expand_start_case (exp)
   return exp;
 }
 
-/* CONSTP remembers whether or not all the intervening pointers in the `to'
-   type have been const.  */
+/* Returns non-zero if the pointer-type FROM can be converted to the
+   pointer-type TO via a qualification conversion.  If CONSTP is -1,
+   then we return non-zero if the pointers are similar, and the
+   cv-qualification signature of FROM is a proper subset of that of TO.
+
+   If CONSTP is positive, then all outer pointers have been
+   const-qualified.  */
 
 static int
 comp_ptr_ttypes_real (to, from, constp)
      tree to, from;
      int constp;
 {
+  int to_more_cv_qualified = 0;
+
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
       if (TREE_CODE (to) != TREE_CODE (from))
@@ -7431,19 +7478,32 @@ comp_ptr_ttypes_real (to, from, constp)
 	 so the usual checks are not appropriate.  */
       if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
 	{
-	  if (TYPE_READONLY (from) > TYPE_READONLY (to)
-	      || TYPE_VOLATILE (from) > TYPE_VOLATILE (to))
-	    return 0;
+	  switch (comp_cv_qualification (from, to))
+	    {
+	    case 1:
+	      /* FROM is more cv-qualified than TO.  */
+	      return 0;
 
-	  if (! constp
-	      && (TYPE_READONLY (to) > TYPE_READONLY (from)
-		  || TYPE_VOLATILE (to) > TYPE_READONLY (from)))
-	    return 0;
-	  constp &= TYPE_READONLY (to);
+	    case -1:
+	      /* TO is more cv-qualified than FROM.  */
+	      if (constp == 0)
+		return 0;
+	      else 
+		++to_more_cv_qualified;
+	      break;
+
+	    default:
+	      break;
+	    }
+
+	  if (constp > 0)
+	    constp &= TYPE_READONLY (to);
 	}
 
       if (TREE_CODE (to) != POINTER_TYPE)
-	return comptypes (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), 1);
+	return 
+	  comptypes (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), 1)
+	  && (constp >= 0 || to_more_cv_qualified);
     }
 }
 
