@@ -2197,6 +2197,7 @@ substitute_in_expr (exp, f, r)
      tree r;
 {
   enum tree_code code = TREE_CODE (exp);
+  tree new = 0;
   tree inner;
 
   switch (TREE_CODE_CLASS (code))
@@ -2217,9 +2218,10 @@ substitute_in_expr (exp, f, r)
       switch (tree_code_length[(int) code])
 	{
 	case 1:
-	  return fold (build1 (code, TREE_TYPE (exp),
-			       substitute_in_expr (TREE_OPERAND (exp, 0),
-						   f, r)));
+	  new = fold (build1 (code, TREE_TYPE (exp),
+			      substitute_in_expr (TREE_OPERAND (exp, 0),
+						  f, r)));
+	  break;
 
 	case 2:
 	  /* An RTL_EXPR cannot contain a PLACEHOLDER_EXPR; a CONSTRUCTOR
@@ -2229,10 +2231,11 @@ substitute_in_expr (exp, f, r)
 	  else if (code == CONSTRUCTOR)
 	    abort ();
 
-	  return fold (build (code, TREE_TYPE (exp),
-			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			      substitute_in_expr (TREE_OPERAND (exp, 1),
-						  f, r)));
+	  new = fold (build (code, TREE_TYPE (exp),
+			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			     substitute_in_expr (TREE_OPERAND (exp, 1),
+						 f, r)));
+	  break;
 
 	case 3:
 	  /* It cannot be that anything inside a SAVE_EXPR contains a
@@ -2243,11 +2246,11 @@ substitute_in_expr (exp, f, r)
 	  if (code != COND_EXPR)
 	    abort ();
 
-	  return fold (build (code, TREE_TYPE (exp),
-			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			      substitute_in_expr (TREE_OPERAND (exp, 1), f, r),
-			      substitute_in_expr (TREE_OPERAND (exp, 2),
-						  f, r)));
+	  new = fold (build (code, TREE_TYPE (exp),
+			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			     substitute_in_expr (TREE_OPERAND (exp, 1), f, r),
+			     substitute_in_expr (TREE_OPERAND (exp, 2),
+						 f, r)));
 	}
 
       break;
@@ -2266,29 +2269,39 @@ substitute_in_expr (exp, f, r)
 	      && TREE_OPERAND (exp, 1) == f)
 	    return r;
 
-	  return fold (build (code, TREE_TYPE (exp),
-			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			      TREE_OPERAND (exp, 1)));
+	  new = fold (build (code, TREE_TYPE (exp),
+			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			     TREE_OPERAND (exp, 1)));
+	  break;
+
 	case BIT_FIELD_REF:
-	  return fold (build (code, TREE_TYPE (exp),
-			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			      substitute_in_expr (TREE_OPERAND (exp, 1), f, r),
-			      substitute_in_expr (TREE_OPERAND (exp, 2), f, r)));
+	  new = fold (build (code, TREE_TYPE (exp),
+			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			     substitute_in_expr (TREE_OPERAND (exp, 1), f, r),
+			     substitute_in_expr (TREE_OPERAND (exp, 2), f, r)));
+	  break;
+
 	case INDIRECT_REF:
 	case BUFFER_REF:
-	  return fold (build1 (code, TREE_TYPE (exp),
-			       substitute_in_expr (TREE_OPERAND (exp, 0),
-						 f, r)));
+	  new = fold (build1 (code, TREE_TYPE (exp),
+			      substitute_in_expr (TREE_OPERAND (exp, 0),
+						  f, r)));
+	  break;
+
 	case OFFSET_REF:
-	  return fold (build (code, TREE_TYPE (exp),
-			      substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			      substitute_in_expr (TREE_OPERAND (exp, 1), f, r)));
+	  new = fold (build (code, TREE_TYPE (exp),
+			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+			     substitute_in_expr (TREE_OPERAND (exp, 1), f, r)));
+	  break;
 	}
     }
 
   /* If it wasn't one of the cases we handle, give up.  */
+  if (new == 0)
+    abort ();
 
-  abort ();
+  TREE_READONLY (new) = TREE_READONLY (exp);
+  return new;
 }
 
 /* Given a type T, a FIELD_DECL F, and a replacement value R,
