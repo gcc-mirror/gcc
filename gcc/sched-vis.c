@@ -787,8 +787,12 @@ print_insn (char *buf, rtx x, int verbose)
       break;
     case NOTE:
       if (NOTE_LINE_NUMBER (x) > 0)
-	sprintf (buf, "%4d note \"%s\" %d", INSN_UID (x),
-		 NOTE_SOURCE_FILE (x), NOTE_LINE_NUMBER (x));
+	{
+	  expanded_location xloc;
+	  NOTE_EXPANDED_LOCATION (xloc, x);
+	  sprintf (buf, "%4d note \"%s\" %d", INSN_UID (x),
+		   xloc.file, xloc.line);
+	}
       else
 	sprintf (buf, "%4d %s", INSN_UID (x),
 		 GET_NOTE_INSN_NAME (NOTE_LINE_NUMBER (x)));

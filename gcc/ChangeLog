@@ -79,6 +79,16 @@
 	* rtl-error.c:  Likewise.
 	* stmt.c (check_seenlabel):  Likewise.
 	* tree-pretty-print.c:  Likewise.
+	* gengtype-lex.l:  Temporary kludge to avoid duplicate typedef.
+	* gengtype.c:  Update for now typdefs in input.h.  More kludges.
+	* modulo-sched.c (sms_schedule):  Use NOTE_EXPANDED_LOCATION macro.
+	* ra-debug.c (ra_print_rtl):  Likewise.
+	* sched-rgn.c:  Likewise.
+	* sched-vis.c:  Likewise.
+	* rtl.h (gen_rtx_ASM_OPERANDS):  Redefine if USE_MAPPED_LOCATION.
+	* stmt.c (expand_asm_operands):  Adjust calls to gen_rtx_ASM_OPERANDS.
+	* tree-cfg.c:  Use new macros and typedefs.
+	* tree-flow-inline.h:  Likewise.
 
 2004-06-30  Richard Sandiford  <rsandifo@redhat.com>
 	    Eric Christopher  <echristo@redhat.com>

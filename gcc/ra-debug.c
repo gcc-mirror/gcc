@@ -389,9 +389,11 @@ ra_print_rtx (FILE *file, rtx x, int with_pn)
 	    fprintf (file, " %s", GET_NOTE_INSN_NAME (ln));
 	  else
 	    {
-	      fprintf (file, " line %d", ln);
-	      if (NOTE_SOURCE_FILE (x))
-		fprintf (file, ":%s", NOTE_SOURCE_FILE (x));
+	      expanded_location s;
+	      NOTE_EXPANDED_LOCATION (s, x);
+	      fprintf (file, " line %d", s.line);
+	      if (s.file != NULL)
+		fprintf (file, ":%s", s.file);
 	    }
 	}
       else

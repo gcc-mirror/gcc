@@ -2321,8 +2321,12 @@ debug_dependencies (void)
 		      if (n < 0)
 			fprintf (sched_dump, "%s\n", GET_NOTE_INSN_NAME (n));
 		      else
-			fprintf (sched_dump, "line %d, file %s\n", n,
-				 NOTE_SOURCE_FILE (insn));
+			{
+			  expanded_location xloc;
+			  NOTE_EXPANDED_LOCATION (xloc, insn);
+			  fprintf (sched_dump, "line %d, file %s\n",
+				   xloc.line, xloc.file);
+			}
 		    }
 		  else
 		    fprintf (sched_dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));

@@ -1104,7 +1104,7 @@ open_base_files (void)
     /* The order of files here matters very much.  */
     static const char *const ifiles [] = {
       "config.h", "system.h", "coretypes.h", "tm.h", "varray.h", 
-      "hashtab.h", "splay-tree.h", "bitmap.h", "tree.h", "rtl.h",
+      "hashtab.h", "splay-tree.h", "bitmap.h", "input.h", "tree.h", "rtl.h",
       "function.h", "insn-config.h", "expr.h", "hard-reg-set.h",
       "basic-block.h", "cselib.h", "insn-addr.h", "optabs.h",
       "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
@@ -2988,6 +2988,10 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED)
   do_scalar_typedef ("uint8", &pos);
   do_scalar_typedef ("jword", &pos);
   do_scalar_typedef ("JCF_u2", &pos);
+#ifdef USE_MAPPED_LOCATION
+  do_scalar_typedef ("location_t", &pos);
+  do_scalar_typedef ("source_locus", &pos);
+#endif
   do_scalar_typedef ("void", &pos);
 
   do_typedef ("PTR", create_pointer (resolve_typedef ("void", &pos)), &pos);
@@ -3010,6 +3014,12 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED)
         }
       if (!dupflag)
         parse_file (all_files[i]);
+#ifndef USE_MAPPED_LOCATION
+      /* temporary kludge - gengtype doesn't handle conditionals.
+	 Manually add source_locus *after* we've processed input.h. */
+      if (i == 0)
+	do_typedef ("source_locus", create_pointer (resolve_typedef ("location_t", &pos)), &pos);
+#endif
     }
 
   if (hit_error != 0)
