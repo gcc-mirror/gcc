@@ -259,6 +259,35 @@ pp_c_parameter_declaration (pp, t)
   pp_unsupported_tree (pp, t);
 }
 
+/* Pretty-print ATTRIBUTES using GNU C extension syntax.  */
+void 
+pp_c_attributes (pp, attributes)
+     c_pretty_printer pp;
+     tree attributes;
+{
+  if (attributes == NULL_TREE)
+    return;
+  
+  pp_c_identifier (pp, "__attribute__");
+  pp_c_left_paren (pp); 
+  pp_c_left_paren (pp);
+  for (; attributes != NULL_TREE; attributes = TREE_CHAIN (attributes))
+    {
+      pp_tree_identifier (pp, TREE_PURPOSE (attributes));
+      if (TREE_VALUE (attributes))
+	{
+	  pp_c_left_paren (pp);
+	  pp_c_expression_list (pp, TREE_VALUE (attributes));
+	  pp_c_right_paren (pp);
+	}
+      
+      if (TREE_CHAIN (attributes))
+	pp_separate_with (pp, ',');
+    }
+  pp_c_right_paren (pp);
+  pp_c_right_paren (pp);
+}
+
 
 /* Expressions.  */
 

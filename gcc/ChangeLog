@@ -1,3 +1,10 @@
+2002-08-14  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* c-pretty-print.h: Guard against multiple inclusion.
+	Robustify macros.
+	(pp_c_attributes): Declare.
+	* c-pretty-print.c (pp_c_attributes): New function.
+
 2002-08-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* m68k.c (m68k_output_function_prologue,
