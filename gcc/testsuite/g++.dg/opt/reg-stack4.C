@@ -5,7 +5,7 @@
 // deleted a valid edge.
 
 // { dg-do compile }
-// { dg-options "-mtune=i586 -O2" { target i?86-*-* } }
+// { dg-options "-mcpu=i586 -O2" { target i?86-*-* } }
 
 struct array {
   double data;

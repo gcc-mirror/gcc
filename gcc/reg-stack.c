@@ -249,13 +249,13 @@ static int get_hard_regnum		PARAMS ((stack, rtx));
 static rtx emit_pop_insn		PARAMS ((rtx, stack, rtx,
 					       enum emit_where));
 static void emit_swap_insn		PARAMS ((rtx, stack, rtx));
-static void move_for_stack_reg		PARAMS ((rtx, stack, rtx));
+static bool move_for_stack_reg		PARAMS ((rtx, stack, rtx));
 static int swap_rtx_condition_1		PARAMS ((rtx));
 static int swap_rtx_condition		PARAMS ((rtx));
 static void compare_for_stack_reg	PARAMS ((rtx, stack, rtx));
-static void subst_stack_regs_pat	PARAMS ((rtx, stack, rtx));
+static bool subst_stack_regs_pat	PARAMS ((rtx, stack, rtx));
 static void subst_asm_stack_regs	PARAMS ((rtx, stack));
-static void subst_stack_regs		PARAMS ((rtx, stack));
+static bool subst_stack_regs		PARAMS ((rtx, stack));
 static void change_stack		PARAMS ((rtx, stack, stack,
 					       enum emit_where));
 static int convert_regs_entry		PARAMS ((void));
@@ -1052,9 +1052,10 @@ emit_swap_insn (insn, regstack, reg)
 }
 
 /* Handle a move to or from a stack register in PAT, which is in INSN.
-   REGSTACK is the current stack.  */
+   REGSTACK is the current stack.  Return whether a control flow insn
+    was deleted in the process.  */
 
-static void
+static bool
 move_for_stack_reg (insn, regstack, pat)
      rtx insn;
      stack regstack;
@@ -1064,6 +1065,7 @@ move_for_stack_reg (insn, regstack, pat)
   rtx *pdest = get_true_reg (&SET_DEST (pat));
   rtx src, dest;
   rtx note;
+  bool control_flow_insn_deleted = false;
 
   src = *psrc; dest = *pdest;
 
@@ -1093,21 +1095,17 @@ move_for_stack_reg (insn, regstack, pat)
 	     If so, just pop the src.  */
 
 	  if (find_regno_note (insn, REG_UNUSED, REGNO (dest)))
+	    emit_pop_insn (insn, regstack, src, EMIT_AFTER);
+	  else
 	    {
-	      emit_pop_insn (insn, regstack, src, EMIT_AFTER);
-
-	      delete_insn (insn);
-	      return;
+	      regstack->reg[i] = REGNO (dest);
+	      SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
+	      CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (src));
 	    }
 
-	  regstack->reg[i] = REGNO (dest);
-
-	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
-	  CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (src));
-
+	  control_flow_insn_deleted |= control_flow_insn_p (insn);
 	  delete_insn (insn);
-
-	  return;
+	  return control_flow_insn_deleted;
 	}
 
       /* The source reg does not die.  */
@@ -1122,8 +1120,9 @@ move_for_stack_reg (insn, regstack, pat)
 	  if (find_regno_note (insn, REG_UNUSED, REGNO (dest)))
 	    emit_pop_insn (insn, regstack, dest, EMIT_AFTER);
 
+	  control_flow_insn_deleted |= control_flow_insn_p (insn);
 	  delete_insn (insn);
-	  return;
+	  return control_flow_insn_deleted;
 	}
 
       /* The destination ought to be dead.  */
@@ -1195,6 +1194,8 @@ move_for_stack_reg (insn, regstack, pat)
     }
   else
     abort ();
+
+  return control_flow_insn_deleted;
 }
 
 /* Swap the condition on a branch, if there is one.  Return true if we
@@ -1411,15 +1412,17 @@ compare_for_stack_reg (insn, regstack, pat_src)
 }
 
 /* Substitute new registers in PAT, which is part of INSN.  REGSTACK
-   is the current register layout.  */
+   is the current register layout.  Return whether a control flow insn
+   was deleted in the process.  */
 
-static void
+static bool
 subst_stack_regs_pat (insn, regstack, pat)
      rtx insn;
      stack regstack;
      rtx pat;
 {
   rtx *dest, *src;
+  bool control_flow_insn_deleted = false;
 
   switch (GET_CODE (pat))
     {
@@ -1431,7 +1434,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 	  && find_regno_note (insn, REG_DEAD, REGNO (*src)))
 	{
 	  emit_pop_insn (insn, regstack, *src, EMIT_AFTER);
-	  return;
+	  return control_flow_insn_deleted;
 	}
       /* ??? Uninitialized USE should not happen.  */
       else if (get_hard_regnum (regstack, *src) == -1)
@@ -1481,7 +1484,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 				       FP_MODE_REG (REGNO (*dest), SFmode),
 				       nan);
 		    PATTERN (insn) = pat;
-		    move_for_stack_reg (insn, regstack, pat);
+		    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);
 		  }
 		if (! note && COMPLEX_MODE_P (GET_MODE (*dest))
 		    && get_hard_regnum (regstack, FP_MODE_REG (REGNO (*dest), DFmode)) == -1)
@@ -1490,7 +1493,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 				       FP_MODE_REG (REGNO (*dest) + 1, SFmode),
 				       nan);
 		    PATTERN (insn) = pat;
-		    move_for_stack_reg (insn, regstack, pat);
+		    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);
 		  }
 	      }
 	  }
@@ -1513,7 +1516,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 		&& (GET_CODE (*src) == REG || GET_CODE (*src) == MEM
 		    || GET_CODE (*src) == CONST_DOUBLE)))
 	  {
-	    move_for_stack_reg (insn, regstack, pat);
+	    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);
 	    break;
 	  }
 
@@ -1846,6 +1849,8 @@ subst_stack_regs_pat (insn, regstack, pat)
     default:
       break;
     }
+
+  return control_flow_insn_deleted;
 }
 
 /* Substitute hard regnums for any stack regs in INSN, which has
@@ -2145,14 +2150,16 @@ subst_asm_stack_regs (insn, regstack)
 /* Substitute stack hard reg numbers for stack virtual registers in
    INSN.  Non-stack register numbers are not changed.  REGSTACK is the
    current stack content.  Insns may be emitted as needed to arrange the
-   stack for the 387 based on the contents of the insn.  */
+   stack for the 387 based on the contents of the insn.  Return whether
+   a control flow insn was deleted in the process.  */
 
-static void
+static bool
 subst_stack_regs (insn, regstack)
      rtx insn;
      stack regstack;
 {
   rtx *note_link, note;
+  bool control_flow_insn_deleted = false;
   int i;
 
   if (GET_CODE (insn) == CALL_INSN)
@@ -2193,25 +2200,27 @@ subst_stack_regs (insn, regstack)
 	     Any REG_UNUSED notes will be handled by subst_asm_stack_regs.  */
 
 	  subst_asm_stack_regs (insn, regstack);
-	  return;
+	  return control_flow_insn_deleted;
 	}
 
       if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	  {
 	    if (stack_regs_mentioned_p (XVECEXP (PATTERN (insn), 0, i)))
-	      subst_stack_regs_pat (insn, regstack,
-				    XVECEXP (PATTERN (insn), 0, i));
+	      control_flow_insn_deleted
+		|= subst_stack_regs_pat (insn, regstack,
+					 XVECEXP (PATTERN (insn), 0, i));
 	  }
       else
-	subst_stack_regs_pat (insn, regstack, PATTERN (insn));
+	control_flow_insn_deleted
+	  |= subst_stack_regs_pat (insn, regstack, PATTERN (insn));
     }
 
   /* subst_stack_regs_pat may have deleted a no-op insn.  If so, any
      REG_UNUSED will already have been dealt with, so just return.  */
 
   if (GET_CODE (insn) == NOTE || INSN_DELETED_P (insn))
-    return;
+    return control_flow_insn_deleted;
 
   /* If there is a REG_UNUSED note on a stack register on this insn,
      the indicated reg must be popped.  The REG_UNUSED note is removed,
@@ -2227,6 +2236,8 @@ subst_stack_regs (insn, regstack)
       }
     else
       note_link = &XEXP (note, 1);
+
+  return control_flow_insn_deleted;
 }
 
 /* Change the organization of the stack so that it fits a new basic
@@ -2619,6 +2630,7 @@ convert_regs_1 (file, block)
   int deleted, inserted, reg;
   rtx insn, next;
   edge e, beste = NULL;
+  bool control_flow_insn_deleted = false;
 
   inserted = 0;
   deleted = 0;
@@ -2707,8 +2719,7 @@ convert_regs_1 (file, block)
 		       INSN_UID (insn));
 	      print_stack (file, &regstack);
 	    }
-	  subst_stack_regs (insn, &regstack);
-	  deleted |= (GET_CODE (insn) == NOTE || INSN_DELETED_P (insn));
+	  control_flow_insn_deleted |= subst_stack_regs (insn, &regstack);
 	}
     }
   while (next);
@@ -2747,8 +2758,7 @@ convert_regs_1 (file, block)
 	  set = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, SFmode),
 			     nan);
 	  insn = emit_insn_after (set, insn);
-	  subst_stack_regs (insn, &regstack);
-	  deleted |= (GET_CODE (insn) == NOTE || INSN_DELETED_P (insn));
+	  control_flow_insn_deleted |= subst_stack_regs (insn, &regstack);
 	}
     }
   
@@ -2758,12 +2768,18 @@ convert_regs_1 (file, block)
      called at the end of convert_regs.  The order in which we process the
      blocks ensures that we never delete an already processed edge.
 
+     Note that, at this point, the CFG may have been damaged by the emission
+     of instructions after an abnormal call, which moves the basic block end
+     (and is the reason why we call fixup_abnormal_edges later).  So we must
+     be sure that the trapping insn has been deleted before trying to purge
+     dead edges, otherwise we risk purging valid edges.
+
      ??? We are normally supposed not to delete trapping insns, so we pretend
      that the insns deleted above don't actually trap.  It would have been
      better to detect this earlier and avoid creating the EH edge in the first
      place, still, but we don't have enough information at that time.  */
 
-  if (deleted)
+  if (control_flow_insn_deleted)
     purge_dead_edges (block);
 
   /* Something failed if the stack lives don't match.  If we had malformed
