@@ -1,3 +1,8 @@
+2002-09-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* cse.c (fold_rtx): Calculate the old cost before we fold each
+	operand.
+
 2002-09-21  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (cpp_define_data_format): Remove __GCC_LITTLE_ENDIAN__,

@@ -3732,6 +3732,7 @@ fold_rtx (x, insn)
 	rtx cheap_arg, expensive_arg;
 	rtx replacements[2];
 	int j;
+	int old_cost = COST_IN (XEXP (x, i), code);
 
 	/* Most arguments are cheap, so handle them specially.  */
 	switch (GET_CODE (arg))
@@ -3822,7 +3823,6 @@ fold_rtx (x, insn)
 
 	for (j = 0; j < 2 && replacements[j]; j++)
 	  {
-	    int old_cost = COST_IN (XEXP (x, i), code);
 	    int new_cost = COST_IN (replacements[j], code);
 
 	    /* Stop if what existed before was cheaper.  Prefer constants
