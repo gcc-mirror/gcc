@@ -1,3 +1,8 @@
+2003-10-09  Roger Sayle  <roger@eyesopen.com>
+
+	* optabs.c (prepare_float_lib_cmp): Always attach a REG_EQUAL note
+	to the comparison, as emit_libcall_block calls copy_rtx on equiv.
+
 2003-10-09  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* haifa-sched.c (ok_for_early_schedule): New function.
