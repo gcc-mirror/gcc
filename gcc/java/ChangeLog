@@ -1,3 +1,9 @@
+2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* gjavah.c (help): Use GCCBUGURL.
+	* jv-scan.c (help): Likewise.
+	* jcf-dump.c (help): Likewise.
+
 2000-02-16  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (PARSE_C, PARSE_SCAN_C): Move dependencies on

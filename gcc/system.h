@@ -23,6 +23,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_SYSTEM_H__
 #define __GCC_SYSTEM_H__
 
+/* This is the location of the online document giving information how
+   to report bugs. If you change this string, also check for strings
+   not under control of the preprocessor.  */
+#define GCCBUGURL "<URL:http://www.gnu.org/software/gcc/bugs.html>"
+
 /* We must include stdarg.h/varargs.h before stdio.h. */
 #ifdef ANSI_PROTOTYPES
 #include <stdarg.h>

@@ -316,7 +316,7 @@ my_friendly_abort (i)
 	  else
 	    ack ("Internal compiler error %d.", i);
 	  ack ("Please submit a full bug report.");
-	  ack ("See <URL:http://www.gnu.org/software/gcc/faq.html#bugreport> for instructions.");
+	  ack ("See %s for instructions.", GCCBUGURL);
 	}
       else
 	error ("confused by earlier errors, bailing out");
@@ -331,7 +331,7 @@ my_friendly_abort (i)
     error ("Internal compiler error %d.", i);
 
   error ("Please submit a full bug report.");
-  fatal ("See <URL:http://www.gnu.org/software/gcc/faq.html#bugreport> for instructions.");
+  fatal ("See %s for instructions.", GCCBUGURL);
 }
 
 void

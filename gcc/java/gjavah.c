@@ -1845,7 +1845,7 @@ help ()
   /* We omit -MG until it is implemented.  */
   printf ("\n");
   printf ("For bug reporting instructions, please see:\n");
-  printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>.\n");
+  printf ("%s.\n", GCCBUGURL);
   exit (0);
 }
 

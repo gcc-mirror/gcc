@@ -1,3 +1,11 @@
+2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* gcc.texi (Bug Reporting): Refer to bugs.html.
+	(Bug Lists): Likewise.
+	* system.h (GCCBUGURL): New preprocessor define.
+	* rtl.c (fancy_abort): Use it.
+	* gcc.c (main): Likewise.
+
 2000-02-18  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (INSN_VOLATILE, SET_INSN_VOLATILE, uid_volatile): Remove.

@@ -1,3 +1,7 @@
+Fri Feb 18 13:19:34 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* g77spec.c (lang_specific_driver): Use GCCBUGURL.
+
 2000-02-17  Andy Vaught  <andy@maxwell.la.asu.edu>
 
 	* com.c (ffecom_member_phase2_): Re-enable COMMON debug code.
