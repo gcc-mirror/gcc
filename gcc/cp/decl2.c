@@ -1050,17 +1050,7 @@ grok_alignof (expr)
       return c_alignof (TREE_TYPE (TREE_TYPE (best)));
     }
   else
-    {
-      /* ANSI says arrays and fns are converted inside comma.
-	 But we can't convert them in build_compound_expr
-	 because that would break commas in lvalues.
-	 So do the conversion here if operand was a comma.  */
-      if (TREE_CODE (expr) == COMPOUND_EXPR
-	  && (TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
-	      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE))
-	expr = default_conversion (expr);
-      return c_alignof (TREE_TYPE (expr));
-    }
+    return c_alignof (TREE_TYPE (expr));
 }
 
 /* Create an ARRAY_REF, checking for the user doing things backwards

@@ -1895,8 +1895,6 @@ build_new (placement, decl, init, use_global_new)
   tree nelts = NULL_TREE, t;
   int has_array = 0;
 
-  tree pending_sizes = NULL_TREE;
-
   if (decl == error_mark_node)
     return error_mark_node;
 
@@ -2053,10 +2051,6 @@ build_new (placement, decl, init, use_global_new)
   /* Wrap it in a NOP_EXPR so warn_if_unused_value doesn't complain.  */
   rval = build1 (NOP_EXPR, TREE_TYPE (rval), rval);
   TREE_NO_UNUSED_WARNING (rval) = 1;
-
-  if (pending_sizes)
-    rval = build_compound_expr (chainon (pending_sizes,
-					 build_expr_list (NULL_TREE, rval)));
 
   return rval;
 }
