@@ -1,3 +1,7 @@
+2002-03-12  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/20020312-1.c: New test case.
+
 2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/g++.old-deja/g++.other/friend9.C: Revert DR 209 changes.
@@ -41,7 +45,7 @@ Sat Mar  9 07:30:53 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2002-03-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/compile/20020304-1.c: New test case
-	(from PR c/5830). 
+	(from PR c/5830).
 
 2002-03-02  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -192,7 +196,7 @@ Sat Mar  9 07:30:53 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-02-12  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc.dg/c99-flex-array-2.c: Add -std=iso9899:1999 
+	* gcc.dg/c99-flex-array-2.c: Add -std=iso9899:1999
 
 2002-02-10  Kazu Hirata  <kazu@hxi.com>
 
@@ -237,7 +241,7 @@ Sat Mar  9 07:30:53 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2002-02-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR fortran/5473
-	* g77.dg/pr5473.f: Now dg-error.  Add additional cases.  
+	* g77.dg/pr5473.f: Now dg-error.  Add additional cases.
 
 2002-02-07  Richard Henderson  <rth@redhat.com>
 
@@ -434,7 +438,7 @@ Sat Mar  9 07:30:53 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* gcc.c-torture/execute/20020127-1.c: New test.
 
 2002-01-27  David Billinghurst  <David.Billinghurst@riotinto.com>
- 
+
 	* g77.dg/f77-edit-i-in.f: New test
 	* g77.dg/f77-edit-i-out.f: New test
 
