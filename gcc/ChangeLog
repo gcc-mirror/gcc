@@ -1,3 +1,8 @@
+2002-08-07  Stephen Clarke <stephen.clarke@superh.com>
+
+	* config/sh/lib1funcs.asm (GCC_shcompact_incoming_args): Don't
+	overwrite callee-save registers.  Fix comment.
+
 2002-08-06  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.c (override_options): Set MASK_BRANCHLIKELY
