@@ -81,6 +81,7 @@ ADA_FLAGS_TO_PASS = \
 ada-warn = $(ALL_ADA_CFLAGS) $(WERROR)
 # unresolved warnings in a couple of files
 ada/tracebak.o-warn = -Wno-error
+ada/b_gnat1.o-warn = -Wno-error
 ada/b_gnatb.o-warn = -Wno-error
 
 .adb.o:
