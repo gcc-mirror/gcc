@@ -1,5 +1,8 @@
 Mon May  7 09:30:14 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* except.c (sjlj_mark_call_sites): Do not search for assignments to
+	non-argumment registers that are mentioned in CALL_INSN_FUNCTION_USAGE.
+
 	* pa.h (MAX_LONG_TYPE_SIZE): Should be 32, not 64.
 	* pa-64.h (*_TYPE_SIZE): Undefine before redefining.
 
