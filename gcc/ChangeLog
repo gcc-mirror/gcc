@@ -1,3 +1,8 @@
+2001-06-15  Zack Weinberg  <zackw@stanford.edu>
+
+	* doc/cpp.texi: Revised and brought up to date.
+	* doc/cpp.1: Regenerate.
+
 2001-06-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi: Update --enable-threads to match reality.
