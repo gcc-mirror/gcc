@@ -298,11 +298,13 @@ read_braced_string (ob, infile)
 {
   int c;
   int brace_depth = 1;  /* caller-processed */
+  unsigned long starting_read_rtx_lineno = read_rtx_lineno;
 
   obstack_1grow (ob, '{');
   while (brace_depth)
     {
       c = getc (infile); /* Read the string  */
+
       if (c == '\n')
 	read_rtx_lineno++;
       else if (c == '{')
@@ -314,6 +316,10 @@ read_braced_string (ob, infile)
 	  read_escape (ob, infile);
 	  continue;
 	}
+      else if (c == EOF)
+	fatal_with_file_and_line
+	  (infile, "missing closing } for opening brace on line %lu",
+	   starting_read_rtx_lineno);      
 
       obstack_1grow (ob, c);
     }
