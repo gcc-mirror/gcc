@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,8 +39,9 @@ void test01()
 
   // template<_CharT, _Traits>
   //  basic_istream& operator>>(istream&, _CharT*)
-  int n = 20;
+  const int n = 20;
   wchar_t array1[n];
+  array1[0] = L'\0';
   typedef std::wios::traits_type ctraits_type;
   ctraits_type::int_type i1, i2;
 
