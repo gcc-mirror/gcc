@@ -10,6 +10,6 @@ CALL mvbits(from, 2, 16, to, 1)
 if (to /= result) CALL abort()
 
 to8 = 0
-call mvbits (b'1011'_8*2_8**32, 33, 3, to8, 2)
-if (to8 /= b'10100'_8) call abort
+call mvbits (b'1011'_8*2_8**32, 33, 3, to8, 2) ! { dg-warning "" "" }
+if (to8 /= b'10100'_8) call abort ! { dg-warning "" "" }
 end
