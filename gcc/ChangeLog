@@ -1,3 +1,16 @@
+2000-07-12  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* diagnostic.c (vline_wrapper_message_with_location,
+	v_message_with_file_and_line, v_error_with_file_and_file,
+	v_error_for_asm, v_warning_for_asm, vfatal,
+	v_warning_with_file_and_line, v_pedwarn_with_file_and_line,
+	vsorry, verror, vwarning, vpedwarn): Remove.
+	(diagnostic_for_asm): New function.
+	(pedwarn, error, warning, pedwarn_with_file_and_line,
+	error_with_file_and_line, warning_with_file_and_line, sorry,
+	error_for_asm, warning_for_asm, fatal): Reimplement.
+	(finish_diagnostic): Clear diagnostic info as well.
+	
 2000-07-13  Neil Booth  <NeilB@earthling.net>
 
 	* c-common.h (flag_digraphs): New.
