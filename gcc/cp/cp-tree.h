@@ -3480,7 +3480,7 @@ extern tree xref_tag_from_type			PROTO((tree, tree, int));
 extern void xref_basetypes			PROTO((tree, tree, tree, tree));
 extern tree start_enum				PROTO((tree));
 extern tree finish_enum				PROTO((tree));
-extern tree build_enumerator			PROTO((tree, tree, tree));
+extern void build_enumerator			PROTO((tree, tree, tree));
 extern int start_function			PROTO((tree, tree, tree, int));
 extern void expand_start_early_try_stmts	PROTO((void));
 extern void store_parm_decls			PROTO((void));

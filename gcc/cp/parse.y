@@ -215,7 +215,6 @@ empty_parms ()
 %type <ttype> component_declarator component_declarator0
 %type <ttype> notype_component_declarator notype_component_declarator0
 %type <ttype> after_type_component_declarator after_type_component_declarator0
-%type <ttype> enumlist_opt enumlist enumerator
 %type <ttype> absdcl cv_qualifiers
 %type <ttype> direct_abstract_declarator conversion_declarator
 %type <ttype> new_declarator direct_new_declarator
@@ -2062,8 +2061,7 @@ structsp:
 		{ $<ttype>$ = current_enum_type;
 		  current_enum_type = start_enum ($2); }
 	  enumlist_opt '}'
-		{ TYPE_VALUES (current_enum_type) = $5;
-		  $$.t = finish_enum (current_enum_type);
+		{ $$.t = finish_enum (current_enum_type);
 		  $$.new_type_flag = 1;
 		  current_enum_type = $<ttype>4;
 		  check_for_missing_semicolon ($$.t); }
@@ -2071,8 +2069,7 @@ structsp:
 		{ $<ttype>$ = current_enum_type;
 		  current_enum_type = start_enum (make_anon_name ()); }
 	  enumlist_opt '}'
-                { TYPE_VALUES (current_enum_type) = $4;
-		  $$.t = finish_enum (current_enum_type);
+                { $$.t = finish_enum (current_enum_type);
 		  $$.new_type_flag = 1;
 		  current_enum_type = $<ttype>3;
 		  check_for_missing_semicolon ($$.t); }
@@ -2578,7 +2575,6 @@ notype_component_declarator:
 enumlist_opt:
 	  enumlist maybecomma_warn
 	| maybecomma_warn
-	  { $$ = NULL_TREE; }
 	;
 
 /* We chain the enumerators in reverse order.
@@ -2588,14 +2584,13 @@ enumlist_opt:
 enumlist:
 	  enumerator
 	| enumlist ',' enumerator
-		{ TREE_CHAIN ($3) = $$; $$ = $3; }
 	;
 
 enumerator:
 	  identifier
-		{ $$ = build_enumerator ($$, NULL_TREE, current_enum_type); }
+		{ build_enumerator ($1, NULL_TREE, current_enum_type); }
 	| identifier '=' expr_no_commas
-		{ $$ = build_enumerator ($$, $3, current_enum_type); }
+		{ build_enumerator ($1, $3, current_enum_type); }
 	;
 
 /* ANSI new-type-id (5.3.4) */
