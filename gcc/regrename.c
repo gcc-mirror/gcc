@@ -1244,6 +1244,12 @@ copy_value (dest, src, vd)
   if (vd->e[sr].mode == VOIDmode)
     set_value_regno (sr, vd->e[dr].mode, vd);
 
+  /* If SRC had been assigned a mode narrower than the copy, we can't
+     link DEST into the chain, because not all of the pieces of the
+     copy came from oldest_regno.  */
+  else if (sn > (unsigned int) HARD_REGNO_NREGS (sr, vd->e[sr].mode))
+    return;
+
   /* Link DR at the end of the value chain used by SR.  */
 
   vd->e[dr].oldest_regno = vd->e[sr].oldest_regno;
