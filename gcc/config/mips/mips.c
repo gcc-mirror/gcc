@@ -47,7 +47,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "flags.h"
 #include "reload.h"
-#include "output.h"
 #include "tm_p.h"
 #include "ggc.h"
 #include "gstab.h"

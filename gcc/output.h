@@ -20,6 +20,9 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_OUTPUT_H
+#define GCC_OUTPUT_H
+
 /* Compute branch alignments based on frequency information in the CFG.  */
 extern void compute_alignments  PARAMS ((void));
 
@@ -536,3 +539,5 @@ extern void assemble_vtable_inherit PARAMS ((struct rtx_def *,
 					     struct rtx_def *));
 
 extern int default_address_cost PARAMS ((rtx));
+
+#endif /* ! GCC_OUTPUT_H */

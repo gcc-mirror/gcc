@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "expr.h"
 #include "optabs.h"
-#include "output.h"
 #include "except.h"
 #include "function.h"
 #include "target.h"
