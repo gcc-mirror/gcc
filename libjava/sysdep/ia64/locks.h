@@ -11,6 +11,8 @@ details.  */
 #ifndef __SYSDEP_LOCKS_H__
 #define __SYSDEP_LOCKS_H__
 
+#include <ia64intrin.h>
+
 typedef size_t obj_addr_t;	/* Integer type big enough for object	*/
 				/* address.				*/
 
@@ -19,11 +21,7 @@ compare_and_swap(volatile obj_addr_t *addr,
 	 				      obj_addr_t old,
 					      obj_addr_t new_val) 
 {
-  unsigned long oldval;
-  __asm__ __volatile__("mov ar.ccv=%4 ;; cmpxchg8.acq %0=%1,%2,ar.ccv"
-	      : "=r"(oldval), "=m"(*addr)
-	      : "r"(new_val), "1"(*addr), "r"(old) : "memory");
-  return (oldval == old);
+  return __sync_bool_compare_and_swap (addr, old, new_val);
 }
 
 // The fact that *addr is volatile should cause the compiler to
@@ -31,7 +29,7 @@ compare_and_swap(volatile obj_addr_t *addr,
 inline static void
 release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
 {
-  __asm__ __volatile__(" " : : : "memory");
+  __asm__ __volatile__("" : : : "memory");
   *(addr) = new_val;
 }
 
@@ -40,11 +38,12 @@ compare_and_swap_release(volatile obj_addr_t *addr,
 	 				             obj_addr_t old,
 						     obj_addr_t new_val) 
 {
-  unsigned long oldval;
-  __asm__ __volatile__("mov ar.ccv=%4 ;; cmpxchg8.rel %0=%1,%2,ar.ccv"
-	      : "=r"(oldval), "=m"(*addr)
-	      : "r"(new_val), "1"(*addr), "r"(old) : "memory");
-  return (oldval == old);
+  register unsigned long ar_ccv __asm__("ar.ccv") = old;
+  unsigned long out;
+  __asm__ __volatile__("cmpxchg8.rel %0=%1,%2,%4"
+	      : "=r"(out), "=m"(*addr)
+	      : "r"(new_val), "m"(*addr), "d"(ar_ccv) : "memory");
+  return (out == old);
 }
 
 #endif
