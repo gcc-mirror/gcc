@@ -5572,6 +5572,24 @@ expand_function_end (filename, line, end_bindings)
   if (end_bindings)
     expand_end_bindings (0, 0, 0);
 
+  /* Now handle any leftover exception regions that may have been
+     created for the parameters.  */
+  {
+    rtx last = get_last_insn ();
+    rtx label;
+
+    expand_leftover_cleanups ();
+
+    /* If the above emitted any code, may sure we jump around it.  */
+    if (last != get_last_insn ())
+      {
+	label = gen_label_rtx ();
+	last = emit_jump_insn_after (gen_jump (label), last);
+	last = emit_barrier_after (last);
+	emit_label (label);
+      }
+  }
+
   /* If we had calls to alloca, and this machine needs
      an accurate stack pointer to exit the function,
      insert some code to save and restore the stack pointer.  */
