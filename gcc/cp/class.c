@@ -1896,6 +1896,8 @@ dfs_find_final_overrider_1 (tree binfo,
 			    tree *vpath, 
 			    find_final_overrider_data *ffod)
 {
+  tree method;
+
   /* If BINFO is not the most derived type, try a more derived class.
      A definition there will overrider a definition here.  */
   if (!same_type_p (BINFO_TYPE (binfo), ffod->most_derived_type))
@@ -1910,8 +1912,7 @@ dfs_find_final_overrider_1 (tree binfo,
 	return true;
     }
 
-  tree method = look_for_overrides_here (BINFO_TYPE (binfo), ffod->fn);
-	  
+  method = look_for_overrides_here (BINFO_TYPE (binfo), ffod->fn);
   if (method)
     {
       tree *candidate = &ffod->candidates;
