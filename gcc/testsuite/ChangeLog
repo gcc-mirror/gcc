@@ -1,5 +1,8 @@
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11295
+	* g++.dg/ext/stmtexpr1.C: New test.
+
 	* g++.dg/opt/tmp1.C: New test.
 
 	PR c++/11525

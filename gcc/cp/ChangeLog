@@ -1,5 +1,30 @@
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11295
+	* cp-tree.h (tubst_flags_t): Add tf_stmt_expr_cmpd,
+	tf_stmt_expr_body.
+	(finish_stmt_expr_expr): Declare.
+	* parser.c (cp_parser_primary_expression): Tell
+	cp_parser_compount_statement that it is a statement expression.
+	(cp_parser_statement, cp_parser_labeled_statement,
+	cp_parser_compound_statement, cp_parser_statement_seq_opt): Add
+	in_statement_expr_p parameter.
+	(cp_parser_expression_statement): Likewise. Call
+	finish_stmt_expr_expr for final expression of a statement
+	expression.
+	(cp_parser_for_init_statement,
+	cp_parser_implicitly_scoped_statement,
+	cp_parser_already_scoped_statement, cp_parser_function_definition,
+	cp_parser_try_block, cp_parser_handled): Adjust.
+	* pt.c (tsubst_copy) <STMT_EXPR case>: Pass tf_stmt_expr.
+	(tsubst_expr): Process tf_stmt_expr and tf_stmt_exprs flags.
+	(tsubst_expr) <EXPR_STMT case>: Check tf_stmt_exprs flag.
+	* semantics.c (finish_expr_stmt): Do not deal with statement
+	expressions.
+	(begin_stmt_expr): Clear last_expr_type.
+	(finish_stmt_expr_expr): New.
+	(finish_stmt_expr): Process the value expression.
+	
 	* typeck.c (build_compound_expr): If RHS is a TARGET_EXPR, put the
 	compound expr inside the target's initializer.
 	

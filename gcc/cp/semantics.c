@@ -416,31 +416,16 @@ tree
 finish_expr_stmt (tree expr)
 {
   tree r = NULL_TREE;
-  tree expr_type = NULL_TREE;;
 
   if (expr != NULL_TREE)
     {
-      if (!processing_template_decl
-	  && !(stmts_are_full_exprs_p ())
-	  && ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
-	       && lvalue_p (expr))
-	      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE))
-	expr = decay_conversion (expr);
-      
-      /* Remember the type of the expression.  */
-      expr_type = TREE_TYPE (expr);
-
-      if (!processing_template_decl && stmts_are_full_exprs_p ())
+      if (!processing_template_decl)
 	expr = convert_to_void (expr, "statement");
       
       r = add_stmt (build_stmt (EXPR_STMT, expr));
     }
 
   finish_stmt ();
-
-  /* This was an expression-statement, so we save the type of the
-     expression.  */
-  last_expr_type = expr_type;
 
   return r;
 }
@@ -1415,12 +1400,71 @@ begin_stmt_expr (void)
   if (! cfun && !last_tree)
     begin_stmt_tree (&scope_chain->x_saved_tree);
 
+  last_expr_type = NULL_TREE;
+  
   keep_next_level (1);
-  /* If we're building a statement tree, then the upcoming compound
-     statement will be chained onto the tree structure, starting at
-     last_tree.  We return last_tree so that we can later unhook the
-     compound statement.  */
+  
   return last_tree; 
+}
+
+/* Process the final expression of a statement expression. EXPR can be
+   NULL, if the final expression is empty.  Build up a TARGET_EXPR so
+   that the result value can be safely returned to the enclosing
+   expression.  */
+
+tree
+finish_stmt_expr_expr (tree expr)
+{
+  tree result = NULL_TREE;
+  tree type = void_type_node;
+
+  if (expr)
+    {
+      type = TREE_TYPE (expr);
+      
+      if (!processing_template_decl && !VOID_TYPE_P (TREE_TYPE (expr)))
+	{
+	  if (TREE_CODE (type) == ARRAY_TYPE
+	      || TREE_CODE (type) == FUNCTION_TYPE)
+	    expr = decay_conversion (expr);
+
+	  expr = convert_from_reference (expr);
+	  expr = require_complete_type (expr);
+
+	  /* Build a TARGET_EXPR for this aggregate.  finish_stmt_expr
+	     will then pull it apart so the lifetime of the target is
+	     within the scope of the expresson containing this statement
+	     expression.  */
+	  if (TREE_CODE (expr) == TARGET_EXPR)
+	    ;
+	  else if (!IS_AGGR_TYPE (type) || TYPE_HAS_TRIVIAL_INIT_REF (type))
+	    expr = build_target_expr_with_type (expr, type);
+	  else
+	    {
+	      /* Copy construct.  */
+	      expr = build_special_member_call
+		(NULL_TREE, complete_ctor_identifier,
+		 build_tree_list (NULL_TREE, expr),
+		 TYPE_BINFO (type), LOOKUP_NORMAL);
+	      expr = build_cplus_new (type, expr);
+	      my_friendly_assert (TREE_CODE (expr) == TARGET_EXPR, 20030729);
+	    }
+	}
+
+      if (expr != error_mark_node)
+	{
+	  result = build_stmt (EXPR_STMT, expr);
+	  add_stmt (result);
+	}
+    }
+  
+  finish_stmt ();
+
+  /* Remember the last expression so that finish_stmt_expr can pull it
+     apart.  */
+  last_expr_type = result ? result : void_type_node;
+  
+  return result;
 }
 
 /* Finish a statement-expression.  RTL_EXPR should be the value
@@ -1432,17 +1476,26 @@ tree
 finish_stmt_expr (tree rtl_expr)
 {
   tree result;
-
-  /* If the last thing in the statement-expression was not an
-     expression-statement, then it has type `void'.  In a template, we
-     cannot distinguish the case where the last expression-statement
-     had a dependent type from the case where the last statement was
-     not an expression-statement.  Therefore, we (incorrectly) treat
-     the STMT_EXPR as dependent in that case.  */
-  if (!last_expr_type && !processing_template_decl)
-    last_expr_type = void_type_node;
-  result = build_min (STMT_EXPR, last_expr_type, last_tree);
+  tree result_stmt = last_expr_type;
+  tree type;
+  
+  if (!last_expr_type)
+    type = void_type_node;
+  else
+    {
+      if (result_stmt == void_type_node)
+	{
+	  type = void_type_node;
+	  result_stmt = NULL_TREE;
+	}
+      else
+	type = TREE_TYPE (EXPR_STMT_EXPR (result_stmt));
+    }
+  
+  result = build_min (STMT_EXPR, type, last_tree);
   TREE_SIDE_EFFECTS (result) = 1;
+  
+  last_expr_type = NULL_TREE;
   
   /* Remove the compound statement from the tree structure; it is
      now saved in the STMT_EXPR.  */
@@ -1455,6 +1508,22 @@ finish_stmt_expr (tree rtl_expr)
       && TREE_CHAIN (scope_chain->x_saved_tree) == NULL_TREE)
     finish_stmt_tree (&scope_chain->x_saved_tree);
 
+  if (processing_template_decl)
+    return result;
+
+  if (!VOID_TYPE_P (type))
+    {
+      /* Pull out the TARGET_EXPR that is the final expression. Put
+	 the target's init_expr as the final expression and then put
+	 the statement expression itself as the target's init
+	 expr. Finally, return the target expression.  */
+      tree last_expr = EXPR_STMT_EXPR (result_stmt);
+      
+      my_friendly_assert (TREE_CODE (last_expr) == TARGET_EXPR, 20030729);
+      EXPR_STMT_EXPR (result_stmt) = TREE_OPERAND (last_expr, 1);
+      TREE_OPERAND (last_expr, 1) = result;
+      result = last_expr;
+    }
   return result;
 }
 

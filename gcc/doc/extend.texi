@@ -539,32 +539,46 @@ the initial value of a static variable.
 If you don't know the type of the operand, you can still do this, but you
 must use @code{typeof} (@pxref{Typeof}).
 
-Statement expressions are not supported fully in G++, and their fate
-there is unclear.  (It is possible that they will become fully supported
-at some point, or that they will be deprecated, or that the bugs that
-are present will continue to exist indefinitely.)  Presently, statement
-expressions do not work well as default arguments.
+In G++, the result value of a statement expression undergoes array and
+function pointer decay, and is returned by value to the enclosing
+expression. For instance, if @code{A} is a class, then
 
-In addition, there are semantic issues with statement-expressions in
-C++.  If you try to use statement-expressions instead of inline
-functions in C++, you may be surprised at the way object destruction is
-handled.  For example:
+@smallexample
+        A a;
 
-@example
-#define foo(a)  (@{int b = (a); b + 3; @})
-@end example
+        (@{a;@}).Foo ()
+@end smallexample
 
 @noindent
-does not work the same way as:
+will construct a temporary @code{A} object to hold the result of the
+statement expression, and that will be used to invoke @code{Foo}.
+Therefore the @code{this} pointer observed by @code{Foo} will not be the
+address of @code{a}.
 
-@example
-inline int foo(int a) @{ int b = a; return b + 3; @}
-@end example
+Any temporaries created within a statement within a statement expression
+will be destroyed at the statement's end.  This makes statement
+expressions inside macros slightly different from function calls.  In
+the latter case temporaries introduced during argument evaluation will
+be destroyed at the end of the statement that includes the function
+call.  In the statement expression case they will be destroyed during
+the statement expression.  For instance,
+
+@smallexample
+#define macro(a)  (@{__typeof__(a) b = (a); b + 3; @})
+template<typename T> T function(T a) @{ T b = a; return b + 3; @}
+
+void foo ()
+@{
+  macro (X ());
+  function (X ());
+@}
+@end smallexample
 
 @noindent
-In particular, if the expression passed into @code{foo} involves the
-creation of temporaries, the destructors for those temporaries will be
-run earlier in the case of the macro than in the case of the function.
+will have different places where temporaries are destroyed.  For the
+@code{macro} case, the temporary @code{X} will be destroyed just after
+the initialization of @code{b}.  In the @code{function} case that
+temporary will be destroyed when the function returns.
 
 These considerations mean that it is probably a bad idea to use
 statement-expressions of this form in header files that are designed to
@@ -3476,9 +3490,10 @@ in an @code{__attribute__} will still only provide you with 8 byte
 alignment.  See your linker documentation for further information.
 
 @item packed
-This attribute, attached to an @code{enum}, @code{struct}, or
-@code{union} type definition, specifies that the minimum required memory
-be used to represent the type.
+This attribute, attached to @code{struct} or @code{union} type
+definition, specifies that each member of the structure or union is
+placed to minimize the memory required. When attached to an @code{enum}
+definition, it indicates that the smallest integral type should be used.
 
 @opindex fshort-enums
 Specifying this attribute for @code{struct} and @code{union} types is
@@ -3487,9 +3502,29 @@ structure or union members.  Specifying the @option{-fshort-enums}
 flag on the line is equivalent to specifying the @code{packed}
 attribute on all @code{enum} definitions.
 
-You may only specify this attribute after a closing curly brace on an
-@code{enum} definition, not in a @code{typedef} declaration, unless that
-declaration also contains the definition of the @code{enum}.
+In the following example @code{struct my_packed_struct}'s members are
+packed closely together, but the internal layout of its @code{s} member
+is not packed -- to do that, @code{struct my_unpacked_struct} would need to
+be packed too.
+
+@smallexample
+struct my_unpacked_struct
+ @{
+    char c;
+    int i;
+ @};
+
+struct my_packed_struct __attribute__ ((__packed__))
+  @{
+     char c;
+     int  i;
+     struct my_unpacked_struct s;
+  @};
+@end smallexample
+
+You may only specify this attribute on the definition of a @code{enum},
+@code{struct} or @code{union}, not on a @code{typedef} which does not
+also define the enumerated type, structure or union.
 
 @item transparent_union
 This attribute, attached to a @code{union} type definition, indicates

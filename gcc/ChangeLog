@@ -1,3 +1,8 @@
+2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11295
+	* doc/extend.texi (Statement Expressions): Document C++ semantics.
+
 2003-07-31  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
 
 	* config.gcc (sh-*-linux*): Do not override sh/t-linux with sh/t-le.
