@@ -339,20 +339,29 @@ done
 
 # Make sure that any include files referenced using double quotes
 # exist in the fixed directory.
-set x $required
-shift
-while [ $# != 0 ]; do
-  # $1 is the directory to copy from, $2 is the unfixed file,
-  # $3 is the fixed file name.
-  cd ${INPUT}
-  cd $1
-  if [ -r $2 ] && [ ! -r $3 ]; then
-    cp $2 $3 >/dev/null 2>&1 || echo "Can't copy $2"
-    chmod +w $3 2>/dev/null
-    chmod a+r $3 2>/dev/null
-    echo Copied $2
-  fi
-  shift; shift; shift
+while [ -n "$required" ]; do
+  newreq=
+  set x $required
+  shift
+  while [ $# != 0 ]; do
+    # $1 is the directory to copy from, $2 is the unfixed file,
+    # $3 is the fixed file name.
+    cd ${INPUT}
+    cd $1
+    if [ -r $2 ] && [ ! -r $3 ]; then
+      cp $2 $3 >/dev/null 2>&1 || echo "Can't copy $2"
+      chmod +w $3 2>/dev/null
+      chmod a+r $3 2>/dev/null
+      echo Copied $2
+      for include in `egrep '^[ 	]*#[ 	]*include[ 	]*"[^/]' $3 | sed -e 's/^[ 	]*#[ 	]*include[ 	]*"\([^"]*\)".*$/\1/'`; do
+	dir=`echo $2 | sed -e s'|/[^/]*$||'`
+	dir2=`echo $3 | sed -e s'|/[^/]*$||'`
+	newreq="$newreq $1 $dir/$include $dir2/$include"
+      done
+    fi
+    shift; shift; shift
+  done
+  required=$newreq
 done
 
 cd ${INPUT}
