@@ -1,3 +1,8 @@
+Fri Oct 31 01:45:31 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* libgcc2.c (L_eh): Define __eh_pc.
+	Replace __eh_type with generic pointer __eh_info.
+
 Fri Oct 31 00:34:55 1996  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* expr.c (expand_increment): When enqueing a postincrement for a MEM,
