@@ -1,3 +1,8 @@
+2003-12-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/eh/simd-1.C: XFAIL on SPARC.
+	* g++.dg/eh/simd-2.C: Likewise.
+
 2003-12-17  James E Wilson  <wilson@specifixinc.com>
 	    Roger Sayle  <roger@eyesopen.com>
 
