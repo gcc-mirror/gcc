@@ -1,3 +1,7 @@
+1998-11-18  Mark Mitchell  <mark@markmitchell.com>
+
+	* Make-lang.in (cc1plus): Add dependency on hash.o.
+
 1998-11-18  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (get_abstract_virtuals): Complain about virtuals with
