@@ -1,3 +1,10 @@
+2002-07-09  Steve Ellcey  <sje@cup.hp.com>
+	* gcc/except.c (expand_eh_region_end_cleanup): Change exception pointer
+	from Pmode to ptr_mode.
+	(get_exception_pointer): Ditto.
+	(connect_post_landing_pads): Ditto.
+	(dw2_build_landing_pads): Ditto.
+
 2002-07-08  Steve Ellcey  <sje@cup.hp.com>
 	* gcc/c-pragma.h (add_to_renaming_pragma_list): New function.
 	* gcc/c-pragma.c (add_to_renaming_pragma_list): New function.

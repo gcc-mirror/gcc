@@ -569,7 +569,7 @@ expand_eh_region_end_cleanup (handler)
 
   /* In case this cleanup involves an inline destructor with a try block in
      it, we need to save the EH return data registers around it.  */
-  data_save[0] = gen_reg_rtx (Pmode);
+  data_save[0] = gen_reg_rtx (ptr_mode);
   emit_move_insn (data_save[0], get_exception_pointer (cfun));
   data_save[1] = gen_reg_rtx (word_mode);
   emit_move_insn (data_save[1], get_exception_filter (cfun));
@@ -829,7 +829,7 @@ get_exception_pointer (fun)
   rtx exc_ptr = fun->eh->exc_ptr;
   if (fun == cfun && ! exc_ptr)
     {
-      exc_ptr = gen_reg_rtx (Pmode);
+      exc_ptr = gen_reg_rtx (ptr_mode);
       fun->eh->exc_ptr = exc_ptr;
     }
   return exc_ptr;
@@ -1791,7 +1791,7 @@ connect_post_landing_pads ()
 	emit_jump (outer->post_landing_pad);
       else
 	emit_library_call (unwind_resume_libfunc, LCT_THROW,
-			   VOIDmode, 1, cfun->eh->exc_ptr, Pmode);
+			   VOIDmode, 1, cfun->eh->exc_ptr, ptr_mode);
 
       seq = get_insns ();
       end_sequence ();
@@ -1864,7 +1864,7 @@ dw2_build_landing_pads ()
 	}
 
       emit_move_insn (cfun->eh->exc_ptr,
-		      gen_rtx_REG (Pmode, EH_RETURN_DATA_REGNO (0)));
+		      gen_rtx_REG (ptr_mode, EH_RETURN_DATA_REGNO (0)));
       emit_move_insn (cfun->eh->filter,
 		      gen_rtx_REG (word_mode, EH_RETURN_DATA_REGNO (1)));
 
