@@ -38,10 +38,6 @@ void test5(char *ptr)
   sprintf(buffer,"%s",ptr);
 }
 
-int test6(char *ptr)
-{
-  return sprintf(buffer,"%s",ptr);
-}
 
 int main()
 {
@@ -69,12 +65,6 @@ int main()
 
   memset (buffer, 'A', 32);
   test5 ("barf");
-  if (memcmp(buffer, "barf", 5) || buffer[5] != 'A')
-    abort ();
-
-  memset (buffer, 'A', 32);
-  if (test6 ("barf") != 4)
-    abort ();
   if (memcmp(buffer, "barf", 5) || buffer[5] != 'A')
     abort ();
 

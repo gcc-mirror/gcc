@@ -1,3 +1,11 @@
+2003-06-26  Roger Sayle  <roger@eyesopen.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/string-opt-16.c: Remove test for disabled
+	sprintf(dst,"%s",src) optimization.
+	* gcc.c-torture/execute/20030626-1.c: New test case.
+	* gcc.c-torture/execute/20030626-2.c: New test case.
+
 2003-06-26  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/multi-ix.c: New test.
