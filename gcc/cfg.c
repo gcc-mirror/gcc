@@ -19,10 +19,11 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-/* This file contains low level functions to manipulate with CFG and analyze it.
-   All other modules should not transform the datastructure directly and use
-   abstraction instead.  The file is supposed to be ordered bottom-up and should
-   not contain any code dependent on particular intermediate language (RTL or trees)
+/* This file contains low level functions to manipulate the CFG and
+   analyze it.  All other modules should not transform the datastructure
+   directly and use abstraction instead.  The file is supposed to be
+   ordered bottom-up and should not contain any code dependent on a
+   particular intermediate language (RTL or trees).
 
    Available functionality:
      - Initialization/deallocation
