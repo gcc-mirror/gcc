@@ -1,6 +1,7 @@
 /* Declarations and definitions of codes relating to the DWARF2 symbolic
    debugging information format.
-   Copyright (C) 1992, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1997, 2000 
+   Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).  Derived from the
    DWARF 1 implementation written by Ron Guilmette (rfg@monkeys.com).
 
@@ -501,7 +502,8 @@ enum dwarf_call_frame_info
 
     /* GNU extensions */
     DW_CFA_GNU_window_save = 0x2d,
-    DW_CFA_GNU_args_size = 0x2e
+    DW_CFA_GNU_args_size = 0x2e,
+    DW_CFA_GNU_negative_offset_extended = 0x2f
   };
 
 #define DW_CIE_ID	  0xffffffff

@@ -643,6 +643,8 @@ dwarf_cfi_name (cfi_opc)
       return "DW_CFA_GNU_window_save";
     case DW_CFA_GNU_args_size:
       return "DW_CFA_GNU_args_size";
+    case DW_CFA_GNU_negative_offset_extended:
+      return "DW_CFA_GNU_negative_offset_extended";
 
     default:
       return "DW_CFA_<unknown>";
@@ -872,7 +874,10 @@ reg_save (label, reg, sreg, offset)
 
       offset /= DWARF_CIE_DATA_ALIGNMENT;
       if (offset < 0)
-	abort ();
+	{
+	  cfi->dw_cfi_opc = DW_CFA_GNU_negative_offset_extended;
+	  offset = -offset;
+	}
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
     }
   else
@@ -1559,6 +1564,7 @@ output_cfi (cfi, fde)
 	  break;
 #endif
 	case DW_CFA_offset_extended:
+	case DW_CFA_GNU_negative_offset_extended:
 	case DW_CFA_def_cfa:
 	  output_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
           fputc ('\n', asm_out_file);
