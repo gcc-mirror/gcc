@@ -1,5 +1,10 @@
 Fri Apr 14 18:07:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* flow.c (count_basic_blocks): Remove unused var PREV_CALL.
+	Never have a LIBCALL end a basic block.
+	(find_basic_blocks_1): Likewise.
+	Reorganize CALL_INSN cases.
+
 	* sbitmap.h (EXECUTE_IF_SET_IN_SBITMAP): Revert last change.
 
 Fri Apr 14 10:54:22 2000  Jim Wilson  <wilson@cygnus.com>
