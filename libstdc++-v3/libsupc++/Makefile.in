@@ -67,7 +67,7 @@ AR = @AR@
 AS = @AS@
 CC = @CC@
 CPP = @CPP@
-CSHADOWFLAGS = @CSHADOWFLAGS@
+CSHADOW_FLAGS = @CSHADOW_FLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 DEBUG_FLAGS = @DEBUG_FLAGS@
@@ -94,9 +94,9 @@ SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
 USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
+WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 WFMT_FLAGS = @WFMT_FLAGS@
-c_include_dir = @c_include_dir@
 glibcpp_basedir = @glibcpp_basedir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
@@ -113,6 +113,29 @@ MAINT_CHARSET = latin1
 toolexeclib_LTLIBRARIES = libsupc++.la
 # 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
 noinst_LTLIBRARIES = libsupc++convenience.la
+
+# Compile flags that should be constant throughout the build, both for
+# SUBDIRS and for libstdc++-v3 in general.
+OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
+
+# These bits are all figured out from configure. Look in acinclude.m4
+# or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
+# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
+CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
+
+
+# Warning flags to use.
+WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
+
+
+# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
+GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@
+C_INCLUDE_DIR = @C_INCLUDE_DIR@
+TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
+LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
+LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
+LIBIO_INCLUDES = @LIBIO_INCLUDES@
+CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
 INCLUDES =  	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include 	$(CSHADOW_INCLUDES)  $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) 	$(CONFIG_INCLUDES) -I$(top_builddir)
 

@@ -1,3 +1,7 @@
+2000-10-11  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* Makefile.am: Add includes from GLIBCPP_EXPORT_INCLUDES.
+
 2000-10-10  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* _G_config.h (__need_ptrdiff_t): Add.

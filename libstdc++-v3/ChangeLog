@@ -1,3 +1,17 @@
+2000-10-11  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* libsupc++/Makefile.am: Use it.
+	* libio/Makefile.am: Use it.
+	* libmath/Makefile.am: Use it.
+	* src/Makefile.am: Use it.
+	* Makefile.am (AM_MAKEFLAGS): Remove includes.
+
+	* acinclude.m4 (GLIBCPP_EXPORT_INCLUES): Move include macros here.
+	(GLIBCPP_EXPORT_FLAGS): Move CXX flag setting here.
+	* configure.in: Use it.
+
+	* mkcheck.in (SRC_DIR): Use C_INCLUDE_DIR.
+	
 2000-10-11  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Comment out

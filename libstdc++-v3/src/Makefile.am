@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.37 2000/10/09 08:55:06 bkoz Exp $
+## $Id: Makefile.am,v 1.38 2000/10/10 23:50:39 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -39,6 +39,29 @@ endif
 toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
+
+# Compile flags that should be constant throughout the build, both for
+# SUBDIRS and for libstdc++-v3 in general.
+OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
+
+# These bits are all figured out from configure. Look in acinclude.m4
+# or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
+# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
+CONFIG_CXXFLAGS = \
+	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
+
+# Warning flags to use.
+WARN_CXXFLAGS = \
+	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
+
+# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
+GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@
+C_INCLUDE_DIR = @C_INCLUDE_DIR@
+TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
+LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
+LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
+LIBIO_INCLUDES = @LIBIO_INCLUDES@
+CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
 INCLUDES = \
 	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ \
