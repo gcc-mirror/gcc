@@ -1,0 +1,3 @@
+i370-c.o: $(srcdir)/config/i370/i370-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(TM_H) $(TREE_H) toplev.h $(CPPLIB_H) c-pragma.h $(TM_P_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i370/i370-c.c

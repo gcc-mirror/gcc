@@ -1,0 +1,125 @@
+
+This directory contains code for building a compiler for the
+32-bit ESA/390 architecture.  It supports three different styles 
+of assembly:
+
+-- MVS for use with the HLASM assembler
+-- Open Edition (USS Unix System Services) 
+-- ELF/Linux for use with the binutils/gas GNU assembler.
+
+
+Cross-compiling Hints
+---------------------
+When building a cross-compiler on AIX, set the environment variable CC
+and be sure to set the -ma and -qcpluscmt flags; i.e.
+
+   export CC="cc -ma -qcpluscmt"
+
+do this *before* running configure, e.g.
+
+   configure --target=i370-ibm-linux --prefix=/where/to/install/usr
+
+The Objective-C and FORTRAN front ends don't build.  To avoid looking at
+errors, do only 
+
+   make LANGUAGES=c
+
+
+OpenEdition Hints
+-----------------
+The shell script "install" is handy for users of OpenEdition.
+
+
+The ELF ABI
+-----------
+This compiler, in conjunction with the gas/binutils assembler, defines
+a defacto ELF-based ABI for the ESA/390 architecture.  Be warned: this 
+ABI has several major faults.  It should be fixed.  As it is fixed,
+it is subject to change without warning.  You should not commit to major
+software systems without further exploring and fixing these problems.
+Here are some of the problems:
+
+-- No support for shared libraries or dynamically loadable objects.
+   This is because the compiler currently places address literals in 
+   the text section.  Although the GAS assembler supports a syntax for 
+   USING that will place address literals in the data section, this forces
+   the use of two base registers, one for branches and one for the literal 
+   pool. Work is needed to redesign the function prologue, epilogue and the 
+   base register reloads to minimize the currently excessive use of reserved 
+   registers. 
+
+   I beleive the best solution would be to add a toc or plt, and extending
+   the meaning of the USING directive to encompass this.  This would 
+   allow the continued use of the human-readable and familiar practice
+   of using =A() and =F'' to denote address literals, as opposed to more 
+   difficult jump-table notation.
+
+-- the stackframe is almost twice as big as it needs to be.
+
+-- currently, r15 is used to return 32-bit values.  Because this is the
+   last register, it prevents 64-bit ints and small structures from being 
+   returned in registers, forcing return in memory.  It would be more
+   efficient to use r14 to return 32-bit values, and r14+r15 to return
+   64-bit values.
+
+-- all arguments are currently passed in memory.  It would be more efficient 
+   to pass arguments in registers.
+
+
+
+
+ChangeLog
+---------
+Oct98-Dec98 -- add ELF back end; work on getting ABI more or less functional.
+98.12.05 -- fix numerous MVC bugs
+99.02.06 -- multiply insn sometimes not generated when needed.
+         -- extendsidi bugs, bad literal values printed
+         -- remove broken adddi subdi patterns
+99.02.15 -- add clrstrsi pattern
+         -- fix -O2 divide bug
+99.03.04 -- base & index reg usage bugs
+99.03.15 -- fixes for returning long longs and structs (struct value return)
+99.03.29 -- fix handling & alignment of shorts
+99.03.31 -- clobbered register 14 is not always clobbered
+99.04.02 -- operand constraints for cmphi
+99.04.07 -- function pointer fixes for call, call_value patterns,
+            function pointers derefed once too often.
+99.04.14 -- add pattern to print double-wide int
+         -- check intval<4096 for misc operands
+         -- add clrstrsi pattern
+         -- movstrsi fixes
+99.04.16 -- use r2 to pass args into r11 in subroutine call.
+         -- fixes to movsi; some operand combinations impossible;
+            rework constraints
+         -- start work on forward jump optimization
+         -- char alignment bug
+99.04.25 -- add untyped_call pattern so that builtin_apply works
+99.04.27 -- fixes to compare logical under mask
+99.04.28 -- reg 2 is clobbered by calls
+99.04.30 -- fix rare mulsi bug
+99.04.30 -- add constraints so that all RS, SI, SS forms insns have valid
+            addressing modes
+99.04.30 -- major condition code fixes. The old code was just way off 
+            w.r.t. which insns set condition code, and the codes that
+            were set.  The extent of this damage was unbeleivable.
+99.05.01 -- restructuring of operand constraints on many patterns,
+            many lead to invalid instructions being genned.
+99.05.02 -- float pt fixes
+         -- fix movdi issue bugs
+99.05.03 -- fix divide insn; was dividing incorrectly
+99.05.05 -- fix sign extension problems on andhi
+         -- deprecate some constraints
+99.05.06 -- add set_attr insn lengths; fix misc litpool sizes
+         -- add notes about how unsigned jumps work (i.e. 
+            arithmetic vs. logical vs. signed vs unsigned).
+99.05.11 -- use insn length to predict forward branch target;
+            use relative branchining where possible,
+            remove un-needed base register reload.
+99.05.15 -- fix movstrsi, clrstrsi, cmpstrsi patterns as per conversation 
+            w/ Richard Henderson
+
+
+
+
+
+

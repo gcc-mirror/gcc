@@ -1,0 +1,30 @@
+LIB2FUNCS_EXTRA = xp-bit.c
+
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT_BIT_ORDER_MISMATCH' > dp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+xp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define EXTENDED_FLOAT_STUBS' > xp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> xp-bit.c
+
+i960-c.o: $(srcdir)/config/i960/i960-c.c $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h $(TM_H) $(CPPLIB_H) $(TREE_H) c-pragma.h toplev.h $(GGC_H) $(TM_P_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i960/i960-c.c
+
+MULTILIB_OPTIONS=mnumerics/msoft-float mlong-double-64
+MULTILIB_DIRNAMES=float soft-float ld64
+MULTILIB_MATCHES=mnumerics=msb mnumerics=msc mnumerics=mkb mnumerics=mkc mnumerics=mmc mnumerics=mcb mnumerics=mcc mnumerics=mjf msoft-float=msa msoft-float=mka msoft-float=mca msoft-float=mcf
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib

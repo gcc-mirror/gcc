@@ -1,0 +1,1103 @@
+/* bad.def -- Public #include File (module.h template V1.0)
+   Copyright (C) 1995, 1996, 1997, 2002 Free Software Foundation, Inc.
+   Contributed by James Craig Burley.
+
+This file is part of GNU Fortran.
+
+GNU Fortran is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Fortran is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Fortran; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+
+   Owning Modules:
+      bad.c
+
+   Modifications:
+*/
+
+#define INFORM FFEBAD_severityINFORMATIONAL
+#define TRIVIAL FFEBAD_severityTRIVIAL
+#define WARN FFEBAD_severityWARNING
+#define PECULIAR FFEBAD_severityPECULIAR
+#define FATAL FFEBAD_severityFATAL
+#define WEIRD FFEBAD_severityWEIRD
+#define SEVERE FFEBAD_severitySEVERE
+#define DISASTER FFEBAD_severityDISASTER
+
+FFEBAD_MSG (FFEBAD_MISSING_FIRST_BINARY_OPERAND, FATAL,
+/* xgettext:no-c-format */
+"Missing first operand for binary operator at %0")
+FFEBAD_MSG (FFEBAD_NULL_CHAR_CONST, WARN,
+/* xgettext:no-c-format */
+"Zero-length character constant at %0")
+FFEBAD_MSG (FFEBAD_INVALID_TOKEN_IN_EXPRESSION, FATAL,
+/* xgettext:no-c-format */
+"Invalid token at %0 in expression or subexpression at %1")
+FFEBAD_MSG (FFEBAD_MISSING_OPERAND_FOR_OPERATOR, FATAL,
+/* xgettext:no-c-format */
+"Missing operand for operator at %1 at end of expression at %0")
+FFEBAD_MSG (FFEBAD_LABEL_ALREADY_DEFINED, FATAL,
+/* xgettext:no-c-format */
+"Label %A already defined at %1 when redefined at %0")
+FFEBAD_MSG (FFEBAD_UNRECOGNIZED_CHARACTER, FATAL,
+/* xgettext:no-c-format */
+"Unrecognized character at %0 [info -f g77 M LEX]")
+FFEBAD_MSG (FFEBAD_LABEL_WITHOUT_STMT, WARN,
+/* xgettext:no-c-format */
+"Label definition %A at %0 on empty statement (as of %1)")
+FFEBAD_MSG (FFEBAD_EXTRA_LABEL_DEF, FATAL,
+/* xgettext:no-c-format */
+LONG("Extra label definition %A at %0 -- perhaps previous label definition %B at %1 should have CONTINUE statement?")
+/* xgettext:no-c-format */
+SHORT("Extra label definition %A at %0 following label definition %B at %1"))
+FFEBAD_MSG (FFEBAD_FIRST_CHAR_INVALID, FATAL,
+/* xgettext:no-c-format */
+"Invalid first character at %0 [info -f g77 M LEX]")
+FFEBAD_MSG (FFEBAD_LINE_TOO_LONG, FATAL,
+/* xgettext:no-c-format */
+"Line too long as of %0 [info -f g77 M LEX]")
+FFEBAD_MSG (FFEBAD_LABEL_FIELD_NOT_NUMERIC, FATAL,
+/* xgettext:no-c-format */
+"Non-numeric character at %0 in label field [info -f g77 M LEX]")
+FFEBAD_MSG (FFEBAD_LABEL_NUMBER_INVALID, FATAL,
+/* xgettext:no-c-format */
+"Label number at %0 not in range 1-99999")
+FFEBAD_MSG (FFEBAD_NON_ANSI_COMMENT, WARN,
+/* xgettext:no-c-format */
+"At %0, '!' and '/*' are not valid comment delimiters")
+FFEBAD_MSG (FFEBAD_NON_ANSI_CONTINUATION_COLUMN, WARN,
+/* xgettext:no-c-format */
+"Continuation indicator at %0 must appear in column 6 [info -f g77 M LEX]")
+FFEBAD_MSG (FFEBAD_LABEL_ON_CONTINUATION, FATAL,
+/* xgettext:no-c-format */
+"Label at %0 invalid with continuation line indicator at %1 [info -f g77 M LEX]")
+FFEBAD_MSG (FFEBAD_INVALID_CONTINUATION, FATAL,
+/* xgettext:no-c-format */
+LONG("Continuation indicator at %0 invalid on first non-comment line of file or following END or INCLUDE [info -f g77 M LEX]")
+/* xgettext:no-c-format */
+SHORT("Continuation indicator at %0 invalid here [info -f g77 M LEX]"))
+FFEBAD_MSG (FFEBAD_NO_CLOSING_APOSTROPHE, FATAL,
+/* xgettext:no-c-format */
+"Character constant at %0 has no closing apostrophe at %1")
+FFEBAD_MSG (FFEBAD_NOT_ENOUGH_HOLLERITH_CHARS, FATAL,
+/* xgettext:no-c-format */
+"Hollerith constant at %0 specified %A more characters than are present as of %1")
+FFEBAD_MSG (FFEBAD_MISSING_CLOSE_PAREN, FATAL,
+/* xgettext:no-c-format */
+"Missing close parenthese at %0 needed to match open parenthese at %1")
+FFEBAD_MSG (FFEBAD_INTEGER_TOO_LARGE, FATAL,
+/* xgettext:no-c-format */
+"Integer at %0 too large")
+FFEBAD_MSG (FFEBAD_BAD_MAGICAL, WARN,
+/* xgettext:no-c-format */
+LONG("Integer at %0 too large except as negative number (preceded by unary minus sign)")
+/* xgettext:no-c-format */
+SHORT("Non-negative integer at %0 too large"))
+FFEBAD_MSG (FFEBAD_BAD_MAGICAL_PRECEDENCE, WARN,
+/* xgettext:no-c-format */
+LONG("Integer at %0 too large; even though preceded by unary minus sign at %1, subsequent operator at %2 has precedence over unary minus -- enclose unary minus sign and integer in parentheses to force precedence")
+/* xgettext:no-c-format */
+SHORT("Integer at %0 too large (%2 has precedence over %1)"))
+FFEBAD_MSG (FFEBAD_BAD_MAGICAL_BINARY, WARN,
+/* xgettext:no-c-format */
+LONG("Integer at %0 too large; even though preceded by minus sign at %1, because minus sign is a binary, not unary, operator -- insert plus sign before minus sign to change it to a unary minus sign")
+/* xgettext:no-c-format */
+SHORT("Integer at %0 too large (needs unary, not binary, minus at %1)"))
+FFEBAD_MSG (FFEBAD_BAD_MAGICAL_PRECEDENCE_BINARY, WARN,
+/* xgettext:no-c-format */
+LONG("Integer at %0 too large; even though preceded by minus sign at %1, subsequent operator at %2 has precedence over minus, and that minus sign should be a unary minus rather than a binary minus -- insert plus sign before minus sign to change it to a unary minus sign, and enclose unary minus sign and integer in parentheses to force precedence")
+/* xgettext:no-c-format */
+SHORT("Integer at %0 too large (%2 has precedence over %1, which needs to be unary, not binary, minus)"))
+FFEBAD_MSG (FFEBAD_IGNORING_PERIOD, FATAL,
+/* xgettext:no-c-format */
+"Period at %0 not followed by digits for floating-point number or by `NOT.', `TRUE.', or `FALSE.'")
+FFEBAD_MSG (FFEBAD_INSERTING_PERIOD, FATAL,
+/* xgettext:no-c-format */
+"Missing close-period between `.%A' at %0 and %1")
+FFEBAD_MSG (FFEBAD_INVALID_EXPONENT, FATAL,
+/* xgettext:no-c-format */
+"Invalid exponent at %0 for real constant at %1; nondigit `%A' in exponent field")
+FFEBAD_MSG (FFEBAD_MISSING_EXPONENT_VALUE, FATAL,
+/* xgettext:no-c-format */
+"Missing value at %1 for real-number exponent at %0")
+FFEBAD_MSG (FFEBAD_MISSING_BINARY_OPERATOR, FATAL,
+/* xgettext:no-c-format */
+"Expected binary operator between expressions at %0 and at %1")
+FFEBAD_MSG (FFEBAD_INVALID_DOTDOT, FATAL,
+/* xgettext:no-c-format */
+LONG("Period at %0 not followed by valid keyword forming a valid binary operator; `.%A.' is not a valid binary operator")
+/* xgettext:no-c-format */
+SHORT("`.%A.' at %0 not a binary operator"))
+FFEBAD_MSG (FFEBAD_QUOTE_MISSES_DIGITS, FATAL,
+/* xgettext:no-c-format */
+LONG("Double-quote at %0 not followed by a string of valid octal digits at %1")
+/* xgettext:no-c-format */
+SHORT("Invalid octal constant at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_BINARY_DIGIT, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid binary digit(s) found in string of digits at %0")
+/* xgettext:no-c-format */
+SHORT("Invalid binary constant at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_HEX_DIGIT, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid hexadecimal digit(s) found in string of digits at %0")
+/* xgettext:no-c-format */
+SHORT("Invalid hexadecimal constant at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_OCTAL_DIGIT, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid octal digit(s) found in string of digits at %0")
+/* xgettext:no-c-format */
+SHORT("Invalid octal constant at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_RADIX_SPECIFIER, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid radix specifier `%A' at %0 for typeless constant at %1")
+/* xgettext:no-c-format */
+SHORT("Invalid typeless constant at %1"))
+FFEBAD_MSG (FFEBAD_INVALID_TYPELESS_BINARY_DIGIT, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid binary digit(s) found in string of digits at %0")
+/* xgettext:no-c-format */
+SHORT("Invalid binary constant at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_TYPELESS_OCTAL_DIGIT, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid octal digit(s) found in string of digits at %0")
+/* xgettext:no-c-format */
+SHORT("Invalid octal constant at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_TYPELESS_HEX_DIGIT, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid hexadecimal digit(s) found in string of digits at %0")
+/* xgettext:no-c-format */
+SHORT("Invalid hexadecimal constant at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_COMPLEX_PART, FATAL,
+/* xgettext:no-c-format */
+LONG("%A part of complex constant at %0 must be a real or integer constant -- otherwise use CMPLX() or COMPLEX() in place of ()")
+/* xgettext:no-c-format */
+SHORT("%A part of complex constant at %0 not a real or integer constant"))
+FFEBAD_MSG (FFEBAD_INVALID_PERCENT, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid keyword `%%%A' at %0 in this context")
+/* xgettext:no-c-format */
+SHORT("Invalid keyword `%%%A' at %0"))
+FFEBAD_MSG (FFEBAD_NULL_EXPRESSION, FATAL,
+/* xgettext:no-c-format */
+LONG("Null expression between %0 and %1 invalid in this context")
+/* xgettext:no-c-format */
+SHORT("Invalid null expression between %0 and %1"))
+FFEBAD_MSG (FFEBAD_CONCAT_ARGS_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Concatenation operator at %0 must operate on two subexpressions of character type, but neither subexpression at %1 or %2 is of character type")
+/* xgettext:no-c-format */
+SHORT("Invalid operands at %1 and %2 for concatenation operator at %0"))
+FFEBAD_MSG (FFEBAD_CONCAT_ARG_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Concatenation operator at %0 must operate on two subexpressions of character type, but the subexpression at %1 is not of character type")
+/* xgettext:no-c-format */
+SHORT("Invalid operand at %1 for concatenation operator at %0"))
+FFEBAD_MSG (FFEBAD_CONCAT_ARG_KIND, FATAL,
+/* xgettext:no-c-format */
+LONG("Concatenation operator at %0 must operate on two scalar (not array) subexpressions, two function invocations returning character scalars, or a combination of both -- but the subexpression at %1 is %A")
+/* xgettext:no-c-format */
+SHORT("Invalid operand (is %A) at %1 for concatenation operator at %0"))
+FFEBAD_MSG (FFEBAD_MATH_ARGS_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Arithmetic operator at %0 must operate on two subexpressions of arithmetic type, but neither subexpression at %1 or %2 is of arithmetic type")
+/* xgettext:no-c-format */
+SHORT("Invalid operands at %1 and %2 for arithmetic operator at %0"))
+FFEBAD_MSG (FFEBAD_MATH_ARG_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Arithmetic operator at %0 must operate on two subexpressions of arithmetic type, but the subexpression at %1 is not of arithmetic type")
+/* xgettext:no-c-format */
+SHORT("Invalid operand at %1 for arithmetic operator at %0"))
+FFEBAD_MSG (FFEBAD_MATH_ARG_KIND, FATAL,
+/* xgettext:no-c-format */
+LONG("Arithmetic operator at %0 must operate on two scalar (not array) subexpressions, two function invocations returning arithmetic scalars, or a combination of both -- but the subexpression at %1 is %A")
+/* xgettext:no-c-format */
+SHORT("Invalid operand (is %A) at %1 for arithmetic operator at %0"))
+FFEBAD_MSG (FFEBAD_NO_CLOSING_QUOTE, FATAL,
+/* xgettext:no-c-format */
+LONG("Character constant at %0 has no closing quote at %1 [info -f g77 M LEX]")
+/* xgettext:no-c-format */
+SHORT("Unterminated character constant at %0 [info -f g77 M LEX]"))
+FFEBAD_MSG (FFEBAD_BAD_CHAR_CONTINUE, FATAL,
+/* xgettext:no-c-format */
+LONG("Continuation line at %0 must have initial `&' since it continues a character context [info -f g77 M LEX]")
+/* xgettext:no-c-format */
+SHORT("Missing initial `&' on continuation line at %0 [info -f g77 M LEX]"))
+FFEBAD_MSG (FFEBAD_BAD_LEXTOK_CONTINUE, FATAL,
+/* xgettext:no-c-format */
+LONG("Continuation line at %0 must have initial `&' since it continues a split lexical token [info -f g77 M LEX]")
+/* xgettext:no-c-format */
+SHORT("Missing initial `&' on continuation line at %0 [info -f g77 M LEX]"))
+FFEBAD_MSG (FFEBAD_BAD_FREE_CONTINUE, FATAL,
+/* xgettext:no-c-format */
+LONG("Continuation line at %0 invalid because it consists only of a single `&' as the only nonblank character")
+/* xgettext:no-c-format */
+SHORT("Invalid continuation line at %0"))
+FFEBAD_MSG (FFEBAD_STMT_BEGINS_BAD, FATAL,
+/* xgettext:no-c-format */
+LONG("Statement at %0 begins with invalid token [info -f g77 M LEX]")
+/* xgettext:no-c-format */
+SHORT("Invalid statement at %0 [info -f g77 M LEX]"))
+FFEBAD_MSG (FFEBAD_SEMICOLON, FATAL,
+/* xgettext:no-c-format */
+"Semicolon at %0 is an invalid token")
+FFEBAD_MSG (FFEBAD_UNREC_STMT, FATAL,
+/* xgettext:no-c-format */
+LONG("Unrecognized statement name at %0 and invalid form for assignment or statement-function definition at %1")
+/* xgettext:no-c-format */
+SHORT("Invalid statement at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_STMT_FORM, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid form for %A statement at %0")
+/* xgettext:no-c-format */
+SHORT("Invalid %A statement at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_HOLL_IN_STMT, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid use of hollerith constant in statement at %0 -- enclose the constant in parentheses (for example, change BACKSPACE 2HAB to BACKSPACE (2HAB))")
+/* xgettext:no-c-format */
+SHORT("Enclose hollerith constant in statement at %0 in parentheses"))
+FFEBAD_MSG (FFEBAD_FORMAT_EXTRA_COMMA, FATAL,
+/* xgettext:no-c-format */
+"Extraneous comma in FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_MISSING_COMMA, WARN,
+/* xgettext:no-c-format */
+"Missing comma in FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_SPURIOUS_SIGN, FATAL,
+/* xgettext:no-c-format */
+"Spurious sign in FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_SPURIOUS_NUMBER, FATAL,
+/* xgettext:no-c-format */
+"Spurious number in FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_TEXT_IN_NUMBER, FATAL,
+/* xgettext:no-c-format */
+"Spurious text trailing number in FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_P_NOCOMMA, FATAL,
+/* xgettext:no-c-format */
+LONG("nP control edit descriptor not followed by comma but followed by edit descriptor at %0 other than D, E, EN, F, or G")
+/* xgettext:no-c-format */
+SHORT("Invalid edit descriptor at %0 following nP control edit descriptor"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_SPEC, FATAL,
+/* xgettext:no-c-format */
+"Unrecognized FORMAT specifier at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_I_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid I specifier in FORMAT statement at %0 -- correct form: [r]Iw.[m]")
+/* xgettext:no-c-format */
+SHORT("Invalid I specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_B_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid B specifier in FORMAT statement at %0 -- correct form: [r]Bw.[m]")
+/* xgettext:no-c-format */
+SHORT("Invalid B specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_O_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid O specifier in FORMAT statement at %0 -- correct form: [r]Ow.[m]")
+/* xgettext:no-c-format */
+SHORT("Invalid O specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_Z_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid Z specifier in FORMAT statement at %0 -- correct form: [r]Zw.[m]")
+/* xgettext:no-c-format */
+SHORT("Invalid Z specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_F_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid F specifier in FORMAT statement at %0 -- correct form: [r]Fw.d")
+/* xgettext:no-c-format */
+SHORT("Invalid F specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_E_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid E specifier in FORMAT statement at %0 -- correct form: [r]Ew.d[Ee]")
+/* xgettext:no-c-format */
+SHORT("Invalid E specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_EN_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid EN specifier in FORMAT statement at %0 -- correct form: [r]ENw.d[Ee]")
+/* xgettext:no-c-format */
+SHORT("Invalid EN specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_G_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid G specifier in FORMAT statement at %0 -- correct form: [r]Gw.d[Ee]")
+/* xgettext:no-c-format */
+SHORT("Invalid G specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_L_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid L specifier in FORMAT statement at %0 -- correct form: [r]Lw")
+/* xgettext:no-c-format */
+SHORT("Invalid L specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_A_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid A specifier in FORMAT statement at %0 -- correct form: [r]A[w]")
+/* xgettext:no-c-format */
+SHORT("Invalid A specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_D_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid D specifier in FORMAT statement at %0 -- correct form: [r]Dw.d")
+/* xgettext:no-c-format */
+SHORT("Invalid D specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_Q_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid Q specifier in FORMAT statement at %0 -- correct form: Q")
+/* xgettext:no-c-format */
+SHORT("Invalid Q specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_DOLLAR_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid $ specifier in FORMAT statement at %0 -- correct form: $")
+/* xgettext:no-c-format */
+SHORT("Invalid $ specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_P_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid P specifier in FORMAT statement at %0 -- correct form: kP")
+/* xgettext:no-c-format */
+SHORT("Invalid P specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_T_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid T specifier in FORMAT statement at %0 -- correct form: Tn")
+/* xgettext:no-c-format */
+SHORT("Invalid T specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_TL_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid TL specifier in FORMAT statement at %0 -- correct form: TLn")
+/* xgettext:no-c-format */
+SHORT("Invalid TL specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_TR_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid TR specifier in FORMAT statement at %0 -- correct form: TRn")
+/* xgettext:no-c-format */
+SHORT("Invalid TR specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_X_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid X specifier in FORMAT statement at %0 -- correct form: nX")
+/* xgettext:no-c-format */
+SHORT("Invalid X specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_S_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid S specifier in FORMAT statement at %0 -- correct form: S")
+/* xgettext:no-c-format */
+SHORT("Invalid S specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_SP_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid SP specifier in FORMAT statement at %0 -- correct form: SP")
+/* xgettext:no-c-format */
+SHORT("Invalid SP specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_SS_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid SS specifier in FORMAT statement at %0 -- correct form: SS")
+/* xgettext:no-c-format */
+SHORT("Invalid SS specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_BN_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid BN specifier in FORMAT statement at %0 -- correct form: BN")
+/* xgettext:no-c-format */
+SHORT("Invalid BN specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_BZ_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid BZ specifier in FORMAT statement at %0 -- correct form: BZ")
+/* xgettext:no-c-format */
+SHORT("Invalid BZ specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_COLON_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid : specifier in FORMAT statement at %0 -- correct form: :")
+/* xgettext:no-c-format */
+SHORT("Invalid : specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_BAD_H_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid H specifier in FORMAT statement at %0 -- correct form: nHcharacters  !where n is an unsigned decimal constant, and characters               !contains exactly n characters (including spaces)")
+/* xgettext:no-c-format */
+SHORT("Invalid H specifier in FORMAT statement at %0"))
+FFEBAD_MSG (FFEBAD_FORMAT_MISSING_PAREN, FATAL,
+/* xgettext:no-c-format */
+"Missing close-parenthese(s) in FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_MISSING_DOT, FATAL,
+/* xgettext:no-c-format */
+"Missing number following period in FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_MISSING_EXP, FATAL,
+/* xgettext:no-c-format */
+"Missing number following `E' in FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_EXPR_TOKEN, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid token with FORMAT run-time expression at %0 -- use the traditional operators .LT., .LE., .GT., .GE., .EQ., and .NE. in place of the newer tokens <, <=, >, >=, ==, and !=, because > ends an expression within a FORMAT statement")
+/* xgettext:no-c-format */
+SHORT("Invalid token with FORMAT run-time expression at %0"))
+FFEBAD_MSG (FFEBAD_TRAILING_COMMA, WARN,
+/* xgettext:no-c-format */
+"Spurious trailing comma preceding terminator at %0")
+FFEBAD_MSG (FFEBAD_INTERFACE_ASSIGNMENT, WARN,
+/* xgettext:no-c-format */
+"At %0, specify OPERATOR instead of ASSIGNMENT for INTERFACE statement not specifying the assignment operator (=)")
+FFEBAD_MSG (FFEBAD_INTERFACE_OPERATOR, WARN,
+/* xgettext:no-c-format */
+"At %0, specify ASSIGNMENT instead of OPERATOR for INTERFACE statement specifying the assignment operator (=)")
+FFEBAD_MSG (FFEBAD_INTERFACE_NONLETTER, FATAL,
+/* xgettext:no-c-format */
+LONG("Defined operator at %0 contains a nonletter -- must contain only letters A-Z (or a-z)")
+/* xgettext:no-c-format */
+SHORT("Nonletter in defined operator at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_TYPEDECL_ATTR, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid type-declaration attribute at %0 -- must be one of: DIMENSION(array-spec), EXTERNAL, INTRINSIC, PARAMETER, or SAVE")
+/* xgettext:no-c-format */
+SHORT("Invalid type-declaration attribute at %0"))
+FFEBAD_MSG (FFEBAD_INVALID_TYPEDECL_INIT, FATAL,
+/* xgettext:no-c-format */
+"Cannot specify =initialization-expr at %0 unless `::' appears before list of objects")
+FFEBAD_MSG (FFEBAD_LABEL_USE_DEF, FATAL,
+/* xgettext:no-c-format */
+"Reference to label at %1 inconsistent with its definition at %0")
+FFEBAD_MSG (FFEBAD_LABEL_USE_USE, FATAL,
+/* xgettext:no-c-format */
+"Reference to label at %1 inconsistent with earlier reference at %0")
+FFEBAD_MSG (FFEBAD_LABEL_DEF_DO, FATAL,
+/* xgettext:no-c-format */
+"DO-statement reference to label at %1 follows its definition at %0")
+FFEBAD_MSG (FFEBAD_LABEL_BLOCK, WARN,
+/* xgettext:no-c-format */
+"Reference to label at %1 is outside block containing definition at %0")
+FFEBAD_MSG (FFEBAD_LABEL_DO_BLOCK_DO, FATAL,
+/* xgettext:no-c-format */
+"DO-statement references to label at %0 and %2 separated by unterminated block starting at %1")
+FFEBAD_MSG (FFEBAD_LABEL_DO_BLOCK_END, FATAL,
+/* xgettext:no-c-format */
+"DO-statement reference to label at %0 and label definition at %2 separated by unterminated block starting at %1")
+FFEBAD_MSG (FFEBAD_INVALID_LABEL_DEF, FATAL,
+/* xgettext:no-c-format */
+"Label definition at %0 invalid on this kind of statement")
+FFEBAD_MSG (FFEBAD_ORDER_1, FATAL,
+/* xgettext:no-c-format */
+"Statement at %0 invalid in this context")
+FFEBAD_MSG (FFEBAD_ORDER_2, FATAL,
+/* xgettext:no-c-format */
+"Statement at %0 invalid in context established by statement at %1")
+FFEBAD_MSG (FFEBAD_CONSTRUCT_NAMED, FATAL,
+/* xgettext:no-c-format */
+"Statement at %0 must specify construct name specified at %1")
+FFEBAD_MSG (FFEBAD_CONSTRUCT_NOT_NAMED, FATAL,
+/* xgettext:no-c-format */
+"Construct name at %0 superfluous, no construct name specified at %1")
+FFEBAD_MSG (FFEBAD_CONSTRUCT_WRONG_NAME, FATAL,
+/* xgettext:no-c-format */
+"Construct name at %0 not the same as construct name at %1")
+FFEBAD_MSG (FFEBAD_CONSTRUCT_NO_DO_NAME, FATAL,
+/* xgettext:no-c-format */
+"Construct name at %0 does not match construct name for any containing DO constructs")
+FFEBAD_MSG (FFEBAD_DO_HAD_LABEL, FATAL,
+/* xgettext:no-c-format */
+"Label definition missing at %0 for DO construct specifying label at %1")
+FFEBAD_MSG (FFEBAD_AFTER_ELSE, FATAL,
+/* xgettext:no-c-format */
+"Statement at %0 follows ELSE block for IF construct at %1")
+FFEBAD_MSG (FFEBAD_FORMAT_NO_LABEL_DEF, FATAL,
+/* xgettext:no-c-format */
+"No label definition for FORMAT statement at %0")
+FFEBAD_MSG (FFEBAD_SECOND_ELSE_WHERE, FATAL,
+/* xgettext:no-c-format */
+"Second occurrence of ELSE WHERE at %0 within WHERE at %1")
+FFEBAD_MSG (FFEBAD_END_WO, WARN,
+/* xgettext:no-c-format */
+"END statement at %0 missing `%A' keyword required for internal or module procedure(s) bounded by %1")
+FFEBAD_MSG (FFEBAD_INVALID_MODULE_PROCEDURE, FATAL,
+/* xgettext:no-c-format */
+"MODULE PROCEDURE statement at %0 disallowed because INTERFACE at %1 specifies no generic name, operator, or assignment")
+FFEBAD_MSG (FFEBAD_BLOCKDATA_NOT_NAMED, FATAL,
+/* xgettext:no-c-format */
+"BLOCK DATA name at %0 superfluous, no name specified at %1")
+FFEBAD_MSG (FFEBAD_PROGRAM_NOT_NAMED, FATAL,
+/* xgettext:no-c-format */
+"Program name at %0 superfluous, no PROGRAM statement specified at %1")
+FFEBAD_MSG (FFEBAD_UNIT_WRONG_NAME, FATAL,
+/* xgettext:no-c-format */
+"Program unit name at %0 not the same as name at %1")
+FFEBAD_MSG (FFEBAD_TYPE_WRONG_NAME, FATAL,
+/* xgettext:no-c-format */
+"Type name at %0 not the same as name at %1")
+FFEBAD_MSG (FFEBAD_EOF_BEFORE_BLOCK_END, FATAL,
+/* xgettext:no-c-format */
+"End of source file before end of block started at %0")
+FFEBAD_MSG (FFEBAD_UNDEF_LABEL, FATAL,
+/* xgettext:no-c-format */
+"Undefined label, first referenced at %0")
+FFEBAD_MSG (FFEBAD_CONFLICTING_SAVES, WARN,
+/* xgettext:no-c-format */
+"SAVE statement or attribute at %1 cannot be specified along with SAVE statement or attribute at %0")
+FFEBAD_MSG (FFEBAD_CONFLICTING_ACCESSES, FATAL,
+/* xgettext:no-c-format */
+"PUBLIC or PRIVATE statement at %1 cannot be specified along with PUBLIC or PRIVATE statement at %0")
+FFEBAD_MSG (FFEBAD_RETURN_IN_MAIN, WARN,
+/* xgettext:no-c-format */
+"RETURN statement at %0 invalid within a main program unit")
+FFEBAD_MSG (FFEBAD_ALTRETURN_IN_PROGRAM, FATAL,
+/* xgettext:no-c-format */
+"Alternate return specifier at %0 invalid within a main program unit")
+FFEBAD_MSG (FFEBAD_ALTRETURN_IN_FUNCTION, FATAL,
+/* xgettext:no-c-format */
+"Alternate return specifier at %0 invalid within a function")
+FFEBAD_MSG (FFEBAD_DERIVTYP_ACCESS, FATAL,
+/* xgettext:no-c-format */
+"Access specifier or PRIVATE statement at %0 invalid for derived-type definition within other than the specification part of a module")
+FFEBAD_MSG (FFEBAD_DERIVTYP_ACCESS_FIRST, FATAL,
+/* xgettext:no-c-format */
+"Access specifier at %0 must immediately follow derived-type statement at %1 with no intervening statements")
+FFEBAD_MSG (FFEBAD_DERIVTYP_NO_COMPONENTS, FATAL,
+/* xgettext:no-c-format */
+"No components specified as of %0 for derived-type definition beginning at %1")
+FFEBAD_MSG (FFEBAD_STRUCT_NO_COMPONENTS, FATAL,
+/* xgettext:no-c-format */
+"No components specified as of %0 for structure definition beginning at %1")
+FFEBAD_MSG (FFEBAD_STRUCT_MISSING_NAME, FATAL,
+/* xgettext:no-c-format */
+"Missing structure name for outer structure definition at %0")
+FFEBAD_MSG (FFEBAD_STRUCT_IGNORING_FIELD, FATAL,
+/* xgettext:no-c-format */
+"Field names at %0 for outer structure definition -- specify them in a subsequent RECORD statement instead")
+FFEBAD_MSG (FFEBAD_STRUCT_MISSING_FIELD, FATAL,
+/* xgettext:no-c-format */
+"Missing field name(s) for structure definition at %0 within structure definition at %1")
+FFEBAD_MSG (FFEBAD_MAP_NO_COMPONENTS, FATAL,
+/* xgettext:no-c-format */
+"No components specified as of %0 for map beginning at %1")
+FFEBAD_MSG (FFEBAD_UNION_NO_TWO_MAPS, FATAL,
+/* xgettext:no-c-format */
+"Zero or one maps specified as of %0 for union beginning at %1 -- at least two are required")
+FFEBAD_MSG (FFEBAD_MISSING_SPECIFIER, FATAL,
+/* xgettext:no-c-format */
+"Missing %A specifier in statement at %0")
+FFEBAD_MSG (FFEBAD_NAMELIST_ITEMS, FATAL,
+/* xgettext:no-c-format */
+"Items in I/O list starting at %0 invalid for namelist-directed I/O")
+FFEBAD_MSG (FFEBAD_CONFLICTING_SPECS, FATAL,
+/* xgettext:no-c-format */
+"Conflicting I/O control specifications at %0 and %1")
+FFEBAD_MSG (FFEBAD_NO_UNIT_SPEC, FATAL,
+/* xgettext:no-c-format */
+"No UNIT= specifier in I/O control list at %0")
+FFEBAD_MSG (FFEBAD_MISSING_ADVANCE_SPEC, FATAL,
+/* xgettext:no-c-format */
+"Specification at %0 requires ADVANCE=`NO' specification in same I/O control list")
+FFEBAD_MSG (FFEBAD_MISSING_FORMAT_SPEC, FATAL,
+/* xgettext:no-c-format */
+"Specification at %0 requires explicit FMT= specification in same I/O control list")
+FFEBAD_MSG (FFEBAD_SPEC_VALUE, FATAL,
+/* xgettext:no-c-format */
+LONG("Unrecognized value for character constant at %0 -- expecting %A")
+/* xgettext:no-c-format */
+SHORT("Unrecognized value for character constant at %0"))
+FFEBAD_MSG (FFEBAD_CASE_SECOND_DEFAULT, FATAL,
+/* xgettext:no-c-format */
+"Second occurrence of CASE DEFAULT at %0 within SELECT CASE at %1")
+FFEBAD_MSG (FFEBAD_CASE_DUPLICATE, FATAL,
+/* xgettext:no-c-format */
+"Duplicate or overlapping case values/ranges at %0 and %1")
+FFEBAD_MSG (FFEBAD_CASE_TYPE_DISAGREE, FATAL,
+/* xgettext:no-c-format */
+"Type and/or kind-type parameter disagreement between CASE value or value within range at %0 and SELECT CASE at %1")
+FFEBAD_MSG (FFEBAD_CASE_LOGICAL_RANGE, FATAL,
+/* xgettext:no-c-format */
+"Range specification at %0 invalid for CASE statement within logical-type SELECT CASE statement")
+FFEBAD_MSG (FFEBAD_CASE_BAD_RANGE, FATAL,
+/* xgettext:no-c-format */
+LONG("Range specification at %0 invalid -- at least one expression must be specified, or use CASE DEFAULT")
+/* xgettext:no-c-format */
+SHORT("Range specification at %0 invalid"))
+FFEBAD_MSG (FFEBAD_CASE_RANGE_USELESS, INFORM,
+/* xgettext:no-c-format */
+LONG("Range specification at %0 useless; first expression greater than second expression in range, so range can never be matched by any selection expression")
+/* xgettext:no-c-format */
+SHORT("Useless range at %0"))
+FFEBAD_MSG (FFEBAD_F90, FATAL,
+/* xgettext:no-c-format */
+"Fortran 90 feature at %0 unsupported")
+FFEBAD_MSG (FFEBAD_KINDTYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid kind at %0 for type at %1 -- unsupported or not permitted")
+/* xgettext:no-c-format */
+SHORT("Invalid kind at %0 for type at %1"))
+FFEBAD_MSG (FFEBAD_BAD_IMPLICIT, FATAL,
+/* xgettext:no-c-format */
+LONG("Cannot establish implicit type for initial letter `%A' at %0 -- already explicitly established or used to set implicit type of some name, or backwards order of letters in letter range")
+/* xgettext:no-c-format */
+SHORT("Cannot establish implicit type for initial letter `%A' at %0"))
+FFEBAD_MSG (FFEBAD_SYMERR, FATAL,
+/* xgettext:no-c-format */
+"Invalid declaration of or reference to symbol `%A' at %0 [initially seen at %1]")
+FFEBAD_MSG (FFEBAD_LABEL_WRONG_PLACE, FATAL,
+/* xgettext:no-c-format */
+LONG("Label definition %A (at %0) invalid -- must be in columns 1-5")
+/* xgettext:no-c-format */
+SHORT("Invalid label definition %A (at %0)"))
+FFEBAD_MSG (FFEBAD_NULL_ELEMENT, FATAL,
+/* xgettext:no-c-format */
+"Null element at %0 for array reference at %1")
+FFEBAD_MSG (FFEBAD_TOO_FEW_ELEMENTS, FATAL,
+/* xgettext:no-c-format */
+"Too few elements (%A missing) as of %0 for array reference at %1")
+FFEBAD_MSG (FFEBAD_TOO_MANY_ELEMENTS, FATAL,
+/* xgettext:no-c-format */
+"Too many elements as of %0 for array reference at %1")
+FFEBAD_MSG (FFEBAD_MISSING_COLON_IN_SUBSTR, FATAL,
+/* xgettext:no-c-format */
+"Missing colon as of %0 in substring reference for %1")
+FFEBAD_MSG (FFEBAD_BAD_SUBSTR, FATAL,
+/* xgettext:no-c-format */
+"Invalid use at %0 of substring operator on %1")
+FFEBAD_MSG (FFEBAD_RANGE_SUBSTR, WARN,
+/* xgettext:no-c-format */
+"Substring begin/end point at %0 out of defined range")
+FFEBAD_MSG (FFEBAD_RANGE_ARRAY, WARN,
+/* xgettext:no-c-format */
+"Array element value at %0 out of defined range")
+FFEBAD_MSG (FFEBAD_EXPR_WRONG, FATAL,
+/* xgettext:no-c-format */
+"Expression at %0 has incorrect data type or rank for its context")
+FFEBAD_MSG (FFEBAD_DIV_BY_ZERO, WARN,
+/* xgettext:no-c-format */
+"Division by 0 (zero) at %0 (IEEE not yet supported)")
+FFEBAD_MSG (FFEBAD_DO_STEP_ZERO, FATAL,
+/* xgettext:no-c-format */
+"%A step count known to be 0 (zero) at %0")
+FFEBAD_MSG (FFEBAD_DO_END_OVERFLOW, WARN,
+/* xgettext:no-c-format */
+"%A end value plus step count known to overflow at %0")
+FFEBAD_MSG (FFEBAD_DO_IMP_OVERFLOW, WARN,
+/* xgettext:no-c-format */
+"%A begin, end, and step-count values known to result in implementation-dependent behavior due to overflow(s) in intermediate calculations at %0")
+FFEBAD_MSG (FFEBAD_DO_NULL, WARN,
+/* xgettext:no-c-format */
+"%A begin, end, and step-count values known to result in no iterations at %0")
+FFEBAD_MSG (FFEBAD_BAD_TYPES, FATAL,
+/* xgettext:no-c-format */
+"Type disagreement between expressions at %0 and %1")
+FFEBAD_MSG (FFEBAD_FORMAT_EXPR_SPEC, FATAL,
+/* xgettext:no-c-format */
+LONG("Run-time expression at %0 in FORMAT statement that does not follow the first executable statement in the program unit -- move the statement")
+/* xgettext:no-c-format */
+SHORT("FORMAT at %0 with run-time expression must follow first executable statement"))
+FFEBAD_MSG (FFEBAD_BAD_IMPDO, FATAL,
+/* xgettext:no-c-format */
+LONG("Unexpected token at %0 in implied-DO construct at %1 -- form of implied-DO is `(item-list,do-var=start,end[,incr])'")
+/* xgettext:no-c-format */
+SHORT("Unexpected token at %0 in implied-DO construct at %1"))
+FFEBAD_MSG (FFEBAD_BAD_IMPDCL, FATAL,
+/* xgettext:no-c-format */
+"No specification for implied-DO iterator `%A' at %0")
+FFEBAD_MSG (FFEBAD_IMPDO_PAREN, WARN,
+/* xgettext:no-c-format */
+"Gratuitous parentheses surround implied-DO construct at %0")
+FFEBAD_MSG (FFEBAD_ZERO_SIZE, FATAL,
+/* xgettext:no-c-format */
+"Zero-size specification invalid at %0")
+FFEBAD_MSG (FFEBAD_ZERO_ARRAY, FATAL,
+/* xgettext:no-c-format */
+"Zero-size array at %0")
+FFEBAD_MSG (FFEBAD_BAD_COMPLEX, FATAL,
+/* xgettext:no-c-format */
+"Target machine does not support complex entity of kind specified at %0")
+FFEBAD_MSG (FFEBAD_BAD_DBLCMPLX, FATAL,
+/* xgettext:no-c-format */
+"Target machine does not support DOUBLE COMPLEX, specified at %0")
+FFEBAD_MSG (FFEBAD_BAD_POWER, WARN,
+/* xgettext:no-c-format */
+"Attempt to raise constant zero to a power at %0")
+FFEBAD_MSG (FFEBAD_BOOL_ARGS_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Boolean/logical operator at %0 must operate on two subexpressions of logical type, but neither subexpression at %1 or %2 is of logical type")
+/* xgettext:no-c-format */
+SHORT("Invalid operands at %1 and %2 for boolean operator at %0"))
+FFEBAD_MSG (FFEBAD_BOOL_ARG_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Boolean/logical operator at %0 must operate on two subexpressions of logical type, but the subexpression at %1 is not of logical type")
+/* xgettext:no-c-format */
+SHORT("Invalid operand at %1 for boolean operator at %0"))
+FFEBAD_MSG (FFEBAD_BOOL_ARG_KIND, FATAL,
+/* xgettext:no-c-format */
+LONG("Boolean/logical operator at %0 must operate on two scalar (not array) subexpressions, two function invocations returning logical scalars, or a combination of both -- but the subexpression at %1 is %A")
+/* xgettext:no-c-format */
+SHORT("Invalid operand (is %A) at %1 for boolean operator at %0"))
+FFEBAD_MSG (FFEBAD_NOT_ARG_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG(".NOT. operator at %0 must operate on subexpression of logical type, but the subexpression at %1 is not of logical type")
+/* xgettext:no-c-format */
+SHORT("Invalid operand at %1 for .NOT. operator at %0"))
+FFEBAD_MSG (FFEBAD_NOT_ARG_KIND, FATAL,
+/* xgettext:no-c-format */
+LONG(".NOT. operator at %0 must operate on scalar subexpressions -- but the subexpression at %1 is %A")
+/* xgettext:no-c-format */
+SHORT("Invalid operand (is %A) at %1 for .NOT. operator at %0"))
+FFEBAD_MSG (FFEBAD_EQOP_ARGS_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Equality operator at %0 must operate on two subexpressions of arithmetic or character type, but neither subexpression at %1 or %2 is of arithmetic or character type")
+/* xgettext:no-c-format */
+SHORT("Invalid operands at %1 and %2 for equality operator at %0"))
+FFEBAD_MSG (FFEBAD_EQOP_ARG_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Equality operator at %0 must operate on two subexpressions of arithmetic or character type, but the subexpression at %1 is not of arithmetic or character type")
+/* xgettext:no-c-format */
+SHORT("Invalid operand at %1 for equality operator at %0"))
+FFEBAD_MSG (FFEBAD_EQOP_ARG_KIND, FATAL,
+/* xgettext:no-c-format */
+LONG("Equality operator at %0 must operate on two scalar (not array) subexpressions, two function invocations returning arithmetic or character scalars, or a combination of both -- but the subexpression at %1 is %A")
+/* xgettext:no-c-format */
+SHORT("Invalid operand (is %A) at %1 for equality operator at %0"))
+FFEBAD_MSG (FFEBAD_RELOP_ARGS_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Relational operator at %0 must operate on two subexpressions of integer, real, or character type, but neither subexpression at %1 or %2 is of integer, real, or character type")
+/* xgettext:no-c-format */
+SHORT("Invalid operands at %1 and %2 for relational operator at %0"))
+FFEBAD_MSG (FFEBAD_RELOP_ARG_TYPE, FATAL,
+/* xgettext:no-c-format */
+LONG("Relational operator at %0 must operate on two subexpressions of integer, real, or character type, but the subexpression at %1 is not of integer, real, or character type")
+/* xgettext:no-c-format */
+SHORT("Invalid operand at %1 for relational operator at %0"))
+FFEBAD_MSG (FFEBAD_RELOP_ARG_KIND, FATAL,
+/* xgettext:no-c-format */
+LONG("Relational operator at %0 must operate on two scalar (not array) subexpressions, two function invocations returning integer, real, or character scalars, or a combination of both -- but the subexpression at %1 is %A")
+/* xgettext:no-c-format */
+SHORT("Invalid operand (is %A) at %1 for relational operator at %0"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_REF, FATAL,
+/* xgettext:no-c-format */
+LONG("Reference to intrinsic `%A' at %0 invalid -- one or more arguments have incorrect type")
+/* xgettext:no-c-format */
+SHORT("Invalid reference to intrinsic `%A' at %0"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_TOOFEW, FATAL,
+/* xgettext:no-c-format */
+LONG("Too few arguments passed to intrinsic `%A' at %0")
+/* xgettext:no-c-format */
+SHORT("Too few arguments for intrinsic `%A' at %0"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_TOOMANY, FATAL,
+/* xgettext:no-c-format */
+LONG("Too many arguments passed to intrinsic `%A' at %0")
+/* xgettext:no-c-format */
+SHORT("Too many arguments for intrinsic `%A' at %0"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_DISABLED, FATAL,
+/* xgettext:no-c-format */
+LONG("Reference to disabled intrinsic `%A' at %0")
+/* xgettext:no-c-format */
+SHORT("Disabled intrinsic `%A' at %0"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_IS_SUBR, FATAL,
+/* xgettext:no-c-format */
+LONG("Reference to intrinsic subroutine `%A' as if it were a function at %0")
+/* xgettext:no-c-format */
+SHORT("Function reference to intrinsic subroutine `%A' at %0"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_IS_FUNC, FATAL,
+/* xgettext:no-c-format */
+LONG("Reference to intrinsic function `%A' as if it were a subroutine at %0")
+/* xgettext:no-c-format */
+SHORT("Subroutine reference to intrinsic function `%A' at %0"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_UNIMPL, FATAL,
+/* xgettext:no-c-format */
+LONG("Reference to unimplemented intrinsic `%A' at %0 -- use EXTERNAL to reference user-written procedure with this name")
+/* xgettext:no-c-format */
+SHORT("Unimplemented intrinsic `%A' at %0"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_UNIMPLW, WARN,
+/* xgettext:no-c-format */
+LONG("Reference to unimplemented intrinsic `%A' at %0 (assumed EXTERNAL)")
+/* xgettext:no-c-format */
+SHORT("Unimplemented intrinsic `%A' at %0 (assumed EXTERNAL)"))
+FFEBAD_MSG (FFEBAD_INTRINSIC_AMBIG, FATAL,
+/* xgettext:no-c-format */
+"Reference to generic intrinsic `%A' at %0 could be to form %B or %C")
+FFEBAD_MSG (FFEBAD_INTRINSIC_CMPAMBIG, FATAL,
+/* xgettext:no-c-format */
+"Ambiguous use of intrinsic `%A' at %0 [info -f g77 M CMPAMBIG]")
+FFEBAD_MSG (FFEBAD_INTRINSIC_EXPIMP, WARN,
+/* xgettext:no-c-format */
+"Intrinsic `%A' referenced %Bly at %0, %Cly at %1 [info -f g77 M EXPIMP]")
+FFEBAD_MSG (FFEBAD_INTRINSIC_GLOBAL, WARN,
+/* xgettext:no-c-format */
+"Same name `%A' used for %B at %0 and %C at %1 [info -f g77 M INTGLOB]")
+FFEBAD_MSG (FFEBAD_INTRINSIC_TYPE, WARN,
+/* xgettext:no-c-format */
+"Explicit type declaration for intrinsic `%A' disagrees with invocation at %0")
+FFEBAD_MSG (FFEBAD_OPEN_INCLUDE, FATAL,
+/* xgettext:no-c-format */
+"Unable to open INCLUDE file `%A' at %0")
+FFEBAD_MSG (FFEBAD_DOITER, FATAL,
+/* xgettext:no-c-format */
+LONG("Attempt to modify variable `%A' at %0 while it serves as DO-loop iterator at %1")
+/* xgettext:no-c-format */
+SHORT("Modification of DO-loop iterator `%A' at %0"))
+FFEBAD_MSG (FFEBAD_DOITER_IMPDO, FATAL,
+/* xgettext:no-c-format */
+LONG("Attempt to modify variable `%A' via item #%B in list at %0 while it serves as implied-DO iterator at %1")
+/* xgettext:no-c-format */
+SHORT("Modification of DO-loop iterator `%A' at %0"))
+FFEBAD_MSG (FFEBAD_TOO_MANY_DIMS, FATAL,
+/* xgettext:no-c-format */
+LONG("Array has too many dimensions, as of dimension specifier at %0")
+/* xgettext:no-c-format */
+SHORT("Too many dimensions at %0"))
+FFEBAD_MSG (FFEBAD_NULL_ARGUMENT, FATAL,
+/* xgettext:no-c-format */
+"Null argument at %0 for statement function reference at %1")
+FFEBAD_MSG (FFEBAD_NULL_ARGUMENT_W, WARN,
+/* xgettext:no-c-format */
+"Null argument at %0 for procedure invocation at %1")
+FFEBAD_MSG (FFEBAD_TOO_FEW_ARGUMENTS, FATAL,
+/* xgettext:no-c-format */
+"%A too few arguments (starting with dummy argument `%B') as of %0 for statement function reference at %1")
+FFEBAD_MSG (FFEBAD_TOO_MANY_ARGUMENTS, FATAL,
+/* xgettext:no-c-format */
+"%A too many arguments as of %0 for statement function reference at %1")
+FFEBAD_MSG (FFEBAD_ARRAY_AS_SFARG, FATAL,
+/* xgettext:no-c-format */
+"Array supplied at %1 for dummy argument `%A' in statement function reference at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_UNSUPPORTED, FATAL,
+/* xgettext:no-c-format */
+"Unsupported FORMAT specifier at %0")
+FFEBAD_MSG (FFEBAD_FORMAT_VARIABLE, FATAL,
+/* xgettext:no-c-format */
+"Variable-expression FORMAT specifier at %0 -- unsupported")
+FFEBAD_MSG (FFEBAD_OPEN_UNSUPPORTED, FATAL,
+/* xgettext:no-c-format */
+LONG("Unsupported OPEN control item at %0 -- ACTION=, ASSOCIATEVARIABLE=, BLOCKSIZE=, BUFFERCOUNT=, CARRIAGECONTROL=, DEFAULTFILE=, DELIM=, DISPOSE=, EXTENDSIZE=, INITIALSIZE=, KEY=, MAXREC=, NOSPANBLOCKS, ORGANIZATION=, PAD=, POSITION=, READONLY=, RECORDTYPE=, SHARED=, and USEROPEN= are not supported")
+/* xgettext:no-c-format */
+SHORT("Unsupported OPEN control item at %0"))
+FFEBAD_MSG (FFEBAD_INQUIRE_UNSUPPORTED, FATAL,
+/* xgettext:no-c-format */
+LONG("Unsupported INQUIRE control item at %0 -- ACTION=, CARRIAGECONTROL=, DEFAULTFILE=, DELIM=, KEYED=, ORGANIZATION=, PAD=, POSITION=, READ=, READWRITE=, RECORDTYPE=, and WRITE= are not supported")
+/* xgettext:no-c-format */
+SHORT("Unsupported INQUIRE control item at %0"))
+FFEBAD_MSG (FFEBAD_READ_UNSUPPORTED, FATAL,
+/* xgettext:no-c-format */
+LONG("Unsupported READ control item at %0 -- ADVANCE=, EOR=, KEYEQ=, KEYGE=, KEYGT=, KEYID=, NULLS=, and SIZE= are not supported")
+/* xgettext:no-c-format */
+SHORT("Unsupported READ control item at %0"))
+FFEBAD_MSG (FFEBAD_WRITE_UNSUPPORTED, FATAL,
+/* xgettext:no-c-format */
+LONG("Unsupported WRITE control item at %0 -- ADVANCE= and EOR= are not supported")
+/* xgettext:no-c-format */
+SHORT("Unsupported WRITE control item at %0"))
+FFEBAD_MSG (FFEBAD_VXT_UNSUPPORTED, FATAL,
+/* xgettext:no-c-format */
+"Unsupported VXT statement at %0")
+FFEBAD_MSG (FFEBAD_DATA_REINIT, FATAL,
+/* xgettext:no-c-format */
+"Attempt to specify second initial value for `%A' at %0")
+FFEBAD_MSG (FFEBAD_DATA_TOOFEW, FATAL,
+/* xgettext:no-c-format */
+"Too few initial values in list of initializers for `%A' at %0")
+FFEBAD_MSG (FFEBAD_DATA_TOOMANY, FATAL,
+/* xgettext:no-c-format */
+"Too many initial values in list of initializers starting at %0")
+FFEBAD_MSG (FFEBAD_DATA_RANGE, FATAL,
+/* xgettext:no-c-format */
+"Array or substring specification for `%A' out of range in statement at %0")
+FFEBAD_MSG (FFEBAD_DATA_SUBSCRIPT, FATAL,
+/* xgettext:no-c-format */
+"Array subscript #%B out of range for initialization of `%A' in statement at %0")
+FFEBAD_MSG (FFEBAD_DATA_ZERO, FATAL,
+/* xgettext:no-c-format */
+"Implied do-loop step count of 0 (zero) for iteration variable `%A' in statement at %0")
+FFEBAD_MSG (FFEBAD_DATA_EMPTY, FATAL,
+/* xgettext:no-c-format */
+"Implied do-loop iteration count of 0 (zero) for iteration variable `%A' in statement at %0")
+FFEBAD_MSG (FFEBAD_DATA_EVAL, FATAL,
+/* xgettext:no-c-format */
+"Not an integer constant expression in implied do-loop in statement at %0")
+FFEBAD_MSG (FFEBAD_DATA_MULTIPLE, FATAL,
+/* xgettext:no-c-format */
+"Attempt to specify second initial value for element of `%A' at %0")
+FFEBAD_MSG (FFEBAD_EQUIV_COMMON, FATAL,
+/* xgettext:no-c-format */
+"Attempt to EQUIVALENCE common areas `%A' and `%B' at %0")
+FFEBAD_MSG (FFEBAD_EQUIV_ALIGN, FATAL,
+/* xgettext:no-c-format */
+"Can't place `%A' as directed by EQUIVALENCE due to alignment restrictions")
+FFEBAD_MSG (FFEBAD_EQUIV_MISMATCH, FATAL,
+/* xgettext:no-c-format */
+"Mismatched EQUIVALENCE requirements for placement of `%A' at both %C and %D bytes offset from `%B'")
+FFEBAD_MSG (FFEBAD_EQUIV_RANGE, FATAL,
+/* xgettext:no-c-format */
+"Array or substring specification for `%A' out of range in EQUIVALENCE statement")
+FFEBAD_MSG (FFEBAD_EQUIV_SUBSTR, FATAL,
+/* xgettext:no-c-format */
+"Substring of non-CHARACTER entity `%A' in EQUIVALENCE statement")
+FFEBAD_MSG (FFEBAD_EQUIV_ARRAY, FATAL,
+/* xgettext:no-c-format */
+"Array reference to scalar variable `%A' in EQUIVALENCE statement")
+FFEBAD_MSG (FFEBAD_EQUIV_SUBSCRIPT, WARN,
+/* xgettext:no-c-format */
+"Array subscript #%B out of range for EQUIVALENCE of `%A'")
+FFEBAD_MSG (FFEBAD_COMMON_PAD, WARN,
+/* xgettext:no-c-format */
+LONG("Padding of %A %D required before `%B' in common block `%C' at %0 -- consider reordering members, largest-type-size first")
+/* xgettext:no-c-format */
+SHORT("Padding of %A %D required before `%B' in common block `%C' at %0"))
+FFEBAD_MSG (FFEBAD_COMMON_NEG, FATAL,
+/* xgettext:no-c-format */
+"Attempt to extend COMMON area beyond its starting point via EQUIVALENCE of `%A'")
+FFEBAD_MSG (FFEBAD_EQUIV_FEW, FATAL,
+/* xgettext:no-c-format */
+"Too few elements in reference to array `%A' in EQUIVALENCE statement")
+FFEBAD_MSG (FFEBAD_EQUIV_MANY, FATAL,
+/* xgettext:no-c-format */
+"Too many elements in reference to array `%A' in EQUIVALENCE statement")
+FFEBAD_MSG (FFEBAD_MIXED_TYPES, WARN,
+/* xgettext:no-c-format */
+"Mixed CHARACTER and non-CHARACTER types via COMMON/EQUIVALENCE -- for example, `%A' and `%B'")
+FFEBAD_MSG (FFEBAD_IMPLICIT_ADJLEN, FATAL,
+/* xgettext:no-c-format */
+LONG("Invalid length specification at %0 for IMPLICIT statement -- must be integer constant expression")
+/* xgettext:no-c-format */
+SHORT("Invalid length specification at %0"))
+FFEBAD_MSG (FFEBAD_ENTRY_CONFLICTS, FATAL,
+/* xgettext:no-c-format */
+LONG("Type of ENTRY point at %0 to function conflicts with type(s) of previous entrypoint(s) -- must all be identical-length CHARACTER or none be CHARACTER type")
+/* xgettext:no-c-format */
+SHORT("Type of ENTRY point at %0 to function conflicts with type(s) of previous entrypoint(s)"))
+FFEBAD_MSG (FFEBAD_RETURN_VALUE_UNSET, WARN,
+/* xgettext:no-c-format */
+"Return value `%A' for FUNCTION at %0 not referenced in subprogram")
+FFEBAD_MSG (FFEBAD_COMMON_ALREADY_INIT, FATAL,
+/* xgettext:no-c-format */
+LONG("Common block `%A' initialized at %0 already initialized at %1 -- only one program unit may specify initial values for a particular common block")
+/* xgettext:no-c-format */
+SHORT("Common block `%A' initialized at %0 already initialized at %1"))
+FFEBAD_MSG (FFEBAD_COMMON_INIT_PAD, WARN,
+/* xgettext:no-c-format */
+LONG("Initial padding for common block `%A' is %B %C at %0 -- consider reordering members, largest-type-size first")
+/* xgettext:no-c-format */
+SHORT("Initial padding for common block `%A' is %B %C at %0"))
+FFEBAD_MSG (FFEBAD_COMMON_DIFF_PAD, FATAL,
+/* xgettext:no-c-format */
+LONG("Initial padding for common block `%A' is %B %D at %0 but %C %E at %1 -- consider reordering members, largest-type-size first")
+/* xgettext:no-c-format */
+SHORT("Initial padding for common block `%A' is %B %D at %0 but %C %E at %1"))
+FFEBAD_MSG (FFEBAD_COMMON_DIFF_SAVE, WARN,
+/* xgettext:no-c-format */
+"Common block `%A' is SAVEd, explicitly or implicitly, at %0 but not SAVEd at %1")
+FFEBAD_MSG (FFEBAD_COMMON_DIFF_SIZE, WARN,
+/* xgettext:no-c-format */
+"Common block `%A' is %B %D in length at %0 but %C %E at %1")
+FFEBAD_MSG (FFEBAD_COMMON_ENLARGED, FATAL,
+/* xgettext:no-c-format */
+LONG("Common block `%A' is initialized to %B %D long at %0 but enlarged to %C %E at %1 -- use consistent definitions or reorder program units in source file")
+/* xgettext:no-c-format */
+SHORT("Common block `%A' is initialized to %B %D long at %0 but enlarged to %C %E at %1"))
+FFEBAD_MSG (FFEBAD_COMMON_BLANK_INIT, WARN,
+/* xgettext:no-c-format */
+"Blank common initialized at %0")
+FFEBAD_MSG (FFEBAD_NEED_INTRINSIC, WARN,
+/* xgettext:no-c-format */
+"Intrinsic `%A' is passed as actual argument at %0 but not explicitly declared INTRINSIC")
+FFEBAD_MSG (FFEBAD_NEED_EXTERNAL, WARN,
+/* xgettext:no-c-format */
+"External procedure `%A' is passed as actual argument at %0 but not explicitly declared EXTERNAL")
+FFEBAD_MSG (FFEBAD_SYMBOL_UPPER_CASE, WARN,
+/* xgettext:no-c-format */
+"Character `%A' (for example) is upper-case in symbol name at %0")
+FFEBAD_MSG (FFEBAD_SYMBOL_LOWER_CASE, WARN,
+/* xgettext:no-c-format */
+"Character `%A' (for example) is lower-case in symbol name at %0")
+FFEBAD_MSG (FFEBAD_SYMBOL_NOLOWER_INITCAP, WARN,
+/* xgettext:no-c-format */
+"Character `%A' not followed at some point by lower-case character in symbol name at %0")
+FFEBAD_MSG (FFEBAD_SYMBOL_LOWER_INITCAP, WARN,
+/* xgettext:no-c-format */
+"Initial character `%A' is lower-case in symbol name at %0")
+FFEBAD_MSG (FFEBAD_DO_REAL, WARN,
+/* xgettext:no-c-format */
+LONG("DO-variable `%A' is type REAL or DOUBLE PRECISION at %0 -- unexpected behavior likely")
+/* xgettext:no-c-format */
+SHORT("DO-variable `%A' is type REAL or DOUBLE PRECISION at %0"))
+FFEBAD_MSG (FFEBAD_NAMELIST_CASE, WARN,
+/* xgettext:no-c-format */
+"NAMELIST not adequately supported by run-time library for source files with case preserved")
+FFEBAD_MSG (FFEBAD_NESTED_PERCENT, WARN,
+/* xgettext:no-c-format */
+"Nested %% construct (%%VAL, %%REF, or %%DESCR) at %0")
+FFEBAD_MSG (FFEBAD_ACTUALARG, WARN,
+/* xgettext:no-c-format */
+LONG("Invalid actual argument at %0 -- replace hollerith constants with %%REF('string') and typeless constants with INTEGER constant equivalents, or use -fugly-args or -fugly")
+/* xgettext:no-c-format */
+SHORT("Invalid actual argument at %0"))
+FFEBAD_MSG (FFEBAD_QUAD_UNSUPPORTED, FATAL,
+/* xgettext:no-c-format */
+LONG("Quadruple-precision floating-point unsupported -- treating constant at %0 as double-precision")
+/* xgettext:no-c-format */
+SHORT("Quadruple-precision floating-point unsupported"))
+FFEBAD_MSG (FFEBAD_TOO_BIG_INIT, WARN,
+/* xgettext:no-c-format */
+LONG("Initialization of large (%B-unit) aggregate area `%A' at %0 slow and takes lots of memory during g77 compile")
+/* xgettext:no-c-format */
+SHORT("This could take a while (initializing `%A' at %0)..."))
+FFEBAD_MSG (FFEBAD_BLOCKDATA_STMT, FATAL,
+/* xgettext:no-c-format */
+"Statement at %0 invalid in BLOCK DATA program unit at %1")
+FFEBAD_MSG (FFEBAD_TRUNCATING_CHARACTER, FATAL,
+/* xgettext:no-c-format */
+"Truncating characters on right side of character constant at %0")
+FFEBAD_MSG (FFEBAD_TRUNCATING_HOLLERITH, FATAL,
+/* xgettext:no-c-format */
+"Truncating characters on right side of hollerith constant at %0")
+FFEBAD_MSG (FFEBAD_TRUNCATING_NUMERIC, FATAL,
+/* xgettext:no-c-format */
+"Truncating non-zero data on left side of numeric constant at %0")
+FFEBAD_MSG (FFEBAD_TRUNCATING_TYPELESS, FATAL,
+/* xgettext:no-c-format */
+"Truncating non-zero data on left side of typeless constant at %0")
+FFEBAD_MSG (FFEBAD_TYPELESS_OVERFLOW, FATAL,
+/* xgettext:no-c-format */
+"Typeless constant at %0 too large")
+FFEBAD_MSG (FFEBAD_AMPERSAND, WARN,
+/* xgettext:no-c-format */
+"First-column ampersand continuation at %0")
+FFEBAD_MSG (FFEBAD_FILEWIDE_ALREADY_SEEN, FATAL,
+/* xgettext:no-c-format */
+"Global name `%A' defined at %0 already defined at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_ALREADY_SEEN_W, WARN,
+/* xgettext:no-c-format */
+"Global name `%A' defined at %0 already defined at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_DISAGREEMENT, FATAL,
+/* xgettext:no-c-format */
+"Global name `%A' is %B at %0 but is %C at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_DISAGREEMENT_W, WARN,
+/* xgettext:no-c-format */
+"Global name `%A' is %B at %0 but is %C at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_TYPE_MISMATCH, FATAL,
+/* xgettext:no-c-format */
+"Global name `%A' at %0 has different type at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_TYPE_MISMATCH_W, WARN,
+/* xgettext:no-c-format */
+"Global name `%A' at %0 has different type at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_NARGS, FATAL,
+/* xgettext:no-c-format */
+"Too %B arguments passed to `%A' at %0 versus definition at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_NARGS_W, WARN,
+/* xgettext:no-c-format */
+"Too %B arguments for `%A' at %0 versus invocation at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_ARG, FATAL,
+/* xgettext:no-c-format */
+"Argument #%B of `%A' is %C at %0 but is %D at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_FILEWIDE_ARG_W, WARN,
+/* xgettext:no-c-format */
+"Argument #%B of `%A' is %C at %0 but is %D at %1 [info -f g77 M GLOBALS]")
+FFEBAD_MSG (FFEBAD_ARRAY_LARGE, FATAL,
+/* xgettext:no-c-format */
+"Array `%A' at %0 is too large to handle")
+FFEBAD_MSG (FFEBAD_SFUNC_UNUSED, WARN,
+/* xgettext:no-c-format */
+"Statement function `%A' defined at %0 is not used")
+FFEBAD_MSG (FFEBAD_INTRINSIC_Y2KBAD, WARN,
+/* xgettext:no-c-format */
+"Intrinsic `%A', invoked at %0, known to be non-Y2K-compliant [info -f g77 M Y2KBAD]")
+FFEBAD_MSG (FFEBAD_NOCANDO, DISASTER,
+/* xgettext:no-c-format */
+"Internal compiler error -- cannot perform operation")
+
+#undef INFORM
+#undef TRIVIAL
+#undef WARN
+#undef PECULIAR
+#undef FATAL
+#undef WEIRD
+#undef SEVERE
+#undef DISASTER

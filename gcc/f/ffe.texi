@@ -1,0 +1,2063 @@
+@c Copyright (C) 1999, 2003 Free Software Foundation, Inc.
+@c This is part of the G77 manual.
+@c For copying conditions, see the file g77.texi.
+
+@node Front End
+@chapter Front End
+@cindex GNU Fortran Front End (FFE)
+@cindex FFE
+@cindex @code{g77}, front end
+@cindex front end, @code{g77}
+
+This chapter describes some aspects of the design and implementation
+of the @code{g77} front end.
+
+To find about things that are ``To Be Determined'' or ``To Be Done'',
+search for the string TBD.
+If you want to help by working on one or more of these items,
+email @email{gcc@@gcc.gnu.org}.
+If you're planning to do more than just research issues and offer comments,
+see @uref{http://gcc.gnu.org/contribute.html} for steps you might
+need to take first.
+
+@menu
+* Overview of Sources::
+* Overview of Translation Process::
+* Philosophy of Code Generation::
+* Two-pass Design::
+* Challenges Posed::
+* Transforming Statements::
+* Transforming Expressions::
+* Internal Naming Conventions::
+@end menu
+
+@node Overview of Sources
+@section Overview of Sources
+
+The current directory layout includes the following:
+
+@table @file
+@item @var{srcdir}/gcc/
+Non-g77 files in gcc
+
+@item @var{srcdir}/gcc/f/
+GNU Fortran front end sources
+
+@item @var{srcdir}/libf2c/
+@code{libg2c} configuration and @code{g2c.h} file generation
+
+@item @var{srcdir}/libf2c/libF77/
+General support and math portion of @code{libg2c}
+
+@item @var{srcdir}/libf2c/libI77/
+I/O portion of @code{libg2c}
+
+@item @var{srcdir}/libf2c/libU77/
+Additional interfaces to Unix @code{libc} for @code{libg2c}
+@end table
+
+Components of note in @code{g77} are described below.
+
+@file{f/} as a whole contains the source for @code{g77},
+while @file{libf2c/} contains a portion of the separate program
+@code{f2c}.
+Note that the @code{libf2c} code is not part of the program @code{g77},
+just distributed with it.
+
+@file{f/} contains text files that document the Fortran compiler, source
+files for the GNU Fortran Front End (FFE), and some other stuff.
+The @code{g77} compiler code is placed in @file{f/} because it,
+along with its contents,
+is designed to be a subdirectory of a @code{gcc} source directory,
+@file{gcc/},
+which is structured so that language-specific front ends can be ``dropped
+in'' as subdirectories.
+The C++ front end (@code{g++}), is an example of this---it resides in
+the @file{cp/} subdirectory.
+Note that the C front end (also referred to as @code{gcc})
+is an exception to this, as its source files reside
+in the @file{gcc/} directory itself.
+
+@file{libf2c/} contains the run-time libraries for the @code{f2c} program,
+also used by @code{g77}.
+These libraries normally referred to collectively as @code{libf2c}.
+When built as part of @code{g77},
+@code{libf2c} is installed under the name @code{libg2c} to avoid
+conflict with any existing version of @code{libf2c},
+and thus is often referred to as @code{libg2c} when the
+@code{g77} version is specifically being referred to.
+
+The @code{netlib} version of @code{libf2c/}
+contains two distinct libraries,
+@code{libF77} and @code{libI77},
+each in their own subdirectories.
+In @code{g77}, this distinction is not made,
+beyond maintaining the subdirectory structure in the source-code tree.
+
+@file{libf2c/} is not part of the program @code{g77},
+just distributed with it.
+It contains files not present
+in the official (@code{netlib}) version of @code{libf2c},
+and also contains some minor changes made from @code{libf2c},
+to fix some bugs,
+and to facilitate automatic configuration, building, and installation of
+@code{libf2c} (as @code{libg2c}) for use by @code{g77} users.
+See @file{libf2c/README} for more information,
+including licensing conditions
+governing distribution of programs containing code from @code{libg2c}.
+
+@code{libg2c}, @code{g77}'s version of @code{libf2c},
+adds Dave Love's implementation of @code{libU77},
+in the @file{libf2c/libU77/} directory.
+This library is distributed under the
+GNU Library General Public License (LGPL)---see the
+file @file{libf2c/libU77/COPYING.LIB}
+for more information,
+as this license
+governs distribution conditions for programs containing code
+from this portion of the library.
+
+Files of note in @file{f/} and @file{libf2c/} are described below:
+
+@table @file
+@item f/BUGS
+Lists some important bugs known to be in g77.
+Or use Info (or GNU Emacs Info mode) to read
+the ``Actual Bugs'' node of the @code{g77} documentation:
+
+@smallexample
+info -f f/g77.info -n "Actual Bugs"
+@end smallexample
+
+@item f/ChangeLog
+Lists recent changes to @code{g77} internals.
+
+@item libf2c/ChangeLog
+Lists recent changes to @code{libg2c} internals.
+
+@item f/NEWS
+Contains the per-release changes.
+These include the user-visible
+changes described in the node ``Changes''
+in the @code{g77} documentation, plus internal
+changes of import.
+Or use:
+
+@smallexample
+info -f f/g77.info -n News
+@end smallexample
+
+@item f/g77.info*
+The @code{g77} documentation, in Info format,
+produced by building @code{g77}.
+
+All users of @code{g77} (not just installers) should read this,
+using the @code{more} command if neither the @code{info} command,
+nor GNU Emacs (with its Info mode), are available, or if users
+aren't yet accustomed to using these tools.
+All of these files are readable as ``plain text'' files,
+though they're easier to navigate using Info readers
+such as @code{info} and GNU Emacs Info mode.
+@end table
+
+If you want to explore the FFE code, which lives entirely in @file{f/},
+here are a few clues.
+The file @file{g77spec.c} contains the @code{g77}-specific source code
+for the @code{g77} command only---this just forms a variant of the
+@code{gcc} command, so,
+just as the @code{gcc} command itself does not contain the C front end,
+the @code{g77} command does not contain the Fortran front end (FFE).
+The FFE code ends up in an executable named @file{f771},
+which does the actual compiling,
+so it contains the FFE plus the @code{gcc} back end (GBE),
+the latter to do most of the optimization, and the code generation.
+
+The file @file{parse.c} is the source file for @code{yyparse()},
+which is invoked by the GBE to start the compilation process,
+for @file{f771}.
+
+The file @file{top.c} contains the top-level FFE function @code{ffe_file}
+and it (along with top.h) define all @samp{ffe_[a-z].*}, @samp{ffe[A-Z].*},
+and @samp{FFE_[A-Za-z].*} symbols.
+
+The file @file{fini.c} is a @code{main()} program that is used when building
+the FFE to generate C header and source files for recognizing keywords.
+The files @file{malloc.c} and @file{malloc.h} comprise a memory manager
+that defines all @samp{malloc_[a-z].*}, @samp{malloc[A-Z].*}, and
+@samp{MALLOC_[A-Za-z].*} symbols.
+
+All other modules named @var{xyz}
+are comprised of all files named @samp{@var{xyz}*.@var{ext}}
+and define all @samp{ffe@var{xyz}_[a-z].*}, @samp{ffe@var{xyz}[A-Z].*},
+and @samp{FFE@var{XYZ}_[A-Za-z].*} symbols.
+If you understand all this, congratulations---it's easier for me to remember
+how it works than to type in these regular expressions.
+But it does make it easy to find where a symbol is defined.
+For example, the symbol @samp{ffexyz_set_something} would be defined
+in @file{xyz.h} and implemented there (if it's a macro) or in @file{xyz.c}.
+
+The ``porting'' files of note currently are:
+
+@table @file
+@item proj.h
+This defines the ``language'' used by all the other source files,
+the language being Standard C plus some useful things
+like @code{ARRAY_SIZE} and such.
+
+@item target.c
+@itemx target.h
+These describe the target machine
+in terms of what data types are supported,
+how they are denoted
+(to what C type does an @code{INTEGER*8} map, for example),
+how to convert between them,
+and so on.
+Over time, versions of @code{g77} rely less on this file
+and more on run-time configuration based on GBE info
+in @file{com.c}.
+
+@item com.c
+@itemx com.h
+These are the primary interface to the GBE.
+
+@item ste.c
+@itemx ste.h
+This contains code for implementing recognized executable statements
+in the GBE.
+
+@item src.c
+@itemx src.h
+These contain information on the format(s) of source files
+(such as whether they are never to be processed as case-insensitive
+with regard to Fortran keywords).
+@end table
+
+If you want to debug the @file{f771} executable,
+for example if it crashes,
+note that the global variables @code{lineno} and @code{input_filename}
+are usually set to reflect the current line being read by the lexer
+during the first-pass analysis of a program unit and to reflect
+the current line being processed during the second-pass compilation
+of a program unit.
+
+If an invocation of the function @code{ffestd_exec_end} is on the stack,
+the compiler is in the second pass, otherwise it is in the first.
+
+(This information might help you reduce a test case and/or work around
+a bug in @code{g77} until a fix is available.)
+
+@node Overview of Translation Process
+@section Overview of Translation Process
+
+The order of phases translating source code to the form accepted
+by the GBE is:
+
+@enumerate
+@item
+Stripping punched-card sources (@file{g77stripcard.c})
+
+@item
+Lexing (@file{lex.c})
+
+@item
+Stand-alone statement identification (@file{sta.c})
+
+@item
+INCLUDE handling (@file{sti.c})
+
+@item
+Order-dependent statement identification (@file{stq.c})
+
+@item
+Parsing (@file{stb.c} and @file{expr.c})
+
+@item
+Constructing (@file{stc.c})
+
+@item
+Collecting (@file{std.c})
+
+@item
+Expanding (@file{ste.c})
+@end enumerate
+
+To get a rough idea of how a particularly twisted Fortran statement
+gets treated by the passes, consider:
+
+@smallexample
+      FORMAT(I2 4H)=(J/
+     &   I3)
+@end smallexample
+
+The job of @file{lex.c} is to know enough about Fortran syntax rules
+to break the statement up into distinct lexemes without requiring
+any feedback from subsequent phases:
+
+@smallexample
+`FORMAT'
+`('
+`I24H'
+`)'
+`='
+`('
+`J'
+`/'
+`I3'
+`)'
+@end smallexample
+
+The job of @file{sta.c} is to figure out the kind of statement,
+or, at least, statement form, that sequence of lexemes represent.
+
+The sooner it can do this (in terms of using the smallest number of
+lexemes, starting with the first for each statement), the better,
+because that leaves diagnostics for problems beyond the recognition
+of the statement form to subsequent phases,
+which can usually better describe the nature of the problem.
+
+In this case, the @samp{=} at ``level zero''
+(not nested within parentheses)
+tells @file{sta.c} that this is an @emph{assignment-form},
+not @code{FORMAT}, statement.
+
+An assignment-form statement might be a statement-function
+definition or an executable assignment statement.
+
+To make that determination,
+@file{sta.c} looks at the first two lexemes.
+
+Since the second lexeme is @samp{(},
+the first must represent an array for this to be an assignment statement,
+else it's a statement function.
+
+Either way, @file{sta.c} hands off the statement to @file{stq.c}
+(via @file{sti.c}, which expands INCLUDE files).
+@file{stq.c} figures out what a statement that is,
+on its own, ambiguous, must actually be based on the context
+established by previous statements.
+
+So, @file{stq.c} watches the statement stream for executable statements,
+END statements, and so on, so it knows whether @samp{A(B)=C} is
+(intended as) a statement-function definition or an assignment statement.
+
+After establishing the context-aware statement info, @file{stq.c}
+passes the original sample statement on to @file{stb.c}
+(either its statement-function parser or its assignment-statement parser).
+
+@file{stb.c} forms a
+statement-specific record containing the pertinent information.
+That information includes a source expression and,
+for an assignment statement, a destination expression.
+Expressions are parsed by @file{expr.c}.
+
+This record is passed to @file{stc.c},
+which copes with the implications of the statement
+within the context established by previous statements.
+
+For example, if it's the first statement in the file
+or after an @code{END} statement,
+@file{stc.c} recognizes that, first of all,
+a main program unit is now being lexed
+(and tells that to @file{std.c}
+before telling it about the current statement).
+
+@file{stc.c} attaches whatever information it can,
+usually derived from the context established by the preceding statements,
+and passes the information to @file{std.c}.
+
+@file{std.c} saves this information away,
+since the GBE cannot cope with information
+that might be incomplete at this stage.
+
+For example, @samp{I3} might later be determined
+to be an argument to an alternate @code{ENTRY} point.
+
+When @file{std.c} is told about the end of an external (top-level)
+program unit,
+it passes all the information it has saved away
+on statements in that program unit
+to @file{ste.c}.
+
+@file{ste.c} ``expands'' each statement, in sequence, by
+constructing the appropriate GBE information and calling
+the appropriate GBE routines.
+
+Details on the transformational phases follow.
+Keep in mind that Fortran numbering is used,
+so the first character on a line is column 1,
+decimal numbering is used, and so on.
+
+@menu
+* g77stripcard::
+* lex.c::
+* sta.c::
+* sti.c::
+* stq.c::
+* stb.c::
+* expr.c::
+* stc.c::
+* std.c::
+* ste.c::
+
+* Gotchas (Transforming)::
+* TBD (Transforming)::
+@end menu
+
+@node g77stripcard
+@subsection g77stripcard
+
+The @code{g77stripcard} program handles removing content beyond
+column 72 (adjustable via a command-line option),
+optionally warning about that content being something other
+than trailing whitespace or Fortran commentary.
+
+This program is needed because @code{lex.c} doesn't pay attention
+to maximum line lengths at all, to make it easier to maintain,
+as well as faster (for sources that don't depend on the maximum
+column length vis-a-vis trailing non-blank non-commentary content).
+
+Just how this program will be run---whether automatically for
+old source (perhaps as the default for @file{.f} files?)---is not
+yet determined.
+
+In the meantime, it might as well be implemented as a typical UNIX pipe.
+
+It should accept a @samp{-fline-length-@var{n}} option,
+with the default line length set to 72.
+
+When the text it strips off the end of a line is not blank
+(not spaces and tabs),
+it should insert an additional comment line
+(beginning with @samp{!},
+so it works for both fixed-form and free-form files)
+containing the text,
+following the stripped line.
+The inserted comment should have a prefix of some kind,
+TBD, that distinguishes the comment as representing stripped text.
+Users could use that to @code{sed} out such lines, if they wished---it
+seems silly to provide a command-line option to delete information
+when it can be so easily filtered out by another program.
+
+(This inserted comment should be designed to ``fit in'' well
+with whatever the Fortran community is using these days for
+preprocessor, translator, and other such products, like OpenMP.
+What that's all about, and how @code{g77} can elegantly fit its
+special comment conventions into it all, is TBD as well.
+We don't want to reinvent the wheel here, but if there turn out
+to be too many conflicting conventions, we might have to invent
+one that looks nothing like the others, but which offers their
+host products a better infrastructure in which to fit and coexist
+peacefully.)
+
+@code{g77stripcard} probably shouldn't do any tab expansion or other
+fancy stuff.
+People can use @code{expand} or other pre-filtering if they like.
+The idea here is to keep each stage quite simple, while providing
+excellent performance for ``normal'' code.
+
+(Code with junk beyond column 73 is not really ``normal'',
+as it comes from a card-punch heritage,
+and will be increasingly hard for tomorrow's Fortran programmers to read.)
+
+@node lex.c
+@subsection lex.c
+
+To help make the lexer simple, fast, and easy to maintain,
+while also having @code{g77} generally encourage Fortran programmers
+to write simple, maintainable, portable code by maximizing the
+performance of compiling that kind of code:
+
+@itemize @bullet
+@item
+There'll be just one lexer, for both fixed-form and free-form source.
+
+@item
+It'll care about the form only when handling the first 7 columns of
+text, stuff like spaces between strings of alphanumerics, and
+how lines are continued.
+
+Some other distinctions will be handled by subsequent phases,
+so at least one of them will have to know which form is involved.
+
+For example, @samp{I = 2 . 4} is acceptable in fixed form,
+and works in free form as well given the implementation @code{g77}
+presently uses.
+But the standard requires a diagnostic for it in free form,
+so the parser has to be able to recognize that
+the lexemes aren't contiguous
+(information the lexer @emph{does} have to provide)
+and that free-form source is being parsed,
+so it can provide the diagnostic.
+
+The @code{g77} lexer doesn't try to gather @samp{2 . 4} into a single lexeme.
+Otherwise, it'd have to know a whole lot more about how to parse Fortran,
+or subsequent phases (mainly parsing) would have two paths through
+lots of critical code---one to handle the lexeme @samp{2}, @samp{.},
+and @samp{4} in sequence, another to handle the lexeme @samp{2.4}.
+
+@item
+It won't worry about line lengths
+(beyond the first 7 columns for fixed-form source).
+
+That is, once it starts parsing the ``statement'' part of a line
+(column 7 for fixed-form, column 1 for free-form),
+it'll keep going until it finds a newline,
+rather than ignoring everything past a particular column
+(72 or 132).
+
+The implication here is that there shouldn't @emph{be}
+anything past that last column, other than whitespace or
+commentary, because users using typical editors
+(or viewing output as typically printed)
+won't necessarily know just where the last column is.
+
+Code that has ``garbage'' beyond the last column
+(almost certainly only fixed-form code with a punched-card legacy,
+such as code using columns 73-80 for ``sequence numbers'')
+will have to be run through @code{g77stripcard} first.
+
+Also, keeping track of the maximum column position while also watching out
+for the end of a line @emph{and} while reading from a file
+just makes things slower.
+Since a file must be read, and watching for the end of the line
+is necessary (unless the typical input file was preprocessed to
+include the necessary number of trailing spaces),
+dropping the tracking of the maximum column position
+is the only way to reduce the complexity of the pertinent code
+while maintaining high performance.
+
+@item
+ASCII encoding is assumed for the input file.
+
+Code written in other character sets will have to be converted first.
+
+@item
+Tabs (ASCII code 9)
+will be converted to spaces via the straightforward
+approach.
+
+Specifically, a tab is converted to between one and eight spaces
+as necessary to reach column @var{n},
+where dividing @samp{(@var{n} - 1)} by eight
+results in a remainder of zero.
+
+That saves having to pass most source files through @code{expand}.
+
+@item
+Linefeeds (ASCII code 10)
+mark the ends of lines.
+
+@item
+A carriage return (ASCII code 13)
+is accept if it immediately precedes a linefeed,
+in which case it is ignored.
+
+Otherwise, it is rejected (with a diagnostic).
+
+@item
+Any other characters other than the above
+that are not part of the GNU Fortran Character Set
+(@pxref{Character Set})
+are rejected with a diagnostic.
+
+This includes backspaces, form feeds, and the like.
+
+(It might make sense to allow a form feed in column 1
+as long as that's the only character on a line.
+It certainly wouldn't seem to cost much in terms of performance.)
+
+@item
+The end of the input stream (EOF)
+ends the current line.
+
+@item
+The distinction between uppercase and lowercase letters
+will be preserved.
+
+It will be up to subsequent phases to decide to fold case.
+
+Current plans are to permit any casing for Fortran (reserved) keywords
+while preserving casing for user-defined names.
+(This might not be made the default for @file{.f} files, though.)
+
+Preserving case seems necessary to provide more direct access
+to facilities outside of @code{g77}, such as to C or Pascal code.
+
+Names of intrinsics will probably be matchable in any case,
+
+(How @samp{external SiN; r = sin(x)} would be handled is TBD.
+I think old @code{g77} might already handle that pretty elegantly,
+but whether we can cope with allowing the same fragment to reference
+a @emph{different} procedure, even with the same interface,
+via @samp{s = SiN(r)}, needs to be determined.
+If it can't, we need to make sure that when code introduces
+a user-defined name, any intrinsic matching that name
+using a case-insensitive comparison
+is ``turned off''.)
+
+@item
+Backslashes in @code{CHARACTER} and Hollerith constants
+are not allowed.
+
+This avoids the confusion introduced by some Fortran compiler vendors
+providing C-like interpretation of backslashes,
+while others provide straight-through interpretation.
+
+Some kind of lexical construct (TBD) will be provided to allow
+flagging of a @code{CHARACTER}
+(but probably not a Hollerith)
+constant that permits backslashes.
+It'll necessarily be a prefix, such as:
+
+@smallexample
+PRINT *, C'This line has a backspace \b here.'
+PRINT *, F'This line has a straight backslash \ here.'
+@end smallexample
+
+Further, command-line options might be provided to specify that
+one prefix or the other is to be assumed as the default
+for @code{CHARACTER} constants.
+
+However, it seems more helpful for @code{g77} to provide a program
+that converts prefix all constants
+(or just those containing backslashes)
+with the desired designation,
+so printouts of code can be read
+without knowing the compile-time options used when compiling it.
+
+If such a program is provided
+(let's name it @code{g77slash} for now),
+then a command-line option to @code{g77} should not be provided.
+(Though, given that it'll be easy to implement, it might be hard
+to resist user requests for it ``to compile faster than if we
+have to invoke another filter''.)
+
+This program would take a command-line option to specify the
+default interpretation of slashes,
+affecting which prefix it uses for constants.
+
+@code{g77slash} probably should automatically convert Hollerith
+constants that contain slashes
+to the appropriate @code{CHARACTER} constants.
+Then @code{g77} wouldn't have to define a prefix syntax for Hollerith
+constants specifying whether they want C-style or straight-through
+backslashes.
+
+@item
+To allow for form-neutral INCLUDE files without requiring them
+to be preprocessed,
+the fixed-form lexer should offer an extension (if possible)
+allowing a trailing @samp{&} to be ignored, especially if after
+column 72, as it would be using the traditional Unix Fortran source
+model (which ignores @emph{everything} after column 72).
+@end itemize
+
+The above implements nearly exactly what is specified by
+@ref{Character Set},
+and
+@ref{Lines},
+except it also provides automatic conversion of tabs
+and ignoring of newline-related carriage returns,
+as well as accommodating form-neutral INCLUDE files.
+
+It also implements the ``pure visual'' model,
+by which is meant that a user viewing his code
+in a typical text editor
+(assuming it's not preprocessed via @code{g77stripcard} or similar)
+doesn't need any special knowledge
+of whether spaces on the screen are really tabs,
+whether lines end immediately after the last visible non-space character
+or after a number of spaces and tabs that follow it,
+or whether the last line in the file is ended by a newline.
+
+Most editors don't make these distinctions,
+the ANSI FORTRAN 77 standard doesn't require them to,
+and it permits a standard-conforming compiler
+to define a method for transforming source code to
+``standard form'' however it wants.
+
+So, GNU Fortran defines it such that users have the best chance
+of having the code be interpreted the way it looks on the screen
+of the typical editor.
+
+(Fancy editors should @emph{never} be required to correctly read code
+written in classic two-dimensional-plaintext form.
+By correct reading I mean ability to read it, book-like, without
+mistaking text ignored by the compiler for program code and vice versa,
+and without having to count beyond the first several columns.
+The vague meaning of ASCII TAB, among other things, complicates
+this somewhat, but as long as ``everyone'', including the editor,
+other tools, and printer, agrees about the every-eighth-column convention,
+the GNU Fortran ``pure visual'' model meets these requirements.
+Any language or user-visible source form
+requiring special tagging of tabs,
+the ends of lines after spaces/tabs,
+and so on, fails to meet this fairly straightforward specification.
+Fortunately, Fortran @emph{itself} does not mandate such a failure,
+though most vendor-supplied defaults for their Fortran compilers @emph{do}
+fail to meet this specification for readability.)
+
+Further, this model provides a clean interface
+to whatever preprocessors or code-generators are used
+to produce input to this phase of @code{g77}.
+Mainly, they need not worry about long lines.
+
+@node sta.c
+@subsection sta.c
+
+@node sti.c
+@subsection sti.c
+
+@node stq.c
+@subsection stq.c
+
+@node stb.c
+@subsection stb.c
+
+@node expr.c
+@subsection expr.c
+
+@node stc.c
+@subsection stc.c
+
+@node std.c
+@subsection std.c
+
+@node ste.c
+@subsection ste.c
+
+@node Gotchas (Transforming)
+@subsection Gotchas (Transforming)
+
+This section is not about transforming ``gotchas'' into something else.
+It is about the weirder aspects of transforming Fortran,
+however that's defined,
+into a more modern, canonical form.
+
+@subsubsection Multi-character Lexemes
+
+Each lexeme carries with it a pointer to where it appears in the source.
+
+To provide the ability for diagnostics to point to column numbers,
+in addition to line numbers and names,
+lexemes that represent more than one (significant) character
+in the source code need, generally,
+to provide pointers to where each @emph{character} appears in the source.
+
+This provides the ability to properly identify the precise location
+of the problem in code like
+
+@smallexample
+SUBROUTINE X
+END
+BLOCK DATA X
+END
+@end smallexample
+
+which, in fixed-form source, would result in single lexemes
+consisting of the strings @samp{SUBROUTINEX} and @samp{BLOCKDATAX}.
+(The problem is that @samp{X} is defined twice,
+so a pointer to the @samp{X} in the second definition,
+as well as a follow-up pointer to the corresponding pointer in the first,
+would be preferable to pointing to the beginnings of the statements.)
+
+This need also arises when parsing (and diagnosing) @code{FORMAT}
+statements.
+
+Further, it arises when diagnosing
+@code{FMT=} specifiers that contain constants
+(or partial constants, or even propagated constants!)
+in I/O statements, as in:
+
+@smallexample
+PRINT '(I2, 3HAB)', J
+@end smallexample
+
+(A pointer to the beginning of the prematurely-terminated Hollerith
+constant, and/or to the close parenthese, is preferable to a pointer
+to the open-parenthese or the apostrophe that precedes it.)
+
+Multi-character lexemes, which would seem to naturally include
+at least digit strings, alphanumeric strings, @code{CHARACTER}
+constants, and Hollerith constants, therefore need to provide
+location information on each character.
+(Maybe Hollerith constants don't, but it's unnecessary to except them.)
+
+The question then arises, what about @emph{other} multi-character lexemes,
+such as @samp{**} and @samp{//},
+and Fortran 90's @samp{(/}, @samp{/)}, @samp{::}, and so on?
+
+Turns out there's a need to identify the location of the second character
+of these two-character lexemes.
+For example, in @samp{I(/J) = K}, the slash needs to be diagnosed
+as the problem, not the open parenthese.
+Similarly, it is preferable to diagnose the second slash in
+@samp{I = J // K} rather than the first, given the implicit typing
+rules, which would result in the compiler disallowing the attempted
+concatenation of two integers.
+(Though, since that's more of a semantic issue,
+it's not @emph{that} much preferable.)
+
+Even sequences that could be parsed as digit strings could use location info,
+for example, to diagnose the @samp{9} in the octal constant @samp{O'129'}.
+(This probably will be parsed as a character string,
+to be consistent with the parsing of @samp{Z'129A'}.)
+
+To avoid the hassle of recording the location of the second character,
+while also preserving the general rule that each significant character
+is distinctly pointed to by the lexeme that contains it,
+it's best to simply not have any fixed-size lexemes
+larger than one character.
+
+This new design is expected to make checking for two
+@samp{*} lexemes in a row much easier than the old design,
+so this is not much of a sacrifice.
+It probably makes the lexer much easier to implement
+than it makes the parser harder.
+
+@subsubsection Space-padding Lexemes
+
+Certain lexemes need to be padded with virtual spaces when the
+end of the line (or file) is encountered.
+
+This is necessary in fixed form, to handle lines that don't
+extend to column 72, assuming that's the line length in effect.
+
+@subsubsection Bizarre Free-form Hollerith Constants
+
+Last I checked, the Fortran 90 standard actually required the compiler
+to silently accept something like
+
+@smallexample
+FORMAT ( 1 2   Htwelve chars )
+@end smallexample
+
+as a valid @code{FORMAT} statement specifying a twelve-character
+Hollerith constant.
+
+The implication here is that, since the new lexer is a zero-feedback one,
+it won't know that the special case of a @code{FORMAT} statement being parsed
+requires apparently distinct lexemes @samp{1} and @samp{2} to be treated as
+a single lexeme.
+
+(This is a horrible misfeature of the Fortran 90 language.
+It's one of many such misfeatures that almost make me want
+to not support them, and forge ahead with designing a new
+``GNU Fortran'' language that has the features,
+but not the misfeatures, of Fortran 90,
+and provide utility programs to do the conversion automatically.)
+
+So, the lexer must gather distinct chunks of decimal strings into
+a single lexeme in contexts where a single decimal lexeme might
+start a Hollerith constant.
+
+(Which probably means it might as well do that all the time
+for all multi-character lexemes, even in free-form mode,
+leaving it to subsequent phases to pull them apart as they see fit.)
+
+Compare the treatment of this to how
+
+@smallexample
+CHARACTER * 4 5 HEY
+@end smallexample
+
+and
+
+@smallexample
+CHARACTER * 12 HEY
+@end smallexample
+
+must be treated---the former must be diagnosed, due to the separation
+between lexemes, the latter must be accepted as a proper declaration.
+
+@subsubsection Hollerith Constants
+
+Recognizing a Hollerith constant---specifically,
+that an @samp{H} or @samp{h} after a digit string begins
+such a constant---requires some knowledge of context.
+
+Hollerith constants (such as @samp{2HAB}) can appear after:
+
+@itemize @bullet
+@item
+@samp{(}
+
+@item
+@samp{,}
+
+@item
+@samp{=}
+
+@item
+@samp{+}, @samp{-}, @samp{/}
+
+@item
+@samp{*}, except as noted below
+@end itemize
+
+Hollerith constants don't appear after:
+
+@itemize @bullet
+@item
+@samp{CHARACTER*},
+which can be treated generally as
+any @samp{*} that is the second lexeme of a statement
+@end itemize
+
+@subsubsection Confusing Function Keyword
+
+While
+
+@smallexample
+REAL FUNCTION FOO ()
+@end smallexample
+
+must be a @code{FUNCTION} statement and
+
+@smallexample
+REAL FUNCTION FOO (5)
+@end smallexample
+
+must be a type-definition statement,
+
+@smallexample
+REAL FUNCTION FOO (@var{names})
+@end smallexample
+
+where @var{names} is a comma-separated list of names,
+can be one or the other.
+
+The only way to disambiguate that statement
+(short of mandating free-form source or a short maximum
+length for name for external procedures)
+is based on the context of the statement.
+
+In particular, the statement is known to be within an
+already-started program unit
+(but not at the outer level of the @code{CONTAINS} block),
+it is a type-declaration statement.
+
+Otherwise, the statement is a @code{FUNCTION} statement,
+in that it begins a function program unit
+(external, or, within @code{CONTAINS}, nested).
+
+@subsubsection Weird READ
+
+The statement
+
+@smallexample
+READ (N)
+@end smallexample
+
+is equivalent to either
+
+@smallexample
+READ (UNIT=(N))
+@end smallexample
+
+or
+
+@smallexample
+READ (FMT=(N))
+@end smallexample
+
+depending on which would be valid in context.
+
+Specifically, if @samp{N} is type @code{INTEGER},
+@samp{READ (FMT=(N))} would not be valid,
+because parentheses may not be used around @samp{N},
+whereas they may around it in @samp{READ (UNIT=(N))}.
+
+Further, if @samp{N} is type @code{CHARACTER},
+the opposite is true---@samp{READ (UNIT=(N))} is not valid,
+but @samp{READ (FMT=(N))} is.
+
+Strictly speaking, if anything follows
+
+@smallexample
+READ (N)
+@end smallexample
+
+in the statement, whether the first lexeme after the close
+parenthese is a comma could be used to disambiguate the two cases,
+without looking at the type of @samp{N},
+because the comma is required for the @samp{READ (FMT=(N))}
+interpretation and disallowed for the @samp{READ (UNIT=(N))}
+interpretation.
+
+However, in practice, many Fortran compilers allow
+the comma for the @samp{READ (UNIT=(N))}
+interpretation anyway
+(in that they generally allow a leading comma before
+an I/O list in an I/O statement),
+and much code takes advantage of this allowance.
+
+(This is quite a reasonable allowance, since the
+juxtaposition of a comma-separated list immediately
+after an I/O control-specification list, which is also comma-separated,
+without an intervening comma,
+looks sufficiently ``wrong'' to programmers
+that they can't resist the itch to insert the comma.
+@samp{READ (I, J), K, L} simply looks cleaner than
+@samp{READ (I, J) K, L}.)
+
+So, type-based disambiguation is needed unless strict adherence
+to the standard is always assumed, and we're not going to assume that.
+
+@node TBD (Transforming)
+@subsection TBD (Transforming)
+
+Continue researching gotchas, designing the transformational process,
+and implementing it.
+
+Specific issues to resolve:
+
+@itemize @bullet
+@item
+Just where should (if it was implemented) @code{USE} processing take place?
+
+This gets into the whole issue of how @code{g77} should handle the concept
+of modules.
+I think GNAT already takes on this issue, but don't know more than that.
+Jim Giles has written extensively on @code{comp.lang.fortran}
+about his opinions on module handling, as have others.
+Jim's views should be taken into account.
+
+Actually, Richard M. Stallman (RMS) also has written up
+some guidelines for implementing such things,
+but I'm not sure where I read them.
+Perhaps the old @email{gcc2@@cygnus.com} list.
+
+If someone could dig references to these up and get them to me,
+that would be much appreciated!
+Even though modules are not on the short-term list for implementation,
+it'd be helpful to know @emph{now} how to avoid making them harder to
+implement them @emph{later}.
+
+@item
+Should the @code{g77} command become just a script that invokes
+all the various preprocessing that might be needed,
+thus making it seem slower than necessary for legacy code
+that people are unwilling to convert,
+or should we provide a separate script for that,
+thus encouraging people to convert their code once and for all?
+
+At least, a separate script to behave as old @code{g77} did,
+perhaps named @code{g77old}, might ease the transition,
+as might a corresponding one that converts source codes
+named @code{g77oldnew}.
+
+These scripts would take all the pertinent options @code{g77} used
+to take and run the appropriate filters,
+passing the results to @code{g77} or just making new sources out of them
+(in a subdirectory, leaving the user to do the dirty deed of
+moving or copying them over the old sources).
+
+@item
+Do other Fortran compilers provide a prefix syntax
+to govern the treatment of backslashes in @code{CHARACTER}
+(or Hollerith) constants?
+
+Knowing what other compilers provide would help.
+
+@item
+Is it okay to drop support for the @samp{-fintrin-case-initcap},
+@samp{-fmatch-case-initcap}, @samp{-fsymbol-case-initcap},
+and @samp{-fcase-initcap} options?
+
+I've asked @email{info-gnu-fortran@@gnu.org} for input on this.
+Not having to support these makes it easier to write the new front end,
+and might also avoid complicated its design.
+
+The consensus to date (1999-11-17) has been to drop this support.
+Can't recall anybody saying they're using it, in fact.
+@end itemize
+
+@node Philosophy of Code Generation
+@section Philosophy of Code Generation
+
+Don't poke the bear.
+
+The @code{g77} front end generates code
+via the @code{gcc} back end.
+
+@cindex GNU Back End (GBE)
+@cindex GBE
+@cindex @code{gcc}, back end
+@cindex back end, gcc
+@cindex code generator
+The @code{gcc} back end (GBE) is a large, complex
+labyrinth of intricate code
+written in a combination of the C language
+and specialized languages internal to @code{gcc}.
+
+While the @emph{code} that implements the GBE
+is written in a combination of languages,
+the GBE itself is,
+to the front end for a language like Fortran,
+best viewed as a @emph{compiler}
+that compiles its own, unique, language.
+
+The GBE's ``source'', then, is written in this language,
+which consists primarily of
+a combination of calls to GBE functions
+and @dfn{tree} nodes
+(which are, themselves, created
+by calling GBE functions).
+
+So, the @code{g77} generates code by, in effect,
+translating the Fortran code it reads
+into a form ``written'' in the ``language''
+of the @code{gcc} back end.
+
+@cindex GBEL
+@cindex GNU Back End Language (GBEL)
+This language will heretofore be referred to as @dfn{GBEL},
+for GNU Back End Language.
+
+GBEL is an evolving language,
+not fully specified in any published form
+as of this writing.
+It offers many facilities,
+but its ``core'' facilities
+are those that corresponding most directly
+to those needed to support @code{gcc}
+(compiling code written in GNU C).
+
+The @code{g77} Fortran Front End (FFE)
+is designed and implemented
+to navigate the currents and eddies
+of ongoing GBEL and @code{gcc} development
+while also delivering on the potential
+of an integrated FFE
+(as compared to using a converter like @code{f2c}
+and feeding the output into @code{gcc}).
+
+Goals of the FFE's code-generation strategy include:
+
+@itemize @bullet
+@item
+High likelihood of generation of correct code,
+or, failing that, producing a fatal diagnostic or crashing.
+
+@item
+Generation of highly optimized code,
+as directed by the user
+via GBE-specific (versus @code{g77}-specific) constructs,
+such as command-line options.
+
+@item
+Fast overall (FFE plus GBE) compilation.
+
+@item
+Preservation of source-level debugging information.
+@end itemize
+
+The strategies historically, and currently, used by the FFE
+to achieve these goals include:
+
+@itemize @bullet
+@item
+Use of GBEL constructs that most faithfully encapsulate
+the semantics of Fortran.
+
+@item
+Avoidance of GBEL constructs that are so rarely used,
+or limited to use in specialized situations not related to Fortran,
+that their reliability and performance has not yet been established
+as sufficient for use by the FFE.
+
+@item
+Flexible design, to readily accommodate changes to specific
+code-generation strategies, perhaps governed by command-line options.
+@end itemize
+
+@cindex Bear-poking
+@cindex Poking the bear
+``Don't poke the bear'' somewhat summarizes the above strategies.
+The GBE is the bear.
+The FFE is designed and implemented to avoid poking it
+in ways that are likely to just annoy it.
+The FFE usually either tackles it head-on,
+or avoids treating it in ways dissimilar to how
+the @code{gcc} front end treats it.
+
+For example, the FFE uses the native array facility in the back end
+instead of the lower-level pointer-arithmetic facility
+used by @code{gcc} when compiling @code{f2c} output).
+Theoretically, this presents more opportunities for optimization,
+faster compile times,
+and the production of more faithful debugging information.
+These benefits were not, however, immediately realized,
+mainly because @code{gcc} itself makes little or no use
+of the native array facility.
+
+Complex arithmetic is a case study of the evolution of this strategy.
+When originally implemented,
+the GBEL had just evolved its own native complex-arithmetic facility,
+so the FFE took advantage of that.
+
+When porting @code{g77} to 64-bit systems,
+it was discovered that the GBE didn't really
+implement its native complex-arithmetic facility properly.
+
+The short-term solution was to rewrite the FFE
+to instead use the lower-level facilities
+that'd be used by @code{gcc}-compiled code
+(assuming that code, itself, didn't use the native complex type
+provided, as an extension, by @code{gcc}),
+since these were known to work,
+and, in any case, if shown to not work,
+would likely be rapidly fixed
+(since they'd likely not work for vanilla C code in similar circumstances).
+
+However, the rewrite accommodated the original, native approach as well
+by offering a command-line option to select it over the emulated approach.
+This allowed users, and especially GBE maintainers, to try out
+fixes to complex-arithmetic support in the GBE
+while @code{g77} continued to default to compiling more code correctly,
+albeit producing (typically) slower executables.
+
+As of April 1999, it appeared that the last few bugs
+in the GBE's support of its native complex-arithmetic facility
+were worked out.
+The FFE was changed back to default to using that native facility,
+leaving emulation as an option.
+
+Later during the release cycle
+(which was called EGCS 1.2, but soon became GCC 2.95),
+bugs in the native facility were found.
+Reactions among various people included
+``the last thing we should do is change the default back'',
+``we must change the default back'',
+and ``let's figure out whether we can narrow down the bugs to
+few enough cases to allow the now-months-long-tested default
+to remain the same''.
+The latter viewpoint won that particular time.
+The bugs exposed other concerns regarding ABI compliance
+when the ABI specified treatment of complex data as different
+from treatment of what Fortran and GNU C consider the equivalent
+aggregation (structure) of real (or float) pairs.
+
+Other Fortran constructs---arrays, character strings,
+complex division, @code{COMMON} and @code{EQUIVALENCE} aggregates,
+and so on---involve issues similar to those pertaining to complex arithmetic.
+
+So, it is possible that the history
+of how the FFE handled complex arithmetic
+will be repeated, probably in modified form
+(and hopefully over shorter timeframes),
+for some of these other facilities.
+
+@node Two-pass Design
+@section Two-pass Design
+
+The FFE does not tell the GBE anything about a program unit
+until after the last statement in that unit has been parsed.
+(A program unit is a Fortran concept that corresponds, in the C world,
+mostly closely to functions definitions in ISO C.
+That is, a program unit in Fortran is like a top-level function in C.
+Nested functions, found among the extensions offered by GNU C,
+correspond roughly to Fortran's statement functions.)
+
+So, while parsing the code in a program unit,
+the FFE saves up all the information
+on statements, expressions, names, and so on,
+until it has seen the last statement.
+
+At that point, the FFE revisits the saved information
+(in what amounts to a second @dfn{pass} over the program unit)
+to perform the actual translation of the program unit into GBEL,
+ultimating in the generation of assembly code for it.
+
+Some lookahead is performed during this second pass,
+so the FFE could be viewed as a ``two-plus-pass'' design.
+
+@menu
+* Two-pass Code::
+* Why Two Passes::
+@end menu
+
+@node Two-pass Code
+@subsection Two-pass Code
+
+Most of the code that turns the first pass (parsing)
+into a second pass for code generation
+is in @file{@value{path-g77}/std.c}.
+
+It has external functions,
+called mainly by siblings in @file{@value{path-g77}/stc.c},
+that record the information on statements and expressions
+in the order they are seen in the source code.
+These functions save that information.
+
+It also has an external function that revisits that information,
+calling the siblings in @file{@value{path-g77}/ste.c},
+which handles the actual code generation
+(by generating GBEL code,
+that is, by calling GBE routines
+to represent and specify expressions, statements, and so on).
+
+@node Why Two Passes
+@subsection Why Two Passes
+
+The need for two passes was not immediately evident
+during the design and implementation of the code in the FFE
+that was to produce GBEL.
+Only after a few kludges,
+to handle things like incorrectly-guessed @code{ASSIGN} label nature,
+had been implemented,
+did enough evidence pile up to make it clear
+that @file{std.c} had to be introduced to intercept,
+save, then revisit as part of a second pass,
+the digested contents of a program unit.
+
+Other such missteps have occurred during the evolution of the FFE,
+because of the different goals of the FFE and the GBE.
+
+Because the GBE's original, and still primary, goal
+was to directly support the GNU C language,
+the GBEL, and the GBE itself,
+requires more complexity
+on the part of most front ends
+than it requires of @code{gcc}'s.
+
+For example,
+the GBEL offers an interface that permits the @code{gcc} front end
+to implement most, or all, of the language features it supports,
+without the front end having to
+make use of non-user-defined variables.
+(It's almost certainly the case that all of K&R C,
+and probably ANSI C as well,
+is handled by the @code{gcc} front end
+without declaring such variables.)
+
+The FFE, on the other hand, must resort to a variety of ``tricks''
+to achieve its goals.
+
+Consider the following C code:
+
+@smallexample
+int
+foo (int a, int b)
+@{
+  int c = 0;
+
+  if ((c = bar (c)) == 0)
+    goto done;
+
+  quux (c << 1);
+
+done:
+  return c;
+@}
+@end smallexample
+
+Note what kinds of objects are declared, or defined, before their use,
+and before any actual code generation involving them
+would normally take place:
+
+@itemize @bullet
+@item
+Return type of function
+
+@item
+Entry point(s) of function
+
+@item
+Dummy arguments
+
+@item
+Variables
+
+@item
+Initial values for variables
+@end itemize
+
+Whereas, the following items can, and do,
+suddenly appear ``out of the blue'' in C:
+
+@itemize @bullet
+@item
+Label references
+
+@item
+Function references
+@end itemize
+
+Not surprisingly, the GBE faithfully permits the latter set of items
+to be ``discovered'' partway through GBEL ``programs'',
+just as they are permitted to in C.
+
+Yet, the GBE has tended, at least in the past,
+to be reticent to fully support similar ``late'' discovery
+of items in the former set.
+
+This makes Fortran a poor fit for the ``safe'' subset of GBEL.
+Consider:
+
+@smallexample
+      FUNCTION X (A, ARRAY, ID1)
+      CHARACTER*(*) A
+      DOUBLE PRECISION X, Y, Z, TMP, EE, PI
+      REAL ARRAY(ID1*ID2)
+      COMMON ID2
+      EXTERNAL FRED
+
+      ASSIGN 100 TO J
+      CALL FOO (I)
+      IF (I .EQ. 0) PRINT *, A(0)
+      GOTO 200
+
+      ENTRY Y (Z)
+      ASSIGN 101 TO J
+200   PRINT *, A(1)
+      READ *, TMP
+      GOTO J
+100   X = TMP * EE
+      RETURN
+101   Y = TMP * PI
+      CALL FRED
+      DATA EE, PI /2.71D0, 3.14D0/
+      END
+@end smallexample
+
+Here are some observations about the above code,
+which, while somewhat contrived,
+conforms to the FORTRAN 77 and Fortran 90 standards:
+
+@itemize @bullet
+@item
+The return type of function @samp{X} is not known
+until the @samp{DOUBLE PRECISION} line has been parsed.
+
+@item
+Whether @samp{A} is a function or a variable
+is not known until the @samp{PRINT *, A(0)} statement
+has been parsed.
+
+@item
+The bounds of the array of argument @samp{ARRAY}
+depend on a computation involving
+the subsequent argument @samp{ID1}
+and the blank-common member @samp{ID2}.
+
+@item
+Whether @samp{Y} and @samp{Z} are local variables,
+additional function entry points,
+or dummy arguments to additional entry points
+is not known
+until the @code{ENTRY} statement is parsed.
+
+@item
+Similarly, whether @samp{TMP} is a local variable is not known
+until the @samp{READ *, TMP} statement is parsed.
+
+@item
+The initial values for @samp{EE} and @samp{PI}
+are not known until after the @code{DATA} statement is parsed.
+
+@item
+Whether @samp{FRED} is a function returning type @code{REAL}
+or a subroutine
+(which can be thought of as returning type @code{void}
+@emph{or}, to support alternate returns in a simple way,
+type @code{int})
+is not known
+until the @samp{CALL FRED} statement is parsed.
+
+@item
+Whether @samp{100} is a @code{FORMAT} label
+or the label of an executable statement
+is not known
+until the @samp{X =} statement is parsed.
+(These two types of labels get @emph{very} different treatment,
+especially when @code{ASSIGN}'ed.)
+
+@item
+That @samp{J} is a local variable is not known
+until the first @code{ASSIGN} statement is parsed.
+(This happens @emph{after} executable code has been seen.)
+@end itemize
+
+Very few of these ``discoveries''
+can be accommodated by the GBE as it has evolved over the years.
+The GBEL doesn't support several of them,
+and those it might appear to support
+don't always work properly,
+especially in combination with other GBEL and GBE features,
+as implemented in the GBE.
+
+(Had the GBE and its GBEL originally evolved to support @code{g77},
+the shoe would be on the other foot, so to speak---most, if not all,
+of the above would be directly supported by the GBEL,
+and a few C constructs would probably not, as they are in reality,
+be supported.
+Both this mythical, and today's real, GBE caters to its GBEL
+by, sometimes, scrambling around, cleaning up after itself---after
+discovering that assumptions it made earlier during code generation
+are incorrect.
+That's not a great design, since it indicates significant code
+paths that might be rarely tested but used in some key production
+environments.)
+
+So, the FFE handles these discrepancies---between the order in which
+it discovers facts about the code it is compiling,
+and the order in which the GBEL and GBE support such discoveries---by
+performing what amounts to two
+passes over each program unit.
+
+(A few ambiguities can remain at that point,
+such as whether, given @samp{EXTERNAL BAZ}
+and no other reference to @samp{BAZ} in the program unit,
+it is a subroutine, a function, or a block-data---which, in C-speak,
+governs its declared return type.
+Fortunately, these distinctions are easily finessed
+for the procedure, library, and object-file interfaces
+supported by @code{g77}.)
+
+@node Challenges Posed
+@section Challenges Posed
+
+Consider the following Fortran code, which uses various extensions
+(including some to Fortran 90):
+
+@smallexample
+SUBROUTINE X(A)
+CHARACTER*(*) A
+COMPLEX CFUNC
+INTEGER*2 CLOCKS(200)
+INTEGER IFUNC
+
+CALL SYSTEM_CLOCK (CLOCKS (IFUNC (CFUNC ('('//A//')'))))
+@end smallexample
+
+The above poses the following challenges to any Fortran compiler
+that uses run-time interfaces, and a run-time library, roughly similar
+to those used by @code{g77}:
+
+@itemize @bullet
+@item
+Assuming the library routine that supports @code{SYSTEM_CLOCK}
+expects to set an @code{INTEGER*4} variable via its @code{COUNT} argument,
+the compiler must make available to it a temporary variable of that type.
+
+@item
+Further, after the @code{SYSTEM_CLOCK} library routine returns,
+the compiler must ensure that the temporary variable it wrote
+is copied into the appropriate element of the @samp{CLOCKS} array.
+(This assumes the compiler doesn't just reject the code,
+which it should if it is compiling under some kind of a ``strict'' option.)
+
+@item
+To determine the correct index into the @samp{CLOCKS} array,
+(putting aside the fact that the index, in this particular case,
+need not be computed until after
+the @code{SYSTEM_CLOCK} library routine returns),
+the compiler must ensure that the @code{IFUNC} function is called.
+
+That requires evaluating its argument,
+which requires, for @code{g77}
+(assuming @code{-ff2c} is in force),
+reserving a temporary variable of type @code{COMPLEX}
+for use as a repository for the return value
+being computed by @samp{CFUNC}.
+
+@item
+Before invoking @samp{CFUNC},
+is argument must be evaluated,
+which requires allocating, at run time,
+a temporary large enough to hold the result of the concatenation,
+as well as actually performing the concatenation.
+
+@item
+The large temporary needed during invocation of @code{CFUNC}
+should, ideally, be deallocated
+(or, at least, left to the GBE to dispose of, as it sees fit)
+as soon as @code{CFUNC} returns,
+which means before @code{IFUNC} is called
+(as it might need a lot of dynamically allocated memory).
+@end itemize
+
+@code{g77} currently doesn't support all of the above,
+but, so that it might someday, it has evolved to handle
+at least some of the above requirements.
+
+Meeting the above requirements is made more challenging
+by conforming to the requirements of the GBEL/GBE combination.
+
+@node Transforming Statements
+@section Transforming Statements
+
+Most Fortran statements are given their own block,
+and, for temporary variables they might need, their own scope.
+(A block is what distinguishes @samp{@{ foo (); @}}
+from just @samp{foo ();} in C.
+A scope is included with every such block,
+providing a distinct name space for local variables.)
+
+Label definitions for the statement precede this block,
+so @samp{10 PRINT *, I} is handled more like
+@samp{fl10: @{ @dots{} @}} than @samp{@{ fl10: @dots{} @}}
+(where @samp{fl10} is just a notation meaning ``Fortran Label 10''
+for the purposes of this document).
+
+@menu
+* Statements Needing Temporaries::
+* Transforming DO WHILE::
+* Transforming Iterative DO::
+* Transforming Block IF::
+* Transforming SELECT CASE::
+@end menu
+
+@node Statements Needing Temporaries
+@subsection Statements Needing Temporaries
+
+Any temporaries needed during, but not beyond,
+execution of a Fortran statement,
+are made local to the scope of that statement's block.
+
+This allows the GBE to share storage for these temporaries
+among the various statements without the FFE
+having to manage that itself.
+
+(The GBE could, of course, decide to optimize 
+management of these temporaries.
+For example, it could, theoretically,
+schedule some of the computations involving these temporaries
+to occur in parallel.
+More practically, it might leave the storage for some temporaries
+``live'' beyond their scopes, to reduce the number of
+manipulations of the stack pointer at run time.)
+
+Temporaries needed across distinct statement boundaries usually
+are associated with Fortran blocks (such as @code{DO}/@code{END DO}).
+(Also, there might be temporaries not associated with blocks at all---these
+would be in the scope of the entire program unit.)
+
+Each Fortran block @emph{should} get its own block/scope in the GBE.
+This is best, because it allows temporaries to be more naturally handled.
+However, it might pose problems when handling labels
+(in particular, when they're the targets of @code{GOTO}s outside the Fortran
+block), and generally just hassling with replicating
+parts of the @code{gcc} front end
+(because the FFE needs to support
+an arbitrary number of nested back-end blocks
+if each Fortran block gets one).
+
+So, there might still be a need for top-level temporaries, whose
+``owning'' scope is that of the containing procedure.
+
+Also, there seems to be problems declaring new variables after
+generating code (within a block) in the back end, leading to, e.g.,
+@samp{label not defined before binding contour} or similar messages,
+when compiling with @samp{-fstack-check} or
+when compiling for certain targets.
+
+Because of that, and because sometimes these temporaries are not
+discovered until in the middle of of generating code for an expression
+statement (as in the case of the optimization for @samp{X**I}),
+it seems best to always
+pre-scan all the expressions that'll be expanded for a block
+before generating any of the code for that block.
+
+This pre-scan then handles discovering and declaring, to the back end,
+the temporaries needed for that block.
+
+It's also important to treat distinct items in an I/O list as distinct
+statements deserving their own blocks.
+That's because there's a requirement
+that each I/O item be fully processed before the next one,
+which matters in cases like @samp{READ (*,*), I, A(I)}---the
+element of @samp{A} read in the second item
+@emph{must} be determined from the value
+of @samp{I} read in the first item.
+
+@node Transforming DO WHILE
+@subsection Transforming DO WHILE
+
+@samp{DO WHILE(expr)} @emph{must} be implemented
+so that temporaries needed to evaluate @samp{expr}
+are generated just for the test, each time.
+
+Consider how @samp{DO WHILE (A//B .NE. 'END'); @dots{}; END DO} is transformed:
+
+@smallexample
+for (;;)
+  @{
+    int temp0;
+
+    @{
+      char temp1[large];
+
+      libg77_catenate (temp1, a, b);
+      temp0 = libg77_ne (temp1, 'END');
+    @}
+
+    if (! temp0)
+      break;
+
+    @dots{}
+  @}
+@end smallexample
+
+In this case, it seems like a time/space tradeoff
+between allocating and deallocating @samp{temp1} for each iteration
+and allocating it just once for the entire loop.
+
+However, if @samp{temp1} is allocated just once for the entire loop,
+it could be the wrong size for subsequent iterations of that loop
+in cases like @samp{DO WHILE (A(I:J)//B .NE. 'END')},
+because the body of the loop might modify @samp{I} or @samp{J}.
+
+So, the above implementation is used,
+though a more optimal one can be used
+in specific circumstances.
+
+@node Transforming Iterative DO
+@subsection Transforming Iterative DO
+
+An iterative @code{DO} loop
+(one that specifies an iteration variable)
+is required by the Fortran standards
+to be implemented as though an iteration count
+is computed before entering the loop body,
+and that iteration count used to determine
+the number of times the loop body is to be performed
+(assuming the loop isn't cut short via @code{GOTO} or @code{EXIT}).
+
+The FFE handles this by allocating a temporary variable
+to contain the computed number of iterations.
+Since this variable must be in a scope that includes the entire loop,
+a GBEL block is created for that loop,
+and the variable declared as belonging to the scope of that block.
+
+@node Transforming Block IF
+@subsection Transforming Block IF
+
+Consider:
+
+@smallexample
+SUBROUTINE X(A,B,C)
+CHARACTER*(*) A, B, C
+LOGICAL LFUNC
+
+IF (LFUNC (A//B)) THEN
+  CALL SUBR1
+ELSE IF (LFUNC (A//C)) THEN
+  CALL SUBR2
+ELSE
+  CALL SUBR3
+END
+@end smallexample
+
+The arguments to the two calls to @samp{LFUNC}
+require dynamic allocation (at run time),
+but are not required during execution of the @code{CALL} statements.
+
+So, the scopes of those temporaries must be within blocks inside
+the block corresponding to the Fortran @code{IF} block.
+
+This cannot be represented ``naturally''
+in vanilla C, nor in GBEL.
+The @code{if}, @code{elseif}, @code{else},
+and @code{endif} constructs
+provided by both languages must,
+for a given @code{if} block,
+share the same C/GBE block.
+
+Therefore, any temporaries needed during evaluation of @samp{expr}
+while executing @samp{ELSE IF(expr)}
+must either have been predeclared
+at the top of the corresponding @code{IF} block,
+or declared within a new block for that @code{ELSE IF}---a block that,
+since it cannot contain the @code{else} or @code{else if} itself
+(due to the above requirement),
+actually implements the rest of the @code{IF} block's
+@code{ELSE IF} and @code{ELSE} statements
+within an inner block.
+
+The FFE takes the latter approach.
+
+@node Transforming SELECT CASE
+@subsection Transforming SELECT CASE
+
+@code{SELECT CASE} poses a few interesting problems for code generation,
+if efficiency and frugal stack management are important.
+
+Consider @samp{SELECT CASE (I('PREFIX'//A))},
+where @samp{A} is @code{CHARACTER*(*)}.
+In a case like this---basically,
+in any case where largish temporaries are needed
+to evaluate the expression---those temporaries should
+not be ``live'' during execution of any of the @code{CASE} blocks.
+
+So, evaluation of the expression is best done within its own block,
+which in turn is within the @code{SELECT CASE} block itself
+(which contains the code for the CASE blocks as well,
+though each within their own block).
+
+Otherwise, we'd have the rough equivalent of this pseudo-code:
+
+@smallexample
+@{
+  char temp[large];
+
+  libg77_catenate (temp, 'prefix', a);
+
+  switch (i (temp))
+    @{
+    case 0:
+      @dots{}
+    @}
+@}
+@end smallexample
+
+And that would leave temp[large] in scope during the CASE blocks
+(although a clever back end *could* see that it isn't referenced
+in them, and thus free that temp before executing the blocks).
+
+So this approach is used instead:
+
+@smallexample
+@{
+  int temp0;
+
+  @{
+    char temp1[large];
+
+    libg77_catenate (temp1, 'prefix', a);
+    temp0 = i (temp1);
+  @}
+
+  switch (temp0)
+    @{
+    case 0:
+      @dots{}
+    @}
+@}
+@end smallexample
+
+Note how @samp{temp1} goes out of scope before starting the switch,
+thus making it easy for a back end to free it.
+
+The problem @emph{that} solution has, however,
+is with @samp{SELECT CASE('prefix'//A)}
+(which is currently not supported).
+
+Unless the GBEL is extended to support arbitrarily long character strings
+in its @code{case} facility,
+the FFE has to implement @code{SELECT CASE} on @code{CHARACTER}
+(probably excepting @code{CHARACTER*1})
+using a cascade of
+@code{if}, @code{elseif}, @code{else}, and @code{endif} constructs
+in GBEL.
+
+To prevent the (potentially large) temporary,
+needed to hold the selected expression itself (@samp{'prefix'//A}),
+from being in scope during execution of the @code{CASE} blocks,
+two approaches are available:
+
+@itemize @bullet
+@item
+Pre-evaluate all the @code{CASE} tests,
+producing an integer ordinal that is used,
+a la @samp{temp0} in the earlier example,
+as if @samp{SELECT CASE(temp0)} had been written.
+
+Each corresponding @code{CASE} is replaced with @samp{CASE(@var{i})},
+where @var{i} is the ordinal for that case,
+determined while, or before,
+generating the cascade of @code{if}-related constructs
+to cope with @code{CHARACTER} selection.
+
+@item
+Make @samp{temp0} above just
+large enough to hold the longest @code{CASE} string
+that'll actually be compared against the expression
+(in this case, @samp{'prefix'//A}).
+
+Since that length must be constant
+(because @code{CASE} expressions are all constant),
+it won't be so large,
+and, further, @samp{temp1} need not be dynamically allocated,
+since normal @code{CHARACTER} assignment can be used
+into the fixed-length @samp{temp0}.
+@end itemize
+
+Both of these solutions require @code{SELECT CASE} implementation
+to be changed so all the corresponding @code{CASE} statements
+are seen during the actual code generation for @code{SELECT CASE}.
+
+@node Transforming Expressions
+@section Transforming Expressions
+
+The interactions between statements, expressions, and subexpressions
+at program run time can be viewed as:
+
+@smallexample
+@var{action}(@var{expr})
+@end smallexample
+
+Here, @var{action} is the series of steps
+performed to effect the statement,
+and @var{expr} is the expression
+whose value is used by @var{action}.
+
+Expanding the above shows a typical order of events at run time:
+
+@smallexample
+Evaluate @var{expr}
+Perform @var{action}, using result of evaluation of @var{expr}
+Clean up after evaluating @var{expr}
+@end smallexample
+
+So, if evaluating @var{expr} requires allocating memory,
+that memory can be freed before performing @var{action}
+only if it is not needed to hold the result of evaluating @var{expr}.
+Otherwise, it must be freed no sooner than
+after @var{action} has been performed.
+
+The above are recursive definitions,
+in the sense that they apply to subexpressions of @var{expr}.
+
+That is, evaluating @var{expr} involves
+evaluating all of its subexpressions,
+performing the @var{action} that computes the
+result value of @var{expr},
+then cleaning up after evaluating those subexpressions.
+
+The recursive nature of this evaluation is implemented
+via recursive-descent transformation of the top-level statements,
+their expressions, @emph{their} subexpressions, and so on.
+
+However, that recursive-descent transformation is,
+due to the nature of the GBEL,
+focused primarily on generating a @emph{single} stream of code
+to be executed at run time.
+
+Yet, from the above, it's clear that multiple streams of code
+must effectively be simultaneously generated
+during the recursive-descent analysis of statements.
+
+The primary stream implements the primary @var{action} items,
+while at least two other streams implement
+the evaluation and clean-up items.
+
+Requirements imposed by expressions include:
+
+@itemize @bullet
+@item
+Whether the caller needs to have a temporary ready
+to hold the value of the expression.
+
+@item
+Other stuff???
+@end itemize
+
+@node Internal Naming Conventions
+@section Internal Naming Conventions
+
+Names exported by FFE modules have the following (regular-expression) forms.
+Note that all names beginning @code{ffe@var{mod}} or @code{FFE@var{mod}},
+where @var{mod} is lowercase or uppercase alphanumerics, respectively,
+are exported by the module @code{ffe@var{mod}},
+with the source code doing the exporting in @file{@var{mod}.h}.
+(Usually, the source code for the implementation is in @file{@var{mod}.c}.)
+
+Identifiers that don't fit the following forms
+are not considered exported,
+even if they are according to the C language.
+(For example, they might be made available to other modules
+solely for use within expansions of exported macros,
+not for use within any source code in those other modules.)
+
+@table @code
+@item ffe@var{mod}
+The single typedef exported by the module.
+
+@item FFE@var{umod}_[A-Z][A-Z0-9_]*
+(Where @var{umod} is the uppercase for of @var{mod}.)
+
+A @code{#define} or @code{enum} constant of the type @code{ffe@var{mod}}.
+
+@item ffe@var{mod}[A-Z][A-Z][a-z0-9]*
+A typedef exported by the module.
+
+The portion of the identifier after @code{ffe@var{mod}} is
+referred to as @code{ctype}, a capitalized (mixed-case) form
+of @code{type}.
+
+@item FFE@var{umod}_@var{type}[A-Z][A-Z0-9_]*[A-Z0-9]?
+(Where @var{umod} is the uppercase for of @var{mod}.)
+
+A @code{#define} or @code{enum} constant of the type
+@code{ffe@var{mod}@var{type}},
+where @var{type} is the lowercase form of @var{ctype}
+in an exported typedef.
+
+@item ffe@var{mod}_@var{value}
+A function that does or returns something,
+as described by @var{value} (see below).
+
+@item ffe@var{mod}_@var{value}_@var{input}
+A function that does or returns something based
+primarily on the thing described by @var{input} (see below).
+@end table
+
+Below are names used for @var{value} and @var{input},
+along with their definitions.
+
+@table @code
+@item col
+A column number within a line (first column is number 1).
+
+@item file
+An encapsulation of a file's name.
+
+@item find
+Looks up an instance of some type that matches specified criteria,
+and returns that, even if it has to create a new instance or
+crash trying to find it (as appropriate).
+
+@item initialize
+Initializes, usually a module.  No type.
+
+@item int
+A generic integer of type @code{int}.
+
+@item is
+A generic integer that contains a true (nonzero) or false (zero) value.
+
+@item len
+A generic integer that contains the length of something.
+
+@item line
+A line number within a source file,
+or a global line number.
+
+@item lookup
+Looks up an instance of some type that matches specified criteria,
+and returns that, or returns nil.
+
+@item name
+A @code{text} that points to a name of something.
+
+@item new
+Makes a new instance of the indicated type.
+Might return an existing one if appropriate---if so,
+similar to @code{find} without crashing.
+
+@item pt
+Pointer to a particular character (line, column pairs)
+in the input file (source code being compiled).
+
+@item run
+Performs some herculean task.  No type.
+
+@item terminate
+Terminates, usually a module.  No type.
+
+@item text
+A @code{char *} that points to generic text.
+@end table

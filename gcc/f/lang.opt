@@ -1,0 +1,402 @@
+; Options for the Fortran 77 front end.
+; Copyright (C) 2003 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 2, or (at your option) any later
+; version.
+; 
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING.  If not, write to the Free
+; Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+; 02111-1307, USA.
+
+; See c.opt for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+Language
+F77
+
+I
+F77 Joined
+Add a directory for INCLUDE searching
+
+Wall
+F77
+; Documented in C
+
+Wcomment
+F77
+
+Wcomments
+F77
+
+Wglobals
+F77
+Enable warnings about inter-procedural problems
+
+Wimplicit
+F77
+
+Wimport
+F77
+
+Wsurprising
+F77
+Warn about constructs with surprising meanings
+
+Wtrigraphs
+F77
+
+fautomatic
+F77
+Do not treat local variables and COMMON blocks as if they were named in SAVE statements
+
+fbackslash
+F77
+Backslashes in character and hollerith constants are special (not C-style)
+
+fbadu77-intrinsics-delete
+F77 RejectNegative
+Delete libU77 intrinsics with bad interfaces
+
+fbadu77-intrinsics-disable
+F77 RejectNegative
+Disable libU77 intrinsics with bad interfaces
+
+fbadu77-intrinsics-enable
+F77 RejectNegative
+Enable libU77 intrinsics with bad interfaces
+
+fbadu77-intrinsics-hide
+F77 RejectNegative
+Hide libU77 intrinsics with bad interfaces
+
+fcase-initcap
+F77 RejectNegative
+Program written in strict mixed-case
+
+fcase-lower
+F77 RejectNegative
+Compile as if program written in lowercase
+
+fcase-preserve
+F77 RejectNegative
+Preserve case used in program
+
+fcase-strict-lower
+F77 RejectNegative
+Program written in lowercase
+
+fcase-strict-upper
+F77 RejectNegative
+Program written in uppercase
+
+fcase-upper
+F77 RejectNegative
+Compile as if program written in uppercase
+
+fdebug-kludge
+F77
+Emit special debugging information for COMMON and EQUIVALENCE (disabled)
+
+fdollar-ok
+F77
+Allow '$' in symbol names
+
+femulate-complex
+F77
+Have front end emulate COMPLEX arithmetic to avoid bugs
+
+ff2c
+F77
+f2c-compatible code can be generated
+
+ff2c-intrinsics-delete
+F77 RejectNegative
+Delete non-FORTRAN-77 intrinsics f2c supports
+
+ff2c-intrinsics-disable
+F77 RejectNegative
+Disable non-FORTRAN-77 intrinsics f2c supports
+
+ff2c-intrinsics-enable
+F77 RejectNegative
+Enable non-FORTRAN-77 intrinsics f2c supports
+
+ff2c-intrinsics-hide
+F77 RejectNegative
+Hide non-FORTRAN-77 intrinsics f2c supports
+
+ff2c-library
+F77
+Unsupported; generate libf2c-calling code
+
+ff66
+F77
+Program is written in typical FORTRAN 66 dialect
+
+ff77
+F77
+Program is written in typical Unix-f77 dialect
+
+ff90
+F77
+Program is written in Fortran-90-ish dialect
+
+ff90-intrinsics-delete
+F77 RejectNegative
+Delete non-FORTRAN-77 intrinsics F90 supports
+
+ff90-intrinsics-disable
+F77 RejectNegative
+Disable non-FORTRAN-77 intrinsics F90 supports
+
+ff90-intrinsics-enable
+F77 RejectNegative
+Enable non-FORTRAN-77 intrinsics F90 supports
+
+ff90-intrinsics-hide
+F77 RejectNegative
+Hide non-FORTRAN-77 intrinsics F90 supports
+
+ff90-not-vxt
+F77 RejectNegative
+
+ffixed-form
+F77
+
+ffixed-line-length-
+F77 Joined
+ffixed-line-length-<number>	Set the maximum line length to <number>
+
+fflatten-arrays
+F77
+Unsupported; affects code generation of arrays
+
+ffortran-bounds-check
+F77
+Generate code to check subscript and substring bounds
+
+ffree-form
+F77
+Program is written in Fortran-90-ish free form
+
+fglobals
+F77
+Enable fatal diagnostics about inter-procedural problems
+
+fgnu-intrinsics-delete
+F77 RejectNegative
+Delete non-FORTRAN-77 intrinsics g77 supports
+
+fgnu-intrinsics-disable
+F77 RejectNegative
+Disable non-FORTRAN 77 intrinsics F90 supports
+
+fgnu-intrinsics-enable
+F77 RejectNegative
+Enable non-FORTRAN 77 intrinsics F90 supports
+
+fgnu-intrinsics-hide
+F77 RejectNegative
+Hide non-FORTRAN 77 intrinsics F90 supports
+
+finit-local-zero
+F77
+Initialize local vars and arrays to zero
+
+fintrin-case-any
+F77 RejectNegative
+Intrinsics letters in arbitrary cases
+
+fintrin-case-initcap
+F77 RejectNegative
+Intrinsics spelled as e.g. SqRt
+
+fintrin-case-lower
+F77 RejectNegative
+Intrinsics in lowercase
+
+fintrin-case-upper
+F77 RejectNegative
+Intrinsics in uppercase
+
+fmatch-case-any
+F77 RejectNegative
+Language keyword letters in arbitrary cases
+
+fmatch-case-initcap
+F77 RejectNegative
+Language keywords spelled as e.g. IOStat
+
+fmatch-case-lower
+F77 RejectNegative
+Language keywords in lowercase
+
+fmatch-case-upper
+F77 RejectNegative
+Language keywords in uppercase
+
+fmil-intrinsics-delete
+F77 RejectNegative
+Delete MIL-STD 1753 intrinsics
+
+fmil-intrinsics-disable
+F77 RejectNegative
+Disable MIL-STD 1753 intrinsics
+
+fmil-intrinsics-enable
+F77 RejectNegative
+Enable MIL-STD 1753 intrinsics
+
+fmil-intrinsics-hide
+F77 RejectNegative
+Hide MIL-STD 1753 intrinsics
+
+fonetrip
+F77
+Take at least one trip through each iterative DO loop
+
+fpedantic
+F77
+Warn about use of (only a few for now) Fortran extensions
+
+fpreprocessed
+F77
+
+fsecond-underscore
+F77
+Allow appending a second underscore to externals
+
+fsilent
+F77
+Do not print names of program units as they are compiled
+
+fsource-case-lower
+F77 RejectNegative
+Internally convert most source to lowercase
+
+fsource-case-preserve
+F77 RejectNegative
+Internally preserve source case
+
+fsource-case-upper
+F77 RejectNegative
+Internally convert most source to uppercase
+
+fsymbol-case-any
+F77 RejectNegative
+
+fsymbol-case-initcap
+F77 RejectNegative
+Symbol names spelled in mixed case
+
+fsymbol-case-lower
+F77 RejectNegative
+Symbol names in lowercase
+
+fsymbol-case-upper
+F77 RejectNegative
+Symbol names in uppercase
+
+ftypeless-boz
+F77
+Make prefix-radix non-decimal constants be typeless
+
+fugly
+F77
+Allow all ugly features
+
+fugly-args
+F77
+Hollerith and typeless can be passed as arguments
+
+fugly-assign
+F77
+Allow ordinary copying of ASSIGN'ed vars
+
+fugly-assumed
+F77
+Dummy array dimensioned to (1) is assumed-size
+
+fugly-comma
+F77
+Trailing comma in procedure call denotes null argument
+
+fugly-complex
+F77
+Allow REAL(Z) and AIMAG(Z) given DOUBLE COMPLEX Z
+
+fugly-init
+F77
+Initialization via DATA and PARAMETER is not type-compatible
+
+fugly-logint
+F77
+Allow INTEGER and LOGICAL interchangeability
+
+funderscoring
+F77
+Append underscores to externals
+
+funix-intrinsics-delete
+F77 RejectNegative
+Delete libU77 intrinsics
+
+funix-intrinsics-disable
+F77 RejectNegative
+Disable libU77 intrinsics
+
+funix-intrinsics-enable
+F77 RejectNegative
+Enable libU77 intrinsics
+
+funix-intrinsics-hide
+F77 RejectNegative
+Hide libU77 intrinsics
+
+fversion
+F77 RejectNegative
+Print g77-specific version information and run internal tests
+
+fvxt
+F77
+Program is written in VXT (Digital-like) FORTRAN
+
+fvxt-intrinsics-delete
+F77 RejectNegative
+Delete non-FORTRAN-77 intrinsics VXT FORTRAN supports
+
+fvxt-intrinsics-disable
+F77 RejectNegative
+Disable non-FORTRAN-77 intrinsics VXT FORTRAN supports
+
+fvxt-intrinsics-enable
+F77 RejectNegative
+Enable non-FORTRAN-77 intrinsics VXT FORTRAN supports
+
+fvxt-intrinsics-hide
+F77 RejectNegative
+Hide non-FORTRAN-77 intrinsics VXT FORTRAN supports
+
+fvxt-not-f90
+F77 RejectNegative
+
+fxyzzy
+F77
+Print internal debugging-related information
+
+fzeros
+F77
+Treat initial values of 0 like non-zero values
+
+; This comment is to ensure we retain the blank line above.
