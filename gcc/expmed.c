@@ -4492,10 +4492,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	 we can use zero-extension to the wider mode (an unsigned conversion)
 	 as the operation.  */
 
-      /* CYGNUS LOCAL - amylaar/-ftrapv:  Note that ABS doesn't yield a
-         positive number for INT_MIN, but that is compensated by the
-         subsequent overflow when subtracting one / negating.
-         END CYGNUS LOCAL */
+      /* Note that ABS doesn't yield a positive number for INT_MIN, but 
+	 that is compensated by the subsequent overflow when subtracting 
+	 one / negating. */
 
       if (abs_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
 	tem = expand_unop (mode, abs_optab, op0, subtarget, 1);

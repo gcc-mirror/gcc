@@ -1,5 +1,10 @@
 2000-10-19  Chandrakala Chavva   <cchavva@redhat.com>
 
+	* expmed.c: Minor corrections in comments.
+	* invoke.texi: Added desciption for the new option -ftrapv.
+
+2000-10-19  Chandrakala Chavva   <cchavva@redhat.com>
+
 	* libgcc2.c: Added the missing #endif.
 
 Thu Oct 19 14:25:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
