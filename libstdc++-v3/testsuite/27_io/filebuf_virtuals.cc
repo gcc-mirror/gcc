@@ -546,6 +546,7 @@ class MyTraits : public std::char_traits<char>
 public:
   static bool eq(char c1, char c2)
   {
+    bool test = true;
     VERIFY( c1 != 'X' );
     VERIFY( c2 != 'X' );
     return std::char_traits<char>::eq(c1, c2);

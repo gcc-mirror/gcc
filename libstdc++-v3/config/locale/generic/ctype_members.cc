@@ -158,15 +158,18 @@ namespace std
   wchar_t
   ctype<wchar_t>::
   do_widen(char __c) const
-  { return btowc(__c); }
+  { return btowc(static_cast<unsigned char>(__c)); }
   
   const char* 
   ctype<wchar_t>::
   do_widen(const char* __lo, const char* __hi, wchar_t* __dest) const
   {
-    mbstate_t __state;
-    memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-    mbsrtowcs(__dest, &__lo, __hi - __lo, &__state);
+    while (__lo < __hi)
+      {
+	*__dest = btowc(static_cast<unsigned char>(*__lo));
+	++__lo;
+	++__dest;
+      }
     return __hi;
   }
 
@@ -183,22 +186,12 @@ namespace std
   do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault, 
 	    char* __dest) const
   {
-    size_t __offset = 0;
-    while (true)
+    while (__lo < __hi)
       {
-	const wchar_t* __start = __lo + __offset;        
-	size_t __len = __hi - __start;
-	
-	mbstate_t __state;
-	memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-	size_t __con = wcsrtombs(__dest + __offset, &__start, __len, &__state);
-	if (__con != __len && __start != 0)
-	  {
-	    __offset = __start - __lo;          
-	    __dest[__offset++] = __dfault;
-	  }
-	else
-	  break;
+	int __c = wctob(*__lo);
+	*__dest = (__c == EOF ? __dfault : static_cast<char>(__c));
+	++__lo;
+	++__dest;
       }
     return __hi;
   }

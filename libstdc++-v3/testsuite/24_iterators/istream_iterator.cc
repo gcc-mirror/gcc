@@ -1,6 +1,6 @@
 // 2001-06-25  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,6 +53,7 @@ template class std::istream_iterator<char>;
 void test02()
 {
   using namespace std;
+  bool test = true;
 
   string st("R.Rorty");
 

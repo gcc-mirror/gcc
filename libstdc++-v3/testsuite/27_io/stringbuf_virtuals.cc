@@ -40,6 +40,7 @@ void test01()
 
 void test02(std::stringbuf& in, bool pass)
 {
+  bool test = true;
   using namespace std;
   typedef streambuf::pos_type pos_type;
   typedef streambuf::off_type off_type;

@@ -1,5 +1,45 @@
 2003-03-14  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/23_containers/bitset_members.cc: Add test variable.	
+	* testsuite/23_containers/map_insert.cc: Same.
+	* testsuite/22_locale/ctype/cons/char/1.cc: Same.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/1.cc: Same.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/2.cc: Same.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/3.cc: Same.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/4.cc: Same.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/1.cc: Same.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/2.cc: Same.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/3.cc: Same.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/4.cc: Same.
+	* testsuite/27_io/istream_exception.cc: Same.
+	* testsuite/27_io/filebuf_virtuals.cc: Same.
+	* testsuite/27_io/stringbuf_virtuals.cc: Same.
+	* testsuite/27_io/ostream_inserter_arith.cc: Same.
+	* testsuite/26_numerics/valarray_operators.cc: Same.
+	* testsuite/26_numerics/slice.cc: Same.
+	* testsuite/26_numerics/slice_array_assignment.cc: Same.
+	* testsuite/24_iterators/istream_iterator.cc: Same.
+	* mkcheck.in (TESTS_FILE): Use dejagnu-generated file if possible.
+	
+2003-03-14  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9581
+	PR libstdc++/9870
+	* config/locale/generic/ctype_members.cc,
+	* config/locale/gnu/ctype_members.cc
+	(ctype<wchar_t>::do_widen(char)):  Cast argument to
+	unsigned char before passing to btowc.
+	(ctype<wchar_t>::do_widen(const char*, const char*, wchar_t*)):
+	Convert characters with btowc instead of mbsrtowcs.
+	(ctype<wchar_t>::do_narrow(const wchar_t*, const wchar_t*,
+	char, char*):
+	Convert characters with wctob instead of wcsrtombs.
+	* testsuite/22_locale/ctype/narrow/wchar_t/3.cc:  New test.
+	* testsuite/22_locale/ctype/widen/wchar_t/2.cc:  New test.	
+	* testsuite/22_locale/ctype/widen/wchar_t/3.cc:  New test.	
+
+2003-03-14  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/stdc++.h: New.	
 	* libsupc++/exception_defines.h (__EXCEPTION_DEFINES_H): Add guard.
 	* include/Makefile.am (stamp-std-precompile): Generate stdc++.h.gch

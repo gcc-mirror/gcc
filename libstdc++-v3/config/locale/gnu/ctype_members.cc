@@ -169,7 +169,7 @@ namespace std
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_ctype);
 #endif
-    wchar_t __ret = btowc(__c);
+    wchar_t __ret = btowc(static_cast<unsigned char>(__c));
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif
@@ -183,9 +183,12 @@ namespace std
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_ctype);
 #endif
-    mbstate_t __state;
-    memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-    mbsrtowcs(__dest, &__lo, __hi - __lo, &__state);
+    while (__lo < __hi)
+      {
+	*__dest = btowc(static_cast<unsigned char>(*__lo));
+	++__lo;
+	++__dest;
+      }
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif
@@ -214,22 +217,12 @@ namespace std
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_ctype);
 #endif
-    size_t __offset = 0;
-    while (true)
+    while (__lo < __hi)
       {
-	const wchar_t* __start = __lo + __offset;        
-	size_t __len = __hi - __start;
-	
-	mbstate_t __state;
-	memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-	size_t __con = wcsrtombs(__dest + __offset, &__start, __len, &__state);
-	if (__con != __len && __start != 0)
-	  {
-	    __offset = __start - __lo;          
-	    __dest[__offset++] = __dfault;
-	  }
-	else
-	  break;
+	int __c = wctob(*__lo);
+	*__dest = (__c == EOF ? __dfault : static_cast<char>(__c));
+	++__lo;
+	++__dest;
       }
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
