@@ -305,7 +305,7 @@
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "register_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))
@@ -334,7 +334,7 @@
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "register_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))
@@ -377,7 +377,7 @@
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && INTVAL (operands[2]) > 0"
@@ -400,7 +400,7 @@
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && INTVAL (operands[2]) > 0"
@@ -485,7 +485,7 @@
 	(minus:DI (match_operand:DI 1 "register_operand" "")
 		  (match_operand:DI 2 "register_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
@@ -512,7 +512,7 @@
 	(minus:DI (match_operand:DI 1 "register_operand" "")
 		  (match_operand:DI 2 "register_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
@@ -553,7 +553,7 @@
 	(minus:DI (match_operand:DI 1 "register_operand" "")
 		  (match_operand:DI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && INTVAL (operands[2]) > 0"
@@ -576,7 +576,7 @@
 	(minus:DI (match_operand:DI 1 "register_operand" "")
 		  (match_operand:DI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && INTVAL (operands[2]) > 0"
@@ -651,7 +651,7 @@
 		 (match_operand:SI 2 "register_operand" "")))
    (clobber (reg:SI 64))
    (clobber (reg:SI 65))]
-  ""
+  "!TARGET_DEBUG_D_MODE"
   [(parallel [(set (reg:SI 65)		;; low register
 		   (mult:SI (match_dup 1)
 			    (match_dup 2)))
@@ -1054,7 +1054,7 @@ move\\t%0,%z4\\n\\
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
 	(not:DI (match_operand:DI 1 "register_operand" "")))]
-  "reload_completed && !TARGET_DEBUG_G_MODE
+  "reload_completed && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
 
@@ -1090,7 +1090,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "")
 	(not:DI (ior:DI (match_operand:DI 1 "register_operand" "")
 			(match_operand:DI 2 "register_operand" ""))))]
-  "reload_completed && !TARGET_DEBUG_G_MODE
+  "reload_completed && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
@@ -1141,7 +1141,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "")
 	(and:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))]
-  "reload_completed && !TARGET_DEBUG_G_MODE
+  "reload_completed && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
@@ -1178,7 +1178,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "")
 	(ior:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))]
-  "reload_completed && !TARGET_DEBUG_G_MODE
+  "reload_completed && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
@@ -1215,7 +1215,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "")
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))]
-  "reload_completed && !TARGET_DEBUG_G_MODE
+  "reload_completed && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
@@ -1762,7 +1762,7 @@ move\\t%0,%z4\\n\\
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_operand:DI 1 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_G_MODE
+  "reload_completed && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
 
@@ -1776,7 +1776,7 @@ move\\t%0,%z4\\n\\
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(match_operand:SI 1 "large_int" ""))]
-  ""
+  "!TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(match_dup 2))
    (set (match_dup 0)
@@ -1882,7 +1882,7 @@ move\\t%0,%z4\\n\\
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_G_MODE
+  "reload_completed && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
 
@@ -1890,6 +1890,7 @@ move\\t%0,%z4\\n\\
    (set (subreg:SI (match_dup 0) 1) (subreg:SI (match_dup 1) 1))]
   "")
 
+
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination
 ;; Argument 1 is the source
@@ -1914,19 +1915,95 @@ move\\t%0,%z4\\n\\
 ;; Insn generated by block moves
 
 (define_insn "movstrsi_internal"
-  [(set (match_operand:BLK 0 "memory_operand" "=Ro")
-	(match_operand:BLK 1 "memory_operand" "Ro"))
-   (clobber (match_scratch:SI 4 "=&d"))
-   (clobber (match_scratch:SI 5 "=&d"))
-   (clobber (match_scratch:SI 6 "=&d"))
-   (clobber (match_scratch:SI 7 "=&d"))
-   (use (match_operand:SI 2 "small_int" "I"))
-   (use (match_operand:SI 3 "small_int" "I"))]
+  [(set (match_operand:BLK 0 "memory_operand" "=Ro")	;; destination
+	(match_operand:BLK 1 "memory_operand" "Ro"))	;; source
+   (clobber (match_scratch:SI 4 "=&d"))			;; temp 1
+   (clobber (match_scratch:SI 5 "=&d"))			;; temp 2
+   (clobber (match_scratch:SI 6 "=&d"))			;; temp 3
+   (clobber (match_scratch:SI 7 "=&d"))			;; temp 4
+   (use (match_operand:SI 2 "small_int" "I"))		;; # bytes to move
+   (use (match_operand:SI 3 "small_int" "I"))		;; alignment
+   (use (const_int 0))]					;; normal block move
   ""
-  "* return output_block_move (insn, operands, 4);"
+  "* return output_block_move (insn, operands, 4, BLOCK_MOVE_NORMAL);"
   [(set_attr "type"	"multi")
    (set_attr "mode"	"none")
    (set_attr "length"	"20")])
+
+;; Split a block move into 2 parts, the first part is everything
+;; except for the last move, and the second part is just the last
+;; store, which is exactly 1 instruction (ie, not a usw), so it can
+;; fill a delay slot.  This also prevents a bug in delayed branches
+;; from showing up, which reuses one of the registers in our clobbers.
+
+(define_split
+  [(set (mem:BLK (match_operand:SI 0 "register_operand" ""))
+	(mem:BLK (match_operand:SI 1 "register_operand" "")))
+   (clobber (match_operand:SI 4 "register_operand" ""))
+   (clobber (match_operand:SI 5 "register_operand" ""))
+   (clobber (match_operand:SI 6 "register_operand" ""))
+   (clobber (match_operand:SI 7 "register_operand" ""))
+   (use (match_operand:SI 2 "small_int" ""))
+   (use (match_operand:SI 3 "small_int" ""))
+   (use (const_int 0))]
+
+  "reload_completed && !TARGET_DEBUG_D_MODE && INTVAL (operands[2]) > 0"
+
+  ;; All but the last move
+  [(parallel [(set (mem:BLK (match_dup 0))
+		   (mem:BLK (match_dup 1)))
+	      (clobber (match_dup 4))
+	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))
+	      (clobber (match_dup 7))
+	      (use (match_dup 2))
+	      (use (match_dup 3))
+	      (use (const_int 1))])
+
+   ;; The last store, so it can fill a delay slot
+   (parallel [(set (mem:BLK (match_dup 0))
+		   (mem:BLK (match_dup 1)))
+	      (clobber (match_dup 4))
+	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))
+	      (clobber (match_dup 7))
+	      (use (match_dup 2))
+	      (use (match_dup 3))
+	      (use (const_int 2))])]
+
+  "")
+
+(define_insn "movstrsi_internal2"
+  [(set (match_operand:BLK 0 "memory_operand" "=Ro")	;; destination
+	(match_operand:BLK 1 "memory_operand" "Ro"))	;; source
+   (clobber (match_scratch:SI 4 "=&d"))			;; temp 1
+   (clobber (match_scratch:SI 5 "=&d"))			;; temp 2
+   (clobber (match_scratch:SI 6 "=&d"))			;; temp 3
+   (clobber (match_scratch:SI 7 "=&d"))			;; temp 4
+   (use (match_operand:SI 2 "small_int" "I"))		;; # bytes to move
+   (use (match_operand:SI 3 "small_int" "I"))		;; alignment
+   (use (const_int 1))]					;; all but last store
+  ""
+  "* return output_block_move (insn, operands, 4, BLOCK_MOVE_NOT_LAST);"
+  [(set_attr "type"	"multi")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"20")])
+
+(define_insn "movstrsi_internal3"
+  [(set (match_operand:BLK 0 "memory_operand" "=Ro")	;; destination
+	(match_operand:BLK 1 "memory_operand" "Ro"))	;; source
+   (clobber (match_scratch:SI 4 "=&d"))			;; temp 1
+   (clobber (match_scratch:SI 5 "=&d"))			;; temp 2
+   (clobber (match_scratch:SI 6 "=&d"))			;; temp 3
+   (clobber (match_scratch:SI 7 "=&d"))			;; temp 4
+   (use (match_operand:SI 2 "small_int" "I"))		;; # bytes to move
+   (use (match_operand:SI 3 "small_int" "I"))		;; alignment
+   (use (const_int 2))]					;; just last store of block mvoe
+  ""
+  "* return output_block_move (insn, operands, 4, BLOCK_MOVE_LAST);"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"1")])
 
 
 ;;
@@ -2018,7 +2095,7 @@ move\\t%0,%z4\\n\\
 	(ashift:DI (match_operand:DI 1 "register_operand" "")
 		   (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
@@ -2034,7 +2111,7 @@ move\\t%0,%z4\\n\\
 	(ashift:DI (match_operand:DI 1 "register_operand" "")
 		   (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
@@ -2073,7 +2150,7 @@ move\\t%0,%z4\\n\\
 	(ashift:DI (match_operand:DI 1 "register_operand" "")
 		   (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 63) < 32
@@ -2107,7 +2184,7 @@ move\\t%0,%z4\\n\\
 	(ashift:DI (match_operand:DI 1 "register_operand" "")
 		   (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 63) < 32
@@ -2217,7 +2294,7 @@ move\\t%0,%z4\\n\\
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
 		     (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
@@ -2233,7 +2310,7 @@ move\\t%0,%z4\\n\\
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
 		     (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
@@ -2271,7 +2348,7 @@ move\\t%0,%z4\\n\\
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
 		     (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 63) < 32
@@ -2305,7 +2382,7 @@ move\\t%0,%z4\\n\\
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
 		     (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 63) < 32
@@ -2416,7 +2493,7 @@ move\\t%0,%z4\\n\\
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
 		     (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
@@ -2432,7 +2509,7 @@ move\\t%0,%z4\\n\\
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
 		     (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
@@ -2470,7 +2547,7 @@ move\\t%0,%z4\\n\\
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
 		     (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 63) < 32
@@ -2504,7 +2581,7 @@ move\\t%0,%z4\\n\\
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
 		     (match_operand:SI 2 "small_int" "")))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_G_MODE
+  "reload_completed && WORDS_BIG_ENDIAN && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 63) < 32
@@ -3139,7 +3216,8 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(eq:CC_EQ (match_operand:SI 1 "register_operand" "")
 		  (match_operand:SI 2 "uns_arith_operand" "")))]
-  "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0"
+  "!TARGET_DEBUG_D_MODE
+    && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
   [(set (match_dup 0)
 	(xor:SI (match_dup 1)
 		(match_dup 2)))
@@ -3193,7 +3271,8 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(ne:CC_EQ (match_operand:SI 1 "register_operand" "")
 		  (match_operand:SI 2 "uns_arith_operand" "")))]
-  "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0"
+  "!TARGET_DEBUG_D_MODE
+    && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
   [(set (match_dup 0)
 	(xor:SI (match_dup 1)
 		(match_dup 2)))
@@ -3265,7 +3344,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(ge:CC (match_operand:SI 1 "register_operand" "")
 	       (match_operand:SI 2 "arith_operand" "")))]
-  ""
+  "!TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(lt:CC (match_dup 1)
 	       (match_dup 2)))
@@ -3339,7 +3418,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(le:CC (match_operand:SI 1 "register_operand" "")
 	       (match_operand:SI 2 "register_operand" "")))]
-  ""
+  "!TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(lt:CC (match_dup 2)
 	       (match_dup 1)))
@@ -3411,7 +3490,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(geu:CC (match_operand:SI 1 "register_operand" "")
 		(match_operand:SI 2 "arith_operand" "")))]
-  ""
+  "!TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(ltu:CC (match_dup 1)
 		(match_dup 2)))
@@ -3485,7 +3564,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(leu:CC (match_operand:SI 1 "register_operand" "")
 		(match_operand:SI 2 "register_operand" "")))]
-  ""
+  "!TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(ltu:CC (match_dup 2)
 		(match_dup 1)))
