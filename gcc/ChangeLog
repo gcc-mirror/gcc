@@ -1,3 +1,10 @@
+Wed May 26 06:05:10 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* flow.c (insn_dead_p): Check against frame_pointer_rtx not
+	FRAME_POINTER_REGNUM. 
+	(mark_set_1): Ditto.
+	(mark_used_regs): Ditto.
+
 Wed May 26 02:19:31 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* arm.h (NEED_PLT_GOT): Fix mistake in last change.
