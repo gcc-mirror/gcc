@@ -1,3 +1,10 @@
+2002-09-13  Steve Ellcey  <sje@cup.hp.com>
+
+	* config.gcc (ia64*-*-aix*, ia64*-*-elf*, ia64*-*-freebsd*,
+	ia64*-*-linux*): Set extra_parts.
+	* config/ia64/t-aix (EXTRA_PARTS): Remove.
+	* config/ia64/t-ia64 (EXTRA_PARTS): Remove.
+
 2002-09-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/fixunssfsi.c: Replace H8/S with H8S.
