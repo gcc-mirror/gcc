@@ -1,3 +1,7 @@
+2004-08-23  Hans Boehm  <Hans.Boehm@hp.com>
+	* defineclass.cc: Include <stdio.h>.
+	* java/lang/natClassLoader.cc: Include <stdio.h>.
+
 2004-08-21  Andreas Tobler  <a.tobler@schweiz.ch>
 	    Michael Koch  <konqueror@gmx.de>
 
