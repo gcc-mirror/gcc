@@ -41,8 +41,9 @@ extern struct obstack permanent_obstack;
 int skip_evaluation;
 
 enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
-	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
-	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS};
+	    A_NO_CHECK_MEMORY_USAGE, A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE,
+	    A_SECTION, A_ALIGNED, A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK,
+	    A_ALIAS};
 
 enum format_type { printf_format_type, scanf_format_type,
 		   strftime_format_type };
@@ -340,6 +341,7 @@ init_attributes ()
   add_attribute (A_FORMAT_ARG, "format_arg", 1, 1, 1);
   add_attribute (A_WEAK, "weak", 0, 0, 1);
   add_attribute (A_ALIAS, "alias", 1, 1, 1);
+  add_attribute (A_NO_CHECK_MEMORY_USAGE, "no_check_memory_usage", 0, 0, 1);
 }
 
 /* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
@@ -813,6 +815,19 @@ decl_attributes (node, attributes, prefix_attributes)
 	    }
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_NO_CHECK_MEMORY_USAGE:
+	  if (TREE_CODE (decl) != FUNCTION_DECL)
+	    error_with_decl (decl,
+			     "`%s' attribute applies only to functions",
+			     IDENTIFIER_POINTER (name));
+	  else if (DECL_INITIAL (decl))
+	    error_with_decl (decl,
+			     "can't set `%s' attribute after definition",
+			     IDENTIFIER_POINTER (name));
+	  else
+	    DECL_NO_CHECK_MEMORY_USAGE (decl) = 1;
 	  break;
 	}
     }
