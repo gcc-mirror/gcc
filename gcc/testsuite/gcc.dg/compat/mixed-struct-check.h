@@ -26,3 +26,12 @@ void checkScssdss (Scssdss x, int i)
 void checkScssdssc (Scssdssc x, int i)
 { if (x.c != (char)i || x.ssds.sd.d != (double)i+1
     || x.b != (char)i+2) DEBUG_CHECK }
+
+void checkSfi (Sfi x, int i)
+{ if (x.f != (float)i || x.i != i+1) DEBUG_CHECK }
+void checkSfii (Sfii x, int i)
+{ if (x.f != (float)i || x.i1 != i+1 || x.i2 != i+2) DEBUG_CHECK }
+void checkSfifi (Sfifi x, int i)
+{ if (x.fi.f != (float)i || x.fi.i != i+1) DEBUG_CHECK }
+void checkSfiifii (Sfiifii x, int i)
+{ if (x.fii.f != (float)i || x.fii.i1 != i+1 || x.fii.i2 != i+2) DEBUG_CHECK }

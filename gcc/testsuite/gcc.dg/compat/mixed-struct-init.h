@@ -24,3 +24,12 @@ void initScssdss (Scssdss *p, int i)
 { p->c = (char)i; p->ssds.sd.d = (double)i+1; }
 void initScssdssc (Scssdssc *p, int i)
 { p->c = (char)i; p->ssds.sd.d = (double)i+1; p->b = (char)i+2; }
+
+void initSfi (Sfi *x, int i)
+{ x->f = (float)i; x->i = i+1; }
+void initSfii (Sfii *x, int i)
+{ x->f = (float)i; x->i1 = i+1; x->i2 = i+2; }
+void initSfifi (Sfifi *x, int i)
+{ x->fi.f = (float)i; x->fi.i = i+1; }
+void initSfiifii (Sfiifii *x, int i)
+{ x->fii.f = (float)i; x->fii.i1 = i+1; x->fii.i2 = i+2; }
