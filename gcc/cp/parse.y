@@ -3745,9 +3745,15 @@ conversion_declarator:
 
 operator:
         OPERATOR
-        { saved_scopes = tree_cons (got_scope, got_object, saved_scopes); 
-          got_scope = NULL_TREE; got_object = NULL_TREE; }
+        {
+	  saved_scopes = tree_cons (got_scope, got_object, saved_scopes);
+	  /* We look for conversion-type-id's in both the class and current
+	     scopes, just as for ID in 'ptr->ID::'.  */
+	  looking_for_typename = 1; got_object = got_scope;
+          got_scope = NULL_TREE;
+	}
         ;
+
 unoperator:
         { got_scope = TREE_PURPOSE (saved_scopes);
           got_object = TREE_VALUE (saved_scopes);
@@ -3821,7 +3827,6 @@ operator_name:
 		{ $$ = frob_opname (ansi_opname (VEC_NEW_EXPR)); }
 	| operator DELETE '[' ']' unoperator
 		{ $$ = frob_opname (ansi_opname (VEC_DELETE_EXPR)); }
-	/* Names here should be looked up in class scope ALSO.  */
 	| operator type_specifier_seq conversion_declarator unoperator
 		{ $$ = frob_opname (grokoptypename ($2.t, $3)); }
 	| operator error unoperator

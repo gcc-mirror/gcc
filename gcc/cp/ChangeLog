@@ -1,3 +1,10 @@
+2000-10-21  Jason Merrill  <jason@redhat.com>
+
+	* parse.y (operator): Set got_object from got_scope.
+	Set looking_for_typename.
+	* decl.c (lookup_name_real): Clear val after setting from_obj.
+	Reorganize diagnostic.
+
 2000-10-20  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (walk_tree): Don't walk into default args.
@@ -419,7 +426,7 @@ Thu Sep 14 12:10:45 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(cp_parse_init): Adjust.
 	(do_id): If lastiddecl is NULL, do do_identifier.
 	(operator): Save scope information.
-	(unoperator): new reduction. Restore scope information.
+	(unoperator): New reduction. Restore scope information.
 	(operator_name): Append unoperator. Call frob_opname.
 	* spew.c (frob_opname): Define.
 
