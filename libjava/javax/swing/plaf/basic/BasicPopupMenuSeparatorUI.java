@@ -53,7 +53,7 @@ import javax.swing.plaf.SeparatorUI;
 
 
 /**
- * The Basic L&F UI delegate for JPopupMenu.Separator.
+ * The Basic Look and Feel UI delegate for JPopupMenu.Separator.
  */
 public class BasicPopupMenuSeparatorUI extends BasicSeparatorUI
 {

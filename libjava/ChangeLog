@@ -1,3 +1,21 @@
+2004-07-17  Mark Wielaard  <mark@klomp.org>
+
+	* javax/swing/Box.java: Put FIXME comment above class declaration.
+	* javax/swing/JButton.java: Remove illegal L&F HTML from comments.
+	* javax/swing/JCheckBox.java: Likewise.
+	* javax/swing/JDialog.java: Likewise.
+	* javax/swing/JRadioButton.java: Likewise.
+	* javax/swing/JToggleButton.java: Likewise.
+	* javax/swing/UIManager.java: Likewise.
+	* javax/swing/border/TitledBorder.java: Likewise.
+	* javax/swing/plaf/basic/BasicLabelUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java: Likewise.
+	* javax/swing/plaf/basic/BasicPopupMenuSeparatorUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicProgressBarUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicScrollBarUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicSeparatorUI.java: Likewise.
+	* javax/swing/text/JTextComponent.java: Likewise.
+
 2004-07-17  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/net/DatagramPacket.java (setAddress): Removed check for

@@ -371,7 +371,7 @@ public abstract class JTextComponent extends JComponent
   }
 
   /**
-   * Returns a string that specifies the name of the l&amp;f class
+   * Returns a string that specifies the name of the Look and Feel class
    * that renders this component.
    *
    * @return the string "TextComponentUI"

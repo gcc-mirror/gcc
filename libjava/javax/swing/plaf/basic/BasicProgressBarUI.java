@@ -139,7 +139,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   // The total number of frames must be an even number.
   // The total number of frames is calculated from
   // the cycleTime and repaintInterval given by
-  // the basic L&F's defaults.
+  // the basic Look and Feel defaults.
   //
   // +-----------------------------------------------+
   // | frame0 | frame1 | frame2 | frame 3 | frame 4  |

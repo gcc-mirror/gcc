@@ -55,9 +55,8 @@ public class Box extends JComponent implements Accessible
 {
   private static final long serialVersionUID = 1525417495883046342L;
   
-  protected class AccessibleBox 
   // FIXME: disable to make libjava compile; visibility rules are broken
-  // extends Container.AccessibleAWTContainer
+  protected class AccessibleBox // extends Container.AccessibleAWTContainer
   {
     private static final long serialVersionUID = -7775079816389931944L;
   
@@ -75,9 +74,8 @@ public class Box extends JComponent implements Accessible
   {
     private static final long serialVersionUID = -1204263191910183998L;
   
-    protected class AccessibleBoxFiller 
     // FIXME: disable to make libjava compile; visibility rules are broken
-    // extends Component.AccessibleAWTComponent
+    protected class AccessibleBoxFiller // extends Component.AccessibleAWTComponent
     {
       private static final long serialVersionUID = 164963348357479321L;
       

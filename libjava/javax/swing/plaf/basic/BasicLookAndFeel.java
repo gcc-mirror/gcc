@@ -1,5 +1,5 @@
 /* BasicLookAndFeel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -228,7 +228,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
   {
     Object[] uiDefaults;
     
-    // The JDK's default L&F happens to use these three purple shades
+    // The default Look and Feel happens to use these three purple shades
     // extensively.
     Color lightPurple = new Color(0xCC, 0xCC, 0xFF);
     Color midPurple = new Color(0x99, 0x99, 0xCC);
