@@ -73,6 +73,9 @@ Boston, MA 02111-1307, USA.  */
 /* The IDENTIFIER_NODE naming the real class.  */
 #define TINFO_REAL_NAME(NODE) TREE_PURPOSE (NODE)
 
+/* A varray of all tinfo decls that haven't yet been emitted. */
+varray_type unemitted_tinfo_decls;
+
 static tree build_headof PARAMS((tree));
 static tree ifnonnull PARAMS((tree, tree));
 static tree tinfo_name PARAMS((tree));
@@ -97,6 +100,7 @@ static tree get_pseudo_ti_init PARAMS ((tree, tree, bool *));
 static tree get_pseudo_ti_desc PARAMS((tree));
 static void create_tinfo_types PARAMS((void));
 static bool typeinfo_in_lib_p (tree);
+static bool unemitted_tinfo_decl_p PARAMS((tree));
 
 static int doing_runtime = 0;
 
@@ -121,6 +125,8 @@ init_rtti_processing (void)
 					       TYPE_QUAL_CONST);
   type_info_ptr_type = build_pointer_type (const_type_info_type);
   type_info_ref_type = build_reference_type (const_type_info_type);
+
+  VARRAY_TREE_INIT (unemitted_tinfo_decls, 10, "RTTI decls");
 
   create_tinfo_types ();
 }
@@ -367,6 +373,10 @@ get_tinfo_decl (tree type)
 
       /* Remember the type it is for.  */
       TREE_TYPE (name) = type;
+
+      /* Add decl to the global array of tinfo decls. */
+      my_friendly_assert (unemitted_tinfo_decls != 0, 20030312);
+      VARRAY_PUSH_TREE (unemitted_tinfo_decls, d);
     }
 
   return d;
@@ -1403,8 +1413,8 @@ emit_support_tinfos (void)
 /* Return true, iff T is a type_info variable which has not had a
    definition emitted for it.  */
 
-bool
-unemitted_tinfo_decl_p (tree t, void *data ATTRIBUTE_UNUSED)
+static bool
+unemitted_tinfo_decl_p (tree t)
 {
   if (/* It's a var decl */
       TREE_CODE (t) == VAR_DECL
@@ -1429,13 +1439,14 @@ unemitted_tinfo_decl_p (tree t, void *data ATTRIBUTE_UNUSED)
    generate the initializer.  */
 
 bool
-emit_tinfo_decl (tree *decl_ptr, void *data ATTRIBUTE_UNUSED)
+emit_tinfo_decl (tree decl)
 {
-  tree decl = *decl_ptr;
   tree type = TREE_TYPE (DECL_NAME (decl));
   bool non_public;
   int in_library = typeinfo_in_lib_p (type);
   tree var_desc, var_init;
+
+  my_friendly_assert (unemitted_tinfo_decl_p (decl), 20030307); 
   
   import_export_tinfo (decl, type, in_library);
   if (DECL_REALLY_EXTERN (decl) || !DECL_NEEDED_P (decl))

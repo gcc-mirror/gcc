@@ -1,3 +1,17 @@
+2003-03-14  Matt Austern  <austern@apple.com>
+
+	* cp-tree.h (unemitted_tinfo_decls): Declaration of a new varray.
+	(unemitted_tinfo_decl_p): Remove.
+	(emit_tinfo_decl): Change declaration to remove unused parameter.
+	* decl2.c (finish_file): Change tinfo emission to loop through
+	unemitted_tinfo_decls array instead of looping through all decls.
+	* rtti.c (unemitted_tinfo_decl_p): Declare as static, remove
+	unused second parameter.
+	(init_rtti_processing): initialize unemitted_tinfo_decls varray.
+	(get_tinfo_decls): push new tinfo decl on unemitted_tinfo_decls.
+	(emit_tinfo_decl): remove unused second parameter, add assertion
+	that decl hasn't already been emitted.	
+	
 2003-03-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* dump.c (cp_dump_tree), cp-tree.h (cp_dump_tree): Change return

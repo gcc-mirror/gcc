@@ -4062,14 +4062,16 @@ extern void init_repo (const char *);
 extern void finish_repo (void);
 
 /* in rtti.c */
+/* A varray of all tinfo decls that haven't been emitted yet. */
+extern GTY(()) varray_type unemitted_tinfo_decls;
+
 extern void init_rtti_processing (void);
 extern tree build_typeid (tree);
 extern tree get_tinfo_decl (tree);
 extern tree get_typeid (tree);
 extern tree build_dynamic_cast (tree, tree);
 extern void emit_support_tinfos (void);
-extern bool unemitted_tinfo_decl_p (tree, void *);
-extern bool emit_tinfo_decl (tree *, void *);
+extern bool emit_tinfo_decl (tree);
 
 /* in search.c */
 extern tree lookup_base (tree, tree, base_access, base_kind *);
