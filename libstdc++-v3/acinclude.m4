@@ -30,6 +30,12 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
 
   AM_INIT_AUTOMAKE(libstdc++, 2.90.8)
 
+  # Never versions of autoconf add an underscore to these functions.
+  # Prevent future problems ...
+  ifdef([AC_PROG_CC_G],[],[define([AC_PROG_CC_G],defn([_AC_PROG_CC_G]))])
+  ifdef([AC_PROG_CC_GNU],[],[define([AC_PROG_CC_GNU],defn([_AC_PROG_CC_GNU]))])
+  ifdef([AC_PROG_CXX_G],[],[define([AC_PROG_CXX_G],defn([_AC_PROG_CXX_G]))])
+  ifdef([AC_PROG_CXX_GNU],[],[define([AC_PROG_CXX_GNU],defn([_AC_PROG_CXX_GNU]))])
 
 #  AC_PROG_CC
 
@@ -1515,7 +1521,7 @@ dnl Then, if any (well almost any) other make is called, and GNU make also
 dnl exists, then the other make wraps the GNU make.
 dnl
 dnl @author John Darrington <j.darrington@elvis.murdoch.edu.au>
-dnl @version $Id: acinclude.m4,v 1.46 2000/07/24 16:33:55 bkoz Exp $
+dnl @version $Id: acinclude.m4,v 1.47 2000/07/26 06:51:37 bkoz Exp $
 dnl
 dnl #### Changes for libstdc++-v3:  reformatting and linewrapping; prepending
 dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the

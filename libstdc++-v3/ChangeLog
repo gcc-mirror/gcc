@@ -1,3 +1,12 @@
+2000-07-26  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* src/misc-inst.cc (std): Remove instantiations.
+
+	* acinclude.m4: Add forward-looking bits for autoconf.
+	* aclocal.m4: Regenerate.
+
+	* bits/ostream.tcc (ostream::operator<<): Fix const char* case.
+
 2000-07-25  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* configure.in: Change AM_PROG_LIBTOOL to AC_PROG_LIBTOOL. Change
