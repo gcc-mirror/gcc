@@ -683,7 +683,8 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
 					      current_scope_in_chain);
 	  /* watch for updates; only update if path is good.  */
 	  if (path_ptr && WATCH_VALUES (rval, *via_virtual_ptr) != was)
-	    BINFO_INHERITANCE_CHAIN (base_binfo) = binfo;
+	    my_friendly_assert (BINFO_INHERITANCE_CHAIN (base_binfo) == binfo,
+				980827);
 	  if (rval == -2 && *via_virtual_ptr == 0)
 	    return rval;
 
@@ -741,7 +742,8 @@ get_base_distance (parent, binfo, protect, path_ptr)
       binfo = TYPE_BINFO (type);
 
       if (path_ptr)
-	BINFO_INHERITANCE_CHAIN (binfo) = NULL_TREE;
+	my_friendly_assert (BINFO_INHERITANCE_CHAIN (binfo) == NULL_TREE,
+			    980827);
     }
   else
     my_friendly_abort (92);
@@ -777,7 +779,7 @@ get_base_distance (parent, binfo, protect, path_ptr)
       && parent == binfo_member (BINFO_TYPE (parent),
 				 CLASSTYPE_VBASECLASSES (type)))
     {
-      BINFO_INHERITANCE_CHAIN (parent) = binfo;
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (parent) == binfo, 980827);
       new_binfo = parent;
       rval = 1;
     }
@@ -1003,7 +1005,7 @@ compute_access (basetype_path, field)
     }
 
   /* must reverse more than one element */
-  basetype_path = reverse_path (basetype_path, /*copy=*/0);
+  basetype_path = reverse_path (basetype_path);
   types = basetype_path;
   via_protected = 0;
   access = access_default_node;
@@ -1049,7 +1051,6 @@ compute_access (basetype_path, field)
       else
 	break;
     }
-  reverse_path (basetype_path, /*copy=*/0);
 
   /* No special visibilities apply.  Use normal rules.  */
 
@@ -1223,7 +1224,8 @@ lookup_field (xbasetype, name, protect, want_type)
     {
       type = xbasetype;
       basetype_path = TYPE_BINFO (type);
-      BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path) == NULL_TREE,
+			  980827);
     }
   else
     my_friendly_abort (97);
@@ -1315,9 +1317,6 @@ lookup_field (xbasetype, name, protect, want_type)
     }
 
   basetype_chain = build_expr_list (NULL_TREE, basetype_path);
-  TREE_VIA_PUBLIC (basetype_chain) = TREE_VIA_PUBLIC (basetype_path);
-  TREE_VIA_PROTECTED (basetype_chain) = TREE_VIA_PROTECTED (basetype_path);
-  TREE_VIA_VIRTUAL (basetype_chain) = TREE_VIA_VIRTUAL (basetype_path);
 
   /* The ambiguity check relies upon breadth first searching.  */
 
@@ -1341,9 +1340,6 @@ lookup_field (xbasetype, name, protect, want_type)
 
 	      SET_BINFO_FIELDS_MARKED (base_binfo);
 	      btypes = my_tree_cons (NULL_TREE, base_binfo, basetype_chain);
-	      TREE_VIA_PUBLIC (btypes) = TREE_VIA_PUBLIC (base_binfo);
-	      TREE_VIA_PROTECTED (btypes) = TREE_VIA_PROTECTED (base_binfo);
-	      TREE_VIA_VIRTUAL (btypes) = TREE_VIA_VIRTUAL (base_binfo);
 	      if (TREE_VIA_VIRTUAL (base_binfo))
 		btypes = my_tree_cons (NULL_TREE,
 				    TYPE_BINFO (BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i))),
@@ -1368,9 +1364,12 @@ lookup_field (xbasetype, name, protect, want_type)
       basetype_chain = TREE_CHAIN (basetype_chain);
       basetype_path = TREE_VALUE (basetype_chain);
       if (TREE_CHAIN (basetype_chain))
-	BINFO_INHERITANCE_CHAIN (basetype_path) = TREE_VALUE (TREE_CHAIN (basetype_chain));
+	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
+			    == TREE_VALUE (TREE_CHAIN (basetype_chain)),
+			    980827);
       else
-	BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
+	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
+			    == NULL_TREE, 980827);
 
       binfo = basetype_path;
       type = BINFO_TYPE (binfo);
@@ -1850,16 +1849,11 @@ lookup_fnfields (basetype_path, name, complain)
   if (basetype_path == TYPE_BINFO (type))
     {
       basetype_chain = CLASSTYPE_BINFO_AS_LIST (type);
-      TREE_VIA_PUBLIC (basetype_chain) = 1;
-      BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path) == NULL_TREE,
+			  980827);
     }
   else
-    {
-      basetype_chain = build_expr_list (NULL_TREE, basetype_path);
-      TREE_VIA_PUBLIC (basetype_chain) = TREE_VIA_PUBLIC (basetype_path);
-      TREE_VIA_PROTECTED (basetype_chain) = TREE_VIA_PROTECTED (basetype_path);
-      TREE_VIA_VIRTUAL (basetype_chain) = TREE_VIA_VIRTUAL (basetype_path);
-    }
+    basetype_chain = build_expr_list (NULL_TREE, basetype_path);
 
   /* The ambiguity check relies upon breadth first searching.  */
 
@@ -1883,9 +1877,6 @@ lookup_fnfields (basetype_path, name, complain)
 
 	      SET_BINFO_FIELDS_MARKED (base_binfo);
 	      btypes = my_tree_cons (NULL_TREE, base_binfo, basetype_chain);
-	      TREE_VIA_PUBLIC (btypes) = TREE_VIA_PUBLIC (base_binfo);
-	      TREE_VIA_PROTECTED (btypes) = TREE_VIA_PROTECTED (base_binfo);
-	      TREE_VIA_VIRTUAL (btypes) = TREE_VIA_VIRTUAL (base_binfo);
 	      if (TREE_VIA_VIRTUAL (base_binfo))
 		btypes = my_tree_cons (NULL_TREE,
 				    TYPE_BINFO (BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i))),
@@ -1910,9 +1901,12 @@ lookup_fnfields (basetype_path, name, complain)
       basetype_chain = TREE_CHAIN (basetype_chain);
       basetype_path = TREE_VALUE (basetype_chain);
       if (TREE_CHAIN (basetype_chain))
-	BINFO_INHERITANCE_CHAIN (basetype_path) = TREE_VALUE (TREE_CHAIN (basetype_chain));
+	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
+			    == TREE_VALUE (TREE_CHAIN (basetype_chain)),
+			    980827);
       else
-	BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
+	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
+			    == NULL_TREE, 980827);
 
       binfo = basetype_path;
       type = BINFO_TYPE (binfo);
@@ -2016,7 +2010,8 @@ lookup_member (xbasetype, name, protect, want_type)
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
     {
       basetype_path = TYPE_BINFO (xbasetype);
-      BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
+			  == NULL_TREE, 980827);
     }
   else
     my_friendly_abort (97);
@@ -2538,9 +2533,12 @@ convert_pointer_to_single_level (to_type, expr)
 
   binfo_of_derived = TYPE_BINFO (TREE_TYPE (TREE_TYPE (expr)));
   last = get_binfo (to_type, TREE_TYPE (TREE_TYPE (expr)), 0);
-  BINFO_INHERITANCE_CHAIN (last) = binfo_of_derived;
-  BINFO_INHERITANCE_CHAIN (binfo_of_derived) = NULL_TREE;
-  return build_vbase_path (PLUS_EXPR, build_pointer_type (to_type), expr, last, 1);
+  my_friendly_assert (BINFO_INHERITANCE_CHAIN (last) == binfo_of_derived,
+		      980827);
+  my_friendly_assert (BINFO_INHERITANCE_CHAIN (binfo_of_derived) == NULL_TREE,
+		      980827);
+  return build_vbase_path (PLUS_EXPR, build_pointer_type (to_type), expr,
+			   last, 1);
 }
 
 /* The main function which implements depth first search.

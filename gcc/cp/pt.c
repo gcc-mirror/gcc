@@ -4297,6 +4297,9 @@ instantiate_class_template (type)
 
 	    /* These are set up in xref_basetypes for normal classes, so
 	       we have to handle them here for template bases.  */
+
+	    unshare_base_binfos (elt);
+
 	    if (TYPE_USES_VIRTUAL_BASECLASSES (basetype))
 	      {
 		TYPE_USES_VIRTUAL_BASECLASSES (type) = 1;

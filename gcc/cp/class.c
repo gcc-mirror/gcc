@@ -265,11 +265,7 @@ build_vbase_path (code, type, expr, path, nonnull)
   nonnull_expr = expr;
 
   if (BINFO_INHERITANCE_CHAIN (path))
-    {
-      push_expression_obstack ();
-      path = reverse_path (path, /*copy=*/1);
-      pop_obstacks ();
-    }
+    path = reverse_path (path);
 
   basetype = BINFO_TYPE (path);
 

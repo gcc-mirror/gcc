@@ -39,7 +39,6 @@ static int list_hash PROTO((tree, tree, tree));
 static tree list_hash_lookup PROTO((int, int, int, int, tree, tree,
 				    tree));
 static void propagate_binfo_offsets PROTO((tree, tree));
-static void unshare_base_binfos PROTO((tree));
 static int avoid_overlap PROTO((tree, tree));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
@@ -584,10 +583,7 @@ propagate_binfo_offsets (binfo, offset)
       tree base_binfo = TREE_VEC_ELT (binfos, i);
 
       if (TREE_VIA_VIRTUAL (base_binfo))
-	{
-	  i += 1;
-	  unshare_base_binfos (base_binfo);
-	}	  
+	i += 1;
       else
 	{
 	  int j;
@@ -614,7 +610,7 @@ propagate_binfo_offsets (binfo, offset)
 	  BINFO_OFFSET (base_binfo) = offset;
 #endif
 
-	  unshare_base_binfos (base_binfo);
+	  propagate_binfo_offsets (base_binfo, offset);
 
 	  /* Go to our next class that counts for offset propagation.  */
 	  i = j;
@@ -624,39 +620,35 @@ propagate_binfo_offsets (binfo, offset)
     }
 }
 
-/* Makes new binfos for the indirect bases under BASE_BINFO, and updates
+/* Makes new binfos for the indirect bases under BINFO, and updates
    BINFO_OFFSET for them and their bases.  */
 
-static void
-unshare_base_binfos (base_binfo)
-     tree base_binfo;
+void
+unshare_base_binfos (binfo)
+     tree binfo;
 {
-  if (BINFO_BASETYPES (base_binfo))
+  tree binfos = BINFO_BASETYPES (binfo);
+  tree new_binfo;
+  int j;
+
+  if (binfos == NULL_TREE)
+    return;
+
+  /* Now unshare the structure beneath BINFO.  */
+  for (j = TREE_VEC_LENGTH (binfos)-1;
+       j >= 0; j--)
     {
-      tree base_binfos = BINFO_BASETYPES (base_binfo);
-      tree chain = NULL_TREE;
-      int j;
-
-      /* Now unshare the structure beneath BASE_BINFO.  */
-      for (j = TREE_VEC_LENGTH (base_binfos)-1;
-	   j >= 0; j--)
-	{
-	  tree base_base_binfo = TREE_VEC_ELT (base_binfos, j);
-	  TREE_VEC_ELT (base_binfos, j)
-	    = make_binfo (BINFO_OFFSET (base_base_binfo),
-			  base_base_binfo,
-			  BINFO_VTABLE (base_base_binfo),
-			  BINFO_VIRTUALS (base_base_binfo));
-	  chain = TREE_VEC_ELT (base_binfos, j);
-	  TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
-	  TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
-	  TREE_VIA_VIRTUAL (chain) = TREE_VIA_VIRTUAL (base_base_binfo);
-	  BINFO_INHERITANCE_CHAIN (chain) = base_binfo;
-	}
-
-      /* Completely unshare potentially shared data, and
-	 update what is ours.  */
-      propagate_binfo_offsets (base_binfo, BINFO_OFFSET (base_binfo));
+      tree base_binfo = TREE_VEC_ELT (binfos, j);
+      new_binfo = TREE_VEC_ELT (binfos, j)
+	= make_binfo (BINFO_OFFSET (base_binfo),
+		      base_binfo,
+		      BINFO_VTABLE (base_binfo),
+		      BINFO_VIRTUALS (base_binfo));
+      TREE_VIA_PUBLIC (new_binfo) = TREE_VIA_PUBLIC (base_binfo);
+      TREE_VIA_PROTECTED (new_binfo) = TREE_VIA_PROTECTED (base_binfo);
+      TREE_VIA_VIRTUAL (new_binfo) = TREE_VIA_VIRTUAL (base_binfo);
+      BINFO_INHERITANCE_CHAIN (new_binfo) = binfo;
+      unshare_base_binfos (new_binfo);
     }
 }
 
@@ -758,21 +750,19 @@ layout_basetypes (rec, max)
       tree field = TYPE_FIELDS (rec);
 
       if (TREE_VIA_VIRTUAL (base_binfo))
-	unshare_base_binfos (base_binfo);
-      else
-	{
-	  my_friendly_assert (TREE_TYPE (field) == basetype, 23897);
+	continue;
 
-	  if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
-	    cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
-			basetype, rec);
+      my_friendly_assert (TREE_TYPE (field) == basetype, 23897);
 
-	  BINFO_OFFSET (base_binfo)
-	    = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)),
-			      BITS_PER_UNIT));
-	  unshare_base_binfos (base_binfo);
-	  TYPE_FIELDS (rec) = TREE_CHAIN (field);
-	}
+      if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
+	cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
+		    basetype, rec);
+
+      BINFO_OFFSET (base_binfo)
+	= size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)),
+			  BITS_PER_UNIT));
+      propagate_binfo_offsets (base_binfo, BINFO_OFFSET (base_binfo));
+      TYPE_FIELDS (rec) = TREE_CHAIN (field);
     }
 
   for (vbase_types = CLASSTYPE_VBASECLASSES (rec); vbase_types;
@@ -780,6 +770,7 @@ layout_basetypes (rec, max)
     {
       BINFO_INHERITANCE_CHAIN (vbase_types) = TYPE_BINFO (rec);
       unshare_base_binfos (vbase_types);
+      propagate_binfo_offsets (vbase_types, BINFO_OFFSET (vbase_types));
 
       if (extra_warnings)
 	{
@@ -1258,26 +1249,24 @@ binfo_value (elem, type)
   return get_binfo (elem, type, 0);
 }
 
-/* Reverse the BINFO-chain given by PATH.  (If the 
+/* Return a reversed copy of the BINFO-chain given by PATH.  (If the 
    BINFO_INHERITANCE_CHAIN points from base classes to derived
    classes, it will instead point from derived classes to base
-   classes.)  Returns the first node in the reversed chain.  If COPY
-   is non-zero, the nodes are copied as the chain is traversed.  */
+   classes.)  Returns the first node in the reversed chain.  */
 
 tree
-reverse_path (path, copy)
+reverse_path (path)
      tree path;
-     int copy;
 {
-  register tree prev = 0, tmp, next;
-  for (tmp = path; tmp; tmp = next)
+  register tree prev = NULL_TREE, cur;
+  push_expression_obstack ();
+  for (cur = path; cur; cur = BINFO_INHERITANCE_CHAIN (cur))
     {
-      if (copy) 
-	tmp = copy_node (tmp);
-      next = BINFO_INHERITANCE_CHAIN (tmp);
-      BINFO_INHERITANCE_CHAIN (tmp) = prev;
-      prev = tmp;
+      tree r = copy_node (cur);
+      BINFO_INHERITANCE_CHAIN (r) = prev;
+      prev = r;
     }
+  pop_obstacks ();
   return prev;
 }
 
