@@ -1,3 +1,9 @@
+Mon May 17 01:42:34 1999  Stu Grossman  <grossman@babylon-5.cygnus.com>
+
+	* cplus-dem.c (demangle_fund_type (near 'I' case)): Don't advance
+	the *mangled pointer beyond the end of the string.  Clean up code to
+	match prevailing coding style.
+
 1999-05-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* tmpnam.c (L_tmpnam): Fix typo.

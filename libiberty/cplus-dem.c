@@ -51,6 +51,8 @@ char * realloc ();
 
 #include "libiberty.h"
 
+#define min(X,Y) (((X) < (Y)) ? (X) : (Y))
+
 static const char *mystrstr PARAMS ((const char *, const char *));
 
 static const char *
@@ -3373,14 +3375,14 @@ demangle_fund_type (work, mangled, result)
 	  break;
 	}
     case 'I':
-      ++(*mangled);
+      (*mangled)++;
       if (**mangled == '_')
 	{
 	  int i;
-	  ++(*mangled);
+	  (*mangled)++;
 	  for (i = 0;
-	       (i < sizeof (buf) - 1 && **mangled && **mangled != '_');
-	       ++(*mangled), ++i)
+	       i < sizeof (buf) - 1 && **mangled && **mangled != '_';
+	       (*mangled)++, i++)
 	    buf[i] = **mangled;
 	  if (**mangled != '_')
 	    {
@@ -3388,13 +3390,13 @@ demangle_fund_type (work, mangled, result)
 	      break;
 	    }
 	  buf[i] = '\0';
-	  ++(*mangled);
+	  (*mangled)++;
 	}
       else
 	{
 	  strncpy (buf, *mangled, 2);
 	  buf[2] = '\0';
-	  *mangled += 2;
+	  *mangled += min (strlen (*mangled), 2);
 	}
       sscanf (buf, "%x", &dec);
       sprintf (buf, "int%i_t", dec);
