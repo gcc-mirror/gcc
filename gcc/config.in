@@ -330,8 +330,11 @@
 /* Define if printf supports %p. */
 #undef HAVE_PRINTF_PTR
 
-/* Define if mmap can get us zeroed pages without MAP_FIXED. */
-#undef HAVE_MMAP_ANYWHERE
+/* Define if mmap can get us zeroed pages from /dev/zero. */
+#undef HAVE_MMAP_DEV_ZERO
+
+/* Define if mmap can get us zeroed pages using MAP_ANON(YMOUS). */
+#undef HAVE_MMAP_ANON
 
 /* Define if read-only mmap of a plain file works. */
 #undef HAVE_MMAP_FILE

@@ -737,16 +737,17 @@ AC_SUBST($1)dnl
 # Check whether mmap can map an arbitrary page from /dev/zero or with
 # MAP_ANONYMOUS, without MAP_FIXED.
 AC_DEFUN([AC_FUNC_MMAP_ANYWHERE],
-[AC_CHECK_HEADERS(unistd.h)
-AC_CHECK_FUNCS(getpagesize)
-AC_CACHE_CHECK(for working mmap which provides zeroed pages anywhere,
-  ac_cv_func_mmap_anywhere,
-[AC_TRY_RUN([
-/* Test by Richard Henderson and Alexandre Oliva.
-   Check whether mmap MAP_ANONYMOUS or mmap from /dev/zero works. */
+[AC_CHECK_FUNCS(getpagesize)
+# The test program for the next two tests is the same except for one
+# set of ifdefs.
+changequote({{{,}}})dnl
+{{{cat >ct-mmap.inc <<'EOF'
 #include <sys/types.h>
-#include <fcntl.h>
 #include <sys/mman.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <setjmp.h>
+#include <stdio.h>
 
 #if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
 # define MAP_ANONYMOUS MAP_ANON
@@ -793,45 +794,246 @@ AC_CACHE_CHECK(for working mmap which provides zeroed pages anywhere,
 
 #endif /* no HAVE_GETPAGESIZE */
 
-int main()
+#ifndef MAP_FAILED
+# define MAP_FAILED -1
+#endif
+
+#undef perror_exit
+#define perror_exit(str, val) \
+  do { perror(str); exit(val); } while (0)
+
+/* Some versions of cygwin mmap require that munmap is called with the
+   same parameters as mmap.  GCC expects that this is not the case.
+   Test for various forms of this problem.  Warning - icky signal games.  */
+
+static sigset_t unblock_sigsegv;
+static jmp_buf r;
+static size_t pg;
+static int devzero;
+
+static char *
+anonmap (size)
+     size_t size;
 {
-  char *x;
-  int fd, pg;
-
-#ifndef MAP_ANONYMOUS
-  fd = open("/dev/zero", O_RDWR);
-  if (fd < 0)
-    exit(1);
-#endif
-
-  pg = getpagesize();
-#ifdef MAP_ANONYMOUS
-  x = (char*)mmap(0, pg, PROT_READ|PROT_WRITE,
-                  MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+#ifdef USE_MAP_ANON
+  return (char *) mmap (0, size, PROT_READ|PROT_WRITE,
+			MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 #else
-  x = (char*)mmap(0, pg, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+  return (char *) mmap (0, size, PROT_READ|PROT_WRITE,
+			MAP_PRIVATE, devzero, 0);
 #endif
-  if (x == (char *) -1)
-    exit(2);
+}
+
+static void
+sigsegv (unused)
+     int unused;
+{
+  sigprocmask (SIG_UNBLOCK, &unblock_sigsegv, 0);
+  longjmp (r, 1);
+}
+
+/* Basic functionality test.  */
+void
+test_0 ()
+{
+  char *x = anonmap (pg);
+  if (x == (char *) MAP_FAILED)
+    perror_exit("test 0 mmap", 2);
 
   *(int *)x += 1;
 
   if (munmap(x, pg) < 0)
-    exit(3);
+    perror_exit("test 0 munmap", 3);
+}
+
+/* 1. If we map a 2-page region and unmap its second page, the first page
+   must remain.  */
+static void
+test_1 ()
+{
+  char *x = anonmap (pg * 2);
+  if (x == (char *)MAP_FAILED)
+    perror_exit ("test 1 mmap", 4);
+
+  signal (SIGSEGV, sigsegv);
+  if (setjmp (r))
+    perror_exit ("test 1 fault", 5);
+
+  x[0] = 1;
+  x[pg] = 1;
+
+  if (munmap (x + pg, pg) < 0)
+    perror_exit ("test 1 munmap 1", 6);
+  x[0] = 2;
+
+  if (setjmp (r) == 0)
+    {
+      x[pg] = 1;
+      perror_exit ("test 1 no fault", 7);
+    }
+  if (munmap (x, pg) < 0)
+    perror_exit ("test 1 munmap 2", 8);
+}
+
+/* 2. If we map a 2-page region and unmap its first page, the second
+   page must remain.  */
+static void
+test_2 ()
+{
+  char *x = anonmap (pg * 2);
+  if (x == (char *)MAP_FAILED)
+    perror_exit ("test 2 mmap", 9);
+
+  signal (SIGSEGV, sigsegv);
+  if (setjmp (r))
+    perror_exit ("test 2 fault", 10);
+
+  x[0] = 1;
+  x[pg] = 1;
+
+  if (munmap (x, pg) < 0)
+    perror_exit ("test 2 munmap 1", 11);
+
+  x[pg] = 2;
+
+  if (setjmp (r) == 0)
+    {
+      x[0] = 1;
+      perror_exit ("test 2 no fault", 12);
+    }
+
+  if (munmap (x+pg, pg) < 0)
+    perror_exit ("test 2 munmap 2", 13);
+}
+
+/* 3. If we map two adjacent 1-page regions and unmap them both with
+   one munmap, both must go away.
+
+   Getting two adjacent 1-page regions with two mmap calls is slightly
+   tricky.  All OS's tested skip over already-allocated blocks; therefore
+   we have been careful to unmap all allocated regions in previous tests.
+   HP/UX allocates pages backward in memory.  No OS has yet been observed
+   to be so perverse as to leave unmapped space between consecutive calls
+   to mmap.  */
+
+static void
+test_3 ()
+{
+  char *x, *y, *z;
+
+  x = anonmap (pg);
+  if (x == (char *)MAP_FAILED)
+    perror_exit ("test 3 mmap 1", 14);
+  y = anonmap (pg);
+  if (y == (char *)MAP_FAILED)
+    perror_exit ("test 3 mmap 2", 15);
+
+  if (y != x + pg)
+    {
+      if (y == x - pg)
+	z = y, y = x, x = z;
+      else
+	{
+	  fprintf (stderr, "test 3 nonconsecutive pages - %lx, %lx\n",
+		   (unsigned long)x, (unsigned long)y);
+	  exit (16);
+	}
+    }
+
+  signal (SIGSEGV, sigsegv);
+  if (setjmp (r))
+    perror_exit ("test 3 fault", 17);
+
+  x[0] = 1;
+  y[0] = 1;
+
+  if (munmap (x, pg*2) < 0)
+    perror_exit ("test 3 munmap", 18);
+
+  if (setjmp (r) == 0)
+    {
+      x[0] = 1;
+      perror_exit ("test 3 no fault 1", 19);
+    }
+  
+  signal (SIGSEGV, sigsegv);
+  if (setjmp (r) == 0)
+    {
+      y[0] = 1;
+      perror_exit ("test 3 no fault 2", 20);
+    }
+}
+
+int
+main ()
+{
+  sigemptyset (&unblock_sigsegv);
+  sigaddset (&unblock_sigsegv, SIGSEGV);
+  pg = getpagesize ();
+#ifndef USE_MAP_ANON
+  devzero = open ("/dev/zero", O_RDWR);
+  if (devzero < 0)
+    perror_exit ("open /dev/zero", 1);
+#endif
+
+  test_0();
+  test_1();
+  test_2();
+  test_3();
 
   exit(0);
-}], ac_cv_func_mmap_anywhere=yes, ac_cv_func_mmap_anywhere=no,
-ac_cv_func_mmap_anywhere=no)])
-if test $ac_cv_func_mmap_anywhere = yes; then
-  AC_DEFINE(HAVE_MMAP_ANYWHERE, 1,
-	    [Define if mmap can get us zeroed pages without MAP_FIXED.])
+}
+EOF}}}
+changequote([,])dnl
+
+AC_CACHE_CHECK(for working mmap from /dev/zero,
+  ac_cv_func_mmap_dev_zero,
+[AC_TRY_RUN(
+ [#include "ct-mmap.inc"],
+ ac_cv_func_mmap_dev_zero=yes,
+ [if test $? -lt 4
+ then ac_cv_func_mmap_dev_zero=no
+ else ac_cv_func_mmap_dev_zero=buggy
+ fi],
+ # If this is not cygwin, and /dev/zero is a character device, it's probably
+ # safe to assume it works.
+ [case "$host_os" in
+   cygwin* | win32 | pe | mingw* ) ac_cv_func_mmap_dev_zero=buggy ;;
+   * ) if test -c /dev/zero
+       then ac_cv_func_mmap_dev_zero=yes
+       else ac_cv_func_mmap_dev_zero=no
+       fi ;;
+  esac])
+])
+if test $ac_cv_func_mmap_dev_zero = yes; then
+  AC_DEFINE(HAVE_MMAP_DEV_ZERO, 1,
+	    [Define if mmap can get us zeroed pages from /dev/zero.])
 fi
+
+AC_CACHE_CHECK([for working mmap with MAP_ANON(YMOUS)],
+  ac_cv_func_mmap_anon,
+[AC_TRY_RUN(
+ [#define USE_MAP_ANON
+#include "ct-mmap.inc"],
+ ac_cv_func_mmap_anon=yes,
+ [if test $? -lt 4
+ then ac_cv_func_mmap_anon=no
+ else ac_cv_func_mmap_anon=buggy
+ fi],
+ # Unlike /dev/zero, it is not safe to assume MAP_ANON(YMOUS) works
+ # just because it's there. Some SCO Un*xen define it but don't implement it.
+ ac_cv_func_mmap_anon=no)
+])
+if test $ac_cv_func_mmap_anon = yes; then
+  AC_DEFINE(HAVE_MMAP_ANON, 1,
+	    [Define if mmap can get us zeroed pages using MAP_ANON(YMOUS).])
+fi
+rm -f ct-mmap.inc
 ])
 
 # Check whether mmap can map a plain file, without MAP_FIXED.
 AC_DEFUN([AC_FUNC_MMAP_FILE], 
-[AC_REQUIRE([AC_FUNC_MMAP_ANYWHERE])dnl
-AC_CACHE_CHECK(for working mmap of a file, ac_cv_func_mmap_file,
+[AC_CACHE_CHECK(for working mmap of a file, ac_cv_func_mmap_file,
 [# Create a file one thousand bytes long.
 for i in 1 2 3 4 5 6 7 8 9 0
 do for j in 1 2 3 4 5 6 7 8 9 0

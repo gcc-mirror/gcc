@@ -29,16 +29,37 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "timevar.h"
 
-#ifdef HAVE_MMAP_ANYWHERE
-#include <sys/mman.h>
+/* Prefer MAP_ANON(YMOUS) to /dev/zero, since we don't need to keep a
+   file open.  Prefer either to valloc.  */
+#ifdef HAVE_MMAP_ANON
+# undef HAVE_MMAP_DEV_ZERO
+# undef HAVE_VALLOC
+
+# include <sys/mman.h>
+# ifndef MAP_FAILED
+#  define MAP_FAILED -1
+# endif
+# if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
+#  define MAP_ANONYMOUS MAP_ANON
+# endif
+# define USING_MMAP
+
 #endif
 
-#ifndef MAP_FAILED
-#define MAP_FAILED -1
+#ifdef HAVE_MMAP_DEV_ZERO
+# undef HAVE_VALLOC
+
+# include <sys/mman.h>
+# ifndef MAP_FAILED
+#  define MAP_FAILED -1
+# endif
+# define USING_MMAP
+
 #endif
 
-#if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
-#define MAP_ANONYMOUS MAP_ANON
+#ifdef HAVE_VALLOC
+# undef MAP_FAILED
+# define MAP_FAILED 0
 #endif
 
 /* Stategy: 
@@ -279,7 +300,7 @@ static struct globals
   unsigned short context_depth;
 
   /* A file descriptor open to /dev/zero for reading.  */
-#if defined (HAVE_MMAP_ANYWHERE) && !defined(MAP_ANONYMOUS)
+#if defined (HAVE_MMAP_DEV_ZERO)
   int dev_zero_fd;
 #endif
 
@@ -445,38 +466,31 @@ debug_print_page_list (order)
 }
 
 /* Allocate SIZE bytes of anonymous memory, preferably near PREF,
-   (if non-null).  */
+   (if non-null).  The ifdef structure here is intended to cause a
+   compile error unless exactly one of the HAVE_* is defined.  */
 
 static inline char *
 alloc_anon (pref, size)
      char *pref ATTRIBUTE_UNUSED;
      size_t size;
 {
-  char *page;
-
-#ifdef HAVE_MMAP_ANYWHERE
-#ifdef MAP_ANONYMOUS
-  page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
-			MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-#else
-  page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
-			MAP_PRIVATE, G.dev_zero_fd, 0);
+#ifdef HAVE_MMAP_ANON
+  char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
+			      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 #endif
+#ifdef HAVE_MMAP_DEV_ZERO
+  char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
+			      MAP_PRIVATE, G.dev_zero_fd, 0);
+#endif
+#ifdef HAVE_VALLOC
+  char *page = (char *) valloc (size);
+#endif
+
   if (page == (char *) MAP_FAILED)
     {
       fputs ("Virtual memory exhausted!\n", stderr);
       exit(1);
     }
-#else
-#ifdef HAVE_VALLOC
-  page = (char *) valloc (size);
-  if (!page)
-    {
-      fputs ("Virtual memory exhausted!\n", stderr);
-      exit(1);
-    }
-#endif /* HAVE_VALLOC */
-#endif /* HAVE_MMAP_ANYWHERE */
 
   /* Remember that we allocated this memory.  */
   G.bytes_mapped += size;
@@ -526,7 +540,7 @@ alloc_page (order)
       else
 	free (p);
     }
-#ifdef HAVE_MMAP_ANYWHERE
+#ifdef USING_MMAP
   else if (entry_size == G.pagesize)
     {
       /* We want just one page.  Allocate a bunch of them and put the
@@ -601,7 +615,7 @@ release_pages ()
 {
   page_entry *p, *next;
 
-#ifdef HAVE_MMAP_ANYWHERE
+#ifdef USING_MMAP
   char *start;
   size_t len;
 
@@ -628,8 +642,6 @@ release_pages ()
       G.bytes_mapped -= len;
     }
 #else
-#ifdef HAVE_VALLOC
-
   for (p = G.free_pages; p; p = next)
     {
       next = p->next;
@@ -637,8 +649,7 @@ release_pages ()
       G.bytes_mapped -= p->bytes;
       free (p);
     }
-#endif /* HAVE_VALLOC */
-#endif /* HAVE_MMAP_ANYWHERE */
+#endif /* USING_MMAP */
 
   G.free_pages = NULL;
 }
@@ -849,7 +860,7 @@ init_ggc ()
   G.pagesize = getpagesize();
   G.lg_pagesize = exact_log2 (G.pagesize);
 
-#if defined (HAVE_MMAP_ANYWHERE) && !defined(MAP_ANONYMOUS)
+#ifdef HAVE_MMAP_DEV_ZERO
   G.dev_zero_fd = open ("/dev/zero", O_RDONLY);
   if (G.dev_zero_fd == -1)
     abort ();
@@ -863,13 +874,14 @@ init_ggc ()
 
   G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
-#ifdef HAVE_MMAP_ANYWHERE
+#ifdef USING_MMAP
   /* StunOS has an amazing off-by-one error for the first mmap allocation
      after fiddling with RLIMIT_STACK.  The result, as hard as it is to
      believe, is an unaligned page allocation, which would cause us to
      hork badly if we tried to use it.  */
   {
     char *p = alloc_anon (NULL, G.pagesize);
+    struct page_entry *e;
     if ((size_t)p & (G.pagesize - 1))
       {
 	/* How losing.  Discard this one and try another.  If we still
@@ -879,7 +891,13 @@ init_ggc ()
 	if ((size_t)p & (G.pagesize - 1))
 	  abort ();
       }
-    munmap (p, G.pagesize);
+
+    /* We have a good page, might as well hold onto it... */
+    e = (struct page_entry *) xcalloc (1, sizeof (struct page_entry));
+    e->bytes = G.pagesize;
+    e->page = p;
+    e->next = G.free_pages;
+    G.free_pages = e;
   }
 #endif
 
