@@ -20,6 +20,9 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* Limit the length of a stabs entry (for the broken Acorn assembler) */
+#define DBX_CONTIN_LENGTH 80
+
 #include "arm/riscix.h"
 
 /* The native RISCiX assembler does not support stabs of any kind; because
@@ -31,8 +34,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DBX_DEBUGGING_INFO
 
 /* Unfortunately dbx doesn't understand these */
-#define DEFAULT_GDB_EXTENSIONS 0
+/* Dbx on RISCiX is so broken that I've given up trying to support it.
+   lets just support gdb. */
+/* #define DEFAULT_GDB_EXTENSIONS 0 */
 /* RISCiX dbx doesn't accept xrefs */
-#define DBX_NO_XREFS 1
-/* dbx wants lbracs before variables */
-/* #define DBX_LBRAC_FIRST 1*/
+/* #define DBX_NO_XREFS 1 */
+
