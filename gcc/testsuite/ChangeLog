@@ -1,7 +1,7 @@
 2004-05-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15083
-	* g++.dg/warn/noeffect5.C: New test.
+	* g++.dg/warn/noeffect6.C: New test.
 
 	PR c++/15471
 	* g++.dg/expr/ptrmem4.C: New test.
