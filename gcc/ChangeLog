@@ -62,6 +62,9 @@ doc:
 
 Thu May  9 11:50:09 2002  Jeffrey A Law  (law@cygnus.com)
 
+	* athlon.md, k6.md, pentium.md, ppro.md): New files.
+	* i386.md: Move scheduling information into new files.
+
 	* i386.md (type attribute): Add "rotate" for rotate insns.
 	(rotate insns): Set type to "rotate".
 	(various attributes and function units): Treat rotate like shift.
