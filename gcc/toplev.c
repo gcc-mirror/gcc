@@ -2199,7 +2199,6 @@ compile_file (name)
       if (flag_verbose_asm)
 	{
 	  /* Print the list of options in effect.  */
-	  /* ??? May want to only do this if -fverbose-asm or somesuch.  */
 	  print_version (asm_out_file, ASM_COMMENT_START);
 	  print_switch_values (asm_out_file, 0, MAX_LINE,
 			       ASM_COMMENT_START, " ", "\n");
