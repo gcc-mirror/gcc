@@ -261,6 +261,8 @@ java_decode_option (argc, argv)
 {
   char *p = argv[0];
 
+  jcf_path_init ();
+
   if (strcmp (p, "-version") == 0)
     {
       version_flag = 1;
@@ -306,7 +308,7 @@ java_decode_option (argc, argv)
 #define CLARG "-fCLASSPATH="
   if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
     {
-      jcf_path_CLASSPATH_arg (p + sizeof (CLARG) - 1);
+      jcf_path_classpath_arg (p + sizeof (CLARG) - 1);
       return 1;
     }
 #undef CLARG
@@ -314,6 +316,13 @@ java_decode_option (argc, argv)
   if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
     {
       jcf_path_classpath_arg (p + sizeof (CLARG) - 1);
+      return 1;
+    }
+#undef CLARG
+#define CLARG "-fbootclasspath="
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      jcf_path_bootclasspath_arg (p + sizeof (CLARG) - 1);
       return 1;
     }
 #undef CLARG
