@@ -1601,6 +1601,22 @@ sprintf(some_string, "hello");
 @noindent
 will produce an error.
 
+Note, if the poisoned identifier appears through the result of macro
+expansion it @emph{won't} cause an error.  So if you poison an
+identifier you need not worry about system headers defining macros that
+use it.
+
+For example,
+
+@example
+#define strrchr rindex
+#pragma GCC poison rindex
+strrchr(some_string, 'h');
+@end example
+
+@noindent
+will not produce an error.
+
 @node Macro Pitfalls,, Poisoning, Macros
 @subsection Pitfalls and Subtleties of Macros
 @cindex problems with macros
