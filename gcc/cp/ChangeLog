@@ -1,3 +1,8 @@
+Sat Sep 20 15:31:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_over_call): Do require_complete_type before
+	build_cplus_new.
+
 Thu Sep 18 16:47:52 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (lookup_field): Call complete_type in all cases.
