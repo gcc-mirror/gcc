@@ -756,6 +756,9 @@ static T
 _Jv_JNI_CallStaticMethodV (JNIEnv *env, jclass klass,
 			   jmethodID id, va_list args)
 {
+  JvAssert (((id->accflags) & java::lang::reflect::Modifier::STATIC));
+  JvAssert ((&ClassClass)->isInstance (klass));
+
   return _Jv_JNI_CallAnyMethodV<T, static_type> (env, NULL, klass, id, args);
 }
 
@@ -767,6 +770,9 @@ _Jv_JNI_CallStaticMethod (JNIEnv *env, jclass klass, jmethodID id, ...)
 {
   va_list args;
   T result;
+
+  JvAssert (((id->accflags) & java::lang::reflect::Modifier::STATIC));
+  JvAssert ((&ClassClass)->isInstance (klass));
 
   va_start (args, id);
   result = _Jv_JNI_CallAnyMethodV<T, static_type> (env, NULL, klass,
@@ -783,6 +789,9 @@ static T
 _Jv_JNI_CallStaticMethodA (JNIEnv *env, jclass klass, jmethodID id,
 			   jvalue *args)
 {
+  JvAssert (((id->accflags) & java::lang::reflect::Modifier::STATIC));
+  JvAssert ((&ClassClass)->isInstance (klass));
+
   return _Jv_JNI_CallAnyMethodA<T, static_type> (env, NULL, klass, id, args);
 }
 
