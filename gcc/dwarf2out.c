@@ -6732,6 +6732,13 @@ add_AT_location_description (die, attr_kind, rtl)
   if (is_pseudo_reg (rtl)
       || (GET_CODE (rtl) == MEM
 	  && is_pseudo_reg (XEXP (rtl, 0)))
+      /* This can happen for a PARM_DECL with a DECL_INCOMING_RTL which 
+	 references the internal argument pointer (a pseudo) in a function
+	 where all references to the internal argument pointer were
+	 eliminated via the optimizers.  */
+      || (GET_CODE (rtl) == MEM
+	  && GET_CODE (XEXP (rtl, 0)) == PLUS
+	  && is_pseudo_reg (XEXP (XEXP (rtl, 0), 0)))
       || (GET_CODE (rtl) == CONCAT
 	  && is_pseudo_reg (XEXP (rtl, 0))
 	  && is_pseudo_reg (XEXP (rtl, 1))))
