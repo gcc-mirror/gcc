@@ -1,5 +1,8 @@
 2002-02-07  Tom Tromey  <tromey@redhat.com>
 
+	* include/name-finder.h: Conditionally include sys/wait.h.
+	* include/config.h.in: Rebuilt.
+
 	* java/io/natFile.cc (_access): Don't stack-allocate buffer.
 	Size buffer based on real size of string.
 	(_stat): Likewise.
