@@ -243,5 +243,5 @@ strsignal.o: config.h $(INCDIR)/libiberty.h
 xatexit.o: $(INCDIR)/libiberty.h
 xexit.o: $(INCDIR)/libiberty.h
 xmalloc.o: $(INCDIR)/libiberty.h
-xstrdup.o: $(INCDIR)/libiberty.h
+xstrdup.o: config.h $(INCDIR)/libiberty.h
 xstrerror.o: config.h $(INCDIR)/libiberty.h
