@@ -999,9 +999,11 @@ mem_aligned_8 (mem)
 
   addr = XEXP (mem, 0);
 
-#if 1
   /* Now that all misaligned double parms are copied on function entry,
-     we can assume any 64-bit object is 64-bit aligned.  */
+     we can assume any 64-bit object is 64-bit aligned except those which
+     are at unaligned offsets from the stack or frame pointer.  If the
+     TARGET_UNALIGNED_DOUBLES switch is given, we do not make this
+     assumption.  */
 
   /* See what register we use in the address.  */
   base = 0;
@@ -1029,49 +1031,13 @@ mem_aligned_8 (mem)
       if ((INTVAL (offset) & 0x7) == 0)
 	return 1;
     }
-  else
-    /* Anything else, we know is properly aligned.  */
+  /* Anything else we know is properly aligned unless TARGET_UNALIGNED_DOUBLES
+     is true, in which case we can only assume that an access is aligned if
+     it is to an aggregate, it is to a constant address, or the address
+     involves a LO_SUM.  */
+  else if (! TARGET_UNALIGNED_DOUBLES || MEM_IN_STRUCT_P (mem)
+	   || CONSTANT_P (addr) || GET_CODE (addr) == LO_SUM)
     return 1;
-#else
-  /* If the operand is known to have been allocated in static storage, then
-     it must be aligned.  */
-
-  if (CONSTANT_P (addr) || GET_CODE (addr) == LO_SUM)
-    return 1;
-
-  base = 0;
-  if (GET_CODE (addr) == PLUS)
-    {
-      if (GET_CODE (XEXP (addr, 0)) == REG
-          && GET_CODE (XEXP (addr, 1)) == CONST_INT)
-        {
-          base = XEXP (addr, 0);
-          offset = XEXP (addr, 1);
-        }
-    }
-  else if (GET_CODE (addr) == REG)
-    {
-      base = addr;
-      offset = const0_rtx;
-    }
-
-  /* Trust round enough offsets from the stack or frame pointer.
-     If TARGET_HOPE_ALIGN, trust round enough offset from any register.
-     If it is obviously unaligned, don't ever return true.  */
-  if (base
-      && (REGNO (base) == FRAME_POINTER_REGNUM
-          || REGNO (base) == STACK_POINTER_REGNUM
-	  || TARGET_HOPE_ALIGN))
-    {
-      if ((INTVAL (offset) & 0x7) == 0)
-	return 1;
-    }
-  /* Otherwise, we can assume that an access is aligned if it is to an
-     aggregate.  Also, if TARGET_HOPE_ALIGN, then assume everything that isn't
-     obviously unaligned is aligned.  */
-  else if (MEM_IN_STRUCT_P (mem) || TARGET_HOPE_ALIGN)
-    return 1;
-#endif
 
   /* An obviously unaligned address.  */
   return 0;
