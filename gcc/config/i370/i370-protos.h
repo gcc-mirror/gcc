@@ -39,7 +39,6 @@ extern int unsigned_jump_follows_p PARAMS ((rtx));
 extern int handle_pragma PARAMS ((int (*)(void), void (*)(int), const char *));
 #endif /* TREE_CODE */
 
-extern char mvs_map_char PARAMS ((int));
 extern void mvs_add_label PARAMS ((int));
 extern int mvs_check_label PARAMS ((int));
 extern int mvs_check_page PARAMS ((FILE *, int, int));

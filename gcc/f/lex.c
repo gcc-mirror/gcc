@@ -219,11 +219,6 @@ ffelex_append_to_token_ (char c)
       ffelex_token_->size <<= 1;
       assert (ffelex_token_->length < ffelex_token_->size);
     }
-#ifdef MAP_CHARACTER
-Sorry, MAP_CHARACTER is not going to work as expected in GNU Fortran,
-please contact fortran@gnu.org if you wish to fund work to
-port g77 to non-ASCII machines.
-#endif
   ffelex_token_->text[ffelex_token_->length++] = c;
 }
 
