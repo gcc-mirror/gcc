@@ -173,8 +173,7 @@
           (cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 4))))
                      (const_int 131072))
                  (const_int 4)
-		 (ne (symbol_ref "flag_pic && ! TARGET_EMBEDDED_PIC")
-		     (const_int 0))
+		 (ne (symbol_ref "flag_pic") (const_int 0))
 		 (const_int 24)
 		 ] (const_int 12))
 
@@ -4519,23 +4518,6 @@ dsrl\t%3,%3,1\n\
 {
   if (mips_legitimize_move (DImode, operands[0], operands[1]))
     DONE;
-
-  /* If we are generating embedded PIC code, and we are referring to a
-     symbol in the .text section, we must use an offset from the start
-     of the function.  */
-  if (TARGET_EMBEDDED_PIC
-      && (GET_CODE (operands[1]) == LABEL_REF
-	  || (GET_CODE (operands[1]) == SYMBOL_REF
-	      && ! SYMBOL_REF_FLAG (operands[1]))))
-    {
-      rtx temp;
-
-      temp = embedded_pic_offset (operands[1]);
-      temp = gen_rtx_PLUS (Pmode, embedded_pic_fnaddr_reg (),
-			   force_reg (DImode, temp));
-      emit_move_insn (operands[0], force_reg (DImode, temp));
-      DONE;
-    }
 })
 
 ;; For mips16, we need a special case to handle storing $31 into
@@ -4663,23 +4645,6 @@ dsrl\t%3,%3,1\n\
 {
   if (mips_legitimize_move (SImode, operands[0], operands[1]))
     DONE;
-
-  /* If we are generating embedded PIC code, and we are referring to a
-     symbol in the .text section, we must use an offset from the start
-     of the function.  */
-  if (TARGET_EMBEDDED_PIC
-      && (GET_CODE (operands[1]) == LABEL_REF
-	  || (GET_CODE (operands[1]) == SYMBOL_REF
-	      && ! SYMBOL_REF_FLAG (operands[1]))))
-    {
-      rtx temp;
-
-      temp = embedded_pic_offset (operands[1]);
-      temp = gen_rtx_PLUS (Pmode, embedded_pic_fnaddr_reg (),
-			   force_reg (SImode, temp));
-      emit_move_insn (operands[0], force_reg (SImode, temp));
-      DONE;
-    }
 })
 
 ;; We can only store $ra directly into a small sp offset.
@@ -8091,7 +8056,7 @@ srl\t%M0,%M1,%2\n\
 	(label_ref (match_operand 0 "" "")))]
   "!TARGET_MIPS16"
 {
-  if (flag_pic && ! TARGET_EMBEDDED_PIC)
+  if (flag_pic)
     {
       if (get_attr_length (insn) <= 8)
 	return "%*b\t%l0%/";
@@ -8107,12 +8072,11 @@ srl\t%M0,%M1,%2\n\
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set (attr "length")
-	;; we can't use `j' when emitting non-embedded PIC, so we emit
-	;; branch, if it's in range, or load the address of the branch
-	;; target into $at in a PIC-compatible way and then jump to it.
+	;; We can't use `j' when emitting PIC.  Emit a branch if it's
+	;; in range, otherwise load the address of the branch target into
+	;; $at and then jump to it.
 	(if_then_else
-	 (ior (eq (symbol_ref "flag_pic && ! TARGET_EMBEDDED_PIC")
-		  (const_int 0))
+	 (ior (eq (symbol_ref "flag_pic") (const_int 0))
 	      (lt (abs (minus (match_dup 0)
 			      (plus (pc) (const_int 4))))
 		  (const_int 131072)))
@@ -8247,107 +8211,6 @@ srl\t%M0,%M1,%2\n\
   DONE;
 })
 
-;; Implement a switch statement when generating embedded PIC code.
-;; Switches are implemented by `tablejump' when not using -membedded-pic.
-
-(define_expand "casesi"
-  [(set (match_dup 5)
-	(minus:SI (match_operand:SI 0 "register_operand" "")
-		  (match_operand:SI 1 "const_int_operand" "")))
-   (set (cc0)
-	(compare:CC (match_dup 5)
-		    (match_operand:SI 2 "arith_operand" "")))
-   (set (pc)
-	(if_then_else (gtu (cc0)
-			   (const_int 0))
-		      (label_ref (match_operand 4 "" ""))
-		      (pc)))
-   (parallel
-    [(set (pc)
-	  (mem:SI (plus:SI (mult:SI (match_dup 5)
-				    (const_int 4))
-			   (label_ref (match_operand 3 "" "")))))
-     (clobber (match_scratch:SI 6 ""))
-     (clobber (reg:SI 31))])]
-  "TARGET_EMBEDDED_PIC"
-{
-  rtx index;
-
-  /* If the index is too large, go to the default label.  */
-  index = expand_binop (SImode, sub_optab, operands[0],
-			operands[1], 0, 0, OPTAB_WIDEN);
-  emit_insn (gen_cmpsi (index, operands[2]));
-  emit_insn (gen_bgtu (operands[4]));
-
-  /* Do the PIC jump.  */
-  if (Pmode != DImode)
-    emit_jump_insn (gen_casesi_internal (index, operands[3],
-					 gen_reg_rtx (SImode)));
-  else
-    emit_jump_insn (gen_casesi_internal_di (index, operands[3],
-					    gen_reg_rtx (DImode)));
-
-  DONE;
-})
-
-;; An embedded PIC switch statement looks like this:
-;;	bal	$LS1
-;;	sll	$reg,$index,2
-;; $LS1:
-;;	addu	$reg,$reg,$31
-;;	lw	$reg,$L1-$LS1($reg)
-;;	addu	$reg,$reg,$31
-;;	j	$reg
-;; $L1:
-;;	.word	case1-$LS1
-;;	.word	case2-$LS1
-;;	...
-
-(define_insn "casesi_internal"
-  [(set (pc)
-	(mem:SI (plus:SI (mult:SI (match_operand:SI 0 "register_operand" "d")
-				  (const_int 4))
-			 (label_ref (match_operand 1 "" "")))))
-   (clobber (match_operand:SI 2 "register_operand" "=d"))
-   (clobber (reg:SI 31))]
-  "TARGET_EMBEDDED_PIC"
-  {
-    if (set_nomacro)
-      return "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
-.set macro\;lw\\t%2,%1-%S1(%2)\;.set nomacro\;addu\\t%2,%2,$31\\n\\t%*j\\t%2%/";
-    return
-  "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
-lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
-    ;
-  }
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"24")])
-
-;; This code assumes that the table index will never be >= 29 bits wide,
-;; which allows the 'sign extend' from SI to DI be a no-op.
-(define_insn "casesi_internal_di"
-  [(set (pc)
-	(mem:DI (plus:DI (sign_extend:DI
-			  (mult:SI (match_operand:SI 0 "register_operand" "d")
-				  (const_int 8)))
-			 (label_ref (match_operand 1 "" "")))))
-   (clobber (match_operand:DI 2 "register_operand" "=d"))
-   (clobber (reg:DI 31))]
-  "TARGET_EMBEDDED_PIC"
-  {
-    if (set_nomacro)
-      return "%(bal\\t%S1\;sll\\t%2,%0,3\\n%~%S1:\;daddu\\t%2,%2,$31%)\;\\
-.set macro\;ld\\t%2,%1-%S1(%2)\;.set nomacro\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/";
-    return
-  "%(bal\\t%S1\;sll\\t%2,%0,3\\n%~%S1:\;daddu\\t%2,%2,$31%)\;\\
-ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
-    ;
-  }
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"24")])
-
 ;; For TARGET_ABICALLS, we save the gp in the jmp_buf as well.
 ;; While it is possible to either pull it off the stack (in the
 ;; o32 case) or recalculate it given t9 and our target label,
@@ -8460,20 +8323,6 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "%*j\t%0%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
-
-;; When generating embedded PIC code we need to get the address of the
-;; current function.  This specialized instruction does just that.
-
-(define_insn "get_fnaddr"
-  [(set (match_operand 0 "register_operand" "=d")
-	(unspec [(match_operand 1 "" "")] UNSPEC_GET_FNADDR))
-   (clobber (reg:SI 31))]
-  "TARGET_EMBEDDED_PIC
-   && GET_CODE (operands[1]) == SYMBOL_REF"
-  "%($LF%= = . + 8\;bal\t$LF%=\;nop;la\t%0,%1-$LF%=%)\;addu\t%0,%0,$31"
-  [(set_attr "type"	"call")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"20")])
 
 ;; This is used in compiling the unwind routines.
 (define_expand "eh_return"

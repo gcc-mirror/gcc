@@ -154,24 +154,23 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define MASK_XGOT	   0x00000800	/* emit big-got PIC */
 #define MASK_LONG_CALLS	   0x00001000	/* Always call through a register */
 #define MASK_64BIT	   0x00002000	/* Use 64 bit GP registers and insns */
-#define MASK_EMBEDDED_PIC  0x00004000	/* Generate embedded PIC code */
-#define MASK_EMBEDDED_DATA 0x00008000	/* Reduce RAM usage, not fast code */
-#define MASK_BIG_ENDIAN	   0x00010000	/* Generate big endian code */
-#define MASK_SINGLE_FLOAT  0x00020000	/* Only single precision FPU.  */
-#define MASK_MAD	   0x00040000	/* Generate mad/madu as on 4650.  */
-#define MASK_4300_MUL_FIX  0x00080000   /* Work-around early Vr4300 CPU bug */
-#define MASK_MIPS16	   0x00100000	/* Generate mips16 code */
+#define MASK_EMBEDDED_DATA 0x00004000	/* Reduce RAM usage, not fast code */
+#define MASK_BIG_ENDIAN	   0x00008000	/* Generate big endian code */
+#define MASK_SINGLE_FLOAT  0x00010000	/* Only single precision FPU.  */
+#define MASK_MAD	   0x00020000	/* Generate mad/madu as on 4650.  */
+#define MASK_4300_MUL_FIX  0x00040000   /* Work-around early Vr4300 CPU bug */
+#define MASK_MIPS16	   0x00080000	/* Generate mips16 code */
 #define MASK_NO_CHECK_ZERO_DIV \
-			   0x00200000	/* divide by zero checking */
-#define MASK_BRANCHLIKELY  0x00400000   /* Generate Branch Likely
+			   0x00100000	/* divide by zero checking */
+#define MASK_BRANCHLIKELY  0x00200000   /* Generate Branch Likely
 					   instructions.  */
 #define MASK_UNINIT_CONST_IN_RODATA \
-			   0x00800000	/* Store uninitialized
+			   0x00400000	/* Store uninitialized
 					   consts in rodata */
-#define MASK_FIX_R4000	   0x01000000	/* Work around R4000 errata.  */
-#define MASK_FIX_R4400	   0x02000000	/* Work around R4400 errata.  */
-#define MASK_FIX_SB1	   0x04000000	/* Work around SB-1 errata.  */
-#define MASK_FIX_VR4120	   0x08000000   /* Work around VR4120 errata.  */
+#define MASK_FIX_R4000	   0x00800000	/* Work around R4000 errata.  */
+#define MASK_FIX_R4400	   0x01000000	/* Work around R4400 errata.  */
+#define MASK_FIX_SB1	   0x02000000	/* Work around SB-1 errata.  */
+#define MASK_FIX_VR4120	   0x04000000   /* Work around VR4120 errata.  */
 
 #define MASK_FP_EXCEPTIONS 0x10000000   /* FP exceptions are enabled.  */
 
@@ -219,10 +218,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 					/* always call through a register */
 #define TARGET_LONG_CALLS	(target_flags & MASK_LONG_CALLS)
-
-					/* generate embedded PIC code;
-					   requires gas.  */
-#define TARGET_EMBEDDED_PIC	(target_flags & MASK_EMBEDDED_PIC)
 
 					/* for embedded systems, optimize for
 					   reduced RAM space instead of for
@@ -567,10 +562,6 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("Use indirect calls")},						\
   {"no-long-calls",	 -MASK_LONG_CALLS,				\
      N_("Don't use indirect calls")},					\
-  {"embedded-pic",	  MASK_EMBEDDED_PIC,				\
-     N_("Use embedded PIC")},						\
-  {"no-embedded-pic",	 -MASK_EMBEDDED_PIC,				\
-     N_("Don't use embedded PIC")},					\
   {"embedded-data",	  MASK_EMBEDDED_DATA,				\
      N_("Use ROM instead of RAM")},					\
   {"no-embedded-data",	 -MASK_EMBEDDED_DATA,				\
@@ -1130,7 +1121,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 %{mfix-vr4120} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
-%{membedded-pic} \
 %{mabi=32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
 %{mabi=eabi} %{mabi=o64} %{!mabi*: %(asm_abi_default_spec)} \
 %{mgp32} %{mgp64} %{march=*} %{mxgot:-xgot} \
@@ -3213,18 +3203,14 @@ while (0)
 	   LOCAL_LABEL_PREFIX,						\
 	   VALUE)
 
-/* This is how to output an element of a case-vector that is relative.
-   This is used for pc-relative code (e.g. when TARGET_ABICALLS or
-   TARGET_EMBEDDED_PIC).  */
+/* This is how to output an element of a case-vector.  We can make the
+   entries PC-relative in MIPS16 code and GP-relative when .gp(d)word
+   is supported.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)		\
 do {									\
   if (TARGET_MIPS16)							\
     fprintf (STREAM, "\t.half\t%sL%d-%sL%d\n",				\
-	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
-  else if (TARGET_EMBEDDED_PIC)						\
-    fprintf (STREAM, "\t%s\t%sL%d-%sLS%d\n",				\
-	     ptr_mode == DImode ? ".dword" : ".word",			\
 	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
   else if (TARGET_GPWORD)						\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
@@ -3236,16 +3222,15 @@ do {									\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
 } while (0)
 
-/* When generating embedded PIC or mips16 code we want to put the jump
-   table in the .text section.  In all other cases, we want to put the
-   jump table in the .rdata section.  Unfortunately, we can't use
-   JUMP_TABLES_IN_TEXT_SECTION, because it is not conditional.
-   Instead, we use ASM_OUTPUT_CASE_LABEL to switch back to the .text
-   section if appropriate.  */
+/* When generating mips16 code we want to put the jump table in the .text
+   section.  In all other cases, we want to put the jump table in the .rdata
+   section.  Unfortunately, we can't use JUMP_TABLES_IN_TEXT_SECTION, because
+   it is not conditional.  Instead, we use ASM_OUTPUT_CASE_LABEL to switch back
+   to the .text section if appropriate.  */
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, INSN)			\
 do {									\
-  if (TARGET_EMBEDDED_PIC || TARGET_MIPS16)				\
+  if (TARGET_MIPS16)							\
     function_section (current_function_decl);				\
   (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);		\
 } while (0)

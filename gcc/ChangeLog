@@ -1,3 +1,30 @@
+2004-04-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/invoke.texi: Remove the MIPS -membedded-pic option.
+	* config/mips/mips-protos.h (embedded_pic_fnaddr_reg): Delete.
+	(embedded_pic_offset): Delete.
+	* config/mips/mips.h (MASK_EMBEDDED_PIC): Delete.  Shuffle other
+	MASK_* constants.
+	(TARGET_EMBEDDED_PIC): Delete.
+	(TARGET_SWITCHES): Remove -m{no-,}embedded-pic.
+	(ASM_SPEC): Remove -membedded-pic.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Remove embedded-pic handling.
+	(ASM_OUTPUT_CASE_LABEL): Likewise.
+	* config/mips/vxworks.h (ASM_SPEC): Remove -membedded-pic.
+	* config/mips/windiss.h (ASM_SPEC): Likewise.
+	* config/mips/mips.c (struct machine_function): Remove
+	embedded_pic_fnaddr_rtx.
+	(TARGET_ENCODE_SECTION_INFO): Remove override.
+	(embedded_pic_fnaddr_reg, embedded_pic_offset): Delete.
+	(override_options): Remove -membedded-pic handling.
+	(print_operand): Remove handling of '%S'.
+	(mips_select_section: Remove -membedded-pic handling.
+	(mips_encode_section_info): Delete.
+	(mips_output_conditional_branch): Remove mention of -membedded-pic.
+	* config/mips/mips.md (define_attr length, movsi, movdi, jump): Remove
+	-membedded-pic handling.
+	(casesi, casesi_internal, casesi_internal_di, get_fnaddr): Delete.
+
 2004-04-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* var-tracking.c (frame_base_decl): Remove useless GTY.

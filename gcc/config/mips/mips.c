@@ -206,7 +206,6 @@ static void mips_select_rtx_section (enum machine_mode, rtx,
 static void mips_select_section (tree, int, unsigned HOST_WIDE_INT)
 				  ATTRIBUTE_UNUSED;
 static bool mips_in_small_data_p (tree);
-static void mips_encode_section_info (tree, rtx, int);
 static int mips_fpr_return_fields (tree, tree *);
 static bool mips_return_in_msb (tree);
 static rtx mips_return_fpr_pair (enum machine_mode mode,
@@ -274,10 +273,6 @@ struct mips_frame_info GTY(())
 };
 
 struct machine_function GTY(()) {
-  /* Pseudo-reg holding the address of the current function when
-     generating embedded PIC code.  */
-  rtx embedded_pic_fnaddr_rtx;
-
   /* Pseudo-reg holding the value of $28 in a mips16 function which
      refers to GP relative global variables.  */
   rtx mips16_gp_pseudo_rtx;
@@ -695,8 +690,6 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST mips_address_cost
 
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO mips_encode_section_info
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P mips_in_small_data_p
 
@@ -2442,55 +2435,6 @@ static int
 mips_address_cost (rtx addr)
 {
   return mips_address_insns (addr, SImode);
-}
-
-/* Return a pseudo that points to the address of the current function.
-   The first time it is called for a function, an initializer for the
-   pseudo is emitted in the beginning of the function.  */
-
-rtx
-embedded_pic_fnaddr_reg (void)
-{
-  if (cfun->machine->embedded_pic_fnaddr_rtx == NULL)
-    {
-      rtx seq;
-
-      cfun->machine->embedded_pic_fnaddr_rtx = gen_reg_rtx (Pmode);
-
-      /* Output code at function start to initialize the pseudo-reg.  */
-      /* ??? We used to do this in FINALIZE_PIC, but that does not work for
-	 inline functions, because it is called after RTL for the function
-	 has been copied.  The pseudo-reg in embedded_pic_fnaddr_rtx however
-	 does not get copied, and ends up not matching the rest of the RTL.
-	 This solution works, but means that we get unnecessary code to
-	 initialize this value every time a function is inlined into another
-	 function.  */
-      start_sequence ();
-      emit_insn (gen_get_fnaddr (cfun->machine->embedded_pic_fnaddr_rtx,
-				 XEXP (DECL_RTL (current_function_decl), 0)));
-      seq = get_insns ();
-      end_sequence ();
-      push_topmost_sequence ();
-      emit_insn_after (seq, get_insns ());
-      pop_topmost_sequence ();
-    }
-
-  return cfun->machine->embedded_pic_fnaddr_rtx;
-}
-
-/* Return RTL for the offset from the current function to the argument.
-   X is the symbol whose offset from the current function we want.  */
-
-rtx
-embedded_pic_offset (rtx x)
-{
-  /* Make sure it is emitted.  */
-  embedded_pic_fnaddr_reg ();
-
-  return
-    gen_rtx_CONST (Pmode,
-		   gen_rtx_MINUS (Pmode, x,
-				  XEXP (DECL_RTL (current_function_decl), 0)));
 }
 
 /* Return one word of double-word value OP, taking into account the fixed
@@ -4778,30 +4722,6 @@ override_options (void)
   if (!targetm.have_named_sections)
     mips_section_threshold = 0;
 
-  /* -membedded-pic is a form of PIC code suitable for embedded
-     systems.  All calls are made using PC relative addressing, and
-     all data is addressed using the $gp register.  This requires gas,
-     which does most of the work, and GNU ld, which automatically
-     expands PC relative calls which are out of range into a longer
-     instruction sequence.  All gcc really does differently is
-     generate a different sequence for a switch.  */
-  if (TARGET_EMBEDDED_PIC)
-    {
-      flag_pic = 1;
-      if (TARGET_ABICALLS)
-	warning ("-membedded-pic and -mabicalls are incompatible");
-
-      if (g_switch_set)
-	warning ("-G and -membedded-pic are incompatible");
-
-      /* Setting mips_section_threshold is not required, because gas
-	 will force everything to be GP addressable anyhow, but
-	 setting it will cause gcc to make better estimates of the
-	 number of instructions required to access a particular data
-	 item.  */
-      mips_section_threshold = 0x7fffffff;
-    }
-
   /* mips_split_addresses is a half-way house between explicit
      relocations and the traditional assembler macros.  It can
      split absolute 32-bit symbolic constants into a high/lo_sum
@@ -5255,7 +5175,6 @@ mips_debugger_offset (rtx addr, HOST_WIDE_INT offset)
    'F'  print part of opcode for a floating-point branch condition.
    'N'  print part of opcode for a branch condition, inverted.
    'W'  print part of opcode for a floating-point branch condition, inverted.
-   'S'  OP is CODE_LABEL, print with prefix of "LS" (for embedded switch).
    'B'  print 'z' for EQ, 'n' for NE
    'b'  print 'n' for EQ, 'z' for NE
    'T'  print 'f' for EQ, 't' for NE
@@ -5492,14 +5411,6 @@ print_operand (FILE *file, rtx op, int letter)
 
   else if (letter == 'R')
     print_operand_reloc (file, op, mips_lo_relocs);
-
-  else if (letter == 'S')
-    {
-      char buffer[100];
-
-      ASM_GENERATE_INTERNAL_LABEL (buffer, "LS", CODE_LABEL_NUMBER (op));
-      assemble_name (file, buffer);
-    }
 
   else if (letter == 'Z')
     {
@@ -7260,11 +7171,7 @@ static void
 mips_select_section (tree decl, int reloc,
 		     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  if (TARGET_EMBEDDED_PIC && TREE_CODE (decl) == STRING_CST)
-    /* For embedded position independent code, put constant strings in the
-       text section, because the data section is limited to 64K in size.  */
-    text_section ();
-  else if (targetm.have_named_sections)
+  if (targetm.have_named_sections)
     default_elf_select_section (decl, reloc, align);
   else
     /* The native irix o32 assembler doesn't support named sections.  */
@@ -7317,38 +7224,6 @@ mips_in_small_data_p (tree decl)
 
   size = int_size_in_bytes (TREE_TYPE (decl));
   return (size > 0 && size <= mips_section_threshold);
-}
-
-
-/* When generating embedded PIC code, SYMBOL_REF_FLAG is set for
-   symbols which are not in the .text section.  */
-
-static void
-mips_encode_section_info (tree decl, rtx rtl, int first)
-{
-  rtx symbol;
-
-  if (GET_CODE (rtl) != MEM)
-    return;
-
-  symbol = XEXP (rtl, 0);
-
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    return;
-
-  if (TARGET_EMBEDDED_PIC)
-    {
-      if (TREE_CODE (decl) == VAR_DECL)
-        SYMBOL_REF_FLAG (symbol) = 1;
-      else if (TREE_CODE (decl) == FUNCTION_DECL)
-        SYMBOL_REF_FLAG (symbol) = 0;
-      else if (TREE_CODE (decl) == STRING_CST)
-        SYMBOL_REF_FLAG (symbol) = 0;
-      else
-        SYMBOL_REF_FLAG (symbol) = 1;
-    }
-
-  default_encode_section_info (decl, rtl, first);
 }
 
 /* See whether VALTYPE is a record whose fields should be returned in
@@ -8977,7 +8852,7 @@ mips_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
 		.set macro
 		.set reorder
 
-	   When generating non-embedded PIC, instead of:
+	   When generating PIC, instead of:
 
 	        j     target
 
