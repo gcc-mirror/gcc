@@ -28,6 +28,8 @@
 #			pthread_self calls by caching thread IDs in a hashtable
 #   can_unwind_signal   Set to "yes" if the EH unwinder supports throwing
 #			from a signal handler.
+#   disable_dladdr      Set to "yes" if dladdr should not be used
+#                       (i.e it is broken).
 
 libgcj_flags=
 libgcj_cflags=
@@ -39,6 +41,7 @@ enable_hash_synchronization_default=no
 sysdeps_dir=generic
 slow_pthread_self=
 can_unwind_signal=no
+disable_dladdr=
 
 case "${target_optspace}:${host}" in
   yes:*)
@@ -212,6 +215,17 @@ EOF
 	  ./conftest ./conftest && slow_pthread_self=
 	  rm -f conftest conftest.c
 	fi
+	;;
+  mips*-*-linux* )
+  	sysdeps_dir=mips
+  	can_unwind_signal=yes
+	libgcj_flags="${libgcj_flags} -mxgot"
+	case "${host}" in
+	    mipsel*-linux* | mipsisa32el*-linux*)
+		enable_hash_synchronization_default=yes
+		disable_dladdr=yes
+	    ;;
+	esac
 	;;
   *-*-darwin*)
 	enable_hash_synchronization_default=no

@@ -353,11 +353,17 @@
 /* Define if you have the 'localtime_r' function. */
 #undef HAVE_LOCALTIME_R
 
+/* Define if usleep is declared in <unistd.h>. */
+#undef HAVE_USLEEP_DECL
+
 /* Define if using POSIX threads that have the mutexattr functions. */
 #undef HAVE_PTHREAD_MUTEXATTR_INIT
 
 /* Define if getuid() and friends are missing. */
 #undef NO_GETUID
+
+/* Define if your platform has a working backtrace() function. */
+#undef HAVE_BACKTRACE
 
 /* Define if your platform has a working backtrace() function. */
 #undef HAVE_BACKTRACE

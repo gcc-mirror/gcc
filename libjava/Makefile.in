@@ -76,6 +76,7 @@ DIVIDESPEC = @DIVIDESPEC@
 DLLTOOL = @DLLTOOL@
 EXCEPTIONSPEC = @EXCEPTIONSPEC@
 EXEEXT = @EXEEXT@
+EXTRA_CC_FILES = @EXTRA_CC_FILES@
 GCDEPS = @GCDEPS@
 GCINCS = @GCINCS@
 GCJ = @GCJ@
@@ -226,6 +227,7 @@ INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 nat_files = $(nat_source_files:.cc=.lo)
 x_nat_files = $(x_nat_source_files:.cc=.lo)
 c_files = $(c_source_files:.c=.lo)
+extra_cc_files = $(extra_cc_source_files:.cc=.lo)
 gtk_c_files = $(gtk_c_source_files:.c=.lo)
 javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
@@ -237,15 +239,15 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 	$(nat_source_files)
 
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
-	win32-threads.cc posix.cc win32.cc \
-	$(c_source_files) $(java_source_files) $(built_java_source_files)
+	win32-threads.cc posix.cc win32.cc $(c_source_files) \
+	$(extra_cc_source_files) $(java_source_files) $(built_java_source_files)
 
 libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(javao_files) \
-	$(c_files) $(GCOBJS) $(THREADOBJS) $(PLATFORMOBJS) $(LIBLTDL) \
-	$(LIBFFI) $(ZLIBS) $(GCLIBS)
+	$(c_files) $(extra_cc_files) $(GCOBJS) $(THREADOBJS) \
+       $(PLATFORMOBJS) $(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS)
 
 
-libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
+libgcj_la_LIBADD = $(javao_files) $(c_files) $(extra_cc_files) $(GCOBJS) \
 	$(THREADOBJS) $(PLATFORMOBJS)
 
 # Include THREADLIBS here to ensure that the correct version of
@@ -2351,6 +2353,8 @@ c_source_files = \
   java/lang/k_cos.c       java/lang/s_sin.c       java/lang/sf_fabs.c
 
 
+extra_cc_source_files = $(EXTRA_CC_FILES)
+
 #java/awt/natToolkit.cc
 
 nat_source_files = \
@@ -2722,14 +2726,13 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(jar_DATA) $(pkgconfig_DATA) $(toolexecmainlib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acinclude.m4 aclocal.m4 config.guess config.sub configure \
-configure.in install-sh libgcj-test.spec.in libgcj.pc.in libgcj.spec.in \
-ltmain.sh missing mkinstalldirs
+THANKS acinclude.m4 aclocal.m4 configure configure.in \
+libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -4955,6 +4958,9 @@ $(nat_files) $(x_nat_files): %.lo: %.cc
 
 $(c_files): %.lo: %.c
 	$(LTCOMPILE) -c -o $@ $<
+
+$(extra_cc_files): %.lo: %.cc
+	$(LTCXXCOMPILE) -c -o $@ $<
 
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
