@@ -100,8 +100,8 @@ extern void expand_df_binop PARAMS ((rtx (*)(rtx, rtx, rtx, rtx), rtx *));
 extern void expand_fp_branch PARAMS ((rtx (*)(void), rtx (*)(void)));
 extern int sh_insn_length_adjustment PARAMS ((rtx));
 extern int sh_can_redirect_branch PARAMS ((rtx, rtx));
-extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
-extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
+extern void sh_expand_unop_v2sf PARAMS ((enum rtx_code, rtx, rtx));
+extern void sh_expand_binop_v2sf PARAMS ((enum rtx_code, rtx, rtx, rtx));
 #ifdef TREE_CODE
 extern void sh_va_start PARAMS ((tree, rtx));
 extern rtx sh_va_arg PARAMS ((tree, tree));
@@ -124,8 +124,8 @@ extern int initial_elimination_offset PARAMS ((int, int));
 extern int fldi_ok PARAMS ((void));
 extern int sh_pr_n_sets PARAMS ((void));
 extern int sh_hard_regno_rename_ok PARAMS ((unsigned int, unsigned int));
-extern int sh_cfun_interrupt_handler_p (void);
-extern void sh_initialize_trampoline (rtx, rtx, rtx);
+extern int sh_cfun_interrupt_handler_p PARAMS ((void));
+extern void sh_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 
 #ifdef HARD_CONST
 extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
