@@ -2,6 +2,7 @@
 // Contributed by Aldy Hernandez (aldy@quesejoda.com).
 // { dg-options "-O" }
 // { dg-do run }
+// { dg-error "" "PR target/12916" { target sparc*-*-* } 10 }
 
 typedef int __attribute__((mode(V2SI))) vecint;
 
