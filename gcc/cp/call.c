@@ -2275,7 +2275,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   if (i != 0)
     return NULL;
 
-  fn = instantiate_template (tmpl, targs);
+  fn = instantiate_template (tmpl, targs, tf_none);
   if (fn == error_mark_node)
     return NULL;
 

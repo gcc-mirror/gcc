@@ -5989,7 +5989,8 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
 	    continue;
 
 	  /* Instantiate the template.  */
-	  instantiation = instantiate_template (fn, targs);
+	  instantiation = instantiate_template (fn, targs,
+						complain ? tf_error : tf_none);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
 	    continue;
