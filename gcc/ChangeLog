@@ -1,3 +1,7 @@
+Mon Jul 27 22:20:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (move_operand): Accept CONSTANT_P_RTX.
+
 Mon Jul 27 00:46:56 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
