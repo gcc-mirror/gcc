@@ -1,3 +1,7 @@
+2001-04-27  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* emit-rtl.c (try_split):  Copy EH notes to sequence.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* regmove.c (record_stack_memrefs): Catch all references to the

@@ -2585,7 +2585,8 @@ try_split (pat, trial, last)
       if (GET_CODE (seq) == SEQUENCE)
 	{
 	  int i;
-
+	  rtx eh_note;
+	  
 	  /* Avoid infinite loop if any insn of the result matches 
 	     the original pattern.  */
 	  for (i = 0; i < XVECLEN (seq, 0); i++)
@@ -2606,6 +2607,19 @@ try_split (pat, trial, last)
 	      if (GET_CODE (XVECEXP (seq, 0, i)) == CALL_INSN)
 		CALL_INSN_FUNCTION_USAGE (XVECEXP (seq, 0, i))
 		  = CALL_INSN_FUNCTION_USAGE (trial);
+
+	  /* Copy EH notes.  */
+	  if ((eh_note = find_reg_note (trial, REG_EH_REGION, NULL_RTX)))
+	    for (i = 0; i < XVECLEN (seq, 0); i++)
+	      {
+		rtx insn = XVECEXP (seq, 0, i);
+		if (GET_CODE (insn) == CALL_INSN
+		    || (flag_non_call_exceptions 
+			&& may_trap_p (PATTERN (insn))))
+		  REG_NOTES (insn) 
+		    = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (eh_note, 0),
+					 REG_NOTES (insn));
+	      }
 
 	  /* If there are LABELS inside the split insns increment the
 	     usage count so we don't delete the label.  */
