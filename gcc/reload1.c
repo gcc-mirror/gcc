@@ -536,10 +536,20 @@ compute_use_by_pseudos (to, from)
        int r = reg_renumber[regno];
        int nregs;
        if (r < 0)
-	 abort ();
-       nregs = HARD_REGNO_NREGS (r, PSEUDO_REGNO_MODE (regno));
-       while (nregs-- > 0)
-	 SET_HARD_REG_BIT (*to, r + nregs);
+	 {
+	   /* reload_combine uses the information from
+	      basic_block_live_at_start, which might still contain registers
+	      that have not actually been allocated since they have an
+	      equivalence.  */
+	   if (! reload_completed)
+	     abort ();
+	 }
+       else
+	 {
+	   nregs = HARD_REGNO_NREGS (r, PSEUDO_REGNO_MODE (regno));
+	   while (nregs-- > 0)
+	     SET_HARD_REG_BIT (*to, r + nregs);
+	 }
      });
 }
 

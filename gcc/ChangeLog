@@ -1,3 +1,8 @@
+Sun Dec 13 00:24:14 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (compute_use_by_pseudos): Allow reg_renumber[regno] < 0
+	after reload.
+
 Sat Dec 12 23:39:10 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386/next.h (ASM_OUTPUT_ALIGN): Use 0x90 for fill character.
