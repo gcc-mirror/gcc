@@ -1,3 +1,12 @@
+Sat Oct 16 11:19:52 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386/t-cygwin (winnt.o): Depend on RTL_H and TREE_H.
+	* i386/t-winnt: Likewise.
+
+Sat Oct 16 11:11:54 1999  Richard Henderson  <rth@cygnus.com>
+
+	* ggc-page.c (init_ggc): Work around SunOS unaligned mmap bug.
+
 1999-10-16  Manfred Hollstein  <mhollstein@cygnus.com>
 
 	* Makefile.in (LANGUAGES): Omit "proto".
