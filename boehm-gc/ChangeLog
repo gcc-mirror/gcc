@@ -1,3 +1,9 @@
+2004-06-20  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.am: Add rule for .S files to fix bootstrap on
+	solaris and alpha.
+	* Makefile.in: Regenerate.
+
 2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* boehm-gc/configure.ac: New name of configure.in.

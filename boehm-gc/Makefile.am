@@ -57,6 +57,8 @@ TESTS = gctest
 ## We use -Wp,-P to strip #line directives.  Irix `as' chokes on
 ## these.
 	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<
+.S.lo:
+	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<
 
 ## We have our own definition of LTCOMPILE because we want to use our
 ## CFLAGS, not those passed in from the top level make.

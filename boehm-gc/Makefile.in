@@ -352,7 +352,7 @@ MAKEOVERRIDES =
 all: all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj .s
+.SUFFIXES: .S .c .lo .o .obj .s
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -765,6 +765,8 @@ uninstall-info: uninstall-info-recursive
 
 
 .s.lo:
+	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<
+.S.lo:
 	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
