@@ -1,3 +1,10 @@
+2005-01-27  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/mips-movcc-1.c, gcc.dg/mips-movcc-2.c, gcc.dg/mips-movcc-3.c,
+	* gcc.dg/mips-nmadd-1.c, gcc.dg/mips-nmadd-2.c, gcc.dg/mips-rsqrt-1.c,
+	* gcc.dg/mips-rsqrt-2, gcc.dg/mips-rsqrt-3.c: Add dummy asm statements
+	to cope with cases where the multilib options override the dg-options.
+
 2005-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/18946
