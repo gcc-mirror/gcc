@@ -260,6 +260,23 @@ extern int memcmp();
 
 
 /*
+ * Solaris <sys/varargs.h> is a DDK (aka kernel-land) header providing
+ * the same interface as <stdarg.h>.  No idea why they couldn't have just
+ * used the standard header.
+ */
+fix = {
+    hackname = AAB_solaris_sys_varargs_h;
+    files    = "sys/varargs.h";
+    mach     = '*-*-solaris*';
+    replace  = "#ifdef __STDC__\n"
+	       "#include <stdarg.h>\n"
+	       "#else\n"
+	       "#include <varargs.h>\n"
+	       "#endif\n";
+};
+
+
+/*
  *  Completely replace <sys/varargs.h> with a file that includes gcc's
  *  stdarg.h or varargs.h files as appropriate.
  */
@@ -2073,23 +2090,6 @@ fix = {
     sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
 
     test_text = '#if\tdefined(__cplusplus) && (__cplusplus < 54321L)';
-};
-
-
-/*
- * Solaris <sys/varargs.h> is a DDK (aka kernel-land) header providing
- * the same interface as <stdarg.h>.  No idea why they couldn't have just
- * used the standard header.
- */
-fix = {
-    hackname = solaris_sys_varargs_h;
-    files    = "sys/varargs.h";
-    mach     = '*-*-solaris*';
-    replace  = "#ifdef __STDC__\n"
-	       "#include <stdarg.h>\n"
-	       "#else\n"
-	       "#include <varargs.h>\n"
-	       "#endif\n";
 };
 
 /*
