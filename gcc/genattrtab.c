@@ -5692,6 +5692,8 @@ write_function_unit_info ()
       printf ("}, \n");
     }
 
+  if (num_units == 0)
+    printf ("{\"dummy\", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} /* a dummy element */");
   printf ("};\n\n");
 }
 

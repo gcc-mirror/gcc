@@ -1,3 +1,8 @@
+2002-05-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genattrtab.c (write_function_unit_info): Add a dummy element
+	when num_units == 0.
+
 2002-05-02 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* predict.c: (propagate_freq, estimate_bb_frequencies): Use
