@@ -578,7 +578,8 @@ dnl gcc_AC_C_ENUM_BF_UNSIGNED
 AC_CHECK_FUNCS(strtoul bsearch popen times clock \
 	strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
-	fputs_unlocked getrusage nl_langinfo lstat)
+	fputs_unlocked fwrite_unlocked fprintf_unlocked getrusage nl_langinfo \
+	lstat)
 
 AC_CHECK_TYPE(ssize_t, int)
 
@@ -623,7 +624,8 @@ AM_ICONV
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
 gcc_AC_CHECK_DECLS(getenv atol sbrk abort atof getcwd getwd \
-	strsignal putc_unlocked fputs_unlocked strstr environ errno \
+	strsignal putc_unlocked fputs_unlocked fwrite_unlocked \
+        fprintf_unlocked strstr environ errno \
 	malloc realloc calloc free basename getopt clock, , ,[
 #include "ansidecl.h"
 #include "system.h"])

@@ -1514,6 +1514,7 @@ cpp_output_token (token, fp)
     case SPELL_OPERATOR:
       {
 	const unsigned char *spelling;
+	int c;
 
 	if (token->flags & DIGRAPH)
 	  spelling
@@ -1523,13 +1524,16 @@ cpp_output_token (token, fp)
 	else
 	  spelling = TOKEN_NAME (token);
 
-	ufputs (spelling, fp);
+	c = *spelling;
+	do
+	  putc (c, fp);
+	while ((c = *++spelling) != '\0');
       }
       break;
 
     spell_ident:
     case SPELL_IDENT:
-      ufputs (NODE_NAME (token->val.node), fp);
+      fwrite (NODE_NAME (token->val.node), 1, NODE_LEN (token->val.node), fp);
     break;
 
     case SPELL_STRING:

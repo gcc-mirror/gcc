@@ -1,3 +1,13 @@
+2001-09-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpplex.c (cpp_output_token): Use a putc loop for
+	SPELL_OPERATOR, and fwrite for SPELL_IDENT.
+
+	* configure.in: Detect fwrite_unlocked and fprintf_unlocked.
+	* configure, config.in: Regenerate.
+	* system.h: Replace fwrite and fprintf with their unlocked
+	variants if available.
+
 2001-09-27  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dwarf2out_frame_finish): Never elide .debug_frame
@@ -5,7 +15,7 @@
 
 2001-09-27  Aldy Hernandez  <aldyh@redhat.com>
 
-	* config/rs6000/rs6000.h (FUNCTION_VALUE): Change hardcoded 33 and 3 
+	* config/rs6000/rs6000.h (FUNCTION_VALUE): Change hardcoded 33 and 3
 	to macros.
 	(LIBCALL_VALUE): Likewise.
 
@@ -160,7 +170,7 @@ Tue Sep 25 17:13:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(bdesc_2srg): Likewise.
 	(bdesc_1arg): Likewise.
 
-	* config/i386/i386.c (ix86_init_builtins): Correct return type 
+	* config/i386/i386.c (ix86_init_builtins): Correct return type
 	building v4hi_ftype_v4hi_int_int tree node.
 	(ix86_expand_sse_comi): Fix typo swapping operands.
 	Don't swap comparision condition, it is already swapped.
@@ -252,7 +262,7 @@ Mon Sep 24 18:57:59 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-09-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Final install): Request additional information
-	in mail about successful builds. 
+	in mail about successful builds.
 
 2001-09-24  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
