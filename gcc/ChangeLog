@@ -1,5 +1,8 @@
 2003-10-07  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.in: Add more comments separating large conceptually
+	separate sections.
+
 	* configure.in: Clean up thread file logic.
 	* configure: Regenerate.
 
