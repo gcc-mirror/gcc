@@ -136,10 +136,13 @@ So instead we use the macro below and test it against specific values.  */
 #define GCC_VERSION (__GNUC__ * 1000 + __GNUC_MINOR__)
 #endif /* GCC_VERSION */
 
-#if defined (__STDC__) || defined (_AIX) || (defined (__mips) && defined (_SYSTYPE_SVR4)) || defined(_WIN32)
+#if defined (__STDC__) || defined (_AIX) || (defined (__mips) && defined (_SYSTYPE_SVR4)) || defined(_WIN32) || (defined(__alpha) && defined(__cplusplus))
 /* All known AIX compilers implement these things (but don't always
    define __STDC__).  The RISC/OS MIPS compiler defines these things
    in SVR4 mode, but does not define __STDC__.  */
+/* eraxxon@alumni.rice.edu: The Compaq C++ compiler, unlike many other
+   C++ compilers, does not define __STDC__, though it acts as if this
+   was so. (Verified versions: 5.7, 6.2, 6.3, 6.5) */
 
 #define ANSI_PROTOTYPES	1
 #define PTR		void *
