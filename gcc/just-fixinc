@@ -21,9 +21,11 @@ $installed/fixinc.svr4 $installed/include /usr/include $installed
 
 # Make sure fixed native limits.h gets renamed to syslimits.h before gcc's
 # limits.h from tmpfoo is moved back.
+rm -f syslimits.h
 if test -f limits.h ; then
-  rm -f syslimits.h
   mv limits.h syslimits.h
+else
+  cp $installed/gsyslimits.h syslimits.h
 fi
 chmod a+r syslimits.h
 
