@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Intel 80386
    running FreeBSD.
-   Copyright (C) 1988, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1996 Free Software Foundation, Inc.
    Contributed by Poul-Henning Kamp <phk@login.dkuug.dk>
 
 This file is part of GNU CC.
@@ -119,12 +119,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define TYPE_ASM_OP	".type"
 #define SIZE_ASM_OP	".size"
-
-/* This is how we tell the assembler that a symbol is weak.  */
-
-#define ASM_WEAKEN_LABEL(FILE,NAME) \
-  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
-       fputc ('\n', FILE); } while (0)
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
