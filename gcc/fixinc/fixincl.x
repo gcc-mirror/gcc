@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 148 fixup descriptions.
+ * This file contains 125 fixup descriptions.
  *
  * See README for more information.
  *
@@ -29,77 +29,6 @@
  *             59 Temple Place - Suite 330,
  *             Boston,  MA  02111-1307, USA.
  */
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aab_Dgux_Int_Varargs fix
- */
-tSCC zAab_Dgux_Int_VarargsName[] =
-     "AAB_dgux_int_varargs";
-
-/*
- *  File name selection pattern
- */
-tSCC zAab_Dgux_Int_VarargsList[] =
-  "|_int_varargs.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAab_Dgux_Int_VarargsMachs (const char**)NULL
-#define AAB_DGUX_INT_VARARGS_TEST_CT  0
-#define aAab_Dgux_Int_VarargsTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Aab_Dgux_Int_Varargs
- */
-static const char* apzAab_Dgux_Int_VarargsPatch[] = {
-"#ifndef __INT_VARARGS_H\n\
-#define __INT_VARARGS_H\n\n\
-/********************************************************/\n\
-/*  Define the common stuff for varargs/stdarg/stdio.   */\n\
-/********************************************************/\n\n\
-/*\n\
-** This file is a DG internal header.  Never include this\n\
-** file directly.\n\
-*/\n\n\
-#ifndef ___int_features_h\n\
-#include <sys/_int_features.h>\n\
-#endif\n\n\
-#if !(defined(_VA_LIST) || defined(_VA_LIST_))\n\
-#define _VA_LIST\n\
-#define _VA_LIST_\n\n\
-#ifdef __LINT__\n\n\
-#ifdef __STDC__\n\
-typedef void * va_list;\n\
-#else\n\
-typedef char * va_list;\n\
-#endif\n\n\
-#else\n\
-#if _M88K_ANY\n\n\
-#if defined(__DCC__)\n\n\
-typedef struct {\n\
-      int     next_arg;\n\
-      int     *mem_ptr;\n\
-      int     *reg_ptr;\n\
-} va_list;\n\n\
-#else  /* ! defined(__DCC__) */\n\n\
-typedef struct {\n\
-      int  __va_arg;       /* argument number */\n\
-      int *__va_stk;       /* start of args passed on stack */\n\
-      int *__va_reg;       /* start of args passed in regs */\n\
-} va_list;\n\n\
-#endif  /* ! defined(__DCC__) */\n\n\
-#elif _IX86_ANY\n\n\
-#if defined(__GNUC__) || defined(__STDC__)\n\
-typedef void * va_list;\n\
-#else\n\
-typedef char * va_list;\n\
-#endif\n\n\
-#endif  /*  _IX86_ANY */\n\n\
-#endif /* __LINT__ */\n\
-#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */\n\
-#endif /*  #ifndef __INT_VARARGS_H  */",
-    (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -324,7 +253,7 @@ extern char *memcpy();\n\
 extern char *memset();\n\
 #endif /* __STDC__ */\n\n\
 extern int memcmp();\n\n\
-#endif /* __memory_h__ */\n",
+#endif /* __memory_h__ */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -394,8 +323,8 @@ htonl (unsigned long __arg)\n\
 {\n\
   register unsigned long __result;\n\n\
   __asm__ (\"xchg%B0 %b0,%h0\n\
-\tror%L0 $16,%0\n\
-\txchg%B0 %b0,%h0\" : \"=q\" (__result) : \"0\" (__arg));\n\
+ror%L0 $16,%0\n\
+xchg%B0 %b0,%h0\" : \"=q\" (__result) : \"0\" (__arg));\n\
   return __result;\n\
 }\n\n\
 /* Convert a host short to a network short.  */\n\n\
@@ -406,9 +335,7 @@ htons (unsigned int __arg)\n\
   __asm__ (\"xchg%B0 %b0,%h0\" : \"=q\" (__result) : \"0\" (__arg));\n\
   return __result;\n\
 }\n\n\
-#elif ((defined (__i860__) && !defined (__i860_big_endian__))\t\\\n\
-       || defined (__ns32k__) || defined (__vax__)\t\t\\\n\
-       || defined (__spur__) || defined (__arm__))\n\n\
+#elif (defined (__ns32k__) || defined (__vax__) || defined (__arm__))\n\n\
 #ifndef __BYTE_ORDER__\n\
 #define __BYTE_ORDER__ __LITTLE_ENDIAN__\n\
 #endif\n\n\
@@ -463,134 +390,7 @@ ntohs (unsigned int __arg)\n\
 {\n\
   return htons (__arg);\n\
 }\n\
-#endif\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aab_Ultrix_Ansi_Compat fix
- */
-tSCC zAab_Ultrix_Ansi_CompatName[] =
-     "AAB_ultrix_ansi_compat";
-
-/*
- *  File name selection pattern
- */
-tSCC zAab_Ultrix_Ansi_CompatList[] =
-  "|ansi_compat.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAab_Ultrix_Ansi_CompatMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAab_Ultrix_Ansi_CompatSelect0[] =
-       "ULTRIX";
-
-#define    AAB_ULTRIX_ANSI_COMPAT_TEST_CT  1
-static tTestDesc aAab_Ultrix_Ansi_CompatTests[] = {
-  { TT_EGREP,    zAab_Ultrix_Ansi_CompatSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aab_Ultrix_Ansi_Compat
- */
-static const char* apzAab_Ultrix_Ansi_CompatPatch[] = {
-"/* This file intentionally left blank.  */\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aab_Ultrix_Limits fix
- */
-tSCC zAab_Ultrix_LimitsName[] =
-     "AAB_ultrix_limits";
-
-/*
- *  File name selection pattern
- */
-tSCC zAab_Ultrix_LimitsList[] =
-  "|limits.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzAab_Ultrix_LimitsMachs[] = {
-        "*-*-ultrix4.3",
-        (const char*)NULL };
-#define AAB_ULTRIX_LIMITS_TEST_CT  0
-#define aAab_Ultrix_LimitsTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Aab_Ultrix_Limits
- */
-static const char* apzAab_Ultrix_LimitsPatch[] = {
-"#ifndef _LIMITS_INCLUDED\n\
-#define _LIMITS_INCLUDED\n\
-#include <sys/limits.h>\n\
-#endif /* _LIMITS_INCLUDED */\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aab_Ultrix_Memory fix
- */
-tSCC zAab_Ultrix_MemoryName[] =
-     "AAB_ultrix_memory";
-
-/*
- *  File name selection pattern
- */
-tSCC zAab_Ultrix_MemoryList[] =
-  "|memory.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzAab_Ultrix_MemoryMachs[] = {
-        "*-*-ultrix4.3",
-        (const char*)NULL };
-#define AAB_ULTRIX_MEMORY_TEST_CT  0
-#define aAab_Ultrix_MemoryTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Aab_Ultrix_Memory
- */
-static const char* apzAab_Ultrix_MemoryPatch[] = {
-"#ifndef _MEMORY_INCLUDED\n\
-#define _MEMORY_INCLUDED\n\
-#include <strings.h>\n\
-#endif /* _MEMORY_INCLUDED */\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aab_Ultrix_String fix
- */
-tSCC zAab_Ultrix_StringName[] =
-     "AAB_ultrix_string";
-
-/*
- *  File name selection pattern
- */
-tSCC zAab_Ultrix_StringList[] =
-  "|string.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzAab_Ultrix_StringMachs[] = {
-        "*-*-ultrix4.3",
-        (const char*)NULL };
-#define AAB_ULTRIX_STRING_TEST_CT  0
-#define aAab_Ultrix_StringTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Aab_Ultrix_String
- */
-static const char* apzAab_Ultrix_StringPatch[] = {
-"#ifndef _STRING_INCLUDED\n\
-#define _STRING_INCLUDED\n\
-#include <strings.h>\n\
-#endif /* _STRING_INCLUDED */\n",
+#endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -912,112 +712,6 @@ static tTestDesc aAlpha_SbrkTests[] = {
 static const char* apzAlpha_SbrkPatch[] = {
     "format",
     "void *sbrk(",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Arm_Norcroft_Hint fix
- */
-tSCC zArm_Norcroft_HintName[] =
-     "arm_norcroft_hint";
-
-/*
- *  File name selection pattern
- */
-tSCC zArm_Norcroft_HintList[] =
-  "|X11/Intrinsic.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzArm_Norcroft_HintMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zArm_Norcroft_HintSelect0[] =
-       "___type p_type";
-
-#define    ARM_NORCROFT_HINT_TEST_CT  1
-static tTestDesc aArm_Norcroft_HintTests[] = {
-  { TT_EGREP,    zArm_Norcroft_HintSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Arm_Norcroft_Hint
- */
-static const char* apzArm_Norcroft_HintPatch[] = {
-    "format",
-    "p_type",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Arm_Wchar fix
- */
-tSCC zArm_WcharName[] =
-     "arm_wchar";
-
-/*
- *  File name selection pattern
- */
-tSCC zArm_WcharList[] =
-  "|stdlib.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzArm_WcharMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zArm_WcharSelect0[] =
-       "#[ \t]*define[ \t]*__wchar_t";
-
-#define    ARM_WCHAR_TEST_CT  1
-static tTestDesc aArm_WcharTests[] = {
-  { TT_EGREP,    zArm_WcharSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Arm_Wchar
- */
-static const char* apzArm_WcharPatch[] = {
-    "format",
-    "%1_GCC_WCHAR_T",
-    "(#[ \t]*(ifndef|define)[ \t]+)__wchar_t",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aux_Asm fix
- */
-tSCC zAux_AsmName[] =
-     "aux_asm";
-
-/*
- *  File name selection pattern
- */
-tSCC zAux_AsmList[] =
-  "|sys/param.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAux_AsmMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAux_AsmSelect0[] =
-       "#ifndef NOINLINE";
-
-#define    AUX_ASM_TEST_CT  1
-static tTestDesc aAux_AsmTests[] = {
-  { TT_EGREP,    zAux_AsmSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aux_Asm
- */
-static const char* apzAux_AsmPatch[] = {
-    "format",
-    "#if !defined(NOINLINE) && !defined(__GNUC__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1595,43 +1289,6 @@ static const char* apzEcd_CursorPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Fix_Header_Breakage fix
- */
-tSCC zFix_Header_BreakageName[] =
-     "fix_header_breakage";
-
-/*
- *  File name selection pattern
- */
-tSCC zFix_Header_BreakageList[] =
-  "|math.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzFix_Header_BreakageMachs[] = {
-        "m88k-motorola-sysv3*",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zFix_Header_BreakageSelect0[] =
-       "extern double floor\\(\\), ceil\\(\\), fmod\\(\\), fabs\\(\\);";
-
-#define    FIX_HEADER_BREAKAGE_TEST_CT  1
-static tTestDesc aFix_Header_BreakageTests[] = {
-  { TT_EGREP,    zFix_Header_BreakageSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Fix_Header_Breakage
- */
-static const char* apzFix_Header_BreakagePatch[] = {
-    "format",
-    "extern double floor(), ceil(), fmod(), fabs _PARAMS((double));",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
  *  Description of Freebsd_Gcc3_Breakage fix
  */
 tSCC zFreebsd_Gcc3_BreakageName[] =
@@ -1868,6 +1525,43 @@ static const char* apzHpux11_Cpp_Pow_InlinePatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Hpux11_Abs fix
+ */
+tSCC zHpux11_AbsName[] =
+     "hpux11_abs";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zHpux11_AbsList[] =
+  "|stdlib.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzHpux11_AbsMachs[] = {
+        "ia64-hp-hpux11*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux11_AbsSelect0[] =
+       "ifndef _MATH_INCLUDED";
+
+#define    HPUX11_ABS_TEST_CT  1
+static tTestDesc aHpux11_AbsTests[] = {
+  { TT_EGREP,    zHpux11_AbsSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Hpux11_Abs
+ */
+static const char* apzHpux11_AbsPatch[] = {
+    "format",
+    "if !defined(_MATH_INCLUDED) || defined(__GNUG__)",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Hpux11_Fabsf fix
  */
 tSCC zHpux11_FabsfName[] =
@@ -1908,43 +1602,6 @@ static const char* apzHpux11_FabsfPatch[] = {
     "#ifndef __cplusplus\n\
 %0\n\
 #endif",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Hpux11_Abs fix
- */
-tSCC zHpux11_AbsName[] =
-     "hpux11_abs";
-
-/*
- *  File name selection pattern
- */
-tSCC zHpux11_AbsList[] =
-  "|stdlib.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzHpux11_AbsMachs[] = {
-        "ia64-hp-hpux11*",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zHpux11_AbsSelect0[] =
-       "ifndef _MATH_INCLUDED";
-
-#define    HPUX11_ABS_TEST_CT  1
-static tTestDesc aHpux11_AbsTests[] = {
-  { TT_EGREP,    zHpux11_AbsSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Hpux11_Abs
- */
-static const char* apzHpux11_AbsPatch[] = {
-    "format",
-    "if !defined(_MATH_INCLUDED) || defined(__GNUG__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2527,6 +2184,43 @@ static const char* apzKandr_ConcatPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Libc1_G_Va_List fix
+ */
+tSCC zLibc1_G_Va_ListName[] =
+     "libc1_G_va_list";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zLibc1_G_Va_ListList[] =
+  "|_G_config.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzLibc1_G_Va_ListMachs[] = {
+        "*-*-linux*libc1",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zLibc1_G_Va_ListSelect0[] =
+       "typedef void \\* _G_va_list;";
+
+#define    LIBC1_G_VA_LIST_TEST_CT  1
+static tTestDesc aLibc1_G_Va_ListTests[] = {
+  { TT_EGREP,    zLibc1_G_Va_ListSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Libc1_G_Va_List
+ */
+static const char* apzLibc1_G_Va_ListPatch[] = {
+    "format",
+    "typedef __builtin_va_list _G_va_list;",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Libc1_Ifdefd_Memx fix
  */
 tSCC zLibc1_Ifdefd_MemxName[] =
@@ -2571,43 +2265,6 @@ static const char* apzLibc1_Ifdefd_MemxPatch[] = {
 extern [a-z_]+ mem.*(\n\
 [^#].*)*;)\n\
 #endif",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Libc1_G_Va_List fix
- */
-tSCC zLibc1_G_Va_ListName[] =
-     "libc1_G_va_list";
-
-/*
- *  File name selection pattern
- */
-tSCC zLibc1_G_Va_ListList[] =
-  "|_G_config.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzLibc1_G_Va_ListMachs[] = {
-        "*-*-linux*libc1",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zLibc1_G_Va_ListSelect0[] =
-       "typedef void \\* _G_va_list;";
-
-#define    LIBC1_G_VA_LIST_TEST_CT  1
-static tTestDesc aLibc1_G_Va_ListTests[] = {
-  { TT_EGREP,    zLibc1_G_Va_ListSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Libc1_G_Va_List
- */
-static const char* apzLibc1_G_Va_ListPatch[] = {
-    "format",
-    "typedef __builtin_va_list _G_va_list;",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2717,128 +2374,6 @@ static const char* apzLynxos_Fcntl_ProtoPatch[] = {
     "format",
     "%1...)",
     "(fcntl[ \t]*\\(int, int, )int\\)",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of M88k_Bad_Hypot_Opt fix
- */
-tSCC zM88k_Bad_Hypot_OptName[] =
-     "m88k_bad_hypot_opt";
-
-/*
- *  File name selection pattern
- */
-tSCC zM88k_Bad_Hypot_OptList[] =
-  "|math.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzM88k_Bad_Hypot_OptMachs[] = {
-        "m88k-motorola-sysv3*",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zM88k_Bad_Hypot_OptSelect0[] =
-       "^extern double hypot\\(\\);\n";
-
-#define    M88K_BAD_HYPOT_OPT_TEST_CT  1
-static tTestDesc aM88k_Bad_Hypot_OptTests[] = {
-  { TT_EGREP,    zM88k_Bad_Hypot_OptSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for M88k_Bad_Hypot_Opt
- */
-static const char* apzM88k_Bad_Hypot_OptPatch[] = {
-    "format",
-    "%0/* Workaround a stupid Motorola optimization if one\n\
-   of x or y is 0.0 and the other is negative!  */\n\
-#ifdef __STDC__\n\
-static __inline__ double fake_hypot (double x, double y)\n\
-#else\n\
-static __inline__ double fake_hypot (x, y)\n\
-\tdouble x, y;\n\
-#endif\n\
-{\n\
-\treturn fabs (hypot (x, y));\n\
-}\n\
-#define hypot\tfake_hypot\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of M88k_Bad_S_If fix
- */
-tSCC zM88k_Bad_S_IfName[] =
-     "m88k_bad_s_if";
-
-/*
- *  File name selection pattern
- */
-tSCC zM88k_Bad_S_IfList[] =
-  "|sys/stat.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzM88k_Bad_S_IfMachs[] = {
-        "m88k-*-sysv3*",
-        (const char*)NULL };
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zM88k_Bad_S_IfSelect0[] =
-       "#define[ \t]+S_IS[A-Z]+\\(m\\)[ \t]+\\(m[ \t]*&";
-
-#define    M88K_BAD_S_IF_TEST_CT  1
-static tTestDesc aM88k_Bad_S_IfTests[] = {
-  { TT_EGREP,    zM88k_Bad_S_IfSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for M88k_Bad_S_If
- */
-static const char* apzM88k_Bad_S_IfPatch[] = {
-    "format",
-    "#define %1(m) (((m) & S_IFMT) == %2)",
-    "#define[ \t]+(S_IS[A-Z]+)\\(m\\)[ \t]+\\(m[ \t]*&[ \t]*(S_IF[A-Z][A-Z][A-Z]+|0[0-9]+)[ \t]*\\)",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of M88k_Multi_Incl fix
- */
-tSCC zM88k_Multi_InclName[] =
-     "m88k_multi_incl";
-
-/*
- *  File name selection pattern
- */
-tSCC zM88k_Multi_InclList[] =
-  "|time.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzM88k_Multi_InclMachs[] = {
-        "m88k-tektronix-sysv3*",
-        (const char*)NULL };
-
-/*
- *  content bypass pattern - skip fix if pattern found
- */
-tSCC zM88k_Multi_InclBypass0[] =
-       "#ifndef";
-
-#define    M88K_MULTI_INCL_TEST_CT  1
-static tTestDesc aM88k_Multi_InclTests[] = {
-  { TT_NEGREP,   zM88k_Multi_InclBypass0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for M88k_Multi_Incl
- */
-static const char* apzM88k_Multi_InclPatch[] = {
-    "wrap",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3150,43 +2685,6 @@ static tTestDesc aNested_Sys_LimitsTests[] = {
 static const char* apzNested_Sys_LimitsPatch[] = { "sed",
     "-e", "/CHILD_MAX/s,/\\* Max, Max,",
     "-e", "/OPEN_MAX/s,/\\* Max, Max,",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of News_Os_Recursion fix
- */
-tSCC zNews_Os_RecursionName[] =
-     "news_os_recursion";
-
-/*
- *  File name selection pattern
- */
-tSCC zNews_Os_RecursionList[] =
-  "|stdlib.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzNews_Os_RecursionMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zNews_Os_RecursionSelect0[] =
-       "[ \t]*#include <stdlib\\.h>.*";
-
-#define    NEWS_OS_RECURSION_TEST_CT  1
-static tTestDesc aNews_Os_RecursionTests[] = {
-  { TT_EGREP,    zNews_Os_RecursionSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for News_Os_Recursion
- */
-static const char* apzNews_Os_RecursionPatch[] = {
-    "format",
-    "#ifdef BOGUS_RECURSION\n\
-%0\n\
-#endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4713,76 +4211,6 @@ static const char* apzTinfo_CplusplusPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Ultrix_Atexit_Param fix
- */
-tSCC zUltrix_Atexit_ParamName[] =
-     "ultrix_atexit_param";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_Atexit_ParamList[] =
-  "|stdlib.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_Atexit_ParamMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_Atexit_ParamSelect0[] =
-       "atexit\\(.*\\(\\)";
-
-#define    ULTRIX_ATEXIT_PARAM_TEST_CT  1
-static tTestDesc aUltrix_Atexit_ParamTests[] = {
-  { TT_EGREP,    zUltrix_Atexit_ParamSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Atexit_Param
- */
-static const char* apzUltrix_Atexit_ParamPatch[] = {
-    "format",
-    "atexit( void (*__func)( void )",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Atof_Param fix
- */
-tSCC zUltrix_Atof_ParamName[] =
-     "ultrix_atof_param";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_Atof_ParamList[] =
-  "|math.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_Atof_ParamMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_Atof_ParamSelect0[] =
-       "atof\\([ \t]*char";
-
-#define    ULTRIX_ATOF_PARAM_TEST_CT  1
-static tTestDesc aUltrix_Atof_ParamTests[] = {
-  { TT_EGREP,    zUltrix_Atof_ParamSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Atof_Param
- */
-static const char* apzUltrix_Atof_ParamPatch[] = {
-    "format",
-    "atof(const char",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
  *  Description of Ultrix_Const fix
  */
 tSCC zUltrix_ConstName[] =
@@ -4851,290 +4279,6 @@ static const char* apzUltrix_Const2Patch[] = {
     "format",
     "%1( const char *%3, const char *",
     "([ \t*](fopen|sscanf|popen|tempnam))\\([ \t]*char[ \t]*\\*([^,]*),[ \t]*char[ \t]*\\*[ \t]*",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Fix_Fixproto fix
- */
-tSCC zUltrix_Fix_FixprotoName[] =
-     "ultrix_fix_fixproto";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_Fix_FixprotoList[] =
-  "|sys/utsname.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_Fix_FixprotoMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_Fix_FixprotoSelect0[] =
-       "ULTRIX";
-
-#define    ULTRIX_FIX_FIXPROTO_TEST_CT  1
-static tTestDesc aUltrix_Fix_FixprotoTests[] = {
-  { TT_EGREP,    zUltrix_Fix_FixprotoSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Fix_Fixproto
- */
-static const char* apzUltrix_Fix_FixprotoPatch[] = {
-    "format",
-    "struct utsname;\n\
-%0",
-    "^[ \t]*extern[ \t]*int[ \t]*uname\\(\\);",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Ifdef fix
- */
-tSCC zUltrix_IfdefName[] =
-     "ultrix_ifdef";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_IfdefList[] =
-  "|sys/file.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_IfdefMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_IfdefSelect0[] =
-       "^#ifdef KERNEL[ \t]+&&";
-
-#define    ULTRIX_IFDEF_TEST_CT  1
-static tTestDesc aUltrix_IfdefTests[] = {
-  { TT_EGREP,    zUltrix_IfdefSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Ifdef
- */
-static const char* apzUltrix_IfdefPatch[] = {
-    "format",
-    "#if defined(KERNEL) &&",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Math_Ifdef fix
- */
-tSCC zUltrix_Math_IfdefName[] =
-     "ultrix_math_ifdef";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_Math_IfdefList[] =
-  "|sys/limits.h|float.h|math.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_Math_IfdefMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_Math_IfdefSelect0[] =
-       "^(#if.*)\\|\\|[ \t]+CC\\$[a-z]+";
-
-#define    ULTRIX_MATH_IFDEF_TEST_CT  1
-static tTestDesc aUltrix_Math_IfdefTests[] = {
-  { TT_EGREP,    zUltrix_Math_IfdefSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Math_Ifdef
- */
-static const char* apzUltrix_Math_IfdefPatch[] = {
-    "format",
-    "%1",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Nested_Ioctl fix
- */
-tSCC zUltrix_Nested_IoctlName[] =
-     "ultrix_nested_ioctl";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_Nested_IoctlList[] =
-  "|sys/ioctl.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_Nested_IoctlMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_Nested_IoctlSelect0[] =
-       "^/\\* #define SIOCSCREEN";
-
-#define    ULTRIX_NESTED_IOCTL_TEST_CT  1
-static tTestDesc aUltrix_Nested_IoctlTests[] = {
-  { TT_EGREP,    zUltrix_Nested_IoctlSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Nested_Ioctl
- */
-static const char* apzUltrix_Nested_IoctlPatch[] = { "sed",
-    "-e", "/^\\/\\* #define SIOCSCREEN/s@/\\* screend@*//* screend@",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Nested_Svc fix
- */
-tSCC zUltrix_Nested_SvcName[] =
-     "ultrix_nested_svc";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_Nested_SvcList[] =
-  "|rpc/svc.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_Nested_SvcMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_Nested_SvcSelect0[] =
-       "^ \\*[ \t]*int protocol;  */\\*";
-
-#define    ULTRIX_NESTED_SVC_TEST_CT  1
-static tTestDesc aUltrix_Nested_SvcTests[] = {
-  { TT_EGREP,    zUltrix_Nested_SvcSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Nested_Svc
- */
-static const char* apzUltrix_Nested_SvcPatch[] = { "sed",
-    "-e", "s@^\\( \\*\tint protocol;  \\)/\\*@\\1*/ /*@",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Stat fix
- */
-tSCC zUltrix_StatName[] =
-     "ultrix_stat";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_StatList[] =
-  "|sys/stat.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_StatMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_StatSelect0[] =
-       "@\\(#\\)stat\\.h.*6\\.1.*\\(ULTRIX\\)";
-
-#define    ULTRIX_STAT_TEST_CT  1
-static tTestDesc aUltrix_StatTests[] = {
-  { TT_EGREP,    zUltrix_StatSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Stat
- */
-static const char* apzUltrix_StatPatch[] = { "sed",
-    "-e", "/^#define[ \t]S_IFPORT[ \t]*S_IFIFO$/a\\\n\
-\\\n\
-/* macro to test for symbolic link */\\\n\
-#define S_ISLNK(mode) (((mode) & S_IFMT) == S_IFLNK)\\\n\n",
-    "-e", "/^[ \t]*fstat(),$/a\\\n\
-\tlstat(),\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Static fix
- */
-tSCC zUltrix_StaticName[] =
-     "ultrix_static";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_StaticList[] =
-  "|machine/cpu.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_StaticMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_StaticSelect0[] =
-       "#include \"r[34]_cpu";
-
-#define    ULTRIX_STATIC_TEST_CT  1
-static tTestDesc aUltrix_StaticTests[] = {
-  { TT_EGREP,    zUltrix_StaticSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Static
- */
-static const char* apzUltrix_StaticPatch[] = { "sed",
-    "-e", "s/^static struct tlb_pid_state/struct tlb_pid_state/",
-    "-e", "s/^#include \"r3_cpu\\.h\"$/#include <machine\\/r3_cpu\\.h>/",
-    "-e", "s/^#include \"r4_cpu\\.h\"$/#include <machine\\/r4_cpu\\.h>/",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Ultrix_Strings fix
- */
-tSCC zUltrix_StringsName[] =
-     "ultrix_strings";
-
-/*
- *  File name selection pattern
- */
-tSCC zUltrix_StringsList[] =
-  "|strings.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzUltrix_StringsMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zUltrix_StringsSelect0[] =
-       "@\\(#\\)strings\\.h.*6\\.1.*\\(ULTRIX\\)";
-
-#define    ULTRIX_STRINGS_TEST_CT  1
-static tTestDesc aUltrix_StringsTests[] = {
-  { TT_EGREP,    zUltrix_StringsSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Ultrix_Strings
- */
-static const char* apzUltrix_StringsPatch[] = {
-    "wrap",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5782,25 +4926,20 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          155
+#define REGEX_COUNT          136
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            148
+#define FIX_COUNT            125
 
 /*
  *  Enumerate the fixes
  */
 typedef enum {
-    AAB_DGUX_INT_VARARGS_FIXIDX,
     AAB_FD_ZERO_ASM_POSIX_TYPES_H_FIXIDX,
     AAB_FD_ZERO_GNU_TYPES_H_FIXIDX,
     AAB_FD_ZERO_SELECTBITS_H_FIXIDX,
     AAB_SOLARIS_SYS_VARARGS_H_FIXIDX,
     AAB_SUN_MEMCPY_FIXIDX,
     AAB_SVR4_REPLACE_BYTEORDER_FIXIDX,
-    AAB_ULTRIX_ANSI_COMPAT_FIXIDX,
-    AAB_ULTRIX_LIMITS_FIXIDX,
-    AAB_ULTRIX_MEMORY_FIXIDX,
-    AAB_ULTRIX_STRING_FIXIDX,
     AIX_PTHREAD_FIXIDX,
     AIX_SYSMACHINE_FIXIDX,
     AIX_SYSWAIT_FIXIDX,
@@ -5810,9 +4949,6 @@ typedef enum {
     ALPHA_GETOPT_FIXIDX,
     ALPHA_PARENS_FIXIDX,
     ALPHA_SBRK_FIXIDX,
-    ARM_NORCROFT_HINT_FIXIDX,
-    ARM_WCHAR_FIXIDX,
-    AUX_ASM_FIXIDX,
     AVOID_BOOL_DEFINE_FIXIDX,
     AVOID_BOOL_TYPE_FIXIDX,
     AVOID_WCHAR_T_TYPE_FIXIDX,
@@ -5828,15 +4964,14 @@ typedef enum {
     DEC_INTERN_ASM_FIXIDX,
     DJGPP_WCHAR_H_FIXIDX,
     ECD_CURSOR_FIXIDX,
-    FIX_HEADER_BREAKAGE_FIXIDX,
     FREEBSD_GCC3_BREAKAGE_FIXIDX,
     GNU_TYPES_FIXIDX,
     HP_INLINE_FIXIDX,
     HP_SYSFILE_FIXIDX,
     HPUX10_CPP_POW_INLINE_FIXIDX,
     HPUX11_CPP_POW_INLINE_FIXIDX,
-    HPUX11_FABSF_FIXIDX,
     HPUX11_ABS_FIXIDX,
+    HPUX11_FABSF_FIXIDX,
     HPUX11_SIZE_T_FIXIDX,
     HPUX11_UINT32_C_FIXIDX,
     HPUX11_VSNPRINTF_FIXIDX,
@@ -5853,14 +4988,11 @@ typedef enum {
     ISC_FMOD_FIXIDX,
     ISC_OMITS_WITH_STDC_FIXIDX,
     KANDR_CONCAT_FIXIDX,
-    LIBC1_IFDEFD_MEMX_FIXIDX,
     LIBC1_G_VA_LIST_FIXIDX,
+    LIBC1_IFDEFD_MEMX_FIXIDX,
     LIMITS_IFNDEFS_FIXIDX,
     LYNX_VOID_INT_FIXIDX,
     LYNXOS_FCNTL_PROTO_FIXIDX,
-    M88K_BAD_HYPOT_OPT_FIXIDX,
-    M88K_BAD_S_IF_FIXIDX,
-    M88K_MULTI_INCL_FIXIDX,
     MACHINE_ANSI_H_VA_LIST_FIXIDX,
     MACHINE_NAME_FIXIDX,
     MATH_EXCEPTION_FIXIDX,
@@ -5869,7 +5001,6 @@ typedef enum {
     NESTED_AUTH_DES_FIXIDX,
     NESTED_MOTOROLA_FIXIDX,
     NESTED_SYS_LIMITS_FIXIDX,
-    NEWS_OS_RECURSION_FIXIDX,
     NEXT_MATH_PREFIX_FIXIDX,
     NEXT_TEMPLATE_FIXIDX,
     NEXT_VOLITILE_FIXIDX,
@@ -5910,18 +5041,8 @@ typedef enum {
     SYSZ_STDLIB_FOR_SUN_FIXIDX,
     THREAD_KEYWORD_FIXIDX,
     TINFO_CPLUSPLUS_FIXIDX,
-    ULTRIX_ATEXIT_PARAM_FIXIDX,
-    ULTRIX_ATOF_PARAM_FIXIDX,
     ULTRIX_CONST_FIXIDX,
     ULTRIX_CONST2_FIXIDX,
-    ULTRIX_FIX_FIXPROTO_FIXIDX,
-    ULTRIX_IFDEF_FIXIDX,
-    ULTRIX_MATH_IFDEF_FIXIDX,
-    ULTRIX_NESTED_IOCTL_FIXIDX,
-    ULTRIX_NESTED_SVC_FIXIDX,
-    ULTRIX_STAT_FIXIDX,
-    ULTRIX_STATIC_FIXIDX,
-    ULTRIX_STRINGS_FIXIDX,
     UNDEFINE_NULL_FIXIDX,
     UNICOSMK_RESTRICT_FIXIDX,
     UW7_BYTEORDER_FIX_FIXIDX,
@@ -5941,11 +5062,6 @@ typedef enum {
 } t_fixinc_idx;
 
 tFixDesc fixDescList[ FIX_COUNT ] = {
-  {  zAab_Dgux_Int_VarargsName,    zAab_Dgux_Int_VarargsList,
-     apzAab_Dgux_Int_VarargsMachs,
-     AAB_DGUX_INT_VARARGS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAab_Dgux_Int_VarargsTests,   apzAab_Dgux_Int_VarargsPatch, 0 },
-
   {  zAab_Fd_Zero_Asm_Posix_Types_HName,    zAab_Fd_Zero_Asm_Posix_Types_HList,
      apzAab_Fd_Zero_Asm_Posix_Types_HMachs,
      AAB_FD_ZERO_ASM_POSIX_TYPES_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
@@ -5975,26 +5091,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAab_Svr4_Replace_ByteorderMachs,
      AAB_SVR4_REPLACE_BYTEORDER_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Svr4_Replace_ByteorderTests,   apzAab_Svr4_Replace_ByteorderPatch, 0 },
-
-  {  zAab_Ultrix_Ansi_CompatName,    zAab_Ultrix_Ansi_CompatList,
-     apzAab_Ultrix_Ansi_CompatMachs,
-     AAB_ULTRIX_ANSI_COMPAT_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAab_Ultrix_Ansi_CompatTests,   apzAab_Ultrix_Ansi_CompatPatch, 0 },
-
-  {  zAab_Ultrix_LimitsName,    zAab_Ultrix_LimitsList,
-     apzAab_Ultrix_LimitsMachs,
-     AAB_ULTRIX_LIMITS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAab_Ultrix_LimitsTests,   apzAab_Ultrix_LimitsPatch, 0 },
-
-  {  zAab_Ultrix_MemoryName,    zAab_Ultrix_MemoryList,
-     apzAab_Ultrix_MemoryMachs,
-     AAB_ULTRIX_MEMORY_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAab_Ultrix_MemoryTests,   apzAab_Ultrix_MemoryPatch, 0 },
-
-  {  zAab_Ultrix_StringName,    zAab_Ultrix_StringList,
-     apzAab_Ultrix_StringMachs,
-     AAB_ULTRIX_STRING_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAab_Ultrix_StringTests,   apzAab_Ultrix_StringPatch, 0 },
 
   {  zAix_PthreadName,    zAix_PthreadList,
      apzAix_PthreadMachs,
@@ -6040,21 +5136,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAlpha_SbrkMachs,
      ALPHA_SBRK_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAlpha_SbrkTests,   apzAlpha_SbrkPatch, 0 },
-
-  {  zArm_Norcroft_HintName,    zArm_Norcroft_HintList,
-     apzArm_Norcroft_HintMachs,
-     ARM_NORCROFT_HINT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aArm_Norcroft_HintTests,   apzArm_Norcroft_HintPatch, 0 },
-
-  {  zArm_WcharName,    zArm_WcharList,
-     apzArm_WcharMachs,
-     ARM_WCHAR_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aArm_WcharTests,   apzArm_WcharPatch, 0 },
-
-  {  zAux_AsmName,    zAux_AsmList,
-     apzAux_AsmMachs,
-     AUX_ASM_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aAux_AsmTests,   apzAux_AsmPatch, 0 },
 
   {  zAvoid_Bool_DefineName,    zAvoid_Bool_DefineList,
      apzAvoid_Bool_DefineMachs,
@@ -6131,11 +5212,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      ECD_CURSOR_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aEcd_CursorTests,   apzEcd_CursorPatch, 0 },
 
-  {  zFix_Header_BreakageName,    zFix_Header_BreakageList,
-     apzFix_Header_BreakageMachs,
-     FIX_HEADER_BREAKAGE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aFix_Header_BreakageTests,   apzFix_Header_BreakagePatch, 0 },
-
   {  zFreebsd_Gcc3_BreakageName,    zFreebsd_Gcc3_BreakageList,
      apzFreebsd_Gcc3_BreakageMachs,
      FREEBSD_GCC3_BREAKAGE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
@@ -6166,15 +5242,15 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      HPUX11_CPP_POW_INLINE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux11_Cpp_Pow_InlineTests,   apzHpux11_Cpp_Pow_InlinePatch, 0 },
 
-  {  zHpux11_FabsfName,    zHpux11_FabsfList,
-     apzHpux11_FabsfMachs,
-     HPUX11_FABSF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aHpux11_FabsfTests,   apzHpux11_FabsfPatch, 0 },
-
   {  zHpux11_AbsName,    zHpux11_AbsList,
      apzHpux11_AbsMachs,
      HPUX11_ABS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux11_AbsTests,   apzHpux11_AbsPatch, 0 },
+
+  {  zHpux11_FabsfName,    zHpux11_FabsfList,
+     apzHpux11_FabsfMachs,
+     HPUX11_FABSF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aHpux11_FabsfTests,   apzHpux11_FabsfPatch, 0 },
 
   {  zHpux11_Size_TName,    zHpux11_Size_TList,
      apzHpux11_Size_TMachs,
@@ -6256,15 +5332,15 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      KANDR_CONCAT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aKandr_ConcatTests,   apzKandr_ConcatPatch, 0 },
 
-  {  zLibc1_Ifdefd_MemxName,    zLibc1_Ifdefd_MemxList,
-     apzLibc1_Ifdefd_MemxMachs,
-     LIBC1_IFDEFD_MEMX_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aLibc1_Ifdefd_MemxTests,   apzLibc1_Ifdefd_MemxPatch, 0 },
-
   {  zLibc1_G_Va_ListName,    zLibc1_G_Va_ListList,
      apzLibc1_G_Va_ListMachs,
      LIBC1_G_VA_LIST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aLibc1_G_Va_ListTests,   apzLibc1_G_Va_ListPatch, 0 },
+
+  {  zLibc1_Ifdefd_MemxName,    zLibc1_Ifdefd_MemxList,
+     apzLibc1_Ifdefd_MemxMachs,
+     LIBC1_IFDEFD_MEMX_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aLibc1_Ifdefd_MemxTests,   apzLibc1_Ifdefd_MemxPatch, 0 },
 
   {  zLimits_IfndefsName,    zLimits_IfndefsList,
      apzLimits_IfndefsMachs,
@@ -6280,21 +5356,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzLynxos_Fcntl_ProtoMachs,
      LYNXOS_FCNTL_PROTO_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aLynxos_Fcntl_ProtoTests,   apzLynxos_Fcntl_ProtoPatch, 0 },
-
-  {  zM88k_Bad_Hypot_OptName,    zM88k_Bad_Hypot_OptList,
-     apzM88k_Bad_Hypot_OptMachs,
-     M88K_BAD_HYPOT_OPT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aM88k_Bad_Hypot_OptTests,   apzM88k_Bad_Hypot_OptPatch, 0 },
-
-  {  zM88k_Bad_S_IfName,    zM88k_Bad_S_IfList,
-     apzM88k_Bad_S_IfMachs,
-     M88K_BAD_S_IF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aM88k_Bad_S_IfTests,   apzM88k_Bad_S_IfPatch, 0 },
-
-  {  zM88k_Multi_InclName,    zM88k_Multi_InclList,
-     apzM88k_Multi_InclMachs,
-     M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aM88k_Multi_InclTests,   apzM88k_Multi_InclPatch, 0 },
 
   {  zMachine_Ansi_H_Va_ListName,    zMachine_Ansi_H_Va_ListList,
      apzMachine_Ansi_H_Va_ListMachs,
@@ -6335,11 +5396,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzNested_Sys_LimitsMachs,
      NESTED_SYS_LIMITS_TEST_CT, FD_MACH_ONLY,
      aNested_Sys_LimitsTests,   apzNested_Sys_LimitsPatch, 0 },
-
-  {  zNews_Os_RecursionName,    zNews_Os_RecursionList,
-     apzNews_Os_RecursionMachs,
-     NEWS_OS_RECURSION_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aNews_Os_RecursionTests,   apzNews_Os_RecursionPatch, 0 },
 
   {  zNext_Math_PrefixName,    zNext_Math_PrefixList,
      apzNext_Math_PrefixMachs,
@@ -6541,16 +5597,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      TINFO_CPLUSPLUS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aTinfo_CplusplusTests,   apzTinfo_CplusplusPatch, 0 },
 
-  {  zUltrix_Atexit_ParamName,    zUltrix_Atexit_ParamList,
-     apzUltrix_Atexit_ParamMachs,
-     ULTRIX_ATEXIT_PARAM_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aUltrix_Atexit_ParamTests,   apzUltrix_Atexit_ParamPatch, 0 },
-
-  {  zUltrix_Atof_ParamName,    zUltrix_Atof_ParamList,
-     apzUltrix_Atof_ParamMachs,
-     ULTRIX_ATOF_PARAM_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aUltrix_Atof_ParamTests,   apzUltrix_Atof_ParamPatch, 0 },
-
   {  zUltrix_ConstName,    zUltrix_ConstList,
      apzUltrix_ConstMachs,
      ULTRIX_CONST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
@@ -6560,46 +5606,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzUltrix_Const2Machs,
      ULTRIX_CONST2_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aUltrix_Const2Tests,   apzUltrix_Const2Patch, 0 },
-
-  {  zUltrix_Fix_FixprotoName,    zUltrix_Fix_FixprotoList,
-     apzUltrix_Fix_FixprotoMachs,
-     ULTRIX_FIX_FIXPROTO_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aUltrix_Fix_FixprotoTests,   apzUltrix_Fix_FixprotoPatch, 0 },
-
-  {  zUltrix_IfdefName,    zUltrix_IfdefList,
-     apzUltrix_IfdefMachs,
-     ULTRIX_IFDEF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aUltrix_IfdefTests,   apzUltrix_IfdefPatch, 0 },
-
-  {  zUltrix_Math_IfdefName,    zUltrix_Math_IfdefList,
-     apzUltrix_Math_IfdefMachs,
-     ULTRIX_MATH_IFDEF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aUltrix_Math_IfdefTests,   apzUltrix_Math_IfdefPatch, 0 },
-
-  {  zUltrix_Nested_IoctlName,    zUltrix_Nested_IoctlList,
-     apzUltrix_Nested_IoctlMachs,
-     ULTRIX_NESTED_IOCTL_TEST_CT, FD_MACH_ONLY,
-     aUltrix_Nested_IoctlTests,   apzUltrix_Nested_IoctlPatch, 0 },
-
-  {  zUltrix_Nested_SvcName,    zUltrix_Nested_SvcList,
-     apzUltrix_Nested_SvcMachs,
-     ULTRIX_NESTED_SVC_TEST_CT, FD_MACH_ONLY,
-     aUltrix_Nested_SvcTests,   apzUltrix_Nested_SvcPatch, 0 },
-
-  {  zUltrix_StatName,    zUltrix_StatList,
-     apzUltrix_StatMachs,
-     ULTRIX_STAT_TEST_CT, FD_MACH_ONLY,
-     aUltrix_StatTests,   apzUltrix_StatPatch, 0 },
-
-  {  zUltrix_StaticName,    zUltrix_StaticList,
-     apzUltrix_StaticMachs,
-     ULTRIX_STATIC_TEST_CT, FD_MACH_ONLY,
-     aUltrix_StaticTests,   apzUltrix_StaticPatch, 0 },
-
-  {  zUltrix_StringsName,    zUltrix_StringsList,
-     apzUltrix_StringsMachs,
-     ULTRIX_STRINGS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aUltrix_StringsTests,   apzUltrix_StringsPatch, 0 },
 
   {  zUndefine_NullName,    zUndefine_NullList,
      apzUndefine_NullMachs,
