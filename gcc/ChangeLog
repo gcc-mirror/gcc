@@ -1,3 +1,8 @@
+2003-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_stpcpy): Copy `arglist' before
+	modifying it.
+
 2003-05-03  Falk Hueffner <falk.hueffner@student.uni-tuebingen.de>
 	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
