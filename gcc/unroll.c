@@ -290,6 +290,19 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		block_begins++;
 	      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 		block_ends++;
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
+		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+		{
+		  /* Note, would be nice to add code to unroll EH
+		     regions, but until that time, we punt (don't
+		     unroll).  For the proper way of doing it, see
+		     expand_inline_function.  */
+
+		  if (loop_dump_stream)
+		    fprintf (loop_dump_stream,
+			     "Unrolling failure: cannot unroll EH regions.\n");
+		  return;
+		}
 	    }
 	}
 

@@ -1,3 +1,7 @@
+Tue Jan 11 11:37:58 2000  Mike Stump  <mrs@wrs.com>
+
+	* unroll.c (unroll_loop): Add EH support.
+
 2000-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pa-protos.h: New file.
