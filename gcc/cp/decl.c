@@ -4447,7 +4447,7 @@ reshape_init (tree type, tree *initp)
   if (*initp)
     {
       if (brace_enclosed_p)
-	error ("too many initializers for %qT", type);
+	error ("too many initializers for `%T'", type);
       else if (warn_missing_braces)
 	warning ("missing braces around initializer");
     }

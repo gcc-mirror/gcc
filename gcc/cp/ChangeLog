@@ -1,3 +1,8 @@
+2005-02-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (reshape_init): Use explicit quotes in error message
+	instead of %q.
+	
 2005-02-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14479
