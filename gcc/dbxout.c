@@ -195,8 +195,10 @@ struct dbx_file GTY(())
   struct dbx_file *prev;              /* Chain to traverse all pending bincls.  */
 };
 
+#ifdef DBX_DEBUGGING_INFO
 /* If zero then there is no pending BINCL.  */
 static int pending_bincls = 0;
+#endif
 
 /* This is the top of the stack.  */
 
