@@ -1933,7 +1933,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
       break;
 
     case COND_EXPR:
-      /* [over.builtin]
+      /* [over.built]
 
 	 For every pair of promoted arithmetic types L and R, there
 	 exist candidate operator functions of the form 
@@ -5412,26 +5412,6 @@ joust (cand1, cand2, warn)
 	  else
 	    /* cand2 is built-in; prefer cand1.  */
 	    return 1;
-	}
-
-      /* Kludge around broken overloading rules whereby
-	 Integer a, b; test ? a : b; is ambiguous, since there's a builtin
-	 that takes references and another that takes values.  */
-      if (cand1->fn == cand2->fn
-	  && cand1->fn == ansi_opname (COND_EXPR))
-	{
-	  tree c1 = TREE_VEC_ELT (cand1->convs, 1);
-	  tree c2 = TREE_VEC_ELT (cand2->convs, 1);
-	  tree t1 = strip_top_quals (non_reference (TREE_TYPE (c1)));
-	  tree t2 = strip_top_quals (non_reference (TREE_TYPE (c2)));
-
-	  if (same_type_p (t1, t2))
-	    {
-	      if (TREE_CODE (c1) == REF_BIND && TREE_CODE (c2) != REF_BIND)
-		return 1;
-	      if (TREE_CODE (c1) != REF_BIND && TREE_CODE (c2) == REF_BIND)
-		return -1;
-	    }
 	}
     }
 
