@@ -4436,28 +4436,33 @@ output_function_profiler (file, labelno)
       if (flag_pic == 1)
 	{
 	  fprintf (file, "\tbl _GLOBAL_OFFSET_TABLE_@local-4\n");
+	  fprintf (file, "\t%s %s,4(%s)\n",
+		   (TARGET_NEW_MNEMONICS) ? "stw" : "st",
+		   reg_names[0], reg_names[1]);
 	  fprintf (file, "\tmflr %s\n", reg_names[11]);
 	  fprintf (file, "\t%s %s,", (TARGET_NEW_MNEMONICS) ? "lwz" : "l",
-		   reg_names[11]);
+		   reg_names[0]);
 	  assemble_name (file, buf);
 	  fprintf (file, "@got(%s)\n", reg_names[11]);
 	}
 #if TARGET_ELF
       else if (flag_pic > 1 || TARGET_RELOCATABLE)
 	{
-	  fprintf (file, "\tstw %s,4(%s)\n", reg_names[0], reg_names[1]);
-	  fprintf (file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
-	  assemble_name (file, buf);
-	  fprintf (file, "X = .-.LCTOC1\n");
-	  fprintf (file, "\t.long ");
-	  assemble_name (file, buf);
-	  fputs ("\n\t.previous\n", file);
+	  fprintf (file, "\t%s %s,4(%s)\n",
+		   (TARGET_NEW_MNEMONICS) ? "stw" : "st",
+		   reg_names[0], reg_names[1]);
 	  rs6000_pic_func_labelno = rs6000_pic_labelno;
 	  rs6000_output_load_toc_table (file, 11);
 	  fprintf (file, "\t%s %s,", (TARGET_NEW_MNEMONICS) ? "lwz" : "l",
 		   reg_names[11]);
 	  assemble_name (file, buf);
 	  fprintf (file, "X(%s)\n", reg_names[11]);
+	  fprintf (file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
+	  assemble_name (file, buf);
+	  fprintf (file, "X = .-.LCTOC1\n");
+	  fprintf (file, "\t.long ");
+	  assemble_name (file, buf);
+	  fputs ("\n\t.previous\n", file);
 	}
 #endif
       else if (TARGET_NEW_MNEMONICS)
@@ -4466,7 +4471,7 @@ output_function_profiler (file, labelno)
 	  assemble_name (file, buf);
 	  fprintf (file, "@ha\n");
 	  fprintf (file, "\tstw %s,4(%s)\n", reg_names[0], reg_names[1]);
-	  fprintf (file, "\taddi %s,%s,", reg_names[11], reg_names[11]);
+	  fprintf (file, "\taddi %s,%s,", reg_names[0], reg_names[11]);
 	  assemble_name (file, buf);
 	  fputs ("@l\n", file);
 	}
