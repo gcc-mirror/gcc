@@ -1,3 +1,7 @@
+2002-02-05  Roger Sayle  <roger@eyesopen.com>
+
+	* cfgloop.h (flow_bb_inside_loop_p): Correct prototype again.
+
 2003-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/8555
