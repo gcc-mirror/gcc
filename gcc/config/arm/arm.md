@@ -466,8 +466,8 @@
 ; addition.
 (define_peephole2
   [(match_scratch:SI 3 "r")
-   (set (match_operand:SI          0 "s_register_operand" "")
-	(plus:SI (match_operand:SI 1 "s_register_operand" "")
+   (set (match_operand:SI          0 "arm_general_register_operand" "")
+	(plus:SI (match_operand:SI 1 "arm_general_register_operand" "")
 		 (match_operand:SI 2 "const_int_operand"  "")))]
   "TARGET_ARM &&
    !(const_ok_for_arm (INTVAL (operands[2]))
@@ -534,15 +534,14 @@
 ;; Reloading and elimination of the frame pointer can
 ;; sometimes cause this optimization to be missed.
 (define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arm_general_register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))
    (set (match_dup 0)
-	(plus:SI (match_dup 0) (match_operand:SI 2 "register_operand" "")))]
+	(plus:SI (match_dup 0) (reg:SI SP_REGNUM)))]
   "TARGET_THUMB
-   && REGNO (operands[2]) == STACK_POINTER_REGNUM 
    && (unsigned HOST_WIDE_INT) (INTVAL (operands[1])) < 1024
    && (INTVAL (operands[1]) & 3) == 0"
-  [(set (match_dup 0) (plus:SI (match_dup 2) (match_dup 1)))]
+  [(set (match_dup 0) (plus:SI (reg:SI SP_REGNUM) (match_dup 1)))]
   ""
 )
 
@@ -630,8 +629,8 @@
 ;; similarly for the beq variant using bcc.
 ;; This is a common looping idiom (while (n--))
 (define_peephole2
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(plus:SI (match_operand:SI 1 "s_register_operand" "")
+  [(set (match_operand:SI 0 "arm_general_register_operand" "")
+	(plus:SI (match_operand:SI 1 "arm_general_register_operand" "")
 		 (const_int -1)))
    (set (match_operand 2 "cc_register" "")
 	(compare (match_dup 0) (const_int -1)))
@@ -986,9 +985,9 @@
 
 (define_peephole2
   [(match_scratch:SI 3 "r")
-   (set (match_operand:SI           0 "s_register_operand" "")
+   (set (match_operand:SI 0 "arm_general_register_operand" "")
 	(minus:SI (match_operand:SI 1 "const_int_operand" "")
-		  (match_operand:SI 2 "s_register_operand" "")))]
+		  (match_operand:SI 2 "arm_general_register_operand" "")))]
   "TARGET_ARM
    && !const_ok_for_arm (INTVAL (operands[1]))
    && const_ok_for_arm (~INTVAL (operands[1]))"
@@ -2116,8 +2115,8 @@
 
 (define_peephole2
   [(match_scratch:SI 3 "r")
-   (set (match_operand:SI         0 "s_register_operand" "")
-	(ior:SI (match_operand:SI 1 "s_register_operand" "")
+   (set (match_operand:SI 0 "arm_general_register_operand" "")
+	(ior:SI (match_operand:SI 1 "arm_general_register_operand" "")
 		(match_operand:SI 2 "const_int_operand" "")))]
   "TARGET_ARM
    && !const_ok_for_arm (INTVAL (operands[2]))
@@ -9651,15 +9650,11 @@
 ; This pattern is never tried by combine, so do it as a peephole
 
 (define_peephole2
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(match_operand:SI 1 "s_register_operand" ""))
+  [(set (match_operand:SI 0 "arm_general_register_operand" "")
+	(match_operand:SI 1 "arm_general_register_operand" ""))
    (set (reg:CC CC_REGNUM)
 	(compare:CC (match_dup 1) (const_int 0)))]
-  "TARGET_ARM
-   && (!(TARGET_HARD_FLOAT && TARGET_MAVERICK)
-       || (!cirrus_fp_register (operands[0], SImode)
-           && !cirrus_fp_register (operands[1], SImode)))
-  "
+  "TARGET_ARM"
   [(parallel [(set (reg:CC CC_REGNUM) (compare:CC (match_dup 1) (const_int 0)))
 	      (set (match_dup 0) (match_dup 1))])]
   ""
