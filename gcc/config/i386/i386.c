@@ -1560,6 +1560,14 @@ ix86_expand_binary_operator (code, mode, operands)
 
       if (GET_CODE (operands[2]) == MEM)
 	operands[2] = force_reg (GET_MODE (operands[2]), operands[2]);
+
+      if (GET_CODE (operands[1]) == CONST_INT && code == MINUS)
+	{
+	  rtx temp = gen_reg_rtx (GET_MODE (operands[0]));
+	  emit_move_insn (temp, operands[1]);
+	  operands[1] = temp;
+	  return TRUE;
+	}	  
     }
 
   if (!ix86_binary_operator_ok (code, mode, operands))
@@ -1584,6 +1592,14 @@ ix86_expand_binary_operator (code, mode, operands)
 	      modified = TRUE;
 	    }
 
+	  if (GET_CODE (operands[1]) == CONST_INT && code == MINUS)
+	    {
+	      rtx temp = gen_reg_rtx (GET_MODE (operands[0]));
+	      emit_move_insn (temp, operands[1]);
+	      operands[1] = temp;
+	      return TRUE;
+	    }	  
+
 	  if (modified && !ix86_binary_operator_ok (code, mode, operands))
 	    return FALSE;
 	}
@@ -1603,7 +1619,9 @@ ix86_binary_operator_ok (code, mode, operands)
      enum machine_mode mode;
      rtx operands[3];
 {
-  return TRUE;
+  return (GET_CODE (operands[1]) != MEM && GET_CODE (operands[2]) != MEM
+	  && GET_CODE (operands[1]) != CONST_INT)
+    || GET_RTX_CLASS (code) == 'c';
 }
 
 /* Attempt to expand a unary operator.  Make the expansion closer to the
