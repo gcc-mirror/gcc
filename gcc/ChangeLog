@@ -1,3 +1,7 @@
+Wed Nov  3 03:26:28 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* dwarf2out.c: Do not include ctype.h.
+
 Tue Nov  2 21:53:44 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* regclass.c (record_reg_classes): Always use may_move_cost when
