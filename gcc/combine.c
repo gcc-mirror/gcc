@@ -140,9 +140,8 @@ static int max_uid_cuid;
 
 /* Get the cuid of an insn.  */
 
-#define INSN_CUID(INSN) (INSN_UID (INSN) > max_uid_cuid		\
-			 ? (abort(), 0)				\
-			 : uid_cuid[INSN_UID (INSN)])
+#define INSN_CUID(INSN) \
+(INSN_UID (INSN) > max_uid_cuid ? insn_cuid (INSN) : uid_cuid[INSN_UID (INSN)])
 
 /* Maximum register number, which is the size of the tables below.  */
 
@@ -446,6 +445,7 @@ static int reg_bitfield_target_p  PROTO((rtx, rtx));
 static void distribute_notes	PROTO((rtx, rtx, rtx, rtx, rtx, rtx));
 static void distribute_links	PROTO((rtx));
 static void mark_used_regs_combine PROTO((rtx));
+static int insn_cuid		PROTO((rtx));
 
 /* Main entry point for combiner.  F is the first insn of the function.
    NREGS is the first unused pseudo-reg number.  */
@@ -11189,6 +11189,22 @@ distribute_links (links)
 	    }
 	}
     }
+}
+
+/* Compute INSN_CUID for INSN, which is an insn made by combine.  */
+
+static int
+insn_cuid (insn)
+     rtx insn;
+{
+  while (insn != 0 && INSN_UID (insn) > max_uid_cuid
+	 && GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE)
+    insn = NEXT_INSN (insn);
+
+  if (INSN_UID (insn) > max_uid_cuid)
+    abort ();
+
+  return INSN_CUID (insn);
 }
 
 void
