@@ -12,6 +12,10 @@
 	* config/fr30/fr30.md: Include predicates.md.
 	* config/fr30/predicates.md: New.
 
+	* config/mcore/mcore.h (PREDICATE_CODES): Add SYMBOL_REF and
+	LABEL_REF to mcore_general_movsrc_operand.  Add SYMBOL_REF to
+	mcore_call_address_operand.
+
 2005-04-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* passes.c (rest_of_handle_final): NULL unlikely_text_section_name
