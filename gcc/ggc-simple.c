@@ -28,69 +28,74 @@
 #include "hash.h"
 #include "ggc.h"
 
+#ifndef offsetof
+#define offsetof(TYPE, MEMBER)	((size_t) &((TYPE *)0)->MEMBER)
+#endif
+
 /* Debugging flags.  */
 
 /* Zap memory before freeing to catch dangling pointers.  */
 #define GGC_POISON
 
-/* Log alloc and release.  Don't enable this unless you want a
-   really really lot of data.  */
-#undef GGC_DUMP
+/* Collect statistics on how bushy the search tree is.  */
+#undef GGC_BALANCE
 
-/* Some magic tags for strings and anonymous memory, hoping to catch
-   certain errors wrt marking memory.  */
+/* Perform collection every time ggc_collect is invoked.  Otherwise,
+   collection is performed only when a significant amount of memory
+   has been allocated since the last collection.  */
+#undef GGC_ALWAYS_COLLECT
 
-#define IS_MARKED(X)		((X) & 1)
-#define IGNORE_MARK(X)		((X) & -2)
+/* Always verify that the to-be-marked memory is collectable.  */
+#undef GGC_ALWAYS_VERIFY
 
-#define GGC_STRING_MAGIC	((unsigned int)0xa1b2c3d4)
-#define GGC_STRING_MAGIC_MARK	((unsigned int)0xa1b2c3d4 | 1)
-
-#define GGC_ANY_MAGIC		((unsigned int)0xa9bacbdc)
-#define GGC_ANY_MAGIC_MARK	((unsigned int)0xa9bacbdc | 1)
+#ifdef ENABLE_CHECKING
+#define GGC_POISON
+#define GGC_ALWAYS_COLLECT
+#define GGC_ALWAYS_VERIFY
+#endif
 
 /* Constants for general use.  */
 
 char *empty_string;
+extern int gc_time;
 
-/* Global lists of roots, rtxs, and trees.  */
+#ifndef HOST_BITS_PER_PTR
+#define HOST_BITS_PER_PTR  HOST_BITS_PER_LONG
+#endif
 
-struct ggc_rtx
+/* We'd like a balanced tree, but we don't really want to pay for the
+   cost of keeping the tree balanced.  We'll settle for the next best
+   thing -- nearly balanced.
+
+   In this context, the most natural key is the node pointer itself,
+   but due to the way memory managers work, we'd be virtually certain
+   to wind up with a completely degenerate straight line.  What's needed
+   is to make something more variable, and yet predictable, be more
+   significant in the comparison.
+
+   The handiest source of variability is the low bits of the pointer
+   value itself.  Any sort of bit/byte swap would do, but such machine
+   specific operations are not handy, and we don't want to put that much
+   effort into it.  */
+
+#define PTR_KEY(p)	((size_t)p << (HOST_BITS_PER_PTR - 8)		    \
+			 | ((size_t)p & 0xff00) << (HOST_BITS_PER_PTR - 24) \
+			 | (size_t)p >> 16)
+
+/* GC'able memory; a node in a binary search tree.  */
+
+struct ggc_mem
 {
-  struct ggc_rtx *chain;
-  struct rtx_def rtx;
-};
+  /* A combination of the standard left/right nodes, indexable by `<'.  */
+  struct ggc_mem *sub[2];
 
-struct ggc_rtvec
-{
-  struct ggc_rtvec *chain;
-  struct rtvec_def vec;
-};
-
-struct ggc_tree
-{
-  struct ggc_tree *chain;
-  union tree_node tree;
-};
-
-struct ggc_string
-{
-  struct ggc_string *chain;
-  unsigned int magic_mark;
-  char string[1];
-};
-
-/* A generic allocation, with an external mark bit.  */
-
-struct ggc_any
-{
-  struct ggc_any *chain;
-  unsigned int magic_mark;
+  unsigned int mark : 1;
+  unsigned int context : 7;
+  unsigned int size : 24;
 
   /* Make sure the data is reasonably aligned.  */
   union {
-    char c;
-    HOST_WIDE_INT i;
+    HOST_WIDEST_INT i;
 #ifdef HAVE_LONG_DOUBLE
     long double d;
 #else
@@ -99,59 +104,265 @@ struct ggc_any
   } u;
 };
 
-struct ggc_status
+static struct globals
 {
-  struct ggc_status *next;
-  struct ggc_rtx *rtxs;
-  struct ggc_rtvec *vecs;
-  struct ggc_tree *trees;
-  struct ggc_string *strings;
-  struct ggc_any *anys;
-  size_t bytes_alloced_since_gc;
-};
+  /* Root of the object tree.  */
+  struct ggc_mem *root;
 
-/* A chain of GGC contexts.  The currently active context is at the
-   front of the chain.  */
-static struct ggc_status *ggc_chain;
+  /* Data bytes currently allocated.  */
+  size_t allocated;
 
-/* The table of all allocated strings.  Only valid during collection.  */
-static varray_type ggc_allocated_strings;
-static size_t ggc_strings_used;
+  /* Data objects currently allocated.  */
+  size_t objects;
 
-/* Some statistics.  */
+  /* Data bytes allocated at time of last GC.  */
+  size_t allocated_last_gc;
 
-static int n_rtxs_collected;
-static int n_vecs_collected;
-static int n_trees_collected;
-static int n_strings_collected;
-static int n_anys_collected;
-extern int gc_time;
+  /* Current context level.  */
+  int context;
+} G;
 
-#ifdef GGC_DUMP
-static FILE *dump;
-#endif
+/* Skip garbage collection if the current allocation is not at least
+   this factor times the allocation at the end of the last collection.
+   In other words, total allocation must expand by (this factor minus
+   one) before collection is performed.  */
+#define GGC_MIN_EXPAND_FOR_GC (1.3)
+
+/* Bound `allocated_last_gc' to 4MB, to prevent the memory expansion
+   test from triggering too often when the heap is small.  */
+#define GGC_MIN_LAST_ALLOCATED (4 * 1024 * 1024)
 
 /* Local function prototypes.  */
 
-static void ggc_free_rtx PROTO ((struct ggc_rtx *r));
-static void ggc_free_rtvec PROTO ((struct ggc_rtvec *v));
-static void ggc_free_tree PROTO ((struct ggc_tree *t));
-static void ggc_free_string PROTO ((struct ggc_string *s));
-static void ggc_free_any PROTO ((struct ggc_any *a));
-static int ggc_compare_addresses PROTO ((const void *, const void *));
+static void tree_insert PROTO ((struct ggc_mem *));
+static int tree_lookup PROTO ((struct ggc_mem *));
+static void clear_marks PROTO ((struct ggc_mem *));
+static void sweep_objs PROTO ((struct ggc_mem **));
+static void ggc_pop_context_1 PROTO ((struct ggc_mem *, int));
+
+#ifdef GGC_BALANCE
+extern void debug_ggc_balance PROTO ((void));
+static void tally_leaves PROTO ((struct ggc_mem *, int, size_t *, size_t *));
+#endif
+
+/* Insert V into the search tree.  */
+
+static inline void
+tree_insert (v)
+     struct ggc_mem *v;
+{
+  size_t v_key = PTR_KEY (v);
+  struct ggc_mem *p, **pp;
+
+  for (pp = &G.root, p = *pp; p ; p = *pp)
+    {
+      size_t p_key = PTR_KEY (p);
+      pp = &p->sub[v_key < p_key];
+    }
+  *pp = v;
+}
+
+/* Return true if V is in the tree.  */
+
+static inline int
+tree_lookup (v)
+     struct ggc_mem *v;
+{
+  size_t v_key = PTR_KEY (v);
+  struct ggc_mem *p = G.root;
+
+  while (p)
+    {
+      size_t p_key = PTR_KEY (p);
+      if (p == v)
+	return 1;
+      p = p->sub[v_key < p_key];
+    }
+
+  return 0;
+}
+
+/* Alloc SIZE bytes of GC'able memory.  If ZERO, clear the memory.  */
+
+void *
+ggc_alloc_obj (size, zero)
+     size_t size;
+     int zero;
+{
+  struct ggc_mem *x;
+
+  x = (struct ggc_mem *) xmalloc (offsetof (struct ggc_mem, u) + size);
+  x->sub[0] = NULL;
+  x->sub[1] = NULL;
+  x->mark = 0;
+  x->context = G.context;
+  x->size = size;
+
+  if (zero)
+    memset (&x->u, 0, size);
+
+  tree_insert (x);
+  G.allocated += size;
+  G.objects += 1;
+
+  return &x->u;
+}
+
+/* Mark a node.  */
+
+int
+ggc_set_mark (p)
+     void *p;
+{
+  struct ggc_mem *x;
+
+  x = (struct ggc_mem *) ((char *)p - offsetof (struct ggc_mem, u));
+#ifdef GGC_ALWAYS_VERIFY
+  if (! tree_lookup (x))
+    abort ();
+#endif
+
+  if (x->mark)
+    return 1;
+
+  x->mark = 1;
+  G.allocated += x->size;
+  G.objects += 1;
+
+  return 0;
+}
+
+void
+ggc_mark_if_gcable (p)
+     void *p;
+{
+  struct ggc_mem *x;
+
+  if (p == NULL)
+    return;
+
+  x = (struct ggc_mem *) ((char *)p - offsetof (struct ggc_mem, u));
+  if (! tree_lookup (x))
+    return;
+
+  if (x->mark)
+    return;
+
+  x->mark = 1;
+  G.allocated += x->size;
+  G.objects += 1;
+}
+
+static void
+clear_marks (x)
+     struct ggc_mem *x;
+{
+  x->mark = 0;
+  if (x->sub[0])
+    clear_marks (x->sub[0]);
+  if (x->sub[1])
+    clear_marks (x->sub[1]);
+}
+
+static void
+sweep_objs (root)
+     struct ggc_mem **root;
+{
+  struct ggc_mem *x = *root;
+  if (!x)
+    return;
+
+  sweep_objs (&x->sub[0]);
+  sweep_objs (&x->sub[1]);
+
+  if (! x->mark && x->context >= G.context)
+    {
+      struct ggc_mem *l, *r;
+
+      l = x->sub[0];
+      r = x->sub[1];
+      if (!l)
+	*root = r;
+      else if (!r)
+	*root = l;
+      else if (!l->sub[1])
+	{
+	  *root = l;
+	  l->sub[1] = r;
+	}
+      else if (!r->sub[0])
+	{
+	  *root = r;
+	  r->sub[0] = l;
+	}
+      else
+	{
+	  *root = l;
+	  do {
+	    root = &l->sub[1];
+	  } while ((l = *root) != NULL);
+	  *root = r;
+	}
+
+#ifdef GGC_POISON
+      memset (&x->u, 0xA5, x->size);
+#endif
+
+      free (x);
+    }
+}
+
+/* The top level mark-and-sweep routine.  */
+
+void
+ggc_collect ()
+{
+  int time;
+
+#ifndef GGC_ALWAYS_COLLECT
+  if (G.allocated < GGC_MIN_EXPAND_FOR_GC * G.allocated_last_gc)
+    return;
+#endif
+
+#ifdef GGC_BALANCE
+  debug_ggc_balance ();
+#endif
+
+  time = get_run_time ();
+  if (!quiet_flag)
+    fprintf (stderr, " {GC %luk -> ", (unsigned long)G.allocated / 1024);
+
+  G.allocated = 0;
+  G.objects = 0;
+
+  clear_marks (G.root);
+  ggc_mark_roots ();
+  sweep_objs (&G.root);
+
+  G.allocated_last_gc = G.allocated;
+  if (G.allocated_last_gc < GGC_MIN_LAST_ALLOCATED)
+    G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
+
+  time = get_run_time () - time;
+  gc_time += time;
+
+  if (!quiet_flag)
+    {
+      fprintf (stderr, "%luk in %.3f}", 
+	       (unsigned long) G.allocated / 1024, time * 1e-6);
+    }
+
+#ifdef GGC_BALANCE
+  debug_ggc_balance ();
+#endif
+}
 
 /* Called once to initialize the garbage collector.  */
 
 void 
-init_ggc PROTO ((void))
+init_ggc ()
 {
-  /* Initialize the global context.  */
-  ggc_push_context ();
-
-#ifdef GGC_DUMP
-  dump = fopen ("zgcdump", "w");
-  setlinebuf (dump);
-#endif
+  G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
   empty_string = ggc_alloc_string ("", 0);
   ggc_add_string_root (&empty_string, 1);
@@ -161,580 +372,105 @@ init_ggc PROTO ((void))
    will not be collected while the new context is active.  */
 
 void
-ggc_push_context PROTO ((void))
+ggc_push_context ()
 {
-  struct ggc_status *gs = (struct ggc_status *) xcalloc (1, sizeof (*gs));
-  gs->next = ggc_chain;
-  ggc_chain = gs;
+  G.context++;
+
+  /* We only allocated 7 bits in the node for the context.  This
+     should be more than enough.  */
+  if (G.context >= 128)
+    abort ();
 }
 
 /* Finish a GC context.  Any uncollected memory in the new context
    will be merged with the old context.  */
 
 void 
-ggc_pop_context PROTO ((void))
+ggc_pop_context ()
 {
-  struct ggc_rtx *r;
-  struct ggc_rtvec *v;
-  struct ggc_tree *t;
-  struct ggc_string *s;
-  struct ggc_any *a;
-  struct ggc_status *gs;
+  G.context--;
+  if (G.root)
+    ggc_pop_context_1 (G.root, G.context);
+}
 
-  gs = ggc_chain;
+static void
+ggc_pop_context_1 (x, c)
+     struct ggc_mem *x;
+     int c;
+{
+  if (x->context > c)
+    x->context = c;
+  if (x->sub[0])
+    ggc_pop_context_1 (x->sub[0], c);
+  if (x->sub[1])
+    ggc_pop_context_1 (x->sub[1], c);
+}
 
-  r = gs->rtxs;
-  if (r)
-    {
-      while (r->chain)
-	r = r->chain;
-      r->chain = gs->next->rtxs;
-      gs->next->rtxs = gs->rtxs;
-    }
-      
-  v = gs->vecs;
-  if (v)
-    {
-      while (v->chain)
-	v = v->chain;
-      v->chain = gs->next->vecs;
-      gs->next->vecs = gs->vecs;
-    }
+/* Dump a tree.  */
 
-  t = gs->trees;
-  if (t)
+void
+debug_ggc_tree (p, indent)
+     struct ggc_mem *p;
+     int indent;
+{
+  int i;
+
+  if (!p)
     {
-      while (t->chain)
-	t = t->chain;
-      t->chain = gs->next->trees;
-      gs->next->trees = gs->trees;
+      fputs ("(nil)\n", stderr);
+      return;
     }
 
-  s = gs->strings;
-  if (s)
+  if (p->sub[0])
+    debug_ggc_tree (p->sub[0], indent + 1);
+
+  for (i = 0; i < indent; ++i)
+    putc (' ', stderr);
+  fprintf (stderr, "%lx %p\n", PTR_KEY (p), p);
+ 
+  if (p->sub[1])
+    debug_ggc_tree (p->sub[1], indent + 1);
+}
+
+#ifdef GGC_BALANCE
+/* Collect tree balance metrics  */
+
+#include <math.h>
+
+void
+debug_ggc_balance ()
+{
+  size_t nleaf, sumdepth;
+
+  nleaf = sumdepth = 0;
+  tally_leaves (G.root, 0, &nleaf, &sumdepth);
+
+  fprintf (stderr, " {B %.2f,%.1f,%.1f}",
+	   /* In a balanced tree, leaf/node should approach 1/2.  */
+	   (float)nleaf / (float)G.objects,
+	   /* In a balanced tree, average leaf depth should approach lg(n).  */
+	   (float)sumdepth / (float)nleaf,
+	   log ((double) G.objects) / M_LN2);
+}
+
+static void
+tally_leaves (x, depth, nleaf, sumdepth)
+     struct ggc_mem *x;
+     int depth;
+     size_t *nleaf;
+     size_t *sumdepth;
+{
+  if (! x->sub[0] && !x->sub[1])
     {
-      while (s->chain)
-	s = s->chain;
-      s->chain = gs->next->strings;
-      gs->next->strings = gs->strings;
+      *nleaf += 1;
+      *sumdepth += depth;
     }
-
-  a = gs->anys;
-  if (a)
-    {
-     while (a->chain)
-       a = a->chain;
-      a->chain = gs->next->anys;
-      gs->next->anys = gs->anys;
-    }
-
-  gs->next->bytes_alloced_since_gc += gs->bytes_alloced_since_gc;
-
-  ggc_chain = gs->next;
-  free (gs);
-}
-
-/* These allocators are dreadfully simple, with no caching whatsoever so
-   that Purify-like tools that do allocation versioning can catch errors.
-   This collector is never going to go fast anyway.  */
-
-rtx
-ggc_alloc_rtx (nslots)
-     int nslots;
-{
-  struct ggc_rtx *n;
-  int size = sizeof(*n) + (nslots-1) * sizeof(rtunion);
-
-  n = (struct ggc_rtx *) xcalloc (1, size);
-  n->chain = ggc_chain->rtxs;
-  ggc_chain->rtxs = n;
-
-#ifdef GGC_DUMP
-  fprintf (dump, "alloc rtx %p\n", &n->rtx);
-#endif
-
-  ggc_chain->bytes_alloced_since_gc += size;
-
-  return &n->rtx;
-}
-
-rtvec
-ggc_alloc_rtvec (nelt)
-     int nelt;
-{
-  struct ggc_rtvec *v;
-  int size = sizeof (*v) + (nelt - 1) * sizeof (rtx);
-
-  v = (struct ggc_rtvec *) xcalloc (1, size);
-  v->chain = ggc_chain->vecs;
-  ggc_chain->vecs = v;
-
-#ifdef GGC_DUMP
-  fprintf(dump, "alloc vec %p\n", &v->vec);
-#endif
-
-  ggc_chain->bytes_alloced_since_gc += size;
-
-  return &v->vec;
-}
-
-tree
-ggc_alloc_tree (length)
-     int length;
-{
-  struct ggc_tree *n;
-  int size = sizeof(*n) - sizeof(n->tree) + length;
-
-  n = (struct ggc_tree *) xcalloc (1, size);
-  n->chain = ggc_chain->trees;
-  ggc_chain->trees = n;
-
-#ifdef GGC_DUMP
-  fprintf(dump, "alloc tree %p\n", &n->tree);
-#endif
-
-  ggc_chain->bytes_alloced_since_gc += size;
-
-  return &n->tree;
-}
-
-char *
-ggc_alloc_string (contents, length)
-     const char *contents;
-     int length;
-{
-  struct ggc_string *s;
-  int size;
-
-  if (length < 0)
-    {
-      if (contents == NULL)
-	return NULL;
-      length = strlen (contents);
-    }
-
-  size = (s->string - (char *)s) + length + 1;
-  s = (struct ggc_string *) xmalloc (size);
-  s->chain = ggc_chain->strings;
-  s->magic_mark = GGC_STRING_MAGIC;
-  ggc_chain->strings = s;
-
-  if (contents)
-    memcpy (s->string, contents, length);
-  s->string[length] = 0;
-
-#ifdef GGC_DUMP
-  fprintf(dump, "alloc string %p\n", &s->string);
-#endif
-
-  ggc_chain->bytes_alloced_since_gc += size;
-
-  return s->string;
-}
-
-/* Like xmalloc, but allocates GC-able memory.  */
-
-void *
-ggc_alloc (bytes)
-     size_t bytes;
-{
-  struct ggc_any *a;
-
-  if (bytes == 0)
-    bytes = 1;
-  bytes += (&((struct ggc_any *) 0)->u.c - (char *) 0);
-
-  a = (struct ggc_any *) xmalloc (bytes);
-  a->chain = ggc_chain->anys;
-  a->magic_mark = GGC_ANY_MAGIC;
-  ggc_chain->anys = a;
-
-  ggc_chain->bytes_alloced_since_gc += bytes;
-
-  return &a->u;
-}
-
-/* Freeing a bit of rtl is as simple as calling free.  */
-
-static inline void
-ggc_free_rtx (r)
-     struct ggc_rtx *r;
-{
-#ifdef GGC_DUMP
-  fprintf (dump, "collect rtx %p\n", &r->rtx);
-#endif
-#ifdef GGC_POISON
-  memset (r, 0xAA, sizeof(*r) + ((GET_RTX_LENGTH (r->rtx.code) -1)
-				 * sizeof(rtunion)));
-#endif
-
-  free (r);
-}
-
-/* Freeing an rtvec is as simple as calling free.  */
-
-static inline void
-ggc_free_rtvec (v)
-     struct ggc_rtvec *v;
-{
-#ifdef GGC_DUMP
-  fprintf(dump, "collect vec %p\n", &v->vec);
-#endif
-#ifdef GGC_POISON
-  memset (v, 0xBB, sizeof (*v) + ((GET_NUM_ELEM (&v->vec) - 1)
-				  * sizeof (rtx)));
-#endif
-
-  free (v);
-}
-
-/* Freeing a tree node is almost, but not quite, as simple as calling free.
-   Mostly we need to let the language clean up its lang_specific bits.  */
-
-static inline void
-ggc_free_tree (t)
-     struct ggc_tree *t;
-{
-#ifdef GGC_DUMP
-  fprintf (dump, "collect tree %p\n", &t->tree);
-#endif
-#ifdef GGC_POISON
-  memset(&t->tree.common, 0xCC, sizeof(t->tree.common));
-#endif
-
-  free (t);
-}
-
-/* Freeing a string is as simple as calling free.  */
-
-static inline void
-ggc_free_string (s)
-     struct ggc_string *s;
-{
-#ifdef GGC_DUMP
-  fprintf(dump, "collect string %p\n", s->string);
-#endif
-#ifdef GGC_POISON
-  s->magic_mark = 0xDDDDDDDD;
-  s->string[0] = 0xDD;
-#endif
-
-  free (s);
-}
-
-/* Freeing anonymous memory is as simple as calling free.  */
-
-static inline void
-ggc_free_any (a)
-     struct ggc_any *a;
-{
-#ifdef GGC_DUMP
-  fprintf(dump, "collect mem %p\n", &a->u);
-#endif
-#ifdef GGC_POISON
-  a->magic_mark = 0xEEEEEEEE;
-#endif
-
-  free (a);
-}
-
-/* Mark a node.  */
-
-int
-ggc_set_mark_rtx (r)
-     rtx r;
-{
-  int marked = r->gc_mark;
-  if (! marked)
-    r->gc_mark = 1;
-  return marked;
-}
-
-int
-ggc_set_mark_rtvec (v)
-     rtvec v;
-{
-  int marked = v->gc_mark;
-  if (! marked)
-    v->gc_mark = 1;
-  return marked;
-}
-
-int
-ggc_set_mark_tree (t)
-     tree t;
-{
-  int marked = t->common.gc_mark;
-  if (! marked)
-    t->common.gc_mark = 1;
-  return marked;
-}
-
-/* Compare the pointers pointed to by A1 and A2.  Used as a callback
-   for qsort/bsearch.  */
-
-static int
-ggc_compare_addresses (a1, a2)
-     const void *a1;
-     const void *a2;
-{
-  const char *c1 = *((const char **) a1);
-  const char *c2 = *((const char **) a2);
-
-  if (c1 < c2)
-    return -1;
-  else if (c1 > c2)
-    return 1;
   else
-    return 0;
-}
-
-void
-ggc_mark_string (s)
-     char *s;
-{
-  const ptrdiff_t d = (((struct ggc_string *) 0)->string - (char *) 0);
-  struct ggc_string *gs;
-
-  if (s == NULL)
-    return;
-
-  gs = (struct ggc_string *)(s - d);
-  if (IGNORE_MARK (gs->magic_mark) != GGC_STRING_MAGIC)
-    return;   /* abort? */
-  gs->magic_mark = GGC_STRING_MAGIC_MARK;
-}
-
-
-void
-ggc_mark_string_if_gcable (s)
-     char *s;
-{
-  if (s && !bsearch (&s, 
-		     &VARRAY_CHAR_PTR (ggc_allocated_strings, 0),
-		     ggc_strings_used, sizeof (char *),
-		     ggc_compare_addresses))
-    return;
-
-  ggc_mark_string (s);
-}
-
-
-/* Mark P, allocated with ggc_alloc.  */
-
-void
-ggc_mark (p)
-     void *p;
-{
-  const ptrdiff_t d = (&((struct ggc_any *) 0)->u.c - (char *) 0);
-  struct ggc_any *a;
-
-  if (p == NULL)
-    return;
-
-  a = (struct ggc_any *) (((char*) p) - d);
-  if (IGNORE_MARK (a->magic_mark) != GGC_ANY_MAGIC)
-    abort ();
-  a->magic_mark = GGC_ANY_MAGIC_MARK;
-}
-
-/* The top level mark-and-sweep routine.  */
-
-void
-ggc_collect ()
-{
-  struct ggc_rtx *r, **rp;
-  struct ggc_rtvec *v, **vp;
-  struct ggc_tree *t, **tp;
-  struct ggc_string *s, **sp;
-  struct ggc_status *gs;
-  struct ggc_any *a, **ap;
-  int time, n_rtxs, n_trees, n_vecs, n_strings, n_anys;
-
-#if !defined(ENABLE_CHECKING)
-  /* See if it's even worth our while.  */
-  if (ggc_chain->bytes_alloced_since_gc < 4*1024*1024)
-    return;
-#endif
-
-  if (!quiet_flag)
-    fputs (" {GC ", stderr);
-
-  time = get_run_time ();
-
-  /* Set up the table of allocated strings.  */
-  VARRAY_CHAR_PTR_INIT (ggc_allocated_strings, 1024, "allocated strings");
-  ggc_strings_used = 0;
-
-  /* Clean out all of the GC marks.  */
-  for (gs = ggc_chain; gs; gs = gs->next)
     {
-      for (r = gs->rtxs; r != NULL; r = r->chain)
-	r->rtx.gc_mark = 0;
-      for (v = gs->vecs; v != NULL; v = v->chain)
-	v->vec.gc_mark = 0;
-      for (t = gs->trees; t != NULL; t = t->chain)
-	t->tree.common.gc_mark = 0;
-      for (s = gs->strings; s != NULL; s = s->chain)
-	{
-	  s->magic_mark = GGC_STRING_MAGIC;
-	  if (ggc_strings_used == ggc_allocated_strings->num_elements)
-	    VARRAY_GROW (ggc_allocated_strings, 2 * ggc_strings_used);
-	  VARRAY_CHAR_PTR (ggc_allocated_strings, ggc_strings_used)
-	    = &s->string[0];
-	  ++ggc_strings_used;
-	}
-      for (a = gs->anys; a != NULL; a = a->chain)
-	a->magic_mark = GGC_ANY_MAGIC;
+      if (x->sub[0])
+	tally_leaves (x->sub[0], depth + 1, nleaf, sumdepth);
+      if (x->sub[1])
+	tally_leaves (x->sub[1], depth + 1, nleaf, sumdepth);
     }
-
-  /* Sort the allocated string table.  */
-  qsort (&VARRAY_CHAR_PTR (ggc_allocated_strings, 0),
-	 ggc_strings_used, sizeof (char *),
-	 ggc_compare_addresses);
-
-  ggc_mark_roots ();
-
-  /* Free the string table.  */
-  VARRAY_FREE (ggc_allocated_strings);
-
-  /* Sweep the resulting dead nodes.  */
-
-  /* The RTXs.  */
-
-  rp = &ggc_chain->rtxs;
-  r = ggc_chain->rtxs;
-  n_rtxs = 0;
-  while (r != NULL)
-    {
-      struct ggc_rtx *chain = r->chain;
-      if (!r->rtx.gc_mark)
-        {
-	  ggc_free_rtx (r);
-	  *rp = chain;
-	  n_rtxs++;
-        }
-      else
-	rp = &r->chain;
-      r = chain;
-    }
-  *rp = NULL;
-  n_rtxs_collected += n_rtxs;
-
-  /* The vectors.  */
-
-  vp = &ggc_chain->vecs;
-  v = ggc_chain->vecs;
-  n_vecs = 0;
-  while (v != NULL)
-    {
-      struct ggc_rtvec *chain = v->chain;
-      if (!v->vec.gc_mark)
-        {
-	  ggc_free_rtvec (v);
-	  *vp = chain;
-	  n_vecs++;
-        }
-      else
-	vp = &v->chain;
-      v = chain;
-    }
-  *vp = NULL;
-  n_vecs_collected += n_vecs;
-
-  /* The trees.  */
-
-  tp = &ggc_chain->trees;
-  t = ggc_chain->trees;
-  n_trees = 0;
-  while (t != NULL)
-    {
-      struct ggc_tree *chain = t->chain;
-      if (!t->tree.common.gc_mark)
-        {
-	  ggc_free_tree (t);
-	  *tp = chain;
-	  n_trees++;
-        }
-      else
-	tp = &t->chain;
-      t = chain;
-    }
-  *tp = NULL;
-  n_trees_collected += n_trees;
-
-  /* The strings.  */
-
-  sp = &ggc_chain->strings;
-  s = ggc_chain->strings;
-  n_strings = 0;
-  while (s != NULL)
-    {
-      struct ggc_string *chain = s->chain;
-      if (! IS_MARKED (s->magic_mark))
-        {
-	  ggc_free_string (s);
-	  *sp = chain;
-	  n_strings++;
-        }
-      else
-	sp = &s->chain;
-      s = chain;
-    }
-  *sp = NULL;
-  n_strings_collected += n_strings;
-
-  /* The generic data.  */
-
-  ap = &ggc_chain->anys;
-  a = ggc_chain->anys;
-  n_anys = 0;
-  while (a != NULL)
-    {
-      struct ggc_any *chain = a->chain;
-      if (! IS_MARKED (a->magic_mark))
-	{
-	  ggc_free_any (a);
-	  *ap = chain;
-	  n_anys++;
-	}
-      else
-	ap = &a->chain;
-      a = chain;
-    }
-  n_anys_collected += n_anys;
-
-  ggc_chain->bytes_alloced_since_gc = 0;
-
-  time = get_run_time () - time;
-  gc_time += time;
-
-  if (!quiet_flag)
-    {
-      time = (time + 500) / 1000;
-      fprintf (stderr, "%dr,%dv,%dt,%ds,%da %d.%03d}", n_rtxs, n_vecs, 
-	       n_trees, n_strings, n_anys, time / 1000, time % 1000);
-    }
-}
-
-#if 0
-/* GDB really should have a memory search function.  Since this is just
-   for initial debugging, I won't even pretend to get the __data_start
-   to work on any but alpha-dec-linux-gnu.  */
-static void **
-search_data(void **start, void *target)
-{
-  extern void *__data_start[];
-  void **_end = (void **)sbrk(0);
-
-  if (start == NULL)
-    start = __data_start;
-  while (start < _end)
-    {
-      if (*start == target)
-        return start;
-      start++;
-    }
-  return NULL;
 }
 #endif

@@ -56,33 +56,51 @@ void ggc_del_root PROTO ((void *base));
 
 /* Mark nodes from the gc_add_root callback.  These functions follow
    pointers to mark other objects too.  */
-extern void ggc_mark_rtvec PROTO ((struct rtvec_def *));
 extern void ggc_mark_tree_varray PROTO ((struct varray_head_tag *));
 extern void ggc_mark_tree_hash_table PROTO ((struct hash_table *));
-extern void ggc_mark_string PROTO ((char *));
-extern void ggc_mark PROTO ((void *));
 extern void ggc_mark_roots PROTO((void));
 
 extern void ggc_mark_rtx_children PROTO ((struct rtx_def *));
+extern void ggc_mark_rtvec_children PROTO ((struct rtvec_def *));
 extern void ggc_mark_tree_children PROTO ((union tree_node *));
 
-/* Mark the string, but only if it was allocated in collectable
-   memory.  */
-extern void ggc_mark_string_if_gcable PROTO ((char *));
-
-#define ggc_mark_rtx(RTX_EXPR)				\
-  do {							\
-    rtx r__ = (RTX_EXPR);				\
-    if (r__ != NULL && ! ggc_set_mark_rtx (r__))	\
-      ggc_mark_rtx_children (r__);			\
+#define ggc_mark_rtx(EXPR)			\
+  do {						\
+    rtx r__ = (EXPR);				\
+    if (r__ != NULL && ! ggc_set_mark (r__))	\
+      ggc_mark_rtx_children (r__);		\
   } while (0)
 
-#define ggc_mark_tree(TREE_EXPR)			\
-  do {							\
-    tree t__ = (TREE_EXPR);				\
-    if (t__ != NULL && ! ggc_set_mark_tree (t__))	\
-      ggc_mark_tree_children (t__);			\
+#define ggc_mark_tree(EXPR)			\
+  do {						\
+    tree t__ = (EXPR);				\
+    if (t__ != NULL && ! ggc_set_mark (t__))	\
+      ggc_mark_tree_children (t__);		\
   } while (0)
+
+#define ggc_mark_rtvec(EXPR)			\
+  do {						\
+    rtvec v__ = (EXPR);				\
+    if (v__ != NULL && ! ggc_set_mark (v__))	\
+      ggc_mark_rtvec_children (v__);		\
+  } while (0)
+
+#define ggc_mark_string(EXPR)			\
+  do {						\
+    char *s__ = (EXPR);				\
+    if (s__ != NULL)				\
+      ggc_set_mark (s__);			\
+  } while (0)
+
+#define ggc_mark(EXPR)				\
+  do {						\
+    void *a__ = (EXPR);				\
+    if (a__ != NULL)				\
+      ggc_set_mark (a__);			\
+  } while (0)
+
+/* Mark, but only if it was allocated in collectable memory.  */
+extern void ggc_mark_if_gcable PROTO ((void *));
 
 /* A GC implementation must provide these functions.  */
 
@@ -98,24 +116,35 @@ extern void ggc_push_context PROTO ((void));
 extern void ggc_pop_context PROTO ((void));
 
 /* Allocation.  */
-struct rtx_def *ggc_alloc_rtx PROTO ((int nslots));
-struct rtvec_def *ggc_alloc_rtvec PROTO ((int nelt));
-union tree_node *ggc_alloc_tree PROTO ((int length));
+
+/* The internal primitive.  */
+void *ggc_alloc_obj PROTO ((size_t, int));
+
+#define ggc_alloc_rtx(NSLOTS)						     \
+  ((struct rtx_def *) ggc_alloc_obj (sizeof (struct rtx_def)		     \
+				     + ((NSLOTS) - 1) * sizeof (rtunion), 1))
+
+#define ggc_alloc_rtvec(NELT)						  \
+  ((struct rtvec_def *) ggc_alloc_obj (sizeof (struct rtvec_def)	  \
+				       + ((NELT) - 1) * sizeof (rtx), 1))
+
+#define ggc_alloc_tree(LENGTH)				\
+  ((union tree_node *) ggc_alloc_obj ((LENGTH), 1))
+
+#define ggc_alloc(SIZE)  ggc_alloc_obj((SIZE), 0)
+
 char *ggc_alloc_string PROTO ((const char *contents, int length));
-void *ggc_alloc PROTO ((size_t));
 
 /* Invoke the collector.  This is really just a hint, but in the case of
    the simple collector, the only time it will happen.  */
 void ggc_collect PROTO ((void));
 
 /* Actually set the mark on a particular region of memory, but don't
-   follow pointers.  These functions are called by ggc_mark_*.  They
-   return zero if the object was not previously marked; they return
-   non-zero if the object was already marked, or if, for any other
-   reason, pointers in this data structure should not be traversed.  */
-int ggc_set_mark_rtx PROTO ((struct rtx_def *));
-int ggc_set_mark_rtvec PROTO ((struct rtvec_def *));
-int ggc_set_mark_tree PROTO ((union tree_node *));
+   follow pointers.  This function is called by ggc_mark_*.  It
+   returns zero if the object was not previously marked; non-zero if
+   the object was already marked, or if, for any other reason,
+   pointers in this data structure should not be traversed.  */
+int ggc_set_mark PROTO ((void *));
 
 /* Callbacks to the languages.  */
 

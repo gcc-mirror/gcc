@@ -268,20 +268,17 @@ ggc_mark_rtx_children (r)
 	  ggc_mark_rtvec (XVEC (r, i));
 	  break;
 	case 'S': case 's':
-	  ggc_mark_string_if_gcable (XSTR (r, i));
+	  ggc_mark_if_gcable (XSTR (r, i));
 	  break;
 	}
     }
 }
 
 void
-ggc_mark_rtvec (v)
+ggc_mark_rtvec_children (v)
      rtvec v;
 {
   int i;
-
-  if (v == NULL || ggc_set_mark_rtvec (v))
-    return;
 
   i = GET_NUM_ELEM (v);
   while (--i >= 0)
@@ -451,3 +448,26 @@ ggc_mark_tree_hash_table (ht)
   hash_traverse (ht, ggc_mark_tree_hash_table_entry, /*info=*/0);
 }
 
+/* Allocation wrappers.  */
+
+char *
+ggc_alloc_string (contents, length)
+     const char *contents;
+     int length;
+{
+  char *string;
+
+  if (length < 0)
+    {
+      if (contents == NULL)
+	return NULL;
+      length = strlen (contents);
+    }
+
+  string = (char *) ggc_alloc_obj (length + 1, 0);
+  if (contents != NULL)
+    memcpy (string, contents, length);
+  string[length] = 0;
+
+  return string;
+}
