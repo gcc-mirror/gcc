@@ -1,3 +1,8 @@
+2002-03-15  Richard Henderson  <rth@redhat.com>
+
+	* decl.c (finish_function): Reapply accidentally reverted
+	2002-02-28 patch.
+
 2002-03-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLEANUP_DECL): Remove.
