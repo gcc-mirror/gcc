@@ -68,11 +68,16 @@ if { ac_try='${CC-c++} -E conftest.$ac_ext'; { (eval echo \"$ac_try\") 1>&5; (ev
   # Set up default GNU C++ configuration
 
   # Check if GNU C++ uses GNU ld as the underlying linker, since the
-  # archiving commands below assume that GNU ld is being used.
-  if eval "`$CC -print-prog-name=ld` --version 2>&1" | \
-      egrep 'GNU ld' > /dev/null; then
-    with_gnu_ld=yes
+  # archiving commands below assume that GNU ld is being used.  The
+  # assumption here is that the linker is going to be the same as that
+  # used by the C compiler.  For the purposes of GCC, this is ok, but
+  # if someone uses g++ along with a non-GNU C compiler that doesn't
+  # use GNU ld, we may lose.  This is ok for the toolchain tree, since
+  # the only users of ltcf-cxx.sh are libstdc++-v3 and libjava,
+  # anyway, and those use both gcc and g++, so the settings are bound
+  # to be the same.
 
+  if test "$with_gnu_ld" = yes; then
     archive_cmds='$CC -shared -nostdlib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname $wl$soname -o $lib'
     archive_expsym_cmds='$CC -shared -nostdlib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
 
@@ -92,7 +97,6 @@ if { ac_try='${CC-c++} -E conftest.$ac_ext'; { (eval echo \"$ac_try\") 1>&5; (ev
       whole_archive_flag_spec=
     fi
   else
-    with_gnu_ld=no
     wlarc=
 
     # A generic and very simple default shared library creation
@@ -110,7 +114,6 @@ if { ac_try='${CC-c++} -E conftest.$ac_ext'; { (eval echo \"$ac_try\") 1>&5; (ev
 
 else
   with_gcc=no
-  with_gnu_ld=no
   wlarc=
 fi
 
