@@ -1,3 +1,7 @@
+2004-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/20040409-1.c: New test.
+
 2004-04-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/14888

@@ -4315,7 +4315,7 @@ handle_noreturn_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
     TREE_TYPE (*node)
       = build_pointer_type
 	(build_type_variant (TREE_TYPE (type),
-			     TREE_READONLY (TREE_TYPE (type)), 1));
+			     TYPE_READONLY (TREE_TYPE (type)), 1));
   else
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
