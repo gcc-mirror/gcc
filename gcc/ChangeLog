@@ -1,4 +1,6 @@
-2002-05-09  David S. Miller  <davem@redhat.com>
+2002-05-10  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.md: Use define_constants for unspec numbers.
 
 	* rtl.h (struct rtx_def): Document unchanging and in_struct flags
 	more accurately.
