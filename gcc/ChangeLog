@@ -1,3 +1,8 @@
+Mon Sep 27 21:34:00 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* po/en_UK.po (Project-Id-Version): Set to cc 2.8.1.19980813 for now.
+	(PO-Revision-Date): Set to the current date.
+
 Sun Sep 27 07:33:18 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* m68k/vxm68k.h (LINK_SPEC): Always use -r.
