@@ -1,3 +1,8 @@
+2002-10-14  Roger Sayle  <roger@eyesopen.com>
+	    Zack Weinberg <zack@codesourcery.com>
+
+	* config/i386/i386.c (k6_cost): Correct typo.
+
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/6631
