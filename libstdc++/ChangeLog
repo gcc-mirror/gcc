@@ -1,3 +1,8 @@
+Tue Jun  8 00:21:11 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (*-*-freebsd2*): Add missing '*' at end of configure
+	string.
+
 1999-06-05  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* std/std_valarray.h: Don't #include unconditionally <alloca.h>
