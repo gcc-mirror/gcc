@@ -1107,19 +1107,33 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
       if (ctype != NULL_TREE && TYPE_BEING_DEFINED (ctype))
 	{
-	  /* Since finish_struct_1 has not been called yet, we
-	     can't call lookup_fnfields.  We note that this
-	     template is a specialization, and proceed, letting
-	     finish_struct fix this up later.  */
-	  tree ti = perm_tree_cons (NULL_TREE, 
-				    TREE_OPERAND (declarator, 1),
-				    NULL_TREE);
-	  TI_PENDING_SPECIALIZATION_FLAG (ti) = 1;
-	  DECL_TEMPLATE_INFO (decl) = ti;
-	  /* This should not be an instantiation; explicit
-	     instantiation directives can only occur at the top
-	     level.  */
-	  my_friendly_assert (!explicit_instantiation, 0);
+	  if (!explicit_instantiation)
+	    {
+	      /* Since finish_struct_1 has not been called yet, we
+		 can't call lookup_fnfields.  We note that this
+		 template is a specialization, and proceed, letting
+		 finish_struct fix this up later.  */
+	      tree ti = perm_tree_cons (NULL_TREE, 
+					TREE_OPERAND (declarator, 1),
+					NULL_TREE);
+	      TI_PENDING_SPECIALIZATION_FLAG (ti) = 1;
+	      DECL_TEMPLATE_INFO (decl) = ti;
+	    }
+	  else
+	    /* It's not legal to write an explicit instantiation in
+	       class scope, e.g.:
+
+	         class C { template void f(); }
+
+	       This case is caught by the parser.  However, on
+	       something like:
+	       
+	         template class C { void f(); };
+
+	       (which is illegal) we can get here.  The error will be
+	       issued later.  */
+	    ;
+
 	  return decl;
 	}
       else if (ctype != NULL_TREE 

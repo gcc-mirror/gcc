@@ -1,3 +1,8 @@
+1998-08-17  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (check_explicit_specialization): Don't abort on bogus
+	explicit instantiations.
+
 1998-08-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* rtti.c (get_tinfo_fn): Don't mess with the context for now.
