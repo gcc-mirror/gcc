@@ -110,7 +110,7 @@ extern int target_flags;
     {"h",		4096,  "Generate H8/300H code"},		\
     {"no-h",		-4096, "Do not generate H8/300H code"},		\
     {"align-300",	8192,  "Use H8/300 alignment rules"},		\
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT, NULL}}
 
 /* Do things that must be done once at start up.  */
 
