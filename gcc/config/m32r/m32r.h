@@ -184,6 +184,8 @@
   { "relax",			RELAX_SPEC },				\
   SUBTARGET_EXTRA_SPECS
 
+#define CPP_SPEC "%(cpp_cpu)"
+
 #undef  CC1_SPEC
 #define CC1_SPEC "%{G*} %(cc1_cpu)"
 
@@ -241,7 +243,7 @@ extern int target_flags;
 
 /* Support extended instruction set of m32r2.  */
 #define TARGET_M32R2_MASK       (1 << 6)
-#define TARGET_M32R2            (target_flags & TARGET_M32RX_MASK)
+#define TARGET_M32R2            (target_flags & TARGET_M32R2_MASK)
 #undef  TARGET_M32R
 #define TARGET_M32R             (! TARGET_M32RX && ! TARGET_M32R2)
 
@@ -497,15 +499,6 @@ extern enum m32r_sdata m32r_sdata;
     {						\
       (MODE) = SImode;				\
     }
-
-/* Define this macro if the promotion described by `PROMOTE_MODE'
-   should also be done for outgoing function arguments.  */
-/*#define PROMOTE_FUNCTION_ARGS*/
-
-/* Likewise, if the function return value is promoted.
-   If defined, FUNCTION_VALUE must perform the same promotions done by
-   PROMOTE_MODE.  */
-/*#define PROMOTE_FUNCTION_RETURN*/
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY 32
@@ -1039,7 +1032,7 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
    SIZE is the number of bytes of arguments passed on the stack.  */
 #define RETURN_POPS_ARGS(DECL, FUNTYPE, SIZE) 0
 
-/* Nonzero if we do not know how to pass TYPE solely in registers. */
+/* Nonzero if we do not know how to pass TYPE solely in registers.  */
 #define MUST_PASS_IN_STACK(MODE, TYPE)			\
   ((TYPE) != 0						\
    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
@@ -1780,7 +1773,7 @@ extern char m32r_punct_chars[256];
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 /* It's not clear what PIC will look like or whether we want to use -fpic
    for the embedded form currently being talked about.  For now require -fpic
    to get pc relative switch tables.  */
