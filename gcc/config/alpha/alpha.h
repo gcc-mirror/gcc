@@ -44,9 +44,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
 
-/* Under OSF/1, -p and -pg require -lprof1.  */
+/* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
 
-#define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} %{a:-lprof2} -lc"
+#define LIB_SPEC "%{p:-lprof1 -lpdf} %{pg:-lprof1 -lpdf} %{a:-lprof2} -lc"
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
    optimizing, -O1 if we are not.  Pass -shared, -non_shared or
