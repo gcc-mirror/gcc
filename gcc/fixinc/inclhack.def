@@ -634,6 +634,23 @@ fix = {
 
 
 /*
+ *  Change external names of wcstok/wcsftime via asm instead of macros on
+ *  Tru64 UNIX V4.0.
+ */
+fix = {
+    hackname = alpha_wchar;
+    files    = wchar.h;
+
+    mach     = "alpha*-dec-osf4*";
+    select   = "#define wcstok wcstok_r";
+    sed      = "s@#define wcstok wcstok_r@extern wchar_t *wcstok __((wchar_t *, const wchar_t *, wchar_t **)) __asm__(\"wcstok_r\");@";
+    sed      = "s@#define wcsftime __wcsftime_isoc@extern size_t   wcsftime __((wchar_t *, size_t, const wchar_t *, const struct tm *)) __asm__(\"__wcsftime_isoc\");@";
+    test_text = "#define wcstok wcstok_r\n"
+		"#define wcsftime __wcsftime_isoc";
+};
+
+
+/*
  *  For C++, avoid any typedef or macro definition of bool,
  *  and use the built in type instead.
  *  HP/UX 10.20 also has it in curses_colr/curses.h.
