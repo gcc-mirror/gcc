@@ -1,3 +1,7 @@
+1999-08-20  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
+
+	* linux.h (LIB_SPEC): Added.
+
 Fri Aug 20 22:32:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (STARTFILE_SPEC): Don't define.

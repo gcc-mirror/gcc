@@ -55,6 +55,13 @@ Boston, MA 02111-1307, USA.  */
 #undef MIPS_DEFAULT_GVALUE
 #define MIPS_DEFAULT_GVALUE 0
 
+#undef LIB_SPEC
+/* Taken from sparc/linux.h.  */
+#define LIB_SPEC \
+  "%{shared: -lc} \
+   %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
+     %{profile:-lc_p} %{!profile: -lc}}"
+
 /* Borrowed from sparc/linux.h */
 #undef LINK_SPEC
 #define LINK_SPEC "-Y P,/usr/lib %{shared:-shared} \
