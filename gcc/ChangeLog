@@ -1,3 +1,9 @@
+2003-07-14  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR optimization/11440
+	* gcse.c (try_replace_reg): Don't attach notes to ZERO_EXTRACT or
+	SIGN_EXTRACT SETs.
+
 2003-07-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* doc/tm.texi (BLOCK_REG_PADDING): Describe.
