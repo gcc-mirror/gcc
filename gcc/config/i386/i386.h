@@ -405,10 +405,14 @@ extern int ix86_arch;
 #ifndef CC1_CPU_SPEC
 #define CC1_CPU_SPEC "\
 %{!mcpu*: \
-%{m386:-mcpu=i386} \
-%{m486:-mcpu=i486} \
-%{mpentium:-mcpu=pentium} \
-%{mpentiumpro:-mcpu=pentiumpro}}"
+%{m386:-mcpu=i386 \
+%n`-mpentium' is deprecated. Use `-march' or `-mcpu' instead.\n} \
+%{m486:-mcpu=i486 \
+%n`-mpentium' is deprecated. Use `-march' or `-mcpu' instead.\n} \
+%{mpentium:-mcpu=pentium \
+%n`-mpentium' is deprecated. Use `-march' or `-mcpu' instead.\n} \
+%{mpentiumpro:-mcpu=pentiumpro \
+%n`-mpentiumpro' is deprecated. Use `-march' or `-mcpu' instead.\n}}"
 #endif
 
 #ifndef CPP_CPU_DEFAULT_SPEC

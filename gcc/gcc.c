@@ -360,6 +360,7 @@ or with constant text in a single argument.
 	and substitute the full name found.
  %eSTR  Print STR as an error message.  STR is terminated by a newline.
         Use this when inconsistent options are detected.
+ %nSTR  Print STR as an notice.  STR is terminated by a newline.
  %x{OPTION}	Accumulate an option for %X.
  %X	Output the accumulated linker options specified by compilations.
  %Y	Output the accumulated assembler options specified by compilations.
@@ -4194,6 +4195,21 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      buf[p - q] = 0;
 	      error ("%s", buf);
 	      return -1;
+	    }
+	    break;
+	  case 'n':
+	    /* %nfoo means report an notice with `foo' on stderr.  */
+	    {
+	      const char *q = p;
+	      char *buf;
+	      while (*p != 0 && *p != '\n')
+		p++;
+	      buf = (char *) alloca (p - q + 1);
+	      strncpy (buf, q, p - q);
+	      buf[p - q] = 0;
+	      notice ("%s\n", buf);
+	      if (*p)
+		p++;
 	    }
 	    break;
 
