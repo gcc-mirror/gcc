@@ -4524,7 +4524,7 @@ emit_insn_group_barriers (dump, insns)
 
 static void
 emit_all_insn_group_barriers (dump, insns)
-     FILE *dump;
+     FILE *dump ATTRIBUTE_UNUSED;
      rtx insns;
 {
   rtx insn;
@@ -4748,10 +4748,13 @@ static const char *type_names[] =
 /* Nonzero if we should insert stop bits into the schedule.  */
 int ia64_final_schedule = 0;
 
+static int itanium_split_issue PARAMS ((const struct ia64_packet *, int));
 static rtx ia64_single_set PARAMS ((rtx));
 static int insn_matches_slot PARAMS ((const struct ia64_packet *, enum attr_type, int, rtx));
 static void ia64_emit_insn_before PARAMS ((rtx, rtx));
+#if 0
 static rtx gen_nop_type PARAMS ((enum attr_type));
+#endif
 static void finish_last_head PARAMS ((FILE *, int));
 static void rotate_one_bundle PARAMS ((FILE *));
 static void rotate_two_bundles PARAMS ((FILE *));
@@ -5049,6 +5052,7 @@ ia64_emit_insn_before (insn, before)
   emit_insn_before (insn, before);
 }
 
+#if 0
 /* Generate a nop insn of the given type.  Note we never generate L type
    nops.  */
 
@@ -5072,6 +5076,7 @@ gen_nop_type (t)
       abort ();
     }
 }
+#endif
 
 /* When rotating a bundle out of the issue window, insert a bundle selector
    insn in front of it.  DUMP is the scheduling dump file or NULL.  START
@@ -5383,7 +5388,7 @@ find_best_packet (pbest, ppacket, ready, types, n_ready)
   int first = sched_data.first_slot;
   int best = 0;
   int lowest_end = 6;
-  const struct ia64_packet *best_packet;
+  const struct ia64_packet *best_packet = NULL;
   int i;
 
   for (i = 0; i < NR_PACKETS; i++)
@@ -6160,12 +6165,13 @@ ia64_encode_section_info (decl)
 	{
 	  size_t len = strlen (symbol_str);
 	  char *newstr = alloca (len + 1);
+	  const char *string;
 
 	  *newstr = SDATA_NAME_FLAG_CHAR;
 	  memcpy (newstr + 1, symbol_str, len + 1);
 	  
-	  newstr = ggc_alloc_string (newstr, len + 1);
-	  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
+	  string = ggc_alloc_string (newstr, len + 1);
+	  XSTR (XEXP (DECL_RTL (decl), 0), 0) = string;
 	}
     }
   /* This decl is marked as being in small data/bss but it shouldn't

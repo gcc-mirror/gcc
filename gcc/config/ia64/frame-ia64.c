@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "defaults.h"
 #include "frame-ia64.h"
+#include "eh-common.h"
 
 /* Some types used by the DWARF 2 spec.  */
 

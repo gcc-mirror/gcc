@@ -407,7 +407,9 @@ static void emul	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       unsigned EMUSHORT *));
 static void e53toe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void e64toe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
+#ifndef INTEL_EXTENDED_IEEE_FORMAT
 static void e113toe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
+#endif
 static void e24toe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void etoe113	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void toe113	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
@@ -439,7 +441,9 @@ static void etoasc	PARAMS ((unsigned EMUSHORT *, char *, int));
 static void asctoe24	PARAMS ((const char *, unsigned EMUSHORT *));
 static void asctoe53	PARAMS ((const char *, unsigned EMUSHORT *));
 static void asctoe64	PARAMS ((const char *, unsigned EMUSHORT *));
+#ifndef INTEL_EXTENDED_IEEE_FORMAT
 static void asctoe113	PARAMS ((const char *, unsigned EMUSHORT *));
+#endif
 static void asctoe	PARAMS ((const char *, unsigned EMUSHORT *));
 static void asctoeg	PARAMS ((const char *, unsigned EMUSHORT *, int));
 static void efloor	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
@@ -3327,6 +3331,7 @@ bigend_nan:
     *q++ = *p++;
 }
 
+#ifndef INTEL_EXTENDED_IEEE_FORMAT
 /* Convert 128-bit long double precision float PE to e type Y.  */
 
 static void
@@ -3411,6 +3416,7 @@ e113toe (pe, y)
     }
   emovo (yy, y);
 }
+#endif
 
 /* Convert single precision float PE to e type Y.  */
 
@@ -5101,6 +5107,7 @@ asctoe64 (s, y)
   asctoeg (s, y, 64);
 }
 
+#ifndef INTEL_EXTENDED_IEEE_FORMAT
 /* Convert ASCII string S to 128-bit long double Y.  */
 
 static void
@@ -5110,6 +5117,7 @@ asctoe113 (s, y)
 {
   asctoeg (s, y, 113);
 }
+#endif
 
 /* Convert ASCII string S to e type Y.  */
 

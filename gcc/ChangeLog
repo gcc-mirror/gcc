@@ -1,3 +1,28 @@
+2001-01-23  Jim Wilson  <wilson@redhat.com>
+
+	* dwarf2out.c (dwarf2out_line): Make last_file_num be unsigned.
+	* frame.h (__ia64_personality_v1): Add prototype.
+	* libgcc2.c (ia64_throw_helper): Change personality declaration to
+	prototype form.  Add void * cast to first argument to personality
+	call.
+	* real.c (e113toe): Surround with INTEL_EXTENDED_IEEE_FORMAT ifdefs.
+	(asctoe113): Likewise.
+	* config/ia64/frame-ia64.c: Include eh-common.h.
+	* config/ia64/ia64-protos.h (sdata_section, sbbs_section): Add
+	prototypes.
+	* config/ia64/ia64.c (emit_insn_group_barriers): Add ATTRIBUTE_UNUSED
+	to dump parameter.
+	(itanium_split_issue): Add prototype.
+	(gen_nop_type): Ifdef out.
+	(find_best_packet): Initialize best_packet.
+	(ia64_encode_section_info): New local string.  Use for ggc_alloc_string
+	result.
+	* config/ia64/ia64.h (ASM_OUTPUT_LONG_DOUBLE): Use 0L not 0.
+	* config/ia64/ia64.md (bsp_value): Add explicit stop bit at start.
+	(flushrs): Add explicit stop bit at end.
+	* config/ia64/lib1funcs.asm (__ia64_restore_stack_nonlocal): Change
+	trailing \ to >.
+	
 2001-01-23  Chris Demetriou  <cgd@broadcom.com>
 
 	* libgcc-std.ver (GCC_3.0): Add __terminate_func_set to list

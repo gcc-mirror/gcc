@@ -135,3 +135,11 @@ extern void ia64_output_end_prologue PARAMS((FILE *));
 extern void ia64_init_builtins PARAMS((void));
 extern void ia64_override_options PARAMS((void));
 extern int ia64_dbx_register_number PARAMS((int));
+
+#ifdef SDATA_SECTION_ASM_OP
+extern void sdata_section PARAMS ((void));
+#endif
+
+#ifdef SBSS_SECTION_ASM_OP
+extern void sbss_section PARAMS ((void));
+#endif

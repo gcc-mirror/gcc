@@ -4230,7 +4230,7 @@ ia64_throw_helper (ia64_frame_state *throw_frame, ia64_frame_state *caller,
   memcpy (caller, throw_frame, sizeof (*caller));
   while (!handler)
     {
-      void *(*personality) ();
+      void *(*personality) (void *, old_exception_table *);
       void *eh_table;
 
       frame_count++;
@@ -4256,7 +4256,7 @@ ia64_throw_helper (ia64_frame_state *throw_frame, ia64_frame_state *caller,
       if (personality)
 	/* Pass a segment relative PC address to the personality routine,
 	   because the unwind_info section uses segrel relocs.  */
-	handler = personality (pc - pc_base, eh_table);
+	handler = personality ((void *)(pc - pc_base), eh_table);
     }
   
   if (!handler)

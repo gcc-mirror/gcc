@@ -11390,7 +11390,7 @@ dwarf2out_line (filename, line)
 	    fprintf (asm_out_file, "\t.file %d \"%s\"\n", file_num, filename);
 	  fprintf (asm_out_file, "\t.loc %d %d 0\n", file_num, line);
 #else
-	  static int last_file_num;
+	  static unsigned int last_file_num;
 	  if (file_num != last_file_num)
 	    {
 	      last_file_num = file_num;
