@@ -22,6 +22,11 @@
 	Make sure we call cleanup_subreg_operands even when splitting the last
 	insn in a basic block.
 
+	* invoke.texi (Debugging Options): Describe -do.
+	* toplev.c (enum_dump_file_index): New entry DFI_postreload.
+	(dump_file): Likewise.
+	(rest_of_compilation): Split .greg dump into .greg and .postreload.
+
 2000-10-30  Neil Booth  <neilb@earthling.net>
 
 	* cppfiles.c (stack_include_file): Check for stacked contexts
