@@ -4,8 +4,6 @@
 // make sure we don't call base dtors, if we failed to call the
 // base ctor due to exception throwing
 
-// execution test - XFAIL *-*-*
-
 #include <stdio.h>
 
 static bool bad = false;

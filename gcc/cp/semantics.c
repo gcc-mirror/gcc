@@ -2268,6 +2268,11 @@ expand_stmt (t)
 	  finish_expr_stmt (EXPR_STMT_EXPR (t));
 	  break;
 
+	case CTOR_COMPLETE:
+	  /* All subobjects have been fully constructed at this point.  */
+	  end_protect_partials ();
+	  break;
+
 	case DECL_STMT:
 	  {
 	    tree decl;

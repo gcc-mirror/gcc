@@ -237,6 +237,9 @@ DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 5)
    run if an exception is thrown before the end of the enclosing
    function.  */
 DEFTREECODE (SUBOBJECT, "subobject", 'e', 1)
+/* A CTOR_COMPLETE statements marks the end of the main body of the
+   constructor, not including any function try blocks.  */
+DEFTREECODE (CTOR_COMPLETE, "ctor_complete", 'e', 0)
 /* A CLEANUP_STMT marks the point at which a declaration is fully
    constructed.  If, after this point, the CLEANUP_DECL goes out of
    scope, the CLEANUP_EXPR must be run.  */
