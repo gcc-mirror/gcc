@@ -249,7 +249,9 @@ ordinary_nat_headers = $(ordinary_java_source_files:.java=.h) \
 	$(built_java_source_files:.java=.h)
 
 inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
-	java/io/ObjectInputStream$$GetField.h
+	java/io/ObjectInputStream$$GetField.h \
+	java/lang/reflect/Proxy$$ProxyData.h \
+	java/lang/reflect/Proxy$$ProxyType.h
 
 nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
 
@@ -308,6 +310,18 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class
 	    -friend 'class java::io::ObjectInputStream;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
+
+java/lang/reflect/Proxy.h: java/lang/reflect/Proxy.class
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
+	    $(basename $<)
+
+java/lang/reflect/Proxy$$ProxyData.h: java/lang/reflect/Proxy.class
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
+	'java/lang/reflect/Proxy$$ProxyData'
+
+java/lang/reflect/Proxy$$ProxyType.h: java/lang/reflect/Proxy.class
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
+	'java/lang/reflect/Proxy$$ProxyType'
 
 gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
@@ -1873,11 +1887,14 @@ java/lang/reflect/AccessibleObject.java	\
 java/lang/reflect/Array.java \
 java/lang/reflect/Constructor.java \
 java/lang/reflect/Field.java \
+java/lang/reflect/InvocationHandler.java \
 java/lang/reflect/InvocationTargetException.java \
 java/lang/reflect/Member.java \
 java/lang/reflect/Method.java \
 java/lang/reflect/Modifier.java	\
+java/lang/reflect/Proxy.java \
 java/lang/reflect/ReflectPermission.java \
+java/lang/reflect/UndeclaredThrowableException.java \
 java/math/BigDecimal.java \
 java/math/BigInteger.java \
 java/net/Authenticator.java \
@@ -2242,6 +2259,7 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
+java/lang/reflect/natProxy.cc \
 java/net/natNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
