@@ -173,14 +173,9 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
-#define MASK_DEBUG_A	0		/* don't allow <label>($reg) addrs */
-#define MASK_DEBUG_B	0		/* GO_IF_LEGITIMATE_ADDRESS debug */
 #define MASK_DEBUG_C	0		/* don't expand seq, etc.  */
 #define MASK_DEBUG_D	0		/* don't do define_split's */
-#define MASK_DEBUG_E	0		/* function_arg debug */
-#define MASK_DEBUG_F	0		/* ??? */
 #define MASK_DEBUG_G	0		/* don't support 64 bit arithmetic */
-#define MASK_DEBUG_I	0		/* unused */
 
 					/* Dummy switches used only in specs */
 #define MASK_MIPS_TFILE	0		/* flag for mips-tfile usage */
@@ -200,14 +195,9 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 					/* Debug Modes */
 #define TARGET_DEBUG_MODE	(target_flags & MASK_DEBUG)
-#define TARGET_DEBUG_A_MODE	(target_flags & MASK_DEBUG_A)
-#define TARGET_DEBUG_B_MODE	(target_flags & MASK_DEBUG_B)
 #define TARGET_DEBUG_C_MODE	(target_flags & MASK_DEBUG_C)
 #define TARGET_DEBUG_D_MODE	(target_flags & MASK_DEBUG_D)
-#define TARGET_DEBUG_E_MODE	(target_flags & MASK_DEBUG_E)
-#define TARGET_DEBUG_F_MODE	(target_flags & MASK_DEBUG_F)
 #define TARGET_DEBUG_G_MODE	(target_flags & MASK_DEBUG_G)
-#define TARGET_DEBUG_I_MODE	(target_flags & MASK_DEBUG_I)
 
 					/* Reg. Naming in .s ($21 vs. $a0) */
 #define TARGET_NAME_REGS	(target_flags & MASK_NAME_REGS)
@@ -322,16 +312,11 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* Architecture target defines.  */
 #define TARGET_MIPS3900             (mips_arch == PROCESSOR_R3900)
 #define TARGET_MIPS4000             (mips_arch == PROCESSOR_R4000)
-#define TARGET_MIPS4100             (mips_arch == PROCESSOR_R4100)
 #define TARGET_MIPS4120             (mips_arch == PROCESSOR_R4120)
-#define TARGET_MIPS4300             (mips_arch == PROCESSOR_R4300)
-#define TARGET_MIPS4KC              (mips_arch == PROCESSOR_4KC)
-#define TARGET_MIPS5KC              (mips_arch == PROCESSOR_5KC)
 #define TARGET_MIPS5400             (mips_arch == PROCESSOR_R5400)
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
 #define TARGET_MIPS7000             (mips_arch == PROCESSOR_R7000)
 #define TARGET_MIPS9000             (mips_arch == PROCESSOR_R9000)
-#define TARGET_SB1                  (mips_arch == PROCESSOR_SB1)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
 
 /* Scheduling target defines.  */
@@ -344,8 +329,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
 #define TUNE_MIPS7000               (mips_tune == PROCESSOR_R7000)
 #define TUNE_MIPS9000               (mips_tune == PROCESSOR_R9000)
-#define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
-#define TUNE_SR71K                  (mips_tune == PROCESSOR_SR71000)
 
 #define TARGET_OLDABI		    (mips_abi == ABI_32 || mips_abi == ABI_O64)
 #define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
@@ -627,21 +610,11 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("Do not lift restrictions on GOT size") },			\
   {"debug",		  MASK_DEBUG,					\
      NULL},								\
-  {"debuga",		  MASK_DEBUG_A,					\
-     NULL},								\
-  {"debugb",		  MASK_DEBUG_B,					\
-     NULL},								\
   {"debugc",		  MASK_DEBUG_C,					\
      NULL},								\
   {"debugd",		  MASK_DEBUG_D,					\
      NULL},								\
-  {"debuge",		  MASK_DEBUG_E,					\
-     NULL},								\
-  {"debugf",		  MASK_DEBUG_F,					\
-     NULL},								\
   {"debugg",		  MASK_DEBUG_G,					\
-     NULL},								\
-  {"debugi",		  MASK_DEBUG_I,					\
      NULL},								\
   {"",			  (TARGET_DEFAULT				\
 			   | TARGET_CPU_DEFAULT				\
@@ -2185,10 +2158,6 @@ extern enum reg_class mips_char_to_class[256];
 
 #define MAX_ARGS_IN_REGISTERS (TARGET_OLDABI ? 4 : 8)
 
-/* Largest possible value of MAX_ARGS_IN_REGISTERS.  */
-
-#define BIGGEST_MAX_ARGS_IN_REGISTERS 8
-
 /* Symbolic macros for the first/last argument registers.  */
 
 #define GP_ARG_FIRST (GP_REG_FIRST + 4)
@@ -2524,21 +2493,6 @@ typedef struct mips_args {
 /* Maximum number of registers that can appear in a valid memory address.  */
 
 #define MAX_REGS_PER_ADDRESS 1
-
-/* A C compound statement with a conditional `goto LABEL;' executed
-   if X (an RTX) is a legitimate memory address on the target
-   machine for a memory operand of mode MODE.  */
-
-#if 1
-#define GO_PRINTF(x)	fprintf(stderr, (x))
-#define GO_PRINTF2(x,y)	fprintf(stderr, (x), (y))
-#define GO_DEBUG_RTX(x) debug_rtx(x)
-
-#else
-#define GO_PRINTF(x)
-#define GO_PRINTF2(x,y)
-#define GO_DEBUG_RTX(x)
-#endif
 
 #ifdef REG_OK_STRICT
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
@@ -3361,14 +3315,6 @@ while (0)
 
 #define DONT_ACCESS_GBLS_AFTER_EPILOGUE (TARGET_ABICALLS && !TARGET_OLDABI)
 
-
-#define DFMODE_NAN \
-	unsigned short DFbignan[4] = {0x7ff7, 0xffff, 0xffff, 0xffff}; \
-	unsigned short DFlittlenan[4] = {0xffff, 0xffff, 0xffff, 0xfff7}
-#define SFMODE_NAN \
-	unsigned short SFbignan[2] = {0x7fbf, 0xffff}; \
-	unsigned short SFlittlenan[2] = {0xffff, 0xffbf}
-
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
 
