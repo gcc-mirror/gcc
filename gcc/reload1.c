@@ -4820,18 +4820,40 @@ choose_reload_regs (insn, avoid_return_reg)
 
 		      if (k == nr)
 			{
-			  /* Mark the register as in use for this part of
-			     the insn.  */
-			  mark_reload_reg_in_use (spill_regs[i],
-						  reload_opnum[r],
-						  reload_when_needed[r],
-						  reload_mode[r]);
-			  reload_reg_rtx[r] = reg_last_reload_reg[regno];
-			  reload_inherited[r] = 1;
-			  reload_inheritance_insn[r] = reg_reloaded_insn[i];
-			  reload_spill_index[r] = i;
-			  SET_HARD_REG_BIT (reload_reg_used_for_inherit,
-					    spill_regs[i]);
+			  int i1;
+
+			  /* We found a register that contains the
+			     value we need.  If this register is the
+			     same as an `earlyclobber' operand of the
+			     current insn, just mark it as a place to
+			     reload from since we can't use it as the
+			     reload register itself.  */
+
+			  for (i1 = 0; i1 < n_earlyclobbers; i1++)
+			    if (reg_overlap_mentioned_for_reload_p
+				(reg_last_reload_reg[regno],
+				 reload_earlyclobbers[i1]))
+			      break;
+
+			  if (i1 != n_earlyclobbers)
+			    reload_override_in[r] = reg_last_reload_reg[regno];
+			  else
+			    {
+			      /* We can use this as a reload reg.  */
+			      /* Mark the register as in use for this part of
+				 the insn.  */
+			      mark_reload_reg_in_use (spill_regs[i],
+						      reload_opnum[r],
+						      reload_when_needed[r],
+						      reload_mode[r]);
+			      reload_reg_rtx[r] = reg_last_reload_reg[regno];
+			      reload_inherited[r] = 1;
+			      reload_inheritance_insn[r]
+				= reg_reloaded_insn[i];
+			      reload_spill_index[r] = i;
+			      SET_HARD_REG_BIT (reload_reg_used_for_inherit,
+						spill_regs[i]);
+			    }
 			}
 		    }
 		}
