@@ -1,3 +1,12 @@
+2002-10-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/static_members.cc (test02): Disable for 
+	systems without named locale support.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Don't assume
+	running the testsuites in "C" environment.
+	Add new tests.
+	* docs/html/22_locale/locale.html: Update.
+
 2002-10-13  Danny Smith  <dannysmith@users.sourceforge.net> 
 
 	* include/bits/stl_threads.h (_GLIBCPP_mutex,

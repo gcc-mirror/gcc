@@ -315,53 +315,119 @@ void test03()
 {
   bool test = true;
 #ifdef _GLIBCPP_HAVE_SETENV 
-  const char* oldLC_ALL = getenv("LC_ALL");
+  const char* LC_ALL_orig = getenv("LC_ALL");
   if (!setenv("LC_ALL", "it_IT", 1))
     {
       std::locale loc(""); 
       VERIFY( loc.name() == "it_IT" );
-      setenv("LC_ALL", oldLC_ALL ? oldLC_ALL : "", 1);
+      setenv("LC_ALL", LC_ALL_orig ? LC_ALL_orig : "", 1);
     }
 #endif
 }
 
 
-// More tests for Posix locale::name. 
+// More tests for locale("") == POSIX locale::name. 
 void test04()
 {
   bool test = true;
+  using namespace std;
+
 #ifdef _GLIBCPP_HAVE_SETENV
 
-  const char* oldLC_ALL = getenv("LC_ALL") ? strdup(getenv("LC_ALL")) : "";
-  const char* oldLANG = getenv("LANG") ? strdup(getenv("LANG")) : "";
+  const char* LANG_orig = getenv("LANG") ? strdup(getenv("LANG")) : "";
+  const char* LC_ALL_orig = getenv("LC_ALL") ? strdup(getenv("LC_ALL")) : "";
+  const char* LC_CTYPE_orig = 
+    getenv("LC_CTYPE") ? strdup(getenv("LC_CTYPE")) : "";
+  const char* LC_NUMERIC_orig = 
+    getenv("LC_NUMERIC") ? strdup(getenv("LC_NUMERIC")) : "";
+  const char* LC_COLLATE_orig =
+    getenv("LC_COLLATE") ? strdup(getenv("LC_COLLATE")) : "";
+  const char* LC_TIME_orig = 
+    getenv("LC_TIME") ? strdup(getenv("LC_TIME")) : "";
+  const char* LC_MONETARY_orig = 
+    getenv("LC_MONETARY") ? strdup(getenv("LC_MONETARY")) : "";
+  const char* LC_MESSAGES_orig = 
+    getenv("LC_MESSAGES") ? strdup(getenv("LC_MESSAGES")) : "";
+#if _GLIBCPP_NUM_CATEGORIES
+  const char* LC_PAPER_orig = 
+    getenv("LC_PAPER") ? strdup(getenv("LC_PAPER")) : "";
+  const char* LC_NAME_orig = 
+    getenv("LC_NAME") ? strdup(getenv("LC_NAME")) : "";
+  const char* LC_ADDRESS_orig = 
+    getenv("LC_ADDRESS") ? strdup(getenv("LC_ADDRESS")) : "";
+  const char* LC_TELEPHONE_orig = 
+    getenv("LC_TELEPHONE") ? strdup(getenv("LC_TELEPHONE")) : "";
+  const char* LC_MEASUREMENT_orig = 
+    getenv("LC_MEASUREMENT") ? strdup(getenv("LC_MEASUREMENT")) : "";
+  const char* LC_IDENTIFICATION_orig =
+    getenv("LC_IDENTIFICATION") ? strdup(getenv("LC_IDENTIFICATION")) : "";
+#endif
 
   // Check that a "POSIX" LC_ALL is equivalent to "C".
   if (!setenv("LC_ALL", "POSIX", 1))
     {
-      std::locale loc("");
+      locale loc("");
       VERIFY( loc.name() == "C" );
     }
+  setenv("LC_ALL", "", 1);
+
+  // Check that a "en_PH" LC_ALL is equivalent to "en_PH".
+  if (!setenv("LC_ALL", "en_PH", 1))
+    {
+      locale loc("");
+      VERIFY( loc.name() == "en_PH" );
+    }
+  setenv("LC_ALL", "", 1);
+
+  // Explicit check that LC_ALL sets regardless of LC_* and LANG.
+  if (!setenv("LANG", "es_MX", 1) && !setenv("LC_COLLATE", "de_DE", 1))
+    {
+      if (!setenv("LC_ALL", "en_PH", 1))
+	{
+	  locale loc("");
+	  VERIFY( loc.name() == "en_PH" );
+	}
+      setenv("LC_ALL", "", 1);
+      setenv("LANG", LANG_orig ? LANG_orig : "", 1);
+      setenv("LC_COLLATE", LC_COLLATE_orig ? LC_COLLATE_orig : "", 1);
+    }
+
+  // NB: LANG checks all LC_* macro settings. As such, all LC_* macros
+  // must be cleared for these tests, and then restored.
+  setenv("LC_ALL", "", 1);
+  setenv("LC_CTYPE", "", 1);
+  setenv("LC_NUMERIC", "", 1);
+  setenv("LC_COLLATE", "", 1);
+  setenv("LC_TIME", "", 1);
+  setenv("LC_MONETARY", "", 1);
+  setenv("LC_MESSAGES", "", 1);
+#if _GLIBCPP_NUM_CATEGORIES
+  setenv("LC_PAPER", "", 1);
+  setenv("LC_NAME", "", 1);
+  setenv("LC_ADDRESS", "", 1);
+  setenv("LC_TELEPHONE", "", 1);
+  setenv("LC_MEASUREMENT", "", 1);
+  setenv("LC_IDENTIFICATION", "", 1);
+#endif
 
   // Check the default set by LANG.
-  if (!setenv("LC_ALL", "", 1) && !setenv("LANG", "fr_FR", 1))
+  if (!setenv("LANG", "fr_FR", 1))
     {
-      std::locale loc("");
+      locale loc("");
       VERIFY( loc.name() == "fr_FR" );
     }
 
   // Check that a "POSIX" LANG is equivalent to "C".
   if (!setenv("LANG", "POSIX", 1))
     {
-      std::locale loc(""); 
+      locale loc(""); 
       VERIFY( loc.name() == "C" );
     }
 
   // Setting a category in the "C" default.
-  const char* oldLC_COLLATE =
-    getenv("LC_COLLATE") ? strdup(getenv("LC_COLLATE")) : "";
   if (!setenv("LC_COLLATE", "de_DE", 1))
     {
-      std::locale loc("");
+      locale loc("");
 
 #if _GLIBCPP_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_COLLATE=de_DE;"
@@ -377,7 +443,7 @@ void test04()
   // Changing the LANG default while LC_COLLATE is set.
   if (!setenv("LANG", "fr_FR", 1))
     {
-      std::locale loc("");
+      locale loc("");
 #if _GLIBCPP_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
 	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
@@ -392,12 +458,10 @@ void test04()
     }
   
   // Changing another (C only) category.
-  const char* oldLC_IDENTIFICATION =
-    getenv("LC_IDENTIFICATION") ? strdup(getenv("LC_IDENTIFICATION")) : "";
 #if _GLIBCPP_NUM_CATEGORIES
   if (!setenv("LC_IDENTIFICATION", "it_IT", 1))
     {
-      std::locale loc("");
+      locale loc("");
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
 	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
 	      "LC_MESSAGES=fr_FR;LC_PAPER=fr_FR;LC_NAME=fr_FR;"
@@ -407,11 +471,24 @@ void test04()
 #endif
 
   // Restore the environment.
-  setenv("LC_ALL", oldLC_ALL ? oldLC_ALL : "", 1);
-  setenv("LANG", oldLANG ? oldLANG : "", 1);
-  setenv("LC_COLLATE", oldLC_COLLATE ? oldLC_COLLATE : "", 1);
-  setenv("LC_IDENTIFICATION",
-	 oldLC_IDENTIFICATION ? oldLC_IDENTIFICATION : "", 1);
+  setenv("LANG", LANG_orig ? LANG_orig : "", 1);
+  setenv("LC_ALL", LC_ALL_orig ? LC_ALL_orig : "", 1);
+  setenv("LC_CTYPE", LC_CTYPE_orig ? LC_CTYPE_orig : "", 1);
+  setenv("LC_NUMERIC", LC_NUMERIC_orig ? LC_NUMERIC_orig : "", 1);
+  setenv("LC_COLLATE", LC_COLLATE_orig ? LC_COLLATE_orig : "", 1);
+  setenv("LC_TIME", LC_TIME_orig ? LC_TIME_orig : "", 1);
+  setenv("LC_MONETARY", LC_MONETARY_orig ? LC_MONETARY_orig : "", 1);
+  setenv("LC_MESSAGES", LC_MESSAGES_orig ? LC_MESSAGES_orig : "", 1);
+#if _GLIBCPP_NUM_CATEGORIES
+  setenv("LC_PAPER", LC_PAPER_orig ? LC_PAPER_orig : "", 1);
+  setenv("LC_NAME", LC_NAME_orig ? LC_NAME_orig : "", 1);
+  setenv("LC_ADDRESS", LC_ADDRESS_orig ? LC_ADDRESS_orig : "", 1);
+  setenv("LC_TELEPHONE", LC_TELEPHONE_orig ? LC_TELEPHONE_orig : "", 1);
+  setenv("LC_MEASUREMENT", LC_MEASUREMENT_orig ? LC_MEASUREMENT_orig : "", 1);
+  setenv("LC_IDENTIFICATION", 
+         LC_IDENTIFICATION_orig ? LC_IDENTIFICATION_orig : "", 1);
+#endif
+
 #endif
 }
 
