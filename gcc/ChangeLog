@@ -1,3 +1,12 @@
+2000-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-lex.c (parse_float, yylex): For -Wtraditional, issue a
+	warning about non-traditional numeric constant suffixes.
+
+	* cppexp.c (parse_number): Likewise.
+
+	* invoke.texi: (-Wtraditional): Document new behavior.
+
 Thu Aug 10 00:11:04 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* gthr-posix.h: Include auto-host.h. Conditionally include
