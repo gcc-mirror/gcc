@@ -83,7 +83,7 @@ max_operand_1 (x)
   if (code == MATCH_OPERAND || code == MATCH_OPERATOR
       || code == MATCH_PARALLEL)
     max_opno = MAX (max_opno, XINT (x, 0));
-  if (code == MATCH_DUP || code == MATCH_OP_DUP)
+  if (code == MATCH_DUP || code == MATCH_OP_DUP || code == MATCH_PAR_DUP)
     max_dup_opno = MAX (max_dup_opno, XINT (x, 0));
 
   fmt = GET_RTX_FORMAT (code);
@@ -182,6 +182,7 @@ gen_exp (x)
       return;
 
     case MATCH_PARALLEL:
+    case MATCH_PAR_DUP:
       printf ("operand%d", XINT (x, 0));
       return;
 
