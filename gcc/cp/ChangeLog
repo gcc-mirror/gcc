@@ -1,3 +1,8 @@
+Thu Feb  5 14:38:23 1998  Mike Stump  <mrs@wrs.com>
+
+	* search.c (compute_access): Handle protected constructors in derived
+	classes as accessible.
+
 Wed Feb  4 01:26:49 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* expr.c (cplus_expand_expr, PCC_STATIC_STRUCT_RETURN code):
