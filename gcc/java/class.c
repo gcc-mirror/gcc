@@ -1411,7 +1411,7 @@ maybe_layout_super_class (super_class)
       load_class (name, 1);
       super_class = IDENTIFIER_CLASS_VALUE (name);
       if (!super_class)
-	    return;
+	return NULL_TREE;	/* FIXME, NULL_TREE not checked by caller. */
       super_class = TREE_TYPE (super_class);
     }
   if (!TYPE_SIZE (super_class))

@@ -569,7 +569,7 @@ static jdeplist *reverse_jdep_list ();
     ctxp->deprecated = 0;			\
   }
 
-/* Register an impor */
+/* Register an import */
 #define REGISTER_IMPORT(WHOLE, NAME)			\
 {							\
   IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P ((NAME)) = 1;	\
@@ -577,6 +577,9 @@ static jdeplist *reverse_jdep_list ();
   TREE_CHAIN (node) = ctxp->import_list;		\
   ctxp->import_list = node;				\
 }
+
+/* Macro to access the osb (opening square bracket) count */
+#define CURRENT_OSB(C) (C)->osb_number [(C)->osb_depth]
      
 /* Parser context data structure. */
 struct parser_ctxt {
@@ -592,7 +595,9 @@ struct parser_ctxt {
   int first_ccb_indent1;	     /* First { at ident level 1 */
   int last_ccb_indent1;		     /* Last } at ident level 1 */
   int parser_ccb_indent;	     /* Keep track of {} indent, parser */
-  int osb_number;		     /* Keep track of ['s */
+  int osb_depth;		     /* Current depth of [ in an expression */
+  int osb_limit;		     /* Limit of this depth */
+  int *osb_number;		     /* Keep track of ['s */
   int minus_seen;		     /* Integral literal overflow */
   int lineno;			     /* Current lineno */
   int java_error_flag;		     /* Report error when true */

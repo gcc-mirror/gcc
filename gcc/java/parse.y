@@ -281,6 +281,9 @@ static tree wfl_append = NULL_TREE;
 
 /* The "toString" identifier used for String `+' operator. */
 static tree wfl_to_string = NULL_TREE;
+
+/* The "java.lang" import qualified name.  */
+static tree java_lang_id = NULL_TREE;
 %}
 
 %union {
@@ -591,10 +594,14 @@ type_import_on_demand_declaration:
 	IMPORT_TK name DOT_TK MULT_TK SC_TK
 		{
 		  tree name = EXPR_WFL_NODE ($2);
-		  tree node = build_tree_list ($2, NULL_TREE);
-		  read_import_dir ($2);
-		  TREE_CHAIN (node) = ctxp->import_demand_list;
-		  ctxp->import_demand_list = node;
+		  /* Don't import java.lang.* twice. */
+		  if (name != java_lang_id)
+		    {
+		      tree node = build_tree_list ($2, NULL_TREE);
+		      read_import_dir ($2);
+		      TREE_CHAIN (node) = ctxp->import_demand_list;
+		      ctxp->import_demand_list = node;
+		    }
 		}
 |	IMPORT_TK name DOT_TK error
 		{yyerror ("'*' expected"); RECOVER;}
@@ -1760,9 +1767,9 @@ array_creation_expression:
 |	NEW_TK class_or_interface_type dim_exprs
 		{ $$ = build_newarray_node ($2, $3, 0); }
 |	NEW_TK primitive_type dim_exprs dims
-		{ $$ = build_newarray_node ($2, $3, ctxp->osb_number); }
+		{ $$ = build_newarray_node ($2, $3, CURRENT_OSB (ctxp));}
 |	NEW_TK class_or_interface_type dim_exprs dims
-		{ $$ = build_newarray_node ($2, $3, ctxp->osb_number); }
+		{ $$ = build_newarray_node ($2, $3, CURRENT_OSB (ctxp));}
         /* Added, JDK1.1 anonymous array. Initial documentation rule
            modified */
 |	NEW_TK class_or_interface_type dims array_initializer
@@ -1800,9 +1807,33 @@ dim_expr:
 
 dims:				
 	OSB_TK CSB_TK
-		{ ctxp->osb_number = 1; }
+		{ 
+		  int allocate = 0;
+		  /* If not initialized, allocate memory for the osb
+                     numbers stack */
+		  if (!ctxp->osb_limit)
+		    {
+		      allocate = ctxp->osb_limit = 32;
+		      ctxp->osb_depth = -1;
+		    }
+		  /* If capacity overflown, reallocate a bigger chuck */
+		  else if (ctxp->osb_depth+1 == ctxp->osb_limit)
+		    allocate = ctxp->osb_limit << 1;
+		  
+		  if (allocate)
+		    {
+		      allocate *= sizeof (int);
+		      if (ctxp->osb_number)
+			ctxp->osb_number = (int *)xrealloc (ctxp->osb_number,
+							    allocate);
+		      else
+			ctxp->osb_number = (int *)xmalloc (allocate);
+		    }
+		  ctxp->osb_depth++;
+		  CURRENT_OSB (ctxp) = 1;
+		}
 |	dims OSB_TK CSB_TK
-		{ ctxp->osb_number++; }
+		{ CURRENT_OSB (ctxp)++; }
 |	dims OSB_TK error
 		{ yyerror ("']' expected"); RECOVER;}
 ;
@@ -1960,8 +1991,9 @@ cast_expression:		/* Error handling here is potentially weak */
 	OP_TK primitive_type dims CP_TK unary_expression
 		{ 
 		  tree type = $2;
-		  while (ctxp->osb_number--)
+		  while (CURRENT_OSB (ctxp)--)
 		    type = build_java_array_type (type, -1);
+		  ctxp->osb_depth--;
 		  $$ = build_cast ($1.location, type, $5); 
 		}
 |	OP_TK primitive_type CP_TK unary_expression
@@ -1971,8 +2003,9 @@ cast_expression:		/* Error handling here is potentially weak */
 |	OP_TK name dims CP_TK unary_expression_not_plus_minus
 		{ 
 		  char *ptr;
-		  while (ctxp->osb_number--)
+		  while (CURRENT_OSB (ctxp)--)
 		    obstack_1grow (&temporary_obstack, '[');
+		  ctxp->osb_depth--;
 		  obstack_grow0 (&temporary_obstack, 
 				 IDENTIFIER_POINTER (EXPR_WFL_NODE ($2)),
 				 IDENTIFIER_LENGTH (EXPR_WFL_NODE ($2)));
@@ -2513,6 +2546,7 @@ find_expr_with_wfl (node)
 	  if (((code == '1') || (code == '2') || (code == 'e'))
 	      && EXPR_WFL_LINECOL (node))
 	    return node;
+	  return NULL_TREE;
 	}
     }
   return NULL_TREE;
@@ -3130,9 +3164,9 @@ register_fields (flags, type, variable_list)
 	    {
 	      /* We include the field and its initialization part into
 		 a list used to generate <clinit>. After <clinit> is
-		 walked, fields initialization will be processed and
-		 fields initialized with know constants will be taken
-		 out of <clinit> and have ther DECL_INITIAL set
+		 walked, field initializations will be processed and
+		 fields initialized with known constants will be taken
+		 out of <clinit> and have their DECL_INITIAL set
 		 appropriately. */
 	      TREE_CHAIN (init) = ctxp->static_initialized;
 	      ctxp->static_initialized = init;
@@ -4395,8 +4429,8 @@ check_method_redefinition (class, method)
   tree redef, name;
   tree cl = DECL_NAME (method);
   tree sig = TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (method));
-  /* decl name of artificial <clinit> and $finit$ doesn't need to be fixed and
-     checked */
+  /* decl name of artificial <clinit> and $finit$ doesn't need to be
+     fixed and checked */
 
   /* Reset the method name before running the check. If it returns 1,
      the method doesn't need to be verified with respect to method
@@ -4454,7 +4488,10 @@ java_check_regular_methods (class_decl)
       /* If we previously found something and its name was saved,
          reinstall it now */
       if (found && saved_found_wfl)
-	DECL_NAME (found) = saved_found_wfl;
+	{
+	  DECL_NAME (found) = saved_found_wfl;
+	  saved_found_wfl = NULL_TREE;
+	}
 
       /* Check for redefinitions */
       if (check_method_redefinition (class, method))
