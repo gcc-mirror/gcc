@@ -246,7 +246,11 @@ sparc_override_options ()
 	       sparc_align_loops_string);
     }
   else
-    sparc_align_loops = 0;
+    {
+      /* ??? This relies on ASM_OUTPUT_ALIGN to not emit the alignment if
+	 its 0.  This sounds a bit kludgey.  */
+      sparc_align_loops = 0;
+    }
 
   /* Validate -malign-jumps= value, or provide default.  */
   if (sparc_align_jumps_string)
@@ -257,7 +261,11 @@ sparc_override_options ()
 	       sparc_align_jumps_string);
     }
   else
-    sparc_align_jumps = 0;
+    {
+      /* ??? This relies on ASM_OUTPUT_ALIGN to not emit the alignment if
+	 its 0.  This sounds a bit kludgey.  */
+      sparc_align_jumps = 0;
+    }
 
   /* Validate -malign-functions= value, or provide default. */
   if (sparc_align_funcs_string)
