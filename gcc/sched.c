@@ -2042,11 +2042,10 @@ sched_note_set (b, x, death)
     {
       /* Must treat modification of just one hardware register of a multi-reg
 	 value or just a byte field of a register exactly the same way that
-	 mark_set_1 in flow.c does.  */
-      if (GET_CODE (reg) == ZERO_EXTRACT
-	  || GET_CODE (reg) == SIGN_EXTRACT
-	  || (GET_CODE (reg) == SUBREG
-	      && REG_SIZE (SUBREG_REG (reg)) > REG_SIZE (reg)))
+	 mark_set_1 in flow.c does, i.e. anything except a paradoxical subreg
+	 does not kill the entire register.  */
+      if (GET_CODE (reg) != SUBREG
+	  || REG_SIZE (SUBREG_REG (reg)) > REG_SIZE (reg))
 	subreg_p = 1;
 
       reg = SUBREG_REG (reg);
