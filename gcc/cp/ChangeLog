@@ -1,5 +1,7 @@
 Sun Mar 29 00:47:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* call.c (source_type): #if 0 out.
+
 	* class.c (alter_access): Remove unused label.  Add braces
 	around empty else clause.
 
