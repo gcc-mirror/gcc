@@ -47,42 +47,105 @@ import javax.swing.event.EventListenerList;
 
 public class Timer implements Serializable
 {
+  private static final long serialVersionUID = -1116180831621385484L;
+  
   protected EventListenerList listenerList = new EventListenerList();
   
-  int ticks;
-  static boolean verbose;
+  // This object manages a "queue" of virtual actionEvents, maintained as a
+  // simple long counter. When the timer expires, a new event is queued,
+  // and a dispatcher object is pushed into the system event queue. When
+  // the system thread runs the dispatcher, it will fire as many
+  // ActionEvents as have been queued, unless the timer is set to
+  // coalescing mode, in which case it will fire only one ActionEvent.
+
+  private long queue;
+  private Object queueLock = new Object();
+  private void queueEvent()
+  {
+    synchronized (queueLock)
+      {
+        queue++;
+        if (queue == 1)
+          SwingUtilities.invokeLater(new Runnable() { public void run() { drainEvents(); } });
+      }
+  }
+
+  private void drainEvents()
+  {
+    synchronized (queueLock)
+      {
+        if (isCoalesce())
+          {
+            if (queue > 0)
+              fireActionPerformed();
+          }
+        else
+          {
+            while(queue > 0)
+              {                  
+                fireActionPerformed();
+                queue--;
+              }          
+          }
+        queue = 0;
+      }
+  }
+  
+
+  static boolean logTimers;
+  boolean coalesce = true;
+  boolean repeats = true;
   boolean running;
-  boolean repeat_ticks = true;
-  long interval, init_delay;
+  int ticks;
+  int delay;
+  int initialDelay;
     
-  class Waker extends Thread
+  private class Waker 
+    extends Thread
   {
     public void run()
     {
       running = true;
-      try {
-	sleep(init_delay);
-		
-	while (running)
-	  {
-	    sleep(interval);
+      try 
+        {
 
-	    if (verbose)
-	      {
-		System.out.println("javax.swing.Timer -> clocktick");
-	      }
-
-	    ticks++;
-	    fireActionPerformed();
-  
-	    if (! repeat_ticks)
-	      break;
-	  }
-	running = false;
-      } catch (Exception e) {
-	System.out.println("swing.Timer::" + e);
-      }
+          sleep(initialDelay);
+          
+          while (running)
+            {
+              sleep(delay);
+              
+              if (logTimers)
+                System.out.println("javax.swing.Timer -> clocktick");
+              
+              if (! repeats)
+                break;
+            }
+          running = false;
+      } 
+      catch (Exception e) 
+        {
+          System.out.println("swing.Timer::" + e);
+        }
     }
+  }
+
+  public Timer(int d, ActionListener listener)
+  {
+    delay = d;
+
+    if (listener != null)
+      addActionListener(listener);
+  }
+
+  public void setCoalesce(boolean c)
+  {
+    coalesce = c;
+  }
+
+  public boolean isCoalesce()
+  {
+    return coalesce;
   }
 
   public void addActionListener(ActionListener listener)
@@ -123,37 +186,47 @@ public class Timer implements Serializable
 
   void fireActionPerformed ()
   {
-    fireActionPerformed (new ActionEvent (this, ticks, "Timer"));
+    fireActionPerformed (new ActionEvent (this, ticks++, "Timer"));
   }
 
-  public static void setLogTimers(boolean flag)
+  public static void setLogTimers(boolean lt)
   {
-    verbose = flag;
+    logTimers = lt;
   }
 
   public static boolean getLogTimers()
   {
-    return verbose;
+    return logTimers;
   }
     
-  public void setDelay(int delay)
+  public void setDelay(int d)
   {
-    interval = delay;
+    delay = d;
   }
 
   public int getDelay()
   {
-    return (int)interval;
+    return delay;
   }
 
-  public void setInitialDelay(int initialDelay)
+  public void setInitialDelay(int i)
   {
-    init_delay = initialDelay;
+    initialDelay = i;
   }
 
-  public void setRepeats(boolean flag)
+  public int getInitialDelay()
   {
-    repeat_ticks = flag;
+    return initialDelay;
+  }
+
+  public void setRepeats(boolean r)
+  {
+    repeats = r;
+  }
+
+  public boolean isRepeats()
+  {
+    return repeats;
   }
 
   public boolean isRunning()
@@ -169,6 +242,15 @@ public class Timer implements Serializable
 	return;
       }
     new Waker().start();
+  }
+
+  public void restart()
+  {
+    synchronized (queueLock)
+      {
+        queue = 0;
+      }
+    start();
   }
 
   public void stop()

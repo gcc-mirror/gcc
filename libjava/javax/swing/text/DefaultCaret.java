@@ -1,4 +1,4 @@
-/* DefaultCaret.java -- 
+/* DefaultCaret.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,132 +44,184 @@ import java.awt.Rectangle;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.Vector;
+import java.util.EventListener;
 
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 
-public class DefaultCaret extends Rectangle implements Caret, FocusListener, MouseListener, MouseMotionListener
+public class DefaultCaret extends Rectangle
+  implements Caret, FocusListener, MouseListener, MouseMotionListener
 {
-    Color color = new Color(0,0,0);
-    JTextComponent parent;
-    
-    public void mouseDragged(java.awt.event.MouseEvent  evt)
-    {
-    }
-
-    public void mouseMoved(java.awt.event.MouseEvent  evt)
-    {
-    }
-
-    public void mouseClicked(java.awt.event.MouseEvent  evt)
-    {
-    }
-
-    public void mouseEntered(java.awt.event.MouseEvent  evt)
-    {
-    }
-
-    public void mouseExited(java.awt.event.MouseEvent  evt)
-    {
-    }
-
-    public void mousePressed(java.awt.event.MouseEvent  evt)
-    {
-    }
-
-    public void mouseReleased(java.awt.event.MouseEvent  evt)
-    {
-    }
-
-    public void focusGained(java.awt.event.FocusEvent  evt)
-    {
-    }
-
-    public void focusLost(java.awt.event.FocusEvent  evt)
-    {
-    }
-
-    // caret methods:
-
-    public void deinstall(JTextComponent c)
-    {
-	parent.removeFocusListener(this);
-	parent.removeMouseListener(this);
-
-	parent = null;    
-    }
-    public void install(JTextComponent c)
-    {
-	parent.addFocusListener(this);
-	parent.addMouseListener(this);
-	parent = c;
-	repaint();
-    }
-    
-    Point magic = null;
-    public void setMagicCaretPosition(Point p)
-    {	magic = p;    }
-    public Point getMagicCaretPosition()
-    {	return magic;    }
-
-    
-    int mark = 0;
-    public int getMark()
-    {	return mark;    }
-
-    boolean vis_sel = true;
-    public void setSelectionVisible(boolean v)
-    {  vis_sel = v;  repaint();  }
-    public boolean isSelectionVisible()
-    {  return vis_sel;    }
-
-    private void repaint()
-    {	
-	if (parent != null)
-	    {
-		parent.repaint();
-	    }
-    }
-
-    public void paint(Graphics g)
-    {
-	g.setColor(color);
-	g.drawLine(x,y,
-		   x,y+height);
-    }
-
-    
-    Vector changes = new Vector();
-    public void addChangeListener(ChangeListener l)
-    {	changes.addElement(l);    }
-    public void removeChangeListener(ChangeListener l)
-    {   changes.removeElement(l);    }
+  protected ChangeEvent changeEvent = new ChangeEvent(this);
+  protected EventListenerList listenerList = new EventListenerList();
+  
+  Color color = new Color(0, 0, 0);
+  JTextComponent parent;
+  Point magic = null;
+  int mark = 0;
+  boolean vis_sel = true;
+  int blink = 500;
+  int dot = 0;
+  boolean vis = true;
 
 
-    int blink = 500;
-    public int getBlinkRate()
-    { return blink;    }
-    public void setBlinkRate(int rate)
-    { blink = rate;    }
+  public void mouseDragged(java.awt.event.MouseEvent evt)
+  {
+  }
 
-    int dot = 0;
-    public int getDot()
-    {  return dot;     }
-    public void moveDot(int dot)
-    {   setDot(dot);    }
-    public void setDot(int dot)
-    {
-	this.dot = dot;   
-	repaint();
-    }
+  public void mouseMoved(java.awt.event.MouseEvent evt)
+  {
+  }
 
-    boolean vis = true;
-    public boolean isVisible()
-    {	return vis;    }
-    public void setVisible(boolean v)
-    {
-	vis = v; 
-	repaint();
-    }
+  public void mouseClicked(java.awt.event.MouseEvent evt)
+  {
+  }
+
+  public void mouseEntered(java.awt.event.MouseEvent evt)
+  {
+  }
+
+  public void mouseExited(java.awt.event.MouseEvent evt)
+  {
+  }
+
+  public void mousePressed(java.awt.event.MouseEvent evt)
+  {
+  }
+
+  public void mouseReleased(java.awt.event.MouseEvent evt)
+  {
+  }
+
+  public void focusGained(java.awt.event.FocusEvent evt)
+  {
+  }
+
+  public void focusLost(java.awt.event.FocusEvent evt)
+  {
+  }
+
+  public void deinstall(JTextComponent c)
+  {
+    parent.removeFocusListener(this);
+    parent.removeMouseListener(this);
+    parent = null;
+  }
+
+  public void install(JTextComponent c)
+  {
+    parent.addFocusListener(this);
+    parent.addMouseListener(this);
+    parent = c;
+    repaint();
+  }
+
+  public void setMagicCaretPosition(Point p)
+  {
+    magic = p;
+  }
+
+  public Point getMagicCaretPosition()
+  {
+    return magic;
+  }
+
+  public int getMark()
+  {
+    return mark;
+  }
+
+  public void setSelectionVisible(boolean v)
+  {
+    vis_sel = v;
+    repaint();
+  }
+
+  public boolean isSelectionVisible()
+  {
+    return vis_sel;
+  }
+
+  private void repaint()
+  {
+    if (parent != null)
+      parent.repaint();
+  }
+
+  public void paint(Graphics g)
+  {
+    g.setColor(color);
+    g.drawLine(x, y, x, y + height);
+  }
+
+  public EventListener[] getListeners(Class listenerType)
+  {
+    return listenerList.getListeners(listenerType);
+  }
+
+  public void addChangeListener(ChangeListener listener)
+  {
+    listenerList.add(ChangeListener.class, listener);
+  }
+
+  public void removeChangeListener(ChangeListener listener)
+  {
+    listenerList.remove(ChangeListener.class, listener);
+  }
+
+  public ChangeListener[] getChangeListeners()
+  {
+    return (ChangeListener[]) getListeners(ChangeListener.class);
+  }
+
+  protected void fireStateChanged()
+  {
+    ChangeListener[] listeners = getChangeListeners();
+
+    for (int index = 0; index < listeners.length; ++index)
+      listeners[index].stateChanged(changeEvent);
+  }
+
+  protected final JTextComponent getComponent()
+  {
+    return parent;
+  }
+  
+  public int getBlinkRate()
+  {
+    return blink;
+  }
+
+  public void setBlinkRate(int rate)
+  {
+    blink = rate;
+  }
+
+  public int getDot()
+  {
+    return dot;
+  }
+
+  public void moveDot(int dot)
+  {
+    setDot(dot);
+  }
+
+  public void setDot(int dot)
+  {
+    this.dot = dot;
+    repaint();
+  }
+
+  public boolean isVisible()
+  {
+    return vis;
+  }
+
+  public void setVisible(boolean v)
+  {
+    vis = v;
+    repaint();
+  }
 }

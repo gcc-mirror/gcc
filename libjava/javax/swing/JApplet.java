@@ -1,5 +1,5 @@
 /* JApplet.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,6 +51,7 @@ import javax.accessibility.AccessibleContext;
 
 public class JApplet extends Applet implements RootPaneContainer
 {
+  private static final long serialVersionUID = 7269359214497372587L;
 
     public final static int HIDE_ON_CLOSE        = 0;
     public final static int EXIT_ON_CLOSE        = 1;
@@ -136,10 +137,10 @@ public class JApplet extends Applet implements RootPaneContainer
     {    return close_action;   }
 
     
-    JMenuBar getJMenuBar()
+    public JMenuBar getJMenuBar()
     {    return getRootPane().getJMenuBar();   }
     
-    void setJMenuBar(JMenuBar menubar)
+    public void setJMenuBar(JMenuBar menubar)
     {    getRootPane().setJMenuBar(menubar); }
     
     

@@ -103,29 +103,33 @@ public class TextArea extends TextComponent implements java.io.Serializable
   private static transient long next_text_number = 0;
 
   /**
-   * Initialize a new instance of <code>TextArea</code> that is empty
-   * and is one row by one column.  Both horizontal and vertical
+   * Initialize a new instance of <code>TextArea</code> that is empty.
+   * Conceptually the <code>TextArea</code> has 0 rows and 0 columns
+   * but its initial bounds are defined by its peer or by the
+   * container in which it is packed.  Both horizontal and vertical
    * scrollbars will be displayed.
    *
-   * @exception HeadlessException If GraphicsEnvironment.isHeadless () is true,
+   * @exception HeadlessException if GraphicsEnvironment.isHeadless () is true
    */
   public TextArea ()
   {
-    this ("", 1, 1, SCROLLBARS_BOTH);
+    this ("", 0, 0, SCROLLBARS_BOTH);
   }
 
   /**
-   * Initialize a new instance of <code>TextArea</code> that initially
-   * contains the specified text.  Both horizontal and veritcal
-   * scrollbars will be displayed.
+   * Initialize a new instance of <code>TextArea</code> that contains
+   * the specified text.  Conceptually the <code>TextArea</code> has 0
+   * rows and 0 columns but its initial bounds are defined by its peer
+   * or by the container in which it is packed.  Both horizontal and
+   * veritcal scrollbars will be displayed.
    *
    * @param text The text to display in this text area.
    *
-   * @exception HeadlessException If GraphicsEnvironment.isHeadless () is true,
+   * @exception HeadlessException if GraphicsEnvironment.isHeadless () is true
    */
   public TextArea (String text)
   {
-    this (text, 1, text.length (), SCROLLBARS_BOTH);
+    this (text, 0, 0, SCROLLBARS_BOTH);
   }
 
   /**
@@ -137,7 +141,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * @param rows The number of rows in this text area.
    * @param columns The number of columns in this text area.
    *
-   * @exception HeadlessException If GraphicsEnvironment.isHeadless () is true,
+   * @exception HeadlessException if GraphicsEnvironment.isHeadless () is true
    */
   public TextArea (int rows, int columns)
   {
@@ -154,7 +158,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * @param rows The number of rows in this text area.
    * @param columns The number of columns in this text area.
    *
-   * @exception HeadlessException If GraphicsEnvironment.isHeadless () is true,
+   * @exception HeadlessException if GraphicsEnvironment.isHeadless () is true
    */
   public TextArea (String text, int rows, int columns)
   {
@@ -175,7 +179,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * SCROLLBARS_BOTH, SCROLLBARS_VERTICAL_ONLY,
    * SCROLLBARS_HORIZONTAL_ONLY, SCROLLBARS_NONE.
    *
-   * @exception HeadlessException If GraphicsEnvironment.isHeadless () is true,
+   * @exception HeadlessException if GraphicsEnvironment.isHeadless () is true
    */
   public TextArea (String text, int rows, int columns, int scrollbarVisibility)
   {
@@ -184,7 +188,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
     if (GraphicsEnvironment.isHeadless ())
       throw new HeadlessException ();
 
-    if (rows < 1 || columns < 0)
+    if (rows < 0 || columns < 0)
       throw new IllegalArgumentException ("Bad row or column value");
 
     if (scrollbarVisibility != SCROLLBARS_BOTH

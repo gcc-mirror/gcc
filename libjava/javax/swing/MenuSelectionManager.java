@@ -1,4 +1,4 @@
-/* MenuSelectionManager.java -- 
+/* MenuSelectionManager.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,70 +35,111 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-
+import java.util.ArrayList;
 import java.util.Vector;
-
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
+
+/**
+ * This class manages current menu selectection. It provides
+ * methods to clear and set current selected menu path.
+ * It also fires StateChange event to its registered
+ * listeners whenever selected path of the current menu hierarchy
+ * changes.
+ *
+ */
 public class MenuSelectionManager
 {
-  protected ChangeEvent changeEvent;
-  
-  protected EventListenerList listenerList = new EventListenerList ();
+  /** ChangeEvent fired when selected path changes*/
+  protected ChangeEvent changeEvent = new ChangeEvent(this);
 
+  /** List of listeners for this MenuSelectionManager */
+  protected EventListenerList listenerList = new EventListenerList();
+
+  /** Default manager for the current menu hierarchy*/
   private static final MenuSelectionManager manager = new MenuSelectionManager();
-  
-  private Vector selection = new Vector();
-  
-  protected void fireStateChanged ()
+
+  /** Path to the currently selected menu */
+  private Vector selectedPath = new Vector();
+
+  /**
+   * Fires StateChange event to registered listeners
+   */
+  protected void fireStateChanged()
   {
-    ChangeListener[] listeners = getChangeListeners ();
+    ChangeListener[] listeners = getChangeListeners();
 
     for (int i = 0; i < listeners.length; i++)
-      {
-        listeners [i].stateChanged (new ChangeEvent (this));
-      }
+      listeners[i].stateChanged(changeEvent);
   }
 
-  public void addChangeListener (ChangeListener listener)
-  {
-    listenerList.add (ChangeListener.class, listener);
-  }
-
-  public void removeChangeListener (ChangeListener listener)
-  {
-    listenerList.remove (ChangeListener.class, listener);
-  }
-
-  /** @since 1.4 */
-  public ChangeListener[] getChangeListeners ()
-  {
-    return (ChangeListener[]) listenerList.getListeners (ChangeListener.class);
-  }
-  
   /**
-   * Unselects all the menu elements on the selection path 
+   * Adds ChangeListener to this MenuSelectionManager
+   *
+   * @param listener ChangeListener to add
    */
-  public void clearSelectedPath ()
+  public void addChangeListener(ChangeListener listener)
   {
-    for (int i = 0; i < selection.size (); i++)
-      ((MenuElement) selection.get (i)).menuSelectionChanged (false);
-
-    selection.clear ();
+    listenerList.add(ChangeListener.class, listener);
   }
-  
-  public Component componentForPoint (Component source, Point sourcePoint)
+
+  /**
+   * Removes ChangeListener from the list of registered listeners
+   * for this MenuSelectionManager.
+   *
+   * @param listener ChangeListner to remove
+   */
+  public void removeChangeListener(ChangeListener listener)
+  {
+    listenerList.remove(ChangeListener.class, listener);
+  }
+
+  /**
+   * Returns list of registered listeners with MenuSelectionManager
+   *
+   * @since 1.4
+   */
+  public ChangeListener[] getChangeListeners()
+  {
+    return (ChangeListener[]) listenerList.getListeners(ChangeListener.class);
+  }
+
+  /**
+   * Unselects all the menu elements on the selection path
+   */
+  public void clearSelectedPath()
+  {
+    // Send events from the bottom most item in the menu - hierarchy to the
+    // top most
+    for (int i = selectedPath.size() - 1; i >= 0; i--)
+      ((MenuElement) selectedPath.get(i)).menuSelectionChanged(false);
+
+    // notify all listeners that the selected path was changed    
+    fireStateChanged();
+
+    // clear selected path
+    selectedPath.clear();
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param source DOCUMENT ME!
+   * @param sourcePoint DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public Component componentForPoint(Component source, Point sourcePoint)
   {
     throw new UnsupportedOperationException("not implemented");
   }
@@ -108,7 +149,7 @@ public class MenuSelectionManager
    *
    * @return default Manager
    */
-  public static MenuSelectionManager defaultManager ()
+  public static MenuSelectionManager defaultManager()
   {
     return manager;
   }
@@ -118,12 +159,12 @@ public class MenuSelectionManager
    *
    * @return Current selection path
    */
-  public MenuElement[] getSelectedPath ()
+  public MenuElement[] getSelectedPath()
   {
-    MenuElement[] path = new MenuElement[selection.size ()];
+    MenuElement[] path = new MenuElement[selectedPath.size()];
 
     for (int i = 0; i < path.length; i++)
-      path[i] = (MenuElement) selection.get (i);
+      path[i] = (MenuElement) selectedPath.get(i);
 
     return path;
   }
@@ -135,17 +176,17 @@ public class MenuSelectionManager
    * @param c Component for which to check
    * @return True if specified component is part of current menu
    */
-  boolean isComponentPartOfCurrentMenu (Component c)
+  boolean isComponentPartOfCurrentMenu(Component c)
   {
     MenuElement[] subElements;
-    for (int i = 0; i < selection.size (); i++)
+    for (int i = 0; i < selectedPath.size(); i++)
       {
-        subElements = ((MenuElement) selection.get (i)).getSubElements ();
-        for (int j = 0; j < subElements.length; j++)
-          {
-            if ((subElements[j].getComponent ()).equals (c))
-              return true;
-          }
+	subElements = ((MenuElement) selectedPath.get(i)).getSubElements();
+	for (int j = 0; j < subElements.length; j++)
+	  {
+	    if ((subElements[j].getComponent()).equals(c))
+	      return true;
+	  }
       }
 
     return false;
@@ -156,7 +197,7 @@ public class MenuSelectionManager
    *
    * @param e DOCUMENT ME!
    */
-  public void processKeyEvent (KeyEvent e)
+  public void processKeyEvent(KeyEvent e)
   {
     throw new UnsupportedOperationException("not implemented");
   }
@@ -166,35 +207,20 @@ public class MenuSelectionManager
    *
    * @param event Mouse event
    */
-  public void processMouseEvent (MouseEvent event)
+  public void processMouseEvent(MouseEvent event)
   {
-    
-    Component c = ((MenuElement) event.getSource ()).getComponent ();
-    if (selection.size () == 0)
-      {
-        ((MenuElement) event.getSource ()).processMouseEvent (event,
-                                                              getPath (c),
-                                                              manager);
-        return;
-      }
+    Component c = ((Component) event.getSource());
 
-    // find the index of the source component in the current menu hierarchy
-    int i = 0;
-    for (i = 0; i < selection.size (); i++)
-      {
-        MenuElement me = (MenuElement) selection.get (i);
-        if (me.getComponent ().equals (c))
-          break;
-      }
+    MenuElement[] path = getPath(c);
+    ((MenuElement) c).processMouseEvent(event, path, manager);
 
-    // Forward event to all subcomponents of the source 
-    Component subComp;
-    for (int j = i; j < selection.size (); j++)
+    // forward events to subcomponents 
+    MenuElement[] subComponents = ((MenuElement) c).getSubElements();
+
+    for (int i = 0; i < subComponents.length; i++)
       {
-         subComp = ((MenuElement)selection.get (j)).getComponent ();
-        ((MenuElement) selection.get (j)).processMouseEvent (event,
-                                                             getPath (subComp),
-                                                             manager);
+	if (subComponents[i] instanceof JMenuItem)
+	  subComponents[i].processMouseEvent(event, path, manager);
       }
   }
 
@@ -203,67 +229,65 @@ public class MenuSelectionManager
    *
    * @param path new selection path
    */
-  public void setSelectedPath (MenuElement[] path)
+  public void setSelectedPath(MenuElement[] path)
   {
     if (path == null)
       {
-        clearSelectedPath ();
-        return;
+	clearSelectedPath();
+	return;
       }
+
+    fireStateChanged();
 
     int i;
     int minSize = path.length; // size of the smaller path. 
 
-    if (path.length > selection.size ())
+    if (path.length > selectedPath.size())
       {
-        // if new selected path contains more elements then current
-        // selection then first add all elements at 
-        // the indexes > selection.size 
-	
-        for (i = selection.size (); i < path.length; i++)
-          {
-            selection.add (path[i]);
-            path[i].menuSelectionChanged (true);
-          }
+	// if new selected path contains more elements then current
+	// selection then first add all elements at 
+	// the indexes > selectedPath.size 
+	for (i = selectedPath.size(); i < path.length; i++)
+	  {
+	    selectedPath.add(path[i]);
+	    path[i].menuSelectionChanged(true);
+	  }
 
-        minSize = selection.size ();
+	minSize = selectedPath.size();
       }
 
-    else if (path.length < selection.size ())
+    else if (path.length < selectedPath.size())
       {
-        // if new selected path contains less elements then current 
-        // selection then first remove all elements from the selection
-        // at the indexes > path.length
-	
-        for (i = selection.size () - 1; i >= path.length; i--)
-          {
-            ((MenuElement) selection.get (i)).menuSelectionChanged (false);
-            selection.remove (i);
-          }
+	// if new selected path contains less elements then current 
+	// selection then first remove all elements from the selection
+	// at the indexes > path.length
+	for (i = selectedPath.size() - 1; i >= path.length; i--)
+	  {
+	    ((MenuElement) selectedPath.get(i)).menuSelectionChanged(false);
+	    selectedPath.remove(i);
+	  }
 
-        minSize = path.length;
+	minSize = path.length;
       }
 
     // Now compare elements in new and current selection path at the 
     // same location and adjust selection until 
     // same menu elements will be encountered at the
     // same index in both current and new selection path.
-    
-    MenuElement oldSelection;
+    MenuElement oldSelectedPath;
 
     for (i = minSize - 1; i >= 0; i--)
       {
-        oldSelection = (MenuElement) selection.get (i);
+	oldSelectedPath = (MenuElement) selectedPath.get(i);
 
-        if (path[i].equals (oldSelection))
-          break;
+	if (path[i].equals(oldSelectedPath))
+	  break;
 
-        oldSelection.menuSelectionChanged (false);
-        path[i].menuSelectionChanged (true);
-        selection.setElementAt (path[i], i);
+	oldSelectedPath.menuSelectionChanged(false);
+	path[i].menuSelectionChanged(true);
+	selectedPath.setElementAt(path[i], i);
       }
   }
-
 
   /**
    * Returns path to the specified component
@@ -272,27 +296,21 @@ public class MenuSelectionManager
    *
    * @return path to the specified component
    */
-  private MenuElement[] getPath (Component c)
+  private MenuElement[] getPath(Component c)
   {
-    Vector path = new Vector();
-    path.add (c);
-
-    Component parent = c.getParent ();
-
-    while (parent instanceof JMenu 
-           || parent instanceof JPopupMenu 
-           || parent instanceof JMenuItem 
-           || parent instanceof JMenuBar)
+    ArrayList path = new ArrayList();
+    while (c instanceof MenuElement)
       {
-        path.add (parent);
-        parent = parent.getParent ();
+	path.add(0, (MenuElement) c);
+
+	if (c instanceof JPopupMenu)
+	  c = ((JPopupMenu) c).getInvoker();
+	else
+	  c = c.getParent();
       }
 
-    MenuElement[] pathArray = new MenuElement[path.size ()];
-
-    for (int i = 0; i < path.size (); i++)
-      pathArray[i] = (MenuElement) path.get (path.size () - i - 1);
+    MenuElement[] pathArray = new MenuElement[path.size()];
+    path.toArray(pathArray);
     return pathArray;
   }
-  
-} // class MenuSelectionManager
+}

@@ -153,7 +153,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetFont
   gdk_threads_enter();
 
   font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+  pango_font_description_set_size (font_desc, size * dpi_conversion_factor);
 
   if (style & AWT_STYLE_BOLD)
     pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);

@@ -54,7 +54,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
   str = (*env)->GetStringUTFChars (env, text, 0);
 
   gdk_threads_enter ();
-  
+
   ebox = gtk_event_box_new ();
   ebox_container = GTK_CONTAINER (ebox);
   label = gtk_label_new (str);
@@ -80,17 +80,17 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkSetFont
 
   ptr = NSA_GET_PTR (env, obj);
 
-  label = gtk_bin_get_child (GTK_BIN(ptr));
-
-  if (!label)
-      return;
-
   font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
-  gdk_threads_enter();
+  gdk_threads_enter ();
+
+  label = gtk_bin_get_child (GTK_BIN (ptr));
+
+  if (!label)
+    return;
 
   font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+  pango_font_description_set_size (font_desc, size * dpi_conversion_factor);
 
   if (style & AWT_STYLE_BOLD)
     pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
@@ -98,11 +98,11 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkSetFont
   if (style & AWT_STYLE_ITALIC)
     pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
 
-  gtk_widget_modify_font (GTK_WIDGET(label), font_desc);
+  gtk_widget_modify_font (GTK_WIDGET (label), font_desc);
 
   pango_font_description_free (font_desc);
 
-  gdk_threads_leave();
+  gdk_threads_leave ();
 
   (*env)->ReleaseStringUTFChars (env, name, font_name);
 }

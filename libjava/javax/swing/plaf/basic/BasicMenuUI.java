@@ -1,5 +1,5 @@
 /* BasicMenuUI.java
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.UIDefaults;
@@ -71,12 +72,16 @@ import javax.swing.plaf.MenuItemUI;
 
 
 /**
- * DOCUMENT ME!
+ * UI Delegate for JMenu
  */
 public class BasicMenuUI extends BasicMenuItemUI
 {
   protected ChangeListener changeListener;
+
+  /* MenuListener listens to MenuEvents fired by JMenu */
   protected MenuListener menuListener;
+
+  /* PropertyChangeListner that listens to propertyChangeEvents occuring in JMenu*/
   protected PropertyChangeListener propertyChangeListener;
 
   /**
@@ -84,52 +89,53 @@ public class BasicMenuUI extends BasicMenuItemUI
    */
   public BasicMenuUI()
   {
-    mouseInputListener = createMouseInputListener(menuItem);
-    menuListener = createMenuListener(menuItem);
+    mouseInputListener = createMouseInputListener((JMenu) menuItem);
+    menuListener = createMenuListener((JMenu) menuItem);
+    propertyChangeListener = createPropertyChangeListener((JMenu) menuItem);
   }
 
   /**
-   * DOCUMENT ME!
+   * This method creates a new ChangeListener.
    *
-   * @param c DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
+   * @return A new ChangeListener.
    */
   protected ChangeListener createChangeListener(JComponent c)
   {
-    return null;
+    return new ChangeHandler();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method creates new MenuDragMouseListener to listen to mouse dragged events
+   * occuring in the Menu
    *
-   * @param c DOCUMENT ME!
+   * @param c the menu to listen to
    *
-   * @return DOCUMENT ME!
+   * @return The MenuDrageMouseListener
    */
   protected MenuDragMouseListener createMenuDragMouseListener(JComponent c)
   {
-    return null;
+    return new MenuDragMouseHandler();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method creates new MenuDragKeyListener to listen to key events
    *
-   * @param c DOCUMENT ME!
+   * @param c the menu to listen to
    *
-   * @return DOCUMENT ME!
+   * @return The MenuKeyListener
    */
   protected MenuKeyListener createMenuKeyListener(JComponent c)
   {
-    return null;
+    return new MenuKeyHandler();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method creates new MenuListener to listen to menu events
+   * occuring in the Menu
    *
-   * @param c DOCUMENT ME!
+   * @param c the menu to listen to
    *
-   * @return DOCUMENT ME!
+   * @return The MenuListener
    */
   protected MenuListener createMenuListener(JComponent c)
   {
@@ -137,11 +143,12 @@ public class BasicMenuUI extends BasicMenuItemUI
   }
 
   /**
-   * DOCUMENT ME!
+   * This method creates new MouseInputListener to listen to mouse input events
+   * occuring in the Menu
    *
-   * @param c DOCUMENT ME!
+   * @param c the menu to listen to
    *
-   * @return DOCUMENT ME!
+   * @return The MouseInputListener
    */
   protected MouseInputListener createMouseInputListener(JComponent c)
   {
@@ -149,53 +156,50 @@ public class BasicMenuUI extends BasicMenuItemUI
   }
 
   /**
-   * DOCUMENT ME!
+   * This method creates newPropertyChangeListener to listen to property changes
+   * occuring in the Menu
    *
-   * @param c DOCUMENT ME!
+   * @param c the menu to listen to
    *
-   * @return DOCUMENT ME!
+   * @return The PropertyChangeListener
    */
   protected PropertyChangeListener createPropertyChangeListener(JComponent c)
   {
-    return null;
+    return new PropertyChangeHandler();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method creates a new BasicMenuUI.
    *
-   * @param x DOCUMENT ME!
+   * @param c The JComponent to create a UI for.
    *
-   * @return DOCUMENT ME!
+   * @return A new BasicMenuUI.
    */
-  public static ComponentUI createUI(JComponent x)
+  public static ComponentUI createUI(JComponent c)
   {
     return new BasicMenuUI();
   }
 
   /**
-   * DOCUMENT ME!
+   * Get the component's maximum size.
    *
-   * @param c DOCUMENT ME!
+   * @param c The JComponent for which to get maximum size
    *
-   * @return DOCUMENT ME!
+   * @return The maximum size of the component
    */
   public Dimension getMaximumSize(JComponent c)
   {
     return null;
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
-   */
   protected String getPropertyPrefix()
   {
     return null;
   }
 
   /**
-   * DOCUMENT ME!
+   * Initializes any default properties that this UI has from the defaults for
+   * the Basic look and feel.
    */
   protected void installDefaults()
   {
@@ -214,14 +218,17 @@ public class BasicMenuUI extends BasicMenuItemUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Installs any keyboard actions. The list of keys that need to be bound are
+   * listed in Basic look and feel's defaults.
+   *
    */
   protected void installKeyboardActions()
   {
+    // FIXME: Need to implement
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates and registers all the listeners for this UI delegate.
    */
   protected void installListeners()
   {
@@ -229,17 +236,13 @@ public class BasicMenuUI extends BasicMenuItemUI
     ((JMenu) menuItem).addMenuListener(menuListener);
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @param menu DOCUMENT ME!
-   */
   protected void setupPostTimer(JMenu menu)
   {
   }
 
   /**
-   * DOCUMENT ME!
+   * This method uninstalls the defaults and sets any objects created during
+   * install to null
    */
   protected void uninstallDefaults()
   {
@@ -255,30 +258,35 @@ public class BasicMenuUI extends BasicMenuItemUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Uninstalls any keyboard actions. The list of keys used  are listed in
+   * Basic look and feel's defaults.
    */
   protected void uninstallKeyboardActions()
   {
+    // FIXME: Need to implement
   }
 
   /**
-   * DOCUMENT ME!
+   * Unregisters all the listeners that this UI delegate was using. In
+   * addition, it will also null any listeners that it was using.
    */
   protected void uninstallListeners()
   {
+    ((JMenu) menuItem).removeMouseListener(mouseInputListener);
+    ((JMenu) menuItem).removeMenuListener(menuListener);
+    ((JMenu) menuItem).removePropertyChangeListener(propertyChangeListener);
   }
 
   /**
-   * DOCUMENT ME!
+   * This class is used by menus to handle mouse events occuring in the
+   * menu.
    */
   protected class MouseInputHandler implements MouseInputListener
   {
-    protected MouseInputHandler()
-    {
-    }
-
     public void mouseClicked(MouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.processMouseEvent(e);
     }
 
     public void mouseDragged(MouseEvent e)
@@ -289,34 +297,30 @@ public class BasicMenuUI extends BasicMenuItemUI
 
     public void mouseEntered(MouseEvent e)
     {
-      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-      manager.setSelectedPath(getPath());
-      manager.processMouseEvent(e);
+      /* When mouse enters menu item, it should be considered selected
 
-      JMenu subMenu = (JMenu) menuItem;
-
-      int x = 0;
-      int y = 0;
-
-      // location of the popup menu is relative to the invoker
-      if (subMenu.isTopLevelMenu())
+       if (i) if this menu is a submenu in some other menu
+          (ii) or if this menu is in a menu bar and some other menu in a menu bar was just
+               selected. (If nothing was selected, menu should be pressed before
+               it will be selected)      
+      */
+      
+      JMenu menu = (JMenu) menuItem;
+      if (! menu.isTopLevelMenu()
+          || (menu.isTopLevelMenu()
+          && (((JMenuBar) menu.getParent()).isSelected())))
         {
-	  JMenuBar mb = (JMenuBar) subMenu.getParent();
-
-	  // Subtract menuBar's insets.bottom and popupMenu's insets.top, 
-	  // s.t. the space between menu bar and its popup menu is equal to 
-	  // menuBar's margin. By default menuBar's margin is Insets(0,0,0,0).
-	  y = subMenu.getHeight() - mb.getInsets().bottom
-	      - subMenu.getPopupMenu().getInsets().top + mb.getMargin().bottom;
+	  // set new selection and forward this event to MenuSelectionManager
+	  MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+	  manager.setSelectedPath(getPath());
+	  manager.processMouseEvent(e);
         }
-      else
-	x = subMenu.getWidth();
-
-      subMenu.getPopupMenu().show(subMenu, x, y);
     }
 
     public void mouseExited(MouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.processMouseEvent(e);
     }
 
     public void mouseMoved(MouseEvent e)
@@ -325,6 +329,37 @@ public class BasicMenuUI extends BasicMenuItemUI
 
     public void mousePressed(MouseEvent e)
     {
+
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      JMenu menu = (JMenu) menuItem;
+      manager.processMouseEvent(e);
+      
+      // Menu should be displayed when the menu is pressed only if 
+      // it is top-level menu
+      if (menu.isTopLevelMenu())
+        {
+	  if (menu.getPopupMenu().isVisible())
+	    {
+	      // If menu is visible and menu button was pressed.. 
+	      // then need to cancel the menu
+	      menu.fireMenuCanceled();
+	      manager.clearSelectedPath();
+	    }
+	  else
+	    {
+	      // Display the menu
+	      int x = 0;
+	      int y = menu.getHeight();
+
+	      menu.fireMenuSelected();
+	      manager.setSelectedPath(getPath());
+
+	      JMenuBar mb = (JMenuBar) menu.getParent();
+
+	      // set selectedIndex of the selectionModel of a menuBar
+	      mb.getSelectionModel().setSelectedIndex(mb.getComponentIndex(menu));
+	    }
+        }
     }
 
     public void mouseReleased(MouseEvent e)
@@ -334,17 +369,140 @@ public class BasicMenuUI extends BasicMenuItemUI
     }
   }
 
+  /**
+   * This class handles MenuEvents fired by the JMenu
+   */
   protected class MenuHandler implements MenuListener
   {
+    /**
+     * This method is called when menu is cancelled. The menu is cancelled
+     * when its popup menu is closed without selection.
+     *
+     * @param e The MenuEvent.
+     */
     public void menuCanceled(MenuEvent e)
     {
     }
 
+    /**
+     * This method is called when menu is deselected.
+     *
+     * @param e The MenuEvent.
+     */
     public void menuDeselected(MenuEvent e)
     {
     }
 
+    /**
+     * This method is called when menu is selected.
+     *
+     * @param e The MenuEvent.
+     */
     public void menuSelected(MenuEvent e)
+    {
+    }
+  }
+
+  /**
+   * This class handles PropertyChangeEvents fired from the JMenu
+   */
+  protected class PropertyChangeHandler implements PropertyChangeListener
+  {
+    /**
+      * This method is called whenever one of the properties of the menu item
+      * changes.
+      *
+      * @param e The PropertyChangeEvent.
+      */
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+    }
+  }
+
+  protected class ChangeHandler implements ChangeListener
+  {
+    public void stateChanged(ChangeEvent e)
+    {
+      // FIXME: It seems that this class is not used anywhere
+    }
+  }
+
+  /**
+   * This class handles mouse dragged events.
+   */
+  protected class MenuDragMouseHandler implements MenuDragMouseListener
+  {
+    /**
+     * Tbis method is invoked when mouse is dragged over the menu item.
+     *
+     * @param e The MenuDragMouseEvent
+     */
+    public void menuDragMouseDragged(MenuDragMouseEvent e)
+    {
+    }
+
+    /**
+     * Tbis method is invoked when mouse enters the menu item while it is
+     * being dragged.
+     *
+     * @param e The MenuDragMouseEvent
+     */
+    public void menuDragMouseEntered(MenuDragMouseEvent e)
+    {
+    }
+
+    /**
+     * Tbis method is invoked when mouse exits the menu item while
+     * it is being dragged
+     *
+     * @param e The MenuDragMouseEvent
+     */
+    public void menuDragMouseExited(MenuDragMouseEvent e)
+    {
+    }
+
+    /**
+     * Tbis method is invoked when mouse was dragged and released
+     * inside the menu item.
+     *
+     * @param e The MenuDragMouseEvent
+     */
+    public void menuDragMouseReleased(MenuDragMouseEvent e)
+    {
+    }
+  }
+
+  /**
+   * This class handles key events occuring when menu item is visible on the
+   * screen.
+   */
+  protected class MenuKeyHandler implements MenuKeyListener
+  {
+    /**
+     * This method is invoked when key has been pressed
+     *
+     * @param e A {@link MenuKeyEvent}.
+     */
+    public void menuKeyPressed(MenuKeyEvent e)
+    {
+    }
+
+    /**
+     * This method is invoked when key has been pressed
+     *
+     * @param e A {@link MenuKeyEvent}.
+     */
+    public void menuKeyReleased(MenuKeyEvent e)
+    {
+    }
+
+    /**
+     * This method is invoked when key has been typed
+     * It handles the mnemonic key for the menu item.
+     *
+     * @param e A {@link MenuKeyEvent}.
+     */
+    public void menuKeyTyped(MenuKeyEvent e)
     {
     }
   }

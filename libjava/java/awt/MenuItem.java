@@ -424,6 +424,11 @@ dispatchEventImpl(AWTEvent e)
       && (action_listeners != null
 	  || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
     processEvent(e);
+
+  // Send the event to the parent menu if it has not yet been
+  // consumed.
+  if (!e.isConsumed ())
+    ((Menu) getParent ()).processEvent (e);
 }
 
 /**

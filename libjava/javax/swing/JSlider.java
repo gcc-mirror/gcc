@@ -122,14 +122,15 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   protected class AccessibleJSlider extends JComponent.AccessibleJComponent
     implements AccessibleValue
   {
+    private static final long serialVersionUID = -6301740148041106789L;
+  
     /**
      * Creates a new AccessibleJSlider object.
      *
      * @param value0 DOCUMENT ME!
      */
-    protected AccessibleJSlider(JSlider value0)
+    protected AccessibleJSlider()
     {
-      super(value0);
     }
 
     /**
@@ -933,7 +934,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJSlider(this);
+      accessibleContext = new AccessibleJSlider();
+    
     return accessibleContext;
   }
 }

@@ -49,55 +49,31 @@ import javax.swing.text.Document;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JPasswordField extends JTextField {
+public class JPasswordField extends JTextField
+{
+  /**
+   * AccessibleJPasswordField
+   */
+  protected class AccessibleJPasswordField extends AccessibleJTextField
+  {
+    private static final long serialVersionUID = -8477039424200681086L;
 
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
+    /**
+     * Constructor AccessibleJPasswordField
+     */
+    protected AccessibleJPasswordField()
+    {
+    }
 
-	/**
-	 * AccessibleJPasswordField
-	 */
-	protected class AccessibleJPasswordField extends AccessibleJTextField {
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor AccessibleJPasswordField
-		 * @param component TODO
-		 */
-		protected AccessibleJPasswordField(JPasswordField component) {
-			super(component);
-			// TODO
-		} // AccessibleJPasswordField()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * getAccessibleRole
-		 * @returns AccessibleRole
-		 */
-		public AccessibleRole getAccessibleRole() {
-			return AccessibleRole.PASSWORD_TEXT;
-		} // getAccessibleRole()
-
-
-	} // AccessibleJPasswordField
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+    /**
+     * getAccessibleRole
+     * @return AccessibleRole
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.PASSWORD_TEXT;
+    }
+  }
 
 	/**
 	 * uiClassID
@@ -254,16 +230,15 @@ public class JPasswordField extends JTextField {
 		return null; // TODO
 	} // paramString()
 
-	/**
-	 * getAccessibleContext
-	 * @returns AccessibleContext
-	 */
-	public AccessibleContext getAccessibleContext() {
-		if (accessibleContext == null) {
-			accessibleContext = new AccessibleJPasswordField(this);
-		} // if
-		return accessibleContext;
-	} // getAccessibleContext()
+  /**
+   * getAccessibleContext
+   * @return AccessibleContext
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJPasswordField();
 
-
-} // JPasswordField
+    return accessibleContext;
+  }
+}

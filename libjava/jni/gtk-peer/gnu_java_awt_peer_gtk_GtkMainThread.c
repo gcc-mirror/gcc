@@ -69,6 +69,12 @@ JavaVM *gdk_vm;
 
 GtkWindowGroup *global_gtk_window_group;
 
+double dpi_conversion_factor;
+
+static void init_dpi_conversion_factor ();
+static void dpi_changed_cb (GtkSettings  *settings,
+                            GParamSpec   *pspec);
+
 /*
  * Call gtk_init.  It is very important that this happen before any other
  * gtk calls.
@@ -166,7 +172,7 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
 					       "postMenuActionEvent",
 					       "()V");
   postMouseEventID = (*env)->GetMethodID (env, gtkcomponentpeer, 
-					  "postMouseEvent", "(IJIIIIZ)V");
+                                          "postMouseEvent", "(IJIIIIZ)V");
   postConfigureEventID = (*env)->GetMethodID (env, gtkwindowpeer, 
 					      "postConfigureEvent", "(IIII)V");
   postWindowEventID = (*env)->GetMethodID (env, gtkwindowpeer,
@@ -194,6 +200,8 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
 					     "postTextEvent",
 					     "()V");
   global_gtk_window_group = gtk_window_group_new ();
+
+  init_dpi_conversion_factor ();
 }
 
 /*
@@ -206,4 +214,37 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkMain
   gdk_threads_enter ();
   gtk_main ();
   gdk_threads_leave ();
+}
+
+/* This is a big hack, needed until this pango bug is resolved:
+   http://bugzilla.gnome.org/show_bug.cgi?id=119081.
+   See: http://www.geocrawler.com/archives/3/522/2003/8/0/10579352/
+   for details. */
+static void
+init_dpi_conversion_factor ()
+{
+  GtkSettings *settings = gtk_settings_get_default ();
+  GObjectClass *klass;
+
+  klass = G_OBJECT_CLASS (GTK_SETTINGS_GET_CLASS (settings));
+  if (g_object_class_find_property (klass, "gtk-xft-dpi"))
+    {
+      int int_dpi;
+      g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
+      dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
+      g_signal_connect (settings, "notify::gtk-xft-dpi",
+                        G_CALLBACK (dpi_changed_cb), NULL);
+    }
+  else
+    /* Approximate. */
+    dpi_conversion_factor = PANGO_SCALE * 72.0 / 96.;
+}
+
+static void
+dpi_changed_cb (GtkSettings  *settings,
+                GParamSpec   *pspec)
+{
+  int int_dpi;
+  g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
+  dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
 }

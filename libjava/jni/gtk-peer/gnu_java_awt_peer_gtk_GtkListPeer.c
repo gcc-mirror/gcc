@@ -44,6 +44,13 @@ enum
     N_COLUMNS
   };
 
+gboolean item_highlighted (GtkTreeSelection *selection,
+                           GtkTreeModel *model,
+                           GtkTreePath *path,
+                           gboolean path_currently_selected,
+                           jobject peer);
+
+
 #define TREE_VIEW_FROM_SW(obj) \
            (GTK_TREE_VIEW (GTK_SCROLLED_WINDOW (obj)->container.child))
 
@@ -130,20 +137,27 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  GtkTreeView *list;
   jobject *gref;
-
-  gref = NSA_GET_GLOBAL_REF (env, obj);
-  g_assert (gref);
+  GtkTreeView *list;
+  GtkTreeSelection *selection;
 
   ptr = NSA_GET_PTR (env, obj);
+  gref = NSA_GET_GLOBAL_REF (env, obj);
 
   gdk_threads_enter ();
 
+  g_assert (gref);
+
   gtk_widget_realize (GTK_WIDGET (ptr));
+
   list = TREE_VIEW_FROM_SW (ptr);
+
   g_signal_connect (G_OBJECT (list), "event",
                     G_CALLBACK (pre_event_handler), *gref);
+
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));
+  gtk_tree_selection_set_select_function (selection, item_highlighted,
+                                          *gref, NULL);
 
   gdk_threads_leave ();
 }
@@ -166,7 +180,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_gtkSetFont
   font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
   font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+  pango_font_description_set_size (font_desc, size * dpi_conversion_factor);
 
   if (style & AWT_STYLE_BOLD)
     pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
@@ -483,4 +497,35 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_setMultipleMode
                                : GTK_SELECTION_SINGLE);
 
   gdk_threads_leave ();
+}
+
+gboolean
+item_highlighted (GtkTreeSelection *selection __attribute__((unused)),
+                  GtkTreeModel *model,
+                  GtkTreePath *path,
+                  gboolean path_currently_selected,
+                  jobject peer)
+{
+  GtkTreeIter iter;
+  jint row;
+  gint *indices;
+
+  if (gtk_tree_model_get_iter (model, &iter, path))
+    {
+      indices = gtk_tree_path_get_indices (path);
+      row = indices ? indices[0] : -1;
+
+      if (!path_currently_selected)
+        (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                    postListItemEventID,
+                                    row,
+                                    (jint) AWT_ITEM_SELECTED);
+      else
+        (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                    postListItemEventID,
+                                    row,
+                                    (jint) AWT_ITEM_DESELECTED);
+    }
+
+  return TRUE;
 }

@@ -1,4 +1,4 @@
-/* ButtonGroup.java -- 
+/* ButtonGroup.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,97 +35,145 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class ButtonGroup implements Serializable 
+
+public class ButtonGroup
+  implements Serializable
 {
-  static final long serialVersionUID = 4259076101881721375L;
+  private static final long serialVersionUID = 4259076101881721375L;
 
-    Vector v = new Vector();
-    ButtonModel sel;
-    
-    public ButtonGroup() {}
-    
-    public void add(AbstractButton b) 
-    {
-	b.getModel().setGroup(this);
-	v.addElement(b);
-    }
-    
-    public void remove(AbstractButton b)
-    {
-	b.getModel().setGroup(null);
-	v.removeElement(b);
-    }
+  /**
+   * The buttons added to this button group.
+   */
+  protected Vector buttons = new Vector();
 
+  /**
+   * The currently selected button model.
+   */
+  ButtonModel sel;
 
-    public Enumeration getElements() {
-        return v.elements();
-    }
+  /**
+   * Creates a new button group.
+   */
+  public ButtonGroup()
+  {
+  }
 
-    public ButtonModel getSelection() {
-        return sel;
-    }
+  /**
+   * Adds a button to this group.
+   *
+   * @param b the button to add
+   */
+  public void add(AbstractButton b)
+  {
+    b.getModel().setGroup(this);
+    buttons.addElement(b);
+  }
 
-    AbstractButton FindButton(ButtonModel m)
-    {
-	for (int i=0;i<v.size();i++)
-	    {
-	    AbstractButton a = (AbstractButton) v.get(i);
-	    if (a.getModel()== m)
-	    {
-		return a;
-	    }
-	}
-	return null;
-    }
+  /**
+   * Removed a given button from this group.
+   *
+   * @param b the button to remove
+   */
+  public void remove(AbstractButton b)
+  {
+    b.getModel().setGroup(null);
+    buttons.removeElement(b);
+  }
 
-    public void setSelected(ButtonModel m, boolean b)
-    {
-	if ((m == sel) &&
-	    (b == true))
-	    {
-		// clicked on sam item twice.
-		System.out.println("PRESSED TWICE:" + m + ", sel="+sel);
-		return;
-	    }	
-	
-	if (sel != null)
-	    {
+  /**
+   * Returns the currently added buttons.
+   *
+   * @return <code>Enumeration</code> over all added buttons
+   */
+  public Enumeration getElements()
+  {
+    return buttons.elements();
+  }
 
-		System.out.println("DESELECTING: " + sel);
-		sel.setSelected(!b);
+  /**
+   * Returns the currently selected button model.
+   *
+   * @return the currently selected button model,
+   * null if none was selected yet
+   */
+  public ButtonModel getSelection()
+  {
+    return sel;
+  }
 
-		AbstractButton but = FindButton(sel);
-		if (but != null)
-		    {
-			System.out.println("REPAINT-REQUIST: " + but.text);
-			//but.revalidate();
-			but.repaint();
-		    }
-	    }
-	else
-	    {
-		System.out.println("NO SELECTION YET");
-	    }
-	
-	sel = m;
-    }
-    
-    public boolean isSelected(ButtonModel m) 
-    {
-        return (m == sel);
-    }
+  AbstractButton FindButton(ButtonModel m)
+  {
+    for (int i = 0;i < buttons.size(); i++)
+      {
+	AbstractButton a = (AbstractButton) buttons.get(i);
+	if (a.getModel() == m)
+	  return a;
+      }
+    return null;
+  }
 
-    public int getButtonCount() 
-    {
-	return v.size();
-    }
+  /**
+   * Sets the currently selected button model. Only one button of a group
+   * can be selected at a time.
+   *
+   * @param m the model to select
+   * @param b true if this button is to be selected, false otherwise
+   */
+  public void setSelected(ButtonModel m, boolean b)
+  {
+    if ((m == sel) && (b == true))
+      {
+	// clicked on same item twice.
+	System.out.println("PRESSED TWICE:" + m + ", sel=" + sel);
+	return;
+      }
 
+    if (sel != null)
+      {
+	System.out.println("DESELECTING: " + sel);
+	sel.setSelected(! b);
+
+	AbstractButton but = FindButton(sel);
+	if (but != null)
+	  {
+	    System.out.println("REPAINT-REQUEST: " + but.text);
+	    //but.revalidate();
+	    but.repaint();
+	  }
+      }
+    else
+      System.out.println("NO SELECTION YET");
+
+    sel = m;
+  }
+
+  /**
+   * Checks if the given <code>ButtonModel</code> is selected
+   * in this button group.
+   *
+   * @return true of given <code>ButtonModel</code> is selected,
+   * false otherwise
+   */
+  public boolean isSelected(ButtonModel m)
+  {
+    return m == sel;
+  }
+
+  /**
+   * Return the number of buttons in this button group.
+   *
+   * @return the number of buttons
+   *
+   * @since 1.3
+   */
+  public int getButtonCount()
+  {
+    return buttons.size();
+  }
 }
-

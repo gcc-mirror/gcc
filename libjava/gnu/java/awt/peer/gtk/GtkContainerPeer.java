@@ -107,10 +107,7 @@ public class GtkContainerPeer extends GtkComponentPeer
 
   public Graphics getGraphics ()
   {
-    if (GtkToolkit.useGraphics2D ())
-        return new GdkGraphics2D (this);
-    else
-    return new GdkGraphics (this);
+    return super.getGraphics();
   }
 
   public void beginLayout () { }

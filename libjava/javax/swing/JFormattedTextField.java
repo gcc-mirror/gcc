@@ -1,5 +1,5 @@
 /* JFormattedTextField.java --
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,7 +52,7 @@ import javax.swing.text.NavigationFilter;
  */
 public class JFormattedTextField extends JTextField
 {
-  private static final long serialVersionUID = 2889768923115424035L;
+  private static final long serialVersionUID = 5464657870110180632L;
 
   public abstract static class AbstractFormatter implements Serializable
   {

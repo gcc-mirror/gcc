@@ -104,7 +104,7 @@ public class GtkImagePainter implements Runnable, ImageConsumer
     s_width = Math.abs (sx2 - sx1);
     s_height = Math.abs (sy2 - sy1);
     clip = new Rectangle (sx1, sy1, s_width, s_height);
-    
+
     new Thread (this).start ();
   }
 
@@ -169,8 +169,6 @@ public class GtkImagePainter implements Runnable, ImageConsumer
 	  return;
 
 	offset += r.y * scansize + r.x;
-
-	r.translate (-Math.abs (clip.x - startX), -Math.abs (clip.y - startY));
 
 	width = r.width;
 	height = r.height;

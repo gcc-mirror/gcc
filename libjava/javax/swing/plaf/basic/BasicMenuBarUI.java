@@ -1,5 +1,5 @@
-/* BasicMenuUI.java
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* BasicMenuBarUI.java --
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,11 +37,13 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.awt.Dimension;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
@@ -70,18 +72,22 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.MenuBarUI;
 import javax.swing.plaf.MenuItemUI;
-import java.awt.Insets;
-import java.awt.GridLayout;
 
 
 /**
- * DOCUMENT ME!
+ * UI Delegate for JMenuBar.
  */
 public class BasicMenuBarUI extends MenuBarUI
 {
   protected ChangeListener changeListener;
+
+  /*ContainerListener that listens to the ContainerEvents fired from menu bar*/
   protected ContainerListener containerListener;
+
+  /*Property change listeners that listener to PropertyChangeEvent from menu bar*/
   protected PropertyChangeListener propertyChangeListener;
+
+  /* menu bar for which this UI delegate is for*/
   protected JMenuBar menuBar;
 
   /**
@@ -105,21 +111,23 @@ public class BasicMenuBarUI extends MenuBarUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates ContainerListener() to listen for ContainerEvents
+   * fired by JMenuBar
    *
-   * @return DOCUMENT ME!
+   * @return The ContainerListener
    */
-  protected ContainerListener  createContainerListener()
+  protected ContainerListener createContainerListener()
   {
     return new ContainerHandler();
   }
 
   /**
-   * DOCUMENT ME!
+   * Factory method to create a BasicMenuBarUI for the given {@link
+   * JComponent}, which should be a {@link JMenuBar}.
    *
-   * @param x DOCUMENT ME!
+   * @param b The {@link JComponent} a UI is being created for.
    *
-   * @return DOCUMENT ME!
+   * @return A BasicMenuBarUI for the {@link JComponent}.
    */
   public static ComponentUI createUI(JComponent x)
   {
@@ -127,11 +135,11 @@ public class BasicMenuBarUI extends MenuBarUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns maximum size for the specified menu bar
    *
-   * @param c DOCUMENT ME!
+   * @param c component for which to get maximum size
    *
-   * @return DOCUMENT ME!
+   * @return  Maximum size for the specified menu bar
    */
   public Dimension getMaximumSize(JComponent c)
   {
@@ -140,11 +148,11 @@ public class BasicMenuBarUI extends MenuBarUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns maximum allowed size of JMenuBar.
    *
-   * @param c DOCUMENT ME!
+   * @param c menuBar for which to return maximum size
    *
-   * @return DOCUMENT ME!
+   * @return Maximum size of the give menu bar.
    */
   public Dimension getMinimumSize(JComponent c)
   {
@@ -153,11 +161,11 @@ public class BasicMenuBarUI extends MenuBarUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns preferred size of JMenuBar.
    *
-   * @param c DOCUMENT ME!
+   * @param c menuBar for which to return preferred size
    *
-   * @return DOCUMENT ME!
+   * @return Preferred size of the give menu bar.
    */
   public Dimension getPreferredSize(JComponent c)
   {
@@ -166,7 +174,8 @@ public class BasicMenuBarUI extends MenuBarUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Initializes any default properties that this UI has from the defaults for
+   * the Basic look and feel.
    */
   protected void installDefaults()
   {
@@ -179,26 +188,29 @@ public class BasicMenuBarUI extends MenuBarUI
   }
 
   /**
-   * DOCUMENT ME!
+   * This method installs the keyboard actions for the JMenuBar.
    */
   protected void installKeyboardActions()
   {
+    // FIXME: implement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method installs the listeners needed for this UI to function.
    */
   protected void installListeners()
-  {        
+  {
     menuBar.addContainerListener(containerListener);
-    menuBar.addPropertyChangeListener(propertyChangeListener);    
+    menuBar.addPropertyChangeListener(propertyChangeListener);
   }
 
   /**
-   * DOCUMENT ME!
-   *
-   * @param c DOCUMENT ME!
-   */
+  * Installs and initializes all fields for this UI delegate. Any properties
+  * of the UI that need to be initialized and/or set to defaults will be
+  * done now. It will also install any listeners necessary.
+  *
+  * @param c The {@link JComponent} that is having this UI installed.
+  */
   public void installUI(JComponent c)
   {
     super.installUI(c);
@@ -206,10 +218,12 @@ public class BasicMenuBarUI extends MenuBarUI
     menuBar.setLayout(new BoxLayout(menuBar, BoxLayout.X_AXIS));
     installDefaults();
     installListeners();
+    installKeyboardActions();
   }
 
   /**
-   * DOCUMENT ME!
+   * This method uninstalls the defaults and nulls any objects created during
+   * install.
    */
   protected void uninstallDefaults()
   {
@@ -220,10 +234,11 @@ public class BasicMenuBarUI extends MenuBarUI
   }
 
   /**
-   * DOCUMENT ME!
+   * This method reverses the work done in installKeyboardActions.
    */
   protected void uninstallKeyboardActions()
   {
+    // FIXME: implement. 
   }
 
   /**
@@ -236,15 +251,18 @@ public class BasicMenuBarUI extends MenuBarUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Performs the opposite of installUI. Any properties or resources that need
+   * to be cleaned up will be done now. It will also uninstall any listeners
+   * it has. In addition, any properties of this UI will be nulled.
    *
-   * @param c DOCUMENT ME!
+   * @param c The {@link JComponent} that is having this UI uninstalled.
    */
   public void uninstallUI(JComponent c)
   {
     uninstallDefaults();
-    uninstallListeners();    
-    menuBar= null;
+    uninstallListeners();
+    uninstallKeyboardActions();
+    menuBar = null;
   }
 
   protected class ChangeHandler implements ChangeListener
@@ -254,21 +272,47 @@ public class BasicMenuBarUI extends MenuBarUI
     }
   }
 
+  /**
+   * This class handles ContainerEvents fired by JMenuBar
+   */
   protected class ContainerHandler implements ContainerListener
   {
+    /**
+     * This method is called whenever menu is added to the menu bar
+     *
+     * @param e The ContainerEvent.
+     */
     public void componentAdded(ContainerEvent e)
     {
+      System.out.println("BasicMenuBar...componentAdded.. listener");
     }
 
+    /**
+     * This method is called whenever menu is removed from the menu bar
+     *
+     * @param e The ContainerEvent.
+     */
     public void componentRemoved(ContainerEvent e)
     {
+      System.out.println("BasicMenuBar...componentRemoved.. listener");
     }
   }
 
+  /**
+   * This class handles PropertyChangeEvents fired from the JMenuBar
+   */
   protected class PropertyChangeHandler implements PropertyChangeListener
   {
+    /**
+     * This method is called whenever one of the properties of the MenuBar
+     * changes.
+     *
+     * @param e The PropertyChangeEvent.
+     */
     public void propertyChange(PropertyChangeEvent e)
     {
+      if (e.getPropertyName().equals(JMenuBar.BORDER_PAINTED_CHANGED_PROPERTY))
+	menuBar.repaint();
     }
   }
 }

@@ -47,6 +47,9 @@ import java.awt.peer.TextAreaPeer;
 public class GtkTextAreaPeer extends GtkTextComponentPeer
   implements TextAreaPeer
 {
+  private static transient int DEFAULT_ROWS = 10;
+  private static transient int DEFAULT_COLS = 80;
+
   native void create (int width, int height, int scrollbarVisibility);
 
   native void gtkSetFont (String name, int style, int size);
@@ -61,7 +64,7 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
     // GtkComponent.create.
     if (f == null)
       {
-	f = new Font ("Fixed", Font.PLAIN, 12);
+	f = new Font ("Dialog", Font.PLAIN, 12);
 	awtComponent.setFont (f);
       }
 
@@ -72,13 +75,17 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
       fm = new GdkFontMetrics (f);
 
     TextArea ta = ((TextArea) awtComponent);
-    int rows = ta.getRows ();
-    int cols = ta.getColumns ();
+    int sizeRows = ta.getRows ();
+    int sizeCols = ta.getColumns ();
 
-    int width = cols * fm.getMaxAdvance ();
-    int height = rows * (fm.getMaxDescent () + fm.getMaxAscent ());
+    sizeRows = sizeRows == 0 ? DEFAULT_ROWS : sizeRows;
+    sizeCols = sizeCols == 0 ? DEFAULT_COLS : sizeCols;
+
+    int width = sizeCols * fm.getMaxAdvance ();
+    int height = sizeRows * (fm.getMaxDescent () + fm.getMaxAscent ());
 
     create (width, height, ta.getScrollbarVisibility ());
+    setEditable (ta.isEditable ());
   }
 
   public GtkTextAreaPeer (TextArea ta)
@@ -91,12 +98,14 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
 
   public Dimension getMinimumSize (int rows, int cols)
   {
-    return minimumSize (rows, cols);
+    return minimumSize (rows == 0 ? DEFAULT_ROWS : rows,
+                        cols == 0 ? DEFAULT_COLS : cols);
   }
 
   public Dimension getPreferredSize (int rows, int cols)
   {
-    return preferredSize (rows, cols);
+    return preferredSize (rows == 0 ? DEFAULT_ROWS : rows,
+                          cols == 0 ? DEFAULT_COLS : cols);
   }
 
   native int getHScrollbarHeight ();
@@ -127,8 +136,11 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
     else
       fm = new GdkFontMetrics (f);
 
-    width += cols * fm.getMaxAdvance ();
-    height += rows * (fm.getMaxDescent () + fm.getMaxAscent ());
+    int sizeRows = rows == 0 ? DEFAULT_ROWS : rows;
+    int sizeCols = cols == 0 ? DEFAULT_COLS : cols;
+
+    width += sizeCols * fm.getMaxAdvance ();
+    height += sizeRows * (fm.getMaxDescent () + fm.getMaxAscent ());
 
     return new Dimension (width, height);
   }
@@ -157,8 +169,11 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
     else
       fm = new GdkFontMetrics (f);
 
-    width += cols * fm.getMaxAdvance ();
-    height += rows * (fm.getMaxDescent () + fm.getMaxAscent ());
+    int sizeRows = rows == 0 ? DEFAULT_ROWS : rows;
+    int sizeCols = cols == 0 ? DEFAULT_COLS : cols;
+
+    width += sizeCols * fm.getMaxAdvance ();
+    height += sizeRows * (fm.getMaxDescent () + fm.getMaxAscent ());
 
     return new Dimension (width, height);
   }

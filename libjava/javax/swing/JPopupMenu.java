@@ -52,6 +52,7 @@ import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -71,19 +72,54 @@ import javax.swing.plaf.PopupMenuUI;
  */
 public class JPopupMenu extends JComponent implements Accessible, MenuElement
 {
+  private static final long serialVersionUID = -8336996630009646009L;
+
+  /** name for the UI delegate for this menuItem. */
   private static final String uiClassID = "PopupMenuUI";
-  private static final Object defaultLWPopupEnabledKey = null;
-  private static boolean defaultLWPopupEnabled = true;
+
+  /* indicates if popup's menu border should be painted*/
+  private boolean borderPainted = true;
+
+  /** Flag indicating whether lightweight, mediumweight or heavyweight popup
+     is used to display menu items.
+
+     These are the possible cases:
+
+     1. if DefaultLightWeightPopupEnabled true
+         (i)  use lightweight container if popup feets inside top-level window
+         (ii) only use heavyweight container (JWindow) if popup doesn't fit.
+
+     2. if DefaultLightWeightPopupEnabled false
+         (i) if popup fits, use awt.Panel (mediumWeight)
+         (ii) if popup doesn't fit, use JWindow (heavyWeight)
+  */
+  private static boolean DefaultLightWeightPopupEnabled = true;
+
+  /* Component that invokes popup menu. */
   transient Component invoker;
-  private int locationX;
-  private int locationY;
+
+  /* Label for this popup menu */
   private String label;
-  private boolean paintBorder;
+
+  /*Amount of space between menuItem's in JPopupMenu and JPopupMenu's border */
   private Insets margin;
+
+  /** Indicates whether ligthWeight container can be used to display popup
+     menu. This flag is the same as DefaultLightWeightPopupEnabled, but setting
+     this flag can change popup menu after creation of the object */
   private boolean lightWeightPopupEnabled;
+
+  /** SelectionModel that keeps track of menu selection. */
   private SingleSelectionModel selectionModel;
+
+  /* Popup that is used to display JPopupMenu */
   private transient Popup popup;
-  private Point location;
+
+  /* Location of the popup */
+  private Point popupLocation;
+
+  /* Bound Property indicating visibility of the popup menu*/
+  public static final String VISIBLE_CHANGED_PROPERTY = "visible";
 
   /**
    * Creates a new JPopupMenu object.
@@ -91,15 +127,17 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   public JPopupMenu()
   {
     updateUI();
-    
-    lightWeightPopupEnabled = defaultLWPopupEnabled;
+
+    lightWeightPopupEnabled = DefaultLightWeightPopupEnabled;
     selectionModel = new DefaultSingleSelectionModel();
+
+    super.setVisible(false);
   }
 
   /**
-   * Creates a new JPopupMenu object.
+   * Creates a new JPopupMenu with specified label
    *
-   * @param label DOCUMENT ME!
+   * @param label Label for popup menu.
    */
   public JPopupMenu(String label)
   {
@@ -131,11 +169,11 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds given menu item to the popup menu
    *
-   * @param item DOCUMENT ME!
+   * @param item menu item to add to the popup menu
    *
-   * @return DOCUMENT ME!
+   * @return menu item that was added to the popup menu
    */
   public JMenuItem add(JMenuItem item)
   {
@@ -144,11 +182,12 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Constructs menu item with a specified label and adds it to
+   * popup menu
    *
-   * @param text DOCUMENT ME!
+   * @param text label for the menu item to be added
    *
-   * @return DOCUMENT ME!
+   * @return constructed menu item that was added to the popup menu
    */
   public JMenuItem add(String text)
   {
@@ -157,22 +196,27 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Constructs menu item associated with the specified action
+   * and adds it to the popup menu
    *
-   * @param action DOCUMENT ME!
+   * @param action Action for the new menu item
    *
-   * @return DOCUMENT ME!
+   * @return menu item that was added to the menu
    */
   public JMenuItem add(Action action)
   {
     JMenuItem item = new JMenuItem(action);
+
+    if (action != null)
+      action.addPropertyChangeListener(createActionChangeListener(item));
+
     return add(item);
   }
 
   /**
-   * DOCUMENT ME!
+   * Revomes component at the given index from the menu.
    *
-   * @param index DOCUMENT ME!
+   * @param index index of the component that will be removed in the menu
    */
   public void remove(int index)
   {
@@ -192,10 +236,11 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Create menu item associated with the given action
+   * and inserts it into the popup menu at the specified index
    *
-   * @param action DOCUMENT ME!
-   * @param index DOCUMENT ME!
+   * @param action Action for the new menu item
+   * @param index index in the popup menu at which to insert new menu item.
    */
   public void insert(Action action, int index)
   {
@@ -204,10 +249,11 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Insert given component to the popup menu at the
+   * specified index
    *
-   * @param component DOCUMENT ME!
-   * @param index DOCUMENT ME!
+   * @param component Component to insert
+   * @param index Index at which to insert given component
    */
   public void insert(Component component, int index)
   {
@@ -215,10 +261,10 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
     constraints.fill = GridBagConstraints.HORIZONTAL;
     constraints.weightx = 100.0;
     constraints.weighty = 100.0;
-    
+
     if (index == -1)
-       index = getComponents().length;
-       
+      index = getComponents().length;
+
     constraints.gridy = index;
     super.add(component, constraints, index);
 
@@ -237,41 +283,45 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Paints popup menu's border if borderPainted is true
    *
-   * @param graphics DOCUMENT ME!
+   * @param graphics graphics context used to paint this popup's menu border.
    */
-  protected void paintBorder(Graphics graphics)
+  protected void borderPainted(Graphics graphics)
   {
-    if (paintBorder)
+    if (borderPainted)
       getBorder().paintBorder(this, graphics, 0, 0, getSize(null).width,
                               getSize(null).height);
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns flag indicating if newly created JPopupMenu will use
+   * heavyweight or lightweight container to display its menu items
    *
-   * @return DOCUMENT ME!
+   * @return true if JPopupMenu will use lightweight container to display
+   * menu items by default, and false otherwise.
    */
   public static boolean getDefaultLightWeightPopupEnabled()
   {
-    return defaultLWPopupEnabled;
+    return DefaultLightWeightPopupEnabled;
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets whether JPopupMenu should use ligthWeight container to
+   * display it menu items by default
    *
-   * @param enabled DOCUMENT ME!
+   * @param enabled true if JPopupMenu should use lightweight container
+   * for displaying its menu items, and false otherwise.
    */
   public static void setDefaultLightWeightPopupEnabled(boolean enabled)
   {
-    defaultLWPopupEnabled = enabled;
+    DefaultLightWeightPopupEnabled = enabled;
   }
 
   /**
-   * DOCUMENT ME!
+   * This method returns the UI used to display the JPopupMenu.
    *
-   * @return DOCUMENT ME!
+   * @return The UI used to display the JPopupMenu.
    */
   public PopupMenuUI getUI()
   {
@@ -279,9 +329,10 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Set the "UI" property of the menu item, which is a look and feel class
+   * responsible for handling popupMenu's input events and painting it.
    *
-   * @param ui DOCUMENT ME!
+   * @param ui The new "UI" property
    */
   public void setUI(PopupMenuUI ui)
   {
@@ -289,7 +340,8 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method sets this menuItem's UI to the UIManager's default for the
+   * current look and feel.
    */
   public void updateUI()
   {
@@ -298,9 +350,10 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method returns a name to identify which look and feel class will be
+   * the UI delegate for the menuItem.
    *
-   * @return DOCUMENT ME!
+   * @return The Look and Feel classID. "PopupMenuUI"
    */
   public String getUIClassID()
   {
@@ -308,9 +361,10 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns selectionModel used by this popup menu to keep
+   * track of the selection.
    *
-   * @return DOCUMENT ME!
+   * @return popup menu's selection model
    */
   public SingleSelectionModel getSelectionModel()
   {
@@ -318,9 +372,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets selection model for this popup menu
    *
-   * @param model DOCUMENT ME!
+   * @param model new selection model of this popup menu
    */
   public void setSelectionModel(SingleSelectionModel model)
   {
@@ -355,9 +409,11 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns true if this popup menu will display its menu item in
+   * a lightweight container and false otherwise.
    *
-   * @return DOCUMENT ME!
+   * @return true if this popup menu will display its menu items
+   * in a lightweight container and false otherwise.
    */
   public boolean isLightWeightPopupEnabled()
   {
@@ -375,9 +431,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns label for this popup menu
    *
-   * @return DOCUMENT ME!
+   * @return label for this popup menu
    */
   public String getLabel()
   {
@@ -385,9 +441,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets label for this popup menu
    *
-   * @param label DOCUMENT ME!
+   * @param label label for this popup menu
    */
   public void setLabel(String label)
   {
@@ -395,16 +451,19 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds separator to this popup menu
    */
   public void addSeparator()
   {
+    // insert separator at the end of the list of menu items    
+    this.insert(new Separator(), -1);
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds popupMenuListener to listen for PopupMenuEvents fired
+   * by the JPopupMenu
    *
-   * @param listener DOCUMENT ME!
+   * @param listener PopupMenuListener to add to JPopupMenu
    */
   public void addPopupMenuListener(PopupMenuListener listener)
   {
@@ -412,9 +471,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Removes PopupMenuListener from JPopupMenu's list of listeners
    *
-   * @param listener DOCUMENT ME!
+   * @param listener PopupMenuListener which needs to be removed
    */
   public void removePopupMenuListener(PopupMenuListener listener)
   {
@@ -422,7 +481,19 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns array of PopupMenuListeners that are listening to JPopupMenu
+   *
+   * @return Array of PopupMenuListeners that are listening to JPopupMenu
+   */
+  public PopupMenuListener[] getPopupMenuListeners()
+  {
+    return ((PopupMenuListener[]) listenerList.getListeners(PopupMenuListener.class));
+  }
+
+  /**
+   * This method calls popupMenuWillBecomeVisible() of popup menu's
+   * PopupMenuListeners. This method is invoked just before popup menu
+   * will appear on the screen.
    */
   protected void firePopupMenuWillBecomeVisible()
   {
@@ -433,7 +504,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method calls popupMenuWillBecomeInvisible() of popup
+   * menu's PopupMenuListeners. This method is invoked just before popup
+   * menu will disappear from the screen
    */
   protected void firePopupMenuWillBecomeInvisible()
   {
@@ -444,7 +517,10 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method calls popupMenuCanceled() of popup menu's PopupMenuListeners.
+   * This method is invoked just before popup menu is cancelled. This happens
+   * when popup menu is closed without selecting any of its menu items. This
+   * usually happens when the top-level window is resized or moved.
    */
   protected void firePopupMenuCanceled()
   {
@@ -455,16 +531,18 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This methods sets popup menu's size to its' preferred size. If the
+   * popup menu's size is previously set it will be ignored.
    */
   public void pack()
   {
+    super.setSize(null);
   }
 
   /**
-   * DOCUMENT ME!
+   * Return visibility of the popup menu
    *
-   * @return DOCUMENT ME!
+   * @return true if popup menu is visible on the screen and false otherwise.
    */
   public boolean isVisible()
   {
@@ -472,90 +550,103 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets visibility property of this popup menu. If the property is
+   * set to true then popup menu will be dispayed and popup menu will
+   * hide itself if visible property is set to false.
    *
-   * @param visible DOCUMENT ME!
+   * @param visible true if popup menu will become visible and false otherwise.
    */
   public void setVisible(boolean visible)
   {
+    boolean old = isVisible();
     super.setVisible(visible);
-
-    firePopupMenuWillBecomeVisible();
-
-    if (visible)
+    if (old != isVisible())
       {
-	Container rootContainer = (Container) SwingUtilities.getRoot(invoker);
+	firePropertyChange(VISIBLE_CHANGED_PROPERTY, old, (boolean) isVisible());
+	if (visible)
+	  {
+	    firePopupMenuWillBecomeVisible();
+	    Container rootContainer = (Container) SwingUtilities.getRoot(invoker);
 
-	boolean fit = true;
-	Dimension size;
+	    boolean fit = true;
+	    Dimension size;
 
-	// Determine the size of the popup menu
-	if (this.getSize().width == 0 && this.getSize().width == 0)
-	  size = this.getPreferredSize();
-	else
-	  size = this.getSize();
+	    // Determine the size of the popup menu
+	    if (this.getSize().width == 0 && this.getSize().width == 0)
+	      size = this.getPreferredSize();
+	    else
+	      size = this.getSize();
+	    if ((size.width > (rootContainer.getWidth() - popupLocation.x))
+	        || (size.height > (rootContainer.getHeight() - popupLocation.y)))
+	      fit = false;
+	    if (lightWeightPopupEnabled && fit)
+	      popup = new LightWeightPopup(this);
+	    else
+	      {
+		if (fit)
+		  popup = new MediumWeightPopup(this);
+		else
+		  popup = new HeavyWeightPopup(this);
+	      }
+	    if (popup instanceof LightWeightPopup
+	        || popup instanceof MediumWeightPopup)
+	      {
+		JLayeredPane layeredPane;
+		layeredPane = SwingUtilities.getRootPane(invoker)
+		                            .getLayeredPane();
+		Point p = new Point(popupLocation.x, popupLocation.y);
+		SwingUtilities.convertPointFromScreen(p, layeredPane);
+		popup.show(p.x, p.y, size.width, size.height);
+	      }
+	    else
+	      {
+		// Subtract insets of the top-level container if popup menu's
+		// top-left corner is inside it.
+		if (rootContainer.contains(popupLocation))
+		  {
+		    Insets insets = rootContainer.getInsets();
+		    popup.show(popupLocation.x - insets.left,
+		               popupLocation.y - insets.top, size.width,
+		               size.height);
+		  }
 
-	if ((size.width > (rootContainer.getWidth() - locationX))
-	    || (size.height > (rootContainer.getHeight() - locationY)))
-	  fit = false;
-
-	if (lightWeightPopupEnabled && fit)
-	  popup = new LightWeightPopup(this);
+		else
+		  popup.show(popupLocation.x, popupLocation.y, size.width,
+		             size.height);
+	      }
+	  }
 	else
 	  {
-	    if (fit)
-	      popup = new MediumWeightPopup(this);
-	    else
-	      popup = new HeavyWeightPopup(this);
+	    // popup menu was cancelled without selection
+	    if (! getSelectionModel().isSelected())
+	      firePopupMenuCanceled();
+
+	    firePopupMenuWillBecomeInvisible();
+
+	    popup.hide();
 	  }
-	
-        if (popup instanceof LightWeightPopup 
-            || popup instanceof MediumWeightPopup)
-          {
-            JLayeredPane layeredPane;
-            layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
-            Point lp = layeredPane.getLocationOnScreen();
-            Point r = SwingUtilities.getRoot(invoker).getLocationOnScreen();
-            int px = locationX - (lp.x - r.x);
-            int py = locationY - (lp.y - r.y);	  
-            popup.show(px, py, size.width, size.height);	  		
-          } 
-        else
-          popup.show(locationX, locationY, size.width, size.height);
-      }
-    else
-      {
-	firePopupMenuWillBecomeInvisible();
-	popup.hide();
       }
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets location of the popup menu.
    *
-   * @param x DOCUMENT ME!
-   * @param y DOCUMENT ME!
+   * @param x X coordinate of the popup menu's location
+   * @param y Y coordinate of the popup menu's location
    */
   public void setLocation(int x, int y)
   {
-    locationX = x;
-    locationY = y;
+    if (popupLocation == null)
+      popupLocation = new Point();
+
+    popupLocation.x = x;
+    popupLocation.y = y;
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns popup menu's invoker.
    *
-   * @return DOCUMENT ME!
-   */
-  private boolean isPopupMenu()
-  {
-    return true;
-  }
-
-  /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
+   * @return popup menu's invoker
    */
   public Component getInvoker()
   {
@@ -563,9 +654,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets popup menu's invoker.
    *
-   * @param component DOCUMENT ME!
+   * @param component The new invoker of this popup menu
    */
   public void setInvoker(Component component)
   {
@@ -573,43 +664,31 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method displays JPopupMenu on the screen at the specified
+   * location. Note that x and y coordinates given to this method
+   * should be expressed in terms of the popup menus' invoker.
    *
-   * @param component DOCUMENT ME!
-   * @param x DOCUMENT ME!
-   * @param y DOCUMENT ME!
+   * @param component Invoker for this popup menu
+   * @param x x-coordinate of the popup menu relative to the specified invoker
+   * @param y y-coordiate of the popup menu relative to the specified invoker
    */
   public void show(Component component, int x, int y)
   {
     setInvoker(component);
-
-    Point rootOnScreen;
-    rootOnScreen = SwingUtilities.getRoot(invoker).getLocationOnScreen();
-    Point invokerOnScreen = invoker.getLocationOnScreen();
-    
-    int popupX = (invokerOnScreen.x - rootOnScreen.x) + x;
-    int popupY = (invokerOnScreen.y - rootOnScreen.y) + y;
-    
-    setLocation(popupX , popupY);
+    Point p = new Point(x, y);
+    SwingUtilities.convertPointToScreen(p, component);
+    setLocation(p.x, p.y);
     setVisible(true);
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns component located at the specified index in the popup menu
    *
-   * @return DOCUMENT ME!
-   */
-  JPopupMenu getRootPopupMenu()
-  {
-    return null;
-  }
-
-  /**
-   * DOCUMENT ME!
+   * @param index index of the component to return
    *
-   * @param index DOCUMENT ME!
+   * @return component located at the specified index in the popup menu
    *
-   * @return DOCUMENT ME!
+   * @deprecated Replaced by getComponent(int)
    */
   public Component getComponentAtIndex(int index)
   {
@@ -617,11 +696,11 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns index of the specified component in the popup menu
    *
-   * @param component DOCUMENT ME!
+   * @param component Component to look for
    *
-   * @return DOCUMENT ME!
+   * @return index of the specified component in the popup menu
    */
   public int getComponentIndex(Component component)
   {
@@ -637,9 +716,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets size of the popup
    *
-   * @param size DOCUMENT ME!
+   * @param size Dimensions representing new size of the popup menu
    */
   public void setPopupSize(Dimension size)
   {
@@ -647,20 +726,20 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets size of the popup menu
    *
-   * @param x DOCUMENT ME!
-   * @param y DOCUMENT ME!
+   * @param width width for the new size
+   * @param height height for the new size
    */
-  public void setPopupSize(int x, int y)
+  public void setPopupSize(int width, int height)
   {
-    super.setSize(x, y);
+    super.setSize(width, height);
   }
 
   /**
-   * DOCUMENT ME!
+   * Selects specified component in this popup menu.
    *
-   * @param selected DOCUMENT ME!
+   * @param selected component to select
    */
   public void setSelected(Component selected)
   {
@@ -669,29 +748,30 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Checks if this popup menu paints its border.
    *
-   * @return DOCUMENT ME!
+   * @return true if this popup menu paints its border and false otherwise.
    */
   public boolean isBorderPainted()
   {
-    return paintBorder;
+    return borderPainted;
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets if the border of the popup menu should be
+   * painter or not.
    *
-   * @param painted DOCUMENT ME!
+   * @param painted true if the border should be painted and false otherwise
    */
   public void setBorderPainted(boolean painted)
   {
-    paintBorder = painted;
+    borderPainted = painted;
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns margin for this popup menu.
    *
-   * @return DOCUMENT ME!
+   * @return margin for this popup menu.
    */
   public Insets getMargin()
   {
@@ -699,9 +779,10 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * A string that describes this JPopupMenu. Normally only used
+   * for debugging.
    *
-   * @return DOCUMENT ME!
+   * @return A string describing this JMenuItem
    */
   protected String paramString()
   {
@@ -709,12 +790,12 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
-   *
-   * @param event DOCUMENT ME!
-   * @param path DOCUMENT ME!
-   * @param manager DOCUMENT ME!
-   */
+  * Process mouse events forwarded from MenuSelectionManager.
+  *
+  * @param event event forwarded from MenuSelectionManager
+  * @param path path to the menu element from which event was generated
+  * @param manager MenuSelectionManager for the current menu hierarchy
+  */
   public void processMouseEvent(MouseEvent event, MenuElement[] path,
                                 MenuSelectionManager manager)
   {
@@ -733,18 +814,20 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Method of MenuElement Interface. It is invoked when
+   * popupMenu's selection has changed
    *
-   * @param changed DOCUMENT ME!
+   * @param changed true if this popupMenu is part of current menu
+   * hierarchy and false otherwise.
    */
   public void menuSelectionChanged(boolean changed)
   {
   }
 
   /**
-   * DOCUMENT ME!
+   * Return subcomonents of this popup menu.
    *
-   * @return DOCUMENT ME!
+   * @return Array containing menuItem's of belonging to this popup menu.
    */
   public MenuElement[] getSubElements()
   {
@@ -758,9 +841,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Method of the MenuElement interface. Returns reference to itself.
    *
-   * @return DOCUMENT ME!
+   * @return Returns reference to itself
    */
   public Component getComponent()
   {
@@ -768,16 +851,16 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Checks if observing mouse event should trigger popup
+   * menu to show on the screen.
    *
-   * @param event DOCUMENT ME!
+   * @param event MouseEvent to check
    *
-   * @return DOCUMENT ME!
+   * @return true if the observing mouse event is popup trigger and false otherwise
    */
   public boolean isPopupTrigger(MouseEvent event)
   {
-    return ((PopupMenuUI)getUI()).isPopupTrigger(event);
-    
+    return ((PopupMenuUI) getUI()).isPopupTrigger(event);
   }
 
   /**
@@ -788,65 +871,114 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJPopupMenu(this);
+      accessibleContext = new AccessibleJPopupMenu();
 
     return accessibleContext;
   }
 
   /**
-   * DOCUMENT ME!
+   * This interface is used to display menu items of the JPopupMenu
    */
   private interface Popup
   {
     /**
-     * DOCUMENT ME!
+     * Displays container on the screen
      *
-     * @param x DOCUMENT ME!
-     * @param y DOCUMENT ME!
-     * @param width DOCUMENT ME!
-     * @param height DOCUMENT ME!
+     * @param x x-coordinate of popup menu's location on the screen
+     * @param y y-coordinate of popup menu's location on the screen
+     * @param width width of the container that is used to display menu
+     * item's for popup menu
+     * @param height height of the container that is used to display menu
+     * item's for popup menu
      */
     void show(int x, int y, int width, int height);
 
     /**
-     * DOCUMENT ME!
+     * Hides container used to display popup menu item's from the screen
      */
     void hide();
   }
 
   /**
-   * DOCUMENT ME!
+   * This class represents Popup menu that uses light weight container
+   * to display its contents.
    */
-  private class LightWeightPopup extends JPanel implements Popup
+  private class LightWeightPopup extends Container implements Popup
   {
     /**
-     * Creates a new LightWeightPopup object.
+     * Creates a new LightWeightPopup menu
      *
-     * @param c DOCUMENT ME!
+     * @param c Container containing menu items
      */
+    private Component c;
+
     public LightWeightPopup(Container c)
+    {
+      this.c = c;
+    }
+
+    /**
+     * Displayes lightweight container with menu items to the screen
+     *
+     * @param x x-coordinate of lightweight container on the screen
+     * @param y y-coordinate of lightweight container on the screen
+     * @param width width of the lightweight container
+     * @param height height of the lightweight container
+     */
+    public void show(int x, int y, int width, int height)
+    {
+      JLayeredPane layeredPane;
+      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
+      c.setBounds(x, y, width, height);
+      layeredPane.add(c, JLayeredPane.POPUP_LAYER, 0);
+    }
+
+    /**
+     * Hides lightweight container from the screen
+     */
+    public void hide()
+    {
+      JLayeredPane layeredPane;
+      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
+      int index = layeredPane.getIndexOf(c);
+      layeredPane.remove(index);
+    }
+  }
+
+  /**
+   * MediumWeightPopup is an AWT Panel with JPopupMenu's menu items.
+   * It is used to display JPopupMenu's menu items on the screen
+   */
+  private class MediumWeightPopup extends Panel implements Popup
+  {
+    /**
+     * Creates a new MediumWeightPopup object.
+     *
+     * @param c Container with JPopupMenu's menu items
+     */
+    public MediumWeightPopup(Container c)
     {
       this.add(c);
     }
 
     /**
-     * DOCUMENT ME!
+     * Displays AWT Panel with its components on the screen
      *
-     * @param x DOCUMENT ME!
-     * @param y DOCUMENT ME!
-     * @param width DOCUMENT ME!
-     * @param height DOCUMENT ME!
+     * @param x x-coordinate of the upper-left corner of the panel's
+     * @param y y-coordinate of the upper-left corner of the panel's
+     * @param width width of the panel
+     * @param height height of the panel
      */
     public void show(int x, int y, int width, int height)
     {
       JLayeredPane layeredPane;
       layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
-      this.setBounds(x, y, width, height);
       layeredPane.add(this, JLayeredPane.POPUP_LAYER, 0);
+      this.setBounds(x, y, width, height);
     }
 
     /**
-     * DOCUMENT ME!
+     * Hides This panel from the screen
      */
     public void hide()
     {
@@ -858,58 +990,15 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
-   */
-  private class MediumWeightPopup extends Panel implements Popup
-  {
-
-    /**
-     * Creates a new MediumWeightPopup object.
-     *
-     * @param c DOCUMENT ME!
-     */
-    public MediumWeightPopup(Container c)
-    {
-      this.add(c);      
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param x DOCUMENT ME!
-     * @param y DOCUMENT ME!
-     * @param width DOCUMENT ME!
-     * @param heigth DOCUMENT ME!
-     */
-    public void show(int x, int y, int width, int height)
-    {
-      JLayeredPane layeredPane;
-      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
-      layeredPane.add(this, JLayeredPane.POPUP_LAYER, 0);
-      this.setBounds(x, y, width, height);
-    }
-
-    /**
-     * DOCUMENT ME!
-     */
-    public void hide()
-    {
-      JLayeredPane layeredPane;
-      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane(); 
-      int index = layeredPane.getIndexOf(this);
-      layeredPane.remove(index);
-    }
-  }
-
-  /**
-   * DOCUMENT ME!
+   * HeavyWeightPopup is JWindow that is used to display JPopupMenu menu item's
+   * on the screen
    */
   private class HeavyWeightPopup extends JWindow implements Popup
   {
     /**
      * Creates a new HeavyWeightPopup object.
      *
-     * @param c DOCUMENT ME!
+     * @param c Container containing menu items
      */
     public HeavyWeightPopup(Container c)
     {
@@ -917,12 +1006,12 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
     }
 
     /**
-     * DOCUMENT ME!
+     * Displays JWindow container JPopupMenu's menu items to the screen
      *
-     * @param x DOCUMENT ME!
-     * @param y DOCUMENT ME!
-     * @param width DOCUMENT ME!
-     * @param height DOCUMENT ME!
+     * @param x x-coordinate of JWindow containing menu items
+     * @param y y-coordinate of JWindow containing menu items
+     * @param width width of the JWindow
+     * @param height height of the JWindow
      */
     public void show(int x, int y, int width, int height)
     {
@@ -931,57 +1020,34 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
     }
 
     /**
-     * DOCUMENT ME!
+     * Hides JWindow with menu item's from the screen.
      */
     public void hide()
     {
-      this.hide();
+      super.hide();
     }
   }
 
-  /**
-   * DOCUMENT ME!
-   */
   public static class Separator extends JSeparator
   {
-    /**
-     * Creates a new Separator object.
-     */
     public Separator()
     {
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public String getUIClassID()
     {
-      return null;
+      return "PopupMenuSeparatorUI";
     }
   }
 
-  /**
-   * DOCUMENT ME!
-   */
   protected class AccessibleJPopupMenu extends AccessibleJComponent
   {
-    /**
-     * Creates a new AccessibleJPopupMenu object.
-     *
-     * @param component DOCUMENT ME!
-     */
-    protected AccessibleJPopupMenu(JPopupMenu component)
+    private static final long serialVersionUID = 7423261328879849768L;
+
+    protected AccessibleJPopupMenu()
     {
-      super(component);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.POPUP_MENU;

@@ -1,5 +1,5 @@
 /* JMenu.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,9 +39,11 @@ package javax.swing;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -52,6 +54,7 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleSelection;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
@@ -59,18 +62,35 @@ import javax.swing.plaf.MenuItemUI;
 
 
 /**
- * DOCUMENT ME!
+ * This class represents a menu that can be added to a menu bar or
+ * to some other menu. When JMenu is selected it displays JPopupMenu
+ * containing its menu items.
  */
 public class JMenu extends JMenuItem implements Accessible, MenuElement
 {
   static final long serialVersionUID = 4227225638931828014L;
+
+  /** name for the UI delegate for this menu. */
   private static final String uiClassID = "MenuUI";
-  private static Hashtable listenerRegistry = null;
+
+  /** A Popup menu associated with this menu, which pops up when menu is selected */
   private JPopupMenu popupMenu = new JPopupMenu();
+
+  /** MenuChangeListener that listens to change events occuring in menu's model */
   private ChangeListener menuChangeListener;
-  private MenuEvent menuEvent;
+
+  /** MenuEvent */
+  private MenuEvent menuEvent = new MenuEvent(this);
+
+  /*Amount of time, in milliseconds, that should pass before popupMenu
+    associated with this menu appears or disappers */
   private int delay;
-  protected JMenu.WinListener popupListener;
+
+  /* PopupListener */
+  protected WinListener popupListener;
+
+  /** Location at which popup menu associated with this menu will be displayed*/
+  private Point menuLocation;
 
   /**
    * Creates a new JMenu object.
@@ -78,55 +98,57 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   public JMenu()
   {
     super();
+    menuChangeListener = createMenuChangeListener();
+    getModel().addChangeListener(menuChangeListener);
   }
 
   /**
-   * Creates a new JMenu object.
+   * Creates a new JMenu with the spicified label
    *
-   * @param text DOCUMENT ME!
+   * @param text label for this menu
    */
   public JMenu(String text)
   {
     super(text);
+    menuChangeListener = createMenuChangeListener();
+    getModel().addChangeListener(menuChangeListener);
   }
 
   /**
-   * Creates a new JMenu object.
+   * Creates a new JMenu object
    *
-   * @param action DOCUMENT ME!
+   * @param action Action that  is used to create menu item tha will be
+   * added to the menu.
    */
   public JMenu(Action action)
   {
     super(action);
+    menuChangeListener = createMenuChangeListener();
+    getModel().addChangeListener(menuChangeListener);
   }
 
   /**
-   * Creates a new JMenu object.
+   * Creates a new JMenu with specified label and an option
+   * for this menu to be tear-off menu
    *
-   * @param text DOCUMENT ME!
-   * @param tearoff DOCUMENT ME!
+   * @param text label for this menu
+   * @param tearoff true if this menu should be tear-off and false otherwise
    */
   public JMenu(String text, boolean tearoff)
   {
+    throw new Error("not implemented");
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @param stream DOCUMENT ME!
-   *
-   * @throws IOException DOCUMENT ME!
-   */
   private void writeObject(ObjectOutputStream stream) throws IOException
   {
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds specified menu item to this menu
    *
-   * @param item DOCUMENT ME!
+   * @param item Menu item to add to this menu
    *
-   * @return DOCUMENT ME!
+   * @return Menu item that was added
    */
   public JMenuItem add(JMenuItem item)
   {
@@ -134,11 +156,11 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds specified component to this menu.
    *
-   * @param component DOCUMENT ME!
+   * @param component Component to add to this menu
    *
-   * @return DOCUMENT ME!
+   * @return Component that was added
    */
   public Component add(Component component)
   {
@@ -146,12 +168,12 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds specified component to this menu at the given index
    *
-   * @param component DOCUMENT ME!
-   * @param index DOCUMENT ME!
+   * @param component Component to add
+   * @param index Position of this menu item in the menu
    *
-   * @return DOCUMENT ME!
+   * @return Component that was added
    */
   public Component add(Component component, int index)
   {
@@ -159,11 +181,11 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds JMenuItem constructed with the specified label to this menu
    *
-   * @param text DOCUMENT ME!
+   * @param text label for the menu item that will be added
    *
-   * @return DOCUMENT ME!
+   * @return Menu Item that was added to this menu
    */
   public JMenuItem add(String text)
   {
@@ -171,11 +193,11 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds JMenuItem constructed using properties from specified action.
    *
-   * @param action DOCUMENT ME!
+   * @param action action to construct the menu item with
    *
-   * @return DOCUMENT ME!
+   * @return Menu Item that was added to this menu
    */
   public JMenuItem add(Action action)
   {
@@ -183,9 +205,10 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Removes given menu item from this menu. Nothing happens if
+   * this menu doesn't contain specified menu item.
    *
-   * @param item DOCUMENT ME!
+   * @param item Menu Item which needs to be removed
    */
   public void remove(JMenuItem item)
   {
@@ -193,9 +216,9 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Removes component at the specified index from this menu
    *
-   * @param index DOCUMENT ME!
+   * @param index Position of the component that needs to be removed in the menu
    */
   public void remove(int index)
   {
@@ -203,9 +226,9 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Removes given component from this menu.
    *
-   * @param component DOCUMENT ME!
+   * @param component Component to remove
    */
   public void remove(Component component)
   {
@@ -214,7 +237,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Removes all menu items from the menu
    */
   public void removeAll()
   {
@@ -222,49 +245,56 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates JMenuItem with the specified text and inserts it in the
+   * at the specified index
    *
-   * @param text DOCUMENT ME!
-   * @param index DOCUMENT ME!
+   * @param text label for the new menu item
+   * @param index index at which to insert newly created menu item.
    */
   public void insert(String text, int index)
   {
-    popupMenu.insert(new JMenuItem(text), index);
+    this.insert(new JMenuItem(text), index);
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates JMenuItem with the specified text and inserts it in the
+   * at the specified index. IllegalArgumentException is thrown
+   * if index is less than 0
    *
-   * @param item DOCUMENT ME!
-   * @param index DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
+   * @param item menu item to insert
+   * @param index index at which to insert menu item.
+   * @return Menu item that was added to the menu
    */
   public JMenuItem insert(JMenuItem item, int index)
   {
+    if (index < 0)
+      throw new IllegalArgumentException("index less than zero");
+
     popupMenu.insert(item, index);
 
     return item;
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates JMenuItem with the associated action and inserts it to the menu
+   * at the specified index. IllegalArgumentException is thrown
+   * if index is less than 0
    *
-   * @param action DOCUMENT ME!
-   * @param index DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
+   * @param action Action for the new menu item
+   * @param index index at which to insert newly created menu item.
+   * @return Menu item that was added to the menu
    */
   public JMenuItem insert(Action action, int index)
   {
     JMenuItem item = new JMenuItem(action);
-    popupMenu.insert(item, index);
+    this.insert(item, index);
 
     return item;
   }
 
   /**
-   * DOCUMENT ME!
+   * This method sets this menuItem's UI to the UIManager's default for the
+   * current look and feel.
    */
   public void updateUI()
   {
@@ -273,9 +303,10 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method returns a name to identify which look and feel class will be
+   * the UI delegate for the menu.
    *
-   * @return DOCUMENT ME!
+   * @return The Look and Feel classID. "MenuUI"
    */
   public String getUIClassID()
   {
@@ -283,9 +314,9 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets model for this menu.
    *
-   * @param model DOCUMENT ME!
+   * @param model model to set
    */
   public void setModel(ButtonModel model)
   {
@@ -293,29 +324,32 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns true if the menu is selected and false otherwise
    *
-   * @return DOCUMENT ME!
+   * @return true if the menu is selected and false otherwise
    */
   public boolean isSelected()
   {
-    return super.isSelected();
+    return super.isArmed();
   }
 
   /**
-   * DOCUMENT ME!
+   * Changes this menu selected state if selected is true and false otherwise
+   * This method fires menuEvents to model's registered listeners.
    *
-   * @param selected DOCUMENT ME!
+   * @param selected true if the menu should be selected and false otherwise
    */
   public void setSelected(boolean selected)
   {
-    super.setSelected(selected);
+    super.setArmed(true);
+    fireMenuSelected();
   }
 
   /**
-   * DOCUMENT ME!
+   * Checks if PopupMenu associated with this menu is visible
    *
-   * @return DOCUMENT ME!
+   * @return true if the popup associated with this menu is currently visible on the screen and
+   * false otherwise.
    */
   public boolean isPopupMenuVisible()
   {
@@ -323,20 +357,20 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets popup menu visibility
    *
-   * @param popup DOCUMENT ME!
+   * @param popup true if popup should be visible and false otherwise
    */
   public void setPopupMenuVisible(boolean popup)
   {
-    if (isEnabled())
+    if (getModel().isEnabled())
       popupMenu.setVisible(popup);
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns origin point of the popup menu
    *
-   * @return DOCUMENT ME!
+   * @return Point containing
    */
   protected Point getPopupMenuOrigin()
   {
@@ -349,9 +383,11 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns delay property.
    *
-   * @return DOCUMENT ME!
+   * @return delay property, indicating number of milliseconds before
+   * popup menu associated with the menu appears or disappears after
+   * menu was selected or deselected respectively
    */
   public int getDelay()
   {
@@ -359,75 +395,90 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets delay property for this menu. If given time for the delay
+   * property is negative, then IllegalArgumentException is thrown
    *
-   * @param delay DOCUMENT ME!
+   * @param delay number of milliseconds before
+   * popup menu associated with the menu appears or disappears after
+   * menu was selected or deselected respectively
    */
   public void setDelay(int delay)
   {
+    if (delay < 0)
+      throw new IllegalArgumentException("delay less than 0");
     this.delay = delay;
   }
 
   /**
-   * DOCUMENT ME!
+   * Sets location at which popup menu should be displayed
+   * The location given is relative to this menu item
    *
-   * @param x DOCUMENT ME!
-   * @param y DOCUMENT ME!
+   * @param x x-coordinate of the menu location
+   * @param y y-coordinate of the menu location
    */
   public void setMenuLocation(int x, int y)
   {
-    popupMenu.setLocation(x, y);
+    menuLocation = new Point(x, y);
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates and returns JMenuItem associated with the given action
    *
-   * @param action DOCUMENT ME!
+   * @param action Action to use for creation of JMenuItem
    *
-   * @return DOCUMENT ME!
+   * @return JMenuItem that was creted with given action
    */
   protected JMenuItem createActionComponent(Action action)
   {
-    return null;
+    return new JMenuItem(action);
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates ActionChangeListener to listen for PropertyChangeEvents occuring
+   * in the action that is associated with this menu
    *
-   * @param item DOCUMENT ME!
+   * @param item menu that contains action to listen to
    *
-   * @return DOCUMENT ME!
+   * @return The PropertyChangeListener
    */
   protected PropertyChangeListener createActionChangeListener(JMenuItem item)
   {
-    return null;
+    return new ActionChangedListener(item);
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds separator to the end of the menu items in the menu.
    */
   public void addSeparator()
   {
+    getPopupMenu().addSeparator();
   }
 
   /**
-   * DOCUMENT ME!
+   * Inserts separator in the menu at the specified index.
    *
-   * @param index DOCUMENT ME!
+   * @param index Index at which separator should be inserted
    */
   public void insertSeparator(int index)
   {
+    if (index < 0)
+      throw new IllegalArgumentException("index less than 0");
+
+    getPopupMenu().insert(new JPopupMenu.Separator(), index);
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns menu item located at the specified index in the menu
    *
-   * @param index DOCUMENT ME!
+   * @param index Index at which to look for the menu item
    *
-   * @return DOCUMENT ME!
+   * @return menu item located at the specified index in the menu
    */
   public JMenuItem getItem(int index)
   {
+    if (index < 0)
+      throw new IllegalArgumentException("index less than 0");
+
     Component c = popupMenu.getComponentAtIndex(index);
 
     if (c instanceof JMenuItem)
@@ -437,29 +488,32 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns number of items in the menu
    *
-   * @return DOCUMENT ME!
+   * @return number of items in the menu
    */
   public int getItemCount()
   {
-    return 0;
+    // returns the number of items on 
+    // the menu, including separators.
+    return getComponents().length;
   }
 
   /**
-   * DOCUMENT ME!
+   * Checks if this menu is a tear-off menu.
    *
-   * @return DOCUMENT ME!
+   * @return true if this menu is a tear-off menu and false otherwise
    */
   public boolean isTearOff()
   {
+    // NOT YET IMPLEMENTED 
     return false;
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns number of menu components in this menu
    *
-   * @return DOCUMENT ME!
+   * @return number of menu components in this menu
    */
   public int getMenuComponentCount()
   {
@@ -467,11 +521,12 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns menu component located at the givent index
+   * in the menu
    *
-   * @param index DOCUMENT ME!
+   * @param index index at which to get the menu component in the menu
    *
-   * @return DOCUMENT ME!
+   * @return Menu Component located in the menu at the specified index
    */
   public Component getMenuComponent(int index)
   {
@@ -479,9 +534,9 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Return components belonging to this menu
    *
-   * @return DOCUMENT ME!
+   * @return components belonging to this menu
    */
   public Component[] getMenuComponents()
   {
@@ -489,9 +544,11 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Checks if this menu is a top level menu. The menu is top
+   * level menu if it is inside the menu bar. While if the menu
+   * inside some other menu, it is considered to be a pull-right menu.
    *
-   * @return DOCUMENT ME!
+   * @return true if this menu is top level menu, and false otherwise
    */
   public boolean isTopLevelMenu()
   {
@@ -502,11 +559,12 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Checks if given component exists in this menu. The submenus of
+   * this menu are checked as well
    *
-   * @param component DOCUMENT ME!
+   * @param component Component to look for
    *
-   * @return DOCUMENT ME!
+   * @return true if the given component exists in this menu, and false otherwise
    */
   public boolean isMenuComponent(Component component)
   {
@@ -514,9 +572,9 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns popup menu associated with the menu.
    *
-   * @return DOCUMENT ME!
+   * @return popup menu associated with the menu.
    */
   public JPopupMenu getPopupMenu()
   {
@@ -524,9 +582,9 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds MenuListener to the menu
    *
-   * @param listener DOCUMENT ME!
+   * @param listener MenuListener to add
    */
   public void addMenuListener(MenuListener listener)
   {
@@ -534,9 +592,9 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * Removes MenuListener from the menu
    *
-   * @param listener DOCUMENT ME!
+   * @param listener MenuListener to remove
    */
   public void removeMenuListener(MenuListener listener)
   {
@@ -544,73 +602,114 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method fires MenuEvents to all menu's MenuListeners. In this case
+   * menuSelected() method of MenuListeners is called to indicated that the menu
+   * was selected.
    */
   protected void fireMenuSelected()
   {
     EventListener[] ll = listenerList.getListeners(MenuListener.class);
 
     for (int i = 0; i < ll.length; i++)
-      ((MenuListener) ll[i]).menuSelected(new MenuEvent(this));
+      ((MenuListener) ll[i]).menuSelected(menuEvent);
   }
 
   /**
-   * DOCUMENT ME!
+   * This method fires MenuEvents to all menu's MenuListeners. In this case
+   * menuDeselected() method of MenuListeners is called to indicated that the menu
+   * was deselected.
    */
   protected void fireMenuDeselected()
   {
     EventListener[] ll = listenerList.getListeners(MenuListener.class);
 
     for (int i = 0; i < ll.length; i++)
-      ((MenuListener) ll[i]).menuDeselected(new MenuEvent(this));
+      ((MenuListener) ll[i]).menuDeselected(menuEvent);
   }
 
   /**
-   * DOCUMENT ME!
+   * This method fires MenuEvents to all menu's MenuListeners. In this case
+   * menuSelected() method of MenuListeners is called to indicated that the menu
+   * was cancelled. The menu is cancelled when it's popup menu is close without selection.
    */
   protected void fireMenuCanceled()
   {
     EventListener[] ll = listenerList.getListeners(MenuListener.class);
 
     for (int i = 0; i < ll.length; i++)
-      ((MenuListener) ll[i]).menuCanceled(new MenuEvent(this));
+      ((MenuListener) ll[i]).menuCanceled(menuEvent);
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates MenuChangeListener to listen to change events occuring
+   * in the model
    *
-   * @return DOCUMENT ME!
+   * @return ChangeListener
    */
   private ChangeListener createMenuChangeListener()
   {
-    return null;
+    return new MenuChangeListener();
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates WinListener that listens to the menu;s popup menu.
    *
-   * @param popup DOCUMENT ME!
+   * @param popup JPopupMenu to listen to
    *
-   * @return DOCUMENT ME!
+   * @return The WinListener
    */
-  protected JMenu.WinListener createWinListener(JPopupMenu popup)
+  protected WinListener createWinListener(JPopupMenu popup)
   {
-    return null;
+    return new WinListener(popup);
   }
 
   /**
-   * DOCUMENT ME!
+   * Method of the MenuElementInterface. It reacts to the selection
+   * changes in the menu. If this menu was selected, then it
+   * displayes popup menu associated with it and if this menu was
+   * deselected it hides the popup menu.
    *
-   * @param changed DOCUMENT ME!
+   * @param changed true if the menu was selected and false otherwise
    */
   public void menuSelectionChanged(boolean changed)
   {
+    // if this menu selection is true, then activate this menu and 
+    // display popup associated with this menu
+    if (changed)
+      {
+	setArmed(true);
+	fireMenuSelected();
+
+	int x = 0;
+	int y = 0;
+	if (menuLocation == null)
+	  {
+	    // Calculate correct position of the popup. Note that location of the popup 
+	    // passed to show() should be relative to the popup's invoker
+	    if (isTopLevelMenu())
+	      y = this.getHeight();
+	    else
+	      x = this.getWidth();
+
+	    getPopupMenu().show(this, x, y);
+	  }
+	else
+	  getPopupMenu().show(this, menuLocation.x, menuLocation.y);
+      }
+
+    else
+      {
+	fireMenuDeselected();
+	popupMenu.setVisible(false);
+	setArmed(false);
+      }
   }
 
   /**
-   * DOCUMENT ME!
+   * Method of MenuElement interface. Returns sub components of
+   * this menu.
    *
-   * @return DOCUMENT ME!
+   * @return array containing popupMenu that is associated with this menu
    */
   public MenuElement[] getSubElements()
   {
@@ -618,9 +717,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
+   * @return Returns reference to itself
    */
   public Component getComponent()
   {
@@ -628,205 +725,174 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * DOCUMENT ME!
+   * This method is overriden with empty implementation, s.t the
+   * accelerator couldn't be set for the menu. The mnemonic should
+   * be used for the menu instead.
    *
-   * @param keystroke DOCUMENT ME!
+   * @param keystroke accelerator for this menu
    */
   public void setAccelerator(KeyStroke keystroke)
   {
-    super.setAccelerator(keystroke);
+    throw new Error("setAccelerator() is not defined for JMenu.  Use setMnemonic() instead.");
   }
 
   /**
-   * DOCUMENT ME!
+   * This method process KeyEvent occuring when the menu is visible
    *
-   * @param event DOCUMENT ME!
+   * @param event The KeyEvent
    */
   protected void processKeyEvent(KeyEvent event)
   {
   }
 
   /**
-   * DOCUMENT ME!
+   * Programatically performs click
    *
-   * @param time DOCUMENT ME!
+   * @param time Number of milliseconds for which this menu stays pressed
    */
   public void doClick(int time)
   {
+    getModel().setArmed(true);
+    getModel().setPressed(true);
+    try
+      {
+	java.lang.Thread.sleep(time);
+      }
+    catch (java.lang.InterruptedException e)
+      {
+	// probably harmless
+      }
+
+    getModel().setPressed(false);
+    getModel().setArmed(false);
+    popupMenu.show(this, this.getWidth(), 0);
   }
 
   /**
-   * DOCUMENT ME!
+   * A string that describes this JMenu. Normally only used
+   * for debugging.
    *
-   * @return DOCUMENT ME!
+   * @return A string describing this JMenu
    */
   protected String paramString()
   {
     return "JMenu";
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
-   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJMenu(this);
+      accessibleContext = new AccessibleJMenu();
 
     return accessibleContext;
   }
 
-  /**
-   * DOCUMENT ME!
-   */
   protected class AccessibleJMenu extends AccessibleJMenuItem
     implements AccessibleSelection
   {
-    /**
-     * Creates a new AccessibleJMenu object.
-     *
-     * @param component DOCUMENT ME!
-     */
-    protected AccessibleJMenu(JMenu component)
+    protected AccessibleJMenu()
     {
-      super(component);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public int getAccessibleChildrenCount()
     {
       return 0;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value0 DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public Accessible getAccessibleChild(int value0)
     {
       return null;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public AccessibleSelection getAccessibleSelection()
     {
       return null;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value0 DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public Accessible getAccessibleSelection(int value0)
     {
       return null;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value0 DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public boolean isAccessibleChildSelected(int value0)
     {
       return false;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.MENU;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
     public int getAccessibleSelectionCount()
     {
       return 0;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value0 DOCUMENT ME!
-     */
     public void addAccessibleSelection(int value0)
     {
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value0 DOCUMENT ME!
-     */
     public void removeAccessibleSelection(int value0)
     {
     }
 
-    /**
-     * DOCUMENT ME!
-     */
     public void clearAccessibleSelection()
     {
     }
 
-    /**
-     * DOCUMENT ME!
-     */
     public void selectAllAccessibleSelection()
     {
     }
   }
 
-  /**
-   * DOCUMENT ME!
-   */
   protected class WinListener extends WindowAdapter implements Serializable
   {
     JPopupMenu popupMenu;
+    private static final long serialVersionUID = -6415815570638474823L;
 
-    /**
-     * Creates a new WinListener object.
-     *
-     * @param value0 DOCUMENT ME!
-     * @param value1 DOCUMENT ME!
-     */
-    public WinListener(JMenu value0, JPopupMenu value1)
+    public WinListener(JPopupMenu popup)
     {
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value0 DOCUMENT ME!
-     */
-    public void windowClosing(WindowEvent value0)
+    public void windowClosing(WindowEvent event)
     {
+    }
+  }
+
+  /** This class listens to ChangeEvent fired by menu's model*/
+  protected class MenuChangeListener implements ChangeListener
+  {
+    /** This method is invoked when there is change in menu's model property */
+    public void stateChanged(ChangeEvent e)
+    {
+      revalidate();
+      repaint();
+    }
+  }
+
+  /**
+   * This class listens to PropertyChangeEvents occuring in menu's action
+   */
+  protected class ActionChangedListener implements PropertyChangeListener
+  {
+    /** menu item associated with the action */
+    private JMenuItem menuItem;
+
+    /** Creates new ActionChangedListener and adds it to menuItem's action */
+    public ActionChangedListener(JMenuItem menuItem)
+    {
+      this.menuItem = menuItem;
+
+      Action a = menuItem.getAction();
+      if (a != null)
+	a.addPropertyChangeListener(this);
+    }
+
+    /**This method is invoked when some change occures in menuItem's action*/
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+      // FIXME: Need to implement
     }
   }
 }

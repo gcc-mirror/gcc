@@ -59,10 +59,23 @@ import javax.accessibility.AccessibleContext;
  */
 public class JFrame extends Frame implements WindowConstants, RootPaneContainer
 {
-    protected  AccessibleContext accessibleContext;
+  private static final long serialVersionUID = -3362141868504252139L;
+  
+  protected  AccessibleContext accessibleContext;
+  
+  private int close_action = HIDE_ON_CLOSE;    
+  
+  private static boolean defaultLookAndFeelDecorated = false;    
 
-    private int close_action = HIDE_ON_CLOSE;    
-    
+  public static void setDefaultLookAndFeelDecorated(boolean d)
+  {
+    defaultLookAndFeelDecorated = d;
+  }
+
+  public static boolean isDefaultLookAndFeelDecorated()
+  {
+    return defaultLookAndFeelDecorated;
+  }
 
     /***************************************************
      *
@@ -111,10 +124,10 @@ public class JFrame extends Frame implements WindowConstants, RootPaneContainer
     return d;
   }
 
-    JMenuBar getJMenuBar()
+  public JMenuBar getJMenuBar()
     {    return getRootPane().getJMenuBar();   }
     
-    void setJMenuBar(JMenuBar menubar)
+  public void setJMenuBar(JMenuBar menubar)
     {    getRootPane().setJMenuBar(menubar); }
     
 

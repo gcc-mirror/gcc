@@ -62,6 +62,7 @@ import javax.accessibility.AccessibleContext;
 public class JDialog extends Dialog implements Accessible, WindowConstants,
                                                RootPaneContainer
 {
+  private static final long serialVersionUID = -864070866424508218L;
 
   /** DOCUMENT ME! */
   protected AccessibleContext accessibleContext;

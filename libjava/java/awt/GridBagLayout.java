@@ -790,13 +790,26 @@ public class GridBagLayout
                                   info.rowWeights);
         } // end of STEP 4
 
-      calcCellSizes (info.colWidths, info.colWeights, parentDim.width);
-      calcCellSizes (info.rowHeights, info.rowWeights, parentDim.height);
+      // Adjust cell sizes iff parent size not zero.
+      if (parentDim.width > 0 && parentDim.height > 0)
+        {
+          calcCellSizes (info.colWidths, info.colWeights, parentDim.width);
+          calcCellSizes (info.rowHeights, info.rowWeights, parentDim.height);
+        }
 
       int totalWidth = sumIntArray(info.colWidths);
       int totalHeight = sumIntArray(info.rowHeights);
-      info.pos_x = parentInsets.left + (parentDim.width - totalWidth) / 2;
-      info.pos_y = parentInsets.top + (parentDim.height - totalHeight) / 2;
+
+      // Make sure pos_x and pos_y are never negative.
+      if (totalWidth >= parentDim.width)
+        info.pos_x = parentInsets.left;
+      else
+        info.pos_x = parentInsets.left + (parentDim.width - totalWidth) / 2;
+
+      if (totalHeight >= parentDim.height)
+        info.pos_y = parentInsets.top;
+      else
+        info.pos_y = parentInsets.top + (parentDim.height - totalHeight) / 2;
 
       // DEBUG
       //dumpLayoutInfo (info);

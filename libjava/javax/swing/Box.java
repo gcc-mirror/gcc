@@ -1,5 +1,5 @@
 /* Box.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,8 +55,12 @@ public class Box extends JComponent implements Accessible
 {
   private static final long serialVersionUID = 1525417495883046342L;
   
-  protected class AccessibleBox extends AccessibleAWTContainer
+  protected class AccessibleBox 
+  // FIXME: disable to make libjava compile; visibility rules are broken
+  // extends Container.AccessibleAWTContainer
   {
+    private static final long serialVersionUID = -7775079816389931944L;
+  
     protected AccessibleBox()
     {
     }
@@ -69,8 +73,14 @@ public class Box extends JComponent implements Accessible
   
   public static class Filler extends JComponent implements Accessible
   {
-    protected class AccessibleBoxFiller// extends AccessibleAWTComponent
+    private static final long serialVersionUID = -1204263191910183998L;
+  
+    protected class AccessibleBoxFiller 
+    // FIXME: disable to make libjava compile; visibility rules are broken
+    // extends Component.AccessibleAWTComponent
     {
+      private static final long serialVersionUID = 164963348357479321L;
+      
       protected AccessibleBoxFiller()
       {
       }
@@ -99,8 +109,9 @@ public class Box extends JComponent implements Accessible
     
     public AccessibleContext getAccessibleContext()
     {
-//      if (accessibleContext == null)
-//        accessibleContext = new AccessibleBoxFiller();
+      // FIXME: disable to make libjava compile; visibility rules are broken      
+      //      if (accessibleContext == null)
+      //        accessibleContext = new AccessibleBoxFiller();
       return accessibleContext;
     }
     
@@ -172,8 +183,8 @@ public class Box extends JComponent implements Accessible
   
   public AccessibleContext getAccessibleContext()
   {
-    if (accessibleContext == null)
-      accessibleContext = new AccessibleBox();
+    //     if (accessibleContext == null)
+    //       accessibleContext = new AccessibleBox();
     return accessibleContext;
   }
   

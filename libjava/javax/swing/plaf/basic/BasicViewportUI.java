@@ -173,10 +173,18 @@ public class BasicViewportUI extends ViewportUI
         g.clearRect(0, 0, portBounds.width, portBounds.height);
       }
 
-    view.paint(g2);
+    g2.translate(-pos.x, -pos.y);
+    try 
+      {
+        view.paint(g2);
+      }
+    finally
+      {
+        g2.translate(pos.x, pos.y);
+      }
     g2 = null;
     g.drawImage(backingStoreImage, 
-                -pos.x, -pos.y, 
+                0, 0, 
                 (ImageObserver)null);
   }
 }

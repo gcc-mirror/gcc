@@ -72,7 +72,7 @@ area_prepared (GdkPixbufLoader *loader,
     return;
 
   width = gdk_pixbuf_get_width (pixbuf); 
-  height = gdk_pixbuf_get_height (pixbuf), 
+  height = gdk_pixbuf_get_height (pixbuf);
 
   gdk_threads_leave ();
 

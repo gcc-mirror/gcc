@@ -154,6 +154,8 @@ import javax.swing.text.AttributeSet;
 public abstract class AbstractButton extends JComponent
   implements ItemSelectable, SwingConstants
 {
+  private static final long serialVersionUID = -937921345538462020L;
+  
   /** The icon displayed by default. */
   Icon default_icon;
 
@@ -292,9 +294,10 @@ public abstract class AbstractButton extends JComponent
     extends AccessibleJComponent implements AccessibleAction, AccessibleValue,
                                             AccessibleText
   {
-    protected AccessibleAbstractButton(JComponent c)
+    private static final long serialVersionUID = -5673062525319836790L;
+    
+    protected AccessibleAbstractButton()
     {
-      super(c);
     }
 
     public AccessibleStateSet getAccessibleStateSet()
@@ -459,7 +462,7 @@ public abstract class AbstractButton extends JComponent
   /**
    * Creates a new AbstractButton object.
    */
-  AbstractButton()
+  public AbstractButton()
   {
     this("",null);
   }
@@ -472,28 +475,7 @@ public abstract class AbstractButton extends JComponent
    */
   AbstractButton(String txt, Icon icon)
   {
-    text = txt;
-    default_icon = icon;
-    model = new DefaultButtonModel();
-    actionListener = createActionListener();
-    changeListener = createChangeListener();
-    itemListener = createItemListener();
-
-    model.addActionListener(actionListener);
-    model.addChangeListener(changeListener);
-    model.addItemListener(itemListener);
-
-    hori_align = CENTER;
-    hori_text_pos = TRAILING;
-    vert_align = CENTER;
-    vert_text_pos = CENTER;
-    paint_border = true;
-    content_area_filled = true;
-
-    setAlignmentX(LEFT_ALIGNMENT);
-    setAlignmentY(CENTER_ALIGNMENT);
-
-    addFocusListener(new ButtonFocusListener());
+    init (txt, icon);
     updateUI();
   }
 
@@ -538,6 +520,32 @@ public abstract class AbstractButton extends JComponent
     repaint();
   }
 
+ protected void init(String text, Icon icon) 
+ {
+    this.text = text;
+    default_icon = icon;
+    model = new DefaultButtonModel();
+    actionListener = createActionListener();
+    changeListener = createChangeListener();
+    itemListener = createItemListener();
+
+    model.addActionListener(actionListener);
+    model.addChangeListener(changeListener);
+    model.addItemListener(itemListener);
+
+    hori_align = CENTER;
+    hori_text_pos = TRAILING;
+    vert_align = CENTER;
+    vert_text_pos = CENTER;
+    paint_border = true;
+    content_area_filled = true;
+
+    setAlignmentX(LEFT_ALIGNMENT);
+    setAlignmentY(CENTER_ALIGNMENT);
+
+    addFocusListener(new ButtonFocusListener());
+ }
+ 
   /**
    * Get the action command string for this button's model.
    *
@@ -1036,15 +1044,17 @@ public abstract class AbstractButton extends JComponent
             action.removePropertyChangeListener(actionPropertyChangeListener);
             actionPropertyChangeListener = null;
           }
-        actionPropertyChangeListener = createActionPropertyChangeListener(a);
+
+
   }
+  
 
     Action old = action;
     action = a;
     configurePropertiesFromAction(action);
-
     if (action != null)
       {
+        actionPropertyChangeListener = createActionPropertyChangeListener(a);      
         action.addPropertyChangeListener(actionPropertyChangeListener);
         addActionListener(action);
       }
@@ -1067,15 +1077,15 @@ public abstract class AbstractButton extends JComponent
    * @param i The new default icon
    */
   public void setIcon(Icon i)
+  {
+    if (default_icon != i)
       {
-    Icon old = default_icon;
-    default_icon = i;
-    if (old != i)
-      {
-        firePropertyChange(ICON_CHANGED_PROPERTY, old, i);
+    Icon old = default_icon;      
+    default_icon = i;      
+    firePropertyChange(ICON_CHANGED_PROPERTY, old, i);
     revalidate();
     repaint();
-  }
+      }
   }
 
   /**
@@ -1204,6 +1214,10 @@ public abstract class AbstractButton extends JComponent
    */
   public Icon getDisabledIcon()
   {
+    if (disabled_icon == null
+	&& default_icon instanceof ImageIcon)
+      disabled_icon = new ImageIcon(GrayFilter.createDisabledImage(((ImageIcon) default_icon).getImage()));
+      
     return disabled_icon;
   }
 
@@ -1375,7 +1389,8 @@ public abstract class AbstractButton extends JComponent
         setIcon((Icon)(a.getValue(Action.SMALL_ICON)));
         setEnabled(a.isEnabled());
         setToolTipText((String)(a.getValue(Action.SHORT_DESCRIPTION)));
-        setMnemonic(((Integer)(a.getValue(Action.MNEMONIC_KEY))).intValue());
+	if (a.getValue(Action.MNEMONIC_KEY) != null)
+          setMnemonic(((Integer)(a.getValue(Action.MNEMONIC_KEY))).intValue());
         setActionCommand((String)(a.getValue(Action.ACTION_COMMAND_KEY)));
       }
   }
@@ -1433,9 +1448,21 @@ public abstract class AbstractButton extends JComponent
       {
         public void propertyChange(PropertyChangeEvent e)
         {
-          Action act = (Action)(e.getSource());
-          AbstractButton.this.configurePropertiesFromAction(act);
-        }
+          Action act = (Action) (e.getSource());	
+	  if (e.getPropertyName().equals(AbstractAction.ENABLED_PROPERTY))
+	    setEnabled(act.isEnabled());
+	  else if (e.getPropertyName().equals(Action.NAME))
+            setText((String)(act.getValue(Action.NAME)));
+	  else if (e.getPropertyName().equals(Action.SMALL_ICON))
+	    setIcon((Icon)(act.getValue(Action.SMALL_ICON)));
+	  else if (e.getPropertyName().equals(Action.SHORT_DESCRIPTION))
+            setToolTipText((String)(act.getValue(Action.SHORT_DESCRIPTION)));
+	  else if (e.getPropertyName().equals(Action.MNEMONIC_KEY))
+            if (act.getValue(Action.MNEMONIC_KEY) != null)
+              setMnemonic(((Integer)(act.getValue(Action.MNEMONIC_KEY))).intValue());
+	  else if (e.getPropertyName().equals(Action.ACTION_COMMAND_KEY))
+            setActionCommand((String)(act.getValue(Action.ACTION_COMMAND_KEY)));
+	}
       };
   }
 

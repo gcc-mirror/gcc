@@ -60,12 +60,13 @@ public class JOptionPane extends JComponent implements Accessible
    */
   protected class AccessibleJOptionPane extends JComponent.AccessibleJComponent
   {
+    private static final long serialVersionUID = 686071432213084821L;
+  
     /**
      * Creates a new AccessibleJOptionPane object.
      */
     protected AccessibleJOptionPane()
     {
-      super(JOptionPane.this);
     }
 
     /**
@@ -79,6 +80,8 @@ public class JOptionPane extends JComponent implements Accessible
     }
   }
 
+  private static final long serialVersionUID = 5231143276678566796L;
+  
   /** The value returned when cancel option is selected. */
   public static final int CANCEL_OPTION = 2;
 
@@ -418,21 +421,7 @@ public class JOptionPane extends JComponent implements Accessible
    */
   public static JDesktopPane getDesktopPaneForComponent(Component parentComponent)
   {
-    if (parentComponent == null)
-      return null;
-    if (parentComponent instanceof JDesktopPane)
-      return (JDesktopPane) parentComponent;
-    JDesktopPane parent = null;
-    while (parentComponent.getParent() != null)
-      {
-	parentComponent = parentComponent.getParent();
-	if (parentComponent instanceof JDesktopPane)
-	  {
-	    parent = (JDesktopPane) parentComponent;
-	    break;
-	  }
-      }
-    return parent;
+    return (JDesktopPane) SwingUtilities.getAncestorOfClass(JDesktopPane.class, parentComponent);
   }
 
   /**
@@ -445,21 +434,7 @@ public class JOptionPane extends JComponent implements Accessible
    */
   public static Frame getFrameForComponent(Component parentComponent)
   {
-    if (parentComponent == null)
-      return null;
-    if (parentComponent instanceof Frame)
-      return (Frame) parentComponent;
-    Frame parent = null;
-    while (parentComponent.getParent() != null)
-      {
-	parentComponent = parentComponent.getParent();
-	if (parentComponent instanceof Frame)
-	  {
-	    parent = (Frame) parentComponent;
-	    break;
-	  }
-      }
-    return parent;
+    return (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parentComponent);
   }
 
   /**

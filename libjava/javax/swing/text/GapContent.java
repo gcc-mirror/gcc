@@ -1,4 +1,4 @@
-/* GapContent.java -- 
+/* GapContent.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,69 +35,75 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package javax.swing.text; 
+package javax.swing.text;
+
+import java.io.Serializable;
 
 // too lazy to make a real gapcontent.
 // lets just use a stringbuffer instead.
-
 import javax.swing.undo.UndoableEdit;
 
-public class GapContent implements AbstractDocument.Content
+public class GapContent
+  implements AbstractDocument.Content, Serializable
 {
-    StringBuffer buf = new StringBuffer();
-
-    public GapContent()
-    {
-	this(10);
-    }
+  private static final long serialVersionUID = 8374645204155842629L;
     
-    public GapContent(int size)
-    {
-    }
+  StringBuffer buf = new StringBuffer();
 
-    public Position createPosition(final int offset) throws BadLocationException
-    {
-	return new Position()
-	    {
-		int off = offset;
-		public int getOffset()
-		{
-		    return off;
-		}
-	    };
-    }
+  public GapContent()
+  {
+    this(10);
+  }
 
-    public int length()
-    {
-	return buf.length();
-    }
+  public GapContent(int size)
+  {
+  }
 
-    public UndoableEdit insertString(int where, String str) throws BadLocationException
-    {
-	buf.insert(where, str);
-	return null;
-    }
+  public Position createPosition(final int offset) throws BadLocationException
+  {
+    return new Position()
+      {
+	int off = offset;
 
-    public UndoableEdit remove(int where, int nitems) throws BadLocationException
-    {
-	buf.delete(where, where + nitems);
-	return null;
-    }
+	public int getOffset()
+	{
+	  return off;
+	}
+      };
+  }
 
-    public String getString(int where, int len) throws BadLocationException
-    {
-	return buf.toString();
-    }
+  public int length()
+  {
+    return buf.length();
+  }
 
-    public void getChars(int where, int len, Segment txt) throws BadLocationException
-    {
-	txt.array = new char[len];
-		
-	System.arraycopy(buf.toString().toCharArray(), where, 
-			 txt.array, 0,
-			 len);
-	
-	txt.count  = len;
-	txt.offset = 0;
-    }
+  public UndoableEdit insertString(int where, String str)
+    throws BadLocationException
+  {
+    buf.insert(where, str);
+    return null;
+  }
+
+  public UndoableEdit remove(int where, int nitems)
+    throws BadLocationException
+  {
+    buf.delete(where, where + nitems);
+    return null;
+  }
+
+  public String getString(int where, int len) throws BadLocationException
+  {
+    return buf.toString();
+  }
+
+  public void getChars(int where, int len, Segment txt)
+    throws BadLocationException
+  {
+    txt.array = new char[len];
+
+    System.arraycopy(buf.toString().toCharArray(), where, txt.array, 0, len);
+
+    txt.count = len;
+    txt.offset = 0;
+  }
 }

@@ -160,6 +160,8 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
       // e.g. in the inset area.
       if (index != -1 && tabPane.isEnabledAt(index))
 	tabPane.setSelectedIndex(index);
+      tabPane.layout();
+      tabPane.repaint();
     }
   }
 
@@ -1085,7 +1087,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
 
 	  // we want to cover that entire space so that borders that run under
 	  // the tab area don't show up when we move the viewport around.
-	  panel.setBounds(0, 0, w + p.x, h + p.y);
+	  panel.setSize(w + p.x, h + p.y);
         }
       viewport.setViewPosition(findPointForIndex(currentScrollLocation));
     }
@@ -1154,31 +1156,6 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
    */
   private class ScrollingViewport extends JViewport implements UIResource
   {
-    /**
-     * This method is temporary until the viewport layouts are  implemented.
-     * Need it because the flow layout it  currently moves our panel around.
-     *
-     * @param g The graphics object to paint with.
-     */
-    public void paint(Graphics g)
-    {
-      // FIXME: Remove this as well.
-      int tabC = tabPane.getTabCount() - 1;
-      if (tabC + 1 > 0)
-        {
-	  int w = Math.max(rects[tabC].width + rects[tabC].x, tabAreaRect.width);
-	  int h = Math.max(rects[tabC].height, tabAreaRect.height);
-	  Point p = findPointForIndex(currentScrollLocation);
-
-	  // we want to cover that entire space so that borders that run under
-	  // the tab area don't show up when we move the viewport around.
-	  panel.setBounds(0, 0, w + p.x, h + p.y);
-        }
-
-      // FIXME: Remove when ViewportLayout is done.
-      setViewPosition(findPointForIndex(currentScrollLocation));
-      super.paint(g);
-    }
   }
 
   /**
@@ -1998,7 +1975,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
                                 int x, int y, int w, int h, boolean isSelected)
   {
     Color saved = g.getColor();
-
+    
     if (! isSelected || tabPlacement != SwingConstants.TOP)
       {
 	g.setColor(shadow);

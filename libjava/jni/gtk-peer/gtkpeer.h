@@ -435,6 +435,8 @@ extern jclass gdkColor;
 extern jmethodID gdkColorID;
 extern JNIEnv *gdk_env;
 
+extern double dpi_conversion_factor;
+
 extern GtkWindowGroup *global_gtk_window_group;
 
 void awt_event_handler (GdkEvent *event);
