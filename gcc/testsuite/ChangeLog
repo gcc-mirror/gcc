@@ -1,5 +1,8 @@
 2004-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* g++.dg/tree-ssa/ssa-sra-1.C: Fix comment.
+	* g++.dg/tree-ssa/ssa-sra-2.C: Likewise.
+
 	PR tree-optimization/14736
 	* g++.dg/tree-ssa/ssa-cast-1.C: New Test.
 	
