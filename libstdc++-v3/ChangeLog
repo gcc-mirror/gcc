@@ -1,3 +1,7 @@
+2000-09-06  Levente Farkas  <lfarkas@mindmaker.hu>
+
+	* bits/string.tcc: Fix up more parameter names.
+
 2000-09-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure: Rebuilt with new libtool.m4.
