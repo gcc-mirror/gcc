@@ -1,4 +1,9 @@
 2002-10-18  Loren J. Rittle  <ljrittle@acm.org>
+
+	* configure.target (freebsd*): Use abi_baseline_triplet.
+	* config/abi/i386-unknown-freebsd4/baseline_symbols.txt: New file.
+
+2002-10-18  Loren J. Rittle  <ljrittle@acm.org>
 	    Brad Spencer  <spencer@infointeractive.com> (provided alternate
 						         patch and improvements)
 

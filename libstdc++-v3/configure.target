@@ -138,7 +138,8 @@ case "${target_os}" in
   aix*)
     ATOMICITYH="cpu/generic"
     ;;
-  bsd* | freebsd* )
+  bsd*)
+    # Plain BSD attempts to share FreeBSD files.
     os_include_dir="os/bsd/freebsd"
     ;;
   cygwin*)
@@ -146,6 +147,11 @@ case "${target_os}" in
     ;;
   *djgpp*)      # leading * picks up "msdosdjgpp"
     os_include_dir="os/djgpp"
+    ;;
+  freebsd*)
+    os_include_dir="os/bsd/freebsd"
+    # The FreeBSD ABI is expressed in the major version number only.
+    abi_baseline_triplet=`echo ${target} | sed 's,\(\.[0-9]*\)*$,,'`
     ;;
   gnu* | linux*)
     os_include_dir="os/gnu-linux"
