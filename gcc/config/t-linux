@@ -1,0 +1,5 @@
+# Linux uses crtbeginS.o and crtendS.o. Don't compile 
+# crtbegin.o and crtend.o with -fPIC.
+CRTSTUFF_T_CFLAGS=-fomit-frame-pointer -finhibit-size-directive \
+	-fno-inline-functions
+TARGET_LIBGCC2_CFLAGS = -fPIC
