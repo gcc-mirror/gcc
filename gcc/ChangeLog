@@ -1,3 +1,8 @@
+2002-02-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c (init_gcc_specs): Get -static and -static-libgcc to
+	override -shared and -shared-libgcc.
+
 2002-02-28  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (sparc64-*-freebsd): Explicitly accept a cpu specification

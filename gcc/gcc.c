@@ -1414,18 +1414,18 @@ init_gcc_specs (obstack, shared_name, static_name, eh_name)
 {
   char *buf;
 
-  buf = concat ("%{!shared:%{!shared-libgcc:", static_name, " ",
+  buf = concat ("%{static|static-libgcc:", static_name, " ", eh_name,
+		"}%{!static:%{!static-libgcc:",
+		"%{!shared:%{!shared-libgcc:", static_name, " ",
 		eh_name, "}%{shared-libgcc:", shared_name, " ",
-		static_name, "}}",
-		"%{shared:%{static-libgcc:", static_name, " ",
-		eh_name, "}%{!static-libgcc:",
+		static_name, "}}%{shared:",
 #ifdef LINK_EH_SPEC
 		"%{shared-libgcc:", shared_name,
 		"}%{!shared-libgcc:", static_name, "}",
 #else
 		shared_name,
 #endif
-		"}}", NULL);
+		"}}}", NULL);
 
   obstack_grow (obstack, buf, strlen (buf));
   free (buf);
