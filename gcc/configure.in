@@ -1864,9 +1864,7 @@ changequote([,])dnl
     fi
   else
     # non-GNU linkers don't seem to support .hidden yet
-    if test x"$gnu_ld_flag" = x"no"; then
-      gcc_cv_ld_hidden=no
-    fi
+    gcc_cv_ld_hidden=no
   fi
 fi])
 libgcc_visibility=no
