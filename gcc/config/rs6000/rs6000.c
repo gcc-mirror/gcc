@@ -1332,15 +1332,14 @@ output_prolog (file, size)
     fprintf (file, "\tmfcr 12\n");
 
   /* Do any required saving of fpr's.  If only one or two to save, do it
-     ourself.  Otherwise, call function.  */
+     ourself.  Otherwise, call function.  Note that since they are statically
+     linked, we do not need a nop following them.  */
   if (first_fp_reg == 62)
     fprintf (file, "\tstfd 30,-16(1)\n\tstfd 31,-8(1)\n");
   else if (first_fp_reg == 63)
     fprintf (file, "\tstfd 31,-8(1)\n");
   else if (first_fp_reg != 64)
-    fprintf (file, "\tbl ._savef%d\n\tcror %d,%d,%d\n", first_fp_reg - 32,
-	     RS6000_CROR_BIT_NUMBER, RS6000_CROR_BIT_NUMBER,
-	     RS6000_CROR_BIT_NUMBER);
+    fprintf (file, "\tbl ._savef%d\n", first_fp_reg - 32);
 
   /* Now save gpr's.  */
   if (first_reg == 31)
@@ -1443,9 +1442,7 @@ output_epilog (file, size)
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
       if (first_fp_reg < 62)
-	fprintf (file, "\tb ._restf%d\n\tcror %d,%d,%d\n", first_fp_reg - 32,
-		 RS6000_CROR_BIT_NUMBER, RS6000_CROR_BIT_NUMBER,
-		 RS6000_CROR_BIT_NUMBER);
+	fprintf (file, "\tb ._restf%d\n", first_fp_reg - 32);
       else
 	fprintf (file, "\tbr\n");
     }
