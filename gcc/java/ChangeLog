@@ -1,3 +1,7 @@
+Mon Mar 13 11:36:51 2000  Hans Boehm <boehm@acm.org>
+
+	* typeck.c (build_prim_array_type): Correctly set the high word too.
+
 2000-03-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (qualify_ambiguous_name): Properly handle expressions
