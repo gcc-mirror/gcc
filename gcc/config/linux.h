@@ -1,5 +1,5 @@
 /* Definitions for Linux-based GNU systems with ELF format
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2003
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
@@ -116,6 +116,11 @@ Boston, MA 02111-1307, USA.  */
 
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
+
+/* Use --as-needed -lgcc_s for eh support.  */
+#ifdef HAVE_LD_AS_NEEDED
+#define USE_LD_AS_NEEDED 1
+#endif
 
 /* Determine whether the the entire c99 runtime
    is present in the runtime library.  */
