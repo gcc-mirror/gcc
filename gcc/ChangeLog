@@ -1,5 +1,16 @@
 2003-09-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* configure.in (HAVE_GAS_SHF_MERGE): Always define to test result.
+	Update description.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* dwarf2out.c (DEBUG_STR_SECTION_FLAGS): Test for
+	HAVE_GAS_SHF_MERGE value. 
+	* varasm.c (mergeable_string_section): Likewise.
+	(mergeable_constant_section): Likewise.
+
+2003-09-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* except.h (MUST_USE_SJLJ_EXCEPTIONS): Test for DWARF2_UNWIND_INFO
 	value.
 

@@ -561,8 +561,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 			  unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED,
 			  unsigned int flags ATTRIBUTE_UNUSED)
 {
-#ifdef HAVE_GAS_SHF_MERGE
-  if (flag_merge_constants
+  if (HAVE_GAS_SHF_MERGE && flag_merge_constants
       && TREE_CODE (decl) == STRING_CST
       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
       && align <= 256
@@ -624,7 +623,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 	    }
 	}
     }
-#endif
+
   readonly_data_section ();
 }
 
@@ -635,10 +634,9 @@ mergeable_constant_section (enum machine_mode mode ATTRIBUTE_UNUSED,
 			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED,
 			    unsigned int flags ATTRIBUTE_UNUSED)
 {
-#ifdef HAVE_GAS_SHF_MERGE
   unsigned int modesize = GET_MODE_BITSIZE (mode);
 
-  if (flag_merge_constants
+  if (HAVE_GAS_SHF_MERGE && flag_merge_constants
       && mode != VOIDmode
       && mode != BLKmode
       && modesize <= align
@@ -653,7 +651,7 @@ mergeable_constant_section (enum machine_mode mode ATTRIBUTE_UNUSED,
       named_section_flags (name, flags);
       return;
     }
-#endif
+
   readonly_data_section ();
 }
 
