@@ -756,6 +756,22 @@ is_specialization_of (decl, tmpl)
   return 0;
 }
 
+/* Returns nonzero if T1 and T2 are instances of the same template.
+   (They may have different template arguments.)  */
+
+int
+specializations_of_same_template_p (t1, t2)
+     tree t1;
+     tree t2;
+{
+  /* For now, we only deal with instances of class templates, since
+     that is the only way in which this function is used.  */
+
+  return (most_general_template (CLASSTYPE_TI_TEMPLATE (t1))
+	  == most_general_template (CLASSTYPE_TI_TEMPLATE (t2)));
+}
+
+
 /* Register the specialization SPEC as a specialization of TMPL with
    the indicated ARGS.  Returns SPEC, or an equivalent prior
    declaration, if available.  */
@@ -7340,12 +7356,18 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	       can be a derived class of the deduced A.  Likewise, if
 	       P is a pointer to a class of the form template-id, A
 	       can be a pointer to a derived class pointed to by the
-	       deduced A.  */
+	       deduced A. 
+
+	       The call to get_template_base also handles the case
+	       where PARM and ARG are the same type, i.e., where no
+	       derivation is involved.  */
 	    t = get_template_base (CLASSTYPE_TI_TEMPLATE (parm), arg);
-	  else if
-	    (CLASSTYPE_TEMPLATE_INFO (arg)
-	     && CLASSTYPE_TI_TEMPLATE (parm) == CLASSTYPE_TI_TEMPLATE (arg))
+	  else if (CLASSTYPE_TEMPLATE_INFO (arg) 
+		   && specializations_of_same_template_p (parm, arg))
+	    /* Perhaps PARM is something like S<U> and ARG is S<int>.
+	       Then, we should unify `int' and `U'.  */
 	    t = arg;
+
 	  if (! t || t == error_mark_node)
 	    return 1;
 
