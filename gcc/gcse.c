@@ -831,11 +831,11 @@ gcse_main (f, file)
 	    {
 	      free_modify_mem_tables ();
 	      modify_mem_list
-		= (rtx *) gmalloc (n_basic_blocks * sizeof (rtx *));
+		= (rtx *) gmalloc (n_basic_blocks * sizeof (rtx));
 	      canon_modify_mem_list
-		= (rtx *) gmalloc (n_basic_blocks * sizeof (rtx *));
-	      memset ((char *) modify_mem_list, 0, n_basic_blocks * sizeof (rtx *));
-	      memset ((char *) canon_modify_mem_list, 0, n_basic_blocks * sizeof (rtx *));
+		= (rtx *) gmalloc (n_basic_blocks * sizeof (rtx));
+	      memset ((char *) modify_mem_list, 0, n_basic_blocks * sizeof (rtx));
+	      memset ((char *) canon_modify_mem_list, 0, n_basic_blocks * sizeof (rtx));
 	      orig_bb_count = n_basic_blocks;
 	    }
 	  free_reg_set_mem ();
@@ -1019,10 +1019,10 @@ alloc_gcse_mem (f)
 						       max_gcse_regno);
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  */
-  modify_mem_list = (rtx *) gmalloc (n_basic_blocks * sizeof (rtx *));
-  canon_modify_mem_list = (rtx *) gmalloc (n_basic_blocks * sizeof (rtx *));
-  memset ((char *) modify_mem_list, 0, n_basic_blocks * sizeof (rtx *));
-  memset ((char *) canon_modify_mem_list, 0, n_basic_blocks * sizeof (rtx *));
+  modify_mem_list = (rtx *) gmalloc (n_basic_blocks * sizeof (rtx));
+  canon_modify_mem_list = (rtx *) gmalloc (n_basic_blocks * sizeof (rtx));
+  memset ((char *) modify_mem_list, 0, n_basic_blocks * sizeof (rtx));
+  memset ((char *) canon_modify_mem_list, 0, n_basic_blocks * sizeof (rtx));
   modify_mem_list_set = BITMAP_XMALLOC ();
   canon_modify_mem_list_set = BITMAP_XMALLOC ();
 }

@@ -1,5 +1,10 @@
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
+	* gcse.c (gcse_main): Fix typos.
+	(alloc_gcse_mem): Likewise.
+
+2001-12-31  Graham Stott  <grahams@redhat.com>
+
 	* function.h: Remove undefs for rtx and tree.
 
 2001-12-30  Richard Henderson  <rth@redhat.com>
