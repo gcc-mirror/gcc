@@ -39,7 +39,7 @@ main ()
    should abort.  */
 __attribute__ ((noinline))
 static int
-memcmp (const char *p1, const char *p2, size_t len)
+memcmp (const void *p1, const void *p2, size_t len)
 {
   abort ();
 }

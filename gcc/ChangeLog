@@ -1,3 +1,11 @@
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.c (shadow_warning): Delete.
+	* c-common.h (free_parser_stacks, shadow_warning, sw_kind): Delete.
+	* c-decl.c (warn_if_shadowing): Issue shadow warnings directly.
+	* c-opts.c (c_common_parse_file): Don't call free_parser_stacks.
+	* c-parse.in (free_parser_stacks): Delete.
+
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-opts.c, c-ppoutput.c, cppfiles.c, cpphash.h, cppinit.c,
@@ -175,7 +183,7 @@
 	* doc/interface.texi, doc/tm.texi, doc/trouble.texi: Don't
 	mention deprecated target macros.
 
-2004-02-03  Wolfgang Bangerth  <bangerth@dealii.org> 
+2004-02-03  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* doc/invoke.texi (x86 options): Fix spelling/wording.
 
@@ -210,7 +218,7 @@
 
 2004-02-03  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
-        * toplev.c: Fix broken checkin of 2003-12-30, again.
+	* toplev.c: Fix broken checkin of 2003-12-30, again.
 
 2004-02-02  Eric Christopher  <echristo@redhat.com>
 	    Zack Weinberg  <zack@codesourcery.com>
@@ -466,9 +474,9 @@
 
 2004-01-29  Richard Henderson  <rth@redhat.com>
 
-        * c-parse.in (extension): Use itype.
-        (SAVE_EXT_FLAGS): Don't allocate a tree.
-        (RESTORE_EXT_FLAGS): Don't read a tree.
+	* c-parse.in (extension): Use itype.
+	(SAVE_EXT_FLAGS): Don't allocate a tree.
+	(RESTORE_EXT_FLAGS): Don't read a tree.
 
 2004-01-29  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 

@@ -1553,8 +1553,6 @@ record_external_decl (tree decl)
 static void
 warn_if_shadowing (tree x, tree old)
 {
-  const char *name;
-
   /* Nothing to shadow?  */
   if (old == 0
       /* Shadow warnings not wanted?  */
@@ -1571,13 +1569,14 @@ warn_if_shadowing (tree x, tree old)
       || (TREE_CODE (x) == PARM_DECL && current_scope->outer->parm_flag))
     return;
 
-  name = IDENTIFIER_POINTER (DECL_NAME (x));
   if (TREE_CODE (old) == PARM_DECL)
-    shadow_warning (SW_PARAM, name, old);
+    warning ("%Jdeclaration of '%D' shadows a parameter", x, x);
   else if (DECL_FILE_SCOPE_P (old))
-    shadow_warning (SW_GLOBAL, name, old);
+    warning ("%Jdeclaration of '%D' shadows a global declaration", x, x);
   else
-    shadow_warning (SW_LOCAL, name, old);
+    warning ("%Jdeclaration of '%D' shadows a previous local", x, x);
+
+  warning ("%Jshadowed declaration is here", old);
 }
 
 

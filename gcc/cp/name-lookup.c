@@ -936,15 +936,16 @@ pushdecl (tree x)
 		  /* ARM $8.3 */
 		  if (b->kind == sk_function_parms)
 		    {
-		      error ("declaration of `%#D' shadows a parameter",
-			     name);
+		      error ("declaration of '%#D' shadows a parameter", x);
 		      err = true;
 		    }
 		}
 
 	      if (warn_shadow && !err)
-		shadow_warning (SW_PARAM,
-				IDENTIFIER_POINTER (name), oldlocal);
+		{
+		  warning ("declaration of '%#D' shadows a parameter", x);
+		  warning ("%Jshadowed declaration is here", oldlocal);
+		}
 	    }
 
 	  /* Maybe warn if shadowing something else.  */
@@ -957,17 +958,25 @@ pushdecl (tree x)
 	      if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE
 		       && current_class_ptr
 		       && !TREE_STATIC (name))
-		warning ("declaration of `%s' shadows a member of `this'",
-			    IDENTIFIER_POINTER (name));
+		{
+		  /* Location of previous decl is not useful in this case.  */
+		  warning ("declaration of '%D' shadows a member of 'this'",
+			   x);
+		}
 	      else if (oldlocal != NULL_TREE
 		       && TREE_CODE (oldlocal) == VAR_DECL)
-		shadow_warning (SW_LOCAL,
-				IDENTIFIER_POINTER (name), oldlocal);
+		{
+		  warning ("declaration of '%D' shadows a previous local", x);
+		  warning ("%Jshadowed declaration is here", oldlocal);
+		}
 	      else if (oldglobal != NULL_TREE
 		       && TREE_CODE (oldglobal) == VAR_DECL)
 		/* XXX shadow warnings in outer-more namespaces */
-		shadow_warning (SW_GLOBAL,
-				IDENTIFIER_POINTER (name), oldglobal);
+		{
+		  warning ("declaration of '%D' shadows a global declaration",
+			   x);
+		  warning ("%Jshadowed declaration is here", oldglobal);
+		}
 	    }
 	}
 

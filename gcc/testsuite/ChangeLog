@@ -1,3 +1,9 @@
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/string-opt-15.c: Define memcmp with void *
+	arguments.
+	* gcc.dg/fwritable-strings-1.c: Expect the deprecation notice.
+
 2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14033
@@ -87,9 +93,9 @@
 	* g++.dg/template/sizeof7.C: New test.
 
 2004-02-02  Eric Christopher  <echristo@redhat.com>
-            Zack Weinberg  <zack@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
 
-        * gcc.c-torture/execute/wchar_t-1.c: Add -finput-charset.
+	* gcc.c-torture/execute/wchar_t-1.c: Add -finput-charset.
 
 2004-02-02  Zack Weinberg  <zack@codesourcery.com>
 

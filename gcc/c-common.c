@@ -4288,21 +4288,6 @@ c_init_attributes (void)
 #undef DEF_ATTR_TREE_LIST
 }
 
-/* Output a -Wshadow warning MSGCODE about NAME, and give the location
-   of the previous declaration DECL.  */
-void
-shadow_warning (enum sw_kind msgcode, const char *name, tree decl)
-{
-  static const char *const msgs[] = {
-    /* SW_PARAM  */ N_("declaration of \"%s\" shadows a parameter"),
-    /* SW_LOCAL  */ N_("declaration of \"%s\" shadows a previous local"),
-    /* SW_GLOBAL */ N_("declaration of \"%s\" shadows a global declaration")
-  };
-
-  warning (msgs[msgcode], name);
-  warning ("%Jshadowed declaration is here", decl);
-}
-
 /* Attribute handlers common to C front ends.  */
 
 /* Handle a "packed" attribute; arguments as in

@@ -1237,7 +1237,6 @@ c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       file_index++;
     } while (file_index < num_in_fnames);
   
-  free_parser_stacks ();
   finish_file ();
 }
 

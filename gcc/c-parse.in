@@ -3763,13 +3763,6 @@ yyprint (FILE *file, int yychar, YYSTYPE yyl)
 /* This is not the ideal place to put these, but we have to get them out
    of c-lex.c because cp/lex.c has its own versions.  */
 
-/* Free malloced parser stacks if necessary.  */
-
-void
-free_parser_stacks (void)
-{
-}
-
 /* Parse the file.  */
 void
 c_parse_file (void)

@@ -1,3 +1,8 @@
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* name-lookup.c (pushdecl): Issue shadow warnings directly.
+	* parser.c (free_parser_stacks): Delete.
+
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* rtti.c, tree.c: Update copyright.
@@ -161,7 +166,7 @@
 
 2004-01-29  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
-	* parser.c (cp_parser_template_id): Parse tentatively `[:' after a 
+	* parser.c (cp_parser_template_id): Parse tentatively `[:' after a
 	template name as it was `<::' (digraph typo).
 	(cp_parser_nth_token_starts_template_argument_list_p): New function.
 	(cp_parser_id_expression): Use it.
@@ -240,7 +245,7 @@
 2004-01-25  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13810
-	* parser.c (cp_parser_type_parameter): When cp_parser_id_expression 
+	* parser.c (cp_parser_type_parameter): When cp_parser_id_expression
 	returns a TYPE_DECL. no further lookup is required.
 	* semantics.c (check_template_template_default_arg): A TYPE_DECL
 	is invalid. Rework to give better diagnostics.
@@ -285,7 +290,7 @@
 
 2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in (CXX_INSTALL_NAME, GXX_INSTALL_NAME, 
+	* Make-lang.in (CXX_INSTALL_NAME, GXX_INSTALL_NAME,
 	CXX_TARGET_INSTALL_NAME, GXX_TARGET_INSTALL_NAME): Define via a
 	immediate $(shell) instead of deferred backquote.
 
@@ -395,7 +400,7 @@
 2004-01-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/8856
-	* parser.c (cp_parser_template_name): Don't try to parse a 
+	* parser.c (cp_parser_template_name): Don't try to parse a
 	conversion-function-id, as it cannot be a template-name.
 	(cp_parser_simple_type_specifier): Check for invalid template-ids
 	even after a built-in type.
@@ -506,7 +511,7 @@
 
 	DR 337
 	PR c++/9256
-	* pt.c (tsubst): Substitution must fail if we are attempting to 
+	* pt.c (tsubst): Substitution must fail if we are attempting to
 	create an array with element type that is an abstract class type.
 	* decl.c (cp_finish_decl): Strip pointers and array types recursively
 	before calling abstract_virtuals_error.
