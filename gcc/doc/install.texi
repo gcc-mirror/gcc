@@ -2779,7 +2779,8 @@ GCC is consistent with itself, but not consistent with the SGI C compiler
 happen are when there are library functions that take/return such
 structures. There are very few such library functions.  Currently this
 is known to affect @code{inet_ntoa}, @code{inet_lnaof},
-@code{inet_netof}, @code{inet_makeaddr}, and @code{semctl}.
+@code{inet_netof}, @code{inet_makeaddr}, and @code{semctl}.  Until the
+bug is fixed, GCC contains workarounds for the known affected functions.
 
 See @uref{http://freeware.sgi.com/,,http://freeware.sgi.com/} for more
 information about using GCC on IRIX platforms.
