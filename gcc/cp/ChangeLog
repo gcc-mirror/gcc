@@ -1,5 +1,11 @@
 2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/14033
+	* decl.c (require_complete_types_for_parms): Do not insert
+	error_mark_node in the parameter list.
+
+2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/14028
 	* parser.c (cp_parser_enclosed_template_argument_list): Emit straight
 	error when terminator can not be found.
