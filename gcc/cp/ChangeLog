@@ -1,3 +1,8 @@
+Sat Jan 24 12:13:54 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (dump_decl): Fix type default template args.
+	(dump_type): Hand TEMPLATE_DECL off to dump_decl.
+
 Fri Jan 23 18:34:37 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* lex.c (DIR_SEPARATOR): Define to be '/' if not already defined.
