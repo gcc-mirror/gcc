@@ -1,3 +1,9 @@
+2002-01-08  Graham Stott  <grahams@redhat.com>
+
+	* debug.h: Use "tree" and "rtx" throughout.
+
+	* debug.c: Likewise.
+
 2002-01-08  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* dbxout.c (dbxout_symbol_location): If a symbol ref is in the
