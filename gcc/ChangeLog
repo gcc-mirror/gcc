@@ -1,3 +1,10 @@
+Fri Oct 23 00:56:11 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (pending_chain): Move up.
+	(save_expr_status): Do save pending_chain.
+	(restore_expr_status): And restore it.
+	* function.h (struct function): Add pending_chain.
+
 1998-10-23 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* reorg.c (relax_delay_slots): Fixed test for mostly_true_jump. The
