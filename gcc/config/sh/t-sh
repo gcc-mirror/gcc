@@ -22,7 +22,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 MULTILIB_ENDIAN = ml/mb
-MULTILIB_CPUS= $(ML_sh1)$(ML_sh2a)$(ML_sh2a_nofpu)$(ML_sh2a_single_only)$(ML_sh2a_single)$(ML_sh2e)$(ML_sh2)$(ML_sh3e)$(ML_sh3)$(ML_sh4_nofpu)$(ML_sh4_single_only)$(ML_sh4_single)$(ML_sh4)$(ML_sh4a_nofpu)$(ML_sh4a_single_only)$(ML_sh4a_single)$(ML_sh4a)$(ML_m5_32media)$(ML_m5_32media_nofpu)$(ML_m5_compact)$(ML_m5_compact_nofpu)$(ML_m5_64media)$(ML_m5_64media_nofpu)
+MULTILIB_CPUS= $(ML_sh1)$(ML_sh2a)$(ML_sh2a_nofpu)$(ML_sh2a_single_only)$(ML_sh2a_single)$(ML_sh2e)$(ML_sh2)$(ML_sh3e)$(ML_sh3)$(ML_sh4_nofpu)$(ML_sh4_single_only)$(ML_sh4_single)$(ML_sh4)$(ML_sh4a_nofpu)$(ML_sh4a_single_only)$(ML_sh4a_single)$(ML_sh4a)$(ML_sh5_32media)$(ML_sh5_32media_nofpu)$(ML_sh5_compact)$(ML_sh5_compact_nofpu)$(ML_sh5_64media)$(ML_sh5_64media_nofpu)
 
 MULTILIB_OPTIONS= $(MULTILIB_ENDIAN) $(MULTILIB_CPUS:/=)
 MULTILIB_DIRNAMES= 
