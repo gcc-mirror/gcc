@@ -1,3 +1,8 @@
+2003-01-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR other/7448
+	* doc/passes.texi (fssa-ccp): Remove misplaced line.
+
 2003-01-21  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
         PR opt/7507
