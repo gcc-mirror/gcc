@@ -103,7 +103,8 @@ extern int errno;
   ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC || (magic) == U802TOCMAGIC)
 #endif
 
-#if defined (_AIX) || defined (USG)
+/* Many versions of ldfcn.h define these.  */
+#ifdef FREAD
 #undef FREAD
 #undef FWRITE
 #endif
