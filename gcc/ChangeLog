@@ -1,3 +1,17 @@
+2002-04-09  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.in (auto-build.h): Use target_alias and build_alias
+	when running configure.
+	(gcc_cv_as_bfd_srcdir): Define.
+	(gcc_cv_as): Use gcc_cv_as_bfd_srcdir to find gas version. Use
+	$target_alias in directory searchs rather than $target.  Heed
+	program_prefix and program_transform_name.  Search for gas in
+	cross-compiler case too.  "test -x" rather than "test -f".
+	(gcc_cv_nm): Set for cross compilers too.
+	(gcc_cv_objdump): Define and use.
+	(as_ver): Cope with date string in as --version output.
+	* configure: Regenerate.
+
 2002-04-04  Richard Henderson  <rth@redhat.com>
 
 	PR opt/6165
