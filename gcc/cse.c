@@ -7489,7 +7489,7 @@ count_reg_usage (x, counts, dest, incr)
 static bool
 set_live_p (set, insn, counts)
      rtx set;
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;	/* Only used with HAVE_cc0.  */
      int *counts;
 {
 #ifdef HAVE_cc0

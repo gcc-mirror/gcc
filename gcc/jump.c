@@ -69,6 +69,7 @@ static void invert_exp_1		PARAMS ((rtx));
 static int invert_exp			PARAMS ((rtx));
 static int returnjump_p_1	        PARAMS ((rtx *, void *));
 static void delete_prior_computation    PARAMS ((rtx, rtx));
+static void mark_modified_reg		PARAMS ((rtx, rtx, void *));
 
 /* Alternate entry into the jump optimizer.  This entry point only rebuilds
    the JUMP_LABEL field in jumping insns and REG_LABEL notes in non-jumping
