@@ -1,5 +1,10 @@
 Sun May 20 16:39:24 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr, case ARRAY_REF): Don't fold constant
+	access if EXPAND_CONST_ADDRESS or EXPAND_INITIALIZER.
+	(expand_expr, case COMPONENT_REF): Do copy if misaligned even
+	if EXPAND_CONST_ADDRESS or EXPAND_INITIALIZER.
+
 	* stmt.c (expand_decl): Set mode, alignment, and sizes for CONST_DECL.
 
 2001-05-20  Richard Henderson  <rth@redhat.com>
