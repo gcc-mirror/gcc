@@ -1,5 +1,7 @@
 Sun Oct 25 06:12:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* optabs.c (emit_no_conflict_block): Allow insn of just USE or SET.
+
 	* explow.c (allocate_dynamic_stack_space): If operand 1 has VOIDmode,
 	use Pmode.
 
