@@ -4817,6 +4817,13 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 				   plus_constant (XEXP (target, 0),
 						bitpos / BITS_PER_UNIT));
 
+	  /* Make sure that ALIGN is no stricter than the alignment of
+	     EXP.  */
+	  if (TREE_CODE (exp) == VAR_DECL)
+	    align = MIN (DECL_ALIGN (exp) / BITS_PER_UNIT, align);
+	  else
+	    align = MIN (TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT, align);
+
 	  /* Find an alignment that is consistent with the bit position.  */
 	  while ((bitpos % (align * BITS_PER_UNIT)) != 0)
 	    align >>= 1;
