@@ -1131,10 +1131,11 @@
 	(zero_extract:SI (match_operand:SI 3 "register_operand" "")
 			 (const_int 1)
 			 (const_int 31)))
-  (set (zero_extract:SI (match_operand:SI 0 "register_operand" "")
-			(match_operand:SI 1 "const_int_operand" "")
-			(match_operand:SI 2 "const_int_operand" ""))
-       (ne (cc0) (const_int 0)))]
+   (parallel [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "")
+				    (match_operand:SI 1 "const_int_operand" "")
+				    (match_operand:SI 2 "const_int_operand" ""))
+		   (ne (cc0) (const_int 0)))
+	      (clobber (match_scratch:SI 4 ""))])]
   ""
   "")
 	
@@ -1159,7 +1160,7 @@
 			 (const_int 1)
 			 (match_operand:SI 1 "const_int_operand" "n,m"))
 	(ne (cc0) (const_int 0)))
-   (match_scratch 2 "=X,b")]
+   (clobber (match_scratch:SI 2 "=X,b"))]
   ""
   "@
    mftbi%t1 %0,%S1
