@@ -18,21 +18,7 @@ const int test_va = 0;
 const int test_va = 1;
 #endif
 
-typedef struct { char c; } Sc;
-typedef struct { short s; } Ss;
-typedef struct { int i; } Si;
-typedef struct { short s; char c; } Ssc;
-typedef struct { char c; short s; } Scs;
-typedef struct { int i; char c; } Sic;
-typedef struct { char c; int i; } Sci;
-typedef struct { short s; int i; } Ssi;
-typedef struct { int i; short s; } Sis;
-typedef struct { char c; short s; int i; } Scsi;
-typedef struct { char c; int i; short s; } Scis;
-typedef struct { short s; char c; int i; } Ssci;
-typedef struct { short s; int i; char c; } Ssic;
-typedef struct { int i; short s; char c; } Sisc;
-typedef struct { int i; char c; short s; } Sics;
+#include "small-struct-defs.h"
 
 extern void checkSc (Sc x, int i);
 extern void checkSs (Ss x, int i);
@@ -50,21 +36,7 @@ extern void checkSsic (Ssic x, int i);
 extern void checkSisc (Sisc x, int i);
 extern void checkSics (Sics x, int i);
 
-void initSc (Sc *p, int i) { p->c = (char)i; }
-void initSs (Ss *p, int i) { p->s = i; }
-void initSi (Si *p, int i) { p->i = i; }
-void initSsc (Ssc *p, int i) { p->s = i; p->c = (char)i+1; }
-void initScs (Scs *p, int i) { p->c = (char)i; p->s = i+1; }
-void initSsi (Ssi *p, int i) { p->s = i; p->i = i+1; }
-void initSis (Sis *p, int i) { p->i = i; p->s = i+1; }
-void initSic (Sic *p, int i) { p->i = i; p->c = (char)i+1; }
-void initSci (Sci *p, int i) { p->c = (char)i; p->i = i+1; }
-void initScsi (Scsi *p, int i) { p->c = (char)i; p->s = i+1; p->i = i+2; }
-void initScis (Scis *p, int i) { p->c = (char)i; p->i = i+1; p->s = i+2; }
-void initSsci (Ssci *p, int i) { p->s = i; p->c = (char)i+1; p->i = i+2; }
-void initSsic (Ssic *p, int i) { p->s = i; p->i = i+1; p->c = (char)i+2; }
-void initSisc (Sisc *p, int i) { p->i = i; p->s = i+1; p->c = (char)i+2; }
-void initSics (Sics *p, int i) { p->i = i; p->c = (char)i+1; p->s = i+2; }
+#include "small-struct-init.h"
 
 #define T(TYPE)							\
 extern TYPE g1s##TYPE, g2s##TYPE, g3s##TYPE, g4s##TYPE;		\
