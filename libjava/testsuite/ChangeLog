@@ -1,3 +1,8 @@
+2003-02-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* libjava.jacks/jacks.exp (gcj_jacks_write): Set LD_LIBRARY_PATH
+	to find libgcc_s.  Set JAVA_CLASSPATH to find libgcj.jar.
+
 2003-01-31  Mark Wielaard  <mark@klomp.org>
  
 	* lib/libjava.exp (libjava_prune_warnings): Remove all unreachable

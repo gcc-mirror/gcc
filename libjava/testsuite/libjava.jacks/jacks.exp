@@ -14,6 +14,9 @@ proc gcj_jacks_setup_xfail {ary} {
 
 proc gcj_jacks_write {filename} {
   global GCJ_UNDER_TEST
+  global libgcj_jar
+  global libjava_libgcc_s_path
+  global original_ld_library_path
 
   set gcjl [split $GCJ_UNDER_TEST]
   set gcj_cmd [lindex $gcjl 0]
@@ -22,7 +25,7 @@ proc gcj_jacks_write {filename} {
 
   set fd [open $filename w]
   puts $fd "set JAVAC $gcj_cmd"
-  puts $fd "set JAVA_CLASSPATH \"\""
+  puts $fd "set JAVA_CLASSPATH \"$libgcj_jar\""
   puts $fd "set JAVAC_FLAGS [list $rest]"
   puts $fd "set JAVA [list [libjava_find_gij]]"
   puts $fd "set JAVA_FLAGS \"\""
@@ -32,6 +35,8 @@ proc gcj_jacks_write {filename} {
   # "Time-consuming JVM limitation tests".
   # puts $fd "set tcltest::testConstraints(jvm) 1"
   close $fd
+
+  setenv LD_LIBRARY_PATH $libjava_libgcc_s_path:$original_ld_library_path
 }
 
 proc gcj_jacks_parse {file} {
