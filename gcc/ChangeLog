@@ -1,3 +1,10 @@
+Fri Feb 20 08:27:46 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* sparc/sol2-sld.h: New file.
+	* configure.in (sparc-*-solaris2*): Use it when using system linker.
+	* toplev.c (main): Don't default to DWARF2_DEBUG with -ggdb 
+	if LINKER_DOES_NOT_WORK_WITH_DWARF2 is defined.
+
 Fri Feb 20 08:21:49 1998  H.J. Lu  (hjl@gnu.org)
 
 	* alpha/elf.h (STARTFILE_SPEC, ENDFILE_SPEC): Support shared library.
