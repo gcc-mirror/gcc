@@ -1,5 +1,5 @@
 /* com.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
@@ -124,19 +124,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # endif
 #endif
 
-#ifndef RLIMIT_STACK
-# include <time.h>
-#else
-# if TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-# else
-#  if HAVE_SYS_TIME_H
-#   include <sys/time.h>
-#  else
-#   include <time.h>
-#  endif
-# endif
+#ifdef RLIMIT_STACK
 # include <sys/resource.h>
 #endif
 
