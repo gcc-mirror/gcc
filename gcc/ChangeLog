@@ -1,3 +1,8 @@
+2002-11-21  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/arm/elf.h (ASM_SPEC, LINK_SPEC): Pass -EL
+	if -mlittle-endian is specified.
+
 2002-11-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR optimization/2903

@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef ASM_SPEC
 #define ASM_SPEC "\
 %{mbig-endian:-EB} \
+%{mlittle-endian:-EL} \
 %{mcpu=*:-mcpu=%*} \
 %{march=*:-march=%*} \
 %{mapcs-*:-mapcs-%*} \
@@ -91,7 +92,7 @@ Boston, MA 02111-1307, USA.  */
 #define JUMP_TABLES_IN_TEXT_SECTION (TARGET_ARM)
 
 #ifndef LINK_SPEC
-#define LINK_SPEC "%{mbig-endian:-EB} -X"
+#define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} -X"
 #endif
   
 /* Run-time Target Specification.  */
