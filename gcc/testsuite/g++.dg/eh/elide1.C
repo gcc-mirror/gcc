@@ -5,7 +5,8 @@
 // temporary.  This is wrong; the throw from A() should propagate normally
 // regardless of the elision of the temporary.
 
-// { dg-do run }
+// XFAILed until tree-ssa is merged onto the trunk.
+// { dg-do run { xfail *-*-* } }
 
 struct A
 {
