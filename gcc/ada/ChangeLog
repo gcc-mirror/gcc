@@ -1,3 +1,9 @@
+2001-10-30  Richard Kenner <kenner@gnat.com>
+
+	* misc.c (gnat_expand_expr, case NULL_EXPR): Remove call to 
+	set_mem_attributes since not needed and wrong if RESULT if a REG; 
+	fixes ACATS failures.
+
 2001-10-30  Geert Bosch <bosch@gnat.com>
 
 	* 86numaux.adb, a-tigeau.ads, a-wtgeau.ads, fname-sf.ads, g-traceb.ads,
