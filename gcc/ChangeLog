@@ -1,4 +1,9 @@
-Wed Aug 20 14:57:11 1997  Michael Meissner  <meissner@cygnus.com>
+Wed Aug 20 11:58:33 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* stmt.c (start_cleanup_deferal, end_cleanup_deferal): Test
+	block_stack before dereferencing it.
+
+Wed Aug 20 11:57:11 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.h (ISSUE_RATE): Define instead of MACHINE_issue_rate.
 

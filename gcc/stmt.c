@@ -4212,7 +4212,10 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 void
 start_cleanup_deferal ()
 {
-  ++block_stack->data.block.conditional_code;
+  /* block_stack can be NULL if we are inside the parameter list.  It is
+     OK to do nothing, because cleanups aren't possible here.  */
+  if (block_stack)
+    ++block_stack->data.block.conditional_code;
 }
 
 /* Mark the end of a conditional region of code.  Because cleanup
@@ -4223,7 +4226,10 @@ start_cleanup_deferal ()
 void
 end_cleanup_deferal ()
 {
-  --block_stack->data.block.conditional_code;
+  /* block_stack can be NULL if we are inside the parameter list.  It is
+     OK to do nothing, because cleanups aren't possible here.  */
+  if (block_stack)
+    --block_stack->data.block.conditional_code;
 }
 
 /* Move all cleanups from the current block_stack
