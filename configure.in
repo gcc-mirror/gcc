@@ -14,7 +14,7 @@
 ## For more information on these two systems, check out the documentation
 ## for 'Autoconf' (autoconf.texi) and 'Configure' (configure.texi).  
 
-#   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -300,6 +300,12 @@ case "${target}" in
     ;;
   powerpc-*-netware*)
     target_makefile_frag="${target_makefile_frag} config/mt-netware"
+    ;;
+  alpha*-*-linux-gnulibc1)
+    target_makefile_frag="${target_makefile_frag} config/mt-linux"
+    ;;
+  powerpc*-*-linux-gnulibc1)
+    target_makefile_frag="${target_makefile_frag} config/mt-linux"
     ;;
   *-*-linux-gnu)
     target_makefile_frag="${target_makefile_frag} config/mt-linux"
