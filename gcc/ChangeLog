@@ -1,5 +1,9 @@
 Wed Jul 14 23:28:06 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* emit-rtl.c (gen_realpart): Issue an error for cases GCC can not
+	handle at this time instead of silently generating incorrect code.
+	(gen_imagpart): Likewise.
+
 	* reload.c (find_reloads): Emit a USE for a pseudo register without
 	a hard register if we could not create an optional reload for the
 	pseudo.

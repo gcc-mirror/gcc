@@ -966,6 +966,11 @@ gen_realpart (mode, x)
 {
   if (GET_CODE (x) == CONCAT && GET_MODE (XEXP (x, 0)) == mode)
     return XEXP (x, 0);
+  else if (WORDS_BIG_ENDIAN
+	   && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+	   && REG_P (x)
+	   && REGNO (x) < FIRST_PSEUDO_REGISTER)
+    fatal ("Unable to access real part of complex value in a hard register on this target");
   else if (WORDS_BIG_ENDIAN)
     return gen_highpart (mode, x);
   else
@@ -984,6 +989,11 @@ gen_imagpart (mode, x)
     return XEXP (x, 1);
   else if (WORDS_BIG_ENDIAN)
     return gen_lowpart (mode, x);
+  else if (!WORDS_BIG_ENDIAN
+	   && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+	   && REG_P (x)
+	   && REGNO (x) < FIRST_PSEUDO_REGISTER)
+    fatal ("Unable to access imaginary part of complex value in a hard register on this target");
   else
     return gen_highpart (mode, x);
 }
