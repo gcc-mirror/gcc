@@ -219,12 +219,7 @@ expand_prologue ()
   emit_insn (gen_store_movm ());
 
   if (frame_pointer_needed)
-    {
-      emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
-      emit_insn (gen_addsi3 (frame_pointer_rtx,
-			     frame_pointer_rtx,
-			     GEN_INT (20)));
-    }
+    emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
 
   if (size)
     emit_insn (gen_addsi3 (stack_pointer_rtx,
@@ -240,9 +235,6 @@ expand_epilogue ()
   /* Cut back the stack.  */
   if (frame_pointer_needed)
     {
-      emit_insn (gen_addsi3 (frame_pointer_rtx,
-			     frame_pointer_rtx,
-			     GEN_INT (-20)));
       emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
       size = 0;
     }

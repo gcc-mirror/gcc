@@ -337,13 +337,13 @@ enum reg_class {
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
 
-#define STARTING_FRAME_OFFSET -20
+#define STARTING_FRAME_OFFSET 0
 
 /* Offset of first parameter from the argument pointer register value.  */
 /* Is equal to the size of the saved fp + pc, even if an fp isn't
    saved since the value is used before we know.  */
 
-#define FIRST_PARM_OFFSET(FNDECL) 0
+#define FIRST_PARM_OFFSET(FNDECL) (-4 + 20)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -374,7 +374,7 @@ enum reg_class {
    as of the start of the function body.  This depends on the layout
    of the fixed parts of the stack frame and on how registers are saved.  */
 
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 0
+#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 20
 
 /* A guess for the MN10300.  */
 #define PROMOTE_PROTOTYPES 1
@@ -387,6 +387,17 @@ enum reg_class {
    SIZE is the number of bytes of arguments passed on the stack.  */
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
+
+/* On the mn10300, the caller is responsible for allocating and deallocating
+   a stack slot for the "call" and "calls" instructions to save their return
+   pointer.  We used to do this in the "call" and "call_value" expanders,
+   but that generated poor code.
+
+   Now we pretend that we have an outgoing register parameter space so that
+   the generic function calling code will allocate the slot.  */
+   
+#define REG_PARM_STACK_SPACE(FNDECL) 4
+#define OUTGOING_REG_PARM_STACK_SPACE
 
 /* 1 if N is a possible register number for function argument passing.
    On the MN10300, no registers are used in this way.  */
