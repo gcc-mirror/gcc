@@ -245,11 +245,6 @@ Thu Jun 28 00:31:24 2001  Denis Chertykov  <denisc@overta.ru>
 	COMPOUND_STMT.
 	Fixes PR c/3259.
 
-2001-06-21  David Edelsohn  <edelsohn@gnu.org>
-
-	* config/rs6000/aix.h (USE_FP_FOR_ARG_P): Override macro to match
-	AIX ABI.
-
 2001-06-21  Geoff Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.md (maxsf3): Use rs6000_emit_minmax.
