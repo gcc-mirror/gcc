@@ -1651,7 +1651,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
     default:
       {
-	register rtx body = PATTERN (insn);
+	register rtx body = PATTERN (insn), set;
 	int insn_code_number;
 	char *template;
 	rtx note;
@@ -1853,6 +1853,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	body = PATTERN (insn);
 
 #ifdef HAVE_cc0
+	set = single_set(insn);
+
 	/* Check for redundant test and compare instructions
 	   (when the condition codes are already set up as desired).
 	   This is done only when optimizing; if not optimizing,
@@ -1863,7 +1865,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	if (optimize)
 	  {
+#if 0
 	    rtx set = single_set(insn);
+#endif
 
 	    if (set
 		&& GET_CODE (SET_DEST (set)) == CC0
@@ -1978,20 +1982,20 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	   handle conditional moves (if this machine has either one).  */
 
 	if (cc_status.flags != 0
-	    && GET_CODE (body) == SET)
+	    && set != 0)
 	  {
 	    rtx cond_rtx, then_rtx, else_rtx;
 	    
 	    if (GET_CODE (insn) != JUMP_INSN
-		&& GET_CODE (SET_SRC (body)) == IF_THEN_ELSE)
+		&& GET_CODE (SET_SRC (set)) == IF_THEN_ELSE)
 	      {
-		cond_rtx = XEXP (SET_SRC (body), 0);
-		then_rtx = XEXP (SET_SRC (body), 1);
-		else_rtx = XEXP (SET_SRC (body), 2);
+		cond_rtx = XEXP (SET_SRC (set), 0);
+		then_rtx = XEXP (SET_SRC (set), 1);
+		else_rtx = XEXP (SET_SRC (set), 2);
 	      }
 	    else
 	      {
-		cond_rtx = SET_SRC (body);
+		cond_rtx = SET_SRC (set);
 		then_rtx = const_true_rtx;
 		else_rtx = const0_rtx;
 	      }
@@ -2014,12 +2018,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		    break;
 		  result = alter_cond (cond_rtx);
 		  if (result == 1)
-		    validate_change (insn, &SET_SRC (body), then_rtx, 0);
+		    validate_change (insn, &SET_SRC (set), then_rtx, 0);
 		  else if (result == -1)
-		    validate_change (insn, &SET_SRC (body), else_rtx, 0);
+		    validate_change (insn, &SET_SRC (set), else_rtx, 0);
 		  else if (result == 2)
 		    INSN_CODE (insn) = -1;
-		  if (SET_DEST (body) == SET_SRC (body))
+		  if (SET_DEST (set) == SET_SRC (set))
 		    {
 		      PUT_CODE (insn, NOTE);
 		      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
