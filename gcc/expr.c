@@ -9109,9 +9109,6 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
       rtx prev = get_last_insn ();
       rtx branch = 0;
 
-      if (prev != 0)
-	prev = PREV_INSN (prev);
-
       /* Output the branch with the opposite condition.  Then try to invert
 	 what is generated.  If more than one insn is a branch, or if the
 	 branch is not the last insn written, abort. If we can't invert
@@ -9123,14 +9120,17 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
       else
 	abort ();
 
-      /* Here we get the insn before what was just emitted.
-	 On some machines, emitting the branch can discard
-	 the previous compare insn and emit a replacement.  */
+      /* Here we get the first insn that was just emitted.  It used to be  the
+	 case that, on some machines, emitting the branch would discard
+	 the previous compare insn and emit a replacement.  This isn't
+	 done anymore, but abort if we see that PREV is deleted.  */
+
       if (prev == 0)
-	/* If there's only one preceding insn...  */
 	insn = get_insns ();
+      else if (INSN_DELETED_P (prev))
+	abort ();
       else
-	insn = NEXT_INSN (NEXT_INSN (prev));
+	insn = NEXT_INSN (prev);
 
       for (; insn; insn = NEXT_INSN (insn))
 	if (GET_CODE (insn) == JUMP_INSN)
