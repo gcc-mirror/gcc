@@ -3786,11 +3786,13 @@ typedef struct mips_args {
    macro are thoses used in the most insn patterns.  */
 
 #define PREDICATE_CODES							\
-  {"uns_arith_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"arith_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"arith32_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG }}, \
-  {"true_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG }}, \
+  {"uns_arith_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
+  {"arith_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
+  {"arith32_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
+  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG,	\
+				  ADDRESSOF }},				\
+  {"true_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG,	\
+				  ADDRESSOF }},				\
   {"small_int",			{ CONST_INT }},				\
   {"large_int",			{ CONST_INT }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
@@ -3804,20 +3806,21 @@ typedef struct mips_args {
   {"call_insn_operand",		{ CONST_INT, CONST, SYMBOL_REF, REG}},	\
   {"move_operand", 		{ CONST_INT, CONST_DOUBLE, CONST,	\
 				  SYMBOL_REF, LABEL_REF, SUBREG,	\
-				  REG, MEM}},				\
+				  REG, MEM, ADDRESSOF }},		\
   {"movdi_operand",		{ CONST_INT, CONST_DOUBLE, CONST,	\
-				  SYMBOL_REF, LABEL_REF, SUBREG, REG,	\
-				  MEM, SIGN_EXTEND }},			\
-  {"se_register_operand",	{ SUBREG, REG, SIGN_EXTEND }},		\
+				  SYMBOL_REF, LABEL_REF, SUBREG,	\
+				  REG, MEM, ADDRESSOF, SIGN_EXTEND }},	\
+  {"se_register_operand",	{ SUBREG, REG, ADDRESSOF,		\
+				  SIGN_EXTEND }},			\
   {"se_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG,	\
-				  SIGN_EXTEND }},			\
+				  ADDRESSOF, SIGN_EXTEND }},		\
   {"se_uns_arith_operand",	{ REG, CONST_INT, SUBREG,		\
-				  SIGN_EXTEND }},			\
+				  ADDRESSOF, SIGN_EXTEND }},		\
   {"se_arith_operand",		{ REG, CONST_INT, SUBREG,		\
-				  SIGN_EXTEND }},			\
+				  ADDRESSOF, SIGN_EXTEND }},		\
   {"se_nonmemory_operand",	{ CONST_INT, CONST_DOUBLE, CONST,	\
 				  SYMBOL_REF, LABEL_REF, SUBREG,	\
-				  REG, SIGN_EXTEND }},			\
+				  REG, ADDRESSOF, SIGN_EXTEND }},	\
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST }},		\
   {"fcc_register_operand",	{ REG, SUBREG }},			\
