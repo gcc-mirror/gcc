@@ -963,6 +963,18 @@ assign_stack_temp_for_type (mode, size, keep, type)
 
       p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
 
+      /* We are passing an explicit alignment request to assign_stack_local.
+	 One side effect of that is assign_stack_local will not round SIZE
+	 to ensure the frame offset remains suitably aligned.
+
+	 So for requests which depended on the rounding of SIZE, we go ahead
+	 and round it now.  We also make sure ALIGNMENT is at least
+	 BIGGEST_ALIGNMENT.  */
+      if (mode == BLKmode)
+	{
+	  align = MAX (align, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
+	  size = CEIL_ROUND (size, align);
+	}
       p->slot = assign_stack_local (mode, size, align);
 
       p->align = align;
