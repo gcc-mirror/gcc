@@ -1,3 +1,8 @@
+2001-08-17  Jeff Sturm  <jsturm@one-point.com>
+
+	* gnu/gcj/convert/UnicodeToBytes.java (write): Write work buffer
+	starting from zero offset.
+
 2001-08-17  Hans-J. Boehm <Hans_Boehm@hp.com>
 
 	* boehm.cc: Include gc_local_alloc.h if appropriate.
