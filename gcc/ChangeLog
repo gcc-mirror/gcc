@@ -1,3 +1,8 @@
+Mon Nov 23 16:39:04 1998  Richard Henderson  <rth@cygnus.com>
+
+        * configure.in: Look for <sys/stat.h>.
+        * system.h: Include it before substitute S_ISREG definitions.
+
 Mon Nov 23 17:40:37 1998  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/abi.h: Use ABI_O64, duplicating ABI_32 usage.

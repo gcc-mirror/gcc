@@ -356,6 +356,9 @@ extern void abort ();
 #define _(String) String
 #define N_(String) String
 
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 
 /* Test if something is a normal file.  */
 #ifndef S_ISREG
