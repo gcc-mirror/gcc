@@ -1,3 +1,8 @@
+2002-03-29  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/natPlainDatagramSocketImpl.cc (close): New function.
+	* java/net/natPlainSocketImpl.cc (close): Indentation fix.
+
 2002-03-27  Jeff Sturm  <jsturm@one-point.com>
 
 	* java/net/PlainDatagramSocketImpl.java
@@ -24,25 +29,6 @@
 	instead of syscall on IA-64.
 	Add FIXME comment.
 	
-2002-03-24  Tom Tromey  <tromey@redhat.com>
-
-	* java/awt/TextComponent.java (TextComponent): Editable by
-	default.
-
-	* java/awt/MenuItem.java (eventMask): No longer private.
-	* java/awt/Button.java (dispatchEventImpl): Only dispatch to
-	superclass if we didn't handle event.
-	* java/awt/Checkbox.java (dispatchEventImpl): New method.
-	* java/awt/CheckboxMenuItem.java (dispatchEventImpl): New method.
-	* java/awt/Choice.java (dispatchEventImpl): New method.
-	* java/awt/List.java (dispatchEventImpl): New method.
-	* java/awt/Scrollbar.java (dispatchEventImpl): New method.
-	* java/awt/TextComponent.java (dispatchEventImpl): New method.
-	* java/awt/TextField.java (dispatchEventImpl): New method.
-
-	* java/awt/Component.java (processEvent): Check ComponentEvent
-	after KeyEvent.
-
 2002-03-27  Anthony Green  <green@redhat.com>
 
 	* libgcj.spec.in: Add CHECKREFSPEC.
