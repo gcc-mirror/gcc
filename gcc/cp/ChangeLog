@@ -1,3 +1,11 @@
+2004-09-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport from gcc-3_4-branch
+	2004-08-24  Jason Merrill  <jason@redhat.com>
+	PR c++/15461
+	* semantics.c (nullify_returns_r): Replace a DECL_STMT
+	for the NRV with an INIT_EXPR.
+
 2004-07-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/16175
