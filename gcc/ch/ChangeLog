@@ -1,3 +1,19 @@
+Tue Jan 19 23:24:36 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (typeck.o): Depend on insn-codes.h.
+	* actions.c (chill_handle_multi_case_label): Initialize "expr".
+	* decl.c (poplevel): Initialize "block_previously_created".
+	* expr.c (chill_expand_expr): Initialize "size0" and "size1".
+	(fold_set_expr): Initialize "buffer1".
+	* inout.c (process_io_list): Initialize "to_assign".
+	(check_exprlist): Initialize "result".
+	* parse.c (expand_expr): Declare.
+	(parse_multi_dimension_case_action): Initialize "end_case_label".
+	* tasking.c (build_start_process): Initialize "struct_type_node".
+	* typeck.c (apply_chill_field_layout): Initialize "word".
+	(type_for_mode); Unconditionally cast RHS & LHS to ints to shut up	
+	signed/unsigned comparison warning.
+
 Mon Jan 18 11:55:06 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ch-tree.h: Remove conflicting prototypes for pedwarn,

@@ -1,5 +1,5 @@
 /* Implement I/O-related actions for CHILL.
-   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 1994, 1998, 1999 Free Software Foundation, Inc.
    
    This file is part of GNU CC.
    
@@ -3314,7 +3314,7 @@ process_io_list (exprlist, iolist_addr, iolist_length, iolist_rtx, do_read,
 	}
       else if (TREE_CODE (item_type) == BOOLEAN_TYPE)
 	{
-	  tree to_assign;
+	  tree to_assign = NULL_TREE;
 
 	  if (do_read && readonly)
 	    {
@@ -3834,7 +3834,7 @@ check_exprlist (code, exprlist, argnum, repetition)
      int argnum;
      unsigned long repetition;
 {
-  tree expr, type, result;
+  tree expr, type, result = NULL_TREE;
 
   while (repetition--)
     {

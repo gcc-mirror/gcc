@@ -1,5 +1,5 @@
 /* Implement tasking-related actions for CHILL.
-   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 1994, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -515,7 +515,7 @@ build_start_process (process_name, copynum,
 		     exprlist, optset)
      tree process_name, copynum, exprlist, optset;
 {
-  tree process_decl, struct_type_node;
+  tree process_decl = NULL_TREE, struct_type_node = NULL_TREE;
   tree result;
   tree valtail, typetail;
   tree tuple = NULL_TREE, actuallist = NULL_TREE;

@@ -312,8 +312,8 @@ tasking.o : tasking.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) \
 tree.o : tree.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../system.h \
 	$(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(CHILL_TREE_H) ../insn-codes.h \
-	$(srcdir)/../expr.h $(srcdir)/../flags.h lex.h $(srcdir)/../system.h \
-	$(srcdir)/../toplev.h
+	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../flags.h lex.h \
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
 ch-version.o : ch-version.c
 ch-version.c : Makefile
 	echo 'char *gnuchill_version = "$(GNUCHILL_VERSION)";' > $@
