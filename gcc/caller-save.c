@@ -728,6 +728,10 @@ insert_one_insn (chain, before_p, code, pat)
       chain->prev = new;
       new->next = chain;
       new->insn = emit_insn_before (pat, insn);
+      /* ??? It would be nice if we could exclude the already / still saved
+	 registers from the live sets.  */
+      COPY_REG_SET (new->live_before, chain->live_before);
+      COPY_REG_SET (new->live_after, chain->live_before);
       if (chain->insn == basic_block_head[chain->block])
 	basic_block_head[chain->block] = new->insn;
     }
@@ -739,6 +743,10 @@ insert_one_insn (chain, before_p, code, pat)
       chain->next = new;
       new->prev = chain;
       new->insn = emit_insn_after (pat, insn);
+      /* ??? It would be nice if we could exclude the already / still saved
+	 registers from the live sets, and observe REG_UNUSED notes.  */
+      COPY_REG_SET (new->live_before, chain->live_after);
+      COPY_REG_SET (new->live_after, chain->live_after);
       if (chain->insn == basic_block_end[chain->block])
 	basic_block_end[chain->block] = new->insn;
     }
