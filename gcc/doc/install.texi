@@ -2059,8 +2059,7 @@ longer a multiple of 2 bytes.
 
 We @emph{highly} recommend using gas/binutils 2.8 or newer on all hppa
 platforms; you may encounter a variety of problems when using the HP
-assembler.  The HP assembler does not work with the @samp{hppa64-hp-hpux11*}
-port.
+assembler.
 
 Specifically, @option{-g} does not work on HP-UX (since that system
 uses a peculiar debugging format which GCC does not know about), unless you
@@ -2162,16 +2161,27 @@ compile GCC 3.0 and up.  Refer to @uref{binaries.html,,binaries} for
 information about obtaining precompiled GCC binaries for HP-UX.
 
 GNU binutils 2.13 or later is recommended with the 64-bit port.
-The HP assembler is not supported.  It is @emph{highly} recommended
-that the GNU linker be used as well.  Either binutils must be built
-prior to gcc, or a binary distribution of gcc or binutils must be
-obtained for the initial builds.  When starting with a HP compiler,
-it is preferable to use the ANSI compiler as the bundled compiler
-only supports traditional C.  Bootstrapping with the bundled compiler
-is tested infrequently and problems often arise because of the subtle
-differences in semantics between traditional and ISO C.  There also
-have been problems reported with various binary distributions.  This
-port still is undergoing significant development.
+The HP assembler has many limitations and is not recommended.  For
+example, it does not support weak symbols or alias definitions.
+As a result, explicit template instantiations are required when
+using C++.  Either the HP or GNU linker can be used but it may be
+necessary to use the GNU linker when dwarf2 exception support is
+implemented.
+
+There are several possible approaches to building the distribution.
+Binutils can be built first using the HP tools.  Then, the GCC
+distribution can be built.  The second approach is to build GCC
+first using the HP tools, then build binutils, then rebuild GCC.
+There have been problems with various binary distributions, so
+it is best not to start from a binary distribution.
+
+When starting with a HP compiler, it is preferable to use the ANSI
+compiler as the bundled compiler only supports traditional C.
+Bootstrapping with the bundled compiler is tested infrequently and
+problems often arise because of the subtle differences in semantics
+between traditional and ISO C.
+
+This port still is undergoing significant development.
 
 @html
 <hr />

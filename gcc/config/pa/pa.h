@@ -672,8 +672,10 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 8
+   of the first local allocated.  The start of the locals must lie on
+   a STACK_BOUNDARY or else the frame size of leaf functions will not
+   be zero.  */
+#define STARTING_FRAME_OFFSET (TARGET_64BIT ? 16 : 8)
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.

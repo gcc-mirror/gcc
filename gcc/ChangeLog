@@ -1,3 +1,32 @@
+2002-11-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.h (STARTING_FRAME_OFFSET): Change offset for TARGET_64BIT to 16.
+
+	* config.gcc (hppa*64*-*-linux*): Shorten lines in tm_file define.
+	(hppa*64*-*-hpux11*): Likewise.  Use elfos.h with gas.
+	* pa.c (output_millicode_call): Use symbol difference rather than
+	$PIC_pcrel$0 when using HP assembler.
+	* pa64-hpux.h (TARGET_GAS): Define to 1 or 0 depending on whether or
+	not elfos.h (i.e., gas) is being used.
+	(ASM_FILE_START, STRING_ASM_OP, TEXT_SECTION_ASM_OP,
+	DATA_SECTION_ASM_OP, BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_COMMON,
+	ASM_OUTPUT_ALIGNED_LOCAL, GLOBAL_ASM_OP, ASM_DECLARE_FUNCTION_NAME,
+	ASM_OUTPUT_EXTERNAL, ASM_OUTPUT_EXTERNAL_LIBCALL,
+	ASM_OUTPUT_INTERNAL_LABEL, ASM_GENERATE_INTERNAL_LABEL): Define when
+	using elfos.h.
+	(TARGET_ASM_GLOBALIZE_LABEL): Undefine when using elfos.h.
+	(DWARF2_ASM_LINE_DEBUG_INFO): Delete.
+	(ASM_FILE_START): Add standard .SPACE and .SUBSPA defines when not
+	using elfos.h.
+	(TEXT_SECTION_ASM_OP, READONLY_DATA_SECTION_ASM_OP, DATA_SECTION_ASM_OP,
+	BSS_SECTION_ASM_OP): New HP style defines when not using elfos.h.
+	(TARGET_ASM_NAMED_SECTION, MAKE_DECL_ONE_ONLY, ASM_WEAKEN_LABEL):
+	Don't define when not using elfos.h.
+	(ASM_DECLARE_RESULT): Don't define.
+	* doc/install.texi (hppa*-hp-hpux*): Remove statement that HP assembler
+	doesn't work on hppa64-hp-hpux11.
+	(hppa*-hp-hpux11): Update.
+
 2002-11-09  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/mips/netbsd.h (SUBTARGET_ASM_SPEC): Don't pass -KPIC
