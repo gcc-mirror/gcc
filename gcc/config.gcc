@@ -324,6 +324,8 @@ case $machine in
 	*-*-linux*ecoff* | *-*-linux*libc1* | *-*-linux*oldld* | *-*-linux*aout*)
 		;;
 	*)
+		extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+		gas=yes gnu_ld=yes
 		case x${enable_threads} in
 			x | xyes | xposix) thread_file='posix'
 			;;
@@ -488,8 +490,6 @@ alpha*-*-linux*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 	target_cpu_default="MASK_GAS"
 	tmake_file="t-slibgcc-elf-ver t-linux alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-	gas=yes gnu_ld=yes
 	;;
 alpha*-*-gnu*)
 	target_cpu_default="MASK_GAS"
@@ -705,13 +705,6 @@ cris-*-elf | cris-*-none)
 cris-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h cris/linux.h"
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	case x${enable_threads} in
-	x | xyes | xpthreads | xposix)
-		thread_file=posix
-		;;
-	esac
-	gas=yes
 	;;
 d30v-*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
@@ -757,8 +750,6 @@ hppa*-*-linux* | parisc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux pa/t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	gas=yes gnu_ld=yes
 	;;
 hppa*-*-openbsd*)
 	target_cpu_default="MASK_PA_11"
@@ -997,10 +988,6 @@ i370-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h i370/linux.h ${tm_file}"
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	# broken_install=yes
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	# extra_parts="crtbegin.o crtend.o"
-	gnu_ld=yes
-	gas=yes
 	elf=yes
 	;;
 i[34567]86-*-darwin*)
@@ -1124,16 +1111,12 @@ i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 			# aka GNU/Linux C library 6
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	gnu_ld=yes
 	float_format=i386
 	;;
 x86_64-*-linux*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h \
 		 i386/x86-64.h i386/linux64.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff i386/t-linux64"
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	gnu_ld=yes
 	float_format=i386
 	;;
 i[34567]86-*-gnu*)
@@ -1867,9 +1850,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
                 ;;
         esac
 	tmake_file="t-slibgcc-elf-ver t-linux mips/t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	gnu_ld=yes
-	gas=yes
 	;;
 mips*el-*-openbsd*)	# mips little endian
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
@@ -2219,7 +2199,6 @@ rs6000-*-lynxos*)
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	;;
 s390x-*-linux*)
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
@@ -2228,7 +2207,6 @@ s390x-*-linux*)
 	extra_modes=s390/s390-modes.def
 	out_file=s390/s390.c
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux s390/t-linux64"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	;;
 sh-*-elf* | sh[2346l]*-*-elf*)
 	tmake_file="sh/t-sh sh/t-elf"
@@ -2416,8 +2394,6 @@ sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-crtfm"
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	gnu_ld=yes
 	float_format=sparc
 	;;
 sparc-*-lynxos*)
@@ -2608,8 +2584,6 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64 sparc/t-crtfm"
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	gnu_ld=yes
 	float_format=sparc
 	;;
 sparc64-*-netbsd*)
@@ -2739,8 +2713,6 @@ xtensa-*-elf*)
 xtensa-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h xtensa/linux.h"
 	tmake_file="t-linux xtensa/t-xtensa"
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	gas=yes gnu_ld=yes
 	;;
 *)
 	echo "*** Configuration $machine not supported" 1>&2
