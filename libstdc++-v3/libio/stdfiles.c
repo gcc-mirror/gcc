@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 1994, 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
 
    This library is free software; you can redistribute it and/or
@@ -31,21 +31,44 @@
    hand, we don't need a C++ compiler to build this file.) */
 
 #include "libioP.h"
-
-#ifdef _IO_MTSAFE_IO
-#define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
-  static _IO_lock_t _IO_stdfile_##FD##_lock = _IO_lock_initializer; \
-  struct _IO_FILE_plus NAME \
-    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD), &_IO_file_jumps}
-#else
-#define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
-  struct _IO_FILE_plus NAME \
-    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD), &_IO_file_jumps}
+#ifndef _LIBC
+# include <bits/c++config.h>
 #endif
 
-DEF_STDFILE(_IO_stdin_, 0, 0, _IO_NO_WRITES);
-DEF_STDFILE(_IO_stdout_, 1, &_IO_stdin_.file, _IO_NO_READS);
-DEF_STDFILE(_IO_stderr_, 2, &_IO_stdout_.file,
-            _IO_NO_READS+_IO_UNBUFFERED);
+#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
+# ifdef _IO_MTSAFE_IO
+#  define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
+  static _IO_lock_t _IO_stdfile_##FD##_lock = _IO_lock_initializer; \
+  static struct _IO_wide_data _IO_wide_data_##FD \
+    = { ._wide_vtable = &_IO_wfile_jumps }; \
+  struct _IO_FILE_plus NAME \
+    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD, &_IO_wide_data_##FD), \
+       &_IO_file_jumps};
+# else
+#  define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
+  static struct _IO_wide_data _IO_wide_data_##FD \
+    = { ._wide_vtable = &_IO_wfile_jumps }; \
+  struct _IO_FILE_plus NAME \
+    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD, &_IO_wide_data_##FD), \
+       &_IO_file_jumps};
+# endif
+#else
+# ifdef _IO_MTSAFE_IO
+#  define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
+  static _IO_lock_t _IO_stdfile_##FD##_lock = _IO_lock_initializer; \
+  struct _IO_FILE_plus NAME \
+    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD, NULL), \
+       &_IO_file_jumps};
+# else
+#  define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
+  struct _IO_FILE_plus NAME \
+    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD, NULL), \
+       &_IO_file_jumps};
+# endif
+#endif
 
-_IO_FILE *_IO_list_all = &_IO_stderr_.file;
+DEF_STDFILE(_IO_2_1_stdin_, 0, 0, _IO_NO_WRITES);
+DEF_STDFILE(_IO_2_1_stdout_, 1, &_IO_2_1_stdin_, _IO_NO_READS);
+DEF_STDFILE(_IO_2_1_stderr_, 2, &_IO_2_1_stdout_, _IO_NO_READS+_IO_UNBUFFERED);
+
+struct _IO_FILE_plus *_IO_list_all = &_IO_2_1_stderr_;

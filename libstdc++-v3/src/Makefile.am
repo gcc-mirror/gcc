@@ -52,7 +52,7 @@ AC_CXXFLAGS = \
 # the end of the compile line so that -O2 can be overridden as the
 # occasion call for it. (ie, --enable-debug)
 AM_CXXFLAGS = \
-	-fno-implicit-templates $(OPTIMIZE_CXXFLAGS) \
+	-D_GNU_SOURCE -fno-implicit-templates $(OPTIMIZE_CXXFLAGS) \
 	-Wall -Wno-format -W -Wwrite-strings -Winline \
 	$(AC_CXXFLAGS) 
 

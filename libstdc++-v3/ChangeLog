@@ -1,3 +1,31 @@
+2000-07-01  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+	    Ulrich Drepper  <drepper@purist.soma.redhat.com>
+
+	Sync libio to glibc-2.2 current CVS. 
+	* libio/_G_config.h: New file.
+	* libio/wfileops.c: New file.
+	* libio/wfiledoalloc.c: New file.
+	* libio/wgenops.c: New file.
+	* libio/iofwide.c: New file.
+	* libio/Makefile.am: Tweaks.
+	* libio/Makefile.in: Regenerate.
+	* libio/gen-params: Remove. Generic replacement for this yet undone.
+	* libio/[filedoalloc.c, fileops.c, genops.c, iolibio.h, libio.h,
+	libioP.h, stdfiles.c]: Update.
+	* config/c_io_libio.cc: Tweaks.
+	* acinclude.m4: Complete hacks to test wide io.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* src/Makefile.am: Update.
+	* src/Makefile.in: Regenerate.
+
+	* math/cargl.c: Remove underscores.
+	
+	* bits/locale_facets.h: Tweaks. Start adding iconv details
+	and notes.
+	* bits/locale_facets.tcc: Tweaks.
+	* bits/std_cwchar.h: Tweaks.
+	
 2000-06-29  scott snyder  <snyder@fnal.gov>
 
         * bits/concept_checks.h
@@ -18,7 +46,7 @@
 	function, uglify to __eos. Return char_type().
 	* bits/std_ostream.h: Change.
 
-	* testsuite/27_io/ostream_seeks.cc (test01): New file.
+	* testsuite/27_io/ostream_seeks.cc: New file.
 	* testsuite/27_io/ostream_seeks-1.tst: New file.
 	* testsuite/27_io/istream_unformatted.cc (main): Move test04 and
 	test05 to...

@@ -41,7 +41,7 @@ namespace std {
   {
     _lock = __lock;
     _IO_init(this, 0);     
-    _IO_file_init(this); 
+    _IO_file_init((_IO_FILE_plus*) this); 
     _IO_file_attach(this, -1);
   }
 
@@ -55,7 +55,7 @@ namespace std {
       {
 	_IO_do_flush(this);
 	if (!(_flags & _IO_DELETE_DONT_CLOSE))
-	  _IO_SYSCLOSE(this);
+	  _IO_SYSCLOSE((_IO_FILE*)this);
       }
     _IO_default_finish(this, 0);
   }
@@ -92,7 +92,7 @@ namespace std {
 	_fileno = __fd;
 	int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
 	_flags = (_flags & ~__mask) | (__rw_mode & __mask);
-	_IO_link_in(this); 
+	_IO_link_in((_IO_FILE_plus*) this); 
 	__retval = this;
       }
     return __retval;

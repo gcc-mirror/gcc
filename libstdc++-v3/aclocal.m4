@@ -1185,6 +1185,10 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
 		# see if we are on a system with libio native (ie, linux)
   		AC_CHECK_HEADER(libio.h,  has_libio=yes, has_libio=no)
+
+		# bkoz XXX hack hack need version checks, this is temporary
+		has_libio=no
+
   		if test $has_libio = "yes"; then
    		  BUILD_LIBIO_INCLUDE=
 		  need_libio=no
@@ -1198,6 +1202,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 		# NB: This replaces the _G_CONFIG_H machinery in libio-v2
 		AC_CHECK_HEADER(_G_config.h,  has_gconf_h=yes, has_gconf_h=no)
   		AM_CONDITIONAL(GLIBCPP_NEED_LIBIO_CONFIG_H, test "$has_gconf_h" = no)
+		# bkoz XXX hack need to add support for non-glibc systems here
+	 	has_gconf=no
+
+		# bkoz XXX need to add checks for this
+		need_wlibio=yes
 		;;
         xwince)
                 CSTDIO_H=c_io_wince.h
@@ -1216,6 +1225,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AC_SUBST(CSTDIO_H)
   AC_SUBST(CSTDIO_CC)
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
+  AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
 ])
 
 
