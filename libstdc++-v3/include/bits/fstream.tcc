@@ -451,9 +451,11 @@ namespace std
  	      pos_type __tmp =
  		_M_file.seekoff(__off, ios_base::cur, __mode);
  	      if (__tmp >= 0)
- 		// Seek successful.
- 		__ret = __tmp +
-		  max(_M_out_cur, _M_in_cur) - _M_filepos;
+		{
+		  // Seek successful.
+		  __ret = __tmp;
+		  __ret += max(_M_out_cur, _M_in_cur) - _M_filepos;
+		}
 	    }
 	}
       _M_last_overflowed = false;	

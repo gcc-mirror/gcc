@@ -1,3 +1,9 @@
+2003-02-11  Scott Snyder  <snyder@fnal.gov>
+
+	PR libstdc++/9659
+	* include/bits/fstream.tcc (seekoff): Avoid operator+
+	for pos_type.
+
 2003-02-11  Paolo Carlini  <pcarlini@unitus.it>
             Petur Runolfsson  <peturr02@ru.is>
 
