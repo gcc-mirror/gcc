@@ -1,4 +1,13 @@
-2000-11-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+2000-11-30  Mark Kettenis  <kettenis@gnu.org>
+
+	* configure.in: Reorganize handling of *-*-gnu*, to share target
+	specific make details with Linux.  Update comments to clarify
+        the distinction between GNU/Linux and GNU/Hurd.
+	* config/t-gnu (LIBGCC1, CROSS_LIBGCC1, CRTSTUFF_T_CFLAGS,
+	TARGET_LIBGCC2_CFLAGS): Remove.  We now use the settings from
+	config/t-linux for the Hurd.
+
+2000-11-30  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/mn10200/udivmod.c, config/mn10200/divmod.c,
 	config/mn10200/udivmodsi4.c: Moved from here.

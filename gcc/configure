@@ -3810,7 +3810,7 @@ else
 	mkdir $tempdir
 	cd $tempdir
 	case ${srcdir} in
-	/*) realsrcdir=${srcdir};;
+	/* | A-Za-z:\\/* ) realsrcdir=${srcdir};;
 	*) realsrcdir=../${srcdir};;
 	esac
 	CC=${CC_FOR_BUILD} ${realsrcdir}/configure \
