@@ -335,7 +335,7 @@ done
 
 echo 'stmp-dirs: force'
 echo '	for d in '"$dirs"'; do \'
-echo '	  if [ -d $$d ]; then true; else '$mkinstalldirs' $$d; fi \'
+echo '	  if [ -d $$d ]; then true; else '$mkinstalldirs' $$d; fi; \'
 echo '	done'
 echo '	if [ -f stmp-dirs ]; then true; else touch stmp-dirs; fi'
 
