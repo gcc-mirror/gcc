@@ -1,3 +1,8 @@
+2002-12-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa32-linux.h (CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL): Move define.
+	* pa.h (CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL): To here.
+
 2002-12-05  Dale Johannesen  <dalej@apple.com>
 
 	* tree.c (unsafe_for_reeval):  Consider callee child of CALL_EXPR.
