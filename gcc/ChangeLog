@@ -1,3 +1,9 @@
+Thu Dec 11 22:02:10 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* flow.c (find_basic_blocks): A CALL_INSN that can throw starts
+	a new basic block.
+	(find_basic_blocks_1): Likewise.
+
 Thu Dec 11 21:08:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (use_eh_context): Don't copy_rtx a REG.
