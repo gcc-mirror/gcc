@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.23 $"
+#define VERSION_INFO2   "$Revision: 1.24 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -134,16 +134,18 @@ Boston, MA 02111-1307, USA.  */
   { "startfile_default", STARTFILE_DEFAULT_SPEC },  \
   { "startfile_crtbegin", STARTFILE_CRTBEGIN_SPEC }
    
+/* Keep this left justified, no white space is allowed between
+   the arguments to the -Wc option */
 #define ASM_CPU_SPEC "\
-		  %{v:-V}\
-		  %{g:\
-		  %{mno-legend:-Wc,off}\
-		  %{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
-		  %{traditional:,-lc}\
-		  %{!traditional:,-lansi-c}\
-		  %{mstandard:,-keep-std}\
-		  %{mexternal-legend:,-external}\
-		  %{mocs-frame-position:,-ocs}}}"
+%{v:-V} \
+%{g:\
+%{mno-legend:-Wc,off}\
+%{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
+%{traditional:,-lc}\
+%{!traditional:,-lansi-c}\
+%{mstandard:,-keep-std}\
+%{mexternal-legend:,-external}\
+%{mocs-frame-position:,-ocs}}}"
 
 #define CPP_CPU_SPEC "\
                   %{!m88000:%{!m88100:%{m88110:-D__m88110__}}} \
