@@ -1,5 +1,5 @@
-/* ProfileDataException.java -- error in processing an ICC_Profile
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* RMIClassLoaderSpi.java
+  Copyright (c) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,30 +35,30 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+package java.rmi.server;
 
-package java.awt.color;
+import java.net.MalformedURLException;
 
 /**
-  * Thrown when there is an error accessing or processing an
-  * <code>ICC_Profile</code>.
-  *
-  * @author Eric Blake <ebb9@email.byu.edu>
-  * @status updated to 1.4
-  */
-public class ProfileDataException extends RuntimeException
+ * @author Michael Koch
+ * @since 1.4
+ */
+public abstract class RMIClassLoaderSpi
 {
-  /**
-   * Compatible with JDK 1.2+.
-   */
-  private static final long serialVersionUID = 7286140888240322498L;
-
-  /**
-   * Create a new instance with a specified detailed error message.
-   *
-   * @param message the message
-   */
-  public ProfileDataException(String message)
+  public RMIClassLoaderSpi()
   {
-    super(message);
   }
-} // class ProfileDataException
+
+  public abstract Class loadClass (String codeBase, String name,
+                                   ClassLoader defaultLoader)
+    throws MalformedURLException, ClassNotFoundException;
+
+  public abstract Class loadProxyClass (String codeBase, String[] interfaces,
+                                        ClassLoader defaultLoader)
+    throws MalformedURLException, ClassNotFoundException;
+
+  public abstract ClassLoader getClassLoader (String codebase)
+    throws MalformedURLException;
+
+  public abstract String getClassAnnotation (Class cl);
+}

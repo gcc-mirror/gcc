@@ -109,7 +109,7 @@ public class WindowEvent extends ComponentEvent
   public static final int WINDOW_STATE_CHANGED = 209;
 
   /** This is the last id in the range of event ids used by this class. */
-  public static final int WINDOW_LAST = 207;
+  public static final int WINDOW_LAST = 209;
 
   /**
    * The other Window involved in a focus or activation change. For

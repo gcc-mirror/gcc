@@ -40,6 +40,7 @@ package java.awt.datatransfer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
   * This class maps between native platform type names and DataFlavors.
@@ -47,134 +48,122 @@ import java.util.Map;
   * XXX - The current implementation does no mapping at all.
   *
   * @author Mark Wielaard (mark@klomp.org)
-  */
-public final class SystemFlavorMap implements FlavorMap
-{
-
-/**
-  * The default (instance) flavor map.
-  */
-private static FlavorMap defaultFlavorMap;
-
-/**
-  * Private constructor.
-  */
-private SystemFlavorMap()
-{
-}
-
-/*************************************************************************/
-
-/**
-  * Maps the specified <code>DataFlavor</code> objects to the native
-  * data type name.  The returned <code>Map</code> has keys that are
-  * the data flavors and values that are strings.  The returned map
-  * may be modified.  This can be useful for implementing nested mappings.
   *
-  * @param flavors An array of data flavors to map
-  *                or null for all data flavors.
-  *
-  * @return A <code>Map</code> of native data types to data flavors.
+  * @since 1.2
   */
-public Map
-getNativesForFlavors(DataFlavor[] flavors)
+public final class SystemFlavorMap implements FlavorMap, FlavorTable
 {
-  return(new HashMap());
-}
+  /**
+   * The default (instance) flavor map.
+   */
+  private static FlavorMap defaultFlavorMap;
 
-/*************************************************************************/
+  /**
+   * Private constructor.
+   */
+  private SystemFlavorMap ()
+  {
+  }
 
-/**
-  * Maps the specified native type names to <code>DataFlavor</code>'s.
-  * The returned <code>Map</code> has keys that are strings and values
-  * that are <code>DataFlavor</code>'s.  The returned map may be
-  * modified.  This can be useful for implementing nested mappings.
-  *
-  * @param natives An array of native types to map
-  *                or null for all native types.
-  *
-  * @return A <code>Map</code> of data flavors to native type names.
-  */
-public Map
-getFlavorsForNatives(String[] natives)
-{
-  return(new HashMap());
-}
+  /**
+   * Maps the specified <code>DataFlavor</code> objects to the native
+   * data type name.  The returned <code>Map</code> has keys that are
+   * the data flavors and values that are strings.  The returned map
+   * may be modified.  This can be useful for implementing nested mappings.
+   *
+   * @param flavors An array of data flavors to map
+   *                or null for all data flavors.
+   *
+   * @return A <code>Map</code> of native data types to data flavors.
+   */
+  public Map getNativesForFlavors (DataFlavor[] flavors)
+  {
+    return new HashMap();
+  }
 
-/*************************************************************************/
+  /**
+   * Maps the specified native type names to <code>DataFlavor</code>'s.
+   * The returned <code>Map</code> has keys that are strings and values
+   * that are <code>DataFlavor</code>'s.  The returned map may be
+   * modified.  This can be useful for implementing nested mappings.
+   *
+   * @param natives An array of native types to map
+   *                or null for all native types.
+   *
+   * @return A <code>Map</code> of data flavors to native type names.
+   */
+  public Map getFlavorsForNatives (String[] natives)
+  { 
+    return new HashMap();
+  }
 
-/**
-  * Returns the default (instance) (System)FlavorMap.
-  */
-public static FlavorMap
-getDefaultFlavorMap()
-{
-  if (defaultFlavorMap == null)
-    defaultFlavorMap = new SystemFlavorMap();
+  /**
+   * Returns the default (instance) (System)FlavorMap.
+   */
+  public static FlavorMap getDefaultFlavorMap ()
+  {
+    if (defaultFlavorMap == null)
+      defaultFlavorMap = new SystemFlavorMap ();
 
-  return(defaultFlavorMap);
-}
+    return defaultFlavorMap;
+  }
 
-/*************************************************************************/
+  /**
+   * Returns the native type name for the given java mime type.
+   */
+  public static String encodeJavaMIMEType (String mime)
+  {
+    return null;
+  }
 
-/**
-  * Returns the native type name for the given java mime type.
-  */
-public static String
-encodeJavaMIMEType(String mime)
-{
-  return null;
-}
+  /**
+   * Returns the native type name for the given data flavor.
+   */
+  public static String encodeDataFlavor (DataFlavor df)
+  {
+    return null;
+  }
 
-/*************************************************************************/
+  /**
+   * Returns true if the native type name can be represented as
+   * a java mime type.
+   */
+  public static boolean isJavaMIMEType (String name)
+  {
+    return false;
+  }
 
-/**
-  * Returns the native type name for the given data flavor.
-  */
-public static String
-encodeDataFlavor(DataFlavor df)
-{
-  return null;
-}
+  /**
+   * Returns the java mime type for the given the native type name.
+   */
+  public static String decodeJavaMIMEType (String name)
+  {
+    return null;
+  }
 
-/*************************************************************************/
+  /**
+   * Returns the data flavor given the native type name
+   * or null when no such data flavor exists.
+   */
+  public static DataFlavor decodeDataFlavor (String name)
+    throws ClassNotFoundException
+  {
+    String javaMIMEType = decodeJavaMIMEType (name);
+    
+    if (javaMIMEType != null)
+      return new DataFlavor (javaMIMEType);
+    else
+      return null;
+  }
 
-/**
-  * Returns true if the native type name can be represented as
-  * a java mime type.
-  */
-public static boolean
-isJavaMIMEType(String name)
-{
-  return(false);
-}
+  public List getFlavorsForNative (String nat)
+  {
+    throw new Error ("Not implemented");
+  }
 
-/*************************************************************************/
-
-/**
-  * Returns the java mime type for the given the native type name.
-  */
-public static String
-decodeJavaMIMEType(String name)
-{
-  return null;
-}
-
-/*************************************************************************/
-
-/**
-  * Returns the data flavor given the native type name
-  * or null when no such data flavor exists.
-  */
-public static DataFlavor
-decodeDataFlavor(String name) throws ClassNotFoundException
-{
-  String javaMIMEType = decodeJavaMIMEType(name);
-  if (javaMIMEType != null)
-    return(new DataFlavor(javaMIMEType));
-  else
-    return(null);
-}
+  public List getNativesForFlavor (DataFlavor flav)
+  {
+    throw new Error ("Not implemented");
+  }
 
 } // class SystemFlavorMap
-

@@ -44,7 +44,7 @@ package java.awt.color;
   * @author Eric Blake <ebb9@email.byu.edu>
   * @status updated to 1.4
   */
-public class CMMException extends Exception
+public class CMMException extends RuntimeException
 {
   /**
    * Compatible with JDK 1.2+.

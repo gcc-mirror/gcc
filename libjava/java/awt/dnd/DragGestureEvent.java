@@ -113,15 +113,42 @@ public class DragGestureEvent extends EventObject
   {
     return null;
   }
+
+  /**
+   * Starts the drag given the initial Cursor to display, the Transferable
+   * object, and the DragSourceListener to use.
+   *
+   * @exception InvalidDnDOperationException If the Drag and Drop system is
+   * unable to initiate a drag operation, or if the user attempts to start
+   * a drag while an existing drag operation is still executing.
+   */
   public void startDrag(Cursor dragCursor, Transferable trans)
   {
     startDrag(dragCursor, null, null, trans, null);
   }
+
+  /**
+   * Starts the drag given the initial Cursor to display, the Transferable
+   * object, and the DragSourceListener to use.
+   *
+   * @exception InvalidDnDOperationException If the Drag and Drop system is
+   * unable to initiate a drag operation, or if the user attempts to start
+   * a drag while an existing drag operation is still executing.
+   */
   public void startDrag(Cursor dragCursor, Transferable trans,
                         DragSourceListener l)
   {
     startDrag(dragCursor, null, null, trans, l);
   }
+
+  /**
+   * Starts the drag given the initial Cursor to display, the Transferable
+   * object, and the DragSourceListener to use.
+   *
+   * @exception InvalidDnDOperationException If the Drag and Drop system is
+   * unable to initiate a drag operation, or if the user attempts to start
+   * a drag while an existing drag operation is still executing.
+   */
   public void startDrag(Cursor dragCursor, Image dragImage, Point imageOffset,
                         Transferable trans, DragSourceListener l)
   {

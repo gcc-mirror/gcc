@@ -142,16 +142,15 @@ FileDialog(Frame parent, String title)
   * @param title The title for this dialog.
   * @param mode The mode of the dialog, either <code>LOAD</code> or
   * <code>SAVE</code>.
+  *
+  * @exception IllegalArgumentException If an illegal file dialog mode
+  * is supplied.
   */
 public
 FileDialog(Frame parent, String title, int mode)
 {
   super(parent, title, true);
-
-  if ((mode != LOAD) && (mode != SAVE))
-    throw new IllegalArgumentException("Bad mode: " + mode);
-
-  this.mode = mode;
+  setMode (mode);
 }
 
 /*************************************************************************/
@@ -180,6 +179,9 @@ getMode()
   * peer is created.
   *
   * @param mode The new mode of this file dialog.
+  *
+  * @exception IllegalArgumentException If an illegal file dialog mode
+  * is supplied.
   */
 public void
 setMode(int mode)

@@ -40,6 +40,8 @@ package java.awt.dnd;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.datatransfer.FlavorMap;
@@ -62,10 +64,20 @@ public class DragSource implements Serializable
   public static final Cursor DefaultMoveNoDrop = null;
   public static final Cursor DefaultLinkNoDrop = null;
 
+  /**
+   * Initializes the drag source.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   */
   public DragSource()
   {
+    if (GraphicsEnvironment.isHeadless())
+      throw new HeadlessException ();
   }
 
+  /**
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   */
   public static DragSource getDefaultDragSource()
   {
     return null;
@@ -76,6 +88,13 @@ public class DragSource implements Serializable
     return false;
   }
 
+  /**
+   * Start a drag, given the DragGestureEvent that initiated the drag.
+   *
+   * @exception InvalidDnDOperationException If the Drag and Drop system is
+   * unable to initiate a drag operation, or if the user attempts to start
+   * a drag while an existing drag operation is still executing.
+   */
   public void startDrag(DragGestureEvent trigger, Cursor dragCursor,
                         Image dragImage, Point imageOffset,
                         Transferable trans, DragSourceListener dsl,
@@ -83,6 +102,13 @@ public class DragSource implements Serializable
   {
   }
 
+  /**
+   * Start a drag, given the DragGestureEvent that initiated the drag.
+   *
+   * @exception InvalidDnDOperationException If the Drag and Drop system is
+   * unable to initiate a drag operation, or if the user attempts to start
+   * a drag while an existing drag operation is still executing.
+   */
   public void startDrag(DragGestureEvent trigger, Cursor dragCursor,
                         Transferable trans, DragSourceListener dsl,
                         FlavorMap map)
@@ -90,6 +116,13 @@ public class DragSource implements Serializable
     startDrag(trigger, dragCursor, null, null, trans, dsl, map);
   }
 
+  /**
+   * Start a drag, given the DragGestureEvent that initiated the drag.
+   *
+   * @exception InvalidDnDOperationException If the Drag and Drop system is
+   * unable to initiate a drag operation, or if the user attempts to start
+   * a drag while an existing drag operation is still executing.
+   */
   public void startDrag(DragGestureEvent trigger, Cursor dragCursor,
                         Image dragImage, Point imageOffset,
                         Transferable trans, DragSourceListener dsl)
@@ -97,12 +130,25 @@ public class DragSource implements Serializable
     startDrag(trigger, dragCursor, dragImage, imageOffset, trans, dsl, null);
   }
 
+  /**
+   * Start a drag, given the DragGestureEvent that initiated the drag.
+   *
+   * @exception InvalidDnDOperationException If the Drag and Drop system is
+   * unable to initiate a drag operation, or if the user attempts to start
+   * a drag while an existing drag operation is still executing.
+   */
   public void startDrag(DragGestureEvent trigger, Cursor dragCursor,
                         Transferable trans, DragSourceListener dsl)
   {
     startDrag(trigger, dragCursor, null, null, trans, dsl, null);
   }
 
+  /**
+   * Creates the DragSourceContext to handle this drag.
+   *
+   * @exception IllegalArgumentException FIXME
+   * @exception NullPointerException If dscp, dgl, dragImage or t is null.
+   */
   protected DragSourceContext
     createDragSourceContext(DragSourceContextPeer peer, DragGestureEvent dge,
                             Cursor cursor, Image image, Point offset,

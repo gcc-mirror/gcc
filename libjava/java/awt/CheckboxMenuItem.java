@@ -84,6 +84,9 @@ private transient ItemListener item_listeners;
 /**
   * Initializes a new instance of <code>CheckboxMenuItem</code> with no
   * label and an initial state of off.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+  * returns true.
   */
 public
 CheckboxMenuItem()
@@ -98,6 +101,9 @@ CheckboxMenuItem()
   * specified label and an initial state of off.
   *
   * @param label The label of the menu item.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+  * returns true.
   */
 public
 CheckboxMenuItem(String label)
@@ -114,12 +120,18 @@ CheckboxMenuItem(String label)
   * @param label The label of the menu item.
   * @param state The initial state of the menu item, where <code>true</code>
   * is on, and <code>false</code> is off.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+  * returns true.
   */
 public
 CheckboxMenuItem(String label, boolean state)
 {
   super(label);
   this.state = state;
+
+  if (GraphicsEnvironment.isHeadless())
+    throw new HeadlessException ();
 }
 
 /*************************************************************************/

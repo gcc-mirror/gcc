@@ -172,7 +172,7 @@ public class RMIClassLoader
 	  }
       }
 
-    return loader != null ? loader.loadClass(name) : Class.forName(name);
+    return loader.loadClass(name);
   }
   
   public static String getClassAnnotation(Class cl)
