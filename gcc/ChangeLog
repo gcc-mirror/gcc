@@ -1,5 +1,9 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	2000-02-26  Geoff Keating  <geoffk@cygnus.com>
+	* reload1.c (do_output_reload): Check reg_reloaded_valid before
+	looking at reg_reloaded_contents.
+
 	Thu Apr 13 19:39:56 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	* emit-rtl.c (try_split): Avoid infinite loop if the split
 	results in a sequence that contains the original insn.
