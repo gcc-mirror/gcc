@@ -981,31 +981,27 @@ member_init:
 		{
 		  if (current_class_name)
 		    pedwarn ("anachronistic old style base class initializer");
-		  $$ = expand_member_init (current_class_ref, NULL_TREE, $2);
+		  $$ = expand_member_init (NULL_TREE, $2);
 		}
 	| LEFT_RIGHT
 		{
 		  if (current_class_name)
 		    pedwarn ("anachronistic old style base class initializer");
-		  $$ = expand_member_init (current_class_ref,
-					   NULL_TREE,
+		  $$ = expand_member_init (NULL_TREE,
 					   void_type_node);
 		}
 	| notype_identifier '(' nonnull_exprlist ')'
-		{ $$ = expand_member_init (current_class_ref, $1, $3); }
+		{ $$ = expand_member_init ($1, $3); }
 	| notype_identifier LEFT_RIGHT
-		{ $$ = expand_member_init (current_class_ref, $1,
-					   void_type_node); }
+		{ $$ = expand_member_init ($1, void_type_node); }
 	| nonnested_type '(' nonnull_exprlist ')'
-		{ $$ = expand_member_init (current_class_ref, $1, $3); }
+		{ $$ = expand_member_init ($1, $3); }
 	| nonnested_type LEFT_RIGHT
-		{ $$ = expand_member_init (current_class_ref, $1,
-					   void_type_node); }
+		{ $$ = expand_member_init ($1, void_type_node); }
 	| typename_sub '(' nonnull_exprlist ')'
-		{ $$ = expand_member_init (current_class_ref, $1, $3); }
+		{ $$ = expand_member_init ($1, $3); }
 	| typename_sub LEFT_RIGHT
-		{ $$ = expand_member_init (current_class_ref, $1,
-					   void_type_node); }
+		{ $$ = expand_member_init ($1, void_type_node); }
         | error
                 { $$ = NULL_TREE; }
 	;

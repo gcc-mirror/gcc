@@ -1094,67 +1094,21 @@ begin_mem_initializers ()
     error ("only constructors take base initializers");
 }
 
-/* The INIT_LIST is a list of mem-initializers, in the order they were
-   written by the user.  The TREE_VALUE of each node is a list of
-   initializers for a particular subobject.  The TREE_PURPOSE is a
-   FIELD_DECL is the initializer is for a non-static data member, and
-   a class type if the initializer is for a base class.  */
+/* The MEM_INITS is a list of mem-initializers, in reverse of the
+   order they were written by the user.  Each node is as for
+   emit_mem_initializers.  */
 
 void
-finish_mem_initializers (init_list)
-     tree init_list;
+finish_mem_initializers (tree mem_inits)
 {
-  tree member_init_list;
-  tree base_init_list;
-  tree last_base_warned_about;
-  tree next; 
-  tree init;
-
-  member_init_list = NULL_TREE;
-  base_init_list = NULL_TREE;
-  last_base_warned_about = NULL_TREE;
-
-  for (init = init_list; init; init = next)
-    {
-      next = TREE_CHAIN (init);
-      if (TREE_CODE (TREE_PURPOSE (init)) == FIELD_DECL)
-	{
-	  TREE_CHAIN (init) = member_init_list;
-	  member_init_list = init;
-
-	  /* We're running through the initializers from right to left
-	     as we process them here.  So, if we see a data member
-	     initializer after we see a base initializer, that
-	     actually means that the base initializer preceded the
-	     data member initializer.  */
-	  if (warn_reorder && last_base_warned_about != base_init_list)
-	    {
-	      tree base;
-
-	      for (base = base_init_list; 
-		   base != last_base_warned_about; 
-		   base = TREE_CHAIN (base))
-		{
-		  warning ("base initializer for `%T'",
-			      TREE_PURPOSE (base));
-		  warning ("   will be re-ordered to precede member initializations");
-		}
-
-	      last_base_warned_about = base_init_list;
-	    }
-	}
-      else
-	{
-	  TREE_CHAIN (init) = base_init_list;
-	  base_init_list = init;
-	}
-    }
+  /* Reorder the MEM_INITS so that they are in the order they appeared
+     in the source program.  */
+  mem_inits = nreverse (mem_inits);
 
   if (processing_template_decl)
-    add_stmt (build_min_nt (CTOR_INITIALIZER,
-			    member_init_list, base_init_list));
+    add_stmt (build_min_nt (CTOR_INITIALIZER, mem_inits));
   else
-    emit_base_init (member_init_list, base_init_list);
+    emit_mem_initializers (mem_inits);
 }
 
 /* Returns the stack of SCOPE_STMTs for the current function.  */

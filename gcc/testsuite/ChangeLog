@@ -1,3 +1,11 @@
+2002-10-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7188.
+	* g++.dg/template/meminit1.C: New test.
+	* g++.dg/warn/Wreorder-1.C: Likewise.
+	* g++.old-deja/g++.mike/warn3.C: Tweak.
+	* lib/prune.exp: Ingore "in copy constructor".
+
 2002-10-02  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/20020919-1.c, gcc.dg/inline-2.c, gcc.dg/980211-1.c,

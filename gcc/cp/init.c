@@ -34,17 +34,15 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 
-static void expand_aggr_vbase_init_1 PARAMS ((tree, tree, tree, tree));
-static void construct_virtual_bases PARAMS ((tree, tree, tree, tree, tree));
+static void construct_virtual_base (tree, tree);
 static void expand_aggr_init_1 PARAMS ((tree, tree, tree, tree, int));
 static void expand_default_init PARAMS ((tree, tree, tree, tree, int));
 static tree build_vec_delete_1 PARAMS ((tree, tree, tree, special_function_kind, int));
-static void perform_member_init PARAMS ((tree, tree, int));
-static void sort_base_init PARAMS ((tree, tree, tree *, tree *));
+static void perform_member_init (tree, tree);
 static tree build_builtin_delete_call PARAMS ((tree));
 static int member_init_ok_or_else PARAMS ((tree, tree, tree));
 static void expand_virtual_init PARAMS ((tree, tree));
-static tree sort_member_init PARAMS ((tree, tree));
+static tree sort_mem_initializers (tree, tree);
 static tree initializing_context PARAMS ((tree));
 static void expand_cleanup_for_base PARAMS ((tree, tree));
 static tree get_temp_regvar PARAMS ((tree, tree));
@@ -303,16 +301,30 @@ build_default_init (type)
   return build_zero_init (type, /*static_storage_p=*/false);
 }
 
-/* Subroutine of emit_base_init.  */
+/* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
+   arguments.  If TREE_LIST is void_type_node, an empty initializer
+   list was given; if NULL_TREE no initializer was given.  */
 
 static void
-perform_member_init (member, init, explicit)
-     tree member, init;
-     int explicit;
+perform_member_init (tree member, tree init)
 {
   tree decl;
   tree type = TREE_TYPE (member);
+  bool explicit;
 
+  explicit = (init != NULL_TREE);
+
+  /* Effective C++ rule 12 requires that all data members be
+     initialized.  */
+  if (warn_ecpp && !explicit && TREE_CODE (type) != ARRAY_TYPE)
+    warning ("`%D' should be initialized in the member initialization "
+	     "list", 
+	     member);
+
+  if (init == void_type_node)
+    init = NULL_TREE;
+
+  /* Get an lvalue for the data member.  */
   decl = build_class_member_access_expr (current_class_ref, member,
 					 /*access_path=*/NULL_TREE,
 					 /*preserve_reference=*/true);
@@ -333,11 +345,6 @@ perform_member_init (member, init, explicit)
   else if (TYPE_NEEDS_CONSTRUCTING (type)
 	   || (init && TYPE_HAS_CONSTRUCTOR (type)))
     {
-      /* Since `init' is already a TREE_LIST on the member_init_list,
-	 only build it into one if we aren't already a list.  */
-      if (init != NULL_TREE && TREE_CODE (init) != TREE_LIST)
-	init = build_tree_list (NULL_TREE, init);
-
       if (explicit
 	  && TREE_CODE (type) == ARRAY_TYPE
 	  && init != NULL_TREE
@@ -443,79 +450,107 @@ build_field_list (t, list, uses_unions_p)
   return list;
 }
 
-/* The MEMBER_INIT_LIST is a TREE_LIST.  The TREE_PURPOSE of each list
-   gives a FIELD_DECL in T that needs initialization.  The TREE_VALUE
-   gives the initializer, or list of initializer arguments.  Sort the
-   MEMBER_INIT_LIST, returning a version that contains the same
-   information but in the order that the fields should actually be
-   initialized.  Perform error-checking in the process.  */
+/* The MEM_INITS are a TREE_LIST.  The TREE_PURPOSE of each list gives
+   a FIELD_DECL or BINFO in T that needs initialization.  The
+   TREE_VALUE gives the initializer, or list of initializer arguments.
+
+   Return a TREE_LIST containing all of the initializations required
+   for T, in the order in which they should be performed.  The output
+   list has the same format as the input.  */
 
 static tree
-sort_member_init (t, member_init_list)
-     tree t;
-     tree member_init_list;
+sort_mem_initializers (tree t, tree mem_inits)
 {
-  tree init_list;
-  tree last_field;
   tree init;
+  tree base;
+  tree sorted_inits;
+  tree next_subobject;
+  int i;
   int uses_unions_p;
 
-  /* Build up a list of the various fields, in sorted order.  */
-  init_list = nreverse (build_field_list (t, NULL_TREE, &uses_unions_p));
-
-  /* Go through the explicit initializers, adding them to the
-     INIT_LIST.  */
-  last_field = init_list;
-  for (init = member_init_list; init; init = TREE_CHAIN (init))
+  /* Build up a list of initializations.  The TREE_PURPOSE of entry
+     will be the subobject (a FIELD_DECL or BINFO) to initialize.  The
+     TREE_VALUE will be the constructor arguments, or NULL if no
+     explicit initialization was provided.  */
+  sorted_inits = NULL_TREE;
+  /* Process the virtual bases.  */
+  for (base = CLASSTYPE_VBASECLASSES (t); base; base = TREE_CHAIN (base))
+    sorted_inits = tree_cons (TREE_VALUE (base), NULL_TREE, sorted_inits);
+  /* Process the direct bases.  */
+  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
     {
-      tree f;
-      tree initialized_field;
+      base = BINFO_BASETYPE (TYPE_BINFO (t), i);
+      if (!TREE_VIA_VIRTUAL (base))
+	sorted_inits = tree_cons (base, NULL_TREE, sorted_inits);
+    }
+  /* Process the non-static data members.  */
+  sorted_inits = build_field_list (t, sorted_inits, &uses_unions_p);
+  /* Reverse the entire list of initializations, so that they are in
+     the order that they will actually be performed.  */
+  sorted_inits = nreverse (sorted_inits);
 
-      initialized_field = TREE_PURPOSE (init);
-      my_friendly_assert (TREE_CODE (initialized_field) == FIELD_DECL,
-			  20000516);
+  /* If the user presented the initializers in an order different from
+     that in which they will actually occur, we issue a warning.  Keep
+     track of the next subobject which can be explicitly initialized
+     without issuing a warning.  */
+  next_subobject = sorted_inits;
 
-      /* If the explicit initializers are in sorted order, then the
-	 INITIALIZED_FIELD will be for a field following the
-	 LAST_FIELD.  */
-      for (f = last_field; f; f = TREE_CHAIN (f))
-	if (TREE_PURPOSE (f) == initialized_field)
+  /* Go through the explicit initializers, filling in TREE_PURPOSE in
+     the SORTED_INITS.  */
+  for (init = mem_inits; init; init = TREE_CHAIN (init))
+    {
+      tree subobject;
+      tree subobject_init;
+
+      subobject = TREE_PURPOSE (init);
+
+      /* If the explicit initializers are in sorted order, then
+	 SUBOBJECT will be NEXT_SUBOBJECT, or something following 
+	 it.  */
+      for (subobject_init = next_subobject; 
+	   subobject_init; 
+	   subobject_init = TREE_CHAIN (subobject_init))
+	if (TREE_PURPOSE (subobject_init) == subobject)
 	  break;
 
-      /* Give a warning, if appropriate.  */
-      if (warn_reorder && !f)
+      /* Issue a warning if the explicit initializer order does not
+	 match that which will actually occur.  */
+      if (warn_reorder && !subobject_init)
 	{
-	  cp_warning_at ("member initializers for `%#D'", 
-			 TREE_PURPOSE (last_field));
-	  cp_warning_at ("  and `%#D'", initialized_field);
-	  warning ("  will be re-ordered to match declaration order");
+	  if (TREE_CODE (TREE_PURPOSE (next_subobject)) == FIELD_DECL)
+	    cp_warning_at ("`%D' will be initialized after",
+			   TREE_PURPOSE (next_subobject));
+	  else
+	    warning ("base `%T' will be initialized after",
+		     TREE_PURPOSE (next_subobject));
+	  if (TREE_CODE (subobject) == FIELD_DECL)
+	    cp_warning_at ("  `%#D'", subobject);
+	  else
+	    warning ("  base `%T'", subobject);
 	}
 
-      /* Look again, from the beginning of the list.  We must find the
-	 field on this loop.  */
-      if (!f)
+      /* Look again, from the beginning of the list.  */
+      if (!subobject_init)
 	{
-	  f = init_list;
-	  while (TREE_PURPOSE (f) != initialized_field)
-	    f = TREE_CHAIN (f);
+	  subobject_init = sorted_inits;
+	  while (TREE_PURPOSE (subobject_init) != subobject)
+	    subobject_init = TREE_CHAIN (subobject_init);
+	}
+	
+      /* It is invalid to initialize the same subobject more than
+	 once.  */
+      if (TREE_VALUE (subobject_init))
+	{
+	  if (TREE_CODE (subobject) == FIELD_DECL)
+	    error ("multiple initializations given for `%D'", subobject);
+	  else
+	    error ("multiple initializations given for base `%T'", 
+		   subobject);
 	}
 
-      /* If there was already an explicit initializer for this field,
-	 issue an error.  */
-      if (TREE_TYPE (f))
-	error ("multiple initializations given for member `%D'",
-		  initialized_field);
-      else
-	{
-	  /* Mark the field as explicitly initialized.  */
-	  TREE_TYPE (f) = error_mark_node;
-	  /* And insert the initializer.  */
-	  TREE_VALUE (f) = TREE_VALUE (init);
-	}
-
-      /* Remember the location of the last explicitly initialized
-	 field.  */
-      last_field = f;
+      /* Record the initialization.  */
+      TREE_VALUE (subobject_init) = TREE_VALUE (init);
+      next_subobject = subobject_init;
     }
 
   /* [class.base.init]
@@ -525,15 +560,16 @@ sort_member_init (t, member_init_list)
      anonymous unions), the ctor-initializer is ill-formed.  */
   if (uses_unions_p)
     {
-      last_field = NULL_TREE;
-      for (init = init_list; init; init = TREE_CHAIN (init))
+      tree last_field = NULL_TREE;
+      for (init = sorted_inits; init; init = TREE_CHAIN (init))
 	{
 	  tree field;
 	  tree field_type;
 	  int done;
 
-	  /* Skip uninitialized members.  */
-	  if (!TREE_TYPE (init))
+	  /* Skip uninitialized members and base classes.  */
+	  if (!TREE_VALUE (init) 
+	      || TREE_CODE (TREE_PURPOSE (init)) != FIELD_DECL)
 	    continue;
 	  /* See if this field is a member of a union, or a member of a
 	     structure contained in a union, etc.  */
@@ -600,231 +636,73 @@ sort_member_init (t, member_init_list)
 	}
     }
 
-  return init_list;
+  return sorted_inits;
 }
 
-/* Like sort_member_init, but used for initializers of base classes.
-   *RBASE_PTR is filled in with the initializers for non-virtual bases;
-   vbase_ptr gets the virtual bases.  */
-
-static void
-sort_base_init (t, base_init_list, rbase_ptr, vbase_ptr)
-     tree t;
-     tree base_init_list;
-     tree *rbase_ptr, *vbase_ptr;
-{
-  tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
-  int n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-  int i;
-  tree x;
-  tree last;
-
-  /* For warn_reorder.  */
-  int last_pos = 0;
-  tree last_base = NULL_TREE;
-
-  tree rbases = NULL_TREE;
-  tree vbases = NULL_TREE;
-
-  /* First walk through and splice out vbase and invalid initializers.
-     Also replace types with binfos.  */
-
-  last = tree_cons (NULL_TREE, NULL_TREE, base_init_list);
-  for (x = TREE_CHAIN (last); x; x = TREE_CHAIN (x))
-    {
-      tree basetype = TREE_PURPOSE (x);
-      tree binfo = (TREE_CODE (basetype) == TREE_VEC
-		    ? basetype : binfo_or_else (basetype, t));
-      
-      if (binfo == NULL_TREE)
-	/* BASETYPE might be an inaccessible direct base (because it
-	   is also an indirect base).  */
-	continue;
-
-      if (TREE_VIA_VIRTUAL (binfo))
-	{
-	  /* Virtual base classes are special cases.  Their
-	     initializers are recorded with this constructor, and they
-	     are used when this constructor is the top-level
-	     constructor called.  */
-	  tree v = binfo_for_vbase (BINFO_TYPE (binfo), t);
-	  vbases = tree_cons (v, TREE_VALUE (x), vbases);
-	}
-      else
-	{
-	  /* Otherwise, it must be an immediate base class.  */
-	  my_friendly_assert
-	    (same_type_p (BINFO_TYPE (BINFO_INHERITANCE_CHAIN (binfo)),
-			  t), 20011113);
-
-	  TREE_PURPOSE (x) = binfo;
-	  TREE_CHAIN (last) = x;
-	  last = x;
-	}
-    }
-  TREE_CHAIN (last) = NULL_TREE;
-
-  /* Now walk through our regular bases and make sure they're initialized.  */
-
-  for (i = 0; i < n_baseclasses; ++i)
-    {
-      /* The base for which we're currently initializing.  */
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      /* The initializer for BASE_BINFO.  */
-      tree init;
-      int pos;
-
-      if (TREE_VIA_VIRTUAL (base_binfo))
-	continue;
-
-      /* We haven't found the BASE_BINFO yet.  */
-      init = NULL_TREE;
-      /* Loop through all the explicitly initialized bases, looking
-	 for an appropriate initializer.  */
-      for (x = base_init_list, pos = 0; x; x = TREE_CHAIN (x), ++pos)
-	{
-	  tree binfo = TREE_PURPOSE (x);
-
-	  if (binfo == base_binfo && !init)
-	    {
-	      if (warn_reorder)
-		{
-		  if (pos < last_pos)
-		    {
-		      cp_warning_at ("base initializers for `%#T'", last_base);
-		      cp_warning_at ("  and `%#T'", BINFO_TYPE (binfo));
-		      warning ("  will be re-ordered to match inheritance order");
-		    }
-		  last_pos = pos;
-		  last_base = BINFO_TYPE (binfo);
-		}
-
-	      /* Make sure we won't try to work on this init again.  */
-	      TREE_PURPOSE (x) = NULL_TREE;
-	      init = build_tree_list (binfo, TREE_VALUE (x));
-	    }
-	  else if (binfo == base_binfo)
-	    {
-	      error ("base class `%T' already initialized", 
-			BINFO_TYPE (binfo));
-	      break;
-	    }
-	}
-
-      /* If we didn't find BASE_BINFO in the list, create a dummy entry
-	 so the two lists (RBASES and the list of bases) will be
-	 symmetrical.  */
-      if (!init)
-	init = build_tree_list (NULL_TREE, NULL_TREE);
-      rbases = chainon (rbases, init);
-    }
-
-  *rbase_ptr = rbases;
-  *vbase_ptr = vbases;
-}
-
-/* Perform whatever initializations have yet to be done on the base
-   class, and non-static data members, of the CURRENT_CLASS_TYPE.
-   These actions are given by the BASE_INIT_LIST and MEM_INIT_LIST,
-   respectively.
-
-   If there is a need for a call to a constructor, we must surround
-   that call with a pushlevel/poplevel pair, since we are technically
-   at the PARM level of scope.  */
+/* Initialize all bases and members of CURRENT_CLASS_TYPE.  MEM_INITS
+   is a TREE_LIST giving the explicit mem-initializer-list for the
+   constructor.  The TREE_PURPOSE of each entry is a subobject (a
+   FIELD_DECL or a BINFO) of the CURRENT_CLASS_TYPE.  The TREE_VALUE
+   is a TREE_LIST giving the arguments to the constructor or
+   void_type_node for an empty list of arguments.  */
 
 void
-emit_base_init (mem_init_list, base_init_list)
-     tree mem_init_list;
-     tree base_init_list;
+emit_mem_initializers (tree mem_inits)
 {
-  tree member;
-  tree rbase_init_list, vbase_init_list;
-  tree t = current_class_type;
-  tree t_binfo = TYPE_BINFO (t);
-  tree binfos = BINFO_BASETYPES (t_binfo);
-  int i;
-  int n_baseclasses = BINFO_N_BASETYPES (t_binfo);
+  /* Sort the mem-initializers into the order in which the
+     initializations should be performed.  */
+  mem_inits = sort_mem_initializers (current_class_type, mem_inits);
 
-  mem_init_list = sort_member_init (t, mem_init_list);
-  sort_base_init (t, base_init_list, &rbase_init_list, &vbase_init_list);
-
-  /* First, initialize the virtual base classes, if we are
-     constructing the most-derived object.  */
-  if (TYPE_USES_VIRTUAL_BASECLASSES (t))
+  /* Initialize base classes.  */
+  while (mem_inits 
+	 && TREE_CODE (TREE_PURPOSE (mem_inits)) != FIELD_DECL)
     {
-      tree first_arg = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
-      construct_virtual_bases (t, current_class_ref, current_class_ptr,
-			       vbase_init_list, first_arg);
-    }
+      tree subobject = TREE_PURPOSE (mem_inits);
+      tree arguments = TREE_VALUE (mem_inits);
 
-  /* Now, perform initialization of non-virtual base classes.  */
-  for (i = 0; i < n_baseclasses; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      tree init = void_list_node;
+      /* If these initializations are taking place in a copy
+	 constructor, the base class should probably be explicitly
+	 initialized.  */
+      if (extra_warnings && !arguments 
+	  && DECL_COPY_CONSTRUCTOR_P (current_function_decl)
+	  && TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (subobject)))
+	warning ("base class `%#T' should be explicitly initialized in the "
+		 "copy constructor",
+		 BINFO_TYPE (subobject));
 
-      if (TREE_VIA_VIRTUAL (base_binfo))
-	continue;
+      /* If an explicit -- but empty -- initializer list was present,
+	 treat it just like default initialization at this point.  */
+      if (arguments == void_type_node)
+	arguments = NULL_TREE;
 
-      my_friendly_assert (BINFO_INHERITANCE_CHAIN (base_binfo) == t_binfo,
-			  999);
-
-      if (TREE_PURPOSE (rbase_init_list))
-	init = TREE_VALUE (rbase_init_list);
-      else if (TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (base_binfo)))
-	{
-	  init = NULL_TREE;
-	  if (extra_warnings 
-	      && DECL_COPY_CONSTRUCTOR_P (current_function_decl))
-	    warning ("base class `%#T' should be explicitly initialized in the copy constructor",
-			BINFO_TYPE (base_binfo));
-	}
-
-      if (init != void_list_node)
-	{
-	  member = build_base_path (PLUS_EXPR, current_class_ptr,
-				    base_binfo, 1);
-	  expand_aggr_init_1 (base_binfo, NULL_TREE,
-			      build_indirect_ref (member, NULL), init,
-			      LOOKUP_NORMAL);
-	}
-
-      expand_cleanup_for_base (base_binfo, NULL_TREE);
-      rbase_init_list = TREE_CHAIN (rbase_init_list);
-    }
-
-  /* Initialize the vtable pointers for the class.  */
-  initialize_vtbl_ptrs (current_class_ptr);
-
-  while (mem_init_list)
-    {
-      tree init;
-      tree member;
-      int from_init_list;
-
-      member = TREE_PURPOSE (mem_init_list);
-
-      /* See if we had a user-specified member initialization.  */
-      if (TREE_TYPE (mem_init_list))
-	{
-	  init = TREE_VALUE (mem_init_list);
-	  from_init_list = 1;
-	}
+      /* Initialize the base.  */
+      if (TREE_VIA_VIRTUAL (subobject))
+	construct_virtual_base (subobject, arguments);
       else
 	{
-	  init = DECL_INITIAL (member);
-	  from_init_list = 0;
-
-	  /* Effective C++ rule 12.  */
-	  if (warn_ecpp && init == NULL_TREE
-	      && !DECL_ARTIFICIAL (member)
-	      && TREE_CODE (TREE_TYPE (member)) != ARRAY_TYPE)
-	    warning ("`%D' should be initialized in the member initialization list", member);	    
+	  tree base_addr;
+	  
+	  base_addr = build_base_path (PLUS_EXPR, current_class_ptr,
+				       subobject, 1);
+	  expand_aggr_init_1 (subobject, NULL_TREE,
+			      build_indirect_ref (base_addr, NULL), 
+			      arguments,
+			      LOOKUP_NORMAL);
+	  expand_cleanup_for_base (subobject, NULL_TREE);
 	}
 
-      perform_member_init (member, init, from_init_list);
-      mem_init_list = TREE_CHAIN (mem_init_list);
+      mem_inits = TREE_CHAIN (mem_inits);
+    }
+
+  /* Initialize the vptrs.  */
+  initialize_vtbl_ptrs (current_class_ptr);
+
+  /* Initialize the data members.  */
+  while (mem_inits)
+    {
+      perform_member_init (TREE_PURPOSE (mem_inits),
+			   TREE_VALUE (mem_inits));
+      mem_inits = TREE_CHAIN (mem_inits);
     }
 }
 
@@ -948,89 +826,57 @@ expand_cleanup_for_base (binfo, flag)
   finish_eh_cleanup (expr);
 }
 
-/* Subroutine of `expand_aggr_vbase_init'.
-   BINFO is the binfo of the type that is being initialized.
-   INIT_LIST is the list of initializers for the virtual baseclass.  */
+/* Construct the virtual base-class VBASE passing the ARGUMENTS to its
+   constructor.  */
 
 static void
-expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
-     tree binfo, exp, addr, init_list;
+construct_virtual_base (tree vbase, tree arguments)
 {
-  tree init = purpose_member (binfo, init_list);
-  tree ref = build_indirect_ref (addr, NULL);
+  tree inner_if_stmt;
+  tree compound_stmt;
+  tree exp;
+  tree flag;  
 
-  if (init)
-    init = TREE_VALUE (init);
-  /* Call constructors, but don't set up vtables.  */
-  expand_aggr_init_1 (binfo, exp, ref, init, LOOKUP_COMPLAIN);
-}
+  /* If there are virtual base classes with destructors, we need to
+     emit cleanups to destroy them if an exception is thrown during
+     the construction process.  These exception regions (i.e., the
+     period during which the cleanups must occur) begin from the time
+     the construction is complete to the end of the function.  If we
+     create a conditional block in which to initialize the
+     base-classes, then the cleanup region for the virtual base begins
+     inside a block, and ends outside of that block.  This situation
+     confuses the sjlj exception-handling code.  Therefore, we do not
+     create a single conditional block, but one for each
+     initialization.  (That way the cleanup regions always begin
+     in the outer block.)  We trust the back-end to figure out
+     that the FLAG will not change across initializations, and
+     avoid doing multiple tests.  */
+  flag = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
+  inner_if_stmt = begin_if_stmt ();
+  finish_if_stmt_cond (flag, inner_if_stmt);
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/1);
 
-/* Construct the virtual base-classes of THIS_REF (whose address is
-   THIS_PTR).  The object has the indicated TYPE.  The construction
-   actually takes place only if FLAG is nonzero.  INIT_LIST is list
-   of initializations for constructors to perform.  */
+  /* Compute the location of the virtual base.  If we're
+     constructing virtual bases, then we must be the most derived
+     class.  Therefore, we don't have to look up the virtual base;
+     we already know where it is.  */
+  exp = build (PLUS_EXPR,
+	       TREE_TYPE (current_class_ptr),
+	       current_class_ptr,
+	       fold (build1 (NOP_EXPR, TREE_TYPE (current_class_ptr),
+			     BINFO_OFFSET (vbase))));
+  exp = build1 (NOP_EXPR, 
+		build_pointer_type (BINFO_TYPE (vbase)), 
+		exp);
+  exp = build1 (INDIRECT_REF, BINFO_TYPE (vbase), exp);
 
-static void
-construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
-     tree type;
-     tree this_ref;
-     tree this_ptr;
-     tree init_list;
-     tree flag;
-{
-  tree vbases;
+  expand_aggr_init_1 (vbase, current_class_ref, exp,
+		      arguments, LOOKUP_COMPLAIN);
+  finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
+  finish_then_clause (inner_if_stmt);
+  finish_if_stmt ();
 
-  /* If there are no virtual baseclasses, we shouldn't even be here.  */
-  my_friendly_assert (TYPE_USES_VIRTUAL_BASECLASSES (type), 19990621);
-
-  /* Now, run through the baseclasses, initializing each.  */ 
-  for (vbases = CLASSTYPE_VBASECLASSES (type); vbases;
-       vbases = TREE_CHAIN (vbases))
-    {
-      tree inner_if_stmt;
-      tree compound_stmt;
-      tree exp;
-      tree vbase;
-
-      /* If there are virtual base classes with destructors, we need to
-	 emit cleanups to destroy them if an exception is thrown during
-	 the construction process.  These exception regions (i.e., the
-	 period during which the cleanups must occur) begin from the time
-	 the construction is complete to the end of the function.  If we
-	 create a conditional block in which to initialize the
-	 base-classes, then the cleanup region for the virtual base begins
-	 inside a block, and ends outside of that block.  This situation
-	 confuses the sjlj exception-handling code.  Therefore, we do not
-	 create a single conditional block, but one for each
-	 initialization.  (That way the cleanup regions always begin
-	 in the outer block.)  We trust the back-end to figure out
-	 that the FLAG will not change across initializations, and
-	 avoid doing multiple tests.  */
-      inner_if_stmt = begin_if_stmt ();
-      finish_if_stmt_cond (flag, inner_if_stmt);
-      compound_stmt = begin_compound_stmt (/*has_no_scope=*/1);
-
-      /* Compute the location of the virtual base.  If we're
-	 constructing virtual bases, then we must be the most derived
-	 class.  Therefore, we don't have to look up the virtual base;
-	 we already know where it is.  */
-      vbase = TREE_VALUE (vbases);
-      exp = build (PLUS_EXPR,
-		   TREE_TYPE (this_ptr),
-		   this_ptr,
-		   fold (build1 (NOP_EXPR, TREE_TYPE (this_ptr),
-				 BINFO_OFFSET (vbase))));
-      exp = build1 (NOP_EXPR, 
-		    build_pointer_type (BINFO_TYPE (vbase)), 
-		    exp);
-
-      expand_aggr_vbase_init_1 (vbase, this_ref, exp, init_list);
-      finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
-      finish_then_clause (inner_if_stmt);
-      finish_if_stmt ();
-      
-      expand_cleanup_for_base (vbase, flag);
-    }
+  expand_cleanup_for_base (vbase, flag);
 }
 
 /* Find the context in which this FIELD can be initialized.  */
@@ -1079,46 +925,41 @@ member_init_ok_or_else (field, type, member_name)
   return 1;
 }
 
-/* EXP is an expression of aggregate type. NAME is an IDENTIFIER_NODE
-   which names a field, or it is a _TYPE node or TYPE_DECL which names
-   a base for that type.  INIT is a parameter list for that field's or
-   base's constructor.  Check the validity of NAME, and return a
-   TREE_LIST of the base _TYPE or FIELD_DECL and the INIT. EXP is used
-   only to get its type.  If NAME is invalid, return NULL_TREE and
-   issue a diagnostic.
+/* NAME is a FIELD_DECL, an IDENTIFIER_NODE which names a field, or it
+   is a _TYPE node or TYPE_DECL which names a base for that type.
+   INIT is a parameter list for that field's or base's constructor.
+   Check the validity of NAME, and return a TREE_LIST of the base
+   _TYPE or FIELD_DECL and the INIT.  If NAME is invalid, return
+   NULL_TREE and issue a diagnostic.
 
    An old style unnamed direct single base construction is permitted,
    where NAME is NULL.  */
 
 tree
-expand_member_init (exp, name, init)
-     tree exp, name, init;
+expand_member_init (tree name, tree init)
 {
-  tree basetype = NULL_TREE, field;
-  tree type;
+  tree basetype;
+  tree field;
 
-  if (exp == NULL_TREE)
+  if (!current_class_ref)
     return NULL_TREE;
-
-  type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
-  my_friendly_assert (IS_AGGR_TYPE (type), 20011113);
 
   if (!name)
     {
       /* This is an obsolete unnamed base class initializer.  The
 	 parser will already have warned about its use.  */
-      switch (CLASSTYPE_N_BASECLASSES (type))
+      switch (CLASSTYPE_N_BASECLASSES (current_class_type))
 	{
 	case 0:
 	  error ("unnamed initializer for `%T', which has no base classes",
-		    type);
+		 current_class_type);
 	  return NULL_TREE;
 	case 1:
-	  basetype = TYPE_BINFO_BASETYPE (type, 0);
+	  basetype = TYPE_BINFO_BASETYPE (current_class_type, 0);
 	  break;
 	default:
 	  error ("unnamed initializer for `%T', which uses multiple inheritance",
-		    type);
+		 current_class_type);
 	  return NULL_TREE;
       }
     }
@@ -1129,44 +970,54 @@ expand_member_init (exp, name, init)
     }
   else if (TREE_CODE (name) == TYPE_DECL)
     basetype = TYPE_MAIN_VARIANT (TREE_TYPE (name));
+  else
+    basetype = NULL_TREE;
 
   my_friendly_assert (init != NULL_TREE, 0);
 
-  if (init == void_type_node)
-    init = NULL_TREE;
-
   if (basetype)
     {
+      tree binfo;
+
       if (current_template_parms)
-	;
-      else if (vec_binfo_member (basetype, TYPE_BINFO_BASETYPES (type)))
-	/* A direct base.  */;
-      else if (binfo_for_vbase (basetype, type))
-	/* A virtual base.  */;
-      else
+	return build_tree_list (basetype, init);
+
+      binfo = lookup_base (current_class_type, basetype, 
+			   ba_ignore, NULL);
+      if (binfo)
 	{
-	  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
+	  if (TREE_VIA_VIRTUAL (binfo))
+	    binfo = binfo_for_vbase (basetype, current_class_type);
+	  else if (BINFO_INHERITANCE_CHAIN (binfo) 
+		   != TYPE_BINFO (current_class_type))
+	    binfo = NULL_TREE;
+	}
+      if (!binfo)
+	{
+	  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
 	    error ("type `%D' is not a direct or virtual base of `%T'",
-		      name, type);
+		   name, current_class_type);
 	  else
 	    error ("type `%D' is not a direct base of `%T'",
-		      name, type);
+		   name, current_class_type);
 	  return NULL_TREE;
 	}
 
-      init = build_tree_list (basetype, init);
+      if (binfo)
+	return build_tree_list (binfo, init);
     }
   else
     {
-      field = lookup_field (type, name, 1, 0);
+      if (TREE_CODE (name) == IDENTIFIER_NODE)
+	field = lookup_field (current_class_type, name, 1, 0);
+      else
+	field = name;
 
-      if (! member_init_ok_or_else (field, type, name))
-	return NULL_TREE;
-
-      init = build_tree_list (field, init);
+      if (member_init_ok_or_else (field, current_class_type, name))
+	return build_tree_list (field, init);
     }
 
-  return init;
+  return NULL_TREE;
 }
 
 /* This is like `expand_member_init', only it stores one aggregate
