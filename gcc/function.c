@@ -1905,14 +1905,11 @@ instantiate_decls (fndecl, valid_only)
       if (DECL_RTL (decl) && GET_CODE (DECL_RTL (decl)) == MEM)
 	instantiate_virtual_regs_1 (&XEXP (DECL_RTL (decl), 0),
 				    valid_only ? DECL_RTL (decl) : 0, 0);
-#if 1 /* This is probably correct, but it seems to require fixes
-	 elsewhere in order to work.  Let's fix them in 2.1.  */
       if (DECL_INCOMING_RTL (decl)
 	  && GET_CODE (DECL_INCOMING_RTL (decl)) == MEM)
 	instantiate_virtual_regs_1 (&XEXP (DECL_INCOMING_RTL (decl), 0),
 				    valid_only ? DECL_INCOMING_RTL (decl) : 0,
 				    0);
-#endif
     }
 
   /* Now process all variables defined in the function or its subblocks. */
