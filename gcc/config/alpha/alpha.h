@@ -694,11 +694,6 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
    current_file functions.  Moreover, we do not expose the ldgp
    until after reload, so we're probably safe.  */
 /* #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED */
-
-/* Register in which address to store a structure value
-   arrives in the function.  On the Alpha, the address is passed
-   as a hidden argument.  */
-#define STRUCT_VALUE 0
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.

@@ -1,3 +1,9 @@
+2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/alpha/alpha.h (STRUCT_VALUE): Remove.
+	* config/alpha/vms.h (STRUCT_VALUE_REGNUM): Remove #undef.
+	(STRUCT_VALUE): Remove.
+
 2003-01-14  Steven Bosscher  <stevenb@suse.de>
 
 	* system.h: Poison PROMOTED_MODE
