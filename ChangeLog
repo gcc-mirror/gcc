@@ -1,5 +1,8 @@
 2002-04-29  Nathanael Nerode  <neroden@doctormoo.dyndns.org>
 
+	* configure.in: Eliminate references to gash.
+	* Makefile.in: Eliminate references to gash.
+
 	* configure.in: remove useless references to 'pic' makefile fragments.
 
 	* configure.in: (*-*-windows*) Finish removing.

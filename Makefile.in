@@ -743,7 +743,6 @@ ALL_X11_MODULES = \
 	all-emacs19 \
 	all-gdb \
 	all-expect \
-	all-gash \
 	all-guile \
 	all-tclX \
 	all-tk \
@@ -757,7 +756,6 @@ CHECK_X11_MODULES = \
 	check-gdb \
 	check-guile \
 	check-expect \
-	check-gash \
 	check-tclX \
 	check-tk \
 	check-tix
@@ -770,7 +768,6 @@ INSTALL_X11_MODULES = \
 	install-gdb \
 	install-guile \
 	install-expect \
-	install-gash \
 	install-tclX \
 	install-tk \
 	install-tk8.1 \
@@ -953,7 +950,6 @@ CLEAN_X11_MODULES = \
 	clean-emacs19 \
 	clean-gdb \
 	clean-expect \
-	clean-gash \
 	clean-guile \
 	clean-tclX \
 	clean-tk \
@@ -1733,7 +1729,6 @@ all-findutils:
 all-find:
 all-flex: all-libiberty all-bison all-byacc
 all-gas: all-libiberty all-opcodes all-bfd all-intl
-all-gash: all-tcl
 all-gawk:
 all-gcc: all-bison all-byacc all-binutils all-gas all-ld all-zlib
 all-bootstrap: all-libiberty all-texinfo all-bison all-byacc all-binutils all-gas all-ld all-zlib

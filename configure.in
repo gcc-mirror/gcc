@@ -42,7 +42,7 @@
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline gash db tcl tk tcl8.1 tk8.1 tclX itcl tix libgui zlib"
+host_libs="intl mmalloc libiberty opcodes bfd readline db tcl tk tcl8.1 tk8.1 tclX itcl tix libgui zlib"
 
 libstdcxx_version="target-libstdc++-v3"
 # Don't use libstdc++-v3's flags to configure/build itself.
@@ -93,7 +93,7 @@ target_tools="target-examples target-groff target-gperf"
 #
 # This must be a single line because of the way it is searched by grep in
 # the code below.
-native_only="autoconf automake libtool cvssrc emacs emacs19 fileutils find gawk gettext grep gzip hello indent ispell m4 rcs recode sed shellutils tar textutils gash uudecode wdiff gprof target-groff guile perl apache inet time ash bash bzip2 prms snavigator gnuserv target-gperf"
+native_only="autoconf automake libtool cvssrc emacs emacs19 fileutils find gawk gettext grep gzip hello indent ispell m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl apache inet time ash bash bzip2 prms snavigator gnuserv target-gperf"
 
 # directories to be built in a cross environment only
 #
@@ -414,7 +414,7 @@ case ${with_x} in
   yes | "")  # the default value for this tree is that X11 is available
 	;;
   no)
-	skipdirs="${skipdirs} tk libgui gash"
+	skipdirs="${skipdirs} tk libgui"
 	;;
   *)
     	echo "*** bad value \"${with_x}\" for -with-x flag; ignored" 1>&2
