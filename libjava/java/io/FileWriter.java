@@ -1,5 +1,5 @@
 /* FileWriter.java -- Convenience class for writing to files.
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -73,6 +73,25 @@ public class FileWriter extends OutputStreamWriter
   public FileWriter(File file) throws SecurityException, IOException
   {
     super(new FileOutputStream(file));
+  }
+
+  /*************************************************************************/
+
+  /**
+    * This method initializes a new <code>FileWriter</code> object to write
+    * to the specified <code>File</code> object.
+    *
+    * @param file The <code>File</code> object to write to.
+    * @param append <code>true</code> to start adding data at the end of the
+    *               file, <code>false</code> otherwise.
+    *
+    * @param SecurityException If writing to this file is forbidden by the
+    *                          <code>SecurityManager</code>.
+    * @param IOException If any other error occurs
+    */
+  public FileWriter(File file, boolean append) throws IOException
+  {
+    super(new FileOutputStream(file, append));
   }
 
   /*************************************************************************/

@@ -1,3 +1,10 @@
+2003-03-19  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/FileOutputStream.java
+	(FileOutputStream): New constructor, merged from classpath.
+	* java/io/FileWriter.java
+	(FileWriter): New constructor, merged from classpath.
+
 2003-03-18  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/ScrollPane.java
