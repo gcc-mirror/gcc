@@ -129,10 +129,15 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
 /* A subroutine of expand_gimple_basic_block.  Expand one CALL_EXPR
    that has CALL_EXPR_TAILCALL set.  Returns non-null if we actually
    generated a tail call (something that might be denied by the ABI
-   rules governing the call; see calls.c).  */
+   rules governing the call; see calls.c).
+
+   Sets CAN_FALLTHRU if we generated a *conditional* tail call, and
+   can still reach the rest of BB.  The case here is __builtin_sqrt,
+   where the NaN result goes through the external function (with a
+   tailcall) and the normal result happens via a sqrt instruction.  */
 
 static basic_block
-expand_gimple_tailcall (basic_block bb, tree stmt)
+expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
 {
   rtx last = get_last_insn ();
   edge e;
@@ -145,6 +150,7 @@ expand_gimple_tailcall (basic_block bb, tree stmt)
     if (CALL_P (last) && SIBLING_CALL_P (last))
       goto found;
 
+  *can_fallthru = true;
   return NULL;
 
  found:
@@ -191,12 +197,17 @@ expand_gimple_tailcall (basic_block bb, tree stmt)
   last = NEXT_INSN (last);
   if (!BARRIER_P (last))
     abort ();
+
+  *can_fallthru = false;
   while (NEXT_INSN (last))
     {
       /* For instance an sqrt builtin expander expands if with
 	 sibcall in the then and label for `else`.  */
       if (LABEL_P (NEXT_INSN (last)))
-	break;
+	{
+	  *can_fallthru = true;
+	  break;
+	}
       delete_insn (NEXT_INSN (last));
     }
 
@@ -277,7 +288,7 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
   for (; !bsi_end_p (bsi); bsi_next (&bsi))
     {
       tree stmt = bsi_stmt (bsi);
-      basic_block new_bb = NULL;
+      basic_block new_bb;
 
       if (!stmt)
 	continue;
@@ -285,18 +296,29 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
       /* Expand this statement, then evaluate the resulting RTL and
 	 fixup the CFG accordingly.  */
       if (TREE_CODE (stmt) == COND_EXPR)
-	new_bb = expand_gimple_cond_expr (bb, stmt);
+	{
+	  new_bb = expand_gimple_cond_expr (bb, stmt);
+	  if (new_bb)
+	    return new_bb;
+	}
       else
 	{
 	  tree call = get_call_expr_in (stmt);
 	  if (call && CALL_EXPR_TAILCALL (call))
-	    new_bb = expand_gimple_tailcall (bb, stmt);
+	    {
+	      bool can_fallthru;
+	      new_bb = expand_gimple_tailcall (bb, stmt, &can_fallthru);
+	      if (new_bb)
+		{
+		  if (can_fallthru)
+		    bb = new_bb;
+		  else
+		    return new_bb;
+		}
+	    }
 	  else
 	    expand_expr_stmt (stmt);
 	}
-
-      if (new_bb)
-	return new_bb;
     }
 
   do_pending_stack_adjust ();

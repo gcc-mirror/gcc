@@ -1,3 +1,10 @@
+2004-08-22  Richard Henderson  <rth@redhat.com>
+
+	PR 17075
+	* cfgexpand.c (expand_gimple_tailcall): Detect when we can both
+	create new blocks and fall through.
+	(expand_gimple_basic_block): Update to match.
+
 2004-08-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads_address): Make return value tri-state.
