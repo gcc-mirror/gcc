@@ -3389,6 +3389,16 @@ set_initial_elim_offsets ()
   num_not_at_initial_offset = 0;
 }
 
+/* Subroutine of set_initial_label_offsets called via for_each_eh_label.  */
+
+static void set_initial_eh_label_offset PARAMS ((rtx));
+static void
+set_initial_eh_label_offset (label)
+     rtx label;
+{
+  set_label_offsets (label, NULL_RTX, 1);
+}
+
 /* Initialize the known label offsets.
    Set a known offset for each forced label to be at the initial offset
    of each elimination.  We do this because we assume that all
@@ -3405,6 +3415,8 @@ set_initial_label_offsets ()
   for (x = forced_labels; x; x = XEXP (x, 1))
     if (XEXP (x, 0))
       set_label_offsets (XEXP (x, 0), NULL_RTX, 1);
+
+  for_each_eh_label (set_initial_eh_label_offset);
 }
 
 /* Set all elimination offsets to the known values for the code label given
