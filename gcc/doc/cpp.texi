@@ -759,9 +759,11 @@ named @var{file} in a standard list of system directories.  You can prepend
 directories to this list with the @option{-I} option (@pxref{Invocation}).
 
 @item #include "@var{file}"
-This variant is used for header files of your own program.  It searches
-for a file named @var{file} first in the directory containing the
-current file, then in the same directories used for @code{<@var{file}>}.
+This variant is used for header files of your own program.  It
+searches for a file named @var{file} first in the directory containing
+the current file, then in the quote directories and then the same
+directories used for @code{<@var{file}>}.  You can prepend directories
+to the list of quote directories with the @option{-iquote} option.
 @end table
 
 The argument of @samp{#include}, whether delimited with quote marks or
@@ -883,9 +885,10 @@ standard C library facilities, or the standard C library itself.
 @option{-nostdinc} is in effect.
 
 GCC looks for headers requested with @code{@w{#include "@var{file}"}}
-first in the directory containing the current file, then in the same
-places it would have looked for a header requested with angle brackets.
-For example, if @file{/usr/include/sys/stat.h} contains
+first in the directory containing the current file, then in the
+directories as specified by @option{-iquote} options, then in the same
+places it would have looked for a header requested with angle
+brackets.  For example, if @file{/usr/include/sys/stat.h} contains
 @code{@w{#include "types.h"}}, GCC looks for @file{types.h} first in
 @file{/usr/include/sys}, then in its usual search path.
 
@@ -898,7 +901,8 @@ This has two effects.  First, directories appearing before the
 quote marks.  Directories after @option{-I-} are searched for all
 headers.  Second, the directory containing the current file is not
 searched for anything, unless it happens to be one of the directories
-named by an @option{-I} switch.
+named by an @option{-I} switch.  @option{-I-} is deprecated, -iquote
+should be used instead.
 
 @option{-I. -I-} is not the same as no @option{-I} options at all, and does
 not cause the same behavior for @samp{<>} includes that @samp{""}
@@ -4039,6 +4043,11 @@ they generally represent bugs in the snapshots.
 
 @itemize @bullet
 
+@item -I- deprecated
+
+This option has been deprecated in 3.5.  @option{-iquote} is meant to
+replace the need for this option.
+
 @item Order of evaluation of @samp{#} and @samp{##} operators
 
 The standard does not specify the order of evaluation of a chain of
@@ -4131,7 +4140,8 @@ without notice.
 @ignore
 @c man begin SYNOPSIS
 cpp [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
-    [@option{-I}@var{dir}@dots{}] [@option{-W}@var{warn}@dots{}]
+    [@option{-I}@var{dir}@dots{}] [@option{-iquote}@var{dir}@dots{}]
+    [@option{-W}@var{warn}@dots{}]
     [@option{-M}|@option{-MM}] [@option{-MG}] [@option{-MF} @var{filename}]
     [@option{-MP}] [@option{-MQ} @var{target}@dots{}]
     [@option{-MT} @var{target}@dots{}]

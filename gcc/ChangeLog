@@ -1,3 +1,19 @@
+2004-05-3  Mike Stump  <mrs@apple.com>
+
+	* doc/invoke.texi (Directory Options): Document -iquote.
+	* doc/cpp.texi: Likewise.
+	* doc/cppopts.texi: Likewise.
+	* c-opts.c (c_common_missing_argument): Add -iquote processing.
+	(c_common_handle_option): Likewise.
+	* c.opt (iquote): Add.
+	* gcc.h (DEFAULT_WORD_SWITCH_TAKES_ARG): Add -iquote.
+	* c-incpath.c (merge_include_chains): Update comment to use -iquote.
+
+	* c-opts.c (case OPT_I): Deprecate -I- support.
+	* doc/invoke.texi: Likewise.
+	* doc/cpp.texi: Likewise.
+	* doc/cppopts.texi: Likewise.
+
 2004-05-05  Steven Bosscher  <stevenb@suse.de>
 
 	* basic-block.h (free_basic_block_vars): Update prototype.
