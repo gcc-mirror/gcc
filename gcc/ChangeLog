@@ -1,3 +1,8 @@
+2002-09-08  Krister Walfridsson  <cato@df.lth.se>
+
+	* config/arm/netbsd.h (INITIALIZE_TRAMPOLINE): Redefine.
+	(CLEAR_INSN_CACHE): Define.
+
 2002-09-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h: Fix comment formatting.
