@@ -6452,6 +6452,80 @@ fixup_anonymous_union (t)
     error ("an anonymous union cannot have function members");
 }
 
+/* Make sure that a declaration with no declarator is well-formed, i.e.
+   just defines a tagged type or anonymous union.
+
+   Returns the type defined, if any.  */
+
+tree
+check_tag_decl (declspecs)
+     tree declspecs;
+{
+  int found_type = 0;
+  tree ob_modifier = NULL_TREE;
+  register tree link;
+  register tree t = NULL_TREE;
+
+  for (link = declspecs; link; link = TREE_CHAIN (link))
+    {
+      register tree value = TREE_VALUE (link);
+
+      if (TYPE_P (value))
+	{
+	  ++found_type;
+
+	  if (IS_AGGR_TYPE (value) || TREE_CODE (value) == ENUMERAL_TYPE)
+	    {
+	      my_friendly_assert (TYPE_MAIN_DECL (value) != NULL_TREE, 261);
+	      t = value;
+	    }
+	}
+      else if (value == ridpointers[(int) RID_STATIC]
+	       || value == ridpointers[(int) RID_EXTERN]
+	       || value == ridpointers[(int) RID_AUTO]
+	       || value == ridpointers[(int) RID_REGISTER]
+	       || value == ridpointers[(int) RID_INLINE]
+	       || value == ridpointers[(int) RID_VIRTUAL]
+	       || (value == ridpointers[(int) RID_FRIEND]
+		   && (current_class_type == NULL_TREE
+		       || current_scope () != current_class_type))
+	       || value == ridpointers[(int) RID_CONST]
+	       || value == ridpointers[(int) RID_VOLATILE]
+	       || value == ridpointers[(int) RID_EXPLICIT])
+	ob_modifier = value;
+    }
+
+  if (found_type > 1)
+    error ("multiple types in one declaration");
+    
+  if (t == NULL_TREE)
+    pedwarn ("declaration does not declare anything");
+  else if (ANON_UNION_TYPE_P (t))
+    return t;
+  else
+    {
+      /* Anonymous unions are objects, that's why we only check for
+	 inappropriate specifiers in this branch.  */
+
+      if (ob_modifier)
+	{
+	  if (ob_modifier == ridpointers[(int) RID_INLINE]
+	      || ob_modifier == ridpointers[(int) RID_VIRTUAL])
+	    cp_error ("`%D' can only be specified for functions", ob_modifier);
+	  else if (ob_modifier == ridpointers[(int) RID_FRIEND])
+	    cp_error ("`%D' can only be specified inside a class", ob_modifier);
+	  else if (ob_modifier == ridpointers[(int) RID_EXPLICIT])
+	    cp_error ("`%D' can only be specified for constructors",
+		      ob_modifier);
+	  else
+	    cp_error ("`%D' can only be specified for objects and functions",
+		      ob_modifier);
+	}
+    }
+
+  return t;
+}
+
 /* Called when a declaration is seen that contains no names to declare.
    If its type is a reference to a structure, union or enum inherited
    from a containing scope, shadow that tag name for the current scope
@@ -6467,48 +6541,17 @@ void
 shadow_tag (declspecs)
      tree declspecs;
 {
-  int found_tag = 0;
-  tree ob_modifier = NULL_TREE;
-  register tree link;
-  register enum tree_code code, ok_code = ERROR_MARK;
-  register tree t = NULL_TREE;
+  tree t = check_tag_decl (declspecs);
 
-  for (link = declspecs; link; link = TREE_CHAIN (link))
-    {
-      register tree value = TREE_VALUE (link);
-
-      code = TREE_CODE (value);
-      if (IS_AGGR_TYPE_CODE (code) || code == ENUMERAL_TYPE)
-	{
-	  my_friendly_assert (TYPE_MAIN_DECL (value) != NULL_TREE, 261);
-
-	  maybe_process_partial_specialization (value);
-
-	  t = value;
-	  ok_code = code;
-	  found_tag++;
-	}
-      else if (value == ridpointers[(int) RID_STATIC]
-	       || value == ridpointers[(int) RID_EXTERN]
-	       || value == ridpointers[(int) RID_AUTO]
-	       || value == ridpointers[(int) RID_REGISTER]
-	       || value == ridpointers[(int) RID_INLINE]
-	       || value == ridpointers[(int) RID_VIRTUAL]
-	       || value == ridpointers[(int) RID_EXPLICIT])
-	ob_modifier = value;
-    }
+  if (t)
+    maybe_process_partial_specialization (t);
 
   /* This is where the variables in an anonymous union are
      declared.  An anonymous union declaration looks like:
      union { ... } ;
      because there is no declarator after the union, the parser
      sends that declaration here.  */
-  if (ok_code == UNION_TYPE
-      && t != NULL_TREE
-      && ((TREE_CODE (TYPE_NAME (t)) == IDENTIFIER_NODE
-	   && ANON_AGGRNAME_P (TYPE_NAME (t)))
-	  || (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
-	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))))
+  if (t && ANON_UNION_TYPE_P (t))
     {
       fixup_anonymous_union (t);
 
@@ -6518,29 +6561,6 @@ shadow_tag (declspecs)
 				      NULL_TREE);
 	  finish_anon_union (decl);
 	}
-    }
-  else
-    {
-      /* Anonymous unions are objects, that's why we only check for
-	 inappropriate specifiers in this branch.  */
-
-      if (ob_modifier)
-	{
-	  if (ob_modifier == ridpointers[(int) RID_INLINE]
-	      || ob_modifier == ridpointers[(int) RID_VIRTUAL])
-	    cp_error ("`%D' can only be specified for functions", ob_modifier);
-	  else if (ob_modifier == ridpointers[(int) RID_EXPLICIT])
-	    cp_error ("`%D' can only be specified for constructors",
-		      ob_modifier);
-	  else
-	    cp_error ("`%D' can only be specified for objects and functions",
-		      ob_modifier);
-	}
-
-      if (found_tag == 0)
-	cp_error ("abstract declarator used as declaration");
-      else if (found_tag > 1)
-	pedwarn ("multiple types in one declaration");
     }
 }
 
@@ -10761,9 +10781,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 							   type))
 		  /* If we just return the declaration, crashes
 		     will sometimes occur.  We therefore return
-			 void_type_node, as if this was a friend
-			 declaration, to cause callers to completely
-			 ignore this declaration.  */
+		     void_type_node, as if this was a friend
+		     declaration, to cause callers to completely
+		     ignore this declaration.  */
 		  return void_type_node;
 	      }
 

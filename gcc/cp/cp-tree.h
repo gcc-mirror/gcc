@@ -2706,6 +2706,7 @@ extern int init_type_desc			PROTO((void));
 extern tree define_function
 	PROTO((char *, tree, enum built_in_function,
 	       void (*) (tree), char *));
+extern tree check_tag_decl			PROTO((tree));
 extern void shadow_tag				PROTO((tree));
 extern tree groktypename			PROTO((tree));
 extern tree start_decl				PROTO((tree, tree, int, tree, tree));

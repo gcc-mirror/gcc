@@ -3669,23 +3669,24 @@ finish_struct_1 (t, warn_anon)
 				 x, TREE_TYPE (x));
 		}
 
-	      if (DECL_INITIAL (x) == NULL_TREE)
-		;
-	      else if (width == 0)
-		{
-#ifdef EMPTY_FIELD_BOUNDARY
-		  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), EMPTY_FIELD_BOUNDARY);
-#endif
-#ifdef PCC_BITFIELD_TYPE_MATTERS
-		  DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-					TYPE_ALIGN (TREE_TYPE (x)));
-#endif
-		}
-	      else
+	      if (DECL_INITIAL (x))
 		{
 		  DECL_INITIAL (x) = NULL_TREE;
 		  DECL_FIELD_SIZE (x) = width;
 		  DECL_BIT_FIELD (x) = 1;
+
+		  if (width == 0)
+		    {
+#ifdef EMPTY_FIELD_BOUNDARY
+		      DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
+					    EMPTY_FIELD_BOUNDARY);
+#endif
+#ifdef PCC_BITFIELD_TYPE_MATTERS
+		      if (PCC_BITFIELD_TYPE_MATTERS)
+			DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
+					      TYPE_ALIGN (TREE_TYPE (x)));
+#endif
+		    }
 		}
 	    }
 	  else
