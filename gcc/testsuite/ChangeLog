@@ -1,5 +1,10 @@
 2003-03-09  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8534
+	* g++.dg/opt/ptrmem1.C: New test.
+
+2003-03-09  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/9912
 	* g++.dg/parse/class1.C: New test.
 	* g++.old-deja/g++.other/decl5.C: Adjust.

@@ -9643,15 +9643,52 @@ grokvardecl (type, name, specbits_in, initialized, constp, scope)
    TYPE, which is a POINTER_TYPE to a METHOD_TYPE.  */
 
 tree
-build_ptrmemfunc_type (type)
-     tree type;
+build_ptrmemfunc_type (tree type)
 {
   tree fields[4];
   tree t;
+  tree method_type;
+  tree arg_type;
   tree unqualified_variant = NULL_TREE;
 
   if (type == error_mark_node)
     return type;
+
+  /* If the METHOD_TYPE has any default parameters, make a copy that
+     does not have the default parameters.  The pointer-to-member type
+     never has default parameters.  */
+  method_type = TREE_TYPE (type);
+  for (arg_type = TYPE_ARG_TYPES (method_type);
+       arg_type;
+       arg_type = TREE_CHAIN (arg_type))
+    if (TREE_PURPOSE (arg_type))
+      {
+	/* At least one parameter has a default argument.  */
+	tree arg_types = NULL_TREE;
+	tree *arg_type_p = &arg_types;
+
+	/* Copy the parameter types.  The "this" parameter will be
+	   added by build_cplus_method_type.  */
+	for (arg_type = TREE_CHAIN (TYPE_ARG_TYPES (method_type));
+	     arg_type;
+	     arg_type = TREE_CHAIN (arg_type))
+	  {
+	    if (arg_type == void_list_node)
+	      *arg_type_p = void_list_node;
+	    else
+	      *arg_type_p = build_tree_list (NULL_TREE,
+					     TREE_VALUE (arg_type));
+	    arg_type_p = &TREE_CHAIN (*arg_type_p);
+	  }
+	/* Build the new METHOD_TYPE.  */
+	method_type = build_cplus_method_type (TYPE_METHOD_BASETYPE (method_type), 
+					       TREE_TYPE (method_type), 
+					       arg_types);
+	/* Build the new POINTER_TYPE.  */
+	type = cp_build_qualified_type (build_pointer_type (method_type),
+					cp_type_quals (type));
+	break;
+      }
 
   /* If a canonical type already exists for this type, use it.  We use
      this method instead of type_hash_canon, because it only does a
