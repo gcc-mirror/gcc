@@ -626,7 +626,8 @@ expand_builtin_init_dwarf_reg_sizes (address)
   rtx addr = expand_expr (address, NULL_RTX, VOIDmode, 0);
   rtx mem = gen_rtx_MEM (mode, addr);
 
-  for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
+  i = MAX (FIRST_PSEUDO_REGISTER, DWARF_FRAME_REGISTERS);
+  while (i--)
     {
       int offset = DWARF_FRAME_REGNUM (i) * GET_MODE_SIZE (mode);
       int size = GET_MODE_SIZE (reg_raw_mode[i]);
@@ -1208,6 +1209,11 @@ static unsigned cfa_temp_reg;
 /* A temporary value used in adjusting SP or setting up the store_reg.  */
 static long cfa_temp_value;
 
+/* If we see a store of the CFA register, remember it in case we later also
+   copy it into another register.  The ARM saves the old SP in the stack,
+   but it also has a usable FP.  */
+static unsigned cfa_old_reg;
+
 /* Record call frame debugging information for an expression, which either
    sets SP or FP (adjusting how we calculate the frame address) or saves a
    register to the stack. */
@@ -1257,7 +1263,10 @@ dwarf2out_frame_debug_expr (expr, label)
         {
           /* Setting FP from SP.  */
         case REG:
-          if (cfa.reg != (unsigned) REGNO (src))
+          if (cfa.reg == (unsigned) REGNO (src)
+	      || (cfa.indirect && cfa_old_reg == (unsigned) REGNO (src)))
+	    /* OK */;
+	  else
             abort ();
 
 	  /* We used to require that dest be either SP or FP, but the
@@ -1265,6 +1274,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	     FP.  So we just rely on the backends to only set
 	     RTX_FRAME_RELATED_P on appropriate insns.  */
           cfa.reg = REGNO (dest);
+	  cfa.indirect = 0;
           break;
 
         case PLUS:
@@ -1376,7 +1386,9 @@ dwarf2out_frame_debug_expr (expr, label)
          going to have to use an indrect mechanism.  */
       if (REGNO (src) != STACK_POINTER_REGNUM 
 	  && REGNO (src) != HARD_FRAME_POINTER_REGNUM 
-	  && (unsigned) REGNO (src) == cfa.reg)
+	  && (unsigned) REGNO (src) == cfa.reg
+	  /* Temporary KLUDGE to make ARM work.  */
+	  && GET_CODE (XEXP (dest, 0)) != PRE_DEC)
 	{
 	  /* We currently allow this to be ONLY a MEM or MEM + offset.  */
 	  rtx x = XEXP (dest, 0);
@@ -1390,6 +1402,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	    }
 	  if (GET_CODE (x) != REG)
 	    abort ();
+	  cfa_old_reg = cfa.reg;
 	  cfa.reg = (unsigned) REGNO (x);
 	  cfa.base_offset = offset;
 	  cfa.indirect = 1;

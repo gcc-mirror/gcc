@@ -1,3 +1,9 @@
+2000-07-14  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr): If we store the CFA 
+	register in the stack and later in another register, use the new
+	register.
+
 Fri Jul 14 10:25:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/mips/mips.md: (absdi2): Handle sign_extend for
@@ -391,6 +397,7 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* cpp.texi: Update.
 
+>>>>>>> 1.7094
 2000-07-11  Neil Booth  <NeilB@earthling.net>
 
 	* cppinit.c: (cpp_reader_init): Allow digraphs by default.
