@@ -4663,6 +4663,8 @@ delete_noop_moves (f)
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
+	      if (insn == bb->end)
+		purge_dead_edges (bb);
 	    }
 	}
     }
@@ -5250,7 +5252,10 @@ propagate_block_delete_insn (bb, insn)
     }
 
   if (bb->end == insn)
-    bb->end = PREV_INSN (insn);
+    {
+      bb->end = PREV_INSN (insn);
+      purge_dead_edges (bb);
+    }
   flow_delete_insn (insn);
 }
 

@@ -7336,6 +7336,7 @@ thread_prologue_and_epilogue_insns (f)
 	  emit_barrier_after (last->end);
 	  emit_return_into_block (last, epilogue_line_note);
 	  epilogue_end = last->end;
+	  last->succ->flags &= ~EDGE_FALLTHRU;
 	  goto epilogue_done;
 	}
     }
