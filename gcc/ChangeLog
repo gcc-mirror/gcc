@@ -1,5 +1,10 @@
 2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (four define_peephole2's): Use
+	h8300_regs_ok_for_stm().
+
+2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300-protos.h: Update the prototype for
 	expand_a_rotate().
 	* config/h8300/h8300.c (expand_a_rotate): Remove the first
