@@ -1,3 +1,8 @@
+2002-07-31  Graham Stott  <grahas@btinternet.com>
+
+	* config/rs6000/rs6000.c(rs6000_hash_constant): Fix
+	hash for LABEL_REF's. 
+
 2002-07-31  Graham Stott  <grahams@btinternet.com>
 
 	* config/rs6000/rs6000.c (spe_init_builtins,
