@@ -10892,8 +10892,9 @@ save area.
 In general, code compiled with @option{-mbackchain} is call-compatible with
 code compiled with @option{-mmo-backchain}; however, use of the backchain
 for debugging purposes usually requires that the whole binary is built with
-@option{-mbackchain}.  Note that the combination of @option{-mbackchain} and
-@option{-mpacked-stack} generates code that is not ABI-compatible.
+@option{-mbackchain}.  Note that the combination of @option{-mbackchain},
+@option{-mpacked-stack} and @option{-mhard-float} is not supported.  In order
+to build a linux kernel use @option{-msoft-float}.
 
 The default is to not maintain the backchain.
 
@@ -10917,8 +10918,9 @@ As long as the stack frame backchain is not used, code generated with
 S/390 or zSeries generated code that uses the stack frame backchain at run
 time, not just for debugging purposes.  Such code is not call-compatible
 with code compiled with @option{-mpacked-stack}.  Also, note that the
-combination of @option{-mbackchain} and @option{-mpacked-stack} generates code
-that is not ABI-compatible.
+combination of @option{-mbackchain},
+@option{-mpacked-stack} and @option{-mhard-float} is not supported.  In order
+to build a linux kernel use @option{-msoft-float}.
 
 The default is to not use the packed stack layout.
 

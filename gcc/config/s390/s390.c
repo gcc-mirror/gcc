@@ -1424,6 +1424,10 @@ override_options (void)
     s390_cost = &z900_cost;
 
 
+  if (TARGET_BACKCHAIN && TARGET_PACKED_STACK && TARGET_HARD_FLOAT)
+    error ("-mbackchain -mpacked-stack -mhard-float are not supported "
+	   "in combination.");
+
   if (s390_warn_framesize_string)
     {
       if (sscanf (s390_warn_framesize_string, HOST_WIDE_INT_PRINT_DEC,
@@ -7711,15 +7715,9 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   /* Find the register save area.  */
   t = make_tree (TREE_TYPE (sav), return_address_pointer_rtx);
-  if (TARGET_BACKCHAIN && TARGET_PACKED_STACK) /* kernel stack layout */
-    t = build (PLUS_EXPR, TREE_TYPE (sav), t,
-	       build_int_cst (NULL_TREE,
-			      -(RETURN_REGNUM - 2) * UNITS_PER_WORD
-			      - (TARGET_64BIT ? 4 : 2) * 8));
-  else
-    t = build (PLUS_EXPR, TREE_TYPE (sav), t,
-	       build_int_cst (NULL_TREE, -RETURN_REGNUM * UNITS_PER_WORD));
-
+  t = build (PLUS_EXPR, TREE_TYPE (sav), t,
+	     build_int_cst (NULL_TREE, -RETURN_REGNUM * UNITS_PER_WORD));
+  
   t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -7787,8 +7785,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       /* kernel stack layout on 31 bit: It is assumed here that no padding
 	 will be added by s390_frame_info because for va_args always an even
 	 number of gprs has to be saved r15-r2 = 14 regs.  */
-      sav_ofs = ((TARGET_BACKCHAIN && TARGET_PACKED_STACK) ?
-		 (TARGET_64BIT ? 4 : 2) * 8 : 2 * UNITS_PER_WORD);
+      sav_ofs = 2 * UNITS_PER_WORD;
       sav_scale = UNITS_PER_WORD;
       size = UNITS_PER_WORD;
       max_reg = 4;
@@ -7805,8 +7802,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       indirect_p = 0;
       reg = fpr;
       n_reg = 1;
-      sav_ofs = ((TARGET_BACKCHAIN && TARGET_PACKED_STACK) ?
-		 0 : 16 * UNITS_PER_WORD);
+      sav_ofs = 16 * UNITS_PER_WORD;
       sav_scale = 8;
       /* TARGET_64BIT has up to 4 parameter in fprs */
       max_reg = TARGET_64BIT ? 3 : 1;
@@ -7827,8 +7823,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       /* kernel stack layout on 31 bit: It is assumed here that no padding
 	 will be added by s390_frame_info because for va_args always an even
 	 number of gprs has to be saved r15-r2 = 14 regs.  */
-      sav_ofs = ((TARGET_BACKCHAIN && TARGET_PACKED_STACK) ? 
-		 (TARGET_64BIT ? 4 : 2) * 8 : 2 * UNITS_PER_WORD);
+      sav_ofs = 2 * UNITS_PER_WORD;
 
       if (size < UNITS_PER_WORD)
 	sav_ofs += UNITS_PER_WORD - size;

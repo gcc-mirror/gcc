@@ -1,5 +1,13 @@
 2005-01-11  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.c (override_options): Return error if
+	-mbackchain, -mpacked-stack and -mhard-float are used together.
+	(s390_va_start): Remove the backchain && packed-stack special case.
+	(s390_gimplify_va_arg): Likewise.
+	* doc/invoke.texi: Remove the ABI incompatibility note.
+
+2005-01-11  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.c (struct s390_frame_layout): Remove 
 	save_backchain_p.
 	(s390_frame_info, s390_emit_prologue): Replace occurrences of
