@@ -5139,8 +5139,12 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
     case LSHIFT_EXPR:  case RSHIFT_EXPR:
       /* If the second operand is constant, this is a multiplication
 	 or floor division, by a power of two, so we can treat it that
-	 way unless the multiplier or divisor overflows.  */
+	 way unless the multiplier or divisor overflows.  Signed
+	 left-shift overflow is implementation-defined rather than
+	 undefined in C90, so do not convert signed left shift into
+	 multiplication.  */
       if (TREE_CODE (op1) == INTEGER_CST
+	  && (tcode == RSHIFT_EXPR || TYPE_UNSIGNED (TREE_TYPE (op0)))
 	  /* const_binop may not detect overflow correctly,
 	     so check for it explicitly here.  */
 	  && TYPE_PRECISION (TREE_TYPE (size_one_node)) > TREE_INT_CST_LOW (op1)

@@ -1,5 +1,11 @@
 2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR c/7284
+	* fold-const.c (extract_muldiv_1): Do not treat signed left shift
+	as multiplication.
+
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* doc/implement-c.texi: New file.
 	* doc/extend.texi (C Implementation): Move to there.
 	* doc/gcc.texi: Include implement-c.texi.
