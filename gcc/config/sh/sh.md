@@ -3596,7 +3596,7 @@
 (define_expand "sym_label2reg"
   [(set (match_operand:SI 0 "" "")
 	(const (minus:SI
-		(unspec [(match_operand:SI 1 "" "")] UNSPEC_PIC)
+		(const (unspec [(match_operand:SI 1 "" "")] UNSPEC_PIC))
 		(const (plus:SI
 			(unspec [(label_ref (match_operand:SI 2 "" ""))]
 				UNSPEC_PIC)
@@ -3629,12 +3629,13 @@
 (define_expand "symPLT_label2reg"
   [(set (match_operand:SI 0 "" "")
 	(const (minus:SI
-		(plus:SI (pc)
-			 (unspec [(match_operand:SI 1 "" "")] UNSPEC_PLT))
-		(const
-		 (plus:SI
-		  (unspec [(label_ref (match_operand:SI 2 "" ""))] UNSPEC_PIC)
-		  (const_int 2))))))
+		(const (plus:SI
+			(unspec [(match_operand:SI 1 "" "")] UNSPEC_PLT)
+			(pc)))
+		(const (plus:SI
+			(unspec [(label_ref (match_operand:SI 2 "" ""))]
+				UNSPEC_PIC)
+			(const_int 2))))))
    (use (match_dup 3))]
   ;; Even though the PIC register is not really used by the call
   ;; sequence in which this is expanded, the PLT code assumes the PIC

@@ -5500,6 +5500,18 @@ would be identical to repeatedly calling the macro corresponding to
 a size of @code{UNITS_PER_WORD}, once for each word, you need not define
 the macro.
 
+@findex OUTPUT_ADDR_CONST_EXTRA
+@item OUTPUT_ADDR_CONST_EXTRA (@var{stream}, @var{x}, @var{fail})
+A C statement to recognize @var{rtx} patterns that
+@code{output_addr_const} can't deal with, and output assembly code to
+@var{stream} corresponding to the pattern @var{x}.  This may be used to
+allow machine-dependent @code{UNSPEC}s to appear within constants.
+
+If @code{OUTPUT_ADDR_CONST_EXTRA} fails to recognize a pattern, it must
+@code{goto fail}, so that a standard error message is printed.  If it
+prints an error message itself, by calling, for example,
+@code{output_operand_lossage}, it may just complete normally.
+
 @findex ASM_OUTPUT_BYTE
 @item ASM_OUTPUT_BYTE (@var{stream}, @var{value})
 A C statement to output to the stdio stream @var{stream} an assembler

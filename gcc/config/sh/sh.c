@@ -202,7 +202,7 @@ print_operand_address (stream, x)
       break;
 
     default:
-      output_pic_addr_const (stream, x);
+      output_addr_const (stream, x);
       break;
     }
 }
@@ -5333,120 +5333,4 @@ legitimize_pic_address (orig, mode, reg)
       return reg;
     }
   return orig;
-}
-
-/* Like output_addr_const(), but recognize PIC unspecs and special
-   expressions.  */
-void
-output_pic_addr_const (file, x)
-     FILE *file;
-     rtx x;
-{
-  char buf[256];
-
-  switch (GET_CODE (x))
-    {
-    case PC:
-      if (flag_pic)
-	putc ('.', file);
-      else
-	abort ();
-      break;
-
-    case SYMBOL_REF:
-      assemble_name (file, XSTR (x, 0));
-      break;
-
-    case LABEL_REF:
-      x = XEXP (x, 0);
-      /* FALLTHRU */
-    case CODE_LABEL:
-      ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
-      assemble_name (asm_out_file, buf);
-      break;
-
-    case CONST:
-      output_pic_addr_const (file, XEXP (x, 0));
-      break;
-
-    case CONST_INT:
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
-      break;
-
-    case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
-	{
-	  /* We can use %d if the number is <32 bits and positive.  */
-	  if (CONST_DOUBLE_HIGH (x) || CONST_DOUBLE_LOW (x) < 0)
-	    fprintf (file, "0x%lx%08lx",
-		     (unsigned long) CONST_DOUBLE_HIGH (x),
-		     (unsigned long) CONST_DOUBLE_LOW (x));
-	  else
-	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x));
-	}
-      else
-	/* We can't handle floating point constants;
-	   PRINT_OPERAND must handle them.  */
-	output_operand_lossage ("floating constant misused");
-      break;
-
-    case PLUS:
-      /* Some assemblers need integer constants to appear first.  */
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	{
-	  output_pic_addr_const (file, XEXP (x, 0));
-	  fprintf (file, "+");
-	  output_pic_addr_const (file, XEXP (x, 1));
-	}
-      else if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	       || GET_CODE (XEXP (x, 0)) == PC)
-	{
-	  output_pic_addr_const (file, XEXP (x, 1));
-	  fprintf (file, "+");
-	  output_pic_addr_const (file, XEXP (x, 0));
-	}
-      else
-	abort ();
-      break;
-
-    case MINUS:
-      output_pic_addr_const (file, XEXP (x, 0));
-      fprintf (file, "-");
-      if (GET_CODE (XEXP (x, 1)) == CONST)
-	{
-	  putc ('(', file);
-	  output_pic_addr_const (file, XEXP (x, 1));
-	  putc (')', file);
-	}
-      else
-	output_pic_addr_const (file, XEXP (x, 1));
-      break;
-
-    case UNSPEC:
-      if ((XVECLEN (x, 0)) > 3)
- 	abort ();
-      output_pic_addr_const (file, XVECEXP (x, 0, 0));
-      switch (XINT (x, 1))
- 	{
-	case 6:
-	  /* GLOBAL_OFFSET_TABLE or local symbols, no suffix.  */
-	  break;
- 	case 7:
- 	  fputs ("@GOT", file);
- 	  break;
-	case 8:
-	  fputs ("@GOTOFF", file);
-	  break;
-        case 9:
-	  fputs ("@PLT", file);
-	  break;
- 	default:
- 	  output_operand_lossage ("invalid UNSPEC as operand");
- 	  break;
- 	}
-      break;
-
-    default:
-      output_operand_lossage ("invalid expression as operand");
-    }
 }
