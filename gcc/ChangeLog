@@ -1,3 +1,9 @@
+2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/18045
+	* expmed.c (expand_smod_pow2): Handle modes whose size
+	is greater than that of HOST_WIDE_INT.
+
 2004-10-18  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-parse.in (reservedwords): Add OBJC_TYPE_QUAL as alternative.
