@@ -1,6 +1,4 @@
-// 2001-07-19 Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
-
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,17 +16,31 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 25.2.8 Unique
-
-
-#include <list>
 #include <algorithm>
+#include <testsuite_hooks.h>
 
+int a[10] = { 1, 2, 3, 3, 4, 5, 5, 6, 7, 9 };
 
-int main()
+static int compare_count = 0;
+
+bool compare(int a, int b)
 {
-  using namespace std;
-  list<int> menge;
-  unique (menge.begin(), menge.end());
+  compare_count++;
+  return a == b;
+}
+
+// libstdc++/11480
+void test01()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::unique(a, a+10, compare);
+  VERIFY( compare_count == 9 );
+}
+
+int
+main()
+{
+  test01();
   return 0;
 }

@@ -1,5 +1,13 @@
 2003-10-14  Paolo Carlini  <pcarlini@unitus.it>
 
+	PR libstdc++/11480
+	* include/bits/stl_algo.h (unique): Fix.
+	* testsuite/25_algorithms/unique.cc: Move to unique/1.cc.
+	* testsuite/25_algorithms/unique/11480.cc: New, from the PR.
+	* testsuite/25_algorithms/unique/2.cc: New.
+
+2003-10-14  Paolo Carlini  <pcarlini@unitus.it>
+
 	* src/localename.cc (_M_replace_categories, M_replace_facet):
 	Const-ify a couple of variables.
 
