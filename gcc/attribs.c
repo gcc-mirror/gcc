@@ -32,6 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "cpplib.h"
 #include "target.h"
+#include "langhooks.h"
 
 static void init_attributes		PARAMS ((void));
 
@@ -274,7 +275,7 @@ decl_attributes (node, attributes, flags)
 
   if (DECL_P (*node) && TREE_CODE (*node) == FUNCTION_DECL
       && !(flags & (int) ATTR_FLAG_BUILT_IN))
-    insert_default_attributes (*node);
+    (*lang_hooks.insert_default_attributes) (*node);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
     {

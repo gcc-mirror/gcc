@@ -2976,10 +2976,6 @@ extern tree decl_attributes		PARAMS ((tree *, tree, int));
 /* The following function must be provided by front ends
    using attribs.c.  */
 
-/* Possibly apply default attributes to a function (represented by
-   a FUNCTION_DECL).  */
-extern void insert_default_attributes PARAMS ((tree));
-
 /* Table of machine-independent attributes for checking formats, if used.  */
 extern const struct attribute_spec *format_attribute_table;
 

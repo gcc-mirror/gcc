@@ -6886,7 +6886,7 @@ push_throw_library_fn (name, type)
    attributes.  */
 
 void
-insert_default_attributes (decl)
+cxx_insert_default_attributes (decl)
      tree decl;
 {
   if (!DECL_EXTERN_C_FUNCTION_P (decl))

@@ -1,3 +1,9 @@
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES): Redefine.
+	* cp-tree.h (cxx_insert_default_attributes): New.
+	* decl.c (insert_default_attributes): Rename.
+
 2002-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/4884
