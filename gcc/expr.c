@@ -8763,8 +8763,8 @@ do_store_flag (exp, target, mode, only_cheap)
 	 operations as unsigned.  If we must use the AND, we have a choice.
 	 Normally unsigned is faster, but for some machines signed is.  */
       ops_unsignedp = (bitnum == TYPE_PRECISION (type) - 1 ? 1
-#ifdef BYTE_LOADS_SIGN_EXTEND
-		       : 0
+#ifdef LOAD_EXTEND_OP
+		       : (LOAD_EXTEND_OP (operand_mode) == SIGN_EXTEND ? 0 : 1)
 #else
 		       : 1
 #endif
