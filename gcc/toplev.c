@@ -36,6 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <ctype.h>
 #include <sys/stat.h>
 
+#ifndef WINNT
 #ifdef USG
 #undef FLOAT
 #include <sys/param.h>
@@ -48,6 +49,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef VMS
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
 #endif
 #endif
 
@@ -853,6 +855,9 @@ int dump_time;
 int
 get_run_time ()
 {
+#ifdef WINNT
+  return 0;
+#else
 #ifdef USG
   struct tms tms;
 #else
@@ -883,6 +888,7 @@ get_run_time ()
 #else /* VMS */
   times (&vms_times);
   return (vms_times.proc_user_time + vms_times.proc_system_time) * 10000;
+#endif
 #endif
 #endif
 }
@@ -3943,8 +3949,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 
   compile_file (filename);
 
-#ifndef OS2
-#ifndef VMS
+#if !defined(OS2) && !defined(VMS) && !defined(WINNT)
   if (flag_print_mem)
     {
 #ifdef __alpha
@@ -3962,8 +3967,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
       system ("ps v");
 #endif /* not USG */
     }
-#endif /* not VMS */
-#endif /* not OS2 */
+#endif /* not OS2 and not VMS and not WINNT */
 
   if (errorcount)
     exit (FATAL_EXIT_CODE);
