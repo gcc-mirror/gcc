@@ -7785,6 +7785,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    return omit_one_operand (type, arg1, arg0);
 	  if (integer_onep (arg1))
 	    return non_lvalue (fold_convert (type, arg0));
+	  /* Transform x * -1 into -x.  */
+	  if (integer_all_onesp (arg1))
+	    return fold_convert (type, negate_expr (arg0));
 
 	  /* (a * (1 << b)) is (a << b)  */
 	  if (TREE_CODE (arg1) == LSHIFT_EXPR
