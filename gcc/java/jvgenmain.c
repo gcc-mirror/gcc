@@ -127,17 +127,3 @@ main (int argc, const char **argv)
     }
   return 0;
 }
-
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR val = (PTR) malloc (size);
- 
-  if (val == 0)
-    {
-      fprintf(stderr, "jvgenmain: virtual memory exhausted");
-      exit(FATAL_EXIT_CODE);
-    }
-  return val;
-}

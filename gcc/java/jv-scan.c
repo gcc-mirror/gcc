@@ -200,14 +200,3 @@ gcc_obstack_init (obstack)
 		  (void *(*) (long)) OBSTACK_CHUNK_ALLOC,
 		  (void (*) (void *)) OBSTACK_CHUNK_FREE);
 }
-
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR val = (PTR) malloc (size);
- 
-  if (val == 0)
-    fatal ("virtual memory exhausted");
-  return val;
-}

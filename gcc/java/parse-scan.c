@@ -405,40 +405,40 @@ static const short yyrhs[] = {   123,
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
    175,   180,   182,   183,   184,   185,   186,   190,   192,   195,
-   201,   206,   213,   215,   218,   222,   226,   230,   232,   239,
-   249,   251,   254,   258,   267,   272,   273,   274,   275,   276,
-   277,   278,   279,   282,   284,   287,   289,   292,   297,   299,
-   302,   306,   310,   312,   313,   319,   328,   339,   346,   346,
-   349,   351,   352,   355,   356,   359,   362,   366,   368,   371,
-   373,   376,   378,   379,   380,   383,   385,   386,   387,   391,
-   394,   398,   401,   404,   406,   409,   412,   416,   418,   422,
-   426,   429,   430,   432,   439,   446,   452,   455,   457,   465,
-   481,   497,   498,   501,   504,   508,   510,   511,   515,   517,
-   520,   530,   532,   535,   537,   543,   546,   550,   552,   553,
-   554,   558,   560,   563,   565,   569,   571,   576,   579,   581,
-   583,   587,   589,   592,   594,   597,   599,   602,   604,   605,
-   606,   609,   613,   618,   620,   621,   622,   625,   627,   631,
-   633,   636,   638,   641,   643,   644,   647,   651,   654,   658,
-   660,   661,   662,   663,   664,   667,   669,   670,   671,   672,
-   675,   677,   678,   679,   680,   681,   682,   683,   684,   685,
-   686,   689,   693,   698,   702,   708,   712,   714,   715,   716,
-   717,   718,   719,   722,   726,   730,   734,   738,   740,   741,
-   742,   745,   747,   750,   755,   757,   760,   762,   765,   769,
-   773,   777,   781,   785,   787,   790,   792,   795,   799,   802,
-   803,   804,   807,   808,   811,   813,   816,   818,   821,   823,
-   826,   828,   831,   835,   837,   840,   845,   847,   848,   851,
-   853,   856,   860,   865,   867,   870,   872,   873,   874,   875,
-   876,   877,   881,   883,   885,   889,   893,   895,   899,   900,
-   904,   905,   906,   907,   910,   913,   916,   918,   919,   922,
-   924,   925,   926,   929,   930,   933,   935,   938,   942,   944,
-   947,   949,   952,   955,   957,   958,   959,   960,   963,   966,
-   969,   971,   973,   974,   977,   981,   985,   987,   988,   989,
-   990,   993,   997,  1001,  1003,  1004,  1005,  1008,  1010,  1011,
-  1012,  1015,  1017,  1018,  1019,  1022,  1024,  1025,  1028,  1030,
-  1031,  1032,  1035,  1037,  1038,  1039,  1040,  1041,  1044,  1046,
-  1047,  1050,  1052,  1055,  1057,  1060,  1062,  1065,  1067,  1070,
-  1072,  1075,  1077,  1080,  1082,  1085,  1089,  1092,  1093,  1096,
-  1098,  1101,  1105
+   201,   206,   213,   215,   218,   222,   226,   230,   232,   236,
+   243,   245,   248,   252,   259,   264,   265,   266,   267,   268,
+   269,   270,   271,   274,   276,   279,   281,   284,   289,   291,
+   294,   298,   302,   304,   305,   311,   320,   331,   338,   338,
+   341,   343,   344,   347,   348,   351,   354,   358,   360,   363,
+   365,   368,   370,   371,   372,   375,   377,   378,   379,   383,
+   386,   390,   393,   396,   398,   401,   404,   408,   410,   414,
+   418,   421,   422,   424,   431,   438,   444,   447,   449,   455,
+   471,   487,   488,   491,   494,   498,   500,   501,   505,   507,
+   510,   520,   522,   525,   527,   533,   536,   540,   542,   543,
+   544,   548,   550,   553,   555,   559,   561,   566,   569,   571,
+   573,   577,   579,   582,   584,   587,   589,   592,   594,   595,
+   596,   599,   603,   608,   610,   611,   612,   615,   617,   621,
+   623,   626,   628,   631,   633,   634,   637,   641,   644,   648,
+   650,   651,   652,   653,   654,   657,   659,   660,   661,   662,
+   665,   667,   668,   669,   670,   671,   672,   673,   674,   675,
+   676,   679,   683,   688,   692,   698,   702,   704,   705,   706,
+   707,   708,   709,   712,   716,   720,   724,   728,   730,   731,
+   732,   735,   737,   740,   745,   747,   750,   752,   755,   759,
+   763,   767,   771,   775,   777,   780,   782,   785,   789,   792,
+   793,   794,   797,   798,   801,   803,   806,   808,   811,   813,
+   816,   818,   821,   825,   827,   830,   835,   837,   838,   841,
+   843,   846,   850,   855,   857,   860,   862,   863,   864,   865,
+   866,   867,   871,   873,   875,   879,   883,   885,   889,   890,
+   894,   895,   896,   897,   900,   903,   906,   908,   909,   912,
+   914,   915,   916,   919,   920,   923,   925,   928,   932,   934,
+   937,   939,   942,   945,   947,   948,   949,   950,   953,   956,
+   959,   961,   963,   964,   967,   971,   975,   977,   978,   979,
+   980,   983,   987,   991,   993,   994,   995,   998,  1000,  1001,
+  1002,  1005,  1007,  1008,  1009,  1012,  1014,  1015,  1018,  1020,
+  1021,  1022,  1025,  1027,  1028,  1029,  1030,  1031,  1034,  1036,
+  1037,  1040,  1042,  1045,  1047,  1050,  1052,  1055,  1057,  1060,
+  1062,  1065,  1067,  1070,  1072,  1075,  1079,  1082,  1083,  1086,
+  1088,  1091,  1095
 };
 #endif
 
@@ -1378,7 +1378,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/cygnus/TBD-TBD/share/bison.simple"
+#line 3 "/usr/local/gnu/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1571,7 +1571,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/cygnus/TBD-TBD/share/bison.simple"
+#line 196 "/usr/local/gnu/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -1899,35 +1899,27 @@ case 12:
 case 19:
 #line 233 "./parse-scan.y"
 {
-		  char *n = xmalloc (strlen (yyvsp[-2].node)+2);
-		  n [0] = '[';
-		  strcpy (n+1, yyvsp[-2].node);
-		  yyval.node = n;
+		  yyval.node = concat ("[", yyvsp[-2].node, NULL);
 		;
     break;}
 case 20:
-#line 240 "./parse-scan.y"
+#line 237 "./parse-scan.y"
 {	
-		  char *n = xmalloc (strlen (yyvsp[-2].node)+2);
-		  n [0] = '[';
-		  strcpy (n+1, yyvsp[-2].node);
-		  yyval.node = n;
+		  yyval.node = concat ("[", yyvsp[-2].node, NULL);
 		;
     break;}
 case 24:
-#line 260 "./parse-scan.y"
+#line 254 "./parse-scan.y"
 { 
-		  char *n = xmalloc (strlen (yyvsp[-2].node)+strlen (yyvsp[0].node)+2);
-		  sprintf (n, "%s.%s", yyvsp[-2].node, yyvsp[0].node);
-		  yyval.node = n;
+		  yyval.node = concat (yyvsp[-2].node, ".", yyvsp[0].node, NULL);
 		;
     break;}
 case 38:
-#line 294 "./parse-scan.y"
+#line 286 "./parse-scan.y"
 { package_name = yyvsp[-1].node; ;
     break;}
 case 46:
-#line 321 "./parse-scan.y"
+#line 313 "./parse-scan.y"
 { 
 		  if (yyvsp[0].value == PUBLIC_TK)
 		    modifier_value++;
@@ -1937,7 +1929,7 @@ case 46:
 		;
     break;}
 case 47:
-#line 329 "./parse-scan.y"
+#line 321 "./parse-scan.y"
 { 
 		  if (yyvsp[0].value == PUBLIC_TK)
 		    modifier_value++;
@@ -1947,57 +1939,57 @@ case 47:
 		;
     break;}
 case 48:
-#line 341 "./parse-scan.y"
+#line 333 "./parse-scan.y"
 { 
 		  report_class_declaration(yyvsp[-2].node);
 		  modifier_value = 0;
                 ;
     break;}
 case 50:
-#line 347 "./parse-scan.y"
+#line 339 "./parse-scan.y"
 { report_class_declaration(yyvsp[-2].node); ;
     break;}
 case 56:
-#line 361 "./parse-scan.y"
+#line 353 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 57:
-#line 363 "./parse-scan.y"
+#line 355 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 70:
-#line 393 "./parse-scan.y"
+#line 385 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 71:
-#line 395 "./parse-scan.y"
+#line 387 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 76:
-#line 411 "./parse-scan.y"
+#line 403 "./parse-scan.y"
 { bracket_count = 0; USE_ABSORBER; ;
     break;}
 case 77:
-#line 413 "./parse-scan.y"
+#line 405 "./parse-scan.y"
 { ++bracket_count; ;
     break;}
 case 81:
-#line 428 "./parse-scan.y"
+#line 420 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 83:
-#line 431 "./parse-scan.y"
+#line 423 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 84:
-#line 433 "./parse-scan.y"
+#line 425 "./parse-scan.y"
 { 
                   report_main_declaration (yyvsp[-1].declarator);
 		  modifier_value = 0;
 		;
     break;}
 case 85:
-#line 441 "./parse-scan.y"
+#line 433 "./parse-scan.y"
 { 
 		  struct method_declarator *d;
 		  NEW_METHOD_DECLARATOR (d, yyvsp[-2].node, NULL);
@@ -2005,7 +1997,7 @@ case 85:
 		;
     break;}
 case 86:
-#line 447 "./parse-scan.y"
+#line 439 "./parse-scan.y"
 { 
 		  struct method_declarator *d;
 		  NEW_METHOD_DECLARATOR (d, yyvsp[-3].node, yyvsp[-1].node);
@@ -2013,15 +2005,13 @@ case 86:
 		;
     break;}
 case 89:
-#line 458 "./parse-scan.y"
+#line 450 "./parse-scan.y"
 {
-		  char *n = xmalloc (strlen (yyvsp[-2].node)+strlen(yyvsp[0].node)+2);
-		  sprintf (n, "%s,%s", yyvsp[-2].node, yyvsp[0].node);
-		  yyval.node = n;
+		  yyval.node = concat (yyvsp[-2].node, ",", yyvsp[0].node, NULL);
 		;
     break;}
 case 90:
-#line 467 "./parse-scan.y"
+#line 457 "./parse-scan.y"
 { 
 		  USE_ABSORBER;
 		  if (bracket_count)
@@ -2038,7 +2028,7 @@ case 90:
 		;
     break;}
 case 91:
-#line 482 "./parse-scan.y"
+#line 472 "./parse-scan.y"
 {
 		  if (bracket_count)
 		    {
@@ -2054,112 +2044,112 @@ case 91:
 		;
     break;}
 case 94:
-#line 503 "./parse-scan.y"
+#line 493 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 95:
-#line 505 "./parse-scan.y"
+#line 495 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 101:
-#line 522 "./parse-scan.y"
+#line 512 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 103:
-#line 533 "./parse-scan.y"
+#line 523 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 105:
-#line 538 "./parse-scan.y"
+#line 528 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 106:
-#line 545 "./parse-scan.y"
+#line 535 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 107:
-#line 547 "./parse-scan.y"
+#line 537 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 114:
-#line 564 "./parse-scan.y"
+#line 554 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 115:
-#line 566 "./parse-scan.y"
+#line 556 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 118:
-#line 578 "./parse-scan.y"
+#line 568 "./parse-scan.y"
 { report_class_declaration (yyvsp[-1].node); modifier_value = 0; ;
     break;}
 case 119:
-#line 580 "./parse-scan.y"
+#line 570 "./parse-scan.y"
 { report_class_declaration (yyvsp[-1].node); modifier_value = 0; ;
     break;}
 case 120:
-#line 582 "./parse-scan.y"
+#line 572 "./parse-scan.y"
 { report_class_declaration (yyvsp[-2].node); modifier_value = 0; ;
     break;}
 case 121:
-#line 584 "./parse-scan.y"
+#line 574 "./parse-scan.y"
 { report_class_declaration (yyvsp[-2].node); modifier_value = 0; ;
     break;}
 case 148:
-#line 653 "./parse-scan.y"
+#line 643 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 149:
-#line 655 "./parse-scan.y"
+#line 645 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 173:
-#line 695 "./parse-scan.y"
+#line 685 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 226:
-#line 842 "./parse-scan.y"
+#line 832 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 243:
-#line 882 "./parse-scan.y"
+#line 872 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 244:
-#line 884 "./parse-scan.y"
+#line 874 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 246:
-#line 890 "./parse-scan.y"
+#line 880 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 255:
-#line 912 "./parse-scan.y"
+#line 902 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 273:
-#line 954 "./parse-scan.y"
+#line 944 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 274:
-#line 956 "./parse-scan.y"
+#line 946 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 279:
-#line 965 "./parse-scan.y"
+#line 955 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 282:
-#line 972 "./parse-scan.y"
+#line 962 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 337:
-#line 1091 "./parse-scan.y"
+#line 1081 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/cygnus/TBD-TBD/share/bison.simple"
+#line 498 "/usr/local/gnu/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2355,7 +2345,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 1109 "./parse-scan.y"
+#line 1099 "./parse-scan.y"
 
 
 /* Create a new parser context */
@@ -2364,9 +2354,8 @@ void
 java_push_parser_context ()
 {
   struct parser_ctxt *new = 
-    (struct parser_ctxt *)xmalloc(sizeof (struct parser_ctxt));
+    (struct parser_ctxt *) xcalloc (1, sizeof (struct parser_ctxt));
 
-  bzero ((PTR) new, sizeof (struct parser_ctxt));
   new->next = ctxp;
   ctxp = new;
 }  
@@ -2435,15 +2424,4 @@ void
 yyerror (msg)
      const char *msg ATTRIBUTE_UNUSED;
 {
-}
-
-char *
-xstrdup (s)
-     const char *s;
-{
-  char *ret;
-
-  ret = xmalloc (strlen (s) + 1);
-  strcpy (ret, s);
-  return ret;
 }

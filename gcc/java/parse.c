@@ -5710,14 +5710,14 @@ duplicate_declaration_error_p (new_field_name, new_type, cl)
 			  new_field_name);
   if (decl)
     {
-      char *t1 = strdup (purify_type_name
+      char *t1 = xstrdup (purify_type_name
 			 ((TREE_CODE (new_type) == POINTER_TYPE 
 			   && TREE_TYPE (new_type) == NULL_TREE) ?
 			  IDENTIFIER_POINTER (TYPE_NAME (new_type)) :
 			  lang_printable_name (new_type, 1)));
       /* The type may not have been completed by the time we report
 	 the error */
-      char *t2 = strdup (purify_type_name
+      char *t2 = xstrdup (purify_type_name
 			 ((TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE 
 			   && TREE_TYPE (TREE_TYPE (decl)) == NULL_TREE) ?
 			  IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl))) :
@@ -6191,7 +6191,7 @@ constructor_circularity_msg (from, to)
      tree from, to;
 {
   static char string [4096];
-  char *t = strdup (lang_printable_name (from, 0));
+  char *t = xstrdup (lang_printable_name (from, 0));
   sprintf (string, "`%s' invokes `%s'", t, lang_printable_name (to, 0));
   free (t);
   return string;
@@ -6224,7 +6224,7 @@ verify_constructor_circularity (meth, current)
 		  java_error_count--;
 		}
 	    }
-	  t = strdup (lang_printable_name (meth, 0));
+	  t = xstrdup (lang_printable_name (meth, 0));
 	  parse_error_context (TREE_PURPOSE (c), 
 			       "%s: recursive invocation of constructor `%s'",
 			       constructor_circularity_msg (current, meth), t);
@@ -7227,7 +7227,7 @@ check_abstract_method_definitions (do_interface, class_decl, type)
 	 that CLASS can use. */
       if (!found)
 	{
-	  char *t = strdup (lang_printable_name 
+	  char *t = xstrdup (lang_printable_name 
 			    (TREE_TYPE (TREE_TYPE (method)), 0));
 	  tree ccn = DECL_NAME (TYPE_NAME (DECL_CONTEXT (method)));
 	  tree saved_wfl = NULL_TREE;
@@ -7377,7 +7377,7 @@ java_check_regular_methods (class_decl)
 	 types. */
       if (TREE_TYPE (TREE_TYPE (found)) != TREE_TYPE (TREE_TYPE (method)))
 	{
-	  char *t = strdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)),
+	  char *t = xstrdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)),
 						 0));
 	  parse_error_context 
 	    (method_wfl,
@@ -7568,7 +7568,7 @@ java_check_abstract_methods (interface_decl)
 	  char *t;
 	  tree saved_found_wfl = DECL_NAME (found);
 	  reset_method_name (found);
-	  t = strdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)), 0));
+	  t = xstrdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)), 0));
 	  parse_error_context 
 	    (method_wfl,
 	     "Method `%s' was defined with return type `%s' in class `%s'",
@@ -9758,7 +9758,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	  list = lookup_method_invoke (0, wfl, type, identifier, args);
 	  if (list && !METHOD_STATIC (list))
 	    {
-	      char *fct_name = strdup (lang_printable_name (list, 0));
+	      char *fct_name = xstrdup (lang_printable_name (list, 0));
 	      parse_error_context 
 		(identifier_wfl,
 		 "Can't make static reference to method `%s %s' in class `%s'",
@@ -9904,7 +9904,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
      return the call */
   if (not_accessible_p (DECL_CONTEXT (current_function_decl), list, 0))
     {
-      char *fct_name = strdup (lang_printable_name (list, 0));
+      char *fct_name = xstrdup (lang_printable_name (list, 0));
       parse_error_context 
 	(wfl, "Can't access %s method `%s %s.%s' from `%s'",
 	 java_accstring_lookup (get_access_flags_from_decl (list)),
@@ -9969,7 +9969,7 @@ check_for_static_method_reference (wfl, node, method, where, primary)
   if (METHOD_STATIC (current_function_decl) 
       && !METHOD_STATIC (method) && !primary && !CALL_CONSTRUCTOR_P (node))
     {
-      char *fct_name = strdup (lang_printable_name (method, 0));
+      char *fct_name = xstrdup (lang_printable_name (method, 0));
       parse_error_context 
 	(wfl, "Can't make static reference to method `%s %s' in class `%s'", 
 	 lang_printable_name (TREE_TYPE (TREE_TYPE (method)), 0), fct_name,
@@ -11689,8 +11689,8 @@ patch_assignment (node, wfl_op1, wfl_op2)
   /* Explicit cast required. This is an error */
   if (!new_rhs)
     {
-      char *t1 = strdup (lang_printable_name (TREE_TYPE (rhs), 0));
-      char *t2 = strdup (lang_printable_name (lhs_type, 0));
+      char *t1 = xstrdup (lang_printable_name (TREE_TYPE (rhs), 0));
+      char *t2 = xstrdup (lang_printable_name (lhs_type, 0));
       tree wfl;
       char operation [32];	/* Max size known */
 
@@ -12425,7 +12425,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 	 the type operand. This is a compile time error. */
       else
 	{
-	  char *t1 = strdup (lang_printable_name (op1_type, 0));
+	  char *t1 = xstrdup (lang_printable_name (op1_type, 0));
 	  SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
 	  parse_error_context 
 	    (wfl_operator, "Impossible for `%s' to be instance of `%s'",
@@ -12534,7 +12534,7 @@ patch_binop (node, wfl_op1, wfl_op2)
       else
 	{
 	  char *t1;
-	  t1 = strdup (lang_printable_name (op1_type, 0));
+	  t1 = xstrdup (lang_printable_name (op1_type, 0));
 	  parse_error_context 
 	    (wfl_operator, "Incompatible type for `%s'. Can't convert `%s' "
 	     "to `%s'", operator_string (node), t1, 
@@ -13129,7 +13129,7 @@ patch_cast (node, wfl_operator)
     }
 
   /* Any other casts are proven incorrect at compile time */
-  t1 = strdup (lang_printable_name (op_type, 0));
+  t1 = xstrdup (lang_printable_name (op_type, 0));
   parse_error_context (wfl_operator, "Invalid cast from `%s' to `%s'",
 		       t1, lang_printable_name (cast_type, 0));
   free (t1);
@@ -13470,7 +13470,7 @@ array_constructor_check_entry (type, entry)
       const char *msg = (!valid_cast_to_p (type_value, type) ?
 		   "Can't" : "Explicit cast needed to");
       if (!array_type_string)
-	array_type_string = strdup (lang_printable_name (type, 1));
+	array_type_string = xstrdup (lang_printable_name (type, 1));
       parse_error_context 
 	(wfl_operator, "Incompatible type for array. %s convert `%s' to `%s'",
 	 msg, lang_printable_name (type_value, 1), array_type_string);
@@ -13549,7 +13549,7 @@ patch_return (node)
 
       else if (!DECL_CONSTRUCTOR_P (meth))
 	{
-	  char *t = strdup (lang_printable_name (mtype, 0));
+	  char *t = xstrdup (lang_printable_name (mtype, 0));
 	  parse_error_context (wfl_operator, 
 			       "`return' with%s value from `%s %s'",
 			       (error_found == 1 ? "" : "out"), 
@@ -14525,7 +14525,7 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
   /* If we don't have any resulting type, we're in trouble */
   if (!resulting_type)
     {
-      char *t = strdup (lang_printable_name (t1, 0));
+      char *t = xstrdup (lang_printable_name (t1, 0));
       SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
       parse_error_context (wfl_operator, "Incompatible type for `?:'. Can't "
 			   "convert `%s' to `%s'", t,

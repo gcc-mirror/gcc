@@ -53,8 +53,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define JCF_u2 unsigned short
 #endif
 
-#define ALLOC (void*)malloc
-#define REALLOC (void*)realloc
+#define ALLOC xmalloc
+#define REALLOC xrealloc
 #ifndef FREE
 #define FREE(PTR) free(PTR)
 #endif

@@ -167,11 +167,11 @@ add_entry (entp, filename, is_system)
       strcpy (f2, filename);
       f2[len] = DIR_SEPARATOR;
       f2[len + 1] = '\0';
-      n->name = strdup (f2);
+      n->name = xstrdup (f2);
       ++len;
     }
   else
-    n->name = strdup (filename);
+    n->name = xstrdup (filename);
 
   if (len > longest_path)
     longest_path = len;
