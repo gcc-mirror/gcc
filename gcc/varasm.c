@@ -899,6 +899,16 @@ assemble_gc_entry (name)
 #endif
 }
 
+/* CONSTANT_POOL_BEFORE_FUNCTION may be defined as an expression with
+   a non-zero value if the constant pool should be output before the
+   start of the function, or a zero value if the pool should output
+   after the end of the function.  The default is to put it before the
+   start.  */
+
+#ifndef CONSTANT_POOL_BEFORE_FUNCTION
+#define CONSTANT_POOL_BEFORE_FUNCTION 1
+#endif
+
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current
@@ -915,7 +925,8 @@ assemble_start_function (decl, fnname)
 
   app_disable ();
 
-  output_constant_pool (fnname, decl);
+  if (CONSTANT_POOL_BEFORE_FUNCTION)
+    output_constant_pool (fnname, decl);
 
 #ifdef ASM_OUTPUT_SECTION_NAME
   /* If the function is to be put in its own section and it's not in a section
@@ -1012,6 +1023,8 @@ assemble_end_function (decl, fnname)
 #ifdef ASM_DECLARE_FUNCTION_SIZE
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
 #endif
+  if (! CONSTANT_POOL_BEFORE_FUNCTION)
+    output_constant_pool (fnname, decl);
 }
 
 /* Assemble code to leave SIZE bytes of zeros.  */
