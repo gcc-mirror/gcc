@@ -302,7 +302,7 @@ print_operand (stream, x, code)
       switch (GET_CODE (x))
 	{
 	case REG:
-	  if (REGNO (x) >= FIRST_FP_REG && REGNO (x) <= LAST_FP_REG
+	  if (FP_REGISTER_P (REGNO (x))
 	      && GET_MODE_SIZE (GET_MODE (x)) > 4)
 	    fprintf ((stream), "d%s", reg_names[REGNO (x)]+1);
 	  else
@@ -2084,8 +2084,7 @@ broken_move (insn)
 		   know the current setting of fpscr, so disable fldi.  */
 		&& (! TARGET_SH4 || TARGET_FMOVD)
 		&& GET_CODE (SET_DEST (pat)) == REG
-		&& REGNO (SET_DEST (pat)) >= FIRST_FP_REG
-		&& REGNO (SET_DEST (pat)) <= LAST_FP_REG)
+		&& FP_REGISTER_P (REGNO (SET_DEST (pat))))
 	  && (GET_CODE (SET_SRC (pat)) != CONST_INT
 	      || ! CONST_OK_FOR_I (INTVAL (SET_SRC (pat)))))
 	return 1;
@@ -2211,10 +2210,7 @@ find_barrier (num_mova, mova, from)
 
 	  /* See the code in machine_dependent_reorg, which has a similar if
 	     statement that generates a new mova insn in many cases.  */
-	  if (GET_CODE (dst) == REG
-	      && ((REGNO (dst) >= FIRST_FP_REG
-		   && REGNO (dst) <= LAST_XD_REG)
-		  || REGNO (dst) == FPUL_REG))
+	  if (GET_CODE (dst) == REG && FP_ANY_REGISTER_P (REGNO (dst)))
 	    inc += 2;
 	}
 
@@ -3237,10 +3233,7 @@ machine_dependent_reorg (first)
 		      dst = gen_rtx_REG (HImode, REGNO (dst) + offset);
 		    }
 
-		  if (GET_CODE (dst) == REG
-		      && ((REGNO (dst) >= FIRST_FP_REG
-			   && REGNO (dst) <= LAST_XD_REG)
-			  || REGNO (dst) == FPUL_REG))
+		  if (GET_CODE (dst) == REG && FP_ANY_REGISTER_P (REGNO (dst)))
 		    {
 		      /* This must be an insn that clobbers r0.  */
 		      rtx clobber = XVECEXP (PATTERN (scan), 0,
@@ -3747,13 +3740,13 @@ push (rn)
   if (rn == FPUL_REG)
     x = gen_push_fpul ();
   else if (TARGET_SH4 && TARGET_FMOVD && ! TARGET_FPU_SINGLE
-	   && rn >= FIRST_FP_REG && rn <= LAST_XD_REG)
+	   && FP_OR_XD_REGISTER_P (rn))
     {
-      if ((rn - FIRST_FP_REG) & 1 && rn <= LAST_FP_REG)
+      if (FP_REGISTER_P (rn) && (rn - FIRST_FP_REG) & 1)
 	return;
       x = gen_push_4 (gen_rtx_REG (DFmode, rn));
     }
-  else if (TARGET_SH3E && rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
+  else if (TARGET_SH3E && FP_REGISTER_P (rn))
     x = gen_push_e (gen_rtx_REG (SFmode, rn));
   else
     x = gen_push (gen_rtx_REG (SImode, rn));
@@ -3774,13 +3767,13 @@ pop (rn)
   if (rn == FPUL_REG)
     x = gen_pop_fpul ();
   else if (TARGET_SH4 && TARGET_FMOVD && ! TARGET_FPU_SINGLE
-	   && rn >= FIRST_FP_REG && rn <= LAST_XD_REG)
+	   && FP_OR_XD_REGISTER_P (rn))
     {
-      if ((rn - FIRST_FP_REG) & 1 && rn <= LAST_FP_REG)
+      if (FP_REGISTER_P (rn) && (rn - FIRST_FP_REG) & 1)
 	return;
       x = gen_pop_4 (gen_rtx_REG (DFmode, rn));
     }
-  else if (TARGET_SH3E && rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
+  else if (TARGET_SH3E && FP_REGISTER_P (rn))
     x = gen_pop_e (gen_rtx_REG (SFmode, rn));
   else
     x = gen_pop (gen_rtx_REG (SImode, rn));
@@ -3867,9 +3860,9 @@ calc_live_regs (count_ptr, live_regs_mask2)
 	  else
 	    live_regs_mask |= 1 << reg;
 	  count++;
-	  if (TARGET_SH4 && TARGET_FMOVD && reg >= FIRST_FP_REG)
+	  if (TARGET_SH4 && TARGET_FMOVD && FP_OR_XD_REGISTER_P (reg))
 	    {
-	      if (reg <= LAST_FP_REG)
+	      if (FP_REGISTER_P (reg))
 		{
 		  if (! TARGET_FPU_SINGLE && ! regs_ever_live[reg ^ 1])
 		    {
@@ -3880,7 +3873,7 @@ calc_live_regs (count_ptr, live_regs_mask2)
 		      count++;
 		    }
 		}
-	      else if (reg <= LAST_XD_REG)
+	      else /* if (XD_REGISTER_P (reg)) */
 		{
 		  /* Must switch to double mode to access these registers.  */
 		  target_flags &= ~FPU_SINGLE_BIT;
@@ -4705,7 +4698,7 @@ fp_arith_reg_operand (op, mode)
 	return 1;
 
       return (regno >= FIRST_PSEUDO_REGISTER
-	      || (regno >= FIRST_FP_REG && regno <= LAST_FP_REG));
+	      || FP_REGISTER_P (regno));
     }
   return 0;
 }
