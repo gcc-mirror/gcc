@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -461,10 +461,7 @@ namespace std
       bool __testbeg = gptr() == eback() && pptr() == pbase();
 
       if (__testbeg && _M_buf_locale != __loc)
-	{
-	  _M_buf_locale = __loc;
-	  _M_buf_locale_init = true;
-	}
+	_M_buf_locale = __loc;
 
       // NB this may require the reconversion of previously
       // converted chars. This in turn may cause the reconstruction
