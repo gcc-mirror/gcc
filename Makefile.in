@@ -210,66 +210,17 @@ INSTALL_TARGET_CROSS = installdirs \
 	$(INSTALL_X11_MODULES) \
 	$(INSTALL_DOSREL)
 
-CC_FOR_TARGET = ` \
-  if [ -f $$r/gcc/xgcc ] ; then \
-    if [ -f $$r/$(TARGET_SUBDIR)/newlib/Makefile ] ; then \
-      case "$(target_canonical)" in \
-        i[3456]86-*-cygwin*) \
-          echo $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$$r/gcc/ -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/winsup/include -idirafter $$s/winsup/cygwin/include -idirafter $$s/winsup/w32api/include -idirafter $$s/newlib/libc/include -idirafter $$s/newlib/libc/sys/cygwin -idirafter $$s/newlib/libc/sys/cygwin32 -nostdinc; \
-          ;; \
-        *) \
-          echo $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$$r/gcc/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
-	  ;; \
-      esac \
-    else \
-      echo $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -B$$r/gcc/ -isystem $(build_tooldir)/include; \
-    fi; \
-  else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
-      echo $(CC); \
-    else \
-      t='$(program_transform_name)'; echo gcc | sed -e 's/x/x/' $$t; \
-    fi; \
-  fi`
+# Should be substed by configure.in
+FLAGS_FOR_TARGET =
+CC_FOR_TARGET =
+CHILL_FOR_TARGET =
+CXX_FOR_TARGET =
 
-# If CC_FOR_TARGET is not overriden on the command line, then this
+# If GCC_FOR_TARGET is not overriden on the command line, then this
 # variable is passed down to the gcc Makefile, where it is used to
 # build libgcc2.a.  We define it here so that it can itself be
 # overridden on the command line.
-GCC_FOR_TARGET = $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -B$$r/gcc/ -isystem $(build_tooldir)/include
-
-CHILL_FOR_TARGET = ` \
-  if [ -f $$r/gcc/xgcc ] ; then \
-    echo $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -B$$r/gcc/ -L$$r/gcc/ch/runtime/; \
-  else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
-      echo $(CC); \
-    else \
-      t='$(program_transform_name)'; echo gcc | sed -e 's/x/x/' $$t; \
-    fi; \
-  fi`
-
-CXX_FOR_TARGET = ` \
-  if [ -f $$r/gcc/g++ ] ; then \
-    if [ -f $$r/$(TARGET_SUBDIR)/newlib/Makefile ] ; then \
-      case "$(target_canonical)" in \
-        i[3456]86-*-cygwin*) \
-          echo $$r/gcc/g++ -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$$r/gcc/ -L$$r/$(TARGET_SUBDIR)/winsup -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/winsup/cygwin/include -idirafter $$s/winsup/w32api/include -idirafter $$s/newlib/libc/include -idirafter $$s/newlib/libc/sys/cygwin -idirafter $$s/newlib/libc/sys/cygwin32 -nostdinc -L$$r/$(TARGET_SUBDIR)/libstdc++; \
-          ;; \
-        *) \
-          echo $$r/gcc/g++ -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$$r/gcc/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc -L$$r/$(TARGET_SUBDIR)/libstdc++; \
-	  ;; \
-      esac \
-    else \
-      echo $$r/gcc/g++ -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -B$$r/gcc/ -isystem $(build_tooldir)/include -L$$r/$(TARGET_SUBDIR)/libstdc++; \
-    fi; \
-  else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
-      echo $(CXX); \
-    else \
-      t='$(program_transform_name)'; echo c++ | sed -e 's/x/x/' $$t; \
-    fi; \
-  fi`
+GCC_FOR_TARGET = $$r/gcc/xgcc $(FLAGS_FOR_TARGET)
 
 AS_FOR_TARGET = ` \
   if [ -f $$r/gas/as-new ] ; then \
