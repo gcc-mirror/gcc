@@ -4,40 +4,6 @@
 	with a '\0' to guard against the case where the formatted
 	time string is more than the size allowed by the buffer.
 
-Patch:
--------------------------- 8< --------------------------
---- ChangeLog Mon Jan 20 23:27:56 2003
-+++ ChangeLog Mon Jan 20 23:31:42 2003
-@@ -1572,5 +1572,5 @@
-	time_t tdate;
-	struct tm *s_tm;
--  char ascii_date[30];
-+  char ascii_date[31];
-	zipentry ze;
-
-@@ -1663,4 +1663,5 @@
-	s_tm = localtime(&tdate);
-	strftime(ascii_date, 30, "%a %b %d %H:%M:%S %Z %Y", s_tm);
-+        ascii_date[30] = '\0';
-	}
-
-@@ -1782,4 +1783,5 @@
-	s_tm = localtime(&tdate);
-	strftime(ascii_date, 30, "%a %b %d %H:%M:%S %Z %Y", s_tm);
-+        ascii_date[30] = '\0';
-	}
-
--------------------------- 8< --------------------------
-
-Sincerely Yours,
-Ranjit.
-
--- 
-Ranjit Mathew        Email: rmathew AT hotmail DOT com
-Bangalore,
-INDIA.               Web: http://ranjitmathew.tripod.com/
-
-
 2002-12-30  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.am (jar.1, grepjar.1): Protect against
