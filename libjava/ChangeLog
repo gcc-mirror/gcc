@@ -1,5 +1,11 @@
 2003-06-25  Michael Koch  <konqueror@gmx.de>
 
+	* Makefile.am
+	(awt_java_source_files): Added javax/swing/plaf/SpinnerUI.java.
+	* Makefile.in: Regenerated.
+
+2003-06-25  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/plaf/ActionMapUIResource.java,
 	javax/swing/plaf/BorderUIResource.java,
 	javax/swing/plaf/ButtonUI.java,

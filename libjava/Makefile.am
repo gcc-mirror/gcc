@@ -1212,6 +1212,7 @@ javax/swing/plaf/RootPaneUI.java \
 javax/swing/plaf/ScrollBarUI.java \
 javax/swing/plaf/SeparatorUI.java \
 javax/swing/plaf/SliderUI.java \
+javax/swing/plaf/SpinnerUI.java \
 javax/swing/plaf/SplitPaneUI.java \
 javax/swing/plaf/TableHeaderUI.java \
 javax/swing/plaf/TableUI.java \
