@@ -3178,9 +3178,6 @@ force_evaluation_order (tree node)
     {
       tree arg, cmp;
 
-      if (!TREE_OPERAND (node, 1))
-	return node;
-
       arg = node;
       
       /* Position arg properly, account for wrapped around ctors. */
@@ -3189,7 +3186,11 @@ force_evaluation_order (tree node)
       
       arg = TREE_OPERAND (arg, 1);
       
-      /* Not having a list of argument here is an error. */ 
+      /* An empty argument list is ok, just ignore it.  */
+      if (!arg)
+	return node;
+
+      /* Not having a list of arguments here is an error. */ 
       if (TREE_CODE (arg) != TREE_LIST)
         abort ();
 

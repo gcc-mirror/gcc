@@ -9607,6 +9607,9 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 	     forcoming function's argument. */
 	  if (previous_call_static && is_static)
 	    {
+	      /* We must set CAN_COMPLETE_NORMALLY for the first call
+		 since it is done nowhere else.  */
+	      CAN_COMPLETE_NORMALLY (decl) = 1;
 	      decl = build2 (COMPOUND_EXPR, TREE_TYPE (*where_found),
 			     decl, *where_found);
 	      TREE_SIDE_EFFECTS (decl) = 1;
