@@ -55,7 +55,6 @@ java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
   jclass klass;
   klass = (jclass) JvAllocObject (&java::lang::Class::class$,
 				  sizeof (_Jv_InterpClass));
-  _Jv_InitNewClassFields (klass);
 
   // Synchronize on the class, so that it is not attempted initialized
   // until we're done loading.
@@ -521,47 +520,11 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
   return klass;
 }
 
-void
-_Jv_InitNewClassFields (jclass ret)
-{
-  ret->next = NULL;
-  ret->name = NULL;
-  ret->accflags = 0;
-  ret->superclass = NULL;
-  ret->constants.size = 0;
-  ret->constants.tags = NULL;
-  ret->constants.data = NULL;
-  ret->methods = NULL;
-  ret->method_count = 0;
-  ret->vtable_method_count = 0;
-  ret->fields = NULL;
-  ret->size_in_bytes = 0;
-  ret->field_count = 0;
-  ret->static_field_count = 0;
-  ret->vtable = NULL;
-  ret->otable_syms = NULL;
-  ret->atable = NULL;
-  ret->atable_syms = NULL;
-  ret->interfaces = NULL;
-  ret->loader = NULL;
-  ret->interface_count = 0;
-  ret->state = JV_STATE_NOTHING;
-  ret->thread = NULL;
-  ret->depth = 0;
-  ret->ancestors = NULL;
-  ret->idt = NULL;
-  ret->arrayclass = NULL;
-  ret->protectionDomain = NULL;
-  ret->signers = NULL;
-  ret->chain = NULL;
-}
-
 jclass
 _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 	      java::lang::ClassLoader *loader)
 {
   jclass ret = (jclass) JvAllocObject (&java::lang::Class::class$);
-  _Jv_InitNewClassFields (ret);
   ret->name = name;
   ret->superclass = superclass;
   ret->loader = loader;

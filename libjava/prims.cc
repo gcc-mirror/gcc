@@ -633,8 +633,6 @@ _Jv_InitPrimClass (jclass cl, char *cname, char sig, int len,
 {    
   using namespace java::lang::reflect;
 
-  _Jv_InitNewClassFields (cl);
-
   // We must set the vtable for the class; the Java constructor
   // doesn't do this.
   (*(_Jv_VTable **) cl) = java::lang::Class::class$.vtable;
