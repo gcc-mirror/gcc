@@ -3846,6 +3846,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    tree name;
 	    bool dependent_p;
 	    bool template_p;
+	    bool pseudo_destructor_p;
 	    tree scope = NULL_TREE;
 	    enum cpp_ttype token_type = token->type;
 
@@ -3896,11 +3897,34 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 
 	    /* Consume the `.' or `->' operator.  */
 	    cp_lexer_consume_token (parser->lexer);
-	    /* If the SCOPE is not a scalar type, we are looking at an
-	       ordinary class member access expression, rather than a
-	       pseudo-destructor-name.  */
-	    if (!scope || !SCALAR_TYPE_P (scope))
+	    
+	    /* Assume this expression is not a pseudo-destructor access.  */
+	    pseudo_destructor_p = false;
+
+	    /* If the SCOPE is a scalar type, then, if this is a valid program,
+	       we must be looking at a pseudo-destructor-name.  */
+	    if (scope && SCALAR_TYPE_P (scope))
 	      {
+		tree s = NULL_TREE;
+		tree type;
+
+		cp_parser_parse_tentatively (parser);
+		/* Parse the pseudo-destructor-name.  */
+		cp_parser_pseudo_destructor_name (parser, &s, &type);
+		if (cp_parser_parse_definitely (parser))
+		  {
+		    pseudo_destructor_p = true;
+		    postfix_expression
+		      = finish_pseudo_destructor_expr (postfix_expression,
+						       s, TREE_TYPE (type));
+		  }
+	      }
+
+	    if (!pseudo_destructor_p)
+	      {
+		/* If the SCOPE is not a scalar type, we are looking
+		   at an ordinary class member access expression,
+		   rather than a pseudo-destructor-name.  */
 		template_p = cp_parser_optional_template_keyword (parser);
 		/* Parse the id-expression.  */
 		name = cp_parser_id_expression (parser,
@@ -3939,19 +3963,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		    (name, BINFO_TYPE (BASELINK_BINFO (name)), scope);
 		postfix_expression 
 		  = finish_class_member_access_expr (postfix_expression, name);
-	      }
-	    /* Otherwise, try the pseudo-destructor-name production.  */
-	    else
-	      {
-		tree s = NULL_TREE;
-		tree type;
-
-		/* Parse the pseudo-destructor-name.  */
-		cp_parser_pseudo_destructor_name (parser, &s, &type);
-		/* Form the call.  */
-		postfix_expression 
-		  = finish_pseudo_destructor_expr (postfix_expression,
-						   s, TREE_TYPE (type));
 	      }
 
 	    /* We no longer need to look up names in the scope of the

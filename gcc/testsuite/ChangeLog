@@ -1,3 +1,17 @@
+2004-10-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17821
+	* g++.dg/parse/error20.C: New test.
+
+	PR c++/17826
+	* g++.dg/template/crash24.C: New test.
+
+	PR c++/17524
+	* g++.dg/template/static9.C: New test.
+
+	PR c++/17685
+	* g++.dg/parse/operator5.C: New test.
+
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/16999
