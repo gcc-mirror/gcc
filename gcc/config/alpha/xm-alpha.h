@@ -59,3 +59,7 @@ extern char *malloc (), *realloc (), *sbrk (), *calloc ();
 #endif
 
 #include "string.h"
+
+#ifndef __GNUC__
+#define ONLY_INT_FIELDS
+#endif
