@@ -1,7 +1,10 @@
 2003-12-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* config/cpu/i386/atomicity.h (__exchange_and_add): Fix output 
+	constraint.
+
 	PR libstdc++/13480
-	* config/cpu/i486/atomicity.h: Split up read-write memory operand.
+	* config/cpu/i386/atomicity.h: Split up read-write memory operand.
 
 2003-12-23  Benjamin Kosnik  <bkoz@redhat.com>
 
