@@ -26,17 +26,7 @@ You should have received a copy of the GNU General Public License
 along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#ifdef __APCS_26__
-#define RET	movs	pc, lr
-#define RETc(x)	mov##x##s	pc, lr
-#define RETCOND ^
-#else
-#define RET	mov	pc, lr
-#define RETc(x)	mov##x	pc, lr
-#define RETCOND
-#endif
-
+/* ------------------------------------------------------------------------ */
 #ifndef __USER_LABEL_PREFIX__
 #error  __USER_LABEL_PREFIX__ not defined
 #endif
@@ -52,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef __ELF__
 #ifdef __thumb__
-#define __PLT__  /* Not supported in thumb assembler (for now).  */
+#define __PLT__  /* Not supported in Thumb assembler (for now).  */
 #else
 #define __PLT__ (PLT)
 #endif
@@ -62,6 +52,55 @@ Boston, MA 02111-1307, USA.  */
 #define __PLT__
 #define TYPE(x)
 #define SIZE(x)
+#endif
+
+/* Function end macros.  Variants for 26 bit APCS and interworking.  */
+#ifdef __APCS_26__
+# define RET		movs	pc, lr
+# define RETc(x)	mov##x##s	pc, lr
+# define RETCOND 	^
+.macro ARM_LDIV0
+Ldiv0:
+	str	lr, [sp, #-4]!
+	bl	SYM (__div0) __PLT__
+	mov	r0, #0			@ About as wrong as it could be.
+	ldmia	sp!, {pc}^
+.endm
+#else
+# ifdef __THUMB_INTERWORK__
+#  define RET		bx	lr
+#  define RETc(x)	bx##x	lr
+.macro THUMB_LDIV0
+	push	{ lr }
+	bl	SYM (__div0)
+	mov	r0, #0			@ About as wrong as it could be.
+	pop	{ r1 }
+	bx	r1
+.endm
+.macro ARM_LDIV0
+	str	lr, [sp, #-4]!
+	bl	SYM (__div0) __PLT__
+	mov	r0, #0			@ About as wrong as it could be.
+	ldr	lr, [sp], #4
+	bx	lr
+.endm	
+# else
+#  define RET		mov	pc, lr
+#  define RETc(x)	mov##x	pc, lr
+.macro THUMB_LDIV0
+	push	{ lr }
+	bl	SYM (__div0)
+	mov	r0, #0			@ About as wrong as it could be.
+	pop	{ pc }
+.endm
+.macro ARM_LDIV0
+	str	lr, [sp, #-4]!
+	bl	SYM (__div0) __PLT__
+	mov	r0, #0			@ About as wrong as it could be.
+	ldmia	sp!, {pc}
+.endm	
+# endif
+# define RETCOND
 #endif
 
 #ifdef __thumb__
@@ -83,9 +122,27 @@ Boston, MA 02111-1307, USA.  */
 SYM (__\name):
 .endm
 
+.macro FUNC_END name
+Ldiv0:
+#ifdef __thumb__
+	THUMB_LDIV0
+#else
+	ARM_LDIV0
+#endif
+	SIZE (__\name)	
+.endm
+
+.macro THUMB_FUNC_START name
+	.globl	SYM (\name)
+	TYPE	(\name)
+	.thumb_func
+SYM (\name):
+.endm
+		
 /* Used for Thumb code.  */	
 work		.req	r4	@ XXXX is this safe ?
 
+/* ------------------------------------------------------------------------ */
 #ifdef L_udivsi3
 
 dividend	.req	r0
@@ -97,7 +154,7 @@ sp		.req	r13
 lr		.req	r14
 pc		.req	r15
 	
- FUNC_START udivsi3
+	FUNC_START udivsi3
 
 #ifdef __thumb__
 
@@ -181,14 +238,8 @@ Lgot_result:
 	mov	r0, result
 	pop	{ work }
 	RET
-
-Ldiv0:
-	push	{ lr }
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ about as wrong as it could be
-	pop	{ pc }
-
-#else /* arm version */
+	
+#else /* ARM version.  */
 	
 	cmp	divisor, #0
 	beq	Ldiv0
@@ -241,18 +292,12 @@ Lgot_result:
 	mov	r0, result
 	RET	
 
-Ldiv0:
-	str	lr, [sp, #-4]!
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ about as wrong as it could be
-	ldmia	sp!, {pc}RETCOND
+#endif /* ARM version */
 
-#endif /* arm version */
-	
- SIZE	(__udivsi3)
+	FUNC_END udivsi3	
 
 #endif /* L_udivsi3 */
-
+/* ------------------------------------------------------------------------ */
 #ifdef L_umodsi3
 
 dividend	.req	r0
@@ -264,7 +309,7 @@ sp		.req	r13
 lr		.req	r14
 pc		.req	r15
 	
- FUNC_START umodsi3
+	FUNC_START umodsi3
 
 #ifdef __thumb__
 
@@ -391,14 +436,8 @@ Over9:
 	add	dividend, dividend, work
 Over10:
 	pop	{ work }
-	RET	
-Ldiv0:
-	push	{ lr }
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ about as wrong as it could be
-	pop	{ pc }
-
-#else  /* arm version */
+	
+#else  /* ARM version.  */
 	
 	cmp	divisor, #0
 	beq	Ldiv0
@@ -463,18 +502,12 @@ Loop3:
 	addne	dividend, dividend, divisor, lsr #1
 	RET	
 
-Ldiv0:
-	str	lr, [sp, #-4]!
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ about as wrong as it could be
-	ldmia	sp!, {pc}RETCOND
-
 #endif /* arm version */
 	
- SIZE	(__umodsi3)
+	FUNC_END umodsi3
 
 #endif /* L_umodsi3 */
-
+/* ------------------------------------------------------------------------ */
 #ifdef L_divsi3
 
 dividend	.req	r0
@@ -486,7 +519,7 @@ sp		.req	r13
 lr		.req	r14
 pc		.req	r15
 
- FUNC_START divsi3	
+	FUNC_START divsi3	
 
 #ifdef __thumb__
 	cmp	divisor, #0
@@ -585,13 +618,7 @@ Over7:
 	pop	{ work }
 	RET	
 
-Ldiv0:
-	push	{ lr }
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ about as wrong as it could be
-	pop	{ pc }
-	
-#else /* arm version */
+#else /* ARM version.  */
 	
 	eor	ip, dividend, divisor		@ Save the sign of the result.
 	mov	curbit, #1
@@ -651,18 +678,12 @@ Lgot_result:
 	rsbmi	r0, r0, #0
 	RET	
 
-Ldiv0:
-	str	lr, [sp, #-4]!
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ about as wrong as it could be
-	ldmia	sp!, {pc}RETCOND
-
-#endif /* arm version */
+#endif /* ARM version */
 	
- SIZE	(__divsi3)
+	FUNC_END divsi3
 
 #endif /* L_divsi3 */
-
+/* ------------------------------------------------------------------------ */
 #ifdef L_modsi3
 
 dividend	.req	r0
@@ -674,7 +695,7 @@ sp		.req	r13
 lr		.req	r14
 pc		.req	r15
 	
- FUNC_START modsi3
+	FUNC_START modsi3
 
 #ifdef __thumb__
 
@@ -814,14 +835,8 @@ Lgot_result:
 Over10:
 	pop	{ work }
 	RET	
-
-Ldiv0:
-	push    { lr }
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ about as wrong as it could be
-	pop	{ pc }
-
-#else /* arm version */
+	
+#else /* ARM version.  */
 	
 	mov	curbit, #1
 	cmp	divisor, #0
@@ -896,29 +911,23 @@ Lgot_result:
 	cmp	ip, #0
 	rsbmi	dividend, dividend, #0
 	RET	
-
-Ldiv0:
-	str	lr, [sp, #-4]!
-	bl	SYM (__div0) __PLT__
-	mov	r0, #0			@ about as wrong as it could be
-	ldmia	sp!, {pc}RETCOND
-
-#endif /* arm version */
 	
- SIZE	(__modsi3)
+#endif /* ARM version */
+	
+	FUNC_END modsi3
 
 #endif /* L_modsi3 */
-
+/* ------------------------------------------------------------------------ */
 #ifdef L_dvmd_tls
 
- FUNC_START div0	
+	FUNC_START div0	
 
 	RET	
 
- SIZE	(__div0)
+	SIZE	(__div0)
 	
 #endif /* L_divmodsi_tools */
-
+/* ------------------------------------------------------------------------ */
 #ifdef L_dvmd_lnx
 @ GNU/Linux division-by zero handler.  Used in place of L_dvmd_tls
 
@@ -926,7 +935,7 @@ Ldiv0:
 	
 #define SIGFPE	8			@ cant use <asm/signal.h> as it
 					@ contains too much C rubbish
- FUNC_START div0	
+	FUNC_START div0	
 
 	stmfd	sp!, {r1, lr}
 	swi	__NR_getpid
@@ -934,12 +943,17 @@ Ldiv0:
 	ldmhsfd	sp!, {r1, pc}RETCOND	@ not much we can do
 	mov	r1, #SIGFPE
 	swi	__NR_kill
+#ifdef __THUMB_INTERWORK__
+	ldmfd	sp!, {r1, lr}
+	bx	lr
+#else
 	ldmfd	sp!, {r1, pc}RETCOND
-
- SIZE 	(__div0)
+#endif
+	
+	SIZE 	(__div0)
 	
 #endif /* L_dvmd_lnx */
-
+/* ------------------------------------------------------------------------ */
 /* These next two sections are here despite the fact that they contain Thumb 
    assembler because their presence allows interworked code to be linked even
    when the GCC library is this one.  */
@@ -958,11 +972,10 @@ Ldiv0:
 	.text
 	.align 0
         .force_thumb
+	
 .macro call_via register
-	.globl	SYM (_call_via_\register)
-	TYPE	(_call_via_\register)
-	.thumb_func
-SYM (_call_via_\register):
+	THUMB_FUNC_START _call_via_\register
+
 	bx	\register
 	nop
 
@@ -986,7 +999,7 @@ SYM (_call_via_\register):
 	call_via lr
 
 #endif /* L_call_via_rX */
-
+/* ------------------------------------------------------------------------ */
 /* Do not build the interworking functions when the target cpu
    is the arm v3 architecture.  (This is one of the multilib
    options).  */
@@ -1015,10 +1028,9 @@ _arm_return:
 
 .macro interwork register					
 	.code   16
-	.globl	SYM (_interwork_call_via_\register)
-	TYPE	(_interwork_call_via_\register)
-	.thumb_func
-SYM (_interwork_call_via_\register):
+
+	THUMB_FUNC_START _interwork_call_via_\register
+
 	bx 	pc
 	nop
 	
@@ -1048,12 +1060,11 @@ SYM (_interwork_call_via_\register):
 	interwork ip
 	interwork sp
 	
-	/* The lr case has to be handled a little differently...*/
+	/* The LR case has to be handled a little differently...  */
 	.code 16
-	.globl	SYM (_interwork_call_via_lr)
-	TYPE	(_interwork_call_via_lr)
-	.thumb_func
-SYM (_interwork_call_via_lr):
+
+	THUMB_FUNC_START _interwork_call_via_lr
+
 	bx 	pc
 	nop
 	
@@ -1069,3 +1080,4 @@ SYM (_interwork_call_via_lr):
 	SIZE	(_interwork_call_via_lr)
 	
 #endif /* L_interwork_call_via_rX */
+

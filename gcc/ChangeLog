@@ -1,3 +1,11 @@
+2000-08-10  Richard Earnshaw <rearnshaw@arm.com> & Nick Clifton  <nickc@cygnus.com>
+
+	* arm.h (CPP_SPEC): Use sub-spec cpp_interwork.
+	(CPP_INTERWORK_SPEC, CPP_INTERWORK_DEFAULT_SPEC): New sub-specs.
+	(EXTRA_SPECS): Add them.
+	* arm/lib1funcs.asm: Support builds for interworking.
+	Use macros to eliminate duplicated pieces of code.
+
 2000-08-10  Kazu Hirata  <kazu@hxi.com>
 
 	* h8300.c: Fix comment typos.
