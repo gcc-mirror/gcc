@@ -210,6 +210,7 @@ static int find_splittable_givs PROTO((struct iv_class *,enum unroll_types,
 				       rtx, rtx, rtx, int));
 static int reg_dead_after_loop PROTO((rtx, rtx, rtx));
 static rtx fold_rtx_mult_add PROTO((rtx, rtx, rtx, enum machine_mode));
+static int verify_addresses PROTO((struct induction *, rtx, int));
 static rtx remap_split_bivs PROTO((rtx));
 
 /* Try to unroll one loop and split induction variables in the loop.

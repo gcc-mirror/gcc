@@ -264,6 +264,9 @@ static void fix_reg_dead_note PROTO((rtx, rtx));
 static void update_reg_unused_notes PROTO((rtx, rtx));
 static void update_live_status	PROTO((rtx, rtx));
 static rtx next_insn_no_annul	PROTO((rtx));
+static rtx find_dead_or_set_registers PROTO ((rtx, struct resources *, rtx *,
+					      int, struct resources,
+					      struct resources));
 static void mark_target_live_regs PROTO((rtx, struct resources *));
 static void fill_simple_delay_slots PROTO((int));
 static rtx fill_slots_from_thread PROTO((rtx, rtx, rtx, rtx, int, int,

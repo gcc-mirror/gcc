@@ -436,6 +436,7 @@ static void expand_null_return_1	PROTO((rtx, int));
 static void expand_value_return		PROTO((rtx));
 static int tail_recursion_args		PROTO((tree, tree));
 static void expand_cleanups		PROTO((tree, tree, int, int));
+static void check_seenlabel		PROTO((void));
 static void do_jump_if_equal		PROTO((rtx, rtx, rtx, int));
 static int estimate_case_costs		PROTO((case_node_ptr));
 static void group_case_nodes		PROTO((case_node_ptr));

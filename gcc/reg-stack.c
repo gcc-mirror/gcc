@@ -237,6 +237,7 @@ extern rtx forced_labels;
 
 static void mark_regs_pat		PROTO((rtx, HARD_REG_SET *));
 static void straighten_stack		PROTO((rtx, stack));
+static void pop_stack			PROTO((stack, int));
 static void record_label_references	PROTO((rtx, rtx));
 static rtx *get_true_reg		PROTO((rtx *));
 static int constrain_asm_operands	PROTO((int, rtx *, char **, int *,
