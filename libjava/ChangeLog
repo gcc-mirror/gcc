@@ -1,3 +1,7 @@
+2002-04-05  Adam Megacz <adam@xwt.org>
+
+        * exception.cc (abort): added static modifier
+
 2002-04-08  Alberto Biancardi  <alberto.biancardi@unipv.it>
 
 	Fix for PR libgcj/6187:
