@@ -6074,4 +6074,76 @@ get_case_label (tree t)
   return CASE_LEADER_OR_LABEL (t);
 }
 
+/* Returns the largest value obtainable by casting something in INNER type to
+   OUTER type.  */
+
+tree
+upper_bound_in_type (tree outer, tree inner)
+{
+  unsigned HOST_WIDE_INT lo, hi;
+  unsigned bits = TYPE_PRECISION (inner);
+
+  if (TYPE_UNSIGNED (outer) || TYPE_UNSIGNED (inner))
+    {
+      /* Zero extending in these cases.  */
+      if (bits <= HOST_BITS_PER_WIDE_INT)
+	{
+	  hi = 0;
+	  lo = (~(unsigned HOST_WIDE_INT) 0)
+		  >> (HOST_BITS_PER_WIDE_INT - bits);
+	}
+      else
+	{
+	  hi = (~(unsigned HOST_WIDE_INT) 0)
+		  >> (2 * HOST_BITS_PER_WIDE_INT - bits);
+	  lo = ~(unsigned HOST_WIDE_INT) 0;
+	}
+    }
+  else
+    {
+      /* Sign extending in these cases.  */
+      if (bits <= HOST_BITS_PER_WIDE_INT)
+	{
+	  hi = 0;
+	  lo = (~(unsigned HOST_WIDE_INT) 0)
+		  >> (HOST_BITS_PER_WIDE_INT - bits) >> 1;
+	}
+      else
+	{
+	  hi = (~(unsigned HOST_WIDE_INT) 0)
+		  >> (2 * HOST_BITS_PER_WIDE_INT - bits) >> 1;
+	  lo = ~(unsigned HOST_WIDE_INT) 0;
+	}
+    }
+
+  return fold_convert (outer,
+		       build_int_cst_wide (inner, lo, hi));
+}
+
+/* Returns the smallest value obtainable by casting something in INNER type to
+   OUTER type.  */
+
+tree
+lower_bound_in_type (tree outer, tree inner)
+{
+  unsigned HOST_WIDE_INT lo, hi;
+  unsigned bits = TYPE_PRECISION (inner);
+
+  if (TYPE_UNSIGNED (outer) || TYPE_UNSIGNED (inner))
+    lo = hi = 0;
+  else if (bits <= HOST_BITS_PER_WIDE_INT)
+    {
+      hi = ~(unsigned HOST_WIDE_INT) 0;
+      lo = (~(unsigned HOST_WIDE_INT) 0) << (bits - 1);
+    }
+  else
+    {
+      hi = (~(unsigned HOST_WIDE_INT) 0) << (bits - HOST_BITS_PER_WIDE_INT - 1);
+      lo = 0;
+    }
+
+  return fold_convert (outer,
+		       build_int_cst_wide (inner, lo, hi));
+}
+
 #include "gt-tree.h"
