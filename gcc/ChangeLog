@@ -1,3 +1,9 @@
+2001-11-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* config/s390/s390.md: Remove ALIGN arg from emit_cmp_and_jump_insns 
+	call.
+	* config/i386/i386.md: Likewise.
+
 Thu Nov 15 21:40:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* timevar.c (rtl.h): Include so get fancy abort.
