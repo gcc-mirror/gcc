@@ -30,4 +30,7 @@
 
 /* Whether sbrk must be declared even if <unistd.h> is included.  */
 #undef NEED_DECLARATION_SBRK
+
+/* Whether abort must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_ABORT
 @TOP@
