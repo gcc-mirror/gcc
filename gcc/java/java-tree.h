@@ -810,7 +810,7 @@ union lang_tree_node
   (DECL_LANG_SPECIFIC(DECL)->u.f.ict)
 /* A list of all the static method calls in the method DECL (if optimizing).
    Actually each TREE_VALUE points to a COMPONT_EXPR that wraps the
-   invoation so we can later patch it. */
+   invocation so we can later patch it.  */
 #define DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->u.f.smic)
 /* The Number of Artificial Parameters (NAP) DECL contains. this$<n>
@@ -838,7 +838,7 @@ union lang_tree_node
 #define FIELD_LOCAL_ALIAS_USED(DECL) DECL_LANG_FLAG_7 (DECL)
 
 /* True when DECL is a this$<n> field. Note that
-   FIELD_LOCAL_ALIAS_USED can be differenciated when tested against
+   FIELD_LOCAL_ALIAS_USED can be differentiated when tested against
    FIELD_LOCAL_ALIAS.  */
 #define FIELD_THISN(DECL) DECL_LANG_FLAG_7 (DECL)
 
@@ -1517,7 +1517,7 @@ extern tree *type_map;
 #define MODIFY_EXPR_FROM_INITIALIZATION_P(EXPR) TREE_LANG_FLAG_2 (EXPR)
 
 /* True if EXPR (a TREE_TYPE denoting a class type) has its methods
-   already checked (for redifitions, etc, see java_check_regular_methods.) */
+   already checked (for redefinitions, etc, see java_check_regular_methods.) */
 #define CLASS_METHOD_CHECKED_P(EXPR) TREE_LANG_FLAG_2 (EXPR)
 
 /* True if TYPE (a TREE_TYPE denoting a class type) was found to

@@ -1079,7 +1079,7 @@ disassemble_method (JCF* jcf, const unsigned char *byte_ops, int len)
 /* This is the actual code emitted for each of opcodes in javaops.def.
    The actual opcode-specific stuff is handled by the OPKIND macro.
    I.e. for an opcode whose OPKIND is BINOP, the BINOP will be called.
-   Those macros are defiend below.  The OPKINDs that do not have any
+   Those macros are defined below.  The OPKINDs that do not have any
    inline parameters (such as BINOP) and therefore do mot need anything
    else to me printed out just use an empty body. */
 

@@ -363,7 +363,7 @@ start_pc_cmp (const void *xp, const void *yp)
 #define VERIFICATION_ERROR_WITH_INDEX(MESSAGE) \
   do { message = MESSAGE;  goto error_with_index; } while (0)
 
-/* Recursive helper function to pop argument types during verifiation.
+/* Recursive helper function to pop argument types during verification.
    ARG_TYPES is the list of formal parameter types.
    Return NULL on success and a freshly malloc'd error message on failure. */
 
@@ -713,7 +713,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	prev_eh_ranges = NULL_EH_RANGE;
 
 	/* Allocate decl and rtx for this variable now, so if we're not
-	   optmizing, we get a temporary that survives the whole method. */
+	   optimizing, we get a temporary that survives the whole method. */
 	find_local_variable (index, type, oldpc);
 
         if (TYPE_IS_WIDE (type))

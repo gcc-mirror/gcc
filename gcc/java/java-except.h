@@ -34,7 +34,7 @@ struct eh_range
        and the TREE_VALUE is the LABEL_DECL of the handler. */
     tree handlers;
 
-    /* Surrunding handler, if any. */
+    /* Surrounding handler, if any. */
     struct eh_range *outer;
 
     /* The first child range.  It is is nested inside this range

@@ -65,7 +65,7 @@ tree java_lang_cloneable_identifier_node;
 /* Name of the Serializable class.  */
 tree java_io_serializable_identifier_node;
 
-/* Set to nonzero value in order to emit class initilization code
+/* Set to nonzero value in order to emit class initialization code
    before static field references.  */
 extern int always_initialize_class_p;
 

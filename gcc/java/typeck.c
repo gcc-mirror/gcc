@@ -337,7 +337,7 @@ java_array_type_length (tree array_type)
 
 /* An array of unknown length will be ultimately given an length of
    -2, so that we can still have `length' producing a negative value
-   even if found. This was part of an optimization amaing at removing
+   even if found. This was part of an optimization aiming at removing
    `length' from static arrays. We could restore it, FIXME.  */
 
 tree

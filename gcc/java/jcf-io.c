@@ -310,7 +310,7 @@ typedef struct memoized_dirlist_entry
   struct dirent **files;
 } memoized_dirlist_entry;
 
-/* Returns true if ENTRY (a memoized_dirlist_entry *) correponds to
+/* Returns true if ENTRY (a memoized_dirlist_entry *) corresponds to
    the directory given by KEY (a char *) giving the directory 
    name.  */
 
@@ -378,7 +378,7 @@ caching_stat (char *filename, struct stat *buf)
   else
     dent = *((memoized_dirlist_entry **) slot);
 
-  /* Put the spearator back.  */
+  /* Put the separator back.  */
   if (sep)
     *sep = DIR_SEPARATOR;
 

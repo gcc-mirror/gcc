@@ -920,7 +920,7 @@ java_unsafe_for_reeval (tree t)
    This variable is used to avoid multiple calls to the static
    constructor for each class.  
 
-   It looks somthing like this:
+   It looks something like this:
 
    foo ()
    {
@@ -937,7 +937,7 @@ java_unsafe_for_reeval (tree t)
    Each of these boolean variables has an entry in the
    DECL_FUNCTION_INIT_TEST_TABLE of a method.  When inlining a method
    we must merge the DECL_FUNCTION_INIT_TEST_TABLE from the function
-   being linlined and create the boolean variables in the outermost
+   being inlined and create the boolean variables in the outermost
    scope of the method being inlined into.  */
 
 /* Create a mapping from a boolean variable in a method being inlined

@@ -129,7 +129,7 @@ struct jcf_block
 
      If the label has been defined:
      Until perform_relocations is finished, this is the maximum possible
-     value of the bytecode offset at the begnning of this block.
+     value of the bytecode offset at the beginning of this block.
      After perform_relocations, it is the actual offset (pc). */
   int pc;
 
@@ -537,7 +537,7 @@ alloc_handler (struct jcf_block *start_label, struct jcf_block *end_label,
 /* The index of jvm local variable allocated for this DECL.
    This is assigned when generating .class files;
    contrast DECL_LOCAL_SLOT_NUMBER which is set when *reading* a .class file.
-   (We don't allocate DECL_LANG_SPECIFIC for locals from Java sourc code.) */
+   (We don't allocate DECL_LANG_SPECIFIC for locals from Java source code.) */
 
 #define DECL_LOCAL_INDEX(DECL) DECL_ALIGN(DECL)
 
@@ -1069,7 +1069,7 @@ emit_jsr (struct jcf_block *target, struct jcf_partial *state)
 
 /* Generate code to evaluate EXP.  If the result is true,
    branch to TRUE_LABEL; otherwise, branch to FALSE_LABEL.
-   TRUE_BRANCH_FIRST is a code geneation hint that the
+   TRUE_BRANCH_FIRST is a code generation hint that the
    TRUE_LABEL may follow right after this. (The idea is that we
    may be able to optimize away GOTO TRUE_LABEL; TRUE_LABEL:) */
 
@@ -2820,7 +2820,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
   append_chunk (NULL, 0, state);
   cpool_chunk = state->chunk;
 
-  /* Next allocate the chunk containing acces_flags through fields_counr. */
+  /* Next allocate the chunk containing acces_flags through fields_count. */
   if (clas == object_type_node)
     i = 10;
   else
@@ -3292,7 +3292,7 @@ make_class_file_name (tree clas)
   return r;
 }
 
-/* Write out the contens of a class (RECORD_TYPE) CLAS, as a .class file.
+/* Write out the contents of a class (RECORD_TYPE) CLAS, as a .class file.
    The output .class file name is make_class_file_name(CLAS). */
 
 void

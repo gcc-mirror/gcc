@@ -2044,7 +2044,7 @@ register_class (void)
 
    The preferred mechanism is through the .jcr section, which contain
    a list of pointers to classes which get registered during
-   constructor invoction time.  The fallback mechanism is to generate
+   constructor invocation time.  The fallback mechanism is to generate
    a `constructor' function which calls _Jv_RegisterClass for each
    class in this file.  */
 
