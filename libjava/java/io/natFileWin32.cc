@@ -119,9 +119,14 @@ java::io::File::getCanonicalPath (void)
 jboolean
 java::io::File::isAbsolute (void)
 {
-  if (path->length() > 0
-      && (path->charAt(0) == '/' || path->charAt(0) == '\\'))
+  // See if the path represents a Windows UNC network path.
+  if (path->length () > 1
+      && (path->charAt (0) == '\\') && (path->charAt (1) == '\\'))
     return true;
+
+  // Note that the path is not an absolute path even if it starts with
+  // a '/' or a '\' because it lacks a drive specifier.
+
   if (path->length() < 3)
     return false;
   // Hard-code A-Za-z because Windows (I think) can't use non-ASCII
