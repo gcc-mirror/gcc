@@ -5189,6 +5189,9 @@ struct machine_function GTY(())
 
   /* For OSF.  */
   const char *some_ld_name;
+
+  /* For TARGET_LD_BUGGY_LDGP.  */
+  struct rtx_def *gp_save_rtx;
 };
 
 /* How to allocate a 'struct machine_function'.  */
@@ -5213,16 +5216,30 @@ alpha_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
   return get_hard_reg_initial_val (Pmode, REG_RA);
 }
 
-/* Return or create a pseudo containing the gp value for the current
+/* Return or create a memory slot containing the gp value for the current
    function.  Needed only if TARGET_LD_BUGGY_LDGP.  */
 
 rtx
 alpha_gp_save_rtx (void)
 {
-  rtx r = get_hard_reg_initial_val (DImode, 29);
-  if (GET_CODE (r) != MEM)
-    r = gen_mem_addressof (r, NULL_TREE, /*rescan=*/true);
-  return r;
+  rtx seq, m = cfun->machine->gp_save_rtx;
+
+  if (m == NULL)
+    {
+      start_sequence ();
+
+      m = assign_stack_local (DImode, UNITS_PER_WORD, BITS_PER_WORD);
+      m = validize_mem (m);
+      emit_move_insn (m, pic_offset_table_rtx);
+
+      seq = get_insns ();
+      end_sequence ();
+      emit_insn_after (seq, entry_of_function ());
+
+      cfun->machine->gp_save_rtx = m;
+    }
+
+  return m;
 }
 
 static int
