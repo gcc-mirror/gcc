@@ -645,9 +645,10 @@ special_function_p (fndecl, returns_twice, is_longjmp, fork_or_exec,
          C++ operator new is not suitable because it is not required
          to return a unique pointer; indeed, the standard placement new
 	 just returns its argument. */
-      else if (! strcmp (tname, "malloc")
-	       || ! strcmp (tname, "calloc")
-	       || ! strcmp (tname, "strdup"))
+      else if (TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == Pmode
+	       && (! strcmp (tname, "malloc")
+		   || ! strcmp (tname, "calloc")
+		   || ! strcmp (tname, "strdup")))
 	*is_malloc = 1;
     }
 }

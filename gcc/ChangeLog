@@ -1,3 +1,8 @@
+2000-03-17  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* call.c (special_function_p): It is only malloc if it returns
+	Pmode.
+
 2000-03-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (ASM_SPEC, CPP_SPEC, LINK_SPEC): Support C33.
