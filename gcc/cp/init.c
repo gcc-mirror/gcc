@@ -716,15 +716,14 @@ build_vtbl_address (tree binfo)
   tree binfo_for = binfo;
   tree vtbl;
 
-  if (BINFO_VPTR_INDEX (binfo) && BINFO_VIRTUAL_P (binfo)
-      && BINFO_PRIMARY_P (binfo))
+  if (BINFO_VPTR_INDEX (binfo) && BINFO_VIRTUAL_P (binfo))
     /* If this is a virtual primary base, then the vtable we want to store
        is that for the base this is being used as the primary base of.  We
        can't simply skip the initialization, because we may be expanding the
        inits of a subobject constructor where the virtual base layout
        can be different.  */
-    while (BINFO_PRIMARY_BASE_OF (binfo_for))
-      binfo_for = BINFO_PRIMARY_BASE_OF (binfo_for);
+    while (BINFO_PRIMARY_P (binfo_for))
+      binfo_for = BINFO_INHERITANCE_CHAIN (binfo_for);
 
   /* Figure out what vtable BINFO's vtable is based on, and mark it as
      used.  */
