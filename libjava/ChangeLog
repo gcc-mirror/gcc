@@ -1,3 +1,22 @@
+2002-06-06  James Clark  <jjc@jclark.com>
+
+	Fix for PR libgcj/8738:
+	* gnu/gcj/convert/UnicodeToBytes.java (havePendingBytes): New method.
+	* gnu/gcj/convert/Output_SJIS.java (havePendingBytes): Likewise.
+	* gnu/gcj/convert/Output_EUCJIS.java (havePendingBytes): Likewise.
+	* gnu/gcj/convert/Output_UTF8.java (havePendingBytes): Likewise.
+	(write): Always decrease avail when count is increased.
+	* java/lang/natString.cc (getBytes): Check converter havePendingBytes()
+	and whether output buffer is full before increasing size.
+
+2002-06-06  Mark Wielaard  <mark@klomp dot org>
+
+	* java/io/PrintStream.java (writeChars(char[],int, int)):
+	Check converter.havePendingBytes().
+	(writeChars(String,int,int)): Likewise.
+	* java/io/OutputStreamWriter.java (writeChars(char[], int, int)):
+	Check converter.havePendingBytes() and flush buffer when stalled.
+
 2003-06-07  Michael Koch  <konqueror@gmx.de>
 
 	* include/posix.h

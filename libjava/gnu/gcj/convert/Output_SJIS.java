@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,6 +21,11 @@ public class Output_SJIS extends UnicodeToBytes
   public native int write (char[] inbuffer, int inpos, int inlength);
 
   public native int write (String str, int inpos, int inlength, char[] work);
+
+  public boolean havePendingBytes()
+  {
+    return pending >= 0;
+  }
 
   int pending = -1;
 }
