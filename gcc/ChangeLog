@@ -1,3 +1,10 @@
+2000-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* emit-rtl.c (gen_lowpart_common) [REAL_ARITHMETICS]: Fix conversion
+	from float to integral mode with HOST_BITS_PER_WIDE_INT 64.
+	* dwarf2out.c (add_const_value_attribute): Divide by 4, not
+	sizeof(long).
+
 Thu Oct  5 09:31:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (fold, case MINUS_EXPR, case EQ_EXPR): Perform

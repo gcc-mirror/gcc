@@ -942,10 +942,12 @@ gen_lowpart_common (mode, x)
 	  break;
 #if LONG_DOUBLE_TYPE_SIZE == 96
 	case XFmode:
+	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i + endian);
+	  i[3-3*endian] = 0;
 #else
 	case TFmode:
-#endif
 	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i);
+#endif
 	  break;
 	default:
 	  abort ();
@@ -964,13 +966,21 @@ gen_lowpart_common (mode, x)
 
 	for (c = 0; c < 4; c++)
 	  i[c] &= ~ (0L);
-      
-	return immed_double_const (i[endian * 3]
-				   | (((HOST_WIDE_INT) i[1 + endian]) << 32),
-				   i[2 - endian]
-				   | (((HOST_WIDE_INT) i[3 - endian * 3])
-				      << 32),
-				   mode);
+
+	switch (GET_MODE (x))
+	  {
+	  case SFmode:
+	  case DFmode:
+	    return immed_double_const (((unsigned long) i[endian]) |
+				       (((HOST_WIDE_INT) i[1-endian]) << 32),
+				       0, mode);
+	  default:
+	    return immed_double_const (((unsigned long) i[endian*3]) |
+				       (((HOST_WIDE_INT) i[1+endian]) << 32),
+				       ((unsigned long) i[2-endian]) |
+				       (((HOST_WIDE_INT) i[3-endian*3]) << 32),
+				       mode);
+	  }
       }
 #endif
     }
