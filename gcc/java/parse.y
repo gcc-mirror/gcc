@@ -114,7 +114,7 @@ static tree maybe_create_class_interface_decl PROTO ((tree, tree, tree));
 static int check_class_interface_creation PROTO ((int, int, tree, 
 						  tree, tree, tree));
 static tree patch_method_invocation PROTO ((tree, tree, tree, 
-					    int *, tree *, int));
+					    int *, tree *));
 static int breakdown_qualified PROTO ((tree *, tree *, tree));
 static tree resolve_and_layout PROTO ((tree, tree));
 static tree resolve_no_layout PROTO ((tree, tree));
@@ -123,7 +123,7 @@ static tree find_applicable_accessible_methods_list PROTO ((int, tree,
 							    tree, tree));
 static tree find_most_specific_methods_list PROTO ((tree));
 static int argument_types_convertible PROTO ((tree, tree));
-static tree patch_invoke PROTO ((tree, tree, tree, int));
+static tree patch_invoke PROTO ((tree, tree, tree));
 static tree lookup_method_invoke PROTO ((int, tree, tree, tree, tree));
 static tree register_incomplete_type PROTO ((int, tree, tree, tree));
 static tree obtain_incomplete_type PROTO ((tree));
@@ -224,7 +224,6 @@ static int verify_constructor_super PROTO (());
 static tree create_artificial_method PROTO ((tree, int, tree, tree, tree));
 static void start_artificial_method_body PROTO ((tree));
 static void end_artificial_method_body PROTO ((tree));
-static tree generate_field_initialization_code PROTO ((tree));
 static int check_method_redefinition PROTO ((tree, tree));
 static int reset_method_name PROTO ((tree));
 static void java_check_regular_methods PROTO ((tree));
@@ -3152,7 +3151,7 @@ register_fields (flags, type, variable_list)
   lineno = saved_lineno;
 }
 
-/* Generate the method <finit> that initializes fields initialized
+/* Generate the method $finit$ that initializes fields initialized
    upon declaration.  */
 
 static void
@@ -3164,7 +3163,7 @@ maybe_generate_finit ()
     return;
 
   mdecl = create_artificial_method (TREE_TYPE (ctxp->current_parsed_class),
-				    ACC_PRIVATE|ACC_FINAL, void_type_node,
+				    ACC_PRIVATE, void_type_node,
 				    finit_identifier_node, end_params_node);
   start_artificial_method_body (mdecl);
 
@@ -4369,7 +4368,7 @@ check_method_redefinition (class, method)
   tree redef, name;
   tree cl = DECL_NAME (method);
   tree sig = TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (method));
-  /* decl name of artificial <clinit> and <finit> doesn't need to be fixed and
+  /* decl name of artificial <clinit> and $finit$ doesn't need to be fixed and
      checked */
 
   /* Reset the method name before running the check. If it returns 1,
@@ -5674,11 +5673,12 @@ fix_constructors (mdecl)
   tree body = DECL_FUNCTION_BODY (mdecl);
   tree field_init;
 
-  /* The constructor body must be crafted by hand. It's the
-     constructor we defined when we realize we didn't have the
-     CLASSNAME() constructor */
   if (!body)
     {
+      /* The constructor body must be crafted by hand. It's the
+	 constructor we defined when we realize we didn't have the
+	 CLASSNAME() constructor */
+
       tree compound;
 
       /* It is an error for the compiler to generate a default
@@ -5699,11 +5699,6 @@ fix_constructors (mdecl)
 	 compiling java.lang.Object. build_super_invocation takes care
 	 of that. */
       compound = java_method_add_stmt (mdecl, build_super_invocation ());
-      
-      /* Takes care of non static field initialization */
-      field_init = generate_field_initialization_code (current_class);
-      if (field_init)
-	compound = java_method_add_stmt (mdecl, field_init);
 
       end_artificial_method_body (mdecl);
     }
@@ -5737,11 +5732,6 @@ fix_constructors (mdecl)
 	compound = add_stmt_to_compound (compound, NULL_TREE,
 					 build_super_invocation ());
       
-      /* Also fix its initialized fields initialization */
-      field_init = generate_field_initialization_code (current_class);
-      if (field_init)
-	compound = add_stmt_to_compound (compound, NULL_TREE, field_init);
-      
       /* Fix the constructor main block if we're adding extra stmts */
       if (compound)
 	{
@@ -5774,23 +5764,6 @@ verify_constructor_super ()
 	}
     }
   return 1;
-}
-
-/* Generate the code used to initialize field declared with an
-   initialization statement. For now, it returns a call the the
-   artificial function <finit>, if required. Always returns NULL if
-   nothing needs to be generated. */
-
-static tree
-generate_field_initialization_code (class)
-     tree class;
-{
-  if (CLASS_HAS_FINIT_P (class))
-    return build_method_invocation (build_expr_wfl (finit_identifier_node, 
-						    input_filename, 0, 0), 
-				    NULL_TREE);
-  else
-    return NULL_TREE;
 }
 
 /* Expand finals.  */
@@ -6132,9 +6105,10 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  /* And code for the function call */
 	  if (complete_function_arguments (qual_wfl))
 	    return 1;
+	  if (from_super && TREE_CODE (qual_wfl) == CALL_EXPR)
+	    CALL_USING_SUPER (qual_wfl) = 1;
 	  *where_found = 
-	    patch_method_invocation (qual_wfl, decl, type,
-				     &is_static, NULL, from_super);
+	    patch_method_invocation (qual_wfl, decl, type, &is_static, NULL);
 	  if (*where_found == error_mark_node)
 	    return 1;
 	  *type_found = type = QUAL_DECL_TYPE (*where_found);
@@ -6559,17 +6533,17 @@ maybe_access_field (decl, where, type)
    used. IS_STATIC is set to 1 if the invoked function is static. */
 
 static tree
-patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
+patch_method_invocation (patch, primary, where, is_static, ret_decl)
      tree patch, primary, where;
      int *is_static;
      tree *ret_decl;
-     int super;
 {
   tree wfl = TREE_OPERAND (patch, 0);
   tree args = TREE_OPERAND (patch, 1);
   tree name = EXPR_WFL_NODE (wfl);
   tree list;
   int is_static_flag = 0;
+  int is_super_init = 0;
   
   /* Should be overriden if everything goes well. Otherwise, if
      something fails, it should keep this value. It stop the
@@ -6690,6 +6664,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
 	  else if (EXPR_WFL_NODE (TREE_OPERAND (patch, 0)) ==
 		   super_identifier_node)
 	    {
+	      is_super_init = 1;
 	      if (CLASSTYPE_SUPER (current_class))
 		class_to_search = 
 		  DECL_NAME (TYPE_NAME (CLASSTYPE_SUPER (current_class)));
@@ -6808,7 +6783,22 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
      EH checking */
   if (ret_decl)
     *ret_decl = list;
-  return patch_invoke (patch, list, args, super);
+  patch = patch_invoke (patch, list, args);
+  if (is_super_init && CLASS_HAS_FINIT_P (current_class))
+    {
+      /* Generate the code used to initialize fields declared with an
+	 initialization statement. For now, it returns a call the the
+	 artificial function $finit$, if required. */
+
+      tree finit_call =
+	build_method_invocation (build_expr_wfl (finit_identifier_node,  
+						 input_filename, 0, 0),  
+				 NULL_TREE);
+      patch = build (COMPOUND_EXPR, void_type_node, patch,
+		     java_complete_tree (finit_call));
+      CAN_COMPLETE_NORMALLY (patch) = 1;
+    }
+  return patch;
 }
 
 /* Check that we're not trying to do a static reference to a method in
@@ -6836,11 +6826,9 @@ check_for_static_method_reference (wfl, node, method, where, primary)
    mode.  */
 
 static tree
-patch_invoke (patch, method, args, from_super)
+patch_invoke (patch, method, args)
      tree patch, method, args;
-     int from_super;
 {
-  int im;
   tree dtable, func;
   tree original_call, t, ta;
 
@@ -6861,7 +6849,7 @@ patch_invoke (patch, method, args, from_super)
   else
     {
       tree signature = build_java_signature (TREE_TYPE (method));
-      switch ((im = invocation_mode (method, from_super)))
+      switch (invocation_mode (method, CALL_USING_SUPER (patch)))
 	{
 	case INVOKE_VIRTUAL:
 	  dtable = invoke_build_dtable (0, args);
@@ -6881,8 +6869,7 @@ patch_invoke (patch, method, args, from_super)
 	  break;
 
 	default:
-	  fatal ("Unknown invocation mode `%d' - build_invoke", im);
-	  return NULL_TREE;
+	  fatal ("internal error - unknown invocation_mode result");
 	}
 
       /* Ensure self_type is initialized, (invokestatic). FIXME */
@@ -7439,7 +7426,8 @@ java_complete_tree (node)
 			break;
 		    }
 		  if (TREE_CODE (wfl_op2) != CASE_EXPR
-		      && TREE_CODE (wfl_op2) != DEFAULT_EXPR)
+		      && TREE_CODE (wfl_op2) != DEFAULT_EXPR
+		      && wfl_op2 != empty_stmt_node)
 		    unreachable_stmt_error (*ptr);
 		}
 	      ptr = next;
@@ -7608,7 +7596,8 @@ java_complete_tree (node)
     case COMPOUND_EXPR:
       wfl_op2 = TREE_OPERAND (node, 1);
       TREE_OPERAND (node, 0) = nn = java_complete_tree (TREE_OPERAND (node, 0));
-      if (! CAN_COMPLETE_NORMALLY (nn) && TREE_CODE (nn) != ERROR_MARK)
+      if (! CAN_COMPLETE_NORMALLY (nn) && TREE_CODE (nn) != ERROR_MARK
+	  && TREE_OPERAND (node, 1) != empty_stmt_node)
 	{
 	  SET_WFL_OPERATOR (wfl_operator, node, wfl_op2);
 	  parse_error_context (wfl_operator, "Unreachable statement");
@@ -7689,7 +7678,7 @@ java_complete_tree (node)
 	  int in_this = CALL_THIS_CONSTRUCTOR_P (node);
 
 	  node = patch_method_invocation (node, NULL_TREE, 
-					  NULL_TREE, 0, &decl, 0);
+					  NULL_TREE, 0, &decl);
 	  if (node == error_mark_node)
 	    return error_mark_node;
 
