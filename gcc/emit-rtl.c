@@ -110,9 +110,12 @@ rtx const_true_rtx;
 REAL_VALUE_TYPE dconst0;
 REAL_VALUE_TYPE dconst1;
 REAL_VALUE_TYPE dconst2;
+REAL_VALUE_TYPE dconst3;
+REAL_VALUE_TYPE dconst10;
 REAL_VALUE_TYPE dconstm1;
 REAL_VALUE_TYPE dconstm2;
 REAL_VALUE_TYPE dconsthalf;
+REAL_VALUE_TYPE dconstthird;
 
 /* All references to the following fixed hard registers go through
    these unique rtl objects.  On machines where the frame-pointer and
@@ -5414,13 +5417,17 @@ init_emit_once (int line_numbers)
   REAL_VALUE_FROM_INT (dconst0,   0,  0, double_mode);
   REAL_VALUE_FROM_INT (dconst1,   1,  0, double_mode);
   REAL_VALUE_FROM_INT (dconst2,   2,  0, double_mode);
+  REAL_VALUE_FROM_INT (dconst3,   3,  0, double_mode);
+  REAL_VALUE_FROM_INT (dconst10, 10,  0, double_mode);
   REAL_VALUE_FROM_INT (dconstm1, -1, -1, double_mode);
   REAL_VALUE_FROM_INT (dconstm2, -2, -1, double_mode);
 
   dconsthalf = dconst1;
   dconsthalf.exp--;
 
-  for (i = 0; i <= 2; i++)
+  real_arithmetic (&dconstthird, RDIV_EXPR, &dconst1, &dconst3);
+
+  for (i = 0; i < (int) ARRAY_SIZE (const_tiny_rtx); i++)
     {
       REAL_VALUE_TYPE *r =
 	(i == 0 ? &dconst0 : i == 1 ? &dconst1 : &dconst2);
