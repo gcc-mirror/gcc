@@ -1,5 +1,5 @@
 # Makefile for GNU C compiler.
-#   Copyright (C) 1987, 1988, 1990, 1991 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 1988, 1990, 1991, 1992 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -402,7 +402,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 # Header files that are made available under the same name
 # to programs compiled with GCC.
 USER_H = va-alpha.h va-i860.h va-i960.h va-mips.h va-m88k.h \
-    va-pa.h va-pyr.h va-sparc.h va-spur.h proto.h syslimits.h $(EXTRA_HEADERS)
+    va-pa.h va-pyr.h va-sparc.h va-spur.h proto.h $(EXTRA_HEADERS)
 
 # All the header files that are installed for users from GCC itself.
 INSTALLED_H = float.h stddef.h stdarg.h varargs.h $(USER_H) limits.h
@@ -1449,7 +1449,9 @@ install-dir:
 	-if [ -d $(mandir) ] ; then true ; else mkdir $(mandir) ; fi
 
 # Install the compiler executables built during cross compilation.
-install-common: native install-dir xgcc $(srcdir)/g++ $(srcdir)/c++ $(EXTRA_PARTS)
+# Deps on  $(srcdir)/g++ $(srcdir)/c++  would be natural here,
+# but the latter would get confused with the target `c++'.
+install-common: native install-dir xgcc $(EXTRA_PARTS)
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
 	    rm -f $(libsubdir)/$$file; \
@@ -1550,7 +1552,7 @@ install-limits-h: xlimits.h install-dir
 	chmod a-x $(libsubdir)/include/limits.h
 
 # Install the fixed headers that are the same for all machines.
-install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
+install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h assert.h
 	-if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
 	-chmod ugo+rx $(libsubdir)/include
 # Must compute $(libsubdir) before the cd; the awk script won't work after.
@@ -1579,6 +1581,9 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	  $(INSTALL_DATA) $(srcdir)/assert.h $(assertdir)/assert.h; \
 	  chmod a-x $(assertdir)/assert.h; \
 	fi
+	-rm -f $(libsubdir)/include/syslimits.h
+	$(INSTALL_DATA) $(srcdir)/gsyslimits.h $(libsubdir)/include/syslimits.h
+	chmod a-x $(libsubdir)/include/syslimits.h
 	-rm -f $(libsubdir)/include/varargs.h
 	$(INSTALL_DATA) $(srcdir)/gvarargs.h $(libsubdir)/include/varargs.h
 	chmod a-x $(libsubdir)/include/varargs.h
