@@ -3094,7 +3094,7 @@ meaning inside a function, since the preprocessor does not do anything
 special with the identifier @code{__FUNCTION__}.
 
 GNU CC also supports the magic word @code{__func__}, defined by the
-draft standard for C-99:
+ISO standard C-99:
 
 @display
 The identifier @code{__func__} is implicitly declared by the translator
