@@ -1,3 +1,7 @@
+2003-06-07  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (cb_register_builtins): Define __EXCEPTIONS for C also.
+
 2003-06-07  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* configure.in (HAVE_LD_RO_RW_SECTION_MIXING): Remove quotes in
