@@ -1,3 +1,9 @@
+2002-11-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (DECL_LANG_FLAG_4): Document more uses.
+	(template_parms_equal): Remove prototype.
+	* typeck.c (buuld_indirect_ref): Reformat.
+
 2002-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (cp_build_qualified_type_real): Correct handling of
@@ -7611,7 +7617,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(cp_make_fname_decl): Use size_int, not build_int_2.
 	(push_inline_template_parms_recursive): Likewise.
 	(end_template_parm_list): Likewise.
-	(for_each_tempalte_parm): Do not use walk_tree_without_duplicates.
+	(for_each_template_parm): Do not use walk_tree_without_duplicates.
 	(tsubst_template_parms): Use size_int, not build_int_2.
 	(tsubst): Likewise.
 	* rtti.c (get_vmi_pseudo_type_info): Likewise.

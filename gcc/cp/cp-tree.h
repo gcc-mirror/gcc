@@ -101,6 +101,7 @@ struct diagnostic_context;
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
+      DECL_MAYBE_TEMPLATE (in a FUNCTION_DECL)
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
@@ -4001,7 +4002,6 @@ extern int push_tinst_level			PARAMS ((tree));
 extern void pop_tinst_level			PARAMS ((void));
 extern int more_specialized_class		PARAMS ((tree, tree));
 extern int is_member_template                   PARAMS ((tree));
-extern int template_parms_equal                 PARAMS ((tree, tree));
 extern int comp_template_parms                  PARAMS ((tree, tree));
 extern int template_class_depth                 PARAMS ((tree));
 extern int is_specialization_of                 PARAMS ((tree, tree));
