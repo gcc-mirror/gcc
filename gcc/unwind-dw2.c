@@ -262,7 +262,7 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
 		  _Unwind_FrameState *fs)
 {
   const unsigned char *aug = cie->augmentation;
-  const unsigned char *p = aug + strlen (aug) + 1;
+  const unsigned char *p = aug + strlen ((const char *)aug) + 1;
   const unsigned char *ret = NULL;
   _Unwind_Word utmp;
 
