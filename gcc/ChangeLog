@@ -1,3 +1,8 @@
+2003-07-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.c (handle_packed_attribute): Don't pack a struct via a
+	typedef. Propagate packedness from a main variant.
+
 2003-07-22  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in (install-common): Add dependency on installdirs.

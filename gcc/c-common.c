@@ -4534,25 +4534,33 @@ static tree
 handle_packed_attribute (tree *node, tree name, tree args  ATTRIBUTE_UNUSED,
 			 int flags, bool *no_add_attrs)
 {
-  tree *type = NULL;
-  if (DECL_P (*node))
-    {
-      if (TREE_CODE (*node) == TYPE_DECL)
-	type = &TREE_TYPE (*node);
-    }
-  else
-    type = node;
-
-  if (type)
+  if (TYPE_P (*node))
     {
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-	*type = build_type_copy (*type);
-      TYPE_PACKED (*type) = 1;
+	*node = build_type_copy (*node);
+      TYPE_PACKED (*node) = 1;
+      if (TYPE_MAIN_VARIANT (*node) == *node)
+	{
+	  /* If it is the main variant, then pack the other variants
+   	     too. This happens in,
+	     
+	     struct Foo {
+	       struct Foo const *ptr; // creates a variant w/o packed flag
+	       } __ attribute__((packed)); // packs it now.
+	  */
+	  tree probe;
+	  
+	  for (probe = *node; probe; probe = TYPE_NEXT_VARIANT (probe))
+	    TYPE_PACKED (probe) = 1;
+	}
+      
     }
   else if (TREE_CODE (*node) == FIELD_DECL)
     DECL_PACKED (*node) = 1;
   /* We can't set DECL_PACKED for a VAR_DECL, because the bit is
-     used for DECL_REGISTER.  It wouldn't mean anything anyway.  */
+     used for DECL_REGISTER.  It wouldn't mean anything anyway.
+     We can't set DECL_PACKED on the type of a TYPE_DECL, because
+     that changes what the typedef is typing.  */
   else
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
