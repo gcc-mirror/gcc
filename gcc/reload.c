@@ -1641,6 +1641,16 @@ combine_reloads ()
   if (earlyclobber_operand_p (rld[output_reload].out))
     return;
 
+  /* If there is a reload for part of the address of this operand, we would
+     need to chnage it to RELOAD_FOR_OTHER_ADDRESS.  But that would extend
+     its life to the point where doing this combine would not lower the
+     number of spill registers needed.  */
+  for (i = 0; i < n_reloads; i++)
+    if ((rld[i].when_needed == RELOAD_FOR_OUTPUT_ADDRESS
+	 || rld[i].when_needed == RELOAD_FOR_OUTADDR_ADDRESS)
+	&& rld[i].opnum == rld[output_reload].opnum)
+      return;
+
   /* Check each input reload; can we combine it?  */
 
   for (i = 0; i < n_reloads; i++)
