@@ -130,6 +130,22 @@ find_opt (const char *input, int lang_mask)
   return result;
 }
 
+/* If ARG is a postive integer made up solely of digits, return its
+   value, otherwise return -1.  */
+static int
+integral_argument (const char *arg)
+{
+  const char *p = arg;
+
+  while (*p && ISDIGIT (*p))
+    p++;
+
+  if (*p == '\0')
+    return atoi (arg);
+
+  return -1;
+}
+
 /* Handle the switch beginning at ARGV, with ARGC remaining.  */
 int
 handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
@@ -137,7 +153,7 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
   size_t opt_index;
   const char *opt, *arg = 0;
   char *dup = 0;
-  bool on = true;
+  int value = 1;
   int result = 0, temp;
   const struct cl_option *option;
 
@@ -149,7 +165,7 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
       opt_index = cl_options_count;
       arg = opt;
       main_input_filename = opt;
-      result = (*lang_hooks.handle_option) (opt_index, arg, on);
+      result = (*lang_hooks.handle_option) (opt_index, arg, value);
     }
   else
     {
@@ -164,7 +180,7 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
 	  dup[1] = opt[1];
 	  memcpy (dup + 2, opt + 5, len - 2 + 1);
 	  opt = dup;
-	  on = false;
+	  value = 0;
 	}
 
       opt_index = find_opt (opt + 1, lang_mask | CL_COMMON);
@@ -174,48 +190,62 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
       option = &cl_options[opt_index];
 
       /* Reject negative form of switches that don't take negatives.  */
-      if (!on && (option->flags & CL_REJECT_NEGATIVE))
+      if (!value && (option->flags & CL_REJECT_NEGATIVE))
 	goto done;
 
       /* We've recognized this switch.  */
       result = 1;
 
       /* Sort out any argument the switch takes.  */
-      if (option->flags & (CL_JOINED | CL_SEPARATE))
+      if (option->flags & CL_JOINED)
 	{
-	  if (option->flags & CL_JOINED)
-	    {
-	      /* Have arg point to the original switch.  This is because
-		 some code, such as disable_builtin_function, expects its
-		 argument to be persistent until the program exits.  */
-	      arg = argv[0] + cl_options[opt_index].opt_len + 1;
-	      if (!on)
-		arg += strlen ("no-");
-	    }
+	  /* Have arg point to the original switch.  This is because
+	     some code, such as disable_builtin_function, expects its
+	     argument to be persistent until the program exits.  */
+	  arg = argv[0] + cl_options[opt_index].opt_len + 1;
+	  if (!value)
+	    arg += strlen ("no-");
 
-	  /* If we don't have an argument, and CL_SEPARATE, try the next
-	     argument in the vector.  */
-	  if (!arg || (*arg == '\0' && option->flags & CL_SEPARATE))
+	  if (*arg == '\0' && !(option->flags & CL_MISSING_OK))
 	    {
-	      arg = argv[1];
-	      result = 2;
+	      if (option->flags & CL_SEPARATE)
+		{
+		  arg = argv[1];
+		  result = 2;
+		}
+	      else
+		/* Missing argument.  */
+		arg = NULL;
 	    }
+	}
+      else if (option->flags & CL_SEPARATE)
+	{
+	  arg = argv[1];
+	  result = 2;
+	}
 
-	  /* Canonicalize missing arguments as NULL for the handler.  */
-	  if (*arg == '\0')
-	    arg = NULL;
+      /* If the switch takes an integer, convert it.  */
+      if (arg && (option->flags & CL_UINTEGER))
+	{
+	  value = integral_argument (arg);
+	  if (value == -1)
+	    {
+	      error ("argument to \"-%s\" should be a non-negative integer",
+		     option->opt_text);
+	      goto done;
+	    }
 	}
 
       if (option->flags & lang_mask)
 	{
-	  temp = (*lang_hooks.handle_option) (opt_index, arg, on);
+	  temp = (*lang_hooks.handle_option) (opt_index, arg, value);
 	  if (temp <= 0)
 	    result = temp;
 	}
 
       if (result > 0 && (option->flags & CL_COMMON))
 	{
-	  if (common_handle_option (opt_index, arg, on) == 0)
+	  if (common_handle_option (opt_index, arg, value) == 0)
 	    result = 0;
 	}
     }
@@ -262,9 +292,7 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_G:
-      g_switch_value = read_integral_parameter (arg, 0, -1);
-      if (g_switch_value == (unsigned HOST_WIDE_INT) -1)
-	return 0;
+      g_switch_value = value;
       g_switch_set = true;
       break;
 

@@ -1,5 +1,19 @@
 2003-06-16  Neil Booth  <neil@daikokuya.co.uk>
 
+	* c-opts.c (c_common_handle_option): s/on/value/.
+	(OPT_fabi_version_, OPT_ftabstop_, OPT_ftemplate_depth_): Use value
+	directly rather than converting the argument.
+	* c.opt: Update docs.  Use UInteger where appropriate.
+	* common.opt: Use UInteger where appropriate.
+	* opts.c (integral_argument): New.
+	(handle_argument): Handle integral arguments, and optional
+	joined arguments.
+	(common_handle_option): Update.
+	* opts.h (CL_MISSING_OK, CL_UINTEGER): New.
+	* opts.sh: Handle JoinedOrMissing and UInteger flags.
+
+2003-06-16  Neil Booth  <neil@daikokuya.co.uk>
+
 	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_LOCAL): Remove
 	unnecessary extern declaration.
 
