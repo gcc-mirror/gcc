@@ -2,23 +2,6 @@
 
 	* doc/install.texi:  Add 'c' to list of --enable-languages choices.
 
-
-Index: doc/install.texi
-===================================================================
-RCS file: /cvs/gcc/gcc/gcc/doc/install.texi,v
-retrieving revision 1.31
-diff -u -3 -p -r1.31 install.texi
---- install.texi	2001/06/21 15:25:54	1.31
-+++ install.texi	2001/06/21 18:59:08
-@@ -546,7 +546,7 @@ their runtime libraries should be built.
- @var{langN} you can issue the following command in the
- @file{gcc} directory of your GCC source tree:@* @samp{grep language=
- */config-lang.in}@* Currently, you can use any of the following:
--@code{c++}, @code{f77}, @code{java} and @code{objc}.
-+@code{c}, @code{c++}, @code{f77}, @code{java} and @code{objc}.
- @code{CHILL} is not currently maintained, and will almost
- certainly fail to compile.  Note that this switch does not work with
- EGCS 1.1.2 or older versions of egcs.  It is supported in GCC 2.95
 2001-06-21  DJ Delorie  <dj@redhat.com>
 
 	* integrate.c (mark_hard_reg_initial_vals): Check for NULL.
