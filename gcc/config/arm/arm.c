@@ -2884,19 +2884,11 @@ output_move_double (operands)
 	  if (reg1 == 12)
 	    abort();
 
-	  otherops[1] = gen_rtx (REG, SImode, 1 + reg1);
-
 	  /* Ensure the second source is not overwritten */
-	  if (reg0 == 1 + reg1)
-	    {
-	      output_asm_insn("mov%?\t%0, %1", otherops);
-	      output_asm_insn("mov%?\t%0, %1", operands);
-	    }
+	  if (reg1 == reg0 + (WORDS_BIG_ENDIAN ? -1 : 1))
+	    output_asm_insn("mov%?\t%Q0, %Q1\n\tmov%?\t%R0, %R1", operands);
 	  else
-	    {
-	      output_asm_insn("mov%?\t%0, %1", operands);
-	      output_asm_insn("mov%?\t%0, %1", otherops);
-	    }
+	    output_asm_insn("mov%?\t%R0, %R1\n\tmov%?\t%Q0, %Q1", operands);
 	}
       else if (code1 == CONST_DOUBLE)
 	{
@@ -2911,25 +2903,36 @@ output_move_double (operands)
 	      otherops[1] = GEN_INT(l[1]);
 	      operands[1] = GEN_INT(l[0]);
 	    }
+	  else if (GET_MODE (operands[1]) != VOIDmode)
+	    abort ();
+	  else if (WORDS_BIG_ENDIAN)
+	    {
+	      
+	      otherops[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
+	      operands[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
+	    }
 	  else
 	    {
+	      
 	      otherops[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
 	      operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
 	    }
-	  output_mov_immediate (operands, FALSE, "");
-	  output_mov_immediate (otherops, FALSE, "");
+	  output_mov_immediate (operands);
+	  output_mov_immediate (otherops);
 	}
       else if (code1 == CONST_INT)
 	{
-	  otherops[1] = const0_rtx;
 	  /* sign extend the intval into the high-order word */
-	  /* Note: output_mov_immediate may clobber operands[1], so we
-	     put this out first */
-	  if (INTVAL (operands[1]) < 0)
-	    output_asm_insn ("mvn%?\t%0, %1", otherops);
+	  if (WORDS_BIG_ENDIAN)
+	    {
+	      otherops[1] = operands[1];
+	      operands[1] = (INTVAL (operands[1]) < 0
+			     ? constm1_rtx : const0_rtx);
+	    }
 	  else
-	    output_asm_insn ("mov%?\t%0, %1", otherops);
-	  output_mov_immediate (operands, FALSE, "");
+	    otherops[1] = INTVAL (operands[1]) < 0 ? constm1_rtx : const0_rtx;
+	  output_mov_immediate (otherops);
+	  output_mov_immediate (operands);
 	}
       else if (code1 == MEM)
 	{
@@ -4018,11 +4021,18 @@ arm_print_operand (stream, x, code)
       }
       return;
 
+    case 'Q':
+      if (REGNO (x) > 15)
+	abort ();
+      fputs (REGISTER_PREFIX, stream);
+      fputs (reg_names[REGNO (x) + (WORDS_BIG_ENDIAN ? 1 : 0)], stream);
+      return;
+
     case 'R':
       if (REGNO (x) > 15)
 	abort ();
       fputs (REGISTER_PREFIX, stream);
-      fputs (reg_names[REGNO (x) + 1], stream);
+      fputs (reg_names[REGNO (x) + (WORDS_BIG_ENDIAN ? 0 : 1)], stream);
       return;
 
     case 'm':
