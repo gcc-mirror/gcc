@@ -845,7 +845,8 @@ push_long_const (lo, hi, state)
       RESERVE(1);
       OP1(OPCODE_lconst_0 + lo);
     }
-  else if ((hi == 0 && lo < 32768) || (hi == -1 && lo >= -32768))
+  else if ((hi == 0 && (jword)(lo  & 0xFFFFFFFF) < 32768) 
+          || (hi == -1 && (jword)(lo & 0xFFFFFFFF) >= -32768))
       {
         push_int_const (lo, state);
         RESERVE (1);
