@@ -1,3 +1,7 @@
+Sat Jul  4 11:07:33 1998  Eberhard Mattes  <mattes@azu.informatik.uni-stuttgart.de>
+
+	* function.c (assign_parms): Handle PARALLEL which include stack.
+
 Sat Jul  4 09:44:29 1998  Paul Edwards  <avon@matra.com.au>
 
 	* tree.c, print-tree.c, c-lang.c: Include stdio.h before tree.h.
