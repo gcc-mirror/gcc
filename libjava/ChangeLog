@@ -1,5 +1,12 @@
 2002-02-07  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natThrowable.cc: Updated copyright.
+	* java/io/natFileWin32.cc: Updated copyright.
+	* java/io/natFileDescriptorWin32.cc: Updated copyright.
+	* win32-threads.cc: Updated copyright.
+	* name-finder.cc: Updated copyright.
+	* include/name-finder.h: Updated copyright.
+
 	* include/name-finder.h: Conditionally include sys/wait.h.
 	* include/config.h.in: Rebuilt.
 

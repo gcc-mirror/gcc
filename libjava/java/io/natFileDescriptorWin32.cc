@@ -1,6 +1,6 @@
 // natFileDescriptorWin32.cc - Native part of FileDescriptor class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation, Inc.
 
    This file is part of libgcj.
 

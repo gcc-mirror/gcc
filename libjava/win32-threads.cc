@@ -1,6 +1,6 @@
 // win32-threads.cc - interface between libjava and Win32 threads.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999  Free Software Foundation, Inc.
 
    This file is part of libgcj.
 
