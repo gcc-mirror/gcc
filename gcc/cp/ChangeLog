@@ -1,3 +1,9 @@
+2002-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c++/7266
+	* decl.c (grokdeclarator): Check that TREE_OPERAND 0 of a
+	SCOPE_REF is not null before dereferencing it.
+
 2002-10-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_vtbl_initializer): Don't use build_vtable_entry.
@@ -8,7 +14,7 @@
 	* decl.c (duplicate_decls): Copy it.
 	* method.c (make_thunk): Simplify, and add thunks to DECL_THUNKS.
 	* semantics.c (emit_associated_thunks): Simplify.
-	
+
 2002-10-24  David Edelsohn  <edelsohn@gnu.org>
 
 	PR c++/7228
