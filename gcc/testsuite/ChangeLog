@@ -1,5 +1,8 @@
 2004-11-15  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/vect/tree-vect.h: (check_vect): Test symbols defined for
+	powerpc*-*-linux*.
+
 	* gcc.dg/ppc64-abi-1.c: Skip if not lp64.
 	* gcc.dg/ppc64-abi-2.c: Ditto.
 	* gcc.dg/ppc64-abi-3.c: Ditto.
