@@ -1,5 +1,10 @@
 2003-01-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Revert previous change.
+	* configure: Regenerate.
+
+2003-01-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
 	* configure.in: Make rda native-only.
 	* configure: Regenerate.
 
