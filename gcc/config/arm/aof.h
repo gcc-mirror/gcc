@@ -35,8 +35,7 @@
 #define ENDFILE_SPEC "crtend.o%s"
 
 #ifndef ASM_SPEC
-#define ASM_SPEC "%{g -g} -arch 4 \
--apcs 3%{mapcs-32:/32bit}%{mapcs-26:/26bit}%{!mapcs-26:%{!macps-32:/26bit}}"
+#define ASM_SPEC "%{g -g} -arch 4 -apcs 3/32bit"
 #endif
 
 #ifndef LIB_SPEC

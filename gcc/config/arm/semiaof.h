@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  ARM on semi-hosted platform
    AOF Syntax assembler.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2004 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (richard.earnshaw@armltd.co.uk)
 
    This file is part of GCC.
@@ -26,17 +26,13 @@
 	builtin_define_std ("semi");		\
     } while (0)
 
-#define ASM_SPEC "%{g -g} -arch 4 \
--apcs 3%{mapcs-32:/32bit}%{mapcs-26:/26bit}%{!mapcs-26:%{!macps-32:/32bit}}"
+#define ASM_SPEC "%{g -g} -arch 4 -apcs 3/32bit"
 
 #define LIB_SPEC "%{Eb: armlib_h.32b%s}%{!Eb: armlib_h.32l%s}"
 
 #define TARGET_VERSION fputs (" (ARM/semi-hosted)", stderr);
 
-#define TARGET_DEFAULT ARM_FLAG_APCS_32
+#define TARGET_DEFAULT (0)
 
 /* The Norcroft C library defines size_t as "unsigned int".  */
 #define SIZE_TYPE "unsigned int"
-
-#undef CPP_APCS_PC_DEFAULT_SPEC
-#define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"

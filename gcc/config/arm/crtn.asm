@@ -1,4 +1,4 @@
-#   Copyright (C) 2001 Free Software Foundation, Inc.
+#   Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 #   Written By Nick Clifton
 # 
 # This file is free software; you can redistribute it and/or modify it
@@ -61,11 +61,7 @@
 #if defined __THUMB_INTERWORK__ || defined __thumb__
 	bx	lr
 #else
-#ifdef __APCS_26__
-	movs	pc, lr
-#else
 	mov	pc, lr
-#endif
 #endif
 .endm
 		

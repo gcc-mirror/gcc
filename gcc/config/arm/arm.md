@@ -128,11 +128,6 @@
 ; patterns that share the same RTL in both ARM and Thumb code.
 (define_attr "is_thumb" "no,yes" (const (symbol_ref "thumb_code")))
 
-; PROG_MODE attribute is used to determine whether condition codes are
-; clobbered by a call insn: they are if in prog32 mode.  This is controlled
-; by the -mapcs-{32,26} flag, and possibly the -mcpu=... option.
-(define_attr "prog_mode" "prog26,prog32" (const (symbol_ref "arm_prog_mode")))
-
 ; IS_STRONGARM is set to 'yes' when compiling for StrongARM, it affects
 ; scheduling decisions for the load unit and the multiplier.
 (define_attr "is_strongarm" "no,yes" (const (symbol_ref "arm_is_strong")))
@@ -254,8 +249,7 @@
 
 (define_attr "conds" "use,set,clob,jump_clob,nocond"
 	(if_then_else (eq_attr "type" "call")
-	 (if_then_else (eq_attr "prog_mode" "prog32")
-	  (const_string "clob") (const_string "nocond"))
+	 (const_string "clob")
 	 (const_string "nocond")))
 
 ; Predicable means that the insn can be conditionally executed based on
@@ -3144,16 +3138,12 @@
   {
     if ((TARGET_THUMB || arm_arch4) && GET_CODE (operands[1]) == MEM)
       {
-       /* Note: We do not have to worry about TARGET_MMU_TRAPS
-	  here because the insn below will generate an LDRH instruction
-	  rather than an LDR instruction, so we cannot get an unaligned
-	  word access.  */
 	emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 				gen_rtx_ZERO_EXTEND (SImode, operands[1])));
 	DONE;
       }
 
-    if (TARGET_ARM && TARGET_MMU_TRAPS && GET_CODE (operands[1]) == MEM)
+    if (TARGET_ARM && GET_CODE (operands[1]) == MEM)
       {
 	emit_insn (gen_movhi_bytes (operands[0], operands[1]));
 	DONE;
@@ -3461,17 +3451,13 @@
           }
 	else if (arm_arch4)
 	  {
-	    /* Note: We do not have to worry about TARGET_MMU_TRAPS
-	       here because the insn below will generate an LDRH instruction
-	       rather than an LDR instruction, so we cannot get an unaligned
-	       word access.  */
 	    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 		       gen_rtx_SIGN_EXTEND (SImode, operands[1])));
 	    DONE;
 	  }
       }
 
-    if (TARGET_ARM && TARGET_MMU_TRAPS && GET_CODE (operands[1]) == MEM)
+    if (TARGET_ARM && GET_CODE (operands[1]) == MEM)
       {
         emit_insn (gen_extendhisi2_mem (operands[0], operands[1]));
         DONE;
@@ -4577,89 +4563,40 @@
 	    }
           else if (!arm_arch4)
 	    {
-	     /* Note: We do not have to worry about TARGET_MMU_TRAPS
-	        for v4 and up architectures because LDRH instructions will
-	        be used to access the HI values, and these cannot generate
-	        unaligned word access faults in the MMU.  */
 	      if (GET_CODE (operands[1]) == MEM)
 	        {
-	          if (TARGET_MMU_TRAPS)
+		  rtx base;
+		  rtx offset = const0_rtx;
+		  rtx reg = gen_reg_rtx (SImode);
+
+		  if ((GET_CODE (base = XEXP (operands[1], 0)) == REG
+		       || (GET_CODE (base) == PLUS
+			   && (GET_CODE (offset = XEXP (base, 1))
+			       == CONST_INT)
+                           && ((INTVAL(offset) & 1) != 1)
+			   && GET_CODE (base = XEXP (base, 0)) == REG))
+		      && REGNO_POINTER_ALIGN (REGNO (base)) >= 32)
 		    {
-		      rtx base;
-		      rtx offset = const0_rtx;
-		      rtx reg = gen_reg_rtx (SImode);
+		      HOST_WIDE_INT new_offset = INTVAL (offset) & ~3;
+		      rtx new;
 
-		      if ((GET_CODE (base = XEXP (operands[1], 0)) == REG
-		           || (GET_CODE (base) == PLUS
-			       && (GET_CODE (offset = XEXP (base, 1))
-				   == CONST_INT)
-                               && ((INTVAL(offset) & 1) != 1)
-			       && GET_CODE (base = XEXP (base, 0)) == REG))
-		          && REGNO_POINTER_ALIGN (REGNO (base)) >= 32)
-		        {
-		          HOST_WIDE_INT new_offset = INTVAL (offset) & ~3;
-		          rtx new;
+		      new = gen_rtx_MEM (SImode,
+					 plus_constant (base, new_offset));
+	              MEM_COPY_ATTRIBUTES (new, operands[1]);
+		      emit_insn (gen_movsi (reg, new));
+		      if (((INTVAL (offset) & 2) != 0)
+			  ^ (BYTES_BIG_ENDIAN ? 1 : 0))
+			{
+			  rtx reg2 = gen_reg_rtx (SImode);
 
-		          new = gen_rtx_MEM (SImode,
-				   	     plus_constant (base, new_offset));
-	                  MEM_COPY_ATTRIBUTES (new, operands[1]);
-		          emit_insn (gen_movsi (reg, new));
-		          if (((INTVAL (offset) & 2) != 0)
-			      ^ (BYTES_BIG_ENDIAN ? 1 : 0))
-			    {
-			      rtx reg2 = gen_reg_rtx (SImode);
-
-			      emit_insn (gen_lshrsi3 (reg2, reg,
-					 GEN_INT (16)));
-			      reg = reg2;
-			    }
-		        }
-		      else
-		        emit_insn (gen_movhi_bytes (reg, operands[1]));
-
-		      operands[1] = gen_lowpart (HImode, reg);
+			  emit_insn (gen_lshrsi3 (reg2, reg, GEN_INT (16)));
+			  reg = reg2;
+			}
 		    }
-	          else if (BYTES_BIG_ENDIAN)
-		    {
-		      rtx base;
-		      rtx offset = const0_rtx;
+		  else
+		    emit_insn (gen_movhi_bytes (reg, operands[1]));
 
-		      if ((GET_CODE (base = XEXP (operands[1], 0)) == REG
-		           || (GET_CODE (base) == PLUS
-			      && (GET_CODE (offset = XEXP (base, 1))
-				  == CONST_INT)
-			      && GET_CODE (base = XEXP (base, 0)) == REG))
-		          && REGNO_POINTER_ALIGN (REGNO (base)) >= 32)
-		        {
-		          rtx reg = gen_reg_rtx (SImode);
-		          rtx new;
-
-		          if ((INTVAL (offset) & 2) == 2)
-			    {
-			      HOST_WIDE_INT new_offset = INTVAL (offset) ^ 2;
-			      new = gen_rtx_MEM (SImode,
-				  	         plus_constant (base,
-								new_offset));
-                              MEM_COPY_ATTRIBUTES (new, operands[1]);
-			      emit_insn (gen_movsi (reg, new));
-			    }
-		          else
-			    {
-			      new = gen_rtx_MEM (SImode,
-						 XEXP (operands[1], 0));
-	                      MEM_COPY_ATTRIBUTES (new, operands[1]);
-			      emit_insn (gen_rotated_loadsi (reg, new));
-			    }
-
-		          operands[1] = gen_lowpart (HImode, reg);
-		        }
-		      else
-		        {
-		          emit_insn (gen_movhi_bigend (operands[0],
-						       operands[1]));
-		          DONE;
-		        }
-		    }
+		  operands[1] = gen_lowpart (HImode, reg);
 	       }
 	   }
         }
@@ -4762,24 +4699,6 @@
 )
 
 
-(define_insn "rotated_loadsi"
-  [(set (match_operand:SI            0 "s_register_operand"        "=r")
-	(rotate:SI (match_operand:SI 1 "offsettable_memory_operand" "o")
-		   (const_int 16)))]
-  "TARGET_ARM && (!TARGET_MMU_TRAPS)"
-  "*
-  {
-    rtx ops[2];
-
-    ops[0] = operands[0];
-    ops[1] = gen_rtx_MEM (SImode, plus_constant (XEXP (operands[1], 0), 2));
-    output_asm_insn (\"ldr%?\\t%0, %1\\t%@ load-rotate\", ops);
-    return \"\";
-  }"
-  [(set_attr "type" "load1")
-   (set_attr "predicable" "yes")]
-)
-
 (define_expand "movhi_bytes"
   [(set (match_dup 2) (zero_extend:SI (match_operand:HI 1 "" "")))
    (set (match_dup 3)
@@ -4851,65 +4770,10 @@
    (set_attr "neg_pool_range" "*,*,*,244")]
 )
 
-(define_insn "*movhi_insn_littleend"
-  [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
-	(match_operand:HI 1 "general_operand"  "rI,K,m"))]
-  "TARGET_ARM
-   && !arm_arch4
-   && !BYTES_BIG_ENDIAN
-   && !TARGET_MMU_TRAPS
-   && (GET_CODE (operands[1]) != CONST_INT
-       || const_ok_for_arm (INTVAL (operands[1]))
-       || const_ok_for_arm (~INTVAL (operands[1])))"
-  "@
-   mov%?\\t%0, %1\\t%@ movhi
-   mvn%?\\t%0, #%B1\\t%@ movhi
-   ldr%?\\t%0, %1\\t%@ movhi"
-  [(set_attr "type" "*,*,load1")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "4096")
-   (set_attr "neg_pool_range" "4084")]
-)
-
-(define_insn "*movhi_insn_bigend"
-  [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
-	(match_operand:HI 1 "general_operand"    "rI,K,m"))]
-  "TARGET_ARM
-   && !arm_arch4
-   && BYTES_BIG_ENDIAN
-   && !TARGET_MMU_TRAPS
-   && (GET_CODE (operands[1]) != CONST_INT
-       || const_ok_for_arm (INTVAL (operands[1]))
-       || const_ok_for_arm (~INTVAL (operands[1])))"
-  "@
-   mov%?\\t%0, %1\\t%@ movhi
-   mvn%?\\t%0, #%B1\\t%@ movhi
-   ldr%?\\t%0, %1\\t%@ movhi_bigend\;mov%?\\t%0, %0, asr #16"
-  [(set_attr "type" "*,*,load1")
-   (set_attr "predicable" "yes")
-   (set_attr "length" "4,4,8")
-   (set_attr "pool_range" "*,*,4092")
-   (set_attr "neg_pool_range" "*,*,4084")]
-)
-
-(define_insn "*loadhi_si_bigend"
-  [(set (match_operand:SI                       0 "s_register_operand" "=r")
-	(rotate:SI (subreg:SI (match_operand:HI 1 "memory_operand"      "m") 0)
-		   (const_int 16)))]
-  "TARGET_ARM
-   && BYTES_BIG_ENDIAN
-   && !TARGET_MMU_TRAPS"
-  "ldr%?\\t%0, %1\\t%@ movhi_bigend"
-  [(set_attr "type" "load1")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "4096")
-   (set_attr "neg_pool_range" "4084")]
-)
-
 (define_insn "*movhi_bytes"
   [(set (match_operand:HI 0 "s_register_operand" "=r,r")
 	(match_operand:HI 1 "arm_rhs_operand"  "rI,K"))]
-  "TARGET_ARM && TARGET_MMU_TRAPS"
+  "TARGET_ARM"
   "@
    mov%?\\t%0, %1\\t%@ movhi
    mvn%?\\t%0, #%B1\\t%@ movhi"
@@ -4945,7 +4809,7 @@
   [(parallel [(match_operand:HI 0 "s_register_operand" "=r")
 	      (match_operand:HI 1 "arm_reload_memory_operand" "o")
 	      (match_operand:DI 2 "s_register_operand" "=&r")])]
-  "TARGET_THUMB || (TARGET_ARM && TARGET_MMU_TRAPS)"
+  "TARGET_EITHER"
   "
   if (TARGET_ARM)
     arm_reload_in_hi (operands);
@@ -9324,44 +9188,6 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*loadhi_preinc"
-  [(set (match_operand:HI 3 "s_register_operand" "=r")
-	(mem:HI (plus:SI (match_operand:SI 1 "s_register_operand" "%0")
-			 (match_operand:SI 2 "index_operand" "rJ"))))
-   (set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_ARM
-   && !BYTES_BIG_ENDIAN
-   && !TARGET_MMU_TRAPS
-   && !arm_arch4
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
-  "ldr%?\\t%3, [%0, %2]!\\t%@ loadhi"
-  [(set_attr "type" "load_byte")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*loadhi_predec"
-  [(set (match_operand:HI 3 "s_register_operand" "=r")
-	(mem:HI (minus:SI (match_operand:SI 1 "s_register_operand" "0")
-			  (match_operand:SI 2 "s_register_operand" "r"))))
-   (set (match_operand:SI 0 "s_register_operand" "=r")
-	(minus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_ARM
-   && !BYTES_BIG_ENDIAN
-   && !TARGET_MMU_TRAPS
-   && !arm_arch4
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
-  "ldr%?\\t%3, [%0, -%2]!\\t%@ loadhi"
-  [(set_attr "type" "load_byte")
-   (set_attr "predicable" "yes")]
-)
-
 (define_insn "*strqi_shiftpreinc"
   [(set (mem:QI (plus:SI (match_operator:SI 2 "shift_operator"
 			  [(match_operand:SI 3 "s_register_operand" "r")
@@ -9505,48 +9331,6 @@
   [(set_attr "type" "load1")
    (set_attr "predicable" "yes")])
 
-(define_insn "*loadhi_shiftpreinc"
-  [(set (match_operand:HI 5 "s_register_operand" "=r")
-	(mem:HI (plus:SI (match_operator:SI 2 "shift_operator"
-			  [(match_operand:SI 3 "s_register_operand" "r")
-			   (match_operand:SI 4 "const_shift_operand" "n")])
-			 (match_operand:SI 1 "s_register_operand" "0"))))
-   (set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (match_op_dup 2 [(match_dup 3)	(match_dup 4)])
-		 (match_dup 1)))]
-  "TARGET_ARM
-   && !BYTES_BIG_ENDIAN
-   && !TARGET_MMU_TRAPS
-   && !arm_arch4
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
-  "ldr%?\\t%5, [%0, %3%S2]!\\t%@ loadhi"
-  [(set_attr "type" "load_byte")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*loadhi_shiftpredec"
-  [(set (match_operand:HI 5 "s_register_operand" "=r")
-	(mem:HI (minus:SI (match_operand:SI 1 "s_register_operand" "0")
-			  (match_operator:SI 2 "shift_operator"
-			   [(match_operand:SI 3 "s_register_operand" "r")
-			    (match_operand:SI 4 "const_shift_operand" "n")]))))
-   (set (match_operand:SI 0 "s_register_operand" "=r")
-	(minus:SI (match_dup 1) (match_op_dup 2 [(match_dup 3)
-						 (match_dup 4)])))]
-  "TARGET_ARM
-   && !BYTES_BIG_ENDIAN
-   && !TARGET_MMU_TRAPS
-   && !arm_arch4
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
-  "ldr%?\\t%5, [%0, -%3%S2]!\\t%@ loadhi"
-  [(set_attr "type" "load_byte")
-   (set_attr "predicable" "yes")]
-)
-
 ; It can also support extended post-inc expressions, but combine doesn't
 ; try these....
 ; It doesn't seem worth adding peepholes for anything but the most common
@@ -9592,21 +9376,6 @@
    && (GET_CODE (operands[1]) != REG
        || (REGNO (operands[1]) != REGNO (operands[0])))"
   "str%?\\t%2, [%0], %1"
-)
-
-(define_peephole
-  [(set (match_operand:HI 0 "s_register_operand" "=r")
-	(mem:HI (match_operand:SI 1 "s_register_operand" "+r")))
-   (set (match_dup 1)
-	(plus:SI (match_dup 1) (match_operand:SI 2 "index_operand" "rJ")))]
-  "TARGET_ARM
-   && !BYTES_BIG_ENDIAN
-   && !TARGET_MMU_TRAPS
-   && !arm_arch4
-   && REGNO (operands[0]) != REGNO(operands[1])
-   && (GET_CODE (operands[2]) != REG
-       || REGNO(operands[0]) != REGNO (operands[2]))"
-  "ldr%?\\t%0, [%1], %2\\t%@ loadhi"
 )
 
 (define_peephole

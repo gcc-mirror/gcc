@@ -24,9 +24,9 @@ pe.o: $(srcdir)/config/arm/pe.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) output.h flags.h $(TREE_H) expr.h toplev.h $(TM_P_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/arm/pe.c
 
-MULTILIB_OPTIONS = mhard-float mapcs-26
-MULTILIB_DIRNAMES = fpu apcs26
-# Note - Thumb multilib omitted because Thumb apcs32 support for
+MULTILIB_OPTIONS = mhard-float
+MULTILIB_DIRNAMES = fpu
+# Note - Thumb multilib omitted because Thumb support for
 # arm-wince-pe target does not appear to be working in binutils
 # yet... 
 # MULTILIB_OPTIONS += thumb

@@ -35,9 +35,8 @@
 /* ARM6 family default cpu.  */
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm6
 
-/* Default is to use APCS-32 mode.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_FRAME)
+#define TARGET_DEFAULT (ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_FRAME)
 
 /* Some defines for CPP.
    arm32 is the NetBSD port name, so we always define arm32 and __arm32__.  */
@@ -56,12 +55,8 @@
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
-%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %(cpp_endian) %(netbsd_cpp_spec) \
+%(cpp_cpu_arch) %(cpp_float) %(cpp_endian) %(netbsd_cpp_spec) \
 "
-
-/* Because TARGET_DEFAULT sets ARM_FLAG_APCS_32 */
-#undef CPP_APCS_PC_DEFAULT_SPEC
-#define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
 
 /* Because TARGET_DEFAULT sets ARM_FLAG_SOFT_FLOAT */
 #undef CPP_FLOAT_DEFAULT_SPEC

@@ -36,6 +36,7 @@ extern char arm_arch_name[];
 	/* Define __arm__ even when in thumb mode, for	\
 	   consistency with armcc.  */			\
 	builtin_define ("__arm__");			\
+	builtin_define ("__APCS_32__");			\
 	if (TARGET_THUMB)				\
 	  builtin_define ("__thumb__");			\
 							\
@@ -53,11 +54,6 @@ extern char arm_arch_name[];
 	    if (TARGET_THUMB)				\
 	      builtin_define ("__THUMBEL__");		\
 	  }						\
-							\
-	if (TARGET_APCS_32)				\
-	  builtin_define ("__APCS_32__");		\
-	else						\
-	  builtin_define ("__APCS_26__");		\
 							\
 	if (TARGET_SOFT_FLOAT)				\
 	  builtin_define ("__SOFTFP__");		\
@@ -149,8 +145,6 @@ extern GTY(()) rtx aof_pic_label;
 
 #undef  CPP_SPEC
 #define CPP_SPEC "%(subtarget_cpp_spec)					\
-%{mapcs-32:%{mapcs-26:							\
-	%e-mapcs-26 and -mapcs-32 may not be used together}}		\
 %{msoft-float:%{mhard-float:						\
 	%e-msoft-float and -mhard_float may not be used together}}	\
 %{mbig-endian:%{mlittle-endian:						\
@@ -201,12 +195,7 @@ extern GTY(()) rtx aof_pic_label;
    case instruction scheduling becomes very uninteresting.  */
 #define ARM_FLAG_FPE		(1 << 2)
 
-/* Nonzero if destined for a processor in 32-bit program mode.  Takes out bit
-   that assume restoration of the condition flags when returning from a
-   branch and link (ie a function).  */
-#define ARM_FLAG_APCS_32	(1 << 3)
-
-/* FLAGS 0x0008 and 0x0010 are now spare (used to be arm3/6 selection).  */
+/* FLAG 0x0008 now spare (used to be apcs-32 selection).  */
 
 /* Nonzero if stack checking should be performed on entry to each function
    which allocates temporary variables on the stack.  */
@@ -220,10 +209,7 @@ extern GTY(()) rtx aof_pic_label;
    This is equivalent to -fpic.  */
 #define ARM_FLAG_APCS_REENT	(1 << 6)
 
-/* Nonzero if the MMU will trap unaligned word accesses, so shorts must
-   be loaded using either LDRH or LDRB instructions.  */
-#define ARM_FLAG_MMU_TRAPS	(1 << 7)
-
+  /* FLAG 0x0080 now spare (used to be alignment traps).  */
 /* Nonzero if all floating point instructions are missing (and there is no
    emulator either).  Generate function calls for all ops in this case.  */
 #define ARM_FLAG_SOFT_FLOAT	(1 << 8)
@@ -276,11 +262,9 @@ extern GTY(()) rtx aof_pic_label;
 #define TARGET_APCS_FRAME		(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
 #define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
-#define TARGET_APCS_32			(target_flags & ARM_FLAG_APCS_32)
 #define TARGET_APCS_STACK		(target_flags & ARM_FLAG_APCS_STACK)
 #define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
 #define TARGET_APCS_REENT		(target_flags & ARM_FLAG_APCS_REENT)
-#define TARGET_MMU_TRAPS		(target_flags & ARM_FLAG_MMU_TRAPS)
 #define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
 #define TARGET_SOFT_FLOAT_ABI		(arm_float_abi != ARM_FLOAT_ABI_HARD)
 #define TARGET_HARD_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_HARD)
@@ -325,10 +309,6 @@ extern GTY(()) rtx aof_pic_label;
    N_("Store function names in object code") },				\
   {"no-poke-function-name",    -ARM_FLAG_POKE, "" },			\
   {"fpe",			ARM_FLAG_FPE,  "" },			\
-  {"apcs-32",			ARM_FLAG_APCS_32,			\
-   N_("Use the 32-bit version of the APCS") },				\
-  {"apcs-26",		       -ARM_FLAG_APCS_32,			\
-   N_("Use the 26-bit version of the APCS") },				\
   {"apcs-stack-check",		ARM_FLAG_APCS_STACK, "" },		\
   {"no-apcs-stack-check",      -ARM_FLAG_APCS_STACK, "" },		\
   {"apcs-float",		ARM_FLAG_APCS_FLOAT,			\
@@ -337,13 +317,6 @@ extern GTY(()) rtx aof_pic_label;
   {"apcs-reentrant",		ARM_FLAG_APCS_REENT,			\
    N_("Generate re-entrant, PIC code") },				\
   {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT, "" },		\
-  {"alignment-traps",           ARM_FLAG_MMU_TRAPS,			\
-   N_("The MMU will trap on unaligned accesses") },			\
-  {"no-alignment-traps",       -ARM_FLAG_MMU_TRAPS, "" },		\
-  {"short-load-bytes",		ARM_FLAG_MMU_TRAPS, "" },		\
-  {"no-short-load-bytes",      -ARM_FLAG_MMU_TRAPS, "" },		\
-  {"short-load-words",	       -ARM_FLAG_MMU_TRAPS, "" },		\
-  {"no-short-load-words",	ARM_FLAG_MMU_TRAPS, "" },		\
   {"soft-float",		ARM_FLAG_SOFT_FLOAT,			\
    N_("Use library calls to perform FP operations") },			\
   {"hard-float",	       -ARM_FLAG_SOFT_FLOAT,			\
@@ -445,17 +418,6 @@ struct arm_cpu_select
    which matches one of the entries in TARGET_OPTIONS then the corresponding
    string pointer will be set to the value specified by the user.  */
 extern struct arm_cpu_select arm_select[];
-
-enum prog_mode_type
-{
-  prog_mode26,
-  prog_mode32
-};
-
-/* Recast the program mode class to be the prog_mode attribute.  */
-#define arm_prog_mode ((enum attr_prog_mode) arm_prgmode)
-
-extern enum prog_mode_type arm_prgmode;
 
 /* Which floating point model to use.  */
 enum arm_fp_model
@@ -617,7 +579,7 @@ extern int arm_is_6_or_7;
       if (MODE == QImode)			\
 	UNSIGNEDP = 1;				\
       else if (MODE == HImode)			\
-	UNSIGNEDP = TARGET_MMU_TRAPS != 0;	\
+	UNSIGNEDP = 1;				\
       (MODE) = SImode;				\
     }
 
@@ -1394,7 +1356,7 @@ enum reg_class
    (((CLASS) == IWMMXT_REGS || (CLASS) == IWMMXT_GR_REGS)	\
       && CONSTANT_P (X))					\
    ? GENERAL_REGS :						\
-   (((MODE) == HImode && ! arm_arch4 && TARGET_MMU_TRAPS	\
+   (((MODE) == HImode && ! arm_arch4				\
      && (GET_CODE (X) == MEM					\
 	 || ((GET_CODE (X) == REG || GET_CODE (X) == SUBREG)	\
 	     && true_regnum (X) == -1)))			\
@@ -2621,9 +2583,8 @@ extern int making_const_table;
      in 26 bit mode, the condition codes must be masked out of the	\
      return address.  This does not apply to ARM6 and later processors	\
      when running in 32 bit mode.  */					\
-  ((!TARGET_APCS_32) ? (gen_int_mode (RETURN_ADDR_MASK26, Pmode))	\
-   : (arm_arch4 || TARGET_THUMB) ?					\
-     (gen_int_mode ((unsigned long)0xffffffff, Pmode))			\
+  ((arm_arch4 || TARGET_THUMB)						\
+   ? (gen_int_mode ((unsigned long)0xffffffff, Pmode))			\
    : arm_gen_return_addr_mask ())
 
 

@@ -30,9 +30,8 @@
 /* Do not assume anything about header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
-/* Default is to use APCS-32 mode.  */
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_MMU_TRAPS)
+#define TARGET_DEFAULT (0)
 
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm6
 
@@ -40,9 +39,7 @@
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
-	{ "marm", "mlittle-endian", "mhard-float", "mapcs-32", "mno-thumb-interwork" }
-
-#define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
+	{ "marm", "mlittle-endian", "mhard-float", "mno-thumb-interwork" }
 
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
