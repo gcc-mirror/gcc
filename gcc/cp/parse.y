@@ -1224,9 +1224,7 @@ unary_expr:
                 { $$ = finish_unary_op_expr ($1, $2); }
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
-		{ if (pedantic)
-		    pedwarn ("ISO C++ forbids `&&'");
-  		  $$ = finish_label_address_expr ($2); }
+		{ $$ = finish_label_address_expr ($2); }
 	| SIZEOF unary_expr  %prec UNARY
 		{ $$ = expr_sizeof ($2); }
 	| SIZEOF '(' type_id ')'  %prec HYPERUNARY

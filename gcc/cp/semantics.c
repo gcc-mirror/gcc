@@ -1491,31 +1491,6 @@ finish_qualified_call_expr (fn, args)
 			      args);
 }
 
-/* Finish an expression taking the address of LABEL.  Returns an
-   expression for the address.  */
-
-tree 
-finish_label_address_expr (label)
-     tree label;
-{
-  tree result;
-
-  label = lookup_label (label);
-  if (label == NULL_TREE)
-    result = null_pointer_node;
-  else
-    {
-      TREE_USED (label) = 1;
-      result = build1 (ADDR_EXPR, ptr_type_node, label);
-      TREE_CONSTANT (result) = 1;
-      /* This function cannot be inlined.  All jumps to the addressed
-	 label should wind up at the same point.  */
-      DECL_UNINLINABLE (current_function_decl) = 1;
-    }
-
-  return result;
-}
-
 /* Finish an expression of the form CODE EXPR.  */
 
 tree

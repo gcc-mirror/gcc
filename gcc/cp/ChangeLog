@@ -1,3 +1,9 @@
+2001-05-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-tree.h (finish_label_expr, lookup_label): Delete.
+	* parse.y: Update for '&&'; don't issue warning here.
+	* semantics.c (finish_label_expr): Delete.
+
 2001-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (splay_tree_max): New function.
