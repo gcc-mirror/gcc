@@ -1,3 +1,7 @@
+2004-12-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c99-flex-array-4.c: Remove.
+
 2004-11-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/compat.exp (compat-get-options): Fix for use with dg-xfail-if.

@@ -1,3 +1,7 @@
+2004-12-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* doc/standards.texi: Update for C99 TC2.
+
 2004-11-30  Jeff Law  <law@redhat.com>
 
 	* sbitmap.c (sbitmap_any_common_bits): New function.
