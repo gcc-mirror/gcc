@@ -1000,12 +1000,7 @@ variable_declarator_id:
 		{yyerror ("Invalid declaration"); DRECOVER(vdi);}
 |	variable_declarator_id OSB_TK error
 		{
-		  tree node = java_lval.node;
-		  if (node && (TREE_CODE (node) == INTEGER_CST
-			       || TREE_CODE (node) == EXPR_WITH_FILE_LOCATION))
-		    yyerror ("Can't specify array dimension in a declaration");
-		  else
-		    yyerror ("']' expected");
+		  yyerror ("']' expected");
 		  DRECOVER(vdi);
 		}
 |	variable_declarator_id CSB_TK error
