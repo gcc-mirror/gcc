@@ -244,7 +244,7 @@ cpp_classify_number (pfile, token)
 	{
 	  cpp_error (pfile, DL_ERROR,
 		     "invalid suffix \"%.*s\" on floating constant",
-		     limit - str, str);
+		     (int) (limit - str), str);
 	  return CPP_N_INVALID;
 	}
 
@@ -254,7 +254,7 @@ cpp_classify_number (pfile, token)
 	  && ! cpp_sys_macro_p (pfile))
 	cpp_error (pfile, DL_WARNING,
 		   "traditional C rejects the \"%.*s\" suffix",
-		   limit - str, str);
+		   (int) (limit - str), str);
 
       result |= CPP_N_FLOATING;
     }
@@ -265,7 +265,7 @@ cpp_classify_number (pfile, token)
 	{
 	  cpp_error (pfile, DL_ERROR,
 		     "invalid suffix \"%.*s\" on integer constant",
-		     limit - str, str);
+		     (int) (limit - str), str);
 	  return CPP_N_INVALID;
 	}
 
@@ -275,7 +275,7 @@ cpp_classify_number (pfile, token)
 	  && ! cpp_sys_macro_p (pfile))
 	cpp_error (pfile, DL_WARNING,
 		   "traditional C rejects the \"%.*s\" suffix",
-		   limit - str, str);
+		   (int) (limit - str), str);
 
       if ((result & CPP_N_WIDTH) == CPP_N_LARGE
 	  && ! CPP_OPTION (pfile, c99)
