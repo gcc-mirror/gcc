@@ -27,3 +27,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* OSF1 on the PA still uses 16bit wchar_t.  */
+#undef WCHAR_TYPE
+#undef WCHAR_TYPE_SIZE
+
+#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE_SIZE 16
