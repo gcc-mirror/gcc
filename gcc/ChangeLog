@@ -3,17 +3,11 @@ Wed Apr  1 17:06:19 1998  Nick Clifton  <nickc@cygnus.com>
 	* config/arm/thumb.h: Add super interworking support.
 	* config/arm/thumb.c: Add super interworking support.
 	* config/arm/thumb.md: Add super interworking support.
-	* config/arm/tpe.h: New file.
 	* config/arm/lib1funcs.asm: Add interworking support.
 	* config/arm/lib1thumb.asm: Add super interworking support.
-	* config/arm/t-pe: New file.
 	* config/arm/t-semi: Add interworking support.
 	* config/arm/t-thumb: Add interworking support.
-	* config/arm/t-pe-thumb: New file.
 	* config/arm/README-interworking: New file.
-	* config.sub: Add thumb-pe target.
-	* configure.in: Add thumb-pe target.
-	* configure: Add thumb-pe target.
 	
 Wed Apr  1 14:38:10 1998  Jim Wilson  <wilson@cygnus.com>
 
