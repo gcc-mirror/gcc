@@ -23,34 +23,25 @@
 #include <testsuite_hooks.h>
 
 std::string str_01("mykonos. . . or what?");
-std::string str_02("paris, or sainte-maxime?");
-std::string str_03;
 std::stringbuf strb_01(str_01);
-std::stringbuf strb_02(str_02, std::ios_base::in);
-std::stringbuf strb_03(str_03, std::ios_base::out);
 
 // test overloaded virtual functions
 void test04() 
 {
   bool test __attribute__((unused)) = true;
   std::string 		str_tmp;
-  std::stringbuf 		strb_tmp;
   typedef std::stringbuf::int_type int_type;
-  typedef std::stringbuf::traits_type traits_type;
   typedef std::stringbuf::pos_type pos_type;
   typedef std::stringbuf::off_type off_type;
 
   int_type c1 = strb_01.sbumpc();
-  int_type c2 = strb_02.sbumpc();
+  int_type c2; 
   int_type c3 = strb_01.sbumpc();
 
   pos_type pt_1(off_type(-1));
   pos_type pt_2(off_type(0));
   off_type off_1 = 0;
   off_type off_2 = 0;
-
-  // PUT
-  strb_03.str(str_01); //reset
   
   // BUFFER MANAGEMENT & POSITIONING
 
@@ -58,8 +49,7 @@ void test04()
   // pubseekpos(pos_type sp, ios_base::openmode)
   // alters the stream position to sp
   strb_01.str(str_01); //in|out ("mykonos. . . or what?");
-  strb_02.str(str_02); //in ("paris, or sainte-maxime?");
-  strb_03.str(str_03); //out ("")
+
   //IN|OUT
   //beg
   pt_1 = strb_01.pubseekoff(2, std::ios_base::beg);

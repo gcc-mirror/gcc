@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -147,28 +147,28 @@ namespace std
 
 	  _M_update_egptr();
 
-	  off_type __newoffi = 0;
-	  off_type __newoffo = 0;
+	  off_type __newoffi = __off;
+	  off_type __newoffo = __newoffi;
 	  if (__way == ios_base::cur)
 	    {
-	      __newoffi = this->gptr() - __beg;
-	      __newoffo = this->pptr() - __beg;
+	      __newoffi += this->gptr() - __beg;
+	      __newoffo += this->pptr() - __beg;
 	    }
 	  else if (__way == ios_base::end)
-	    __newoffo = __newoffi = this->egptr() - __beg;
+	    __newoffo = __newoffi += this->egptr() - __beg;
 
 	  if ((__testin || __testboth)
-	      && __newoffi + __off >= 0
-	      && this->egptr() - __beg >= __newoffi + __off)
+	      && __newoffi >= 0
+	      && this->egptr() - __beg >= __newoffi)
 	    {
-	      this->gbump((__beg + __newoffi + __off) - this->gptr());
+	      this->gbump((__beg + __newoffi) - this->gptr());
 	      __ret = pos_type(__newoffi);
 	    }
 	  if ((__testout || __testboth)
-	      && __newoffo + __off >= 0
-	      && this->egptr() - __beg >= __newoffo + __off)
+	      && __newoffo >= 0
+	      && this->egptr() - __beg >= __newoffo)
 	    {
-	      this->pbump((__beg + __newoffo + __off) - this->pptr());
+	      this->pbump((__beg + __newoffo) - this->pptr());
 	      __ret = pos_type(__newoffo);
 	    }
 	}

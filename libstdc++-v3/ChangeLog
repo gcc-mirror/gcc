@@ -1,3 +1,16 @@
+2004-08-12  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16956
+	* include/bits/sstream.tcc (basic_stringbuf<>::seekoff): Add __off
+	to the returned value, reorganize a bit.
+	* testsuite/27_io/basic_stringbuf/seekoff/char/16956.cc: New.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/16956.cc: New.
+
+	* testsuite/27_io/basic_stringbuf/seekoff/char/1.cc: Remove junk.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/wchar_t/1.cc: Likewise.
+
 2004-08-12  Paul Brook  <paul@codesourcery.com>
 
 	* config/cpu/arm/cxxabi_tweaks.h: Define __cxa_vec_ctor_return and
