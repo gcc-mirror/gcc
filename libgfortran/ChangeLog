@@ -1,3 +1,14 @@
+2004-07-04  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+	Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/15280
+	PR fortran/15665
+	* libgfortran.h (gfc_strlen_type): Define.
+	* intrinsics/args.c (getarg): Rename ...
+	(getarg_i4): ... to this.
+	(getarg_i8, get_command_argument_i4, get_command_argument_i8,
+	get_command_i4, get_command_i8): New functions.
+
 2004-07-04  Matthias Klose  <doko@debian.org>
 
 	* libtool-version: New.

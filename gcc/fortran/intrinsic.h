@@ -315,6 +315,9 @@ void gfc_resolve_verify (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_cpu_time (gfc_code *);
 void gfc_resolve_system_clock(gfc_code *);
 void gfc_resolve_random_number (gfc_code *);
+void gfc_resolve_getarg (gfc_code *);
+void gfc_resolve_get_command (gfc_code *);
+void gfc_resolve_get_command_argument (gfc_code *);
 
 
 /* The mvbits() subroutine requires the most arguments: five.  */

@@ -1408,6 +1408,48 @@ gfc_resolve_srand (gfc_code * c)
 }
 
 
+/* Resolve the getarg intrinsic subroutine.  */
+
+void
+gfc_resolve_getarg (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  kind = gfc_default_integer_kind ();
+  name = gfc_get_string (PREFIX("getarg_i%d"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+/* Resolve the get_command intrinsic subroutine.  */
+
+void
+gfc_resolve_get_command (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  kind = gfc_default_integer_kind ();
+  name = gfc_get_string (PREFIX("get_command_i%d"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+/* Resolve the get_command_argument intrinsic subroutine.  */
+
+void
+gfc_resolve_get_command_argument (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  kind = gfc_default_integer_kind ();
+  name = gfc_get_string (PREFIX("get_command_argument_i%d"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
 /* Determine if the arguments to SYSTEM_CLOCK are INTEGER(4) or INTEGER(8) */
 
 void

@@ -88,6 +88,7 @@ typedef complex float GFC_COMPLEX_4;
 typedef complex double GFC_COMPLEX_8;
 
 typedef size_t index_type;
+typedef GFC_INTEGER_4 gfc_strlen_type;
 
 /* This will be 0 on little-endian machines and one on big-endian machines.  */
 #define l8_to_l4_offset prefix(l8_to_l4_offset)

@@ -2585,6 +2585,29 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Generate code for the IARGC intrinsic.  If args_only is true this is
+   actually the COMMAND_ARGUMENT_COUNT intrinsic, so return IARGC - 1.  */
+
+static void
+gfc_conv_intrinsic_iargc (gfc_se * se, gfc_expr * expr, bool args_only)
+{
+  tree tmp;
+  tree fndecl;
+  tree type;
+
+  /* Call the library function.  This always returns an INTEGER(4).  */
+  fndecl = gfor_fndecl_iargc;
+  tmp = gfc_build_function_call (fndecl, NULL_TREE);
+
+  /* Convert it to the required type.  */
+  type = gfc_typenode_for_spec (&expr->ts);
+  tmp = fold_convert (type, tmp);
+
+  if (args_only)
+    tmp = build (MINUS_EXPR, type, tmp, convert (type, integer_one_node));
+  se->expr = tmp;
+}
+
 /* Generate code for an intrinsic function.  Some map directly to library
    calls, others get special handling.  In some cases the name of the function
    used depends on the type specifiers.  */
@@ -2739,6 +2762,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_cmplx (se, expr, name[5] == '1');
       break;
 
+    case GFC_ISYM_COMMAND_ARGUMENT_COUNT:
+      gfc_conv_intrinsic_iargc (se, expr, TRUE);
+      break;
+
     case GFC_ISYM_CONJG:
       gfc_conv_intrinsic_conjg (se, expr);
       break;
@@ -2775,6 +2802,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_ICHAR:
       /* We assume ASCII character sequence.  */
       gfc_conv_intrinsic_ichar (se, expr);
+      break;
+
+    case GFC_ISYM_IARGC:
+      gfc_conv_intrinsic_iargc (se, expr, FALSE);
       break;
 
     case GFC_ISYM_IEOR:
