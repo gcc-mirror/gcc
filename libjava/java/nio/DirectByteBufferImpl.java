@@ -292,134 +292,56 @@ class DirectByteBufferImpl extends ByteBuffer
   
   final public ByteBuffer putLong (long value)
   {
-    // FIXME: this handles little endian only
-    put ((byte) ((value & 0xff00000000000000L) >> 56));
-    put ((byte) ((value & 0x00ff000000000000L) >> 48));
-    put ((byte) ((value & 0x0000ff0000000000L) >> 40));
-    put ((byte) ((value & 0x000000ff00000000L) >> 32));
-    put ((byte) ((value & 0x00000000ff000000L) >> 24));
-    put ((byte) ((value & 0x0000000000ff0000L) >> 16));
-    put ((byte) ((value & 0x000000000000ff00L) >> 8));
-    put ((byte) (value & 0x00000000000000ffL));
-    return this;
+    return ByteBufferHelper.putLong (this, value);
   }
   
   final public long getLong (int index)
   {
-    // FIXME: this handles little endian only
-    return (long) (((get (index) & 0xff) << 56)
-                   + ((get (index + 1) & 0xff) << 48)
-                   + ((get (index + 2) & 0xff) << 40)
-                   + ((get (index + 3) & 0xff) << 32)
-                   + ((get (index + 4) & 0xff) << 24)
-                   + ((get (index + 5) & 0xff) << 16)
-                   + ((get (index + 6) & 0xff) << 8)
-                   + (get (index + 7) & 0xff));
+    return ByteBufferHelper.getLong (this, index);
   }
   
   final public ByteBuffer putLong (int index, long value)
   {
-    // FIXME: this handles little endian only
-    put (index, (byte) ((value & 0xff00000000000000L) >> 56));
-    put (index + 1, (byte) ((value & 0x00ff000000000000L) >> 48));
-    put (index + 2, (byte) ((value & 0x0000ff0000000000L) >> 40));
-    put (index + 3, (byte) ((value & 0x000000ff00000000L) >> 32));
-    put (index + 4, (byte) ((value & 0x00000000ff000000L) >> 24));
-    put (index + 5, (byte) ((value & 0x0000000000ff0000L) >> 16));
-    put (index + 6, (byte) ((value & 0x000000000000ff00L) >> 8));
-    put (index + 7, (byte) (value & 0x00000000000000ffL));
-    return this;
+    return ByteBufferHelper.putLong (this, index, value);
   }
 
   final public float getFloat ()
   {
-    // FIXME: this handles little endian only
-    return (float) (((get () & 0xff) << 24)
-                    + ((get () & 0xff) << 16)
-                    + ((get () & 0xff) << 8)
-                    + (get () & 0xff));
+    return ByteBufferHelper.getFloat (this);
   }
   
   final public ByteBuffer putFloat (float value)
   {
-    // FIXME: this handles little endian only
-    put ((byte) ((((int) value) & 0xff000000) >> 24));
-    put ((byte) ((((int) value) & 0x00ff0000) >> 16));
-    put ((byte) ((((int) value) & 0x0000ff00) >> 8));
-    put ((byte) (((int) value) & 0x000000ff));
-    return this;
+    return ByteBufferHelper.putFloat (this, value);
   }
   
-  final public float getFloat (int index)
+  public final float getFloat (int index)
   {
-    // FIXME: this handles little endian only
-    return (float) (((get (index) & 0xff) << 24)
-                    + ((get (index + 1) & 0xff) << 16)
-                    + ((get (index + 2) & 0xff) << 8)
-                    + (get (index + 3) & 0xff));
+    return ByteBufferHelper.getFloat (this, index);
   }
 
   final public ByteBuffer putFloat (int index, float value)
   {
-    // FIXME: this handles little endian only
-    put (index, (byte) ((((int) value) & 0xff000000) >> 24));
-    put (index + 1, (byte) ((((int) value) & 0x00ff0000) >> 16));
-    put (index + 2, (byte) ((((int) value) & 0x0000ff00) >> 8));
-    put (index + 3, (byte) (((int) value) & 0x000000ff));
-    return this;
+    return ByteBufferHelper.putFloat (this, index, value);
   }
 
   final public double getDouble ()
   {
-    // FIXME: this handles little endian only
-    return (double) (((get () & 0xff) << 56)
-                     + ((get () & 0xff) << 48)
-                     + ((get () & 0xff) << 40)
-                     + ((get () & 0xff) << 32)
-                     + ((get () & 0xff) << 24)
-                     + ((get () & 0xff) << 16)
-                     + ((get () & 0xff) << 8)
-                     + (get () & 0xff));
+    return ByteBufferHelper.getDouble (this);
   }
 
   final public ByteBuffer putDouble (double value)
   {
-    // FIXME: this handles little endian only
-    put ((byte) ((((long) value) & 0xff00000000000000L) >> 56));
-    put ((byte) ((((long) value) & 0x00ff000000000000L) >> 48));
-    put ((byte) ((((long) value) & 0x0000ff0000000000L) >> 40));
-    put ((byte) ((((long) value) & 0x000000ff00000000L) >> 32));
-    put ((byte) ((((long) value) & 0x00000000ff000000L) >> 24));
-    put ((byte) ((((long) value) & 0x0000000000ff0000L) >> 16));
-    put ((byte) ((((long) value) & 0x000000000000ff00L) >> 8));
-    put ((byte) (((long) value) & 0x00000000000000ffL));
-    return this;
+    return ByteBufferHelper.putDouble (this, value);
   }
   
   final public double getDouble (int index)
   {
-    // FIXME: this handles little endian only
-    return (double) (((get (index) & 0xff) << 56)
-                     + ((get (index + 1) & 0xff) << 48)
-                     + ((get (index + 2) & 0xff) << 40)
-                     + ((get (index + 3) & 0xff) << 32)
-                     + ((get (index + 4) & 0xff) << 24)
-                     + ((get (index + 5) & 0xff) << 16)
-                     + ((get (index + 6) & 0xff) << 8)
-                     + (get (index + 7) & 0xff));
+    return ByteBufferHelper.getDouble (this, index);
   }
   
   final public ByteBuffer putDouble (int index, double value)
   {
-    // FIXME: this handles little endian only
-    put (index, (byte) ((((long) value) & 0xff00000000000000L) >> 56));
-    put (index + 1, (byte) ((((long) value) & 0x00ff000000000000L) >> 48));
-    put (index + 2, (byte) ((((long) value) & 0x0000ff0000000000L) >> 40));
-    put (index + 3, (byte) ((((long) value) & 0x000000ff00000000L) >> 32));
-    put (index + 4, (byte) ((((long) value) & 0x00000000ff000000L) >> 24));
-    put (index + 5, (byte) ((((long) value) & 0x0000000000ff0000L) >> 16));
-    put (index + 6, (byte) ((((long) value) & 0x000000000000ff00L) >> 8));
-    put (index + 7, (byte) (((long) value) & 0x00000000000000ffL));
-    return this;
+    return ByteBufferHelper.putDouble (this, index, value);
   }
 }
