@@ -1369,7 +1369,7 @@ constant_subword (op, offset, mode)
 	  val = k[offset >> 1];
 	  if ((offset & 1) == ! WORDS_BIG_ENDIAN)
 	    val >>= 16;
-	  val &= 0xffff;
+	  val = ((val & 0xffff) ^ 0x8000) - 0x8000;
 	  return GEN_INT (val);
 	}
       else
@@ -1448,7 +1448,7 @@ constant_subword (op, offset, mode)
 	{
 	  if ((offset & 1) == ! WORDS_BIG_ENDIAN)
 	    val >>= 16;
-	  val &= 0xffff;
+	  val = ((val & 0xffff) ^ 0x8000) - 0x8000;
 	}
 
       return GEN_INT (val);
