@@ -39,12 +39,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    appropriate define for the type of hardware that you are targeting.
 */
 
-/* Define a symbol so that libgcc* can know what sort of operating
-   environment and assembler syntax we are targeting for.  */
-#ifndef SVR4
-#define SVR4
-#endif
-
 /* For the sake of libgcc2.c, indicate target supports atexit.  */
 #define HAVE_ATEXIT
 
@@ -269,8 +263,11 @@ do {				 				\
 /* This is how to allocate empty space in some section.  The .zero
    pseudo-op is used for this on most svr4 assemblers.  */
 
+#define SKIP_ASM_OP	".zero"
+
 #undef ASM_OUTPUT_SKIP
-#define ASM_OUTPUT_SKIP(FILE,SIZE) fprintf (FILE, "\t.zero\t%u\n", (SIZE))
+#define ASM_OUTPUT_SKIP(FILE,SIZE) \
+  fprintf (FILE, "\t%s\t%u\n", SKIP_ASM_OP, (SIZE))
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.
@@ -280,6 +277,46 @@ do {				 				\
 
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "%s", NAME)
+
+/* This is how to output an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.
+
+   If the NUM argument is negative, we don't use it when generating the
+   label.
+
+   For most svr4 systems, the convention is that any symbol which begins
+   with a period is not put into the linker symbol table by the assembler.
+*/
+
+#undef ASM_OUTPUT_INTERNAL_LABEL
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM)			\
+do {									\
+  if ((int) (NUM) >= 0)							\ ???
+    fprintf (FILE, ".%s%d:\n", PREFIX, NUM);				\
+  else									\
+    fprintf (FILE, ".%s:\n", PREFIX);					\
+} while (0)
+
+/* This is how to store into the string LABEL
+   the symbol_ref name of an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.
+   This is suitable for output with `assemble_name'.
+
+   If the NUM argument is negative, we don't use it when generating the
+   label.
+
+   For most svr4 systems, the convention is that any symbol which begins
+   with a period is not put into the linker symbol table by the assembler.
+*/
+
+#undef ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)			\
+do {									\
+  if ((int) (NUM) >= 0)							\
+    sprintf (LABEL, "*.%s%d", PREFIX, NUM);				\
+  else									\
+    sprintf (LABEL, "*.%s", PREFIX);					\
+} while (0)
 
 /* The standard SVR4 assembler seems to require that certain builtin
    library routines (e.g. .udiv) be explicitly declared as .globl
@@ -293,10 +330,12 @@ do {				 				\
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
+#define COMMON_ASM_OP	".comm"
+
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  fputs ("\t.comm\t", (FILE));						\
+  fprintf ((FILE), "\t%s\t", COMMON_ASM_OP);				\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
 } while (0)
@@ -391,7 +430,7 @@ ctors_section ()							\
 {									\
   if (in_section != in_ctors)						\
     {									\
-      fprintf (asm_out_file, CTORS_SECTION_ASM_OP);			\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
       in_section = in_ctors;						\
     }									\
 }
@@ -402,7 +441,7 @@ dtors_section ()							\
 {									\
   if (in_section != in_dtors)						\
     {									\
-      fprintf (asm_out_file, DTORS_SECTION_ASM_OP);			\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
       in_section = in_dtors;						\
     }									\
 }
@@ -479,11 +518,22 @@ dtors_section ()							\
 
 #define TYPE_OPERAND_FMT	"@%s"
 
+/* Write the extra assembler code needed to declare a function's result.
+   Most svr4 assemblers don't require any special declaration of the
+   result value, but there are exceptions.  */
+
+#ifndef ASM_DECLARE_RESULT
+#define ASM_DECLARE_RESULT(FILE, RESULT)
+#endif
+
 /* These macros generate the special .type and .size directives which
    are used to set the corresponding fields of the linker symbol table
-   entries in an ELF object file under SVR4.  */
+   entries in an ELF object file under SVR4.  These macros also output
+   the starting labels for the relevant functions/objects.  */
 
-/* Write the extra assembler code needed to declare a function properly.  */
+/* Write the extra assembler code needed to declare a function properly.
+   Some svr4 assemblers need to also have something extra said about the
+   function's return value.  We allow for that here.  */
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
@@ -492,6 +542,7 @@ dtors_section ()							\
     putc (',', FILE);							\
     fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
     putc ('\n', FILE);							\
+    ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
     ASM_OUTPUT_LABEL(FILE, NAME);					\
   } while (0)
 
