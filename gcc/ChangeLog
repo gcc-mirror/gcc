@@ -1,3 +1,8 @@
+2003-04-02  Richard Henderson  <rth@redhat.com>
+
+        * dwarf2out.c (output_call_frame_info): Ignore fde->nothrow as an
+        optimization when flag_exceptions not enabled.
+
 2003-03-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/6955
