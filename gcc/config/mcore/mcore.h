@@ -28,12 +28,6 @@
 #define	MCORE_STRUCT_ARGS
 /* RBE: end of "move elsewhere".  */
 
-#include "hwint.h"
-
-#ifndef HAVE_MACHINE_MODES
-#include "machmode.h"
-#endif
-
 /* Run-time Target Specification.  */
 #define TARGET_MCORE
 
@@ -179,10 +173,8 @@ extern const char * mcore_stack_increment_string;
      N_("Maximum amount for a single stack increment operation"), 0}	\
 }
 
-#ifndef CC1_SPEC
 /* The MCore ABI says that bitfields are unsigned by default.  */
 #define CC1_SPEC "-funsigned-bitfields"
-#endif
 
 /* What options are we going to default to specific settings when
    -O* happens; the user can subsequently override these settings.

@@ -128,20 +128,9 @@ Boston, MA 02111-1307, USA.  */
   while (0)
 
 
-/* Include the generic MIPS ELF configuration.  */
-#include <mips/elf.h>
-
-/* Now clean up after it.  */
+/* Clean up after the generic MIPS/ELF configuration.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
-
-/* Get generic NetBSD definitions.  */
-#include <netbsd.h>
-
-
-/* Get generic NetBSD ELF definitions.  */
-#include <netbsd-elf.h>
-
 
 /* Extra specs we need.  */
 #undef SUBTARGET_EXTRA_SPECS

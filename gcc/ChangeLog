@@ -1,3 +1,54 @@
+2003-08-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (INCLUDES): Remove -I$(srcdir)/config.
+	* config.gcc (*-*-openbsd): Don't set tm_file.
+	(alpha*-*-openbsd, arm*-*-coff*, arm*-wince-pe*,
+	arm-*-pe*, avr-*-*, h8300-*-rtems*, h8300-*-elf*,
+	h8300-*-*, hppa*-*-osf*, hppa*-*-bsd*, hppa*-*-hpux*,
+	i370-*-opened*, i370-*-mvs*, i370-*-linux*, i?86-*-openbsd*,
+	i?86-*-lynxos, i?86-*-nto-qnx*, iq2000*-*-elf*, m68000-hp-hpux*,
+	m68k-hp-hpux*, m68k-*-aout*, m68k-*-coff*, m68020-*-elf*,
+	m68k-*-elf*, m68k*-*-netbsd*, m68k*-*-openbsd*, m68k-*-sysv4*,
+	m68k-*-linux*, m68k-*-rtems*, mcore-*-pe*, mips*-*-netbsd*,
+	mips*-*-openbsd*, rs6000-*-lynxos*, sh*-*-elf*, sh*-*-ka,
+	sh-*-rtemself, sparc-*-openbsd*, strongarm-*-pe, vax-*-openbsd*,
+	xscale-*-coff): Use explicit and complete lists of target headers
+	to include.  Move definitions to tm_defines where appropriate.
+	(hppa*-*-openbsd*, powerpc-*-openbsd*): Comment out stanza for
+	not-yet-contributed configuration.
+
+	* config/lynx.h, config/alpha/openbsd.h, config/arm/coff.h
+	* config/avr/avr.h, config/frv/frv.h, config/h8300/elf.h
+	* config/i370/linux.h, config/i370/mvs.h, config/i370/oe.h
+	* config/i386/nto.h, config/iq2000/iq2000.h,
+	* config/m68k/coff.h, config/m68k/hp310.h, config/m68k/hp320.h
+	* config/m68k/linux.h, config/m68k/m68k-aout.h
+	* config/m68k/m68k-none.h, config/m68k/m68kv4.h
+	* config/m68k/netbsd.h, config/m68k/openbsd.h
+	* config/m68k/sgs.h, config/mcore/mcore-pe.h,
+	* config/mips/netbsd.h, config/mips/openbsd.h, config/pa/pa.h,
+	* config/rs6000/lynx.h, config/sh/embed-elf.h, config/sparc/openbsd.h:
+	Remove includes of other target config headers, and
+	definitions of macros moved to tm_defines lists.  Add #undefs
+	where now necessary to prevent redefinition warnings.
+
+	* config/h8300/coff.h: New file split out of...
+	* config/h8300/elf.h: ...here.
+	* config/m68k/hp320base.h: New file split out of...
+	* config/m68k/hp320.h: ...here.
+	* config/rs6000/lynxbase.h: New file split out of...
+	* config/rs6000/lynx.h: ...here.
+
+	* config/m68k/hp310g.h, config/m68k/hp320g.h, config/m68k/hpux7.h
+	* config/m68k/m68k-coff.h, config/mips/openbsd-be.h: Delete file.
+
+	* config/sol2.h: Remove #if 0-ed #include of sys/mman.h.
+	* config/m68k/m68kelf.h: Remove commented out #include of m68k/sgs.h.
+	* config/mcore/mcore.h: Don't include hwint.h nor machmode.h.
+	Remove unnecessary #ifndef.
+	* config/s390/s390.h: Prefix #include of s390/fixdfdi.h
+	[under IN_LIBGCC2] with config/.
+
 2003-08-21  Per Bothner  <bothner@pbothner.com>
 
 	* cppfiles.c (stack_file):  Correctly pass return_at_eof parameter
@@ -27,13 +78,13 @@
 	* configure.in: When testing with_libs and with_headers, treat
 	'no' as unset.  Based on a patch by Dan Kegel <dank@kegel.com>.
 	* configure: Regenerate.
-	
+
 2003-08-20  Peter Barada <peter@baradas.org>
 
 	* longlong.h (umul_ppmm): Add ColdFire support.
 
 2003-08-20  Peter Barada <peter@baradas.org>
-            Bernardo Innocenti  <bernie@develer.com>
+	    Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k-none.h: Introduce new ColdFire archs.
 	* config/m68k/m68k.h: Likewise.
@@ -115,7 +166,7 @@
 2003-08-20  Jason Merrill  <jason@redhat.com>
 
 	* builtins.c (expand_builtin_mathfn): Use get_callee_fndecl.
-	(expand_builtin_mathfn2, expand_builtin, builtin_mathfn_code, 
+	(expand_builtin_mathfn2, expand_builtin, builtin_mathfn_code,
 	fold_trunc_transparent_mathfn, fold_builtin): Likewise.
 	* dojump.c (do_jump): Likewise.
 	* fold-const.c (operand_equal_p, fold): Likewise.
@@ -123,7 +174,7 @@
 
 	* stor-layout.c (do_type_align): Only copy DECL_USER_ALIGN from
 	TYPE_USER_ALIGN for FIELD_DECLs.
-	
+
 	* attribs.c (decl_attributes): Rebuild the function pointer type after
 	changing the target type.
 	* tree.c (get_qualified_type): Also check that the attributes match.

@@ -1,5 +1,5 @@
 /* Configuration for  a Mips ABI32 OpenBSD target.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,34 +21,23 @@ Boston, MA 02111-1307, USA.  */
 /* Definitions needed for OpenBSD, to avoid picking mips 'defaults'.  */
 
 /* GAS must know this.  */
+#undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC "%{fPIC|fPIE:-KPIC}"
 
 #define AS_NEEDS_DASH_FOR_PIPED_INPUT
 
 /* CPP specific OpenBSD specs.  */
+#undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC OBSD_CPP_SPEC
 
 /* Needed for ELF (inspired by netbsd-elf).  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."
 
 /* The profiling lib spec here is not really correct but we leave
    it as it is until we have some kind of profiling working.  */
 #define LIB_SPEC OBSD_LIB_SPEC
-
-/* By default, OpenBSD mips is little endian.  This is important to set
-   here as mips/mips.h defaults to big endian.  */
-#ifndef TARGET_ENDIAN_DEFAULT
-#define TARGET_ENDIAN_DEFAULT 0
-#endif
-
-#include <mips/mips.h>
-
-/* Get generic OpenBSD definitions.  */
-#define OBSD_HAS_DECLARE_FUNCTION_NAME
-#define OBSD_HAS_DECLARE_OBJECT
-#define OBSD_HAS_CORRECT_SPECS
-#include <openbsd.h>
 
 /* mips assembler uses .set for arcane purposes.  __attribute__((alias))
    and friends won't work until we get recent binutils with .weakext

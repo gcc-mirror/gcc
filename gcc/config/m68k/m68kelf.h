@@ -1,7 +1,7 @@
 /* m68kelf support, derived from m68kv4.h */
 
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 2000, 2002, 2003 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
 
@@ -21,8 +21,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-/* #notinclude "m68k/sgs.h"	/ * The m68k/SVR4 assembler is SGS based */
 
 /* These are necessary for -fpic/-fPIC to work correctly.  */
 #ifndef MOTOROLA

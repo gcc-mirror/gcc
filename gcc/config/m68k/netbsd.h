@@ -11,13 +11,6 @@
     }						\
   while (0)
 
-#include <m68k/m68k.h>
-
-/* Get generic NetBSD definitions.  */
-
-#include <netbsd.h>
-#include <netbsd-aout.h>
-
 #define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 
 #define EXTRA_SPECS \

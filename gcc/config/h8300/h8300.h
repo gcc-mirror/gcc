@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Hitachi H8/300 version generating coff
+   Hitachi H8/300 (generic)
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
    2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
@@ -256,9 +256,6 @@ extern int target_flags;
    need 16 bit alignment, this is left as is so that -mint32 doesn't change
    structure layouts.  */
 #define EMPTY_FIELD_BOUNDARY 16
-
-/* A bit-field declared as `int' forces `int' alignment for the struct.  */
-#define PCC_BITFIELD_TYPE_MATTERS  0
 
 /* No data type wants to be aligned rounder than this.
    32 bit values are aligned as such on the H8/300H and H8S for speed.  */
@@ -1038,7 +1035,6 @@ struct cum_arg
 #define ASM_APP_OFF "; #NO_APP\n"
 
 #define FILE_ASM_OP "\t.file\n"
-#define IDENT_ASM_OP "\t.ident\t"
 
 /* The assembler op to get a word, 2 bytes for the H8/300, 4 for H8/300H.  */
 #define ASM_WORD_OP							\
@@ -1047,8 +1043,6 @@ struct cum_arg
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 #define DATA_SECTION_ASM_OP "\t.section .data"
 #define BSS_SECTION_ASM_OP "\t.section .bss"
-#define INIT_SECTION_ASM_OP "\t.section .init"
-#define READONLY_DATA_SECTION_ASM_OP "\t.section .rodata"
 
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
@@ -1085,26 +1079,6 @@ struct cum_arg
 #define ADDITIONAL_REGISTER_NAMES \
 { {"er0", 0}, {"er1", 1}, {"er2", 2}, {"er3", 3}, {"er4", 4}, \
   {"er5", 5}, {"er6", 6}, {"er7", 7}, {"r7", 7} }
-
-#define SDB_DEBUGGING_INFO 1
-#define SDB_DELIM	"\n"
-
-/* Support -gstabs.  */
-
-#include "dbxcoff.h"
-
-/* Override definition in dbxcoff.h.  */
-/* Generate a blank trailing N_SO to mark the end of the .o file, since
-   we can't depend upon the linker to mark .o file boundaries with
-   embedded stabs.  */
-
-#undef DBX_OUTPUT_MAIN_SOURCE_FILE_END
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-  fprintf (FILE,							\
-	   "\t.text\n.stabs \"\",%d,0,0,.Letext\n.Letext:\n", N_SO)
-
-/* Switch into a generic section.  */
-#define TARGET_ASM_NAMED_SECTION h8300_asm_named_section
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)
 
@@ -1157,12 +1131,6 @@ struct cum_arg
 #define ASM_OUTPUT_ALIGN(FILE, LOG)		\
   if ((LOG) != 0)				\
     fprintf (FILE, "\t.align %d\n", (LOG))
-
-/* This is how to output an assembler line
-   that says to advance the location counter by SIZE bytes.  */
-
-#define ASM_OUTPUT_IDENT(FILE, NAME)			\
-  fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME)
 
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
   fprintf (FILE, "\t.space %d\n", (int)(SIZE))
@@ -1221,7 +1189,7 @@ struct cum_arg
    (and ANSI C) library functions `memcpy' and `memset' rather than
    the BSD functions `bcopy' and `bzero'.  */
 
-#define TARGET_MEM_FUNCTIONS 1
+#define TARGET_MEM_FUNCTIONS
 
 #define MULHI3_LIBCALL	"__mulhi3"
 #define DIVHI3_LIBCALL	"__divhi3"

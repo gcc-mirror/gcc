@@ -1,5 +1,5 @@
 /* Target independent definitions for LynxOS using gas and gnu ld.
-   Copyright (C) 1993, 1994, 1995, 1996, 1999, 2000, 2002
+   Copyright (C) 1993, 1994, 1995, 1996, 1999, 2000, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -19,10 +19,7 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* LynxOS is a multi-platform Unix, similar to SVR3, but not identical.
-   We can get quite a bit from generic svr3, but have to do some overrides.  */
-
-#include "svr3.h"
+/* LynxOS is a multi-platform Unix, similar to SVR3, but not identical.  */
 
 /* Define various macros, depending on the combination of flags.  */
 

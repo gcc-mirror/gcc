@@ -1,5 +1,5 @@
 /* Configuration file for an m68k OpenBSD target.
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -28,16 +28,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_assert ("system=OpenBSD");	\
    }						\
   while (0)
-
-/* m68k is an old configuration that does not yet use the TARGET_CPU_DEFAULT
-   framework.  */
-#define TARGET_DEFAULT (MASK_BITFIELD | MASK_68881 | MASK_68020)
-
-#include <m68k/m68k.h>
-
-/* Get generic OpenBSD definitions.  */
-#define OBSD_OLD_GAS
-#include <openbsd.h>
 
 /* Define __HAVE_68881__ in preprocessor, unless -msoft-float is specified.
    This will control the use of inline 68881 insns in certain macros.  */

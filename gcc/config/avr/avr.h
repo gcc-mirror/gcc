@@ -2499,6 +2499,3 @@ extern struct rtx_def *zero_reg_rtx;
 extern struct rtx_def *ldi_reg_rtx;
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-/* Get the standard ELF stabs definitions.  */
-#include "dbxelf.h"

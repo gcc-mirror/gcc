@@ -412,7 +412,6 @@ case $machine in
 	esac
 	;;
 *-*-openbsd*)
-	tm_file=${cpu_type}/openbsd.h
 	tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -578,7 +577,8 @@ alpha*-*-netbsd*)
 	;;
 
 alpha*-*-openbsd*)
-	tm_file="${cpu_type}/${cpu_type}.h ${tm_file}"
+	tm_defines="OBSD_NO_DYNAMIC_LIBRARIES OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_FUNCTION_SIZE OBSD_HAS_DECLARE_OBJECT"
+	tm_file="alpha/alpha.h openbsd.h alpha/openbsd.h"
 	# default x-alpha is only appropriate for dec-osf.
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-alpha alpha/t-ieee"
@@ -659,7 +659,7 @@ arc-*-elf*)
 	extra_parts="crtinit.o crtfini.o"
 	;;
 arm-*-coff* | armel-*-coff*)
-	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h"
+	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h"
 	tmake_file=arm/t-arm-coff
 	;;
 arm-semi-aof | armel-semi-aof)
@@ -711,12 +711,12 @@ arm*-*-elf | ep9312-*-elf)
 	tmake_file=arm/t-arm-elf
 	;;
 arm*-wince-pe*)
-	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h arm/pe.h arm/wince-pe.h"
+	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h arm/wince-pe.h"
 	tmake_file=arm/t-wince-pe
 	extra_objs="pe.o"
 	;;
 arm-*-pe*)
-	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h arm/pe.h"
+	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h"
 	tmake_file=arm/t-pe
 	extra_objs="pe.o"
 	;;
@@ -725,6 +725,7 @@ arm*-*-kaos*)
 	tmake_file=arm/t-arm-elf
 	;;
 avr-*-*)
+	tm_file="avr/avr.h dbxelf.h"
 	;;
 c4x-*-rtems* | tic4x-*-rtems*)
 	tmake_file="c4x/t-c4x t-rtems"
@@ -770,16 +771,17 @@ frv-*-elf)
 	;;
 h8300-*-rtems*)
 	tmake_file="h8300/t-h8300 t-rtems"
-	tm_file="h8300/h8300.h h8300/rtems.h rtems.h"
+	tm_file="h8300/h8300.h dbxcoff.h h8300/coff.h h8300/rtems.h rtems.h"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
 	;;
 h8300-*-elf*)
 	tmake_file="h8300/t-h8300 h8300/t-elf"
-	tm_file="h8300/h8300.h h8300/elf.h"
+	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h"
 	;;
 h8300-*-*)
+	tm_file="h8300/h8300.h dbxcoff.h h8300/coff.h"
 	;;
 hppa*64*-*-linux* | parisc*64*-*-linux*)
 	target_cpu_default="(MASK_PA_11 | MASK_PA_20)"
@@ -795,10 +797,11 @@ hppa*-*-linux* | parisc*-*-linux*)
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux pa/t-linux"
 	;;
-hppa*-*-openbsd*)
-	target_cpu_default="MASK_PA_11"
-	tmake_file=pa/t-bsd
-	;;
+# port not yet contributed.
+#hppa*-*-openbsd*)
+#	target_cpu_default="MASK_PA_11"
+#	tmake_file=pa/t-bsd
+#	;;
 hppa1.1-*-pro*)
 	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h"
@@ -807,7 +810,7 @@ hppa1.1-*-pro*)
 	;;
 hppa1.1-*-osf*)
 	target_cpu_default="MASK_PA_11"
-	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-osf.h"
+	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h pa/pa-osf.h"
 	tmake_file="pa/t-bsd pa/t-pa"
 	xmake_file="pa/x-ada"
 	use_collect2=yes
@@ -822,7 +825,7 @@ hppa1.1-*-rtems*)
 	fi
 	;;
 hppa1.1-*-bsd*)
-	tm_file="${tm_file} pa/pa32-regs.h pa/som.h"
+	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h"
 	target_cpu_default="MASK_PA_11"
 	tmake_file="pa/t-bsd pa/t-pa"
 	xmake_file="pa/x-ada"
@@ -830,7 +833,7 @@ hppa1.1-*-bsd*)
 	;;
 hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 	target_cpu_default="MASK_PA_11"
-	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
+	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
 	xmake_file="pa/x-ada"
 	if test x$enable_threads = x; then
@@ -845,7 +848,7 @@ hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 	use_collect2=yes
 	;;
 hppa1.0-*-hpux10*)
-	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
+	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
 	xmake_file="pa/x-ada"
 	if test x$enable_threads = x; then
@@ -890,7 +893,7 @@ hppa*64*-*-hpux11*)
 	;;
 hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	target_cpu_default="MASK_PA_11"
-	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
+	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
 	xmake_file="pa/x-ada"
 #	if test x$enable_threads = x; then
@@ -904,7 +907,7 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	use_collect2=yes
 	;;
 hppa1.0-*-hpux11*)
-	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
+	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h dbxelf.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
 	xmake_file="pa/x-ada"
 #	if test x$enable_threads = x; then
@@ -919,20 +922,20 @@ hppa1.0-*-hpux11*)
 	;;
 i370-*-opened*)			 # IBM 360/370/390 Architecture
 	xm_defines='FATAL_EXIT_CODE=12'
-	tm_file=i370/oe.h
+	tm_file="i370/oe.h i370/i370.h"
 	tmake_file="i370/t-oe i370/t-i370"
 	c_target_objs="i370-c.o"
 	cxx_target_objs="i370-c.o"
 	;;
 i370-*-mvs*)
 	xm_defines='FATAL_EXIT_CODE=12'
-	tm_file=i370/mvs.h
+	tm_file="i370/mvs.h i370/i370.h"
 	tmake_file="i370/t-i370"
 	c_target_objs="i370-c.o"
 	cxx_target_objs="i370-c.o"
 	;;
 i370-*-linux*)
-	tm_file="dbxelf.h elfos.h svr4.h linux.h i370/linux.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h svr4.h linux.h i370/linux.h i370/i370.h"
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	# broken_install=yes
 	elf=yes
@@ -996,7 +999,7 @@ x86_64-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
 	;;
 i[34567]86-*-openbsd*)
-	tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h openbsd-oldgas.h openbsd.h ${tm_file}"
+	tm_file="i386/i386.h i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h openbsd-oldgas.h openbsd.h i386/openbsd.h"
 	# needed to unconfuse gdb
 	tmake_file="t-libc-ok t-openbsd i386/t-openbsd"
 	# we need collect2 until our bug is fixed...
@@ -1056,7 +1059,7 @@ i[34567]86-moss-msdos* | i[34567]86-*-moss*)
 i[34567]86-*-lynxos*)
 	if test x$gas = xyes
 	then
-		tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h lynx.h i386/lynx.h"
+		tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h svr3.h lynx.h i386/lynx.h"
 	else
 		tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h lynx-ng.h i386/lynx-ng.h"
 	fi
@@ -1067,7 +1070,7 @@ i[34567]86-*-mach*)
 	use_collect2=yes
 	;;
 i[34567]86-*-nto-qnx*)
-	tm_file="${tm_file} i386/att.h dbxelf.h tm-dwarf2.h elfos.h svr4.h i386/nto.h"
+	tm_file="${tm_file} i386/att.h dbxelf.h tm-dwarf2.h elfos.h svr4.h i386/unix.h i386/nto.h"
 	tmake_file=i386/t-nto
 	gnu_ld=yes
 	gas=yes
@@ -1297,7 +1300,7 @@ ip2k-*-elf)
 	tm_file="elfos.h ${tm_file}"
 	;;
 iq2000*-*-elf*)
-        tm_file="iq2000/iq2000.h"
+        tm_file="svr4.h elfos.h iq2000/iq2000.h"
         tmake_file=iq2000/t-iq2000
         out_file=iq2000/iq2000.c
         md_file=iq2000/iq2000.md
@@ -1322,46 +1325,47 @@ m68hc12-*-*|m6812-*-*)
 	tmake_file="m68hc11/t-m68hc11-gas"
         ;;
 m68000-hp-hpux*)		# HP 9000 series 300
+	tm_file="m68k/hp320base.h m68k/m68k.h m68k/hp320.h m68k/hp310.h"
+	tm_defines="TARGET_DEFAULT=0" # 68000, no 68881, no bitfield ops
 	if test x$gas = xyes
 	then
-		tm_file=m68k/hp310g.h
-	else
-		tm_file=m68k/hp310.h
+		tm_defines="${tm_defines} DBX_DEBUGGING_INFO=1 USE_GAS"
 	fi
 	tmake_file=m68k/t-hp320
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
+	tm_file="m68k/hp320base.h m68k/m68k.h m68k/hp320.h"
 	if test x$gas = xyes
 	then
-		tm_file=m68k/hp320g.h
+		tm_defines="DBX_DEBUGGING_INFO=1 USE_GAS"
 	else
-		tm_file=m68k/hpux7.h
+		tm_defines="NO_DOT_IN_LABEL NO_BUGS"
 	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 m68k-hp-hpux*)	# HP 9000 series 300
+	tm_file="m68k/hp320base.h m68k/m68k.h m68k/hp320.h"
 	if test x$gas = xyes
 	then
-		tm_file=m68k/hp320g.h
-	else
-		tm_file=m68k/hp320.h
+		tm_defines="DBX_DEBUGGING_INFO=1 USE_GAS"
 	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 m68k-*-aout*)
 	tmake_file=m68k/t-m68kbare
-	tm_file="m68k/m68k-aout.h libgloss.h"
+	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kemb.h m68k/m68k-aout.h libgloss.h"
 	;;
 m68k-*-coff*)
 	tmake_file=m68k/t-m68kbare
-	tm_file="m68k/m68k-coff.h dbx.h"
+	tm_defines="MOTOROLA USE_GAS"
+	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kemb.h dbxcoff.h m68k/coff.h dbx.h"
 	;;
 m68020-*-elf* | m68k-*-elf*)
-	tm_file="m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h"
+	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h"
 	tmake_file=m68k/t-m68kelf
 	extra_parts="crtbegin.o crtend.o"
 	;;
@@ -1377,31 +1381,35 @@ m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 	esac
 	;;
 m68k*-*-netbsd*)
-	tm_file=m68k/netbsd.h
+	tm_file="m68k/m68k.h netbsd.h netbsd-aout.h m68k/netbsd.h"
 	tmake_file=t-netbsd
 	extra_parts=""
 	use_collect2=yes
 	;;
 m68k*-*-openbsd*)
 	# needed to unconfuse gdb
+	tm_defines="OBSD_OLD_GAS TARGET_DEFAULT=(MASK_68020|MASK_68881|MASK_BITFIELD)"
+	tm_file="m68k/m68k.h openbsd.h m68k/openbsd.h"
 	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;
 m68k-*-sysv4*)			# Motorola m68k's running system V.4
-	tm_file=m68k/m68kv4.h
+	tm_file="m68k/m68k.h m68k/sgs.h dbxelf.h elfos.h svr4.h m68k/m68kv4.h"
+	tm_defines="MOTOROLA SGS SGS_CMP_ORDER SGS_SWITCH_TABLES"
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
 	;;
 m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
-	tm_file=m68k/linux.h
+	tm_file="m68k/m68k.h dbxelf.h elfos.h svr4.h linux.h m68k/linux.h"
+	tm_defines="MOTOROLA USE_GAS LINUX_DEFAULT_ELF"
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	;;
 m68k-*-rtems*)
 	tmake_file="m68k/t-m68kbare t-rtems m68k/t-crtstuff"
-	tm_file="m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h m68k/rtemself.h rtems.h"
+	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h m68k/rtemself.h rtems.h"
 	extra_parts="crtbegin.o crtend.o"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
@@ -1412,7 +1420,7 @@ mcore-*-elf)
 	tmake_file=mcore/t-mcore
 	;;
 mcore-*-pe*)
-	tm_file=mcore/mcore-pe.h
+	tm_file="svr3.h dbxcoff.h ${tm_file} mcore/mcore-pe.h"
 	tmake_file=mcore/t-mcore-pe
 	;;
 mips-sgi-irix6*o32)		# SGI System V.4., IRIX 6, O32 ABI
@@ -1490,7 +1498,7 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
-	tm_file="elfos.h ${tm_file} mips/netbsd.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
 	tmake_file="${tmake_file}"
 	;;
 mips64*-*-linux*)
@@ -1521,13 +1529,15 @@ mips*-*-linux*)				# Linux MIPS, either endian.
         esac
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	;;
-mips*el-*-openbsd*)	# mips little endian
+mips*-*-openbsd*)
+	tm_defines="OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_OBJECT OBSD_HAS_CORRECT_SPECS"
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
-	tm_file="${tm_file} mips/sdb.h"
-	;;
-mips*-*-openbsd*)		# mips big endian
-	target_cpu_default="MASK_GAS|MASK_ABICALLS"
-	tm_file="mips/openbsd-be.h ${tm_file} mips/sdb.h"
+	tm_file="mips/mips.h openbsd.h mips/openbsd.h mips/sdb.h"
+	case $machine in
+	mips*el-*-openbsd*) 
+	    tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=0";;
+	*)  tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=MASK_BIG_ENDIAN";;
+        esac
 	;;
 mipsisa32-*-elf* | mipsisa32el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
@@ -1618,10 +1628,11 @@ pdp11-*-*)
 	;;
 avr-*-*)
 	;;
-powerpc-*-openbsd*)
-	tmake_file="${tmake_file} rs6000/t-fprules "
-	extra_headers=
-	;;
+# port not yet contributed
+#powerpc-*-openbsd*)
+#	tmake_file="${tmake_file} rs6000/t-fprules "
+#	extra_headers=
+#	;;
 powerpc64-*-linux*)
 	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	case x$with_cpu in
@@ -1788,7 +1799,7 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	extra_headers=
 	;;
 rs6000-*-lynxos*)
-	tm_file="lynx.h rs6000/lynx.h"
+	tm_file="svr3.h lynx.h rs6000/lynxbase.h rs6000/rs6000.h rs6000/lynx.h"
 	tmake_file=rs6000/t-fprules
 	use_collect2=yes
 	;;
@@ -1812,7 +1823,7 @@ sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
 		tmake_file="${tmake_file} sh/t-le"
 		;;
 	esac
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h"
 	case $machine in
 	sh64*)
 		tmake_file="${tmake_file} sh/t-sh64"
@@ -1835,7 +1846,7 @@ sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
 	;;
 sh-*-rtemself*)
 	tmake_file="sh/t-sh sh/t-elf t-rtems"
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h sh/rtemself.h rtems.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
@@ -1920,7 +1931,8 @@ sparc-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
 	;;
 sparc-*-openbsd*)
-	tm_file="sparc/sparc.h ${tm_file}"
+	tm_defines=OBSD_OLD_GAS
+	tm_file="sparc/sparc.h openbsd.h sparc/openbsd.h"
 	# needed to unconfuse gdb
 	tmake_file="t-libc-ok t-openbsd sparc/t-openbsd"
 	# we need collect2 until our bug is fixed...
@@ -2077,7 +2089,7 @@ strongarm-*-elf*)
 	extra_modes=arm/arm-modes.def
 	;;
 strongarm-*-pe)
-	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/strongarm-coff.h arm/arm.h arm/pe.h arm/strongarm-pe.h"
+	tm_file="arm/semi.h arm/aout.h arm/coff.h dbxcoff.h arm/strongarm-coff.h arm/arm.h arm/pe.h arm/strongarm-pe.h"
 	tmake_file=arm/t-strongarm-pe
 	out_file=arm/arm.c
 	md_file=arm/arm.md
@@ -2135,7 +2147,7 @@ vax-*-netbsd*)
 	use_collect2=yes
 	;;
 vax-*-openbsd*)
-	tm_file="vax/vax.h vax/openbsd1.h openbsd.h ${tm_file}"
+	tm_file="vax/vax.h vax/openbsd1.h openbsd.h vax/openbsd.h"
 	use_collect2=yes
 	;;
 vax-*-ultrix*)			# VAXen running ultrix
@@ -2155,7 +2167,7 @@ xscale-*-elf)
 	extra_modes=arm/arm-modes.def
 	;;
 xscale-*-coff)
-	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/xscale-coff.h arm/arm.h"
+	tm_file="arm/semi.h arm/aout.h arm/coff.h dbxcoff.h arm/xscale-coff.h arm/arm.h"
 	tmake_file=arm/t-xscale-coff
 	out_file=arm/arm.c
 	md_file=arm/arm.md
