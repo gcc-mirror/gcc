@@ -878,36 +878,33 @@ unroll_loop_runtime_iterations (loops, loop)
 		DLTHE_FLAG_UPDATE_FREQ))
     	abort ();
 
-      if (i != n_peel)
-	{
-	  /* Create item for switch.  */
-	  j = n_peel - i - (extra_zero_check ? 0 : 1);
-	  p = REG_BR_PROB_BASE / (i + 2);
+      /* Create item for switch.  */
+      j = n_peel - i - (extra_zero_check ? 0 : 1);
+      p = REG_BR_PROB_BASE / (i + 2);
 
-	  preheader = loop_split_edge_with (loop_preheader_edge (loop),
-					    NULL_RTX, loops);
-	  label = block_label (preheader);
-	  start_sequence ();
-	  do_compare_rtx_and_jump (copy_rtx (niter), GEN_INT (j), EQ, 0,
-		    		   GET_MODE (desc->var), NULL_RTX, NULL_RTX,
-				   label);
-	  jump = get_last_insn ();
-	  JUMP_LABEL (jump) = label;
-	  REG_NOTES (jump)
-		  = gen_rtx_EXPR_LIST (REG_BR_PROB,
-			    	       GEN_INT (p), REG_NOTES (jump));
+      preheader = loop_split_edge_with (loop_preheader_edge (loop),
+					NULL_RTX, loops);
+      label = block_label (preheader);
+      start_sequence ();
+      do_compare_rtx_and_jump (copy_rtx (niter), GEN_INT (j), EQ, 0,
+			       GET_MODE (desc->var), NULL_RTX, NULL_RTX,
+			       label);
+      jump = get_last_insn ();
+      JUMP_LABEL (jump) = label;
+      REG_NOTES (jump)
+	      = gen_rtx_EXPR_LIST (REG_BR_PROB,
+				   GEN_INT (p), REG_NOTES (jump));
 	
-	  LABEL_NUSES (label)++;
-	  branch_code = get_insns ();
-	  end_sequence ();
+      LABEL_NUSES (label)++;
+      branch_code = get_insns ();
+      end_sequence ();
 
-	  swtch = loop_split_edge_with (swtch->pred, branch_code, loops);
-	  set_immediate_dominator (loops->cfg.dom, preheader, swtch);
-	  swtch->succ->probability = REG_BR_PROB_BASE - p;
-	  e = make_edge (swtch, preheader,
-			 swtch->succ->flags & EDGE_IRREDUCIBLE_LOOP);
-	  e->probability = p;
-	}
+      swtch = loop_split_edge_with (swtch->pred, branch_code, loops);
+      set_immediate_dominator (loops->cfg.dom, preheader, swtch);
+      swtch->succ->probability = REG_BR_PROB_BASE - p;
+      e = make_edge (swtch, preheader,
+		     swtch->succ->flags & EDGE_IRREDUCIBLE_LOOP);
+      e->probability = p;
     }
 
   if (extra_zero_check)

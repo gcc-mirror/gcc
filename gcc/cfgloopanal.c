@@ -1033,7 +1033,8 @@ num_loop_insns (loop)
       bb = bbs[i];
       ninsns++;
       for (insn = bb->head; insn != bb->end; insn = NEXT_INSN (insn))
-	ninsns++;
+	if (INSN_P (insn))
+	  ninsns++;
     }
   free(bbs);
   
@@ -1057,7 +1058,8 @@ average_num_loop_insns (loop)
 
       binsns = 1;
       for (insn = bb->head; insn != bb->end; insn = NEXT_INSN (insn))
-	binsns++;
+	if (INSN_P (insn))
+	  binsns++;
 
       ratio = loop->header->frequency == 0
 	      ? BB_FREQ_MAX
