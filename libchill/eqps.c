@@ -55,27 +55,6 @@ __eqpowerset (left, right, bitlength)
      SET_WORD *right;
      unsigned long bitlength;
 {
-#ifndef USE_CHARS
-  if (bitlength <= SET_CHAR_SIZE)
-    {
-      SET_CHAR c = *(SET_CHAR *)left ^ *(SET_CHAR *)right;
-      MASK_UNUSED_CHAR_BITS (&c, bitlength);
-      return (c == 0) ? 1 : 0;
-    }
-  else if (bitlength <= SET_SHORT_SIZE)
-    {
-      SET_SHORT c = *(SET_SHORT *)left ^ *(SET_SHORT *)right;
-      MASK_UNUSED_SHORT_BITS (&c, bitlength);
-      return (c == 0) ? 1 : 0;
-    }
-  else if (bitlength <= SET_WORD_SIZE)
-    {
-      SET_WORD c = *(SET_WORD *)left ^ *(SET_WORD *)right;
-      MASK_UNUSED_WORD_BITS (&c, bitlength % SET_WORD_SIZE);
-      return (c == 0) ? 1 : 0;
-    }
-  else
-#endif
     {
       SET_WORD c;
       register unsigned long i;

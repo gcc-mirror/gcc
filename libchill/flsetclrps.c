@@ -57,23 +57,6 @@ __flsetclrpowerset (ps, bitlength, first_bit)
 {
   register int bitno;
 
-#ifndef USE_CHARS
-  if (bitlength <= SET_CHAR_SIZE)
-    {
-      for (bitno = bitlength - 1; bitno >= first_bit; bitno--)
-	if (GET_BIT_IN_CHAR (*((SET_CHAR *)ps), bitno))
-	  break;
-      return bitno < first_bit ? -1 : bitno;
-    }
-  else if (bitlength <= SET_SHORT_SIZE)
-    {
-      for (bitno = bitlength - 1; bitno >= first_bit; bitno--)
-	if (GET_BIT_IN_SHORT (*((SET_SHORT *)ps), bitno))
-	  break;
-      return bitno < first_bit ? -1 : bitno;
-    }
-  else
-#endif
     {
       SET_WORD *p, c;
       bitno = bitlength - 1;
