@@ -694,7 +694,7 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
       create_phi_node (var, BASIC_BLOCK (bb_index));
     });
 
-  BITMAP_FREE (phi_insertion_points);
+  BITMAP_XFREE (phi_insertion_points);
 }
 
 /* SSA Rewriting Step 2.  Rewrite every variable used in each statement in
