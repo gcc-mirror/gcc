@@ -1,3 +1,8 @@
+Thu Oct 21 20:37:19 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (cse.o): Depend on hashtab.h, not splay-tree.h.  Also
+	depend on ggc.h.
+
 Thu Oct 21 20:30:19 1999  Matthias Klose  <doko@debian.org>
 
 	* gcc.1: Document exit codes.
