@@ -3120,7 +3120,7 @@ output_asm_insn (const char *template, rtx *operands)
 	      output_operand (operands[opnum], letter);
 
 	    if (!opoutput[opnum])
-	      oporder[ops++] = c;
+	      oporder[ops++] = opnum;
 	    opoutput[opnum] = 1;
 
 	    p = endptr;
@@ -3139,7 +3139,7 @@ output_asm_insn (const char *template, rtx *operands)
 	      output_operand (operands[opnum], 0);
 
 	    if (!opoutput[opnum])
-	      oporder[ops++] = c;
+	      oporder[ops++] = opnum;
 	    opoutput[opnum] = 1;
 
 	    p = endptr;

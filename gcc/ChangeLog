@@ -1,3 +1,7 @@
+2004-09-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* final.c (output_asm_insn): Correct problem with -fverbose-asm.
+
 2004-09-10  James E Wilson  <wilson@specifixinc.com>
 
 	* emit-rtl.c (gen_const_vector): Renamed from gen_const_vector_0.
