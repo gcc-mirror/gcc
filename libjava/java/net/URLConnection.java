@@ -92,21 +92,42 @@ import gnu.gcj.io.MimeTypes;
  */
 public abstract class URLConnection
 {
-  private static boolean defaultAllowUserInteraction = false;
-  private static boolean defaultUseCaches = true;
-  private static FileNameMap fileNameMap;  // Set by the URLConnection subclass.
+  /**
+   * This is an object that maps filenames to MIME types.  The interface
+   * to do this is implemented by this class, so just create an empty
+   * instance and store it here.
+   */
+  private static FileNameMap fileNameMap;
+ 
+  /**
+   * This is the ContentHandlerFactory set by the caller, if any
+   */
   private static ContentHandlerFactory factory;
-  private static ContentHandler contentHandler;
-  private static Hashtable handlers = new Hashtable();
-  private static Locale locale; 
-  private static SimpleDateFormat dateFormat1, dateFormat2, dateFormat3;
-  private static boolean dateformats_initialized = false;
+  
+  /**
+   * This is the default value that will be used to determine whether or
+   * not user interaction should be allowed.
+   */
+  private static boolean defaultAllowUserInteraction = false;
+  
+  /**
+   * This is the default flag indicating whether or not to use caches to
+   * store the data returned from a server
+   */
+  private static boolean defaultUseCaches = true;
 
   /**
-   * This is the URL associated with this connection
+   * This variable determines whether or not interaction is allowed with
+   * the user.  For example, to prompt for a username and password.
    */
-  protected URL url;
+  protected boolean allowUserInteraction;
 
+  /**
+   * Indicates whether or not a connection has been established to the
+   * destination specified in the URL
+   */
+  protected boolean connected = false;
+  
   /**
    * Indicates whether or not input can be read from this URL
    */
@@ -117,8 +138,6 @@ public abstract class URLConnection
    */
   protected boolean doOutput = false;
   
-  protected boolean allowUserInteraction;
-
   /**
    * If this flag is set, the protocol is allowed to cache data whenever
    * it can (caching is not guaranteed). If it is not set, the protocol
@@ -141,11 +160,16 @@ public abstract class URLConnection
   protected long ifModifiedSince = 0L;
 
   /**
-   * Indicates whether or not a connection has been established to the
-   * destination specified in the URL
+   * This is the URL associated with this connection
    */
-  protected boolean connected = false;
-  
+  protected URL url;
+
+  private static ContentHandler contentHandler;
+  private static Hashtable handlers = new Hashtable();
+  private static Locale locale; 
+  private static SimpleDateFormat dateFormat1, dateFormat2, dateFormat3;
+  private static boolean dateformats_initialized = false;
+
   /**
    * Creates a URL connection to a given URL. A real connection is not made.
    * Use #connect to do this.
@@ -162,15 +186,15 @@ public abstract class URLConnection
   }
 
   /**
-   * Creates a real connection to the object references by the URL given
-   * to the constructor
-   *
-   * @exception IOException If an error occurs
+   * Establishes the actual connection to the URL associated with this
+   * connection object
    */
   public abstract void connect() throws IOException;
 
   /**
-   * Returns ths URL to the object.
+   * Returns the URL object associated with this connection
+   *
+   * @return The URL for this connection.
    */
   public URL getURL()
   {
@@ -178,7 +202,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the content-length header field
+   * Returns the value of the content-length header field or -1 if the value
+   * is not known or not present.
+   *
+   * @return The content-length field
    */
   public int getContentLength()
   {
@@ -186,7 +213,14 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the content-type header field
+   * Returns the the content-type of the data pointed to by the URL.  This
+   * method first tries looking for a content-type header.  If that is not
+   * present, it attempts to use the file name to determine the content's
+   * MIME type.  If that is unsuccessful, the method returns null.  The caller
+   * may then still attempt to determine the MIME type by a call to
+   * guessContentTypeFromStream()
+   *
+   * @return The content MIME type
    */
   public String getContentType()
   {
@@ -194,7 +228,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the content-encoding header field
+   * Returns the value of the content-encoding field or null if it is not
+   * known or not present.
+   * 
+   * @return The content-encoding field
    */
   public String getContentEncoding()
   {
@@ -202,7 +239,11 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the expires header field
+   * Returns the value of the expires header or 0 if not known or present.
+   * If populated, the return value is number of seconds since midnight
+   * on 1/1/1970 GMT.
+   *
+   * @return The expiration time.
    */
   public long getExpiration()
   {
@@ -210,7 +251,12 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the date header field
+   * Returns the date of the document pointed to by the URL as reported in
+   * the date field of the header or 0 if the value is not present or not
+   * known. If populated, the return value is number of seconds since
+   * midnight on 1/1/1970 GMT.
+   *
+   * @return The document date
    */
   public long getDate()
   {
@@ -218,7 +264,11 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the last-modified header field
+   * Returns the value of the last-modified header field or 0 if not known known
+   * or not present.  If populated, the return value is the number of seconds
+   * since midnight on 1/1/1970.
+   *
+   * @return The last modified time
    */
   public long getLastModified()
   {
@@ -237,7 +287,8 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of the header filed specified by name
+   * Returns a String representing the value of the header field having
+   * the named key.  Returns null if the header field does not exist.
    *
    * @param name The name of the header field
    */
@@ -311,7 +362,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the key of the n-th header field
+   * Returns a String representing the header key at the specified index.
+   * This allows the caller to walk the list of header fields.  The analogous
+   * getHeaderField(int) method allows access to the corresponding value for
+   * this tag.
    *
    * @param num The number of the header field
    */
@@ -322,7 +376,19 @@ public abstract class URLConnection
   }
 
   /**
-   * Retrieves the content of this URLConnection
+   * This method returns the content of the document pointed to by the URL
+   * as an Object.  The type of object depends on the MIME type of the
+   * object and particular content hander loaded.  Most text type content
+   * handlers will return a subclass of InputStream.  Images usually return
+   * a class that implements ImageProducer.  There is not guarantee what
+   * type of object will be returned, however.
+   * <p>
+   * This class first determines the MIME type of the content, then creates
+   * a ContentHandler object to process the input.  If the ContentHandlerFactory
+   * is set, then that object is called to load a content handler, otherwise
+   * a class called gnu.java.net.content.<content_type> is tried.
+   * The default class will also be used if the content handler factory returns
+   * a null content handler.
    *
    * @exception IOException If an error occurs
    * @exception UnknownServiceException If the protocol does not support the
@@ -356,9 +422,15 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns a permission object representing the permission necessary to make
-   * the connection represented by this object. This method returns null if no
-   * permission is required to make the connection.
+   * This method returns a <code>Permission</code> object representing the
+   * permissions required to access this URL.  This method returns
+   * <code>java.security.AllPermission</code> by default.  Subclasses should
+   * override it to return a more specific permission.  For example, an
+   * HTTP URL should return an instance of <code>SocketPermission</code>
+   * for the appropriate host and port.
+   * <p>
+   * Note that because of items such as HTTP redirects, the permission
+   * object returned might be different before and after connecting.
    *
    * @exception IOException If the computation of the permission requires
    * network or file I/O and an exception occurs while computing it
@@ -370,7 +442,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the input stream of the URL connection
+   * Returns an InputStream for this connection.  As this default
+   * implementation returns null, subclasses should override this method
+   *
+   * @return An InputStream for this connection
    *
    * @exception IOException If an error occurs
    * @exception UnknownServiceException If the protocol does not support input
@@ -383,7 +458,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the output stream of the URL connection
+   * Returns an OutputStream for this connection.  As this default
+   * implementation returns null, subclasses should override this method
+   *
+   * @return An OutputStream for this connection
    *
    * @exception IOException If an error occurs
    * @exception UnknownServiceException If the protocol does not support output
@@ -396,7 +474,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns a string representation of the URL connection object
+   * The methods prints the value of this object as a String by calling the
+   * toString() method of its associated URL.  Overrides Object.toString()
+   * 
+   * @return A String representation of this object
    */
   public String toString()
   {
@@ -419,7 +500,11 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the current value of the doInput field
+   * Returns the value of a flag indicating whether or not input is going
+   * to be done for this connection.  This default to true unless the
+   * doOutput flag is set to false, in which case this defaults to false.
+   *
+   * @return true if input is to be done, false otherwise
    */
   public boolean getDoInput()
   {
@@ -442,7 +527,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the current value of the doOutput field
+   * Returns a boolean flag indicating whether or not output will be done
+   * on this connection.  This defaults to false.
+   *
+   * @return true if output is to be done, false otherwise
    */
   public boolean getDoOutput()
   {
@@ -450,7 +538,9 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets a new value to the allowUserInteraction field
+   * Sets a boolean flag indicating whether or not user interaction is
+   * allowed for this connection.  (For example, in order to prompt for
+   * username and password info.
    *
    * @param allowed The new value
    *
@@ -465,7 +555,11 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the current value of the allowUserInteraction field
+   * Returns a boolean flag indicating whether or not user interaction is
+   * allowed for this connection.  (For example, in order to prompt for
+   * username and password info.
+   *
+   * @return true if user interaction is allowed, false otherwise
    */
   public boolean getAllowUserInteraction()
   {
@@ -473,7 +567,8 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets the default value if the allowUserInteraction field
+   * Sets the default flag for whether or not interaction with a user
+   * is allowed.  This will be used for all connections unless overridden
    *
    * @param allowed The new default value
    */
@@ -483,7 +578,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the default value of the allowUserInteraction field
+   * Returns the default flag for whether or not interaction with a user
+   * is allowed.  This will be used for all connections unless overridden
+   *
+   * @return true if user interaction is allowed, false otherwise
    */
   public static boolean getDefaultAllowUserInteraction()
   {
@@ -491,7 +589,8 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets a new value to the useCaches field
+   * Sets a boolean flag indicating whether or not caching will be used
+   * (if possible) to store data downloaded via the connection.
    *
    * @param usecaches The new value
    *
@@ -506,7 +605,10 @@ public abstract class URLConnection
   }
 
   /**
-   * The current value of the useCaches field
+   * Returns a boolean flag indicating whether or not caching will be used
+   * (if possible) to store data downloaded via the connection.
+   *
+   * @return true if caching should be used if possible, false otherwise
    */
   public boolean getUseCaches()
   {
@@ -514,7 +616,11 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets the value of the ifModifiedSince field
+   * Sets the ifModified since instance variable.  If this value is non
+   * zero and the underlying protocol supports it, the actual document will
+   * not be fetched unless it has been modified since this time.  The value
+   * passed should  be 0 if this feature is to be disabled or the time expressed
+   * as the number of seconds since midnight 1/1/1970 GMT otherwise.
    *
    * @param ifmodifiedsince The new value in milliseconds
    * since January 1, 1970 GMT
@@ -530,7 +636,13 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the current value of the ifModifiedSince field
+   * Returns the ifModified since instance variable.  If this value is non
+   * zero and the underlying protocol supports it, the actual document will
+   * not be fetched unless it has been modified since this time.  The value
+   * returned will be 0 if this feature is disabled or the time expressed
+   * as the number of seconds since midnight 1/1/1970 GMT otherwise
+   *
+   * @return The ifModifiedSince value
    */
   public long getIfModifiedSince()
   {
@@ -546,7 +658,8 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets the default value of the useCaches field
+   * Sets the default value used to determine whether or not caching
+   * of documents will be done when possible.
    *
    * @param defaultusecaches The new default value
    */
@@ -639,7 +752,9 @@ public abstract class URLConnection
   }
 
   /**
-   * Defines a default request property
+   * Sets the default value of a request property.  This will be used
+   * for all connections unless the value of the property is manually
+   * overridden.
    *
    * @param key The key of the property
    * @param value The value of the property
@@ -655,7 +770,9 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of a default request property
+   * Returns the default value of a request property.  This will be used
+   * for all connections unless the value of the property is manually
+   * overridden.
    *
    * @param key The key of the default property
    *
@@ -672,7 +789,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Sets a ContentHandlerFactory
+   * Set's the ContentHandlerFactory for an application.  This can be called
+   * once and only once.  If it is called again, then an Error is thrown.
+   * Unlike for other set factory methods, this one does not do a security
+   * check prior to setting the factory.
    *
    * @param fac The ContentHandlerFactory
    *
@@ -739,7 +859,8 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns a filename map (a mimetable)
+   * This method returns the <code>FileNameMap</code> object being used
+   * to decode MIME types by file extension.
    *
    * @since 1.2
    */

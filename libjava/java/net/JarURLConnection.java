@@ -54,9 +54,29 @@ import java.util.Hashtable;
 import java.security.cert.Certificate;
 
 /**
+ * This abstract class represents a common superclass for implementations
+ * of jar URL's.  A jar URL is a special type of URL that allows JAR
+ * files on remote systems to be accessed.  It has the form:
+ * <p>
+ * jar:<standard URL pointing to jar file>!/file/within/jarfile
+ * <p> for example:
+ * <p>
+ * jar:http://www.urbanophile.com/java/foo.jar!/com/urbanophile/bar.class
+ * <p>
+ * That example URL points to the file /com/urbanophile/bar.class in the
+ * remote JAR file http://www.urbanophile.com/java/foo.jar.  The HTTP
+ * protocol is used only as an example.  Any supported remote protocol
+ * can be used.
+ * <p>
+ * This class currently works by retrieving the entire jar file into a
+ * local cache file, then performing standard jar operations on it.
+ * (At least this is true for the default protocol implementation).
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Kresten Krab Thorup <krab@gnu.org>
- * @since 1.2
  * @date Aug 10, 1999.
+ *
+ * @since 1.2
  */
 public abstract class JarURLConnection extends URLConnection
 {
@@ -74,18 +94,10 @@ public abstract class JarURLConnection extends URLConnection
   // Cached JarURLConnection's 
   static Hashtable conn_cache = new Hashtable();
 
-  public URL getJarFileURL ()
-  {
-    return jarFileURL;
-  }
-
-  public String getEntryName ()
-  {
-    return element;
-  }
-
   /**
-   * Creates a new JarURLConnection
+   * Creates a JarURLConnection from an URL object
+   *
+   * @param URL url The URL object for this connection.
    *
    * @exception MalformedURLException If url is invalid
    *
@@ -106,6 +118,29 @@ public abstract class JarURLConnection extends URLConnection
 
     // Get the name of the element, if any.
     element = (bang+2==spec.length() ? null : spec.substring (bang+2));
+  }
+
+  /**
+   * This method returns the "real" URL where the JarFile is located.
+   * //****Is this right?*****
+   *
+   * @return The remote URL
+   */
+  public URL getJarFileURL ()
+  {
+    return jarFileURL;
+  }
+
+  /**
+   * Returns the "entry name" portion of the jar URL.  This is the portion
+   * after the "!/" in the jar URL that represents the pathname inside the
+   * actual jar file.
+   *
+   * @return The entry name.
+   */
+  public String getEntryName ()
+  {
+    return element;
   }
 
   public synchronized void connect() throws IOException
@@ -201,6 +236,8 @@ public abstract class JarURLConnection extends URLConnection
   /**
    * Return the JAR entry object for this connection, if any
    *
+   * @return The jar entry
+   *
    * @exception IOException If an error occurs
    */
   public JarEntry getJarEntry () throws IOException
@@ -250,10 +287,11 @@ public abstract class JarURLConnection extends URLConnection
   /**
    * Return the JAR file for this connection
    *
+   * @return The JarFile object
+   *
    * @exception IOException If an error occurs
    */
-  public abstract JarFile getJarFile() throws IOException;
-
+  public abstract JarFile getJarFile () throws IOException;
 
   // Steal and borrow from protocol/file/Connection.java
 
