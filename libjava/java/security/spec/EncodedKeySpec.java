@@ -35,7 +35,7 @@ package java.security.spec;
 
 	@author Mark Benvenuto
 */
-public abstract class EncodedKeySpec 
+public abstract class EncodedKeySpec implements KeySpec
 {
 
   private byte[] encodedKey;

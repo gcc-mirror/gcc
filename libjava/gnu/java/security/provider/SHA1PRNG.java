@@ -28,13 +28,12 @@ executable file might be covered by the GNU General Public License. */
 package gnu.java.security.provider;
 
 import java.util.Random;
-// import java.security.SecureRandomSpi;
+import java.security.SecureRandomSpi;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.io.Serializable;
 
-// public class SHA1PRNG extends SecureRandomSpi implements Serializable
-public class SHA1PRNG implements Serializable
+public class SHA1PRNG extends SecureRandomSpi implements Serializable
 {
   MessageDigest digest;
   byte seed[];
@@ -76,7 +75,7 @@ public class SHA1PRNG implements Serializable
   {
 
     if( bytes.length < (20 - datapos) ) {
-      System.arraycopy( bytes, 0, data, datapos, bytes.length);
+      System.arraycopy( data, datapos, bytes, 0, bytes.length);
       datapos += bytes.length;
       return;
     }
@@ -85,7 +84,7 @@ public class SHA1PRNG implements Serializable
     byte digestdata[];
     while( bpos < blen ) {
       i = 20 - datapos;
-      System.arraycopy( bytes, bpos, data, datapos, i);
+      System.arraycopy( data, datapos, bytes, bpos, i);
       bpos += i;
       datapos += i;
       if( datapos >= 20) {

@@ -25,6 +25,7 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
 package java.security;
+import java.security.spec.AlgorithmParameterSpec;
 
 final class DummyKeyPairGenerator extends KeyPairGenerator
 {
@@ -39,6 +40,12 @@ final class DummyKeyPairGenerator extends KeyPairGenerator
   public void initialize(int keysize, SecureRandom random)
   {
     kpgSpi.initialize(keysize, random);
+  }
+
+  public void initialize(AlgorithmParameterSpec params, SecureRandom random)
+    throws InvalidAlgorithmParameterException
+  {
+    kpgSpi.initialize(params, random);
   }
 
   public KeyPair generateKeyPair()

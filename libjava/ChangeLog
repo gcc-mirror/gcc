@@ -1,3 +1,16 @@
+2001-09-22  Anthony Green  <green@redhat.com>
+
+ 	* java/security/DummyKeyPairGenerator.java (initialize): New
+ 	method (with AlgorithmParameterSpec argument).
+
+2001-09-22  Anthony Green  <green@redhat.com>
+
+	* java/security/spec/EncodedKeySpec.java: Implements KeySpec.
+
+	* gnu/java/security/provider/SHA1PRNG.java: Extend from
+	SecureRandomSpi.  
+	(engineNextBytes): Fix order of memory copies.
+	
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
 	* include/jvm.h (_Jv_VTable): Handle function descriptors for ia64;
