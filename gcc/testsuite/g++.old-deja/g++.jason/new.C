@@ -19,7 +19,7 @@ main()
 
   float f = 3;
   int* b1 = new int[(int)f];
-  int* b2 = new int[f];
+  int* b2 = new int[f];		// ERROR - new requires integral size
 
   return s;
 }

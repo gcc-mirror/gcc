@@ -24,17 +24,17 @@ struct X {
 };
 
 void b() {
-  goto bar; // ERROR - jump from here - XFAIL *-*-*
-  X x; // ERROR - jump crosses initialization - XFAIL *-*-*
- bar: // ERROR - jump to here - XFAIL *-*-*
+  goto bar; // ERROR - jump from here
+  X x; // ERROR - jump crosses initialization
+ bar: // ERROR - jump to here
   ;
 }
 
 #include <vector>
 
 void c() {
-  goto bar; // ERROR - jump from here - XFAIL *-*-*
-  vector<int> x; // ERROR - jump crosses initialization - XFAIL *-*-*
- bar: // ERROR - jump to here - XFAIL *-*-*
+  goto bar; // ERROR - jump from here
+  vector<int> x; // ERROR - jump crosses initialization
+ bar: // ERROR - jump to here
   ;
 }

@@ -2,8 +2,9 @@
 // Bug: g++ emits template instances when it shouldn't.
 // Special g++ Options: -g -fexternal-templates
 
-// We mark this XFAIL for the 'collect2: ld returned 1 exit status' message.
-// excess errors test - XFAIL *-*-*
+// We mark this XFAIL because we can't test for expected linker errors.
+// If we get an XPASS for this testcase, that's a bug.
+// (OK) excess errors test - XFAIL *-*-*
 
 #pragma implementation "irrelevant_file"
 #line 1 "template18.h"
@@ -13,5 +14,5 @@ template <class T> inline T min (T a, T b) { return a<b?a:b; }
 
 main()
 {
-  min (1, 1); 		// ERROR - undefined
+  min (1, 1); 		// should produce an undefined symbol error.
 }

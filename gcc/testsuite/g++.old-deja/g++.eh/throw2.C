@@ -6,7 +6,7 @@
 
 void athrow(const ANY & e) throw(ANY)
 {
-   throw e; // gets bogus error - discarding const - XFAIL *-*-*
+   throw e; // gets bogus error - discarding const
 }
 
 int main(void)
