@@ -277,3 +277,14 @@ do { \
 
 #endif /* defined (__SH5__) */
 #endif /* IN_LIBGCC2 */
+
+/* For SH3 and SH4, we use a slot of the unwind frame which correspond
+   to a fake register number 16 as a placeholder for the return address
+   in MD_FALLBACK_FRAME_STATE_FOR and its content will be read with
+   _Unwind_GetGR which uses dwarf_reg_size_table to get the size of
+   the register.  So the entry of dwarf_reg_size_table corresponding to
+   this slot must be set.  To do this, we redefine DBX_REGISTER_NUMBER
+   so as to return itself for 16.  */
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(REGNO) \
+  ((! TARGET_SH5 && (REGNO) == 16) ? 16 : SH_DBX_REGISTER_NUMBER (REGNO))

@@ -1,3 +1,8 @@
+2003-08-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (DBX_REGISTER_NUMBER): Define so to map a
+	special index for MD_FALLBACK_FRAME_STATE_FOR to itself.
+
 2003-08-13  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_get_pr_initial_val): Always wrap in unspec for TARGET_SH1.
