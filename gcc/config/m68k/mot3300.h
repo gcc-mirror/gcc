@@ -252,7 +252,7 @@ output_file_directive ((FILE), main_input_filename)
 /* NYI: If -mold return pointer in a0 and d0 */
 
 #undef FUNCTION_VALUE
-#define FUNCTION_VALUE(VALTYPE,FUNC) LIBCALL_VALUE(TYPE_MODE(VALTYPE))
+#define FUNCTION_VALUE(VALTYPE,FUNC) LIBCALL_VALUE (TYPE_MODE (VALTYPE))
 
 /* sysV68 (brain damaged) cc convention support. */
 /* Commented out until we find a safe way to make it optional.  */
@@ -268,8 +268,11 @@ output_file_directive ((FILE), main_input_filename)
 /* If TARGET_68881, SF and DF values are returned in fp0 instead of d0.  */
 
 #undef LIBCALL_VALUE
-#define LIBCALL_VALUE(MODE) \
- gen_rtx (REG, (MODE), ((TARGET_68881 && ((MODE) == SFmode || (MODE) == DFmode)) ? 16 : 0))
+#define LIBCALL_VALUE(MODE)						   \
+ gen_rtx (REG, (MODE),							   \
+	  ((TARGET_68881						   \
+	    && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)) \
+	   ? 16 : 0))
 
 /* 1 if N is a possible register number for a function value.
    d0 may be used, and fp0 as well if -msoft-float is not specified.  */
@@ -307,19 +310,29 @@ output_file_directive ((FILE), main_input_filename)
   sprintf ((OUTPUT), "%s_%%%d", (NAME), (LABELNO)))
 
 /* The sysV68 as doesn't know about double's and float's.  */
+/* This is how to output an assembler line defining a `double' constant.  */
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { union { double d; long l[2]; } tem;			\
-     tem.d = (VALUE);						\
-     fprintf(FILE, "\tlong 0x%x,0x%x\n", tem.l[0], tem.l[1]);	\
+do { long l[2];						\
+     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
+     fprintf (FILE, "\tlong 0x%x,0x%x\n", l[0], l[1]); \
    } while (0)
+
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
+do { long l[3];								\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
+     fprintf (FILE, "\tlong 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
+   } while (0)
+
+/* This is how to output an assembler line defining a `float' constant.  */
 
 #undef ASM_OUTPUT_FLOAT
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-do { union { float f; long l;} tem;			\
-     tem.f = (VALUE);					\
-     fprintf (FILE, "\tlong 0x%x\n", tem.l);		\
+do { long l;					\
+     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
+     fprintf ((FILE), "\tlong 0x%x\n", l);	\
    } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -447,19 +460,20 @@ do { union { float f; long l;} tem;			\
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
-    { union { double d; int i[2]; } u;					\
-      union { float f; int i; } u1;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      u1.f = u.d;							\
+    { REAL_VALUE_TYPE r; long l;					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
       /* Use hex representation even if CODE is f.  as needs it.  */	\
-      if (CODE == 'f')							\
-        fprintf (FILE, "&0x%x", u1.i);					\
-      else								\
-        fprintf (FILE, "&0x%x", u1.i); }				\
+      fprintf (FILE, "&0x%x", l); }					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
-    { union { double d; int i[2]; } u;					\
-      PRINT_OPERAND_EXTRACT_FLOAT (X);					\
-      fprintf (FILE, "&0x%08x%08x", u.i[0], u.i[1]); }			\
+    { REAL_VALUE_TYPE r; int i[2];					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_TARGET_DOUBLE (r, i);				\
+      fprintf (FILE, "&0x%08x%08x", i[0], i[1]); }			\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
+    { REAL_VALUE_TYPE r;						\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      ASM_OUTPUT_LONG_DOUBLE_OPERAND (FILE, r); }			\
   else { putc ('&', FILE); output_addr_const (FILE, X); }}
 
 #undef PRINT_OPERAND_ADDRESS
