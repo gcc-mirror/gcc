@@ -212,6 +212,12 @@ cb_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
 void
 fe_file_change (const struct line_map *new_map)
 {
+  if (new_map == NULL)
+    {
+      map = NULL;
+      return;
+    }
+
   if (new_map->reason == LC_ENTER)
     {
       /* Don't stack the main buffer on the input stack;

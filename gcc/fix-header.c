@@ -578,7 +578,7 @@ cb_file_change (cpp_reader *pfile ATTRIBUTE_UNUSED,
 		const struct line_map *map)
 {
   /* Just keep track of current file name.  */
-  cur_file = map->to_file;
+  cur_file = map == NULL ? NULL : map->to_file;
 }
 
 static void
