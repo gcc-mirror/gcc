@@ -41,6 +41,8 @@ AM_INIT_AUTOMAKE(boehm-gc, 4.13a2, no-define)
 
 AC_DEFUN(LIB_AC_PROG_CC,
 [AC_BEFORE([$0], [AC_PROG_CPP])dnl
+dnl Fool anybody using AC_PROG_CC.
+AC_PROVIDE([AC_PROG_CC])
 AC_CHECK_PROG(CC, gcc, gcc)
 if test -z "$CC"; then
   AC_CHECK_PROG(CC, cc, cc, , , /usr/ucb/cc)
@@ -76,6 +78,8 @@ LIB_AC_PROG_CC
 # Likewise for AC_PROG_CXX.
 AC_DEFUN(LIB_AC_PROG_CXX,
 [AC_BEFORE([$0], [AC_PROG_CXXCPP])dnl
+dnl Fool anybody using AC_PROG_CXX.
+AC_PROVIDE([AC_PROG_CXX])
 AC_CHECK_PROGS(CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
 test -z "$CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
 
