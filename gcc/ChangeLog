@@ -1,3 +1,8 @@
+2000-07-07  Manfred Hollstein  <manfredh@redhat.com>
+
+	* i386.md (exception_receiver): Add missing parameter in
+	call to load_pic_register.
+
 Fri May 26 10:30:02 2000  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.md (negdi2): Add clobber of condition code register.
