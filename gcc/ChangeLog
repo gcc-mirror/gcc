@@ -1,3 +1,7 @@
+2002-12-27  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/include/texinfo.tex: Update to version 2002-12-26.16.
+
 2002-12-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Add Abramo and Roberto Bagnara.

@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2002-11-25.11}
+\def\texinfoversion{2002-12-26.16}
 %
 % Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
@@ -29,9 +29,8 @@
 %
 % Please try the latest version of texinfo.tex before submitting bug
 % reports; you can get the latest version from:
-%   ftp://ftp.gnu.org/gnu/texinfo.tex
+%   ftp://ftp.gnu.org/gnu/texinfo/texinfo.tex
 %     (and all GNU mirrors, see http://www.gnu.org/order/ftp.html)
-%   ftp://texinfo.org/texinfo/texinfo.tex
 %   ftp://tug.org/tex/texinfo.tex
 %     (and all CTAN mirrors, see http://www.ctan.org),
 %   and /home/gd/gnu/doc/texinfo.tex on the GNU machines.
@@ -2513,7 +2512,7 @@ width0pt\relax} \fi
     \immediate\write16{If you are running another version of TeX, relax.}
     \immediate\write16{If you are running Unix TeX 3.0, kill this TeX process.}
     \immediate\write16{  Then upgrade your TeX installation if you can.}
-    \immediate\write16{  (See ftp://ftp.gnu.org/pub/gnu/TeX.README.)}
+    \immediate\write16{  (See ftp://ftp.gnu.org/non-gnu/TeX.README.)}
     \immediate\write16{If you are stuck with version 3.0, run the}
     \immediate\write16{  script ``tex3patch'' from the Texinfo distribution}
     \immediate\write16{  to use a workaround.}
@@ -4711,9 +4710,14 @@ width0pt\relax} \fi
 % then it can also check if \lastpenalty=1.  If it does, then manually
 % do \par.
 % 
-% Seems pretty fragile, but for the limited use of getting the copying
-% text (which should be quite simple) inserted, we can hope it's ok.
-% % 
+% This messes up the normal definitions of @c[omment], so we redefine
+% it.  Similarly for @ignore.  (These commands are used in the gcc
+% manual for man page generation.)
+% 
+% Seems pretty fragile, most line-oriented commands will presumably
+% fail, but for the limited use of getting the copying text (which
+% should be quite simple) inserted, we can hope it's ok.
+%
 {\catcode`\^^M=\active %
 \gdef\insertcopying{\begingroup %
   \parindent = 0pt  % looks wrong on title page
@@ -4724,6 +4728,15 @@ width0pt\relax} \fi
       \space \penalty 1 %
     \fi %
   }%
+  %
+  % Fix @c[omment] for catcode 13 ^^M's.
+  \def\c##1^^M{\ignorespaces}%
+  \let\comment = \c %
+  %
+  % Don't bother jumping through all the hoops that \doignore does, it
+  % would be very hard since the catcodes are already set.
+  \long\def\ignore##1\end ignore{\ignorespaces}%
+  %
   \copyingtext %
 \endgroup}%
 }
