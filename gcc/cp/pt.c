@@ -7869,7 +7869,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
-    case ARRAY_REF:
     case COMPOUND_EXPR:
     case SCOPE_REF:
     case DOTSTAR_EXPR:
@@ -7881,6 +7880,13 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return build_nt
 	(code, tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl));
+
+    case ARRAY_REF:
+      return build_nt
+	(ARRAY_REF,
+	 tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),
+	 tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl),
+	 NULL_TREE, NULL_TREE);
 
     case CALL_EXPR:
       return build_nt (code, 
@@ -8526,21 +8532,12 @@ tsubst_copy_and_build (tree t,
     case SCOPE_REF:
       return tsubst_qualified_id (t, args, complain, in_decl, /*done=*/true,
 				  /*address_p=*/false);
-
     case ARRAY_REF:
-      if (tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl)
-	  == NULL_TREE)
-	/* new-type-id */
-	return build_nt (ARRAY_REF, NULL_TREE, RECUR (TREE_OPERAND (t, 1)),
-			 NULL_TREE, NULL_TREE);
-
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);
-      /* Remember that there was a reference to this entity.  */
-      if (DECL_P (op1))
-	mark_used (op1);
-      return grok_array_decl (op1, RECUR (TREE_OPERAND (t, 1)));
-
+      return build_x_binary_op (ARRAY_REF, op1, RECUR (TREE_OPERAND (t, 1)),
+				/*overloaded_p=*/NULL);
+      
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
       op1 = TREE_OPERAND (t, 0);
