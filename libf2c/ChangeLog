@@ -1,3 +1,9 @@
+2003-02-03  Andreas Jaeger  <aj@suse.de>
+
+	* libU77/configure.in (AC_PROG_CC_WORKS): Define _GNU_SOURCE.
+	* libU77/config.hin: Regenerated.
+	* libU77/configure: Regenerated.
+
 2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in ($(LIBG2C)): -rpath is glibcpp_toolexeclibdir.
