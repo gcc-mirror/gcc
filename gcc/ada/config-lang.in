@@ -27,7 +27,7 @@
 # stagestuff	- files to add to $(STAGESTUFF)
 
 language="ada"
-boot_language=no
+boot_language=yes
 boot_language_boot_flags='ADAFLAGS="$(BOOT_ADAFLAGS)"'
 
 compilers="gnat1\$(exeext)"

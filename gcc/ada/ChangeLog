@@ -1,3 +1,7 @@
+2004-08-10  Richard Henderson  <rth@redhat.com>
+
+	* config-lang.in (boot_language): Yes.
+
 2004-08-09  Thomas Quinot  <quinot@act-europe.fr>
 
 	* g-socket.adb (Abort_Selector): Initialize Buf to prevent valgrind
