@@ -377,7 +377,7 @@ decide_peel_completely (loops, loop, flags)
       	{
 	  fprintf (rtl_dump_file, ";; Not peeling loop completely, rolls too much (");
 	  fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC,(HOST_WIDEST_INT) loop->desc.niter);
-	  fprintf (rtl_dump_file, "iterations > %d [maximum peelings])\n", npeel);
+	  fprintf (rtl_dump_file, " iterations > %d [maximum peelings])\n", npeel);
 	}
       return;
     }
