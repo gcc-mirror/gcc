@@ -139,13 +139,18 @@ extern int target_flags;
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES)  \
   fprintf ((STREAM), "\t.space\t%u\n", (NBYTES))
 
-/* This is how to output an assembler line
-   that says to advance the location counter
-   to a multiple of 2**LOG bytes.  */
-#define ASM_OUTPUT_ALIGN(STREAM,LOG)					\
-{									\
-  fprintf (STREAM, "\t.align\t%d\n", (LOG));				\
-}
+/* This is how to output an assembler line that says to advance the
+   location counter to a multiple of 2**LOG bytes.  Advancing to the
+   nearest 1 byte boundary is redundant, and anyway the assembler would
+   treat it as meaning "advance to nearest 4 byte boundary", which we do
+   not want.  */
+#define ASM_OUTPUT_ALIGN(STREAM,LOG)			\
+  do							\
+    {							\
+      if ((LOG) > 0)					\
+	fprintf (STREAM, "\t.align\t%d\n", LOG);	\
+    }							\
+  while (0)
 
 /* Output a common block */
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)  		\

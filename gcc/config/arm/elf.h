@@ -356,8 +356,14 @@ dtors_section ()							\
    not defined, the default value is `BIGGEST_ALIGNMENT'.  */
 #define MAX_OFILE_ALIGNMENT (32768 * 8)
 
-/* Align output to a power of two.  */
-#define ASM_OUTPUT_ALIGN(STREAM, POWER)  \
-  fprintf (STREAM, "\t.align\t%d\n", POWER)
+/* Align output to a power of two.  Note ".align 0" is redundant,
+   and also GAS will treat it as ".align 2" which we do not want.  */
+#define ASM_OUTPUT_ALIGN(STREAM, POWER)			\
+  do							\
+    {							\
+      if ((POWER) > 0)					\
+	fprintf (STREAM, "\t.align\t%d\n", POWER);	\
+    }							\
+  while (0)
 
 #include "arm/aout.h"
