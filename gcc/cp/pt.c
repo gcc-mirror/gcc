@@ -1857,7 +1857,6 @@ end_template_parm_list (parms)
   int nparms;
   tree parm;
   tree saved_parmlist = make_tree_vec (list_length (parms));
-  int seen_def_arg_p = 0;
 
   current_template_parms
     = tree_cons (build_int_2 (0, processing_template_decl),
@@ -1866,25 +1865,7 @@ end_template_parm_list (parms)
   for (parm = parms, nparms = 0; 
        parm; 
        parm = TREE_CHAIN (parm), nparms++)
-    {
-      /* [temp.param]
-	 
-	 If a template-parameter has a default template-argument, all
-	 subsequent template-parameters shall have a default
-	 template-argument supplied.  */
-      if (TREE_PURPOSE (parm))
-	seen_def_arg_p = 1;
-      else if (seen_def_arg_p)
-	{
-	  /* Issue the error message.  */
-	  cp_error ("no default argument for `%D'", TREE_VALUE (parm));
-	  /* For better subsequent error-recovery, we indicate that
-	     there should have been a default argument.  */
-	  TREE_PURPOSE (parm) = error_mark_node;
-	}
-
-      TREE_VEC_ELT (saved_parmlist, nparms) = parm;
-    }
+    TREE_VEC_ELT (saved_parmlist, nparms) = parm;
 
   --processing_template_parmlist;
 
@@ -2227,7 +2208,8 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
      int is_partial;
 {
   const char *msg;
-  int   last_level_to_check;
+  int last_level_to_check;
+  tree parm_level;
 
   /* [temp.param] 
 
@@ -2250,6 +2232,33 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
        was defined in class scope, but we're processing it's body now
        that the class is complete.  */
     return;
+
+  /* [temp.param]
+	 
+     If a template-parameter has a default template-argument, all
+     subsequent template-parameters shall have a default
+     template-argument supplied.  */
+  for (parm_level = parms; parm_level; parm_level = TREE_CHAIN (parm_level))
+    {
+      tree inner_parms = TREE_VALUE (parm_level);
+      int ntparms = TREE_VEC_LENGTH (inner_parms);
+      int seen_def_arg_p = 0; 
+      int i;
+
+      for (i = 0; i < ntparms; ++i) 
+	{
+	  tree parm = TREE_VEC_ELT (inner_parms, i);
+	  if (TREE_PURPOSE (parm))
+	    seen_def_arg_p = 1;
+	  else if (seen_def_arg_p)
+	    {
+	      cp_error ("no default argument for `%D'", TREE_VALUE (parm));
+	      /* For better subsequent error-recovery, we indicate that
+		 there should have been a default argument.  */
+	      TREE_PURPOSE (parm) = error_mark_node;
+	    }
+	}
+    }
 
   if (TREE_CODE (decl) != TYPE_DECL || is_partial || !is_primary)
     /* For an ordinary class template, default template arguments are
@@ -2293,11 +2302,13 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
     /* Check everything.  */
     last_level_to_check = 0;
 
-  for (; parms && TMPL_PARMS_DEPTH (parms) >= last_level_to_check; 
-       parms = TREE_CHAIN (parms))
+  for (parm_level = parms; 
+       parm_level && TMPL_PARMS_DEPTH (parm_level) >= last_level_to_check; 
+       parm_level = TREE_CHAIN (parm_level))
     {
-      tree inner_parms = TREE_VALUE (parms);
-      int i, ntparms;
+      tree inner_parms = TREE_VALUE (parm_level);
+      int i;
+      int ntparms;
 
       ntparms = TREE_VEC_LENGTH (inner_parms);
       for (i = 0; i < ntparms; ++i) 

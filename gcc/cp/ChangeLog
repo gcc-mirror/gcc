@@ -1,3 +1,9 @@
+1999-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (check_default_tmpl_args): Move test for missing default
+	arguments here, from ...
+	(end_template_parm_list): Here.
+
 1999-07-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (lookup_nested_type): Remove.
