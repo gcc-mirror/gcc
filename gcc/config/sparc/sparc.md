@@ -2317,12 +2317,6 @@
   "jmp %%o0+0\;restore"
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
-
-;(define_insn "tail_call" ;; tail call
-;  [(set (pc) (match_operand 0 "memory_operand" "m"))]
-;  "tail_call_valid_p ()"
-;  "* return output_tail_call (operands, insn);"
-;  [(set_attr "type" "branch")])
 
 ;; Split up troublesome insns for better scheduling.  */
 
