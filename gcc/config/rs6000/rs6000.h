@@ -639,8 +639,7 @@ extern int rs6000_altivec_abi;
    local store.  TYPE is the data type, and ALIGN is the alignment
    that the object would ordinarily have.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
-	((TARGET_ALTIVEC		    			\
-	  && TREE_CODE (TYPE)) == VECTOR_TYPE ? 128 : ALIGN)
+  ((TARGET_ALTIVEC && TREE_CODE (TYPE) == VECTOR_TYPE) ? 128 : ALIGN)
 
 /* Handle #pragma pack.  */
 #define HANDLE_PRAGMA_PACK 1
