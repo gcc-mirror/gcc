@@ -61,37 +61,49 @@ Boston, MA 02111-1307, USA.  */
 
 extern int target_flags;
 
+#define MASK_32081		1
+#define MASK_RTD		2
+#define MASK_REGPARM		4
+#define MASK_32532		8
+#define MASK_32332		16
+#define MASK_NO_SB		32
+#define MASK_NO_BITFIELD	64
+#define MASK_HIMEM		128
+#define MASK_32381		256
+#define MASK_MULT_ADD		512
+#define MASK_SRC		1024
+
 /* Macros used in the machine description to test the flags.  */
 
 /* Compile 32081 insns for floating point (not library calls). */
-#define TARGET_32081 (target_flags & 1)
-#define TARGET_32381 (target_flags & 256)
+#define TARGET_32081 (target_flags & MASK_32081)
+#define TARGET_32381 (target_flags & MASK_32381)
 
 /* The use of multiply-add instructions is optional because there may
  * be cases where it produces worse code.
  */
 
-#define TARGET_MULT_ADD (target_flags & 512)
+#define TARGET_MULT_ADD (target_flags & MASK_MULT_ADD)
 
 /* Compile using rtd insn calling sequence.
    This will not work unless you use prototypes at least
    for all functions that can take varying numbers of args.  */
-#define TARGET_RTD (target_flags & 2)
+#define TARGET_RTD (target_flags & MASK_RTD)
 
 /* Compile passing first two args in regs 0 and 1.  */
-#define TARGET_REGPARM (target_flags & 4)
+#define TARGET_REGPARM (target_flags & MASK_REGPARM)
 
 /* Options to select type of CPU, for better optimization.
    The output is correct for any kind of 32000 regardless of these options.  */
-#define TARGET_32532 (target_flags & 8)
-#define TARGET_32332 (target_flags & 16)
+#define TARGET_32532 (target_flags & MASK_32532)
+#define TARGET_32332 (target_flags & MASK_32332)
 
 /* Ok to use the static base register (and presume it's 0) */
-#define TARGET_SB    ((target_flags & 32) == 0)
-#define TARGET_HIMEM (target_flags & 128)
+#define TARGET_SB    ((target_flags & MASK_NO_SB) == 0)
+#define TARGET_HIMEM (target_flags & MASK_HIMEM)
 
 /* Compile using bitfield insns.  */
-#define TARGET_BITFIELD ((target_flags & 64) == 0)
+#define TARGET_BITFIELD ((target_flags & MASK_NO_BITFIELD) == 0)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -100,29 +112,32 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES							\
-  { { "32081", 1, N_("Use hardware fp")},				\
-    { "soft-float", -257, N_("Don't use hardware fp")},			\
-    { "rtd", 2, N_("Alternative calling convention")},			\
-    { "nortd", -2, N_("Use normal calling convention")},		\
-    { "regparm", 4, N_("Pass some arguments in registers")},		\
-    { "noregparm", -4, N_("Pass all arguments on stack")},		\
-    { "32532", 24, N_("Optimize for 32532 cpu")},			\
-    { "32332", 16, N_("Optimize for 32332 cpu")},			\
-    { "32332", -8, 0},							\
-    { "32032", -24, N_("Optimize for 32032")},				\
-    { "sb", -32,							\
+  { { "32081", MASK_32081, N_("Use hardware fp")},			\
+    { "soft-float", -(MASK_32081|MASK_32381),				\
+      N_("Don't use hardware fp")},					\
+    { "rtd", MASK_RTD, N_("Alternative calling convention")},		\
+    { "nortd", -MASK_RTD, N_("Use normal calling convention")},		\
+    { "regparm", MASK_REGPARM, N_("Pass some arguments in registers")},	\
+    { "noregparm", -MASK_REGPARM, N_("Pass all arguments on stack")},	\
+    { "32532", MASK_32532|MASK_32332, N_("Optimize for 32532 cpu")},	\
+    { "32332", MASK_32332, N_("Optimize for 32332 cpu")},		\
+    { "32332", -MASK_32532, 0},						\
+    { "32032", -(MASK_32532|MASK_32332), N_("Optimize for 32032")},	\
+    { "sb", -MASK_NO_SB,						\
       N_("Register sb is zero. Use for absolute addressing")},		\
-    { "nosb", 32, N_("Do not use register sb")},			\
-    { "bitfield", -64, N_("Do not use bit-field instructions")},	\
-    { "nobitfield", 64, N_("Use bit-field instructions")},		\
-    { "himem", 128, N_("Generate code for high memory")},		\
-    { "nohimem", -128, N_("Generate code for low memory")},		\
-    { "32381", 256, N_("32381 fpu")},					\
-    { "mult-add", 512, N_("Use multiply-accumulate fp instructions")},	\
-    { "nomult-add", -512,						\
+    { "nosb", MASK_NO_SB, N_("Do not use register sb")},		\
+    { "bitfield", -MASK_NO_BITFIELD,					\
+      N_("Do not use bit-field instructions")},				\
+    { "nobitfield", MASK_NO_BITFIELD, N_("Use bit-field instructions")},\
+    { "himem", MASK_HIMEM, N_("Generate code for high memory")},	\
+    { "nohimem", -MASK_HIMEM, N_("Generate code for low memory")},	\
+    { "32381", MASK_32381, N_("32381 fpu")},				\
+    { "mult-add", MASK_MULT_ADD,					\
+      N_("Use multiply-accumulate fp instructions")},			\
+    { "nomult-add", -MASK_MULT_ADD,					\
       N_("Do not use multiply-accumulate fp instructions") }, 		\
-    { "src", 1024, N_("\"Small register classes\" kludge")},		\
-    { "nosrc", -1024, N_("No \"Small register classes\" kludge")},	\
+    { "src", MASK_SRC, N_("\"Small register classes\" kludge")},	\
+    { "nosrc", -MASK_SRC, N_("No \"Small register classes\" kludge")},	\
     { "", TARGET_DEFAULT, 0}}
 
 /* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */
@@ -132,9 +147,12 @@ extern int target_flags;
 
 #define OVERRIDE_OPTIONS				\
 {							\
-  if (flag_pic || TARGET_HIMEM) target_flags |= 32;	\
-  if (TARGET_32381) target_flags |= 1;			\
-  else target_flags &= ~512;				\
+  if (flag_pic || TARGET_HIMEM)				\
+    target_flags |= MASK_NO_SB;				\
+  if (TARGET_32381)					\
+    target_flags |= MASK_32081;				\
+  else							\
+    target_flags &= ~MASK_MULT_ADD;			\
 }
 
 /* Zero or more C statements that may conditionally modify two
@@ -835,7 +853,7 @@ __transfer_from_trampoline ()		\
 /* SMALL_REGISTER_CLASSES is a run time option. This should no longer
    be necessay and should go when we have confidence that we won't run
    out of spill registers */
-#define SMALL_REGISTER_CLASSES (target_flags & 1024)
+#define SMALL_REGISTER_CLASSES (target_flags & MASK_SRC)
 
 /* A C expression whose value is nonzero if pseudos that have been
    assigned to registers of class CLASS would likely be spilled

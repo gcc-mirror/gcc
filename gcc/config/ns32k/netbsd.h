@@ -24,7 +24,9 @@ Boston, MA 02111-1307, USA.  */
    FPU is 32381;
    Use multiply-add instructions */
 
-#define TARGET_DEFAULT (1 + 24 + 32 + 64 + 256 + 512)
+#define TARGET_DEFAULT \
+  (MASK_32532|MASK_32332 | MASK_NO_SB | MASK_NO_BITFIELD | \
+   MASK_32081|MASK_32381 | MASK_MULT_ADD)
 
 /* 32-bit alignment for efficiency */
 
