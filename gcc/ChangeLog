@@ -1,3 +1,13 @@
+Sat Aug 28 16:24:31 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (flow_delete_insn_chain): Rename from delete_insn_chain.
+	(update_life_info) [REG_WAS_0]: Search the original insns rather
+	than the new insns for the note.  Fix typos finding note_dest.
+	If no dest found, discard the note rather than abort.
+	[REG_NOALIAS]: Handle as REG_NO_CONFLICT.
+	(replace_insns): Remove the old insn list after update_life_info
+	not before.
+
 Sat Aug 28 16:20:12 1999  Richard Henderson  <rth@cygnus.com>
 
         * haifa-sched.c (sched_analyze): Clear LOG_LINKS before calling
