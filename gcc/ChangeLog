@@ -1,3 +1,10 @@
+2004-03-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR optimization/9707.
+	* stmt.c (emit_case_nodes): Emit equality comparisons instead
+	of recursing if both children are single-valued cases with no
+	children.
+
 2004-03-25  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (vfp_print_multi): Remove.
