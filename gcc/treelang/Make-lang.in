@@ -56,9 +56,8 @@ GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 TREE_GENERATED = lex.c parse.c parse.h parse.output
 TREE_EXES = tree1
 
-#no -Wtraditional warnings, allow long long
-treelang-warn = $(LOOSE_WARN) -pedantic -Wno-long-long -Wmissing-prototypes \
-  -Wmissing-declarations -Wno-variadic-macros $(WERROR)
+#strict warnings for treelang
+treelang-warn = $(STRICT_WARN)
 # bison emits some unused static arrays (yytoknum)
 treelang/parse.o-warn = -Wno-error
 # flex produces 'no previous prototype' warnings
