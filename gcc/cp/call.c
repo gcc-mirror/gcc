@@ -3769,6 +3769,14 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	}
       else
 	{
+	  /* Give any warnings we noticed during overload resolution.  */
+	  if (cand->warnings)
+	    {
+	      struct candidate_warning *w;
+	      for (w = cand->warnings; w; w = w->next)
+		joust (cand, w->loser, 1);
+	    }
+
 	  /* Check for comparison of different enum types.  */
 	  switch (code)
 	    {

@@ -1,3 +1,9 @@
+2004-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16334
+	* call.c (build_new_op): Give overload warnings for built-in
+	candidates.
+
 2004-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/16276
