@@ -1,3 +1,7 @@
+2004-01-13  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfg.c (dump_bb): Dump entry edges.
+
 2004-01-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb_legitimate_address_p): Only allow constant pool 
