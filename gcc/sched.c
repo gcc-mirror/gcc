@@ -4452,6 +4452,15 @@ update_flow_info (notes, first, last, orig_insn)
 		 pattern, so we can safely ignore it.  */
 	      if (insn == first)
 		{
+		  /* After reload, REG_DEAD notes come sometimes an
+		     instruction after the register actually dies.  */
+		  if (reload_completed && REG_NOTE_KIND (note) == REG_DEAD)
+		    {
+		      XEXP (note, 1) = REG_NOTES (insn);
+		      REG_NOTES (insn) = note;
+		      break;
+		    }
+			
 		  if (REG_NOTE_KIND (note) != REG_UNUSED)
 		    abort ();
 
@@ -4480,6 +4489,15 @@ update_flow_info (notes, first, last, orig_insn)
 		     uses it.  */
 		  break;
 		}
+	      /* If this note refers to a multiple word hard
+		 register, it may have been split into several smaller
+		 hard register references.  We could split the notes,
+		 but simply dropping them is good enough.  */
+	      if (GET_CODE (orig_dest) == REG
+		  && REGNO (orig_dest) < FIRST_PSEUDO_REGISTER
+		  && HARD_REGNO_NREGS (REGNO (orig_dest),
+				       GET_MODE (orig_dest)) > 1)
+		    break;
 	      /* It must be set somewhere, fail if we couldn't find where it
 		 was set.  */
 	      if (insn == last)
@@ -4516,7 +4534,22 @@ update_flow_info (notes, first, last, orig_insn)
 	      /* The original dest must still be set someplace.  Abort if we
 		 couldn't find it.  */
 	      if (insn == first)
-		abort ();
+		{
+		  /* However, if this note refers to a multiple word hard
+		     register, it may have been split into several smaller
+		     hard register references.  We could split the notes,
+		     but simply dropping them is good enough.  */
+		  if (GET_CODE (orig_dest) == REG
+		      && REGNO (orig_dest) < FIRST_PSEUDO_REGISTER
+		      && HARD_REGNO_NREGS (REGNO (orig_dest),
+					   GET_MODE (orig_dest)) > 1)
+		    break;
+		  /* Likewise for multi-word memory references.  */
+		  if (GET_CODE (orig_dest) == MEM
+		      && SIZE_FOR_MODE (orig_dest) > MOVE_MAX)
+		    break;
+		  abort ();
+		}
 	    }
 	  break;
 
@@ -4563,6 +4596,9 @@ update_flow_info (notes, first, last, orig_insn)
 	  break;
 
 	case REG_INC:
+	  /* reload sometimes leaves obsolete REG_INC notes around.  */
+	  if (reload_completed)
+	    break;
 	  /* This should be moved to whichever instruction now has the
 	     increment operation.  */
 	  abort ();
@@ -4945,7 +4981,10 @@ schedule_insns (dump_file)
 
 	  /* Split insns here to get max fine-grain parallelism.  */
 	  prev = PREV_INSN (insn);
-	  if (reload_completed == 0)
+	  /* It is probably not worthwhile to try to split again in the
+	     second pass.  However, if flag_schedule_insns is not set,
+	     the first and only (if any) scheduling pass is after reload.  */
+	  if (reload_completed == 0 || ! flag_schedule_insns)
 	    {
 	      rtx last, first = PREV_INSN (insn);
 	      rtx notes = REG_NOTES (insn);
