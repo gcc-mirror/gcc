@@ -1,3 +1,10 @@
+2001-12-18  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+	
+	* include/bits/basic_string.h (assign(__str, __pos, __n)):
+	Call assign(__s, __n).
+	(assign(__s, __n)): Terminate the string with _S_terminal.
+
 2001-12-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/std_limits.h (__glibcpp_long_double_is_bounded):
