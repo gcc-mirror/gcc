@@ -654,7 +654,7 @@
   return parts.disp != NULL_RTX;
 })
 
-;; Returns 1 if OP is memory operand that can not be represented
+;; Returns 1 if OP is memory operand that cannot be represented
 ;; by the modRM array.
 (define_predicate "long_memory_operand"
   (and (match_operand 0 "memory_operand")

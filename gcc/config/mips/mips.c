@@ -4482,7 +4482,7 @@ override_options (void)
   if (optimize > 2 && (target_flags_explicit & MASK_VR4130_ALIGN) == 0)
     target_flags |= MASK_VR4130_ALIGN;
 
-  /* When compiling for the mips16, we can not use floating point.  We
+  /* When compiling for the mips16, we cannot use floating point.  We
      record the original hard float value in mips16_hard_float.  */
   if (TARGET_MIPS16)
     {
@@ -7470,7 +7470,7 @@ build_mips16_function_stub (FILE *file)
   ASM_OUTPUT_ALIGN (file, floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT));
 
   /* ??? If FUNCTION_NAME_ALREADY_DECLARED is defined, then we are
-     within a .ent, and we can not emit another .ent.  */
+     within a .ent, and we cannot emit another .ent.  */
   if (!FUNCTION_NAME_ALREADY_DECLARED)
     {
       fputs ("\t.ent\t", file);
@@ -7803,7 +7803,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
      Fortunately, this case is illegal, since it means that a function
      was declared in two different ways in a single compilation.  */
   if (fpret && ! l->fpret)
-    error ("can not handle inconsistent calls to `%s'", fnname);
+    error ("cannot handle inconsistent calls to `%s'", fnname);
 
   /* If we are calling a stub which handles a floating point return
      value, we need to arrange to save $18 in the prologue.  We do

@@ -102,7 +102,7 @@ RESET_FLOAT_FORMAT (DF, 0);  /* not used */
    Thus (GE (MINUS (0x80000000) (0x7fffffff) (0x00000000))) sets the N
    flag but (GE (0x00000001)) does not set the N flag.
 
-   The upshot is that we can not use signed branch and conditional
+   The upshot is that we cannot use signed branch and conditional
    load instructions after an add, subtract, neg, abs or multiply.
    We must emit a compare insn to check the result against 0.  */
 

@@ -1,3 +1,32 @@
+2004-08-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/darwin-c.c (find_subframework_file): Fix spelling of cannot.
+	* config/libgloss.h: Likewise.
+	* config/arm/arm.c (arm_gen_load_multiple): Likewise.
+	* c4x/c4x-modes.def: Likewise.
+	* config/c4x/c4x.c (c4x_hard_regno_rename_ok): Likewise.
+	(c4x_rptb_nop_p): Likewise.
+	(c4x_rptb_valid_p): Likewise.
+	(c4x_rptb_insert): Likewise.
+	(c4x_address_conflict): Likewise.
+	* config/c4x/c4x.md: Likewise.
+	* config/frv/frv.md: Likewise.
+	* config/i386/athlon.md: Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/i386/predicates.md: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/ia64/itanium1.md: Likewise.
+	* config/ia64/itanium2.md: Likewise.
+	* config/iq2000/iq2000.md: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mips/r3900.h: Likewise.
+	* config/mips/sb1.md: Likewise.
+	* config/pa/milli64.S: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/rs6000/8540.md: Likewise.
+
 2004-08-13  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in (BOOT_CFLAGS): Remove accidental addition of -dU.

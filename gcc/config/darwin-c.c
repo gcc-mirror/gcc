@@ -319,7 +319,7 @@ find_subframework_file (const char *fname, const char *pname)
   bufptr = strstr (pname, dot_framework);
 
   /* If the parent header is not of any framework, then this header
-     can not be part of any subframework.  */
+     cannot be part of any subframework.  */
   if (!bufptr)
     return 0;
 

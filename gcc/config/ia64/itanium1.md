@@ -33,10 +33,10 @@
      DEFINE_AUTOMATON).
 
      All define_reservations and define_cpu_units should have unique
-     names which can not be "nothing".
+     names which cannot be "nothing".
 
    o (exclusion_set string string) means that each CPU function unit
-     in the first string can not be reserved simultaneously with each
+     in the first string cannot be reserved simultaneously with each
      unit whose name is in the second string and vise versa.  CPU
      units in the string are separated by commas. For example, it is
      useful for description CPU with fully pipelined floating point
@@ -44,7 +44,7 @@
      floating point insns or only double floating point insns.
 
    o (presence_set string string) means that each CPU function unit in
-     the first string can not be reserved unless at least one of
+     the first string cannot be reserved unless at least one of
      pattern of units whose names are in the second string is
      reserved.  This is an asymmetric relation.  CPU units or unit
      patterns in the strings are separated by commas.  Pattern is one
@@ -92,13 +92,13 @@
      string are separated by commas.  Pattern is one unit name or unit
      names separated by white-spaces.
 
-     For example, it is useful for description that slot0 can not be
+     For example, it is useful for description that slot0 cannot be
      reserved after slot1 or slot2 reservation for a VLIW processor.
      We could describe it by the following construction
 
         (absence_set "slot2" "slot0, slot1")
 
-     Or slot2 can not be reserved if slot0 and unit b0 are reserved or
+     Or slot2 cannot be reserved if slot0 and unit b0 are reserved or
      slot1 and unit b1 are reserved .  In this case we could write
 
         (absence_set "slot2" "slot0 b0, slot1 b1")
@@ -140,7 +140,7 @@
      case, you describe common part and use one its name (the 1st
      parameter) in regular expression in define_insn_reservation.  All
      define_reservations, define results and define_cpu_units should
-     have unique names which can not be "nothing".
+     have unique names which cannot be "nothing".
 
    o (define_insn_reservation name default_latency condition regexpr)
      describes reservation of cpu functional units (the 3nd operand)

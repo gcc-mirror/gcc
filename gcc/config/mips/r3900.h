@@ -34,4 +34,4 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CC1_SPEC "\
 %{mhard-float:%e-mhard-float not supported} \
 %{msingle-float:%{msoft-float: \
-  %e-msingle-float and -msoft-float can not both be specified}}"
+  %e-msingle-float and -msoft-float cannot both be specified}}"
