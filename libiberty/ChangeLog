@@ -1,3 +1,10 @@
+2000-04-28  Kenneth Block  <block@zk3.dec.com>
+	    Jason Merrill  <jason@casey.cygnus.com>
+
+        * cplus-dem.c (libiberty_demanglers): New table for demangle styles.
+        (cplus_demangle_set_style): New function for setting style.
+        (cplus_demangle_name_to_style): New function to translate name.
+
 2000-04-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4: New file with new test libiberty_AC_FUNC_STRNCMP.
