@@ -1567,24 +1567,80 @@ fi
 
 
 
+for ac_func in tempnam
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1574: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1579 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1602: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+
 # posix will guarantee the right behaviour for sprintf, else we can't be
 # sure; HEADER_STDC wouldn't be the right check in sunos4, for instance.
 # However, on my sunos4/gcc setup unistd.h leads us wrongly to believe
 # we're posix-conformant, so always do the test.
 echo $ac_n "checking for ansi/posix sprintf result""... $ac_c" 1>&6
-echo "configure:1576: checking for ansi/posix sprintf result" >&5
+echo "configure:1632: checking for ansi/posix sprintf result" >&5
 if test "$cross_compiling" = yes; then
   g77_cv_sys_sprintf_ansi=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 1581 "configure"
+#line 1637 "configure"
 #include "confdefs.h"
   #include <stdio.h>
     /* does sprintf return the number of chars transferred? */
     main () {char foo[2]; (sprintf(foo, "1") == 1) ? exit(0) : exit(1);}
 
 EOF
-if { (eval echo configure:1588: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:1644: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
 then
   g77_cv_sys_sprintf_ansi=yes
 else
@@ -1618,9 +1674,9 @@ fi
 
 # define NON_ANSI_RW_MODES on unix (can't hurt)
 echo $ac_n "checking NON_ANSI_RW_MODES""... $ac_c" 1>&6
-echo "configure:1622: checking NON_ANSI_RW_MODES" >&5
+echo "configure:1678: checking NON_ANSI_RW_MODES" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1624 "configure"
+#line 1680 "configure"
 #include "confdefs.h"
 #ifdef unix
   yes
@@ -1661,14 +1717,14 @@ fi
 # (via com.h).  proj.h and com.h are in $srcdir/.., config.h which they need
 # is in ../.. and the config files are in $srcdir/../../config.
 echo $ac_n "checking f2c integer type""... $ac_c" 1>&6
-echo "configure:1665: checking f2c integer type" >&5
+echo "configure:1721: checking f2c integer type" >&5
 late_ac_cpp=$ac_cpp
 ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../gcc/config"
 if eval "test \"`echo '$''{'g77_cv_sys_f2cinteger'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1672 "configure"
+#line 1728 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1691,7 +1747,7 @@ rm -f conftest*
 
 if test "$g77_cv_sys_f2cinteger" = ""; then
   cat > conftest.$ac_ext <<EOF
-#line 1695 "configure"
+#line 1751 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1726,14 +1782,14 @@ ac_cpp=$late_ac_cpp
 
 
 echo $ac_n "checking f2c long int type""... $ac_c" 1>&6
-echo "configure:1730: checking f2c long int type" >&5
+echo "configure:1786: checking f2c long int type" >&5
 late_ac_cpp=$ac_cpp
 ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../gcc/config"
 if eval "test \"`echo '$''{'g77_cv_sys_f2clongint'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1737 "configure"
+#line 1793 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1756,7 +1812,7 @@ rm -f conftest*
 
 if test "$g77_cv_sys_f2clongint" = ""; then
   cat > conftest.$ac_ext <<EOF
-#line 1760 "configure"
+#line 1816 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
