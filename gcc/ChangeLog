@@ -1,3 +1,7 @@
+2002-05-23  Hans Boehm  <Hans_Boehm@hp.com>
+	* config/ia64/linux.h (IA64_GATE_AREA_END): Adjust for 64K
+	pages.
+
 2002-05-23  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (output_set_got): Fix typo in pic no-deep case.
