@@ -5021,7 +5021,7 @@ write_attr_get (attr)
       return;
     }
 
-  printf ("     rtx insn;\n");
+  printf ("     rtx insn ATTRIBUTE_UNUSED;\n");
   printf ("{\n");
 
   if (GET_CODE (common_av->value) == FFS)
