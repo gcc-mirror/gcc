@@ -1,3 +1,7 @@
+Thu Aug 20 13:44:20 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (movqi, movhi): Add CONSTANT_P_RTX.
+
 Thu Aug 20 13:15:11 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* stor-layout.c (layout_type): Compute TYPE_SIZE_UNIT correctly for
