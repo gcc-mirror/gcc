@@ -4187,8 +4187,16 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
   if ((FLOAT_TYPE_P (TREE_TYPE (arg01))
        ? real_zerop (arg01)
        : integer_zerop (arg01))
-      && TREE_CODE (arg2) == NEGATE_EXPR
-      && operand_equal_p (TREE_OPERAND (arg2, 0), arg1, 0))
+      && ((TREE_CODE (arg2) == NEGATE_EXPR
+	   && operand_equal_p (TREE_OPERAND (arg2, 0), arg1, 0))
+	     /* In the case that A is of the form X-Y, '-A' (arg2) may
+	        have already been folded to Y-X, check for that. */
+	  || (TREE_CODE (arg1) == MINUS_EXPR
+	      && TREE_CODE (arg2) == MINUS_EXPR
+	      && operand_equal_p (TREE_OPERAND (arg1, 0),
+				  TREE_OPERAND (arg2, 1), 0)
+	      && operand_equal_p (TREE_OPERAND (arg1, 1),
+				  TREE_OPERAND (arg2, 0), 0))))
     switch (comp_code)
       {
       case EQ_EXPR:
