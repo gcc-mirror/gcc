@@ -1,5 +1,8 @@
 Thu Apr 20 14:19:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
+	* loop.c (emit_iv_add_mult):  Simplify it's input and emit
+	REG_EQUAL note explaining the calculated value.
+
 	* calls.c (expand_call): Avoid unnecesary precalculation
 	and outgoing parameters space guarding for sibling calls.
 	(store_one_arg): Likewise.
