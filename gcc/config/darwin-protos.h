@@ -23,6 +23,7 @@ extern int name_needs_quotes PARAMS ((const char *));
 extern void machopic_validate_stub_or_non_lazy_ptr PARAMS ((const char *, int));
 
 extern const char *machopic_function_base_name PARAMS ((void));
+extern void machopic_output_function_base_name (FILE *);
 extern const char *machopic_non_lazy_ptr_name PARAMS ((const char*));
 extern const char *machopic_stub_name PARAMS ((const char*));
 

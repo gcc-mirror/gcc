@@ -81,6 +81,10 @@ machopic_classify_ident (ident)
 		     && name[4] == 'C'
 		     && name[5] == '_'));
   tree temp;
+  
+  /* The PIC base symbol is always defined. */
+  if (! strcmp (name, "<pic base>"))
+    return MACHOPIC_DEFINED_DATA;
 
   if (name[0] != '!')
     {
@@ -218,54 +222,46 @@ machopic_define_name (name)
   machopic_define_ident (get_identifier (name));
 }
 
-/* This is a static to make inline functions work.  The rtx
-   representing the PIC base symbol always points to here.  
-
-   FIXME: The rest of the compiler doesn't expect strings to change.  */
-
 static GTY(()) char * function_base;
-static GTY(()) const char * function_base_func_name;
-static GTY(()) int current_pic_label_num;
 
 const char *
 machopic_function_base_name ()
 {
   const char *current_name;
-
   /* if dynamic-no-pic is on, we should not get here */
   if (MACHO_DYNAMIC_NO_PIC_P)
     abort ();
   current_name = 
     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
 
-  if (function_base_func_name != current_name)
-    {
-      current_function_uses_pic_offset_table = 1;
+  if (function_base == NULL)
+    function_base = 
+      (char *) ggc_alloc_string ("<pic base>", sizeof ("<pic base>"));
 
-      /* Save mucho space and time.  Some of the C++ mangled names are over
-	 700 characters long!  Note that we produce a label containing a '-'
-	 if the function we're compiling is an Objective-C method, as evinced
-	 by the incredibly scientific test below.  This is because code in
-	 rs6000.c makes the same ugly test when loading the PIC reg.  */
- 
-      /* It's hard to describe just how ugly this is.  The reason for
-         the '%011d' is that after a PCH load, we can't change the
-         size of the string, because PCH will have uniqued it and
-         allocated it in the string pool.  */
-      if (function_base == NULL)
-	function_base = 
-	  (char *) ggc_alloc_string ("", sizeof ("*\"L12345678901$pb\""));
-
-      ++current_pic_label_num;
-      if (*current_name == '+' || *current_name == '-')
-	sprintf (function_base, "*\"L-%010d$pb\"", current_pic_label_num);
-      else
-	sprintf (function_base, "*\"L%011d$pb\"", current_pic_label_num);
-
-      function_base_func_name = current_name;
-    }
+  current_function_uses_pic_offset_table = 1;
 
   return function_base;
+}
+
+static GTY(()) const char * function_base_func_name;
+static GTY(()) int current_pic_label_num;
+
+void
+machopic_output_function_base_name (FILE *file)
+{
+  const char *current_name;
+
+  /* If dynamic-no-pic is on, we should not get here. */
+  if (MACHO_DYNAMIC_NO_PIC_P)
+    abort ();
+  current_name = 
+    IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
+  if (function_base_func_name != current_name)
+    {
+      ++current_pic_label_num;
+      function_base_func_name = current_name;
+    }
+  fprintf (file, "\"L%011d$pb\"", current_pic_label_num);
 }
 
 static GTY(()) tree machopic_non_lazy_pointers;

@@ -396,7 +396,9 @@ do { text_section ();							\
 #define ASM_OUTPUT_LABELREF(FILE,NAME)					     \
   do {									     \
        const char *xname = darwin_strip_name_encoding (NAME);		     \
-       if (xname[0] == '&' || xname[0] == '*')				     \
+       if (! strcmp (xname, "<pic base>"))				     \
+         machopic_output_function_base_name(FILE);                           \
+       else if (xname[0] == '&' || xname[0] == '*')			     \
          {								     \
            int len = strlen (xname);					     \
 	   if (len > 6 && !strcmp ("$stub", xname + len - 5))		     \
