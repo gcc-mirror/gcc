@@ -2482,7 +2482,7 @@ build1 (code, type, node)
       break;
 
     default:
-      if (TREE_CODE_CLASS (code) == '1' && TREE_CONSTANT (node))
+      if (TREE_CODE_CLASS (code) == '1' && node && TREE_CONSTANT (node))
 	TREE_CONSTANT (t) = 1;
       break;
     }
