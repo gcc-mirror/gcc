@@ -1,5 +1,14 @@
 2001-12-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* avr.c (avr_simplify_comparision_p, adjust_insn_length,
+	mask_one_bit_p, output_reload_insisf): Don't use the 'U' suffix.
+	* avr.h (reg_class): Likewise.
+	* avr.md: Likewise.
+	* mcore.c (try_constant_tricks, mcore_byte_offset,
+	mcore_halfword_offset): Likewise.
+	* sh.c (shl_sext_kind, gen_block_redirect, split_branches): Likewise.
+	* v850.c (not_power_of_two_operand): Likewise.
+
 	* clipper/clix.h (ASM_OUTPUT_ASCII): Avoid signed/unsigned
 	warnings.
 	* convex.h (ASM_OUTPUT_ASCII): Likewise.

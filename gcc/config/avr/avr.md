@@ -996,9 +996,9 @@
 	    output_asm_insn (AS2 (andi,%A0,lo8(%2)), operands);
 	  if ((mask & 0xff00) != 0xff00)
 	    output_asm_insn (AS2 (andi,%B0,hi8(%2)), operands);
-	  if ((mask & 0xff0000UL) != 0xff0000UL)
+	  if ((mask & 0xff0000L) != 0xff0000L)
 	    output_asm_insn (AS2 (andi,%C0,hlo8(%2)), operands);
-	  if ((mask & 0xff000000UL) != 0xff000000UL)
+	  if ((mask & 0xff000000L) != 0xff000000L)
 	    output_asm_insn (AS2 (andi,%D0,hhi8(%2)), operands);
 	  return \"\";
         }
@@ -1080,9 +1080,9 @@
 	  output_asm_insn (AS2 (ori,%A0,lo8(%2)), operands);
 	if (mask & 0xff00)
 	  output_asm_insn (AS2 (ori,%B0,hi8(%2)), operands);
-	if (mask & 0xff0000UL)
+	if (mask & 0xff0000L)
 	  output_asm_insn (AS2 (ori,%C0,hlo8(%2)), operands);
-	if (mask & 0xff000000UL)
+	if (mask & 0xff000000L)
 	  output_asm_insn (AS2 (ori,%D0,hhi8(%2)), operands);
 	return \"\";
       }

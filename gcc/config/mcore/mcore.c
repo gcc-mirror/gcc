@@ -719,7 +719,7 @@ try_constant_tricks (value, x, y)
 	    }
 	}
       
-      bit = 0x80000000UL;
+      bit = 0x80000000L;
       
       for (i = 0; i <= 31; i++)
 	{
@@ -886,13 +886,13 @@ int
 mcore_byte_offset (mask)
      unsigned int mask;
 {
-  if (mask == 0x00ffffffUL)
+  if (mask == 0x00ffffffL)
     return 0;
-  else if (mask == 0xff00ffffUL)
+  else if (mask == 0xff00ffffL)
     return 1;
-  else if (mask == 0xffff00ffUL)
+  else if (mask == 0xffff00ffL)
     return 2;
-  else if (mask == 0xffffff00UL)
+  else if (mask == 0xffffff00L)
     return 3;
 
   return -1;
@@ -906,7 +906,7 @@ mcore_halfword_offset (mask)
 {
   if (mask == 0x0000ffffL)
     return 0;
-  else if (mask == 0xffff0000UL)
+  else if (mask == 0xffff0000L)
     return 1;
 
   return -1;
