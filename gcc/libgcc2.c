@@ -141,7 +141,7 @@ __mulvsi3 (SItype a, SItype b)
 
   w = a * b;
 
-  if (((u >= 0) == (v >= 0)) ? w < 0 : w > 0)
+  if (((a >= 0) == (b >= 0)) ? w < 0 : w > 0)
     abort ();
 
   return w;
