@@ -481,7 +481,6 @@ enum update_life_extent
 #define PROP_SCAN_DEAD_CODE	16	/* Scan for dead code.  */
 #define PROP_AUTOINC		32	/* Create autoinc mem references.  */
 #define PROP_FINAL		63	/* All of the above.  */
-/* Flag number 64 is used internally in flow.c.  */
 
 /* Flags for loop discovery.  */
 
