@@ -24,11 +24,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	MASK_NO_BITFIELD_TYPE	0x40000000	/* Set PCC_BITFIELD_TYPE_MATTERS to 0 */
 #define	MASK_STRICT_ALIGN	0x20000000	/* Set STRICT_ALIGNMENT to 1.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
+#define	MASK_NO_TRACEBACK	0x08000000	/* eliminate traceback words */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
 #define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
+#define TARGET_NO_TRACEBACK	(target_flags & MASK_NO_TRACEBACK)
+#define	TARGET_TRACEBACK	(! TARGET_NO_TRACEBACK)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
@@ -37,7 +40,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   { "strict-align",	 MASK_STRICT_ALIGN },				\
   { "no-strict-align",	-MASK_STRICT_ALIGN },				\
   { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
-  { "no-relocatable",	-MASK_RELOCATABLE },
+  { "no-relocatable",	-MASK_RELOCATABLE },				\
+  { "traceback",	-MASK_NO_TRACEBACK },				\
+  { "no-traceback",	 MASK_NO_TRACEBACK },
 
 #include "rs6000/powerpc.h"
 
@@ -214,7 +219,8 @@ extern int rs6000_pic_labelno;
     putc (',', FILE);							\
     fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
     putc ('\n', FILE);							\
-    svr4_traceback (FILE, NAME, DECL);					\
+    if (TARGET_TRACEBACK)						\
+      svr4_traceback (FILE, NAME, DECL);				\
     ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
     ASM_OUTPUT_LABEL(FILE, NAME);					\
   } while (0)
