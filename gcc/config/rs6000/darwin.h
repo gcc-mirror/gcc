@@ -196,6 +196,13 @@ Boston, MA 02111-1307, USA.  */
 /* Fix for emit_group_load (): force large constants to be pushed via regs.  */
 #define ALWAYS_PUSH_CONSTS_USING_REGS_P		1
 
+/* Darwin word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
+  (TYPE_MODE (TREE_CODE (TREE_TYPE (FIELD)) == ARRAY_TYPE \
+	      ? get_inner_array_type (FIELD) \
+	      : TREE_TYPE (FIELD)) == DFmode \
+   ? MIN ((COMPUTED), 32) : (COMPUTED))
+
 /* Darwin increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
 #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)	\
