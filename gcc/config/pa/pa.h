@@ -110,8 +110,7 @@ extern int target_flags;
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
 #else
-#define CPP_SPEC "%{!mpa-risc-1-0:-D__hp9000s700 -D_PA_RISC1_1}\
- %{!mnosnake:-D__hp9000s700 -D_PA_RISC1_1}"
+#define CPP_SPEC "%{!mpa-risc-1-0:%{!mnosnake:-D__hp700s700 -D_PA_RISC1_1}}"
 #endif
 
 /* Defines for a K&R CC */
