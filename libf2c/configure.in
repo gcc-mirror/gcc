@@ -343,6 +343,12 @@ test -f libF77/makefile && mv libF77/makefile  libF77/makefile.ori
 test -f libI77/makefile && mv libI77/makefile  libI77/makefile.ori
 test -f libU77/makefile && mv libU77/makefile  libU77/makefile.ori
 
+# Get the version number from the toplevel
+version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/../gcc/version.c`
+AC_SUBST(version)
+AC_CANONICAL_SYSTEM
+AC_SUBST(target_alias)
+
 AC_CONFIG_SUBDIRS(libU77)
 AC_OUTPUT(Makefile g2c.h libI77/Makefile libF77/Makefile)
 
