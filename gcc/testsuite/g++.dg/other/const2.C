@@ -10,7 +10,7 @@ struct foo
 
   static const bar bars[];
 
-  int bad ()
+  void bad ()
   {
     this->*(bars[0].b) = 42; // { dg-bogus "read-only" "" }
   }

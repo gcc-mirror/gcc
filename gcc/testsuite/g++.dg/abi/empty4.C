@@ -18,7 +18,7 @@ struct NonPod
 
   NonPod () {m = 0x12345678;}
   NonPod (long m_) {m = m_;}
-  NonPod &operator= (NonPod const &src) {now = m; m = src.m;}
+  NonPod &operator= (NonPod const &src) {now = m; m = src.m; return *this;}
   NonPod (NonPod const &src) {m = src.m;}
 };
 

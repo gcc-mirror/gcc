@@ -13,8 +13,8 @@ public:
   void  operator -= (const Char   );
 };
 
-inline  Char  operator -  (const Char    a, const Char    b) {}
-inline  char  operator == (const Char    a, const char b) {}
+inline  Char  operator -  (const Char    a, const Char    b) { return Char(0); }
+inline  char  operator == (const Char    a, const char b) { return 0; }
 
 char mystrcmp(Char s[31], Char t[31])
 {

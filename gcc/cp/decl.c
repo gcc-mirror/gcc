@@ -14247,6 +14247,18 @@ finish_function (flags)
   if (!processing_template_decl && calls_setjmp_p (fndecl))
     DECL_UNINLINABLE (fndecl) = 1;
 
+  /* Complain if there's just no return statement.  */
+  if (!processing_template_decl
+      && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE
+      && !current_function_returns_value
+      && !DECL_NAME (DECL_RESULT (fndecl))
+      /* Don't complain if we abort or throw.  */
+      && !current_function_returns_abnormally
+      /* If we have -Wreturn-type, let flow complain.  Unless we're an
+	 inline function, as we might never be compiled separately.  */
+      && (!warn_return_type || DECL_INLINE (fndecl))
+    warning ("no return statement in function returning non-void");
+    
   /* Clear out memory we no longer need.  */
   free_after_parsing (cfun);
   /* Since we never call rest_of_compilation, we never clear

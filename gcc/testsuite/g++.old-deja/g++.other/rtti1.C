@@ -39,15 +39,15 @@ class XX {
 public:
   int xxi;
   float xxf;
-  int xxf1 () {};
-  int xxf2 (int k) {};
+  int xxf1 () { return 0; };
+  int xxf2 (int k) { return 0; };
 };
 
 class YY {
 public:
   int yyi;
   double yyd;
-  int yyf1 (float f) {};
+  int yyf1 (float f) { return 0; };
   double yyf2 () {return yyd;};
 };
 

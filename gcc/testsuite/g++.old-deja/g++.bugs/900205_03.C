@@ -25,10 +25,10 @@ struct00 global_function_1 () {
 struct struct0 {
 
   int struct0_member_function_0 () {
-  }					// ERROR - XFAIL
+  }					// ERROR - 
 
   struct0 struct0_member_function_1 () {
-  }					// ERROR - XFAIL
+  }					// ERROR - 
 };
 
 struct struct1 {

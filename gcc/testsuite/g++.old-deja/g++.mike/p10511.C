@@ -8,7 +8,7 @@ public:
 
 class C {
 public:
-  bool f (S::E()) { }
+  bool f (S::E()) { return true; }
   virtual void foo();
 };
 
