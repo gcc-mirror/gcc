@@ -2087,12 +2087,12 @@ extern rtx delete_insn_and_edges	PARAMS ((rtx));
 extern void delete_insn_chain_and_edges	PARAMS ((rtx, rtx));
 
 /* In combine.c */
-extern int combine_instructions		PARAMS ((rtx, unsigned int));
-extern unsigned int extended_count	PARAMS ((rtx, enum machine_mode, int));
-extern rtx remove_death			PARAMS ((unsigned int, rtx));
+extern int combine_instructions (rtx, unsigned int);
+extern unsigned int extended_count (rtx, enum machine_mode, int);
+extern rtx remove_death (unsigned int, rtx);
 #ifdef BUFSIZ
-extern void dump_combine_stats		PARAMS ((FILE *));
-extern void dump_combine_total_stats	PARAMS ((FILE *));
+extern void dump_combine_stats (FILE *);
+extern void dump_combine_total_stats (FILE *);
 #endif
 
 /* In sched.c.  */

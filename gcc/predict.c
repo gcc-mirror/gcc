@@ -65,25 +65,21 @@ static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 #define PROB_VERY_LIKELY	(REG_BR_PROB_BASE - PROB_VERY_UNLIKELY)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
-static bool predicted_by_p		 PARAMS ((basic_block,
-						  enum br_predictor));
-static void combine_predictions_for_insn PARAMS ((rtx, basic_block));
-static void dump_prediction		 PARAMS ((enum br_predictor, int,
-						  basic_block, int));
-static void estimate_loops_at_level	 PARAMS ((struct loop *loop));
-static void propagate_freq		 PARAMS ((struct loop *));
-static void estimate_bb_frequencies	 PARAMS ((struct loops *));
-static void counts_to_freqs		 PARAMS ((void));
-static void process_note_predictions	 PARAMS ((basic_block, int *,
-						  dominance_info,
-						  dominance_info));
-static void process_note_prediction	 PARAMS ((basic_block, int *, 
-						  dominance_info,
-						  dominance_info, int, int));
-static bool last_basic_block_p           PARAMS ((basic_block));
-static void compute_function_frequency	 PARAMS ((void));
-static void choose_function_section	 PARAMS ((void));
-static bool can_predict_insn_p		 PARAMS ((rtx));
+static bool predicted_by_p (basic_block, enum br_predictor);
+static void combine_predictions_for_insn (rtx, basic_block);
+static void dump_prediction (enum br_predictor, int, basic_block, int);
+static void estimate_loops_at_level (struct loop *loop);
+static void propagate_freq (struct loop *);
+static void estimate_bb_frequencies (struct loops *);
+static void counts_to_freqs (void);
+static void process_note_predictions (basic_block, int *, dominance_info,
+				      dominance_info);
+static void process_note_prediction (basic_block, int *, dominance_info,
+				     dominance_info, int, int);
+static bool last_basic_block_p (basic_block);
+static void compute_function_frequency (void);
+static void choose_function_section (void);
+static bool can_predict_insn_p (rtx);
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -117,8 +113,7 @@ static const struct predictor_info predictor_info[]= {
    for maximal performance.  */
 
 bool
-maybe_hot_bb_p (bb)
-     basic_block bb;
+maybe_hot_bb_p (basic_block bb)
 {
   if (profile_info && flag_branch_probabilities
       && (bb->count
@@ -132,8 +127,7 @@ maybe_hot_bb_p (bb)
 /* Return true in case BB is cold and should be optimized for size.  */
 
 bool
-probably_cold_bb_p (bb)
-     basic_block bb;
+probably_cold_bb_p (basic_block bb)
 {
   if (profile_info && flag_branch_probabilities
       && (bb->count
@@ -146,8 +140,7 @@ probably_cold_bb_p (bb)
 
 /* Return true in case BB is probably never executed.  */
 bool
-probably_never_executed_bb_p (bb)
-	basic_block bb;
+probably_never_executed_bb_p (basic_block bb)
 {
   if (profile_info && flag_branch_probabilities)
     return ((bb->count + profile_info->runs / 2) / profile_info->runs) == 0;
@@ -158,9 +151,7 @@ probably_never_executed_bb_p (bb)
    PREDICTOR.  */
 
 static bool
-predicted_by_p (bb, predictor)
-     basic_block bb;
-     enum br_predictor predictor;
+predicted_by_p (basic_block bb, enum br_predictor predictor)
 {
   rtx note;
   if (!INSN_P (bb->end))
@@ -173,10 +164,7 @@ predicted_by_p (bb, predictor)
 }
 
 void
-predict_insn (insn, predictor, probability)
-     rtx insn;
-     int probability;
-     enum br_predictor predictor;
+predict_insn (rtx insn, enum br_predictor predictor, int probability)
 {
   if (!any_condjump_p (insn))
     abort ();
@@ -194,10 +182,8 @@ predict_insn (insn, predictor, probability)
 /* Predict insn by given predictor.  */
 
 void
-predict_insn_def (insn, predictor, taken)
-     rtx insn;
-     enum br_predictor predictor;
-     enum prediction taken;
+predict_insn_def (rtx insn, enum br_predictor predictor,
+		  enum prediction taken)
 {
    int probability = predictor_info[(int) predictor].hitrate;
 
@@ -210,10 +196,7 @@ predict_insn_def (insn, predictor, taken)
 /* Predict edge E with given probability if possible.  */
 
 void
-predict_edge (e, predictor, probability)
-     edge e;
-     int probability;
-     enum br_predictor predictor;
+predict_edge (edge e, enum br_predictor predictor, int probability)
 {
   rtx last_insn;
   last_insn = e->src->end;
@@ -234,8 +217,7 @@ predict_edge (e, predictor, probability)
    At the moment we represent predictions only on conditional
    jumps, not at computed jump or other complicated cases.  */
 static bool
-can_predict_insn_p (insn)
-	rtx insn;
+can_predict_insn_p (rtx insn)
 {
   return (GET_CODE (insn) == JUMP_INSN
 	  && any_condjump_p (insn)
@@ -245,10 +227,8 @@ can_predict_insn_p (insn)
 /* Predict edge E by given predictor if possible.  */
 
 void
-predict_edge_def (e, predictor, taken)
-     edge e;
-     enum br_predictor predictor;
-     enum prediction taken;
+predict_edge_def (edge e, enum br_predictor predictor,
+		  enum prediction taken)
 {
    int probability = predictor_info[(int) predictor].hitrate;
 
@@ -262,8 +242,7 @@ predict_edge_def (e, predictor, taken)
    to be done each time we invert the condition used by the jump.  */
 
 void
-invert_br_probabilities (insn)
-     rtx insn;
+invert_br_probabilities (rtx insn)
 {
   rtx note;
 
@@ -278,11 +257,8 @@ invert_br_probabilities (insn)
 /* Dump information about the branch prediction to the output file.  */
 
 static void
-dump_prediction (predictor, probability, bb, used)
-     enum br_predictor predictor;
-     int probability;
-     basic_block bb;
-     int used;
+dump_prediction (enum br_predictor predictor, int probability,
+		 basic_block bb, int used)
 {
   edge e = bb->succ;
 
@@ -315,9 +291,7 @@ dump_prediction (predictor, probability, bb, used)
    note if not already present.  Remove now useless REG_BR_PRED notes.  */
 
 static void
-combine_predictions_for_insn (insn, bb)
-     rtx insn;
-     basic_block bb;
+combine_predictions_for_insn (rtx insn, basic_block bb)
 {
   rtx prob_note = find_reg_note (insn, REG_BR_PROB, 0);
   rtx *pnote = &REG_NOTES (insn);
@@ -417,8 +391,7 @@ combine_predictions_for_insn (insn, bb)
    predictions).  */
 
 void
-estimate_probability (loops_info)
-     struct loops *loops_info;
+estimate_probability (struct loops *loops_info)
 {
   dominance_info dominators, post_dominators;
   basic_block bb;
@@ -657,7 +630,7 @@ estimate_probability (loops_info)
    values.  */
 
 void
-expected_value_to_br_prob ()
+expected_value_to_br_prob (void)
 {
   rtx insn, cond, ev = NULL_RTX, ev_reg = NULL_RTX;
 
@@ -725,11 +698,10 @@ expected_value_to_br_prob ()
     }
 }
 
-/* Check whether this is the last basic block of function.  Commonly tehre
-   is one extra common cleanup block.  */
+/* Check whether this is the last basic block of function.  Commonly
+   there is one extra common cleanup block.  */
 static bool
-last_basic_block_p (bb)
-     basic_block bb;
+last_basic_block_p (basic_block bb)
 {
   if (bb == EXIT_BLOCK_PTR)
     return false;
@@ -740,20 +712,17 @@ last_basic_block_p (bb)
 	      && bb->succ->dest->next_bb == EXIT_BLOCK_PTR));
 }
 
-/* Sets branch probabilities according to PREDiction and FLAGS. HEADS[bb->index]
-   should be index of basic block in that we need to alter branch predictions
-   (i.e. the first of our dominators such that we do not post-dominate it)
-   (but we fill this information on demand, so -1 may be there in case this
-   was not needed yet).  */
+/* Sets branch probabilities according to PREDiction and
+   FLAGS. HEADS[bb->index] should be index of basic block in that we
+   need to alter branch predictions (i.e. the first of our dominators
+   such that we do not post-dominate it) (but we fill this information
+   on demand, so -1 may be there in case this was not needed yet).  */
 
 static void
-process_note_prediction (bb, heads, dominators, post_dominators, pred, flags)
-     basic_block bb;
-     int *heads;
-     dominance_info dominators;
-     dominance_info post_dominators;
-     int pred;
-     int flags;
+process_note_prediction (basic_block bb, int *heads,
+			 dominance_info dominators,
+			 dominance_info post_dominators, int pred,
+			 int flags)
 {
   edge e;
   int y;
@@ -809,11 +778,9 @@ process_note_prediction (bb, heads, dominators, post_dominators, pred, flags)
    process_note_prediction.  */
 
 static void
-process_note_predictions (bb, heads, dominators, post_dominators)
-     basic_block bb;
-     int *heads;
-     dominance_info dominators;
-     dominance_info post_dominators;
+process_note_predictions (basic_block bb, int *heads,
+			  dominance_info dominators,
+			  dominance_info post_dominators)
 {
   rtx insn;
   edge e;
@@ -871,7 +838,7 @@ process_note_predictions (bb, heads, dominators, post_dominators)
    branch probabilities.  */
 
 void
-note_prediction_to_br_prob ()
+note_prediction_to_br_prob (void)
 {
   basic_block bb;
   dominance_info post_dominators, dominators;
@@ -936,8 +903,7 @@ typedef struct edge_info_def
    Propagate the frequencies for LOOP.  */
 
 static void
-propagate_freq (loop)
-     struct loop *loop;
+propagate_freq (struct loop *loop)
 {
   basic_block head = loop->header;
   basic_block bb;
@@ -1019,7 +985,7 @@ propagate_freq (loop)
 			  sizeof (real_almost_one));
 		}
 
-	      /* BLOCK_INFO (bb)->frequency = frequency 
+	      /* BLOCK_INFO (bb)->frequency = frequency
 					      / (1 - cyclic_probability) */
 
 	      sreal_sub (&cyclic_probability, &real_one, &cyclic_probability);
@@ -1068,8 +1034,7 @@ propagate_freq (loop)
 /* Estimate probabilities of loopback edges in loops at same nest level.  */
 
 static void
-estimate_loops_at_level (first_loop)
-     struct loop *first_loop;
+estimate_loops_at_level (struct loop *first_loop)
 {
   struct loop *loop;
 
@@ -1080,7 +1045,7 @@ estimate_loops_at_level (first_loop)
       unsigned i;
 
       estimate_loops_at_level (loop->inner);
-      
+
       if (loop->latch->succ)  /* Do not do this for dummy function loop.  */
 	{
 	  /* Find current loop back edge and mark it.  */
@@ -1099,7 +1064,7 @@ estimate_loops_at_level (first_loop)
 /* Convert counts measured by profile driven feedback to frequencies.  */
 
 static void
-counts_to_freqs ()
+counts_to_freqs (void)
 {
   gcov_type count_max = 1;
   basic_block bb;
@@ -1117,8 +1082,7 @@ counts_to_freqs ()
    function can execute at average to be still considered not expensive.  */
 
 bool
-expensive_function_p (threshold)
-	int threshold;
+expensive_function_p (int threshold)
 {
   unsigned int sum = 0;
   basic_block bb;
@@ -1157,8 +1121,7 @@ expensive_function_p (threshold)
 /* Estimate basic blocks frequency by given branch probabilities.  */
 
 static void
-estimate_bb_frequencies (loops)
-     struct loops *loops;
+estimate_bb_frequencies (struct loops *loops)
 {
   basic_block bb;
   sreal freq_max;
@@ -1256,7 +1219,7 @@ estimate_bb_frequencies (loops)
 
 /* Decide whether function is hot, cold or unlikely executed.  */
 static void
-compute_function_frequency ()
+compute_function_frequency (void)
 {
   basic_block bb;
 
@@ -1277,12 +1240,12 @@ compute_function_frequency ()
 
 /* Choose appropriate section for the function.  */
 static void
-choose_function_section ()
+choose_function_section (void)
 {
   if (DECL_SECTION_NAME (current_function_decl)
       || !targetm.have_named_sections
       /* Theoretically we can split the gnu.linkonce text section too,
- 	 but this requires more work as the frequency needs to match
+	 but this requires more work as the frequency needs to match
 	 for all generated objects so we need to merge the frequency
 	 of all instances.  For now just never set frequency for these.  */
       || DECL_ONE_ONLY (current_function_decl))

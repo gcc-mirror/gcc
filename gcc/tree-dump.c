@@ -30,21 +30,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-dump.h"
 #include "langhooks.h"
 
-static unsigned int queue PARAMS ((dump_info_p, tree, int));
-static void dump_index PARAMS ((dump_info_p, unsigned int));
-static void dequeue_and_dump PARAMS ((dump_info_p));
-static void dump_new_line PARAMS ((dump_info_p));
-static void dump_maybe_newline PARAMS ((dump_info_p));
-static void dump_string_field PARAMS ((dump_info_p, const char *, const char *));
+static unsigned int queue (dump_info_p, tree, int);
+static void dump_index (dump_info_p, unsigned int);
+static void dequeue_and_dump (dump_info_p);
+static void dump_new_line (dump_info_p);
+static void dump_maybe_newline (dump_info_p);
+static void dump_string_field (dump_info_p, const char *, const char *);
 
 /* Add T to the end of the queue of nodes to dump.  Returns the index
    assigned to T.  */
 
 static unsigned int
-queue (di, t, flags)
-     dump_info_p di;
-     tree t;
-     int flags;
+queue (dump_info_p di, tree t, int flags)
 {
   dump_queue_p dq;
   dump_node_info_p dni;
@@ -82,9 +79,7 @@ queue (di, t, flags)
 }
 
 static void
-dump_index (di, index)
-     dump_info_p di;
-     unsigned int index;
+dump_index (dump_info_p di, unsigned int index)
 {
   fprintf (di->stream, "@%-6u ", index);
   di->column += 8;
@@ -95,11 +90,7 @@ dump_index (di, index)
    index of T is printed.  */
 
 void
-queue_and_dump_index (di, field, t, flags)
-     dump_info_p di;
-     const char *field;
-     tree t;
-     int flags;
+queue_and_dump_index (dump_info_p di, const char *field, tree t, int flags)
 {
   unsigned int index;
   splay_tree_node n;
@@ -127,9 +118,7 @@ queue_and_dump_index (di, field, t, flags)
 /* Dump the type of T.  */
 
 void
-queue_and_dump_type (di, t)
-     dump_info_p di;
-     tree t;
+queue_and_dump_type (dump_info_p di, tree t)
 {
   queue_and_dump_index (di, "type", TREE_TYPE (t), DUMP_NONE);
 }
@@ -143,8 +132,7 @@ queue_and_dump_type (di, t)
    place to start printing more fields.  */
 
 static void
-dump_new_line (di)
-     dump_info_p di;
+dump_new_line (dump_info_p di)
 {
   fprintf (di->stream, "\n%*s", SOL_COLUMN, "");
   di->column = SOL_COLUMN;
@@ -153,8 +141,7 @@ dump_new_line (di)
 /* If necessary, insert a new line.  */
 
 static void
-dump_maybe_newline (di)
-     dump_info_p di;
+dump_maybe_newline (dump_info_p di)
 {
   int extra;
 
@@ -172,10 +159,7 @@ dump_maybe_newline (di)
 /* Dump pointer PTR using FIELD to identify it.  */
 
 void
-dump_pointer (di, field, ptr)
-     dump_info_p di;
-     const char *field;
-     void *ptr;
+dump_pointer (dump_info_p di, const char *field, void *ptr)
 {
   dump_maybe_newline (di);
   fprintf (di->stream, "%-4s: %-8lx ", field, (long) ptr);
@@ -185,10 +169,7 @@ dump_pointer (di, field, ptr)
 /* Dump integer I using FIELD to identify it.  */
 
 void
-dump_int (di, field, i)
-     dump_info_p di;
-     const char *field;
-     int i;
+dump_int (dump_info_p di, const char *field, int i)
 {
   dump_maybe_newline (di);
   fprintf (di->stream, "%-4s: %-7d ", field, i);
@@ -198,9 +179,7 @@ dump_int (di, field, i)
 /* Dump the string S.  */
 
 void
-dump_string (di, string)
-     dump_info_p di;
-     const char *string;
+dump_string (dump_info_p di, const char *string)
 {
   dump_maybe_newline (di);
   fprintf (di->stream, "%-13s ", string);
@@ -213,10 +192,7 @@ dump_string (di, string)
 /* Dump the string field S.  */
 
 static void
-dump_string_field (di, field, string)
-     dump_info_p di;
-     const char *field;
-     const char *string;
+dump_string_field (dump_info_p di, const char *field, const char *string)
 {
   dump_maybe_newline (di);
   fprintf (di->stream, "%-4s: %-7s ", field, string);
@@ -229,8 +205,7 @@ dump_string_field (di, field, string)
 /* Dump the next node in the queue.  */
 
 static void
-dequeue_and_dump (di)
-     dump_info_p di;
+dequeue_and_dump (dump_info_p di)
 {
   dump_queue_p dq;
   splay_tree_node stn;
@@ -277,7 +252,7 @@ dequeue_and_dump (di)
       tree bases = BINFO_BASETYPES (t);
       unsigned n_bases = bases ? TREE_VEC_LENGTH (bases): 0;
       tree accesses = BINFO_BASEACCESSES (t);
-      
+
       dump_child ("type", BINFO_TYPE (t));
 
       if (TREE_VIA_VIRTUAL (t))
@@ -299,11 +274,11 @@ dequeue_and_dump (di)
 	    string = "priv";
 	  else
 	    abort ();
-	  
+
 	  dump_string (di, string);
 	  queue_and_dump_index (di, "binf", base, DUMP_BINFO);
 	}
-      
+
       goto done;
     }
 
@@ -616,10 +591,7 @@ dequeue_and_dump (di)
 /* Return nonzero if FLAG has been specified for the dump, and NODE
    is not the root node of the dump.  */
 
-int dump_flag (di, flag, node)
-     dump_info_p di;
-     int flag;
-     tree node;
+int dump_flag (dump_info_p di, int flag, tree node)
 {
   return (di->flags & flag) && (node != di->node);
 }
@@ -627,10 +599,7 @@ int dump_flag (di, flag, node)
 /* Dump T, and all its children, on STREAM.  */
 
 void
-dump_node (t, flags, stream)
-     tree t;
-     int flags;
-     FILE *stream;
+dump_node (tree t, int flags, FILE *stream)
 {
   struct dump_info di;
   dump_queue_p dq;
@@ -707,9 +676,7 @@ static const struct dump_option_value_info dump_options[] =
    Multiple calls will reopen and append to the dump file.  */
 
 FILE *
-dump_begin (phase, flag_ptr)
-     enum tree_dump_index phase;
-     int *flag_ptr;
+dump_begin (enum tree_dump_index phase, int *flag_ptr)
 {
   FILE *stream;
   char *name;
@@ -733,8 +700,7 @@ dump_begin (phase, flag_ptr)
 /* Returns nonzero if tree dump PHASE is enabled.  */
 
 int
-dump_enabled_p (phase)
-     enum tree_dump_index phase;
+dump_enabled_p (enum tree_dump_index phase)
 {
   return dump_files[phase].state;
 }
@@ -742,8 +708,7 @@ dump_enabled_p (phase)
 /* Returns the switch name of PHASE.  */
 
 const char *
-dump_flag_name (phase)
-     enum tree_dump_index phase;
+dump_flag_name (enum tree_dump_index phase)
 {
   return dump_files[phase].swtch;
 }
@@ -752,9 +717,7 @@ dump_flag_name (phase)
    dump_begin.  */
 
 void
-dump_end (phase, stream)
-     enum tree_dump_index phase ATTRIBUTE_UNUSED;
-     FILE *stream;
+dump_end (enum tree_dump_index phase ATTRIBUTE_UNUSED, FILE *stream)
 {
   fclose (stream);
 }
@@ -763,8 +726,7 @@ dump_end (phase, stream)
    relevant details in the dump_files array.  */
 
 int
-dump_switch_p (arg)
-     const char *arg;
+dump_switch_p (const char *arg)
 {
   unsigned ix;
   const char *option_value;
