@@ -1,3 +1,10 @@
+2003-07-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* cppfiles.c (stack_file): Leave filename as "" rather than "<stdin>".
+	* line-map.h (linemap_add): Update comments.
+	* line-map.c (linemap_add): Update comments, interpret zero-length
+	filename as "<stdin>".
+
 2003-07-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* mkinstalldirs: Import autoconf 2.57 / automake 1.7 version.

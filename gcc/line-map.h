@@ -74,8 +74,11 @@ extern void linemap_init (struct line_maps *);
 extern void linemap_free (struct line_maps *);
 
 /* Add a mapping of logical source line to physical source file and
-   line number.  The text pointed to by TO_FILE must have a lifetime
-   at least as long as the line maps.  If reason is LC_LEAVE, and
+   line number.
+
+   The text pointed to by TO_FILE must have a lifetime
+   at least as long as the final call to lookup_line ().  An empty
+   TO_FILE means standard input.  If reason is LC_LEAVE, and
    TO_FILE is NULL, then TO_FILE, TO_LINE and SYSP are given their
    natural values considering the file we are returning to.
 

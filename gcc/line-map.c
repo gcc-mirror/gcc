@@ -61,11 +61,17 @@ linemap_free (struct line_maps *set)
 }
 
 /* Add a mapping of logical source line to physical source file and
-   line number.  The text pointed to by TO_FILE must have a lifetime
-   at least as long as the final call to lookup_line ().
+   line number.
+
+   The text pointed to by TO_FILE must have a lifetime
+   at least as long as the final call to lookup_line ().  An empty
+   TO_FILE means standard input.  If reason is LC_LEAVE, and
+   TO_FILE is NULL, then TO_FILE, TO_LINE and SYSP are given their
+   natural values considering the file we are returning to.
 
    FROM_LINE should be monotonic increasing across calls to this
-   function.  */
+   function.  A call to this function can relocate the previous set of
+   maps, so any stored line_map pointers should not be used.  */
 
 const struct line_map *
 linemap_add (struct line_maps *set, enum lc_reason reason,
@@ -84,6 +90,9 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
     }
 
   map = &set->maps[set->used++];
+
+  if (to_file && *to_file == '\0')
+    to_file = "<stdin>";
 
   /* If we don't keep our line maps consistent, we can easily
      segfault.  Don't rely on the client to do it for us.  */
