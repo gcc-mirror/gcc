@@ -1012,35 +1012,6 @@ do {									\
 } while (0)
 
 
-/* Constant Pool for all symbols operands which are changed with
-   force_const_mem during insn generation (expand_insn).  */
-
-extern int s390_pool_count;
-extern int s390_nr_constants;
-
-#define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, fndecl, size)  	        \
-{								       	\
-  struct pool_constant *pool;					       	\
-								        \
-    if (s390_pool_count == -1)                                        	\
-     {							                \
-       s390_nr_constants = 0;				                \
-       for (pool = first_pool; pool; pool = pool->next)	                \
-	 if (pool->mark) s390_nr_constants++;		                \
-       return;                                      	                \
-     }                                                                  \
-}
-
-#define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE, EXP, MODE, ALIGN, LABELNO, WIN) \
-{									    \
-  fprintf (FILE, ".LC%d:\n", LABELNO);					    \
-  s390_output_pool_entry (FILE, EXP, MODE, ALIGN);			    \
-  if (GET_MODE_SIZE (MODE) == 1)					    \
-    ASM_OUTPUT_SKIP ((FILE), (unsigned HOST_WIDE_INT)1);		    \
-  goto WIN;								    \
-}
-
-
 /* Miscellaneous parameters.  */
 
 /* Define the codes that are matched by predicates in aux-output.c.  */
