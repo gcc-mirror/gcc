@@ -1,3 +1,8 @@
+Fri Dec 19 10:02:57 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* i386.h (INITIAL_ELIMINATION_OFFSET): Correctly test for PIC
+	register used.
+
 Fri Dec 19 09:50:30 1997  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* combine.c (simplify_rtx, case ABS): Don't get confused by a
