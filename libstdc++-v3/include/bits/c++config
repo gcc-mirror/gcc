@@ -48,7 +48,7 @@
 // string and exception.
 # define _GLIBCPP_USE_EXCEPTIONS 1 
 
-// This is necessary until Egcs supports separate template
+// This is necessary until GCC supports separate template
 // compilation.  
 #define _GLIBCPP_NO_TEMPLATE_EXPORT 1
 

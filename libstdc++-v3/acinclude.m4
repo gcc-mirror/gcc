@@ -1128,7 +1128,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT, [
       // Check for buggy __complex__ that causes ICE in most versions of egcs
       // and gcc-2.95.x on certain platforms (eg., x86-win32).
       //
-      // See http://egcs.cygnus.com/ml/gcc-bugs/1999-07/msg00845.html for
+      // See http://gcc.gnu.org/ml/gcc-bugs/1999-07n/msg00845.html for
       // more info on the bug itself.
       //
       struct

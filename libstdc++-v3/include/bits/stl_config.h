@@ -328,7 +328,7 @@
 #   endif
 # endif
 
-// Mingw32, egcs compiler using the Microsoft C runtime
+// Mingw32, GCC compiler using the Microsoft C runtime
 # if defined(__MINGW32__)
 #   define __STL_NO_DRAND48
 #   ifdef _MT
@@ -336,7 +336,7 @@
 #   endif
 # endif
 
-// Cygwin32, egcs compiler on MS Windows
+// Cygwin32, GCC compiler on MS Windows
 # if defined(__CYGWIN__)
 #   define __STL_NO_DRAND48
 # endif
