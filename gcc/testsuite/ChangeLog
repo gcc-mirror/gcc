@@ -1,3 +1,8 @@
+2004-04-05  Devang Patel  <dpatel@apple.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_shif): New.
+	* gcc.dg/vect/vect-shift-1.c: New test.
+	
 2005-04-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20755
