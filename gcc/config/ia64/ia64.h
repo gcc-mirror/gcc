@@ -300,15 +300,12 @@ extern const char *ia64_fixed_range_string;
 /* A macro to update MODE and UNSIGNEDP when an object whose type is TYPE and
    which has the specified mode and signedness is to be stored in a register.
    This macro is only called when TYPE is a scalar type.  */
-
-/* ??? Maybe sign-extend 32 bit values like the alpha?  Or maybe zero-extend
-   because we only have zero-extending loads? */
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)				\
 do									\
   {									\
     if (GET_MODE_CLASS (MODE) == MODE_INT				\
-	&& GET_MODE_SIZE (MODE) < UNITS_PER_WORD)			\
-      (MODE) = DImode;							\
+	&& GET_MODE_SIZE (MODE) < 4)					\
+      (MODE) = SImode;							\
   }									\
 while (0)
 
