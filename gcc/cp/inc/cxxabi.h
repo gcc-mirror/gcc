@@ -160,51 +160,40 @@ class __base_class_info
 /* abi defined member variables */
 public:
   const __class_type_info *base;    /* base class type */
-  std::ptrdiff_t offset;            /* offset to the sub object */
-  int vmi_flags;                    /* about the base */
+  long vmi_offset_flags;            /* offset and info */
 
 /* implementation defined types */
 public:
   enum vmi_masks {
     virtual_mask = 0x1,
     public_mask = 0x2,
-    hwm_bit = 2
+    hwm_bit = 2,
+    offset_shift = 8          /* bits to shift offset by */
   };
   
 /* implementation defined member functions */
 public:
   bool is_virtual_p () const
-    { return vmi_flags & virtual_mask; }
+    { return vmi_offset_flags & virtual_mask; }
   bool is_public_p () const
-    { return vmi_flags & public_mask; }
+    { return vmi_offset_flags & public_mask; }
+  std::ptrdiff_t offset () const
+    { return std::ptrdiff_t (vmi_offset_flags) >> offset_shift; }
 };
 
 /* type information for a class */
 class __class_type_info
   : public std::type_info
 {
-/* abi defined member variables */
-public:
-  int details;      /* details about the class heirarchy */
-
 /* abi defined member functions */
 public:
   virtual ~__class_type_info ();
 public:
-  explicit __class_type_info (const char *n_,
-                              int details_)
-    : type_info (n_), details (details_)
+  explicit __class_type_info (const char *n_)
+    : type_info (n_)
     { }
 
 /* implementation defined types */
-public:
-  enum detail_masks {
-    multiple_base_mask = 0x1,   /* multiple inheritance of the same base type */
-    polymorphic_mask = 0x2,     /* is a polymorphic type */
-    virtual_base_mask = 0x4,    /* has virtual bases (direct or indirect) */
-    private_base_mask = 0x8     /* has private bases (direct or indirect) */
-  };
-
 public:
   /* sub_kind tells us about how a base object is contained within a derived
      object. We often do this lazily, hence the UNKNOWN value. At other times
@@ -230,7 +219,7 @@ public:
   {
     const void *dst_ptr;        /* pointer to caught object */
     sub_kind whole2dst;         /* path from most derived object to target */
-    int src_details;            /* hints about the source type */
+    int src_details;            /* hints about the source type heirarchy */
     const __class_type_info *base_type; /* where we found the target, */
                                 /* if in vbase the __class_type_info of vbase */
                                 /* if a non-virtual base then 1 */
@@ -320,9 +309,8 @@ public:
   virtual ~__si_class_type_info ();
 public:
   explicit __si_class_type_info (const char *n_,
-                                 int details_,
                                  const __class_type_info *base_)
-    : __class_type_info (n_, details_), base (base_)
+    : __class_type_info (n_), base (base_)
     { }
 
 /* implementation defined member functions */
@@ -342,7 +330,8 @@ protected:
 /* type information for a class with multiple and/or virtual bases */
 class __vmi_class_type_info : public __class_type_info {
 /* abi defined member variables */
-protected:
+public:
+  int details;      /* details about the class heirarchy */
   int n_bases;      /* number of direct bases */
   __base_class_info base_list[1]; /* array of bases */
   /* The array of bases uses the trailing array struct hack
@@ -355,8 +344,19 @@ public:
 public:
   explicit __vmi_class_type_info (const char *n_,
                                   int details_)
-    : __class_type_info (n_, details_), n_bases (0)
+    : __class_type_info (n_), details (details_), n_bases (0)
     { }
+
+/* implementation defined types */
+public:
+  enum detail_masks {
+    non_diamond_repeat_mask = 0x1,   /* distinct instance of repeated base */
+    diamond_shaped_mask = 0x2,       /* diamond shaped multiple inheritance */
+    non_public_base_mask = 0x4,      /* has non-public direct or indirect base */
+    public_base_mask = 0x8,          /* has public base (direct) */
+    
+    details_unknown_mask = 0x10
+  };
 
 /* implementation defined member functions */
 protected:

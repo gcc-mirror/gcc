@@ -1392,12 +1392,12 @@ class_hint_flags (type)
      tree type;
 {
   int hint_flags = 0;
-  hint_flags |= 0x1;  /* contains multiply inherited sub object */
-  hint_flags |= 0x4;  /* has virtual bases */
-  hint_flags |= 0x8;  /* has private base */
-  if (TYPE_POLYMORPHIC_P (type))
-    hint_flags |= 0x2;
   
+  hint_flags |= 0x1;  /* non-diamond shaped repeated base */
+  hint_flags |= 0x2;  /* diamond shaped */
+  hint_flags |= 0x4;  /* non-public base */
+  hint_flags |= 0x8;  /* public base */
+  type = 0; /* FIXME: Use it! */
   return hint_flags;
 }
         
@@ -1412,9 +1412,7 @@ class_initializer (desc, target, trail)
      tree trail;
 {
   tree init = tinfo_base_init (desc, target);
-  int flags = class_hint_flags (target);
   
-  trail = tree_cons (NULL_TREE, build_int_2 (flags, 0), trail);
   TREE_CHAIN (init) = trail;
   init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, init);
   TREE_HAS_CONSTRUCTOR (init) = TREE_CONSTANT (init) = TREE_STATIC (init) = 1;
@@ -1520,8 +1518,11 @@ synthesize_tinfo_var (target_type, real_name)
                 }
               is_simple = 0;
               
-              base_init = tree_cons
-                  (NULL_TREE, build_int_2 (flags, 0), base_init);
+              /* combine offset and flags into one field */
+              offset = build_binary_op (LSHIFT_EXPR, offset,
+                                        build_int_2 (8, 0));
+              offset = build_binary_op (BIT_IOR_EXPR, offset,
+                                        build_int_2 (flags, 0));
               base_init = tree_cons (NULL_TREE, offset, base_init);
               base_init = tree_cons (NULL_TREE, tinfo, base_init);
               base_init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, base_init);
@@ -1532,12 +1533,16 @@ synthesize_tinfo_var (target_type, real_name)
             var_type = si_class_desc_type_node;
           else
             {
-              /* Prepend the number of bases.  */
+              int hint = class_hint_flags (target_type);
+              
               base_inits = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, base_inits);
               base_inits = tree_cons (NULL_TREE, base_inits, NULL_TREE);
+              /* Prepend the number of bases.  */
               base_inits = tree_cons (NULL_TREE,
                                       build_int_2 (nbases, 0), base_inits);
-          
+              /* Prepend the hint flags. */
+              base_inits = tree_cons (NULL_TREE,
+                                      build_int_2 (hint, 0), base_inits);
               var_type = get_vmi_pseudo_type_info (nbases);
             }
           var_init = class_initializer (var_type, target_type, base_inits);
@@ -1761,27 +1766,24 @@ create_tinfo_types ()
   /* Class type_info. Add a flags field.  */
   class_desc_type_node = create_pseudo_type_info
         ("__class_type_info", 0,
-         build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
          NULL);
   
   /* Single public non-virtual base class. Add pointer to base class.  */
   si_class_desc_type_node = create_pseudo_type_info
            ("__si_class_type_info", 0,
-            build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
             build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
             NULL);
   
   /* Base class internal helper. Pointer to base type, offset to base,
      flags. */
   {
-    tree fields[3];
+    tree fields[2];
     
-    fields[0] = build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
-    fields[1] = build_lang_decl (FIELD_DECL, NULL_TREE, ptrdiff_type_node),
-    fields[2] = build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
+    fields[0] = build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info);
+    fields[1] = build_lang_decl (FIELD_DECL, NULL_TREE, integer_types[itk_long]);
     base_desc_type_node = make_aggr_type (RECORD_TYPE);
     finish_builtin_type (base_desc_type_node, "__base_class_type_info_pseudo",
-                         fields, 2, ptr_type_node);
+                         fields, 1, ptr_type_node);
     TYPE_HAS_CONSTRUCTOR (base_desc_type_node) = 1;
   }
   

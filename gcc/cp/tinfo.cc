@@ -652,7 +652,7 @@ do_catch (const type_info *thr_type, void **thr_obj,
 bool __class_type_info::
 do_upcast (const __class_type_info *dst_type, void **obj_ptr) const
 {
-  upcast_result result (details);
+  upcast_result result (__vmi_class_type_info::details_unknown_mask);
   
   if (do_upcast (contained_public, dst_type, *obj_ptr, result))
     return false;
@@ -712,7 +712,7 @@ do_find_public_src (ptrdiff_t src2dst,
         continue; // Not public, can't be here.
       
       const void *base = obj_ptr;
-      ptrdiff_t offset = base_list[i].offset;
+      ptrdiff_t offset = base_list[i].offset ();
       
       if (base_list[i].is_virtual_p ())
         {
@@ -836,7 +836,7 @@ do_dyncast (ptrdiff_t src2dst,
       dyncast_result result2;
       void const *base = obj_ptr;
       sub_kind base_access = access_path;
-      ptrdiff_t offset = base_list[i].offset;
+      ptrdiff_t offset = base_list[i].offset ();
       
       if (base_list[i].is_virtual_p ())
         {
@@ -1018,16 +1018,20 @@ do_upcast (sub_kind access_path,
       return contained_nonpublic_p (access_path);
     }
   
+  int src_details = result.src_details;
+  if (src_details & details_unknown_mask)
+    src_details = details;
+  
   for (size_t i = n_bases; i--;)
     {
-      upcast_result result2 (result.src_details);
+      upcast_result result2 (src_details);
       const void *base = obj_ptr;
       sub_kind sub_access = access_path;
-      ptrdiff_t offset = base_list[i].offset;
+      ptrdiff_t offset = base_list[i].offset ();
       
       if (!base_list[i].is_public_p ())
         {
-          if (!(result.src_details & multiple_base_mask))
+          if (!(src_details & non_diamond_repeat_mask))
             // original cannot have an ambiguous base
             continue;
           sub_access = sub_kind (sub_access & ~contained_public_mask);
@@ -1055,7 +1059,7 @@ do_upcast (sub_kind access_path,
           if (!result.base_type)
             {
               result = result2;
-              if (!(details & multiple_base_mask))
+              if (!(details & non_diamond_repeat_mask))
                 // cannot have an ambiguous other base
                 return false;
             }
@@ -1119,9 +1123,11 @@ __dynamic_cast (const void *src_ptr,    // object started from
   if (contained_nonvirtual_p (result.whole2src))
     // Found an invalid cross cast, which cannot also be a down cast
     return NULL;
+  #if 0 // FIXME: we need to discover this lazily
   if (!(whole_type->details & __class_type_info::private_base_mask))
     // whole type has no private bases
     return const_cast <void *> (result.dst_ptr);
+  #endif
   if (result.dst2src == __class_type_info::unknown)
     result.dst2src = dst_type->find_public_src (src2dst, result.dst_ptr,
                                                 src_type, src_ptr);
