@@ -14,17 +14,8 @@ SRCDIR=${3-${SRCDIR-.}}
 # (This was named INCLUDES, but that conflicts with a name in Makefile.in.)
 INPUT=${2-${INPUT-/usr/include}}
 
-# This prevents /bin/ex from failing if the current terminal type is
-# unrecognizable.
-TERM=unknown
-export TERM
-# This prevents two problems:
-# Either ex might find a .exrc file and get confused,
-# or ex might complain if the EXINIT variable is invalid. 
-# We know there is no .exrc in the GCC source.
-# `set' is a no-op ex command.
-EXINIT=set
-export EXINIT
+# Directory in which to store the results.
+LIB=${1?"fixincludes: output directory not specified"}
 
 # Define PWDCMD as a command to use to get the working dir
 # in the form that we want.
@@ -35,9 +26,6 @@ case "`pwd`" in
 	PWDCMD="eval pwd | sed -e 's,.*/usr/,/usr/,'"
 	;;
 esac
-
-# Directory in which to store the results.
-LIB=${1?"fixincludes: output directory not specified"}
 
 # Make sure it exists.
 if [ ! -d $LIB ]; then
@@ -258,7 +246,6 @@ while [ $# != 0 ]; do
 	' $2/$file > $2/$file.sed
 	mv $2/$file.sed $2/$file
 	if cmp $file $2/$file >/dev/null 2>&1; then
-	   echo Deleting $2/$file\; no fixes were needed.
 	   rm $2/$file
 	fi
       fi
@@ -280,12 +267,9 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file comment
-  ex ${LIB}/$file <<EOF
-  g/doesn't/s/doesn't/does not/
-  wq
-EOF
+  sed -e "s/doesn't/does not/" ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   fi
 fi
@@ -330,38 +314,23 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
-  ex ${LIB}/$file <<EOF
-  /size_t.*;/
-  i
-#ifndef _GCC_SIZE_T
-#define _GCC_SIZE_T
-.
-  /size_t/+1
-  i
-#endif
-.
-  /ptrdiff_t.*;/
-  i
-#ifndef _GCC_PTRDIFF_T
-#define _GCC_PTRDIFF_T
-.
-  /ptrdiff_t/+1
-  i
-#endif
-.
-  /wchar_t.*;/
-  i
-#ifndef _GCC_WCHAR_T
-#define _GCC_WCHAR_T
-.
-  /wchar_t/+1
-  i
-#endif
-.
-  wq
-EOF
+sed -e '/size_t.*;/i\
+#ifndef _GCC_SIZE_T\
+#define _GCC_SIZE_T' \
+    -e '/size_t.*;/a\
+#endif' \
+    -e '/ptrdiff_t.*;/i\
+#ifndef _GCC_PTRDIFF_T\
+#define _GCC_PTRDIFF_T' \
+    -e '/ptrdiff_t.*;/a\
+#endif' \
+    -e '/wchar_t.*;/i\
+#ifndef _GCC_WCHAR_T\
+#define _GCC_WCHAR_T' \
+    -e '/wchar_t.*;/a\
+#endif' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   fi
 fi
@@ -377,20 +346,13 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
-  ex ${LIB}/$file <<EOF
-  /typedef.*[ 	]size_t.*;/
-  i
-#ifndef _GCC_SIZE_T
-#define _GCC_SIZE_T
-.
-  /size_t/+1
-  i
-#endif
-.
-  wq
-EOF
+sed -e '/size_t.*;/i\
+#ifndef _GCC_SIZE_T\
+#define _GCC_SIZE_T' \
+    -e '/size_t.*;/a\
+#endif' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   fi
 fi
@@ -426,12 +388,9 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, definition of statsswtch
-  ex ${LIB}/$file <<EOF
-  g/boottime$/s//&;/
-  wq
-EOF
+  sed -e 's/boottime$/boottime;/' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   fi
 fi
@@ -448,12 +407,9 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, definition of nodeent
-  ex ${LIB}/$file <<EOF
-  g/char.*na_addr *$/s//&;/
-  wq
-EOF
+  sed -e 's/char.*na_addr *$/char *na_addr;/' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   fi
 fi
@@ -468,13 +424,9 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, bad \#ifdef line
-  ex ${LIB}/$file <<EOF
-  g/^#ifdef KERNEL && !defined/
-  s/#ifdef KERNEL && !defined/#if defined(KERNEL) \&\& !defined/
-  wq
-EOF
+  sed -e 's/#ifdef KERNEL/#if defined(KERNEL)/' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   fi
 fi
@@ -493,7 +445,6 @@ fi
 #  sed -e 's/#endif.*/#endif/' ${LIB}/$file > ${LIB}/${file}.sed
 #  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
 #  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-#    echo Deleting ${LIB}/$file\; no fixes were needed.
 #    rm -f ${LIB}/$file
 #  fi
 #fi
@@ -509,13 +460,9 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, superfluous static
-  ex ${LIB}/$file <<EOF
-  g/^static struct tlb_pid_state/
-  s/static//
-  wq
-EOF
+  sed -e 's/^static struct tlb_pid_state/struct tlb_pid_state/' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   else
 # This file has an alternative name, mips/cpu.h.  Fix that name, too.
@@ -537,16 +484,11 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file sprintf declaration
-  ex ${LIB}/$file <<EOF
-  /^extern char \*	sprintf();$/c
-#ifndef __STDC__
-extern char *	sprintf();
-#endif /* !defined __STDC__ */
-.
-  wq
-EOF
+  sed -e 's,^extern char \*	sprintf();$,#ifndef __STDC__\
+extern char *	sprintf();\
+#endif /* !defined __STDC__ */,' ${LIB}/$file > ${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   fi
 fi
@@ -563,16 +505,11 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file sprintf declaration
-  ex ${LIB}/$file <<EOF
-  /^extern char \*	sprintf();$/c
-#ifndef __STDC__
-extern char *	sprintf();
-#endif /* !defined __STDC__ */
-.
-  wq
-EOF
+  sed -e 's,^extern char \*	sprintf();$,#ifndef __STDC__\
+extern char *	sprintf();\
+#endif /* !defined __STDC__ */,' ${LIB}/$file > ${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm ${LIB}/$file
   fi
 fi
@@ -591,7 +528,6 @@ if [ -r ${LIB}/$file ]; then
   sed -e '/^struct/,/^};/s/}$/};/' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -616,7 +552,6 @@ if [ -r ${LIB}/$file ]; then
 ' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -635,7 +570,6 @@ if [ -r ${LIB}/$file ]; then
   sed -e '/^struct/,/^};/s/_cnt$/_cnt;/' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -658,7 +592,6 @@ if [ -r ${LIB}/$file ]; then
   -e 's/int	exit/void	exit/g' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -678,7 +611,6 @@ if [ -r ${LIB}/$file ]; then
   ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -697,7 +629,6 @@ if [ -r ${LIB}/$file ]; then
   sed -e 's%#endif / \*%#endif /\* %g' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -717,7 +648,6 @@ if [ -r ${LIB}/$file ]; then
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -737,7 +667,6 @@ if [ -r ${LIB}/$file ]; then
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -757,7 +686,6 @@ if [ -r ${LIB}/$file ]; then
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -777,7 +705,6 @@ if [ -r ${LIB}/$file ]; then
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -798,7 +725,6 @@ if [ -r ${LIB}/$file ]; then
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -860,7 +786,6 @@ if [ -r ${LIB}/$file ]; then
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -890,7 +815,6 @@ if [ -r ${LIB}/$file ]; then
   
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
@@ -920,7 +844,6 @@ if [ -r ${LIB}/$file ]; then
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
     rm -f ${LIB}/$file
   fi
 fi
