@@ -1,3 +1,9 @@
+Sun Feb 21 13:15:40 1999  Richard Henderson  <rth@cygnus.com>
+
+	* regmove.c (discover_flags_reg): Remove cc0 code.
+	(mark_flags_life_zones) [HAVE_cc0]: Force use of cc0; bail if
+	a potential flags register was identified.
+
 Sat Feb 20 16:16:07 1998  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000.md (scc plus ltu): Fix typo in last change.
