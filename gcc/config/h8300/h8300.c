@@ -542,29 +542,10 @@ asm_file_end (file)
 
 int
 small_power_of_two (value)
-     int value;
+     HOST_WIDE_INT value;
 {
-  switch (value)
-    {
-    case 1:
-    case 2:
-    case 4:
-    case 8:
-    case 16:
-    case 32:
-    case 64:
-    case 128:
-    case 256:
-    case 512:
-    case 1024:
-    case 2048:
-    case 4096:
-    case 8192:
-    case 16384:
-    case 32768:
-      return 1;
-    }
-  return 0;
+  int power = exact_log2 (value);
+  return power >= 0 && power <= 15;
 }
 
 /* Return true if VALUE is a valid constant for constraint 'O', which
@@ -573,7 +554,7 @@ small_power_of_two (value)
 
 int
 ok_for_bclr (value)
-     int value;
+     HOST_WIDE_INT value;
 {
   return small_power_of_two ((~value) & 0xff);
 }
@@ -645,107 +626,92 @@ call_insn_operand (op, mode)
 }
 
 int
-adds_subs_operand (op, mode)
+two_insn_adds_subs_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == CONST_INT)
     {
-      if (INTVAL (op) <= 4 && INTVAL (op) >= 0)
-	return 1;
-      if (INTVAL (op) >= -4 && INTVAL (op) <= 0)
-	return 1;
-      if ((TARGET_H8300H || TARGET_H8300S)
-	  && INTVAL (op) != 7
-	  && (INTVAL (op) <= 8 && INTVAL (op) >= 0))
-	return 1;
-      if ((TARGET_H8300H || TARGET_H8300S)
-	  && INTVAL (op) != -7
-	  && (INTVAL (op) >= -8 && INTVAL (op) <= 0))
-	return 1;
+      HOST_WIDE_INT value = INTVAL (op);
+
+      if (TARGET_H8300H || TARGET_H8300S)
+	{
+	  if (value >= -8 && value < -4 && value != -7)
+	    return 1;
+	  if (value > 4 && value <= 8 && value != 7)
+	    return 1;
+	}
+      else
+	{
+	  if (value == -4 || value == -3 || value == 3 || value == 4)
+	    return 1;
+	}
     }
+
   return 0;
 }
 
-/* Return nonzero if op is an adds/subs operand which only requires
-   one insn to implement.  It is assumed that OP is already an adds/subs
-   operand.  */
-int
-one_insn_adds_subs_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  int val = INTVAL (op);
+/* Split an add of a small constant into two adds/subs insns.  */
 
-  if (val == 1 || val == -1
-      || val == 2 || val == -2
-      || ((TARGET_H8300H || TARGET_H8300S)
-	  && (val == 4 || val == -4)))
-    return 1;
-  return 0;
-}
-
-const char *
-output_adds_subs (operands)
+void
+split_adds_subs (mode, operands)
+     enum machine_mode mode;
      rtx *operands;
 {
-  int val = INTVAL (operands[2]);
+  HOST_WIDE_INT val = INTVAL (operands[1]);
+  rtx reg = operands[0];
+  rtx tmp;
 
-  /* First get the value into the range -4..4 inclusive.
-
-     The only way it can be out of this range is when TARGET_H8300H
-     or TARGET_H8300S is true, thus it is safe to use adds #4 and subs #4.  */
-  if (val > 4)
+  /* Take care of +/- 4 for H8300H and H8300S.  */
+  if (TARGET_H8300H || TARGET_H8300S)
     {
-      output_asm_insn ("adds #4,%A0", operands);
-      val -= 4;
+      /* Get the value in range of +/- 4.  */
+      if (val > 4)
+	{
+	  tmp = gen_rtx_PLUS (mode, reg, GEN_INT (4));
+	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
+	  val -= 4;
+	}
+      else if (val < -4)
+	{
+	  tmp = gen_rtx_PLUS (mode, reg, GEN_INT (-4));
+	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
+	  val += 4;
+	}
+
+      if (val == 4 || val == -4)
+	{
+	  tmp = gen_rtx_PLUS (mode, reg, GEN_INT (val));
+	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
+	  return;
+	}
     }
 
-  if (val < -4)
-    {
-      output_asm_insn ("subs #4,%A0", operands);
-      val += 4;
-    }
-
-  /* Handle case were val == 4 or val == -4 and we're compiling
-     for TARGET_H8300H or TARGET_H8300S.  */
-  if ((TARGET_H8300H || TARGET_H8300S)
-      && val == 4)
-    return "adds #4,%A0";
-
-  if ((TARGET_H8300H || TARGET_H8300S)
-      && val == -4)
-    return "subs #4,%A0";
-
+  /* Get the value in range of +/- 2.  */
   if (val > 2)
     {
-      output_asm_insn ("adds #2,%A0", operands);
+      tmp = gen_rtx_PLUS (mode, reg, GEN_INT (2));
+      emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
       val -= 2;
     }
-
-  if (val < -2)
+  else if (val < -2)
     {
-      output_asm_insn ("subs #2,%A0", operands);
+      tmp = gen_rtx_PLUS (mode, reg, GEN_INT (-2));
+      emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
       val += 2;
     }
 
-  /* val should be one or two now.  */
-  if (val == 2)
-    return "adds #2,%A0";
-
-  if (val == -2)
-    return "subs #2,%A0";
-
-  /* val should be one now.  */
-  if (val == 1)
-    return "adds #1,%A0";
-
-  if (val == -1)
-    return "subs #1,%A0";
-
   /* If not optimizing, we might be asked to add 0.  */
   if (val == 0)
-    return "";
+    return;
+
+  /* We should have one or two now.  */
+  if (val >= -2 && val <= 2)
+    {
+      tmp = gen_rtx_PLUS (mode, reg, GEN_INT (val));
+      emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
+      return;
+    }
 
   /* In theory, this can't happen.  */
   abort ();

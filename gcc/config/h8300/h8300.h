@@ -399,11 +399,17 @@ enum reg_class {
    Return 1 if VALUE is in the range specified by C.  */
 
 #define CONST_OK_FOR_I(VALUE) ((VALUE) == 0)
-#define CONST_OK_FOR_J(VALUE) ((unsigned) (VALUE) < 256)
-#define CONST_OK_FOR_K(VALUE) (((VALUE) == 1) || (VALUE) == 2)
-#define CONST_OK_FOR_L(VALUE) (((VALUE) == -1) || (VALUE) == -2)
-#define CONST_OK_FOR_M(VALUE) (((VALUE) == 3) || (VALUE) == 4)
-#define CONST_OK_FOR_N(VALUE) (((VALUE) == -3) || (VALUE) == -4)
+#define CONST_OK_FOR_J(VALUE) ((unsigned HOST_WIDE_INT) (VALUE) < 256)
+#define CONST_OK_FOR_K(VALUE) ((VALUE) == 1 || (VALUE) == 2)
+#define CONST_OK_FOR_L(VALUE) \
+  (TARGET_H8300H || TARGET_H8300S \
+   ? (VALUE) == 1 || (VALUE) == 2 || (VALUE) == 4 \
+   : (VALUE) == 1 || (VALUE) == 2)
+#define CONST_OK_FOR_M(VALUE) ((VALUE) == 3 || (VALUE) == 4)
+#define CONST_OK_FOR_N(VALUE) \
+  (TARGET_H8300H || TARGET_H8300S \
+   ? (VALUE) == -1 || (VALUE) == -2 || (VALUE) == -4 \
+   : (VALUE) == -1 || (VALUE) == -2)
 #define CONST_OK_FOR_O(VALUE) (ok_for_bclr (VALUE))
 #define CONST_OK_FOR_P(VALUE) (small_power_of_two (VALUE))
 
@@ -415,7 +421,7 @@ enum reg_class {
    (C) == 'M' ? CONST_OK_FOR_M (VALUE) : \
    (C) == 'N' ? CONST_OK_FOR_N (VALUE) : \
    (C) == 'O' ? CONST_OK_FOR_O (VALUE) : \
-   (C) == 'P' ? CONST_OK_FOR_P(VALUE) : \
+   (C) == 'P' ? CONST_OK_FOR_P (VALUE) : \
    0)
 
 /* Similar, but for floating constants, and defining letters G and H.
