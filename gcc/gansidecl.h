@@ -45,6 +45,9 @@ Boston, MA 02111-1307, USA.  */
 # undef const
 # undef inline
 # define inline __inline__  /* Modern gcc can use `__inline__' freely. */
+# ifndef HAVE_LONG_DOUBLE
+#  define HAVE_LONG_DOUBLE 1
+# endif
 #endif /* GCC >= 2.7 */
 
 #ifndef NULL_PTR

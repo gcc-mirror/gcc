@@ -172,6 +172,25 @@ if test $gcc_cv_c_volatile = yes ; then
 fi
 ])
 
+dnl Check whether long double is supported.  This differs from the
+dnl built-in autoconf test in that it works for cross compiles.
+AC_DEFUN(AC_GCC_C_LONG_DOUBLE,
+[AC_CACHE_CHECK(for long double, gcc_cv_c_long_double,
+[if test "$GCC" = yes; then
+  gcc_cv_c_long_double=yes
+else
+AC_TRY_COMPILE(,
+[/* The Stardent Vistra knows sizeof(long double), but does not support it.  */
+long double foo = 0.0;
+/* On Ultrix 4.3 cc, long double is 4 and double is 8.  */
+switch (0) case 0: case (sizeof(long double) >= sizeof(double)):;],
+gcc_cv_c_long_double=yes, gcc_cv_c_long_double=no)
+fi])
+if test $gcc_cv_c_long_double = yes; then
+  AC_DEFINE(HAVE_LONG_DOUBLE)
+fi
+])
+
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
 AC_DEFUN(GCC_FUNC_MKDIR_TAKES_ONE_ARG,

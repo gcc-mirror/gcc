@@ -86,7 +86,11 @@ struct ggc_any
   union {
     char c;
     HOST_WIDE_INT i;
+#ifdef HAVE_LONG_DOUBLE
     long double d;
+#else
+    double d;
+#endif
   } u;
 };
 
