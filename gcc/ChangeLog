@@ -1,3 +1,7 @@
+Sat Oct 16 12:42:12 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_emit_libcall): Use ggc_alloc_string.
+
 Sat Oct 16 12:34:44 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_rptb_insert): Emit rpts_top pattern
