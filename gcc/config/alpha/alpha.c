@@ -84,6 +84,8 @@ extern int rtx_equal_function_value_matters;
 
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1  PROTO((rtx, int, int, int));
+static rtx alpha_emit_set_const_1 PROTO((rtx, enum machine_mode,
+					 HOST_WIDE_INT, int));
 static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
 
 /* Parse target option strings. */
@@ -788,6 +790,26 @@ alpha_emit_set_const (target, mode, c, n)
      HOST_WIDE_INT c;
      int n;
 {
+  rtx pat;
+  int i;
+
+  /* Try 1 insn, then 2, then up to N. */
+  for (i = 1; i <= n; i++)
+    if ((pat = alpha_emit_set_const_1 (target, mode, c, i)) != 0)
+      return pat;
+
+  return 0;
+}
+
+/* Internal routine for the above to check for N or below insns.  */
+
+static rtx
+alpha_emit_set_const_1 (target, mode, c, n)
+     rtx target;
+     enum machine_mode mode;
+     HOST_WIDE_INT c;
+     int n;
+{
   HOST_WIDE_INT new = c;
   int i, bits;
   /* Use a pseudo if highly optimizing and still generating RTL.  */
@@ -832,12 +854,7 @@ alpha_emit_set_const (target, mode, c, n)
 
       if (c == low || (low == 0 && extra == 0))
 	return copy_to_suggested_reg (GEN_INT (c), target, mode);
-      else if (n >= 2 + (extra != 0)
-	       /* We can't do this when SImode if HIGH required adjustment.
-		  This is because the code relies on an implicit overflow
-		  which is invisible to the RTL.  We can thus get incorrect
-		  code if the two ldah instructions are combined.  */
-	       && ! (mode == SImode && extra != 0))
+      else if (n >= 2 + (extra != 0))
 	{
 	  temp = copy_to_suggested_reg (GEN_INT (low), subtarget, mode);
 
