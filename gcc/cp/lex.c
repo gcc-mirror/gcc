@@ -3805,17 +3805,14 @@ real_yylex ()
 	    yylval.ttype = build_int_2 (low, high);
 	    TREE_TYPE (yylval.ttype) = long_long_unsigned_type_node;
 
+	    /* Calculate the ANSI type.  */
 	    if (!spec_long && !spec_unsigned
 		&& int_fits_type_p (yylval.ttype, integer_type_node))
-	      {
-		type = integer_type_node;
-	      }
+	      type = integer_type_node;
 	    else if (!spec_long && (base != 10 || spec_unsigned)
 		     && int_fits_type_p (yylval.ttype, unsigned_type_node))
-	      {
-		/* Nondecimal constants try unsigned even in traditional C.  */
-		type = unsigned_type_node;
-	      }
+	      /* Nondecimal constants try unsigned even in traditional C.  */
+	      type = unsigned_type_node;
 	    else if (!spec_unsigned && !spec_long_long
 		     && int_fits_type_p (yylval.ttype, long_integer_type_node))
 	      type = long_integer_type_node;
@@ -3827,31 +3824,28 @@ real_yylex ()
 		     && int_fits_type_p (yylval.ttype,
 					 long_long_integer_type_node))
 	      type = long_long_integer_type_node;
-	    else if (int_fits_type_p (yylval.ttype,
-				      long_long_unsigned_type_node))
+	    else
 	      type = long_long_unsigned_type_node;
 
-	    else
+	    if (!int_fits_type_p (yylval.ttype, type) && !warn)
+	      pedwarn ("integer constant out of range");
+
+	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
+	      warning ("decimal integer constant is so large that it is unsigned");
+
+	    if (spec_imag)
 	      {
-		type = long_long_integer_type_node;
-		warning ("integer constant out of range");
-
-		if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
-		  warning ("decimal integer constant is so large that it is unsigned");
-		if (spec_imag)
-		  {
-		    if (TYPE_PRECISION (type)
-			<= TYPE_PRECISION (integer_type_node))
-		      yylval.ttype
-			= build_complex (NULL_TREE, integer_zero_node,
-					 cp_convert (integer_type_node,
-						     yylval.ttype));
-		    else
-		      error ("complex integer constant is too wide for `__complex int'");
-		  }
+		if (TYPE_PRECISION (type)
+		    <= TYPE_PRECISION (integer_type_node))
+		  yylval.ttype
+		    = build_complex (NULL_TREE, integer_zero_node,
+				     cp_convert (integer_type_node,
+						 yylval.ttype));
+		else
+		  error ("complex integer constant is too wide for `__complex int'");
 	      }
-
-	    TREE_TYPE (yylval.ttype) = type;
+	    else
+	      TREE_TYPE (yylval.ttype) = type;
 	  }
 
 	put_back (c);
