@@ -1223,7 +1223,8 @@ static void
 do_pragma_once (pfile)
      cpp_reader *pfile;
 {
-  cpp_error (pfile, DL_WARNING, "#pragma once is obsolete");
+  if (CPP_OPTION (pfile, warn_deprecated))
+    cpp_error (pfile, DL_WARNING, "#pragma once is obsolete");
 
   if (pfile->buffer->prev == NULL)
     cpp_error (pfile, DL_WARNING, "#pragma once in main file");

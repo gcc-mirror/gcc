@@ -278,6 +278,9 @@ struct cpp_options
   /* Nonzero means don't print warning messages.  */
   unsigned char inhibit_warnings;
 
+  /* Nonzero means complain about deprecated features.  */
+  unsigned char warn_deprecated;
+
   /* Nonzero means don't suppress warnings from system headers.  */
   unsigned char warn_system_headers;
 

@@ -767,6 +767,7 @@ c_common_decode_option (argc, argv)
 
     case OPT_Wdeprecated:
       warn_deprecated = on;
+      cpp_opts->warn_deprecated = on;
       break;
 
     case OPT_Wdiv_by_zero:

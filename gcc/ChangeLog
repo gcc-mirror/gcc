@@ -1,4 +1,13 @@
+2003-01-28  Jason Merrill  <jason@redhat.com>
+
+	* cpplib.h (struct cpp_options): Add warn_deprecated field.
+	* cppinit.c (cpp_create_reader): Turn it on by default.
+	* c-opts.c (c_common_decode_option): Set it.
+	* cpplib.c (do_pragma_once): Only complain about #pragma once
+	if warn_deprecated is set.
+
 2003-01-28  Dale Johannesen  <dalej@apple.com>
+
         * emit-rtl.c (const_double_htab_hash):  Use mode in the hash.
         * loop.c (scan_loop):  Move movables on -Os rich-register targets.
         * config/rs6000/rs6000.md (sibcall*):  Use match_operand for LR.
