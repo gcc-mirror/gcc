@@ -282,8 +282,11 @@ option:   ID
 	    { $$ = create_option ($1, adjust_field_type ($3, NULL)); }
 	| NESTED_PTR '(' type ',' stringseq ',' stringseq ')'
 	    {
-	      struct nested_ptr_data d =
-	        { adjust_field_type ($3, NULL), $5, $7 };
+	      struct nested_ptr_data d;
+
+	      d.type = adjust_field_type ($3, NULL);
+	      d.convert_to = $5;
+	      d.convert_from = $7;
 	      $$ = create_option ("nested_ptr",
 				  xmemdup (&d, sizeof (d), sizeof (d)));
 	    }
