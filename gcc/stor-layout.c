@@ -97,6 +97,17 @@ variable_size (size)
 
   size = save_expr (size);
 
+  /* If an array with a variable number of elements is declared, and
+     the elements require destruction, we will emit a cleanup for the
+     array.  That cleanup is run both on normal exit from the block
+     and in the exception-handler for the block.  Normally, when code
+     is used in both ordinary code and in an exception handler it is
+     `unsaved', i.e., all SAVE_EXPRs are recalculated.  However, we do
+     not wish to do that here; the array-size is the same in both
+     places.  */
+  if (TREE_CODE (size) == SAVE_EXPR)
+    SAVE_EXPR_PERSISTENT_P (size) = 1;
+
   if (global_bindings_p ())
     {
       if (TREE_CONSTANT (size))

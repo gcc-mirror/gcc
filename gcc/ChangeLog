@@ -1,3 +1,12 @@
+Fri Nov 12 08:54:22 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (SAVE_EXPR_PERSISTENT_P): New macro.
+	* tree.c (array_type_nelts): Don't handle SAVE_EXPRs specially.
+	(unsave_expr_now): Don't unsave SAVE_EXPR_PERSISTENT_P
+	expressions.
+	* stor-layout.c (variable_size): Set SAVE_EXPR_PERSISTENT_P on
+	variable-sized array bounds.
+	
 Fri Nov 12 08:04:45 1999  Catherine Moore  <clm@cygnus.com>
 
 	* defaults.h (ASM_OUTPUT_ALTERNATE_LABEL_NAME):  Use
