@@ -1,3 +1,64 @@
+Tue Mar 30 12:04:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * sta.c (ffesta_ffebad_1sp, ffesta_ffebad_1st, ffesta_ffebad_2st):
+        Const-ify a char*.
+
+        * sta.h (ffesta_ffebad_1sp, ffesta_ffebad_1st, ffesta_ffebad_2st):
+        Likewise.
+
+        * stb.c (ffestb_local_u_): Likewise.
+        (ffestb_do, ffestb_dowhile, ffestb_else, ffestb_elsexyz,
+        ffestb_else3_, ffestb_endxyz, ffestb_goto, ffestb_let,
+        ffestb_type, ffestb_type1_, ffestb_varlist, ffestb_R423B,
+        ffestb_R522, ffestb_R528, ffestb_R542, ffestb_R834, ffestb_R835,
+        ffestb_R838, ffestb_R841, ffestb_R1102, ffestb_blockdata,
+        ffestb_R1212, ffestb_R1228, ffestb_V009, ffestb_module,
+        ffestb_R809, ffestb_R810, ffestb_R10014_, ffestb_R10015_,
+        ffestb_R10018_, ffestb_R1107, ffestb_R1202, ffestb_R12026_,
+        ffestb_S3P4, ffestb_V012, ffestb_V014, ffestb_V025, ffestb_V0255_,
+        ffestb_V020, ffestb_dimlist, ffestb_dummy, ffestb_R524,
+        ffestb_R547, ffestb_decl_chartype, ffestb_decl_dbltype,
+        ffestb_decl_gentype, ffestb_decl_recursive, ffestb_decl_entsp_2_,
+        ffestb_decl_func_, ffestb_V003, ffestb_V016, ffestb_V027,
+        ffestb_decl_R539): Likewise.
+
+        * stb.h (_ffestb_args_): Likewise.
+
+        * stc.c (ffestc_subr_binsrch_, ffestc_subr_is_present_,
+        ffestc_subr_speccmp_, ffestc_R904, ffestc_R907): Likewise.
+
+        * std.c (ffestd_R1001dump_1005_1_, ffestd_R1001dump_1005_2_,
+        ffestd_R1001dump_1005_3_, ffestd_R1001dump_1005_4_,
+        ffestd_R1001dump_1005_5_, ffestd_R1001dump_1010_1_,
+        ffestd_R1001dump_1010_2_, ffestd_R1001dump_1010_3_,
+        ffestd_R1001dump_1010_4_, ffestd_R1001dump_1010_5_): Likewise.
+
+        * ste.c (ffeste_begin_iterdo_, ffeste_subr_file_): Likewise.
+
+        * sts.c (ffests_printf_1D, ffests_printf_1U, ffests_printf_1s,
+        ffests_printf_2Us, ffests_puts, ffests_puttext): Likewise.
+
+        * sts.h (ffests_printf_1D, ffests_printf_1U, ffests_printf_1s,
+        ffests_printf_2Us, ffests_puts, ffests_puttext): Likewise.
+
+        * stt.c (ffestt_exprlist_drive, ffestt_implist_drive,
+        ffestt_tokenlist_drive): Add prototype arguments.
+
+        * stt.h (ffestt_exprlist_drive, ffestt_implist_drive,
+        ffestt_tokenlist_drive): Likewise.
+
+        * stu.c (ffestu_dummies_transition_): Likewise.
+        (ffestu_sym_end_transition): Const-ify a char*.
+
+        * stw.c (ffestw_display_state, ffestw_new, ffestw_pop): Add
+        prototype arguments.
+
+        * stw.h (ffestw_display_state, ffestw_new, ffestw_pop): Likewise.
+
+        * version.c (ffe_version_string): Const-ify a char*.
+
+        * version.h (ffe_version_string): Likewise.
+
 Sat Mar 27 13:00:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bad.c (_ffebad_message_, ffebad_string_, ffebad_message_,

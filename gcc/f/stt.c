@@ -598,7 +598,7 @@ ffestt_exprlist_create ()
    at a time.  */
 
 void
-ffestt_exprlist_drive (ffesttExprList list, void (*fn) ())
+ffestt_exprlist_drive (ffesttExprList list, void (*fn) (ffebld, ffelexToken))
 {
   ffesttExprList next;
 
@@ -837,7 +837,7 @@ ffestt_implist_create ()
    The token pairs in the list are passed to the function one pair at a time.  */
 
 void
-ffestt_implist_drive (ffesttImpList list, void (*fn) ())
+ffestt_implist_drive (ffesttImpList list, void (*fn) (ffelexToken, ffelexToken))
 {
   ffesttImpList next;
 
@@ -951,7 +951,7 @@ ffestt_tokenlist_create ()
    The tokens in the list are passed to the given function.  */
 
 void
-ffestt_tokenlist_drive (ffesttTokenList tl, void (*fn) ())
+ffestt_tokenlist_drive (ffesttTokenList tl, void (*fn) (ffelexToken))
 {
   ffesttTokenItem ti;
 

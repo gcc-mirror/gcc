@@ -74,7 +74,7 @@ ffestw ffestw_stack_top_ = NULL;
    ffestw_display_state();  */
 
 void
-ffestw_display_state ()
+ffestw_display_state (void)
 {
   assert (ffestw_stack_top_ != NULL);
 
@@ -320,7 +320,7 @@ ffestw_kill (ffestw b)
    b = ffestw_new();  */
 
 ffestw
-ffestw_new ()
+ffestw_new (void)
 {
   ffestw b;
 
@@ -335,7 +335,7 @@ ffestw_new ()
    ffestw_pop();  */
 
 ffestw
-ffestw_pop ()
+ffestw_pop (void)
 {
   ffestw b;
   ffestw oldb = ffestw_stack_top_;

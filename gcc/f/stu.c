@@ -60,7 +60,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static void ffestu_list_exec_transition_ (ffebld list);
 static bool ffestu_symter_end_transition_ (ffebld expr);
 static bool ffestu_symter_exec_transition_ (ffebld expr);
-static bool ffestu_dummies_transition_ (ffesymbol (*symfunc) (),
+static bool ffestu_dummies_transition_ (ffesymbol (*symfunc) (ffesymbol),
 					ffebld list);
 
 /* Internal macros. */
@@ -122,7 +122,7 @@ ffestu_sym_end_transition (ffesymbol s)
 	  ffeinfoBasictype bt;
 	  ffeinfoKindtype kt;
 	  bool array;
-	  char *name = NULL;
+	  const char *name = NULL;
 
 	  ffestu_dummies_transition_ (ffecom_sym_end_transition,
 				      ffesymbol_dummyargs (s));
@@ -1114,7 +1114,7 @@ tail:				/* :::::::::::::::::::: */
    Make sure we don't get called recursively ourselves!	 */
 
 static bool
-ffestu_dummies_transition_ (ffesymbol (*symfunc) (), ffebld list)
+ffestu_dummies_transition_ (ffesymbol (*symfunc) (ffesymbol), ffebld list)
 {
   static bool in_progress = FALSE;
   ffebld item;

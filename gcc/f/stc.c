@@ -339,14 +339,14 @@ static void ffestc_shriek_where_ (bool ok);
 #if FFESTR_F90
 static void ffestc_shriek_wherethen_ (bool ok);
 #endif
-static int ffestc_subr_binsrch_ (char **list, int size, ffestpFile *spec,
-				 char *whine);
+static int ffestc_subr_binsrch_ (const char **list, int size, ffestpFile *spec,
+				 const char *whine);
 static ffestvFormat ffestc_subr_format_ (ffestpFile *spec);
 static bool ffestc_subr_is_branch_ (ffestpFile *spec);
 static bool ffestc_subr_is_format_ (ffestpFile *spec);
-static bool ffestc_subr_is_present_ (char *name, ffestpFile *spec);
-static int ffestc_subr_speccmp_ (char *string, ffestpFile *spec,
-				 char **target, int *length);
+static bool ffestc_subr_is_present_ (const char *name, ffestpFile *spec);
+static int ffestc_subr_speccmp_ (const char *string, ffestpFile *spec,
+				 const char **target, int *length);
 static ffestvUnit ffestc_subr_unit_ (ffestpFile *spec);
 static void ffestc_try_shriek_do_ (void);
 
@@ -5044,14 +5044,14 @@ ffestc_shriek_wherethen_ (bool ok)
    using "etc" as the pick-one-of-these string.	 */
 
 static int
-ffestc_subr_binsrch_ (char **list, int size, ffestpFile *spec, char *whine)
+ffestc_subr_binsrch_ (const char **list, int size, ffestpFile *spec, const char *whine)
 {
   int lowest_tested;
   int highest_tested;
   int halfway;
   int offset;
   int c;
-  char *str;
+  const char *str;
   int len;
 
   if (size == 0)
@@ -5186,7 +5186,7 @@ ffestc_subr_is_format_ (ffestpFile *spec)
    ffestc_subr_is_present_("SPECIFIER",&specifier);  */
 
 static bool
-ffestc_subr_is_present_ (char *name, ffestpFile *spec)
+ffestc_subr_is_present_ (const char *name, ffestpFile *spec)
 {
   if (spec->kw_or_val_present)
     {
@@ -5219,7 +5219,7 @@ ffestc_subr_is_present_ (char *name, ffestpFile *spec)
    0 if 2 is returned, the length of the constant string value otherwise.  */
 
 static int
-ffestc_subr_speccmp_ (char *string, ffestpFile *spec, char **target,
+ffestc_subr_speccmp_ (const char *string, ffestpFile *spec, const char **target,
 		      int *length)
 {
   ffebldConstant c;
@@ -10198,7 +10198,7 @@ ffestc_R904 ()
 {
   int i;
   int expect_file;
-  char *status_strs[]
+  const char *status_strs[]
   =
   {
     "New",
@@ -10207,7 +10207,7 @@ ffestc_R904 ()
     "Scratch",
     "Unknown"
   };
-  char *access_strs[]
+  const char *access_strs[]
   =
   {
     "Append",
@@ -10215,20 +10215,20 @@ ffestc_R904 ()
     "Keyed",
     "Sequential"
   };
-  char *blank_strs[]
+  const char *blank_strs[]
   =
   {
     "Null",
     "Zero"
   };
-  char *carriagecontrol_strs[]
+  const char *carriagecontrol_strs[]
   =
   {
     "Fortran",
     "List",
     "None"
   };
-  char *dispose_strs[]
+  const char *dispose_strs[]
   =
   {
     "Delete",
@@ -10239,41 +10239,41 @@ ffestc_R904 ()
     "Submit",
     "Submit/Delete"
   };
-  char *form_strs[]
+  const char *form_strs[]
   =
   {
     "Formatted",
     "Unformatted"
   };
-  char *organization_strs[]
+  const char *organization_strs[]
   =
   {
     "Indexed",
     "Relative",
     "Sequential"
   };
-  char *position_strs[]
+  const char *position_strs[]
   =
   {
     "Append",
     "AsIs",
     "Rewind"
   };
-  char *action_strs[]
+  const char *action_strs[]
   =
   {
     "Read",
     "ReadWrite",
     "Write"
   };
-  char *delim_strs[]
+  const char *delim_strs[]
   =
   {
     "Apostrophe",
     "None",
     "Quote"
   };
-  char *recordtype_strs[]
+  const char *recordtype_strs[]
   =
   {
     "Fixed",
@@ -10283,7 +10283,7 @@ ffestc_R904 ()
     "Stream_LF",
     "Variable"
   };
-  char *pad_strs[]
+  const char *pad_strs[]
   =
   {
     "No",
@@ -10453,7 +10453,7 @@ ffestc_R904 ()
 void
 ffestc_R907 ()
 {
-  char *status_strs[]
+  const char *status_strs[]
   =
   {
     "Delete",

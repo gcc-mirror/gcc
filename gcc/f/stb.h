@@ -50,7 +50,7 @@ struct _ffestb_args_
   {
     struct
       {
-	char *badname;
+	const char *badname;
 	ffeTokenLength len;	/* Length of "ENTRY/FUNCTION/SUBROUTINE". */
 	bool is_subr;		/* TRUE if SUBROUTINE or if ENTRY within
 				   SUBROUTINE. */
@@ -58,7 +58,7 @@ struct _ffestb_args_
     dummy;
     struct
       {
-	char *badname;
+	const char *badname;
 	ffeTokenLength len;	/* Length of
 				   "BACKSPACE/ENDFILE/REWIND/UNLOCK". */
       }
@@ -82,7 +82,7 @@ struct _ffestb_args_
 #if FFESTR_F90
     struct
       {
-	char *badname;
+	const char *badname;
 	ffeTokenLength len;	/* Length of "ALLOCATE/DEALLOCATE". */
 	ffeexprContext ctx;	/* Either ALLOCATE or DEALLOCATE. */
       }
@@ -90,7 +90,7 @@ struct _ffestb_args_
 #endif
     struct
       {
-	char *badname;
+	const char *badname;
 	ffeTokenLength len;	/* Length of
 				   "EXTERNAL/INTENT/INTRINSIC/OPTIONAL/PUBLIC/
 				   PRIVATE". */
@@ -99,7 +99,7 @@ struct _ffestb_args_
 #if FFESTR_VXT
     struct
       {
-	char *badname;
+	const char *badname;
 	ffeTokenLength len;	/* Length of "ENCODE/DECODE". */
       }
     vxtcode;
@@ -107,14 +107,14 @@ struct _ffestb_args_
 #if FFESTR_F90
     struct
       {
-	char *badname;
+	const char *badname;
 	ffeTokenLength len;	/* Length of "ALLOCATABLE/POINTER/TARGET". */
       }
     dimlist;
 #endif
     struct
       {
-	char *badname;
+	const char *badname;
 	ffeTokenLength len;	/* Length of "DIMENSION/VIRTUAL". */
       }
     R524;

@@ -104,7 +104,7 @@ ffests_new (ffests s, mallocPool pool, ffestsLength size)
    Like printf, but into a string.  */
 
 void
-ffests_printf_1D (ffests s, char *ctl, long arg1)
+ffests_printf_1D (ffests s, const char *ctl, long arg1)
 {
   char quickbuf[40];
   char *buff;
@@ -133,7 +133,7 @@ ffests_printf_1D (ffests s, char *ctl, long arg1)
    Like printf, but into a string.  */
 
 void
-ffests_printf_1U (ffests s, char *ctl, unsigned long arg1)
+ffests_printf_1U (ffests s, const char *ctl, unsigned long arg1)
 {
   char quickbuf[40];
   char *buff;
@@ -162,7 +162,7 @@ ffests_printf_1U (ffests s, char *ctl, unsigned long arg1)
    Like printf, but into a string.  */
 
 void
-ffests_printf_1s (ffests s, char *ctl, char *arg1)
+ffests_printf_1s (ffests s, const char *ctl, const char *arg1)
 {
   char quickbuf[40];
   char *buff;
@@ -190,7 +190,7 @@ ffests_printf_1s (ffests s, char *ctl, char *arg1)
    Like printf, but into a string.  */
 
 void
-ffests_printf_2Us (ffests s, char *ctl, unsigned long arg1, char *arg2)
+ffests_printf_2Us (ffests s, const char *ctl, unsigned long arg1, const char *arg2)
 {
   char quickbuf[60];
   char *buff;
@@ -228,7 +228,7 @@ ffests_putc (ffests s, char c)
    ffests_puts(s,"append me");	*/
 
 void
-ffests_puts (ffests s, char *string)
+ffests_puts (ffests s, const char *string)
 {
   ffests_puttext (s, string, strlen (string));
 }
@@ -242,7 +242,7 @@ ffests_puts (ffests s, char *string)
    and may be 0.  */
 
 void
-ffests_puttext (ffests s, char *text, ffestsLength length)
+ffests_puttext (ffests s, const char *text, ffestsLength length)
 {
   ffestsLength newlen;
   ffestsLength newmax;

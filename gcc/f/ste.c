@@ -113,7 +113,7 @@ static void ffeste_begin_iterdo_ (ffestw block, tree *tvar, tree *tincr,
 				  ffebld start, ffelexToken start_token,
 				  ffebld end, ffelexToken end_token,
 				  ffebld incr, ffelexToken incr_token,
-				  char *msg);
+				  const char *msg);
 static void ffeste_end_iterdo_ (tree tvar, tree tincr, tree itersvar);
 static void ffeste_io_call_ (tree call, bool do_check);
 static tree ffeste_io_dofio_ (ffebld expr);
@@ -141,7 +141,7 @@ static tree ffeste_io_olist_ (bool have_err, ffebld unit_expr,
 			      ffestpFile *blank_spec);
 static void ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt);
 #elif FFECOM_targetCURRENT == FFECOM_targetFFE
-static void ffeste_subr_file_ (char *kw, ffestpFile *spec);
+static void ffeste_subr_file_ (const char *kw, ffestpFile *spec);
 #else
 #error
 #endif
@@ -302,7 +302,7 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 		      ffebld start, ffelexToken start_token,
 		      ffebld end, ffelexToken end_token,
 		      ffebld incr, ffelexToken incr_token,
-		      char *msg)
+		      const char *msg)
 {
   tree tvar;
   tree expr;
@@ -1942,7 +1942,7 @@ ffeste_io_olist_ (bool have_err,
 
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
 static void
-ffeste_subr_file_ (char *kw, ffestpFile *spec)
+ffeste_subr_file_ (const char *kw, ffestpFile *spec)
 {
   if (!spec->kw_or_val_present)
     return;
