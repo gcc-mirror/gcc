@@ -1,3 +1,10 @@
+Wed Mar  4 21:58:25 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+
+	* rs6000/linux.h: don't define DEFAULT_VTABLE_THUNKS to 1 if 
+	USE_GNULIBC_1 is defined
+	* configure.in: add a new case powerpc-*-linux-gnulibc1 which
+	includes the t-linux-gnulibc1 fragment
+
 Wed Mar  4 12:11:36 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.md (movdf_internal1a): Fix misplaced parenthesis in condition.
