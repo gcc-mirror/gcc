@@ -571,11 +571,13 @@ this_or_super:			/* Added, simplifies error diagnostics */
 /* 19.9.1 Productions from 9.1: Interfaces Declarations  */
 interface_declaration:
 	INTERFACE_TK identifier	interface_body
+		{ report_class_declaration ($2); modifier_value = 0; }
 |	modifiers INTERFACE_TK identifier interface_body
-		{ modifier_value = 0; }
+		{ report_class_declaration ($3); modifier_value = 0; }
 |	INTERFACE_TK identifier extends_interfaces interface_body
+		{ report_class_declaration ($2); modifier_value = 0; }
 |	modifiers INTERFACE_TK identifier extends_interfaces interface_body
-		{ modifier_value = 0; }
+		{ report_class_declaration ($3); modifier_value = 0; }
 ;
 
 extends_interfaces:
