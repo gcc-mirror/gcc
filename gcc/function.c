@@ -1453,7 +1453,7 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 
 	     If it has a REG_LIBCALL note, delete the REG_LIBCALL
 	     and REG_RETVAL notes too.  */
-	  if (GET_CODE (PATTERN (insn)) == CLOBBER
+ 	  if (GET_CODE (PATTERN (insn)) == CLOBBER
 	      && XEXP (PATTERN (insn), 0) == var)
 	    {
 	      if ((note = find_reg_note (insn, REG_LIBCALL, NULL_RTX)) != 0)
@@ -2059,13 +2059,14 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	      fixeddest = XEXP (fixeddest, 0);
 	    /* Convert (SUBREG (MEM)) to a MEM in a changed mode.  */
 	    if (GET_CODE (fixeddest) == SUBREG)
-	      fixeddest = fixup_memory_subreg (fixeddest, insn, 0);
+	      {
+		fixeddest = fixup_memory_subreg (fixeddest, insn, 0);
+		promoted_mode = GET_MODE (fixeddest);
+	      }
 	    else
 	      fixeddest = fixup_stack_1 (fixeddest, insn);
 
-	    temp = gen_reg_rtx (GET_MODE (SET_SRC (x)) == VOIDmode
-				? GET_MODE (fixeddest)
-				: GET_MODE (SET_SRC (x)));
+	    temp = gen_reg_rtx (promoted_mode);
 
 	    emit_insn_after (gen_move_insn (fixeddest,
 					    gen_lowpart (GET_MODE (fixeddest),
