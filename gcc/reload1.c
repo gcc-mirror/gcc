@@ -378,7 +378,7 @@ static void clear_reload_reg_in_use	PROTO((int, int, enum reload_type,
 					       enum machine_mode));
 static int reload_reg_free_p		PROTO((int, int, enum reload_type));
 static int reload_reg_free_before_p	PROTO((int, int, enum reload_type));
-static int reload_reg_free_for_value_p	PROTO((int, int, enum reload_type, rtx));
+static int reload_reg_free_for_value_p	PROTO((int, int, enum reload_type, rtx, rtx, int));
 static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
 static int allocate_reload_reg		PROTO((int, rtx, int, int));
 static void choose_reload_regs		PROTO((rtx, rtx));
@@ -4983,15 +4983,23 @@ int reload_spill_index[MAX_RELOADS];
 /* Return 1 if the value in reload reg REGNO, as used by a reload
    needed for the part of the insn specified by OPNUM and TYPE,
    may be used to load VALUE into it.
-   Other read-only reloads with the same value do not conflict.
+
+   Other read-only reloads with the same value do not conflict
+   unless OUT is non-zero and these other reloads have to live while
+   output reloads live.
+
+   RELOADNUM is the number of the reload we want to load this value for;
+   a reload does not conflict with itself.
+
    The caller has to make sure that there is no conflict with the return
    register.  */
 static int
-reload_reg_free_for_value_p (regno, opnum, type, value)
+reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum)
      int regno;
      int opnum;
      enum reload_type type;
-     rtx value;
+     rtx value, out;
+     int reloadnum;
 {
   int time1;
   int i;
@@ -5048,39 +5056,53 @@ reload_reg_free_for_value_p (regno, opnum, type, value)
       if (reg && GET_CODE (reg) == REG
 	  && ((unsigned) regno - true_regnum (reg)
 	      <= HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)) - 1U)
-	  && (! reload_in[i] || ! rtx_equal_p (reload_in[i], value)
-	      || reload_out[i]))
+	  && i != reloadnum)
 	{
-	  int time2;
-	  switch (reload_when_needed[i])
-	    {
-	    case RELOAD_FOR_OTHER_ADDRESS:
-	      time2 = 0;
-	      break;
-	    case RELOAD_FOR_INPADDR_ADDRESS:
-	      time2 = reload_opnum[i] * 4 + 1;
-	      break;
-	    case RELOAD_FOR_INPUT_ADDRESS:
-	      time2 = reload_opnum[i] * 4 + 2;
-	      break;
-	    case RELOAD_FOR_INPUT:
-	      time2 = reload_opnum[i] * 4 + 3;
-	      break;
-	    case RELOAD_FOR_OUTPUT:
-	    /* All RELOAD_FOR_OUTPUT reloads become live just after the
-	       instruction is executed.  */
-	      time2 = MAX_RECOG_OPERANDS * 4;
-	      break;
-	    /* The first RELOAD_FOR_OUTPUT_ADDRESS reload conflicts with the
-	       RELOAD_FOR_OUTPUT reloads, so assign it the same time value.  */
-	    case RELOAD_FOR_OUTPUT_ADDRESS:
-	      time2 = MAX_RECOG_OPERANDS * 4 + reload_opnum[i];
-	      break;
-	    default:
-	      time2 = 0;
-	    }
-	  if (time1 >= time2)
+	  if (out
+	      && reload_when_needed[i] != RELOAD_FOR_INPUT
+	      && reload_when_needed[i] != RELOAD_FOR_INPUT_ADDRESS
+	      && reload_when_needed[i] != RELOAD_FOR_INPADDR_ADDRESS)
 	    return 0;
+	  if (! reload_in[i] || ! rtx_equal_p (reload_in[i], value)
+	      || reload_out[i])
+	    {
+	      int time2;
+	      switch (reload_when_needed[i])
+		{
+		case RELOAD_FOR_OTHER_ADDRESS:
+		  time2 = 0;
+		  break;
+		case RELOAD_FOR_INPADDR_ADDRESS:
+		  time2 = reload_opnum[i] * 4 + 1;
+		  break;
+		case RELOAD_FOR_INPUT_ADDRESS:
+		  time2 = reload_opnum[i] * 4 + 2;
+		  break;
+		case RELOAD_FOR_INPUT:
+		  time2 = reload_opnum[i] * 4 + 3;
+		  break;
+		case RELOAD_FOR_OUTPUT:
+		/* All RELOAD_FOR_OUTPUT reloads become live just after the
+		   instruction is executed.  */
+		  time2 = MAX_RECOG_OPERANDS * 4;
+		  break;
+		/* The first RELOAD_FOR_OUTPUT_ADDRESS reload conflicts with the
+		   RELOAD_FOR_OUTPUT reloads, so assign it the same time value.  */
+		case RELOAD_FOR_OUTPUT_ADDRESS:
+		  time2 = MAX_RECOG_OPERANDS * 4 + reload_opnum[i];
+		  break;
+		case RELOAD_OTHER:
+		  if (! reload_in[i] || rtx_equal_p (reload_in[i], value))
+		    {
+		      time2 = MAX_RECOG_OPERANDS * 4;
+		      break;
+		    }
+		default:
+		  time2 = 0;
+		}
+	      if (time1 >= time2)
+		return 0;
+	    }
 	}
     }
   return 1;
@@ -5160,14 +5182,15 @@ allocate_reload_reg (r, insn, last_reload, noerror)
 
 	  if ((reload_reg_free_p (spill_regs[i], reload_opnum[r],
 				  reload_when_needed[r])
-	       || (reload_in[r] && ! reload_out[r]
+	       || (reload_in[r]
 		      /* We check reload_reg_used to make sure we
 			 don't clobber the return register.  */
 		   && ! TEST_HARD_REG_BIT (reload_reg_used, spill_regs[i])
 		   && reload_reg_free_for_value_p (spill_regs[i],
 						  reload_opnum[r],
 						  reload_when_needed[r],
-						  reload_in[r])))
+						  reload_in[r],
+						  reload_out[r], r)))
 	      && TEST_HARD_REG_BIT (reg_class_contents[class], spill_regs[i])
 	      && HARD_REGNO_MODE_OK (spill_regs[i], reload_mode[r])
 	      /* Look first for regs to share, then for unshared.  But
@@ -5634,7 +5657,8 @@ choose_reload_regs (insn, avoid_return_reg)
 							reload_when_needed[r]))
 			  || reload_reg_free_for_value_p (i, reload_opnum[r],
 							  reload_when_needed[r],
-							  reload_in[r])))
+							  reload_in[r],
+							  reload_out[r], r)))
 		    {
 		      /* If a group is needed, verify that all the subsequent
 			 registers still have their values intact.  */
@@ -5741,7 +5765,8 @@ choose_reload_regs (insn, avoid_return_reg)
 			     || reload_reg_free_for_value_p (regno,
 							     reload_opnum[r],
 							     reload_when_needed[r],
-							     reload_in[r])))
+							     reload_in[r],
+							     reload_out[r], r)))
 		      || ! TEST_HARD_REG_BIT (reg_class_contents[(int) reload_reg_class[r]],
 					      regno)))
 		equiv = 0;
@@ -5924,7 +5949,8 @@ choose_reload_regs (insn, avoid_return_reg)
 		|| reload_reg_free_for_value_p (true_regnum (reload_reg_rtx[r]),
 						reload_opnum[r],
 						reload_when_needed[r],
-						reload_in[r])))
+						reload_in[r],
+						reload_out[r], r)))
 	reload_inherited[r] = 0;
       /* If we can inherit a RELOAD_FOR_INPUT, then we do not need its related
 	 RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_INPADDR_ADDRESS reloads.

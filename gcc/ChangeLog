@@ -1,3 +1,8 @@
+Wed Jun  3 20:00:04 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_for_value_p): New arguments out and
+	reloadnum.  Changed all callers.
+
 1998-06-03  Ulrich Drepper  <drepper@cygnus.com>
 
 	* system.h: Add _() and N_() macros in preparation for gettext.
