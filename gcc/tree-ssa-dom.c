@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "domwalk.h"
 #include "real.h"
 #include "tree-pass.h"
+#include "tree-ssa-propagate.h"
 #include "langhooks.h"
 
 /* This file implements optimizations on the dominator tree.  */
@@ -2646,12 +2647,20 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
   bool may_have_exposed_new_symbols = false;
   use_operand_p op_p;
   ssa_op_iter iter;
+  tree rhs;
 
   FOR_EACH_SSA_USE_OPERAND (op_p, stmt, iter, SSA_OP_ALL_USES)
     {
       if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols
 	  |= cprop_operand (stmt, op_p, const_and_copies);
+    }
+
+  if (may_have_exposed_new_symbols)
+    {
+      rhs = get_rhs (stmt);
+      if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
+	recompute_tree_invarant_for_addr_expr (rhs);
     }
 
   return may_have_exposed_new_symbols;

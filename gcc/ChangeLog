@@ -1,3 +1,9 @@
+2004-09-15  Steven Bosscher  <stevenb@suse.de>
+
+	* Makefile.in (tree-ssa-dom.o): Depend on tree-ssa-propagate.h.
+	* tree-ssa-dom.c (cprop_into_stmt): Recompute TREE_INVARIANT
+        after propagating into an ADDR_EXPR.
+
 2004-09-15  Andrew Pinski  <apinski@apple.com>
 
 	PR rtl-opt/17427
