@@ -10,17 +10,7 @@
 
 
 #if defined( SCO_REGSET_CHECK )
-union u_fps {
-    struct	rsfpstate
-    {
-       int whatever;
-    }
-};
-union _u_fps {
-    struct _rsfpstate
-    {
-       int whatever;
-    }
-};
+union u_fps { struct	rsfpstate { int whatever; } };
+union _u_fps { struct _rsfpstate { int whatever; } };
 
 #endif  /* SCO_REGSET_CHECK */

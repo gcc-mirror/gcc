@@ -105,8 +105,16 @@ extern int class();
 
 
 #if defined( SCO_MATH_CHECK )
+#ifndef __GNUC__
 #define __fp_class(a) \
  __builtin_generic(a,"ld:__fplcassifyl;f:__fpclassifyf;:__fpclassify")
+#else
+#define __fp_class(a) \
+  __builtin_choose_expr(__builtin_types_compatible_p(typeof(a),long double),\
+   __fpclassifyl(a), \
+    __builtin_choose_expr(__builtin_types_compatible_p(typeof(a), float), \
+      __fpclassifyf(a),__fpclassify(a)))
+#endif
 
 #endif  /* SCO_MATH_CHECK */
 

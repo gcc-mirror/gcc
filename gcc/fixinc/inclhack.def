@@ -301,13 +301,6 @@ fix = {
  */
 fix = {
     hackname = AAB_svr4_replace_byteorder;
-    mach = "*-*-sysv4*";
-    mach = "i[34567]86-*-sysv5*";
-    mach = "i[34567]86-*-sco3.2v5*";
-    mach = "i[34567]86-*-udk*";
-    mach = "i[34567]86-*-solaris2.[0-4]";
-    mach = "powerpcle-*-solaris2.[0-4]";
-    mach = "sparc-*-solaris2.[0-4]";
     files    = sys/byteorder.h;
     replace  = '#ifndef _SYS_BYTEORDER_H
 \#define _SYS_BYTEORDER_H
@@ -2217,14 +2210,14 @@ fix = {
 fix = {
     hackname = sco_math;
     files    = math.h;
-    files    = ansi/math.h;
     files    = posix/math.h;
+    files    = ansi/math.h;
     files    = xpg4/math.h;
     files    = xpg4v2/math.h;
     files    = xpg4plus/math.h;
     files    = ods_30_compat/math.h;
     files    = oldstyle/math.h;
-    select   = "inline double abs";
+    select   = "__builtin_generic";
     sed      = "/#define.*__fp_class(a) \\\\/i\\\n"
 	       "#ifndef __GNUC__\n";
     sed      =
@@ -2264,18 +2257,8 @@ fix = {
     c_fix_arg = "%1rsfpstate";
 
     test_text =
-    "union u_fps {\n"
-    "    struct\tfpstate\n"
-    "    {\n"
-    "       int whatever;\n"
-    "    }\n"
-    "};\n"
-    "union _u_fps {\n"
-    "    struct _fpstate\n"
-    "    {\n"
-    "       int whatever;\n"
-    "    }\n"
-    "};\n";
+    "union u_fps { struct\tfpstate { int whatever; } };\n"
+    "union _u_fps { struct _fpstate { int whatever; } };\n";
 };
 
 
@@ -2286,7 +2269,6 @@ fix = {
  */
 fix = {
     hackname = sco_string;
-    files    = string.h;
     files    = ansi/string.h;
     files    = posix/string.h;
     files    = xpg4/string.h;
@@ -2294,6 +2276,7 @@ fix = {
     files    = xpg4plus/string.h;
     files    = ods_30_compat/string.h;
     files    = oldstyle/string.h;
+    files    = string.h;
     mach      = "*-*-sco3.2v5*";
     select   = "inline char";
     sed      = "/extern \"C\\+\\+\"/N;"

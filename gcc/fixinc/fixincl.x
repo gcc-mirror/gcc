@@ -342,15 +342,7 @@ tSCC zAab_Svr4_Replace_ByteorderList[] =
 /*
  *  Machine/OS name selection pattern
  */
-tSCC* apzAab_Svr4_Replace_ByteorderMachs[] = {
-        "*-*-sysv4*",
-        "i[34567]86-*-sysv5*",
-        "i[34567]86-*-sco3.2v5*",
-        "i[34567]86-*-udk*",
-        "i[34567]86-*-solaris2.[0-4]",
-        "powerpcle-*-solaris2.[0-4]",
-        "sparc-*-solaris2.[0-4]",
-        (const char*)NULL };
+#define apzAab_Svr4_Replace_ByteorderMachs (const char**)NULL
 #define AAB_SVR4_REPLACE_BYTEORDER_TEST_CT  0
 #define aAab_Svr4_Replace_ByteorderTests   (tTestDesc*)NULL
 
@@ -4020,7 +4012,7 @@ tSCC zSco_MathName[] =
  *  File name selection pattern
  */
 tSCC zSco_MathList[] =
-  "|math.h|ansi/math.h|posix/math.h|xpg4/math.h|xpg4v2/math.h|xpg4plus/math.h|ods_30_compat/math.h|oldstyle/math.h|";
+  "|math.h|posix/math.h|ansi/math.h|xpg4/math.h|xpg4v2/math.h|xpg4plus/math.h|ods_30_compat/math.h|oldstyle/math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -4030,7 +4022,7 @@ tSCC zSco_MathList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zSco_MathSelect0[] =
-       "inline double abs";
+       "__builtin_generic";
 
 #define    SCO_MATH_TEST_CT  1
 static tTestDesc aSco_MathTests[] = {
@@ -4104,7 +4096,7 @@ tSCC zSco_StringName[] =
  *  File name selection pattern
  */
 tSCC zSco_StringList[] =
-  "|string.h|ansi/string.h|posix/string.h|xpg4/string.h|xpg4v2/string.h|xpg4plus/string.h|ods_30_compat/string.h|oldstyle/string.h|";
+  "|ansi/string.h|posix/string.h|xpg4/string.h|xpg4v2/string.h|xpg4plus/string.h|ods_30_compat/string.h|oldstyle/string.h|string.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -6343,7 +6335,7 @@ static const char* apzX11_SprintfPatch[] = {
  *  List of all fixes
  */
 #define REGEX_COUNT          175
-#define MACH_LIST_SIZE_LIMIT 306
+#define MACH_LIST_SIZE_LIMIT 261
 #define FIX_COUNT            161
 
 /*

@@ -1,3 +1,17 @@
+2003-08-11  Kean Johnston  <jkj@sco.com>
+
+	* fixinc/inclhack.def (sco_math): Updated test text and select trigger
+	according to bkorb's review.
+	* fixinc/inclhack.def (sco_regset): Ditto.
+	* fixinc/inclhack.def (AAB_svr4_replace_byteorder): Remove all mach
+	lines so that this file is unconditionally replaced.
+	* fixinc/inclhack.def (sco_string): Use ansi/string.h as the first file
+	to check so that the Ultrix string.h check doesnt overwrite the test
+	case with its replacement text.
+	* fixinc/fixincl.x: Regenerated
+	* fixinc/tests/base/math.h: Updated sco_math result text
+	* fixinc/tests/base/ansi/string.h: New file.
+	* fixinc/tests/base/sys/regset.h: Compacted result text to fewer lines.
 
 2003-08-11  Dale Johannesen  <dalej@apple.com>
 	* config/rs6000/rs6000.md (ctrsi, ctrdi):  Reenable handling of
