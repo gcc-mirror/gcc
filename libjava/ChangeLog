@@ -1,3 +1,10 @@
+2000-05-07  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (LIBLINK): New macro.
+	(libgcj_la_LINK): Use it.
+	(libgcjawt_la_LINK): Likewise.
+
 2000-05-06  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
