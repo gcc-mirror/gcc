@@ -1,3 +1,9 @@
+2003-12-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (thumb_base_register_rtx_p): Don't allow virtual registers
+	as base registers for sub-word operations.
+	(thumb_legitimate_address_p): Simplify REG+REG test.
+
 2003-12-17  Segher Boessenkool  <boessen@de.ibm.com>
 
 	* opts.c (wrap_help): Fix overflow.
