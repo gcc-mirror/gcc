@@ -1,3 +1,12 @@
+1999-10-23 08:51 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* hashtab.c (find_hash_table_entry): When returning a
+	DELETED_ENTRY slot, change it to EMPTY_ENTRY first.
+	(clear_hash_table_slot): New function which deletes an entry
+	by its position in the table, not its value.
+	(traverse_hash_table): New function which calls a hook
+	function for every live entry in the table.
+
 1999-10-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* cplus-dem.c (INTBUF_SIZE): New macro.

@@ -47,7 +47,7 @@ typedef const void *hash_table_entry_t;
    tables.  All work with hash table should be executed only through
    functions mentioned below. */
 
-typedef struct
+typedef struct hash_table
 {
   /* Current size (in entries) of the hash table */
   size_t size;
@@ -88,13 +88,19 @@ extern hash_table_entry_t *find_hash_table_entry
 extern void remove_element_from_hash_table_entry PARAMS ((hash_table_t,
 							  hash_table_entry_t));
 
+extern void clear_hash_table_slot PARAMS ((hash_table_t, hash_table_entry_t *));
+
+extern void traverse_hash_table PARAMS ((hash_table_t,
+					 int (*) (hash_table_entry_t, void *),
+					 void *));
+    
 extern size_t hash_table_size PARAMS ((hash_table_t));
 
 extern size_t hash_table_elements_number PARAMS ((hash_table_t));
 
 extern int hash_table_collisions PARAMS ((hash_table_t));
 
-extern int all_hash_table_collisions ();
+extern int all_hash_table_collisions PARAMS ((void));
 
 #ifdef __cplusplus
 }
