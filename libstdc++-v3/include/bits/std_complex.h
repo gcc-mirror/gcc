@@ -617,7 +617,7 @@ namespace std
 #ifdef _GLIBCPP_BUGGY_COMPLEX
     complex(const complex& __z) : _M_value(__z._M_value) { }
 #endif
-    explicit complex(const complex<float>&);
+    complex(const complex<float>&);
     explicit complex(const complex<long double>&);
         
     double real() const;
@@ -772,8 +772,8 @@ namespace std
 #ifdef _GLIBCPP_BUGGY_COMPLEX
     complex(const complex& __z) : _M_value(__z._M_value) { }
 #endif
-    explicit complex(const complex<float>&);
-    explicit complex(const complex<double>&);
+    complex(const complex<float>&);
+    complex(const complex<double>&);
 
     long double real() const;
     long double imag() const;
@@ -920,6 +920,8 @@ namespace std
 
   // These bits have to be at the end of this file, so that the
   // specializations have all been defined.
+  // ??? No, they have to be there because of compiler limitation at
+  // inlining.  It suffices that class specializations be defined.
   inline
   complex<float>::complex(const complex<double>& __z)
   : _M_value(_ComplexT(__z._M_value)) { }

@@ -1,3 +1,11 @@
+2000-11-21  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/std_complex.h (complex<double>): Constructor
+	complex<double>::complex(const complex<float>&) is not explicit;
+	since it is a promotion.
+	(complex<long double>): Constructors taking complex<float> and
+	complex<double> are not explicit.
+
 2000-11-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/std_complex.h: Tweaks, include cmath for abs overloads.
