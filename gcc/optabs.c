@@ -2675,7 +2675,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	 have them return something that isn't a double-word.  */
       if (unoptab == ffs_optab || unoptab == clz_optab || unoptab == ctz_optab
 	  || unoptab == popcount_optab || unoptab == parity_optab)
-	outmode = word_mode;
+	outmode = TYPE_MODE (integer_type_node);
 
       start_sequence ();
 

@@ -1,3 +1,11 @@
+2003-02-03  Richard Henderson  <rth@redhat.com>
+
+	* libgcc2.c (__ffsdi2, __clzsi2, __clzdi2, __ctzsi2, __ctzdi2,
+	__popcountsi2, __popcountdi2, __paritysi2, __paritydi2): Change
+	return type to "int".  Shuffle declarations and undef int trap.
+	* libgcc2.h: Remove their declarations.
+	* optabs.c (expand_unop): Force outmode to int for bitops.
+
 2003-02-03  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (order_regs_for_local_alloc): Order the
