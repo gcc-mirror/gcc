@@ -381,6 +381,10 @@ struct temp_slot *temp_slots;
 /* Current nesting level for temporaries.  */
 
 int temp_slot_level;
+
+/* Current nesting level for variables in a block.  */
+
+int var_temp_slot_level;
 
 /* The FUNCTION_DECL node for the current function.  */
 static tree this_function_decl;
@@ -531,6 +535,8 @@ push_function_context_to (context)
   p->function_call_count = function_call_count;
   p->temp_slots = temp_slots;
   p->temp_slot_level = temp_slot_level;
+  p->target_temp_slot_level = target_temp_slot_level;
+  p->var_temp_slot_level = var_temp_slot_level;
   p->fixup_var_refs_queue = 0;
   p->epilogue_delay_list = current_function_epilogue_delay_list;
   p->args_info = current_function_args_info;
@@ -561,6 +567,7 @@ pop_function_context_from (context)
      tree context;
 {
   struct function *p = outer_function_chain;
+  struct var_refs_queue *queue;
 
   outer_function_chain = p->next;
 
@@ -611,6 +618,8 @@ pop_function_context_from (context)
   function_call_count = p->function_call_count;
   temp_slots = p->temp_slots;
   temp_slot_level = p->temp_slot_level;
+  target_temp_slot_level = p->target_temp_slot_level;
+  var_temp_slot_level = p->var_temp_slot_level;
   current_function_epilogue_delay_list = p->epilogue_delay_list;
   reg_renumber = 0;
   current_function_args_info = p->args_info;
@@ -627,11 +636,8 @@ pop_function_context_from (context)
 
   /* Finish doing put_var_into_stack for any of our variables
      which became addressable during the nested function.  */
-  {
-    struct var_refs_queue *queue = p->fixup_var_refs_queue;
-    for (; queue; queue = queue->next)
-      fixup_var_refs (queue->modified, queue->promoted_mode, queue->unsignedp);
-  }
+  for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
+    fixup_var_refs (queue->modified, queue->promoted_mode, queue->unsignedp);
 
   free (p);
 
@@ -811,8 +817,10 @@ assign_outer_stack_local (mode, size, align, function)
 
    KEEP is 1 if this slot is to be retained after a call to
    free_temp_slots.  Automatic variables for a block are allocated
-   with this flag.  KEEP is 2, if we allocate a longer term temporary,
-   whose lifetime is controlled by CLEANUP_POINT_EXPRs.  */
+   with this flag.  KEEP is 2 if we allocate a longer term temporary,
+   whose lifetime is controlled by CLEANUP_POINT_EXPRs.  KEEP is 3
+   if we are to allocate something at an inner level to be treated as
+   a variable in the block (e.g., a SAVE_EXPR).  */
 
 rtx
 assign_stack_temp (mode, size, keep)
@@ -922,6 +930,11 @@ assign_stack_temp (mode, size, keep)
   if (keep == 2)
     {
       p->level = target_temp_slot_level;
+      p->keep = 0;
+    }
+  else if (keep == 3)
+    {
+      p->level = var_temp_slot_level;
       p->keep = 0;
     }
   else
@@ -1277,6 +1290,17 @@ push_temp_slots ()
   temp_slot_level++;
 }
 
+/* Likewise, but save the new level as the place to allocate variables
+   for blocks.  */
+
+void
+push_temp_slots_for_block ()
+{
+  push_temp_slots ();
+
+  var_temp_slot_level = temp_slot_level;
+}
+
 /* Pop a temporary nesting level.  All slots in use in the current level
    are freed.  */
 
@@ -1302,6 +1326,7 @@ init_temp_slots ()
   /* We have not allocated any temporaries yet.  */
   temp_slots = 0;
   temp_slot_level = 0;
+  var_temp_slot_level = 0;
   target_temp_slot_level = 0;
 }
 
