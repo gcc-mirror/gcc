@@ -31,6 +31,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "expr.h"
 
+tree protect_list;
+
 extern void (*interim_eh_hook)	PROTO((tree));
 
 /* holds the fndecl for __builtin_return_address () */
@@ -51,6 +53,11 @@ tree builtin_return_address_fndecl;
 #ifdef mips
 #ifndef __mips
 #define __mips
+#endif
+#endif
+#ifdef __i386__
+#ifndef __i386
+#define __i386
 #endif
 #endif
 #if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips) || defined (__arm) || defined (__alpha)
@@ -872,10 +879,12 @@ void
 end_protect (finalization)
      tree finalization;
 {
-  struct ehEntry *entry = pop_eh_entry (&ehstack);
+  struct ehEntry *entry;
 
   if (! doing_eh (0))
     return;
+
+  entry = pop_eh_entry (&ehstack);
 
   emit_label (entry->end_label);
 
@@ -1574,11 +1583,29 @@ expand_throw (exp)
 /* end of: my-cp-except.c */
 #endif
 
+void
+end_protect_partials () {
+  while (protect_list)
+    {
+      end_protect (TREE_VALUE (protect_list));
+      protect_list = TREE_CHAIN (protect_list);
+    }
+}
+
+int
+might_have_exceptions_p ()
+{
+#ifdef TRY_NEW_EH
+  if (eh_table_output_queue.head)
+    return 1;
+#endif
+  return 0;
+}
 
 /* Output the exception table.
  Return the number of handlers.  */
-int
-build_exception_table ()
+void
+emit_exception_table ()
 {
   int count = 0;
 #ifdef TRY_NEW_EH
@@ -1587,7 +1614,15 @@ build_exception_table ()
   tree eh_node_decl;
 
   if (! doing_eh (0))
-    return 0;
+    return;
+
+  exception_section ();
+
+  /* Beginning marker for table. */
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+  ASM_OUTPUT_LABEL (asm_out_file, "__EXCEPTION_TABLE__");
+  output_exception_table_entry (asm_out_file,
+				const0_rtx, const0_rtx, const0_rtx);
 
  while (entry = dequeue_eh_entry (&eh_table_output_queue))
    {
@@ -1596,32 +1631,18 @@ build_exception_table ()
      if (context && ! TREE_ASM_WRITTEN (context))
        continue;
 
-     if (count == 0)
-       {
-	 exception_section ();
-
-	 /* Beginning marker for table. */
-	 ASM_OUTPUT_ALIGN (asm_out_file, 2);
-	 ASM_OUTPUT_LABEL (asm_out_file, "__EXCEPTION_TABLE__");
-	 output_exception_table_entry (asm_out_file,
-				       const0_rtx, const0_rtx, const0_rtx);
-       }
      count++;
      output_exception_table_entry (asm_out_file,
 				   entry->start_label, entry->end_label,
 				   entry->exception_handler_label);
   }
 
-  if (count)
-    {
-      /* Ending marker for table. */
-      ASM_OUTPUT_LABEL (asm_out_file, "__EXCEPTION_END__");
-      output_exception_table_entry (asm_out_file,
-				    constm1_rtx, constm1_rtx, constm1_rtx);
-    }
+  /* Ending marker for table. */
+  ASM_OUTPUT_LABEL (asm_out_file, "__EXCEPTION_END__");
+  output_exception_table_entry (asm_out_file,
+				constm1_rtx, constm1_rtx, constm1_rtx);
 
 #endif /* TRY_NEW_EH */
-  return count;
 }
 
 void

@@ -4541,8 +4541,6 @@ real_yylex ()
 	  { value = '}'; goto done; }
 	else if (c == '%' && c1 == ':')
 	  { value = '#'; goto done; }
-	else if (c == ':' && c1 == '>')
-	  { value = ']'; goto done; }
 
 	nextchar = c1;
 	token_buffer[1] = 0;
@@ -4559,6 +4557,11 @@ real_yylex ()
 	  token_buffer[2] = '\0';
 	  value = SCOPE;
 	  yylval.itype = 1;
+	}
+      else if (c == '>')
+	{
+	  value = ']';
+	  goto done;
 	}
       else
 	{

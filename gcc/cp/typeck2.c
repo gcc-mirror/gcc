@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 364.  Free: */
+/* First used: 0 (reserved), Last used: 366.  Free: */
 
 static int abortcount = 0;
 
@@ -854,6 +854,14 @@ digest_init (type, init, tail)
 	      return error_mark_node;
 	    }
 	  init = element;
+	}
+      while (TREE_CODE (init) == CONSTRUCTOR)
+	{
+	  cp_pedwarn ("braces around scalar initializer for `%T'", type);
+	  init = CONSTRUCTOR_ELTS (init);
+	  if (TREE_CHAIN (init))
+	    cp_pedwarn ("ignoring extra initializers for `%T'", type);
+	  init = TREE_VALUE (init);
 	}
 
       return convert_for_initialization (0, type, init, LOOKUP_NORMAL,

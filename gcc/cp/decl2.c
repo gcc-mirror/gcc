@@ -1027,6 +1027,7 @@ grok_array_decl (array_expr, index_exp)
      tree array_expr, index_exp;
 {
   tree type = TREE_TYPE (array_expr);
+  tree p1, p2, i1, i2;
 
   if (type == error_mark_node || index_exp == error_mark_node)
     return error_mark_node;
@@ -1049,28 +1050,38 @@ grok_array_decl (array_expr, index_exp)
 			   array_expr, index_exp, NULL_TREE);
 
   /* Otherwise, create an ARRAY_REF for a pointer or array type.  */
-  if (TREE_CODE (type) == POINTER_TYPE
-      || TREE_CODE (type) == ARRAY_TYPE)
-    return build_array_ref (array_expr, index_exp);
 
-  /* Woops, looks like they did something like `5[a]' instead of `a[5]'.
-     We don't emit a warning or error for this, since it's allowed
-     by ARM $8.2.4.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    p1 = array_expr;
+  else
+    p1 = build_expr_type_conversion (WANT_POINTER, array_expr, 0);
 
-  type = TREE_TYPE (index_exp);
+  if (TREE_CODE (TREE_TYPE (index_exp)) == ARRAY_TYPE)
+    p2 = index_exp;
+  else
+    p2 = build_expr_type_conversion (WANT_POINTER, index_exp, 0);
 
-  if (TREE_CODE (type) == OFFSET_TYPE
-      || TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+  i1 = build_expr_type_conversion (WANT_INT | WANT_ENUM, array_expr, 0);
+  i2 = build_expr_type_conversion (WANT_INT | WANT_ENUM, index_exp, 0);
 
-  if (TREE_CODE (type) == POINTER_TYPE
-      || TREE_CODE (type) == ARRAY_TYPE)
-    return build_array_ref (index_exp, array_expr);
+  if ((p1 && i2) && (i1 && p2))
+    error ("ambiguous conversion for array subscript");
 
-  /* The expression E1[E2] is identical (by definition) to *((E1)+(E2)).  */
-  return build_indirect_ref (build_binary_op (PLUS_EXPR, array_expr,
-					      index_exp, 1),
-			     "array indexing");
+  if (p1 && i2)
+    array_expr = p1, index_exp = i2;
+  else if (i1 && p2)
+    array_expr = p2, index_exp = i1;
+  else
+    {
+      cp_error ("invalid types `%T[%T]' for array subscript",
+		type, TREE_TYPE (index_exp));
+      return error_mark_node;
+    }
+
+  if (array_expr == error_mark_node || index_exp == error_mark_node)
+    error ("ambiguous conversion for array subscript");
+
+  return build_array_ref (array_expr, index_exp);
 }
 
 /* Given the cast expression EXP, checking out its validity.   Either return
@@ -2487,8 +2498,8 @@ import_export_vtable (decl, type, final)
     }
   else
     {
-      /* We can only do this optimization if we have real non-inline
-	 virtual functions in our class, or if we come from a template.  */
+      /* We can only wait to decide if we have real non-inline virtual
+	 functions in our class, or if we come from a template.  */
 
       int found = CLASSTYPE_TEMPLATE_INSTANTIATION (type);
 
@@ -2543,7 +2554,8 @@ finish_prevtable_vardecl (prev, vars)
   tree ctype = DECL_CONTEXT (vars);
   import_export_template (ctype);
 
-  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype))
+  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype)
+      && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
     {
       tree method;
       for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
@@ -2562,19 +2574,11 @@ finish_prevtable_vardecl (prev, vars)
 
   import_export_vtable (vars, ctype, 1);
 
-  if (write_virtuals >= 0
+  if (flag_rtti && write_virtuals >= 0
       && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
     {
-      extern tree the_null_vtable_entry;
-
       /* Kick out the type descriptor before writing out the vtable.  */
-      if (flag_rtti)
-	{
-	  build_t_desc (ctype, 1);
-	}
-
-      /* Write it out.  */
-      mark_vtable_entries (vars);
+      build_t_desc (ctype, 1);
     }
 }
     
@@ -2582,39 +2586,13 @@ static void
 finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
-  tree ctype = DECL_CONTEXT (vars);
-  import_export_template (ctype);
-
-  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype))
-    {
-      tree method;
-      for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
-	   method = DECL_NEXT_METHOD (method))
-	{
-	  if (DECL_VINDEX (method) != NULL_TREE && !DECL_SAVED_INSNS (method)
-	      && !DECL_ABSTRACT_VIRTUAL_P (method))
-	    {
-	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
-	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
-	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
-	      if (flag_rtti)
-		cp_warning ("compiler error: rtti entry for `%T' decided too late", ctype);
-	      break;
-	    }
-	}
-    }
-
-  import_export_vtable (vars, ctype, 1);
-
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
     {
-      extern tree the_null_vtable_entry;
-
       /* Write it out.  */
       mark_vtable_entries (vars);
       if (TREE_TYPE (DECL_INITIAL (vars)) == 0)
-	  store_init_value (vars, DECL_INITIAL (vars));
+	store_init_value (vars, DECL_INITIAL (vars));
 
 #ifdef DWARF_DEBUGGING_INFO
       if (write_symbols == DWARF_DEBUG)
@@ -2646,8 +2624,18 @@ finish_vtable_vardecl (prev, vars)
 
       rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
     }
-  else if (TREE_USED (vars))
-    assemble_external (vars);
+  else if (! TREE_USED (vars))
+    /* We don't know what to do with this one yet.  */
+    return;
+
+  /* We know that PREV must be non-zero here.  */
+  TREE_CHAIN (prev) = TREE_CHAIN (vars);
+}
+
+static void
+prune_vtable_vardecl (prev, vars)
+     tree prev, vars;
+{
   /* We know that PREV must be non-zero here.  */
   TREE_CHAIN (prev) = TREE_CHAIN (vars);
 }
@@ -2731,6 +2719,8 @@ import_export_inline (decl)
   if (DECL_INTERFACE_KNOWN (decl))
     return;
 
+  DECL_EXTERNAL (decl) = 0;
+
   if (DECL_TEMPLATE_INSTANTIATION (decl))
     {
       if (DECL_IMPLICIT_INSTANTIATION (decl) && flag_implicit_templates)
@@ -2773,7 +2763,6 @@ finish_file ()
   tree fnname;
   tree vars = static_aggregates;
   int needs_cleaning = 0, needs_messing_up = 0;
-  int have_exception_handlers = build_exception_table ();
 
   if (flag_detailed_statistics)
     dump_tree_statistics ();
@@ -2788,7 +2777,7 @@ finish_file ()
      we'll need here.  */
   push_lang_context (lang_name_c);
 
-  if (static_ctors || vars || have_exception_handlers)
+  if (static_ctors || vars || might_have_exceptions_p ())
     needs_messing_up = 1;
   if (static_dtors)
     needs_cleaning = 1;
@@ -2900,7 +2889,7 @@ finish_file ()
       push_momentary ();
       expand_start_bindings (0);
 
-      if (have_exception_handlers)
+      if (might_have_exceptions_p ())
 	register_exception_table ();
 
       while (vars)
@@ -2931,6 +2920,7 @@ finish_file ()
 	      /* 9.5p5: The initializer of a static member of a class has
 		 the same acess rights as a member function.  */
 	      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
+	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
 
 #if 0
 	      if (init)
@@ -3061,29 +3051,8 @@ finish_file ()
   pushdecl (vars);
 #endif
 
-  walk_vtables ((void (*)())0, finish_vtable_vardecl);
   if (flag_handle_signatures)
     walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
-
-  for (vars = saved_inlines; vars; vars = TREE_CHAIN (vars))
-    {
-      tree decl = TREE_VALUE (vars);
-
-      if (DECL_ARTIFICIAL (decl)
-	  && ! DECL_INITIAL (decl)
-	  && TREE_USED (decl))
-	synthesize_method (decl);
-    }
-
-  for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
-    {
-      if (TREE_CODE (vars) == THUNK_DECL)
-	emit_thunk (vars);
-      else if (TREE_CODE (vars) == FUNCTION_DECL
-	       && ! DECL_INTERFACE_KNOWN (vars)
-	       && DECL_DECLARED_STATIC (vars))
-	TREE_PUBLIC (vars) = 0;
-    }
 
   /* Now write out inline functions which had their addresses taken and
      which were not declared virtual and which were not declared `extern
@@ -3098,9 +3067,22 @@ finish_file ()
 	tree place = TREE_CHAIN (saved_inlines);
 	reconsider = 0;
 
+	walk_vtables ((void (*)())0, finish_vtable_vardecl);
+
 	for (; place; place = TREE_CHAIN (place))
 	  {
 	    tree decl = TREE_VALUE (place);
+
+	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl))
+	      {
+		if (TREE_USED (decl))
+		  synthesize_method (decl);
+		else
+		  {
+		    last = place;
+		    continue;
+		  }
+	      }
 
 	    if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
 	      {
@@ -3114,9 +3096,7 @@ finish_file ()
 	      {
 		TREE_CHAIN (last) = TREE_CHAIN (place);
 
-		if (DECL_EXTERNAL (decl))
-		  assemble_external (decl);
-		else
+		if (! DECL_EXTERNAL (decl))
 		  {
 		    reconsider = 1;
 		    temporary_allocation ();
@@ -3131,6 +3111,21 @@ finish_file ()
 	  }
       }
   }
+
+  walk_vtables ((void (*)())0, prune_vtable_vardecl);
+
+  for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
+    {
+      if (TREE_CODE (vars) == THUNK_DECL)
+	emit_thunk (vars);
+      else if (TREE_CODE (vars) == FUNCTION_DECL
+	       && ! DECL_INTERFACE_KNOWN (vars)
+	       && DECL_DECLARED_STATIC (vars))
+	TREE_PUBLIC (vars) = 0;
+    }
+
+  if (might_have_exceptions_p ())
+    emit_exception_table ();
 
   if (write_virtuals == 2)
     {

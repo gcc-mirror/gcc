@@ -2211,12 +2211,14 @@ synthesize_method (fndecl)
   int nested = (current_function_decl != NULL_TREE);
   int toplev = (decl_function_context (fndecl) == NULL_TREE);
   char *f = input_filename;
+  tree base = DECL_CLASS_CONTEXT (fndecl);
 
   if (nested)
     push_cp_function_context (toplev);
 
   input_filename = DECL_SOURCE_FILE (fndecl);
-  extract_interface_info ();
+  interface_unknown = CLASSTYPE_INTERFACE_UNKNOWN (base);
+  interface_only = CLASSTYPE_INTERFACE_ONLY (base);
   start_function (NULL_TREE, fndecl, NULL_TREE, 1);
   store_parm_decls ();
 

@@ -585,7 +585,7 @@ dump_decl (t, v)
       break;
       
     case VAR_DECL:
-      if (VTABLE_NAME_P (DECL_NAME (t)))
+      if (DECL_NAME (t) && VTABLE_NAME_P (DECL_NAME (t)))
 	{
 	  OB_PUTS ("vtable for ");
 	  dump_type (DECL_CONTEXT (t), v);
@@ -933,9 +933,16 @@ dump_expr (t, nop)
 	    char *p = enum_name_string (t, type);
 	    OB_PUTCP (p);
 	  }
-	else if (type == char_type_node
-		 || type == signed_char_type_node
-		 || type == unsigned_char_type_node)
+	else if (type == boolean_type_node)
+	  {
+	    if (t == boolean_false_node)
+	      OB_PUTS ("false");
+	    else if (t == boolean_true_node)
+	      OB_PUTS ("true");
+	    else
+	      my_friendly_abort (366);
+	  }
+	else if (type == char_type_node)
 	  {
 	    OB_PUTC ('\'');
 	    dump_char (TREE_INT_CST_LOW (t));

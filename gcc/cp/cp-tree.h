@@ -1836,6 +1836,17 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define CONV_C_CAST      (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
 			  | CONV_REINTERPRET | CONV_PRIVATE | CONV_FORCE_TEMP)
 
+/* Used by build_expr_type_conversion to indicate which types are
+   acceptable as arguments to the expression under consideration.  */
+
+#define WANT_INT	1 /* integer types, including bool */
+#define WANT_FLOAT	2 /* floating point types */
+#define WANT_ENUM	4 /* enumerated types */
+#define WANT_POINTER	8 /* pointer types */
+#define WANT_NULL      16 /* null pointer constant */
+
+#define WANT_ARITH	(WANT_INT | WANT_FLOAT)
+
 /* Anatomy of a DECL_FRIENDLIST (which is a TREE_LIST):
    purpose = friend name (IDENTIFIER_NODE);
    value = TREE_LIST of FUNCTION_DECLS;
@@ -1913,8 +1924,8 @@ extern tree convert				PROTO((tree, tree));
 extern tree cp_convert				PROTO((tree, tree, int, int));
 extern tree convert_force			PROTO((tree, tree, int));
 extern tree build_type_conversion		PROTO((enum tree_code, tree, tree, int));
+extern tree build_expr_type_conversion		PROTO((int, tree, int));
 extern int build_default_binary_type_conversion	PROTO((enum tree_code, tree *, tree *));
-extern int build_default_unary_type_conversion	PROTO((enum tree_code, tree *));
 extern tree type_promotes_to			PROTO((tree));
 
 /* decl.c */
@@ -2042,9 +2053,10 @@ extern tree get_namespace_id			PROTO((void));
 /* in edsel.c */
 
 /* in except.c */
-
+extern tree protect_list;
 extern void start_protect			PROTO((void));
 extern void end_protect				PROTO((tree));
+extern void end_protect_partials		();
 extern void expand_exception_blocks		PROTO((void));
 extern void expand_start_try_stmts		PROTO((void));
 extern void expand_end_try_stmts		PROTO((void));
@@ -2053,7 +2065,8 @@ extern void expand_end_all_catch		PROTO((void));
 extern void start_catch_block			PROTO((tree, tree));
 extern void end_catch_block			PROTO((void));
 extern void expand_throw			PROTO((tree));
-extern int build_exception_table		PROTO((void));
+extern int might_have_exceptions_p		PROTO((void));
+extern void emit_exception_table		PROTO((void));
 extern tree build_throw				PROTO((tree));
 extern void init_exception_processing		PROTO((void));
 
@@ -2093,7 +2106,7 @@ extern tree get_type_value			PROTO((tree));
 extern tree build_member_call			PROTO((tree, tree, tree));
 extern tree build_offset_ref			PROTO((tree, tree));
 extern tree get_member_function			PROTO((tree *, tree, tree));
-extern tree get_member_function_from_ptrfunc	PROTO((tree *, tree, tree));
+extern tree get_member_function_from_ptrfunc	PROTO((tree *, tree));
 extern tree resolve_offset_ref			PROTO((tree));
 extern tree decl_constant_value			PROTO((tree));
 extern int is_friend_type			PROTO((tree, tree));
