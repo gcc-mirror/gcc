@@ -46,6 +46,7 @@ static void set_block_levels		PARAMS ((tree, int));
 static void change_scope		PARAMS ((rtx, tree, tree));
 
 void verify_insn_chain			PARAMS ((void));
+static void cleanup_unconditional_jumps	PARAMS ((void));
 static void fixup_fallthru_exit_predecessor PARAMS ((void));
 static rtx unlink_insn_chain PARAMS ((rtx, rtx));
 static rtx duplicate_insn_chain PARAMS ((rtx, rtx));
@@ -578,6 +579,76 @@ verify_insn_chain ()
     abort ();
 }
 
+/* Remove any unconditional jumps and forwarder block creating fallthru
+   edges instead.  During BB reordering fallthru edges are not required
+   to target next basic block in the linear CFG layout, so the unconditional
+   jumps are not needed.  If LOOPS is not null, also update loop structure &
+   dominators.  */
+
+static void
+cleanup_unconditional_jumps ()
+{
+  int i;
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+
+      if (!bb->succ)
+	continue;
+      if (bb->succ->flags & EDGE_FALLTHRU)
+	continue;
+      if (!bb->succ->succ_next)
+	{
+	  rtx insn;
+	  if (GET_CODE (bb->head) != CODE_LABEL && forwarder_block_p (bb) && i)
+	    {
+	      basic_block prev = BASIC_BLOCK (--i);
+
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file, "Removing forwarder BB %i\n",
+			 bb->index);
+
+	      redirect_edge_succ (bb->pred, bb->succ->dest);
+	      flow_delete_block (bb);
+	      bb = prev;
+	    }
+	  else if (simplejump_p (bb->end))
+	    {
+	      rtx jump = bb->end;
+
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file, "Removing jump %i in BB %i\n",
+			 INSN_UID (jump), bb->index);
+	      delete_insn (jump);
+	      bb->succ->flags |= EDGE_FALLTHRU;
+	    }
+	  else
+	    continue;
+
+	  /* Cleanup barriers and delete ADDR_VECs in a way as they are belonging
+             to removed tablejump anyway.  */
+	  insn = NEXT_INSN (bb->end);
+	  while (insn
+		 && (GET_CODE (insn) != NOTE
+		     || NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK))
+	    {
+	      rtx next = NEXT_INSN (insn);
+
+	      if (GET_CODE (insn) == BARRIER)
+		delete_barrier (insn);
+	      else if (GET_CODE (insn) == JUMP_INSN)
+		delete_insn_chain (PREV_INSN (insn), insn);
+	      else if (GET_CODE (insn) == CODE_LABEL)
+		;
+	      else if (GET_CODE (insn) != NOTE)
+		abort ();
+
+	      insn = next;
+	    }
+	}
+    }
+}
+
 /* The block falling through to exit must be the last one in the
    reordered chain.  Ensure that this condition is met.  */
 static void
@@ -767,6 +838,14 @@ cfg_layout_redirect_edge (e, dest)
     }
   else
     redirect_edge_and_branch (e, dest);
+
+  /* We don't want simplejumps in the insn stream during cfglayout.  */
+  if (simplejump_p (src->end))
+    {
+      delete_insn (src->end);
+      delete_barrier (NEXT_INSN (src->end));
+      src->succ->flags |= EDGE_FALLTHRU;
+    }
   dest->index = old_index;
 }
 
@@ -867,6 +946,8 @@ cfg_layout_initialize ()
   /* Our algorithm depends on fact that there are now dead jumptables
      around the code.  */
   alloc_aux_for_blocks (sizeof (struct reorder_block_def));
+
+  cleanup_unconditional_jumps ();
 
   scope_to_insns_initialize ();
 

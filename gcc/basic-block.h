@@ -141,6 +141,7 @@ typedef struct edge_def {
 #define EDGE_EH			8
 #define EDGE_FAKE		16
 #define EDGE_DFS_BACK		32
+#define EDGE_CAN_FALLTHRU	64
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
@@ -699,6 +700,7 @@ extern conflict_graph conflict_graph_compute
                                         PARAMS ((regset,
 						 partition));
 extern bool mark_dfs_back_edges		PARAMS ((void));
+extern void set_edge_can_fallthru_flag	PARAMS ((void));
 extern void update_br_prob_note		PARAMS ((basic_block));
 extern void fixup_abnormal_edges	PARAMS ((void));
 
