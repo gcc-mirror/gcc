@@ -1,3 +1,7 @@
+2002-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/mangle7.C: New test.
+
 2002-04-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/ucs.c: Update as for 3.2.

@@ -1,5 +1,10 @@
 2002-04-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* mangle.c (write_type): Don't use TYPE_MAIN_VARIANT when writing
+	out an array type.
+	(write_CV_qualifiers_for_type): Use TYPE_QUALS, not cp_type_quals,
+	to determine qualifiers.
+
 	* cvt.c (convert_to_void): Don't unconditionally make COND_EXPRs
 	void.
 
