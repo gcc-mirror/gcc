@@ -1,3 +1,37 @@
+2004-10-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (ICS_USER_FLAG): Remove comment about obsolete flag.
+	(DECL_MEMBER_TEMPLATE_P): New macro.
+	(is_member_template): Remove.
+	(class_method_index_for_fn): New function.
+	* pt.c (build_over_call): Use DECL_MEMBER_TEMPLATE_P.
+	* class.c (finish_struct_methods): Remove out-of-date comment.
+	* decl.c (copy_fn_p): Use DECL_MBMER_TEMPLATE_P.
+	* decl2.c (check_classfn): Use DECL_MEMBER_TEMPLATE_P and
+	class_method_index_for_fn.
+	* pt.c (is_member_template): Remove.
+	(is_member_template_class): Likewise.
+	(optimize_specialization_lookup_p): New function.
+	(retrieve_specialization): Optimize lookups for members that are
+	not member templates.
+	(register_specialization): Adjust accordingly.
+	(build_template_decl): Add member_template_p parameter.  Set
+	DECL_MEMBER_TEMPLATE_P.
+	(process_partial_specialization): Adjust call to
+	retrieve_specialization.
+	(push_template_decl_real): Determine whether the template is a
+	member template.
+	(lookup_template_class): Use retrieve_specialization.
+	(tsubst_decl): Adjust call to retrieve_specialization.
+	(tsubst_exception_specification): New function.
+	(tsubst): Use it.
+	(tsubst_copy): Use DECL_MEMBER_TEMPLATE_P.
+	(instantiate_template): Adjust call to retrieve_specialization.
+	(regenerate_decl_from_template): Do not actually generate a new
+	DECL.
+	(instantiate_decl): Adjust call to retrieve_specialization.
+	(class_method_index_for_fn): New method.
+
 2004-10-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* parser.c (cp_parser_asm_definition): Look passed the
