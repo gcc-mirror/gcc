@@ -2619,8 +2619,11 @@ for machine in $build $host $target; do
 				;;
 
 			*)
-				echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
-				exit 1
+				if [[ x$pass2done = xyes ]]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
 				;;
 		esac
 		;;
@@ -2633,8 +2636,11 @@ for machine in $build $host $target; do
 				target_cpu_default2="TARGET_CPU_$with_cpu"
 				;;
 			*)
-				echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
-				exit 1
+				if [[ x$pass2done = xyes ]]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
 				;;
 		esac
 		;;
