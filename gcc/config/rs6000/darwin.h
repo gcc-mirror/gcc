@@ -211,7 +211,7 @@ Boston, MA 02111-1307, USA.  */
     || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)		\
    && TYPE_FIELDS (STRUCT) != 0				\
    && DECL_MODE (TYPE_FIELDS (STRUCT)) == DFmode	\
-   ? MAX (MAX ((COMPUTED), (SPECIFIED)), BIGGEST_ALIGNMENT) \
+   ? MAX (MAX ((COMPUTED), (SPECIFIED)), 64)		\
    : MAX ((COMPUTED), (SPECIFIED)))
 /* XXX: Darwin supports neither .quad, or .llong, but it also doesn't
    support 64 bit powerpc either, so this just keeps things happy. */
