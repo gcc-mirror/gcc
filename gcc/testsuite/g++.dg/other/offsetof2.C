@@ -1,10 +1,12 @@
-// { dg-do run }
+// { dg-do run { xfail *-*-* } }
 // { dg-options -Wold-style-cast }
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 22 Apr 2003 <nathan@codesourcery.com>
 
 // DR273 POD can have an operator&, offsetof is still required to work
+
+// XFAILED - you can't write offsetof without an extension
 
 #include <stddef.h>
 

@@ -1,5 +1,9 @@
 2003-07-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11072
+	* g++.dg/other/offsetof2.C: XFAIL.
+	* g++.dg/other/offsetof5.C: New.
+
 	PR c++/10219
 	* g++.dg/template/error1.C: New.
 	
