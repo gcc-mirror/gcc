@@ -9183,11 +9183,11 @@ option is on by default if you optimize.
 @itemx -mprolog-function
 @opindex mno-prolog-function
 @opindex mprolog-function
-Do not use (do use) external functions to save and restore registers at
-the prolog and epilog of a function.  The external functions are slower,
-but use less code space if more than one function saves the same number
-of registers.  The @option{-mprolog-function} option is on by default if
-you optimize.
+Do not use (do use) external functions to save and restore registers
+at the prologue and epilogue of a function.  The external functions
+are slower, but use less code space if more than one function saves
+the same number of registers.  The @option{-mprolog-function} option
+is on by default if you optimize.
 
 @item -mspace
 @opindex mspace

@@ -1,3 +1,7 @@
+2003-07-21  Ben Elliston  <bje@wasabisystems.com>
+
+	* doc/invoke.texi (V850 Options): Spelling fixes.
+
 2003-07-21  Lisa M. Goldstein  <opus@gnu.org>
 
 	* doc/invoke.texi: Fixes to style, grammar and diction.
