@@ -1,3 +1,8 @@
+Sat Jun 12 03:40:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* sparc.h (LEGITIMIZE_RELOAD_ADDRESS): Do nothing with operands
+	that require PIC code sequences.
+
 Fri Jun 11 03:17:51 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (libgcc2): Pass MAYBE_USE_COLLECT2 as an argument.
