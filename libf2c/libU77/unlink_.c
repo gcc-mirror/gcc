@@ -39,7 +39,6 @@ integer
 G77_unlink_0 (const char *str, const ftnlen Lstr)
 {
   char *buff;
-  char *bp, *blast;
   int i;
 
   buff = malloc (Lstr + 1);

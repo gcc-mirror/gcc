@@ -96,7 +96,7 @@ rd_Z (Uint * n, int w, ftnlen len)
 static int
 rd_I (Uint * n, int w, ftnlen len, register int base)
 {
-  int bad, ch, sign;
+  int ch, sign;
   longint x = 0;
 
   if (w <= 0)

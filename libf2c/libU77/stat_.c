@@ -33,7 +33,6 @@ integer
 G77_stat_0 (const char *name, integer statb[13], const ftnlen Lname)
 {
   char *buff;
-  char *bp, *blast;
   int err;
   struct stat buf;
 

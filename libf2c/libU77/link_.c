@@ -42,7 +42,6 @@ G77_link_0 (const char *path1, const char *path2, const ftnlen Lpath1,
 {
 #if defined (HAVE_LINK)
   char *buff1, *buff2;
-  char *bp, *blast;
   int i;
 
   buff1 = malloc (Lpath1 + 1);

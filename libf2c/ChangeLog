@@ -1,3 +1,17 @@
+Sun Jun  2 08:58:05 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libI77/rdfmt.c (rd_I): Delete unused variable(s).
+	* libU77/access_.c (G77_access_0): Likewise.
+	* libU77/chdir_.c (G77_chdir_0): Likewise.
+	* libU77/chmod_.c (G77_chmod_0): Likewise.
+	* libU77/ctime_.c (G77_ctime_0): Likewise.
+	* libU77/link_.c (G77_link_0): Likewise.
+	* libU77/lstat_.c (G77_lstat_0): Likewise.
+	* libU77/rename_.c (G77_rename_0): Likewise.
+	* libU77/stat_.c (G77_stat_0): Likewise.
+	* libU77/symlnk_.c (G77_symlnk_0): Likewise.
+	* libU77/unlink_.c (G77_unlink_0): Likewise.
+
 Sun Jun  2 08:55:20 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libI77/inquire.c (f_inqu): Avoid ambiguous else clauses.

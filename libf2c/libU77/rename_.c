@@ -36,7 +36,6 @@ G77_rename_0 (const char *path1, const char *path2, const ftnlen Lpath1,
 	      const ftnlen Lpath2)
 {
   char *buff1, *buff2;
-  char *bp, *blast;
   int i;
 
   buff1 = malloc (Lpath1 + 1);

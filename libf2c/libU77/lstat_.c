@@ -37,7 +37,6 @@ G77_lstat_0 (const char *name, integer statb[13], const ftnlen Lname)
 {
 #if HAVE_LSTAT
   char *buff;
-  char *bp, *blast;
   int err;
   struct stat buf;
 

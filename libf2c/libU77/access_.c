@@ -51,7 +51,6 @@ integer
 G77_access_0 (const char *name, const char *mode, ftnlen Lname, ftnlen Lmode)
 {
   char *buff;
-  char *bp, *blast;
   int amode, i;
 
   buff = malloc (Lname + 1);

@@ -41,7 +41,6 @@ G77_symlnk_0 (const char *path1, const char *path2, const ftnlen Lpath1,
 {
 #if HAVE_SYMLINK
   char *buff1, *buff2;
-  char *bp, *blast;
   int i;
 
   buff1 = (char *) malloc (Lpath1 + 1);
