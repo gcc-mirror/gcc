@@ -1,7 +1,7 @@
 2004-12-08  David Edelsohn  <edelsohn@gnu.org>
 
-	* Makefile.am (LIBCFLAGS): Remove duplicate.
-	(PICFLAG): Remove duplicate.
+	* Makefile.am (AM_MAKEFLAGS): Remove duplicate LIBCFLAGS and
+	PICFLAG.
 	* Makefile.in: Regenerated.
 
 2004-12-07  Paolo Carlini  <pcarlini@suse.de>
