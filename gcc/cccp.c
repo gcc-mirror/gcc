@@ -6026,7 +6026,7 @@ collect_expansion (buf, end, nargs, arglist)
 	  p++;
 	  concat_sharp_token_type = c;
 	  if (is_hor_space[*p]) {
-	    concat_sharp_token_type++;
+	    concat_sharp_token_type = c + 1;
 	    p++;
 	    SKIP_WHITE_SPACE (p);
 	  }
@@ -6040,7 +6040,7 @@ collect_expansion (buf, end, nargs, arglist)
 	  exp_p--;
 	  stringify_sharp_token_type = c;
 	  if (is_hor_space[*p]) {
-	    stringify_sharp_token_type++;
+	    stringify_sharp_token_type = c + 1;
 	    p++;
 	    SKIP_WHITE_SPACE (p);
 	  }
