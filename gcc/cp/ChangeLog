@@ -1,3 +1,7 @@
+Thu Aug 21 22:25:46 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* lex.c (real_yylex): Don't use getc directly.
+
 Wed Aug 20 17:25:08 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (is_subseq): Don't try to be clever.
