@@ -6,6 +6,10 @@ Tue Oct 26 00:41:54 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Mon Oct 25 23:54:45 1999  Geoff Keating  <geoffk@cygnus.com>
 
+	* expmed.c (extract_bit_field): Allow for the case of non-integer
+	objects that are smaller than a word (like SFmode on a 64-bit
+	machine).
+
 	* loop.c (basic_induction_var): A non-integer variable which is
 	being set by a paradoxical subreg is probably not a biv.
 
