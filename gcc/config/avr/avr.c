@@ -4485,22 +4485,6 @@ avr_assemble_integer (x, size, aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
-
-/* Output real N to file FILE */
-
-void
-asm_output_float (file, n)
-     FILE *file;
-     REAL_VALUE_TYPE n;
-{
-  long val;
-  char dstr[100];
-  
-  REAL_VALUE_TO_TARGET_SINGLE (n, val);
-  REAL_VALUE_TO_DECIMAL (n, "%g", dstr);
-  fprintf (file, "\t.long 0x%08lx\t/* %s */\n", val, dstr);
-}
-
 /* Sets section name for declaration DECL */
   
 void

@@ -1913,37 +1913,6 @@ do {						\
 
 /* Output of Data.  */
 
-/* A C statement to output to the stdio stream STREAM an assembler instruction
-   to assemble a floating-point constant of `TFmode', `DFmode', `SFmode',
-   respectively, whose value is VALUE.  */
-
-/* ??? Must reverse the word order for big-endian code?  */
-
-#define ASM_OUTPUT_LONG_DOUBLE(FILE, VALUE) \
-do {									\
-  long t[3];								\
-  REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, t);				\
-  fprintf (FILE, "\tdata4 0x%08lx, 0x%08lx, 0x%08lx, 0x%08lx\n",	\
-	   t[0] & 0xffffffff, t[1] & 0xffffffff, t[2] & 0xffffffff, 0L);\
-} while (0)
-
-/* ??? Must reverse the word order for big-endian code?  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)				\
-do {								\
-  long t[2];							\
-  REAL_VALUE_TO_TARGET_DOUBLE (VALUE, t);			\
-  fprintf (FILE, "\tdata8 0x%08lx%08lx\n",			\
-	   t[1] & 0xffffffff, t[0] & 0xffffffff);		\
-} while (0)
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)				\
-  do {								\
-    long t;							\
-    REAL_VALUE_TO_TARGET_SINGLE (VALUE, t);			\
-    fprintf (FILE, "\tdata4 0x%lx\n", t & 0xffffffff);		\
-} while (0)
-  
 /* This is how to output an assembler line defining a `char' constant
    to an xdata segment.  */
 

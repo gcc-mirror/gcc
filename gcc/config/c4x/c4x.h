@@ -1851,43 +1851,6 @@ const_section ()							\
 #define ASM_APP_ON ""
 #define ASM_APP_OFF ""
 
-/* Output float/double constants  QFmode.  */
-
-#define ASM_OUTPUT_BYTE_FLOAT(FILE, VALUE)		\
-  do {							\
-    long l;						\
-    char str[30];					\
-    REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-    REAL_VALUE_TO_DECIMAL (VALUE, "%20lf", str);	\
-    if (sizeof (int) == sizeof (long))			\
-      fprintf (FILE, "\t.word\t0%08xh\t; %s\n", (int) l, str);\
-    else						\
-      fprintf (FILE, "\t.word\t0%08lxh\t; %s\n", l, str);\
-  } while (0);
-
-/* Output long double constants  HFmode. 
-   The first word contains the exponent and first part of the mantissa
-   in the same manner as QFmode.  The second word contains the full
-   mantissa.  We should ensure that the two words are allocated within
-   the same page for the large memory model since we only output a single
-   LDP instruction.  FIXME.  The simplest solution probably is to output
-   a LDP for each load.  */
-
-#define ASM_OUTPUT_SHORT_FLOAT(FILE, VALUE)		\
-  do {							\
-    long l[2];						\
-    char str[30];					\
-    REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-    REAL_VALUE_TO_DECIMAL (VALUE, "%20lf", str);	\
-    l[1] = (l[0] << 8) | ((l[1] >> 24) & 0xff);		\
-    if (sizeof (int) == sizeof (long))			\
-      fprintf (FILE, "\t.word\t0%08xh\t; %s\n\t.word\t0%08xh\n", \
-               (int) l[0], str, (int) l[1]);		\
-    else							\
-      fprintf (FILE, "\t.word\t0%08lxh\t; %s\n\t.word\t0%08lxh\n", \
-               l[0], str, l[1]);				\
-  } while (0);
-
 #define ASM_OUTPUT_ASCII(FILE, PTR, LEN) c4x_output_ascii (FILE, PTR, LEN)
 
 /* Output and Generation of Labels.  */

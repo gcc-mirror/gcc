@@ -2876,34 +2876,6 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define ASM_OUTPUT_LABEL(FILE,NAME)	\
   (assemble_name (FILE, NAME), fputs (":\n", FILE))
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-do { long l[2];								\
-     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
-     fprintf (FILE, "%s0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]);		\
-   } while (0)
-
-/* This is how to output a `long double' extended real constant.  */
-
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  		\
-do { long l[4];						\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);	\
-     if (TARGET_128BIT_LONG_DOUBLE)			\
-       fprintf (FILE, "%s0x%lx,0x%lx,0x%lx,0x0\n", ASM_LONG, l[0], l[1], l[2]); \
-     else \
-       fprintf (FILE, "%s0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
-   } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-do { long l;						\
-     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     fprintf ((FILE), "%s0x%lx\n", ASM_LONG, l);	\
-   } while (0)
-
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */

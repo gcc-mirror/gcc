@@ -1638,16 +1638,6 @@ const_section ()                                                   \
 
 /* OUTPUT OF DATA */
 
-/* This is how to output an assembler line defining a `double' constant.  */
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  asm_output_float (FILE,VALUE)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  asm_output_float (FILE, VALUE)
-
-/* This is how to output an assembler line defining a 'float' constant of
-   size HFmode.  */
-#define ASM_OUTPUT_SHORT_FLOAT(FILE,VALUE)  asm_output_float (FILE, VALUE)
-
 /* This is how we output a 'c' character string. For the 16xx
    assembler we have to do it one letter at a time */
 

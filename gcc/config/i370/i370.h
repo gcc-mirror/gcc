@@ -1183,14 +1183,6 @@ enum reg_class
   fprintf (FILE, "\tL\t%s,%d(13)\n\tLA\t13,4(13)\n",			\
      reg_names[REGNO], STACK_POINTER_OFFSET)
 
-/* This is how to output an assembler line defining a `double' constant.  */
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)					\
-  fprintf (FILE, "\tDC\tD'%.18G'\n", (VALUE))
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)					\
-  fprintf (FILE, "\tDC\tE'%.9G'\n", (VALUE))
-
 /* This outputs a text string.  The string are chopped up to fit into
    an 80 byte record.  Also, control and special characters, interpreted
    by the IBM assembler, are output numerically.  */
@@ -1865,24 +1857,6 @@ abort(); \
 #undef ASM_OUTPUT_EXTERNAL
 
 #define ASM_DOUBLE "\t.double"     
-
-/* Argument to the flt pt. macros is a REAL_VALUE_TYPE which 
-   may or may not be a float/double, depending on whther we
-   are running in cross-compiler mode.  */
-/* This is how to output an assembler line defining a `double' constant.  */
-#define ASM_OUTPUT_DOUBLE(FILE, RVAL) {					\
-  char buf[50];								\
-  REAL_VALUE_TO_DECIMAL (RVAL,  HOST_WIDE_INT_PRINT_DOUBLE_HEX, buf);	\
-  fprintf (FILE, "\tDC\tD'%s'\n", buf);					\
-}
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE, RVAL) {					\
-  char buf[50];								\
-  REAL_VALUE_TO_DECIMAL (RVAL,  HOST_WIDE_INT_PRINT_DEC, buf);		\
-  fprintf (FILE, "\tDC\tE'%s'\n", buf); 				\
-}
-
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

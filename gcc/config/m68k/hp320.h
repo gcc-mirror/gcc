@@ -165,8 +165,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TEXT_SECTION_ASM_OP
 #undef DATA_SECTION_ASM_OP
 #undef READONLY_DATA_SECTION
-#undef ASM_OUTPUT_DOUBLE
-#undef ASM_OUTPUT_FLOAT
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #undef ASM_OUTPUT_ALIGN
@@ -266,25 +264,6 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
     fprintf (FILE, "%s%d:\n", PREFIX, NUM);		\
 } while(0)
 
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)			\
-  do { char dstr[30];					\
-       REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);	\
-       fprintf (FILE, "\tdouble 0f%s\n", dstr);		\
-     } while (0)
-
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
-  do { char dstr[30];					\
-       REAL_VALUE_TO_DECIMAL (VALUE, "%.9g", dstr);	\
-       fprintf (FILE, "\tfloat 0f%s\n", dstr);		\
-     } while (0)
-
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
-do { long l[3];								\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\tlong 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
-   } while (0)
-  
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\tlong L%d\n", VALUE)
 

@@ -46,22 +46,6 @@ do {							\
   fputs ("\n", (FILE));					\
 } while (0)
 
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)	\
-{					\
-  union { int i[2]; double d; } _d_;	\
-  _d_.d = VALUE;				\
-  fprintf (FILE, "\t.long 0x%08x,0x%08x\n", _d_.i[0],_d_.i[1]); \
-}
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)	\
-{					\
-  union { int i; float f; } _f_;	\
-  _f_.f = VALUE;				\
-  fprintf (FILE, "\t.long 0x%08x\n", _f_.i); \
-}
-
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */

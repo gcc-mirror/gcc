@@ -43,3 +43,6 @@ extern const char *branch_or_jump PARAMS ((const char *, int));
 extern int find_jmplbl PARAMS ((int));
 extern int one_bit_set_p PARAMS ((int));
 extern void check_section PARAMS ((enum section));
+
+extern long real_value_to_target_single PARAMS((double));
+extern void real_value_to_target_double PARAMS((double, long[]));

@@ -96,48 +96,6 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC \
   "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic}"
 
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  do { if (REAL_VALUE_ISINF (VALUE))					\
-        {								\
-          if (REAL_VALUE_NEGATIVE (VALUE))				\
-            fprintf (FILE, "\t.double 0r-99e999\n");			\
-          else								\
-            fprintf (FILE, "\t.double 0r99e999\n");			\
-        }								\
-      else if (REAL_VALUE_MINUS_ZERO (VALUE))				\
-        {								\
-          fprintf (FILE, "\t.long 0x80000000,0\n");			\
-        }								\
-      else								\
-        { char dstr[30];						\
-          REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
-          fprintf (FILE, "\t.double 0r%s\n", dstr);			\
-        }								\
-    } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
- do { if (REAL_VALUE_ISINF (VALUE))					\
-        {								\
-          if (REAL_VALUE_NEGATIVE (VALUE))				\
-            fprintf (FILE, "\t.single 0r-99e999\n");			\
-          else								\
-            fprintf (FILE, "\t.single 0r99e999\n");			\
-        }								\
-      else if (REAL_VALUE_MINUS_ZERO (VALUE))				\
-        {								\
-          fprintf (FILE, "\t.long 0x80000000\n");			\
-        }								\
-      else								\
-        { char dstr[30];						\
-          REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
-          fprintf (FILE, "\t.single 0r%s\n", dstr);			\
-        }								\
-    } while (0)
-
 #undef ASM_OUTPUT_FLOAT_OPERAND
 #define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)		\
  do { 								\

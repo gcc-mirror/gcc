@@ -1,3 +1,38 @@
+2001-12-20  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (assemble_real): Use REAL_VALUE_TO_x and assemble_integer
+	to emit floating point values.
+	(assemble_real_1): Remove.
+
+	* 1750a/1750a.c (real_value_to_target_single): New.
+	(real_value_to_target_double): New.
+	* 1750a/1750a.h (TARGET_FLOAT_FORMAT): New.
+	(REAL_VALUE_TO_TARGET_SINGLE): New.
+	(REAL_VALUE_TO_TARGET_DOUBLE): New.
+	* 1750a/1750a-protos.h: Update.
+
+	* 1750a/1750a.h, a29k/a29k.h, alpha/alpha.h, alpha/unicosmk.h,
+	alpha/vms.h, arc/arc.h, arm/aof.h, arm/aout.h, avr/avr.c, 
+	avr/avr.h, c4x/c4x.h, clipper/clix.h, convex/convex.h, cris/cris.h,
+	d30v/d30v.h, dsp16xx/dsp16xx.c, dsp16xx/dsp16xx.h, elxsi/elxsi.h,
+	fr30/fr30.h, h8300/h8300.h, i370/i370.h, i386/i386.h, i386/i386elf.h,
+	i386/next.h, i386/ptx4-i.h, i386/sysv4.h, i860/fx2800.h, i860/i860.h,
+	i860/paragon.h, i860/sysv4.h, i960/i960-protos.h, i960/i960.c,
+	i960/i960.h, ia64/ia64.h, m32r/m32r.h, m68hc11/m68hc11.c, 
+	m68hc11/m68hc11.h, m68k/3b1.h, m68k/altos3068.h, m68k/crds.h,
+	m68k/dpx2.h, m68k/hp320.h, m68k/m68k.h, m68k/mot3300.h, m68k/news.h,
+	m68k/next.h, m68k/next21.h, m68k/sgs.h, m68k/sun2o4.h, m68k/sun3.h,
+	m68k/tower-as.h, m88k/m88k.h, mcore/mcore.h, mips/mips-protos.h,
+	mips/mips.c, mips/mips.h, mmix/mmix-protos.h, mmix/mmix.c,
+	mmix/mmix.h, mn10200/mn10200.h, mn10300/mn10300.h, ns32k/encore.h,
+	ns32k/ns32k.h, pa/long_double.h, pa/pa.h, pdp11/pdp11.h, pj/pj.h,
+	romp/romp.c, romp/romp.h, rs6000/rs6000.h, s390/linux.h, sh/sh.h,
+	sparc/sparc.h, stormy16/stormy16.h, v850/v850.h, vax/vax.h,
+	vax/vaxv.h, we32k/we32k.h, doc/tm.texi: Remove ASM_OUTPUT_FLOAT,
+	ASM_OUTPUT_DOUBLE, ASM_OUTPUT_LONG_DOUBLE, ASM_OUTPUT_BYTE_FLOAT,
+	ASM_OUTPUT_SHORT_FLOAT, ASM_OUTPUT_THREE_QUARTER_FLOAT, and all
+	associated support routines.
+
 Thu Dec 20 16:58:46 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (flow_find_cross_jump): Avoid incrementing of ninsns

@@ -1238,28 +1238,6 @@ do {							\
    no longer contain unusual constructs.  */
 #define ASM_APP_OFF ""
 
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE, VALUE) \
-{							\
-  long t;						\
-  char str[30];						\
-  REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);		\
-  REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);	\
-  fprintf (FILE, "\t.word\t0x%lx %s %s\n",		\
-	   t, ASM_COMMENT_START, str);			\
-}
-
-/* This is how to output an assembler line defining a `double' constant.  */
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE) \
-{							\
-  long t[2];						\
-  char str[30];						\
-  REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);		\
-  REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);	\
-  fprintf (FILE, "\t.word\t0x%lx %s %s\n\t.word\t0x%lx\n", \
-	   t[0], ASM_COMMENT_START, str, t[1]);		\
-}
-
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 #define ASM_OUTPUT_LABEL(FILE, NAME) \

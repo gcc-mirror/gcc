@@ -20,17 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define LONG_DOUBLE_TYPE_SIZE 128
 
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)                              \
-do { long value[4];                                                     \
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), value);                 \
-     fprintf((FILE), "%s\t0x%lx\n", "\t.word", value[0]);                \
-     fprintf((FILE), "%s\t0x%lx\n", "\t.word", value[1]);                \
-     fprintf((FILE), "%s\t0x%lx\n", "\t.word", value[2]);                \
-     fprintf((FILE), "%s\t0x%lx\n", "\t.word", value[3]);                \
-   } while (0)
-
-
 /* Define library calls for quad FP operations.  These are all part of the
    PA32 and PA64 ABIs.  */
 #define ADDTF3_LIBCALL "_U_Qfadd"

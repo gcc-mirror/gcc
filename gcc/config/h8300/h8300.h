@@ -1248,28 +1248,6 @@ readonly_data ()							\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
   sprintf (LABEL, "*.%s%d", PREFIX, NUM)
 
-/* This is how to output an assembler line defining a `double' constant.
-   It is .dfloat or .gfloat, depending.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)				\
-  do								\
-    {								\
-      char dstr[30];						\
-      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
-      fprintf (FILE, "\t.double %s\n", dstr);			\
-    }								\
-  while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)				\
-  do								\
-    {								\
-      char dstr[30];						\
-      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);		\
-      fprintf (FILE, "\t.float %s\n", dstr);			\
-    }								\
-  while (0)
-
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 

@@ -1388,19 +1388,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%d", PREFIX, NUM)
 
-/* This is how to output an assembler line defining a `long double'
-   constant.  */
-
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE) i960_output_long_double(FILE, VALUE)
-
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  i960_output_double(FILE, VALUE)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  i960_output_float(FILE, VALUE)
-
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
   fprintf (FILE, "\tst\t%s,(sp)\n\taddo\t4,sp,sp\n", reg_names[REGNO])
 

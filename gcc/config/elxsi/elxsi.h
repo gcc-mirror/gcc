@@ -732,21 +732,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, ".%s%d", PREFIX, NUM)
 
-/* This is how to output an assembler line defining a `double' constant.
-   It is .dfloat or .gfloat, depending.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-{ union {double d; int i[2]; } tem;				\
-  tem.d = (VALUE);						\
-  fprintf (FILE, "\t.data\t%d{32}, %d{32}\n", tem.i[0], tem.i[1]); }
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-{ union {float f; int i; } tem;					\
-  tem.f = (VALUE);						\
-  fprintf (FILE, "\t.data %d{32}\n", tem.i); }
-
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 

@@ -1413,38 +1413,6 @@ do										\
 #define ASM_APP_OFF "#NO_APP\n"
 
 /*}}}*/ 
-/*{{{  Output of Data.  */
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
-  do							\
-    {							\
-      long t;						\
-      char str[30];					\
-      							\
-      REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);		\
-      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);	\
-      							\
-      fprintf (FILE, "\t.word\t0x%lx %s %s\n",		\
-	       t, ASM_COMMENT_START, str);		\
-    }							\
-  while (0)
-
-/* This is how to output an assembler line defining a `double' constant.  */
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)				\
-  do								\
-    {								\
-      long t[2];						\
-      char str[30];						\
-      								\
-      REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
-      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
-      								\
-      fprintf (FILE, "\t.word\t0x%lx %s %s\n\t.word\t0x%lx\n",	\
-	       t[0], ASM_COMMENT_START, str, t[1]);		\
-    }								\
-  while (0)
-/*}}}*/ 
 /*{{{  Output and Generation of Labels.  */ 
 
 /* A C statement (sans semicolon) to output to the stdio stream STREAM the

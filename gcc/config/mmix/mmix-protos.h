@@ -131,12 +131,6 @@ extern rtx mmix_gen_compare_reg PARAMS ((enum rtx_code, rtx, rtx));
 extern int mmix_asm_preferred_eh_data_format PARAMS ((int, int));
 extern void mmix_setup_frame_addresses PARAMS ((void));
 
-/* Need real.h */
-#ifdef GCC_REAL_H
-extern void mmix_asm_output_double PARAMS ((FILE *, REAL_VALUE_TYPE *));
-extern void mmix_asm_output_float PARAMS ((FILE *, REAL_VALUE_TYPE *));
-#endif /* GCC_REAL_H */
-
 /*
  * Local variables:
  * eval: (c-set-style "gnu")

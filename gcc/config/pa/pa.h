@@ -1735,22 +1735,6 @@ while (0)
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%c$%s%04ld", (PREFIX)[0], (PREFIX) + 1, (long)(NUM))
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  do { long l[2];							\
-       REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
-       fprintf (FILE, "\t.word 0x%lx\n\t.word 0x%lx\n", l[0], l[1]);	\
-     } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-  do { long l;								\
-       REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);				\
-       fprintf (FILE, "\t.word 0x%lx\n", l);				\
-     } while (0)
-
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
   do {									\
     /* We only handle DATA objects here, functions are globalized in	\

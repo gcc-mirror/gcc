@@ -88,12 +88,6 @@ extern int i960_final_reg_parm_stack_space PARAMS ((int, tree));
 extern int i960_reg_parm_stack_space PARAMS ((tree));
 #endif /* TREE_CODE */
 
-#ifdef REAL_VALUE_TYPE
-extern void i960_output_long_double PARAMS ((FILE *, REAL_VALUE_TYPE));
-extern void i960_output_double PARAMS ((FILE *, REAL_VALUE_TYPE));
-extern void i960_output_float PARAMS ((FILE *, REAL_VALUE_TYPE));
-#endif /* REAL_VALUE_TYPE */
-
 extern int process_pragma PARAMS ((int(*)(void), void(*)(int), const char *));
 extern int i960_object_bytes_bitalign PARAMS ((int));
 extern void i960_initialize PARAMS ((void));
