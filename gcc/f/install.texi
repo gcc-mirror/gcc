@@ -5,7 +5,7 @@
 @c The text of this file appears in the file INSTALL
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-08-17
+@c 1997-09-09
 
 @ifclear INSTALLONLY
 @node Installation
@@ -61,20 +61,21 @@ There are GNU versions of all these available---in fact,
 a complete GNU UNIX system can be put together on
 most systems, if desired.
 
+=======
 The version of GNU @code{gzip} used to package this release
 is 1.24.
 (The version of GNU @code{tar} used to package this release
 is 1.11.2.)
 
-@item @file{gcc-2.7.2.2.tar.gz}
+@item @file{gcc-2.7.2.3.tar.gz}
 You need to have this, or some other applicable, version
 of @code{gcc} on your system.
 The version should be an exact copy of a distribution
 from the FSF.
 Its size is approximately 7.1MB.
 
-If you've already unpacked @file{gcc-2.7.2.2.tar.gz} into a
-directory (named @file{gcc-2.7.2.2}) called the @dfn{source tree}
+If you've already unpacked @file{gcc-2.7.2.3.tar.gz} into a
+directory (named @file{gcc-2.7.2.3}) called the @dfn{source tree}
 for @code{gcc}, you can delete the distribution
 itself, but you'll need to remember to skip any instructions to unpack
 this distribution.
@@ -99,7 +100,7 @@ using, how you build @code{g77}, and how much of it you
 install (primarily, which languages you install).
 
 The sizes shown below assume all languages distributed
-in @code{gcc-2.7.2.2}, plus @code{g77}, will be built
+in @code{gcc-2.7.2.3}, plus @code{g77}, will be built
 and installed.
 These sizes are indicative of GNU/Linux systems on
 Intel x86 running COFF and on Digital Alpha (AXP) systems
@@ -759,7 +760,7 @@ already reside in @file{/usr/FSF}, a naming convention
 used by the author of @code{g77} on his own system:
 
 @example
-/usr/FSF/gcc-2.7.2.2.tar.gz
+/usr/FSF/gcc-2.7.2.3.tar.gz
 /usr/FSF/g77-0.5.21.tar.gz
 @end example
 
@@ -801,20 +802,20 @@ These explanations follow this list of steps.
 @example
 sh[ 1]# @kbd{cd /usr/src}
 @set source-dir 1
-sh[ 2]# @kbd{gunzip -c < /usr/FSF/gcc-2.7.2.2.tar.gz | tar xf -}
+sh[ 2]# @kbd{gunzip -c < /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -}
 [Might say "Broken pipe"...that is normal on some systems.]
 @set unpack-gcc 2
 sh[ 3]# @kbd{gunzip -c < /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
 ["Broken pipe" again possible.]
 @set unpack-g77 3
-sh[ 4]# @kbd{ln -s gcc-2.7.2.2 gcc}
+sh[ 4]# @kbd{ln -s gcc-2.7.2.3 gcc}
 @set link-gcc 4
 sh[ 5]# @kbd{ln -s g77-0.5.21 g77}
 @set link-g77 5
 sh[ 6]# @kbd{mv -i g77/* gcc}
 [No questions should be asked by mv here; or, you made a mistake.]
 @set merge-g77 6
-sh[ 7]# @kbd{patch -p1 -V t -d gcc < gcc/f/gbe/2.7.2.2.diff}
+sh[ 7]# @kbd{patch -p1 -V t -d gcc < gcc/f/gbe/2.7.2.3.diff}
 [Unless patch complains about rejected patches, this step worked.]
 @set apply-patch 7
 sh[ 8]# @kbd{cd gcc}
@@ -882,7 +883,7 @@ version of @code{g77}, and then apply the appropriate patches
 to achieve the same result---a source tree containing version
 0.5.21 of @code{g77}.
 
-@item Step @value{link-gcc}: @kbd{ln -s gcc-2.7.2.2 gcc}
+@item Step @value{link-gcc}: @kbd{ln -s gcc-2.7.2.3 gcc}
 @item Step @value{link-g77}: @kbd{ln -s g77-0.5.21 g77}
 These commands mainly help reduce typing,
 and help reduce visual clutter in examples
@@ -1105,9 +1106,9 @@ and @code{g77} is:
 
 @example
 sh# @kbd{cd /usr/src}
-sh# @kbd{gunzip -c /usr/FSF/gcc-2.7.2.2.tar.gz | tar xf -}
+sh# @kbd{gunzip -c /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -}
 sh# @kbd{gunzip -c /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
-sh# @kbd{ln -s gcc-2.7.2.2 gcc}
+sh# @kbd{ln -s gcc-2.7.2.3 gcc}
 sh# @kbd{ln -s g77-0.5.21 g77}
 sh# @kbd{mv -i g77/* gcc}
 @end example
@@ -1133,7 +1134,7 @@ g77/f
 
 All three entries should be moved (or copied) into a @code{gcc}
 source tree (typically named after its version number and
-as it appears in the FSF distributions---e.g. @file{gcc-2.7.2.2}).
+as it appears in the FSF distributions---e.g. @file{gcc-2.7.2.3}).
 
 @file{g77/f} is the subdirectory containing all of the
 code, documentation, and other information that is specific
@@ -1749,43 +1750,43 @@ sh# @kbd{./g77 --driver=./xgcc -B./ -v}
 g77 version 0.5.21
  ./xgcc -B./ -v -fnull-version -o /tmp/gfa18047 @dots{}
 Reading specs from ./specs
-gcc version 2.7.2.2.f.3
+gcc version 2.7.2.3.f.1
  ./cpp -lang-c -v -isystem ./include -undef @dots{}
-GNU CPP version 2.7.2.2.f.3 (Linux/Alpha)
+GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
 #include "..." search starts here:
 #include <...> search starts here:
  ./include
  /usr/local/include
  /usr/alpha-unknown-linux/include
- /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.2.f.3/include
+ /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
  /usr/include
 End of search list.
  ./f771 /tmp/cca18048.i -fset-g77-defaults -quiet -dumpbase @dots{}
-GNU F77 version 2.7.2.2.f.3 (Linux/Alpha) compiled @dots{}
+GNU F77 version 2.7.2.3.f.1 (Linux/Alpha) compiled @dots{}
 GNU Fortran Front End version 0.5.21 compiled: @dots{}
  as -nocpp -o /tmp/cca180481.o /tmp/cca18048.s
  ld -G 8 -O1 -o /tmp/gfa18047 /usr/lib/crt0.o -L. @dots{}
 __G77_LIBF77_VERSION__: 0.5.21
 @@(#)LIBF77 VERSION 19970404
 __G77_LIBI77_VERSION__: 0.5.21
-@@(#) LIBI77 VERSION pjw,dmg-mods 19970527
+@@(#) LIBI77 VERSION pjw,dmg-mods 19970816
 __G77_LIBU77_VERSION__: 0.5.21
 @@(#) LIBU77 VERSION 19970609
 sh# @kbd{./xgcc -B./ -v -o /tmp/delete-me -xc /dev/null -xnone}
 Reading specs from ./specs
-gcc version 2.7.2.2.f.3
+gcc version 2.7.2.3.f.1
  ./cpp -lang-c -v -isystem ./include -undef @dots{}
-GNU CPP version 2.7.2.2.f.3 (Linux/Alpha)
+GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
 #include "..." search starts here:
 #include <...> search starts here:
  ./include
  /usr/local/include
  /usr/alpha-unknown-linux/include
- /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.2.f.3/include
+ /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
  /usr/include
 End of search list.
  ./cc1 /tmp/cca18063.i -quiet -dumpbase null.c -version @dots{}
-GNU C version 2.7.2.2.f.3 (Linux/Alpha) compiled @dots{}
+GNU C version 2.7.2.3.f.1 (Linux/Alpha) compiled @dots{}
  as -nocpp -o /tmp/cca180631.o /tmp/cca18063.s
  ld -G 8 -O1 -o /tmp/delete-me /usr/lib/crt0.o -L. @dots{}
 /usr/lib/crt0.o: In function `__start':

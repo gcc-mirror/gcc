@@ -282,6 +282,8 @@ dumpem ()
       summaries[cc_summaries[i].imp] = cc_summaries[i].text;
     }
 
+  printf ("@c This file is automatically derived from intdoc.c, intdoc.in,\n");
+  printf ("@c ansify.c, intrin.def, and intrin.h.  Edit those files instead.\n");
   printf ("@menu\n");
   for (i = 0; ((size_t) i) < ARRAY_SIZE (names); ++i)
     {

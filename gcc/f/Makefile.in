@@ -136,6 +136,7 @@ all: all.indirect
 ####host overrides
 ####cross overrides
 ####build overrides
+#
 # Now figure out from those variables how to compile and link.
 
 all.indirect: f/Makefile f771
@@ -201,6 +202,7 @@ FLAGS_TO_PASS = \
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< -o $@
+#
 # Lists of files for various purposes.
 
 # Language-specific object files for g77
@@ -265,6 +267,7 @@ f/Makefile:
 Makefile: $(srcdir)/f/Makefile.in $(srcdir)/configure
 
 native: f771
+#
 # Compiling object files from source files.
 
 # Note that dependencies on obstack.h are not written
@@ -543,6 +546,7 @@ deps-kinda:
 	      -e 's: \([.]/\)*f/str[.]h: f/stamp-str:g' \
 	      -e 's%^\(.*\)[ ]*: %f/\1: %g'
 
+#
 # These exist for maintenance purposes.
 
 # Update the tags table.

@@ -1,3 +1,25 @@
+Tue Sep  9 01:59:35 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* Version 0.5.21 released.
+
+Tue Sep  9 00:31:01 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* intdoc.c (dumpem): Put appropriate commentary in
+	output file, so readers know it isn't source.
+
+Wed Aug 27 08:08:25 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* proj.h: Always #include "config.j" first, to pick up
+	gcc's configuration.
+	* com.c: Change bcopy() and bzero() calls to memcpy()
+	and memset() calls, to make more of g77 ANSI C.
+
+1997-08-26  Dave Love  <d.love@dl.ac.uk>
+
+	* Make-lang.in ($(srcdir)/f/runtime/configure,
+ 	$(srcdir)/f/runtime/libU77/configure): Fix for when srcdir isn't
+ 	relative.
+
 Tue Aug 26 05:59:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* ansify.c (main): Make sure readers of stdout know
