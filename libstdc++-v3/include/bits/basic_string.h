@@ -185,14 +185,6 @@ namespace std
 	_M_is_shared() const
         { return this->_M_refcount > 0; }
 
-	// True if source and destination do not overlap.
-	bool
-	_M_is_safe(const _CharT* __data, const _CharT* __s) const
-	{
-	  return (less<const _CharT*>()(__s, __data)
-		  || less<const _CharT*>()(__data + this->_M_length, __s));
-	}
-
         void
 	_M_set_leaked()
         { this->_M_refcount = -1; }
@@ -323,6 +315,14 @@ namespace std
       {
 	const bool __testoff =  __off < this->size() - __pos;
 	return __testoff ? __off : this->size() - __pos;
+      }
+
+      // True if _Rep and source do not overlap.
+      bool
+      _M_disjunct(const _CharT* __s) const
+      {
+	return (less<const _CharT*>()(__s, _M_data())
+		|| less<const _CharT*>()(_M_data() + this->size(), __s));
       }
 
       // When __n = 1 way faster than the general multichar

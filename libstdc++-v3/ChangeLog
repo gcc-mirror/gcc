@@ -1,4 +1,10 @@
 2004-10-25  Paolo Carlini  <pcarlini@suse.de>
+	
+	* include/bits/basic_string.h (_Rep::_M_is_safe): Move to
+	basic_string as _M_disjunct, adjust to take only __s.
+	* include/bits/basic_string.tcc: Adjust consistently callers. 
+
+2004-10-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.tcc (assign(const _CharT*, size_type)):
 	Adjust bit missing from the previous commit.
