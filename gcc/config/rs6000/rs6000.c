@@ -9602,12 +9602,12 @@ print_operand (FILE *file, rtx x, int code)
       return;
 
     case 'D':
-      /* Like 'J' but get to the GT bit.  */
+      /* Like 'J' but get to the EQ bit.  */
       if (GET_CODE (x) != REG)
 	abort ();
 
-      /* Bit 1 is GT bit.  */
-      i = 4 * (REGNO (x) - CR0_REGNO) + 1;
+      /* Bit 1 is EQ bit.  */
+      i = 4 * (REGNO (x) - CR0_REGNO) + 2;
 
       /* If we want bit 31, write a shift count of zero, not 32.  */
       fprintf (file, "%d", i == 31 ? 0 : i + 1);
@@ -10565,9 +10565,9 @@ rs6000_emit_sCOND (enum rtx_code code, rtx result)
 	abort ();
 
       if (cond_code == NE)
-	emit_insn (gen_e500_flip_gt_bit (t, t));
+	emit_insn (gen_e500_flip_eq_bit (t, t));
 
-      emit_insn (gen_move_from_CR_gt_bit (result, t));
+      emit_insn (gen_move_from_CR_eq_bit (result, t));
       return;
     }
 
@@ -10748,9 +10748,9 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
   return string;
 }
 
-/* Return the string to flip the GT bit on a CR.  */
+/* Return the string to flip the EQ bit on a CR.  */
 char *
-output_e500_flip_gt_bit (rtx dst, rtx src)
+output_e500_flip_eq_bit (rtx dst, rtx src)
 {
   static char string[64];
   int a, b;
@@ -10759,9 +10759,9 @@ output_e500_flip_gt_bit (rtx dst, rtx src)
       || GET_CODE (src) != REG || ! CR_REGNO_P (REGNO (src)))
     abort ();
 
-  /* GT bit.  */
-  a = 4 * (REGNO (dst) - CR0_REGNO) + 1;
-  b = 4 * (REGNO (src) - CR0_REGNO) + 1;
+  /* EQ bit.  */
+  a = 4 * (REGNO (dst) - CR0_REGNO) + 2;
+  b = 4 * (REGNO (src) - CR0_REGNO) + 2;
 
   sprintf (string, "crnot %d,%d", a, b);
   return string;
