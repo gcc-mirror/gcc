@@ -240,7 +240,7 @@ in the following sections.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{
--a  -ax  -d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
+-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fdump-unnumbered 
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-tree-original@r{[}-@var{n}@r{]} -fdump-tree-optimized@r{[}-@var{n}@r{]} @gol
@@ -2752,80 +2752,6 @@ pass when it finishes.
 @opindex fmem-report
 Makes the compiler print some statistics about permanent memory
 allocation when it finishes.
-
-@item -ax
-@opindex ax
-Generate extra code to profile basic blocks.  Your executable will
-produce output that is a superset of that produced when @option{-a} is
-used.  Additional output is the source and target address of the basic
-blocks where a jump takes place, the number of times a jump is executed,
-and (optionally) the complete sequence of basic blocks being executed.
-The output is appended to file @file{bb.out}.
-
-You can examine different profiling aspects without recompilation.  Your
-executable will read a list of function names from file @file{bb.in}.
-Profiling starts when a function on the list is entered and stops when
-that invocation is exited.  To exclude a function from profiling, prefix
-its name with @samp{-}.  If a function name is not unique, you can
-disambiguate it by writing it in the form
-@samp{/path/filename.d:functionname}.  Your executable will write the
-available paths and filenames in file @file{bb.out}.
-
-Several function names have a special meaning:
-@table @code
-@item __bb_jumps__
-Write source, target and frequency of jumps to file @file{bb.out}.
-@item __bb_hidecall__
-Exclude function calls from frequency count.
-@item __bb_showret__
-Include function returns in frequency count.
-@item __bb_trace__
-Write the sequence of basic blocks executed to file @file{bbtrace.gz}.
-The file will be compressed using the program @samp{gzip}, which must
-exist in your @env{PATH}.  On systems without the @samp{popen}
-function, the file will be named @file{bbtrace} and will not be
-compressed.  @strong{Profiling for even a few seconds on these systems
-will produce a very large file.}  Note: @code{__bb_hidecall__} and
-@code{__bb_showret__} will not affect the sequence written to
-@file{bbtrace.gz}.
-@end table
-
-Here's a short example using different profiling parameters
-in file @file{bb.in}.  Assume function @code{foo} consists of basic blocks
-1 and 2 and is called twice from block 3 of function @code{main}.  After
-the calls, block 3 transfers control to block 4 of @code{main}.
-
-With @code{__bb_trace__} and @code{main} contained in file @file{bb.in},
-the following sequence of blocks is written to file @file{bbtrace.gz}:
-0 3 1 2 1 2 4.  The return from block 2 to block 3 is not shown, because
-the return is to a point inside the block and not to the top.  The
-block address 0 always indicates, that control is transferred
-to the trace from somewhere outside the observed functions.  With
-@samp{-foo} added to @file{bb.in}, the blocks of function
-@code{foo} are removed from the trace, so only 0 3 4 remains.
-
-With @code{__bb_jumps__} and @code{main} contained in file @file{bb.in},
-jump frequencies will be written to file @file{bb.out}.  The
-frequencies are obtained by constructing a trace of blocks
-and incrementing a counter for every neighbouring pair of blocks
-in the trace.  The trace 0 3 1 2 1 2 4 displays the following
-frequencies:
-
-@example
-Jump from block 0x0 to block 0x3 executed 1 time(s)
-Jump from block 0x3 to block 0x1 executed 1 time(s)
-Jump from block 0x1 to block 0x2 executed 2 time(s)
-Jump from block 0x2 to block 0x1 executed 1 time(s)
-Jump from block 0x2 to block 0x4 executed 1 time(s)
-@end example
-
-With @code{__bb_hidecall__}, control transfer due to call instructions
-is removed from the trace, that is the trace is cut into three parts: 0
-3 4, 0 1 2 and 0 1 2.  With @code{__bb_showret__}, control transfer due
-to return instructions is added to the trace.  The trace becomes: 0 3 1
-2 3 1 2 3 4.  Note, that this trace is not the same, as the sequence
-written to @file{bbtrace.gz}.  It is solely used for counting jump
-frequencies.
 
 @item -fprofile-arcs
 @opindex fprofile-arcs

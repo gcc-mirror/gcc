@@ -1308,7 +1308,7 @@ i960_output_function_prologue (file, size)
 
   epilogue_string[0] = '\0';
 
-  if (profile_flag || profile_block_flag)
+  if (profile_flag)
     {
       /* When profiling, we may use registers 20 to 27 to save arguments, so
 	 they can't be used here for saving globals.  J is the number of

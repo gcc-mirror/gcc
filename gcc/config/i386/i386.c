@@ -3401,10 +3401,6 @@ ix86_can_use_return_insn_p ()
   if (NON_SAVING_SETJMP && current_function_calls_setjmp)
     return 0;
 #endif
-#ifdef FUNCTION_BLOCK_PROFILER_EXIT
-  if (profile_block_flag == 2)
-    return 0;
-#endif
 
   if (! reload_completed || frame_pointer_needed)
     return 0;
@@ -4029,7 +4025,7 @@ ix86_expand_prologue ()
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  However, if -fpic, the above call will have
      done that.  */
-  if ((profile_flag || profile_block_flag) && ! pic_reg_used)
+  if (profile_flag && ! pic_reg_used)
     emit_insn (gen_blockage ());
 }
 
@@ -4074,13 +4070,6 @@ ix86_expand_epilogue (style)
   if (current_function_calls_eh_return && style != 2)
     offset -= 2;
   offset *= -UNITS_PER_WORD;
-
-#ifdef FUNCTION_BLOCK_PROFILER_EXIT
-  if (profile_block_flag == 2)
-    {
-      FUNCTION_BLOCK_PROFILER_EXIT;
-    }
-#endif
 
   /* If we're only restoring one register and sp is not valid then
      using a move instruction to restore the register since it's
@@ -6403,252 +6392,6 @@ output_fp_compare (insn, operands, eflags_p, unordered_p)
 	abort ();
 
       return ret;
-    }
-}
-
-/* Output assembler code to FILE to initialize basic-block profiling.
-
-   If profile_block_flag == 2
-
-	Output code to call the subroutine `__bb_init_trace_func'
-	and pass two parameters to it. The first parameter is
-	the address of a block allocated in the object module.
-	The second parameter is the number of the first basic block
-	of the function.
-
-	The name of the block is a local symbol made with this statement:
-
-	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 0);
-
-	Of course, since you are writing the definition of
-	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
-	can take a short cut in the definition of this macro and use the
-	name that you know will result.
-
-	The number of the first basic block of the function is
-	passed to the macro in BLOCK_OR_LABEL.
-
-	If described in a virtual assembler language the code to be
-	output looks like:
-
-		parameter1 <- LPBX0
-		parameter2 <- BLOCK_OR_LABEL
-		call __bb_init_trace_func
-
-    else if profile_block_flag != 0
-
-	Output code to call the subroutine `__bb_init_func'
-	and pass one single parameter to it, which is the same
-	as the first parameter to `__bb_init_trace_func'.
-
-	The first word of this parameter is a flag which will be nonzero if
-	the object module has already been initialized.  So test this word
-	first, and do not call `__bb_init_func' if the flag is nonzero.
-	Note: When profile_block_flag == 2 the test need not be done
-	but `__bb_init_trace_func' *must* be called.
-
-	BLOCK_OR_LABEL may be used to generate a label number as a
-	branch destination in case `__bb_init_func' will not be called.
-
-	If described in a virtual assembler language the code to be
-	output looks like:
-
-		cmp (LPBX0),0
-		jne local_label
-		parameter1 <- LPBX0
-		call __bb_init_func
-	      local_label:
-*/
-
-void
-ix86_output_function_block_profiler (file, block_or_label)
-     FILE *file;
-     int block_or_label;
-{
-  static int num_func = 0;
-  rtx xops[8];
-  char block_table[80], false_label[80];
-
-  ASM_GENERATE_INTERNAL_LABEL (block_table, "LPBX", 0);
-
-  xops[1] = gen_rtx_SYMBOL_REF (VOIDmode, block_table);
-  xops[5] = stack_pointer_rtx;
-  xops[7] = gen_rtx_REG (Pmode, 0); /* eax */
-
-  CONSTANT_POOL_ADDRESS_P (xops[1]) = TRUE;
-
-  switch (profile_block_flag)
-    {
-    case 2:
-      xops[2] = GEN_INT (block_or_label);
-      xops[3] = gen_rtx_MEM (Pmode,
-		     gen_rtx_SYMBOL_REF (VOIDmode, "__bb_init_trace_func"));
-      xops[6] = GEN_INT (8);
-
-      output_asm_insn ("push{l}\t%2", xops);
-      if (!flag_pic)
-	output_asm_insn ("push{l}\t%1", xops);
-      else
-	{
-	  output_asm_insn ("lea{l}\t{%a1, %7|%7, %a1}", xops);
-	  output_asm_insn ("push{l}\t%7", xops);
-	}
-      output_asm_insn ("call\t%P3", xops);
-      output_asm_insn ("add{l}\t{%6, %5|%5, %6}", xops);
-      break;
-
-    default:
-      ASM_GENERATE_INTERNAL_LABEL (false_label, "LPBZ", num_func);
-
-      xops[0] = const0_rtx;
-      xops[2] = gen_rtx_MEM (Pmode,
-			     gen_rtx_SYMBOL_REF (VOIDmode, false_label));
-      xops[3] = gen_rtx_MEM (Pmode,
-			     gen_rtx_SYMBOL_REF (VOIDmode, "__bb_init_func"));
-      xops[4] = gen_rtx_MEM (Pmode, xops[1]);
-      xops[6] = GEN_INT (4);
-
-      CONSTANT_POOL_ADDRESS_P (xops[2]) = TRUE;
-
-      output_asm_insn ("cmp{l}\t{%0, %4|%4, %0}", xops);
-      output_asm_insn ("jne\t%2", xops);
-
-      if (!flag_pic)
-	output_asm_insn ("push{l}\t%1", xops);
-      else
-	{
-	  output_asm_insn ("lea{l}\t{%a1, %7|%7, %a2}", xops);
-	  output_asm_insn ("push{l}\t%7", xops);
-	}
-      output_asm_insn ("call\t%P3", xops);
-      output_asm_insn ("add{l}\t{%6, %5|%5, %6}", xops);
-      ASM_OUTPUT_INTERNAL_LABEL (file, "LPBZ", num_func);
-      num_func++;
-      break;
-    }
-}
-
-/* Output assembler code to FILE to increment a counter associated
-   with basic block number BLOCKNO.
-
-   If profile_block_flag == 2
-
-	Output code to initialize the global structure `__bb' and
-	call the function `__bb_trace_func' which will increment the
-	counter.
-
-	`__bb' consists of two words. In the first word the number
-	of the basic block has to be stored. In the second word
-	the address of a block allocated in the object module
-	has to be stored.
-
-	The basic block number is given by BLOCKNO.
-
-	The address of the block is given by the label created with
-
-	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 0);
-
-	by FUNCTION_BLOCK_PROFILER.
-
-	Of course, since you are writing the definition of
-	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
-	can take a short cut in the definition of this macro and use the
-	name that you know will result.
-
-	If described in a virtual assembler language the code to be
-	output looks like:
-
-		move BLOCKNO -> (__bb)
-		move LPBX0 -> (__bb+4)
-		call __bb_trace_func
-
-	Note that function `__bb_trace_func' must not change the
-	machine state, especially the flag register. To grant
-	this, you must output code to save and restore registers
-	either in this macro or in the macros MACHINE_STATE_SAVE
-	and MACHINE_STATE_RESTORE. The last two macros will be
-	used in the function `__bb_trace_func', so you must make
-	sure that the function prologue does not change any
-	register prior to saving it with MACHINE_STATE_SAVE.
-
-   else if profile_block_flag != 0
-
-	Output code to increment the counter directly.
-	Basic blocks are numbered separately from zero within each
-	compiled object module. The count associated with block number
-	BLOCKNO is at index BLOCKNO in an array of words; the name of
-	this array is a local symbol made with this statement:
-
-	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 2);
-
-	Of course, since you are writing the definition of
-	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
-	can take a short cut in the definition of this macro and use the
-	name that you know will result.
-
-	If described in a virtual assembler language the code to be
-	output looks like:
-
-		inc (LPBX2+4*BLOCKNO)
-*/
-
-void
-ix86_output_block_profiler (file, blockno)
-     FILE *file ATTRIBUTE_UNUSED;
-     int blockno;
-{
-  rtx xops[8], cnt_rtx;
-  char counts[80];
-  char *block_table = counts;
-
-  switch (profile_block_flag)
-    {
-    case 2:
-      ASM_GENERATE_INTERNAL_LABEL (block_table, "LPBX", 0);
-
-      xops[1] = gen_rtx_SYMBOL_REF (VOIDmode, block_table);
-      xops[2] = GEN_INT (blockno);
-      xops[3] = gen_rtx_MEM (Pmode,
-			     gen_rtx_SYMBOL_REF (VOIDmode, "__bb_trace_func"));
-      xops[4] = gen_rtx_SYMBOL_REF (VOIDmode, "__bb");
-      xops[5] = plus_constant (xops[4], 4);
-      xops[0] = gen_rtx_MEM (SImode, xops[4]);
-      xops[6] = gen_rtx_MEM (SImode, xops[5]);
-
-      CONSTANT_POOL_ADDRESS_P (xops[1]) = TRUE;
-
-      output_asm_insn ("pushf", xops);
-      output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
-      if (flag_pic)
-	{
-	  xops[7] = gen_rtx_REG (Pmode, 0); /* eax */
-	  output_asm_insn ("push{l}\t%7", xops);
-	  output_asm_insn ("lea{l}\t{%a1, %7|%7, %a1}", xops);
-	  output_asm_insn ("mov{l}\t{%7, %6|%6, %7}", xops);
-	  output_asm_insn ("pop{l}\t%7", xops);
-	}
-      else
-	output_asm_insn ("mov{l}\t{%1, %6|%6, %1}", xops);
-      output_asm_insn ("call\t%P3", xops);
-      output_asm_insn ("popf", xops);
-
-      break;
-
-    default:
-      ASM_GENERATE_INTERNAL_LABEL (counts, "LPBX", 2);
-      cnt_rtx = gen_rtx_SYMBOL_REF (VOIDmode, counts);
-      SYMBOL_REF_FLAG (cnt_rtx) = TRUE;
-
-      if (blockno)
-	cnt_rtx = plus_constant (cnt_rtx, blockno*4);
-
-      if (flag_pic)
-	cnt_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, cnt_rtx);
-
-      xops[0] = gen_rtx_MEM (SImode, cnt_rtx);
-      output_asm_insn ("inc{l}\t%0", xops);
-
-      break;
     }
 }
 

@@ -1185,13 +1185,6 @@ m68k_output_function_epilogue (stream, size)
       return;
     }
 
-#ifdef FUNCTION_BLOCK_PROFILER_EXIT
-  if (profile_block_flag == 2)
-    {
-      FUNCTION_BLOCK_PROFILER_EXIT (stream);
-    }
-#endif
-
 #ifdef FUNCTION_EXTRA_EPILOGUE
   FUNCTION_EXTRA_EPILOGUE (stream, size);
 #endif

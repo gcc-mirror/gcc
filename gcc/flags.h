@@ -173,10 +173,6 @@ extern int warn_disabled_optimization;
 
 extern int profile_flag;
 
-/* Nonzero if generating code to do profiling on the basis of basic blocks.  */
-
-extern int profile_block_flag;
-
 /* Nonzero if generating code to profile program flow graph arcs.  */
 
 extern int profile_arc_flag;

@@ -52,8 +52,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_NO_PROTOTYPE 0
 #endif
 
-extern int profile_block_flag;
-
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
@@ -379,8 +377,6 @@ rs6000_override_options (default_cpu)
   int multiple = TARGET_MULTIPLE;
   /* Save current -mstring/-mno-string status.  */
   int string = TARGET_STRING;
-
-  profile_block_flag = 0;
 
   /* Identify the processor type.  */
   rs6000_select[0].string = default_cpu;

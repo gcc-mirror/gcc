@@ -1560,9 +1560,6 @@ output_options (file, f_options, f_len, W_options, W_len,
     pos = output_option (file, sep, "-traditional", "", indent, pos, max);
   if (profile_flag)
     pos = output_option (file, sep, "-p", "", indent, pos, max);
-  if (profile_block_flag)
-    pos = output_option (file, sep, "-a", "", indent, pos, max);
-
   for (j = 0; j < f_len; j++)
     if (*f_options[j].variable == f_options[j].on_value)
       pos = output_option (file, sep, "-f", f_options[j].string,
@@ -1820,7 +1817,7 @@ m88k_layout_frame ()
   frame_size = get_frame_size ();
 
   /* Since profiling requires a call, make sure r1 is saved.  */
-  if (profile_flag || profile_block_flag)
+  if (profile_flag)
     save_regs[1] = 1;
 
   /* If we are producing debug information, store r1 and r30 where the
@@ -2031,7 +2028,7 @@ m88k_expand_prologue ()
       if (! save_regs[1])
 	emit_move_insn (return_reg, temp_reg);
     }
-  if (profile_flag || profile_block_flag)
+  if (profile_flag)
     emit_insn (gen_blockage ());
 }
 
