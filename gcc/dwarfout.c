@@ -1478,7 +1478,19 @@ output_mem_loc_descriptor (rtl)
 	   be referred to as a "base register".  This distinction is not
 	   based in any way upon what category of register the hardware
 	   believes the given register belongs to.  This is strictly
-	   Dwarf terminology we're dealing with here.  */
+	   Dwarf terminology we're dealing with here.
+
+	   Note that in cases where the location of a memory-resident data
+	   object could be expressed as:
+
+		    OP_ADD (OP_BASEREG (basereg), OP_CONST (0))
+
+	   the actual DWARF location descriptor that we generate may just
+	   be OP_BASEREG (basereg).  This may look deceptively like the
+	   object in question was allocated to a register (rather than
+	   in memory) so DWARF consumers need to be aware of the subtle
+	   distinction between OP_REG and OP_BASEREG.
+	*/
 
 	ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_BASEREG);
         ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
@@ -1877,13 +1889,27 @@ location_attribute (rtl)
   /* Handle a special case.  If we are about to output a location descriptor
      for a variable or parameter which has been optimized out of existence,
      don't do that.  Instead we output a zero-length location descriptor
-     value as part of the location attribute.  Note that we cannot simply
-     suppress the entire location attribute, because the absence of a
-     location attribute in certain kinds of DIEs is used to indicate some-
-     thing entirely different... i.e. that the DIE represents an object
-     declaration, but not a definition.  So sayeth the PLSIG.  */
+     value as part of the location attribute.
 
-  if (! is_pseudo_reg (rtl))
+     A variable which has been optimized out of existance will have a
+     DECL_RTL value which denotes a pseudo-reg.
+
+     Currently, in some rare cases, variables can have DECL_RTL values
+     which look like (MEM (REG pseudo-reg#)).  These cases are due to
+     bugs elsewhere in the compiler.  We treat such cases
+     as if the variable(s) in question had been optimized out of existance.
+
+     Note that in all cases where we wish to express the fact that a
+     variable has been optimized out of existance, we do not simply
+     suppress the generation of the entire location attribute because
+     the absence of a location attribute in certain kinds of DIEs is
+     used to indicate something else entirely... i.e. that the DIE
+     represents an object declaration, but not a definition.  So sayeth
+     the PLSIG.
+  */
+
+  if (! is_pseudo_reg (rtl)
+      && (GET_CODE (rtl) != MEM || ! is_pseudo_reg (XEXP (rtl, 0))))
     output_loc_descriptor (eliminate_regs (rtl, 0, NULL_RTX));
 
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
