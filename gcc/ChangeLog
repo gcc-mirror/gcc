@@ -1,3 +1,45 @@
+Thu Nov 26 14:56:32 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (TARGET_DEFAULT): Add PARALEL_MPY_FLAG.
+	(TARGET_SMALL_REG_CLASS): Set to 0 so that SMALL_REGISTER_CLASSES
+	is no longer enabled if PARALLEL_MPY_FLAG set.
+	(HARD_REGNO_CALL_CLOBBERED): Add parentheses to remove ambiguity.
+	(REG_CLASS_CONTENTS): Add braces around initializers.
+	(HAVE_MULTIPLE_PACK): Define.
+	(ASM_OUTPUT_BYTE_FLOAT): Use %lf format specifier with 
+	REAL_VALUE_TO_DECIMAL.
+	(ASM_OUTPUT_SHORT_FLOAT): Use %lf format specifier with 
+	REAL_VALUE_TO_DECIMAL.
+	(ar0_reg_operand): Add prototype.
+	(ar0_mem_operand): Likewise.
+	(ar1_reg_operand): Likewise.
+	(ar1_mem_operand): Likewise.
+	(ar2_reg_operand): Likewise.
+	(ar2_mem_operand): Likewise.
+	(ar3_reg_operand): Likewise.
+	(ar3_mem_operand): Likewise.
+	(ar4_reg_operand): Likewise.
+	(ar4_mem_operand): Likewise.
+	(ar5_reg_operand): Likewise.
+	(ar5_mem_operand): Likewise.
+	(ar6_reg_operand): Likewise.
+	(ar6_mem_operand): Likewise.
+	(ar7_reg_operand): Likewise.
+	(ar7_mem_operand): Likewise.
+	(ir0_reg_operand): Likewise.
+	(ir0_mem_operand): Likewise.
+	(ir1_reg_operand): Likewise.
+	(ir1_mem_operand): Likewise.
+	(group1_reg_operand): Likewise.
+	(group1_mem_operand): Likewise.
+	(ir1_reg_operand): Likewise.
+	(arx_reg_operand): Likewise.
+	(not_rc_reg): Likewise.
+	(not_modify_reg): Likewise.
+	(c4x_group1_reg_operand): Remove prototype.
+	(c4x_group1_mem_operand): Likewise.
+	(c4x_arx_reg_operand): Likewise.
+
 Wed Nov 25 19:02:55 1998  (Stephen L Moshier) <moshier@world.std.com>
 
 	* emit-rtl.c (gen_lowpart_common): Remove earlier change.
