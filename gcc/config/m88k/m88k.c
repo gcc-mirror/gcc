@@ -68,7 +68,7 @@ static void m88k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m88k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m88k_output_function_end_prologue PARAMS ((FILE *));
 static void m88k_output_function_begin_epilogue PARAMS ((FILE *));
-#ifdef INIT_SECTION_ASM_OP
+#if defined (CTOR_LIST_BEGIN) && !defined (OBJECT_FORMAT_ELF)
 static void m88k_svr3_asm_out_constructor PARAMS ((rtx, int));
 static void m88k_svr3_asm_out_destructor PARAMS ((rtx, int));
 #endif
@@ -3292,7 +3292,7 @@ symbolic_operand (op, mode)
     }
 }
 
-#ifdef INIT_SECTION_ASM_OP
+#if defined (CTOR_LIST_BEGIN) && !defined (OBJECT_FORMAT_ELF)
 static void
 m88k_svr3_asm_out_constructor (symbol, priority)
      rtx symbol;
@@ -3321,7 +3321,7 @@ m88k_svr3_asm_out_destructor (symbol, priority)
   for (i = 1; i < 4; i++)
     assemble_integer (constm1_rtx, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
-#endif
+#endif /* INIT_SECTION_ASM_OP && ! OBJECT_FORMAT_ELF */
 
 /* Adjust the cost of INSN based on the relationship between INSN that
    is dependent on DEP_INSN through the dependence LINK.  The default

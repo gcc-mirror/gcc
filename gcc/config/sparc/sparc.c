@@ -167,8 +167,9 @@ static void sparc_nonflat_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT,
 						     int));
 static void sparc_nonflat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT,
 						     int));
+#ifdef OBJECT_FORMAT_ELF
 static void sparc_elf_asm_named_section PARAMS ((const char *, unsigned int));
-
+#endif
 static void ultrasparc_sched_reorder PARAMS ((FILE *, int, rtx *, int));
 static int ultrasparc_variable_issue PARAMS ((rtx));
 static void ultrasparc_sched_init PARAMS ((void));
@@ -8739,6 +8740,7 @@ sparc_add_gc_roots ()
 		sizeof (ultra_pipe_hist[0]), &mark_ultrasparc_pipeline_state);
 }
 
+#ifdef OBJECT_FORMAT_ELF
 static void
 sparc_elf_asm_named_section (name, flags)
      const char *name;
@@ -8765,3 +8767,4 @@ sparc_elf_asm_named_section (name, flags)
 
   fputc ('\n', asm_out_file);
 }
+#endif /* OBJECT_FORMAT_ELF */

@@ -59,7 +59,9 @@ static tree h8300_handle_eightbit_data_attribute PARAMS ((tree *, tree, tree, in
 static tree h8300_handle_tiny_data_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void h8300_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void h8300_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+#ifndef OBJECT_FORMAT_ELF
 static void h8300_asm_named_section PARAMS ((const char *, unsigned int));
+#endif
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -3473,6 +3475,7 @@ h8300_adjust_insn_length (insn, length)
   return 0;
 }
 
+#ifndef OBJECT_FORMAT_ELF
 static void
 h8300_asm_named_section (name, flags)
      const char *name;
@@ -3481,3 +3484,4 @@ h8300_asm_named_section (name, flags)
   /* ??? Perhaps we should be using default_coff_asm_named_section.  */
   fprintf (asm_out_file, "\t.section %s\n", name);
 }
+#endif /* ! OBJECT_FORMAT_ELF */
