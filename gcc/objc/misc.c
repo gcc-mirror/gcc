@@ -71,9 +71,6 @@ __objc_xrealloc(void* mem, size_t size)
 void*
 __objc_xcalloc(size_t nelem, size_t size)
 {
-#ifdef __alpha__
-  extern bzero (void *, size_t);
-#endif
   void* res = (void*)malloc(nelem * size);
   if(!res)
     objc_fatal("Virtual memory exhausted\n");
