@@ -124,14 +124,14 @@ proc libstdc++-v3-dg-test { prog do_what extra_tool_flags } {
 	}
 	"link" {
 	    set compile_type "executable"
-	    set output_file "./[file rootname [file tail $prog]]"
+	    set output_file "./[file rootname [file tail $prog]].exe"
 	}
 	"run" {
 	    set compile_type "executable"
 	    # FIXME: "./" is to cope with "." not being in $PATH.
 	    # Should this be handled elsewhere?
 	    # YES.
-	    set output_file "./[file rootname [file tail $prog]]"
+	    set output_file "./[file rootname [file tail $prog]].exe"
 	    # This is the only place where we care if an executable was
 	    # created or not.  If it was, dg.exp will try to run it.
 	    remote_file build delete $output_file;
