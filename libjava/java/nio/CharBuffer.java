@@ -88,6 +88,11 @@ public abstract class CharBuffer extends Buffer
   {
     return wrap  (array, 0, array.length);
   }
+ 
+  CharBuffer (int cap, int lim, int pos, int mark)
+  {
+    super (cap, lim, pos, mark);
+  }
   
   /**
    * @exception BufferUnderflowException FIXME
@@ -197,8 +202,8 @@ public abstract class CharBuffer extends Buffer
       return 1;
     
     int r = remaining ();
-    int i1 = pos;
-    int i2 = a.pos;
+    int i1 = position ();
+    int i2 = a.position ();
     
     for (int i = 0; i < r; i++)
       {

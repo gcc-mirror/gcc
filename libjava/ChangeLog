@@ -1,3 +1,47 @@
+2003-02-11  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/Buffer.java
+	(cap, lim, pos, mark): Made private
+	(Buffer): Added package private constructor.
+	* java/nio/ByteBuffer.java
+	(ByteBuffer): Implements Cloneable.
+	(offset): New member variable.
+	(readOnly): New member variable.
+	(backing_buffer): New member variable.
+	(allocateDirect): Throw exception and tell that direct buffers are
+	not supported yet, documentation added.
+	(allocate): Documentation added.
+	(wrap): Documentation added.
+	(ByteBuffer): New constructor.
+	(hasArray): New method.
+	(array): New method.
+	(arrayOffset): New method.
+	(get): Documentation added.
+	(put): Documentation added.
+	* java/nio/CharBuffer.java
+	(CharBuffer): New constructor.
+	(compareTo): Don't access member variables of Buffer directly.
+	* java/nio/DoubleBuffer.java
+	(allocateDirect): Throw exception and tell that direct buffers are
+	not supported yet.
+	* java/nio/FloatBuffer.java
+	(allocateDirect): Throw exception and tell that direct buffers are
+	not supported yet.
+	* java/nio/IntBuffer.java
+	(allocateDirect): Throw exception and tell that direct buffers are
+	not supported yet.
+	* java/nio/LongBuffer.java
+	(allocateDirect): Throw exception and tell that direct buffers are
+	not supported yet.
+	* java/nio/MappedByteBuffer.java
+	(MappedByteBuffer): New method.
+	(force): New method.
+	(isLoaded): New method.
+	(load): New method.
+	* java/nio/ShortBuffer.java
+	(allocateDirect): Throw exception and tell that direct buffers are
+	not supported yet.
+
 2003-02-11  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/io/natFileDescriptorWin32.cc 

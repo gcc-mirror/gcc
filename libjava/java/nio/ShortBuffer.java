@@ -46,7 +46,7 @@ public abstract class ShortBuffer extends Buffer implements Comparable
 
   public static ShortBuffer allocateDirect(int capacity)
   {
-    return new ShortBufferImpl(capacity, 0, capacity);
+    throw new Error ("direct buffers not implemented");
   }
 
   public static ShortBuffer allocate(int capacity)
