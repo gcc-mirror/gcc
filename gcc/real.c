@@ -741,9 +741,6 @@ do_multiply (r, a, b)
     rr = r;
   get_zero (rr, 0);
 
-  u.class = rvc_normal;
-  u.sign = 0;
-
   /* Collect all the partial products.  Since we don't have sure access
      to a widening multiply, we split each long into two half-words.
 
@@ -784,6 +781,8 @@ do_multiply (r, a, b)
 	    /* Would underflow to zero, which we shouldn't bother adding.  */
 	    continue;
 
+	  u.class = rvc_normal;
+	  u.sign = 0;
 	  u.exp = exp;
 
 	  for (k = j; k < SIGSZ * 2; k += 2)
@@ -797,6 +796,7 @@ do_multiply (r, a, b)
 	      u.sig[k / 2] = ai * bi;
 	    }
 
+	  normalize (&u);
 	  do_add (rr, rr, &u, 0);
 	}
     }
