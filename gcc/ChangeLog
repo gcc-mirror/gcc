@@ -1,3 +1,9 @@
+2001-07-24  Lars Brinkhoff  <lars@nocrew.org>
+
+	* stor-layout.c (get_mode_alignment): make it work when
+	BITS_PER_UNIT is not a power of two.
+	* builtins.c (get_pointer_alignment): Likewise.
+
 2001-07-24  Richard Henderson  <rth@redhat.com>
 
 	* simplify-rtx.c (avoid_constant_pool_reference): Coerce
