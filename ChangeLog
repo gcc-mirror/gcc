@@ -1,3 +1,7 @@
+2005-03-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Move John Carr to Write After Approval.
+
 2005-03-30  J"orn Rennecke <joern.rennecke@st.com>
 
 	* config/mh-mingw32: Delete.
