@@ -1,3 +1,7 @@
+2001-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-intconst-1.c, gcc.dg/c99-intconst-1.c: New tests.
+
 2001-11-20  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* gcc.c-torture/compile/981006-1.x: Treat XScale like ARM.
