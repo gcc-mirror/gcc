@@ -1,3 +1,8 @@
+Wed Jun  9 03:10:34 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* c-pragma.c (handle_pragma_token): Handle `#pragma pack()'
+	correctly.
+
 Tue Jun  8 13:06:15 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (rs6000-ibm-aix4.[12]*): Change rx6000 to rs6000.
