@@ -5,6 +5,8 @@
 
 /* The mark pragma is to help decorate IDEs.  */
 
+extern void abort(void);
+
 #pragma mark hey hey ho
 
 /* The options pragma used to do a lot, now it's only for emulating

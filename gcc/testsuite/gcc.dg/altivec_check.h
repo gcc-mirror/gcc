@@ -3,6 +3,7 @@
 
 #include <signal.h>
 extern void exit (int);
+extern void abort (void);
 
 void 
 sig_ill_handler (int sig)

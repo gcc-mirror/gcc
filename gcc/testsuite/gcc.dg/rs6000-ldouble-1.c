@@ -4,6 +4,9 @@
 /* Check that long double values are rounded correctly when being converted
    to 32-bit integers.  All these values are of the form +/- 2 +/- 2^-60.  */
 
+extern void abort(void);
+extern void exit(int);
+
 int main(void)
 {
   long double l1 = 1.9999999999999999991326382620115964527941L;
