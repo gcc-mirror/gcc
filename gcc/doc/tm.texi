@@ -3762,6 +3762,17 @@ controlled by @code{PARM_BOUNDARY}.  If this macro is not defined, all such
 arguments are padded down if @code{BYTES_BIG_ENDIAN} is true.
 @end defmac
 
+@defmac BLOCK_REG_PADDING (@var{mode}, @var{type}, @var{first})
+Specify padding for the last element of a block move between registers and
+memory.  @var{first} is nonzero if this is the only element.  Defining this
+macro allows better control of register function parameters on big-endian
+machines, without using @code{PARALLEL} rtl.  In particular,
+@code{MUST_PASS_IN_STACK} need not test padding and mode of types in
+registers, as there is no longer a "wrong" part of a register;  For example,
+a three byte aggregate may be passed in the high part of a register if so
+required.
+@end defmac
+
 @defmac FUNCTION_ARG_BOUNDARY (@var{mode}, @var{type})
 If defined, a C expression that gives the alignment boundary, in bits,
 of an argument with the specified mode and type.  If it is not defined,

@@ -1,3 +1,39 @@
+2003-07-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* doc/tm.texi (BLOCK_REG_PADDING): Describe.
+	* expr.h (struct locate_and_pad_arg_data): Add where_pad.
+	(emit_group_load, emit_group_store): Adjust declarations.
+	Remove most occurrences of #ifdef TREE_CODE.
+	* expr.c (emit_group_load): Add "type" param, and use
+	BLOCK_REG_PADDING to determine need for a shift.  Optimize non-
+	aligned accesses if !SLOW_UNALIGNED_ACCESS.
+	(emit_group_store): Likewise.
+	(emit_push_insn, expand_assignment, store_expr, expand_expr): Adjust
+	emit_group_load and emit_group_store calls.
+	* calls.c (store_unaligned_arguments_into_pseudos): Tidy.  Use
+	BLOCK_REG_PADDING to determine whether we need endian_correction.
+	(load_register_parameters): Localize vars.  Handle shifting of
+	small values to the correct end of regs.  Adjust emit_group_load
+	call.
+	(expand_call, emit_library_call_value_1): Adjust emit_group_load
+	and emit_group_store calls.
+	* function.c (assign_parms): Set mem alignment for stack slots.
+	Adjust emit_group_store call.  Store values at the "wrong" end
+	of regs to the stack.  Use BLOCK_REG_PADDING.
+	(locate_and_pad_parm): Save where_pad.
+	(expand_function_end): Adjust emit_group_load call.
+	* stmt.c (expand_value_return): Adjust emit_group_load call.
+	* Makefile.in (calls.o): Depend on $(OPTABS_H).
+	* config/rs6000/linux64.h (TARGET_LITTLE_ENDIAN): Redefine as 0.
+	(AGGREGATE_PADDING_FIXED, AGGREGATES_PAD_UPWARD_ALWAYS): Define.
+	(MUST_PASS_IN_STACK): Define.
+	(BLOCK_REG_PADDING): Define.
+	* config/rs6000/rs6000.h (struct rs6000_args): Remove orig_nargs.
+	(PAD_VARARGS_DOWN): Define in terms of FUNCTION_ARG_PADDING.
+	* config/rs6000/rs6000.c (init_cumulative_args): Don't set orig_nargs.
+	(function_arg_padding): !AGGREGATE_PADDING_FIXED compatibility code.
+	Act on AGGREGATES_PAD_UPWARD_ALWAYS.
+
 2003-07-13  Aaron W. LaFramboise  <awlaframboise@aol.com>
 
 	* config/i386/gthr-win32.c (__GTHREAD_HIDE_WIN32API): Define to 1.
