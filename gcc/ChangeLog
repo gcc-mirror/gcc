@@ -1,5 +1,9 @@
 2002-03-31  Richard Henderson  <rth@redhat.com>
 
+	* libgcc2.c (__bb_exit_func): Make static.
+
+2002-03-31  Richard Henderson  <rth@redhat.com>
+
 	* builtins.c (expand_builtin_va_arg): Give warnings not errors for
 	promoted argument types; build trap.
 	(expand_builtin_trap): New.
