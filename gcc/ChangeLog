@@ -1,3 +1,9 @@
+Sat Nov  7 00:54:55 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (reload): If we can not perform a particular elimination
+	when we thought we could earlier, then we must always iterate through
+	the loop at least one more time.
+
 Fri Nov  6 19:37:33 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (add_operand): Simplify the CONST_INT match.
