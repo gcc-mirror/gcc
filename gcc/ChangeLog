@@ -1,3 +1,8 @@
+2001-08-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* mips.md (movdicc): Make conditional on TARGET_64BIT.  Likewise
+	for the unnamed instructions it expands to.
+
 2001-08-02  Richard Henderson  <rth@redhat.com>
 
 	* regclass.c (call_really_used_regs): Conditionally define.
