@@ -53,7 +53,12 @@ static splay_tree file_info_tree;
 
 int pending_lang_change; /* If we need to switch languages - C++ only */
 int c_header_level;	 /* depth in C headers - C++ only */
-bool c_lex_string_translate = true; /* If we need to translate characters received.  */
+
+/* If we need to translate characters received.  This is tri-state:
+   0 means use only the untranslated string; 1 means use only
+   the translated string; -1 means chain the translated string
+   to the untranslated one.  */
+int c_lex_string_translate = 1;
 
 static tree interpret_integer (const cpp_token *, unsigned int);
 static tree interpret_float (const cpp_token *, unsigned int);
@@ -699,6 +704,28 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
     {
       value = build_string (istr.len, (char *)istr.text);
       free ((void *)istr.text);
+
+      if (c_lex_string_translate == -1)
+	{
+	  if (!cpp_interpret_string_notranslate (parse_in, strs, count,
+						 &istr, wide))
+	    /* Assume that, if we managed to translate the string
+	       above, then the untranslated parsing will always
+	       succeed.  */
+	    abort ();
+	  
+	  if (TREE_STRING_LENGTH (value) != (int)istr.len
+	      || 0 != strncmp (TREE_STRING_POINTER (value), (char *)istr.text,
+			       istr.len))
+	    {
+	      /* Arrange for us to return the untranslated string in
+		 *valp, but to set up the C type of the translated
+		 one.  */
+	      *valp = build_string (istr.len, (char *)istr.text);
+	      valp = &TREE_CHAIN (*valp);
+	    }
+	  free ((void *)istr.text);
+	}
     }
   else
     {

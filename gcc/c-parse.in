@@ -2545,11 +2545,11 @@ asm_clobbers:
 	;
 
 stop_string_translation:
-        { c_lex_string_translate = false; }
+        { c_lex_string_translate = 0; }
         ;
 
 start_string_translation:
-        { c_lex_string_translate = true; }
+        { c_lex_string_translate = 1; }
         ;
 
 
