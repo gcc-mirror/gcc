@@ -1,6 +1,6 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1932,6 +1932,9 @@ extern int cse_main			PARAMS ((rtx, int, int, FILE *));
 extern void cse_end_of_basic_block	PARAMS ((rtx,
 						struct cse_basic_block_data *,
 						int, int, int));
+extern void cse_condition_code_reg	PARAMS ((void));
+extern enum machine_mode default_cc_modes_compatible PARAMS ((enum machine_mode,
+							      enum machine_mode));
 
 /* In jump.c */
 extern int comparison_dominates_p	PARAMS ((enum rtx_code, enum rtx_code));

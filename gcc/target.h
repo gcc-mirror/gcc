@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -278,6 +278,23 @@ struct gcc_target
 
   /* Undo the effects of encode_section_info on the symbol string.  */
   const char * (* strip_name_encoding) PARAMS ((const char *));
+
+  /* Fetch the fixed register(s) which hold condition codes, for
+     targets where it makes sense to look for duplicate assignments to
+     the condition codes.  This should return true if there is such a
+     register, false otherwise.  The arguments should be set to the
+     fixed register numbers.  Up to two condition code registers are
+     supported.  If there is only one for this target, the int pointed
+     at by the second argument should be set to -1.  */
+  bool (* fixed_condition_code_regs) PARAMS ((unsigned int *, unsigned int *));
+
+  /* If two condition code modes are compatible, return a condition
+     code mode which is compatible with both, such that a comparison
+     done in the returned mode will work for both of the original
+     modes.  If the condition code modes are not compatible, return
+     VOIDmode.  */
+  enum machine_mode (* cc_modes_compatible) PARAMS ((enum machine_mode,
+						     enum machine_mode));
 
   /* Leave the boolean fields at the end.  */
 

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -5202,6 +5202,34 @@ follows:
 @end smallexample
 
 @end table
+
+@deftypefn {Target Hook} bool TARGET_FIXED_CONDITION_CODE_REGS (unsigned int *, unsigned int *)
+On targets which do not use @code{(cc0)}, and which use a hard
+register rather than a pseudo-register to hold condition codes, the
+regular CSE passes are often not able to identify cases in which the
+hard register is set to a common value.  Use this hook to enable a
+small pass which optimizes such cases.  This hook should return true
+to enable this pass, and it should set the integers to which its
+arguments point to the hard register numbers used for condition codes.
+When there is only one such register, as is true on most systems, the
+integer pointed to by the second argument should be set to
+@code{INVALID_REGNUM}.
+
+The default version of this hook returns false.
+@end deftypefn
+
+@deftypefn {Target Hook} enum machine_mode TARGET_CC_MODES_COMPATIBLE (enum machine_mode, enum machine_mode)
+On targets which use multiple condition code modes in class
+@code{MODE_CC}, it is sometimes the case that a comparison can be
+validly done in more than one mode.  On such a system, define this
+target hook to take two mode arguments and to return a mode in which
+both comparisons may be validly done.  If there is no such mode,
+return @code{VOIDmode}.
+
+The default version of this hook checks whether the modes are the
+same.  If they are, it returns that mode.  If they are different, it
+returns @code{VOIDmode}.
+@end deftypefn
 
 @node Costs
 @section Describing Relative Costs of Operations

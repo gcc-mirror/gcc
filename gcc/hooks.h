@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -29,6 +29,7 @@ bool hook_bool_tree_hwi_hwi_tree_false
 bool hook_bool_tree_hwi_hwi_tree_true
   PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 bool hook_bool_rtx_false PARAMS ((rtx));
+bool hook_bool_uintp_uintp_false PARAMS ((unsigned int *, unsigned int *));
 
 void hook_void_tree_int PARAMS ((tree, int));
 void hook_void_void PARAMS ((void));

@@ -1,6 +1,6 @@
 /* Common subexpression elimination for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "ggc.h"
 #include "timevar.h"
+#include "target.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -701,6 +702,9 @@ static void flush_hash_table	PARAMS ((void));
 static bool insn_live_p		PARAMS ((rtx, int *));
 static bool set_live_p		PARAMS ((rtx, rtx, int *));
 static bool dead_libcall_p	PARAMS ((rtx, int *));
+static int cse_change_cc_mode	PARAMS ((rtx *, void *));
+static void cse_change_cc_mode_insns PARAMS ((rtx, rtx, rtx));
+static enum machine_mode cse_cc_succs PARAMS ((basic_block, rtx, rtx, int));
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */
@@ -7773,4 +7777,370 @@ delete_trivially_dead_insns (insns, nreg)
   free (counts);
   timevar_pop (TV_DELETE_TRIVIALLY_DEAD);
   return ndead;
+}
+
+/* This function is called via for_each_rtx.  The argument, NEWREG, is
+   a condition code register with the desired mode.  If we are looking
+   at the same register in a different mode, replace it with
+   NEWREG.  */
+
+static int
+cse_change_cc_mode (loc, data)
+     rtx *loc;
+     void *data;
+{
+  rtx newreg = (rtx) data;
+
+  if (*loc
+      && GET_CODE (*loc) == REG
+      && REGNO (*loc) == REGNO (newreg)
+      && GET_MODE (*loc) != GET_MODE (newreg))
+    {
+      *loc = newreg;
+      return -1;
+    }
+  return 0;
+}
+
+/* Change the mode of any reference to the register REGNO (NEWREG) to
+   GET_MODE (NEWREG), starting at START.  Stop before END.  Stop at
+   any instruction which modifies NEWREG.  */
+
+static void
+cse_change_cc_mode_insns (start, end, newreg)
+     rtx start;
+     rtx end;
+     rtx newreg;
+{
+  rtx insn;
+
+  for (insn = start; insn != end; insn = NEXT_INSN (insn))
+    {
+      if (! INSN_P (insn))
+	continue;
+
+      if (reg_set_p (newreg, insn))
+	return;
+
+      for_each_rtx (&PATTERN (insn), cse_change_cc_mode, newreg);
+      for_each_rtx (&REG_NOTES (insn), cse_change_cc_mode, newreg);
+    }
+}
+
+/* BB is a basic block which finishes with CC_REG as a condition code
+   register which is set to CC_SRC.  Look through the successors of BB
+   to find blocks which have a single predecessor (i.e., this one),
+   and look through those blocks for an assignment to CC_REG which is
+   equivalent to CC_SRC.  CAN_CHANGE_MODE indicates whether we are
+   permitted to change the mode of CC_SRC to a compatible mode.  This
+   returns VOIDmode if no equivalent assignments were found.
+   Otherwise it returns the mode which CC_SRC should wind up with.
+
+   The main complexity in this function is handling the mode issues.
+   We may have more than one duplicate which we can eliminate, and we
+   try to find a mode which will work for multiple duplicates.  */
+
+static enum machine_mode
+cse_cc_succs (bb, cc_reg, cc_src, can_change_mode)
+     basic_block bb;
+     rtx cc_reg;
+     rtx cc_src;
+     int can_change_mode;
+{
+  bool found_equiv;
+  enum machine_mode mode;
+  unsigned int insn_count;
+  edge e;
+  rtx insns[2];
+  enum machine_mode modes[2];
+  rtx last_insns[2];
+  unsigned int i;
+  rtx newreg;
+
+  /* We expect to have two successors.  Look at both before picking
+     the final mode for the comparison.  If we have more successors
+     (i.e., some sort of table jump, although that seems unlikely),
+     then we require all beyond the first two to use the same
+     mode.  */
+
+  found_equiv = false;
+  mode = GET_MODE (cc_src);
+  insn_count = 0;
+  for (e = bb->succ; e; e = e->succ_next)
+    {
+      rtx insn;
+      rtx end;
+
+      if (e->flags & EDGE_COMPLEX)
+	continue;
+
+      if (! e->dest->pred
+	  || e->dest->pred->pred_next
+	  || e->dest == EXIT_BLOCK_PTR)
+	continue;
+
+      end = NEXT_INSN (e->dest->end);
+      for (insn = e->dest->head; insn != end; insn = NEXT_INSN (insn))
+	{
+	  rtx set;
+
+	  if (! INSN_P (insn))
+	    continue;
+
+	  /* If CC_SRC is modified, we have to stop looking for
+	     something which uses it.  */
+	  if (modified_in_p (cc_src, insn))
+	    break;
+
+	  /* Check whether INSN sets CC_REG to CC_SRC.  */
+	  set = single_set (insn);
+	  if (set
+	      && GET_CODE (SET_DEST (set)) == REG
+	      && REGNO (SET_DEST (set)) == REGNO (cc_reg))
+	    {
+	      bool found;
+	      enum machine_mode set_mode;
+	      enum machine_mode comp_mode;
+
+	      found = false;
+	      set_mode = GET_MODE (SET_SRC (set));
+	      comp_mode = set_mode;
+	      if (rtx_equal_p (cc_src, SET_SRC (set)))
+		found = true;
+	      else if (GET_CODE (cc_src) == COMPARE
+		       && GET_CODE (SET_SRC (set)) == COMPARE
+		       && mode != set_mode
+		       && rtx_equal_p (XEXP (cc_src, 0),
+				       XEXP (SET_SRC (set), 0))
+		       && rtx_equal_p (XEXP (cc_src, 1),
+				       XEXP (SET_SRC (set), 1)))
+			   
+		{
+		  comp_mode = (*targetm.cc_modes_compatible) (mode, set_mode);
+		  if (comp_mode != VOIDmode
+		      && (can_change_mode || comp_mode == mode))
+		    found = true;
+		}
+
+	      if (found)
+		{
+		  found_equiv = true;
+		  if (insn_count < ARRAY_SIZE (insns))
+		    {
+		      insns[insn_count] = insn;
+		      modes[insn_count] = set_mode;
+		      last_insns[insn_count] = end;
+		      ++insn_count;
+
+		      if (mode != comp_mode)
+			{
+			  if (! can_change_mode)
+			    abort ();
+			  mode = comp_mode;
+			  PUT_MODE (cc_src, mode);
+			}
+		    }
+		  else
+		    {
+		      if (set_mode != mode)
+			{
+			  /* We found a matching expression in the
+			     wrong mode, but we don't have room to
+			     store it in the array.  Punt.  This case
+			     should be rare.  */
+			  break;
+			}
+		      /* INSN sets CC_REG to a value equal to CC_SRC
+			 with the right mode.  We can simply delete
+			 it.  */
+		      delete_insn (insn);
+		    }
+
+		  /* We found an instruction to delete.  Keep looking,
+		     in the hopes of finding a three-way jump.  */
+		  continue;
+		}
+
+	      /* We found an instruction which sets the condition
+		 code, so don't look any farther.  */
+	      break;
+	    }
+
+	  /* If INSN sets CC_REG in some other way, don't look any
+	     farther.  */
+	  if (reg_set_p (cc_reg, insn))
+	    break;
+	}
+
+      /* If we fell off the bottom of the block, we can keep looking
+	 through successors.  We pass CAN_CHANGE_MODE as false because
+	 we aren't prepared to handle compatibility between the
+	 further blocks and this block.  */
+      if (insn == end)
+	{
+	  enum machine_mode submode;
+
+	  submode = cse_cc_succs (e->dest, cc_reg, cc_src, false);
+	  if (submode != VOIDmode)
+	    {
+	      if (submode != mode)
+		abort ();
+	      found_equiv = true;
+	      can_change_mode = false;
+	    }
+	}
+    }
+
+  if (! found_equiv)
+    return VOIDmode;
+
+  /* Now INSN_COUNT is the number of instructions we found which set
+     CC_REG to a value equivalent to CC_SRC.  The instructions are in
+     INSNS.  The modes used by those instructions are in MODES.  */
+
+  newreg = NULL_RTX;
+  for (i = 0; i < insn_count; ++i)
+    {
+      if (modes[i] != mode)
+	{
+	  /* We need to change the mode of CC_REG in INSNS[i] and
+	     subsequent instructions.  */
+	  if (! newreg)
+	    {
+	      if (GET_MODE (cc_reg) == mode)
+		newreg = cc_reg;
+	      else
+		newreg = gen_rtx_REG (mode, REGNO (cc_reg));
+	    }
+	  cse_change_cc_mode_insns (NEXT_INSN (insns[i]), last_insns[i],
+				    newreg);
+	}
+
+      delete_insn (insns[i]);
+    }
+
+  return mode;
+}
+
+/* If we have a fixed condition code register (or two), walk through
+   the instructions and try to eliminate duplicate assignments.  */
+
+void
+cse_condition_code_reg ()
+{
+  unsigned int cc_regno_1;
+  unsigned int cc_regno_2;
+  rtx cc_reg_1;
+  rtx cc_reg_2;
+  basic_block bb;
+
+  if (! (*targetm.fixed_condition_code_regs) (&cc_regno_1, &cc_regno_2))
+    return;
+
+  cc_reg_1 = gen_rtx_REG (CCmode, cc_regno_1);
+  if (cc_regno_2 != INVALID_REGNUM)
+    cc_reg_2 = gen_rtx_REG (CCmode, cc_regno_2);
+  else
+    cc_reg_2 = NULL_RTX;
+
+  FOR_EACH_BB (bb)
+    {
+      rtx last_insn;
+      rtx cc_reg;
+      rtx insn;
+      rtx cc_src_insn;
+      rtx cc_src;
+      enum machine_mode mode;
+      enum machine_mode orig_mode;
+
+      /* Look for blocks which end with a conditional jump based on a
+	 condition code register.  Then look for the instruction which
+	 sets the condition code register.  Then look through the
+	 successor blocks for instructions which set the condition
+	 code register to the same value.  There are other possible
+	 uses of the condition code register, but these are by far the
+	 most common and the ones which we are most likely to be able
+	 to optimize.  */
+
+      last_insn = bb->end;
+      if (GET_CODE (last_insn) != JUMP_INSN)
+	continue;
+
+      if (reg_referenced_p (cc_reg_1, PATTERN (last_insn)))
+	cc_reg = cc_reg_1;
+      else if (cc_reg_2 && reg_referenced_p (cc_reg_2, PATTERN (last_insn)))
+	cc_reg = cc_reg_2;
+      else
+	continue;
+
+      cc_src_insn = NULL_RTX;
+      cc_src = NULL_RTX;
+      for (insn = PREV_INSN (last_insn);
+	   insn && insn != PREV_INSN (bb->head);
+	   insn = PREV_INSN (insn))
+	{
+	  rtx set;
+
+	  if (! INSN_P (insn))
+	    continue;
+	  set = single_set (insn);
+	  if (set
+	      && GET_CODE (SET_DEST (set)) == REG
+	      && REGNO (SET_DEST (set)) == REGNO (cc_reg))
+	    {
+	      cc_src_insn = insn;
+	      cc_src = SET_SRC (set);
+	      break;
+	    }
+	  else if (reg_set_p (cc_reg, insn))
+	    break;
+	}
+
+      if (! cc_src_insn)
+	continue;
+
+      if (modified_between_p (cc_src, cc_src_insn, NEXT_INSN (last_insn)))
+	continue;
+
+      /* Now CC_REG is a condition code register used for a
+	 conditional jump at the end of the block, and CC_SRC, in
+	 CC_SRC_INSN, is the value to which that condition code
+	 register is set, and CC_SRC is still meaningful at the end of
+	 the basic block.  */
+
+      orig_mode = GET_MODE (cc_src);
+      mode = cse_cc_succs (bb, cc_reg, cc_src, true);
+      if (mode != VOIDmode)
+	{
+	  if (mode != GET_MODE (cc_src))
+	    abort ();
+	  if (mode != orig_mode)
+	    {
+	      rtx newreg = gen_rtx_REG (mode, REGNO (cc_reg));
+
+	      /* Change the mode of CC_REG in CC_SRC_INSN to
+		 GET_MODE (NEWREG).  */
+	      for_each_rtx (&PATTERN (cc_src_insn), cse_change_cc_mode,
+			    newreg);
+	      for_each_rtx (&REG_NOTES (cc_src_insn), cse_change_cc_mode,
+			    newreg);
+
+	      /* Do the same in the following insns that use the
+		 current value of CC_REG within BB.  */
+	      cse_change_cc_mode_insns (NEXT_INSN (cc_src_insn),
+					NEXT_INSN (last_insn),
+					newreg);
+	    }
+	}
+    }
+}
+
+enum machine_mode
+default_cc_modes_compatible (m1, m2)
+     enum machine_mode m1;
+     enum machine_mode m2;
+{
+  if (m1 == m2)
+    return m1;
+  return VOIDmode;
 }
