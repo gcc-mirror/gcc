@@ -2342,7 +2342,8 @@ find_if_block (ce_info)
   /* The THEN block of an IF-THEN combo must have zero or one successors.  */
   if (then_succ != NULL_EDGE
       && (then_succ->succ_next != NULL_EDGE
-          || (then_succ->flags & EDGE_COMPLEX)))
+          || (then_succ->flags & EDGE_COMPLEX)
+	  || (flow2_completed && tablejump_p (then_bb->end))))
     return FALSE;
 
   /* If the THEN block has no successors, conditional execution can still
@@ -2389,7 +2390,8 @@ find_if_block (ce_info)
 	   && then_succ->dest == else_succ->dest
 	   && else_bb->pred->pred_next == NULL_EDGE
 	   && else_succ->succ_next == NULL_EDGE
-	   && ! (else_succ->flags & EDGE_COMPLEX))
+	   && ! (else_succ->flags & EDGE_COMPLEX)
+	   && ! (flow2_completed && tablejump_p (else_bb->end)))
     join_bb = else_succ->dest;
 
   /* Otherwise it is not an IF-THEN or IF-THEN-ELSE combination.  */
