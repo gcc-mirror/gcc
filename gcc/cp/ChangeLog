@@ -1,3 +1,8 @@
+2001-07-18  Xavier Delacour <xavier@fmaudio.net>,
+            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* NEWS (Changes in GCC 3.0): Fix typo.
+
 2001-07-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl2.c (cplus_decl_attributes): Take a pointer to the node to
