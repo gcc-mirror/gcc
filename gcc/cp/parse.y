@@ -1268,7 +1268,7 @@ new_initializer:
 	  '(' nonnull_exprlist ')'
 		{ $$ = $2; }
 	| LEFT_RIGHT
-		{ $$ = NULL_TREE; }
+		{ $$ = void_zero_node; }
 	| '(' typespec ')'
 		{
 		  cp_error ("`%T' is not a valid expression", $2.t);

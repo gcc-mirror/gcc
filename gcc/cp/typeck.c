@@ -5627,7 +5627,15 @@ build_modify_expr (lhs, modifycode, rhs)
 
   if (modifycode == INIT_EXPR)
     {
-      if (! IS_AGGR_TYPE (lhstype))
+      if (TREE_CODE (rhs) == CONSTRUCTOR)
+	{
+	  if (! same_type_p (TREE_TYPE (rhs), lhstype))
+	    abort ();
+	  result = build (INIT_EXPR, lhstype, lhs, rhs);
+	  TREE_SIDE_EFFECTS (result) = 1;
+	  return result;
+	}
+      else if (! IS_AGGR_TYPE (lhstype))
 	/* Do the default thing */;
       else
 	{
@@ -5808,9 +5816,7 @@ build_modify_expr (lhs, modifycode, rhs)
 
       from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
 	           ? 1 + (modifycode != INIT_EXPR): 0;
-      return (build_vec_init
-	      (lhs, lhs, array_type_nelts (lhstype), newrhs,
-	       from_array));
+      return build_vec_init (lhs, newrhs, from_array);
     }
 
   if (modifycode == INIT_EXPR)

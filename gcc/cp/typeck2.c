@@ -581,7 +581,8 @@ digest_init (type, init, tail)
 
   if (code == ARRAY_TYPE || IS_AGGR_TYPE_CODE (code))
     {
-      if (raw_constructor && TYPE_NON_AGGREGATE_CLASS (type))
+      if (raw_constructor && TYPE_NON_AGGREGATE_CLASS (type)
+	  && TREE_HAS_CONSTRUCTOR (init))
 	{
 	  cp_error ("subobject of type `%T' must be initialized by constructor, not by `%E'",
 		    type, init);
