@@ -5,6 +5,10 @@
 	jobject.
 	* gnu/gcj/RawData.java: Clarify documentation.
 
+	From Gregory R. Warnes <warnes@biostat.washington.edu>:
+	* gnu/gcj/protocol/jar/Connection.java (getJarFile): Test for null
+	`jarFile', not `jarFileURL'.
+
 2000-05-15  Andrew Haley  <aph@cygnus.com>
 
 	* include/ppc-signal.h: New file.
