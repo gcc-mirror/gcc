@@ -1,3 +1,7 @@
+Fri Mar 27 18:16:40 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* inc/exception: Reorder closing braces.
+
 Fri Mar 27 13:22:18 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (redeclare_class_template): New function.

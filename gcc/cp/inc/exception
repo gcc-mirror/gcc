@@ -33,10 +33,11 @@ void terminate (void) __attribute__ ((__noreturn__));
 unexpected_handler set_unexpected (unexpected_handler);
 void unexpected (void) __attribute__ ((__noreturn__));
 bool uncaught_exception ();
-} // extern "C++"
 
 #if 0
 } // namespace std
 #endif
+
+} // extern "C++"
 
 #endif
