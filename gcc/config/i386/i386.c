@@ -7405,7 +7405,7 @@ ix86_split_lshrdi (operands, scratch)
     }
 }
 
-/* Helper function for the string operations bellow.  Dest VARIABLE whether
+/* Helper function for the string operations below.  Dest VARIABLE whether
    it is aligned to VALUE bytes.  If true, jump to the label.  */
 static rtx
 ix86_expand_aligntest (variable, value)
