@@ -288,27 +288,26 @@ gfc_conv_descriptor_ubound (tree desc, tree dim)
 }
 
 
-/* Generate an initializer for a static pointer or allocatable array.  */
+/* Build an null array descriptor constructor.  */
 
-void
-gfc_trans_static_array_pointer (gfc_symbol * sym)
+tree
+gfc_build_null_descriptor (tree type)
 {
-  tree tmp;
   tree field;
-  tree type;
+  tree tmp;
 
-  assert (TREE_STATIC (sym->backend_decl));
-  /* Just zero the data member.  */
-  type = TREE_TYPE (sym->backend_decl);
   assert (GFC_DESCRIPTOR_TYPE_P (type));
   assert (DATA_FIELD == 0);
   field = TYPE_FIELDS (type);
 
+  /* Set a NULL data pointer.  */
   tmp = tree_cons (field, null_pointer_node, NULL_TREE);
   tmp = build1 (CONSTRUCTOR, type, tmp);
   TREE_CONSTANT (tmp) = 1;
   TREE_INVARIANT (tmp) = 1;
-  DECL_INITIAL (sym->backend_decl) = tmp;
+  /* All other fields are ignored.  */
+
+  return tmp;
 }
 
 
@@ -419,6 +418,20 @@ gfc_add_ss_to_loop (gfc_loopinfo * loop, gfc_ss * head)
     }
   assert (ss == gfc_ss_terminator);
   loop->ss = head;
+}
+
+
+/* Generate an initializer for a static pointer or allocatable array.  */
+
+void
+gfc_trans_static_array_pointer (gfc_symbol * sym)
+{
+  tree type;
+
+  assert (TREE_STATIC (sym->backend_decl));
+  /* Just zero the data member.  */
+  type = TREE_TYPE (sym->backend_decl);
+  DECL_INITIAL (sym->backend_decl) =gfc_build_null_descriptor (type);
 }
 
 
