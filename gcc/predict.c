@@ -1207,14 +1207,9 @@ apply_return_prediction (int *heads)
       || !SSA_NAME_DEF_STMT (return_val)
       || TREE_CODE (SSA_NAME_DEF_STMT (return_val)) != PHI_NODE)
     return;
-  phi = SSA_NAME_DEF_STMT (return_val);
-  while (phi)
-    {
-      tree next = PHI_CHAIN (phi);
-      if (PHI_RESULT (phi) == return_val)
-	break;
-      phi = next;
-    }
+  for (phi = SSA_NAME_DEF_STMT (return_val); phi; phi = PHI_CHAIN (phi))
+    if (PHI_RESULT (phi) == return_val)
+      break;
   if (!phi)
     return;
   phi_num_args = PHI_NUM_ARGS (phi);

@@ -53,15 +53,13 @@ Boston, MA 02111-1307, USA.  */
 edge
 ssa_redirect_edge (edge e, basic_block dest)
 {
-  tree phi, next;
+  tree phi;
   tree list = NULL, *last = &list;
   tree src, dst, node;
 
   /* Remove the appropriate PHI arguments in E's destination block.  */
-  for (phi = phi_nodes (e->dest); phi; phi = next)
+  for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
     {
-      next = PHI_CHAIN (phi);
-
       if (PHI_ARG_DEF (phi, e->dest_idx) == NULL_TREE)
 	continue;
 
