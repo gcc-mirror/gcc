@@ -7059,9 +7059,15 @@ package body Sem_Ch3 is
          Set_Primitive_Operations (Full, Primitive_Operations (Full_Base));
          Set_Class_Wide_Type      (Full, Class_Wide_Type (Full_Base));
 
+      --  If this is a subtype of a protected or task type, constrain its
+      --  corresponding record, unless this is a subtype without constraints,
+      --  i.e. a simple renaming as with an actual subtype in an instance.
+
       elsif Is_Concurrent_Type (Full_Base) then
          if Has_Discriminants (Full)
            and then Present (Corresponding_Record_Type (Full_Base))
+           and then
+             not Is_Empty_Elmt_List (Discriminant_Constraint (Full))
          then
             Set_Corresponding_Record_Type (Full,
               Constrain_Corresponding_Record
