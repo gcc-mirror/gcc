@@ -3662,7 +3662,7 @@ uninitialized_vars_warning (block)
 	  && GET_CODE (DECL_RTL (decl)) == REG
 	  && regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
 	warning_with_decl (decl,
-			   "variable `%s' may be clobbered by `longjmp'");
+			   "variable `%s' may be clobbered by `longjmp' or `vfork'");
     }
   for (sub = BLOCK_SUBBLOCKS (block); sub; sub = TREE_CHAIN (sub))
     uninitialized_vars_warning (sub);
@@ -3681,7 +3681,7 @@ setjmp_args_warning (block)
     if (DECL_RTL (decl) != 0
 	&& GET_CODE (DECL_RTL (decl)) == REG
 	&& regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
-      warning_with_decl (decl, "argument `%s' may be clobbered by `longjmp'");
+      warning_with_decl (decl, "argument `%s' may be clobbered by `longjmp' or `vfork'");
 }
 
 /* If this function call setjmp, put all vars into the stack
