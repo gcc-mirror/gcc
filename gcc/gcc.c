@@ -826,6 +826,10 @@ static int argbuf_index;
 
 static int execution_count;
 
+/* Number of commands that exited with a signal.  */
+
+static int signal_count;
+
 /* Name with which this program was invoked.  */
 
 static char *programname;
@@ -1726,8 +1730,11 @@ execute ()
 		prog = commands[j].prog;
 
 	    if ((status & 0x7F) != 0)
-	      fatal ("Internal compiler error: program %s got fatal signal %d",
-		     prog, (status & 0x7F));
+	      {
+		fatal ("Internal compiler error: program %s got fatal signal %d",
+		       prog, (status & 0x7F));
+		signal_count++;
+	      }
 	    if (((status & 0xFF00) >> 8) >= MIN_FATAL_STATUS)
 	      ret_code = -1;
 	  }
@@ -3474,7 +3481,7 @@ main (argc, argv)
     delete_failure_queue ();
   delete_temp_files ();
 
-  exit (error_count);
+  exit (error_count > 0 ? (signal_count ? 2 : 1) : 0);
   /* NOTREACHED */
   return 0;
 }
