@@ -793,10 +793,10 @@ scan_loop (loop_start, end, nregs, unroll_p)
 	     (1) it is used only in the same basic block as the set
 	     (2) the set is guaranteed to be executed once the loop starts,
 	         and the reg is not used until after that.  */
-	  else if (! (reg_in_basic_block_p (p, SET_DEST (set)))
+	  else if (! (reg_in_basic_block_p (p, SET_DEST (set))
 		      || (! maybe_never
 			  && ! loop_reg_used_before_p (set, p, loop_start,
-						       scan_start, end)))
+						       scan_start, end))))
 	    ;
 	  else if ((tem = invariant_p (src))
 		   && (dependencies == 0
