@@ -1,5 +1,6 @@
 2002-01-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/2432
 	* config/sparc/sparc.md (call-jump peepholes): Pass the right insn
 	to can_throw_internal.
 
