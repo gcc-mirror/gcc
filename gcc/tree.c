@@ -877,11 +877,12 @@ make_node (code)
   tree_node_sizes[(int)kind] += length;
 #endif
 
-  /* We assume here that the length of a tree node is a multiple of the
-     size of an int.  Rounding up won't work because it would clobber
-     the next object.  */
+  /* Clear a word at a time.  */
   for (i = (length / sizeof (int)) - 1; i >= 0; i--)
     ((int *) t)[i] = 0;
+  /* Clear any extra bytes.  */
+  for (i = length / sizeof (int) * sizeof (int); i < length; i++)
+    ((char *) t)[i] = 0;
 
   TREE_SET_CODE (t, code);
   if (obstack == &permanent_obstack)
@@ -978,6 +979,9 @@ copy_node (node)
 
   for (i = (length / sizeof (int)) - 1; i >= 0; i--)
     ((int *) t)[i] = ((int *) node)[i];
+  /* Clear any extra bytes.  */
+  for (i = length / sizeof (int) * sizeof (int); i < length; i++)
+    ((char *) t)[i] = 0;
 
   TREE_CHAIN (t) = 0;
 
