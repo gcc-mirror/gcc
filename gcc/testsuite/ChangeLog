@@ -1,3 +1,7 @@
+2004-10-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* objc.dg/image-info.m: Update for changes to section selection.
+
 2004-10-25  David Ayers  <d.ayers@inode.at>
 	    Ziemowit Laski  <zlaski@apple.com>
 

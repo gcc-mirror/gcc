@@ -759,14 +759,10 @@ dbxout_source_file (FILE *file, const char *filename)
       fprintf (asm_out_file, ",%d,0,0,", N_SOL);
       assemble_name (asm_out_file, ltext_label_name);
       fputc ('\n', asm_out_file);
-      if (current_function_decl != NULL_TREE
-	  && DECL_SECTION_NAME (current_function_decl) != NULL_TREE)
+      if (current_function_decl != NULL_TREE)
 	; /* Don't change section amid function.  */
       else
-	{
-	  if (!in_text_section () && !in_unlikely_text_section ())
-	    text_section ();
-	}
+	text_section ();
       targetm.asm_out.internal_label (file, "Ltext", source_label_number);
       source_label_number++;
       lastfile = filename;

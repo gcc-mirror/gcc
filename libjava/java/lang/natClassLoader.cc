@@ -316,11 +316,29 @@ _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 // class chain.  At all other times, the caller should synchronize on
 // Class::class$.
 void
-_Jv_RegisterClasses (jclass *classes)
+_Jv_RegisterClasses (const jclass *classes)
 {
   for (; *classes; ++classes)
     {
       jclass klass = *classes;
+
+      (*_Jv_RegisterClassHook) (klass);
+
+      // registering a compiled class causes
+      // it to be immediately "prepared".  
+      if (klass->state == JV_STATE_NOTHING)
+	klass->state = JV_STATE_COMPILED;
+    }
+}
+
+// This is a version of _Jv_RegisterClasses that takes a count.
+void
+_Jv_RegisterClasses_Counted (const jclass * classes, size_t count)
+{
+  size_t i;
+  for (i = 0; i < count; i++)
+    {
+      jclass klass = classes[i];
 
       (*_Jv_RegisterClassHook) (klass);
 

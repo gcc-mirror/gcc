@@ -30,7 +30,7 @@
 
 #include "new"
 
-void
+__attribute__((weak)) void
 operator delete[] (void *ptr) throw ()
 {
   ::operator delete (ptr);

@@ -1,3 +1,14 @@
+2004-10-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* libsupc++/new_op.cc (new): Make weak.
+	* libsupc++/new_opnt.cc (new): Make weak.
+	* libsupc++/new_opv.cc (new): Make weak.
+	* libsupc++/new_opvnt.cc (new): Make weak.
+	* libsupc++/delete_op.cc (delete): Make weak.
+	* libsupc++/delete_opnt.cc (delete): Make weak.
+	* libsupc++/delete_opv.cc (delete): Make weak.
+	* libsupc++/delete_opvnt.cc (delete): Make weak.
+
 2004-10-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/Makefile.am (GLIBCXX_INCLUDES): Add.

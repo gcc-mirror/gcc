@@ -1,3 +1,23 @@
+2004-10-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.am (DARWIN_CRT_SRC): New.
+	(libgcj_la_SOURCES): Use it.
+	* configure.ac: Define USING_DARWIN_CRT when on Darwin.
+	* darwin.cc: New file.
+	* include/jvm.h (_Jv_RegisterClasses): Constify.
+	(_Jv_RegisterClasses_Counted): New prototype.
+	* java/lang/Class.h: Include stddef.h.  
+	(_Jv_RegisterClasses): Constify.
+	(_Jv_RegisterClasses_Counted): New prototype.
+	(Object): Make '_Jv_RegisterClasses_Counted' a friend.
+	* java/lang/natClassLoader.cc (_Jv_RegisterClasses): Constify.
+	(_Jv_RegisterClasses_Counted): New function.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2004-10-25  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/ResourceBundle.java (tryBundle): Use
