@@ -316,8 +316,10 @@ struct nesting
 	  int num_ranges;
 	  /* Name of this kind of statement, for warnings.  */
 	  char *printname;
-	  /* Nonzero if a case label has been seen in this case stmt.  */
-	  char seenlabel;
+	  /* Used to save no_line_numbers till we see the first case label.
+	     We set this to -1 when we see the first case label in this
+	     case statement.  */
+	  int line_number_status;
 	} case_stmt;
     } data;
 };
@@ -3759,7 +3761,7 @@ expand_start_case (exit_flag, expr, type, printname)
   thiscase->data.case_stmt.default_label = 0;
   thiscase->data.case_stmt.num_ranges = 0;
   thiscase->data.case_stmt.printname = printname;
-  thiscase->data.case_stmt.seenlabel = 0;
+  thiscase->data.case_stmt.line_number_status = force_line_numbers ();
   case_stack = thiscase;
   nesting_stack = thiscase;
 
@@ -3822,6 +3824,41 @@ case_index_expr_type ()
   return 0;
 }
 
+static void
+check_seenlabel ()
+{
+  /* If this is the first label, warn if any insns have been emitted.  */
+  if (case_stack->data.case_stmt.line_number_status >= 0)
+    {
+      rtx insn;
+
+      restore_line_number_status
+	(case_stack->data.case_stmt.line_number_status);
+      case_stack->data.case_stmt.line_number_status = -1;
+
+      for (insn = case_stack->data.case_stmt.start;
+	   insn;
+	   insn = NEXT_INSN (insn))
+	{
+	  if (GET_CODE (insn) == CODE_LABEL)
+	    break;
+	  if (GET_CODE (insn) != NOTE
+	      && (GET_CODE (insn) != INSN || GET_CODE (PATTERN (insn)) != USE))
+	    {
+	      do
+		insn = PREV_INSN (insn);
+	      while (GET_CODE (insn) != NOTE || NOTE_LINE_NUMBER (insn) < 0);
+
+	      warning_with_file_and_line (NOTE_SOURCE_FILE(insn),
+					  NOTE_LINE_NUMBER(insn),
+					  "unreachable code at beginning of %s",
+					  case_stack->data.case_stmt.printname);
+	      break;
+	    }
+	}
+    }
+}
+
 /* Accumulate one case or default label inside a case or switch statement.
    VALUE is the value of the case (a null pointer, for a default label).
    The function CONVERTER, when applied to arguments T and V,
@@ -3858,6 +3895,8 @@ pushcase (value, converter, label, duplicate)
   index_type = TREE_TYPE (case_stack->data.case_stmt.index_expr);
   nominal_type = case_stack->data.case_stmt.nominal_type;
 
+  check_seenlabel ();
+
   /* If the index is erroneous, avoid more problems: pretend to succeed.  */
   if (index_type == error_mark_node)
     return 0;
@@ -3865,27 +3904,6 @@ pushcase (value, converter, label, duplicate)
   /* Convert VALUE to the type in which the comparisons are nominally done.  */
   if (value != 0)
     value = (*converter) (nominal_type, value);
-
-  /* If this is the first label, warn if any insns have been emitted.  */
-  if (case_stack->data.case_stmt.seenlabel == 0)
-    {
-      rtx insn;
-      for (insn = case_stack->data.case_stmt.start;
-	   insn;
-	   insn = NEXT_INSN (insn))
-	{
-	  if (GET_CODE (insn) == CODE_LABEL)
-	    break;
-	  if (GET_CODE (insn) != NOTE
-	      && (GET_CODE (insn) != INSN || GET_CODE (PATTERN (insn)) != USE))
-	    {
-	      warning ("unreachable code at beginning of %s",
-		       case_stack->data.case_stmt.printname);
-	      break;
-	    }
-	}
-    }
-  case_stack->data.case_stmt.seenlabel = 1;
 
   /* Fail if this value is out of range for the actual type of the index
      (which may be narrower than NOMINAL_TYPE).  */
@@ -3943,26 +3961,7 @@ pushcase_range (value1, value2, converter, label, duplicate)
   if (index_type == error_mark_node)
     return 0;
 
-  /* If this is the first label, warn if any insns have been emitted.  */
-  if (case_stack->data.case_stmt.seenlabel == 0)
-    {
-      rtx insn;
-      for (insn = case_stack->data.case_stmt.start;
-	   insn;
-	   insn = NEXT_INSN (insn))
-	{
-	  if (GET_CODE (insn) == CODE_LABEL)
-	    break;
-	  if (GET_CODE (insn) != NOTE
-	      && (GET_CODE (insn) != INSN || GET_CODE (PATTERN (insn)) != USE))
-	    {
-	      warning ("unreachable code at beginning of %s",
-		       case_stack->data.case_stmt.printname);
-	      break;
-	    }
-	}
-    }
-  case_stack->data.case_stmt.seenlabel = 1;
+  check_seenlabel ();
 
   /* Convert VALUEs to type in which the comparisons are nominally done
      and replace any unspecified value with the corresponding bound.  */
@@ -4613,6 +4612,8 @@ expand_end_case (orig_index)
 
   do_pending_stack_adjust ();
 
+  check_seenlabel ();
+
   /* An ERROR_MARK occurs for various reasons including invalid data type.  */
   if (index_type != error_mark_node)
     {
@@ -4624,22 +4625,6 @@ expand_end_case (orig_index)
 	  && TREE_CODE (TREE_TYPE (orig_index)) == ENUMERAL_TYPE
 	  && TREE_CODE (index_expr) != INTEGER_CST)
 	check_for_full_enumeration_handling (TREE_TYPE (orig_index));
-
-      /* If this is the first label, warn if any insns have been emitted.  */
-      if (thiscase->data.case_stmt.seenlabel == 0)
-	{
-	  rtx insn;
-	  for (insn = get_last_insn ();
-	       insn != case_stack->data.case_stmt.start;
-	       insn = PREV_INSN (insn))
-	    if (GET_CODE (insn) != NOTE
-	        && (GET_CODE (insn) != INSN || GET_CODE (PATTERN (insn))!= USE))
-	      {
-		warning ("unreachable code at beginning of %s",
-			 case_stack->data.case_stmt.printname);
-		break;
-	      }
-	}
 
       /* If we don't have a default-label, create one here,
 	 after the body of the switch.  */
