@@ -1,3 +1,12 @@
+2003-01-07  Andreas Schwab  <schwab@suse.de>
+
+        * configure.in: Restore CFLAGS before gcc_AC_INITFINI_ARRAY.
+        Move --enable-initfini-array check ...
+        * aclocal.m4 (gcc_AC_INITFINI_ARRAY): ... here.  Define
+        HAVE_INITFINI_ARRAY also when --enable-initfini-array is given.
+        Don't AC_SUBST gcc_cv_initfinit_array.  Use AC_TRY_RUN.
+        * configure: Rebuild.
+
 2003-01-07  Richard Henderson  <rth@redhat.com>
 
         * alias.c (find_base_value): Only use new_reg_base_value shortcut
