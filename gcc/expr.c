@@ -4005,6 +4005,7 @@ expand_expr (exp, target, tmode, modifier)
 		emit_move_insn (new, op0);
 		op0 = copy_rtx (new);
 		PUT_MODE (op0, BLKmode);
+		MEM_IN_STRUCT_P (op0) = 1;
 	      }
 
 	    return op0;
