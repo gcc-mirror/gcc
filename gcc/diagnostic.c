@@ -1049,9 +1049,9 @@ sorry VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
+  ++sorrycount;
   os = output_buffer_state (diagnostic_buffer);
 
-  ++sorrycount;
   output_set_prefix
     (diagnostic_buffer, context_as_prefix (input_filename, lineno, 0));
   output_printf (diagnostic_buffer, "sorry, not implemented: ");
