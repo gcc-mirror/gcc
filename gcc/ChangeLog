@@ -1,3 +1,7 @@
+2000-05-08  Nick Clifton  <nickc@cygnus.com>
+
+	* config/i386/i386.h (ELIMINABLE_REGS): Fix comment.
+
 2000-05-08  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/mkfixinc.sh:  fixinc.sco is no longer used
