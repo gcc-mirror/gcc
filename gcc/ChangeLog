@@ -1,3 +1,12 @@
+2000-03-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin): Handle bcmp.
+
+	* builtins.def: Add BUILT_IN_BCMP.
+
+	* c-common.c (c_common_nodes_and_builtins): Provide builtin
+	prototype & function for bcmp.
+
 Thu Mar 23 11:34:39 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.c (rtx_needs_barrier, case UNSPEC): Move case 6...

@@ -3462,10 +3462,11 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 {
   tree temp;
   tree memcpy_ftype, memset_ftype, strlen_ftype;
+  tree bcmp_ftype;
   tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree sizetype_endlink;
   tree ptr_ftype, ptr_ftype_unsigned;
-  tree void_ftype_any, void_ftype_int;
+  tree void_ftype_any, void_ftype_int, int_ftype_any;
   tree double_ftype_double, double_ftype_double_double;
   tree float_ftype_float, ldouble_ftype_ldouble;
   tree int_ftype_cptr_cptr_sizet;
@@ -3473,6 +3474,10 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   tree long_ftype_long;
   /* Either char* or void*.  */
   tree traditional_ptr_type_node;
+  /* Either const char* or const void*.  */
+  tree traditional_cptr_type_node;
+  tree traditional_len_type_node;
+  tree traditional_len_endlink;
   tree va_list_ptr_type_node;
   tree va_list_arg_type_node;
 
@@ -3503,6 +3508,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   /* We realloc here because sizetype could be int or unsigned.  S'ok.  */
   ptr_ftype_sizetype = build_function_type (ptr_type_node, sizetype_endlink);
 
+  int_ftype_any = build_function_type (integer_type_node, NULL_TREE);
   void_ftype_any = build_function_type (void_type_node, NULL_TREE);
   void_ftype = build_function_type (void_type_node, endlink);
   void_ftype_int = build_function_type (void_type_node, int_endlink);
@@ -3551,6 +3557,11 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 						 const_string_type_node,
 						 endlink)));
 
+  traditional_len_type_node = (flag_traditional && ! cplus_mode
+			       ? integer_type_node : sizetype);
+  traditional_len_endlink = tree_cons (NULL_TREE, traditional_len_type_node,
+				       endlink);
+
   /* Prototype for strcmp.  */
   int_ftype_string_string
     = build_function_type (integer_type_node,
@@ -3561,13 +3572,14 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 
   /* Prototype for strlen.  */
   strlen_ftype
-    = build_function_type ((flag_traditional && ! cplus_mode
-			    ? integer_type_node : sizetype),
+    = build_function_type (traditional_len_type_node,
 			   tree_cons (NULL_TREE, const_string_type_node,
 				      endlink));
 
   traditional_ptr_type_node = (flag_traditional && ! cplus_mode
 			       ? string_type_node : ptr_type_node);
+  traditional_cptr_type_node = (flag_traditional && ! cplus_mode
+			       ? const_string_type_node : const_ptr_type_node);
 
   /* Prototype for memcpy.  */
   memcpy_ftype
@@ -3584,6 +3596,14 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 						 tree_cons (NULL_TREE,
 							    sizetype,
 							    endlink))));
+
+  /* Prototype for bcmp.  */
+  bcmp_ftype
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, traditional_cptr_type_node,
+				      tree_cons (NULL_TREE,
+						 traditional_cptr_type_node,
+						 traditional_len_endlink)));
 
   builtin_function ("__builtin_constant_p", default_function_type,
 		    BUILT_IN_CONSTANT_P, BUILT_IN_NORMAL, NULL_PTR);
@@ -3617,6 +3637,11 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
       /* Suppress error if redefined as a non-function.  */
+      DECL_BUILT_IN_NONANSI (temp) = 1;
+
+      temp = builtin_function ("bcmp",
+			       cplus_mode ? bcmp_ftype : int_ftype_any,
+			       BUILT_IN_BCMP, BUILT_IN_NORMAL, NULL_PTR);
       DECL_BUILT_IN_NONANSI (temp) = 1;
     }
 
@@ -3723,6 +3748,8 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 		    BUILT_IN_MEMCMP, BUILT_IN_NORMAL, "memcmp");
   builtin_function ("__builtin_memset", memset_ftype, BUILT_IN_MEMSET,
 		    BUILT_IN_NORMAL, "memset");
+  builtin_function ("__builtin_bcmp", bcmp_ftype,
+		    BUILT_IN_BCMP, BUILT_IN_NORMAL, "bcmp");
   builtin_function ("__builtin_strcmp", int_ftype_string_string,
 		    BUILT_IN_STRCMP, BUILT_IN_NORMAL, "strcmp");
   builtin_function ("__builtin_strcpy", string_ftype_ptr_ptr,
