@@ -5436,7 +5436,8 @@ pop_init_level (implicit)
 	  && constructor_incremental)
 	{
 	  constructor = digest_init (constructor_type, constructor,
-				     0, 0);
+				     require_constant_value,
+				     require_constant_elements);
 
 	  /* If initializing an array of unknown size,
 	     determine the size now.  */
@@ -5771,7 +5772,8 @@ output_init_element (value, type, field, pending)
 	   constructor_index, which is modified in place.  */
 	constructor_pending_elts
 	  = tree_cons (copy_node (field),
-		       digest_init (type, value, 0, 0),
+		       digest_init (type, value, require_constant_value, 
+				    require_constant_elements),
 		       constructor_pending_elts);
     }
   else if (TREE_CODE (constructor_type) == RECORD_TYPE
@@ -5783,7 +5785,8 @@ output_init_element (value, type, field, pending)
       if (!duplicate)
 	constructor_pending_elts
 	  = tree_cons (field,
-		       digest_init (type, value, 0, 0),
+		       digest_init (type, value, require_constant_value, 
+				    require_constant_elements),
 		       constructor_pending_elts);
     }
   else
@@ -5798,7 +5801,9 @@ output_init_element (value, type, field, pending)
 	      if (field && TREE_CODE (field) == INTEGER_CST)
 		field = copy_node (field);
 	      constructor_elements
-		= tree_cons (field, digest_init (type, value, 0, 0),
+		= tree_cons (field, digest_init (type, value,
+						 require_constant_value, 
+						 require_constant_elements),
 			     constructor_elements);
 	    }
 	  else
@@ -5819,7 +5824,9 @@ output_init_element (value, type, field, pending)
 		      assemble_zeros (next - here);
 		    }
 		}
-	      output_constant (digest_init (type, value, 0, 0),
+	      output_constant (digest_init (type, value,
+					    require_constant_value,
+					    require_constant_elements),
 			       int_size_in_bytes (type));
 
 	      /* For a record or union,
