@@ -49,11 +49,11 @@ dos2unixtime (unsigned long dostime)
   ltime = *localtime (&now);
 
   ltime.tm_year = (dostime >> 25) + 80;
-  ltime.tm_mon = 1 + ((dostime >> 21) & 0x0f);
+  ltime.tm_mon = ((dostime >> 21) & 0x0f) - 1;
   ltime.tm_mday = (dostime >> 16) & 0x1f;
   ltime.tm_hour = (dostime >> 11) & 0x0f;
   ltime.tm_min = (dostime >> 5) & 0x3f;
-  ltime.tm_sec = (dostime & 0x0f) << 1;
+  ltime.tm_sec = (dostime & 0x1f) << 1;
 
   ltime.tm_wday = -1;
   ltime.tm_yday = -1;
@@ -66,10 +66,13 @@ unsigned long
 unix2dostime (time_t *time)
 {
   struct tm *ltime = localtime (time);
+  int year = ltime->tm_year - 80;
+  if (year < 0)
+    year = 0;
 
-  return ((ltime->tm_year - 80) << 25
-	  | ltime->tm_mon << 21
-	  | (ltime->tm_mday - 1) << 16
+  return (year << 25
+	  | (ltime->tm_mon + 1) << 21
+	  | ltime->tm_mday << 16
 	  | ltime->tm_hour << 11
 	  | ltime->tm_min << 5
 	  | ltime->tm_sec >> 1);
