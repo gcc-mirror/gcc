@@ -1,5 +1,9 @@
 2001-11-18  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::branch_prepass) [op_sipush]:
+	Skip a short, not a byte.
+	[op_newarray]: Skip a byte, not a short.
+
 	* verify.cc (_Jv_BytecodeVerifier::get_type_val_for_signature):
 	Added `B' case.
 
