@@ -1,3 +1,11 @@
+2001-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpp.texi: Update for handling of charconsts.
+	* cpplex.c (maybe_read_ucs): Don't accept D800-DFFF.  Update
+	diagnostics.  Skip to the end if the UCS is too short.
+	(cpp_interpret_charconst): Long charconsts issue a warning
+	not an error.
+
 2001-05-23  Richard Henderson  <rth@redhat.com>
 
 	* doc/install.texi (alpha-linux): Require binutils 2.11.
