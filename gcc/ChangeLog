@@ -1,3 +1,20 @@
+2004-11-10  Peter S. Mazinger  <ps.m@gmx.net>
+
+	* config/mips/linux.h (LINUX_TARGET_OS_CPP_BUILTINS): Define
+	__PIC__ and __pic__ only if TARGET_ABICALLS.
+	(SUBTARGET_CPP_SPECS): Don't define or undefine __PIC__ and __pic__.
+	(SUBTARGET_ASM_SPECS): Don't pass -non_shared to assembler; pass
+	-KPIC only if not -mno-abicalls.
+
+	* config/alpha/linux.h, config/arm/linux-elf.h, config/pa/pa-linux.h
+	* config/sparc/linux.h, config/sparc/linux64.h
+	(TARGET_OS_CPP_BUILTINS): Define __PIC__ and __pic__ if flag_pic.
+
+	* config/arm/linux-gas.h (CPP_SPEC): Don't define __PIC__ or __pic__.
+	* config/pa/pa/linux.h (CPP_SPEC): Likewise.
+	* config/sparc/linux.h (CPP_SUBTARGET_SPEC): Likewise.
+	* config/sparc/linux64.h (CPP_SUBTARGET_SPEC): Likewise.
+
 2004-11-11  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Save PIC
@@ -15,7 +32,7 @@
 
 	* tree-data-ref.c (build_classic_dist_vector): If either loop
 	is outside of the nest we asked about, the dependence can't
-	matter.	
+	matter.
 	(build_classic_dir_vector): Ditto.
 
 2004-11-10  Zdenek Dvorak  <dvorakz@suse.cz>
@@ -193,7 +210,7 @@
 	* reload.h: Remove the corresponding prototypes.
 
 2004-11-09  James A. Morrison  <phython@gcc.gnu.org>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/18230
 	* doc/md.texi (SPARC constraints): Document 'Y' constraint.
@@ -246,7 +263,7 @@
 	when eliminating an UNSPEC_CMPINT.
 	(s390_secondary_input_reload_class): Fix test for CC register reload.
 	(s390_secondary_output_reload_class): Likewise.
-	(s390_expand_cmpmem): Swap operands.  Use gen_cmpint. 
+	(s390_expand_cmpmem): Swap operands.  Use gen_cmpint.
 	* config/s390/s390.md ("*cmpint_si", "*cmpint_di"): Remove.
 	("cmpint", "*cmpint_cc", "*cmpint_sign", "*cmpint_sign_cc"): New
 	insn patterns with splitters.
@@ -458,22 +475,22 @@
 	("*cmpint_si", "*cmpint_di", "fix_truncdfsi2_ibm", "floatsidf2_ibm",
 	"*negdi2_31"):
 	Do not set type attribute to "other" where already default.
-	("movti", "*movdi_64", "*movdi_31", "*movdf_31", 
+	("movti", "*movdi_64", "*movdi_31", "*movdf_31",
 	"*strlendi", "*strlensi",
 	"*movmem_long_64", "*movmem_long_31",
 	"*clrmem_long_64", "*clrmem_long_31",
 	"*cmpmem_long_64", "*cmpmem_long_31",
-	"*cmpint_si", "*cmpint_di", 
-	"addti3", "*adddi3_31z", "*adddi3_31", 
+	"*cmpint_si", "*cmpint_di",
+	"addti3", "*adddi3_31z", "*adddi3_31",
 	"subti3", "*subdi3_31z", "*subdi3_31", "*negdi2_31",
 	"*sconddi", "*scondsi", "*sconddi_neg", "*scondsi_neg",
 	"fix_truncdfsi2_ibm", "floatsidf2_ibm", "extendsfdf2_ibm",
 	"*pool_entry", "pool_align", "pool_section_start",
 	"pool_section_end", "main_pool", "reload_base_31", "pool"):
 	Do not set op_type attribute to "NN" where already default.
-	("*extractqi", "*extracthi", "*zero_extendhisi2_31", 
+	("*extractqi", "*extracthi", "*zero_extendhisi2_31",
 	"*zero_extendqisi2_31", "*zero_extendqihi2_31",
-	"fix_truncdfsi2_ibm", "floatsidf2_ibm"): 
+	"fix_truncdfsi2_ibm", "floatsidf2_ibm"):
 	Do not set atype attribute to "agen" where already default.
 	("*movmem_short", "*clrmem_short", "*cmpmem_short"): Don't set op_type.
 
@@ -572,7 +589,7 @@
 	("floatsisf2", "floatsisf2_ieee"): Likewise.
 	("truncdfsf2", "truncdfsf2_ieee"): Only allow "register_operand".
 	("truncdfsf2_ibm"): Only allow "nonimmediate_operand".  Use LER
-	instead of LRER. 
+	instead of LRER.
 	("extendsfdf2_ibm"): Do not set atype.  Set type to "floads".
 	("sqrtdf2"): Set type to "fsqrtd".
 	("sqrtsf2"): Set type to "fsqrts".
@@ -717,7 +734,7 @@
 
 	* config/arm/arm.c (arm_handle_notshared_attribute): New function.
 	* doc/extend.texi: Document "notshared" attribute.
-	
+
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinodes.c (make_phi_node): Make it static.
@@ -771,7 +788,7 @@
 
 2004-11-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* flow.c (init_propagate_block_info): Change the type of i to 
+	* flow.c (init_propagate_block_info): Change the type of i to
 	unsigned.
 
 2004-11-04  Ulrich Weigand  <uweigand@de.ibm.com>
@@ -910,13 +927,13 @@
 	Also update DR_MISALIGNMENT due to peeling; this functionality used to
 	be in vect_update_inits_of_drs and vect_do_peeling_for_alignment).
 	(vect_analyze_data_refs_alignment): Decision on whether and by how much
-	to peel moved to vect_enhance_data_refs_alignment. Call 
+	to peel moved to vect_enhance_data_refs_alignment. Call
 	vect_supportable_dr_alignment.
 
 	(vect_compute_data_ref_alignment): Set STMT_VINFO_VECTYPE.
 	(vect_compute_data_refs_alignment): Return bool. Consider return value
 	of vect_compute_data_ref_alignment and return true/false accordingly.
-	(vect_enhance_data_refs_alignment): Consider return value of 
+	(vect_enhance_data_refs_alignment): Consider return value of
 	vect_compute_data_refs_alignment and return true/false accordingly.
 
 	(vect_supportable_dr_alignment): New function.
@@ -1080,7 +1097,7 @@
 	* rtlanal.c (canonicalize_condition, get_condition): ...here.
 	* sched-deps.c (get_condition): Rename to sched_get_condition.
 	(add_dependence): Update this caller.
- 
+
 2004-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/16808
@@ -1146,7 +1163,7 @@
 
 2004-11-02  Ben Elliston  <bje@au.ibm.com>
 
-	* timevar.h (timevar_get): Remove. 
+	* timevar.h (timevar_get): Remove.
 	* timevar.c (timevar_get): Remove unused function.
 
 2004-11-02  Joseph S. Myers  <joseph@codesourcery.com>
@@ -1161,7 +1178,7 @@
 2004-11-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/16447
-	* tree-cfg.c (bsi_commit_one_edge_insert): Rename from 
+	* tree-cfg.c (bsi_commit_one_edge_insert): Rename from
 	bsi_commit_edge_inserts_1, and make funtion external.  Return new block.
 	(bsi_commit_edge_inserts): Use renamed bsi_commit_one_edge_insert.
 	* tree-optimize.c (pass_cleanup_cfg_post_optimizing): Enable listing.
@@ -1170,7 +1187,7 @@
 	(same_stmt_list_p): New.  Return TRUE if edge is to be forwarded.
 	(identical_copies_p): New.  Return true is two copies are the same.
 	(identical_stmt_lists_p): New.  Return true if stmt lists are the same.
-	(analyze_edges_for_bb): New.  Determine how best to insert edge stmts 
+	(analyze_edges_for_bb): New.  Determine how best to insert edge stmts
 	for a basic block.
 	(perform_edge_inserts): New.  Determine what to do with all stmts that
 	have been inserted on edges.
@@ -1213,7 +1230,7 @@
 
 	Fix PR tree-optimization/17672
 	Fix PR tree-optimization/18168
-	
+
 	* lambda-code.c (lambda_lattice_compute_base): Fix reversed
 	assert test.
 	(gcc_tree_to_linear_expression): Add extra to existing constant.
@@ -1228,7 +1245,7 @@
 	and induction variable creation.
 	(lle_to_gcc_expression): Ditto.
 	(lambda_loopnest_to_gcc_loopnest): Create new iv with same type as
-	oldiv. Pass type argument to lle_to_gcc_expression and 
+	oldiv. Pass type argument to lle_to_gcc_expression and
 	lbv_to_gcc_expression.
 	Reset number of iterations after transformation.
 	(perfect_nestify): Remove useless pre-allocation, and cleanup
@@ -1239,12 +1256,12 @@
 	(build_classic_dir_vector): Ditto.
 	(compute_data_dependences_for_loop): Only add dependence relations
 	inside the loop we asked about.
-	
+
 	* tree-loop-linear.c (linear_transform_loops): Use DDR_SIZE_VECT.
 	Compute immediate uses.
-	
+
 	* tree-optimize.c: Move linear_transform_loops to before ivcanon.
-	
+
 2004-11-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (thread_jumps): Fix a comment typo.
@@ -1484,7 +1501,7 @@
 
 	config/mn10300/mn10300.h (CONDITIONAL_REGISTER_USAGE): When
 	adding the PIC register to the fixed_regs array, also add it
-	to the call_used_regs array.  
+	to the call_used_regs array.
 
 2004-10-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -1498,7 +1515,7 @@
 	function to call.
 	(rewrite_def_def_chains): Call rewrite_blocks with true here.
 	(rewrite_into_ssa): and call it with false here.
-	
+
 2004-10-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinodes.c (add_phi_arg): Turn an "if" that always

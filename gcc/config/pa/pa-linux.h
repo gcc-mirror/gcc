@@ -58,11 +58,16 @@ Boston, MA 02111-1307, USA.  */
     {						\
 	LINUX_TARGET_OS_CPP_BUILTINS();		\
 	builtin_assert ("machine=bigendian");	\
+	if (flag_pic)				\
+	  {					\
+		builtin_define ("__PIC__");	\
+		builtin_define ("__pic__");	\
+	  }					\
     }						\
   while (0)
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{fPIC|fpic|fPIE|fpie:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
 
 #undef	LIB_SPEC
 #define LIB_SPEC \
