@@ -395,7 +395,8 @@ cp_parse_init ()
 %type <ttype> maybe_parmlist
 %type <ttype> member_init
 %type <ftype> member_init_list
-%type <ttype> template_header template_parm_list template_parm
+%type <ttype> template_parm_header template_spec_header template_header
+%type <ttype> template_parm_list template_parm
 %type <ttype> template_type_parm template_template_parm
 %type <code>  template_close_bracket
 %type <ttype> apparent_template_type
@@ -599,14 +600,22 @@ extern_lang_string:
 		  pop_lang_context (); push_lang_context ($2); }
 	;
 
-template_header:
+template_parm_header:
 	  TEMPLATE '<'
 		{ begin_template_parm_list (); }
 	  template_parm_list '>'
 		{ $$ = end_template_parm_list ($4); }
-	| TEMPLATE '<' '>'
+	;
+
+template_spec_header:
+	  TEMPLATE '<' '>'
                 { begin_specialization(); 
 		  $$ = NULL_TREE; }
+	;
+
+template_header:
+	  template_parm_header
+	| template_spec_header
 	;
 
 template_parm_list:
@@ -630,7 +639,7 @@ template_type_parm:
 	;
 
 template_template_parm:
-	  template_header aggr maybe_identifier
+	  template_parm_header aggr maybe_identifier
                 { $$ = finish_template_template_parm ($2, $3); }
 	;
 
