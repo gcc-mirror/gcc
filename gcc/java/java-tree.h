@@ -49,11 +49,13 @@ struct JCF;
       MODIFY_EXPR_FROM_INITIALIZATION_P (in MODIFY_EXPR)
    3: IS_AN_IMPORT_ON_DEMAND_P (in IDENTIFIER_NODE)
       RESOLVE_PACKAGE_NAME_P (in EXPR_WITH_FILE_LOCATION)
+      SWITCH_HAS_DEFAULT (in SWITCH_EXPR)
    4: IS_A_COMMAND_LINE_FILENAME_P (in IDENTIFIER_NODE)
       RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
    5: HAS_BEEN_ALREADY_PARSED_P (in IDENTIFIER_NODE)
       IS_BREAK_STMT_P (in EXPR_WITH_FILE_LOCATION)
       IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
+   6: CAN_COMPLETE_NORMALLY (in statement nodes).
 
    Usage of TYPE_LANG_FLAG_?:
    0: CLASS_METHOD_CHECKED_P (in RECORD_TYPE)
@@ -262,6 +264,7 @@ extern tree class_dtable_decl;
 extern struct CPool *outgoing_cpool; 
 extern tree current_constant_pool_data_ref;
 
+extern tree wfl_operator;
 
 struct lang_identifier
 {
@@ -541,6 +544,8 @@ extern int alloc_name_constant PROTO ((int, tree));
 extern void emit_register_classes PROTO (());
 extern void lang_init_source PROTO ((int));
 extern void write_classfile PROTO ((tree));
+extern char *print_int_node PROTO ((tree));
+extern void parse_error_context VPROTO ((tree cl, char *msg, ...));
 extern tree build_primtype_type_ref PROTO ((char *));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
@@ -713,6 +718,9 @@ extern tree *type_map;
 /* True if EXPR is RHS sub-tree of a compound assign expression */
 #define COMPOUND_ASSIGN_P(EXPR) TREE_LANG_FLAG_1 (EXPR)
 
+/* True if a SWITCH_EXPR has a DEFAULT_EXPR. */
+#define SWITCH_HAS_DEFAULT(NODE) TREE_LANG_FLAG_3 (NODE)
+
 /* True if EXPR (a WFL in that case) was created after the
    reduction of PRIMARY . XXX */
 #define PRIMARY_P(EXPR) TREE_LANG_FLAG_2 (EXPR)
@@ -738,6 +746,9 @@ extern tree *type_map;
 
 /* True if EXPR (a CALL_EXPR in that case) is a crafted StringBuffer */
 #define IS_CRAFTED_STRING_BUFFER_P(EXPR) TREE_LANG_FLAG_5 (EXPR)
+
+/* True if NODE (a statement) can complete normally. */
+#define CAN_COMPLETE_NORMALLY(NODE) TREE_LANG_FLAG_6(NODE)
 
 /* Add a FIELD_DECL to RECORD_TYPE RTYPE.
    The field has name NAME (a char*), and type FTYPE.
