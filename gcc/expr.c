@@ -1020,7 +1020,8 @@ convert_move (to, from, unsignedp)
 	    if (((can_extend_p (to_mode, intermediate, unsignedp)
 		  != CODE_FOR_nothing)
 		 || (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (intermediate)
-		     && TRULY_NOOP_TRUNCATION (to_mode, intermediate)))
+		     && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (to_mode),
+					       GET_MODE_BITSIZE (intermediate))))
 		&& (can_extend_p (intermediate, from_mode, unsignedp)
 		    != CODE_FOR_nothing))
 	      {
