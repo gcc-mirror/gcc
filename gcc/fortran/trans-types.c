@@ -55,7 +55,7 @@ tree pvoid_type_node;
 tree ppvoid_type_node;
 tree pchar_type_node;
 tree gfc_character1_type_node;
-tree gfc_strlen_type_node;
+tree gfc_charlen_type_node;
 
 static GTY(()) tree gfc_desc_dim_type;
 static GTY(()) tree gfc_max_array_element_size;
@@ -541,7 +541,7 @@ gfc_init_types (void)
   boolean_false_node = build_int_cst (boolean_type_node, 0);
 
   /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
-  gfc_strlen_type_node = gfc_get_int_type (4);
+  gfc_charlen_type_node = gfc_get_int_type (4);
 }
 
 /* Get the type node for the given type and kind.  */
@@ -1502,7 +1502,7 @@ gfc_get_function_type (gfc_symbol * sym)
 
       typelist = gfc_chainon_list (typelist, type);
       if (arg->ts.type == BT_CHARACTER)
-	typelist = gfc_chainon_list (typelist, gfc_strlen_type_node);
+	typelist = gfc_chainon_list (typelist, gfc_charlen_type_node);
     }
 
   /* Build the argument types for the function.  */
@@ -1551,7 +1551,7 @@ gfc_get_function_type (gfc_symbol * sym)
 
   /* Add hidden string length parameters.  */
   while (nstr--)
-    typelist = gfc_chainon_list (typelist, gfc_strlen_type_node);
+    typelist = gfc_chainon_list (typelist, gfc_charlen_type_node);
 
   typelist = gfc_chainon_list (typelist, void_type_node);
 

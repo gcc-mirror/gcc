@@ -333,7 +333,7 @@ gfc_build_io_library_fndecls (void)
                                      void_type_node, 5,
                                      pvoid_type_node, pvoid_type_node,
                                      gfc_int4_type_node, gfc_int4_type_node, 
-                                     gfc_strlen_type_node);
+                                     gfc_charlen_type_node);
   iocall_set_nml_val_complex =
     gfc_build_library_function_decl (get_identifier (PREFIX("st_set_nml_var_complex")),
                                      void_type_node, 4,

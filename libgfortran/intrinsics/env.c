@@ -34,8 +34,8 @@ Boston, MA 02111-1307, USA.  */
 void 
 prefix(getenv) (char * name, 
 		char * value, 
-		gfc_strlen_type name_len, 
-		gfc_strlen_type value_len)
+		gfc_charlen_type name_len, 
+		gfc_charlen_type value_len)
 {
 
   /* Make a null-terminated copy of the name string so that c library
@@ -99,8 +99,8 @@ prefix(get_environment_variable_i4)
    GFC_INTEGER_4 *length,
    GFC_INTEGER_4 *status,
    GFC_LOGICAL_4 *trim_name,
-   gfc_strlen_type name_len,
-   gfc_strlen_type value_len)
+   gfc_charlen_type name_len,
+   gfc_charlen_type value_len)
 {
   int stat = GFC_SUCCESS, res_len = 0;
   char name_nt[name_len+1], *res;
@@ -164,8 +164,8 @@ prefix(get_environment_variable_i8)
    GFC_INTEGER_8 *length,
    GFC_INTEGER_8 *status,
    GFC_LOGICAL_8 *trim_name,
-   gfc_strlen_type name_len,
-   gfc_strlen_type value_len)
+   gfc_charlen_type name_len,
+   gfc_charlen_type value_len)
 {
   GFC_INTEGER_4 length4, status4;
   GFC_LOGICAL_4 trim_name4;

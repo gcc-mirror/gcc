@@ -1072,7 +1072,7 @@ get_array_ctor_strlen (gfc_constructor * c, tree * len)
 	{
 	case EXPR_CONSTANT:
 	  if (!(*len && INTEGER_CST_P (*len)))
-	    *len = build_int_cstu (gfc_strlen_type_node,
+	    *len = build_int_cstu (gfc_charlen_type_node,
 				   c->expr->value.character.length);
 	  break;
 

@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 /* Get a commandline argument.  */
 
 void 
-prefix(getarg_i4) (GFC_INTEGER_4 *pos, char  *val, gfc_strlen_type val_len)
+prefix(getarg_i4) (GFC_INTEGER_4 *pos, char  *val, gfc_charlen_type val_len)
 {
   int argc;
   int arglen;
@@ -55,7 +55,7 @@ prefix(getarg_i4) (GFC_INTEGER_4 *pos, char  *val, gfc_strlen_type val_len)
 /* INTEGER*8 wrapper of getarg.  */
 
 void 
-prefix(getarg_i8) (GFC_INTEGER_8 *pos, char  *val, gfc_strlen_type val_len)
+prefix(getarg_i8) (GFC_INTEGER_8 *pos, char  *val, gfc_charlen_type val_len)
 {
   GFC_INTEGER_4 pos4;
 
@@ -103,7 +103,7 @@ prefix(get_command_argument_i4) (GFC_INTEGER_4 *number,
 				 char *value, 
 				 GFC_INTEGER_4 *length, 
 				 GFC_INTEGER_4 *status, 
-				 gfc_strlen_type value_len)
+				 gfc_charlen_type value_len)
 {
   int argc, arglen = 0, stat_flag = GFC_GC_SUCCESS;
   char **argv;
@@ -155,7 +155,7 @@ prefix(get_command_argument_i8) (GFC_INTEGER_8 *number,
 				 char *value, 
 				 GFC_INTEGER_8 *length, 
 				 GFC_INTEGER_8 *status, 
-				 gfc_strlen_type value_len)
+				 gfc_charlen_type value_len)
 {
   GFC_INTEGER_4 number4;
   GFC_INTEGER_4 length4;
@@ -177,7 +177,7 @@ void
 prefix(get_command_i4) (char *command, 
 			GFC_INTEGER_4 *length, 
 			GFC_INTEGER_4 *status,
-			gfc_strlen_type command_len)
+			gfc_charlen_type command_len)
 {
   int i, argc, arglen, thisarg;
   int stat_flag = GFC_GC_SUCCESS;
@@ -237,7 +237,7 @@ void
 prefix(get_command_i8) (char *command, 
 			GFC_INTEGER_8 *length, 
 			GFC_INTEGER_8 *status,
-			gfc_strlen_type command_len)
+			gfc_charlen_type command_len)
 {
   GFC_INTEGER_4 length4;
   GFC_INTEGER_4 status4;

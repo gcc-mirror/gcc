@@ -1578,7 +1578,7 @@ st_set_nml_var_float (void * var_addr, char * var_name, int var_name_len,
 
 void
 st_set_nml_var_char (void * var_addr, char * var_name, int var_name_len,
-		     int kind, gfc_strlen_type string_length)
+		     int kind, gfc_charlen_type string_length)
 {
 
   st_set_nml_var (var_addr, var_name, var_name_len, kind, BT_CHARACTER,
