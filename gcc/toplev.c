@@ -505,6 +505,10 @@ int flag_syntax_only = 0;
 
 static int flag_rerun_cse_after_loop;
 
+/* Nonzero means to run loop optimizations twice.  */
+
+static int flag_rerun_loop_opt;
+
 /* Nonzero for -finline-functions: ok to inline functions that look like
    good inline candidates.  */
 
@@ -707,6 +711,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"reg-struct-return", &flag_pcc_struct_return, 0},
   {"delayed-branch", &flag_delayed_branch, 1},
   {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1},
+  {"rerun-loop-opt", &flag_rerun_loop_opt, 1},
   {"pretend-float", &flag_pretend_float, 1},
   {"schedule-insns", &flag_schedule_insns, 1},
   {"schedule-insns2", &flag_schedule_insns_after_reload, 1},
@@ -3262,6 +3267,27 @@ rest_of_compilation (decl)
     {
       TIMEVAR (loop_time,
 	       {
+		 int save_flag_unroll_loops;
+		 int save_flag_unroll_all_loops;
+
+		 if (flag_rerun_loop_opt)
+		   {
+		      /* We only want to perform unrolling once.  */
+		      save_flag_unroll_loops = flag_unroll_loops;
+		      save_flag_unroll_all_loops = flag_unroll_all_loops;
+		      flag_unroll_loops = 0;
+		      flag_unroll_all_loops = 0;
+
+		      loop_optimize (insns, loop_dump_file);
+
+		      /* The regscan pass may not be necessary, but let's
+			 be safe until we can prove otherwise.  */
+		      reg_scan (insns, max_reg_num (), 1);
+
+		      /* Restore loop unrolling flags.  */
+		      flag_unroll_loops = save_flag_unroll_loops;
+		      flag_unroll_all_loops = save_flag_unroll_all_loops;
+		   }
 		 loop_optimize (insns, loop_dump_file);
 	       });
     }
@@ -3819,6 +3845,7 @@ main (argc, argv, envp)
       flag_expensive_optimizations = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
+      flag_rerun_loop_opt = 1;
       flag_caller_saves = 1;
       flag_force_mem = 1;
 #ifdef INSN_SCHEDULING
