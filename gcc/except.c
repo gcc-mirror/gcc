@@ -3589,6 +3589,33 @@ sjlj_output_call_site_table ()
   call_site_base += n;
 }
 
+/* Tell assembler to switch to the section for the exception handling
+   table.  */
+
+void
+default_exception_section ()
+{
+  if (targetm.have_named_sections)
+    {
+      int tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
+      int flags;
+
+#ifdef HAVE_LD_RO_RW_SECTION_MIXING
+      flags = (! flag_pic
+	       || ((tt_format & 0x70) != DW_EH_PE_absptr
+		   && (tt_format & 0x70) != DW_EH_PE_aligned))
+	      ? 0 : SECTION_WRITE;
+#else
+      flags = SECTION_WRITE;
+#endif
+      named_section_flags (".gcc_except_table", flags);
+    }
+  else if (flag_pic)
+    data_section ();
+  else
+    readonly_data_section ();
+}
+
 void
 output_function_exception_table ()
 {

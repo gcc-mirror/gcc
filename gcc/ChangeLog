@@ -1,3 +1,18 @@
+2002-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (default_exception_section): Move to...
+	* except.c (default_exception_section): ... here. Make
+	.gcc_except_table read-only if it is not expected to have any
+	dynamic relocations and linker handles it.
+	* dwarf2out.c (default_eh_frame_section): Make .eh_frame read-only
+	if it is not expected to have any dynamic relocations and linker
+	handles it.
+	* configure.in (HAVE_LD_RO_RW_SECTION_MIXING): Check what ld does
+	when linking read-only and read-write sections together.
+	* configure, config.in: Rebuilt.
+	* crtstuff.c (EH_FRAME_SECTION_CONST): Define.
+	(__EH_FRAME_BEGIN__, __FRAME_END__): Add it.
+
 2002-11-25  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/spe.h (__ev_create_sfix32_fs): Change macro into
