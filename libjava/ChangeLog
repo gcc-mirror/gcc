@@ -1,3 +1,9 @@
+2003-09-25  Jeff Sturm  <jsturm@one-point.com>
+
+	* gnu/java/nio/SelectorImpl.java (getFDsAsArray): Use getNativeFD().
+	(select): Likewise.
+	(register): Use DatagramChannelSelectionKey, SocketChannelSelectionKey.
+
 2003-09-25  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/DatagramChannelImpl.java
