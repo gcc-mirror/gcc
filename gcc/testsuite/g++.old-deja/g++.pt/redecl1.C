@@ -6,7 +6,7 @@ struct S1; // ERROR - previous declaration
 template <class T, class U>
 struct S1 {}; // ERROR - used 1 template parameter
 
-template <class T = int>
+template <class T = int> // ERROR - original def of default
 struct S2; 
 
 template <class T = int>
