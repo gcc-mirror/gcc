@@ -534,7 +534,7 @@ case $os in
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
-	      | -hiux* | -386bsd* | -netbsd* | -riscix* | -lynxos*)
+	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* | -lynxos*)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
