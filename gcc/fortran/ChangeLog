@@ -1,3 +1,7 @@
+2004-08-18  Paul Brook  <paul@codesourcery.com>
+
+	* trans-types.c (gfc_sym_type): Use pointer types for optional args.
+
 2004-08-18  Victor Leikehman  <lei@il.ibm.com>
 
 	PR fortran/13278

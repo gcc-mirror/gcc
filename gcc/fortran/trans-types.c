@@ -972,7 +972,14 @@ gfc_sym_type (gfc_symbol * sym)
      See f95_get_function_decl.  For dummy function parameters return the
      function type.  */
   if (byref)
-    type = build_reference_type (type);
+    {
+      /* We must use pointer types for potentially absent variables.  The
+	 optimizers assume a reference type argument is never NULL.  */
+      if (sym->attr.optional || sym->ns->proc_name->attr.entry_master)
+	type = build_pointer_type (type);
+      else
+	type = build_reference_type (type);
+    }
 
   return (type);
 }
