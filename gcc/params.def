@@ -347,6 +347,14 @@ DEFPARAM(PARAM_IV_MAX_CONSIDERED_USES,
 	 "Bound on number of iv uses in loop optimized in iv optimizations",
 	 250, 0, 0)
 
+/* If there are at most this number of ivs in the set, try removing unnecessary
+   ivs from the set always.  */
+
+DEFPARAM(PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND,
+	 "iv-always-prune-cand-set-bound",
+	 "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization",
+	 10, 0, 0)
+
 /* The product of the next two is used to decide whether or not to
    use .GLOBAL_VAR.  See tree-dfa.c.  */
 DEFPARAM(PARAM_GLOBAL_VAR_THRESHOLD,
