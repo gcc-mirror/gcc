@@ -1,6 +1,7 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -543,9 +544,13 @@ namespace std
     replace(size_type __pos1, size_type __n1, const basic_string& __str,
 	    size_type __pos2, size_type __n2)
     {
-      return this->replace(_M_check(__pos1), _M_fold(__pos1, __n1),
-			   __str._M_check(__pos2), 
-			   __str._M_fold(__pos2, __n2));      
+      const size_type __strsize = __str.size();
+      if (__pos2 > __strsize)
+	__throw_out_of_range("basic_string::replace");
+      const bool __testn2 = __n2 < __strsize - __pos2;
+      const size_type __foldn2 = __testn2 ? __n2 : __strsize - __pos2;
+      return this->replace(__pos1, __n1,
+			   __str._M_data() + __pos2, __foldn2);      
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
