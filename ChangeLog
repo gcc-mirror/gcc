@@ -1,3 +1,8 @@
+2002-07-08  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in (gxx_include_dir):  Change to match versioned
+	C++ headers if --enable-version-specific-runtime-libs is used.
+
 2002-06-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config.if (libstdcxx_incdir): Version C++ headers.
