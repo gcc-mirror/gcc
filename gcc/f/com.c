@@ -8078,7 +8078,7 @@ ffecom_sym_transform_ (ffesymbol s)
 	  DECL_EXTERNAL (t) = 1;
 	  TREE_PUBLIC (t) = 1;
 
-	  t = start_decl (t, TRUE);
+	  t = start_decl (t, ffe_is_globals ());
 	  finish_decl (t, NULL_TREE, TRUE);
 
 	  if ((g != NULL)
