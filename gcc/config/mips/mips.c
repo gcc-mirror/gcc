@@ -8449,19 +8449,20 @@ function_arg_pass_by_reference (cum, mode, type, named)
    We can't allow 64-bit float registers to change from a 32-bit
    mode to a 64-bit mode.  */
 
-enum reg_class
-mips_cannot_change_mode_class (from, to)
+bool
+mips_cannot_change_mode_class (from, to, class)
      enum machine_mode from, to;
+     enum reg_class class;
 {
   if (GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
     {
       if (TARGET_BIG_ENDIAN)
-        return FP_REGS;
+	return reg_classes_intersect_p (FP_REGS, class);
       if (TARGET_FLOAT64)
-        return HI_AND_FP_REGS;
-      return HI_REG;
+	return reg_classes_intersect_p (HI_AND_FP_REGS, class);
+      return reg_classes_intersect_p (HI_REG, class);
     }
-  return NO_REGS;
+  return false;
 }
 
 /* This function returns the register class required for a secondary

@@ -945,8 +945,8 @@ df_def_record_1 (df, x, bb, insn)
 
 #ifdef CLASS_CANNOT_CHANGE_MODE
   if (GET_CODE (dst) == SUBREG
-      && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
-				     GET_MODE (SUBREG_REG (dst))))
+      && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (dst)),
+				     GET_MODE (dst)))
     flags |= DF_REF_MODE_CHANGE;
 #endif
 
@@ -966,8 +966,8 @@ df_def_record_1 (df, x, bb, insn)
 	}
 #ifdef CLASS_CANNOT_CHANGE_MODE
       if (GET_CODE (dst) == SUBREG
-	  && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
-				         GET_MODE (SUBREG_REG (dst))))
+	  && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (dst)),
+				         GET_MODE (dst)))
         flags |= DF_REF_MODE_CHANGE;
 #endif
       loc = &XEXP (dst, 0);

@@ -7740,24 +7740,25 @@ sh_expand_binop_v2sf (code, op0, op1, op2)
 
 /* Return the class of registers for which a mode change from FROM to TO
    is invalid.  */
-enum reg_class 
-sh_cannot_change_mode_class (from, to)
+bool
+sh_cannot_change_mode_class (from, to, class)
      enum machine_mode from, to;
+     enum reg_class class;
 {
   if (GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
     {
        if (TARGET_LITTLE_ENDIAN)
          {
 	   if (GET_MODE_SIZE (to) < 8 || GET_MODE_SIZE (from) < 8)
-	     return DF_REGS;
+	     return reg_classes_intersect_p (DF_REGS, class);
 	 }
        else
 	 {
 	   if (GET_MODE_SIZE (from) < 8)
-	     return DF_HI_REGS;
+	     return reg_classes_intersect_p (DF_HI_REGS, class);
 	 }
     }
-  return NO_REGS;
+  return 0;
 }
 
 

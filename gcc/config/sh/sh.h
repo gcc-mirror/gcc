@@ -1377,8 +1377,8 @@ extern enum reg_class reg_class_from_letter[];
 /* ??? We need to renumber the internal numbers for the frnn registers
    when in little endian in order to allow mode size changes.  */
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO) 			    \
-  sh_cannot_change_mode_class (FROM, TO)
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) 			    \
+  sh_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 

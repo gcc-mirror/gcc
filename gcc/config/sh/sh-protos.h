@@ -126,8 +126,8 @@ extern int sh_pr_n_sets PARAMS ((void));
 extern int sh_hard_regno_rename_ok PARAMS ((unsigned int, unsigned int));
 extern int sh_cfun_interrupt_handler_p PARAMS ((void));
 extern void sh_initialize_trampoline PARAMS ((rtx, rtx, rtx));
-extern enum reg_class sh_cannot_change_mode_class
-	      PARAMS ((enum machine_mode, enum machine_mode));
+extern bool sh_cannot_change_mode_class
+	      PARAMS ((enum machine_mode, enum machine_mode, enum reg_class));
 extern void sh_mark_label PARAMS ((rtx, int));
 extern int sh_register_move_cost
   PARAMS ((enum machine_mode mode, enum reg_class, enum reg_class));

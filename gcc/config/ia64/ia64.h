@@ -1011,8 +1011,9 @@ enum reg_class
 /* In FP regs, we can't change FP values to integer values and vice
    versa, but we can change e.g. DImode to SImode.  */
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO) 	\
-  (GET_MODE_CLASS (FROM) != GET_MODE_CLASS (TO) ? FR_REGS : NO_REGS)
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) 	\
+  (GET_MODE_CLASS (FROM) != GET_MODE_CLASS (TO)		\
+   ? reg_classes_intersect_p (CLASS, FR_REGS) : 0)
 
 /* A C expression that defines the machine-dependent operand constraint
    letters (`I', `J', `K', .. 'P') that specify particular ranges of

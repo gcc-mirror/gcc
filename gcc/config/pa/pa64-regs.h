@@ -240,9 +240,9 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
    we inhibit changes from SImode unless they are to a mode that is
    identical in size.  */
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO)			\
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
   ((FROM) == SImode && GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)       \
-   ? FP_REGS : NO_REGS)
+   ? reg_classes_intersect_p (CLASS, FP_REGS) : 0)
 
 /* Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression

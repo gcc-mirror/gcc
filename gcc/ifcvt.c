@@ -1178,7 +1178,16 @@ noce_try_cmove_arith (if_info)
           tmp = gen_reg_rtx (GET_MODE (b));
 	  tmp = emit_insn (gen_rtx_SET (VOIDmode, tmp, b));
 	}
-      else if (! insn_b)
+      else if (! insn_b
+#if 0
+	       /* In the case we are going to duplicate insn originally
+		  present in the front of comparsion, verify that the
+		  comparsion didn't clobbered the operands.  */
+	       || modified_between_p (SET_SRC (single_set (insn_b)),
+				      if_info->cond_earliest,
+				      NEXT_INSN (if_info->jump)))
+#endif
+	      )
 	goto end_seq_and_fail;
       else
 	{
