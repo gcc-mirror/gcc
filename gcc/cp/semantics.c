@@ -127,17 +127,24 @@ finish_expr_stmt (expr)
   if (expr != NULL_TREE)
     {
       if (building_stmt_tree ())
-	add_tree (build_min_nt (EXPR_STMT, expr));
+	{
+	  /* Do default conversion if safe and possibly important,
+	     in case within ({...}).  */
+	  if (!processing_template_decl
+	      && !stmts_are_full_exprs_p
+	      && ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
+		   && lvalue_p (expr))
+		  || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE))
+	    expr = default_conversion (expr);
+
+	  if (!processing_template_decl)
+	    expr = break_out_cleanups (expr);
+
+	  add_tree (build_min_nt (EXPR_STMT, expr));
+	}
       else
 	{
 	  emit_line_note (input_filename, lineno);
-	  /* Do default conversion if safe and possibly important,
-	     in case within ({...}).  */
-	  if (!stmts_are_full_exprs_p &&
-	      ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
-	        && lvalue_p (expr))
-	       || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE))
-	    expr = default_conversion (expr);
 
 	  if (stmts_are_full_exprs_p)
 	    expand_start_target_temps ();
