@@ -116,6 +116,11 @@ int current_function_calls_longjmp;
 
 int current_function_has_nonlocal_label;
 
+/* Nonzero if function being compiled has nonlocal gotos to parent
+   function.  */
+
+int current_function_has_nonlocal_goto;
+
 /* Nonzero if function being compiled contains nested functions.  */
 
 int current_function_contains_functions;
@@ -404,6 +409,7 @@ push_function_context ()
   p->calls_longjmp = current_function_calls_longjmp;
   p->calls_alloca = current_function_calls_alloca;
   p->has_nonlocal_label = current_function_has_nonlocal_label;
+  p->has_nonlocal_goto = current_function_has_nonlocal_goto;
   p->args_size = current_function_args_size;
   p->pretend_args_size = current_function_pretend_args_size;
   p->arg_offset_rtx = current_function_arg_offset_rtx;
@@ -465,6 +471,7 @@ pop_function_context ()
   current_function_calls_longjmp = p->calls_longjmp;
   current_function_calls_alloca = p->calls_alloca;
   current_function_has_nonlocal_label = p->has_nonlocal_label;
+  current_function_has_nonlocal_goto = p->has_nonlocal_goto;
   current_function_contains_functions = 1;
   current_function_args_size = p->args_size;
   current_function_pretend_args_size = p->pretend_args_size;
@@ -4311,6 +4318,7 @@ init_function_start (subr, filename, line)
 
   current_function_calls_alloca = 0;
   current_function_has_nonlocal_label = 0;
+  current_function_has_nonlocal_goto = 0;
   current_function_contains_functions = 0;
 
   current_function_returns_pcc_struct = 0;
