@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: PowerPC version  -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _GLIBCXX_ATOMICITY_H
-#define _GLIBCXX_ATOMICITY_H	1
+#include <bits/atomicity.h>
 
 #ifdef __PPC405__
 #define _STWCX "sync \n\tstwcx. "
@@ -36,43 +35,42 @@
 #define _STWCX "stwcx. "
 #endif
 
-typedef int _Atomic_word;
-
-static inline _Atomic_word
-__attribute__ ((__unused__))
-__exchange_and_add(volatile _Atomic_word* __mem, int __val)
+namespace __gnu_cxx
 {
-  _Atomic_word __tmp, __res;
-  __asm__ __volatile__ (
-	"/* Inline exchange & add */\n"
-	"0:\t"
-	"lwarx    %0,0,%3 \n\t"
-	"add%I4   %1,%0,%4 \n\t"
-	_STWCX "  %1,0,%3 \n\t"
-	"bne-     0b \n\t"
-	"/* End exchange & add */"
-	: "=&b"(__res), "=&r"(__tmp), "=m" (*__mem)
-	: "r" (__mem), "Ir"(__val), "m" (*__mem)
-	: "cr0");
-  return __res;
-}
-
-static inline void
-__attribute__ ((__unused__))
-__atomic_add(volatile _Atomic_word* __mem, int __val)
-{
-  _Atomic_word __tmp;
-  __asm__ __volatile__ (
-	"/* Inline atomic add */\n"
-	"0:\t"
-	"lwarx    %0,0,%2 \n\t"
-	"add%I3   %0,%0,%3 \n\t"
-	_STWCX "  %0,0,%2 \n\t"
-	"bne-     0b \n\t"
-	"/* End atomic add */"
-	: "=&b"(__tmp), "=m" (*__mem)
-	: "r" (__mem), "Ir"(__val), "m" (*__mem)
-	: "cr0");
-}
-
-#endif /* atomicity.h */
+  _Atomic_word
+  __attribute__ ((__unused__))
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  {
+    _Atomic_word __tmp, __res;
+    __asm__ __volatile__ (
+			  "/* Inline exchange & add */\n"
+			  "0:\t"
+			  "lwarx    %0,0,%3 \n\t"
+			  "add%I4   %1,%0,%4 \n\t"
+			  _STWCX "  %1,0,%3 \n\t"
+			  "bne-     0b \n\t"
+			  "/* End exchange & add */"
+			  : "=&b"(__res), "=&r"(__tmp), "=m" (*__mem)
+			  : "r" (__mem), "Ir"(__val), "m" (*__mem)
+			  : "cr0");
+    return __res;
+  }
+  
+  void
+  __attribute__ ((__unused__))
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  {
+    _Atomic_word __tmp;
+    __asm__ __volatile__ (
+			  "/* Inline atomic add */\n"
+			  "0:\t"
+			  "lwarx    %0,0,%2 \n\t"
+			  "add%I3   %0,%0,%3 \n\t"
+			  _STWCX "  %0,0,%2 \n\t"
+			  "bne-     0b \n\t"
+			  "/* End atomic add */"
+			  : "=&b"(__tmp), "=m" (*__mem)
+			  : "r" (__mem), "Ir"(__val), "m" (*__mem)
+			  : "cr0");
+  }
+} // namespace __gnu_cxx

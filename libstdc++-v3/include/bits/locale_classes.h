@@ -400,12 +400,12 @@ namespace std
   private:
     inline void
     _M_add_reference() const throw()
-    { __atomic_add(&_M_refcount, 1); }
+    { __gnu_cxx::__atomic_add(&_M_refcount, 1); }
 
     inline void
     _M_remove_reference() const throw()
     {
-      if (__exchange_and_add(&_M_refcount, -1) == 1)
+      if (__gnu_cxx::__exchange_and_add(&_M_refcount, -1) == 1)
 	{
 	  try
 	    { delete this; }
@@ -505,12 +505,12 @@ namespace std
 
     inline void
     _M_add_reference() throw()
-    { __atomic_add(&_M_refcount, 1); }
+    { __gnu_cxx::__atomic_add(&_M_refcount, 1); }
 
     inline void
     _M_remove_reference() throw()
     {
-      if (__exchange_and_add(&_M_refcount, -1) == 1)
+      if (__gnu_cxx::__exchange_and_add(&_M_refcount, -1) == 1)
 	{
 	  try
 	    { delete this; }

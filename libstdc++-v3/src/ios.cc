@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -138,7 +138,7 @@ namespace std
     // Implementation note: Initialize top to zero to ensure that
     // initialization occurs before main() is started.
     static _Atomic_word _S_top = 0; 
-    return __exchange_and_add(&_S_top, 1) + 4;
+    return __gnu_cxx::__exchange_and_add(&_S_top, 1) + 4;
   }
 
   void 

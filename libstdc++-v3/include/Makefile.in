@@ -42,7 +42,8 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AR = @AR@
 AS = @AS@
-ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
+ATOMICITY_SRCDIR = @ATOMICITY_SRCDIR@
+ATOMIC_WORD_SRCDIR = @ATOMIC_WORD_SRCDIR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -287,6 +288,7 @@ bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
 	${bits_srcdir}/allocator.h \
+	${bits_srcdir}/atomicity.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
@@ -524,9 +526,9 @@ debug_headers = \
 # For --enable-cheaders=c_std
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_base_headers_extra = ${c_base_srcdir}/cmath.tcc
 @GLIBCXX_C_HEADERS_C_STD_FALSE@c_base_headers_extra = 
+@GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
 @GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE@c_compatibility_headers_extra = ${c_compatibility_headers}
-@GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
 host_srcdir = ${glibcxx_srcdir}/$(OS_INC_SRCDIR)
 host_builddir = ./${host_alias}/bits
@@ -535,7 +537,7 @@ host_headers = \
 	${host_srcdir}/ctype_inline.h \
 	${host_srcdir}/ctype_noninline.h \
 	${host_srcdir}/os_defines.h \
-	${glibcxx_srcdir}/$(ATOMICITY_INC_SRCDIR)/atomicity.h 
+	${glibcxx_srcdir}/$(ATOMIC_WORD_SRCDIR)/atomic_word.h 
 
 
 # Non-installed host_header files.
