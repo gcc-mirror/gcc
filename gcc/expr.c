@@ -4634,6 +4634,7 @@ expand_expr (exp, target, tmode, modifier)
 	   or copied into our original target.  */
 
 	tree slot = TREE_OPERAND (exp, 0);
+	tree exp1;
 
 	if (TREE_CODE (slot) != VAR_DECL)
 	  abort ();
@@ -4643,9 +4644,10 @@ expand_expr (exp, target, tmode, modifier)
 	    if (DECL_RTL (slot) != 0)
 	      {
 		target = DECL_RTL (slot);
-		/* We have already expanded the slot, so don't do
+		/* If we have already expanded the slot, so don't do
 		   it again.  (mrs)  */
-		return target;
+		if (TREE_OPERAND (exp, 1) == NULL_TREE)
+		  return target;
 	      }
 	    else
 	      {
@@ -4689,7 +4691,11 @@ expand_expr (exp, target, tmode, modifier)
 	    DECL_RTL (slot) = target;
 	  }
 
-	return expand_expr (TREE_OPERAND (exp, 1), target, tmode, modifier);
+	exp1 = TREE_OPERAND (exp, 1);
+	/* Mark it as expanded.  */
+	TREE_OPERAND (exp, 1) = NULL_TREE;
+
+	return expand_expr (exp1, target, tmode, modifier);
       }
 
     case INIT_EXPR:
