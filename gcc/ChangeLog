@@ -1,3 +1,8 @@
+2004-08-02  Ben Elliston  <bje@au.ibm.com>
+
+	PR target/16155
+	* config/rs6000/altivec.h: Replace typeof with __typeof__.
+
 2004-08-01  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (expand_expr_real_1) <normal_inner_ref>: Fix crash with

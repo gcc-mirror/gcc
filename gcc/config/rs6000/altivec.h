@@ -311,7 +311,7 @@ struct __vec_step_help<vector float>
   static const int _S_elem = 4;
 };
 
-#define vec_step(t)  __vec_step_help<typeof(t)>::_S_elem
+#define vec_step(t)  __vec_step_help<__typeof__(t)>::_S_elem
 
 /* vec_abs */
 
@@ -8313,31 +8313,31 @@ vec_any_out (vector float a1, vector float a2)
 /* Helper macros.  */
 
 #define __un_args_eq(xtype, x)						\
-	__builtin_types_compatible_p (xtype, typeof (x))
+	__builtin_types_compatible_p (xtype, __typeof__ (x))
 
 #define __bin_args_eq(xtype, x, ytype, y)				\
-	(__builtin_types_compatible_p (xtype, typeof (x))		\
-	 && __builtin_types_compatible_p (ytype, typeof (y)))
+	(__builtin_types_compatible_p (xtype, __typeof__ (x))		\
+	 && __builtin_types_compatible_p (ytype, __typeof__ (y)))
 
 #define __tern_args_eq(xtype, x, ytype, y, ztype, z)                    \
-        (__builtin_types_compatible_p (xtype, typeof (x))               \
-         && __builtin_types_compatible_p (ytype, typeof (y))		\
-	 && __builtin_types_compatible_p (ztype, typeof (z)))
+        (__builtin_types_compatible_p (xtype, __typeof__ (x))               \
+         && __builtin_types_compatible_p (ytype, __typeof__ (y))		\
+	 && __builtin_types_compatible_p (ztype, __typeof__ (z)))
 
 #define __ch(x, y, z)	__builtin_choose_expr (x, y, z)
 
 #define vec_step(t) \
-  __ch (__builtin_types_compatible_p (typeof (t), vector signed int), 4,      \
-  __ch (__builtin_types_compatible_p (typeof (t), vector unsigned int), 4,    \
-  __ch (__builtin_types_compatible_p (typeof (t), vector bool int), 4,        \
-  __ch (__builtin_types_compatible_p (typeof (t), vector signed short), 8,    \
-  __ch (__builtin_types_compatible_p (typeof (t), vector unsigned short), 8,  \
-  __ch (__builtin_types_compatible_p (typeof (t), vector bool short), 8,      \
-  __ch (__builtin_types_compatible_p (typeof (t), vector pixel), 8,           \
-  __ch (__builtin_types_compatible_p (typeof (t), vector signed char), 16,    \
-  __ch (__builtin_types_compatible_p (typeof (t), vector unsigned char), 16,  \
-  __ch (__builtin_types_compatible_p (typeof (t), vector bool char), 16,      \
-  __ch (__builtin_types_compatible_p (typeof (t), vector float), 4,           \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector signed int), 4,      \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector unsigned int), 4,    \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector bool int), 4,        \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector signed short), 8,    \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector unsigned short), 8,  \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector bool short), 8,      \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector pixel), 8,           \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector signed char), 16,    \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector unsigned char), 16,  \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector bool char), 16,      \
+  __ch (__builtin_types_compatible_p (__typeof__ (t), vector float), 4,           \
   __builtin_altivec_compiletime_error ("vec_step"))))))))))))
 
 #define vec_abs(a) \
