@@ -1,3 +1,9 @@
+2003-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (dwarf2out_finish): Add AT_comp_dir
+	attribute even if input file name is absolute, but one of the
+	includes is relative.
+
 2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/gcc.texi, doc/gccint.texi, doc/gcov.texi,
