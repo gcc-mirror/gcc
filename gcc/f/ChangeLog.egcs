@@ -1,3 +1,7 @@
+Mon Dec 15 16:38:52 1997  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ffecom_type_vardesc_): Vardesc.dims is a `ftnlen*'.
+
 Fri Nov 21 09:35:20 1997  Fred Fish  <fnf@cygnus.com>
 
 	* Make-lang.in (stmp-f2c.h): Move inclusion of F77_FLAGS_TO_PASS
