@@ -53,8 +53,6 @@ Mon Nov 22 22:58:01 1999  "R. Kelley Cook" <KelleyCook@attglobal.net>
 	(reverse_die_lists): New fn.
 	(add_sibling_attributes): Use it.
 	(push_decl_scope): Reorganize.
-	(gen_struct_or_union_type_die): Don't add a DW_AT_containing_type 
-	that points to ourself.
 	(add_name_and_src_coords_attributes): Don't set file and line for
 	an artificial decl.
 	(gen_subprogram_die): An artificial function doesn't need to match
