@@ -1,3 +1,7 @@
+Sun Dec 26 07:48:20 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (fold_truthop): Properly check for FP RHS.
+
 1999-12-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* toplev.h (note_deferall_of_defined_inline_function): Declare.
