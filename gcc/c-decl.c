@@ -2681,7 +2681,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 
   pending_invalid_xref = 0;
 
-  if (declspecs->type && !declspecs->typedef_decl)
+  if (declspecs->type && !declspecs->typedef_p)
     {
       tree value = declspecs->type;
       enum tree_code code = TREE_CODE (value);
@@ -2724,7 +2724,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	    }
 	}
     }
-  else if (warned != 1 && !in_system_header && declspecs->typedef_decl)
+  else if (warned != 1 && !in_system_header && declspecs->typedef_p)
     {
       pedwarn ("useless type name in empty declaration");
       warned = 1;
@@ -3666,9 +3666,7 @@ grokdeclarator (const struct c_declarator *declarator,
     decl_context = PARM;
 
   if (declspecs->deprecated_p && deprecated_state != DEPRECATED_SUPPRESS)
-    warn_deprecated_use (declspecs->typedef_decl
-			 ? declspecs->typedef_decl
-			 : declspecs->type);
+    warn_deprecated_use (declspecs->type);
 
   typedef_type = type;
   if (type)
@@ -3782,8 +3780,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	      || declspecs->explicit_char_p
 	      /* A typedef for plain `int' without `signed'
 		 can be controlled just like plain `int'.  */
-	      || ! (declspecs->typedef_decl != 0
-		    && C_TYPEDEF_EXPLICITLY_SIGNED (declspecs->typedef_decl)))
+	      || !declspecs->typedef_signed_p)
 	  && TREE_CODE (type) != ENUMERAL_TYPE
 	  && !(specbits & 1 << (int) RID_SIGNED)))
     {
@@ -3795,7 +3792,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	type = short_unsigned_type_node;
       else if (type == char_type_node)
 	type = unsigned_char_type_node;
-      else if (declspecs->typedef_decl)
+      else if (declspecs->typedef_p)
 	type = c_common_unsigned_type (type);
       else
 	type = unsigned_type_node;
@@ -4352,8 +4349,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	type = c_build_qualified_type (type, type_quals);
       decl = build_decl (TYPE_DECL, declarator->u.id, type);
       if ((specbits & (1 << (int) RID_SIGNED))
-	  || (declspecs->typedef_decl
-	      && C_TYPEDEF_EXPLICITLY_SIGNED (declspecs->typedef_decl)))
+	  || declspecs->typedef_signed_p)
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
       decl_attributes (&decl, returned_attrs, 0);
       return decl;
@@ -5099,7 +5095,7 @@ grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
       if (type
 	  && (TREE_CODE (type) == RECORD_TYPE
 	      || TREE_CODE (type) == UNION_TYPE)
-	  && (flag_ms_extensions || !declspecs->typedef_decl))
+	  && (flag_ms_extensions || !declspecs->typedef_p))
 	{
 	  if (flag_ms_extensions)
 	    ; /* ok */
@@ -6728,11 +6724,12 @@ build_null_declspecs (void)
 {
   struct c_declspecs *ret = XOBNEW (&parser_obstack, struct c_declspecs);
   ret->type = 0;
-  ret->typedef_decl = 0;
   ret->decl_attr = 0;
   ret->attrs = 0;
   ret->specbits = 0;
   ret->non_sc_seen_p = false;
+  ret->typedef_p = false;
+  ret->typedef_signed_p = false;
   ret->deprecated_p = false;
   ret->explicit_int_p = false;
   ret->explicit_char_p = false;
@@ -6807,7 +6804,8 @@ declspecs_add_type (struct c_declspecs *specs, tree type)
 	{
 	  specs->type = TREE_TYPE (type);
 	  specs->decl_attr = DECL_ATTRIBUTES (type);
-	  specs->typedef_decl = type;
+	  specs->typedef_p = true;
+	  specs->typedef_signed_p = C_TYPEDEF_EXPLICITLY_SIGNED (type);
 	}
     }
   /* Built-in types come as identifiers.  */
