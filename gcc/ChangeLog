@@ -1,3 +1,16 @@
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
+	* config/h8300/h8300.c (SYMBOL_FLAG_FUNCVEC_FUNCTION): New.
+	(small_call_insn_operand): Use it.
+	(SYMBOL_FLAG_EIGHTBIT_DATA): New.
+	(h8300_eightbit_constant_address_p): Use it.
+	(SYMBOL_FLAG_TINY_DATA): New.
+	(h8300_tiny_constant_address_p): Use it.
+	(h8300_encode_label, h8300_strip_name_encoding): Remove.
+	(h8300_encode_section_info): Set SYMBOL_REF_FLAGS.
+	* config/h8300/h8300.h (TINY_DATA_NAME_P): Remove.
+	(ASM_OUTPUT_LABELREF): Remove.
+
 2003-04-16  Richard Henderson  <rth@redhat.com>
 
 	* config/frv/frv.c (symbol_ref_small_data_p): Remove.  Replace

@@ -1090,8 +1090,6 @@ struct cum_arg
     }						\
 }
 
-#define TINY_DATA_NAME_P(NAME) (*(NAME) == '&')
-
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
@@ -1121,9 +1119,6 @@ struct cum_arg
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION h8300_asm_named_section
-
-#define ASM_OUTPUT_LABELREF(FILE, NAME)  \
-  asm_fprintf ((FILE), "%U%s", (NAME) + (TINY_DATA_NAME_P (NAME) ? 1 : 0))
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)
 
