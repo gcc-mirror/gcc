@@ -263,20 +263,6 @@ static void hack_vms_include_specification ();
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
-/* Find the largest host integer type and set its size and type.  */
-
-#ifndef HOST_BITS_PER_WIDE_INT
-
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
-#endif
-
-#endif
-
 #ifndef S_ISREG
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
@@ -332,8 +318,8 @@ char *strerror ();
 #else	/* VMS */
 char *strerror (int,...);
 #endif
-int parse_escape PROTO((char **));
-HOST_WIDE_INT parse_c_expression PROTO((char *));
+long parse_escape PROTO((char **, long));
+long parse_c_expression PROTO((char *));
 
 #ifndef errno
 extern int errno;
@@ -1147,7 +1133,7 @@ static void delete_assertion PROTO((ASSERTION_HASHNODE *));
 
 static void do_once PROTO((void));
 
-static HOST_WIDE_INT eval_if_expression PROTO((U_CHAR *, int));
+static long eval_if_expression PROTO((U_CHAR *, int));
 static void conditional_skip PROTO((FILE_BUF *, int, enum node_type, U_CHAR *, FILE_BUF *));
 static void skip_if_group PROTO((FILE_BUF *, int, FILE_BUF *));
 static void validate_else PROTO((U_CHAR *));
@@ -5271,12 +5257,12 @@ pcfinclude (buf, limit, name, op)
 
     /* First skip to a longword boundary */
     /* ??? Why a 4-byte boundary?  On all machines? */
-    /* NOTE: This works correctly even if HOST_WIDE_INT
+    /* NOTE: This works correctly even if int
        is narrower than a pointer.
        Do not try risky measures here to get another type to use!
        Do not include stddef.h--it will fail!  */
-    if ((HOST_WIDE_INT) cp & 3)
-      cp += 4 - ((HOST_WIDE_INT) cp & 3);
+    if ((int) cp & 3)
+      cp += 4 - ((int) cp & 3);
     
     /* Now get the string. */
     str = (STRINGDEF *) (GENERIC_PTR) cp;
@@ -6584,7 +6570,7 @@ do_line (buf, limit, op, keyword)
       case '\\':
 	{
 	  char *bpc = (char *) bp;
-	  int c = parse_escape (&bpc);
+	  long c = parse_escape (&bpc, (long) (U_CHAR) (-1));
 	  bp = (U_CHAR *) bpc;
 	  if (c < 0)
 	    p--;
@@ -6906,7 +6892,7 @@ do_if (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword;
 {
-  HOST_WIDE_INT value;
+  long value;
   FILE_BUF *ip = &instack[indepth];
 
   value = eval_if_expression (buf, limit - buf);
@@ -6925,7 +6911,7 @@ do_elif (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword;
 {
-  HOST_WIDE_INT value;
+  long value;
   FILE_BUF *ip = &instack[indepth];
 
   if (if_stack == instack[indepth].if_stack) {
@@ -6961,14 +6947,14 @@ do_elif (buf, limit, op, keyword)
  * evaluate a #if expression in BUF, of length LENGTH,
  * then parse the result as a C expression and return the value as an int.
  */
-static HOST_WIDE_INT
+static long
 eval_if_expression (buf, length)
      U_CHAR *buf;
      int length;
 {
   FILE_BUF temp_obuf;
   HASHNODE *save_defined;
-  HOST_WIDE_INT value;
+  long value;
 
   save_defined = install ((U_CHAR *) "defined", -1, T_SPEC_DEFINED,
 			  NULL_PTR, -1);
