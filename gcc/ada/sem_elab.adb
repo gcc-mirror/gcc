@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.84 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -549,18 +549,26 @@ package body Sem_Elab is
             --  Loop to carefully follow renamings and derivations
             --  one step outside the current unit, but not further.
 
-            loop
+            if not Inst_Case
+              and then Present (Alias (Ent))
+            then
+               E_Scope := Alias (Ent);
+            else
                E_Scope := Ent;
+            end if;
+
+            loop
                while not Is_Compilation_Unit (E_Scope) loop
                   E_Scope := Scope (E_Scope);
                end loop;
 
                --  If E_Scope is the same as C_Scope, it means that there
-               --  definitely was a renaming or derivation, and we are
-               --  not yet out of the current unit.
+               --  definitely was a local renaming or derivation, and we
+               --  are not yet out of the current unit.
 
                exit when E_Scope /= C_Scope;
                Ent := Alias (Ent);
+               E_Scope := Ent;
             end loop;
          end if;
 
