@@ -13434,6 +13434,13 @@ ix86_expand_binop_builtin (icode, arglist, target)
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
 
+  if (GET_MODE (op1) == SImode && mode1 == TImode)
+    {
+      rtx x = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_loadd (x, op1));
+      op1 = gen_lowpart (TImode, x);
+    }
+
   /* In case the insn wants input operands in modes different from
      the result, abort.  */
   if (GET_MODE (op0) != mode0 || GET_MODE (op1) != mode1)
