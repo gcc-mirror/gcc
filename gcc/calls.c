@@ -848,8 +848,8 @@ expand_call (exp, target, ignore)
     abort ();
   funtype = TREE_TYPE (funtype);
 
-  /* Push the temporary stack slot level so that we can free temporaries used
-     by each of the arguments separately.  */
+  /* Push the temporary stack slot level so that we can free any temporaries
+     we make.  */
   push_temp_slots ();
 
   /* Start updating where the next arg would go.  */
@@ -1266,6 +1266,8 @@ expand_call (exp, target, ignore)
 	|| (must_preallocate && (args_size.var != 0 || args_size.constant != 0)
 	    && calls_function (args[i].tree_value, 0)))
       {
+	push_temp_slots ();
+
 	args[i].initial_value = args[i].value
 	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
 
@@ -1274,8 +1276,7 @@ expand_call (exp, target, ignore)
 	  args[i].value = convert_to_mode (args[i].mode, args[i].value,
 					   args[i].unsignedp);
 	preserve_temp_slots (args[i].value);
-
-	free_temp_slots ();
+	pop_temp_slots ();
 
 	/* ANSI doesn't require a sequence point here,
 	   but PCC has one, so this will avoid some problems.  */
@@ -1514,8 +1515,9 @@ expand_call (exp, target, ignore)
   else
     /* Generate an rtx (probably a pseudo-register) for the address.  */
     {
+      push_temp_slots ();
       funexp = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
-      free_temp_slots ();	/* FUNEXP can't be BLKmode */
+      pop_temp_slots ();	/* FUNEXP can't be BLKmode */
       emit_queue ();
     }
 
@@ -1541,10 +1543,11 @@ expand_call (exp, target, ignore)
 
 	if (args[i].value == 0)
 	  {
+	    push_temp_slots ();
 	    args[i].value = expand_expr (args[i].tree_value, NULL_RTX,
 					 VOIDmode, 0);
 	    preserve_temp_slots (args[i].value);
-	    free_temp_slots ();
+	    pop_temp_slots ();
 
 	    /* ANSI doesn't require a sequence point here,
 	       but PCC has one, so this will avoid some problems.  */
@@ -2776,6 +2779,10 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
   if (TREE_CODE (pval) == ERROR_MARK)
     return;
 
+  /* Push a new temporary level for any temporaries we make for
+     this argument.  */
+  push_temp_slots ();
+
 #ifdef ACCUMULATE_OUTGOING_ARGS
   /* If this is being stored into a pre-allocated, fixed-size, stack area,
      save any previous data at that location.  */
@@ -2822,6 +2829,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	    {
 	      arg->save_area = assign_stack_temp (BLKmode,
 						  arg->size.constant, 1);
+	      preserve_temp_slots (arg->save_area);
 	      emit_block_move (validize_mem (arg->save_area), stack_area,
 			       GEN_INT (arg->size.constant),
 			       PARM_BOUNDARY / BITS_PER_UNIT);
@@ -3000,6 +3008,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 
   /* Free any temporary slots made in processing this argument.  */
   free_temp_slots ();
+  pop_temp_slots ();
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
   /* Now mark the segment we just used.  */
