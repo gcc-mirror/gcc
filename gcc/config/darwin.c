@@ -97,9 +97,8 @@ name_needs_quotes (const char *name)
 static int
 machopic_symbol_defined_p (rtx sym_ref)
 {
-  return ((SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_DEFINED)
-	  /* Local symbols must always be defined.  */
-	  || SYMBOL_REF_LOCAL_P (sym_ref));
+  return (SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_DEFINED)
+    || (SYMBOL_REF_LOCAL_P (sym_ref) && ! SYMBOL_REF_EXTERNAL_P (sym_ref));
 }
 
 /* This module assumes that (const (symbol_ref "foo")) is a legal pic
@@ -874,7 +873,8 @@ machopic_output_indirection (void **slot, void *data)
       machopic_output_stub (asm_out_file, sym, stub);    
     }
   else if (! indirect_data (symbol)
-	   && machopic_symbol_defined_p (symbol))
+	   && (machopic_symbol_defined_p (symbol)
+	       || SYMBOL_REF_LOCAL_P (symbol)))
     {
       data_section ();
       assemble_align (GET_MODE_ALIGNMENT (Pmode));
