@@ -1,7 +1,7 @@
 Sun Jan 18 20:01:37 1998  Toon Moene  <toon@moene.indiv.nluug.nl>
 
-	* f_back (f/runtime/libI77/backspace.c): use type `uiolen'
-	to determine size of record length specifier.
+	* libI77/backspace.c: (f_back): Use type `uiolen' to determine size
+	of record length specifier.
 
 Sat Jan 17 22:40:31 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
