@@ -4410,9 +4410,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
   /* If we have an indexed stack slot, there are three possible reasons why
      it might be invalid: The index might need to be reloaded, the address
      might have been made by frame pointer elimination and hence have a
-     constant out of range, or the address is the result of register
-     elimination and (plus (plus reg reg) const), which has been
-     canonicalized from (plus (plus reg const) reg), isn't a valid address.
+     constant out of range, or both reasons might apply.  
 
      We can easily check for an index needing reload, but even if that is the
      case, we might also have an invalid constant.  To avoid making the
@@ -4439,11 +4437,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
      innermost PLUS.  */
 
   else if (GET_CODE (ad) == PLUS && GET_CODE (XEXP (ad, 1)) == CONST_INT
-	   && (GET_CODE (XEXP (ad, 0)) == PLUS
-	       /* MINUS can happen as a result of register elimination of
-		  (minus eliminable reg) which gets canonicalized as
-		  (plus (minus reg reg) const).  */
-	       || GET_CODE (XEXP (ad, 0)) == MINUS)
+	   && GET_CODE (XEXP (ad, 0)) == PLUS
 	   && (XEXP (XEXP (ad, 0), 0) == frame_pointer_rtx
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
 	       || XEXP (XEXP (ad, 0), 0) == hard_frame_pointer_rtx
@@ -4454,7 +4448,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 	       || XEXP (XEXP (ad, 0), 0) == stack_pointer_rtx)
 	   && ! memory_address_p (mode, ad))
     {
-      *loc = ad = gen_rtx (GET_CODE (XEXP (ad, 0)), GET_MODE (ad),
+      *loc = ad = gen_rtx (PLUS, GET_MODE (ad),
 			   plus_constant (XEXP (XEXP (ad, 0), 0),
 					  INTVAL (XEXP (ad, 1))),
 			   XEXP (XEXP (ad, 0), 1));
