@@ -2467,7 +2467,9 @@ asm_operand:
 	  STRING '(' expr ')'
 		{ $$ = build_tree_list (build_tree_list (NULL_TREE, $1), $3); }
 	| '[' identifier ']' STRING '(' expr ')'
-		{ $$ = build_tree_list (build_tree_list ($2, $4), $6); }
+		{ $2 = build_string (IDENTIFIER_LENGTH ($2),
+				     IDENTIFIER_POINTER ($2));
+		  $$ = build_tree_list (build_tree_list ($2, $4), $6); }
 	;
 
 asm_clobbers:

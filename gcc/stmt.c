@@ -2034,7 +2034,7 @@ check_unique_operand_names (outputs, inputs)
 	continue;
 
       for (j = TREE_CHAIN (i); j ; j = TREE_CHAIN (j))
-	if (i_name == TREE_PURPOSE (TREE_PURPOSE (j)))
+	if (simple_cst_equal (i_name, TREE_PURPOSE (TREE_PURPOSE (j))))
 	  goto failure;
     }
 
@@ -2045,10 +2045,10 @@ check_unique_operand_names (outputs, inputs)
 	continue;
 
       for (j = TREE_CHAIN (i); j ; j = TREE_CHAIN (j))
-	if (i_name == TREE_PURPOSE (TREE_PURPOSE (j)))
+	if (simple_cst_equal (i_name, TREE_PURPOSE (TREE_PURPOSE (j))))
 	  goto failure;
       for (j = outputs; j ; j = TREE_CHAIN (j))
-	if (i_name == TREE_PURPOSE (TREE_PURPOSE (j)))
+	if (simple_cst_equal (i_name, TREE_PURPOSE (TREE_PURPOSE (j))))
 	  goto failure;
     }
 
@@ -2056,7 +2056,7 @@ check_unique_operand_names (outputs, inputs)
 
  failure:
   error ("duplicate asm operand name '%s'",
-	 IDENTIFIER_POINTER (TREE_PURPOSE (TREE_PURPOSE (i))));
+	 TREE_STRING_POINTER (TREE_PURPOSE (TREE_PURPOSE (i))));
   return false;
 }
 
@@ -2150,20 +2150,20 @@ resolve_operand_name_1 (p, outputs, inputs)
   /* Resolve the name to a number.  */
   for (op = 0, t = outputs; t ; t = TREE_CHAIN (t), op++)
     {
-      tree id = TREE_PURPOSE (TREE_PURPOSE (t));
-      if (id)
+      tree name = TREE_PURPOSE (TREE_PURPOSE (t));
+      if (name)
 	{
-	  const char *c = IDENTIFIER_POINTER (id);
+	  const char *c = TREE_STRING_POINTER (name);
 	  if (strncmp (c, p + 1, len) == 0 && c[len] == '\0')
 	    goto found;
 	}
     }
   for (t = inputs; t ; t = TREE_CHAIN (t), op++)
     {
-      tree id = TREE_PURPOSE (TREE_PURPOSE (t));
-      if (id)
+      tree name = TREE_PURPOSE (TREE_PURPOSE (t));
+      if (name)
 	{
-	  const char *c = IDENTIFIER_POINTER (id);
+	  const char *c = TREE_STRING_POINTER (name);
 	  if (strncmp (c, p + 1, len) == 0 && c[len] == '\0')
 	    goto found;
 	}
