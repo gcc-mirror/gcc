@@ -868,7 +868,8 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 #else
 		asm_fprintf (stream, "\tmovel %s@(-%wd,%Ra1:l),%s\n",
 			     reg_names[FRAME_POINTER_REGNUM],
-			     offset);
+			     offset,
+			     reg_names[i]);
 #endif
 	      }
             else if (restore_from_sp)

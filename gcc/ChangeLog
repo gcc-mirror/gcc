@@ -1,3 +1,8 @@
+2003-10-18  Gunther Nikl  <gni@gecko.de>
+
+	* config/m68k/m68k.c (m68k_output_function_epilogue): Add missing
+	argument to asm_fprintf statement.
+
 2003-10-18  Fariborz Jahanian  <fjahanian@apple.com>
 
         * rs6000.md: Separate TARGET_POWERPC64 patterns for TARGET_64BIT or TARGET_32BIT.
