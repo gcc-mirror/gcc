@@ -278,130 +278,6 @@ int adding_implicit_members = 0;
 bool have_extern_spec;
 
 
-/* For each binding contour we allocate a binding_level structure
-   which records the names defined in that contour.
-   Contours include:
-    0) the global one
-    1) one for each function definition,
-       where internal declarations of the parameters appear.
-    2) one for each compound statement,
-       to record its declarations.
-
-   The current meaning of a name can be found by searching the levels
-   from the current one out to the global one.
-
-   Off to the side, may be the class_binding_level.  This exists only
-   to catch class-local declarations.  It is otherwise nonexistent.
-
-   Also there may be binding levels that catch cleanups that must be
-   run when exceptions occur.  Thus, to see whether a name is bound in
-   the current scope, it is not enough to look in the
-   CURRENT_BINDING_LEVEL.  You should use lookup_name_current_level
-   instead.  */
-
-/* Note that the information in the `names' component of the global contour
-   is duplicated in the IDENTIFIER_GLOBAL_VALUEs of all identifiers.  */
-
-struct cp_binding_level GTY(())
-  {
-    /* A chain of _DECL nodes for all variables, constants, functions,
-       and typedef types.  These are in the reverse of the order
-       supplied.  There may be OVERLOADs on this list, too, but they
-       are wrapped in TREE_LISTs; the TREE_VALUE is the OVERLOAD.  */
-    tree names;
-
-    /* Count of elements in names chain.  */
-    size_t names_size;
-
-    /* A chain of NAMESPACE_DECL nodes.  */
-    tree namespaces;
-
-    /* An array of static functions and variables (for namespaces only) */
-    varray_type static_decls;
-
-    /* A chain of VTABLE_DECL nodes.  */
-    tree vtables; 
-
-    /* A dictionary for looking up user-defined-types.  */
-    binding_table type_decls;
-
-    /* A list of USING_DECL nodes.  */
-    tree usings;
-
-    /* A list of used namespaces. PURPOSE is the namespace,
-       VALUE the common ancestor with this binding_level's namespace.  */
-    tree using_directives;
-
-    /* If this binding level is the binding level for a class, then
-       class_shadowed is a TREE_LIST.  The TREE_PURPOSE of each node
-       is the name of an entity bound in the class.  The TREE_TYPE is
-       the DECL bound by this name in the class.  */
-    tree class_shadowed;
-
-    /* Similar to class_shadowed, but for IDENTIFIER_TYPE_VALUE, and
-       is used for all binding levels. In addition the TREE_VALUE is the
-       IDENTIFIER_TYPE_VALUE before we entered the class.  */
-    tree type_shadowed;
-
-    /* A TREE_LIST.  Each TREE_VALUE is the LABEL_DECL for a local
-       label in this scope.  The TREE_PURPOSE is the previous value of
-       the IDENTIFIER_LABEL VALUE.  */
-    tree shadowed_labels;
-
-    /* For each level (except not the global one),
-       a chain of BLOCK nodes for all the levels
-       that were entered and exited one level down.  */
-    tree blocks;
-
-    /* The entity (namespace, class, function) the scope of which this
-       binding contour corresponds to.  Otherwise NULL.  */
-    tree this_entity;
-
-    /* The binding level which this one is contained in (inherits from).  */
-    struct cp_binding_level *level_chain;
-
-    /* List of VAR_DECLS saved from a previous for statement.
-       These would be dead in ISO-conforming code, but might
-       be referenced in ARM-era code.  These are stored in a
-       TREE_LIST; the TREE_VALUE is the actual declaration.  */
-    tree dead_vars_from_for;
-
-    /* Binding depth at which this level began.  */
-    int binding_depth;
-
-    /* The kind of scope that this object represents.  However, a
-       SK_TEMPLATE_SPEC scope is represented with KIND set to
-       SK_TEMPALTE_PARMS and EXPLICIT_SPEC_P set to true.  */
-    enum scope_kind kind : 4;
-
-    /* True if this scope is an SK_TEMPLATE_SPEC scope.  This field is
-       only valid if KIND == SK_TEMPLATE_PARMS.  */
-    bool explicit_spec_p : 1;
-
-    /* true means make a BLOCK for this level regardless of all else.  */
-    unsigned keep : 1;
-
-    /* Nonzero if this level can safely have additional
-       cleanup-needing variables added to it.  */
-    unsigned more_cleanups_ok : 1;
-    unsigned have_cleanups : 1;
-
-    /* 22 bits left to fill a 32-bit word.  */
-  };
-
-#define NULL_BINDING_LEVEL ((struct cp_binding_level *) NULL)
-
-/* The binding level currently in effect.  */
-
-#define current_binding_level			\
-  (*(cfun && cp_function_chain->bindings	\
-   ? &cp_function_chain->bindings		\
-   : &scope_chain->bindings))
-
-/* The binding level of the current class, if any.  */
-
-#define class_binding_level scope_chain->class_bindings
-
 /* A chain of binding_level structures awaiting reuse.  */
 
 static GTY((deletable (""))) struct cp_binding_level *free_binding_level;
@@ -6055,8 +5931,7 @@ cxx_init_decl_processing (void)
   push_to_top_level ();
 
   current_function_decl = NULL_TREE;
-  current_binding_level = NULL_BINDING_LEVEL;
-  free_binding_level = NULL_BINDING_LEVEL;
+  current_binding_level = NULL;
   /* Enter the global namespace.  */
   my_friendly_assert (global_namespace == NULL_TREE, 375);
   global_namespace = build_lang_decl (NAMESPACE_DECL, global_scope_name,

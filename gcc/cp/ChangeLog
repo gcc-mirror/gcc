@@ -1,5 +1,12 @@
 2003-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* decl.c (struct cp_binding_level): Move to name-lookup.h
+	(current_binding_level): Likewise.
+	(class_binding_level): Likewise.
+	* cp-tree.h (enum scope_kind): Likewise.
+
+2003-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* name-lookup.c (binding_entry_free): Nullify name and type
 	fields. 
 
