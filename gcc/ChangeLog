@@ -1,3 +1,12 @@
+Sat Aug 25 23:07:35 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (expensive_function_p): New.
+	* rtl.h (expensive_function_p): Declare.
+	* i386.c (FAST_PROLOGUE_INSN_COUNT): New constant.
+	(use_fast_prologue_epilogue): New static variable.
+	(expand_prologue): Set it; emit short prologues if unset.
+	(expand_epilogue): Likewise.
+
 2001-08-22  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config.gcc: Add stormy16-*-elf case.

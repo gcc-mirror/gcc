@@ -2028,4 +2028,5 @@ extern void if_convert			PARAMS ((int));
 
 /* In predict.c */
 extern void invert_br_probabilities	PARAMS ((rtx));
+extern bool expensive_function_p	PARAMS ((int));
 #endif /* ! GCC_RTL_H */
