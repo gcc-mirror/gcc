@@ -38,54 +38,33 @@
 //   __set_testsuite_memlimit() uses setrlimit() to restrict dynamic memory
 //   allocation.  We provide a default memory limit if none is passed by the
 //   calling application.  The argument to __set_testsuite_memlimit() is the
-//   limit in megabytes (a floating-point number).  If NO_MEM_LIMITS is
+//   limit in megabytes (a floating-point number).  If _GLIBCPP_MEM_LIMITS is
 //   #defined before including this header, then no limiting is attempted.
 
 #ifndef _GLIBCPP_TESTSUITE_HOOKS_H
 #define _GLIBCPP_TESTSUITE_HOOKS_H
 
-
-/*******
- * VERIFY(), via DEBUG_ASSERT, from Brent Verner <brent@rcfile.org>.
-*/
 #ifdef DEBUG_ASSERT
 # include <cassert>
 # define VERIFY(fn) assert(fn)
+#else
+# define VERIFY(fn) test &= (fn)
+# define VERIFY(fn) fn
+#endif
+
+#include <bits/c++config.h>
+
+// Defined in GLIBCPP_CONFIGURE_TESTSUITE.
+#ifndef _GLIBCPP_MEM_LIMITS
+
+// Don't do memory limits.
+void
+__set_testsuite_memlimit(float)
+{ }
 
 #else
 
-# define VERIFY(fn) test &= (fn)
-// should we define this here to make sure no 'unexpected' failures
-// happen, or do we require that it be defined in any scope where
-// the VERIFY macro is used???
-//
-// static bool test = true;
-#endif
-
-
-/*******
- * __set_testsuite_memlimit()
-*/
-// The RLIMIT_* macros used will be as many of the following as we can find,
-// and they will be used in this order, for whatever difference it makes:
-//   RLIMIT_DATA
-//   RLIMIT_RSS
-//   RLIMIT_VMEM
-//   RLIMIT_AS
-
-#define NO_MEM_LIMITS
-
-// The following lines will be changed by configure...
-#undef HAVE_SYS_RESOURCE_H
-#undef HAVE_UNISTD_H
-#undef HAVE_MEMLIMIT_DATA
-#undef HAVE_MEMLIMIT_RSS
-#undef HAVE_MEMLIMIT_VMEM
-#undef HAVE_MEMLIMIT_AS
-
-// ...and the results used here.
-#if defined(HAVE_SYS_RESOURCE_H) && defined(HAVE_UNISTD_H) && !defined(NO_MEM_LIMITS)
-
+// Do memory limits.
 #include <sys/resource.h>
 #include <unistd.h>
 
@@ -94,40 +73,32 @@
 #endif
 
 void
-__set_testsuite_memlimit(float megs = MEMLIMIT_MB)
+__set_testsuite_memlimit(float __size = MEMLIMIT_MB)
 {
     struct rlimit r;
-    r.rlim_cur = (rlim_t)(megs * 1048576);
+    r.rlim_cur = (rlim_t)(__size * 1048576);
 
-    // heap size, seems to be common
-#if HAVE_MEMLIMIT_DATA
-    setrlimit (RLIMIT_DATA, &r);
+    // Heap size, seems to be common.
+#if _GLIBCPP_HAVE_MEMLIMIT_DATA
+    setrlimit(RLIMIT_DATA, &r);
 #endif
 
-    // resident set size -- Linux?
-#if HAVE_MEMLIMIT_RSS
-    setrlimit (RLIMIT_RSS, &r);
+    // Resident set size.
+#if _GLIBCPP_HAVE_MEMLIMIT_RSS
+    setrlimit(RLIMIT_RSS, &r);
 #endif
 
-    // mapped memory (brk+mmap) -- Solaris?
-#if HAVE_MEMLIMIT_VMEM
-    setrlimit (RLIMIT_VMEM, &r);
+    // Mapped memory (brk + mmap).
+#if _GLIBCPP_HAVE_MEMLIMIT_VMEM
+    setrlimit(RLIMIT_VMEM, &r);
 #endif
 
-    // virtual memory, seems to be common
-#if HAVE_MEMLIMIT_AS
-    setrlimit (RLIMIT_AS, &r);
+    // Virtual memory.
+#if _GLIBCPP_HAVE_MEMLIMIT_AS
+    setrlimit(RLIMIT_AS, &r);
 #endif
 }
-
-#else
-// The headers needed for resource limiting are not available.  This is
-// safe, but means that no memory limits will be applied... ouch.
-#define __set_testsuite_memlimit(__junk)
 #endif
-
-
-
 
 #endif // _GLIBCPP_TESTSUITE_HOOKS_H
 

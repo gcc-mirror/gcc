@@ -202,7 +202,7 @@ uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 # One big happy istallation:  just copy everything from the build to the
 # install tree (except for the build stamps).
 gxx_include_dir = @gxx_include_dir@
-CONFIG_HEADER = ../config.h ../config.h ../testsuite/testsuite_hooks.h
+CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  Makefile.am Makefile.in
 

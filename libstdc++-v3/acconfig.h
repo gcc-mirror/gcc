@@ -31,6 +31,9 @@
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCPP_USE_WCHAR_T
 
+// Define if using setrlimit to limit memory usage during 'make check'.
+#undef _GLIBCPP_MEM_LIMITS
+
 // Define if you have the atan2f function.
 #undef _GLIBCPP_HAVE_ATAN2F 
 

@@ -1819,19 +1819,37 @@ AC_DEFUN(GLIBCPP_CHECK_SETRLIMIT_ancilliary, [
                      [Only used in build directory testsuite_hooks.h.])
 ])
 AC_DEFUN(GLIBCPP_CHECK_SETRLIMIT, [
-  setrlimit_have_needed_headers=yes
+  setrlimit_have_headers=yes
   AC_CHECK_HEADERS(sys/resource.h unistd.h,
                    [],
-                   setrlimit_have_needed_headers=no)
+                   setrlimit_have_headers=no)
   # If don't have the headers, then we can't run the tests now, and we
   # won't be seeing any of these during testsuite compilation.
-  if test $setrlimit_have_needed_headers = yes; then
+  if test $setrlimit_have_headers = yes; then
     # Can't do these in a loop, else the resulting syntax is wrong.
     GLIBCPP_CHECK_SETRLIMIT_ancilliary(DATA)
     GLIBCPP_CHECK_SETRLIMIT_ancilliary(RSS)
     GLIBCPP_CHECK_SETRLIMIT_ancilliary(VMEM)
     GLIBCPP_CHECK_SETRLIMIT_ancilliary(AS)
+
+    # Check for rlimit, setrlimit.
+    AC_CACHE_VAL(ac_setrlimit, [
+      AC_TRY_COMPILE([#include <sys/resource.h>
+		      #include <unistd.h>
+		     ], 
+                     [ struct rlimit r; setrlimit(0, &r);], 
+                     [ac_setrlimit=yes], [ac_setrlimit=no])
+    ])
   fi
+
+  AC_MSG_CHECKING([for testsuite memory limit support])
+  if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
+    ac_mem_limits=yes
+    AC_DEFINE(_GLIBCPP_MEM_LIMITS)
+  else
+    ac_mem_limits=no
+  fi
+  AC_MSG_RESULT($ac_mem_limits)
 ])
 
 

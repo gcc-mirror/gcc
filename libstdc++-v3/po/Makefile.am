@@ -39,15 +39,23 @@ LOCALE_IN = @POFILES@
 LOCALE_OUT = @glibcpp_MOFILES@
 
 .po.mo:
-	cat=`basename $<`; \
-	lang=`echo $$cat | sed 's/\.po$$//'`; \
-	dir=$(locale_builddir)/$$lang/LC_MESSAGES; \
-	$(mkinstalldirs) $$dir; \
-	$(MSGFMT) $< -o $$dir/$(PACKAGE).mo 
+	$(MSGFMT) $< -o $@
 
 all-local: all-local-@USE_NLS@
 all-local-no: 
-all-local-yes: $(LOCALE_OUT)
+all-local-yes: $(LOCALE_OUT) 
+
+# 'make check' needs the catalogs constructed in build directory.
+check:
+	$(mkinstalldirs) $(locale_builddir) 
+	@catalogs='$(LOCALE_OUT)'; \
+	for cat in $$catalogs; do \
+	  cat=`basename $$cat`; \
+	  lang=`echo $$cat | sed 's/\.mo$$//'`; \
+	  install_dir=$(locale_builddir)/$$lang/LC_MESSAGES; \
+	  $(mkinstalldirs) $$install_dir; \
+	  $(INSTALL_DATA) $$cat $$install_dir/$(PACKAGE).mo; \
+	done 
 
 # Install rules here. 
 # Wish install could just `cp -R ./share $(locale_installdir)` ...
@@ -66,4 +74,4 @@ install-data-local-yes: all-local-yes
 	done
 
 # Specify what gets cleaned up on a 'make clean'
-CLEANFILES = $(LOCALE_OUT)
+CLEANFILES = $(LOCALE_OUT) 

@@ -1,3 +1,21 @@
+2001-08-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acconfig.h (_GLIBCPP_MEM_LIMITS): Define.
+	* config.h.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_CHECK_SETRLIMIT): Check for setrlimit
+	function.
+	* aclocal.m4: Regenerate.
+	* configure.in: Remove duplicate AM_CONFIG_HEADER.
+	(AM_CONFIG_HEADER): Remove testsuite/testsuite_hooks.h.
+	Only call GLIBCPP_CHECK_SETRLIMIT for native compiles.
+	* configure: Regenerate.
+	* testsuite_hooks.h.in: Move to...
+	* testsuite_hooks.h: Here, include c++config.h. Use it.
+	
+	* Makefile.am (SUBDIRS): Move testsuite to last directory.
+	* Makefile.in: Regenerate.
+	* po/Makefile.am (stamp-po): Add.
+
 2001-08-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/os/aix/bits/os_defines.h: Define std_limits.h macros.

@@ -12,7 +12,7 @@ VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 
-# Gets and sets build, host, target, *_vendor, *_cpu, *_os, etc.
+# Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 # AC 2.50 sets target_alias iff the user specified --target, but we use it
 # everywhere, so we set it here just to be sure.
 AC_CANONICAL_SYSTEM
@@ -31,8 +31,6 @@ AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
-
-AM_CONFIG_HEADER(config.h testsuite/testsuite_hooks.h)
 
 # Check for c++ or library specific bits that don't require linking.
 #GLIBCPP_CHECK_COMPILER_VERSION
@@ -189,6 +187,7 @@ else
   GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
   GLIBCPP_CHECK_WCHAR_T_SUPPORT
   GLIBCPP_CHECK_STDLIB_SUPPORT
+  AC_LC_MESSAGES
 
   AC_TRY_COMPILE([
 #include <setjmp.h>
@@ -197,11 +196,10 @@ else
 
   AC_FUNC_MMAP
 
+  # Establish limits on memory usage during 'make check'
+  GLIBCPP_CONFIGURE_TESTSUITE
 fi
 
-# Enable/configure some pieces which may require knowledge about the
-# compiler situation (native/cross), which we just finished discovering.
-GLIBCPP_CONFIGURE_TESTSUITE
 
 # Propagate the target-specific source directories through the build chain.
 OS_INC_SRCDIR=$os_include_dir/bits
@@ -214,7 +212,6 @@ AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
  
 AC_CACHE_SAVE
-AC_LC_MESSAGES
 
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
