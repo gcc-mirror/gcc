@@ -1,4 +1,4 @@
-2001-01-22  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+2001-01-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20010123-1.c: New test.
 
