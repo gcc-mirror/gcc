@@ -25,6 +25,7 @@
 ;; cpp macro #define NOTICE_UPDATE_CC in file tm.h handles condition code
 ;; updates for most instructions.
 
+;; These comments are mostly obsolete.  Written for gcc version 1.XX.
 ;; * Try using define_insn instead of some peepholes in more places.
 ;; * Set REG_NOTES:REG_EQUIV for cvt[bh]w loads.  This would make the
 ;;   backward scan in sign_extend needless.
@@ -197,7 +198,8 @@
   [(set (cc0)
 	(compare (match_operand:HI 0 "memory_operand" "m")
 		 (match_operand:HI 1 "memory_operand" "m")))]
-  "weird_memory_memory (operands[0], operands[1])"
+  "(!TRULY_UNSIGNED_COMPARE_P (GET_CODE (XEXP (SET_SRC (PATTERN (NEXT_INSN (insn))), 0))))
+   && weird_memory_memory (operands[0], operands[1])"
   "*
 {
   rtx br_insn = NEXT_INSN (insn);
@@ -220,7 +222,8 @@
   [(set (cc0)
 	(compare (match_operand:HI 0 "nonimmediate_operand" "r,m")
 		 (match_operand:HI 1 "nonimmediate_operand" "m,r")))]
-  "(GET_CODE (operands[0]) != GET_CODE (operands[1]))"
+  "(!TRULY_UNSIGNED_COMPARE_P (GET_CODE (XEXP (SET_SRC (PATTERN (NEXT_INSN (insn))), 0))))
+   && (GET_CODE (operands[0]) != GET_CODE (operands[1]))"
   "*
 {
   rtx br_insn = NEXT_INSN (insn);
