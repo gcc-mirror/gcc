@@ -1,5 +1,12 @@
 Mon Mar 30 08:55:42 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* tree.c (member_p): New fn.
+	* decl2.c (finish_file): Only set DECL_STATIC_FUNCTION_P for
+	initializing class members.
+
+	* cp-tree.def (TEMPLATE_PARM_INDEX): Class 'x'.
+	* ptree.c (lang_print_xnode): Handle TEMPLATE_PARM_INDEX.
+
 	* call.c (build_method_call): Handle non-scoped destructors, too.
 	* pt.c (tsubst_copy): Likewise.
 

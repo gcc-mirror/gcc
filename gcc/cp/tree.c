@@ -2183,3 +2183,13 @@ varargs_function_p (function)
       return 0;
   return 1;
 }
+
+/* Returns 1 if decl is a member of a class.  */
+
+int
+member_p (decl)
+     tree decl;
+{
+  tree ctx = DECL_CONTEXT (decl);
+  return (ctx && TREE_CODE_CLASS (TREE_CODE (ctx)) == 't');
+}

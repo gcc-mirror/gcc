@@ -120,7 +120,7 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", 'd', 0)
    The LEVEL is the level of the parameter when we are worrying about
    the types of things; the ORIG_LEVEL is the level when we are
    worrying about instantiating things.  */
-DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'c', 
+DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'x', 
 	     /* The addition of (sizeof(char*) - 1) in the next
 		expression is to ensure against the case where
 		sizeof(char*) does not evenly divide
