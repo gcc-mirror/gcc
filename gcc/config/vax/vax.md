@@ -688,7 +688,7 @@
     output_asm_insn (pattern, low);
   if (!carry)
     /* If CARRY is 0, we don't have any carry value to worry about.  */
-    return OUT_FCN (CODE_FOR_addsi3) (operands, insn);
+    return get_insn_template (CODE_FOR_addsi3, insn);
   /* %0 = C + %1 + %2 */
   if (!rtx_equal_p (operands[0], operands[1]))
     output_asm_insn ((operands[1] == const0_rtx
@@ -772,7 +772,7 @@
       if (low[2] == constm1_rtx)
 	pattern = \"decl %0\";
       else if (low[2] == const0_rtx)
-	pattern = OUT_FCN (CODE_FOR_movsi) (low, insn), carry = 0;
+	pattern = get_insn_template (CODE_FOR_movsi, insn), carry = 0;
       else
 	pattern = \"subl3 %2,%1,%0\";
     }
@@ -785,7 +785,7 @@
       return \"sbwc %2,%0\";
       /* %0 = %2 - %1 - C */
     }
-  return OUT_FCN (CODE_FOR_subsi3) (operands, insn);
+  return get_insn_template (CODE_FOR_subsi3, insn);
 }")
 
 ;;- Multiply instructions.
