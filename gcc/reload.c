@@ -2730,6 +2730,17 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		   we are supposed to match can be fixed with reloads.  */
 		badop = 0;
 		this_alternative[i] = this_alternative[c];
+
+		/* If we have to reload this operand and some previous
+		   operand also had to match the same thing as this
+		   operand, we don't know how to do that.  So reject this
+		   alternative.  */
+		if (! win || force_reload)
+		  for (j = 0; j < i; j++)
+		    if (this_alternative_matches[j]
+			== this_alternative_matches[i])
+		      badop = 1;
+
 		break;
 
 	      case 'p':
