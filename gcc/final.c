@@ -902,10 +902,39 @@ final (first, file, optimize, prescan)
   last_ignored_compare = 0;
   new_block = 1;
 
-  /* Make a map indicating which line numbers appear in this function.  */
-  for (insn = first; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > max_line)
-      max_line = NOTE_LINE_NUMBER (insn);
+  /* Make a map indicating which line numbers appear in this function.
+     When producing SDB debugging info, delete troublesome line number
+     notes from inlined functions in other files as well as duplicate
+     line number notes.  */
+#ifdef SDB_DEBUGGING_INFO
+  if (write_symbols == SDB_DEBUG)
+    {
+      rtx last = 0;
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	  {
+	    if ((RTX_INTEGRATED_P (insn)
+		 && strcmp (NOTE_SOURCE_FILE (insn), main_input_filename) != 0)
+		 || (last != 0
+		     && NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last)
+		     && NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last)))
+	      {
+		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (insn) = 0;
+		continue;
+	      }
+	    last = insn;
+	    if (NOTE_LINE_NUMBER (insn) > max_line)
+	      max_line = NOTE_LINE_NUMBER (insn);
+	  }
+    }
+  else
+#endif
+    {
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > max_line)
+	  max_line = NOTE_LINE_NUMBER (insn);
+    }
 
   line_note_exists = (char *) oballoc (max_line + 1);
   bzero (line_note_exists, max_line + 1);
