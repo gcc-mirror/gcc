@@ -6904,9 +6904,12 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
 	    record_base_value (REGNO (SET_DEST (set)), SET_SRC (set), 0);
 	}
     }
-  else if (GET_CODE (seq) == SET
-	   && GET_CODE (SET_DEST (seq)) == REG)
-    record_base_value (REGNO (SET_DEST (seq)), SET_SRC (seq), 0);
+  else 
+    {
+      rtx set = single_set (seq);
+      if (set && GET_CODE (SET_DEST (set)) == REG)
+	record_base_value (REGNO (SET_DEST (set)), SET_SRC (set), 0);
+    }
 }
 
 /* Similar to emit_iv_add_mult, but compute cost rather than emitting
