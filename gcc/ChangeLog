@@ -1,3 +1,9 @@
+2003-07-30  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* objc/Make-lang.in (objc.stage1, objc.stage2, objc.stage3)
+	(objc.stage4, objc.stageprofile, objc.stagefeedback): Remove moves
+	of cc1obj.
+
 2003-07-30  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (SIZE_TYPE, PTRDIFF_TYPE): Undef these
