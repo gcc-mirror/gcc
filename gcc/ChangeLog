@@ -1,3 +1,8 @@
+Thu Jan 10 17:19:12 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (try_forward_edges): Properly initialize nthreaded_edges;
+        update edge probabilities to match.
+
 2002-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in ($(docdir)/gccint.info, gccint.dvi): Add additional
