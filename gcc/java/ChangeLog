@@ -1,3 +1,10 @@
+2002-01-28  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (build_jni_stub): Ensure storage for `meth' is
+	generated.
+	* parse.y (java_complete_expand_methods): Set
+	current_function_decl before building JNI stub.
+
 2002-01-26 Andreas Tobler <a.tobler@schweiz.ch>
 	
 	* gcc/java/builtins.c (sqrt_builtin): Use BUILT_IN_SQRT, not
