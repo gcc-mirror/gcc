@@ -371,7 +371,7 @@ static tree UOBJC_SYMBOLS_decl;
 static tree UOBJC_INSTANCE_VARIABLES_decl, UOBJC_CLASS_VARIABLES_decl;
 static tree UOBJC_INSTANCE_METHODS_decl, UOBJC_CLASS_METHODS_decl;
 static tree UOBJC_CLASS_decl, UOBJC_METACLASS_decl;
-static tree UOBJC_SELECTOR_REFERENCES_decl;
+static tree UOBJC_SELECTOR_TABLE_decl;
 static tree UOBJC_MODULES_decl;
 static tree UOBJC_STRINGS_decl;
 
@@ -1054,12 +1054,12 @@ synth_module_prologue ()
   objc_get_meta_class_decl
     = builtin_function (TAG_GETMETACLASS, temp_type, NOT_BUILT_IN, 0);
 
-  /* static SEL _OBJC_SELECTOR_REFERENCES[]; */
+  /* static SEL _OBJC_SELECTOR_TABLE[]; */
 
   if (! flag_next_runtime)
-    UOBJC_SELECTOR_REFERENCES_decl
+    UOBJC_SELECTOR_TABLE_decl
       = create_builtin_decl (VAR_DECL, build_array_type (selector_type, NULLT),
-			     "_OBJC_SELECTOR_REFERENCES");
+			     "_OBJC_SELECTOR_TABLE");
 
   generate_forward_declaration_to_string_table ();
 
@@ -1255,12 +1255,12 @@ init_objc_symtab ()
 
   initlist = build_tree_list (NULLT, build_int_2 (0, 0));
 
-  /* refs = { ..., _OBJC_SELECTOR_REFERENCES, ... } */
+  /* refs = { ..., _OBJC_SELECTOR_TABLE, ... } */
 
   if (flag_next_runtime || ! sel_ref_chain)
     initlist = tree_cons (NULLT, build_int_2 (0, 0), initlist);
   else
-    initlist = tree_cons (NULLT, UOBJC_SELECTOR_REFERENCES_decl, initlist);
+    initlist = tree_cons (NULLT, UOBJC_SELECTOR_TABLE_decl, initlist);
 
   /* cls_def_cnt = { ..., 5, ... } */
 
@@ -1714,13 +1714,13 @@ build_selector_translation_table ()
   if (! flag_next_runtime)
     {
       /* Cause the variable and its initial value to be actually output.  */
-      DECL_EXTERNAL (UOBJC_SELECTOR_REFERENCES_decl) = 0;
-      TREE_STATIC (UOBJC_SELECTOR_REFERENCES_decl) = 1;
+      DECL_EXTERNAL (UOBJC_SELECTOR_TABLE_decl) = 0;
+      TREE_STATIC (UOBJC_SELECTOR_TABLE_decl) = 1;
       /* NULL terminate the list and fix the decl for output. */
       initlist = tree_cons (NULLT, build_int_2 (0, 0), initlist);
-      DECL_INITIAL (UOBJC_SELECTOR_REFERENCES_decl) = (tree) 1;
+      DECL_INITIAL (UOBJC_SELECTOR_TABLE_decl) = (tree) 1;
       initlist = build_nt (CONSTRUCTOR, NULLT, nreverse (initlist));
-      finish_decl (UOBJC_SELECTOR_REFERENCES_decl, initlist, NULLT);
+      finish_decl (UOBJC_SELECTOR_TABLE_decl, initlist, NULLT);
     }
 }
 
@@ -1740,7 +1740,7 @@ build_selector_reference (ident)
       if (TREE_VALUE (*chain) == ident)
 	return (flag_next_runtime
 		? TREE_PURPOSE (*chain)
-		: build_array_ref (UOBJC_SELECTOR_REFERENCES_decl,
+		: build_array_ref (UOBJC_SELECTOR_TABLE_decl,
 				   build_int_2 (index, 0)));
 
       index++;
@@ -1753,7 +1753,7 @@ build_selector_reference (ident)
 
   return (flag_next_runtime
 	  ? decl
-	  : build_array_ref (UOBJC_SELECTOR_REFERENCES_decl,
+	  : build_array_ref (UOBJC_SELECTOR_TABLE_decl,
 			     build_int_2 (index, 0)));
 }
 
