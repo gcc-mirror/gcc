@@ -243,15 +243,9 @@ while (0)
 
 #else  /* __ia64__ */
 
-// FIXME: We shouldn't be using libc_sigaction here, since it should
-// be glibc private.  But using syscall here would mean translating to
-// the kernel's struct sigaction and argument sequence, which we
-// shouldn't either.  The right solution is to call sigaction and to
-// make sure that we can unwind correctly through the pthread signal
-// wrapper.
-extern "C" int __libc_sigaction (int __sig, 
-		      __const struct sigaction *__restrict __act,
-                      struct sigaction *__restrict __oact) throw ();
+// On IA64, unwind information is mandatory, so we can unwind
+// correctly through glibc frames.  Thus we call the ordinary
+// sigaction.
 
 #define INIT_SEGV						\
 do								\
@@ -261,7 +255,7 @@ do								\
     act.sa_sigaction = _Jv_catch_segv;      			\
     sigemptyset (&act.sa_mask);					\
     act.sa_flags = SA_SIGINFO;	       				\
-    __libc_sigaction (SIGSEGV, &act, NULL);			\
+    sigaction (SIGSEGV, &act, NULL);				\
   }								\
 while (0)  
 
@@ -274,7 +268,7 @@ do								\
     act.sa_sigaction = _Jv_catch_fpe;				\
     sigemptyset (&act.sa_mask);					\
     act.sa_flags = SA_SIGINFO;		       			\
-    __libc_sigaction (SIGFPE, &act, NULL);			\
+    sigaction (SIGFPE, &act, NULL);				\
   }								\
 while (0)  
 #endif /* __ia64__ || __sparc__ */

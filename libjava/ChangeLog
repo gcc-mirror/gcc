@@ -1,3 +1,8 @@
+2002-05-02  Hans Boehm <Hans_Boehm@hp.com>
+
+	* include/dwarf2-signal.h (INIT_SEGV, INIT_FPE for ia64):
+	use sigaction instead of __libc_sigaction.
+
 2002-05-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libjava.exp (libjava_find_spec): New function.
