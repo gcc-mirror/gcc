@@ -382,10 +382,13 @@ static int cse_altered;
 
 static int cse_jumps_altered;
 
-/* Nonzero if we put a LABEL_REF into the hash table.  Since we may have put
-   it into an INSN without a REG_LABEL, we have to rerun jump after CSE
-   to put in the note.  */
+/* Nonzero if we put a LABEL_REF into the hash table for an INSN without a
+   REG_LABEL, we have to rerun jump after CSE to put in the note.  */
 static int recorded_label_ref;
+
+/* Says which LABEL_REF was put in the hash table.  Used to see if we need
+   to set the above flag.  */
+static rtx new_label_ref;
 
 /* canon_hash stores 1 in do_not_record
    if it notices a reference to CC0, PC, or some other volatile
@@ -1581,7 +1584,7 @@ insert (x, classp, hash, mode)
   if (GET_CODE (x) == LABEL_REF
       || (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF))
-    recorded_label_ref = 1;
+    new_label_ref = x;
 
   /* Put an element for X into the right hash bucket.  */
 
@@ -7308,7 +7311,17 @@ cse_basic_block (from, to, next_branch, around_loop)
 		libcall_insn = 0;
 	    }
 
+	  new_label_ref = 0;
 	  cse_insn (insn, libcall_insn);
+
+	  /* If this insn uses a LABEL_REF and there isn't a REG_LABEL
+	     note for it, we must rerun jump since it needs to place the
+	     note.  If this is a LABEL_REF for a CODE_LABEL that isn't in
+	     the insn chain, don't do this since no REG_LABEL will be added. */
+	  if (new_label_ref != 0 && INSN_UID (XEXP (new_label_ref, 0)) != 0
+	      && reg_mentioned_p (new_label_ref, PATTERN (insn))
+	      && ! find_reg_note (insn, REG_LABEL, XEXP (new_label_ref, 0)))
+	    recorded_label_ref = 1;
 	}
 
       /* If INSN is now an unconditional jump, skip to the end of our
