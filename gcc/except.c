@@ -3147,7 +3147,7 @@ nothrow_function_p ()
       return false;
   for (insn = current_function_epilogue_delay_list; insn;
        insn = XEXP (insn, 1))
-    if (can_throw_external (insn))
+    if (can_throw_external (XEXP (insn, 0)))
       return false;
 
   return true;
