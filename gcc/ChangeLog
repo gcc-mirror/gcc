@@ -1,3 +1,9 @@
+2003-09-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (pushdecl): Don't put variables on
+	C_TYPE_INCOMPLETE_VARS of a type unless that type is itself
+	incomplete.
+
 2003-09-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.host: New file.
@@ -40,8 +46,8 @@
 
 2003-08-31  Olivier Hainque  <hainque@act-europe.fr>
 
-        * builtins.c (expand_builtin_setjmp): Use emit_jump to jump around
-        the != 0 case, which ensures pending stack adjustments are flushed.
+	* builtins.c (expand_builtin_setjmp): Use emit_jump to jump around
+	the != 0 case, which ensures pending stack adjustments are flushed.
 
 2003-08-30  Zack Weinberg  <zack@codesourcery.com>
 

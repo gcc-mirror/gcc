@@ -1761,7 +1761,8 @@ pushdecl (tree x)
 	  if ((TREE_CODE (element) == RECORD_TYPE
 	       || TREE_CODE (element) == UNION_TYPE)
 	      && (TREE_CODE (x) != TYPE_DECL
-		  || TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE))
+		  || TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE)
+	      && !COMPLETE_TYPE_P (element))
 	    C_TYPE_INCOMPLETE_VARS (element)
 	      = tree_cons (NULL_TREE, x, C_TYPE_INCOMPLETE_VARS (element));
 	}
