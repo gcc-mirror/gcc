@@ -1314,9 +1314,8 @@ block_alloc (int b)
 		  if (hard_reg != NULL_RTX)
 		    {
 		      if (REG_P (hard_reg)
-			  && IN_RANGE (REGNO (hard_reg),
-				       0, FIRST_PSEUDO_REGISTER - 1)
-			  && ! call_used_regs[REGNO (hard_reg)])
+			  && REGNO (hard_reg) < FIRST_PSEUDO_REGISTER
+			  && !call_used_regs[REGNO (hard_reg)])
 			continue;
 		    }
 
