@@ -27,6 +27,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __object_INCLUDE_GNU
 #define __object_INCLUDE_GNU
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <objc/objc.h>
 #include <objc/typedstream.h>
 
@@ -120,5 +124,9 @@ Boston, MA 02111-1307, USA.  */
 - awake;
 
 @end
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
