@@ -2759,6 +2759,23 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
+  /* If we are generating embedded PIC code, and we are referring to a
+     symbol in the .text section, we must use an offset from the start
+     of the function.  */
+  if (TARGET_EMBEDDED_PIC
+      && (GET_CODE (operands[1]) == LABEL_REF
+	  || (GET_CODE (operands[1]) == SYMBOL_REF
+	      && ! SYMBOL_REF_FLAG (operands[1]))))
+    {
+      rtx temp;
+
+      temp = embedded_pic_offset (operands[1]);
+      temp = gen_rtx (PLUS, Pmode, embedded_pic_fnaddr_rtx,
+		      force_reg (SImode, temp));
+      emit_move_insn (operands[0], force_reg (SImode, temp));
+      DONE;
+    }
+
   /* If operands[1] is a constant address illegal for pic, then we need to
      handle it just like LEGITIMIZE_ADDRESS does.  */
   if (flag_pic && pic_address_needs_scratch (operands[1]))
@@ -5541,6 +5558,20 @@ move\\t%0,%z4\\n\\
 ;;       DONE;
 ;;     }
 ;; }")
+
+;; When generating embedded PIC code we need to get the address of the
+;; current function.  This specialized instruction does just that.
+
+(define_insn "get_fnaddr"
+  [(set (match_operand 0 "register_operand" "d")
+	(unspec [(match_operand 1 "" "")] 1))
+   (clobber (reg:SI 31))]
+  "TARGET_EMBEDDED_PIC
+   && GET_CODE (operands[1]) == SYMBOL_REF"
+  "%($LF%= = . + 8\;bal\\t$LF%=\;la\\t%0,%1-$LF%=%)\;addu\\t%0,%0,$31"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"4")])
 
 
 ;;

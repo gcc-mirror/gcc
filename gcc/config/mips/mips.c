@@ -218,6 +218,11 @@ struct mips_frame_info zero_frame_info;
    for -mgpopt.  */
 static char *temp_filename;
 
+/* Pseudo-reg holding the address of the current function when
+   generating embedded PIC code.  Created by LEGITIMIZE_ADDRESS, used
+   by mips_finalize_pic if it was created.  */
+rtx embedded_pic_fnaddr_rtx;
+
 /* List of all MIPS punctuation characters used by print_operand.  */
 char mips_print_operand_punct[256];
 
@@ -853,6 +858,20 @@ mips_count_memory_refs (op, num)
 }
 
 
+/* Return RTL for the offset from the current function to the
+   argument.  */
+
+rtx
+embedded_pic_offset (x)
+     rtx x;
+{
+  if (embedded_pic_fnaddr_rtx == NULL)
+    embedded_pic_fnaddr_rtx = gen_reg_rtx (Pmode);
+  return gen_rtx (CONST, Pmode,
+		  gen_rtx (MINUS, Pmode, x,
+			   XEXP (DECL_RTL (current_function_decl), 0)));
+}
+
 /* Return the appropriate instructions to move one operand to another.  */
 
 char *
@@ -4200,6 +4219,33 @@ epilogue_reg_mentioned_p (insn)
 }
 
 
+/* When generating embedded PIC code we may need to get the address of
+   the current function.  We will need it if we take the address of
+   any symbol in the .text section.  */
+
+void
+mips_finalize_pic ()
+{
+  rtx seq;
+
+  if (! TARGET_EMBEDDED_PIC)
+    return;
+  if (embedded_pic_fnaddr_rtx == NULL)
+    return;
+
+  start_sequence ();
+
+  emit_insn (gen_get_fnaddr (embedded_pic_fnaddr_rtx,
+			     XEXP (DECL_RTL (current_function_decl), 0)));
+
+  seq = gen_sequence ();
+  end_sequence ();
+  emit_insn_after (seq, get_insns ());
+
+  embedded_pic_fnaddr_rtx = NULL;
+}
+
+
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.
 
@@ -5221,7 +5267,17 @@ mips_select_section (decl, reloc)
 {
   int size = int_size_in_bytes (TREE_TYPE (decl));
 
-  if (TARGET_EMBEDDED_DATA)
+  if (TARGET_EMBEDDED_PIC
+      && TREE_CODE (decl) == STRING_CST
+      && !flag_writable_strings)
+    {
+      /* For embedded position independent code, put constant strings
+	 in the text section, because the data section is limited to
+	 64K in size.  */
+
+      text_section ();
+    }
+  else if (TARGET_EMBEDDED_DATA)
     {
       /* For embedded applications, always put an object in read-only data
 	 if possible, in order to reduce RAM usage.  */
