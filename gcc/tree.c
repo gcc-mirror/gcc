@@ -1691,7 +1691,7 @@ integer_pow2p (expr)
   if (TREE_CODE (expr) != INTEGER_CST || TREE_CONSTANT_OVERFLOW (expr))
     return 0;
 
-  prec = (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+  prec = (POINTER_TYPE_P (TREE_TYPE (expr))
 	  ? POINTER_SIZE : TYPE_PRECISION (TREE_TYPE (expr)));
   high = TREE_INT_CST_HIGH (expr);
   low = TREE_INT_CST_LOW (expr);
@@ -1732,7 +1732,7 @@ tree_log2 (expr)
   if (TREE_CODE (expr) == COMPLEX_CST)
     return tree_log2 (TREE_REALPART (expr));
 
-  prec = (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+  prec = (POINTER_TYPE_P (TREE_TYPE (expr))
 	  ? POINTER_SIZE : TYPE_PRECISION (TREE_TYPE (expr)));
 
   high = TREE_INT_CST_HIGH (expr);
@@ -3302,7 +3302,7 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 
   /* Handle putting a type attribute on pointer-to-function-type by putting
      the attribute on the function type.  */
-  else if (TREE_CODE (type) == POINTER_TYPE
+  else if (POINTER_TYPE_P (type)
 	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
 	   && VALID_MACHINE_TYPE_ATTRIBUTE (TREE_TYPE (type), type_attr_list,
 					    attr_name, attr_args))
