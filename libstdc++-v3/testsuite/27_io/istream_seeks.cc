@@ -86,19 +86,19 @@ void test04(void)
   pos01 = is01.tellg();
   pos02 = is01.tellg();
   VERIFY( pos01 == pos02 );
-  //  VERIFY( istream::pos_type(0) != pos01 ); //depricated
+  //  VERIFY( istream::pos_type(0) != pos01 ); //deprecated
 
   // in
   pos03 = is02.tellg();
   pos04 = is02.tellg();
   VERIFY( pos03 == pos04 );
-  //  VERIFY( istream::pos_type(0) != pos03 ); //depricated
+  //  VERIFY( istream::pos_type(0) != pos03 ); //deprecated
 
   // out
   pos05 = is03.tellg();
   pos06 = is03.tellg();
   VERIFY( pos05 == pos06 );
-  //  VERIFY( istream::pos_type(0) != pos01 ); //depricated
+  //  VERIFY( istream::pos_type(0) != pos01 ); //deprecated
 
   // istream& seekg(pos_type)
   // istream& seekg(off_type, ios_base::seekdir)

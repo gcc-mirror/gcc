@@ -1,3 +1,8 @@
+Tue Oct 17 20:06:59 2000  Martin Buchholz <martin@xemacs.org>
+
+	* testsuite/27_io/istream_seeks.cc: Fix spelling typo.
+	* testsuite/27_io/ostream_seeks.cc: Similarly.
+
 2000-10-17  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	via Alexandre Oliva  <aoliva@redhat.com>
