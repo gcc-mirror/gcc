@@ -1,3 +1,22 @@
+Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfgbuild.c (make_edges):  Do not use next_nonnote_insn when
+	looking for fallthru edge.
+
+	* athlon.md (athlon-agu, athlon-store, athlon-fany, athlon-faddmul):
+	Fix.
+	(athlon-load2, athlon-store2, athlon-fpsched, athlon-fpload,
+	athlon-fvector): New.
+	(athlon_*): Revisit to match new optimization guide.
+	* i386.c (ix86_adjust_cost):  Fix memory operand costs on Athlon/k8
+	* i386.md (cvt??2?? patterns): Fix modes.
+	(fistp patterns): Set modes.
+
+	Accidentaly commited with my earlier reload patch:
+	PR c/10308
+	* reload.c (find_reloads_address_1): Reload plus at the place of
+	index register.
+	
 2003-04-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	New GCOV_TAG_FUNCTION layout

@@ -4618,6 +4618,18 @@ parameter very large effectively disables garbage collection.  Setting
 this parameter and @option{ggc-min-expand} to zero causes a full
 collection to occur at every opportunity.
 
+@item reorder-blocks-duplicate
+@itemx reorder-blocks-duplicate-feedback
+
+Used by basic block reordering pass to decide whether to use uncondtional
+branch or duplicate the code on it's destination.  Code is duplicated when it's
+estimated size is smaller than this value multiplied by the estimated size of
+unconditinal jump in the hot spots of the program.
+
+The @option{reorder-block-duplicate-feedback} is used only when profile
+feedback is available and may be set to higher values than
+@option{reorder-block-duplicate} since information about the hot spots is more
+accurate.
 @end table
 @end table
 
