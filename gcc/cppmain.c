@@ -347,7 +347,7 @@ cb_ident (pfile, str)
      const cpp_string * str;
 {
   maybe_print_line (cpp_get_line (pfile)->output_line);
-  fprintf (print.outf, "#ident \"%.*s\"\n", (int) str->len, str->text);
+  fprintf (print.outf, "#ident \"%s\"\n", str->text);
   print.lineno++;
 }
 

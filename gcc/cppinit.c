@@ -948,8 +948,6 @@ cpp_start_read (pfile, fname)
       p = q;
     }
 
-  pfile->done_initializing = 1;
-
   /* The -imacros files can be scanned now, but the -include files
      have to be pushed onto the buffer stack and processed later,
      otherwise cppmain.c won't see the tokens.  include_head was built

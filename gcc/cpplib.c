@@ -525,8 +525,9 @@ glue_header_name (pfile, header)
     cpp_error (pfile, "missing terminating > character");
   else
     {
-      token_mem = _cpp_pool_alloc (&pfile->ident_pool, total_len);
+      token_mem = _cpp_pool_alloc (&pfile->ident_pool, total_len + 1);
       memcpy (token_mem, buffer, total_len);
+      token_mem[total_len] = '\0';
 
       header->type = CPP_HEADER_NAME;
       header->flags &= ~PREV_WHITE;
@@ -708,14 +709,10 @@ do_line (pfile)
   if (token.type == CPP_STRING)
     {
       char *fname;
-      unsigned int len;
+      unsigned int len = token.val.str.len + 1;
 
-      /* FIXME: memory leak.  */
-      len = token.val.str.len;
-      fname = xmalloc (len + 1);
+      fname = (char *) _cpp_pool_alloc (&pfile->ident_pool, len);
       memcpy (fname, token.val.str.text, len);
-      fname[len] = '\0';
-    
       _cpp_simplify_pathname (fname);
 
       /* Only accept flags for the # 55 form.  */

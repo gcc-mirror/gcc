@@ -629,10 +629,11 @@ unescaped_terminator_p (pfile, dest)
 }
 
 /* Parses a string, character constant, or angle-bracketed header file
-   name.  Handles embedded trigraphs and escaped newlines.
+   name.  Handles embedded trigraphs and escaped newlines.  The stored
+   string is guaranteed NUL-terminated, but it is not guaranteed that
+   this is the first NUL since embedded NULs are preserved.
 
-   Multi-line strings are allowed, but they are deprecated within
-   directives.  */
+   Multi-line strings are allowed, but they are deprecated.  */
 static void
 parse_string (pfile, token, terminator)
      cpp_reader *pfile;
@@ -651,14 +652,21 @@ parse_string (pfile, token, terminator)
   for (;;)
     {
       if (buffer->cur == buffer->rlimit)
+	c = EOF;
+      else
+	c = *buffer->cur++;
+
+    have_char:
+      /* We need space for the terminating NUL.  */
+      if (dest >= limit)
+	limit = _cpp_next_chunk (pool, 0, &dest);
+
+      if (c == EOF)
 	{
-	  c = EOF;
 	  unterminated (pfile, terminator);
 	  break;
 	}
-      c = *buffer->cur++;
 
-    have_char:
       /* Handle trigraphs, escaped newlines etc.  */
       if (c == '?' || c == '\\')
 	c = skip_escaped_newlines (buffer, c);
@@ -690,8 +698,9 @@ parse_string (pfile, token, terminator)
 	  if (pfile->mlstring_pos.line == 0)
 	    pfile->mlstring_pos = pfile->lexer_pos;
 	      
-	  handle_newline (buffer, c);  /* Stores to read_ahead.  */
-	  c = '\n';
+	  c = handle_newline (buffer, c);
+	  *dest++ = '\n';
+	  goto have_char;
 	}
       else if (c == '\0')
 	{
@@ -699,25 +708,16 @@ parse_string (pfile, token, terminator)
 	    cpp_warning (pfile, "null character(s) preserved in literal");
 	}
 
-      /* No terminating null for strings - they could contain nulls.  */
-      if (dest >= limit)
-	limit = _cpp_next_chunk (pool, 0, &dest);
       *dest++ = c;
-
-      /* If we had a new line, the next character is in read_ahead.  */
-      if (c != '\n')
-	continue;
-      c = buffer->read_ahead;
-      if (c != EOF)
-	goto have_char;
     }
 
   /* Remember the next character.  */
   buffer->read_ahead = c;
+  *dest = '\0';
 
   token->val.str.text = POOL_FRONT (pool);
   token->val.str.len = dest - token->val.str.text;
-  POOL_COMMIT (pool, token->val.str.len);
+  POOL_COMMIT (pool, token->val.str.len + 1);
 }
 
 /* The stored comment includes the comment start and any terminator.  */
@@ -1480,26 +1480,6 @@ _cpp_equiv_tokens (a, b)
 
   return 0;
 }
-
-#if 0
-/* Compare two token lists.  */
-int
-_cpp_equiv_toklists (a, b)
-     const struct toklist *a, *b;
-{
-  unsigned int i, count;
-
-  count = a->limit - a->first;
-  if (count != (b->limit - b->first))
-    return 0;
-
-  for (i = 0; i < count; i++)
-    if (! _cpp_equiv_tokens (&a->first[i], &b->first[i]))
-      return 0;
-
-  return 1;
-}
-#endif
 
 /* Determine whether two tokens can be pasted together, and if so,
    what the resulting token is.  Returns CPP_EOF if the tokens cannot
