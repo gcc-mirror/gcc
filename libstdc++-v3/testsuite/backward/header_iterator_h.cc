@@ -23,7 +23,7 @@
 #include <iterator.h>
 #include <testsuite_hooks.h>
 
-// { dg-excess-errors "" }
+// { dg-options "-Wno-deprecated" }
 
 int main(void)
 {
