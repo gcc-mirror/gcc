@@ -28,12 +28,6 @@
 	PR c++/14810
 	* name-lookup.c (maybe_push_cleanup_level): Robustify.
 
-2004-03-30  Jason Merrill  <jason@redhat.com>
-
-	PR c++/13294
-	* pt.c (maybe_process_partial_specialization): Remember the
-	context of a specialization.
-
 2004-03-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14724
