@@ -1538,3 +1538,23 @@ extern char *i960_output_move_quad ();
 /* Defined in reload.c, and used in insn-recog.c.  */
 
 extern int rtx_equal_function_value_matters;
+
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
+do {									\
+  int d = (DELTA);							\
+  if (d < 0 && d > -32)							\
+    fprintf (FILE, "\tsubo %d,g0,g0\n", -d);				\
+  else if (d > 0 && d < 32)						\
+    fprintf (FILE, "\taddo %d,g0,g0\n", d);				\
+  else									\
+    {									\
+      fprintf (FILE, "\tldconst %d,r5\n", d);				\
+      fprintf (FILE, "\taddo r5,g0,g0\n");				\
+    }									\
+  fprintf (FILE, "\tbx ");						\
+  assemble_name								\
+    (FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+  fprintf (FILE, "\n");							\
+} while (0);
