@@ -1,3 +1,17 @@
+2002-02-17  Roland McGrath  <roland@frob.com>
+
+	* config.gcc (powerpc-*-gnu-gnualtivec*,
+	powerpc-*-gnu*, powerpc64-*-gnu*): New configurations.
+	* config/rs6000/gnu.h: New file.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS):
+	Grok "gnu" in rs6000_abi_name.
+	(ASM_SPEC, CC1_SPEC, LINK_START_SPEC, LINK_OS_SPEC,
+	CPP_ENDIAN_SPEC, CPP_SPEC, STARTFILE_SPEC, LIB_SPEC, ENDFILE_SPEC):
+	Grok -mcall-gnu analogous to -mcall-linux et al.
+	(LIB_GNU_SPEC, STARTFILE_GNU_SPEC, ENDFILE_GNU_SPEC,
+	LINK_START_GNU_SPEC, LINK_OS_GNU_SPEC, CPP_OS_GNU_SPEC): New macros.
+	(SUBTARGET_EXTRA_SPECS): Add *_os_gnu specs using them.
+
 2002-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/3444:

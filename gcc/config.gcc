@@ -2679,6 +2679,11 @@ powerpc64-*-linux*)
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
 	;;
+powerpc64-*-gnu*)
+	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux64.h rs6000/gnu.h"
+	out_file=rs6000/rs6000.c
+	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-gnu rs6000/t-ppccomm"
+	;;
 powerpc-*-beos*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/beos.h rs6000/xcoff.h"
 	xm_defines=POSIX
@@ -2779,6 +2784,22 @@ powerpc-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	;;
+powerpc-*-gnu-gnualtivec*)
+	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h rs6000/gnu.h"
+	out_file=rs6000/rs6000.c
+	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-gnu rs6000/t-ppccomm"
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	;;
+powerpc-*-gnu*)
+	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/gnu.h"
+	out_file=rs6000/rs6000.c
+	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-gnu rs6000/t-ppccomm"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
