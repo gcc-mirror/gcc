@@ -868,7 +868,29 @@ embedded_pic_offset (x)
      rtx x;
 {
   if (embedded_pic_fnaddr_rtx == NULL)
-    embedded_pic_fnaddr_rtx = gen_reg_rtx (Pmode);
+    {
+      rtx seq;
+
+      embedded_pic_fnaddr_rtx = gen_reg_rtx (Pmode);
+      
+      /* Output code at function start to initialize the psuedo-reg.  */
+      /* ??? We used to do this in FINALIZE_PIC, but that does not work for
+	 inline functions, because it is called after RTL for the function
+	 has been copied.  The pseudo-reg in embedded_pic_fnaddr_rtx however
+	 does not get copied, and ends up not matching the rest of the RTL.
+	 This solution works, but means that we get unnecessary code to
+	 initialize this value everytime a function is inlined into another
+	 function.  */
+      start_sequence ();
+      emit_insn (gen_get_fnaddr (embedded_pic_fnaddr_rtx,
+				 XEXP (DECL_RTL (current_function_decl), 0)));
+      seq = gen_sequence ();
+      end_sequence ();
+      push_topmost_sequence ();
+      emit_insn_after (seq, get_insns ());
+      pop_topmost_sequence ();
+    }
+
   return gen_rtx (CONST, Pmode,
 		  gen_rtx (MINUS, Pmode, x,
 			   XEXP (DECL_RTL (current_function_decl), 0)));
@@ -4362,34 +4384,6 @@ epilogue_reg_mentioned_p (insn)
 
   return 0;
 }
-
-
-/* When generating embedded PIC code we may need to get the address of
-   the current function.  We will need it if we take the address of
-   any symbol in the .text section.  */
-
-void
-mips_finalize_pic ()
-{
-  rtx seq;
-
-  if (! TARGET_EMBEDDED_PIC)
-    return;
-  if (embedded_pic_fnaddr_rtx == NULL)
-    return;
-
-  start_sequence ();
-
-  emit_insn (gen_get_fnaddr (embedded_pic_fnaddr_rtx,
-			     XEXP (DECL_RTL (current_function_decl), 0)));
-
-  seq = gen_sequence ();
-  end_sequence ();
-  emit_insn_after (seq, get_insns ());
-
-  embedded_pic_fnaddr_rtx = NULL;
-}
-
 
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.
