@@ -1,3 +1,8 @@
+2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR rtl-optimization/20290
+	* gcc.c-torture/execute/loop-ivopts-2.c: New.
+
 2005-04-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/old-style-then-proto-1.c: New test.
