@@ -1,3 +1,8 @@
+2001-08-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* jcf-write.c (generate_bytecode_insns): Generate an integer to
+	real conversion for increments and decrements of reals.
+
 2001-08-24  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (check_deprecation): Handle TYPE_DECL in a special case,

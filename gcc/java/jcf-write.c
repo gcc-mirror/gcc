@@ -1960,8 +1960,15 @@ generate_bytecode_insns (exp, target, state)
       /* Stack, if ARRAY_REF:  ..., [result, ] array, index, oldvalue. */
       /* Stack, if COMPONENT_REF:  ..., [result, ] objectref, oldvalue. */
       /* Stack, otherwise:  ..., [result, ] oldvalue. */
-      if (size == 1)
-	push_int_const (value, state);
+      if (size == 1 || TREE_CODE (type) == REAL_TYPE)
+	{
+	  push_int_const (value, state);
+	  if (TREE_CODE (type) == REAL_TYPE)
+	    {
+	      RESERVE (1);
+	      OP1 (TYPE_PRECISION (type) == 32 ? OPCODE_i2f : OPCODE_i2d);
+	    }
+	}
       else
 	push_long_const (value, (HOST_WIDE_INT)(value >= 0 ? 0 : -1), state);
       NOTE_PUSH (size);
