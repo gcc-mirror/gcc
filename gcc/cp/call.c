@@ -716,6 +716,8 @@ standard_conversion (tree to, tree from, tree expr)
 					TYPE_PTRMEM_POINTED_TO_TYPE (from));
 	      conv = build_conv (ck_pmem, from, conv);
 	    }
+	  else if (!same_type_p (fbase, tbase))
+	    return NULL;
 	}
       else if (IS_AGGR_TYPE (TREE_TYPE (from))
 	       && IS_AGGR_TYPE (TREE_TYPE (to))

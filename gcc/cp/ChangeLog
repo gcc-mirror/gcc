@@ -1,5 +1,18 @@
 2004-08-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16853
+	* call.c (standard_conversion): Do not accept conversions between
+	pointers to members if the class types are unrelated.
+
+	PR c++/16618
+	* parser.c (cp_parser_builtin_offsetof): Cast to "const volatile
+	char &" instead of just "char &".
+
+	PR c++/16870
+	* pt.c (tsubst): Just return the unknown_type_node.
+
+2004-08-11  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/16964
 	* parser.c (cp_parser_class_specifier): Robustify.
 

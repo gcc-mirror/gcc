@@ -5859,7 +5859,12 @@ cp_parser_builtin_offsetof (cp_parser *parser)
      we're just mirroring the traditional macro implementation.  Better
      would be to do the lowering of the ADDR_EXPR to flat pointer arithmetic
      here rather than in build_x_unary_op.  */
-  expr = build_reinterpret_cast (build_reference_type (char_type_node), expr);
+  
+  expr = (build_reinterpret_cast 
+	  (build_reference_type (cp_build_qualified_type 
+				 (char_type_node, 
+				  TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)), 
+	   expr));
   expr = build_x_unary_op (ADDR_EXPR, expr);
   expr = build_reinterpret_cast (size_type_node, expr);
 

@@ -6706,6 +6706,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       || t == integer_type_node
       || t == void_type_node
       || t == char_type_node
+      || t == unknown_type_node
       || TREE_CODE (t) == NAMESPACE_DECL)
     return t;
 
