@@ -1,3 +1,37 @@
+Mon Jul  9 06:41:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-lang.c (start_cdtor): Remove extra parameter from start_function.
+
+	* emit-rtl.c (adjust_address_nv, replace_equiv_address_nv): New fcns.
+	(operand_subword): Use them.
+	(change_address_1): Renamed from change_address; new arg VALIDATE.
+	* expr.h: Reflect above changes; change_address now macro.
+	* alias.c (canon_rtx): Use replace_equiv_address_nv instead of
+	making MEM.
+	* cselib.c (add_mem_for_addr): Likewise.
+	* expr.c (protect_from_queue, emit_move_insn_1): Likewise.
+	* regmove.c (try_apply_stack_adjustment): Likewise.
+	* reload.c (push_reload, make_memloc): Likewise.
+	* reload1.c (eliminate_regs): Likewise.
+	* simplify-rtx.c (simplify_replace_rtx): Likewise.
+	* caller-save.c (setup_save_areas): Use adjust_address_nv instead of
+	adjust_addess.
+	* combine.c (make_extraction, simplify_shift_const): Likewise.
+	(gen_lowpart_for_combine): Likewise.
+	* cse.c (gen_lowpart_if_possible): Likewise.
+	* function.c (fixup_var_refs_1, purge_addressof_1): Likewise.
+	* expr.c (expand_expr, case COMPONENT_REF): Likewise.
+	* optabs.c (gen_move_insn): Likewise.
+	* reload1.c (alter_reg): Likewise.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+	* stmt.c (expand_anon_union_decl): Likewise.
+	* recog.c (validate_replace_rtx_1): Likewise.
+	(expr.h): Include.
+	* Makefile.in (recog.o): Add $(EXPR_H).
+	* explow.c (stabilize): Call replace_equiv_address.
+	* expr.c (move_by_pieces_1, store_by_pieces_2): Likewise.
+	* final.c (alter_subreg): OFFSET is HOST_WIDE_INT.
+
 2001-07-03  Andrew Haley  <aph@redhat.com>
 
 	* expmed.c (store_fixed_bit_field): Don't use a mode bigger than
@@ -18,50 +52,49 @@
 	* doc/tm.texi: Document TARGET_ASM_FUNCTION_END_PROLOGUE,
 	TARGET_ASM_FUNCTION_BEGIN_EPILOGUE, TARGET_ASM_OPEN_PAREN and
 	TARGET_ASM_CLOSE_PAREN.
-config:
-	* i386/i386.c (TARGET_ASM_OPEN_PAREN, TARGET_ASM_CLOSE_PAREN):
+	* config/i386/i386.c (TARGET_ASM_OPEN_PAREN, TARGET_ASM_CLOSE_PAREN):
 	Override.
-	* pdp11/pdp11.c (TARGET_ASM_OPEN_PAREN, TARGET_ASM_CLOSE_PAREN):
+	* config/pdp11/pdp11.c (TARGET_ASM_OPEN_PAREN, TARGET_ASM_CLOSE_PAREN):
 	Override.
-	* 1750a/1750a.h (ASM_OPEN_PAREN, ASM_CLOSE_PAREN): Remove.
-	* a29k/a29k.h: Similarly.
-	* alpha/alpha.h: Similarly.
-	* arc/arc.h: Similarly.
-	* arm/aof.h: Similarly.
-	* arm/aout.h: Similarly.
-	* avr/avr.h: Similarly.
-	* c4x/c4x.h: Similarly.
-	* clipper/clipper.h: Similarly.
-	* convex/convex.h: Similarly.
-	* d30v/d30v.h: Similarly.
-	* dsp16xx/dsp16xx.h: Similarly.
-	* elxsi/elxsi.h: Similarly.
-	* fr30/fr30.h: Similarly.
-	* h8300/h8300.h: Similarly.
-	* i370/i370.h: Similarly.
-	* i386/i386.h: Similarly.
-	* i860/i860.h: Similarly.
-	* i960/i960.h: Similarly.
-	* ia64/ia64.h: Similarly.
-	* m32r/m32r.h: Similarly.
-	* m68hc11/m68hc11.h: Similarly.
-	* m68k/m68k.h: Similarly.
-	* m88k/m88k.h: Similarly.
-	* mcore/mcore.h: Similarly.
-	* mips/mips.h: Similarly.
-	* mn10200/mn10200.h: Similarly.
-	* mn10300/mn10300.h: Similarly.
-	* ns32k/ns32k.h: Similarly.
-	* pa/pa.h: Similarly.
-	* pdp11/pdp11.h: Similarly.
-	* pj/pj.h: Similarly.
-	* romp/romp.h: Similarly.
-	* rs6000/rs6000.h: Similarly.
-	* sh/sh.h: Similarly.
-	* sparc/sparc.h: Similarly.
-	* v850/v850.h: Similarly.
-	* vax/vax.h: Similarly.
-	* we32k/we32k.h: Similarly.
+	* config/1750a/1750a.h (ASM_OPEN_PAREN, ASM_CLOSE_PAREN): Remove.
+	* config/a29k/a29k.h: Similarly.
+	* config/alpha/alpha.h: Similarly.
+	* config/arc/arc.h: Similarly.
+	* config/arm/aof.h: Similarly.
+	* config/arm/aout.h: Similarly.
+	* config/avr/avr.h: Similarly.
+	* config/c4x/c4x.h: Similarly.
+	* config/clipper/clipper.h: Similarly.
+	* config/convex/convex.h: Similarly.
+	* config/d30v/d30v.h: Similarly.
+	* config/dsp16xx/dsp16xx.h: Similarly.
+	* config/elxsi/elxsi.h: Similarly.
+	* config/fr30/fr30.h: Similarly.
+	* config/h8300/h8300.h: Similarly.
+	* config/i370/i370.h: Similarly.
+	* config/i386/i386.h: Similarly.
+	* config/i860/i860.h: Similarly.
+	* config/i960/i960.h: Similarly.
+	* config/ia64/ia64.h: Similarly.
+	* config/m32r/m32r.h: Similarly.
+	* config/m68hc11/m68hc11.h: Similarly.
+	* config/m68k/m68k.h: Similarly.
+	* config/m88k/m88k.h: Similarly.
+	* config/mcore/mcore.h: Similarly.
+	* config/mips/mips.h: Similarly.
+	* config/mn10200/mn10200.h: Similarly.
+	* config/mn10300/mn10300.h: Similarly.
+	* config/ns32k/ns32k.h: Similarly.
+	* config/pa/pa.h: Similarly.
+	* config/pdp11/pdp11.h: Similarly.
+	* config/pj/pj.h: Similarly.
+	* config/romp/romp.h: Similarly.
+	* config/rs6000/rs6000.h: Similarly.
+	* config/sh/sh.h: Similarly.
+	* config/sparc/sparc.h: Similarly.
+	* config/v850/v850.h: Similarly.
+	* config/vax/vax.h: Similarly.
+	* config/we32k/we32k.h: Similarly.
 
 2001-07-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -153,25 +186,25 @@ config:
 	(TARGET_ASM_OUT): Update.
 	* target.h (struct gcc_target): New members function_end_prologue
 	and function_begin_epilogue.
-config:
-	* 1750/1750.h (ASM_OUTPUT_FUNNAM): Delete as unused.
-	* alpha/alpha-protos.h (output_end_prologue): Delete.
-	* alpha/alpha.c (output_end_prologue): Rename to
+	* config/1750/1750.h (ASM_OUTPUT_FUNNAM): Delete as unused.
+	* config/alpha/alpha-protos.h (output_end_prologue): Delete.
+	* config/alpha/alpha.c (output_end_prologue): Rename to
 	alpha_output_function_end_prologue.  Use in target struct
 	and make static.
-	* alpha/alpha.h (FUNCTION_END_PROLOGUE): Delete.
-	* ia64/ia64-protos.h (ia64_output_end_prologue): Delete.
-	* ia64/ia64.c (ia64_output_end_prologue): Rename to
+	* config/alpha/alpha.h (FUNCTION_END_PROLOGUE): Delete.
+	* config/ia64/ia64-protos.h (ia64_output_end_prologue): Delete.
+	* config/ia64/ia64.c (ia64_output_end_prologue): Rename to
 	ia64_output_function_end_prologue.  Use in target struct
 	and make static.
 	(ia64_function_prologue, ia64_funciton_epilogue): Rename
 	mistyped prototypes.
-	* ia64/ia64.h (FUNCTION_END_PROLOGUE): Delete.
-	* m88k/m88k-protos.h (m88k_end_prologue, m88k_begin_epilogue): Delete.
-	* m88k/m88k.c (m88k_end_prologue, m88k_begin_epilogue): Rename
+	* config/ia64/ia64.h (FUNCTION_END_PROLOGUE): Delete.
+	* config/m88k/m88k-protos.h (m88k_end_prologue, m88k_begin_epilogue):
+	Delete.
+	* config/m88k/m88k.c (m88k_end_prologue, m88k_begin_epilogue): Rename
 	an use in target struct, make static.
-	* ia64/ia64.h (FUNCTION_END_PROLOGUE, FUNCTION_BEGIN_EPILOGUE): Delete.
-
+	* config/ia64/ia64.h (FUNCTION_END_PROLOGUE, FUNCTION_BEGIN_EPILOGUE):
+	Delete.
 
 2001-07-08  Richard Henderson  <rth@redhat.com>
 

@@ -187,7 +187,7 @@ start_cdtor (method_type)
 		  build_nt (CALL_EXPR, fnname,
 			    tree_cons (NULL_TREE, NULL_TREE, void_list_node_1),
 			    NULL_TREE),
-		  NULL_TREE, NULL_TREE);
+		  NULL_TREE);
   store_parm_decls ();
 
   current_function_cannot_inline
