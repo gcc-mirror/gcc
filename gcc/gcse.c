@@ -616,7 +616,7 @@ static void compute_transpout	PARAMS ((void));
 static void compute_local_properties PARAMS ((sbitmap *, sbitmap *, sbitmap *,
 					      int));
 static void compute_cprop_data	PARAMS ((void));
-static void find_used_regs	PARAMS ((rtx));
+static void find_used_regs	PARAMS ((rtx *, void *));
 static int try_replace_reg	PARAMS ((rtx, rtx, rtx));
 static struct expr *find_avail_set PARAMS ((int, rtx));
 static int cprop_jump		PARAMS ((rtx, rtx, rtx));
@@ -3937,56 +3937,29 @@ static int reg_use_count;
    This doesn't hurt anything but it will slow things down.  */
 
 static void
-find_used_regs (x)
-     rtx x;
+find_used_regs (xptr, data)
+     rtx *xptr;
+     void *data ATTRIBUTE_UNUSED;
 {
   int i, j;
   enum rtx_code code;
   const char *fmt;
+  rtx x = *xptr;
 
   /* repeat is used to turn tail-recursion into iteration since GCC
      can't do it when there's no return value.  */
  repeat:
-
   if (x == 0)
     return;
 
   code = GET_CODE (x);
-  switch (code)
+  if (REG_P (x))
     {
-    case REG:
       if (reg_use_count == MAX_USES)
 	return;
 
       reg_use_table[reg_use_count].reg_rtx = x;
       reg_use_count++;
-      return;
-
-    case MEM:
-      x = XEXP (x, 0);
-      goto repeat;
-
-    case PC:
-    case CC0:
-    case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    case CLOBBER:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-    case ASM_INPUT: /*FIXME*/
-      return;
-
-    case SET:
-      if (GET_CODE (SET_DEST (x)) == MEM)
-	find_used_regs (SET_DEST (x));
-      x = SET_SRC (x);
-      goto repeat;
-
-    default:
-      break;
     }
 
   /* Recursively scan the operands of this expression.  */
@@ -4004,11 +3977,11 @@ find_used_regs (x)
 	      goto repeat;
 	    }
 
-	  find_used_regs (XEXP (x, i));
+	  find_used_regs (&XEXP (x, i), data);
 	}
       else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  find_used_regs (XVECEXP (x, i, j));
+	  find_used_regs (&XVECEXP (x, i, j), data);
     }
 }
 
@@ -4024,29 +3997,19 @@ try_replace_reg (from, to, insn)
   int success = 0;
   rtx set = single_set (insn);
 
-  /* If this is a single set, try to simplify the source of the set given
-     our substitution.  We could perhaps try this for multiple SETs, but
-     it probably won't buy us anything.  */
-  if (set != 0)
+  success = validate_replace_src (from, to, insn);
+
+  /* If above failed and this is a single set, try to simplify the source of
+     the set given our substitution.  We could perhaps try this for multiple
+     SETs, but it probably won't buy us anything.  */
+  if (!success && set != 0)
     {
       src = simplify_replace_rtx (SET_SRC (set), from, to);
 
-      /* Try this two ways: first just replace SET_SRC.  If that doesn't
-	 work and this is a PARALLEL, try to replace the whole pattern
-	 with a new SET.  */
-      if (validate_change (insn, &SET_SRC (set), src, 0))
-	success = 1;
-      else if (GET_CODE (PATTERN (insn)) == PARALLEL
-	       && validate_change (insn, &PATTERN (insn),
-				   gen_rtx_SET (VOIDmode, SET_DEST (set),
-						src),
-				   0))
+      if (!rtx_equal_p (src, SET_SRC (set))
+	  && validate_change (insn, &SET_SRC (set), src, 0))
 	success = 1;
     }
-
-  /* Otherwise, try to do a global replacement within the insn.  */
-  if (!success)
-    success = validate_replace_src (from, to, insn);
 
   /* If we've failed to do replacement, have a single SET, and don't already
      have a note, add a REG_EQUAL note to not lose information.  */
@@ -4237,19 +4200,17 @@ cprop_insn (insn, alter_jumps)
   int changed = 0;
   rtx note;
 
-  /* Only propagate into SETs.  Note that a conditional jump is a
-     SET with pc_rtx as the destination.  */
-  if (GET_CODE (insn) != INSN && GET_CODE (insn) != JUMP_INSN)
+  if (!INSN_P (insn))
     return 0;
 
   reg_use_count = 0;
-  find_used_regs (PATTERN (insn));
+  note_uses (&PATTERN (insn), find_used_regs, NULL);
   
   note = find_reg_equal_equiv_note (insn);
 
   /* We may win even when propagating constants into notes. */
   if (note)
-    find_used_regs (XEXP (note, 0));
+    find_used_regs (&XEXP (note, 0), NULL);
 
   for (reg_used = &reg_use_table[0]; reg_use_count > 0;
        reg_used++, reg_use_count--)
