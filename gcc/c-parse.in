@@ -682,12 +682,14 @@ end ifobjc
 		     there is a way to turn off the entire subtree of blocks
 		     that are contained in it.  */
 		  keep_next_level ();
+		  push_iterator_stack ();
 		  push_label_level ();
 		  $<ttype>$ = expand_start_stmt_expr (); }
 	  compstmt ')'
 		{ tree rtl_exp;
 		  if (pedantic)
 		    pedwarn ("ANSI C forbids braced-groups within expressions");
+		  pop_iterator_stack ();
 		  pop_label_level ();
 		  rtl_exp = expand_end_stmt_expr ($<ttype>2);
 		  /* The statements have side effects, so the group does.  */
@@ -1541,10 +1543,11 @@ stmt_or_label:
 stmt:
 	  compstmt
 		{ stmt_count++; }
+        | all_iter_stmt 
 	| expr ';'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
-		  c_expand_expr_stmt ($1);
+		  iterator_expand ($1);
 		  clear_momentary (); }
 	| simple_if ELSE
 		{ expand_start_else ();
@@ -1714,6 +1717,61 @@ stmt:
 		  expand_computed_goto (convert (ptr_type_node, $3)); }
 	| ';'
 	;
+
+all_iter_stmt:
+	  all_iter_stmt_simple
+/*	| all_iter_stmt_with_decl */
+	;
+
+all_iter_stmt_simple:
+	  FOR '(' primary ')' 
+	  {
+	    /* The value returned by this action is  */
+	    /*      1 if everything is OK */ 
+	    /*      0 in case of error or already bound iterator */
+
+	    $<itype>$ = 0;
+	    if (TREE_CODE ($3) != VAR_DECL)
+	      error ("invalid `for (ITERATOR)' syntax");
+	    if (! ITERATOR_P ($3))
+	      error ("`%s' is not an iterator",
+		     IDENTIFIER_POINTER (DECL_NAME ($3)));
+	    else if (ITERATOR_BOUND_P ($3))
+	      error ("`for (%s)' inside expansion of same iterator"
+		     IDENTIFIER_POINTER (DECL_NAME ($3)));
+	    else
+	      {
+		$<itype>$ = 1;
+		iterator_for_loop_start ($3);
+	      }
+	  }
+	  lineno_labeled_stmt
+	  {
+	    if ($<itype>5)
+	      iterator_for_loop_end ($3);
+	  }
+
+/*  This really should allow any kind of declaration,
+    for generality.  Fix it before turning it back on.
+
+all_iter_stmt_with_decl:
+	  FOR '(' ITERATOR pushlevel setspecs iterator_spec ')' 
+	  {
+*/	    /* The value returned by this action is  */
+	    /*      1 if everything is OK */ 
+	    /*      0 in case of error or already bound iterator */
+/*
+	    iterator_for_loop_start ($6);
+	  }
+	  lineno_labeled_stmt
+	  {
+	    iterator_for_loop_end ($6);
+	    emit_line_note (input_filename, lineno);
+	    expand_end_bindings (getdecls (), 1, 0);
+	    $<ttype>$ = poplevel (1, 1, 0);
+	    pop_momentary ();	    
+	  }
+*/
 
 /* Any kind of label, including jump labels and case labels.
    ANSI C accepts labels only before statements, but we allow them
