@@ -1,3 +1,7 @@
+2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/torture/mips-div-1.c: New test.
+
 2004-06-22 Kelley Cook <kcook@gcc.gnu.org>
 
 	* g++.dg/opt/pr15551.C: New testcase.
