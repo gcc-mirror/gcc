@@ -1,5 +1,23 @@
 2003-03-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* config/cris/cris.md: Remove lingering EGCS reference.
+	("*extopqihi_side_biap"): For HI operation, match
+	cris_additive_operand_extend_operator, not
+	cris_operand_extend_operator.  Adjust condition.
+	("*extopqihi_side", "*extopqihi"): Ditto.
+	("*extopqisi_side_biap"): Correct operand numbers in condition.
+	("*extophisi_side_biap", "*extopqisi_swap_side_biap"): Ditto.
+	("*extophisi_swap_side_biap", "*extopqisi_swap"): Ditto.
+	("*extophisi_swap"): Ditto.
+	("*extopqihi_swap_side_biap"): For HI operation, match a simple
+	PLUS, not cris_operand_extend_operator.  Adjust condition and
+	output template.
+	("*extopqihi_swap_side", "*extopqihi_swap"): Ditto.
+	* config/cris/cris.h (PREDICATE_CODES): Add
+	cris_additive_operand_extend_operator.
+	* config/cris/cris.c (cris_additive_operand_extend_operator):
+	New predicate.
+
 	* config/cris/aout.h (ENDFILE_SPEC): Undef.
 	(CRIS_CPP_SUBTARGET_SPEC): Move -D__AOUT__ to...
 	(TARGET_OS_CPP_BUILTINS): New macro.
