@@ -1005,7 +1005,8 @@ inlinable_function_p (tree fn, inline_data *id, int nolimit)
   /* In case we don't disregard the inlining limits and we basically
      can inline this function, investigate further.  */
   if (! (*lang_hooks.tree_inlining.disregard_inline_limits) (fn)
-      && inlinable && !nolimit)
+      && inlinable && !nolimit
+      && currfn_insns > MIN_INLINE_INSNS)
     {
       int sum_insns = (id ? id->inlined_insns : 0) + currfn_insns;
       /* In the extreme case that we have exceeded the recursive inlining
@@ -1017,8 +1018,7 @@ inlinable_function_p (tree fn, inline_data *id, int nolimit)
          with slope -1/MAX_INLINE_SLOPE to exceedingly decrease the
          allowable size. We always allow a size of MIN_INLINE_INSNS
          though.  */
-      else if ((sum_insns > MAX_INLINE_INSNS)
-	       && (currfn_insns > MIN_INLINE_INSNS))
+      else if (sum_insns > MAX_INLINE_INSNS)
 	{
 	  int max_curr = MAX_INLINE_INSNS_SINGLE
 			- (sum_insns - MAX_INLINE_INSNS) / MAX_INLINE_SLOPE;
