@@ -9792,6 +9792,53 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
 }
 
+/* Generate an RTL constant from a decl initializer INIT with decl type TYPE,
+   for use in a later add_const_value_attribute call.  */
+
+static rtx
+rtl_for_decl_init (tree init, tree type)
+{
+  rtx rtl = NULL_RTX;
+
+  /* If a variable is initialized with a string constant without embedded
+     zeros, build CONST_STRING.  */
+  if (TREE_CODE (init) == STRING_CST && TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree enttype = TREE_TYPE (type);
+      tree domain = TYPE_DOMAIN (type);
+      enum machine_mode mode = TYPE_MODE (enttype);
+
+      if (GET_MODE_CLASS (mode) == MODE_INT && GET_MODE_SIZE (mode) == 1
+	  && domain
+	  && integer_zerop (TYPE_MIN_VALUE (domain))
+	  && compare_tree_int (TYPE_MAX_VALUE (domain),
+			       TREE_STRING_LENGTH (init) - 1) == 0
+	  && ((size_t) TREE_STRING_LENGTH (init)
+	      == strlen (TREE_STRING_POINTER (init)) + 1))
+	rtl = gen_rtx_CONST_STRING (VOIDmode,
+				    ggc_strdup (TREE_STRING_POINTER (init)));
+    }
+  /* If the initializer is something that we know will expand into an
+     immediate RTL constant, expand it now.  Expanding anything else
+     tends to produce unresolved symbols; see debug/5770 and c++/6381.  */
+  /* Aggregate, vector, and complex types may contain constructors that may
+     result in code being generated when expand_expr is called, so we can't
+     handle them here.  Integer and float are useful and safe types to handle
+     here.  */
+  else if ((INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type))
+	   && initializer_constant_valid_p (init, type) == null_pointer_node)
+    {
+      rtl = expand_expr (init, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+
+      /* If expand_expr returns a MEM, it wasn't immediate.  */
+      gcc_assert (!rtl || !MEM_P (rtl));
+    }
+
+  return rtl;
+}
+
+/* Generate RTL for the variable DECL to represent its location.  */
+
 static rtx
 rtl_for_decl_location (tree decl)
 {
@@ -9987,40 +10034,7 @@ rtl_for_decl_location (tree decl)
      and will have been substituted directly into all expressions that use it.
      C does not have such a concept, but C++ and other languages do.  */
   else if (TREE_CODE (decl) == VAR_DECL && DECL_INITIAL (decl))
-    {
-      /* If a variable is initialized with a string constant without embedded
-	 zeros, build CONST_STRING.  */
-      if (TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
-	  && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	{
-	  tree arrtype = TREE_TYPE (decl);
-	  tree enttype = TREE_TYPE (arrtype);
-	  tree domain = TYPE_DOMAIN (arrtype);
-	  tree init = DECL_INITIAL (decl);
-	  enum machine_mode mode = TYPE_MODE (enttype);
-
-	  if (GET_MODE_CLASS (mode) == MODE_INT && GET_MODE_SIZE (mode) == 1
-	      && domain
-	      && integer_zerop (TYPE_MIN_VALUE (domain))
-	      && compare_tree_int (TYPE_MAX_VALUE (domain),
-				   TREE_STRING_LENGTH (init) - 1) == 0
-	      && ((size_t) TREE_STRING_LENGTH (init)
-		  == strlen (TREE_STRING_POINTER (init)) + 1))
-	    rtl = gen_rtx_CONST_STRING (VOIDmode,
-					ggc_strdup (TREE_STRING_POINTER (init)));
-	}
-      /* If the initializer is something that we know will expand into an
-	 immediate RTL constant, expand it now.  Expanding anything else
-	 tends to produce unresolved symbols; see debug/5770 and c++/6381.  */
-      else if (TREE_CODE (DECL_INITIAL (decl)) == INTEGER_CST
-	       || TREE_CODE (DECL_INITIAL (decl)) == REAL_CST)
-	{
-	  rtl = expand_expr (DECL_INITIAL (decl), NULL_RTX, VOIDmode,
-			     EXPAND_INITIALIZER);
-	  /* If expand_expr returns a MEM, it wasn't immediate.  */
-	  gcc_assert (!rtl || !MEM_P (rtl));
-	}
-    }
+    rtl = rtl_for_decl_init (DECL_INITIAL (decl), TREE_TYPE (decl));
 
   if (rtl)
     rtl = targetm.delegitimize_address (rtl);
@@ -10222,27 +10236,16 @@ tree_add_const_value_attribute (dw_die_ref var_die, tree decl)
 {
   tree init = DECL_INITIAL (decl);
   tree type = TREE_TYPE (decl);
+  rtx rtl;
 
-  if (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl) && init
-      && initializer_constant_valid_p (init, type) == null_pointer_node)
+  if (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl) && init)
     /* OK */;
   else
     return;
 
-  switch (TREE_CODE (type))
-    {
-    case INTEGER_TYPE:
-      if (host_integerp (init, 0))
-	add_AT_unsigned (var_die, DW_AT_const_value,
-			 tree_low_cst (init, 0));
-      else
-	add_AT_long_long (var_die, DW_AT_const_value,
-			  TREE_INT_CST_HIGH (init),
-			  TREE_INT_CST_LOW (init));
-      break;
-
-    default:;
-    }
+  rtl = rtl_for_decl_init (init, type);
+  if (rtl)
+    add_const_value_attribute (var_die, rtl);
 }
 
 /* Generate a DW_AT_name attribute given some string value to be included as
