@@ -1,3 +1,8 @@
+Thu Jul 25 20:34:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (LOAD_EXTEND_OP): QImode zero-extends on SHmedia.
+	* sh.md (truncdiqi2, movqi_media): Likewise.
+
 2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcse.c (obstack_chunk_alloc): Remove.
