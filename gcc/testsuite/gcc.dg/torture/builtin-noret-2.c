@@ -1,6 +1,7 @@
 /* Test for builtin noreturn attributes when the visible declarations
    are function-local.  Modified from builtin-noret-1.c by Zack Weinberg
    <zack@codesourcery.com>.  */
+/* { dg-options "-multiply_defined suppress" { target powerpc-*-darwin* } } */
 /* { dg-do link } */
 
 extern void tabort (void);
