@@ -45,16 +45,13 @@ Boston, MA 02111-1307, USA.  */
   %{g: %{!gfull: -feliminate-unused-debug-symbols %<gfull }}"
 
 #undef ASM_SPEC
-#define ASM_SPEC "-arch i686 \
-  -force_cpusubtype_ALL \
-  %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
-  %{!Zforce_cpusubtype_ALL:%{mmmx:-force_cpusubtype_ALL}\
-			   %{msse:-force_cpusubtype_ALL}\
-			   %{msse2:-force_cpusubtype_ALL}}"
+#define ASM_SPEC "-arch i686 -force_cpusubtype_ALL"
 
 #undef SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS			\
-  { "darwin_arch", "i686" },
+#define SUBTARGET_EXTRA_SPECS					\
+  { "darwin_arch", "i686" },					\
+  { "darwin_subarch", "%{march=pentium3:pentIIm3;:i686}" },
+   
 
 /* Use the following macro for any Darwin/x86-specific command-line option
    translation.  */

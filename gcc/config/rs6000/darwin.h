@@ -132,9 +132,29 @@ do {									\
 %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
 %{!static:%{!mdynamic-no-pic:-fPIC}}"
 
+#define DARWIN_SUBARCH_SPEC "			\
+ %{m64: ppc64}					\
+ %{!m64:					\
+ %{mcpu=601:ppc601;				\
+   mcpu=603:ppc603;				\
+   mcpu=603e:ppc603;				\
+   mcpu=604:ppc604;				\
+   mcpu=604e:ppc604e;				\
+   mcpu=740:ppc750;				\
+   mcpu=750:ppc750;				\
+   mcpu=G3:ppc750;				\
+   mcpu=7400:ppc7400;				\
+   mcpu=G4:ppc7400;				\
+   mcpu=7450:ppc7450;				\
+   mcpu=970:ppc970;				\
+   mcpu=power4:ppc970;				\
+   mcpu=G5:ppc970;				\
+   :ppc}}"
+
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
-  { "darwin_arch", "%{m64:ppc64} %{!m64:ppc}" },
+  { "darwin_arch", "%{m64:ppc64;:ppc}" },	\
+  { "darwin_subarch", DARWIN_SUBARCH_SPEC },
 
 /* Output a .machine directive.  */
 #undef TARGET_ASM_FILE_START

@@ -7185,7 +7185,17 @@ Like @option{-sim}, but pass linker options to locate initialized data at
 @cindex Darwin options
 
 These options are defined for all architectures running the Darwin operating
-system.  They are useful for compatibility with other Mac OS compilers.
+system.
+
+FSF GCC on Darwin does not create ``fat'' object files; it will create
+an object file for the single architecture that it was built to
+target.  Apple's GCC on Darwin does create ``fat'' files if multiple
+@option{-arch} options are used.
+
+The subtype of the file created (@var{ppc7400} or @var{ppc970} or
+@var{i686}) is determined by the flag that specifies the ISA
+that GCC is targetting, @option{-mcpu} or @option{-march}.  The
+@option{-force_cpusubtype_ALL} option can be used to override this.
 
 @table @gcctabopt
 @item -F@var{dir}
@@ -7272,12 +7282,20 @@ See man ld(1) for more information.
 
 @item -bundle_loader @var{executable}
 @opindex bundle_loader
-This specifies the @var{executable} that will be loading the build
+This option specifies the @var{executable} that will be loading the build
 output file being linked. See man ld(1) for more information.
 
-@item -allowable_client  @var{client_name}
-@itemx -arch_only
+@item -dynamiclib
+@opindex -dynamiclib
+When passed this option, GCC will produce a dynamic library instead of
+an executable when linking, using the Darwin @file{libtool} command.
 
+@item -force_cpusubtype_ALL
+@opindex -force_cpusubtype_ALL
+This causes GCC's output file to have the @var{ALL} subtype, instead of
+one controlled by the @option{-mcpu} or @option{-march} option.
+
+@item -allowable_client  @var{client_name}
 @itemx -client_name
 @itemx -compatibility_version
 @itemx -current_version
@@ -7286,11 +7304,9 @@ output file being linked. See man ld(1) for more information.
 @itemx -dylib_file
 @itemx -dylinker_install_name
 @itemx -dynamic
-@itemx -dynamiclib
 @itemx -exported_symbols_list
 @itemx -filelist
 @itemx -flat_namespace
-@itemx -force_cpusubtype_ALL
 @itemx -force_flat_namespace
 @itemx -headerpad_max_install_names
 @itemx -image_base
@@ -7339,7 +7355,6 @@ output file being linked. See man ld(1) for more information.
 @itemx -whatsloaded
 
 @opindex allowable_client
-@opindex arch_only
 @opindex client_name
 @opindex compatibility_version
 @opindex current_version
@@ -7348,11 +7363,9 @@ output file being linked. See man ld(1) for more information.
 @opindex dylib_file
 @opindex dylinker_install_name
 @opindex dynamic
-@opindex dynamiclib
 @opindex exported_symbols_list
 @opindex filelist
 @opindex flat_namespace
-@opindex force_cpusubtype_ALL
 @opindex force_flat_namespace
 @opindex headerpad_max_install_names
 @opindex image_base
@@ -7400,7 +7413,7 @@ output file being linked. See man ld(1) for more information.
 @opindex weak_reference_mismatches
 @opindex whatsloaded
 
-These options are available for Darwin linker. Darwin linker man page
+These options are passed to the Darwin linker.  The Darwin linker man page
 describes them in detail.
 @end table
 

@@ -219,8 +219,6 @@ extern const char *darwin_fix_and_continue_switch;
 #define LINK_COMMAND_SPEC "\
 %{!fdump=*:%{!fsyntax-only:%{!precomp:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{!Zdynamiclib:%(linker)}%{Zdynamiclib:/usr/bin/libtool} \
-    %{!Zdynamiclib:-arch %(darwin_arch)} \
-    %{Zdynamiclib:-arch_only %(darwin_arch)} \
     %l %X %{d} %{s} %{t} %{Z} \
     %{!Zdynamiclib:%{A} %{e*} %{m} %{N} %{n} %{r} %{u*} %{x} %{z}} \
     %{@:-o %f%u.out}%{!@:%{o*}%{!o:-o a.out}} \
@@ -240,13 +238,14 @@ extern const char *darwin_fix_and_continue_switch;
   "%{static}%{!static:-dynamic} \
    %{fgnu-runtime:%:replace-outfile(-lobjc -lobjc-gnu)}\
    %{!Zdynamiclib: \
+     %{Zforce_cpusubtype_ALL:-arch %(darwin_arch) -force_cpusubtype_ALL} \
+     %{!Zforce_cpusubtype_ALL:-arch %(darwin_subarch)} \
      %{Zbundle:-bundle} \
      %{Zbundle_loader*:-bundle_loader %*} \
      %{client_name*} \
      %{compatibility_version*:%e-compatibility_version only allowed with -dynamiclib\
 } \
      %{current_version*:%e-current_version only allowed with -dynamiclib} \
-     %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
      %{Zforce_flat_namespace:-force_flat_namespace} \
      %{Zinstall_name*:%e-install_name only allowed with -dynamiclib} \
      %{keep_private_externs} \
@@ -258,7 +257,8 @@ extern const char *darwin_fix_and_continue_switch;
      %{client_name*:%e-client_name not allowed with -dynamiclib} \
      %{compatibility_version*} \
      %{current_version*} \
-     %{Zforce_cpusubtype_ALL:%e-force_cpusubtype_ALL not allowed with -dynamiclib} \
+     %{Zforce_cpusubtype_ALL:-arch_only %(darwin_arch)} \
+     %{!Zforce_cpusubtype_ALL: -arch_only %(darwin_subarch)} \
      %{Zforce_flat_namespace:%e-force_flat_namespace not allowed with -dynamiclib} \
      %{Zinstall_name*:-install_name %*} \
      %{keep_private_externs:%e-keep_private_externs not allowed with -dynamiclib} \
@@ -332,7 +332,8 @@ extern const char *darwin_fix_and_continue_switch;
 /* #define ENDFILE_SPEC "" */
 
 /* Default Darwin ASM_SPEC, very simple.  */
-#define ASM_SPEC "-arch %(darwin_arch)"
+#define ASM_SPEC "-arch %(darwin_arch) \
+  %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL}"
 
 /* We use Dbx symbol format.  */
 

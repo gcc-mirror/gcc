@@ -43,6 +43,17 @@
 
 2004-10-29  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/i386/darwin.h (ASM_SPEC): Simplify.
+	(SUBTARGET_EXTRA_SPECS): Add darwin_subarch spec.
+	* config/rs6000/darwin.h (DARWIN_SUBARCH_SPEC): New.
+	(SUBTARGET_EXTRA_SPECS): Add darwin_subarch spec.
+	* config/darwin.h (LINK_COMMAND_SPEC): Don't pass -arch here.
+	(LINK_SPEC): Do pass -arch here.  Handle -force_cpusubtype_ALL
+	in all cases.  Pass the right -arch or -arch_only based on -mcpu.
+	(ASM_SPEC): Handle -force_cpusubtype_ALL.
+	* doc/invoke.texi (Darwin Options): Improve documentation for
+	Darwin linker (and libtool) switches.
+
 	* config/rs6000/darwin-fallback.c: Include <mach/thread_status.h>.
 
 2004-10-29  Stan Shebs  <shebs@apple.com>
