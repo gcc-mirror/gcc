@@ -1,5 +1,5 @@
 /* Arrays.java -- Utility class with methods to operate on arrays
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -2430,7 +2430,7 @@ public class Arrays
     {
       int size = a.length;
       for (int i = 0; i < size; i++)
-        if (equals(o, a[i]))
+        if (this.equals(o, a[i]))
           return i;
       return -1;
     }
@@ -2439,7 +2439,7 @@ public class Arrays
     {
       int i = a.length;
       while (--i >= 0)
-        if (equals(o, a[i]))
+        if (this.equals(o, a[i]))
           return i;
       return -1;
     }
