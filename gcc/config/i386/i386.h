@@ -218,7 +218,7 @@ extern const int x86_promote_hi_regs, x86_integer_DFmode_moves;
 extern const int x86_add_esp_4, x86_add_esp_8, x86_sub_esp_4, x86_sub_esp_8;
 extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 extern const int x86_accumulate_outgoing_args, x86_prologue_using_move;
-extern const int x86_epilogue_using_move;
+extern const int x86_epilogue_using_move, x86_decompose_lea;
 
 #define TARGET_USE_LEAVE (x86_use_leave & CPUMASK)
 #define TARGET_PUSH_MEMORY (x86_push_memory & CPUMASK)
@@ -256,6 +256,7 @@ extern const int x86_epilogue_using_move;
 #define TARGET_MEMORY_MISMATCH_STALL (x86_memory_mismatch_stall & CPUMASK)
 #define TARGET_PROLOGUE_USING_MOVE (x86_prologue_using_move & CPUMASK)
 #define TARGET_EPILOGUE_USING_MOVE (x86_epilogue_using_move & CPUMASK)
+#define TARGET_DECOMPOSE_LEA (x86_decompose_lea & CPUMASK)
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
@@ -2485,7 +2486,9 @@ while (0)
 	HOST_WIDE_INT value = INTVAL (XEXP (X, 1));			\
 	if (value == 1)							\
 	  TOPLEVEL_COSTS_N_INSNS (ix86_cost->add);			\
-	if (value == 2 || value == 3)					\
+	if ((value == 2 || value == 3)					\
+	    && !TARGET_DECOMPOSE_LEA					\
+	    && ix86_cost->lea <= ix86_cost->shift_const)		\
 	  TOPLEVEL_COSTS_N_INSNS (ix86_cost->lea);			\
       }									\
     /* fall through */							\
@@ -2546,37 +2549,42 @@ while (0)
     TOPLEVEL_COSTS_N_INSNS (ix86_cost->divide);				\
 									\
   case PLUS:								\
-    if (GET_CODE (XEXP (X, 0)) == PLUS					\
-	&& GET_CODE (XEXP (XEXP (X, 0), 0)) == MULT			\
-	&& GET_CODE (XEXP (XEXP (XEXP (X, 0), 0), 1)) == CONST_INT	\
-	&& GET_CODE (XEXP (X, 1)) == CONST_INT)				\
+    if (!TARGET_DECOMPOSE_LEA						\
+	&& INTEGRAL_MODE_P (GET_MODE (X))				\
+	&& GET_MODE_BITSIZE (GET_MODE (X)) <= GET_MODE_BITSIZE (Pmode))	\
       {									\
-	HOST_WIDE_INT val = INTVAL (XEXP (XEXP (XEXP (X, 0), 0), 1));	\
-	if (val == 2 || val == 4 || val == 8)				\
+        if (GET_CODE (XEXP (X, 0)) == PLUS				\
+	    && GET_CODE (XEXP (XEXP (X, 0), 0)) == MULT			\
+	    && GET_CODE (XEXP (XEXP (XEXP (X, 0), 0), 1)) == CONST_INT	\
+	    && CONSTANT_P (XEXP (X, 1)))				\
 	  {								\
-            return (COSTS_N_INSNS (ix86_cost->lea)			\
-		    + rtx_cost (XEXP (XEXP (X, 0), 1), OUTER_CODE)	\
-		    + rtx_cost (XEXP (XEXP (XEXP (X, 0), 0), 0), OUTER_CODE) \
-		    + rtx_cost (XEXP (X, 1), OUTER_CODE));		\
+	    HOST_WIDE_INT val = INTVAL (XEXP (XEXP (XEXP (X, 0), 0), 1));\
+	    if (val == 2 || val == 4 || val == 8)			\
+	      {								\
+		return (COSTS_N_INSNS (ix86_cost->lea)			\
+			+ rtx_cost (XEXP (XEXP (X, 0), 1), OUTER_CODE)	\
+			+ rtx_cost (XEXP (XEXP (XEXP (X, 0), 0), 0), OUTER_CODE) \
+			+ rtx_cost (XEXP (X, 1), OUTER_CODE));		\
+	      }								\
 	  }								\
-      }									\
-    else if (GET_CODE (XEXP (X, 0)) == MULT				\
-	     && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT)		\
-      {									\
-	HOST_WIDE_INT val = INTVAL (XEXP (XEXP (X, 0), 1));		\
-	if (val == 2 || val == 4 || val == 8)				\
+	else if (GET_CODE (XEXP (X, 0)) == MULT				\
+		 && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT)	\
+	  {								\
+	    HOST_WIDE_INT val = INTVAL (XEXP (XEXP (X, 0), 1));		\
+	    if (val == 2 || val == 4 || val == 8)			\
+	      {								\
+		return (COSTS_N_INSNS (ix86_cost->lea)			\
+			+ rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
+			+ rtx_cost (XEXP (X, 1), OUTER_CODE));		\
+	      }								\
+	  }								\
+	else if (GET_CODE (XEXP (X, 0)) == PLUS)			\
 	  {								\
 	    return (COSTS_N_INSNS (ix86_cost->lea)			\
 		    + rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
+		    + rtx_cost (XEXP (XEXP (X, 0), 1), OUTER_CODE)	\
 		    + rtx_cost (XEXP (X, 1), OUTER_CODE));		\
 	  }								\
-      }									\
-    else if (GET_CODE (XEXP (X, 0)) == PLUS)				\
-      {									\
-	return (COSTS_N_INSNS (ix86_cost->lea)				\
-		+ rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)		\
-		+ rtx_cost (XEXP (XEXP (X, 0), 1), OUTER_CODE)		\
-		+ rtx_cost (XEXP (X, 1), OUTER_CODE));			\
       }									\
 									\
     /* fall through */							\
