@@ -1,3 +1,11 @@
+2003-02-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_wide_const_load_uses_clr): New
+	function.
+	* config/mn10300/mn10300-protos.h: Declare it.
+	* config/mn10300/mn10300.md (movdi, movdf): Use it to compute
+	attribute cc of instructions that may use clr.
+
 2003-02-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* simplify-rtx.c (simplify_binary_operation): Simplify ~y when
