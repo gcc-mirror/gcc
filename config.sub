@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 #   Free Software Foundation, Inc.
 
-timestamp='2001-10-05'
+timestamp='2001-11-08'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -245,14 +245,13 @@ case $basic_machine in
 	| pdp10 | pdp11 | pj | pjl \
 	| powerpc | powerpc64 | powerpc64le | powerpcle | ppcbe \
 	| pyramid \
-	| s390 | s390x \
 	| sh | sh[34] | sh[34]eb | shbe | shle \
 	| sparc | sparc64 | sparclet | sparclite | sparcv9 | sparcv9b \
-	| stormy16 | strongarm \
+	| strongarm \
 	| tahoe | thumb | tic80 | tron \
 	| v850 \
 	| we32k \
-	| x86 | xscale \
+	| x86 | xscale | xstormy16 \
 	| z8k)
 		basic_machine=$basic_machine-unknown
 		;;
@@ -304,14 +303,13 @@ case $basic_machine in
 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* | ppcbe-* \
 	| pyramid-* \
 	| romp-* | rs6000-* \
-	| s390-* | s390x-* \
 	| sh-* | sh[34]-* | sh[34]eb-* | shbe-* | shle-* \
 	| sparc-* | sparc64-* | sparc86x-* | sparclite-* \
-	| sparcv9-* | sparcv9b-* | stormy16-* | strongarm-* | sv1-* \
+	| sparcv9-* | sparcv9b-* | strongarm-* | sv1-* \
 	| t3e-* | tahoe-* | thumb-* | tic30-* | tic54x-* | tic80-* | tron-* \
 	| v850-* | vax-* \
 	| we32k-* \
-	| x86-* | x86_64-* | xmp-* | xps100-* | xscale-* \
+	| x86-* | x86_64-* | xmp-* | xps100-* | xscale-* | xstormy16-* \
 	| ymp-* \
 	| z8k-*)
 		;;
@@ -786,6 +784,12 @@ case $basic_machine in
 	rtpc | rtpc-*)
 		basic_machine=romp-ibm
 		;;
+	s390 | s390-*)
+		basic_machine=s390-ibm
+		;;
+	s390x | s390x-*)
+		basic_machine=s390x-ibm
+		;;
 	sa29200)
 		basic_machine=a29k-amd
 		os=-udi
@@ -1070,7 +1074,7 @@ case $os in
 	      | -interix* | -uwin* | -rhapsody* | -darwin* | -opened* \
 	      | -openstep* | -oskit* | -conix* | -pw32* | -nonstopux* \
 	      | -storm-chaos* | -tops10* | -tenex* | -tops20* | -its* \
-	      | -os2* | -vos*)
+	      | -os2* | -vos* | -palmos* | -uclinux*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)

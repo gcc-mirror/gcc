@@ -1,6 +1,6 @@
-# The structure is too large for the stormy16 - won't fit in 16 bits.
+# The structure is too large for the xstormy16 - won't fit in 16 bits.
 
-if { [istarget "stormy16-*-*"] } {
+if { [istarget "xstormy16-*-*"] } {
         return 1;
 }
 

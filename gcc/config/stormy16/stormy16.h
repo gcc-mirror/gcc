@@ -1,4 +1,4 @@
-/* Stormy16 cpu description.
+/* Xstormy16 cpu description.
    Copyright (C) 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
@@ -138,7 +138,7 @@ Boston, MA 02111-1307, USA.  */
    between the two is that `LIB_SPEC' is used at the end of the command given
    to the linker.
 
-   For stormy16:
+   For xstormy16:
    - If -msim is specified, everything is built and linked as for the sim.
    - If -T is specified, that linker script is used, and it should provide
      appropriate libraries.
@@ -355,7 +355,7 @@ Boston, MA 02111-1307, USA.  */
    The result is to define the macros `__mc68000__', `__sun__' and `__unix__'
    unconditionally, and the macros `mc68000', `sun' and `unix' provided `-ansi'
    is not specified.  */
-#define CPP_PREDEFINES "-Dstormy16 -Amachine=stormy16 -D__INT_MAX__=32767"
+#define CPP_PREDEFINES "-Dxstormy16 -Amachine=xstormy16 -D__INT_MAX__=32767"
 
 /* This declaration should be present.  */
 extern int target_flags;
@@ -444,7 +444,7 @@ extern int target_flags;
         #define TARGET_VERSION \
           fprintf (stderr, " (68k, MIT syntax)");
         #endif  */
-#define TARGET_VERSION fprintf (stderr, " (stormy16 cpu core)");
+#define TARGET_VERSION fprintf (stderr, " (xstormy16 cpu core)");
 
 /* Sometimes certain combinations of command options do not make sense on a
    particular target machine.  You can define a macro `OVERRIDE_OPTIONS' to
@@ -1347,13 +1347,13 @@ enum reg_class
 
    This declaration must be present.  */
 #define PREFERRED_RELOAD_CLASS(X, CLASS) \
-  stormy16_preferred_reload_class (X, CLASS)
+  xstormy16_preferred_reload_class (X, CLASS)
 
 /* Like `PREFERRED_RELOAD_CLASS', but for output reloads instead of input
    reloads.  If you don't define this macro, the default is to use CLASS,
    unchanged.  */
 #define PREFERRED_OUTPUT_RELOAD_CLASS(X, CLASS) \
-  stormy16_preferred_reload_class (X, CLASS)
+  xstormy16_preferred_reload_class (X, CLASS)
 
 /* A C expression that places additional restrictions on the register class to
    use when it is necessary to be able to hold a value of mode MODE in a reload
@@ -1424,7 +1424,7 @@ enum reg_class
 /* This chip has the interesting property that only the first eight
    registers can be moved to/from memory.  */
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)			\
-  stormy16_secondary_reload_class (CLASS, MODE, X)
+  xstormy16_secondary_reload_class (CLASS, MODE, X)
 
 /* #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X) */
 /* #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) */
@@ -1572,7 +1572,7 @@ enum reg_class
    input and `r' on the output.  The next alternative specifies `m' on the
    input and a register class that does not include r0 on the output.  */
 #define EXTRA_CONSTRAINT(VALUE, C) \
-  stormy16_extra_constraint_p (VALUE, C)
+  xstormy16_extra_constraint_p (VALUE, C)
 
 
 /* Basic Stack Layout */
@@ -1680,7 +1680,7 @@ enum reg_class
 
    You only need to define this macro if you want to support call frame
    debugging information like that provided by DWARF 2.  */
-#define INCOMING_FRAME_SP_OFFSET (stormy16_interrupt_function_p () ? 6 : 4)
+#define INCOMING_FRAME_SP_OFFSET (xstormy16_interrupt_function_p () ? 6 : 4)
 
 
 /* Stack Checking.  */
@@ -1876,7 +1876,7 @@ enum reg_class
    initial difference between the specified pair of registers.  This macro must
    be defined if `ELIMINABLE_REGS' is defined.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
-  (OFFSET) = stormy16_initial_elimination_offset (FROM, TO)
+  (OFFSET) = xstormy16_initial_elimination_offset (FROM, TO)
 
 /* Define this macro if the `longjmp' function restores registers from the
    stack frames, rather than from those saved specifically by `setjmp'.
@@ -2015,7 +2015,7 @@ enum reg_class
 #define NUM_ARGUMENT_REGISTERS 6
 #define FIRST_ARGUMENT_REGISTER 2
 
-#define STORMY16_WORD_SIZE(TYPE, MODE)				\
+#define XSTORMY16_WORD_SIZE(TYPE, MODE)				\
   ((((TYPE) ? int_size_in_bytes (TYPE) : GET_MODE_SIZE (MODE))	\
     + 1) 							\
    / 2)
@@ -2052,7 +2052,7 @@ enum reg_class
    stack and then loaded into a register.  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				  \
   ((MODE) == VOIDmode ? const0_rtx					  \
-   : (CUM) + STORMY16_WORD_SIZE (TYPE, MODE) > NUM_ARGUMENT_REGISTERS ? 0 \
+   : (CUM) + XSTORMY16_WORD_SIZE (TYPE, MODE) > NUM_ARGUMENT_REGISTERS ? 0 \
    : gen_rtx_REG (MODE, (CUM) + 2))
 
 /* Define this macro if the target machine has "register windows", so that the
@@ -2161,7 +2161,7 @@ typedef int CUMULATIVE_ARGS;
    the stack.  The compiler knows how to track the amount of stack space used
    for arguments without any special help.  */
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  ((CUM) = stormy16_function_arg_advance (CUM, MODE, TYPE, NAMED))
+  ((CUM) = xstormy16_function_arg_advance (CUM, MODE, TYPE, NAMED))
 
 /* If defined, a C expression which determines whether, and in which direction,
    to pad out an argument with extra space.  The value should be of type `enum
@@ -2221,7 +2221,7 @@ typedef int CUMULATIVE_ARGS;
    because these are returned in another way.  See `STRUCT_VALUE_REGNUM' and
    related macros, below.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  stormy16_function_value (VALTYPE, FUNC)
+  xstormy16_function_value (VALTYPE, FUNC)
 
 
 /* Define this macro if the target machine has "register windows" so that the
@@ -2376,7 +2376,7 @@ typedef int CUMULATIVE_ARGS;
    frame pointer registers are already be assumed to be used as
    needed.  */
 #define EPILOGUE_USES(REGNO) \
-  stormy16_epilogue_uses (REGNO)
+  xstormy16_epilogue_uses (REGNO)
 
 /* Define this macro if the function epilogue contains delay slots to which
    instructions from the rest of the function can be "moved".  The definition
@@ -2437,7 +2437,7 @@ typedef int CUMULATIVE_ARGS;
    FUNCTION instead of jumping to it.  The generic approach does not support
    varargs.  */
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
-  stormy16_asm_output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
+  xstormy16_asm_output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
 
 
 /* Generating Code for Profiling.  */
@@ -2604,7 +2604,7 @@ typedef int CUMULATIVE_ARGS;
    a message describing why the function could not be inlined.  The message will
    displayed if the '-Winline' command line switch has been given.  If the message
    contains a '%s' sequence, this will be replaced by the name of the function.  */
-/* #define TARGET_CANNOT_INLINE_P(FN_DECL) stormy16_cannot_inline_p (FN_DECL) */
+/* #define TARGET_CANNOT_INLINE_P(FN_DECL) xstormy16_cannot_inline_p (FN_DECL) */
 
 /* Implementing the Varargs Macros.  */
 
@@ -2648,7 +2648,7 @@ typedef int CUMULATIVE_ARGS;
    this case.  */
 #define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_ARGS_SIZE, SECOND_TIME) \
   if (! SECOND_TIME) \
-    stormy16_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE)
+    xstormy16_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE)
 
 /* Define this macro if the location where a function argument is passed
    depends on whether or not it is a named argument.
@@ -2664,7 +2664,7 @@ typedef int CUMULATIVE_ARGS;
 /* Build up the stdarg/varargs va_list type tree, assinging it to NODE.  If not
    defined, it is assumed that va_list is a void * pointer.  */
 #define BUILD_VA_LIST_TYPE(NODE) \
-  ((NODE) = stormy16_build_va_list ())
+  ((NODE) = xstormy16_build_va_list ())
 
 /* Implement the stdarg/varargs va_start macro.  STDARG_P is non-zero if this
    is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
@@ -2672,12 +2672,12 @@ typedef int CUMULATIVE_ARGS;
    'next' argument after the variable arguments.  If not defined, a standard
    implementation will be defined that works for arguments passed on the stack.  */
 #define EXPAND_BUILTIN_VA_START(STDARG_P, VALIST, NEXTARG) \
-  stormy16_expand_builtin_va_start (STDARG_P, VALIST, NEXTARG)
+  xstormy16_expand_builtin_va_start (STDARG_P, VALIST, NEXTARG)
 
 /* Implement the stdarg/varargs va_arg macro.  VALIST is the variable of type
    va_list as a tree, TYPE is the type passed to va_arg.  */
 #define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) \
-  stormy16_expand_builtin_va_arg (VALIST, TYPE)
+  xstormy16_expand_builtin_va_arg (VALIST, TYPE)
 
 /* Implement the stdarg/varargs va_end macro.  VALIST is the variable of type
    va_list as a tree.  */
@@ -2710,7 +2710,7 @@ typedef int CUMULATIVE_ARGS;
    the nested function; STATIC_CHAIN is an RTX for the static chain value that
    should be passed to the function when it is called.  */
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
-  stormy16_initialize_trampoline (ADDR, FNADDR, STATIC_CHAIN)
+  xstormy16_initialize_trampoline (ADDR, FNADDR, STATIC_CHAIN)
 
 /* A C expression to allocate run-time space for a trampoline.  The expression
    value should be an RTX representing a memory reference to the space for the
@@ -3042,13 +3042,13 @@ typedef int CUMULATIVE_ARGS;
 #ifdef REG_OK_STRICT
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)	\
 do {							\
-  if (stormy16_legitimate_address_p (MODE, X, 1))	\
+  if (xstormy16_legitimate_address_p (MODE, X, 1))	\
     goto LABEL;						\
 } while (0)
 #else
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)	\
 do {							\
-  if (stormy16_legitimate_address_p (MODE, X, 0))	\
+  if (xstormy16_legitimate_address_p (MODE, X, 0))	\
     goto LABEL;						\
 } while (0)
 #endif
@@ -3116,7 +3116,7 @@ do {							\
    or pre-decrement address.
 */
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)			\
-  if (stormy16_mode_dependent_address_p (ADDR))				\
+  if (xstormy16_mode_dependent_address_p (ADDR))				\
     goto LABEL
 
 /* A C expression that is nonzero if X is a legitimate constant for an
@@ -3526,7 +3526,7 @@ do {							\
    The usual thing for this macro to do is to record a flag in the `symbol_ref'
    (such as `SYMBOL_REF_FLAG') or to store a modified name string in the
    `symbol_ref' (if one bit is not enough information).  */
-#define ENCODE_SECTION_INFO(DECL)  stormy16_encode_section_info(DECL)
+#define ENCODE_SECTION_INFO(DECL)  xstormy16_encode_section_info(DECL)
 
 /* Decode SYM_NAME and store the real name part in VAR, sans the characters
    that encode section info.  Define this macro if `ENCODE_SECTION_INFO' alters
@@ -4402,7 +4402,7 @@ do {									\
    When the machine description has a specification `%PUNCT' (a `%' followed by
    a punctuation character), this macro is called with a null pointer for X and
    the punctuation character for CODE.  */
-#define PRINT_OPERAND(STREAM, X, CODE) stormy16_print_operand (STREAM, X, CODE)
+#define PRINT_OPERAND(STREAM, X, CODE) xstormy16_print_operand (STREAM, X, CODE)
 
 /* A C expression which evaluates to true if CODE is a valid punctuation
    character for use in the `PRINT_OPERAND' macro.  If
@@ -4420,7 +4420,7 @@ do {									\
    then check for it here.
 
    This declaration must be present.  */
-#define PRINT_OPERAND_ADDRESS(STREAM, X) stormy16_print_operand_address (STREAM, X)
+#define PRINT_OPERAND_ADDRESS(STREAM, X) xstormy16_print_operand_address (STREAM, X)
 
 /* A C statement, to be executed after all slot-filler instructions have been
    output.  If necessary, call `dbr_sequence_length' to determine the number of
@@ -4490,7 +4490,7 @@ do {									\
    which would be bad.  Instead, it controls the output of the table
    itself.  */
 #define ASM_OUTPUT_ADDR_VEC(LABEL, BODY) \
-  stormy16_output_addr_vec (file, LABEL, BODY)
+  xstormy16_output_addr_vec (file, LABEL, BODY)
 
 /* Alignment for ADDR_VECs is the same as for code.  */
 #define ADDR_VEC_ALIGN(ADDR_VEC) 1
@@ -4956,7 +4956,7 @@ do {									\
   {"shift_operator", {ASHIFT, ASHIFTRT, LSHIFTRT }},	\
   {"equality_operator", {EQ, NE }},			\
   {"inequality_operator", {GE, GT, LE, LT, GEU, GTU, LEU, LTU }}, \
-  {"stormy16_ineqsi_operator", {LT, GE, LTU, GEU }},
+  {"xstormy16_ineqsi_operator", {LT, GE, LTU, GEU }},
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */
@@ -5342,6 +5342,6 @@ do {									\
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
 
-extern struct rtx_def *stormy16_compare_op0, *stormy16_compare_op1;
+extern struct rtx_def *xstormy16_compare_op0, *xstormy16_compare_op1;
 
-/* End of stormy16.h */
+/* End of xstormy16.h */

@@ -1,4 +1,4 @@
-Stormy16 ABI
+xStormy16 ABI
 ************
 
 !!!!! NOTE !!!!!
@@ -114,10 +114,10 @@ ELF File Format
 ELF file header
 ---------------
 
-Stormy16 ELF files are distinguished by the value EM_STORMY16 in
+xStormy16 ELF files are distinguished by the value EM_XSTORMY16 in
 the e_machine field of the ELF file header:
 
-#define EM_STORMY16	        0xad45
+#define EM_XSTORMY16	        0xad45
 
 DWARF Register Number Mapping
 -----------------------------
@@ -131,17 +131,17 @@ RELA relocs are used exclusively.  The relocation types defined are:
 
 Name			Value	Field	Calculation	Overflow
 ----------------------------------------------------------------
-R_STORMY16_NONE		0	none	none		none
-R_STORMY16_32		1	32	S + A		none
-R_STORMY16_16		2	16	S + A		unsigned
-R_STORMY16_8		3	8	S + A		unsigned
-R_STORMY16_PC32		4	32	S + A - P	none
-R_STORMY16_PC16		5	16	S + A - P	signed
-R_STORMY16_PC8		6	8	S + A - P	signed
-R_STORMY16_REL_12	7	16:12:0	S + A - P	signed
-R_STORMY16_24		8	32:23:1	(S + A) >> 1	unsigned
-R_STORMY16_GNU_VTINHERIT 9	n/a	n/a		n/a
-R_STORMY16_GNU_VTENTRY	10	n/a	n/a		n/a
+R_XSTORMY16_NONE		0	none	none		none
+R_XSTORMY16_32		1	32	S + A		none
+R_XSTORMY16_16		2	16	S + A		unsigned
+R_XSTORMY16_8		3	8	S + A		unsigned
+R_XSTORMY16_PC32		4	32	S + A - P	none
+R_XSTORMY16_PC16		5	16	S + A - P	signed
+R_XSTORMY16_PC8		6	8	S + A - P	signed
+R_XSTORMY16_REL_12	7	16:12:0	S + A - P	signed
+R_XSTORMY16_24		8	32:23:1	(S + A) >> 1	unsigned
+R_XSTORMY16_GNU_VTINHERIT 9	n/a	n/a		n/a
+R_XSTORMY16_GNU_VTENTRY	10	n/a	n/a		n/a
 
 In the 'Calculation' column, 'S' is the value of the symbol to which
 the reloc refers, 'A' is the addend, and 'P' represents the place of

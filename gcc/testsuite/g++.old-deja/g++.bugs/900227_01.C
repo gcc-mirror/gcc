@@ -32,7 +32,7 @@
 
 int main ();
 
-short s = (short) &main;	// WARNING - small integer XFAIL h8*-*-* stormy16-*-*
+short s = (short) &main;	// WARNING - small integer XFAIL h8*-*-* xstormy16-*-*
 char c = (char) &main;		// WARNING - small integer
 
 int main () { return 0; }
