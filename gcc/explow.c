@@ -33,10 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 
-#if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
-#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
-#endif
-
 static rtx break_out_memory_refs	PARAMS ((rtx));
 static void emit_stack_probe		PARAMS ((rtx));
 
@@ -976,7 +972,6 @@ rtx
 round_push (size)
      rtx size;
 {
-#ifdef PREFERRED_STACK_BOUNDARY
   int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
   if (align == 1)
     return size;
@@ -997,7 +992,6 @@ round_push (size)
 			    NULL_RTX, 1);
       size = expand_mult (Pmode, size, GEN_INT (align), NULL_RTX, 1);
     }
-#endif /* PREFERRED_STACK_BOUNDARY */
   return size;
 }
 
@@ -1260,9 +1254,7 @@ allocate_dynamic_stack_space (size, target, known_align)
   /* We can't attempt to minimize alignment necessary, because we don't
      know the final value of preferred_stack_boundary yet while executing
      this code.  */
-#ifdef PREFERRED_STACK_BOUNDARY
   cfun->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
-#endif
 
   /* We will need to ensure that the address we return is aligned to
      BIGGEST_ALIGNMENT.  If STACK_DYNAMIC_OFFSET is defined, we don't
@@ -1277,7 +1269,7 @@ allocate_dynamic_stack_space (size, target, known_align)
      If we have to align, we must leave space in SIZE for the hole
      that might result from the alignment operation.  */
 
-#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET) || ! defined (PREFERRED_STACK_BOUNDARY)
+#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET)
 #define MUST_ALIGN 1
 #else
 #define MUST_ALIGN (PREFERRED_STACK_BOUNDARY < BIGGEST_ALIGNMENT)
@@ -1307,11 +1299,10 @@ allocate_dynamic_stack_space (size, target, known_align)
 	/* See optimize_save_area_alloca to understand what is being
 	   set up here.  */
 
-#if !defined(PREFERRED_STACK_BOUNDARY) || !defined(MUST_ALIGN) || (PREFERRED_STACK_BOUNDARY != BIGGEST_ALIGNMENT)
-	/* If anyone creates a target with these characteristics, let them
-	   know that our optimization cannot work correctly in such a case.  */
-	abort ();
-#endif
+	/* ??? Code below assumes that the save area needs maximal
+	   alignment.  This constraint may be too strong.  */
+	if (PREFERRED_STACK_BOUNDARY != BIGGEST_ALIGNMENT)
+	  abort ();
 
 	if (GET_CODE (size) == CONST_INT)
 	  {
@@ -1357,23 +1348,19 @@ allocate_dynamic_stack_space (size, target, known_align)
      way of knowing which systems have this problem.  So we avoid even
      momentarily mis-aligning the stack.  */
 
-#ifdef PREFERRED_STACK_BOUNDARY
   /* If we added a variable amount to SIZE,
      we can no longer assume it is aligned.  */
 #if !defined (SETJMP_VIA_SAVE_AREA)
   if (MUST_ALIGN || known_align % PREFERRED_STACK_BOUNDARY != 0)
 #endif
     size = round_push (size);
-#endif
 
   do_pending_stack_adjust ();
 
  /* We ought to be called always on the toplevel and stack ought to be aligned
     propertly.  */
-#ifdef PREFERRED_STACK_BOUNDARY
   if (stack_pointer_delta % (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT))
     abort ();
-#endif
 
   /* If needed, check that we have the required amount of stack.  Take into
      account what has already been checked.  */

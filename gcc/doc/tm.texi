@@ -1015,18 +1015,19 @@ size of an integer.
 
 @findex STACK_BOUNDARY
 @item STACK_BOUNDARY
-Define this macro if there is a guaranteed alignment for the stack
-pointer on this machine.  The definition is a C expression
-for the desired alignment (measured in bits).  This value is used as a
-default if @code{PREFERRED_STACK_BOUNDARY} is not defined.
+Define this macro to the minimum alignment enforced by hardware for the
+stack pointer on this machine.  The definition is a C expression for the
+desired alignment (measured in bits).  This value is used as a default
+if @code{PREFERRED_STACK_BOUNDARY} is not defined.  On most machines,
+this should be the same as @code{PARM_BOUNDARY}.
 
 @findex PREFERRED_STACK_BOUNDARY
 @item PREFERRED_STACK_BOUNDARY
-Define this macro if you wish to preserve a certain alignment for
-the stack pointer.  The definition is a C expression
-for the desired alignment (measured in bits).  If @code{STACK_BOUNDARY} is
-also defined, this macro must evaluate to a value equal to or larger
-than @code{STACK_BOUNDARY}.
+Define this macro if you wish to preserve a certain alignment for the
+stack pointer, greater than what the hardware enforces.  The definition
+is a C expression for the desired alignment (measured in bits).  This
+macro must evaluate to a value equal to or larger than
+@code{STACK_BOUNDARY}.
 
 @findex FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
 @item FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN

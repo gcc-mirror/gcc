@@ -1,3 +1,18 @@
+2001-08-11  Zack Weinberg  <zackw@panix.com>
+
+	* defaults.h: Define PREFERRED_STACK_BOUNDARY to
+	STACK_BOUNDARY if not already defined.
+
+	* calls.c, function.c, reload1.c, explow.c: Don't default
+	PREFERRED_STACK_BOUNDARY.  Remove all #if/#ifdef on
+	PREFERRRED_STACK_BOUNDARY and/or STACK_BOUNDARY.
+
+	* explow.c (allocate_dynamic_stack_space): Change unsafe #if
+	to run-time test.
+
+	* doc/tm.texi: Document that STACK_BOUNDARY is required;
+	clarify difference between it and PREFERRED_STACK_BOUNDARY.
+
 2001-08-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmacro.c (enter_macro_context): Push macro expansions even
