@@ -1,3 +1,21 @@
+2003-05-29  Roger Sayle  <roger@eyesopen.com>
+	    Kaveh Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR bootstrap/10169
+	* mips-tfile.c (main): Use getopt_long instead of getopt.
+	Add new command line option --version to display version.
+	Treat --verbose like -v to report a single line version.
+	(options): New global variable for getopt_long.
+	* mips-tdump.c (main): Use getopt_long instead of getopt.
+	New command line options -v, --version and -verbose to display
+	the program version number (to match mips-tfile's behavior).
+	(options): New global variable for getopt_long.
+
+	* gcov.c (options): Zero-terminate getopt_long array.
+	* gcov-dump.c (options): Likewise.
+
+	* Makefile.in (mips-tdump.o): Add dependency on version.h.
+
 2003-05-29  Stan Shebs  <shebs@apple.com>
 
 	Remove OBJC_PROLOGUE everywhere.

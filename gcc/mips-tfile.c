@@ -611,6 +611,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define saber_stop()
 #endif
 
+/* Include getopt.h for the sake of getopt_long.  */
+#include "getopt.h"
+
 #ifndef __LINE__
 #define __LINE__ 0
 #endif
@@ -1510,6 +1513,7 @@ static unsigned	cur_line_alloc	= 0;		/* # bytes total in buffer */
 static long	line_number	= 0;		/* current input line number */
 static int	debug		= 0; 		/* trace functions */
 static int	version		= 0; 		/* print version # */
+static int	verbose		= 0;
 static int	had_errors	= 0;		/* != 0 if errors were found */
 static int	rename_output	= 0;		/* != 0 if rename output file*/
 static int	delete_input	= 0;		/* != 0 if delete input after done */
@@ -1663,6 +1667,15 @@ static const pseudo_ops_t pseudo_ops[] = {
   { "#@stabs",	sizeof("#@stabs")-1,	mark_stabs },
 };
 
+
+/* Command line options for getopt_long.  */
+
+static const struct option options[] =
+{
+  { "version", 0, 0, 'V' },
+  { "verbose", 0, 0, 'v' },
+  { 0, 0, 0, 0 }
+};
 
 /* Add a page to a varray object.  */
 
@@ -4809,7 +4822,7 @@ main (argc, argv)
   void_type_info = type_info_init;
   void_type_info.basic_type = bt_Void;
 
-  while ((option = getopt (argc, argv, "d:i:I:o:v")) != EOF)
+  while ((option = getopt_long (argc, argv, "d:i:I:o:v", options, NULL)) != -1)
     switch (option)
       {
       default:
@@ -4849,9 +4862,23 @@ main (argc, argv)
 	break;
 
       case 'v':
+	verbose++;
+	break;
+
+      case 'V':
 	version++;
 	break;
       }
+
+  if (version)
+    {
+      printf (_("mips-tfile (GCC) %s\n"), version_string);
+      fputs (_("Copyright (C) 2003 Free Software Foundation, Inc.\n"), stdout);
+      fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
+     	     stdout);
+      exit (0);
+    }
 
   if (obj_in_name == (char *) 0 && optind <= argc - 2)
     obj_in_name = argv[--argc];
@@ -4868,7 +4895,19 @@ main (argc, argv)
       delete_input = 1;
     }
 
-  if (object_name == (char *) 0 || had_errors || optind != argc - 1)
+  if (optind != argc - 1)
+    had_errors++;
+
+  if (verbose || had_errors)
+    {
+      fprintf (stderr, _("mips-tfile (GCC) %s"), version_string);
+#ifdef TARGET_VERSION
+      TARGET_VERSION;
+#endif
+      fputc ('\n', stderr);
+    }
+
+  if (object_name == (char *) 0 || had_errors)
     {
       fprintf (stderr, _("Calling Sequence:\n"));
       fprintf (stderr, _("\tmips-tfile [-d <num>] [-v] [-i <o-in-file>] -o <o-out-file> <s-file> (or)\n"));
@@ -4881,16 +4920,6 @@ main (argc, argv)
       fprintf (stderr, _("    3\tDebug level 2 + trace all symbols.\n"));
       fprintf (stderr, _("    4\tDebug level 3 + trace memory allocations.\n"));
       return 1;
-    }
-
-
-  if (version)
-    {
-      fprintf (stderr, _("mips-tfile version %s"), version_string);
-#ifdef TARGET_VERSION
-      TARGET_VERSION;
-#endif
-      fputc ('\n', stderr);
     }
 
   if (obj_in_name == (char *) 0)

@@ -1,5 +1,5 @@
 /* Read and manage MIPS symbol tables from object modules.
-   Copyright (C) 1991, 1994, 1995, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1991, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2003
    Free Software Foundation, Inc.
    Contributed by hartzell@boulder.colorado.edu,
    Rewritten by meissner@osf.org.
@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "version.h"
 #ifdef index
 #undef index
 #endif
@@ -33,6 +34,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #else
 #include "mips/a.out.h"
 #endif /* CROSS_COMPILE */
+
+/* Include getopt.h for the sake of getopt_long.  */
+#include "getopt.h"
 
 #ifndef MIPS_IS_STAB
 /* Macros for mips-tfile.c to encapsulate stabs in ECOFF, and for
@@ -209,6 +213,8 @@ int	 want_line	= 0;	/* print line numbers */
 int	 want_rfd	= 0;	/* print relative file desc's */
 int	 want_scope	= 0;	/* print scopes for every symbol */
 int	 tfile		= 0;	/* no global header file */
+int	 version	= 0;    /* print version # */
+int	 verbose	= 0;
 int	 tfile_fd;		/* file descriptor of .T file */
 off_t	 tfile_offset;		/* current offset in .T file */
 scope_t	*cur_scope	= 0;	/* list of active scopes */
@@ -254,6 +260,14 @@ const struct {const short code; const char string[10];} stab_names[]  = {
 #undef __define_stab
 };
 
+/* Command line options for getopt_long.  */
+
+static const struct option options[] =
+{
+  { "version", 0, 0, 'V' },
+  { "verbose", 0, 0, 'v' },
+  { 0, 0, 0, 0 }
+};
 
 /* Read some bytes at a specified location, and return a pointer.  */
 
@@ -1434,7 +1448,7 @@ main (argc, argv)
   /*
    * Process arguments
    */
-  while ((opt = getopt (argc, argv, "alrst")) != EOF)
+  while ((opt = getopt_long (argc, argv, "alrsvt", options, NULL)) != -1)
     switch (opt)
       {
       default:	errors++;	break;
@@ -1442,10 +1456,35 @@ main (argc, argv)
       case 'l': want_line++;	break;	/* print line numbers */
       case 'r': want_rfd++;	break;	/* print relative fd's */
       case 's':	want_scope++;	break;	/* print scope info */
-      case 't': tfile++;	break;	/* this is a tfile (without header), and not a .o */
+      case 'v': verbose++;	break;  /* print version # */
+      case 'V': version++;	break;  /* print version # */
+      case 't': tfile++;	break;	/* this is a tfile (without header),
+					   and not a .o */
       }
 
-  if (errors || optind != argc - 1)
+  if (version)
+    {
+      printf ("mips-tdump (GCC) %s\n", version_string);
+      fputs ("Copyright (C) 2003 Free Software Foundation, Inc.\n", stdout);
+      fputs ("This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+             stdout);
+      exit (0);
+    }
+
+  if (optind != argc - 1)
+    errors++;
+
+  if (verbose || errors)
+    {
+      fprintf (stderr, "mips-tdump (GCC) %s", version_string);
+#ifdef TARGET_VERSION
+      TARGET_VERSION;
+#endif
+      fputc ('\n', stderr);
+    }
+
+  if (errors)
     {
       fprintf (stderr, "Calling Sequence:\n");
       fprintf (stderr, "\t%s [-alrst] <object-or-T-file>\n", argv[0]);
@@ -1456,6 +1495,7 @@ main (argc, argv)
       fprintf (stderr, "\t-r Print out relative file descriptors.\n");
       fprintf (stderr, "\t-s Print out the current scopes for an item.\n");
       fprintf (stderr, "\t-t Assume there is no global header (ie, a T-file).\n");
+      fprintf (stderr, "\t-v Print program version.\n");
       return 1;
     }
 
