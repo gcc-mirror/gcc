@@ -3,7 +3,7 @@
 struct S
 {
   template <class T>
-  void foo(T);
+  void foo(T) {}
 };
 
 template void S::foo(int);
