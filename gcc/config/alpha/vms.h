@@ -155,39 +155,40 @@ do {								\
 	  = vmskrunch (XSTR (XEXP (DECL_RTL (DECL), 0), 0));	\
 } while (0)
 
-/* Don't use BLKmode if VAX floats are used.  */
+/* Perform any needed actions needed for a function that is receiving a
+   variable number of arguments. 
+
+   CUM is as for INIT_CUMULATIVE_ARGS.
+
+   MODE and TYPE are the mode and type of the current parameter.
+
+   PRETEND_SIZE is a variable that should be set to the amount of stack
+   that must be pushed by the prolog to pretend that our caller pushed
+   it.
+
+   Normally, this macro will push all remaining incoming registers on the
+   stack and set PRETEND_SIZE to the length of the registers pushed. 
+
+   For VMS, we allocate space for all 6 arg registers plus a count.
+
+   However, if NO registers need to be saved, don't allocate any space.
+   This is not only because we won't need the space, but because AP includes
+   the current_pretend_args_size and we don't want to mess up any
+   ap-relative addresses already made.   */
+
 #undef SETUP_INCOMING_VARARGS
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if ((CUM & 0xff) < 6)							\
-    {									\
-      if (! (NO_RTL))							\
-	{								\
-	  move_block_from_reg						\
-	    (16 + (CUM & 0xff),						\
-	     gen_rtx (MEM, BLKmode,					\
-		      plus_constant (virtual_incoming_args_rtx,		\
-				     ((CUM & 0xff) + 6)* UNITS_PER_WORD)),\
-	     6 - (CUM & 0xff), (6 - (CUM & 0xff)) * UNITS_PER_WORD);	\
-	  if (!TARGET_FLOAT_VAX || !TARGET_FPREGS)			\
-	    move_block_from_reg						\
-	      (16 + (TARGET_FPREGS ? 32 : 0) + (CUM & 0xff),		\
-		gen_rtx (MEM, BLKmode,					\
-			 plus_constant (virtual_incoming_args_rtx,	\
-					(CUM & 0xff) * UNITS_PER_WORD)),\
-		6 - (CUM & 0xff), (6 - (CUM & 0xff)) * UNITS_PER_WORD);	\
-	  else								\
-	    {								\
-	      int i;							\
-	      for (i = (CUM & 0xff); i < 6; i++)			\
-		emit_move_insn (					\
-		  gen_rtx (MEM, DFmode,					\
-		    plus_constant (virtual_incoming_args_rtx,		\
-				   i * UNITS_PER_WORD)),		\
-		  gen_rtx (REG, DFmode, 48+i));				\
-	    }								\
-	 }								\
-      PRETEND_SIZE = 12 * UNITS_PER_WORD;				\
-    }									\
+{ if ((CUM) < 6)					\
+    {							\
+      if (! (NO_RTL))					\
+	{						\
+	  emit_move_insn (gen_rtx (REG, DImode, 1),	\
+			  virtual_incoming_args_rtx);	\
+	  emit_insn (gen_arg_home ());			\
+	}						\
+						        \
+      PRETEND_SIZE = 7 * UNITS_PER_WORD;		\
+    }							\
 }
 
 #undef ASM_DECLARE_FUNCTION_NAME
@@ -277,42 +278,6 @@ void *function_arg ();
 { ASM_OUTPUT_ALIGN (FILE, 3); ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM); }
 
 #define NO_MD_PROTOTYPES
-/* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments. 
-
-   CUM is as above.
-
-   MODE and TYPE are the mode and type of the current parameter.
-
-   PRETEND_SIZE is a variable that should be set to the amount of stack
-   that must be pushed by the prolog to pretend that our caller pushed
-   it.
-
-   Normally, this macro will push all remaining incoming registers on the
-   stack and set PRETEND_SIZE to the length of the registers pushed. 
-
-   For VMS, we allocate space for all 6 arg registers plus a count.
-
-   However, if NO registers need to be saved, don't allocate any space.
-   This is not only because we won't need the space, but because AP includes
-   the current_pretend_args_size and we don't want to mess up any
-   ap-relative addresses already made.   */
-   
-
-#undef SETUP_INCOMING_VARARGS
-#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if ((CUM) < 6)					\
-    {							\
-      if (! (NO_RTL))					\
-	{						\
-	  emit_move_insn (gen_rtx (REG, DImode, 1),	\
-			  virtual_incoming_args_rtx);	\
-	  emit_insn (gen_arg_home ());			\
-	}						\
-						        \
-      PRETEND_SIZE = 7 * UNITS_PER_WORD;		\
-    }							\
-}
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
