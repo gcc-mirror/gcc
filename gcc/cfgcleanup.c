@@ -661,7 +661,8 @@ label_is_jump_target_p (rtx label, rtx jump_insn)
 
   if (tablejump_p (jump_insn, NULL, &tmp))
     {
-      rtvec vec = XVEC (tmp, GET_CODE (tmp) == ADDR_DIFF_VEC);
+      rtvec vec = XVEC (PATTERN (tmp),
+			GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC);
       int i, veclen = GET_NUM_ELEM (vec);
 
       for (i = 0; i < veclen; ++i)
