@@ -1,5 +1,11 @@
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
+	* pa-gas.h: Delete file.
+	* config.gcc: Match `parisc' as well as `hppa' for cpu_type=pa.
+	Add new targets hppa*64*-*-linux* and parisc*64*-*-linux*.  Update
+	hppa*-*-linux*.  For all pa targets, remove pa/gas.h from tm_file,
+	instead setting MASK_GAS | MASK_JUMP_IN_DELAY in target_cpu_default2.
+
 	* config/pa/mill32.S: New file.
 	* config/pa/mill64.S: New file.
 	* config/pa/t-linux (LIBGCC1, CROSS_LIBGCC1, LIB1ASMFUNCS,
