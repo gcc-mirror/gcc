@@ -1,4 +1,9 @@
+Thu Feb 12 20:16:35 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.md: Replace gen_rtx (CONST_INT,...) with GEN_INT.
+
 Thu Feb 12 16:45:17 1998  Robert Lipe  <robertl@dgii.com>
+
 	* expr.c (expand_assignment):  Correct typo exposed by -Wall. 
 	offset should have been a truth value, not an assignment.
 
