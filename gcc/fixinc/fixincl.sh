@@ -6,7 +6,7 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 112 fixup scripts.
+# This script contains 114 fixup scripts.
 #
 # See README-fixinc for more information.
 #

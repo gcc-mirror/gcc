@@ -106,8 +106,10 @@ skip_quote( q, text )
   return text;
 }
 
-
-TEST_FOR_FIX_PROC_HEAD( double_slash_test )
+static apply_fix_p_t
+is_cxx_header (fname, text)
+     const char *fname;
+     const char *text;
 {
   /*  First, check to see if the file is in a C++ directory */
   if (strstr( fname, "CC/" ) != NULL)
@@ -116,7 +118,17 @@ TEST_FOR_FIX_PROC_HEAD( double_slash_test )
     return SKIP_FIX;
   if (strstr( fname, "++" ) != NULL)
     return SKIP_FIX;
+  /* Or it might contain the phrase 'extern "C++"' */
   if (strstr( text, "extern \"C++\"" ) != NULL)
+    return SKIP_FIX;
+
+  return APPLY_FIX;
+}
+
+
+TEST_FOR_FIX_PROC_HEAD( double_slash_test )
+{
+  if (is_cxx_header (fname, text) == SKIP_FIX)
     return SKIP_FIX;
 
   /*  Now look for the comment markers in the text */
@@ -167,6 +179,7 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
   char ch;
   const char* pz_next = (char*)NULL;
   regmatch_t match[2];
+  const char *all_text = text;
 
   /*
      This routine may be run many times within a single execution.
@@ -266,10 +279,15 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
                   pz_next += 2;
                   break;
                 }
-
-              /*
-                FIXME:  if this is a C++ file, then a double slash comment
-                is allowed to follow the directive.  */
+	      else if (*pz_next == '/'
+		       && is_cxx_header( fname, all_text ) == SKIP_FIX)
+		{
+		  pz_next = strchr( pz_next+1, '\n' );
+		  if (pz_next == (char*)NULL)
+		    return SKIP_FIX;
+		  pz_next++;
+		  break;
+		}
 
               /* FALLTHROUGH */
 

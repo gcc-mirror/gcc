@@ -63,9 +63,9 @@ fi
 set -e
 
 case "$1" in
-inclhack.def )
+inclhack.sh )
   echo AutoGen-ing inclhack.sh
-  $AG inclhack.sh
+  $AG inclhack.def
   ;;
 
 fixincl.x )

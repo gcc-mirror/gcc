@@ -1,5 +1,40 @@
 1999-12-17 13:21 -0800  Zack Weinberg  <zack@rabi.columbia.edu>
 
+	* fixtests.c (is_cxx_header): New fn, split out of
+	double_slash_test.
+	(else_endif_label): Allow "#endif // comment" in C++ headers,
+	as determined by is_cxx_header.
+	* fixfixes.c (else_endif_label_fix): Update comment.
+	* fixincl.c: Don't output VERB_PROGRESS lines if stdout is not
+	a tty.
+	* genfixes: Correct double thinko in commandline parsing.
+	* hackshell.tpl: Generate correct sh syntax for bypass
+	entries.
+
+	* inclhack.def (all): Whenever an inserted preprocessor
+	conditional is split over multiple lines, use double
+	backslashes in this file so the fixed header will be readable.
+
+	(AAB_fd_zero_glibc_1_0): Rename to AAB_fd_zero_asm_posix_types_h
+	and add bypass entry for correct version of this header.
+	(AAB_fd_zero_glibc_1_x): Rename to AAB_fd_zero_gnu_types_h.
+	(AAB_fd_zero_glibc_2_0): Rename to AAB_fd_zero_selectbits_h.
+
+	(hpux8_bogus_inlines): New fix, split from...
+	(ultrix_atof_param) ... here.
+	(math_expression): Add bypass entry keyed to glibc comment
+	indicating the problem has been dealt with; disable
+	unnecessary sed operations; update commentary.
+	(math_gcc_ifndefs): Rename to math_huge_val_from_dbl_max,
+	add select and bypass entries, simplify shell operation.
+	(math_huge_val_ifndef): Split from math_gcc_ifndefs.
+
+	(ip_missing_semi, rs6000_param, tinfo_cplusplus,
+	 ultrix_atof_param): Add select entry.
+	(stdio_va_list, sunos_mather_decl): Add bypass entry.
+	(systypes_for_aix, sysv86_string, tinfo_cplusplus): Put the
+	comments with the fixes they describe.
+
 	* c-parse.in (string action): Do not warn about ANSI string
 	concatenation in system headers.  Affects C parser only.
 	* c-parse.y, c-parse.c, c-parse.h: Rebuild.

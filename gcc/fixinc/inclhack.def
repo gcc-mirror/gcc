@@ -155,12 +155,13 @@ typedef char * va_list;
 
 
 /*
- *  This fixes __FD_ZERO bug for glibc-1.0.x
+ *  This fixes __FD_ZERO bug for linux 2.x.y (x <= 2 && y <= some n)
  */
 fix = {
-    hackname = AAB_fd_zero_glibc_1_0;
+    hackname = AAB_fd_zero_asm_posix_types_h;
     files    = asm/posix_types.h;
     mach     = 'i[34567]86-*-linux-gnu*';
+    bypass   = '} while';
 
     /*
      * Define _POSIX_TYPES_H_WRAPPER at the end of the wrapper, not
@@ -170,20 +171,21 @@ fix = {
      */
     replace  =
 
-'/* This file fixes __FD_ZERO bug for glibc-1.x. */
+'/* This file fixes a bug in the __FD_ZERO macro
+   for older versions of the Linux kernel. */
 \#ifndef _POSIX_TYPES_H_WRAPPER
 \#include <features.h>
 \#include_next <asm/posix_types.h>
 
 \#if defined(__FD_ZERO) && !defined(__GLIBC__)
 \#undef __FD_ZERO
-\#define __FD_ZERO(fdsetp) \
-  do { \
-    int __d0, __d1; \
-		__asm__ __volatile__("cld ; rep ; stosl" \
-			: "=&c" (__d0), "=&D" (__d1) \
-			: "a" (0), "0" (__FDSET_LONGS), \
-			  "1" ((__kernel_fd_set *) (fdsetp)) :"memory"); \
+\#define __FD_ZERO(fdsetp) \\
+  do { \\
+    int __d0, __d1; \\
+		__asm__ __volatile__("cld ; rep ; stosl" \\
+			: "=&c" (__d0), "=&D" (__d1) \\
+			: "a" (0), "0" (__FDSET_LONGS), \\
+			  "1" ((__kernel_fd_set *) (fdsetp)) :"memory"); \\
   } while (0)
 \#endif
 
@@ -197,7 +199,7 @@ fix = {
  *  This fixes __FD_ZERO bug for glibc-1.x
  */
 fix = {
-    hackname = AAB_fd_zero_glibc_1_x;
+    hackname = AAB_fd_zero_gnu_types_h;
     files    = gnu/types.h;
     mach     = 'i[34567]86-*-linux-gnu*';
 
@@ -209,20 +211,20 @@ fix = {
      */
     replace  =
 
-'/* This file fixes __FD_ZERO bug for glibc-1.x. */
+'/* This file fixes a bug in the __FD_ZERO macro present in glibc 1.x. */
 \#ifndef _TYPES_H_WRAPPER
 \#include <features.h>
 \#include_next <gnu/types.h>
 
 \#if defined(__FD_ZERO) && !defined(__GLIBC__)
 \#undef __FD_ZERO
-\# define __FD_ZERO(fdsetp) \
-  do { \
-    int __d0, __d1; \
-	__asm__ __volatile__("cld ; rep ; stosl" \
-        	: "=&c" (__d0), "=&D" (__d1) \
-        	: "a" (0), "0" (__FDSET_LONGS), \
-		  "1" ((__fd_set *) (fdsetp)) :"memory"); \
+\# define __FD_ZERO(fdsetp) \\
+  do { \\
+    int __d0, __d1; \\
+	__asm__ __volatile__("cld ; rep ; stosl" \\
+        	: "=&c" (__d0), "=&D" (__d1) \\
+        	: "a" (0), "0" (__FDSET_LONGS), \\
+		  "1" ((__fd_set *) (fdsetp)) :"memory"); \\
   } while (0)
 \#endif
 
@@ -236,7 +238,7 @@ fix = {
  *  This fixes __FD_ZERO bug for glibc-2.0.x
  */
 fix = {
-    hackname = AAB_fd_zero_glibc_2_0;
+    hackname = AAB_fd_zero_selectbits_h;
     files    = selectbits.h;
     mach     = 'i[34567]86-*-linux-gnu*';
 
@@ -248,24 +250,24 @@ fix = {
      */
     replace  =
 
-'/* This file fixes __FD_ZERO bug for glibc-2.0.x. */
+'/* This file fixes a bug in the __FD_ZERO macro present in glibc 2.0.x. */
 \#ifndef _SELECTBITS_H_WRAPPER
 \#include <features.h>
 \#include_next <selectbits.h>
 
-\#if defined(__FD_ZERO) && defined(__GLIBC__) \
-	&& defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \
+\#if defined(__FD_ZERO) && defined(__GLIBC__) \\
+	&& defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \\
 	&& __GLIBC_MINOR__ == 0
 \#undef __FD_ZERO
-\#define __FD_ZERO(fdsetp) \
-  do { \
-    int __d0, __d1; \
-  __asm__ __volatile__ ("cld; rep; stosl" \
-                        : "=&c" (__d0), "=&D" (__d1) \
-                        : "a" (0), "0" (sizeof (__fd_set) \
-                                        / sizeof (__fd_mask)), \
-                          "1" ((__fd_mask *) (fdsetp)) \
-                        : "memory"); \
+\#define __FD_ZERO(fdsetp) \\
+  do { \\
+    int __d0, __d1; \\
+  __asm__ __volatile__ ("cld; rep; stosl" \\
+                        : "=&c" (__d0), "=&D" (__d1) \\
+                        : "a" (0), "0" (sizeof (__fd_set) \\
+                                        / sizeof (__fd_mask)), \\
+                          "1" ((__fd_mask *) (fdsetp)) \\
+                        : "memory"); \\
   } while (0)
 \#endif
 
@@ -357,8 +359,8 @@ htons (unsigned int __arg)
   return __result;
 }
 
-\#elif ((defined (__i860__) && !defined (__i860_big_endian__))	\
-       || defined (__ns32k__) || defined (__vax__)		\
+\#elif ((defined (__i860__) && !defined (__i860_big_endian__))	\\
+       || defined (__ns32k__) || defined (__vax__)		\\
        || defined (__spur__) || defined (__arm__))
 
 \#ifndef __BYTE_ORDER__
@@ -853,6 +855,20 @@ fix = {
     sed      = "s/^extern struct sigevent;/struct sigevent;/";
 };
 
+/*
+ *  get rid of bogus inline definitions in HP-UX 8.0
+ */
+fix = {
+    hackname = hpux8_bogus_inlines;
+    files    = math.h;
+    select   = inline;
+    sed = "s@inline int abs(int [a-z][a-z]*) {.*}@extern \"C\" int abs(int);@";
+    sed = "s@inline double abs(double [a-z][a-z]*) {.*}@@";
+    sed = "s@inline int sqr(int [a-z][a-z]*) {.*}@@";
+    sed = "s@inline double sqr(double [a-z][a-z]*) {.*}@@";
+};
+
+
 /* 
  * In inttypes.h on HPUX 11, the use of __CONCAT__ in the definition 
  * of UINT32_C has undefined behavior according to ISO/ANSI:
@@ -980,6 +996,7 @@ fix = {
 fix = {
     hackname = ip_missing_semi;
     files    = netinet/ip.h;
+    select   = "}$";
     sed      = "/^struct/,/^};/s/}$/};/";
 };
 
@@ -1326,6 +1343,7 @@ fix = {
     hackname = math_exception;
     files    = math.h;
     select   = "struct exception";
+    bypass   = "We have a problem when using C++";
     sed      = "/struct exception/i\\\n"
                "#ifdef __cplusplus\\\n"
                "#define exception __math_exception\\\n"
@@ -1335,6 +1353,7 @@ fix = {
                "#undef exception\\\n"
                "#endif\n";
 
+#ifdef MATH_EXCEPTION_FIXED
     sed      = "/matherr/i\\\n"
                "#ifdef __cplusplus\\\n"
                "#define exception __math_exception\\\n"
@@ -1345,14 +1364,21 @@ fix = {
                "#undef exception\\\n"
                "#endif\n";
 
-#ifdef MATH_EXCEPTION_FIXED
-
 I think this patch needs some more thinking.
 This is from SVR4.2 (With '#' replaced with '@').
 Perhaps we could do without the "/matherr/a" entries?
 Can we bypass the entire fix if someone was astute
 enough to have '#ifdef __cplusplus' anywhere in the file?
 
+We can definitely do without the "/matherr/a" entries.  They are
+there to cover the case where matherr is declared with no prototype
+-- extern int matherr(); -- but we don't need a fix then since there
+is no reference to struct exception.
+
+Bypassing on "#ifdef __cplusplus" is too optimistic, but I've stuck
+in a bypass for the comment in the glibc 2.1 header that indicates
+awareness of the problem.  Hmm.  Could we use a shell test that did
+cpp -D__cplusplus | grep "struct exception" ?
 
 *** /usr/include/math.h Fri Apr  3 18:54:59 1998
 --- math.h      Sun May  9 07:28:58 1999
@@ -1396,46 +1422,43 @@ enough to have '#ifdef __cplusplus' anywhere in the file?
 #endif
 };
 
-
-/*
- * In math.h, put #ifndefs around things that might be defined
- * in a gcc specific math-*.h file.
- */
 fix = {
-    hackname = math_gcc_ifndefs;
+    hackname = math_huge_val_from_dbl_max;
     files    = math.h;
+    /*
+     * IF HUGE_VAL is defined to be DBL_MAX *and* DBL_MAX is _not_ defined
+     * in math.h, this fix applies.
+     */
+    select   = "define[ \t]*HUGE_VAL[ \t]*DBL_MAX";
+    bypass   = "define[ \t]*DBL_MAX";
 
     shell    =
     /*
-     *  First see if we have a definition for DBL_MAX in float.h
+     *  See if we have a definition for DBL_MAX in float.h.
      *  If we do, we will replace the one in math.h with that one.
-     */
-
-    /*
-     *  IF we have such a define *and* HUGE_VAL is defined to be DBL_MAX
-     *     *and* DBL_MAX is _not_ defined in the current file (math.h),
-     *  THEN replace the defined value of HUGE_VAL
-     *  ELSE just copy stdin to stdout so the main filter can process it
-     */
-
-    /*
-     *  Put conditional guards around the HUGE_VAL definition.
      */
 
     "\tdbl_max_def=`egrep 'define[ \t]+DBL_MAX[ \t]+.*' float.h "
                 "2>/dev/null`\n\n"
 
-    "\tif ( test -n \"${dbl_max_def}\" \\\n"
-    "\t\t-a -n \"`egrep '#define[ \t]*HUGE_VAL[ \t]+DBL_MAX' $file`\" \\\n"
-    "\t\t-a -z \"`egrep '#define[ \t]+DBL_MAX[ \t]+' $file`\"\n"
-             "\t   ) > /dev/null 2>&1\n"
-    "\tthen sed -e '/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/'"
-    "\n\telse cat ; fi |\n"
-
-    "\tsed -e '/define[ \t]HUGE_VAL[ \t]/i\\\n#ifndef HUGE_VAL\n' "
-          "-e '/define[ \t]HUGE_VAL[ \t]/a\\\n#endif\n'";
+    "\tif ( test -n \"${dbl_max_def}\" ) > /dev/null 2>&1\n"
+    "\tthen sed -e '/define[ \t]*HUGE_VAL[ \t]*DBL_MAX/"
+			"s/DBL_MAX/'\"$dbl_max_def/\"\n"
+    "\telse cat\n"
+    "\tfi";
 };
 
+/*
+ * In any case, put #ifndef .. #endif around #define HUGE_VAL in math.h.
+ */
+fix = {
+    hackname = math_huge_val_ifndef;
+    files    = math/math.h;
+    select   = "define[ \t]*HUGE_VAL";
+
+    sed      = "/define[ \t]HUGE_VAL[ \t]/i\\\n#ifndef HUGE_VAL\n";
+    sed      = "/define[ \t]HUGE_VAL[ \t]/a\\\n#endif\n";
+};
 
 /*
  *  nested comment
@@ -1626,6 +1649,7 @@ fix = {
     hackname = rs6000_param;
     files  = "stdio.h";
     files  = "unistd.h";
+    select = 'const char new';
 
     sed = 's@rename(const char \*old, const char \*new)@'
             'rename(const char *_old, const char *_new)@';
@@ -1708,6 +1732,7 @@ fix = {
 fix = {
     hackname = stdio_va_list;
     files    = stdio.h;
+    bypass   = "__gnuc_va_list";
 
     /*
      * Use __gnuc_va_list in arg types in place of va_list.
@@ -1907,6 +1932,8 @@ fix = {
 fix = {
     hackname = sunos_matherr_decl;
     files    = math.h;
+    /*  If matherr has a prototype already, the header needs no fix.  */
+    bypass   = 'matherr.*struct exception';
     /*
      *  Once a declaration for 'struct exception' is found,
      *  stop trying to insert a forward reference for it.
@@ -1922,6 +1949,7 @@ fix = {
 fix = {
     hackname = sunos_strlen;
     files    = strings.h;
+    select   = "int[ \t]*strlen";
     sed = "s/int[ \t]*strlen();/__SIZE_TYPE__ strlen();/";
 };
 
@@ -2314,9 +2342,9 @@ fix = {
 
 
 /*
- *  Fix return type of exit and abort in <stdlib.h> on SunOS 4.1.
- *  Also wrap protection around size_t for m88k-sysv3 systems.
- *  We use a funny name to ensure it follows 'systypes' fix.
+ *  Fix this file to avoid interfering with stddef.h,
+ *  but don't mistakenly match ssize_t present in AIX for the ps/2,
+ *  or typedefs which use (but do not set) size_t.
  */
 fix = {
     hackname = systypes_for_aix;
@@ -2334,8 +2362,9 @@ fix = {
 
 
 /*
- *  if the #if says _cplusplus, not the double underscore __cplusplus
- *  that it should be
+ *  Fix return type of exit and abort in <stdlib.h> on SunOS 4.1.
+ *  Also wrap protection around size_t for m88k-sysv3 systems.
+ *  We use a funny name to ensure it follows 'systypes' fix.
  */
 fix = {
     hackname = sysv68_string;
@@ -2410,13 +2439,13 @@ fix = {
 
 
 /*
- *  Fix this file to avoid interfering with stddef.h,
- *  but don't mistakenly match ssize_t present in AIX for the ps/2,
- *  or typedefs which use (but do not set) size_t.
+ *  if the #if says _cplusplus, not the double underscore __cplusplus
+ *  that it should be
  */
 fix = {
     hackname = tinfo_cplusplus;
     files    = tinfo.h;
+    select   = "[ \t]_cplusplus";
     sed      = "s/[ \t]_cplusplus/ __cplusplus/";
 };
 
@@ -2448,17 +2477,13 @@ fix = {
 
 /*
  *  parameter to atof not const on DECstation Ultrix V4.0 and NEWS-OS 4.2R.
- *  also get rid of bogus inline definitions in HP-UX 8.0
  */
 fix = {
     hackname = ultrix_atof_param;
     files    = math.h;
+    select   = "atof\\([ \t]*char";
 
     sed = "s@atof(\\([ \t]*char[ \t]*\\*[^)]*\\))@atof(const \\1)@";
-    sed = "s@inline int abs(int [a-z][a-z]*) {.*}@extern \"C\" int abs(int);@";
-    sed = "s@inline double abs(double [a-z][a-z]*) {.*}@@";
-    sed = "s@inline int sqr(int [a-z][a-z]*) {.*}@@";
-    sed = "s@inline double sqr(double [a-z][a-z]*) {.*}@@";
 };
 
 

@@ -114,6 +114,7 @@ typedef enum {
 } te_verbose;
 
 te_verbose  verbose_level = VERB_PROGRESS;
+int have_tty = 0;
 
 #define VLEVEL(l)  (verbose_level >= l)
 #define NOT_SILENT VLEVEL(VERB_FIXES)
@@ -191,6 +192,8 @@ main (argc, argv)
     }
 
   initialize ();
+
+  have_tty = isatty (fileno (stderr));
 
   /* Before anything else, ensure we can allocate our file name buffer. */
   file_name_buf = load_file_data (stdin);
@@ -1336,7 +1339,7 @@ process ()
 #ifdef DO_STATS
   process_ct++;
 #endif
-  if (VLEVEL( VERB_PROGRESS ))
+  if (VLEVEL( VERB_PROGRESS ) && have_tty)
     fprintf (stderr, "%6d %-50s   \r", data_map_size, pz_curr_file );
 
   process_chain_head = NOPROCESS;
