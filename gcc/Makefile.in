@@ -1581,7 +1581,7 @@ tree-ssa-forwprop.o : tree-ssa-forwprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_FLOW_H) tree-pass.h $(TREE_DUMP_H)
 tree-ssa-phiopt.o : tree-ssa-phiopt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) errors.h $(GGC_H) $(TREE_H) $(RTL_H) $(TM_P_H) $(BASIC_BLOCK_H) \
-   $(TREE_FLOW_H) tree-pass.h $(TREE_DUMP_H) langhooks.h
+   $(TREE_FLOW_H) tree-pass.h $(TREE_DUMP_H) langhooks.h flags.h
 tree-nrv.o : tree-nrv.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(RTL_H) function.h $(BASIC_BLOCK_H) $(EXPR_H) \
    diagnostic.h $(TREE_FLOW_H) $(TIMEVAR_H) $(TREE_DUMP_H) tree-pass.h \
