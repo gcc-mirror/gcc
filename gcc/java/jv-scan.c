@@ -24,9 +24,17 @@ Boston, MA 02111-1307, USA.  */
 
 #include "obstack.h"		/* We use obstacks in lex.c */
 
+#include "version.c"
+
+#include <getopt.h>
+
 void fatal PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void warning PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1;
 void gcc_obstack_init PARAMS ((struct obstack *obstack));
+
+static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
 
 #define JC1_LITE
 #include "jcf.h"
@@ -46,6 +54,59 @@ int flag_find_main = 0;
 int flag_dump_class = 0;
 int flag_list_filename = 0;
 
+
+
+/* This is used to mark options with no short value.  */
+#define LONG_OPT(Num)  ((Num) + 128)
+
+#define OPT_HELP      LONG_OPT (0)
+#define OPT_VERSION   LONG_OPT (1)
+
+static struct option options[] =
+{
+  { "help",      no_argument,       NULL, OPT_HELP },
+  { "version",   no_argument,       NULL, OPT_VERSION },
+  { "print-main", no_argument,      &flag_find_main, 1 },
+  { "list-filename", no_argument,   &flag_list_filename, 1 },
+  { "list-class", no_argument,      &flag_dump_class, 1 },
+  { NULL,        no_argument,       NULL, 0 }
+};
+
+static void
+usage ()
+{
+  fprintf (stderr, "Try `jv-scan --help' for more information.\n");
+  exit (1);
+}
+
+static void
+help ()
+{
+  printf ("Usage: jv-scan [OPTION]... FILE...\n\n");
+  printf ("Print useful information read from Java source files.\n\n");
+  printf ("  --print-main            Print name of class containing `main'\n");
+  printf ("  --list-class            List all classes defined in file\n");
+  printf ("  --list-filename         Print input filename when listing class names\n");
+  printf ("  -o FILE                 Set output file name\n");
+  printf ("\n");
+  printf ("  --help                  Print this help, then exit\n");
+  printf ("  --version               Print version number, then exit\n");
+  printf ("\n");
+  printf ("For bug reporting instructions, please see:\n");
+  printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>.\n");
+  exit (0);
+}
+
+static void
+version ()
+{
+  printf ("jv-scan (%s)\n\n", version_string);
+  printf ("Copyright (C) 1998, 1999 Free Software Foundation, Inc.\n");
+  printf ("This is free software; see the source for copying conditions.  There is NO\n");
+  printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+  exit (0);
+}
+
 /* jc1-lite main entry point */
 int
 DEFUN (main, (argc, argv),
@@ -54,43 +115,39 @@ DEFUN (main, (argc, argv),
   int i = 1;
   const char *output_file = NULL;
   long ft;
+  int opt;
 
   exec_name = argv[0];
 
   /* Default for output */
   out = stdout;
 
-  /* Process options first */
-  while (argv [i])
+  /* Process options first.  We use getopt_long and not
+     getopt_long_only because we only support `--' long options here.  */
+  while ((opt = getopt_long (argc, argv, "o:", options, NULL)) != -1)
     {
-      if (argv [i][0] == '-')
+      switch (opt)
 	{
-	  /* Dump result into a file */
-	  if (!strcmp (argv [i], "-o") && i+1 < argc)
-	    {
-	      argv [i] = NULL;
-	      output_file = argv [++i];
-	      argv [i] = NULL;
-	    }
+	case 0:
+	  /* Already handled.  */
+	  break;
 
-	  /* Print the name of the class that contains main */
-	  else if (!strcmp (argv [i], "--print-main"))
-	    flag_find_main = 1;
+	case 'o':
+	  output_file = optarg;
+	  break;
 
-	  else if (!strcmp (argv [i], "--list-filename"))
-	    flag_list_filename = 1;
+	case OPT_HELP:
+	  help ();
+	  break;
 
-	  /* List all the classes found in a source file */
-	  else if (!strcmp (argv [i], "--list-class"))
-	    flag_dump_class = 1;
+	case OPT_VERSION:
+	  version ();
+	  break;
 
-	  else
-	    warning ("Unrecognized argument `%s'", argv[i]);
-
-	  /* non recognized argument ignored silently */ 
-	  argv [i] = NULL;	/* Nullify so it's not considered a file */
+	default:
+	  usage ();
+	  break;
 	}
-      i++;
     }
 
   /* No flags? Do nothing */
@@ -109,7 +166,7 @@ DEFUN (main, (argc, argv),
   gcc_obstack_init (&temporary_obstack);
   java_push_parser_context ();
 
-  for ( i = 1; i < argc; i++ )
+  for ( i = optind; i < argc; i++ )
     if (argv [i])
       {
 	input_filename = argv [i];
@@ -135,6 +192,8 @@ DEFUN (main, (argc, argv),
 
   return 0;
 }
+
+
 
 /* Error report, memory, obstack initialization and other utility
    functions */
