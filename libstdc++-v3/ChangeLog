@@ -1,3 +1,9 @@
+2004-11-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_int):
+	Evaluate *__beg the exact strict minimum number of times; likewise
+	for __beg != __end; slightly simplify main parsing loop.
+
 2004-11-02  Benjamin Kosnik  <bkoz@redhat.com>
   	    Lothar Werzinger  <lothar@xcerla.com>
 	
@@ -34,9 +40,9 @@
 	
 2004-11-01  Chris Jefferson  <chris@bubblescope.net>
 
-        PR libstdc++/18159
-        * include/tr1/tuple (get(pair)): Change occurrences of _I to _Int.
-        (get(const pair)): Likewise.
+	PR libstdc++/18159
+	* include/tr1/tuple (get(pair)): Change occurrences of _I to _Int.
+	(get(const pair)): Likewise.
 
 2004-11-01  Paolo Carlini  <pcarlini@suse.de>
 
