@@ -1,3 +1,11 @@
+2004-07-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/15713
+	* include/jvm.h (_Jv_value): New union type.
+	* gcj/field.h (_Jv_Field): Add new _addr union field variants 
+	* interperet.cc (run): Use _Jv_value union type and *_addr _Jv_Field 
+	union members.
+
 2004-07-12  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/awt/xlib/XCanvasPeer.java (createImage): Implement.

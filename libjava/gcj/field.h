@@ -39,7 +39,16 @@ struct _Jv_Field
 
   union {
     jint		boffset;  /* offset in bytes for instance field */
-    void*		addr;  /* address of static field */
+    char*		addr;  /* address of static field */
+    
+    jobject* object_addr;  /* address of static object field... etc */
+    jbyte* byte_addr;
+    jshort* short_addr;
+    jchar* char_addr;
+    jint* int_addr;
+    jlong* long_addr;
+    jfloat* float_addr;
+    jdouble* double_addr;
   } u;
 
 #ifdef __cplusplus
