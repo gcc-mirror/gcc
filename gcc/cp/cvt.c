@@ -694,20 +694,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  return error_mark_node;
 	}
       if (code == BOOLEAN_TYPE)
-	{
-	  tree fn = NULL_TREE;
+	return cp_truthvalue_conversion (e);
 
-	  /* Common Ada/Pascal programmer's mistake.  We always warn
-             about this since it is so bad.  */
-	  if (TREE_CODE (expr) == FUNCTION_DECL)
-	    fn = expr;
-	  else if (TREE_CODE (expr) == ADDR_EXPR 
-		   && TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL)
-	    fn = TREE_OPERAND (expr, 0);
-	  if (fn && !DECL_WEAK (fn))
-	    warning ("the address of `%D', will always be `true'", fn);
-	  return cp_truthvalue_conversion (e);
-	}
       return fold (convert_to_integer (type, e));
     }
   if (POINTER_TYPE_P (type) || TYPE_PTR_TO_MEMBER_P (type))

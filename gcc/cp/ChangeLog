@@ -1,3 +1,7 @@
+2003-10-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cvt.c (ocp_convert): Move warning to C common code.
+
 2003-10-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/6392

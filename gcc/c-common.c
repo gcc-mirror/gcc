@@ -2602,6 +2602,9 @@ c_common_truthvalue_conversion (tree expr)
   if (TREE_CODE (expr) == ERROR_MARK)
     return expr;
 
+  if (TREE_CODE (expr) == FUNCTION_DECL)
+    expr = build_unary_op (ADDR_EXPR, expr, 0);
+
 #if 0 /* This appears to be wrong for C++.  */
   /* These really should return error_mark_node after 2.4 is stable.
      But not all callers handle ERROR_MARK properly.  */
@@ -2647,17 +2650,29 @@ c_common_truthvalue_conversion (tree expr)
       return real_zerop (expr) ? truthvalue_false_node : truthvalue_true_node;
 
     case ADDR_EXPR:
-      /* If we are taking the address of an external decl, it might be zero
-	 if it is weak, so we cannot optimize.  */
-      if (DECL_P (TREE_OPERAND (expr, 0))
-	  && DECL_EXTERNAL (TREE_OPERAND (expr, 0)))
-	break;
+      {
+	if (TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL
+	    && ! DECL_WEAK (TREE_OPERAND (expr, 0)))
+	  {
+	    /* Common Ada/Pascal programmer's mistake.  We always warn
+	       about this since it is so bad.  */
+	    warning ("the address of `%D', will always evaluate as `true'",
+		     TREE_OPERAND (expr, 0));
+	    return truthvalue_true_node;
+	  }
 
-      if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0)))
-	return build (COMPOUND_EXPR, truthvalue_type_node,
-		      TREE_OPERAND (expr, 0), truthvalue_true_node);
-      else
-	return truthvalue_true_node;
+	/* If we are taking the address of an external decl, it might be
+	   zero if it is weak, so we cannot optimize.  */
+	if (DECL_P (TREE_OPERAND (expr, 0))
+	    && DECL_EXTERNAL (TREE_OPERAND (expr, 0)))
+	  break;
+
+	if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0)))
+	  return build (COMPOUND_EXPR, truthvalue_type_node,
+			TREE_OPERAND (expr, 0), truthvalue_true_node);
+	else
+	  return truthvalue_true_node;
+      }
 
     case COMPLEX_EXPR:
       return build_binary_op ((TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
