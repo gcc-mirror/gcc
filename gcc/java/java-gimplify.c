@@ -177,6 +177,11 @@ java_gimplify_block (tree java_block)
      because they use BLOCK_SUBBLOCKS for another purpose.  */
   block = make_node (BLOCK);
   BLOCK_VARS (block) = decls;
+
+  /* The TREE_USED flag on a block determines whether the debug ouput
+     routines generate info for the variables in that block.  */
+  TREE_USED (block) = 1;
+
   if (outer != NULL_TREE)
     {
       outer = BIND_EXPR_BLOCK (outer);

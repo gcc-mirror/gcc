@@ -1,3 +1,8 @@
+2004-06-21  Andrew Haley  <aph@redhat.com>
+
+	* java-gimplify.c (java_gimplify_block): set TREE_USED on the new
+	block.
+
 2004-06-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* jcf.h (struct JCF): Change java_source, right_zip and finished
