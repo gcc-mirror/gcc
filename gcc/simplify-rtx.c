@@ -2409,7 +2409,11 @@ simplify_subreg (outermode, op, innermode, byte)
 
   if (GET_CODE (op) == MEM
       && ! mode_dependent_address_p (XEXP (op, 0))
-      && ! MEM_VOLATILE_P (op)
+      /* Allow splitting of volatile memory references in case we don't
+         have instruction to move the whole thing.  */
+      && (! MEM_VOLATILE_P (op)
+	  || (mov_optab->handlers[(int) innermode].insn_code
+	      == CODE_FOR_nothing))
       && GET_MODE_SIZE (outermode) <= GET_MODE_SIZE (GET_MODE (op)))
     {
       rtx new;
