@@ -1160,8 +1160,6 @@ struct cum_arg
 { {"er0", 0}, {"er1", 1}, {"er2", 2}, {"er3", 3}, {"er4", 4}, \
   {"er5", 5}, {"er6", 6}, {"er7", 7}, {"r7", 7} }
 
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)
-
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.global "
 

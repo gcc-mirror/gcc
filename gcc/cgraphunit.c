@@ -1750,6 +1750,9 @@ cgraph_optimize (void)
 #endif
   if (!flag_unit_at_a_time)
     return;
+
+  process_pending_assemble_externals ();
+
   timevar_push (TV_CGRAPHOPT);
   if (!quiet_flag)
     fprintf (stderr, "Performing intraprocedural optimizations\n");

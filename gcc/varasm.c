@@ -1759,6 +1759,12 @@ contains_pointers_p (tree type)
     }
 }
 
+/* In unit-at-a-time mode, we delay assemble_external processing until
+   the compilation unit is finalized.  This is the best we can do for
+   right now (i.e. stage 3 of GCC 4.0) - the right thing is to delay
+   it all the way to final.  See PR 17982 for further discussion.  */
+static GTY(()) tree pending_assemble_externals;
+
 #ifdef ASM_OUTPUT_EXTERNAL
 /* True if DECL is a function decl for which no out-of-line copy exists.
    It is assumed that DECL's assembler name has been set.  */
@@ -1780,7 +1786,36 @@ incorporeal_function_p (tree decl)
     }
   return false;
 }
+
+/* Actually do the tests to determine if this is necessary, and invoke
+   ASM_OUTPUT_EXTERNAL.  */
+static void
+assemble_external_real (tree decl)
+{
+  rtx rtl = DECL_RTL (decl);
+
+  if (MEM_P (rtl) && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
+      && !SYMBOL_REF_USED (XEXP (rtl, 0))
+      && !incorporeal_function_p (decl))
+    {
+      /* Some systems do require some output.  */
+      SYMBOL_REF_USED (XEXP (rtl, 0)) = 1;
+      ASM_OUTPUT_EXTERNAL (asm_out_file, decl, XSTR (XEXP (rtl, 0), 0));
+    }
+}
 #endif
+
+void
+process_pending_assemble_externals (void)
+{
+#ifdef ASM_OUTPUT_EXTERNAL
+  tree list;
+  for (list = pending_assemble_externals; list; list = TREE_CHAIN (list))
+    assemble_external_real (TREE_VALUE (list));
+
+  pending_assemble_externals = 0;
+#endif
+}
 
 /* Output something to declare an external symbol to the assembler.
    (Most assemblers don't need this, so we normally output nothing.)
@@ -1793,23 +1828,17 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
      main body of this code is only rarely exercised.  To provide some
      testing, on all platforms, we make sure that the ASM_OUT_FILE is
      open.  If it's not, we should not be calling this function.  */
-  if (!asm_out_file)
-    abort ();
+  gcc_assert (asm_out_file);
 
 #ifdef ASM_OUTPUT_EXTERNAL
-  if (DECL_P (decl) && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
-    {
-      rtx rtl = DECL_RTL (decl);
+  if (!DECL_P (decl) || !DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl))
+    return;
 
-      if (MEM_P (rtl) && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
-	  && !SYMBOL_REF_USED (XEXP (rtl, 0))
-	  && !incorporeal_function_p (decl))
-	{
-	  /* Some systems do require some output.  */
-	  SYMBOL_REF_USED (XEXP (rtl, 0)) = 1;
-	  ASM_OUTPUT_EXTERNAL (asm_out_file, decl, XSTR (XEXP (rtl, 0), 0));
-	}
-    }
+  if (flag_unit_at_a_time)
+    pending_assemble_externals = tree_cons (0, decl,
+					    pending_assemble_externals);
+  else
+    assemble_external_real (decl);
 #endif
 }
 

@@ -1,3 +1,18 @@
+2004-12-08  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 17982
+	* varasm.c (pending_assemble_externals): New static.
+	(assemble_external_real): Meat of assemble_external split out
+	to this new function.
+	(process_pending_assemble_externals): New function.
+	(assemble_external): Use gcc_assert.  If flag_unit_at_a_time
+	is true and the basic test passes, merely cons the decl onto
+	the pending list to be handled later.
+	* tree.h: Declare process_pending_assemble_externals.
+	* cgraphunit.c (cgraph_optimize): Call it.
+
+	* config/h8300/h8300.h: Do not define ASM_OUTPUT_EXTERNAL.
+
 2004-12-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgloopmanip.c (create_preheader): Speed up by "unrolling"
@@ -87,9 +102,9 @@
 
 2004-12-07  David Mosberger  <davidm@hpl.hp.com>
 
-        PR target/18443
-        * config/ia64/ia64.c (ia64_assemble_integer): Add support for
-        emitting unaligned pointer-sized integers.
+	PR target/18443
+	* config/ia64/ia64.c (ia64_assemble_integer): Add support for
+	emitting unaligned pointer-sized integers.
 
 2004-12-07  Steven Bosscher  <stevenb@suse.de>
 
