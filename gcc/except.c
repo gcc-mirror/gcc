@@ -189,6 +189,7 @@ struct eh_region GTY(())
     struct eh_region_u_fixup {
       tree cleanup_exp;
       struct eh_region *real_region;
+      bool resolved;
     } GTY ((tag ("ERT_FIXUP"))) fixup;
   } GTY ((desc ("%0.type"))) u;
 
@@ -890,29 +891,49 @@ collect_eh_region_array (void)
 }
 
 static void
+resolve_one_fixup_region (struct eh_region *fixup)
+{
+  struct eh_region *cleanup, *real;
+  int j, n;
+
+  n = cfun->eh->last_region_number;
+  cleanup = 0;
+
+  for (j = 1; j <= n; ++j)
+    {
+      cleanup = cfun->eh->region_array[j];
+      if (cleanup && cleanup->type == ERT_CLEANUP
+	  && cleanup->u.cleanup.exp == fixup->u.fixup.cleanup_exp)
+	break;
+    }
+  if (j > n)
+    abort ();
+
+  real = cleanup->outer;
+  if (real && real->type == ERT_FIXUP)
+    {
+      if (!real->u.fixup.resolved)
+	resolve_one_fixup_region (real);
+      real = real->u.fixup.real_region;
+    }
+
+  fixup->u.fixup.real_region = real;
+  fixup->u.fixup.resolved = true;
+}
+
+static void
 resolve_fixup_regions (void)
 {
-  int i, j, n = cfun->eh->last_region_number;
+  int i, n = cfun->eh->last_region_number;
 
   for (i = 1; i <= n; ++i)
     {
       struct eh_region *fixup = cfun->eh->region_array[i];
-      struct eh_region *cleanup = 0;
 
-      if (! fixup || fixup->type != ERT_FIXUP)
+      if (!fixup || fixup->type != ERT_FIXUP || fixup->u.fixup.resolved)
 	continue;
 
-      for (j = 1; j <= n; ++j)
-	{
-	  cleanup = cfun->eh->region_array[j];
-	  if (cleanup && cleanup->type == ERT_CLEANUP
-	      && cleanup->u.cleanup.exp == fixup->u.fixup.cleanup_exp)
-	    break;
-	}
-      if (j > n)
-	abort ();
-
-      fixup->u.fixup.real_region = cleanup->outer;
+      resolve_one_fixup_region (fixup);
     }
 }
 
