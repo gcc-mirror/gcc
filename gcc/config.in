@@ -139,9 +139,6 @@
 /* Define to 1 if you have the `atoq' function. */
 #undef HAVE_ATOQ
 
-/* Define if BANSHEE is available */
-#undef HAVE_BANSHEE
-
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
 
