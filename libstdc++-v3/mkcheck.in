@@ -51,7 +51,7 @@ fi
 
 # INC_PATH == include path to new headers for use on gcc command-line
 if [ $WHICH != "1" ]; then
-  INC_PATH="-I$BUILD_DIR -I$SRC_DIR/@ctype_include_dir@ -I$SRC_DIR/@cpu_include_dir@  -I$SRC_DIR/std -I$SRC_DIR -I$SRC_DIR/libio"
+  INC_PATH="-I$BUILD_DIR -I$BUILD_DIR/libio -I$SRC_DIR/@ctype_include_dir@ -I$SRC_DIR/@cpu_include_dir@  -I$SRC_DIR/std -I$SRC_DIR -I$SRC_DIR/libio"
 elif [ $WHICH -eq 1 ]; then
   INC_PATH=""
 fi
@@ -133,7 +133,7 @@ cp $SRC_DIR/testsuite/27_io/*.tst $TEST_DIR
 
 # Emit useful info about compiler and platform
 echo "host: $(uname -mrsv)" >> $RESULTS_FILE
-echo "compiler: $(g++ --version)" >> $RESULTS_FILE
+echo "compiler: $($CXX --version)" >> $RESULTS_FILE
 echo "compiler flags: $CXX_FLAG $ST_FLAG" >> $RESULTS_FILE
 echo "date: $(date +%Y%m%d)" >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE
