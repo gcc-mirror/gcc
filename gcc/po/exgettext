@@ -1,18 +1,16 @@
 #! /bin/sh
-# Wrapper around gettext for GCC sources.
-# Copyright 1998, 2001 Free Software Foundation, Inc.
+# Wrapper around gettext for programs using the msgid convention.
+# Copyright 1998, 2001, 2002 Free Software Foundation, Inc.
 
 # Written by Paul Eggert <eggert@twinsun.com>.
 # Revised by Zack Weinberg <zackw@stanford.edu> for no-POTFILES operation.
 
-# This file is part of GNU CC.
-
-# GNU CC is free software; you can redistribute it and/or modify
+# This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2, or (at your option)
 # any later version.
 
-# GNU CC is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -22,8 +20,14 @@
 # the Free Software Foundation, 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-# Set environment to default value, if not already set.
-: ${AWK=awk}
+# Always operate in the C locale.
+LANG=C
+LANGUAGE=C
+LC_ALL=C
+export LANG LANGUAGE LC_ALL
+
+# Set AWK if environment has not already set it.
+AWK=${AWK-awk}
 
 # The arguments to this wrapper are: the program to execute, the
 # name of the "package", and the path to the source directory.
@@ -52,8 +56,8 @@ kopt=$pwd/$T/keyword-options
 emsg=$pwd/$T/emsgids.c
 posr=$pwd/$T/po-sources
 
-# Locate files to scan, and generate the list.  All .c and .h files in
-# $srcdir are examined, likewise $srcdir/config and $srcdir/config/*
+# Locate files to scan, and generate the list.  All .c, .h, and .def files
+# in $srcdir are examined, likewise $srcdir/config and $srcdir/config/*
 # (directories).  Also, all subdirectories of $srcdir that contain a
 # config-lang.in.  Exclusions come from $srcdir/po/EXCLUDE.
 #
@@ -68,14 +72,12 @@ posr=$pwd/$T/po-sources
 echo "scanning for keywords and %e strings..." >&2
 
 ( cd $srcdir
-  lang_subdirs=`echo */config-lang.in | sed -e 's|/config-lang\.in||g'`
-  { echo *.[ch]
-    echo config/*.[ch]
-    echo config/*/*.[ch]
-    for l in $lang_subdirs
-    do	echo $l/*.[ch]
-    done
-  } | tr ' ' "$nl" | 
+  lang_subdirs=`echo */config-lang.in | sed -e 's|config-lang\.in||g'`
+  for dir in "" config/ config/*/ $lang_subdirs
+  do  for glob in '*.c' '*.h' '*.def'
+      do  eval echo $dir$glob
+      done
+  done | tr ' ' "$nl" | grep -v '\*' |
   $AWK -v excl=po/EXCLUDES -v posr=$posr -v kopt=$kopt -v emsg=$emsg '
 function keyword_option(line) {
     paren_index = index(line, "(")
@@ -153,4 +155,4 @@ END {
 echo "running xgettext..." >&2
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments `cat $kopt` --files-from=$posr \
-	  -o po/$package.pot
+	  --language=c -o po/$package.pot

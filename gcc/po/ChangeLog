@@ -1,3 +1,8 @@
+2002-01-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* exgettext: Merge changes from diffutils.  Scan .def files in
+	addition to .c and .h.  Add --language=c to xgettext command line.
+
 2001-12-05  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* es.po: Update to 3.0 template.
