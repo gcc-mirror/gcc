@@ -1,5 +1,9 @@
 2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Add comments about peephole2's.
+
+2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Tweak operand numbers of some
 	peephole2's.
 
