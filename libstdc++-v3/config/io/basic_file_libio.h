@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,7 +54,7 @@ namespace std
   // and detailed description of the whole object-layout,
   // vtable-swapping, sordid history of this hack.
   template<typename _CharT>
-    struct __basic_file_base: public __c_file_type
+    struct __basic_file_base: public __c_file
     {
       virtual 
       ~__basic_file_base() { };
@@ -123,7 +123,7 @@ namespace std
     class __basic_file: public __basic_file_base<_CharT>
     {
 # ifdef _GLIBCPP_USE_WCHAR_T
-      __c_wfile_type	_M_wfile;
+      __c_wfile	_M_wfile;
 # endif
 
     public:
@@ -140,11 +140,14 @@ namespace std
       // Used for opening the standard streams, cin, cout, cerr, clog,
       // and their wide-stream equivalents. Instead of calling open, it
       // just sets
-      //  - for libio:  __c_file_type->_fileno and the respective _flags bits
+      //  - for libio:  __c_file->_fileno and the respective _flags bits
       //  - for stdio:  _M_cfile = __file and some internal flags
       // and returns.
       __basic_file*
-      sys_open(__c_file_type* __file, ios_base::openmode __mode);
+      sys_open(__c_file* __file, ios_base::openmode __mode);
+
+      __basic_file*
+      sys_open(int __fd, ios_base::openmode __mode, bool __del);
 
       _CharT
       sys_getc();
@@ -156,7 +159,7 @@ namespace std
       close(); 
 
       bool 
-      is_open();
+      is_open() const;
 
       int 
       fd();
@@ -180,26 +183,26 @@ namespace std
       virtual int 
       pbackfail(int __c);
 
-      // A complex "write" function that sets all of __c_file_type's
+      // A complex "write" function that sets all of __c_file's
       // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamsize 
       xsputn(const _CharT* __s, streamsize __n);
 
-      // A complex "read" function that sets all of __c_file_type's
+      // A complex "read" function that sets all of __c_file's
       // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamsize 
       xsgetn(_CharT* __s, streamsize __n);
 
-      // A complex "seekoff" function that sets all of __c_file_type's
+      // A complex "seekoff" function that sets all of __c_file's
       // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamoff
       seekoff(streamoff __off, ios_base::seekdir __way,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-      // A complex "seekpos" function that sets all of __c_file_type's
+      // A complex "seekpos" function that sets all of __c_file's
       // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamoff
@@ -217,19 +220,19 @@ namespace std
 
       // A simple read function for the external byte sequence, that
       // does no mucking around with or setting of the pointers or flags
-      // in __c_file_type.
+      // in __c_file.
       virtual streamsize 
       sys_read(_CharT* __s, streamsize __n);
 
       // A simple write function for the external byte sequence, that
       // does no mucking around with or setting of the pointers or flags
-      // in __c_file_type.
+      // in __c_file.
       virtual streamsize 
       sys_write(const _CharT* __s, streamsize __n);
 
       // A simple seek function for the external byte sequence, that
       // does no mucking around with or setting of the pointers or flags
-      // in __c_file_type.
+      // in __c_file.
       virtual streamoff
       sys_seek(streamoff __off, ios_base::seekdir __way);
 
@@ -394,7 +397,7 @@ namespace std
   
   template<typename _CharT>
     __basic_file<_CharT>*
-    __basic_file<_CharT>::sys_open(__c_file_type* __f, 
+    __basic_file<_CharT>::sys_open(__c_file* __f, 
 				   ios_base::openmode __mode) 
     {
       __basic_file* __ret = NULL;
@@ -419,6 +422,33 @@ namespace std
     }
   
   template<typename _CharT>
+  __basic_file<_CharT>*
+  __basic_file<_CharT>::sys_open(int __fd, ios_base::openmode __mode, 
+			       bool __del) 
+  {
+    __basic_file* __ret = NULL;
+    int __p_mode = 0;
+    int __rw_mode = 0;
+    char __c_mode[4];
+
+#if 0    
+#error copy from basic_file_stdio.h will make no sense
+    _M_open_mode(__mode, __p_mode, __rw_mode, __c_mode);
+    if (!this->is_open() && (_M_cfile = fdopen(__fd, __c_mode)))
+      {
+	// Iff __del is true, then close will fclose the fd.
+	_M_cfile_created = __del;
+
+	if (__fd == 0)
+	  setvbuf(_M_cfile, reinterpret_cast<char*>(NULL), _IONBF, 0);
+
+	__ret = this;
+      }
+#endif
+    return __ret;
+  }
+
+  template<typename _CharT>
     __basic_file<_CharT>* 
     __basic_file<_CharT>::open(const char* __name, ios_base::openmode __mode, 
 			       int __prot)
@@ -431,7 +461,7 @@ namespace std
       _M_open_mode(__mode, __p_mode, __rw_mode, __c_mode);
       if (!_IO_file_is_open(this))
 	{
-	  __c_file_type* __f;
+	  __c_file* __f;
 	  __f = _IO_file_open(this, __name, __p_mode, __prot, __rw_mode, 0);
 	  __ret = __f ? this: NULL;
 	}
@@ -440,7 +470,7 @@ namespace std
   
   template<typename _CharT>
     bool 
-    __basic_file<_CharT>::is_open() { return _fileno >= 0; }
+    __basic_file<_CharT>::is_open() const { return _fileno >= 0; }
   
   template<typename _CharT>
     __basic_file<_CharT>* 
