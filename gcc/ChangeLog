@@ -1,3 +1,8 @@
+Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_field): When making temp object for unaligned
+	component, set it to alias set 0.
+
 2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (c_expand_expr_stmt): Apply default conversions to
