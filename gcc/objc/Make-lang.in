@@ -146,19 +146,13 @@ objc.maintainer-clean:
 
 objc.stage1: stage1-start
 	-mv objc/*$(objext) stage1/objc
-	-mv cc1obj$(exeext) stage1
 objc.stage2: stage2-start
 	-mv objc/*$(objext) stage2/objc
-	-mv cc1obj$(exeext) stage2
 objc.stage3: stage3-start
 	-mv objc/*$(objext) stage3/objc
-	-mv cc1obj$(exeext) stage3
 objc.stage4: stage4-start
 	-mv objc/*$(objext) stage4/objc
-	-mv cc1obj$(exeext) stage4
 objc.stageprofile: stageprofile-start
 	-mv objc/*$(objext) stageprofile/objc
-	-mv cc1obj$(exeext) stageprofile
 objc.stagefeedback: stagefeedback-start
 	-mv objc/*$(objext) stagefeedback/objc
-	-mv cc1obj$(exeext) stagefeedback
