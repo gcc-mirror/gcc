@@ -1,3 +1,10 @@
+2004-09-15  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/file/Handler.java
+	(openConnection): Don't throw exception if host part for file: URI is
+	present. setURL() keeps file: protocol if ftp: protocol is not
+	available.
+
 2004-09-14  Richard Henderson  <rth@redhat.com>
 
 	* java/lang/natPosixProcess.cc (waitForSignal): Ignore return
