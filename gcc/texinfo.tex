@@ -35,7 +35,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.181 $
+\deftexinfoversion$Revision: 2.182 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1200,6 +1200,7 @@ where each line of input produces a line of output.}
      \hbox{\raise0.4pt\hbox{\vphantom{$\langle$}}#1}}%
     \kern-0.4pt\hrule}%
   \kern-.06em\raise0.4pt\hbox{$\rangle$}}}}
+% The old definition, with no lozenge:
 %\def\key #1{{\ttsl \nohyphenation \uppercase{#1}}\null}
 \def\ctrl #1{{\tt \rawbackslash \hat}#1}
 
@@ -1288,6 +1289,9 @@ where each line of input produces a line of output.}
 % Use of \lowercase was suggested.
 \def\sc#1{{\smallcaps#1}}	% smallcaps font
 \def\ii#1{{\it #1}}		% italic font
+
+% @pounds{} is a sterling sign.
+\def\pounds{{\it \$$}}
 
 \message{page headings,}
 
@@ -2911,7 +2915,7 @@ width0pt\relax} \fi
 %%% Define plain chapter starts, and page on/off switching for it
 % Parameter controlling skip before chapter headings (if needed)
 
-\newskip \chapheadingskip \chapheadingskip = 30pt plus 8pt minus 4pt
+\newskip\chapheadingskip
 
 \def\chapbreak{\dobreak \chapheadingskip {-4000}}
 \def\chappager{\par\vfill\supereject}
@@ -2999,13 +3003,13 @@ width0pt\relax} \fi
 
 
 % Section titles.
-\newskip \secheadingskip  \secheadingskip = 21pt plus 8pt minus 4pt
+\newskip\secheadingskip
 \def\secheadingbreak{\dobreak \secheadingskip {-1000}}
 \def\secheading#1#2#3{\sectionheading{sec}{#2.#3}{#1}}
 \def\plainsecheading#1{\sectionheading{sec}{}{#1}}
 
 % Subsection titles.
-\newskip \subsecheadingskip  \subsecheadingskip = 17pt plus 8pt minus 4pt
+\newskip \subsecheadingskip
 \def\subsecheadingbreak{\dobreak \subsecheadingskip {-500}}
 \def\subsecheading#1#2#3#4{\sectionheading{subsec}{#2.#3.#4}{#1}}
 \def\plainsubsecheading#1{\sectionheading{subsec}{}{#1}}
@@ -3228,12 +3232,11 @@ width0pt\relax} \fi
 %                                      depth .1ex\hfil}
 %}
 
+% @point{}, @result{}, @expansion{}, @print{}, @equiv{}.
 \def\point{$\star$}
-
 \def\result{\leavevmode\raise.15ex\hbox to 1em{\hfil$\Rightarrow$\hfil}}
 \def\expansion{\leavevmode\raise.1ex\hbox to 1em{\hfil$\mapsto$\hfil}}
 \def\print{\leavevmode\lower.1ex\hbox to 1em{\hfil$\dashv$\hfil}}
-
 \def\equiv{\leavevmode\lower.1ex\hbox to 1em{\hfil$\ptexequiv$\hfil}}
 
 % Adapted from the TeXbook's \boxit.
@@ -4345,12 +4348,17 @@ width0pt\relax} \fi
 
 % Set some numeric style parameters, for 8.5 x 11 format.
 
-%\hsize = 6.5in
+\hsize = 6in
+\hoffset = .25in
 \newdimen\defaultparindent \defaultparindent = 15pt
 \parindent = \defaultparindent
-\parskip 18pt plus 1pt
-\setleading{15pt}
+\parskip 3pt plus 2pt minus 1pt
+\setleading{13.2pt}
 \advance\topskip by 1.2cm
+
+\chapheadingskip = 15pt plus 4pt minus 2pt
+\secheadingskip = 12pt plus 3pt minus 2pt
+\subsecheadingskip = 9pt plus 2pt minus 2pt
 
 % Prevent underfull vbox error messages.
 \vbadness=10000
@@ -4374,30 +4382,28 @@ width0pt\relax} \fi
 
 % Use @smallbook to reset parameters for 7x9.5 format  (or else 7x9.25)
 \def\smallbook{
-
-% These values for secheadingskip and subsecheadingskip are
-% experiments.  RJC 7 Aug 1992
-\global\secheadingskip = 17pt plus 6pt minus 3pt
-\global\subsecheadingskip = 14pt plus 6pt minus 3pt
-
-\global\lispnarrowing = 0.3in
-\setleading{12pt}
-\advance\topskip by -1cm
-\global\parskip 3pt plus 1pt
-\global\hsize = 5in
-\global\vsize=7.5in
-\global\tolerance=700
-\global\hfuzz=1pt
-\global\contentsrightmargin=0pt
-\global\deftypemargin=0pt
-\global\defbodyindent=.5cm
-
-\global\pagewidth=\hsize
-\global\pageheight=\vsize
-
-\global\let\smalllisp=\smalllispx
-\global\let\smallexample=\smalllispx
-\global\def\Esmallexample{\Esmalllisp}
+  \global\chapheadingskip = 15pt plus 4pt minus 2pt
+  \global\secheadingskip = 12pt plus 3pt minus 2pt
+  \global\subsecheadingskip = 9pt plus 2pt minus 2pt
+  %
+  \global\lispnarrowing = 0.3in
+  \setleading{12pt}
+  \advance\topskip by -1cm
+  \global\parskip 2pt plus 1pt
+  \global\hsize = 5in
+  \global\vsize=7.5in
+  \global\tolerance=700
+  \global\hfuzz=1pt
+  \global\contentsrightmargin=0pt
+  \global\deftypemargin=0pt
+  \global\defbodyindent=.5cm
+  %
+  \global\pagewidth=\hsize
+  \global\pageheight=\vsize
+  %
+  \global\let\smalllisp=\smalllispx
+  \global\let\smallexample=\smalllispx
+  \global\def\Esmallexample{\Esmalllisp}
 }
 
 % Use @afourpaper to print on European A4 paper.
