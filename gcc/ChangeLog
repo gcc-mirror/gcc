@@ -1,3 +1,8 @@
+Thu Jul  8 16:50:14 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* invoke.texi (Spec Files): New node: Describe the contents of
+	spec files.
+
 Thu Jul  8 10:28:25 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* invoke.texi (DEC Alpha Options): Put @end table at
