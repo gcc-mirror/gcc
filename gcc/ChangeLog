@@ -1,3 +1,12 @@
+2003-12-26  Fariborz Jahanian <fjahanian@apple.com>
+	    Geoffrey Keating <geoffk@apple.com>
+	    David Edelsohn <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (legitimate_offset_address_p): Do not
+	restrict DFmode and TFmode to word alignment.
+	* config/rs6000/rs6000.md (movdf_hardfloat64): Use 'o' constraint
+	for ld/std and order before mr.
+
 2003-12-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/darwin.h (LINK_COMMAND_SPEC): Arrange
