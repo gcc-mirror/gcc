@@ -1,3 +1,10 @@
+2000-11-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* mangle.c (write_special_name_constructor): Don't generate
+	assembler junk when confronted with an old-style constructor.
+	(write_special_name_destructor): Likewise.
+	(mangle_decl_string): Do it here instead.
+
 2000-11-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (op_error): Make error messages clearer.
