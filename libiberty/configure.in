@@ -154,7 +154,7 @@ funcs="$funcs waitpid"
 
 vars="sys_errlist sys_nerr sys_siglist"
 
-checkfuncs="getrusage on_exit psignal strerror strsignal sysconf times"
+checkfuncs="getrusage on_exit psignal strerror strsignal sysconf times sbrk"
 
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
@@ -168,6 +168,7 @@ if test "x" = "y"; then
   AC_DEFINE(HAVE_SYS_NERR)
   AC_DEFINE(HAVE_SYS_SIGLIST)
   AC_CHECK_FUNCS(getrusage on_exit psignal strerror strsignal sysconf times)
+  AC_CHECK_FUNCS(sbrk)
 fi
 
 # For each of these functions, if the host does not provide the
