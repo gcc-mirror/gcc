@@ -605,14 +605,14 @@ static void compute_cprop_data	PARAMS ((void));
 static void find_used_regs	PARAMS ((rtx *, void *));
 static int try_replace_reg	PARAMS ((rtx, rtx, rtx));
 static struct expr *find_avail_set PARAMS ((int, rtx));
-static int cprop_jump		PARAMS ((rtx, rtx, rtx));
+static int cprop_jump		PARAMS ((basic_block, rtx, rtx, rtx));
 #ifdef HAVE_cc0
-static int cprop_cc0_jump	PARAMS ((rtx, struct reg_use *, rtx));
+static int cprop_cc0_jump	PARAMS ((basic_block, rtx, struct reg_use *, rtx));
 #endif
 static void mems_conflict_for_gcse_p PARAMS ((rtx, rtx, void *));
 static int load_killed_in_block_p    PARAMS ((basic_block, int, rtx, int));
 static void canon_list_insert        PARAMS ((rtx, rtx, void *));
-static int cprop_insn		PARAMS ((rtx, int));
+static int cprop_insn		PARAMS ((basic_block, rtx, int));
 static int cprop		PARAMS ((int));
 static int one_cprop_pass	PARAMS ((int, int));
 static void alloc_pre_mem	PARAMS ((int, int));
@@ -4015,10 +4015,11 @@ find_avail_set (regno, insn)
    nonzero if a change was made.  We know INSN has just a SET.  */
 
 static int
-cprop_jump (insn, from, src)
+cprop_jump (bb, insn, from, src)
      rtx insn;
      rtx from;
      rtx src;
+     basic_block bb;
 {
   rtx set = PATTERN (insn);
   rtx new = simplify_replace_rtx (SET_SRC (set), from, src);
@@ -4059,6 +4060,7 @@ cprop_jump (insn, from, src)
       print_rtl (gcse_file, src);
       fprintf (gcse_file, "\n");
     }
+  purge_dead_edges (bb);
 
   return 1;
 }
@@ -4072,7 +4074,8 @@ cprop_jump (insn, from, src)
    Returns nonzero if a change was made.  */
 
 static int
-cprop_cc0_jump (insn, reg_used, src)
+cprop_cc0_jump (bb, insn, reg_used, src)
+     basic_block bb;
      rtx insn;
      struct reg_use *reg_used;
      rtx src;
@@ -4083,7 +4086,7 @@ cprop_cc0_jump (insn, reg_used, src)
   rtx new_src = simplify_replace_rtx (SET_SRC (PATTERN (insn)),
 				      reg_used->reg_rtx, src);
 
-  if (! cprop_jump (jump, cc0_rtx, new_src))
+  if (! cprop_jump (bb, jump, cc0_rtx, new_src))
     return 0;
 
   /* If we succeeded, delete the cc0 setter.  */
@@ -4099,7 +4102,8 @@ cprop_cc0_jump (insn, reg_used, src)
    The result is non-zero if a change was made.  */
 
 static int
-cprop_insn (insn, alter_jumps)
+cprop_insn (bb, insn, alter_jumps)
+     basic_block bb;
      rtx insn;
      int alter_jumps;
 {
@@ -4183,7 +4187,7 @@ cprop_insn (insn, alter_jumps)
 		   && GET_CODE (insn) == JUMP_INSN
 		   && condjump_p (insn)
 		   && ! simplejump_p (insn))
-	    changed |= cprop_jump (insn, reg_used->reg_rtx, src);
+	    changed |= cprop_jump (bb, insn, reg_used->reg_rtx, src);
 
 #ifdef HAVE_cc0
 	  /* Similar code for machines that use a pair of CC0 setter and
@@ -4252,7 +4256,7 @@ cprop (alter_jumps)
 	   insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
 	  {
-	    changed |= cprop_insn (insn, alter_jumps);
+	    changed |= cprop_insn (BASIC_BLOCK (bb), insn, alter_jumps);
 
 	    /* Keep track of everything modified by this insn.  */
 	    /* ??? Need to be careful w.r.t. mods done to INSN.  Don't

@@ -374,7 +374,7 @@ static int flow_find_cross_jump		PARAMS ((int, basic_block, basic_block,
 static int count_basic_blocks		PARAMS ((rtx));
 static void find_basic_blocks_1		PARAMS ((rtx));
 static rtx find_label_refs		PARAMS ((rtx, rtx));
-static void make_edges			PARAMS ((rtx));
+static void make_edges			PARAMS ((rtx, int, int));
 static void make_label_edge		PARAMS ((sbitmap *, basic_block,
 						 rtx, int));
 static void make_eh_edge		PARAMS ((sbitmap *, basic_block, rtx));
@@ -401,8 +401,6 @@ static void tidy_fallthru_edges		PARAMS ((void));
 static int verify_wide_reg_1		PARAMS ((rtx *, void *));
 static void verify_wide_reg		PARAMS ((int, rtx, rtx));
 static void verify_local_live_at_start	PARAMS ((regset, basic_block));
-static int noop_move_p			PARAMS ((rtx));
-static void delete_noop_moves		PARAMS ((rtx));
 static void notice_stack_pointer_modification_1 PARAMS ((rtx, rtx, void *));
 static void notice_stack_pointer_modification PARAMS ((rtx));
 static void mark_reg			PARAMS ((rtx, void *));
@@ -483,7 +481,6 @@ static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
-static void find_sub_basic_blocks	PARAMS ((basic_block));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -543,7 +540,7 @@ find_basic_blocks (f, nregs, file)
   compute_bb_for_insn (max_uid);
 
   /* Discover the edges of our cfg.  */
-  make_edges (label_value_list);
+  make_edges (label_value_list, 0, n_basic_blocks - 1);
 
   /* Do very simple cleanup now, for the benefit of code that runs between
      here and cleanup_cfg, e.g. thread_prologue_and_epilogue_insns.  */
@@ -705,39 +702,30 @@ find_label_refs (f, lvl)
 
 /* Assume that someone emitted code with control flow instructions to the
    basic block.  Update the data structure.  */
-static void
+void
 find_sub_basic_blocks (bb)
      basic_block bb;
 {
-  rtx first_insn = bb->head, insn;
+  rtx insn = bb->head;
   rtx end = bb->end;
-  edge succ_list = bb->succ;
   rtx jump_insn = NULL_RTX;
   int created = 0;
   int barrier = 0;
   edge falltru = 0;
-  basic_block first_bb = bb, last_bb;
-  int i;
+  basic_block first_bb = bb;
 
-  if (GET_CODE (first_insn) == LABEL_REF)
-    first_insn = NEXT_INSN (first_insn);
-  first_insn = NEXT_INSN (first_insn);
-  bb->succ = NULL;
+  if (insn == bb->end)
+    return;
 
-  insn = first_insn;
+  if (GET_CODE (insn) == CODE_LABEL)
+    insn = NEXT_INSN (insn);
+
   /* Scan insn chain and try to find new basic block boundaries.  */
-  while (insn != end)
+  while (1)
     {
       enum rtx_code code = GET_CODE (insn);
       switch (code)
 	{
-	case JUMP_INSN:
-	  /* We need some special care for those expressions.  */
-	  if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-	    abort();
-	  jump_insn = insn;
-	  break;
 	case BARRIER:
 	  if (!jump_insn)
 	    abort ();
@@ -749,8 +737,7 @@ find_sub_basic_blocks (bb)
 	  if (jump_insn)
 	    bb->end = jump_insn;
 	  bb = falltru->dest;
-	  if (barrier)
-	    remove_edge (falltru);
+	  remove_edge (falltru);
 	  barrier = 0;
 	  jump_insn = 0;
 	  created = 1;
@@ -758,6 +745,7 @@ find_sub_basic_blocks (bb)
 	    make_edge (NULL, ENTRY_BLOCK_PTR, bb, 0);
 	  break;
 	case INSN:
+	case JUMP_INSN:
 	  /* In case we've previously split insn on the JUMP_INSN, move the
 	     block header to proper place.  */
 	  if (jump_insn)
@@ -765,42 +753,39 @@ find_sub_basic_blocks (bb)
 	      falltru = split_block (bb, PREV_INSN (insn));
 	      bb->end = jump_insn;
 	      bb = falltru->dest;
-	      if (barrier)
-		abort ();
+	      remove_edge (falltru);
 	      jump_insn = 0;
 	    }
+	  /* We need some special care for those expressions.  */
+	  if (GET_CODE (insn) == JUMP_INSN)
+	    {
+	      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
+		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+		abort();
+	      jump_insn = insn;
+	    }
+	  break;
 	default:
 	  break;
 	}
+      if (insn == end)
+	break;
       insn = NEXT_INSN (insn);
     }
-  /* Last basic block must end in the original BB end.  */
-  if (jump_insn)
-    abort ();
 
-  /* Wire in the original edges for last basic block.  */
-  if (created)
-    {
-      bb->succ = succ_list;
-      while (succ_list)
-	succ_list->src = bb, succ_list = succ_list->succ_next;
-    }
-  else
-    bb->succ = succ_list;
+  /* In case we've got barrier at the end of new insn stream, put it
+     outside basic block.  */
+  if (GET_CODE (bb->end) == BARRIER)
+    bb->end = PREV_INSN (bb->end);
+
+  /* We've possibly replaced the conditional jump by conditional jump
+     followed by cleanup at fallthru edge, so the outgoing edges may
+     be dead.  */
+  purge_dead_edges (bb);
 
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
-  last_bb = bb;
-  for (i = first_bb->index; i < last_bb->index; i++)
-    {
-      bb = BASIC_BLOCK (i);
-      if (GET_CODE (bb->end) == JUMP_INSN)
-	{
-	  mark_jump_label (PATTERN (bb->end), bb->end, 0);
-	  make_label_edge (NULL, bb, JUMP_LABEL (bb->end), 0);
-	}
-      insn = NEXT_INSN (insn);
-    }
+  make_edges (NULL, first_bb->index, bb->index - 1);
 }
 
 /* Find all basic blocks of the function whose first insn is F.
@@ -1166,7 +1151,7 @@ clear_edges ()
   n_edges = 0;
 }
 
-/* Identify the edges between basic blocks.
+/* Identify the edges between basic blocks MIN to MAX.
 
    NONLOCAL_LABEL_LIST is a list of non-local labels in the function.  Blocks
    that are otherwise unreachable may be reachable with a non-local goto.
@@ -1175,8 +1160,9 @@ clear_edges ()
    the list of exception regions active at the end of the basic block.  */
 
 static void
-make_edges (label_value_list)
+make_edges (label_value_list, min, max)
      rtx label_value_list;
+     int min, max;
 {
   int i;
   sbitmap *edge_cache = NULL;
@@ -1196,7 +1182,7 @@ make_edges (label_value_list)
   /* By nature of the way these get numbered, block 0 is always the entry.  */
   make_edge (edge_cache, ENTRY_BLOCK_PTR, BASIC_BLOCK (0), EDGE_FALLTHRU);
 
-  for (i = 0; i < n_basic_blocks; ++i)
+  for (i = min; i <= max; ++i)
     {
       basic_block bb = BASIC_BLOCK (i);
       rtx insn, x;
@@ -4317,58 +4303,28 @@ free_basic_block_vars (keep_head_end_p)
     }
 }
 
-/* Return nonzero if an insn consists only of SETs, each of which only sets a
-   value to itself.  */
-
-static int
-noop_move_p (insn)
-     rtx insn;
-{
-  rtx pat = PATTERN (insn);
-
-  /* Insns carrying these notes are useful later on.  */
-  if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
-    return 0;
-
-  if (GET_CODE (pat) == SET && set_noop_p (pat))
-    return 1;
-
-  if (GET_CODE (pat) == PARALLEL)
-    {
-      int i;
-      /* If nothing but SETs of registers to themselves,
-	 this insn can also be deleted.  */
-      for (i = 0; i < XVECLEN (pat, 0); i++)
-	{
-	  rtx tem = XVECEXP (pat, 0, i);
-
-	  if (GET_CODE (tem) == USE
-	      || GET_CODE (tem) == CLOBBER)
-	    continue;
-
-	  if (GET_CODE (tem) != SET || ! set_noop_p (tem))
-	    return 0;
-	}
-
-      return 1;
-    }
-  return 0;
-}
-
 /* Delete any insns that copy a register to itself.  */
 
-static void
+void
 delete_noop_moves (f)
-     rtx f;
+     rtx f ATTRIBUTE_UNUSED;
 {
-  rtx insn;
-  for (insn = f; insn; insn = NEXT_INSN (insn))
+  int i;
+  rtx insn, next;
+  basic_block bb;
+
+  for (i = 0; i < n_basic_blocks; i++)
     {
-      if (GET_CODE (insn) == INSN && noop_move_p (insn))
+      bb = BASIC_BLOCK (i);
+      for (insn = bb->head; insn != NEXT_INSN (bb->end); insn = next)
 	{
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (insn) = 0;
+	  next = NEXT_INSN (insn);
+	  if (INSN_P (insn) && noop_move_p (insn))
+	    {
+	      if (insn == bb->end)
+		bb->end = PREV_INSN (insn);
+	      flow_delete_insn (insn);
+	    }
 	}
     }
 }
@@ -9813,4 +9769,70 @@ init_flow ()
       obstack_free (&flow_obstack, flow_firstobj);
       flow_firstobj = (char *) obstack_alloc (&flow_obstack, 0);
     }
+}
+
+/* Assume that the preceeding pass has possibly eliminated jump instructions
+   or converted the unconditional jumps.  Eliminate the edges from CFG.  */
+
+void
+purge_dead_edges (bb)
+     basic_block bb;
+{
+  edge e, next;
+  rtx insn = bb->end;
+  if (GET_CODE (insn) == JUMP_INSN && !simplejump_p (insn))
+    return;
+  if (GET_CODE (insn) == JUMP_INSN)
+    {
+      for (e = bb->succ; e; e = next)
+	{
+	  next = e->succ_next;
+	  if (e->dest == EXIT_BLOCK_PTR || e->dest->head != JUMP_LABEL (insn))
+	    remove_edge (e);
+	}
+      if (bb->succ && bb->succ->succ_next)
+	abort ();
+      if (!bb->succ)
+	return;
+      bb->succ->probability = REG_BR_PROB_BASE;
+      bb->succ->count = bb->count;
+
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file, "Purged edges from bb %i\n", bb->index);
+      return;
+    }
+  /* If we don't see a jump insn, we don't know exactly why the block would
+     have been broken at this point.  Look for a simple, non-fallthru edge,
+     as these are only created by conditional branches.  If we find such an
+     edge we know that there used to be a jump here and can then safely
+     remove all non-fallthru edges.  */
+  for (e = bb->succ; e && (e->flags & (EDGE_COMPLEX | EDGE_FALLTHRU));
+       e = e->succ_next);
+  if (!e)
+    return;
+  for (e = bb->succ; e; e = next)
+    {
+      next = e->succ_next;
+      if (!(e->flags & EDGE_FALLTHRU))
+	remove_edge (e);
+    }
+  if (!bb->succ || bb->succ->succ_next)
+    abort ();
+  bb->succ->probability = REG_BR_PROB_BASE;
+  bb->succ->count = bb->count;
+
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "Purged non-fallthru edges from bb %i\n",
+	     bb->index);
+  return;
+}
+
+/* Search all basic blocks for potentionally dead edges and purge them.  */
+
+void
+purge_all_dead_edges ()
+{
+  int i;
+  for (i = 0; i < n_basic_blocks; i++)
+    purge_dead_edges (BASIC_BLOCK (i));
 }

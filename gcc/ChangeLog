@@ -1,3 +1,33 @@
+Mon Jul 23 16:03:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (find_sub_basic_block): Declare.
+	* flow.c (make_edges): New arguments MIN and MAX;
+	(find_sub_basic_blocks): Revamp to use make_edges
+	and purge_dead_edges.
+	(find_basic_blocks): Update call of find_sub_basic_block.
+
+	* recog.c (split_all_insns): Always expect CFG to be consistent;
+	call find_sub_basic_blocks in case something has changed.
+	* toplev.c (rest_of_compilation): Always call split_all_insns once CFG
+	has been built.
+
+	* basic-block.h (delete_noop_moves): Declare.
+	* combine.c (combine_instructions): Call it.
+	(recog_for_combine): Tolerate noop moves
+	(distribute_notes): Force refresh when register dies at noop move.
+	* flow.c (delete_noop_moves): Use BB structure; delete JUMP insns
+	too.
+	(life_analysis): Update delete_noop_moves call.
+	(set_noop_p): Move too ...
+	* rtlanal.c (noop_move_p): ... here.
+	* rtl.h (noop_move_p): Declare.
+
+	* basic-block.h (purge_all_dead_edges, purge_dead_edges): New functions.
+	* toplev.c (rest_of_compilation): Conditionally call purge_all_dead_edges
+	after combine.
+	* gcse.c (cprop_cc0_jump, cprop_insn): New argument "basic_block".
+	(cprop_jump): Likewise; call purge_dead_edges if substitution suceeded.
+
 2001-07-23  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* reload.c (push_reload): Fix typo in comment.

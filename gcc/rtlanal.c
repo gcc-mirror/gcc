@@ -1020,6 +1020,45 @@ set_noop_p (set)
   return (GET_CODE (src) == REG && GET_CODE (dst) == REG
 	  && REGNO (src) == REGNO (dst));
 }
+
+/* Return nonzero if an insn consists only of SETs, each of which only sets a
+   value to itself.  */
+
+int
+noop_move_p (insn)
+     rtx insn;
+{
+  rtx pat = PATTERN (insn);
+
+  /* Insns carrying these notes are useful later on.  */
+  if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
+    return 0;
+
+  if (GET_CODE (pat) == SET && set_noop_p (pat))
+    return 1;
+
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      int i;
+      /* If nothing but SETs of registers to themselves,
+	 this insn can also be deleted.  */
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx tem = XVECEXP (pat, 0, i);
+
+	  if (GET_CODE (tem) == USE
+	      || GET_CODE (tem) == CLOBBER)
+	    continue;
+
+	  if (GET_CODE (tem) != SET || ! set_noop_p (tem))
+	    return 0;
+	}
+
+      return 1;
+    }
+  return 0;
+}
+
 
 /* Return the last thing that X was assigned from before *PINSN.  If VALID_TO
    is not NULL_RTX then verify that the object is not modified up to VALID_TO.

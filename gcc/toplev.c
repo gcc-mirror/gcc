@@ -3265,7 +3265,7 @@ rest_of_compilation (decl)
 	  timevar_pop (TV_JUMP);
 
 	  timevar_push (TV_FLOW);
-	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	  purge_all_dead_edges ();
 	  cleanup_cfg (CLEANUP_EXPENSIVE);
 
 	  /* Blimey.  We've got to have the CFG up to date for the call to
@@ -3441,16 +3441,6 @@ rest_of_compilation (decl)
       timevar_pop (TV_RELOAD_CSE_REGS);
     }
 
-  /* If optimizing, then go ahead and split insns now since we are about
-     to recompute flow information anyway.  */
-  if (optimize > 0)
-    {
-      int old_labelnum = max_label_num ();
-
-      split_all_insns (0);
-      rebuild_label_notes_after_reload |= old_labelnum != max_label_num ();
-    }
-
   /* Register allocation and reloading may have turned an indirect jump into
      a direct jump.  If so, we must rebuild the JUMP_LABEL fields of
      jumping instructions.  */
@@ -3470,6 +3460,11 @@ rest_of_compilation (decl)
   open_dump_file (DFI_flow2, decl);
 
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+
+  /* If optimizing, then go ahead and split insns now.  */
+  if (optimize > 0)
+    split_all_insns (0);
+
   cleanup_cfg (0);
 
   /* On some machines, the prologue and epilogue code, or parts thereof,
