@@ -80,6 +80,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coverage.h"
 #include "value-prof.h"
 #include "alloc-pool.h"
+#include "tree-mudflap.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -1003,6 +1004,10 @@ compile_file (void)
      Else the coverage initializer would not be emitted if all the
      functions in this compilation unit were deferred.  */
   coverage_finish ();
+
+  /* Likewise for mudflap static object registrations.  */
+  if (flag_mudflap)
+    mudflap_finish_file ();
 
   /* Write out any pending weak symbol declarations.  */
 

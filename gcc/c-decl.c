@@ -7300,11 +7300,6 @@ c_write_global_declarations (void)
   /* We're done parsing; proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */
   cgraph_optimize ();
-
-  /* Presently this has to happen after cgraph_optimize.
-     FIXME: shouldn't be the front end's responsibility to call this.  */
-  if (flag_mudflap)
-    mudflap_finish_file ();
 }
 
 #include "gt-c-decl.h"

@@ -1,3 +1,10 @@
+2004-10-13  Frank Ch. Eigler  <fche@redhat.com>
+
+	* toplev.c (compile_file): Call mudflap_finish_file from here ...
+	* c-decl.c (c_write_global_declarations): ... instead of here ...
+	* cp/decl.c (cp_finish_file): ... and here.
+	* tree-mudflap.c (mudflap_enqueue_decl): Reword a warning message.
+
 2004-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-ssa-dom.c (record_range): Free the element if we are not
