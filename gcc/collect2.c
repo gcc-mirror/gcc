@@ -1362,7 +1362,7 @@ main (argc, argv)
 
   /* On AIX we do this later.  */
 #ifndef COLLECT_EXPORT_LIST
-  do_tlink (ld1_argv, object_lst); 
+  do_tlink (ld1_argv, object_lst);
 #endif
 
   /* If -r or they will be run via some other method, do not build the
@@ -1374,6 +1374,9 @@ main (argc, argv)
       )
     {
 #ifdef COLLECT_EXPORT_LIST
+      /* Do the link we avoided above if we are exiting.  */
+      do_tlink (ld1_argv, object_lst);
+
       /* But make sure we delete the export file we may have created.  */
       if (export_file != 0 && export_file[0])
 	maybe_unlink (export_file);
