@@ -1,5 +1,10 @@
 2003-07-14  Paolo Carlini  <pcarlini@unitus.it>
 
+	* config/locale/gnu/c_locale.h (__convert_from_v): One more
+	qualification.
+
+2003-07-14  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/stl_tempbuf.h: Qualify free with std::.
 	* src/locale.cc: Include <cstdlib>, qualify getenv.
 
