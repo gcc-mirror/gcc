@@ -4924,7 +4924,7 @@ form_the_same_automaton_unit_lists_from_regexp (regexp)
 		  if (unit->mode == rm_unit)
 		    process_unit_to_form_the_same_automaton_unit_lists
 		      (unit, regexp, j);
-		  else if (allof->mode != rm_nothing)
+		  else if (unit->mode != rm_nothing)
 		    abort ();
 		}
 	    else if (allof->mode == rm_unit)
