@@ -1,3 +1,10 @@
+2000-09-10  Richard Henderson  <rth@cygnus.com>
+
+	* c-parse.in: Revert last change.
+	(init_reswords): Do not enter disabled keywords into the ridpointers
+	table, modulo objc weirdness.
+	(_yylex): Return the canonical spelling for a keyword.
+
 2000-09-10  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.h (CPP_ISA_SPEC): Don't define `arm' or `thumb'.
