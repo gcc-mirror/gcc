@@ -366,7 +366,7 @@ init_reload ()
 
   /* See if reg+reg is a valid (and offsettable) address.  */
 
-  tem = gen_rtx (PLUS, Pmode, 
+  tem = gen_rtx (PLUS, Pmode,
 		 gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM),
 		 gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM));
   /* This way, we make sure that reg+reg is an offsettable address.  */
@@ -521,7 +521,7 @@ reload (first, global, dumpfile)
   /* Initialize the save area information for caller-save, in case some
      are needed.  */
   init_save_areas ();
-    
+
   /* Compute which hard registers are now in use
      as homes for pseudo registers.
      This is done here rather than (eg) in global_alloc
@@ -570,7 +570,7 @@ reload (first, global, dumpfile)
 	  rtx note = find_reg_note (insn, REG_EQUIV, 0);
 	  if (note
 #ifdef LEGITIMATE_PIC_OPERAND_P
-	      && (! CONSTANT_P (XEXP (note, 0)) || ! flag_pic 
+	      && (! CONSTANT_P (XEXP (note, 0)) || ! flag_pic
 		  || LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0)))
 #endif
 	      )
@@ -647,7 +647,7 @@ reload (first, global, dumpfile)
 #endif
 
   /* Count the number of eliminable registers and build the FROM and TO
-     REG rtx's.  Note that code in gen_rtx will cause, e.g., 
+     REG rtx's.  Note that code in gen_rtx will cause, e.g.,
      gen_rtx (REG, Pmode, STACK_POINTER_REGNUM) to equal stack_pointer_rtx.
      We depend on this.  */
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
@@ -839,7 +839,7 @@ reload (first, global, dumpfile)
 	 and constant, it is probably not addressable because the constant is
 	 out of range, in that case record the address; we will generate
 	 hairy code to compute the address in a register each time it is
-	 needed. 
+	 needed.
 
 	 If the location is not addressable, but does not have one of the
 	 above forms, assign a stack slot.  We have to do this to avoid the
@@ -868,7 +868,7 @@ reload (first, global, dumpfile)
 	    else
 	      {
 		/* Make a new stack slot.  Then indicate that something
-		   changed so we go back and recompute offsets for 
+		   changed so we go back and recompute offsets for
 		   eliminable registers because the allocation of memory
 		   below might change some offset.  reg_equiv_{mem,address}
 		   will be set up for this pseudo on the next pass around
@@ -879,7 +879,7 @@ reload (first, global, dumpfile)
 		something_changed = 1;
 	      }
 	  }
-	
+
       /* If we allocated another psuedo to the stack, redo elimination
 	 bookkeeping.  */
       if (something_changed)
@@ -1024,7 +1024,7 @@ reload (first, global, dumpfile)
 		}
 
 	      /* If this insn has no reloads, we need not do anything except
-		 in the case of a CALL_INSN when we have caller-saves and 
+		 in the case of a CALL_INSN when we have caller-saves and
 		 caller-save needs reloads.  */
 
 	      if (n_reloads == 0
@@ -1179,7 +1179,7 @@ reload (first, global, dumpfile)
 		 needed for this insn.   However, the spill register
 		 can be used by any reload of this insn, so we only
 		 need do something if no need for that class has
-		 been recorded. 
+		 been recorded.
 
 		 The assumption that every CALL_INSN will trigger a
 		 caller-save is highly conservative, however, the number
@@ -1279,7 +1279,7 @@ reload (first, global, dumpfile)
 	     supports the sum of two registers for an address; see
 	     find_address_reloads for details.  */
 
-	  caller_save_spill_class 
+	  caller_save_spill_class
 	    = double_reg_address_ok ? INDEX_REG_CLASS : BASE_REG_CLASS;
 	  caller_save_group_size
 	    = CLASS_MAX_NREGS (caller_save_spill_class, Pmode);
@@ -1331,7 +1331,7 @@ reload (first, global, dumpfile)
       count_possible_groups (group_size, group_mode, max_groups);
 
       /* Now count all spill regs against the individual need,
-	 This includes those counted above for groups, 
+	 This includes those counted above for groups,
 	 but not those previously counted for nongroups.
 
 	 Those that weren't counted_for_groups can also count against
@@ -1373,7 +1373,7 @@ reload (first, global, dumpfile)
 	 no longer replace register C with register B and we need to disable
 	 such an elimination, if it exists.  This occurs often with A == ap,
 	 B == sp, and C == fp.  */
-	 
+
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	{
 	  struct elim_table *op;
@@ -1839,7 +1839,7 @@ count_possible_groups (group_size, group_mode, max_groups)
 		  p = reg_class_superclasses[i];
 		  while (*p != LIM_REG_CLASSES)
 		    max_groups[(int) *p++]--;
-		  /* Don't count these registers again.  */ 
+		  /* Don't count these registers again.  */
 		  for (k = 0; k < group_size[i]; k++)
 		    SET_HARD_REG_BIT (counted_for_groups, j + k);
 		}
@@ -2171,7 +2171,7 @@ set_label_offsets (x, insn, initial_p)
 	/* If neither of the above cases is true, compare each offset
 	   with those previously recorded and suppress any eliminations
 	   where the offsets disagree.  */
-	  
+
 	for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
 	  if (offsets_at[CODE_LABEL_NUMBER (x)][i]
 	      != (initial_p ? reg_eliminate[i].initial_offset
@@ -2259,7 +2259,7 @@ set_label_offsets (x, insn, initial_p)
 
 static struct rtvec_def *old_asm_operands_vec, *new_asm_operands_vec;
 
-/* Scan X and replace any eliminable registers (such as fp) with a 
+/* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp), plus an offset.
 
    MEM_MODE is the mode of an enclosing MEM.  We need this to know how
@@ -2401,7 +2401,7 @@ eliminate_regs (x, mem_mode, insn)
 	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
 	  {
 	    /* If one side is a PLUS and the other side is a pseudo that
-	       didn't get a hard register but has a reg_equiv_constant, 
+	       didn't get a hard register but has a reg_equiv_constant,
 	       we must replace the constant here since it may no longer
 	       be in the position of any operand.  */
 	    if (GET_CODE (new0) == PLUS && GET_CODE (new1) == REG
@@ -2609,7 +2609,7 @@ eliminate_regs (x, mem_mode, insn)
       if (GET_CODE (SET_DEST (x)) == REG)
 	{
 	  /* See if this is setting the replacement register for an
-	     elimination. 
+	     elimination.
 
 	     If DEST is the frame pointer, we do nothing because we assume that
 	     all assignments to the frame pointer are for non-local gotos and
@@ -2819,7 +2819,7 @@ eliminate_regs_in_insn (insn, replace)
 	REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, 0);
       val = 1;
     }
-  
+
   /* Loop through all elimination pairs.  See if any have changed and
      recalculate the number not at initial offset.
 
@@ -2937,7 +2937,7 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (reg_renumber[i] >= 0
 	&& reg_renumber[i] <= regno
-	&& (reg_renumber[i] 
+	&& (reg_renumber[i]
 	    + HARD_REGNO_NREGS (reg_renumber[i],
 				PSEUDO_REGNO_MODE (i))
 	    > regno))
@@ -2960,7 +2960,7 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
 		 *p != LIM_REG_CLASSES; p++)
 	      if (basic_block_needs[(int) *p][reg_basic_block[i]] > 0)
 		break;
-	  
+
 	    if (*p == LIM_REG_CLASSES)
 	      continue;
 	  }
@@ -3278,7 +3278,7 @@ reload_as_needed (first, live_known)
 	      int class;
 
 	      /* If this block has not had spilling done for a
-		 particular class, deactivate any optional reloads 
+		 particular class, deactivate any optional reloads
 		 of that class lest they try to use a spill-reg which isn't
 		 available here.  If we have any non-optionals that need a
 		 spill reg, abort.  */
@@ -3448,7 +3448,7 @@ reload_reg_class_lower (p1, p2)
 {
   register int r1 = *p1, r2 = *p2;
   register int t;
-  
+
   /* Consider required reloads before optional ones.  */
   t = reload_optional[r1] - reload_optional[r2];
   if (t != 0)
@@ -3703,7 +3703,7 @@ allocate_reload_reg (r, insn, last_reload, noerror)
 
   /* If we put this reload ahead, thinking it is a group,
      then insist on finding a group.  Otherwise we can grab a
-     reg that some other reload needs. 
+     reg that some other reload needs.
      (That can happen when we have a 68000 DATA_OR_FP_REG
      which is a group of data regs or one fp reg.)
      We need not be so restrictive if there are no more reloads
@@ -3948,7 +3948,7 @@ choose_reload_regs (insn, avoid_return_reg)
 #if 0  /* Not needed, now that we can always retry without inheritance.  */
   /* See if we have more mandatory reloads than spill regs.
      If so, then we cannot risk optimizations that could prevent
-     reloads from sharing one spill register. 
+     reloads from sharing one spill register.
 
      Since we will try finding a better register than reload_reg_rtx
      unless it is equal to reload_in or reload_out, count such reloads.  */
@@ -3957,7 +3957,7 @@ choose_reload_regs (insn, avoid_return_reg)
     int tem = 0;
 #ifdef SMALL_REGISTER_CLASSES
     int tem = (avoid_return_reg != 0);
-#endif 
+#endif
     for (j = 0; j < n_reloads; j++)
       if (! reload_optional[j]
 	  && (reload_in[j] != 0 || reload_out[j] != 0 || reload_secondary_p[j])
@@ -3989,7 +3989,7 @@ choose_reload_regs (insn, avoid_return_reg)
   /* In order to be certain of getting the registers we need,
      we must sort the reloads into order of increasing register class.
      Then our grabbing of reload registers will parallel the process
-     that provided the reload registers. 
+     that provided the reload registers.
 
      Also note whether any of the reloads wants a consecutive group of regs.
      If so, record the maximum size of the group desired and what
@@ -4544,7 +4544,7 @@ emit_reload_insns (insn)
 
 	      /* If OLDEQUIV is a spill register, don't use it for this
 		 if any other reload needs it at an earlier stage of this insn
-		 or at this stage.  */	   
+		 or at this stage.  */
 	      if (spill_reg_order[regno] >= 0
 		  && (! reload_reg_free_p (regno, reload_when_needed[j])
 		      || ! reload_reg_free_before_p (regno,
@@ -4719,10 +4719,10 @@ emit_reload_insns (insn)
 			      new_icode = reload_in_optab[(int) mode];
 			      if (new_icode != CODE_FOR_nothing
 				  && ((insn_operand_predicate[(int) new_icode][0]
-				       && ! (insn_operand_predicate[(int) new_icode][0]
+				       && ! ((*insn_operand_predicate[(int) new_icode][0])
 					     (reloadreg, mode)))
-				      || (insn_operand_predicate[(int) new_icode]
-					  && ! (insn_operand_predicate[(int) new_icode][1]
+				      || (insn_operand_predicate[(int) new_icode][1]
+					  && ! ((*insn_operand_predicate[(int) new_icode][1])
 						(oldequiv, mode)))))
 				new_icode = CODE_FOR_nothing;
 
@@ -4860,7 +4860,7 @@ emit_reload_insns (insn)
 	{
 	  register rtx reloadreg = reload_reg_rtx[j];
 
-#if 0	  
+#if 0
 	  /* We can't abort here because we need to support this for sched.c.
 	     It's not terrible to miss a REG_DEAD note, but we should try
 	     to figure out how to do this correctly.  */
@@ -4900,7 +4900,7 @@ emit_reload_insns (insn)
 		   && GET_CODE (reload_in[j]) == REG
 		   && spill_reg_store[reload_spill_index[j]] == 0
 		   && reload_inheritance_insn[j] != 0
-		   && find_regno_note (reload_inheritance_insn[j], REG_DEAD, 
+		   && find_regno_note (reload_inheritance_insn[j], REG_DEAD,
 				       REGNO (reload_reg_rtx[j])))
 	    remove_death (REGNO (reload_reg_rtx[j]),
 			  reload_inheritance_insn[j]);
@@ -5258,7 +5258,7 @@ emit_reload_insns (insn)
 
 	      /* If there are two separate reloads (one in and one out)
 		 for the same (hard or pseudo) reg,
-		 leave reg_last_reload_reg set 
+		 leave reg_last_reload_reg set
 		 based on the output reload.
 		 Otherwise, set it from this input reload.  */
 	      if (!reg_has_output_reload[nregno]
@@ -5312,7 +5312,7 @@ gen_input_reload (reloadreg, in, before_insn)
 {
   register rtx prev_insn = PREV_INSN (before_insn);
 
-  /* How to do this reload can get quite tricky.  Normally, we are being 
+  /* How to do this reload can get quite tricky.  Normally, we are being
      asked to reload a simple operand, such as a MEM, a constant, or a pseudo
      register that didn't get a hard register.  In that case we can just
      call emit_move_insn.
@@ -5356,17 +5356,17 @@ gen_input_reload (reloadreg, in, before_insn)
 	 but we need to pass the insn as an operand to `recog' and it is
 	 simpler to emit and then delete the insn if not valid than to
 	 dummy things up.  */
-      
+
       rtx move_operand, other_operand, insn;
       int code;
-      
+
       /* Since constraint checking is strict, commutativity won't be
 	 checked, so we need to do that here to avoid spurious failure
 	 if the add instruction is two-address and the second operand
 	 of the add is the same as the reload reg, which is frequently
 	 the case.  If the insn would be A = B + A, rearrange it so
 	 it will be A = A + B as constrain_operands expects. */
-	
+
       if (GET_CODE (XEXP (in, 1)) == REG
 	  && REGNO (reloadreg) == REGNO (XEXP (in, 1)))
 	in = gen_rtx (PLUS, GET_MODE (in), XEXP (in, 1), XEXP (in, 0));
@@ -5526,7 +5526,7 @@ delete_output_reload (insn, j, output_reload_insn)
 }
 
 
-/* Output reload-insns to reload VALUE into RELOADREG. 
+/* Output reload-insns to reload VALUE into RELOADREG.
    VALUE is a autoincrement or autodecrement RTX whose operand
    is a register or memory location;
    so reloading involves incrementing that location.
