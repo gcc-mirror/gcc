@@ -103,11 +103,11 @@ g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c prefix.h
 	else true; fi
 
 # Create the compiler driver for g77.
-g77$(exeext): g77.o g77spec.o g77version.o version.o choose-temp.o pexecute.o prefix.o mkstemp.o \
+g77$(exeext): g77.o g77spec.o g77version.o version.o prefix.o \
   $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	if [ -f lang-f77 ]; then \
 	  $(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g77.o g77spec.o g77version.o \
-	   version.o choose-temp.o pexecute.o prefix.o mkstemp.o $(EXTRA_GCC_OBJS) $(LIBS); \
+	   version.o prefix.o $(EXTRA_GCC_OBJS) $(LIBS); \
 	else true; fi
 
 # Create a version of the g77 driver which calls the cross-compiler.

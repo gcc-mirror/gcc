@@ -1,3 +1,8 @@
+Wed Feb  3 22:50:17 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+
+	* Make-lang.in (g77$(exeext)): Get choose-temp.o, pexecute.o and
+	mkstemp.o from libiberty.
+
 1999-02-01  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* top.c: Don't define ffe_is_ident_.  Don't process
