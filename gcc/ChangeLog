@@ -1,3 +1,11 @@
+2003-01-15  Roger Sayle  <roger@eyesopen.com>
+
+	* real.c (real_sqrt): Return a bool result indicating whether
+	a floating point exception or trap should be raised.
+	* real.h (real_sqrt): Update function prototype.
+	* builtins.c (fold_builtin): Only fold non-trapping square
+	roots unless we're ignoring errno and trapping math.
+
 2003-01-15  John David Anglin  <dave.anglin@nrc.gc.ca>
 
 	* expr.h (emit_conditional_add): Add PARAMS to declaration.

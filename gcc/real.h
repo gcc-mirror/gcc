@@ -1,6 +1,6 @@
 /* Definitions of floating-point access for GNU compiler.
-   Copyright (C) 1989, 1991, 1994, 1996, 1997, 1998,
-   1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1994, 1996, 1997, 1998, 1999,
+   2000, 2002, 2003 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -350,7 +350,7 @@ extern bool exact_real_inverse	PARAMS ((enum machine_mode, REAL_VALUE_TYPE *));
 extern tree build_real			PARAMS ((tree, REAL_VALUE_TYPE));
 
 /* Calculate R as the square root of X in the given machine mode.  */
-extern void real_sqrt			PARAMS ((REAL_VALUE_TYPE *,
+extern bool real_sqrt			PARAMS ((REAL_VALUE_TYPE *,
 						 enum machine_mode,
 						 const REAL_VALUE_TYPE *));
 

@@ -1,6 +1,6 @@
 /* Expand builtin functions.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4308,11 +4308,9 @@ fold_builtin (exp)
 
 	      x = TREE_REAL_CST (arg);
 	      mode = TYPE_MODE (TREE_TYPE (arg));
-	      if (!HONOR_SNANS (mode) || !real_isnan (&x))
-	      {
-		real_sqrt (&r, mode, &x);
+	      if (real_sqrt (&r, mode, &x)
+		  || (!flag_trapping_math && !flag_errno_math))
 		return build_real (TREE_TYPE (arg), r);
-	      }
 	    }
 
 	  /* Optimize sqrt(exp(x)) = exp(x/2.0).  */

@@ -1,6 +1,6 @@
 /* real.c - software floating point emulation.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
    Re-written by Richard Henderson  <rth@redhat.com>
 
@@ -4401,11 +4401,12 @@ const struct real_format *real_format_for_mode[TFmode - QFmode + 1] =
 
 
 /* Calculate the square root of X in mode MODE, and store the result
-   in R.  For details see "High Precision Division and Square Root",
+   in R.  Return TRUE if the operation does not raise an exception.
+   For details see "High Precision Division and Square Root",
    Alan H. Karp and Peter Markstein, HP Lab Report 93-93-42, June
    1993.  http://www.hpl.hp.com/techreports/93/HPL-93-42.pdf.  */
 
-void
+bool
 real_sqrt (r, mode, x)
      REAL_VALUE_TYPE *r;
      enum machine_mode mode;
@@ -4421,7 +4422,7 @@ real_sqrt (r, mode, x)
   if (real_isnegzero (x))
     {
       *r = *x;
-      return;
+      return false;
     }
 
   /* Negative arguments return NaN.  */
@@ -4429,14 +4430,14 @@ real_sqrt (r, mode, x)
     {
       /* Mode is ignored for canonical NaN.  */
       real_nan (r, "", 1, SFmode);
-      return;
+      return false;
     }
 
   /* Infinity and NaN return themselves.  */
   if (real_isinf (x) || real_isnan (x))
     {
       *r = *x;
-      return;
+      return false;
     }
 
   if (!init)
@@ -4479,5 +4480,6 @@ real_sqrt (r, mode, x)
   /* ??? We need a Tuckerman test to get the last bit.  */
 
   real_convert (r, mode, &h);
+  return true;
 }
 
