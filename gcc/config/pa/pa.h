@@ -28,53 +28,6 @@ enum cmp_type				/* comparison type */
   CMP_MAX				/* max comparison type */
 };
 
-#define DBX_DEBUGGING_INFO
-#define DEFAULT_GDB_EXTENSIONS 0
-
-#if (TARGET_DEFAULT & 1) == 0
-#define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
- %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
-#else
-#define CPP_SPEC "%{!mpa-risc-1-0:-D__hp9000s700 -D_PA_RISC1_1}"
-#endif
-
-/* Defines for a K&R CC */
-
-#ifdef OLD_CC
-#define CPP_SPEC "%{!gnu:-nostdinc %{!nostinc:-I/usr/include}} \
-  %{gnu:%{nostdinc}} %{!gnu:-traditional} -Dvolatile=__volatile"
-#define CC1_SPEC "%{!gnu:-traditional -fwritable-strings -fno-defer-pop} \
-  %{pg:} %{p:}"
-#else
-#define CC1_SPEC "%{pg:} %{p:}"
-#endif
-  
-/* Brain-dead loader */
-#ifdef hpux8
-#define LINK_SPEC "-u main -a archive"
-#else
-#define LINK_SPEC "-u main"
-#endif
-
-/* Make gcc agree with <machine/ansi.h> */
-
-#define SIZE_TYPE "unsigned int"
-#define PTRDIFF_TYPE "int"
-#define WCHAR_TYPE "short unsigned int"
-#define WCHAR_TYPE_SIZE 16
-
-/* Omit frame pointer at high optimization levels.  */
-  
-#define OPTIMIZATION_OPTIONS(OPTIMIZE) \
-{  								\
-  if (OPTIMIZE >= 2) 						\
-    flag_omit_frame_pointer = 1;				\
-}
-
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV"
-
 /* Print subsidiary information on the compiler version in use.  */
 
 #define TARGET_VERSION fprintf (stderr, " (hppa)");
@@ -130,7 +83,52 @@ extern int target_flags;
    {"long-calls", 16},	\
    { "", TARGET_DEFAULT}}
 
+#ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 0
+#endif
+
+#define DBX_DEBUGGING_INFO
+#define DEFAULT_GDB_EXTENSIONS 0
+
+#if (TARGET_DEFAULT & 1) == 0
+#define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
+ %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
+#else
+#define CPP_SPEC "%{!mpa-risc-1-0:-D__hp9000s700 -D_PA_RISC1_1}\
+ %{!mnosnake:-D__hp9000s700 -D_PA_RISC1_1}"
+#endif
+
+/* Defines for a K&R CC */
+
+#ifdef OLD_CC
+#define CPP_SPEC "%{!gnu:-nostdinc %{!nostinc:-I/usr/include}} \
+  %{gnu:%{nostdinc}} %{!gnu:-traditional} -Dvolatile=__volatile"
+#define CC1_SPEC "%{!gnu:-traditional -fwritable-strings -fno-defer-pop} \
+  %{pg:} %{p:}"
+#else
+#define CC1_SPEC "%{pg:} %{p:}"
+#endif
+  
+#define LINK_SPEC "-u main"
+
+/* Make gcc agree with <machine/ansi.h> */
+
+#define SIZE_TYPE "unsigned int"
+#define PTRDIFF_TYPE "int"
+#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE_SIZE 16
+
+/* Omit frame pointer at high optimization levels.  */
+  
+#define OPTIMIZATION_OPTIONS(OPTIMIZE) \
+{  								\
+  if (OPTIMIZE >= 2) 						\
+    flag_omit_frame_pointer = 1;				\
+}
+
+/* Names to predefine in the preprocessor for this target machine.  */
+
+#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV"
 
 /* target machine storage layout */
 
