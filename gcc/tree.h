@@ -1251,7 +1251,7 @@ extern tree build_parse_node		PVPROTO((enum tree_code, ...));
 extern tree build_int_2_wide		PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
 extern tree build_real			PROTO((tree, REAL_VALUE_TYPE));
 extern tree build_real_from_int_cst 	PROTO((tree, tree));
-extern tree build_complex		PROTO((tree, tree));
+extern tree build_complex		PROTO((tree, tree, tree));
 extern tree build_string		PROTO((int, char *));
 extern tree build1			PROTO((enum tree_code, tree, tree));
 extern tree build_tree_list		PROTO((tree, tree));

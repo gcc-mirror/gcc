@@ -1444,18 +1444,19 @@ build_string (len, str)
 
 /* Return a newly constructed COMPLEX_CST node whose value is
    specified by the real and imaginary parts REAL and IMAG.
-   Both REAL and IMAG should be constant nodes.
-   The TREE_TYPE is not initialized.  */
+   Both REAL and IMAG should be constant nodes.  TYPE, if specified,
+   will be the type of the COMPLEX_CST; otherwise a new type will be made.  */
 
 tree
-build_complex (real, imag)
+build_complex (type, real, imag)
+     tree type;
      tree real, imag;
 {
   register tree t = make_node (COMPLEX_CST);
 
   TREE_REALPART (t) = real;
   TREE_IMAGPART (t) = imag;
-  TREE_TYPE (t) = build_complex_type (TREE_TYPE (real));
+  TREE_TYPE (t) = type ? type : build_complex_type (TREE_TYPE (real));
   TREE_OVERFLOW (t) = TREE_OVERFLOW (real) | TREE_OVERFLOW (imag);
   TREE_CONSTANT_OVERFLOW (t)
     = TREE_CONSTANT_OVERFLOW (real) | TREE_CONSTANT_OVERFLOW (imag);
@@ -3164,7 +3165,7 @@ build_type_variant (type, constp, volatilep)
      like the one we need to have.  If so, use that existing one.  We must
      preserve the TYPE_NAME, since there is code that depends on this.  */
 
-  for (t = TYPE_MAIN_VARIANT(type); t; t = TYPE_NEXT_VARIANT (t))
+  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
     if (constp == TYPE_READONLY (t) && volatilep == TYPE_VOLATILE (t)
 	&& TYPE_NAME (t) == TYPE_NAME (type))
       return t;
