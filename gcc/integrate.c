@@ -312,9 +312,12 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
 
   /* Copy the declaration.  */
   if (TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == RESULT_DECL)
-    /* For a parameter, we must make an equivalent VAR_DECL, not a
-       new PARM_DECL.  */
-    copy = build_decl (VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+    {
+      /* For a parameter, we must make an equivalent VAR_DECL, not a
+	 new PARM_DECL.  */
+      copy = build_decl (VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+      TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
+    }
   else
     {
       copy = copy_node (decl);
