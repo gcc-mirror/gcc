@@ -1,3 +1,11 @@
+2004-10-04  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Paul Brook  <paul@codesourcery.com>
+
+	* trans-array.c (gfc_conv_expr_descriptor): Check for substriungs.
+	Use gfc_get_expr_charlen.
+	* trans-expr.c (gfc_get_expr_charlen): New function.
+	* trans.h (gfc_get_expr_charlen): Add prototype.
+
 2004-10-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* trans-intrinsic.c: Fix a comment typo.
