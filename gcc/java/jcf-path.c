@@ -141,7 +141,7 @@ add_entry (entp, filename, is_system)
   n->next = NULL;
 
   len = strlen (filename);
-  if (len > 4 && ! strcmp (filename - 4, ".zip"))
+  if (len > 4 && ! strcmp (filename + len - 4, ".zip"))
     {
       n->flags |= FLAG_ZIP;
       /* If the user uses -classpath then he'll have to include
@@ -152,9 +152,10 @@ add_entry (entp, filename, is_system)
 	n->flags |= FLAG_SYSTEM;
     }
 
-  if (! (n->flags & FLAG_ZIP)
-      && filename[len - 1] != '/'
-      && filename[len - 1] != DIR_SEPARATOR)
+  /* Note that we add a trailing separator to `.zip' names as well.
+     This is a little hack that lets the searching code in jcf-io.c
+     work more easily.  Eww.  */
+  if (filename[len - 1] != '/' && filename[len - 1] != DIR_SEPARATOR)
     {
       char *f2 = (char *) alloca (len + 1);
       strcpy (f2, filename);

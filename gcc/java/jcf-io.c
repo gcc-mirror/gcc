@@ -282,6 +282,8 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
       strcpy (buffer, jcf_path_name (entry));
       i = strlen (buffer);
 
+      /* This is right because we know that `.zip' entries will have a
+	 trailing slash.  See jcf-path.c.  */
       dir_len = i - 1;
 
       for (k = 0; k < classname_length; k++, i++)
