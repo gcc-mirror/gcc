@@ -1,3 +1,7 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* objc-features.texi: Use the GFDL.
+
 Wed Mar 21 04:44:58 EST 2001  John Wehle  (john@feith.com)
 
 	* encoding.c (REAL_TYPE): Define.

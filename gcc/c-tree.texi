@@ -1,25 +1,6 @@
 \input texinfo
 
 @c ---------------------------------------------------------------------
-@c This file is part of GNU CC.
-@c 
-@c GNU CC is free software; you can redistribute it and/or modify
-@c it under the terms of the GNU General Public License as published by
-@c the Free Software Foundation; either version 2, or (at your option)
-@c any later version.
-@c
-@c GNU CC is distributed in the hope that it will be useful,
-@c but WITHOUT ANY WARRANTY; without even the implied warranty of
-@c MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-@c GNU General Public License for more details.
-@c 
-@c You should have received a copy of the GNU General Public License
-@c along with GNU CC; see the file COPYING.  If not, write to
-@c the Free Software Foundation, 59 Temple Place - Suite 330,
-@c Boston, MA 02111-1307, USA.
-@c ---------------------------------------------------------------------
-
-@c ---------------------------------------------------------------------
 @c Prologue
 @c ---------------------------------------------------------------------
 
@@ -48,6 +29,24 @@ Copyright (c) 1999, 2000, 2001 Free Software Foundation, Inc.
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1999, 2000, 2001 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'', the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
 @end titlepage
 
 @c ---------------------------------------------------------------------
@@ -101,6 +100,7 @@ not appear in C.
 * Functions::           Overloading, function bodies, and linkage.
 * Declarations::        Type declarations and variables.
 * Expressions::         From @code{typeid} to @code{throw}.
+* GNU Free Documentation License:: How you can copy and share this manual.
 * Node Index::          The various types of tree nodes.
 * Function Index::      Functions and macros described in this manual.
 * Concept Index::       Index.
@@ -2273,6 +2273,12 @@ given by the third operand to the @code{AGGR_INIT_EXPR}; constructors do
 not return a value.
 
 @end table
+
+@c ---------------------------------------------------------------------
+@c GFDL
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
 
 @c ---------------------------------------------------------------------
 @c Node Index
