@@ -1,5 +1,11 @@
 2005-02-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/17413
+	* pt.c (check_instantiated_args): Improve error message.
+	Fix logic when to print its second part.
+
+2005-02-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* cp-tree.h (complete_type_or_else): Remove macro.
 	(complete_type_or_diagnostic): Rename to complete_type_or_else
 	and remove last argument.
