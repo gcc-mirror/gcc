@@ -612,7 +612,7 @@ bool operator==(const hashtable<V, K, HF, Ex, Eq, A>& ht1,
 
 template <class Val, class Key, class HF, class Extract, class EqKey, class A>
 inline void swap(hashtable<Val, Key, HF, Extract, EqKey, A>& ht1,
-                 hashtable<Val, Key, HF, Extract, EqKay, A>& ht2) {
+                 hashtable<Val, Key, HF, Extract, EqKey, A>& ht2) {
   ht1.swap(ht2);
 }
 

@@ -1,3 +1,7 @@
+Fri Nov  7 10:27:40 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* stl_hashtable.h: Fix typo.
+
 Thu Nov  6 11:19:09 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stl_algo.h, stl_algobase.h, stl_bvector.h,
