@@ -3420,7 +3420,8 @@ fold (expr)
 	      tree lhs = fold (build (code, type, true_value, arg1));
 	      tree rhs = fold (build (code, type, false_value, arg1));
 
-	      if (TREE_CONSTANT (lhs) || TREE_CONSTANT (rhs))
+	      if (TREE_CONSTANT (lhs) || TREE_CONSTANT (rhs)
+		  || TREE_CONSTANT (arg1))
 		return fold (build (COND_EXPR, type, test, lhs, rhs));
 
 	      arg1 = save_expr (arg1);
