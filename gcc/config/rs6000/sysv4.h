@@ -27,20 +27,35 @@ Boston, MA 02111-1307, USA.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
 #define	MASK_NO_TRACEBACK	0x08000000	/* eliminate traceback words */
 #define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
-#define MASK_NO_TOC		0x02000000	/* do not use TOC for loading addresses */
+#define MASK_AIX_CALLS		0x02000000	/* Use AIX calling sequence */
+#define MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
 #define TARGET_NO_TRACEBACK	(target_flags & MASK_NO_TRACEBACK)
 #define TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
-#define TARGET_NO_TOC		(target_flags & MASK_NO_TOC)
+#define TARGET_AIX_CALLS	(target_flags & MASK_AIX_CALLS)
+#define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
+#define	TARGET_TOC		(target_flags & (MASK_64BIT		\
+						 | MASK_RELOCATABLE	\
+						 | MASK_MINIMAL_TOC))
 
 #define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
 #define	TARGET_TRACEBACK	(! TARGET_NO_TRACEBACK)
 #define TARGET_BIG_ENDIAN	(! TARGET_LITTLE_ENDIAN)
-#define TARGET_TOC		(! TARGET_NO_TOC)
+#define TARGET_NO_AIX_CALLS	(! TARGET_AIX_CALLS)
+#define	TARGET_NO_PROTOTYPE	(! TARGET_PROTOTYPE)
+#define	TARGET_NO_TOC		(! TARGET_TOC)
 
+#define TARGET_V4_CALLS		TARGET_NO_AIX_CALLS
+
+/* Pseudo target to indicate whether the object format is ELF
+   (to get around not having conditional compilation in the md file)  */
+#define	TARGET_ELF		1
+
+/* Note, V.4 no longer uses a normal TOC, so make -mfull-toc, be just
+   the same as -mminimal-toc.  */
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
   { "bit-align",	-MASK_NO_BITFIELD_TYPE },			\
@@ -55,8 +70,13 @@ Boston, MA 02111-1307, USA.  */
   { "little",		 MASK_LITTLE_ENDIAN },				\
   { "big-endian",	-MASK_LITTLE_ENDIAN },				\
   { "big",		-MASK_LITTLE_ENDIAN },				\
-  { "no-toc",		 MASK_NO_TOC | MASK_MINIMAL_TOC },		\
-  { "toc",		-MASK_NO_TOC },
+  { "no-toc",		 0 },						\
+  { "toc",		 MASK_MINIMAL_TOC },				\
+  { "full-toc",		 MASK_MINIMAL_TOC },				\
+  { "call-aix",		 MASK_AIX_CALLS },				\
+  { "call-sysv",	-MASK_AIX_CALLS },				\
+  { "prototype",	 MASK_PROTOTYPE },				\
+  { "no-prototype",	-MASK_PROTOTYPE },
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
@@ -69,22 +89,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (TARGET_RELOCATABLE && TARGET_NO_TOC)				\
-    {									\
-      target_flags &= ~ MASK_NO_TOC;					\
-      error ("-mrelocatable and -mno-toc are incompatible.");		\
-    }									\
-									\
   if (TARGET_RELOCATABLE && !TARGET_MINIMAL_TOC)			\
     {									\
       target_flags |= MASK_MINIMAL_TOC;					\
       error ("-mrelocatable and -mno-minimal-toc are incompatible.");	\
-    }									\
-									\
-  if (TARGET_NO_TOC && !TARGET_MINIMAL_TOC)				\
-    {									\
-      target_flags |= MASK_MINIMAL_TOC;					\
-      error ("-mno-toc and -mno-minimal-toc are incompatible.");	\
     }									\
 } while (0)
 
@@ -96,11 +104,37 @@ do {									\
 #undef	FIXED_R13
 #define FIXED_R13 1
 
+/* System V.4 passes the first 8 floating arguments in registers,
+   instead of the first 13 like AIX does.  */
+#undef	FP_ARG_MAX_REG
+#define	FP_ARG_AIX_MAX_REG	45
+#define	FP_ARG_V4_MAX_REG	40
+#define	FP_ARG_MAX_REG ((TARGET_AIX_CALLS) ? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
+
+/* Size of the V.4 varargs area if needed */
+#undef	RS6000_VARARGS_AREA
+#define RS6000_VARARGS_AREA ((rs6000_sysv_varargs_p) ? RS6000_VARARGS_SIZE : 0)
+
 /* Override default big endianism */
 #undef  BYTES_BIG_ENDIAN
 #undef  WORDS_BIG_ENDIAN
 #define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN)
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN)
+
+/* Size of the outgoing register save area */
+#undef	RS6000_REG_SAVE
+#define RS6000_REG_SAVE (TARGET_AIX_CALLS ? (TARGET_64BIT ? 64 : 32) : 0)
+
+/* Size of the fixed area on the stack.  For AIX, use the standard 6 word
+   area, otherwise use 2 words to store back chain & LR.  */
+#undef	RS6000_SAVE_AREA
+#define RS6000_SAVE_AREA \
+  ((TARGET_AIX_CALLS ? 24 : 8) << (TARGET_64BIT ? 1 : 0))
+
+/* Define cutoff for using external functions to save floating point.
+   Currently on V.4, always use inline stores */
+#undef	FP_SAVE_INLINE
+#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 64)
 
 /* Don't generate XCOFF debugging information.  */
 
@@ -192,37 +226,14 @@ toc_section ()								\
 									\
   if (in_section != in_toc)						\
     {									\
+      in_section = in_toc;						\
+      fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);	\
       if (! toc_initialized)						\
 	{								\
-	  if (!TARGET_RELOCATABLE && !TARGET_NO_TOC)			\
-	    fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);		\
-									\
-	  if (TARGET_MINIMAL_TOC)					\
-	    {								\
-	      if (!TARGET_RELOCATABLE && !TARGET_NO_TOC)		\
-		{							\
-		  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LCTOC", 0);	\
-		  fprintf (asm_out_file, "\t.tc ");			\
-		  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1[TC],"); \
-		  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
-		  fprintf (asm_out_file, "\n");				\
-		}							\
-									\
-	      fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP); \
-	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
-	      fprintf (asm_out_file, " = .+32768\n");			\
-	    }								\
-									\
+	  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1");	\
+	  fprintf (asm_out_file, " = .+32768\n");			\
 	  toc_initialized = 1;						\
 	}								\
-									\
-      else								\
-	fprintf (asm_out_file, "%s\n",					\
-		 (TARGET_MINIMAL_TOC					\
-		  ? MINIMAL_TOC_SECTION_ASM_OP				\
-		  : TOC_SECTION_ASM_OP));				\
-									\
-      in_section = in_toc;						\
     }									\
 }
 
@@ -342,7 +353,78 @@ while (0)
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
+
 
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.
+
+   The trampoline should set the static chain pointer to value placed
+   into the trampoline and should branch to the specified routine.
+
+   Unlike AIX, this needs real code.  */
+
+#undef	TRAMPOLINE_TEMPLATE
+#define TRAMPOLINE_TEMPLATE(FILE)					\
+do {									\
+  char *sc = reg_names[STATIC_CHAIN_REGNUM];				\
+  char *r0 = reg_names[0];						\
+									\
+  if (STATIC_CHAIN_REGNUM == 0 || !TARGET_NEW_MNEMONICS)		\
+    abort ();								\
+									\
+  if (TARGET_64BIT)							\
+    {									\
+      fprintf (FILE, "\tmflr %s\n", r0);		/* offset  0 */	\
+      fprintf (FILE, "\tbl .LTRAMP1\n");		/* offset  4 */	\
+      fprintf (FILE, "\t.long 0,0,0,0\n");		/* offset  8 */	\
+      fprintf (FILE, ".LTRAMP1:\n");					\
+      fprintf (FILE, "\tmflr %s\n", sc);		/* offset 28 */	\
+      fprintf (FILE, "\tmtlr %s\n", r0);		/* offset 32 */	\
+      fprintf (FILE, "\tld %s,0(%s)\n", r0, sc);	/* offset 36 */	\
+      fprintf (FILE, "\tld %s,8(%s)\n", sc, sc);	/* offset 40 */	\
+      fprintf (FILE, "\tmtctr %s\n", r0);		/* offset 44 */	\
+      fprintf (FILE, "\tbctr\n");			/* offset 48 */	\
+    }									\
+  else									\
+    {									\
+      fprintf (FILE, "\tmflr %s\n", r0);		/* offset  0 */	\
+      fprintf (FILE, "\tbl .LTRAMP1\n");		/* offset  4 */	\
+      fprintf (FILE, "\t.long 0,0\n");			/* offset  8 */	\
+      fprintf (FILE, ".LTRAMP1:\n");					\
+      fprintf (FILE, "\tmflr %s\n", sc);		/* offset 20 */	\
+      fprintf (FILE, "\tmtlr %s\n", r0);		/* offset 24 */	\
+      fprintf (FILE, "\tlwz %s,0(%s)\n", r0, sc);	/* offset 28 */	\
+      fprintf (FILE, "\tlwz %s,4(%s)\n", sc, sc);	/* offset 32 */	\
+      fprintf (FILE, "\tmtctr %s\n", r0);		/* offset 36 */	\
+      fprintf (FILE, "\tbctr\n");			/* offset 40 */	\
+    }									\
+} while (0)
+
+/* Length in units of the trampoline for entering a nested function.  */
+
+#undef	TRAMPOLINE_SIZE
+#define TRAMPOLINE_SIZE    (TARGET_64BIT ? 52 : 44)
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.  */
+
+#undef	INITIALIZE_TRAMPOLINE
+#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)			\
+{									\
+  rtx reg = gen_reg_rtx (Pmode);					\
+									\
+  emit_move_insn (reg, FNADDR);						\
+  emit_move_insn (gen_rtx (MEM, Pmode,					\
+			   plus_constant (ADDR, 8)),			\
+		  reg);							\
+  emit_move_insn (gen_rtx (MEM, Pmode,					\
+			   plus_constant (ADDR, (TARGET_64BIT ? 16 : 12))), \
+		  CXT);							\
+  emit_insn (gen_sync (gen_rtx (MEM, BLKmode, ADDR)));			\
+}
+
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
   "-DPPC -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(powerpc) -Amachine(powerpc)"
@@ -382,6 +464,8 @@ while (0)
 #define CPP_SPEC "\
 %{posix: -D_POSIX_SOURCE} \
 %{mrelocatable: -D_RELOCATABLE} \
+%{mcall-sysv: -D_CALL_SYSV} %{mcall-aix: -D_CALL_AIX} %{!mcall-sysv: %{!mcall-aix: -D_CALL_SYSV}} \
+%{msoft-float: -D_SOFT_FLOAT} %{mcpu=403: -D_SOFT_FLOAT} \
 %{mlittle: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
 %{mlittle-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
 %{!mlittle: %{!mlittle-endian: -D_BIG_ENDIAN -Amachine(bigendian)}} \
