@@ -1,3 +1,10 @@
+2000-04-16  Richard Henderson  <rth@cygnus.com>
+
+	* rtl.h (enum insn_note): New enumeration.  Subsume
+	NOTE_INSN_DELETED and friends.
+	(GET_NOTE_INSN_NAME): Adjust index by NOTE_INSN_BIAS.
+	* rtl.c (note_insn_name): Tweek string order.
+
 2000-04-15  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (_cpp_read_and_prescan): Enlarge len by setting it
