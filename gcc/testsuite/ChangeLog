@@ -1,5 +1,9 @@
 2000-11-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.other/friend46.C: New test.
+
+2000-11-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.other/ptrmem8.C: New test.
 
 2000-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

@@ -1,5 +1,13 @@
 2000-11-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (grokfndecl): Undo COMPONENT_REF damage caused by
+	bison parser ickiness.
+	* pt.c (tsubst_friend_function): Enter namespace scope when
+	tsubsting the function name.
+	* cp-tree.h (DECL_TI_TEMPLATE): Update comment to reflect reality.
+
+2000-11-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (binfo_from_vbase): Return the virtual base's binfo.
 	* cvt.c (cp_convert_to_pointer): Add force parameter.
 	Allow conversions via virtual base if forced.

@@ -4422,17 +4422,22 @@ tsubst_friend_function (decl, args)
        function declaration.  Now, we have to figure out what
        instantiation of what template.  */
     {
-      tree template_id;
+      tree template_id, arglist, fns;
       tree new_args;
       tree tmpl;
-
-      template_id
-	= lookup_template_function (tsubst_expr (DECL_TI_TEMPLATE (decl),
-						 args, /*complain=*/1, 
-						 NULL_TREE),
-				    tsubst (DECL_TI_ARGS (decl),
-					    args, /*complain=*/1, 
-					    NULL_TREE));
+      tree ns = CP_DECL_CONTEXT (TYPE_MAIN_DECL (current_class_type));
+      
+      /* Friend functions are looked up in the containing namespace scope.
+         We must enter that scope, to avoid finding member functions of the
+         current cless with same name.  */
+      push_nested_namespace (ns);
+      fns = tsubst_expr (DECL_TI_TEMPLATE (decl), args,
+                         /*complain=*/1, NULL_TREE);
+      pop_nested_namespace (ns);
+      arglist = tsubst (DECL_TI_ARGS (decl), args,
+                        /*complain=*/1, NULL_TREE);
+      template_id = lookup_template_function (fns, arglist);
+      
       new_friend = tsubst (decl, args, /*complain=*/1, NULL_TREE);
       tmpl = determine_specialization (template_id, new_friend,
 				       &new_args, 
