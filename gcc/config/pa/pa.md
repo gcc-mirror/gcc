@@ -5101,7 +5101,7 @@
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (match_dup 4))])
-   (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
+   (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
@@ -5227,7 +5227,7 @@
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (match_dup 5))])
-   (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
+   (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
@@ -5283,7 +5283,7 @@
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (match_dup 5))])
-   (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
+   (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
@@ -5340,7 +5340,7 @@
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (match_dup 5))])
-   (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
+   (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
@@ -5392,7 +5392,7 @@
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (match_dup 5))])
-   (set (match_operand:SI 0 "general_operand" "") (reg:SI 29))]
+   (set (match_operand:SI 0 "move_dest_operand" "") (reg:SI 29))]
   ""
   "
 {
