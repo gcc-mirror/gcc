@@ -1487,6 +1487,14 @@ typedef struct
    && (NUM_ARG_REGS < ((CUM).nregs + ARM_NUM_REGS2 (MODE, TYPE)))	\
    ?   NUM_ARG_REGS - (CUM).nregs : 0)
 
+/* A C expression that indicates when an argument must be passed by
+   reference.  If nonzero for an argument, a copy of that argument is
+   made in memory and a pointer to the argument is passed instead of
+   the argument itself.  The pointer is passed in whatever way is
+   appropriate for passing a pointer to that type.  */
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
+  arm_function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED)
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.
@@ -1503,6 +1511,10 @@ typedef struct
 /* 1 if N is a possible register number for function argument passing.
    On the ARM, r0-r3 are used to pass args.  */
 #define FUNCTION_ARG_REGNO_P(REGNO)	(IN_RANGE ((REGNO), 0, 3))
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  arm_va_arg (valist, type)
 
 
 /* Tail calling.  */

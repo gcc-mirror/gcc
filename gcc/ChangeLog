@@ -1,3 +1,11 @@
+2002-11-14  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	* config/arm/arm.h (EXPAND_BUILTIN_VA_ARG,
+	FUNCTION_ARG_PASS_BY_REFERENCE): Define.
+	* config/arm/arm.c (arm_va_arg,
+	arm_function_arg_pass_by_reference): New.
+	* config/arm/arm-protos.h: Add prototypes.
+
 2002-11-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gthr-single.h: Fix formatting.
