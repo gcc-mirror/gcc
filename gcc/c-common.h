@@ -63,7 +63,7 @@ enum rid
   RID_FRIEND, RID_VIRTUAL, RID_EXPLICIT, RID_EXPORT, RID_MUTABLE,
 
   /* ObjC */
-  RID_FIRST_PQ, RID_IN = RID_FIRST_PQ, RID_OUT, RID_INOUT, RID_BYCOPY, RID_BYREF, RID_ONEWAY,
+  RID_IN, RID_OUT, RID_INOUT, RID_BYCOPY, RID_BYREF, RID_ONEWAY,
 
   /* C */
   RID_INT,     RID_CHAR,   RID_FLOAT,    RID_DOUBLE, RID_VOID,
@@ -107,8 +107,21 @@ enum rid
   RID_MAX,
 
   RID_FIRST_MODIFIER = RID_STATIC,
-  RID_LAST_MODIFIER = RID_ONEWAY
+  RID_LAST_MODIFIER = RID_ONEWAY,
+
+  RID_FIRST_AT = RID_AT_ENCODE,
+  RID_LAST_AT = RID_AT_IMPLEMENTATION,
+  RID_FIRST_PQ = RID_IN,
+  RID_LAST_PQ = RID_ONEWAY
 };
+
+#define OBJC_IS_AT_KEYWORD(rid) \
+  ((unsigned int)(rid) >= (unsigned int)RID_FIRST_AT && \
+   (unsigned int)(rid) <= (unsigned int)RID_LAST_AT)
+
+#define OBJC_IS_PQ_KEYWORD(rid) \
+  ((unsigned int)(rid) >= (unsigned int)RID_FIRST_PQ && \
+   (unsigned int)(rid) <= (unsigned int)RID_LAST_PQ)
 
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
