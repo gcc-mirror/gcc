@@ -1,3 +1,9 @@
+Sun Nov 15 14:10:56 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-parse.c (HANDLE_EXCEPTIONS_ATTRIBUTE):  New macro.
+
+	* jcf-io.c (find_class):  Simpler/cleaner structure fixes a bug.
+
 Sat Nov 14 17:19:18 1998  Per Bothner  <bothner@cygnus.com>
 
 	Allow uses of interface types to verify.  This is not really
