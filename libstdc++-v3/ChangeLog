@@ -1,4 +1,26 @@
 2002-02-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/5286
+	libstdc++/3860
+	* include/std/std_fstream.h (filebuf::__file_type): Change to
+	__basic_file<char>.
+	(filebuf::_M_convert_to_external): Declare.
+	* include/bits/fstream.tcc (filebuf::_M_convert_to_external): Define
+	codecvt bits for wide streams.
+	(filebuf::_M_really_overflow): Use it.
+	(filebuf::underflow): Use codecvt.
+	* config/locale/codecvt_specializations_ieee_1003.1-200x.h: 
+	(codecvt<__enc_traits>::do_out): Deal with partial.
+	(codecvt<__enc_traits>::do_encoding): Return something useful.
+	* src/codecvt.cc (codecvt<wchar_t>::do_encoding): Return sizeof
+	wchar_t.
+	* testsuite/22_locale/codecvt_members_unicode_char.cc (test01):
+	Change expected encoding output.
+	(test02): Same.
+	* testsuite/22_locale/codecvt_members_wchar_t_char.cc (test01): Same.
+	(test02): Same.
+
+2002-02-07  Benjamin Kosnik  <bkoz@redhat.com>
             Wolfgang Bangerth  <wolfgang.bangerth@iwr.uni-heidelberg.de>
 	
 	* include/bits/basic_ios.tcc (basic_ios::narrow): Add default value.
