@@ -92,7 +92,7 @@ static tree ident_fndecl PROTO((tree));
 static void dump_template_argument PROTO((tree, enum tree_string_flags));
 static void dump_template_argument_list PROTO((tree, enum tree_string_flags));
 static void dump_template_parameter PROTO((tree, enum tree_string_flags));
-static void dump_template_bindings PROTO((tree, tree, enum tree_string_flags));
+static void dump_template_bindings PROTO((tree, tree));
 static void dump_scope PROTO((tree, enum tree_string_flags));
 static void dump_template_parms PROTO((tree, int, enum tree_string_flags));
 
@@ -293,40 +293,38 @@ dump_template_parameter (parm, flags)
    TREE_VEC.  */
 
 static void
-dump_template_bindings (parms, args, flags)
+dump_template_bindings (parms, args)
      tree parms, args;
-     enum tree_string_flags flags;
 {
-  int arg_idx = 0;
   int need_comma = 0;
 
   while (parms)
     {
       tree p = TREE_VALUE (parms);
+      int lvl = TMPL_PARMS_DEPTH (parms);
+      int arg_idx = 0;
       int i;
 
       for (i = 0; i < TREE_VEC_LENGTH (p); ++i)
-        {
-          tree arg = TREE_VEC_ELT (args, arg_idx);
+	{
+	  tree arg = TMPL_ARG (args, lvl, arg_idx);
 
-          if (need_comma)
-            OB_PUTS (", ");
-          dump_template_parameter (TREE_VEC_ELT (p, i), TS_PLAIN);
-          OB_PUTS (" = ");
-          if (arg)
-            dump_template_argument (arg, TS_PLAIN);
-          else
-            OB_PUTS ("{missing}");
+	  if (need_comma)
+	    OB_PUTS (", ");
+	  dump_template_parameter (TREE_VEC_ELT (p, i), TS_PLAIN);
+	  OB_PUTS (" = ");
+	  if (arg)
+	    dump_template_argument (arg, TS_PLAIN);
+	  else
+	    OB_PUTS ("{missing}");
           
-          ++arg_idx;
-          need_comma = 1;
-        }
+	  ++arg_idx;
+	  need_comma = 1;
+	}
 
       parms = TREE_CHAIN (parms);
     }
 }
-
-
 
 /* Dump into the obstack a human-readable equivalent of TYPE.  FLAGS
    controls the format.  */
@@ -1042,31 +1040,32 @@ dump_template_decl (t, flags)
      tree t;
      enum tree_string_flags flags;
 {
-  tree orig_args = DECL_TEMPLATE_PARMS (t);
-  tree args;
+  tree orig_parms = DECL_TEMPLATE_PARMS (t);
+  tree parms;
   int i; 
   
   if (flags & TS_TEMPLATE_PREFIX)
     {
-      for (args = orig_args = nreverse (orig_args); 
-           args;
-           args = TREE_CHAIN (args))
+      for (parms = orig_parms = nreverse (orig_parms); 
+           parms;
+           parms = TREE_CHAIN (parms))
         {
-          int len = TREE_VEC_LENGTH (TREE_VALUE (args));
+	  tree inner_parms = INNERMOST_TEMPLATE_PARMS (parms);
+          int len = TREE_VEC_LENGTH (inner_parms);
           
           OB_PUTS ("template <");
           for (i = 0; i < len; i++)
             {
               if (i)
                 OB_PUTS (", ");
-              dump_template_parameter (TREE_VEC_ELT (args, i), flags);
+              dump_template_parameter (TREE_VEC_ELT (inner_parms, i), flags);
             }
           OB_END_TEMPLATE_ID ();
           OB_PUTC (' ');
         }
-      nreverse(orig_args);
+      nreverse(orig_parms);
       /* If we've shown the template<args> prefix, we'd better show the
-       * decl's type too.  */
+	 decl's type too.  */
       flags |= TS_DECL_TYPE;
     }
   if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)
@@ -1113,11 +1112,12 @@ dump_function_decl (t, flags)
     t = DECL_TEMPLATE_RESULT (t);
 
   /* Pretty print template instantiations only.  */
-  if (DECL_USE_TEMPLATE (t) == 1 || DECL_USE_TEMPLATE (t) == 3)
+  if (DECL_TEMPLATE_INSTANTIATION (t))
     {
       template_args = DECL_TI_ARGS (t);
       t = most_general_template (t);
-      template_parms = DECL_TEMPLATE_PARMS (t);
+      if (TREE_CODE (t) == TEMPLATE_DECL)
+	template_parms = DECL_TEMPLATE_PARMS (t);
     }
 
   fntype = TREE_TYPE (t);
@@ -1184,7 +1184,7 @@ dump_function_decl (t, flags)
   if (template_parms != NULL_TREE && template_args != NULL_TREE)
     {
       OB_PUTS (" [with ");
-      dump_template_bindings (template_parms, template_args, flags);
+      dump_template_bindings (template_parms, template_args);
       OB_PUTC (']');
     }
 }
