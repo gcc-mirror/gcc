@@ -3367,6 +3367,12 @@ ia64_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 static bool
 ia64_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
+  /* We can't perform a sibcall if the current function has the syscall_linkage
+     attribute.  */
+  if (lookup_attribute ("syscall_linkage",
+			TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
+    return false;
+
   /* We must always return with our current GP.  This means we can
      only sibcall to functions defined in the current module.  */
   return decl && (*targetm.binds_local_p) (decl);
