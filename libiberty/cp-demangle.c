@@ -2015,6 +2015,9 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
       /* Insert an asterisk where we're told to; it doesn't
 	 necessarily go at the end.  */
       RETURN_IF_ERROR (result_insert_char (dm, *insert_pos, '*'));
+      /* The next (outermost) pointer or reference character should go
+	 after this one.  */
+      ++(*insert_pos);
     }
   else if (next == 'R')
     {
@@ -2026,6 +2029,9 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
       /* Insert an ampersand where we're told to; it doesn't
 	 necessarily go at the end.  */
       RETURN_IF_ERROR (result_insert_char (dm, *insert_pos, '&'));
+      /* The next (outermost) pointer or reference character should go
+	 after this one.  */
+      ++(*insert_pos);
     }
   else if (next == 'M')
     {
