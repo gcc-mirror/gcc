@@ -209,7 +209,7 @@ unknown arithmetic type
 #if HOST_BITS_PER_LONG >= EMULONG_SIZE
 #define EMULONG long
 #else
-#if HOST_BITS_PER_LONG_LONG >= EMULONG_SIZE
+#if HOST_BITS_PER_LONGLONG >= EMULONG_SIZE
 #define EMULONG long long int
 #else
 /*  You will have to modify this program to have a smaller unit size.  */
