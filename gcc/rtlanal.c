@@ -1233,22 +1233,9 @@ dead_or_set_regno_p (insn, test_regno)
   unsigned int regno, endregno;
   rtx link, pattern;
 
-  /* See if there is a death note for something that includes
-     TEST_REGNO.  */
-  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-    {
-      if (REG_NOTE_KIND (link) != REG_DEAD
-	  || GET_CODE (XEXP (link, 0)) != REG)
-	continue;
-
-      regno = REGNO (XEXP (link, 0));
-      endregno = (regno >= FIRST_PSEUDO_REGISTER ? regno + 1
-		  : regno + HARD_REGNO_NREGS (regno,
-					      GET_MODE (XEXP (link, 0))));
-
-      if (test_regno >= regno && test_regno < endregno)
-	return 1;
-    }
+  /* See if there is a death note for something that includes TEST_REGNO.  */
+  if (find_regno_note (insn, REG_DEAD, test_regno))
+    return 1;
 
   if (GET_CODE (insn) == CALL_INSN
       && find_regno_fusage (insn, CLOBBER, test_regno))

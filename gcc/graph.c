@@ -147,33 +147,10 @@ darkgrey\n  shape: ellipse" : "white",
   /* Print the RTL.  */
   if (GET_CODE (tmp_rtx) == NOTE)
     {
-      static const char *note_names[] =
-      {
-	NULL,
-	"deleted",
-	"block_beg",
-	"block_end",
-	"loop_beg",
-	"loop_end",
-	"function_end",
-	"setjmp",
-	"loop_cont",
-	"loop_vtop",
-	"prologue_end",
-	"epilogue_beg",
-	"deleted_label",
-	"function_beg",
-	"eh_region_beg",
-	"eh_region_end",
-	"repeated_line_number",
-	"range_start",
-	"range_end",
-	"live",
-	"basic_block"
-      };
-
-      fprintf (fp, " %s",
-	       XINT (tmp_rtx, 4) < 0 ? note_names[-XINT (tmp_rtx, 4)] : "");
+      const char *name = "";
+      if (NOTE_LINE_NUMBER (tmp_rtx) < 0)
+	name =  GET_NOTE_INSN_NAME (NOTE_LINE_NUMBER (tmp_rtx));
+      fprintf (fp, " %s", name);
     }
   else if (GET_RTX_CLASS (GET_CODE (tmp_rtx)) == 'i')
     print_rtl_single (fp, PATTERN (tmp_rtx));

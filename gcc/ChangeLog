@@ -1,3 +1,11 @@
+2000-04-26  Richard Henderson  <rth@cygnus.com>
+
+	* rtlanal.c (dead_or_set_regno_p): Use find_regno_note.
+
+	* genconfig.c (main): Set all HAVE_foo to 1.
+
+	* graph.c (node_data): Use GET_NOTE_INSN_NAME instead of local array.
+
 2000-04-26  Alex Samuel  <samuel@codesourcery.com>
 
 	* invoke.texi: Document -fssa flag.
