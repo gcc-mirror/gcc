@@ -1674,7 +1674,7 @@ rs6000_legitimize_address (x, oldx, mode)
 	   && CONSTANT_P (x)
 	   && GET_MODE_NUNITS (mode) == 1
 	   && (GET_MODE_BITSIZE (mode) <= 32
-	       || (TARGET_HARD_FLOAT && mode != DFmode)))
+	       || (TARGET_HARD_FLOAT && mode == DFmode)))
     {
       rtx reg = gen_reg_rtx (Pmode);
       emit_insn (gen_elf_high (reg, (x)));
