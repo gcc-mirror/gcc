@@ -1,3 +1,7 @@
+2004-09-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c: Fix a comment typo.
+
 2004-09-23  Jan Hubicka  <jh@suse.cz>
 
 	* profile.c (branch_prob): Do not verify flow info in the middle of the

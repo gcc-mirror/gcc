@@ -8667,7 +8667,7 @@ fold_builtin_strstr (tree arglist)
     }
 }
 
-/* Simplify a call to the strstr builtin.
+/* Simplify a call to the strchr builtin.
 
    Return 0 if no simplification was possible, otherwise return the
    simplified form of the call as a tree.
