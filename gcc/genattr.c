@@ -30,13 +30,13 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void free ();
-extern int atoi ();
-extern rtx read_rtx ();
+extern void free PROTO((void *));
+extern int atoi PROTO((char *));
+extern rtx read_rtx PROTO((FILE *));
 
-char *xmalloc ();
+char *xmalloc PROTO((unsigned));
 static void fatal ();
-void fancy_abort ();
+void fancy_abort PROTO((void));
 
 /* A range of values.  */
 
@@ -130,10 +130,10 @@ gen_attr (attr)
   if (! strcmp (XSTR (attr, 0), "length"))
     {
       printf ("extern void init_lengths ();\n");
-      printf ("extern void shorten_branches ();\n");
-      printf ("extern int insn_default_length ();\n");
-      printf ("extern int insn_variable_length_p ();\n");
-      printf ("extern int insn_current_length ();\n\n");
+      printf ("extern void shorten_branches PROTO((rtx));\n");
+      printf ("extern int insn_default_length PROTO((rtx));\n");
+      printf ("extern int insn_variable_length_p PROTO((rtx));\n");
+      printf ("extern int insn_current_length PROTO((rtx));\n\n");
       printf ("extern int *insn_addresses;\n");
       printf ("extern int insn_current_address;\n\n");
     }
@@ -152,8 +152,8 @@ write_units (num_units, multiplicity, simultaneity,
   int i, q_size;
 
   printf ("#define INSN_SCHEDULING\n\n");
-  printf ("extern int result_ready_cost ();\n");
-  printf ("extern int function_units_used ();\n\n");
+  printf ("extern int result_ready_cost PROTO((rtx));\n");
+  printf ("extern int function_units_used PROTO((rtx));\n\n");
   printf ("extern struct function_unit_desc\n");
   printf ("{\n");
   printf ("  char *name;\n");
@@ -275,6 +275,14 @@ from the machine description file `md'.  */\n\n");
   /* For compatibility, define the attribute `alternative', which is just
      a reference to the variable `which_alternative'.  */
 
+  printf("#ifndef PROTO\n");
+  printf("#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)\n");
+  printf("#define PROTO(ARGS) ARGS\n");
+  printf("#else\n");
+  printf("#define PROTO(ARGS) ()\n");
+  printf("#endif\n");
+  printf("#endif\n");
+
   printf ("#define HAVE_ATTR_alternative\n");
   printf ("#define get_attr_alternative(insn) which_alternative\n");
      
@@ -296,9 +304,9 @@ from the machine description file `md'.  */\n\n");
 	  if (! have_delay)
 	    {
 	      printf ("#define DELAY_SLOTS\n");
-	      printf ("extern int num_delay_slots ();\n");
-	      printf ("extern int eligible_for_delay ();\n\n");
-	      printf ("extern int const_num_delay_slots ();\n\n");
+	      printf ("extern int num_delay_slots PROTO((rtx));\n");
+	      printf ("extern int eligible_for_delay PROTO((rtx, int, rtx));\n\n");
+	      printf ("extern int const_num_delay_slots PROTO((rtx));\n\n");
 	      have_delay = 1;
 	    }
 
