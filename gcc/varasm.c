@@ -4066,6 +4066,11 @@ output_addressed_constants (exp)
 {
   int reloc = 0;
 
+  /* Give the front-end a chance to convert VALUE to something that
+     looks more like a constant to the back-end.  */
+  if (lang_expand_constant)
+    exp = (*lang_expand_constant) (exp);
+
   switch (TREE_CODE (exp))
     {
     case ADDR_EXPR:
