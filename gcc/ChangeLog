@@ -1,3 +1,15 @@
+Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (subreg_hard_regno):  Check that register is representable.
+	* reload.c (reload_inner_reg_of_subreg):  When register is not
+	representable, reload the whole thing.
+	(find_reloads): Likewsie.
+	* rtlanal.c (subreg_representable_p):  New function.
+
+	* profile.c (compute_branch_probabilities):  Cleanup sanity checking;
+	allow negative probabilities for edges from the call to exit.
+	(branch_prob): Do not add fake edges for functions that may return twice
+
 2003-04-17  DJ Delorie  <dj@redhat.com>
 
 	* toplev.c (target_options): Add value field.

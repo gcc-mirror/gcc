@@ -674,22 +674,47 @@ compute_branch_probabilities ()
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
       edge e;
-      gcov_type total;
       rtx note;
 
-      total = bb->count;
-      if (total)
+      if (bb->count < 0)
+	{
+	  error ("corrupted profile info: number of iterations for basic block %d thought to be %i",
+		 bb->index, (int)bb->count);
+	  bb->count = 0;
+	}
+      for (e = bb->succ; e; e = e->succ_next)
+	{
+	  /* Function may return twice in the cased the called fucntion is
+	     setjmp or calls fork, but we can't represent this by extra
+	     edge from the entry, since extra edge from the exit is
+	     already present.  We get negative frequency from the entry
+	     point.  */
+	  if ((e->count < 0
+	       && e->dest == EXIT_BLOCK_PTR)
+	      || (e->count > bb->count
+		  && e->dest != EXIT_BLOCK_PTR))
+	    {
+	      rtx insn = bb->end;
+
+	      while (GET_CODE (insn) != CALL_INSN
+		     && insn != bb->head
+		     && keep_with_call_p (insn))
+		insn = PREV_INSN (insn);
+	      if (GET_CODE (insn) == CALL_INSN)
+		e->count = e->count < 0 ? 0 : bb->count;
+	    }
+	  if (e->count < 0 || e->count > bb->count)
+	    {
+	      error ("corrupted profile info: number of executions for edge %d-%d thought to be %i",
+		     e->src->index, e->dest->index,
+		     (int)e->count);
+	      e->count = bb->count / 2;
+	    }
+	}
+      if (bb->count)
 	{
 	  for (e = bb->succ; e; e = e->succ_next)
-	    {
-		e->probability = (e->count * REG_BR_PROB_BASE + total / 2) / total;
-		if (e->probability < 0 || e->probability > REG_BR_PROB_BASE)
-		  {
-		    error ("corrupted profile info: prob for %d-%d thought to be %d",
-			   e->src->index, e->dest->index, e->probability);
-		    e->probability = REG_BR_PROB_BASE / 2;
-		  }
-	    }
+	    e->probability = (e->count * REG_BR_PROB_BASE + bb->count / 2) / bb->count;
 	  if (bb->index >= 0
 	      && any_condjump_p (bb->end)
 	      && bb->succ->succ_next)
@@ -730,6 +755,8 @@ compute_branch_probabilities ()
 	 calls).  */
       else
 	{
+	  int total = 0;
+
 	  for (e = bb->succ; e; e = e->succ_next)
 	    if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
 	      total ++;
@@ -873,36 +900,13 @@ branch_prob ()
     {
       int need_exit_edge = 0, need_entry_edge = 0;
       int have_exit_edge = 0, have_entry_edge = 0;
-      rtx insn;
       edge e;
 
-      /* Add fake edges from entry block to the call insns that may return
-	 twice.  The CFG is not quite correct then, as call insn plays more
-	 role of CODE_LABEL, but for our purposes, everything should be OK,
-	 as we never insert code to the beginning of basic block.  */
-      for (insn = bb->head; insn != NEXT_INSN (bb->end);
-	   insn = NEXT_INSN (insn))
-	{
-	  if (GET_CODE (insn) == CALL_INSN
-	      && find_reg_note (insn, REG_SETJMP, NULL))
-	    {
-	      if (GET_CODE (bb->head) == CODE_LABEL
-		  || insn != NEXT_INSN (bb->head))
-		{
-		  e = split_block (bb, PREV_INSN (insn));
-		  make_edge (ENTRY_BLOCK_PTR, e->dest, EDGE_FAKE);
-		  break;
-		}
-	      else
-		{
-		  /* We should not get abort here, as call to setjmp should not
-		     be the very first instruction of function.  */
-		  if (bb == ENTRY_BLOCK_PTR)
-		    abort ();
-		  make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
-		}
-	    }
-	}
+      /* Functions returning multiple times are not handled by extra edges.
+         Instead we simply allow negative counts on edges from exit to the
+         block past call and corresponding probabilities.  We can't go
+         with the extra edges because that would result in flowgraph that
+	 needs to have fake edges outside the spanning tree.  */
 
       for (e = bb->succ; e; e = e->succ_next)
 	{
