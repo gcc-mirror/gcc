@@ -130,27 +130,6 @@ protected:
                          unsigned outer) const;
 };
 
-// type information for reference to data
-class __reference_type_info : public type_info {
-public:
-  virtual ~__reference_type_info ();
-  int quals;                // qualification of the target object
-  const type_info *target;  // type of object being referenced
-
-// internal parts
-  enum quals_masks {
-    const_mask = 0x1,
-    volatile_mask = 0x2
-  };
-  
-public:
-  explicit __reference_type_info (const char *n,
-                                  int quals_,
-                                  const type_info *target_)
-    : type_info (n), quals (quals_), target (target_)
-    { }
-};
-
 // type information for array objects
 class __array_type_info : public type_info {
 public:
@@ -227,10 +206,6 @@ __fundamental_type_info::
 
 __pointer_type_info::
 ~__pointer_type_info ()
-{}
-
-__reference_type_info::
-~__reference_type_info ()
 {}
 
 __array_type_info::

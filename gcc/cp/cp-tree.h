@@ -520,7 +520,6 @@ enum cp_tree_index
     CPTI_TI_DESC_TYPE,
     CPTI_BLTN_DESC_TYPE,
     CPTI_PTR_DESC_TYPE,
-    CPTI_REF_DESC_TYPE,
     CPTI_ARY_DESC_TYPE,
     CPTI_FUNC_DESC_TYPE,
     CPTI_ENUM_DESC_TYPE,
@@ -606,7 +605,6 @@ extern tree cp_global_trees[CPTI_MAX];
 #define ti_desc_type_node		cp_global_trees[CPTI_TI_DESC_TYPE]
 #define bltn_desc_type_node		cp_global_trees[CPTI_BLTN_DESC_TYPE]
 #define ptr_desc_type_node		cp_global_trees[CPTI_PTR_DESC_TYPE]
-#define ref_desc_type_node		cp_global_trees[CPTI_REF_DESC_TYPE]
 #define ary_desc_type_node		cp_global_trees[CPTI_ARY_DESC_TYPE]
 #define func_desc_type_node		cp_global_trees[CPTI_FUNC_DESC_TYPE]
 #define enum_desc_type_node		cp_global_trees[CPTI_ENUM_DESC_TYPE]

@@ -64,7 +64,7 @@ static tree tinfo_from_decl PARAMS((tree));
 static int qualifier_flags PARAMS((tree));
 static tree tinfo_base_init PARAMS((tree, tree));
 static tree generic_initializer PARAMS((tree, tree));
-static tree ptr_ref_initializer PARAMS((tree, tree));
+static tree ptr_initializer PARAMS((tree, tree));
 static tree ptmd_initializer PARAMS((tree, tree));
 static int class_hint_flags PARAMS((tree));
 static tree class_initializer PARAMS((tree, tree, tree));
@@ -1298,12 +1298,12 @@ generic_initializer (desc, target)
   return init;
 }
 
-/* Return the CONSTRUCTOR expr for a type_info of pointer or reference TYPE.
+/* Return the CONSTRUCTOR expr for a type_info of pointer TYPE.
    DESC provides information about the particular type_info derivation,
    which adds target type and qualifier flags members to the type_info base.  */
 
 static tree
-ptr_ref_initializer (desc, target)
+ptr_initializer (desc, target)
      tree desc;
      tree target;
 {
@@ -1322,7 +1322,7 @@ ptr_ref_initializer (desc, target)
   return init;
 }
 
-/* Return the CONSTRUCTOR expr for a type_info of pointer or reference TYPE.
+/* Return the CONSTRUCTOR expr for a type_info of pointer to member data TYPE.
    DESC provides information about the particular type_info derivation,
    which adds target type and qualifier flags members to the type_info base.  */
 
@@ -1427,12 +1427,8 @@ synthesize_tinfo_var (target_type, real_name)
             /* These are in the runtime.  */
             return NULL_TREE;
           var_type = ptr_desc_type_node;
-          var_init = ptr_ref_initializer (var_type, target_type);
+          var_init = ptr_initializer (var_type, target_type);
         }
-      break;
-    case REFERENCE_TYPE:
-      var_type = ref_desc_type_node;
-      var_init = ptr_ref_initializer (var_type, target_type);
       break;
     case ENUMERAL_TYPE:
       var_type = enum_desc_type_node;
@@ -1704,15 +1700,10 @@ create_tinfo_types ()
       ("__fundamental_type_info", 0,
        NULL);
 
-  /* Pointer and reference type_info. These two fields, qualification mask
-      and pointer to the pointed to (referenced) type.  */
+  /* Pointer type_info. Adds two fields, qualification mask
+     and pointer to the pointed to type.  */
   ptr_desc_type_node = create_pseudo_type_info
       ("__pointer_type_info", 0,
-       build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-       build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
-       NULL);
-  ref_desc_type_node = create_pseudo_type_info
-      ("__reference_type_info", 0,
        build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
        build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
        NULL);
