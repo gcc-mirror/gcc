@@ -327,7 +327,7 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
   tree binfos;
   int i, n_baselinks;
 
-  if (protect
+  if (protect == 1
       && !current_scope_in_chain
       && is_friend (BINFO_TYPE (binfo), current_scope ()))
     current_scope_in_chain = 1;
@@ -383,12 +383,15 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
       tree base_binfo = TREE_VEC_ELT (binfos, i);
 
       int via_private
-	= (protect
-	   && (is_private
-	       || (!TREE_VIA_PUBLIC (base_binfo)
-		   && !(TREE_VIA_PROTECTED (base_binfo)
-			&& current_scope_in_chain)
-		   && !is_friend (BINFO_TYPE (binfo), current_scope ()))));
+	= ((protect == 1
+	    && (is_private
+		|| (!TREE_VIA_PUBLIC (base_binfo)
+		    && !(TREE_VIA_PROTECTED (base_binfo)
+			 && current_scope_in_chain)
+		    && !is_friend (BINFO_TYPE (binfo), current_scope ()))))
+	   || (protect > 1
+	       && (is_private || !TREE_VIA_PUBLIC (base_binfo))));
+
       int this_virtual = via_virtual || TREE_VIA_VIRTUAL (base_binfo);
 
       rval = get_base_distance_recursive (base_binfo, depth, via_private,
@@ -415,11 +418,14 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
    Return -1 if TYPE is not derived from PARENT.
    Return -2 if PARENT is an ambiguous base class of TYPE, and PROTECT is
     non-negative.
-   Return -3 if PARENT is private to TYPE, and PROTECT is non-zero.
+   Return -3 if PARENT is not accessible in TYPE, and PROTECT is non-zero.
 
    If PATH_PTR is non-NULL, then also build the list of types
    from PARENT to TYPE, with TREE_VIA_VIRTUAL and TREE_VIA_PUBLIC
    set.
+
+   If PROTECT is greater than 1, ignore any special access the current
+   scope might have when determining whether PARENT is inaccessible.
 
    PARENT can also be a binfo, in which case that exact parent is found
    and no other.  convert_pointer_to_real uses this functionality.
@@ -468,7 +474,7 @@ get_base_distance (parent, binfo, protect, path_ptr)
       return 0;
     }
 
-  if (path_ptr)
+  if (path_ptr && watch_access == 0)
     watch_access = 1;
 
   rval = get_base_distance_recursive (binfo, 0, 0, -1,

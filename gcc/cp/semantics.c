@@ -838,7 +838,10 @@ finish_handler_sequence (try_block)
      tree try_block;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS (try_block, TRY_HANDLERS (try_block));
+    {
+      RECHAIN_STMTS (try_block, TRY_HANDLERS (try_block));
+      check_handlers (TRY_HANDLERS (try_block));
+    }
   else
     expand_end_all_catch ();
 }
@@ -852,7 +855,10 @@ finish_function_handler_sequence (try_block)
   in_function_try_handler = 0;
 
   if (building_stmt_tree ())
-    RECHAIN_STMTS (try_block, TRY_HANDLERS (try_block));
+    {
+      RECHAIN_STMTS (try_block, TRY_HANDLERS (try_block));
+      check_handlers (TRY_HANDLERS (try_block));
+    }
   else
     expand_end_all_catch ();
 }
@@ -900,6 +906,9 @@ finish_handler_parms (decl, handler)
     }
   else if (building_stmt_tree ())
     blocks = expand_start_catch_block (decl);
+
+  if (decl)
+    TREE_TYPE (handler) = TREE_TYPE (decl);
 
   return blocks;
 }

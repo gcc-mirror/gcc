@@ -1106,3 +1106,87 @@ nothrow_libfn_p (fn)
   id = DECL_ASSEMBLER_NAME (fn);
   return !!libc_name_p (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
 }
+
+/* Returns nonzero if an exception of type FROM will be caught by a
+   handler for type TO, as per [except.handle].  */
+
+static int
+can_convert_eh (to, from)
+     tree to, from;
+{
+  if (TREE_CODE (to) == REFERENCE_TYPE)
+    to = TREE_TYPE (to);
+  if (TREE_CODE (from) == REFERENCE_TYPE)
+    from = TREE_TYPE (from);
+
+  if (TREE_CODE (to) == POINTER_TYPE && TREE_CODE (from) == POINTER_TYPE)
+    {
+      to = TREE_TYPE (to);
+      from = TREE_TYPE (from);
+
+      if (! at_least_as_qualified_p (to, from))
+	return 0;
+
+      if (TREE_CODE (to) == VOID_TYPE)
+	return 1;
+
+      /* else fall through */
+    }
+
+  if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
+      && PUBLICLY_UNIQUELY_DERIVED_P (to, from))
+    return 1;
+
+  return 0;
+}
+
+/* Check whether any of HANDLERS are shadowed by another handler accepting
+   TYPE.  Note that the shadowing may not be complete; even if an exception
+   of type B would be caught by a handler for A, there could be a derived
+   class C for which A is an ambiguous base but B is not, so the handler
+   for B would catch an exception of type C.  */
+
+static void
+check_handlers_1 (master, handlers)
+     tree master;
+     tree handlers;
+{
+  tree type = TREE_TYPE (master);
+  tree handler;
+
+  for (handler = handlers; handler; handler = TREE_CHAIN (handler))
+    if (TREE_TYPE (handler)
+	&& can_convert_eh (type, TREE_TYPE (handler)))
+      {
+	lineno = STMT_LINENO (handler);
+	cp_warning ("exception of type `%T' will be caught",
+		    TREE_TYPE (handler));
+	lineno = STMT_LINENO (master);
+	cp_warning ("   by earlier handler for `%T'", type);
+	break;
+      }
+}
+
+/* Given a chain of HANDLERs, make sure that they're OK.  */
+
+void
+check_handlers (handlers)
+     tree handlers;
+{
+  tree handler;
+  int save_line = lineno;
+  for (handler = handlers; handler; handler = TREE_CHAIN (handler))
+    {
+      if (TREE_CHAIN (handler) == NULL_TREE)
+	/* No more handlers; nothing to shadow.  */;
+      else if (TREE_TYPE (handler) == NULL_TREE)
+	{
+	  lineno = STMT_LINENO (handler);
+	  cp_pedwarn
+	    ("`...' handler must be the last handler for its try block");
+	}
+      else
+	check_handlers_1 (handler, TREE_CHAIN (handler));
+    }
+  lineno = save_line;
+}

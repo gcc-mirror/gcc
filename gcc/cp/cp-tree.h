@@ -1314,6 +1314,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define UNIQUELY_DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 0, (tree *)0) >= 0)
 #define ACCESSIBLY_DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, -1, (tree *)0) >= 0)
 #define ACCESSIBLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 1, (tree *)0) >= 0)
+#define PUBLICLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 2, (tree *)0) >= 0)
 #define DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 0, (tree *)0) != -1)
 
 /* This structure provides additional information above and beyond
@@ -4114,6 +4115,7 @@ extern void expand_exception_blocks		PARAMS ((void));
 extern tree build_throw				PARAMS ((tree));
 extern void mark_all_runtime_matches            PARAMS ((void));
 extern int nothrow_libfn_p			PARAMS ((tree));
+extern void check_handlers			PARAMS ((tree));
 
 /* in expr.c */
 extern void init_cplus_expand			PARAMS ((void));
