@@ -1,3 +1,8 @@
+Mon May 22 11:30:48 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* jump.c (jump_optimize_1): Don't increment LABEL_NUSES
+	on deleted labels.
+
 2000-05-22  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* varasm.c (eh_frame_section): Revert change to argument list.
