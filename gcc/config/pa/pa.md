@@ -5389,15 +5389,10 @@
 	  (const_int 8)
 	  (const_int 12)))))])
 
-;; The next several patterns (parallel_addb, parallel_movb, fmpyadd and
-;; fmpysub aren't currently used by the FSF sources, but will be soon.
-;;
-;; They're in the FSF tree for documentation and to make Cygnus<->FSF
-;; merging easier.
 (define_insn ""
   [(set (pc) (label_ref (match_operand 3 "" "" )))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_operand:SI 1 "register_operand" "r")
+   (set (match_operand:SI 0 "ireg_operand" "=r")
+	(plus:SI (match_operand:SI 1 "ireg_operand" "r")
 		 (match_operand:SI 2 "ireg_or_int5_operand" "rL")))]
   "(reload_completed && operands[0] == operands[1]) || operands[0] == operands[2]"
   "*
@@ -5413,7 +5408,7 @@
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 2 "" "" )))
-   (set (match_operand:SF 0 "register_operand" "=r")
+   (set (match_operand:SF 0 "ireg_operand" "=r")
 	(match_operand:SF 1 "ireg_or_int5_operand" "rL"))]
   "reload_completed"
   "*
@@ -5429,7 +5424,7 @@
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 2 "" "" )))
-   (set (match_operand:SI 0 "register_operand" "=r")
+   (set (match_operand:SI 0 "ireg_operand" "=r")
 	(match_operand:SI 1 "ireg_or_int5_operand" "rL"))]
   "reload_completed"
   "*
@@ -5445,7 +5440,7 @@
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 2 "" "" )))
-   (set (match_operand:HI 0 "register_operand" "=r")
+   (set (match_operand:HI 0 "ireg_operand" "=r")
 	(match_operand:HI 1 "ireg_or_int5_operand" "rL"))]
   "reload_completed"
   "*
@@ -5461,7 +5456,7 @@
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 2 "" "" )))
-   (set (match_operand:QI 0 "register_operand" "=r")
+   (set (match_operand:QI 0 "ireg_operand" "=r")
 	(match_operand:QI 1 "ireg_or_int5_operand" "rL"))]
   "reload_completed"
   "*

@@ -2307,4 +2307,5 @@ extern struct rtx_def *return_addr_rtx ();
   {"shadd_operand", {CONST_INT}},					\
   {"basereg_operand", {REG}},						\
   {"div_operand", {REG, CONST_INT}},					\
+  {"ireg_operand", {REG}},						\
   {"movb_comparison_operator", {EQ, NE, LT, GE}},

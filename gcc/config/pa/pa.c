@@ -478,6 +478,15 @@ ireg_or_int5_operand (op, mode)
 	  || (GET_CODE (op) == REG && REGNO (op) > 0 && REGNO (op) < 32));
 }
 
+/* Return nonzero if OP is an integer register, else return zero.  */
+int
+ireg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == REG && REGNO (op) > 0 && REGNO (op) < 32);
+}
+
 /* Return truth value of whether OP is a integer which fits the
    range constraining immediate operands in three-address insns.  */
 
