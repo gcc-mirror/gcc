@@ -1,3 +1,9 @@
+2004-08-24  Richard Henderson  <rth@redhat.com>
+
+	PR target/16298
+	* config/i386/i386.c (legitimate_constant_p): Rework to not accept
+	random codes within CONST.
+
 2004-08-24  James E Wilson  <wilson@specifixinc.com>
 
 	* Makefile.in (STAGEFEEDBACK_FLAGS_TO_PASS): Remove
