@@ -1,3 +1,26 @@
+2001-06-15  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (ClassClass): Removed; updated all users.
+	(ObjectClass): Likewise.
+	(ThrowableClass): Likewise.
+	(MethodClass): Likewise.
+	(ThreadGroupClass): Likewise.
+	(local_ref_table): Renamed from `ref_table'.
+	(global_ref_table): New global.
+	(_Jv_JNI_Init): Initialize both ref tables.
+	(mark_for_gc): Added `ref_table' parameter.
+	(unmark_for_gc): Likewise.  Also, fail if we unreferenced too many
+	times.
+	(_Jv_JNI_NewGlobalRef): Updated for new mark function.
+	(_Jv_JNI_DeleteGlobalRef): Likewise.
+	(_Jv_JNI_DeleteLocalRef): Likewise.
+	(_Jv_JNI_NewLocalRef): Likewise.
+	(_Jv_JNI_PopLocalFrame): Likewise.
+	(_Jv_JNI_GetStringChars): Likewise.
+	(_Jv_JNI_ReleaseStringChars): Likewise.
+	(_Jv_JNI_GetPrimitiveArrayElements): Likewise.
+	(_Jv_JNI_ReleasePrimitiveArrayElements): Likewise.
+
 2001-06-14  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/3144:
