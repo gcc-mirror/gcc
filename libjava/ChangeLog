@@ -1,3 +1,7 @@
+2004-02-08  Andreas Jaeger  <aj@suse.de>
+
+	* include/x86_64-signal.h: Fix typo.
+
 2004-02-08  Diego Novillo  <dnovillo@redhat.com>
 
 	* include/i386-signal.h (MAKE_THROW_FRAME): Add volatile

@@ -84,7 +84,7 @@ while (0)
 
 #else /* __x86_64__ */
 
-/* This is for the 32-bit subsystem on on x86-64.  */
+/* This is for the 32-bit subsystem on x86-64.  */
 
 #define sigcontext_struct sigcontext
 #include <java-signal-aux.h>
