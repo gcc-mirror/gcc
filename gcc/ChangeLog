@@ -1,3 +1,9 @@
+2003-07-17  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Depend .pot generation on options.c.
+	* po/exgettext: Add an extra_files variable containing additional
+	files to scan.
+
 2003-07-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c: Fix typos in several comments.  Remove all

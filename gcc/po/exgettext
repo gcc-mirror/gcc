@@ -58,6 +58,9 @@ kopt=$pwd/$T/keyword-options
 emsg=$pwd/$T/emsgids.c
 posr=$pwd/$T/po-sources
 
+# Extra files to scan
+extra_files=$pwd/options.c
+
 # Locate files to scan, and generate the list.  All .c, .h, and .def files
 # in $srcdir are examined, likewise $srcdir/config and $srcdir/config/*
 # (directories).  Also, all subdirectories of $srcdir that contain a
@@ -75,11 +78,13 @@ echo "scanning for keywords and %e strings..." >&2
 
 ( cd $srcdir
   lang_subdirs=`echo */config-lang.in | sed -e 's|config-lang\.in||g'`
-  for dir in "" config/ config/*/ $lang_subdirs
-  do  for glob in '*.c' '*.h' '*.def'
-      do  eval echo $dir$glob
-      done
-  done | tr ' ' "$nl" | grep -v '\*' |
+  { for dir in "" config/ config/*/ $lang_subdirs
+    do  for glob in '*.c' '*.h' '*.def'
+        do  eval echo $dir$glob
+        done
+    done;
+    echo $extra_files;
+  } | tr ' ' "$nl" | grep -v '\*' |
   $AWK -v excl=po/EXCLUDES -v posr=$posr -v kopt=$kopt -v emsg=$emsg '
 function keyword_option(line) {
     paren_index = index(line, "(")
