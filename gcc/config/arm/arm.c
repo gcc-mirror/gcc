@@ -2719,12 +2719,11 @@ output_return_instruction (operand, really_return)
   return "";
 }
 
-/* Return nonzero if optimizing and the current function is volatile
-   (ie: `noreturn').
-   Since such functions don't return call-saved registers don't need to
-   be saved.  Making such an optimization may seem dubious at first glance.
-   It was put in for a particular user who was using them to do context
-   switching and obviously wanted it to be fast.  */
+/* Return nonzero if optimizing and the current function is volatile.
+   Such functions never return, and many memory cycles can be saved
+   by not storing register values that will never be needed again.
+   This optimization was added to speed up context switching in a
+   kernel application. */
 
 int
 arm_volatile_func ()
