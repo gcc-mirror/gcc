@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2.12.65.2.212 $
+--                            $Revision: 1.2.12.65.2.213 $
 --                                                                          --
 --          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -38,7 +38,7 @@
 
 package Gnatvsn is
 
-   Gnat_Version_String : constant String := "3.2.3 20030219 (prerelease)";
+   Gnat_Version_String : constant String := "3.2.3 20030220 (prerelease)";
    --  Version output when GNAT (compiler), or its related tools, including
    --  GNATBIND, GNATCHOP, GNATFIND, GNATLINK, GNATMAKE, GNATXREF, are run
    --  (with appropriate verbose option switch set).
