@@ -1,3 +1,12 @@
+2001-03-18  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/natClass.cc (_Jv_CheckCast): add class names to exception
+
+2001-03-18  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/gcj/runtime/FirstThread.java (main): replace / with . in
+	jarMainClassName
+
 2001-03-17  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natString.cc (rehash): Don't bother with memset;
@@ -32,12 +41,14 @@
 	Only try to print the subordinate stack trace if "exception" is set.
 	Print our class name first.
 
+>>>>>>> 1.710
 2001-03-08  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/ObjectStreamClass.java (setUID): Don't write interface
 	info for array classes.
 	Fixes PR libgcj/1971.
 
+>>>>>>> 1.707
 2001-03-06  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/TreeSet.java (writeObject): Use a for-loop instead of
@@ -50,6 +61,7 @@
 	back-porting the classes to JDK1.1 trivial.
 	(readObject): likewise.
 	
+>>>>>>> 1.706
 2001-03-01  Per Bothner  <per@bothner.com>
 
 	Changes merged from Kawa's gnu.math.
@@ -124,6 +136,7 @@
 	which are alive.
 	(enumerate): Likewise.
 
+>>>>>>> 1.705
 2001-02-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Integer.java (getInteger): Return default argument if
@@ -135,6 +148,7 @@
 	(ready): Return false if no more characters can be read.
 	* java/io/ByteArrayInputStream.java (ByteArrayInputStream): Likewise.
 
+>>>>>>> 1.696
 2001-02-17  Mark Wielaard <mark@klomp.org>
 
 	* java/util/TimerTask.java: New version from Classpath.

@@ -56,8 +56,10 @@ final class FirstThread extends Thread
       jarMainClassName = a.getValue(Attributes.Name.MAIN_CLASS);
 
       if (jarMainClassName != null)
+      {
+	jarMainClassName = jarMainClassName.replace('/','.');
 	return;
-
+      }
     } catch (Exception e) {
       // empty
     }
