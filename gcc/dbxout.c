@@ -836,6 +836,35 @@ dbxout_type_methods (type)
 	}
     }
 }
+
+/* Emit a "range" type specification, which has the form:
+   "r<index type>;<lower bound>;<upper bound>;".
+   TYPE is an INTEGER_TYPE. */
+
+static void
+dbxout_range_type (type)
+     tree type;
+{
+  fprintf (asmfile, "r");
+  if (TREE_TYPE (type) && TREE_CODE (TREE_TYPE(type)) != INTEGER_TYPE)
+    dbxout_type (TREE_TYPE (type), 0, 0);
+  else
+    {
+      /* This used to say `r1' and we used to take care
+	 to make sure that `int' was type number 1.  */
+      fprintf (asmfile, "%d", TYPE_SYMTAB_ADDRESS (integer_type_node));
+    }
+  if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
+    fprintf (asmfile, ";%d", 
+	     TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)));
+  else
+    fprintf (asmfile, ";0");
+  if (TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST)
+    fprintf (asmfile, ";%d;", 
+	     TREE_INT_CST_LOW (TYPE_MAX_VALUE (type)));
+  else
+    fprintf (asmfile, ";-1;");
+}
 
 /* Output a reference to a type.  If the type has not yet been
    described in the dbx output, output its definition now.
@@ -974,14 +1003,8 @@ dbxout_type (type, full, show_arg_types)
 	  print_int_cst_octal (TYPE_MAX_VALUE (type));
 	  fprintf (asmfile, ";");
 	}
-      else
-	/* Output other integer types as subranges of `int'.  */
-	/* This used to say `r1' and we used to take care
-	   to make sure that `int' was type number 1.  */
-	fprintf (asmfile, "r%d;%d;%d;",
-		 TYPE_SYMTAB_ADDRESS (integer_type_node),
-		 TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)),
-		 TREE_INT_CST_LOW (TYPE_MAX_VALUE (type)));
+      else /* Output other integer types as subranges of `int'.  */
+	dbxout_range_type (type);
       CHARS (25);
       break;
 
@@ -1035,14 +1058,16 @@ dbxout_type (type, full, show_arg_types)
       /* Output "a" followed by a range type definition
 	 for the index type of the array
 	 followed by a reference to the target-type.
-	 ar1;0;N;M for an array of type M and size N.  */
-      /* This used to say `r1' and we used to take care
-	 to make sure that `int' was type number 1.  */
-      fprintf (asmfile, "ar%d;0;%d;", TYPE_SYMTAB_ADDRESS (integer_type_node),
-
-	       (TYPE_DOMAIN (type)
-		? TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
-	        : -1));
+	 ar1;0;N;M for a C array of type M and size N+1.  */
+      tem = TYPE_DOMAIN (type);
+      if (tem == NULL)
+	fprintf(asmfile, "ar%d;0;-1",
+		   TYPE_SYMTAB_ADDRESS (integer_type_node));
+      else
+	{
+	  fprintf(asmfile, "a");
+	  dbxout_range_type (tem);
+	}
       CHARS (17);
       dbxout_type (TREE_TYPE (type), 0, 0);
       break;
