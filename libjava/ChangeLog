@@ -1,5 +1,18 @@
 2004-01-25  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* java/awt/TextArea.java: Fix indentation.  Flesh out javadocs.
+	(getMinimumSize (int, int)): Fix FIXME -- return Dimension (0,0)
+	when peer is null.
+	(setColumns): Remove FIXME -- peer will retrieve number of
+	columns by calling getColumns.
+	(setRows): Likewise for number of rows.
+	(next_text_number): New field.
+	(paramString): Fix param string.
+	(generateName): New method.
+	(getUniqueLong): New method.
+
+2004-01-25  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
 	* gnu/java/awt/peer/gtk/GtkToolkit.java (checkImage): Inform
 	image observer of image loading status.
 	(getImage (String)): Start image production.
