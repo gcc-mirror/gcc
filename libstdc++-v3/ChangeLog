@@ -1,3 +1,25 @@
+2001-10-11  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* docs/html/configopts.html: Quote StyleSheet attribute values.
+	* docs/html/documentation.html: Likewise.
+	* docs/html/explanations.html: Likewise.
+	* docs/html/install.html: Likewise.
+	* docs/html/17_intro/howto.html: Likewise.
+	* docs/html/17_intro/license.html: Likewise.
+	* docs/html/18_support/howto.html: Likewise.
+	* docs/html/19_diagnostics/howto.html: Likewise.
+	* docs/html/20_util/howto.html: Likewise.
+	* docs/html/21_strings/howto.html: Likewise.
+	* docs/html/22_locale/howto.html: Likewise.
+	* docs/html/23_containers/howto.html: Likewise.
+	* docs/html/24_iterators/howto.html: Likewise.
+	* docs/html/25_algorithms/howto.html: Likewise.
+	* docs/html/26_numerics/howto.html: Likewise.
+	* docs/html/27_io/howto.html: Likewise.
+	* docs/html/ext/howto.html: Likewise.
+	* docs/html/ext/sgiexts.html: Likewise.
+	* docs/html/faq/index.html: Likewise.
+
 2001-10-11  Loren J. Rittle  <ljrittle@acm.org>
 
 	* docs/html/faq/index.html (Is libstdc++-v3 thread-safe?): Rewrite.
