@@ -1,7 +1,5 @@
-/* ??? It'd be nice to run this for sparc32 as well, if we could know
-   for sure that we're on an ultrasparc, rather than an older cpu.  */
-/* { dg-do run { target sparcv9-*-* sparc64-*-* } } */
-/* { dg-options "-O2 -m32 -mcpu=ultrasparc -mvis" } */
+/* { dg-do run { target sparc*-*-* } } */
+/* { dg-options "-O2 -mcpu=ultrasparc -mvis" } */
 
 int l;
 

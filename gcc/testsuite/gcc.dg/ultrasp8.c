@@ -1,7 +1,7 @@
 /* PR target/10067 */
 /* Originator: <dat94ali@ludat.lth.se> */
 /* { dg-do compile { target sparc*-*-* } } */
-/* { dg-options "-O2 -m64 -mtune=supersparc" { target sparc64-*-* } } */
+/* { dg-options "-O2 -mtune=supersparc" { target sparc64-*-* sparcv9-*-* } } */
 
 struct _reent;
 

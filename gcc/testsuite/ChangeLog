@@ -1,5 +1,26 @@
 2004-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	Backport from mainline:
+
+	2004-03-26  James A. Morrison  <ja2morri@uwaterloo.ca>
+
+	* gcc.dg/20001013-1.c: Run on 32-bit and 64-bit SPARC.
+	* gcc.dg/20001101-1.c: Likewise.
+	* gcc.dg/20001102-1.c: Likewise.
+
+	2004-03-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/ultrasp2.c: Do not pass -m64.  Remove redundant lines.
+	* gcc.dg/ultrasp4.c: Likewise.
+	* gcc.dg/ultrasp8.c: Do not pass -m64.  Add sparcv9-*-*.
+
+	2004-01-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/sparc-ret.c: Run only in 32-bit mode.  Don't scan
+	the assembly output if -m64 is passed.
+
+2004-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/sparc-trap-1.c: New test.
 
 2004-05-26  Hans-Peter Nilsson  <hp@axis.com>
