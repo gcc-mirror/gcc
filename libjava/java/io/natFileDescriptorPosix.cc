@@ -45,6 +45,14 @@ details.  */
 
 #define NO_FSYNC_MESSAGE "sync unsupported"
 
+void
+java::io::FileDescriptor::init(void)
+{
+  in = new java::io::FileDescriptor((jint)(GetStdHandle (0)));
+  out = new java::io::FileDescriptor((jint)(GetStdHandle (1)));
+  err = new java::io::FileDescriptor((jint)(GetStdHandle (2)));
+}
+
 jboolean
 java::io::FileDescriptor::valid (void)
 {

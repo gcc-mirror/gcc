@@ -24,13 +24,19 @@ package java.io;
 // if need be.
 public final class FileDescriptor
 {
-  public static final FileDescriptor in = new FileDescriptor (0);
-  public static final FileDescriptor out = new FileDescriptor (1);
-  public static final FileDescriptor err = new FileDescriptor (2);
+
+  public static final FileDescriptor in = null;
+  public static final FileDescriptor out = null;
+  public static final FileDescriptor err = null;
+
+  private static native void init();
+  static
+  {
+    init();
+  }
 
   public native void sync () throws SyncFailedException;
   public native boolean valid ();
-
 
   // These are mode values for open().
   static final int READ   = 1;

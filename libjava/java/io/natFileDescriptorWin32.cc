@@ -32,6 +32,17 @@ details.  */
 #include <java/lang/Thread.h>
 #include <java/io/FileNotFoundException.h>
 
+// FIXME: casting a FILE (pointer) to a jint will not work on Win64 --
+//        we should be using gnu.gcj.RawData's.
+
+void
+java::io::FileDescriptor::init(void)
+{
+  in = new java::io::FileDescriptor((jint)(GetStdHandle (STD_INPUT_HANDLE)));
+  out = new java::io::FileDescriptor((jint)(GetStdHandle (STD_OUTPUT_HANDLE)));
+  err = new java::io::FileDescriptor((jint)(GetStdHandle (STD_ERROR_HANDLE)));
+}
+
 static char *
 winerr (void)
 {
