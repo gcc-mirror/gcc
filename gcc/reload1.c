@@ -449,6 +449,9 @@ static void move2add_note_store PROTO((rtx, rtx));
 #ifdef AUTO_INC_DEC
 static void add_auto_inc_notes PROTO((rtx, rtx));
 #endif
+static rtx gen_mode_int			PROTO((enum machine_mode,
+					       HOST_WIDE_INT));
+extern void dump_needs			PROTO((struct insn_chain *, FILE *));
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -4023,8 +4026,8 @@ hard_reg_use_compare (p1p, p2p)
      const PTR p1p;
      const PTR p2p;
 {
-  struct hard_reg_n_uses *p1 = (struct hard_reg_n_uses *)p1p;
-  struct hard_reg_n_uses *p2 = (struct hard_reg_n_uses *)p2p;
+  const struct hard_reg_n_uses *p1 = (const struct hard_reg_n_uses *)p1p;
+  const struct hard_reg_n_uses *p2 = (const struct hard_reg_n_uses *)p2p;
   int bad1 = TEST_HARD_REG_BIT (bad_spill_regs, p1->regno);
   int bad2 = TEST_HARD_REG_BIT (bad_spill_regs, p2->regno);
   if (bad1 && bad2)
@@ -4519,7 +4522,7 @@ reload_reg_class_lower (r1p, r2p)
      const PTR r1p;
      const PTR r2p;
 {
-  register int r1 = *(short *)r1p, r2 = *(short *)r2p;
+  register int r1 = *(const short *)r1p, r2 = *(const short *)r2p;
   register int t;
 
   /* Consider required reloads before optional ones.  */
@@ -6014,7 +6017,7 @@ choose_reload_regs (chain)
 	      register rtx equiv
 		= find_equiv_reg (search_equiv, insn, rld[r].class,
 				  -1, NULL_PTR, 0, reload_mode[r]);
-	      int regno;
+	      int regno = 0;
 
 	      if (equiv != 0)
 		{

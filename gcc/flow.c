@@ -354,7 +354,15 @@ static int maybe_add_dead_note		PROTO ((rtx, rtx, rtx));
 static int sets_reg_or_subreg		PROTO ((rtx, rtx));
 static void update_n_sets 		PROTO ((rtx, int));
 static void new_insn_dead_notes		PROTO ((rtx, rtx, rtx, rtx, rtx, rtx));
-void verify_flow_info			PROTO ((void));
+#ifdef ENABLE_CHECKING
+static void verify_flow_info		PROTO ((void));
+#endif
+static void split_hard_reg_notes	PROTO ((rtx, rtx, rtx, rtx));
+static rtx find_insn_with_note		PROTO ((rtx, rtx, rtx));
+static void sets_reg_or_subreg_1	PROTO ((rtx, rtx));
+static rtx prepend_reg_notes		PROTO ((rtx, rtx));
+static void remove_edge			PROTO ((edge));
+static void remove_fake_successors	PROTO ((basic_block));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -3529,7 +3537,7 @@ mark_set_1 (needed, dead, x, insn, significant)
      rtx insn;
      regset significant;
 {
-  register int regno;
+  register int regno = -1;
   register rtx reg = SET_DEST (x);
 
   /* Some targets place small structures in registers for
@@ -5419,7 +5427,7 @@ unlink_insn_chain (start, finish)
      rtx start, finish;
 {
   rtx insert_point = PREV_INSN (start);
-  rtx chain = NULL_RTX, curr;
+  rtx chain = NULL_RTX, curr = NULL_RTX;
 
   /* Unchain the insns one by one.  It would be quicker to delete all
      of these with a single unchaining, rather than one at a time, but
@@ -5625,7 +5633,7 @@ maybe_add_dead_note_use (insn, dest)
 
 /* Find the first insn in the set of insns from FIRST to LAST inclusive
    that contains the note NOTE. */
-rtx
+static rtx
 find_insn_with_note (note, first, last)
      rtx note, first, last;
 {
@@ -6472,7 +6480,8 @@ replace_insns (first, last, first_new, notes)
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
 
-void
+#ifdef ENABLE_CHECKING
+static void
 verify_flow_info ()
 {
   const int max_uid = get_max_uid ();
@@ -6675,6 +6684,7 @@ verify_flow_info ()
       x = NEXT_INSN (x);
     }
 }
+#endif
 
 /* Functions to access an edge list with a vector representation.
    Enough data is kept such that given an index number, the 
@@ -6998,12 +7008,10 @@ void
 remove_fake_edges ()
 {
   int x;
-  edge e;
   basic_block bb;
 
   for (x = 0; x < n_basic_blocks; x++)
     {
-      edge tmp, last = NULL;
       bb = BASIC_BLOCK (x);
       remove_fake_successors (bb);
     }

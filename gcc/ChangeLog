@@ -1,3 +1,34 @@
+Wed Oct  6 10:41:56 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (scan_prog_file, scan_libraries): Prototype function
+	pointers and casts for `int_handler' and `quit_handler'.
+
+	* flow.c (verify_flow_info, split_hard_reg_notes,
+	find_insn_with_note, sets_reg_or_subreg_1, prepend_reg_notes,
+	remove_edge, remove_fake_successors): Add static prototypes.
+	(verify_flow_info): Wrap with macro ENABLE_CHECKING.
+	(mark_set_1): Initialize variable `regno'.
+	(unlink_insn_chain): Likewise for variable `curr'.
+	(remove_fake_edges): Remove unused variables `e', `tmp' and `last'.
+
+	* loop.c (strength_reduce): Initialize variable
+	`unrolled_insn_copies'.
+	(cmp_combine_givs_stats, cmp_recombine_givs_stats): Add static
+	prototypes.  Change these functions to take const PTR parameters
+	to avoid prototype conflict when used as the comparson argument
+	for qsort.
+	(check_dbra_loop): Initialize variable `comparison_val'.
+
+	* reload.c (debug_reload_to_stream, debug_reload): Add prototypes.
+	(get_secondary_mem): Mark parameter `x' with ATTRIBUTE_UNUSED.
+	(find_valid_class): Initialize variable `best_class'.
+	(find_reloads): Call memcpy, not bcopy.
+
+	* reload1.c (gen_mode_int, dump_needs): Add prototypes.
+	(hard_reg_use_compare): Don't needlessly cast away const.
+	(reload_reg_class_lower): Likewise.
+	(choose_reload_regs): Initialize variable `regno'.
+
 Tue Oct  5 16:34:12 1999  Paul Burchard <burchard@pobox.com>
 
 	* ggc-page.c (GGC_ALWAYS_COLLECT): Fix typo when undef'ing.
