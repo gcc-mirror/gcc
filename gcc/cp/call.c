@@ -3021,9 +3021,7 @@ build_conv (code, type, from)
 	rank = STD_RANK;
       break;
 
-    case LVALUE_CONV:
     case QUAL_CONV:
-    case RVALUE_CONV:
       if (rank < EXACT_RANK)
 	rank = EXACT_RANK;
 
@@ -5649,6 +5647,11 @@ static int
 is_subseq (ics1, ics2)
      tree ics1, ics2;
 {
+  /* Do not consider lvalue transformations here.  */
+  if (TREE_CODE (ics2) == RVALUE_CONV
+      || TREE_CODE (ics2) == LVALUE_CONV)
+    return 0;
+
   for (;; ics2 = TREE_OPERAND (ics2, 0))
     {
       if (TREE_CODE (ics2) == TREE_CODE (ics1)
@@ -6084,10 +6087,10 @@ joust (cand1, cand2)
 	  break;
       if (i == TREE_VEC_LENGTH (cand1->convs))
 	return 1;
-#if 0
+
       /* Kludge around broken overloading rules whereby
-	 bool ? void *const & : void *const & is ambiguous.  */
-      /* Huh?  Explain the problem better.  */
+	 Integer a, b; test ? a : b; is ambiguous, since there's a builtin
+	 that takes references and another that takes values.  */
       if (cand1->fn == ansi_opname[COND_EXPR])
 	{
 	  tree c1 = TREE_VEC_ELT (cand1->convs, 1);
@@ -6103,7 +6106,6 @@ joust (cand1, cand2)
 		return -1;
 	    }
 	}
-#endif
     }
 
 tweak:
