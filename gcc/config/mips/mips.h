@@ -452,6 +452,19 @@ extern void		text_section ();
 #endif
 #endif
 
+/* We must pass -EL to the linker by default for little endian embedded
+   targets using linker scripts with a OUTPUT_FORMAT line.  Otherwise, the
+   linker will default to using big-endian output files.  The OUTPUT_FORMAT
+   line must be in the linker script, otherwise -EB/-EL will not work.  */
+
+#ifndef LINKER_ENDIAN_SPEC
+#if TARGET_ENDIAN_DEFAULT == 0
+#define LINKER_ENDIAN_SPEC "%{!EB:%{!meb:-EL}}"
+#else
+#define LINKER_ENDIAN_SPEC ""
+#endif
+#endif
+
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
    initializer with a subgrouping for each command option.
@@ -740,7 +753,8 @@ while (0)
 #ifndef LINK_SPEC
 #define LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
-%{bestGnum} %{shared} %{non_shared}"
+%{bestGnum} %{shared} %{non_shared} \
+%(linker_endian_spec)"
 #endif	/* LINK_SPEC defined */
 
 /* Specs for the compiler proper */
@@ -823,6 +837,7 @@ while (0)
   { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
   { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
   { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
+  { "linker_endian_spec", LINKER_ENDIAN_SPEC },				\
   SUBTARGET_EXTRA_SPECS
 
 #ifndef SUBTARGET_EXTRA_SPECS
