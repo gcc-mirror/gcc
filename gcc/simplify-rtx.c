@@ -599,10 +599,22 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  /* We don't attempt to optimize this.  */
 	  return 0;
 
-	case ABS:	      d = REAL_VALUE_ABS (d);			break;
-	case NEG:	      d = REAL_VALUE_NEGATE (d);		break;
-	case FLOAT_TRUNCATE:  d = real_value_truncate (mode, d);	break;
-	case FLOAT_EXTEND:    /* All this does is change the mode.  */  break;
+	case ABS:
+	  d = REAL_VALUE_ABS (d);
+	  break;
+	case NEG:
+	  d = REAL_VALUE_NEGATE (d);
+	  break;
+	case FLOAT_TRUNCATE:
+	  d = real_value_truncate (mode, d);
+	  break;
+	case FLOAT_EXTEND:
+	  /* All this does is change the mode.  */
+	  break;
+	case FIX:
+	  real_arithmetic (&d, FIX_TRUNC_EXPR, &d, NULL);
+	  break;
+
 	default:
 	  abort ();
 	}

@@ -174,6 +174,8 @@ static void do_divide PARAMS ((struct real_value *, const struct real_value *,
 			       const struct real_value *));
 static int do_compare PARAMS ((const struct real_value *,
 			       const struct real_value *, int));
+static void do_fix_trunc PARAMS ((struct real_value *,
+				  const struct real_value *));
 
 static const struct real_value * ten_to_ptwo PARAMS ((int));
 static const struct real_value * real_digit PARAMS ((int));
@@ -1013,6 +1015,34 @@ do_compare (a, b, nan_result)
   return (a->sign ? -ret : ret);
 }
 
+/* Return A truncated to an integral value toward zero.  */
+
+void
+do_fix_trunc (r, a)
+     struct real_value *r;
+     const struct real_value *a;
+{
+  *r = *a;
+
+  switch (a->class)
+    {
+    case rvc_zero:
+    case rvc_inf:
+    case rvc_nan:
+      break;
+
+    case rvc_normal:
+      if (r->exp <= 0)
+	get_zero (r, r->sign);
+      else if (r->exp < SIGNIFICAND_BITS)
+	clear_significand_below (r, SIGNIFICAND_BITS - r->exp);
+      break;
+
+    default:
+      abort ();
+    }
+}
+
 /* Perform the binary or unary operation described by CODE.
    For a unary operation, leave OP1 NULL.  */
 
@@ -1071,6 +1101,10 @@ real_arithmetic (tr, icode, top0, top1)
     case ABS_EXPR:
       *r = *op0;
       r->sign = 0;
+      break;
+
+    case FIX_TRUNC_EXPR:
+      do_fix_trunc (r, op0);
       break;
 
     default:
