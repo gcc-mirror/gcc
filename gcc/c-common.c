@@ -21,6 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "real.h"
 #include "flags.h"
@@ -5601,6 +5603,7 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
       int len = strlen (p);
       enum machine_mode mode = VOIDmode;
       tree typefm;
+      tree ptr_type;
 
       if (len > 4 && p[0] == '_' && p[1] == '_'
 	  && p[len - 1] == '_' && p[len - 2] == '_')
@@ -5630,6 +5633,10 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
       else if (0 == (typefm = (*lang_hooks.types.type_for_mode)
 		     (mode, TREE_UNSIGNED (type))))
 	error ("no data type for mode `%s'", p);
+      else if ((TREE_CODE (type) == POINTER_TYPE
+		|| TREE_CODE (type) == REFERENCE_TYPE)
+	       && !(*targetm.valid_pointer_mode) (mode))
+	error ("invalid pointer mode `%s'", p);
       else
 	{
 	  /* If this is a vector, make sure we either have hardware
@@ -5642,6 +5649,19 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
 	      return NULL_TREE;
 	    }
 
+	  if (TREE_CODE (type) == POINTER_TYPE)
+	    {
+	      ptr_type = build_pointer_type_for_mode (TREE_TYPE (type),
+						      mode);
+	      *node = ptr_type;
+	    }
+	  else if (TREE_CODE (type) == REFERENCE_TYPE)
+	    {
+	      ptr_type = build_reference_type_for_mode (TREE_TYPE (type),
+							mode);
+	      *node = ptr_type;
+	    }
+	  else
 	  *node = typefm;
 	  /* No need to layout the type here.  The caller should do this.  */
 	}

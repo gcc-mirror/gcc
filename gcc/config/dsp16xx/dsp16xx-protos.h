@@ -81,7 +81,7 @@ extern void asm_output_float PARAMS ((FILE *, double));
 extern void dsp16xx_file_start PARAMS ((void));
 extern void coff_dsp16xx_file_start PARAMS ((FILE *));
 extern void luxworks_dsp16xx_file_start PARAMS ((FILE *));
-extern struct rtx_def *(*dsp16xx_compare_gen) PARAMS (());
+extern bool dsp16xx_compare_gen;
 extern int hard_regno_mode_ok PARAMS ((int, enum machine_mode));
 extern enum reg_class dsp16xx_reg_class_from_letter PARAMS ((int));
 extern int regno_reg_class PARAMS ((int));

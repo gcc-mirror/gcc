@@ -1,3 +1,7 @@
+2002-11-23  H.J. Lu <hjl@gnu.org>
+
+	* accross.m4: New.
+
 2002-11-10  Stan Shebs  <shebs@apple.com>
 
 	Retire common MPW configury bits.

@@ -1,5 +1,3 @@
-// excess errors test - XFAIL
-// covariant return types in are currently not support for complex inheritance
 #include <stdio.h>
 
 class A {

@@ -14,7 +14,9 @@ LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/include \
 	-I$(srcdir)/../winsup/cygwin/include \
 	-I$(srcdir)/../winsup/w32api/include
 
-winnt.o: $(srcdir)/config/i386/winnt.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_P_H)
+winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
+  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c
 
 # Don't run fixproto

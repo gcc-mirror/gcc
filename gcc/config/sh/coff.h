@@ -50,10 +50,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
   sprintf ((STRING), "*%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
 
-/* Output an internal label definition.  */
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM) \
-  asm_fprintf ((FILE), "%L%s%d:\n", (PREFIX), (NUM))
-
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
 

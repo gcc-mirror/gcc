@@ -42,20 +42,10 @@
 
    */
 
-/* Undefine IN_GCC so malloc etc work. The alternative is to redefine
-   the out of stack routine in bison.  */
-#undef IN_GCC
-/* Front ends should not have to see these, but config.h needs everything.  */
-typedef void *tree;
-typedef void *rtx;
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "ansidecl.h"
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "diagnostic.h"
 
 #include "treelang.h"

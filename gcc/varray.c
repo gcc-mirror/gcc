@@ -22,6 +22,8 @@
 #include "config.h"
 #include "errors.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "varray.h"
 #include "ggc.h"
 

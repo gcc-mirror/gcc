@@ -135,6 +135,12 @@ enum optab_index
   OTI_exp,
   /* Natural Logarithm */
   OTI_log,
+  /* Rounding functions */
+  OTI_floor,
+  OTI_ceil,
+  OTI_trunc,
+  OTI_round,
+  OTI_nearbyint,
 
   /* Compare insn; two operands.  */
   OTI_cmp,
@@ -204,6 +210,11 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define cos_optab (optab_table[OTI_cos])
 #define exp_optab (optab_table[OTI_exp])
 #define log_optab (optab_table[OTI_log])
+#define floor_optab (optab_table[OTI_floor])
+#define ceil_optab (optab_table[OTI_ceil])
+#define trunc_optab (optab_table[OTI_trunc])
+#define round_optab (optab_table[OTI_round])
+#define nearbyint_optab (optab_table[OTI_nearbyint])
 
 #define cmp_optab (optab_table[OTI_cmp])
 #define ucmp_optab (optab_table[OTI_ucmp])

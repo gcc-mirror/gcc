@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -366,9 +366,15 @@
 /* Define as the number of bits in a byte, if `limits.h' doesn't. */
 #undef CHAR_BIT
 
+/* whether byteorder is bigendian */
+#undef WORDS_BIGENDIAN
+
 /* Define if the host machine stores words of multi-word integers in
    big-endian order. */
 #undef HOST_WORDS_BIG_ENDIAN
+
+/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
+#undef BYTEORDER
 
 /* Define to the floating point format of the host machine, if not IEEE. */
 #undef HOST_FLOAT_FORMAT
@@ -492,6 +498,15 @@
 /* Define if host mkdir takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
 
+/* Define 0/1 to force the choice for exception handling model. */
+#undef CONFIG_SJLJ_EXCEPTIONS
+
+/* Define if gcc should use -lunwind. */
+#undef USE_LIBUNWIND_EXCEPTIONS
+
+/* Define to 1 if HOST_WIDE_INT must be 64 bits wide (see hwint.h). */
+#undef NEED_64BIT_HOST_WIDE_INT
+
 /* Define to the name of a file containing a list of extra machine modes
    for this architecture. */
 #undef EXTRA_MODES_FILE
@@ -595,12 +610,6 @@
 
 /* Define if your MIPS libgloss linker scripts consistently include STARTUP directives. */
 #undef HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES
-
-/* Define 0/1 to force the choice for exception handling model. */
-#undef CONFIG_SJLJ_EXCEPTIONS
-
-/* Define if gcc should use -lunwind. */
-#undef USE_LIBUNWIND_EXCEPTIONS
 
 
 /* Bison unconditionally undefines `const' if neither `__STDC__' nor

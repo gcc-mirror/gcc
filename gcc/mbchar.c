@@ -32,6 +32,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #ifdef MULTIBYTE_CHARS
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "mbchar.h"
 #include <locale.h>
 

@@ -100,8 +100,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ATTR_PERMANENT_P(RTX) (RTX_FLAG((RTX), integrated))
 #define ATTR_EQ_ATTR_P(RTX) (RTX_FLAG((RTX), volatil))
 
-#include "hconfig.h"
+#include "bconfig.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "ggc.h"
 #include "gensupport.h"
@@ -2562,11 +2564,10 @@ simplify_cond (exp, insn_code, insn_index)
   int len = XVECLEN (exp, 0);
   rtx *tests = (rtx *) xmalloc (len * sizeof (rtx));
   int allsame = 1;
-  char *first_spacer;
   rtx ret;
 
   /* This lets us free all storage allocated below, if appropriate.  */
-  first_spacer = (char *) obstack_finish (rtl_obstack);
+  obstack_finish (rtl_obstack);
 
   memcpy (tests, XVEC (exp, 0)->elem, len * sizeof (rtx));
 
@@ -6169,6 +6170,8 @@ from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
+  printf ("#include \"coretypes.h\"\n");
+  printf ("#include \"tm.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"tm_p.h\"\n");
   printf ("#include \"insn-config.h\"\n");

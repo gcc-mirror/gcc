@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "toplev.h"
 
 /* Include insn-config.h before expr.h so that HAVE_conditional_move
@@ -2514,6 +2516,39 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       return target;
     }
 
+  /* Try negating floating point values by flipping the sign bit.  */
+  if (unoptab->code == NEG && class == MODE_FLOAT
+      && GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
+    {
+      const struct real_format *fmt = real_format_for_mode[mode - QFmode];
+      enum machine_mode imode = int_mode_for_mode (mode);
+      int bitpos = (fmt != 0) ? fmt->signbit : -1;
+
+      if (imode != BLKmode && bitpos >= 0 && fmt->has_signed_zero)
+	{
+	  HOST_WIDE_INT hi, lo;
+	  rtx last = get_last_insn ();
+
+	  if (bitpos < HOST_BITS_PER_WIDE_INT)
+	    {
+	      hi = 0;
+	      lo = (HOST_WIDE_INT) 1 << bitpos;
+	    }
+	  else
+	    {
+	      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
+	      lo = 0;
+	    }
+	  temp = expand_binop (imode, xor_optab,
+			       gen_lowpart (imode, op0),
+			       immed_double_const (lo, hi, imode),
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	  if (temp != 0)
+	    return gen_lowpart (mode, temp);
+	  delete_insns_since (last);
+        }
+    }
+
   /* Now try a library call in this mode.  */
   if (unoptab->handlers[(int) mode].libfunc)
     {
@@ -2625,6 +2660,39 @@ expand_abs (mode, op0, target, result_unsignedp, safe)
                       op0, target, 0);
   if (temp != 0)
     return temp;
+
+  /* For floating point modes, try clearing the sign bit.  */
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_MODE_BITSIZE (mode) <= 2 * HOST_BITS_PER_WIDE_INT)
+    {
+      const struct real_format *fmt = real_format_for_mode[mode - QFmode];
+      enum machine_mode imode = int_mode_for_mode (mode);
+      int bitpos = (fmt != 0) ? fmt->signbit : -1;
+
+      if (imode != BLKmode && bitpos >= 0)
+	{
+	  HOST_WIDE_INT hi, lo;
+	  rtx last = get_last_insn ();
+
+	  if (bitpos < HOST_BITS_PER_WIDE_INT)
+	    {
+	      hi = 0;
+	      lo = (HOST_WIDE_INT) 1 << bitpos;
+	    }
+	  else
+	    {
+	      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
+	      lo = 0;
+	    }
+	  temp = expand_binop (imode, and_optab,
+			       gen_lowpart (imode, op0),
+			       immed_double_const (~lo, ~hi, imode),
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	  if (temp != 0)
+	    return gen_lowpart (mode, temp);
+	  delete_insns_since (last);
+	}
+    }
 
   /* If we have a MAX insn, we can do this as MAX (x, -x).  */
   if (smax_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
@@ -5164,6 +5232,11 @@ init_optabs ()
   one_cmpl_optab = init_optab (NOT);
   ffs_optab = init_optab (FFS);
   sqrt_optab = init_optab (SQRT);
+  floor_optab = init_optab (UNKNOWN);
+  ceil_optab = init_optab (UNKNOWN);
+  round_optab = init_optab (UNKNOWN);
+  trunc_optab = init_optab (UNKNOWN);
+  nearbyint_optab = init_optab (UNKNOWN);
   sin_optab = init_optab (UNKNOWN);
   cos_optab = init_optab (UNKNOWN);
   exp_optab = init_optab (UNKNOWN);

@@ -42,7 +42,6 @@ extern unsigned int  arm_compute_initial_elimination_offset PARAMS ((unsigned in
 #ifdef TREE_CODE
 extern int    arm_return_in_memory	PARAMS ((tree));
 extern void   arm_encode_call_attribute	PARAMS ((tree, int));
-extern int    arm_function_ok_for_sibcall PARAMS ((tree));
 #endif
 #ifdef RTX_CODE
 extern int    arm_hard_regno_mode_ok	PARAMS ((unsigned int,

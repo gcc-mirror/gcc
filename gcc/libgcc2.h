@@ -27,19 +27,6 @@ extern void __clear_cache (char *, char *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));
 
-struct bb;
-extern void __bb_exit_func (void);
-extern void __bb_init_func (struct bb *);
-extern void __bb_fork_func (void);
-
-#if LONG_TYPE_SIZE == GCOV_TYPE_SIZE
-typedef long gcov_type;
-#else
-typedef long long gcov_type;
-#endif
-
-extern gcov_type *__bb_find_arc_counters (void);
-
 struct exception_descriptor;
 extern short int __get_eh_table_language (struct exception_descriptor *);
 extern short int __get_eh_table_version (struct exception_descriptor *);

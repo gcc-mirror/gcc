@@ -44,6 +44,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "flags.h"
 #include "tree.h"
 #include "real.h"
@@ -5081,6 +5083,18 @@ fold (expr)
 	}
       else if (TREE_CODE (arg0) == ABS_EXPR || TREE_CODE (arg0) == NEGATE_EXPR)
 	return build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0));
+      else
+	{
+	  /* fabs(sqrt(x)) = sqrt(x) and fabs(exp(x)) = exp(x).  */
+	  enum built_in_function fcode = builtin_mathfn_code (arg0);
+	  if (fcode == BUILT_IN_SQRT
+	      || fcode == BUILT_IN_SQRTF
+	      || fcode == BUILT_IN_SQRTL
+	      || fcode == BUILT_IN_EXP
+	      || fcode == BUILT_IN_EXPF
+	      || fcode == BUILT_IN_EXPL)
+	    t = arg0;
+	}
       return t;
 
     case CONJ_EXPR:
@@ -5521,6 +5535,38 @@ fold (expr)
 	      tree arg = save_expr (arg0);
 	      return build (PLUS_EXPR, type, arg, arg);
 	    }
+
+	  if (flag_unsafe_math_optimizations)
+	    {
+	      enum built_in_function fcode0 = builtin_mathfn_code (arg0);
+	      enum built_in_function fcode1 = builtin_mathfn_code (arg1);
+
+	      /* Optimize sqrt(x)*sqrt(y) as sqrt(x*y).  */
+	      if ((fcode0 == BUILT_IN_SQRT && fcode1 == BUILT_IN_SQRT)
+		  || (fcode0 == BUILT_IN_SQRTF && fcode1 == BUILT_IN_SQRTF)
+		  || (fcode0 == BUILT_IN_SQRTL && fcode1 == BUILT_IN_SQRTL))
+		{
+		  tree sqrtfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+		  tree arg = build (MULT_EXPR, type,
+				    TREE_VALUE (TREE_OPERAND (arg0, 1)),
+				    TREE_VALUE (TREE_OPERAND (arg1, 1)));
+		  tree arglist = build_tree_list (NULL_TREE, arg);
+		  return fold (build_function_call_expr (sqrtfn, arglist));
+		}
+
+	      /* Optimize exp(x)*exp(y) as exp(x+y).  */
+	      if ((fcode0 == BUILT_IN_EXP && fcode1 == BUILT_IN_EXP)
+		  || (fcode0 == BUILT_IN_EXPF && fcode1 == BUILT_IN_EXPF)
+		  || (fcode0 == BUILT_IN_EXPL && fcode1 == BUILT_IN_EXPL))
+		{
+		  tree expfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+		  tree arg = build (PLUS_EXPR, type,
+				    TREE_VALUE (TREE_OPERAND (arg0, 1)),
+				    TREE_VALUE (TREE_OPERAND (arg1, 1)));
+		  tree arglist = build_tree_list (NULL_TREE, arg);
+		  return fold (build_function_call_expr (expfn, arglist));
+		}
+	    }
 	}
       goto associate;
 
@@ -5689,6 +5735,23 @@ fold (expr)
 			     	     TREE_OPERAND (arg1, 0)),
 	 		      TREE_OPERAND (arg1, 1)));
 	}
+
+      /* Optimize x/exp(y) into x*exp(-y).  */
+      if (flag_unsafe_math_optimizations)
+	{
+	  enum built_in_function fcode = builtin_mathfn_code (arg1);
+	  if (fcode == BUILT_IN_EXP
+	      || fcode == BUILT_IN_EXPF
+	      || fcode == BUILT_IN_EXPL)
+	    {
+	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
+	      tree arg = build1 (NEGATE_EXPR, type,
+				 TREE_VALUE (TREE_OPERAND (arg1, 1)));
+	      tree arglist = build_tree_list (NULL_TREE, arg);
+	      arg1 = build_function_call_expr (expfn, arglist);
+	      return fold (build (MULT_EXPR, type, arg0, arg1));
+	    }
+	}
       goto binary;
 
     case TRUNC_DIV_EXPR:
@@ -5734,12 +5797,25 @@ fold (expr)
 
       goto binary;
 
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
+      if (integer_all_onesp (arg0))
+	return omit_one_operand (type, arg0, arg1);
+      goto shift;
+
+    case RSHIFT_EXPR:
+      /* Optimize -1 >> x for arithmetic right shifts.  */
+      if (integer_all_onesp (arg0) && ! TREE_UNSIGNED (type))
+	return omit_one_operand (type, arg0, arg1);
+      /* ... fall through ...  */
+
+    case LSHIFT_EXPR:
+    shift:
       if (integer_zerop (arg1))
 	return non_lvalue (convert (type, arg0));
+      if (integer_zerop (arg0))
+	return omit_one_operand (type, arg0, arg1);
+
       /* Since negative shift count is not well-defined,
 	 don't try to compute it in the compiler.  */
       if (TREE_CODE (arg1) == INTEGER_CST && tree_int_cst_sgn (arg1) < 0)

@@ -70,7 +70,7 @@
   ""
   "
 {
-  dsp16xx_compare_gen = gen_tst_reg;
+  dsp16xx_compare_gen = false;
   dsp16xx_compare_op0 = operands[0];
   dsp16xx_compare_op1 = const0_rtx;
   DONE;
@@ -89,7 +89,7 @@
   ""
   "
 {
-  dsp16xx_compare_gen = gen_tst_reg;
+  dsp16xx_compare_gen = false;
   dsp16xx_compare_op0 = operands[0];
   dsp16xx_compare_op1 = const0_rtx;
   DONE;
@@ -181,7 +181,7 @@
   if (GET_CODE (operands[1]) == CONST_INT)
     operands[1] = force_reg (HImode, operands[1]);
 
-  dsp16xx_compare_gen = gen_compare_reg;
+  dsp16xx_compare_gen = true;
   dsp16xx_compare_op0 = operands[0];
   dsp16xx_compare_op1 = operands[1];
   DONE;
@@ -266,7 +266,7 @@
  {
   if (operands[0])	/* Avoid unused code warning */
     {
-      dsp16xx_compare_gen = gen_compare_reg;
+      dsp16xx_compare_gen = true;
       dsp16xx_compare_op0 = operands[0];
       dsp16xx_compare_op1 = operands[1];
       DONE;
@@ -433,7 +433,7 @@
   if (!dsp16xx_cmphf3_libcall)
     dsp16xx_cmphf3_libcall = gen_rtx_SYMBOL_REF (Pmode, CMPHF3_LIBCALL);
 
-   dsp16xx_compare_gen = gen_compare_reg;
+   dsp16xx_compare_gen = true;
    dsp16xx_compare_op0 = operands[0];
    dsp16xx_compare_op1 = operands[1];
    emit_library_call (dsp16xx_cmphf3_libcall, 1, HImode, 2,
@@ -2397,10 +2397,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(EQ, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (EQ, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 (define_expand "sne"
@@ -2409,10 +2409,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(NE, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (NE, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2422,10 +2422,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(GT, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (GT, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2435,10 +2435,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(LT, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (LT, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 (define_expand "sge"
@@ -2447,10 +2447,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(GE, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (GE, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2460,10 +2460,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(LE, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (LE, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2473,10 +2473,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(GTU, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (GTU, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2486,10 +2486,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(LTU, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (LTU, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2499,10 +2499,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(GEU, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (GEU, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2512,10 +2512,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(LEU, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (LEU, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2539,10 +2539,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(EQ, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (EQ, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 (define_expand "bne"
@@ -2554,10 +2554,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(NE, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (NE, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2570,10 +2570,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(GT, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (GT, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2586,10 +2586,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(GE, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (GE, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2602,10 +2602,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(LT, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (LT, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2618,10 +2618,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(LE, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (LE, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2634,10 +2634,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(GTU, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (GTU, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2650,10 +2650,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(GEU, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (GEU, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2666,10 +2666,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(LTU, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (LTU, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 
@@ -2682,10 +2682,10 @@
   ""
   "
 { 
-   if (dsp16xx_compare_gen == gen_compare_reg)
-     operands[1] = (*dsp16xx_compare_gen)(LEU, dsp16xx_compare_op0, dsp16xx_compare_op1);
+   if (dsp16xx_compare_gen)
+     operands[1] = gen_compare_reg (LEU, dsp16xx_compare_op0, dsp16xx_compare_op1);
    else
-     operands[1] = (*dsp16xx_compare_gen)(dsp16xx_compare_op0);
+     operands[1] = gen_tst_reg (dsp16xx_compare_op0);
 }")
 
 

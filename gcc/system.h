@@ -567,6 +567,13 @@ typedef char _Bool;
 #define really_call_calloc calloc
 #define really_call_realloc realloc
 
+#if defined(FLEX_SCANNER) || defined(YYBISON)
+/* Flex and bison use malloc and realloc.  Yuk.  Note that this means
+   really_call_* cannot be used in a .l or .y file. */
+#define malloc xmalloc
+#define realloc xrealloc
+#endif
+
 #if (GCC_VERSION >= 3000)
 
 /* Note autoconf checks for prototype declarations and includes
@@ -578,11 +585,7 @@ typedef char _Bool;
 #undef strdup
  #pragma GCC poison calloc strdup
 
-#if defined(FLEX_SCANNER) || defined (YYBISON)
-/* Flex and bison use malloc and realloc.  Yuk.  */
-#define malloc xmalloc
-#define realloc xrealloc
-#else
+#if !defined(FLEX_SCANNER) && !defined(YYBISON)
 #undef malloc
 #undef realloc
  #pragma GCC poison malloc realloc
@@ -617,7 +620,7 @@ typedef char _Bool;
 	BLOCK_PROFILER BLOCK_PROFILER_CODE FUNCTION_BLOCK_PROFILER	   \
 	FUNCTION_BLOCK_PROFILER_EXIT MACHINE_STATE_SAVE			   \
 	MACHINE_STATE_RESTORE SCCS_DIRECTIVE SECTION_ASM_OP		   \
-	ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+	ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL ASM_OUTPUT_INTERNAL_LABEL
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\

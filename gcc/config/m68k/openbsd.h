@@ -38,7 +38,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* m68k as needs to know about the processor subtype.  */
 #undef ASM_SPEC
-#define ASM_SPEC "%| %{m68030} %{m68040} %{m68060} %{fpic:-k} %{fPIC:-k -K}"
+#define ASM_SPEC "%{m68030} %{m68040} %{m68060} %{fpic:-k} %{fPIC:-k -K}"
+
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
 
 /* Layout of source language data types.  */
 

@@ -462,16 +462,6 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 }
 
 static inline int
-__gthread_key_dtor (__gthread_key_t key, void *ptr)
-{
-  /* Just reset the key value to zero.  */
-  if (ptr)
-    return pthread_setspecific (key, 0);
-  else
-    return 0;
-}
-
-static inline int
 __gthread_key_delete (__gthread_key_t key)
 {
   return pthread_key_delete (key);

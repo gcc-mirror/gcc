@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "toplev.h"
 #include "rtl.h"
 #include "tree.h"
@@ -658,8 +660,7 @@ maybe_set_unchanging (ref, t)
      first case, and decls with TREE_CONSTANT initializers in the second.  */
   if ((TREE_READONLY (t) && DECL_P (t)
        && (TREE_CODE (t) == PARM_DECL
-	   || DECL_INITIAL (t) == NULL_TREE
-	   || TREE_CONSTANT (DECL_INITIAL (t))))
+	   || (DECL_INITIAL (t) && TREE_CONSTANT (DECL_INITIAL (t)))))
       || TREE_CODE_CLASS (TREE_CODE (t)) == 'c')
     RTX_UNCHANGING_P (ref) = 1;
 }

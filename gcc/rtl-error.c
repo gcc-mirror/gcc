@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 #undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "insn-attr.h"
 #include "insn-config.h"

@@ -1604,16 +1604,6 @@ do {                                                                    \
   assemble_name (FILE, NAME); \
   fputs ("\n", FILE);}
 
-
-
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
-
 /* How to refer to registers in assembler output.  This sequence is indexed
    by compiler's hard-register-number (see above).  */
 #define REGISTER_NAMES						\

@@ -890,8 +890,29 @@ forward to maintain the port.
 
 Some options which only apply to building cross compilers:
 @table @code
+@item --with-sysroot
+@itemx --with-sysroot=@var{dir}
+Tells GCC to consider @var{dir} as the root of a tree that contains a
+(subset of) the root filesystem of the target operating system.
+Target system headers, libraries and run-time object files will be
+searched in there.  The specified directory is not copied into the
+install tree, unlike the options @option{--with-headers} and
+@option{--with-libs} that this option obsoletes.  The default value,
+in case @option{--with-sysroot} is not given an argument, is
+@option{$@{gcc_tooldir@}/sys-root}.  Starting the pathname with
+@option{$@{gcc_tooldir@}/}, in such a way that this variable is not
+expanded by the shell, but rather by the gcc Makefile, enables the
+target sysroot directory to be relocatable along with the entire
+install tree, but it will require the gcc tool directory to be created
+@emph{before} the build is started.  This directory, as well as its
+intermediate pathnames, can be easily created by running @command{make
+install-gcc-tooldir} the gcc build directory.  This is not done
+automatically to avoid touching the install tree without explicit
+permission.
+
 @item --with-headers
 @itemx --with-headers=@var{dir}
+Deprecated in favor of @option{--with-sysroot}.
 Specifies that target headers are available when building a cross compiler.
 The @var{dir} argument specifies a directory which has the target include
 files.  These include files will be copied into the @file{gcc} install
@@ -902,6 +923,7 @@ pre-exist, the @var{dir} argument may be omitted.  @command{fixincludes}
 will be run on these files to make them compatible with GCC.
 @item --with-libs
 @itemx --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
+Deprecated in favor of @option{--with-sysroot}.
 Specifies a list of directories which contain the target runtime
 libraries.  These libraries will be copied into the @file{gcc} install
 directory.  If the directory list is omitted, this option has no
@@ -1701,6 +1723,8 @@ GNU Compiler Collection on your machine.
 @uref{#*-*-sysv*,,*-*-sysv*}
 @item
 @uref{#vax-dec-ultrix,,vax-dec-ultrix}
+@item
+@uref{#*-*-vxworks*,,*-*-vxworks*}
 @item
 @uref{#xtensa-*-elf,,xtensa-*-elf}
 @item
@@ -3204,6 +3228,41 @@ On a System V release 4 system, make sure @file{/usr/bin} precedes
 @heading @anchor{vax-dec-ultrix}vax-dec-ultrix
 Don't try compiling with VAX C (@code{vcc}).  It produces incorrect code
 in some cases (for example, when @code{alloca} is used).
+
+@html
+<hr />
+@end html
+@heading @anchor{*-*-vxworks*}*-*-vxworks*
+Support for VxWorks is in flux.  At present GCC supports @emph{only} the
+very recent VxWorks 5.5 (aka Tornado 2.2) release, and only on PowerPC.
+We welcome patches for other architectures supported by VxWorks 5.5.
+Support for VxWorks AE would also be welcome; we believe this is merely
+a matter of writing an appropriate ``configlette'' (see below).  We are
+not interested in supporting older, a.out or COFF-based, versions of
+VxWorks in GCC 3.
+
+VxWorks comes with an older version of GCC installed in
+@file{@var{$WIND_BASE}/host}; we recommend you do not overwrite it.
+Choose an installation @var{prefix} entirely outside @var{$WIND_BASE}.
+Before running @command{configure}, create the directories @file{@var{prefix}}
+and @file{@var{prefix}/bin}.  Link or copy the appropriate assembler,
+linker, etc. into @file{@var{prefix}/bin}, and set your @var{PATH} to
+include that directory while running both @command{configure} and
+@command{make}.
+
+You must give @command{configure} the
+@option{--with-headers=@var{$WIND_BASE}/target/h} switch so that it can
+find the VxWorks system headers.  Since VxWorks is a cross compilation
+target only, you must also specify @option{--target=@var{target}}.
+@command{configure} will attempt to create the directory
+@file{@var{prefix}/@var{target}/sys-include} and copy files into it;
+make sure the user running @command{configure} has sufficient privilege
+to do so.
+
+GCC's exception handling runtime requires a special ``configlette''
+module, @file{contrib/gthr_supp_vxw_5x.c}.  Follow the instructions in
+that file to add the module to your kernel build.  (Future versions of
+VxWorks will incorporate this module.)  
 
 @html
 <hr />

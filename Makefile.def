@@ -1,6 +1,8 @@
 #! /usr/bin/autogen
 AutoGen definitions Makefile.tpl;
 
+build_modules= { module= libiberty; };
+
 host_modules= { module= ash; };
 host_modules= { module= autoconf; };
 host_modules= { module= automake; };
@@ -61,8 +63,15 @@ host_modules= { module= uudecode; };
 host_modules= { module= wdiff; };
 host_modules= { module= zip; no_check_cross=true; };
 host_modules= { module= zlib; no_install=true; no_check=true; };
+host_modules= { module= gdb; with_x=true; };
+host_modules= { module= expect; with_x=true; };
+host_modules= { module= guile; with_x=true; };
+host_modules= { module= tk; with_x=true; };
+host_modules= { module= tix; with_x=true; };
+host_modules= { module= libtermcap; no_check=true; no_clean=true; };
+host_modules= { module= utils; no_check=true; };
 
-target_modules = { module= libstdc++-v3; };
+target_modules = { module= libstdc++-v3; raw_cxx=true; };
 target_modules = { module= newlib; };
 target_modules = { module= libf2c; };
 target_modules = { module= libobjc; };
@@ -73,8 +82,20 @@ target_modules = { module= libiberty; };
 target_modules = { module= gperf; };
 target_modules = { module= examples; no_check=true; no_install=true; };
 target_modules = { module= libffi; no_install=true; };
-target_modules = { module= libjava; };
+target_modules = { module= libjava; raw_cxx=true; };
 target_modules = { module= zlib; };
 target_modules = { module= boehm-gc; };
 target_modules = { module= qthreads; };
 target_modules = { module= rda; };
+
+// These are (some of) the targets to be done in each subdirectory.
+// Not all; these are the ones which don't have special options.
+recursive_targets = { target= clean; };
+recursive_targets = { target= distclean; };
+recursive_targets = { target= dvi; };
+recursive_targets = { target= info; };
+recursive_targets = { target= install-info; };
+recursive_targets = { target= installcheck; };
+recursive_targets = { target= mostlyclean; };
+recursive_targets = { target= maintainer-clean; };
+recursive_targets = { target= TAGS; };

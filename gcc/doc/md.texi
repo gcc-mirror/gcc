@@ -2662,6 +2662,51 @@ corresponds to the C data type @code{double} and the @code{logf}
 built-in function uses the mode which corresponds to the C data
 type @code{float}.
 
+@cindex @code{floor@var{m}2} instruction pattern
+@item @samp{floor@var{m}2}
+Store the largest integral value not greater than argument.
+
+The @code{floor} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{floorf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{trunc@var{m}2} instruction pattern
+@item @samp{trunc@var{m}2}
+Store the argument rounded to integer towards zero.
+
+The @code{trunc} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{truncf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{round@var{m}2} instruction pattern
+@item @samp{round@var{m}2}
+Store the argument rounded to integer away from zero.
+
+The @code{round} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{roundf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{ceil@var{m}2} instruction pattern
+@item @samp{ceil@var{m}2}
+Store the argument rounded to integer away from zero.
+
+The @code{ceil} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{ceilf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{nearbyint@var{m}2} instruction pattern
+@item @samp{nearbyint@var{m}2}
+Store the argument rounded according to the default rounding mode
+
+The @code{nearbyint} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{nearbyintf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
 @cindex @code{ffs@var{m}2} instruction pattern
 @item @samp{ffs@var{m}2}
 Store into operand 0 one plus the index of the least significant 1-bit

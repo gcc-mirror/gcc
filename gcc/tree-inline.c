@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "toplev.h"
 #include "tree.h"
 #include "tree-inline.h"
@@ -88,8 +90,6 @@ typedef struct inline_data
   /* Nonzero if we are currently within the cleanup for a
      TARGET_EXPR.  */
   int in_target_cleanup_p;
-  /* A stack of the TARGET_EXPRs that we are currently processing.  */
-  varray_type target_exprs;
   /* A list of the functions current function has inlined.  */
   varray_type inlined_fns;
   /* The approximate number of statements we have inlined in the
@@ -107,7 +107,7 @@ typedef struct inline_data
 
 /* Prototypes.  */
 
-static tree declare_return_variable PARAMS ((inline_data *, tree *));
+static tree declare_return_variable PARAMS ((inline_data *, tree, tree *));
 static tree copy_body_r PARAMS ((tree *, int *, void *));
 static tree copy_body PARAMS ((inline_data *));
 static tree expand_call_inline PARAMS ((tree *, int *, void *));
@@ -789,13 +789,15 @@ initialize_inlined_parameters (id, args, fn, block)
 
 #ifndef INLINER_FOR_JAVA
 static tree
-declare_return_variable (id, use_stmt)
+declare_return_variable (id, return_slot_addr, use_stmt)
      struct inline_data *id;
+     tree return_slot_addr;
      tree *use_stmt;
 #else /* INLINER_FOR_JAVA */
 static tree
-declare_return_variable (id, var)
+declare_return_variable (id, return_slot_addr, var)
      struct inline_data *id;
+     tree return_slot_addr;
      tree *var;
 #endif /* INLINER_FOR_JAVA */
 {
@@ -821,7 +823,7 @@ declare_return_variable (id, var)
 #ifndef INLINER_FOR_JAVA
   var = ((*lang_hooks.tree_inlining.copy_res_decl_for_inlining)
 	 (result, fn, VARRAY_TREE (id->fns, 0), id->decl_map,
-	  &need_return_decl, &id->target_exprs));
+	  &need_return_decl, return_slot_addr));
 
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
      way, when the RESULT_DECL is encountered, it will be
@@ -847,7 +849,7 @@ declare_return_variable (id, var)
 #else /* INLINER_FOR_JAVA */
   *var = ((*lang_hooks.tree_inlining.copy_res_decl_for_inlining)
 	 (result, fn, VARRAY_TREE (id->fns, 0), id->decl_map,
-	  &need_return_decl, NULL_TREE));
+	  &need_return_decl, return_slot_addr));
 
   splay_tree_insert (id->decl_map,
 		     (splay_tree_key) result,
@@ -1035,6 +1037,8 @@ expand_call_inline (tp, walk_subtrees, data)
   tree arg_inits;
   tree *inlined_body;
   splay_tree st;
+  tree args;
+  tree return_slot_addr;
 
   /* See what we've got.  */
   id = (inline_data *) data;
@@ -1050,9 +1054,6 @@ expand_call_inline (tp, walk_subtrees, data)
       /* We're walking our own subtrees.  */
       *walk_subtrees = 0;
 
-      /* Push *TP on the stack of pending TARGET_EXPRs.  */
-      VARRAY_PUSH_TREE (id->target_exprs, *tp);
-
       /* Actually walk over them.  This loop is the body of
 	 walk_trees, omitting the case where the TARGET_EXPR
 	 itself is handled.  */
@@ -1065,9 +1066,6 @@ expand_call_inline (tp, walk_subtrees, data)
 	  if (i == 2)
 	    --id->in_target_cleanup_p;
 	}
-
-      /* We're done with this TARGET_EXPR now.  */
-      VARRAY_POP (id->target_exprs);
 
       return NULL_TREE;
 #else /* INLINER_FOR_JAVA */
@@ -1144,8 +1142,16 @@ expand_call_inline (tp, walk_subtrees, data)
 				 NULL, NULL);
 
   /* Initialize the parameters.  */
+  args = TREE_OPERAND (t, 1);
+  return_slot_addr = NULL_TREE;
+  if (CALL_EXPR_HAS_RETURN_SLOT_ADDR (t))
+    {
+      return_slot_addr = TREE_VALUE (args);
+      args = TREE_CHAIN (args);
+    }
+
 #ifndef INLINER_FOR_JAVA
-  arg_inits = initialize_inlined_parameters (id, TREE_OPERAND (t, 1), fn);
+  arg_inits = initialize_inlined_parameters (id, args, fn);
   /* Expand any inlined calls in the initializers.  Do this before we
      push FN on the stack of functions we are inlining; we want to
      inline calls to FN that appear in the initializers for the
@@ -1154,7 +1160,7 @@ expand_call_inline (tp, walk_subtrees, data)
   /* And add them to the tree.  */
   COMPOUND_BODY (stmt) = chainon (COMPOUND_BODY (stmt), arg_inits);
 #else /* INLINER_FOR_JAVA */
-  arg_inits = initialize_inlined_parameters (id, TREE_OPERAND (t, 1), fn, expr);
+  arg_inits = initialize_inlined_parameters (id, args, fn, expr);
   if (arg_inits)
     {
       /* Expand any inlined calls in the initializers.  Do this before we
@@ -1215,11 +1221,11 @@ expand_call_inline (tp, walk_subtrees, data)
   /* Declare the return variable for the function.  */
   COMPOUND_BODY (stmt)
     = chainon (COMPOUND_BODY (stmt),
-	       declare_return_variable (id, &use_stmt));
+	       declare_return_variable (id, return_slot_addr, &use_stmt));
 #else /* INLINER_FOR_JAVA */
   {
     /* Declare the return variable for the function.  */
-    tree decl = declare_return_variable (id, &retvar);
+    tree decl = declare_return_variable (id, return_slot_addr, &retvar);
     if (retvar)
       {
 	tree *next = &BLOCK_VARS (expr);
@@ -1386,9 +1392,6 @@ optimize_inline_calls (fn)
 
   prev_fn = ((*lang_hooks.tree_inlining.add_pending_fn_decls)
 	     (&id.fns, prev_fn));
-
-  /* Create the stack of TARGET_EXPRs.  */
-  VARRAY_TREE_INIT (id.target_exprs, 32, "target_exprs");
 
   /* Create the list of functions this call will inline.  */
   VARRAY_TREE_INIT (id.inlined_fns, 32, "inlined_fns");

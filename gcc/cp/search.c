@@ -25,6 +25,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "obstack.h"
@@ -97,7 +99,6 @@ static tree dfs_push_type_decls PARAMS ((tree, void *));
 static tree dfs_push_decls PARAMS ((tree, void *));
 static tree dfs_unuse_fields PARAMS ((tree, void *));
 static tree add_conversions PARAMS ((tree, void *));
-static int covariant_return_p PARAMS ((tree, tree));
 static int look_for_overrides_r PARAMS ((tree, tree));
 static struct search_level *push_search_level
 	PARAMS ((struct stack_level *, struct obstack *));
@@ -1850,58 +1851,6 @@ dfs_walk (binfo, fn, qfn, data)
   return dfs_walk_real (binfo, 0, fn, qfn, data);
 }
 
-/* Returns > 0 if a function with type DRETTYPE overriding a function
-   with type BRETTYPE is covariant, as defined in [class.virtual].
-
-   Returns 1 if trivial covariance, 2 if non-trivial (requiring runtime
-   adjustment), or -1 if pedantically invalid covariance.  */
-
-static int
-covariant_return_p (brettype, drettype)
-     tree brettype, drettype;
-{
-  tree binfo;
-  base_kind kind;
-
-  if (TREE_CODE (brettype) == FUNCTION_DECL)
-    {
-      brettype = TREE_TYPE (TREE_TYPE (brettype));
-      drettype = TREE_TYPE (TREE_TYPE (drettype));
-    }
-  else if (TREE_CODE (brettype) == METHOD_TYPE)
-    {
-      brettype = TREE_TYPE (brettype);
-      drettype = TREE_TYPE (drettype);
-    }
-
-  if (same_type_p (brettype, drettype))
-    return 0;
-
-  if (! (TREE_CODE (brettype) == TREE_CODE (drettype)
-	 && (TREE_CODE (brettype) == POINTER_TYPE
-	     || TREE_CODE (brettype) == REFERENCE_TYPE)
-	 && TYPE_QUALS (brettype) == TYPE_QUALS (drettype)))
-    return 0;
-
-  if (! can_convert (brettype, drettype))
-    return 0;
-
-  brettype = TREE_TYPE (brettype);
-  drettype = TREE_TYPE (drettype);
-
-  /* If not pedantic, allow any standard pointer conversion.  */
-  if (! IS_AGGR_TYPE (drettype) || ! IS_AGGR_TYPE (brettype))
-    return -1;
-
-  binfo = lookup_base (drettype, brettype, ba_check | ba_quiet, &kind);
-  
-  if (!binfo)
-    return 0;
-  if (BINFO_OFFSET_ZEROP (binfo) && kind != bk_via_virtual)
-    return 1;
-  return 2;
-}
-
 /* Check that virtual overrider OVERRIDER is acceptable for base function
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 
@@ -1915,32 +1864,74 @@ check_final_overrider (overrider, basefn)
   tree base_return = TREE_TYPE (base_type);
   tree over_throw = TYPE_RAISES_EXCEPTIONS (over_type);
   tree base_throw = TYPE_RAISES_EXCEPTIONS (base_type);
-  int i;
+  int fail = 0;
   
   if (same_type_p (base_return, over_return))
     /* OK */;
-  else if ((i = covariant_return_p (base_return, over_return)))
+  else if ((CLASS_TYPE_P (over_return) && CLASS_TYPE_P (base_return))
+	   || (TREE_CODE (base_return) == TREE_CODE (over_return)
+	       && POINTER_TYPE_P (base_return)))
     {
-      if (i == 2)
-	sorry ("adjusting pointers for covariant returns");
-
-      if (pedantic && i == -1)
+      /* Potentially covariant. */
+      unsigned base_quals, over_quals;
+      
+      fail = !POINTER_TYPE_P (base_return);
+      if (!fail)
 	{
-	  cp_pedwarn_at ("invalid covariant return type for `%#D'", overrider);
-	  cp_pedwarn_at ("  overriding `%#D' (must be pointer or reference to class)", basefn);
+	  fail = cp_type_quals (base_return) != cp_type_quals (over_return);
+	  
+	  base_return = TREE_TYPE (base_return);
+	  over_return = TREE_TYPE (over_return);
 	}
+      base_quals = cp_type_quals (base_return);
+      over_quals = cp_type_quals (over_return);
+
+      if ((base_quals & over_quals) != over_quals)
+	fail = 1;
+      
+      if (CLASS_TYPE_P (base_return) && CLASS_TYPE_P (over_return))
+	{
+	  tree binfo = lookup_base (over_return, base_return,
+				    ba_check | ba_quiet, NULL);
+
+	  if (!binfo)
+	    fail = 1;
+	}
+      else if (!pedantic
+	       && can_convert (TREE_TYPE (base_type), TREE_TYPE (over_type)))
+	/* GNU extension, allow trivial pointer conversions such as
+	   converting to void *, or qualification conversion.  */
+	{
+	  /* can_convert will permit user defined conversion from a
+	     (reference to) class type. We must reject them. */
+	  over_return = TREE_TYPE (over_type);
+	  if (TREE_CODE (over_return) == REFERENCE_TYPE)
+	    over_return = TREE_TYPE (over_return);
+	  if (CLASS_TYPE_P (over_return))
+	    fail = 2;
+	}
+      else
+	fail = 2;
     }
-  else if (IS_AGGR_TYPE_2 (base_return, over_return)
-	   && same_or_base_type_p (base_return, over_return))
+  else
+    fail = 2;
+  if (!fail)
+    /* OK */;
+  else if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider)))
+    return 0;
+  else
     {
-      cp_error_at ("invalid covariant return type for `%#D'", overrider);
-      cp_error_at ("  overriding `%#D' (must use pointer or reference)", basefn);
-      return 0;
-    }
-  else if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider)) == NULL_TREE)
-    {
-      cp_error_at ("conflicting return type specified for `%#D'", overrider);
-      cp_error_at ("  overriding `%#D'", basefn);
+      if (fail == 1)
+	{
+	  cp_error_at ("invalid covariant return type for `%#D'", overrider);
+	  cp_error_at ("  overriding `%#D'", basefn);
+	}
+      else
+	{
+	  cp_error_at ("conflicting return type specified for `%#D'",
+		       overrider);
+	  cp_error_at ("  overriding `%#D'", basefn);
+	}
       SET_IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider),
                                   DECL_CONTEXT (overrider));
       return 0;
@@ -1949,10 +1940,16 @@ check_final_overrider (overrider, basefn)
   /* Check throw specifier is at least as strict.  */
   if (!comp_except_specs (base_throw, over_throw, 0))
     {
-      cp_error_at ("looser throw specifier for `%#F'", overrider);
-      cp_error_at ("  overriding `%#F'", basefn);
+      if (!IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider)))
+	{
+	  cp_error_at ("looser throw specifier for `%#F'", overrider);
+	  cp_error_at ("  overriding `%#F'", basefn);
+	  SET_IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider),
+				      DECL_CONTEXT (overrider));
+	}
       return 0;
     }
+  
   return 1;
 }
 

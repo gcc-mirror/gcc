@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "toplev.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
@@ -153,6 +155,10 @@ rtx_varies_p (x, for_alias)
     case LABEL_REF:
       return 0;
 
+    case ADDRESSOF:
+      /* This will resolve to some offset from the frame pointer.  */
+      return 0;
+
     case REG:
       /* Note that we have to test for the actual rtx used for the frame
 	 and arg pointers and not just the register number in case we have
@@ -225,6 +231,10 @@ rtx_addr_can_trap_p (x)
     case LABEL_REF:
       return 0;
 
+    case ADDRESSOF:
+      /* This will resolve to some offset from the frame pointer.  */
+      return 0;
+
     case REG:
       /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
       if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
@@ -267,6 +277,90 @@ rtx_addr_can_trap_p (x)
 
   /* If it isn't one of the case above, it can cause a trap.  */
   return 1;
+}
+
+/* Return true if X is an address that is known to not be zero.  */
+
+bool
+nonzero_address_p (x)
+     rtx x;
+{
+  enum rtx_code code = GET_CODE (x);
+
+  switch (code)
+    {
+    case SYMBOL_REF:
+      return !SYMBOL_REF_WEAK (x);
+
+    case LABEL_REF:
+      return true;
+
+    case ADDRESSOF:
+      /* This will resolve to some offset from the frame pointer.  */
+      return true;
+
+    case REG:
+      /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
+      if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+	  || x == stack_pointer_rtx
+	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
+	return true;
+      /* All of the virtual frame registers are stack references.  */
+      if (REGNO (x) >= FIRST_VIRTUAL_REGISTER
+	  && REGNO (x) <= LAST_VIRTUAL_REGISTER)
+	return true;
+      return false;
+
+    case CONST:
+      return nonzero_address_p (XEXP (x, 0));
+
+    case PLUS:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	{
+	  /* Pointers aren't allowed to wrap.  If we've got a register
+	     that is known to be a pointer, and a positive offset, then
+	     the composite can't be zero.  */
+	  if (INTVAL (XEXP (x, 1)) > 0
+	      && REG_P (XEXP (x, 0))
+	      && REG_POINTER (XEXP (x, 0)))
+	    return true;
+
+	  return nonzero_address_p (XEXP (x, 0));
+	}
+      /* Handle PIC references.  */
+      else if (XEXP (x, 0) == pic_offset_table_rtx
+	       && CONSTANT_P (XEXP (x, 1)))
+	return true;
+      return false;
+
+    case PRE_MODIFY:
+      /* Similar to the above; allow positive offsets.  Further, since
+	 auto-inc is only allowed in memories, the register must be a
+	 pointer.  */
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) > 0)
+	return true;
+      return nonzero_address_p (XEXP (x, 0));
+
+    case PRE_INC:
+      /* Similarly.  Further, the offset is always positive.  */
+      return true;
+
+    case PRE_DEC:
+    case POST_DEC:
+    case POST_INC:
+    case POST_MODIFY:
+      return nonzero_address_p (XEXP (x, 0));
+
+    case LO_SUM:
+      return nonzero_address_p (XEXP (x, 1));
+
+    default:
+      break;
+    }
+
+  /* If it isn't one of the case above, might be zero.  */
+  return false;
 }
 
 /* Return 1 if X refers to a memory location whose address
@@ -874,13 +968,10 @@ int
 reg_set_p (reg, insn)
      rtx reg, insn;
 {
-  rtx body = insn;
-
   /* We can be passed an insn or part of one.  If we are passed an insn,
      check if a side-effect of the insn clobbers REG.  */
-  if (INSN_P (insn))
-    {
-      if (FIND_REG_INC_NOTE (insn, reg)
+  if (INSN_P (insn)
+      && (FIND_REG_INC_NOTE (insn, reg)
 	  || (GET_CODE (insn) == CALL_INSN
 	      /* We'd like to test call_used_regs here, but rtlanal.c can't
 		 reference that variable due to its use in genattrtab.  So
@@ -891,11 +982,8 @@ reg_set_p (reg, insn)
 	      && ((GET_CODE (reg) == REG
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
 		  || GET_CODE (reg) == MEM
-		  || find_reg_fusage (insn, CLOBBER, reg))))
-	return 1;
-
-      body = PATTERN (insn);
-    }
+		  || find_reg_fusage (insn, CLOBBER, reg)))))
+    return 1;
 
   return set_of (reg, insn) != NULL_RTX;
 }

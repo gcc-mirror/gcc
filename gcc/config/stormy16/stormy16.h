@@ -1986,8 +1986,6 @@ enum reg_class
 #define HAVE_POST_INCREMENT 1
 
 /* Similar for other kinds of addressing.  */
-/* #define HAVE_PRE_INCREMENT 1 */
-/* #define HAVE_POST_DECREMENT 1 */
 #define HAVE_PRE_DECREMENT 1
 
 /* A C expression that is 1 if the RTX X is a constant which is a valid
@@ -2608,7 +2606,7 @@ do {							\
    outputting the label definition at the proper place.  Here is how to do
    this:
 
-        ASM_OUTPUT_INTERNAL_LABEL (FILE, "LC", LABELNO);
+        (*targetm.asm_out.internal_label) (FILE, "LC", LABELNO);
 
    When you output a pool entry specially, you should end with a `goto' to the
    label JUMPTO.  This will prevent the same pool entry from being output a
@@ -2881,31 +2879,11 @@ do  {						\
    is in most Berkeley Unix systems.  This macro is used in `assemble_name'.  */
 /* #define ASM_OUTPUT_LABELREF(STREAM, NAME) */
 
-/* A C statement to output to the stdio stream STREAM a label whose name is
-   made from the string PREFIX and the number NUM.
-
-   It is absolutely essential that these labels be distinct from the labels
-   used for user-level functions and variables.  Otherwise, certain programs
-   will have name conflicts with internal labels.
-
-   It is desirable to exclude internal labels from the symbol table of the
-   object file.  Most assemblers have a naming convention for labels that
-   should be excluded; on many systems, the letter `L' at the beginning of a
-   label has this effect.  You should find out what convention your system
-   uses, and follow it.
-
-   The usual definition of this macro is as follows:
-
-        fprintf (STREAM, "L%s%d:\n", PREFIX, NUM)
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM) */
-
 /* A C statement to store into the string STRING a label whose name is made
    from the string PREFIX and the number NUM.
 
    This string, when output subsequently by `assemble_name', should produce the
-   output that `ASM_OUTPUT_INTERNAL_LABEL' would produce with the same PREFIX
+   output that `(*targetm.asm_out.internal_label)' would produce with the same PREFIX
    and NUM.
 
    If the string begins with `*', then `assemble_name' will output the rest of
@@ -2917,27 +2895,6 @@ do  {						\
 
    Defined in svr4.h.  */
 /* #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM) */
-
-/* A C expression to assign to OUTVAR (which is a variable of type `char *') a
-   newly allocated string made from the string NAME and the number NUMBER, with
-   some suitable punctuation added.  Use `alloca' to get space for the string.
-
-   The string will be used as an argument to `ASM_OUTPUT_LABELREF' to produce
-   an assembler label for an internal static variable whose name is NAME.
-   Therefore, the string must be such as to result in valid assembler code.
-   The argument NUMBER is different each time this macro is executed; it
-   prevents conflicts between similarly-named internal static variables in
-   different scopes.
-
-   Ideally this string should not be a valid C identifier, to prevent any
-   conflict with the user's own symbols.  Most assemblers allow periods or
-   percent signs in assembler symbols; putting at least one of these between
-   the name and the number will suffice.  */
-#define ASM_FORMAT_PRIVATE_NAME(OUTVAR, NAME, NUMBER)			\
-do {									\
-  (OUTVAR) = (char *) alloca (strlen ((NAME)) + 12);			\
-  sprintf ((OUTVAR), "%s.%ld", (NAME), (long)(NUMBER));			\
-} while (0)
 
 /* A C statement to output to the stdio stream STREAM assembler code which
    defines (equates) the symbol NAME to have the value VALUE.

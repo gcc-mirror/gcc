@@ -25,6 +25,8 @@ Boston, MA 02111-1307, USA.  */
 /* Some output-actions in c4x.md need these.  */
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tree.h"
 #include "regs.h"

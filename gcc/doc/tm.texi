@@ -233,6 +233,19 @@ an example of this.
 
 Do not define this macro if it does not need to do anything.
 
+@findex AS_NEEDS_DASH_FOR_PIPED_INPUT
+@item AS_NEEDS_DASH_FOR_PIPED_INPUT
+Define this macro, with no value, if the driver should give the assembler
+an argument consisting of a single dash, @option{-}, to instruct it to
+read from its standard input (which will be a pipe connected to the
+output of the compiler proper).  This argument is given after any
+@option{-o} option specifying the name of the output file.
+
+If you do not define this macro, the assembler is assumed to read its
+standard input if given no non-option arguments.  If your assembler
+cannot read standard input at all, use a @samp{%@{pipe:%e@}} construct;
+see @file{mips.h} for instance.
+
 @findex LINK_SPEC
 @item LINK_SPEC
 A C string constant that tells the GCC driver program options to
@@ -4239,18 +4252,18 @@ the function prologue.  Normally, the profiling code comes after.
 @subsection Permitting tail calls
 @cindex tail calls
 
-@table @code
-@findex FUNCTION_OK_FOR_SIBCALL
-@item FUNCTION_OK_FOR_SIBCALL (@var{decl})
-A C expression that evaluates to true if it is ok to perform a sibling
-call to @var{decl} from the current function.
+@deftypefn {Target Hook} bool TARGET_FUNCTION_OK_FOR_SIBCALL (tree @var{decl}, tree @var{exp})
+True if it is ok to do sibling call optimization for the specified
+call expression @var{exp}.  @var{decl} will be the called function,
+or @code{NULL} if this is an indirect call.
 
 It is not uncommon for limitations of calling conventions to prevent
 tail calls to functions outside the current unit of translation, or
-during PIC compilation.  Use this macro to enforce these restrictions,
+during PIC compilation.  The hook is used to enforce these restrictions,
 as the @code{sibcall} md pattern can not fail, or fall over to a
-``normal'' call.
-@end table
+``normal'' call.  The criteria for successful sibling call optimization
+may vary greatly between different architectures.
+@end deftypefn
 
 @node Varargs
 @section Implementing the Varargs Macros
@@ -5413,6 +5426,15 @@ to clear a chunk of memory, or whether some other block clear mechanism
 will be used.  Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{CLEAR_RATIO}.
 
+@findex STORE_BY_PIECES_P
+@item STORE_BY_PIECES_P (@var{size}, @var{alignment})
+A C expression used to determine whether @code{store_by_pieces} will be
+used to set a chunk of memory to a constant value, or whether some other
+mechanism will be used.  Used by @code{__builtin_memset} when storing
+values other than constant zero and by @code{__builtin_strcpy} when
+when called with a constant source string.
+Defaults to @code{MOVE_BY_PIECES_P}.
+
 @findex USE_LOAD_POST_INCREMENT
 @item USE_LOAD_POST_INCREMENT (@var{mode})
 A C expression used to determine whether a load postincrement is a good
@@ -6267,7 +6289,7 @@ responsible for outputting the label definition at the proper place.
 Here is how to do this:
 
 @example
-ASM_OUTPUT_INTERNAL_LABEL (@var{file}, "LC", @var{labelno});
+@code{(*targetm.asm_out.internal_label)} (@var{file}, "LC", @var{labelno});
 @end example
 
 When you output a pool entry specially, you should end with a
@@ -6725,11 +6747,11 @@ This macro is not used by @code{output_asm_label}, or the @code{%l}
 specifier that calls it; the intention is that this macro should be set
 when it is necessary to output a label differently when its address is
 being taken.
+@end table
 
-@findex ASM_OUTPUT_INTERNAL_LABEL
-@item ASM_OUTPUT_INTERNAL_LABEL (@var{stream}, @var{prefix}, @var{num})
-A C statement to output to the stdio stream @var{stream} a label whose
-name is made from the string @var{prefix} and the number @var{num}.
+@deftypefn {Target Hook} void TARGET_ASM_INTERNAL_LABEL (FILE *@var{stream}, const char *@var{prefix}, unsigned long @var{labelno})
+A function to output to the stdio stream @var{stream} a label whose
+name is made from the string @var{prefix} and the number @var{labelno}.
 
 It is absolutely essential that these labels be distinct from the labels
 used for user-level functions and variables.  Otherwise, certain programs
@@ -6741,12 +6763,11 @@ should be excluded; on many systems, the letter @samp{L} at the
 beginning of a label has this effect.  You should find out what
 convention your system uses, and follow it.
 
-The usual definition of this macro is as follows:
+The default version of this function utilizes ASM_GENERATE_INTERNAL_LABEL.
 
-@example
-fprintf (@var{stream}, "L%s%d:\n", @var{prefix}, @var{num})
-@end example
+@end deftypefn
 
+@table @code
 @findex ASM_OUTPUT_DEBUG_LABEL
 @item ASM_OUTPUT_DEBUG_LABEL (@var{stream}, @var{prefix}, @var{num})
 A C statement to output to the stdio stream @var{stream} a debug info
@@ -6757,7 +6778,7 @@ systems, branch target labels must be at the beginning of instruction
 bundles, but debug info labels can occur in the middle of instruction
 bundles.
 
-If this macro is not defined, then @code{ASM_OUTPUT_INTERNAL_LABEL} will be
+If this macro is not defined, then @code{(*targetm.asm_out.internal_label)} will be
 used.
 
 @findex ASM_GENERATE_INTERNAL_LABEL
@@ -6766,7 +6787,7 @@ A C statement to store into the string @var{string} a label whose name
 is made from the string @var{prefix} and the number @var{num}.
 
 This string, when output subsequently by @code{assemble_name}, should
-produce the output that @code{ASM_OUTPUT_INTERNAL_LABEL} would produce
+produce the output that @code{(*targetm.asm_out.internal_label)} would produce
 with the same @var{prefix} and @var{num}.
 
 If the string begins with @samp{*}, then @code{assemble_name} will
@@ -6795,6 +6816,9 @@ Ideally this string should not be a valid C identifier, to prevent any
 conflict with the user's own symbols.  Most assemblers allow periods
 or percent signs in assembler symbols; putting at least one of these
 between the name and the number will suffice.
+
+If this macro is not defined, a default definition will be provided
+which is correct for most systems.
 
 @findex ASM_OUTPUT_DEF
 @item ASM_OUTPUT_DEF (@var{stream}, @var{name}, @var{value})
@@ -7365,7 +7389,7 @@ A C statement to output to the stdio stream @var{stream} an assembler
 pseudo-instruction to generate a difference between two labels.
 @var{value} and @var{rel} are the numbers of two internal labels.  The
 definitions of these labels are output using
-@code{ASM_OUTPUT_INTERNAL_LABEL}, and they must be printed in the same
+@code{(*targetm.asm_out.internal_label)}, and they must be printed in the same
 way here.  For example,
 
 @example
@@ -7387,7 +7411,7 @@ in a dispatch table are absolute.
 The definition should be a C statement to output to the stdio stream
 @var{stream} an assembler pseudo-instruction to generate a reference to
 a label.  @var{value} is the number of an internal label whose
-definition is output using @code{ASM_OUTPUT_INTERNAL_LABEL}.
+definition is output using @code{(*targetm.asm_out.internal_label)}.
 For example,
 
 @example
@@ -7398,7 +7422,7 @@ fprintf (@var{stream}, "\t.word L%d\n", @var{value})
 @item ASM_OUTPUT_CASE_LABEL (@var{stream}, @var{prefix}, @var{num}, @var{table})
 Define this if the label before a jump-table needs to be output
 specially.  The first three arguments are the same as for
-@code{ASM_OUTPUT_INTERNAL_LABEL}; the fourth argument is the
+@code{(*targetm.asm_out.internal_label)}; the fourth argument is the
 jump-table which follows (a @code{jump_insn} containing an
 @code{addr_vec} or @code{addr_diff_vec}).
 
@@ -7406,7 +7430,7 @@ This feature is used on system V to output a @code{swbeg} statement
 for the table.
 
 If this macro is not defined, these labels are output with
-@code{ASM_OUTPUT_INTERNAL_LABEL}.
+@code{(*targetm.asm_out.internal_label)}.
 
 @findex ASM_OUTPUT_CASE_END
 @item ASM_OUTPUT_CASE_END (@var{stream}, @var{num}, @var{table})

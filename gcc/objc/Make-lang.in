@@ -48,27 +48,27 @@ OBJECTIVE-C objective-c: cc1obj$(exeext)
 objc-warn = $(STRICT_WARN)
 
 # Language-specific object files for Objective C.
-OBJC_OBJS = objc-lang.o objc-parse.o objc-act.o $(C_AND_OBJC_OBJS)
+OBJC_OBJS = objc/objc-lang.o objc/objc-parse.o objc/objc-act.o
 
-cc1obj$(exeext): $(OBJC_OBJS) $(BACKEND) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJC_OBJS) $(BACKEND) $(LIBS)
+cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+		$(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBS)
 
 # Objective C language specific files.
 
-objc-lang.o : $(srcdir)/objc/objc-lang.c \
-   $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(srcdir)/c-tree.h \
-   $(srcdir)/c-common.h $(srcdir)/toplev.h $(srcdir)/objc/objc-act.h \
-   $(srcdir)/langhooks.h $(srcdir)/langhooks-def.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
-	-c $(srcdir)/objc/objc-lang.c $(OUTPUT_OPTION)
+objc/objc-lang.o : objc/objc-lang.c \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) c-tree.h \
+   c-common.h toplev.h objc/objc-act.h langhooks.h $(LANGHOOKS_DEF_H)
 
-objc-parse.o : $(srcdir)/objc/objc-parse.c \
-   $(CONFIG_H) $(TREE_H) $(C_COMMON_H) $(srcdir)/toplev.h $(srcdir)/ggc.h \
-   $(srcdir)/c-pragma.h $(srcdir)/c-tree.h \
-   $(srcdir)/input.h $(srcdir)/flags.h $(srcdir)/output.h \
-   $(srcdir)/objc/objc-act.h $(SYSTEM_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
-	-c $(srcdir)/objc/objc-parse.c $(OUTPUT_OPTION)
+objc/objc-parse.o : objc/objc-parse.c \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_TREE_H) \
+   toplev.h $(GGC_H) c-pragma.h input.h flags.h output.h objc/objc-act.h
+
+objc/objc-act.o : objc/objc-act.c \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(EXPR_H) \
+   $(TARGET_H) $(C_TREE_H) diagnostic.h toplev.h flags.h objc/objc-act.h \
+   input.h function.h output.h debug.h langhooks.h $(LANGHOOKS_DEF_H) \
+   gtype-objc.h
 
 po-generated: $(srcdir)/objc/objc-parse.c
 $(srcdir)/objc/objc-parse.c : $(srcdir)/objc/objc-parse.y
@@ -87,15 +87,6 @@ $(srcdir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 	  -e "/^ifobjc$$/d" -e "/^end ifobjc$$/d" \
 	  $(srcdir)/c-parse.in >>tmp-objc-prs.y
 	$(SHELL) $(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc/objc-parse.y
-
-objc-act.o : $(srcdir)/objc/objc-act.c \
-   $(CONFIG_H) $(TREE_H) $(RTL_H) $(SYSTEM_H) $(EXPR_H) $(TARGET_H) \
-   $(C_COMMON_H) $(srcdir)/c-tree.h $(srcdir)/diagnostic.h \
-   $(srcdir)/toplev.h $(srcdir)/flags.h $(srcdir)/objc/objc-act.h \
-   $(srcdir)/input.h $(srcdir)/function.h $(srcdir)/output.h $(srcdir)/debug.h \
-   $(srcdir)/langhooks.h $(LANGHOOKS_DEF_H) gtype-objc.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
-	-c $(srcdir)/objc/objc-act.c
 
 gtype-objc.h : s-gtype ; @true
 

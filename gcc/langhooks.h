@@ -48,7 +48,7 @@ struct lang_hooks_for_tree_inlining
 							  union tree_node *,
 							  union tree_node *,
 							  void *, int *,
-							  void *));
+							  tree));
   int (*anon_aggr_type_p) PARAMS ((union tree_node *));
   bool (*var_mod_type_p) PARAMS ((union tree_node *));
   int (*start_inlining) PARAMS ((union tree_node *));

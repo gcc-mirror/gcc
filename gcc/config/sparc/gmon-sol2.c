@@ -32,8 +32,10 @@
  * for Cygnus Support, July 1992.
  */
 
-#include "config.h"
-#include "system.h"
+#include "tconfig.h"
+#include "tsystem.h"
+#include "coretypes.h"
+#include "tm.h"
 
 #if 0
 #include "sparc/gmon.h"

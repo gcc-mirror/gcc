@@ -24,6 +24,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tree.h"
 #include "regs.h"
@@ -109,6 +111,7 @@ static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static int mvs_hash_alias PARAMS ((const char *));
 #endif
 static void i370_encode_section_info PARAMS ((tree, int));
+static void i370_internal_label PARAMS ((FILE *, const char *, unsigned long));
 
 /* ===================================================== */
 /* defines and functions specific to the HLASM assembler */
@@ -312,6 +315,8 @@ static const unsigned char ebcasc[256] =
 #define TARGET_ASM_FUNCTION_EPILOGUE i370_output_function_epilogue
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO i370_encode_section_info
+#undef TARGET_ASM_INTERNAL_LABEL
+#define  TARGET_ASM_INTERNAL_LABEL i370_internal_label
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1597,3 +1602,14 @@ i370_encode_section_info (decl, first)
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
 
+static void
+i370_internal_label (stream, prefix, labelno)
+     FILE *stream;
+     const char *prefix;
+     unsigned long labelno;
+{
+  if (!strcmp (prefix, "L"))
+    mvs_add_label(labelno);
+
+  default_internal_label (stream, prefix, labelno);
+}

@@ -79,17 +79,15 @@ program_suffixoption=
 program_transform_name=
 program_transform_nameoption=
 redirect=
-removing=
 site=
 site_makefile_frag=
 site_option=
 srcdir=
 srctrigger=
-subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.48 $"
+version="$Revision: 1.46.6.11 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -316,9 +314,6 @@ do
 		# Double any backslashes or dollar signs in the argument
 		program_transform_name="${program_transform_name} -e `echo ${optarg} | sed -e 's/\\\\/\\\\\\\\/g' -e 's/\\\$/$$/g'`"
 		program_transform_nameoption="${program_transform_nameoption} --program-transform-name='$optarg'"
-		;;
-	--rm)
-		removing=--rm
 		;;
 	--sb*)
 		sbindir=$optarg
@@ -590,28 +585,6 @@ case "${exec_prefixoption}" in
 *) ;;
 esac
 
-# Define the trigger file to make sure configure will re-run whenever
-# the gcc version number changes.
-if [ "${with_gcc_version_trigger+set}" = set ]; then
-    gcc_version_trigger="$with_gcc_version_trigger"
-    gcc_version=`grep version_string ${with_gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
-else
-    # If gcc's sources are available, define the trigger file.
-    if [ -f ${topsrcdir}/gcc/version.c ] ; then
-	gcc_version_trigger=${topsrcdir}/gcc/version.c
-	gcc_version=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
-	case "$arguments" in
-	  *--with-gcc-version-trigger=$gcc_version_trigger* )
-	    ;;
-	  * )
-	    # Make sure configure.in knows about this.
-	    arguments="--with-gcc-version-trigger=$gcc_version_trigger $arguments"
-	    ;;
-	esac
-	withoptions="--with-gcc-version-trigger=$gcc_version_trigger $withoptions"
-    fi
-fi
-
 ### break up ${srcdir}/configure.in.
 case "`grep '^# per\-host:' ${srcdir}/configure.in`" in
 "")
@@ -639,7 +612,7 @@ case "`grep '^# per\-host:' ${srcdir}/configure.in`" in
 		${program_transform_nameoption} ${site_option} \
 		${withoptions} ${withoutoptions} \
 		${enableoptions} ${disableoptions} ${floating_pointoption} \
-		${cache_file_option} ${removing} ${other_options} ${redirect}
+		${cache_file_option} ${other_options} ${redirect}
 	  else
 	    echo '***' There is no configure script present though. 1>&2
 	  fi
@@ -687,23 +660,7 @@ fi
 
 ### do common part of configure.in
 
-# If the language specific compiler does not exist, but the "gcc" directory does,
-# we will skip this directory; in this case the sub-directory's common part
-# of configure.in will create a small shell script "skip-this-dir" containing
-# commands to completely clean up any temporary or created files.
-
 . ${tmpfile}.com
-
-if test -f skip-this-dir; then
-	# Perform the same cleanup as the trap handler, minus the "exit 1" of course,
-	# and reset the trap handler.
-	trap 0
-	rm -rf Makefile* ${tmpdir}
-	# Execute the final clean-up actions
-	${config_shell} skip-this-dir
-	# and stop configuring this directory.
-	exit 0
-fi
 
 # some sanity checks on configure.in
 case "${srctrigger}" in
@@ -911,10 +868,10 @@ do
   test -n "$DEFAULT_LEX" && break
 done
 
+
 if [ "${build}" != "${host}" ]; then
   # If we are doing a Canadian Cross, in which the host and build systems
   # are not the same, we set reasonable default values for the tools.
-
   tools="AR AR_FOR_TARGET AS AS_FOR_TARGET BISON CC_FOR_BUILD"
   tools="${tools} CC_FOR_TARGET CXX_FOR_TARGET GCJ_FOR_TARGET"
   tools="${tools} DLLTOOL DLLTOOL_FOR_TARGET GCC_FOR_TARGET BUILD_PREFIX"
@@ -941,6 +898,7 @@ t loop
 
   AR=${AR-${host_alias}-ar}
   AR_FOR_TARGET=${AR_FOR_TARGET-${target_alias}-ar}
+  AR_FOR_TARGET=${AR_FOR_TARGET}${extra_arflags_for_target}
   AS=${AS-${host_alias}-as}
   AS_FOR_TARGET=${AS_FOR_TARGET-${target_alias}-as}
   BISON=${BISON-bison}
@@ -962,6 +920,7 @@ t loop
   MAKEINFO=${MAKEINFO-makeinfo}
   NM=${NM-${host_alias}-nm}
   NM_FOR_TARGET=${NM_FOR_TARGET-${target_alias}-nm}
+  NM_FOR_TARGET=${NM_FOR_TARGET}${extra_nmflags_for_target}
   RANLIB=${RANLIB-${host_alias}-ranlib}
   RANLIB_FOR_TARGET=${RANLIB_FOR_TARGET-${target_alias}-ranlib}
   WINDRES=${WINDRES-${host_alias}-windres}
@@ -1021,6 +980,44 @@ t loop
   export OBJCOPY
   export OBJDUMP
 else
+  # Set reasonable default values for some tools even if not Canadian.
+  # Of course, these are different reasonable default values, originally
+  # specified directly in the Makefile.
+  # We don't export, so that autoconf can do its job.
+  # Note that all these settings are above the fragment inclusion point
+  # in Makefile.in, so can still be overridden by fragments.
+  # This is all going to change when we autoconfiscate...
+
+  tools="AR AR_FOR_TARGET AS AS_FOR_TARGET BISON CC_FOR_BUILD"
+  tools="${tools} DLLTOOL DLLTOOL_FOR_TARGET GCC_FOR_TARGET BUILD_PREFIX"
+  tools="${tools} BUILD_PREFIX_1 LD LD_FOR_TARGET LEX MAKEINFO NM"
+  tools="${tools} NM_FOR_TARGET RANLIB_FOR_TARGET"
+  tools="${tools} WINDRES WINDRES_FOR_TARGET YACC"
+
+  AR=ar
+  AR_FOR_TARGET='\$(USUAL_AR_FOR_TARGET)'
+  AR_FOR_TARGET=${AR_FOR_TARGET}${extra_arflags_for_target}
+  AS=as
+  AS_FOR_TARGET='\$(USUAL_AS_FOR_TARGET)'
+  BISON='$(USUAL_BISON)'
+  CC_FOR_BUILD='\$(CC)'
+  DLLTOOL=dlltool
+  DLLTOOL_FOR_TARGET='\$(USUAL_DLLTOOL_FOR_TARGET)'
+  GCC_FOR_TARGET='\$(USUAL_GCC_FOR_TARGET)'
+  BUILD_PREFIX=
+  BUILD_PREFIX_1=loser-
+  LD=ld
+  LD_FOR_TARGET='\$(USUAL_LD_FOR_TARGET)'
+  MAKEINFO='\$(USUAL_MAKEINFO)'
+  NM=nm
+  NM_FOR_TARGET='\$(USUAL_NM_FOR_TARGET)'
+  NM_FOR_TARGET=${NM_FOR_TARGET}${extra_nmflags_for_target}
+  RANLIB_FOR_TARGET='\$(USUAL_RANLIB_FOR_TARGET)'
+  WINDRES=windres
+  WINDRES_FOR_TARGET='\$(USUAL_WINDRES_FOR_TARGET)'
+  LEX='\$(USUAL_LEX)'
+  YACC='\$(USUAL_YACC)'
+
   # If CC is still not set, try to get gcc.
   if [ -z "${CC}" ]; then
     IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
@@ -1072,526 +1069,308 @@ export CXX
 export CFLAGS
 export CXXFLAGS
 
-all_build_modules=
-if test x"${build_alias}" != x"${host_alias}"
-then
-  all_build_modules='$(ALL_BUILD_MODULES_LIST)'
+# FIXME Should this be done recursively ??? (Useful for e.g. gdbtest)
+# Set up the list of links to be made.
+# ${links} is the list of link names, and ${files} is the list of names to link to.
+
+# Make the links.
+configlinks="${links}"
+if [ -r ./config.status ] ; then
+  mv -f ./config.status ./config.back
 fi
+while [ -n "${files}" ] ; do
+  # set file to car of files, files to cdr of files
+  set ${files}; file=$1; shift; files=$*
+  set ${links}; link=$1; shift; links=$*
 
-for subdir in . ${subdirs} ; do
-
-    # ${subdir} is relative path from . to the directory we're currently
-    # configuring.
-    # ${invsubdir} is inverse of ${subdir), *with* trailing /, if needed.
-    invsubdir=`echo ${subdir}/ | sed -e 's|\./||g' -e 's|[^/]*/|../|g'`
-
-    ### figure out what to do with srcdir
-    case "${srcdir}" in
-        ".")  # no -srcdir option.  We're building in place.
-                makesrcdir=. ;;
-        /* | [A-Za-z]:[\\/]* ) # absolute path
-                makesrcdir=`echo ${srcdir}/${subdir} | sed -e 's|/\.$||'`
-                ;;
-        *) # otherwise relative
-                case "${subdir}" in
-                .) makesrcdir=${srcdir} ;;
-                *) makesrcdir=${invsubdir}${srcdir}/${subdir} ;;
-                esac
-                ;;
-    esac
-
-    if [ "${subdir}/" != "./" ] ; then
-        Makefile=${subdir}/Makefile
+  if [ ! -r ${srcdir}/${file} ] ; then
+    if [ ! -r ${file} ] ; then
+      echo '***' "${progname}: cannot create a link \"${link}\"," 1>&2
+      echo '***' "since the file \"${srcdir}/${file}\" does not exist." 1>&2
+      exit 1
+    else
+      srcfile=${file}
     fi
+  else
+    srcfile=${srcdir}/${file}
+  fi
 
-    if [ ! -d ${subdir} ] ; then
-        if mkdir ${subdir} ; then
-                true
-        else
-                echo '***' "${progname}: could not make ${PWD=`${PWDCMD-pwd}`}/${subdir}" 1>&2
-                exit 1
-        fi
-    fi
+  ${remove} -f ${link}
+  # Make a symlink if possible, otherwise try a hard link
+  if ${symbolic_link} ${srcfile} ${link} >/dev/null 2>&1 ; then
+    true
+  else
+    # We need to re-remove the file because Lynx leaves a 
+    # very strange directory there when it fails an NFS symlink.
+    ${remove} -r -f ${link}
+    ${hard_link} ${srcfile} ${link}
+  fi
+  if [ ! -r ${link} ] ; then
+    echo '***' "${progname}: unable to link \"${link}\" to \"${srcfile}\"." 1>&2
+    exit 1
+  fi
 
-    case "${removing}" in
-    "")
-        case "${subdir}" in
-        .) ;;
-        *) eval echo Building in ${subdir} ${redirect} ;;
-        esac
-
-        # FIXME Should this be done recursively ??? (Useful for e.g. gdbtest)
-        # Set up the list of links to be made.
-        # ${links} is the list of link names, and ${files} is the list of names to link to.
-
-        # Make the links.
-        configlinks="${links}"
-        if [ -r ${subdir}/config.status ] ; then
-                mv -f ${subdir}/config.status ${subdir}/config.back
-        fi
-        while [ -n "${files}" ] ; do
-                # set file to car of files, files to cdr of files
-                set ${files}; file=$1; shift; files=$*
-                set ${links}; link=$1; shift; links=$*
-
-                if [ ! -r ${srcdir}/${file} ] ; then
-                  if [ ! -r ${file} ] ; then
-		    
-                        echo '***' "${progname}: cannot create a link \"${link}\"," 1>&2
-                        echo '***' "since the file \"${srcdir}/${file}\" does not exist." 1>&2
-                        exit 1
-		  else
-			srcfile=${file}
-		  fi
-		else
-			srcfile=${srcdir}/${file}
-                fi
-
-                ${remove} -f ${link}
-		# Make a symlink if possible, otherwise try a hard link
-		if ${symbolic_link} ${srcfile} ${link} >/dev/null 2>&1 ; then
-			true
-		else
-			# We need to re-remove the file because Lynx leaves a 
-			# very strange directory there when it fails an NFS symlink.
-			${remove} -r -f ${link}
-			${hard_link} ${srcfile} ${link}
-		fi
-                if [ ! -r ${link} ] ; then
-                        echo '***' "${progname}: unable to link \"${link}\" to \"${srcfile}\"." 1>&2
-                        exit 1
-                fi
-
-                echo "Linked \"${link}\" to \"${srcfile}\"."
-        done
-
-        # Create a .gdbinit file which runs the one in srcdir
-        # and tells GDB to look there for source files.
-
-        if [ -r ${srcdir}/${subdir}/.gdbinit ] ; then
-                case ${srcdir} in
-                .) ;;
-                *) cat > ${subdir}/.gdbinit <<EOF
-# ${NO_EDIT}
-dir ${makesrcdir}
-dir .
-source ${makesrcdir}/.gdbinit
-EOF
-                        ;;
-                esac
-        fi
-
-        # Install a makefile, and make it set VPATH
-        # if necessary so that the sources are found.
-        # Also change its value of srcdir.
-        # NOTE: Makefile generation constitutes the majority of the time in configure.  Hence, this section has
-        # been somewhat optimized and is perhaps a bit twisty.
-
-        # code is order so as to try to sed the smallest input files we know.
-        # so do these separately because I don't trust the order of sed -e expressions.
-
-        # the five makefile fragments MUST end up in the resulting Makefile in this order: 
-        # package macros, target, host, site, and package rules.
-
-        if [ -f ${srcdir}/${subdir}/${Makefile_in} ] ; then
-
-            # Conditionalize the makefile for this package from "Makefile.in" (or whatever it's called) into Makefile.tem.
-            rm -f ${subdir}/${Makefile}.tem
-            case "${package_makefile_rules_frag}" in
-              "") cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem ;;
-              *)
-                      if [ ! -f ${package_makefile_rules_frag} ] ; then
-                              package_makefile_rules_frag=${srcdir}/${package_makefile_rules_frag}
-                      fi
-                      if [ -f ${package_makefile_rules_frag} ] ; then
-                              sed -e "/^####/  r ${package_makefile_rules_frag}" ${srcdir}/${subdir}/${Makefile_in} > ${Makefile}.tem
-                      else
-                              echo '***' Expected package makefile rules fragment \"${package_makefile_rules_frag}\" 1>&2
-                              echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
-                              cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem
-                      fi
-            esac
-            # working copy now in ${Makefile}.tem
-
-            # Conditionalize for this site.
-            rm -f ${Makefile}
-              case "${site}" in
-              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
-              *)
-                      site_makefile_frag=${srcdir}/config/ms-${site}
-
-                      if [ -f ${site_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${site_makefile_frag}" ${subdir}/Makefile.tem \
-                                      > ${Makefile}
-                      else
-                              mv ${subdir}/Makefile.tem ${Makefile}
-                              site_makefile_frag=
-                      fi
-                      ;;
-            esac
-            # working copy now in ${Makefile}
-
-            # Conditionalize the makefile for this host.
-            rm -f ${subdir}/Makefile.tem
-            case "${host_makefile_frag}" in
-              "") mv ${Makefile} ${subdir}/Makefile.tem ;;
-              *)
-                      if [ ! -f ${host_makefile_frag} ] ; then
-                              host_makefile_frag=${srcdir}/${host_makefile_frag}
-                      fi
-                      if [ -f ${host_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${host_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
-                      else
-                              echo '***' Expected host makefile fragment \"${host_makefile_frag}\" 1>&2
-                              echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
-                              mv ${Makefile} ${subdir}/Makefile.tem
-                      fi
-            esac
-            # working copy now in ${subdir)/Makefile.tem
-
-            # Conditionalize the makefile for this target.
-            rm -f ${Makefile}
-            case "${target_makefile_frag}" in
-              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
-              *)
-                      if [ ! -f ${target_makefile_frag} ] ; then
-                              target_makefile_frag=${srcdir}/${target_makefile_frag}
-                      fi
-                      if [ -f ${target_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${target_makefile_frag}" ${subdir}/Makefile.tem > ${Makefile}
-                      else
-                              mv ${subdir}/Makefile.tem ${Makefile}
-                              target_makefile_frag=
-                      fi
-                      ;;
-            esac
-            # working copy now in ${Makefile}
-
-            # Emit the default values of this package's macros.
-            rm -f ${subdir}/Makefile.tem
-            case "${package_makefile_frag}" in
-              "") mv ${Makefile} ${subdir}/Makefile.tem ;;
-              *)
-                      if [ ! -f ${package_makefile_frag} ] ; then
-                              package_makefile_frag=${srcdir}/${package_makefile_frag}
-                      fi
-                      if [ -f ${package_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${package_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
-                      else
-                              echo '***' Expected package makefile fragment \"${package_makefile_rules_frag}\" 1>&2
-                              echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
-                              mv ${Makefile} ${subdir}/Makefile.tem
-                      fi
-            esac
-            # real copy now in ${subdir}/Makefile.tem
-
-            # prepend warning about editing, and a bunch of variables.
-            rm -f ${Makefile}
-            cat > ${Makefile} <<EOF
-# ${NO_EDIT}
-VPATH = ${makesrcdir}
-links = ${configlinks}
-host_alias = ${host_alias}
-host_cpu = ${host_cpu}
-host_vendor = ${host_vendor}
-host_os = ${host_os}
-host_canonical = ${host_cpu}-${host_vendor}-${host_os}
-target_alias = ${target_alias}
-target_cpu = ${target_cpu}
-target_vendor = ${target_vendor}
-target_os = ${target_os}
-target_canonical = ${target_cpu}-${target_vendor}-${target_os}
-EOF
-	    case "${build}" in
-	      "") ;;
-	      *)  cat >> ${Makefile} << EOF
-build_alias = ${build_alias}
-build_cpu = ${build_cpu}
-build_vendor = ${build_vendor}
-build_os = ${build_os}
-build_canonical = ${build_cpu}-${build_vendor}-${build_os}
-EOF
-	    esac
-
-            case "${package_makefile_frag}" in
-              "") ;;
-              /* | [A-Za-z]:[\\/]* ) echo package_makefile_frag = ${package_makefile_frag} >>${Makefile} ;;
-              *)  echo package_makefile_frag = ${invsubdir}${package_makefile_frag} >>${Makefile} ;;
-            esac
-
-            case "${target_makefile_frag}" in
-              "") ;;
-              /* | [A-Za-z]:[\\/]* ) echo target_makefile_frag = ${target_makefile_frag} >>${Makefile} ;;
-              *)  echo target_makefile_frag = ${invsubdir}${target_makefile_frag} >>${Makefile} ;;
-            esac
-
-            case "${host_makefile_frag}" in
-              "") ;;
-              /* | [A-Za-z]:[\\/]* ) echo host_makefile_frag = ${host_makefile_frag} >>${Makefile} ;;
-              *)  echo host_makefile_frag = ${invsubdir}${host_makefile_frag} >>${Makefile} ;;
-            esac
-
-            if [ "${site_makefile_frag}" != "" ] ; then
-                echo site_makefile_frag = ${invsubdir}${site_makefile_frag} >>${Makefile}
-            fi 
-
-	    echo enable_shared = ${enable_shared} >> ${Makefile}
-	    echo enable_threads = ${enable_threads} >> ${Makefile}
-	    # record if we want to rumtime library stuff installed in libsubdir.
-	    if test -z "${enable_version_specific_runtime_libs}"; then
-	        echo enable_version_specific_runtime_libs = no >> ${Makefile}
-	    else
-	        echo enable_version_specific_runtime_libs = ${enable_version_specific_runtime_libs} >> ${Makefile}
-	    fi
-
-	    # Emit a macro which describes the file containing gcc's
-	    # version number.
-	    echo gcc_version_trigger = ${gcc_version_trigger} >> ${Makefile}
-	    # And emit a macro defining gcc's version number.
-	    echo gcc_version = ${gcc_version} >> ${Makefile}
-
-            # reset prefix, exec_prefix, srcdir, SUBDIRS, NONSUBDIRS,
-            # remove any form feeds.
-            if [ -z "${subdirs}" ]; then
-                rm -f ${subdir}/Makefile.tm2
-                sedtemp=sed.$$
-                cat >$sedtemp <<EOF
-s:@configdirs@:${configdirs}:
-EOF
-                sed -f $sedtemp \
-                    ${subdir}/Makefile.tem > ${subdir}/Makefile.tm2
-                rm -f $sedtemp
-                rm -f ${subdir}/Makefile.tem
-                mv ${subdir}/Makefile.tm2 ${subdir}/Makefile.tem
-	    fi
-	    sed     -e "s|@prefix@|${prefix}|" \
-                    -e "s|@exec_prefix@|${exec_prefix}|" \
-                    -e "s|@bindir@|${bindir}|" \
-                    -e "s|@sbindir@|${sbindir}|" \
-                    -e "s|@libexecdir@|${libexecdir}|" \
-                    -e "s|@datadir@|${datadir}|" \
-                    -e "s|@sysconfdir@|${sysconfdir}|" \
-                    -e "s|@sharedstatedir@|${sharedstatedir}|" \
-                    -e "s|@localstatedir@|${localstatedir}|" \
-                    -e "s|@libdir@|${libdir}|" \
-                    -e "s|@includedir@|${includedir}|" \
-                    -e "s|@oldincludedir@|${oldincludedir}|" \
-                    -e "s|@infodir@|${infodir}|" \
-                    -e "s|@mandir@|${mandir}|" \
-		    -e "s|@all_build_modules@|${all_build_modules}|" \
-		    -e "/^CC[ 	]*=/{
-			:loop1
-			/\\\\$/ N
-			s/\\\\\\n//g
-			t loop1
-			s%^CC[ 	]*=.*$%CC = ${CC}%
-			}" \
-		    -e "/^CXX[ 	]*=/{
-			:loop2
-			/\\\\$/ N
-			s/\\\\\\n//g
-			t loop2
-			s%^CXX[ 	]*=.*$%CXX = ${CXX}%
-			}" \
-		    -e "/^CFLAGS[ 	]*=/{
-			:loop3
-			/\\\\$/ N
-			s/\\\\\\n//g
-			t loop3
-			s%^CFLAGS[ 	]*=.*$%CFLAGS = ${CFLAGS}%
-			}" \
-		    -e "/^CXXFLAGS[ 	]*=/{
-			:loop4
-			/\\\\$/ N
-			s/\\\\\\n//g
-			t loop4
-			s%^CXXFLAGS[ 	]*=.*$%CXXFLAGS = ${CXXFLAGS}%
-			}" \
-		    -e "s|@config_shell@|${config_shell}|" \
-                    -e "s|@srcdir@|${makesrcdir}|" \
-                    -e "s///" \
-                    -e "s:@program_transform_name@:${program_transform_name}:" \
-                    -e "s|@tooldir@|${tooldir}|" \
-                    -e "s|@build_tooldir@|${tooldir}|" \
-		    -e "s:@DEFAULT_YACC@:${DEFAULT_YACC}:" \
-		    -e "s:@DEFAULT_LEX@:${DEFAULT_LEX}:" \
-		    -e "s:@DEFAULT_M4@:${DEFAULT_M4}:" \
-                    ${subdir}/Makefile.tem >> ${Makefile}
-  
-	    sed -e "s:@GDB_TK@:${GDB_TK}:" ${Makefile} >${Makefile}.tem
-	    mv -f ${Makefile}.tem ${Makefile}
-
-	    # If this is a Canadian Cross, preset the values of many more
-	    # tools.
-	    if [ "${build}" != "${host}" ]; then
-		for var in ${tools}; do
-		    eval val=\$${var}
-		    sed -e "/^${var}[ 	]*=/{
-			   :loop1
-			   /\\\\$/ N
-			   /\\\\$/ b loop1
-			   s/\\\\\\n//g
-			   s%^${var}[ 	]*=.*$%${var} = ${val}%
-			   }" ${Makefile} > ${Makefile}.tem
-		    mv -f ${Makefile}.tem ${Makefile}
-		done
-	    fi
-
-            # final copy now in ${Makefile}
-
-        else
-           echo "No Makefile.in found in ${srcdir}/${subdir}, unable to configure" 1>&2
-        fi
-
-        rm -f ${subdir}/Makefile.tem
-
-        case "${host_makefile_frag}" in
-        "") using= ;;
-        *) using="and \"${host_makefile_frag}\"" ;;
-        esac
-
-        case "${target_makefile_frag}" in
-        "") ;;
-        *) using="${using} and \"${target_makefile_frag}\"" ;;
-        esac
-
-        case "${site_makefile_frag}" in
-        "") ;;
-        *) using="${using} and \"${site_makefile_frag}\"" ;;
-        esac
-
-        newusing=`echo "${using}" | sed 's/and/using/'`
-        using=${newusing}
-        echo "Created \"${Makefile}\" in" ${PWD=`${PWDCMD-pwd}`} ${using}
-
-        . ${tmpfile}.pos
-
-        # describe the chosen configuration in config.status.
-        # Make that file a shellscript which will reestablish
-        # the same configuration.  Used in Makefiles to rebuild
-        # Makefiles.
-
-        case "${norecursion}" in
-        "") arguments="${arguments} --norecursion" ;;
-        *) ;;
-        esac
-
-        if [ ${subdir} = . ] ; then
-            echo "#!/bin/sh
-# ${NO_EDIT}
-# This directory was configured as follows:
-${progname}" ${arguments}  "
-# ${using}" > ${subdir}/config.new
-        else
-            echo "#!/bin/sh
-# ${NO_EDIT}
-# This directory was configured as follows:
-cd ${invsubdir}
-${progname}" ${arguments}  "
-# ${using}" > ${subdir}/config.new
-        fi
-        chmod a+x ${subdir}/config.new
-        if [ -r ${subdir}/config.back ] ; then
-                mv -f ${subdir}/config.back ${subdir}/config.status
-        fi
-	${config_shell} ${moveifchange} ${subdir}/config.new ${subdir}/config.status
-        ;;
-
-    *)  rm -f ${Makefile} ${subdir}/config.status ${links} ;;
-    esac
+  echo "Linked \"${link}\" to \"${srcfile}\"."
 done
 
-# If there are subdirectories, then recur.
-if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then 
-        for configdir in ${configdirs} ${extraconfigdirs} ; do
+# Create a .gdbinit file which runs the one in srcdir
+# and tells GDB to look there for source files.
 
-		# If configdir contains ',' it is
-		# srcdir,builddir,target_alias
-		# These come from extraconfigdirs.
-		case ${configdir} in
-		*,*)
-		    eval `echo ${configdir} | sed -e 's/\([^,]*\),\([^,]*\),\(.*\)/cfg_dir=\1 bld_dir=\2 tgt_alias=\3/'`
-		    ;;
-		*)
-		    cfg_dir=${configdir}
-		    bld_dir=${configdir}
-		    tgt_alias=${target_alias}
-		    ;;
-		esac
-
-                if [ -d ${srcdir}/${cfg_dir} ] ; then
-                        eval echo Configuring ${configdir}... ${redirect}
-                        case "${srcdir}" in
-                        ".") ;;
-                        *)
-                                if [ ! -d ./${bld_dir} ] ; then
-                                        if mkdir ./${bld_dir} ; then
-                                                true
-                                        else
-                                                echo '***' "${progname}: could not make ${PWD=`${PWDCMD-pwd}`}/${bld_dir}" 1>&2
-                                                exit 1
-                                        fi
-                                fi
-                                ;;
-                        esac
-
-                        POPDIR=${PWD=`${PWDCMD-pwd}`}
-                        cd ${bld_dir} 
-
-### figure out what to do with srcdir
-                        case "${srcdir}" in
-                        ".") newsrcdir=${srcdir} ;; # no -srcdir option.  We're building in place.
-                        /* | [A-Za-z]:[\\/]* ) # absolute path
-                                newsrcdir=${srcdir}/${cfg_dir}
-                                srcdiroption="--srcdir=${newsrcdir}"
-                                ;;
-                        *) # otherwise relative
-                                newsrcdir=../${srcdir}/${cfg_dir}
-                                srcdiroption="--srcdir=${newsrcdir}"
-                                ;;
-                        esac
-
-			# Handle --cache-file=../XXX
-			case "${cache_file}" in
-			"") # empty
-				;;
-			/* | [A-Za-z]:[\\/]* ) # absolute path
-				cache_file_option="--cache-file=${cache_file}"
-				;;
-			*) # relative path
-				cache_file_option="--cache-file=../${cache_file}"
-				;;
-			esac
-
-### check for guested configure, otherwise fix possibly relative progname
-                        if [ -f ${newsrcdir}/configure ] ; then
-                                recprog=${newsrcdir}/configure
-                        elif [ -f ${newsrcdir}/configure.in ] ; then
-                                case "${progname}" in
-                                /* | [A-Za-z]:[\\/]* )  recprog=${progname} ;;
-                                *)                      recprog=../${progname} ;;
-                                esac
-			else
-				eval echo No configuration information in ${cfg_dir} ${redirect}
-				recprog=
-                        fi
-
-### The recursion line is here.
-			if [ ! -z "${recprog}" ] ; then
-	                        if eval ${config_shell} ${recprog} ${verbose} ${buildopt} --host=${host_alias} --target=${tgt_alias} \
-        	                        ${prefixoption} ${tmpdiroption} ${exec_prefixoption} \
-                	                ${srcdiroption} ${diroptions} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
-	                                true
-        	                else
-					echo Configure in `${PWDCMD-pwd}` failed, exiting. 1>&2
-                	                exit 1
-                        	fi
-			fi
-
-                        cd ${POPDIR}
-                fi
-        done
+if [ -r ${srcdir}/.gdbinit ] ; then
+  case ${srcdir} in
+    .) ;;
+    *) cat > ./.gdbinit <<EOF
+# ${NO_EDIT}
+dir ${srcdir}
+dir .
+source ${srcdir}/.gdbinit
+EOF
+    ;;
+  esac
 fi
+
+# Install a makefile, and make it set VPATH
+# if necessary so that the sources are found.
+# Also change its value of srcdir.
+# NOTE: Makefile generation constitutes the majority of the time in configure.  Hence, this section has
+# been somewhat optimized and is perhaps a bit twisty.
+
+# code is order so as to try to sed the smallest input files we know.
+# so do these separately because I don't trust the order of sed -e expressions.
+
+# the five makefile fragments MUST end up in the resulting Makefile in this order: 
+# package macros, target, host, site, and package rules.
+
+if [ -f ${srcdir}/${Makefile_in} ] ; then
+
+  # Conditionalize the makefile for this package from "Makefile.in" (or whatever it's called) into Makefile.tem.
+  rm -f ./${Makefile}.tem
+  case "${package_makefile_rules_frag}" in
+    "") cp ${srcdir}/${Makefile_in} ./Makefile.tem ;;
+    *)
+      if [ ! -f ${package_makefile_rules_frag} ] ; then
+        package_makefile_rules_frag=${srcdir}/${package_makefile_rules_frag}
+      fi
+      if [ -f ${package_makefile_rules_frag} ] ; then
+        sed -e "/^####/  r ${package_makefile_rules_frag}" ${srcdir}/${Makefile_in} > ${Makefile}.tem
+      else
+        echo '***' Expected package makefile rules fragment \"${package_makefile_rules_frag}\" 1>&2
+        echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
+        cp ${srcdir}/${Makefile_in} ./Makefile.tem
+      fi
+  esac
+  # working copy now in ${Makefile}.tem
+
+  # Conditionalize for this site.
+  rm -f ${Makefile}
+  case "${site}" in
+    "") mv ./Makefile.tem ${Makefile} ;;
+    *)
+      site_makefile_frag=${srcdir}/config/ms-${site}
+
+      if [ -f ${site_makefile_frag} ] ; then
+        sed -e "/^####/  r ${site_makefile_frag}" ./Makefile.tem > ${Makefile}
+      else
+        mv ./Makefile.tem ${Makefile}
+        site_makefile_frag=
+      fi
+      ;;
+  esac
+  # working copy now in ${Makefile}
+
+  # Conditionalize the makefile for this host.
+  rm -f ./Makefile.tem
+  case "${host_makefile_frag}" in
+    "") mv ${Makefile} ./Makefile.tem ;;
+    *)
+      if [ ! -f ${host_makefile_frag} ] ; then
+        host_makefile_frag=${srcdir}/${host_makefile_frag}
+      fi
+      if [ -f ${host_makefile_frag} ] ; then
+        sed -e "/^####/  r ${host_makefile_frag}" ${Makefile} > ./Makefile.tem
+      else
+        echo '***' Expected host makefile fragment \"${host_makefile_frag}\" 1>&2
+        echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
+        mv ${Makefile} ./Makefile.tem
+      fi
+  esac
+  # working copy now in ./Makefile.tem
+
+  # Conditionalize the makefile for this target.
+  rm -f ${Makefile}
+  case "${target_makefile_frag}" in
+    "") mv ./Makefile.tem ${Makefile} ;;
+    *)
+      if [ ! -f ${target_makefile_frag} ] ; then
+        target_makefile_frag=${srcdir}/${target_makefile_frag}
+      fi
+      if [ -f ${target_makefile_frag} ] ; then
+        sed -e "/^####/  r ${target_makefile_frag}" ./Makefile.tem > ${Makefile}
+      else
+        mv ./Makefile.tem ${Makefile}
+        target_makefile_frag=
+      fi
+      ;;
+  esac
+  # working copy now in ${Makefile}
+
+  # Emit the default values of this package's macros.
+  rm -f ./Makefile.tem
+  case "${package_makefile_frag}" in
+    "") mv ${Makefile} ./Makefile.tem ;;
+    *)
+      if [ ! -f ${package_makefile_frag} ] ; then
+        package_makefile_frag=${srcdir}/${package_makefile_frag}
+      fi
+      if [ -f ${package_makefile_frag} ] ; then
+        sed -e "/^####/  r ${package_makefile_frag}" ${Makefile} > ./Makefile.tem
+      else
+        echo '***' Expected package makefile fragment \"${package_makefile_rules_frag}\" 1>&2
+        echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
+        mv ${Makefile} ./Makefile.tem
+      fi
+  esac
+  # real copy now in ./Makefile.tem
+
+  # record if we want runtime library stuff installed in libsubdir.
+  # Blank means no.
+  if test -z "${enable_version_specific_runtime_libs}"; then
+    enable_version_specific_runtime_libs=no
+  fi
+
+  sed -e "s|@configlinks@|${configlinks}|" \
+      -e "s|@build_alias@|${build_alias}|" \
+      -e "s|@build_cpu@|${build_cpu}|" \
+      -e "s|@build_vendor@|${build_vendor}|" \
+      -e "s|@build_os@|${build_os}|" \
+      -e "s|@host_alias@|${host_alias}|" \
+      -e "s|@host_cpu@|${host_cpu}|" \
+      -e "s|@host_vendor@|${host_vendor}|" \
+      -e "s|@host_os@|${host_os}|" \
+      -e "s|@target_alias@|${target_alias}|" \
+      -e "s|@target_cpu@|${target_cpu}|" \
+      -e "s|@target_vendor@|${target_vendor}|" \
+      -e "s|@target_os@|${target_os}|" \
+      -e "s|@target_makefile_frag@|${target_makefile_frag}|" \
+      -e "s|@host_makefile_frag@|${host_makefile_frag}|" \
+      -e "s|@enable_shared@|${enable_shared}|" \
+      -e "s|@enable_threads@|${enable_threads}|" \
+      -e "s|@enable_version_specific_runtime_libs@|${enable_version_specific_runtime_libs}|" \
+      -e "s|@gcc_version_trigger@|${gcc_version_trigger}|" \
+      -e "s|@gcc_version@|${gcc_version}|" \
+      ./Makefile.tem > ${Makefile}
+  mv -f ${Makefile} ./Makefile.tem
+  # Real copy now in Makefile.tem; no prologue.
+
+  # reset prefix, exec_prefix, srcdir, SUBDIRS, NONSUBDIRS,
+  # remove any form feeds.
+  sed -e "s|@configdirs@|${configdirs}|" \
+      -e "s|@prefix@|${prefix}|" \
+      -e "s|@exec_prefix@|${exec_prefix}|" \
+      -e "s|@bindir@|${bindir}|" \
+      -e "s|@sbindir@|${sbindir}|" \
+      -e "s|@libexecdir@|${libexecdir}|" \
+      -e "s|@datadir@|${datadir}|" \
+      -e "s|@sysconfdir@|${sysconfdir}|" \
+      -e "s|@sharedstatedir@|${sharedstatedir}|" \
+      -e "s|@localstatedir@|${localstatedir}|" \
+      -e "s|@libdir@|${libdir}|" \
+      -e "s|@includedir@|${includedir}|" \
+      -e "s|@oldincludedir@|${oldincludedir}|" \
+      -e "s|@infodir@|${infodir}|" \
+      -e "s|@mandir@|${mandir}|" \
+      -e "s|@CC@|${CC}|" \
+      -e "s|@CXX@|${CXX}|" \
+      -e "s|@CFLAGS@|${CFLAGS}|" \
+      -e "s|@CXXFLAGS@|${CXXFLAGS}|" \
+      -e "s|@config_shell@|${config_shell}|" \
+      -e "s|@srcdir@|${srcdir}|" \
+      -e "s///" \
+      -e "s:@program_transform_name@:${program_transform_name}:" \
+      -e "s|@tooldir@|${tooldir}|" \
+      -e "s|@build_tooldir@|${tooldir}|" \
+      -e "s:@DEFAULT_YACC@:${DEFAULT_YACC}:" \
+      -e "s:@DEFAULT_LEX@:${DEFAULT_LEX}:" \
+      -e "s:@DEFAULT_M4@:${DEFAULT_M4}:" \
+          ./Makefile.tem > ${Makefile}
+
+  # If this is a Canadian Cross, preset the values of many more
+  # tools.
+  if [ "${build}" != "${host}" ]; then
+    for var in ${tools}; do
+      eval val=\$${var}
+      sed -e "/^${var}[ 	]*=/{
+              :loop1
+              /\\\\$/ N
+              /\\\\$/ b loop1
+              s/\\\\\\n//g
+              s%^${var}[ 	]*=.*$%${var} = ${val}%
+              }" ${Makefile} > ${Makefile}.tem
+      mv -f ${Makefile}.tem ${Makefile}
+    done
+  fi
+  # If this is NOT a Canadian Cross, preset the values of some more
+  # tools.  The above line should get merged into this, but this
+  # substitutes *once* where the above substitutes *globally*; that
+  # needs to be worked out before the merger.  The issue is in Makefile
+  # fragment elements (ick, yuck, ugh).
+  if [ "${build}" = "${host}" ]; then
+    for var in ${tools}; do
+      eval val=\$${var}
+      sed -e "s%@${var}@%${val}%" ${Makefile} > ${Makefile}.tem
+      mv -f ${Makefile}.tem ${Makefile}
+    done
+  fi
+
+  # final copy now in ${Makefile}
+
+else
+  echo "No Makefile.in found in ${srcdir}/., unable to configure" 1>&2
+fi
+
+rm -f ./Makefile.tem
+
+case "${host_makefile_frag}" in
+  "") using= ;;
+  *) using="and \"${host_makefile_frag}\"" ;;
+esac
+
+case "${target_makefile_frag}" in
+  "") ;;
+  *) using="${using} and \"${target_makefile_frag}\"" ;;
+esac
+
+case "${site_makefile_frag}" in
+  "") ;;
+  *) using="${using} and \"${site_makefile_frag}\"" ;;
+esac
+
+newusing=`echo "${using}" | sed 's/and/using/'`
+using=${newusing}
+echo "Created \"${Makefile}\" in" ${PWD=`${PWDCMD-pwd}`} ${using}
+
+. ${tmpfile}.pos
+
+# describe the chosen configuration in config.status.
+# Make that file a shellscript which will reestablish
+# the same configuration.  Used in Makefiles to rebuild
+# Makefiles.
+
+case "${norecursion}" in
+  "") arguments="${arguments} --norecursion" ;;
+  *) ;;
+esac
+
+echo "#!/bin/sh
+# ${NO_EDIT}
+# This directory was configured as follows:
+${progname}" ${arguments}  "
+# ${using}" > ./config.new
+chmod a+x ./config.new
+if [ -r ./config.back ] ; then
+  mv -f ./config.back ./config.status
+fi
+${config_shell} ${moveifchange} ./config.new ./config.status
 
 # Perform the same cleanup as the trap handler, minus the "exit 1" of course,
 # and reset the trap handler.

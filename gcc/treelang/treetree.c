@@ -54,25 +54,12 @@
   /* Note it is OK to use GCC extensions such as long long in a compiler front end.
      This is because the GCC front ends are built using GCC. */
 
-/* Standard/OS headers.  */
-
-#include <stdlib.h>
-#include <unistd.h>
-#include "safe-ctype.h"
-#include <errno.h>
-#include <stdarg.h>
-#include <limits.h>
-#include <string.h>
-
-#include <fcntl.h>
-#include <getopt.h>
-#include <stdio.h>
-
 /* GCC headers.  */
 
 #include "config.h"
-#include "ansidecl.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "flags.h"
 #include "output.h"

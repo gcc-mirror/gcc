@@ -21,6 +21,8 @@
 
 #include "tconfig.h"
 #include "tsystem.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "unwind.h"
 #include "gthr.h"
 
@@ -92,15 +94,9 @@ static __gthread_key_t fc_key;
 static int use_fc_key = -1;
 
 static void
-fc_key_dtor (void *ptr)
-{
-  __gthread_key_dtor (fc_key, ptr);
-}
-
-static void
 fc_key_init (void)
 {
-  use_fc_key = __gthread_key_create (&fc_key, fc_key_dtor) == 0;
+  use_fc_key = __gthread_key_create (&fc_key, 0) == 0;
 }
 
 static void

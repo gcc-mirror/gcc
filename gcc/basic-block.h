@@ -112,7 +112,11 @@ do {									\
    be done, other than zero the statistics on the first allocation.  */
 #define MAX_REGNO_REG_SET(NUM_REGS, NEW_P, RENUMBER_P)
 
-/* Type we use to hold basic block counters.  Should be at least 64bit.  */
+/* Type we use to hold basic block counters.  Should be at least
+   64bit.  Although a counter cannot be negative, we use a signed
+   type, because erroneous negative counts can be generated when the
+   flow graph is manipulated by various optimizations.  A signed type
+   makes those easy to detect. */
 typedef HOST_WIDEST_INT gcov_type;
 
 /* Control flow edge information.  */

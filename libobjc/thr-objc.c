@@ -25,6 +25,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define _LIBOBJC
 #include "tconfig.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "defaults.h"
 #include <objc/thr.h>
 #include "runtime.h"

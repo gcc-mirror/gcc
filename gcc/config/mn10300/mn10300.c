@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tree.h"
 #include "regs.h"
@@ -1149,7 +1151,7 @@ mask_ok_for_mem_btst (len, bit)
      int len;
      int bit;
 {
-  int mask = 0;
+  unsigned int mask = 0;
 
   while (len > 0)
     {

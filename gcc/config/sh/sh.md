@@ -135,6 +135,7 @@
   (UNSPEC_FSINA		16)
   (UNSPEC_NSB		17)
   (UNSPEC_ALLOCO	18)
+  (UNSPEC_EH_RETURN	19)
 
   ;; These are used with unspec_volatile.
   (UNSPECV_BLOCKAGE	0)
@@ -7142,6 +7143,48 @@
 {
   sh_expand_epilogue ();
   emit_jump_insn (gen_return ());
+  DONE;
+}")
+
+(define_expand "eh_return"
+  [(use (match_operand 0 "register_operand" ""))
+   (use (match_operand 1 "register_operand" ""))]
+  ""
+{
+  rtx tmp, sa = operands[0], ra = operands[1];
+
+  if (TARGET_SHMEDIA64)
+    emit_insn (gen_eh_set_ra_di (ra));
+  else
+    emit_insn (gen_eh_set_ra_si (ra));
+
+  emit_move_insn (EH_RETURN_STACKADJ_RTX, sa);
+  DONE;
+})
+
+;; Clobber the return address on the stack.  We can't expand this
+;; until we know where it will be put in the stack frame.
+
+(define_insn "eh_set_ra_si"
+  [(unspec [(match_operand:SI 0 "register_operand" "r")] UNSPEC_EH_RETURN)
+   (clobber (match_scratch:SI 1 "=&r"))]
+  "! TARGET_SHMEDIA64"
+  "#")
+
+(define_insn "eh_set_ra_di"
+  [(unspec [(match_operand:DI 0 "register_operand" "r")] UNSPEC_EH_RETURN)
+   (clobber (match_scratch:DI 1 "=&r"))]
+  "TARGET_SHMEDIA64"
+  "#")
+
+(define_split
+  [(unspec [(match_operand 0 "register_operand" "")] UNSPEC_EH_RETURN)
+   (clobber (match_scratch 1 ""))]
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  sh_set_return_address (operands[0], operands[1]);
   DONE;
 }")
 

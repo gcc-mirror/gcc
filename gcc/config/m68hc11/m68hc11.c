@@ -35,6 +35,8 @@ Note:
 #include <stdio.h>
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
@@ -64,7 +66,6 @@ static int go_if_legitimate_address_internal PARAMS((rtx, enum machine_mode,
                                                      int));
 static int register_indirect_p PARAMS((rtx, enum machine_mode, int));
 static rtx m68hc11_expand_compare PARAMS((enum rtx_code, rtx, rtx));
-static int m68hc11_autoinc_compatible_p PARAMS ((rtx, rtx));
 static int must_parenthesize PARAMS ((rtx));
 static int m68hc11_shift_cost PARAMS ((enum machine_mode, rtx, int));
 static int m68hc11_auto_inc_p PARAMS ((rtx));
@@ -78,6 +79,8 @@ static void m68hc11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68hc11_asm_out_constructor PARAMS ((rtx, int));
 static void m68hc11_asm_out_destructor PARAMS ((rtx, int));
 static void m68hc11_encode_section_info PARAMS((tree, int));
+static int autoinc_mode PARAMS((rtx));
+static int m68hc11_make_autoinc_notes PARAMS((rtx *, void *));
 
 rtx m68hc11_soft_tmp_reg;
 

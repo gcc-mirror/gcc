@@ -2693,7 +2693,7 @@
   ""
   "*
 {
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"LI\",
+  (*targetm.asm_out.internal_label) (asm_out_file, \"LI\",
 			     CODE_LABEL_NUMBER (operands[1]));
   return \"cased %0\";
 }")

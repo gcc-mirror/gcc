@@ -142,10 +142,3 @@ do {							\
   else							\
     sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM)); \
 } while (0)
-
-#undef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  if (flag_pic && !strcmp(PREFIX,"LC"))			\
-    fprintf (FILE, "%s%%%d:\n", PREFIX, NUM);		\
-  else							\
-    asm_fprintf (FILE, "%0L%s%d:\n", PREFIX, NUM)

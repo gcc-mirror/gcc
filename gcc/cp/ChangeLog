@@ -1,3 +1,13 @@
+2002-12-14  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (simplify_aggr_init_exprs_r): Also prepend the
+	return slot for normal functions.  Set CALL_EXPR_HAS_RETURN_SLOT_ADDR.
+	* tree.c (build_cplus_new): If the type isn't TREE_ADDRESSABLE,
+	don't bother with an AGGR_INIT_EXPR.
+	(cp_copy_res_decl_for_inlining): If the type isn't TREE_ADDRESSABLE,
+	just generate a new decl normally.  Take return slot parm.
+	* cp-tree.h: Adjust prototype.
+
 2002-12-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR C++/8031
@@ -8,6 +18,13 @@
 
 	* cp-tree.h: Have the multiple-include guards around
 	the entire file.
+
+2002-12-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* cp/spew.c (feed_input): Change limit to last_pos and pos to cur_pos
+	for SPEW_DEBUG.
+	(snarf_method): Same.
+	(snarf_defarg): Same.
 
 2002-12-10  Mark Mitchell  <mark@codesourcery.com>
 
@@ -41,6 +58,37 @@
 	PR C++/8799
 	* error.c (dump_expr): Don't ever try to dump a non-existent
 	expression. 
+
+2002-12-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Implement covariant returns.
+	* cp-tree.h (IS_AGGR_TYPE_2): Remove.
+	(struct lang_decl_flags): Add this_thunk_p flag.
+	Rename vcall_offset to virtual_offset.
+	(struct lang_decl): Rename delta to fixed_offset.
+	(DECL_THIS_THUNK_P, DECL_RESULT_THUNK_P): New #defines.
+	(SET_DECL_THUNK_P): Add THIS_ADJUSTING arg.
+	(THUNK_DELTA, THUNK_VCALL_OFFSET): Rename to ...
+	(THUNK_FIXED_OFFSET, THUNK_VIRTUAL_OFFSET): ... here.
+	(make_thunk): Add this_adjusting arg.
+	(finish_thunk): Declare.
+	(mangle_thunk): Add this_adjusting arg.
+	* class.c (get_vcall_index): Use base function for lookup.
+	(update_vtable_entry_for_fn): Generate covariant thunk.
+	(finish_struct_1): Set DECL_VINDEX to NULL for thunks.
+	(build_vtbl_initializer): Use base function for lookup.
+	Finish covariant thunk here. Adjust thunk generation.
+	* dump.c (cp_dump_tree): Simplify DECL_GLOBAL_[CD]TOR_P handling.
+	Adjust thunk dumping.
+	* mangle.c (mangle_call_offset): New function.
+	(mangle_thunk): Adjust for covariant thunks.
+	* method.c (make_thunk): Adjust. Do not set name here.
+	(finish_thunk): New function. Set name here.
+	(use_thunk): Generate covariant thunks too.
+	(thunk_adjust): New function.
+	* search.c (covariant_return_p): Remove. Fold into ...
+	(check_final_overrider): ... here. Simplify.
+	* semantics.c (emit_associated_thunks): Walk covariant thunk lists.
 
 2002-12-03  Jason Merrill  <jason@redhat.com>
 
@@ -104,6 +152,15 @@
 	* decl2.c (coerce_new_type): Likewise.
 	* except.c (do_allocate_exception): Likewise.
 
+2002-11-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* call.c, class.c, cp-lang.c, cvt.c, cxxfilt.c, decl.c, decl2.c,
+	dump.c, error.c, except.c, expr.c, friend.c, g++spec.c, init.c,
+	lex.c, mangle.c, method.c, optimize.c, parse.y, pt.c, ptree.c,
+	repo.c, rtti.c, search.c, semantics.c, spew.c, tree.c, typeck.c,
+	typeck2.c: Include coretypes.h and tm.h.
+	* Make-lang.in: Update dependencies.
+
 2002-11-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8227
@@ -150,6 +207,11 @@
 	(template_parms_equal): Remove prototype.
 	* typeck.c (buuld_indirect_ref): Reformat.
 
+2002-11-25  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_vec_init): Use a FOR_STMT instead of an IF_STMT
+	and a DO_STMT.
+
 2002-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (cp_build_qualified_type_real): Correct handling of
@@ -170,6 +232,27 @@
 2002-11-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* rtti.c (qualifier_flags): Fix thinko.
+
+2002-11-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Remove traditional C constructs 1/n.
+	* cp-tree.h (init_method, set_mangled_name_for_decl,
+	build_opfncall, hack_identifier, make_thunk, use_thunk,
+	synthesize_method, implicitly_declare_fn,
+	skip_artificial_parms_for, optimize_function, calls_setjmp_p,
+	maybe_clone_body): Remove use of PARAMS.
+
+	* method.c (do_build_assign_ref, do_build_copy_constructor,
+	synthesize_exception_spec, locate_dtor, locate_ctor, locate_copy):
+	Likewise.
+	(synthesize_method): Use 'bool' type and constants instead of
+	'int'.
+	(locate_copy): Likewise.
+	(implicitly_declare_fn): Likewise.
+
+	* optimize.c (calls_setjmp_r, update_cloned_parm, dump_function):
+	Remove old-style declaration.
+	(maybe_clone_body): Use 'bool' type and constants.
 
 2002-11-21  Glen Nakamura  <glen@imodulo.com>
 
@@ -1029,6 +1112,14 @@
 
 	* decl.c (start_cleanup_fn): Clear interface_only before
 	start_function, restore it afterwards.
+
+2002-09-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (finish_builtin_type): Remove.
+	* decl2.c (finish_builtin_type): Move to common code.
+	* decl.c (build_ptrmemfunc_type): Adjust.
+	* rtti.c (create_pseudo_type_info): Adjust.
+	(create_tinfo_types): Adjust.
 
 2002-08-31  Jason Merrill  <jason@redhat.com>
 

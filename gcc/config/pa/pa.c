@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -117,6 +119,7 @@ static void pa_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
 static void pa_encode_section_info PARAMS ((tree, int));
 static const char *pa_strip_name_encoding PARAMS ((const char *));
+static bool pa_function_ok_for_sibcall PARAMS ((tree, tree));
 static void pa_globalize_label PARAMS ((FILE *, const char *))
      ATTRIBUTE_UNUSED;
 static void pa_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
@@ -197,6 +200,9 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_ENCODE_SECTION_INFO pa_encode_section_info
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING pa_strip_name_encoding
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL pa_function_ok_for_sibcall
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK pa_asm_output_mi_thunk
@@ -4784,7 +4790,7 @@ output_deferred_plabels (file)
   /* Now output the deferred plabels.  */
   for (i = 0; i < n_deferred_plabels; i++)
     {
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
+      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
       assemble_integer (gen_rtx_SYMBOL_REF (Pmode, deferred_plabels[i].name),
 			TARGET_64BIT ? 8 : 4, TARGET_64BIT ? 64 : 32, 1);
     }
@@ -5546,7 +5552,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	    {
 	      xoperands[4] = gen_label_rtx ();
 	      output_asm_insn ("addil L'%l0-%l4,%%r1", xoperands);
-	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+	      (*targetm.asm_out.internal_label) (asm_out_file, "L",
 					 CODE_LABEL_NUMBER (xoperands[4]));
 	      output_asm_insn ("ldo R'%l0-%l4(%%r1),%%r1", xoperands);
 	    }
@@ -6248,7 +6254,7 @@ output_millicode_call (insn, call_dest)
 	    {
 	      xoperands[1] = gen_label_rtx ();
 	      output_asm_insn ("addil L'%0-%l1,%%r1", xoperands);
-	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+	      (*targetm.asm_out.internal_label) (asm_out_file, "L",
 					 CODE_LABEL_NUMBER (xoperands[1]));
 	      output_asm_insn ("ldo R'%0-%l1(%%r1),%%r1", xoperands);
 	    }
@@ -6292,7 +6298,7 @@ output_millicode_call (insn, call_dest)
 		 millicode symbol but not an arbitrary external
 		 symbol when generating SOM output.  */
 	      xoperands[1] = gen_label_rtx ();
-	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+	      (*targetm.asm_out.internal_label) (asm_out_file, "L",
 					 CODE_LABEL_NUMBER (xoperands[1]));
 	      output_asm_insn ("addil L'%0-%l1,%%r1", xoperands);
 	      output_asm_insn ("ldo R'%0-%l1(%%r1),%%r1", xoperands);
@@ -6329,7 +6335,7 @@ output_millicode_call (insn, call_dest)
     {
       xoperands[1] = gen_label_rtx ();
       output_asm_insn ("ldo %0-%1(%2),%2", xoperands);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+      (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				 CODE_LABEL_NUMBER (xoperands[1]));
     }
   else
@@ -6540,7 +6546,7 @@ output_call (insn, call_dest, sibcall)
 		  xoperands[1] = gen_label_rtx ();
 		  output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
 		  output_asm_insn ("addil L'%0-%l1,%%r1", xoperands);
-		  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+		  (*targetm.asm_out.internal_label) (asm_out_file, "L",
 					     CODE_LABEL_NUMBER (xoperands[1]));
 		  output_asm_insn ("ldo R'%0-%l1(%%r1),%%r1", xoperands);
 		}
@@ -6667,8 +6673,8 @@ output_call (insn, call_dest, sibcall)
 	{
 	  xoperands[1] = gen_label_rtx ();
 	  output_asm_insn ("ldo %0-%1(%%r2),%%r2", xoperands);
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
-				     CODE_LABEL_NUMBER (xoperands[1]));
+	  (*targetm.asm_out.internal_label) (asm_out_file, "L",
+					     CODE_LABEL_NUMBER (xoperands[1]));
 	}
       else
 	/* ??? This branch may not reach its target.  */
@@ -6837,11 +6843,49 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
     {
       data_section ();
       fprintf (file, "\t.align 4\n");
-      ASM_OUTPUT_INTERNAL_LABEL (file, "LTHN", current_thunk_number);
+      (*targetm.asm_out.internal_label) (file, "LTHN", current_thunk_number);
       fprintf (file, "\t.word P'%s\n", target_name);
       function_section (thunk_fndecl);
     }
   current_thunk_number++;
+}
+
+/* Only direct calls to static functions are allowed to be sibling (tail)
+   call optimized.
+
+   This restriction is necessary because some linker generated stubs will
+   store return pointers into rp' in some cases which might clobber a
+   live value already in rp'.
+
+   In a sibcall the current function and the target function share stack
+   space.  Thus if the path to the current function and the path to the
+   target function save a value in rp', they save the value into the
+   same stack slot, which has undesirable consequences.
+
+   Because of the deferred binding nature of shared libraries any function
+   with external scope could be in a different load module and thus require
+   rp' to be saved when calling that function.  So sibcall optimizations
+   can only be safe for static function.
+
+   Note that GCC never needs return value relocations, so we don't have to
+   worry about static calls with return value relocations (which require
+   saving rp').
+
+   It is safe to perform a sibcall optimization when the target function
+   will never return.  */
+static bool
+pa_function_ok_for_sibcall (decl, exp)
+     tree decl;
+     tree exp ATTRIBUTE_UNUSED;
+{
+#ifdef TARGET_HAS_STUBS_AND_ELF_SECTIONS
+  /* Sibcalls, stubs, and elf sections don't play well.  */
+  return false;
+#endif
+  return (decl
+	  && ! TARGET_PORTABLE_RUNTIME
+	  && ! TARGET_64BIT
+	  && ! TREE_PUBLIC (decl));
 }
 
 /* Returns 1 if the 6 operands specified in OPERANDS are suitable for

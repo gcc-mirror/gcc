@@ -36,7 +36,7 @@ struct profile_info
     /* Checksum of the cfg. Used for 'identification' of code.
        Used by final.  */
 
-    long current_function_cfg_checksum;
+    unsigned current_function_cfg_checksum;
 
     /* Max. value of counter in program corresponding to the profile data
        for the current function.  */

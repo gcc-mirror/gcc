@@ -24,10 +24,113 @@
 
 	* testsuite/abi_check.cc: Add GLIBCPP_3.2.2.
 
+2002-12-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	* config/locale/generic/codecvt_members.cc (codecvt::do_out
+	(state_type&, const intern_type*, const intern_type*,
+	const intern_type*&, extern_type*, extern_type*, extern_type*&),
+	codecvt::do_in(state_type&, const extern_type*, const extern_type*,
+	const extern_type*&, intern_type*, intern_type*, intern_type*&)):
+	Fully qualify min() with std::.
+	* config/locale/gnu/codecvt_members.cc: Ditto.
+	* locale/ieee_1003.1-2001/codecvt_specializations.h
+	(codecvt::do_length(const state_type&, const extern_type*,
+	const extern_type*, size_t): Ditto.
+	* include/bits/deque.tcc
+	(_M_range_initialize(_ForwardIterator, _ForwardIterator,
+	forward_iterator_tag), deque::_M_range_insert_aux(iterator,
+	_ForwardIterator, _ForwardIterator, forward_iterator_tag),
+	deque::_M_reallocate_map(size_type, bool)): Fully qualify
+	distance() and max() with std::.
+	* include/bits/fstream.tcc (basic_filebuf::seekoff(off_type,
+	ios_base::seekdir, ios_base::openmode)): Fully qualify max()
+	with std::.
+	* include/bits/istream.tcc (basic_istream::ignore(streamsize,
+	int_type), basic_istream::readsome(char_type*, streamsize)):
+	Fully qualify min() with std::.
+	* include/bits/locale_facets.tcc (time_get::_M_extract_name
+	(iter_type&, iter_type&, int&, const _CharT**, size_t,
+	ios_base::iostate&)): Ditto.
+	* include/bits/sstream.tcc (basic_stringbuf::overflow(int_type)):
+	Fully qualify max() with std::.
+	* include/bits/stl_algo.h (__inplace_stable_partition(_ForwardIter
+	__first, _ForwardIter, _Predicate, _Distance),
+	__stable_partition_adaptive(_ForwardIter, _ForwardIter, _Predicate,
+	_Distance, _Pointer, _Distance), __merge_sort_loop(_RandomAccessIter1,
+	_RandomAccessIter1, _RandomAccessIter2, _Distance),
+	__merge_sort_loop(_RandomAccessIter1, _RandomAccessIter1,
+	_RandomAccessIter2, _Distance, _Compare), lower_bound(_ForwardIter,
+	_ForwardIter, const _Tp&), lower_bound(_ForwardIter, _ForwardIter,
+	const _Tp&, _Compare), upper_bound(_ForwardIter, _ForwardIter,
+	const _Tp&), upper_bound(_ForwardIter, _ForwardIter, const _Tp&,
+	_Compare), equal_range(_ForwardIter, _ForwardIter, const _Tp&),
+	equal_range(_ForwardIter, _ForwardIter, const _Tp&, _Compare),
+	__merge_without_buffer(_BidirectionalIter, _BidirectionalIter,
+	_BidirectionalIter, _Distance, _Distance), __merge_without_buffer
+	(_BidirectionalIter, _BidirectionalIter, _BidirectionalIter,
+	_Distance, _Distance, _Compare), __rotate_adaptive(_BidirectionalIter1,
+	_BidirectionalIter1, _BidirectionalIter1, _Distance, _Distance,
+	_BidirectionalIter2, _Distance), __merge_adaptive(_BidirectionalIter,
+	_BidirectionalIter, _BidirectionalIter, _Distance, _Distance,
+	_Pointer, _Distance), __merge_adaptive(_BidirectionalIter,
+	_BidirectionalIter, _BidirectionalIter, _Distance, _Distance,
+	_Pointer, _Distance, _Compare), inplace_merge(_BidirectionalIter,
+	_BidirectionalIter, _BidirectionalIter), inplace_merge
+	(_BidirectionalIter, _BidirectionalIter, _BidirectionalIter,
+	_Compare), __find_end(_BidirectionalIter1, _BidirectionalIter1,
+	_BidirectionalIter2, _BidirectionalIter2, bidirectional_iterator_tag,
+	bidirectional_iterator_tag), __find_end(_BidirectionalIter1,
+	_BidirectionalIter1, _BidirectionalIter2, _BidirectionalIter2,
+	bidirectional_iterator_tag, bidirectional_iterator_tag,
+	_BinaryPredicate)): Fully qualify distance() and min() with std::.
+	* include/bits/stl_algobase.h (lexicographical_compare
+	(const unsigned char*, const unsigned char*, const unsigned char*,
+	const unsigned char*)): Fully qualify min() with std::.
+	* include/bits/stl_bvector.h (_M_insert_range(iterator,
+	_ForwardIterator, _ForwardIterator, forward_iterator_tag),
+	_M_assign_aux(_ForwardIterator, _ForwardIterator, forward_iterator_tag),
+	_M_initialize_range(_ForwardIterator, _ForwardIterator,
+	forward_iterator_tag), _M_fill_insert(iterator, size_type, bool)):
+	Fully qualify distance() and max() with std::.
+	* include/bits/stl_deque.h (_Deque_base::_M_initialize_map(size_t),
+	_M_assign_aux(_ForwardIterator, _ForwardIterator, forward_iterator_tag)):
+	Ditto.
+	* include/bits/stl_list.h (size()): Fully qualify distance() with std::.
+	* include/bits/stl_tempbuf.h (_Temporary_buffer::_Temporary_buffer
+	(_ForwardIterator, _ForwardIterator)): Ditto.
+	* include/bits/stl_tree.h (_Rb_tree::erase(const _Key&),
+	_Rb_tree::count(const _Key&)): Ditto.
+	* include/bits/stl_vector.h (_M_range_initialize(_ForwardIterator,
+	_ForwardIterator, forward_iterator_tag)): Ditto.
+	* include/bits/streambuf.tcc (basic_streambuf::xsgetn(char_type*,
+	streamsize), basic_streambuf::xsputn(const char_type*, streamsize)):
+	Fully qualify min() with std::.
+	* include/bits/vector.tcc (_M_assign_aux(_ForwardIter, _ForwardIter,
+	forward_iterator_tag), _M_fill_insert(iterator, size_type,
+	const value_type&), _M_range_insert(iterator, _ForwardIterator,
+	_ForwardIterator, forward_iterator_tag)): Fully qualify max() and
+	distance() with std::.
+	* include/std/std_bitset.h (bitset::_M_copy_from_string
+	(const basic_string&, size_t, size_t)): Fully qualify min() with std::.
+	* include/std/std_streambuf.h (_M_pback_create()): Ditto.
+	* include/std/std_complex.h (abs(const complex<_Tp>&)):
+	Fully qualify max() with std::.
+	* include/std/std_sstream.h (str()): Ditto.
+	* src/codecvt.cc (codecvt::do_out(state_type&, const intern_type*,
+	const intern_type*, const intern_type*&, extern_type*, extern_type*,
+	 extern_type*&), codecvt::do_in(state_type&, const extern_type*,
+	const extern_type*, const extern_type*&, intern_type*, intern_type*,
+	intern_type*&), codecvt::do_length(const state_type&,
+	const extern_type*, const extern_type*, size_t), do_length
+	(const state_type&, const extern_type*, const extern_type*,
+	size_t)): Fully qualify min() with std::.
+	* src/strstream.cc (strstreambuf::strstreambuf(streamsize),
+	strstreambuf::overflow(int_type)): Fully qualify max() with std::.
+
 2002-12-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.h (compare(const basic_string&)):
-        Fully qualify min() with std::.
+	Fully qualify min() with std::.
 
 2002-12-02  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -46,7 +149,7 @@
 	basic_string::compare(size_type, size_type, const _CharT*,
 	size_type), _S_string_copy(const basic_string&, _CharT*,
 	typename _Alloc::size_type)): Fully qualify min() with std::.
-	
+
 2002-12-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.tcc
@@ -67,7 +170,7 @@
 	* docs/html/faq/index.html: Add tip about a namespace for extensions.
 
 2002-11-28  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	* src/localename.cc
 	(locale::_Impl::_Impl(const char*, size_t)):
@@ -87,7 +190,7 @@
 	__cxa_guard_release, __cxa_guard_abort in CXXABI_1.2.1.
 
 2002-11-25  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	* src/localename.cc
 	(locale::_Impl::_Impl(const char*, size_t)):
@@ -127,7 +230,7 @@
 	Trivial cosmetic tweaks.
 
 2002-11-22  Laszlo Ersek  <erseklaszlo@chello.hu>
-            Paolo Carlini  <pcarlini@unitus.it>
+	    Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8645
 	* include/bits/stl_tree.h (_Rb_tree_rebalance_for_erase):
@@ -180,7 +283,7 @@
 	include/std/std_streambuf.h:  Doxygenate all I/O entities.
 
 2002-11-20  Benjamin Kosnik  <bkoz@redhat.com>
-            Jonathan Lennox  <lennox@cs.columbia.edu>
+	    Jonathan Lennox  <lennox@cs.columbia.edu>
 
 	* include/bits/streambuf.tcc (__copy_streambufs):
 	Revert previous fix for the interactive half of
@@ -220,7 +323,7 @@
 	and std::codecvt<wchar_t>::codecvt(size_t) into one export pattern.
 
 2002-11-15  Benjamin Kosnik  <bkoz@redhat.com>
-            Gabriel Dos Reis  <gdr@integrable-solutions.net>
+	    Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR libstdc++/8230
 	* include/bits/stl_alloc.h: Use builtin_expect for the most
@@ -228,16 +331,16 @@
 	(__default_alloc_template::allocate): Check for null, throw
 	bad_alloc.
 	* include/bits/vector.tcc: Formatting tweaks.
-	* include/bits/stl_vector.h: Same.	
+	* include/bits/stl_vector.h: Same.
 	* testsuite/20_util/allocator_members.cc (test02): Add.
 	* testsuite/23_containers/vector_capacity.cc (test03): Add.
-	
+
 2002-11-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* src/ios.cc [_GLIBCPP_HAVE_UNISTD_H]: Include unistd.h.
 
 2002-11-15  Paolo Carlini  <pcarlini@unitus.it>
-            Loren J. Rittle  <ljrittle@acm.org>
+	    Loren J. Rittle  <ljrittle@acm.org>
 
 	PR libstdc++/8399
 	* acinclude.m4
@@ -258,11 +361,11 @@
 
 	* acconfig.h (HAVE_DRAND48): Add.
 	(HAVE_GETPAGESIZE): Add.
-	(HAVE_SETENV): Add.	
-	(HAVE_SIGSETJMP): Add.		
+	(HAVE_SETENV): Add.
+	(HAVE_SIGSETJMP): Add.
 	* config.h.in: Regenerate.
 	* configure: Regenerate.
-	
+
 2002-11-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* config/os/hpux/os_defines.h (_GLIBCPP_INST_ATOMICITY_LOCK): Define
@@ -275,7 +378,7 @@
 	requested size is bigger than max_size().
 	* include/bits/stl_bvector.h (vector<bool>::reserve): Same.
 	* testsuite/23_containers/vector_capacity.cc (test02): Add.
-	
+
 2002-11-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu: Export all _S_construct.
@@ -290,15 +393,15 @@
 	* docs/html/install.html, docs/html/22_locale/locale.html: HTML fix.
 
 2002-11-11  Benjamin Kosnik  <bkoz@redhat.com>
- 
-        PR libstdc++/6746
-        * include/bits/fstream.tcc (filebuf::open): Set input pointers.
+
+	PR libstdc++/6746
+	* include/bits/fstream.tcc (filebuf::open): Set input pointers.
 	* config/io/basic_file_stdio.cc (__basic_file::_M_open_mode): Set
 	__p_mode as well.
 	(__basic_file::open): Set to non-block for input.
 	* testsuite/27_io/istream_unformatted.cc (test12): Add.
 	(test13): Same.
-	
+
 2002-11-11  Jonathan Wakely <redi@gcc.gnu.org>
 
 	* docs/html/17_intro/howto.html: Make "chapter 22 notes" a link.
@@ -313,7 +416,7 @@
 	docs/html/ext/sgiexts.html: Add missing <html> tag.
 
 2002-11-07  Phil Edwards  <pme@gcc.gnu.org>
-            Richard Earnshaw  <rearnsha@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/cpu/generic/atomicity.h:  Provide atomic __exchange_and_add
 	and __atomic_add.
@@ -341,9 +444,9 @@
 	for null buffer.
 	(istream::operator>>(_CharT*)): Use traits_type.
 	(istream::ws): Same.
-	(istream::operator>>(string)): Same.	
+	(istream::operator>>(string)): Same.
 	* testsuite/27_io/istream_unformatted.cc (test11): Add.
-	
+
 2002-11-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8466
@@ -371,7 +474,7 @@
 	* config/linker-map.gnu: Export string operator+.
 	Export __default_alloc_template::_S_force_new.
 	* testsuite/abi_check.cc: Output tweaks.
-	
+
 2002-11-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/8172
@@ -382,17 +485,17 @@
 	PR libstdc++/7926
 	* configure.target: Simplify.
 	* config/cpu/i386/atomicity.h: Remove.
-	* config/cpu/i386: Remove.	
+	* config/cpu/i386: Remove.
 	* config/cpu/arm/atomicity.h: Remove.
-	* config/cpu/arm: Remove.	
+	* config/cpu/arm: Remove.
 	* config/cpu/x86-64/atomicity.h: Remove.
-	* config/cpu/x86-64: Remove.	
-	
+	* config/cpu/x86-64: Remove.
+
 2002-11-01  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	PR libstdc++/8197
 	* config/link-map.gnu: Export math stubbs.
-	
+
 2002-11-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/8318
@@ -406,12 +509,16 @@
 	* include/bits/basic_ios.tcc: Same.
 	* include/bits/streambuf.tcc: Same.
 	* include/bits/locale_facets.tcc: Same.
-	
+
 2002-11-01  John Carter  <john.carter@tait.co.nz>
 
 	PR libstdc++/7961
 	* include/bits/basic_string.tcc
 	(compare(const _CharT* __s)): Don't access __s past its length.
+
+2002-10-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* libsupc++/eh_globals.cc: Don't call __gthread_key_dtor.
 
 2002-10-31  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -419,7 +526,7 @@
 	* include/bits/istream.tcc (istream::tellg): Remove sentry bits.
 	(istream::seekg): Same.
 	* testsuite/27_io/istream_seeks.cc (test06): New.
-	
+
 2002-10-28  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* testsuite/thread/pthread5.cc: Include <unistd.h>
@@ -481,7 +588,7 @@
 	for FreeBSD 5.
 
 2002-10-18  Loren J. Rittle  <ljrittle@acm.org>
-	    Brad Spencer  <spencer@infointeractive.com> 
+	    Brad Spencer  <spencer@infointeractive.com>
 	    (provided alternate patch and improvements)
 
 	* docs/html/23_containers/howto.html (GLIBCPP_FORCE_NEW): Document
@@ -546,21 +653,21 @@
 	c_locale_impl.
 	* testsuite/abi_check.cc (line_to_symbol_info): Collect size info.
 	* docs/html/abi.txt: Update.
-	
+
 2002-10-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/static_members.cc (test02): Less provincial.
 
 2002-10-14  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* testsuite/22_locale/static_members.cc (test02): Disable for 
+	* testsuite/22_locale/static_members.cc (test02): Disable for
 	systems without named locale support.
 	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Don't assume
 	running the testsuites in "C" environment.
 	Add new tests.
 	* docs/html/22_locale/locale.html: Update.
 
-2002-10-13  Danny Smith  <dannysmith@users.sourceforge.net> 
+2002-10-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* include/bits/stl_threads.h (_GLIBCPP_mutex,
 	_GLIBCPP_mutex_init,_GLIBCPP_mutex_address,
@@ -580,7 +687,7 @@
 	* testsuite/22_locale/static_members.cc (test02): Avoid null strings.
 
 2002-10-12  Jonathan Wakely  <jw@kayari.org>
-            Gabriel Dos Reis  <gdr@integrable-solutions.net>
+	    Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* docs/html/21_strings/howto.html#5:  Correct nasting of XHTML
 	elements.  Correct allocator-related text.
@@ -601,19 +708,19 @@
 	hack around m4 issues with quoting '@'.
 	* src/locale.cc: Use _GLIBCPP_ASM_SYMVER.
 	* src/globals.cc: Same.
-	
+
 	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Fix for
 	non-glibc systems.
 
 2002-10-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu (GLIBCPP_3.2.1): Add.
-	(GLIBCPP_3.2): Don't export locale::_S_*. 
+	(GLIBCPP_3.2): Don't export locale::_S_*.
 	* src/ios.cc: Move globals into __gnu_cxx. Make old exported
 	symbols match.
 	* src/locale.cc: Same.
-	* src/localename.cc: Same.	
-	* src/globals.cc: Same. 
+	* src/localename.cc: Same.
+	* src/globals.cc: Same.
 
 2002-10-10  Phil Edwards  <pme@gcc.gnu.org>
 
@@ -621,7 +728,7 @@
 	* docs/html/17_intro/porting.texi:  Expand on os_include_dir.
 	* docs/html/17_intro/porting.html:  Regenerate.
 
-2002-10-09  Benjamin Kosnik  <bkoz@redhat.com>	
+2002-10-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/locale.cc: Fix comments, move ctors together.
 	* testsuite/22_locale/static_members.cc (test03): Add.
@@ -632,9 +739,9 @@
 	* streambuf.tcc (__copy_streambufs): Handle cases where
 	__sbin->in_avail() returns 0, or where __sbin doesn't set gptr().
 	* testsuite/27_io/ostream_inserter_other.cc (test05): Add.
-	
+
 2002-10-08  Paolo Carlini  <pcarlini@unitus.it>
-	    Benjamin Kosnik  <bkoz@redhat.com>	
+	    Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/localefwd.h (class locale): Add static member
 	_S_num_extra_categories, encoding the number of additional
@@ -664,7 +771,7 @@
 	* src/codecvt.c: _S_c_locale simplification.
 	* src/ctype.c: Same.
 	* src/globals.cc: Add fake_name.
-	* src/locale-inst.cc: Remove extra includes.	
+	* src/locale-inst.cc: Remove extra includes.
 	* src/locale.cc: Remove extra includes.
 	Add _S_extra_categories_size definition.
 	Correct "C" initialization.
@@ -679,7 +786,7 @@
 	* config/locale/generic/c_locale.cc: Add _S_categories definition.
 	* config/locale/generic/c_locale.h: Add _GLIBCPP_NUM_CATEGORIES macro.
 	* config/locale/generic/time_members.cc: _S_c_locale cleanup.
-	
+
 	* config/locale/gnu/c_locale.cc: Add _S_categories definition.
 	(_S_destroy_c_locale): Move checks against _S_c_locale here.
 	* config/locale/gnu/c_locale.h: Add _GLIBCPP_NUM_CATEGORIES macro.
@@ -687,7 +794,7 @@
 	calls, _S_c_locale usage.
 	* config/locale/gnu/monetary_members.cc: Same, tweaks.
 	* config/locale/gnu/monetary_members.cc: Same.
-	* config/locale/gnu/time_members.cc: Same.	
+	* config/locale/gnu/time_members.cc: Same.
 	* config/os/gnu-linux/ctype_noninline.h: Use locale::classic().
 
 	* docs/html/22_locale/locale.html: Add bits about global locales
@@ -765,7 +872,7 @@
 	(__glibcpp_long_double_bits): Remove.
 	(__glibcpp_long_bits): Remove.
 	* config/os/hpux/os_defines.h (__glibcpp_wchar_t_is_signed): Remove.
-	* config/os/bsd/freebsd/os_defines.h: 
+	* config/os/bsd/freebsd/os_defines.h:
 	(__glibcpp_long_double_bits): Remove.
 	* config/os/aix/os_defines.h (__glibcpp_wchar_t_bits): Remove.
 	(__glibcpp_wchar_t_is_signed): Remove.
@@ -778,13 +885,13 @@
 	* config/cpu/arm/cpu_limits.h: Remove.
 	* config/cpu/cris/cpu_limits.h: Remove.
 	* config/cpu/generic/cpu_limits.h: Remove.
-	* config/cpu/generic/limits.h: Remove.		
+	* config/cpu/generic/limits.h: Remove.
 	* config/cpu/ia64/cpu_limits.h: Remove.
-	* config/cpu/m68k/cpu_limits.h: Remove.	
-	* config/cpu/mmix/cpu_limits.h: Remove.		
-	* config/cpu/powerpc/cpu_limits.h: Remove.			
+	* config/cpu/m68k/cpu_limits.h: Remove.
+	* config/cpu/mmix/cpu_limits.h: Remove.
+	* config/cpu/powerpc/cpu_limits.h: Remove.
 	* config/cpu/S390/cpu_limits.h: Remove.
-	
+
 2002-09-25  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* testsuite/18_support/numeric_limits.cc: Check the maximum and
@@ -792,9 +899,9 @@
 
 2002-09-25  Mark Mitchell  <mark@codesourcery.com>
 
-	* include/std/std_limits.h (numeric_limits<unsigned char>::digits): 
+	* include/std/std_limits.h (numeric_limits<unsigned char>::digits):
 	Fix typo.
-	
+
 2002-09-23  Richard Henderson  <rth@redhat.com>
 
 	* include/std/std_limits.h (__glibcpp_plain_char_is_signed,
@@ -842,9 +949,9 @@
 	__glibcpp_s8_digits10 et al; check vs the installed versions
 	of digits10 for particular sizes.
 
-        * include/std/std_limits.h (__glibcpp_float_is_modulo,
-        __glibcpp_double_is_modulo, __glibcpp_long_double_is_modulo): Kill.
-        (numeric_limits<T>::is_modulo, T floating): Use false.
+	* include/std/std_limits.h (__glibcpp_float_is_modulo,
+	__glibcpp_double_is_modulo, __glibcpp_long_double_is_modulo): Kill.
+	(numeric_limits<T>::is_modulo, T floating): Use false.
 
 2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -994,16 +1101,16 @@
 	* libmath/Makefile.in: Regenerate.
 	* src/Makefile.am: Tweak comment.
 	* src/Makefile.in: Regenerate.
-	
+
 	* config/locale/gnu/c_locale.h: Remove warnings.
 	Inject __uselocale into __gnu_cxx.
 	* config/locale/generic/c_locale.h: Match.
-	
+
 2002-09-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc (__convert_from_v): Remove.
 	* config/locale/gnu/c_locale.h (__convert_from_v): Add.
-	* config/locale/generic/c_locale.h (__convert_from_v): Add.	
+	* config/locale/generic/c_locale.h (__convert_from_v): Add.
 
 2002-09-11  Paolo Carlini  <pcarlini@unitus.it>
 
@@ -1016,28 +1123,28 @@
 	(target_sources): New.
 	(target_sources_extra): New.
 	* src/Makefile.in: Regenerate.
-	* acinclude.m4: Set CCODECVT_CC. 
+	* acinclude.m4: Set CCODECVT_CC.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 	* src/locale.cc: Move ctype definitions...
-	* src/ctype.cc: ...here. New file. 
+	* src/ctype.cc: ...here. New file.
 	* src/locale.cc: Move codecvt definitions...
-	* src/codecvt.cc: ...here. 	
-	* config/generic/codecvt_members.cc: ...and here. 	
-	* config/gnu/codecvt_members.cc: ...and here. 		
+	* src/codecvt.cc: ...here.
+	* config/generic/codecvt_members.cc: ...and here.
+	* config/gnu/codecvt_members.cc: ...and here.
 	* include/bits/codecvt.h: Tweak.
 	* include/bits/locale_facets: Tweak.
 
 	* src/bitset.cc: Correct license text.
 	* src/concept-inst.cc: Same.
 	* src/strstream.cc: Same.
-	* src/vterminate.cc: Same.	
+	* src/vterminate.cc: Same.
 
 2002-09-10  Gabriel Dos Reis  <gdr@soliton.integrable-solutions.net>
 
 	* include/bits/stl_vector.h (vector<>): Don't use a name with
 	different meanings before and after re-evaluation in the completed
-	scope. 
+	scope.
 	* include/bits/basic_string.h (basic_string<>): Likewise.
 	* include/bits/stl_bvector.h (vector<bool>): Likewise.
 	* include/bits/stl_deque.h (std): Likewise.
@@ -1071,16 +1178,16 @@
 	* docs/html/configopts.html: Change grouping. Note ABI impacts.
 	Update information for locale model defaults.
 	* docs/html/install.html: Update include directory
-	information. 
-	Update testing information. 
+	information.
+	Update testing information.
 	Update linux issues for named locales.
 	* docs/html/abi.txt: Fix typos.
 	Add more info.
 
 	* src/misc-inst.cc: Add missing instantiations.
-	
+
 	* testsuite/abi_check.cc: Make output results more verbose.
-	
+
 	* config/os/gnu-linux/ctype_base.h: Remove shadow headers injections.
 
 2002-09-07  Jakub Jelinek  <jakub@redhat.com>
@@ -1293,7 +1400,7 @@
 	__glibcpp_double_bits, __glibcpp_long_double_bits): Remove.  Use
 	compiler predifined macros.
 	(__glibcpp_wchar_t_is_signed): Define based on compiler predefined
-	__WCHAR_UNSIGNED__. 
+	__WCHAR_UNSIGNED__.
 
 2002-08-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
@@ -1349,7 +1456,7 @@
 	(__glibcpp_long_double_infinity, __glibcpp_long_double_QNaN,
 	__glibcpp_long_double_SNaN, __glibcpp_long_double_denorm_min):
 	Likewise.
-	
+
 	* src/limits.cc (__glibcpp_float_infinity, __glibcpp_float_QNaN,
 	__glibcpp_float_SNaN, __glibcpp_float_denorm_min): Define.
 	(__glibcpp_double_infinity, __glibcpp_double_QNaN,
@@ -1357,7 +1464,7 @@
 	(__glibcpp_long_double_infinity, __glibcpp_long_double_QNaN,
 	__glibcpp_long_double_SNaN, __glibcpp_long_double_denorm_min):
 	Likewise.
-	
+
 2002-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/std/std_limits.h: Indent conditional macro definitions.
@@ -1391,7 +1498,7 @@
 	* testsuite/Makefile.am (noinst_PROGRAMS): Make conditional on
 	native compiling.
 	* testsuite/Makefile.in: Regenerate.
-	
+
 2002-08-22  Loren J. Rittle <ljrittle@acm.org>
 
 	* testsuite/abi_check.cc: Enhance shell portability.
@@ -1409,7 +1516,7 @@
 2002-08-22  Benjamin Kosnik  <bkoz@redhat.com>
 	    Phil Edwards  <pme@gcc.gnu.org>
 	    Ulrich Drepper  <drepper@redhat.com>
-	
+
 	* Makefile.am (check-abi): New rule.
 	* Makefile.in: Regenerate.
 	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Export baseline_file.
@@ -1417,17 +1524,17 @@
 	* configure: Regenerate.
 	* testsuite/Makefile.am (noinst_PROGRAMS): Add abi_check.
 	(abi_check_SOURCES): Add.
-	* testsuite/Makefile.in: Regenerate.	
+	* testsuite/Makefile.in: Regenerate.
 	* testsuite/abi_check.cc: New file.
 	* config/abi: Add.
 	* config/abi/i686-pc-linux-gnu: Add.
 	* config/abi/i686-pc-linux-gnu/baseline_symbols.txt: New file.
-	
+
 2002-08-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (libtool_VERSION): Update to 5:1:0.
 	* configure: Regenerate.
-	
+
 2002-08-19  Jonathan Wakely  <jw@kayari.org>
 
 	* docs/html/configopts.html, docs/html/documentation.html,
@@ -1445,9 +1552,9 @@
 
 	Revert PR libstdc++/7445
 	* src/locale.cc (locale::classic): Revert.
-	
+
 	* docs/html/17_intro/TODO: Add.
-	
+
 2002-08-15  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/documentation.html:  Update doxygen links for 3.2.
@@ -1483,11 +1590,11 @@
 
 2002-08-08  Danny Smith  <dannysmith@users.sourceforge.net>
 	    Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* include/bits/istream.tcc (basic_istream::ignore): Use sbumpc,
 	not snextc.
 	* testsuite/27_io/narrow_stream_objects.cc (test10): Add.
-	
+
 2002-08-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* libsupc++/Makefile.am (LTCOMPILE): Add LIBSUPCXX_PICFLAGS.
@@ -1497,7 +1604,7 @@
 
 	PR/7491
 	* include/bits/slice_array.h(_DEFINE_VALARRAY_OPERATOR):
-	Instantiate with new function objects. 
+	Instantiate with new function objects.
 	* include/bits/mask_array.h (_DEFINE_VALARRAY_OPERATOR): Likewise.
 	Reformat.  Uglify.
 	* include/bits/gslice_array.h: Likewise.
@@ -1532,9 +1639,9 @@
 	* include/bits/valarray_meta.h (_UnFunBase<>): Remove.
 	(_UnFunClos<>): Same.
 	(_UnBase<>): Reformat.  Make first template-parameter non
-	template. 
+	template.
 	(_UnClos<>): Likewise.
-	(_Expr<>): Reformate.  Adjust unary member operator return types. 
+	(_Expr<>): Reformate.  Adjust unary member operator return types.
 	(_DEFINE_EXPR_UNARY_OPERATOR): Adjust definition.
 	(_DEFINE_EXPR_UNARY_FUNCTION): Likewise.
 	* include/std/std_valarray.h (_UnClos<>): Adjust declaration.
@@ -1555,9 +1662,9 @@
 	Revert PR libstdc++/6594
 	* src/strstream.cc (strstreambuf): Revert.
 	(strstreambuf::overflow): Same.
-	(strstreambuf::~strstreambuf): Same.	
+	(strstreambuf::~strstreambuf): Same.
 	* testsuite/backward/strstream_members.cc (test02): Add.
-	
+
 	* docs/html/abi.txt: Update. Spell check.
 
 	* testsuite/19_diagnostics/stdexceptions.cc (test04): Add bool test.
@@ -1566,7 +1673,7 @@
 	* testsuite/Makefile.in: Regenerate.
 	* testsuite/testsuite_hooks.h: Use __throw_exception_again,
 	include functexcept.h so that -fno-exceptions will build.
-	
+
 2002-08-02  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* include/bits/valarray_meta.h (__unary_plus, __negate,
@@ -1575,7 +1682,7 @@
 	__shift_left, __shift_right, __logical_and, __logical_or,
 	__logical_not, __equal_to, __not_equal_to, __less, __less_equal,
 	__greater_equal, __greater, __atan2, __pow): New function object
-	classes. 
+	classes.
 	(__fun<>):  New function traits class.
 
 2002-08-01  Rick Danos  <rdanos@hotmail.com>
@@ -1588,10 +1695,10 @@
 
 	* libsupc++/Makefile.am (LT_COMPILE): Remove C++ flags.
 	* libsupc++/Makefile.in: Regenerate.
-	
+
 2002-08-01  Benjamin Kosnik  <bkoz@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
-	
+
 	* config/linker-map.gnu: Change CXXABI_1 to CXXABI_1.2,
 	GLIBCPP_3.1 to GLIBCPP_3.2.
 
@@ -1606,7 +1713,7 @@
 2002-07-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/7442
-	* libsupc++/cxxabi.h 
+	* libsupc++/cxxabi.h
 	(__base_class_info): Change to __base_class_type_info. 2.9.5p6c
 	(__base_class_info::__base): Change to __base_type. 2.9.5p6c
 	(__base_class_info::offset_shift): Change to __offset_shift. 2.9.5p6c
@@ -1656,15 +1763,15 @@
 	(istream::sync): Same.
 	(istream::sentry::sentry): Use eq_int_type.
 	(istream::get): Same.
-	* include/bits/ostream.tcc: Change __pad to 
-	__pad<_CharT, _Traits>::_S_pad. 
+	* include/bits/ostream.tcc: Change __pad to
+	__pad<_CharT, _Traits>::_S_pad.
 	* include/bits/locale_facets.h: Add __pad_traits generic and
 	ostreambuf_iterator specialization.
 	* include/bits/locale_facets.tcc: Change __pad into struct __pad
 	with a _CharT and _Traits template parameter and _S_pad static
 	member function.
 	* src/locale-inst.cc: Update __pad instantiations.
-	
+
 	* include/std/std_fstream.h: Declare _M_underflow_common
 	specializations.
 	* src/fstream.cc: New. Add _M_underflow_common specializations.
@@ -1686,12 +1793,12 @@
 	* testsuite/27_io/streambuf.cc: Add instantiation test,
 	testsuite_hooks include.
 	* testsuite/27_io/istream.cc: Same.
-	* testsuite/27_io/ostream.cc: Same.	
+	* testsuite/27_io/ostream.cc: Same.
 	* testsuite/27_io/fstream.cc: Same.
 	* testsuite/27_io/stringstream.cc: Same.
 	* testsuite/27_io/filebuf.cc: Same.
 	* testsuite/27_io/stringbuf.cc: Same.
-	
+
 2002-07-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/cpu/powerpc/cpu_limits.h (__glibcpp_long_bits): Define.
@@ -1714,36 +1821,36 @@
 	* testsuite/27_io/ostream.cc: Same.
 	* testsuite/27_io/filebuf.cc: Same.
 	* testsuite/27_io/stringbuf.cc: Replace content, move to...
-	* testsuite/27_io/stringbuf_members.cc: ...here.	
+	* testsuite/27_io/stringbuf_members.cc: ...here.
 	* testsuite/27_io/streambuf.cc: Replace content, move to...
-	* testsuite/27_io/streambuf_members.cc: ...here.	
+	* testsuite/27_io/streambuf_members.cc: ...here.
 	* testsuite/27_io/stringstream.cc: Replace content, move to...
 	* testsuite/27_io/stringstream_members.cc: ...here.
 	* testsuite/27_io/ios.cc: New file.
 	* testsuite/27_io/fstream.cc: New file.
-	* testsuite/27_io/ifstream.cc: New file.	
-	* testsuite/27_io/ofstream.cc: New file.		
-	* testsuite/27_io/istringstream.cc: New file.	
-	* testsuite/27_io/ostringstream.cc: New file.	
-	
+	* testsuite/27_io/ifstream.cc: New file.
+	* testsuite/27_io/ofstream.cc: New file.
+	* testsuite/27_io/istringstream.cc: New file.
+	* testsuite/27_io/ostringstream.cc: New file.
+
 2002-07-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/7220
 	* include/bits/istream.tcc (istream::ignore): Don't extract on
 	zero.
 	* testsuite/27_io/istream_unformatted.cc (test10): Add.
-	
+
 2002-07-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/ios_base_type.cc: Move to...
 	* testsuite/27_io/ios_base_types.cc: ...here.
-	
+
 2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/7222
 	* src/locale.cc (locale::locale(const char*)): Use setlocale NULL.
 	* testsuite/22_locale/ctor_copy_dtor.cc (test02): New.
-	
+
 2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/7230
@@ -1754,7 +1861,7 @@
 	* include/backward/strstream: Revert.
 	* include/backward/strstream.h: Remove.
 	* src/strstream.cc: Revert.
-	* testsuite/backward/strstream_members.cc: Change include.	
+	* testsuite/backward/strstream_members.cc: Change include.
 
 2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1762,7 +1869,7 @@
 	* include/bits/ios_base.h (ios_base::streampos): Add.
 	(ios_base::streamoff): Add.
 	* testsuite/27_io/ios_base_type.cc: New.
-	
+
 2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/7286
@@ -1770,7 +1877,7 @@
 	* testsuite/18_support/new_delete_placement.cc: New.
 
 	* docs/html/abi.txt: Fix typos.
-	
+
 2002-07-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/documentation.html: Remove libstdc++-v3.0.86 links,
@@ -1778,10 +1885,10 @@
 	De-tangle contributor information from introductory notes.
 	Move abi.txt link placement, activate.
 	Re-organize.
-	Move chapter info into old FAQ format. 
+	Move chapter info into old FAQ format.
 	* docs/html/organization.html: Removed, obsoleted by doxygen work.
 	* docs/html/abi.txt: Add notes on testing ABI changes.
-	
+
 2002-07-20  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/abi.txt:  New file.
@@ -1803,15 +1910,15 @@
 
 	* bits/slice_array.h (_DEFINE_VALARRAY_OPERATOR): Fix typo of
 	_Nname to _Name.
-	
+
 2002-07-19  Gabriel Dos Reis  <gdr@nerim.net>
 
 	DR/123
-	* include/bits/slice_array.h 
+	* include/bits/slice_array.h
 	(slice_array<T>::operator=(const T&)): Constify.
-	* include/bits/gslice_array.h 
+	* include/bits/gslice_array.h
 	(gslice_array<T>::operator=(const T&)):  Likewise.
-	* include/bits/mask_array.h 
+	* include/bits/mask_array.h
 	(mask_array<T>::operator=(const T&)): Likewise.
 	* include/bits/indirect_array.h
 	(indirect_array<T>::operator=(const T&): Likewise.

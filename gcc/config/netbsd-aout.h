@@ -39,7 +39,9 @@ Boston, MA 02111-1307, USA.  */
    with the options for generating PIC code.  */
 
 #undef ASM_SPEC
-#define ASM_SPEC " %| %{fpic:-k} %{fPIC:-k -K}"
+#define ASM_SPEC "%{fpic:-k} %{fPIC:-k -K}"
+
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
 
 
 /* Provide a STARTFILE_SPEC appropriate for NetBSD a.out.  Here we

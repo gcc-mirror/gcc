@@ -425,13 +425,6 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 }
 
 static inline int
-__gthread_key_dtor (UNUSED (__gthread_key_t key), UNUSED (void *ptr))
-{
-  /* Nothing needed.  */
-  return 0;
-}
-
-static inline int
 __gthread_key_delete (UNUSED (__gthread_key_t key))
 {
   /* Operation is not supported.  */

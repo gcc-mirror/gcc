@@ -70,6 +70,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
 #include "tree.h"
 #include "rtl.h"
@@ -393,7 +395,7 @@ dbxout_function_end ()
      the system doesn't insert underscores in front of user generated
      labels.  */
   ASM_GENERATE_INTERNAL_LABEL (lscope_label_name, "Lscope", scope_labelno);
-  ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Lscope", scope_labelno);
+  (*targetm.asm_out.internal_label) (asmfile, "Lscope", scope_labelno);
   scope_labelno++;
 
   /* By convention, GCC will mark the end of a function with an N_FUN
@@ -466,7 +468,7 @@ dbxout_init (input_file_name)
   assemble_name (asmfile, ltext_label_name);
   fputc ('\n', asmfile);
   text_section ();
-  ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Ltext", 0);
+  (*targetm.asm_out.internal_label) (asmfile, "Ltext", 0);
 #endif /* no DBX_OUTPUT_MAIN_SOURCE_FILENAME */
 
 #ifdef DBX_OUTPUT_GCC_MARKER
@@ -594,7 +596,7 @@ dbxout_source_file (file, filename)
 	; /* Don't change section amid function.  */
       else
 	text_section ();
-      ASM_OUTPUT_INTERNAL_LABEL (file, "Ltext", source_label_number);
+      (*targetm.asm_out.internal_label) (file, "Ltext", source_label_number);
       source_label_number++;
 #endif
       lastfile = filename;
@@ -625,7 +627,7 @@ dbxout_begin_block (line, n)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int n;
 {
-  ASM_OUTPUT_INTERNAL_LABEL (asmfile, "LBB", n);
+  (*targetm.asm_out.internal_label) (asmfile, "LBB", n);
 }
 
 /* Describe the end line-number of an internal block within a function.  */
@@ -635,7 +637,7 @@ dbxout_end_block (line, n)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int n;
 {
-  ASM_OUTPUT_INTERNAL_LABEL (asmfile, "LBE", n);
+  (*targetm.asm_out.internal_label) (asmfile, "LBE", n);
 }
 
 /* Output dbx data for a function definition.

@@ -1288,9 +1288,6 @@ extern struct dsp16xx_frame_info current_frame_info;
 #define HAVE_POST_INCREMENT 1
 #define HAVE_POST_DECREMENT 1
 
-/* #define HAVE_PRE_DECREMENT 0 */
-/* #define HAVE_PRE_INCREMENT 0 */
-
 /* Recognize any constant value that is a valid address.  */
 #define CONSTANT_ADDRESS_P(X)  CONSTANT_P (X)
 
@@ -1642,22 +1639,7 @@ extern struct dsp16xx_frame_info current_frame_info;
   }									      \
   while (0)
 
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable or function
-   named NAME. LABELNO is an integer which is different for
-   each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)			\
-  do {									\
-    int len = strlen (NAME);						\
-    char *temp = (char *) alloca (len + 3);				\
-    temp[0] = 'L';							\
-    strcpy (&temp[1], (NAME));						\
-    temp[len + 1] = '_';						\
-    temp[len + 2] = 0;							\
-    (OUTPUT) = (char *) alloca (strlen (NAME) + 11);			\
-    ASM_GENERATE_INTERNAL_LABEL (OUTPUT, temp, LABELNO);		\
-  } while (0)
+#define ASM_PN_FORMAT "*L%s_%lu"
 
 /* OUTPUT OF UNINITIALIZED VARIABLES */
 
@@ -1701,11 +1683,6 @@ extern struct dsp16xx_frame_info current_frame_info;
 /* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX "_"
-
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s%d:\n", PREFIX, NUM)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where

@@ -158,7 +158,7 @@ Boston, MA 02111-1307, USA.  */
 /* Use the default.  */
 #undef ASM_OUTPUT_LABEL
 
-/* NOTE: ASM_OUTPUT_INTERNAL_LABEL() is defined for us by elfos.h, and
+/* NOTE: (*targetm.asm_out.internal_label)() is defined for us by elfos.h, and
    does what we want (i.e. uses colons).  It must be compatible with
    ASM_GENERATE_INTERNAL_LABEL(), so do not define it here.  */
 
@@ -166,6 +166,11 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_ASM_GLOBALIZE_LABEL
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".globl "
+
+/* This definition is used inside pa.c to disable all
+   sibcall optimization, because sibcalls, stubs and
+   elf sections don't play well.  */
+#define TARGET_HAS_STUBS_AND_ELF_SECTIONS 1
 
 /* FIXME: Hacked from the <elfos.h> one so that we avoid multiple
    labels in a function declaration (since pa.c seems determined to do

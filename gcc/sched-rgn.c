@@ -47,6 +47,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "toplev.h"
 #include "rtl.h"
 #include "tm_p.h"
@@ -173,7 +175,6 @@ typedef struct
 bitlst;
 
 static int bitlst_table_last;
-static int bitlst_table_size;
 static int *bitlst_table;
 
 static void extract_bitlst PARAMS ((sbitmap, bitlst *));
@@ -2013,7 +2014,6 @@ init_ready_list (ready)
       bblst_table = (int *) xmalloc (bblst_size * sizeof (int));
 
       bitlst_table_last = 0;
-      bitlst_table_size = rgn_nr_edges;
       bitlst_table = (int *) xmalloc (rgn_nr_edges * sizeof (int));
 
       compute_trg_info (target_bb);

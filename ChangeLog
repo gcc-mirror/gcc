@@ -1,3 +1,8 @@
+2002-12-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in, Makefile.tpl, Makefile.def: Remove tclX.
+	* Makefile.in: Regenerate.
+
 2002-12-13  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.tpl (check-gcc-c++): Renamed from check-c++.  Don't run
@@ -7,7 +12,20 @@
 
 2002-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.tpl (configure-target-rda): Depend on $(ALL_GCC_C).
+	* Makefile.in: Rebuilt.
+
+2002-12-12  Alexandre Oliva  <aoliva@redhat.com>
+
 	* Makefile.in (configure-target-rda): Depend on ALL_GCC_C.
+
+2002-12-10  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: Fix bug put in by gremlins.
+
+	* Makefile.tpl: Substitute more autoconfily.
+	* configure: Substitute more autoconfily.
+	* Makefile.in: Regenerate.
 
 2002-12-09  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
@@ -15,14 +33,136 @@
 	* config.guess: Ditto
 	* MAINTAINERS: Added Svein Seldal under write after approval
 
+2002-12-08  Andrew Cagney  <ac131313@redhat.com>
+
+	* Makefile.tpl (all-sim): Depend on maybe-configure-gdb.
+	* Makefile.in (all-sim): Ditto.
+
+2002-12-06  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.tpl: Change configure dependencies to not have real
+	targets depend on phony targets.
+
+2002-12-05  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Revert unintentional change.
+
+	* Makefile.tpl: Change dependency for */multilib.out so that
+	it works when gcc isn't in the tree.
+
+	* configure.in: Substitute more.
+	* configure: Run subconfigures from the Makefile.
+	* Makefile.tpl: Run subconfigures from the Makefile; add a few
+	convenience targets.  Make sure gcc isn't rebuilt after bootstrap.
+
 2002-12-05  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* MAINTAINERS: Add Christian Ehrhardt under "GNATS only".
+
+2002-12-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Add targets for configuring host subdirs in Makefile,
+	and corresponding dependencies.
+	* Makefile.in: Regenerate.
+
+	* configure.in (host_tools): Order binutils, gas and ld for
+	convenience in running the testsuites.
+
+	* Makefile.tpl: Introduce rules to serialize subconfigure runs.
+	* Makefile.in: Regenerate.
+	* configure.in: Introduce rules to serialize subconfigure runs.
+
+	* configure.in: Introduce BASE_CC_FOR_TARGET.
+	* Makefile.tpl: Reorganize and comment.  Introduce HOST_CONFIGARGS.
+	Realize configure-build-* targets.  Realize configure-target-* targets.
+	* Makefile.in: Regenerate.
+
+2002-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: Move gcc_version_trigger stuff from here...
+	* configure.in: ...to here.
+
+	* configure.in: Separate subconfigure options added by this file from
+	options given by the user.  Add machinery to put args for host
+	subconfigures into the Makefile.
+
+	* Makefile.tpl: Remove 'vault' targets.
+	* Makefile.tpl: Reorder and comment dependencies.
+	* Makefile.in: Regenerate.
+
+2002-12-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+	* configure.in: Fix my broken commit of previous patch. (sigh)
 
 2002-11-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.in: Move host-specific darwin noconfigdirs into
 	the host-specific section.
+
+2002-11-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.in: Move host-specific darwin noconfigdirs into
+	the host-specific section.
+
+2002-11-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: Remove skip-this-dir support.
+	* Makefile.tpl: Remove skip-this-dir support.
+
+	* Makefile.tpl: Remove leftover support for non-autoconfiscated
+	subdirectories.
+	* Makefile.in: Regenerate.
+
+	* Makefile.tpl: Strip out useless setting of 'dir'.
+	* Makefile.in: Regenerate.
+
+2002-11-22  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Fix deeply stupid bug.
+
+	* configure.in: Introduce RAW_CXX_FOR_TARGET and simplify embedded
+	shell code in CXX_FOR_TARGET
+	* Makefile.def: Introduce raw_cxx.
+	* Makefile.tpl: Use raw_cxx to select between CXX_FOR_TARGET and
+	RAW_CXX_FOR_TARGET.
+	* Makefile.in: Regenerate.
+
+2002-11-21  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Remove unnecessary ifs.
+	* Makefile.in: Regenerate.
+
+	* Makefile.tpl: Implement soft dependency machinery.  Maybe-ize
+	dependencies.  Maybe-ize build-libiberty.  Create dummy install
+	targets for 'no_install' modules.
+	* configure: Move GDB_TK substitution to configure.in.  Move
+	build_modules stuff to configure.in.
+	* configure.in: Implement soft dependency machinery.  Maybe-ize
+	GDB_TK, rearrange slightly.  Move build_modules stuff from configure.
+	* Makefile.in: Regenerate.
+
+2002-11-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Make all-target, install-target behave similarly
+	to all, install (only hitting configured targets).  Eliminate
+	unused macro defintions.
+
+	* Makefile.tpl: Add all-gcc: all-build-libiberty dependency when
+	build != host.
+
+	* Makefile.tpl: Add all-gcc: all-libiberty dependency.
+
+	* ltcf-c.sh, ltcf-gcj.sh, Makefile.tpl: Correct BUILD/HOST confusion.
+
+	* configure.in: Produce lists of subdir targets we're actually
+	configuring.  Remove references to "dosrel".
+	* Makefile.tpl: Let configure set which subdir targets are hit.
+	Remove install-cross; clean up install; remove ALL.  Remove
+	references to "dosrel".  Remove "EXTRA_TARGET_HOST" hackery.
+	Autogenerate host module targets.  Remove empty dependency lines
+	and redundant dependency; rearrange slightly.
+	* Makefile.def: Add host-side libtermcap, utils.
+
+	* Makefile.in: Regenerate.
 
 2002-11-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
@@ -56,9 +196,49 @@
 
 	* MAINTAINERS: Add myself to write-after-approval list.
 
+2002-11-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.def: Add list of recursive targets to autogenerate.
+	Add build_modules.
+	* Makefile.tpl: Autogenerate do-* targets.  Autogenerate *-target-*
+	targets.  Autogenerate *-build-* targets.
+	* Makefile.in: Regenerate.
+
+2002-11-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: More autoconf-style substitutions.
+	* Makefile.tpl: More autoconf-style substitutions.
+	* Makefile.in: Regenerate.
+
+2002-11-11  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: Substitute more variables in a more autoconf-friendly
+	way.  Simplify slightly.
+	* Makefile.tpl: Make more variables substitutable in an
+	autoconf-friendly way.
+	* Makefile.in: Regenerate.
+
 2002-11-11  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
+
+2002-11-10  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in (v810*): Remove special setting of tools.
+
+	* configure: Add support for extra required flags for ar or nm.
+	* configure.in (aix4.3+): Use above support for target-specific
+	issues, rather than using config/mt-aix43.
+
+2002-11-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: Remove 'removing', which doesn't work.  Replace $subdir
+	with . everywhere.  Replace $subdirs with ''.  Replace $makesrcdir
+	with $srcdir.  Reformat indentation.  Substitute some variables
+	formerly hard-coded in the Makefile for build=host.
+	* Makefile.tpl: Autogenerate more; make more autoconf-friendly.
+	* Makefile.def: Autogenerate more.
+	* Makefile.in: Regenerate.
 
 2002-11-04  Adam Nemet  <anemet@lnxw.com>
 

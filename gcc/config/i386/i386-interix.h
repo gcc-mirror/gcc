@@ -35,11 +35,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387 and needs stack probes
-   We also align doubles to 64-bits for MSVC default compatibility */
+   We also align doubles to 64-bits for MSVC default compatibility
+   We do bitfields MSVC-compatably by default, too. */
 #undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT \
    (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE | \
-    MASK_ALIGN_DOUBLE)
+    MASK_ALIGN_DOUBLE | MASK_MS_BITFIELD_LAYOUT)
 
 #undef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 2 /* 486 */
@@ -243,6 +244,28 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_NOP_FUN_DLLIMPORT 1
 #define drectve_section()  /* nothing */
 
+/* Objective C has its own packing rules...
+   Objc tries to parallel the code in stor-layout.c at runtime	
+   (see libobjc/encoding.c).  This (compile-time) packing info isn't 
+   available at runtime, so it's hopeless to try.
+
+   And if the user tries to set the flag for objc, give an error
+   so he has some clue. */
+
+#undef  SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+do {									\
+  if (strcmp (lang_hooks.name, "GNU Objective-C") == 0)			\
+    {									\
+      if ((target_flags & MASK_MS_BITFIELD_LAYOUT) != 0			\
+	  && (target_flags_explicit & MASK_MS_BITFIELD_LAYOUT) != 0)	\
+	{								\
+	   error ("ms-bitfields not supported for objc");		\
+	}								\
+      target_flags &= ~MASK_MS_BITFIELD_LAYOUT;				\
+    }									\
+} while (0)
+
 #define EH_FRAME_IN_DATA_SECTION
 
 #define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rdata,\"r\""
@@ -273,8 +296,6 @@ while (0)
 #define HOST_PTR_AS_INT unsigned long
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
-#define PCC_BITFIELD_TYPE_TEST TYPE_NATIVE(rec)
-#define GROUP_BITFIELDS_BY_ALIGN TYPE_NATIVE(rec)
 
 /* The following two flags are usually "off" for i386, because some non-gnu
    tools (for the i386) don't handle them.  However, we don't have that

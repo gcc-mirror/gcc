@@ -25,7 +25,11 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
+/* FIXME: This file has no business including tm.h.  */
+
 #include "tconfig.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "runtime.h"
 #include "sarray.h"
 #include "encoding.h"

@@ -972,14 +972,13 @@ ada/memtrack.o  : ada/memtrack.adb ada/s-memory.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
 	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION) 
 
-ada/adadecode.o : ada/adadecode.c ada/adadecode.h $(CONFIG_H) $(SYSTEM_H) \
-	ada/adadecode.h 
-ada/adaint.o  : ada/adaint.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-ada/argv.o    : ada/argv.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
+ada/adadecode.o : ada/adadecode.c $(CONFIG_H) $(SYSTEM_H) ada/adadecode.h
+ada/adaint.o   : ada/adaint.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
+ada/argv.o     : ada/argv.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/cstreams.o : ada/cstreams.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-ada/exit.o    : ada/exit.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-ada/final.o   : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h 
-ada/link.o    : ada/link.c
+ada/exit.o     : ada/exit.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
+ada/final.o    : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h 
+ada/link.o     : ada/link.c
 
 ada/cio.o     : ada/cio.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(RT_FLAGS) \
@@ -999,44 +998,41 @@ ada/tracebak.o  : ada/tracebak.c $(CONFIG_H) $(SYSTEM_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	      -fno-omit-frame-pointer $< $(OUTPUT_OPTION) 
 
-ada/cuintp.o : ada/cuintp.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) ada/ada.h \
-   ada/types.h ada/uintp.h ada/atree.h ada/stringt.h ada/elists.h \
+ada/cuintp.o : ada/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   ada/ada.h ada/types.h ada/uintp.h ada/atree.h ada/stringt.h ada/elists.h \
    ada/nlists.h ada/fe.h ada/gigi.h
 
-ada/decl.o : ada/decl.c $(CONFIG_H) $(TREE_H) $(srcdir)/flags.h \
-   $(srcdir)/toplev.h $(srcdir)/convert.h ada/ada.h ada/types.h ada/atree.h \
-   ada/nlists.h ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/snames.h \
-   ada/namet.h ada/stringt.h ada/repinfo.h ada/fe.h $(ADA_TREE_H) ada/gigi.h \
-   gt-ada-decl.h
+ada/decl.o : ada/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   flags.h toplev.h convert.h ada/ada.h ada/types.h ada/atree.h ada/nlists.h \
+   ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/snames.h ada/namet.h \
+   ada/stringt.h ada/repinfo.h ada/fe.h $(ADA_TREE_H) ada/gigi.h gt-ada-decl.h
 
-ada/misc.o : ada/misc.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(srcdir)/expr.h \
-   insn-codes.h insn-flags.h insn-config.h $(srcdir)/recog.h \
-   $(srcdir)/flags.h $(srcdir)/diagnostic.h $(srcdir)/output.h \
-   $(srcdir)/except.h tm_p.h $(srcdir)/langhooks.h $(srcdir)/debug.h \
-   $(srcdir)/langhooks-def.h $(srcdir)/libfuncs.h $(srcdir)/optabs.h \
-   ada/ada.h ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h \
-   ada/einfo.h ada/namet.h ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) \
-   ada/gigi.h ada/adadecode.h
+ada/misc.o : ada/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   $(RTL_H) expr.h insn-codes.h insn-flags.h insn-config.h recog.h flags.h \
+   diagnostic.h output.h except.h $(TM_P_H) langhooks.h debug.h $(LANGHOOKS_DEF_H) \
+   libfuncs.h $(OPTABS_H) ada/ada.h ada/types.h ada/atree.h ada/nlists.h \
+   ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h ada/stringt.h ada/uintp.h \
+   ada/fe.h $(ADA_TREE_H) ada/gigi.h ada/adadecode.h
 
-ada/targtyps.o : ada/targtyps.c $(CONFIG_H) ada/ada.h ada/types.h ada/atree.h \
-   ada/nlists.h ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/namet.h \
-   ada/snames.h ada/stringt.h ada/urealp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h
+ada/targtyps.o : ada/targtyps.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   ada/ada.h ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/uintp.h \
+   ada/sinfo.h ada/einfo.h ada/namet.h ada/snames.h ada/stringt.h ada/urealp.h \
+   ada/fe.h $(ADA_TREE_H) ada/gigi.h
 
-ada/trans.o : ada/trans.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(srcdir)/flags.h \
-   ada/ada.h $(srcdir)/except.h ada/types.h ada/atree.h ada/nlists.h \
+ada/trans.o : ada/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   $(RTL_H) flags.h ada/ada.h except.h ada/types.h ada/atree.h ada/nlists.h \
    ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/namet.h ada/snames.h \
    ada/stringt.h ada/urealp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h gt-ada-trans.h
 
-ada/utils.o : ada/utils.c $(CONFIG_H) $(TREE_H) $(srcdir)/flags.h \
-   $(srcdir)/expr.h $(srcdir)/convert.h $(srcdir)/defaults.h ada/ada.h \
-   ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h \
-   ada/namet.h ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h \
-   gt-ada-utils.h gtype-ada.h
+ada/utils.o : ada/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   flags.h expr.h convert.h defaults.h ada/ada.h ada/types.h ada/atree.h \
+   ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h ada/stringt.h \
+   ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h gt-ada-utils.h gtype-ada.h
 
-ada/utils2.o : ada/utils2.c $(CONFIG_H) $(TREE_H) $(srcdir)/flags.h ada/ada.h \
-   ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h \
-   ada/namet.h ada/snames.h ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) \
-   ada/gigi.h
+ada/utils2.o : ada/utils2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TREE_H) flags.h ada/ada.h ada/types.h ada/atree.h ada/nlists.h \
+   ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h ada/snames.h ada/stringt.h \
+   ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h
 
 #
 # DO NOT PUT SPECIAL RULES BELOW, THIS SECTION IS UPDATED AUTOMATICALLY

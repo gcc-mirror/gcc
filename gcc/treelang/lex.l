@@ -1,11 +1,11 @@
-%{ /* -*- c -*- = mode for emacs editor
-/* 
+/* -*- c -*- = mode for emacs editor
 
    TREELANG lexical analysis
 
    ---------------------------------------------------------------------
 
-   Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    
    This program is free software; you can redistribute it and/or modify it 
    under the terms of the GNU General Public License as published by the
@@ -33,16 +33,11 @@
  
 */
 
-#include <stdio.h>
-#include <memory.h>
-#include "ansidecl.h"
+%{
 #include "config.h"
 #include "system.h"
-
-/* Avoid poisoned malloc problem.  */
-#undef IN_GCC
-
-#include "config.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "diagnostic.h"
 #include "tree.h"
 

@@ -21,6 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "machmode.h"
 #include "real.h"
 #include "rtl.h"
@@ -225,6 +227,13 @@ static bool float_extend_from_mem[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
 #ifndef CLEAR_BY_PIECES_P
 #define CLEAR_BY_PIECES_P(SIZE, ALIGN) \
   (move_by_pieces_ninsns (SIZE, ALIGN) < (unsigned int) CLEAR_RATIO)
+#endif
+
+/* This macro is used to determine whether store_by_pieces should be
+   called to "memset" storage with byte values other than zero, or
+   to "memcpy" storage when the source is a constant string.  */
+#ifndef STORE_BY_PIECES_P
+#define STORE_BY_PIECES_P(SIZE, ALIGN)	MOVE_BY_PIECES_P (SIZE, ALIGN)
 #endif
 
 /* This array records the insn_code of insns to perform block moves.  */
@@ -2648,7 +2657,7 @@ can_store_by_pieces (len, constfun, constfundata, align)
   int reverse;
   rtx cst;
 
-  if (! MOVE_BY_PIECES_P (len, align))
+  if (! STORE_BY_PIECES_P (len, align))
     return 0;
 
   if (! SLOW_UNALIGNED_ACCESS (word_mode, align)
@@ -2723,7 +2732,7 @@ store_by_pieces (to, len, constfun, constfundata, align)
 {
   struct store_by_pieces data;
 
-  if (! MOVE_BY_PIECES_P (len, align))
+  if (! STORE_BY_PIECES_P (len, align))
     abort ();
   to = protect_from_queue (to, 1);
   data.constfun = constfun;
@@ -3905,7 +3914,6 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
   else
     {
       rtx addr;
-      rtx target = NULL_RTX;
       rtx dest;
 
       /* Push padding now if padding above and stack grows down,
@@ -3929,7 +3937,6 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  else
 	    addr = memory_address (mode, gen_rtx_PLUS (Pmode, args_addr,
 						       args_so_far));
-	  target = addr;
 	  dest = gen_rtx_MEM (mode, addr);
 	  if (type != 0)
 	    {
@@ -4808,7 +4815,6 @@ store_constructor (exp, target, cleared, size)
 	  enum machine_mode mode;
 	  HOST_WIDE_INT bitsize;
 	  HOST_WIDE_INT bitpos = 0;
-	  int unsignedp;
 	  tree offset;
 	  rtx to_rtx = target;
 
@@ -4826,7 +4832,6 @@ store_constructor (exp, target, cleared, size)
 	  else
 	    bitsize = -1;
 
-	  unsignedp = TREE_UNSIGNED (field);
 	  mode = DECL_MODE (field);
 	  if (DECL_BIT_FIELD (field))
 	    mode = VOIDmode;
@@ -5047,7 +5052,7 @@ store_constructor (exp, target, cleared, size)
 	    {
 	      tree lo_index = TREE_OPERAND (index, 0);
 	      tree hi_index = TREE_OPERAND (index, 1);
-	      rtx index_r, pos_rtx, hi_r, loop_top, loop_end;
+	      rtx index_r, pos_rtx, loop_end;
 	      struct nesting *loop;
 	      HOST_WIDE_INT lo, hi, count;
 	      tree position;
@@ -5086,8 +5091,7 @@ store_constructor (exp, target, cleared, size)
 		}
 	      else
 		{
-		  hi_r = expand_expr (hi_index, NULL_RTX, VOIDmode, 0);
-		  loop_top = gen_label_rtx ();
+		  expand_expr (hi_index, NULL_RTX, VOIDmode, 0);
 		  loop_end = gen_label_rtx ();
 
 		  unsignedp = TREE_UNSIGNED (domain);
@@ -6542,12 +6546,14 @@ expand_expr (exp, target, tmode, modifier)
   /* If will do cse, generate all results into pseudo registers
      since 1) that allows cse to find more things
      and 2) otherwise cse could produce an insn the machine
-     cannot support.  And exception is a CONSTRUCTOR into a multi-word
-     MEM: that's much more likely to be most efficient into the MEM.  */
+     cannot support.  An exception is a CONSTRUCTOR into a multi-word
+     MEM: that's much more likely to be most efficient into the MEM.
+     Another is a CALL_EXPR which must return in memory.  */
 
   if (! cse_not_expected && mode != BLKmode && target
       && (GET_CODE (target) != REG || REGNO (target) < FIRST_PSEUDO_REGISTER)
-      && ! (code == CONSTRUCTOR && GET_MODE_SIZE (mode) > UNITS_PER_WORD))
+      && ! (code == CONSTRUCTOR && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+      && ! (code == CALL_EXPR && aggregate_value_p (exp)))
     target = subtarget;
 
   switch (code)
@@ -6944,7 +6950,6 @@ expand_expr (exp, target, tmode, modifier)
     case BIND_EXPR:
       {
 	tree vars = TREE_OPERAND (exp, 0);
-	int vars_need_expansion = 0;
 
 	/* Need to open a binding contour here because
 	   if there are any cleanups they must be contained here.  */
@@ -6959,10 +6964,7 @@ expand_expr (exp, target, tmode, modifier)
 	while (vars)
 	  {
 	    if (!DECL_RTL_SET_P (vars))
-	      {
-		vars_need_expansion = 1;
-		expand_decl (vars);
-	      }
+	      expand_decl (vars);
 	    expand_decl_init (vars);
 	    vars = TREE_CHAIN (vars);
 	  }

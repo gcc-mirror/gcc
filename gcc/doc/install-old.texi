@@ -567,7 +567,7 @@ sources.  If you must recompile, here is how:
 @item
 Execute the command procedure @file{vmsconfig.com} to set up the files
 @file{tm.h}, @file{config.h}, @file{aux-output.c}, and @file{md.}, and
-to create files @file{tconfig.h} and @file{hconfig.h}.  This procedure
+to create files @file{tconfig.h} and @file{bconfig.h}.  This procedure
 also creates several linker option files used by @file{make-cc1.com} and
 a data file used by @file{make-l2.com}.
 

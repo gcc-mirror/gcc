@@ -96,7 +96,6 @@ output_file_directive ((FILE), main_input_filename)
 /* Override parts of m68k.h to fit the SGS-3b1 assembler.  */
 
 #undef TARGET_VERSION
-#undef ASM_FORMAT_PRIVATE_NAME
 #undef ASM_OUTPUT_ALIGN
 #undef ASM_OUTPUT_SOURCE_FILENAME
 #undef ASM_OUTPUT_SOURCE_LINE
@@ -105,7 +104,6 @@ output_file_directive ((FILE), main_input_filename)
 #undef FUNCTION_PROFILER
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
-#undef ASM_OUTPUT_INTERNAL_LABEL
 #undef ASM_OUTPUT_OPCODE
 #undef ASM_OUTPUT_LOCAL
 #undef USER_LABEL_PREFIX
@@ -113,13 +111,7 @@ output_file_directive ((FILE), main_input_filename)
 
 #define TARGET_VERSION fprintf (stderr, " (68k, SGS/AT&T unixpc syntax)");
 
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
-  sprintf ((OUTPUT), "%s_%%%d", (NAME), (LABELNO)))
+#define ASM_PN_FORMAT "%s_%%%lu"
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
 do {					\
@@ -322,9 +314,6 @@ do {					\
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
   sprintf ((LABEL), "%s%%%ld", (PREFIX), (long)(NUM))
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-    fprintf (FILE, "%s%%%d:\n", PREFIX, NUM)
 
 /* Must put address in  %a0 , not  %d0 . -- LGM, 7/15/88 */
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\

@@ -35,12 +35,12 @@
 
 #include "auto-host.h" /* For HAVE_LD_EH_FRAME_HDR.  */
 #include "tconfig.h"
+#include "tsystem.h"
 #ifndef inhibit_libc
-#include <stddef.h>
-#include <stdlib.h>
 #include <link.h>
 #endif
-#include "tsystem.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "dwarf2.h"
 #include "unwind.h"
 #define NO_BASE_OF_ENCODED_VALUE

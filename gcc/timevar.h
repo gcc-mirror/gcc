@@ -53,14 +53,14 @@
 struct timevar_time_def
 {
   /* User time in this process.  */
-  float user;
+  double user;
 
   /* System time (if applicable for this host platform) in this
      process.  */
-  float sys;
+  double sys;
 
   /* Wall clock time.  */
-  float wall;
+  double wall;
 };
 
 /* An enumeration of timing variable identifiers.  Constructed from

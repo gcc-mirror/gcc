@@ -144,8 +144,6 @@ case "${host}" in
 	sysdeps_dir=sh
 	libgcj_flags="${libgcj_flags} -mieee"
 	libgcj_interpreter=yes
-	CHECKREFSPEC=-fcheck-references
-	EXCEPTIONSPEC=
 	enable_hash_synchronization_default=yes
 	;;
 esac
@@ -161,7 +159,8 @@ case "${host}" in
   s390*-linux* | \
   sparc*-linux* | \
   ia64-* | \
-  x86_64*-linux*)
+  x86_64*-linux* | \
+  sh-linux* | sh[34]*-linux*)
   	can_unwind_signal=yes
 	;;
   *-*-darwin*)

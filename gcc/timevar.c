@@ -21,6 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "intl.h"
 #include "rtl.h"
 
@@ -100,13 +102,13 @@ extern clock_t clock PARAMS ((void));
    precompute them.  Whose wonderful idea was it to make all those
    _constants_ variable at run time, anyway?  */
 #ifdef USE_TIMES
-static float ticks_to_msec;
-#define TICKS_TO_MSEC (1 / (float)TICKS_PER_SECOND)
+static double ticks_to_msec;
+#define TICKS_TO_MSEC (1 / (double)TICKS_PER_SECOND)
 #endif
 
 #ifdef USE_CLOCK
-static float clocks_to_msec;
-#define CLOCKS_TO_MSEC (1 / (float)CLOCKS_PER_SEC)
+static double clocks_to_msec;
+#define CLOCKS_TO_MSEC (1 / (double)CLOCKS_PER_SEC)
 #endif
 
 #include "flags.h"
@@ -449,7 +451,7 @@ timevar_print (fp)
   for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
     {
       struct timevar_def *tv = &timevars[(timevar_id_t) id];
-      const float tiny = 5e-3;
+      const double tiny = 5e-3;
 
       /* Don't print the total execution time here; that goes at the
 	 end.  */

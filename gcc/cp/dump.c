@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "tree-dump.h"
@@ -317,21 +319,22 @@ cp_dump_tree (dump_info, t)
 	    dump_string (di, "destructor");
 	  if (DECL_CONV_FN_P (t))
 	    dump_string (di, "conversion");
-	  if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
-	    {
-	      if (DECL_GLOBAL_CTOR_P (t))
-		dump_string (di, "global init");
-	      if (DECL_GLOBAL_DTOR_P (t))
-		dump_string (di, "global fini");
-	    }
+	  if (DECL_GLOBAL_CTOR_P (t))
+	    dump_string (di, "global init");
+	  if (DECL_GLOBAL_DTOR_P (t))
+	    dump_string (di, "global fini");
 	  if (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t))
 	    dump_string (di, "pseudo tmpl");
 	}
       else
 	{
 	  dump_string (di, "thunk");
-	  dump_int (di, "dlta", THUNK_DELTA (t));
-	  dump_child ("vcll", THUNK_VCALL_OFFSET (t));
+	  if (DECL_THIS_THUNK_P (t))
+	    dump_string (di, "this adjusting");
+	  else
+	    dump_string (di, "result adjusting");
+	  dump_int (di, "fixd", THUNK_FIXED_OFFSET (t));
+	  dump_child ("virt", THUNK_VIRTUAL_OFFSET (t));
 	  dump_child ("fn", DECL_INITIAL (t));
 	}
       break;

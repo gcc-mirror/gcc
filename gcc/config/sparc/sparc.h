@@ -323,8 +323,10 @@ extern enum cmodel sparc_cmodel;
 /* Special flags to the Sun-4 assembler when using pipe for input.  */
 
 #define ASM_SPEC "\
-%| %{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L} \
+%{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L} \
 %(asm_cpu) %(asm_relax)"
+
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -1932,27 +1934,6 @@ do {									\
 
 #define STRICT_ARGUMENT_NAMING TARGET_V9
 
-/* We do not allow sibling calls if -mflat, nor
-   we do not allow indirect calls to be optimized into sibling calls.
-
-   Also, on sparc 32-bit we cannot emit a sibling call when the
-   current function returns a structure.  This is because the "unimp
-   after call" convention would cause the callee to return to the
-   wrong place.  The generic code already disallows cases where the
-   function being called returns a structure.
-
-   It may seem strange how this last case could occur.  Usually there
-   is code after the call which jumps to epilogue code which dumps the
-   return value into the struct return area.  That ought to invalidate
-   the sibling call right?  Well, in the c++ case we can end up passing
-   the pointer to the struct return area to a constructor (which returns
-   void) and then nothing else happens.  Such a sibling call would look
-   valid without the added check here.  */
-#define FUNCTION_OK_FOR_SIBCALL(DECL) \
-	(DECL \
-	 && ! TARGET_FLAT \
-	 && (TARGET_ARCH64 || ! current_function_returns_struct))
-
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */
 #define SETUP_FRAME_ADDRESSES()		\
@@ -2046,12 +2027,6 @@ do {									\
 #endif
 
 /* Addressing modes, and classification of registers for them.  */
-
-/* #define HAVE_POST_INCREMENT 0 */
-/* #define HAVE_POST_DECREMENT 0 */
-
-/* #define HAVE_PRE_DECREMENT 0 */
-/* #define HAVE_PRE_INCREMENT 0 */
 
 /* Macros to check register numbers against specific register classes.  */
 
@@ -2736,12 +2711,6 @@ case LABEL_REF: case SYMBOL_REF: case CONST_DOUBLE:
 
 #define USER_LABEL_PREFIX "_"
 
-/* This is how to output a definition of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s%d:\n", PREFIX, NUM)
-
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
@@ -2851,14 +2820,6 @@ do {									\
     fputs ("\n", (FILE));					\
     ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);		\
   } while (0)
-
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
 #define IDENT_ASM_OP "\t.ident\t"
 

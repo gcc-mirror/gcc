@@ -20,6 +20,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
@@ -740,7 +742,6 @@ duplicate_insn_chain (from, to)
      be reordered later.  */
   for (insn = from; insn != NEXT_INSN (to); insn = NEXT_INSN (insn))
     {
-      rtx new;
       switch (GET_CODE (insn))
 	{
 	case INSN:
@@ -752,7 +753,7 @@ duplicate_insn_chain (from, to)
 	  if (GET_CODE (PATTERN (insn)) == ADDR_VEC
 	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    break;
-	  new = emit_copy_of_insn_after (insn, get_last_insn ());
+	  emit_copy_of_insn_after (insn, get_last_insn ());
 	  break;
 
 	case CODE_LABEL:

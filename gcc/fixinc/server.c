@@ -45,17 +45,9 @@
  * choice whether to permit this exception to apply to your modifications.
  * If you do not wish that, delete this exception notice.
  */
-#include "auto-host.h"
 
-#include "ansidecl.h"
-#include "system.h"
-#include <signal.h>
-
+#include "fixlib.h"
 #include "server.h"
-
-#if !defined(volatile) && !defined(HAVE_VOLATILE)
-# define volatile
-#endif
 
 STATIC volatile enum t_bool read_pipe_timeout;
 STATIC pid_t server_master_pid = NOPROCESS;

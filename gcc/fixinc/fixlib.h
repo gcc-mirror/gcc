@@ -25,10 +25,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_FIXLIB_H
 #define GCC_FIXLIB_H
 
-#include "auto-host.h"
-#include "ansidecl.h"
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
 #include "gnu-regex.h"
 #include "machname.h"

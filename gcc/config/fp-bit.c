@@ -44,6 +44,8 @@ Boston, MA 02111-1307, USA.  */
    to one copy, then compile both copies and add them to libgcc.a.  */
 
 #include "tconfig.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "fp-bit.h"
 
 /* The following macros can be defined to change the behavior of this file:

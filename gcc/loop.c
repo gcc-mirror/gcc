@@ -36,6 +36,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "function.h"
@@ -168,10 +170,6 @@ struct loop **uid_loop;
 /* 1 + largest uid of any insn.  */
 
 int max_uid_for_loop;
-
-/* 1 + luid of last insn.  */
-
-static int max_luid;
 
 /* Number of loops detected in current function.  Used as index to the
    next few tables.  */
@@ -522,7 +520,7 @@ loop_optimize (f, dumpfile, flags)
   /* find_and_verify_loops has already called compute_luids, but it
      might have rearranged code afterwards, so we need to recompute
      the luids now.  */
-  max_luid = compute_luids (f, NULL_RTX, 0);
+  compute_luids (f, NULL_RTX, 0);
 
   /* Don't leave gaps in uid_luid for insns that have been
      deleted.  It is possible that the first or last insn
@@ -616,8 +614,6 @@ scan_loop (loop, flags)
   /* 1 if we are scanning insns that might never be executed
      due to a subroutine call which might exit before they are reached.  */
   int call_passed = 0;
-  /* Jump insn that enters the loop, or 0 if control drops in.  */
-  rtx loop_entry_jump = 0;
   /* Number of insns in the loop.  */
   int insn_count;
   int tem;
@@ -685,24 +681,20 @@ scan_loop (loop, flags)
      Start scan from there.
      But record in LOOP->TOP the place where the end-test jumps
      back to so we can scan that after the end of the loop.  */
-  if (GET_CODE (p) == JUMP_INSN)
-    {
-      loop_entry_jump = p;
-
+  if (GET_CODE (p) == JUMP_INSN
       /* Loop entry must be unconditional jump (and not a RETURN)  */
-      if (any_uncondjump_p (p)
-	  && JUMP_LABEL (p) != 0
-	  /* Check to see whether the jump actually
-	     jumps out of the loop (meaning it's no loop).
-	     This case can happen for things like
-	     do {..} while (0).  If this label was generated previously
-	     by loop, we can't tell anything about it and have to reject
-	     the loop.  */
-	  && INSN_IN_RANGE_P (JUMP_LABEL (p), loop_start, loop_end))
-	{
-	  loop->top = next_label (loop->scan_start);
-	  loop->scan_start = JUMP_LABEL (p);
-	}
+      && any_uncondjump_p (p)
+      && JUMP_LABEL (p) != 0
+      /* Check to see whether the jump actually
+	 jumps out of the loop (meaning it's no loop).
+	 This case can happen for things like
+	 do {..} while (0).  If this label was generated previously
+	 by loop, we can't tell anything about it and have to reject
+	 the loop.  */
+      && INSN_IN_RANGE_P (JUMP_LABEL (p), loop_start, loop_end))
+    {
+      loop->top = next_label (loop->scan_start);
+      loop->scan_start = JUMP_LABEL (p);
     }
 
   /* If LOOP->SCAN_START was an insn created by loop, we don't know its luid
@@ -5949,11 +5941,7 @@ check_final_value (loop, v)
      const struct loop *loop;
      struct induction *v;
 {
-  struct loop_ivs *ivs = LOOP_IVS (loop);
-  struct iv_class *bl;
   rtx final_value = 0;
-
-  bl = REG_IV_CLASS (ivs, REGNO (v->src_reg));
 
   /* DEST_ADDR givs will never reach here, because they are always marked
      replaceable above in record_giv.  */

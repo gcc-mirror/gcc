@@ -44,6 +44,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
@@ -1219,7 +1221,6 @@ split_edge (edge_in)
      edge edge_in;
 {
   basic_block bb;
-  edge edge_out;
   rtx before;
 
   /* Abnormal edges cannot be split.  */
@@ -1285,7 +1286,7 @@ split_edge (edge_in)
 		    edge_in->dest->global_live_at_start);
     }
 
-  edge_out = make_single_succ_edge (bb, edge_in->dest, EDGE_FALLTHRU);
+  make_single_succ_edge (bb, edge_in->dest, EDGE_FALLTHRU);
 
   /* For non-fallthry edges, we must adjust the predecessor's
      jump instruction to target our new block.  */
@@ -1818,7 +1819,7 @@ verify_flow_info ()
 	  if (e->flags & EDGE_FALLTHRU)
 	    n_fallthru++;
 
-	  if ((e->flags & ~EDGE_DFS_BACK) == 0)
+	  if ((e->flags & ~(EDGE_DFS_BACK | EDGE_CAN_FALLTHRU)) == 0)
 	    n_branch++;
 
 	  if (e->flags & EDGE_ABNORMAL_CALL)

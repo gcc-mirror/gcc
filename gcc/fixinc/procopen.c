@@ -45,12 +45,9 @@
  * choice whether to permit this exception to apply to your modifications.
  * If you do not wish that, delete this exception notice.
  */
-#include "auto-host.h"
-#include "ansidecl.h"
-#include "system.h"
 
-#include "server.h"
 #include "fixlib.h"
+#include "server.h"
 
 STATIC const char* def_args[] =
 { (char *) NULL, (char *) NULL };

@@ -122,7 +122,7 @@ extern const char *cris_elinux_stacksize_str;
    someone will fight for us.  This year in the mountains.
    Note that for -melinux and -mlinux, command-line -isystem options are
    emitted both before and after the synthesized one.  We can't remove all
-   of them: a %{<isystem} will only remove the first one and %{<isystem*}
+   of them: a %<isystem will only remove the first one and %<isystem*
    will not do TRT.  Those extra occurrences are harmless anyway.  */
 #define CPP_SPEC \
  "-$ -D__CRIS_ABI_version=2\
@@ -1580,27 +1580,10 @@ call_ ## FUNC (void)						\
    handle (to #undef or ignore it) in a.out.  */
 #define HAVE_GAS_HIDDEN 1
 
-#undef  ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM)	\
-  do							\
-    {							\
-      asm_fprintf (FILE, "%L%s%d:\n", PREFIX, NUM);	\
-    }							\
-  while (0)
-
 /* Remove any previous definition (elfos.h).  */
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
   sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long) NUM)
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)		\
-  do								\
-    {								\
-      (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10);	\
-      sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO));		\
-    }								\
-  while (0)
-
 
 /* Node: Initialization */
 /* (no definitions) */

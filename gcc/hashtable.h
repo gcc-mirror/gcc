@@ -25,8 +25,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 typedef struct ht_identifier ht_identifier;
 struct ht_identifier GTY(())
 {
-  unsigned int len;
   const unsigned char *str;
+  unsigned int len;
 };
 
 #define HT_LEN(NODE) ((NODE)->len)

@@ -198,7 +198,8 @@ do {                                                                    \
       ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);				\
   } while (0)
 
-#define ASM_SPEC   " %| %{fpic:-k} %{fPIC:-k}"
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
+#define ASM_SPEC   "%{fpic:-k} %{fPIC:-k}"
 #define LINK_SPEC \
   "%{p:%e`-p' not supported; use `-pg' and gprof(1)} \
    %{shared:-Bshareable} \

@@ -605,8 +605,6 @@ extern void free_after_compilation	PARAMS ((struct function *));
 
 extern void init_varasm_status		PARAMS ((struct function *));
 
-extern rtx get_first_block_beg		PARAMS ((void));
-
 #ifdef RTX_CODE
 extern void diddle_return_value		PARAMS ((void (*)(rtx, void*), void*));
 extern void clobber_return_register	PARAMS ((void));

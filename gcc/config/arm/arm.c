@@ -24,6 +24,8 @@ Boston, MA 02111-1307, USA.  */
     
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tree.h"
 #include "obstack.h"
@@ -117,6 +119,7 @@ static void	 arm_set_default_type_attributes  PARAMS ((tree));
 static int	 arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
 static int	 count_insns_for_constant	PARAMS ((HOST_WIDE_INT, int));
 static int	 arm_get_strip_length		PARAMS ((int));
+static bool      arm_function_ok_for_sibcall    PARAMS ((tree, tree));
 #ifdef OBJECT_FORMAT_ELF
 static void	 arm_elf_asm_named_section	PARAMS ((const char *, unsigned int));
 #endif
@@ -126,6 +129,7 @@ static void	 arm_encode_section_info	PARAMS ((tree, int));
 #ifdef AOF_ASSEMBLER
 static void	 aof_globalize_label		PARAMS ((FILE *, const char *));
 #endif
+static void	 arm_internal_label		PARAMS ((FILE *, const char *, unsigned long));
 static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
 							 HOST_WIDE_INT,
 							 HOST_WIDE_INT, tree));
@@ -190,6 +194,12 @@ static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
 
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING arm_strip_name_encoding
+
+#undef TARGET_ASM_INTERNAL_LABEL
+#define TARGET_ASM_INTERNAL_LABEL arm_internal_label
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL arm_function_ok_for_sibcall
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK arm_output_mi_thunk
@@ -2308,16 +2318,17 @@ arm_is_longcall_p (sym_ref, call_cookie, call_symbol)
 
 /* Return nonzero if it is ok to make a tail-call to DECL.  */
 
-int
-arm_function_ok_for_sibcall (decl)
+static bool
+arm_function_ok_for_sibcall (decl, exp)
      tree decl;
+     tree exp ATTRIBUTE_UNUSED;
 {
   int call_type = TARGET_LONG_CALLS ? CALL_LONG : CALL_NORMAL;
 
   /* Never tailcall something for which we have no decl, or if we
      are in Thumb mode.  */
   if (decl == NULL || TARGET_THUMB)
-    return 0;
+    return false;
 
   /* Get the calling method.  */
   if (lookup_attribute ("short_call", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
@@ -2329,20 +2340,20 @@ arm_function_ok_for_sibcall (decl)
      a branch instruction.  However, if not compiling PIC, we know
      we can reach the symbol if it is in this compilation unit.  */
   if (call_type == CALL_LONG && (flag_pic || !TREE_ASM_WRITTEN (decl)))
-    return 0;
+    return false;
 
   /* If we are interworking and the function is not declared static
      then we can't tail-call it unless we know that it exists in this 
      compilation unit (since it might be a Thumb routine).  */
   if (TARGET_INTERWORK && TREE_PUBLIC (decl) && !TREE_ASM_WRITTEN (decl))
-    return 0;
+    return false;
 
   /* Never tailcall from an ISR routine - it needs a special exit sequence.  */
   if (IS_INTERRUPT (arm_current_func_type ()))
-    return 0;
+    return false;
 
   /* Everything else is ok.  */
-  return 1;
+  return true;
 }
 
 
@@ -8853,7 +8864,7 @@ arm_assemble_integer (x, size, aligned_p)
    0 -> 2 final_prescan_insn if the `target' is an unconditional branch
    1 -> 3 ASM_OUTPUT_OPCODE after not having output the conditional branch
    2 -> 4 ASM_OUTPUT_OPCODE after not having output the conditional branch
-   3 -> 0 ASM_OUTPUT_INTERNAL_LABEL if the `target' label is reached
+   3 -> 0 (*targetm.asm_out.internal_label) if the `target' label is reached
           (the target label has CODE_LABEL_NUMBER equal to arm_target_label).
    4 -> 0 final_prescan_insn if the `target' unconditional branch is reached
           (the target insn is arm_target_insn).
@@ -11353,6 +11364,21 @@ arm_encode_section_info (decl, first)
 }
 #endif /* !ARM_PE */
 
+static void
+arm_internal_label (stream, prefix, labelno)
+     FILE *stream;
+     const char *prefix;
+     unsigned long labelno;
+{
+  if (arm_ccfsm_state == 3 && (unsigned) arm_target_label == labelno
+      && !strcmp (prefix, "L"))
+    {
+      arm_ccfsm_state = 0;
+      arm_target_insn = NULL;
+    }
+  default_internal_label (stream, prefix, labelno);
+}
+
 /* Output code to add DELTA to the first argument, and then jump
    to FUNCTION.  Used for C++ multiple inheritance.  */
 
@@ -11390,4 +11416,3 @@ arm_output_mi_thunk (file, thunk, delta, vcall_offset, function)
     fputs ("(PLT)", file);
   fputc ('\n', file);
 }
-

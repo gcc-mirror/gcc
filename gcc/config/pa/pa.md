@@ -2455,7 +2455,7 @@
   output_asm_insn (\"{bl|b,l} .+8,%0\", xoperands);
   output_asm_insn (\"{depi|depwi} 0,31,2,%0\", xoperands);
   if (TARGET_SOM || ! TARGET_GAS)
-    ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+    (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 			       CODE_LABEL_NUMBER (xoperands[2]));
 
   /* If we're trying to load the address of a label that happens to be
@@ -5724,7 +5724,7 @@
   xoperands[2] = gen_label_rtx ();
   output_asm_insn (\"{bl|b,l} %0,%%r2\;ldo %1-%2(%%r2),%%r25\", xoperands);
 
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 			     CODE_LABEL_NUMBER (xoperands[2]));
   return \"\";
 }"
@@ -5789,7 +5789,7 @@
 
 	  output_asm_insn (\"{bl|b,l} .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\",
 			   xoperands);
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+	  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 				     CODE_LABEL_NUMBER (xoperands[1]));
 	  output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\", xoperands);
 	}
@@ -6018,7 +6018,7 @@
   if (TARGET_SOM || ! TARGET_GAS)
     {
       output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+      (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 				 CODE_LABEL_NUMBER (xoperands[1]));
       output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
     }
@@ -6194,7 +6194,7 @@
   if (TARGET_SOM || ! TARGET_GAS)
     {
       output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+      (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 				 CODE_LABEL_NUMBER (xoperands[1]));
       output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
     }

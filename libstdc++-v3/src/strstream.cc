@@ -59,7 +59,7 @@ namespace std
   : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(true), 
     _M_frozen(false), _M_constant(false)
   {
-    streamsize n = max(initial_capacity, streamsize(16));
+    streamsize n = std::max(initial_capacity, streamsize(16));
     
     char* buf = _M_alloc(n);
     if (buf) 
@@ -148,7 +148,7 @@ namespace std
     if (pptr() == epptr() && _M_dynamic && !_M_frozen && !_M_constant) 
       {
 	ptrdiff_t old_size = epptr() - pbase();
-	ptrdiff_t new_size = max(2 * old_size, ptrdiff_t(1));
+	ptrdiff_t new_size = std::max(2 * old_size, ptrdiff_t(1));
 	
 	char* buf = _M_alloc(new_size);
 	if (buf) 
@@ -168,7 +168,7 @@ namespace std
 
 	    if (reposition_get)
 	      setg(buf, buf + old_get_offset, buf + 
-		   max(old_get_offset, old_size));
+		   std::max(old_get_offset, old_size));
 
 	    _M_free(old_buffer);
 	  }

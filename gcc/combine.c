@@ -76,6 +76,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"
@@ -167,11 +169,6 @@ static int last_call_cuid;
 
 static rtx subst_insn;
 
-/* This is an insn that belongs before subst_insn, but is not currently
-   on the insn chain.  */
-
-static rtx subst_prev_insn;
-
 /* This is the lowest CUID that `subst' is currently dealing with.
    get_last_value will not return a value if the register was set at or
    after this CUID.  If not for this mechanism, we could get confused if
@@ -199,7 +196,6 @@ static basic_block this_basic_block;
    After combine, we'll need to re-do global life analysis with
    those blocks as starting points.  */
 static sbitmap refresh_blocks;
-static int need_refresh;
 
 /* The next group of arrays allows the recording of the last value assigned
    to (hard or pseudo) register n.  We use this information to see if a
@@ -571,15 +567,10 @@ combine_instructions (f, nregs)
 
   label_tick = 1;
 
-  /* We need to initialize it here, because record_dead_and_set_regs may call
-     get_last_value.  */
-  subst_prev_insn = NULL_RTX;
-
   setup_incoming_promotions ();
 
   refresh_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (refresh_blocks);
-  need_refresh = 0;
 
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
@@ -1752,11 +1743,10 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	     never appear in the insn stream so giving it the same INSN_UID
 	     as I2 will not cause a problem.  */
 
-	  subst_prev_insn = i1
-	    = gen_rtx_INSN (VOIDmode, INSN_UID (i2), NULL_RTX, i2,
-			    BLOCK_FOR_INSN (i2), INSN_SCOPE (i2),
-			    XVECEXP (PATTERN (i2), 0, 1), -1, NULL_RTX,
-			    NULL_RTX);
+	  i1 = gen_rtx_INSN (VOIDmode, INSN_UID (i2), NULL_RTX, i2,
+			     BLOCK_FOR_INSN (i2), INSN_SCOPE (i2),
+			     XVECEXP (PATTERN (i2), 0, 1), -1, NULL_RTX,
+			     NULL_RTX);
 
 	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
 	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
@@ -2860,10 +2850,6 @@ try_combine (i3, i2, i1, new_direct_jump_p)
   combine_successes++;
   undo_commit ();
 
-  /* Clear this here, so that subsequent get_last_value calls are not
-     affected.  */
-  subst_prev_insn = NULL_RTX;
-
   if (added_links_insn
       && (newi2pat == 0 || INSN_CUID (added_links_insn) < INSN_CUID (i2))
       && INSN_CUID (added_links_insn) < INSN_CUID (i3))
@@ -2892,10 +2878,6 @@ undo_all ()
     }
 
   undobuf.undos = 0;
-
-  /* Clear this here, so that subsequent get_last_value calls are not
-     affected.  */
-  subst_prev_insn = NULL_RTX;
 }
 
 /* We've committed to accepting the changes we made.  Move all
@@ -12700,10 +12682,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	      if (REG_NOTE_KIND (note) == REG_DEAD && place == 0
 		  && REGNO_REG_SET_P (bb->global_live_at_start,
 				      REGNO (XEXP (note, 0))))
-		{
-		  SET_BIT (refresh_blocks, this_basic_block->index);
-		  need_refresh = 1;
-		}
+		SET_BIT (refresh_blocks, this_basic_block->index);
 	    }
 
 	  /* If the register is set or already dead at PLACE, we needn't do
@@ -12720,10 +12699,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		 the note is a noop, we'll need do a global live update
 		 after we remove them in delete_noop_moves.  */
 	      if (noop_move_p (place))
-		{
-		  SET_BIT (refresh_blocks, this_basic_block->index);
-		  need_refresh = 1;
-		}
+		SET_BIT (refresh_blocks, this_basic_block->index);
 
 	      if (dead_or_set_p (place, XEXP (note, 0))
 		  || reg_bitfield_target_p (XEXP (note, 0), PATTERN (place)))
@@ -12795,7 +12771,6 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 				      {
 					SET_BIT (refresh_blocks,
 						 this_basic_block->index);
-					need_refresh = 1;
 					break;
 				      }
 				    continue;

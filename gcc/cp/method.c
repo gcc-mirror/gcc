@@ -25,6 +25,8 @@ Boston, MA 02111-1307, USA.  */
 /* Handle method declarations.  */
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "rtl.h"
@@ -54,17 +56,18 @@ enum mangling_flags
 
 typedef enum mangling_flags mangling_flags;
 
-static void do_build_assign_ref PARAMS ((tree));
-static void do_build_copy_constructor PARAMS ((tree));
-static tree synthesize_exception_spec PARAMS ((tree, tree (*) (tree, void *), void *));
-static tree locate_dtor PARAMS ((tree, void *));
-static tree locate_ctor PARAMS ((tree, void *));
-static tree locate_copy PARAMS ((tree, void *));
+static tree thunk_adjust (tree, bool, HOST_WIDE_INT, tree);
+static void do_build_assign_ref (tree);
+static void do_build_copy_constructor (tree);
+static tree synthesize_exception_spec (tree, tree (*) (tree, void *), void *);
+static tree locate_dtor (tree, void *);
+static tree locate_ctor (tree, void *);
+static tree locate_copy (tree, void *);
 
 /* Called once to initialize method.c.  */
 
 void
-init_method ()
+init_method (void)
 {
   init_mangle ();
 }
@@ -73,8 +76,7 @@ init_method ()
 /* Set the mangled name (DECL_ASSEMBLER_NAME) for DECL.  */
 
 void
-set_mangled_name_for_decl (decl)
-     tree decl;
+set_mangled_name_for_decl (tree decl)
 {
   if (processing_template_decl)
     /* There's no need to mangle the name of a template function.  */
@@ -108,10 +110,8 @@ set_mangled_name_for_decl (decl)
 
 /* NOSTRICT */
 tree
-build_opfncall (code, flags, xarg1, xarg2, arg3)
-     enum tree_code code;
-     int flags;
-     tree xarg1, xarg2, arg3;
+build_opfncall (enum tree_code code, int flags,
+                tree xarg1, tree xarg2, tree arg3)
 {
   return build_new_op (code, flags, xarg1, xarg2, arg3);
 }
@@ -136,8 +136,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
    compiler faster).  */
 
 tree
-hack_identifier (value, name)
-     tree value, name;
+hack_identifier (tree value, tree name)
 {
   tree type;
 
@@ -265,67 +264,70 @@ request for member `%D' is ambiguous in multiple inheritance lattice",
 }
 
 
-/* Return a thunk to FUNCTION.  For a virtual thunk, DELTA is the
-   offset to this used to locate the vptr, and VCALL_INDEX is used to
-   look up the eventual subobject location.  For a non-virtual thunk,
-   DELTA is the offset to this and VCALL_INDEX is NULL.  */
+/* Return a this or result adjusting thunk to FUNCTION.  THIS_ADJUSTING
+   indicates whether it is a this or result adjusting thunk.
+   FIXED_OFFSET and VIRTUAL_OFFSET indicate how to do the adjustment
+   (see thunk_adjust).  VIRTUAL_OFFSET can be NULL, but FIXED_OFFSET
+   never is.  VIRTUAL_OFFSET is the /index/ into the vtable for this
+   adjusting thunks, we scale it to a byte offset. For covariant
+   thunks VIRTUAL_OFFSET is the virtual binfo.  You must post process
+   the returned thunk with finish_thunk.  */
 
 tree
-make_thunk (function, delta, vcall_index)
-     tree function;
-     tree delta;
-     tree vcall_index;
+make_thunk (tree function, bool this_adjusting,
+	    tree fixed_offset, tree virtual_offset)
 {
-  tree thunk_id;
-  tree thunk;
-  tree vcall_offset;
   HOST_WIDE_INT d;
-
+  tree thunk;
+  
   my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 20021025);
-
-  /* Scale the VCALL_INDEX to be in terms of bytes.  */
-  if (vcall_index)
-    vcall_offset 
+  /* We can have this thunks to covariant thunks, but not vice versa. */
+  my_friendly_assert (!DECL_THIS_THUNK_P (function), 20021127);
+  
+  /* Scale the VIRTUAL_OFFSET to be in terms of bytes.  */
+  if (this_adjusting && virtual_offset)
+    virtual_offset 
       = size_binop (MULT_EXPR,
-		    vcall_index,
-		    convert (ssizetype,
-			     TYPE_SIZE_UNIT (vtable_entry_type)));
-  else
-    vcall_offset = NULL_TREE;
-
-  d = tree_low_cst (delta, 0);
-
-  /* See if we already have the thunk in question.  */
+ 		    virtual_offset,
+  		    convert (ssizetype,
+  			     TYPE_SIZE_UNIT (vtable_entry_type)));
+  
+  d = tree_low_cst (fixed_offset, 0);
+  
+  /* See if we already have the thunk in question.  For this_adjusting
+     thunks VIRTUAL_OFFSET will be an INTEGER_CST, for covariant thunks it
+     will be a BINFO (because of the organization of the layout
+     algorithm). */
   for (thunk = DECL_THUNKS (function); thunk; thunk = TREE_CHAIN (thunk))
-    if (THUNK_DELTA (thunk) == d
-	&& ((THUNK_VCALL_OFFSET (thunk) != NULL_TREE)
-	    == (vcall_offset != NULL_TREE))
-	&& (THUNK_VCALL_OFFSET (thunk)
-	    ? tree_int_cst_equal (THUNK_VCALL_OFFSET (thunk), 
-				  vcall_offset)
-	    : true))
+    if (DECL_THIS_THUNK_P (thunk) == this_adjusting
+ 	&& THUNK_FIXED_OFFSET (thunk) == d
+ 	&& (this_adjusting
+ 	    ? (!THUNK_VIRTUAL_OFFSET (thunk) == !virtual_offset
+ 	       && (!virtual_offset
+ 		   || tree_int_cst_equal (THUNK_VIRTUAL_OFFSET (thunk), 
+ 					  virtual_offset)))
+ 	    : THUNK_VIRTUAL_OFFSET (thunk) == virtual_offset))
       return thunk;
-
+  
   /* All thunks must be created before FUNCTION is actually emitted;
      the ABI requires that all thunks be emitted together with the
      function to which they transfer control.  */
   my_friendly_assert (!TREE_ASM_WRITTEN (function), 20021025);
 
-  thunk_id = mangle_thunk (function, delta, vcall_offset);
-  thunk = build_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (function));
+  thunk = build_decl (FUNCTION_DECL, NULL_TREE, TREE_TYPE (function));
   DECL_LANG_SPECIFIC (thunk) = DECL_LANG_SPECIFIC (function);
   cxx_dup_lang_specific_decl (function);
-  SET_DECL_ASSEMBLER_NAME (thunk, thunk_id);
   DECL_CONTEXT (thunk) = DECL_CONTEXT (function);
   TREE_READONLY (thunk) = TREE_READONLY (function);
   TREE_THIS_VOLATILE (thunk) = TREE_THIS_VOLATILE (function);
   TREE_PUBLIC (thunk) = TREE_PUBLIC (function);
   if (flag_weak)
     comdat_linkage (thunk);
-  SET_DECL_THUNK_P (thunk);
+  SET_DECL_THUNK_P (thunk, this_adjusting);
   DECL_INITIAL (thunk) = build1 (ADDR_EXPR, vfunc_ptr_type_node, function);
-  THUNK_DELTA (thunk) = d;
-  THUNK_VCALL_OFFSET (thunk) = vcall_offset;
+  THUNK_FIXED_OFFSET (thunk) = tree_low_cst (fixed_offset, 0);
+  THUNK_VIRTUAL_OFFSET (thunk) = virtual_offset;
+  
   /* The thunk itself is not a constructor or destructor, even if
      the thing it is thunking to is.  */
   DECL_INTERFACE_KNOWN (thunk) = 1;
@@ -351,18 +353,85 @@ make_thunk (function, delta, vcall_index)
   return thunk;
 }
 
-/* Emit the definition of a C++ multiple inheritance vtable thunk.  If
-   EMIT_P is nonzero, the thunk is emitted immediately.  */
+/* Finish THUNK, a thunk decl. FIXED_OFFSET and VIRTUAL_OFFSET are the
+   adjustments to apply.  */
 
 void
-use_thunk (thunk_fndecl, emit_p)
-     tree thunk_fndecl;
-     int emit_p;
+finish_thunk (tree thunk, tree fixed_offset, tree virtual_offset)
+{
+  tree function, name;
+  
+  my_friendly_assert (!DECL_NAME (thunk) && DECL_THUNK_P (thunk), 20021127);
+  function = TREE_OPERAND (DECL_INITIAL (thunk), 0);
+  name = mangle_thunk (function, DECL_THIS_THUNK_P (thunk),
+			    fixed_offset, virtual_offset);
+  THUNK_FIXED_OFFSET (thunk) = tree_low_cst (fixed_offset, 0);
+  THUNK_VIRTUAL_OFFSET (thunk) = virtual_offset;
+  DECL_NAME (thunk) = name;
+  SET_DECL_ASSEMBLER_NAME (thunk, name);
+}
+
+/* Adjust PTR by the constant FIXED_OFFSET, and by the vtable
+   offset indicated by VIRTUAL_OFFSET, if that is
+   non-null. THIS_ADJUSTING is non-zero for a this adjusting thunk and
+   zero for a result adjusting thunk. */
+
+static tree
+thunk_adjust (tree ptr, bool this_adjusting,
+	      HOST_WIDE_INT fixed_offset, tree virtual_offset)
+{
+  if (this_adjusting)
+    /* Adjust the pointer by the constant.  */
+    ptr = fold (build (PLUS_EXPR, TREE_TYPE (ptr), ptr,
+		       ssize_int (fixed_offset)));
+
+  /* If there's a virtual offset, look up that value in the vtable and
+     adjust the pointer again.  */
+  if (virtual_offset)
+    {
+      tree vtable;
+
+      /* It shouldn't be a binfo any more. */
+      my_friendly_assert (TREE_CODE (virtual_offset) == INTEGER_CST, 20021127);
+      
+      ptr = save_expr (ptr);
+      /* The vptr is always at offset zero in the object.  */
+      vtable = build1 (NOP_EXPR,
+		       build_pointer_type (build_pointer_type 
+					   (vtable_entry_type)),
+		       ptr);
+      /* Form the vtable address.  */
+      vtable = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (vtable)), vtable);
+      /* Find the entry with the vcall offset.  */
+      vtable = build (PLUS_EXPR, TREE_TYPE (vtable), vtable, virtual_offset);
+      /* Get the offset itself.  */
+      vtable = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (vtable)), vtable);
+      /* Adjust the `this' pointer.  */
+      ptr = fold (build (PLUS_EXPR, TREE_TYPE (ptr), ptr, vtable));
+    }
+  
+  if (!this_adjusting)
+    /* Adjust the pointer by the constant.  */
+    ptr = fold (build (PLUS_EXPR, TREE_TYPE (ptr), ptr,
+		       ssize_int (fixed_offset)));
+
+  return ptr;
+}
+
+/* Emit the definition of a C++ multiple inheritance or covariant
+   return vtable thunk.  If EMIT_P is nonzero, the thunk is emitted
+   immediately.  */
+
+void
+use_thunk (tree thunk_fndecl, bool emit_p)
 {
   tree fnaddr;
   tree function;
-  tree vcall_offset;
-  HOST_WIDE_INT delta, vcall_value;
+  tree virtual_offset;
+  HOST_WIDE_INT fixed_offset, virtual_value;
+
+  /* We should have called finish_thunk to give it a name. */
+  my_friendly_assert (DECL_NAME (thunk_fndecl), 20021127);
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
     return;
@@ -385,20 +454,13 @@ use_thunk (thunk_fndecl, emit_p)
   if (!emit_p)
     return;
 
-  delta = THUNK_DELTA (thunk_fndecl);
-  vcall_offset = THUNK_VCALL_OFFSET (thunk_fndecl);
+  fixed_offset = THUNK_FIXED_OFFSET (thunk_fndecl);
+  virtual_offset = THUNK_VIRTUAL_OFFSET (thunk_fndecl);
 
-  if (vcall_offset)
-    {
-      vcall_value = tree_low_cst (vcall_offset, /*pos=*/0);
-
-      /* It is expected that a value of zero means no vcall.  */
-      if (!vcall_value)
-	abort ();
-    }
-  else
-    vcall_value = 0;
-
+  virtual_value = (virtual_offset
+		   ? tree_low_cst (virtual_offset, /*pos=*/0) : 0);
+  my_friendly_assert (!virtual_offset || virtual_value, 20021026);
+  
   /* And, if we need to emit the thunk, it's used.  */
   mark_used (thunk_fndecl);
   /* This thunk is actually defined.  */
@@ -421,8 +483,9 @@ use_thunk (thunk_fndecl, emit_p)
   BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) 
     = DECL_ARGUMENTS (thunk_fndecl);
 
-  if (targetm.asm_out.can_output_mi_thunk (thunk_fndecl, delta,
-					   vcall_value, function))
+  if (DECL_THIS_THUNK_P (thunk_fndecl)
+      && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
+					      virtual_value, function))
     {
       const char *fnname;
       current_function_decl = thunk_fndecl;
@@ -433,8 +496,8 @@ use_thunk (thunk_fndecl, emit_p)
       current_function_is_thunk = 1;
       assemble_start_function (thunk_fndecl, fnname);
 
-      targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl, delta,
-				       vcall_value, function);
+      targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl,
+				       fixed_offset, virtual_value, function);
 
       assemble_end_function (thunk_fndecl, fnname);
       current_function_decl = 0;
@@ -443,9 +506,10 @@ use_thunk (thunk_fndecl, emit_p)
     }
   else
     {
-      /* If we don't have the necessary code for efficient thunks,
-	 generate a thunk function that just makes a call to the real
-	 function.  Unfortunately, this doesn't work for varargs.  */
+      /* If this is a covariant thunk, or we don't have the necessary
+	 code for efficient thunks, generate a thunk function that
+	 just makes a call to the real function.  Unfortunately, this
+	 doesn't work for varargs.  */
 
       tree a, t;
 
@@ -453,7 +517,7 @@ use_thunk (thunk_fndecl, emit_p)
 	error ("generic thunk code fails for method `%#D' which uses `...'",
 	       function);
 
-      /* Set up clone argument trees for the thunk.  */
+      /* Set up cloned argument trees for the thunk.  */
       t = NULL_TREE;
       for (a = DECL_ARGUMENTS (function); a; a = TREE_CHAIN (a))
 	{
@@ -469,42 +533,22 @@ use_thunk (thunk_fndecl, emit_p)
       start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
       /* We don't bother with a body block for thunks.  */
 
-      /* Adjust the this pointer by the constant.  */
-      t = ssize_int (delta);
-      t = fold (build (PLUS_EXPR, TREE_TYPE (a), a, t));
-
-      /* If there's a vcall offset, look up that value in the vtable and
-	 adjust the `this' pointer again.  */
-      if (vcall_offset && !integer_zerop (vcall_offset))
-	{
-	  tree orig_this;
-
-	  t = save_expr (t);
-	  orig_this = t;
-	  /* The vptr is always at offset zero in the object.  */
-	  t = build1 (NOP_EXPR,
-		      build_pointer_type (build_pointer_type 
-					  (vtable_entry_type)),
-		      t);
-	  /* Form the vtable address.  */
-	  t = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
-	  /* Find the entry with the vcall offset.  */
-	  t = build (PLUS_EXPR, TREE_TYPE (t), t, vcall_offset);
-	  /* Calculate the offset itself.  */
-	  t = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
-	  /* Adjust the `this' pointer.  */
-	  t = fold (build (PLUS_EXPR,
-			   TREE_TYPE (orig_this),
-			   orig_this,
-			   t));
-	}
-
+      t = a;
+      
+      if (DECL_THIS_THUNK_P (thunk_fndecl))
+	t = thunk_adjust (t, /*this_adjusting=*/1,
+			  fixed_offset, virtual_offset);
+      
       /* Build up the call to the real function.  */
       t = tree_cons (NULL_TREE, t, NULL_TREE);
       for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
 	t = tree_cons (NULL_TREE, a, t);
       t = nreverse (t);
       t = build_call (function, t);
+      if (DECL_RESULT_THUNK_P (thunk_fndecl))
+	t = thunk_adjust (t, /*this_adjusting=*/0,
+			  fixed_offset, virtual_offset);
+      
       if (VOID_TYPE_P (TREE_TYPE (t)))
 	finish_expr_stmt (t);
       else
@@ -528,8 +572,7 @@ use_thunk (thunk_fndecl, emit_p)
 /* Generate code for default X(X&) constructor.  */
 
 static void
-do_build_copy_constructor (fndecl)
-     tree fndecl;
+do_build_copy_constructor (tree fndecl)
 {
   tree parm = FUNCTION_FIRST_USER_PARM (fndecl);
   tree t;
@@ -632,8 +675,7 @@ do_build_copy_constructor (fndecl)
 }
 
 static void
-do_build_assign_ref (fndecl)
-     tree fndecl;
+do_build_assign_ref (tree fndecl)
 {
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
   tree compound_stmt;
@@ -735,12 +777,11 @@ do_build_assign_ref (fndecl)
 }
 
 void
-synthesize_method (fndecl)
-     tree fndecl;
+synthesize_method (tree fndecl)
 {
-  int nested = (current_function_decl != NULL_TREE);
+  bool nested = (current_function_decl != NULL_TREE);
   tree context = decl_function_context (fndecl);
-  int need_body = 1;
+  bool need_body = true;
   tree stmt;
 
   if (at_eof)
@@ -777,7 +818,7 @@ synthesize_method (fndecl)
   if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)
     {
       do_build_assign_ref (fndecl);
-      need_body = 0;
+      need_body = false;
     }
   else if (DECL_CONSTRUCTOR_P (fndecl))
     {
@@ -814,10 +855,8 @@ synthesize_method (fndecl)
    variants yet, so we need to look at the main one.  */
 
 static tree
-synthesize_exception_spec (type, extractor, client)
-     tree type;
-     tree (*extractor) (tree, void *);
-     void *client;
+synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
+                           void *client)
 {
   tree raises = empty_except_spec;
   tree fields = TYPE_FIELDS (type);
@@ -861,9 +900,7 @@ synthesize_exception_spec (type, extractor, client)
 /* Locate the dtor of TYPE.  */
 
 static tree
-locate_dtor (type, client)
-     tree type;
-     void *client ATTRIBUTE_UNUSED;
+locate_dtor (tree type, void *client ATTRIBUTE_UNUSED)
 {
   tree fns;
   
@@ -877,9 +914,7 @@ locate_dtor (type, client)
 /* Locate the default ctor of TYPE.  */
 
 static tree
-locate_ctor (type, client)
-     tree type;
-     void *client ATTRIBUTE_UNUSED;
+locate_ctor (tree type, void *client ATTRIBUTE_UNUSED)
 {
   tree fns;
   
@@ -910,15 +945,13 @@ struct copy_data
    and desired qualifiers of the source operand.  */
 
 static tree
-locate_copy (type, client_)
-     tree type;
-     void *client_;
+locate_copy (tree type, void *client_)
 {
   struct copy_data *client = (struct copy_data *)client_;
   tree fns;
   int ix = -1;
   tree best = NULL_TREE;
-  int excess_p = 0;
+  bool excess_p = false;
   
   if (client->name)
     {
@@ -971,16 +1004,13 @@ locate_copy (type, client_)
    reference argument or a non-const reference.  */
 
 tree
-implicitly_declare_fn (kind, type, const_p)
-     special_function_kind kind;
-     tree type;
-     int const_p;
+implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
 {
   tree declspecs = NULL_TREE;
   tree fn, args = NULL_TREE;
   tree raises = empty_except_spec;
-  int retref = 0;
-  int has_parm = 0;
+  bool retref = false;
+  bool has_parm = false;
   tree name = constructor_name (TYPE_IDENTIFIER (type));
 
   switch (kind)
@@ -1004,12 +1034,12 @@ implicitly_declare_fn (kind, type, const_p)
       struct copy_data data;
       tree argtype = type;
       
-      has_parm = 1;
+      has_parm = true;
       data.name = NULL;
       data.quals = 0;
       if (kind == sfk_assignment_operator)
         {
-          retref = 1;
+          retref = true;
           declspecs = build_tree_list (NULL_TREE, type);
 
           name = ansi_assopname (NOP_EXPR);
@@ -1061,8 +1091,7 @@ implicitly_declare_fn (kind, type, const_p)
    as there are artificial parms in FN.  */
 
 tree
-skip_artificial_parms_for (fn, list)
-     tree fn, list;
+skip_artificial_parms_for (tree fn, tree list)
 {
   if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
     list = TREE_CHAIN (list);

@@ -389,114 +389,23 @@ many times the result was 1.
 @node Gcov Data Files
 @section Brief description of @command{gcov} data files
 
-@command{gcov} uses three files for doing profiling.  The names of these
-files are derived from the original @emph{source} file by substituting
-the file suffix with either @file{.bb}, @file{.bbg}, or @file{.da}.  All
-of these files are placed in the same directory as the source file, and
-contain data stored in a platform-independent method.
+@command{gcov} uses two files for profiling.  The names of these files
+are derived from the original @emph{object} file by substituting the
+file suffix with either @file{.bbg}, or @file{.da}.  All of these files
+are placed in the same directory as the object file, and contain data
+stored in a platform-independent format.
 
-The @file{.bb} and @file{.bbg} files are generated when the source file
-is compiled with the GCC @option{-ftest-coverage} option.  The
-@file{.bb} file contains a list of source files (including headers),
-functions within those files, and line numbers corresponding to each
-basic block in the source file.
-
-The @file{.bb} file format consists of several lists of 4-byte integers
-which correspond to the line numbers of each basic block in the file.
-Each list is terminated by a line number of 0.  A line number of
-@minus{}1 is used to designate that the source file name (padded to a
-4-byte boundary and followed by another @minus{}1) follows.  In
-addition, a line number of @minus{}2 is used to designate that the name
-of a function (also padded to a 4-byte boundary and followed by a
-@minus{}2) follows.
-
-The @file{.bbg} file is used to reconstruct the program flow graph for
-the source file.  It contains a list of the program flow arcs (possible
-branches taken from one basic block to another) for each function which,
-in combination with the @file{.bb} file, enables gcov to reconstruct the
-program flow.
-
-In the @file{.bbg} file, the format is:
-@smallexample
-        name of function #0
-        checksum of function #0
-        number of basic blocks for function #0 (4-byte number)
-        total number of arcs for function #0 (4-byte number)
-        count of arcs in basic block #0 (4-byte number)
-        destination basic block of arc #0 (4-byte number)
-        flag bits (4-byte number)
-        destination basic block of arc #1 (4-byte number)
-        flag bits (4-byte number)
-        @dots{}
-        destination basic block of arc #N (4-byte number)
-        flag bits (4-byte number)
-        count of arcs in basic block #1 (4-byte number)
-        destination basic block of arc #0 (4-byte number)
-        flag bits (4-byte number)
-        @dots{}
-@end smallexample
-
-A @minus{}1 (stored as a 4-byte number) is used to separate each function's
-list of basic blocks, and to verify that the file has been read
-correctly.
-
-The function name is stored as a @minus{}1 (4 bytes), the length (4 bytes),
-the name itself (padded to 4-byte boundary) followed by a @minus{}1 (4 bytes).
-
-The flags are defined as follows:
-@itemize
-@item bit0 
-On function spanning tree
-
-@item bit1
-Is a fake edge
-
-@item bit2
-Is the fall through edge from one block to its immediate successor.
-
-@item bit3-bit31
-For future expansion
-
-@end itemize
+The @file{.bbg} files is generated when the source file is compiled with
+the GCC @option{-ftest-coverage} option.  It contains information to
+reconstruct the basic block graphs and assign source line numbers to
+blocks.
 
 The @file{.da} file is generated when a program containing object files
 built with the GCC @option{-fprofile-arcs} option is executed.  A
-separate @file{.da} file is created for each source file compiled with
-this option, and the name of the @file{.da} file is stored as an
-absolute pathname in the resulting object file.  This path name is
-derived from the object file name by substituting a @file{.da} suffix.
+separate @file{.da} file is created for each object file compiled with
+this option. It contains arc transition counts, and some summary
+information.
 
-The @file{.da} consists of one or more blocks with the following
-structure:
-@smallexample
-        "magic" number @minus{}123 (4-byte number)
-	number of functions (4-byte number)
-        length of the "extension block" in bytes
-	extension block (variable length)
-  	name of function #0 (the same format as in .bbg file)
-        checksum of function #0
-	number of instrumented arcs (4-byte number)
-        count of arc #0 (8-byte number)
-        count of arc #1 (8-byte number)
-        @dots{}
-	count of arc #M_0 (8-byte number)
-  	name of function #1 (the same format as in .bbg file)
-        checksum of function #1
-	@dots{}
-@end smallexample
-Multiple program runs might merge data into a single block, or might
-append a new block. The current structure of the extension block is as
-follows:
-@smallexample
-        number of instrumented arcs in whole program (4-byte number)
-        sum all of instrumented arcs in whole program (8-byte number)
-        maximal value of counter in whole program (8-byte number)
-        number of instrumented arcs in the object file (4-byte number)
-        sum all of instrumented arcs in the object file (8-byte number)
-        maximal value of counter in the object file (8-byte number)
-@end smallexample
-
-All three of these files use the functions in @file{gcov-io.h} to store
-integers; the functions in this header provide a machine-independent
-mechanism for storing and retrieving data from a stream.
-
+The full details of the file format is specified in @file{gcov-io.h},
+and functions provided in that header file should be used to access the
+coverage files.

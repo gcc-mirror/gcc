@@ -72,6 +72,9 @@ struct gcc_target
     /* Output code that will globalize a label.  */
     void (* globalize_label) PARAMS ((FILE *, const char *));
 
+    /* Output an internal label.  */
+    void (* internal_label) PARAMS ((FILE *, const char *, unsigned long));
+
     /* Emit an assembler directive to set visibility for the symbol
        associated with the tree decl.  */
     void (* visibility) PARAMS ((tree, int));
@@ -265,6 +268,11 @@ struct gcc_target
   /* True if the constant X cannot be placed in the constant pool.  */
   bool (* cannot_force_const_mem) PARAMS ((rtx));
 
+  /* True if it is OK to do sibling call optimization for the specified
+     call expression EXP.  DECL will be the called function, or NULL if
+     this is an indirect call.  */
+  bool (*function_ok_for_sibcall) PARAMS ((tree decl, tree exp));
+  
   /* True if EXP should be placed in a "small data" section.  */
   bool (* in_small_data_p) PARAMS ((tree));
 
@@ -279,6 +287,7 @@ struct gcc_target
   /* Undo the effects of encode_section_info on the symbol string.  */
   const char * (* strip_name_encoding) PARAMS ((const char *));
 
+  bool (* valid_pointer_mode) PARAMS ((enum machine_mode mode));
   /* Leave the boolean fields at the end.  */
 
   /* True if arbitrary sections are supported.  */

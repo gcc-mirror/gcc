@@ -125,7 +125,7 @@ drectve_section ()						\
         assemble_name (FILE,						  \
 		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
         putc ('\n', FILE);						  \
-        ASM_OUTPUT_INTERNAL_LABEL (FILE, "LM", sym_lineno);		  \
+        (*targetm.asm_out.internal_label) (FILE, "LM", sym_lineno);		  \
         sym_lineno ++;							  \
       }									  \
   }

@@ -1,5 +1,6 @@
 # gmon build rule:
-$(T)gmon.o:	$(srcdir)/config/sparc/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H) stmp-int-hdrs
+$(T)gmon.o:	$(srcdir)/config/sparc/gmon-sol2.c $(GCC_PASSES) \
+  $(TCONFIG_H) tsystem.h coretypes.h $(TM_H) stmp-int-hdrs
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) \
 		-c $(srcdir)/config/sparc/gmon-sol2.c -o $(T)gmon.o
 
