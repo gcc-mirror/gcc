@@ -3994,7 +3994,8 @@ finish_struct_1 (t, warn_anon)
 	  /* The first slot is for the rtti offset.  */
 	  pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
 
-	  set_rtti_entry (pending_virtuals, integer_zero_node, t);
+	  set_rtti_entry (pending_virtuals,
+			  convert (ssizetype, integer_zero_node), t);
 	  build_vtable (NULL_TREE, t);
 	}
       else
