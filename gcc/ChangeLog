@@ -1,5 +1,19 @@
 2001-05-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* loop.h (struct movables): Remove `num'.
+	* loop.c (scan_loop): Don't set it.  Use count_insns_in_loop.
+	Adjust call to strength_reduce.
+	(num_unmoved_movables): New function.
+	(move_movables): Don't set movables->num.
+	(strength_reduce): Compute the number of instructions in the loop
+	here, rather than in the caller.
+	(check_dbra_loop): Always clear reversible_mem_store if there
+	are any memory sets.
+	(loop_regs_scan): Don't count instructions here.
+	(count_insn_in_loop): New function.
+
+2001-05-11  Mark Mitchell  <mark@codesourcery.com>
+
 	* optabs.c (emit_libcall_block): Don't mark calls as CONST_CALL_P.
 
 2001-05-11  Neil Booth  <neil@daikokuya.demon.co.uk>

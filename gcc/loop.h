@@ -289,8 +289,6 @@ struct loop_movables
   struct movable *head;
   /* Last movable in chain.  */
   struct movable *last;
-  /* Number of movables in the loop.  */
-  int num;
 };
 
 
