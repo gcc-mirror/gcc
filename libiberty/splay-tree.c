@@ -32,6 +32,8 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #endif
 
+#include <stdio.h>
+
 #include "libiberty.h"
 #include "splay-tree.h"
 

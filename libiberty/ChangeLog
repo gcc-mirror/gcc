@@ -1,3 +1,7 @@
+2000-09-14  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* splay-tree.c: #include <stdio.h>.
+
 2000-09-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/demangle-expected: Add two tests for anonymous
