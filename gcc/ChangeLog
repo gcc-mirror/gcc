@@ -1,5 +1,8 @@
 2001-09-14  Nick Clifton  <nickc@cambridge.redhat.com>
 
+	* rtlanal.c (subreg_regno_offset): Add semicolon to end of
+	invocation of SUBREG_REGNO_OFFSET.
+
 	* haifa-sched.c: Fix typo in FSF copyright statement.
 	* sched-deps.c: Fix typo in FSF copyright statement.
 	* sched-ebb.c: Fix typo in FSF copyright statement.

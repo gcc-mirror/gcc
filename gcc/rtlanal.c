@@ -2750,7 +2750,7 @@ subreg_regno_offset (xregno, xmode, offset, ymode)
 
 /* Check for an override, and use it instead.  */
 #ifdef SUBREG_REGNO_OFFSET
-  ret = SUBREG_REGNO_OFFSET (xregno, xmode, offset, ymode)
+  ret = SUBREG_REGNO_OFFSET (xregno, xmode, offset, ymode);
 #else
   if (xregno >= FIRST_PSEUDO_REGISTER)
     abort ();
