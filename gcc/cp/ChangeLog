@@ -1,4 +1,4 @@
-2001-01-08  Nathan Sidwell  <nathan@acm.org>
+2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (struct binding_level): Adjust class_shadowed comments
 	to reflect reality.

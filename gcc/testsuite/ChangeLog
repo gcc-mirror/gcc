@@ -1,4 +1,4 @@
-2001-01-08  Nathan Sidwell  <nathan@acm.org>
+2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/lookup16.C: Remove XFAIL.
 
