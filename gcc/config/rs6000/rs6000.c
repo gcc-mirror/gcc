@@ -3820,14 +3820,15 @@ rs6000_sync_trampoline (addr)
   rtx (*cmp_fcn) PROTO ((rtx, rtx));
   rtx label;
 
-  if (TARGET_64BIT)
-    {
-      abort ();			/* no cmpdi function yet */
-    }
-  else
+  if (TARGET_32BIT)
     {
       sub_fcn = gen_subsi3;
       cmp_fcn = gen_cmpsi;
+    }
+  else
+    {
+      sub_fcn = gen_subdi3;
+      cmp_fcn = gen_cmpdi;
     }
 
   addr = force_reg (pmode, addr);
@@ -3990,6 +3991,7 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
      rtx cxt;
 {
   rtx reg, reg2, reg3;
+  enum machine_mode pmode = Pmode;
 
   switch (DEFAULT_ABI)
     {
@@ -3998,31 +4000,31 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 
     /* Under AIX, just build the 3 word function descriptor */
     case ABI_AIX:
-      emit_move_insn (gen_rtx (MEM, Pmode,
-			       memory_address (Pmode, (addr))),
-		      gen_rtx (MEM, Pmode,
-			       memory_address (Pmode, (fnaddr))));
-      emit_move_insn (gen_rtx (MEM, Pmode,
-			       memory_address (Pmode,
+      emit_move_insn (gen_rtx (MEM, pmode,
+			       memory_address (pmode, (addr))),
+		      gen_rtx (MEM, pmode,
+			       memory_address (pmode, (fnaddr))));
+      emit_move_insn (gen_rtx (MEM, pmode,
+			       memory_address (pmode,
 					       plus_constant ((addr), 4))),
-		      gen_rtx (MEM, Pmode,
-			       memory_address (Pmode,
+		      gen_rtx (MEM, pmode,
+			       memory_address (pmode,
 					       plus_constant ((fnaddr), 4))));
-      emit_move_insn (gen_rtx (MEM, Pmode,
-			       memory_address (Pmode,
+      emit_move_insn (gen_rtx (MEM, pmode,
+			       memory_address (pmode,
 					       plus_constant ((addr), 8))),
-		      force_reg (Pmode, (cxt)));
+		      force_reg (pmode, (cxt)));
       break;
 
     /* Under V.4/eabi, update the two words after the bl to have the real
        function address and the static chain.  */
     case ABI_V4:
     case ABI_AIX_NODESC:
-      reg = gen_reg_rtx (Pmode);
+      reg = gen_reg_rtx (pmode);
 
       emit_move_insn (reg, fnaddr);
-      emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (addr, 8)), reg);
-      emit_move_insn (gen_rtx (MEM, Pmode,
+      emit_move_insn (gen_rtx (MEM, pmode, plus_constant (addr, 8)), reg);
+      emit_move_insn (gen_rtx (MEM, pmode,
 			       plus_constant (addr, (TARGET_64BIT ? 16 : 12))),
 		      cxt);
 
@@ -4033,18 +4035,18 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
        then fill in the fields with the function address and static chain after
        the bl instruction.  */
     case ABI_NT:
-      reg  = gen_reg_rtx (Pmode);
-      reg2 = gen_reg_rtx (Pmode);
-      reg3 = gen_reg_rtx (Pmode);
+      reg  = gen_reg_rtx (pmode);
+      reg2 = gen_reg_rtx (pmode);
+      reg3 = gen_reg_rtx (pmode);
 
-      emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (addr, 4)),
-		      gen_rtx (REG, Pmode, 2));
+      emit_move_insn (gen_rtx (MEM, pmode, plus_constant (addr, 4)),
+		      gen_rtx (REG, pmode, 2));
       emit_move_insn (reg, fnaddr);
-      emit_move_insn (reg2, gen_rtx (MEM, Pmode, reg));
+      emit_move_insn (reg2, gen_rtx (MEM, pmode, reg));
       emit_move_insn (reg3, plus_constant (addr, 8));
-      emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (addr, 16)), reg);
-      emit_move_insn (gen_rtx (MEM, Pmode, addr), reg3);
-      emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (addr, 20)), cxt);
+      emit_move_insn (gen_rtx (MEM, pmode, plus_constant (addr, 16)), reg);
+      emit_move_insn (gen_rtx (MEM, pmode, addr), reg3);
+      emit_move_insn (gen_rtx (MEM, pmode, plus_constant (addr, 20)), cxt);
       rs6000_sync_trampoline (addr);
       break;
     }
