@@ -17,6 +17,10 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+#include <stdio.h>
+#include "config.h"
+#include "tree.h"
+
 #ifdef HANDLE_SYSV_PRAGMA
 
 /* When structure field packing is in effect, this variable is the
@@ -24,38 +28,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    in effect, this is zero. */
 
 extern int maximum_field_alignment;
-
-/* Handle a #pragma directive.  INPUT is the current input stream,
-   and C is a character to reread.
-   Returns a character for the caller to reread,
-   or -1 meaning there isn't one.  */
-
-int
-handle_sysv_pragma (input, c)
-     FILE *input;
-     int c;
-{
-  while (c == ' ' || c == '\t')
-    c = getc (input);
-  if (c == '\n' || c == EOF)
-    {
-      handle_pragma_token (0, 0);
-      return c;
-    }
-  ungetc (c, input);
-  switch (yylex ())
-    {
-    case IDENTIFIER:
-    case TYPENAME:
-    case STRING:
-    case CONSTANT:
-      handle_pragma_token (token_buffer, yylval.ttype);
-      break;
-    default:
-      handle_pragma_token (token_buffer, 0);
-    }
-  return -1;
-}
 
 /* Handle one token of a pragma directive.  TOKEN is the
    current token, and STRING is its printable form.  */
