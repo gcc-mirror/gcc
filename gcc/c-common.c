@@ -1078,9 +1078,10 @@ void
 constant_expression_warning (value)
      tree value;
 {
-  if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
-    if (pedantic)
-      pedwarn ("overflow in constant expression");
+  if ((TREE_CODE (value) == INTEGER_CST || TREE_CODE (value) == REAL_CST
+       || TREE_CODE (value) == COMPLEX_CST)
+      && TREE_CONSTANT_OVERFLOW (value) && pedantic)
+    pedwarn ("overflow in constant expression");
 }
 
 /* Print a warning if an expression had overflow in folding.
@@ -1094,10 +1095,21 @@ void
 overflow_warning (value)
      tree value;
 {
-  if (TREE_CODE (value) == INTEGER_CST && TREE_OVERFLOW (value))
+  if ((TREE_CODE (value) == INTEGER_CST
+       || (TREE_CODE (value) == COMPLEX_CST
+	   && TREE_CODE (TREE_REALPART (value)) == INTEGER_CST))
+      && TREE_OVERFLOW (value))
     {
       TREE_OVERFLOW (value) = 0;
       warning ("integer overflow in expression");
+    }
+  else if ((TREE_CODE (value) == REAL_CST
+	    || (TREE_CODE (value) == COMPLEX_CST
+		&& TREE_CODE (TREE_REALPART (value)) == REAL_CST))
+	   && TREE_OVERFLOW (value))
+    {
+      TREE_OVERFLOW (value) = 0;
+      warning ("floating-pointer overflow in expression");
     }
 }
 
