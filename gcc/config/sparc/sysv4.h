@@ -91,6 +91,7 @@ Boston, MA 02111-1307, USA.  */
 #define STRING_ASM_OP		".asciz"
 #define COMMON_ASM_OP		".common"
 #define SKIP_ASM_OP		".skip"
+#define UNALIGNED_DOUBLE_INT_ASM_OP ".uaxword"
 #define UNALIGNED_INT_ASM_OP	".uaword"
 #define UNALIGNED_SHORT_ASM_OP	".uahalf"
 #define PUSHSECTION_ASM_OP	".pushsection"
@@ -179,6 +180,8 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc,#write"
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc,#write"
+#undef EH_FRAME_SECTION_ASM_OP
+#define EH_FRAME_SECTION_ASM_OP ".section\t\".eh_frame\",#alloc,#write"
 
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or

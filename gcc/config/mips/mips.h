@@ -948,12 +948,11 @@ while (0)
 #define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[ (REGNO) ]
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.
-   This mapping does not allow for tracking DBX register 0, since column 0
-   is used for the frame address, but since register 0 is fixed this is
-   not really a problem.  */
+   This mapping does not allow for tracking register 0, since SGI's broken
+   dwarf reader thinks column 0 is used for the frame address, but since
+   register 0 is fixed this is not a problem.  */
 #define DWARF_FRAME_REGNUM(REG)				\
-  (REG == GP_REG_FIRST + 31 ? DWARF_FRAME_RETURN_COLUMN	\
-   : DBX_REGISTER_NUMBER (REG))
+  (REG == GP_REG_FIRST + 31 ? DWARF_FRAME_RETURN_COLUMN : REG)
 
 /* The DWARF 2 CFA column which tracks the return address.  */
 #define DWARF_FRAME_RETURN_COLUMN (FP_REG_LAST + 1)

@@ -25,3 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #define DBX_USE_BINCL
 
 #include "sparc/sparc.h"
+
+/* The Sun as doesn't like unaligned data.  */
+#define DWARF2_UNWIND_INFO 0

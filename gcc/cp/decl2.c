@@ -2934,7 +2934,7 @@ finish_file ()
       rest_of_decl_compilation (TREE_VALUE (vars), 0, 1, 1);
   vars = static_aggregates;
 
-  if (static_ctors || vars || exception_table_p ())
+  if (static_ctors || vars || register_exception_table_p ())
     needs_messing_up = 1;
   if (static_dtors)
     needs_cleaning = 1;
@@ -3033,7 +3033,7 @@ finish_file ()
       push_momentary ();
       expand_start_bindings (0);
 
-      if (exception_table_p ())
+      if (register_exception_table_p ())
 	register_exception_table ();
 
       while (vars)

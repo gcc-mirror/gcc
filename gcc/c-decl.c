@@ -2849,7 +2849,7 @@ init_decl_processing ()
   tree traditional_ptr_type_node;
   /* Data types of memcpy and strlen.  */
   tree memcpy_ftype, memset_ftype, strlen_ftype;
-  tree void_ftype_any;
+  tree void_ftype_any, ptr_ftype_void, ptr_ftype_ptr;
   int wchar_type_size;
   tree temp;
   tree array_domain_type;
@@ -3165,6 +3165,11 @@ init_decl_processing ()
 							    sizetype,
 							    endlink))));
 
+  ptr_ftype_void = build_function_type (ptr_type_node, endlink);
+  ptr_ftype_ptr
+    = build_function_type (ptr_type_node,
+			   tree_cons (NULL_TREE, ptr_type_node, endlink));
+
   builtin_function ("__builtin_constant_p", default_function_type,
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
@@ -3185,6 +3190,36 @@ init_decl_processing ()
   builtin_function ("__builtin_aggregate_incoming_address",
 		    build_function_type (ptr_type_node, NULL_TREE),
 		    BUILT_IN_AGGREGATE_INCOMING_ADDRESS, NULL_PTR);
+
+  /* Hooks for the DWARF 2 __throw routine.  */
+  builtin_function ("__builtin_unwind_init",
+		    build_function_type (void_type_node, endlink),
+		    BUILT_IN_UNWIND_INIT, NULL_PTR);
+  builtin_function ("__builtin_fp", ptr_ftype_void, BUILT_IN_FP, NULL_PTR);
+  builtin_function ("__builtin_sp", ptr_ftype_void, BUILT_IN_SP, NULL_PTR);
+  builtin_function ("__builtin_dwarf_fp_regnum",
+		    build_function_type (unsigned_type_node, endlink),
+		    BUILT_IN_DWARF_FP_REGNUM, NULL_PTR);
+  builtin_function ("__builtin_frob_return_addr", ptr_ftype_ptr,
+		    BUILT_IN_FROB_RETURN_ADDR, NULL_PTR);
+  builtin_function ("__builtin_extract_return_addr", ptr_ftype_ptr,
+		    BUILT_IN_EXTRACT_RETURN_ADDR, NULL_PTR);
+  builtin_function ("__builtin_set_return_addr_reg",
+		    build_function_type (void_type_node, 
+					 tree_cons (NULL_TREE,
+						    ptr_type_node,
+						    endlink)),
+		    BUILT_IN_SET_RETURN_ADDR_REG, NULL_PTR);
+  builtin_function ("__builtin_eh_stub", ptr_ftype_void,
+		    BUILT_IN_EH_STUB, NULL_PTR);
+  builtin_function
+    ("__builtin_set_eh_regs",
+     build_function_type (void_type_node,
+			  tree_cons (NULL_TREE, ptr_type_node,
+				     tree_cons (NULL_TREE,
+						type_for_mode (ptr_mode, 0),
+						endlink))),
+     BUILT_IN_SET_EH_REGS, NULL_PTR);
 
   builtin_function ("__builtin_alloca",
 		    build_function_type (ptr_type_node,
