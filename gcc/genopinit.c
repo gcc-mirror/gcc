@@ -130,6 +130,7 @@ static const char * const optabs[] =
   "movstrict_optab->handlers[$A].insn_code = CODE_FOR_$(movstrict$a$)",
   "cmp_optab->handlers[$A].insn_code = CODE_FOR_$(cmp$a$)",
   "tst_optab->handlers[$A].insn_code = CODE_FOR_$(tst$a$)",
+  "addcc_optab->handlers[$A].insn_code = CODE_FOR_$(add$acc$)",
   "bcc_gen_fctn[$C] = gen_$(b$c$)",
   "setcc_gen_code[$C] = CODE_FOR_$(s$c$)",
   "movcc_gen_code[$A] = CODE_FOR_$(mov$acc$)",

@@ -1,3 +1,23 @@
+Tue Jan  7 21:46:57 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* genopinit.c (optabs): Add addc_optab.
+	* ifcvt.c (noce_try_store_flag): Rename to ...
+	(noce_try_addcc): ... this one; handle generic conditional increment.
+	(noce_process_if_block): Update noce_try_addcc call.
+	* optabs.c (emit_conditional_add): New.
+	(init_obtabs): Initialize addc_optab.
+	* optabs.h (optab_index): Add OTI_addcc.
+	(addcc_optab): New macro.
+	* md.texi: Document addMcc
+
+	PR target/8322
+	* i386.c (ix86_init_mmx_sse_builtins): Constify arguments of loads.
+	* xmmintrin.h (_mm_load*_si128. _mm_store*_si128): Add casts.
+	* xmmintrin.h (_mm_load*_si128. _mm_store*_si128): Add casts.
+
+	* reload1.c (delete_output_reload): Avoid repeated attempts
+	to delete insn.
+
 2003-01-07  Andreas Schwab  <schwab@suse.de>
 
         * configure.in: Restore CFLAGS before gcc_AC_INITFINI_ARRAY.

@@ -4230,6 +4230,134 @@ can_conditionally_move_p (mode)
 }
 
 #endif /* HAVE_conditional_move */
+
+/* Emit a conditional addition instruction if the machine supports one for that
+   condition and machine mode.
+
+   OP0 and OP1 are the operands that should be compared using CODE.  CMODE is
+   the mode to use should they be constants.  If it is VOIDmode, they cannot
+   both be constants.
+
+   OP2 should be stored in TARGET if the comparison is true, otherwise OP2+OP3
+   should be stored there.  MODE is the mode to use should they be constants.
+   If it is VOIDmode, they cannot both be constants.
+
+   The result is either TARGET (perhaps modified) or NULL_RTX if the operation
+   is not supported.  */
+
+rtx
+emit_conditional_add (target, code, op0, op1, cmode, op2, op3, mode,
+		      unsignedp)
+     rtx target;
+     enum rtx_code code;
+     rtx op0, op1;
+     enum machine_mode cmode;
+     rtx op2, op3;
+     enum machine_mode mode;
+     int unsignedp;
+{
+  rtx tem, subtarget, comparison, insn;
+  enum insn_code icode;
+  enum rtx_code reversed;
+
+  /* If one operand is constant, make it the second one.  Only do this
+     if the other operand is not constant as well.  */
+
+  if (swap_commutative_operands_p (op0, op1))
+    {
+      tem = op0;
+      op0 = op1;
+      op1 = tem;
+      code = swap_condition (code);
+    }
+
+  /* get_condition will prefer to generate LT and GT even if the old
+     comparison was against zero, so undo that canonicalization here since
+     comparisons against zero are cheaper.  */
+  if (code == LT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == 1)
+    code = LE, op1 = const0_rtx;
+  else if (code == GT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == -1)
+    code = GE, op1 = const0_rtx;
+
+  if (cmode == VOIDmode)
+    cmode = GET_MODE (op0);
+
+  if (swap_commutative_operands_p (op2, op3)
+      && ((reversed = reversed_comparison_code_parts (code, op0, op1, NULL))
+          != UNKNOWN))
+    {
+      tem = op2;
+      op2 = op3;
+      op3 = tem;
+      code = reversed;
+    }
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (op2);
+
+  icode = addcc_optab->handlers[(int) mode].insn_code;
+
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  if (flag_force_mem)
+    {
+      op2 = force_not_mem (op2);
+      op3 = force_not_mem (op3);
+    }
+
+  if (target)
+    target = protect_from_queue (target, 1);
+  else
+    target = gen_reg_rtx (mode);
+
+  subtarget = target;
+
+  emit_queue ();
+
+  op2 = protect_from_queue (op2, 0);
+  op3 = protect_from_queue (op3, 0);
+
+  /* If the insn doesn't accept these operands, put them in pseudos.  */
+
+  if (! (*insn_data[icode].operand[0].predicate)
+      (subtarget, insn_data[icode].operand[0].mode))
+    subtarget = gen_reg_rtx (insn_data[icode].operand[0].mode);
+
+  if (! (*insn_data[icode].operand[2].predicate)
+      (op2, insn_data[icode].operand[2].mode))
+    op2 = copy_to_mode_reg (insn_data[icode].operand[2].mode, op2);
+
+  if (! (*insn_data[icode].operand[3].predicate)
+      (op3, insn_data[icode].operand[3].mode))
+    op3 = copy_to_mode_reg (insn_data[icode].operand[3].mode, op3);
+
+  /* Everything should now be in the suitable form, so emit the compare insn
+     and then the conditional move.  */
+
+  comparison 
+    = compare_from_rtx (op0, op1, code, unsignedp, cmode, NULL_RTX);
+
+  /* ??? Watch for const0_rtx (nop) and const_true_rtx (unconditional)?  */
+  /* We can get const0_rtx or const_true_rtx in some circumstances.  Just
+     return NULL and let the caller figure out how best to deal with this
+     situation.  */
+  if (GET_CODE (comparison) != code)
+    return NULL_RTX;
+  
+  insn = GEN_FCN (icode) (subtarget, comparison, op2, op3);
+
+  /* If that failed, then give up.  */
+  if (insn == 0)
+    return 0;
+
+  emit_insn (insn);
+
+  if (subtarget != target)
+    convert_move (target, subtarget, 0);
+
+  return target;
+}
 
 /* These functions generate an insn body and return it
    rather than emitting the insn.
@@ -5229,6 +5357,7 @@ init_optabs ()
   negv_optab = init_optabv (NEG);
   abs_optab = init_optab (ABS);
   absv_optab = init_optabv (ABS);
+  addcc_optab = init_optab (UNKNOWN);
   one_cmpl_optab = init_optab (NOT);
   ffs_optab = init_optab (FFS);
   sqrt_optab = init_optab (SQRT);

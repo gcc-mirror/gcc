@@ -160,6 +160,9 @@ enum optab_index
   /* Push instruction.  */
   OTI_push,
 
+  /* Conditional add instruction.  */
+  OTI_addcc,
+
   OTI_MAX
 };
 
@@ -226,6 +229,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define cmov_optab (optab_table[OTI_cmov])
 #define cstore_optab (optab_table[OTI_cstore])
 #define push_optab (optab_table[OTI_push])
+#define addcc_optab (optab_table[OTI_addcc])
 
 /* Tables of patterns for extending one integer mode to another.  */
 extern enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
