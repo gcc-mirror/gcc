@@ -1,3 +1,7 @@
+2003-06-06  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config.gcc: Add a missing sparc64 case.
+
 2003-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* mklibgcc.in: Propagate .note.GNU-stack section if needed into
