@@ -1,3 +1,7 @@
+2000-11-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (build_ptrmemfunc_type): Allow error_mark_node.
+
 2000-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in (c++.distdir): Remove.

@@ -9215,6 +9215,9 @@ build_ptrmemfunc_type (type)
   tree u;
   tree unqualified_variant = NULL_TREE;
 
+  if (type == error_mark_node)
+    return type;
+  
   /* If a canonical type already exists for this type, use it.  We use
      this method instead of type_hash_canon, because it only does a
      simple equality check on the list of field members.  */
