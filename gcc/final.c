@@ -956,6 +956,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 	  XEXP (pat, 3) = gen_rtx_LABEL_REF (VOIDmode, max_lab);
 	  insn_shuid = INSN_SHUID (insn);
 	  rel = INSN_SHUID (XEXP (XEXP (pat, 0), 0));
+	  memset (&flags, 0, sizeof (flags));
 	  flags.min_align = min_align;
 	  flags.base_after_vec = rel > insn_shuid;
 	  flags.min_after_vec  = min > insn_shuid;
