@@ -1,3 +1,8 @@
+2004-12-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/14765
+	* gcc.dg/pr14765-1.c: New test.
+
 2004-12-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR other/19093
