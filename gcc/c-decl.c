@@ -6589,7 +6589,8 @@ finish_function (nested)
       setjmp_protect_args ();
     }
 
-  if (! strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main"))
+  if (! strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main")
+      && flag_hosted)
     {
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
 	  != integer_type_node)
@@ -6604,6 +6605,9 @@ finish_function (nested)
 #ifdef DEFAULT_MAIN_RETURN
 	  /* Make it so that `main' always returns success by default.  */
 	  DEFAULT_MAIN_RETURN;
+#else
+	  if (flag_isoc99)
+	    c_expand_return (integer_zero_node);
 #endif
 	}
     }
