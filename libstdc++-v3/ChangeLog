@@ -1,3 +1,9 @@
+2004-10-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR libstdc++/17850
+	* configure.ac: Newlib does not provide strtold.
+	* configure: Regenerate.
+
 2004-10-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_THREADS): Set enable_thread.
