@@ -11348,25 +11348,23 @@ dependent_type_p_r (tree type)
 	return true;
       return dependent_type_p (TREE_TYPE (type));
     }
+  
   /* -- a template-id in which either the template name is a template
-        parameter or any of the template arguments is a dependent type or
-	an expression that is type-dependent or value-dependent.  
-
-     This language seems somewhat confused; for example, it does not
-     discuss template template arguments.  Therefore, we use the
-     definition for dependent template arguments in [temp.dep.temp].  */
-  if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
-      && (dependent_template_id_p
-	  (CLASSTYPE_TI_TEMPLATE (type),
-	   CLASSTYPE_TI_ARGS (type))))
+     parameter ...  */
+  if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
     return true;
-  else if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+  /* ... or any of the template arguments is a dependent type or
+	an expression that is type-dependent or value-dependent.   */
+  else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
+      && any_dependent_template_arguments_p (CLASSTYPE_TI_ARGS (type)))
     return true;
+  
   /* All TYPEOF_TYPEs are dependent; if the argument of the `typeof'
      expression is not type-dependent, then it should already been
      have resolved.  */
   if (TREE_CODE (type) == TYPEOF_TYPE)
     return true;
+  
   /* The standard does not specifically mention types that are local
      to template functions or local classes, but they should be
      considered dependent too.  For example:
@@ -11616,9 +11614,8 @@ type_dependent_expression_p (tree expression)
   if (TREE_CODE (expression) == FUNCTION_DECL
       && DECL_LANG_SPECIFIC (expression)
       && DECL_TEMPLATE_INFO (expression)
-      && (dependent_template_id_p
-	  (DECL_TI_TEMPLATE (expression),
-	   INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
+      && (any_dependent_template_arguments_p
+	  (INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
     return true;
 
   if (TREE_TYPE (expression) == unknown_type_node)
