@@ -715,6 +715,11 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
  ((CLASS) == FLOAT_REGS			\
   ? ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+
+/* If defined, gives a class of registers that cannot be used as the
+   operand of a SUBREG that changes the size of the object.  */
+
+#define CLASS_CANNOT_CHANGE_SIZE	FLOAT_REGS
 
 /* Stack layout; function entry, exit and calling.  */
 
