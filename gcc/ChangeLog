@@ -1,3 +1,9 @@
+2004-12-02  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-opt/18716
+	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes): Properly set
+	then and else labels.
+
 2004-12-02  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (WERROR_FLAGS): Renamed from WERROR.
