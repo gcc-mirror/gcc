@@ -1,3 +1,20 @@
+2003-06-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-tree.h (grokfield): Remove unused filename and line parameters.
+	* c-decl.c (grokfield): Remove unused filename and line	parameters.
+	* c-parse.in (component_decl): Adjust field grokking rules, adjust
+	grokfield calls.
+	(component_declarator): Likewise.
+	(component_notype_declarator): Likewise.
+	* objc/objc-act.c (build_module_descriptor): Adjust grokfield
+	calls.
+	(build_protocol_template, build_method_prototype_list_template,
+	build_method_prototype_template, build_category_template,
+	build_selector_template, build_class_template,
+	build_super_template, build_ivar_template,
+	build_ivar_list_template, build_method_list_template,
+	build_method_template, add_instance_variable): Likewise.
+
 2003-06-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* stmt.c (do_jump_if_equal): Return 0 earlier if OP1 and

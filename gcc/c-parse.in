@@ -1862,7 +1862,7 @@ component_decl:
 	  declspecs_nosc_ts setspecs components
 		{ $$ = $3;
 		  POP_DECLSPEC_STACK; }
-	| declspecs_nosc_ts setspecs save_filename save_lineno
+	| declspecs_nosc_ts setspecs
 		{
 		  /* Support for unnamed structs or unions as members of
 		     structs or unions (which is [a] useful and [b] supports
@@ -1870,7 +1870,7 @@ component_decl:
 		  if (pedantic)
 		    pedwarn ("ISO C doesn't support unnamed structs/unions");
 
-		  $$ = grokfield($3, $4, NULL, current_declspecs, NULL_TREE);
+		  $$ = grokfield(NULL, current_declspecs, NULL_TREE);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nosc_nots setspecs components_notype
 		{ $$ = $3;
@@ -1900,29 +1900,33 @@ components_notype:
 	;
 
 component_declarator:
-	  save_filename save_lineno declarator maybe_attribute
-		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes (&$$, chainon ($4, all_prefix_attributes), 0); }
-	| save_filename save_lineno
-	  declarator ':' expr_no_commas maybe_attribute
-		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes (&$$, chainon ($6, all_prefix_attributes), 0); }
-	| save_filename save_lineno ':' expr_no_commas maybe_attribute
-		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes (&$$, chainon ($5, all_prefix_attributes), 0); }
+	  declarator maybe_attribute
+		{ $$ = grokfield ($1, current_declspecs, NULL_TREE);
+		  decl_attributes (&$$,
+				   chainon ($2, all_prefix_attributes), 0); }
+	| declarator ':' expr_no_commas maybe_attribute
+		{ $$ = grokfield ($1, current_declspecs, $3);
+		  decl_attributes (&$$,
+				   chainon ($4, all_prefix_attributes), 0); }
+	| ':' expr_no_commas maybe_attribute
+		{ $$ = grokfield (NULL_TREE, current_declspecs, $2);
+		  decl_attributes (&$$,
+				   chainon ($3, all_prefix_attributes), 0); }
 	;
 
 component_notype_declarator:
-	  save_filename save_lineno notype_declarator maybe_attribute
-		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes (&$$, chainon ($4, all_prefix_attributes), 0); }
-	| save_filename save_lineno
-	  notype_declarator ':' expr_no_commas maybe_attribute
-		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes (&$$, chainon ($6, all_prefix_attributes), 0); }
-	| save_filename save_lineno ':' expr_no_commas maybe_attribute
-		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes (&$$, chainon ($5, all_prefix_attributes), 0); }
+	  notype_declarator maybe_attribute
+		{ $$ = grokfield ($1, current_declspecs, NULL_TREE);
+		  decl_attributes (&$$,
+				   chainon ($2, all_prefix_attributes), 0); }
+	| notype_declarator ':' expr_no_commas maybe_attribute
+		{ $$ = grokfield ($1, current_declspecs, $3);
+		  decl_attributes (&$$,
+				   chainon ($4, all_prefix_attributes), 0); }
+	| ':' expr_no_commas maybe_attribute
+		{ $$ = grokfield (NULL_TREE, current_declspecs, $2);
+		  decl_attributes (&$$,
+				   chainon ($3, all_prefix_attributes), 0); }
 	;
 
 /* We chain the enumerators in reverse order.

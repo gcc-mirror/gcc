@@ -4811,8 +4811,7 @@ start_struct (enum tree_code code, tree name)
    are ultimately passed to `build_struct' to make the RECORD_TYPE node.  */
 
 tree
-grokfield (const char *filename ATTRIBUTE_UNUSED, int line ATTRIBUTE_UNUSED,
-	   tree declarator, tree declspecs, tree width)
+grokfield (tree declarator, tree declspecs, tree width)
 {
   tree value;
 
