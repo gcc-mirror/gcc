@@ -1,3 +1,8 @@
+2005-02-13  Frank Ch. Eigler  <fche@redhat.com>
+
+	PR mudflap/19319
+	* testsuite/libmudflap.c++/pass55-frag.c: New test.
+
 2005-01-05  Richard Henderson  <rth@redhat.com>
 
 	* testsuite/libmudflap.c/pass32-frag.c: Fix typo.
