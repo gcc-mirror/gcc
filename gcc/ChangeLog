@@ -1,5 +1,10 @@
 2001-08-29  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/lib1funcs.asm: Update the copyright.  Fix
+	comment typos.
+
+2001-08-29  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.md (anonymous movhi pattern): Don't move
 	(reg n) to (mem (pre_dec (reg n))
 	(anonymous movsi pattern): Likewise.

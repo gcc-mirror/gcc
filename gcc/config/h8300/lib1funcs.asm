@@ -1,7 +1,7 @@
 ;; libgcc routines for the Hitachi H8/300 CPU.
 ;; Contributed by Steve Chamberlain <sac@cygnus.com>
 
-/* Copyright (C) 1994, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1994, 2000, 2001 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -502,10 +502,10 @@ reti:
 	POPP	S2P
 	rts	
 
-	; takes A0/A1 numerator (A0P for 300h)
-	; A2/A3 denominator (A1P for 300h)
-	; returns A0/A1 quotient (A0P for 300h)
-	; S0/S1 remainder (S0P for 300h)
+	; takes A0/A1 numerator (A0P for 300H)
+	; A2/A3 denominator (A1P for 300H)
+	; returns A0/A1 quotient (A0P for 300H)
+	; S0/S1 remainder (S0P for 300H)
 	; trashes S2
 
 #ifdef __H8300__
