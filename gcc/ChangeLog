@@ -1,3 +1,7 @@
+2001-03-07  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (call_osf_1_noreturn): New pattern.
+
 2001-03-07  Laurynas Biveinis  <lauras@softhome.net>
 
         * fixinc/inclhack.def (djgpp_wchar_h): New test.
