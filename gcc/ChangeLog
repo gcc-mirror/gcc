@@ -1,3 +1,7 @@
+2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c (used_arg): Check whether an option has been removed.
+
 2004-04-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (i[34567]86-*-solaris2*): Default to DWARF-2
