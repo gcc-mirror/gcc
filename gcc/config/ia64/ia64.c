@@ -140,7 +140,7 @@ call_operand (op, mode)
 int
 sdata_symbolic_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -163,7 +163,7 @@ sdata_symbolic_operand (op, mode)
 int
 symbolic_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -183,7 +183,7 @@ symbolic_operand (op, mode)
 int
 function_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_FLAG (op))
     return 1;
@@ -198,7 +198,7 @@ function_operand (op, mode)
 int
 setjmp_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   const char *name;
   int retval = 0;
@@ -350,7 +350,7 @@ reg_or_22bit_operand (op, mode)
 int
 shift_count_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_M (INTVAL (op)))
 	  || GET_CODE (op) == CONSTANT_P_RTX);
@@ -361,7 +361,7 @@ shift_count_operand (op, mode)
 int
 shift_32bit_count_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT
 	   && (INTVAL (op) >= 0 && INTVAL (op) < 32))
@@ -373,7 +373,7 @@ shift_32bit_count_operand (op, mode)
 int
 shladd_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) == 2 || INTVAL (op) == 4
@@ -385,7 +385,7 @@ shladd_operand (op, mode)
 int
 fetchadd_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
           && (INTVAL (op) == -16 || INTVAL (op) == -8 ||
@@ -443,7 +443,7 @@ call_multiple_values_operation (op, mode)
 {
   int count = XVECLEN (op, 0) - 2;
   int i;
-  int dest_regno;
+  unsigned int dest_regno;
 
   /* Perform a quick check so we don't block up below.  */
   if (count <= 1
@@ -1082,7 +1082,7 @@ ia64_expand_epilogue ()
 void
 ia64_function_prologue (file, size)
      FILE *file;
-     int size;
+     int size ATTRIBUTE_UNUSED;
 {
   rtx insn;
   if (ia64_need_regstk)
@@ -1123,8 +1123,8 @@ ia64_function_prologue (file, size)
 
 void
 ia64_function_epilogue (file, size)
-     FILE *file;
-     int size;
+     FILE *file ATTRIBUTE_UNUSED;
+     int size ATTRIBUTE_UNUSED;
 {
 }
 
@@ -1144,8 +1144,8 @@ ia64_direct_return ()
 void
 ia64_setup_incoming_varargs (cum, int_mode, type, pretend_size, second_time)
      CUMULATIVE_ARGS cum;
-     int             int_mode;
-     tree            type;
+     int             int_mode ATTRIBUTE_UNUSED;
+     tree            type ATTRIBUTE_UNUSED;
      int *           pretend_size;
      int	     second_time;
 {
@@ -1418,7 +1418,7 @@ ia64_function_arg_partial_nregs (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   int words = (((mode == BLKmode ? int_size_in_bytes (type)
 		 : GET_MODE_SIZE (mode)) + UNITS_PER_WORD - 1)
@@ -1623,7 +1623,7 @@ ia64_return_in_memory (valtype)
 rtx
 ia64_function_value (valtype, func)
      tree valtype;
-     tree func;
+     tree func ATTRIBUTE_UNUSED;
 {
   enum machine_mode mode;
   enum machine_mode hfa_mode;
@@ -1670,8 +1670,8 @@ ia64_function_value (valtype, func)
 
 void
 ia64_print_operand_address (stream, address)
-     FILE * stream;
-     rtx    address;
+     FILE * stream ATTRIBUTE_UNUSED;
+     rtx    address ATTRIBUTE_UNUSED;
 {
 }
 
@@ -1858,7 +1858,7 @@ ia64_print_operand (file, x, code)
 enum reg_class
 ia64_secondary_reload_class (class, mode, x)
      enum reg_class class;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx x;
 {
   int regno = -1;
@@ -3515,9 +3515,9 @@ rtx
 ia64_expand_builtin (exp, target, subtarget, mode, ignore)
      tree exp;
      rtx target;
-     rtx subtarget;
-     enum machine_mode mode;
-     int ignore;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore ATTRIBUTE_UNUSED;
 {
   rtx op0, op1, pat;
   rtx tmp_reg;

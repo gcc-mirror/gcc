@@ -1,5 +1,4 @@
 2000-05-06  Richard Henderson  <rth@cygnus.com>
-2000-05-06  Richard Henderson  <rth@cygnus.com>
 
 	* c-decl.c: Include "tm_p.h".
 
@@ -18,6 +17,16 @@
 	(ia64_expand_builtin): Likewise.
 	* config/ia64/ia64.h (ASM_OUTPUT_BYTE): Mask and cast value to int
 	for printing.
+
+	* config/ia64/ia64.c (sdata_symbolic_operand): Mark unused args.
+	(symbolic_operand, function_operand, setjmp_operand): Likewise.
+	(shift_count_operand, shift_32bit_count_operand): Likewise.
+	(shladd_operand, fetchadd_operand, ia64_function_prologue): Likewise.
+	(ia64_function_epilogue, ia64_setup_incoming_varargs): Likewise.
+	(ia64_function_arg_partial_nregs, ia64_function_value): Likewise.
+	(ia64_print_operand_address, ia64_secondary_reload_class): Likewise.
+	(ia64_expand_builtin): Likewise.
+	(call_multiple_values_operation): Make dest_regno unsigned.
 
 2000-05-06  Richard Henderson  <rth@cygnus.com>
 
