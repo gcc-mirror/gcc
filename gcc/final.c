@@ -3671,9 +3671,9 @@ output_addr_const (file, x)
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) < 0)
 	{
-	  fprintf (file, ASM_OPEN_PAREN);
+	  fprintf (file, "%s", ASM_OPEN_PAREN);
 	  output_addr_const (file, XEXP (x, 1));
-	  fprintf (file, ASM_CLOSE_PAREN);
+	  fprintf (file, "%s", ASM_CLOSE_PAREN);
 	}
       else
 	output_addr_const (file, XEXP (x, 1));
