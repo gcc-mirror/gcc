@@ -463,7 +463,7 @@ namespace std
       static locale::id id;
 
       explicit 
-      ctype(size_t __refs = 0) throw();
+      ctype(size_t /*__refs*/ = 0) throw();
 
     protected:
       virtual 
