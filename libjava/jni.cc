@@ -2066,12 +2066,26 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
   if ((_this->self->accflags & java::lang::reflect::Modifier::STATIC))
     real_args[offset++].ptr = _this->defining_class;
 
+  // In libgcj, the callee synchronizes.
+  jobject sync = NULL;
+  if ((_this->self->accflags & java::lang::reflect::Modifier::SYNCHRONIZED))
+    {
+      if ((_this->self->accflags & java::lang::reflect::Modifier::STATIC))
+	sync = _this->defining_class;
+      else
+	sync = (jobject) args[0].ptr;
+      _Jv_MonitorEnter (sync);
+    }
+
   // Copy over passed-in arguments.
   memcpy (&real_args[offset], args, _this->args_raw_size);
 
   // The actual call to the JNI function.
   ffi_raw_call (&_this->jni_cif, (void (*)()) _this->function,
 		ret, real_args);
+
+  if (sync != NULL)
+    _Jv_MonitorExit (sync);
 
   _Jv_JNI_PopSystemFrame (env);
 }
