@@ -1,3 +1,10 @@
+2002-09-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Volker Reichelt <reichelt@igpm.rwth-aachen.de>
+
+	PR c/7411
+	* expr.c (expand_expr) [PLUS]: Simplify after the operands
+	have been expanded in EXPAND_NORMAL mode.
+
 2002-10-06  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.md (load_toc_v4_PIC_2): Fix base constraint.
