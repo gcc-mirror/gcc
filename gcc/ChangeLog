@@ -1,3 +1,9 @@
+Tue Aug  3 14:14:52 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (HARD_REGNO_NREGS): FP registers are always 4 bytes wide for
+	PA1.1 and above.
+	(CLASS_MAX_NREGS): Likewise.
+
 Tue Aug  3 03:51:20 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (cse_insn): Fix dumb thinko in last change.
