@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1998, 1999 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of the GNU Fortran libU77 library.
@@ -86,15 +86,18 @@ AC_CHECK_LIB(socket, gethostname, [LIBS="$LIBS -lsocket"])
 dnl Checks for library functions.
 
 AC_CHECK_FUNCS(symlink getcwd getwd lstat gethostname strerror clock \
-  getrusage times alarm getlogin getgid getuid kill link ttyname \
-  gettimeofday)
+  getrusage times alarm getlogin getgid getuid kill link ttyname)
+
+dnl The standard autoconf HAVE_STRUCT_TIMEZONE doesn't actually check
+dnl for struct timezone, as you might think.  We also need to check how
+dnl to call gettimeofday if we have it.
+LIBU77_GETTIMEOFDAY
+
 test $ac_cv_func_symlink = yes && MAYBES="$MAYBES symlnk_.o"
 test $ac_cv_func_lstat = yes && MAYBES="$MAYBES lstat_.o"
 test $ac_cv_func_gethostname = yes && MAYBES="$MAYBES hostnm_.o"
 test $ac_cv_func_clock = yes && MAYBES="$MAYBES mclock_.o"
 AC_SUBST(MAYBES)
-
-LIBU77_HAVE_STRUCT_TIMEZONE
 
 AC_SUBST(CROSS)
 AC_SUBST(RANLIB)
