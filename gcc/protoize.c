@@ -1,5 +1,5 @@
 /* Protoize program - Original version by Ron Guilmette at MCC.
-   Copyright (C) 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -812,7 +812,7 @@ restore_pointers ()
   repl_write_ptr = saved_repl_write_ptr;
 }
 
-/* Return true if the given character is a legal identifier character.  */
+/* Return true if the given character is a valid identifier character.  */
 
 static int
 is_id_char (ch)
@@ -3486,7 +3486,7 @@ find_rightmost_formals_list (clean_text_p)
          sure that this is in fact the right paren that we were looking for.
 
          The one we were looking for *must* be followed by either a '{' or
-         by an alphabetic character, while others *cannot* legally be followed
+         by an alphabetic character, while others *cannot* validly be followed
          by such characters.  */
 
       if ((ch == '{') || isalpha (ch))

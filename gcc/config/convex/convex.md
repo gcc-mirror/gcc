@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Convex Version
-;;  Copyright (C) 1988, 1994 Free Software Foundation, Inc.
+;;  Copyright (C) 1988, 1994, 1995 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1268,7 +1268,7 @@
 ;; Use
 ;;     ((a >> b) ^ signbit) - signbit
 ;; where signbit is (1 << 63) >> b
-;; Works for 0..63.  Does not work for 64; unfortunate but legal.
+;; Works for 0..63.  Does not work for 64; unfortunate but valid.
 
 (define_expand "ashrdi3"
   [(set (match_operand:DI 0 "register_operand" "")

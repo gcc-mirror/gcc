@@ -1,5 +1,5 @@
 # Use link editor directives to make NULL pointers point to 
-# illegal addresses.
+# invalid addresses.
 
 EXTRA_PARTS=crtbegin.o crtend.o gcc.ld
 

@@ -2861,7 +2861,7 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 
-  /* If operands[1] is a constant address illegal for pic, then we need to
+  /* If operands[1] is a constant address invalid for pic, then we need to
      handle it just like LEGITIMIZE_ADDRESS does.  */
   if (flag_pic && pic_address_needs_scratch (operands[1]))
     {

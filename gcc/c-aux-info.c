@@ -1,8 +1,8 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-   Copyright (C) 1989, 1991, 1994 Free Software Foundation, Inc.
-   Contributed by Ron Guilmette (rfg@netcom.com).
+   Copyright (C) 1989, 1991, 1994, 1995 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GNU CC.
 
@@ -208,7 +208,7 @@ gen_formal_list_for_type (fntype, style)
      to output the "void" verbatim, and that what we do.  In the former case,
      we do our best to give protoize something nice to insert.
 
-     This "something nice" should be something that is still legal (when
+     This "something nice" should be something that is still valid (when
      re-compiled) but something that can clearly indicate to the user that
      more typing information (for the parameter list) should be added (by
      hand) at some convenient moment.
