@@ -776,7 +776,7 @@ static int
 preferrable (cost_a, regcost_a, cost_b, regcost_b)
      int cost_a, regcost_a, cost_b, regcost_b;
 {
-  /* First, get rid of a cases involving expressions that are entirely
+  /* First, get rid of cases involving expressions that are entirely
      unwanted.  */
   if (cost_a != cost_b)
     {

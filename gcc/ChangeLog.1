@@ -1732,7 +1732,7 @@ Fri Apr  9 10:40:10 1999  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
 Thu Apr  8 19:20:18 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (expand_expr, case ARRAY_REF, COMPONENT_REF, BIT_FIELD_REF):
-	Do not try to optimize a aggregate address which has VOIDmode.
+	Do not try to optimize an aggregate address which has VOIDmode.
 	Mirrors March 23 change to expand_assignment.
 
 	* flow.c (delete_unreachable_blocks): Do not require EDGE_FALLTHRU
@@ -2625,7 +2625,7 @@ Tue Mar 23 23:32:14 1999  Jeffrey A Law  (law@cygnus.com)
 	left using a variable rotate right.  Provide anonymous pattern for
 	rotate left by a constant value.
 
-	* expr.c (expand_assignment): Do not try to optimize a aggregate
+	* expr.c (expand_assignment): Do not try to optimize an aggregate
 	address which has VOIDmode.
 
 Tue Mar 23 22:51:48 1999  Mumit Khan  <khan@xraylith.wisc.edu>
