@@ -1,3 +1,8 @@
+Tue Dec 14 08:37:27 CST 1999 Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/arm/arm.md (mulsidi3adddi, umulsidi3adddi): New patterns
+	for long long multiply-accumulate.
+
 Tue Dec 14 13:51:38 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* regclass.c (scan_one_insn): Set loop_cost to 1 when
