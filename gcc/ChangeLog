@@ -1,3 +1,7 @@
+1998-07-01  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
+
+	* invoke.texi (Optimize Options): Fix typo.
+
 Wed Jul  1 22:25:43 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* xcoffout.c (xcoffout_begin_function): Call xcoffout_block for
