@@ -1,3 +1,7 @@
+2005-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (cp-warn): Don't append $(WERROR).
+
 2005-01-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.h: Fix a comment typo.
