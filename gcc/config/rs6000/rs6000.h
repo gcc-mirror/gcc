@@ -2412,7 +2412,6 @@ toc_section ()						\
 { rtx _symref = XEXP (DECL_RTL (DECL), 0);	\
   if ((TREE_CODE (DECL) == VAR_DECL		\
        || TREE_CODE (DECL) == FUNCTION_DECL)	\
-      && (NAME)[0] != '*'			\
       && (NAME)[strlen (NAME) - 1] != ']')	\
     {						\
       char *_name = (char *) permalloc (strlen (XSTR (_symref, 0)) + 5); \
