@@ -1,5 +1,16 @@
 2000-01-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
+        * c4x.h (INIT_TARGET_OPTABS): Add all missing local optab entries.
+	* c4x.c: Define the optab rtx values.
+	(c4x_add_gc_roots): Add the ggc roots for these optab rtx values.
+	(c4x_emit_libcall): Use new optab rtx values.
+	(c4x_emit_libcall3): Likewise.
+	(c4x_emit_libcall_mulhi): Likewise.
+	* c4x-protos.h: Add prototypes for optab rtx values and change
+	prototypes for above c4x_emit_libcall functions.
+
+2000-01-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
         * c4x.c (c4x_output_ascii): Restrict line length of output when TI
 	syntax is used.
 	(c4x_function_prologue): Use regnames intead of float_reg_names when

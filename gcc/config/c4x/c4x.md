@@ -2084,7 +2084,8 @@
                                           operands[2]));
             DONE;
          }
-       c4x_emit_libcall3 (MULQI3_LIBCALL, MULT, QImode, operands);
+       c4x_emit_libcall3 (smul_optab->handlers[(int) QImode].libfunc,
+			  MULT, QImode, operands);
        DONE;
      }
   ")
@@ -2295,7 +2296,7 @@
  "legitimize_operands (MULT, operands, QImode);
   if (TARGET_C3X)
     {
-       c4x_emit_libcall_mulhi (SMULHI3_LIBCALL, SIGN_EXTEND, QImode, operands);
+       c4x_emit_libcall_mulhi (smulhi3_libfunc, SIGN_EXTEND, QImode, operands);
        DONE;
     }
  ")
@@ -2352,7 +2353,7 @@
  "legitimize_operands (MULT, operands, QImode);
   if (TARGET_C3X) 
     {
-      c4x_emit_libcall_mulhi (UMULHI3_LIBCALL, ZERO_EXTEND, QImode, operands);
+      c4x_emit_libcall_mulhi (umulhi3_libfunc, ZERO_EXTEND, QImode, operands);
       DONE;
     }
  ")
@@ -3747,7 +3748,7 @@
                    (fix:HI (match_operand:QF 1 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall (FIX_TRUNCQFHI2_LIBCALL, FIX, HImode, QFmode, 2, operands);
+  "c4x_emit_libcall (fix_truncqfhi2_libfunc, FIX, HImode, QFmode, 2, operands);
    DONE;")
 
 ; Is this allowed to be implementation dependent?  If so, we can
@@ -3770,7 +3771,7 @@
                    (unsigned_fix:HI (match_operand:QF 1 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall (FIXUNS_TRUNCQFHI2_LIBCALL, UNSIGNED_FIX, 
+  "c4x_emit_libcall (fixuns_truncqfhi2_libfunc, UNSIGNED_FIX, 
                      HImode, QFmode, 2, operands);
    DONE;")
 
@@ -5905,7 +5906,7 @@
                    (fix:HI (match_operand:HF 1 "reg_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall (FIX_TRUNCHFHI2_LIBCALL, FIX, HImode, HFmode, 2, operands);
+  "c4x_emit_libcall (fix_trunchfhi2_libfunc, FIX, HImode, HFmode, 2, operands);
    DONE;")
 
 (define_expand "fixuns_trunchfhi2"
@@ -5913,7 +5914,7 @@
                    (unsigned_fix:HI (match_operand:HF 1 "reg_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall (FIXUNS_TRUNCHFHI2_LIBCALL, UNSIGNED_FIX, 
+  "c4x_emit_libcall (fixuns_trunchfhi2_libfunc, UNSIGNED_FIX, 
                      HImode, HFmode, 2, operands);
    DONE;")
 
@@ -6254,7 +6255,7 @@
                    (float:QF (match_operand:HI 1 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall (FLOATHIQF2_LIBCALL, FLOAT, QFmode, HImode, 2, operands);
+  "c4x_emit_libcall (floathiqf2_libfunc, FLOAT, QFmode, HImode, 2, operands);
    DONE;")
 
 (define_expand "floatunshiqf2"
@@ -6262,7 +6263,7 @@
                    (unsigned_float:QF (match_operand:HI 1 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall (FLOATUNSHIQF2_LIBCALL, UNSIGNED_FLOAT,
+  "c4x_emit_libcall (floatunshiqf2_libfunc, UNSIGNED_FLOAT,
                      QFmode, HImode, 2, operands);
    DONE;")
 
@@ -6271,7 +6272,7 @@
                    (float:HF (match_operand:HI 1 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall (FLOATHIHF2_LIBCALL, FLOAT, HFmode, HImode, 2, operands);
+  "c4x_emit_libcall (floathihf2_libfunc, FLOAT, HFmode, HImode, 2, operands);
    DONE;")
 
 (define_expand "floatunshihf2"
@@ -6279,7 +6280,7 @@
                    (unsigned_float:HF (match_operand:HI 1 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall (FLOATUNSHIHF2_LIBCALL, UNSIGNED_FLOAT,
+  "c4x_emit_libcall (floatunshihf2_libfunc, UNSIGNED_FLOAT,
                      HFmode, HImode, 2, operands);
    DONE;")
 
@@ -6846,7 +6847,8 @@
                             (match_operand:HI 2 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall3 (MULHI3_LIBCALL, MULT, HImode, operands);
+  "c4x_emit_libcall3 (smul_optab->handlers[(int) HImode].libfunc,
+		      MULT, HImode, operands);
    DONE;")
 
 

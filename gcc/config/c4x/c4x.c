@@ -46,6 +46,17 @@
 #include "ggc.h"
 #include "c4x-protos.h"
 
+rtx smulhi3_libfunc;
+rtx umulhi3_libfunc;
+rtx fix_truncqfhi2_libfunc;
+rtx fixuns_truncqfhi2_libfunc;
+rtx fix_trunchfhi2_libfunc;
+rtx fixuns_trunchfhi2_libfunc;
+rtx floathiqf2_libfunc;
+rtx floatunshiqf2_libfunc;
+rtx floathihf2_libfunc;
+rtx floatunshihf2_libfunc;
+
 static int c4x_leaf_function;
 
 static char *float_reg_names[] = FLOAT_REGISTER_NAMES;
@@ -163,6 +174,16 @@ c4x_add_gc_roots ()
   ggc_add_tree_root (&pure_tree, 1);
   ggc_add_tree_root (&noreturn_tree, 1);
   ggc_add_tree_root (&interrupt_tree, 1);
+  ggc_add_rtx_root (&smulhi3_libfunc, 1);
+  ggc_add_rtx_root (&umulhi3_libfunc, 1);
+  ggc_add_rtx_root (&fix_truncqfhi2_libfunc, 1);
+  ggc_add_rtx_root (&fixuns_truncqfhi2_libfunc, 1);
+  ggc_add_rtx_root (&fix_trunchfhi2_libfunc, 1);
+  ggc_add_rtx_root (&fixuns_trunchfhi2_libfunc, 1);
+  ggc_add_rtx_root (&floathiqf2_libfunc, 1);
+  ggc_add_rtx_root (&floatunshiqf2_libfunc, 1);
+  ggc_add_rtx_root (&floathihf2_libfunc, 1);
+  ggc_add_rtx_root (&floatunshihf2_libfunc, 1);
 }
 
 
@@ -1237,8 +1258,8 @@ c4x_emit_move_sequence (operands, mode)
 
 
 void
-c4x_emit_libcall (name, code, dmode, smode, noperands, operands)
-     const char *name;
+c4x_emit_libcall (libcall, code, dmode, smode, noperands, operands)
+     rtx libcall;
      enum rtx_code code;
      enum machine_mode dmode;
      enum machine_mode smode;
@@ -1247,13 +1268,9 @@ c4x_emit_libcall (name, code, dmode, smode, noperands, operands)
 {
   rtx ret;
   rtx insns;
-  rtx libcall;
   rtx equiv;
 
   start_sequence ();
-  if (ggc_p)
-    name = ggc_alloc_string (name, -1);
-  libcall = gen_rtx_SYMBOL_REF (Pmode, name);
   switch (noperands)
     {
     case 2:
@@ -1279,30 +1296,28 @@ c4x_emit_libcall (name, code, dmode, smode, noperands, operands)
 
 
 void
-c4x_emit_libcall3 (name, code, mode, operands)
-     const char *name;
+c4x_emit_libcall3 (libcall, code, mode, operands)
+     rtx libcall;
      enum rtx_code code;
      enum machine_mode mode;
      rtx *operands;
 {
-  return c4x_emit_libcall (name, code, mode, mode, 3, operands);
+  return c4x_emit_libcall (libcall, code, mode, mode, 3, operands);
 }
 
 
 void
-c4x_emit_libcall_mulhi (name, code, mode, operands)
-     char *name;
+c4x_emit_libcall_mulhi (libcall, code, mode, operands)
+     rtx libcall;
      enum rtx_code code;
      enum machine_mode mode;
      rtx *operands;
 {
   rtx ret;
   rtx insns;
-  rtx libcall;
   rtx equiv;
 
   start_sequence ();
-  libcall = gen_rtx_SYMBOL_REF (Pmode, name);
   ret = emit_library_call_value (libcall, NULL_RTX, 1, mode, 2,
                                  operands[1], mode, operands[2], mode);
   equiv = gen_rtx_TRUNCATE (mode,
@@ -2329,8 +2344,8 @@ c4x_shiftable_constant (op)
 	break;
     }
   mask = ((0xffff >> i) << 16) | 0xffff;
-  if (IS_INT16_CONST (val & 0x80000000 ? (val >> i) | ~mask
-				       : (val >> i) & mask))
+  if (IS_INT16_CONST (val & (1 << 31) ? (val >> i) | ~mask
+				      : (val >> i) & mask))
     return i;
   return -1;
 } 
@@ -2999,7 +3014,6 @@ std_reg_operand (op, mode)
     op = SUBREG_REG (op);
   return REG_P (op) && IS_STD_OR_PSEUDO_REG (op);
 }
-
 
 /* Standard precision or normal register.  */
 
