@@ -11268,8 +11268,7 @@ dwarf2out_line (filename, line)
     }
 }
 
-/* Record the beginning of a new source file, for later output
-   of the .debug_macinfo section.*/
+/* Record the beginning of a new source file. */
 
 void
 dwarf2out_start_source_file (lineno, filename)
@@ -11291,8 +11290,7 @@ dwarf2out_start_source_file (lineno, filename)
     }
 }
 
-/* Record the end of a source file, for later output
-   of the .debug_macinfo section.  At present, unimplemented.  */
+/* Record the end of a source file.  */
 
 void
 dwarf2out_end_source_file ()
@@ -11309,7 +11307,7 @@ dwarf2out_end_source_file ()
     }
 }
 
-/* Called from check_newline in c-parse.y.  The `buffer' parameter contains
+/* Called from debug_define in toplev.c.  The `buffer' parameter contains
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 
@@ -11333,7 +11331,7 @@ dwarf2out_define (lineno, buffer)
     }
 }
 
-/* Called from check_newline in c-parse.y.  The `buffer' parameter contains
+/* Called from debug_undef in toplev.c.  The `buffer' parameter contains
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 
@@ -11564,6 +11562,13 @@ dwarf2out_finish ()
       ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LOC_SECTION);
       output_location_lists (die);
       have_location_lists = 0;
+    }
+
+  /* Have to end the primary source file. */
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+    { 
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
   
 }
