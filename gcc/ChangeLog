@@ -1,3 +1,7 @@
+2004-10-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c: Fix comment typos.
+
 2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17301
