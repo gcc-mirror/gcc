@@ -4975,4 +4975,68 @@ enum machine_mode mode;
     *nan++ = *p++;
 }
 
+/* Convert an SFmode target `float' value to a REAL_VALUE_TYPE.
+   This is the inverse of the function `etarsingle' invoked by
+   REAL_VALUE_TO_TARGET_SINGLE.  */
+
+REAL_VALUE_TYPE
+ereal_from_float (f)
+     unsigned long f;
+{
+  REAL_VALUE_TYPE r;
+  unsigned EMUSHORT s[2];
+  unsigned EMUSHORT e[NE];
+
+  /* Convert 32 bit integer to array of 16 bit pieces in target machine order.
+   This is the inverse operation to what the function `endian' does.  */
+#if WORDS_BIG_ENDIAN
+  s[0] = (unsigned EMUSHORT) (f >> 16);
+  s[1] = (unsigned EMUSHORT) f;
+#else
+  s[0] = (unsigned EMUSHORT) f;
+  s[1] = (unsigned EMUSHORT) (f >> 16);
+#endif
+  /* Convert and promote the target float to E-type. */
+  e24toe (s, e);
+  /* Output E-type to REAL_VALUE_TYPE. */
+  PUT_REAL (e, &r);
+  return r;
+}
+
+/* Convert a DFmode target `double' value to a REAL_VALUE_TYPE.
+   This is the inverse of the function `etardouble' invoked by
+   REAL_VALUE_TO_TARGET_DOUBLE.
+
+   The DFmode is stored as an array of longs (i.e., HOST_WIDE_INTs)
+   with 32 bits of the value per each long.  The first element
+   of the input array holds the bits that would come first in the
+   target computer's memory.  */
+
+REAL_VALUE_TYPE
+ereal_from_double (d)
+     unsigned long d[];
+{
+  REAL_VALUE_TYPE r;
+  unsigned EMUSHORT s[4];
+  unsigned EMUSHORT e[NE];
+
+  /* Convert array of 32 bit pieces to equivalent array of 16 bit pieces.
+     This is the inverse of `endian'.   */
+#if WORDS_BIG_ENDIAN
+  s[0] = (unsigned EMUSHORT) (d[0] >> 16);
+  s[1] = (unsigned EMUSHORT) d[0];
+  s[2] = (unsigned EMUSHORT) (d[1] >> 16);
+  s[3] = (unsigned EMUSHORT) d[1];
+#else
+  s[0] = (unsigned EMUSHORT) d[0];
+  s[1] = (unsigned EMUSHORT) (d[0] >> 16);
+  s[2] = (unsigned EMUSHORT) d[1];
+  s[3] = (unsigned EMUSHORT) (d[1] >> 16);
+#endif
+  /* Convert target double to E-type. */
+  e53toe (s, e);
+  /* Output E-type to REAL_VALUE_TYPE. */
+  PUT_REAL (e, &r);
+  return r;
+}
 #endif /* EMU_NON_COMPILE not defined */
