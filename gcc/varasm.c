@@ -1596,7 +1596,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
   else if (DECL_INITIAL (decl))
     reloc = output_addressed_constants (DECL_INITIAL (decl));
-  resolve_unique_section (decl, reloc, flag_data_section);
+  resolve_unique_section (decl, reloc, flag_data_sections);
 
   /* Handle uninitialized definitions.  */
 
