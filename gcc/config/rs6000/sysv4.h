@@ -296,8 +296,7 @@ extern int rs6000_pic_labelno;
 #undef ASM_SPEC
 #define ASM_SPEC \
   "-u \
-%{mcpu=601: -m601} %{mcpu=ppc601: -m601} %{mcpu=mpc601: -m601} \
-%{!mcpu=601: %{!mcpu=ppc601: %{!mcpu=mpc601: -mppc }}} \
+%{mcpu=601: -m601} %{!mcpu=601: -mppc} \
 %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{mrelocatable} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
@@ -401,14 +400,6 @@ while (0)
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
-%{mcpu=mpc403: -D_ARCH_PPC} \
-%{mcpu=ppc403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=mpc601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=ppc601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=mpc603: -D_ARCH_PPC} \
-%{mcpu=ppc603: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=mpc604: -D_ARCH_PPC} \
-%{mcpu=ppc604: -D_ARCH_PPC}"
+%{mcpu=604: -D_ARCH_PPC}"
