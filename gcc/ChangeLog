@@ -1,3 +1,11 @@
+2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.md (SOFT_Z_REGNUM): New constant.
+	("tstqi_z_used" split): Use it.
+	("cmphi_z_used"): Likewise.
+	("bitcmpqi_z_used"): Likewise; also use SP_REGNUM constant.
+	("cmpqi_z_used"): Likewise.
+
 2003-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7910
