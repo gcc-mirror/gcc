@@ -1,3 +1,11 @@
+2003-06-29  Andreas Jaeger  <aj@suse.de>
+
+	* target-def.h: Remove usage of OBJECT_FORMAT_ROSE.
+	* system.h: Poison OBJ_FORMAT_ROSE.
+	* doc/tm.texi (Macros for Initialization): Remove documentatin of
+	OBJECT_FORMAT_ROSE.
+	* config/rs6000/lynx.h: Remove undef of OBJECT_FORMAT_ROSE.
+	* collect2.c: Remove usage of OBJECT_FORMAT_ROSE.
 
 2003-06-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 

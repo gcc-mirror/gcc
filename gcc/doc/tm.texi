@@ -7118,21 +7118,15 @@ If your system uses @command{collect2} as the means of processing
 constructors, then that program normally uses @command{nm} to scan
 an object file for constructor functions to be called.
 
-On certain kinds of systems, you can define these macros to make
+On certain kinds of systems, you can define this macro to make
 @command{collect2} work faster (and, in some cases, make it work at all):
 
 @defmac OBJECT_FORMAT_COFF
 Define this macro if the system uses COFF (Common Object File Format)
 object files, so that @command{collect2} can assume this format and scan
 object files directly for dynamic constructor/destructor functions.
-@end defmac
 
-@defmac OBJECT_FORMAT_ROSE
-Define this macro if the system uses ROSE format object files, so that
-@command{collect2} can assume this format and scan object files directly
-for dynamic constructor/destructor functions.
-
-These macros are effective only in a native compiler; @command{collect2} as
+This macro is effective only in a native compiler; @command{collect2} as
 part of a cross compiler always uses @command{nm} for the target machine.
 @end defmac
 

@@ -103,7 +103,6 @@ do {								\
 /* For collect2 */
 #define OBJECT_FORMAT_NONE
 #undef OBJECT_FORMAT_COFF
-#undef OBJECT_FORMAT_ROSE
 #undef MD_EXEC_PREFIX
 #undef REAL_LD_FILE_NAME
 #undef REAL_STRIP_FILE_NAME
