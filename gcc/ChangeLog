@@ -1,3 +1,7 @@
+2003-06-19  Andreas Jaeger  <aj@suse.de>
+
+	* protoize.c: Fix breakage from last patch.
+
 2003-06-19  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* hooks.h (hook_reg_class_void_no_regs): Only declare if tm.h

@@ -1,6 +1,6 @@
 /* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -227,9 +227,7 @@ struct string_list *exclude_list;
 static const char * const other_var_style = "stdarg";
 #else /* !defined (UNPROTOIZE) */
 static const char * const other_var_style = "varargs";
-/* Note that this is a string containing the expansion of va_alist.
-   But in `main' we discard all but the first token.  */
-static const char *varargs_style_indicator = #va_alist;
+static const char *varargs_style_indicator = "va_alist";
 #endif /* !defined (UNPROTOIZE) */
 
 /* The following two types are used to create hash tables.  In this program,
