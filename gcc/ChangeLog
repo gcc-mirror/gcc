@@ -1,3 +1,8 @@
+Mon Mar  1 11:46:25 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* config/h8300/h8300.c (print_operand):  Use 16 bit addressing
+	when the data in 8-bit area and can not be addressed by 8-bit.
+
 Sun Feb 28 16:40:00 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (create_basic_block): Disregard integrated bb notes.
