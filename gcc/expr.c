@@ -120,6 +120,7 @@ struct store_by_pieces
 };
 
 static unsigned HOST_WIDE_INT move_by_pieces_ninsns (unsigned HOST_WIDE_INT,
+						     unsigned int,
 						     unsigned int);
 static void move_by_pieces_1 (rtx (*) (rtx, ...), enum machine_mode,
 			      struct move_by_pieces *);
@@ -174,21 +175,25 @@ static bool float_extend_from_mem[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
    to perform a structure copy.  */
 #ifndef MOVE_BY_PIECES_P
 #define MOVE_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN) < (unsigned int) MOVE_RATIO)
+  (move_by_pieces_ninsns (SIZE, ALIGN, MOVE_MAX_PIECES + 1) \
+   < (unsigned int) MOVE_RATIO)
 #endif
 
 /* This macro is used to determine whether clear_by_pieces should be
    called to clear storage.  */
 #ifndef CLEAR_BY_PIECES_P
 #define CLEAR_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN) < (unsigned int) CLEAR_RATIO)
+  (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
+   < (unsigned int) CLEAR_RATIO)
 #endif
 
 /* This macro is used to determine whether store_by_pieces should be
    called to "memset" storage with byte values other than zero, or
    to "memcpy" storage when the source is a constant string.  */
 #ifndef STORE_BY_PIECES_P
-#define STORE_BY_PIECES_P(SIZE, ALIGN)	MOVE_BY_PIECES_P (SIZE, ALIGN)
+#define STORE_BY_PIECES_P(SIZE, ALIGN) \
+  (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
+   < (unsigned int) MOVE_RATIO)
 #endif
 
 /* This array records the insn_code of insns to perform block moves.  */
@@ -882,7 +887,7 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
      copy addresses to registers (to make displacements shorter)
      and use post-increment if available.  */
   if (!(data.autinc_from && data.autinc_to)
-      && move_by_pieces_ninsns (len, align) > 2)
+      && move_by_pieces_ninsns (len, align, max_size) > 2)
     {
       /* Find the mode of the largest move...  */
       for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
@@ -983,10 +988,10 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
    ALIGN (in bits) is maximum alignment we can assume.  */
 
 static unsigned HOST_WIDE_INT
-move_by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align)
+move_by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
+		       unsigned int max_size)
 {
   unsigned HOST_WIDE_INT n_insns = 0;
-  unsigned HOST_WIDE_INT max_size = MOVE_MAX + 1;
 
   if (! SLOW_UNALIGNED_ACCESS (word_mode, align)
       || align > MOVE_MAX * BITS_PER_UNIT || align >= BIGGEST_ALIGNMENT)
@@ -1980,7 +1985,8 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 		     rtx (*constfun) (void *, HOST_WIDE_INT, enum machine_mode),
 		     void *constfundata, unsigned int align)
 {
-  unsigned HOST_WIDE_INT max_size, l;
+  unsigned HOST_WIDE_INT l;
+  unsigned int max_size;
   HOST_WIDE_INT offset = 0;
   enum machine_mode mode, tmode;
   enum insn_code icode;
@@ -2148,7 +2154,7 @@ store_by_pieces_1 (struct store_by_pieces *data ATTRIBUTE_UNUSED,
 		   unsigned int align ATTRIBUTE_UNUSED)
 {
   rtx to_addr = XEXP (data->to, 0);
-  unsigned HOST_WIDE_INT max_size = STORE_MAX_PIECES + 1;
+  unsigned int max_size = STORE_MAX_PIECES + 1;
   enum machine_mode mode = VOIDmode, tmode;
   enum insn_code icode;
 
@@ -2168,7 +2174,7 @@ store_by_pieces_1 (struct store_by_pieces *data ATTRIBUTE_UNUSED,
      copy addresses to registers (to make displacements shorter)
      and use post-increment if available.  */
   if (!data->autinc_to
-      && move_by_pieces_ninsns (data->len, align) > 2)
+      && move_by_pieces_ninsns (data->len, align, max_size) > 2)
     {
       /* Determine the main mode we'll be using.  */
       for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);

@@ -2518,6 +2518,12 @@ enum ix86_builtins
 
 #define MOVE_RATIO (optimize_size ? 3 : ix86_cost->move_ratio)
 
+/* If a clear memory operation would take CLEAR_RATIO or more simple
+   move-instruction sequences, we will do a clrmem or libcall instead.  */
+
+#define CLEAR_RATIO (optimize_size ? 2 \
+		     : ix86_cost->move_ratio > 6 ? 6 : ix86_cost->move_ratio)
+
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension
    of a shift count.  */

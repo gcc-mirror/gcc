@@ -1,3 +1,25 @@
+2004-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/3144
+	* expr.c (move_by_pieces_ninsns): Add max_size argument.
+	(MOVE_BY_PIECES_P): Pass MOVE_MAX_PIECES + 1 to it.
+	(CLEAR_BY_PIECES_P): Pass STORE_MAX_PIECES + 1 to it.
+	(STORE_BY_PIECES_P): Define similarly to CLEAR_BY_PIECES_P,
+	but using MOVE_RATIO.
+	(move_by_pieces): Pass max_size to move_by_pieces_ninsns.
+	(can_store_by_pieces): Change max_size type to unsigned int.
+	(store_by_pieces_1): Likewise.  Pass max_size to
+	move_by_pieces_ninsns.
+	* config/s390/s390.h (STORE_BY_PIECES_P): Define.
+	* config/sh/sh.c (MOVE_BY_PIECES_P): Pass MOVE_MAX_PIECES + 1
+	to move_by_pieces_ninsns.
+	(STORE_BY_PIECES_P): Define.
+	* config/ns32k/ns32k.h (STORE_BY_PIECES_P): Pass STORE_MAX_PIECES + 1
+	to move_by_pieces_ninsns.
+	* doc/tm.texi (STORE_BY_PIECES_P): Document changed default.
+
+	* config/i386/i386.h (CLEAR_RATIO): Define.
+
 2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expr.c (expand_expr_real_1): Add back code that was not dead.

@@ -1109,8 +1109,8 @@ __transfer_from_trampoline ()		\
 
 #define STORE_RATIO (optimize_size ? 3 : 15)
 #define STORE_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN) < (unsigned int) STORE_RATIO)
-
+  (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
+   < (unsigned int) STORE_RATIO)
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
