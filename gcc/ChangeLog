@@ -1,3 +1,14 @@
+2002-03-28  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.in (gcc_cv_as): Use $target_alias in directory searchs
+	rather than $target.  Heed program_prefix and
+	program_transform_name.  Search for gas in cross-compiler case too.
+	"test -x" rather than "test -f".
+	(gcc_cv_ld): Likewise.
+	(gcc_cv_nm): Heed program_prefix and program_transform_name.
+	(gcc_cv_objdump): Likewise.
+	* configure: Regenerate.
+
 2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (attribs.o): Update.
