@@ -74,7 +74,7 @@ static unsigned int avr_section_type_flags (tree, const char *, int);
 static void avr_reorg (void);
 static void avr_asm_out_ctor (rtx, int);
 static void avr_asm_out_dtor (rtx, int);
-static int default_rtx_costs (rtx, enum rtx_code, enum rtx_code);
+static int avr_operand_rtx_cost (rtx, enum machine_mode, enum rtx_code);
 static bool avr_rtx_costs (rtx, int, int, int *);
 static int avr_address_cost (rtx);
 static bool avr_return_in_memory (tree, tree);
@@ -4820,110 +4820,558 @@ order_regs_for_local_alloc (void)
       reg_alloc_order[i] = order[i];
 }
 
-/* Calculate the cost of X code of the expression in which it is contained,
-   found in OUTER_CODE */
+
+/* Mutually recursive subroutine of avr_rtx_cost for calculating the
+   cost of an RTX operand given its context.  X is the rtx of the
+   operand, MODE is its mode, and OUTER is the rtx_code of this
+   operand's parent operator.  */
 
 static int
-default_rtx_costs (rtx X, enum rtx_code code, enum rtx_code outer_code)
+avr_operand_rtx_cost (rtx x, enum machine_mode mode, enum rtx_code outer)
 {
-  int cost=0;
+  enum rtx_code code = GET_CODE (x);
+  int total;
+
   switch (code)
     {
-    case SYMBOL_REF:
-    case LABEL_REF:
-      cost = 2 * GET_MODE_SIZE (GET_MODE (X));
-      break;
-    case MEM:
-      if (outer_code != SET)
-	cost = 1;
-      if (GET_CODE (XEXP (X,0)) == SYMBOL_REF)
-	cost += 2 * GET_MODE_SIZE (GET_MODE (X));
-      else
-	cost += GET_MODE_SIZE (GET_MODE (X));
-      break;
+    case REG:
+    case SUBREG:
+      return 0;
+
     case CONST_INT:
-      cost = 0;
-      break;
-    case SIGN_EXTEND:
-      if (outer_code == SET)
-	cost = GET_MODE_SIZE (GET_MODE (X));
-      else
-	cost = -GET_MODE_SIZE (GET_MODE (X));
-      break;
-    case ZERO_EXTEND:
-      if (outer_code == SET)
-	cost = GET_MODE_SIZE (GET_MODE (X));
-      else
-	cost = -1;
-      break;
-    case PLUS:
-    case MINUS:
-      if (outer_code == SET)
-	{
-	  if (X == stack_pointer_rtx)
-	    cost = -10;
-	  else if (GET_CODE (XEXP (X,1)) == CONST_INT)
-	    cost = (INTVAL (XEXP (X,1)) <= 63 ? 1 :
-		     GET_MODE_SIZE (GET_MODE (X)));
-	  else
-	    cost = GET_MODE_SIZE (GET_MODE (X));
-	}
-      break;
-    case COMPARE:
-      if (GET_CODE (XEXP (X,1)) == CONST_INT)
-	cost = GET_MODE_SIZE (GET_MODE (XEXP (X,0)));
-      break;
+    case CONST_DOUBLE:
+      return COSTS_N_INSNS (GET_MODE_SIZE (mode));
+
     default:
       break;
     }
-  return cost;
+
+  total = 0;
+  avr_rtx_costs (x, code, outer, &total);
+  return total;
 }
+
+/* The AVR backend's rtx_cost function.  X is rtx expression whose cost
+   is to be calculated.  Return true if the complete cost has been
+   computed, and false if subexpressions should be scanned.  In either
+   case, *TOTAL contains the cost result.  */
 
 static bool
 avr_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
-  int cst;
+  enum machine_mode mode = GET_MODE (x);
+  HOST_WIDE_INT val;
 
   switch (code)
     {
     case CONST_INT:
-      if (outer_code == PLUS
-	  || outer_code == IOR
-	  || outer_code == AND
-	  || outer_code == MINUS
-	  || outer_code == SET
-	  || INTVAL (x) == 0)
-	{
-          *total = 2;
-	  return true;
-	}
-      if (outer_code == COMPARE
-	  && INTVAL (x) >= 0
-	  && INTVAL (x) <= 255)
-	{
-	  *total = 2;
-	  return true;
-	}
-      /* FALLTHRU */
+    case CONST_DOUBLE:
+      /* Immediate constants are as cheap as registers.  */
+      *total = 0;
+      return true;
 
+    case MEM:
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_DOUBLE:
-      *total = 4;
+      *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+      return true;
+
+    case NEG:
+      switch (mode)
+	{
+	case QImode:
+	case SFmode:
+	  *total = COSTS_N_INSNS (1);
+	  break;
+
+	case HImode:
+	  *total = COSTS_N_INSNS (3);
+	  break;
+
+	case SImode:
+	  *total = COSTS_N_INSNS (7);
+	  break;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case ABS:
+      switch (mode)
+	{
+	case QImode:
+	case SFmode:
+	  *total = COSTS_N_INSNS (1);
+	  break;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case NOT:
+      *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case ZERO_EXTEND:
+      *total = COSTS_N_INSNS (GET_MODE_SIZE (mode)
+			      - GET_MODE_SIZE (GET_MODE (XEXP (x, 0))));
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case SIGN_EXTEND:
+      *total = COSTS_N_INSNS (GET_MODE_SIZE (mode) + 2
+			      - GET_MODE_SIZE (GET_MODE (XEXP (x, 0))));
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case PLUS:
+      switch (mode)
+	{
+	case QImode:
+	  *total = COSTS_N_INSNS (1);
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	  break;
+
+	case HImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (2);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else if (INTVAL (XEXP (x, 1)) >= -63 && INTVAL (XEXP (x, 1)) <= 63)
+	    *total = COSTS_N_INSNS (1);
+	  else
+	    *total = COSTS_N_INSNS (2);
+	  break;
+
+	case SImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (4);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else if (INTVAL (XEXP (x, 1)) >= -63 && INTVAL (XEXP (x, 1)) <= 63)
+	    *total = COSTS_N_INSNS (1);
+	  else
+	    *total = COSTS_N_INSNS (4);
+	  break;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case MINUS:
+    case AND:
+    case IOR:
+      *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+          *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+      return true;
+
+    case XOR:
+      *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+      return true;
+
+    case MULT:
+      switch (mode)
+	{
+	case QImode:
+	  if (AVR_ENHANCED)
+	    *total = COSTS_N_INSNS (optimize_size ? 3 : 4);
+	  else if (optimize_size)
+	    *total = COSTS_N_INSNS (AVR_MEGA ? 2 : 1);
+	  else
+	    return false;
+
+	case HImode:
+	  if (AVR_ENHANCED)
+	    *total = COSTS_N_INSNS (optimize_size ? 7 : 10);
+	  else if (optimize_size)
+	    *total = COSTS_N_INSNS (AVR_MEGA ? 2 : 1);
+	  else
+	    return false;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+      return true;
+
+    case DIV:
+    case MOD:
+    case UDIV:
+    case UMOD:
+      if (optimize_size)
+	*total = COSTS_N_INSNS (AVR_MEGA ? 2 : 1);
+      else
+	return false;
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+      return true;
+
+    case ASHIFT:
+      switch (mode)
+	{
+	case QImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 4 : 17);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    {
+	      val = INTVAL (XEXP (x, 1));
+	      if (val == 7)
+		*total = COSTS_N_INSNS (3);
+	      else if (val >= 0 && val <= 7)
+		*total = COSTS_N_INSNS (val);
+	      else
+		*total = COSTS_N_INSNS (1);
+	    }
+	  break;
+
+	case HImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 5 : 41);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    switch (INTVAL (XEXP (x, 1)))
+	      {
+	      case 0:
+		*total = 0;
+		break;
+	      case 1:
+	      case 8:
+		*total = COSTS_N_INSNS (2);
+		break;
+	      case 9:
+		*total = COSTS_N_INSNS (3);
+		break;
+	      case 2:
+	      case 3:
+	      case 10:
+	      case 15:
+		*total = COSTS_N_INSNS (4);
+		break;
+	      case 7:
+	      case 11:
+	      case 12:
+		*total = COSTS_N_INSNS (5);
+		break;
+	      case 4:
+		*total = COSTS_N_INSNS (optimize_size ? 5 : 8);
+		break;
+	      case 6:
+		*total = COSTS_N_INSNS (optimize_size ? 5 : 9);
+		break;
+	      case 5:
+		*total = COSTS_N_INSNS (optimize_size ? 5 : 10);
+		break;
+	      default:
+	        *total = COSTS_N_INSNS (optimize_size ? 5 : 41);
+	        *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	      }
+	  break;
+
+	case SImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 7 : 113);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    switch (INTVAL (XEXP (x, 1)))
+	      {
+	      case 0:
+		*total = 0;
+		break;
+	      case 24:
+		*total = COSTS_N_INSNS (3);
+		break;
+	      case 1:
+	      case 8:
+	      case 16:
+		*total = COSTS_N_INSNS (4);
+		break;
+	      case 31:
+		*total = COSTS_N_INSNS (6);
+		break;
+	      case 2:
+		*total = COSTS_N_INSNS (optimize_size ? 7 : 8);
+		break;
+	      default:
+		*total = COSTS_N_INSNS (optimize_size ? 7 : 113);
+		*total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	      }
+	  break;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case ASHIFTRT:
+      switch (mode)
+	{
+	case QImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 4 : 17);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    {
+	      val = INTVAL (XEXP (x, 1));
+	      if (val == 6)
+		*total = COSTS_N_INSNS (4);
+	      else if (val == 7)
+		*total = COSTS_N_INSNS (2);
+	      else if (val >= 0 && val <= 7)
+		*total = COSTS_N_INSNS (val);
+	      else
+		*total = COSTS_N_INSNS (1);
+	    }
+	  break;
+
+	case HImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 5 : 41);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    switch (INTVAL (XEXP (x, 1)))
+	      {
+	      case 0:
+		*total = 0;
+		break;
+	      case 1:
+		*total = COSTS_N_INSNS (2);
+		break;
+	      case 15:
+		*total = COSTS_N_INSNS (3);
+		break;
+	      case 2:
+	      case 7:
+              case 8:
+              case 9:
+		*total = COSTS_N_INSNS (4);
+		break;
+              case 10:
+	      case 14:
+		*total = COSTS_N_INSNS (5);
+		break;
+              case 11:
+                *total = COSTS_N_INSNS (optimize_size ? 5 : 6);
+		break;
+              case 12:
+                *total = COSTS_N_INSNS (optimize_size ? 5 : 7);
+		break;
+              case 6:
+	      case 13:
+                *total = COSTS_N_INSNS (optimize_size ? 5 : 8);
+		break;
+	      default:
+	        *total = COSTS_N_INSNS (optimize_size ? 5 : 41);
+	        *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	      }
+	  break;
+
+	case SImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 7 : 113);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    switch (INTVAL (XEXP (x, 1)))
+	      {
+	      case 0:
+		*total = 0;
+		break;
+	      case 1:
+		*total = COSTS_N_INSNS (4);
+		break;
+	      case 8:
+	      case 16:
+	      case 24:
+		*total = COSTS_N_INSNS (6);
+		break;
+	      case 2:
+		*total = COSTS_N_INSNS (optimize_size ? 7 : 8);
+		break;
+	      case 31:
+		*total = COSTS_N_INSNS (AVR_ENHANCED ? 4 : 5);
+		break;
+	      default:
+		*total = COSTS_N_INSNS (optimize_size ? 7 : 113);
+		*total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	      }
+	  break;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case LSHIFTRT:
+      switch (mode)
+	{
+	case QImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 4 : 17);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    {
+	      val = INTVAL (XEXP (x, 1));
+	      if (val == 7)
+		*total = COSTS_N_INSNS (3);
+	      else if (val >= 0 && val <= 7)
+		*total = COSTS_N_INSNS (val);
+	      else
+		*total = COSTS_N_INSNS (1);
+	    }
+	  break;
+
+	case HImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 5 : 41);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    switch (INTVAL (XEXP (x, 1)))
+	      {
+	      case 0:
+		*total = 0;
+		break;
+	      case 1:
+	      case 8:
+		*total = COSTS_N_INSNS (2);
+		break;
+	      case 9:
+		*total = COSTS_N_INSNS (3);
+		break;
+	      case 2:
+	      case 10:
+	      case 15:
+		*total = COSTS_N_INSNS (4);
+		break;
+	      case 7:
+              case 11:
+		*total = COSTS_N_INSNS (5);
+		break;
+	      case 3:
+	      case 12:
+	      case 13:
+	      case 14:
+		*total = COSTS_N_INSNS (optimize_size ? 5 : 6);
+		break;
+	      case 4:
+		*total = COSTS_N_INSNS (optimize_size ? 5 : 7);
+		break;
+	      case 5:
+	      case 6:
+		*total = COSTS_N_INSNS (optimize_size ? 5 : 9);
+		break;
+	      default:
+	        *total = COSTS_N_INSNS (optimize_size ? 5 : 41);
+	        *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	      }
+	  break;
+
+	case SImode:
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    {
+	      *total = COSTS_N_INSNS (optimize_size ? 7 : 113);
+	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	    }
+	  else
+	    switch (INTVAL (XEXP (x, 1)))
+	      {
+	      case 0:
+		*total = 0;
+		break;
+	      case 1:
+		*total = COSTS_N_INSNS (4);
+		break;
+	      case 2:
+		*total = COSTS_N_INSNS (optimize_size ? 7 : 8);
+		break;
+	      case 8:
+	      case 16:
+	      case 24:
+		*total = COSTS_N_INSNS (4);
+		break;
+	      case 31:
+		*total = COSTS_N_INSNS (6);
+		break;
+	      default:
+		*total = COSTS_N_INSNS (optimize_size ? 7 : 113);
+		*total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	      }
+	  break;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
+      return true;
+
+    case COMPARE:
+      switch (GET_MODE (XEXP (x, 0)))
+	{
+	case QImode:
+	  *total = COSTS_N_INSNS (1);
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+	    *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	  break;
+
+        case HImode:
+	  *total = COSTS_N_INSNS (2);
+	  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+            *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	  else if (INTVAL (XEXP (x, 1)) != 0)
+	    *total += COSTS_N_INSNS (1);
+          break;
+
+        case SImode:
+          *total = COSTS_N_INSNS (4);
+          if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+            *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code);
+	  else if (INTVAL (XEXP (x, 1)) != 0)
+	    *total += COSTS_N_INSNS (3);
+          break;
+
+	default:
+	  return false;
+	}
+      *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code);
       return true;
 
     default:
-      cst = default_rtx_costs (x, code, outer_code);
-      if (cst > 0)
-	{
-	  *total = cst;
-	  return true;
-	}
-      else if (cst < 0)
-	*total += -cst;
-      return false;
+      break;
     }
+  return false;
 }
 
 /* Calculate the cost of a memory address.  */
