@@ -996,6 +996,12 @@ expand_call (exp, target, ignore)
 		  copy = assign_stack_temp (TYPE_MODE (type), size, 1);
 		}
 
+	      MEM_IN_STRUCT_P (copy)
+		= (TREE_CODE (type) == RECORD_TYPE
+		   || TREE_CODE (type) == UNION_TYPE
+		   || TREE_CODE (type) == QUAL_UNION_TYPE
+		   || TREE_CODE (type) == ARRAY_TYPE);
+
 	      store_expr (args[i].tree_value, copy, 0);
 
 	      args[i].tree_value = build1 (ADDR_EXPR,
