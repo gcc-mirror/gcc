@@ -88,14 +88,7 @@ final class MessageFormatElement
 	    {
 	      format = NumberFormat.getNumberInstance(loc);
 	      DecimalFormat df = (DecimalFormat) format;
-	      try
-		{
-		  df.applyPattern(style);
-		}
-	      catch (ParseException x)
-		{
-		  throw new IllegalArgumentException (x.getMessage());
-		}
+	      df.applyPattern(style);
 	    }
 	}
       else if (type.equals("time") || type.equals("date"))
