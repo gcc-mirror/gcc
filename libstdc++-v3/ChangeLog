@@ -1,3 +1,16 @@
+2000-10-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* docs/configopts.html, docs/install.html, docs/17_intro/BADNAMES,
+	docs/17_intro/howto.html, docs/18_support/howto.html,
+	docs/19_diagnostics/howto.html, docs/20_util/howto.html,
+	docs/21_strings/howto.html, docs/22_locale/howto.html,
+	docs/23_containers/howto.html, docs/24_iterators/howto.html,
+	docs/25_algorithms/howto.html, docs/26_numerics/howto.html,
+	docs/27_io/howto.html, docs/ext/howto.html, docs/faq/index.html:
+	Remove many EGCS references; use current absolute URLs on
+	gcc.gnu.org or sources.redhat.com for messages in list archives.
+	* docs/faq/index.txt: Regenerate.
+
 2000-10-19  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* testsuite/22_locale/codecvt_unicode_char.cc (test01): Adjust
