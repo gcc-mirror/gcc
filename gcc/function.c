@@ -2513,8 +2513,12 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
     return true;
 
 #ifdef BLOCK_REG_PADDING
-  if (data->locate.where_pad == (BYTES_BIG_ENDIAN ? upward : downward)
-      && GET_MODE_SIZE (data->promoted_mode) < UNITS_PER_WORD)
+  /* Only assign_parm_setup_block knows how to deal with register arguments
+     that are padded at the least significant end.  */
+  if (REG_P (data->entry_parm)
+      && GET_MODE_SIZE (data->promoted_mode) < UNITS_PER_WORD
+      && (BLOCK_REG_PADDING (data->passed_mode, data->passed_type, 1)
+	  == (BYTES_BIG_ENDIAN ? upward : downward)))
     return true;
 #endif
 
