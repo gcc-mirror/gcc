@@ -352,7 +352,7 @@ case "${target}" in
   powerpc-*-netware*)
     target_makefile_frag="${target_makefile_frag} config/mt-netware"
     ;;
-  *-*-linux-gnu*)
+  *-*-linux*)
     target_makefile_frag="${target_makefile_frag} config/mt-linux"
     ;;
   *-*-aix4.[3456789]* | *-*-aix[56789].*)
@@ -684,7 +684,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss target-libffi"
     ;;
   hppa*-*-*elf* | \
-  hppa*-*-linux-gnu* | \
+  hppa*-*-linux* | \
   hppa*-*-lites* | \
   hppa*64*-*-*)
     # Do configure ld/binutils/gas for this case.

@@ -47,22 +47,27 @@ package_makefile_rules_frag=Make.pack.r
 
 echo "# Warning: this fragment is automatically generated" > temp.mt
 frags=
+case x$enable_threads in
+	xno) ;;
+	*)   mtsafe=mtsafe.mt ;;
+esac
 
 case "${target}" in
   *-mpeix*)      frags="mpeix.mt" ;;
   *-hpux*)       frags=hpux.mt ;;
-  alpha*-*-linux-gnulibc1)
-		 frags="linux.mt linuxaxp1.mt mtsafe.mt" ;;
-  powerpc*-*-linux-gnulibc1)
-		 frags="linux.mt linuxaxp1.mt mtsafe.mt" ;;
-  *-linux-gnulibc1)
+  alpha*-*-linux*libc1)
+		 frags="linux.mt linuxaxp1.mt $mtsafe" ;;
+  powerpc*-*-linux*libc1)
+		 frags="linux.mt linuxaxp1.mt $mtsafe" ;;
+  *-linux*libc1)
 		 frags=linuxlibc1.mt ;;
-  *-linux-gnu*)  frags="linux.mt mtsafe.mt" ;;
+  *-linux*)
+		 frags="linux.mt $mtsafe" ;;
   *-isc*)        frags=isc.mt ;;
   *-netware*)    frags=netware.mt ;;
   *-dgux*)	 frags=dgux.mt ;;
   *vxworks*)     frags="vxworks.mt" ;;
-  *-beos*)	 frags="beos.mt mtsafe.mt" ;;
+  *-beos*)	 frags="beos.mt $mtsafe" ;;
   *)             frags=${target_cpu}.mt ;;
 esac
 
@@ -88,7 +93,7 @@ fi
 
 # Take care of header file lossage.
 case "${target}" in
-  alpha*-*-linux-gnulibc1)
+  alpha*-*-linux*libc1)
     # For some reason stdio-lock.h is not installed on Red Hat systems.
     # Further, libc-lock.h needs to define the pthreads stuff weak, and
     # fails to do this for other than _LIBC.  Install our own versions
@@ -96,7 +101,7 @@ case "${target}" in
     cp ${srcdir}/config/linuxaxp1-libc-lock.h libc-lock.h
     cp ${srcdir}/config/linuxaxp1-stdio-lock.h stdio-lock.h
     ;;
-  powerpc*-*-linux-gnulibc1)
+  powerpc*-*-linux*libc1)
     # For some reason stdio-lock.h is not installed on Red Hat systems.
     # Further, libc-lock.h needs to define the pthreads stuff weak, and
     # fails to do this for other than _LIBC.  Install our own versions
@@ -104,7 +109,7 @@ case "${target}" in
     cp ${srcdir}/config/linuxaxp1-libc-lock.h libc-lock.h
     cp ${srcdir}/config/linuxaxp1-stdio-lock.h stdio-lock.h
     ;;
-  *-linux-gnu*)
+  *-linux*)
     # We have a correct libc-lock.h in glibc 2.1 but not all glibc 2.0.
     # Create a wrapper if necessary.
     (echo "#include <bits/libc-lock.h>" | ${CC-cc} -E -) >/dev/null 2>&1 ||

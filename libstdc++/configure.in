@@ -89,10 +89,11 @@ fi
 
 # Make sure the right flags are defined for multi-threading.
 case "${target}" in
-  alpha*-*-linux-gnulibc1)	frags="${frags} linux.mt" ;;
-  powerpc*-*-linux-gnulibc1)	frags="${frags} linux.mt" ;;
-  *-*-linux-gnu*)		frags="${frags} linux.mt" ;;
-  *-*-openbsd*)		
+  *-*-linux*)
+	case "x${enable_threads}" in
+		xyes|xposix)	frags="${frags} linux.mt" ;;
+	esac;;
+  *-*-openbsd*)	
   	case "x${enable_threads}" in
 		xyes|xposix)	frags="${frags} openbsd.mt" ;;
 	esac;;

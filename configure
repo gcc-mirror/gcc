@@ -53,6 +53,8 @@ cache_file_option=
 configdirs=
 extraconfigdirs=
 diroptions=
+enable_threads=no
+enable_shared=no
 exec_prefix=
 exec_prefixoption=
 fatal=
@@ -86,7 +88,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.26 $"
+version="$Revision: 1.27 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -1335,12 +1337,8 @@ EOF
                 echo site_makefile_frag = ${invsubdir}${site_makefile_frag} >>${Makefile}
             fi 
 
-	    # record if we want to build shared libs.
-	    if test -z "${enable_shared}"; then
-	        echo enable_shared = no >> ${Makefile}
-	    else
-	        echo enable_shared = ${enable_shared} >> ${Makefile}
-	    fi
+	    echo enable_shared = ${enable_shared} >> ${Makefile}
+	    echo enable_threads = ${enable_threads} >> ${Makefile}
 	    # record if we want to rumtime library stuff installed in libsubdir.
 	    if test -z "${enable_version_specific_runtime_libs}"; then
 	        echo enable_version_specific_runtime_libs = no >> ${Makefile}

@@ -776,8 +776,8 @@ Here is a list of system types:
 
 @quotation
 386bsd, aix, acis, amigaos, aos, aout, aux, bosx, bsd, clix, coff, ctix, cxux,
-dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms, genix, gnu, linux-gnu,
-hiux, hpux, iris, irix, isc, luna, lynxos, mach, minix, msdos, mvs,
+dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms, genix, gnu, linux,
+linux-gnu, hiux, hpux, iris, irix, isc, luna, lynxos, mach, minix, msdos, mvs,
 netbsd, newsos, nindy, ns, osf, osfrose, ptx, riscix, riscos, rtu, sco, sim,
 solaris, sunos, sym, sysv, udi, ultrix, unicos, uniplus, unos, vms, vsta,
 vxworks, winnt, xenix.
@@ -792,6 +792,12 @@ make a difference.  For example, you can write @samp{bsd4.3} or
 @samp{bsd4.4} to distinguish versions of BSD.  In practice, the version
 number is most needed for @samp{sysv3} and @samp{sysv4}, which are often
 treated differently.
+
+@samp{linux} and @samp{linux-gnu} are equivalent.  The distinction is
+purely political, and has no effect on the compiler.  The version of
+the kernel in use is not relevant on these systems.  A suffix such as
+@samp{libc1} or @samp{aout} distinguishes major versions of the C library;
+all of the suffixed versions are obsolete.
 
 If you specify an impossible combination such as @samp{i860-dg-vms},
 then you may get an error message from @file{configure}, or it may
@@ -940,12 +946,13 @@ configuration.
 @item arm-*-elf
 This configuration is intended for embedded systems.
 
-@item arm-*-linux-gnuaout
+@item arm-*-linux*aout
 Any of the ARM-family processors running the Linux-based GNU system with
 the @file{a.out} binary format.  This is an obsolete configuration.
 
-@item arm-*-linux-gnu
-@itemx arm-*-linux-gnuoldld
+@item arm-*-linux
+@itemx arm-*-linux-gnu
+@itemx arm-*-linux*oldld
 Any of the ARM-family processors running the Linux-based GNU system with
 the @file{ELF} binary format.  You must use version 2.9.1.0.22 or later
 of the GNU/Linux binutils, which you can download from
@@ -1087,17 +1094,18 @@ option before building.
 This port is very preliminary and has many known bugs.  We hope to
 have a higher-quality port for this machine soon.
 
-@item i386-*-linux-gnuoldld
+@item i386-*-linux*oldld
 Use this configuration to generate @file{a.out} binaries on Linux-based
 GNU systems if you do not have gas/binutils version 2.5.2 or later
 installed. This is an obsolete configuration.
 
-@item i386-*-linux-gnuaout
+@item i386-*-linux*aout
 Use this configuration to generate @file{a.out} binaries on Linux-based
 GNU systems. This configuration is being superseded. You must use
 gas/binutils version 2.5.2 or later.
 
-@item i386-*-linux-gnu
+@item i386-*-linux
+@itemx i386-*-linux-gnu
 Use this configuration to generate ELF binaries on Linux-based GNU
 systems.  You must use gas/binutils version 2.5.2 or later.
 
@@ -1559,7 +1567,8 @@ PowerPC system in big endian mode, running System V.4.
 You can specify a default version for the @samp{-mcpu=}@var{cpu_type}
 switch by using the configure option @samp{--with-cpu-}@var{cpu_type}.
 
-@item powerpc-*-linux-gnu
+@item powerpc-*-linux
+@itemx powerpc-*-linux-gnu
 PowerPC system in big endian mode, running the Linux-based GNU system.
 
 You can specify a default version for the @samp{-mcpu=}@var{cpu_type}

@@ -331,7 +331,7 @@ tSCC zAab_Fd_Zero_Asm_Posix_Types_HList[] =
  *  Machine/OS name selection pattern
  */
 tSCC* apzAab_Fd_Zero_Asm_Posix_Types_HMachs[] = {
-        "i[34567]86-*-linux-gnu*",
+        "i[34567]86-*-linux*",
         (const char*)NULL };
 
 /*
@@ -387,7 +387,7 @@ tSCC zAab_Fd_Zero_Gnu_Types_HList[] =
  *  Machine/OS name selection pattern
  */
 tSCC* apzAab_Fd_Zero_Gnu_Types_HMachs[] = {
-        "i[34567]86-*-linux-gnu*",
+        "i[34567]86-*-linux*",
         (const char*)NULL };
 #define AAB_FD_ZERO_GNU_TYPES_H_TEST_CT  0
 #define aAab_Fd_Zero_Gnu_Types_HTests   (tTestDesc*)NULL
@@ -434,7 +434,7 @@ tSCC zAab_Fd_Zero_Selectbits_HList[] =
  *  Machine/OS name selection pattern
  */
 tSCC* apzAab_Fd_Zero_Selectbits_HMachs[] = {
-        "i[34567]86-*-linux-gnu*",
+        "i[34567]86-*-linux*",
         (const char*)NULL };
 #define AAB_FD_ZERO_SELECTBITS_H_TEST_CT  0
 #define aAab_Fd_Zero_Selectbits_HTests   (tTestDesc*)NULL

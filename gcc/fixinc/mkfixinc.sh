@@ -13,7 +13,7 @@ echo constructing ${target} for $machine
 fixincludes="${machine}"
 
 case $machine in
-	i[34567]86-*-linux-gnu*)
+	i[34567]86-*-linux*)
 		:
 		;;
 
@@ -35,7 +35,7 @@ case $machine in
 		;;
 
 	*-*-netbsd* | \
-	alpha*-*-linux-gnulibc1* | \
+	alpha*-*-linux*libc1* | \
 	i?86-*-openbsd* | \
 	i?86-*-solaris2* | \
 	sparcv9-*-solaris2* | \
@@ -63,7 +63,7 @@ case $machine in
 	hppa1.1-*-bsd* | \
 	hppa1.0-*-bsd* | \
 	hppa*-*-lites* | \
-	*-*-linux-gnu* | \
+	*-*-linux* | \
 	*-*-gnu* | \
 	i?86-moss-msdos* | i?86-*-moss* | \
 	i?86-*-osf1* | \
