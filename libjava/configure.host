@@ -110,6 +110,7 @@ case "${host}" in
 	libgcj_flags="${libgcj_flags} -mieee"
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
+	IEEESPEC=-mieee
 	;;
   powerpc64*-*)
 	# libffi not ported.
