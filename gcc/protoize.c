@@ -198,12 +198,11 @@ extern int      strncmp ();
 extern char *   strncpy ();
 extern char *   strrchr ();
 
+/* Fork is not declared because the declaration caused a conflict
+   on the HPPA.  */
 #if !(defined (USG) || defined (VMS))
-extern int vfork ();
 #define fork vfork
-#else
-extern int fork ();
-#endif /* !(defined (USG) || defined (VMS)) */
+#endif /* (defined (USG) || defined (VMS)) */
 
 #endif /* !defined (POSIX) */
 
