@@ -1,3 +1,7 @@
+2006-06-22  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/noreturn-1.c (foo5): Update function does return lineno.
+
 2004-06-22  Loren James Rittle  <ljrittle@acm.org>
 
 	* gcc.dg/builtins-config.h: Handle FreeBSD.
