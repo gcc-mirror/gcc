@@ -1,3 +1,7 @@
+2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/cppopts.texi: Fix a typo.
+
 2004-02-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-hpux.h (LIB_SPEC): Fix linking under HP-UX 11.00 with -p and -pg.
