@@ -462,7 +462,11 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #else /* UNALIGNED_INT_ASM_OP */
 
 /* We don't have unaligned support, let's hope the normal output works for
-   .debug_frame.  */
+   .debug_frame.  But we know it won't work for .debug_info.  */
+
+#ifdef DWARF2_DEBUGGING_INFO
+#error DWARF2_DEBUGGING_INFO requires UNALIGNED_INT_ASM_OP.
+#endif
 
 #ifndef ASM_OUTPUT_DWARF_ADDR
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL) \
@@ -888,16 +892,14 @@ def_cfa_1 (label, loc_p)
   if (loc.reg == old_cfa.reg && loc.offset == old_cfa.offset &&
       loc.indirect == old_cfa.indirect)
     {
-      if (loc.indirect == 0)
+      if (loc.indirect == 0
+	  || loc.base_offset == old_cfa.base_offset)
 	return;
-      else 
-        if (loc.base_offset == old_cfa.base_offset)
-	  return;
     }
 
   cfi = new_cfi ();
 
-  if (loc.reg == old_cfa.reg && loc.indirect == old_cfa.indirect)
+  if (loc.reg == old_cfa.reg && !loc.indirect)
     {
       cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
       cfi->dw_cfi_oprnd1.dw_cfi_offset = loc.offset;
@@ -905,7 +907,7 @@ def_cfa_1 (label, loc_p)
 
 #ifndef MIPS_DEBUGGING_INFO  /* SGI dbx thinks this means no offset.  */
   else if (loc.offset == old_cfa.offset && old_cfa.reg != (unsigned long) -1
-	   && loc.indirect == old_cfa.indirect)
+	   && !loc.indirect)
     {
       cfi->dw_cfi_opc = DW_CFA_def_cfa_register;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
@@ -1208,11 +1210,6 @@ static unsigned cfa_temp_reg;
 /* A temporary value used in adjusting SP or setting up the store_reg.  */
 static long cfa_temp_value;
 
-/* If we see a store of the CFA register, remember it in case we later also
-   copy it into another register.  The ARM saves the old SP in the stack,
-   but it also has a usable FP.  */
-static unsigned cfa_old_reg;
-
 /* Record call frame debugging information for an expression, which either
    sets SP or FP (adjusting how we calculate the frame address) or saves a
    register to the stack. */
@@ -1262,8 +1259,7 @@ dwarf2out_frame_debug_expr (expr, label)
         {
           /* Setting FP from SP.  */
         case REG:
-          if (cfa.reg == (unsigned) REGNO (src)
-	      || (cfa.indirect && cfa_old_reg == (unsigned) REGNO (src)))
+          if (cfa.reg == (unsigned) REGNO (src))
 	    /* OK */;
 	  else
             abort ();
@@ -1273,7 +1269,6 @@ dwarf2out_frame_debug_expr (expr, label)
 	     FP.  So we just rely on the backends to only set
 	     RTX_FRAME_RELATED_P on appropriate insns.  */
           cfa.reg = REGNO (dest);
-	  cfa.indirect = 0;
           break;
 
         case PLUS:
@@ -1381,34 +1376,6 @@ dwarf2out_frame_debug_expr (expr, label)
       if (GET_CODE (src) != REG)
 	abort ();
 
-      /* If the src is our current CFA, and it isn't the SP or FP, then we're
-         going to have to use an indrect mechanism.  */
-      if (REGNO (src) != STACK_POINTER_REGNUM 
-	  && REGNO (src) != HARD_FRAME_POINTER_REGNUM 
-	  && (unsigned) REGNO (src) == cfa.reg
-	  /* Temporary KLUDGE to make ARM work.  */
-	  && GET_CODE (XEXP (dest, 0)) != PRE_DEC)
-	{
-	  /* We currently allow this to be ONLY a MEM or MEM + offset.  */
-	  rtx x = XEXP (dest, 0);
-	  int offset = 0;
-	  if (GET_CODE (x) == PLUS || GET_CODE (x) ==  MINUS)
-	    {
-	      offset = INTVAL (XEXP (x, 1));
-	      if (GET_CODE (x) == MINUS)
-		offset = -offset;
-	      x = XEXP (x, 0);
-	    }
-	  if (GET_CODE (x) != REG)
-	    abort ();
-	  cfa_old_reg = cfa.reg;
-	  cfa.reg = (unsigned) REGNO (x);
-	  cfa.base_offset = offset;
-	  cfa.indirect = 1;
-	  def_cfa_1 (label, &cfa);
-	  break;
-	}
-
       /* Saving a register to the stack.  Make sure dest is relative to the
 	 CFA register.  */
       switch (GET_CODE (XEXP (dest, 0)))
@@ -1452,6 +1419,41 @@ dwarf2out_frame_debug_expr (expr, label)
 	default:
 	  abort ();
 	}
+
+      if (REGNO (src) != STACK_POINTER_REGNUM 
+	  && REGNO (src) != HARD_FRAME_POINTER_REGNUM
+	  && (unsigned) REGNO (src) == cfa.reg)
+	{
+	  /* We're storing the current CFA reg into the stack.  */
+
+	  if (cfa.offset == 0)
+	    {
+	      /* If the source register is exactly the CFA, assume
+		 we're saving SP like any other register; this happens
+		 on the ARM.  */
+
+	      def_cfa_1 (label, &cfa);
+	      dwarf2out_reg_save (label, STACK_POINTER_REGNUM, offset);
+	      break;
+	    }
+	  else
+	    {
+	      /* Otherwise, we'll need to look in the stack to
+                 calculate the CFA.  */
+
+	      rtx x = XEXP (dest, 0);
+	      if (GET_CODE (x) != REG)
+		x = XEXP (x, 0);
+	      if (GET_CODE (x) != REG)
+		abort ();
+	      cfa.reg = (unsigned) REGNO (x);
+	      cfa.base_offset = offset;
+	      cfa.indirect = 1;
+	      def_cfa_1 (label, &cfa);
+	      break;
+	    }
+	}
+
       def_cfa_1 (label, &cfa);
       dwarf2out_reg_save (label, REGNO (src), offset);
       break;

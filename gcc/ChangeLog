@@ -1,5 +1,12 @@
 2000-07-24  Jason Merrill  <jason@redhat.com>
 
+	* dwarf2out.c: Complain if DWARF2_DEBUGGING_INFO is defined without
+	UNALIGNED_INT_ASM_OP.
+	(def_cfa_1): Don't emit def_cfa_register or def_cfa_offset to adjust
+	a location expression.
+	(dwarf2out_frame_debug_expr): Lose cfa_old_reg stuff.  Don't 
+	assume indirect access if we're saving the CFA address exactly.
+
 	* Makefile.in (bootstrap): Move -BstageN/ to the end.
 
 2000-07-24  Jakub Jelinek  <jakub@redhat.com>
