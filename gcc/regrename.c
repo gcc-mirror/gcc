@@ -1757,7 +1757,7 @@ copyprop_hardreg_forward (void)
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queuing of blocks.  */
-      if (EDGE_COUNT (bb->preds) > 0)
+      if (EDGE_COUNT (bb->preds) == 1)
 	for (bbp = bb; bbp && bbp != EDGE_PRED (bb, 0)->src; bbp = bbp->prev_bb);
       if (EDGE_COUNT (bb->preds) == 1
 	  && ! (EDGE_PRED (bb, 0)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))

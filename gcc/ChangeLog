@@ -1,3 +1,9 @@
+2004-11-20  Jeff Law  <law@redhat.com>
+
+	* regrename.c (copyprop_hardreg_forward): Only search for a
+	previously processed block if the current block only has one
+	predecessor.
+
 2004-11-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-threadupdate.c, tree-vectorizer.c: Fix comment
