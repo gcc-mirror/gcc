@@ -758,7 +758,8 @@ void
 genrtl_cleanup_stmt (tree t)
 {
   tree decl = CLEANUP_DECL (t);
-  if (!decl || (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node))
+  if (!decl || !DECL_P (decl)
+      || (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node))
     expand_decl_cleanup_eh (decl, CLEANUP_EXPR (t), CLEANUP_EH_ONLY (t));
 }
 
