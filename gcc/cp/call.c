@@ -3926,12 +3926,10 @@ compare_ics (ics1, ics2)
       if (is_subseq (ics2, ics1))
 	return -1;
     }
-  else
-    /* One sequence cannot be a subsequence of the other; they don't
-       start with the same type.  This can happen when comparing the
-       second standard conversion sequence in two user-defined
-       conversion sequences.  */
-    ;
+  /* Otherwise, one sequence cannot be a subsequence of the other; they
+     don't start with the same type.  This can happen when comparing the
+     second standard conversion sequence in two user-defined conversion
+     sequences.  */
 
   /* [over.ics.rank]
 
