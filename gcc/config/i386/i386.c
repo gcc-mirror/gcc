@@ -5924,7 +5924,17 @@ ix86_agi_dependant (insn, dep_insn, insn_type)
   rtx addr;
 
   if (insn_type == TYPE_LEA)
-    addr = SET_SRC (single_set (insn));
+    {
+      addr = PATTERN (insn);
+      if (GET_CODE (addr) == SET)
+	;
+      else if (GET_CODE (addr) == PARALLEL
+	       && GET_CODE (XVECEXP (addr, 0, 0)) == SET)
+	addr = XVECEXP (addr, 0, 0);
+      else
+	abort ();
+      addr = SET_SRC (addr);
+    }
   else
     {
       int i;
