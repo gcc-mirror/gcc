@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include "config.h"
 #include "tree.h"
+#include "except.h"
 #include "function.h"
 #include "defaults.h"
 #include "c-pragma.h"
