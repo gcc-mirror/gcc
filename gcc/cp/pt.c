@@ -2385,6 +2385,7 @@ push_template_decl_real (decl, is_friend)
   tree ctx;
   int primary;
   int is_partial;
+  int new_template_p = 0;
 
   /* See if this is a partial specialization.  */
   is_partial = (DECL_IMPLICIT_TYPEDEF_P (decl)
@@ -2449,7 +2450,8 @@ push_template_decl_real (decl, is_friend)
       else
 	{
 	  tmpl = build_template_decl (decl, current_template_parms);
-	  
+	  new_template_p = 1;
+
 	  if (DECL_LANG_SPECIFIC (decl)
 	      && DECL_TEMPLATE_SPECIALIZATION (decl))
 	    {
@@ -2560,7 +2562,7 @@ push_template_decl_real (decl, is_friend)
      that we do not try to push a global template friend declared in a
      template class; such a thing may well depend on the template
      parameters of the class.  */
-  if (! ctx 
+  if (new_template_p && !ctx 
       && !(is_friend && template_class_depth (current_class_type) > 0))
     tmpl = pushdecl_namespace_level (tmpl);
 
