@@ -1,3 +1,9 @@
+2004-07-30  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/EmbeddedWindow.java
+	(addNotify): Use AccessController to allow execution of privileged
+	code.
+
 2004-07-29  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/lang/MainThread.java:
