@@ -201,12 +201,14 @@ public class Container extends Component
   /**
    * Adds the specified component to the container at the end of the
    * component list.  This method should not be used. Instead, use
-   * <code>add(Component, Object</code>.
+   * <code>add(Component, Object)</code>.
    *
    * @param name The name of the component to be added.
    * @param component The component to be added.
    *
    * @return The same component that was added.
+   *
+   * @see #add(Component,Object)
    */
   public Component add(String name, Component comp)
   {

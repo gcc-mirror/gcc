@@ -1,5 +1,14 @@
 2003-07-09  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java,
+	gnu/java/awt/peer/gtk/GtkContainerPeer.java,
+	gnu/java/awt/peer/gtk/GtkDialogPeer.java,
+	gnu/java/awt/peer/gtk/GtkWindowPeer.java:
+	Explicitly import used classes.
+	* java/awt/Container.java: New version from classpath.
+
+2003-07-09  Michael Koch  <konqueror@gmx.de>
+
 	* libgcj.pc.in
 	* Makefile.am
 	* Makefile.in
