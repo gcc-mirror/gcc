@@ -1,25 +1,26 @@
-/* This file contains changes made by Data General, December 1989.  */
 /* GNU C varargs support for the Motorola 88100  */
 
-#ifndef __INT_VARARGS_H		/* Prevent multiple inclusions of this file */
-#define __INT_VARARGS_H		/* and _int_varargs.h under DG/UX */
+/* Define __gnuc_va_list.  */
+
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
 
 typedef struct
 {
   int  __va_arg;		/* argument number */
   int *__va_stk;		/* start of args passed on stack */
   int *__va_reg;		/* start of args passed in regs */
-} va_list;
+} __gnuc_va_list;
+#endif /* not __GNUC_VA_LIST */
 
-#else
-#undef __va_size
-#undef __va_reg_p
-#endif /* __INT_VARARGS_H */
+/* If this is for internal libc use, don't define anything but
+   __gnuc_va_list.  */
+#if defined (_STDARG_H) || defined (_VARARGS_H)
 
 #ifdef _STDARG_H /* stdarg.h support */
 
 #if __GNUC__ > 1 /* GCC 2.0 and beyond */
-#define va_start(AP,LASTARG) ((AP) = *(va_list *)__builtin_saveregs())
+#define va_start(AP,LASTARG) ((AP) = *(__gnuc_va_list *)__builtin_saveregs())
 #else
 #define va_start(AP,LASTARG) \
   ( (AP).__va_reg = (int *) __builtin_saveregs2(0), \
@@ -30,7 +31,7 @@ typedef struct
 #else /* varargs.h support */
 
 #if __GNUC__ > 1 /* GCC 2.0 and beyond */
-#define va_start(AP) ((AP) = *(va_list *)__builtin_saveregs())
+#define va_start(AP) ((AP) = *(__gnuc_va_list *)__builtin_saveregs())
 #else
 #define va_start(AP) \
   ( (AP).__va_reg = (int *) __builtin_saveregs2(1), \
@@ -41,6 +42,17 @@ typedef struct
 #define va_dcl register int va_alist;
 
 #endif /* _STDARG_H */
+
+/* Avoid trouble between this file and _int_varargs.h under DG/UX.  This file
+   can be included by <stdio.h> and others and provides definitions of
+   __va_size and __va_reg_p and  a va_list typedef.  Avoid defining va_list
+   again with _VA_LIST.  */
+#ifdef __INT_VARARGS_H
+#undef __va_size
+#undef __va_reg_p
+#define __gnuc_va_list va_list
+#define _VA_LIST
+#endif
 
 #define __va_reg_p(TYPE) \
   (__builtin_classify_type(*(TYPE *)0) < 12 \
@@ -57,3 +69,5 @@ typedef struct
 		+ ((AP).__va_arg - __va_size(TYPE)))))
 
 #define va_end(AP)
+
+#endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
