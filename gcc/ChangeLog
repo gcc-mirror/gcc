@@ -1,3 +1,7 @@
+2001-09-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* calls.c (store_one_arg): Expand comment.
+
 2001-09-10  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* calls.c (store_one_arg): Make sure that the entire argument is
