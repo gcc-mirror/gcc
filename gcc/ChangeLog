@@ -1,3 +1,9 @@
+Sat May  8 01:51:50 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* ginclude/stdarg.h (__va_rounded_size): Use long type for
+	rounding on AIX.
+	* ginclude/varargs.h: Likewise.
+
 Sat May  8 01:47:20 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* invoke.texi: Remove duplicates in the description of -d
