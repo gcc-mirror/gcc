@@ -7652,6 +7652,7 @@ store_motion (void)
   /* Now compute kill & transp vectors.  */
   build_store_vectors ();
   add_noreturn_fake_exit_edges ();
+  connect_infinite_loops_to_exit ();
 
   edge_list = pre_edge_rev_lcm (gcse_file, num_stores, transp, ae_gen,
 				st_antloc, ae_kill, &pre_insert_map,

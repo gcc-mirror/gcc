@@ -1,3 +1,8 @@
+2003-07-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR optimization/11631
+	* gcse.c (store_motion): Connect infinite loops to exit.
+
 2003-07-24  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (boolean_type_node): Move from C/C++/Java frontends.
