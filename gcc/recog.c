@@ -3045,7 +3045,7 @@ peephole2_optimize (dump_file)
 	  prev = PREV_INSN (insn);
 	  if (INSN_P (insn))
 	    {
-	      rtx try;
+	      rtx try, before_try;
 	      int match_len;
 	      rtx note;
 
@@ -3128,14 +3128,16 @@ peephole2_optimize (dump_file)
 		  if (i >= MAX_INSNS_PER_PEEP2 + 1)
 		    i -= MAX_INSNS_PER_PEEP2 + 1;
 
+		  note = find_reg_note (peep2_insn_data[i].insn, 
+					REG_EH_REGION, NULL_RTX);
+
 		  /* Replace the old sequence with the new.  */
 		  try = emit_insn_after (try, peep2_insn_data[i].insn);
+		  before_try = PREV_INSN (insn);
 		  delete_insn_chain (insn, peep2_insn_data[i].insn);
 
 		  /* Re-insert the EH_REGION notes.  */
-		  if (try == bb->end
-		      && (note = find_reg_note (peep2_insn_data[i].insn, 
-						REG_EH_REGION, NULL_RTX)))
+		  if (note)
 		    {
 		      rtx x;
 		      edge eh_edge;
@@ -3145,11 +3147,11 @@ peephole2_optimize (dump_file)
 			if (eh_edge->flags & EDGE_EH)
 			  break;
 
-		      for (x = NEXT_INSN (peep2_insn_data[i].insn);
-			   x != NEXT_INSN (try); x = NEXT_INSN (x))
+		      for (x = try ; x != before_try ; x = PREV_INSN (x))
 			if (GET_CODE (x) == CALL_INSN
 			    || (flag_non_call_exceptions
-				&& may_trap_p (PATTERN (x))))
+				&& may_trap_p (PATTERN (x))
+				&& !find_reg_note (x, REG_EH_REGION, NULL)))
 			  {
 			    REG_NOTES (x)
 			      = gen_rtx_EXPR_LIST (REG_EH_REGION,
@@ -3158,9 +3160,16 @@ peephole2_optimize (dump_file)
 
 			    if (x != bb->end && eh_edge)
 			      {
-				edge nfte = split_block (bb, x);
-				edge nehe = make_edge (nfte->src, eh_edge->dest,
-						       eh_edge->flags);
+				edge nfte, nehe;
+				int flags;
+
+				nfte = split_block (bb, x);
+				flags = EDGE_EH | EDGE_ABNORMAL;
+				if (GET_CODE (x) == CALL_INSN)
+				  flags |= EDGE_ABNORMAL_CALL;
+				nehe = make_edge (nfte->src, eh_edge->dest,
+						  flags);
+
 				nehe->probability = eh_edge->probability;
 				nfte->probability
 				  = REG_BR_PROB_BASE - nehe->probability;
@@ -3171,6 +3180,7 @@ peephole2_optimize (dump_file)
 				changed = true;
 #endif
 				bb = nfte->src;
+				eh_edge = nehe;
 			      }
 			  }
 
