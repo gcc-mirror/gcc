@@ -1,3 +1,8 @@
+2003-10-08  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/SocketChannelImpl.java
+	(read): Write only read data to buffer.
+
 2003-10-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkMenuItemPeer.java (setEnabled): Stub
