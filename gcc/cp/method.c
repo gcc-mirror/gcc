@@ -1917,23 +1917,30 @@ make_thunk (function, delta)
      tree function;
      int delta;
 {
-  char *buffer;
   tree thunk_id;
   tree thunk;
-  char *func_name;
   tree func_decl;
+
   if (TREE_CODE (function) != ADDR_EXPR)
     abort ();
   func_decl = TREE_OPERAND (function, 0);
   if (TREE_CODE (func_decl) != FUNCTION_DECL)
     abort ();
-  func_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (func_decl));
-  buffer = (char *)alloca (strlen (func_name) + 32);
-  if (delta<=0)
-    sprintf (buffer, "__thunk_%d_%s", -delta, func_name);
+
+  OB_INIT ();
+  OB_PUTS ("__thunk_");
+  if (delta > 0)
+    {
+      OB_PUTC ('n');
+      icat (delta);
+    }
   else
-    sprintf (buffer, "__thunk_n%d_%s", delta, func_name);
-  thunk_id = get_identifier (buffer);
+    icat (-delta);
+  OB_PUTC ('_');
+  OB_PUTID (DECL_ASSEMBLER_NAME (func_decl));
+  OB_FINISH ();
+  thunk_id = get_identifier (obstack_base (&scratch_obstack));
+
   thunk = IDENTIFIER_GLOBAL_VALUE (thunk_id);
   if (thunk && TREE_CODE (thunk) != THUNK_DECL)
     {
