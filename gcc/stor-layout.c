@@ -1528,6 +1528,23 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
   return mode;
 }
 
+/* Return the alignment of MODE. This will be bounded by 1 and
+   BIGGEST_ALIGNMENT.  */
+
+unsigned get_mode_alignment (mode)
+     enum machine_mode mode;
+{
+  unsigned alignment = GET_MODE_UNIT_SIZE (mode);
+  
+  /* Extract the LSB of the size.  */
+  alignment = alignment & -alignment;
+  
+  alignment *= BITS_PER_UNIT;
+
+  alignment = MIN (BIGGEST_ALIGNMENT, MAX (1, alignment));
+  return alignment;
+}
+
 /* This function is run once to initialize stor-layout.c.  */
 
 void
