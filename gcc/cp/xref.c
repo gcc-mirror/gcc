@@ -40,10 +40,9 @@ extern char *getpwd PROTO((void));
 
 #ifdef HAVE_STRING_H
 #include <string.h>
-#else
-extern char *index ();
-extern char *rindex ();
 #endif
+
+extern char *rindex ();
 
 /* The character(s) used to join a directory specification (obtained with
    getwd or equivalent) with a non-absolute file name.  */
@@ -813,14 +812,14 @@ open_xref_file(file)
 #ifdef XREF_FILE_NAME
   XREF_FILE_NAME (xref_name, file);
 #else
-  s = (char *) rindex (file, '/');
+  s = rindex (file, '/');
   if (s == NULL)
     sprintf (xref_name, ".%s.gxref", file);
   else
     {
       ++s;
       strcpy (xref_name, file);
-      t = (char *) rindex (xref_name, '/');
+      t = rindex (xref_name, '/');
       ++t;
       *t++ = '.';
       strcpy (t, s);

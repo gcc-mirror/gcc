@@ -34,15 +34,15 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HAVE_STRING_H
 #include <string.h>
-#else
-extern char * rindex ();
 #endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
 extern char * getenv ();
 #endif
-extern char * getpwd PROTO((void));
+
+extern char *rindex ();
+extern char *getpwd PROTO((void));
 
 static tree repo_get_id PROTO((tree));
 static char *save_string PROTO((char *, int));
@@ -277,7 +277,7 @@ get_base_filename (filename)
       return NULL;
     }
 
-  p = (char *) rindex (filename, '/');
+  p = rindex (filename, '/');
   if (p)
     return p+1;
   else
@@ -294,10 +294,10 @@ open_repo_file (filename)
   if (s == NULL)
     return;
 
-  p = (char *) rindex (s, '/');
+  p = rindex (s, '/');
   if (! p)
     p = s;
-  p = (char *) rindex (p, '.');
+  p = rindex (p, '.');
   if (! p)
     p = s + strlen (s);
 
