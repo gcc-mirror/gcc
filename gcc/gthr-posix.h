@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -158,7 +158,7 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
     return NULL;
  
   if ( !(pthread_create(&new_thread_handle, NULL, (void *)func, arg)) )
-    thread_id = *(objc_thread_t *)&new_thread_handle;
+    thread_id = (objc_thread_t) new_thread_handle;
   else
     thread_id = NULL;
   
@@ -246,13 +246,9 @@ static inline objc_thread_t
 __gthread_objc_thread_id(void)
 {
   if (__gthread_active_p ())
-    {
-      pthread_t self = pthread_self();
-
-      return *(objc_thread_t *)&self;
-    }
+    return (objc_thread_t) pthread_self();
   else
-    return (objc_thread_t)1;
+    return (objc_thread_t) 1;
 }
 
 /* Sets the thread's local storage pointer. */
