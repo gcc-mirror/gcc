@@ -4025,7 +4025,7 @@ mips_build_va_list ()
 
       TYPE_FIELDS (record) = f_fpr;
       TREE_CHAIN (f_fpr) = f_rem;
-      TREE_CHAIN (f_gpr) = f_gpr;
+      TREE_CHAIN (f_rem) = f_gpr;
 
       layout_type (record);
 
@@ -4059,7 +4059,7 @@ mips_va_start (stdarg_p, valist, nextarg)
 
 	  f_fpr = TYPE_FIELDS (va_list_type_node);
 	  f_rem = TREE_CHAIN (f_fpr);
-	  f_gpr = TREE_CHAIN (f_gpr);
+	  f_gpr = TREE_CHAIN (f_rem);
 
 	  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
 	  rem = build (COMPONENT_REF, TREE_TYPE (f_rem), valist, f_rem);
@@ -4168,7 +4168,7 @@ mips_va_arg (valist, type)
 
 	  f_fpr = TYPE_FIELDS (va_list_type_node);
 	  f_rem = TREE_CHAIN (f_fpr);
-	  f_gpr = TREE_CHAIN (f_gpr);
+	  f_gpr = TREE_CHAIN (f_rem);
 
 	  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
 	  rem = build (COMPONENT_REF, TREE_TYPE (f_rem), valist, f_rem);
@@ -4218,7 +4218,7 @@ mips_va_arg (valist, type)
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	}
 
-      t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr, rsize);
+      t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr, size_int (rsize));
       TREE_SIDE_EFFECTS (t) = 1;
       r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
       if (r != addr_rtx)

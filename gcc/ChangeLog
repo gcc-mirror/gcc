@@ -1,3 +1,11 @@
+Mon Oct 11 13:29:06 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/mips/mips.c (mips_build_va_list): Correct
+	TREE_CHAIN setting when hard-float.
+	(mips_va_start): Use corrected setting.
+	(mips_va_arg): Likewise.  Also pass a tree to build of
+	POSTINCREMENT_EXPR rather than a naked 'int'.
+
 Sun Oct 10 18:27:27 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc.h (ggc_push_context): Fix comment.
