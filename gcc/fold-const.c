@@ -7176,16 +7176,6 @@ fold_binary (tree expr)
 
   switch (code)
     {
-    case RANGE_EXPR:
-      if (TREE_CONSTANT (t) != wins)
-	{
-	  tem = copy_node (t);
-	  TREE_CONSTANT (tem) = wins;
-	  TREE_INVARIANT (tem) = wins;
-	  return tem;
-	}
-      return t;
-
     case PLUS_EXPR:
       /* A + (-B) -> A - B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
