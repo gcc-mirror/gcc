@@ -5683,7 +5683,7 @@ grokfndecl (tree ctype,
 
       if (old_decl)
 	{
-	  bool ok;
+	  tree ok;
 
 	  /* Since we've smashed OLD_DECL to its
 	     DECL_TEMPLATE_RESULT, we must do the same to DECL.  */
