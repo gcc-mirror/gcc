@@ -1,5 +1,9 @@
 2005-01-03  Richard Henderson  <rth@redhat.com>
 
+	* g++.old-deja/g++.ext/attrib5.C: Move the alias after the referent.
+
+2005-01-03  Richard Henderson  <rth@redhat.com>
+
 	* gcc.dg/vect/vect.exp: Enable for ia64.
 	* lib/target-supports.exp (check_effective_target_vect_int): Likewise.
 	(check_effective_target_vect_float): Likewise.
