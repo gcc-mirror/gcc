@@ -1,3 +1,12 @@
+2003-12-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	Backport from mainline:
+	2003-12-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+		PR c++/13507
+		* decl.c (duplicate_decls): Use build_type_attribute_variant to
+		merge attributes.
+
 2003-12-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/13445
