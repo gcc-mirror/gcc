@@ -312,7 +312,7 @@ single_insn_src_p (op, mode)
 	  if (CONSTANT_P (arg)
 	      && !(GET_CODE (arg) == CONST_INT
 		   && (SMALL_INT (arg)
-		       || INTVAL (arg) & 0xffff == 0)))
+		       || (INTVAL (arg) & 0xffff) == 0)))
 	    return 0;
 	}
     case IOR:
@@ -322,7 +322,7 @@ single_insn_src_p (op, mode)
       if (CONSTANT_P (XEXP (op, 1))
 	  && !(GET_CODE (XEXP (op, 1)) == CONST_INT
 	       && (SMALL_INT (XEXP (op, 1))
-		   || INTVAL (XEXP (op, 1)) & 0xffff == 0)))
+		   || (INTVAL (XEXP (op, 1)) & 0xffff) == 0)))
 	return 0;
 
     case ASHIFT:

@@ -1,3 +1,8 @@
+Thu Nov 19 22:20:51 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i860.c (single_insn_src_p): Add missing parens.
+	* ginclude/math-3300.h: Likewise.
+
 Thu Nov 19 20:55:59 1998  H.J. Lu  (hjl@gnu.org)
 
 	* regclass.c (init_reg_sets_1): Add prototype.
