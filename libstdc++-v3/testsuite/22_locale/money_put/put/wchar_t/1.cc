@@ -36,13 +36,8 @@ void test01()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_hk = __gnu_test::try_named_locale("en_HK");
-  locale loc_fr = __gnu_test::try_named_locale("fr_FR@euro");
   locale loc_de = __gnu_test::try_named_locale("de_DE@euro");
   VERIFY( loc_c != loc_de );
-  VERIFY( loc_hk != loc_fr );
-  VERIFY( loc_hk != loc_de );
-  VERIFY( loc_de != loc_fr );
 
   // cache the moneypunct facets
   typedef moneypunct<wchar_t, true> __money_true;
@@ -54,14 +49,8 @@ void test01()
   // total EPA budget FY 2002
   const wstring digits1(L"720000000000");
 
-  // est. cost, national missile "defense", expressed as a loss in USD 2001
-  const wstring digits2(L"-10000000000000");  
-
-  // not valid input
-  const wstring digits3(L"-A"); 
-
   // input less than frac_digits
-  const wstring digits4(L"-1");
+  const wstring digits2(L"-1");
   
   // cache the money_put facet
   wostringstream oss;
@@ -104,14 +93,14 @@ void test01()
   // test various fill strategies
   oss.str(empty);
   oss.width(20);
-  iterator_type os_it10 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
+  iterator_type os_it10 = mon_put.put(oss.rdbuf(), true, oss, '*', digits2);
   wstring result10 = oss.str();
   VERIFY( result10 == L"***************-,01*");
 
   oss.str(empty);
   oss.width(20);
   oss.setf(ios_base::internal);
-  iterator_type os_it11 = mon_put.put(oss.rdbuf(), true, oss, '*', digits4);
+  iterator_type os_it11 = mon_put.put(oss.rdbuf(), true, oss, '*', digits2);
   wstring result11 = oss.str();
   VERIFY( result11 == L"-,01****************");
 }
