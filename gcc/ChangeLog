@@ -1,3 +1,14 @@
+2001-04-04  Zack Weinberg  <zackw@stanford.edu>
+
+	* config.gcc: Remove default for xm_file.  Clean up local
+	machine type handling.  Remove settings of xm_file to
+	something that doesn't exist.  In the big switch, set xm_file,
+	don't append to it (the value before the big switch is always
+	null).  Don't force build_xm_file or host_xm_file to have a value.
+	* configure.in: Remove default for xm_file.  Do not special       
+	case $cpu/xm-$cpu.h not existing.                          
+	* configure: Regenerate.
+
 2001-04-04  Diego Novillo  <dnovillo@redhat.com>
 
 	* simplify-rtx.c (simplify_binary_operation): Check for overflow
