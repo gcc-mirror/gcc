@@ -1,6 +1,6 @@
 // Build don't link:
 // Special g++ Options:
-// excess errors test - XFAIL *-*-*
+// excess errors test
 
 template <class T>
 struct B 
