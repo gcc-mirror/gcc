@@ -2394,9 +2394,19 @@ eligible_for_epilogue_delay (trial, slot)
   /* Otherwise, only operations which can be done in tandem with
      a `restore' or `return' insn can go into the delay slot.  */
   if (GET_CODE (SET_DEST (pat)) != REG
-      || REGNO (SET_DEST (pat)) >= 32
       || REGNO (SET_DEST (pat)) < 24)
     return 0;
+
+  /* If this instruction sets up floating point register and we have a return
+     instruction, it can probably go in.  But restore will not work
+     with FP_REGS.  */
+  if (REGNO (SET_DEST (pat)) >= 32)
+    {
+      if (TARGET_V9 && ! epilogue_renumber (&pat, 1)
+	  && (get_attr_in_uncond_branch_delay (trial) == IN_BRANCH_DELAY_TRUE))
+	return 1;
+      return 0;
+    }
 
   /* The set of insns matched here must agree precisely with the set of
      patterns paired with a RETURN in sparc.md.  */
