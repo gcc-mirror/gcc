@@ -3394,8 +3394,10 @@ build_over_call (cand, args, flags)
 	  /* Don't copy the padding byte; it might not have been allocated
 	     if to is a base subobject.  */
 	  if (is_empty_class (DECL_CLASS_CONTEXT (fn)))
-	    return build (COMPOUND_EXPR, TREE_TYPE (to),
-			  cp_convert (void_type_node, arg), to);
+	    return build_unary_op
+	      (ADDR_EXPR, build (COMPOUND_EXPR, TREE_TYPE (to),
+				 cp_convert (void_type_node, arg), to),
+	       0);
 
 	  val = build (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
 	  TREE_SIDE_EFFECTS (val) = 1;
