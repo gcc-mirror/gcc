@@ -21,6 +21,8 @@
 // 24.5.1 Template class istream_iterator
 
 #include <iterator>
+#include <sstream>
+#include <testsuite_hooks.h>
 
 void test01()
 {
@@ -48,8 +50,42 @@ void test01()
 // Instantiate
 template class std::istream_iterator<char>;
 
+void test02()
+{
+  using namespace std;
+
+  string st("R.Rorty");
+
+  string re_01, re_02, re_03;
+  re_02 = ",H.Putnam";
+  re_03 = "D.Dennett,xxx,H.Putnam";
+  
+  stringbuf sb_01(st);
+  istream is_01(&sb_01);
+  istream_iterator<char> inb_01(is_01);
+  istream_iterator<char> ine_01;
+  re_01.assign(inb_01, ine_01);
+  VERIFY( re_01 == "R.Rorty" );
+
+  stringbuf sb_02(st);
+  istream is_02(&sb_02);
+  istream_iterator<char> inb_02(is_02);
+  istream_iterator<char> ine_02;
+  re_02.insert(re_02.begin(), inb_02, ine_02);
+  VERIFY( re_02 == "R.Rorty,H.Putnam" );
+
+  stringbuf sb_03(st);
+  istream is_03(&sb_03);
+  istream_iterator<char> inb_03(is_03);
+  istream_iterator<char> ine_03;
+  re_03.replace(re_03.begin() + 10, re_03.begin() + 13,
+		inb_03, ine_03);
+  VERIFY( re_03 == "D.Dennett,R.Rorty,H.Putnam" );
+}
+
 int main() 
 { 
   test01();
+  test02();
   return 0;
 }

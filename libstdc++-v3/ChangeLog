@@ -1,3 +1,8 @@
+2002-03-28  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/24_iterators/istream_iterator.cc
+	(test02): New tests.
+
 2002-03-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
             Paolo Carlini  <pcarlini@unitus.it>
 
