@@ -1230,7 +1230,7 @@ __builtin_new (sz)
 
 #ifdef __GNU_LIBRARY__
   /* Avoid forcing the library's meaning of `write' on the user program
-     by using the "internal" name (for use within the library)
+     by using the "internal" name (for use within the library)  */
 #define write(fd, buf, n)	__write((fd), (buf), (n))
 #endif
 
