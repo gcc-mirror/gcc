@@ -1,3 +1,10 @@
+Don Feb 28 11:24:30 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (purge_dead_edges): Fix handling of EH edges.
+
+	* i386.h (CONDITIONAL_REGISTER_USAGE): Do not write to
+	PIC_OFFSET_TABLE_REGNUM when it is INVALID_REGNUM
+
 Don Feb 28 11:07:36 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (BB_REACHABLE): Renumber.
