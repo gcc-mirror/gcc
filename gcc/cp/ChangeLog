@@ -23,7 +23,6 @@
 	(pp_cxx_nonconsecutive_character): Tidy.
 	(pp_cxx_conversion_function_id): New function.
 	(pp_cxx_template_id): Likewise.
-	(pp_cxx_class_name): Likewise.
 	(pp_cxx_template_keyword_if_needed): Likewise.
 	(pp_cxx_nested_name_specifier): Likewise.
 	(pp_cxx_unqualified_id): Tidy
