@@ -1,3 +1,7 @@
+2004-03-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (current_binding_level): Define as an lvalue.
+
 2004-02-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13635
