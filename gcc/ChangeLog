@@ -1,5 +1,14 @@
 2002-10-03  Richard Henderson  <rth@redhat.com>
 
+	* config/m68k/m68k.h (OVERRIDE_OPTIONS): Move additional code ...
+	* config/m68k/m68k.c (override_options): ... here.
+	* config/m68k/m68kelf.h (OVERRIDE_OPTIONS): Remove.
+	* config/m68k/m68kv4.h (OVERRIDE_OPTIONS): Remove.
+	* config/m68k/linux.h (SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	* config/m68k/netbsd-elf.h (SUBTARGET_OVERRIDE_OPTIONS): Remove.
+
+2002-10-03  Richard Henderson  <rth@redhat.com>
+
 	* real.h (struct real_value): Use ENUM_BITFIELD.
 
 2002-10-03  Richard Henderson  <rth@redhat.com>
