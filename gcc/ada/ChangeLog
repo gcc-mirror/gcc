@@ -1,7 +1,7 @@
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* trans.c (build_unit_elab, set_lineno): Rename lineno to
-	input_line. 
+	* trans.c (tree_transform, build_unit_elab,
+	set_lineno): Rename lineno to input_line.
 	* utils.c (pushdecl, create_label_decl, begin_subprog_body,
 	end_subprog_body): Likewise.
 	* utils2.c (build_call_raise): Likewise.
