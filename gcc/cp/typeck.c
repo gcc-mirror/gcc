@@ -4766,11 +4766,24 @@ build_compound_expr (tree list)
   return build (COMPOUND_EXPR, TREE_TYPE (rest), first, rest);
 }
 
+/* Issue an error message if casting from SRC_TYPE to DEST_TYPE casts
+   away constness.  */
+
+static void
+check_for_casting_away_constness (tree src_type, tree dest_type)
+{
+  if (casts_away_constness (src_type, dest_type))
+    error ("static_cast from type `%T' to type `%T' casts away constness",
+	   src_type, dest_type);
+}
+
+/* Return an expression representing static_cast<TYPE>(EXPR).  */
+
 tree
 build_static_cast (tree type, tree expr)
 {
   tree intype;
-  int ok;
+  tree result;
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -4791,88 +4804,149 @@ build_static_cast (tree type, tree expr)
       && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
     expr = TREE_OPERAND (expr, 0);
 
-  if (TREE_CODE (type) == VOID_TYPE)
-    {
-      expr = convert_to_void (expr, /*implicit=*/NULL);
-      return expr;
-    }
-
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    return (convert_from_reference
-	    (convert_to_reference (type, expr, CONV_STATIC|CONV_IMPLICIT,
-				   LOOKUP_COMPLAIN, NULL_TREE)));
-
-  if (IS_AGGR_TYPE (type))
-    return build_cplus_new (type, (build_special_member_call
-				   (NULL_TREE, complete_ctor_identifier, 
-				    build_tree_list (NULL_TREE, expr),
-				    TYPE_BINFO (type), LOOKUP_NORMAL)));
-  
   intype = TREE_TYPE (expr);
-
-  /* FIXME handle casting to array type.  */
-
-  ok = 0;
-  if (IS_AGGR_TYPE (intype)
-      ? can_convert_arg (type, intype, expr)
-      : can_convert_arg (strip_all_pointer_quals (type),
-                         strip_all_pointer_quals (intype), expr))
-    /* This is a standard conversion.  */
-    ok = 1;
-  else if (TYPE_PTROB_P (type) && TYPE_PTROB_P (intype))
-    {
-      /* They're pointers to objects. They must be aggregates that
-         are related non-virtually.  */
-      base_kind kind;
-      
-      if (IS_AGGR_TYPE (TREE_TYPE (type)) && IS_AGGR_TYPE (TREE_TYPE (intype))
-	  && lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
-			  ba_ignore | ba_quiet, &kind)
-	  && kind != bk_via_virtual)
-	ok = 1;
-    }
-  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
-    {
-      /* They're pointers to members. The pointed to objects must be
-	 the same (ignoring CV qualifiers), and the containing classes
-	 must be related non-virtually.  */
-      base_kind kind;
-      
-      if (same_type_p
-	  (strip_all_pointer_quals (TREE_TYPE (TREE_TYPE (type))),
-	   strip_all_pointer_quals (TREE_TYPE (TREE_TYPE (intype))))
- 	  && (lookup_base (TYPE_OFFSET_BASETYPE (TREE_TYPE (intype)),
-			   TYPE_OFFSET_BASETYPE (TREE_TYPE (type)),
-			   ba_ignore | ba_quiet, &kind))
- 	  && kind != bk_via_virtual)
-  	ok = 1;
-    }
-  else if (TREE_CODE (intype) != BOOLEAN_TYPE
-	   && TREE_CODE (type) != ARRAY_TYPE
-	   && TREE_CODE (type) != FUNCTION_TYPE
-	   && can_convert (intype, strip_all_pointer_quals (type)))
-    ok = 1;
-  else if (TREE_CODE (intype) == ENUMERAL_TYPE
-           && TREE_CODE (type) == ENUMERAL_TYPE)
-    /* DR 128: "A value of integral _or enumeration_ type can be explicitly
-       converted to an enumeration type."
-       The integral to enumeration will be accepted by the previous clause.
-       We need to explicitly check for enumeration to enumeration.  */
-    ok = 1;
 
   /* [expr.static.cast]
 
-     The static_cast operator shall not be used to cast away
-     constness.  */
-  if (ok && casts_away_constness (intype, type))
+     An expression e can be explicitly converted to a type T using a
+     static_cast of the form static_cast<T>(e) if the declaration T
+     t(e);" is well-formed, for some invented temporary variable
+     t.  */
+  result = perform_direct_initialization_if_possible (type, expr);
+  if (result)
+    return result;
+  
+  /* [expr.static.cast]
+
+     Any expression can be explicitly converted to type cv void.  */
+  if (TREE_CODE (type) == VOID_TYPE)
+    return convert_to_void (expr, /*implicit=*/NULL);
+
+  /* [expr.static.cast]
+
+     An lvalue of type "cv1 B", where B is a class type, can be cast
+     to type "reference to cv2 D", where D is a class derived (clause
+     _class.derived_) from B, if a valid standard conversion from
+     "pointer to D" to "pointer to B" exists (_conv.ptr_), cv2 is the
+     same cv-qualification as, or greater cv-qualification than, cv1,
+     and B is not a virtual base class of D.  */
+  if (TREE_CODE (type) == REFERENCE_TYPE
+      && CLASS_TYPE_P (TREE_TYPE (type))
+      && CLASS_TYPE_P (intype)
+      && real_non_cast_lvalue_p (expr)
+      && DERIVED_FROM_P (intype, TREE_TYPE (type))
+      && can_convert (build_pointer_type (TYPE_MAIN_VARIANT (intype)),
+		      build_pointer_type (TYPE_MAIN_VARIANT 
+					  (TREE_TYPE (type))))
+      && at_least_as_qualified_p (TREE_TYPE (type), intype))
     {
-      error ("static_cast from type `%T' to type `%T' casts away constness",
-		intype, type);
-      return error_mark_node;
+      /* At this point we have checked all of the conditions except
+	 that B is not a virtual base class of D.  That will be
+	 checked by build_base_path.  */
+      tree base = lookup_base (TREE_TYPE (type), intype, ba_any, NULL);
+
+      /* Convert from B* to D*.  */
+      expr = build_base_path (MINUS_EXPR, build_address (expr), 
+			      base, /*nonnull=*/false);
+      /* Convert the pointer to a reference.  */
+      return build_nop (type, expr);
     }
 
-  if (ok)
-    return build_c_cast (type, expr);
+  /* [expr.static.cast]
+
+     The inverse of any standard conversion sequence (clause _conv_),
+     other than the lvalue-to-rvalue (_conv.lval_), array-to-pointer
+     (_conv.array_), function-to-pointer (_conv.func_), and boolean
+     (_conv.bool_) conversions, can be performed explicitly using
+     static_cast subject to the restriction that the explicit
+     conversion does not cast away constness (_expr.const.cast_), and
+     the following additional rules for specific cases:  */
+  /* For reference, the conversions not excluded are: integral
+     promotions, floating point promotion, integral conversions,
+     floating point conversions, floating-integral conversions,
+     pointer conversions, and pointer to member conversions.  */
+  if ((ARITHMETIC_TYPE_P (type) && ARITHMETIC_TYPE_P (intype))
+      /* DR 128
+
+         A value of integral _or enumeration_ type can be explicitly
+	 converted to an enumeration type.  */
+      || (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	  && INTEGRAL_OR_ENUMERATION_TYPE_P (intype)))
+      /* Really, build_c_cast should defer to this function rather
+	 than the other way around.  */
+      return build_c_cast (type, expr);
+  if (TYPE_PTR_P (type) && TYPE_PTR_P (intype)
+      && CLASS_TYPE_P (TREE_TYPE (type))
+      && CLASS_TYPE_P (TREE_TYPE (intype))
+      && can_convert (build_pointer_type (TYPE_MAIN_VARIANT 
+					  (TREE_TYPE (intype))), 
+		      build_pointer_type (TYPE_MAIN_VARIANT 
+					  (TREE_TYPE (type)))))
+    {
+      tree base;
+
+      check_for_casting_away_constness (intype, type);
+      base = lookup_base (TREE_TYPE (type), TREE_TYPE (intype), 
+			  ba_check | ba_quiet, NULL);
+      return build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false);
+    }
+  if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
+      || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
+    {
+      tree c1;
+      tree c2;
+      tree t1;
+      tree t2;
+
+      c1 = TYPE_PTRMEM_CLASS_TYPE (intype);
+      c2 = TYPE_PTRMEM_CLASS_TYPE (type);
+
+      if (TYPE_PTRMEM_P (type))
+	{
+	  t1 = (build_ptrmem_type 
+		(c1,
+		 TYPE_MAIN_VARIANT (TYPE_PTRMEM_POINTED_TO_TYPE (intype))));
+	  t2 = (build_ptrmem_type 
+		(c2,
+		 TYPE_MAIN_VARIANT (TYPE_PTRMEM_POINTED_TO_TYPE (type))));
+	}
+      else
+	{
+	  t1 = intype;
+	  t2 = type;
+	}
+      if (can_convert (t1, t2))
+	{
+	  check_for_casting_away_constness (intype, type);
+	  if (TYPE_PTRMEM_P (type))
+	    {
+	      if (TREE_CODE (expr) == PTRMEM_CST)
+		expr = cplus_expand_constant (expr);
+	      expr = cp_build_binary_op (PLUS_EXPR, 
+					 cp_convert (ptrdiff_type_node, expr),
+					 get_delta_difference (c1, c2, 
+							       /*force=*/1));
+	      return build_nop (type, expr);
+	    }
+	  else
+	    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 
+				     /*force=*/1);
+	}
+    }
+    
+  /* [expr.static.cast]
+
+     An rvalue of type "pointer to cv void" can be explicitly
+     converted to a pointer to object type.  A value of type pointer
+     to object converted to "pointer to cv void" and back to the
+     original pointer type will have its original value.  */
+  if (TREE_CODE (intype) == POINTER_TYPE 
+      && VOID_TYPE_P (TREE_TYPE (intype))
+      && TYPE_PTROB_P (type))
+    {
+      check_for_casting_away_constness (intype, type);
+      return build_nop (type, expr);
+    }
 
   error ("invalid static_cast from type `%T' to type `%T'", intype, type);
   return error_mark_node;

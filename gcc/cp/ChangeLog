@@ -1,3 +1,14 @@
+2003-06-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10931
+	* call.c (convert_like): Pass issue_conversion_warnings.
+	(convert_like_with_context): Likewise.
+	(convert_like_real): Add issue_conversion_warnings parameter.
+	(perform_direct_initialization_if_possible): New function.
+	* cp-tree.h (perform_direct_initialization_if_possible): Declare it.
+	* typeck.c (check_for_casting_away_constness): New function.
+	(build_static_cast): Rewrite.
+	
 2003-06-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (enforce_access): Assert we get a binfo.
