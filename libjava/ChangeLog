@@ -1,3 +1,19 @@
+2005-04-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/20750
+	* Makefile.am (AM_CXXFLAGS): Define JAVA_HOME.
+	* Makefile.in: Regenerate.
+	* configure.ac: Add --with-java-home option.
+	* configure: Regenerate.
+	* external/Makefile.in: Regenerate.
+	* external/sax/Makefile.in: Regenerate.
+	* external/w3c_dom/Makefile.in: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* java/lang/natRuntime.cc (insertSystemProperties): Set java.home
+	to JAVA_HOME macro.
+
 2005-04-05  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNI_GetAnyFieldID): Throw ClassNotFoundException.

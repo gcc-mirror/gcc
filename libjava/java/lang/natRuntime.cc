@@ -398,7 +398,7 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   // part we do this because most people specify only --prefix and
   // nothing else when installing gcj.  Plus, people are free to
   // redefine `java.home' with `-D' if necessary.
-  SET ("java.home", PREFIX);
+  SET ("java.home", JAVA_HOME);
   SET ("gnu.classpath.home", PREFIX);
   // This is set to $(libdir) because we use this to find .security
   // files at runtime.
