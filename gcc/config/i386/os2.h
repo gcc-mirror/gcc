@@ -22,9 +22,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef DEFAULT_TARGET_MACHINE
 #define DEFAULT_TARGET_MACHINE "i386-os2"
 #endif
-#ifndef OBJECT_SUFFIX
-#define OBJECT_SUFFIX "obj"
-#endif
 #ifndef LINK_SPEC
 #define LINK_SPEC "/st:1048576/pm:vio/noi/a:16/e/bas:65536/nol"
 #endif
