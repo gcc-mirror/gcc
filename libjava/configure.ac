@@ -1105,7 +1105,7 @@ if test ! -f gnu/classpath/Configuration.java; then
   # but we add /dev/null to the input list so that grep will print the
   # filename of Configuration.java in case it finds any matches.
   if grep @ gnu/classpath/Configuration.java /dev/null; then
-    AC_MSG_ERROR([configure.in is missing the substitutions above])
+    AC_MSG_ERROR([configure.ac is missing the substitutions above])
   fi
 fi
 

@@ -1,5 +1,12 @@
 2004-08-20  Michael Koch  <konqueror@gmx.de>
 
+	* configure.in: Renamed to configure.ac.
+	* configure.ac: New file.
+	* configure, Makefile.in, gcj/Makefile.in, include/Makefile.in
+	include/config.h.in, testsuite/Makefile.in: Regenerated.
+
+2004-08-20  Michael Koch  <konqueror@gmx.de>
+
 	* configure.in: Rewrote some obsolete stuff for autoconf 2.59.
 	* aclocal.m4, configure: Regenerated.
 
