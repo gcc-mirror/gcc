@@ -8651,10 +8651,59 @@ patch_assignment (node, wfl_op1, wfl_op2)
   if (error_found)
     return error_mark_node;
 
-  /* If we built a compound expression as the result of a reference
-     assignment into an array element, return it here. */
-  if (TREE_CODE (node) == COMPOUND_EXPR)
-    return node;
+  /* 10.10: Array Store Exception runtime check */
+  if (!flag_emit_class_files
+      && lvalue_from_array 
+      && JREFERENCE_TYPE_P (TYPE_ARRAY_ELEMENT (lhs_type))
+      && !CLASS_FINAL (TYPE_NAME (GET_SKIP_TYPE (rhs_type))))
+    {
+      tree check;
+      tree base = lvalue;
+
+      /* We need to retrieve the right argument for _Jv_CheckArrayStore */
+      if (TREE_CODE (lvalue) == COMPOUND_EXPR)
+	base = TREE_OPERAND (lvalue, 0);
+      else
+	{
+	  if (flag_bounds_check)
+	    base = TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (base, 0), 1), 0);
+	  else
+	    base = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
+	}
+
+      /* Build the invocation of _Jv_CheckArrayStore */
+      check = build (CALL_EXPR, void_type_node,
+		     build_address_of (soft_checkarraystore_node),
+		     tree_cons (NULL_TREE, base,
+				build_tree_list (NULL_TREE, new_rhs)),
+		     NULL_TREE);
+      TREE_SIDE_EFFECTS (check) = 1;
+
+      /* We have to decide on an insertion point */
+      if (TREE_CODE (lvalue) == COMPOUND_EXPR)
+	{
+	  tree t;
+	  if (flag_bounds_check)
+	    {
+	      t = TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (lvalue, 1), 0), 0);
+	      TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (lvalue, 1), 0), 0) =
+		build (COMPOUND_EXPR, void_type_node, t, check);
+	    }
+	  else
+	    TREE_OPERAND (lvalue, 1) = build (COMPOUND_EXPR, lhs_type,
+					      check, TREE_OPERAND (lvalue, 1));
+	}
+      else 
+	{
+	  /* Make sure the bound check will happen before the store check */
+	  if (flag_bounds_check)
+	    TREE_OPERAND (TREE_OPERAND (lvalue, 0), 0) =
+	      build (COMPOUND_EXPR, void_type_node,
+		     TREE_OPERAND (TREE_OPERAND (lvalue, 0), 0), check);
+	  else
+	    lvalue = build (COMPOUND_EXPR, lhs_type, check, lvalue);
+	}
+    }
 
   TREE_OPERAND (node, 0) = lvalue;
   TREE_OPERAND (node, 1) = new_rhs;
