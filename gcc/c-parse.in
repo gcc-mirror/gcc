@@ -1620,11 +1620,11 @@ declarator:
 
 after_type_declarator:
 	  '(' maybe_attribute after_type_declarator ')'
-		{ $$ = $2 ? tree_cons ($2, $3, NULL_TREE) : $3; }
+		{ $$ = $2 ? build_attrs_declarator ($2, $3) : $3; }
 	| after_type_declarator '(' parmlist_or_identifiers  %prec '.'
-		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
+		{ $$ = build_function_declarator ($3, $1); }
 	| after_type_declarator array_declarator  %prec '.'
-		{ $$ = set_array_declarator_type ($2, $1, false); }
+		{ $$ = set_array_declarator_inner ($2, $1, false); }
 	| '*' maybe_type_quals_attrs after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
@@ -1644,9 +1644,9 @@ parm_declarator:
 
 parm_declarator_starttypename:
 	  parm_declarator_starttypename '(' parmlist_or_identifiers  %prec '.'
-		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
+		{ $$ = build_function_declarator ($3, $1); }
 	| parm_declarator_starttypename array_declarator  %prec '.'
-		{ $$ = set_array_declarator_type ($2, $1, false); }
+		{ $$ = set_array_declarator_inner ($2, $1, false); }
 	| TYPENAME
 @@ifobjc
 	| OBJECTNAME
@@ -1655,15 +1655,15 @@ parm_declarator_starttypename:
 
 parm_declarator_nostarttypename:
 	  parm_declarator_nostarttypename '(' parmlist_or_identifiers  %prec '.'
-		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
+		{ $$ = build_function_declarator ($3, $1); }
 	| parm_declarator_nostarttypename array_declarator  %prec '.'
-		{ $$ = set_array_declarator_type ($2, $1, false); }
+		{ $$ = set_array_declarator_inner ($2, $1, false); }
 	| '*' maybe_type_quals_attrs parm_declarator_starttypename  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| '*' maybe_type_quals_attrs parm_declarator_nostarttypename  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| '(' maybe_attribute parm_declarator_nostarttypename ')'
-		{ $$ = $2 ? tree_cons ($2, $3, NULL_TREE) : $3; }
+		{ $$ = $2 ? build_attrs_declarator ($2, $3) : $3; }
 	;
 
 /* A declarator allowed whether or not there has been
@@ -1671,13 +1671,13 @@ parm_declarator_nostarttypename:
 
 notype_declarator:
 	  notype_declarator '(' parmlist_or_identifiers  %prec '.'
-		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
+		{ $$ = build_function_declarator ($3, $1); }
 	| '(' maybe_attribute notype_declarator ')'
-		{ $$ = $2 ? tree_cons ($2, $3, NULL_TREE) : $3; }
+		{ $$ = $2 ? build_attrs_declarator ($2, $3) : $3; }
 	| '*' maybe_type_quals_attrs notype_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| notype_declarator array_declarator  %prec '.'
-		{ $$ = set_array_declarator_type ($2, $1, false); }
+		{ $$ = set_array_declarator_inner ($2, $1, false); }
 	| IDENTIFIER
 	;
 
@@ -1909,17 +1909,15 @@ absdcl:   /* an absolute declarator */
 
 absdcl_maybe_attribute:   /* absdcl maybe_attribute, but not just attributes */
 	/* empty */
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 NULL_TREE),
-					all_prefix_attributes); }
+		{ $$ = build_c_parm (current_declspecs, all_prefix_attributes,
+				     NULL_TREE); }
 	| absdcl1
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 $1),
-					all_prefix_attributes); }
+		{ $$ = build_c_parm (current_declspecs, all_prefix_attributes,
+				     $1); }
 	| absdcl1_noea attributes
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 $1),
-					chainon ($2, all_prefix_attributes)); }
+		{ $$ = build_c_parm (current_declspecs,
+				     chainon ($2, all_prefix_attributes),
+				     $1); }
 	;
 
 absdcl1:  /* a nonempty absolute declarator */
@@ -1942,15 +1940,15 @@ absdcl1_ea:
 
 direct_absdcl1:
 	  '(' maybe_attribute absdcl1 ')'
-		{ $$ = $2 ? tree_cons ($2, $3, NULL_TREE) : $3; }
+		{ $$ = $2 ? build_attrs_declarator ($2, $3) : $3; }
 	| direct_absdcl1 '(' parmlist
-		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
+		{ $$ = build_function_declarator ($3, $1); }
 	| direct_absdcl1 array_declarator
-		{ $$ = set_array_declarator_type ($2, $1, true); }
+		{ $$ = set_array_declarator_inner ($2, $1, true); }
 	| '(' parmlist
-		{ $$ = build_nt (CALL_EXPR, NULL_TREE, $2, NULL_TREE); }
+		{ $$ = build_function_declarator ($2, NULL_TREE); }
 	| array_declarator
-		{ $$ = set_array_declarator_type ($1, NULL_TREE, true); }
+		{ $$ = set_array_declarator_inner ($1, NULL_TREE, true); }
 	;
 
 /* The [...] part of a declarator for an array type.  */
@@ -2526,22 +2524,19 @@ parms:
    as found in a parmlist.  */
 parm:
 	  declspecs_ts setspecs parm_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 $3),
-					chainon ($4, all_prefix_attributes));
+		{ $$ = build_c_parm (current_declspecs,
+				     chainon ($4, all_prefix_attributes), $3);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs notype_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 $3),
-					chainon ($4, all_prefix_attributes));
+		{ $$ = build_c_parm (current_declspecs,
+				     chainon ($4, all_prefix_attributes), $3);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs absdcl_maybe_attribute
 		{ $$ = $3;
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 $3),
-					chainon ($4, all_prefix_attributes));
+		{ $$ = build_c_parm (current_declspecs,
+				     chainon ($4, all_prefix_attributes), $3);
 		  POP_DECLSPEC_STACK; }
 
 	| declspecs_nots setspecs absdcl_maybe_attribute
@@ -2553,22 +2548,19 @@ parm:
    stack.  */
 firstparm:
 	  declspecs_ts_nosa setspecs_fp parm_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 $3),
-					chainon ($4, all_prefix_attributes));
+		{ $$ = build_c_parm (current_declspecs,
+				     chainon ($4, all_prefix_attributes), $3);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts_nosa setspecs_fp notype_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 $3),
-					chainon ($4, all_prefix_attributes));
+		{ $$ = build_c_parm (current_declspecs,
+				     chainon ($4, all_prefix_attributes), $3);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts_nosa setspecs_fp absdcl_maybe_attribute
 		{ $$ = $3;
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nots_nosa setspecs_fp notype_declarator maybe_attribute
-		{ $$ = build_tree_list (build_tree_list (current_declspecs,
-							 $3),
-					chainon ($4, all_prefix_attributes));
+		{ $$ = build_c_parm (current_declspecs,
+				     chainon ($4, all_prefix_attributes), $3);
 		  POP_DECLSPEC_STACK; }
 
 	| declspecs_nots_nosa setspecs_fp absdcl_maybe_attribute

@@ -2629,7 +2629,7 @@ shadow_tag_warned (tree declspecs, int warned)
    nevertheless a complete type (not currently implemented by GCC),
    false otherwise.  The declarator is constructed as an ARRAY_REF
    (to be decoded by grokdeclarator), whose operand 0 is what's on the
-   left of the [] (filled by in set_array_declarator_type) and operand 1
+   left of the [] (filled by in set_array_declarator_inner) and operand 1
    is the expression inside; whose TREE_TYPE is the type qualifiers and
    which has TREE_STATIC set if "static" is used.  */
 
@@ -2661,7 +2661,7 @@ build_array_declarator (tree expr, tree quals, bool static_p,
    C99 grammar.  */
 
 tree
-set_array_declarator_type (tree decl, tree type, bool abstract_p)
+set_array_declarator_inner (tree decl, tree type, bool abstract_p)
 {
   TREE_OPERAND (decl, 0) = type;
   if (abstract_p && (TREE_TYPE (decl) != NULL_TREE || TREE_STATIC (decl)))
@@ -6640,6 +6640,34 @@ build_void_list_node (void)
   return t;
 }
 
+/* Return a structure for a parameter with the given SPECS, ATTRS and
+   DECLARATOR.  */
+
+tree
+build_c_parm (tree specs, tree attrs, tree declarator)
+{
+  return build_tree_list (build_tree_list (specs, declarator), attrs);
+}
+
+/* Return a declarator with nested attributes.  TARGET is the inner
+   declarator to which these attributes apply.  ATTRS are the
+   attributes.  */
+
+tree
+build_attrs_declarator (tree attrs, tree target)
+{
+  return tree_cons (attrs, target, NULL_TREE);
+}
+
+/* Return a declarator for a function with arguments specified by ARGS
+   and return type specified by TARGET.  */
+
+tree
+build_function_declarator (tree args, tree target)
+{
+  return build_nt (CALL_EXPR, target, args, NULL_TREE);
+}
+
 /* Return something to represent absolute declarators containing a *.
    TARGET is the absolute declarator that the * contains.
    TYPE_QUALS_ATTRS is a list of modifiers such as const or volatile
@@ -6656,7 +6684,7 @@ make_pointer_declarator (tree type_quals_attrs, tree target)
   tree itarget = target;
   split_specs_attrs (type_quals_attrs, &quals, &attrs);
   if (attrs != NULL_TREE)
-    itarget = tree_cons (attrs, target, NULL_TREE);
+    itarget = build_attrs_declarator (attrs, target);
   return build1 (INDIRECT_REF, quals, itarget);
 }
 

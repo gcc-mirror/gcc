@@ -1,5 +1,21 @@
 2004-08-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* c-decl.c (set_array_declarator_type): Rename to
+	set_array_declarator_inner.
+	(build_c_parm, build_attrs_declarator, build_function_declarator):
+	New functions.
+	(make_pointer_declarator): Call build_attrs_declarator.
+	* c-tree.h (set_array_declarator_type): Rename to
+	set_array_declarator_inner.
+	(build_c_parm, build_attrs_declarator, build_function_declarator):
+	New prototypes.
+	* c-parse.in (after_type_declarator,
+	parm_declarator_starttypename, parm_declarator_nostarttypename,
+	notype_declarator, absdcl_maybe_attribute, direct_absdcl1, parm,
+	firstparm): Use these functions
+
+2004-08-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* c-decl.c (build_array_declarator, set_array_declarator_type,
 	start_decl, grokdeclarator, grokparms): Change boolean parameters
 	to type bool.

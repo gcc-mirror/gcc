@@ -188,7 +188,7 @@ extern void c_push_function_context (struct function *);
 extern void c_pop_function_context (struct function *);
 extern void push_parm_decl (tree);
 extern tree pushdecl_top_level (tree);
-extern tree set_array_declarator_type (tree, tree, bool);
+extern tree set_array_declarator_inner (tree, tree, bool);
 extern tree builtin_function (const char *, tree, int, enum built_in_class,
 			      const char *, tree);
 extern void shadow_tag (tree);
@@ -200,6 +200,9 @@ extern tree start_struct (enum tree_code, tree);
 extern void store_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
 extern int c_expand_decl (tree);
+extern tree build_c_parm (tree, tree, tree);
+extern tree build_attrs_declarator (tree, tree);
+extern tree build_function_declarator (tree, tree);
 extern tree make_pointer_declarator (tree, tree);
 
 /* in c-objc-common.c */
