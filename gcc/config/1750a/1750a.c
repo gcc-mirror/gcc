@@ -652,7 +652,7 @@ print_operand (file, x, letter)
 
     case CALL:
       fprintf (file, "CALL nargs=");
-      fprintf (file, HOST_PTR_PRINTF, XEXP (x, 1));
+      fprintf (file, HOST_PTR_PRINTF, (PTR) XEXP (x, 1));
       fprintf (file, ", func is either '%s' or '%s'",
 	       XSTR (XEXP (XEXP (x, 0), 1), 0), XSTR (XEXP (x, 0), 1));
       break;

@@ -449,7 +449,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
      HOST_WIDE_INT stack_size ATTRIBUTE_UNUSED;
      HOST_WIDE_INT rounded_stack_size;
      HOST_WIDE_INT struct_value_size ATTRIBUTE_UNUSED;
-     rtx next_arg_reg;
+     rtx next_arg_reg ATTRIBUTE_UNUSED;
      rtx valreg;
      int old_inhibit_defer_pop;
      rtx call_fusage;

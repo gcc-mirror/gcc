@@ -163,7 +163,9 @@ static void output_after_function_constants PARAMS ((void));
 static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
 static unsigned min_align		PARAMS ((unsigned, unsigned));
 static void output_constructor		PARAMS ((tree, int, unsigned));
+#ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PARAMS ((const char *));
+#endif
 static int in_named_entry_eq		PARAMS ((const PTR, const PTR));
 static hashval_t in_named_entry_hash	PARAMS ((const PTR));
 #ifdef ASM_OUTPUT_BSS
@@ -5047,6 +5049,7 @@ weak_finish ()
 /* Remove NAME from the pending list of weak symbols.  This prevents
    the compiler from emitting multiple .weak directives which confuses
    some assemblers.  */
+#ifdef ASM_WEAKEN_LABEL
 static void
 remove_from_pending_weak_list (name)
      const char *name;
@@ -5066,6 +5069,7 @@ remove_from_pending_weak_list (name)
         p = &(t->next);
     }
 }
+#endif /* ASM_WEAKEN_LABEL */
 
 /* Emit an assembler directive to make the symbol for DECL an alias to
    the symbol for TARGET.  */
