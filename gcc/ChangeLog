@@ -1,5 +1,6 @@
 Fri Oct  1 10:56:06 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* md.texi (No Constraints): Delete section.
 	* Makefile.in (genattrtab.o): Don't depend on "insn-config.h".
 	* final.c (final_scan_insn): We always have register constraints.
 	* genattrtab.c: Don't include "insn-config.h".

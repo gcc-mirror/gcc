@@ -667,7 +667,6 @@ have.  Constraints can also require two operands to match.
 * Class Preferences::   Constraints guide which hard register to put things in.
 * Modifiers::           More precise control over effects of constraints.
 * Machine Constraints:: Existing constraints for some particular machines.
-* No Constraints::      Describing a clean machine without constraints.
 @end menu
 @end ifset
 
@@ -1658,32 +1657,6 @@ Memory address aligned to an 8-byte boundary
 Even register
 @end table
 @end table
-
-@ifset INTERNALS
-@node No Constraints
-@subsection Not Using Constraints
-@cindex no constraints
-@cindex not using constraints
-
-Some machines are so clean that operand constraints are not required.  For
-example, on the Vax, an operand valid in one context is valid in any other
-context.  On such a machine, every operand constraint would be @samp{g},
-excepting only operands of ``load address'' instructions which are
-written as if they referred to a memory location's contents but actual
-refer to its address.  They would have constraint @samp{p}.
-
-@cindex empty constraints
-For such machines, instead of writing @samp{g} and @samp{p} for all
-the constraints, you can choose to write a description with empty constraints.
-Then you write @samp{""} for the constraint in every @code{match_operand}.
-Address operands are identified by writing an @code{address} expression
-around the @code{match_operand}, not by their constraints.
-
-When the machine description has just empty constraints, certain parts
-of compilation are skipped, making the compiler faster.  However,
-few machines actually do not need constraints; all machine descriptions
-now in existence use constraints.
-@end ifset
 
 @ifset INTERNALS
 @node Standard Names
