@@ -1,5 +1,9 @@
 1998-09-07  Dave Love  <d.love@dl.ac.uk>
 
+	* ChangeLog.egcs: Deleted.  Entries merged here.
+
+1998-09-07  Dave Love  <d.love@dl.ac.uk>
+
 	* libI77/sfe.c, libI77/dfe.c: Revert last change.
 
 1998-09-06  Dave Love  <d.love@dl.ac.uk>
@@ -30,14 +34,39 @@ Wed Aug 26 23:19:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 1998-07-24  Dave Love  <d.love@dl.ac.uk>
 
-	* Makefile.in (s-libe77, ${srcdir}/configure, g2c.h, Makefile,
-	config.status, rebuilt): Rely on VPATH, dropping explicit use of
+	* Makefile.in (s-libe77, ${srcdir}/configure, g2c.h, Makefile)
+	(config.status, rebuilt): Rely on VPATH, dropping explicit use of
 	$(srcdir) in various places.
 
 1998-07-19  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in (all): Depend on s-libe77, not e77.
 	(.PHONY): Remove e77.
+
+Thu Jul 16 00:58:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* libU77/Makefile.in: Missed one config.h.in -> config.hin change.
+
+	* g2c.hin: Renamed from g2c.h.in.
+	* Makefile.in, configure.in: Changed as needed.
+	* configure: Rebuilt.
+
+	* libU77/config.hin: Renamed from libU77/config.h.in.
+	* Makefile.in, configure.in: Changed as needed.
+	* configure: Rebuilt.
+
+Tue Jul 14 21:35:30 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* Makefile.in (all): Invoke $(MAKE) instead of just make.
+
+Tue Jul 14 02:16:34 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in: stamp-lib* -> s-lib*.
+	* libU77/Makefile.in: Likewise.
+	* libF77/Makefile.in: Likewise.
+	* libI77/Makefile.in: Likewise.
+
+	* libU77/Makefile.in (ALL_CFLAGS): Add -I$(F2C_H_DIR).
 
 Mon Jul 13 13:31:03 1998  Craig Burley  <burley@gnu.org>
 
@@ -56,8 +85,8 @@ Mon Jul 13 13:31:03 1998  Craig Burley  <burley@gnu.org>
 	* configure.in: Move much of testing to new configures in
 	subdirs.  Tidy up handling of RANLIB etc.
 
-	* stamp-h.in, libF77/configure.in, libI77/configure.in,
-	libF77/configure, libI77/configure: New files.
+	* stamp-h.in, libF77/configure.in, libI77/configure.in:
+	* libF77/configure, libI77/configure: New files.
 
 	* libF77/Makefile.in, libI77/Makefile.in, libU77/Makefile.in:
 	Change in step with libf2c/Makefile.in.
@@ -71,6 +100,11 @@ Mon Jul 13 13:31:03 1998  Craig Burley  <burley@gnu.org>
 
 	* libU77/sys_clock_.c: Replace TIMES conditional stuff removed in
 	error by last change.
+
+1998-07-06  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (clean): Don't remove Makefiles, that is done in
+	distclean.
 
 1998-07-06  Dave Love  <d.love@dl.ac.uk>
 
@@ -110,11 +144,40 @@ Mon Jul 13 13:31:03 1998  Craig Burley  <burley@gnu.org>
 	previous change.
 	* libI77/rsfe.c (s_rsfe): Likewise.
 
+Sat Jun 27 23:04:49 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (FLAGS_TO_PASS, case G2C_H_DIR): Use $(TARGET_SUBDIR)
+	instead of hardcoding "libraries".
+
+1998-06-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (gcc_version_trigger): Add new macro.
+	(config.status): Add dependency upon $(gcc_version_trigger).
+
+	* configure.in (gcc_version_trigger): New variable; initialize
+	using value from toplevel configure; add AC_SUBST for it.
+	(gcc_version): Change initialization to use this new variable.
+	* configure: Regenerate.
+
+1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (version): Rename to gcc_version.
+	* configure.in (version): Likewise.
+	(gcc_version): Add code to use an option passed from parent configure.
+	* configure: Regenerate.
+
 1998-06-23  Dave Love  <d.love@dl.ac.uk>
 
-	* libI77/backspace.c, libI77/dfe.c, libI77/due.c, libI77/iio.c,
-	libI77/lread.c, libI77/ sfe.c, libI77/sue.c, libI77/wsfe.c: Update
+	* libI77/backspace.c, libI77/dfe.c, libI77/due.c, libI77/iio.c:
+	* libI77/lread.c, libI77/sfe.c, libI77/sue.c, libI77/wsfe.c: Update
 	to Netlib version of 1998-06-18.
+
+1998-06-21  Dave Love  <d.love@dl.ac.uk>
+
+	* configure.in (version, target_alias): Define.
+
+	* Makefile.in (version, target_alias, libsubdir): Define.
+	(install): Remove check for libsubdir.
 
 Sat Jun 13 03:46:40 1998  Craig Burley  <burley@gnu.org>
 
@@ -124,8 +187,8 @@ Sat Jun 13 03:46:40 1998  Craig Burley  <burley@gnu.org>
 
 	* Makefile.in (g2c.h): Rename from f2c.h.
 
-	* Makefile.in, libF77/Makefile.in, libI77/Makefile.in,
-	libU77/Makefile.in: Rewrite config and var assignment
+	* Makefile.in, libF77/Makefile.in, libI77/Makefile.in:
+	* libU77/Makefile.in: Rewrite config and var assignment
 	sections to be even more minimal than before, and to
 	more clearly documented what macros are expected to be
 	set and to what sorts of values.  Eliminate CROSS and
@@ -168,6 +231,16 @@ Sat Jun 13 03:46:40 1998  Craig Burley  <burley@gnu.org>
 	macros.  Remove F2C_H macro, replace use with explicit
 	dependencies on f2c.h and g2c.h.
 	(*clean): Remove.
+
+Mon Apr 27 22:52:31 1998  Richard Henderson  <rth@cygnus.com>
+
+	* libU77/ltime_.c: Bounce the ftnint argument through a local time_t.
+	* libU77/gmtime_.c: Likewise.
+
+Sun Apr 26 18:07:56 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Adjust include paths in F2C_INTEGER and F2C_LONGINT
+	tests to work out of the build directory.
 
 1998-05-20  Dave Love  <d.love@dl.ac.uk>
 
@@ -235,12 +308,99 @@ Sat Feb 28 15:32:15 1998  Craig Burley  <burley@gnu.org>
 	* libI77/open.c (f_open): Use sizeof(buf) instead of
 	256, for the usual reasons.
 
+1998-02-17  Dave Love  <d.love@dl.ac.uk>
+
+	* libU77/u77-test.f: Tweak some o/p.
+
+	* libU77/Makefile.in (check): Use -L for new directory structure.
+
+	* Makefile.in (check): Run the u77 check.
+	(config.status,	Makefile): New targets.
+
+Wed Feb 11 01:46:20 1998  Manfred Hollstein <manfred@s-direktnet.de>
+
+	* Makefile.in ($(lib)): Call $(AR) repeatedly to avoid overflowing
+	argument size limit on ancious System V.
+
+Sun Feb  8 00:32:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in: Add `info install-info clean-info check dvi' targets.
+
+Mon Feb  2 11:08:49 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Update F2C_INTEGER and F2C_LONGINT tests
+	for the new placement in the hierarchy.
+
+Sun Feb  1 02:36:33 1998  Richard Henderson  <rth@cygnus.com>
+
+	* Previous contents of gcc/f/runtime moved into toplevel
+	"libf2c" directory.
+
+Sun Feb  1 01:42:47 1998  Mumit Khan <khan@xraylith.wisc.edu> 
+
+	* libU77/configure.in (getlogin,getgid,getuid, kill,link,ttyname): 
+	Check.
+	* libU77/config.h.in (HAVE_GETLOGIN, HAVE_GETGID, HAVE_GETUID,
+	HAVE_KILL, HAVE_LINK, HAVE_TTYNAME): New defs.
+	* libU77/getlog_.c: Conditionalize for target platform. Set errno
+	to ENOSYS if target libc doesn't have the function.
+	* libU77/getgid_.c: Likewise.
+	* libU77/getuid_.c: Likewise.
+	* libU77/kill_.c: Likewise.
+	* libU77/link_.c: Likewise.
+	* libU77/ttynam_.c: Likewise.
+
+Sun Jan 18 20:01:37 1998  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/backspace.c: (f_back): Use type `uiolen' to determine size
+	of record length specifier.
+
+Sat Jan 17 22:40:31 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* libU77/configure.in (sys/param.h,sys/times.h): Check.
+	(times,alarm): Likewise.
+	* libU77/config.h.in (HAVE_SYS_PARAM_H, HAVE_SYS_TIMES_H)
+	(HAVE_ALARM, HAVE_TIMES): New defs.
+	* libU77/alarm_.c: Conditionalize for target platform. Set errno
+	to ENOSYS if target libc doesn't have the function.
+	* libU77/dtime_.c: Likewise.
+	* libU77/etime_.c: Likewise.
+	* libU77/sys_clock_.c: Likewise.
+       
+	* configure.in (NON_UNIX_STDIO): Define if MINGW32.
+	(NON_ANSI_RW_MODE): Do not define for CYGWIN32 or MINGW32.
+
+	* libI77/rawio.h: Don't providing conflicting declarations for
+	read() and write(). MINGW32 header files use "const" quals.
+
+	* libF77/s_paus.c: _WIN32 does not have pause().
+
+Mon Apr 27 22:52:31 1998  Richard Henderson  <rth@cygnus.com>
+
+	* libU77/ltime_.c: Bounce the ftnint argument through a local time_t.
+	* libU77/gmtime_.c: Likewise.
+
+Sun Apr 26 18:07:56 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Adjust include paths in F2C_INTEGER and F2C_LONGINT
+	tests to work out of the build directory.
+
 Tue Dec 23 22:56:01 1997  Craig Burley  <burley@gnu.org>
 
 	* libF77/signal_.c (G77_signal_0): Return type is
 	now `void *', to cope with returning previous signal
 	handler on 64-bit systems like Alphas.
 	* f2cext.c (signal_): Changed accordingly.
+
+Tue Nov 18 09:49:04 1997  Mumit Khan   (khan@xraylith.wisc.edu)
+
+	* libI77/close.c (f_exit): Reset f__init so that f_clos does not
+	(incorrectly) think there is an I/O recursion when program is
+	interrupted.
+
+Sat Nov  1 18:03:42 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* libF77/signal_.c: Undo last change until we can fix it right.
 
 Wed Oct 29 01:01:04 1997  Mumit Khan  <khan@brahma.xraylith.wisc.edu>
 
@@ -254,14 +414,35 @@ Fri Oct 24 11:15:22 1997  Mumit Khan <khan@brahma.xraylith.wisc.edu>
 
 Wed Oct 15 10:06:29 1997  Richard Henderson  <rth@cygnus.com>
 
+	* libF77/signal_.c (G77_signal_0): Make return type sig_pf as well.
 	* libI77/fio.h: Include <string.h> if STDC_HEADERS.
 	* libU77/chmod_.c: Likewise.
+
+Tue Oct  7 18:22:10 1997  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (CGFLAGS): Don't force -g0.
+	* libF77/Makefile.in, libI77/Makefile.in, libU77/Makefile.in: Likewise.
+
+Mon Oct  6 14:16:46 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (distclean): Do a better job at cleaning up.
 
 1997-10-03  Dave Love  <d.love@dl.ac.uk>
 
 	* configure.in: Check for tempnam (best because it obeys TMPDIR).
 	* libI77/open.c: Use it.
 	* libI77/err.c: New message # 132.
+
+Wed Oct  1 01:46:16 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
+
+	* libU77/sys_clock_.c: File renamed from system_clock_.c.
+	* libU77/Makefile.in, Makefile.in : Reference sys_clock_.*, not
+	system_clock_.*.
+	* libU77/dtime_.c (clk_tck): Try also HZ macro.
+	* libU77/access.c (G77_access_0): Check malloc return value against 0,
+	not NULL.
+	* libU77/getlog_.c, libU77/ttynam_.c, libU77/chdir_.c: Ditto.
+	* libU77/chmod_.c, libU77/rename_.c: Ditto.
 
 Tue Sep 30 00:41:39 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
@@ -293,6 +474,13 @@ Mon Sep 29 16:30:31 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* libU77/dtime_.c (G77_dtime_0): Fix types in HAVE_GETRUSAGE case
  	so as not to truncate results to integer values.
+	* libU77/Version.c: Bump.
+
+Thu Sep 18 16:58:46 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (stamp-lib): Don't use '$?', explicitly
+	list the variables containing the object files to include
+	in libf2c.a
 
 Tue Sep  9 00:33:24 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
@@ -303,6 +491,15 @@ Mon Sep  8 19:39:01 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 	* libI77/close.c (f_exit): Fix thinko, inverted test
 	of whether initialization done, so exiting now closes
 	open units again.
+
+Fri Sep  5 00:18:17 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (clean): Don't remove config.cache.
+	(distclean): Do it here instead.
+
+Tue Aug 26 20:14:08 1997  Robert Lipe  (robertl@dgii.com)
+
+	* hostnm_.c: Include errno.h
 
 Tue Aug 26 01:42:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
@@ -319,6 +516,14 @@ Tue Aug 26 01:25:58 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 	a temp directory named libE77, then `ar' them all at
 	once into libf2c.a, to get the job done a bit faster.
 	Still remove the objects (and libE77 directory) afterward.
+
+Mon Aug 25 23:26:05 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* Makefile.in (mostlyclean, clean): Check if Makefile exists
+	before using it. Remove stamp-*.
+	(stamp-libi77, stamp-libf77, stamp-libu77): New.
+	(stamp-lib): Only depend on stamp-libi77 stamp-libf77
+	stamp-libu77
 
 Sun Aug 24 05:04:35 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
@@ -754,7 +959,7 @@ Wed Nov  6 14:17:27 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 	* libF77/Version.c, libI77/Version.c: Restore macro definition
 	of version information.
 
-	* libI77/Makefile.in (OBJ): Add ftell_.o to list of objects.
+	* libI77/Makefile.in (OBJ) [foo]: Add ftell_.o to list of objects.
 
 	* libI77/uio.c (do_ud): Fix up casts in PAD_UDread case just
 	like they were fixed in the other case.
@@ -768,7 +973,7 @@ Thu Oct 31 22:27:45 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 1996-10-19  Dave Love  <d.love@dl.ac.uk>
 
 	* configure.in: Add check that we have the tools to cross-compile
- 	if appropriate.
+	if appropriate.
 	(NO_EOF_CHAR_CHECK,Skip_f2c_Undefs): Define.
 
 	* libF77/Makefile.in (F90BIT): New routines from Netlib.
@@ -807,8 +1012,8 @@ Tue Aug 20 09:21:43 1996  Dave Love  <d.love@dl.ac.uk>
 
 Sat Aug 17 13:00:47 1996  Dave Love  <d.love@dl.ac.uk>
 
-	* (libF77/qbitshft.c, libF77/qbitbits.c, libF77/lbitshft.c,
- 	libF77/lbitbits.c): New file from Netlib.  qbit... not currently
+	* libF77/qbitshft.c, libF77/qbitbits.c, libF77/lbitshft.c,
+	libF77/lbitbits.c: New file from Netlib.  qbit... not currently
 	compiled.
 
 Sun Jul  7 18:06:33 1996  Dave Love  <d.love@dl.ac.uk>
@@ -869,7 +1074,8 @@ Tue Mar 19 13:10:02 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* Makefile.in (rebuilt): New target.
 
-	* lib[FI]77/Makefile.in: Use $AR_FOR_TARGET, not $AR.
+	* libF77/Makefile.in, libI77/Makefile.in: Use $AR_FOR_TARGET, not
+	$AR.
 
 Tue Mar 19 12:53:19 1996  Dave Love  <d.love@dl.ac.uk>
 
@@ -892,10 +1098,10 @@ Fri Dec 29 18:22:01 1995  Craig Burley  <burley@gnu.ai.mit.edu>
 	* Makefile.in: Reorganize the *clean rules to more closely
 	parallel gcc's.
 
-	* lib[FI]77/Makefile.in: Ignore error from $(AR) command,
-	in case just doing an install and installer has no write
-	access to library (this is a kludge fix -- perhaps install
-	targets should never try updating anything?).
+	* libF77/Makefile.in, libI77/Makefile.in: Ignore error from $(AR)
+	command, in case just doing an install and installer has no write
+	access to library (this is a kludge fix -- perhaps install targets
+	should never try updating anything?).
 
 Sat Nov 18 19:37:22 1995  Craig Burley  (burley@gnu.ai.mit.edu)
 
