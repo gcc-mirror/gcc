@@ -1,3 +1,8 @@
+1997-10-04  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* frame.c (__frame_state_for): Execute the FDE insns until the
+	current pc value is strictly bigger than the target pc value.
+
 Tue Oct  7 11:00:42 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* regclass.c (init_reg_modes): If we can't find a mode for the 
