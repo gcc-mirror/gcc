@@ -1183,6 +1183,24 @@ iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
   return iv->base != NULL_RTX;
 }
 
+/* Checks whether definition of register REG in INSN a basic induction
+   variable.  IV analysis must have been initialized (via a call to
+   iv_analysis_loop_init) for this function to produce a result.  */
+
+bool
+biv_p (rtx insn, rtx reg)
+{
+  struct rtx_iv iv;
+
+  if (!REG_P (reg))
+    return false;
+
+  if (last_def[REGNO (reg)] != insn)
+    return false;
+
+  return iv_analyze_biv (reg, &iv);
+}
+
 /* Calculates value of IV at ITERATION-th iteration.  */
 
 rtx
