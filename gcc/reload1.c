@@ -190,6 +190,12 @@ static HARD_REG_SET counted_for_groups;
    as part of a group, even if it seems to be otherwise ok.  */
 static HARD_REG_SET counted_for_nongroups;
 
+/* Indexed by pseudo reg number N,
+   says may not delete stores into the real (memory) home of pseudo N.
+   This is set if we already substituted a memory equivalent in some uses,
+   which happens when we have to eliminate the fp from it.  */
+static char *cannot_omit_stores;
+
 /* Nonzero if indirect addressing is supported on the machine; this means
    that spilling (REG n) does not require reloading it into a register in
    order to do (MEM (REG n)) or (MEM (PLUS (REG n) (CONST_INT c))).  The
@@ -511,6 +517,8 @@ reload (first, global, dumpfile)
   bzero (reg_equiv_address, max_regno * sizeof (rtx));
   reg_max_ref_width = (int *) alloca (max_regno * sizeof (int));
   bzero (reg_max_ref_width, max_regno * sizeof (int));
+  cannot_omit_stores = (char *) alloca (max_regno);
+  bzero (cannot_omit_stores, max_regno);
 
   /* Look for REG_EQUIV notes; record what each pseudo is equivalent to.
      Also find all paradoxical subregs
@@ -2601,7 +2609,10 @@ eliminate_regs (x, mem_mode, insn)
 	  new = eliminate_regs (reg_equiv_memory_loc[regno],
 				mem_mode, NULL_RTX);
 	  if (new != reg_equiv_memory_loc[regno])
-	    return copy_rtx (new);
+	    {
+	      cannot_omit_stores[regno] = 1;
+	      return copy_rtx (new);
+	    }
 	}
       return x;
 
@@ -6464,6 +6475,9 @@ delete_output_reload (insn, j, output_reload_insn)
 	  && reg_mentioned_p (reg, PATTERN (i1)))
 	return;
     }
+
+  if (cannot_omit_stores[REGNO (reg)])
+    return;
 
   /* If this insn will store in the pseudo again,
      the previous store can be removed.  */
