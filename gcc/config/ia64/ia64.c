@@ -1398,8 +1398,14 @@ spill_restore_mem (reg, cfa_off)
 	spill_fill_data.init_after
 	  = emit_insn_after (seq, spill_fill_data.init_after);
       else
-	spill_fill_data.init_after
-	  = emit_insn_before (seq, get_insns ());
+	{
+	  rtx first = get_insns ();
+	  if (first)
+	    spill_fill_data.init_after
+	      = emit_insn_before (seq, first);
+	  else
+	    spill_fill_data.init_after = emit_insn (seq);
+	}
     }
 
   mem = gen_rtx_MEM (GET_MODE (reg), spill_fill_data.iter_reg[iter]);
