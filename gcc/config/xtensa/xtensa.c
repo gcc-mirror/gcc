@@ -197,8 +197,10 @@ static rtx fixup_subreg_mem PARAMS ((rtx x));
 static enum machine_mode xtensa_find_mode_for_size PARAMS ((unsigned));
 static struct machine_function * xtensa_init_machine_status PARAMS ((void));
 static void printx PARAMS ((FILE *, signed int));
-static void xtensa_select_rtx_section PARAMS ((enum machine_mode, rtx,
-					       unsigned HOST_WIDE_INT));
+static unsigned int xtensa_multibss_section_type_flags
+  PARAMS ((tree, const char *, int));
+static void xtensa_select_rtx_section
+  PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
 static void xtensa_encode_section_info PARAMS ((tree, int));
 
 static rtx frame_size_const;
@@ -2745,6 +2747,34 @@ a7_overlap_mentioned_p (x)
 
   return 0;
 }
+
+
+/* Some Xtensa targets support multiple bss sections.  If the section
+   name ends with ".bss", add SECTION_BSS to the flags.  */
+
+static unsigned int
+xtensa_multibss_section_type_flags (decl, name, reloc)
+     tree decl;
+     const char *name;
+     int reloc;
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+  const char *suffix;
+
+  suffix = strrchr (name, '.');
+  if (suffix && strcmp (suffix, ".bss") == 0)
+    {
+      if (!decl || (TREE_CODE (decl) == VAR_DECL
+		    && DECL_INITIAL (decl) == NULL_TREE))
+	flags |= SECTION_BSS;  /* @nobits */
+      else
+	warning ("only uninitialized variables can be placed in a "
+		 ".bss section");
+    }
+
+  return flags;
+}
+
 
 /* The literal pool stays with the function.  */
 
