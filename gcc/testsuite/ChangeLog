@@ -1,3 +1,7 @@
+2002-07-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/Wsignprom.c: New tests.
+
 2002-07-20  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.c-torture/execute/loop-13.c: New test.

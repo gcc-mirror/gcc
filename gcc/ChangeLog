@@ -1,3 +1,13 @@
+2002-07-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppexp.c (struct op): Add token pointer.
+	(check_promotion, CHECK_PROMOTION): New.
+	(optab): Update.
+	(_cpp_parse_expr): Update, use token pointer of struct op.
+	(reduce): Warn about change of sign owing to promotion.
+	* cppinit.c (cpp_handle_option): New warning if -Wall.
+	* cpplib.h (struct cpp_options): New member.
+
 2002-07-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md: Remove ppc630 fpcompare from single
