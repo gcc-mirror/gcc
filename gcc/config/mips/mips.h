@@ -2756,6 +2756,9 @@ while (0)
   { "sp",	29 + GP_REG_FIRST },					\
   { "fp",	30 + GP_REG_FIRST },					\
   { "ra",	31 + GP_REG_FIRST },					\
+  { "$sp",	29 + GP_REG_FIRST },					\
+  { "$fp",	30 + GP_REG_FIRST },					\
+  { "cc",	FPSW_REGNUM },						\
 }
 
 /* Define results of standard character escape sequences.  */
