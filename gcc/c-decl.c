@@ -1586,7 +1586,8 @@ duplicate_decls (newdecl, olddecl)
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != 0
 	       && TYPE_ARG_TYPES (oldtype) == 0
-	       && TYPE_ARG_TYPES (newtype) != 0)
+	       && TYPE_ARG_TYPES (newtype) != 0
+	       && TYPE_ACTUAL_ARG_TYPES (oldtype) != 0)
 	{
 	  register tree type, parm;
 	  register int nargs;
