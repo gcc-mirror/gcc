@@ -1,3 +1,8 @@
+2002-02-04  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/27_io/howto.html: Link to Dietmar Kuehl's IOStream page,
+	add HTML comment about updating links if numbering changes.
+
 2003-02-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9538
