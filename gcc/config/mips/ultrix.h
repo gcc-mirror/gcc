@@ -43,7 +43,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
-#ifndef LINK_SPEC
 #define LINK_SPEC "\
 %{G*} \
 %{!mgas: \
@@ -51,7 +50,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{EB: %e-EB not supported} \
 	%{mips1} %{mips2} %{mips3} \
 	%{bestGnum}}"
-#endif
 
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"
 
