@@ -44,7 +44,9 @@ if test "$THREADS" = yes; then
        THREADS=win32
        ;;
     *-*-irix*)
-       THREADS=irix
+       # FIXME: for now, choose POSIX, because we implement that.
+       # Later, choose irix threads.
+       THREADS=posix
        ;;
     *-*-solaris*)
        # FIXME: for now, choose POSIX, because we implement that.
@@ -73,6 +75,9 @@ case "$THREADS" in
      *-*-solaris*)
 	AC_DEFINE(SOLARIS_THREADS)
 	AC_DEFINE(_SOLARIS_PTHREADS)
+	;;
+     *-*-irix*)
+	AC_DEFINE(IRIX_THREADS)
 	;;
     esac
     ;;
@@ -131,6 +136,10 @@ machdep=
 case "$host" in
  alpha-*-*)
     machdep="alpha_mach_dep.lo"
+    ;;
+ mips-*-*)
+    machdep="mips_sgi_mach_dep.lo"
+    AC_DEFINE(NO_EXECUTE_PERMISSION)
     ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
