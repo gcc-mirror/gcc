@@ -3859,7 +3859,7 @@ edit_fn_definition (def_dec_p, clean_text_p)
 }
 
 /* Clean up the clean text buffer.  Do this by converting comments and
-   preprocessor directives into spaces.   Also convert line continuations
+   preprocessing directives into spaces.   Also convert line continuations
    into whitespace.  Also, whiteout string and character literals.  */
 
 static void
@@ -4109,14 +4109,14 @@ scan_for_missed_items (file_p)
 /* Do all editing operations for a single source file (either a "base" file
    or an "include" file).  To do this we read the file into memory, keep a
    virgin copy there, make another cleaned in-core copy of the original file
-   (i.e. one in which all of the comments and preprocessor directives have
+   (i.e. one in which all of the comments and preprocessing directives have
    been replaced with whitespace), then use these two in-core copies of the
    file to make a new edited in-core copy of the file.  Finally, rename the
    original file (as a way of saving it), and then write the edited version
    of the file from core to a disk file of the same name as the original.
 
    Note that the trick of making a copy of the original sans comments &
-   preprocessor directives make the editing a whole lot easier.  */
+   preprocessing directives make the editing a whole lot easier.  */
    
 static void
 edit_file (hp)
