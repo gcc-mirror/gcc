@@ -1,5 +1,12 @@
 2004-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (dfs_modify_vtables): Simplify condition. Return
+	dfs_skip_bases as appropriate.
+	(modify_all_vtables): Walk in pre-order.
+	* search.c (dfs_walk_all, dfs_walk_once_r,
+	dfs_walk_once_accessible_r): Assert post order function never
+	returns dfs_skip_bases.
+
 	* search.c (struct lookup_base_data_s): New.
 	(lookup_base_r): Replace with ...
 	(dfs_lookup_base): ... this.
