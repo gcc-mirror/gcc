@@ -762,9 +762,13 @@ namespace std
 	// Consider the possibility of long ios_base::fixed outputs
 	const bool __fixed = __io.flags() & ios_base::fixed;
 	const int __max_exp = numeric_limits<_ValueT>::max_exponent10;
-	// XXX Why + 4? Why * 4? What's going on? Who's on first?
+	// ios_base::fixed outputs may need up to __max_exp+1 chars
+	// for the integer part + up to __max_digits chars for the
+	// fractional part + 3 chars for sign, decimal point, '\0'. On
+	// the other hand, for non-fixed outputs __max_digits*3 chars
+	// are largely sufficient.
 	const int __cs_size = __fixed ? __max_exp + __max_digits + 4 
-	                              : __max_digits * 4;
+	                              : __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
 	int __len;
