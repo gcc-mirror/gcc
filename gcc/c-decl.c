@@ -1598,13 +1598,14 @@ duplicate_decls (newdecl, olddecl)
   else
     {
       TREE_STATIC (olddecl) = TREE_STATIC (newdecl);
-      DECL_EXTERNAL (olddecl) = 0;
       TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
     }
+
   /* If either decl says `inline', this fn is inline,
      unless its definition was passed already.  */
   if (DECL_INLINE (newdecl) && DECL_INITIAL (olddecl) == 0)
     DECL_INLINE (olddecl) = 1;
+  DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
 
   /* Get rid of any built-in function if new arg types don't match it
      or if we have a function definition.  */
@@ -1635,9 +1636,16 @@ duplicate_decls (newdecl, olddecl)
       DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
     }
 
-  bcopy ((char *) newdecl + sizeof (struct tree_common),
-	 (char *) olddecl + sizeof (struct tree_common),
-	 sizeof (struct tree_decl) - sizeof (struct tree_common));
+  /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
+     But preserve OLDdECL's DECL_UID.  */
+  {
+    register unsigned olddecl_uid = DECL_UID (olddecl);
+
+    bcopy ((char *) newdecl + sizeof (struct tree_common),
+	   (char *) olddecl + sizeof (struct tree_common),
+	   sizeof (struct tree_decl) - sizeof (struct tree_common));
+    DECL_UID (olddecl) = olddecl_uid;
+  }
 
   return 1;
 }
