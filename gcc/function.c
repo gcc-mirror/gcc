@@ -7649,19 +7649,8 @@ thread_prologue_and_epilogue_insns (f)
 		 that with a conditional return instruction.  */
 	      else if (condjump_p (jump))
 		{
-		  rtx ret, *loc;
-
-		  ret = SET_SRC (PATTERN (jump));
-		  if (GET_CODE (XEXP (ret, 1)) == LABEL_REF)
-		    loc = &XEXP (ret, 1);
-		  else
-		    loc = &XEXP (ret, 2);
-		  ret = gen_rtx_RETURN (VOIDmode);
-
-		  if (! validate_change (jump, loc, ret, 0))
+		  if (! redirect_jump (jump, 0, 1))
 		    continue;
-		  if (JUMP_LABEL (jump))
-		    LABEL_NUSES (JUMP_LABEL (jump))--;
 
 		  /* If this block has only one successor, it both jumps
 		     and falls through to the fallthru block, so we can't

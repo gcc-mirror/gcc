@@ -1,3 +1,9 @@
+2003-03-15  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	PR optimization/9387
+	* function.c (thread_prologue_and_epilogue_insns): Use redirect jump
+	for conditional returns.
+
 2003-03-14  Jason Merrill  <jason@redhat.com>
 
 	PR optimization/6871
