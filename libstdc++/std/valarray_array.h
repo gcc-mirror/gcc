@@ -281,7 +281,7 @@ __valarray_copy (const _Tp* __restrict__ __a, size_t __n,
 
   // Compute the product of all elements in range [__f, __l)
   template<typename _Tp>
-  _Tp
+  inline _Tp
   __valarray_product(const _Tp* __restrict__ __f,
                      const _Tp* __restrict__ __l)
   {

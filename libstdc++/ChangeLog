@@ -1,3 +1,7 @@
+2000-07-17  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* std/valarray_array.h(__valarray_sum): Make inline.
+
 2000-07-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* std/valarray_array.h (__valarray_get_memory,
