@@ -138,9 +138,6 @@ Boston, MA 02111-1307, USA.  */
   { "asm_default",		ASM_DEFAULT_SPEC },			\
   SUBTARGET_EXTRA_SPECS
 
-/* gcc must do the search itself to find libgcc.a, not use -l.  */
-#define LIBGCC_SPEC "libgcc.a%s"
-
 /* Architecture type.  */
 
 extern int target_flags;
