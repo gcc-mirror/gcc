@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 1995, 1997, 1998 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
 
    This library is free software; you can redistribute it and/or
@@ -258,7 +258,7 @@ __underflow (fp)
     {
       _IO_switch_to_main_get_area (fp);
       if (fp->_IO_read_ptr < fp->_IO_read_end)
-	return *fp->_IO_read_ptr;
+	return *(unsigned char *) fp->_IO_read_ptr;
     }
   if (_IO_have_markers (fp))
     {
@@ -283,7 +283,7 @@ __uflow (fp)
     {
       _IO_switch_to_main_get_area (fp);
       if (fp->_IO_read_ptr < fp->_IO_read_end)
-	return *fp->_IO_read_ptr++;
+	return *(unsigned char *) fp->_IO_read_ptr++;
     }
   if (_IO_have_markers (fp))
     {
