@@ -3089,16 +3089,14 @@ arm_legitimate_index_p (enum machine_mode mode, rtx index, RTX_CODE outer,
   HOST_WIDE_INT range;
   enum rtx_code code = GET_CODE (index);
 
-  if (TARGET_HARD_FLOAT && TARGET_FPA && GET_MODE_CLASS (mode) == MODE_FLOAT)
+  /* Standard coprocessor addressing modes.  */
+  if (TARGET_HARD_FLOAT
+      && (TARGET_FPA || TARGET_MAVERICK)
+      && (GET_MODE_CLASS (mode) == MODE_FLOAT
+	  || (TARGET_MAVERICK && mode == DImode)))
     return (code == CONST_INT && INTVAL (index) < 1024
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
-
-  if (TARGET_HARD_FLOAT && TARGET_MAVERICK
-      && (GET_MODE_CLASS (mode) == MODE_FLOAT || mode == DImode))
-    return (code == CONST_INT
-	    && INTVAL (index) < 255
-	    && INTVAL (index) > -255);
 
   if (arm_address_register_rtx_p (index, strict_p)
       && GET_MODE_SIZE (mode) <= 4)
