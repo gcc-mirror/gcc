@@ -1223,6 +1223,18 @@
   [(set_attr "type" "store,load,move,store,load")
    (set_attr "length" "1,1,2,3,3")])
 
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "")
+	(match_operand:DF 1 "register_operand" ""))]
+  "reload_completed"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+  "
+{ operands[2] = operand_subword (operands[0], 0, 0, DFmode);
+  operands[3] = operand_subword (operands[1], 0, 0, DFmode);
+  operands[4] = operand_subword (operands[0], 1, 0, DFmode);
+  operands[5] = operand_subword (operands[1], 1, 0, DFmode); }")
+
 (define_insn ""
   [(set (mem:DF (match_operand:SI 0 "symbolic_operand" "i,i"))
 	(match_operand:DF 1 "reg_or_0_operand" "rf,G"))
