@@ -50,15 +50,38 @@ i386_pe_valid_decl_attribute_p (decl, attributes, attr, args)
      tree attr;
      tree args;
 {
-  if (args != NULL_TREE)
-    return 0;
-
-  if (is_attribute_p ("dllexport", attr))
-    return 1;
-  if (is_attribute_p ("dllimport", attr))
-    return 1;
+  if (args == NULL_TREE)
+    {
+      if (is_attribute_p ("dllexport", attr))
+	return 1;
+      if (is_attribute_p ("dllimport", attr))
+	return 1;
+    }
 
   return i386_valid_decl_attribute_p (decl, attributes, attr, args);
+}
+
+/* Return nonzero if ATTR is a valid attribute for TYPE.
+   ATTRIBUTES are any existing attributes and ARGS are the arguments
+   supplied with ATTR.  */
+
+int
+i386_pe_valid_type_attribute_p (type, attributes, attr, args)
+     tree type;
+     tree attributes;
+     tree attr;
+     tree args;
+{
+  if (args == NULL_TREE
+      && (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE))
+    {
+      if (is_attribute_p ("dllexport", attr))
+	return 1;
+      if (is_attribute_p ("dllimport", attr))
+	return 1;
+    }
+
+  return i386_valid_type_attribute_p (type, attributes, attr, args);
 }
 
 /* Merge attributes in decls OLD and NEW.
@@ -114,48 +137,32 @@ i386_pe_merge_decl_attributes (old, new)
   return a;
 }
 
-/* Check a type that has a virtual table, and see if any virtual methods are
-   marked for import or export, and if so, arrange for the vtable to
-   be imported or exported.  */
+/* Return the type that we should use to determine if DECL is
+   imported or exported.  */
 
-static int
-i386_pe_check_vtable_importexport (type)
-     tree type;
+static tree
+associated_type (decl)
+     tree decl;
 {
-  tree methods = TYPE_METHODS (type);
-  tree fndecl;
+  tree t = NULL_TREE;
 
-  if (TREE_CODE (methods) == FUNCTION_DECL)
-    fndecl = methods;
-  else if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
-    fndecl = TREE_VEC_ELT (methods, 0);
-  else
-    fndecl = TREE_VEC_ELT (methods, 1);
-
-  while (fndecl)
+  /* In the C++ frontend, DECL_CONTEXT for a method doesn't actually refer
+     to the containing class.  So we look at the 'this' arg.  */
+  if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
     {
-      if (DECL_VIRTUAL_P (fndecl) || DECL_VINDEX (fndecl) != NULL_TREE)
-	{
-	  tree exp = lookup_attribute ("dllimport",
-				       DECL_MACHINE_ATTRIBUTES (fndecl));
-	  if (exp == 0)
-	    exp = lookup_attribute ("dllexport",
-				    DECL_MACHINE_ATTRIBUTES (fndecl));
-	  if (exp)
-	    return 1;
-	}
-
-      fndecl = TREE_CHAIN (fndecl);
+      /* Artificial methods are not affected by the import/export status of
+	 their class unless they are virtual.  */
+      if (! DECL_ARTIFICIAL (decl) || DECL_VINDEX (decl))
+	t = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl))));
     }
+  else if (DECL_CONTEXT (decl)
+	   && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
+    t = DECL_CONTEXT (decl);
 
-  return 0;
+  return t;
 }
 
 /* Return non-zero if DECL is a dllexport'd object.  */
-
-#if 0
-tree current_class_type; /* FIXME */
-#endif
 
 int
 i386_pe_dllexport_p (decl)
@@ -170,22 +177,14 @@ i386_pe_dllexport_p (decl)
   if (exp)
     return 1;
 
-#if 0 /* This was a hack to get vtable's exported or imported since only one
-	 copy of them is ever output.  Disabled pending better solution.  */
-  /* For C++, the vtables might have to be marked.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
+  /* Class members get the dllexport status of their class.  */
+  if (associated_type (decl))
     {
-      if (TREE_PUBLIC (decl)
-	  && DECL_EXTERNAL (decl) == 0
-	  && (DECL_CONTEXT (decl)
-	      ? i386_pe_check_vtable_importexport (DECL_CONTEXT (decl))
-	      : current_class_type
-	      ? i386_pe_check_vtable_importexport (current_class_type)
-	      : 0)
-	  )
+      exp = lookup_attribute ("dllexport",
+			      TYPE_ATTRIBUTES (associated_type (decl)));
+      if (exp)
 	return 1;
     }
-#endif
 
   return 0;
 }
@@ -209,22 +208,14 @@ i386_pe_dllimport_p (decl)
   if (imp)
     return 1;
 
-#if 0 /* This was a hack to get vtable's exported or imported since only one
-	 copy of them is ever output.  Disabled pending better solution.  */
-  /* For C++, the vtables might have to be marked.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
+  /* Class members get the dllimport status of their class.  */
+  if (associated_type (decl))
     {
-      if (TREE_PUBLIC (decl)
-	  && DECL_EXTERNAL (decl)
-	  && (DECL_CONTEXT (decl)
-	      ? i386_pe_check_vtable_importexport (DECL_CONTEXT (decl))
-	      : current_class_type
-	      ? i386_pe_check_vtable_importexport (current_class_type)
-	      : 0)
-	  )
+      imp = lookup_attribute ("dllimport",
+			      TYPE_ATTRIBUTES (associated_type (decl)));
+      if (imp)
 	return 1;
     }
-#endif
 
   return 0;
 }
