@@ -7046,15 +7046,18 @@ fold (expr)
 	    case EQ_EXPR:
 	    case GE_EXPR:
 	    case LE_EXPR:
-	      if (! FLOAT_TYPE_P (TREE_TYPE (arg0)))
+	      if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
+		  || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
 		return constant_boolean_node (1, type);
 	      code = EQ_EXPR;
 	      TREE_SET_CODE (t, code);
 	      break;
 
 	    case NE_EXPR:
-	      /* For NE, we can only do this simplification if integer.  */
-	      if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
+	      /* For NE, we can only do this simplification if integer
+		 or we don't honor IEEE floating point NaNs.  */
+	      if (FLOAT_TYPE_P (TREE_TYPE (arg0))
+		  && HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
 		break;
 	      /* ... fall through ...  */
 	    case GT_EXPR:
