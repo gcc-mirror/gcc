@@ -528,7 +528,7 @@ main (argc, argv)
   strip_file_name = xcalloc (len + sizeof ("gstrip"), 1);
 
   /* Determine the full path name of the ld program to use.  */
-  memcpy (ld_file_name, prefix, len);
+  bcopy (prefix, ld_file_name, len);
   strcpy (ld_file_name + len, "real-ld");
   if (access (ld_file_name, X_OK) < 0)
     {
@@ -550,7 +550,7 @@ main (argc, argv)
   if (c_file_name == 0 || c_file_name[0] != '/')
     {
       c_file_name = xcalloc (clen + sizeof ("gcc"), 1);
-      memcpy (c_file_name, prefix, len);
+      bcopy (prefix, c_file_name, len);
       strcpy (c_file_name + len, "gcc");
       if (access (c_file_name, X_OK) < 0)
 	{
@@ -573,7 +573,7 @@ main (argc, argv)
     }
 
   /* Determine the full path name of the nm to use.  */
-  memcpy (nm_file_name, prefix, len);
+  bcopy (prefix, nm_file_name, len);
   strcpy (nm_file_name + len, "nm");
   if (access (nm_file_name, X_OK) < 0)
     {
@@ -591,7 +591,7 @@ main (argc, argv)
     }
 
   /* Determine the full pathname of the strip to use.  */
-  memcpy (strip_file_name, prefix, len);
+  bcopy (prefix, strip_file_name, len);
   strcpy (strip_file_name + len, "strip");
   if (access (strip_file_name, X_OK) < 0)
     {
@@ -1384,7 +1384,7 @@ scan_prog_file (prog_name, which_pass)
       if (rw)
 	{
 	  load_union_t *ptr = (load_union_t *) xmalloc (load_hdr->hdr.ldci_cmd_size);
-	  memcpy (ptr, load_hdr, load_hdr->hdr.ldci_cmd_size);
+	  bcopy (load_hdr, ptr, load_hdr->hdr.ldci_cmd_size);
 	  load_hdr = ptr;
 
 	  /* null out old command map, because we will rewrite at the end.  */
@@ -1567,7 +1567,7 @@ scan_prog_file (prog_name, which_pass)
 	  if (debug)
 	    print_load_command (load_hdr, offset, i);
 
-	  memcpy (obj + offset, load_hdr, size);
+	  bcopy (load_hdr, obj + offset, size);
 	  offset += size;
 	}
     }
