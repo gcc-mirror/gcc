@@ -2382,6 +2382,8 @@ private:
 		  push_type (t);
 		  push_type (t2);
 		}
+	      else
+		push_type (t);
 	      push_type (t);
 	    }
 	    break;
