@@ -1,6 +1,6 @@
-s/|| cp/|| copy/
+/^Makefile/,/^	rm -f config.run/d
 s/rm -f/del/
-/^Makefile/,/^	$(SHELL) config.run/d
+s/|| cp/|| copy/
 /^config.status/,/	fi/d
 s/config.status//g
 s/\/dev\/null/NUL/g
@@ -12,7 +12,7 @@ target=winnt3.5
 /^xmake_file=/ d
 /^tmake_file=/ d
 /^version=/ c\
-version=2.6.2
+version=2.6.3
 s/CC = cc/CC = cl/
 s/^SHELL =.*/SHELL =/
 s/CFLAGS = -g/CFLAGS =/
@@ -27,7 +27,7 @@ s/^	cd \$(srcdir)[ 	]*;/	/
   /\\/d
   /fi/d
   /copy/ i\
-	  genattrtab md > tmp-attrtab.c
+\	  genattrtab md > tmp-attrtab.c
 }
 /^enquire[ 	]*:/ s/\$(GCC_PARTS)//g
 /^enquire.o[ 	]*:/ s/\$(GCC_PASSES)//g
@@ -61,8 +61,8 @@ LDFLAGS = -align:0x1000 -subsystem:console -entry:mainCRTStartup \\\
 EXTRA_PROGRAMS=ld.exe \
 \
 ld.obj: $(srcdir)/config/winnt/ld.c \
-	$(CC) $(CFLAGS) \\\
- -I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/winnt/ld.c \
+\	$(CC) $(CFLAGS) \\\
+\ 	-I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/winnt/ld.c \
 \
 ld.exe: ld.obj \
 	link32 -out:ld.exe ld.obj $(LDFLAGS) $(CLIB)
