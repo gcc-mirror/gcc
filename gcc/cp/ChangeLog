@@ -1,3 +1,8 @@
+Wed Jan 25 15:02:09 1995  David S. Miller  (davem@nadzieja.rutgers.edu)
+
+	* class.c (instantiate_type): Change error message text.
+	* typeck2.c (store_init_value): Likewise.
+
 Mon Jan 23 21:57:14 1995  Mike Stump  <mrs@cygnus.com>
 
 	* pt.c (tsubst): When we copy a node, don't forget to copy
