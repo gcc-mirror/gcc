@@ -1,3 +1,8 @@
+Thu Jul 11 22:02:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* combine.c (try_combine): When converting a paradoxical subreg
+	to an extension, take LOAD_EXTEND_OP into account.
+
 2002-07-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (mips-sgi-irix6*o32): New configuration.
