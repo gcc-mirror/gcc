@@ -1,3 +1,8 @@
+2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (cleanup_tree_cfg): Remove variable
+	something_changed.  Simplify the while loop.
+
 2004-10-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_memmove): Delete duplicate code
