@@ -47,6 +47,14 @@ struct sequence_stack
 };
 
 extern struct sequence_stack *sequence_stack;
+
+/* Stack of single obstacks.  */
+
+struct simple_obstack_stack
+{
+  struct obstack *obstack;
+  struct simple_obstack_stack *next;
+};
 
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */
@@ -67,6 +75,7 @@ struct function
   int calls_alloca;
   int has_nonlocal_label;
   int has_nonlocal_goto;
+  int contains_functions;
   rtx nonlocal_goto_handler_slot;
   rtx nonlocal_goto_stack_level;
   tree nonlocal_labels;
@@ -158,6 +167,7 @@ struct function
   struct obstack *expression_obstack;
   struct obstack *saveable_obstack;
   struct obstack *rtl_obstack;
+  struct simple_obstack_stack *inline_obstacks;
 
   /* For integrate.c.  */
   int uses_const_pool;

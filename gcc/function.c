@@ -462,8 +462,8 @@ find_function_data (decl)
    since this function knows only about language-independent variables.  */
 
 void
-push_function_context_to (toplevel)
-     int toplevel;
+push_function_context_to (context)
+     tree context;
 {
   struct function *p = (struct function *) xmalloc (sizeof (struct function));
 
@@ -481,6 +481,7 @@ push_function_context_to (toplevel)
   p->calls_alloca = current_function_calls_alloca;
   p->has_nonlocal_label = current_function_has_nonlocal_label;
   p->has_nonlocal_goto = current_function_has_nonlocal_goto;
+  p->contains_functions = current_function_contains_functions;
   p->args_size = current_function_args_size;
   p->pretend_args_size = current_function_pretend_args_size;
   p->arg_offset_rtx = current_function_arg_offset_rtx;
@@ -514,7 +515,7 @@ push_function_context_to (toplevel)
   p->fixup_var_refs_queue = 0;
   p->epilogue_delay_list = current_function_epilogue_delay_list;
 
-  save_tree_status (p, toplevel);
+  save_tree_status (p, context);
   save_storage_status (p);
   save_emit_status (p);
   init_emit ();
@@ -529,15 +530,15 @@ push_function_context_to (toplevel)
 void
 push_function_context ()
 {
-  push_function_context_to (0);
+  push_function_context_to (current_function_decl);
 }
 
 /* Restore the last saved context, at the end of a nested function.
    This function is called from language-specific code.  */
 
 void
-pop_function_context_from (toplevel)
-     int toplevel;
+pop_function_context_from (context)
+     tree context;
 {
   struct function *p = outer_function_chain;
 
@@ -554,8 +555,9 @@ pop_function_context_from (toplevel)
   current_function_calls_alloca = p->calls_alloca;
   current_function_has_nonlocal_label = p->has_nonlocal_label;
   current_function_has_nonlocal_goto = p->has_nonlocal_goto;
-  if (! toplevel)
-    current_function_contains_functions = 1;
+  current_function_contains_functions
+    = p->contains_functions || p->inline_obstacks
+      || context == current_function_decl;
   current_function_args_size = p->args_size;
   current_function_pretend_args_size = p->pretend_args_size;
   current_function_arg_offset_rtx = p->arg_offset_rtx;
@@ -589,7 +591,7 @@ pop_function_context_from (toplevel)
   current_function_epilogue_delay_list = p->epilogue_delay_list;
   reg_renumber = 0;
 
-  restore_tree_status (p, toplevel);
+  restore_tree_status (p);
   restore_storage_status (p);
   restore_expr_status (p);
   restore_emit_status (p);
@@ -616,7 +618,7 @@ pop_function_context_from (toplevel)
 
 void pop_function_context ()
 {
-  pop_function_context_from (0);
+  pop_function_context_from (current_function_decl);
 }
 
 /* Allocate fixed slots in the stack frame of the current function.  */
