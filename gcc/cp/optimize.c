@@ -498,6 +498,18 @@ initialize_inlined_parameters (id, args, fn)
 	DECL_INITIAL (var) = value;
       else
 	{
+	  /* Even if P was TREE_READONLY, the new VAR should not be.
+	     In the original code, we would have constructed a
+	     temporary, and then the function body would have never
+	     changed the value of P.  However, now, we will be
+	     constructing VAR directly.  The constructor body may
+	     change its value multiple times as it is being
+	     constructed.  Therefore, it must not be TREE_READONLY;
+	     the back-end assumes that TREE_READONLY variable is
+	     assigned to only once.  */
+	  TREE_READONLY (var) = 0;
+
+	  /* Build a run-time initialization.  */
 	  init_stmt = build_stmt (EXPR_STMT,
 				  build (INIT_EXPR, TREE_TYPE (p),
 					 var, value));
