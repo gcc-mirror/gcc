@@ -2922,6 +2922,14 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	extract_insn (insn);
 	cleanup_subreg_operands (insn);
 
+       /* Dump the insn in the assembly for debugging.  */
+       if (flag_dump_rtl_in_asm)
+         {
+           print_rtx_head = ASM_COMMENT_START;
+           print_rtl_single (asm_out_file, insn);
+           print_rtx_head = "";
+         }
+       
 	if (! constrain_operands (1))
 	  fatal_insn_not_found (insn);
 

@@ -1,5 +1,22 @@
 2000-09-13  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* flags.h (flag_dump_rtl_in_asm): Declare.
+	* toplev.c (flag_dump_rtl_in_asm): Define.
+	(decode_d_option): Set flag_dump_rtl_in_asm and flag_print_asm_name
+	if -dP is specified.
+	* rtl.h (print_rtx_head): Declare.
+	* print-rtl.c (print_rtx_head): Define.
+	(print_rtx): Print the string pointed to by print_rtx_head
+	at beginning of each dump line.
+	(print_rtl): Likewise.
+	(print_rtl_single): Likewise.
+	* final.c (final_scan_insn): Dump the insn in the assembly
+	file for debugging.
+	* gcc.1: Document -dP option.
+	* invoke.texi (Debugging Options): Likewise.
+
+2000-09-13  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* md.texi (Machine Constraints): Document the 68HC11 constraints.
 	* install.texi (Configurations): Document the 68HC11&68HC12 port.
 	* invoke.texi (Option Summary, M68hc1x Options): Document the options.
