@@ -1,3 +1,8 @@
+2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* exgettext: Replace "GNU CC" and "this program" with "GCC" in
+	copyright boilerplate.
+
 2003-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.pot: Regenerate.
