@@ -1,3 +1,9 @@
+2001-02-21  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (iorsi3): Do not output an extra newline
+	character.
+	(xorsi3): Likewise.
+
 Wed Feb 21 17:35:24 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (init_propagate_block_info): Canon address and use single_set
