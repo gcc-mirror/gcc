@@ -1,3 +1,9 @@
+2003-03-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*addsi3_and_r_1): Put under plus:SI
+	section of h8300.md
+	(*addsi3_and_nor_r_1): Likewise.
+
 2003-03-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologoue): Make sure backchain is
