@@ -1659,6 +1659,17 @@ pop{l} %0"							\
 
 #endif
 
+/* If defined, a C expression to determine the base term of address X.
+   This macro is used in only one place: `find_base_term' in alias.c.
+
+   It is always safe for this macro to not be defined.  It exists so
+   that alias analysis can understand machine-dependent addresses.
+
+   The typical use of this macro is to handle addresses containing
+   a label_ref or symbol_ref within an UNSPEC.  */
+
+#define FIND_BASE_TERM(X) ix86_find_base_term (x)
+
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
    This macro is used in only one place: `memory_address' in explow.c.

@@ -4453,6 +4453,17 @@ may serve in each capacity.  The compiler will try both labelings,
 looking for one that is valid, and will reload one or both registers
 only if neither labeling works.
 
+@findex FIND_BASE_TERM
+@item FIND_BASE_TERM (@var{x})
+A C expression to determine the base term of address @var{x}.
+This macro is used in only one place: `find_base_term' in alias.c.
+
+It is always safe for this macro to not be defined.  It exists so
+that alias analysis can understand machine-dependent addresses.
+
+The typical use of this macro is to handle addresses containing
+a label_ref or symbol_ref within an UNSPEC.
+
 @findex LEGITIMIZE_ADDRESS
 @item LEGITIMIZE_ADDRESS (@var{x}, @var{oldx}, @var{mode}, @var{win})
 A C compound statement that attempts to replace @var{x} with a valid

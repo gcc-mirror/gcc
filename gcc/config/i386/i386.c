@@ -2332,6 +2332,40 @@ ix86_address_cost (x)
   return cost;
 }
 
+/* If X is a machine specific address (i.e. a symbol or label being
+   referenced as a displacement from the GOT implemented using an
+   UNSPEC), then return the base term.  Otherwise return X.  */
+
+rtx
+ix86_find_base_term (x)
+     rtx x;
+{
+  rtx term;
+
+  if (GET_CODE (x) != PLUS
+      || XEXP (x, 0) != pic_offset_table_rtx
+      || GET_CODE (XEXP (x, 1)) != CONST)
+    return x;
+
+  term = XEXP (XEXP (x, 1), 0);
+
+  if (GET_CODE (term) == PLUS && GET_CODE (XEXP (term, 1)) == CONST_INT)
+    term = XEXP (term, 0);
+
+  if (GET_CODE (term) != UNSPEC
+      || XVECLEN (term, 0) != 1
+      || XINT (term, 1) !=  7)
+    return x;
+
+  term = XVECEXP (term, 0, 0);
+
+  if (GET_CODE (term) != SYMBOL_REF
+      && GET_CODE (term) != LABEL_REF)
+    return x;
+
+  return term;
+}
+
 /* Determine if a given CONST RTX is a valid memory displacement
    in PIC mode.  */
    
