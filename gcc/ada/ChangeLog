@@ -1,3 +1,7 @@
+2005-03-30  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* adaint.c (_gnat_set_close_on_exec): Mark parameters unused.
+
 2005-03-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb (Resolve_Real_Literal): Generate warning if static
