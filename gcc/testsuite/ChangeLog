@@ -1,5 +1,9 @@
 2003-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/noreturn-7.c: New test.
+
+2003-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/null-pointer-1.c: New test.
 
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
