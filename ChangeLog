@@ -1,3 +1,9 @@
+2003-10-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Make GCC_FLAGS_TO_PASS a superset of
+	HOST_FLAGS_TO_PASS.
+	* Makefile.in: Regenerate.
+
 2003-10-11  Bernardo Innocenti  <bernie@develer.com>
 
 	* config.guess: Update to 2003-10-07 version.
