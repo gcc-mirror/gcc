@@ -1,3 +1,10 @@
+2000-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in: Determine and substitute gcc_version_full.
+	* configure: Regenerate.
+	* gccbug.in: Use it to give full version.  Don't allow
+	confidential PRs.
+
 2000-10-28  Richard Henderson  <rth@redhat.com>
 
 	* recog.c (split_all_insns): Run cleanup_subreg_operands

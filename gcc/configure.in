@@ -4174,7 +4174,8 @@ else
 	gcc_version_trigger=${srcdir}/version.c
 fi
 changequote(,)dnl
-gcc_version=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
+gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
 changequote([,])dnl
 
 # Internationalization
@@ -5147,6 +5148,7 @@ AC_SUBST(extra_programs)
 AC_SUBST(float_h_file)
 AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_version)
+AC_SUBST(gcc_version_full)
 AC_SUBST(gcc_version_trigger)
 AC_SUBST(host_exeext)
 AC_SUBST(host_extra_gcc_objs)
@@ -5260,6 +5262,7 @@ dep_tmake_file='${dep_tmake_file}'
 tmake_file='${tmake_file}'
 thread_file='${thread_file}'
 gcc_version='${gcc_version}'
+gcc_version_full='${gcc_version_full}'
 gcc_version_trigger='${gcc_version_trigger}'
 local_prefix='${local_prefix}'
 build_install_headers_dir='${build_install_headers_dir}'

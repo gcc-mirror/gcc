@@ -30,7 +30,7 @@ SUBMITTER=net
 GNATS_ADDR=gcc-gnats@gcc.gnu.org
 
 # The default release for this host.
-DEFAULT_RELEASE="@gcc_version@"
+DEFAULT_RELEASE="@gcc_version_full@"
 
 # The default organization.
 DEFAULT_ORGANIZATION=
@@ -199,7 +199,6 @@ esac
 
 ORIGINATOR_C='<name of the PR author (one line)>'
 ORGANIZATION_C='<organization of PR author (multiple lines)>'
-CONFIDENTIAL_C='<[ yes | no ] (one line)>'
 SYNOPSIS_C='<synopsis of the problem (one line)>'
 if [ -z "$SEVERITY_C" ]; then
   SEVERITY_C='<[ non-critical | serious | critical ] (one line)>'
@@ -290,7 +289,8 @@ X-GNATS-Notify:
 >Submitter-Id:	$SUBMITTER
 >Originator:	$ORIGINATOR
 >Organization:	${ORGANIZATION-$ORGANIZATION_C}
->Confidential:	$CONFIDENTIAL_C
+>Confidential:	no
+SEND-PR: Leave "Confidential" as "no"; all GCC PRs are public.
 >Synopsis:	$SYNOPSIS_C
 >Severity:	$SEVERITY_C
 SEND-PR: critical     GCC is completely not operational; no work-around known.
@@ -380,7 +380,7 @@ while [ -z "$REQUEST_ID" ]; do
   PATTERN=">Confidential:"
   CONFIDENTIAL=`eval sed -n -e "\"$SED_CMD\"" $TEMP`
   case "$CONFIDENTIAL" in
-    ""|yes|no) CNT=`expr $CNT + 1` ;;
+    no) CNT=`expr $CNT + 1` ;;
     *) echo "$COMMAND: \`$CONFIDENTIAL' is not a valid value for \`Confidential'." ;;
   esac
   #
