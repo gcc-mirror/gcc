@@ -32,6 +32,7 @@ void test01()
 
   strb_01.sputn("broken peak", 11);
   pos_type pt_1 = strb_01.pubseekoff(0, ios_base::end, ios_base::out);
+
   // In general, according to 27.7.1.3,14, the below has undefined
   // behaviour since pt_1 + off_type(1) doesn't come from a
   // previous pubseekpos or pubseekoff. However, given v3 implementation,
