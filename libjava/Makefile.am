@@ -935,6 +935,7 @@ java/util/GregorianCalendar.java \
 java/util/HashMap.java \
 java/util/Hashtable.java \
 java/util/Iterator.java	\
+java/util/LinkedList.java \
 java/util/List.java \
 java/util/ListIterator.java \
 java/util/ListResourceBundle.java \
