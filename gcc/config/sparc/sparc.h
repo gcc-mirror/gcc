@@ -2680,26 +2680,25 @@ do {                                                                    \
 #define MULSI3_LIBCALL "*.umul"
 
 /* Define library calls for quad FP operations.  These are all part of the
-   SPARC ABI.
-   ??? ARCH64 still does not work as the _Qp_* routines take pointers.  */
-#define ADDTF3_LIBCALL (TARGET_ARCH64 ? "_Qp_add" : "_Q_add")
-#define SUBTF3_LIBCALL (TARGET_ARCH64 ? "_Qp_sub" : "_Q_sub")
-#define NEGTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_neg" : "_Q_neg")
-#define MULTF3_LIBCALL (TARGET_ARCH64 ? "_Qp_mul" : "_Q_mul")
-#define DIVTF3_LIBCALL (TARGET_ARCH64 ? "_Qp_div" : "_Q_div")
-#define FLOATSITF2_LIBCALL (TARGET_ARCH64 ? "_Qp_itoq" : "_Q_itoq")
-#define FIX_TRUNCTFSI2_LIBCALL (TARGET_ARCH64 ? "_Qp_qtoi" : "_Q_qtoi")
-#define FIXUNS_TRUNCTFSI2_LIBCALL (TARGET_ARCH64 ? "_Qp_qtoui" : "_Q_qtou")
-#define EXTENDSFTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_stoq" : "_Q_stoq")
-#define TRUNCTFSF2_LIBCALL (TARGET_ARCH64 ? "_Qp_qtos" :  "_Q_qtos")
-#define EXTENDDFTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_dtoq" : "_Q_dtoq")
-#define TRUNCTFDF2_LIBCALL (TARGET_ARCH64 ? "_Qp_qtod" : "_Q_qtod")
-#define EQTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_feq" : "_Q_feq")
-#define NETF2_LIBCALL (TARGET_ARCH64 ? "_Qp_fne" : "_Q_fne")
-#define GTTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_fgt" : "_Q_fgt")
-#define GETF2_LIBCALL (TARGET_ARCH64 ? "_Qp_fge" : "_Q_fge")
-#define LTTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_flt" : "_Q_flt")
-#define LETF2_LIBCALL (TARGET_ARCH64 ? "_Qp_fle" : "_Q_fle")
+   SPARC 32bit ABI.  */
+#define ADDTF3_LIBCALL "_Q_add"
+#define SUBTF3_LIBCALL "_Q_sub"
+#define NEGTF2_LIBCALL "_Q_neg"
+#define MULTF3_LIBCALL "_Q_mul"
+#define DIVTF3_LIBCALL "_Q_div"
+#define FLOATSITF2_LIBCALL "_Q_itoq"
+#define FIX_TRUNCTFSI2_LIBCALL "_Q_qtoi"
+#define FIXUNS_TRUNCTFSI2_LIBCALL "_Q_qtou"
+#define EXTENDSFTF2_LIBCALL "_Q_stoq"
+#define TRUNCTFSF2_LIBCALL "_Q_qtos"
+#define EXTENDDFTF2_LIBCALL "_Q_dtoq"
+#define TRUNCTFDF2_LIBCALL "_Q_qtod"
+#define EQTF2_LIBCALL "_Q_feq"
+#define NETF2_LIBCALL "_Q_fne"
+#define GTTF2_LIBCALL "_Q_fgt"
+#define GETF2_LIBCALL "_Q_fge"
+#define LTTF2_LIBCALL "_Q_flt"
+#define LETF2_LIBCALL "_Q_fle"
 
 /* We can define the TFmode sqrt optab only if TARGET_FPU.  This is because
    with soft-float, the SFmode and DFmode sqrt instructions will be absent,
@@ -2707,33 +2706,36 @@ do {                                                                    \
    for calls to the builtin function sqrt, but this fails.  */
 #define INIT_TARGET_OPTABS						\
   do {									\
-    add_optab->handlers[(int) TFmode].libfunc				\
-      = init_one_libfunc (ADDTF3_LIBCALL);				\
-    sub_optab->handlers[(int) TFmode].libfunc				\
-      = init_one_libfunc (SUBTF3_LIBCALL);				\
-    neg_optab->handlers[(int) TFmode].libfunc				\
-      = init_one_libfunc (NEGTF2_LIBCALL);				\
-    smul_optab->handlers[(int) TFmode].libfunc				\
-      = init_one_libfunc (MULTF3_LIBCALL);				\
-    flodiv_optab->handlers[(int) TFmode].libfunc			\
-      = init_one_libfunc (DIVTF3_LIBCALL);				\
-    eqtf2_libfunc = init_one_libfunc (EQTF2_LIBCALL);			\
-    netf2_libfunc = init_one_libfunc (NETF2_LIBCALL);			\
-    gttf2_libfunc = init_one_libfunc (GTTF2_LIBCALL);			\
-    getf2_libfunc = init_one_libfunc (GETF2_LIBCALL);			\
-    lttf2_libfunc = init_one_libfunc (LTTF2_LIBCALL);			\
-    letf2_libfunc = init_one_libfunc (LETF2_LIBCALL);			\
-    trunctfsf2_libfunc = init_one_libfunc (TRUNCTFSF2_LIBCALL);		\
-    trunctfdf2_libfunc = init_one_libfunc (TRUNCTFDF2_LIBCALL);		\
-    extendsftf2_libfunc = init_one_libfunc (EXTENDSFTF2_LIBCALL);	\
-    extenddftf2_libfunc = init_one_libfunc (EXTENDDFTF2_LIBCALL);	\
-    floatsitf_libfunc = init_one_libfunc (FLOATSITF2_LIBCALL);		\
-    fixtfsi_libfunc = init_one_libfunc (FIX_TRUNCTFSI2_LIBCALL);	\
-    fixunstfsi_libfunc							\
-      = init_one_libfunc (FIXUNS_TRUNCTFSI2_LIBCALL);			\
-    if (TARGET_FPU)							\
-      sqrt_optab->handlers[(int) TFmode].libfunc			\
-	= init_one_libfunc ("_Q_sqrt");					\
+    if (TARGET_ARCH32)							\
+      {									\
+	add_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (ADDTF3_LIBCALL);				\
+	sub_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (SUBTF3_LIBCALL);				\
+	neg_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (NEGTF2_LIBCALL);				\
+	smul_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (MULTF3_LIBCALL);				\
+	flodiv_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (DIVTF3_LIBCALL);				\
+	eqtf2_libfunc = init_one_libfunc (EQTF2_LIBCALL);		\
+	netf2_libfunc = init_one_libfunc (NETF2_LIBCALL);		\
+	gttf2_libfunc = init_one_libfunc (GTTF2_LIBCALL);		\
+	getf2_libfunc = init_one_libfunc (GETF2_LIBCALL);		\
+	lttf2_libfunc = init_one_libfunc (LTTF2_LIBCALL);		\
+	letf2_libfunc = init_one_libfunc (LETF2_LIBCALL);		\
+	trunctfsf2_libfunc = init_one_libfunc (TRUNCTFSF2_LIBCALL);	\
+	trunctfdf2_libfunc = init_one_libfunc (TRUNCTFDF2_LIBCALL);	\
+	extendsftf2_libfunc = init_one_libfunc (EXTENDSFTF2_LIBCALL);	\
+	extenddftf2_libfunc = init_one_libfunc (EXTENDDFTF2_LIBCALL);	\
+	floatsitf_libfunc = init_one_libfunc (FLOATSITF2_LIBCALL);	\
+	fixtfsi_libfunc = init_one_libfunc (FIX_TRUNCTFSI2_LIBCALL);	\
+	fixunstfsi_libfunc						\
+	  = init_one_libfunc (FIXUNS_TRUNCTFSI2_LIBCALL);		\
+	if (TARGET_FPU)							\
+	  sqrt_optab->handlers[(int) TFmode].libfunc			\
+	    = init_one_libfunc ("_Q_sqrt");				\
+      }									\
     INIT_SUBTARGET_OPTABS;						\
   } while (0)
 
