@@ -35,7 +35,7 @@
 #endif
 
 #ifndef __STL_NO_BAD_ALLOC
-#  include <bits/std_new.h>
+#  include <new>
 #endif
 
 __STL_BEGIN_NAMESPACE

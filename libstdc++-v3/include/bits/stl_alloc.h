@@ -44,7 +44,7 @@
 #    include <bits/std_cstdlib.h>
 #    define __THROW_BAD_ALLOC fprintf(stderr, "out of memory\n"); exit(1)
 #  else /* Standard conforming out-of-memory handling */
-#    include <bits/std_new.h>
+#    include <new>
 #    define __THROW_BAD_ALLOC throw std::bad_alloc()
 #  endif
 #endif

@@ -1490,13 +1490,16 @@ changequote([, ])
     yes) 
 	CSHADOWFLAGS="-fno-builtin"
         AC_DEFINE(_GLIBCPP_USE_SHADOW_HEADERS)
+	c_include_dir=c_std
 	;;
     no)   
 	CSHADOWFLAGS=""
+	c_include_dir=c
         ;;
   esac
 
   AC_SUBST(CSHADOWFLAGS)
+  AC_SUBST(c_include_dir)
   AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cshadow_headers" = yes)
 ])
 

@@ -28,7 +28,7 @@ noinst_LTLIBRARIES = libio.la
 
 INCLUDES = \
 	-nostdinc++ \
-	-I$(top_builddir) -I$(GLIBCPP_INCLUDES) \
+	-I$(top_builddir) -I$(GLIBCPP_INCLUDE_DIR) \
 	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 libio_headers = \

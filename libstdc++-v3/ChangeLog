@@ -1,3 +1,63 @@
+2000-10-10  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* Makefile.am (LIBSUPCXX_INCLUDES): Adjust.
+	* libsupc++/include: Remove
+	* libsupc++/include/*: Move to ...
+	* libsupc++: Here.
+	* libsupc++/Makefile.am (glibcppinstall_HEADERS): Install headers.
+	(glibcppinstalldir): New.
+	
+	* src/Makefile.am (c_base_headers): New.
+	(c_shadow_headers): New
+	(c_headers): New.
+	(myinstallheaders): Correct install issues.
+	* src/Makefile.in: Regenerate.
+	
+	* Makefile.am (CSHADOW_INCLUDES): Simplify.
+	* Makefile.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): Add c_include_dir.
+	* aclocal.m4: Regenerate.
+	* mkcheck.in (SRC_DIR): Use it.
+	
+	* include/bits/std_stdexcept.h: And here.
+	* include/bits/std_ios.h: Change std_exception.h to exception.
+	* src/locale.cc: And here.
+	* src/locale-inst.cc: And here.
+	
+	* include/bits/valarray_array.h: And here.
+	* include/bits/stl_alloc.h: And here.
+	* include/bits/stl_algobase.h: And here.
+	* include/bits/pthread_allocimpl.h: And here.
+	* include/bits/stl_construct.h: Change to std_new.h to new.
+
+	* include/bits/locale_facets.h: Change std_typeinfo.h to typeinfo.
+
+	* src/Makefile.am (INCLUDES): Add LIBSUPCXX_INCLUDES.
+	(headers): Remove duplicated headers.
+	(std_headers): And here.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am (LIBSUPCXX_INCLUDES): Remove.
+	* libsupc++/Makefile.in: Regenerate.
+	* Makefile.am (LIBSUPCXX_INCLUDES): Add here.
+	(AM_MAKEFLAGS): And here.
+	* Makefile.in: Regenerate.
+	* include/bits/std_typeinfo.h: Remove.
+	* include/bits/std_new.h: Remove
+	* include/bits/std_exception.h: Remove.
+	* std/new: Remove.
+	* std/typeinfo: Remove.
+	* std/exception: Remove.
+
+	* libio/_G_config.h (__need_ptrdiff_t): Add.
+	
+	* libsupc++/include/new: Change stddef.h to cstddef.
+	* libsupc++/tinfo.h: Change limits.h to climits.
+	* libsupc++/pure.cc: Comment out _GNU_LIBRARY_ bits, as this
+	renders the file uncompilable. Add copyright.
+
+	* include/c_std/bits/std_cstddef.h: Don't bring wchar_t into std
+	namespace, as it is a fundamental type.
+
 2000-10-09  Richard Henderson  <rth@cygnus.com>
 
 	* libsupc++/pure.cc: New file.

@@ -56,7 +56,8 @@ fi
 # INC_PATH == include path to new headers for use on gcc command-line
 if [ $WHICH != "1" ]; then
   INC_PATH="@CSHADOWFLAGS@ -I$BUILD_DIR -I$BUILD_DIR/libio \
-    -I$SRC_DIR/include/std -I$SRC_DIR/include -I$SRC_DIR/libio \
+    -I$SRC_DIR/include/std  -I$SRC_DIR/include/@c_include_dir@ \
+    -I$SRC_DIR/include -I$SRC_DIR/libsupc++/include -I$SRC_DIR/libio \
     -I$SRC_DIR/testsuite"
 elif [ $WHICH -eq 1 ]; then
   INC_PATH="-I$SRC_DIR/testsuite"

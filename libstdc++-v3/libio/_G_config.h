@@ -16,6 +16,7 @@
 #define __need_wchar_t
 #define __need_wint_t
 #define __need_NULL
+#define __need_ptrdiff_t
 #ifdef __cplusplus
 # include <cstddef>
 #else
