@@ -1,3 +1,17 @@
+2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (struct c_declspecs): Add const_p, volatile_p and
+	restrict_p.
+	(struct c_declarator): Change u.array.quals and pointer_quals to
+	int.  Add u.array.attrs.
+	(quals_from_declspecs): New.
+	* c-decl.c (quals_from_declspecs): New.
+	(shadow_tag_warned): Give more specific message for useless type
+	qualifiers.
+	(build_array_declarator, set_array_declarator_inner,
+	grokdeclarator, make_pointer_declarator, build_null_declspecs,
+	declspecs_add_qual): Update for changed structures.
+
 2004-09-14  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (stmts_to_rescan): Move from a block-local
