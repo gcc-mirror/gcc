@@ -1,3 +1,11 @@
+2004-02-17  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.ac: When generating auto-build.h, pass
+	--enable-languages to the sub-configure.
+	Put quotes around ${program_transform_name} when generating
+	name of as, ld, nm, objdump.
+	* configure: Regenerate.
+
 2004-02-17  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* Makefile.in (s-check, s-config, s-conditions, s-flags)
