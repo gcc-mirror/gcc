@@ -616,6 +616,11 @@ regclass (f, nregs)
 		      /* This makes one more setting of new insns's dest. */
 		      reg_n_sets[REGNO (recog_operand[0])]++;
 
+		      *recog_operand_loc[1] = recog_operand[0];
+		      for (i = insn_n_dups[insn_code_number] - 1; i >= 0; i--)
+			if (recog_dup_num[i] == 1)
+			  *recog_dup_loc[i] = recog_operand[0];
+
 		      insn = PREV_INSN (newinsn);
 		      continue;
 		    }
