@@ -346,9 +346,6 @@ void
 bitmap_copy (bitmap to, bitmap from)
 {
   bitmap_element *from_ptr, *to_ptr = 0;
-#if BITMAP_ELEMENT_WORDS != 2
-  unsigned i;
-#endif
 
   bitmap_clear (to);
 
@@ -358,14 +355,7 @@ bitmap_copy (bitmap to, bitmap from)
       bitmap_element *to_elt = bitmap_element_allocate (to);
 
       to_elt->indx = from_ptr->indx;
-
-#if BITMAP_ELEMENT_WORDS == 2
-      to_elt->bits[0] = from_ptr->bits[0];
-      to_elt->bits[1] = from_ptr->bits[1];
-#else
-      for (i = 0; i < BITMAP_ELEMENT_WORDS; i++)
-	to_elt->bits[i] = from_ptr->bits[i];
-#endif
+      memcpy (to_elt->bits, from_ptr->bits, sizeof (to_elt->bits));
 
       /* Here we have a special case of bitmap_element_link, for the case
 	 where we know the links are being entered in sequence.  */
