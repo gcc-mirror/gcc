@@ -42,11 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "tm_p.h"
 #include "errors.h"
-
-static int machopic_data_defined_p (const char *);
-static void update_non_lazy_ptrs (const char *);
-static void update_stubs (const char *);
-static const char *machopic_non_lazy_ptr_name (const char*);
+#include "hashtab.h"
 
 int
 name_needs_quotes (const char *name)
@@ -63,131 +59,37 @@ name_needs_quotes (const char *name)
  * flag_pic = 2 ... generate indirections and pure code
  */
 
+static int
+machopic_symbol_defined_p (rtx sym_ref)
+{
+  return ((SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_DEFINED)
+	  /* Local symbols must always be defined.  */
+	  || SYMBOL_REF_LOCAL_P (sym_ref));
+}
+
 /* This module assumes that (const (symbol_ref "foo")) is a legal pic
    reference, which will not be changed.  */
 
-static GTY(()) tree machopic_defined_list;
-
 enum machopic_addr_class
-machopic_classify_ident (tree ident)
+machopic_classify_symbol (rtx sym_ref)
 {
-  const char *name = IDENTIFIER_POINTER (ident);
-  int lprefix = (((name[0] == '*' || name[0] == '&')
-		  && (name[1] == 'L' || (name[1] == '"' && name[2] == 'L')))
-		 || (   name[0] == '_'
-		     && name[1] == 'O'
-		     && name[2] == 'B'
-		     && name[3] == 'J'
-		     && name[4] == 'C'
-		     && name[5] == '_'));
-  tree temp;
+  int flags;
+  bool function_p;
 
-  /* The PIC base symbol is always defined.  */
-  if (! strcmp (name, "<pic base>"))
-    return MACHOPIC_DEFINED_DATA;
-
-  if (name[0] != '!')
-    {
-      /* Here if no special encoding to be found.  */
-      if (lprefix)
-	{
-	  const char *name = IDENTIFIER_POINTER (ident);
-	  int len = strlen (name);
-
-	  if ((len > 5 && !strcmp (name + len - 5, "$stub"))
-	      || (len > 6 && !strcmp (name + len - 6, "$stub\"")))
-	    return MACHOPIC_DEFINED_FUNCTION;
-	  return MACHOPIC_DEFINED_DATA;
-	}
-
-      for (temp = machopic_defined_list;
-	   temp != NULL_TREE;
-	   temp = TREE_CHAIN (temp))
-	{
-	  if (ident == TREE_VALUE (temp))
-	    return MACHOPIC_DEFINED_DATA;
-	}
-
-      if (TREE_ASM_WRITTEN (ident))
-	return MACHOPIC_DEFINED_DATA;
-
-      return MACHOPIC_UNDEFINED;
-    }
-
-  else if (name[1] == 'D')
-    return MACHOPIC_DEFINED_DATA;
-
-  else if (name[1] == 'T')
-    return MACHOPIC_DEFINED_FUNCTION;
-
-  /* It is possible that someone is holding a "stale" name, which has
-     since been defined.  See if there is a "defined" name (i.e,
-     different from NAME only in having a '!D_' or a '!T_' instead of
-     a '!d_' or '!t_' prefix) in the identifier hash tables.  If so, say
-     that this identifier is defined.  */
-  else if (name[1] == 'd' || name[1] == 't')
-    {
-      char *new_name;
-      new_name = (char *)alloca (strlen (name) + 1);
-      strcpy (new_name, name);
-      new_name[1] = (name[1] == 'd') ? 'D' : 'T';
-      if (maybe_get_identifier (new_name) != NULL)
-	return  (name[1] == 'd') ? MACHOPIC_DEFINED_DATA
-				 : MACHOPIC_DEFINED_FUNCTION;
-    }
-
-  for (temp = machopic_defined_list; temp != NULL_TREE; temp = TREE_CHAIN (temp))
-    {
-      if (ident == TREE_VALUE (temp))
-	{
-	  if (name[1] == 'T')
-	    return MACHOPIC_DEFINED_FUNCTION;
-	  else
-	    return MACHOPIC_DEFINED_DATA;
-	}
-    }
-
-  if (name[1] == 't' || name[1] == 'T')
-    {
-      if (lprefix)
-	return MACHOPIC_DEFINED_FUNCTION;
-      else
-	return MACHOPIC_UNDEFINED_FUNCTION;
-    }
+  flags = SYMBOL_REF_FLAGS (sym_ref);
+  function_p = SYMBOL_REF_FUNCTION_P (sym_ref);
+  if (machopic_symbol_defined_p (sym_ref))
+    return (function_p 
+	    ? MACHOPIC_DEFINED_FUNCTION : MACHOPIC_DEFINED_DATA);
   else
-    {
-      if (lprefix)
-	return MACHOPIC_DEFINED_DATA;
-      else
-	return MACHOPIC_UNDEFINED_DATA;
-    }
-}
-
-
-enum machopic_addr_class
-machopic_classify_name (const char *name)
-{
-  return machopic_classify_ident (get_identifier (name));
-}
-
-int
-machopic_ident_defined_p (tree ident)
-{
-  switch (machopic_classify_ident (ident))
-    {
-    case MACHOPIC_UNDEFINED:
-    case MACHOPIC_UNDEFINED_DATA:
-    case MACHOPIC_UNDEFINED_FUNCTION:
-      return 0;
-    default:
-      return 1;
-    }
+    return (function_p 
+	    ? MACHOPIC_UNDEFINED_FUNCTION : MACHOPIC_UNDEFINED_DATA);
 }
 
 static int
-machopic_data_defined_p (const char *name)
+machopic_data_defined_p (rtx sym_ref)
 {
-  switch (machopic_classify_ident (get_identifier (name)))
+  switch (machopic_classify_symbol (sym_ref))
     {
     case MACHOPIC_DEFINED_DATA:
       return 1;
@@ -196,24 +98,14 @@ machopic_data_defined_p (const char *name)
     }
 }
 
-int
-machopic_name_defined_p (const char *name)
-{
-  return machopic_ident_defined_p (get_identifier (name));
-}
-
 void
-machopic_define_ident (tree ident)
+machopic_define_symbol (rtx mem)
 {
-  if (!machopic_ident_defined_p (ident))
-    machopic_defined_list =
-      tree_cons (NULL_TREE, ident, machopic_defined_list);
-}
-
-void
-machopic_define_name (const char *name)
-{
-  machopic_define_ident (get_identifier (name));
+  rtx sym_ref;
+  if (GET_CODE (mem) != MEM)
+    abort ();
+  sym_ref = XEXP (mem, 0);
+  SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_DEFINED;
 }
 
 static GTY(()) char * function_base;
@@ -232,6 +124,19 @@ machopic_function_base_name (void)
   current_function_uses_pic_offset_table = 1;
 
   return function_base;
+}
+
+/* Return a SYMBOL_REF for the PIC function base.  */
+
+rtx
+machopic_function_base_sym (void)
+{
+  rtx sym_ref;
+
+  sym_ref = gen_rtx_SYMBOL_REF (Pmode, machopic_function_base_name ());
+  SYMBOL_REF_FLAGS (sym_ref) 
+    |= (MACHO_SYMBOL_FLAG_VARIABLE | MACHO_SYMBOL_FLAG_DEFINED);
+  return sym_ref;
 }
 
 static GTY(()) const char * function_base_func_name;
@@ -255,182 +160,155 @@ machopic_output_function_base_name (FILE *file)
   fprintf (file, "\"L%011d$pb\"", current_pic_label_num);
 }
 
-static GTY(()) tree machopic_non_lazy_pointers;
+/* The suffix attached to non-lazy pointer symbols.  */
+#define NON_LAZY_POINTER_SUFFIX "$non_lazy_ptr"
+/* The suffix attached to stub symbols.  */
+#define STUB_SUFFIX "$stub"
 
-/* Return a non-lazy pointer name corresponding to the given name,
-   either by finding it in our list of pointer names, or by generating
-   a new one.  */
-
-static const char *
-machopic_non_lazy_ptr_name (const char *name)
+typedef struct machopic_indirection GTY (())
 {
-  const char *temp_name;
-  tree temp, ident = get_identifier (name);
+  /* The SYMBOL_REF for the entity referenced.  */
+  rtx symbol;
+  /* The IDENTIFIER_NODE giving the name of the stub or non-lazy
+     pointer.  */
+  tree ptr_name;
+  /* True iff this entry is for a stub (as opposed to a non-lazy
+     pointer).  */
+  bool stub_p;
+  /* True iff this stub or pointer pointer has been referenced.  */
+  bool used;
+} machopic_indirection;
 
-  for (temp = machopic_non_lazy_pointers;
-       temp != NULL_TREE;
-       temp = TREE_CHAIN (temp))
-    {
-      if (ident == TREE_VALUE (temp))
-	return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
-    }
+/* A table mapping stub names and non-lazy pointer names to
+   SYMBOL_REFs for the stubbed-to and pointed-to entities.  */
 
-  name = darwin_strip_name_encoding (name);
+static GTY ((param_is (struct machopic_indirection))) htab_t 
+  machopic_indirections;
 
-  /* Try again, but comparing names this time.  */
-  for (temp = machopic_non_lazy_pointers;
-       temp != NULL_TREE;
-       temp = TREE_CHAIN (temp))
-    {
-      if (TREE_VALUE (temp))
-	{
-	  temp_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-	  temp_name = darwin_strip_name_encoding (temp_name);
-	  if (strcmp (name, temp_name) == 0)
-	    return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
-	}
-    }
+/* Return a hash value for a SLOT in the indirections hash table.  */
 
-  {
-    char *buffer;
-    int namelen = strlen (name);
-    int bufferlen = 0;
-    tree ptr_name;
-
-    buffer = alloca (namelen + strlen("$non_lazy_ptr") + 5);
-
-    strcpy (buffer, "&L");
-    bufferlen = 2;
-    if (name[0] == '*')
-      {
-        memcpy (buffer + bufferlen, name+1, namelen-1+1);
-        bufferlen += namelen-1;
-      }
-    else
-      {
-	strcpy (buffer + bufferlen, user_label_prefix);
-	bufferlen += strlen (user_label_prefix);
-	memcpy (buffer + bufferlen, name, namelen+1);
-        bufferlen += namelen;
-      }
-
-    memcpy (buffer + bufferlen, "$non_lazy_ptr", strlen("$non_lazy_ptr")+1);
-    bufferlen += strlen("$non_lazy_ptr");
-    ptr_name = get_identifier (buffer);
-
-    machopic_non_lazy_pointers
-      = tree_cons (ptr_name, ident, machopic_non_lazy_pointers);
-
-    TREE_USED (machopic_non_lazy_pointers) = 0;
-
-    return IDENTIFIER_POINTER (ptr_name);
-  }
+static hashval_t
+machopic_indirection_hash (const void *slot)
+{
+  const machopic_indirection *p = (const machopic_indirection *) slot;
+  return IDENTIFIER_HASH_VALUE (p->ptr_name);
 }
 
-static GTY(()) tree machopic_stubs;
+/* Returns true if the KEY is the same as that associated with
+   SLOT.  */
 
-/* Return the name of the stub corresponding to the given name,
-   generating a new stub name if necessary.  */
+static int
+machopic_indirection_eq (const void *slot, const void *key)
+{
+  return ((const machopic_indirection *) slot)->ptr_name == (tree) key;
+}
+
+/* Return the name of the non-lazy pointer (if STUB_P is false) or
+   stub (if STUB_B is true) corresponding to the given name.  */
 
 const char *
-machopic_stub_name (const char *name)
+machopic_indirection_name (rtx sym_ref, bool stub_p)
 {
-  tree temp, ident = get_identifier (name);
-  const char *tname;
-
-  for (temp = machopic_stubs;
-       temp != NULL_TREE;
-       temp = TREE_CHAIN (temp))
+  char *buffer;
+  const char *name = XSTR (sym_ref, 0);
+  int namelen = strlen (name);
+  tree ptr_name;
+  machopic_indirection *p;
+  
+  /* Construct the name of the non-lazy pointer or stub.  */
+  if (stub_p)
     {
-      if (ident == TREE_VALUE (temp))
-	return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
-      tname = IDENTIFIER_POINTER (TREE_VALUE (temp));
-      if (strcmp (name, tname) == 0)
-	return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
-      /* A library call name might not be section-encoded yet, so try
-	 it against a stripped name.  */
-      if (name[0] != '!'
-	  && tname[0] == '!'
-	  && strcmp (name, tname + 4) == 0)
-	return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
+      int needs_quotes = name_needs_quotes (name);
+      buffer = alloca (strlen ("&L")
+		       + namelen
+		       + strlen (STUB_SUFFIX)
+		       + 2 /* possible quotes */
+		       + 1 /* '\0' */);
+
+      if (needs_quotes)
+	{
+	  if (name[0] == '*')
+	    sprintf (buffer, "&\"L%s" STUB_SUFFIX "\"", name + 1);
+	  else
+	    sprintf (buffer, "&\"L%s%s" STUB_SUFFIX "\"", user_label_prefix, 
+		     name);
+	}
+      else if (name[0] == '*')
+	sprintf (buffer, "&L%s" STUB_SUFFIX, name + 1);
+      else
+	sprintf (buffer, "&L%s%s" STUB_SUFFIX, user_label_prefix, name);
+    }
+  else
+    {
+      buffer = alloca (strlen ("&L")
+		       + strlen (user_label_prefix)
+		       + namelen
+		       + strlen (NON_LAZY_POINTER_SUFFIX)
+		       + 1 /* '\0' */);
+      if (name[0] == '*')
+	sprintf (buffer, "&L%s" NON_LAZY_POINTER_SUFFIX, name + 1);
+      else
+	sprintf (buffer, "&L%s%s" NON_LAZY_POINTER_SUFFIX, 
+		 user_label_prefix, name);
     }
 
-  name = darwin_strip_name_encoding (name);
-
-  {
-    char *buffer;
-    int bufferlen = 0;
-    int namelen = strlen (name);
-    tree ptr_name;
-    int needs_quotes = name_needs_quotes (name);
-
-    buffer = alloca (namelen + 20);
-
-    if (needs_quotes)
-      {
-        strcpy (buffer, "&\"L");
-        bufferlen = strlen("&\"L");
-      }
-    else
-      {
-        strcpy (buffer, "&L");
-        bufferlen = strlen("&L");
-      }
-    
-    if (name[0] == '*')
-      {
-	memcpy (buffer + bufferlen, name+1, namelen - 1 +1);
-        bufferlen += namelen - 1;
-      }
-    else
-      {
-	strcpy (buffer + bufferlen, user_label_prefix);
-	bufferlen += strlen (user_label_prefix);
-	memcpy (buffer + bufferlen, name, namelen+1);
-        bufferlen += namelen;
-      }
-
-    if (needs_quotes)
-      {
-        memcpy (buffer + bufferlen, "$stub\"", strlen("$stub\"")+1);
-        bufferlen += strlen("$stub\"");
-      }
-    else
-      {
-        memcpy (buffer + bufferlen, "$stub", strlen("$stub")+1);
-        bufferlen += strlen("$stub");
-      }
-    ptr_name = get_identifier (buffer);
-
-    machopic_stubs = tree_cons (ptr_name, ident, machopic_stubs);
-    TREE_USED (machopic_stubs) = 0;
-
-    return IDENTIFIER_POINTER (ptr_name);
-  }
+  /* See if we already have it.  */
+  ptr_name = maybe_get_identifier (buffer);
+  /* If not, create a mapping from the non-lazy pointer to the
+     SYMBOL_REF.  */
+  if (!ptr_name)
+    {
+      void **slot;
+      ptr_name = get_identifier (buffer);
+      p = (machopic_indirection *) ggc_alloc (sizeof (machopic_indirection));
+      p->symbol = sym_ref;
+      p->ptr_name = ptr_name;
+      p->stub_p = stub_p;
+      p->used = 0;
+      if (!machopic_indirections)
+	machopic_indirections 
+	  = htab_create_ggc (37, 
+			     machopic_indirection_hash,
+			     machopic_indirection_eq,
+			     /*htab_del=*/NULL);
+      slot = htab_find_slot_with_hash (machopic_indirections, ptr_name,
+				       IDENTIFIER_HASH_VALUE (ptr_name),
+				       INSERT);
+      *((machopic_indirection **) slot) = p;
+    }
+  
+  return IDENTIFIER_POINTER (ptr_name);
 }
 
-void
-machopic_validate_stub_or_non_lazy_ptr (const char *name, int validate_stub)
-{
-  const char *real_name;
-  tree temp, ident = get_identifier (name), id2;
+/* Return the name of the stub for the mcount function.  */
 
-    for (temp = (validate_stub ? machopic_stubs : machopic_non_lazy_pointers);
-         temp != NULL_TREE;
-         temp = TREE_CHAIN (temp))
-      if (ident == TREE_PURPOSE (temp))
-	{
-	  /* Mark both the stub or non-lazy pointer as well as the
-	     original symbol as being referenced.  */
-          TREE_USED (temp) = 1;
-	  if (TREE_CODE (TREE_VALUE (temp)) == IDENTIFIER_NODE)
-	    mark_referenced (TREE_VALUE (temp));
-	  real_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-	  real_name = darwin_strip_name_encoding (real_name);
-	  id2 = maybe_get_identifier (real_name);
-	  if (id2)
-	    mark_referenced (id2);
-	}
+const char*
+machopic_mcount_stub_name (void)
+{
+  return "&L*mcount$stub";
+}
+
+/* If NAME is the name of a stub or a non-lazy pointer , mark the stub
+   or non-lazy pointer as used -- and mark the object to which the
+   pointer/stub refers as used as well, since the pointer/stub will
+   emit a reference to it.  */
+
+void
+machopic_validate_stub_or_non_lazy_ptr (const char *name)
+{
+  tree ident = get_identifier (name);
+
+  machopic_indirection *p;
+  
+  p = ((machopic_indirection *) 
+       (htab_find_with_hash (machopic_indirections, ident,
+			     IDENTIFIER_HASH_VALUE (ident))));
+  if (p)
+    {
+      p->used = 1;
+      mark_referenced (ident);
+      mark_referenced (get_identifier (XSTR (p->symbol, 0)));
+    }
 }
 
 /* Transform ORIG, which may be any data source, to the corresponding
@@ -446,8 +324,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 
   if (GET_CODE (orig) == SYMBOL_REF)
     {
-      const char *name = XSTR (orig, 0);
-      int defined = machopic_data_defined_p (name);
+      int defined = machopic_data_defined_p (orig);
 
       if (defined && MACHO_DYNAMIC_NO_PIC_P)
 	{
@@ -463,8 +340,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
       else if (defined)
 	{
 #if defined (TARGET_TOC) || defined (HAVE_lo_sum)
-	  rtx pic_base = gen_rtx_SYMBOL_REF (Pmode,
-					     machopic_function_base_name ());
+	  rtx pic_base = machopic_function_base_sym ();
 	  rtx offset = gen_rtx_CONST (Pmode,
 				      gen_rtx_MINUS (Pmode, orig, pic_base));
 #endif
@@ -498,8 +374,9 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	  return orig;
 	}
 
-      ptr_ref = gen_rtx_SYMBOL_REF (Pmode,
-				    machopic_non_lazy_ptr_name (name));
+      ptr_ref = (gen_rtx_SYMBOL_REF 
+		 (Pmode, 
+		  machopic_indirection_name (orig, /*stub_p=*/false)));
 
      SYMBOL_REF_DECL (ptr_ref) = SYMBOL_REF_DECL (orig);
 
@@ -575,24 +452,20 @@ machopic_indirect_call_target (rtx target)
   if (GET_CODE (target) != MEM)
     return target;
 
-  if (MACHOPIC_INDIRECT && GET_CODE (XEXP (target, 0)) == SYMBOL_REF)
+  if (MACHOPIC_INDIRECT 
+      && GET_CODE (XEXP (target, 0)) == SYMBOL_REF
+      && !(SYMBOL_REF_FLAGS (XEXP (target, 0))
+	   & MACHO_SYMBOL_FLAG_DEFINED))
     {
-      enum machine_mode mode = GET_MODE (XEXP (target, 0));
-      const char *name = XSTR (XEXP (target, 0), 0);
-
-      /* If the name is already defined, we need do nothing.  */
-      if (name[0] == '!' && name[1] == 'T')
-	return target;
-
-      if (!machopic_name_defined_p (name))
-	{
-	  const char *stub_name = machopic_stub_name (name);
-	  tree decl = SYMBOL_REF_DECL (XEXP (target, 0));
-
-	  XEXP (target, 0) = gen_rtx_SYMBOL_REF (mode, stub_name);
-	  SYMBOL_REF_DECL (XEXP (target, 0)) = decl;
-	  RTX_UNCHANGING_P (target) = 1;
-	}
+      rtx sym_ref = XEXP (target, 0);
+      const char *stub_name = machopic_indirection_name (sym_ref, 
+							 /*stub_p=*/true);
+      enum machine_mode mode = GET_MODE (sym_ref);
+      tree decl = SYMBOL_REF_DECL (sym_ref);
+      
+      XEXP (target, 0) = gen_rtx_SYMBOL_REF (mode, stub_name);
+      SYMBOL_REF_DECL (XEXP (target, 0)) = decl;
+      RTX_UNCHANGING_P (target) = 1;
     }
 
   return target;
@@ -630,7 +503,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
       if (MACHO_DYNAMIC_NO_PIC_P)
 	pic_base = CONST0_RTX (Pmode);
       else
-      pic_base = gen_rtx_SYMBOL_REF (Pmode, machopic_function_base_name ());
+	pic_base = machopic_function_base_sym ();
 
       if (GET_CODE (orig) == MEM)
 	{
@@ -885,25 +758,30 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
   return pic_ref;
 }
 
+/* Output the stub or non-lazy pointer in *SLOT, if it has been used.
+   DATA is the FILE* for assembly output.  Called from
+   htab_traverse.  */
 
-void
-machopic_finish (FILE *asm_out_file)
+static int
+machopic_output_indirection (void **slot, void *data)
 {
-  tree temp;
+  machopic_indirection *p = *((machopic_indirection **) slot);
+  FILE *asm_out_file = (FILE *) data;
+  rtx symbol;
+  const char *sym_name;
+  const char *ptr_name;
+  
+  if (!p->used)
+    return 1;
 
-  for (temp = machopic_stubs;
-       temp != NULL_TREE;
-       temp = TREE_CHAIN (temp))
+  symbol = p->symbol;
+  sym_name = XSTR (symbol, 0);
+  ptr_name = IDENTIFIER_POINTER (p->ptr_name);
+  
+  if (p->stub_p)
     {
-      const char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-      const char *stub_name = IDENTIFIER_POINTER (TREE_PURPOSE (temp));
       char *sym;
       char *stub;
-
-      if (! TREE_USED (temp))
-	continue;
-
-      sym_name = darwin_strip_name_encoding (sym_name);
 
       sym = alloca (strlen (sym_name) + 2);
       if (sym_name[0] == '*' || sym_name[0] == '&')
@@ -913,48 +791,47 @@ machopic_finish (FILE *asm_out_file)
       else
 	sprintf (sym, "%s%s", user_label_prefix, sym_name);
 
-      stub = alloca (strlen (stub_name) + 2);
-      if (stub_name[0] == '*' || stub_name[0] == '&')
-	strcpy (stub, stub_name + 1);
+      stub = alloca (strlen (ptr_name) + 2);
+      if (ptr_name[0] == '*' || ptr_name[0] == '&')
+	strcpy (stub, ptr_name + 1);
       else
-	sprintf (stub, "%s%s", user_label_prefix, stub_name);
+	sprintf (stub, "%s%s", user_label_prefix, ptr_name);
 
-      machopic_output_stub (asm_out_file, sym, stub);
+      machopic_output_stub (asm_out_file, sym, stub);    
     }
-
-  for (temp = machopic_non_lazy_pointers;
-       temp != NULL_TREE;
-       temp = TREE_CHAIN (temp))
+  else if (machopic_symbol_defined_p (symbol))
     {
-      const char *const sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-      const char *const lazy_name = IDENTIFIER_POINTER (TREE_PURPOSE (temp));
-
-      if (! TREE_USED (temp))
-	continue;
-
-      if (machopic_ident_defined_p (TREE_VALUE (temp)))
-	{
-	  data_section ();
-	  assemble_align (GET_MODE_ALIGNMENT (Pmode));
-	  assemble_label (lazy_name);
-	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, sym_name),
-			    GET_MODE_SIZE (Pmode),
-			    GET_MODE_ALIGNMENT (Pmode), 1);
-	}
-      else
-	{
-	  machopic_nl_symbol_ptr_section ();
-	  assemble_name (asm_out_file, lazy_name);
-	  fprintf (asm_out_file, ":\n");
-
-	  fprintf (asm_out_file, "\t.indirect_symbol ");
-	  assemble_name (asm_out_file, sym_name);
-	  fprintf (asm_out_file, "\n");
-
-	  assemble_integer (const0_rtx, GET_MODE_SIZE (Pmode),
-			    GET_MODE_ALIGNMENT (Pmode), 1);
-	}
+      data_section ();
+      assemble_align (GET_MODE_ALIGNMENT (Pmode));
+      assemble_label (ptr_name);
+      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, sym_name),
+			GET_MODE_SIZE (Pmode),
+			GET_MODE_ALIGNMENT (Pmode), 1);
     }
+  else
+    {
+      machopic_nl_symbol_ptr_section ();
+      assemble_name (asm_out_file, ptr_name);
+      fprintf (asm_out_file, ":\n");
+      
+      fprintf (asm_out_file, "\t.indirect_symbol ");
+      assemble_name (asm_out_file, sym_name);
+      fprintf (asm_out_file, "\n");
+      
+      assemble_integer (const0_rtx, GET_MODE_SIZE (Pmode),
+			GET_MODE_ALIGNMENT (Pmode), 1);
+    }
+  
+  return 1;
+}
+
+void
+machopic_finish (FILE *asm_out_file)
+{
+  if (machopic_indirections)
+    htab_traverse_noresize (machopic_indirections, 
+			    machopic_output_indirection,
+			    asm_out_file);
 }
 
 int
@@ -966,7 +843,7 @@ machopic_operand_p (rtx op)
 	op = XEXP (op, 0);
 
       if (GET_CODE (op) == SYMBOL_REF)
-	return machopic_name_defined_p (XSTR (op, 0));
+	return machopic_symbol_defined_p (op);
       else
 	return 0;
     }
@@ -977,8 +854,8 @@ machopic_operand_p (rtx op)
   if (GET_CODE (op) == MINUS
       && GET_CODE (XEXP (op, 0)) == SYMBOL_REF
       && GET_CODE (XEXP (op, 1)) == SYMBOL_REF
-      && machopic_name_defined_p (XSTR (XEXP (op, 0), 0))
-      && machopic_name_defined_p (XSTR (XEXP (op, 1), 0)))
+      && machopic_symbol_defined_p (XEXP (op, 0))
+      && machopic_symbol_defined_p (XEXP (op, 1)))
       return 1;
 
   return 0;
@@ -991,140 +868,25 @@ machopic_operand_p (rtx op)
 void
 darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 {
-  char code = '\0';
-  int defined = 0;
   rtx sym_ref;
-  const char *orig_str;
-  char *new_str;
-  size_t len, new_len;
 
   /* Do the standard encoding things first.  */
   default_encode_section_info (decl, rtl, first);
 
-  /* With the introduction of symbol_ref flags, some of the following
-     code has become redundant and should be removed at some point.  */
+  if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+    return;
 
-  if ((TREE_CODE (decl) == FUNCTION_DECL
-       || TREE_CODE (decl) == VAR_DECL)
-      && !DECL_EXTERNAL (decl)
+  sym_ref = XEXP (rtl, 0);
+  if (TREE_CODE (decl) == VAR_DECL)
+    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_VARIABLE;
+
+  if (!DECL_EXTERNAL (decl)
       && (!TREE_PUBLIC (decl) || (!DECL_ONE_ONLY (decl) && !DECL_WEAK (decl)))
       && ((TREE_STATIC (decl)
 	   && (!DECL_COMMON (decl) || !TREE_PUBLIC (decl)))
 	  || (!DECL_COMMON (decl) && DECL_INITIAL (decl)
 	      && DECL_INITIAL (decl) != error_mark_node)))
-    defined = 1;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    code = (defined ? 'T' : 't');
-  else if (TREE_CODE (decl) == VAR_DECL)
-    code = (defined ? 'D' : 'd');
-
-  if (code == '\0')
-    return;
-
-  sym_ref = XEXP (rtl, 0);
-  orig_str = XSTR (sym_ref, 0);
-  len = strlen (orig_str) + 1;
-
-  if (orig_str[0] == '!')
-    {
-      /* Already encoded; see if we need to change it.  */
-      if (code == orig_str[1])
-	return;
-      /* Yes, tweak a copy of the name and put it in a new string.  */
-      new_str = alloca (len);
-      memcpy (new_str, orig_str, len);
-      new_str[1] = code;
-      XSTR (sym_ref, 0) = ggc_alloc_string (new_str, len);
-    }
-  else
-    {
-      /* Add the encoding.  */
-      new_len = len + 4;
-      new_str = alloca (new_len);
-      new_str[0] = '!';
-      new_str[1] = code;
-      new_str[2] = '_';
-      new_str[3] = '_';
-      memcpy (new_str + 4, orig_str, len);
-      XSTR (sym_ref, 0) = ggc_alloc_string (new_str, new_len);
-    }
-  /* The non-lazy pointer list may have captured references to the
-     old encoded name, change them.  */
-  if (TREE_CODE (decl) == VAR_DECL)
-    update_non_lazy_ptrs (XSTR (sym_ref, 0));
-  else
-    update_stubs (XSTR (sym_ref, 0));
-}
-
-/* Undo the effects of the above.  */
-
-const char *
-darwin_strip_name_encoding (const char *str)
-{
-  return str[0] == '!' ? str + 4 : str;
-}
-
-/* Scan the list of non-lazy pointers and update any recorded names whose
-   stripped name matches the argument.  */
-
-static void
-update_non_lazy_ptrs (const char *name)
-{
-  const char *name1, *name2;
-  tree temp;
-
-  name1 = darwin_strip_name_encoding (name);
-
-  for (temp = machopic_non_lazy_pointers;
-       temp != NULL_TREE;
-       temp = TREE_CHAIN (temp))
-    {
-      const char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-
-      if (*sym_name == '!')
-	{
-	  name2 = darwin_strip_name_encoding (sym_name);
-	  if (strcmp (name1, name2) == 0)
-	    {
-	      /* FIXME: This breaks the identifier hash table.  */
-	      IDENTIFIER_NODE_CHECK (TREE_VALUE (temp))->identifier.id.str
-		= (unsigned char *) name;
-	      break;
-	    }
-	}
-    }
-}
-
-/* Scan the list of stubs and update any recorded names whose
-   stripped name matches the argument.  */
-
-static void
-update_stubs (const char *name)
-{
-  const char *name1, *name2;
-  tree temp;
-
-  name1 = darwin_strip_name_encoding (name);
-
-  for (temp = machopic_stubs;
-       temp != NULL_TREE;
-       temp = TREE_CHAIN (temp))
-    {
-      const char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-
-      if (*sym_name == '!')
-	{
-	  name2 = darwin_strip_name_encoding (sym_name);
-	  if (strcmp (name1, name2) == 0)
-	    {
-	      /* FIXME: This breaks the identifier hash table.  */
-	      IDENTIFIER_NODE_CHECK (TREE_VALUE (temp))->identifier.id.str
-		= (unsigned char *) name;
-	      break;
-	    }
-	}
-    }
+    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_DEFINED;
 }
 
 void
@@ -1417,14 +1179,12 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
 void
 darwin_non_lazy_pcrel (FILE *file, rtx addr)
 {
-  const char *str;
   const char *nlp_name;
 
   if (GET_CODE (addr) != SYMBOL_REF)
     abort ();
 
-  str = darwin_strip_name_encoding (XSTR (addr, 0));
-  nlp_name = machopic_non_lazy_ptr_name (str);
+  nlp_name = machopic_indirection_name (addr, /*stub_p=*/false);
   fputs ("\t.long\t", file);
   ASM_OUTPUT_LABELREF (file, nlp_name);
   fputs ("-.", file);

@@ -2265,9 +2265,13 @@ output_call_frame_info (int for_eh)
 					          (DECL_ASSEMBLER_NAME (fde->decl))),
 		     "FDE initial location");
 	  else
-	    dw2_asm_output_encoded_addr_rtx (fde_encoding,
-		     gen_rtx_SYMBOL_REF (Pmode, fde->dw_fde_begin),
-		     "FDE initial location");
+	    {
+	      rtx sym_ref = gen_rtx_SYMBOL_REF (Pmode, fde->dw_fde_begin);
+	      SYMBOL_REF_FLAGS (sym_ref) |= SYMBOL_FLAG_LOCAL;
+	      dw2_asm_output_encoded_addr_rtx (fde_encoding,
+					       sym_ref,
+					       "FDE initial location");
+	    }
 	  dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
 				fde->dw_fde_end, fde->dw_fde_begin,
 				"FDE address range");

@@ -20,11 +20,12 @@ Boston, MA 02111-1307, USA.  */
 
 extern int name_needs_quotes (const char *);
 
-extern void machopic_validate_stub_or_non_lazy_ptr (const char *, int);
+extern void machopic_validate_stub_or_non_lazy_ptr (const char *);
 
 extern const char *machopic_function_base_name (void);
 extern void machopic_output_function_base_name (FILE *);
-extern const char *machopic_stub_name (const char*);
+extern const char *machopic_indirection_name (rtx, bool);
+extern const char *machopic_mcount_stub_name (void);
 
 extern void machopic_picsymbol_stub_section (void);
 extern void machopic_picsymbol_stub1_section (void);
@@ -40,8 +41,9 @@ extern void mod_term_section (void);
 
 #ifdef RTX_CODE
 
+extern rtx machopic_function_base_sym (void);
 extern int machopic_operand_p (rtx);
-extern enum machopic_addr_class machopic_classify_name (const char*);
+extern enum machopic_addr_class machopic_classify_symbol (rtx);
 
 extern rtx machopic_indirect_data_reference (rtx, rtx);
 extern rtx machopic_indirect_call_target (rtx);
@@ -53,13 +55,8 @@ extern void machopic_asm_out_destructor (rtx, int);
 
 #ifdef TREE_CODE
 
-extern enum machopic_addr_class machopic_classify_ident (tree);
-extern void machopic_define_ident (tree);
-extern void machopic_define_name (const char*);
-extern int machopic_name_defined_p (const char*);
-extern int machopic_ident_defined_p (tree);
+extern void machopic_define_symbol (rtx);
 extern void darwin_encode_section_info (tree, rtx, int);
-extern const char *darwin_strip_name_encoding (const char *);
 
 #endif /* TREE_CODE */
 

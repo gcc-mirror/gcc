@@ -1,3 +1,79 @@
+2004-07-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* dwarf2out.c (output_call_frame_info): Set SYMBOL_FLAG_LOCAL on
+	generated SYMBOL_REFs for labels.
+	* config/darwin-protos.h (machopic_validate_stub_or_non_lazy_ptr):
+	Change prototype.
+	(machopic_stub_name): Remove.
+	(machopic_indirection_name): New function.
+	(machopic_mcount_stub_name): Likewise.
+	(machopic_classify_name): Remove.
+	(machopic_function_base_sym): New function.
+	(machpoic_classify_symbol): Likewise.
+	(machopic_classify_ident): Remove.
+	(machopic_define_ident): Likewise.
+	(machopic_define_name): Likewise.
+	(machopic_name_defined_p): Likewise.
+	(machopic_ident_defined_p): Likewise.
+	(darwin_strip_name_encoding): Likewise.
+	(machopic_define_symbol): New function.
+	* config/darwin.c (hashtab.h): Include.
+	(machopic_defined_list): Remove.
+	(machopic_classify_ident): Likewise.
+	(machopic_classify_name): Likewise.
+	(machopic_ident_defined_p): Likewise.
+	(machopic_define_ident): Likewise.
+	(machopic_define_name): Likewise.
+	(machopic_symbol_defined_p): New function.
+	(machopic_classify_symbol): Likewise.
+	(machopic_data_defined_p): Use machopic_classify_symbol.
+	(machopic_define_symbol): New function.
+	(machopic_function_base_sym): New function.
+	(machopic_non_lazy_pointers): Remove.
+	(machopic_non_lazy_ptr_name): Likewise.
+	(machopic_stubs): Likewise.
+	(machopic_stub_name): Likewise.
+	(NON_LAZY_POINTER_SUFFIX): New macro.
+	(STUB_SUFFIX): Likewise.
+	(machopic_indirection): New structure.
+	(machopic_indirections): New variable.
+	(machopic_indirection_hash): New function.
+	(machopic_indirection_eq): Likewise.
+	(machopic_indirection_name): Likewise.
+	(machopic_mcount_stub_name): New function.
+	(machopic_validate_stub_or_non_lazy_pointer): Reimplement to use
+	hash table.
+	(machopic_indirect_data_reference): Rework to use new functions.
+	(machopic_indirect_call_target): Likewise.
+	(machopic_legitimize_pic_address): Likewise.
+	(machopic_output_indirection): New function.
+	(machopic_finish): Use it.
+	(machopic_operand_p): Rework to use new functions.
+	(darwin_encode_seciton_info): Use SYMBOL_REF_FLAGS.
+	(darwin_strip_name_encoding): Remove.
+	(update_non_lazy_ptrs): Remove.
+	(update_stubs): Likewise.
+	(darwin_non_lazy_pcrel): Use new functions.
+	* config/darwin.h (ASM_DECLARE_OBJECT_NAME): Likewise.
+	(ASM_OUTPUT_LABELREF): Likewise.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Likewise.
+	(MACHO_SYMBOL_FLAG_VARIABLE): New macro.
+	(MACHO_SYMBOL_FLAG_DEFINED): Likewise.
+	(TARGET_STRIP_NAME_ENCODING): Do not use
+	darwin_strip_name_encoding.
+	(GEN_LAZY_PTR_NAME_FOR_SYMBOL): Do not use
+	darwin_strip_name_encoding.
+	* config/i386/darwin.h (FUNCTION_PROFILER): Use
+	machopic_mcount_stub_name.
+	* config/i386/i386.c (x86_output_mi_thunk): Use
+	machopic_indirection_name, not machopic_stub_name.
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Use
+	machopic_function_base_sym.
+	(print_operand): Use machopic_classify_symbol.
+	(rs6000_emit_prologue): Use machopic_function_base_sym.
+	(output_profile_hook): Do not use machopic_stub_name.
+	(macho_branch_isalnds): Do not use darwin_strip_name_encoding.
+	
 2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/7284

@@ -15521,8 +15521,10 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 #if TARGET_MACHO
 	if (TARGET_MACHO)
 	  {
-	    const char *ip = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
-	    tmp = gen_rtx_SYMBOL_REF (Pmode, machopic_stub_name (ip));
+	    rtx sym_ref = XEXP (DECL_RTL (function), 0);
+	    tmp = (gen_rtx_SYMBOL_REF 
+		   (Pmode, 
+		    machopic_indirection_name (sym_ref, /*stub_p=*/true)));
 	    tmp = gen_rtx_MEM (QImode, tmp);
 	    xops[0] = tmp;
 	    output_asm_insn ("jmp\t%0", xops);
