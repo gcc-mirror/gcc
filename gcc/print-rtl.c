@@ -195,7 +195,9 @@ print_rtx (in_rtx)
 	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BASIC_BLOCK)
 	      {
 		basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
-		fprintf (outfile, " [bb %d]", bb->index);
+
+		if (bb != 0)
+		  fprintf (outfile, " [bb %d]", bb->index);
 	      }
 	    else
 	      {
