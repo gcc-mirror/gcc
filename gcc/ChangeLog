@@ -1,3 +1,10 @@
+2004-12-20  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/md.texi (Expander Definitions): Use @emph instead of @strong
+	around Note: text to workaround a limitation of the Info format.
+	* doc/cpp.texi (Invocation): Likewise.
+	* doc/cppopts.texi: Likewise.
+
 2004-12-19  Dale Johannesen  <dalej@apple.com>
 
 	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p):  Don't

@@ -133,7 +133,7 @@ time it is redefined or undefined.
 Built-in macros, macros defined on the command line, and macros
 defined in include files are not warned about.
 
-@strong{Note:} If a macro is actually used, but only used in skipped
+@emph{Note:} If a macro is actually used, but only used in skipped
 conditional blocks, then CPP will report it as unused.  To avoid the
 warning in such a case, you might improve the scope of the macro's
 definition by, for example, moving it into the first skipped block.
@@ -359,7 +359,7 @@ extensions for C++ and assembly are also recognized.  If cpp does not
 recognize the extension, it will treat the file as C; this is the most
 generic mode.
 
-@strong{Note:} Previous versions of cpp accepted a @option{-lang} option
+@emph{Note:} Previous versions of cpp accepted a @option{-lang} option
 which selected both the language and the standards conformance level.
 This option has been removed, because it conflicts with the @option{-l}
 option.
