@@ -167,6 +167,9 @@
 /* Define if you have the backtrace function.  */
 #undef HAVE_BACKTRACE
 
+/* Define if you have the chmod function.  */
+#undef HAVE_CHMOD
+
 /* Define if you have the execvp function.  */
 #undef HAVE_EXECVP
 
@@ -286,6 +289,9 @@
 
 /* Define if you have the unlink function.  */
 #undef HAVE_UNLINK
+
+/* Define if you have the utime function.  */
+#undef HAVE_UTIME
 
 /* Define if you have the <arpa/inet.h> header file.  */
 #undef HAVE_ARPA_INET_H

@@ -1,6 +1,6 @@
-// natFile.cc - Native part of File class.
+// natFile.cc - Native part of File class for POSIX.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -24,23 +24,23 @@ details.  */
 #include <dirent.h>
 #endif
 #include <string.h>
+#include <utime.h>
 
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java/io/File.h>
 #include <java/io/IOException.h>
-#include <java/util/Vector.h>
+#include <java/util/ArrayList.h>
 #include <java/lang/String.h>
 #include <java/io/FilenameFilter.h>
+#include <java/io/FileFilter.h>
 #include <java/lang/System.h>
 
 jboolean
-java::io::File::access (jstring canon, jint query)
+java::io::File::access (jint query)
 {
-  if (! canon)
-    return false;
   char buf[MAXPATHLEN];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
   JvAssert (query == READ || query == WRITE || query == EXISTS);
@@ -59,14 +59,15 @@ java::io::File::access (jstring canon, jint query)
 }
 
 jboolean
-java::io::File::stat (jstring canon, jint query)
+java::io::File::stat (jint query)
 {
-  if (! canon)
-    return false;
   char buf[MAXPATHLEN];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
+
+  if (query == ISHIDDEN)
+    return (getName()->charAt(0) == '.');
 
 #ifdef HAVE_STAT
   struct stat sb;
@@ -82,13 +83,10 @@ java::io::File::stat (jstring canon, jint query)
 }
 
 jlong
-java::io::File::attr (jstring canon, jint query)
+java::io::File::attr (jint query)
 {
-  if (! canon)
-    return false;
-
   char buf[MAXPATHLEN];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
 
@@ -99,8 +97,6 @@ java::io::File::attr (jstring canon, jint query)
     return 0;
 
   JvAssert (query == MODIFIED || query == LENGTH);
-  // FIXME: time computation is very POSIX-specific -- POSIX and Java
-  // have the same Epoch.
   return query == MODIFIED ? (jlong)sb.st_mtime * 1000 : sb.st_size;
 #else
   // There's no good choice here.
@@ -118,7 +114,7 @@ java::io::File::getCanonicalPath (void)
 
 #ifdef HAVE_REALPATH
   if (realpath (buf, buf2) == NULL)
-    _Jv_Throw (new IOException (JvNewStringLatin1 (strerror (errno))));
+    throw new IOException (JvNewStringLatin1 (strerror (errno)));
 
   // FIXME: what encoding to assume for file names?  This affects many
   // calls.
@@ -131,23 +127,7 @@ java::io::File::getCanonicalPath (void)
 jboolean
 java::io::File::isAbsolute (void)
 {
-  // FIXME: cpp define name.
-  // FIXME: cygwin.
-#ifdef WIN32
-  if (path->charAt(0) == '/' || path->charAt(0) == '\\')
-    return true;
-  if (path->length() < 3)
-    return false;
-  // Hard-code A-Za-z because Windows (I think) can't use non-ASCII
-  // letters as drive names.
-  if ((path->charAt(0) < 'a' || path->charAt(0) > 'z')
-      && (path->charAt(0) < 'A' || path->charAt(0) > 'Z'))
-    return false;
-  return (path->charAt(1) == ':'
-	  && (path->charAt(2) == '/' || path->charAt(2) == '\\'));
-#else
   return path->charAt(0) == '/';
-#endif
 }
 
 #ifdef HAVE_DIRENT_H
@@ -173,15 +153,14 @@ get_entry (DIR *dir, struct dirent *)
 #endif /* defined(__JV_POSIX_THREADS__) && defined(HAVE_READDIR_R) */
 #endif /* HAVE_DIRENT_H */
 
-jstringArray
-java::io::File::performList (jstring canon, FilenameFilter *filter)
+jobjectArray
+java::io::File::performList (java::io::FilenameFilter *filter, 
+			     java::io::FileFilter *fileFilter, 
+			     java::lang::Class *result_type)
 {
-  if (! canon)
-    return NULL;
-
 #ifdef HAVE_DIRENT_H
   char buf[MAXPATHLEN];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
 
@@ -189,26 +168,37 @@ java::io::File::performList (jstring canon, FilenameFilter *filter)
   if (! dir)
     return NULL;
 
-  java::util::Vector *vec = new java::util::Vector ();
+  java::util::ArrayList *list = new java::util::ArrayList ();
   struct dirent *d, d2;
   while ((d = get_entry (dir, &d2)) != NULL)
     {
-      if (! strcmp (d->d_name, ".") || ! strcmp (d->d_name, ".."))
+      // Omit "." and "..".
+      if (d->d_name[0] == '.'
+	  && (d->d_name[1] == '\0'
+	      || (d->d_name[1] == '.' && d->d_name[2] == '\0')))
 	continue;
 
       jstring name = JvNewStringUTF (d->d_name);
       if (filter && ! filter->accept(this, name))
 	continue;
+      
+      if (result_type == &java::io::File::class$)
+        {
+	  java::io::File *file = new java::io::File (this, name);
+	  if (fileFilter && ! fileFilter->accept(file))
+	    continue;
 
-      vec->addElement(name);
+	  list->add(file);
+	}
+      else
+	list->add(name);
     }
 
   closedir (dir);
 
-  jobjectArray ret = JvNewObjectArray (vec->size(), canon->getClass(),
-				       NULL);
-  vec->copyInto(ret);
-  return reinterpret_cast<jstringArray> (ret);
+  jobjectArray ret = JvNewObjectArray (list->size(), result_type, NULL);
+  list->toArray(ret);
+  return ret;
 #else /* HAVE_DIRENT_H */
   return NULL;
 #endif /* HAVE_DIRENT_H */
@@ -227,6 +217,42 @@ java::io::File::performMkdir (void)
 #else
   return false;
 #endif
+}
+
+jboolean
+java::io::File::performSetReadOnly (void)
+{
+  char buf[MAXPATHLEN];
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
+  // FIXME?
+  buf[total] = '\0';
+
+#ifdef HAVE_STAT && HAVE_CHMOD
+  struct stat sb;
+  if (::stat (buf, &sb))
+    return false;
+
+  if (::chmod(buf, sb.st_mode & 0555))
+    return false;  
+  return true;
+#else
+  return false;
+#endif
+}
+
+static JArray<java::io::File *> *unixroot;
+
+JArray< ::java::io::File *>*
+java::io::File::performListRoots ()
+{
+  if (unixroot == NULL)
+    {
+      ::java::io::File *f = new ::java::io::File (JvNewStringLatin1 ("/"));
+      unixroot = reinterpret_cast <JArray<java::io::File *>*> 
+		   (JvNewObjectArray (1, &java::io::File::class$, f));
+      elements (unixroot) [0] = f;
+    }
+  return unixroot;
 }
 
 jboolean
@@ -249,10 +275,52 @@ java::io::File::performRenameTo (File *dest)
 }
 
 jboolean
-java::io::File::performDelete (jstring canon)
+java::io::File::performSetLastModified (jlong time)
+{
+#ifdef HAVE_UTIME
+  utimbuf tb;
+
+  char buf[MAXPATHLEN];
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
+  // FIXME?
+  buf[total] = '\0';
+  
+  tb.actime = time / 1000;
+  tb.modtime = time / 1000;
+  return ::utime (buf, &tb);
+#else
+  return false;
+#endif
+}
+
+jboolean
+java::io::File::performCreate (void)
 {
   char buf[MAXPATHLEN];
-  jsize total = JvGetStringUTFRegion (canon, 0, canon->length(), buf);
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
+  // FIXME?
+  buf[total] = '\0';
+
+  int fd = ::open (buf, O_CREAT | O_EXCL, 0644);
+
+  if (fd < 0)
+    {
+      if (errno == EEXIST)
+        return false;
+      throw new IOException (JvNewStringLatin1 (strerror (errno)));
+    }
+  else
+    {
+      ::close (fd);
+      return true;
+    }
+}
+
+jboolean
+java::io::File::performDelete (void)
+{
+  char buf[MAXPATHLEN];
+  jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   // FIXME?
   buf[total] = '\0';
 
@@ -265,4 +333,18 @@ java::io::File::performDelete (jstring canon)
     return ::unlink (buf) == 0;
 #endif // HAVE_UNLINK
   return false;
+}
+
+void
+java::io::File::init_native ()
+{
+  separator = JvNewStringLatin1 ("/");
+  pathSeparator = JvNewStringLatin1 (":");
+  
+  char *tmp = ::getenv("TMPDIR");
+  if (! tmp)
+    tmp = "/tmp";
+  tmpdir = JvNewStringLatin1 (tmp);
+  maxPathLen = MAXPATHLEN;
+  caseSensitive = true;
 }

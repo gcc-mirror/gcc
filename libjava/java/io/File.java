@@ -1,6 +1,6 @@
 // File.java - File name
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,42 +21,40 @@ import gnu.gcj.runtime.FileDeleter;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
- * Status:  Complete to version 1.1; 1.2 functionality missing.
- * A known bug: most calls to the security manager can generate
- * IOException since we use the canonical path.
+ * Status:  Complete to version 1.3.
  */
 
-public class File implements Serializable
+public class File implements Serializable, Comparable
 {
   public boolean canRead ()
   {
-    return access (checkRead (), READ);
+    checkRead();
+    return access (READ);
   }
 
   public boolean canWrite ()
   {
-    SecurityManager s = System.getSecurityManager();
-    String p = safeCanonicalPath ();
-    // FIXME: it isn't entirely clear what to do if we can't find the
-    // canonical path.
-    if (p == null)
-      return false;
-    if (s != null)
-      s.checkWrite(p);
-    return access (p, WRITE);
+    checkWrite();
+    return access (WRITE);
   }
+  
+  private native boolean performCreate() throws IOException;
 
-  private final native static boolean performDelete (String canon);
+  /** @since 1.2 */
+  public boolean createNewFile() throws IOException
+  {
+    checkWrite();
+    return performCreate();
+  }
+  
+  private native boolean performDelete ();
   public boolean delete ()
   {
     SecurityManager s = System.getSecurityManager();
-    String p = safeCanonicalPath ();
-    // FIXME: what is right?
-    if (p == null)
-      return false;
+    String name = path;
     if (s != null)
-      s.checkDelete(p);
-    return performDelete (p);
+      s.checkDelete(path);
+    return performDelete ();
   }
 
   public boolean equals (Object obj)
@@ -64,12 +62,16 @@ public class File implements Serializable
     if (! (obj instanceof File))
       return false;
     File other = (File) obj;
-    return path.compareTo(other.path) == 0;
+    if (caseSensitive)
+      return (path.equals(other.path));
+    else
+      return (path.equalsIgnoreCase(other.path));      
   }
 
   public boolean exists ()
   {
-    return access (checkRead (), EXISTS);
+    checkRead();
+    return access (EXISTS);
   }
 
   public File (String p)
@@ -100,6 +102,7 @@ public class File implements Serializable
     this (dir == null ? null : dir.path, name);
   }
 
+  // FIXME  ???
   public String getAbsolutePath ()
   {
     if (isAbsolute ())
@@ -107,6 +110,7 @@ public class File implements Serializable
     return System.getProperty("user.dir") + separatorChar + path;
   }
 
+  /** @since 1.2 */
   public File getAbsoluteFile () throws IOException
   {
     return new File (getAbsolutePath());
@@ -114,6 +118,7 @@ public class File implements Serializable
 
   public native String getCanonicalPath () throws IOException;
 
+  /** @since 1.2 */
   public File getCanonicalFile () throws IOException
   {
     return new File (getCanonicalPath());
@@ -133,6 +138,7 @@ public class File implements Serializable
     return path.substring(0, last);
   }
 
+  /** @since 1.2 */
   public File getParentFile ()
   {
     String parent = getParent ();
@@ -146,42 +152,85 @@ public class File implements Serializable
 
   public int hashCode ()
   {
-    // FIXME: test.
-    return path.hashCode();
+    if (caseSensitive)
+      return (path.hashCode() ^ 1234321);
+    else
+      return (path.toLowerCase().hashCode() ^ 1234321);
   }
 
   public native boolean isAbsolute ();
 
   public boolean isDirectory ()
   {
-    return stat (checkRead (), DIRECTORY);
+    checkRead();
+    return stat (DIRECTORY);
   }
 
   public boolean isFile ()
   {
-    return stat (checkRead (), ISFILE);
+    checkRead();
+    return stat (ISFILE);
+  }
+
+  /** @since 1.2 */
+  public boolean isHidden()
+  {
+    checkRead();
+    return stat (ISHIDDEN);
   }
 
   public long lastModified ()
   {
-    return attr (checkRead (), MODIFIED);
+    checkRead();
+    return attr (MODIFIED);
   }
 
   public long length ()
   {
-    return attr (checkRead (), LENGTH);
+    checkRead();
+    return attr (LENGTH);
   }
+    
+  private final native Object[] performList (FilenameFilter filter,
+					     FileFilter fileFilter,
+					     Class result_type);
 
-  private final native String[] performList (String canon,
-					     FilenameFilter filter);
+  // Arguments for the performList function. Specifies whether we want
+  // File objects or path strings in the returned object array.
+  private final static int OBJECTS = 0;
+  private final static int STRINGS = 1;
+
   public String[] list (FilenameFilter filter)
   {
-    return performList (checkRead (), filter);
+    checkRead();
+    return (String[]) performList (filter, null, String.class);
   }
 
   public String[] list ()
   {
-    return performList (checkRead (), null);
+    checkRead();
+    return (String[]) performList (null, null, String.class);
+  }
+
+  /** @since 1.2 */
+  public File[] listFiles()
+  {
+    checkRead();
+    return (File[]) performList (null, null, File.class);
+  }
+  
+  /** @since 1.2 */
+  public File[] listFiles(FilenameFilter filter)
+  {
+    checkRead();
+    return (File[]) performList (filter, null, File.class);
+  }
+  
+  /** @since 1.2 */
+  public File[] listFiles(FileFilter filter)
+  {
+    checkRead();
+    return (File[]) performList (null, filter, File.class);
   }
 
   public String toString ()
@@ -195,16 +244,10 @@ public class File implements Serializable
   }
 
   private final native boolean performMkdir ();
+
   public boolean mkdir ()
   {
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      {
-	// NOTE: in theory we should use the canonical path.  In
-	// practice, we can't compute the canonical path until we've
-	// made this completely.  Lame.
-	s.checkWrite(path);
-      }
+    checkWrite();
     return performMkdir ();
   }
 
@@ -216,25 +259,17 @@ public class File implements Serializable
     String parent = x.getParent();
     if (parent != null)
       {
-	x.setPath(parent);
+	x.path = parent;
 	if (! mkdirs (x))
 	  return false;
-	x.setPath(p);
+	x.path = p;
       }
     return x.mkdir();
   }
 
   public boolean mkdirs ()
   {
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      {
-	// NOTE: in theory we should use the canonical path.  In
-	// practice, we can't compute the canonical path until we've
-	// made this completely.  Lame.
-	s.checkWrite(path);
-      }
-
+    checkWrite();
     if (isDirectory ())
       return false;
     return mkdirs (new File (path));
@@ -245,6 +280,7 @@ public class File implements Serializable
     return Long.toString(counter++, Character.MAX_RADIX);
   }
 
+  /** @since 1.2 */
   public static File createTempFile (String prefix, String suffix,
 				     File directory)
     throws IOException
@@ -272,19 +308,16 @@ public class File implements Serializable
     if (suffix == null)
       suffix = ".tmp";
 
-    // FIXME: filename length varies by architecture and filesystem.
-    int max_length = 255;
-
     // Truncation rules.
     // `6' is the number of characters we generate.
-    if (prefix.length () + 6 + suffix.length () > max_length)
+    if (prefix.length () + 6 + suffix.length () > maxPathLen)
       {
 	int suf_len = 0;
 	if (suffix.charAt(0) == '.')
 	  suf_len = 4;
 	suffix = suffix.substring(0, suf_len);
-	if (prefix.length () + 6 + suf_len > max_length)
-	  prefix = prefix.substring(0, max_length - 6 - suf_len);
+	if (prefix.length () + 6 + suf_len > maxPathLen)
+	  prefix = prefix.substring(0, maxPathLen - 6 - suf_len);
       }
 
     File f;
@@ -298,32 +331,63 @@ public class File implements Serializable
 	try
 	  {
 	    f = new File(directory, l);
-	    if (f.exists())
-	      continue;
-	    else
-	      {
-		String af = f.getAbsolutePath ();
-		
-		// Check to see if we're allowed to write to it.
-		SecurityManager s = System.getSecurityManager();
-		if (s != null)
-		  s.checkWrite (af);
-		
-		// Now create the file.
-		FileDescriptor fd = 
-		  new FileDescriptor (af, 
-				      FileDescriptor.WRITE
-				      | FileDescriptor.EXCL);
-		fd.close ();
-		return f;
-	      }
+	    if (f.createNewFile())
+	      return f;
 	  }
-	catch (IOException _)
+	catch (IOException ignored)
 	  {
 	  }
       }
 
     throw new IOException ("cannot create temporary file");
+  }
+
+  private native boolean performSetReadOnly();
+
+  /** @since 1.2 */
+  public boolean setReadOnly()
+  {
+    checkWrite();
+    return performSetReadOnly();
+  }
+
+  private static native File[] performListRoots();
+
+  /** @since 1.2 */
+  public static File[] listRoots()
+  {
+    File[] roots = performListRoots();
+    
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      {
+	// Only return roots to which the security manager permits read access.
+	int count = roots.length;
+	for (int i = 0; i < roots.length; i++)
+	  {
+	    try
+	      {
+        	s.checkRead(roots[i].path);		
+	      }
+	    catch (SecurityException sx)
+	      {
+	        roots[i] = null;
+		count--;
+	      }
+	  }
+	if (count != roots.length)
+	  {
+	    File[] newRoots = new File[count];
+	    int k = 0;
+	    for (int i=0; i < roots.length; i++)
+	      {
+	        if (roots[i] != null)
+		  newRoots[k++] = roots[i];
+	      }
+	    roots = newRoots;
+	  }
+      }
+    return roots;
   }
 
   public static File createTempFile (String prefix, String suffix)
@@ -332,26 +396,65 @@ public class File implements Serializable
     return createTempFile (prefix, suffix, null);
   }
 
-  private final native boolean performRenameTo (File dest);
+  /** @since 1.2 */
+  public int compareTo(File other)
+  {
+    if (caseSensitive)
+      return path.compareTo (other.path);
+    else
+      return path.compareToIgnoreCase (other.path);
+  }
+
+  /** @since 1.2 */
+  public int compareTo(Object o)
+  {
+    File other = (File) o;
+    return compareTo (other);
+  }
+
+  private native boolean performRenameTo (File dest);
   public boolean renameTo (File dest)
   {
     SecurityManager s = System.getSecurityManager();
+    String sname = getName();
+    String dname = dest.getName();
     if (s != null)
       {
-	// FIXME: JCL doesn't specify which path to check.  We check the
-	// source since we can canonicalize it.
-	s.checkWrite(safeCanonicalPath());
+	s.checkWrite(sname);
+	s.checkWrite(dname);
       }
     return performRenameTo (dest);
   }
 
-  public static final String pathSeparator
-    = System.getProperty("path.separator");
-  public static final char pathSeparatorChar = pathSeparator.charAt(0);
-  public static final String separator = System.getProperty("file.separator");
-  public static final char separatorChar = separator.charAt(0);
+  private native boolean performSetLastModified(long time);
+  
+  /** @since 1.2 */
+  public boolean setLastModified(long time)
+  {
+    checkWrite();
+    return performSetLastModified(time);
+  }
 
-  private static final String tmpdir = System.getProperty("java.io.tmpdir");
+  public static final String separator = null;
+  public static final String pathSeparator = null;
+  static final String tmpdir = null;
+  static int maxPathLen;
+  static boolean caseSensitive;
+  
+  public static final char separatorChar;
+  public static final char pathSeparatorChar;
+  
+  static
+  {
+    init_native();
+    pathSeparatorChar = pathSeparator.charAt(0);
+    separatorChar = separator.charAt(0);
+  }
+  
+  // Native function called at class initialization. This should should
+  // set the separator, pathSeparator, tmpdir, maxPathLen, and caseSensitive
+  // variables.
+  private static native void init_native();
 
   // The path.
   private String path;
@@ -360,41 +463,27 @@ public class File implements Serializable
   // value randomly to try to avoid clashes with other VMs.
   private static long counter = Double.doubleToLongBits (Math.random ());
 
-  // mkdirs() uses this to avoid repeated allocations.
-  private final void setPath (String n)
-  {
-    path = n;
-  }
-
-
-  private final String checkRead ()
+  private void checkWrite ()
   {
     SecurityManager s = System.getSecurityManager();
-    String p = safeCanonicalPath ();
-    if (p == null)
-      return null;
     if (s != null)
-      s.checkRead(p);
-    return p;
+      s.checkWrite(path);
   }
 
-  // Return canonical path, or null.
-  private final String safeCanonicalPath ()
+  private void checkRead ()
   {
-    String p = null;
-    try
-      {
-	p = getCanonicalPath ();
-      }
-    catch (IOException x)
-      {
-	// Nothing.
-      }
-    return p;
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkRead(path);
   }
 
-  // Add this File to the set of files to be deleted upon normal
-  // termination.
+  /** 
+    * Add this File to the set of files to be deleted upon normal
+    * termination.
+    *
+    * @since 1.2 
+    */
+  // FIXME: This should use the ShutdownHook API once we implement that.
   public void deleteOnExit ()
   {
     SecurityManager sm = System.getSecurityManager ();
@@ -430,14 +519,15 @@ public class File implements Serializable
   // QUERY arguments to stat function.
   private final static int DIRECTORY = 0;
   private final static int ISFILE = 1;
+  private final static int ISHIDDEN = 2;
 
   // QUERY arguments to attr function.
   private final static int MODIFIED = 0;
   private final static int LENGTH = 1;
-
-  private final native long attr (String p, int query);
-  private final native boolean access (String p, int query);
-  private final native boolean stat (String p, int query);
+  
+  private final native long attr (int query);
+  private final native boolean access (int query);
+  private final native boolean stat (int query);
 
   private static final long serialVersionUID = 301077366599181567L;
 }
