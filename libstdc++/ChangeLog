@@ -1,3 +1,7 @@
+Thu Nov 27 01:33:55 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (install): Change gxx_includedir to gxx_include_dir.
+
 Tue Nov 25 23:16:44 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	London changes to string:
