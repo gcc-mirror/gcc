@@ -5293,6 +5293,7 @@ instructions, but allow the compiler to schedule those calls.
 @menu
 * Alpha Built-in Functions::
 * ARM Built-in Functions::
+* FR-V Built-in Functions::
 * X86 Built-in Functions::
 * PowerPC AltiVec Built-in Functions::
 @end menu
@@ -5525,6 +5526,410 @@ v2si __builtin_arm_wunpckilw (v2si, v2si)
 long long __builtin_arm_wxor (long long, long long)
 long long __builtin_arm_wzero ()
 @end smallexample
+
+@node FR-V Built-in Functions
+@subsection FR-V Built-in Functions
+
+GCC provides many FR-V-specific built-in functions.  In general,
+these functions are intended to be compatible with those described
+by @cite{FR-V Family, Softune C/C++ Compiler Manual (V6), Fujitsu
+Semiconductor}.  The two exceptions are @code{__MDUNPACKH} and
+@code{__MBTOHE}, the gcc forms of which pass 128-bit values by
+pointer rather than by value.
+
+Most of the functions are named after specific FR-V instructions.
+Such functions are said to be ``directly mapped'' and are summarised
+here in tabular form.
+
+@menu
+* Argument Types::
+* Directly-mapped Integer Functions::
+* Directly-mapped Media Functions::
+* Other Built-in Functions::
+@end menu
+
+@node Argument Types
+@subsubsection Argument Types
+
+The arguments to the built-in functions can be divided into three groups:
+register numbers, compile-time constants and run-time values.  In order
+to make this classification clear at a glance, the arguments and return
+values are given the following pseudo types:
+
+@multitable @columnfractions .20 .30 .15 .35
+@item Pseudo type @tab Real C type @tab Constant? @tab Description
+@item @code{uh} @tab @code{unsigned short} @tab No @tab an unsigned halfword
+@item @code{uw1} @tab @code{unsigned int} @tab No @tab an unsigned word
+@item @code{sw1} @tab @code{int} @tab No @tab a signed word
+@item @code{uw2} @tab @code{unsigned long long} @tab No
+@tab an unsigned doubleword
+@item @code{sw2} @tab @code{long long} @tab No @tab a signed doubleword
+@item @code{const} @tab @code{int} @tab Yes @tab an integer constant
+@item @code{acc} @tab @code{int} @tab Yes @tab an ACC register number
+@item @code{iacc} @tab @code{int} @tab Yes @tab an IACC register number
+@end multitable
+
+These pseudo types are not defined by GCC, they are simply a notational
+convenience used in this manual.
+
+Arguments of type @code{uh}, @code{uw1}, @code{sw1}, @code{uw2}
+and @code{sw2} are evaluated at run time.  They correspond to
+register operands in the underlying FR-V instructions.
+
+@code{const} arguments represent immediate operands in the underlying
+FR-V instructions.  They must be compile-time constants.
+
+@code{acc} arguments are evaluated at compile time and specify the number
+of an accumulator register.  For example, an @code{acc} argument of 2
+will select the ACC2 register.
+
+@code{iacc} arguments are similar to @code{acc} arguments but specify the
+number of an IACC register.  See @pxref{Other Built-in Functions}
+for more details.
+
+@node Directly-mapped Integer Functions
+@subsubsection Directly-mapped Integer Functions
+
+The functions listed below map directly to FR-V I-type instructions.
+
+@multitable @columnfractions .45 .32 .23
+@item Function prototype @tab Example usage @tab Assembly output
+@item @code{sw1 __ADDSS (sw1, sw1)}
+@tab @code{@var{c} = __ADDSS (@var{a}, @var{b})}
+@tab @code{ADDSS @var{a},@var{b},@var{c}}
+@item @code{sw1 __SCAN (sw1, sw1)}
+@tab @code{@var{c} = __SCAN (@var{a}, @var{b})}
+@tab @code{SCAN @var{a},@var{b},@var{c}}
+@item @code{sw1 __SCUTSS (sw1)}
+@tab @code{@var{b} = __SCUTSS (@var{a})}
+@tab @code{SCUTSS @var{a},@var{b}}
+@item @code{sw1 __SLASS (sw1, sw1)}
+@tab @code{@var{c} = __SLASS (@var{a}, @var{b})}
+@tab @code{SLASS @var{a},@var{b},@var{c}}
+@item @code{void __SMASS (sw1, sw1)}
+@tab @code{__SMASS (@var{a}, @var{b})}
+@tab @code{SMASS @var{a},@var{b}}
+@item @code{void __SMSSS (sw1, sw1)}
+@tab @code{__SMSSS (@var{a}, @var{b})}
+@tab @code{SMSSS @var{a},@var{b}}
+@item @code{void __SMU (sw1, sw1)}
+@tab @code{__SMU (@var{a}, @var{b})}
+@tab @code{SMU @var{a},@var{b}}
+@item @code{sw2 __SMUL (sw1, sw1)}
+@tab @code{@var{c} = __SMUL (@var{a}, @var{b})}
+@tab @code{SMUL @var{a},@var{b},@var{c}}
+@item @code{sw1 __SUBSS (sw1, sw1)}
+@tab @code{@var{c} = __SUBSS (@var{a}, @var{b})}
+@tab @code{SUBSS @var{a},@var{b},@var{c}}
+@item @code{uw2 __UMUL (uw1, uw1)}
+@tab @code{@var{c} = __UMUL (@var{a}, @var{b})}
+@tab @code{UMUL @var{a},@var{b},@var{c}}
+@end multitable
+
+@node Directly-mapped Media Functions
+@subsubsection Directly-mapped Media Functions
+
+The functions listed below map directly to FR-V M-type instructions.
+
+@multitable @columnfractions .45 .32 .23
+@item Function prototype @tab Example usage @tab Assembly output
+@item @code{uw1 __MABSHS (sw1)}
+@tab @code{@var{b} = __MABSHS (@var{a})}
+@tab @code{MABSHS @var{a},@var{b}}
+@item @code{void __MADDACCS (acc, acc)}
+@tab @code{__MADDACCS (@var{b}, @var{a})}
+@tab @code{MADDACCS @var{a},@var{b}}
+@item @code{sw1 __MADDHSS (sw1, sw1)}
+@tab @code{@var{c} = __MADDHSS (@var{a}, @var{b})}
+@tab @code{MADDHSS @var{a},@var{b},@var{c}}
+@item @code{uw1 __MADDHUS (uw1, uw1)}
+@tab @code{@var{c} = __MADDHUS (@var{a}, @var{b})}
+@tab @code{MADDHUS @var{a},@var{b},@var{c}}
+@item @code{uw1 __MAND (uw1, uw1)}
+@tab @code{@var{c} = __MAND (@var{a}, @var{b})}
+@tab @code{MAND @var{a},@var{b},@var{c}}
+@item @code{void __MASACCS (acc, acc)}
+@tab @code{__MASACCS (@var{b}, @var{a})}
+@tab @code{MASACCS @var{a},@var{b}}
+@item @code{uw1 __MAVEH (uw1, uw1)}
+@tab @code{@var{c} = __MAVEH (@var{a}, @var{b})}
+@tab @code{MAVEH @var{a},@var{b},@var{c}}
+@item @code{uw2 __MBTOH (uw1)}
+@tab @code{@var{b} = __MBTOH (@var{a})}
+@tab @code{MBTOH @var{a},@var{b}}
+@item @code{void __MBTOHE (uw1 *, uw1)}
+@tab @code{__MBTOHE (&@var{b}, @var{a})}
+@tab @code{MBTOHE @var{a},@var{b}}
+@item @code{void __MCLRACC (acc)}
+@tab @code{__MCLRACC (@var{a})}
+@tab @code{MCLRACC @var{a}}
+@item @code{void __MCLRACCA (void)}
+@tab @code{__MCLRACCA ()}
+@tab @code{MCLRACCA}
+@item @code{uw1 __Mcop1 (uw1, uw1)}
+@tab @code{@var{c} = __Mcop1 (@var{a}, @var{b})}
+@tab @code{Mcop1 @var{a},@var{b},@var{c}}
+@item @code{uw1 __Mcop2 (uw1, uw1)}
+@tab @code{@var{c} = __Mcop2 (@var{a}, @var{b})}
+@tab @code{Mcop2 @var{a},@var{b},@var{c}}
+@item @code{uw1 __MCPLHI (uw2, const)}
+@tab @code{@var{c} = __MCPLHI (@var{a}, @var{b})}
+@tab @code{MCPLHI @var{a},#@var{b},@var{c}}
+@item @code{uw1 __MCPLI (uw2, const)}
+@tab @code{@var{c} = __MCPLI (@var{a}, @var{b})}
+@tab @code{MCPLI @var{a},#@var{b},@var{c}}
+@item @code{void __MCPXIS (acc, sw1, sw1)}
+@tab @code{__MCPXIS (@var{c}, @var{a}, @var{b})}
+@tab @code{MCPXIS @var{a},@var{b},@var{c}}
+@item @code{void __MCPXIU (acc, uw1, uw1)}
+@tab @code{__MCPXIU (@var{c}, @var{a}, @var{b})}
+@tab @code{MCPXIU @var{a},@var{b},@var{c}}
+@item @code{void __MCPXRS (acc, sw1, sw1)}
+@tab @code{__MCPXRS (@var{c}, @var{a}, @var{b})}
+@tab @code{MCPXRS @var{a},@var{b},@var{c}}
+@item @code{void __MCPXRU (acc, uw1, uw1)}
+@tab @code{__MCPXRU (@var{c}, @var{a}, @var{b})}
+@tab @code{MCPXRU @var{a},@var{b},@var{c}}
+@item @code{uw1 __MCUT (acc, uw1)}
+@tab @code{@var{c} = __MCUT (@var{a}, @var{b})}
+@tab @code{MCUT @var{a},@var{b},@var{c}}
+@item @code{uw1 __MCUTSS (acc, sw1)}
+@tab @code{@var{c} = __MCUTSS (@var{a}, @var{b})}
+@tab @code{MCUTSS @var{a},@var{b},@var{c}}
+@item @code{void __MDADDACCS (acc, acc)}
+@tab @code{__MDADDACCS (@var{b}, @var{a})}
+@tab @code{MDADDACCS @var{a},@var{b}}
+@item @code{void __MDASACCS (acc, acc)}
+@tab @code{__MDASACCS (@var{b}, @var{a})}
+@tab @code{MDASACCS @var{a},@var{b}}
+@item @code{uw2 __MDCUTSSI (acc, const)}
+@tab @code{@var{c} = __MDCUTSSI (@var{a}, @var{b})}
+@tab @code{MDCUTSSI @var{a},#@var{b},@var{c}}
+@item @code{uw2 __MDPACKH (uw2, uw2)}
+@tab @code{@var{c} = __MDPACKH (@var{a}, @var{b})}
+@tab @code{MDPACKH @var{a},@var{b},@var{c}}
+@item @code{uw2 __MDROTLI (uw2, const)}
+@tab @code{@var{c} = __MDROTLI (@var{a}, @var{b})}
+@tab @code{MDROTLI @var{a},#@var{b},@var{c}}
+@item @code{void __MDSUBACCS (acc, acc)}
+@tab @code{__MDSUBACCS (@var{b}, @var{a})}
+@tab @code{MDSUBACCS @var{a},@var{b}}
+@item @code{void __MDUNPACKH (uw1 *, uw2)}
+@tab @code{__MDUNPACKH (&@var{b}, @var{a})}
+@tab @code{MDUNPACKH @var{a},@var{b}}
+@item @code{uw2 __MEXPDHD (uw1, const)}
+@tab @code{@var{c} = __MEXPDHD (@var{a}, @var{b})}
+@tab @code{MEXPDHD @var{a},#@var{b},@var{c}}
+@item @code{uw1 __MEXPDHW (uw1, const)}
+@tab @code{@var{c} = __MEXPDHW (@var{a}, @var{b})}
+@tab @code{MEXPDHW @var{a},#@var{b},@var{c}}
+@item @code{uw1 __MHDSETH (uw1, const)}
+@tab @code{@var{c} = __MHDSETH (@var{a}, @var{b})}
+@tab @code{MHDSETH @var{a},#@var{b},@var{c}}
+@item @code{sw1 __MHDSETS (const)}
+@tab @code{@var{b} = __MHDSETS (@var{a})}
+@tab @code{MHDSETS #@var{a},@var{b}}
+@item @code{uw1 __MHSETHIH (uw1, const)}
+@tab @code{@var{b} = __MHSETHIH (@var{b}, @var{a})}
+@tab @code{MHSETHIH #@var{a},@var{b}}
+@item @code{sw1 __MHSETHIS (sw1, const)}
+@tab @code{@var{b} = __MHSETHIS (@var{b}, @var{a})}
+@tab @code{MHSETHIS #@var{a},@var{b}}
+@item @code{uw1 __MHSETLOH (uw1, const)}
+@tab @code{@var{b} = __MHSETLOH (@var{b}, @var{a})}
+@tab @code{MHSETLOH #@var{a},@var{b}}
+@item @code{sw1 __MHSETLOS (sw1, const)}
+@tab @code{@var{b} = __MHSETLOS (@var{b}, @var{a})}
+@tab @code{MHSETLOS #@var{a},@var{b}}
+@item @code{uw1 __MHTOB (uw2)}
+@tab @code{@var{b} = __MHTOB (@var{a})}
+@tab @code{MHTOB @var{a},@var{b}}
+@item @code{void __MMACHS (acc, sw1, sw1)}
+@tab @code{__MMACHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MMACHS @var{a},@var{b},@var{c}}
+@item @code{void __MMACHU (acc, uw1, uw1)}
+@tab @code{__MMACHU (@var{c}, @var{a}, @var{b})}
+@tab @code{MMACHU @var{a},@var{b},@var{c}}
+@item @code{void __MMRDHS (acc, sw1, sw1)}
+@tab @code{__MMRDHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MMRDHS @var{a},@var{b},@var{c}}
+@item @code{void __MMRDHU (acc, uw1, uw1)}
+@tab @code{__MMRDHU (@var{c}, @var{a}, @var{b})}
+@tab @code{MMRDHU @var{a},@var{b},@var{c}}
+@item @code{void __MMULHS (acc, sw1, sw1)}
+@tab @code{__MMULHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MMULHS @var{a},@var{b},@var{c}}
+@item @code{void __MMULHU (acc, uw1, uw1)}
+@tab @code{__MMULHU (@var{c}, @var{a}, @var{b})}
+@tab @code{MMULHU @var{a},@var{b},@var{c}}
+@item @code{void __MMULXHS (acc, sw1, sw1)}
+@tab @code{__MMULXHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MMULXHS @var{a},@var{b},@var{c}}
+@item @code{void __MMULXHU (acc, uw1, uw1)}
+@tab @code{__MMULXHU (@var{c}, @var{a}, @var{b})}
+@tab @code{MMULXHU @var{a},@var{b},@var{c}}
+@item @code{uw1 __MNOT (uw1)}
+@tab @code{@var{b} = __MNOT (@var{a})}
+@tab @code{MNOT @var{a},@var{b}}
+@item @code{uw1 __MOR (uw1, uw1)}
+@tab @code{@var{c} = __MOR (@var{a}, @var{b})}
+@tab @code{MOR @var{a},@var{b},@var{c}}
+@item @code{uw1 __MPACKH (uh, uh)}
+@tab @code{@var{c} = __MPACKH (@var{a}, @var{b})}
+@tab @code{MPACKH @var{a},@var{b},@var{c}}
+@item @code{sw2 __MQADDHSS (sw2, sw2)}
+@tab @code{@var{c} = __MQADDHSS (@var{a}, @var{b})}
+@tab @code{MQADDHSS @var{a},@var{b},@var{c}}
+@item @code{uw2 __MQADDHUS (uw2, uw2)}
+@tab @code{@var{c} = __MQADDHUS (@var{a}, @var{b})}
+@tab @code{MQADDHUS @var{a},@var{b},@var{c}}
+@item @code{void __MQCPXIS (acc, sw2, sw2)}
+@tab @code{__MQCPXIS (@var{c}, @var{a}, @var{b})}
+@tab @code{MQCPXIS @var{a},@var{b},@var{c}}
+@item @code{void __MQCPXIU (acc, uw2, uw2)}
+@tab @code{__MQCPXIU (@var{c}, @var{a}, @var{b})}
+@tab @code{MQCPXIU @var{a},@var{b},@var{c}}
+@item @code{void __MQCPXRS (acc, sw2, sw2)}
+@tab @code{__MQCPXRS (@var{c}, @var{a}, @var{b})}
+@tab @code{MQCPXRS @var{a},@var{b},@var{c}}
+@item @code{void __MQCPXRU (acc, uw2, uw2)}
+@tab @code{__MQCPXRU (@var{c}, @var{a}, @var{b})}
+@tab @code{MQCPXRU @var{a},@var{b},@var{c}}
+@item @code{sw2 __MQLCLRHS (sw2, sw2)}
+@tab @code{@var{c} = __MQLCLRHS (@var{a}, @var{b})}
+@tab @code{MQLCLRHS @var{a},@var{b},@var{c}}
+@item @code{sw2 __MQLMTHS (sw2, sw2)}
+@tab @code{@var{c} = __MQLMTHS (@var{a}, @var{b})}
+@tab @code{MQLMTHS @var{a},@var{b},@var{c}}
+@item @code{void __MQMACHS (acc, sw2, sw2)}
+@tab @code{__MQMACHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MQMACHS @var{a},@var{b},@var{c}}
+@item @code{void __MQMACHU (acc, uw2, uw2)}
+@tab @code{__MQMACHU (@var{c}, @var{a}, @var{b})}
+@tab @code{MQMACHU @var{a},@var{b},@var{c}}
+@item @code{void __MQMACXHS (acc, sw2, sw2)}
+@tab @code{__MQMACXHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MQMACXHS @var{a},@var{b},@var{c}}
+@item @code{void __MQMULHS (acc, sw2, sw2)}
+@tab @code{__MQMULHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MQMULHS @var{a},@var{b},@var{c}}
+@item @code{void __MQMULHU (acc, uw2, uw2)}
+@tab @code{__MQMULHU (@var{c}, @var{a}, @var{b})}
+@tab @code{MQMULHU @var{a},@var{b},@var{c}}
+@item @code{void __MQMULXHS (acc, sw2, sw2)}
+@tab @code{__MQMULXHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MQMULXHS @var{a},@var{b},@var{c}}
+@item @code{void __MQMULXHU (acc, uw2, uw2)}
+@tab @code{__MQMULXHU (@var{c}, @var{a}, @var{b})}
+@tab @code{MQMULXHU @var{a},@var{b},@var{c}}
+@item @code{sw2 __MQSATHS (sw2, sw2)}
+@tab @code{@var{c} = __MQSATHS (@var{a}, @var{b})}
+@tab @code{MQSATHS @var{a},@var{b},@var{c}}
+@item @code{uw2 __MQSLLHI (uw2, int)}
+@tab @code{@var{c} = __MQSLLHI (@var{a}, @var{b})}
+@tab @code{MQSLLHI @var{a},@var{b},@var{c}}
+@item @code{sw2 __MQSRAHI (sw2, int)}
+@tab @code{@var{c} = __MQSRAHI (@var{a}, @var{b})}
+@tab @code{MQSRAHI @var{a},@var{b},@var{c}}
+@item @code{sw2 __MQSUBHSS (sw2, sw2)}
+@tab @code{@var{c} = __MQSUBHSS (@var{a}, @var{b})}
+@tab @code{MQSUBHSS @var{a},@var{b},@var{c}}
+@item @code{uw2 __MQSUBHUS (uw2, uw2)}
+@tab @code{@var{c} = __MQSUBHUS (@var{a}, @var{b})}
+@tab @code{MQSUBHUS @var{a},@var{b},@var{c}}
+@item @code{void __MQXMACHS (acc, sw2, sw2)}
+@tab @code{__MQXMACHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MQXMACHS @var{a},@var{b},@var{c}}
+@item @code{void __MQXMACXHS (acc, sw2, sw2)}
+@tab @code{__MQXMACXHS (@var{c}, @var{a}, @var{b})}
+@tab @code{MQXMACXHS @var{a},@var{b},@var{c}}
+@item @code{uw1 __MRDACC (acc)}
+@tab @code{@var{b} = __MRDACC (@var{a})}
+@tab @code{MRDACC @var{a},@var{b}}
+@item @code{uw1 __MRDACCG (acc)}
+@tab @code{@var{b} = __MRDACCG (@var{a})}
+@tab @code{MRDACCG @var{a},@var{b}}
+@item @code{uw1 __MROTLI (uw1, const)}
+@tab @code{@var{c} = __MROTLI (@var{a}, @var{b})}
+@tab @code{MROTLI @var{a},#@var{b},@var{c}}
+@item @code{uw1 __MROTRI (uw1, const)}
+@tab @code{@var{c} = __MROTRI (@var{a}, @var{b})}
+@tab @code{MROTRI @var{a},#@var{b},@var{c}}
+@item @code{sw1 __MSATHS (sw1, sw1)}
+@tab @code{@var{c} = __MSATHS (@var{a}, @var{b})}
+@tab @code{MSATHS @var{a},@var{b},@var{c}}
+@item @code{uw1 __MSATHU (uw1, uw1)}
+@tab @code{@var{c} = __MSATHU (@var{a}, @var{b})}
+@tab @code{MSATHU @var{a},@var{b},@var{c}}
+@item @code{uw1 __MSLLHI (uw1, const)}
+@tab @code{@var{c} = __MSLLHI (@var{a}, @var{b})}
+@tab @code{MSLLHI @var{a},#@var{b},@var{c}}
+@item @code{sw1 __MSRAHI (sw1, const)}
+@tab @code{@var{c} = __MSRAHI (@var{a}, @var{b})}
+@tab @code{MSRAHI @var{a},#@var{b},@var{c}}
+@item @code{uw1 __MSRLHI (uw1, const)}
+@tab @code{@var{c} = __MSRLHI (@var{a}, @var{b})}
+@tab @code{MSRLHI @var{a},#@var{b},@var{c}}
+@item @code{void __MSUBACCS (acc, acc)}
+@tab @code{__MSUBACCS (@var{b}, @var{a})}
+@tab @code{MSUBACCS @var{a},@var{b}}
+@item @code{sw1 __MSUBHSS (sw1, sw1)}
+@tab @code{@var{c} = __MSUBHSS (@var{a}, @var{b})}
+@tab @code{MSUBHSS @var{a},@var{b},@var{c}}
+@item @code{uw1 __MSUBHUS (uw1, uw1)}
+@tab @code{@var{c} = __MSUBHUS (@var{a}, @var{b})}
+@tab @code{MSUBHUS @var{a},@var{b},@var{c}}
+@item @code{void __MTRAP (void)}
+@tab @code{__MTRAP ()}
+@tab @code{MTRAP}
+@item @code{uw2 __MUNPACKH (uw1)}
+@tab @code{@var{b} = __MUNPACKH (@var{a})}
+@tab @code{MUNPACKH @var{a},@var{b}}
+@item @code{uw1 __MWCUT (uw2, uw1)}
+@tab @code{@var{c} = __MWCUT (@var{a}, @var{b})}
+@tab @code{MWCUT @var{a},@var{b},@var{c}}
+@item @code{void __MWTACC (acc, uw1)}
+@tab @code{__MWTACC (@var{b}, @var{a})}
+@tab @code{MWTACC @var{a},@var{b}}
+@item @code{void __MWTACCG (acc, uw1)}
+@tab @code{__MWTACCG (@var{b}, @var{a})}
+@tab @code{MWTACCG @var{a},@var{b}}
+@item @code{uw1 __MXOR (uw1, uw1)}
+@tab @code{@var{c} = __MXOR (@var{a}, @var{b})}
+@tab @code{MXOR @var{a},@var{b},@var{c}}
+@end multitable
+
+@node Other Built-in Functions
+@subsubsection Other Built-in Functions
+
+This section describes built-in functions that are not named after
+a specific FR-V instruction.
+
+@table @code
+@item sw2 __IACCreadll (iacc @var{reg})
+Return the full 64-bit value of IACC0@.  The @var{reg} argument is reserved
+for future expansion and must be 0.
+
+@item sw1 __IACCreadl (iacc @var{reg})
+Return the value of IACC0H if @var{reg} is 0 and IACC0L if @var{reg} is 1.
+Other values of @var{reg} are rejected as invalid.
+
+@item void __IACCsetll (iacc @var{reg}, sw2 @var{x})
+Set the full 64-bit value of IACC0 to @var{x}.  The @var{reg} argument
+is reserved for future expansion and must be 0.
+
+@item void __IACCsetl (iacc @var{reg}, sw1 @var{x})
+Set IACC0H to @var{x} if @var{reg} is 0 and IACC0L to @var{x} if @var{reg}
+is 1.  Other values of @var{reg} are rejected as invalid.
+
+@item void __data_prefetch0 (const void *@var{x})
+Use the @code{dcpl} instruction to load the contents of address @var{x}
+into the data cache.
+
+@item void __data_prefetch (const void *@var{x})
+Use the @code{nldub} instruction to load the contents of address @var{x}
+into the data cache.  The instruction will be issued in slot I1@.
+@end table
 
 @node X86 Built-in Functions
 @subsection X86 Built-in Functions
