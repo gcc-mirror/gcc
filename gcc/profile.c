@@ -622,9 +622,15 @@ compute_value_histograms (unsigned n_values, struct histogram_value *values)
   any = 0;
   for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
     {
+      if (!n_histogram_counters[t])
+	{
+	  histogram_counts[t] = NULL;
+	  continue;
+	}
+
       histogram_counts[t] =
 	get_coverage_counts (COUNTER_FOR_HIST_TYPE (t),
-			     n_histogram_counters[t], &profile_info);
+			     n_histogram_counters[t], NULL);
       if (histogram_counts[t])
 	any = 1;
       act_count[t] = histogram_counts[t];
