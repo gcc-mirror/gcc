@@ -807,7 +807,7 @@
 	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SH3"
-  "shad	%2,%1")
+  "shad	%2,%0")
 
 (define_insn "ashrsi3_n"
   [(set (reg:SI 4)
