@@ -192,6 +192,11 @@ for code in ALL STD ; do
 	  do
 	    new_files_to_check=""
 	    for file in $files_to_check ; do
+	      xxfile=`echo $file | sed -e 's|/\([^/\.][^/\.]*\)/\.\./|/|'`
+	      # Just in case we have edited out a symbolic link
+	      if [ -f $src_dir_std/$file -a -f $src_dir_std/$xxfile ] ; then
+		file=$xxfile
+	      fi
 	      case " $rel_source_files " in
 	        *" ${file} "*)
 		  # Already seen $file; nothing to do
