@@ -3327,7 +3327,6 @@ rest_of_compilation (decl)
   life_analysis (insns, rtl_dump_file, PROP_FINAL);
   timevar_pop (TV_FLOW);
 
-  register_life_up_to_date = 1;
   no_new_pseudos = 1;
 
   if (warn_uninitialized || extra_warnings)
@@ -3415,15 +3414,18 @@ rest_of_compilation (decl)
       ggc_collect ();
     }
 
+  /* Do unconditional splitting before register allocation to allow machine
+     description to add extra information not needed previously.  */
+  split_all_insns (1);
+
   /* Any of the several passes since flow1 will have munged register
      lifetime data a bit.  */
-  if (optimize > 0)
-    register_life_up_to_date = 0;
+  register_life_up_to_date = 0;
 
 #ifdef OPTIMIZE_MODE_SWITCHING
   timevar_push (TV_GCSE);
 
-  no_new_pseudos = 1;
+  no_new_pseudos = 0;
   if (optimize_mode_switching (NULL))
     {
       /* We did work, and so had to regenerate global life information.
@@ -3431,14 +3433,12 @@ rest_of_compilation (decl)
 	 information below.  */
       register_life_up_to_date = 1;
     }
-  no_new_pseudos = 0;
+  no_new_pseudos = 1;
 
   timevar_pop (TV_GCSE);
 #endif
 
   timevar_push (TV_SCHED);
-
-  split_all_insns (1);
 
 #ifdef INSN_SCHEDULING
 
