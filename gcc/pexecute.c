@@ -301,9 +301,23 @@ pwait (pid, status, flags)
      int *status;
      int flags;
 {
+  int termstat;
+
+  pid = cwait (&termstat, pid, WAIT_CHILD);
+
   /* ??? Here's an opportunity to canonicalize the values in STATUS.
      Needed?  */
-  return _cwait (status, pid, WAIT_CHILD);
+
+  /* cwait returns the child process exit code in termstat.
+     A value of 3 indicates that the child caught a signal, but not
+     which one.  Since only SIGABRT, SIGFPE and SIGINT do anything, we
+     report SIGABRT.  */
+  if (termstat == 3)
+    *status = SIGABRT;
+  else
+    *status = (((termstat) & 0xff) << 8);
+
+  return pid;
 }
 
 #endif /* _WIN32 */
