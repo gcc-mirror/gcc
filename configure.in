@@ -415,6 +415,7 @@ case "${target}" in
   hppa*-*-*elf* | \
   parisc*-*-linux* | hppa*-*-linux* | \
   hppa*-*-lites* | \
+  hppa*-*-openbsd* | \
   hppa*64*-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     # Do configure ld/binutils/gas for this case.
