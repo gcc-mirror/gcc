@@ -1,3 +1,20 @@
+1999-11-29  David S. Miller  <davem@redhat.com>
+
+	Move quantity tables and register equivalence chains into
+	per-qty and per-register structure arrays respectively.
+	* cse.c (qty_first_reg, qty_last_reg, qty_mode, qty_const,
+	qty_const_insn, qty_comparison_code, qty_comparison_const,
+	qty_comparison_qty): Delete, replace with...
+	(qty_table): this structure table.
+	(reg_next_eqv, reg_prev_eqv): Delete, replace with...
+	(reg_eqv_table): this structure table.
+	(make_new_qty): Add argument MODE.  Caller updated.
+	Update to use qty_table and reg_eqv_table.
+	(make_regs_eqv, delete_reg_equiv, insert_regs,
+	insert, exp_equiv_p, cse_rtx_varies_p, canon_reg,
+	fold_rtx, equiv_constant, record_jump_cond, cse_insn,
+	cse_process_notes, cse_main, cse_basic_block): Likewise.
+
 Mon Nov 29 16:56:42 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (extract_muldiv, case {MIN,MAX}_EXPR): Reverse
