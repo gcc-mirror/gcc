@@ -602,6 +602,10 @@ rs6000_override_options (default_cpu)
     }
 #endif
 
+  /* For Darwin, always silently make -fpic and -fPIC identical.  */
+  if (flag_pic == 1 && DEFAULT_ABI == ABI_DARWIN)
+    flag_pic = 2;
+
   /* Set debug flags */
   if (rs6000_debug_name)
     {

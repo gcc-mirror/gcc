@@ -1,3 +1,8 @@
+2002-09-05  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Make -fpic and
+	-fPIC equivalent on Darwin.
+
 Thu Sep  5 16:27:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_expand_builtin): Return early if encountering an
