@@ -2253,6 +2253,11 @@ rest_of_compilation (decl)
 		       if (warn_inline && specd)
 			 warning_with_decl (decl, lose);
 		       DECL_INLINE (decl) = 0;
+		       /* Don't really compile an extern inline function.
+			  If we can't make it inline, pretend
+			  it was only declared.  */
+		       if (DECL_EXTERNAL (decl))
+			 goto exit_rest_of_compilation;
 		     }
 		   else
 		     DECL_INLINE (decl) = 1;
