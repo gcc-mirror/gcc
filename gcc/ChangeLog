@@ -1,3 +1,7 @@
+Tue Jul  7 00:30:08 1998  Klaus Kaempf <kkaempf@rmi.de>
+
+	* alpha.c: Include tree.h before expr.h.
+
 Mon Jul  6 22:50:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* c-parse.in (struct_head, union_head, enum_head): New nonterminals.
