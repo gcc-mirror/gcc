@@ -1,3 +1,7 @@
+Fri Sep  3 10:39:38 BST 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* gcc.c-torture/execute/990827-1.c: Fix typo.
+
 Fri Sep 03 09:31:10 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/deref1.C: New test.

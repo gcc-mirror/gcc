@@ -9,11 +9,11 @@ unsigned test(unsigned one , unsigned  bit)
 
 int main()
 {
-  if ((test 1,0) != 0)
+  if (test (1,0) != 0)
     abort ();
-  if ((test 1,1) != 1)
+  if (test (1,1) != 1)
     abort ();
-  if ((test 1,65535) != 1)
+  if (test (1,65535) != 1)
     abort ();
   exit (0);
 
