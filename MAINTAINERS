@@ -23,6 +23,8 @@ arm port		Richard Earnshaw	rearnsha@arm.com
 m32r port		Nick Clifton		nickc@cygnus.com
 			Michael Meissner	meissner@cygnus.com
 h8 port			Jeff Law		law@cygnus.com
+mcore			Nick Clifton		nickc@redhat.com
+			Jim Dein		jdein@windriver.com
 mn10200 port		Jeff Law		law@cygnus.com
 mn10300 port		Jeff Law		law@cygnus.com
 hppa port		Jeff Law		law@cygnus.com
