@@ -1,3 +1,14 @@
+2003-08-26  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_bitop): New function to perform constant
+	folding of ffs, clz, ctz, popcount and parity builtin functions
+	and their long and long long variants (such as ffsl and ffsll).
+	(fold_builtin): fold_builtin_bitop when appropriate.
+	* simplify-rtx.c (simplify_unary_operation): Honor both
+	CLZ_DEFINED_VALUE_AT_ZERO and CTZ_DEFINED_VALUE_AT_ZERO when
+	evaluating clz and ctz at compile-time, for operands wider
+	than HOST_WIDE_INT.
+
 2003-08-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* builtins.c (build_function_call_expr): Don't set

@@ -649,24 +649,23 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 
 	case CLZ:
 	  hv = 0;
-	  if (h1 == 0)
-	    lv = GET_MODE_BITSIZE (mode) - floor_log2 (l1) - 1;
-	  else
+	  if (h1 != 0)
 	    lv = GET_MODE_BITSIZE (mode) - floor_log2 (h1) - 1
 	      - HOST_BITS_PER_WIDE_INT;
+	  else if (l1 != 0)
+	    lv = GET_MODE_BITSIZE (mode) - floor_log2 (l1) - 1;
+	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (mode, lv))
+	    lv = GET_MODE_BITSIZE (mode);
 	  break;
 
 	case CTZ:
 	  hv = 0;
-	  if (l1 == 0)
-	    {
-	      if (h1 == 0)
-		lv = GET_MODE_BITSIZE (mode);
-	      else
-		lv = HOST_BITS_PER_WIDE_INT + exact_log2 (h1 & -h1);
-	    }
-	  else
+	  if (l1 != 0)
 	    lv = exact_log2 (l1 & -l1);
+	  else if (h1 != 0)
+	    lv = HOST_BITS_PER_WIDE_INT + exact_log2 (h1 & -h1);
+	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, lv))
+	    lv = GET_MODE_BITSIZE (mode);
 	  break;
 
 	case POPCOUNT:
