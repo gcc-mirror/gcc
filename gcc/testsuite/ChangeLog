@@ -1,5 +1,20 @@
 2000-11-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.old-deja/g++.other/crash24.C: New test.
+	* g++.old-deja/g++.other/crash25.C: New test.
+	* g++.old-deja/g++.other/crash26.C: New test.
+	* g++.old-deja/g++.other/crash27.C: New test.
+	* g++.old-deja/g++.other/crash28.C: New test.
+	* g++.old-deja/g++.other/crash29.C: New test.
+	* g++.old-deja/g++.other/crash30.C: New test.
+	* g++.old-deja/g++.other/crash31.C: New test.
+	* g++.old-deja/g++.other/crash32.C: New test.
+	* g++.old-deja/g++.other/crash33.C: New test.
+	* g++.old-deja/g++.other/crash34.C: New test.
+	* g++.old-deja/g++.other/crash35.C: New test.
+
+2000-11-06  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.c-torture/execute/20001031-1.c: New test.
 
 2000-11-04  Mark Mitchell  <mark@codesourcery.com>
