@@ -1360,6 +1360,10 @@ compile_file (name)
   if (finput == 0)
     pfatal_with_name (name);
 
+#ifdef IO_BUFFER_SIZE
+  setvbuf (finput, xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
+#endif
+
   /* Initialize data in various passes.  */
 
   init_obstacks ();
