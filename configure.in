@@ -718,10 +718,10 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-librx ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
   d30v-*-*)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   fr30-*-elf*)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
@@ -734,7 +734,7 @@ case "${target}" in
   hppa*-*-linux* | \
   hppa*-*-lites* | \
   hppa*64*-*-*)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     # Do configure ld/binutils/gas for this case.
     ;;
   hppa*-*-*)
@@ -860,7 +860,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
   powerpc-*-eabi)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
@@ -936,7 +936,7 @@ case "${target}" in
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc-*-sunos4*)
     noconfigdirs="${libgcj}"

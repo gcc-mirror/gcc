@@ -1,3 +1,8 @@
+Thu Apr 26 02:13:41 2001  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (noconfigdirs): Don't reset it from scratch in the
+	target case; only append to it.
+
 Thu Apr 26 02:13:07 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (noconfigdirs) [hppa*-*-*, mips*-*-irix6*,
