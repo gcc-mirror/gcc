@@ -135,6 +135,8 @@ void report PARAMS ((void));
 }
 
 %{
+extern int flag_assert;
+
 #include "lex.c"
 %}
 

@@ -1,3 +1,18 @@
+2002-09-28  Anthony Green  <green@redhat.com>
+
+	* gcj.texi (Invoking jv-scan): Add --no-assert documentation.
+	(Code Generation): Add -fno-assert documentation.
+	* jv-scan.c (flag_assert): New global.
+	(options): Add assert option.
+	(help): Add --no-assert documentation.
+	* parse-scan.y (flag_assert): New global.
+	* lang.c (lang_f_options): Add -fassert/-fno-assert support.
+	(flag_assert): New global.
+	* java-tree.h (flag_assert): New global.
+	* lex.c (java_lex): Obey flag_assert.
+	* jvspec.c (jvgenmain_spec): Strip -fassert/-fno-assert when
+	calling cc1.
+
 2002-09-26  Andrew Haley  <aph@redhat.com>
 
 	* expr.c (build_java_array_length_access): Check for null pointer.

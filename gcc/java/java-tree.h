@@ -160,6 +160,10 @@ extern int flag_emit_class_files;
 
 extern int flag_filelist_file;
 
+/* When nonzero, permit the use of the assert keyword.  */
+
+extern int flag_assert;
+
 /* When nonzero, assume all native functions are implemented with
    JNI, not CNI.  */
 
