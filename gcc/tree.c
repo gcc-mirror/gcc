@@ -4533,19 +4533,21 @@ append_random_chars (template)
   static unsigned HOST_WIDE_INT value;
   unsigned HOST_WIDE_INT v;
 
-#ifdef HAVE_GETTIMEOFDAY
-  struct timeval tv;
-#endif
+  if (! value)
+    {
+      struct stat st;
+
+      /* VALUE should be unique for each file and must
+	 not change between compiles since this can cause
+	 bootstrap comparison errors.  */
+
+      if (stat (main_input_filename, &st) < 0)
+	abort ();
+
+      value = st.st_dev ^ st.st_ino ^ st.st_mtime;
+    }
 
   template += strlen (template);
-
-#ifdef HAVE_GETTIMEOFDAY
-  /* Get some more or less random data.  */
-  gettimeofday (&tv, NULL);
-  value += ((unsigned HOST_WIDE_INT) tv.tv_usec << 16) ^ tv.tv_sec ^ getpid ();
-#else
-  value += getpid ();
-#endif
 
   v = value;
 
