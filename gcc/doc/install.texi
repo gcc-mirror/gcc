@@ -2030,9 +2030,6 @@ As of GNU binutils 2.11.2, neither GNU @command{as} nor GNU @command{ld}
 are supported on Tru64 UNIX, so you must not configure GCC with
 @option{--with-gnu-as} or @option{--with-gnu-ld}.
 
-The @option{--enable-threads} options isn't supported yet.  A patch is
-in preparation for a future release.
-
 GCC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from
 the system header file @file{/usr/include/stamp.h}.  If you install a

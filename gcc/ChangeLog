@@ -1,5 +1,26 @@
 2003-07-31  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* config.gcc (alpha*-dec-osf[45]*): Enable POSIX thread support by
+	default.
+
+	* gthr-posix.c: New file.
+	* gthr-posix.h: Define _REENTRANT if missing.
+	Make _LIBOBJC #pragma weak visible with _LIBOBJC_WEAK.
+
+	* config/alpha/t-osf4 (SHLIB_LINK): Hide dummy functions provided
+	by gthr-posix.o.
+	* config/alpha/t-osf-pthread: New file.
+
+	* fixinc/inclhack.def (alpha_pthread): New fix.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/pthread.h [ALPHA_PTHREAD_CHECK]: New testcase.
+
+	* doc/install.texi (alpha*-dec-osf*): Remove --enable-threads
+	warning.
+	Fixes PR bootstrap/9330.
+
+2003-07-31  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* configure.in (gcc_cv_ld_hidden): Also disable on mips-sgi-irix5*
 	without GNU ld.
 	Update comment.
