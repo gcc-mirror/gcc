@@ -1,3 +1,11 @@
+2005-01-27  Steven Bosscher  <stevenb@suse.de>
+
+	* decl.c (finish_case_label): Use SWITCH_STMT accessor macros
+	instead of SWITCH_EXPR ones.
+	* pt.c (tsubst_expr): Likewise.
+	* semantics.c (begin_switch_stmt, finish_switch_cond,
+	finish_switch_stmt): Likewise.
+
 2005-01-26  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR c++/18370

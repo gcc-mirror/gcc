@@ -858,7 +858,7 @@ begin_switch_stmt (void)
 
   scope = do_pushlevel (sk_block);
   TREE_CHAIN (r) = scope;
-  begin_cond (&SWITCH_COND (r));
+  begin_cond (&SWITCH_STMT_COND (r));
 
   return r;
 }
@@ -902,11 +902,11 @@ finish_switch_cond (tree cond, tree switch_stmt)
 	    cond = index;
 	}
     }
-  finish_cond (&SWITCH_COND (switch_stmt), cond);
-  SWITCH_TYPE (switch_stmt) = orig_type;
+  finish_cond (&SWITCH_STMT_COND (switch_stmt), cond);
+  SWITCH_STMT_TYPE (switch_stmt) = orig_type;
   add_stmt (switch_stmt);
   push_switch (switch_stmt);
-  SWITCH_BODY (switch_stmt) = push_stmt_list ();
+  SWITCH_STMT_BODY (switch_stmt) = push_stmt_list ();
 }
 
 /* Finish the body of a switch-statement, which may be given by
@@ -917,7 +917,8 @@ finish_switch_stmt (tree switch_stmt)
 {
   tree scope;
 
-  SWITCH_BODY (switch_stmt) = pop_stmt_list (SWITCH_BODY (switch_stmt));
+  SWITCH_STMT_BODY (switch_stmt) =
+    pop_stmt_list (SWITCH_STMT_BODY (switch_stmt));
   pop_switch (); 
   finish_stmt ();
 

@@ -1227,15 +1227,15 @@ struct tree_vec GTY(())
 /* SWITCH_EXPR accessors. These give access to the condition, body and
    original condition type (before any compiler conversions)
    of the switch statement, respectively.  */
-#define SWITCH_COND(NODE)       TREE_OPERAND ((NODE), 0)
-#define SWITCH_BODY(NODE)       TREE_OPERAND ((NODE), 1)
-#define SWITCH_LABELS(NODE)     TREE_OPERAND ((NODE), 2)
+#define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_EXPR_CHECK (NODE), 0)
+#define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_EXPR_CHECK (NODE), 1)
+#define SWITCH_LABELS(NODE)     TREE_OPERAND (SWITCH_EXPR_CHECK (NODE), 2)
 
 /* CASE_LABEL_EXPR accessors. These give access to the high and low values
    of a case label, respectively.  */
-#define CASE_LOW(NODE)          	TREE_OPERAND ((NODE), 0)
-#define CASE_HIGH(NODE)         	TREE_OPERAND ((NODE), 1)
-#define CASE_LABEL(NODE)		TREE_OPERAND ((NODE), 2)
+#define CASE_LOW(NODE)          	TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 0)
+#define CASE_HIGH(NODE)         	TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 1)
+#define CASE_LABEL(NODE)		TREE_OPERAND (CASE_LABEL_EXPR_CHECK (NODE), 2)
 
 /* The operands of a BIND_EXPR.  */
 #define BIND_EXPR_VARS(NODE) (TREE_OPERAND (BIND_EXPR_CHECK (NODE), 0))
@@ -1250,10 +1250,10 @@ struct tree_vec GTY(())
    instruction (e.g., "mov x, y"). ASM_OUTPUTS, ASM_INPUTS, and
    ASM_CLOBBERS represent the outputs, inputs, and clobbers for the
    statement.  */
-#define ASM_STRING(NODE)        TREE_OPERAND ((NODE), 0)
-#define ASM_OUTPUTS(NODE)       TREE_OPERAND ((NODE), 1)
-#define ASM_INPUTS(NODE)        TREE_OPERAND ((NODE), 2)
-#define ASM_CLOBBERS(NODE)      TREE_OPERAND ((NODE), 3)
+#define ASM_STRING(NODE)        TREE_OPERAND (ASM_EXPR_CHECK (NODE), 0)
+#define ASM_OUTPUTS(NODE)       TREE_OPERAND (ASM_EXPR_CHECK (NODE), 1)
+#define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_EXPR_CHECK (NODE), 2)
+#define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_EXPR_CHECK (NODE), 3)
 /* Nonzero if we want to create an ASM_INPUT instead of an
    ASM_OPERAND with no operands.  */
 #define ASM_INPUT_P(NODE) (TREE_STATIC (NODE))

@@ -6563,8 +6563,7 @@ c_start_case (tree exp)
 
   /* Add this new SWITCH_STMT to the stack.  */
   cs = XNEW (struct c_switch);
-  cs->switch_stmt = build_stmt ((enum tree_code) SWITCH_STMT, exp, NULL_TREE,
-				orig_type);
+  cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, orig_type);
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->next = c_switch_stack;
@@ -6583,7 +6582,7 @@ do_case (tree low_value, tree high_value)
   if (c_switch_stack)
     {
       label = c_add_case_label (c_switch_stack->cases,
-				SWITCH_COND (c_switch_stack->switch_stmt),
+				SWITCH_STMT_COND (c_switch_stack->switch_stmt),
 				c_switch_stack->orig_type,
 				low_value, high_value);
       if (label == error_mark_node)
@@ -6604,7 +6603,7 @@ c_finish_case (tree body)
 {
   struct c_switch *cs = c_switch_stack;
 
-  SWITCH_BODY (cs->switch_stmt) = body;
+  SWITCH_STMT_BODY (cs->switch_stmt) = body;
 
   /* Emit warnings as needed.  */
   c_do_switch_warnings (cs->cases, cs->switch_stmt);
