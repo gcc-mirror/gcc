@@ -1,3 +1,10 @@
+Thu Sep 18 21:13:40 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k/xm-mot3300.h (alloca): Properly declare if __STDC__.
+	* mips/mips.h (alloca): Likewise.
+	* rs6000/xm-rs6000.h (alloca): Likewise.
+	* rs6000/xm-sysv4.h: Likewise.
+
 Thu Sep 18 14:22:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* final.c (final_scan_insn): Hand BARRIERs off to the dwarf2 code.
