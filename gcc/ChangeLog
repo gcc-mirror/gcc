@@ -1,3 +1,10 @@
+2002-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR bootstrap/6445
+	* config/i386/i386.md (untyped_call): Return the value in a float
+	register if TARGET_FLOAT_RETURNS_IN_80387, not just if
+	TARGET_80387.
+
 2002-04-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h: Revert 2002-04-22 change.

@@ -1,3 +1,13 @@
+2002-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6497
+	* g++.dg/inherit/access2.C: New test.
+	
+2002-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR bootstrap/6445
+	* gcc.dg/20020426-1.c: New test.
+
 2002-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/abi/enum1.C: New test.
