@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 */
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.14 $"
+#define VERSION_INFO2   "$Revision: 1.15 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -81,11 +81,15 @@ Boston, MA 02111-1307, USA.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
 
-/* Override svr[34].h.  */
+/* Override svr[34].h.  Switch to the data section so that the coffsem
+   symbol isn't in the text section.  */
 #undef	ASM_FILE_START
 #define ASM_FILE_START(FILE) \
-  output_file_start (FILE, f_options, ARRAY_SIZE (f_options), \
-		     W_options, ARRAY_SIZE (W_options))
+  do { \
+    output_file_directive (FILE, main_input_filename); \
+    fprintf (FILE, "\t.version\t\"01.01\"\n"); \
+    data_section (); \
+  } while (0)
 
 /* ix86 abi specified type for wchar_t */
 
