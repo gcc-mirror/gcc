@@ -1,3 +1,12 @@
+2001-12-10  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/basic_string.tcc (_M_replace_safe):  New function.
+	(_M_replace(input_iterator_tag), append members):  Use it.
+	(_M_replace(forward_iterator_tag)):  Remove.
+	* include/bits/basic_string.h:  Adjust declarations.
+	* src/string-inst.cc:  Adjust declarations.
+
 2001-12-09  Benjamin Kosnik  <bkoz@redhat.com>
 	    Philip Martin <pmartin@uklinux.net>
 	
