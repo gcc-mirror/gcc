@@ -1,3 +1,8 @@
+Fri Oct  1 00:53:17 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* lib/file-format.exp (gcc_target_object_format): Don't
+	crash if objdump is unavailable.
+
 Wed Sep 29 23:48:44 1999  Donn Terry <donn@interix.com>
 
 	* gcc.misc-tests/mg.exp: delete extraneous redirection.

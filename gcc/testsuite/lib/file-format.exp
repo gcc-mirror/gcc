@@ -35,8 +35,10 @@ proc gcc_target_object_format { } {
         
         gcc_target_compile objfmtst.c objfmtst.o object ""
         
-        set output [exec $objdump_name --file-headers objfmtst.o ]
-        
+	catch {
+          set output [exec $objdump_name --file-headers objfmtst.o ]
+        } output
+
         file delete objfmtst.o
         
         if ![ regexp "file format (.*)arch" $output dummy objformat ]  {
