@@ -1,3 +1,7 @@
+1998-09-08  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* cplus-dem.c (demangle_arm_pt): Demangle anonymous namespaces.
+
 Mon Sep  7 23:29:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mkstemp.c: Include config.h even when not IN_GCC.  Wrap header

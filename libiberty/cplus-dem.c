@@ -1625,6 +1625,14 @@ demangle_arm_pt (work, mangled, n, declp)
       --declp->p;
       string_append (declp, ">");
     }
+  else if (n>10 && strncmp (*mangled, "_GLOBAL_", 8) == 0
+	   && (*mangled)[9] == 'N'
+	   && (*mangled)[8] == (*mangled)[10]
+	   && strchr (cplus_markers, (*mangled)[8]))
+    {
+      /* A member of the anonymous namespace.  */
+      string_append (declp, "{anonymous}");
+    }
   else
     {
       string_appendn (declp, *mangled, n);
