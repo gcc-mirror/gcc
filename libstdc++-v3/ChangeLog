@@ -1,3 +1,8 @@
+2002-03-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/17_intro/RELEASE-NOTES: Fix usage.
+	* README (libmath): Make clear.
+
 2002-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS): Check for version
@@ -29,7 +34,7 @@
 
 2002-03-03  Phil Edwards  <pme@gcc.gnu.org>
 
-    PR libstdc++/2955
+        PR libstdc++/2955
 	* include/std/std_sstream.h:  Remove trailing spaces.
 	(basic_stringbuf::_M_stringbuf_init):  Also check for ios_base::app.
 	* testsuite/27_io/stringbuf.cc (test05, test06):  New tests.

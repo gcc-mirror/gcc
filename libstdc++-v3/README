@@ -85,7 +85,8 @@ In addition, three subdirectories are convenience libraries:
 
   libmath
     Support routines needed for C++ math. Only needed if the
-    underlying "C" implementation is weak or looses.
+    underlying "C" implementation is non-existent, in particular
+    required or optimal long double, long long, and C99 functionality.
 
   libsupc++
     Contains the runtime library for C++, including exception
