@@ -11064,13 +11064,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       if (type != error_mark_node
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
+	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type))
+	  && CP_TYPE_QUALS (type) == TYPE_UNQUALIFIED)
 	{
 	  tree oldname = TYPE_NAME (type);
 	  tree t;
-
-	  /* FIXME: This is bogus; we should not be doing this for
-	            cv-qualified types.  */
 
 	  /* Replace the anonymous name with the real name everywhere.  */
 	  lookup_tag_reverse (type, declarator);
