@@ -240,6 +240,8 @@ namespace std {
     (vector<string>::const_iterator, vector<string>::const_iterator, 
      string*, _Bool<false>);
 
+#ifdef __STL_USE_CONCEPT_CHECKS
+
   template
     void 
     __sink_unused_warning<char>(char);
@@ -259,6 +261,8 @@ namespace std {
     __sink_unused_warning<ostreambuf_iterator<wchar_t> > 
     (ostreambuf_iterator<wchar_t>);
 #endif
+
+#endif // __STL_USE_CONCEPT_CHECKS
 
   template
     void 

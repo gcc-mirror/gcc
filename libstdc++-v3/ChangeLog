@@ -1,3 +1,11 @@
+2001-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/bits/stl_config.h: Turn off concept-checking.
+	* src/locale-inst.cc: Disable use of __sink_unused_warning when 
+	concept-checking is disabled.
+	* src/misc-inst.cc: Likewise.
+	* src/stl-inst.cc: Likewise.
+
 2001-04-12  Jason Merrill  <jason_merrill@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Prepend "./" to
@@ -20,7 +28,7 @@
 
 2001-04-06  Joe Buck  <jbuck@welsh-buck.org>
 
-        * stl_algobase.h (std::equal): avoid use of possibly-undefined
+	* stl_algobase.h (std::equal): Avoid use of possibly-undefined
         operator != (one line patch).
 
 2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>

@@ -556,12 +556,15 @@
 #   define __STL_VOLATILE
 #endif
 
+// Because concept-checks do not presently work correctly, they 
+// are disabled.
+#if 0
 #if defined(__STL_CLASS_PARTIAL_SPECIALIZATION) \
     && defined(__STL_MEMBER_TEMPLATES) \
     && !defined(_STL_NO_CONCEPT_CHECKS)
 #  define __STL_USE_CONCEPT_CHECKS
 #endif
-
+#endif
 
 #endif /* __STL_CONFIG_H */
 

@@ -285,8 +285,12 @@ namespace std {
 #endif
 #endif // _GLIBCPP_USE_WCHAR_T
 
+#ifdef __STL_USE_CONCEPT_CHECKS
+
   template
     void __sink_unused_warning<locale::facet*>(locale::facet*);
+
+#endif // __STL_USE_CONCEPT_CHECKS
 
   template 
     locale::facet** 

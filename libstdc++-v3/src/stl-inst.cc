@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,8 +49,12 @@ namespace std {
     vector<unsigned int>::
     _M_insert_aux(vector<unsigned int>::iterator, unsigned int const &);
 
+#ifdef __STL_USE_CONCEPT_CHECKS
+
   template
     void
     __sink_unused_warning<unsigned int>(unsigned int);
+
+#endif // __STL_USE_CONCEPT_CHECKS
 
 } //std
