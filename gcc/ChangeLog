@@ -1,3 +1,19 @@
+Thu Sep 24 17:45:55 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* expr.c (store_constructor): When initializing a field that is smaller
+	than a word, at the start of a word, try to widen it to a full word.
+
+	* cse.c (cse_insn): When we are about to change a register,
+	remove any invalid references to it.
+
+	(remove_invalid_subreg_refs): New function.
+	(mention_regs): Special treatment for SUBREGs.
+	(insert_regs): Don't strip SUBREG for call to mention_regs.
+	Check if reg_tick needs to be bumped up before that call.
+	(lookup_as_function): Try to match known word_mode constants when
+	looking for a norrower constant.
+	(canon_hash): Special treatment for SUBREGs.
+
 Thu Sep 24 01:35:34 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sol2-sld-64.h (TRANSFER_FROM_TRAMPOLINE): Define.

@@ -626,6 +626,7 @@ static void merge_equiv_classes PROTO((struct table_elt *,
 static void invalidate		PROTO((rtx, enum machine_mode));
 static int cse_rtx_varies_p	PROTO((rtx));
 static void remove_invalid_refs	PROTO((int));
+static void remove_invalid_subreg_refs	PROTO((int, int, enum machine_mode));
 static void rehash_using_reg	PROTO((rtx));
 static void invalidate_memory	PROTO((void));
 static void invalidate_for_call	PROTO((void));
@@ -980,6 +981,30 @@ mention_regs (x)
       return 0;
     }
 
+  /* If this is a SUBREG, we don't want to discard other SUBREGs of the same
+     pseudo if they don't use overlapping words.  We handle only pseudos
+     here for simplicity.  */
+  if (code == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
+      && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER)
+    {
+      int i = REGNO (SUBREG_REG (x));
+
+      if (reg_in_table[i] >= 0 && reg_in_table[i] != reg_tick[i])
+	{
+	  /* If reg_tick has been incremented more than once since
+	     reg_in_table was last set, that means that the entire
+	     register has been set before, so discard anything memorized
+	     for the entrire register, including all SUBREG expressions.  */
+	  if (reg_in_table[i] != reg_tick[i] - 1)
+	    remove_invalid_refs (i);
+	  else
+	    remove_invalid_subreg_refs (i, SUBREG_WORD (x), GET_MODE (x));
+	}
+
+      reg_in_table[i] = reg_tick[i];
+      return 0;
+    }
+
   /* If X is a comparison or a COMPARE and either operand is a register
      that does not have a quantity, give it one.  This is so that a later
      call to record_jump_equiv won't cause X to be assigned a different
@@ -1077,8 +1102,19 @@ insert_regs (x, classp, modified)
   else if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
 	   && ! REGNO_QTY_VALID_P (REGNO (SUBREG_REG (x))))
     {
+      int regno = REGNO (SUBREG_REG (x));
+
       insert_regs (SUBREG_REG (x), NULL_PTR, 0);
-      mention_regs (SUBREG_REG (x));
+      /* Mention_regs checks if REG_TICK is exactly one larger than
+	 REG_IN_TABLE to find out if there was only a single preceding
+	 invalidation - for the SUBREG - or another one, which would be
+	 for the full register.  Since we don't invalidate the SUBREG
+	 here first, we might have to bump up REG_TICK so that mention_regs
+	 will do the right thing.  */
+      if (reg_in_table[regno] >= 0
+	  && reg_tick[regno] == reg_in_table[regno] + 1)
+	reg_tick++;
+      mention_regs (x);
       return 1;
     }
   else
@@ -1254,6 +1290,17 @@ lookup_as_function (x, code)
 {
   register struct table_elt *p = lookup (x, safe_hash (x, VOIDmode) % NBUCKETS,
 					 GET_MODE (x));
+  /* If we are looking for a CONST_INT, the mode doesn't really matter, as
+     long as we are narrowing.  So if we looked in vain for a mode narrower
+     than word_mode before, look for word_mode now.  */
+  if (p == 0 && code == CONST_INT
+      && GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (word_mode))
+    {
+      x = copy_rtx (x);
+      PUT_MODE (x, word_mode);
+      p = lookup (x, safe_hash (x, VOIDmode) % NBUCKETS, word_mode);
+    }
+
   if (p == 0)
     return 0;
 
@@ -1684,6 +1731,37 @@ remove_invalid_refs (regno)
 	  remove_from_table (p, i);
       }
 }
+
+/* Likewise for a subreg with subreg_reg WORD and mode MODE.  */
+static void
+remove_invalid_subreg_refs (regno, word, mode)
+     int regno;
+     int word;
+     enum machine_mode mode;
+{
+  register int i;
+  register struct table_elt *p, *next;
+  int end = word + (GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD;
+
+  for (i = 0; i < NBUCKETS; i++)
+    for (p = table[i]; p; p = next)
+      {
+	rtx exp;
+	next = p->next_same_hash;
+	
+	exp = p->exp;
+	if (GET_CODE (p->exp) != REG
+	    && (GET_CODE (exp) != SUBREG
+		|| GET_CODE (SUBREG_REG (exp)) != REG
+		|| REGNO (SUBREG_REG (exp)) != regno
+		|| (((SUBREG_WORD (exp)
+		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1) / UNITS_PER_WORD)
+		     >= word)
+		 && SUBREG_WORD (exp) <= end))
+	    && refers_to_regno_p (regno, regno + 1, p->exp, NULL_PTR))
+	  remove_from_table (p, i);
+      }
+}
 
 /* Recompute the hash codes of any valid entries in the hash table that
    reference X, if X is a register, or SUBREG_REG (X) if X is a SUBREG.
@@ -1928,6 +2006,20 @@ canon_hash (x, mode)
 	  }
 	hash += ((unsigned) REG << 7) + (unsigned) reg_qty[regno];
 	return hash;
+      }
+
+    /* We handle SUBREG of a REG specially because the underlying
+       reg changes its hash value with every value change; we don't
+       want to have to forget unrelated subregs when one subreg changes.  */
+    case SUBREG:
+      {
+	if (GET_CODE (SUBREG_REG (x)) == REG)
+	  {
+	    hash += (((unsigned) SUBREG << 7)
+		     + REGNO (SUBREG_REG (x)) + SUBREG_WORD (x));
+	    return hash;
+	  }
+	break;
       }
 
     case CONST_INT:
@@ -7409,8 +7501,44 @@ cse_insn (insn, libcall_insn)
      we are going to hash the SET_DEST values unconditionally.  */
 
   for (i = 0; i < n_sets; i++)
-    if (sets[i].rtl && GET_CODE (SET_DEST (sets[i].rtl)) != REG)
-      mention_regs (SET_DEST (sets[i].rtl));
+    {
+      if (sets[i].rtl)
+	{
+	  rtx x = SET_DEST (sets[i].rtl);
+
+	  if (GET_CODE (x) != REG)
+	    mention_regs (x);
+	  else
+	    {
+	      /* We used to rely on all references to a register becoming
+		 inaccessible when a register changes to a new quantity,
+		 since that changes the hash code.  However, that is not
+		 safe, since after NBUCKETS new quantities we get a
+		 hash 'collision' of a register with its own invalid
+		 entries.  And since SUBREGs have been changed not to
+		 change their hash code with the hash code of the register,
+		 it wouldn't work any longer at all.  So we have to check
+		 for any invalid references lying around now.
+		 This code is similar to the REG case in mention_regs,
+		 but it knows that reg_tick has been incremented, and
+		 it leaves reg_in_table as -1 .  */
+	      register int regno = REGNO (x);
+	      register int endregno
+		= regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
+			   : HARD_REGNO_NREGS (regno, GET_MODE (x)));
+	      int i;
+
+	      for (i = regno; i < endregno; i++)
+		{
+		  if (reg_in_table[i] >= 0)
+		    {
+		      remove_invalid_refs (i);
+		      reg_in_table[i] = -1;
+		    }
+		}
+	    }
+	}
+    }
 
   /* We may have just removed some of the src_elt's from the hash table.
      So replace each one with the current head of the same class.  */

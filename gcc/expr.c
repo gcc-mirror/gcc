@@ -3819,6 +3819,7 @@ store_constructor (exp, target, cleared)
      int cleared;
 {
   tree type = TREE_TYPE (exp);
+  rtx exp_size = expr_size (exp);
 
   /* We know our target cannot conflict, since safe_from_p has been called.  */
 #if 0
@@ -3880,6 +3881,7 @@ store_constructor (exp, target, cleared)
       for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
 	{
 	  register tree field = TREE_PURPOSE (elt);
+	  tree value = TREE_VALUE (elt);
 	  register enum machine_mode mode;
 	  int bitsize;
 	  int bitpos = 0;
@@ -3951,8 +3953,36 @@ store_constructor (exp, target, cleared)
 	      RTX_UNCHANGING_P (to_rtx) = 1;
 	    }
 
+#ifdef WORD_REGISTER_OPERATIONS
+	  /* If this initializes a field that is smaller than a word, at the
+	     start of a word, try to widen it to a full word.
+	     This special case allows us to output C++ member function
+	     initializations in a form that the optimizers can understand.  */
+	  if (constant
+	      && GET_CODE (target) == REG
+	      && bitsize < BITS_PER_WORD
+	      && bitpos % BITS_PER_WORD == 0
+	      && GET_MODE_CLASS (mode) == MODE_INT
+	      && TREE_CODE (value) == INTEGER_CST
+	      && GET_CODE (exp_size) == CONST_INT
+	      && bitpos + BITS_PER_WORD <= INTVAL (exp_size) * BITS_PER_UNIT)
+	    {
+	      tree type = TREE_TYPE (value);
+	      if (TYPE_PRECISION (type) < BITS_PER_WORD)
+		{
+		  type = type_for_size (BITS_PER_WORD, TREE_UNSIGNED (type));
+		  value = convert (type, value);
+		}
+	      if (BYTES_BIG_ENDIAN)
+		value
+		  = fold (build (LSHIFT_EXPR, type, value,
+				 build_int_2 (BITS_PER_WORD - bitsize, 0)));
+	      bitsize = BITS_PER_WORD;
+	      mode = word_mode;
+	    }
+#endif
 	  store_constructor_field (to_rtx, bitsize, bitpos,
-				   mode, TREE_VALUE (elt), type, cleared);
+				   mode, value, type, cleared);
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
