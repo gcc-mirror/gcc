@@ -1,6 +1,6 @@
 // verify.cc - verify bytecode
 
-/* Copyright (C) 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -32,6 +32,10 @@ details.  */
 #endif /* VERIFY_DEBUG */
 
 
+// This is used to mark states which are not scheduled for
+// verification.
+#define INVALID_STATE ((state *) -1)
+
 static void debug_print (const char *fmt, ...)
   __attribute__ ((format (printf, 1, 2)));
 
@@ -46,6 +50,78 @@ debug_print (const char *fmt, ...)
 #endif /* VERIFY_DEBUG */
 }
 
+// This started as a fairly ordinary verifier, and for the most part
+// it remains so.  It works in the obvious way, by modeling the effect
+// of each opcode as it is encountered.  For most opcodes, this is a
+// straightforward operation.
+//
+// This verifier does not do type merging.  It used to, but this
+// results in difficulty verifying some relatively simple code
+// involving interfaces, and it pushed some verification work into the
+// interpreter.
+//
+// Instead of merging reference types, when we reach a point where two
+// flows of control merge, we simply keep the union of reference types
+// from each branch.  Then, when we need to verify a fact about a
+// reference on the stack (e.g., that it is compatible with the
+// argument type of a method), we check to ensure that all possible
+// types satisfy the requirement.
+//
+// Another area this verifier differs from the norm is in its handling
+// of subroutines.  The JVM specification has some confusing things to
+// say about subroutines.  For instance, it makes claims about not
+// allowing subroutines to merge and it rejects recursive subroutines.
+// For the most part these are red herrings; we used to try to follow
+// these things but they lead to problems.  For example, the notion of
+// "being in a subroutine" is not well-defined: is an exception
+// handler in a subroutine?  If you never execute the `ret' but
+// instead `goto 1' do you remain in the subroutine?
+//
+// For clarity on what is really required for type safety, read
+// "Simple Verification Technique for Complex Java Bytecode
+// Subroutines" by Alessandro Coglio.  Among other things this paper
+// shows that recursive subroutines are not harmful to type safety.
+// We implement something similar to what he proposes.  Note that this
+// means that this verifier will accept code that is rejected by some
+// other verifiers.
+//
+// For those not wanting to read the paper, the basic observation is
+// that we can maintain split states in subroutines.  We maintain one
+// state for each calling `jsr'.  In other words, we re-verify a
+// subroutine once for each caller, using the exact types held by the
+// callers (as opposed to the old approach of merging types and
+// keeping a bitmap registering what did or did not change).  This
+// approach lets us continue to verify correctly even when a
+// subroutine is exited via `goto' or `athrow' and not `ret'.
+//
+// In some other areas the JVM specification is (mildly) incorrect,
+// but we still implement what is specified.  For instance, you cannot
+// violate type safety by allocating an object with `new' and then
+// failing to initialize it, no matter how one branches or where one
+// stores the uninitialized reference.  See "Improving the official
+// specification of Java bytecode verification" by Alessandro Coglio.
+// Similarly, there's no real point in enforcing that padding bytes or
+// the mystery byte of invokeinterface must be 0, but we do that too.
+//
+// The verifier is currently neither completely lazy nor eager when it
+// comes to loading classes.  It tries to represent types by name when
+// possible, and then loads them when it needs to verify a fact about
+// the type.  Checking types by name is valid because we only use
+// names which come from the current class' constant pool.  Since all
+// such names are looked up using the same class loader, there is no
+// danger that we might be fooled into comparing different types with
+// the same name.
+//
+// In the future we plan to allow for a completely lazy mode of
+// operation, where the verifier will construct a list of type
+// assertions to be checked later.
+//
+// Some test cases for the verifier live in the "verify" module of the
+// Mauve test suite.  However, some of these are presently
+// (2004-01-20) believed to be incorrect.  (More precisely the notion
+// of "correct" is not well-defined, and this verifier differs from
+// others while remaining type-safe.)  Some other tests live in the
+// libgcj test suite.
 class _Jv_BytecodeVerifier
 {
 private:
@@ -55,10 +131,15 @@ private:
 
   struct state;
   struct type;
-  struct subr_info;
-  struct subr_entry_info;
   struct linked_utf8;
   struct ref_intersection;
+
+  template<typename T>
+  struct linked
+  {
+    T *val;
+    linked<T> *next;
+  };
 
   // The current PC.
   int PC;
@@ -68,28 +149,20 @@ private:
   // The current state of the stack, locals, etc.
   state *current_state;
 
-  // We store the state at branch targets, for merging.  This holds
-  // such states.
-  state **states;
+  // At each branch target we keep a linked list of all the states we
+  // can process at that point.  We'll only have multiple states at a
+  // given PC if they both have different return-address types in the
+  // same stack or local slot.  This array is indexed by PC and holds
+  // the list of all such states.
+  linked<state> **states;
 
-  // We keep a linked list of all the PCs which we must reverify.
-  // The link is done using the PC values.  This is the head of the
-  // list.
-  int next_verify_pc;
+  // We keep a linked list of all the states which we must reverify.
+  // This is the head of the list.
+  state *next_verify_state;
 
   // We keep some flags for each instruction.  The values are the
-  // FLAG_* constants defined above.
+  // FLAG_* constants defined above.  This is an array indexed by PC.
   char *flags;
-
-  // We need to keep track of which instructions can call a given
-  // subroutine.  FIXME: this is inefficient.  We keep a linked list
-  // of all calling `jsr's at at each jsr target.
-  subr_info **jsr_ptrs;
-
-  // We keep a linked list of entries which map each `ret' instruction
-  // to its unique subroutine entry point.  We expect that there won't
-  // be many `ret' instructions, so a linked list is ok.
-  subr_entry_info *entry_points;
 
   // The bytecode itself.
   unsigned char *bytecode;
@@ -103,17 +176,14 @@ private:
 
   // A linked list of utf8 objects we allocate.  This is really ugly,
   // but without this our utf8 objects would be collected.
-  linked_utf8 *utf8_list;
+  linked<_Jv_Utf8Const> *utf8_list;
 
   // A linked list of all ref_intersection objects we allocate.
   ref_intersection *isect_list;
 
-  struct linked_utf8
-  {
-    _Jv_Utf8Const *val;
-    linked_utf8 *next;
-  };
-
+  // Create a new Utf-8 constant and return it.  We do this to avoid
+  // having our Utf-8 constants prematurely collected.  FIXME this is
+  // ugly.
   _Jv_Utf8Const *make_utf8_const (char *s, int len)
   {
     _Jv_Utf8Const *val = _Jv_makeUtf8Const (s, len);
@@ -124,7 +194,8 @@ private:
     r->hash = val->hash;
     memcpy (r->data, val->data, val->length + 1);
 
-    linked_utf8 *lu = (linked_utf8 *) _Jv_Malloc (sizeof (linked_utf8));
+    linked<_Jv_Utf8Const> *lu
+      = (linked<_Jv_Utf8Const> *) _Jv_Malloc (sizeof (linked<_Jv_Utf8Const>));
     lu->val = r;
     lu->next = utf8_list;
     utf8_list = lu;
@@ -183,12 +254,9 @@ private:
     // to indicate an unusable value.
     unsuitable_type,
     return_address_type,
+    // This is the second word of a two-word value, i.e., a double or
+    // a long.
     continuation_type,
-
-    // There is an obscure special case which requires us to note when
-    // a local variable has not been used by a subroutine.  See
-    // push_jump_merge for more information.
-    unused_by_subroutine_type,
 
     // Everything after `reference_type' must be a reference type.
     reference_type,
@@ -497,28 +565,6 @@ private:
     return false;
   }
 
-  // This is used to keep track of which `jsr's correspond to a given
-  // jsr target.
-  struct subr_info
-  {
-    // PC of the instruction just after the jsr.
-    int pc;
-    // Link.
-    subr_info *next;
-  };
-
-  // This is used to keep track of which subroutine entry point
-  // corresponds to which `ret' instruction.
-  struct subr_entry_info
-  {
-    // PC of the subroutine entry point.
-    int pc;
-    // PC of the `ret' instruction.
-    int ret_pc;
-    // Link.
-    subr_entry_info *next;
-  };
-
   // The `type' class is used to represent a single type in the
   // verifier.
   struct type
@@ -529,11 +575,16 @@ private:
     // For reference types, the representation of the type.
     ref_intersection *klass;
 
-    // This is used when constructing a new object.  It is the PC of the
+    // This is used in two situations.
+    //
+    // First, when constructing a new object, it is the PC of the
     // `new' instruction which created the object.  We use the special
-    // value -2 to mean that this is uninitialized, and the special
-    // value -1 for the case where the current method is itself the
-    // <init> method.
+    // value UNINIT to mean that this is uninitialized, and the
+    // special value SELF for the case where the current method is
+    // itself the <init> method.
+    //
+    // Second, when the key is return_address_type, this holds the PC
+    // of the instruction following the `jsr'.
     int pc;
 
     static const int UNINIT = -2;
@@ -640,6 +691,23 @@ private:
 	}
     }
 
+    // Mark this type as a particular return address.
+    void set_return_address (int npc)
+    {
+      pc = npc;
+    }
+
+    // Return true if this type and type OTHER are considered
+    // mergeable for the purposes of state merging.  This is related
+    // to subroutine handling.  For this purpose two types are
+    // considered unmergeable if they are both return-addresses but
+    // have different PCs.
+    bool state_mergeable_p (const type &other) const
+    {
+      return (key != return_address_type
+	      || other.key != return_address_type
+	      || pc == other.pc);
+    }
 
     // Return true if an object of type K can be assigned to a variable
     // of type *THIS.  Handle various special cases too.  Might modify
@@ -780,13 +848,16 @@ private:
     {
       // The way this is written, we don't need to check isarray().
       if (key != reference_type)
-	verifier->verify_fail ("internal error in verify_dimensions: not a reference type");
+	verifier->verify_fail ("internal error in verify_dimensions:"
+			       " not a reference type");
 
       if (klass->count_dimensions () < ndims)
-	verifier->verify_fail ("array type has fewer dimensions than required");
+	verifier->verify_fail ("array type has fewer dimensions"
+			       " than required");
     }
 
-    // Merge OLD_TYPE into this.  On error throw exception.
+    // Merge OLD_TYPE into this.  On error throw exception.  Return
+    // true if the merge caused a type change.
     bool merge (type& old_type, bool local_semantics,
 		_Jv_BytecodeVerifier *verifier)
     {
@@ -829,20 +900,9 @@ private:
 	{
 	  if (local_semantics)
 	    {
-	      // If we're merging into an "unused" slot, then we
-	      // simply accept whatever we're merging from.
-	      if (key == unused_by_subroutine_type)
-		{
-		  *this = old_type;
-		  changed = true;
-		}
-	      else if (old_type.key == unused_by_subroutine_type)
-		{
-		  // Do nothing.
-		}
 	      // If we already have an `unsuitable' type, then we
 	      // don't need to change again.
-	      else if (key != unsuitable_type)
+	      if (key != unsuitable_type)
 		{
 		  key = unsuitable_type;
 		  changed = true;
@@ -872,7 +932,6 @@ private:
 	case unsuitable_type: c = '-'; break;
 	case return_address_type: c = 'r'; break;
 	case continuation_type: c = '+'; break;
-	case unused_by_subroutine_type: c = '_'; break;
 	case reference_type: c = 'L'; break;
 	case null_type: c = '@'; break;
 	case uninitialized_reference_type: c = 'U'; break;
@@ -895,16 +954,6 @@ private:
     type *stack;
     // The local variables.
     type *locals;
-    // Flags are used in subroutines to keep track of which local
-    // variables have been accessed.  They are also used after 
-    char *flags;
-    // If not 0, then we are in a subroutine.  The value is the PC of
-    // the subroutine's entry point.  We can use 0 as an exceptional
-    // value because PC=0 can never be a subroutine.
-    int subroutine;
-    // This is used to keep a linked list of all the states which
-    // require re-verification.  We use the PC to keep track.
-    int next;
     // We keep track of the type of `this' specially.  This is used to
     // ensure that an instance initializer invokes another initializer
     // on `this' before returning.  We must keep track of this
@@ -912,40 +961,27 @@ private:
     // assigns to locals[0] (overwriting `this') and then returns
     // without really initializing.
     type this_type;
-    // This is a list of all subroutines that have been seen at this
-    // point.  Ordinarily this is NULL; it is only allocated and used
-    // in relatively weird situations involving non-ret exit from a
-    // subroutine.  We have to keep track of this in this way to avoid
-    // endless recursion in these cases.
-    subr_info *seen_subrs;
 
-    // INVALID marks a state which is not on the linked list of states
-    // requiring reverification.
-    static const int INVALID = -1;
-    // NO_NEXT marks the state at the end of the reverification list.
-    static const int NO_NEXT = -2;
+    // The PC for this state.  This is only valid on states which are
+    // permanently attached to a given PC.  For an object like
+    // `current_state', which is used transiently, this has no
+    // meaning.
+    int pc;
+    // We keep a linked list of all states requiring reverification.
+    // If this is the special value INVALID_STATE then this state is
+    // not on the list.  NULL marks the end of the linked list.
+    state *next;
 
-    // This is used to mark the stack depth at the instruction just
-    // after a `jsr' when we haven't yet processed the corresponding
-    // `ret'.  See handle_jsr_insn for more information.
-    static const int NO_STACK = -1;
-
-    // This flag indicates that the local was changed in this
-    // subroutine.
-    static const int FLAG_CHANGED = 1;
-    // This is set only on the flags of the state of an instruction
-    // directly following a "jsr".  It indicates that the local
-    // variable was changed by the subroutine corresponding to the
-    // "jsr".
-    static const int FLAG_USED = 2;
+    // NO_NEXT is the PC value meaning that a new state must be
+    // acquired from the verification list.
+    static const int NO_NEXT = -1;
 
     state ()
       : this_type ()
     {
       stack = NULL;
       locals = NULL;
-      flags = NULL;
-      seen_subrs = NULL;
+      next = INVALID_STATE;
     }
 
     state (int max_stack, int max_locals)
@@ -957,26 +993,19 @@ private:
       for (int i = 0; i < max_stack; ++i)
 	stack[i] = unsuitable_type;
       locals = new type[max_locals];
-      flags = (char *) _Jv_Malloc (sizeof (char) * max_locals);
-      seen_subrs = NULL;
       for (int i = 0; i < max_locals; ++i)
-	{
-	  locals[i] = unsuitable_type;
-	  flags[i] = 0;
-	}
-      next = INVALID;
-      subroutine = 0;
+	locals[i] = unsuitable_type;
+      pc = NO_NEXT;
+      next = INVALID_STATE;
     }
 
-    state (const state *orig, int max_stack, int max_locals,
-	   bool ret_semantics = false)
+    state (const state *orig, int max_stack, int max_locals)
     {
       stack = new type[max_stack];
       locals = new type[max_locals];
-      flags = (char *) _Jv_Malloc (sizeof (char) * max_locals);
-      seen_subrs = NULL;
-      copy (orig, max_stack, max_locals, ret_semantics);
-      next = INVALID;
+      copy (orig, max_stack, max_locals);
+      pc = NO_NEXT;
+      next = INVALID_STATE;
     }
 
     ~state ()
@@ -985,9 +1014,6 @@ private:
 	delete[] stack;
       if (locals)
 	delete[] locals;
-      if (flags)
-	_Jv_Free (flags);
-      clean_subrs ();
     }
 
     void *operator new[] (size_t bytes)
@@ -1010,65 +1036,17 @@ private:
       _Jv_Free (mem);
     }
 
-    void clean_subrs ()
-    {
-      subr_info *info = seen_subrs;
-      while (info != NULL)
-	{
-	  subr_info *next = info->next;
-	  _Jv_Free (info);
-	  info = next;
-	}
-      seen_subrs = NULL;
-    }
-
-    void copy (const state *copy, int max_stack, int max_locals,
-	       bool ret_semantics = false)
+    void copy (const state *copy, int max_stack, int max_locals)
     {
       stacktop = copy->stacktop;
       stackdepth = copy->stackdepth;
-      subroutine = copy->subroutine;
       for (int i = 0; i < max_stack; ++i)
 	stack[i] = copy->stack[i];
       for (int i = 0; i < max_locals; ++i)
-	{
-	  // See push_jump_merge to understand this case.
-	  if (ret_semantics)
-	    {
-	      if ((copy->flags[i] & FLAG_CHANGED))
-		{
-		  // Changed in the subroutine, so we copy it here.
-		  locals[i] = copy->locals[i];
-		  flags[i] |= FLAG_USED;
-		}
-	      else
-		{
-		  // Not changed in the subroutine.  Use a special
-		  // type so the coming merge will overwrite.
-		  locals[i] = type (unused_by_subroutine_type);
-		}
-	    }
-	  else
-	    locals[i] = copy->locals[i];
-
-	  // Clear the flag unconditionally just so printouts look ok,
-	  // then only set it if we're still in a subroutine and it
-	  // did in fact change.
-	  flags[i] &= ~FLAG_CHANGED;
-	  if (subroutine && (copy->flags[i] & FLAG_CHANGED) != 0)
-	    flags[i] |= FLAG_CHANGED;
-	}
-
-      clean_subrs ();
-      if (copy->seen_subrs)
-	{
-	  for (subr_info *info = copy->seen_subrs;
-	       info != NULL; info = info->next)
-	    add_subr (info->pc);
-	}
+	locals[i] = copy->locals[i];
 
       this_type = copy->this_type;
-      // Don't modify `next'.
+      // Don't modify `next' or `pc'.
     }
 
     // Modify this state to reflect entry to an exception handler.
@@ -1081,33 +1059,21 @@ private:
 	stack[i] = unsuitable_type;
     }
 
-    // Modify this state to reflect entry into a subroutine.
-    void enter_subroutine (int npc, int max_locals)
+    inline int get_pc () const
     {
-      subroutine = npc;
-      // Mark all items as unchanged.  Each subroutine needs to keep
-      // track of its `changed' state independently.  In the case of
-      // nested subroutines, this information will be merged back into
-      // parent by the `ret'.
-      for (int i = 0; i < max_locals; ++i)
-	flags[i] &= ~FLAG_CHANGED;
+      return pc;
     }
 
-    // Indicate that we've been in this this subroutine.
-    void add_subr (int pc)
+    void set_pc (int npc)
     {
-      subr_info *n = (subr_info *) _Jv_Malloc (sizeof (subr_info));
-      n->pc = pc;
-      n->next = seen_subrs;
-      seen_subrs = n;
+      pc = npc;
     }
 
     // Merge STATE_OLD into this state.  Destructively modifies this
     // state.  Returns true if the new state was in fact changed.
     // Will throw an exception if the states are not mergeable.
-    bool merge (state *state_old, bool ret_semantics,
-		int max_locals, _Jv_BytecodeVerifier *verifier,
-		bool jsr_semantics = false)
+    bool merge (state *state_old, int max_locals,
+		_Jv_BytecodeVerifier *verifier)
     {
       bool changed = false;
 
@@ -1116,135 +1082,20 @@ private:
       if (this_type.isinitialized ())
 	this_type = state_old->this_type;
 
-      // Merge subroutine states.  Here we just keep track of what
-      // subroutine we think we're in.  We only check for a merge
-      // (which is invalid) when we see a `ret'.
-      if (subroutine == state_old->subroutine)
-	{
-	  // Nothing.
-	}
-      else if (subroutine == 0)
-	{
-	  subroutine = state_old->subroutine;
-	  changed = true;
-	}
-      else
-	{
-	  // If the subroutines differ, and we haven't seen this
-	  // subroutine before, indicate that the state changed.  This
-	  // is needed to detect when subroutines have merged.
-	  bool found = false;
-	  for (subr_info *info = seen_subrs; info != NULL; info = info->next)
-	    {
-	      if (info->pc == state_old->subroutine)
-		{
-		  found = true;
-		  break;
-		}
-	    }
-	  if (! found)
-	    {
-	      add_subr (state_old->subroutine);
-	      changed = true;
-	    }
-	}
-
-      // Merge stacks, including special handling for NO_STACK case.
-      // If the destination is NO_STACK, this means it is the
-      // instruction following a "jsr" and has not yet been processed
-      // in any way.  In this situation, if we are currently
-      // processing a "ret", then we must *copy* any locals changed in
-      // the subroutine into the current state.  Merging in this
-      // situation is incorrect because the locals we've noted didn't
-      // come real program flow, they are just an artifact of how
-      // we've chosen to handle the post-jsr state.
-      bool copy_in_locals = ret_semantics && stacktop == NO_STACK;
-
-      if (state_old->stacktop == NO_STACK)
-	{
-	  // This can happen if we're doing a pass-through jsr merge.
-	  // Here we can just ignore the stack.
-	}
-      else if (stacktop == NO_STACK)
-	{
-	  stacktop = state_old->stacktop;
-	  stackdepth = state_old->stackdepth;
-	  for (int i = 0; i < stacktop; ++i)
-	    stack[i] = state_old->stack[i];
-	  changed = true;
-	}
-      else if (state_old->stacktop != stacktop)
+      // Merge stacks.
+      if (state_old->stacktop != stacktop)  // FIXME stackdepth instead?
 	verifier->verify_fail ("stack sizes differ");
-      else
+      for (int i = 0; i < state_old->stacktop; ++i)
 	{
-	  for (int i = 0; i < state_old->stacktop; ++i)
-	    {
-	      if (stack[i].merge (state_old->stack[i], false, verifier))
-		changed = true;
-	    }
+	  if (stack[i].merge (state_old->stack[i], false, verifier))
+	    changed = true;
 	}
 
       // Merge local variables.
       for (int i = 0; i < max_locals; ++i)
 	{
-	  // If we're not processing a `ret', then we merge every
-	  // local variable.  If we are processing a `ret', then we
-	  // only merge locals which changed in the subroutine.  When
-	  // processing a `ret', STATE_OLD is the state at the point
-	  // of the `ret', and THIS is the state just after the `jsr'.
-	  // See comment above for explanation of COPY_IN_LOCALS.
-	  if (copy_in_locals)
-	    {
-	      if ((state_old->flags[i] & FLAG_CHANGED) != 0)
-		{
-		  locals[i] = state_old->locals[i];
-		  changed = true;
-		  // There's no point in calling note_variable here,
-		  // since we call it under the same condition before
-		  // the loop ends.
-		}
-	    }
-	  else if (jsr_semantics && (flags[i] & FLAG_USED) != 0)
-	    {
-	      // We are processing the "pass-through" part of a jsr
-	      // statement.  In this particular case, the local was
-	      // changed by the subroutine.  So, we have no work to
-	      // do, as the pre-jsr value does not survive the
-	      // subroutine call.
-	    }
-	  else if (! ret_semantics
-		   || (state_old->flags[i] & FLAG_CHANGED) != 0)
-	    {
-	      // If we have ordinary (not ret) semantics, then we have
-	      // merging flow control, so we merge types.  Or, we have
-	      // jsr pass-through semantics and the type survives the
-	      // subroutine (see above), so again we merge.  Or,
-	      // finally, we have ret semantics and this value did
-	      // change, in which case we merge the change from the
-	      // subroutine into the post-jsr instruction.
-	      if (locals[i].merge (state_old->locals[i], true, verifier))
-		{
-		  // Note that we don't call `note_variable' here.
-		  // This change doesn't represent a real change to a
-		  // local, but rather a merge artifact.  If we're in
-		  // a subroutine which is called with two
-		  // incompatible types in a slot that is unused by
-		  // the subroutine, then we don't want to mark that
-		  // variable as having been modified.
-		  changed = true;
-		}
-	    }
-
-	  // If we're in a subroutine, we must compute the union of
-	  // all the changed local variables.
-	  if ((state_old->flags[i] & FLAG_CHANGED) != 0)
-	    note_variable (i);
-
-	  // If we're returning from a subroutine, we must mark the
-	  // post-jsr instruction with information about what changed,
-	  // so that future "pass-through" jsr merges work correctly.
-	  if (ret_semantics && (state_old->flags[i] & FLAG_CHANGED) != 0)
-	    flags[i] |= FLAG_USED;
+	  if (locals[i].merge (state_old->locals[i], true, verifier))
+	    changed = true;
 	}
 
       return changed;
@@ -1285,13 +1136,6 @@ private:
       this_type = k;
     }
 
-    // Note that a local variable was modified.
-    void note_variable (int index)
-    {
-      if (subroutine > 0)
-	flags[index] |= FLAG_CHANGED;
-    }
-
     // Mark each `new'd object we know of that was allocated at PC as
     // initialized.
     void set_initialized (int pc, int max_locals)
@@ -1303,17 +1147,36 @@ private:
       this_type.set_initialized (pc);
     }
 
-    // Return true if this state is the unmerged result of a `ret'.
-    bool is_unmerged_ret_state (int max_locals) const
+    // This tests to see whether two states can be considered "merge
+    // compatible".  If both states have a return-address in the same
+    // slot, and the return addresses are different, then they are not
+    // compatible and we must not try to merge them.
+    bool state_mergeable_p (state *other, int max_locals,
+			    _Jv_BytecodeVerifier *verifier)
     {
-      if (stacktop == NO_STACK)
-	return true;
+      // This is tricky: if the stack sizes differ, then not only are
+      // these not mergeable, but in fact we should give an error, as
+      // we've found two execution paths that reach a branch target
+      // with different stack depths.  FIXME stackdepth instead?
+      if (stacktop != other->stacktop)
+	verifier->verify_fail ("stack sizes differ");
+
+      for (int i = 0; i < stacktop; ++i)
+	if (! stack[i].state_mergeable_p (other->stack[i]))
+	  return false;
       for (int i = 0; i < max_locals; ++i)
+	if (! locals[i].state_mergeable_p (other->locals[i]))
+	  return false;
+      return true;
+    }
+
+    void reverify (_Jv_BytecodeVerifier *verifier)
+    {
+      if (next == INVALID_STATE)
 	{
-	  if (locals[i].key == unused_by_subroutine_type)
-	    return true;
+	  next = verifier->next_verify_state;
+	  verifier->next_verify_state = this;
 	}
-      return false;
     }
 
 #ifdef VERIFY_DEBUG
@@ -1328,17 +1191,7 @@ private:
 	debug_print (".");
       debug_print ("    [local] ");
       for (i = 0; i < max_locals; ++i)
-	{
-	  locals[i].print ();
-	  if ((flags[i] & FLAG_USED) != 0)
-	    debug_print ((flags[i] & FLAG_CHANGED) ? ">" : "<");
-	  else
-	    debug_print ((flags[i] & FLAG_CHANGED) ? "+" : " ");
-	}
-      if (subroutine == 0)
-	debug_print ("   | None");
-      else
-	debug_print ("   | %4d", subroutine);
+	locals[i].print ();
       debug_print (" | %p\n", this);
     }
 #else
@@ -1419,18 +1272,11 @@ private:
     if (index > current_method->max_locals - depth)
       verify_fail ("invalid local variable");
     current_state->locals[index] = t;
-    current_state->note_variable (index);
 
     if (depth == 2)
-      {
-	current_state->locals[index + 1] = continuation_type;
-	current_state->note_variable (index + 1);
-      }
+      current_state->locals[index + 1] = continuation_type;
     if (index > 0 && current_state->locals[index - 1].iswide ())
-      {
-	current_state->locals[index - 1] = unsuitable_type;
-	// There's no need to call note_variable here.
-      }
+      current_state->locals[index - 1] = unsuitable_type;
   }
 
   type get_variable (int index, type t)
@@ -1520,56 +1366,71 @@ private:
     return npc;
   }
 
-  // Merge the indicated state into the state at the branch target and
-  // schedule a new PC if there is a change.  If RET_SEMANTICS is
-  // true, then we are merging from a `ret' instruction into the
-  // instruction after a `jsr'.  This is a special case with its own
-  // modified semantics.  If JSR_SEMANTICS is true, then we're merging
-  // some type information from a "jsr" instruction to the immediately
-  // following instruction.  In this situation we have to be careful
-  // not to merge local variables whose values are modified by the
-  // subroutine we're about to call.
-  void push_jump_merge (int npc, state *nstate,
-			bool ret_semantics = false,
-			bool jsr_semantics = false)
+  // Add a new state to the state list at NPC.
+  state *add_new_state (int npc, state *old_state)
   {
-    bool changed = true;
-    if (states[npc] == NULL)
+    state *new_state = new state (old_state, current_method->max_stack,
+				  current_method->max_locals);
+    debug_print ("== New state in add_new_state\n");
+    new_state->print ("New", npc, current_method->max_stack,
+		      current_method->max_locals);
+    linked<state> *nlink
+      = (linked<state> *) _Jv_Malloc (sizeof (linked<state>));
+    nlink->val = new_state;
+    nlink->next = states[npc];
+    states[npc] = nlink;
+    new_state->set_pc (npc);
+    return new_state;
+  }
+
+  // Merge the indicated state into the state at the branch target and
+  // schedule a new PC if there is a change.  NPC is the PC of the
+  // branch target, and FROM_STATE is the state at the source of the
+  // branch.  This method returns true if the destination state
+  // changed and requires reverification, false otherwise.
+  void merge_into (int npc, state *from_state)
+  {
+    // Iterate over all target states and merge our state into each,
+    // if applicable.  FIXME one improvement we could make here is
+    // "state destruction".  Merging a new state into an existing one
+    // might cause a return_address_type to be merged to
+    // unsuitable_type.  In this case the resulting state may now be
+    // mergeable with other states currently held in parallel at this
+    // location.  So in this situation we could pairwise compare and
+    // reduce the number of parallel states.
+    bool applicable = false;
+    for (linked<state> *iter = states[npc]; iter != NULL; iter = iter->next)
       {
-	// There's a weird situation here.  If are examining the
-	// branch that results from a `ret', and there is not yet a
-	// state available at the branch target (the instruction just
-	// after the `jsr'), then we have to construct a special kind
-	// of state at that point for future merging.  This special
-	// state has the type `unused_by_subroutine_type' in each slot
-	// which was not modified by the subroutine.
-	states[npc] = new state (nstate, current_method->max_stack,
-				 current_method->max_locals, ret_semantics);
-	debug_print ("== New state in push_jump_merge (ret_semantics = %s)\n",
-		     ret_semantics ? "true" : "false");
-	states[npc]->print ("New", npc, current_method->max_stack,
-			    current_method->max_locals);
-      }
-    else
-      {
-	debug_print ("== Merge states in push_jump_merge\n");
-	nstate->print ("Frm", start_PC, current_method->max_stack,
-		       current_method->max_locals);
-	states[npc]->print (" To", npc, current_method->max_stack,
-			    current_method->max_locals);
-	changed = states[npc]->merge (nstate, ret_semantics,
-				      current_method->max_locals, this,
-				      jsr_semantics);
-	states[npc]->print ("New", npc, current_method->max_stack,
-			    current_method->max_locals);
+	state *new_state = iter->val;
+	if (new_state->state_mergeable_p (from_state,
+					  current_method->max_locals, this))
+	  {
+	    applicable = true;
+
+	    debug_print ("== Merge states in merge_into\n");
+	    from_state->print ("Frm", start_PC, current_method->max_stack,
+			       current_method->max_locals);
+	    new_state->print (" To", npc, current_method->max_stack,
+			      current_method->max_locals);
+	    bool changed = new_state->merge (from_state,
+					     current_method->max_locals,
+					     this);
+	    new_state->print ("New", npc, current_method->max_stack,
+			      current_method->max_locals);
+
+	    if (changed)
+	      new_state->reverify (this);
+	  }
       }
 
-    if (changed && states[npc]->next == state::INVALID)
+    if (! applicable)
       {
-	// The merge changed the state, and the new PC isn't yet on our
-	// list of PCs to re-verify.
-	states[npc]->next = next_verify_pc;
-	next_verify_pc = npc;
+	// Either we don't yet have a state at NPC, or we have a
+	// return-address type that is in conflict with all existing
+	// state.  So, we need to create a new entry.
+	state *new_state = add_new_state (npc, from_state);
+	// A new state added in this way must always be reverified.
+	new_state->reverify (this);
       }
   }
 
@@ -1578,7 +1439,7 @@ private:
     int npc = compute_jump (offset);
     if (npc < PC)
       current_state->check_no_uninitialized_objects (current_method->max_locals, this);
-    push_jump_merge (npc, current_state);
+    merge_into (npc, current_state);
   }
 
   void push_exception_jump (type t, int pc)
@@ -1590,37 +1451,20 @@ private:
     if (current_method->max_stack < 1)
       verify_fail ("stack overflow at exception handler");
     s.set_exception (t, current_method->max_stack);
-    push_jump_merge (pc, &s);
+    merge_into (pc, &s);
   }
 
-  int pop_jump ()
+  state *pop_jump ()
   {
-    int *prev_loc = &next_verify_pc;
-    int npc = next_verify_pc;
-
-    while (npc != state::NO_NEXT)
+    state *new_state = next_verify_state;
+    if (new_state == INVALID_STATE)
+      verify_fail ("programmer error in pop_jump");
+    if (new_state != NULL)
       {
-	// If the next available PC is an unmerged `ret' state, then
-	// we aren't yet ready to handle it.  That's because we would
-	// need all kind of special cases to do so.  So instead we
-	// defer this jump until after we've processed it via a
-	// fall-through.  This has to happen because the instruction
-	// before this one must be a `jsr'.
-	if (! states[npc]->is_unmerged_ret_state (current_method->max_locals))
-	  {
-	    *prev_loc = states[npc]->next;
-	    states[npc]->next = state::INVALID;
-	    return npc;
-	  }
-
-	prev_loc = &states[npc]->next;
-	npc = states[npc]->next;
+	next_verify_state = new_state->next;
+	new_state->next = INVALID_STATE;
       }
-
-    // Note that we might have gotten here even when there are
-    // remaining states to process.  That can happen if we find a
-    // `jsr' without a `ret'.
-    return state::NO_NEXT;
+    return new_state;
   }
 
   void invalidate_pc ()
@@ -1628,7 +1472,7 @@ private:
     PC = state::NO_NEXT;
   }
 
-  void note_branch_target (int pc, bool is_jsr_target = false)
+  void note_branch_target (int pc)
   {
     // Don't check `pc <= PC', because we've advanced PC after
     // fetching the target and we haven't yet checked the next
@@ -1636,14 +1480,6 @@ private:
     if (pc < PC && ! (flags[pc] & FLAG_INSN_START))
       verify_fail ("branch not to instruction start", start_PC);
     flags[pc] |= FLAG_BRANCH_TARGET;
-    if (is_jsr_target)
-      {
-	// Record the jsr which called this instruction.
-	subr_info *info = (subr_info *) _Jv_Malloc (sizeof (subr_info));
-	info->pc = PC;
-	info->next = jsr_ptrs[pc];
-	jsr_ptrs[pc] = info;
-      }
   }
 
   void skip_padding ()
@@ -1653,72 +1489,29 @@ private:
 	verify_fail ("found nonzero padding byte");
   }
 
-  // Return the subroutine to which the instruction at PC belongs.
-  int get_subroutine (int pc)
-  {
-    if (states[pc] == NULL)
-      return 0;
-    return states[pc]->subroutine;
-  }
-
   // Do the work for a `ret' instruction.  INDEX is the index into the
   // local variables.
   void handle_ret_insn (int index)
   {
-    get_variable (index, return_address_type);
+    type ret_addr = get_variable (index, return_address_type);
+    // It would be nice if we could do this.  However, the JVM Spec
+    // doesn't say that this is what happens.  It is implied that
+    // reusing a return address is invalid, but there's no actual
+    // prohibition against it.
+    // set_variable (index, unsuitable_type);
 
-    int csub = current_state->subroutine;
-    if (csub == 0)
-      verify_fail ("no subroutine");
+    int npc = ret_addr.get_pc ();
+    // We might be returning to a `jsr' that is at the end of the
+    // bytecode.  This is ok if we never return from the called
+    // subroutine, but if we see this here it is an error.
+    if (npc >= current_method->code_length)
+      verify_fail ("fell off end");
 
-    // Check to see if we've merged subroutines.
-    subr_entry_info *entry;
-    for (entry = entry_points; entry != NULL; entry = entry->next)
-      {
-	if (entry->ret_pc == start_PC)
-	  break;
-      }
-    if (entry == NULL)
-      {
-	entry = (subr_entry_info *) _Jv_Malloc (sizeof (subr_entry_info));
-	entry->pc = csub;
-	entry->ret_pc = start_PC;
-	entry->next = entry_points;
-	entry_points = entry;
-      }
-    else if (entry->pc != csub)
-      verify_fail ("subroutines merged");
-
-    for (subr_info *subr = jsr_ptrs[csub]; subr != NULL; subr = subr->next)
-      {
-	// We might be returning to a `jsr' that is at the end of the
-	// bytecode.  This is ok if we never return from the called
-	// subroutine, but if we see this here it is an error.
-	if (subr->pc >= current_method->code_length)
-	  verify_fail ("fell off end");
-
-	// Temporarily modify the current state so it looks like we're
-	// in the enclosing context.
-	current_state->subroutine = get_subroutine (subr->pc);
-	if (subr->pc < PC)
-	  current_state->check_no_uninitialized_objects (current_method->max_locals, this);
-	push_jump_merge (subr->pc, current_state, true);
-      }
-
-    current_state->subroutine = csub;
+    if (npc < PC)
+      current_state->check_no_uninitialized_objects (current_method->max_locals,
+						     this);
+    merge_into (npc, current_state);
     invalidate_pc ();
-  }
-
-  // We're in the subroutine SUB, calling a subroutine at DEST.  Make
-  // sure this subroutine isn't already on the stack.
-  void check_nonrecursive_call (int sub, int dest)
-  {
-    if (sub == 0)
-      return;
-    if (sub == dest)
-      verify_fail ("recursive subroutine call");
-    for (subr_info *info = jsr_ptrs[sub]; info != NULL; info = info->next)
-      check_nonrecursive_call (get_subroutine (info->pc), dest);
   }
 
   void handle_jsr_insn (int offset)
@@ -1727,34 +1520,12 @@ private:
 
     if (npc < PC)
       current_state->check_no_uninitialized_objects (current_method->max_locals, this);
-    check_nonrecursive_call (current_state->subroutine, npc);
 
     // Modify our state as appropriate for entry into a subroutine.
-    push_type (return_address_type);
-    push_jump_merge (npc, current_state);
-    // Clean up.
-    pop_type (return_address_type);
-
-    // On entry to the subroutine, the subroutine number must be set
-    // and the locals must be marked as cleared.  We do this after
-    // merging state so that we don't erroneously "notice" a variable
-    // change merely on entry.
-    states[npc]->enter_subroutine (npc, current_method->max_locals);
-
-    // Indicate that we don't know the stack depth of the instruction
-    // following the `jsr'.  The idea here is that we need to merge
-    // the local variable state across the jsr, but the subroutine
-    // might change the stack depth, so we can't make any assumptions
-    // about it.  So we have yet another special case.  We know that
-    // at this point PC points to the instruction after the jsr.  Note
-    // that it is ok to have a `jsr' at the end of the bytecode,
-    // provided that the called subroutine never returns.  So, we have
-    // a special case here and another one when we handle the ret.
-    if (PC < current_method->code_length)
-      {
-	current_state->stacktop = state::NO_STACK;
-	push_jump_merge (PC, current_state, false, true);
-      }
+    type ret_addr (return_address_type);
+    ret_addr.set_return_address (PC);
+    push_type (ret_addr);
+    merge_into (npc, current_state);
     invalidate_pc ();
   }
 
@@ -1794,7 +1565,6 @@ private:
       case unsuitable_type:
       case return_address_type:
       case continuation_type:
-      case unused_by_subroutine_type:
       case reference_type:
       case null_type:
       case uninitialized_reference_type:
@@ -1810,16 +1580,9 @@ private:
   void branch_prepass ()
   {
     flags = (char *) _Jv_Malloc (current_method->code_length);
-    jsr_ptrs = (subr_info **) _Jv_Malloc (sizeof (subr_info *)
-					  * current_method->code_length);
 
     for (int i = 0; i < current_method->code_length; ++i)
-      {
-	flags[i] = 0;
-	jsr_ptrs[i] = NULL;
-      }
-
-    bool last_was_jsr = false;
+      flags[i] = 0;
 
     PC = 0;
     while (PC < current_method->code_length)
@@ -1828,13 +1591,6 @@ private:
 	// correct value.
 	start_PC = PC;
 	flags[PC] |= FLAG_INSN_START;
-
-	// If the previous instruction was a jsr, then the next
-	// instruction is a branch target -- the branch being the
-	// corresponding `ret'.
-	if (last_was_jsr)
-	  note_branch_target (PC);
-	last_was_jsr = false;
 
 	java_opcode opcode = (java_opcode) bytecode[PC++];
 	switch (opcode)
@@ -2029,8 +1785,6 @@ private:
 	    break;
 
 	  case op_jsr:
-	    last_was_jsr = true;
-	    // Fall through.
 	  case op_ifeq:
 	  case op_ifne:
 	  case op_iflt:
@@ -2048,7 +1802,7 @@ private:
 	  case op_ifnull:
 	  case op_ifnonnull:
 	  case op_goto:
-	    note_branch_target (compute_jump (get_short ()), last_was_jsr);
+	    note_branch_target (compute_jump (get_short ()));
 	    break;
 
 	  case op_tableswitch:
@@ -2095,10 +1849,8 @@ private:
 	    break;
 
 	  case op_jsr_w:
-	    last_was_jsr = true;
-	    // Fall through.
 	  case op_goto_w:
-	    note_branch_target (compute_jump (get_int ()), last_was_jsr);
+	    note_branch_target (compute_jump (get_int ()));
 	    break;
 
 	  // These are unused here, but we call them out explicitly
@@ -2375,37 +2127,31 @@ private:
     // True if we are verifying an instance initializer.
     bool this_is_init = initialize_stack ();
 
-    states = (state **) _Jv_Malloc (sizeof (state *)
-				    * current_method->code_length);
+    states = (linked<state> **) _Jv_Malloc (sizeof (linked<state> *)
+					    * current_method->code_length);
     for (int i = 0; i < current_method->code_length; ++i)
       states[i] = NULL;
 
-    next_verify_pc = state::NO_NEXT;
+    next_verify_state = NULL;
 
     while (true)
       {
 	// If the PC was invalidated, get a new one from the work list.
 	if (PC == state::NO_NEXT)
 	  {
-	    PC = pop_jump ();
-	    if (PC == state::INVALID)
-	      verify_fail ("can't happen: saw state::INVALID");
-	    if (PC == state::NO_NEXT)
+	    state *new_state = pop_jump ();
+	    // If it is null, we're done.
+	    if (new_state == NULL)
 	      break;
+
+	    PC = new_state->get_pc ();
 	    debug_print ("== State pop from pending list\n");
 	    // Set up the current state.
-	    current_state->copy (states[PC], current_method->max_stack,
+	    current_state->copy (new_state, current_method->max_stack,
 				 current_method->max_locals);
 	  }
 	else
 	  {
-	    // Control can't fall off the end of the bytecode.  We
-	    // only need to check this in the fall-through case,
-	    // because branch bounds are checked when they are
-	    // pushed.
-	    if (PC >= current_method->code_length)
-	      verify_fail ("fell off end");
-
 	    // We only have to do this checking in the situation where
 	    // control flow falls through from the previous
 	    // instruction.  Otherwise merging is done at the time we
@@ -2413,39 +2159,29 @@ private:
 	    if (states[PC] != NULL)
 	      {
 		// We've already visited this instruction.  So merge
-		// the states together.  If this yields no change then
-		// we don't have to re-verify.  However, if the new
-		// state is an the result of an unmerged `ret', we
-		// must continue through it.
-		debug_print ("== Fall through merge\n");
-		states[PC]->print ("Old", PC, current_method->max_stack,
-				   current_method->max_locals);
-		current_state->print ("Cur", PC, current_method->max_stack,
-				      current_method->max_locals);
-		if (! current_state->merge (states[PC], false,
-					    current_method->max_locals, this)
-		    && ! states[PC]->is_unmerged_ret_state (current_method->max_locals))
-		  {
-		    debug_print ("== Fall through optimization\n");
-		    invalidate_pc ();
-		    continue;
-		  }
-		// Save a copy of it for later.
-		states[PC]->copy (current_state, current_method->max_stack,
-				  current_method->max_locals);
-		current_state->print ("New", PC, current_method->max_stack,
-				      current_method->max_locals);
+		// the states together.  It is simplest, but not most
+		// efficient, to just always invalidate the PC here.
+		merge_into (PC, current_state);
+		invalidate_pc ();
+		continue;
 	      }
 	  }
 
+	// Control can't fall off the end of the bytecode.  We need to
+	// check this in both cases, not just the fall-through case,
+	// because we don't check to see whether a `jsr' appears at
+	// the end of the bytecode until we process a `ret'.
+	if (PC >= current_method->code_length)
+	  verify_fail ("fell off end");
+
 	// We only have to keep saved state at branch targets.  If
 	// we're at a branch target and the state here hasn't been set
-	// yet, we set it now.
+	// yet, we set it now.  You might notice that `ret' targets
+	// won't necessarily have FLAG_BRANCH_TARGET set.  This
+	// doesn't matter, since those states will be filled in by
+	// merge_into.
 	if (states[PC] == NULL && (flags[PC] & FLAG_BRANCH_TARGET))
-	  {
-	    states[PC] = new state (current_state, current_method->max_stack,
-				    current_method->max_locals);
-	  }
+	  add_new_state (PC, current_state);
 
 	// Set this before handling exceptions so that debug output is
 	// sane.
@@ -3328,50 +3064,21 @@ public:
 
     states = NULL;
     flags = NULL;
-    jsr_ptrs = NULL;
     utf8_list = NULL;
     isect_list = NULL;
-    entry_points = NULL;
   }
 
   ~_Jv_BytecodeVerifier ()
   {
-    if (states)
-      _Jv_Free (states);
     if (flags)
       _Jv_Free (flags);
 
-    if (jsr_ptrs)
-      {
-	for (int i = 0; i < current_method->code_length; ++i)
-	  {
-	    if (jsr_ptrs[i] != NULL)
-	      {
-		subr_info *info = jsr_ptrs[i];
-		while (info != NULL)
-		  {
-		    subr_info *next = info->next;
-		    _Jv_Free (info);
-		    info = next;
-		  }
-	      }
-	  }
-	_Jv_Free (jsr_ptrs);
-      }
-
     while (utf8_list != NULL)
       {
-	linked_utf8 *n = utf8_list->next;
+	linked<_Jv_Utf8Const> *n = utf8_list->next;
 	_Jv_Free (utf8_list->val);
 	_Jv_Free (utf8_list);
 	utf8_list = n;
-      }
-
-    while (entry_points != NULL)
-      {
-	subr_entry_info *next = entry_points->next;
-	_Jv_Free (entry_points);
-	entry_points = next;
       }
 
     while (isect_list != NULL)
@@ -3379,6 +3086,22 @@ public:
 	ref_intersection *next = isect_list->alloc_next;
 	delete isect_list;
 	isect_list = next;
+      }
+
+    if (states)
+      {
+	for (int i = 0; i < current_method->code_length; ++i)
+	  {
+	    linked<state> *iter = states[i];
+	    while (iter != NULL)
+	      {
+		linked<state> *next = iter->next;
+		delete iter->val;
+		_Jv_Free (iter);
+		iter = next;
+	      }
+	  }
+	_Jv_Free (states);
       }
   }
 };
@@ -3389,4 +3112,5 @@ _Jv_VerifyMethod (_Jv_InterpMethod *meth)
   _Jv_BytecodeVerifier v (meth);
   v.verify_instructions ();
 }
+
 #endif	/* INTERPRETER */
