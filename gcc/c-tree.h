@@ -154,6 +154,7 @@ extern tree lookup_objc_ivar			PARAMS ((tree));
 
 /* in c-parse.in */
 extern void c_parse_init			PARAMS ((void));
+extern int yyparse_1				PARAMS ((void));
 
 /* in c-aux-info.c */
 extern void gen_aux_info_record                 PARAMS ((tree, int, int, int));

@@ -1,4 +1,8 @@
-2000-11-16  Alex Samuel  <samuel@codesourcery.com>
+2000-11-20  Richard Henderson  <rth@redhat.com>
+
+	* parse.y (yyparse_1): Rename the parser entry point.
+
+2000-11-20  Alex Samuel  <samuel@codesourcery.com>
 
 	* mangle.c (write_name): Use <unscoped-name> for names directly in
 	function scope.

@@ -1,3 +1,11 @@
+2000-11-20  Richard Henderson  <rth@redhat.com>
+
+	* c-lex.c (orig_filename): New variable.
+	(init_c_lex): Set it.  Move call to cpp_start_read ...
+	(yyparse): ... here.  New function.
+	* c-parse.in (yyparse_1): Rename the parser entry point.
+	* c-tree.h: Declare it.
+
 2000-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (do_compare_and_jump): If op0 was replaced by promoted

@@ -72,8 +72,11 @@ end ifc
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
 
-/* Cause the `yydebug' variable to be defined.  */
+/* Cause the "yydebug" variable to be defined.  */
 #define YYDEBUG 1
+
+/* Rename the "yyparse" function so that we can override it elsewhere.  */
+#define yyparse yyparse_1
 %}
 
 %start program
