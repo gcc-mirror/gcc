@@ -2720,7 +2720,7 @@ rest_of_compilation (decl)
     }
 
   timevar_push (TV_JUMP);
-  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+  cleanup_cfg (optimize ? CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP: 0);
 
   /* Try to identify useless null pointer tests and delete them.  */
   if (flag_delete_null_pointer_checks)
