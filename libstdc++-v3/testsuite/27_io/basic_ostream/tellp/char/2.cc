@@ -1,6 +1,6 @@
 // 2000-03-23 bkoz
 
-// Copyright (C) 2000, 2003 Free Software Foundation
+// Copyright (C) 2000, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,13 +33,13 @@ void test01()
   ostringstream ost;
   pos_type pos1;
   pos1 = ost.tellp();
-  VERIFY( pos1 == pos_type(-1) );
+  VERIFY( pos1 == pos_type(off_type(0)) );
   ost << "RZA ";
   pos1 = ost.tellp();
-  VERIFY( pos1 == pos_type(4) );
+  VERIFY( pos1 == pos_type(off_type(4)) );
   ost << "ghost dog: way of the samurai";
   pos1 = ost.tellp();
-  VERIFY( pos1 == pos_type(33) );
+  VERIFY( pos1 == pos_type(off_type(33)) );
 }                                    
 
 int main()
