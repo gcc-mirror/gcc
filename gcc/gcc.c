@@ -5993,8 +5993,8 @@ used_arg (p, len)
 	    }
 	  matches[i].rep_len = q - matches[i].replace;
 	  i++;
-	  if (*q != ';')
-	    break;
+	  if (*q == ';')
+	    q++;
 	}
 
       /* Now build a list of the replacement string for switches that we care
