@@ -1776,21 +1776,6 @@ finish_parenthesized_expr (expr)
   return expr;
 }
 
-/* The last_tree will be NULL_TREE when entering this function. Unlike
-   the other genrtl functions, in this function, that state can change
-   hence the check at the end as in the original version of
-   begin_stmt_expr. Generate the RTL for the start of a STMT_EXPR. */
-tree
-genrtl_begin_stmt_expr ()
-{
-  if (! cfun && !last_tree)
-    begin_stmt_tree (&scope_chain->x_saved_tree);
-
-  keep_next_level (1);
-  
-  return (last_tree != NULL_TREE) ? last_tree : expand_start_stmt_expr(); 
-}
-
 /* Begin a statement-expression.  The value returned must be passed to
    finish_stmt_expr.  */
 
@@ -1811,22 +1796,34 @@ begin_stmt_expr ()
   return last_tree; 
 }
 
-/* Generate the RTL for the end of the STMT_EXPR. */
+/* Used when beginning a statement-expression outside function scope.
+   For example, when handling a file-scope initializer, we use this
+   function.  */
+
+tree
+begin_global_stmt_expr ()
+{
+  if (! cfun && !last_tree)
+    begin_stmt_tree (&scope_chain->x_saved_tree);
+
+  keep_next_level (1);
+  
+  return (last_tree != NULL_TREE) ? last_tree : expand_start_stmt_expr(); 
+}
+
+/* Finish the STMT_EXPR last begun with begin_global_stmt_expr.  */
 
 tree 
-genrtl_finish_stmt_expr (rtl_expr)
-     tree rtl_expr;
+finish_global_stmt_expr (stmt_expr)
+     tree stmt_expr;
 {
-  tree result;
-
-  rtl_expr = expand_end_stmt_expr (rtl_expr);
-  result = rtl_expr;
+  stmt_expr = expand_end_stmt_expr (stmt_expr);
   
   if (! cfun
       && TREE_CHAIN (scope_chain->x_saved_tree) == NULL_TREE)
     finish_stmt_tree (&scope_chain->x_saved_tree);
 
-  return result;
+  return stmt_expr;
 }
 
 /* Finish a statement-expression.  RTL_EXPR should be the value

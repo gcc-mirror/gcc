@@ -1,3 +1,16 @@
+2000-06-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (genrtl_begin_stmt_expr): Rename to ...
+	(begin_global_stmt_expr): ... this.
+	(genrtl_finish_stmt_expr): Rename to ...
+	(finish_global_stmt_expr): ... this.
+	* init.c (begin_init_stmts): Adjust calls.
+	(finish_init_stmts): Likewise.
+	* semantics.c (genrtl_begin_stmt_expr): Rename to ...
+	(begin_global_stmt_expr): ... this.
+	(genrtl_finish_stmt_expr): Rename to ...
+	(finish_global_stmt_expr): ... this.
+
 2000-06-25 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
         * search.c (lookup_member): Fix typo in comment.

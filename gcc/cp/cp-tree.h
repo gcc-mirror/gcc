@@ -4535,8 +4535,8 @@ extern void genrtl_asm_stmt                     PARAMS ((tree, tree,
 							 tree));
 extern void genrtl_named_return_value           PARAMS ((tree,
 							 tree));
-extern tree genrtl_begin_stmt_expr              PARAMS ((void));
-extern tree genrtl_finish_stmt_expr             PARAMS ((tree));
+extern tree begin_global_stmt_expr              PARAMS ((void));
+extern tree finish_global_stmt_expr             PARAMS ((tree));
 
 
 /* in spew.c */
