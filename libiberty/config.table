@@ -24,7 +24,7 @@ case "${host}" in
   *-*-go32)		frag=mh-go32 ;;
   i[345]86-*-windows*)	frag=mh-windows ;;
 
-  *-*-vxworks5*)
+  *-*-vxworks5* | *-*-vxworks)
     # VxWorks 5 needs special action, because the usual
     # autoconfiguration scheme does not work.
     frag=mt-vxworks5
