@@ -481,11 +481,8 @@ cpp_lex (pfile, skip_evaluation)
 		&& tok_start[1] == toktab->operator[1])
 		break;
 	  if (toktab->token == ERROR)
-	    {
-	      char *buf = (char *) alloca (40);
-	      sprintf (buf, "`%s' not allowed in operand of `#if'", tok_start);
-	      cpp_error (pfile, buf);
-	    }
+	    cpp_error (pfile, "`%s' not allowed in operand of `#if'",
+		       tok_start);
 	  op.op = toktab->token; 
 	  return op;
 	}
@@ -994,11 +991,11 @@ cpp_parse_expr (pfile)
 		}
 	      break;
 	    default:
-	      fprintf (stderr,
-		       top[1].op >= ' ' && top[1].op <= '~'
-		       ? "unimplemented operator '%c'\n"
-		       : "unimplemented operator '\\%03o'\n",
-		       top[1].op);
+	      cpp_error (pfile,
+			 (top[1].op >= ' ' && top[1].op <= '~'
+			  ? "unimplemented operator '%c'\n"
+			  : "unimplemented operator '\\%03o'\n"),
+			 top[1].op);
 	    }
 	}
       if (op.op == 0)
