@@ -1,5 +1,11 @@
 2004-06-23  Richard Earnshaw  <rearnsha@arm.com>
 
+	* PR target/15948
+	* arm.md (bicsi3_cbranch): Add alternative to handle tying operands
+	one and two.
+
+2004-06-23  Richard Earnshaw  <rearnsha@arm.com>
+
 	PR target/15927
 	* arm.h (THUMB_SECONDARY_OUTPUT_RELOAD_CLASS): Don't need a secondary
 	reload if CLASS is BASE_REGS.
