@@ -1,3 +1,8 @@
+2005-03-30  Ian Lance Taylor  <ian@airs.com>
+
+	* config.host (i[34567]86-*-mingw32*): Don't set
+	host_can_use_collect2 to no.
+
 2005-03-30  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/20203
