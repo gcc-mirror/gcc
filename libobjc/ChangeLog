@@ -1,3 +1,8 @@
+2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* archive.c: Fix all the warnings about passing unsigned char*
+	to char* and the other way too.
+
 2004-09-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libobjc/16448
