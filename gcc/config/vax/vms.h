@@ -59,6 +59,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_DEFAULT 1
 #define TARGET_VERSION fprintf (stderr, " (vax vms)");
 
+/* The structure return address arrives as an "argument" on VMS.  */
+#undef STRUCT_VALUE_REGNUM
+#define STRUCT_VALUE 0
+
 #define CALL_USED_REGISTERS {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1}
 
 /* We redefine this because there is a hidden variable on the stack
