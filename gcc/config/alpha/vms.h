@@ -343,6 +343,19 @@ literals_section ()						\
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLEINSN)	\
 { ASM_OUTPUT_ALIGN (FILE, 3); ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM); }
 
+/* This says how to output assembler code to declare an                
+   uninitialized external linkage data object.  */ 
+
+#define COMMON_ASM_OP ".comm"
+
+#undef ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+do {									\
+  fprintf ((FILE), "\t%s\t", COMMON_ASM_OP);				\
+  assemble_name ((FILE), (NAME));					\
+  fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
+} while (0)
+
 #define NO_MD_PROTOTYPES
 
 /* Output assembler code for a block containing the constant parts
