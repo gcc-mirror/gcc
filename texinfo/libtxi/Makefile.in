@@ -1,7 +1,7 @@
 # Makefile for GNU texinfo/libtxi.  -*- Indented-Text -*-
 # $Id: Makefile.in,v 1.4 1998/01/13 20:31:57 law Exp $
 
-# Copyright (C) 1993, 96 Free Software Foundation, Inc.
+# Copyright (C) 1993, 96, 98 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ VPATH = @srcdir@
 
 CC = @CC@
 AR = ar
+AR_FLAGS = rc
 RANLIB = @RANLIB@
 
 DEFS = @DEFS@
@@ -52,7 +53,7 @@ sub-all: all
 
 libtxi.a: $(OBJS)
 	rm -f $@
-	$(AR) cq $@ $(OBJS)
+	$(AR) $(AR_FLAGS) $@ $(OBJS)
 	$(RANLIB) $@
 
 getopt.o: getopt.c getopt.h
