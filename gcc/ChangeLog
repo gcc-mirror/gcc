@@ -1,3 +1,10 @@
+Tue Aug 15 17:33:05 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* diagnostic.c (fatal_function): New variable.
+	(set_fatal_function): New function.
+	(fatal): Call it.
+	* diagnostic.h (set_fatal_function): New declaration.
+
 2000-08-15  William Cohen  <wcohen@redhat.com>
 
 	* config/sh/elf.h (DWARF2_DEBUGGING_INFO): Defined.
