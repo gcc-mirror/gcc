@@ -1,3 +1,11 @@
+2004-04-29  Douglas B Rupp  <rupp@gnat.com>
+
+	* gcc.c (DELETE_IF_ORDINARY): New macro default definition.
+	(delete_if_ordinary): Use above macro.
+	* config/alpha/xm-vms.h (DELETE_IF_ORDINARY): New macro VMS definition.
+	Update copyright.
+	* doc/hostconfig.texi (DELETE_IF_ORDINARY): Document new macro.
+
 2004-04-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* c-decl.c (get_parm_info): Use the correct tag keywords when
