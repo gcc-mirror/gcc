@@ -2650,21 +2650,29 @@ s390_final_chunkify (chunkify)
 	} 
     }
   ltorg_uids[max_ltorg] = 0;
-  for (insn=get_insns (),uids=0; insn;insn = next_real_insn (insn)) 
+
+  if (max_ltorg > 0)
+    {
+      for (insn = get_insns (), uids = 0; insn; insn = next_real_insn (insn)) 
+        if (INSN_UID (insn) == ltorg_uids[uids]) 
+	  {
+	    INSN_ADDRESSES_NEW (emit_insn_after (gen_ltorg (
+			        gen_rtx_CONST_INT (Pmode, ltorg_uids[++uids])),
+					       insn), -1);
+	  } 
+
+      init_insn_lengths ();
+      shorten_branches (get_insns ());
+    }
+
+  for (insn = get_insns (); insn; insn = next_real_insn (insn)) 
     {
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
-      if (INSN_UID (insn) == ltorg_uids[uids]) 
-	{
-	  INSN_ADDRESSES_NEW (emit_insn_after (gen_ltorg (
-			      gen_rtx_CONST_INT (Pmode, ltorg_uids[++uids])),
-					       insn), -1);
-	} 
       if (GET_CODE (insn) == JUMP_INSN) 
-	{
-	  insn = check_and_change_labels (insn, ltorg_uids);
-	}
+	insn = check_and_change_labels (insn, ltorg_uids);
     }
+
   if (chunkify) 
     {
     for (insn=get_insns (); insn;insn = next_insn (insn)) 
