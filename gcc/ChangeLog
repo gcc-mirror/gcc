@@ -1,3 +1,9 @@
+2001-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* gencheck.c, gengenrtl.c: Don't define xmalloc.
+	* gensupport.c: Don't define xstrdup, xcalloc, xrealloc,
+	xmalloc.
+
 2001-11-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (output_ascii): Cast `p' to unsigned char.

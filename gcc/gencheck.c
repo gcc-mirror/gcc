@@ -70,24 +70,3 @@ main (argc, argv)
   puts ("\n#endif /* GCC_TREE_CHECK_H */");
   return 0;
 }
-
-#if defined(USE_C_ALLOCA)
-/* FIXME: We only need an xmalloc definition because we are forced to
-   link with alloca.o on some platforms.  This should go away if/when
-   we link against libiberty.a. (ghazi@caip.rutgers.edu 6/3/98) */
-PTR
-xmalloc (nbytes)
-     size_t nbytes;
-{
-  PTR tmp = (PTR) really_call_malloc (nbytes);
-
-  if (!tmp)
-    {
-      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n",
-	       nbytes);
-      exit (FATAL_EXIT_CODE);
-    }
-
-  return tmp;
-}
-#endif /* USE_C_ALLOCA */

@@ -390,24 +390,6 @@ gencode ()
     gendef (*fmt);
 }
 
-#if defined(USE_C_ALLOCA)
-PTR
-xmalloc (nbytes)
-  size_t nbytes;
-{
-  PTR tmp = (PTR) really_call_malloc (nbytes);
-
-  if (!tmp)
-    {
-      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n",
-	       nbytes);
-      exit (FATAL_EXIT_CODE);
-    }
-
-  return tmp;
-}
-#endif /* USE_C_ALLOCA */
-
 /* This is the main program.  We accept only one argument, "-h", which
    says we are writing the genrtl.h file.  Otherwise we are writing the
    genrtl.c file.  */

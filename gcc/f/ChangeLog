@@ -1,3 +1,7 @@
+2001-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* f/fini.c: Use xmalloc.
+
 Fri Nov 30 20:54:02 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in: Delete references to proj.[co], proj-h.[co].
