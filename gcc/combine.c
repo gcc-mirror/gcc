@@ -83,7 +83,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "insn-config.h"
-#include "insn-codes.h"
 #include "function.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
@@ -6004,59 +6003,28 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   /* Get the mode to use should INNER not be a MEM, the mode for the position,
      and the mode for the result.  */
-#ifdef HAVE_insv
-  if (in_dest)
+  if (in_dest && mode_for_extraction(EP_insv, -1) != MAX_MACHINE_MODE)
     {
-      wanted_inner_reg_mode
-	= insn_data[(int) CODE_FOR_insv].operand[0].mode;
-      if (wanted_inner_reg_mode == VOIDmode)
-	wanted_inner_reg_mode = word_mode;
-
-      pos_mode = insn_data[(int) CODE_FOR_insv].operand[2].mode;
-      if (pos_mode == VOIDmode)
-	pos_mode = word_mode;
-
-      extraction_mode = insn_data[(int) CODE_FOR_insv].operand[3].mode;
-      if (extraction_mode == VOIDmode)
-	extraction_mode = word_mode;
+      wanted_inner_reg_mode = mode_for_extraction (EP_insv, 0);
+      pos_mode = mode_for_extraction (EP_insv, 2);
+      extraction_mode = mode_for_extraction (EP_insv, 3);
     }
-#endif
 
-#ifdef HAVE_extzv
-  if (! in_dest && unsignedp)
+  if (! in_dest && unsignedp
+      && mode_for_extraction (EP_extzv, -1) != MAX_MACHINE_MODE)
     {
-      wanted_inner_reg_mode
-	= insn_data[(int) CODE_FOR_extzv].operand[1].mode;
-      if (wanted_inner_reg_mode == VOIDmode)
-	wanted_inner_reg_mode = word_mode;
-
-      pos_mode = insn_data[(int) CODE_FOR_extzv].operand[3].mode;
-      if (pos_mode == VOIDmode)
-	pos_mode = word_mode;
-
-      extraction_mode = insn_data[(int) CODE_FOR_extzv].operand[0].mode;
-      if (extraction_mode == VOIDmode)
-	extraction_mode = word_mode;
+      wanted_inner_reg_mode = mode_for_extraction (EP_extzv, 1);
+      pos_mode = mode_for_extraction (EP_extzv, 3);
+      extraction_mode = mode_for_extraction (EP_extzv, 0);
     }
-#endif
 
-#ifdef HAVE_extv
-  if (! in_dest && ! unsignedp)
+  if (! in_dest && ! unsignedp
+      && mode_for_extraction (EP_extv, -1) != MAX_MACHINE_MODE)
     {
-      wanted_inner_reg_mode
-	= insn_data[(int) CODE_FOR_extv].operand[1].mode;
-      if (wanted_inner_reg_mode == VOIDmode)
-	wanted_inner_reg_mode = word_mode;
-
-      pos_mode = insn_data[(int) CODE_FOR_extv].operand[3].mode;
-      if (pos_mode == VOIDmode)
-	pos_mode = word_mode;
-
-      extraction_mode = insn_data[(int) CODE_FOR_extv].operand[0].mode;
-      if (extraction_mode == VOIDmode)
-	extraction_mode = word_mode;
+      wanted_inner_reg_mode = mode_for_extraction (EP_extv, 1);
+      pos_mode = mode_for_extraction (EP_extv, 3);
+      extraction_mode = mode_for_extraction (EP_extv, 0);
     }
-#endif
 
   /* Never narrow an object, since that might not be safe.  */
 
@@ -10235,14 +10203,15 @@ simplify_comparison (code, pop0, pop1)
 	    {
 	      if (BITS_BIG_ENDIAN)
 		{
-#ifdef HAVE_extzv
-		  mode = insn_data[(int) CODE_FOR_extzv].operand[1].mode;
-		  if (mode == VOIDmode)
-		    mode = word_mode;
-		  i = (GET_MODE_BITSIZE (mode) - 1 - i);
-#else
-		  i = BITS_PER_WORD - 1 - i;
-#endif
+		  enum machine_mode new_mode
+		    = mode_for_extraction (EP_extzv, 1);
+		  if (new_mode == MAX_MACHINE_MODE)
+		    i = BITS_PER_WORD - 1 - i;
+		  else
+		    {
+		      mode = new_mode;
+		      i = (GET_MODE_BITSIZE (mode) - 1 - i);
+		    }
 		}
 
 	      op0 = XEXP (op0, 2);

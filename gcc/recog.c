@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "regs.h"
 #include "expr.h"
-#include "insn-codes.h"
 #include "function.h"
 #include "flags.h"
 #include "real.h"
@@ -566,22 +565,20 @@ validate_replace_rtx_1 (loc, from, to, object)
 	  enum machine_mode is_mode = GET_MODE (XEXP (x, 0));
 	  int pos = INTVAL (XEXP (x, 2));
 
-#ifdef HAVE_extzv
-	  if (code == ZERO_EXTRACT)
+	  if (GET_CODE (x) == ZERO_EXTRACT)
 	    {
-	      wanted_mode = insn_data[(int) CODE_FOR_extzv].operand[1].mode;
-	      if (wanted_mode == VOIDmode)
-		wanted_mode = word_mode;
+	      enum machine_mode new_mode
+		= mode_for_extraction (EP_extzv, 1);
+	      if (new_mode != MAX_MACHINE_MODE)
+		wanted_mode = new_mode;
 	    }
-#endif
-#ifdef HAVE_extv
-	  if (code == SIGN_EXTRACT)
+	  else if (GET_CODE (x) == SIGN_EXTRACT)
 	    {
-	      wanted_mode = insn_data[(int) CODE_FOR_extv].operand[1].mode;
-	      if (wanted_mode == VOIDmode)
-		wanted_mode = word_mode;
+	      enum machine_mode new_mode
+		= mode_for_extraction (EP_extv, 1);
+	      if (new_mode != MAX_MACHINE_MODE)
+		wanted_mode = new_mode;
 	    }
-#endif
 
 	  /* If we have a narrower mode, we can do something.  */
 	  if (wanted_mode != VOIDmode

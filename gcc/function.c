@@ -50,7 +50,6 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
-#include "insn-codes.h"
 #include "recog.h"
 #include "output.h"
 #include "basic-block.h"
@@ -2064,23 +2063,21 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	      enum machine_mode is_mode = GET_MODE (tem);
 	      HOST_WIDE_INT pos = INTVAL (XEXP (x, 2));
 
-#ifdef HAVE_extzv
 	      if (GET_CODE (x) == ZERO_EXTRACT)
 		{
-		  wanted_mode
-		    = insn_data[(int) CODE_FOR_extzv].operand[1].mode;
-		  if (wanted_mode == VOIDmode)
-		    wanted_mode = word_mode;
+		  enum machine_mode new_mode
+		    = mode_for_extraction (EP_extzv, 1);
+		  if (new_mode != MAX_MACHINE_MODE)
+		    wanted_mode = new_mode;
 		}
-#endif
-#ifdef HAVE_extv
-	      if (GET_CODE (x) == SIGN_EXTRACT)
+	      else if (GET_CODE (x) == SIGN_EXTRACT)
 		{
-		  wanted_mode = insn_data[(int) CODE_FOR_extv].operand[1].mode;
-		  if (wanted_mode == VOIDmode)
-		    wanted_mode = word_mode;
+		  enum machine_mode new_mode
+		    = mode_for_extraction (EP_extv, 1);
+		  if (new_mode != MAX_MACHINE_MODE)
+		    wanted_mode = new_mode;
 		}
-#endif
+
 	      /* If we have a narrower mode, we can do something.  */
 	      if (wanted_mode != VOIDmode
 		  && GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
@@ -2215,9 +2212,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
       {
 	rtx dest = SET_DEST (x);
 	rtx src = SET_SRC (x);
-#ifdef HAVE_insv
 	rtx outerdest = dest;
-#endif
 
 	while (GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART
 	       || GET_CODE (dest) == SIGN_EXTRACT
@@ -2236,8 +2231,8 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	/* We will need to rerecognize this insn.  */
 	INSN_CODE (insn) = -1;
 
-#ifdef HAVE_insv
-	if (GET_CODE (outerdest) == ZERO_EXTRACT && dest == var)
+	if (GET_CODE (outerdest) == ZERO_EXTRACT && dest == var
+	    && mode_for_extraction (EP_insv, -1) != MAX_MACHINE_MODE)
 	  {
 	    /* Since this case will return, ensure we fixup all the
 	       operands here.  */
@@ -2268,9 +2263,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		enum machine_mode is_mode = GET_MODE (tem);
 		HOST_WIDE_INT pos = INTVAL (XEXP (outerdest, 2));
 
-		wanted_mode = insn_data[(int) CODE_FOR_insv].operand[0].mode;
-		if (wanted_mode == VOIDmode)
-		  wanted_mode = word_mode;
+		wanted_mode = mode_for_extraction (EP_insv, 0);
 
 		/* If we have a narrower mode, we can do something.  */
 		if (GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
@@ -2311,7 +2304,6 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    XEXP (outerdest, 0) = tem1;
 	    return;
 	  }
-#endif
 
 	/* STRICT_LOW_PART is a no-op on memory references
 	   and it can cause combinations to be unrecognizable,

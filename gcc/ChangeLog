@@ -1,3 +1,14 @@
+2001-08-21  Zack Weinberg  <zackw@panix.com>
+
+	* expmed.c (mode_for_extraction): New function.
+	(store_bit_field, extract_bit_field): Use it.
+	* expr.h: Prototype it and provide an enum for its first argument.
+
+	* combine.c, function.c, recog.c: Don't include insn-codes.h.
+	Use mode_for_extraction rather than testing HAVE_insv/extv/extzv
+	and digging through the insn_data tables.
+	* Makefile.in: Update dependencies.
+
 2001-08-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (stack_include_file): line-map.c now handles include
