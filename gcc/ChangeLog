@@ -1,4 +1,9 @@
-2003-09-23  John Davind Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Move use_fixproto=no from generic OpenBSD clause
+	to specific OpenBSD clauses.
+
+2003-09-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (hppa_expand_prologue): Do pic register save in frame marker
 	without adding a frame note.
