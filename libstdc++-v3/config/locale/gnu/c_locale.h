@@ -40,6 +40,7 @@
 
 #include <cstring>              // get std::strlen
 #include <cstdlib>              // get std::malloc
+#include <cstdio>               // get std::snprintf or std::sprintf
 #include <clocale>
 #include <langinfo.h>		// For codecvt
 #include <iconv.h>		// For codecvt using iconv, iconv_t
@@ -84,9 +85,9 @@ namespace std
       int __ret;
 #ifdef _GLIBCXX_USE_C99
       if (__prec >= 0)
-        __ret = snprintf(__out, __size, __fmt, __prec, __v);
+        __ret = std::snprintf(__out, __size, __fmt, __prec, __v);
       else
-        __ret = snprintf(__out, __size, __fmt, __v);
+        __ret = std::snprintf(__out, __size, __fmt, __v);
 #else
       if (__prec >= 0)
         __ret = std::sprintf(__out, __fmt, __prec, __v);
