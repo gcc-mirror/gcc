@@ -1834,6 +1834,11 @@ extern int warn_overloaded_virtual;
 /* Nonzero means warn about use of multicharacter literals.  */
 extern int warn_multichar;
 
+/* Non-zero means warn if a non-templatized friend function is
+   declared in a templatized class. This behavior is warned about with
+   flag_guiding_decls in do_friend. */
+extern int warn_nontemplate_friend;
+
 /* in c-common.c */
 extern void declare_function_name               PROTO((void));
 extern void decl_attributes                     PROTO((tree, tree, tree));
