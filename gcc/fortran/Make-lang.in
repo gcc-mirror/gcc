@@ -49,7 +49,14 @@ GFORTRAN_CROSS_NAME := $(shell echo gfortran|sed '$(program_transform_cross_name
 #^L
 
 # Use strict warnings for this front end.
-fortran-warn = $(STRICT_WARN) -Wno-error
+fortran-warn = $(STRICT_WARN)
+
+# These files get warnings from an inline function in GMP saying:
+# "control may reach end of non-void function '__gmpz_get_ui' being inlined"
+fortran/expr.o-warn = -Wno-error
+fortran/resolve.o-warn = -Wno-error
+fortran/simplify.o-warn = -Wno-error
+fortran/trans-common.o-warn = -Wno-error
 
 # These are the groups of object files we have.  The F95_PARSER_OBJS are
 # all the front end files, the F95_OBJS are the files for the translation
