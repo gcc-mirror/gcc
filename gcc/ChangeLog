@@ -1,3 +1,8 @@
+Sat Apr  3 16:22:59 1999  Toshiyasu Morita  (tm@netcom.com)
+
+	* regmove.c (fixup_match_1): Consistently evaluate
+	HAVE_POST_INCREMENT and HAVE_POST_DECREMENT.
+
 Sat Apr  3 19:21:05 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in (DEFAULT_LINKER, DEFAULT_ASSEMBLER): Use grep
