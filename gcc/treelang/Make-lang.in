@@ -90,17 +90,21 @@ tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/par
 
 # object file makes
 
-treelang/tree1.o: $(srcdir)/treelang/tree1.c $(srcdir)/treelang/treelang.h $(srcdir)/treelang/parse.h\
+treelang/tree1.o: $(srcdir)/treelang/tree1.c $(srcdir)/treelang/treelang.h \
+	$(srcdir)/treelang/parse.h $(CONFIG_H) \
 	gt-treelang-tree1.h gt-treelang-treelang.h gtype-treelang.h
 	$(CC) -o $@ -c $(ALL_CFLAGS) $(INCLUDES) $< 
 
-treelang/treetree.o: $(srcdir)/treelang/treetree.c $(srcdir)/treelang/treetree.h
+treelang/treetree.o: $(srcdir)/treelang/treetree.c $(srcdir)/treelang/treetree.h \
+	$(CONFIG_H)
 	$(CC) -o $@ -c $(ALL_CFLAGS) $(INCLUDES) $< 
 
-treelang/parse.o: $(srcdir)/treelang/parse.c $(srcdir)/treelang/treelang.h $(srcdir)/treelang/treetree.h
+treelang/parse.o: $(srcdir)/treelang/parse.c $(srcdir)/treelang/treelang.h \
+	$(srcdir)/treelang/treetree.h $(CONFIG_H)
 	$(CC) -o $@ -c $(ALL_CFLAGS) $(INCLUDES) $< 
 
-treelang/lex.o: $(srcdir)/treelang/lex.c $(srcdir)/treelang/parse.h $(srcdir)/treelang/treelang.h
+treelang/lex.o: $(srcdir)/treelang/lex.c $(srcdir)/treelang/parse.h \
+	$(srcdir)/treelang/treelang.h $(CONFIG_H)
 	$(CC) -o $@ -c $(ALL_CFLAGS) $(INCLUDES) $< 
 
 # generated files the files from lex and yacc are put into the source
