@@ -1,3 +1,13 @@
+2001-01-11  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	Mon Oct  4 16:56:11 1999  Richard Henderson  <rth@cygnus.com>
+	* tree.c (build1): Set TREE_SIDE_EFFECTS for expressions that
+	always have side-effects.
+
+	Mon Oct  4 02:12:41 1999  Mark Mitchell  <mark@codesourcery.com>
+	* tree.c (make_node): Set TREE_SIDE_EFFECTS for expressions that
+	always have side-effects.
+
 2001-01-01  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* version.c: Bump.

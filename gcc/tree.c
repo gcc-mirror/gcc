@@ -1121,6 +1121,26 @@ make_node (code)
     case 'c':
       TREE_CONSTANT (t) = 1;
       break;
+
+     case 'e':
+      switch (code)
+	{
+	case INIT_EXPR:
+	case MODIFY_EXPR:
+	case RTL_EXPR:
+	case PREDECREMENT_EXPR:
+	case PREINCREMENT_EXPR:
+	case POSTDECREMENT_EXPR:
+	case POSTINCREMENT_EXPR:
+	  /* All of these have side-effects, no matter what their
+	     operands are.  */
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  break;
+
+	default:
+	  break;
+	}
+      break;
     }
 
   return t;
@@ -3105,6 +3125,24 @@ build1 (code, type, node)
 	TREE_SIDE_EFFECTS (t) = 1;
       if (TREE_RAISES (node))
 	TREE_RAISES (t) = 1;
+    }
+
+  switch (code)
+    {
+     case INIT_EXPR:
+     case MODIFY_EXPR:
+     case RTL_EXPR:
+     case PREDECREMENT_EXPR:
+     case PREINCREMENT_EXPR:
+     case POSTDECREMENT_EXPR:
+     case POSTINCREMENT_EXPR:
+      /* All of these have side-effects, no matter what their
+       operands are.  */
+      TREE_SIDE_EFFECTS (t) = 1;
+      break;
+
+     default:
+      break;
     }
 
   return t;
