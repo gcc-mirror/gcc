@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.jar;
 
+import gnu.java.net.URLParseError;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
@@ -91,10 +93,11 @@ public class Handler extends URLStreamHandler
         if (url_string.startsWith("/"))
           { //url string is an absolute path
             int idx = file.lastIndexOf ("!/");
-            if (idx == -1) //context path is weird
-                file = file + "!" + url_string; 
-            else
-                file = file.substring (0, idx + 1) + url_string;
+	    
+	    if (idx < 0)
+	      throw new URLParseError("no !/ in spec");
+	    
+	    file = file.substring (0, idx + 1) + url_string;
           }
         else
           {
@@ -108,7 +111,7 @@ public class Handler extends URLStreamHandler
               // according to Java API Documentation, here is a little different 
               // with URLStreamHandler.parseURL
               // but JDK seems doesn't handle it well
-              file = file + "/" + url_string;
+              file = file.substring(0, idx + 1) + url_string;
           }
         
         setURL (url, "jar", url.getHost(), url.getPort(), file, null);
@@ -125,9 +128,22 @@ public class Handler extends URLStreamHandler
     
     // Skip remains of protocol
     url_string = url_string.substring (start, end);
+
+    int jar_stop;
+    if ((jar_stop = url_string.indexOf("!/")) < 0)
+      throw new URLParseError("no !/ in spec");
+
+    try
+      {
+	new URL(url_string.substring (0, jar_stop));
+      }
+    catch (MalformedURLException e)
+      {
+	throw new URLParseError("invalid inner URL: " + e.getMessage());
+      }
     
     if (!url.getProtocol().equals ("jar") )
-      return;
+      throw new URLParseError("unexpected protocol " + url.getProtocol());
         
     setURL (url, "jar", url.getHost(), url.getPort(), url_string, null);
   }
