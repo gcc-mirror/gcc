@@ -88,7 +88,10 @@ proc g++_include_flags { args } {
     } else {
       set odir_v3 [lookfor_file ${gccpath} libstdc++-v3]
       set sdir_v3 [lookfor_file ${srcdir} libstdc++-v3]
-      append flags [exec ${odir_v3}/mkcheck 2 ${odir_v3} ${sdir_v3}]
+      if { ${odir_v3} != "" } {
+        append flags [exec ${odir_v3}/mkcheck 2 ${odir_v3} ${sdir_v3}]
+      }
+      # else we're probably testing an already-installed GCC.
     }
 
     return "$flags"

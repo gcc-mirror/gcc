@@ -1,3 +1,7 @@
+2000-08-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* lib/g++.exp: Support testing already-installed GCC.
+
 2000-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* wtr-label-1.c, wtr-suffix-1.c: New tests.
