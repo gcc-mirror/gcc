@@ -7465,16 +7465,16 @@ init_objc ()
   tree_code_name
     = (char **) xrealloc (tree_code_name,
 			  sizeof (char *) * LAST_OBJC_TREE_CODE);
-  bcopy (objc_tree_code_type,
-	 tree_code_type + (int) LAST_CODE,
+  bcopy ((char *) objc_tree_code_type,
+	 (char *) (tree_code_type + (int) LAST_CODE),
 	 (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE)
 	  * sizeof (char *)));
-  bcopy (objc_tree_code_length,
-	 tree_code_length + (int) LAST_CODE,
+  bcopy ((char *) objc_tree_code_length,
+	 (char *) (tree_code_length + (int) LAST_CODE),
 	 (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE)
 	  * sizeof (int)));
-  bcopy (objc_tree_code_name,
-	 tree_code_name + (int) LAST_CODE,
+  bcopy ((char *) objc_tree_code_name,
+	 (char *) (tree_code_name + (int) LAST_CODE),
 	 (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE)
 	  * sizeof (char *)));
 
