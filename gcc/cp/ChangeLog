@@ -1,3 +1,9 @@
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck.c (convert_for_assignment): Don't look at array
+	initializer.
+	* call.c (convert_like_real): Likewise.	
+
 2000-03-07  Jason Merrill  <jason@casey.cygnus.com>
 
 	Add initial support for '\uNNNN' specifier.
