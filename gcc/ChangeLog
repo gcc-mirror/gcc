@@ -1,3 +1,10 @@
+2003-09-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/11700.
+	* simplify-rtx.c (simplify_subreg): Check that the subreg offset
+	of a hard register is representable before trying to simplify it
+	using subreg_hard_regno.
+
 2003-09-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (gcc_cv_ld_hidden): Disable unless using GNU ld.
