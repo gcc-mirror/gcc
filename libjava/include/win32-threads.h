@@ -33,6 +33,14 @@ typedef struct
   java::lang::Thread *thread_obj;
 } _Jv_Thread_t;
 
+typedef DWORD _Jv_ThreadId_t;
+
+inline _Jv_ThreadId_t
+_Jv_ThreadSelf (void)
+{
+  return GetCurrentThreadId();
+}
+
 typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 
 //

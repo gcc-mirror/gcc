@@ -226,6 +226,7 @@ case "$TARGET_ECOS" in
             PLATFORM=Win32
             PLATFORMOBJS=win32.lo
 	    PLATFORMH=win32.h
+        CHECK_FOR_BROKEN_MINGW_LD
       ;;
       *)
             PLATFORM=Posix
@@ -444,7 +445,7 @@ AC_LINK_FILES(sysdep/$sysdeps_dir/locks.h, sysdep/locks.h)
 
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.
-if test "$enable_hash_synchronization" = yes && test "$THREADS" = "posix"; then
+if test "$enable_hash_synchronization" = yes; then
    HASH_SYNC_SPEC=-fhash-synchronization
    AC_DEFINE(JV_HASH_SYNCHRONIZATION, 1, [Define if hash synchronization is in use])
 fi
