@@ -1,3 +1,8 @@
+Thu Jun  7 16:17:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* global.c (build_insn_chain): Allow ADDR_VEC or ADDR_DIF_VEC after
+	end of last block if last real insn is a JUMP_INSN.
+
 2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* NEWS: Regenerate.
