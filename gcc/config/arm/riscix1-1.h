@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
    but everything still compiles.  */
 /* None of these is actually used in cc1, so they modify bit 31 */
 #define SUBTARGET_SWITCHES \
-{"bsd", 0x80000000}, 
+{"bsd", 0x80000000, ""}, 
     
 
 /* Run-time Target Specification.  */
