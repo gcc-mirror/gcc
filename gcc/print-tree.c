@@ -144,11 +144,13 @@ print_node_brief (file, prefix, node, indent)
     }
   if (TREE_CODE (node) == REAL_CST)
     {
-      REAL_VALUE_TYPE d = TREE_REAL_CST (node);
+      REAL_VALUE_TYPE d;
+
       if (TREE_OVERFLOW (node))
 	fprintf (file, " overflow");
 
 #if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
+      d = TREE_REAL_CST (node);
       if (REAL_VALUE_ISINF (d))
 	fprintf (file, " Inf");
       else if (REAL_VALUE_ISNAN (d))
@@ -620,11 +622,13 @@ print_node (file, prefix, node, indent)
 
 	case REAL_CST:
 	  {
-	    REAL_VALUE_TYPE d = TREE_REAL_CST (node);
+	    REAL_VALUE_TYPE d;
+
 	    if (TREE_OVERFLOW (node))
 	      fprintf (file, " overflow");
 
 #if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
+	    d = TREE_REAL_CST (node);
 	    if (REAL_VALUE_ISINF (d))
 	      fprintf (file, " Inf");
 	    else if (REAL_VALUE_ISNAN (d))
