@@ -1,3 +1,8 @@
+2005-03-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/i386/emmintrin.h (_mm_extract_epi16): Correct the number
+	of closing parenthesis.
+
 2005-03-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (expand_movstr): Update a call to
