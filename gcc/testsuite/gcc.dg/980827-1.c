@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do run { target rs6000-*-linux* powerpc-*-linux*} } */
 /* { dg-options -O2 } */
 
 double dval = 0;
