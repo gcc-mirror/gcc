@@ -514,7 +514,12 @@ void __cxa_guard_release (__guard *);
 
 extern "C"
 void __cxa_guard_abort (__guard *);
-                  
+
+/* pure virtual functions */
+
+extern "C" void
+__cxa_pure_virtual (void);
+
 /* demangling routines */
 
 extern "C" 
