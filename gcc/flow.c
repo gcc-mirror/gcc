@@ -326,6 +326,7 @@ static void add_to_mem_set_list (struct propagate_block_info *, rtx);
 static int invalidate_mems_from_autoinc (rtx *, void *);
 static void invalidate_mems_from_set (struct propagate_block_info *, rtx);
 static void clear_log_links (sbitmap);
+static int count_or_remove_death_notes_bb (basic_block, int);
 
 
 void
@@ -4168,65 +4169,95 @@ int
 count_or_remove_death_notes (sbitmap blocks, int kill)
 {
   int count = 0;
+  int i;
   basic_block bb;
 
-  FOR_EACH_BB_REVERSE (bb)
+  
+  /* This used to be a loop over all the blocks with a membership test
+     inside the loop.  That can be amazingly expensive on a large CFG
+     when only a small number of bits are set in BLOCKs (for example,
+     the calls from the scheduler typically have very few bits set).
+
+     For extra credit, someone should convert BLOCKS to a bitmap rather
+     than an sbitmap.  */
+  if (blocks)
     {
-      rtx insn;
-
-      if (blocks && ! TEST_BIT (blocks, bb->index))
-	continue;
-
-      for (insn = bb->head;; insn = NEXT_INSN (insn))
+      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
 	{
-	  if (INSN_P (insn))
-	    {
-	      rtx *pprev = &REG_NOTES (insn);
-	      rtx link = *pprev;
-
-	      while (link)
-		{
-		  switch (REG_NOTE_KIND (link))
-		    {
-		    case REG_DEAD:
-		      if (GET_CODE (XEXP (link, 0)) == REG)
-			{
-			  rtx reg = XEXP (link, 0);
-			  int n;
-
-			  if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-			    n = 1;
-			  else
-			    n = HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg));
-			  count += n;
-			}
-		      /* Fall through.  */
-
-		    case REG_UNUSED:
-		      if (kill)
-			{
-			  rtx next = XEXP (link, 1);
-			  free_EXPR_LIST_node (link);
-			  *pprev = link = next;
-			  break;
-			}
-		      /* Fall through.  */
-
-		    default:
-		      pprev = &XEXP (link, 1);
-		      link = *pprev;
-		      break;
-		    }
-		}
-	    }
-
-	  if (insn == bb->end)
-	    break;
+	  count += count_or_remove_death_notes_bb (BASIC_BLOCK (i), kill);
+	});
+    }
+  else
+    {
+      FOR_EACH_BB (bb)
+	{
+	  count += count_or_remove_death_notes_bb (bb, kill);
 	}
     }
 
   return count;
 }
+  
+/* Optionally removes all the REG_DEAD and REG_UNUSED notes from basic
+   block BB.  Returns a count of the number of registers that died.  */
+
+static int
+count_or_remove_death_notes_bb (basic_block bb, int kill)
+{
+  int count = 0;
+  rtx insn;
+
+  for (insn = bb->head;; insn = NEXT_INSN (insn))
+    {
+      if (INSN_P (insn))
+	{
+	  rtx *pprev = &REG_NOTES (insn);
+	  rtx link = *pprev;
+
+	  while (link)
+	    {
+	      switch (REG_NOTE_KIND (link))
+		{
+		case REG_DEAD:
+		  if (GET_CODE (XEXP (link, 0)) == REG)
+		    {
+		      rtx reg = XEXP (link, 0);
+		      int n;
+
+		      if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+		        n = 1;
+		      else
+		        n = HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg));
+		      count += n;
+		    }
+
+		  /* Fall through.  */
+
+		case REG_UNUSED:
+		  if (kill)
+		    {
+		      rtx next = XEXP (link, 1);
+		      free_EXPR_LIST_node (link);
+		      *pprev = link = next;
+		      break;
+		    }
+		  /* Fall through.  */
+
+		default:
+		  pprev = &XEXP (link, 1);
+		  link = *pprev;
+		  break;
+		}
+	    }
+	}
+
+      if (insn == bb->end)
+	break;
+    }
+
+  return count;
+}
+
 /* Clear LOG_LINKS fields of insns in a selected blocks or whole chain
    if blocks is NULL.  */
 
