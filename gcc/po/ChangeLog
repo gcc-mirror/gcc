@@ -1,5 +1,9 @@
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* exgettext: Remove local srcdir and objdir paths from gcc.pot.
+
+2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* gcc.pot: Regenerate.
 
 2004-11-07  Joseph S. Myers  <joseph@codesourcery.com>
