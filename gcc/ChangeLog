@@ -1,3 +1,7 @@
+Tue Jun  2 13:02:44 1998  Richard Henderson  <rth@cygnus.com>
+
+	* vax/netbsd.h (DWARF2_UNWIND_INFO): Must be undef, not defined 0.
+
 Mon Jun  1 03:44:03 1998  Catherine Moore <clm@cygnus.com>
  
         * config/sh/sh.h (MAX_OFILE_ALIGNMENT): Define.
