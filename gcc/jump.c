@@ -1038,7 +1038,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      ((BRANCH_COST >= 2
 			&& temp2 == const0_rtx)
 #ifdef HAVE_conditional_move
-		       || 1
+		       || HAVE_conditional_move
 #endif
 		       || BRANCH_COST >= 3)))
 	      /* INSN must either branch to the insn after TEMP or the insn
@@ -1068,7 +1068,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			      && (reversep = can_reverse_comparison_p (temp4,
 								       insn)))))
 #ifdef HAVE_conditional_move
-		  || 1
+		  || HAVE_conditional_move
 #endif
 		  || BRANCH_COST >= 3)
 #ifdef HAVE_cc0

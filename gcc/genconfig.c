@@ -343,7 +343,15 @@ from the machine description file `md'.  */\n\n");
     printf ("#define HAVE_cc0\n");
 
   if (have_cmove_flag)
-    printf ("#define HAVE_conditional_move\n");
+    {
+      /* ??? The #ifndef/#endif is a hack for targets like sparc where
+         conditional moves don't exist for all versions of the
+	 architecture.  This won't be needed after conditional move support
+	 has been clean up.  */
+      printf ("#ifndef HAVE_conditional_move\n");
+      printf ("#define HAVE_conditional_move 1\n");
+      printf ("#endif\n");
+    }
 
   if (have_lo_sum_flag)
     printf ("#define HAVE_lo_sum\n");
