@@ -5400,7 +5400,7 @@ force_to_mode (x, mode, bits, reg)
 	     && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (mode))
 	  && ! (GET_MODE (XEXP (x, 1)) != VOIDmode
 		&& (nonzero_bits (XEXP (x, 1), GET_MODE (XEXP (x, 1)))
-		    < (unsigned) GET_MODE_BITSIZE (mode))))
+		    < (unsigned HOST_WIDE_INT) GET_MODE_BITSIZE (mode))))
 	break;
 	
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) < bits)
@@ -8353,7 +8353,7 @@ simplify_comparison (code, pop0, pop1)
 	      && INTVAL (XEXP (SUBREG_REG (op0), 1)) < 0
 	      && (- INTVAL (XEXP (SUBREG_REG (op0), 1))
 		  < GET_MODE_MASK (mode) / 2)
-	      && (unsigned) const_op < GET_MODE_MASK (mode) / 2
+	      && (unsigned HOST_WIDE_INT) const_op < GET_MODE_MASK (mode) / 2
 	      && (0 == (nonzero_bits (XEXP (SUBREG_REG (op0), 0),
 				      GET_MODE (SUBREG_REG (op0)))
 			& ~ GET_MODE_MASK (mode))
