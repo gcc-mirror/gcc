@@ -36,15 +36,7 @@ libdir = @libdir@
 includedir = @includedir@
 datadir = @datadir@
 localedir = $(datadir)/locale
-gettextsrcdir = $(datadir)/gettext/intl
 aliaspath = $(localedir)
-
-INSTALL = @INSTALL@
-INSTALL_DATA = @INSTALL_DATA@
-MKINSTALLDIRS = @MKINSTALLDIRS@
-mkinstalldirs = $(SHELL) $(MKINSTALLDIRS)
-
-l = @INTL_LIBTOOL_SUFFIX_PREFIX@
 
 AR = ar
 CC = @CC@
@@ -57,7 +49,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 DEFS = -DHAVE_CONFIG_H
 
-COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) $(XCFLAGS)
+COMPILE = $(CC) -c $(CPPFLAGS) $(CFLAGS) $(DEFS) $(DEFS-$@) $(INCLUDES)
 
 HEADERS = \
   gmo.h \
@@ -68,8 +60,7 @@ HEADERS = \
   eval-plural.h \
   localcharset.h \
   relocatable.h \
-  os2compat.h \
-  libgnuintl.h.in
+  libgnuintl.h
 SOURCES = \
   bindtextdom.c \
   dcgettext.c \
@@ -92,7 +83,6 @@ SOURCES = \
   localename.c \
   log.c \
   osdep.c \
-  os2compat.c \
   intl-compat.c
 OBJECTS = \
   bindtextdom.o \
@@ -118,8 +108,13 @@ OBJECTS = \
   osdep.o \
   intl-compat.o
 
+DEFS-dcigettext.o = -DLOCALEDIR="\"$(localedir)\""
+DEFS-localealias.o = -DLOCALE_ALIAS_PATH="\"$(aliaspath)\""
+DEFS-localcharset.o = -DLIBDIR="\"$(libdir)\""
+DEFS-relocatable.o = -DINSTALLDIR="\"$(libdir)\""
+
 all: all-@USE_INCLUDED_LIBINTL@
-all-yes: libintl.a libintl.h
+all-yes: libintl.a libintl.h config.intl
 all-no: # nothing
 
 libintl.a: $(OBJECTS)
@@ -128,7 +123,7 @@ libintl.a: $(OBJECTS)
 	$(RANLIB) $@
 
 libintl.h: $(srcdir)/libgnuintl.h
-	cat $(srcdir)/libgnuintl.h > $@
+	cp $(srcdir)/libgnuintl.h $@
 
 .SUFFIXES:
 .SUFFIXES: .c .y .o
@@ -140,7 +135,7 @@ libintl.h: $(srcdir)/libgnuintl.h
 	$(YACC) $(YFLAGS) --output $@ $<
 	rm -f $*.h
 
-INCLUDES = -I. -I$(srcdir) -I..
+INCLUDES = -I. -I$(srcdir)
 
 check: all
 
@@ -167,35 +162,27 @@ localcharset.o: localcharset.h
 localealias.o localcharset.o relocatable.o: relocatable.h
 
 tags: TAGS
-
 TAGS: $(HEADERS) $(SOURCES)
-	here=`pwd`; cd $(srcdir) && etags -o $$here/TAGS $(HEADERS) $(SOURCES)
+	here=`pwd`; cd $(srcdir) && \
+		etags -o $$here/TAGS $(HEADERS) $(SOURCES)
 
 ctags: CTAGS
-
 CTAGS: $(HEADERS) $(SOURCES)
-	here=`pwd`; cd $(srcdir) && ctags -o $$here/CTAGS $(HEADERS) $(SOURCES)
+	here=`pwd`; cd $(srcdir) && \
+		ctags -o $$here/CTAGS $(HEADERS) $(SOURCES)
 
 id: ID
-
 ID: $(HEADERS) $(SOURCES)
-	here=`pwd`; cd $(srcdir) && mkid -f$$here/ID $(HEADERS) $(SOURCES)
-
+	here=`pwd`; cd $(srcdir) && \
+		mkid -f$$here/ID $(HEADERS) $(SOURCES)
 
 mostlyclean:
-	rm -f *.a *.la *.o *.obj *.lo core core.*
-	rm -f libgnuintl.h libintl.h charset.alias ref-add.sed ref-del.sed
-	rm -f -r .libs _libs
+	rm -f *.a *.la *.o *.obj *.lo core core.* libintl.h
 
 clean: mostlyclean
 
 distclean: clean
 	rm -f Makefile ID TAGS
-	if test "$(PACKAGE)" = "gettext-runtime" || test "$(PACKAGE)" = "gettext-tools"; then \
-	  rm -f ChangeLog.inst $(DISTFILES.normal); \
-	else \
-	  : ; \
-	fi
 
 maintainer-clean: distclean
 
@@ -206,6 +193,9 @@ distdir:
 
 Makefile: Makefile.in config.status
 	CONFIG_HEADERS= CONFIG_FILES=Makefile $(SHELL) ./config.status
+
+config.intl: config.intl.in config.status
+	CONFIG_HEADERS= CONFIG_FILES=config.intl $(SHELL) ./config.status
 
 config.h: cstamp-h; @:
 cstamp-h: config.h.in config.status

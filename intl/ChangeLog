@@ -1,3 +1,28 @@
+2003-07-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* README: Update.
+	* Makefile.in (INSTALL, INSTALL_DATA, MKINSTALLDIRS,
+	mkinstalldirs, gettextsrcdir, l): Delete.
+	(COMPILE): Add $(DEFS-$@), remove $(XCFLAGS).
+	(HEADERS): libgnuintl.h not libgnuintl.h.in.  Remove os2compat.h.
+	(SOURCES): Remove os2compat.c.
+	(DEFS-dcigettext.o, DEFS-localealias.o, DEFS-localcharset.o,
+	DEFS-relocatable.o): New.
+	(all-yes): Add config.intl.
+	(libintl.h): Use cp, not cat.
+	(INCLUDES): Remove -I..
+	(TAGS, CTAGS, ID): Word wrap.
+	(mostlyclean, distclean): Remove junk.
+	(config.intl): New rule.
+	* aclocal.m4: sinclude ../config/progtest.m4 instead of
+	including it inline.
+	* config.intl.in: New file.
+	* configure.in: Take out unnecessary AC_CONFIG_AUX_DIR.
+	Take out AC_DEFINEs for LOCALEDIR, LOCALE_ALIAS_PATH,
+	LIBDIR, INSTALLDIR.  Set LIBINTL_DEP and INCINTL and AC_SUBST
+	them.  Add config.intl to AC_OUTPUT.
+	* os2compat.c, os2compat.h: Delete, unused.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in: Remove unnecessary capabilities for

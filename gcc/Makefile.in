@@ -83,7 +83,7 @@ parsedir = $(srcdir)
 docobjdir = $(srcdir)/doc
 
 # Top build directory, relative to here.
-top_builddir = .
+top_builddir = ..
 # objdir is set by configure.
 # It's normally the absolute path to the current directory.
 objdir = @objdir@
@@ -434,11 +434,12 @@ tmpdir = /tmp
 USE_NLS = @USE_NLS@
 
 # Internationalization library.
-INTLLIBS = @INTLLIBS@
-INTLDEPS = @INTLDEPS@
+LIBINTL = @LIBINTL@
+LIBINTL_DEP = @LIBINTL_DEP@
 
 # Character encoding conversion library.
 LIBICONV = @LIBICONV@
+LIBICONV_DEP = @LIBICONV_DEP@
 
 # The GC method to be used on this system.
 GGC=@GGC@.o
@@ -682,7 +683,7 @@ LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = @FORBUILD@/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
-LIBDEPS= $(INTLDEPS) $(LIBIBERTY)
+LIBDEPS= $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -690,7 +691,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS =	$(INTLLIBS) @LIBS@ $(LIBIBERTY) $(LIBICONV)
+LIBS = @LIBS@ $(LIBIBERTY) $(LIBINTL) $(LIBICONV)
 
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -719,7 +720,7 @@ BUILD_VARRAY = $(BUILD_PREFIX)varray.o
 # currently being compiled, in both source trees, to be examined as well.
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
-	   -I$(srcdir)/config -I$(srcdir)/../include -I../intl
+	   -I$(srcdir)/config -I$(srcdir)/../include @INCINTL@
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
@@ -2316,8 +2317,6 @@ intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(srcdir)/intl.c $(OUTPUT_OPTION)
 
-$(top_builddir)/intl/libintl.a: intl.all
-
 # Make-lang.in should add dependencies of po-generated on any generated
 # files which need to be scanned by gettext (usually Yacc-generated parsers).
 po-generated: $(parsedir)/c-parse.c
@@ -3766,7 +3765,7 @@ stage1: force stage1-start lang.stage1
 stage2-start:
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage2
-	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
+	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
 	 do \
 	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
 	 done
@@ -3795,7 +3794,7 @@ stage2: force stage2-start lang.stage2
 stage3-start:
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage3
-	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
+	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
 	 do \
 	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
 	 done
@@ -3824,7 +3823,7 @@ stage3: force stage3-start lang.stage3
 stage4-start:
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage4
-	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
+	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
 	 do \
 	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
 	 done
@@ -3853,7 +3852,7 @@ stage4: force stage4-start lang.stage4
 stageprofile-start:
 	-if [ -d stageprofile ] ; then true ; else mkdir stageprofile ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stageprofile
-	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
+	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
 	 do \
 	   if [ -d stageprofile/$$dir ] ; then true ; else mkdir stageprofile/$$dir ; fi ; \
 	 done
@@ -3880,7 +3879,7 @@ stageprofile: force stageprofile-start lang.stageprofile
 stagefeedback-start:
 	-if [ -d stagefeedback ] ; then true ; else mkdir stagefeedback ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stagefeedback
-	-subdirs="$(SUBDIRS)"; for dir in $subdirs; \
+	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
 	 do \
 	   if [ -d stagefeedback/$$dir ] ; then true ; else mkdir stagefeedback/$$dir ; fi ; \
 	 done
