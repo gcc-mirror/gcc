@@ -107,6 +107,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef  MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX	"/usr/ccs/lib/"
 
+/* Specify size_t, ptrdiff_t, and wchar_t types.  */
+#undef	SIZE_TYPE
+#undef	PTRDIFF_TYPE
+#undef	WCHAR_TYPE
+#undef	WCHAR_TYPE_SIZE
+
+#define SIZE_TYPE	"long unsigned int"
+#define PTRDIFF_TYPE	"int"
+#define WCHAR_TYPE	"unsigned int"
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
+
 /* Tell final.c we don't need a label passed to mcount.  */
 #define NO_PROFILE_DATA
 
