@@ -1,5 +1,10 @@
 2003-03-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/ScrollPaneAdjustable.java:
+	Compile fixes.
+	
+2003-03-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java
 	(connect): Fixed comment.
 	* java/nio/ByteBuffer.java
