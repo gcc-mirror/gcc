@@ -1,3 +1,8 @@
+2000-05-08  Nick Clifton  <nickc@cygnus.com>
+
+	* Makefile.in (CFILES): Add strncmp.c.
+	(NEEDED): Add strncmp.
+
 2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (cplus_demangle_opname, demangle_function_name):
