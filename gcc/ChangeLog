@@ -1,5 +1,9 @@
 Wed Apr 19 12:02:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
+	* calls.c (precompute_arguments): Remove must_preallocate and
+	args_size calls.
+	(expand_call): Update call of precompute_arguments.
+
 	* loop.c (check_insn_for_bivs, for_every_insn_in_loop,
 	check_insn_for_givs): Break out from ...
 	(strength_reduce) ... here; use for_every_insn_in_loop to call
