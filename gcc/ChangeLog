@@ -1,5 +1,13 @@
 Mon Apr 10 07:21:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcse.c (expr_hash_table_size): Now unsigned.
+	(compute_ae_gen): Local variable `i' now unsigned.
+	(compute_ae_kill, pre_insert_copies, pre_delete, pre_gcse): Likewise.
+	(compute_transout, hoist_code): Likewise.
+	(compute_local_properties): Likewise, also hash_table_size.
+	(alloc_expr_hash_table): N_INSNS now unsigned.
+	(delete_null_pointer_checks): Mark arg F as unused.
+
 	* regrename.c: Minor cleanups, including chang some variables
 	to unsigned int.
 
