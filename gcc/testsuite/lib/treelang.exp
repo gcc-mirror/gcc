@@ -21,14 +21,15 @@
 # Having this file here magically tells dejagnu that the treelang
 # directory is worthy of testing
 
-# This file is basically treelang.exp with treelang replaced with treelang.
+# This file is basically gcc.exp with gcc replaced with treelang.
 
 # This file is loaded by the tool init file (eg: unix.exp).  It provides
-# default definitions for treelang_start, etc. and other supporting cast members.
+# default definitions for treelang_start, etc. and other supporting cast
+# members.
 
-# These globals are used by treelang_start if no compiler arguments are provided.
-# They are also used by the various testsuites to define the environment:
-# where to find stdio.h, libc.a, etc.
+# These globals are used by treelang_start if no compiler arguments are
+# provided.  They are also used by the various testsuites to define the
+# environment: where to find stdio.h, libc.a, etc.
 
 load_lib libgloss.exp
 load_lib prune.exp
@@ -143,7 +144,6 @@ proc treelang_target_compile { source dest type options } {
 
     set ld_library_path ".:${treelang_libgcc_s_path}"
     set_ld_library_path_env_vars
-    lappend options "libs=-ltreelang"
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
