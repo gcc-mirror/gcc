@@ -768,6 +768,9 @@
 ;; of memory unit collision in the same packet.  There's only one divide
 ;; unit too.
 
+(define_automaton "fr400_integer")
+(define_cpu_unit "fr400_mul" "fr400_integer")
+
 (define_insn_reservation "fr400_i1_int" 1
   (and (eq_attr "cpu" "fr400,fr405,fr450")
        (eq_attr "type" "int"))
@@ -788,18 +791,18 @@
 (define_insn_reservation "fr400_i1_mul" 3
   (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "mul"))
-  "i0")
+  "i0 + fr400_mul")
 
 (define_insn_reservation "fr450_i1_mul" 2
   (and (eq_attr "cpu" "fr450")
        (eq_attr "type" "mul"))
-  "i0")
+  "i0 + fr400_mul")
 
 (define_bypass 1 "fr400_i1_macc" "fr400_i1_macc")
 (define_insn_reservation "fr400_i1_macc" 2
   (and (eq_attr "cpu" "fr405,fr450")
        (eq_attr "type" "macc"))
-  "i0|i1")
+  "(i0|i1) + fr400_mul")
 
 (define_insn_reservation "fr400_i1_scan" 1
   (and (eq_attr "cpu" "fr400,fr405,fr450")
@@ -809,7 +812,7 @@
 (define_insn_reservation "fr400_i1_cut" 2
   (and (eq_attr "cpu" "fr405,fr450")
        (eq_attr "type" "cut"))
-  "i0")
+  "i0 + fr400_mul")
 
 ;; 20 is for a write-after-write hazard.
 (define_insn_reservation "fr400_i1_div" 20
