@@ -1,3 +1,14 @@
+2000-11-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (tradcpp.o, tradcif.o): Depend on tradcpp.h.
+
+	* tradcif.y: Include tradcpp.h.  Constify.  Make functions static.
+	Move extern function declarations to tradcpp.h.
+
+	* tradcpp.c: Likewise.
+
+	* tradcpp.h: New file.
+
 2000-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (check_for_loop_decls): New function.

@@ -23,12 +23,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "version.h"
 #include "cppdefault.h"
+#include "tradcpp.h"
 
 typedef unsigned char U_CHAR;
 
 /* Name under which this program was invoked.  */
 
-char *progname;
+static const char *progname;
 
 /* Current maximum length of directory names in the search path
    for include files.  (Altered as we get more of them.)  */
@@ -71,7 +72,7 @@ int no_output;
 
 /* Value of __USER_LABEL_PREFIX__.  Target-dependent, also controlled
    by -f(no-)leading-underscore.  */
-const char *user_label_prefix;
+static const char *user_label_prefix;
 
 /* I/O buffer structure.
    The `fname' field is nonzero for source files and #include files
@@ -184,7 +185,7 @@ struct definition {
      with comma-space between them.
      The only use of this is that we warn on redefinition
      if this differs between the old and new definitions.  */
-  U_CHAR *argnames;
+  const U_CHAR *argnames;
 };
 
 /* different kinds of things that can appear in the value field
@@ -304,42 +305,30 @@ struct arglist {
 
 /* Function prototypes.  */
 
-void do_define	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-void do_line	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-void do_include	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-void do_undef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-void do_if	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-void do_xifdef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-void do_else	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-void do_elif	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-void do_endif	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_define	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_line	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_include	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_undef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_if	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_xifdef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_else	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_elif	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_endif	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
 
-struct hashnode *install PARAMS ((const U_CHAR *, int, enum node_type, int));
-struct hashnode *lookup  PARAMS ((const U_CHAR *, int, int));
-int hashf		 PARAMS ((const U_CHAR *, int, int));
-int compare_defs	 PARAMS ((DEFINITION *, DEFINITION *));
-int comp_def_part	 PARAMS ((int, U_CHAR *, int, U_CHAR *, int, int));
-void delete_macro	 PARAMS ((HASHNODE *));
+static struct hashnode *install PARAMS ((const U_CHAR *, int, enum node_type, int));
+static int hashf		 PARAMS ((const U_CHAR *, int, int));
+static int compare_defs	 PARAMS ((DEFINITION *, DEFINITION *));
+static int comp_def_part	 PARAMS ((int, const U_CHAR *, int,
+					  const U_CHAR *, int, int));
+static void delete_macro	 PARAMS ((HASHNODE *));
 
 /* First arg to v_message.  */
 enum msgtype { WARNING = 0, ERROR, FATAL };
-void v_message		 PARAMS ((enum msgtype mtype, int line,
-				  const char *msgid, va_list ap))
+static void v_message		 PARAMS ((enum msgtype mtype, int line,
+					  const char *msgid, va_list ap))
      ATTRIBUTE_PRINTF (3, 0);
 
-void warning		 PARAMS ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
-void error		 PARAMS ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
-void fatal		 PARAMS ((const char *msgid, ...)) ATTRIBUTE_NORETURN
-     ATTRIBUTE_PRINTF_1;
-void error_with_line	 PARAMS ((int, const char *msgid, ...))
-     ATTRIBUTE_PRINTF_2;
-void error_from_errno	 PARAMS ((const char *msgid));
-
-void perror_with_name 	 PARAMS ((const char *msgid));
-void pfatal_with_name 	 PARAMS ((const char *msgid)) ATTRIBUTE_NORETURN;
-void fancy_abort 	 PARAMS ((int, const char *)) ATTRIBUTE_NORETURN;
-
-int line_for_error	 PARAMS ((int));
+static int line_for_error	 PARAMS ((int));
 
 /* We know perfectly well which file this is, so we don't need to
    use __FILE__.  */
@@ -350,39 +339,39 @@ int line_for_error	 PARAMS ((int));
 #define abort() fancy_abort(__LINE__, 0);
 #endif
 
-void macroexpand 		PARAMS ((HASHNODE *, FILE_BUF *));
-void special_symbol		PARAMS ((HASHNODE *, FILE_BUF *));
-void dump_all_macros 		PARAMS ((void));
-void dump_defn_1		PARAMS ((U_CHAR *, int, int));
-void dump_arg_n			PARAMS ((DEFINITION *, int));
-void conditional_skip 		PARAMS ((FILE_BUF *, int, enum node_type));
-void skip_if_group 		PARAMS ((FILE_BUF *, int));
-void output_line_command 	PARAMS ((FILE_BUF *, FILE_BUF *,
+static void macroexpand 	PARAMS ((HASHNODE *, FILE_BUF *));
+static void special_symbol	PARAMS ((HASHNODE *, FILE_BUF *));
+static void dump_all_macros 	PARAMS ((void));
+static void dump_defn_1		PARAMS ((const U_CHAR *, int, int));
+static void dump_arg_n		PARAMS ((DEFINITION *, int));
+static void conditional_skip 	PARAMS ((FILE_BUF *, int, enum node_type));
+static void skip_if_group 	PARAMS ((FILE_BUF *, int));
+static void output_line_command PARAMS ((FILE_BUF *, FILE_BUF *,
 					 int, enum file_change_code));
 
-int eval_if_expression		PARAMS ((U_CHAR *, int));
-int parse_c_expression		PARAMS ((char *));  /* in tradcif.y */
+static int eval_if_expression	PARAMS ((const U_CHAR *, int));
 
-void initialize_char_syntax	PARAMS ((void));
-void initialize_builtins	PARAMS ((void));
-void make_definition		PARAMS ((U_CHAR *));
-void make_undef			PARAMS ((U_CHAR *));
+static void initialize_char_syntax	PARAMS ((void));
+static void initialize_builtins	PARAMS ((void));
+static void make_definition	PARAMS ((const U_CHAR *));
+static void make_undef		PARAMS ((U_CHAR *));
 
-void grow_outbuf 	PARAMS ((FILE_BUF *, int));
-int handle_directive 	PARAMS ((FILE_BUF *, FILE_BUF *));
-void finclude		PARAMS ((int, const char *, FILE_BUF *));
-void deps_output	PARAMS ((const char *, int));
-void rescan		PARAMS ((FILE_BUF *, int));
-void newline_fix	PARAMS ((U_CHAR *));
-void name_newline_fix	PARAMS ((U_CHAR *));
-U_CHAR *macarg1 	PARAMS ((U_CHAR *, U_CHAR *, int *, int *, int *));
-const char *macarg	PARAMS ((struct argdata *));
-int discard_comments	PARAMS ((U_CHAR *, int, int));
-int file_size_and_mode	PARAMS ((int, int *, long *));
+static void grow_outbuf 	PARAMS ((FILE_BUF *, int));
+static int handle_directive 	PARAMS ((FILE_BUF *, FILE_BUF *));
+static void finclude		PARAMS ((int, const char *, FILE_BUF *));
+static void deps_output		PARAMS ((const char *, int));
+static void rescan		PARAMS ((FILE_BUF *, int));
+static void newline_fix		PARAMS ((U_CHAR *));
+static void name_newline_fix	PARAMS ((U_CHAR *));
+static U_CHAR *macarg1		PARAMS ((U_CHAR *, const U_CHAR *, int *,
+					 int *, int *));
+static const char *macarg	PARAMS ((struct argdata *));
+static int discard_comments	PARAMS ((U_CHAR *, int, int));
+static int file_size_and_mode	PARAMS ((int, int *, long *));
 
-U_CHAR *skip_to_end_of_comment PARAMS ((FILE_BUF *, int *));
-U_CHAR *skip_quoted_string     PARAMS ((U_CHAR *, U_CHAR *, int,
-					int *, int *, int *));
+static U_CHAR *skip_to_end_of_comment PARAMS ((FILE_BUF *, int *));
+static U_CHAR *skip_quoted_string     PARAMS ((const U_CHAR *, const U_CHAR *,
+					       int, int *, int *, int *));
 
 int main		PARAMS ((int, char **));
 
@@ -419,9 +408,9 @@ U_CHAR is_space[256];
   
 int errors = 0;			/* Error counter for exit code */
 
-FILE_BUF expand_to_temp_buffer PARAMS ((U_CHAR *, U_CHAR *, int));
-DEFINITION *collect_expansion  PARAMS ((U_CHAR *, U_CHAR *, int,
-					struct arglist *));
+static FILE_BUF expand_to_temp_buffer PARAMS ((const U_CHAR *, const U_CHAR *, int));
+static DEFINITION *collect_expansion  PARAMS ((U_CHAR *, U_CHAR *, int,
+					       struct arglist *));
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -713,7 +702,7 @@ main (argc, argv)
   /* Do defines specified with -D and undefines specified with -U.  */
   for (i = 1; i < argc; i++)
     if (pend_defs[i])
-      make_definition ((U_CHAR *)pend_defs[i]);
+      make_definition ((const U_CHAR *)pend_defs[i]);
     else if (pend_undefs[i])
       make_undef ((U_CHAR *)pend_undefs[i]);
 
@@ -971,7 +960,7 @@ main (argc, argv)
    Potentially-embarrassing characters are / and *
    (because a backslash-newline inside a comment delimiter
    would cause it not to be recognized).  */
-void
+static void
 newline_fix (bp)
      U_CHAR *bp;
 {
@@ -1006,7 +995,7 @@ newline_fix (bp)
 
 /* Like newline_fix but for use within a directive-name.
    Move any backslash-newlines up past any following symbol constituents.  */
-void
+static void
 name_newline_fix (bp)
      U_CHAR *bp;
 {
@@ -1075,7 +1064,7 @@ name_newline_fix (bp)
  * explicitly, and before RECACHE, since RECACHE uses OBP.
  */
 
-void
+static void
 rescan (op, output_marks)
      FILE_BUF *op;
      int output_marks;
@@ -1711,9 +1700,9 @@ hashcollision:
  * OUTPUT_MARKS is 1 for macroexpanding a macro argument separately
  * before substitution; it is 0 for other uses.
  */
-FILE_BUF
+static FILE_BUF
 expand_to_temp_buffer (buf, limit, output_marks)
-     U_CHAR *buf, *limit;
+     const U_CHAR *buf, *limit;
      int output_marks;
 {
   register FILE_BUF *ip;
@@ -1729,7 +1718,7 @@ expand_to_temp_buffer (buf, limit, output_marks)
 
   buf1 = (U_CHAR *) alloca (length + 1);
   {
-    register U_CHAR *p1 = buf;
+    register const U_CHAR *p1 = buf;
     register U_CHAR *p2 = buf1;
 
     while (p1 != limit)
@@ -1789,7 +1778,7 @@ expand_to_temp_buffer (buf, limit, output_marks)
  * Otherwise, returns zero, without advancing the input pointer.
  */
 
-int
+static int
 handle_directive (ip, op)
      FILE_BUF *ip, *op;
 {
@@ -1851,7 +1840,7 @@ handle_directive (ip, op)
    */
   for (kt = directive_table; kt->length > 0; kt++) {
     if (kt->length == ident_length
-	&& !strncmp (kt->name, (char *)ident, ident_length)) {
+	&& !strncmp (kt->name, (const char *)ident, ident_length)) {
       register U_CHAR *buf;
       register U_CHAR *limit = ip->buf + ip->length;
       int unterminated = 0;
@@ -1982,7 +1971,7 @@ handle_directive (ip, op)
 	  case '\'':
 	  case '\"':
 	    {
-	      register U_CHAR *bp1
+	      register const U_CHAR *bp1
 		= skip_quoted_string (xp - 1, limit, ip->lineno, 0, 0, 0);
 	      while (xp != bp1)
 		*cp++ = *xp++;
@@ -2036,12 +2025,12 @@ monthnames[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
  * expand things like __FILE__.  Place the expansion into the output
  * buffer *without* rescanning.
  */
-void
+static void
 special_symbol (hp, op)
      HASHNODE *hp;
      FILE_BUF *op;
 {
-  char *buf = 0;
+  const char *buf;
   time_t t;
   int i, len;
   int true_indepth;
@@ -2070,56 +2059,70 @@ special_symbol (hp, op)
 
       if (string)
 	{
-	  buf = (char *) alloca (3 + strlen (string));
-	  sprintf (buf, "\"%s\"", string);
+	  char *tmp = (char *) alloca (3 + strlen (string));
+	  sprintf (tmp, "\"%s\"", string);
+	  buf = tmp;
 	}
       else
-	buf = (char *) "";
+	buf = "";
 
       break;
     }
 
   case T_INCLUDE_LEVEL:
-    true_indepth = 0;
-    for (i = indepth; i >= 0; i--)
-      if (instack[i].fname != NULL)
-        true_indepth++;
+    {
+      char *tmp = (char *) alloca (8);	/* Eigth bytes ought to be more than enough */
+      true_indepth = 0;
+      for (i = indepth; i >= 0; i--)
+	if (instack[i].fname != NULL)
+	  true_indepth++;
 
-    buf = (char *) alloca (8);	/* Eigth bytes ought to be more than enough */
-    sprintf (buf, "%d", true_indepth - 1);
+    sprintf (tmp, "%d", true_indepth - 1);
+    buf = tmp;
     break;
+    }
 
   case T_VERSION:
-    buf = (char *) alloca (3 + strlen (version_string));
-    sprintf (buf, "\"%s\"", version_string);
-    break;
+    {
+      char *tmp = (char *) alloca (3 + strlen (version_string));
+      sprintf (tmp, "\"%s\"", version_string);
+      buf = tmp;
+      break;
+    }
 
   case T_CONST:
-    buf = (char *) hp->value.cpval;
+    buf = hp->value.cpval;
     break;
 
   case T_SPECLINE:
-    buf = (char *) alloca (10);
-    sprintf (buf, "%d", ip->lineno);
-    break;
+    {
+      char *tmp = (char *) alloca (10);
+      sprintf (tmp, "%d", ip->lineno);
+      buf = tmp;
+      break;
+    }
 
   case T_DATE:
   case T_TIME:
-    if (timebuf == NULL) {
-      t = time (0);
-      timebuf = localtime (&t);
+    {
+      char *tmp = (char *) alloca (20);
+
+      if (timebuf == NULL) {
+	t = time (0);
+	timebuf = localtime (&t);
+      }
+      if (hp->type == T_DATE)
+	sprintf (tmp, "\"%s %2d %4d\"", monthnames[timebuf->tm_mon],
+		 timebuf->tm_mday, timebuf->tm_year + 1900);
+      else
+	sprintf (tmp, "\"%02d:%02d:%02d\"", timebuf->tm_hour, timebuf->tm_min,
+		 timebuf->tm_sec);
+      buf = tmp;
+      break;
     }
-    buf = (char *) alloca (20);
-    if (hp->type == T_DATE)
-      sprintf (buf, "\"%s %2d %4d\"", monthnames[timebuf->tm_mon],
-	      timebuf->tm_mday, timebuf->tm_year + 1900);
-    else
-      sprintf (buf, "\"%02d:%02d:%02d\"", timebuf->tm_hour, timebuf->tm_min,
-	      timebuf->tm_sec);
-    break;
 
   case T_SPEC_DEFINED:
-    buf = (char *) " 0 ";		/* Assume symbol is not defined */
+    buf = " 0 ";			/* Assume symbol is not defined */
     ip = &instack[indepth];
     SKIP_WHITE_SPACE (ip->bufp);
     if (*ip->bufp == '(') {
@@ -2131,7 +2134,7 @@ special_symbol (hp, op)
     if (!is_idstart[*ip->bufp])
       goto oops;
     if (lookup (ip->bufp, -1, -1))
-      buf = (char *) " 1 ";
+      buf = " 1 ";
     while (is_idchar[*ip->bufp])
       ++ip->bufp;
     SKIP_WHITE_SPACE (ip->bufp);
@@ -2164,7 +2167,7 @@ oops:
  * Process include file by reading it in and calling rescan.
  * Expects to see "fname" or <fname> on the input.
  */
-void
+static void
 do_include (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
@@ -2272,7 +2275,7 @@ get_filename:
   /* If specified file name is absolute, just open it.  */
 
   if (*fbeg == '/') {
-    strncpy (fname, (char *)fbeg, flen);
+    strncpy (fname, (const char *)fbeg, flen);
     fname[flen] = 0;
     f = open (fname, O_RDONLY, 0666);
   } else {
@@ -2287,14 +2290,14 @@ get_filename:
       } else {
 	fname[0] = 0;
       }
-      strncat (fname, (char *)fbeg, flen);
+      strncat (fname, (const char *)fbeg, flen);
       if ((f = open (fname, O_RDONLY, 0666)) >= 0)
 	break;
     }
   }
 
   if (f < 0) {
-    strncpy (fname, (char *)fbeg, flen);
+    strncpy (fname, (const char *)fbeg, flen);
     fname[flen] = 0;
     error_from_errno (fname);
 
@@ -2360,7 +2363,7 @@ get_filename:
 /* Process the contents of include file FNAME, already open on descriptor F,
    with output to OP.  */
 
-void
+static void
 finclude (f, fname, op)
      int f;
      const char *fname;
@@ -2455,7 +2458,7 @@ BUF points to the contents of the #define command, as a continguous string.
 LIMIT points to the first character past the end of the definition.
 KEYWORD is the keyword-table entry for #define.  */
 
-void
+static void
 do_define (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op ATTRIBUTE_UNUSED;
@@ -2489,7 +2492,7 @@ do_define (buf, limit, op, keyword)
     msg[sym_length] = 0;
     error ("invalid macro name `%s'", msg);
   } else {
-    if (! strncmp ((char *)symname, "defined", 7) && sym_length == 7)
+    if (! strncmp ((const char *)symname, "defined", 7) && sym_length == 7)
       error ("defining `defined' as a macro");
   }
 
@@ -2547,19 +2550,22 @@ do_define (buf, limit, op, keyword)
     /* Now set defn->argnames to the result of concatenating
        the argument names in reverse order
        with comma-space between them.  */
-    defn->argnames = (U_CHAR *) xmalloc (arglengths + 1);
     {
       struct arglist *temp;
       int i = 0;
+      U_CHAR *tmp = (U_CHAR *) xmalloc (arglengths + 1);
+
       for (temp = arg_ptrs; temp; temp = temp->next) {
-	memcpy (&defn->argnames[i], temp->name, temp->length);
+	memcpy (&tmp[i], temp->name, temp->length);
 	i += temp->length;
 	if (temp->next != 0) {
-	  defn->argnames[i++] = ',';
-	  defn->argnames[i++] = ' ';
+	  tmp[i++] = ',';
+	  tmp[i++] = ' ';
 	}
       }
-      defn->argnames[i] = 0;
+      tmp[i] = 0;
+      defn->argnames = tmp;
+      
     }
   } else {
     /* simple expansion or empty definition; skip leading whitespace */
@@ -2567,7 +2573,7 @@ do_define (buf, limit, op, keyword)
       ++bp;
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, -1, 0);
-    defn->argnames = (U_CHAR *) "";
+    defn->argnames = (const U_CHAR *) "";
   }
 
   hashcode = hashf (symname, sym_length, HASHSIZE);
@@ -2591,7 +2597,7 @@ do_define (buf, limit, op, keyword)
 /*
  * return zero if two DEFINITIONs are isomorphic
  */
-int
+static int
 compare_defs (d1, d2)
      DEFINITION *d1, *d2;
 {
@@ -2602,12 +2608,12 @@ compare_defs (d1, d2)
 
   if (d1->nargs != d2->nargs)
     return 1;
-  if (strcmp ((char *)d1->argnames, (char *)d2->argnames))
+  if (strcmp ((const char *)d1->argnames, (const char *)d2->argnames))
     return 1;
   for (a1 = d1->pattern, a2 = d2->pattern; a1 && a2;
        a1 = a1->next, a2 = a2->next) {
     if (!((a1->nchars == a2->nchars
-	   && ! strncmp ((char *)p1, (char *)p2, a1->nchars))
+	   && ! strncmp ((const char *)p1, (const char *)p2, a1->nchars))
 	  || ! comp_def_part (first, p1, a1->nchars, p2, a2->nchars, 0))
 	|| a1->argno != a2->argno
 	|| a1->stringify != a2->stringify
@@ -2634,15 +2640,15 @@ compare_defs (d1, d2)
     so ignore leading whitespace entirely.
    LAST means these parts are the last of a macro definition;
     so ignore trailing whitespace entirely.  */
-int
+static int
 comp_def_part (first, beg1, len1, beg2, len2, last)
      int first;
-     U_CHAR *beg1, *beg2;
+     const U_CHAR *beg1, *beg2;
      int len1, len2;
      int last;
 {
-  register U_CHAR *end1 = beg1 + len1;
-  register U_CHAR *end2 = beg2 + len2;
+  register const U_CHAR *end1 = beg1 + len1;
+  register const U_CHAR *end2 = beg2 + len2;
   if (first) {
     while (beg1 != end1 && is_space[*beg1]) beg1++;
     while (beg2 != end2 && is_space[*beg2]) beg2++;
@@ -2683,7 +2689,7 @@ from the argument.  */
    If there is no trailing whitespace, a Newline Space is added at the end
    to prevent concatenation that would be contrary to the standard.  */
 
-DEFINITION *
+static DEFINITION *
 collect_expansion (buf, end, nargs, arglist)
      U_CHAR *buf, *end;
      int nargs;
@@ -2797,7 +2803,8 @@ collect_expansion (buf, end, nargs, arglist)
 
 	  if (arg->name[0] == c
 	      && arg->length == id_len
-	      && strncmp ((char *)arg->name, (char *)id_beg, id_len) == 0) {
+	      && strncmp ((const char *)arg->name,
+			  (const char *)id_beg, id_len) == 0) {
 	    /* make a pat node for this arg and append it to the end of
 	       the pat list */
 	    tpat = (struct reflist *) xmalloc (sizeof (struct reflist));
@@ -2862,7 +2869,7 @@ collect_expansion (buf, end, nargs, arglist)
  * in its very own hash table.
  */
 #define FNAME_HASHSIZE 37
-void
+static void
 do_line (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
@@ -2889,7 +2896,7 @@ do_line (buf, limit, op, keyword)
   /* The Newline at the end of this line remains to be processed.
      To put the next line at the specified line number,
      we must store a line number now that is one less.  */
-  new_lineno = atoi ((char *)bp) - 1;
+  new_lineno = atoi ((const char *)bp) - 1;
 
   /* skip over the line number.  */
   while (isdigit (*bp))
@@ -2945,7 +2952,7 @@ do_line (buf, limit, op, keyword)
       &fname_table[hashf (fname, fname_length, FNAME_HASHSIZE)];
     for (hp = *hash_bucket; hp != NULL; hp = hp->next)
       if (hp->length == fname_length &&
-	  strncmp (hp->value.cpval, (char *)fname, fname_length) == 0) {
+	  strncmp (hp->value.cpval, (const char *)fname, fname_length) == 0) {
 	ip->fname = hp->value.cpval;
 	break;
       }
@@ -2975,7 +2982,7 @@ do_line (buf, limit, op, keyword)
  * according to un*x /lib/cpp, it is not an error to undef
  * something that has no definitions, so it isn't one here either.
  */
-void
+static void
 do_undef (buf, limit, op, keyword)
      U_CHAR *buf;
      U_CHAR *limit ATTRIBUTE_UNUSED;
@@ -2986,7 +2993,7 @@ do_undef (buf, limit, op, keyword)
 
   SKIP_WHITE_SPACE (buf);
 
-  if (! strncmp ((char *)buf, "defined", 7) && ! is_idchar[buf[7]])
+  if (! strncmp ((const char *)buf, "defined", 7) && ! is_idchar[buf[7]])
     warning ("undefining `defined'");
 
   while ((hp = lookup (buf, -1, -1)) != NULL) {
@@ -3008,7 +3015,7 @@ do_undef (buf, limit, op, keyword)
  *   5) call conditional_skip to skip til the next #endif (etc.),
  *      or not, depending on the value from step 3.
  */
-void
+static void
 do_if (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op ATTRIBUTE_UNUSED;
@@ -3025,7 +3032,7 @@ do_if (buf, limit, op, keyword)
  * handle a #elif directive by not changing  if_stack  either.
  * see the comment above do_else.
  */
-void
+static void
 do_elif (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
@@ -3066,9 +3073,9 @@ do_elif (buf, limit, op, keyword)
  * evaluate a #if expression in BUF, of length LENGTH,
  * then parse the result as a C expression and return the value as an int.
  */
-int
+static int
 eval_if_expression (buf, length)
-     U_CHAR *buf;
+     const U_CHAR *buf;
      int length;
 {
   FILE_BUF temp_obuf;
@@ -3079,7 +3086,7 @@ eval_if_expression (buf, length)
   temp_obuf = expand_to_temp_buffer (buf, buf + length, 0);
   delete_macro (save_defined);	/* clean up special symbol */
 
-  value = parse_c_expression ((char *)temp_obuf.buf);
+  value = parse_c_expression ((const char *)temp_obuf.buf);
 
   free (temp_obuf.buf);
 
@@ -3091,7 +3098,7 @@ eval_if_expression (buf, length)
  * then do or don't skip to the #endif/#else/#elif depending
  * on what directive is actually being processed.
  */
-void
+static void
 do_xifdef (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op ATTRIBUTE_UNUSED;
@@ -3120,7 +3127,7 @@ do_xifdef (buf, limit, op, keyword)
 /*
  * push TYPE on stack; then, if SKIP is nonzero, skip ahead.
  */
-void
+static void
 conditional_skip (ip, skip, type)
      FILE_BUF *ip;
      int skip;
@@ -3150,7 +3157,7 @@ conditional_skip (ip, skip, type)
  * leaves input ptr at the sharp sign found.
  * If ANY is nonzero, return at next directive of any sort.
  */
-void
+static void
 skip_if_group (ip, any)
      FILE_BUF *ip;
      int any;
@@ -3255,7 +3262,7 @@ skip_if_group (ip, any)
 
       for (kt = directive_table; kt->length >= 0; kt++) {
 	IF_STACK_FRAME *temp;
-	if (strncmp ((char *)cp, kt->name, kt->length) == 0
+	if (strncmp ((const char *)cp, kt->name, kt->length) == 0
 	    && !is_idchar[cp[kt->length]]) {
 
 	  /* If we are asked to return on next directive,
@@ -3317,7 +3324,7 @@ skip_if_group (ip, any)
  * for missing #endif's etc. will point to the original #if.  It
  * is possible that something different would be better.
  */
-void
+static void
 do_else (buf, limit, op, keyword)
      U_CHAR *buf ATTRIBUTE_UNUSED;
      U_CHAR *limit ATTRIBUTE_UNUSED;
@@ -3351,7 +3358,7 @@ do_else (buf, limit, op, keyword)
 /*
  * unstack after #endif command
  */
-void
+static void
 do_endif (buf, limit, op, keyword)
      U_CHAR *buf ATTRIBUTE_UNUSED;
      U_CHAR *limit ATTRIBUTE_UNUSED;
@@ -3375,7 +3382,7 @@ do_endif (buf, limit, op, keyword)
  * Don't use this routine (or the next one) if bumping the line
  * counter is not sufficient to deal with newlines in the string.
  */
-U_CHAR *
+static U_CHAR *
 skip_to_end_of_comment (ip, line_counter)
      register FILE_BUF *ip;
      int *line_counter;		/* place to remember newlines, or NULL */
@@ -3438,10 +3445,10 @@ skip_to_end_of_comment (ip, line_counter)
  *
  * If EOFP is nonzero, set *EOFP to 1 if the string is unterminated.
  */
-U_CHAR *
+static U_CHAR *
 skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p, eofp)
-     register U_CHAR *bp;
-     register U_CHAR *limit;
+     register const U_CHAR *bp;
+     register const U_CHAR *limit;
      int start_line;
      int *count_newlines;
      int *backslash_newlines_p;
@@ -3482,7 +3489,7 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
     } else if (c == match)
       break;
   }
-  return bp;
+  return (U_CHAR *) bp;
 }
 
 /*
@@ -3493,7 +3500,7 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
  * FILE_CHANGE says whether we are entering a file, leaving, or neither.
  */
 
-void
+static void
 output_line_command (ip, op, conditional, file_change)
      FILE_BUF *ip, *op;
      int conditional;
@@ -3547,7 +3554,7 @@ output_line_command (ip, op, conditional, file_change)
    If macro wants arguments, caller has already verified that
    an argument list follows; arguments come from the input stack.  */
 
-void
+static void
 macroexpand (hp, op)
      HASHNODE *hp;
      FILE_BUF *op;
@@ -3601,8 +3608,8 @@ macroexpand (hp, op)
 
     /* If we got one arg but it was just whitespace, call that 0 args.  */
     if (i == 1) {
-      register U_CHAR *bp = args[0].raw;
-      register U_CHAR *lim = bp + args[0].raw_length;
+      register const U_CHAR *bp = args[0].raw;
+      register const U_CHAR *lim = bp + args[0].raw_length;
       while (bp != lim && is_space[*bp]) bp++;
       if (bp == lim)
 	i = 0;
@@ -3727,8 +3734,8 @@ macroexpand (hp, op)
 	    }
 	  }
 	} else {
-	  U_CHAR *p1 = arg->raw;
-	  U_CHAR *l1 = p1 + arg->raw_length;
+	  const U_CHAR *p1 = arg->raw;
+	  const U_CHAR *l1 = p1 + arg->raw_length;
 
 	  if (ap->raw_before) {
 	    while (p1 != l1 && is_space[*p1]) p1++;
@@ -3746,7 +3753,7 @@ macroexpand (hp, op)
 	    while (p1 != l1) {
 	      if (is_space[l1[-1]]) l1--;
 	      else if (l1[-1] == '-') {
-		U_CHAR *p2 = l1 - 1;
+		const U_CHAR *p2 = l1 - 1;
 		/* If a `-' is preceded by an odd number of newlines then it
 		   and the last newline are a no-reexpansion marker.  */
 		while (p2 != p1 && p2[-1] == '\n') p2--;
@@ -3810,7 +3817,7 @@ macroexpand (hp, op)
  * Return nonzero to indicate a syntax error.
  */
 
-const char *
+static const char *
 macarg (argptr)
      register struct argdata *argptr;
 {
@@ -3898,7 +3905,7 @@ macarg (argptr)
 
   if (argptr != 0) {
     FILE_BUF obuf;
-    register U_CHAR *buf, *lim;
+    register const U_CHAR *buf, *lim;
     register int totlen;
 
     obuf = expand_to_temp_buffer (argptr->raw,
@@ -3941,10 +3948,10 @@ macarg (argptr)
    Increment *NEWLINES each time a newline is passed.
    Set *COMMENTS to 1 if a comment is seen.  */
 
-U_CHAR *
+static U_CHAR *
 macarg1 (start, limit, depthptr, newlines, comments)
      U_CHAR *start;
-     register U_CHAR *limit;
+     register const U_CHAR *limit;
      int *depthptr, *newlines, *comments;
 {
   register U_CHAR *bp = start;
@@ -4029,7 +4036,7 @@ macarg1 (start, limit, depthptr, newlines, comments)
    We assume that that much extra space is available past the end
    of the string.  */
 
-int
+static int
 discard_comments (start, length, newlines)
      U_CHAR *start;
      int length;
@@ -4037,7 +4044,7 @@ discard_comments (start, length, newlines)
 {
   register U_CHAR *ibp;
   register U_CHAR *obp;
-  register U_CHAR *limit;
+  register const U_CHAR *limit;
   register int c;
 
   /* If we have newlines to duplicate, copy everything
@@ -4122,7 +4129,7 @@ discard_comments (start, length, newlines)
 
 
 /* Core error handling routine.  */
-void
+static void
 v_message (mtype, line, msgid, ap)
      enum msgtype mtype;
      int line;
@@ -4275,7 +4282,7 @@ pfatal_with_name (name)
    If the current level is for a file, we return LINE.
    But if the current level is not for a file, LINE is meaningless.
    In that case, we return the lineno of the innermost file.  */
-int
+static int
 line_for_error (line)
      int line;
 {
@@ -4302,7 +4309,7 @@ line_for_error (line)
  * should work ok.
  */
 
-void
+static void
 grow_outbuf (obuf, needed)
      register FILE_BUF *obuf;
      register int needed;
@@ -4343,7 +4350,7 @@ grow_outbuf (obuf, needed)
  *
  * caller must set the value, if any is desired.
  */
-HASHNODE *
+static HASHNODE *
 install (name, len, type, hash)
      const U_CHAR *name;
      int len;
@@ -4412,7 +4419,7 @@ lookup (name, len, hash)
   bucket = hashtab[hash];
   while (bucket) {
     if (bucket->length == len
-	&& strncmp ((char *)bucket->name, (char *)name, len) == 0)
+	&& strncmp ((const char *)bucket->name, (const char *)name, len) == 0)
       return bucket;
     bucket = bucket->next;
   }
@@ -4432,7 +4439,7 @@ lookup (name, len, hash)
    In any case, this is necessary, because a macro can be #undef'd
    in the middle of reading the arguments to a call to it.
    If #undef freed the DEFINITION, that would crash.  */
-void
+static void
 delete_macro (hp)
      HASHNODE *hp;
 {
@@ -4454,7 +4461,7 @@ delete_macro (hp)
  * return hash function on name.  must be compatible with the one
  * computed a step at a time, elsewhere
  */
-int
+static int
 hashf (name, len, hashsize)
      register const U_CHAR *name;
      register int len;
@@ -4470,7 +4477,7 @@ hashf (name, len, hashsize)
 
 /* Dump all macro definitions as #defines to stdout.  */
 
-void
+static void
 dump_all_macros ()
 {
   int bucket;
@@ -4533,20 +4540,20 @@ dump_all_macros ()
    Output characters START thru LENGTH.
    Discard newlines outside of strings, thus
    converting funny-space markers to ordinary spaces.  */
-void
+static void
 dump_defn_1 (base, start, length)
-     U_CHAR *base;
+     const U_CHAR *base;
      int start;
      int length;
 {
-  U_CHAR *p = base + start;
-  U_CHAR *limit = base + start + length;
+  const U_CHAR *p = base + start;
+  const U_CHAR *limit = base + start + length;
 
   while (p < limit) {
     if (*p != '\n')
       putchar (*p);
     else if (*p == '\"' || *p =='\'') {
-      U_CHAR *p1 = skip_quoted_string (p, limit, 0, 0, 0, 0);
+      const U_CHAR *p1 = skip_quoted_string (p, limit, 0, 0, 0, 0);
       fwrite (p, p1 - p, 1, stdout);
       p = p1 - 1;
     }
@@ -4557,14 +4564,14 @@ dump_defn_1 (base, start, length)
 /* Print the name of argument number ARGNUM of macro definition DEFN.
    Recall that DEFN->argnames contains all the arg names
    concatenated in reverse order with comma-space in between.  */
-void
+static void
 dump_arg_n (defn, argnum)
      DEFINITION *defn;
      int argnum;
 {
-  register U_CHAR *p = defn->argnames;
+  register const U_CHAR *p = defn->argnames;
   while (argnum + 1 < defn->nargs) {
-    p = (U_CHAR *) strchr ((char *)p, ' ') + 1;
+    p = (const U_CHAR *) strchr ((const char *)p, ' ') + 1;
     argnum++;
   }
 
@@ -4575,7 +4582,7 @@ dump_arg_n (defn, argnum)
 }
 
 /* Initialize syntactic classifications of characters.  */
-void
+static void
 initialize_char_syntax ()
 {
   register int i;
@@ -4618,7 +4625,7 @@ initialize_char_syntax ()
  install(DSC(name), type, -1);
 #define install_value(name, val) \
  hp = install(DSC(name), T_CONST, -1); hp->value.cpval = val;
-void
+static void
 initialize_builtins ()
 {
   HASHNODE *hp;
@@ -4656,16 +4663,17 @@ initialize_builtins ()
  * If STR has anything after the identifier, then it should
  * be identifier-space-definition.
  */
-void
+static void
 make_definition (str)
-     U_CHAR *str;
+     const U_CHAR *str;
 {
   FILE_BUF *ip;
   struct directive *kt;
-  U_CHAR *buf, *p;
-  size_t len = strlen ((char *)str);
+  U_CHAR *buf;
+  const U_CHAR *p;
+  size_t len = strlen ((const char *)str);
 
-  p = (U_CHAR *) strchr ((char *)str, '=');
+  p = (const U_CHAR *) strchr ((const char *)str, '=');
   if (p == NULL) {
     /* Change -DFOO into #define FOO 1 */
     buf = (U_CHAR *) alloca (len + 3);
@@ -4698,7 +4706,7 @@ make_definition (str)
 }
 
 /* JF, this does the work for the -U option */
-void
+static void
 make_undef (str)
      U_CHAR *str;
 {
@@ -4709,7 +4717,7 @@ make_undef (str)
   ip->fname = "*undef*";
 
   ip->buf = ip->bufp = str;
-  ip->length = strlen ((char *)str);
+  ip->length = strlen ((const char *)str);
   ip->lineno = 1;
   ip->macro = 0;
   ip->free_ptr = 0;
@@ -4726,7 +4734,7 @@ make_undef (str)
    STRING points to the text to be output.
    SIZE is the number of bytes, or 0 meaning output until a null.
    If SIZE is nonzero, we break the line first, if it is long enough.  */
-void
+static void
 deps_output (string, size)
      const char *string;
      int size;
@@ -4757,7 +4765,7 @@ deps_output (string, size)
 /* Get the file-mode and data size of the file open on FD
    and store them in *MODE_POINTER and *SIZE_POINTER.  */
 
-int
+static int
 file_size_and_mode (fd, mode_pointer, size_pointer)
      int fd;
      int *mode_pointer;
