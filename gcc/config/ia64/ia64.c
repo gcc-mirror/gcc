@@ -4026,7 +4026,10 @@ rws_update (rws, regno, flags, pred)
      struct reg_flags flags;
      int pred;
 {
-  rws[regno].write_count += pred ? 1 : 2;
+  if (pred)
+    rws[regno].write_count++;
+  else
+    rws[regno].write_count = 2;
   rws[regno].written_by_fp |= flags.is_fp;
   /* ??? Not tracking and/or across differing predicates.  */
   rws[regno].written_by_and = flags.is_and;
