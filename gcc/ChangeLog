@@ -11,6 +11,9 @@
 	find the index of a PHI argument.  Use e->dest_idx instead.
 	Replace hint with index.
 
+	* tree-ssa-dom.c (cprop_into_successor_phis): Replace index
+	with indx.
+
 2004-11-24  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-alias.c (merge_pointed_to_info): Fix comment

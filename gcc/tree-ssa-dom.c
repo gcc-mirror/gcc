@@ -2290,7 +2290,7 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       tree phi;
-      int index;
+      int indx;
 
       /* If this is an abnormal edge, then we do not want to copy propagate
 	 into the PHI alternative associated with this edge.  */
@@ -2301,7 +2301,7 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
       if (! phi)
 	continue;
 
-      index = e->dest_idx;
+      indx = e->dest_idx;
       for ( ; phi; phi = PHI_CHAIN (phi))
 	{
 	  tree new;
@@ -2310,7 +2310,7 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
 
 	  /* The alternative may be associated with a constant, so verify
 	     it is an SSA_NAME before doing anything with it.  */
-	  orig_p = PHI_ARG_DEF_PTR (phi, index);
+	  orig_p = PHI_ARG_DEF_PTR (phi, indx);
 	  orig = USE_FROM_PTR (orig_p);
 	  if (TREE_CODE (orig) != SSA_NAME)
 	    continue;
@@ -2318,7 +2318,7 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
 	  /* If the alternative is known to have a nonzero value, record
 	     that fact in the PHI node itself for future use.  */
 	  if (bitmap_bit_p (nonzero_vars, SSA_NAME_VERSION (orig)))
-	    PHI_ARG_NONZERO (phi, index) = true;
+	    PHI_ARG_NONZERO (phi, indx) = true;
 
 	  /* If we have *ORIG_P in our constant/copy table, then replace
 	     ORIG_P with its value in our constant/copy table.  */
