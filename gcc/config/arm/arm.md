@@ -297,11 +297,11 @@
 ;; True if the generic scheduling description should be used.
 
 (define_attr "generic_sched" "yes,no"
-        (if_then_else 
-         (eq_attr "tune" "arm926ejs,arm1026ejs,arm1136js,arm1136jfs") 
-         (const_string "no")
-         (const_string "yes")))
-	
+  (const (if_then_else 
+          (eq_attr "tune" "arm926ejs,arm1026ejs,arm1136js,arm1136jfs") 
+          (const_string "no")
+          (const_string "yes"))))
+
 (include "arm-generic.md")
 (include "arm926ejs.md")
 (include "arm1026ejs.md")
