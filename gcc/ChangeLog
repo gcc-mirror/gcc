@@ -1,3 +1,9 @@
+2000-12-08 Laurynas Biveinis <lauras@softhome.net>
+
+	* config/winnt: Remove obsolete directory.
+	* install.texi (Configurations): Remove obsolete documentation for
+	Windows NT.
+
 2000-12-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* configure.in: Don't define INSTALL_INFO.
