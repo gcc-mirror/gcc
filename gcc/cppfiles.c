@@ -804,7 +804,11 @@ search_from (pfile, inc)
   if (CPP_OPTION (pfile, ignore_srcdir))
     return CPP_OPTION (pfile, quote_include);
 
-  dlen = basename (inc->name) - inc->name;
+  /* basename () on Solaris returns "." for an empty string.  */
+  dlen = 0;
+  if (inc->name[0] != '\0')
+    dlen = basename (inc->name) - inc->name;
+
   if (dlen)
     {
       /* We don't guarantee NAME is null-terminated.  This saves

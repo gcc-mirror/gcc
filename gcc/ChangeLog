@@ -1,5 +1,9 @@
 2001-03-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cppfiles.c (search_from): Special case the empty string.
+
+2001-03-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cppfiles.c (_cpp_execute_include): Don't make a null-terminated
 	copy of the filename.  Don't use CPP_PREV_BUFFER.  Don't call
 	strlen or strcpy; we already know the length.
