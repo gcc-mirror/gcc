@@ -1,3 +1,9 @@
+2004-08-31  Paul Brook  <paul@codesourcery.com>
+
+	PR libfortran/16805
+	* io/list_read.c (next_char): Don't signal EOF for internal files.
+	* io/unix.c (mem_alloc_r_at): Don't return NULL for incomplete reads.
+
 2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* io/unit.c: Separate copyright years by ','.
