@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2766,6 +2766,7 @@ rest_of_compilation (decl)
 	  saved_block_tree = DECL_INITIAL (decl);
 	  saved_arguments = DECL_ARGUMENTS (decl);
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
+	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
 	}
 
       /* If specified extern inline but we aren't inlining it, we are
