@@ -293,7 +293,7 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
 	}
 
       if ((unsigned int) TREE_CODE (t) >= LAST_AND_UNUSED_TREE_CODE)
-	return (*lang_hooks.callgraph.analyze_expr) (tp, walk_subtrees, data);
+	return lang_hooks.callgraph.analyze_expr (tp, walk_subtrees, data);
       break;
     }
 
@@ -329,10 +329,10 @@ cgraph_analyze_function (struct cgraph_node *node)
   node->local.inlinable = tree_inlinable_function_p (decl);
   if (!node->local.self_insns)
     node->local.self_insns
-      = (*lang_hooks.tree_inlining.estimate_num_insns) (decl);
+      = lang_hooks.tree_inlining.estimate_num_insns (decl);
   if (node->local.inlinable)
     node->local.disregard_inline_limits
-      = (*lang_hooks.tree_inlining.disregard_inline_limits) (decl);
+      = lang_hooks.tree_inlining.disregard_inline_limits (decl);
   for (e = node->callers; e; e = e->next_caller)
     if (e->inline_failed)
       {
@@ -530,7 +530,7 @@ cgraph_expand_function (struct cgraph_node *node)
 
   /* Generate RTL for the body of DECL.  Nested functions are expanded
      via lang_expand_decl_stmt.  */
-  (*lang_hooks.callgraph.expand_function) (decl);
+  lang_hooks.callgraph.expand_function (decl);
   if (DECL_DEFER_OUTPUT (decl))
     abort ();
 

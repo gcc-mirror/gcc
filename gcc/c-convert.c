@@ -95,7 +95,7 @@ convert (tree type, tree expr)
     return fold (convert_to_integer (type, e));
   if (code == BOOLEAN_TYPE)
     {
-      tree t = (*lang_hooks.truthvalue_conversion) (expr);
+      tree t = lang_hooks.truthvalue_conversion (expr);
       if (TREE_CODE (t) == ERROR_MARK)
 	return t;
 

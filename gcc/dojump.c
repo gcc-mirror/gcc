@@ -1,6 +1,6 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -151,7 +151,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
     case UNSAVE_EXPR:
       do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
       TREE_OPERAND (exp, 0)
-	= (*lang_hooks.unsave_expr_now) (TREE_OPERAND (exp, 0));
+	= lang_hooks.unsave_expr_now (TREE_OPERAND (exp, 0));
       break;
 
     case NOP_EXPR:
@@ -218,7 +218,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
           && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_WIDE_INT
           && (i = tree_floor_log2 (TREE_OPERAND (exp, 1))) >= 0
           && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
-          && (type = (*lang_hooks.types.type_for_mode) (mode, 1)) != 0
+          && (type = lang_hooks.types.type_for_mode (mode, 1)) != 0
           && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
           && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
               != CODE_FOR_nothing))
@@ -278,7 +278,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
         get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode,
                              &unsignedp, &volatilep);
 
-        type = (*lang_hooks.types.type_for_size) (bitsize, unsignedp);
+        type = lang_hooks.types.type_for_size (bitsize, unsignedp);
         if (! SLOW_BYTE_ACCESS
             && type != 0 && bitsize >= 0
             && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))

@@ -290,14 +290,14 @@ c_tree_printer (pretty_printer *pp, text_info *text)
     case 'D':
     case 'F':
       if (DECL_NAME (t))
-	n = (*lang_hooks.decl_printable_name) (t, 2);
+	n = lang_hooks.decl_printable_name (t, 2);
       break;
 
     case 'T':
       if (TREE_CODE (t) == TYPE_DECL)
 	{
 	  if (DECL_NAME (t))
-	    n = (*lang_hooks.decl_printable_name) (t, 2);
+	    n = lang_hooks.decl_printable_name (t, 2);
 	}
       else
 	{

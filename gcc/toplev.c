@@ -1085,7 +1085,7 @@ announce_function (tree decl)
       if (rtl_dump_and_exit)
 	verbatim ("%s ", IDENTIFIER_POINTER (DECL_NAME (decl)));
       else
-	verbatim (" %s", (*lang_hooks.decl_printable_name) (decl, 2));
+	verbatim (" %s", lang_hooks.decl_printable_name (decl, 2));
       fflush (stderr);
       pp_needs_newline (global_dc->printer) = true;
       diagnostic_set_last_function (global_dc);
@@ -1322,7 +1322,7 @@ wrapup_global_declarations (tree *vec, int len)
 	DECL_DEFER_OUTPUT (decl) = 0;
 
       if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0)
-	(*lang_hooks.finish_incomplete_decl) (decl);
+	lang_hooks.finish_incomplete_decl (decl);
     }
 
   /* Now emit any global variables or functions that we have been
@@ -1471,7 +1471,7 @@ check_global_declarations (tree *vec, int len)
 	  /* Global register variables must be declared to reserve them.  */
 	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	  /* Otherwise, ask the language.  */
-	  && (*lang_hooks.decls.warn_unused_global) (decl))
+	  && lang_hooks.decls.warn_unused_global (decl))
 	warning ("%J'%D' defined but not used", decl, decl);
 
       /* Avoid confusing the debug information machinery when there are
@@ -1572,11 +1572,11 @@ compile_file (void)
 
   /* Call the parser, which parses the entire file (calling
      rest_of_compilation for each function).  */
-  (*lang_hooks.parse_file) (set_yydebug);
+  lang_hooks.parse_file (set_yydebug);
 
   /* In case there were missing block closers,
      get us back to the global binding level.  */
-  (*lang_hooks.clear_binding_stack) ();
+  lang_hooks.clear_binding_stack ();
 
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
@@ -1585,7 +1585,7 @@ compile_file (void)
   if (flag_syntax_only)
     return;
 
-  (*lang_hooks.decls.final_write_globals)();
+  lang_hooks.decls.final_write_globals ();
 
   cgraph_varpool_assemble_pending_decls ();
 
@@ -2115,7 +2115,7 @@ default_tree_printer (pretty_printer * pp, text_info *text)
       {
         tree t = va_arg (*text->args_ptr, tree);
         const char *n = DECL_NAME (t)
-          ? (*lang_hooks.decl_printable_name) (t, 2)
+          ? lang_hooks.decl_printable_name (t, 2)
           : "<anonymous>";
         pp_string (pp, n);
       }
@@ -2200,7 +2200,7 @@ process_options (void)
      initialization based on the command line options.  This hook also
      sets the original filename if appropriate (e.g. foo.i -> foo.c)
      so we can correctly initialize debug output.  */
-  no_backend = (*lang_hooks.post_options) (&main_input_filename);
+  no_backend = lang_hooks.post_options (&main_input_filename);
   input_filename = main_input_filename;
 
 #ifdef OVERRIDE_OPTIONS
@@ -2462,7 +2462,7 @@ lang_dependent_init (const char *name)
     dump_base_name = name ? name : "gccdump";
 
   /* Other front-end initialization.  */
-  if ((*lang_hooks.init) () == 0)
+  if (lang_hooks.init () == 0)
     return 0;
 
   init_asm_output (name);
@@ -2538,7 +2538,7 @@ finalize (void)
   free_reg_info ();
 
   /* Language-specific end of compilation actions.  */
-  (*lang_hooks.finish) ();
+  lang_hooks.finish ();
 }
 
 /* Initialize the compiler, and compile the input file.  */

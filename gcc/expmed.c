@@ -4180,14 +4180,14 @@ make_tree (tree type, rtx x)
 			  make_tree (type, XEXP (x, 1))));
 
     case LSHIFTRT:
-      t = (*lang_hooks.types.unsigned_type) (type);
+      t = lang_hooks.types.unsigned_type (type);
       return fold (convert (type,
 			    build (RSHIFT_EXPR, t,
 				   make_tree (t, XEXP (x, 0)),
 				   make_tree (type, XEXP (x, 1)))));
 
     case ASHIFTRT:
-      t = (*lang_hooks.types.signed_type) (type);
+      t = lang_hooks.types.signed_type (type);
       return fold (convert (type,
 			    build (RSHIFT_EXPR, t,
 				   make_tree (t, XEXP (x, 0)),
@@ -4195,7 +4195,7 @@ make_tree (tree type, rtx x)
 
     case DIV:
       if (TREE_CODE (type) != REAL_TYPE)
-	t = (*lang_hooks.types.signed_type) (type);
+	t = lang_hooks.types.signed_type (type);
       else
 	t = type;
 
@@ -4204,7 +4204,7 @@ make_tree (tree type, rtx x)
 				   make_tree (t, XEXP (x, 0)),
 				   make_tree (t, XEXP (x, 1)))));
     case UDIV:
-      t = (*lang_hooks.types.unsigned_type) (type);
+      t = lang_hooks.types.unsigned_type (type);
       return fold (convert (type,
 			    build (TRUNC_DIV_EXPR, t,
 				   make_tree (t, XEXP (x, 0)),
@@ -4212,8 +4212,8 @@ make_tree (tree type, rtx x)
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
-      t = (*lang_hooks.types.type_for_mode) (GET_MODE (XEXP (x, 0)),
-					     GET_CODE (x) == ZERO_EXTEND);
+      t = lang_hooks.types.type_for_mode (GET_MODE (XEXP (x, 0)),
+					  GET_CODE (x) == ZERO_EXTEND);
       return fold (convert (type, make_tree (t, XEXP (x, 0))));
 
    default:
@@ -4245,7 +4245,7 @@ const_mult_add_overflow_p (rtx x, rtx mult, rtx add, enum machine_mode mode, int
 {
   tree type, mult_type, add_type, result;
 
-  type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
+  type = lang_hooks.types.type_for_mode (mode, unsignedp);
 
   /* In order to get a proper overflow indication from an unsigned
      type, we have to pretend that it's a sizetype.  */
@@ -4257,7 +4257,7 @@ const_mult_add_overflow_p (rtx x, rtx mult, rtx add, enum machine_mode mode, int
     }
 
   add_type = (GET_MODE (add) == VOIDmode ? mult_type
-	      : (*lang_hooks.types.type_for_mode) (GET_MODE (add), unsignedp));
+	      : lang_hooks.types.type_for_mode (GET_MODE (add), unsignedp));
 
   result = fold (build (PLUS_EXPR, mult_type,
 			fold (build (MULT_EXPR, mult_type,
@@ -4280,10 +4280,10 @@ rtx
 expand_mult_add (rtx x, rtx target, rtx mult, rtx add, enum machine_mode mode,
 		 int unsignedp)
 {
-  tree type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
+  tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
   tree add_type = (GET_MODE (add) == VOIDmode
-		   ? type: (*lang_hooks.types.type_for_mode) (GET_MODE (add),
-							      unsignedp));
+		   ? type: lang_hooks.types.type_for_mode (GET_MODE (add),
+							   unsignedp));
   tree result =  fold (build (PLUS_EXPR, type,
 			      fold (build (MULT_EXPR, type,
 					   make_tree (type, x),

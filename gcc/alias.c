@@ -486,7 +486,7 @@ get_alias_set (tree t)
       /* Remove any nops, then give the language a chance to do
 	 something with this tree before we look at it.  */
       STRIP_NOPS (t);
-      set = (*lang_hooks.get_alias_set) (t);
+      set = lang_hooks.get_alias_set (t);
       if (set != -1)
 	return set;
 
@@ -577,7 +577,7 @@ get_alias_set (tree t)
     return TYPE_ALIAS_SET (t);
 
   /* See if the language has special handling for this type.  */
-  set = (*lang_hooks.get_alias_set) (t);
+  set = lang_hooks.get_alias_set (t);
   if (set != -1)
     return set;
 

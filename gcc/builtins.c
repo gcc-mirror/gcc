@@ -4090,7 +4090,7 @@ expand_builtin_va_arg (tree valist, tree type)
 
   /* Generate a diagnostic for requesting data of a type that cannot
      be passed through `...' due to type promotion at the call site.  */
-  else if ((promoted_type = (*lang_hooks.types.type_promotes_to) (type))
+  else if ((promoted_type = lang_hooks.types.type_promotes_to (type))
 	   != type)
     {
       const char *name = "<anonymous type>", *pname = 0;

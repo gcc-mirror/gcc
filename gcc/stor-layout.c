@@ -142,7 +142,7 @@ variable_size (tree size)
      just return SIZE unchanged.  Likewise for self-referential sizes and
      constant sizes.  */
   if (TREE_CONSTANT (size)
-      || (*lang_hooks.decls.global_bindings_p) () < 0
+      || lang_hooks.decls.global_bindings_p () < 0
       || CONTAINS_PLACEHOLDER_P (size))
     return size;
 
@@ -164,7 +164,7 @@ variable_size (tree size)
   if (TREE_CODE (save) == SAVE_EXPR)
     SAVE_EXPR_PERSISTENT_P (save) = 1;
 
-  if ((*lang_hooks.decls.global_bindings_p) ())
+  if (lang_hooks.decls.global_bindings_p ())
     {
       if (TREE_CONSTANT (size))
 	error ("type size can't be explicitly evaluated");

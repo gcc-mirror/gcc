@@ -403,7 +403,7 @@ handle_option (const char **argv, unsigned int lang_mask)
 
   if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {
-      if (!(*lang_hooks.missing_argument) (opt, opt_index))
+      if (!lang_hooks.missing_argument (opt, opt_index))
 	error ("missing argument to \"%s\"", opt);
       goto done;
     }
@@ -421,7 +421,7 @@ handle_option (const char **argv, unsigned int lang_mask)
     }
 
   if (option->flags & lang_mask)
-    if ((*lang_hooks.handle_option) (opt_index, arg, value) == 0)
+    if (lang_hooks.handle_option (opt_index, arg, value) == 0)
       result = 0;
 
   if (result && (option->flags & CL_COMMON))
@@ -483,7 +483,7 @@ decode_options (unsigned int argc, const char **argv)
   unsigned int i, lang_mask;
 
   /* Perform language-specific options initialization.  */
-  lang_mask = (*lang_hooks.init_options) (argc, argv);
+  lang_mask = lang_hooks.init_options (argc, argv);
 
   lang_hooks.initialize_diagnostics (global_dc);
 

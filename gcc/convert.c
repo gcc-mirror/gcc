@@ -63,7 +63,7 @@ convert_to_pointer (tree type, tree expr)
 
       return
 	convert_to_pointer (type,
-			    convert ((*lang_hooks.types.type_for_size)
+			    convert (lang_hooks.types.type_for_size
 				     (POINTER_SIZE, 0), expr));
 
     default:
@@ -304,8 +304,9 @@ convert_to_integer (tree type, tree expr)
       if (integer_zerop (expr))
 	expr = integer_zero_node;
       else
-	expr = fold (build1 (CONVERT_EXPR, (*lang_hooks.types.type_for_size)
-			     (POINTER_SIZE, 0), expr));
+	expr = fold (build1 (CONVERT_EXPR,
+			     lang_hooks.types.type_for_size (POINTER_SIZE, 0),
+			     expr));
 
       return convert_to_integer (type, expr);
 
@@ -378,7 +379,7 @@ convert_to_integer (tree type, tree expr)
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       || outprec != GET_MODE_BITSIZE (TYPE_MODE (type)))
 	return build1 (NOP_EXPR, type,
-		       convert ((*lang_hooks.types.type_for_mode)
+		       convert (lang_hooks.types.type_for_mode
 				(TYPE_MODE (type), TREE_UNSIGNED (type)),
 				expr));
 
@@ -490,7 +491,7 @@ convert_to_integer (tree type, tree expr)
 		/* Can't do arithmetic in enumeral types
 		   so use an integer type that will hold the values.  */
 		if (TREE_CODE (typex) == ENUMERAL_TYPE)
-		  typex = (*lang_hooks.types.type_for_size)
+		  typex = lang_hooks.types.type_for_size
 		    (TYPE_PRECISION (typex), TREE_UNSIGNED (typex));
 
 		/* But now perhaps TYPEX is as wide as INPREC.
@@ -517,9 +518,9 @@ convert_to_integer (tree type, tree expr)
 				|| ex_form == LROTATE_EXPR
 				|| ex_form == RROTATE_EXPR))
 			|| ex_form == LSHIFT_EXPR)
-		      typex = (*lang_hooks.types.unsigned_type) (typex);
+		      typex = lang_hooks.types.unsigned_type (typex);
 		    else
-		      typex = (*lang_hooks.types.signed_type) (typex);
+		      typex = lang_hooks.types.signed_type (typex);
 		    return convert (type,
 				    fold (build (ex_form, typex,
 						 convert (typex, arg0),
@@ -539,7 +540,7 @@ convert_to_integer (tree type, tree expr)
 	    /* Can't do arithmetic in enumeral types
 	       so use an integer type that will hold the values.  */
 	    if (TREE_CODE (typex) == ENUMERAL_TYPE)
-	      typex = (*lang_hooks.types.type_for_size)
+	      typex = lang_hooks.types.type_for_size
 		(TYPE_PRECISION (typex), TREE_UNSIGNED (typex));
 
 	    /* But now perhaps TYPEX is as wide as INPREC.
@@ -550,9 +551,9 @@ convert_to_integer (tree type, tree expr)
 		/* Don't do unsigned arithmetic where signed was wanted,
 		   or vice versa.  */
 		if (TREE_UNSIGNED (TREE_TYPE (expr)))
-		  typex = (*lang_hooks.types.unsigned_type) (typex);
+		  typex = lang_hooks.types.unsigned_type (typex);
 		else
-		  typex = (*lang_hooks.types.signed_type) (typex);
+		  typex = lang_hooks.types.signed_type (typex);
 		return convert (type,
 				fold (build1 (ex_form, typex,
 					      convert (typex,

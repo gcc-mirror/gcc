@@ -868,7 +868,7 @@ expand_fixup (tree tree_label, rtx rtl_label, rtx last_insn)
 	TREE_USED (block) = 1;
 
 	if (!cfun->x_whole_function_mode_p)
-	  (*lang_hooks.decls.insert_block) (block);
+	  lang_hooks.decls.insert_block (block);
 	else
 	  {
 	    BLOCK_CHAIN (block)
@@ -985,8 +985,8 @@ fixup_gotos (struct nesting *thisblock, rtx stack_level,
 	     logically be inserting the fixup code.  We do this for the
 	     sake of getting the debugging information right.  */
 
-	  (*lang_hooks.decls.pushlevel) (0);
-	  (*lang_hooks.decls.set_block) (f->context);
+	  lang_hooks.decls.pushlevel (0);
+	  lang_hooks.decls.set_block (f->context);
 
 	  /* Expand the cleanups for blocks this jump exits.  */
 	  if (f->cleanup_list_list)
@@ -1025,7 +1025,7 @@ fixup_gotos (struct nesting *thisblock, rtx stack_level,
 	     destructed are still "in scope".  */
 
 	  cleanup_insns = get_insns ();
-	  (*lang_hooks.decls.poplevel) (1, 0, 0);
+	  lang_hooks.decls.poplevel (1, 0, 0);
 
 	  end_sequence ();
 	  emit_insn_after (cleanup_insns, f->before_jump);
@@ -1059,12 +1059,12 @@ fixup_gotos (struct nesting *thisblock, rtx stack_level,
 	  if (TREE_CHAIN (lists) == thisblock->data.block.outer_cleanups)
 	    {
 	      start_sequence ();
-	      (*lang_hooks.decls.pushlevel) (0);
-	      (*lang_hooks.decls.set_block) (f->context);
+	      lang_hooks.decls.pushlevel (0);
+	      lang_hooks.decls.set_block (f->context);
 	      expand_cleanups (TREE_VALUE (lists), 1, 1);
 	      do_pending_stack_adjust ();
 	      cleanup_insns = get_insns ();
-	      (*lang_hooks.decls.poplevel) (1, 0, 0);
+	      lang_hooks.decls.poplevel (1, 0, 0);
 	      end_sequence ();
 	      if (cleanup_insns != 0)
 		f->before_jump
@@ -1552,7 +1552,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	      || (DECL_P (val)
 		  && GET_CODE (DECL_RTL (val)) == REG
 		  && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type))))
-	(*lang_hooks.mark_addressable) (val);
+	lang_hooks.mark_addressable (val);
 
       if (is_inout)
 	ninout++;
@@ -1581,7 +1581,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	return;
 
       if (! allows_reg && allows_mem)
-	(*lang_hooks.mark_addressable) (TREE_VALUE (tail));
+	lang_hooks.mark_addressable (TREE_VALUE (tail));
     }
 
   /* Second pass evaluates arguments.  */
@@ -4138,12 +4138,12 @@ expand_decl_cleanup (tree decl, tree cleanup)
 	  emit_move_insn (flag, const1_rtx);
 
 	  cond = build_decl (VAR_DECL, NULL_TREE,
-			     (*lang_hooks.types.type_for_mode) (word_mode, 1));
+			     lang_hooks.types.type_for_mode (word_mode, 1));
 	  SET_DECL_RTL (cond, flag);
 
 	  /* Conditionalize the cleanup.  */
 	  cleanup = build (COND_EXPR, void_type_node,
-			   (*lang_hooks.truthvalue_conversion) (cond),
+			   lang_hooks.truthvalue_conversion (cond),
 			   cleanup, integer_zero_node);
 	  cleanup = fold (cleanup);
 
@@ -6464,7 +6464,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	  else if (!low_bound && !high_bound)
 	    {
 	      /* Widen LOW and HIGH to the same width as INDEX.  */
-	      tree type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
+	      tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
 	      tree low = build1 (CONVERT_EXPR, type, node->low);
 	      tree high = build1 (CONVERT_EXPR, type, node->high);
 	      rtx low_rtx, new_index, new_bound;

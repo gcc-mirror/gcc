@@ -293,7 +293,7 @@ void
 diagnostic_report_current_function (diagnostic_context *context)
 {
   diagnostic_report_current_module (context);
-  (*lang_hooks.print_error_function) (context, input_filename);
+  lang_hooks.print_error_function (context, input_filename);
 }
 
 void

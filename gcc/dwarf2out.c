@@ -6983,7 +6983,7 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
 static const char *
 dwarf2_name (tree decl, int scope)
 {
-  return (*lang_hooks.decl_printable_name) (decl, scope ? 1 : 0);
+  return lang_hooks.decl_printable_name (decl, scope ? 1 : 0);
 }
 
 /* Add a new entry to .debug_pubnames if appropriate.  */

@@ -373,7 +373,7 @@ copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
       copy = copy_node (decl);
       /* The COPY is not abstract; it will be generated in TO_FN.  */
       DECL_ABSTRACT (copy) = 0;
-      (*lang_hooks.dup_lang_specific_decl) (copy);
+      lang_hooks.dup_lang_specific_decl (copy);
 
       /* TREE_ADDRESSABLE isn't used to indicate that a label's
 	 address has been taken; it's for internal bookkeeping in
@@ -1256,7 +1256,7 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
        this block to the list of blocks at this binding level.  We
        can't do it the way it's done for function-at-a-time mode the
        superblocks have not been created yet.  */
-    (*lang_hooks.decls.insert_block) (block);
+    lang_hooks.decls.insert_block (block);
   else
     {
       BLOCK_CHAIN (block)
