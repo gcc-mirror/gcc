@@ -119,7 +119,7 @@ static void
 version ()
 {
   printf ("jv-scan (%s)\n\n", version_string);
-  printf ("Copyright (C) 2000 Free Software Foundation, Inc.\n");
+  printf ("Copyright (C) 2001 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
   exit (0);
