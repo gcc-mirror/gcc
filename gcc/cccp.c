@@ -2813,7 +2813,10 @@ do { ip = &instack[indepth];		\
       /* A single quoted string is treated like a double -- some
 	 programs (e.g., troff) are perverse this way */
 
-      if (ident_length)
+      /* Handle any pending identifier;
+	 but the L in L'...' or L"..." is not an identifier.  */
+      if (ident_length
+	  && ! (ident_length == 1 && hash == HASHSTEP (0, 'L')))
 	goto specialchar;
 
       start_line = ip->lineno;
@@ -4122,6 +4125,8 @@ special_symbol (hp, op)
     }
 
     if (!is_idstart[*ip->bufp])
+      goto oops;
+    if (ip->bufp[0] == 'L' && (ip->bufp[1] == '\'' || ip->bufp[1] == '"'))
       goto oops;
     if ((hp = lookup (ip->bufp, -1, -1))) {
       if (pcp_outfile && pcp_inside_if
@@ -5716,7 +5721,8 @@ check_macro_name (symname, usage)
   for (p = symname; is_idchar[*p]; p++)
     ;
   sym_length = p - symname;
-  if (sym_length == 0)
+  if (sym_length == 0
+      || (sym_length == 1 && *symname == 'L' && (*p == '\'' || *p == '"')))
     error ("invalid %s name", usage);
   else if (!is_idstart[*symname]
 	   || (sym_length == 7 && ! bcmp (symname, "defined", 7)))
@@ -5942,7 +5948,8 @@ collect_expansion (buf, end, nargs, arglist)
 	    p++;
 	    SKIP_WHITE_SPACE (p);
 	  }
-	  if (! is_idstart[*p] || nargs == 0)
+	  if (! is_idstart[*p] || nargs == 0
+	      || (*p == 'L' && (p[1] == '\'' || p[1] == '"')))
 	    error ("`#' operator is not followed by a macro argument name");
 	  else
 	    stringify = p;
@@ -6005,7 +6012,8 @@ collect_expansion (buf, end, nargs, arglist)
       while (p != limit && is_idchar[*p]) p++;
       id_len = p - id_beg;
 
-      if (is_idstart[c]) {
+      if (is_idstart[c]
+	  && ! (id_len == 1 && c == 'L' && (*p == '\'' || *p == '"'))) {
 	register struct arglist *arg;
 
 	for (arg = arglist; arg != NULL; arg = arg->next) {
