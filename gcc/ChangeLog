@@ -1,5 +1,7 @@
 2001-02-19  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* version.c: Bump.
+
 	Back out sjlj eh fixes.
 	* varasm.c (force_const_mem): Revert previous change.
 	* except.c (receive_exception_label, start_dynamic_handler):
