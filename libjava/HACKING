@@ -35,18 +35,6 @@ shared libgcj/classpath file.
 
 If you need to add new java files to libgcj then you have to edit the
 Makefile.am file in the top (libjava) directory. And run automake.
-But note the following (thanks to Bryce McKinlay):
-
-> Do you know the magic dance I have to do when adding files to Makefile.am
-> so they will appear in Makefile.in and finally in the user generated
-> Makefile?
-Yup, you need the magic libgcj automake ;-)
-
-<ftp://sources.redhat.com/pub/java/automake-gcj-1.4.tar.gz>
-
-Install that (don't worry, it should still work for other projects), add your
-files to the Makefile.am, then just type "automake" and it will regenerate the
-Makefile.in. Easy!
 
 Tom Tromey adds:
 If you add a class to java.lang, java.io, or java.util
