@@ -1,3 +1,11 @@
+2003-10-08  Timo Kokkonen  <tjko@iki.fi>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/12490
+	* scan-decls.c (MAX_EXTERN_C_BRACES): New preprocessor constant
+	to define the size of the extern_C_braces array.  Set it to 200.
+	(scan_decls): Abort when extern_C_braces_length is out-of-bounds.
+
 2003-10-08  Carlo Wood  <carlo@alinoe.com>
 
 	* Makefile.in (gengtype-lex.c): flex 2.5.4[a] doesn't understand
