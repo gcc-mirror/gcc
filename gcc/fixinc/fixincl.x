@@ -2648,8 +2648,7 @@ tSCC zMachine_Ansi_H_Va_ListName[] =
 /*
  *  File name selection pattern
  */
-tSCC zMachine_Ansi_H_Va_ListList[] =
-  "|machine/ansi.h|";
+#define zMachine_Ansi_H_Va_ListList (char*)NULL
 /*
  *  Machine/OS name selection pattern
  */

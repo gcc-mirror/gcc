@@ -1,3 +1,15 @@
+2000-12-05  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/mkfixinc.sh(*-gnu*): activate fixinc for GNU/Hurd and
+	GNU/Linux.
+
+2000-12-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* fixinc/mkfixinc.sh: Run fixinc on netbsd.
+	* fixinc/inclhack.def (machine/ansi.h): Run this rule on all files,
+	to cope with aliased copies.
+	* fixinc/fixincl.x: Regenerate.
+
 2000-12-05  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* sched-vis.c: Guard with #ifdef INSN_SCHEDULING.
