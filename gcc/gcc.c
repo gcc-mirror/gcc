@@ -207,6 +207,12 @@ static char *find_a_file	PROTO((struct path_prefix *, char *, int));
 static void add_prefix		PROTO((struct path_prefix *, char *, int, int, int *));
 static char *skip_whitespace	PROTO((char *));
 static void record_temp_file	PROTO((char *, int, int));
+static void delete_if_ordinary	PROTO((char *));
+static void delete_temp_files	PROTO((void));
+static void delete_failure_queue PROTO((void));
+static void clear_failure_queue PROTO((void));
+static char *choose_temp_base_try PROTO((char *, char *));
+static void choose_temp_base	PROTO((void));
 static int check_live_switch	PROTO((int, int));
 static char *handle_braces	PROTO((char *));
 static char *save_string	PROTO((char *, int));
@@ -1371,34 +1377,33 @@ record_temp_file (filename, always_delete, fail_delete)
 /* Delete all the temporary files whose names we previously recorded.  */
 
 static void
+delete_if_ordinary (name)
+     char *name;
+{
+  struct stat st;
+#ifdef DEBUG
+  int i, c;
+
+  printf ("Delete %s? (y or n) ", name);
+  fflush (stdout);
+  i = getchar ();
+  if (i != '\n')
+    while ((c = getchar ()) != '\n' && c != EOF) ;
+  if (i == 'y' || i == 'Y')
+#endif /* DEBUG */
+    if (stat (name, &st) >= 0 && S_ISREG (st.st_mode))
+      if (unlink (name) < 0)
+	if (verbose_flag)
+	  perror_with_name (name);
+}
+
+static void
 delete_temp_files ()
 {
   register struct temp_file *temp;
 
   for (temp = always_delete_queue; temp; temp = temp->next)
-    {
-#ifdef DEBUG
-      int i;
-      printf ("Delete %s? (y or n) ", temp->name);
-      fflush (stdout);
-      i = getchar ();
-      if (i != '\n')
-	while (getchar () != '\n') ;
-      if (i == 'y' || i == 'Y')
-#endif /* DEBUG */
-	{
-	  struct stat st;
-	  if (stat (temp->name, &st) >= 0)
-	    {
-	      /* Delete only ordinary files.  */
-	      if (S_ISREG (st.st_mode))
-		if (unlink (temp->name) < 0)
-		  if (verbose_flag)
-		    perror_with_name (temp->name);
-	    }
-	}
-    }
-
+    delete_if_ordinary (temp->name);
   always_delete_queue = 0;
 }
 
@@ -1410,22 +1415,7 @@ delete_failure_queue ()
   register struct temp_file *temp;
 
   for (temp = failure_delete_queue; temp; temp = temp->next)
-    {
-#ifdef DEBUG
-      int i;
-      printf ("Delete %s? (y or n) ", temp->name);
-      fflush (stdout);
-      i = getchar ();
-      if (i != '\n')
-	while (getchar () != '\n') ;
-      if (i == 'y' || i == 'Y')
-#endif /* DEBUG */
-	{
-	  if (unlink (temp->name) < 0)
-	    if (verbose_flag)
-	      perror_with_name (temp->name);
-	}
-    }
+    delete_if_ordinary (temp->name);
 }
 
 static void
@@ -1439,8 +1429,8 @@ clear_failure_queue ()
 
 static char *
 choose_temp_base_try (try, base)
-char *try;
-char *base;
+     char *try;
+     char *base;
 {
   char *rv;
   if (base)
