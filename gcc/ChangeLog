@@ -1,5 +1,7 @@
 Sat Jan  3 12:08:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcov-io.h: Include sys/types.h to ensure we get size_t.
+
 	* pa.h (ASM_OUTPUT_MI_THUNK): Add missing % in fprintf.
 
 Fri Jan  2 23:40:09 1998  Jim Wilson  (wilson@cygnus.com)
