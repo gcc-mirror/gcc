@@ -6695,7 +6695,10 @@ void
 thread_prologue_and_epilogue_insns (f)
      rtx f ATTRIBUTE_UNUSED;
 {
-  int insertted = 0;
+  int inserted = 0;
+#ifdef HAVE_prologue
+  rtx prologue_end = NULL_RTX;
+#endif
 
   prologue = 0;
 #ifdef HAVE_prologue
@@ -6712,7 +6715,7 @@ thread_prologue_and_epilogue_insns (f)
 	seq = get_insns ();
       prologue = record_insns (seq);
 
-      emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+      prologue_end = emit_note (NULL, NOTE_INSN_PROLOGUE_END);
       seq = gen_sequence ();
       end_sequence ();
 
@@ -6725,7 +6728,7 @@ thread_prologue_and_epilogue_insns (f)
 	    abort ();
 
 	  insert_insn_on_edge (seq, ENTRY_BLOCK_PTR->succ);
-	  insertted = 1;
+	  inserted = 1;
 	}
       else
 	emit_insn_after (seq, f);
@@ -6857,8 +6860,56 @@ thread_prologue_and_epilogue_insns (f)
     }
 #endif
 
-  if (insertted)
+  if (inserted)
     commit_edge_insertions ();
+
+#ifdef HAVE_prologue
+  if (prologue_end)
+    {
+      rtx insn, prev;
+
+      /* GDB handles `break f' by setting a breakpoint on the first
+	 line note *after* the prologue.  Which means (1) that if
+	 there are line number notes before where we inserted the
+	 prologue we should move them, and (2) if there is no such
+	 note, then we should generate one at the prologue.  */
+
+      for (insn = prologue_end; insn ; insn = prev)
+	{
+	  prev = PREV_INSN (insn);
+	  if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	    {
+	      /* Note that we cannot reorder the first insn in the
+		 chain, since rest_of_compilation relies on that
+		 remaining constant.  Do the next best thing.  */
+	      if (prev == NULL)
+		{
+		  emit_line_note_after (NOTE_SOURCE_FILE (insn),
+					NOTE_LINE_NUMBER (insn),
+					prologue_end);
+		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		}
+	      else
+		reorder_insns (insn, insn, prologue_end);
+	    }
+	}
+
+      insn = NEXT_INSN (prologue_end);
+      if (! insn || GET_CODE (insn) != NOTE || NOTE_LINE_NUMBER (insn) <= 0)
+	{
+	  for (insn = next_active_insn (f); insn ; insn = PREV_INSN (insn))
+	    {
+	      if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+		{
+		  emit_line_note_after (NOTE_SOURCE_FILE (insn),
+					NOTE_LINE_NUMBER (insn),
+					prologue_end);
+		  break;
+		}
+	    }
+	}
+      }
+  #endif
 }
 
 /* Reposition the prologue-end and epilogue-begin notes after instruction

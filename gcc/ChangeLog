@@ -1,3 +1,9 @@
+Wed May 24 00:25:45 2000  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	2000-05-22  Richard Henderson  <rth@cygnus.com>
+	* function.c (thread_prologue_and_epilogue_insns): Make sure 
+	existing line number notes appear after the prologue.
+
 2000-05-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
  
 	* sysv4.h (CPP_OS_LINUX_SPEC): Define __unix and __linux according
