@@ -1,5 +1,5 @@
 /* Lexical analyzer for GNU CHILL. -*- C -*-
-   Copyright (C) 1992, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1495,6 +1495,22 @@ getlc (file)
   return c;
 }
 
+#if defined HANDLE_PRAGMA
+/* Local versions of these macros, that can be passed as function pointers.  */
+static int
+pragma_getc ()
+{
+  return getc (finput);
+}
+
+static void
+pragma_ungetc (arg)
+     int arg;
+{
+  ungetc (arg, finput);
+}
+#endif /* HANDLE_PRAGMA */
+
 /* At the beginning of a line, increment the line number and process
    any #-directive on this line.  If the line is a #-directive, read
    the entire line and return a newline.  Otherwise, return the line's
@@ -1553,10 +1569,28 @@ check_newline ()
 	      && (isspace (c = getlc (finput))))
 	    {
 #ifdef HANDLE_PRAGMA
-	      return HANDLE_PRAGMA (finput, c);
-#else
-	      goto skipline;
+	      static char buffer [128];
+	      char * buff = buffer;
+
+	      /* Read the pragma name into a buffer.  */
+	      while (isspace (c = getlc (finput)))
+		continue;
+	      
+	      do
+		{
+		  * buff ++ = c;
+		  c = getlc (finput);
+		}
+	      while (c != EOF && ! isspace (c) && c != '\n'
+		     && buff < buffer + 128);
+
+	      pragma_ungetc (c);
+		
+	      * -- buff = 0;
+	      
+	      (void) HANDLE_PRAGMA (pragma_getc, pragma_ungetc, buffer);
 #endif /* HANDLE_PRAGMA */
+	      goto skipline;
 	    }
 	}
 
