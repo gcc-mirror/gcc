@@ -1009,7 +1009,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
       fixup->target_rtl = rtl_label;
 
       /* Create a BLOCK node and a corresponding matched set of
-	 NOTE_INSN_BEGIN_BLOCK and NOTE_INSN_END_BLOCK notes at
+	 NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes at
 	 this point.  The notes will encapsulate any and all fixup
 	 code which we might later insert at this point in the insn
 	 stream.  Also, the BLOCK node will be the parent (i.e. the
