@@ -1,5 +1,13 @@
 2003-03-15  Roger Sayle  <roger@eyesopen.com>
 
+	* stb.c (ffestb_R100110_): Allow the number before the X format
+	to be optional when not -fpedantic.
+	* std.c (ffestd_R1001dump_1010_3_): Delete unused static function.
+	(ffestd_R1001dump_): For the FFESTP_formattypeX case, call
+	ffestd_R1001dump_1010_2_ instead of ffestd_R1001dump_1010_3_.
+
+2003-03-15  Roger Sayle  <roger@eyesopen.com>
+
 	* f/ste.c (ffeste_R810): Fix whitespace.
 
 2003-03-15  Andreas Jaeger  <aj@suse.de>

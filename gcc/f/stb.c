@@ -10514,7 +10514,7 @@ ffestb_R100110_ (ffelexToken t)
 
 	case FFESTP_formattypeX:
 	  err = FFEBAD_FORMAT_BAD_X_SPEC;
-	  pre = required;
+	  pre = ffe_is_pedantic() ? required : optional;
 	  post = disallowed;
 	  dot = disallowed;
 	  exp = disallowed;

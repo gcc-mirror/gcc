@@ -532,8 +532,6 @@ static void ffestd_R1001dump_1010_1_ (ffests s, ffesttFormatList f,
 				      const char *string);
 static void ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f,
 				      const char *string);
-static void ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f,
-				      const char *string);
 static void ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f,
 				      const char *string);
 static void ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f,
@@ -3608,7 +3606,7 @@ ffestd_R1001dump_ (ffests s, ffesttFormatList list)
 	  break;
 
 	case FFESTP_formattypeX:
-	  ffestd_R1001dump_1010_3_ (s, next, "X");
+	  ffestd_R1001dump_1010_2_ (s, next, "X");
 	  break;
 
 	case FFESTP_formattypeS:
@@ -3910,26 +3908,6 @@ ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f, const char *string)
       else
 	ffests_printf (s, "%lu", f->u.R1010.val.u.unsigned_val);
     }
-
-  ffests_puts (s, string);
-}
-
-/* ffestd_R1001dump_1010_3_ -- Dump a particular format
-
-   ffesttFormatList f;
-   ffestd_R1001dump_1010_3_(f,"I");
-
-   The format is dumped with form nX.  */
-
-static void
-ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f, const char *string)
-{
-  assert (f->u.R1010.val.present);
-
-  if (f->u.R1010.val.rtexpr)
-    ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
-  else
-    ffests_printf (s, "%lu", f->u.R1010.val.u.unsigned_val);
 
   ffests_puts (s, string);
 }
