@@ -55,10 +55,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Release 1.0, January 1991
 	A companion ABI document from 88open.  */
 
-/* Other m88k*.h files include this one and override certain items.
-   At present, these are m88kv3.h, m88kv4.h, m88kdgux.h, and m88kluna.h.
-   Additionally, m88kv4.h and m88kdgux.h include svr4.h first.  All other
-   m88k targets except m88kluna.h are based on svr3.h.  */
+/* Other *.h files in config/m88k include this one and override certain items.
+   Currently these are sysv3.h, sysv4.h, dgux.h, dolph.h, tekXD88.h, and luna.h.
+   Additionally, sysv4.h and dgux.h include svr4.h first.  All other
+   m88k targets except luna.h are based on svr3.h.  */
 
 /* Choose SVR3 as the default.  */
 #if !defined(DBX_DEBUGGING_INFO) && !defined(DWARF_DEBUGGING_INFO)
@@ -182,29 +182,34 @@ extern char * reg_names[];
    ASM_SPEC, ASM_FINAL_SPEC, LIB_SPEC, LINK_SPEC, and STARTFILE_SPEC redefined
    in svr4.h.
    CPP_SPEC, ASM_SPEC, ASM_FINAL_SPEC, LIB_SPEC, LINK_SPEC, and
-   STARTFILE_SPEC redefined in m88kdgux.h.  */
+   STARTFILE_SPEC redefined in dgux.h.  */
 
 /*** Run-time Target Specification ***/
 
 /* Names to predefine in the preprocessor for this target machine.
-   Redefined in m88kv3.h, m88kv4.h, m88kdgux.h, and m88kluna.h.  */
+   Redefined in sysv3.h, sysv4.h, dgux.h, and luna.h.  */
 #define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -D__CLASSIFY_TYPE__=2"
 
 #define TARGET_VERSION fprintf (stderr, " (%s%s)", \
 				VERSION_INFO1, VERSION_INFO2)
 
 /* Print subsidiary information on the compiler version in use.
-   Redefined in m88kv4.h, and m88kluna.h.  */
+   Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.15 $"
+#define VERSION_INFO2   "$Revision: 1.55 $"
 #endif
+
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.15 $ " __DATE__
+#ifdef __STDC__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.55 $ " __DATE__
+#else
+#define TM_RCS_ID      "$What$"
+#endif  /* __STDC__ */
 #else
 #define TM_RCS_ID      "@(#)" __FILE__ " " VERSION_INFO2 " " __DATE__
-#endif
+#endif  /* VERSION_STRING */
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -254,7 +259,7 @@ extern char * reg_names[];
 
 #define TARGET_EITHER_LARGE_SHIFT (target_flags & MASK_EITHER_LARGE_SHIFT)
 
-/*  Redefined in m88kv3.h,m88kv4.h, and m88kdgux.h.  */
+/*  Redefined in sysv3.h, sysv4.h, and dgux.h.  */
 #define TARGET_DEFAULT	(MASK_CHECK_ZERO_DIV)
 #define CPU_DEFAULT MASK_88100
 
@@ -287,7 +292,7 @@ extern char * reg_names[];
     { "",				 TARGET_DEFAULT }, \
   }
 
-/* Redefined in m88kdgux.h.  */
+/* Redefined in dgux.h.  */
 #define SUBTARGET_SWITCHES
 
 /* Macro to define table for command options with values.  */
@@ -1082,8 +1087,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define FUNCTION_END_PROLOGUE(FILE) m88k_end_prologue(FILE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  Redefined in m88kv3.h, m88kv4.h and
-   m88kdgux.h.  */
+   for profiling a function entry.  Redefined in sysv3.h, sysv4.h and
+   dgux.h.  */
 #define FUNCTION_PROFILER(FILE, LABELNO) \
   output_function_profiler (FILE, LABELNO, "mcount", 1)
 
@@ -1536,7 +1541,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define PROMOTE_PROTOTYPES
 
 /* Define this macro if a float function always returns float
-   (even in traditional mode).  Redefined in m88kluna.h.  */
+   (even in traditional mode).  Redefined in luna.h.  */
 #define TRADITIONAL_RETURN_FLOAT
 
 /* We assume that the store-condition-codes instructions store 0 for false
@@ -1794,7 +1799,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define ASM_COFFSEM(FILE)
 #endif
 
-/* Output the first line of the assembly file.  Redefined in m88kdgux.h.  */
+/* Output the first line of the assembly file.  Redefined in dgux.h.  */
 
 #define ASM_FIRST_LINE(FILE)						\
   do {									\
@@ -2458,7 +2463,7 @@ do {									 \
 #define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_ctors, in_dtors, \
 		       in_init, in_fini
 
-#else /* m88kluna or other not based on svr[34].h.  */
+#else /* luna or other not based on svr[34].h.  */
 
 #undef INIT_SECTION_ASM_OP
 #define EXTRA_SECTIONS in_const, in_tdesc, in_sdata
