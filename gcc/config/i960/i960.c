@@ -1512,7 +1512,7 @@ i960_print_operand_addr (file, addr)
     }
   else if (GET_CODE (addr) == MULT)
     {
-      breg = XEXP (addr, 0);
+      ireg = XEXP (addr, 0);
       scale = XEXP (addr, 1);
     }
   else
