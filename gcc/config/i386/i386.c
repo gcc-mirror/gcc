@@ -45,6 +45,10 @@ Boston, MA 02111-1307, USA. */
    even if the conditional was untrue.  */
 #endif
 
+#ifndef CHECK_STACK_LIMIT
+#define CHECK_STACK_LIMIT -1
+#endif
+
 enum reg_mem			/* Type of an operand for ix86_{binary,unary}_operator_ok */
 {
   reg_p,
@@ -1742,14 +1746,25 @@ function_prologue (file, size)
   xops[0] = stack_pointer_rtx;
   xops[1] = frame_pointer_rtx;
   xops[2] = GEN_INT (tsize);
+
   if (frame_pointer_needed)
     {
       output_asm_insn ("push%L1 %1", xops); 
       output_asm_insn (AS2 (mov%L0,%0,%1), xops); 
     }
 
-  if (tsize)
+  if (tsize == 0)
+    ;
+  else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
     output_asm_insn (AS2 (sub%L0,%2,%0), xops);
+  else 
+    {
+      xops[3] = gen_rtx (REG, SImode, 0);
+      output_asm_insn (AS2 (mov%L0,%2,%3), xops);
+      
+      xops[3] = gen_rtx (SYMBOL_REF, Pmode, "_alloca");
+      output_asm_insn (AS1 (call,%P3), xops);
+    }
 
   /* Note If use enter it is NOT reversed args.
      This one is not reversed from intel!!
@@ -1820,12 +1835,19 @@ ix86_expand_prologue ()
       emit_move_insn (xops[1], xops[0]);
     }
 
-  if (tsize)
-    emit_insn (gen_rtx (SET, SImode,
-			  xops[0],
-			  gen_rtx (MINUS, SImode,
-				   xops[0],
-				   xops[2])));
+  if (tsize == 0)
+    ;
+  else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
+    emit_insn (gen_subsi3 (xops[0], xops[0], xops[2]));
+  else 
+    {
+      xops[3] = gen_rtx (REG, SImode, 0);
+      emit_move_insn (xops[3], xops[2]);
+      xops[3] = gen_rtx (MEM, FUNCTION_MODE,
+			 gen_rtx (SYMBOL_REF, Pmode, "_alloca"));
+      emit_call_insn (gen_rtx (CALL, VOIDmode,
+			       xops[3], const0_rtx));
+    }
 
   /* Note If use enter it is NOT reversed args.
      This one is not reversed from intel!!
