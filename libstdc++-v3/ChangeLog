@@ -1,3 +1,10 @@
+2004-06-23  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16154
+	* include/bits/boost_concept_check.h (struct _TrivialIteratorConcept):
+	Don't require the _DefaultConstructibleConcept.
+	(struct _ForwardIteratorConcept): Require it here.
+
 2004-06-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* include/bits/istream.tcc (getline): Make sure arguments passed
