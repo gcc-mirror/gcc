@@ -1,3 +1,8 @@
+2002-04-05  David S. Miller  <davem@redhat.com>
+
+	* config/os/gnu-linux/bits/os_defines.h
+	(__glibcpp_long_double_bits): Set to 64 on 32-bit Sparc.
+
 2002-04-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/3457 

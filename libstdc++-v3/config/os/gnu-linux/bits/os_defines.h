@@ -69,4 +69,8 @@ typedef __loff_t __off64_t;
 #define __glibcpp_long_bits 64
 #endif
 
+#if defined(__sparc__) && !defined(__arch64__)
+#define __glibcpp_long_double_bits 64
+#endif
+
 #endif
