@@ -1,3 +1,8 @@
+2002-09-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (udivmodqi4): Enable on H8/300.
+	(anonymous pattern): Likewise.
+
 2002-09-07  Scott Snyder  <snyder@fnal.gov>
 
 	PR target/7374
