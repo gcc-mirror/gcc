@@ -1,3 +1,14 @@
+2000-08-17  Neil Booth  <NeilB@earthling.net>
+
+	* cppinit.c (sort_options): Remove, put functionality in
+	cpp_init.
+	(cpp_init): New.
+	(initialize_builtins): Free memory.
+	(cpp_start_read): Move init_IStable to cpp_init.
+
+	* cpplib.h (cpp_init): New prototype.
+	* cppmain.c (main): Call cpp_init.
+
 Thu Aug 17 13:20:32 EDT 2000  John Wehle  (john@feith.com)
 
 	* rtlanal.c (rtx_unstable_p): Use CONSTANT_P.
