@@ -2555,7 +2555,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	  /* If the target has a cheap shift-and-add instruction use
 	     that in preference to a shift insn followed by an add insn.
 	     Assume that the shift-and-add is "atomic" with a latency
-	     equal to it's cost, otherwise assume that on superscalar
+	     equal to its cost, otherwise assume that on superscalar
 	     hardware the shift may be executed concurrently with the
 	     earlier steps in the algorithm.  */
 	  op_cost = add_cost[mode] + shift_cost[mode][m];

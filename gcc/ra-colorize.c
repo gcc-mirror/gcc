@@ -1323,7 +1323,7 @@ colorize_one_web (struct web *web, int hard)
 	 usable_regs of this web (which is probably larger than that of
 	 the preferred or alternate class).  All searches first try to
 	 find a non-call-clobbered hard-reg.
-         XXX this should be more finegraned... First look into preferred
+         XXX this should be more fine grained... First look into preferred
          non-callclobbered hardregs, then _if_ the web crosses calls, in
          alternate non-cc hardregs, and only _then_ also in preferred cc
          hardregs (and alternate ones).  Currently we don't track the number
