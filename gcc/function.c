@@ -6366,13 +6366,10 @@ expand_function_start (subr, parms_have_cleanups)
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
     /* If return mode is void, this decl rtl should not be used.  */
     SET_DECL_RTL (DECL_RESULT (subr), NULL_RTX);
-  else if (parms_have_cleanups
-	   || current_function_instrument_entry_exit
-	   || (flag_exceptions && USING_SJLJ_EXCEPTIONS))
+  else
     {
-      /* If function will end with cleanup code for parms, compute the
-	 return values into a pseudo reg, which we will copy into the
-	 true return register after the cleanups are done.  */
+      /* Compute the return values into a pseudo reg, which we will copy
+	 into the true return register after the cleanups are done.  */
 
       /* In order to figure out what mode to use for the pseudo, we
 	 figure out what the mode of the eventual return register will
@@ -6392,22 +6389,6 @@ expand_function_start (subr, parms_have_cleanups)
       /* Needed because we may need to move this to memory
 	 in case it's a named return value whose address is taken.  */
       DECL_REGISTER (DECL_RESULT (subr)) = 1;
-    }
-  else
-    {
-      /* Scalar, returned in a register.  */
-      SET_DECL_RTL (DECL_RESULT (subr),
-		    hard_function_value (TREE_TYPE (DECL_RESULT (subr)), 
-					 subr, 1));
-
-      /* Mark this reg as the function's return value.  */
-      if (GET_CODE (DECL_RTL (DECL_RESULT (subr))) == REG)
-	{
-	  REG_FUNCTION_VALUE_P (DECL_RTL (DECL_RESULT (subr))) = 1;
-	  /* Needed because we may need to move this to memory
-	     in case it's a named return value whose address is taken.  */
-	  DECL_REGISTER (DECL_RESULT (subr)) = 1;
-	}
     }
 
   /* Initialize rtx for parameters and local variables.
