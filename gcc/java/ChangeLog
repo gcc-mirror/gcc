@@ -1,3 +1,10 @@
+Fri Jun  2 16:48:55 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (get_dispatch_table): Build the vtable dummy entry list
+ 	element with a null purpose. Fixed leading comment.
+	(build_dtable_decl): Build an accurate dtable type when appropriate
+ 	and use it.
+
 2000-06-02  Richard Henderson  <rth@cygnus.com>
 
 	* lang.c (lang_get_alias_set): New.

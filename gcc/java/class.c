@@ -1229,8 +1229,9 @@ get_dispatch_table (type, this_class_addr)
     }
   /* Dummy entry for compatibility with G++ -fvtable-thunks.  When
      using the Boehm GC we sometimes stash a GC type descriptor
-     there.  */
-  list = tree_cons (integer_zero_node, get_boehm_type_descriptor (type),
+     there. We set the PURPOSE to NULL_TREE not to interfere (reset)
+     the emitted byte count during the output to the assembly file. */
+  list = tree_cons (NULL_TREE, get_boehm_type_descriptor (type),
 		    list);
   list = tree_cons (integer_zero_node, this_class_addr, list);
   return build (CONSTRUCTOR, build_prim_array_type (nativecode_ptr_type_node,
@@ -1673,13 +1674,33 @@ tree
 build_dtable_decl (type)
      tree type;
 {
-  tree name;
+  tree name, dtype;
+
+  /* We need to build a new dtable type so that its size is uniquely
+     computed when we're dealing with the class for real and not just
+     faking it (like java.lang.Class during the initialization of the
+     compiler.) We now we're not faking a class when CURRENT_CLASS is
+     TYPE. */
+  if (current_class == type)
+    {
+      tree dummy, aomt, n;
+
+      dtype = make_node (RECORD_TYPE);
+      PUSH_FIELD (dtype, dummy, "class", class_ptr_type);
+      n = build_int_2 (TREE_VEC_LENGTH (get_dispatch_vector (type)), 0);
+      aomt = build_array_type (ptr_type_node, build_index_type (n));
+      PUSH_FIELD (dtype, dummy, "methods", aomt);
+      layout_type (dtype);
+    }
+  else
+    dtype = dtable_type;
+
   obstack_grow (&temporary_obstack, "__vt_", 5);
   append_gpp_mangled_type (&temporary_obstack, type);
   obstack_1grow (&temporary_obstack, '\0');
   name = get_identifier (obstack_base (&temporary_obstack));
   obstack_free (&temporary_obstack, obstack_base (&temporary_obstack));
-  return build_decl (VAR_DECL, name, dtable_type);
+  return build_decl (VAR_DECL, name, dtype);
 }
 
 /* Pre-pend the TYPE_FIELDS of THIS_CLASS with a dummy FIELD_DECL for the
