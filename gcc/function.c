@@ -2788,7 +2788,7 @@ instantiate_virtual_regs (fndecl, insns)
      addressof elimination.  */
   for (i = 0; i < max_parm_reg; ++i)
     if (parm_reg_stack_loc[i])
-      instantiate_virtual_regs_1 (parm_reg_stack_loc[i], NULL_RTX, 0);
+      instantiate_virtual_regs_1 (&parm_reg_stack_loc[i], NULL_RTX, 0);
 
   /* Initialize recognition, indicating that volatile is OK.  */
   init_recog ();
