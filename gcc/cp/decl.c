@@ -14234,7 +14234,8 @@ static void
 pop_cp_function_context (f)
      struct function *f;
 {
-  free (f->language);
+  if (f->language)
+    free (f->language);
   f->language = 0;
 }
 

@@ -32,6 +32,7 @@
 #include "lex.h"
 #include "toplev.h"
 #include "flags.h"
+#include "ggc.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -2509,7 +2510,14 @@ expand_body (fn)
       || (DECL_LANG_SPECIFIC (fn) 
 	  && DECL_TEMPLATE_INFO (fn)
 	  && uses_template_parms (DECL_TI_ARGS (fn))))
-    return;
+    {
+      /* Normally, collection only occurs in rest_of_compilation.  So,
+	 if we don't collect here, we never collect junk generated
+	 during the processing of templates until we hit a
+	 non-template function.  */
+      ggc_collect ();
+      return;
+    }
 
   /* There's no reason to do any of the work here if we're only doing
      semantic analysis; this code just generates RTL.  */
@@ -2545,6 +2553,11 @@ expand_body (fn)
 
   /* Generate code for the function.  */
   finish_function (lineno, 0);
+
+  /* We don't need the body any more.  Allow it to be garbage
+     collected.  We can't do this if we're going to dump everything.  */
+  if (!flag_dump_translation_unit)
+    DECL_SAVED_TREE (fn) = NULL_TREE;
 
   /* And restore the current source position.  */
   lineno = saved_lineno;

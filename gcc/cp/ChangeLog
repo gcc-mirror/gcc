@@ -1,3 +1,13 @@
+1999-10-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (pop_cp_function_context): Don't call free on a NULL
+	pointer.
+	* semantics.c: Include ggc.h.
+	(expand_body): Do garbage-collection after processing a template
+	function.  Clear DECL_SAVED_TREE after generating RTL for a
+	function.
+	* Makefile.in (semantics.o): Depend on ggc.h.
+	
 1999-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (make_typename_type): Change prototype.
