@@ -24,9 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  OBJECT_FORMAT_COFF
 #undef  EXTENDED_COFF
 
-/* ??? Move all SDB stuff into separate header file.  */
-#undef  SDB_DEBUGGING_INFO
-
 #define DBX_DEBUGGING_INFO 1
 #define DWARF2_DEBUGGING_INFO 1
 

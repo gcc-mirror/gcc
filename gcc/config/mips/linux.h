@@ -226,10 +226,6 @@ do {								\
 #undef ASM_OUTPUT_REG_PUSH
 #undef ASM_OUTPUT_REG_POP
 
-/* The current Linux binutils uses MIPS_STABS_ELF and doesn't support
-   COFF.  */
-#undef SDB_DEBUGGING_INFO
-
 #undef LIB_SPEC
 #define LIB_SPEC "\
 %{shared: -lc} \

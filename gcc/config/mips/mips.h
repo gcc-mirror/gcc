@@ -117,8 +117,6 @@ extern int num_source_filenames;	/* current .file # */
 extern int inside_function;		/* != 0 if inside of a function */
 extern int ignore_line_number;		/* != 0 if we are to ignore next .loc */
 extern int file_in_function_warning;	/* warning given about .file in func */
-extern int sdb_label_count;		/* block start/end next label # */
-extern int sdb_begin_function_line;     /* Starting Line of current function */
 extern int mips_section_threshold;	/* # bytes of data/sdata cutoff */
 extern int sym_lineno;			/* sgi next label # for each stmt */
 extern int set_noreorder;		/* # of nested .set noreorder's  */
@@ -1257,13 +1255,8 @@ extern int mips_abi;
 #endif
 
 
-#define SDB_DEBUGGING_INFO 1		/* generate info for mips-tfile */
 #define DBX_DEBUGGING_INFO 1		/* generate stabs (OSF/rose) */
 #define MIPS_DEBUGGING_INFO 1		/* MIPS specific debugging info */
-
-#ifndef PREFERRED_DEBUGGING_TYPE	/* assume SDB_DEBUGGING_INFO */
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
-#endif
 
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1
@@ -1291,12 +1284,6 @@ extern int mips_abi;
 #ifndef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX	""
 #endif
-
-/* Forward references to tags are allowed.  */
-#define SDB_ALLOW_FORWARD_REFERENCES
-
-/* Unknown tags are also allowed.  */
-#define SDB_ALLOW_UNKNOWN_REFERENCES
 
 /* On Sun 4, this limit is 2048.  We use 1500 to be safe,
    since the length can run past this up to a continuation point.  */
@@ -1329,60 +1316,6 @@ extern int mips_abi;
 #define DWARF_CIE_DATA_ALIGNMENT 4
 
 #define FIND_BASE_TERM(X) mips_delegitimize_address (X)
-
-#define PUT_SDB_DEF(a)					\
-do {							\
-  fprintf (asm_out_file, "\t%s.def\t",			\
-	   (TARGET_GAS) ? "" : "#");			\
-  ASM_OUTPUT_LABELREF (asm_out_file, a); 		\
-  fputc (';', asm_out_file);				\
-} while (0)
-
-#define PUT_SDB_PLAIN_DEF(a)				\
-do {							\
-  fprintf (asm_out_file, "\t%s.def\t.%s;",		\
-	   (TARGET_GAS) ? "" : "#", (a));		\
-} while (0)
-
-/* For block start and end, we create labels, so that
-   later we can figure out where the correct offset is.
-   The normal .ent/.end serve well enough for functions,
-   so those are just commented out.  */
-
-#define PUT_SDB_BLOCK_START(LINE)			\
-do {							\
-  fprintf (asm_out_file,				\
-	   "%sLb%d:\n\t%s.begin\t%sLb%d\t%d\n",		\
-	   LOCAL_LABEL_PREFIX,				\
-	   sdb_label_count,				\
-	   (TARGET_GAS) ? "" : "#",			\
-	   LOCAL_LABEL_PREFIX,				\
-	   sdb_label_count,				\
-	   (LINE));					\
-  sdb_label_count++;					\
-} while (0)
-
-#define PUT_SDB_BLOCK_END(LINE)				\
-do {							\
-  fprintf (asm_out_file,				\
-	   "%sLe%d:\n\t%s.bend\t%sLe%d\t%d\n",		\
-	   LOCAL_LABEL_PREFIX,				\
-	   sdb_label_count,				\
-	   (TARGET_GAS) ? "" : "#",			\
-	   LOCAL_LABEL_PREFIX,				\
-	   sdb_label_count,				\
-	   (LINE));					\
-  sdb_label_count++;					\
-} while (0)
-
-#define PUT_SDB_FUNCTION_START(LINE)
-
-#define PUT_SDB_FUNCTION_END(LINE)			\
-do {							\
-  ASM_OUTPUT_SOURCE_LINE (asm_out_file, LINE + sdb_begin_function_line, 0); \
-} while (0)
-
-#define PUT_SDB_EPILOGUE_END(NAME)
 
 /* Correct the offset of automatic variables and arguments.  Note that
    the MIPS debug format wants all automatic variables and arguments
