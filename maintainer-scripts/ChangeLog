@@ -1,3 +1,9 @@
+2002-05-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_release: Add gcc/ada/gnatvsn.ads to list of files in which
+	release status is updated.
+	* update_version (textstring_FILES): Add gcc/ada/gnatvsn.ads.
+
 2002-05-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_release: Do upload files when local.
