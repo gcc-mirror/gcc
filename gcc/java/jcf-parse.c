@@ -98,7 +98,7 @@ static char *compute_class_name (struct ZipDirectory *zdir);
 static int classify_zip_file (struct ZipDirectory *zdir);
 static void parse_zip_file_entries (void);
 static void process_zip_dir (FILE *);
-static void parse_source_file_1 (tree, FILE *);
+static void parse_source_file_1 (tree, const char *, FILE *);
 static void parse_source_file_2 (void);
 static void parse_source_file_3 (void);
 static void parse_class_file (void);
@@ -544,27 +544,27 @@ read_class (tree name)
       java_push_parser_context ();
 
       given_file = get_identifier (filename);
+      filename = IDENTIFIER_POINTER (given_file);
       real_file = get_identifier (lrealpath (filename));
 
       generate = IS_A_COMMAND_LINE_FILENAME_P (given_file);
-      if (wfl_operator == NULL_TREE)
-	wfl_operator = build_expr_wfl (NULL_TREE, NULL, 0, 0);
-      EXPR_WFL_FILENAME_NODE (wfl_operator) = given_file;
-      input_filename = ggc_strdup (filename);
       output_class = current_class = NULL_TREE;
       current_function_decl = NULL_TREE;
 
       if (! HAS_BEEN_ALREADY_PARSED_P (real_file))
 	{
-	  if (! (finput = fopen (input_filename, "r")))
-	    fatal_error ("can't reopen %s: %m", input_filename);
+	  if (! (finput = fopen (filename, "r")))
+	    fatal_error ("can't reopen %s: %m", filename);
 
-	  parse_source_file_1 (real_file, finput);
+	  parse_source_file_1 (real_file, filename, finput);
 	  parse_source_file_2 ();
 	  parse_source_file_3 ();
 
 	  if (fclose (finput))
 	    fatal_error ("can't close %s: %m", input_filename);
+#ifdef USE_MAPPED_LOCATION
+	  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
+#endif
 	}
       JCF_FINISH (current_jcf);
       java_pop_parser_context (generate);
@@ -577,7 +577,7 @@ read_class (tree name)
 	  java_parser_context_save_global ();
 	  java_push_parser_context ();
 	  output_class = current_class = class;
-	  input_filename = current_jcf->filename;
+	  ctxp->save_location = input_location;
 	  if (JCF_SEEN_IN_ZIP (current_jcf))
 	    read_zip_member(current_jcf,
 			    current_jcf->zipd, current_jcf->zipd->zipf);
@@ -710,6 +710,9 @@ jcf_parse (JCF* jcf)
   code = jcf_parse_final_attributes (jcf);
   if (code != 0)
     fatal_error ("error while parsing final attributes");
+#ifdef USE_MAPPED_LOCATION
+  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
+#endif
 
   /* The fields of class_type_node are already in correct order. */
   if (current_class != class_type_node && current_class != object_type_node)
@@ -804,10 +807,11 @@ parse_class_file (void)
 	  continue;
 	}
 
-      input_line = 0;
+      input_location = file_start_location;
       if (DECL_LINENUMBERS_OFFSET (method))
 	{
 	  int i;
+	  int min_line = 0;
 	  unsigned char *ptr;
 	  JCF_SEEK (jcf, DECL_LINENUMBERS_OFFSET (method));
 	  linenumber_count = i = JCF_readu2 (jcf);
@@ -818,9 +822,16 @@ parse_class_file (void)
 	      int line = GET_u2 (ptr);
 	      /* Set initial input_line to smallest linenumber.
 	       * Needs to be set before init_function_start. */
-	      if (input_line == 0 || line < input_line)
-		input_line = line;
-	    }  
+	      if (min_line == 0 || line < min_line)
+		min_line = line;
+	    }
+#ifdef USE_MAPPED_LOCATION
+	  if (min_line != 0)
+	    input_location = linemap_line_start (&line_table, min_line, 1);
+#else
+	  if (min_line != 0)
+	    input_line = min_line;
+#endif
 	}
       else
 	{
@@ -845,21 +856,19 @@ parse_class_file (void)
 
   finish_class ();
 
-  (*debug_hooks->end_source_file) (save_location.line);
+  (*debug_hooks->end_source_file) (LOCATION_LINE (save_location));
   input_location = save_location;
 }
 
 /* Parse a source file, as pointed by the current value of INPUT_FILENAME. */
 
 static void
-parse_source_file_1 (tree real_file, FILE *finput)
+parse_source_file_1 (tree real_file, const char *filename, FILE *finput)
 {
   int save_error_count = java_error_count;
 
   /* Mark the file as parsed.  */
   HAS_BEEN_ALREADY_PARSED_P (real_file) = 1;
-
-  jcf_dependency_add_file (input_filename, 0);
 
   lang_init_source (1);		    /* Error msgs have no method prototypes */
 
@@ -873,6 +882,18 @@ parse_source_file_1 (tree real_file, FILE *finput)
 #endif 
   if (current_encoding == NULL || *current_encoding == '\0')
     current_encoding = DEFAULT_ENCODING;
+
+#ifdef USE_MAPPED_LOCATION
+  linemap_add (&line_table, LC_ENTER, false, filename, 0);
+  input_location = linemap_line_start (&line_table, 0, 125);
+#else
+  input_filename = filename;
+  input_line = 0;
+#endif
+  ctxp->file_start_location = input_location;
+  ctxp->filename = filename;
+
+  jcf_dependency_add_file (input_filename, 0);
 
   /* Initialize the parser */
   java_init_lex (finput, current_encoding);
@@ -1147,21 +1168,24 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  java_push_parser_context ();
 	  java_parser_context_save_global ();
 
-	  parse_source_file_1 (real_file, finput);
+	  parse_source_file_1 (real_file, filename, finput);
 	  java_parser_context_restore_global ();
 	  java_pop_parser_context (1);
+#ifdef USE_MAPPED_LOCATION
+	  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
+#endif
 	}
     }
 
   for (ctxp = ctxp_for_generation;  ctxp;  ctxp = ctxp->next)
     {
-      input_filename = ctxp->filename;
+      input_location = ctxp->file_start_location;
       parse_source_file_2 ();
     }
 
   for (ctxp = ctxp_for_generation; ctxp; ctxp = ctxp->next)
     {
-      input_filename = ctxp->filename;
+      input_location = ctxp->file_start_location;
       parse_source_file_3 ();
     }
 

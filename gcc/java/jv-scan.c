@@ -59,6 +59,8 @@ FILE *finput, *out;
 /* Executable name.  */
 char *exec_name;
 
+struct line_maps line_table;
+
 /* Flags matching command line options.  */
 int flag_find_main = 0;
 int flag_dump_class = 0;
@@ -129,6 +131,29 @@ version (void)
   exit (0);
 }
 
+#ifdef USE_MAPPED_LOCATION
+/* FIXME - this is the same as the function in tree.c, which is awkward.
+   Probably the cleanest solution is to move the function to line-map.c.
+   This is difficult as long as we still support --disable-mapped-location,
+   since whether expanded_location has a column fields depends on
+   USE_MAPPED_LOCATION. */
+
+expanded_location
+expand_location (source_location loc)
+{
+  expanded_location xloc;
+  if (loc == 0) { xloc.file = NULL; xloc.line = 0;  xloc.column = 0; }
+  else
+    {
+      const struct line_map *map = linemap_lookup (&line_table, loc);
+      xloc.file = map->to_file;
+      xloc.line = SOURCE_LINE (map, loc);
+      xloc.column = SOURCE_COLUMN (map, loc);
+    };
+  return xloc;
+}
+#endif
+
 /* jc1-lite main entry point */
 int
 main (int argc, char **argv)
@@ -198,8 +223,8 @@ main (int argc, char **argv)
   for ( i = optind; i < argc; i++ )
     if (argv [i])
       {
-	input_filename = argv [i];
-	if ( (finput = fopen (argv [i], "r")) )
+	char *filename = argv[i];
+	if ( (finput = fopen (filename, "r")) )
 	  {
 	    /* There's no point in trying to find the current encoding
 	       unless we are going to do something intelligent with it
@@ -213,6 +238,7 @@ main (int argc, char **argv)
 	      encoding = DEFAULT_ENCODING;
 
 	    java_init_lex (finput, encoding);
+	    ctxp->filename = filename;
 	    yyparse ();
 	    report ();
 	    if (ftell (out) != ft)

@@ -89,6 +89,23 @@ extern tree stabilize_reference (tree);
 #define MODIFIER_WFL(M)   (ctxp->modifier_ctx [(M) - PUBLIC_TK])
 
 /* Check on modifiers */
+#ifdef USE_MAPPED_LOCATION
+#define THIS_MODIFIER_ONLY(f, m, v, count, l)				\
+  if ((f) & (m))							\
+    {									\
+      tree node = MODIFIER_WFL (v);					\
+      if (!l)								\
+        l = node;							\
+      else								\
+	{								\
+	  expanded_location lloc = expand_location (EXPR_LOCATION (l));	\
+	  expanded_location nloc = expand_location (EXPR_LOCATION (node)); \
+	  if (nloc.column > lloc.column || nloc.line > lloc.line)	\
+	    l = node;							\
+	}								\
+      count++;								\
+    }
+#else
 #define THIS_MODIFIER_ONLY(f, m, v, count, l)				\
   if ((f) & (m))							\
     {									\
@@ -101,6 +118,7 @@ extern tree stabilize_reference (tree);
         l = node;							\
       count++;								\
     }
+#endif
 
 #define ABSTRACT_CHECK(FLAG, V, CL, S)				\
   if ((FLAG) & (V))						\
@@ -163,11 +181,13 @@ extern tree stabilize_reference (tree);
    && !TREE_TYPE (NODE) 				\
    && TREE_CODE (TYPE_NAME (NODE)) == IDENTIFIER_NODE)
 
+#ifndef USE_MAPPED_LOCATION
 /* Set the EMIT_LINE_NOTE flag of a EXPR_WLF to 1 if debug information
    are requested. Works in the context of a parser rule. */
 #define JAVA_MAYBE_GENERATE_DEBUG_INFO(node)		\
-  (debug_info_level != DINFO_LEVEL_NONE ? 		\
-    EXPR_WFL_EMIT_LINE_NOTE (node) = 1, node : node)
+  do {if (debug_info_level != DINFO_LEVEL_NONE)	\
+      EXPR_WFL_EMIT_LINE_NOTE (node) = 1; } while (0)
+#endif
 
 /* Types classification, according to the JLS, section 4.2 */
 #define JFLOAT_TYPE_P(TYPE)      (TYPE && TREE_CODE ((TYPE)) == REAL_TYPE)
@@ -610,20 +630,14 @@ typedef struct jdeplist_s jdeplist;
 #define GET_CURRENT_BLOCK(F) ((F) ? DECL_FUNCTION_BODY ((F)) :	\
 			     current_static_block)
 
+#ifndef USE_MAPPED_LOCATION
 /* Retrieve line/column from a WFL. */
 #define EXPR_WFL_GET_LINECOL(V,LINE,COL)	\
   {						\
      (LINE) = (V) >> 12;			\
      (COL) = (V) & 0xfff;			\
    }
-/* Add X to the column number information */
-#define EXPR_WFL_ADD_COL(V, X)					\
-  (V) = (((V) & 0xfffff000) | ((((V) & 0xfff) + (X)) & 0xfff))
-
-/* Build a WFL for expression nodes */
-#define BUILD_EXPR_WFL(NODE, WFL)					\
-  build_expr_wfl ((NODE), input_filename, EXPR_WFL_LINENO ((WFL)), 	\
-		  EXPR_WFL_COLNO ((WFL)))
+#endif
 
 #define EXPR_WFL_QUALIFICATION(WFL) TREE_OPERAND ((WFL), 1)
 #define QUAL_WFL(NODE) TREE_PURPOSE (NODE)
@@ -671,10 +685,17 @@ typedef struct jdeplist_s jdeplist;
   }
 
 /* Set wfl_operator for the most accurate error location */
+#ifdef USE_MAPPED_LOCATION
+#define SET_WFL_OPERATOR(WHICH, NODE, WFL)		\
+  SET_EXPR_LOCATION (WHICH,				\
+    (TREE_CODE (WFL) == EXPR_WITH_FILE_LOCATION ?	\
+     EXPR_LOCATION (WFL) : EXPR_LOCATION (NODE)))
+#else
 #define SET_WFL_OPERATOR(WHICH, NODE, WFL)		\
   EXPR_WFL_LINECOL (WHICH) =				\
     (TREE_CODE (WFL) == EXPR_WITH_FILE_LOCATION ?	\
      EXPR_WFL_LINECOL (WFL) : EXPR_WFL_LINECOL (NODE))
+#endif
 
 #define PATCH_METHOD_RETURN_ERROR()		\
   {						\
@@ -724,23 +745,23 @@ typedef struct jdeplist_s jdeplist;
      
 /* Parser context data structure. */
 struct parser_ctxt GTY(()) {
-
-  const char *filename;		    /* Current filename */
+  const char *filename;		     /* Current filename */
+  location_t file_start_location;
+  location_t save_location;
   struct parser_ctxt *next;
 
   java_lexer * GTY((skip)) lexer; /* Current lexer state */
   char marker_begining;		     /* Marker. Should be a sub-struct */
-  struct java_line * GTY ((skip)) p_line; /* Previous line */
-  struct java_line * GTY ((skip)) c_line; /* Current line */
-  java_lc elc;			     /* Error's line column info */
-  int ccb_indent;		     /* Keep track of {} indent, lexer */
-  int first_ccb_indent1;	     /* First { at ident level 1 */
-  int last_ccb_indent1;		     /* Last } at ident level 1 */
+  int ccb_indent;		     /* Number of unmatched { seen. */
+  /* The next two fields are only source_location if USE_MAPPED_LOCATION.
+     Otherwise, they are integer line number, but we can't have #ifdefs
+     in GTY structures. */
+  source_location first_ccb_indent1; /* First { at ident level 1 */
+  source_location last_ccb_indent1;  /* Last } at ident level 1 */
   int parser_ccb_indent;	     /* Keep track of {} indent, parser */
   int osb_depth;		     /* Current depth of [ in an expression */
   int osb_limit;		     /* Limit of this depth */
   int * GTY ((skip)) osb_number; /* Keep track of ['s */
-  int lineno;			     /* Current lineno */
   char marker_end;		     /* End marker. Should be a sub-struct */
 
   /* The flags section */
@@ -762,8 +783,6 @@ struct parser_ctxt GTY(()) {
   tree modifier_ctx [12];	    /* WFL of modifiers */
   tree class_type;		    /* Current class */
   tree function_decl;	            /* Current function decl, save/restore */
-
-  struct JCF * current_jcf;	    /* CU jcf */
 
   int prevent_ese;	            /* Prevent expression statement error */
 
