@@ -26,6 +26,8 @@ details.  */
 #include <java-threads.h>
 #include <java/lang/Throwable.h>
 #include <java/lang/VMThrowable.h>
+#include <java/lang/Thread.h>
+#include <java-interp.h>
 
 #include <sys/types.h>
 
@@ -54,13 +56,35 @@ java::lang::VMThrowable::fillInStackTrace (java::lang::Throwable* t)
   // to include the calls to fillInStackTrace in the trace.
   int n = backtrace (p, 128) - 1;  
 
-  void **addrs;
+  _Jv_frame_info *addrs;
   if (n > 0)
     {
+#ifdef INTERPRETER
+      extern void _Jv_StartOfInterpreter (void);
+      extern void _Jv_EndOfInterpreter (void);
+
+      java::lang::Thread *thread = java::lang::Thread::currentThread();
+      _Jv_MethodChain *interp_frame
+	= (thread ? reinterpret_cast<_Jv_MethodChain *> (thread->interp_frame)
+	   : NULL);
+#endif // INTERPRETER
+
       state->length = n;
-      addrs = (void **) _Jv_Malloc (n * sizeof p[0]);
+      int len = n;
+      addrs = (_Jv_frame_info *) _Jv_Malloc (n * sizeof (_Jv_frame_info));
       while (n--)
-	addrs[n] = p[n];
+	{
+	  addrs[n].addr = p[n];
+#ifdef INTERPRETER
+	  if (p[n] >= &_Jv_StartOfInterpreter && p[n] <= &_Jv_EndOfInterpreter)
+	    {
+	      addrs[n].interp = (void *) interp_frame->self;
+	      interp_frame = interp_frame->next;
+	    }
+	  else
+	    addrs[n].interp = 0;
+#endif // INTERPRETER
+	}
     }
   else
     addrs = NULL;

@@ -1,4 +1,4 @@
-// natNameFinder.cc - native helper methods for NameFiner.java
+// natNameFinder.cc - native helper methods for NameFinder.java
 
 /* Copyright (C) 2002  Free Software Foundation, Inc
 
@@ -19,6 +19,8 @@ details.  */
 #include <jvm.h>
 #include <java/lang/String.h>
 #include <java/lang/StackTraceElement.h>
+#include <java/lang/StringBuffer.h>
+#include <java-interp.h>
 
 #include <gnu/gcj/runtime/NameFinder.h>
 
@@ -29,15 +31,15 @@ details.  */
 java::lang::String*
 gnu::gcj::runtime::NameFinder::getExecutable (void)
 {
-    return JvNewStringLatin1 (_Jv_ThisExecutable ());
+  return JvNewStringLatin1 (_Jv_ThisExecutable ());
 }
 
 java::lang::String*
 gnu::gcj::runtime::NameFinder::getAddrAsString(RawData* addrs, jint n)
 {
-  void **p = (void **) addrs;
+  _Jv_frame_info *p = (_Jv_frame_info *) addrs;
   typedef unsigned word_t __attribute ((mode (word)));
-  word_t w = (word_t) p[n];
+  word_t w = (word_t) p[n].addr;
   int digits = sizeof (void *) * 2;
   char hex[digits+5];
 
@@ -61,8 +63,8 @@ gnu::gcj::runtime::NameFinder::dladdrLookup(RawData* addrs, jint n)
   extern char **_Jv_argv;
   char name[1024];
   char file_name[1024];
-  void **stack = (void **) addrs;
-  void* p = stack[n];
+  _Jv_frame_info *stack = (_Jv_frame_info *) addrs;
+  void* p = stack[n].addr;
   Dl_info dl_info;
    
   if (dladdr (p, &dl_info))
@@ -81,4 +83,30 @@ gnu::gcj::runtime::NameFinder::dladdrLookup(RawData* addrs, jint n)
     }
 #endif
   return NULL;
+}
+
+java::lang::StackTraceElement *
+gnu::gcj::runtime::NameFinder::lookupInterp(RawData* addrs, jint n)
+{
+#ifdef INTERPRETER
+  _Jv_frame_info *stack = (_Jv_frame_info *) addrs;
+  if (stack[n].interp == NULL)
+    return NULL;
+
+  _Jv_InterpMethod *meth
+    = reinterpret_cast<_Jv_InterpMethod *> (stack[n].interp);
+  // FIXME: demangle.
+  java::lang::StringBuffer *sb = new java::lang::StringBuffer();
+  sb->append(_Jv_NewStringUtf8Const(meth->self->name));
+  sb->append(_Jv_NewStringUtf8Const(meth->self->signature));
+  // FIXME: source file name and line number can be found from
+  // bytecode debug information.  But currently we don't keep that
+  // around.
+  // FIXME: is using the defining class correct here?
+  return new java::lang::StackTraceElement(NULL, -1,
+					   meth->defining_class->getName(),
+					   sb->toString(), false);
+#else // INTERPRETER
+  return NULL;
+#endif // INTERPRETER
 }

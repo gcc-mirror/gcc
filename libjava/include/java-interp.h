@@ -13,6 +13,7 @@ details.  */
 
 #include <jvm.h>
 #include <java-cpool.h>
+#include <gnu/gcj/runtime/NameFinder.h>
 
 #ifdef INTERPRETER
 
@@ -138,6 +139,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 
   friend class _Jv_ClassReader;
   friend class _Jv_BytecodeVerifier;
+  friend class gnu::gcj::runtime::NameFinder;
 
   friend void _Jv_PrepareClass(jclass);
 };
@@ -202,6 +204,28 @@ public:
   void set_function (void *f)
   {
     function = f;
+  }
+};
+
+// A structure of this type is used to link together interpreter
+// invocations on the stack.
+struct _Jv_MethodChain
+{
+  const _Jv_InterpMethod *self;
+  _Jv_MethodChain **ptr;
+  _Jv_MethodChain *next;
+
+  _Jv_MethodChain (const _Jv_InterpMethod *s, _Jv_MethodChain **n)
+  {
+    self = s;
+    ptr = n;
+    next = *n;
+    *n = this;
+  }
+
+  ~_Jv_MethodChain ()
+  {
+    *ptr = next;
   }
 };
 

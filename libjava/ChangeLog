@@ -1,3 +1,24 @@
+2002-08-29  Tom Tromey  <tromey@redhat.com>
+
+	* include/jvm.h (struct _Jv_frame_info): New structure.
+	* gnu/gcj/runtime/natNameFinder.cc: Include StringBuffer.h,
+	java-interp.h.
+	(lookupInterp): New method.
+	(getAddrAsString): Use _Jv_frame_info.
+	(dladdrLookup): Likewise.
+	* gnu/gcj/runtime/NameFinder.java (lookup): Try to look up
+	interpreted frame.
+	(lookupInterp): Declare.
+	* java/lang/natVMThrowable.cc: Include Thread.h, java-interp.h.
+	(fillInStackTrace): Collect information on interpreted frames.
+	Use _Jv_frame_info.
+	* interpret.cc: Include Thread.h.
+	(run): Create and push _Jv_MethodChain object.
+	(_Jv_EndOfInterpreter): New global.
+	* java/lang/Thread.java (interp_frame): New field.
+	* include/java-interp.h (struct _Jv_MethodChain): New structure.
+	Include NameFinder.h.
+
 2002-08-28  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.h: Include Package.h.
