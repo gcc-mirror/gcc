@@ -372,6 +372,7 @@ static void dbxout_handle_pch (unsigned);
 #if defined (DBX_DEBUGGING_INFO)
 
 static void dbxout_source_line (unsigned int, const char *);
+static void dbxout_begin_prologue (unsigned int, const char *);
 static void dbxout_source_file (FILE *, const char *);
 static void dbxout_function_end (void);
 static void dbxout_begin_function (tree);
@@ -391,8 +392,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_end_block,
   debug_true_tree,		         /* ignore_block */
   dbxout_source_line,		         /* source_line */
-  dbxout_source_line,		         /* begin_prologue: just output 
-					    line info */
+  dbxout_begin_prologue,	         /* begin_prologue */
   debug_nothing_int_charstar,	         /* end_prologue */
   debug_nothing_int_charstar,	         /* end_epilogue */
 #ifdef DBX_FUNCTION_FIRST
@@ -481,6 +481,9 @@ dbxout_function_end (void)
   assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
   fprintf (asmfile, "\n");
 #endif
+
+  if (!flag_debug_only_used_symbols)
+    fprintf (asmfile, "%s%d,0,0\n", ASM_STABD_OP, N_ENSYM);
 }
 #endif /* DBX_DEBUGGING_INFO */
 
@@ -751,6 +754,17 @@ dbxout_source_file (FILE *file, const char *filename)
       source_label_number++;
       lastfile = filename;
     }
+}
+
+/* Output N_BNSYM and line number symbol entry.  */
+
+static void
+dbxout_begin_prologue (unsigned int lineno, const char *filename)
+{
+  if (!flag_debug_only_used_symbols)
+    fprintf (asmfile, "%s%d,0,0\n", ASM_STABD_OP, N_BNSYM);
+
+  dbxout_source_line (lineno, filename);
 }
 
 /* Output a line number symbol entry for source file FILENAME and line

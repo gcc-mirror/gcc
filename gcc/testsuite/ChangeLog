@@ -1,3 +1,7 @@
+2004-08-12  Devang patel  <dpatel@apple.com>
+
+	* gcc.dg/darwin-20040809-2.c: New test.
+	
 2004-08-12  Janis Johnson  <janis1872us.ibm.com>
 
 	* g++.dg/ext/altivec-12.C: New test.
