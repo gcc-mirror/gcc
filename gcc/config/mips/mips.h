@@ -259,7 +259,7 @@ extern char	       *mktemp ();
 #define MASK_64BIT	0x00002000	/* Use 64 bit GP registers and insns */
 #define MASK_EMBEDDED_PIC 0x00004000	/* Generate embedded PIC code */
 #define MASK_EMBEDDED_DATA 0x00008000	/* Reduce RAM usage, not fast code */
-#define MASK_UNUSED4	0x00010000
+#define MASK_BIG_ENDIAN	0x00010000	/* Generate big endian code */
 #define MASK_UNUSED3	0x00020000
 #define MASK_UNUSED2	0x00040000
 #define MASK_UNUSED1	0x00080000
@@ -338,6 +338,9 @@ extern char	       *mktemp ();
 					   fastest code.  */
 #define TARGET_EMBEDDED_DATA	(target_flags & MASK_EMBEDDED_DATA)
 
+					/* generate big endian code.  */
+#define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -378,6 +381,8 @@ extern char	       *mktemp ();
   {"no-embedded-pic",	 -MASK_EMBEDDED_PIC},				\
   {"embedded-data",	  MASK_EMBEDDED_DATA},				\
   {"no-embedded-data",	 -MASK_EMBEDDED_DATA},				\
+  {"eb",		  MASK_BIG_ENDIAN},				\
+  {"el",		 -MASK_BIG_ENDIAN},				\
   {"debug",		  MASK_DEBUG},					\
   {"debuga",		  MASK_DEBUG_A},				\
   {"debugb",		  MASK_DEBUG_B},				\
@@ -389,7 +394,9 @@ extern char	       *mktemp ();
   {"debugh",		  MASK_DEBUG_H},				\
   {"debugi",		  MASK_DEBUG_I},				\
   {"debugj",		  MASK_DEBUG_J},				\
-  {"",			  TARGET_DEFAULT | TARGET_CPU_DEFAULT}		\
+  {"",			  (TARGET_DEFAULT				\
+			   | TARGET_CPU_DEFAULT				\
+			   | TARGET_ENDIAN_DEFAULT)}			\
 }
 
 /* Default target_flags if no switches are specified  */
@@ -400,6 +407,14 @@ extern char	       *mktemp ();
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
+#endif
+
+#ifndef TARGET_ENDIAN_DEFAULT
+#ifndef DECSTATION
+#define TARGET_ENDIAN_DEFAULT MASK_BIG_ENDIAN
+#else
+#define TARGET_ENDIAN_DEFAULT 0
+#endif
 #endif
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
@@ -648,7 +663,7 @@ while (0)
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{mips1:-mfp32 -mgp32}%{mips2:-mfp32 -mgp32}%{mips3:-mfp64 -mgp64} \
-%{G*} \
+%{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
 %{pic-extern: -mhalf-pic} \
@@ -669,7 +684,9 @@ while (0)
 %{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
 %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
 %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mips3:-U__mips -D__mips=3}"
+%{mips3:-U__mips -D__mips=3} \
+%{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
+%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
 #endif
 
 /* If defined, this macro is an additional prefix to try after
@@ -900,39 +917,27 @@ do {							\
 
 /* Target machine storage layout */
 
+/* Define in order to support both big and little endian float formats
+   in the same gcc binary.  */
+#define REAL_ARITHMETIC
+
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
 */
 #define BITS_BIG_ENDIAN 0
 
 /* Define this if most significant byte of a word is the lowest numbered. */
-#ifndef BYTES_BIG_ENDIAN
-#ifndef DECSTATION
-#define BYTES_BIG_ENDIAN 1
-#else
-#define BYTES_BIG_ENDIAN 0
-#endif
-#endif
+#define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
 /* Define this if most significant word of a multiword number is the lowest. */
-#ifndef WORDS_BIG_ENDIAN
-#ifndef DECSTATION
-#define WORDS_BIG_ENDIAN 1
+#define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
+
+/* Define this to set the endianness to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#if !defined(MIPSEL) && !defined(__MIPSEL__)
+#define LIBGCC2_WORDS_BIG_ENDIAN 1
 #else
-#define WORDS_BIG_ENDIAN 0
-#endif
-#endif
-
-/* Define macros to easily access the most and least significant words
-   without a lot of #ifdef's.  */
-
-#if WORDS_BIG_ENDIAN
-#define MOST_SIGNIFICANT_WORD	0
-#define LEAST_SIGNIFICANT_WORD	1
-
-#else
-#define MOST_SIGNIFICANT_WORD	1
-#define LEAST_SIGNIFICANT_WORD	0
+#define LIBGCC2_WORDS_BIG_ENDIAN 0
 #endif
 
 /* Number of bits in an addressable storage unit */
@@ -2602,9 +2607,13 @@ while (0)
     return COSTS_N_INSNS (SYMBOL_REF_FLAG (X) ? 1 : 2);			\
 									\
   case CONST_DOUBLE:							\
-    return COSTS_N_INSNS ((CONST_DOUBLE_HIGH (X) == 0			\
-			   && CONST_DOUBLE_LOW (X)) ? 2 : 4);
-
+    {									\
+      rtx high, low;							\
+      split_double (X, &high, &low);					\
+      return COSTS_N_INSNS ((high == CONST0_RTX (GET_MODE (high))	\
+			     || low == CONST0_RTX (GET_MODE (low)))	\
+			    ? 2 : 4);					\
+    }
 
 /* Like `CONST_COSTS' but applies to nonconstant RTL expressions.
    This can be used, for example, to indicate how costly a multiply

@@ -51,7 +51,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
 %{mlong64:-D__PTRDIFF_TYPE__=long\\ int} \
-%{!mlong64:-D__PTRDIFF_TYPE__=int}"
+%{!mlong64:-D__PTRDIFF_TYPE__=int} \
+%{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
+%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
 
 /* turn off collect2 COFF support, since ldfcn now has elf declaration */
 #undef OBJECT_FORMAT_COFF

@@ -6,3 +6,10 @@
 # and does not need anything from libgcc1.a.
 LIBGCC1 = libgcc1.null
 CROSS_LIBGCC1 = libgcc1.null
+
+MULTILIB_OPTIONS=EL/EB
+MULTILIB_DIRNAMES=el eb
+MULTILIB_MATCHES=
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
