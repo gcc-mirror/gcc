@@ -2737,11 +2737,11 @@ output_inline_function (fndecl)
 
   set_new_last_label_num (f->inl_max_label_num);
 
-  /* Compile this function all the way down to assembly code.  */
-  rest_of_compilation (fndecl);
-
   /* We're not deferring this any longer.  */
   DECL_DEFER_OUTPUT (fndecl) = 0;
+
+  /* Compile this function all the way down to assembly code.  */
+  rest_of_compilation (fndecl);
 
   /* We can't inline this anymore.  */
   f->inlinable = 0;
