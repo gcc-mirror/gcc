@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -127,9 +127,20 @@ extern int errno;
 #endif
 
 /* Nonzero means if the type has methods, only output debugging
-   information if methods are actually written to the asm file.  */
+   information if methods are actually written to the asm file.  This
+   optimization only works if the debugger can detect the special C++
+   marker.  */
 
-static int flag_minimal_debug = 1;
+#define MINIMAL_DEBUG 1
+
+#ifdef NO_DOLLAR_IN_LABEL
+#ifdef NO_DOT_IN_LABEL
+#undef MINIMAL_DEBUG
+#define MINIMAL_DEBUG 0
+#endif
+#endif
+
+static int flag_minimal_debug = MINIMAL_DEBUG;
 
 /* Nonzero if we have actually used any of the GDB extensions
    to the debugging format.  The idea is that we use them for the
@@ -898,7 +909,7 @@ dbxout_type_methods (type)
 	  /* This is the "mangled" name of the method.
 	     It encodes the argument types.  */
 	  char *debug_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
-	  int destructor = 0;
+	  int show_arg_types = 0;
 
 	  CONTIN;
 
@@ -909,10 +920,22 @@ dbxout_type_methods (type)
 
 	  if (flag_minimal_debug)
 	    {
+	      /* We can't optimize a method which uses an anonymous
+                 class, because the debugger will not be able to
+                 associate the arbitrary class name with the actual
+                 class.  */
+	      if (strchr (debug_name,
+#ifndef NO_DOLLAR_IN_LABEL
+			  '$'
+#else
+			  '.'
+#endif
+			  ) != NULL)
+		show_arg_types = 1;
 	      /* Detect ordinary methods because their mangled names
 		 start with the operation name.  */
-	      if (!strncmp (IDENTIFIER_POINTER (name), debug_name,
-			    IDENTIFIER_LENGTH (name)))
+	      else if (!strncmp (IDENTIFIER_POINTER (name), debug_name,
+				 IDENTIFIER_LENGTH (name)))
 		{
 		  debug_name += IDENTIFIER_LENGTH (name);
 		  if (debug_name[0] == '_' && debug_name[1] == '_')
@@ -948,7 +971,7 @@ dbxout_type_methods (type)
 		}
 	      /* The other alternative is a destructor.  */
 	      else
-		destructor = 1;
+		show_arg_types = 1;
 
 	      /* Output the operation name just once, for the first method
 		 that we output.  */
@@ -960,7 +983,7 @@ dbxout_type_methods (type)
 		}
 	    }
 
-	  dbxout_type (TREE_TYPE (fndecl), 0, destructor);
+	  dbxout_type (TREE_TYPE (fndecl), 0, show_arg_types);
 
 	  dbxout_type_method_1 (fndecl, debug_name);
 	}
