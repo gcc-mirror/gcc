@@ -1,3 +1,8 @@
+2004-12-16  Andrew Stubbs  <andrew.stubbs@st.com>
+
+	* configure.in (sh64-*-*): Reenable gprof.
+	* configure: Regenerate.
+
 2004-12-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* Makefile.def (flags_to_pass): Add PICFLAG_FOR_TARGET.
