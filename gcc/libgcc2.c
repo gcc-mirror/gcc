@@ -2903,17 +2903,26 @@ SYMBOL__MAIN ()
 #include "gbl-ctors.h"
 
 /* Provide default definitions for the lists of constructors and
-   destructors, so that we don't get linker errors.  
-
-   The old code sometimes put these into the data segment and sometimes
-   into the bss segment.  Putting these into the data segment should always
-   work and avoids a little bit of complexity.  */
+   destructors, so that we don't get linker errors.  These symbols are
+   intentionally bss symbols, so that gld and/or collect will provide
+   the right values.  */
 
 /* We declare the lists here with two elements each,
-   so that they are valid empty lists if no other definition is loaded.  */
+   so that they are valid empty lists if no other definition is loaded.
+
+   If we are using the old "set" extensions to have the gnu linker
+   collect ctors and dtors, then we __CTOR_LIST__ and __DTOR_LIST__
+   must be in the bss/common section.
+
+   Long term no port should use those extensions.  But many still do.  */
 #if !defined(INIT_SECTION_ASM_OP) && !defined(CTOR_LISTS_DEFINED_EXTERNALLY)
+#if defined (ASM_OUTPUT_CONSTRUCTOR) || defined (USE_COLLECT2)
 func_ptr __CTOR_LIST__[2] = {0, 0};
 func_ptr __DTOR_LIST__[2] = {0, 0};
+#else
+func_ptr __CTOR_LIST__[2];
+func_ptr __DTOR_LIST__[2];
+#endif
 #endif /* no INIT_SECTION_ASM_OP and not CTOR_LISTS_DEFINED_EXTERNALLY */
 #endif /* L_ctors */
 
