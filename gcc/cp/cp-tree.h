@@ -3024,6 +3024,7 @@ extern void synthesize_method			PROTO((tree));
 extern tree get_id_2				PROTO((char *, tree));
 
 /* in pt.c */
+extern void check_template_shadow		PROTO ((tree));
 extern tree innermost_args			PROTO ((tree));
 extern tree tsubst				PROTO ((tree, tree, tree));
 extern tree tsubst_expr				PROTO ((tree, tree, tree));
@@ -3220,6 +3221,7 @@ extern int yylex				PROTO((void));
 extern tree arbitrate_lookup			PROTO((tree, tree, tree));
 
 /* in tree.c */
+extern int pod_type_p				PROTO((tree));
 extern void unshare_base_binfos			PROTO((tree));
 extern int member_p				PROTO((tree));
 extern int real_lvalue_p			PROTO((tree));

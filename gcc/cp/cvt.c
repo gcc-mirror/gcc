@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "cp-tree.h"
 #include "convert.h"
+#include "toplev.h"
 
 extern tree static_aggregates;
 

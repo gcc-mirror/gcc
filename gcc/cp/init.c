@@ -2759,7 +2759,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
   tree base2 = NULL_TREE;
   tree type = TREE_TYPE (TREE_TYPE (base));
   tree size;
-  tree itype;
+  tree itype = NULL_TREE;
   tree iterator;
   int num_initialized_elts = 0;
 

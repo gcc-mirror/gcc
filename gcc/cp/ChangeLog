@@ -1,3 +1,25 @@
+Tue Dec 22 15:09:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (cvt.o): Depend on toplev.h.
+
+	* cp-tree.h (check_template_shadow, pod_type_p): Add prototypes.
+
+	* cvt.c: Include toplev.h.
+
+	* except.c (get_eh_caught, get_eh_handlers): Hide prototypes and
+	definitions.
+
+	* init.c (expand_vec_init): Initialize variable `itype'.
+
+	* lex.c (yyerror): Cast the argument passed to a ctype function to
+	an unsigned char.
+
+	* method.c (build_mangled_C9x_name): Wrap prototype and definition
+	in "HOST_BITS_PER_WIDE_INT >= 64".
+
+	* typeck.c (build_binary_op): Mark parameter `convert_p' with
+	ATTRIBUTE_UNUSED.
+
 1998-12-22  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (TYPE_RAISES_EXCEPTIONS): Improve documentation.
