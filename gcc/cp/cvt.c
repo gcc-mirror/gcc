@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-1988, 1992-1999 Free Software Foundation, Inc.
+   Copyright (C) 1987-1988, 1992-2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -851,8 +851,9 @@ convert_to_void (expr, implicit)
      tree expr;
      const char *implicit;
 {
-  if (expr == error_mark_node)
-    return expr;
+  if (expr == error_mark_node 
+      || TREE_TYPE (expr) == error_mark_node)
+    return error_mark_node;
   if (!TREE_TYPE (expr))
     return expr;
   if (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (expr)), void_type_node))
@@ -1091,6 +1092,9 @@ build_expr_type_conversion (desires, expr, complain)
     expr = resolve_offset_ref (expr);
   expr = convert_from_reference (expr);
   basetype = TREE_TYPE (expr);
+
+  if (basetype == error_mark_node)
+    return error_mark_node;
 
   if (! IS_AGGR_TYPE (basetype))
     switch (TREE_CODE (basetype))

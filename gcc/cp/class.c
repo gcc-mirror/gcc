@@ -5279,8 +5279,10 @@ push_nested_class (type, modify)
   tree context;
 
   /* A namespace might be passed in error cases, like A::B:C.  */
-  if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type)
+  if (type == NULL_TREE 
+      || type == error_mark_node 
       || TREE_CODE (type) == NAMESPACE_DECL
+      || ! IS_AGGR_TYPE (type)
       || TREE_CODE (type) == TEMPLATE_TYPE_PARM
       || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
     return;
