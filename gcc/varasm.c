@@ -4427,6 +4427,9 @@ process_pending_assemble_output_defs (void)
   size_t i;
   output_def_pair p;
 
+  if (!output_defs)
+    return;
+
   for (i = 0; i < VARRAY_ACTIVE_SIZE (output_defs); i++)
     {
       p = VARRAY_GENERIC_PTR (output_defs, i);
