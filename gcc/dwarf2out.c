@@ -9207,7 +9207,7 @@ gen_tagged_type_instantiation_die (type, context_die)
   if (type != type_main_variant (type))
     abort ();
 
-  /* Do not check TREE_ASM_WRITTEN(type) as it may not be set if this is
+  /* Do not check TREE_ASM_WRITTEN (type) as it may not be set if this is
      an instance of an unresolved type.  */
   
   switch (TREE_CODE (type))

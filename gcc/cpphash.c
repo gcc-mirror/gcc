@@ -131,7 +131,7 @@ cpp_lookup (pfile, name, len, hash)
 
   if (len < 0)
     {
-      for (bp = name; is_idchar(*bp); bp++);
+      for (bp = name; is_idchar (*bp); bp++);
       len = bp - name;
     }
 

@@ -769,7 +769,6 @@ static const char *link_command_spec = "\
 			%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
 			%{static:} %{L*} %o\
 			%{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
-   {"--pass-exit-codes", "-pass-exit-codes", 0},
 			%{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
 			%{T*}\
 			\n }}}}}}";

@@ -4648,7 +4648,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
   switch (type)
     {
     case RELOAD_FOR_OTHER_ADDRESS:
-      /* RELOAD_FOR_OTHER_ADDRESS conflits with RELOAD_OTHER reloads.  */
+      /* RELOAD_FOR_OTHER_ADDRESS conflicts with RELOAD_OTHER reloads.  */
       time1 = copy ? 0 : 1;
       break;
     case RELOAD_OTHER:
