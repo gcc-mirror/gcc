@@ -2749,7 +2749,7 @@ force_evaluation_order (node)
       for (cmp = NULL_TREE, arg = TREE_OPERAND (node, 1); 
 	   arg; arg = TREE_CHAIN (arg))
 	{
-	  tree saved = save_expr (TREE_VALUE (arg));
+	  tree saved = save_expr (force_evaluation_order (TREE_VALUE (arg)));
 	  cmp = (cmp == NULL_TREE ? saved :
 		 build (COMPOUND_EXPR, void_type_node, cmp, saved));
 	  TREE_VALUE (arg) = saved;

@@ -58,6 +58,7 @@ struct JCF;
    5: HAS_BEEN_ALREADY_PARSED_P (in IDENTIFIER_NODE)
       IS_BREAK_STMT_P (in EXPR_WITH_FILE_LOCATION)
       IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
+      IS_INIT_CHECKED (in SAVE_EXPR)
    6: CAN_COMPLETE_NORMALLY (in statement nodes).
 
    Usage of TYPE_LANG_FLAG_?:
@@ -868,6 +869,10 @@ extern tree *type_map;
 
 /* True if EXPR (a CALL_EXPR in that case) is a crafted StringBuffer */
 #define IS_CRAFTED_STRING_BUFFER_P(EXPR) TREE_LANG_FLAG_5 (EXPR)
+
+/* True if EXPR (a SAVE_EXPR in that case) had its content already
+   checked for (un)initialized local variables.  */
+#define IS_INIT_CHECKED(EXPR) TREE_LANG_FLAG_5 (EXPR)
 
 /* If set in CALL_EXPR, the receiver is 'super'. */
 #define CALL_USING_SUPER(EXPR) TREE_LANG_FLAG_4 (EXPR)

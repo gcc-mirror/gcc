@@ -611,7 +611,6 @@ check_init (exp, before)
     case FIX_TRUNC_EXPR:
     case INDIRECT_REF:
     case ADDR_EXPR:
-    case SAVE_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
@@ -619,6 +618,13 @@ check_init (exp, before)
     case NON_LVALUE_EXPR:
     case INSTANCEOF_EXPR:
       /* Avoid needless recursion. */
+      exp = TREE_OPERAND (exp, 0);
+      goto again;
+
+    case SAVE_EXPR:
+      if (IS_INIT_CHECKED (exp))
+	return;
+      IS_INIT_CHECKED (exp) = 1;
       exp = TREE_OPERAND (exp, 0);
       goto again;
 

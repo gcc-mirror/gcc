@@ -1,3 +1,12 @@
+2000-03-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (IS_INIT_CHECKED): New flag.
+	* check-init.c (check_init): Test and set IS_INIT_CHECKED.
+	* parse.y (patch_string): Call force_evaluation_order on the
+	completed string concatenation tree.
+	* expr.c (force_evaluation_order): Call force_evaluation_order on
+        function's arguments too.
+
 Mon Mar  6 18:07:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (emit_init_test_initialization): Mark KEY as unused.

@@ -12963,6 +12963,8 @@ patch_string (node)
       /* Temporary disable forbid the use of `this'. */
       ctxp->explicit_constructor_p = 0;
       ret = java_complete_tree (make_qualified_primary (node, invoke, 0));
+      /* String concatenation arguments must be evaluated in order too. */
+      ret = force_evaluation_order (ret);
       /* Restore it at its previous value */
       ctxp->explicit_constructor_p = saved;
       return ret;
