@@ -3276,6 +3276,13 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	  if (output_address && reload_when_needed[i] == RELOAD_OTHER)
 	    reload_needed_for_multiple[i] = 1;
+
+	  /* If we have earlyclobbers, make sure nothing overlaps them.  */
+	  if (n_earlyclobbers > 0)
+	    {
+	      reload_when_needed[i] = RELOAD_OTHER;
+	      reload_needed_for_multiple[i] = 1;
+	    }
 	}
     }
 
