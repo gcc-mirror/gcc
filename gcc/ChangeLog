@@ -1,5 +1,8 @@
 Sun Feb 27 07:44:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcov-io.h (__fetch_long, __store_long, __read_long, __write_long):
+	Mark as possibly unused.
+
 	* cse.c (cse_insn): Delete dead code involving tablejump.
 	Pass CODE_LABEL, not LABEL_REF to gen_jump and reset INSN_CODE.
 

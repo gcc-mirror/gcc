@@ -24,10 +24,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <sys/types.h>
 
-static int __fetch_long		PARAMS ((long *, char *, size_t));
-static int __store_long		PARAMS ((long, char *, size_t));
-static int __read_long		PARAMS ((long *, FILE *, size_t));
-static int __write_long		PARAMS ((long, FILE *, size_t));
+static int __fetch_long	PARAMS ((long *, char *, size_t)) ATTRIBUTE_UNUSED;
+static int __store_long PARAMS ((long, char *, size_t)) ATTRIBUTE_UNUSED;
+static int __read_long  PARAMS ((long *, FILE *, size_t)) ATTRIBUTE_UNUSED;
+static int __write_long PARAMS ((long, FILE *, size_t)) ATTRIBUTE_UNUSED;
 
 /* These routines only work for signed values. */
 
