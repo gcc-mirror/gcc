@@ -89,6 +89,7 @@ package body Prj is
       Sources                      => Nil_String,
       Source_Dirs                  => Nil_String,
       Object_Directory             => No_Name,
+      Exec_Directory               => No_Name,
       Modifies                     => No_Project,
       Modified_By                  => No_Project,
       Naming                       => Std_Naming_Data,

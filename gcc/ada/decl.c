@@ -1060,12 +1060,15 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	  }
 
 	/* Back-annotate the Alignment of the object if not already in the
-	   tree.  Likewise for Esize if the object is of a constant size.  */
-	if (Unknown_Alignment (gnat_entity))
+	   tree.  Likewise for Esize if the object is of a constant size.
+	   But if the "object" is actually a pointer to an object, the
+	   alignment and size are the same as teh type, so don't back-annotate
+	   the values for the pointer.  */
+	if (! used_by_ref && Unknown_Alignment (gnat_entity))
 	  Set_Alignment (gnat_entity,
 			 UI_From_Int (DECL_ALIGN (gnu_decl) / BITS_PER_UNIT));
 
-	if (Unknown_Esize (gnat_entity)
+	if (! used_by_ref && Unknown_Esize (gnat_entity)
 	    && DECL_SIZE (gnu_decl) != 0)
 	  {
 	    tree gnu_back_size = DECL_SIZE (gnu_decl);

@@ -54,6 +54,7 @@ package body Prj.Attr is
    --  project attributes
 
      "SVobject_dir#" &
+     "SVexec_dir#" &
      "LVsource_dirs#" &
      "LVsource_files#" &
      "SVsource_list_file#" &

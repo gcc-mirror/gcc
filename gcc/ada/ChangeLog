@@ -1,3 +1,61 @@
+2001-12-17  Vincent Celier <celier@gnat.com>
+
+	* make.adb:
+	(Switches_Of): New function
+	(Test_If_Relative_Path): New procedure
+	(Add_Switches): Use new function Switches_Of
+	(Collect_Arguments_And_Compile): Use new function Switches_Of.
+	When using a project file, test if there are any relative
+	search path. Fail if there are any.
+	(Gnatmake): Only add switches for the primary directory when not using 
+	a project file. When using a project file, change directory to the 
+	object directory of the main project file. When using a project file, 
+	test if there are any relative search path. Fail if there are any. 
+	When using a project file, fail if specified executable is relative 
+	path with directory information, and prepend executable, if not 
+	specified as an absolute path, with the exec directory.  Make sure 
+	that only one -o switch is transmitted to the linker.
+	
+	* prj-attr.adb (Initialization_Data): Add project attribute Exec_Dir
+	
+	* prj-nmsc.adb:
+	(Ada_Check): Get Spec_Suffix_Loc and Impl_Suffix_Loc,
+	when using a non standard naming scheme.
+	(Check_Ada_Naming_Scheme): Make sure that error messages
+	do not raise exceptions.
+	(Is_Illegal_Append): Return True if there is no dot in the suffix.
+	(Language_Independent_Check): Check the exec directory.
+	
+	* prj.adb (Project_Empty): Add new component Exec_Directory
+	
+	* prj.ads:
+	(Default_Ada_Spec_Suffix, Default_Ada_Impl_Suffix): Add defaults.
+	(Project_Data): Add component Exec_Directory
+	
+	* snames.adb: Updated to match snames.ads revision 1.215
+	
+	* snames.ads: Added Exec_Dir
+	
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
+	* make.adb: Minor reformatting
+	
+	* prj-nmsc.adb: Minor reformatting
+	
+	* snames.adb: Updated to match snames.ads
+	
+	* snames.ads: Alphebetize entries for project file
+
+2001-12-17  Ed Schonberg <schonber@gnat.com>
+
+	* trans.c (process_freeze_entity): Do nothing if the entity is a 
+	subprogram that was already elaborated.
+	
+2001-12-17  Richard Kenner <kenner@gnat.com>
+	
+	* decl.c (gnat_to_gnu_entity, object): Do not back-annotate Alignment 
+	and Esize if object is referenced via pointer.
+
 2001-12-17  Ed Schonberg <schonber@gnat.com>
 
 	* sem_ch3.adb (Analyze_Variant_Part): check that type of discriminant 

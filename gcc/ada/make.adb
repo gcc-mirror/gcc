@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.5 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -28,7 +28,9 @@
 
 with Ada.Exceptions;   use Ada.Exceptions;
 with Ada.Command_Line; use Ada.Command_Line;
-with GNAT.OS_Lib;      use GNAT.OS_Lib;
+
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 with ALI;              use ALI;
 with ALI.Util;         use ALI.Util;
@@ -376,6 +378,25 @@ package body Make is
    --  The caller process ADA_INCLUDE_PATH and ADA_OBJECTS_PATH are
    --  not affected.
 
+   function Switches_Of
+     (Source_File      : Name_Id;
+      Source_File_Name : String;
+      Naming           : Naming_Data;
+      In_Package       : Package_Id;
+      Allow_ALI        : Boolean)
+      return             Variable_Value;
+   --  Return the switches for the source file in the specified package
+   --  of a project file. If the Source_File ends with a standard GNAT
+   --  extension (".ads" or ".adb"), try first the full name, then the
+   --  name without the extension. If there is no switches for either
+   --  names, try the default switches for Ada. If all failed, return
+   --  No_Variable_Value.
+
+   procedure Test_If_Relative_Path (Switch : String_Access);
+   --  Test if Switch is a relative search path switch.
+   --  Fail if it is. This subprogram is only called
+   --  when using project files.
+
    procedure Set_Library_For
      (Project             : Project_Id;
       There_Are_Libraries : in out Boolean);
@@ -630,27 +651,18 @@ package body Make is
       Switch_List   : String_List_Id;
       Element       : String_Element;
 
-      Switches_Array : constant Array_Element_Id :=
-        Prj.Util.Value_Of
-        (Name => Name_Switches,
-         In_Arrays => Packages.Table (The_Package).Decl.Arrays);
-      Default_Switches_Array : constant Array_Element_Id :=
-        Prj.Util.Value_Of
-        (Name => Name_Default_Switches,
-         In_Arrays => Packages.Table (The_Package).Decl.Arrays);
-
    begin
       if File_Name'Length > 0 then
          Name_Len := File_Name'Length;
          Name_Buffer (1 .. Name_Len) := File_Name;
          Switches :=
-           Prj.Util.Value_Of (Index => Name_Find, In_Array => Switches_Array);
-
-         if Switches = Nil_Variable_Value then
-            Switches := Prj.Util.Value_Of
-              (Index => Name_Ada,
-               In_Array => Default_Switches_Array);
-         end if;
+           Switches_Of
+           (Source_File      => Name_Find,
+            Source_File_Name => File_Name,
+            Naming           => Projects.Table (Main_Project).Naming,
+            In_Package       => The_Package,
+            Allow_ALI        =>
+              Program = Binder or else Program = Linker);
 
          case Switches.Kind is
             when Undefined =>
@@ -861,30 +873,30 @@ package body Make is
       -- Data declarations for Check --
       ---------------------------------
 
-      Full_Lib_File    : File_Name_Type;
+      Full_Lib_File : File_Name_Type;
       --  Full name of current library file
 
-      Full_Obj_File    : File_Name_Type;
+      Full_Obj_File : File_Name_Type;
       --  Full name of the object file corresponding to Lib_File.
 
-      Lib_Stamp        : Time_Stamp_Type;
+      Lib_Stamp : Time_Stamp_Type;
       --  Time stamp of the current ada library file.
 
-      Obj_Stamp        : Time_Stamp_Type;
+      Obj_Stamp : Time_Stamp_Type;
       --  Time stamp of the current object file.
 
-      Modified_Source  : File_Name_Type;
+      Modified_Source : File_Name_Type;
       --  The first source in Lib_File whose current time stamp differs
       --  from that stored in Lib_File.
 
-      New_Spec         : File_Name_Type;
+      New_Spec : File_Name_Type;
       --  If Lib_File contains in its W (with) section a body (for a
       --  subprogram) for which there exists a spec and the spec did not
       --  appear in the Sdep section of Lib_File, New_Spec contains the file
       --  name of this new spec.
 
       Source_Name : Name_Id;
-      Text : Text_Buffer_Ptr;
+      Text        : Text_Buffer_Ptr;
 
       Prev_Switch : Character;
       --  First character of previous switch processed
@@ -1033,6 +1045,8 @@ package body Make is
                      end if;
                   end if;
                end loop;
+
+            --  Special_Arg is non-null
 
             else
                for J in Special_Arg'Range loop
@@ -1679,34 +1693,14 @@ package body Make is
                      --  the specific switches for the current source,
                      --  or the global switches, if any.
 
-                     declare
-                        Defaults : constant Array_Element_Id :=
-                                     Prj.Util.Value_Of
-                                      (Name => Name_Default_Switches,
-                                       In_Arrays =>
-                                         Packages.Table
-                                           (Compiler_Package) .Decl.Arrays);
+                     Switches := Switches_Of
+                       (Source_File      => Source_File,
+                        Source_File_Name => Source_File_Name,
+                        Naming           =>
+                          Projects.Table (Current_Project).Naming,
+                        In_Package       => Compiler_Package,
+                        Allow_ALI        => False);
 
-                        Switches_Array : constant Array_Element_Id :=
-                                           Prj.Util.Value_Of
-                                             (Name => Name_Switches,
-                                              In_Arrays =>
-                                                Packages.Table
-                                                  (Compiler_Package).
-                                                              Decl.Arrays);
-
-                     begin
-                        Switches :=
-                          Prj.Util.Value_Of
-                             (Index => Source_File,
-                              In_Array => Switches_Array);
-
-                        if Switches = Nil_Variable_Value then
-                           Switches :=
-                             Prj.Util.Value_Of
-                               (Index => Name_Ada, In_Array => Defaults);
-                        end if;
-                     end;
                   end if;
 
                   case Switches.Kind is
@@ -1739,6 +1733,7 @@ package body Make is
                                  String_To_Name_Buffer (Element.Value);
                                  New_Args (Index) :=
                                    new String' (Name_Buffer (1 .. Name_Len));
+                                 Test_If_Relative_Path (New_Args (Index));
                                  Current := Element.Next;
                               end loop;
 
@@ -1764,6 +1759,7 @@ package body Make is
                                                 (Name_Buffer (1 .. Name_Len)));
 
                         begin
+                           Test_If_Relative_Path (New_Args (1));
                            Pid := Compile
                              (Path_Name,
                               Lib_File,
@@ -2388,7 +2384,6 @@ package body Make is
             end loop;
          end;
       end if;
-
    end Compile_Sources;
 
    -------------
@@ -2551,11 +2546,11 @@ package body Make is
          declare
             Main_Id : constant Name_Id := Name_Find;
 
-            Mains   : constant Prj.Variable_Value :=
-                        Prj.Util.Value_Of
-                         (Variable_Name => Main_Id,
-                          In_Variables  =>
-                            Projects.Table (Main_Project).Decl.Attributes);
+            Mains : constant Prj.Variable_Value :=
+                      Prj.Util.Value_Of
+                        (Variable_Name => Main_Id,
+                         In_Variables  =>
+                           Projects.Table (Main_Project).Decl.Attributes);
 
             Value : String_List_Id := Mains.Values;
 
@@ -2615,21 +2610,22 @@ package body Make is
       if Project_File_Name = null then
          Add_Switch ("-I-", Compiler, And_Save => True);
          Add_Switch ("-I-", Binder, And_Save => True);
-      end if;
 
-      if Opt.Look_In_Primary_Dir then
+         if Opt.Look_In_Primary_Dir then
 
-         Add_Switch
-           ("-I" &
-            Normalize_Directory_Name
-              (Get_Primary_Src_Search_Directory.all).all,
-            Compiler, Append_Switch => False,
-            And_Save => False);
+            Add_Switch
+              ("-I" &
+               Normalize_Directory_Name
+               (Get_Primary_Src_Search_Directory.all).all,
+               Compiler, Append_Switch => False,
+               And_Save => False);
 
-         Add_Switch ("-aO" & Normalized_CWD,
-                     Binder,
-                     Append_Switch => False,
-                     And_Save => False);
+            Add_Switch ("-aO" & Normalized_CWD,
+                        Binder,
+                        Append_Switch => False,
+                        And_Save => False);
+         end if;
+
       end if;
 
       --  If the user wants a program without a main subprogram, add the
@@ -2640,6 +2636,9 @@ package body Make is
       end if;
 
       if Main_Project /= No_Project then
+
+         Change_Dir
+           (Get_Name_String (Projects.Table (Main_Project).Object_Directory));
 
          --  Find the file name of the main unit
 
@@ -2859,12 +2858,26 @@ package body Make is
 
          for J in 1 .. Saved_Gcc_Switches.Last loop
             The_Saved_Gcc_Switches (J) := Saved_Gcc_Switches.Table (J);
+            Test_If_Relative_Path (The_Saved_Gcc_Switches (J));
          end loop;
 
          --  We never use gnat.adc when a project file is used
 
          The_Saved_Gcc_Switches (The_Saved_Gcc_Switches'Last) :=
            No_gnat_adc;
+
+         for J in 1 .. Gcc_Switches.Last loop
+            Test_If_Relative_Path (Gcc_Switches.Table (J));
+         end loop;
+
+         for J in 1 .. Binder_Switches.Last loop
+            Test_If_Relative_Path (Binder_Switches.Table (J));
+         end loop;
+
+         for J in 1 .. Linker_Switches.Last loop
+            Test_If_Relative_Path (Linker_Switches.Table (J));
+         end loop;
+
       end if;
 
       --  If there was a --GCC, --GNATBIND or --GNATLINK switch on
@@ -2939,7 +2952,9 @@ package body Make is
                --  Look inside the linker switches to see if the name
                --  of the final executable program was specified.
 
-               for J in Linker_Switches.First .. Linker_Switches.Last loop
+               for
+                 J in reverse Linker_Switches.First .. Linker_Switches.Last
+               loop
                   if Linker_Switches.Table (J).all = Output_Flag.all then
                      pragma Assert (J < Linker_Switches.Last);
 
@@ -2998,6 +3013,7 @@ package body Make is
                                           (Projects.Table
                                            (Main_Project).
                                             Naming.Current_Impl_Suffix);
+
                         Spec_Append : constant String :=
                                         Get_Name_String
                                           (Projects.Table
@@ -3013,12 +3029,10 @@ package body Make is
                                            Body_Append
                         then
                            --  We have found the body termination. We remove it
-                           --  add the executable termination (if any) and set
-                           --  Non_Std_Executable.
+                           --  add the executable termination, if any.
 
                            Name_Len := Name_Len - Body_Append'Length;
                            Executable := Executable_Name (Name_Find);
-                           Non_Std_Executable := True;
 
                         elsif Name_Len > Spec_Append'Length
                           and then
@@ -3027,19 +3041,55 @@ package body Make is
                                                                    Spec_Append
                         then
                            --  We have found the spec termination. We remove
-                           --  it, add the executable termination (if any),
-                           --  and set Non_Std_Executable.
+                           --  it, add the executable termination, if any.
 
                            Name_Len := Name_Len - Spec_Append'Length;
                            Executable := Executable_Name (Name_Find);
-                           Non_Std_Executable := True;
 
                         else
                            Executable :=
                              Executable_Name (Strip_Suffix (Main_Source_File));
                         end if;
+
                      end;
                   end if;
+               end if;
+
+               if Main_Project /= No_Project then
+                  declare
+                     Exec_File_Name : constant String :=
+                       Get_Name_String (Executable);
+
+                  begin
+                     if not Is_Absolute_Path (Exec_File_Name) then
+                        for Index in Exec_File_Name'Range loop
+                           if Exec_File_Name (Index) = Directory_Separator then
+                              Fail ("relative executable (""" &
+                                    Exec_File_Name &
+                                    """) with directory part not allowed " &
+                                    "when using project files");
+                           end if;
+                        end loop;
+
+                        Get_Name_String (Projects.Table
+                                         (Main_Project).Exec_Directory);
+
+                        if
+                          Name_Buffer (Name_Len) /= Directory_Separator
+                        then
+                           Name_Len := Name_Len + 1;
+                           Name_Buffer (Name_Len) := Directory_Separator;
+                        end if;
+
+                        Name_Buffer (Name_Len + 1 ..
+                                     Name_Len + Exec_File_Name'Length) :=
+                          Exec_File_Name;
+                        Name_Len := Name_Len + Exec_File_Name'Length;
+                        Executable := Name_Find;
+                        Non_Std_Executable := True;
+                     end if;
+                  end;
+
                end if;
 
                --  Now we invoke Compile_Sources for the current main
@@ -3212,7 +3262,6 @@ package body Make is
                   end if;
                end if;
             end Recursive_Compilation_Step;
-
          end if;
 
          --  If we are here, it means that we need to rebuilt the current
@@ -3243,7 +3292,10 @@ package body Make is
                Main_ALI_File := Full_Lib_File_Name (Main_ALI_File);
             end if;
 
-            pragma Assert (Main_ALI_File /= No_File);
+            if Main_ALI_File = No_File then
+               Fail ("could not find the main ALI file");
+            end if;
+
          end Main_ALI_In_Place_Mode_Step;
 
          if Do_Bind_Step then
@@ -3268,7 +3320,6 @@ package body Make is
 
                Bind (Main_ALI_File, Args);
             end Bind_Step;
-
          end if;
 
          if Do_Link_Step then
@@ -3278,7 +3329,6 @@ package body Make is
                Linker_Switches_Last : constant Integer := Linker_Switches.Last;
 
             begin
-
                if Main_Project /= No_Project then
 
                   if MLib.Tgt.Libraries_Are_Supported then
@@ -3310,9 +3360,7 @@ package body Make is
                            Linker_Switches.Table (Linker_Switches.Last) :=
                              Option;
                         end if;
-
                      end;
-
                   end if;
 
                   --  Put the object directories in ADA_OBJECTS_PATH
@@ -3322,34 +3370,50 @@ package body Make is
 
                declare
                   Args : Argument_List
-                         (Linker_Switches.First .. Linker_Switches.Last + 2);
+                           (Linker_Switches.First .. Linker_Switches.Last + 2);
+
+                  Last_Arg : Integer := Linker_Switches.First - 1;
+                  Skip     : Boolean := False;
 
                begin
                   --  Get all the linker switches
 
                   for J in Linker_Switches.First .. Linker_Switches.Last loop
-                     Args (J) := Linker_Switches.Table (J);
+                     if Skip then
+                        Skip := False;
+
+                     elsif Non_Std_Executable
+                       and then Linker_Switches.Table (J).all = "-o"
+                     then
+                        Skip := True;
+
+                     else
+                        Last_Arg := Last_Arg + 1;
+                        Args (Last_Arg) := Linker_Switches.Table (J);
+                     end if;
+
                   end loop;
 
                   --  And invoke the linker
 
                   if Non_Std_Executable then
-                     Args (Linker_Switches.Last + 1) := new String'("-o");
-                     Args (Linker_Switches.Last + 2) :=
+                     Last_Arg := Last_Arg + 1;
+                     Args (Last_Arg) := new String'("-o");
+                     Last_Arg := Last_Arg + 1;
+                     Args (Last_Arg) :=
                        new String'(Get_Name_String (Executable));
-                     Link (Main_ALI_File, Args);
+                     Link (Main_ALI_File, Args (Args'First .. Last_Arg));
 
                   else
                      Link
                        (Main_ALI_File,
-                        Args (Linker_Switches.First .. Linker_Switches.Last));
+                        Args (Args'First .. Last_Arg));
                   end if;
 
                end;
 
                Linker_Switches.Set_Last (Linker_Switches_Last);
             end Link_Step;
-
          end if;
 
          --  We go to here when we skip the bind and link steps.
@@ -3592,7 +3656,6 @@ package body Make is
          when Err : SFN_Scan.Syntax_Error_In_GNAT_ADC =>
             Osint.Fail (Exception_Message (Err));
       end;
-
    end Initialize;
 
    -----------------------------------
@@ -4514,6 +4577,150 @@ package body Make is
 
       end if;
    end Set_Library_For;
+
+   -----------------
+   -- Switches_Of --
+   -----------------
+
+   function Switches_Of
+     (Source_File      : Name_Id;
+      Source_File_Name : String;
+      Naming           : Naming_Data;
+      In_Package       : Package_Id;
+      Allow_ALI        : Boolean)
+      return             Variable_Value
+   is
+      Switches : Variable_Value;
+
+      Defaults : constant Array_Element_Id :=
+                   Prj.Util.Value_Of
+                     (Name      => Name_Default_Switches,
+                      In_Arrays =>
+                      Packages.Table (In_Package).Decl.Arrays);
+
+      Switches_Array : constant Array_Element_Id :=
+                         Prj.Util.Value_Of
+                           (Name      => Name_Switches,
+                            In_Arrays =>
+                              Packages.Table (In_Package).Decl.Arrays);
+
+   begin
+      Switches :=
+        Prj.Util.Value_Of
+        (Index => Source_File,
+         In_Array => Switches_Array);
+
+      if Switches = Nil_Variable_Value then
+         declare
+            Name        : String (1 .. Source_File_Name'Length + 3);
+            Last        : Positive := Source_File_Name'Length;
+            Spec_Suffix : constant String :=
+                            Get_Name_String (Naming.Current_Spec_Suffix);
+            Impl_Suffix : constant String :=
+                            Get_Name_String (Naming.Current_Impl_Suffix);
+            Truncated   : Boolean := False;
+
+         begin
+            Name (1 .. Last) := Source_File_Name;
+
+            if Last > Impl_Suffix'Length
+               and then Name (Last - Impl_Suffix'Length + 1 .. Last) =
+                                                                  Impl_Suffix
+            then
+               Truncated := True;
+               Last := Last - Impl_Suffix'Length;
+            end if;
+
+            if not Truncated
+              and then Last > Spec_Suffix'Length
+              and then Name (Last - Spec_Suffix'Length + 1 .. Last) =
+                                                                 Spec_Suffix
+            then
+               Truncated := True;
+               Last := Last - Spec_Suffix'Length;
+            end if;
+
+            if Truncated then
+               Name_Len := Last;
+               Name_Buffer (1 .. Name_Len) := Name (1 .. Last);
+               Switches :=
+                 Prj.Util.Value_Of
+                 (Index => Name_Find,
+                  In_Array => Switches_Array);
+
+               if Switches = Nil_Variable_Value then
+                  Last := Source_File_Name'Length;
+
+                  while Name (Last) /= '.' loop
+                     Last := Last - 1;
+                  end loop;
+
+                  Name (Last + 1 .. Last + 3) := "ali";
+                  Name_Len := Last + 3;
+                  Name_Buffer (1 .. Name_Len) := Name (1 .. Name_Len);
+                                 Switches :=
+                 Prj.Util.Value_Of
+                    (Index => Name_Find,
+                     In_Array => Switches_Array);
+               end if;
+            end if;
+         end;
+      end if;
+
+      if Switches = Nil_Variable_Value then
+         Switches := Prj.Util.Value_Of
+                                (Index => Name_Ada, In_Array => Defaults);
+      end if;
+
+      return Switches;
+   end Switches_Of;
+
+   ---------------------------
+   -- Test_If_Relative_Path --
+   ---------------------------
+
+   procedure Test_If_Relative_Path (Switch : String_Access) is
+   begin
+      if Switch /= null then
+
+         declare
+            Sw : String (1 .. Switch'Length);
+            Start : Positive;
+
+         begin
+            Sw := Switch.all;
+
+            if Sw (1) = '-' then
+               if Sw'Length >= 3
+                 and then (Sw (2) = 'A'
+                           or else Sw (2) = 'I'
+                           or else Sw (2) = 'L')
+               then
+                  Start := 3;
+
+                  if Sw = "-I-" then
+                     return;
+                  end if;
+
+               elsif Sw'Length >= 4
+                 and then (Sw (2 .. 3) = "aL"
+                           or else Sw (2 .. 3) = "aO"
+                           or else Sw (2 .. 3) = "aI")
+               then
+                  Start := 4;
+
+               else
+                  return;
+               end if;
+
+               if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
+                  Fail ("relative search path switches (""" &
+                        Sw & """) are not allowed when using project files");
+               end if;
+            end if;
+         end;
+      end if;
+   end Test_If_Relative_Path;
 
    ------------
    -- Unmark --

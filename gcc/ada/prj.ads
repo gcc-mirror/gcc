@@ -40,11 +40,11 @@ with Types;       use Types;
 
 package Prj is
 
-   Default_Ada_Spec_Suffix : Name_Id := No_Name;
+   Default_Ada_Spec_Suffix : Name_Id;
    --  The Name_Id for the standard GNAT suffix for Ada spec source file
    --  name ".ads". Initialized by Prj.Initialize.
 
-   Default_Ada_Impl_Suffix : Name_Id := No_Name;
+   Default_Ada_Impl_Suffix : Name_Id;
    --  The Name_Id for the standard GNAT suffix for Ada body source file
    --  name ".adb". Initialized by Prj.Initialize.
 
@@ -364,6 +364,11 @@ package Prj is
 
       Object_Directory : Name_Id := No_Name;
       --  The object directory of this project file.
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
+
+      Exec_Directory   : Name_Id := No_Name;
+      --  The exec directory of this project file.
+      --  Default is equal to Object_Directory.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Modifies : Project_Id := No_Project;
