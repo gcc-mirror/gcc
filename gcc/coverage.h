@@ -49,6 +49,4 @@ extern gcov_type *get_coverage_counts (unsigned /*counter*/,
 
 extern tree get_gcov_type (void);
 
-#define GCOV_TYPE_NODE get_gcov_type ()
-
 #endif

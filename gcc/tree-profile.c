@@ -61,14 +61,15 @@ tree_init_edge_profiler (void)
 static void
 tree_gen_edge_profiler (int edgeno, edge e)
 {
-  tree tmp1 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  tree tmp2 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
+  tree gcov_type_node = get_gcov_type ();
+  tree tmp1 = create_tmp_var (gcov_type_node, "PROF");
+  tree tmp2 = create_tmp_var (gcov_type_node, "PROF");
   tree ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
-  tree stmt1 = build (MODIFY_EXPR, GCOV_TYPE_NODE, tmp1, ref);
-  tree stmt2 = build (MODIFY_EXPR, GCOV_TYPE_NODE, tmp2,
-		      build (PLUS_EXPR, GCOV_TYPE_NODE, 
+  tree stmt1 = build (MODIFY_EXPR, gcov_type_node, tmp1, ref);
+  tree stmt2 = build (MODIFY_EXPR, gcov_type_node, tmp2,
+		      build (PLUS_EXPR, gcov_type_node, 
 			     tmp1, integer_one_node));
-  tree stmt3 = build (MODIFY_EXPR, GCOV_TYPE_NODE, ref, tmp2);
+  tree stmt3 = build (MODIFY_EXPR, gcov_type_node, ref, tmp2);
   bsi_insert_on_edge (e, stmt1);
   bsi_insert_on_edge (e, stmt2);
   bsi_insert_on_edge (e, stmt3);
@@ -95,6 +96,7 @@ tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
   tree stmt = value->hvalue.tree.stmt;
   block_stmt_iterator bsi = bsi_for_stmt (stmt);
   basic_block bb = bb_for_stmt (stmt);
+  tree gcov_type_node = get_gcov_type ();
   tree optype;
 
   op = stmt;
@@ -143,7 +145,7 @@ tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
   bsi_insert_before (&bsi, stmt3, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt4, BSI_SAME_STMT);
 
-  index = create_tmp_var (GCOV_TYPE_NODE, "PROF");
+  index = create_tmp_var (gcov_type_node, "PROF");
 
   /* Check for too big.  */
   stmt1 = build3 (COND_EXPR, void_type_node,
@@ -167,23 +169,24 @@ tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
   /* Normal case, within range. */
   label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
   bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, index, 
-		    build1 (NOP_EXPR, GCOV_TYPE_NODE, val));
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, index,
+		  build1 (NOP_EXPR, gcov_type_node, val));
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb3end = stmt1;
 
   /* Too big */
   label4 = build1 (LABEL_EXPR, void_type_node, label_decl4);
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, index, 
-		    build_int_cst (GCOV_TYPE_NODE, value->hdata.intvl.steps));
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, index,
+		  build_int_cst (gcov_type_node, value->hdata.intvl.steps));
   bsi_insert_before (&bsi, label4, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb4end = stmt1;
 
   /* Too small */
   label5 = build1 (LABEL_EXPR, void_type_node, label_decl5);
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, index, 
-		    build_int_cst (GCOV_TYPE_NODE, value->hdata.intvl.steps + 1));
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, index,
+		  build_int_cst (gcov_type_node,
+				 value->hdata.intvl.steps + 1));
   bsi_insert_before (&bsi, label5, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb5end = stmt1;
@@ -192,22 +195,22 @@ tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
   label6 = build1 (LABEL_EXPR, void_type_node, label_decl6);
   bsi_insert_before (&bsi, label6, BSI_SAME_STMT);
 
-  tmp1 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  tmp2 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  tmp3 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp1, 
-		    build2 (PLUS_EXPR, GCOV_TYPE_NODE, index, 
-			    TREE_OPERAND (ref, 1)));
+  tmp1 = create_tmp_var (gcov_type_node, "PROF");
+  tmp2 = create_tmp_var (gcov_type_node, "PROF");
+  tmp3 = create_tmp_var (gcov_type_node, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, tmp1,
+		  build2 (PLUS_EXPR, gcov_type_node, index,
+			  TREE_OPERAND (ref, 1)));
   TREE_OPERAND (ref, 1) = tmp1;
   /* Make a copy to avoid sharing complaints. */
   ref2 = build4 (ARRAY_REF, TREE_TYPE (ref), TREE_OPERAND (ref, 0), 
 		TREE_OPERAND (ref, 1), TREE_OPERAND (ref, 2), 
 		TREE_OPERAND (ref, 3));
 
-  stmt2 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp2, ref);
-  stmt3 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp3, 
-		    build2 (PLUS_EXPR, GCOV_TYPE_NODE, tmp2, integer_one_node));
-  stmt4 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, ref2, tmp3);
+  stmt2 = build2 (MODIFY_EXPR, gcov_type_node, tmp2, ref);
+  stmt3 = build2 (MODIFY_EXPR, gcov_type_node, tmp3,
+		  build2 (PLUS_EXPR, gcov_type_node, tmp2, integer_one_node));
+  stmt4 = build2 (MODIFY_EXPR, gcov_type_node, ref2, tmp3);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt3, BSI_SAME_STMT);
@@ -259,6 +262,7 @@ tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
   tree stmt = value->hvalue.tree.stmt;
   block_stmt_iterator bsi = bsi_for_stmt (stmt);
   basic_block bb = bb_for_stmt (stmt);
+  tree gcov_type_node = get_gcov_type ();
   tree optype, optypesigned, optypeunsigned;
 
   op = stmt;
@@ -289,9 +293,9 @@ tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 
   /* Set up variables and check if denominator is negative when considered
      as signed.  */
-  index = create_tmp_var (GCOV_TYPE_NODE, "PROF");
+  index = create_tmp_var (gcov_type_node, "PROF");
   denom = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, index, integer_zero_node);
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, index, integer_zero_node);
   stmt2 = build2 (MODIFY_EXPR, optype, denom, op);
   if (optypesigned == optype)
     {
@@ -335,8 +339,8 @@ tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 
   /* Loop.  Increment index, shift denominator, repeat if denominator nonzero. */
   label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, index, 
-		    build2 (PLUS_EXPR, GCOV_TYPE_NODE, index, integer_one_node));
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, index,
+		  build2 (PLUS_EXPR, gcov_type_node, index, integer_one_node));
   if (optypeunsigned == optype)
     {
       tmp1 = denom;
@@ -364,19 +368,20 @@ tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 
   /* Increment the appropriate counter.  */
   label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
-  tmp1 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  tmp2 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  tmp3 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp1, 
-		    build2 (PLUS_EXPR, GCOV_TYPE_NODE, index, TREE_OPERAND (ref, 1)));
+  tmp1 = create_tmp_var (gcov_type_node, "PROF");
+  tmp2 = create_tmp_var (gcov_type_node, "PROF");
+  tmp3 = create_tmp_var (gcov_type_node, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, tmp1,
+		  build2 (PLUS_EXPR, gcov_type_node,
+			  index, TREE_OPERAND (ref, 1)));
   TREE_OPERAND (ref, 1) = tmp1;
   /* Make a copy to avoid sharing complaints. */
   ref2 = build4 (ARRAY_REF, TREE_TYPE (ref), TREE_OPERAND (ref, 0), 
 		TREE_OPERAND (ref, 1), TREE_OPERAND (ref, 2), TREE_OPERAND (ref, 3));
-  stmt2 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp2, ref);
-  stmt3 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp3, 
-		    build2 (PLUS_EXPR, GCOV_TYPE_NODE, tmp2, integer_one_node));
-  stmt4 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, ref2, tmp3);
+  stmt2 = build2 (MODIFY_EXPR, gcov_type_node, tmp2, ref);
+  stmt3 = build2 (MODIFY_EXPR, gcov_type_node, tmp3,
+		  build2 (PLUS_EXPR, gcov_type_node, tmp2, integer_one_node));
+  stmt4 = build2 (MODIFY_EXPR, gcov_type_node, ref2, tmp3);
   bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
@@ -425,6 +430,7 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
   tree stmt = value->hvalue.tree.stmt;
   block_stmt_iterator bsi = bsi_for_stmt (stmt);
   basic_block bb = bb_for_stmt (stmt);
+  tree gcov_type_node = get_gcov_type ();
   tree optype;
 
   op = stmt;
@@ -440,10 +446,10 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
   optype = TREE_TYPE (op);
 
   /* Check if the stored value matches. */
-  tmp1 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
+  tmp1 = create_tmp_var (gcov_type_node, "PROF");
   tmp2 = create_tmp_var (optype, "PROF");
   tmp3 = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp1, ref1);
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, tmp1, ref1);
   stmt2 = build2 (MODIFY_EXPR, optype, tmp2, 
 		    build1 (NOP_EXPR, optype, tmp1));
   stmt3 = build2 (MODIFY_EXPR, optype, tmp3, op);
@@ -459,8 +465,8 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 
   /* Does not match; check whether the counter is zero. */
   label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
-  tmp1 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp1, ref2);
+  tmp1 = create_tmp_var (gcov_type_node, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, tmp1, ref2);
   stmt2 = build3 (COND_EXPR, void_type_node, 
 		build2 (EQ_EXPR, boolean_type_node, tmp1, integer_zero_node),
 		build1 (GOTO_EXPR, void_type_node, label_decl3), 
@@ -472,13 +478,12 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 
   /* Counter is not zero yet, decrement. */
   label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  tmp1 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  tmp2 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp1, ref2);
-  stmt2 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp2,
-		      build (MINUS_EXPR, GCOV_TYPE_NODE, 
-			     tmp1, integer_one_node));
-  stmt3 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, ref2, tmp2);
+  tmp1 = create_tmp_var (gcov_type_node, "PROF");
+  tmp2 = create_tmp_var (gcov_type_node, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, tmp1, ref2);
+  stmt2 = build2 (MODIFY_EXPR, gcov_type_node, tmp2,
+		  build (MINUS_EXPR, gcov_type_node, tmp1, integer_one_node));
+  stmt3 = build2 (MODIFY_EXPR, gcov_type_node, ref2, tmp2);
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
@@ -488,11 +493,11 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
   /* Counter was zero, store new value. */
   label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
   tmp1 = create_tmp_var (optype, "PROF");
-  tmp2 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
+  tmp2 = create_tmp_var (gcov_type_node, "PROF");
   stmt1 = build2 (MODIFY_EXPR, optype, tmp1, op);
-  stmt2 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp2, 
-			build1 (NOP_EXPR, GCOV_TYPE_NODE, tmp1));
-  stmt3 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, ref1, tmp2);
+  stmt2 = build2 (MODIFY_EXPR, gcov_type_node, tmp2,
+		  build1 (NOP_EXPR, gcov_type_node, tmp1));
+  stmt3 = build2 (MODIFY_EXPR, gcov_type_node, ref1, tmp2);
   bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
@@ -502,13 +507,12 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 
   /* Increment counter.  */
   label4 = build1 (LABEL_EXPR, void_type_node, label_decl4);
-  tmp1 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  tmp2 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp1, ref2);
-  stmt2 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp2,
-		      build (PLUS_EXPR, GCOV_TYPE_NODE, 
-			     tmp1, integer_one_node));
-  stmt3 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, ref2, tmp2);
+  tmp1 = create_tmp_var (gcov_type_node, "PROF");
+  tmp2 = create_tmp_var (gcov_type_node, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, tmp1, ref2);
+  stmt2 = build2 (MODIFY_EXPR, gcov_type_node, tmp2,
+		  build (PLUS_EXPR, gcov_type_node, tmp1, integer_one_node));
+  stmt3 = build2 (MODIFY_EXPR, gcov_type_node, ref2, tmp2);
   bsi_insert_before (&bsi, label4, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
@@ -521,13 +525,12 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
      it is unable to update them correctly, or because it will duplicate
      the block or its part).  */
   label5 = build1 (LABEL_EXPR, void_type_node, label_decl5);
-  tmp1 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  tmp2 = create_tmp_var (GCOV_TYPE_NODE, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp1, ref3);
-  stmt2 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, tmp2,
-		      build (PLUS_EXPR, GCOV_TYPE_NODE, 
-			     tmp1, integer_one_node));
-  stmt3 = build2 (MODIFY_EXPR, GCOV_TYPE_NODE, ref3, tmp2);
+  tmp1 = create_tmp_var (gcov_type_node, "PROF");
+  tmp2 = create_tmp_var (gcov_type_node, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, gcov_type_node, tmp1, ref3);
+  stmt2 = build2 (MODIFY_EXPR, gcov_type_node, tmp2,
+		  build (PLUS_EXPR, gcov_type_node, tmp1, integer_one_node));
+  stmt3 = build2 (MODIFY_EXPR, gcov_type_node, ref3, tmp2);
   bsi_insert_before (&bsi, label5, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
