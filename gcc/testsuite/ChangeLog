@@ -1,3 +1,14 @@
+2001-05-21  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* gcc.c-torture/compile/20000804-1.x: New file, this test fails
+	on 68HC11/HC12 due to the asm instruction.
+	* gcc.c-torture/compile/20001205-1.x: New file, ditto.
+	* gcc.c-torture/compile/920520-1.x: Likewise.
+	* gcc.c-torture/compile/20001226-1.x: New file, this test fails
+	on 68HC11/HC12 because the function is larger than 64K.
+	* gcc.c-torture/compile/961203-1.x: New file, this test fails
+	on 68HC11/HC12 because the structure is too large.
+
 2001-05-20  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/20010520-1.c: New.
