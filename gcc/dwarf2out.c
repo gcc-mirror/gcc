@@ -7188,7 +7188,8 @@ add_location_or_const_value_attribute (die, decl)
 	    rtl = DECL_INCOMING_RTL (decl);
 	  else if (! BYTES_BIG_ENDIAN
 		   && TREE_CODE (declared_type) == INTEGER_TYPE
-		   && TYPE_SIZE (declared_type) <= TYPE_SIZE (passed_type))
+		   && (GET_MODE_SIZE (TYPE_MODE (declared_type))
+		       <= GET_MODE_SIZE (TYPE_MODE (passed_type))))
 		rtl = DECL_INCOMING_RTL (decl);
 	}
 
