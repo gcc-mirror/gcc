@@ -9043,7 +9043,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-	  || POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
 	  || TREE_CHAIN (arglist) == 0
 	  || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
 	      != INTEGER_TYPE)
