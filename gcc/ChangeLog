@@ -1,3 +1,8 @@
+2004-12-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* tree.def, doc/c-tree.texi: Correctly document restrictions on the
+	shift width.
+
 2004-12-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.h (expand_modifier): Define EXPAND_STACK_PARM as 1.
