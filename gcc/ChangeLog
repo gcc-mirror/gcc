@@ -1,3 +1,7 @@
+2003-06-01  Andreas Jaeger  <aj@suse.de>
+
+	* config/d30v/d30v.h: Remove text copied from the manual.
+
 2003-06-01  Roger Sayle  <roger@eyesopen.com>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 	    Geoffrey Keating  <geoffk@apple.com>

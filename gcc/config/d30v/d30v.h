@@ -375,45 +375,6 @@ do {									\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	   /* CRs */		\
 }
 
-/* Zero or more C statements that may conditionally modify two variables
-   `fixed_regs' and `call_used_regs' (both of type `char []') after they have
-   been initialized from the two preceding macros.
-
-   This is necessary in case the fixed or call-clobbered registers depend on
-   target flags.
-
-   You need not define this macro if it has no work to do.
-
-   If the usage of an entire class of registers depends on the target flags,
-   you may indicate this to GCC by using this macro to modify `fixed_regs' and
-   `call_used_regs' to 1 for each of the registers in the classes which should
-   not be used by GCC.  Also define the macro `REG_CLASS_FROM_LETTER' to return
-   `NO_REGS' if it is called with a letter for a class that shouldn't be used.
-
-   (However, if this class is not included in `GENERAL_REGS' and all of the
-   insn patterns whose constraints permit this class are controlled by target
-   switches, then GCC will automatically avoid using these registers when the
-   target switches are opposed to them.)  */
-/* #define CONDITIONAL_REGISTER_USAGE */
-
-/* If this macro is defined and has a nonzero value, it means that `setjmp' and
-   related functions fail to save the registers, or that `longjmp' fails to
-   restore them.  To compensate, the compiler avoids putting variables in
-   registers in functions that use `setjmp'.  */
-/* #define NON_SAVING_SETJMP */
-
-/* Define this macro if the target machine has register windows.  This C
-   expression returns the register number as seen by the called function
-   corresponding to the register number OUT as seen by the calling function.
-   Return OUT if register number OUT is not an outbound register.  */
-/* #define INCOMING_REGNO(OUT) */
-
-/* Define this macro if the target machine has register windows.  This C
-   expression returns the register number as seen by the calling function
-   corresponding to the register number IN as seen by the called function.
-   Return IN if register number IN is not an inbound register.  */
-/* #define OUTGOING_REGNO(IN) */
-
 
 /* Order of allocation of registers */
 
@@ -468,19 +429,6 @@ do {									\
   CR_EIT_VB,	    CR_INT_S,	      CR_INT_M,				\
   ARG_POINTER_REGNUM,							\
 }
-
-/* A C statement (sans semicolon) to choose the order in which to allocate hard
-   registers for pseudo-registers local to a basic block.
-
-   Store the desired register order in the array `reg_alloc_order'.  Element 0
-   should be the register to allocate first; element 1, the next register; and
-   so on.
-
-   The macro body should not assume anything about the contents of
-   `reg_alloc_order' before execution of the macro.
-
-   On most machines, it is not necessary to define this macro.  */
-/* #define ORDER_REGS_FOR_LOCAL_ALLOC */
 
 
 /* How Values Fit in Registers */
@@ -578,34 +526,6 @@ extern unsigned char modes_tieable_p[];
    two CC registers usable for conditional tests, this helps gcse not compound
    the reload problem.  */
 #define AVOID_CCMODE_COPIES
-
-
-/* Handling Leaf Functions */
-
-/* A C initializer for a vector, indexed by hard register number, which
-   contains 1 for a register that is allowable in a candidate for leaf function
-   treatment.
-
-   If leaf function treatment involves renumbering the registers, then the
-   registers marked here should be the ones before renumbering--those that GNU
-   CC would ordinarily allocate.  The registers which will actually be used in
-   the assembler code, after renumbering, should not be marked with 1 in this
-   vector.
-
-   Define this macro only if the target machine offers a way to optimize the
-   treatment of leaf functions.  */
-/* #define LEAF_REGISTERS */
-
-/* A C expression whose value is the register number to which REGNO should be
-   renumbered, when a function is treated as a leaf function.
-
-   If REGNO is a register number which should not appear in a leaf function
-   before renumbering, then the expression should yield -1, which will cause
-   the compiler to abort.
-
-   Define this macro only if the target machine offers a way to optimize the
-   treatment of leaf functions, and registers need to be renumbered to do this.  */
-/* #define LEAF_REG_REMAP(REGNO) */
 
 
 /* Register Classes */
@@ -795,25 +715,6 @@ extern enum reg_class reg_class_from_letter[256];
    floating values cannot be loaded into certain kinds of registers.  */
 #define PREFERRED_RELOAD_CLASS(X, CLASS) CLASS
 
-/* Like `PREFERRED_RELOAD_CLASS', but for output reloads instead of input
-   reloads.  If you don't define this macro, the default is to use CLASS,
-   unchanged.  */
-/* #define PREFERRED_OUTPUT_RELOAD_CLASS(X, CLASS) */
-
-/* A C expression that places additional restrictions on the register class to
-   use when it is necessary to be able to hold a value of mode MODE in a reload
-   register for which class CLASS would ordinarily be used.
-
-   Unlike `PREFERRED_RELOAD_CLASS', this macro should be used when there are
-   certain modes that simply can't go in certain reload classes.
-
-   The value is a register class; perhaps CLASS, or perhaps another, smaller
-   class.
-
-   Don't define this macro unless the target machine has limitations which
-   require the macro to do something nontrivial.  */
-/* #define LIMIT_RELOAD_CLASS(MODE, CLASS) */
-
 /* Many machines have some registers that cannot be copied directly to or from
    memory or even from other types of registers.  An example is the `MQ'
    register, which on most machines, can only be copied to or from general
@@ -871,67 +772,6 @@ extern enum reg_class reg_class_from_letter[256];
  : (CLASS) == EVEN_REGS		? NO_REGS				\
  : (CLASS) == ACCUM_REGS	? EVEN_REGS				\
  :				  GPR_REGS)
-
-/* #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X) */
-/* #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) */
-
-/* Certain machines have the property that some registers cannot be copied to
-   some other registers without using memory.  Define this macro on those
-   machines to be a C expression that is nonzero if objects of mode M in
-   registers of CLASS1 can only be copied to registers of class CLASS2 by
-   storing a register of CLASS1 into memory and loading that memory location
-   into a register of CLASS2.
-
-   Do not define this macro if its value would always be zero.  */
-/* #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, M) */
-
-/* Normally when `SECONDARY_MEMORY_NEEDED' is defined, the compiler allocates a
-   stack slot for a memory location needed for register copies.  If this macro
-   is defined, the compiler instead uses the memory location defined by this
-   macro.
-
-   Do not define this macro if you do not define
-   `SECONDARY_MEMORY_NEEDED'.  */
-/* #define SECONDARY_MEMORY_NEEDED_RTX(MODE) */
-
-/* When the compiler needs a secondary memory location to copy between two
-   registers of mode MODE, it normally allocates sufficient memory to hold a
-   quantity of `BITS_PER_WORD' bits and performs the store and load operations
-   in a mode that many bits wide and whose class is the same as that of MODE.
-
-   This is right thing to do on most machines because it ensures that all bits
-   of the register are copied and prevents accesses to the registers in a
-   narrower mode, which some machines prohibit for floating-point registers.
-
-   However, this default behavior is not correct on some machines, such as the
-   DEC Alpha, that store short integers in floating-point registers differently
-   than in integer registers.  On those machines, the default widening will not
-   work correctly and you must define this macro to suppress that widening in
-   some cases.  See the file `alpha.h' for details.
-
-   Do not define this macro if you do not define `SECONDARY_MEMORY_NEEDED' or
-   if widening MODE to a mode that is `BITS_PER_WORD' bits wide is correct for
-   your machine.  */
-/* #define SECONDARY_MEMORY_NEEDED_MODE(MODE) */
-
-/* Normally the compiler avoids choosing registers that have been explicitly
-   mentioned in the rtl as spill registers (these registers are normally those
-   used to pass parameters and return values).  However, some machines have so
-   few registers of certain classes that there would not be enough registers to
-   use as spill registers if this were done.
-
-   Define `SMALL_REGISTER_CLASSES' to be an expression with a nonzero value on
-   these machines.  When this macro has a nonzero value, the compiler allows
-   registers explicitly used in the rtl to be used as spill registers but
-   avoids extending the lifetime of these registers.
-
-   It is always safe to define this macro with a nonzero value, but if you
-   unnecessarily define it, you will reduce the amount of optimizations that
-   can be performed in some cases.  If you do not define this macro with a
-   nonzero value when it is required, the compiler will run out of spill
-   registers and print a fatal error message.  For most machines, you should
-   not define this macro at all.  */
-/* #define SMALL_REGISTER_CLASSES */
 
 /* A C expression whose value is nonzero if pseudos that have been assigned to
    registers of class CLASS would likely be spilled because registers of CLASS
@@ -1053,14 +893,6 @@ typedef struct d30v_stack {
    matter.  */
 #define STACK_GROWS_DOWNWARD 1
 
-/* Define this macro if the addresses of local variable slots are at negative
-   offsets from the frame pointer.  */
-/* #define FRAME_GROWS_DOWNWARD */
-
-/* Define this macro if successive arguments to a function occupy decreasing
-   addresses on the stack.  */
-/* #define ARGS_GROW_DOWNWARD */
-
 /* Offset from the frame pointer to the first local variable slot to be
    allocated.
 
@@ -1072,43 +904,12 @@ typedef struct d30v_stack {
   (D30V_ALIGN (current_function_outgoing_args_size,			\
 	       (STACK_BOUNDARY / BITS_PER_UNIT)))
 
-/* Offset from the stack pointer register to the first location at which
-   outgoing arguments are placed.  If not specified, the default value of zero
-   is used.  This is the proper value for most machines.
-
-   If `ARGS_GROW_DOWNWARD', this is the offset to the location above the first
-   location at which outgoing arguments are placed.  */
-/* #define STACK_POINTER_OFFSET */
-
 /* Offset from the argument pointer register to the first argument's address.
    On some machines it may depend on the data type of the function.
 
    If `ARGS_GROW_DOWNWARD', this is the offset to the location above the first
    argument's address.  */
 #define FIRST_PARM_OFFSET(FUNDECL) 0
-
-/* Offset from the stack pointer register to an item dynamically allocated on
-   the stack, e.g., by `alloca'.
-
-   The default value for this macro is `STACK_POINTER_OFFSET' plus the length
-   of the outgoing arguments.  The default is correct for most machines.  See
-   `function.c' for details.  */
-/* #define STACK_DYNAMIC_OFFSET(FUNDECL) */
-
-/* A C expression whose value is RTL representing the address in a stack frame
-   where the pointer to the caller's frame is stored.  Assume that FRAMEADDR is
-   an RTL expression for the address of the stack frame itself.
-
-   If you don't define this macro, the default is to return the value of
-   FRAMEADDR--that is, the stack frame address is also the address of the stack
-   word that points to the previous frame.  */
-/* #define DYNAMIC_CHAIN_ADDRESS(FRAMEADDR) */
-
-/* If defined, a C expression that produces the machine-specific code to setup
-   the stack so that arbitrary frames can be accessed.  For example, on the
-   SPARC, we must flush all of the register windows to the stack before we can
-   access arbitrary stack frames.  This macro will seldom need to be defined.  */
-/* #define SETUP_FRAME_ADDRESSES() */
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame, after the
@@ -1129,10 +930,6 @@ typedef struct d30v_stack {
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
   ((COUNT) == 0 ? d30v_return_addr() : const0_rtx)
-
-/* Define this if the return address of a particular stack frame is
-   accessed from the frame pointer of the previous stack frame.  */
-/* #define RETURN_ADDR_IN_PREVIOUS_FRAME */
 
 /* A C expression whose value is RTL representing the location of the incoming
    return address at the beginning of any function, before the prologue.  This
@@ -1161,53 +958,6 @@ typedef struct d30v_stack {
 #define INIT_EXPANDERS  d30v_init_expanders ()
 
 
-/* Stack Checking.  */
-
-/* A nonzero value if stack checking is done by the configuration files in a
-   machine-dependent manner.  You should define this macro if stack checking is
-   require by the ABI of your machine or if you would like to have to stack
-   checking in some more efficient way than GNU CC's portable approach.  The
-   default value of this macro is zero.  */
-/* #define STACK_CHECK_BUILTIN */
-
-/* An integer representing the interval at which GNU CC must generate stack
-   probe instructions.  You will normally define this macro to be no larger
-   than the size of the "guard pages" at the end of a stack area.  The default
-   value of 4096 is suitable for most systems.  */
-/* #define STACK_CHECK_PROBE_INTERVAL */
-
-/* An integer which is nonzero if GNU CC should perform the stack probe as a
-   load instruction and zero if GNU CC should use a store instruction.  The
-   default is zero, which is the most efficient choice on most systems.  */
-/* #define STACK_CHECK_PROBE_LOAD */
-
-/* The number of bytes of stack needed to recover from a stack overflow, for
-   languages where such a recovery is supported.  The default value of 75 words
-   should be adequate for most machines.  */
-/* #define STACK_CHECK_PROTECT */
-
-/* The maximum size of a stack frame, in bytes.  GNU CC will generate probe
-   instructions in non-leaf functions to ensure at least this many bytes of
-   stack are available.  If a stack frame is larger than this size, stack
-   checking will not be reliable and GNU CC will issue a warning.  The default
-   is chosen so that GNU CC only generates one instruction on most systems.
-   You should normally not change the default value of this macro.  */
-/* #define STACK_CHECK_MAX_FRAME_SIZE */
-
-/* GNU CC uses this value to generate the above warning message.  It represents
-   the amount of fixed frame used by a function, not including space for any
-   callee-saved registers, temporaries and user variables.  You need only
-   specify an upper bound for this amount and will normally use the default of
-   four words.  */
-/* #define STACK_CHECK_FIXED_FRAME_SIZE */
-
-/* The maximum size, in bytes, of an object that GNU CC will place in the fixed
-   area of the stack frame when the user specifies `-fstack-check'.  GNU CC
-   computed the default from the values of the above macros and you will
-   normally not need to override that default.  */
-/* #define STACK_CHECK_MAX_VAR_SIZE */
-
-
 /* Register That Address the Stack Frame.  */
 
 /* The register number of the stack pointer register, which must also be a
@@ -1221,44 +971,6 @@ typedef struct d30v_stack {
    register you wish for this purpose.  */
 #define FRAME_POINTER_REGNUM GPR_FP
 
-/* On some machines the offset between the frame pointer and starting offset of
-   the automatic variables is not known until after register allocation has
-   been done (for example, because the saved registers are between these two
-   locations).  On those machines, define `FRAME_POINTER_REGNUM' the number of
-   a special, fixed register to be used internally until the offset is known,
-   and define `HARD_FRAME_POINTER_REGNUM' to be actual the hard register number
-   used for the frame pointer.
-
-   You should define this macro only in the very rare circumstances when it is
-   not possible to calculate the offset between the frame pointer and the
-   automatic variables until after register allocation has been completed.
-   When this macro is defined, you must also indicate in your definition of
-   `ELIMINABLE_REGS' how to eliminate `FRAME_POINTER_REGNUM' into either
-   `HARD_FRAME_POINTER_REGNUM' or `STACK_POINTER_REGNUM'.
-
-   Do not define this macro if it would be the same as `FRAME_POINTER_REGNUM'.  */
-/* #define HARD_FRAME_POINTER_REGNUM */
-
-/* The register number of the arg pointer register, which is used to access the
-   function's argument list.  On some machines, this is the same as the frame
-   pointer register.  On some machines, the hardware determines which register
-   this is.  On other machines, you can choose any register you wish for this
-   purpose.  If this is not the same register as the frame pointer register,
-   then you must mark it as a fixed register according to `FIXED_REGISTERS', or
-   arrange to be able to eliminate it (*note Elimination::.).  */
-/* #define ARG_POINTER_REGNUM */
-
-/* The register number of the return address pointer register, which is used to
-   access the current function's return address from the stack.  On some
-   machines, the return address is not at a fixed offset from the frame pointer
-   or stack pointer or argument pointer.  This register can be defined to point
-   to the return address on the stack, and then be converted by
-   `ELIMINABLE_REGS' into either the frame pointer or stack pointer.
-
-   Do not define this macro unless there is no other way to get the return
-   address from the stack.  */
-/* #define RETURN_ADDRESS_POINTER_REGNUM */
-
 /* Register numbers used for passing a function's static chain pointer.  If
    register windows are used, the register number as seen by the called
    function is `STATIC_CHAIN_INCOMING_REGNUM', while the register number as
@@ -1271,22 +983,6 @@ typedef struct d30v_stack {
    instead, the next two macros should be defined.  */
 
 #define STATIC_CHAIN_REGNUM (GPR_FIRST + 18)
-/* #define STATIC_CHAIN_INCOMING_REGNUM */
-
-/* If the static chain is passed in memory, these macros provide rtx giving
-   `mem' expressions that denote where they are stored.  `STATIC_CHAIN' and
-   `STATIC_CHAIN_INCOMING' give the locations as seen by the calling and called
-   functions, respectively.  Often the former will be at an offset from the
-   stack pointer and the latter at an offset from the frame pointer.
-
-   The variables `stack_pointer_rtx', `frame_pointer_rtx', and
-   `arg_pointer_rtx' will have been initialized prior to the use of these
-   macros and should be used to refer to those items.
-
-   If the static chain is passed in a register, the two previous
-   macros should be defined instead.  */
-/* #define STATIC_CHAIN */
-/* #define STATIC_CHAIN_INCOMING */
 
 
 /* Eliminating the Frame Pointer and the Arg Pointer */
@@ -1310,18 +1006,6 @@ typedef struct d30v_stack {
    register can be allocated for ordinary usage, unless you mark it as a fixed
    register.  See `FIXED_REGISTERS' for more information.  */
 #define FRAME_POINTER_REQUIRED 0
-
-/* A C statement to store in the variable DEPTH-VAR the difference between the
-   frame pointer and the stack pointer values immediately after the function
-   prologue.  The value would be computed from information such as the result
-   of `get_frame_size ()' and the tables of registers `regs_ever_live' and
-   `call_used_regs'.
-
-   If `ELIMINABLE_REGS' is defined, this macro will be not be used and need not
-   be defined.  Otherwise, it must be defined even if `FRAME_POINTER_REQUIRED'
-   is defined to always be true; in that case, you may set DEPTH-VAR to
-   anything.  */
-/* #define INITIAL_FRAME_POINTER_OFFSET(DEPTH_VAR) */
 
 /* If defined, this macro specifies a table of register pairs used to eliminate
    unneeded registers that point into the stack frame.  If it is not defined,
@@ -1382,30 +1066,6 @@ typedef struct d30v_stack {
 
 /* Passing Function Arguments on the Stack */
 
-/* Define this macro if an argument declared in a prototype as an integral type
-   smaller than `int' should actually be passed as an `int'.  In addition to
-   avoiding errors in certain cases of mismatch, it also makes for better code
-   on certain machines.  */
-/* #define PROMOTE_PROTOTYPES */
-
-/* A C expression that is the number of bytes actually pushed onto the stack
-   when an instruction attempts to push NPUSHED bytes.
-
-   If the target machine does not have a push instruction, do not define this
-   macro.  That directs GNU CC to use an alternate strategy: to allocate the
-   entire argument block and then store the arguments into it.
-
-   On some machines, the definition
-
-        #define PUSH_ROUNDING(BYTES) (BYTES)
-
-   will suffice.  But on other machines, instructions that appear to push one
-   byte actually push two bytes in an attempt to maintain alignment.  Then the
-   definition should be
-
-        #define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)  */
-/* #define PUSH_ROUNDING(NPUSHED) */
-
 /* If defined, the maximum amount of space required for outgoing arguments will
    be computed and placed into the variable
    `current_function_outgoing_args_size'.  No space will be pushed onto the
@@ -1415,59 +1075,6 @@ typedef struct d30v_stack {
    Defining both `PUSH_ROUNDING' and `ACCUMULATE_OUTGOING_ARGS' is not
    proper.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
-
-/* Define this macro if functions should assume that stack space has been
-   allocated for arguments even when their values are passed in registers.
-
-   The value of this macro is the size, in bytes, of the area reserved for
-   arguments passed in registers for the function represented by FNDECL.
-
-   This space can be allocated by the caller, or be a part of the
-   machine-dependent stack frame: `OUTGOING_REG_PARM_STACK_SPACE' says
-   which.  */
-/* #define REG_PARM_STACK_SPACE(FNDECL) */
-
-/* Define these macros in addition to the one above if functions might allocate
-   stack space for arguments even when their values are passed in registers.
-   These should be used when the stack space allocated for arguments in
-   registers is not a simple constant independent of the function declaration.
-
-   The value of the first macro is the size, in bytes, of the area that we
-   should initially assume would be reserved for arguments passed in registers.
-
-   The value of the second macro is the actual size, in bytes, of the area that
-   will be reserved for arguments passed in registers.  This takes two
-   arguments: an integer representing the number of bytes of fixed sized
-   arguments on the stack, and a tree representing the number of bytes of
-   variable sized arguments on the stack.
-
-   When these macros are defined, `REG_PARM_STACK_SPACE' will only be called
-   for libcall functions, the current function, or for a function being called
-   when it is known that such stack space must be allocated.  In each case this
-   value can be easily computed.
-
-   When deciding whether a called function needs such stack space, and how much
-   space to reserve, GNU CC uses these two macros instead of
-   `REG_PARM_STACK_SPACE'.  */
-/* #define MAYBE_REG_PARM_STACK_SPACE */
-/* #define FINAL_REG_PARM_STACK_SPACE(CONST_SIZE, VAR_SIZE) */
-
-/* Define this if it is the responsibility of the caller to allocate the area
-   reserved for arguments passed in registers.
-
-   If `ACCUMULATE_OUTGOING_ARGS' is defined, this macro controls whether the
-   space for these arguments counts in the value of
-   `current_function_outgoing_args_size'.  */
-/* #define OUTGOING_REG_PARM_STACK_SPACE */
-
-/* Define this macro if `REG_PARM_STACK_SPACE' is defined, but the stack
-   parameters don't skip the area specified by it.
-
-   Normally, when a parameter is not passed in registers, it is placed on the
-   stack beyond the `REG_PARM_STACK_SPACE' area.  Defining this macro
-   suppresses this behavior and causes the parameter to be passed on the stack
-   in its natural location.  */
-/* #define STACK_PARMS_IN_REG_PARM_AREA */
 
 /* A C expression that should indicate the number of bytes of its own arguments
    that a function pops on returning, or 0 if the function pops no arguments
@@ -1584,16 +1191,6 @@ typedef struct d30v_stack {
           MUST_PASS_IN_STACK (MODE, TYPE)  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) 0
 
-/* If defined, a C expression that indicates when it is the called function's
-   responsibility to make a copy of arguments passed by invisible reference.
-   Normally, the caller makes a copy and passes the address of the copy to the
-   routine being called.  When FUNCTION_ARG_CALLEE_COPIES is defined and is
-   nonzero, the caller does not make a copy.  Instead, it passes a pointer to
-   the "live" value.  The called function must not modify this value.  If it
-   can be determined that the value won't be modified, it need not make a copy;
-   otherwise a copy must be made.  */
-/* #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) */
-
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
    `int' suffices and can hold the number of bytes of argument so far.
@@ -1648,20 +1245,6 @@ typedef struct d30v_stack {
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
   d30v_function_arg_advance (&CUM, (int) MODE, TYPE, NAMED)
 
-/* If defined, a C expression which determines whether, and in which direction,
-   to pad out an argument with extra space.  The value should be of type `enum
-   direction': either `upward' to pad above the argument, `downward' to pad
-   below, or `none' to inhibit padding.
-
-   The *amount* of padding is always just enough to reach the next multiple of
-   `FUNCTION_ARG_BOUNDARY'; this macro does not control it.
-
-   This macro has a default definition which is right for most systems.  For
-   little-endian machines, the default is to pad upward.  For big-endian
-   machines, the default is to pad downward for an argument of constant size
-   shorter than an `int', and upward otherwise.  */
-/* #define FUNCTION_ARG_PADDING(MODE, TYPE) */
-
 /* If defined, a C expression that gives the alignment boundary, in bits, of an
    argument with the specified mode and type.  If it is not defined,
    `PARM_BOUNDARY' is used for all arguments.  */
@@ -1703,22 +1286,6 @@ typedef struct d30v_stack {
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
   gen_rtx (REG, TYPE_MODE (VALTYPE), GPR_RET_VALUE)
 
-/* Define this macro if the target machine has "register windows" so that the
-   register in which a function returns its value is not the same as the one in
-   which the caller sees the value.
-
-   For such machines, `FUNCTION_VALUE' computes the register in which the
-   caller will see the value.  `FUNCTION_OUTGOING_VALUE' should be defined in a
-   similar fashion to tell the function where to put the value.
-
-   If `FUNCTION_OUTGOING_VALUE' is not defined, `FUNCTION_VALUE' serves both
-   purposes.
-
-   `FUNCTION_OUTGOING_VALUE' is not used for return vales with aggregate data
-   types, because these are returned in another way.  See `STRUCT_VALUE_REGNUM'
-   and related macros, below.  */
-/* #define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC) */
-
 /* A C expression to create an RTX representing the place where a library
    function returns a value of mode MODE.  If the precise function being called
    is known, FUNC is a tree node (`FUNCTION_DECL') for it; otherwise, FUNC is a
@@ -1749,39 +1316,8 @@ typedef struct d30v_stack {
 
 #define FUNCTION_VALUE_REGNO_P(REGNO) ((REGNO) == GPR_RET_VALUE)
 
-/* Define this macro if `untyped_call' and `untyped_return' need more space
-   than is implied by `FUNCTION_VALUE_REGNO_P' for saving and restoring an
-   arbitrary return value.  */
-/* #define APPLY_RESULT_SIZE */
-
 
 /* How Large Values are Returned */
-
-/* A C expression which can inhibit the returning of certain function values in
-   registers, based on the type of value.  A nonzero value says to return the
-   function value in memory, just as large structures are always returned.
-   Here TYPE will be a C expression of type `tree', representing the data type
-   of the value.
-
-   Note that values of mode `BLKmode' must be explicitly handled by this macro.
-   Also, the option `-fpcc-struct-return' takes effect regardless of this
-   macro.  On most systems, it is possible to leave the macro undefined; this
-   causes a default definition to be used, whose value is the constant 1 for
-   `BLKmode' values, and 0 otherwise.
-
-   Do not use this macro to indicate that structures and unions should always
-   be returned in memory.  You should instead use `DEFAULT_PCC_STRUCT_RETURN'
-   to indicate this.  */
-/* #define RETURN_IN_MEMORY(TYPE) */
-
-/* Define this macro to be 1 if all structure and union return values must be
-   in memory.  Since this results in slower code, this should be defined only
-   if needed for compatibility with other compilers or with an ABI.  If you
-   define this macro to be 0, then the conventions used for structure and union
-   return values are decided by the `RETURN_IN_MEMORY' macro.
-
-   If not defined, this defaults to the value 1.  */
-/* #define DEFAULT_PCC_STRUCT_RETURN */
 
 /* If the structure value address is passed in a register, then
    `STRUCT_VALUE_REGNUM' should be the number of that register.  */
@@ -1795,89 +1331,12 @@ typedef struct d30v_stack {
 
 #define STRUCT_VALUE 0
 
-/* On some architectures the place where the structure value address is found
-   by the called function is not the same place that the caller put it.  This
-   can be due to register windows, or it could be because the function prologue
-   moves it to a different place.
-
-   If the incoming location of the structure value address is in a register,
-   define this macro as the register number.  */
-/* #define STRUCT_VALUE_INCOMING_REGNUM */
-
-/* If the incoming location is not a register, then you should define
-   `STRUCT_VALUE_INCOMING' as an expression for an RTX for where the called
-   function should find the value.  If it should find the value on the stack,
-   define this to create a `mem' which refers to the frame pointer.  A
-   definition of 0 means that the address is passed as an "invisible" first
-   argument.  */
-/* #define STRUCT_VALUE_INCOMING */
-
-/* Define this macro if the usual system convention on the target machine for
-   returning structures and unions is for the called function to return the
-   address of a static variable containing the value.
-
-   Do not define this if the usual system convention is for the caller to pass
-   an address to the subroutine.
-
-   This macro has effect in `-fpcc-struct-return' mode, but it does nothing
-   when you use `-freg-struct-return' mode.  */
-/* #define PCC_STATIC_STRUCT_RETURN */
-
 
-/* Caller-Saves Register Allocation */
-
-/* Define this macro if function calls on the target machine do not preserve
-   any registers; in other words, if `CALL_USED_REGISTERS' has 1 for all
-   registers.  This macro enables `-fcaller-saves' by default.  Eventually that
-   option will be enabled by default on all machines and both the option and
-   this macro will be eliminated.  */
-/* #define DEFAULT_CALLER_SAVES */
-
-/* A C expression to determine whether it is worthwhile to consider placing a
-   pseudo-register in a call-clobbered hard register and saving and restoring
-   it around each function call.  The expression should be 1 when this is worth
-   doing, and 0 otherwise.
-
-   If you don't define this macro, a default is used which is good on most
-   machines: `4 * CALLS < REFS'.  */
-/* #define CALLER_SAVE_PROFITABLE(REFS, CALLS) */
-
-
-/* #define EXIT_IGNORE_STACK */
-
 /* Define this macro as a C expression that is nonzero for registers
    are used by the epilogue or the `return' pattern.  The stack and
    frame pointer registers are already be assumed to be used as
    needed.  */
 #define EPILOGUE_USES(REGNO)  ((REGNO) == GPR_LINK)
-
-/* Define this macro if the function epilogue contains delay slots to which
-   instructions from the rest of the function can be "moved".  The definition
-   should be a C expression whose value is an integer representing the number
-   of delay slots there.  */
-/* #define DELAY_SLOTS_FOR_EPILOGUE */
-
-/* A C expression that returns 1 if INSN can be placed in delay slot number N
-   of the epilogue.
-
-   The argument N is an integer which identifies the delay slot now being
-   considered (since different slots may have different rules of eligibility).
-   It is never negative and is always less than the number of epilogue delay
-   slots (what `DELAY_SLOTS_FOR_EPILOGUE' returns).  If you reject a particular
-   insn for a given delay slot, in principle, it may be reconsidered for a
-   subsequent delay slot.  Also, other insns may (at least in principle) be
-   considered for the so far unfilled delay slot.
-
-   The insns accepted to fill the epilogue delay slots are put in an
-   RTL list made with `insn_list' objects, stored in the variable
-   `current_function_epilogue_delay_list'.  The insn for the first
-   delay slot comes first in the list.  Your definition of the function
-   output_function_epilogue() should fill the delay slots by outputting the
-   insns in this list, usually by calling `final_scan_insn'.
-
-   You need not define this macro if you did not define
-   `DELAY_SLOTS_FOR_EPILOGUE'.  */
-/* #define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN, N) */
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
@@ -1903,10 +1362,6 @@ typedef struct machine_function GTY(())
    compiler and look at the assembler code that results.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO) d30v_function_profiler (FILE, LABELNO)
-
-/* Define this macro if the code for function profiling should come before the
-   function prologue.  Normally, the profiling code comes after.  */
-/* #define PROFILE_BEFORE_PROLOGUE */
 
 
 /* Implementing the Varargs Macros.  */
@@ -1955,17 +1410,6 @@ typedef struct machine_function GTY(())
   d30v_setup_incoming_varargs (&ARGS_SO_FAR, (int) MODE, TYPE,		\
 			       &PRETEND_ARGS_SIZE, SECOND_TIME)
 
-/* Define this macro if the location where a function argument is passed
-   depends on whether or not it is a named argument.
-
-   This macro controls how the NAMED argument to `FUNCTION_ARG' is set for
-   varargs and stdarg functions.  With this macro defined, the NAMED argument
-   is always true for named arguments, and false for unnamed arguments.  If
-   this is not defined, but `SETUP_INCOMING_VARARGS' is defined, then all
-   arguments are treated as named.  Otherwise, all named arguments except the
-   last are treated as named.  */
-/* #define STRICT_ARGUMENT_NAMING */
-
 /* Build up the stdarg/varargs va_list type tree, assinging it to NODE.  If not
    defined, it is assumed that va_list is a void * pointer.  */
 
@@ -1997,17 +1441,6 @@ typedef struct machine_function GTY(())
 
 /* Trampolines for Nested Functions.  */
 
-/* A C statement to output, on the stream FILE, assembler code for a block of
-   data that contains the constant parts of a trampoline.  This code should not
-   include a label--the label is taken care of automatically.  */
-/* #define TRAMPOLINE_TEMPLATE(FILE) d30v_trampoline_template (FILE) */
-
-/* The name of a subroutine to switch to the section in which the trampoline
-   template is to be placed (*note Sections::.).  The default is a value of
-   `readonly_data_section', which places the trampoline in the section
-   containing read-only data.  */
-/* #define TRAMPOLINE_SECTION */
-
 /* A C expression for the size in bytes of the trampoline, as an integer.  */
 #define TRAMPOLINE_SIZE (d30v_trampoline_size ())
 
@@ -2023,163 +1456,6 @@ typedef struct machine_function GTY(())
    should be passed to the function when it is called.  */
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
   d30v_initialize_trampoline (ADDR, FNADDR, STATIC_CHAIN)
-
-/* Implementing trampolines is difficult on many machines because they have
-   separate instruction and data caches.  Writing into a stack location fails
-   to clear the memory in the instruction cache, so when the program jumps to
-   that location, it executes the old contents.
-
-   Here are two possible solutions.  One is to clear the relevant parts of the
-   instruction cache whenever a trampoline is set up.  The other is to make all
-   trampolines identical, by having them jump to a standard subroutine.  The
-   former technique makes trampoline execution faster; the latter makes
-   initialization faster.
-
-   To clear the instruction cache when a trampoline is initialized, define the
-   following macros which describe the shape of the cache.  */
-
-/* The total size in bytes of the cache.  */
-/* #define INSN_CACHE_SIZE */
-
-/* The length in bytes of each cache line.  The cache is divided into cache
-   lines which are disjoint slots, each holding a contiguous chunk of data
-   fetched from memory.  Each time data is brought into the cache, an entire
-   line is read at once.  The data loaded into a cache line is always aligned
-   on a boundary equal to the line size.  */
-/* #define INSN_CACHE_LINE_WIDTH */
-
-/* The number of alternative cache lines that can hold any particular memory
-   location.  */
-/* #define INSN_CACHE_DEPTH */
-
-/* Alternatively, if the machine has system calls or instructions to clear the
-   instruction cache directly, you can define the following macro.  */
-
-/* If defined, expands to a C expression clearing the *instruction cache* in
-   the specified interval.  If it is not defined, and the macro INSN_CACHE_SIZE
-   is defined, some generic code is generated to clear the cache.  The
-   definition of this macro would typically be a series of `asm' statements.
-   Both BEG and END are both pointer expressions.  */
-/* #define CLEAR_INSN_CACHE (BEG, END) */
-
-/* To use a standard subroutine, define the following macro.  In addition, you
-   must make sure that the instructions in a trampoline fill an entire cache
-   line with identical instructions, or else ensure that the beginning of the
-   trampoline code is always aligned at the same point in its cache line.  Look
-   in `m68k.h' as a guide.  */
-
-/* Define this macro if trampolines need a special subroutine to do their work.
-   The macro should expand to a series of `asm' statements which will be
-   compiled with GNU CC.  They go in a library function named
-   `__transfer_from_trampoline'.
-
-   If you need to avoid executing the ordinary prologue code of a compiled C
-   function when you jump to the subroutine, you can do so by placing a special
-   label of your own in the assembler code.  Use one `asm' statement to
-   generate an assembler label, and another to make the label global.  Then
-   trampolines can use that label to jump directly to your special assembler
-   code.  */
-/* #define TRANSFER_FROM_TRAMPOLINE */
-
-
-/* Implicit Calls to Library Routines */
-
-/* A C string constant giving the name of the function to call for
-   multiplication of one signed full-word by another.  If you do not define
-   this macro, the default name is used, which is `__mulsi3', a function
-   defined in `libgcc.a'.  */
-/* #define MULSI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for division of
-   one signed full-word by another.  If you do not define this macro, the
-   default name is used, which is `__divsi3', a function defined in `libgcc.a'.  */
-/* #define DIVSI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for division of
-   one unsigned full-word by another.  If you do not define this macro, the
-   default name is used, which is `__udivsi3', a function defined in
-   `libgcc.a'.  */
-/* #define UDIVSI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for the
-   remainder in division of one signed full-word by another.  If you do not
-   define this macro, the default name is used, which is `__modsi3', a function
-   defined in `libgcc.a'.  */
-/* #define MODSI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for the
-   remainder in division of one unsigned full-word by another.  If you do not
-   define this macro, the default name is used, which is `__umodsi3', a
-   function defined in `libgcc.a'.  */
-/* #define UMODSI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for
-   multiplication of one signed double-word by another.  If you do not define
-   this macro, the default name is used, which is `__muldi3', a function
-   defined in `libgcc.a'.  */
-/* #define MULDI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for division of
-   one signed double-word by another.  If you do not define this macro, the
-   default name is used, which is `__divdi3', a function defined in `libgcc.a'.  */
-/* #define DIVDI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for division of
-   one unsigned full-word by another.  If you do not define this macro, the
-   default name is used, which is `__udivdi3', a function defined in
-   `libgcc.a'.  */
-/* #define UDIVDI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for the
-   remainder in division of one signed double-word by another.  If you do not
-   define this macro, the default name is used, which is `__moddi3', a function
-   defined in `libgcc.a'.  */
-/* #define MODDI3_LIBCALL */
-
-/* A C string constant giving the name of the function to call for the
-   remainder in division of one unsigned full-word by another.  If you do not
-   define this macro, the default name is used, which is `__umoddi3', a
-   function defined in `libgcc.a'.  */
-/* #define UMODDI3_LIBCALL */
-
-/* Define this macro as a C statement that declares additional library routines
-   renames existing ones. `init_optabs' calls this macro after initializing all
-   the normal library routines.  */
-/* #define INIT_TARGET_OPTABS */
-
-/* The value of `EDOM' on the target machine, as a C integer constant
-   expression.  If you don't define this macro, GNU CC does not attempt to
-   deposit the value of `EDOM' into `errno' directly.  Look in
-   `/usr/include/errno.h' to find the value of `EDOM' on your system.
-
-   If you do not define `TARGET_EDOM', then compiled code reports domain errors
-   by calling the library function and letting it report the error.  If
-   mathematical functions on your system use `matherr' when there is an error,
-   then you should leave `TARGET_EDOM' undefined so that `matherr' is used
-   normally.  */
-/* #define TARGET_EDOM */
-
-/* Define this macro as a C expression to create an rtl expression that refers
-   to the global "variable" `errno'.  (On certain systems, `errno' may not
-   actually be a variable.)  If you don't define this macro, a reasonable
-   default is used.  */
-/* #define GEN_ERRNO_RTX */
-
-/* Define this macro if GNU CC should generate calls to the System V (and ANSI
-   C) library functions `memcpy' and `memset' rather than the BSD functions
-   `bcopy' and `bzero'.
-
-   Defined in svr4.h.  */
-/* #define TARGET_MEM_FUNCTIONS */
-
-/* Define this macro to generate code for Objective-C message sending using the
-   calling convention of the NeXT system.  This calling convention involves
-   passing the object, the selector and the method arguments all at once to the
-   method-lookup library function.
-
-   The default calling convention passes just the object and the selector to
-   the lookup function, which returns a pointer to the method.  */
-/* #define NEXT_OBJC_RUNTIME */
 
 
 /* Addressing Modes */
@@ -2302,109 +1578,6 @@ do {									\
 #define LEGITIMATE_CONSTANT_P(X) 1
 
 
-/* Condition Code Status */
-
-/* C code for a data type which is used for declaring the `mdep' component of
-   `cc_status'.  It defaults to `int'.
-
-   This macro is not used on machines that do not use `cc0'.  */
-/* #define CC_STATUS_MDEP */
-
-/* A C expression to initialize the `mdep' field to "empty".  The default
-   definition does nothing, since most machines don't use the field anyway.  If
-   you want to use the field, you should probably define this macro to
-   initialize it.
-
-   This macro is not used on machines that do not use `cc0'.  */
-/* #define CC_STATUS_MDEP_INIT */
-
-/* A C compound statement to set the components of `cc_status' appropriately
-   for an insn INSN whose body is EXP.  It is this macro's responsibility to
-   recognize insns that set the condition code as a byproduct of other activity
-   as well as those that explicitly set `(cc0)'.
-
-   This macro is not used on machines that do not use `cc0'.
-
-   If there are insns that do not set the condition code but do alter other
-   machine registers, this macro must check to see whether they invalidate the
-   expressions that the condition code is recorded as reflecting.  For example,
-   on the 68000, insns that store in address registers do not set the condition
-   code, which means that usually `NOTICE_UPDATE_CC' can leave `cc_status'
-   unaltered for such insns.  But suppose that the previous insn set the
-   condition code based on location `a4@(102)' and the current insn stores a
-   new value in `a4'.  Although the condition code is not changed by this, it
-   will no longer be true that it reflects the contents of `a4@(102)'.
-   Therefore, `NOTICE_UPDATE_CC' must alter `cc_status' in this case to say
-   that nothing is known about the condition code value.
-
-   The definition of `NOTICE_UPDATE_CC' must be prepared to deal with the
-   results of peephole optimization: insns whose patterns are `parallel' RTXs
-   containing various `reg', `mem' or constants which are just the operands.
-   The RTL structure of these insns is not sufficient to indicate what the
-   insns actually do.  What `NOTICE_UPDATE_CC' should do when it sees one is
-   just to run `CC_STATUS_INIT'.
-
-   A possible definition of `NOTICE_UPDATE_CC' is to call a function that looks
-   at an attribute (*note Insn Attributes::.) named, for example, `cc'.  This
-   avoids having detailed information about patterns in two places, the `md'
-   file and in `NOTICE_UPDATE_CC'.  */
-/* #define NOTICE_UPDATE_CC(EXP, INSN) */
-
-/* A list of names to be used for additional modes for condition code values in
-   registers (*note Jump Patterns::.).  These names are added to `enum
-   machine_mode' and all have class `MODE_CC'.  By convention, they should
-   start with `CC' and end with `mode'.
-
-   You should only define this macro if your machine does not use `cc0' and
-   only if additional modes are required.  */
-/* #define EXTRA_CC_MODES */
-
-/* Returns a mode from class `MODE_CC' to be used when comparison operation
-   code OP is applied to rtx X and Y.  For example, on the SPARC,
-   `SELECT_CC_MODE' is defined as (see *note Jump Patterns::.  for a
-   description of the reason for this definition)
-
-        #define SELECT_CC_MODE(OP,X,Y) \
-          (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT          \
-           ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)    \
-           : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS    \
-               || GET_CODE (X) == NEG) \
-              ? CC_NOOVmode : CCmode))
-
-   You need not define this macro if `EXTRA_CC_MODES' is not defined.  */
-/* #define SELECT_CC_MODE(OP, X, Y) */
-
-/* One some machines not all possible comparisons are defined, but you can
-   convert an invalid comparison into a valid one.  For example, the Alpha does
-   not have a `GT' comparison, but you can use an `LT' comparison instead and
-   swap the order of the operands.
-
-   On such machines, define this macro to be a C statement to do any required
-   conversions.  CODE is the initial comparison code and OP0 and OP1 are the
-   left and right operands of the comparison, respectively.  You should modify
-   CODE, OP0, and OP1 as required.
-
-   GNU CC will not assume that the comparison resulting from this macro is
-   valid but will see if the resulting insn matches a pattern in the `md' file.
-
-   You need not define this macro if it would never change the comparison code
-   or operands.  */
-/* #define CANONICALIZE_COMPARISON(CODE, OP0, OP1) */
-
-/* A C expression whose value is one if it is always safe to reverse a
-   comparison whose mode is MODE.  If `SELECT_CC_MODE' can ever return MODE for
-   a floating-point inequality comparison, then `REVERSIBLE_CC_MODE (MODE)'
-   must be zero.
-
-   You need not define this macro if it would always returns zero or if the
-   floating-point format is anything other than `IEEE_FLOAT_FORMAT'.  For
-   example, here is the definition used on the SPARC, where floating-point
-   inequality comparisons are always given `CCFPEmode':
-
-        #define REVERSIBLE_CC_MODE(MODE)  ((MODE) != CCFPEmode)  */
-/* #define REVERSIBLE_CC_MODE(MODE) */
-
-
 /* Describing Relative Costs of Operations */
 
 /* A C expression for the cost of moving data from a register in class FROM to
@@ -2463,37 +1636,9 @@ extern const char *d30v_branch_cost_string;
    same word of the structure, but to different bytes.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Define this macro to be the value 1 if unaligned accesses have a cost many
-   times greater than aligned accesses, for example if they are emulated in a
-   trap handler.
-
-   When this macro is nonzero, the compiler will act as if `STRICT_ALIGNMENT'
-   were nonzero when generating code for block moves.  This can cause
-   significantly more instructions to be produced.  Therefore, do not set this
-   macro nonzero if unaligned accesses only add a cycle or two to the time for
-   a memory access.
-
-   If the value of this macro is always zero, it need not be defined.  */
-/* #define SLOW_UNALIGNED_ACCESS */
-
-/* Define this macro to inhibit strength reduction of memory addresses.  (On
-   some machines, such strength reduction seems to do harm rather than good.)  */
-/* #define DONT_REDUCE_ADDR */
-
-/* The number of scalar move insns which should be generated instead of a
-   string move insn or a library call.  Increasing the value will always make
-   code faster, but eventually incurs high cost in increased code size.
-
-   If you don't define this, a reasonable default is used.  */
-/* #define MOVE_RATIO */
-
 /* Define this macro if it is as good or better to call a constant function
    address than to call an address kept in a register.  */
 #define NO_FUNCTION_CSE
-
-/* Define this macro if it is as good or better for a function to call itself
-   with an explicit address than to call an address kept in a register.  */
-/* #define NO_RECURSIVE_FUNCTION_CSE */
 
 
 /* Dividing the output into sections.  */
@@ -2508,11 +1653,6 @@ extern const char *d30v_branch_cost_string;
    `".data"' is right.  */
 #define DATA_SECTION_ASM_OP "\t.data"
 
-/* if defined, a C expression whose value is a string containing the assembler
-   operation to identify the following data as shared data.  If not defined,
-   `DATA_SECTION_ASM_OP' will be used.  */
-/* #define SHARED_SECTION_ASM_OP */
-
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as
    uninitialized global data.  If not defined, and neither
@@ -2522,101 +1662,8 @@ extern const char *d30v_branch_cost_string;
    used.  */
 #define BSS_SECTION_ASM_OP "\t.section .bss"
 
-/* If defined, a C expression whose value is a string containing the
-   assembler operation to identify the following data as
-   uninitialized global shared data.  If not defined, and
-   `BSS_SECTION_ASM_OP' is, the latter will be used.  */
-/* #define SHARED_BSS_SECTION_ASM_OP */
-
-/* A list of names for sections other than the standard two, which are
-   `in_text' and `in_data'.  You need not define this macro on a system with no
-   other sections (that GCC needs to use).
-
-   Defined in svr4.h.  */
-/* #define EXTRA_SECTIONS */
-
-/* One or more functions to be defined in `varasm.c'.  These functions should
-   do jobs analogous to those of `text_section' and `data_section', for your
-   additional sections.  Do not define this macro if you do not define
-   `EXTRA_SECTIONS'.
-
-   Defined in svr4.h.  */
-/* #define EXTRA_SECTION_FUNCTIONS */
-
-/* Define this macro if jump tables (for `tablejump' insns) should be output in
-   the text section, along with the assembler instructions.  Otherwise, the
-   readonly data section is used.
-
-   This macro is irrelevant if there is no separate readonly data section.  */
-/* #define JUMP_TABLES_IN_TEXT_SECTION */
-
-/* Position Independent Code.  */
-
-/* The register number of the register used to address a table of static data
-   addresses in memory.  In some cases this register is defined by a
-   processor's "application binary interface" (ABI).  When this macro is
-   defined, RTL is generated for this register once, as with the stack pointer
-   and frame pointer registers.  If this macro is not defined, it is up to the
-   machine-dependent files to allocate such a register (if necessary).  */
-/* #define PIC_OFFSET_TABLE_REGNUM */
-
-/* Define this macro if the register defined by `PIC_OFFSET_TABLE_REGNUM' is
-   clobbered by calls.  Do not define this macro if `PIC_OFFSET_TABLE_REGNUM'
-   is not defined.  */
-/* #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED */
-
-/* By generating position-independent code, when two different programs (A and
-   B) share a common library (libC.a), the text of the library can be shared
-   whether or not the library is linked at the same address for both programs.
-   In some of these environments, position-independent code requires not only
-   the use of different addressing modes, but also special code to enable the
-   use of these addressing modes.
-
-   The `FINALIZE_PIC' macro serves as a hook to emit these special codes once
-   the function is being compiled into assembly code, but not before.  (It is
-   not done before, because in the case of compiling an inline function, it
-   would lead to multiple PIC prologues being included in functions which used
-   inline functions and were compiled to assembly language.)  */
-/* #define FINALIZE_PIC */
-
-/* A C expression that is nonzero if X is a legitimate immediate operand on the
-   target machine when generating position independent code.  You can assume
-   that X satisfies `CONSTANT_P', so you need not check this.  You can also
-   assume FLAG_PIC is true, so you need not check it either.  You need not
-   define this macro if all constants (including `SYMBOL_REF') can be immediate
-   operands when generating position independent code.  */
-/* #define LEGITIMATE_PIC_OPERAND_P(X) */
-
 
 /* The Overall Framework of an Assembler File.  */
-
-/* A C expression which outputs to the stdio stream STREAM some appropriate
-   text to go at the start of an assembler file.
-
-   Normally this macro is defined to output a line containing `#NO_APP', which
-   is a comment that has no effect on most assemblers but tells the GNU
-   assembler that it can save time by not checking for certain assembler
-   constructs.
-
-   On systems that use SDB, it is necessary to output certain commands; see
-   `attasm.h'.
-
-   Defined in svr4.h.  */
-
-/* #define ASM_FILE_START(STREAM) \
-  output_file_directive ((STREAM), main_input_filename) */
-
-/* A C expression which outputs to the stdio stream STREAM some appropriate
-   text to go at the end of an assembler file.
-
-   If this macro is not defined, the default is to output nothing special at
-   the end of the file.  Most systems don't require any definition.
-
-   On systems that use SDB, it is necessary to output certain commands; see
-   `attasm.h'.
-
-   Defined in svr4.h.  */
-/* #define ASM_FILE_END(STREAM) */
 
 /* A C string constant describing how to begin a comment in the target
    assembler language.  The compiler assumes that the comment will end at the
@@ -2635,464 +1682,20 @@ extern const char *d30v_branch_cost_string;
    for ordinary compiler output.  */
 #define ASM_APP_OFF "#NO_APP\n"
 
-/* A C statement to output COFF information or DWARF debugging information
-   which indicates that filename NAME is the current source file to the stdio
-   stream STREAM.
-
-   This macro need not be defined if the standard form of output for the file
-   format in use is appropriate.  */
-/* #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME) */
-
-/* A C statement to output DBX or SDB debugging information before code for
-   line number LINE of the current source file to the stdio stream STREAM.
-
-   This macro need not be defined if the standard form of debugging information
-   for the debugger in use is appropriate.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE) */
-
-/* A C statement to output something to the assembler file to handle a `#ident'
-   directive containing the text STRING.  If this macro is not defined, nothing
-   is output for a `#ident' directive.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_IDENT(STREAM, STRING) */
-
-
-/* Output of Data.  */
-
-/* A C statement to output to the stdio stream STREAM an assembler instruction
-   to assemble a string constant containing the LEN bytes at PTR.  PTR will be
-   a C expression of type `char *' and LEN a C expression of type `int'.
-
-   If the assembler has a `.ascii' pseudo-op as found in the Berkeley Unix
-   assembler, do not define the macro `ASM_OUTPUT_ASCII'.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN) */
-
-/* You may define this macro as a C expression.  You should define the
-   expression to have a nonzero value if GNU CC should output the
-   constant pool for a function before the code for the function, or
-   a zero value if GNU CC should output the constant pool after the
-   function.  If you do not define this macro, the usual case, GNU CC
-   will output the constant pool before the function.  */
-/* #define CONSTANT_POOL_BEFORE_FUNCTION */
-
-/* A C statement to output assembler commands to define the start of the
-   constant pool for a function.  FUNNAME is a string giving the name of the
-   function.  Should the return type of the function be required, it can be
-   obtained via FUNDECL.  SIZE is the size, in bytes, of the constant pool that
-   will be written immediately after this call.
-
-   If no constant-pool prefix is required, the usual case, this macro need not
-   be defined.  */
-/* #define ASM_OUTPUT_POOL_PROLOGUE(FILE FUNNAME FUNDECL SIZE) */
-
-/* A C statement (with or without semicolon) to output a constant in the
-   constant pool, if it needs special treatment.  (This macro need not do
-   anything for RTL expressions that can be output normally.)
-
-   The argument FILE is the standard I/O stream to output the assembler code
-   on.  X is the RTL expression for the constant to output, and MODE is the
-   machine mode (in case X is a `const_int').  ALIGN is the required alignment
-   for the value X; you should output an assembler directive to force this much
-   alignment.
-
-   The argument LABELNO is a number to use in an internal label for the address
-   of this pool entry.  The definition of this macro is responsible for
-   outputting the label definition at the proper place.  Here is how to do
-   this:
-
-        (*targetm.asm_out.internal_label) (FILE, "LC", LABELNO);
-
-   When you output a pool entry specially, you should end with a `goto' to the
-   label JUMPTO.  This will prevent the same pool entry from being output a
-   second time in the usual manner.
-
-   You need not define this macro if it would do nothing.  */
-/* #define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE, X, MODE, ALIGN, LABELNO, JUMPTO) */
-
-/* A C statement to output assembler commands to at the end of the constant
-   pool for a function.  FUNNAME is a string giving the name of the function.
-   Should the return type of the function be required, you can obtain it via
-   FUNDECL.  SIZE is the size, in bytes, of the constant pool that GNU CC wrote
-   immediately before this call.
-
-   If no constant-pool epilogue is required, the usual case, you need not
-   define this macro.  */
-/* #define ASM_OUTPUT_POOL_EPILOGUE (FILE FUNNAME FUNDECL SIZE) */
-
-/* Define this macro as a C expression which is nonzero if C is used as a
-   logical line separator by the assembler.
-
-   If you do not define this macro, the default is that only the character `;'
-   is treated as a logical line separator.  */
-/* #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) */
-
-/* These macros are provided by `real.h' for writing the definitions of
-   `ASM_OUTPUT_DOUBLE' and the like: */
-
-
-/* Output of Uninitialized Variables.  */
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM the
-   assembler definition of a common-label named NAME whose size is SIZE bytes.
-   The variable ROUNDED is the size rounded up to whatever alignment the caller
-   wants.
-
-   Use the expression `assemble_name (STREAM, NAME)' to output the name itself;
-   before and after that, output the additional assembler syntax for defining
-   the name, and a newline.
-
-   This macro controls how the assembler definitions of uninitialized global
-   variables are output.  */
-/* #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED) */
-
-/* Like `ASM_OUTPUT_COMMON' except takes the required alignment as a separate,
-   explicit argument.  If you define this macro, it is used in place of
-   `ASM_OUTPUT_COMMON', and gives you more flexibility in handling the required
-   alignment of the variable.  The alignment is specified as the number of
-   bits.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_ALIGNED_COMMON(STREAM, NAME, SIZE, ALIGNMENT) */
-
-/* Like ASM_OUTPUT_ALIGNED_COMMON except that it takes an additional argument -
-   the DECL of the variable to be output, if there is one.  This macro can be
-   called with DECL == NULL_TREE.  If you define this macro, it is used in
-   place of both ASM_OUTPUT_COMMON and ASM_OUTPUT_ALIGNED_COMMON, and gives you
-   more flexibility in handling the destination of the variable.  */
-/* #define ASM_OUTPUT_DECL_COMMON (STREAM, DECL, NAME, SIZE, ALIGNMENT) */
-
-/* If defined, it is similar to `ASM_OUTPUT_COMMON', except that it is used
-   when NAME is shared.  If not defined, `ASM_OUTPUT_COMMON' will be used.  */
-/* #define ASM_OUTPUT_SHARED_COMMON(STREAM, NAME, SIZE, ROUNDED) */
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM the
-   assembler definition of uninitialized global DECL named NAME whose size is
-   SIZE bytes.  The variable ROUNDED is the size rounded up to whatever
-   alignment the caller wants.
-
-   Try to use function `asm_output_bss' defined in `varasm.c' when defining
-   this macro.  If unable, use the expression `assemble_name (STREAM, NAME)' to
-   output the name itself; before and after that, output the additional
-   assembler syntax for defining the name, and a newline.
-
-   This macro controls how the assembler definitions of uninitialized global
-   variables are output.  This macro exists to properly support languages like
-   `c++' which do not have `common' data.  However, this macro currently is not
-   defined for all targets.  If this macro and `ASM_OUTPUT_ALIGNED_BSS' are not
-   defined then `ASM_OUTPUT_COMMON' or `ASM_OUTPUT_ALIGNED_COMMON' or
-   `ASM_OUTPUT_DECL_COMMON' is used.  */
-/* #define ASM_OUTPUT_BSS(STREAM, DECL, NAME, SIZE, ROUNDED) */
-
-/* Like `ASM_OUTPUT_BSS' except takes the required alignment as a separate,
-   explicit argument.  If you define this macro, it is used in place of
-   `ASM_OUTPUT_BSS', and gives you more flexibility in handling the required
-   alignment of the variable.  The alignment is specified as the number of
-   bits.
-
-   Try to use function `asm_output_aligned_bss' defined in file `varasm.c' when
-   defining this macro.  */
-/* #define ASM_OUTPUT_ALIGNED_BSS(STREAM, DECL, NAME, SIZE, ALIGNMENT) */
-
-/* If defined, it is similar to `ASM_OUTPUT_BSS', except that it is used when
-   NAME is shared.  If not defined, `ASM_OUTPUT_BSS' will be used.  */
-/* #define ASM_OUTPUT_SHARED_BSS(STREAM, DECL, NAME, SIZE, ROUNDED) */
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM the
-   assembler definition of a local-common-label named NAME whose size is SIZE
-   bytes.  The variable ROUNDED is the size rounded up to whatever alignment
-   the caller wants.
-
-   Use the expression `assemble_name (STREAM, NAME)' to output the name itself;
-   before and after that, output the additional assembler syntax for defining
-   the name, and a newline.
-
-   This macro controls how the assembler definitions of uninitialized static
-   variables are output.  */
-/* #define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED) */
-
-/* Like `ASM_OUTPUT_LOCAL' except takes the required alignment as a separate,
-   explicit argument.  If you define this macro, it is used in place of
-   `ASM_OUTPUT_LOCAL', and gives you more flexibility in handling the required
-   alignment of the variable.  The alignment is specified as the number of
-   bits.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGNMENT) */
-
-/* Like `ASM_OUTPUT_ALIGNED_LOCAL' except that it takes an additional
-   parameter - the DECL of variable to be output, if there is one.
-   This macro can be called with DECL == NULL_TREE.  If you define
-   this macro, it is used in place of `ASM_OUTPUT_LOCAL' and
-   `ASM_OUTPUT_ALIGNED_LOCAL', and gives you more flexibility in
-   handling the destination of the variable.  */
-/* #define ASM_OUTPUT_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGNMENT) */
-
-/* If defined, it is similar to `ASM_OUTPUT_LOCAL', except that it is used when
-   NAME is shared.  If not defined, `ASM_OUTPUT_LOCAL' will be used.  */
-/* #define ASM_OUTPUT_SHARED_LOCAL (STREAM, NAME, SIZE, ROUNDED) */
-
 
 /* Output and Generation of Labels.  */
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM any text
-   necessary for declaring the name NAME of a function which is being defined.
-   This macro is responsible for outputting the label definition (perhaps using
-   `ASM_OUTPUT_LABEL').  The argument DECL is the `FUNCTION_DECL' tree node
-   representing the function.
-
-   If this macro is not defined, then the function name is defined in the usual
-   manner as a label (by means of `ASM_OUTPUT_LABEL').
-
-   Defined in svr4.h.  */
-/* #define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL) */
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM any text
-   necessary for declaring the size of a function which is being defined.  The
-   argument NAME is the name of the function.  The argument DECL is the
-   `FUNCTION_DECL' tree node representing the function.
-
-   If this macro is not defined, then the function size is not defined.
-
-   Defined in svr4.h.  */
-/* #define ASM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL) */
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM any text
-   necessary for declaring the name NAME of an initialized variable which is
-   being defined.  This macro must output the label definition (perhaps using
-   `ASM_OUTPUT_LABEL').  The argument DECL is the `VAR_DECL' tree node
-   representing the variable.
-
-   If this macro is not defined, then the variable name is defined in the usual
-   manner as a label (by means of `ASM_OUTPUT_LABEL').
-
-   Defined in svr4.h.  */
-/* #define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL) */
-
-/* A C statement (sans semicolon) to finish up declaring a variable name once
-   the compiler has processed its initializer fully and thus has had a chance
-   to determine the size of an array when controlled by an initializer.  This
-   is used on systems where it's necessary to declare something about the size
-   of the object.
-
-   If you don't define this macro, that is equivalent to defining it to do
-   nothing.
-
-   Defined in svr4.h.  */
-/* #define ASM_FINISH_DECLARE_OBJECT(STREAM, DECL, TOPLEVEL, ATEND) */
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
 
-/* A C statement (sans semicolon) to output to the stdio stream STREAM some
-   commands that will make the label NAME weak; that is, available for
-   reference from other files but only used if no other definition is
-   available.  Use the expression `assemble_name (STREAM, NAME)' to output the
-   name itself; before and after that, output the additional assembler syntax
-   for making that name weak, and a newline.
-
-   If you don't define this macro, GNU CC will not support weak symbols and you
-   should not define the `SUPPORTS_WEAK' macro.
-
-   Defined in svr4.h.  */
-/* #define ASM_WEAKEN_LABEL */
-
-/* A C expression which evaluates to true if the target supports weak symbols.
-
-   If you don't define this macro, `defaults.h' provides a default definition.
-   If `ASM_WEAKEN_LABEL' is defined, the default definition is `1'; otherwise,
-   it is `0'.  Define this macro if you want to control weak symbol support
-   with a compiler flag such as `-melf'.  */
-/* #define SUPPORTS_WEAK */
-
-/* A C statement (sans semicolon) to mark DECL to be emitted as a
-   public symbol such that extra copies in multiple translation units
-   will be discarded by the linker.  Define this macro if your object
-   file format provides support for this concept, such as the `COMDAT'
-   section flags in the Microsoft Windows PE/COFF format, and this
-   support requires changes to DECL, such as putting it in a separate
-   section.
-
-   Defined in svr4.h.  */
-/* #define MAKE_DECL_ONE_ONLY */
-
-/* A C expression which evaluates to true if the target supports one-only
-   semantics.
-
-   If you don't define this macro, `varasm.c' provides a default definition.
-   If `MAKE_DECL_ONE_ONLY' is defined, the default definition is `1';
-   otherwise, it is `0'.  Define this macro if you want to control one-only
-   symbol support with a compiler flag, or if setting the `DECL_ONE_ONLY' flag
-   is enough to mark a declaration to be emitted as one-only.  */
-/* #define SUPPORTS_ONE_ONLY */
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM any text
-   necessary for declaring the name of an external symbol named NAME which is
-   referenced in this compilation but not defined.  The value of DECL is the
-   tree node for the declaration.
-
-   This macro need not be defined if it does not need to output anything.  The
-   GNU assembler and most Unix assemblers don't require anything.  */
-/* #define ASM_OUTPUT_EXTERNAL(STREAM, DECL, NAME) */
-
-/* A C statement (sans semicolon) to output on STREAM an assembler pseudo-op to
-   declare a library function name external.  The name of the library function
-   is given by SYMREF, which has type `rtx' and is a `symbol_ref'.
-
-   This macro need not be defined if it does not need to output anything.  The
-   GNU assembler and most Unix assemblers don't require anything.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_EXTERNAL_LIBCALL(STREAM, SYMREF) */
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM a
-   reference in assembler syntax to a label named NAME.  This should add `_' to
-   the front of the name, if that is customary on your operating system, as it
-   is in most Berkeley Unix systems.  This macro is used in `assemble_name'.  */
-/* #define ASM_OUTPUT_LABELREF(STREAM, NAME) */
-
-/* A C statement to store into the string STRING a label whose name is made
-   from the string PREFIX and the number NUM.
-
-   This string, when output subsequently by `assemble_name', should produce the
-   output that `(*targetm.asm_out.internal_label)' would produce with the same PREFIX
-   and NUM.
-
-   If the string begins with `*', then `assemble_name' will output the rest of
-   the string unchanged.  It is often convenient for
-   `ASM_GENERATE_INTERNAL_LABEL' to use `*' in this way.  If the string doesn't
-   start with `*', then `ASM_OUTPUT_LABELREF' gets to output the string, and
-   may change it.  (Of course, `ASM_OUTPUT_LABELREF' is also part of your
-   machine description, so you should know what it does on your machine.)
-
-   Defined in svr4.h.  */
-
-/*
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)			\
-do {									\
-  sprintf (LABEL, "*.%s%d", PREFIX, NUM);				\
-} while (0)
-*/
-
-/* A C statement to output to the stdio stream STREAM assembler code which
-   defines (equates) the symbol NAME to have the value VALUE.
-
-   If SET_ASM_OP is defined, a default definition is provided which is correct
-   for most systems.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_DEF(STREAM, NAME, VALUE) */
-
-/* A C statement to output to the stdio stream STREAM assembler code which
-   defines (equates) the weak symbol NAME to have the value VALUE.
-
-   Define this macro if the target only supports weak aliases; define
-   ASM_OUTPUT_DEF instead if possible.  */
-/* #define ASM_OUTPUT_WEAK_ALIAS (STREAM, NAME, VALUE) */
-
-/* Define this macro to override the default assembler names used for Objective
-   C methods.
-
-   The default name is a unique method number followed by the name of the class
-   (e.g. `_1_Foo').  For methods in categories, the name of the category is
-   also included in the assembler name (e.g.  `_1_Foo_Bar').
-
-   These names are safe on most systems, but make debugging difficult since the
-   method's selector is not present in the name.  Therefore, particular systems
-   define other ways of computing names.
-
-   BUF is an expression of type `char *' which gives you a buffer in which to
-   store the name; its length is as long as CLASS_NAME, CAT_NAME and SEL_NAME
-   put together, plus 50 characters extra.
-
-   The argument IS_INST specifies whether the method is an instance method or a
-   class method; CLASS_NAME is the name of the class; CAT_NAME is the name of
-   the category (or NULL if the method is not in a category); and SEL_NAME is
-   the name of the selector.
-
-   On systems where the assembler can handle quoted names, you can use this
-   macro to provide more human-readable names.  */
-/* #define OBJC_GEN_METHOD_LABEL(BUF, IS_INST, CLASS_NAME, CAT_NAME, SEL_NAME) */
-
 
 /* Macros Controlling Initialization Routines.  */
-
-/* If defined, a C string constant for the assembler operation to identify the
-   following data as initialization code.  If not defined, GNU CC will assume
-   such a section does not exist.  When you are using special sections for
-   initialization and termination functions, this macro also controls how
-   `crtstuff.c' and `libgcc2.c' arrange to run the initialization functions.
-
-   Defined in svr4.h.  */
-/* #define INIT_SECTION_ASM_OP */
-
-/* If defined, `main' will not call `__main' as described above.  This macro
-   should be defined for systems that control the contents of the init section
-   on a symbol-by-symbol basis, such as OSF/1, and should not be defined
-   explicitly for systems that support `INIT_SECTION_ASM_OP'.  */
-/* #define HAS_INIT_SECTION */
-
-/* If defined, a C string constant for a switch that tells the linker that the
-   following symbol is an initialization routine.  */
-/* #define LD_INIT_SWITCH */
-
-/* If defined, a C string constant for a switch that tells the linker that the
-   following symbol is a finalization routine.  */
-/* #define LD_FINI_SWITCH */
 
 /* If defined, `main' will call `__main' despite the presence of
    `INIT_SECTION_ASM_OP'.  This macro should be defined for systems where the
    init section is not actually run automatically, but is still useful for
    collecting the lists of constructors and destructors.  */
 #define INVOKE__main
-
-/* If your system uses `collect2' as the means of processing constructors, then
-   that program normally uses `nm' to scan an object file for constructor
-   functions to be called.  On certain kinds of systems, you can define these
-   macros to make `collect2' work faster (and, in some cases, make it work at
-   all): */
-
-/* Define this macro if the system uses COFF (Common Object File Format) object
-   files, so that `collect2' can assume this format and scan object files
-   directly for dynamic constructor/destructor functions.  */
-/* #define OBJECT_FORMAT_COFF */
-
-/* Define this macro if the system uses ROSE format object files, so that
-   `collect2' can assume this format and scan object files directly for dynamic
-   constructor/destructor functions.
-
-   These macros are effective only in a native compiler; `collect2' as
-   part of a cross compiler always uses `nm' for the target machine.  */
-/* #define OBJECT_FORMAT_ROSE */
-
-/* Define this macro if the system uses ELF format object files.
-
-   Defined in svr4.h.  */
-/* #define OBJECT_FORMAT_ELF */
-
-/* Define this macro as a C string constant containing the file name to use to
-   execute `nm'.  The default is to search the path normally for `nm'.
-
-   If your system supports shared libraries and has a program to list the
-   dynamic dependencies of a given library or executable, you can define these
-   macros to enable support for running initialization and termination
-   functions in shared libraries: */
-/* #define REAL_NM_FILE_NAME */
-
-/* Define this macro to a C string constant containing the name of the program
-   which lists dynamic dependencies, like `"ldd"' under SunOS 4.  */
-/* #define LDD_SUFFIX */
-
-/* Define this macro to be C code that extracts filenames from the output of
-   the program denoted by `LDD_SUFFIX'.  PTR is a variable of type `char *'
-   that points to the beginning of a line of output from `LDD_SUFFIX'.  If the
-   line lists a dynamic dependency, the code must advance PTR to the beginning
-   of the filename on that line.  Otherwise, it must set PTR to `NULL'.  */
-/* #define PARSE_LDD_OUTPUT (PTR) */
 
 
 /* Output of Assembler Instructions.  */
@@ -3160,55 +1763,6 @@ do {									\
   {"cr17",	CR_INT_M}			\
 }
 
-/* Define this macro if you are using an unusual assembler that requires
-   different names for the machine instructions.
-
-   The definition is a C statement or statements which output an assembler
-   instruction opcode to the stdio stream STREAM.  The macro-operand PTR is a
-   variable of type `char *' which points to the opcode name in its "internal"
-   form--the form that is written in the machine description.  The definition
-   should output the opcode name to STREAM, performing any translation you
-   desire, and increment the variable PTR to point at the end of the opcode so
-   that it will not be output twice.
-
-   In fact, your macro definition may process less than the entire opcode name,
-   or more than the opcode name; but if you want to process text that includes
-   `%'-sequences to substitute operands, you must take care of the substitution
-   yourself.  Just be sure to increment PTR over whatever text should not be
-   output normally.
-
-   If you need to look at the operand values, they can be found as the elements
-   of `recog_data.operand'.
-
-   If the macro definition does nothing, the instruction is output in the usual
-   way.  */
-/* #define ASM_OUTPUT_OPCODE(STREAM, PTR) */
-
-/* If defined, a C statement to be executed just prior to the output of
-   assembler code for INSN, to modify the extracted operands so they will be
-   output differently.
-
-   Here the argument OPVEC is the vector containing the operands extracted from
-   INSN, and NOPERANDS is the number of elements of the vector which contain
-   meaningful data for this insn.  The contents of this vector are what will be
-   used to convert the insn template into assembler code, so you can change the
-   assembler output by changing the contents of the vector.
-
-   This macro is useful when various assembler syntaxes share a single file of
-   instruction patterns; by defining this macro differently, you can cause a
-   large class of instructions to be output differently (such as with
-   rearranged operands).  Naturally, variations in assembler syntax affecting
-   individual insn patterns ought to be handled by writing conditional output
-   routines in those patterns.
-
-   If this macro is not defined, it is equivalent to a null statement.  */
-/* #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) */
-
-/* If defined, `FINAL_PRESCAN_INSN' will be called on each
-   `CODE_LABEL'.  In that case, OPVEC will be a null pointer and
-   NOPERANDS will be zero.  */
-/* #define FINAL_PRESCAN_LABEL */
-
 /* A C compound statement to output to stdio stream STREAM the assembler syntax
    for an instruction operand X.  X is an RTL expression.
 
@@ -3264,22 +1818,6 @@ do {									\
 
 #define PRINT_OPERAND_ADDRESS(STREAM, X) d30v_print_operand_address (STREAM, X)
 
-/* A C statement, to be executed after all slot-filler instructions have been
-   output.  If necessary, call `dbr_sequence_length' to determine the number of
-   slots filled in a sequence (zero if not currently outputting a sequence), to
-   decide how many no-ops to output, or whatever.
-
-   Don't define this macro if it has nothing to do, but it is helpful in
-   reading assembly output if the extent of the delay sequence is made explicit
-   (e.g. with white space).
-
-   Note that output routines for instructions with delay slots must be prepared
-   to deal with not being output as part of a sequence (i.e.  when the
-   scheduling pass is not run, or when no slot fillers could be found.)  The
-   variable `final_sequence' is null when not processing a sequence, otherwise
-   it contains the `sequence' rtx being output.  */
-/* #define DBR_OUTPUT_SEQEND(FILE) */
-
 /* If defined, C string expressions to be used for the `%R', `%L', `%U', and
    `%I' options of `asm_fprintf' (see `final.c').  These are useful when a
    single `md' file must support multiple assembler formats.  In that case, the
@@ -3291,38 +1829,6 @@ do {									\
 #define LOCAL_LABEL_PREFIX "."
 #define USER_LABEL_PREFIX ""
 #define IMMEDIATE_PREFIX ""
-
-/* If your target supports multiple dialects of assembler language (such as
-   different opcodes), define this macro as a C expression that gives the
-   numeric index of the assembler language dialect to use, with zero as the
-   first variant.
-
-   If this macro is defined, you may use `{option0|option1|option2...}'
-   constructs in the output templates of patterns (*note Output Template::.) or
-   in the first argument of `asm_fprintf'.  This construct outputs `option0',
-   `option1' or `option2', etc., if the value of `ASSEMBLER_DIALECT' is zero,
-   one or two, etc.  Any special characters within these strings retain their
-   usual meaning.
-
-   If you do not define this macro, the characters `{', `|' and `}' do not have
-   any special meaning when used in templates or operands to `asm_fprintf'.
-
-   Define the macros `REGISTER_PREFIX', `LOCAL_LABEL_PREFIX',
-   `USER_LABEL_PREFIX' and `IMMEDIATE_PREFIX' if you can express the variations
-   in assemble language syntax with that mechanism.  Define `ASSEMBLER_DIALECT'
-   and use the `{option0|option1}' syntax if the syntax variant are larger and
-   involve such things as different opcodes or operand order.  */
-/* #define ASSEMBLER_DIALECT */
-
-/* A C expression to output to STREAM some assembler code which will push hard
-   register number REGNO onto the stack.  The code need not be optimal, since
-   this macro is used only when profiling.  */
-/* #define ASM_OUTPUT_REG_PUSH (STREAM, REGNO) */
-
-/* A C expression to output to STREAM some assembler code which will pop hard
-   register number REGNO off of the stack.  The code need not be optimal, since
-   this macro is used only when profiling.  */
-/* #define ASM_OUTPUT_REG_POP (STREAM, REGNO) */
 
 
 /* Output of dispatch tables.  */
@@ -3354,82 +1860,8 @@ fprintf (STREAM, "\t.word .L%d-.L%d\n", VALUE, REL)
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE) \
 fprintf (STREAM, "\t.word .L%d\n", VALUE)
 
-/* Define this if the label before a jump-table needs to be output specially.
-   The first three arguments are the same as for `(*targetm.asm_out.internal_label)';
-   the fourth argument is the jump-table which follows (a `jump_insn'
-   containing an `addr_vec' or `addr_diff_vec').
-
-   This feature is used on system V to output a `swbeg' statement for the
-   table.
-
-   If this macro is not defined, these labels are output with
-   `(*targetm.asm_out.internal_label)'.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_CASE_LABEL(STREAM, PREFIX, NUM, TABLE) */
-
-/* Define this if something special must be output at the end of a jump-table.
-   The definition should be a C statement to be executed after the assembler
-   code for the table is written.  It should write the appropriate code to
-   stdio stream STREAM.  The argument TABLE is the jump-table insn, and NUM is
-   the label-number of the preceding label.
-
-   If this macro is not defined, nothing special is output at the end of the
-   jump-table.  */
-/* #define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE) */
-
-
-/* Assembler Commands for Exception Regions.  */
-
-/* An rtx used to mask the return address found via RETURN_ADDR_RTX, so that it
-   does not contain any extraneous set bits in it.  */
-/* #define MASK_RETURN_ADDR */
-
-/* Define this macro to 0 if your target supports DWARF 2 frame unwind
-   information, but it does not yet work with exception handling.  Otherwise,
-   if your target supports this information (if it defines
-   `INCOMING_RETURN_ADDR_RTX'), GCC will provide a default definition of 1.
-
-   If this macro is defined to 1, the DWARF 2 unwinder will be the default
-   exception handling mechanism; otherwise, setjmp/longjmp will be used by
-   default.
-
-   If this macro is defined to anything, the DWARF 2 unwinder will be used
-   instead of inline unwinders and __unwind_function in the non-setjmp case.  */
-/* #define DWARF2_UNWIND_INFO */
-
 
 /* Assembler Commands for Alignment.  */
-
-/* The alignment (log base 2) to put in front of LABEL, which follows
-   a BARRIER.
-
-   This macro need not be defined if you don't want any special alignment to be
-   done at such a time.  Most machine descriptions do not currently define the
-   macro.  */
-/* #define LABEL_ALIGN_AFTER_BARRIER(LABEL) */
-
-/* The desired alignment for the location counter at the beginning
-   of a loop.
-
-   This macro need not be defined if you don't want any special alignment to be
-   done at such a time.  Most machine descriptions do not currently define the
-   macro.  */
-/* #define LOOP_ALIGN(LABEL) */
-
-/* A C statement to output to the stdio stream STREAM an assembler instruction
-   to advance the location counter by NBYTES bytes.  Those bytes should be zero
-   when loaded.  NBYTES will be a C expression of type `int'.
-
-   Defined in svr4.h.  */
-/* #define ASM_OUTPUT_SKIP(STREAM, NBYTES) \
-  fprintf (STREAM, "\t.zero\t%u\n", (NBYTES)) */
-
-/* Define this macro if `ASM_OUTPUT_SKIP' should not be used in the text
-   section because it fails put zeros in the bytes that are skipped.  This is
-   true on many Unix systems, where the pseudo-op to skip bytes produces no-op
-   instructions rather than zeros when used in the text section.  */
-/* #define ASM_NO_SKIP_IN_TEXT */
 
 /* A C statement to output to the stdio stream STREAM an assembler command to
    advance the location counter to a multiple of 2 to the POWER bytes.  POWER
@@ -3477,18 +1909,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
  : (REGNO) == CR_INT_M		 ? (66 + 17)				\
  :				   -1)
 
-/* A C expression that returns the integer offset value for an automatic
-   variable having address X (an RTL expression).  The default computation
-   assumes that X is based on the frame-pointer and gives the offset from the
-   frame-pointer.  This is required for targets that produce debugging output
-   for DBX or COFF-style debugging output for SDB and allow the frame-pointer
-   to be eliminated when the `-g' options is used.  */
-/* #define DEBUGGER_AUTO_OFFSET(X) */
-
-/* A C expression that returns the integer offset value for an argument having
-   address X (an RTL expression).  The nominal offset is OFFSET.  */
-/* #define DEBUGGER_ARG_OFFSET(OFFSET, X) */
-
 /* A C expression that returns the type of debugging output GNU CC produces
    when the user specifies `-g' or `-ggdb'.  Define this if you have arranged
    for GNU CC to support more than one format of debugging output.  Currently,
@@ -3504,284 +1924,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 #undef	PREFERRED_DEBUGGING_TYPE
 #define	PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-
-/* Specific Options for DBX Output.  */
-
-/* Define this macro if GNU CC should produce debugging output for DBX in
-   response to the `-g' option.
-
-   Defined in svr4.h.  */
-/* #define DBX_DEBUGGING_INFO */
-
-/* Define this macro if GNU CC should produce XCOFF format debugging output in
-   response to the `-g' option.  This is a variant of DBX format.  */
-/* #define XCOFF_DEBUGGING_INFO */
-
-/* Define this macro to control whether GNU CC should by default generate GDB's
-   extended version of DBX debugging information (assuming DBX-format debugging
-   information is enabled at all).  If you don't define the macro, the default
-   is 1: always generate the extended information if there is any occasion to.  */
-/* #define DEFAULT_GDB_EXTENSIONS */
-
-/* Define this macro if all `.stabs' commands should be output while in the
-   text section.  */
-/* #define DEBUG_SYMS_TEXT */
-
-/* A C string constant naming the assembler pseudo op to use instead of
-   `.stabs' to define an ordinary debugging symbol.  If you don't define this
-   macro, `.stabs' is used.  This macro applies only to DBX debugging
-   information format.  */
-/* #define ASM_STABS_OP */
-
-/* A C string constant naming the assembler pseudo op to use instead of
-   `.stabd' to define a debugging symbol whose value is the current location.
-   If you don't define this macro, `.stabd' is used.  This macro applies only
-   to DBX debugging information format.  */
-/* #define ASM_STABD_OP */
-
-/* A C string constant naming the assembler pseudo op to use instead of
-   `.stabn' to define a debugging symbol with no name.  If you don't define
-   this macro, `.stabn' is used.  This macro applies only to DBX debugging
-   information format.  */
-/* #define ASM_STABN_OP */
-
-/* Define this macro if DBX on your system does not support the construct
-   `xsTAGNAME'.  On some systems, this construct is used to describe a forward
-   reference to a structure named TAGNAME.  On other systems, this construct is
-   not supported at all.  */
-/* #define DBX_NO_XREFS */
-
-/* A symbol name in DBX-format debugging information is normally continued
-   (split into two separate `.stabs' directives) when it exceeds a certain
-   length (by default, 80 characters).  On some operating systems, DBX requires
-   this splitting; on others, splitting must not be done.  You can inhibit
-   splitting by defining this macro with the value zero.  You can override the
-   default splitting-length by defining this macro as an expression for the
-   length you desire.  */
-/* #define DBX_CONTIN_LENGTH */
-
-/* Normally continuation is indicated by adding a `\' character to the end of a
-   `.stabs' string when a continuation follows.  To use a different character
-   instead, define this macro as a character constant for the character you
-   want to use.  Do not define this macro if backslash is correct for your
-   system.  */
-/* #define DBX_CONTIN_CHAR */
-
-/* Define this macro if it is necessary to go to the data section before
-   outputting the `.stabs' pseudo-op for a non-global static variable.  */
-/* #define DBX_STATIC_STAB_DATA_SECTION */
-
-/* The value to use in the "code" field of the `.stabs' directive for a
-   typedef.  The default is `N_LSYM'.  */
-/* #define DBX_TYPE_DECL_STABS_CODE */
-
-/* The value to use in the "code" field of the `.stabs' directive for a static
-   variable located in the text section.  DBX format does not provide any
-   "right" way to do this.  The default is `N_FUN'.  */
-/* #define DBX_STATIC_CONST_VAR_CODE */
-
-/* The value to use in the "code" field of the `.stabs' directive for a
-   parameter passed in registers.  DBX format does not provide any "right" way
-   to do this.  The default is `N_RSYM'.  */
-/* #define DBX_REGPARM_STABS_CODE */
-
-/* The letter to use in DBX symbol data to identify a symbol as a parameter
-   passed in registers.  DBX format does not customarily provide any way to do
-   this.  The default is `'P''.  */
-/* #define DBX_REGPARM_STABS_LETTER */
-
-/* The letter to use in DBX symbol data to identify a symbol as a stack
-   parameter.  The default is `'p''.  */
-/* #define DBX_MEMPARM_STABS_LETTER */
-
-/* Define this macro if the DBX information for a function and its arguments
-   should precede the assembler code for the function.  Normally, in DBX
-   format, the debugging information entirely follows the assembler code.
-
-   Defined in svr4.h.  */
-/* #define DBX_FUNCTION_FIRST */
-
-/* Define this macro if the `N_LBRAC' symbol for a block should precede the
-   debugging information for variables and functions defined in that block.
-   Normally, in DBX format, the `N_LBRAC' symbol comes first.  */
-/* #define DBX_LBRAC_FIRST */
-
-/* Define this macro if the value of a symbol describing the scope of a block
-   (`N_LBRAC' or `N_RBRAC') should be relative to the start of the enclosing
-   function.  Normally, GNU C uses an absolute address.
-
-   Defined in svr4.h.  */
-/* #define DBX_BLOCKS_FUNCTION_RELATIVE */
-
-/* Define this macro if GNU C should generate `N_BINCL' and `N_EINCL'
-   stabs for included header files, as on Sun systems.  This macro
-   also directs GNU C to output a type number as a pair of a file
-   number and a type number within the file.  Normally, GNU C does not
-   generate `N_BINCL' or `N_EINCL' stabs, and it outputs a single
-   number for a type number.  */
-/* #define DBX_USE_BINCL */
-
-
-/* Open ended Hooks for DBX Output.  */
-
-/* Define this macro to say how to output to STREAM the debugging information
-   for the start of a scope level for variable names.  The argument NAME is the
-   name of an assembler symbol (for use with `assemble_name') whose value is
-   the address where the scope begins.  */
-/* #define DBX_OUTPUT_LBRAC(STREAM, NAME) */
-
-/* Like `DBX_OUTPUT_LBRAC', but for the end of a scope level.  */
-/* #define DBX_OUTPUT_RBRAC(STREAM, NAME) */
-
-/* Define this macro if the target machine requires special handling to output
-   an enumeration type.  The definition should be a C statement (sans
-   semicolon) to output the appropriate information to STREAM for the type
-   TYPE.  */
-/* #define DBX_OUTPUT_ENUM(STREAM, TYPE) */
-
-/* Define this macro if the target machine requires special output at the end
-   of the debugging information for a function.  The definition should be a C
-   statement (sans semicolon) to output the appropriate information to STREAM.
-   FUNCTION is the `FUNCTION_DECL' node for the function.  */
-/* #define DBX_OUTPUT_FUNCTION_END(STREAM, FUNCTION) */
-
-/* Define this macro if you need to control the order of output of the standard
-   data types at the beginning of compilation.  The argument SYMS is a `tree'
-   which is a chain of all the predefined global symbols, including names of
-   data types.
-
-   Normally, DBX output starts with definitions of the types for integers and
-   characters, followed by all the other predefined types of the particular
-   language in no particular order.
-
-   On some machines, it is necessary to output different particular types
-   first.  To do this, define `DBX_OUTPUT_STANDARD_TYPES' to output those
-   symbols in the necessary order.  Any predefined types that you don't
-   explicitly output will be output afterward in no particular order.
-
-   Be careful not to define this macro so that it works only for C.  There are
-   no global variables to access most of the built-in types, because another
-   language may have another set of types.  The way to output a particular type
-   is to look through SYMS to see if you can find it.  Here is an example:
-
-        {
-          tree decl;
-          for (decl = syms; decl; decl = TREE_CHAIN (decl))
-            if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
-                         "long int"))
-              dbxout_symbol (decl);
-          ...
-        }
-
-   This does nothing if the expected type does not exist.
-
-   See the function `init_decl_processing' in `c-decl.c' to find the names to
-   use for all the built-in C types. */
-/* #define DBX_OUTPUT_STANDARD_TYPES(SYMS) */
-
-/* Some stabs encapsulation formats (in particular ECOFF), cannot
-   handle the `.stabs "",N_FUN,,0,0,Lscope-function-1' gdb dbx
-   extension construct.  On those machines, define this macro to turn
-   this feature off without disturbing the rest of the gdb extensions.  */
-/* #define NO_DBX_FUNCTION_END */
-
-
-/* File names in DBX format.  */
-
-/* Define this if DBX wants to have the current directory recorded in each
-   object file.
-
-   Note that the working directory is always recorded if GDB extensions are
-   enabled.  */
-/* #define DBX_WORKING_DIRECTORY */
-
-/* A C statement to output DBX debugging information to the stdio stream STREAM
-   which indicates that file NAME is the main source file--the file specified
-   as the input file for compilation.  This macro is called only once, at the
-   beginning of compilation.
-
-   This macro need not be defined if the standard form of output for DBX
-   debugging information is appropriate.
-
-   Defined in svr4.h.  */
-/* #define DBX_OUTPUT_MAIN_SOURCE_FILENAME(STREAM, NAME) */
-
-/* A C statement to output DBX debugging information to the stdio stream STREAM
-   which indicates that the current directory during compilation is named NAME.
-
-   This macro need not be defined if the standard form of output for DBX
-   debugging information is appropriate.  */
-/* #define DBX_OUTPUT_MAIN_SOURCE_DIRECTORY(STREAM, NAME) */
-
-/* A C statement to output DBX debugging information at the end of compilation
-   of the main source file NAME.
-
-   If you don't define this macro, nothing special is output at the end of
-   compilation, which is correct for most machines.  */
-/* #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(STREAM, NAME) */
-
-/* A C statement to output DBX debugging information to the stdio stream STREAM
-   which indicates that file NAME is the current source file.  This output is
-   generated each time input shifts to a different source file as a result of
-   `#include', the end of an included file, or a `#line' command.
-
-   This macro need not be defined if the standard form of output for DBX
-   debugging information is appropriate.  */
-/* #define DBX_OUTPUT_SOURCE_FILENAME(STREAM, NAME) */
-
-
-/* Macros for SDB and Dwarf Output.  */
-
-/* Define this macro if GNU CC should produce COFF-style debugging output for
-   SDB in response to the `-g' option.  */
-/* #define SDB_DEBUGGING_INFO */
-
-/* Define this macro if GNU CC should produce dwarf format debugging output in
-   response to the `-g' option.
-
-   Defined in svr4.h.  */
-/* #define DWARF_DEBUGGING_INFO */
-
-/* Define this macro if GNU CC should produce dwarf version 2 format debugging
-   output in response to the `-g' option.
-
-   To support optional call frame debugging information, you must also define
-   `INCOMING_RETURN_ADDR_RTX' and either set `RTX_FRAME_RELATED_P' on the
-   prologue insns if you use RTL for the prologue, or call `dwarf2out_def_cfa'
-   and `dwarf2out_reg_save' as appropriate from output_function_prologue() if
-   you don't.
-
-   Defined in svr4.h.  */
-/* #define DWARF2_DEBUGGING_INFO */
-
-/* Define these macros to override the assembler syntax for the special SDB
-   assembler directives.  See `sdbout.c' for a list of these macros and their
-   arguments.  If the standard syntax is used, you need not define them
-   yourself.  */
-/* #define PUT_SDB_... */
-
-/* Some assemblers do not support a semicolon as a delimiter, even between SDB
-   assembler directives.  In that case, define this macro to be the delimiter
-   to use (usually `\n').  It is not necessary to define a new set of
-   `PUT_SDB_OP' macros if this is the only change required.  */
-/* #define SDB_DELIM */
-
-/* Define this macro to override the usual method of constructing a dummy name
-   for anonymous structure and union types.  See `sdbout.c' for more
-   information.  */
-/* #define SDB_GENERATE_FAKE */
-
-/* Define this macro to allow references to unknown structure, union, or
-   enumeration tags to be emitted.  Standard COFF does not allow handling of
-   unknown references, MIPS ECOFF has support for it.  */
-/* #define SDB_ALLOW_UNKNOWN_REFERENCES */
-
-/* Define this macro to allow references to structure, union, or enumeration
-   tags that have not yet been seen to be handled.  Some assemblers choke if
-   forward tags are used, while some require it.  */
-/* #define SDB_ALLOW_FORWARD_REFERENCES */
-
-
 
 /* Miscellaneous Parameters.  */
 
@@ -3869,23 +2011,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    a jump-table should have.  */
 #define CASE_VECTOR_MODE SImode
 
-/* Define as C expression which evaluates to nonzero if the tablejump
-   instruction expects the table to contain offsets from the address of the
-   table.
-   Do not define this if the table should contain absolute addresses. */
-/* #define CASE_VECTOR_PC_RELATIVE 1 */
-
-/* Define this if control falls through a `case' insn when the index value is
-   out of range.  This means the specified default-label is actually ignored by
-   the `case' insn proper.  */
-/* #define CASE_DROPS_THROUGH */
-
-/* Define this to be the smallest number of different values for which it is
-   best to use a jump-table instead of a tree of conditional branches.  The
-   default is four for machines with a `casesi' instruction and five otherwise.
-   This is best for most machines.  */
-/* #define CASE_VALUES_THRESHOLD */
-
 /* Define this macro if operations between registers with integral mode smaller
    than a word are always performed on the entire register.  Most RISC machines
    have this property and most CISC machines do not.  */
@@ -3909,44 +2034,9 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
 
-/* Define this macro if the same instructions that convert a floating point
-   number to a signed fixed point number also convert validly to an unsigned
-   one.  */
-/* #define FIXUNS_TRUNC_LIKE_FIX_TRUNC */
-
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */
 #define MOVE_MAX 8
-
-/* The maximum number of bytes that a single instruction can move quickly from
-   memory to memory.  If this is undefined, the default is `MOVE_MAX'.
-   Otherwise, it is the constant value that is the largest value that
-   `MOVE_MAX' can have at run-time.  */
-/* #define MAX_MOVE_MAX */
-
-/* A C expression that is nonzero if on this machine the number of bits
-   actually used for the count of a shift operation is equal to the number of
-   bits needed to represent the size of the object being shifted.  When this
-   macro is nonzero, the compiler will assume that it is safe to omit a
-   sign-extend, zero-extend, and certain bitwise `and' instructions that
-   truncates the count of a shift operation.  On machines that have
-   instructions that act on bitfields at variable positions, which may include
-   `bit test' instructions, a nonzero `SHIFT_COUNT_TRUNCATED' also enables
-   deletion of truncations of the values that serve as arguments to bitfield
-   instructions.
-
-   If both types of instructions truncate the count (for shifts) and position
-   (for bit-field operations), or if no variable-position bit-field instructions
-   exist, you should define this macro.
-
-   However, on some machines, such as the 80386 and the 680x0, truncation only
-   applies to shift operations and not the (real or pretended) bitfield
-   operations.  Define `SHIFT_COUNT_TRUNCATED' to be zero on such machines.
-   Instead, add patterns to the `md' file that include the implied truncation
-   of the shift instructions.
-
-   You need not define this macro if it would always have the value of zero.  */
-/* #define SHIFT_COUNT_TRUNCATED */
 
 /* A C expression which is nonzero if on this machine it is safe to "convert"
    an integer of INPREC bits to one of OUTPREC bits (where OUTPREC is smaller
@@ -3959,90 +2049,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    case, making `TRULY_NOOP_TRUNCATION' return 0 in such cases may improve
    things.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
-/* A C expression describing the value returned by a comparison operator with
-   an integral mode and stored by a store-flag instruction (`sCOND') when the
-   condition is true.  This description must apply to *all* the `sCOND'
-   patterns and all the comparison operators whose results have a `MODE_INT'
-   mode.
-
-   A value of 1 or -1 means that the instruction implementing the comparison
-   operator returns exactly 1 or -1 when the comparison is true and 0 when the
-   comparison is false.  Otherwise, the value indicates which bits of the
-   result are guaranteed to be 1 when the comparison is true.  This value is
-   interpreted in the mode of the comparison operation, which is given by the
-   mode of the first operand in the `sCOND' pattern.  Either the low bit or the
-   sign bit of `STORE_FLAG_VALUE' be on.  Presently, only those bits are used
-   by the compiler.
-
-   If `STORE_FLAG_VALUE' is neither 1 or -1, the compiler will generate code
-   that depends only on the specified bits.  It can also replace comparison
-   operators with equivalent operations if they cause the required bits to be
-   set, even if the remaining bits are undefined.  For example, on a machine
-   whose comparison operators return an `SImode' value and where
-   `STORE_FLAG_VALUE' is defined as `0x80000000', saying that just the sign bit
-   is relevant, the expression
-
-        (ne:SI (and:SI X (const_int POWER-OF-2)) (const_int 0))
-
-   can be converted to
-
-        (ashift:SI X (const_int N))
-
-   where N is the appropriate shift count to move the bit being tested into the
-   sign bit.
-
-   There is no way to describe a machine that always sets the low-order bit for
-   a true value, but does not guarantee the value of any other bits, but we do
-   not know of any machine that has such an instruction.  If you are trying to
-   port GNU CC to such a machine, include an instruction to perform a
-   logical-and of the result with 1 in the pattern for the comparison operators
-   and let us know (*note How to Report Bugs: Bug Reporting.).
-
-   Often, a machine will have multiple instructions that obtain a value from a
-   comparison (or the condition codes).  Here are rules to guide the choice of
-   value for `STORE_FLAG_VALUE', and hence the instructions to be used:
-
-      * Use the shortest sequence that yields a valid definition for
-        `STORE_FLAG_VALUE'.  It is more efficient for the compiler to
-        "normalize" the value (convert it to, e.g., 1 or 0) than for
-        the comparison operators to do so because there may be
-        opportunities to combine the normalization with other
-        operations.
-
-      * For equal-length sequences, use a value of 1 or -1, with -1
-        being slightly preferred on machines with expensive jumps and
-        1 preferred on other machines.
-
-      * As a second choice, choose a value of `0x80000001' if
-        instructions exist that set both the sign and low-order bits
-        but do not define the others.
-
-      * Otherwise, use a value of `0x80000000'.
-
-   Many machines can produce both the value chosen for `STORE_FLAG_VALUE' and
-   its negation in the same number of instructions.  On those machines, you
-   should also define a pattern for those cases, e.g., one matching
-
-        (set A (neg:M (ne:M B C)))
-
-   Some machines can also perform `and' or `plus' operations on condition code
-   values with less instructions than the corresponding `sCOND' insn followed
-   by `and' or `plus'.  On those machines, define the appropriate patterns.
-   Use the names `incscc' and `decscc', respectively, for the patterns
-   which perform `plus' or `minus' operations on condition code values.  See
-   `rs6000.md' for some examples.  The GNU Superoptizer can be used to find
-   such instruction sequences on other machines.
-
-   You need not define `STORE_FLAG_VALUE' if the machine has no store-flag
-   instructions.  */
-/* #define STORE_FLAG_VALUE */
-
-/* A C expression that gives a nonzero floating point value that is returned
-   when comparison operators with floating-point results are true.  Define this
-   macro on machine that have comparison operations that return floating-point
-   values.  If there are no such operations, do not define this macro.  */
-/* #define FLOAT_STORE_FLAG_VALUE */
 
 /* An alias for the machine mode for pointers.  On most machines, define this
    to be the integer mode corresponding to the width of a hardware pointer;
@@ -4060,82 +2066,10 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    `QImode'.  */
 #define FUNCTION_MODE QImode
 
-/* A C expression for the maximum number of instructions above which the
-   function DECL should not be inlined.  DECL is a `FUNCTION_DECL' node.
-
-   The default definition of this macro is 64 plus 8 times the number of
-   arguments that the function accepts.  Some people think a larger threshold
-   should be used on RISC machines.  */
-/* #define INTEGRATE_THRESHOLD(DECL) */
-
-/* Define this macro if the system header files support C++ as well as C.  This
-   macro inhibits the usual method of using system header files in C++, which
-   is to pretend that the file's contents are enclosed in `extern "C" {...}'.  */
-/* #define NO_IMPLICIT_EXTERN_C */
-
 /* Define this macro to handle System V style pragmas (particularly #pack).
 
    Defined in svr4.h.  */
 #define HANDLE_SYSV_PRAGMA 1
-
-/* Define this macro if you want to handle #pragma weak (HANDLE_SYSV_PRAGMA
-   must also be defined).  */
-/* #define HANDLE_WEAK_PRAGMA */
-
-/* Define this macro if the assembler does not accept the character `$' in
-   label names.  By default constructors and destructors in G++ have `$' in the
-   identifiers.  If this macro is defined, `.' is used instead.
-
-   Defined in svr4.h.  */
-/* #define NO_DOLLAR_IN_LABEL */
-
-/* Define this macro if the assembler does not accept the character `.' in
-   label names.  By default constructors and destructors in G++ have names that
-   use `.'.  If this macro is defined, these names are rewritten to avoid `.'.  */
-/* #define NO_DOT_IN_LABEL */
-
-/* Define this macro if the target system expects every program's `main'
-   function to return a standard "success" value by default (if no other value
-   is explicitly returned).
-
-   The definition should be a C statement (sans semicolon) to generate the
-   appropriate rtl instructions.  It is used only when compiling the end of
-   `main'.  */
-/* #define DEFAULT_MAIN_RETURN */
-
-/* Define this if your `exit' function needs to do something besides calling an
-   external function `_cleanup' before terminating with `_exit'.  The
-   `EXIT_BODY' macro is only needed if `NEED_ATEXIT' is defined and
-   `ON_EXIT' is not defined.  */
-/* #define EXIT_BODY */
-
-/* Define this macro as a C expression that is nonzero if it is safe for the
-   delay slot scheduler to place instructions in the delay slot of INSN, even
-   if they appear to use a resource set or clobbered in INSN.  INSN is always a
-   `jump_insn' or an `insn'; GNU CC knows that every `call_insn' has this
-   behavior.  On machines where some `insn' or `jump_insn' is really a function
-   call and hence has this behavior, you should define this macro.
-
-   You need not define this macro if it would always return zero.  */
-/* #define INSN_SETS_ARE_DELAYED(INSN) */
-
-/* Define this macro as a C expression that is nonzero if it is safe for the
-   delay slot scheduler to place instructions in the delay slot of INSN, even
-   if they appear to set or clobber a resource referenced in INSN.  INSN is
-   always a `jump_insn' or an `insn'.  On machines where some `insn' or
-   `jump_insn' is really a function call and its operands are registers whose
-   use is actually in the subroutine it calls, you should define this macro.
-   Doing so allows the delay slot scheduler to move instructions which copy
-   arguments into the argument registers into the delay slot of INSN.
-
-   You need not define this macro if it would always return zero.  */
-/* #define INSN_REFERENCES_ARE_DELAYED(INSN) */
-
-/* Define this macro if in some cases global symbols from one translation unit
-   may not be bound to undefined symbols in another translation unit without
-   user intervention.  For instance, under Microsoft Windows symbols must be
-   explicitly imported from shared libraries (DLLs).  */
-/* #define MULTIPLE_SYMBOL_SPACES */
 
 /* A C expression for the maximum number of instructions to execute via
    conditional execution instructions instead of a branch.  A value of
