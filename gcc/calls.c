@@ -271,15 +271,11 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
   /* Make a valid memory address and copy constants thru pseudo-regs,
      but not for a constant address if -fno-function-cse.  */
   if (GET_CODE (funexp) != SYMBOL_REF)
-    funexp =
-#ifdef SMALL_REGISTER_CLASSES
     /* If we are using registers for parameters, force the
-	 function address into a register now.  */
-      (SMALL_REGISTER_CLASSES && reg_parm_seen)
-       ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
-       :
-#endif
-         memory_address (FUNCTION_MODE, funexp);
+       function address into a register now.  */
+    funexp = ((SMALL_REGISTER_CLASSES && reg_parm_seen)
+	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
+	      : memory_address (FUNCTION_MODE, funexp));
   else
     {
 #ifndef NO_FUNCTION_CSE
@@ -1675,13 +1671,8 @@ expand_call (exp, target, ignore)
 		    && GET_CODE (SUBREG_REG (args[i].value)) == REG)))
 	    && args[i].mode != BLKmode
 	    && rtx_cost (args[i].value, SET) > 2
-#ifdef SMALL_REGISTER_CLASSES
 	    && ((SMALL_REGISTER_CLASSES && reg_parm_seen)
-		|| preserve_subexpressions_p ())
-#else
-	    && preserve_subexpressions_p ()
-#endif
-	    )
+		|| preserve_subexpressions_p ()))
 	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
       }
 
