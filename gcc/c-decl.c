@@ -1789,10 +1789,7 @@ pushdecl (x)
 		   /* No shadow warnings for internally generated vars.  */
 		   && !DECL_IGNORED_P (x)
 		   /* No shadow warnings for vars made for inlining.  */
-		   && ! DECL_FROM_INLINE (x)
-		   /* No shadow warnings for user-invisible decls.  */
-		   && ! (TREE_CODE (x) == VAR_DECL
-			 && DECL_IGNORED_P (x) && TREE_READONLY (x)))
+		   && ! DECL_FROM_INLINE (x))
 	    {
 	      char *warnstring = 0;
 
@@ -2599,7 +2596,7 @@ init_decl_processing ()
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN, 0);
 #endif
 
-  /* Create the global bindings of __NAME__ and __PRINTABLE_NAME__.  */
+  /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
   declare_function_name ();
 
   start_identifier_warnings ();
@@ -5456,7 +5453,7 @@ store_parm_decls ()
   if (c_function_varargs)
     mark_varargs ();
 
-  /* Declare __NAME__ and __PRINTABLE_NAME__ for this function.  */
+  /* Declare __FUNCTION__ and __PRETTY_FUNCTION__ for this function.  */
 
   declare_function_name ();
 
