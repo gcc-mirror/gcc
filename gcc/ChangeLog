@@ -1,3 +1,7 @@
+2004-08-02  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* gdbinit.in: Reflect previous changes to rtunion_def.
+
 2004-08-02  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold) <TRUNC_MOD_EXPR>: The transformation "X % -Y"
