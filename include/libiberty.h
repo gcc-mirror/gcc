@@ -134,6 +134,8 @@ extern void xmalloc_set_program_name PARAMS ((const char *));
 #ifdef ANSI_PROTOTYPES
 /* Get a definition for size_t.  */
 #include <stddef.h>
+/* Get a definition for va_list.  */
+#include <stdarg.h>
 #endif
 extern PTR xmalloc PARAMS ((size_t));
 
@@ -181,6 +183,17 @@ extern int pexecute PARAMS ((const char *, char * const *, const char *,
 /* Wait for pexecute to finish.  */
 
 extern int pwait PARAMS ((int, int *, int));
+
+/* Like sprintf but provides a pointer to malloc'd storage, which must
+   be freed by the caller.  */
+
+extern int asprintf PARAMS ((char **, const char *, ...)) ATTRIBUTE_PRINTF_2;
+
+/* Like vsprintf but provides a pointer to malloc'd storage, which
+   must be freed by the caller.  */
+
+extern int vasprintf PARAMS ((char **, const char *, va_list))
+  ATTRIBUTE_PRINTF(2,0);
 
 #ifdef __cplusplus
 }
