@@ -1,3 +1,24 @@
+2005-01-06  Laurent GUERBY <laurent@guerby.net>
+
+	Backport from mainline:
+
+	2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	
+	* ada/acats/run_acats (LD_LIBRARY_PATH): Add previous LD_LIBRARY_PATH
+	to LD_LIBRARY_PATH.  Export LD_LIBRARY_PATH.
+
+	2004-04-24  Laurent GUERBY  <laurent@guerby.net>
+	            Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* ada/acats/run_all.sh: Define $target variable.
+	
+	2004-04-24  Laurent GUERBY <laurent@guerby.net>
+
+	* ada/acats/run_all.sh: Handle cd2a83c, cd2a91c (target_bit)
+	and ad8011a (target_insn).
+	* ada/acats/support/macro.dfs: Likewise.
+	* ada/acats/support/impbit.adb: New file.
+
 2005-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20050105-1.c: New test.

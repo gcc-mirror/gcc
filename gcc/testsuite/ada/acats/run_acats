@@ -14,6 +14,7 @@ BASE=`cd $ROOT/../../..; ${PWDCMD-pwd}`
 
 PATH=$BASE:$ROOT:$PATH
 ADA_INCLUDE_PATH=$BASE/ada/rts
+LD_LIBRARY_PATH=$ADA_INCLUDE_PATH:$LD_LIBRARY_PATH
 ADA_OBJECTS_PATH=$ADA_INCLUDE_PATH
 
 if [ ! -d $ADA_INCLUDE_PATH ]; then
@@ -33,7 +34,7 @@ fi
 
 GCC_DRIVER="$BASE/xgcc"
 GCC="$BASE/xgcc -B$BASE/"
-export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_DRIVER GCC
+export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_DRIVER GCC LD_LIBRARY_PATH
 
 echo '#!/bin/sh' > host_gnatchop
 echo PATH=`dirname $host_gnatchop`:'$PATH' >> host_gnatchop
