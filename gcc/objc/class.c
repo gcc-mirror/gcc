@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup and Dennis Glatting.
 
 This file is part of GNU CC.
@@ -143,8 +143,8 @@ objc_get_class (const char *name)
   if(class)
     return class;
   
-  fprintf(stderr, "objc runtime: cannot find class %s\n", name);
-  abort();
+  objc_error(nil, OBJC_ERR_BAD_CLASS, 
+	     "objc runtime: cannot find class %s\n", name);
 }
 
 MetaClass
