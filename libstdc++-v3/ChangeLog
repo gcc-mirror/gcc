@@ -1,3 +1,10 @@
+2001-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* libsupc++/typeinfo (__GXX_MERGED_TYPEINFO_NAMES): New macro.
+	* libsupc++/tinfo.cc (std::typeinfo::operator==): Use strcmp
+	whenever !__GXX_MERGED_TYPEINFO_NAMES.
+	* libsupc++/tinfo2.cc (std::typeinfo::before): Likewise.
+
 2001-02-03  Alexandre Oliva  <aoliva@redhat.com>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 

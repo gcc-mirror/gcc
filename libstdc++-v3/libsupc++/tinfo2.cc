@@ -1,5 +1,5 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000 Free Software Foundation
+// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -36,12 +36,17 @@ extern "C" void abort ();
 
 using std::type_info;
 
-#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+#if !__GXX_MERGED_TYPEINFO_NAMES
+
 bool
 type_info::before (const type_info &arg) const
 {
   return __builtin_strcmp (name (), arg.name ()) < 0;
 }
+
+#endif
+
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
 
 // type info for pointer type.
 
