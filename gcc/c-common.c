@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "expr.h"
 #include "tm_p.h"
+#include "intl.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -1291,6 +1292,38 @@ typedef struct
 } format_kind_info;
 
 
+/* Structure describing details of a type expected in format checking,
+   and the type to check against it.  */
+typedef struct format_wanted_type
+{
+  /* The type wanted.  */
+  tree wanted_type;
+  /* The name of this type to use in diagnostics.  */
+  const char *wanted_type_name;
+  /* The level of indirection through pointers at which this type occurs.  */
+  int pointer_count;
+  /* Whether, when pointer_count is 1, to allow any character type when
+     pedantic, rather than just the character or void type specified.  */
+  int char_lenient_flag;
+  /* Whether the argument, dereferenced once, is written into and so the
+     argument must not be a pointer to a const-qualified type.  */
+  int writing_in_flag;
+  /* If warnings should be of the form "field precision is not type int",
+     the name to use (in this case "field precision"), otherwise NULL,
+     for "%s format, %s arg" type messages.  If (in an extension), this
+     is a pointer type, wanted_type_name should be set to include the
+     terminating '*' characters of the type name to give a correct
+     message.  */
+  const char *name;
+  /* The actual parameter to check against the wanted type.  */
+  tree param;
+  /* The argument number of that parameter.  */
+  int arg_num;
+  /* The next type to check for this format conversion, or NULL if none.  */
+  struct format_wanted_type *next;
+} format_wanted_type;
+
+
 static const format_length_info printf_length_specs[] =
 {
   { "h", FMT_LEN_h, STD_C89, "hh", FMT_LEN_hh, STD_C99 },
@@ -1482,6 +1515,8 @@ static void init_dollar_format_checking		PARAMS ((int, tree));
 static int maybe_read_dollar_number		PARAMS ((const char **, int,
 							 tree, tree *));
 static void finish_dollar_format_checking	PARAMS ((void));
+
+static void check_format_types	PARAMS ((format_wanted_type *));
 
 /* Initialize the table of functions to perform format checking on.
    The ISO C functions are always checked (whether <stdio.h> is
@@ -1842,10 +1877,14 @@ check_format_info (info, params)
   int format_length;
   tree format_tree;
   tree cur_param;
-  tree cur_type;
   tree wanted_type;
   enum format_std_version wanted_type_std;
   const char *wanted_type_name;
+  format_wanted_type width_wanted_type;
+  format_wanted_type precision_wanted_type;
+  format_wanted_type main_wanted_type;
+  format_wanted_type *first_wanted_type;
+  format_wanted_type *last_wanted_type;
   tree first_fillin_param;
   const char *format_chars;
   const format_kind_info *fki = NULL;
@@ -1959,8 +1998,8 @@ check_format_info (info, params)
   while (1)
     {
       int aflag;
-      int char_type_flag = 0;
-      int writing_in_flag = 0;
+      first_wanted_type = NULL;
+      last_wanted_type = NULL;
       if (*format_chars == 0)
 	{
 	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
@@ -2132,16 +2171,20 @@ check_format_info (info, params)
 		      params = TREE_CHAIN (params);
 		      ++arg_num;
 		    }
-		  /* size_t is generally not valid here.
-		     It will work on most machines, because size_t and int
-		     have the same mode.  But might as well warn anyway,
-		     since it will fail on other machines.  */
-		  if ((TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
-		       != integer_type_node)
-		      &&
-		      (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
-		       != unsigned_type_node))
-		    warning ("field width is not type int (arg %d)", arg_num);
+		  width_wanted_type.wanted_type = integer_type_node;
+		  width_wanted_type.wanted_type_name = NULL;
+		  width_wanted_type.pointer_count = 0;
+		  width_wanted_type.char_lenient_flag = 0;
+		  width_wanted_type.writing_in_flag = 0;
+		  width_wanted_type.name = _("field width");
+		  width_wanted_type.param = cur_param;
+		  width_wanted_type.arg_num = arg_num;
+		  width_wanted_type.next = NULL;
+		  if (last_wanted_type != 0)
+		    last_wanted_type->next = &width_wanted_type;
+		  if (first_wanted_type == 0)
+		    first_wanted_type = &width_wanted_type;
+		  last_wanted_type = &width_wanted_type;
 		}
 	    }
 	  else
@@ -2185,13 +2228,20 @@ check_format_info (info, params)
 			  params = TREE_CHAIN (params);
 			  ++arg_num;
 			}
-		      if ((TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
-			   != integer_type_node)
-			  &&
-			  (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
-			   != unsigned_type_node))
-			warning ("field precision is not type int (arg %d)",
-				 arg_num);
+		      precision_wanted_type.wanted_type = integer_type_node;
+		      precision_wanted_type.wanted_type_name = NULL;
+		      precision_wanted_type.pointer_count = 0;
+		      precision_wanted_type.char_lenient_flag = 0;
+		      precision_wanted_type.writing_in_flag = 0;
+		      precision_wanted_type.name = _("field precision");
+		      precision_wanted_type.param = cur_param;
+		      precision_wanted_type.arg_num = arg_num;
+		      precision_wanted_type.next = NULL;
+		      if (last_wanted_type != 0)
+			last_wanted_type->next = &precision_wanted_type;
+		      if (first_wanted_type == 0)
+			first_wanted_type = &precision_wanted_type;
+		      last_wanted_type = &precision_wanted_type;
 		    }
 		}
 	      else
@@ -2357,8 +2407,20 @@ check_format_info (info, params)
       wanted_type_name = fci->types[length_chars_val].name;
       wanted_type_std = fci->types[length_chars_val].std;
       if (wanted_type == 0)
-	warning ("use of `%s' length modifier with `%c' type character",
-		 length_chars, format_char);
+	{
+	  warning ("use of `%s' length modifier with `%c' type character",
+		   length_chars, format_char);
+	  /* Heuristic: skip one argument when an invalid length/type
+	     combination is encountered.  */
+	  arg_num++;
+	  if (params == 0)
+	    {
+	      tfaff ();
+	      return;
+	    }
+	  params = TREE_CHAIN (params);
+	  continue;
+	}
       else if (pedantic
 	       /* Warn if non-standard, provided it is more non-standard
 		  than the length and type characters that may already
@@ -2378,30 +2440,70 @@ check_format_info (info, params)
       /* Finally. . .check type of argument against desired type!  */
       if (info->first_arg_num == 0)
 	continue;
-      if (fci->pointer_count == 0 && wanted_type == void_type_node)
-	/* This specifier takes no argument.  */
-	continue;
-      if (params == 0)
+      if (!(fci->pointer_count == 0 && wanted_type == void_type_node))
 	{
-	  tfaff ();
-	  return;
+	  if (params == 0)
+	    {
+	      tfaff ();
+	      return;
+	    }
+	  cur_param = TREE_VALUE (params);
+	  params = TREE_CHAIN (params);
+	  ++arg_num;
+	  main_wanted_type.wanted_type = wanted_type;
+	  main_wanted_type.wanted_type_name = wanted_type_name;
+	  main_wanted_type.pointer_count = fci->pointer_count + aflag;
+	  main_wanted_type.char_lenient_flag = 0;
+	  if (index (fci->flag_chars, 'c') != 0)
+	    main_wanted_type.char_lenient_flag = 1;
+	  main_wanted_type.writing_in_flag = 0;
+	  if (info->format_type == scanf_format_type
+	       || (info->format_type == printf_format_type
+		   && format_char == 'n'))
+	    main_wanted_type.writing_in_flag = 1;
+	  main_wanted_type.name = NULL;
+	  main_wanted_type.param = cur_param;
+	  main_wanted_type.arg_num = arg_num;
+	  main_wanted_type.next = NULL;
+	  if (last_wanted_type != 0)
+	    last_wanted_type->next = &main_wanted_type;
+	  if (first_wanted_type == 0)
+	    first_wanted_type = &main_wanted_type;
+	  last_wanted_type = &main_wanted_type;
 	}
-      cur_param = TREE_VALUE (params);
-      params = TREE_CHAIN (params);
-      ++arg_num;
+
+      if (first_wanted_type != 0)
+	check_format_types (first_wanted_type);
+
+    }
+}
+
+
+/* Check the argument types from a single format conversion (possibly
+   including width and precision arguments).  */
+static void
+check_format_types (types)
+     format_wanted_type *types;
+{
+  for (; types != 0; types = types->next)
+    {
+      tree cur_param;
+      tree cur_type;
+      tree wanted_type;
+      int arg_num;
+      int i;
+      int char_type_flag;
+      cur_param = types->param;
       cur_type = TREE_TYPE (cur_param);
+      char_type_flag = 0;
+      wanted_type = types->wanted_type;
+      arg_num = types->arg_num;
 
       STRIP_NOPS (cur_param);
 
-      if ((info->format_type == scanf_format_type
-	   || (info->format_type == printf_format_type
-	       && format_char == 'n'))
-	  && wanted_type != 0)
-	writing_in_flag = 1;
-
       /* Check the types of any additional pointer arguments
 	 that precede the "real" argument.  */
-      for (i = 0; i < fci->pointer_count + aflag; ++i)
+      for (i = 0; i < types->pointer_count; ++i)
 	{
 	  if (TREE_CODE (cur_type) == POINTER_TYPE)
 	    {
@@ -2417,7 +2519,7 @@ check_format_info (info, params)
 		 at the first indirection only, if for example
 		 void * const * is passed to scanf %p; passing
 		 const void ** is simply passing an incompatible type.  */
-	      if (writing_in_flag
+	      if (types->writing_in_flag
 		  && i == 0
 		  && TREE_CODE (cur_type) != ERROR_MARK
 		  && (TYPE_READONLY (cur_type)
@@ -2443,7 +2545,7 @@ check_format_info (info, params)
 	    }
 	  if (TREE_CODE (cur_type) != ERROR_MARK)
 	    {
-	      if (fci->pointer_count + aflag == 1)
+	      if (types->pointer_count == 1)
 		warning ("format argument is not a pointer (arg %d)", arg_num);
 	      else
 		warning ("format argument is not a pointer to a pointer (arg %d)", arg_num);
@@ -2454,13 +2556,13 @@ check_format_info (info, params)
       /* Check whether the argument type is a character type.  This leniency
 	 only applies to certain formats, flagged with 'c'.
       */
-      if (TREE_CODE (cur_type) != ERROR_MARK && index (fci->flag_chars, 'c') != 0)
+      if (TREE_CODE (cur_type) != ERROR_MARK && types->char_lenient_flag)
 	char_type_flag = (TYPE_MAIN_VARIANT (cur_type) == char_type_node
 			  || TYPE_MAIN_VARIANT (cur_type) == signed_char_type_node
 			  || TYPE_MAIN_VARIANT (cur_type) == unsigned_char_type_node);
 
       /* Check the type of the "real" argument, if there's a type we want.  */
-      if (i == fci->pointer_count + aflag && wanted_type != 0
+      if (i == types->pointer_count && wanted_type != 0
 	  && TREE_CODE (cur_type) != ERROR_MARK
 	  && wanted_type != TYPE_MAIN_VARIANT (cur_type)
 	  /* If we want `void *', allow any pointer type.
@@ -2469,7 +2571,7 @@ check_format_info (info, params)
 	     types.
 	  */
 	  && ! (wanted_type == void_type_node
-		&& fci->pointer_count > 0
+		&& types->pointer_count > 0
 		&& (! pedantic
 		    || TYPE_MAIN_VARIANT (cur_type) == void_type_node
 		    || (i == 1 && char_type_flag)))
@@ -2533,10 +2635,14 @@ check_format_info (info, params)
 		 but we should allow for programs with a perverse typedef
 		 making size_t something other than what the compiler
 		 thinks.  */
-	      if (wanted_type_name != 0
-		  && strcmp (wanted_type_name, that) != 0)
-		this = wanted_type_name;
-	      warning ("%s format, %s arg (arg %d)", this, that, arg_num);
+	      if (types->wanted_type_name != 0
+		  && strcmp (types->wanted_type_name, that) != 0)
+		this = types->wanted_type_name;
+	      if (types->name != 0)
+		warning ("%s is not type %s (arg %d)", types->name, this,
+			 arg_num);
+	      else
+		warning ("%s format, %s arg (arg %d)", this, that, arg_num);
 	    }
 	}
     }
