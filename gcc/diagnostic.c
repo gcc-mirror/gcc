@@ -1023,7 +1023,6 @@ sorry VPARAMS ((const char *msgid, ...))
 
   output_set_prefix
     (&global_dc->buffer, diagnostic_build_prefix (&diagnostic));
-  output_printf (&global_dc->buffer, "sorry, not implemented: ");
   output_format (&global_dc->buffer, &diagnostic.message);
   output_flush (&global_dc->buffer);
   VA_CLOSE (ap);
