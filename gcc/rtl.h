@@ -1544,6 +1544,8 @@ extern rtx prev_cc0_setter (rtx);
 extern tree choose_inner_scope (tree, tree);
 extern int insn_line (rtx);
 extern const char * insn_file (rtx);
+extern int locator_line (int);
+extern const char * locator_file (int);
 extern int prologue_locator, epilogue_locator;
 
 /* In jump.c */
