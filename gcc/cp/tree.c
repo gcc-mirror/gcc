@@ -2209,13 +2209,15 @@ cp_cannot_inline_tree_fn (fnp)
   if (DECL_TEMPLATE_INFO (fn)
       && TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
     {
+      /* Don't instantiate functions that are not going to be
+	 inlined.  */
+      if (!DECL_INLINE (DECL_TEMPLATE_RESULT 
+			(template_for_substitution (fn))))
+	return 1;
       fn = *fnp = instantiate_decl (fn, /*defer_ok=*/0);
       if (TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
 	return 1;
     }
-
-  if (!DECL_INLINE (fn))
-    return 1;
 
   if (flag_really_no_inline
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
