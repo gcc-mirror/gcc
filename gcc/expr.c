@@ -3955,7 +3955,7 @@ expand_expr (exp, target, tmode, modifier)
 
     case OFFSET_REF:
       {
-	tree base = build_unary_op (ADDR_EXPR, TREE_OPERAND (exp, 0), 0);
+	tree base = build1 (ADDR_EXPR, type, TREE_OPERAND (exp, 0));
 	tree addr = build (PLUS_EXPR, type, base, TREE_OPERAND (exp, 1));
 	op0 = expand_expr (addr, NULL_RTX, VOIDmode, EXPAND_SUM);
 	temp = gen_rtx (MEM, mode, memory_address (mode, op0));
