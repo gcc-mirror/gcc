@@ -1,3 +1,7 @@
+Tue Aug 25 19:20:12 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (GIV_SORT_CRITERION): Delete.
+
 Tue Aug 25 13:19:46 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* regclass.c (regclass): Use xmalloc/free instead of alloca.

@@ -1945,14 +1945,6 @@ do {									\
     cost = 2;								\
 } while (0)								\
 
-/* Since the SH architecture lacks negative address offsets,
-   the givs should be sorted smallest to largest so combine_givs
-   has maximum opportunity to combine givs.  */
-#define GIV_SORT_CRITERION(X, Y)	\
-  if (GET_CODE ((X)->add_val) == CONST_INT		\
-      && GET_CODE ((Y)->add_val) == CONST_INT)		\
-    return INTVAL ((X)->add_val) - INTVAL ((Y)->add_val);
-
 /* For the sake of libgcc2.c, indicate target supports atexit.  */
 #define HAVE_ATEXIT
 
