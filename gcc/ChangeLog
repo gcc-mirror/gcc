@@ -1,3 +1,8 @@
+2002-01-22  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (x86_64-*-netbsd*): New target.
+	* config/i386/netbsd64.h: New file.
+
 2002-01-22  Aldy Hernandez  <aldyh@redhat.com>
 
         * regrename.c (kill_value): Fix typo.
