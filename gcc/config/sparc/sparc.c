@@ -5219,7 +5219,9 @@ output_double_int (file, value)
 		|| GET_CODE (value) == CODE_LABEL
 		|| GET_CODE (value) == MINUS)))
     {
-      if (!TARGET_V9 || TARGET_CM_MEDLOW)
+      if (! TARGET_V9
+	  || (TARGET_CM_MEDLOW
+	      && ! flag_pic))
 	{
 	  ASM_OUTPUT_INT (file, const0_rtx);
 	  ASM_OUTPUT_INT (file, value);

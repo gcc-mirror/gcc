@@ -1,3 +1,9 @@
+Wed Sep  2 23:56:29 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (output_double_int): If V9 and MEDLOW, do
+	not assume top 32-bits of symbolic addresses are zero if
+	flag_pic.
+
 Thu Sep  3 00:23:21 1998  Richard Henderson  <rth@cygnus.com>
 
 	* ginclude/va-alpha.h: Protect entire second portion of the
