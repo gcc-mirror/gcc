@@ -1,3 +1,7 @@
+2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* .cvsignore: New file.
+
 2004-06-10  Stephen Crowley  <stephen.crowley@sbcglobal.net>
 
 	PR libmudflap/13505
