@@ -84,9 +84,6 @@ static int cond_exec_changed_p;
 /* True if life data ok at present.  */
 static bool life_data_ok;
 
-/* The post-dominator relation on the original block numbers.  */
-static dominance_info post_dominators;
-
 /* Forward references.  */
 static int count_bb_insns (basic_block);
 static rtx first_active_insn (basic_block);
@@ -123,6 +120,7 @@ mark_loop_exit_edges (void)
   edge e;
   
   flow_loops_find (&loops, LOOP_TREE);
+  free_dominance_info (CDI_DOMINATORS);
   
   if (loops.num > 1)
     {
@@ -2105,8 +2103,8 @@ merge_if_block (struct ce_if_block * ce_info)
 	{
 	  bb = fallthru;
 	  fallthru = block_fallthru (bb);
-	  if (post_dominators)
-	    delete_from_dominance_info (post_dominators, bb);
+	  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
+	    delete_from_dominance_info (CDI_POST_DOMINATORS, bb);
 	  merge_blocks (combo_bb, bb);
 	  num_true_changes++;
 	}
@@ -2122,8 +2120,8 @@ merge_if_block (struct ce_if_block * ce_info)
       if (combo_bb->global_live_at_end)
 	COPY_REG_SET (combo_bb->global_live_at_end,
 		      then_bb->global_live_at_end);
-      if (post_dominators)
-	delete_from_dominance_info (post_dominators, then_bb);
+      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
+	delete_from_dominance_info (CDI_POST_DOMINATORS, then_bb);
       merge_blocks (combo_bb, then_bb);
       num_true_changes++;
     }
@@ -2133,8 +2131,8 @@ merge_if_block (struct ce_if_block * ce_info)
      get their addresses taken.  */
   if (else_bb)
     {
-      if (post_dominators)
-	delete_from_dominance_info (post_dominators, else_bb);
+      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
+       	delete_from_dominance_info (CDI_POST_DOMINATORS, else_bb);
       merge_blocks (combo_bb, else_bb);
       num_true_changes++;
     }
@@ -2190,8 +2188,8 @@ merge_if_block (struct ce_if_block * ce_info)
 	COPY_REG_SET (combo_bb->global_live_at_end,
 		      join_bb->global_live_at_end);
 
-      if (post_dominators)
-	delete_from_dominance_info (post_dominators, join_bb);
+      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
+	delete_from_dominance_info (CDI_POST_DOMINATORS, join_bb);
       merge_blocks (combo_bb, join_bb);
       num_true_changes++;
     }
@@ -2271,7 +2269,7 @@ find_if_header (basic_block test_bb, int pass)
       && find_cond_trap (test_bb, then_edge, else_edge))
     goto success;
 
-  if (post_dominators
+  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY
       && (! HAVE_conditional_execution || reload_completed))
     {
       if (find_if_case_1 (test_bb, then_edge, else_edge))
@@ -2646,8 +2644,8 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   remove_edge (trap_bb == then_bb ? then_edge : else_edge);
   if (trap_bb->pred == NULL)
     {
-      if (post_dominators)
-	delete_from_dominance_info (post_dominators, trap_bb);
+      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
+	delete_from_dominance_info (CDI_POST_DOMINATORS, trap_bb);
       delete_block (trap_bb);
     }
 
@@ -2831,8 +2829,8 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 
   new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb), else_bb);
   then_bb_index = then_bb->index;
-  if (post_dominators)
-    delete_from_dominance_info (post_dominators, then_bb);
+  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
+    delete_from_dominance_info (CDI_POST_DOMINATORS, then_bb);
   delete_block (then_bb);
 
   /* Make rest of code believe that the newly created block is the THEN_BB
@@ -2841,8 +2839,8 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
     {
       new_bb->index = then_bb_index;
       BASIC_BLOCK (then_bb_index) = new_bb;
-      if (post_dominators)
-	add_to_dominance_info (post_dominators, new_bb);
+      if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
+	add_to_dominance_info (CDI_POST_DOMINATORS, new_bb);
     }
   /* We've possibly created jump to next insn, cleanup_cfg will solve that
      later.  */
@@ -2884,7 +2882,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   if (note && INTVAL (XEXP (note, 0)) >= REG_BR_PROB_BASE / 2)
     ;
   else if (else_succ->dest->index < 0
-	   || dominated_by_p (post_dominators, then_bb,
+	   || dominated_by_p (CDI_POST_DOMINATORS, then_bb,
 			      else_succ->dest))
     ;
   else
@@ -2911,8 +2909,8 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 		    then_bb->global_live_at_start,
 		    else_bb->global_live_at_end, BITMAP_IOR);
 
-  if (post_dominators)
-    delete_from_dominance_info (post_dominators, else_bb);
+  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY)
+    delete_from_dominance_info (CDI_POST_DOMINATORS, else_bb);
   delete_block (else_bb);
 
   num_true_changes++;
@@ -3217,11 +3215,9 @@ if_convert (int x_life_data_ok)
   free_basic_block_vars (1);
 
   /* Compute postdominators if we think we'll use them.  */
-  post_dominators = NULL;
   if (HAVE_conditional_execution || life_data_ok)
-    {
-      post_dominators = calculate_dominance_info (CDI_POST_DOMINATORS);
-    }
+    calculate_dominance_info (CDI_POST_DOMINATORS);
+
   if (life_data_ok)
     clear_bb_flags ();
 
@@ -3258,8 +3254,7 @@ if_convert (int x_life_data_ok)
     fprintf (rtl_dump_file, "\n\n========== no more changes\n");
 #endif
 
-  if (post_dominators)
-    free_dominance_info (post_dominators);
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   if (rtl_dump_file)
     fflush (rtl_dump_file);

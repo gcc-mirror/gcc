@@ -234,6 +234,9 @@ typedef struct basic_block_def {
   /* Outermost loop containing the block.  */
   struct loop *loop_father;
 
+  /* The dominance and postdominance information node.  */
+  struct et_node *dom[2];
+
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
 
@@ -372,10 +375,6 @@ extern void dump_edge_info (FILE *, edge, int);
 extern void clear_edges (void);
 extern void mark_critical_edges (void);
 extern rtx first_insn_after_basic_block_note (basic_block);
-
-/* Dominator information for basic blocks.  */
-
-typedef struct dominance_info *dominance_info;
 
 /* Structure to group all of the information to process IF-THEN and
    IF-THEN-ELSE blocks for the conditional execution support.  This
@@ -612,22 +611,35 @@ enum cdi_direction
   CDI_POST_DOMINATORS
 };
 
-extern dominance_info calculate_dominance_info (enum cdi_direction);
-extern void free_dominance_info (dominance_info);
-extern basic_block nearest_common_dominator (dominance_info,
+enum dom_state
+{
+  DOM_NONE,		/* Not computed at all.  */
+  DOM_CONS_OK,		/* The data is conservatively OK, i.e. if it says you that A dominates B,
+			   it indeed does.  */
+  DOM_NO_FAST_QUERY,	/* The data is OK, but the fast query data are not usable.  */
+  DOM_OK		/* Everything is ok.  */
+};
+
+extern enum dom_state dom_computed[2];
+
+extern void calculate_dominance_info (enum cdi_direction);
+extern void free_dominance_info (enum cdi_direction);
+extern basic_block nearest_common_dominator (enum cdi_direction,
 					     basic_block, basic_block);
-extern void set_immediate_dominator (dominance_info, basic_block,
+extern void set_immediate_dominator (enum cdi_direction, basic_block,
 				     basic_block);
-extern basic_block get_immediate_dominator (dominance_info, basic_block);
-extern bool dominated_by_p (dominance_info, basic_block, basic_block);
-extern int get_dominated_by (dominance_info, basic_block, basic_block **);
-extern void add_to_dominance_info (dominance_info, basic_block);
-extern void delete_from_dominance_info (dominance_info, basic_block);
-basic_block recount_dominator (dominance_info, basic_block);
-extern void redirect_immediate_dominators (dominance_info, basic_block,
+extern basic_block get_immediate_dominator (enum cdi_direction, basic_block);
+extern bool dominated_by_p (enum cdi_direction, basic_block, basic_block);
+extern int get_dominated_by (enum cdi_direction, basic_block, basic_block **);
+extern void add_to_dominance_info (enum cdi_direction, basic_block);
+extern void delete_from_dominance_info (enum cdi_direction, basic_block);
+basic_block recount_dominator (enum cdi_direction, basic_block);
+extern void redirect_immediate_dominators (enum cdi_direction, basic_block,
 					   basic_block);
-void iterate_fix_dominators (dominance_info, basic_block *, int);
-extern void verify_dominators (dominance_info);
+extern void iterate_fix_dominators (enum cdi_direction, basic_block *, int);
+extern void verify_dominators (enum cdi_direction);
+extern basic_block first_dom_son (enum cdi_direction, basic_block);
+extern basic_block next_dom_son (enum cdi_direction, basic_block);
 
 #include "cfghooks.h"
 

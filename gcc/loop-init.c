@@ -53,7 +53,9 @@ loop_optimizer_init (FILE *dumpfile)
 
       /* No loops.  */
       flow_loops_free (loops);
+      free_dominance_info (CDI_DOMINATORS);
       free (loops);
+
       /* Make chain.  */
       FOR_EACH_BB (bb)
 	if (bb->next_bb != EXIT_BLOCK_PTR)
@@ -81,7 +83,7 @@ loop_optimizer_init (FILE *dumpfile)
   flow_loops_dump (loops, dumpfile, NULL, 1);
 
 #ifdef ENABLE_CHECKING
-  verify_dominators (loops->cfg.dom);
+  verify_dominators (CDI_DOMINATORS);
   verify_loop_structure (loops);
 #endif
 
@@ -105,6 +107,7 @@ loop_optimizer_finalize (struct loops *loops, FILE *dumpfile)
 
   /* Clean up.  */
   flow_loops_free (loops);
+  free_dominance_info (CDI_DOMINATORS);
   free (loops);
 
   /* Finalize changes.  */

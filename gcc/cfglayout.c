@@ -1253,7 +1253,7 @@ end:
 void
 copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
 	  edge *edges, unsigned n_edges, edge *new_edges,
-	  struct loop *base, struct loops *loops)
+	  struct loop *base)
 {
   unsigned i, j;
   basic_block bb, new_bb, dom_bb;
@@ -1268,7 +1268,7 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       bb->rbi->duplicated = 1;
       /* Add to loop.  */
       add_bb_to_loop (new_bb, bb->loop_father->copy);
-      add_to_dominance_info (loops->cfg.dom, new_bb);
+      add_to_dominance_info (CDI_DOMINATORS, new_bb);
       /* Possibly set header.  */
       if (bb->loop_father->header == bb && bb->loop_father != base)
 	new_bb->loop_father->header = new_bb;
@@ -1283,11 +1283,11 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       bb = bbs[i];
       new_bb = new_bbs[i];
 
-      dom_bb = get_immediate_dominator (loops->cfg.dom, bb);
+      dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
       if (dom_bb->rbi->duplicated)
 	{
 	  dom_bb = dom_bb->rbi->copy;
-	  set_immediate_dominator (loops->cfg.dom, new_bb, dom_bb);
+	  set_immediate_dominator (CDI_DOMINATORS, new_bb, dom_bb);
 	}
     }
 

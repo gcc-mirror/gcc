@@ -1,3 +1,102 @@
+2003-12-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	Backport from tree-ssa (relevant changes only):
+	2003-12-18  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* et-forest.h (et_forest_create, et_forest_delete,
+	et_forest_add_node, et_forest_add_edge, et_forest_remove_node,
+	et_forest_remove_edge, et_forest_parent,
+	et_forest_common_ancestor, et_forest_node_value,
+	et_forest_enumerate_sons): Declarations removed.
+	(struct et_node): New.
+	(et_new_tree, et_free_tree, et_set_father, et_split, et_nca,
+	et_below): Declare.
+	* et-forest.c (struct et_forest_occurrence, struct et_forest,
+	struct et_forest_node): Removed.
+	(et_forest_create, et_forest_delete,
+	et_forest_add_node, et_forest_add_edge, et_forest_remove_node,
+	et_forest_remove_edge, et_forest_parent,
+	et_forest_common_ancestor, et_forest_node_value,
+	et_forest_enumerate_sons, splay, remove_all_occurrences,
+	find_leftmost_node, find_rightmost_node, calculate_value): Removed.
+	(struct et_occ): New.
+	(et_nodes, et_occurences): New.
+	(set_depth, set_depth_add, set_prev, set_next, et_recomp_min,
+	et_check_occ_sanity, et_check_sanity, et_check_tree_sanity,
+	record_path_before_1, record_path_before, check_path_after_1,
+	check_path_after, et_splay, et_new_occ, et_new_tree,
+	et_free_tree, et_set_father, et_split, et_nca, et_below): New.
+	* basic-block.h (struct basic_block_def): New field dom.
+	(struct dominance_info): Type removed.
+	(calculate_dominance_info, free_dominance_info,
+	nearest_common_dominator, set_immediate_dominator,
+	get_immediate_dominator, dominated_by_p, get_dominated_by,
+	add_to_dominance_info, delete_from_dominance_info,
+	recount_dominator, redirect_immediate_dominators,
+	iterate_fix_dominators, verify_dominators): Declarations
+	changed.
+	(enum dom_state): New.
+	(dom_computed): New variable.
+	(first_dom_son, next_dom_son): Declare.
+	* dominance.c (struct dominance_info): Removed.
+	(BB_NODE, SET_BB_NODE): Removed.
+	(calculate_dominance_info, free_dominance_info,
+	nearest_common_dominator, set_immediate_dominator,
+	get_immediate_dominator, dominated_by_p, get_dominated_by,
+	add_to_dominance_info, delete_from_dominance_info,
+	recount_dominator, redirect_immediate_dominators,
+	iterate_fix_dominators, verify_dominators,
+	debug_dominance_info): Work over new datastructure.  Access
+	dominance datastructures through CFG.
+	(assign_dfs_numbers, compute_dom_fast_query, first_dom_son,
+	next_dom_son): New.
+	* bt-load.c (dom): Variable removed.
+	(augment_live_range, combine_btr_defs, migrate_btr_def,
+	migrate_btr_defs, branch_target_load_optimize): Updated for the
+	new interface for dominance information.
+	* cfg.c {exit_entry_blocks): Update initializer.
+	* cfglayout.c (copy_bbs): Removed loops argument. Updated for
+	the new interface for dominance information.
+	* cfglayout.h (copy_bbs): Declaration changed.
+	* cfgloop.c (flow_loop_pre_header_find, flow_loops_cfg_dump,
+	flow_loop_scan, canonicalize_loop_headers, flow_loops_find): Updated
+	for the new interface for dominance information.
+	(flow_loop_scan): Loops argument removed.
+	(flow_loops_free): Don't release dominators.
+	* cfgloop.h (struct cfg): Dom field removed.
+	(flow_loop_scan, loop_split_edge_with, simple_loop_p,
+	just_once_each_iteration_p, split_loop_bb): Declaration changed.
+	* cfgloopanal.c (simple_loop_exit_p, simple_increment,
+	just_once_each_iteration_p, simple_loop_p): Remove loops argument.
+	Updated for the new interface for dominance information.
+	* cfgloopmanip.c (remove_bbs, find_path, create_preheader,
+	split_loop_bb, loopify, duplicate_loop_to_header_edge,
+	force_single_succ_latches, loop_split_edge_with): Ditto.
+	* gcse.c (dominators): Variable removed.
+	(free_code_hoist_mem, compute_code_hoist_data, hoist_code):
+	Updated for the new interface for dominance information.
+	* ifcvt.c (post_dominators): Variable removed.
+	(mark_loop_exit_edges, merge_if_block, find_if_header,
+	find_cond_trap, find_if_case_1, find_if_case_2, if_convert):
+	Updated for the new interface for dominance information.
+	* loop-init.c (rtl_loop_optimizer_init,
+	rtl_loop_optimizer_finalize): Ditto.
+	* loop-unroll.c (decide_peel_simple, decide_peel_once_rolling,
+	decide_peel_completely, decide_unroll_stupid,
+	decide_unroll_constant_iterations,
+	decide_unroll_runtime_iterations): Loops argument removed.
+	Updated for the new interface for dominance information.
+	(unroll_and_peel_loops, peel_loops_completely,
+	unroll_loop_runtime_iterations): Updated for the new interface for
+	dominance information.
+	* loop-unswitch.c (may_unswitch_on_p, unswitch_loops,
+	unswitch_single_loop, unswitch_loop): Updated for the new
+	interface for dominance information.
+	* predict.c (process_note_predictions, process_note_prediction,
+	estimate_probability, note_prediction_to_br_prob): Ditto.
+	* sched-rgn.c (find_rgns, init_regions): Ditto.
+	* toplev.c (rest_of_handle_branch_prob): Free the dominators.
+
 2003-12-30  Jan Hubicka  <jh@suse.cz>
 
 	PR target/13456

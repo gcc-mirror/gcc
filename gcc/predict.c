@@ -72,10 +72,8 @@ static void estimate_loops_at_level (struct loop *loop);
 static void propagate_freq (struct loop *);
 static void estimate_bb_frequencies (struct loops *);
 static void counts_to_freqs (void);
-static void process_note_predictions (basic_block, int *, dominance_info,
-				      dominance_info);
-static void process_note_prediction (basic_block, int *, dominance_info,
-				     dominance_info, int, int);
+static void process_note_predictions (basic_block, int *);
+static void process_note_prediction (basic_block, int *, int, int);
 static bool last_basic_block_p (basic_block);
 static void compute_function_frequency (void);
 static void choose_function_section (void);
@@ -393,13 +391,12 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
 void
 estimate_probability (struct loops *loops_info)
 {
-  dominance_info dominators, post_dominators;
   basic_block bb;
   unsigned i;
 
   connect_infinite_loops_to_exit ();
-  dominators = calculate_dominance_info (CDI_DOMINATORS);
-  post_dominators = calculate_dominance_info (CDI_POST_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
@@ -412,11 +409,10 @@ estimate_probability (struct loops *loops_info)
       struct loop_desc desc;
       unsigned HOST_WIDE_INT niter;
 
-      flow_loop_scan (loops_info, loop, LOOP_EXIT_EDGES);
+      flow_loop_scan (loop, LOOP_EXIT_EDGES);
       exits = loop->num_exits;
 
-      if (simple_loop_p (loops_info, loop, &desc)
-	  && desc.const_iter)
+      if (simple_loop_p (loop, &desc) && desc.const_iter)
 	{
 	  int prob;
 	  niter = desc.niter + 1;
@@ -500,8 +496,8 @@ estimate_probability (struct loops *loops_info)
 	  /* Look for block we are guarding (ie we dominate it,
 	     but it doesn't postdominate us).  */
 	  if (e->dest != EXIT_BLOCK_PTR && e->dest != bb
-	      && dominated_by_p (dominators, e->dest, e->src)
-	      && !dominated_by_p (post_dominators, e->src, e->dest))
+	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src)
+	      && !dominated_by_p (CDI_POST_DOMINATORS, e->src, e->dest))
 	    {
 	      rtx insn;
 
@@ -618,8 +614,7 @@ estimate_probability (struct loops *loops_info)
 	&& bb->succ->succ_next != NULL)
       combine_predictions_for_insn (BB_END (bb), bb);
 
-  free_dominance_info (post_dominators);
-  free_dominance_info (dominators);
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   remove_fake_edges ();
   estimate_bb_frequencies (loops_info);
@@ -719,10 +714,7 @@ last_basic_block_p (basic_block bb)
    on demand, so -1 may be there in case this was not needed yet).  */
 
 static void
-process_note_prediction (basic_block bb, int *heads,
-			 dominance_info dominators,
-			 dominance_info post_dominators, int pred,
-			 int flags)
+process_note_prediction (basic_block bb, int *heads, int pred, int flags)
 {
   edge e;
   int y;
@@ -736,18 +728,18 @@ process_note_prediction (basic_block bb, int *heads,
          find first dominator that we do not post-dominate (we are
          using already known members of heads array).  */
       basic_block ai = bb;
-      basic_block next_ai = get_immediate_dominator (dominators, bb);
+      basic_block next_ai = get_immediate_dominator (CDI_DOMINATORS, bb);
       int head;
 
       while (heads[next_ai->index] < 0)
 	{
-	  if (!dominated_by_p (post_dominators, next_ai, bb))
+	  if (!dominated_by_p (CDI_POST_DOMINATORS, next_ai, bb))
 	    break;
 	  heads[next_ai->index] = ai->index;
 	  ai = next_ai;
-	  next_ai = get_immediate_dominator (dominators, next_ai);
+	  next_ai = get_immediate_dominator (CDI_DOMINATORS, next_ai);
 	}
-      if (!dominated_by_p (post_dominators, next_ai, bb))
+      if (!dominated_by_p (CDI_POST_DOMINATORS, next_ai, bb))
 	head = next_ai->index;
       else
 	head = heads[next_ai->index];
@@ -769,7 +761,7 @@ process_note_prediction (basic_block bb, int *heads,
     return;
   for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
     if (e->dest->index >= 0
-	&& dominated_by_p (post_dominators, e->dest, bb))
+	&& dominated_by_p (CDI_POST_DOMINATORS, e->dest, bb))
       predict_edge_def (e, pred, taken);
 }
 
@@ -778,9 +770,7 @@ process_note_prediction (basic_block bb, int *heads,
    process_note_prediction.  */
 
 static void
-process_note_predictions (basic_block bb, int *heads,
-			  dominance_info dominators,
-			  dominance_info post_dominators)
+process_note_predictions (basic_block bb, int *heads)
 {
   rtx insn;
   edge e;
@@ -813,8 +803,6 @@ process_note_predictions (basic_block bb, int *heads,
 	  /* Process single prediction note.  */
 	  process_note_prediction (bb,
 				   heads,
-				   dominators,
-				   post_dominators,
 				   alg, (int) NOTE_PREDICTION_FLAGS (insn));
 	  delete_insn (insn);
 	}
@@ -827,10 +815,7 @@ process_note_predictions (basic_block bb, int *heads,
       /* This block ended from other reasons than because of return.
          If it is because of noreturn call, this should certainly not
          be taken.  Otherwise it is probably some error recovery.  */
-      process_note_prediction (bb,
-			       heads,
-			       dominators,
-			       post_dominators, PRED_NORETURN, NOT_TAKEN);
+      process_note_prediction (bb, heads, PRED_NORETURN, NOT_TAKEN);
     }
 }
 
@@ -841,15 +826,14 @@ void
 note_prediction_to_br_prob (void)
 {
   basic_block bb;
-  dominance_info post_dominators, dominators;
   int *heads;
 
   /* To enable handling of noreturn blocks.  */
   add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
 
-  post_dominators = calculate_dominance_info (CDI_POST_DOMINATORS);
-  dominators = calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
 
   heads = xmalloc (sizeof (int) * last_basic_block);
   memset (heads, -1, sizeof (int) * last_basic_block);
@@ -858,10 +842,10 @@ note_prediction_to_br_prob (void)
   /* Process all prediction notes.  */
 
   FOR_EACH_BB (bb)
-    process_note_predictions (bb, heads, dominators, post_dominators);
+    process_note_predictions (bb, heads);
 
-  free_dominance_info (post_dominators);
-  free_dominance_info (dominators);
+  free_dominance_info (CDI_POST_DOMINATORS);
+  free_dominance_info (CDI_DOMINATORS);
   free (heads);
 
   remove_fake_edges ();
