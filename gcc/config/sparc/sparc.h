@@ -1830,6 +1830,7 @@ while(0)
   asm ("	jmp %l1");\
   asm (" nop");\
   asm (".data");\
+  asm ("	.align 4");\
   asm ("LFLAGS" ID ":");\
   asm ("	.word 0");\
   asm ("LSAVRET" ID ":");\
