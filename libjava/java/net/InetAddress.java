@@ -70,61 +70,63 @@ public class InetAddress implements Serializable
 {
   private static final long serialVersionUID = 3286316764910316507L;
   
-  // The Serialized Form specifies that an int 'address' is saved/restored.
-  // This class uses a byte array internally so we'll just do the conversion
-  // at serialization time and leave the rest of the algorithm as is.
+  static final byte[] zeros = { 0, 0, 0, 0 };
+  
+  /**
+   * Dummy InetAddress, used to bind socket to any (all) network interfaces.
+   */
+  static final InetAddress ANY_IF = new InetAddress (zeros, null);
+    
+  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
+
+  private static InetAddress localhost = null;
+
+  /**
+   * The Serialized Form specifies that an int 'address' is saved/restored.
+   * This class uses a byte array internally so we'll just do the conversion
+   * at serialization time and leave the rest of the algorithm as is.
+   */
   private int address;
+
+  /**
+   * An array of octets representing an IP address.
+   */
   transient byte[] addr;
+
+  /**
+   * The name of the host for this address.
+   */
   String hostName;
   
-  // The field 'family' seems to be the AF_ value.
-  // FIXME: Much of the code in the other java.net classes does not make
-  // use of this family field.  A better implementation would be to make
-  // use of getaddrinfo() and have other methods just check the family
-  // field rather than examining the length of the address each time.
+  /**
+   * The field 'family' seems to be the AF_ value.
+   * FIXME: Much of the code in the other java.net classes does not make
+   * use of this family field.  A better implementation would be to make
+   * use of getaddrinfo() and have other methods just check the family
+   * field rather than examining the length of the address each time.
+   */
   int family;
 
   /**
-   * Needed for serialization
+   * Initializes this object's addr instance variable from the passed in
+   * int array.  Note that this constructor is protected and is called
+   * only by static methods in this class.
+   *
+   * @param ipaddr The IP number of this address as an array of bytes
    */
-  private void readResolve () throws ObjectStreamException
+  InetAddress (byte[] address)
   {
-    // FIXME: implement this
-  }
-	  
-  private void readObject (ObjectInputStream ois)
-    throws IOException, ClassNotFoundException
-  {
-    ois.defaultReadObject ();
-    addr = new byte [4];
-    addr [3] = (byte) address;
-    
-    for (int i = 2; i >= 0; --i)
-      addr [i] = (byte) (address >>= 8);
-    
-    // Ignore family from serialized data.  Since the saved address is 32 bits
-    // the deserialized object will have an IPv4 address i.e. AF_INET family.
-    // FIXME: An alternative is to call the aton method on the deserialized
-    // hostname to get a new address.  The Serialized Form doc is silent
-    // on how these fields are used.
-    family = getFamily (addr);
+    this (address, null);
   }
 
-  private void writeObject (ObjectOutputStream oos) throws IOException
-  {
-    // Build a 32 bit address from the last 4 bytes of a 4 byte IPv4 address
-    // or a 16 byte IPv6 address.
-    int len = addr.length;
-    int i = len - 4;
-    
-    for (; i < len; i++)
-      address = address << 8 | (((int) addr [i]) & 0xFF);
-    
-    oos.defaultWriteObject ();
-  }
-
-  private static native int getFamily (byte[] address);
-
+  /**
+   * Initializes this object's addr instance variable from the passed in
+   * int array.  Note that this constructor is protected and is called
+   * only by static methods in this class.
+   *
+   * @param ipaddr The IP number of this address as an array of bytes
+   * @param hostname The hostname of this IP address.
+   */
   InetAddress (byte[] address, String hostname)
   {
     addr = address;
@@ -530,6 +532,8 @@ public class InetAddress implements Serializable
   private static native InetAddress[] lookup (String hostname,
 		                              InetAddress addr, boolean all);
 
+  private static native int getFamily (byte[] address);
+
   /**
    * Determines the IP address of a host, given the host's name.
    *
@@ -606,16 +610,7 @@ public class InetAddress implements Serializable
     return lookup (hostname, null, true);
   }
 
-  static final byte[] zeros = { 0, 0, 0, 0 };
-  
-  /* dummy InetAddress, used to bind socket to any (all) network interfaces */
-  static final InetAddress ANY_IF = new InetAddress (zeros, null);
-    
-  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
-
   private static native String getLocalHostname ();
-
-  private static InetAddress localhost = null;
 
   /**
    * Returns the local host
@@ -680,5 +675,44 @@ public class InetAddress implements Serializable
     
     if (localhost == null)
       localhost = new InetAddress (localhostAddress, "localhost");
+  }
+
+  /**
+   * Needed for serialization
+   */
+  private void readResolve () throws ObjectStreamException
+  {
+    // FIXME: implement this
+  }
+	  
+  private void readObject (ObjectInputStream ois)
+    throws IOException, ClassNotFoundException
+  {
+    ois.defaultReadObject ();
+    addr = new byte [4];
+    addr [3] = (byte) address;
+    
+    for (int i = 2; i >= 0; --i)
+      addr [i] = (byte) (address >>= 8);
+    
+    // Ignore family from serialized data.  Since the saved address is 32 bits
+    // the deserialized object will have an IPv4 address i.e. AF_INET family.
+    // FIXME: An alternative is to call the aton method on the deserialized
+    // hostname to get a new address.  The Serialized Form doc is silent
+    // on how these fields are used.
+    family = getFamily (addr);
+  }
+
+  private void writeObject (ObjectOutputStream oos) throws IOException
+  {
+    // Build a 32 bit address from the last 4 bytes of a 4 byte IPv4 address
+    // or a 16 byte IPv6 address.
+    int len = addr.length;
+    int i = len - 4;
+    
+    for (; i < len; i++)
+      address = address << 8 | (((int) addr [i]) & 0xFF);
+    
+    oos.defaultWriteObject ();
   }
 }
