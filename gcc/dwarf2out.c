@@ -6494,6 +6494,33 @@ file_info_cmp (p1, p2)
     }
 }
 
+/* Compute the maximum prefix of P2 appearing also in P1.  Entire
+   directory names must match.  */
+static int prefix_of PARAMS ((struct dir_info *, struct dir_info *));
+static int
+prefix_of (p1, p2)
+     struct dir_info *p1;
+     struct dir_info *p2;
+{
+  char *s1 = p1->path;
+  char *s2 = p2->path;
+  int len = p1->length < p2->length ? p1->length : p2->length;
+
+  while (*s1 == *s2 && s1 < p1->path + len)
+    ++s1, ++s2;
+
+  if (*s1 == '/' && *s2 == '/')
+    /* The whole of P1 is the prefix.  */
+    return p1->length;
+
+  /* Go back to the last directory component.  */
+  while (s1 > p1->path)
+    if (*--s1 == '/')
+      return s1 - p1->path + 1;
+
+  return 0;
+}
+
 /* Output the directory table and the file name table.  We try to minimize
    the total amount of memory needed.  A heuristic is used to avoid large
    slowdowns with many input files.  */
@@ -6513,7 +6540,7 @@ output_file_names ()
   /* Allocate the various arrays we need.  */
   files = (struct file_info *) alloca (line_file_table.in_use
 				       * sizeof (struct file_info));
-  dirs = (struct dir_info *) alloca (line_file_table.in_use
+  dirs = (struct dir_info *) alloca (line_file_table.in_use * 2
 				     * sizeof (struct dir_info));
 
   /* Sort the file names.  */
@@ -6562,6 +6589,8 @@ output_file_names ()
     else
       {
 	int j;
+	int max_idx;
+	int max_len;
 
 	/* This is a new directory.  */
 	dirs[ndirs].path = files[i].path;
@@ -6573,12 +6602,46 @@ output_file_names ()
 	files[i].dir_idx = ndirs;
 
 	/* Search for a prefix.  */
-	dirs[ndirs].prefix = -1;
+	max_len = 0;
+	max_idx = 0;
 	for (j = 0; j < ndirs; ++j)
-	  if (dirs[j].length < dirs[ndirs].length
-	      && dirs[j].length != 0
-	      && memcmp (dirs[j].path, dirs[ndirs].path, dirs[j].length) == 0)
-	    dirs[ndirs].prefix = j;
+	  if (dirs[j].length > max_len)
+	    {
+	      int this_len = prefix_of (&dirs[j], &dirs[ndirs]);
+
+	      if (this_len > max_len)
+		{
+		  max_len = this_len;
+		  max_idx = j;
+		}
+	    }
+
+	/* Remember the prefix.  If this is a known prefix simply
+	   remember the index.  Otherwise we will have to create an
+	   artificial entry.  */
+	if (max_len == dirs[max_idx].length)
+	  /* This is our prefix.  */
+	  dirs[ndirs].prefix = max_idx;
+	else if (max_len > 0)
+	  {
+	    /* Create an entry without associated file.  Since we have
+	       to keep the dirs array sorted (means, entries with paths
+	       which come first) we have to move the new entry in the
+	       place of the old one.  */
+	    dirs[++ndirs] = dirs[max_idx];
+
+	    /* We don't have to set .path.  */
+	    dirs[max_idx].length = max_len;
+	    dirs[max_idx].nbytes = 0;
+	    dirs[max_idx].count = 0;
+	    dirs[max_idx].dir_idx = ndirs;
+	    dirs[max_idx].used = 0;
+	    dirs[max_idx].prefix = dirs[ndirs].prefix;
+
+	    dirs[ndirs - 1].prefix = dirs[ndirs].prefix = max_idx;
+	  }
+	else
+	  dirs[ndirs].prefix = -1;
 
 	++ndirs;
       }
@@ -6666,7 +6729,7 @@ output_file_names ()
      confuse these indices with the one for the constructed table
      (even though most of the time they are identical).  */
   idx = 1;
-  idx_offset = dirs[0].path[0] == '/' ? 1 : 0;
+  idx_offset = dirs[0].length > 0 ? 1 : 0;
   for (i = 1 - idx_offset; i < ndirs; ++i)
     if (dirs[i].used != 0)
       {
@@ -7856,7 +7919,7 @@ loc_descriptor_from_tree (loc, addressp)
     case NON_LVALUE_EXPR:
     case SAVE_EXPR:
       return loc_descriptor_from_tree (TREE_OPERAND (loc, 0), addressp);
-      
+
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case ARRAY_REF:
