@@ -3950,7 +3950,17 @@ sh_expand_prologue ()
 
   if (flag_pic && (current_function_uses_pic_offset_table
 		   || regs_ever_live[PIC_OFFSET_TABLE_REGNUM]))
-    emit_insn (gen_GOTaddr2picreg ());
+    {
+      rtx insn = get_last_insn ();
+      rtx insn_end = emit_insn (gen_GOTaddr2picreg ());
+      while (insn != insn_end)
+	{
+	  insn = NEXT_INSN (insn);
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD,
+						const0_rtx,
+						REG_NOTES (insn));
+	}
+    }
 
   if (target_flags != save_flags)
     emit_insn (gen_toggle_sz ());
@@ -3975,6 +3985,14 @@ sh_expand_epilogue ()
   int frame_size;
 
   live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
+
+  if (flag_pic && current_function_uses_pic_offset_table)
+    {
+      if ((live_regs_mask & (1 << PIC_OFFSET_TABLE_REGNUM)) != 0)
+	abort ();
+      live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
+      d += UNITS_PER_WORD;
+    }
 
   frame_size = rounded_frame_size (d);
 
@@ -4003,8 +4021,6 @@ sh_expand_epilogue ()
 
   if (target_flags != save_flags)
     emit_insn (gen_toggle_sz ());
-  if (flag_pic && current_function_uses_pic_offset_table)
-    live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
   if (live_regs_mask & (1 << PR_REG))
     pop (PR_REG);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)

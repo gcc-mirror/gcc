@@ -1,5 +1,10 @@
 2000-09-18  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/sh/sh.c (sh_expand_prologue): Mark GOTaddr2picreg as
+	MAYBE_DEAD.
+	(sh_expand_epilogue): Take the PIC register into account when
+	computing the frame size.
+
 	* config/sh/sh.c (nonpic_symbol_mentioned_p): Check LABEL_REFs.
 	* config/sh/sh.md (sym_label2reg, symPLT_label2reg): Protect
 	LABEL_REFs with a PIC-safe unspec.
