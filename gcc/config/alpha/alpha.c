@@ -3628,7 +3628,7 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
 #if HOST_BITS_PER_WIDE_INT == 32
 	    rtx msk = immed_double_const (0xffffffff, 0xffffffff, DImode);
 #else
-	    rtx msk = immed_double_const (0xffffffffffffffff, 0, DImode);
+	    rtx msk = constm1_rtx;
 #endif
 	    emit_insn (gen_mskxl_be (dsth, dsth, msk, addr));
 	  }
@@ -3675,7 +3675,7 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
 #if HOST_BITS_PER_WIDE_INT == 32
 	    rtx msk = immed_double_const (0xffffffff, 0xffffffff, DImode);
 #else
-	    rtx msk = immed_double_const (0xffffffffffffffff, 0, DImode);
+	    rtx msk = constm1_rtx;
 #endif
 	    emit_insn (gen_mskxl_le (dstl, dstl, msk, addr));
 	  }
@@ -3807,7 +3807,7 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
 #if HOST_BITS_PER_WIDE_INT == 32
   rtx const im1 = immed_double_const (0xffffffff, 0xffffffff, DImode);
 #else
-  rtx const im1 = immed_double_const (0xffffffffffffffff, 0, DImode);
+  rtx const im1 = constm1_rtx;
 #endif
   rtx ins_tmps[MAX_MOVE_WORDS];
   rtx st_tmp_1, st_tmp_2, dreg;
