@@ -29,10 +29,8 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DWIN32 -D_WIN32 -DWINNT -D__STDC__=0 -DALMOST_STDC\
-  -D_M_ALPHA -D_ALPHA_ -D__alpha -D__alpha__\
-  -D_LONGLONG -D__unaligned= -D__stdcall= \
-  -Asystem(winnt) -Acpu(alpha) -Amachine(alpha)"
+#define CPP_PREDEFINES "-DWIN32 -D_WIN32 -DWINNT -D__STDC__=0 -DALMOST_STDC \
+-D_M_ALPHA -D_ALPHA_ -D_LONGLONG -D__unaligned= -D__stdcall= -Asystem(winnt)"
 
 #undef ASM_SPEC
 #undef ASM_FINAL_SPEC

@@ -20,20 +20,16 @@ Boston, MA 02111-1307, USA.  */
 
 /* This file just exists to give specs for the Alpha running on VxWorks.  */
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
+#undef CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC "\
 %{mvxsim:-DCPU=SIMALPHADUNIX} \
-%{!mvxsim: %{!mcpu*:-DCPU=21064} \
-           %{mcpu=21064:-DCPU=21064} \
-           %{mcpu=21164:-DCPU=21164}} \
-%{posix: -D_POSIX_SOURCE} \
-%{!.S:	-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}  \
-%{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}}"
+%{!mvxsim: %{!mcpu*|mcpu=21064:-DCPU=21064} %{mcpu=21164:-DCPU=21164}} \
+%{posix: -D_POSIX_SOURCE}"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
 -D__vxworks -D__alpha_vxworks -Asystem(vxworks) \
--Asystem(embedded) -D_LONGLONG  -Acpu(alpha) -Amachine(alpha)"
+-Asystem(embedded) -D_LONGLONG"
 
 /* VxWorks does all the library stuff itself.  */
 

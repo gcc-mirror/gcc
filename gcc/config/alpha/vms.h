@@ -31,20 +31,13 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-D__ALPHA -Dvms -DVMS -D__alpha__ -D__alpha -D__vms__ -D__VMS__\
- -Asystem(vms) -Acpu(alpha) -Amachine(alpha)"
+"-D__ALPHA -Dvms -DVMS -D__vms__ -D__VMS__ -Asystem(vms)"
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
+#undef CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC "\
 %{mfloat-ieee:-D__IEEE_FLOAT} \
 %{mfloat-vax:-D__G_FLOAT} \
-%{!mfloat-vax:-D__IEEE_FLOAT} \
-%{!.S:	-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}  \
-%{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.cc:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
-%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
-%{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
-%{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C}"
+%{!mfloat-vax:-D__IEEE_FLOAT}"
 
 /* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
 

@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.    */
   %{!shared:							\
     %{!static:							\
       %{rdynamic:-export-dynamic}				\
-      %{!dynamic-linker:-dynamic-linker " ELF_DYNAMIC_LINKER "}}\
+      %{!dynamic-linker:-dynamic-linker %(elf_dynamic_linker)}}	\
     %{static:-static}}"
 
 /* Output at beginning of assembler file.  */
