@@ -1,3 +1,25 @@
+2005-03-04  Jeff Law  <law@redhat.com>
+
+	* basic-block.h (rediscover_loops_after_threading): Declare.
+	* tree-ssa-dom.c: Include cfgloop.h.
+	(tree_ssa_dominator_optimize): Discover loops and some basic
+	properties.  Remove forwarder blocks recreated by loop header
+	canonicalization.  Also mark backedges in the CFG.
+	* tree-ssa-threadupdate.c: Include cfgloop.h
+	(rediscover_loops_after_threading): Define.
+	(struct local_info): New field, JUMP_THREADED.
+	(prune_undesirable_thread_requests): New function.
+	(redirect_edges): Clear EDGE_ABNORMAL.  If edges were threaded
+	then record that fact for the callers of redirct_edges.
+	(thread_block): If BB has incoming backedges, then call
+	prune_undesirable_thraed_requests.    Note when we are
+	going to have to rediscover loop information.  Return a
+	boolean indicating if any jumps were threaded.
+	(thread_through_all_blocks): Bubble up boolean indicating
+	if any jumps were threaded.
+	* Makefile.in (tree-ssa-dom.o): Depend on cfgloop.h
+	(tree-ssa-threadupdate.o): Similarly.
+
 2005-03-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold_ternary): Unroll the "for" loop to

@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "ggc.h"
 #include "basic-block.h"
+#include "cfgloop.h"
 #include "output.h"
 #include "errors.h"
 #include "expr.h"
@@ -368,6 +369,7 @@ tree_ssa_dominator_optimize (void)
 {
   struct dom_walk_data walk_data;
   unsigned int i;
+  struct loops loops_info;
 
   memset (&opt_stats, 0, sizeof (opt_stats));
 
@@ -407,6 +409,17 @@ tree_ssa_dominator_optimize (void)
 
   calculate_dominance_info (CDI_DOMINATORS);
 
+  /* We need to know which edges exit loops so that we can
+     aggressively thread through loop headers to an exit
+     edge.  */
+  flow_loops_find (&loops_info);
+  mark_loop_exit_edges (&loops_info);
+  flow_loops_free (&loops_info);
+
+  /* Clean up the CFG so that any forwarder blocks created by loop
+     canonicalization are removed.  */
+  cleanup_tree_cfg ();
+
   /* If we prove certain blocks are unreachable, then we want to
      repeat the dominator optimization process as PHI nodes may
      have turned into copies which allows better propagation of
@@ -416,6 +429,10 @@ tree_ssa_dominator_optimize (void)
     {
       /* Optimize the dominator tree.  */
       cfg_altered = false;
+
+      /* We need accurate information regarding back edges in the CFG
+	 for jump threading.  */
+      mark_dfs_back_edges ();
 
       /* Recursively walk the dominator tree optimizing statements.  */
       walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
@@ -445,8 +462,24 @@ tree_ssa_dominator_optimize (void)
 	}
 
       if (cfg_altered)
-	free_dominance_info (CDI_DOMINATORS);
+        free_dominance_info (CDI_DOMINATORS);
+
       cfg_altered |= cleanup_tree_cfg ();
+
+      if (rediscover_loops_after_threading)
+	{
+	  /* Rerun basic loop analysis to discover any newly
+	     created loops and update the set of exit edges.  */
+	  rediscover_loops_after_threading = false;
+	  flow_loops_find (&loops_info);
+	  mark_loop_exit_edges (&loops_info);
+	  flow_loops_free (&loops_info);
+
+	  /* Remove any forwarder blocks inserted by loop
+	     header canonicalization.  */
+	  cleanup_tree_cfg ();
+	}
+
       calculate_dominance_info (CDI_DOMINATORS);
 
       rewrite_ssa_into_ssa ();
