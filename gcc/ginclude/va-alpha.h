@@ -86,7 +86,8 @@ enum {
    of words.  */
 
 #define __va_tsize(__type)  \
-  (((sizeof (__type) + sizeof (long) - 1) / sizeof (long)) * sizeof (long))
+  (((sizeof (__type) + sizeof (long long) - 1)   \
+    / sizeof (long long)) * sizeof (long long))
 
 #define va_arg(__va, __type)						\
 (*(((__va).__offset += __va_tsize (__type)),				\
