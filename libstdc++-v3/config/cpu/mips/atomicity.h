@@ -52,8 +52,7 @@ __exchange_and_add(volatile _Atomic_word* __mem, int __val)
      "beqz	%1,1b\n\t"
      "/* End exchange & add */"
      : "=&r"(__result), "=&r"(__tmp), "=m"(*__mem)
-     : "m" (*__mem), "r"(__val)
-     : "memory");
+     : "m" (*__mem), "r"(__val));
 
   return __result;
 }
@@ -78,8 +77,7 @@ __atomic_add(volatile _Atomic_word* __mem, int __val)
      "beqz	%0,1b\n\t"
      "/* End atomic add */"
      : "=&r"(__result), "=m"(*__mem)
-     : "m" (*__mem), "r"(__val)
-     : "memory");
+     : "m" (*__mem), "r"(__val));
 }
 
 #endif /* atomicity.h */

@@ -41,15 +41,14 @@ __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   _Atomic_word __tmp1, __tmp2;
   _Atomic_word __val_extended = __val;
 
-  __asm__ __volatile__("1:	ldx	[%2], %0\n\t"
-		       "	add	%0, %3, %1\n\t"
-		       "	casx	[%2], %0, %1\n\t"
+  __asm__ __volatile__("1:	ldx	[%3], %0\n\t"
+		       "	add	%0, %4, %1\n\t"
+		       "	casx	[%3], %0, %1\n\t"
 		       "	sub	%0, %1, %0\n\t"
 		       "	brnz,pn	%0, 1b\n\t"
 		       "	 nop"
-		       : "=&r" (__tmp1), "=&r" (__tmp2)
-		       : "r" (__mem), "r" (__val_extended)
-		       : "memory");
+		       : "=&r" (__tmp1), "=&r" (__tmp2), "=m" (*__mem)
+		       : "r" (__mem), "r" (__val_extended), "m" (*__mem));
   return __tmp2;
 }
 
@@ -60,15 +59,14 @@ __atomic_add(volatile _Atomic_word* __mem, int __val)
   _Atomic_word __tmp1, __tmp2;
   _Atomic_word __val_extended = __val;
 
-  __asm__ __volatile__("1:	ldx	[%2], %0\n\t"
-		       "	add	%0, %3, %1\n\t"
-		       "	casx	[%2], %0, %1\n\t"
+  __asm__ __volatile__("1:	ldx	[%3], %0\n\t"
+		       "	add	%0, %4, %1\n\t"
+		       "	casx	[%3], %0, %1\n\t"
 		       "	sub	%0, %1, %0\n\t"
 		       "	brnz,pn	%0, 1b\n\t"
 		       "	 nop"
-		       : "=&r" (__tmp1), "=&r" (__tmp2)
-		       : "r" (__mem), "r" (__val_extended)
-		       : "memory");
+		       : "=&r" (__tmp1), "=&r" (__tmp2), "=m" (*__mem)
+		       : "r" (__mem), "r" (__val_extended), "m" (*__mem));
 }
 
 #else /* __arch32__ */
