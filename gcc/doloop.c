@@ -583,15 +583,10 @@ doloop_modify_runtime (loop, iterations_max,
   /* The number of iterations (prior to any loop unrolling) is given by:
      (abs (final - initial) + abs_inc - 1) / abs_inc.
 
-     However, it is possible for the summation to overflow, and a
-     safer method is:
-
-     abs (final - initial) / abs_inc + (abs (final - initial) % abs_inc) != 0
-
      If the loop has been unrolled, then the loop body has been
      preconditioned to iterate a multiple of unroll_number times.
      The number of iterations of the loop body is simply:
-     abs (final - initial) / (abs_inc * unroll_number).
+     (abs (final - initial) + abs_inc - 1) / (abs_inc * unroll_number).
 
      The division and modulo operations can be avoided by requiring
      that the increment is a power of 2 (precondition_loop_p enforces
@@ -605,67 +600,40 @@ doloop_modify_runtime (loop, iterations_max,
 		       copy_rtx (neg_inc ? final_value : initial_value),
 		       NULL_RTX, unsigned_p, OPTAB_LIB_WIDEN);
 
-  if (loop_info->unroll_number == 1)
+  if (abs_inc * loop_info->unroll_number != 1)
     {
+      int shift_count;
+
+      shift_count = exact_log2 (abs_inc * loop_info->unroll_number);
+      if (shift_count < 0)
+	abort ();
+
       if (abs_inc != 1)
 	{
-	  int shift_count;
-	  rtx extra;
-	  rtx label;
-
-	  shift_count = exact_log2 (abs_inc);
-	  if (shift_count < 0)
-	    abort ();
-
-	  /* abs (final - initial) / abs_inc  */
+	  /* abs (final - initial + abs_inc - 1) / abs_inc / unroll_number
+	     If we get an overflow, the loop is infinite, and
+	     the loop count is set to zero.  That is not really
+	     infinite but it will run UINT_MAX+1 times.  */
+	  iterations = expand_binop (GET_MODE (diff), add_optab,
+				     diff, GEN_INT (abs_inc - 1),
+				     NULL_RTX, 1,
+				     OPTAB_LIB_WIDEN);
+	  iterations = expand_binop (GET_MODE (iterations), lshr_optab,
+				     iterations, GEN_INT (shift_count),
+				     iterations, 1,
+				     OPTAB_LIB_WIDEN);
+	}
+      else
+	{
+	  /* abs (final - initial) / abs_inc.  */
 	  iterations = expand_binop (GET_MODE (diff), lshr_optab,
 				     diff, GEN_INT (shift_count),
 				     NULL_RTX, 1,
 				     OPTAB_LIB_WIDEN);
-
-	  /* abs (final - initial) % abs_inc  */
-	  extra = expand_binop (GET_MODE (iterations), and_optab,
-				diff, GEN_INT (abs_inc - 1),
-				NULL_RTX, 1,
-				OPTAB_LIB_WIDEN);
-
-	  /* If (abs (final - initial) % abs_inc == 0) jump past
-	     following increment instruction.  */
-	  label = gen_label_rtx();
-	  emit_cmp_and_jump_insns (extra, const0_rtx, EQ, NULL_RTX,
-				   GET_MODE (extra), 0, 0, label);
-	  JUMP_LABEL (get_last_insn ()) = label;
-	  LABEL_NUSES (label)++;
-
-	  /* Increment the iteration count by one.  */
-	  iterations = expand_binop (GET_MODE (iterations), add_optab,
-				     iterations, GEN_INT (1),
-				     iterations, 1,
-				     OPTAB_LIB_WIDEN);
-
-	  emit_label (label);
 	}
-      else
-	iterations = diff;
     }
   else
-    {
-      int shift_count;
-
-      /* precondition_loop_p has preconditioned the loop so that the
-	 iteration count of the loop body is always a power of 2.
-	 Since we won't get an overflow calculating the loop count,
-	 the code we emit is simpler.  */
-      shift_count = exact_log2 (loop_info->unroll_number * abs_inc);
-      if (shift_count < 0)
-	abort ();
-
-      iterations = expand_binop (GET_MODE (diff), lshr_optab,
-				 diff, GEN_INT (shift_count),
-				 NULL_RTX, 1,
-				 OPTAB_LIB_WIDEN);
-    }
-
+    iterations = diff;
 
   /* If there is a NOTE_INSN_LOOP_VTOP, we have a `for' or `while'
      style loop, with a loop exit test at the start.  Thus, we can
@@ -676,7 +644,7 @@ doloop_modify_runtime (loop, iterations_max,
      not executed before the start of the loop.  We need to determine
      if the loop will terminate after the first pass and to limit the
      iteration count to one if necessary.  */
-  if (! loop->vtop)
+  if (! loop->vtop && comparison_code != NE)
     {
       rtx label;
 
@@ -689,13 +657,18 @@ doloop_modify_runtime (loop, iterations_max,
 	 is guaranteed to execute at least once.  */
       if (loop_info->unroll_number == 1)
 	{
+	  rtx incremented_initval;
 	  /*  Emit insns to test if the loop will immediately
 	      terminate and to set the iteration count to 1 if true.  */
 	  label = gen_label_rtx();
-	  emit_cmp_and_jump_insns (copy_rtx (initial_value),
+	  incremented_initval = expand_binop (mode, add_optab,
+					      copy_rtx (initial_value),
+					      increment, NULL_RTX, 0,
+					      OPTAB_LIB_WIDEN);
+	  emit_cmp_and_jump_insns (incremented_initval,
 				   copy_rtx (loop_info->comparison_value),
-				   comparison_code, NULL_RTX, mode, 0, 0,
-				   label);
+				   comparison_code, NULL_RTX, mode,
+				   unsigned_p, 0, label);
 	  JUMP_LABEL (get_last_insn ()) = label;
 	  LABEL_NUSES (label)++;
 	  emit_move_insn (iterations, const1_rtx);

@@ -1,3 +1,9 @@
+2001-11-20  Zoltan Hidvegi <hzoli@hzoli.2y.net>
+
+	* doloop.c (doloop_modify_runtime): Correct calculation of
+	iterations. 
+	* unroll.c (unroll_loop): Correct special exit cases.
+
 2001-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (movdf): Avoid calling validize_mem during
