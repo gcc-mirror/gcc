@@ -861,6 +861,8 @@ java/beans/beancontext/BeanContextServiceRevokedEvent.java \
 java/beans/beancontext/BeanContextServiceRevokedListener.java \
 java/beans/beancontext/BeanContextServices.java \
 java/beans/beancontext/BeanContextServicesListener.java \
+java/beans/beancontext/BeanContextServicesSupport.java \
+java/beans/beancontext/BeanContextSupport.java \
 java/beans/BeanDescriptor.java \
 java/beans/BeanInfo.java \
 java/beans/Beans.java \
@@ -3232,6 +3234,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/beans/beancontext/BeanContextServiceRevokedListener.P \
 .deps/java/beans/beancontext/BeanContextServices.P \
 .deps/java/beans/beancontext/BeanContextServicesListener.P \
+.deps/java/beans/beancontext/BeanContextServicesSupport.P \
+.deps/java/beans/beancontext/BeanContextSupport.P \
 .deps/java/io/BufferedInputStream.P \
 .deps/java/io/BufferedOutputStream.P .deps/java/io/BufferedReader.P \
 .deps/java/io/BufferedWriter.P .deps/java/io/ByteArrayInputStream.P \

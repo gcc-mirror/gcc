@@ -1093,6 +1093,8 @@ java/beans/beancontext/BeanContextServiceRevokedEvent.java \
 java/beans/beancontext/BeanContextServiceRevokedListener.java \
 java/beans/beancontext/BeanContextServices.java \
 java/beans/beancontext/BeanContextServicesListener.java \
+java/beans/beancontext/BeanContextServicesSupport.java \
+java/beans/beancontext/BeanContextSupport.java \
 java/beans/BeanDescriptor.java \
 java/beans/BeanInfo.java \
 java/beans/Beans.java \
