@@ -44,10 +44,7 @@
 	.section ".got","aw"
 	.globl	__GOT_START__
 	.type	__GOT_START__,@object
-	.weak	_GLOBAL_OFFSET_TABLE_
-	.type	_GLOBAL_OFFSET_TABLE_,@object
 __GOT_START__:
-_GLOBAL_OFFSET_TABLE_:
 
 	.section ".got1","aw"
 	.globl	__GOT1_START__
