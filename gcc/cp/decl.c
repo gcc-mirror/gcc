@@ -1398,16 +1398,6 @@ insert_block (block)
     = chainon (current_binding_level->blocks, block);
 }
 
-/* Add BLOCK to the current list of blocks for this binding contour.  */
-
-void
-add_block_current_level (block)
-     tree block;
-{
-  current_binding_level->blocks
-    = chainon (current_binding_level->blocks, block);
-}
-
 /* Set the BLOCK node for the innermost scope
    (the one we are currently in).  */
 

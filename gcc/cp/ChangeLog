@@ -1,3 +1,9 @@
+Sun Nov  9 01:29:55 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* decl.c (add_block_current_level): Delete.
+	* init.c (build_vec_delete_1): Delete build_block and
+	add_block_current_level calls.
+
 Fri Nov  7 11:57:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_file): Put back some code.

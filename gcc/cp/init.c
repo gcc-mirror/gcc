@@ -2772,8 +2772,6 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
   DECL_REGISTER (tbase) = 1;
   controller = build (BIND_EXPR, void_type_node, tbase, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (controller) = 1;
-  block = build_block (tbase, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
-  add_block_current_level (block);
 
   if (auto_delete != integer_zero_node
       && auto_delete != integer_two_node)
