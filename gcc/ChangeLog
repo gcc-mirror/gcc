@@ -1,3 +1,7 @@
+Tue Aug  3 20:21:20 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* Makefile.in (c-decl.o): Depends on defaults.h.
+
 Tue Aug  3 14:14:52 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (HARD_REGNO_NREGS): FP registers are always 4 bytes wide for
