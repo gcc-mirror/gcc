@@ -1,3 +1,10 @@
+2001-08-22  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+ 	* fibheap.c (fibheap_init, fibnode_init): Remove.
+ 	(fibheap_new, fibnode_new): Use xcalloc to allocate and
+ 	initialize memory.
+ 	(fibheap_insert): Remove check for node allocation failure.
+
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (fibheap.o): Depend on config.h.
