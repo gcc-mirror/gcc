@@ -1,3 +1,7 @@
+2004-06-15  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/arm-mmx-1.c: Use asm to clobber registers.
+
 2004-06-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/15967
