@@ -200,9 +200,9 @@ dosize (file, op, size)
 
 /* Output assembly language code for the function prologue.  */
 static int push_order[FIRST_PSEUDO_REGISTER] =
-{0, 1, 2, 3, 4, 5, 6, -1, -1};
+{0, 1, 2, 3, 4, 5, 6, -1, -1, -1};
 static int pop_order[FIRST_PSEUDO_REGISTER] =
-{6, 5, 4, 3, 2, 1, 0, -1, -1};
+{6, 5, 4, 3, 2, 1, 0, -1, -1, -1};
 
 /* This is what the stack looks like after the prolog of 
    a function with a frame has been set up:
