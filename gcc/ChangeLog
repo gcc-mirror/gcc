@@ -1,5 +1,7 @@
 2001-01-01  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* version.c: Bump.
+
 	2000-12-27  Geoffrey Keating  <geoffk@redhat.com>
 	* config/rs6000/rs6000.md (define_attr "length"): Correct
 	calculation.
