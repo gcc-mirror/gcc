@@ -2553,7 +2553,8 @@ try_combine (i3, i2, i1, new_direct_jump_p)
     if (i3_subst_into_i2 && GET_CODE (PATTERN (i2)) == PARALLEL)
       {
 	for (i = 0; i < XVECLEN (PATTERN (i2), 0); i++)
-	  if (GET_CODE (SET_DEST (XVECEXP (PATTERN (i2), 0, i))) == REG
+	  if (GET_CODE (XVECEXP (PATTERN (i2), 0, i)) != USE
+	      && GET_CODE (SET_DEST (XVECEXP (PATTERN (i2), 0, i))) == REG
 	      && SET_DEST (XVECEXP (PATTERN (i2), 0, i)) != i2dest
 	      && ! find_reg_note (i2, REG_UNUSED,
 				  SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
