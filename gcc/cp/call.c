@@ -4209,9 +4209,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       if (convs->check_copy_constructor_p)
 	/* Generate a temporary copy purely to generate the required
 	   diagnostics.  */
-	build_temp (build_dummy_object (totype), totype, 
-		    LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
-		    &diagnostic_fn);
+	build_temp
+	  (build_dummy_object
+	   (build_qualified_type (totype, TYPE_QUAL_CONST)),
+	   totype, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING, &diagnostic_fn);
 	return expr;
     case ck_ambig:
       /* Call build_user_type_conversion again for the error.  */
