@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 struct op
 {
+  const cpp_token *token;	/* The token forming op (for diagnostics).  */
   cpp_num value;		/* The value logically "right" of op.  */
   enum cpp_ttype op;
 };
@@ -64,6 +65,7 @@ static cpp_num eval_token PARAMS ((cpp_reader *, const cpp_token *));
 static struct op *reduce PARAMS ((cpp_reader *, struct op *, enum cpp_ttype));
 static unsigned int interpret_float_suffix PARAMS ((const uchar *, size_t));
 static unsigned int interpret_int_suffix PARAMS ((const uchar *, size_t));
+static void check_promotion PARAMS ((cpp_reader *, const struct op *));
 
 /* Token type abuse to create unary plus and minus operators.  */
 #define CPP_UPLUS (CPP_LAST_CPP_OP + 1)
@@ -630,9 +632,11 @@ The parser assumes all shifted operators require a left operand unless
 the flag NO_L_OPERAND is set.  These semantics are automatic; any
 extra semantics need to be handled with operator-specific code.  */
 
-/* Flags.  */
+/* Flags.  If CHECK_PROMOTION, we warn if the effective sign of an
+   operand changes because of integer promotions.  */
 #define NO_L_OPERAND	(1 << 0)
 #define LEFT_ASSOC	(1 << 1)
+#define CHECK_PROMOTION	(1 << 2)
 
 /* Operator to priority map.  Must be in the same order as the first
    N entries of enum cpp_ttype.  */
@@ -644,35 +648,35 @@ static const struct operator
 {
   /* EQ */		{0, 0},	/* Shouldn't happen.  */
   /* NOT */		{16, NO_L_OPERAND},
-  /* GREATER */		{12, LEFT_ASSOC},
-  /* LESS */		{12, LEFT_ASSOC},
-  /* PLUS */		{14, LEFT_ASSOC},
-  /* MINUS */		{14, LEFT_ASSOC},
-  /* MULT */		{15, LEFT_ASSOC},
-  /* DIV */		{15, LEFT_ASSOC},
-  /* MOD */		{15, LEFT_ASSOC},
-  /* AND */		{9, LEFT_ASSOC},
-  /* OR */		{7, LEFT_ASSOC},
-  /* XOR */		{8, LEFT_ASSOC},
+  /* GREATER */		{12, LEFT_ASSOC | CHECK_PROMOTION},
+  /* LESS */		{12, LEFT_ASSOC | CHECK_PROMOTION},
+  /* PLUS */		{14, LEFT_ASSOC | CHECK_PROMOTION},
+  /* MINUS */		{14, LEFT_ASSOC | CHECK_PROMOTION},
+  /* MULT */		{15, LEFT_ASSOC | CHECK_PROMOTION},
+  /* DIV */		{15, LEFT_ASSOC | CHECK_PROMOTION},
+  /* MOD */		{15, LEFT_ASSOC | CHECK_PROMOTION},
+  /* AND */		{9, LEFT_ASSOC | CHECK_PROMOTION},
+  /* OR */		{7, LEFT_ASSOC | CHECK_PROMOTION},
+  /* XOR */		{8, LEFT_ASSOC | CHECK_PROMOTION},
   /* RSHIFT */		{13, LEFT_ASSOC},
   /* LSHIFT */		{13, LEFT_ASSOC},
 
-  /* MIN */		{10, LEFT_ASSOC},
-  /* MAX */		{10, LEFT_ASSOC},
+  /* MIN */		{10, LEFT_ASSOC | CHECK_PROMOTION},
+  /* MAX */		{10, LEFT_ASSOC | CHECK_PROMOTION},
 
   /* COMPL */		{16, NO_L_OPERAND},
   /* AND_AND */		{6, LEFT_ASSOC},
   /* OR_OR */		{5, LEFT_ASSOC},
   /* QUERY */		{3, 0},
-  /* COLON */		{4, LEFT_ASSOC},
+  /* COLON */		{4, LEFT_ASSOC | CHECK_PROMOTION},
   /* COMMA */		{2, LEFT_ASSOC},
   /* OPEN_PAREN */	{1, NO_L_OPERAND},
   /* CLOSE_PAREN */	{0, 0},
   /* EOF */		{0, 0},
   /* EQ_EQ */		{11, LEFT_ASSOC},
   /* NOT_EQ */		{11, LEFT_ASSOC},
-  /* GREATER_EQ */	{12, LEFT_ASSOC},
-  /* LESS_EQ */		{12, LEFT_ASSOC},
+  /* GREATER_EQ */	{12, LEFT_ASSOC | CHECK_PROMOTION},
+  /* LESS_EQ */		{12, LEFT_ASSOC | CHECK_PROMOTION},
   /* UPLUS */		{16, NO_L_OPERAND},
   /* UMINUS */		{16, NO_L_OPERAND}
 };
@@ -693,7 +697,6 @@ _cpp_parse_expr (pfile)
      cpp_reader *pfile;
 {
   struct op *top = pfile->op_stack;
-  const cpp_token *token = NULL, *prev_token;
   unsigned int lex_count;
   bool saw_leading_not, want_value = true;
 
@@ -711,10 +714,9 @@ _cpp_parse_expr (pfile)
     {
       struct op op;
 
-      prev_token = token;
-      token = cpp_get_token (pfile);
       lex_count++;
-      op.op = token->type;
+      op.token = cpp_get_token (pfile);
+      op.op = op.token->type;
 
       switch (op.op)
 	{
@@ -726,9 +728,9 @@ _cpp_parse_expr (pfile)
 	case CPP_HASH:
 	  if (!want_value)
 	    SYNTAX_ERROR2 ("missing binary operator before token \"%s\"",
-			   cpp_token_as_text (pfile, token));
+			   cpp_token_as_text (pfile, op.token));
 	  want_value = false;
-	  top->value = eval_token (pfile, token);
+	  top->value = eval_token (pfile, op.token);
 	  continue;
 
 	case CPP_NOT:
@@ -743,15 +745,16 @@ _cpp_parse_expr (pfile)
 	    op.op = CPP_UMINUS;
 	  break;
 	case CPP_OTHER:
-	  if (ISGRAPH (token->val.c))
-	    SYNTAX_ERROR2 ("invalid character '%c' in #if", token->val.c);
+	  if (ISGRAPH (op.token->val.c))
+	    SYNTAX_ERROR2 ("invalid character '%c' in #if", op.token->val.c);
 	  else
-	    SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", token->val.c);
+	    SYNTAX_ERROR2 ("invalid character '\\%03o' in #if",
+			   op.token->val.c);
 
 	default:
 	  if ((int) op.op <= (int) CPP_EQ || (int) op.op >= (int) CPP_PLUS_EQ)
 	    SYNTAX_ERROR2 ("token \"%s\" is not valid in preprocessor expressions",
-			   cpp_token_as_text (pfile, token));
+			   cpp_token_as_text (pfile, op.token));
 	  break;
 	}
 
@@ -760,7 +763,7 @@ _cpp_parse_expr (pfile)
 	{
 	  if (!want_value)
 	    SYNTAX_ERROR2 ("missing binary operator before token \"%s\"",
-			   cpp_token_as_text (pfile, token));
+			   cpp_token_as_text (pfile, op.token));
 	}
       else if (want_value)
 	{
@@ -775,7 +778,7 @@ _cpp_parse_expr (pfile)
 	    SYNTAX_ERROR ("#if with no expression");
 	  if (top->op != CPP_EOF && top->op != CPP_OPEN_PAREN)
 	    SYNTAX_ERROR2 ("operator '%s' has no right operand",
-			   cpp_token_as_text (pfile, prev_token));
+			   cpp_token_as_text (pfile, top->token));
 	}
 
       top = reduce (pfile, top, op.op);
@@ -816,6 +819,7 @@ _cpp_parse_expr (pfile)
 	top = _cpp_expand_op_stack (pfile);
 
       top->op = op.op;
+      top->token = op.token;
     }
 
   /* The controlling macro expression is only valid if we called lex 3
@@ -860,6 +864,10 @@ reduce (pfile, top, op)
   prio = optab[op].prio - ((optab[op].flags & LEFT_ASSOC) != 0);
   while (prio < optab[top->op].prio)
     {
+      if (CPP_OPTION (pfile, warn_num_sign_change)
+	  && optab[top->op].flags & CHECK_PROMOTION)
+	check_promotion (pfile, top);
+
       switch (top->op)
 	{
 	case CPP_UPLUS:
@@ -992,6 +1000,29 @@ _cpp_expand_op_stack (pfile)
   pfile->op_limit = pfile->op_stack + new_size;
 
   return pfile->op_stack + old_size;
+}
+
+/* Emits a warning if the effective sign of either operand of OP
+   changes because of integer promotions.  */
+static void
+check_promotion (pfile, op)
+     cpp_reader *pfile;
+     const struct op *op;
+{
+  if (op->value.unsignedp == op[-1].value.unsignedp)
+    return;
+
+  if (op->value.unsignedp)
+    {
+      if (!num_positive (op[-1].value, CPP_OPTION (pfile, precision)))
+	cpp_error (pfile, DL_WARNING,
+		   "the left operand of \"%s\" changes sign when promoted",
+		   cpp_token_as_text (pfile, op->token));
+    }
+  else if (!num_positive (op->value, CPP_OPTION (pfile, precision)))
+    cpp_error (pfile, DL_WARNING,
+	       "the right operand of \"%s\" changes sign when promoted",
+	       cpp_token_as_text (pfile, op->token));
 }
 
 /* Clears the unused high order bits of the number pointed to by PNUM.  */

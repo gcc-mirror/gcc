@@ -1672,6 +1672,7 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_Wall:
 	  CPP_OPTION (pfile, warn_trigraphs) = 1;
 	  CPP_OPTION (pfile, warn_comments) = 1;
+	  CPP_OPTION (pfile, warn_num_sign_change) = 1;
 	  break;
 
 	case OPT_Wtraditional:

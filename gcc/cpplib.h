@@ -333,6 +333,10 @@ struct cpp_options
   /* Nonzero means warn about text after an #endif (or #else).  */
   unsigned char warn_endif_labels;
 
+  /* Nonzero means warn about implicit sign changes owing to integer
+     promotions.  */
+  unsigned char warn_num_sign_change;
+
   /* Nonzero means turn warnings into errors.  */
   unsigned char warnings_are_errors;
 
