@@ -4,6 +4,12 @@
 
 2002-12-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8720
+	* g++.dg/parse/defarg1.C: New test.
+
+	PR c++/8615
+	* g++.dg/template/char1.C: New test.
+
 	* g++.dg/template/varmod1.C: Fix typo.
 
 2002-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
