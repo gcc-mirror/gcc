@@ -6596,10 +6596,10 @@ case 590:
     break;}
 case 591:
 #line 2743 "parse.y"
-{ if (OP0 (yyval.ttype) != current_class_type)
+{ if (OP0 (yyvsp[0].ttype) != current_class_type)
 		    {
-		      push_nested_class (OP0 (yyval.ttype), 3);
-		      TREE_COMPLEXITY (yyval.ttype) = current_class_depth;
+		      push_nested_class (OP0 (yyvsp[0].ttype), 3);
+		      TREE_COMPLEXITY (yyvsp[0].ttype) = current_class_depth;
 		    }
 		;
     break;}
