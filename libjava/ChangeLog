@@ -1,3 +1,11 @@
+2003-07-20  Steve Pribyl <steve@netfuel.com.>
+
+	* gnu/gcj/runtime/natSharedLibLoader.cc (init): `libname' now a
+	String.  Put dlerror() message into exception.
+	Include UnsatisfiedLinkError.
+	* gnu/gcj/runtime/SharedLibLoader.java (init): `libname' now a
+	String.  Now native.
+
 2003-07-20  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Runtime.java: Comment fix.

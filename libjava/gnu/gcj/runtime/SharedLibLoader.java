@@ -45,12 +45,7 @@ public class SharedLibLoader extends ClassLoader
     init(libname, 0);
   }
 
-  void init(String libname, int flags)
-  {
-    init(libname.getBytes(), flags);
-  }
-
-  native void init(byte[] libname, int flags);
+  native void init(String libname, int flags);
 
   public Class loadClass(String name)
     throws ClassNotFoundException

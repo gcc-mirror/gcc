@@ -14,6 +14,7 @@ details.  */
 #include <gnu/gcj/runtime/SharedLibLoader.h>
 #include <java/io/IOException.h>
 #include <java/lang/UnsupportedOperationException.h>
+#include <java/lang/UnsatisfiedLinkError.h>
 
 #ifdef HAVE_DLOPEN
 #include <dlfcn.h>
@@ -45,10 +46,14 @@ struct SharedLibDummy
 #endif
 
 void
-gnu::gcj::runtime::SharedLibLoader::init(jbyteArray libname, jint flags)
+gnu::gcj::runtime::SharedLibLoader::init(jstring libname, jint flags)
 {
 #ifdef HAVE_DLOPEN
-  char *lname = (char*) elements(libname);
+  jint len = _Jv_GetStringUTFLength (libname);
+  char lname[len + 1];
+  JvGetStringUTFRegion (libname, 0, libname->length(), lname);
+  lname[len] = '\0';
+
   if (flags==0)
     flags = RTLD_LAZY;
   JvSynchronize dummy1(&java::lang::Class::class$);
@@ -59,6 +64,10 @@ gnu::gcj::runtime::SharedLibLoader::init(jbyteArray libname, jint flags)
   if (h == NULL)
     {
       const char *msg = dlerror();
+      jstring str = JvNewStringLatin1 (lname);
+      str = str->concat (JvNewStringLatin1 (": "));
+      str = str->concat (JvNewStringLatin1 (msg));
+      throw new java::lang::UnsatisfiedLinkError (str);
     }
   handler = (gnu::gcj::RawData*) h;
 #else
