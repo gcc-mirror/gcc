@@ -1,5 +1,7 @@
 Wed Jul  8 21:43:14 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* print-rtl.c (print_rtx): Revert previous patch.
+
 	* jump.c (duplicate_loop_exit_test): Do not duplicate the loop exit
 	test if the exit code has an insn with ASM_OPERANDS.
 
