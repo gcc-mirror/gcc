@@ -2418,12 +2418,14 @@ gcc.xtar: distdir
 # Make the distribution.
 	tar -chf gcc.xtar gcc-$(version)
 
+distdir-cvs: force
+	if [ -d $(srcdir)/CVS ]; then cvs -r update; fi
+
 # This target exists to do the initial work before the language specific
 # stuff gets done.
 distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
   $(srcdir)/c-parse.c $(srcdir)/cexp.c $(srcdir)/config.in \
   $(srcdir)/bi-parser.h $(srcdir)/bi-parser.c $(srcdir)/version.c TAGS
-	if [ -d $(srcdir)/CVS ]; then cvs -r update; fi
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
@@ -2473,7 +2475,7 @@ distdir-finish:
 # expanded.
 	cd gcc-$(version); make extraclean
 
-distdir: distdir-start lang.distdir distdir-finish
+distdir: distdir-cvs distdir-start lang.distdir distdir-finish
 
 # make diff oldversion=M.N 
 # creates a diff file between an older distribution and this one.
