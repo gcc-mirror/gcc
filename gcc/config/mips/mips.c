@@ -5451,7 +5451,9 @@ mips_expand_prologue ()
 	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
 		 bit, so make sure that we don't emit anything that can be
 		 split.  */
-	      if (large_int (tsize_rtx))
+	      /* ??? There is no DImode ori immediate pattern, so we can only
+		 do this for 32 bit code.  */
+	      if (large_int (tsize_rtx) && GET_MODE (tmp_rtx) == SImode)
 		{
 		  insn = emit_move_insn (tmp_rtx,
 					 GEN_INT (tsize & 0xffff0000));
