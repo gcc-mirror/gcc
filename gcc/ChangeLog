@@ -1,3 +1,8 @@
+2000-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-typeck.c (process_init_element): Avoid union init warnings on
+	floating point zero.  Don't crash on unions containing structs.
+
 2000-09-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (PREDICATE_CODES): Add CONST_DOUBLE to

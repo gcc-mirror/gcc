@@ -1,3 +1,7 @@
+2000-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/wtr-union-init-2.c, gcc.dg/wtr-union-init-3.c: New tests.
+
 2000-09-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp/backslash.c: New test.

@@ -6394,7 +6394,8 @@ process_init_element (value)
 	     code appears conditioned on e.g. __STDC__ to avoid
 	     "missing initializer" warnings and relies on default
 	     initialization to zero in the traditional C case.  */
-	  if (warn_traditional && !in_system_header && !integer_zerop (value))
+	  if (warn_traditional && !in_system_header
+	      && !(value && (integer_zerop (value) || real_zerop (value))))
 	    warning ("traditional C rejects initialization of unions");
 
 	  /* Accept a string constant to initialize a subarray.  */
