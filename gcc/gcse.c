@@ -700,6 +700,7 @@ static void store_motion		PARAMS ((void));
 static void free_insn_expr_list_list	PARAMS ((rtx *));
 static void clear_modify_mem_tables	PARAMS ((void));
 static void free_modify_mem_tables	PARAMS ((void));
+static rtx gcse_emit_move_after		PARAMS ((rtx, rtx, rtx));
 
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */
@@ -4948,6 +4949,33 @@ pre_insert_copies ()
       }
 }
 
+/* Emit move from SRC to DEST noting the equivalence with expression computed
+   in INSN.  */
+static rtx
+gcse_emit_move_after (src, dest, insn)
+     rtx src, dest, insn;
+{
+  rtx new;
+  rtx set = single_set (insn);
+  rtx note;
+  rtx eqv;
+
+  /* This should never fail since we're creating a reg->reg copy
+     we've verified to be valid.  */
+
+  new = emit_insn_after (gen_rtx_SET (VOIDmode, dest, src), insn);
+
+  /* Note the equivalence for local CSE pass.  */
+  if ((note = find_reg_equal_equiv_note (insn)))
+    eqv = XEXP (note, 0);
+  else
+    eqv = SET_SRC (set);
+
+  set_unique_reg_note (new, REG_EQUAL, copy_insn_1 (src));
+
+  return new;
+}
+
 /* Delete redundant computations.
    Deletion is done by changing the insn to copy the `reaching_reg' of
    the expression into the result of the SET.  It is left to later passes
@@ -4991,21 +5019,12 @@ pre_delete ()
 		  expr->reaching_reg
 		    = gen_reg_rtx (GET_MODE (SET_DEST (set)));
 
-		/* In theory this should never fail since we're creating
-		   a reg->reg copy.
-
-		   However, on the x86 some of the movXX patterns actually
-		   contain clobbers of scratch regs.  This may cause the
-		   insn created by validate_change to not match any pattern
-		   and thus cause validate_change to fail.  */
-		if (validate_change (insn, &SET_SRC (set),
-				     expr->reaching_reg, 0))
-		  {
-		    occr->deleted_p = 1;
-		    SET_BIT (pre_redundant_insns, INSN_CUID (insn));
-		    changed = 1;
-		    gcse_subst_count++;
-		  }
+		gcse_emit_move_after (expr->reaching_reg, SET_DEST (set), insn);
+		delete_insn (insn);
+		occr->deleted_p = 1;
+		SET_BIT (pre_redundant_insns, INSN_CUID (insn));
+		changed = 1;
+		gcse_subst_count++;
 
 		if (gcse_file)
 		  {
@@ -5827,23 +5846,13 @@ hoist_code ()
 			expr->reaching_reg
 			  = gen_reg_rtx (GET_MODE (SET_DEST (set)));
 
-		      /* In theory this should never fail since we're creating
-			 a reg->reg copy.
-
-			 However, on the x86 some of the movXX patterns
-			 actually contain clobbers of scratch regs.  This may
-			 cause the insn created by validate_change to not
-			 match any pattern and thus cause validate_change to
-			 fail.  */
-		      if (validate_change (insn, &SET_SRC (set),
-					   expr->reaching_reg, 0))
+		      gcse_emit_move_after (expr->reaching_reg, SET_DEST (set), insn);
+		      delete_insn (insn);
+		      occr->deleted_p = 1;
+		      if (!insn_inserted_p)
 			{
-			  occr->deleted_p = 1;
-			  if (!insn_inserted_p)
-			    {
-			      insert_insn_end_bb (index_map[i], bb, 0);
-			      insn_inserted_p = 1;
-			    }
+			  insert_insn_end_bb (index_map[i], bb, 0);
+			  insn_inserted_p = 1;
 			}
 		    }
 		}
