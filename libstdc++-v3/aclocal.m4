@@ -82,6 +82,9 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   AC_ARG_WITH(cross-host,
   [  --with-cross-host=HOST  configuring with a cross compiler])
 
+  AC_ARG_WITH(newlib,
+  [  --with-newlib                    Configuring with newlib])
+
   glibcpp_basedir=$srcdir/$toprel/$1/libstdc++-v3
   AC_SUBST(glibcpp_basedir)
 
@@ -213,7 +216,7 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
 
   # Find platform-specific directories containing configuration info.  In
   # addition to possibly modifying the same flags, it also sets up symlinks.
-  GLIBCPP_CHECK_TARGET
+  GLIBCPP_CHECK_HOST
 ])
 
 
@@ -886,9 +889,9 @@ dnl Check to see what architecture and operating system we are compiling
 dnl for.  Also, if architecture- or OS-specific flags are required for
 dnl compilation, pick them up here.
 dnl
-dnl GLIBCPP_CHECK_TARGET
-AC_DEFUN(GLIBCPP_CHECK_TARGET, [
-  . [$]{glibcpp_basedir}/configure.target
+dnl GLIBCPP_CHECK_HOST
+AC_DEFUN(GLIBCPP_CHECK_HOST, [
+  . [$]{glibcpp_basedir}/configure.host
   AC_MSG_RESULT(CPU config directory is $cpu_include_dir)
   AC_MSG_RESULT(OS config directory is $os_include_dir)
 ])

@@ -1,3 +1,14 @@
+2003-05-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/3066.
+	* configure.in: Switch target to host, don't assume newlib.
+	(target_alias): Remove.
+	* configure: Regenerate.
+	* acinclude.m4: Same.
+	* aclocal.m4: Regenerate.
+	* configure.target: Same. Rename to...
+	* configure.host: This.
+	
 2003-05-22  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_fstream.h (_S_pback_size): Remove definition.
