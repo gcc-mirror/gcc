@@ -1,0 +1,63 @@
+/* Definitions of target machine for GNU compiler.
+   PC532 with National 32532.
+   Copyright (C) 1990 Free Software Foundation, Inc.
+   Contributed by Jukka Virtanen <jtv@hut.fi>, Jyrki Kuoppala <jkp@cs.hut.fi>,
+   Tatu Yl|nen <ylo@ngs.fi>, Johannes Helander <jvh@cs.hut.fi>.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+#include "ns32k.h"
+
+/* Compile for the floating point unit & 32532 by default;
+   also presume SB is zero */
+
+#define TARGET_DEFAULT 25
+
+/* Write DBX debugging info for gdb to read */
+
+#define DBX_DEBUGGING_INFO
+
+/* Use the re-entrant and potentially faster method */
+
+#undef PCC_STATIC_STRUCT_RETURN
+
+/* 32-bit alignment for efficiency */
+#undef POINTER_BOUNDARY
+#define POINTER_BOUNDARY 32
+
+/* 32-bit alignment for efficiency */
+#undef FUNCTION_BOUNDARY
+#define FUNCTION_BOUNDARY 32
+
+/* 32532 spec says it can handle any alignment.  Rumor from tm-ns32k.h
+   tells this might not be actually true (but it's for 32032, perhaps
+   National has fixed the bug for 32532).  You might have to change this
+   if the bug still exists. */
+
+#undef STRICT_ALIGNMENT
+
+/* Maybe someone needs to know which processor we're running on */
+
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Dns32000 -Dns32532 -Dpc532 -Dunix"
+
+/* Use pc relative addressing whenever possible,
+   it's more efficient than absolute (out-ns32k.c)
+   You have to fix a bug in gas 1.38.1 to make this work with gas,
+   patch available from jkp@cs.hut.fi. */
+
+#define PC_RELATIVE
