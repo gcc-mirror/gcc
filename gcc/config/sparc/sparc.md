@@ -1,8 +1,8 @@
 ;; Machine description for SPARC chip for GCC
 ;;  Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+;;  1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
-;;  64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
+;;  64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;;  at Cygnus Support.
 
 ;; This file is part of GCC.
@@ -1818,8 +1818,8 @@
 ;; We always work with constants here.
 (define_insn "*movhi_lo_sum"
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(ior:HI (match_operand:HI 1 "arith_operand" "%r")
-                (match_operand:HI 2 "arith_operand" "I")))]
+	(ior:HI (match_operand:HI 1 "register_operand" "%r")
+                (match_operand:HI 2 "small_int" "I")))]
   ""
   "or\t%1, %2, %0")
 

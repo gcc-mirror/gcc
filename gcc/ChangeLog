@@ -1,3 +1,8 @@
+2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/11475
+	* config/sparc/sparc.md (movhi_lo_sum): Tighten predicates.
+
 2004-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* emit-rtl.c (change_address): Use XEXP (memref, 0) instead
