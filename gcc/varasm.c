@@ -1484,8 +1484,10 @@ assemble_name (file, name)
      FILE *file;
      char *name;
 {
-  tree id = get_identifier (name);
-  TREE_SYMBOL_REFERENCED (id) = 1;
+  char *real_name;
+
+  STRIP_NAME_ENCODING (real_name, name);
+  TREE_SYMBOL_REFERENCED (get_identifier (real_name)) = 1;
 
   if (name[0] == '*')
     {
