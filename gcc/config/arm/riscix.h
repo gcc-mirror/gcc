@@ -23,11 +23,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Translation to find startup files.  On RISC iX boxes,
    crt0, mcrt0 and gcrt0.o are in /usr/lib.  */
 #define STARTFILE_SPEC  "\
-  %{pg:/usr/lib/mcrt0.o%s}\
+  %{pg:/usr/lib/gcrt0.o%s}\
   %{!pg:%{p:/usr/lib/mcrt0.o%s}\
-        %{!p:%{g:/usr/lib/gcrt0.o%s}\
-        %{!g:/usr/lib/crt0.o%s}}}"
-
+        %{!p:/usr/lib/crt0.o%s}}"
 
 /* RISC iX has no concept of -lg */
 /* If -static is specified then link with -lc_n */
@@ -77,9 +75,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_FINAL_SPEC "\
 %{!mno-symrename: \
 	\n /usr/bin/symrename \
-	-%{mbsd:%{ansi:%e-mbsd and -ansi incompatible}BSD}\
+	-%{mbsd:%{pedantic:%e-mbsd and -pedantic incompatible}BSD}\
 %{mxopen:%{mbsd:%e-mbsd and -mxopen incompatible}\
-%{ansi:%e-mxopen and -ansi incompatible}XOPEN}\
+%{pedantic:%e-mxopen and -pedantic incompatible}XOPEN}\
 %{!mbsd:%{!mxopen:%{!ansi:BSD}}} %{c:%{o*:%*}%{!o*:%b.o}}%{!c:%U.o}}"
 #endif
 #endif
@@ -116,10 +114,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 /* size_t is "unsigned int" in RISCiX */
-#define SIZE_TYPE unsigned int
+#define SIZE_TYPE "unsigned int"
 
 /* ptrdiff_t is "int" in RISCiX */
-#define PTRDIFF_TYPE int
+#define PTRDIFF_TYPE "int"
 
 /* Maths operation domain error number, EDOM */
 #define TARGET_EDOM 33
