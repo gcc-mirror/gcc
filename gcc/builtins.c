@@ -1225,7 +1225,7 @@ expand_builtin_apply (function, arguments, argsize)
   set_mem_align (dest, PARM_BOUNDARY);
   src = gen_rtx_MEM (BLKmode, incoming_args);
   set_mem_align (src, PARM_BOUNDARY);
-  emit_block_move (dest, src, argsize);
+  emit_block_move (dest, src, argsize, BLOCK_OP_NORMAL);
 
   /* Refer to the argument block.  */
   apply_args_size ();
@@ -2000,7 +2000,8 @@ expand_builtin_memcpy (arglist, target, mode)
       set_mem_align (src_mem, src_align);
 
       /* Copy word part most expediently.  */
-      dest_addr = emit_block_move (dest_mem, src_mem, len_rtx);
+      dest_addr = emit_block_move (dest_mem, src_mem, len_rtx,
+				   BLOCK_OP_NORMAL);
 
       if (dest_addr == 0)
 	{
@@ -3298,7 +3299,7 @@ expand_builtin_va_copy (arglist)
       set_mem_align (srcb, TYPE_ALIGN (va_list_type_node));
 
       /* Copy.  */
-      emit_block_move (dstb, srcb, size);
+      emit_block_move (dstb, srcb, size, BLOCK_OP_NORMAL);
     }
 
   return const0_rtx;

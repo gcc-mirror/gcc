@@ -967,11 +967,8 @@ save_fixed_argument_area (reg_parm_stack_space, argblock,
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  /* Cannot use emit_block_move here because it can be done by a
-	     library call which in turn gets into this place again and deadly
-	     infinite recursion happens.  */
-	  move_by_pieces (validize_mem (save_area), stack_area, num_to_save,
-			  PARM_BOUNDARY);
+	  emit_block_move (validize_mem (save_area), stack_area,
+			   GEN_INT (num_to_save), BLOCK_OP_CALL_PARM);
 	}
       else
 	{
@@ -1008,11 +1005,9 @@ restore_fixed_argument_area (save_area, argblock, high_to_save, low_to_save)
   if (save_mode != BLKmode)
     emit_move_insn (stack_area, save_area);
   else
-    /* Cannot use emit_block_move here because it can be done by a library
-       call which in turn gets into this place again and deadly infinite
-       recursion happens.  */
-    move_by_pieces (stack_area, validize_mem (save_area),
-		    high_to_save - low_to_save + 1, PARM_BOUNDARY);
+    emit_block_move (stack_area, validize_mem (save_area),
+		     GEN_INT (high_to_save - low_to_save + 1),
+		     BLOCK_OP_CALL_PARM);
 }
 #endif /* REG_PARM_STACK_SPACE */
 
@@ -3317,9 +3312,9 @@ expand_call (exp, target, ignore)
 		if (save_mode != BLKmode)
 		  emit_move_insn (stack_area, args[i].save_area);
 		else
-		  emit_block_move (stack_area,
-				   validize_mem (args[i].save_area),
-				   GEN_INT (args[i].size.constant));
+		  emit_block_move (stack_area, args[i].save_area,
+				   GEN_INT (args[i].size.constant),
+				   BLOCK_OP_CALL_PARM);
 	      }
 
 	  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
@@ -3909,8 +3904,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	    {
 	      save_area = assign_stack_temp (BLKmode, num_to_save, 0);
 	      set_mem_align (save_area, PARM_BOUNDARY);
-	      emit_block_move (validize_mem (save_area), stack_area,
-			       GEN_INT (num_to_save));
+	      emit_block_move (save_area, stack_area, GEN_INT (num_to_save),
+			       BLOCK_OP_CALL_PARM);
 	    }
 	  else
 	    {
@@ -3978,8 +3973,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 		}
 	    }
 
-	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
-			  argblock, GEN_INT (argvec[argnum].offset.constant),
+	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, PARM_BOUNDARY,
+			  partial, reg, 0, argblock,
+			  GEN_INT (argvec[argnum].offset.constant),
 			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
 
 	  /* Now mark the segment we just used.  */
@@ -4180,8 +4176,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	  if (save_mode != BLKmode)
 	    emit_move_insn (stack_area, save_area);
 	  else
-	    emit_block_move (stack_area, validize_mem (save_area),
-			     GEN_INT (high_to_save - low_to_save + 1));
+	    emit_block_move (stack_area, save_area,
+			     GEN_INT (high_to_save - low_to_save + 1),
+			     BLOCK_OP_CALL_PARM);
 	}
 #endif
 
@@ -4358,7 +4355,8 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 		  arg->save_area = assign_temp (nt, 0, 1, 1);
 		  preserve_temp_slots (arg->save_area);
 		  emit_block_move (validize_mem (arg->save_area), stack_area,
-				   expr_size (arg->tree_value));
+				   expr_size (arg->tree_value),
+				   BLOCK_OP_CALL_PARM);
 		}
 	      else
 		{
@@ -4479,8 +4477,8 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 
       /* This isn't already where we want it on the stack, so put it there.
 	 This can either be done with push or copy insns.  */
-      emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), NULL_RTX, 0,
-		      partial, reg, used - size, argblock,
+      emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), NULL_RTX, 
+		      PARM_BOUNDARY, partial, reg, used - size, argblock,
 		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
 		      ARGS_SIZE_RTX (arg->alignment_pad));
 
@@ -4574,18 +4572,18 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
           {
 	    rtx size_rtx1 = GEN_INT (reg_parm_stack_space - arg->offset.constant);
 	    emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx1,
-		            TYPE_ALIGN (TREE_TYPE (pval)), partial, reg,
-			    excess, argblock, ARGS_SIZE_RTX (arg->offset),
-			    reg_parm_stack_space,
+		            MAX (PARM_BOUNDARY, TYPE_ALIGN (TREE_TYPE (pval))),
+			    partial, reg, excess, argblock,
+			    ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
 		            ARGS_SIZE_RTX (arg->alignment_pad));
 	  }
 	}
 	
 
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
-		      TYPE_ALIGN (TREE_TYPE (pval)), partial, reg, excess,
-		      argblock, ARGS_SIZE_RTX (arg->offset),
-		      reg_parm_stack_space,
+		      MAX (PARM_BOUNDARY, TYPE_ALIGN (TREE_TYPE (pval))),
+		      partial, reg, excess, argblock,
+		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
 		      ARGS_SIZE_RTX (arg->alignment_pad));
 
       /* Unless this is a partially-in-register argument, the argument is now
