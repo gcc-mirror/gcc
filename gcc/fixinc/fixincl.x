@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 161 fixup descriptions.
+ * This file contains 162 fixup descriptions.
  *
  * See README for more information.
  *
@@ -905,6 +905,46 @@ static tTestDesc aAlpha_ParensTests[] = {
 static const char* apzAlpha_ParensPatch[] = {
     "format",
     "#ifndef __mips64",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Alpha_Pthread_Gcc fix
+ */
+tSCC zAlpha_Pthread_GccName[] =
+     "alpha_pthread_gcc";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zAlpha_Pthread_GccList[] =
+  "|pthread.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzAlpha_Pthread_GccMachs[] = {
+        "alpha*-dec-osf*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zAlpha_Pthread_GccSelect0[] =
+       "#else\n\
+# error <pthread.h>: unrecognized compiler.";
+
+#define    ALPHA_PTHREAD_GCC_TEST_CT  1
+static tTestDesc aAlpha_Pthread_GccTests[] = {
+  { TT_EGREP,    zAlpha_Pthread_GccSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Alpha_Pthread_Gcc
+ */
+static const char* apzAlpha_Pthread_GccPatch[] = {
+    "format",
+    "#elif defined (__GNUC__)\n\
+# define _PTHREAD_ENV_GCC\n\
+%0",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -6334,9 +6374,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          175
+#define REGEX_COUNT          176
 #define MACH_LIST_SIZE_LIMIT 261
-#define FIX_COUNT            161
+#define FIX_COUNT            162
 
 /*
  *  Enumerate the fixes
@@ -6362,6 +6402,7 @@ typedef enum {
     ALPHA_ASSERT_FIXIDX,
     ALPHA_GETOPT_FIXIDX,
     ALPHA_PARENS_FIXIDX,
+    ALPHA_PTHREAD_GCC_FIXIDX,
     ALPHA_SBRK_FIXIDX,
     ARM_NORCROFT_HINT_FIXIDX,
     ARM_WCHAR_FIXIDX,
@@ -6605,6 +6646,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAlpha_ParensMachs,
      ALPHA_PARENS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAlpha_ParensTests,   apzAlpha_ParensPatch, 0 },
+
+  {  zAlpha_Pthread_GccName,    zAlpha_Pthread_GccList,
+     apzAlpha_Pthread_GccMachs,
+     ALPHA_PTHREAD_GCC_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aAlpha_Pthread_GccTests,   apzAlpha_Pthread_GccPatch, 0 },
 
   {  zAlpha_SbrkName,    zAlpha_SbrkList,
      apzAlpha_SbrkMachs,
