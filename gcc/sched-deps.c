@@ -1127,7 +1127,13 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
       tmp = SET_SRC (set);
       if (GET_CODE (tmp) == SUBREG)
 	tmp = SUBREG_REG (tmp);
-      if (GET_CODE (tmp) == REG)
+      if ((GET_CODE (tmp) == PLUS
+	   || GET_CODE (tmp) == MINUS)
+	  && GET_CODE (XEXP (tmp, 0)) == REG
+	  && REGNO (XEXP (tmp, 0)) == STACK_POINTER_REGNUM
+	  && dest_regno == STACK_POINTER_REGNUM)
+	src_regno = STACK_POINTER_REGNUM;
+      else if (GET_CODE (tmp) == REG)
 	src_regno = REGNO (tmp);
       else
 	goto end_call_group;
