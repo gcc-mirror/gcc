@@ -1,3 +1,8 @@
+Thu May 17 11:54:50 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* except.c (sjlj_emit_function_enter): Call assemble_external_libcall
+	for eh_personality_libfunc.
+
 Thu May 17 19:48:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (validate_replace_rtx_1): Use "TO" mode if not VOIDmode

@@ -2139,6 +2139,10 @@ sjlj_emit_function_enter (dispatch_label)
 
   start_sequence ();
 
+  /* We're storing this libcall's address into memory instead of
+     calling it directly.  Thus, we must call assemble_external_libcall
+     here, as we can not depend on emit_library_call to do it for us.  */
+  assemble_external_libcall (eh_personality_libfunc);
   mem = change_address (fc, Pmode,
 			plus_constant (XEXP (fc, 0), sjlj_fc_personality_ofs));
   emit_move_insn (mem, eh_personality_libfunc);
