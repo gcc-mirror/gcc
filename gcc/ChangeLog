@@ -1,3 +1,16 @@
+2004-03-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport from 3.4.0:
+	2004-02-29  Mark Mitchell  <mark@codesourcery.com>
+	PR debug/14328
+	* dwarf2out.c (gen_enumeration_type_die): Output all enumeration
+	constants as signed values.
+
+	2004-01-16  J"orn Rennecke <joern.rennecke@superh.com>
+        PR optimization/11864
+        * reload1.c (reload_cse_simplify_operands): Don't remove
+        implicit extension from LOAD_EXTEND_OP.
+
 2004-02-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/14346
