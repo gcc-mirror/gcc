@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "flags.h"
 #include "expr.h"
-#include "optabs.h"
 #include "loop.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
@@ -469,9 +468,9 @@ doloop_modify (loop, iterations, iterations_max,
       if (GET_CODE (count) == CONST_INT)
 	count = GEN_INT (INTVAL (count) - 1);
       else
-	count = expand_binop (GET_MODE (counter_reg), sub_optab,
-			      count, GEN_INT (1),
-			      0, 0, OPTAB_LIB_WIDEN);
+	count = expand_simple_binop (GET_MODE (counter_reg), MINUS,
+				     count, GEN_INT (1),
+				     0, 0, OPTAB_LIB_WIDEN);
     }
 
   /* Insert initialization of the count register into the loop header.  */
@@ -592,10 +591,10 @@ doloop_modify_runtime (loop, iterations_max,
 
   start_sequence ();
   /* abs (final - initial)  */
-  diff = expand_binop (mode, sub_optab,
-		       copy_rtx (neg_inc ? initial_value : final_value),
-		       copy_rtx (neg_inc ? final_value : initial_value),
-		       NULL_RTX, unsigned_p, OPTAB_LIB_WIDEN);
+  diff = expand_simple_binop (mode, MINUS,
+			      copy_rtx (neg_inc ? initial_value : final_value),
+			      copy_rtx (neg_inc ? final_value : initial_value),
+			      NULL_RTX, unsigned_p, OPTAB_LIB_WIDEN);
 
   if (abs_inc * loop_info->unroll_number != 1)
     {
@@ -609,18 +608,18 @@ doloop_modify_runtime (loop, iterations_max,
 	abort ();
 
       /* abs (final - initial) / (abs_inc * unroll_number)  */
-      iterations = expand_binop (GET_MODE (diff), lshr_optab,
-				 diff, GEN_INT (shift_count),
-				 NULL_RTX, 1,
-				 OPTAB_LIB_WIDEN);
+      iterations = expand_simple_binop (GET_MODE (diff), LSHIFTRT,
+					diff, GEN_INT (shift_count),
+					NULL_RTX, 1,
+					OPTAB_LIB_WIDEN);
 
       if (abs_inc != 1)
 	{
 	  /* abs (final - initial) % (abs_inc * unroll_number)  */
-	  extra = expand_binop (GET_MODE (iterations), and_optab,
-				diff, GEN_INT (abs_inc * loop_info->unroll_number - 1),
-				NULL_RTX, 1,
-				OPTAB_LIB_WIDEN);
+	  rtx count = GEN_INT (abs_inc * loop_info->unroll_number - 1);
+	  extra = expand_simple_binop (GET_MODE (iterations), AND,
+				       diff, count, NULL_RTX, 1,
+				       OPTAB_LIB_WIDEN);
 
 	  /* If (abs (final - initial) % (abs_inc * unroll_number)
 	       <= abs_inc * (unroll - 1)),
@@ -634,10 +633,10 @@ doloop_modify_runtime (loop, iterations_max,
 	  LABEL_NUSES (label)++;
 
 	  /* Increment the iteration count by one.  */
-	  iterations = expand_binop (GET_MODE (iterations), add_optab,
-				     iterations, GEN_INT (1),
-				     iterations, 1,
-				     OPTAB_LIB_WIDEN);
+	  iterations = expand_simple_binop (GET_MODE (iterations), PLUS,
+					    iterations, GEN_INT (1),
+					    iterations, 1,
+					    OPTAB_LIB_WIDEN);
 
 	  emit_label (label);
 	}

@@ -7861,7 +7861,7 @@ expand_expr (exp, target, tmode, modifier)
 					  build_real (type, dconst1),
 					  TREE_OPERAND (exp, 1))),
 			    target, tmode, unsignedp);
-      this_optab = flodiv_optab;
+      this_optab = sdiv_optab;
       goto binop;
 
     case TRUNC_MOD_EXPR:

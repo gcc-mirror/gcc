@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "function.h"
 #include "expr.h"
-#include "optabs.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "insn-config.h"
@@ -1952,8 +1951,8 @@ move_movables (loop, movables, threshold, insn_count)
 			  rtx tem;
 
 			  start_sequence ();
-			  tem = expand_binop
-			    (GET_MODE (reg), and_optab, reg,
+			  tem = expand_simple_binop
+			    (GET_MODE (reg), AND, reg,
 			     GEN_INT ((((HOST_WIDE_INT) 1
 					<< GET_MODE_BITSIZE (m->savemode)))
 				      - 1),
@@ -7578,21 +7577,16 @@ check_dbra_loop (loop, insn_count)
 		}
 	      else if (GET_CODE (initial_value) == CONST_INT)
 		{
-		  rtx offset = GEN_INT (-INTVAL (initial_value) - add_adjust);
 		  enum machine_mode mode = GET_MODE (reg);
-		  enum insn_code icode
-		    = add_optab->handlers[(int) mode].insn_code;
+		  rtx offset = GEN_INT (-INTVAL (initial_value) - add_adjust);
+		  rtx add_insn = gen_add3_insn (reg, comparison_value, offset);
 
-		  if (! (*insn_data[icode].operand[0].predicate) (reg, mode)
-		      || ! ((*insn_data[icode].operand[1].predicate)
-			    (comparison_value, mode))
-		      || ! ((*insn_data[icode].operand[2].predicate)
-			    (offset, mode)))
+		  if (add_insn == 0)
 		    return 0;
+
 		  start_value
 		    = gen_rtx_PLUS (mode, comparison_value, offset);
-		  loop_insn_hoist (loop, (GEN_FCN (icode)
-					     (reg, comparison_value, offset)));
+		  loop_insn_hoist (loop, add_insn);
 		  if (GET_CODE (comparison) == LE)
 		    final_value = gen_rtx_PLUS (mode, comparison_value,
 						GEN_INT (add_val));
@@ -7600,19 +7594,14 @@ check_dbra_loop (loop, insn_count)
 	      else if (! add_adjust)
 		{
 		  enum machine_mode mode = GET_MODE (reg);
-		  enum insn_code icode
-		    = sub_optab->handlers[(int) mode].insn_code;
-		  if (! (*insn_data[icode].operand[0].predicate) (reg, mode)
-		      || ! ((*insn_data[icode].operand[1].predicate)
-			    (comparison_value, mode))
-		      || ! ((*insn_data[icode].operand[2].predicate)
-			    (initial_value, mode)))
+		  rtx sub_insn = gen_sub3_insn (reg, comparison_value,
+						initial_value);
+
+		  if (sub_insn == 0)
 		    return 0;
 		  start_value
 		    = gen_rtx_MINUS (mode, comparison_value, initial_value);
-		  loop_insn_hoist (loop, (GEN_FCN (icode)
-					     (reg, comparison_value,
-					      initial_value)));
+		  loop_insn_hoist (loop, sub_insn);
 		}
 	      else
 		/* We could handle the other cases too, but it'll be

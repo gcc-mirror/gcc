@@ -50,8 +50,8 @@ Boston, MA 02111-1307, USA.  */
   sub_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpsub"); \
   smul_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpmul"); \
   smul_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpmul"); \
-  flodiv_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpdiv"); \
-  flodiv_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpdiv"); \
+  sdiv_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpdiv"); \
+  sdiv_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpdiv"); \
   cmp_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpcmp"); \
   cmp_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpcmp"); \
 \

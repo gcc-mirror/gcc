@@ -163,7 +163,6 @@ enum unroll_types
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
-#include "optabs.h"
 #include "loop.h"
 #include "toplev.h"
 #include "hard-reg-set.h"
@@ -936,15 +935,15 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 	     We must copy the final and initial values here to avoid
 	     improperly shared rtl.  */
 
-	  diff = expand_binop (mode, sub_optab, copy_rtx (final_value),
-			       copy_rtx (initial_value), NULL_RTX, 0,
-			       OPTAB_LIB_WIDEN);
+	  diff = expand_simple_binop (mode, MINUS, copy_rtx (final_value),
+				      copy_rtx (initial_value), NULL_RTX, 0,
+				      OPTAB_LIB_WIDEN);
 
 	  /* Now calculate (diff % (unroll * abs (increment))) by using an
 	     and instruction.  */
-	  diff = expand_binop (GET_MODE (diff), and_optab, diff,
-			       GEN_INT (unroll_number * abs_inc - 1),
-			       NULL_RTX, 0, OPTAB_LIB_WIDEN);
+	  diff = expand_simple_binop (GET_MODE (diff), AND, diff,
+				      GEN_INT (unroll_number * abs_inc - 1),
+				      NULL_RTX, 0, OPTAB_LIB_WIDEN);
 
 	  /* Now emit a sequence of branches to jump to the proper precond
 	     loop entry point.  */
@@ -2298,8 +2297,8 @@ emit_unrolled_add (dest_reg, src_reg, increment)
 {
   rtx result;
 
-  result = expand_binop (GET_MODE (dest_reg), add_optab, src_reg, increment,
-			 dest_reg, 0, OPTAB_LIB_WIDEN);
+  result = expand_simple_binop (GET_MODE (dest_reg), PLUS, src_reg, increment,
+				dest_reg, 0, OPTAB_LIB_WIDEN);
 
   if (dest_reg != result)
     emit_move_insn (dest_reg, result);
@@ -3314,9 +3313,9 @@ final_giv_value (loop, v)
 		if (biv->insn == insn)
 		  {
 		    start_sequence ();
-		    tem = expand_binop (GET_MODE (tem), sub_optab, tem,
-					biv->add_val, NULL_RTX, 0,
-					OPTAB_LIB_WIDEN);
+		    tem = expand_simple_binop (GET_MODE (tem), MINUS, tem,
+					       biv->add_val, NULL_RTX, 0,
+					       OPTAB_LIB_WIDEN);
 		    seq = gen_sequence ();
 		    end_sequence ();
 		    loop_insn_sink (loop, seq);

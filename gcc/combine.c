@@ -83,10 +83,10 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "insn-config.h"
+#include "insn-codes.h"
 #include "function.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
-#include "optabs.h"
 #include "insn-attr.h"
 #include "recog.h"
 #include "real.h"
@@ -5882,8 +5882,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	   && GET_CODE (inner) != MEM
 	   && (! in_dest
 	       || (GET_CODE (inner) == REG
-		   && (movstrict_optab->handlers[(int) tmode].insn_code
-		       != CODE_FOR_nothing))))
+		   && have_insn_for (STRICT_LOW_PART, tmode))))
 	  || (GET_CODE (inner) == MEM && pos_rtx == 0
 	      && (pos
 		  % (STRICT_ALIGNMENT ? GET_MODE_ALIGNMENT (tmode)
@@ -6383,10 +6382,9 @@ make_compound_operation (x, in_code)
       /* On machines without logical shifts, if the operand of the AND is
 	 a logical shift and our mask turns off all the propagated sign
 	 bits, we can replace the logical shift with an arithmetic shift.  */
-      else if (ashr_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
-	       && (lshr_optab->handlers[(int) mode].insn_code
-		   == CODE_FOR_nothing)
-	       && GET_CODE (XEXP (x, 0)) == LSHIFTRT
+      else if (GET_CODE (XEXP (x, 0)) == LSHIFTRT
+	       && !have_insn_for (LSHIFTRT, mode)
+	       && have_insn_for (ASHIFTRT, mode)
 	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	       && INTVAL (XEXP (XEXP (x, 0), 1)) >= 0
 	       && INTVAL (XEXP (XEXP (x, 0), 1)) < HOST_BITS_PER_WIDE_INT
@@ -6427,8 +6425,8 @@ make_compound_operation (x, in_code)
     case LSHIFTRT:
       /* If the sign bit is known to be zero, replace this with an
 	 arithmetic shift.  */
-      if (ashr_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing
-	  && lshr_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
+      if (have_insn_for (ASHIFTRT, mode)
+	  && ! have_insn_for (LSHIFTRT, mode)
 	  && mode_width <= HOST_BITS_PER_WIDE_INT
 	  && (nonzero_bits (XEXP (x, 0), mode) & (1 << (mode_width - 1))) == 0)
 	{
@@ -6611,9 +6609,7 @@ force_to_mode (x, mode, mask, reg, just_select)
      that the operation is valid in MODE, in which case we do the operation
      in MODE.  */
   op_mode = ((GET_MODE_CLASS (mode) == GET_MODE_CLASS (GET_MODE (x))
-	      && code_to_optab[(int) code] != 0
-	      && (code_to_optab[(int) code]->handlers[(int) mode].insn_code
-		  != CODE_FOR_nothing))
+	      && have_insn_for (code, mode))
 	     ? mode : GET_MODE (x));
 
   /* It is not valid to do a right-shift in a narrower mode
@@ -10893,12 +10889,12 @@ simplify_comparison (code, pop0, pop1)
   mode = GET_MODE (op0);
   if (mode != VOIDmode && GET_MODE_CLASS (mode) == MODE_INT
       && GET_MODE_SIZE (mode) < UNITS_PER_WORD
-      && cmp_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
+      && ! have_insn_for (COMPARE, mode))
     for (tmode = GET_MODE_WIDER_MODE (mode);
 	 (tmode != VOIDmode
 	  && GET_MODE_BITSIZE (tmode) <= HOST_BITS_PER_WIDE_INT);
 	 tmode = GET_MODE_WIDER_MODE (tmode))
-      if (cmp_optab->handlers[(int) tmode].insn_code != CODE_FOR_nothing)
+      if (have_insn_for (COMPARE, tmode))
 	{
 	  /* If the only nonzero bits in OP0 and OP1 are those in the
 	     narrower mode and this is an equality or unsigned comparison,
@@ -10916,8 +10912,7 @@ simplify_comparison (code, pop0, pop1)
 	      /* If OP0 is an AND and we don't have an AND in MODE either,
 		 make a new AND in the proper mode.  */
 	      if (GET_CODE (op0) == AND
-		  && (add_optab->handlers[(int) mode].insn_code
-		      == CODE_FOR_nothing))
+		  && !have_insn_for (AND, mode))
 		op0 = gen_binary (AND, tmode,
 				  gen_lowpart_for_combine (tmode,
 							   XEXP (op0, 0)),

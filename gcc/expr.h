@@ -256,6 +256,34 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 /* Functions from optabs.c, commonly used, and without need for the optabs
    tables:  */
 
+/* Passed to expand_simple_binop and expand_binop to say which options
+   to try to use if the requested operation can't be open-coded on the
+   requisite mode.  Either OPTAB_LIB or OPTAB_LIB_WIDEN says try using
+   a library call.  Either OPTAB_WIDEN or OPTAB_LIB_WIDEN says try
+   using a wider mode.  OPTAB_MUST_WIDEN says try widening and don't
+   try anything else.  */
+
+enum optab_methods
+{
+  OPTAB_DIRECT,
+  OPTAB_LIB,
+  OPTAB_WIDEN,
+  OPTAB_LIB_WIDEN,
+  OPTAB_MUST_WIDEN
+};
+
+/* Generate code for a simple binary or unary operation.  "Simple" in
+   this case means "can be unambiguously described by a (mode, code)
+   pair and mapped to a single optab."  */
+extern rtx expand_simple_binop PARAMS ((enum machine_mode, enum rtx_code, rtx,
+					rtx, rtx, int, enum optab_methods));
+extern rtx expand_simple_unop PARAMS ((enum machine_mode, enum rtx_code,
+				       rtx, rtx, int));
+
+/* Report whether the machine description contains an insn which can
+   perform the operation described by CODE and MODE.  */
+extern int have_insn_for PARAMS ((enum rtx_code, enum machine_mode));
+
 /* Emit code to make a call to a constant function or a library call. */
 extern void emit_libcall_block PARAMS ((rtx, rtx, rtx, rtx));
 
@@ -266,6 +294,7 @@ extern void emit_libcall_block PARAMS ((rtx, rtx, rtx, rtx));
 extern rtx gen_add2_insn PARAMS ((rtx, rtx));
 extern rtx gen_add3_insn PARAMS ((rtx, rtx, rtx));
 extern rtx gen_sub2_insn PARAMS ((rtx, rtx));
+extern rtx gen_sub3_insn PARAMS ((rtx, rtx, rtx));
 extern rtx gen_move_insn PARAMS ((rtx, rtx));
 extern int have_add2_insn PARAMS ((rtx, rtx));
 extern int have_sub2_insn PARAMS ((rtx, rtx));
