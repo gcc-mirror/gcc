@@ -1,5 +1,22 @@
 2003-04-11  Geoffrey Keating  <geoffk@apple.com>
 
+	PR c++/9393
+	* doc/invoke.texi (Debugging Options): Document -frandom-seed.
+	* configure.in: Check for gettimeofday.
+	* tree.c (flag_random_seed): Define.
+	(default_flag_random_seed): New.
+	(append_random_chars): Use flag_random_seed rather than trying
+	to acquire randomness here.
+	* tree.h (default_flag_random_seed): Declare.
+	* toplev.c (display_help): Add -frandom-seed and -fstack-limit-*
+	descriptions.
+	(decode_f_option): Handle -frandom-seed.
+	(print_switch_values): Call default_flag_random_seed.
+	* flags.h (flag_random_seed): Declare.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/alpha/t-crtfm: Use -frandom-seed.
+	
 	* doc/extend.texi (Empty Structures): New.
 
 	* c-pch.c: Include flags.h.  Add comments to routines.

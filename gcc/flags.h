@@ -671,6 +671,11 @@ extern int flag_signaling_nans;
 
 extern int flag_unit_at_a_time;
 
+/* A string that's used when a random name is required.  NULL means
+   to make it really random.  */
+
+extern const char *flag_random_seed;
+
 /* True if the given mode has a NaN representation and the treatment of
    NaN operands is important.  Certain optimizations, such as folding
    x * 0 into x, are not correct for NaN operands, and are normally
