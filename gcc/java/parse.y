@@ -5070,12 +5070,12 @@ parser_check_super_interface (super_decl, this_decl, this_wfl)
   if (!CLASS_INTERFACE (super_decl))
     {
       parse_error_context 
-	(this_wfl, "Can't use %s `%s' to implement/extend %s `%s'",
-	 (TYPE_ARRAY_P (super_type) ? "array" : "class"),
-	 IDENTIFIER_POINTER (DECL_NAME (super_decl)),
+	(this_wfl, "%s `%s' can't implement/extend %s `%s'",
 	 (CLASS_INTERFACE (TYPE_NAME (TREE_TYPE (this_decl))) ? 
-	  "interface" : "class"),
-	 IDENTIFIER_POINTER (DECL_NAME (this_decl)));
+	  "Interface" : "Class"),
+	 IDENTIFIER_POINTER (DECL_NAME (this_decl)),
+	 (TYPE_ARRAY_P (super_type) ? "array" : "class"),
+	 IDENTIFIER_POINTER (DECL_NAME (super_decl)));
       return 1;
     }
 
