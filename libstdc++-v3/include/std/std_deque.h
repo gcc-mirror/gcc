@@ -70,8 +70,9 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_deque.h>
 
+#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#  include <bits/deque.tcc>
+#endif
+
 #endif /* _CPP_DEQUE */
 
-// Local Variables:
-// mode:C++
-// End:

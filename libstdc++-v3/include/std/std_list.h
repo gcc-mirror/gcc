@@ -70,8 +70,9 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_list.h>
 
+#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#  include <bits/list.tcc>
+#endif
+
 #endif /* _CPP_LIST */
 
-// Local Variables:
-// mode:C++
-// End:

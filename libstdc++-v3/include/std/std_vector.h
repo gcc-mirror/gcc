@@ -71,8 +71,9 @@
 #include <bits/stl_vector.h>
 #include <bits/stl_bvector.h> 
 
+#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#  include <bits/vector.tcc>
+#endif
+
 #endif /* _CPP_VECTOR */
 
-// Local Variables:
-// mode:C++
-// End:
