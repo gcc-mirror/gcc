@@ -4,8 +4,6 @@ README - Wed Nov 29 15:16:24 EST 1995
 
 Limited documentation is available in the THREADS file.
 
-A simple multiple threaded test program is available in thread-test/.
-
 This version has been tested on Sun Solaris, SGI Irix, and Windows NT.
 It should also work on any single threaded system.
 
