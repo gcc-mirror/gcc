@@ -1,5 +1,12 @@
 2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (dfs_unshared_virtual_bases): New function.
+	(mark_primary_bases): Call it.
+	(check_bases): Ignore virtual bases when determining
+	nearly-emptiness.
+
+2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* method.c (make_thunk): Clear DECL_CLONED_FUNCTION.
 
 2001-04-11  Mark Mitchell  <mark@codesourcery.com>
