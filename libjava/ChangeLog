@@ -1,3 +1,8 @@
+2003-04-19  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/math/BigInteger.java (probablePrime): New.
+	* java/math/BigDecimal.java (unscaledValue): New.
+
 2003-04-19  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/io/File.java (getAbsolutePath): On Windows, take care
