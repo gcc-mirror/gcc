@@ -1,3 +1,7 @@
+1999-11-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* posix-threads.cc: Don't include boehm-config.h.
+
 1999-11-02  Tom Tromey  <tromey@cygnus.com>
 
 	* boehm.cc: Don't include boehm-config.h.
