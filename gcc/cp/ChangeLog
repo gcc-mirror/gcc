@@ -1,5 +1,7 @@
 1999-10-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* ir.texi: Document LOOP_EXPR and EXIT_EXPR.
+
 	* method.c (synthesize_method): Call setup_vtbl_ptr for destructors.
 
 	* decl.c (start_function): Set current_in_charge_parm for
