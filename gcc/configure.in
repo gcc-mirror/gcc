@@ -2233,6 +2233,41 @@ EOF
       [Define true if the assembler supports '.long foo@GOTOFF'.])
     AC_MSG_RESULT($gcc_cv_as_gotoff_in_data)
     ;;
+
+  ia64*-*-*)
+    AC_CACHE_CHECK([assembler supports ltoffx and ldxmov],
+	gcc_cv_as_ltoffx_ldxmov_relocs, [
+	gcc_cv_as_ltoffx_ldxmov_relocs=unknown
+	if test x$gcc_cv_gas_major_version != x \
+		-a x$gcc_cv_gas_minor_version != x
+	then
+	   if test "$gcc_cv_gas_major_version" -eq 2 \
+	           -a "$gcc_cv_gas_minor_version" -ge 14 \
+	           -o "$gcc_cv_gas_major_version" -gt 2; then
+	      gcc_cv_as_ltoffx_ldxmov_relocs=yes
+	   fi
+	elif test x$gcc_cv_as != x; then
+	    cat > conftest.s << 'EOF'
+changequote(,)dnl
+	.text
+	addl r15 = @ltoffx(x#), gp
+	;;
+	ld8.mov r16 = [r15], x#
+EOF
+changequote([,])dnl
+	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_ltoffx_ldxmov_relocs=yes
+	    else
+		gcc_cv_as_ltoffx_ldxmov_relocs=no
+	    fi
+	    rm -f conftest.s conftest.o
+	fi
+    ])
+    if test "x$gcc_cv_as_ltoffx_ldxmov_relocs" = xyes; then
+	AC_DEFINE(HAVE_AS_LTOFFX_LDXMOV_RELOCS, 1,
+	  [Define if your assembler supports ltoffx and ldxmov relocations.])
+    fi
+    ;;
 esac
 
 AC_MSG_CHECKING(assembler dwarf2 debug_line support)
