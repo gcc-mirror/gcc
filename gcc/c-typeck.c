@@ -4886,6 +4886,10 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
       tree min_index, max_index, current_index, members_index;
       tree bound_type;
       tree one;
+      /* These are non-zero only within a range initializer.  */
+      tree start_index = 0, end_index = 0;
+      /* Within a range, this is the value for the elts in the range.  */
+      tree range_val = 0;
 
       /* If we have array bounds, set our bounds from that.  Otherwise,
 	 we have a lower bound of zero and an unknown upper bound.  Also
@@ -4908,15 +4912,26 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
       /* Don't leave the loop based on index if the next item has an explicit
 	 index value that will override it. */
 
-      for (current_index = min_index; tail != 0;
+      for (current_index = min_index; tail != 0 || end_index;
 	   current_index = fold (build (PLUS_EXPR, bound_type,
 					current_index, one)))
 	{
-	  register tree next1;
+	  register tree next1 = 0;
+
+	  /* Handle the case where we are inside of a range.
+	     current_index increments through the range,
+	     so just keep reusing the same element of TAIL
+	     until the end of the range.  */
+	  if (end_index != 0)
+	    {
+	      next1 = range_val;
+	      if (!tree_int_cst_lt (current_index, end_index))
+		end_index = 0;
+	    }
 
 	  /* If this element specifies an index,
 	     move to that index before storing it in the new list.  */
-	  if (TREE_PURPOSE (tail) != 0)
+	  else if (TREE_PURPOSE (tail) != 0)
 	    {
 	      int win = 0;
 	      tree index = TREE_PURPOSE (tail);
@@ -4924,7 +4939,49 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	      if (index && TREE_CODE (index) == NON_LVALUE_EXPR)
 		index = TREE_OPERAND (index, 0);
 
-	      if (TREE_CODE (index) == IDENTIFIER_NODE)
+	      /* Begin a range.  */
+	      if (TREE_CODE (index) == TREE_LIST)
+		{
+		  start_index = TREE_PURPOSE (index);
+		  end_index = TREE_PURPOSE (TREE_CHAIN (index));
+
+		  /* Expose constants.  */
+		  if (end_index && TREE_CODE (end_index) == NON_LVALUE_EXPR)
+		    end_index = TREE_OPERAND (end_index, 0);
+		  if (start_index && TREE_CODE (start_index) == NON_LVALUE_EXPR)
+		    start_index = TREE_OPERAND (start_index, 0);
+
+		  if ((TREE_CODE (start_index) == IDENTIFIER_NODE) 
+		      || (TREE_CODE (end_index) == IDENTIFIER_NODE))
+		    error ("field name used as index in array initializer");
+		  else if ((TREE_CODE (start_index) != INTEGER_CST)
+			   || (TREE_CODE (end_index) != INTEGER_CST))
+		    error ("non-constant array index in initializer");
+		  else if (tree_int_cst_lt (start_index, min_index)
+			   || (max_index && tree_int_cst_lt (max_index, start_index))
+			   || tree_int_cst_lt (end_index, min_index)
+			   || (max_index && tree_int_cst_lt (max_index, end_index)))
+		    error ("array index out of range in initializer");
+		  else if (tree_int_cst_lt (end_index, start_index))
+		    {
+		      /* If the range is empty, don't initialize any elements,
+			 but do reset current_index for the next initializer
+			 element.  */
+		      warning ("empty array initializer range");
+		      tail = TREE_CHAIN (tail);
+		      current_index = end_index;
+		      continue;
+		    }
+		  else
+		    {
+		      current_index = start_index;
+		      win = 1;
+		      /* See if the first element is also the last.  */
+		      if (!tree_int_cst_lt (current_index, end_index))
+			end_index = 0;
+		    }
+		}
+	      else if (TREE_CODE (index) == IDENTIFIER_NODE)
 		error ("field name used as index in array initializer");
 	      else if (TREE_CODE (index) != INTEGER_CST)
 		error ("non-constant array index in initializer");
@@ -4942,7 +4999,9 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	    break;  /* Stop if we've indeed run out of elements. */
 
 	  /* Now digest the value specified.  */
-	  if (TREE_VALUE (tail) != 0)
+	  if (next1 != 0)
+	    ;
+	  else if (TREE_VALUE (tail) != 0)
 	    {
 	      tree tail1 = tail;
 
@@ -4977,6 +5036,9 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	      next1 = error_mark_node;
 	      tail = TREE_CHAIN (tail);
 	    }
+
+	  if (end_index != 0)
+	    range_val = next1;
 
 	  if (next1 == error_mark_node)
 	    erroneous = 1;
