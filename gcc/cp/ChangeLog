@@ -1,3 +1,18 @@
+2003-05-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (ENABLE_SCOPE_CHECKING): Rename from DEBUG_BINDING_LEVELS.
+	(binding_depth): Unconditionally define.
+	(is_class_level): Likewise.
+	(indent): Likewise.  Take an indenting parameter.
+	(push_binding_level): Remove conditional definittion. 
+	(pop_binding_level): Likewise.
+	(suspend_binding_level): Likewise.
+	(resume_binding_level): Likewise.
+	(pushlevel): Likewise.
+	(pushlevel_class): Likewise.
+	(poplevel_class): Likewise.
+	(pop_everything): Likewise.
+
 2003-05-27  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* name-lookup.h (global_scope_p): New macro.
