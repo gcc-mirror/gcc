@@ -2287,3 +2287,13 @@ __register_exceptions (exception_table *table)
   exception_table_list = node;
 }
 #endif /* L_eh */
+
+#ifdef L_pure
+#define MESSAGE "pure virtual method called\n"
+void
+__pure_virtual ()
+{
+  write (2, MESSAGE, sizeof (MESSAGE) - 1);
+  _exit (-1);
+}
+#endif
