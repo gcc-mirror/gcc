@@ -34,6 +34,8 @@
 /* No pic register.  */
 #elif defined(__H8300__) || defined(__H8300H__) || defined(__H8300S__)
 /* No pic register.  */
+#elif defined(_IBMR2)
+/* No pic register.  */
 #elif #cpu(i370)
 /* No pic register.  */
 #elif defined(__i386__)
