@@ -1,3 +1,10 @@
+2002-07-08  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Remove references to bsp, cygmon, libstub.
+	* configure.in: Ditto.
+
+	* configure.in: Remove leftover reference to gdbtest.
+
 2002-07-08  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in (gxx_include_dir):  Change to match versioned

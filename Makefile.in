@@ -186,7 +186,7 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
-TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib winsup opcodes bsp libstub cygmon libf2c libobjc
+TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib winsup opcodes libf2c libobjc
 
 # Target libraries are put under this directory:
 # Changed by configure to $(target_alias) if cross.
@@ -768,14 +768,11 @@ ALL_TARGET_MODULES = \
 	all-target-libiberty \
 	all-target-gperf \
 	all-target-examples \
-	all-target-libstub \
 	all-target-libffi \
 	all-target-libjava \
 	all-target-zlib \
 	all-target-boehm-gc \
-	all-target-qthreads \
-	all-target-bsp \
-	all-target-cygmon
+	all-target-qthreads
 
 # This is a list of the configure targets for all of the modules which
 # are compiled using the target tools.
@@ -790,14 +787,11 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-libiberty \
 	configure-target-gperf \
 	configure-target-examples \
-	configure-target-libstub \
 	configure-target-libffi \
 	configure-target-libjava \
 	configure-target-zlib \
 	configure-target-boehm-gc \
-	configure-target-qthreads \
-	configure-target-bsp \
-	configure-target-cygmon
+	configure-target-qthreads
 
 # This is a list of the check targets for all of the modules which are
 # compiled using $(TARGET_FLAGS_TO_PASS).
@@ -826,7 +820,6 @@ INSTALL_TARGET_MODULES = \
 	install-target-winsup \
 	install-target-libgloss \
 	install-target-libiberty \
-	install-target-bsp \
 	install-target-libjava \
 	install-target-zlib \
 	install-target-boehm-gc \
@@ -908,14 +901,11 @@ CLEAN_TARGET_MODULES = \
 	clean-target-libiberty \
 	clean-target-gperf \
 	clean-target-examples \
-	clean-target-libstub \
 	clean-target-libffi \
 	clean-target-libjava \
 	clean-target-zlib \
 	clean-target-boehm-gc \
-	clean-target-qthreads \
-	clean-target-bsp \
-	clean-target-cygmon
+	clean-target-qthreads
 
 # All of the x11 modules that can be cleaned
 CLEAN_X11_MODULES = \
@@ -1672,12 +1662,8 @@ all-binutils: all-libiberty all-opcodes all-bfd all-flex all-bison all-byacc all
 all-bison: all-texinfo
 configure-target-boehm-gc: $(ALL_GCC_C) configure-target-qthreads
 all-target-boehm-gc: configure-target-boehm-gc
-configure-target-bsp: $(ALL_GCC_C)
-all-target-bsp: configure-target-bsp
 all-byacc:
 all-bzip2:
-configure-target-cygmon: $(ALL_GCC_C)
-all-target-cygmon: configure-target-cygmon all-target-libiberty all-target-libstub all-target-bsp
 all-db:
 all-dejagnu: all-tcl all-expect all-tk
 all-diff: all-libiberty
@@ -1723,8 +1709,6 @@ configure-target-libjava: $(ALL_GCC_C) configure-target-zlib configure-target-bo
 all-target-libjava: configure-target-libjava all-fastjar all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
 configure-target-libstdc++-v3: $(ALL_GCC_C)
 all-target-libstdc++-v3: configure-target-libstdc++-v3 all-target-libiberty
-configure-target-libstub: $(ALL_GCC_C)
-all-target-libstub: configure-target-libstub
 all-libtool:
 configure-target-libf2c: $(ALL_GCC_C)
 all-target-libf2c: configure-target-libf2c all-target-libiberty
