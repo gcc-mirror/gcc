@@ -1,13 +1,13 @@
-# Mensajes en español para gcc-3.4.0
+# Mensajes en español para gcc-3.4.2
 # Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.4.0\n"
+"Project-Id-Version: gcc 3.4.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-07-01 11:41-0700\n"
-"PO-Revision-Date: 2004-05-18 18:02-0500\n"
+"PO-Revision-Date: 2004-09-23 08:54-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -282,9 +282,8 @@ msgid "invalid application of `%s' to a void type"
 msgstr "aplicación inválida de `%s' a un tipo void"
 
 #: c-common.c:2951
-#, fuzzy
 msgid "invalid application of `%s' to incomplete type `%T' "
-msgstr "aplicación inválida de `%s' a un tipo de dato incompleto"
+msgstr "aplicación inválida de `%s' a un tipo de dato incompleto `%T' "
 
 #: c-common.c:2992
 msgid "`__alignof' applied to a bit-field"
@@ -11605,7 +11604,7 @@ msgstr "Interruptor -mlong-double-%s desconocido"
 
 #: config/rs6000/rs6000.c:876
 msgid "AltiVec and E500 instructions cannot coexist"
-msgstr ""
+msgstr "Las instrucciones AltiVec y E500 no pueden coexistir"
 
 #: config/rs6000/rs6000.c:1029
 #, c-format
@@ -14670,9 +14669,8 @@ msgid "use of enum `%#D' without previous declaration"
 msgstr "uso del enum `%#D' sin declaración previa"
 
 #: cp/decl.c:9471
-#, fuzzy
 msgid "redeclaration of `%T' as a non-template"
-msgstr "la declaración de `%D' como una no función"
+msgstr "redeclaración de `%T' como algo que no es plantilla"
 
 #: cp/decl.c:9517
 msgid "derived union `%T' invalid"
@@ -15194,9 +15192,8 @@ msgstr "llamado a constructor Java con `%s' sin definir"
 #. fixed correctly in mainline), but on the release branch
 #. we prefer this less-intrusive approacch.
 #: cp/init.c:2077
-#, fuzzy
 msgid "no suitable or ambiguous `%D' found in class `%T'"
-msgstr "no hay un `operator %s' para `%T'"
+msgstr "se encontró un `%D' ambiguo o no adecuado en la clase `%T'"
 
 #: cp/init.c:2083
 msgid "request for member `%D' is ambiguous"
@@ -15692,9 +15689,8 @@ msgid "anachronistic old-style base class initializer"
 msgstr "inicializador de clase base de estilo antiguo anacrónico"
 
 #: cp/parser.c:7201
-#, fuzzy
 msgid "keyword `typename' not allowed in this context (a qualified member initializer is implicitly a type)"
-msgstr "no se permite la palabra clave `typename' en este contexto (la clase base implícitamente es un tipo)"
+msgstr "no se permite la palabra clave `typename' en este contexto (un inicializador de miembro calificado implícitamente es un tipo)"
 
 #. Warn that we do not support `export'.
 #: cp/parser.c:7563
@@ -15721,9 +15717,8 @@ msgid "non-template `%D' used as template"
 msgstr "se usa `%D' que no es plantilla como plantilla"
 
 #: cp/parser.c:8107
-#, fuzzy
 msgid "use `%T::template %D' to indicate that it is a template"
-msgstr "(utilice `%T::template %D' para indicar que es una plantilla)"
+msgstr "utilice `%T::template %D' para indicar que es una plantilla"
 
 #: cp/parser.c:9058
 msgid "using `typename' outside of template"
@@ -15757,9 +15752,8 @@ msgid "attributes after parenthesized initializer ignored"
 msgstr "se ignoran los atributos después del inicializador entre paréntesis"
 
 #: cp/parser.c:10540
-#, fuzzy
 msgid "`%T::%D' is not a type"
-msgstr "`%D::%D' no es una plantilla"
+msgstr "`%T::%D' no es un tipo"
 
 #: cp/parser.c:11288
 msgid "file ends in default argument"
