@@ -6782,38 +6782,37 @@ encode_type (type, curtype, format)
 	{
 	  /* Unsigned integer types.  */
 
-	  if (TYPE_MODE (type) == QImode)
+	  type = TYPE_MAIN_VARIANT (type);
+	  if (type == unsigned_type_node)
+	    obstack_1grow (&util_obstack, 'I');
+	  else if (type == long_unsigned_type_node)
+	    obstack_1grow (&util_obstack, 'L');
+	  else if (type == unsigned_char_type_node)
 	    obstack_1grow (&util_obstack, 'C');
-	  else if (TYPE_MODE (type) == HImode)
+	  else if (type == short_unsigned_type_node)
 	    obstack_1grow (&util_obstack, 'S');
-	  else if (TYPE_MODE (type) == SImode)
-	    {
-	      if (type == long_unsigned_type_node)
-		obstack_1grow (&util_obstack, 'L');
-	      else
-		obstack_1grow (&util_obstack, 'I');
-	    }
-	  else if (TYPE_MODE (type) == DImode)
+	  else if (type == long_long_unsigned_type_node)
 	    obstack_1grow (&util_obstack, 'Q');
+	  else
+	    fatal ("attempt to encode unsigned int of unknown type");
 	}
 
       else
 	/* Signed integer types.  */
 	{
-	  if (TYPE_MODE (type) == QImode)
+	  type = TYPE_MAIN_VARIANT (type);
+	  if (type == integer_type_node)
+	    obstack_1grow (&util_obstack, 'i');
+	  else if (type == long_integer_type_node)
+	    obstack_1grow (&util_obstack, 'l');
+	  else if (type == char_type_node || type == signed_char_type_node)
 	    obstack_1grow (&util_obstack, 'c');
-	  else if (TYPE_MODE (type) == HImode)
+	  else if (type == short_integer_type_node)
 	    obstack_1grow (&util_obstack, 's');
-	  else if (TYPE_MODE (type) == SImode)
-	    {
-	      if (type == long_integer_type_node)
-		obstack_1grow (&util_obstack, 'l');
-	      else
-		obstack_1grow (&util_obstack, 'i');
-	    }
-
-	  else if (TYPE_MODE (type) == DImode)
+	  else if (type == long_long_integer_type_node)
 	    obstack_1grow (&util_obstack, 'q');
+	  else
+	    fatal ("attempt to encode signed int of unknown type");
 	}
     }
 
@@ -6858,38 +6857,37 @@ encode_complete_bitfield (int position, tree type, int size)
 	{
 	  /* Unsigned integer types.  */
 
-	  if (TYPE_MODE (type) == QImode)
+	  type = TYPE_MAIN_VARIANT (type);
+	  if (type == unsigned_type_node)
+	    charType = 'I';
+	  else if (type == long_unsigned_type_node)
+	    charType = 'L';
+	  else if (type == unsigned_char_type_node)
 	    charType = 'C';
-	  else if (TYPE_MODE (type) == HImode)
+	  else if (type == short_unsigned_type_node)
 	    charType = 'S';
-	  else if (TYPE_MODE (type) == SImode)
-	    {
-	      if (type == long_unsigned_type_node)
-		charType = 'L';
-	      else
-		charType = 'I';
-	    }
-	  else if (TYPE_MODE (type) == DImode)
+	  else if (type == long_long_unsigned_type_node)
 	    charType = 'Q';
+	  else
+	    fatal ("attempt to encode unsigned int of unknown type");
 	}
 
       else
 	/* Signed integer types.  */
 	{
-	  if (TYPE_MODE (type) == QImode)
+	  type = TYPE_MAIN_VARIANT (type);
+	  if (type == unsigned_type_node)
+	    charType = 'i';
+	  else if (type == long_unsigned_type_node)
+	    charType = 'l';
+	  else if (type == char_type_node || type == signed_char_type_node)
 	    charType = 'c';
-	  else if (TYPE_MODE (type) == HImode)
+	  else if (type == short_unsigned_type_node)
 	    charType = 's';
-	  else if (TYPE_MODE (type) == SImode)
-	    {
-	      if (type == long_integer_type_node)
-		charType = 'l';
-	      else
-		charType = 'i';
-	    }
-
-	  else if (TYPE_MODE (type) == DImode)
+	  else if (type == long_long_unsigned_type_node)
 	    charType = 'q';
+	  else
+	    fatal ("attempt to encode signed int of unknown type");
 	}
     }
 
