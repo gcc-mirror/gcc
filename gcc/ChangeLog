@@ -1,3 +1,8 @@
+2004-07-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (langhooks.o): Do not depend on gt-langhooks.h.
+	(gt-langhooks.h): Remove.
+
 2004-07-06  George Helffrich <george@gly.bris.ac.uk>
 
 	* xcoffout.h (DBX_FINISH_SYMBOL): Fix typo.
