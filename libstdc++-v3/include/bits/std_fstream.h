@@ -244,41 +244,45 @@ namespace std
       typedef basic_filebuf<char_type, traits_type> 	__filebuf_type;
       typedef basic_istream<char_type, traits_type>	__istream_type;
     
-      // Constructors/Destructors:
+    private:
+      __filebuf_type	_M_filebuf;
+
+    public:
+     // Constructors/Destructors:
       basic_ifstream()
-      : __istream_type(new __filebuf_type())
-      { }
+      : __istream_type(NULL), _M_filebuf()
+      { this->init(&_M_filebuf); }
 
       explicit 
       basic_ifstream(const char* __s, ios_base::openmode __mode = ios_base::in)
-      : __istream_type(new __filebuf_type())
-      { this->open(__s, __mode); }
+      : __istream_type(NULL), _M_filebuf()
+      { 
+	this->init(&_M_filebuf); 
+	this->open(__s, __mode); 
+      }
     
       ~basic_ifstream()
-      { 
-	delete _M_streambuf; 
-	_M_streambuf = NULL;
-      }
+      { }
 
       // Members:
       __filebuf_type* 
       rdbuf() const 
-      { return static_cast<__filebuf_type*>(_M_streambuf); }
+      { return const_cast<__filebuf_type*>(&_M_filebuf); }
 
       bool 
-      is_open(void) { return rdbuf()->is_open(); }
+      is_open(void) { return _M_filebuf.is_open(); }
 
       void 
       open(const char* __s, ios_base::openmode __mode = ios_base::in)
       { 
-	if (rdbuf()->open(__s, __mode | ios_base::in) == NULL)
+	if (_M_filebuf.open(__s, __mode | ios_base::in) == NULL)
 	  this->setstate(ios_base::failbit); 
       }
 
       void 
       close(void)
       { 
-	if (!rdbuf()->close())
+	if (!_M_filebuf.close())
 	  this->setstate(ios_base::failbit);	
       }
     };
@@ -300,43 +304,47 @@ namespace std
       typedef basic_filebuf<char_type, traits_type> 	__filebuf_type;
       typedef basic_ostream<char_type, traits_type>	__ostream_type;
       
+    private:
+      __filebuf_type	_M_filebuf;
+
+    public:
       // Constructors:
       basic_ofstream()
-      : __ostream_type(new __filebuf_type())
-      { }
+      : __ostream_type(NULL), _M_filebuf()
+      { this->init(&_M_filebuf); }
       
       explicit 
       basic_ofstream(const char* __s, 
 		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
-      : __ostream_type(new __filebuf_type())
-      { this->open(__s, __mode); }
+      : __ostream_type(NULL), _M_filebuf()
+      { 
+	this->init(&_M_filebuf); 
+	this->open(__s, __mode); 
+      }
 
       ~basic_ofstream()
-      { 
-	delete _M_streambuf; 
-	_M_streambuf = NULL;
-      }
+      { }
 
       // Members:
       __filebuf_type* 
       rdbuf(void) const
-      { return static_cast<__filebuf_type*>(_M_streambuf); }
+      { return const_cast<__filebuf_type*>(&_M_filebuf); }
  
       bool 
-      is_open(void) { return rdbuf()->is_open(); }
+      is_open(void) { return _M_filebuf.is_open(); }
 
       void 
       open(const char* __s, 
 	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
       { 
-	if (!rdbuf()->open(__s, __mode | ios_base::out))
+	if (!_M_filebuf.open(__s, __mode | ios_base::out))
 	  this->setstate(ios_base::failbit); 
       }
 
       void 
       close(void)
       { 
-	if (!rdbuf()->close())
+	if (!_M_filebuf.close())
 	  setstate(ios_base::failbit); 
       }
     };
@@ -359,44 +367,48 @@ namespace std
       typedef basic_ios<char_type, traits_type>		__ios_type;
       typedef basic_iostream<char_type, traits_type>	__iostream_type;
 
+    private:
+      __filebuf_type	_M_filebuf;
+      
+    public:
       // Constructors/destructor:
       basic_fstream()
-      : __iostream_type(new __filebuf_type())
-      { }
+      : __iostream_type(NULL), _M_filebuf()
+      { this->init(&_M_filebuf); }
 
       explicit 
       basic_fstream(const char* __s,
 		    ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __iostream_type(new __filebuf_type())
-      { this->open(__s, __mode); }
-
-      ~basic_fstream()
+      : __iostream_type(NULL), _M_filebuf()
       { 
-	delete _M_streambuf; 
-	_M_streambuf = NULL;
+	this->init(&_M_filebuf); 
+	this->open(__s, __mode); 
       }
+ 
+      ~basic_fstream()
+      { }
     
       // Members:
       __filebuf_type* 
       rdbuf(void) const 
-      { return static_cast<__filebuf_type*>(_M_streambuf); }
+      { return const_cast<__filebuf_type*>(&_M_filebuf); }
 
       bool 
-      is_open(void) { return rdbuf()->is_open(); }
+      is_open(void) { return _M_filebuf.is_open(); }
 
       void 
       open(const char* __s, 
 	   ios_base::openmode __mode = ios_base::in | ios_base::out)
       { 
-	if (!rdbuf()->open(__s, __mode))
-	  setstate (ios_base::failbit); 
+	if (!_M_filebuf.open(__s, __mode))
+	  setstate(ios_base::failbit); 
       }
 
       void 
       close(void)
       { 
-	if (!rdbuf()->close())
-	  setstate (ios_base::failbit); 
+	if (!_M_filebuf.close())
+	  setstate(ios_base::failbit); 
       }
     };
 } // namespace std

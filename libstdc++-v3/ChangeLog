@@ -1,3 +1,19 @@
+2001-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2832
+	* include/bits/basic_ios.tcc: Small tweak.
+	* include/bits/std_fstream.h (ifstream): Add buffer member. Adjust
+	ctors and dtors, and rdbuf settings.
+	(ofstream): Same.
+	(fstream): Same.
+	* include/bits/std_sstream.h: Same, but for stringstream classes.
+	* testsuite/27_io/ostringstream_members.cc: New.
+	* testsuite/27_io/stringstream_members.cc: New.	
+	* testsuite/27_io/fstream_members.cc: New.		
+	* testsuite/27_io/ifstream_members.cc: Add test.
+	* testsuite/27_io/istringstream_members.cc: Add test.
+	* testsuite/27_io/ofstream_members.cc: Add test.
+
 2001-05-24  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/c++config(__NO_MATH_INLINES): Move to...

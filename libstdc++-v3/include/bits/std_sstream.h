@@ -203,37 +203,37 @@ namespace std
       typedef basic_stringbuf<_CharT, _Traits, _Alloc> 	__stringbuf_type;
       typedef basic_istream<char_type, traits_type>	__istream_type;
 
+    private:
+      __stringbuf_type	_M_stringbuf;
+
+    public:
       // Constructors:
       explicit 
       basic_istringstream(ios_base::openmode __mode = ios_base::in)
-      : __istream_type(new __stringbuf_type(__mode | ios_base::in))
-      { }
+      : __istream_type(NULL), _M_stringbuf(__mode | ios_base::in)
+      { this->init(&_M_stringbuf); }
 
       explicit 
       basic_istringstream(const __string_type& __str,
 			  ios_base::openmode __mode = ios_base::in)
-      : __istream_type(new __stringbuf_type(__str, __mode | ios_base::in))
-      { }
+      : __istream_type(NULL), _M_stringbuf(__str, __mode | ios_base::in)
+      { this->init(&_M_stringbuf); }
 
       ~basic_istringstream()
-      { 
-	delete _M_streambuf; 
-	_M_streambuf = NULL;
-      }
+      { }
 
       // Members:
       __stringbuf_type* 
       rdbuf() const
-      { return static_cast<__stringbuf_type*>(_M_streambuf); }
+      { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
       __string_type
       str() const
-      { return this->rdbuf()->str(); }
+      { return _M_stringbuf.str(); }
   
       void 
       str(const __string_type& __s)
-      { rdbuf()->str(__s); }
-
+      { _M_stringbuf.str(__s); }
     };
 
 
@@ -254,37 +254,37 @@ namespace std
       typedef basic_stringbuf<_CharT, _Traits, _Alloc> 	__stringbuf_type;
       typedef basic_ostream<char_type, traits_type>	__ostream_type;
 
-      // Constructors/destructor:
+    private:
+      __stringbuf_type	_M_stringbuf;
+
+    public:
+     // Constructors/destructor:
       explicit 
       basic_ostringstream(ios_base::openmode __mode = ios_base::out)
-      : __ostream_type(new __stringbuf_type(__mode | ios_base::out))
-      { }
+      : __ostream_type(NULL), _M_stringbuf(__mode | ios_base::out)
+      { this->init(&_M_stringbuf); }
 
       explicit 
       basic_ostringstream(const __string_type __str,
 			  ios_base::openmode __mode = ios_base::out)
-      : __ostream_type(new __stringbuf_type(__str, __mode | ios_base::out))
-      { }
+      : __ostream_type(NULL), _M_stringbuf(__str, __mode | ios_base::out)
+      { this->init(&_M_stringbuf); }
 
       ~basic_ostringstream()
-      { 
-	delete _M_streambuf; 
-	_M_streambuf = NULL;
-      }
+      { }
 
       // Members:
       __stringbuf_type* 
       rdbuf() const
-      { return static_cast<__stringbuf_type*>(_M_streambuf); }
+      { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
       __string_type
       str() const
-      { return this->rdbuf()->str(); }
+      { return _M_stringbuf.str(); }
  
       void 
       str(const __string_type& __s)
-      { rdbuf()->str(__s); }
-
+      { _M_stringbuf.str(__s); }
     };
   
   
@@ -304,41 +304,39 @@ namespace std
       typedef basic_string<_CharT, _Traits, _Alloc> 	__string_type;
       typedef basic_stringbuf<_CharT, _Traits, _Alloc> 	__stringbuf_type;
       typedef basic_iostream<char_type, traits_type>	__iostream_type;
-     
+
+    private:
+      __stringbuf_type	_M_stringbuf;
+
+    public:
       // Constructors/destructors
       explicit 
-      basic_stringstream(ios_base::openmode __mode = 
-			 ios_base::out | ios_base::in)
-      : __iostream_type(new __stringbuf_type(__mode))
-      { }
+      basic_stringstream(ios_base::openmode __m = ios_base::out | ios_base::in)
+      : __iostream_type(NULL), _M_stringbuf(__m)
+      { this->init(&_M_stringbuf); }
 
       explicit 
       basic_stringstream(const __string_type& __str,
-			 ios_base::openmode __mode = 
-			 ios_base::out | ios_base::in)
-      : __iostream_type(new __stringbuf_type(__str, __mode))
-      { }
+			 ios_base::openmode __m = ios_base::out | ios_base::in)
+      : __iostream_type(NULL), _M_stringbuf(__str, __m)
+      { this->init(&_M_stringbuf); }
 
       ~basic_stringstream()
-      { 
-	delete _M_streambuf; 
-	_M_streambuf = NULL;
-      }
+      { }
 
       // Members:
       __stringbuf_type* 
       rdbuf() const
-      { return static_cast<__stringbuf_type*>(_M_streambuf); }
+      { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
       __string_type
       str() const
-      { return rdbuf()->str(); }
+      { return _M_stringbuf.str(); }
 
       void 
       str(const __string_type& __s)
-      { rdbuf()->str(__s); }
+      { _M_stringbuf.str(__s); }
     };
-
 } // namespace std
 
 
@@ -350,5 +348,5 @@ namespace std
 #endif
 #endif
 
-#endif	/* _CPP_SSTREAM */
+#endif	// _CPP_SSTREAM
 

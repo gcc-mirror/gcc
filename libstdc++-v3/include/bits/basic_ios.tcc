@@ -132,6 +132,6 @@ namespace std {
 
 } // namespace std
 
-#endif /* _CPP_BITS_BASICIOS_TCC */
+#endif // _CPP_BITS_BASICIOS_TCC
 
 
