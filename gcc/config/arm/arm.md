@@ -454,8 +454,8 @@
   "
   if (TARGET_ARM && GET_CODE (operands[2]) == CONST_INT)
     {
-      arm_split_constant (PLUS, SImode, INTVAL (operands[2]), operands[0],
-			  operands[1],
+      arm_split_constant (PLUS, SImode, NULL_RTX,
+	                  INTVAL (operands[2]), operands[0], operands[1],
 			  (no_new_pseudos ? 0 : preserve_subexpressions_p ()));
       DONE;
     }
@@ -493,7 +493,8 @@
         || const_ok_for_arm (-INTVAL (operands[2])))"
   [(clobber (const_int 0))]
   "
-  arm_split_constant (PLUS, SImode, INTVAL (operands[2]), operands[0],
+  arm_split_constant (PLUS, SImode, curr_insn,
+	              INTVAL (operands[2]), operands[0],
 		      operands[1], 0);
   DONE;
   "
@@ -940,7 +941,8 @@
     {
       if (TARGET_ARM)
         {
-          arm_split_constant (MINUS, SImode, INTVAL (operands[1]), operands[0],
+          arm_split_constant (MINUS, SImode, NULL_RTX,
+	                      INTVAL (operands[1]), operands[0],
 	  		      operands[2],
 			      (no_new_pseudos ? 0
 			       :  preserve_subexpressions_p ()));
@@ -974,8 +976,8 @@
    && !const_ok_for_arm (INTVAL (operands[1]))"
   [(clobber (const_int 0))]
   "
-  arm_split_constant (MINUS, SImode, INTVAL (operands[1]), operands[0],
-		      operands[2], 0);
+  arm_split_constant (MINUS, SImode, curr_insn,
+                      INTVAL (operands[1]), operands[0], operands[2], 0);
   DONE;
   "
   [(set_attr "length" "4,16")
@@ -1516,7 +1518,8 @@
     {
       if (GET_CODE (operands[2]) == CONST_INT)
         {
-          arm_split_constant (AND, SImode, INTVAL (operands[2]), operands[0],
+          arm_split_constant (AND, SImode, NULL_RTX,
+	                      INTVAL (operands[2]), operands[0],
 			      operands[1],
 			      (no_new_pseudos
 			       ? 0 : preserve_subexpressions_p ()));
@@ -1583,8 +1586,8 @@
 	|| const_ok_for_arm (~INTVAL (operands[2])))"
   [(clobber (const_int 0))]
   "
-  arm_split_constant  (AND, SImode, INTVAL (operands[2]), operands[0],
-		       operands[1], 0);
+  arm_split_constant  (AND, SImode, curr_insn, 
+	               INTVAL (operands[2]), operands[0], operands[1], 0);
   DONE;
   "
   [(set_attr "length" "4,4,16")
@@ -2069,8 +2072,8 @@
     {
       if (TARGET_ARM)
         {
-          arm_split_constant (IOR, SImode, INTVAL (operands[2]), operands[0],
-		 	      operands[1],
+          arm_split_constant (IOR, SImode, NULL_RTX,
+	                      INTVAL (operands[2]), operands[0], operands[1],
 			      (no_new_pseudos
 			      ? 0 : preserve_subexpressions_p ()));
           DONE;
@@ -2094,8 +2097,8 @@
    && !const_ok_for_arm (INTVAL (operands[2]))"
   [(clobber (const_int 0))]
   "
-  arm_split_constant (IOR, SImode, INTVAL (operands[2]), operands[0],
-		      operands[1], 0);
+  arm_split_constant (IOR, SImode, curr_insn, 
+                      INTVAL (operands[2]), operands[0], operands[1], 0);
   DONE;
   "
   [(set_attr "length" "4,16")
@@ -4146,8 +4149,8 @@
           && !(const_ok_for_arm (INTVAL (operands[1]))
                || const_ok_for_arm (~INTVAL (operands[1]))))
         {
-           arm_split_constant (SET, SImode, INTVAL (operands[1]), operands[0],
-		    	      NULL_RTX,
+           arm_split_constant (SET, SImode, NULL_RTX,
+	                       INTVAL (operands[1]), operands[0], NULL_RTX,
 			      (no_new_pseudos ? 0
 			       : preserve_subexpressions_p ()));
           DONE;
@@ -4197,8 +4200,8 @@
         || const_ok_for_arm (~INTVAL (operands[1]))))"
   [(clobber (const_int 0))]
   "
-  arm_split_constant (SET, SImode, INTVAL (operands[1]), operands[0],
-		      NULL_RTX, 0);
+  arm_split_constant (SET, SImode, NULL_RTX, 
+                      INTVAL (operands[1]), operands[0], NULL_RTX, 0);
   DONE;
   "
 )

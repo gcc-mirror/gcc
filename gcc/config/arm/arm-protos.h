@@ -46,8 +46,8 @@ extern void arm_encode_call_attribute (tree, int);
 #ifdef RTX_CODE
 extern int arm_hard_regno_mode_ok (unsigned int, enum machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
-extern int arm_split_constant (RTX_CODE, enum machine_mode, HOST_WIDE_INT, rtx,
-			       rtx, int);
+extern int arm_split_constant (RTX_CODE, enum machine_mode, rtx,
+			       HOST_WIDE_INT, rtx, rtx, int);
 extern RTX_CODE arm_canonicalize_comparison (RTX_CODE, rtx *);
 extern int legitimate_pic_operand_p (rtx);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);

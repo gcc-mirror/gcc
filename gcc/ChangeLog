@@ -1,3 +1,20 @@
+2004-04-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* genemit.c (gen_split): Change prototype of generated code.
+	* genrecog.c (write_action): Adjust prototype for and calls to
+	gen_split_*.
+	* gensupport.c (struct queue_elem): Add split field.
+	(queue_pattern): Return a value.  Clear the split field.
+	(process_rtx): Maintain an association between an insn and the
+	split generated from it for a define_insn_and_split.
+	(process_one_cond_exec): Generate a new split for a
+	define_insn_and_split.
+	* config/arm/arm-protos.h (arm_split_constant): Add insn
+	parameter.
+	(emit_constant_insn): New function.
+	(arm_gen_constant): Use it.
+	* config/arm/arm.md: Adjust calls to arm_split_constant.
+
 2004-04-02  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c: Add overall comment.

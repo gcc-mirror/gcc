@@ -599,8 +599,9 @@ gen_split (rtx split)
     }
   else
     {
-      printf ("extern rtx gen_split_%d (rtx *);\n", insn_code_number);
-      printf ("rtx\ngen_%s_%d (rtx *operands%s)\n", name, insn_code_number, unused);
+      printf ("extern rtx gen_split_%d (rtx, rtx *);\n", insn_code_number);
+      printf ("rtx\ngen_split_%d (rtx curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n", 
+	      insn_code_number, unused);
     }
   printf ("{\n");
 
