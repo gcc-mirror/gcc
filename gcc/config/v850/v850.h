@@ -387,7 +387,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
-  (MODE1 == MODE2 || GET_MODE_SIZE (MODE1) <= 4 && GET_MODE_SIZE (MODE2) <= 4)
+  (MODE1 == MODE2 || (GET_MODE_SIZE (MODE1) <= 4 && GET_MODE_SIZE (MODE2) <= 4))
 
 
 /* Define the classes of registers for register constraints in the
@@ -426,10 +426,11 @@ enum reg_class
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS  			\
-{  0x00000000,		/* No regs      */	\
-   0xffffffff,		/* GENERAL_REGS */    	\
-   0xffffffff,		/* ALL_REGS 	*/	\
+#define REG_CLASS_CONTENTS  		\
+{					\
+  { 0x00000000 }, /* NO_REGS      */	\
+  { 0xffffffff }, /* GENERAL_REGS */   	\
+  { 0xffffffff }, /* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
@@ -886,7 +887,7 @@ extern int current_function_anonymous_args;
    register class that does not include r0 on the output.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
- ((C) == 'Q'   ? ep_memory_operand (OP, GET_MODE (OP))			\
+ ((C) == 'Q'   ? ep_memory_operand (OP, GET_MODE (OP), 0)			\
   : (C) == 'R' ? special_symbolref_operand (OP, VOIDmode)		\
   : (C) == 'S' ? (GET_CODE (OP) == SYMBOL_REF && ! ZDA_NAME_P (XSTR (OP, 0))) \
   : (C) == 'T' ? 0							\
@@ -1412,7 +1413,7 @@ do { char dstr[30];					\
 	   (TARGET_BIG_SWITCH ? ".long" : ".short"),			\
 	   VALUE, REL)
 
-#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
+#define ASM_OUTPUT_ALIGN(FILE, LOG)	\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
@@ -1573,12 +1574,14 @@ enum GHS_section_kind
 
 #define EP_REGNUM 30	/* ep register number */
 
-#define ENCODE_SECTION_INFO(DECL)					\
-do {									\
-  if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))			\
-      && TREE_CODE (DECL) == VAR_DECL)					\
-    v850_encode_data_area (DECL);					\
-} while (0)
+#define ENCODE_SECTION_INFO(DECL)			\
+  do							\
+    {							\
+      if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
+	  && TREE_CODE (DECL) == VAR_DECL)		\
+	v850_encode_data_area (DECL);			\
+    }							\
+  while (0)
 
 #define ZDA_NAME_FLAG_CHAR '@'
 #define TDA_NAME_FLAG_CHAR '%'
@@ -1617,54 +1620,4 @@ do {									\
 { "pattern_is_ok_for_epilogue",	{ PARALLEL }},				\
 { "register_is_ok_for_epilogue",{ REG }},				\
 { "not_power_of_two_operand",	{ CONST_INT }},
-
-  /* Note, due to dependency and search path conflicts, prototypes
-     involving the FILE, rtx or tree types cannot be included here.
-     They are included at the start of v850.c  */
   
-extern void   asm_file_start                ();
-extern void   print_operand                 ();
-extern void   print_operand_address         ();
-extern int    function_arg_partial_nregs    ();
-extern int    const_costs                   ();
-extern char * output_move_double            ();
-extern char * output_move_single            ();
-extern int    ep_memory_operand             ();
-extern int    reg_or_0_operand              ();
-extern int    reg_or_int5_operand           ();
-extern int    call_address_operand          ();
-extern int    movsi_source_operand          ();
-extern int    power_of_two_operand          ();
-extern int    not_power_of_two_operand      ();
-extern int    special_symbolref_operand     ();
-extern void   v850_reorg                    ();
-extern void   notice_update_cc              ();
-extern int    v850_valid_machine_decl_attribute ();
-extern int    v850_interrupt_function_p     ();
-extern int    pattern_is_ok_for_prologue    ();
-extern int    pattern_is_ok_for_epilogue    ();
-extern int    register_is_ok_for_epilogue   ();
-extern char * construct_save_jarl           ();
-extern char * construct_restore_jr          ();
-
-extern void   override_options              PROTO ((void));
-extern int    compute_register_save_size    PROTO ((long *));
-extern int    compute_frame_size            PROTO ((int, long *));
-extern void   expand_prologue               PROTO ((void));
-extern void   expand_epilogue               PROTO ((void));
-
-extern void   v850_output_aligned_bss       ();
-extern void   v850_output_common            ();
-extern void   v850_output_local             ();
-extern void   sdata_section                 PROTO ((void));
-extern void   rosdata_section               PROTO ((void));
-extern void   sbss_section                  PROTO ((void));
-extern void   tdata_section                 PROTO ((void));
-extern void   zdata_section                 PROTO ((void));
-extern void   rozdata_section               PROTO ((void));
-extern void   zbss_section                  PROTO ((void));
-extern int    v850_handle_pragma            PROTO ((int (*)(void), void (*)(int), char *));
-extern void   v850_encode_data_area         ();
-extern void   v850_set_default_decl_attr    ();
-extern v850_data_area v850_get_data_area    ();
-extern struct rtx_def *v850_va_arg	    ();

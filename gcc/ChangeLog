@@ -1,3 +1,11 @@
+Mon Nov  8 15:38:41 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/v850/v850-protos.h: New file: Prototypes for functions
+	defined in v850.c
+	* config/v850/v850.h: Move prototypes to v850-protos.h
+	* config/v850/v850.c: Move prototypes to v850-protos.h
+	* config/v850/v850.md: Fix compile time warnings.
+
 Mon Nov  8 07:25:37 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (get_containing_scope): Declare it.
