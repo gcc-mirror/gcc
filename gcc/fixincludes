@@ -32,7 +32,7 @@ PWDCMD=pwd
 case "`pwd`" in
 //*)
 	# On an Apollo, discard everything before `/usr'.
-	PWDCMD="(pwd) | sed -e 's,.*/usr/,/usr/,'"
+	PWDCMD="eval pwd | sed -e 's,.*/usr/,/usr/,'"
 	;;
 esac
 
