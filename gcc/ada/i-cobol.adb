@@ -632,6 +632,10 @@ package body Interfaces.COBOL is
       return   Boolean
    is
    begin
+      if Item'Length = 0 then
+         return False;
+      end if;
+
       --  All character positions except first and last must be Digits.
       --  This is true for all the formats.
 
