@@ -1,5 +1,5 @@
 /* stc.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -9195,18 +9195,13 @@ ffestc_R810 (ffesttCaseList cases, ffelexToken name)
 	      ffebad_finish ();
 	      continue;
 	    }
-
 	  if (((caseobj->expr1 != NULL)
 	       && ((ffeinfo_basictype (ffebld_info (caseobj->expr1))
-		    != s->type)
-		   || (ffeinfo_kindtype (ffebld_info (caseobj->expr1))
-		       != s->kindtype)))
+		    != s->type)))
 	      || ((caseobj->range)
 		  && (caseobj->expr2 != NULL)
 		  && ((ffeinfo_basictype (ffebld_info (caseobj->expr2))
-		       != s->type)
-		      || (ffeinfo_kindtype (ffebld_info (caseobj->expr2))
-			  != s->kindtype))))
+		       != s->type))))
 	    {
 	      ffebad_start (FFEBAD_CASE_TYPE_DISAGREE);
 	      ffebad_here (0, ffelex_token_where_line (caseobj->t),
