@@ -1,3 +1,8 @@
+2004-10-21  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/ResourceBundle.java (tryBundle): Also ignore
+	ClassCastException.
+
 2004-10-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* configure.ac (SIGNAL_HANDLER): Set to include/sh-signal.h
