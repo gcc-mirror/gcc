@@ -60,7 +60,7 @@ do {									\
 } while (0);
 
 #undef ASM_SPEC
-#define ASM_SPEC "-u %{maix64:-a64 -mppc64} %(asm_cpu)"
+#define ASM_SPEC "-u %{maix64:-a64 %{!mcpu*:-mppc64}} %(asm_cpu)"
 
 /* Common ASM definitions used by ASM_SPEC amongst the various targets
    for handling -mcpu=xxx switches.  */
@@ -69,16 +69,16 @@ do {									\
 "%{!mcpu*: %{!maix64: \
   %{mpowerpc64: -mppc64} \
   %{!mpower64: %(asm_default)}}} \
-%{mcpu=power3: -m604} \
-%{mcpu=power4: -m604} \
+%{mcpu=power3: -m620} \
+%{mcpu=power4: -m620} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rs64a: -mppc} \
 %{mcpu=603: -m603} \
 %{mcpu=603e: -m603} \
 %{mcpu=604: -m604} \
 %{mcpu=604e: -m604} \
-%{mcpu=620: -mppc} \
-%{mcpu=630: -m604}"
+%{mcpu=620: -m620} \
+%{mcpu=630: -m620}"
 
 #undef	ASM_DEFAULT_SPEC
 #define ASM_DEFAULT_SPEC "-mppc"
