@@ -1,3 +1,7 @@
+2000-09-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/wtr-int-type-1.c: Fix for 64-bit platforms.
+
 2000-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/crash57.C: New test.
