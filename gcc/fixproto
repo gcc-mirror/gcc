@@ -34,11 +34,11 @@
 # STRATEGY
 #       Each include file is fed through cpp, and the scan-decls program
 #	parses it, and emits any found function declarations.
-#	The patch-header program analyzes the scan-decls output,
+#	The fix-header program analyzes the scan-decls output,
 #	together with the original include file, and writes a "fixed"
 #	include file, if needed.
 #
-#	The comment at the beginning of patch-header.c lists specifically
+#	The comment at the beginning of fix-header.c lists specifically
 #	what kind of changes are made.
 #
 # NOTE
@@ -297,7 +297,7 @@ for code in ALL STD ; do
 	  done
 	  if ${CPP} -D__STDC__ -D__cplusplus -D_POSIX_SOURCE $include_path fixtmp.c >fixtmp.i 2>/dev/null
 	  then
-	   $original_dir/patch-header $rel_source_file $abs_source_file $abs_target_file "$required_list" <fixtmp.i
+	   $original_dir/fix-header $rel_source_file $abs_source_file $abs_target_file "$required_list" <fixtmp.i
 	  else
 	    echo "${progname}: cpp could not parse ${abs_source_file} (ignored)"
 	  fi
@@ -336,7 +336,7 @@ do
 #define ${rel_source_ident}
 #endif
 EOF
-    $original_dir/patch-header $rel_source_file tmp.h $abs_target_dir/$rel_source_file "$required_list" </dev/null
+    $original_dir/fix-header $rel_source_file tmp.h $abs_target_dir/$rel_source_file "$required_list" </dev/null
     rm tmp.h
   fi
 done
