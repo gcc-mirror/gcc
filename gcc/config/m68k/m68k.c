@@ -53,6 +53,9 @@ static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
 static void m68k_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void m68k_output_function_epilogue (FILE *, HOST_WIDE_INT);
+#ifdef M68K_TARGET_COFF
+static void m68k_coff_asm_named_section (const char *, unsigned int);
+#endif /* M68K_TARGET_COFF */
 #ifdef HPUX_ASM
 static void m68k_hp320_internal_label (FILE *, const char *, unsigned long);
 static void m68k_hp320_file_start (void);
@@ -3341,6 +3344,25 @@ output_xorsi3 (rtx *operands)
     }
   return "eor%.l %2,%0";
 }
+
+#ifdef M68K_TARGET_COFF
+
+/* Output assembly to switch to section NAME with attribute FLAGS.  */
+
+static void
+m68k_coff_asm_named_section (const char *name, unsigned int flags)
+{
+  char flagchar;
+
+  if (flags & SECTION_WRITE)
+    flagchar = 'd';
+  else
+    flagchar = 'x';
+
+  fprintf (asm_out_file, "\t.section\t%s,\"%c\"\n", name, flagchar);
+}
+
+#endif /* M68K_TARGET_COFF */
 
 #ifdef HPUX_ASM
 static void

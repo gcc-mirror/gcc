@@ -22,6 +22,10 @@ Boston, MA 02111-1307, USA.  */
 /* This file is included after m68k.h by CPU COFF specific files.  It
    is not a complete target itself.  */
 
+/* Used in m68k.c to include required support code.  */
+
+#define M68K_TARGET_COFF 1
+
 /* Generate sdb debugging information.  */
 
 #define SDB_DEBUGGING_INFO 1
