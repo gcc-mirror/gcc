@@ -1102,6 +1102,9 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
    This is 1 until after the rtl generation pass.  */
 extern int rtx_equal_function_value_matters;
 
+/* Nonzero when we are generating CONCATs.  */
+extern int generating_concat_p;
+
 /* Generally useful functions.  */
 
 /* The following functions accept a wide integer argument.  Rather than

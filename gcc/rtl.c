@@ -578,6 +578,9 @@ shallow_copy_rtx (orig)
 
 /* This is 1 until after the rtl generation pass.  */
 int rtx_equal_function_value_matters;
+
+/* Nonzero when we are generating CONCATs.  */
+int generating_concat_p;
 
 /* Return 1 if X and Y are identical-looking rtx's.
    This is the Lisp function EQUAL for rtx arguments.  */

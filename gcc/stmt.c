@@ -1330,6 +1330,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
     = (enum machine_mode *) alloca (noutputs * sizeof (enum machine_mode));
   /* The insn we have emitted.  */
   rtx insn;
+  int old_generating_concat_p = generating_concat_p;
 
   /* An ASM with no outputs needs to be treated as volatile, for now.  */
   if (noutputs == 0)
@@ -1537,6 +1538,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 Make the asm insn write into that, then our caller will copy it to
 	 the real output operand.  Likewise for promoted variables.  */
 
+      generating_concat_p = 0;
+
       real_output_rtx[i] = NULL_RTX;
       if ((TREE_CODE (val) == INDIRECT_REF
 	   && allows_mem)
@@ -1556,7 +1559,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
 	  if (! allows_reg && GET_CODE (output_rtx[i]) != MEM)
 	    error ("output number %d not directly addressable", i);
-	  if (! allows_mem && GET_CODE (output_rtx[i]) == MEM)
+	  if ((! allows_mem && GET_CODE (output_rtx[i]) == MEM)
+	      || GET_CODE (output_rtx[i]) == CONCAT)
 	    {
     	      real_output_rtx[i] = protect_from_queue (output_rtx[i], 1);
 	      output_rtx[i] = gen_reg_rtx (GET_MODE (output_rtx[i]));
@@ -1569,6 +1573,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  output_rtx[i] = assign_temp (type, 0, 0, 1);
 	  TREE_VALUE (tail) = make_tree (type, output_rtx[i]);
 	}
+
+      generating_concat_p = old_generating_concat_p;
 
       if (is_inout)
 	{
@@ -1727,6 +1733,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       op = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
 
+      /* Never pass a CONCAT to an ASM.  */
+      generating_concat_p = 0;
+      if (GET_CODE (op) == CONCAT)
+	op = force_reg (GET_MODE (op), op);
+
       if (asm_operand_ok (op, constraint) <= 0)
 	{
 	  if (allows_reg)
@@ -1759,6 +1770,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	       not satisfied.  */
 	    warning ("asm operand %d probably doesn't match constraints", i);
 	}
+      generating_concat_p = old_generating_concat_p;
       XVECEXP (body, 3, i) = op;
 
       XVECEXP (body, 4, i)      /* constraints */
@@ -1769,6 +1781,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   /* Protect all the operands from the queue now that they have all been
      evaluated.  */
+
+  generating_concat_p = 0;
 
   for (i = 0; i < ninputs - ninout; i++)
     XVECEXP (body, 3, i) = protect_from_queue (XVECEXP (body, 3, i), 0);
@@ -1786,6 +1800,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       XVECEXP (body, 4, ninputs - ninout + i)      /* constraints */
 	= gen_rtx_ASM_INPUT (inout_mode[i], digit_strings[j]);
     }
+
+  generating_concat_p = old_generating_concat_p;
 
   /* Now, for each output, construct an rtx
      (set OUTPUT (asm_operands INSN OUTPUTNUMBER OUTPUTCONSTRAINT
