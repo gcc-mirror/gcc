@@ -548,7 +548,6 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	    {
 	      if (!TARGET_COLDFIRE)
 		{
-		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 		  asm_fprintf (stream, "\tsubq.w %I%wd,%Rsp\n", fsize_with_regs);
 #else
@@ -557,7 +556,6 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 		}
 	      else
 		{
-		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 		  asm_fprintf (stream, "\tsubq.l %I%wd,%Rsp\n", fsize_with_regs);
 #else
@@ -569,7 +567,6 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	    {
 	      /* On the CPU32 it is faster to use two subqw instructions to
 		 subtract a small integer (8 < N <= 16) to a register.  */
-	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	      asm_fprintf (stream,
 			   "\tsubq.w %I8,%Rsp\n\tsubq.w %I%wd,%Rsp\n",
@@ -582,7 +579,6 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	  else if (TARGET_68040)
 	    {
 	      /* Adding negative number is faster on the 68040.  */
-	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tadd.w %I%wd,%Rsp\n", -fsize_with_regs);
 #else

@@ -1,3 +1,8 @@
+2003-10-21  Gunther Nikl  <gni@gecko.de>
+
+	* config/m68k/m68k.c (m68k_output_function_prologue): Remove
+	obsolete comments.
+
 2003-10-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in: Get parsedir and docobjdir from configure.
