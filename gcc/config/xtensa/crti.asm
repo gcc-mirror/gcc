@@ -29,16 +29,28 @@
 # .init sections.  Users may put any desired instructions in those
 # sections.
 
+#include "xtensa-config.h"
+
 	.section .init
 	.globl _init
 	.type _init,@function
 	.align	4
 _init:
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	entry	sp, 64
+#else
+	addi	sp, sp, -32
+	s32i	a0, sp, 0
+#endif
 
 	.section .fini
 	.globl _fini
 	.type _fini,@function
 	.align	4
 _fini:
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	entry	sp, 64
+#else
+	addi	sp, sp, -32
+	s32i	a0, sp, 0
+#endif

@@ -75,19 +75,41 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 	.endm
 
+# Define macros for function entry and return, supporting either the
+# standard register windowed ABI or the non-windowed call0 ABI.  These
+# macros do not allocate any extra stack space, so they only work for
+# leaf functions that do not need to spill anything to the stack.
+
+	.macro abi_entry reg, size
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
+	entry \reg, \size
+#else
+	/* do nothing */
+#endif
+	.endm
+
+	.macro abi_return
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
+	retw
+#else
+	ret
+#endif
+	.endm
+
+
 #ifdef L_mulsi3
 	.align	4
 	.global	__mulsi3
 	.type	__mulsi3,@function
 __mulsi3:
-	entry	sp, 32
+	abi_entry sp, 32
 
 #if XCHAL_HAVE_MUL16
 	or	a4, a2, a3
 	srai	a4, a4, 16
 	bnez	a4, .LMUL16
 	mul16u	a2, a2, a3
-	retw
+	abi_return
 .LMUL16:
 	srai	a4, a2, 16
 	srai	a5, a3, 16
@@ -143,7 +165,7 @@ __mulsi3:
 	bgeui	a3, 16, .Lmult_main_loop
 	neg	a3, a2
 	movltz	a2, a3, a5
-	retw
+	abi_return
 
 	.align	4
 .Lmult_main_loop:
@@ -173,7 +195,7 @@ __mulsi3:
 
 #endif /* !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MAC16 */
 
-	retw
+	abi_return
 	.size	__mulsi3,.-__mulsi3
 
 #endif /* L_mulsi3 */
@@ -242,7 +264,7 @@ __nsau_data:
 	.global	__udivsi3
 	.type	__udivsi3,@function
 __udivsi3:
-	entry	sp, 32
+	abi_entry sp, 32
 	bltui	a3, 2, .Lle_one	# check if the divisor <= 1
 
 	mov	a6, a2		# keep dividend in a6
@@ -275,7 +297,7 @@ __udivsi3:
 	bltu	a6, a3, .Lreturn
 	addi	a2, a2, 1	# increment quotient if dividend >= divisor
 .Lreturn:
-	retw
+	abi_return
 
 .Lspecial:
 	# return dividend >= divisor
@@ -283,14 +305,14 @@ __udivsi3:
 	bltu	a6, a3, .Lreturn2
 	movi	a2, 1
 .Lreturn2:
-	retw
+	abi_return
 
 .Lle_one:
 	beqz	a3, .Lerror	# if divisor == 1, return the dividend
-	retw
+	abi_return
 .Lerror:
 	movi	a2, 0		# just return 0; could throw an exception
-	retw
+	abi_return
 	.size	__udivsi3,.-__udivsi3
 
 #endif /* L_udivsi3 */
@@ -301,7 +323,7 @@ __udivsi3:
 	.global	__divsi3
 	.type	__divsi3,@function
 __divsi3:
-	entry	sp, 32
+	abi_entry sp, 32
 	xor	a7, a2, a3	# sign = dividend ^ divisor
 	do_abs	a6, a2, a4	# udividend = abs(dividend)
 	do_abs	a3, a3, a4	# udivisor = abs(divisor)
@@ -337,7 +359,7 @@ __divsi3:
 .Lreturn:
 	neg	a5, a2
 	movltz	a2, a5, a7	# return (sign < 0) ? -quotient : quotient
-	retw
+	abi_return
 
 .Lspecial:
 	movi	a2, 0
@@ -346,16 +368,16 @@ __divsi3:
 	movi	a4, -1
 	movltz	a2, a4, a7	# else return (sign < 0) ? -1 :	 1 
 .Lreturn2:
-	retw
+	abi_return
 
 .Lle_one:
 	beqz	a3, .Lerror
 	neg	a2, a6		# if udivisor == 1, then return...
 	movgez	a2, a6, a7	# (sign < 0) ? -udividend : udividend
-	retw
+	abi_return
 .Lerror:
 	movi	a2, 0		# just return 0; could throw an exception
-	retw
+	abi_return
 	.size	__divsi3,.-__divsi3
 
 #endif /* L_divsi3 */
@@ -366,7 +388,7 @@ __divsi3:
 	.global	__umodsi3
 	.type	__umodsi3,@function
 __umodsi3:
-	entry	sp, 32
+	abi_entry sp, 32
 	bltui	a3, 2, .Lle_one	# check if the divisor is <= 1
 
 	do_nsau	a5, a2, a6, a7	# dividend_shift = nsau(dividend)
@@ -395,19 +417,19 @@ __umodsi3:
 	bltu	a2, a3, .Lreturn
 	sub	a2, a2, a3	# subtract once more if dividend >= divisor
 .Lreturn:
-	retw
+	abi_return
 
 .Lspecial:
 	bltu	a2, a3, .Lreturn2
 	sub	a2, a2, a3	# subtract once if dividend >= divisor
 .Lreturn2:
-	retw
+	abi_return
 
 .Lle_one:
 	# the divisor is either 0 or 1, so just return 0.
 	# someday we may want to throw an exception if the divisor is 0.
 	movi	a2, 0
-	retw
+	abi_return
 	.size	__umodsi3,.-__umodsi3
 
 #endif /* L_umodsi3 */
@@ -418,7 +440,7 @@ __umodsi3:
 	.global	__modsi3
 	.type	__modsi3,@function
 __modsi3:
-	entry	sp, 32
+	abi_entry sp, 32
 	mov	a7, a2		# save original (signed) dividend
 	do_abs	a2, a2, a4	# udividend = abs(dividend)
 	do_abs	a3, a3, a4	# udivisor = abs(divisor)
@@ -452,7 +474,7 @@ __modsi3:
 	bgez	a7, .Lpositive
 	neg	a2, a2		# if (dividend < 0), return -udividend
 .Lpositive:	
-	retw
+	abi_return
 
 .Lspecial:
 	bltu	a2, a3, .Lreturn2
@@ -461,13 +483,13 @@ __modsi3:
 	bgez	a7, .Lpositive2
 	neg	a2, a2		# if (dividend < 0), return -udividend
 .Lpositive2:	
-	retw
+	abi_return
 
 .Lle_one:
 	# udivisor is either 0 or 1, so just return 0.
 	# someday we may want to throw an exception if udivisor is 0.
 	movi	a2, 0
-	retw
+	abi_return
 	.size	__modsi3,.-__modsi3
 
 #endif /* L_modsi3 */
