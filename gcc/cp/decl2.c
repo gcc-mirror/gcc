@@ -3248,8 +3248,6 @@ do_static_destruction (decl, sentry, priority)
   rtx new_insns;
   priority_info pi;
 
-  /* FIXME: We need destructions to be run in reverse order!  */
-
   /* If we don't need a destructor, there's nothing to do.  */
   if (!TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
     return;
@@ -3525,13 +3523,13 @@ finish_file ()
     {
       reconsider = 0;
 
-    /* If there are templates that we've put off instantiating, do
-       them now.  */
+      /* If there are templates that we've put off instantiating, do
+	 them now.  */
       instantiate_pending_templates ();
 
       /* Write out signature-tables and virtual tables as required.
-       Note that writing out the virtual table for a template class
-       may cause the instantiation of members of that class.  */
+	 Note that writing out the virtual table for a template class
+	 may cause the instantiation of members of that class.  */
       if (flag_handle_signatures
 	  && walk_globals (sigtable_decl_p,
 			   finish_sigtable_vardecl,
