@@ -1,3 +1,7 @@
+1999-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (dequeue_and_dump): Dump TARGET_EXPRs.
+
 1999-08-25  Nathan Sidwell  <nathan@acm.org>
 
 	* decl2.c (handle_class_head): Be graceful about additional
