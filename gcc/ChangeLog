@@ -1,3 +1,7 @@
+2001-01-01  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.c (debug_loops): New.
+
 2000-12-31  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/linux-gas.h (CLEAR_INSN_CACHE): Add missing asm
