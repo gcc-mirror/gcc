@@ -5720,26 +5720,16 @@ beq\t%2,%.,1b\;\
 ;; acts like a GOT version number.  By making the register call-clobbered,
 ;; we tell the target-independent code that the address could be changed
 ;; by any call insn.
-(define_insn "load_callsi"
-  [(set (match_operand:SI 0 "register_operand" "=c")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
-		    (match_operand:SI 2 "immediate_operand" "")
-		    (reg:SI FAKE_CALL_REGNO)]
-		   UNSPEC_LOAD_CALL))]
+(define_insn "load_call<mode>"
+  [(set (match_operand:P 0 "register_operand" "=c")
+	(unspec:P [(match_operand:P 1 "register_operand" "r")
+		   (match_operand:P 2 "immediate_operand" "")
+		   (reg:P FAKE_CALL_REGNO)]
+		  UNSPEC_LOAD_CALL))]
   "TARGET_ABICALLS"
-  "lw\t%0,%R2(%1)"
+  "<load>\t%0,%R2(%1)"
   [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
-(define_insn "load_calldi"
-  [(set (match_operand:DI 0 "register_operand" "=c")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
-		    (match_operand:DI 2 "immediate_operand" "")
-		    (reg:DI FAKE_CALL_REGNO)]
-		   UNSPEC_LOAD_CALL))]
-  "TARGET_ABICALLS"
-  "ld\t%0,%R2(%1)"
-  [(set_attr "type" "load")
+   (set_attr "mode" "<MODE>")
    (set_attr "length" "4")])
 
 ;; Sibling calls.  All these patterns use jump instructions.

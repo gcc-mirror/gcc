@@ -1,5 +1,10 @@
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (load_call[sd]i): Redefine using :P.  Add mode
+	attribute.
+
+2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (indirect_jump): Use force_reg.  Adjust names
 	of internal patterns.
 	(indirect_jump[sd]i): Renamed from indirect_jump_internal[12].
