@@ -4163,6 +4163,25 @@ fold (expr)
 			   arg1));
 	}
 
+      /* If this is an NE or EQ comparison of zero against the result of a
+	 signed MOD operation, make the MOD operation unsigned since it
+	 is simpler and equivalent.  */
+      if ((code == NE_EXPR || code == EQ_EXPR)
+	  && integer_zerop (arg1)
+	  && ! TREE_UNSIGNED (TREE_TYPE (arg0))
+	  && (TREE_CODE (arg0) == TRUNC_MOD_EXPR
+	      || TREE_CODE (arg0) == CEIL_MOD_EXPR
+	      || TREE_CODE (arg0) == FLOOR_MOD_EXPR
+	      || TREE_CODE (arg0) == ROUND_MOD_EXPR))
+	{
+	  tree newtype = unsigned_type (TREE_TYPE (arg0));
+	  tree newmod = build (TREE_CODE (arg0), newtype,
+			       convert (newtype, TREE_OPERAND (arg0, 0)),
+			       convert (newtype, TREE_OPERAND (arg0, 1)));
+
+	  return build (code, type, newmod, convert (newtype, arg1));
+	}
+
       /* If this is an NE comparison of zero with an AND of one, remove the
 	 comparison since the AND will give the correct value.  */
       if (code == NE_EXPR && integer_zerop (arg1)
