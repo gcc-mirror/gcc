@@ -1,3 +1,8 @@
+2003-05-13  Andreas Jaeger  <aj@suse.de>
+
+	* config.guess: Update to 2003-05-09 version.
+	* config.sub: Update to 2003-05-09 version.
+
 2003-05-13  Michael Eager <eager@mvista.com>
 
 	* configure.in: Correct sed script so that options in quotes are not
@@ -17,7 +22,7 @@
 2003-05-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config-ml.in: Propagate INSTALL variables.
-	
+
 2003-05-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* MAINTAINERS: Remove duplicate entries in Write After Approval.
@@ -108,7 +113,7 @@
 2003-03-17  Olivier Hainque  <hainque@act-europe.fr>
 
 	* MAINTAINERS (Write After Approval): Add myself.
- 	
+
 2003-03-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Move .NOEXPORT, MAKEOVERRIDES back down.
