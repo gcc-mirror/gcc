@@ -1228,7 +1228,8 @@ reload1.o : reload1.c $(CONFIG_H) $(RTL_H) real.h flags.h expr.h \
    reload.h regs.h hard-reg-set.h insn-config.h insn-flags.h insn-codes.h \
    basic-block.h recog.h output.h
 caller-save.o : caller-save.c $(CONFIG_H) $(RTL_H) flags.h \
-   regs.h hard-reg-set.h insn-config.h basic-block.h recog.h reload.h expr.h
+   regs.h hard-reg-set.h insn-codes.h insn-config.h basic-block.h recog.h \
+   reload.h expr.h
 reorg.o : reorg.c $(CONFIG_H) $(RTL_H) conditions.h hard-reg-set.h \
    basic-block.h regs.h insn-config.h insn-attr.h insn-flags.h recog.h \
    flags.h output.h
