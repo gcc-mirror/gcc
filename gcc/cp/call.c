@@ -6303,7 +6303,7 @@ perform_implicit_conversion (tree type, tree expr)
    permitted.  If the conversion is valid, the converted expression is
    returned.  Otherwise, NULL_TREE is returned, except in the case
    that TYPE is a class type; in that case, an error is issued.  If
-   C_CAST_P is ttrue, then this direction initialization is taking
+   C_CAST_P is true, then this direction initialization is taking
    place as part of a static_cast being attempted as part of a C-style
    cast.  */
 

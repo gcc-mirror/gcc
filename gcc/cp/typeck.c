@@ -4862,7 +4862,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	  || VOID_TYPE_P (TREE_TYPE (type))))
     return convert_member_func_to_ptr (type, expr);
 
-  /* If the cast is not to a reference type, the lvalue-to-rvale,
+  /* If the cast is not to a reference type, the lvalue-to-rvalue,
      array-to-pointer, and function-to-pointer conversions are
      performed.  */
   expr = decay_conversion (expr);

@@ -1,3 +1,7 @@
+2004-10-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c, typeck.c: Fix comment typos.
+
 2004-10-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parser.c (cp_token_position): New typedef. Define VEC thereof.
