@@ -1,3 +1,7 @@
+2004-01-04  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/winline[1-7].c: New tests.
+
 2004-01-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13520

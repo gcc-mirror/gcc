@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cgraph.h"
 #include "varray.h"
 #include "output.h"
+#include "intl.h"
 
 
 /* Hash table used to convert declarations into nodes.  */
@@ -156,7 +157,13 @@ create_edge (struct cgraph_node *caller, struct cgraph_node *callee)
   struct cgraph_edge *edge = ggc_alloc (sizeof (struct cgraph_edge));
   struct cgraph_edge *edge2;
 
-  edge->inline_call = false;
+  if (!DECL_SAVED_TREE (callee->decl))
+    edge->inline_failed = N_("function body not available");
+  else if (callee->local.inlinable)
+    edge->inline_failed = N_("function not considered for inlining");
+  else
+    edge->inline_failed = N_("function not inlinable");
+
   /* At the moment we don't associate calls with specific CALL_EXPRs
      as we probably ought to, so we must preserve inline_call flags to
      be the same in all copies of the same edge.  */
@@ -164,7 +171,7 @@ create_edge (struct cgraph_node *caller, struct cgraph_node *callee)
     for (edge2 = caller->callees; edge2; edge2 = edge2->next_callee)
       if (edge2->callee == callee)
 	{
-	  edge->inline_call = edge2->inline_call;
+	  edge->inline_failed = edge2->inline_failed;
 	  break;
 	}
 
@@ -381,7 +388,7 @@ dump_cgraph (FILE *f)
       for (edge = node->callers; edge; edge = edge->next_caller)
 	{
 	  fprintf (f, "%s ", cgraph_node_name (edge->caller));
-	  if (edge->inline_call)
+	  if (!edge->inline_failed)
 	    fprintf(f, "(inlined) ");
 	}
 
@@ -389,7 +396,7 @@ dump_cgraph (FILE *f)
       for (edge = node->callees; edge; edge = edge->next_callee)
 	{
 	  fprintf (f, "%s ", cgraph_node_name (edge->callee));
-	  if (edge->inline_call)
+	  if (!edge->inline_failed)
 	    fprintf(f, "(inlined) ");
 	}
       fprintf (f, "\n");

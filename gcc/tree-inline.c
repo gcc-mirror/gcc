@@ -1247,6 +1247,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   splay_tree st;
   tree args;
   tree return_slot_addr;
+  const char *reason;
 
   /* See what we've got.  */
   id = (inline_data *) data;
@@ -1327,12 +1328,13 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 
   /* Don't try to inline functions that are not well-suited to
      inlining.  */
-  if (!DECL_SAVED_TREE (fn) || !cgraph_inline_p (id->current_decl, fn))
+  if (!cgraph_inline_p (id->current_decl, fn, &reason))
     {
-      if (warn_inline && DECL_INLINE (fn) && DECL_DECLARED_INLINE_P (fn)
-	  && !DECL_IN_SYSTEM_HEADER (fn))
+      if (warn_inline && DECL_DECLARED_INLINE_P (fn)
+	  && !DECL_IN_SYSTEM_HEADER (fn)
+	  && strlen (reason))
 	{
-	  warning ("%Jinlining failed in call to '%F'", fn, fn);
+	  warning ("%Jinlining failed in call to '%F': %s", fn, fn, reason);
 	  warning ("called from here");
 	}
       return NULL_TREE;
