@@ -359,11 +359,6 @@ extern int system_header_p;
 /* Warn about implicit declarations.  1 = warning, 2 = error.  */
 extern int mesg_implicit_function_declaration;
 
-/* Nonzero enables objc features.  */
-
-#define doing_objc_thang \
-  (c_language == clk_objective_c)
-
 /* In c-decl.c */
 extern void finish_incomplete_decl PARAMS ((tree));
 

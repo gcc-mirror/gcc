@@ -701,32 +701,22 @@ primary:
 	| primary '.' identifier
 		{
 ifobjc
-                  if (doing_objc_thang)
-                    {
-		      if (is_public ($1, $3))
-			$$ = build_component_ref ($1, $3);
-		      else
-			$$ = error_mark_node;
-		    }
-                  else
+		    if (!is_public ($1, $3))
+		      $$ = error_mark_node;
+		    else
 end ifobjc
-		    $$ = build_component_ref ($1, $3);
+		      $$ = build_component_ref ($1, $3);
 		}
 	| primary POINTSAT identifier
 		{
                   tree expr = build_indirect_ref ($1, "->");
 
 ifobjc
-                  if (doing_objc_thang)
-                    {
-		      if (is_public (expr, $3))
-			$$ = build_component_ref (expr, $3);
-		      else
+		      if (!is_public (expr, $3))
 			$$ = error_mark_node;
-		    }
-                  else
+		      else
 end ifobjc
-                    $$ = build_component_ref (expr, $3);
+			$$ = build_component_ref (expr, $3);
 		}
 	| primary PLUSPLUS
 		{ $$ = build_unary_op (POSTINCREMENT_EXPR, $1, 0); }
@@ -3592,10 +3582,12 @@ init_reswords ()
 {
   unsigned int i;
   tree id;
-  int mask = ((doing_objc_thang ? 0 : D_OBJC)
-	      | (flag_isoc99 ? 0 : D_C89)
+  int mask = (flag_isoc99 ? 0 : D_C89)
 	      | (flag_traditional ? D_TRAD : 0)
-	      | (flag_no_asm ? (flag_isoc99 ? D_EXT : D_EXT|D_EXT89) : 0));
+	      | (flag_no_asm ? (flag_isoc99 ? D_EXT : D_EXT|D_EXT89) : 0);
+
+  if (c_language != clk_objective_c)
+     mask |= D_OBJC;
 
   /* It is not necessary to register ridpointers as a GC root, because
      all the trees it points to are permanently interned in the
@@ -3715,7 +3707,8 @@ yylexname ()
       if (TREE_CODE (decl) == TYPE_DECL)
 	return TYPENAME;
     }
-  else if (doing_objc_thang)
+ifobjc
+  else
     {
       tree objc_interface_decl = is_class_name (yylval.ttype);
 
@@ -3725,6 +3718,7 @@ yylexname ()
 	  return CLASSNAME;
 	}
     }
+end ifobjc
 
   return IDENTIFIER;
 }
