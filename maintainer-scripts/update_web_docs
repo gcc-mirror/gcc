@@ -90,7 +90,7 @@ find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc
 # Checkout all the texi files and get them into a single directory.
 # If we ever have texi files with the same name we'll have to do this
 # differently.
-cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/texinfo.tex gcc/gcc/doc/texinfo.tex
+cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/texinfo.tex gcc/gcc/doc/texinfo.tex gcc/gcc/doc/include/texinfo.tex
 mv `find . -name \*.texi -print` .
 mv `find . -name \*.tex -print` .
 
