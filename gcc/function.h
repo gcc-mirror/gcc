@@ -130,10 +130,6 @@ struct expr_status
      These are the arguments to function calls that have already returned.  */
   int x_pending_stack_adjust;
 
-  /* Number of units that we should eventually pop off the stack.
-     These are the arguments to function calls that have not happened yet.  */
-  int x_arg_space_so_far;
-
   /* Under some ABIs, it is the caller's responsibility to pop arguments
      pushed for function calls.  A naive implementation would simply pop
      the arguments immediately after each call.  However, if several
@@ -151,6 +147,12 @@ struct expr_status
      NO_DEFER_POP and OK_DEFER_POP.  */
   int x_inhibit_defer_pop;
 
+  /* If PREFERRED_STACK_BOUNDARY and PUSH_ROUNDING are defined, the stack
+     boundary can be momentairly unaligned while pushing the arguments.
+     Record the delta since last aligned boundary here in order to get
+     stack alignment in the nested function calls working right.  */
+  int x_stack_pointer_delta;
+
   /* Nonzero means __builtin_saveregs has already been done in this function.
      The value is the pseudoreg containing the value __builtin_saveregs
      returned.  */
@@ -167,12 +169,12 @@ struct expr_status
 };
 
 #define pending_stack_adjust (cfun->expr->x_pending_stack_adjust)
-#define arg_space_so_far (cfun->expr->x_arg_space_so_far)
 #define inhibit_defer_pop (cfun->expr->x_inhibit_defer_pop)
 #define saveregs_value (cfun->expr->x_saveregs_value)
 #define apply_args_value (cfun->expr->x_apply_args_value)
 #define forced_labels (cfun->expr->x_forced_labels)
 #define pending_chain (cfun->expr->x_pending_chain)
+#define stack_pointer_delta (cfun->expr->x_stack_pointer_delta)
 
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */

@@ -306,7 +306,7 @@ init_expr ()
 
   pending_chain = 0;
   pending_stack_adjust = 0;
-  arg_space_so_far = 0;
+  stack_pointer_delta = 0;
   inhibit_defer_pop = 0;
   saveregs_value = 0;
   apply_args_value = 0;
@@ -2996,6 +2996,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      && where_pad != none && where_pad != stack_direction)
 	    anti_adjust_stack (GEN_INT (extra));
 
+	  stack_pointer_delta += INTVAL (size) - used;
 	  move_by_pieces (gen_rtx_MEM (BLKmode, gen_push_operand ()), xinner,
 			  INTVAL (size) - used, align);
 
@@ -3236,7 +3237,10 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
 #ifdef PUSH_ROUNDING
       if (args_addr == 0 && PUSH_ARGS)
-	addr = gen_push_operand ();
+	{
+	  addr = gen_push_operand ();
+	  stack_pointer_delta += PUSH_ROUNDING (GET_MODE_SIZE (mode));
+	}
       else
 #endif
 	{
@@ -9121,7 +9125,10 @@ clear_pending_stack_adjust ()
       && EXIT_IGNORE_STACK
       && ! (DECL_INLINE (current_function_decl) && ! flag_no_inline)
       && ! flag_inline_functions)
-    pending_stack_adjust = 0;
+    {
+      stack_pointer_delta -= pending_stack_adjust,
+      pending_stack_adjust = 0;
+    }
 #endif
 }
 

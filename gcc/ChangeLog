@@ -1,3 +1,28 @@
+Sat Apr  1 02:05:29 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c  (expand_builtin_apply):  Pass proper parameters to
+	allocate_dynamic_stack_space.
+	* calls.c (emit_call_1):  Do not adjust stack pointer for SIB,
+	update stack_pointer_delta; do not update arg_size_so_far.
+	(compute_argument_block_size): Use stack_delta instead of
+	stack_pointer_pending and arg_size_so_far.
+	(expand_call): Add sanity checking for stack_pointer_delta;
+	save and restore stack_pointer_delta for SIB, use
+	stack_pointer_delta for alignment; do not update arg_space_so_far.
+	(emit_library_call_value): Use stack_pointer_delta for alignment.
+	(store_one_arg): Do not update arg_space_so_far.
+	* explow.c (adjust_stack, anti_adjust_stack): Update
+	stack_pointer_delta.
+	(allocate_dynamic_stack_space): Add sanity checking for
+	stack_pointer_delta.
+	* expr.c (init_expr, clear_pending_stack_adjust): Clear
+	stack_pointer_delta.
+	(emit_push_insn): Update stack_pointer_delta.
+	* function.h (struct expr_status): Add x_stack_pointer_delta;
+	remove x_arg_space_so_far.
+	(arg_space_so_far): Remove.
+	(stack_pointer_delta): New macro.
+
 2000-03-31  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h: Merge struct cpp_options into struct cpp_reader.

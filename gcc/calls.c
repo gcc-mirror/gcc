@@ -577,6 +577,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 			       CALL_INSN_FUNCTION_USAGE (call_insn));
       rounded_stack_size -= n_popped;
       rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
+      stack_pointer_delta -= n_popped;
     }
 
   if (!ACCUMULATE_OUTGOING_ARGS)
@@ -587,10 +588,6 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 
 	 If returning from the subroutine does pop the args, indicate that the
 	 stack pointer will be changed.  */
-
-      /* The space for the args is no longer waiting for the call; either it
-	 was popped by the call, or it'll be popped below.  */
-      arg_space_so_far -= rounded_stack_size - n_popped;
 
       if (rounded_stack_size != 0)
 	{
@@ -1305,7 +1302,14 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
 #ifdef PREFERRED_STACK_BOUNDARY
       preferred_stack_boundary /= BITS_PER_UNIT;
       if (preferred_stack_boundary > 1)
-	args_size->var = round_up (args_size->var, preferred_stack_boundary);
+	{
+	  /* We don't handle this case yet.  To handle it correctly we have
+	     to add the delta, round and substract the delta.  
+	     Currently no machine description requires this support.  */
+	  if (stack_pointer_delta & (preferred_stack_boundary - 1))
+	    abort();
+	  args_size->var = round_up (args_size->var, preferred_stack_boundary);
+	}
 #endif
 
       if (reg_parm_stack_space > 0)
@@ -1330,13 +1334,11 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
       if (preferred_stack_boundary < 1)
 	preferred_stack_boundary = 1;
       args_size->constant = (((args_size->constant
-			       + arg_space_so_far
-			       + pending_stack_adjust
+			       + stack_pointer_delta
 			       + preferred_stack_boundary - 1)
 			      / preferred_stack_boundary
 			      * preferred_stack_boundary)
-			     - arg_space_so_far
-			     - pending_stack_adjust);
+			     - stack_pointer_delta);
 #endif
 
       args_size->constant = MAX (args_size->constant,
@@ -1813,6 +1815,7 @@ expand_call (exp, target, ignore)
   rtx old_stack_level = 0;
   int old_pending_adj = 0;
   int old_inhibit_defer_pop = inhibit_defer_pop;
+  int old_stack_allocated;
   rtx call_fusage;
   register tree p;
   register int i;
@@ -2118,6 +2121,7 @@ expand_call (exp, target, ignore)
 	 recursion call can be ignored if we indeed use the tail recursion
 	 call expansion.  */
       int save_pending_stack_adjust = pending_stack_adjust;
+      int save_stack_pointer_delta = stack_pointer_delta;
 
       /* Use a new sequence to hold any RTL we generate.  We do not even
 	 know if we will use this RTL yet.  The final decision can not be
@@ -2135,6 +2139,7 @@ expand_call (exp, target, ignore)
       /* Restore the original pending stack adjustment for the sibling and
 	 normal call cases below.  */
       pending_stack_adjust = save_pending_stack_adjust;
+      stack_pointer_delta = save_stack_pointer_delta;
     }
 
   function_call_count++;
@@ -2180,6 +2185,7 @@ expand_call (exp, target, ignore)
 	 recursion call can be ignored if we indeed use the tail recursion
 	 call expansion.  */
       int save_pending_stack_adjust;
+      int save_stack_pointer_delta;
       rtx insns;
       rtx before_call, next_arg_reg;
 
@@ -2217,6 +2223,7 @@ expand_call (exp, target, ignore)
 	  /* State variables we need to save and restore between
 	     iterations.  */
 	  save_pending_stack_adjust = pending_stack_adjust;
+	  save_stack_pointer_delta = stack_pointer_delta;
 	}
 
       /* Other state variables that we must reinitialize each time
@@ -2411,6 +2418,8 @@ expand_call (exp, target, ignore)
       if (is_const || is_malloc)
 	start_sequence ();
 
+      old_stack_allocated =  stack_pointer_delta - pending_stack_adjust;
+
       /* If we have no actual push instructions, or shouldn't use them,
 	 make space for all args right now.  */
 
@@ -2592,22 +2601,21 @@ expand_call (exp, target, ignore)
 	  if (pending_stack_adjust && ! is_const
 	      && ! inhibit_defer_pop)
 	    {
+	      int adjust;
 	      args_size.constant = (unadjusted_args_size
 				    + ((pending_stack_adjust
 					+ args_size.constant
-					+ arg_space_so_far
 					- unadjusted_args_size)
 				       % (preferred_stack_boundary
 					  / BITS_PER_UNIT)));
-	      pending_stack_adjust -= (args_size.constant
-				       - unadjusted_args_size);
-	      do_pending_stack_adjust ();
+	      adjust = (pending_stack_adjust - args_size.constant
+		        + unadjusted_args_size);
+	      adjust_stack (GEN_INT (adjust));
+	      pending_stack_adjust = 0;
 	    }
 	  else if (argblock == 0)
 	    anti_adjust_stack (GEN_INT (args_size.constant
 					- unadjusted_args_size));
-	  arg_space_so_far += args_size.constant - unadjusted_args_size;
-
 	  /* Now that the stack is properly aligned, pops can't safely
 	     be deferred during the evaluation of the arguments.  */
 	  NO_DEFER_POP;
@@ -2674,7 +2682,6 @@ expand_call (exp, target, ignore)
 #ifdef PREFERRED_STACK_BOUNDARY
       /* If we pushed args in forward order, perform stack alignment
 	 after pushing the last arg.  */
-      /* ??? Fix for arg_space_so_far.  */
       if (!PUSH_ARGS_REVERSED && argblock == 0)
 	anti_adjust_stack (GEN_INT (args_size.constant
 				    - unadjusted_args_size));
@@ -2745,6 +2752,11 @@ expand_call (exp, target, ignore)
 		   ((is_const ? ECF_IS_CONST : 0)
 		    | (nothrow ? ECF_NOTHROW : 0)
 		    | (pass == 0 ? ECF_SIBCALL : 0)));
+
+      /* Verify that we've deallocated all the stack we used.  */
+      if (pass
+          && old_stack_allocated != stack_pointer_delta - pending_stack_adjust)
+	abort();
 
       /* If call is cse'able, make appropriate pair of reg-notes around it.
 	 Test valreg so we don't crash; may safely ignore `const'
@@ -3025,10 +3037,11 @@ expand_call (exp, target, ignore)
 	     zero out the sequence.  */
 	  if (sibcall_failure)
 	    tail_call_insns = NULL_RTX;
-
 	  /* Restore the pending stack adjustment now that we have
 	     finished generating the sibling call sequence.  */
+
 	  pending_stack_adjust = save_pending_stack_adjust;
+	  stack_pointer_delta = save_stack_pointer_delta;
 	}
       else
 	normal_call_insns = insns;
@@ -3327,8 +3340,12 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 
   original_args_size = args_size;
 #ifdef PREFERRED_STACK_BOUNDARY
-  args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
-			 / STACK_BYTES) * STACK_BYTES);
+  args_size.constant = (((args_size.constant
+			  + stack_pointer_delta
+			  + STACK_BYTES - 1)
+			  / STACK_BYTES
+			  * STACK_BYTES)
+			 - stack_pointer_delta);
 #endif
 
   args_size.constant = MAX (args_size.constant,
@@ -4043,8 +4060,6 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 		      partial, reg, used - size, argblock,
 		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
 		      ARGS_SIZE_RTX (arg->alignment_pad));
-
-      arg_space_so_far += used;
     }
   else
     {
@@ -4072,7 +4087,6 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 	  excess = (arg->size.constant - int_size_in_bytes (TREE_TYPE (pval))
 		    + partial * UNITS_PER_WORD);
 	  size_rtx = expr_size (pval);
-	  arg_space_so_far += excess + INTVAL (size_rtx);
 	}
 
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
