@@ -1,3 +1,11 @@
+Sat Jun  5 11:46:59 1999  Anthony Green  <green@cygnus.com>
+
+	* Make-lang.in (gcjh): More parallel build fixes.
+
+1999-06-03  Mike Stump  <mrs@wrs.com>
+
+	* Make-lang.in (JCF_DUMP_SOURCES, jvgenmain): Fix parallel builds.
+
 Wed Jun  2 10:44:38 1999  Anthony Green  <green@cygnus.com>
 
 	* except.c (link_handler): Chain exception handlers in order.

@@ -97,7 +97,7 @@ $(GCJ)-cross$(exeext): $(GCJ)$(exeext)
 
 # Dependencies here must be kept in sync with dependencies in Makefile.in.
 jvgenmain$(exeext): $(srcdir)/java/jvgenmain.c $(srcdir)/java/mangle.c \
-		$(OBSTACK) $(LIBDEPS)
+		$(OBSTACK) $(LIBDEPS) $(TREE_H)
 	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jvgenmain$(exeext)
 
 # This must be kept in sync with dependencies in Makefile.in.
@@ -107,7 +107,7 @@ GCJH_SOURCES = $(srcdir)/java/gjavah.c $(srcdir)/java/jcf-io.c \
 	$(srcdir)/java/javaop.def $(srcdir)/java/jcf-depend.c \
 	$(srcdir)/java/jcf-path.c
 
-gcjh$(exeext): $(GCJH_SOURCES) $(LIBDEPS)
+gcjh$(exeext): $(GCJH_SOURCES) $(LIBDEPS) $(TREE_H)
 	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../gcjh$(exeext)
 
 # This must be kept in sync with dependencies in Makefile.in.
@@ -119,7 +119,7 @@ jv-scan$(exeext): $(JV_SCAN_SOURCES) stamp-objlist $(LIBDEPS)
 
 # This must be kept in sync with dependencies in Makefile.in.
 JCF_DUMP_SOURCES = $(srcdir)/java/jcf-dump.c $(srcdir)/java/jcf-io.c \
-       $(srcdir)/java/zextract.c $(srcdir)/../libiberty/memmove.c
+       $(srcdir)/java/zextract.c $(srcdir)/../libiberty/memmove.c $(TREE_H)
 
 jcf-dump$(exeext): $(JCF_DUMP_SOURCES)
 	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jcf-dump$(exeext)
