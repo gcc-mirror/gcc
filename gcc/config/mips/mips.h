@@ -28,11 +28,8 @@ Boston, MA 02111-1307, USA.  */
 extern char    *asm_file_name;
 extern char	call_used_regs[];
 extern int	current_function_calls_alloca;
-extern int	flag_omit_frame_pointer;
-extern int	frame_pointer_needed;
 extern char    *language_string;
 extern int	may_call_alloca;
-extern int	optimize;
 extern char   **save_argv;
 extern int	target_flags;
 extern char    *version_string;
