@@ -1,30 +1,10 @@
 Fri Nov 21 12:22:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* except.c (expand_start_eh_spec): Use the try/catch code.
-	(expand_end_eh_spec): Likewise.  Call __check_eh_spec instead of
-	doing everything inline.
-	(init_exception_processing): throw_type_match now takes
- 	const void pointers.
-	* exception.cc (__check_eh_spec): New fn.
-	* inc/exception: Neither terminate nor unexpected return.
-	* decl.c: Make const_ptr_type_node public.
-	* tinfo2.cc (__throw_type_match_rtti): Take the typeinfos constly.
-
 	* except.c (expand_start_catch_block): We only need the rethrow
  	region for non-sjlj exceptions.
 	(expand_end_catch_block): Likewise.  Use outer_context_label_stack.
 
 Thu Nov 20 14:40:17 1997  Jason Merrill  <jason@yorick.cygnus.com>
-
-	* Make-lang.in (CXX_LIB2FUNCS): Add new op new and op delete objs.
-	(various.o): Likewise.
-	* inc/new: Add placement deletes.  Add throw specs for default new.
-	* new.cc (set_new_handler): Move here from libgcc2.
-	* new1.cc (new (nothrow)): Catch a bad_alloc thrown from the handler.
-	(new): Move from libgcc2.  Throw bad_alloc.
-	* new2.cc: Move the rest of the op news and op deletes from libgcc2.
-	* decl.c (init_decl_processing): Update exception specs on new and
-	delete.
 
 	* method.c (build_decl_overload_real): Don't mess with global 
 	placement delete.

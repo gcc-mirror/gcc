@@ -197,7 +197,6 @@ static tree saved_pc;
 
 extern int throw_used;
 extern rtx catch_clauses;
-extern tree const_ptr_type_node;
 
 /* ========================================================================= */
 
@@ -264,8 +263,8 @@ init_exception_processing ()
 			? "__throw_type_match_rtti"
 			: "__throw_type_match",
 			build_function_type (ptr_type_node,
-					     tree_cons (NULL_TREE, const_ptr_type_node,
-							tree_cons (NULL_TREE, const_ptr_type_node,
+					     tree_cons (NULL_TREE, ptr_type_node,
+							tree_cons (NULL_TREE, ptr_type_node,
 								   tree_cons (NULL_TREE, ptr_type_node,
 									      void_list_node)))),
 			NOT_BUILT_IN, NULL_PTR);
@@ -1021,84 +1020,101 @@ expand_builtin_throw ()
 #endif /* DWARF2_UNWIND_INFO */
 }
 
-/* An exception spec is implemented more or less like:
-
-   try {
-     function body;
-   } catch (...) {
-     void *p[] = { typeid(raises) };
-     __check_eh_spec (p, count);
-   }
-
-   __check_eh_spec in exception.cc handles all the details.  */
 
 void
 expand_start_eh_spec ()
 {
-  expand_start_try_stmts ();
+  expand_eh_region_start ();
 }
 
 static void
 expand_end_eh_spec (raises)
      tree raises;
 {
-  tree tmp, fn, decl, types = NULL_TREE;
-  int count = 0;
+  tree expr, second_try;
+  rtx check = gen_label_rtx ();
+  rtx cont;
+  rtx ret = gen_reg_rtx (Pmode);
+  rtx flag = gen_reg_rtx (TYPE_MODE (integer_type_node));
+  rtx end = gen_label_rtx ();
 
-  expand_start_all_catch ();
-  expand_start_catch_block (NULL_TREE, NULL_TREE);
-
-  /* Build up an array of type_infos.  */
-  for (; raises && TREE_VALUE (raises); raises = TREE_CHAIN (raises))
-    {
-      types = expr_tree_cons
-	(NULL_TREE, build_eh_type_type (TREE_VALUE (raises)), types);
-      ++count;
-    }
-
-  types = build_nt (CONSTRUCTOR, NULL_TREE, types);
-  TREE_HAS_CONSTRUCTOR (types) = 1;
-
-  /* We can't pass the CONSTRUCTOR directly, so stick it in a variable.  */
-  tmp = build_array_type (const_ptr_type_node, NULL_TREE);
-  decl = build_decl (VAR_DECL, NULL_TREE, tmp);
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_INITIAL (decl) = types;
-  cp_finish_decl (decl, types, NULL_TREE, 0, 0);
-
-  decl = decay_conversion (decl);
-
-  fn = get_identifier ("__check_eh_spec");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
-  else
-    {
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
-
-      tmp = tree_cons
-	(NULL_TREE, integer_type_node, tree_cons
-	 (NULL_TREE, TREE_TYPE (decl), void_list_node));
-      tmp = build_function_type	(void_type_node, tmp);
+  expr = make_node (RTL_EXPR);
+  TREE_TYPE (expr) = void_type_node;
+  RTL_EXPR_RTL (expr) = const0_rtx;
+  TREE_SIDE_EFFECTS (expr) = 1;
+  do_pending_stack_adjust ();
+  start_sequence_for_rtl_expr (expr);
+  cont = gen_label_rtx ();
+  emit_move_insn (ret, gen_rtx (LABEL_REF, Pmode, cont));
+  emit_jump (check);
+  emit_label (cont);
+  jumpif (make_tree (integer_type_node, flag), end);
+  do_function_call (Terminate, NULL_TREE, NULL_TREE);
+  assemble_external (TREE_OPERAND (Terminate, 0));
+  emit_barrier ();
+  do_pending_stack_adjust ();
+  RTL_EXPR_SEQUENCE (expr) = get_insns ();
+  end_sequence ();
   
-      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_THIS_VOLATILE (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
-      assemble_external (fn);
-      pop_obstacks ();
+  second_try = expr;
+
+  expr = make_node (RTL_EXPR);
+  TREE_TYPE (expr) = void_type_node;
+  RTL_EXPR_RTL (expr) = const0_rtx;
+  TREE_SIDE_EFFECTS (expr) = 1;
+  do_pending_stack_adjust ();
+  start_sequence_for_rtl_expr (expr);
+
+  cont = gen_label_rtx ();
+  emit_move_insn (ret, gen_rtx (LABEL_REF, Pmode, cont));
+  emit_jump (check);
+  emit_label (cont);
+  jumpif (make_tree (integer_type_node, flag), end);
+  expand_eh_region_start ();
+  do_function_call (Unexpected, NULL_TREE, NULL_TREE);
+  assemble_external (TREE_OPERAND (Unexpected, 0));
+  emit_barrier ();
+
+  expand_eh_region_end (second_try);
+  
+  emit_label (check);
+  emit_move_insn (flag, const1_rtx);
+  cont = gen_label_rtx ();
+
+  push_eh_info ();
+
+  while (raises)
+    {
+      tree exp;
+      tree match_type = TREE_VALUE (raises);
+      
+      if (match_type)
+	{
+	  /* check TREE_VALUE (raises) here */
+	  exp = get_eh_value ();
+	  exp = expr_tree_cons (NULL_TREE,
+			   build_eh_type_type (match_type),
+			   expr_tree_cons (NULL_TREE,
+				      get_eh_type (),
+				      expr_tree_cons (NULL_TREE, exp, NULL_TREE)));
+	  exp = build_function_call (CatchMatch, exp);
+	  assemble_external (TREE_OPERAND (CatchMatch, 0));
+
+	  jumpif (exp, cont);
+	}
+
+      raises = TREE_CHAIN (raises);
     }
-
-  tmp = expr_tree_cons (NULL_TREE, build_int_2 (count, 0), expr_tree_cons
-			(NULL_TREE, decl, NULL_TREE));
-  tmp = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), tmp);
-  expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-  expand_end_catch_block ();
-  expand_end_all_catch ();
+  emit_move_insn (flag, const0_rtx);
+  emit_label (cont);
+  emit_indirect_jump (ret);
+  emit_label (end);
+  
+  do_pending_stack_adjust ();
+  RTL_EXPR_SEQUENCE (expr) = get_insns ();
+  end_sequence ();
+  
+  expand_eh_region_end (expr);
 }
 
 /* This is called to expand all the toplevel exception handling

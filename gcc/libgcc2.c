@@ -42,6 +42,10 @@ Boston, MA 02111-1307, USA.  */
 #undef abort
 #endif
 
+#if (SUPPORTS_WEAK == 1) && (defined (ASM_OUTPUT_DEF) || defined (ASM_OUTPUT_WEAK_ALIAS))
+#define WEAK_ALIAS
+#endif
+
 /* Permit the tm.h file to select the endianness to use just for this
    file.  This is used when the endianness is determined when the
    compiler is run.  */
@@ -2431,6 +2435,157 @@ stack_overflow:;
 #endif /* not inhibit_libc */
 #endif /* not BLOCK_PROFILER_CODE */
 #endif /* L_bb */
+
+/* Default free-store management functions for C++, per sections 12.5 and
+   17.3.3 of the Working Paper.  */
+
+#ifdef L_op_new
+/* operator new (size_t), described in 17.3.3.5.  This function is used by
+   C++ programs to allocate a block of memory to hold a single object.  */
+
+typedef void (*vfp)(void);
+extern vfp __new_handler;
+extern void __default_new_handler (void);
+
+#ifdef WEAK_ALIAS
+void * __builtin_new (size_t sz)
+     __attribute__ ((weak, alias ("___builtin_new")));
+void *
+___builtin_new (size_t sz)
+#else
+void *
+__builtin_new (size_t sz)
+#endif
+{
+  void *p;
+  vfp handler = (__new_handler) ? __new_handler : __default_new_handler;
+
+  /* malloc (0) is unpredictable; avoid it.  */
+  if (sz == 0)
+    sz = 1;
+  p = (void *) malloc (sz);
+  while (p == 0)
+    {
+      (*handler) ();
+      p = (void *) malloc (sz);
+    }
+  
+  return p;
+}
+#endif /* L_op_new */
+
+#ifdef L_op_vnew
+/* void * operator new [] (size_t), described in 17.3.3.6.  This function
+   is used by C++ programs to allocate a block of memory for an array.  */
+
+extern void * __builtin_new (size_t);
+
+#ifdef WEAK_ALIAS
+void * __builtin_vec_new (size_t sz)
+     __attribute__ ((weak, alias ("___builtin_vec_new")));
+void *
+___builtin_vec_new (size_t sz)
+#else
+void *
+__builtin_vec_new (size_t sz)
+#endif
+{
+  return __builtin_new (sz);
+}
+#endif /* L_op_vnew */
+
+#ifdef L_new_handler
+/* set_new_handler (fvoid_t *) and the default new handler, described in
+   17.3.3.2 and 17.3.3.5.  These functions define the result of a failure
+   to allocate the amount of memory requested from operator new or new [].  */
+
+#ifndef inhibit_libc
+/* This gets us __GNU_LIBRARY__.  */
+#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
+#include <stdio.h>
+
+#ifdef __GNU_LIBRARY__
+  /* Avoid forcing the library's meaning of `write' on the user program
+     by using the "internal" name (for use within the library)  */
+#define write(fd, buf, n)	__write((fd), (buf), (n))
+#endif
+#endif /* inhibit_libc */
+
+typedef void (*vfp)(void);
+void __default_new_handler (void);
+
+vfp __new_handler = (vfp) 0;
+
+vfp
+set_new_handler (vfp handler)
+{
+  vfp prev_handler;
+
+  prev_handler = __new_handler;
+  if (handler == 0) handler = __default_new_handler;
+  __new_handler = handler;
+  return prev_handler;
+}
+
+#define MESSAGE "Virtual memory exceeded in `new'\n"
+
+void
+__default_new_handler ()
+{
+#ifndef inhibit_libc
+  /* don't use fprintf (stderr, ...) because it may need to call malloc.  */
+  /* This should really print the name of the program, but that is hard to
+     do.  We need a standard, clean way to get at the name.  */
+  write (2, MESSAGE, sizeof (MESSAGE));
+#endif
+  /* don't call exit () because that may call global destructors which
+     may cause a loop.  */
+  _exit (-1);
+}
+#endif
+
+#ifdef L_op_delete
+/* operator delete (void *), described in 17.3.3.3.  This function is used
+   by C++ programs to return to the free store a block of memory allocated
+   as a single object.  */
+
+#ifdef WEAK_ALIAS
+void __builtin_delete (void *ptr)
+     __attribute__ ((weak, alias ("___builtin_delete")));
+void
+___builtin_delete (void *ptr)
+#else
+void
+__builtin_delete (void *ptr)
+#endif
+{
+  if (ptr)
+    free (ptr);
+}
+#endif
+
+#ifdef L_op_vdel
+/* operator delete [] (void *), described in 17.3.3.4.  This function is
+   used by C++ programs to return to the free store a block of memory
+   allocated as an array.  */
+
+extern void __builtin_delete (void *);
+
+#ifdef WEAK_ALIAS
+void __builtin_vec_delete (void *ptr)
+     __attribute__ ((weak, alias ("___builtin_vec_delete")));
+void
+___builtin_vec_delete (void *ptr)
+#else
+void
+__builtin_vec_delete (void *ptr)
+#endif
+{
+  __builtin_delete (ptr);
+}
+#endif
+
+/* End of C++ free-store management functions */
 
 #ifdef L_shtab
 unsigned int __shtab[] = {
