@@ -23,9 +23,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "ns32k/ns32k.h"
 
 /* Compile for the floating point unit & 32532 by default;
-   also presume SB is zero */
+   also presume SB is zero and no bitfield instructions */
 
-#define TARGET_DEFAULT 25
+#define TARGET_DEFAULT (1 + 24 + 64)
 
 /* Write DBX debugging info for gdb to read */
 
@@ -70,7 +70,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* movd insns may have floating point constant operands.  */
 
 #define MOVD_FLOAT_OK
-
-/* Every address needs to use a base reg.  */
-
-#define BASE_REG_NEEDED
