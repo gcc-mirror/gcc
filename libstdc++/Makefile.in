@@ -19,7 +19,11 @@ INTERFACE = 3
 
 gxx_include_dir=${includedir}/g++
 
-OBJS  = cstringi.o stdexcepti.o cstdlibi.o cmathi.o stlinst.o valarray.o
+OBJS  = cstringi.o stdexcepti.o cstdlibi.o cmathi.o stlinst.o valarray.o \
+	del_op.o del_opnt.o del_opv.o del_opvnt.o exception.o new_handler.o \
+	new_op.o new_opnt.o new_opv.o new_opvnt.o tinfo.o tinfo2.o vec.o \
+	pure.o
+	
 SUBLIBS = $(STAMP)-string $(STAMP)-complx
 
 # C++ headers with no extension
@@ -29,7 +33,7 @@ HEADERS= cassert cctype cerrno cfloat ciso646 climits clocale cmath complex \
 	 algorithm deque functional hash_map hash_set iterator list map \
 	 memory numeric pthread_alloc queue rope set slist stack utility \
 	 vector fstream iomanip iostream strstream iosfwd bitset valarray \
-	 sstream
+	 sstream exception new typeinfo
 
 ARLIB   = libstdc++.a.$(VERSION)
 ARLINK  = libstdc++.a
@@ -131,12 +135,29 @@ STRFUNCS = REP MAIN TRAITS ADDSS ADDPS ADDCS ADDSP ADDSC \
 STRIO	 = EXTRACT INSERT GETLINE
 
 # These are here for SunOS VPATH.
-cstringi.o: cstringi.cc
-cstdlibi.o: cstdlibi.cc
+cinst.o: cinst.cc
 cmathi.o: cmathi.cc
+cstdlibi.o: cstdlibi.cc
+cstringi.o: cstringi.cc
+del_op.o: del_op.cc new
+del_opnt.o: del_opnt.cc new
+del_opv.o: del_opv.cc new
+del_opvnt.o: del_opvnt.cc new
+exception.o: exception.cc typeinfo $(srcdir)/../gcc/gansidecl.h \
+  $(srcdir)/../include/ansidecl.h $(srcdir)/../gcc/eh-common.h
+new_handler.o: new_handler.cc new
+new_op.o: new_op.cc new
+new_opnt.o: new_opnt.cc new
+new_opv.o: new_opv.cc new
+new_opvnt.o: new_opvnt.cc new
+sinst.o: sinst.cc
 stdexcepti.o: stdexcepti.cc
 stlinst.o: stlinst.cc
+tinfo.o: tinfo.cc tinfo.hP typeinfo new
+tinfo2.o: tinfo2.cc tinfo.hP typeinfo new
 valarray.o: valarray.cc
+vec.o: vec.cc
+pure.o: pure.c
 
 # Later do wide strings, too.
 stmp-string: ${srcdir}/sinst.cc ${srcdir}/std/bastring.h \

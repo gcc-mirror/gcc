@@ -134,7 +134,7 @@ ${moveifchange} temp.mt target-mkfrag
 LIBDIR=yes
 TO_TOPDIR=../
 ALL='libs'
-XCXXINCLUDES="-I${srcdir} -I${srcdir}/stl -I${TO_TOPDIR}libio -I${srcdir}/${TO_TOPDIR}libio"
+XCXXINCLUDES="-I${srcdir} -I${srcdir}/stl -I${TO_TOPDIR}libio -I${srcdir}/${TO_TOPDIR}libio -I${srcdir}/${TO_TOPDIR}include -I${srcdir}/${TO_TOPDIR}gcc"
 MOSTLYCLEAN='*.o pic stamp-picdir core so_locations $(MOSTLYCLEAN_JUNK)'
 CLEAN='$(CLEAN_JUNK)'
 EXTRA_DISTCLEAN='target-mkfrag'

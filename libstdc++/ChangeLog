@@ -1,3 +1,14 @@
+2000-10-07  Richard Henderson  <rth@cygnus.com>
+
+	* del_op.cc, del_opnt.cc, del_opv.cc, del_opvnt.cc: New files.
+	* exception.cc, new_handler.cc, new_op.cc, new_opnt.cc: New files.
+	* new_opv.cc, new_opvnt.cc, tinfo.cc, tinfo2.cc, vec.cc: New files.
+	* cxxabi.h, exception, new, new.h, typeinfo, pure.c: New files.
+	* tinfo.hP: New file.
+
+	* Makefile.in (OBJS, HEADERS): Add new files.
+	* configure.in (XCXXINCLUDES): Add ../include and ../gcc.
+
 2000-09-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in: Add AIX multithread support fragment.
