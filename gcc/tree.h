@@ -3480,6 +3480,8 @@ extern void build_common_tree_nodes (int);
 extern void build_common_tree_nodes_2 (int);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_range_type (tree, tree, tree);
+extern HOST_WIDE_INT int_cst_value (tree);
+extern tree tree_fold_gcd (tree, tree);
 
 extern bool fields_compatible_p (tree, tree);
 extern tree find_compatible_field (tree, tree);
