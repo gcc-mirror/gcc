@@ -1,3 +1,8 @@
+2003-09-23  Andrew Pinski  <apinski@apple.com>
+
+	PR bootstrap/12383
+	* configure: Regenerate.
+
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (x86_64-*-freebsd*): Disable fixproto (accidentally
