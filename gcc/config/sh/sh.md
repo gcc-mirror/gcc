@@ -2827,3 +2827,27 @@
 	   && REGNO (SUBREG_REG (operands[2])) >= FIRST_FP_REG))
    && reg_unused_after (operands[0], insn)"
   "fmov.s	@(%0,%1),%2")
+
+;; Switch to a new stack with its address in sp_switch (a SYMBOL_REF).  */
+(define_insn "sp_switch_1"
+  [(const_int 1)]
+  ""
+  "*
+{
+  rtx xoperands[1];
+
+  xoperands[0] = sp_switch;
+  output_asm_insn (\"mov.l r0,@-r15\;mov.l %0,r0\", xoperands);
+  output_asm_insn (\"mov.l @r0,r0\;mov.l r15,@-r0\", xoperands);
+  return \"mov r0,r15\";
+}"
+  [(set_attr "length" "10")])
+   (set_attr "type" "move")])
+
+;; Switch back to the original stack for interrupt funtions with the
+;; sp_switch attribute.  */
+(define_insn "sp_switch_2"
+  [(const_int 2)]
+  ""
+  "mov.l @r15+,r15\;mov.l @r15+,r0"
+  [(set_attr "length" "4")])

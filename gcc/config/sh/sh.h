@@ -1639,6 +1639,18 @@ extern char *output_far_jump();
 
 extern int pragma_interrupt;
 
+/* Set to an RTX containing the address of the stack to switch to
+   for interrupt functions.  */
+extern struct rtx_def *sp_switch;
+
+/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
+   is a valid machine specific attribute for DECL.
+   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
+extern int sh_valid_machine_decl_attribute ();
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
+sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
+
+
 #define MOVE_RATIO (TARGET_SMALLCODE ? 2 : 16)
 
 /* Instructions with unfilled delay slots take up an extra two bytes for
