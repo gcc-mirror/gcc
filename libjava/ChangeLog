@@ -1,3 +1,9 @@
+2003-07-27  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Window.java
+	(Window): Removed now unused constructor. It became oboslete with the
+	new embedded window patch.
+
 2003-07-27  Thomas Fitzsimmons <fitzsim@redhat.com.h> 
 	    Michael Koch  <konqueror@gmx.de>
 
