@@ -1,3 +1,9 @@
+2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (JAVA_INSTALL_NAME, JAVA_TARGET_INSTALL_NAME, 
+	GCJH_TARGET_INSTALL_NAME): Define via a immediate $(shell) 
+	instead of deferred backquote.
+
 2004-01-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* typeck.c (find_method_in_interfaces): Move variable

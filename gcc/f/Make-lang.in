@@ -38,7 +38,7 @@
 # $(srcdir) must be set to the gcc/ source directory (not gcc/f/).
 #
 # Actual name to use when installing a native compiler.
-G77_INSTALL_NAME = `echo g77|sed '$(program_transform_name)'`
+G77_INSTALL_NAME := $(shell echo g77|sed '$(program_transform_name)')
 
 # Some versions of `touch' (such as the version on Solaris 2.8) 
 # do not correctly set the timestamp due to buggy versions of `utime'

@@ -1,3 +1,9 @@
+2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (CXX_INSTALL_NAME, GXX_INSTALL_NAME, 
+	CXX_TARGET_INSTALL_NAME, GXX_TARGET_INSTALL_NAME): Define via a
+	immediate $(shell) instead of deferred backquote.
+
 2004-01-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13651

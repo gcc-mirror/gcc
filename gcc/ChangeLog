@@ -1,3 +1,12 @@
+2004-01-19  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (target_noncanonical, program_transform_name): Use 
+	immediate define instead of deferred.
+	(GCC_INSTALL_NAME, GCC_TARGET_INSTALL_NAME, CPP_INSTALL_NAME, 
+	PROTOIZE_INSTALL_NAME, UNPROTOIZE_INSTALL_NAME, GCOV_INSTALL_NAME,
+	GCCBUG_INSTALL_NAME): Define via a immediate $(shell) instead of
+	deferred backquote.
+
 2004-01-19  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (aligned_memory_operand): Check MEM_ALIGN,

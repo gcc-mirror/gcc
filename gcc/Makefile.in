@@ -60,10 +60,10 @@ MAKEOVERRIDES =
 build=@build@
 host=@host@
 target=@target@
-target_noncanonical=@target_noncanonical@
+target_noncanonical:=@target_noncanonical@
 
 # Sed command to transform gcc to installed name.
-program_transform_name = @program_transform_name@
+program_transform_name := @program_transform_name@
 
 # -----------------------------
 # Directories used during build
@@ -594,13 +594,13 @@ BUILD_LDFLAGS=$(LDFLAGS)
 BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
 
 # Actual name to use when installing a native compiler.
-GCC_INSTALL_NAME = `echo gcc|sed '$(program_transform_name)'`
-GCC_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcc|sed '$(program_transform_name)'`
-CPP_INSTALL_NAME = `echo cpp|sed '$(program_transform_name)'`
-PROTOIZE_INSTALL_NAME = `echo protoize|sed '$(program_transform_name)'`
-UNPROTOIZE_INSTALL_NAME = `echo unprotoize|sed '$(program_transform_name)'`
-GCOV_INSTALL_NAME = `echo gcov|sed '$(program_transform_name)'`
-GCCBUG_INSTALL_NAME = `echo gccbug|sed '$(program_transform_name)'`
+GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
+GCC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcc|sed '$(program_transform_name)')
+CPP_INSTALL_NAME := $(shell echo cpp|sed '$(program_transform_name)')
+PROTOIZE_INSTALL_NAME := $(shell echo protoize|sed '$(program_transform_name)')
+UNPROTOIZE_INSTALL_NAME := $(shell echo unprotoize|sed '$(program_transform_name)')
+GCOV_INSTALL_NAME := $(shell echo gcov|sed '$(program_transform_name)')
+GCCBUG_INSTALL_NAME := $(shell echo gccbug|sed '$(program_transform_name)')
 
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $${rootme}/../expect/expect ] ; then \
