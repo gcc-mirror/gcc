@@ -1,3 +1,15 @@
+2000-09-13  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/String.java (CASE_INSENSITIVE_ORDER): New static field.
+	Initialize with anonymous class.
+	(compareToIgnoreCase): New method.
+	
+	* java/lang/ThreadGroup.java (had_uncaught_exception): New field.
+	(uncaughtException): Set had_uncaught_exception.
+	* prims.cc (JvRunMain): Check value of had_uncaught_exception and
+	exit with error status if set.
+	(_Jv_RunMain): Ditto.
+
 2000-09-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure: Rebuilt with new ../libtool.m4.

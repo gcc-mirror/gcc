@@ -53,6 +53,9 @@ public class ThreadGroup
 {
   /* The Initial, top-level ThreadGroup. */
   static ThreadGroup root = new ThreadGroup();
+  /* This flag is set if an uncaught exception occurs. The runtime should 
+  check this and exit with an error status if it is set. */
+  static boolean had_uncaught_exception = false;
 
   private ThreadGroup parent;
   private String name;
@@ -496,7 +499,10 @@ public class ThreadGroup
     if (parent != null)
       parent.uncaughtException (thread, t);
     else if (! (t instanceof ThreadDeath))
-      t.printStackTrace();
+      {
+	t.printStackTrace();
+	had_uncaught_exception = true;
+      }
   }
 
   /** Tell the VM whether it may suspend Threads in low memory
