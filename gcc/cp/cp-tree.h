@@ -801,6 +801,8 @@ struct saved_scope
 
 extern struct saved_scope *scope_chain;
 
+struct unparsed_text;
+
 /* Global state pertinent to the current function.  */
 
 struct cp_language_function
@@ -828,6 +830,7 @@ struct cp_language_function
   varray_type x_local_names;
 
   const char *cannot_inline;
+  struct unparsed_text *unparsed_inlines;
 };
 
 /* The current C++-specific per-function global variables.  */
@@ -1780,8 +1783,6 @@ struct lang_decl_flags
     tree vcall_offset;
   } u2;
 };
-
-struct unparsed_text;
 
 struct lang_decl
 {
@@ -4193,6 +4194,7 @@ extern tree finish_global_stmt_expr             PARAMS ((tree));
 
 /* in spew.c */
 extern void init_spew				PARAMS ((void));
+extern void mark_pending_inlines		PARAMS ((PTR));
 extern int peekyylex				PARAMS ((void));
 extern tree arbitrate_lookup			PARAMS ((tree, tree, tree));
 extern tree frob_opname                         PARAMS ((tree));

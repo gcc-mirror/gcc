@@ -1,3 +1,16 @@
+2002-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* spew.c (pending_inlines, pending_inlines_tail,
+	processing_these_inlines): Make static.
+	(mark_pending_inlines): Remove static.
+	(begin_parsing_inclass_inline): If in function, save pi
+	for GC to cp_function_chain->unparsed_inlines instead.
+	(process_next_inline): Likewise.
+	* cp-tree.h (struct cp_language_function): Add unparsed_inlines.
+	(mark_pending_inlines): Add prototype.
+	* decl.c (spew_debug): Remove unused extern.
+	(mark_lang_function): Call mark_pending_inlines.
+
 2002-01-23  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* call.c, class.c, decl.c, decl2.c, error.c, expr.c, friend.c, 

@@ -288,10 +288,6 @@ extern int flag_conserve_space;
 
 /* C and C++ flags are in decl2.c.  */
 
-/* Flag used when debugging spew.c */
-
-extern int spew_debug;
-
 /* A expression of value 0 with the same precision as a sizetype
    node, but signed.  */
 tree signed_size_zero_node;
@@ -14607,6 +14603,7 @@ mark_lang_function (p)
 
   mark_named_label_lists (&p->x_named_labels, &p->x_named_label_uses);
   mark_binding_level (&p->bindings);
+  mark_pending_inlines (&p->unparsed_inlines);
 }
 
 /* Mark the language-specific data in F for GC.  */
