@@ -1,3 +1,7 @@
+Mon Nov  1 08:03:15 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* regclass.c (record_reg_classes): In matching case, recompute
+	costs since the direction of movement is different.
 
 Sun Oct 31 23:57:07 1999  Mark Mitchell  <mark@codesourcery.com>
 
