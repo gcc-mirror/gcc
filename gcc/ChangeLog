@@ -1,3 +1,17 @@
+2005-04-04  Ian Lance Taylor  <ian@airs.com>
+
+	* c-typeck.c (struct c_switch): Rename switch_stmt field to
+	switch_expr.
+	(c_start_case): Build SWITCH_EXPR, not SWITCH_STMT.
+	(do_case): Use SWITCH_COND rather than SWITCH_STMT_COND.
+	(c_finish_case): Use SWITCH_BODY rather than SWITCH_STMT_BODY.
+	Call c_do_switch_expr_warnings rather than c_do_switch_warnings.
+	* c-common.c (c_do_switch_warnings_1): New static function broken
+	out of c_do_switch_warnings.
+	(c_do_switch_warnings): Call c_do_switch_warnings_1.
+	(c_do_switch_expr_warnings): New function.
+	* c-common.h (c_do_switch_expr_warnings): Declare.
+
 2005-04-04  David Edelsohn  <edelsohn@gnu.org>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 
