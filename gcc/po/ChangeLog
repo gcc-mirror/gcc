@@ -1,5 +1,10 @@
 2001-06-11  Zack Weinberg  <zackw@stanford.edu>
 
+	* POTFILES.in: Comment out config/float-*.
+	No need to regenerate gcc.pot.
+
+2001-06-11  Zack Weinberg  <zackw@stanford.edu>
+
 	* gcc.pot: Regenerate, again.  You go away for five minutes
 	and someone tweaks the messages on you.
 	* cat-id-tbl.c: Regenerate this too.
