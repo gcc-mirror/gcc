@@ -1,3 +1,8 @@
+2001-11-15  Craig Prescott  <prescott@phys.ufl.edu>
+
+	* target.h (FFETARGET_32bit_longs): Don't define
+	for 64-bit hppa.
+
 2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in: Change all uses of $(manext) to $(man1ext).
