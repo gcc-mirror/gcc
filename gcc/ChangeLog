@@ -1,3 +1,9 @@
+2005-03-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-vectorizer.c (new_vec_stmt_info): Initialize
+	STMT_VINFO_SUBVARS to NULL.
+	* tree-vect-analyze.c (vect_analyze_data_refs): Ditto.
+	
 2005-03-16 Dale Johannesen  <dalej@apple.com>
 
 	* rtlanal.c (find_first_parameter_load):  Rewrite to
