@@ -543,6 +543,33 @@ reg_or_0_operand (op, mode)
   return 0;
 }
 
+/* Return truth value of whether OP is a register or the constant 0,
+   even in mips16 mode. */
+
+int
+true_reg_or_0_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  switch (GET_CODE (op))
+    {
+    case CONST_INT:
+      return INTVAL (op) == 0;
+
+    case CONST_DOUBLE:
+      return op == CONST0_RTX (mode);
+
+    case REG:
+    case SUBREG:
+      return register_operand (op, mode);
+
+    default:
+      break;
+    }
+
+  return 0;
+}
+
 /* Return truth value if a CONST_DOUBLE is ok to be a legitimate constant.  */
 
 int

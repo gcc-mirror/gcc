@@ -226,6 +226,7 @@ extern void		print_operand_address ();
 extern void		print_operand ();
 extern void		print_options ();
 extern int		reg_or_0_operand ();
+extern int		true_reg_or_0_operand ();
 extern int		simple_epilogue_p ();
 extern int		simple_memory_operand ();
 extern int		double_memory_operand ();
@@ -3697,7 +3698,8 @@ while (0)
   {"uns_arith_operand",		{ REG, CONST_INT, SUBREG }},		\
   {"arith_operand",		{ REG, CONST_INT, SUBREG }},		\
   {"arith32_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"reg_or_0_operand",		{ REG, CONST_INT, SUBREG }},		\
+  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG }}, \
+  {"true_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG }}, \
   {"small_int",			{ CONST_INT }},				\
   {"large_int",			{ CONST_INT }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
@@ -3715,7 +3717,7 @@ while (0)
 				  SYMBOL_REF, LABEL_REF, SUBREG, REG,	\
 				  MEM, SIGN_EXTEND }},			\
   {"se_register_operand",	{ SUBREG, REG, SIGN_EXTEND }},		\
-  {"se_reg_or_0_operand",	{ REG, CONST_INT, SUBREG,		\
+  {"se_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG,	\
 				  SIGN_EXTEND }},			\
   {"se_uns_arith_operand",	{ REG, CONST_INT, SUBREG,		\
 				  SIGN_EXTEND }},			\
