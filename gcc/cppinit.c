@@ -40,13 +40,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    Cygwin's emulation can generate non-unique inodes, so don't use it.
    VMS has non-numeric inodes.  */
 #ifdef VMS
-# define INO_T_EQ(a, b) (!memcmp (&(a), &(b), sizeof (a)))
+# define INO_T_EQ(A, B) (!memcmp (&(A), &(B), sizeof (A)))
+# define INO_T_COPY(DEST, SRC) memcpy(&(DEST), &(SRC), sizeof (SRC))
 #else
 # if (defined _WIN32 && ! defined (_UWIN)) || defined __MSDOS__
-#  define INO_T_EQ(a, b) 0
+#  define INO_T_EQ(A, B) 0
 # else
-#  define INO_T_EQ(a, b) ((a) == (b))
+#  define INO_T_EQ(A, B) ((A) == (B))
 # endif
+# define INO_T_COPY(DEST, SRC) (DEST) = (SRC)
 #endif
 
 /* Internal structures and prototypes.  */
@@ -244,7 +246,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
   new = (struct search_path *) xmalloc (sizeof (struct search_path));
   new->name = dir;
   new->len = len;
-  new->ino  = st.st_ino;
+  INO_T_COPY (new->ino, st.st_ino);
   new->dev  = st.st_dev;
   /* Both systm and after include file lists should be treated as system
      include files since these two lists are really just a concatenation
