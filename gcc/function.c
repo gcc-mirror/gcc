@@ -461,7 +461,8 @@ find_function_data (decl)
    since this function knows only about language-independent variables.  */
 
 void
-push_function_context ()
+push_function_context_to (toplevel)
+     int toplevel;
 {
   struct function *p = (struct function *) xmalloc (sizeof (struct function));
 
@@ -512,7 +513,7 @@ push_function_context ()
   p->fixup_var_refs_queue = 0;
   p->epilogue_delay_list = current_function_epilogue_delay_list;
 
-  save_tree_status (p);
+  save_tree_status (p, toplevel);
   save_storage_status (p);
   save_emit_status (p);
   init_emit ();
@@ -524,11 +525,18 @@ push_function_context ()
     (*save_machine_status) (p);
 }
 
+void
+push_function_context ()
+{
+  push_function_context_to (0);
+}
+
 /* Restore the last saved context, at the end of a nested function.
    This function is called from language-specific code.  */
 
 void
-pop_function_context ()
+pop_function_context_from (toplevel)
+     int toplevel;
 {
   struct function *p = outer_function_chain;
 
@@ -545,7 +553,8 @@ pop_function_context ()
   current_function_calls_alloca = p->calls_alloca;
   current_function_has_nonlocal_label = p->has_nonlocal_label;
   current_function_has_nonlocal_goto = p->has_nonlocal_goto;
-  current_function_contains_functions = 1;
+  if (! toplevel)
+    current_function_contains_functions = 1;
   current_function_args_size = p->args_size;
   current_function_pretend_args_size = p->pretend_args_size;
   current_function_arg_offset_rtx = p->arg_offset_rtx;
@@ -579,7 +588,7 @@ pop_function_context ()
   current_function_epilogue_delay_list = p->epilogue_delay_list;
   reg_renumber = 0;
 
-  restore_tree_status (p);
+  restore_tree_status (p, toplevel);
   restore_storage_status (p);
   restore_expr_status (p);
   restore_emit_status (p);
@@ -602,6 +611,11 @@ pop_function_context ()
   /* Reset variables that have known state during rtx generation.  */
   rtx_equal_function_value_matters = 1;
   virtuals_instantiated = 0;
+}
+
+void pop_function_context ()
+{
+  pop_function_context_from (0);
 }
 
 /* Allocate fixed slots in the stack frame of the current function.  */
