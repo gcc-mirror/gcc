@@ -1,5 +1,11 @@
 This file records noteworthy changes.
 
+3.12 (3 March 1998)
+* Elisp files removed, since they are only usefully distributed with Emacs.
+* Restore inclusion of compile-time $(infodir) to INFOPATH.
+* install-info creates a proper dir file.
+* Various portability fixes.
+
 3.11 (31 July 1997)
 * New commands:
   - @uref to make a reference to a url; @url now only indicates such.

@@ -1,10 +1,11 @@
 /* tilde.c -- Tilde expansion code (~/foo := $HOME/foo).
-   $Id: tilde.c,v 1.2 1998/03/24 18:06:55 law Exp $
+   $Id: tilde.c,v 1.1.1.3 1998/03/24 18:20:19 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1988, 89, 90, 91, 92, 93, 96 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 90, 91, 92, 93, 96, 98
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,22 +23,26 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
+/* Indent #pragma so that older Cpp's don't try to parse it. */
+#ifdef _AIX
+ #pragma alloca
+#endif /* _AIX */
+
 /* Include config.h before doing alloca.  */
 #include "info.h"
 
-#ifndef alloca
-#if defined (__GNUC__)
-#  define alloca __builtin_alloca
-#else /* !__GNUC__ */
-#  if defined (_AIX)
- #pragma alloca
-#  else /* !_AIX */
-#    if defined (HAVE_ALLOCA_H)
-#      include <alloca.h>
-#    endif /* HAVE_ALLOCA_H */
-#  endif /* !AIX */
-#endif /* !__GNUC__ */
-#endif /* ! defined alloca */
+#ifdef __GNUC__
+# undef alloca
+# define alloca __builtin_alloca
+#else
+# ifdef HAVE_ALLOCA_H
+#  include <alloca.h>
+# else
+#  ifndef _AIX
+char *alloca ();
+#  endif
+# endif
+#endif
 
 #if defined (TEST) || defined (STATIC_MALLOC)
 static void *xmalloc (), *xrealloc ();

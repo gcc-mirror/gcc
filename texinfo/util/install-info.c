@@ -1,7 +1,7 @@
 /* install-info -- create Info directory entry(ies) for an Info file.
-   $Id: install-info.c,v 1.5 1998/03/24 18:08:44 law Exp $
+   $Id: install-info.c,v 1.1.1.3 1998/03/24 18:20:30 law Exp $
 
-   Copyright (C) 1996, 97 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97, 98 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 
 #include "system.h"
 #include <getopt.h>
+
+#ifdef HAVE_LIBZ
+#include <zlib.h>
+#endif
 
 /* Name this program was invoked with.  */
 char *progname;
@@ -283,8 +287,9 @@ suggest_asking_for_help ()
 void
 print_help ()
 {
-  printf (_("%s [OPTION]... [INFO-FILE [DIR-FILE]]\n\
-  Install INFO-FILE in the Info directory file DIR-FILE.\n\
+  printf (_("Usage: %s [OPTION]... [INFO-FILE [DIR-FILE]]\n\
+\n\
+Install INFO-FILE in the Info directory file DIR-FILE.\n\
 \n\
 Options:\n\
 --delete          Delete existing entries in INFO-FILE;\n\
@@ -312,12 +317,14 @@ Options:\n\
                     from information in the Info file itself.\n\
 --version         Display version information and exit.\n\
 \n\
-Email bug reports to bug-texinfo@prep.ai.mit.edu.\n\
+Email bug reports to bug-texinfo@gnu.org.\n\
 "), progname);
 }
+
 
 /* If DIRFILE does not exist, create a minimal one (or abort).  If it
    already exists, do nothing.  */
+
 void
 ensure_dirfile_exists (dirfile)
      char *dirfile;
@@ -335,7 +342,7 @@ ensure_dirfile_exists (dirfile)
 topmost node of the Info hierarchy, called (dir)Top.\n\
 The first time you invoke Info you start off looking at this node.\n\
 \n\
-File: dir       Node: Top       This is the top of the INFO tree\n\
+File: dir,\tNode: Top,\tThis is the top of the INFO tree\n\
 \n\
   This (the Directory node) gives a menu of major topics.\n\
   Typing \"q\" exits, \"?\" lists all Info commands, \"d\" returns here,\n\
@@ -368,19 +375,20 @@ File: dir       Node: Top       This is the top of the INFO tree\n\
 
 struct option longopts[] =
 {
-  { "delete",                   no_argument, NULL, 'r' },
-  { "dir-file",                 required_argument, NULL, 'd' },
-  { "entry",                    required_argument, NULL, 'e' },
-  { "help",                     no_argument, NULL, 'h' },
-  { "info-dir",                 required_argument, NULL, 'D' },
-  { "info-file",                required_argument, NULL, 'i' },
-  { "item",                     required_argument, NULL, 'e' },
-  { "quiet",                    no_argument, NULL, 'q' },
-  { "remove",                   no_argument, NULL, 'r' },
-  { "section",                  required_argument, NULL, 's' },
-  { "version",                  no_argument, NULL, 'V' },
+  { "delete",    no_argument, NULL, 'r' },
+  { "dir-file",  required_argument, NULL, 'd' },
+  { "entry",     required_argument, NULL, 'e' },
+  { "help",      no_argument, NULL, 'h' },
+  { "info-dir",  required_argument, NULL, 'D' },
+  { "info-file", required_argument, NULL, 'i' },
+  { "item",      required_argument, NULL, 'e' },
+  { "quiet",     no_argument, NULL, 'q' },
+  { "remove",    no_argument, NULL, 'r' },
+  { "section",   required_argument, NULL, 's' },
+  { "version",   no_argument, NULL, 'V' },
   { 0 }
 };
+
 
 int
 main (argc, argv)
@@ -518,11 +526,12 @@ main (argc, argv)
           break;
 
         case 'V':
-          printf (_("install-info (GNU %s) %s\n"), PACKAGE, VERSION);
-puts (_("Copyright (C) 1996 Free Software Foundation, Inc.\n\
+          printf ("install-info (GNU %s) %s\n", PACKAGE, VERSION);
+	  printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
 There is NO warranty.  You may redistribute this software\n\
 under the terms of the GNU General Public License.\n\
-For more information about these matters, see the files named COPYING."));
+For more information about these matters, see the files named COPYING.\n"),
+		  "1998");
           exit (0);
 
         default:
@@ -955,18 +964,49 @@ readfile (filename, sizep)
      char *filename;
      int *sizep;
 {
+  int desc;
   int data_size = 1024;
   char *data = (char *) xmalloc (data_size);
   int filled = 0;
   int nread = 0;
+#ifdef HAVE_LIBZ
+  int isGZ = 0;
+  gzFile zdesc;
+#endif
 
-  int desc = open (filename, O_RDONLY);
+  desc = open (filename, O_RDONLY);
   if (desc < 0)
     pfatal_with_name (filename);
 
+#ifdef HAVE_LIBZ
+  /* The file should always be two bytes long.  */
+  if (read (desc, data, 2) != 2)
+    pfatal_with_name (filename);
+
+  /* Undo that read.  */
+  lseek (desc, 0, SEEK_SET);
+
+  /* If we see gzip magic, use gzdopen. */
+  if (data[0] == '\x1f' && data[1] == '\x8b')
+    {
+      isGZ = 1;
+      zdesc = gzdopen (desc, "r");
+      if (zdesc == NULL) {
+        close (desc);
+        pfatal_with_name (filename);
+      }
+    }
+#endif /* HAVE_LIBZ */
+
   while (1)
     {
-      nread = read (desc, data + filled, data_size - filled);
+#ifdef HAVE_LIBZ
+      if (isGZ)
+	nread = gzread (zdesc, data + filled, data_size - filled);
+      else
+#endif
+        nread = read (desc, data + filled, data_size - filled);
+
       if (nread < 0)
         pfatal_with_name (filename);
       if (nread == 0)
@@ -981,6 +1021,14 @@ readfile (filename, sizep)
     }
 
   *sizep = filled;
+
+#ifdef HAVE_LIBZ
+  if (isGZ)
+    gzclose (zdesc);
+  else
+#endif
+    close(desc);
+
   return data;
 }
 

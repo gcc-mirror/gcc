@@ -1,8 +1,14 @@
-# Makefile.in generated automatically by automake 1.2 from Makefile.am
+# Makefile.in generated automatically by automake 1.2f from Makefile.am
 
-# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
-# gives unlimited permission to copy, distribute and modify it.
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
 
 
 SHELL = /bin/sh
@@ -43,27 +49,26 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
 
-NORMAL_INSTALL = true
-PRE_INSTALL = true
-POST_INSTALL = true
-NORMAL_UNINSTALL = true
-PRE_UNINSTALL = true
-POST_UNINSTALL = true
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 DATADIRNAME = @DATADIRNAME@
-EXEEXT = @EXEEXT@
 GENCAT = @GENCAT@
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
 GT_NO = @GT_NO@
 GT_YES = @GT_YES@
+INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
 INSTOBJEXT = @INSTOBJEXT@
 INTLDEPS = @INTLDEPS@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
-MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
@@ -91,7 +96,6 @@ EXTRA_DIST = README
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-bin_PROGRAMS =  makeinfo$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -119,9 +123,9 @@ OBJECTS = $(makeinfo_OBJECTS)
 default: all
 
 .SUFFIXES:
-.SUFFIXES: .c .o
-$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --cygnus makeinfo/Makefile
+.SUFFIXES: .S .c .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps makeinfo/Makefile
 
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -131,7 +135,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 mostlyclean-binPROGRAMS:
 
 clean-binPROGRAMS:
-	test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
 distclean-binPROGRAMS:
 
@@ -148,7 +152,7 @@ install-binPROGRAMS: $(bin_PROGRAMS)
 	done
 
 uninstall-binPROGRAMS:
-	$(NORMAL_UNINSTALL)
+	@$(NORMAL_UNINSTALL)
 	list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
 	done
@@ -156,37 +160,48 @@ uninstall-binPROGRAMS:
 .c.o:
 	$(COMPILE) -c $<
 
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
 mostlyclean-compile:
-	rm -f *.o core
+	-rm -f *.o core *.core
 
 clean-compile:
 
 distclean-compile:
-	rm -f *.tab.c
+	-rm -f *.tab.c
 
 maintainer-clean-compile:
 
-makeinfo$(EXEEXT): $(makeinfo_OBJECTS) $(makeinfo_DEPENDENCIES)
-	@rm -f makeinfo$(EXEEXT)
+makeinfo: $(makeinfo_OBJECTS) $(makeinfo_DEPENDENCIES)
+	@rm -f makeinfo
 	$(LINK) $(makeinfo_LDFLAGS) $(makeinfo_OBJECTS) $(makeinfo_LDADD) $(LIBS)
 
 tags: TAGS
 
-ID: $(HEADERS) $(SOURCES)
-	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $(SOURCES) $(HEADERS) $(LISP)
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES)
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	test -z "$(ETAGS_ARGS)$(SOURCES)$(HEADERS)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $(SOURCES) $(HEADERS) -o $$here/TAGS)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
 clean-tags:
 
 distclean-tags:
-	rm -f TAGS ID
+	-rm -f TAGS ID
 
 maintainer-clean-tags:
 
@@ -196,17 +211,20 @@ subdir = makeinfo
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
-	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
+makeinfo.o: makeinfo.c ../lib/system.h ../config.h ../lib/getopt.h \
+	makeinfo.h
+multi.o: multi.c ../lib/system.h ../config.h makeinfo.h
+
 info:
 dvi:
 check: all
 	$(MAKE)
 installcheck:
-install-info:
 install-exec: install-binPROGRAMS
 	@$(NORMAL_INSTALL)
 
@@ -227,19 +245,19 @@ installdirs:
 
 
 mostlyclean-generic:
-	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
-	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
-	rm -f Makefile $(DISTCLEANFILES)
-	rm -f config.cache config.log stamp-h stamp-h[0-9]*
-	test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+	-rm -f Makefile $(DISTCLEANFILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 
 maintainer-clean-generic:
-	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
-	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-compile \
 		mostlyclean-tags mostlyclean-generic
 
@@ -248,7 +266,7 @@ clean:  clean-binPROGRAMS clean-compile clean-tags clean-generic \
 
 distclean:  distclean-binPROGRAMS distclean-compile distclean-tags \
 		distclean-generic clean
-	rm -f config.status
+	-rm -f config.status
 
 maintainer-clean:  maintainer-clean-binPROGRAMS maintainer-clean-compile \
 		maintainer-clean-tags maintainer-clean-generic \
@@ -261,8 +279,8 @@ clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
 install-binPROGRAMS mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
 clean-tags maintainer-clean-tags distdir info dvi installcheck \
-install-info install-exec install-data install uninstall all \
-installdirs mostlyclean-generic distclean-generic clean-generic \
+install-exec install-data install uninstall all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 

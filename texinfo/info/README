@@ -6,8 +6,7 @@ maintain, and thus decided to write this one.
 
 The rewrite consists of about 12,000 lines of code written in about 12
 days.  I believe this version of Info to be in much better shape than the
-original Info, and the only reason it is in Beta test is because of its
-short life span.
+original Info.
 
 Info 2.0 is substantially different from its original standalone
 predecessor.  It appears almost identical to the GNU Emacs version, but has
@@ -24,8 +23,4 @@ A full listing of the commands available in Info can be gotten by typing
 `?' while within an Info window.  This produces a node in a window which
 can be viewed just like any Info node.
 
-Please send your comments, bug reports, and suggestions to
-
-	bug-texinfo@prep.ai.mit.edu
-
---Brian Fox <bfox@ai.mit.edu>
+--Brian Fox <bfox@gnu.org>

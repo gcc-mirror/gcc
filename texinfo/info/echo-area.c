@@ -1,7 +1,7 @@
 /* echo-area.c -- How to read a line in the echo area.
-   $Id: echo-area.c,v 1.2 1998/03/24 18:06:11 law Exp $
+   $Id: echo-area.c,v 1.1.1.2 1998/03/24 18:20:08 law Exp $
 
-   Copyright (C) 1993, 97 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97, 98 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -938,11 +938,9 @@ DECLARE_INFO_COMMAND (ea_possible_completions, _("List possible completions"))
       int limit, count, max_label = 0;
 
       initialize_message_buffer ();
-      printf_to_message_buffer
-        (_("There %s %d "), completions_found_index == 1 ? _("is") : _("are"),
-         completions_found_index);
-      printf_to_message_buffer
-        (_("completion%s:\n"), completions_found_index == 1 ? "" : "s");
+      printf_to_message_buffer (completions_found_index == 1
+                                ? _("One completion:\n")
+                                : _("%d completions:\n"));
 
       /* Find the maximum length of a label. */
       for (i = 0; i < completions_found_index; i++)

@@ -1,8 +1,17 @@
-# Makefile.in generated automatically by automake 1.2 from Makefile.am
+# Makefile.in generated automatically by automake 1.2f from Makefile.am
 
-# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
-# gives unlimited permission to copy, distribute and modify it.
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+# Be sure we're using the right version of Automake.
+# 1.2f was the first version that supported .txi as a Texinfo suffix.
 
 
 SHELL = /bin/sh
@@ -43,27 +52,26 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
 
-NORMAL_INSTALL = true
-PRE_INSTALL = true
-POST_INSTALL = true
-NORMAL_UNINSTALL = true
-PRE_UNINSTALL = true
-POST_UNINSTALL = true
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 DATADIRNAME = @DATADIRNAME@
-EXEEXT = @EXEEXT@
 GENCAT = @GENCAT@
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
 GT_NO = @GT_NO@
 GT_YES = @GT_YES@
+INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
 INSTOBJEXT = @INSTOBJEXT@
 INTLDEPS = @INTLDEPS@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
-MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
@@ -79,24 +87,24 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 l = @l@
 
-AUTOMAKE_OPTIONS = 1.1p
+AUTOMAKE_OPTIONS = 1.2f
 
 # Additional files to distribute.
-EXTRA_DIST = INTRODUCTION dir-example README-alpha
+EXTRA_DIST = INTRODUCTION dir-example
 
 # All subdirectories.
 # Do intl/ and lib/ first since the C programs depend on them.
 # Do doc/ last so makeinfo will be built when we get there.
 # Others are alphabetical.
-SUBDIRS = intl lib emacs info makeinfo po util doc
+SUBDIRS = intl lib info makeinfo po util doc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  README ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
-Makefile.am Makefile.in NEWS THANKS TODO acconfig.h acinclude.m4 \
-aclocal.m4 config.guess config.h.in config.sub configure configure.in \
-install-sh missing mkinstalldirs stamp-h.in texinfo.tex
+Makefile.am Makefile.in NEWS TODO acconfig.h aclocal.m4 config.guess \
+config.h.in config.sub configure configure.in install-sh missing \
+mkinstalldirs stamp-h.in texinfo.tex
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -106,28 +114,29 @@ GZIP = --best
 default: all
 
 .SUFFIXES:
-$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --cygnus Makefile
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps Makefile
 
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-$(ACLOCAL_M4): @MAINT@ configure.in  acinclude.m4
+$(ACLOCAL_M4):  configure.in 
 	cd $(srcdir) && $(ACLOCAL)
 
 config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
-$(srcdir)/configure: @MAINT@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
+$(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-config.h: stamp-h ; @:
+config.h: stamp-h
+	@:
 stamp-h: $(srcdir)/config.h.in $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES= CONFIG_HEADERS=config.h \
 	     $(SHELL) ./config.status
 	@echo timestamp > stamp-h
-$(srcdir)/config.h.in: @MAINT@$(srcdir)/stamp-h.in
+$(srcdir)/config.h.in: $(srcdir)/stamp-h.in
 $(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
 	cd $(top_srcdir) && $(AUTOHEADER)
 	@echo timestamp > $(srcdir)/stamp-h.in
@@ -137,7 +146,7 @@ mostlyclean-hdr:
 clean-hdr:
 
 distclean-hdr:
-	rm -f config.h
+	-rm -f config.h
 
 maintainer-clean-hdr:
 
@@ -151,10 +160,10 @@ maintainer-clean-hdr:
 @SET_MAKE@
 
 all-recursive install-data-recursive install-exec-recursive \
-installdirs-recursive install-recursive uninstall-recursive install-info-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
 check-recursive installcheck-recursive info-recursive dvi-recursive:
 	@set fnord $(MAKEFLAGS); amf=$$2; \
-	for subdir in $(SUBDIRS); do \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
 	  target=`echo $@ | sed s/-recursive//`; \
 	  echo "Making $$target in $$subdir"; \
 	  (cd $$subdir && $(MAKE) $$target) \
@@ -164,7 +173,9 @@ check-recursive installcheck-recursive info-recursive dvi-recursive:
 mostlyclean-recursive clean-recursive distclean-recursive \
 maintainer-clean-recursive:
 	@set fnord $(MAKEFLAGS); amf=$$2; \
-	rev=''; for subdir in $(SUBDIRS); do rev="$$rev $$subdir"; done; \
+	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
+	  rev="$$subdir $$rev"; \
+	done; \
 	for subdir in $$rev; do \
 	  target=`echo $@ | sed s/-recursive//`; \
 	  echo "Making $$target in $$subdir"; \
@@ -178,24 +189,29 @@ tags-recursive:
 
 tags: TAGS
 
-ID: $(HEADERS) $(SOURCES)
-	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $(SOURCES) $(HEADERS) $(LISP)
 
-TAGS: tags-recursive $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES)
+TAGS: tags-recursive $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) $(LISP)
 	tags=; \
 	here=`pwd`; \
 	list='$(SUBDIRS)'; for subdir in $$list; do \
 	  test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
 	done; \
-	test -z "$(ETAGS_ARGS)config.h.in$(SOURCES)$(HEADERS)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags config.h.in $(SOURCES) $(HEADERS) -o $$here/TAGS)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)config.h.in$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
 clean-tags:
 
 distclean-tags:
-	rm -f TAGS ID
+	-rm -f TAGS ID
 
 maintainer-clean-tags:
 
@@ -206,7 +222,7 @@ top_distdir = $(distdir)
 # it guarantees that the distribution is self-contained by making another
 # tarfile.
 distcheck: dist
-	rm -rf $(distdir)
+	-rm -rf $(distdir)
 	GZIP=$(GZIP) $(TAR) zxf $(distdir).tar.gz
 	mkdir $(distdir)/=build
 	mkdir $(distdir)/=inst
@@ -219,34 +235,34 @@ distcheck: dist
 	  && $(MAKE) install \
 	  && $(MAKE) installcheck \
 	  && $(MAKE) dist
-	rm -rf $(distdir)
+	-rm -rf $(distdir)
 	@echo "========================"; \
 	echo "$(distdir).tar.gz is ready for distribution"; \
 	echo "========================"
 dist: distdir
 	-chmod -R a+r $(distdir)
 	GZIP=$(GZIP) $(TAR) chozf $(distdir).tar.gz $(distdir)
-	rm -rf $(distdir)
+	-rm -rf $(distdir)
 dist-all: distdir
 	-chmod -R a+r $(distdir)
 	GZIP=$(GZIP) $(TAR) chozf $(distdir).tar.gz $(distdir)
-	rm -rf $(distdir)
+	-rm -rf $(distdir)
 distdir: $(DISTFILES)
-	rm -rf $(distdir)
+	-rm -rf $(distdir)
 	mkdir $(distdir)
 	-chmod 777 $(distdir)
 	@for file in $(DISTFILES); do \
-	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
-	for subdir in $(SUBDIRS); do		\
-	  test -d $(distdir)/$$subdir		\
-	  || mkdir $(distdir)/$$subdir		\
-	  || exit 1;				\
-	  chmod 777 $(distdir)/$$subdir;	\
-	  (cd $$subdir && $(MAKE) top_distdir=../$(top_distdir) distdir=../$(distdir)/$$subdir distdir) \
+	for subdir in $(SUBDIRS); do \
+	  test -d $(distdir)/$$subdir \
+	  || mkdir $(distdir)/$$subdir \
+	  || exit 1; \
+	  chmod 777 $(distdir)/$$subdir; \
+	  (cd $$subdir && $(MAKE) top_distdir=../$(distdir) distdir=../$(distdir)/$$subdir distdir) \
 	    || exit 1; \
 	done
 info: info-recursive
@@ -254,7 +270,6 @@ dvi: dvi-recursive
 check: all-am
 	$(MAKE) check-recursive
 installcheck: installcheck-recursive
-install-info: install-info-recursive
 all-recursive-am: config.h
 	$(MAKE) all-recursive
 
@@ -279,19 +294,19 @@ installdirs: installdirs-recursive
 
 
 mostlyclean-generic:
-	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
-	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
-	rm -f Makefile $(DISTCLEANFILES)
-	rm -f config.cache config.log stamp-h stamp-h[0-9]*
-	test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+	-rm -f Makefile $(DISTCLEANFILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 
 maintainer-clean-generic:
-	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
-	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 mostlyclean-am:  mostlyclean-hdr mostlyclean-tags mostlyclean-generic
 
 clean-am:  clean-hdr clean-tags clean-generic mostlyclean-am
@@ -306,12 +321,12 @@ mostlyclean:  mostlyclean-recursive mostlyclean-am
 clean:  clean-recursive clean-am
 
 distclean:  distclean-recursive distclean-am
-	rm -f config.status
+	-rm -f config.status
 
 maintainer-clean:  maintainer-clean-recursive maintainer-clean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
-	rm -f config.status
+	-rm -f config.status
 
 .PHONY: default mostlyclean-hdr distclean-hdr clean-hdr \
 maintainer-clean-hdr install-data-recursive uninstall-data-recursive \
@@ -321,10 +336,10 @@ installcheck-recursive info-recursive dvi-recursive \
 mostlyclean-recursive distclean-recursive clean-recursive \
 maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
 distclean-tags clean-tags maintainer-clean-tags distdir info dvi \
-installcheck install-info all-recursive-am all-am install-exec \
-install-data install uninstall all installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+installcheck all-recursive-am all-am install-exec install-data install \
+uninstall all installdirs mostlyclean-generic distclean-generic \
+clean-generic maintainer-clean-generic clean mostlyclean distclean \
+maintainer-clean
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

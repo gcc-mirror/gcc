@@ -1,16 +1,16 @@
-Notes on the GNU Translation Project
-************************************
+Notes on the Free Translation Project
+*************************************
 
-   GNU is going international!  The GNU Translation Project is a way to
-get maintainers, translators, and users all together, so that GNU will
-gradually become able to speak many languages.  A few packages already
-provide translations for their messages.
+   Free software is going international!  The Free Translation Project
+is a way to get maintainers of free software, translators, and users all
+together, so that will gradually become able to speak many languages.
+A few packages already provide translations for their messages.
 
-   If you found this `ABOUT-NLS' file inside a GNU distribution, you
-may assume that the distributed package does use GNU `gettext'
-internally, itself available at your nearest GNU archive site.  But you
-do *not* need to install GNU `gettext' prior to configuring, installing
-or using this package with messages translated.
+   If you found this `ABOUT-NLS' file inside a distribution, you may
+assume that the distributed package does use GNU `gettext' internally,
+itself available at your nearest GNU archive site.  But you do *not*
+need to install GNU `gettext' prior to configuring, installing or using
+this package with messages translated.
 
    Installers will find here some useful hints.  These notes also
 explain how users should proceed for getting the programs to use the
@@ -31,19 +31,23 @@ should configure it using
      ./configure --with-included-gettext
 
 to force usage of internationalizing routines provided within this
-package, despite the existence of internationalizing capabilities in
-the operating system where this package is being installed.  So far, no
-prior implementation provides as many useful features (such as locale
-alias or message inheritance).  It is also not possible to offer this
-additional functionality on top of a `catgets' implementation.  Future
-versions of GNU `gettext' will very likely convey even more
-functionality.  So it might be a good idea to change to GNU `gettext'
-as soon as possible.
+package, despite the existence of internationalizing capabilities in the
+operating system where this package is being installed.  So far, only
+the `gettext' implementation in the GNU C library version 2 provides as
+many features (such as locale alias or message inheritance) as the
+implementation here.  It is also not possible to offer this additional
+functionality on top of a `catgets' implementation.  Future versions of
+GNU `gettext' will very likely convey even more functionality.  So it
+might be a good idea to change to GNU `gettext' as soon as possible.
+
+   So you need not provide this option if you are using GNU libc 2 or
+you have installed a recent copy of the GNU gettext package with the
+included `libintl'.
 
 INSTALL Matters
 ===============
 
-   Some GNU packages are "localizable" when properly installed; the
+   Some packages are "localizable" when properly installed; the
 programs they contain can be made to speak your own native language.
 Most such packages use GNU `gettext'.  Other packages have their own
 ways to internationalization, predating GNU `gettext'.
@@ -113,37 +117,34 @@ shell prompt, merely execute `setenv LANG de' (in `csh'),
 can be done from your `.login' or `.profile' file, once and for all.
 
    An operating system might already offer message localization for
-many of its programs, while other programs (whether GNU or not) have
-been installed locally with the full capabilities of GNU `gettext'.
-Just using `gettext' extended syntax for `LANG' would break proper
-localization of already available operating system programs.  In this
-case, users should set both `LANGUAGE' and `LANG' variables in their
-environment, as programs using GNU `gettext' give preference to
-`LANGUAGE'.  For example, some Swedish users would rather read
-translations in German than English for when Swedish is not available.
-This is easily accomplished by setting `LANGUAGE' to `sv:de' while
-leaving `LANG' to `sv'.
+many of its programs, while other programs have been installed locally
+with the full capabilities of GNU `gettext'.  Just using `gettext'
+extended syntax for `LANG' would break proper localization of already
+available operating system programs.  In this case, users should set
+both `LANGUAGE' and `LANG' variables in their environment, as programs
+using GNU `gettext' give preference to `LANGUAGE'.  For example, some
+Swedish users would rather read translations in German than English for
+when Swedish is not available.  This is easily accomplished by setting
+`LANGUAGE' to `sv:de' while leaving `LANG' to `sv'.
 
 Translating Teams
 =================
 
-   For the GNU Translation Project to be a success, we need interested
+   For the Free Translation Project to be a success, we need interested
 people who like their own language and write it well, and who are also
 able to synergize with other translators speaking the same language.
 Each translation team has its own mailing list, courtesy of Linux
 International.  You may reach your translation team at the address
 `LL@li.org', replacing LL by the two-letter ISO 639 code for your
 language.  Language codes are *not* the same as the country codes given
-in ISO 3166.  The following translation teams exist, as of February
-1997:
+in ISO 3166.  The following translation teams exist, as of August 1997:
 
-     Arabic `ar', Chinese `zh', Czech `cs', Danish `da', Dutch `nl',
-     English `en', Esperanto `eo', Finnish `fi', French `fr', German
-     `de', Greek `el', Hebrew `he', Hungarian `hu', Irish `ga', Italian
-     `it', Indonesian `id', Japanese `ja', Korean `ko', Latin `la',
-     Norwegian `no', Persian `fa', Polish `pl', Portuguese `pt',
-     Russian `ru', Slovenian `sl', Spanish `es', Swedish `sv', Telugu
-     `te', Turkish `tr' and Ukrainian `uk'.
+     Chinese `zh', Czech `cs', Danish `da', Dutch `nl', English `en',
+     Esperanto `eo', Finnish `fi', French `fr', German `de', Hungarian
+     `hu', Irish `ga', Italian `it', Indonesian `id', Japanese `ja',
+     Korean `ko', Latin `la', Norwegian `no', Persian `fa', Polish
+     `pl', Portuguese `pt', Russian `ru', Slovenian `sl', Spanish `es',
+     Swedish `sv', and Turkish `tr'.
 
 For example, you may reach the Chinese translation team by writing to
 `zh@li.org'.
@@ -160,55 +161,53 @@ message to `sv-request@li.org', having this message body:
 *actively* in translations, or at solving translational difficulties,
 rather than merely lurking around.  If your team does not exist yet and
 you want to start one, or if you are unsure about what to do or how to
-get started, please write to `gnu-translation@gnu.ai.mit.edu' to reach
-the GNU coordinator for all translator teams.
+get started, please write to `translation@iro.umontreal.ca' to reach the
+coordinator for all translator teams.
 
    The English team is special.  It works at improving and uniformizing
-the terminology used in GNU.  Proven linguistic skill are praised more
-than programming skill, here.  For the time being, please avoid
-subscribing to the English team unless explicitly invited to do so.
+the terminology in use.  Proven linguistic skill are praised more than
+programming skill, here.
 
 Available Packages
 ==================
 
-   Languages are not equally supported in all GNU packages.  The
-following matrix shows the current state of GNU internationalization,
-as of February 1997.  The matrix shows, in regard of each package, for
-which languages PO files have been submitted to translation
-coordination.
+   Languages are not equally supported in all packages.  The following
+matrix shows the current state of internationalization, as of August
+1997.  The matrix shows, in regard of each package, for which languages
+PO files have been submitted to translation coordination.
 
-     Ready PO files    cs de en es fi fr ja ko nl no pl pt sl sv
-                     .-------------------------------------------.
-     bash            |    []          []       []                |  3
-     bison           |    []          []       []                |  3
-     clisp           |    [] []       []                         |  3
-     cpio            |    []    []    []       []    []          |  5
-     diffutils       |          []    []             []       [] |  4
-     enscript        |    []       [] []       []          []    |  5
-     fileutils       |    []    []    []       []    [] [] [] [] |  8
-     findutils       |    []    []    []    [] []    []       [] |  7
-     flex            |                []    []                [] |  3
-     gcal            |    []          []       []                |  3
-     gettext         |    []    []    []    [] [] [] [] [] [] [] | 11
-     grep            |          []    []    [] [] [] []    [] [] |  8
-     hello           |    []    []    []    [] [] [] [] [] [] [] | 10
-     id-utils        |    []          []                         |  2
-     indent          |    []                []                   |  2
-     libc            |    []    []    []    [] []    []       [] |  7
-     m4              |    []          [] []    []             [] |  5
-     make            |    []    []    []    [] []    []          |  6
-     music           |                []                         |  1
-     ptx             |    []    []    []       [] [] [] []    [] |  8
-     recode          |    []    []    []       []    [] [] [] [] |  8
-     sh-utils        |    []          []       []       []    [] |  5
-     sharutils       |    []    []    []       []             [] |  5
-     tar             |    []          []    [] [] [] [] [] [] [] |  9
-     texinfo         |                                           |  0
-     textutils       |    []    []    []    [] []    []          |  6
-     wdiff           | [] []    []    []       [] [] []       [] |  8
-                     `-------------------------------------------'
-       14 languages    cs de en es fi fr ja ko nl no pl pt sl sv
-       27 packages      1 22  1 14  1 25  1 10 20  7 14  7  7 15  145
+     Ready PO files    cs da de en es fi fr it ja ko nl no pl pt sl sv
+                     .-------------------------------------------------.
+     bash            |       []          []          []                |  3
+     bison           |       []          []          []                |  3
+     clisp           |       [] [] []    []                            |  4
+     cpio            |       []    []    []          []    []          |  5
+     diffutils       |       []    []    []                []       [] |  5
+     enscript        |       []    [] [] []          []          []    |  6
+     fileutils       | []    []    []    []       [] []    [] [] [] [] | 10
+     findutils       |       []    []    [] []    [] []    []       [] |  8
+     flex            |             []    []       []                [] |  4
+     gcal            |       []          []          []    []       [] |  5
+     gettext         |       []    []    []       [] [] [] [] [] [] [] | 11
+     grep            |       []    []    []       [] [] [] []    [] [] |  9
+     hello           |       []    []    []       [] [] [] [] [] [] [] | 10
+     id-utils        |       []          []                []          |  3
+     indent          |    [] []                   []       []          |  4
+     libc            |       []    []    []       [] []    []       [] |  7
+     m4              |       []          []    []    []             [] |  5
+     make            |       []    []    []       [] []    []          |  6
+     music           |                   []                []          |  2
+     ptx             |       []    []    []          [] [] [] []    [] |  8
+     recode          |    [] []    []    []          []    [] [] [] [] |  9
+     sh-utils        |       []          []          [] [] [] []    [] |  7
+     sharutils       |       []    []    []          []             [] |  5
+     tar             |       []          [] []    [] [] [] [] [] [] [] | 10
+     texinfo         |                   []                            |  1
+     textutils       | []    []    []    []       [] [] [] []       [] |  9
+     wdiff           | []    []    []    []          [] [] []       [] |  8
+                     `-------------------------------------------------'
+       16 languages    cs da de en es fi fr it ja ko nl no pl pt sl sv
+       27 packages      3  2 24  1 17  1 26  2  1 11 20  9 19  7  7 17  167
 
    Some counters in the preceding matrix are higher than the number of
 visible blocks let us expect.  This is because a few extra PO files are
@@ -219,8 +218,8 @@ dialects.
 which it applies should also have been internationalized and
 distributed as such by its maintainer.  There might be an observable
 lag between the mere existence a PO file and its wide availability in a
-GNU distribution.
+distribution.
 
-   If February 1997 seems to be old, you may fetch a more recent copy
-of this `ABOUT-NLS' file on most GNU archive sites.
+   If August 1997 seems to be old, you may fetch a more recent copy of
+this `ABOUT-NLS' file on most GNU archive sites.
 

@@ -185,6 +185,9 @@
 /* Define if you have the <malloc.h> header file.  */
 #undef HAVE_MALLOC_H
 
+/* Define if you have the <ncurses/termcap.h> header file.  */
+#undef HAVE_NCURSES_TERMCAP_H
+
 /* Define if you have the <nl_types.h> header file.  */
 #undef HAVE_NL_TYPES_H
 
@@ -202,6 +205,9 @@
 
 /* Define if you have the <sys/file.h> header file.  */
 #undef HAVE_SYS_FILE_H
+
+/* Define if you have the <sys/param.h> header file.  */
+#undef HAVE_SYS_PARAM_H
 
 /* Define if you have the <sys/ptem.h> header file.  */
 #undef HAVE_SYS_PTEM_H
@@ -235,6 +241,9 @@
 
 /* Define if you have the i library (-li).  */
 #undef HAVE_LIBI
+
+/* Define if you have the z library (-lz).  */
+#undef HAVE_LIBZ
 
 /* For gettext (NLS) */
 #include <libintl.h>

@@ -1,6 +1,57 @@
-Thu Sep  4 15:01:11 1997  Jeffrey A Law  (law@cygnus.com)
+1997-09-06 02:10  Ulrich Drepper  <drepper@cygnus.com>
 
-	* Makefile.in (install-info): Add dummy target.
+	* intlh.inst.in: Reformat copyright.
+
+1997-08-19 15:22  Ulrich Drepper  <drepper@cygnus.com>
+
+	* dcgettext.c (DCGETTEXT): Remove wrong comment.
+
+1997-08-16 00:13  Ulrich Drepper  <drepper@cygnus.com>
+
+	* Makefile.in (install-data): Don't change directory to install.
+
+1997-08-01 14:30  Ulrich Drepper  <drepper@cygnus.com>
+
+	* cat-compat.c: Fix copyright.
+
+	* localealias.c: Don't define strchr unless !HAVE_STRCHR.
+
+	* loadmsgcat.c: Update copyright.  Fix typos.
+
+	* l10nflist.c: Don't define strchr unless !HAVE_STRCHR.
+	(_nl_make_l10nflist): Handle sponsor and revision correctly.
+
+	* gettext.c: Update copyright.
+	* gettext.h: Likewise.
+	* hash-string.h: Likewise.
+
+	* finddomain.c: Remoave dead code.  Define strchr only if
+	!HAVE_STRCHR.
+
+	* explodename.c: Include <sys/types.h>.
+
+	* explodename.c: Reformat copyright text.
+	(_nl_explode_name): Fix typo.
+
+	* dcgettext.c: Define and use __set_errno.
+	(guess_category_value): Don't use setlocale if HAVE_LC_MESSAGES is
+	not defined.
+
+	* bindtextdom.c: Pretty printing.
+
+1997-05-01 02:25  Ulrich Drepper  <drepper@cygnus.com>
+
+	* dcgettext.c (guess_category_value): Don't depend on
+	HAVE_LC_MESSAGES.  We don't need the macro here.
+	Patch by Bruno Haible <haible@ilog.fr>.
+
+	* cat-compat.c (textdomain): DoN't refer to HAVE_SETLOCALE_NULL
+	macro.  Instead use HAVE_LOCALE_NULL and define it when using
+	glibc, as in dcgettext.c.
+	Patch by Bruno Haible <haible@ilog.fr>.
+
+	* Makefile.in (CPPFLAGS): New variable.  Reported by Franc,ois
+	Pinard.
 
 Mon Mar 10 06:51:17 1997  Ulrich Drepper  <drepper@cygnus.com>
 

@@ -6,23 +6,23 @@
    Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97
    	Free Software Foundation, Inc.
 
-NOTE: The canonical source of this file is maintained with the GNU C Library.
-Bugs can be reported to bug-glibc@prep.ai.mit.edu.
+   NOTE: The canonical source of this file is maintained with the GNU C Library.
+   Bugs can be reported to bug-glibc@prep.ai.mit.edu.
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option) any
-later version.
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-USA.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.  */
 
 /* This tells Alpha OSF/1 not to define a getopt prototype in <stdio.h>.
    Ditto for AIX 3.2 and <stdlib.h>.  */
@@ -77,12 +77,6 @@ USA.  */
 #if HAVE_STRING_H - 0
 #include <string.h>
 #endif
-#endif
-
-#if defined (WIN32) && !defined (__CYGWIN32__)
-/* It's not Unix, really.  See?  Capital letters.  */
-#include <windows.h>
-#define getpid() GetCurrentProcessId()
 #endif
 
 #ifndef _
@@ -262,8 +256,6 @@ static int nonoption_flags_len;
 static int original_argc;
 static char *const *original_argv;
 
-extern pid_t __libc_pid;
-
 /* Make sure the environment variable bash 2.0 puts in the environment
    is valid for the getopt call we must make sure that the ARGV passed
    to getopt is that one passed to the process.  */
@@ -276,7 +268,9 @@ store_args_and_env (int argc, char *const *argv)
   original_argc = argc;
   original_argv = argv;
 }
+# ifdef text_set_element
 text_set_element (__libc_subinit, store_args_and_env);
+# endif /* text_set_element */
 
 # define SWAP_FLAGS(ch1, ch2) \
   if (nonoption_flags_len > 0)						      \
@@ -329,9 +323,9 @@ exchange (argv)
 	nonoption_flags_len = nonoption_flags_max_len = 0;
       else
 	{
-	  memcpy (new_str, __getopt_nonoption_flags, nonoption_flags_max_len);
-	  memset (&new_str[nonoption_flags_max_len], '\0',
-		  top + 1 - nonoption_flags_max_len);
+	  memset (__mempcpy (new_str, __getopt_nonoption_flags,
+			     nonoption_flags_max_len),
+		  '\0', top + 1 - nonoption_flags_max_len);
 	  nonoption_flags_max_len = top + 1;
 	  __getopt_nonoption_flags = new_str;
 	}
@@ -440,11 +434,8 @@ _getopt_initialize (argc, argv, optstring)
 	      if (__getopt_nonoption_flags == NULL)
 		nonoption_flags_max_len = -1;
 	      else
-		{
-		  memcpy (__getopt_nonoption_flags, orig_str, len);
-		  memset (&__getopt_nonoption_flags[len], '\0',
-			  nonoption_flags_max_len - len);
-		}
+		memset (__mempcpy (__getopt_nonoption_flags, orig_str, len),
+			'\0', nonoption_flags_max_len - len);
 	    }
 	}
       nonoption_flags_len = nonoption_flags_max_len;

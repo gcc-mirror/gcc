@@ -1,14 +1,6 @@
 Getting Started with Texinfo
 ============================
 
-25 March 1993
-
-Most of the installation instructions are described in the file `INSTALL'.
-One additional note to make is that if your info files are in a nonstandard
-place (i.e. not in the `info' directory immediately under $prefix) you may
-wish to change the default info path as specified via DEFAULT_INFOPATH in
-info/Makefile.in.
-
 "Texinfo" is a documentation system that uses a single source file to
 produce both on-line information and printed output.  Using Texinfo,
 you can create a printed document with the normal features of a book,
@@ -16,23 +8,23 @@ including chapters, sections, cross references, and indices.  From the
 same Texinfo source file, you can create a menu-driven, on-line Info
 file with nodes, menus, cross references, and indices.
   
-The name of the Texinfo source documentation file is `texinfo.texi'.
+The name of the Texinfo source documentation file is `texinfo.txi'.
 You can produce both on-line information and printed output from this
 source file.  The documentation describes Texinfo in detail, including
 how to write Texinfo files, how to format them for both hard copy and
 Info, and how to install Info files.
 
 To get started, you need to create either a printed manual or an
-on-line Info file from the `texinfo.texi' file.  You do not need to
+on-line Info file from the `texinfo.txi' file.  You do not need to
 create both, although you will probably want both eventually.
 
 To learn how to use Info, read the info documentation.  You can do this in
 one of two ways: using the standalone `info' program, or using Info mode in
 GNU Emacs.
 
-  * If you want to use the `info' program, type
+  * If you want to use the `info' program, run
 
-         $ info -f info-stnd
+         info -f info-stnd
 
   * If you want to use Emacs, start up emacs and type `C-h i' [M-x info].
     Follow the instructions to learn how to use Info.
@@ -40,7 +32,7 @@ GNU Emacs.
 After learning how to use Info, you can read the Texinfo documentation.
 Using the standalone `info', type the following at the shell prompt:
 
-         $ info -f texinfo
+         info -f texinfo
 
 To use read this manual in Emacs, you first need to edit the Info-directory
 menu (the file `dir' in the system info directory) to contain the
@@ -114,6 +106,6 @@ The name of the printing command depends on the system; `lpr -d' is
 common, and is illustrated here.  You may use a different name for the
 printing command.
 
-Please report bugs to bug-texinfo@prep.ai.mit.edu.
+Please report bugs to bug-texinfo@gnu.org.
 
 Happy formatting.
