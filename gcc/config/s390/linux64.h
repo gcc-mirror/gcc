@@ -22,8 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _LINUX64_H
 #define _LINUX64_H
 
-#include <s390/linux.h>              /* Base linux target machine definitions*/
-
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 

@@ -65,6 +65,11 @@ extern int target_flags;
 /* Define this to change the optimizations performed by default.  */
 #define OPTIMIZATION_OPTIONS(LEVEL, SIZE) optimization_options(LEVEL, SIZE)
 
+/* Defines for REAL_ARITHMETIC.  */
+#define IEEE_FLOAT 1
+#define TARGET_IBM_FLOAT           0
+#define TARGET_IEEE_FLOAT          1 
+
 /* The current function count for create unique internal labels.  */
 
 extern int s390_function_count;
