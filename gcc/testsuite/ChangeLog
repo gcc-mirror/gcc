@@ -1,3 +1,7 @@
+2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20040130-1.c: New test.
+
 2004-01-29  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* objc.dg/call-super-2.m: Include stddef.h for size_t.
