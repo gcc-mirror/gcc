@@ -3391,8 +3391,14 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 	}
       else
 	{
+	  /* If this is part of a declaration, create a type variant,
+	     otherwise, this is part of a type definition, so add it 
+	     to the base type.  */
 	  type_attr_list = tree_cons (attr_name, attr_args, type_attr_list);
-	  type = build_type_attribute_variant (type, type_attr_list);
+	  if (decl != 0)
+	    type = build_type_attribute_variant (type, type_attr_list);
+	  else
+	    TYPE_ATTRIBUTES (type) = type_attr_list;
 	}
       if (decl != 0)
 	TREE_TYPE (decl) = type;
