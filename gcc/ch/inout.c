@@ -1652,7 +1652,7 @@ check_text_length (length)
     }
   if (compare_int_csts (LE_EXPR, length, integer_zero_node))
     {
-      error ("text length must be greater then 0");
+      error ("text length must be greater than 0");
       return integer_one_node;
     }
   return length;

@@ -4427,7 +4427,7 @@ layout_enum (enumtype)
 	      constant_expression_warning (value);
 	      if (tree_int_cst_lt (value, integer_zero_node))
 		{
-		  error ("enumerator value for `%s' is less then 0",
+		  error ("enumerator value for `%s' is less than 0",
 			 IDENTIFIER_POINTER (DECL_NAME (decl)));
 		  value = error_mark_node;
 		}
