@@ -5416,10 +5416,9 @@ instantiate_class_template (tree type)
 #endif
 
   base_list = NULL_TREE;
-  if (BINFO_BASE_BINFOS (pbinfo))
+  if (BINFO_N_BASE_BINFOS (pbinfo))
     {
-      tree pbases = BINFO_BASE_BINFOS (pbinfo);
-      tree paccesses = BINFO_BASE_ACCESSES (pbinfo);
+      tree pbase_binfo;
       tree context = TYPE_CONTEXT (type);
       bool pop_p;
       int i;
@@ -5431,22 +5430,18 @@ instantiate_class_template (tree type)
   
       /* Substitute into each of the bases to determine the actual
 	 basetypes.  */
-      for (i = 0; i < TREE_VEC_LENGTH (pbases); ++i)
+      for (i = 0; BINFO_BASE_ITERATE (pbinfo, i, pbase_binfo); i++)
 	{
 	  tree base;
-	  tree access;
-	  tree pbase;
-
-	  pbase = TREE_VEC_ELT (pbases, i);
-	  access = TREE_VEC_ELT (paccesses, i);
+	  tree access = BINFO_BASE_ACCESS (pbinfo, i);
 
 	  /* Substitute to figure out the base class.  */
-	  base = tsubst (BINFO_TYPE (pbase), args, tf_error, NULL_TREE);
+	  base = tsubst (BINFO_TYPE (pbase_binfo), args, tf_error, NULL_TREE);
 	  if (base == error_mark_node)
 	    continue;
 	  
 	  base_list = tree_cons (access, base, base_list);
-	  if (BINFO_VIRTUAL_P (pbase))
+	  if (BINFO_VIRTUAL_P (pbase_binfo))
 	    TREE_TYPE (base_list) = integer_type_node;
 	}
 
@@ -7421,6 +7416,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  if (ctx != DECL_CONTEXT (t))
 	    return lookup_field (ctx, DECL_NAME (t), 0, false);
 	}
+      
       return t;
 
     case VAR_DECL:
@@ -9366,8 +9362,8 @@ get_template_base_recursive (tree tparms,
                              tree rval, 
                              int flags)
 {
-  tree binfos;
-  int i, n_baselinks;
+  tree base_binfo;
+  int i;
   tree arg = BINFO_TYPE (arg_binfo);
 
   if (!(flags & GTB_IGNORE_TYPE))
@@ -9389,13 +9385,9 @@ get_template_base_recursive (tree tparms,
 	rval = r;
     }
 
-  binfos = BINFO_BASE_BINFOS (arg_binfo);
-  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
   /* Process base types.  */
-  for (i = 0; i < n_baselinks; i++)
+  for (i = 0; BINFO_BASE_ITERATE (arg_binfo, i, base_binfo); i++)
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
       int this_virtual;
 
       /* Skip this base, if we've already seen it.  */

@@ -937,8 +937,6 @@ struct lang_type_header GTY(())
   BOOL_BITFIELD has_const_assign_ref : 1;
 };
 
-DEF_VEC_P (tree);
-
 /* This structure provides additional information above and beyond
    what is provide in the ordinary tree_type.  In the past, we used it
    for the types of class types, template parameters types, typename
@@ -1396,24 +1394,6 @@ struct lang_type GTY(())
 
 #define BINFO_PRIMARY_P(NODE) \
   (BINFO_PRIMARY_BASE_OF (NODE) != NULL_TREE)
-
-/* The index in the VTT where this subobject's sub-VTT can be found.
-   NULL_TREE if there is no sub-VTT.  */
-#define BINFO_SUBVTT_INDEX(NODE) BINFO_LANG_SLOT(NODE, 0)
-
-/* The index in the VTT where the vptr for this subobject can be
-   found.  NULL_TREE if there is no secondary vptr in the VTT.  */
-#define BINFO_VPTR_INDEX(NODE) BINFO_LANG_SLOT(NODE, 1)
-
-/* The binfo of which NODE is a primary base.  (This is different from
-   BINFO_INHERITANCE_CHAIN for virtual base because a virtual base is
-   sometimes a primary base for a class for which it is not an
-   immediate base.)  */
-#define BINFO_PRIMARY_BASE_OF(NODE) BINFO_LANG_SLOT(NODE, 2)
-
-/* C++ binfos have 3 additional entries.  */
-
-#define BINFO_LANG_SLOTS (3)
 
 /* Nonzero if this binfo is for a dependent base - one that should not
    be searched.  */

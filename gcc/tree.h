@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "machmode.h"
 #include "input.h"
 #include "statistics.h"
+#include "vec.h"
 
 /* Codes of tree nodes */
 
@@ -74,6 +75,10 @@ extern const unsigned char tree_code_length[];
 /* Names of tree components.  */
 
 extern const char *const tree_code_name[];
+
+/* A vector of trees.  */
+DEF_VEC_P(tree);
+
 
 /* Classify which part of the compiler has defined a given builtin function.
    Note that we assume below that this is no more than two bits.  */
@@ -1641,20 +1646,19 @@ struct tree_type GTY(())
 
    If this basetype describes type D as inherited in C, and if the
    basetypes of D are E and F, then this vector contains binfos for
-   inheritance of E and F by C.
-
-   ??? This could probably be done by just allocating the
-   base types at the end of this TREE_VEC (instead of using
-   another TREE_VEC).  This would simplify the calculation
-   of how many basetypes a given type had.  */
-#define BINFO_BASE_BINFOS(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_binfos)
+   inheritance of E and F by C.  */
+#define BINFO_BASE_BINFOS(NODE) (&TREE_BINFO_CHECK(NODE)->binfo.base_binfos)
 
 /* The number of basetypes for NODE.  */
-#define BINFO_N_BASE_BINFOS(NODE) \
-  (BINFO_BASE_BINFOS (NODE) ? TREE_VEC_LENGTH (BINFO_BASE_BINFOS (NODE)) : 0)
+#define BINFO_N_BASE_BINFOS(NODE) (VEC_length (tree, BINFO_BASE_BINFOS (NODE)))
 
 /* Accessor macro to get to the Nth base binfo of this binfo.  */
-#define BINFO_BASE_BINFO(NODE,N) TREE_VEC_ELT (BINFO_BASE_BINFOS (NODE), (N))
+#define BINFO_BASE_BINFO(NODE,N) \
+ (VEC_index (tree, BINFO_BASE_BINFOS (NODE), (N)))
+#define BINFO_BASE_ITERATE(NODE,N,B) \
+ (VEC_iterate (tree, BINFO_BASE_BINFOS (NODE), (N), (B)))
+#define BINFO_BASE_APPEND(NODE,T) \
+ (VEC_quick_push (tree, BINFO_BASE_BINFOS (NODE), (T)))
 
 /* For a BINFO record describing a virtual base class, i.e., one where
    TREE_VIA_VIRTUAL is set, this field assists in locating the virtual
@@ -1669,10 +1673,19 @@ struct tree_type GTY(())
 #define BINFO_BASE_ACCESSES(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_accesses)
 #define BINFO_BASE_ACCESS(NODE,N) TREE_VEC_ELT (BINFO_BASE_ACCESSES(NODE), (N))
 
-/* Number of language independent elements in a binfo.  Languages may
-   add additional trailing elements.  */
+/* The index in the VTT where this subobject's sub-VTT can be found.
+   NULL_TREE if there is no sub-VTT.  */
+#define BINFO_SUBVTT_INDEX(NODE) (TREE_BINFO_CHECK(NODE)->binfo.vtt_subvtt)
 
-#define BINFO_LANG_SLOT(NODE,N) (TREE_BINFO_CHECK(NODE)->binfo.lang_slots[N])
+/* The index in the VTT where the vptr for this subobject can be
+   found.  NULL_TREE if there is no secondary vptr in the VTT.  */
+#define BINFO_VPTR_INDEX(NODE) (TREE_BINFO_CHECK(NODE)->binfo.vtt_vptr)
+
+/* The binfo of which NODE is a primary base.  (This is different from
+   BINFO_INHERITANCE_CHAIN for virtual base because a virtual base is
+   sometimes a primary base for a class for which it is not an
+   immediate base.)  */
+#define BINFO_PRIMARY_BASE_OF(NODE) (TREE_BINFO_CHECK(NODE)->binfo.primary)
 
 /* The BINFO_INHERITANCE_CHAIN points at the binfo for the base
    inheriting this base for non-virtual bases. For virtual bases it
@@ -1687,14 +1700,16 @@ struct tree_binfo GTY (())
   tree offset;
   tree vtable;
   tree virtuals;
-  tree base_binfos;
   tree vptr_field;
   tree base_accesses;
   tree inheritance;
 
-  tree GTY ((length ("binfo_lang_slots"))) lang_slots[1];
+  tree vtt_subvtt;
+  tree vtt_vptr;
+  tree primary;
+
+  VEC(tree) base_binfos;
 };
-extern GTY (()) unsigned binfo_lang_slots;
 
 
 /* Define fields and accessors for nodes representing declared names.  */

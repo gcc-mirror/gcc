@@ -597,7 +597,7 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
 	return new_binfo;
     }
   
-  new_binfo = make_tree_binfo (BINFO_LANG_SLOTS);
+  new_binfo = make_tree_binfo (binfo ? BINFO_N_BASE_BINFOS (binfo) : 0);
   BINFO_TYPE (new_binfo) = type;
 
   /* Chain it into the inheritance graph.  */
@@ -606,7 +606,8 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
   
   if (binfo)
     {
-      int ix, n = BINFO_N_BASE_BINFOS (binfo);
+      int ix;
+      tree base_binfo;
       
       my_friendly_assert (!BINFO_DEPENDENT_BASE_P (binfo), 20040712);
       my_friendly_assert (type == BINFO_TYPE (binfo), 20040714);
@@ -614,18 +615,12 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
       BINFO_OFFSET (new_binfo) = BINFO_OFFSET (binfo);
       BINFO_VIRTUALS (new_binfo) = BINFO_VIRTUALS (binfo);
       
-      /* Create a new base binfo vector.  */
-      if (n)
-	{
-	  BINFO_BASE_BINFOS (new_binfo) = make_tree_vec (n);
-          /* We do not need to copy the accesses, as they are read only.  */
-	  BINFO_BASE_ACCESSES (new_binfo) = BINFO_BASE_ACCESSES (binfo);
-	}
+      /* We do not need to copy the accesses, as they are read only.  */
+      BINFO_BASE_ACCESSES (new_binfo) = BINFO_BASE_ACCESSES (binfo);
       
       /* Recursively copy base binfos of BINFO.  */
-      for (ix = 0; ix != n; ix++)
+      for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
 	{
-	  tree base_binfo = BINFO_BASE_BINFO (binfo, ix);
 	  tree new_base_binfo;
 	  
 	  my_friendly_assert (!BINFO_DEPENDENT_BASE_P (base_binfo), 20040713);
@@ -635,7 +630,7 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
 	  
 	  if (!BINFO_INHERITANCE_CHAIN (new_base_binfo))
 	    BINFO_INHERITANCE_CHAIN (new_base_binfo) = new_binfo;
-	  BINFO_BASE_BINFO (new_binfo, ix) = new_base_binfo;
+	  BINFO_BASE_APPEND (new_binfo, new_base_binfo);
 	}
     }
   else

@@ -4400,11 +4400,15 @@ arg_assoc_class (struct arg_lookup *k, tree type)
     return true;
 
   if (TYPE_BINFO (type))
-    /* Process baseclasses.  */
-    for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
-      if (arg_assoc_class
-	  (k, BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type), i))))
-	return true;
+    {
+      /* Process baseclasses.  */
+      tree binfo, base_binfo;
+      
+      for (binfo = TYPE_BINFO (type), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	if (arg_assoc_class (k, BINFO_TYPE (base_binfo)))
+	  return true;
+    }
   
   /* Process friends.  */
   for (list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list; 

@@ -1633,10 +1633,7 @@ dbxout_type (tree type, int full)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       {
-	int i, n_baseclasses = 0;
-
-	if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
-	  n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
+	tree binfo = TYPE_BINFO (type);
 
 	/* Output a structure type.  We must use the same test here as we
 	   use in the DBX_NO_XREFS case above.  */
@@ -1683,65 +1680,72 @@ dbxout_type (tree type, int full)
 	CHARS (1);
 	print_wide_int (int_size_in_bytes (type));
 
-	if (use_gnu_debug_info_extensions)
+	if (binfo)
 	  {
-	    if (n_baseclasses)
-	      {
-		have_used_extensions = 1;
-		fprintf (asmfile, "!%d,", n_baseclasses);
-		CHARS (8);
-	      }
-	  }
-	for (i = 0; i < n_baseclasses; i++)
-	  {
-	    tree binfo = TYPE_BINFO (type);
-	    tree child = BINFO_BASE_BINFO (binfo, i);
-	    tree access = (BINFO_BASE_ACCESSES (binfo)
-			   ? BINFO_BASE_ACCESS (binfo, i) : access_public_node);
-
+	    int i;
+	    tree child;
+	    
 	    if (use_gnu_debug_info_extensions)
 	      {
-		have_used_extensions = 1;
-                putc (BINFO_VIRTUAL_P (child) ? '1' : '0', asmfile);
-                putc (access == access_public_node ? '2' :
-                      (access == access_protected_node ? '1' :'0'),
-                      asmfile);
-		CHARS (2);
-		if (BINFO_VIRTUAL_P (child)
-		    && strcmp (lang_hooks.name, "GNU C++") == 0)
-		  /* For a virtual base, print the (negative) offset within
-		     the vtable where we must look to find the necessary
-		     adjustment.  */
-		  print_wide_int (tree_low_cst (BINFO_VPTR_FIELD (child), 0)
-				  * BITS_PER_UNIT);
-		else
-		  print_wide_int (tree_low_cst (BINFO_OFFSET (child), 0)
-				  * BITS_PER_UNIT);
-		putc (',', asmfile);
-		CHARS (1);
-		dbxout_type (BINFO_TYPE (child), 0);
-		putc (';', asmfile);
-		CHARS (1);
+		if (BINFO_N_BASE_BINFOS (binfo))
+		  {
+		    have_used_extensions = 1;
+		    fprintf (asmfile, "!%d,", BINFO_N_BASE_BINFOS (binfo));
+		    CHARS (8);
+		  }
 	      }
-	    else
+	    for (i = 0; BINFO_BASE_ITERATE (binfo, i, child); i++)
 	      {
-		/* Print out the base class information with fields
-		   which have the same names at the types they hold.  */
-		dbxout_type_name (BINFO_TYPE (child));
-		putc (':', asmfile);
-		CHARS (1);
-		dbxout_type (BINFO_TYPE (child), full);
-		putc (',', asmfile);
-		CHARS (1);
-		print_wide_int (tree_low_cst (BINFO_OFFSET (child), 0)
-				* BITS_PER_UNIT);
-		putc (',', asmfile);
-		CHARS (1);
-		print_wide_int (tree_low_cst (TYPE_SIZE (BINFO_TYPE (child)),
-					      0)
-				* BITS_PER_UNIT);
-		putc (';', asmfile);
-		CHARS (1);
+		tree access = (BINFO_BASE_ACCESSES (binfo)
+			       ? BINFO_BASE_ACCESS (binfo, i)
+			       : access_public_node);
+
+		if (use_gnu_debug_info_extensions)
+		  {
+		    have_used_extensions = 1;
+		    putc (BINFO_VIRTUAL_P (child) ? '1' : '0', asmfile);
+		    putc (access == access_public_node ? '2' :
+			  (access == access_protected_node ? '1' :'0'),
+			  asmfile);
+		    CHARS (2);
+		    if (BINFO_VIRTUAL_P (child)
+			&& strcmp (lang_hooks.name, "GNU C++") == 0)
+		      /* For a virtual base, print the (negative)
+		     	 offset within the vtable where we must look
+		     	 to find the necessary adjustment.  */
+		      print_wide_int
+			(tree_low_cst (BINFO_VPTR_FIELD (child), 0)
+			 * BITS_PER_UNIT);
+		    else
+		      print_wide_int (tree_low_cst (BINFO_OFFSET (child), 0)
+				      * BITS_PER_UNIT);
+		    putc (',', asmfile);
+		    CHARS (1);
+		    dbxout_type (BINFO_TYPE (child), 0);
+		    putc (';', asmfile);
+		    CHARS (1);
+		  }
+		else
+		  {
+		    /* Print out the base class information with
+		       fields which have the same names at the types
+		       they hold.  */
+		    dbxout_type_name (BINFO_TYPE (child));
+		    putc (':', asmfile);
+		    CHARS (1);
+		    dbxout_type (BINFO_TYPE (child), full);
+		    putc (',', asmfile);
+		    CHARS (1);
+		    print_wide_int (tree_low_cst (BINFO_OFFSET (child), 0)
+				    * BITS_PER_UNIT);
+		    putc (',', asmfile);
+		    CHARS (1);
+		    print_wide_int
+		      (tree_low_cst (TYPE_SIZE (BINFO_TYPE (child)), 0)
+		       * BITS_PER_UNIT);
+		    putc (';', asmfile);
+		    CHARS (1);
+		  }
 	      }
 	  }
       }

@@ -1130,23 +1130,17 @@ check_bases (tree t,
              int* cant_have_const_ctor_p,
              int* no_const_asn_ref_p)
 {
-  int n_baseclasses;
   int i;
   int seen_non_virtual_nearly_empty_base_p;
-  tree binfos;
+  tree base_binfo;
+  tree binfo;
 
-  binfos = BINFO_BASE_BINFOS (TYPE_BINFO (t));
-  n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
   seen_non_virtual_nearly_empty_base_p = 0;
 
-  for (i = 0; i < n_baseclasses; ++i) 
+  for (binfo = TYPE_BINFO (t), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      tree base_binfo;
-      tree basetype;
-
-      /* Figure out what base we're looking at.  */
-      base_binfo = TREE_VEC_ELT (binfos, i);
-      basetype = TREE_TYPE (base_binfo);
+      tree basetype = TREE_TYPE (base_binfo);
 
       my_friendly_assert (COMPLETE_TYPE_P (basetype), 20040714);
       
@@ -1269,17 +1263,15 @@ determine_primary_base (tree t)
   unsigned i, n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
   tree type_binfo = TYPE_BINFO (t);
   tree vbase_binfo;
+  tree base_binfo;
   VEC(tree) *vbases;
 
   /* If there are no baseclasses, there is certainly no primary base.  */
   if (n_baseclasses == 0)
     return;
 
-  type_binfo = TYPE_BINFO (t);
-
-  for (i = 0; i < n_baseclasses; i++)
+  for (i = 0; BINFO_BASE_ITERATE (type_binfo, i, base_binfo); i++)
     {
-      tree base_binfo = BINFO_BASE_BINFO (type_binfo, i);
       tree basetype = BINFO_TYPE (base_binfo);
 
       if (TYPE_CONTAINS_VPTR_P (basetype))
@@ -1325,12 +1317,12 @@ determine_primary_base (tree t)
       /* See if this virtual base is an indirect primary base.  To be
          so, it must be a primary base within the hierarchy of one of
          our direct bases.  */
-      for (j = 0; j != n_baseclasses; ++j) 
+      for (j = 0; BINFO_BASE_ITERATE (type_binfo, j, base_binfo); j++)
 	{
 	  unsigned k;
 	  VEC (tree) *base_vbases;
 	  tree base_vbase_binfo;
-	  tree basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (t), j));
+	  tree basetype = BINFO_TYPE (base_binfo);
 	  
 	  for (base_vbases = CLASSTYPE_VBASECLASSES (basetype), k = 0;
 	       VEC_iterate (tree, base_vbases, k, base_vbase_binfo); k++)
@@ -1407,7 +1399,6 @@ determine_primary_base (tree t)
 static void
 finish_struct_bits (tree t)
 {
-  int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
   tree variants;
   
   /* Fix up variants (if any).  */
@@ -1439,7 +1430,7 @@ finish_struct_bits (tree t)
       TYPE_SIZE_UNIT (variants) = TYPE_SIZE_UNIT (t);
     }
 
-  if (n_baseclasses && TYPE_POLYMORPHIC_P (t))
+  if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)) && TYPE_POLYMORPHIC_P (t))
     /* For a class w/o baseclasses, `finish_struct' has set
        CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by definition).
        Similarly for a class whose base classes do not have vtables.
@@ -1537,10 +1528,10 @@ maybe_warn_about_overly_private_class (tree t)
 	 constructors/destructors we want to use the code below that
 	 issues error messages specifically referring to
 	 constructors/destructors.)  */
-      int i;
+      unsigned i;
       tree binfo = TYPE_BINFO (t);
       
-      for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); i++)
+      for (i = 0; i != BINFO_N_BASE_BINFOS (binfo); i++)
 	if (BINFO_BASE_ACCESS (binfo, i) != access_private_node)
 	  {
 	    has_nonprivate_method = 1;
@@ -2370,6 +2361,8 @@ warn_hidden (tree t)
       tree name;
       tree fndecl;
       tree base_fndecls;
+      tree base_binfo;
+      tree binfo;
       int j;
 
       /* All functions in this slot in the CLASSTYPE_METHOD_VEC will
@@ -2379,9 +2372,10 @@ warn_hidden (tree t)
       base_fndecls = NULL_TREE;
       /* Iterate through all of the base classes looking for possibly
 	 hidden functions.  */
-      for (j = 0; j < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); j++)
+      for (binfo = TYPE_BINFO (t), j = 0;
+	   BINFO_BASE_ITERATE (binfo, j, base_binfo); j++)
 	{
-	  tree basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (t), j));
+	  tree basetype = BINFO_TYPE (base_binfo);
 	  base_fndecls = chainon (get_basefndecls (name, basetype),
 				  base_fndecls);
 	}
@@ -3178,11 +3172,9 @@ walk_subobject_offsets (tree type,
       /* Iterate through the direct base classes of TYPE.  */
       if (!type_binfo)
 	type_binfo = TYPE_BINFO (type);
-      for (i = 0; i < BINFO_N_BASE_BINFOS (type_binfo); ++i)
+      for (i = 0; BINFO_BASE_ITERATE (type_binfo, i, binfo); i++)
 	{
 	  tree binfo_offset;
-
-	  binfo = BINFO_BASE_BINFO (type_binfo, i);
 
 	  if (abi_version_at_least (2) 
 	      && BINFO_VIRTUAL_P (binfo))
@@ -4263,6 +4255,7 @@ propagate_binfo_offsets (tree binfo, tree offset)
 {
   int i;
   tree primary_binfo;
+  tree base_binfo;
 
   /* Update BINFO's offset.  */
   BINFO_OFFSET (binfo)
@@ -4279,10 +4272,8 @@ propagate_binfo_offsets (tree binfo, tree offset)
   
   /* Scan all of the bases, pushing the BINFO_OFFSET adjust
      downwards.  */
-  for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); ++i)
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
-      tree base_binfo = BINFO_BASE_BINFO (binfo, i);
-      
       /* Don't do the primary base twice.  */
       if (base_binfo == primary_binfo)
 	continue;
@@ -4403,16 +4394,15 @@ end_of_class (tree t, int include_virtuals_p)
   tree offset;
   int i;
 
-  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); ++i)
+  for (binfo = TYPE_BINFO (t), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
-      binfo = BINFO_BASE_BINFO (TYPE_BINFO (t), i);
-
       if (!include_virtuals_p
-	  && BINFO_VIRTUAL_P (binfo) 
-	  && BINFO_PRIMARY_BASE_OF (binfo) != TYPE_BINFO (t))
+	  && BINFO_VIRTUAL_P (base_binfo) 
+	  && BINFO_PRIMARY_BASE_OF (base_binfo) != TYPE_BINFO (t))
 	continue;
 
-      offset = end_of_base (binfo);
+      offset = end_of_base (base_binfo);
       if (INT_CST_LT_UNSIGNED (result, offset))
 	result = offset;
     }
@@ -4447,12 +4437,13 @@ warn_about_ambiguous_bases (tree t)
   VEC (tree) *vbases;
   tree basetype;
   tree binfo;
+  tree base_binfo;
 
   /* Check direct bases.  */
-  for (i = 0;
-       i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); ++i)
+  for (binfo = TYPE_BINFO (t), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
-      basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (t), i));
+      basetype = BINFO_TYPE (base_binfo);
 
       if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
 	warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
@@ -6142,7 +6133,7 @@ get_vfield_name (tree type)
   char *buf;
 
   for (binfo = TYPE_BINFO (type);
-       BINFO_BASE_BINFOS (binfo);
+       BINFO_N_BASE_BINFOS (binfo);
        binfo = base_binfo)
     {
       base_binfo = BINFO_BASE_BINFO (binfo, 0);
@@ -6231,11 +6222,13 @@ contains_empty_class_p (tree type)
   if (CLASS_TYPE_P (type))
     {
       tree field;
+      tree binfo;
+      tree base_binfo;
       int i;
 
-      for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); ++i)
-	if (contains_empty_class_p
-	    (BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type), i))))
+      for (binfo = TYPE_BINFO (type), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+	if (contains_empty_class_p (BINFO_TYPE (base_binfo)))
 	  return true;
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
@@ -6401,7 +6394,8 @@ dump_class_hierarchy_r (FILE *stream,
                         int indent)
 {
   int indented = 0;
-  tree base_binfos;
+  tree base_binfo;
+  int i;
   
   indented = maybe_indent_hierarchy (stream, indent, 0);
   fprintf (stream, "%s (0x%lx) ",
@@ -6477,21 +6471,9 @@ dump_class_hierarchy_r (FILE *stream,
       if (indented)
 	fprintf (stream, "\n");
     }
-  
-  base_binfos = BINFO_BASE_BINFOS (binfo);
-  if (base_binfos)
-    {
-      int ix, n;
 
-      n = TREE_VEC_LENGTH (base_binfos);
-      for (ix = 0; ix != n; ix++)
-	{
-	  tree base_binfo = TREE_VEC_ELT (base_binfos, ix);
-
-	  igo = dump_class_hierarchy_r (stream, flags, base_binfo,
-					igo, indent + 2);
-	}
-    }
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    igo = dump_class_hierarchy_r (stream, flags, base_binfo, igo, indent + 2);
   
   return igo;
 }
@@ -6820,13 +6802,9 @@ build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
   *index = size_binop (PLUS_EXPR, *index, TYPE_SIZE_UNIT (ptr_type_node));
 		       
   /* Recursively add the secondary VTTs for non-virtual bases.  */
-  for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); ++i)
-    {
-      b = BINFO_BASE_BINFO (binfo, i);
-      if (!BINFO_VIRTUAL_P (b))
-	inits = build_vtt_inits (BINFO_BASE_BINFO (binfo, i), t, 
-				 inits, index);
-    }
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, b); ++i)
+    if (!BINFO_VIRTUAL_P (b))
+      inits = build_vtt_inits (BINFO_BASE_BINFO (binfo, i), t, inits, index);
       
   /* Add secondary virtual pointers for all subobjects of BINFO with
      either virtual bases or reachable along a virtual path, except
@@ -7058,6 +7036,7 @@ accumulate_vtbl_inits (tree binfo,
                        tree inits)
 {
   int i;
+  tree base_binfo;
   int ctor_vtbl_p = !same_type_p (BINFO_TYPE (rtti_binfo), t);
 
   my_friendly_assert (same_type_p (BINFO_TYPE (binfo),
@@ -7086,10 +7065,8 @@ accumulate_vtbl_inits (tree binfo,
      secondary vtable lies from the primary vtable.  We can't use
      dfs_walk here because we need to iterate through bases of BINFO
      and RTTI_BINFO simultaneously.  */
-  for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); ++i)
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
-      tree base_binfo = BINFO_BASE_BINFO (binfo, i);
-      
       /* Skip virtual bases.  */
       if (BINFO_VIRTUAL_P (base_binfo))
 	continue;
@@ -7562,6 +7539,7 @@ add_vcall_offset_vtbl_entries_r (tree binfo, vtbl_init_data* vid)
 {
   int i;
   tree primary_binfo;
+  tree base_binfo;
 
   /* Don't walk into virtual bases -- except, of course, for the
      virtual base for which we are building vcall offsets.  Any
@@ -7579,14 +7557,9 @@ add_vcall_offset_vtbl_entries_r (tree binfo, vtbl_init_data* vid)
   add_vcall_offset_vtbl_entries_1 (binfo, vid);
 
   /* Scan the non-primary bases of BINFO.  */
-  for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); ++i) 
-    {
-      tree base_binfo;
-      
-      base_binfo = BINFO_BASE_BINFO (binfo, i);
-      if (base_binfo != primary_binfo)
-	add_vcall_offset_vtbl_entries_r (base_binfo, vid);
-    }
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+    if (base_binfo != primary_binfo)
+      add_vcall_offset_vtbl_entries_r (base_binfo, vid);
 }
 
 /* Called from build_vcall_offset_vtbl_entries_r.  */

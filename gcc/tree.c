@@ -94,9 +94,6 @@ struct type_hash GTY(())
   tree type;
 };
 
-/* Additional language-dependent binfo slots.  */
-unsigned binfo_lang_slots;
-
 /* Initial size of the hash table (rounded to next prime).  */
 #define TYPE_HASH_INITIAL_SIZE 1000
 
@@ -582,20 +579,11 @@ build_complex (tree type, tree real, tree imag)
 /* Build a BINFO with LEN language slots.  */
 
 tree
-make_tree_binfo_stat (unsigned lang_slots MEM_STAT_DECL)
+make_tree_binfo_stat (unsigned base_binfos MEM_STAT_DECL)
 {
   tree t;
-  static unsigned length;
-  
-  if (!length)
-    {
-      length = (offsetof (struct tree_binfo, lang_slots)
-		+ (sizeof (((struct tree_binfo *)0)->lang_slots[0])
-		   * lang_slots));
-      binfo_lang_slots = lang_slots;
-    }
-  else if (binfo_lang_slots != lang_slots)
-    abort ();
+  size_t length = (offsetof (struct tree_binfo, base_binfos)
+		   + VEC_embedded_size (tree, base_binfos));
   
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int) binfo_kind]++;
@@ -604,9 +592,11 @@ make_tree_binfo_stat (unsigned lang_slots MEM_STAT_DECL)
 
   t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
 
-  memset (t, 0, length);
+  memset (t, 0, offsetof (struct tree_binfo, base_binfos));
 
   TREE_SET_CODE (t, TREE_BINFO);
+  
+  VEC_embedded_init (tree, BINFO_BASE_BINFOS (t), base_binfos);
 
   return t;
 }

@@ -457,7 +457,7 @@ static tree
 sort_mem_initializers (tree t, tree mem_inits)
 {
   tree init;
-  tree base;
+  tree base, binfo, base_binfo;
   tree sorted_inits;
   tree next_subobject;
   VEC (tree) *vbases;
@@ -476,12 +476,11 @@ sort_mem_initializers (tree t, tree mem_inits)
     sorted_inits = tree_cons (base, NULL_TREE, sorted_inits);
   
   /* Process the direct bases.  */
-  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); ++i)
-    {
-      base = BINFO_BASE_BINFO (TYPE_BINFO (t), i);
-      if (!BINFO_VIRTUAL_P (base))
-	sorted_inits = tree_cons (base, NULL_TREE, sorted_inits);
-    }
+  for (binfo = TYPE_BINFO (t), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+    if (!BINFO_VIRTUAL_P (base_binfo))
+      sorted_inits = tree_cons (base_binfo, NULL_TREE, sorted_inits);
+
   /* Process the non-static data members.  */
   sorted_inits = build_field_list (t, sorted_inits, &uses_unions_p);
   /* Reverse the entire list of initializations, so that they are in
@@ -983,14 +982,10 @@ expand_member_init (tree name)
       virtual_binfo = NULL_TREE;
 
       /* Look for a direct base.  */
-      for (i = 0; i < BINFO_N_BASE_BINFOS (class_binfo); ++i)
-	if (same_type_p
-	    (basetype, BINFO_TYPE
-	     (BINFO_BASE_BINFO (TYPE_BINFO (current_class_type), i))))
-	  {
-	    direct_binfo = BINFO_BASE_BINFO (class_binfo, i);
-	    break;
-	  }
+      for (i = 0; BINFO_BASE_ITERATE (class_binfo, i, direct_binfo); ++i)
+	if (same_type_p (basetype, BINFO_TYPE (direct_binfo)))
+	  break;
+
       /* Look for a virtual base -- unless the direct base is itself
 	 virtual.  */
       if (!direct_binfo || !BINFO_VIRTUAL_P (direct_binfo))
@@ -2858,8 +2853,8 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 void
 push_base_cleanups (void)
 {
-  tree binfos, base_binfo;
-  int i, n_baseclasses;
+  tree binfo, base_binfo;
+  int i;
   tree member;
   tree expr;
   VEC (tree) *vbases;
@@ -2892,13 +2887,10 @@ push_base_cleanups (void)
 	}
     }
 
-  binfos = BINFO_BASE_BINFOS (TYPE_BINFO (current_class_type));
-  n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (current_class_type));
-
   /* Take care of the remaining baseclasses.  */
-  for (i = 0; i < n_baseclasses; i++)
+  for (binfo = TYPE_BINFO (current_class_type), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
       if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
 	  || BINFO_VIRTUAL_P (base_binfo))
 	continue;

@@ -267,10 +267,12 @@ cp_dump_tree (void* dump_info, tree t)
       if (!dump_flag (di, TDF_SLIM, t) && TYPE_BINFO (t))
 	{
 	  int i;
+	  tree binfo;
+	  tree base_binfo;
 	  
-	  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); ++i)
+	  for (binfo = TYPE_BINFO (t), i = 0;
+	       BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
 	    {
-	      tree base_binfo = BINFO_BASE_BINFO (TYPE_BINFO (t), i);
 	      dump_child ("base", BINFO_TYPE (base_binfo));
 	      if (BINFO_VIRTUAL_P (base_binfo)) 
 		dump_string (di, "virtual");

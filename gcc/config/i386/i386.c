@@ -2103,18 +2103,17 @@ classify_argument (enum machine_mode mode, tree type,
       if (TREE_CODE (type) == RECORD_TYPE)
 	{
 	  /* For classes first merge in the field of the subclasses.  */
-	  if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
+	  if (TYPE_BINFO (type))
 	    {
-	      tree bases = BINFO_BASE_BINFOS (TYPE_BINFO (type));
-	      int n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
+	      tree binfo, base_binfo;
 	      int i;
 
-	      for (i = 0; i < n_bases; ++i)
+	      for (binfo = TYPE_BINFO (type), i = 0;
+		   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 		{
-		   tree binfo = TREE_VEC_ELT (bases, i);
 		   int num;
-		   int offset = tree_low_cst (BINFO_OFFSET (binfo), 0) * 8;
-		   tree type = BINFO_TYPE (binfo);
+		   int offset = tree_low_cst (BINFO_OFFSET (base_binfo), 0) * 8;
+		   tree type = BINFO_TYPE (base_binfo);
 
 		   num = classify_argument (TYPE_MODE (type),
 					    type, subclasses,
@@ -2191,18 +2190,17 @@ classify_argument (enum machine_mode mode, tree type,
 	       || TREE_CODE (type) == QUAL_UNION_TYPE)
 	{
 	  /* For classes first merge in the field of the subclasses.  */
-	  if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
+	  if (TYPE_BINFO (type))
 	    {
-	      tree bases = BINFO_BASE_BINFOS (TYPE_BINFO (type));
-	      int n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
+	      tree binfo, base_binfo;
 	      int i;
 
-	      for (i = 0; i < n_bases; ++i)
+	      for (binfo = TYPE_BINFO (type), i = 0;
+		   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 		{
-		   tree binfo = TREE_VEC_ELT (bases, i);
 		   int num;
-		   int offset = tree_low_cst (BINFO_OFFSET (binfo), 0) * 8;
-		   tree type = BINFO_TYPE (binfo);
+		   int offset = tree_low_cst (BINFO_OFFSET (base_binfo), 0) * 8;
+		   tree type = BINFO_TYPE (base_binfo);
 
 		   num = classify_argument (TYPE_MODE (type),
 					    type, subclasses,
@@ -2816,20 +2814,15 @@ contains_128bit_aligned_vector_p (tree type)
 	{
 	  tree field;
 
-	  if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
+	  if (TYPE_BINFO (type))
 	    {
-	      tree bases = BINFO_BASE_BINFOS (TYPE_BINFO (type));
-	      int n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
+	      tree binfo, base_binfo;
 	      int i;
 
-	      for (i = 0; i < n_bases; ++i)
-		{
-		  tree binfo = TREE_VEC_ELT (bases, i);
-		  tree type = BINFO_TYPE (binfo);
-
-		  if (contains_128bit_aligned_vector_p (type))
-		    return true;
-		}
+	      for (binfo = TYPE_BINFO (type), i = 0;
+		   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+		if (contains_128bit_aligned_vector_p (BINFO_TYPE (base_binfo)))
+		  return true;
 	    }
 	  /* And now merge the fields of structure.  */
 	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))

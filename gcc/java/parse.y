@@ -3879,16 +3879,24 @@ patch_anonymous_class (tree type_decl, tree class_decl, tree wfl)
   /* If it's an interface, implement it */
   if (CLASS_INTERFACE (type_decl))
     {
-      tree s_binfo;
-      int length;
-
       if (parser_check_super_interface (type_decl, class_decl, wfl))
 	return;
 
-      s_binfo = TREE_VEC_ELT (BINFO_BASE_BINFOS (TYPE_BINFO (class)), 0);
-      length = TREE_VEC_LENGTH (BINFO_BASE_BINFOS (TYPE_BINFO (class)))+1;
-      BINFO_BASE_BINFOS (TYPE_BINFO (class)) = make_tree_vec (length);
-      TREE_VEC_ELT (BINFO_BASE_BINFOS (TYPE_BINFO (class)), 0) = s_binfo;
+      if (VEC_space (tree, BINFO_BASE_BINFOS (binfo), 1))
+	{
+	   /* Extend the binfo - by reallocating and copying it. */
+	  tree new_binfo;
+	  tree base_binfo;
+	  int i;
+	  
+	  new_binfo = make_tree_binfo ((BINFO_N_BASE_BINFOS (binfo) + 1) * 2);
+	  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	    BINFO_BASE_APPEND (new_binfo, base_binfo);
+	  CLASS_HAS_SUPER_FLAG (new_binfo) = CLASS_HAS_SUPER_FLAG (binfo);
+	  BINFO_VTABLE (new_binfo) = BINFO_VTABLE (binfo);
+	  TYPE_BINFO (class) = new_binfo;
+	}
+      
       /* And add the interface */
       parser_add_interface (class_decl, type_decl, wfl);
     }
@@ -3897,7 +3905,7 @@ patch_anonymous_class (tree type_decl, tree class_decl, tree wfl)
     {
       if (parser_check_super (type_decl, class_decl, wfl))
 	return;
-      BINFO_TYPE (TREE_VEC_ELT (BINFO_BASE_BINFOS (binfo), 0)) = type;
+      BINFO_TYPE (BINFO_BASE_BINFO (binfo, 0)) = type;
     }
 }
 
@@ -5213,23 +5221,18 @@ register_incomplete_type (int kind, tree wfl, tree decl, tree ptr)
 static tree
 check_inner_circular_reference (tree source, tree target)
 {
-  tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (source));
+  tree base_binfo;
   tree ctx, cl;
   int i;
 
-  if (!basetype_vec)
-    return NULL_TREE;
-
-  for (i = 0; i < TREE_VEC_LENGTH (basetype_vec); i++)
+  for (i = 0; BINFO_BASE_ITERATE (TYPE_BINFO (source), i, base_binfo); i++)
     {
       tree su;
 
       /* We can end up with a NULL_TREE or an incomplete type here if
 	 we encountered previous type resolution errors. It's safe to
 	 simply ignore these cases.  */
-      if (TREE_VEC_ELT (basetype_vec, i) == NULL_TREE)
-	continue;
-      su = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
+      su = BINFO_TYPE (base_binfo);
       if (INCOMPLETE_TYPE_P (su))
 	continue;
 
@@ -5259,10 +5262,10 @@ check_inner_circular_reference (tree source, tree target)
 static tree
 check_circular_reference (tree type)
 {
-  tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (type));
+  tree base_binfo;
   int i;
 
-  if (!basetype_vec)
+  if (!BINFO_N_BASE_BINFOS (TYPE_BINFO (type)))
     return NULL_TREE;
 
   if (! CLASS_INTERFACE (TYPE_NAME (type)))
@@ -5272,12 +5275,11 @@ check_circular_reference (tree type)
       return NULL_TREE;
     }
 
-  for (i = 0; i < TREE_VEC_LENGTH (basetype_vec); i++)
+  for (i = 0; BINFO_BASE_ITERATE (TYPE_BINFO (type), i, base_binfo); i++)
     {
-      tree vec_elt = TREE_VEC_ELT (basetype_vec, i);
-      if (vec_elt && BINFO_TYPE (vec_elt) != object_type_node
-	  && interface_of_p (type, BINFO_TYPE (vec_elt)))
-	return lookup_cl (TYPE_NAME (BINFO_TYPE (vec_elt)));
+      if (BINFO_TYPE (base_binfo) != object_type_node
+	  && interface_of_p (type, BINFO_TYPE (base_binfo)))
+	return lookup_cl (TYPE_NAME (BINFO_TYPE (base_binfo)));
     }
   return NULL_TREE;
 }
@@ -5569,8 +5571,9 @@ java_complete_class (void)
 	      /* Simply patch super */
 	      if (parser_check_super (decl, JDEP_DECL (dep), JDEP_WFL (dep)))
 		continue;
-	      BINFO_TYPE (TREE_VEC_ELT (BINFO_BASE_BINFOS (TYPE_BINFO
-	        (TREE_TYPE (JDEP_DECL (dep)))), 0)) = TREE_TYPE (decl);
+	      BINFO_TYPE (BINFO_BASE_BINFO
+			  (TYPE_BINFO (TREE_TYPE (JDEP_DECL (dep))), 0))
+		= TREE_TYPE (decl);
 	      break;
 
 	    case JDEP_FIELD:
@@ -6198,12 +6201,13 @@ check_abstract_method_definitions (int do_interface, tree class_decl,
     {
       /* Check for implemented interfaces. */
       int i;
-      tree vector = BINFO_BASE_BINFOS (TYPE_BINFO (type));
-      for (i = 1; ok && vector && i < TREE_VEC_LENGTH (vector); i++)
-	{
-	  tree super = BINFO_TYPE (TREE_VEC_ELT (vector, i));
-	  ok = check_abstract_method_definitions (1, class_decl, super);
-	}
+      tree base_binfo;
+      
+      for (i = 1;
+	   ok && BINFO_BASE_ITERATE (TYPE_BINFO (type), i, base_binfo);
+	   i++)
+	ok = check_abstract_method_definitions (1, class_decl,
+						BINFO_TYPE (base_binfo));
     }
 
   return ok;
@@ -6216,7 +6220,7 @@ static void
 java_check_abstract_method_definitions (tree class_decl)
 {
   tree class = TREE_TYPE (class_decl);
-  tree super, vector;
+  tree super, base_binfo;
   int i;
 
   if (CLASS_ABSTRACT (class_decl))
@@ -6230,12 +6234,8 @@ java_check_abstract_method_definitions (tree class_decl)
   } while (super != object_type_node);
 
   /* Check for implemented interfaces. */
-  vector = BINFO_BASE_BINFOS (TYPE_BINFO (class));
-  for (i = 1; i < TREE_VEC_LENGTH (vector); i++)
-    {
-      super = BINFO_TYPE (TREE_VEC_ELT (vector, i));
-      check_abstract_method_definitions (1, class_decl, super);
-    }
+  for (i = 1; BINFO_BASE_ITERATE (TYPE_BINFO (class), i, base_binfo); i++)
+    check_abstract_method_definitions (1, class_decl, BINFO_TYPE (base_binfo));
 }
 
 /* Check all the types method DECL uses and return 1 if all of them
@@ -6493,8 +6493,6 @@ check_interface_throws_clauses (tree check_class_decl, tree class_decl)
 {
   for (; class_decl != NULL_TREE; class_decl = CLASSTYPE_SUPER (class_decl))
     {
-      tree bases;
-      int iface_len;
       int i;
 
       if (! CLASS_LOADED_P (class_decl))
@@ -6505,11 +6503,10 @@ check_interface_throws_clauses (tree check_class_decl, tree class_decl)
 	    load_class (class_decl, 1);
 	}
 
-      bases = BINFO_BASE_BINFOS (TYPE_BINFO (class_decl));
-      iface_len = TREE_VEC_LENGTH (bases) - 1;
-      for (i = iface_len; i > 0; --i)
+      for (i = BINFO_N_BASE_BINFOS (TYPE_BINFO (class_decl)) - 1; i > 0; --i)
 	{
-	  tree interface = BINFO_TYPE (TREE_VEC_ELT (bases, i));
+	  tree interface
+	    = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (class_decl), i));
 	  tree iface_method;
 
 	  for (iface_method = TYPE_METHODS (interface);
@@ -6609,9 +6606,10 @@ check_throws_clauses (tree method, tree method_wfl, tree found)
 static void
 java_check_abstract_methods (tree interface_decl)
 {
-  int i, n;
-  tree method, basetype_vec, found;
+  int i;
+  tree method, found;
   tree interface = TREE_TYPE (interface_decl);
+  tree base_binfo;
 
   for (method = TYPE_METHODS (interface); method; method = TREE_CHAIN (method))
     {
@@ -6637,16 +6635,11 @@ java_check_abstract_methods (tree interface_decl)
     }
 
   /* 4- Inherited methods can't differ by their returned types */
-  if (!(basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (interface))))
-    return;
-  n = TREE_VEC_LENGTH (basetype_vec);
-  for (i = 0; i < n; i++)
+  for (i = 0; BINFO_BASE_ITERATE (TYPE_BINFO (interface), i, base_binfo); i++)
     {
       tree sub_interface_method, sub_interface;
-      tree vec_elt = TREE_VEC_ELT (basetype_vec, i);
-      if (!vec_elt)
-	continue;
-      sub_interface = BINFO_TYPE (vec_elt);
+
+      sub_interface = BINFO_TYPE (base_binfo);
       for (sub_interface_method = TYPE_METHODS (sub_interface);
 	   sub_interface_method;
 	   sub_interface_method = TREE_CHAIN (sub_interface_method))
@@ -6676,26 +6669,21 @@ java_check_abstract_methods (tree interface_decl)
 static tree
 lookup_java_interface_method2 (tree class, tree method_decl)
 {
-  int i, n;
-  tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (class));
+  int i;
+  tree base_binfo;
   tree to_return;
 
-  if (!basetype_vec)
-    return NULL_TREE;
-
-  n = TREE_VEC_LENGTH (basetype_vec);
-  for (i = 0; i < n; i++)
+  for (i = 0; BINFO_BASE_ITERATE (TYPE_BINFO (class), i, base_binfo); i++)
     {
-      tree vec_elt = TREE_VEC_ELT (basetype_vec, i), to_return;
-      if ((BINFO_TYPE (vec_elt) != object_type_node)
+      if ((BINFO_TYPE (base_binfo) != object_type_node)
 	  && (to_return =
-	      lookup_java_method2 (BINFO_TYPE (vec_elt), method_decl, 1)))
+	      lookup_java_method2 (BINFO_TYPE (base_binfo), method_decl, 1)))
 	return to_return;
     }
-  for (i = 0; i < n; i++)
+  for (i = 0; BINFO_BASE_ITERATE (TYPE_BINFO (class), i, base_binfo); i++)
     {
       to_return = lookup_java_interface_method2
-	(BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i)), method_decl);
+	(BINFO_TYPE (base_binfo), method_decl);
       if (to_return)
 	return to_return;
     }
@@ -10984,6 +10972,8 @@ find_applicable_accessible_methods_list (int lc, tree class, tree name,
   static htab_t searched_classes;
   static int search_not_done = 0;
   tree list = NULL_TREE, all_list = NULL_TREE;
+  tree base_binfo;
+  int i;
 
   /* Check the hash table to determine if this class has been searched
      already. */
@@ -11011,16 +11001,13 @@ find_applicable_accessible_methods_list (int lc, tree class, tree name,
   if (TREE_CODE (TYPE_NAME (class)) == TYPE_DECL
       && CLASS_INTERFACE (TYPE_NAME (class)))
     {
-      int i, n;
-      tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (class));
       search_applicable_methods_list (lc, TYPE_METHODS (class),
 				      name, arglist, &list, &all_list);
-      n = TREE_VEC_LENGTH (basetype_vec);
-      for (i = 1; i < n; i++)
+      for (i = 1; BINFO_BASE_ITERATE (TYPE_BINFO (class), i, base_binfo); i++)
 	{
-	  tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
+	  tree t = BINFO_TYPE (base_binfo);
 	  tree rlist;
-
+	  
 	  rlist = find_applicable_accessible_methods_list (lc,  t, name,
 							   arglist);
 	  list = chainon (rlist, list);
@@ -11044,21 +11031,20 @@ find_applicable_accessible_methods_list (int lc, tree class, tree name,
 
       /* We must search all interfaces of this class */
       if (!lc)
-      {
-	tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (class));
-	int n = TREE_VEC_LENGTH (basetype_vec), i;
-	for (i = 1; i < n; i++)
-	  {
-	    tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
-	    if (t != object_type_node)
-	      {
-		tree rlist
-		  = find_applicable_accessible_methods_list (lc, t,
-							     name, arglist);
-		list = chainon (rlist, list);
-	      }
-	  }
-      }
+	{
+	  for (i = 1;
+	       BINFO_BASE_ITERATE (TYPE_BINFO (class), i, base_binfo); i++)
+	    {
+	      tree t = BINFO_TYPE (base_binfo);
+	      if (t != object_type_node)
+		{
+		  tree rlist
+		    = find_applicable_accessible_methods_list (lc, t,
+							       name, arglist);
+		  list = chainon (rlist, list);
+		}
+	    }
+	}
 
       /* Search superclass */
       if (!lc && CLASSTYPE_SUPER (class) != NULL_TREE)

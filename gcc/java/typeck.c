@@ -796,13 +796,12 @@ find_method_in_interfaces (tree searched_class, int flags, tree method_name,
                            tree signature, tree (*signature_builder) (tree))
 {
   int i;
-  int interface_len = 
-    TREE_VEC_LENGTH (BINFO_BASE_BINFOS (TYPE_BINFO (searched_class))) - 1;
+  tree binfo, base_binfo;
 
-  for (i = interface_len; i > 0; i--)
+  for (binfo = TYPE_BINFO (searched_class), i = 1;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      tree child = BINFO_BASE_BINFO (TYPE_BINFO (searched_class), i);
-      tree iclass = BINFO_TYPE (child);
+      tree iclass = BINFO_TYPE (base_binfo);
       tree method;
 	  
       /* If the superinterface hasn't been loaded yet, do so now.  */
@@ -814,7 +813,7 @@ find_method_in_interfaces (tree searched_class, int flags, tree method_name,
       /* First, we look in ICLASS.  If that doesn't work we'll
 	 recursively look through all its superinterfaces.  */
       method = shallow_find_method (iclass, flags, method_name, 
-					 signature, signature_builder);      
+				    signature, signature_builder);      
       if (method != NULL_TREE)
 	return method;
   

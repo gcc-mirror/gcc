@@ -747,32 +747,33 @@ list.  Implicitly declared functions (including default constructors,
 copy constructors, assignment operators, and destructors) will appear on
 this list as well.
 
-@c under reconstruction 2004-07-01, FIXME:Nathan Sidwell
-[Binfos are being redesigned, this information is in a state of flux.]
 Every class has an associated @dfn{binfo}, which can be obtained with
 @code{TYPE_BINFO}.  Binfos are used to represent base-classes.  The
 binfo given by @code{TYPE_BINFO} is the degenerate case, whereby every
-class is considered to be its own base-class.  The base classes for a
-particular binfo can be obtained with @code{BINFO_BASETYPES}.  These
-base-classes are themselves binfos.  The class type associated with a
-binfo is given by @code{BINFO_TYPE}.  It is always the case that
-@code{BINFO_TYPE (TYPE_BINFO (x))} is the same type as @code{x}, up to
-qualifiers.  However, it is not always the case that @code{TYPE_BINFO
-(BINFO_TYPE (y))} is always the same binfo as @code{y}.  The reason is
-that if @code{y} is a binfo representing a base-class @code{B} of a
-derived class @code{D}, then @code{BINFO_TYPE (y)} will be @code{B},
-and @code{TYPE_BINFO (BINFO_TYPE (y))} will be @code{B} as its own
-base-class, rather than as a base-class of @code{D}.
+class is considered to be its own base-class.  The base binfos for a
+particular binfo are held in a vector, whose length is obtained with
+@code{BINFO_N_BASE_BINFOS}.  The base binfos themselves are obtained
+with @code{BINFO_BASE_BINFO} and @code{BINFO_BASE_ITERATE}.  To add a
+new binfo, use @code{BINFO_BASE_APPEND}.  The vector of base binfos can
+be obtained with @code{BINFO_BASE_BINFOS}, but normally you do not need
+to use that.  The class type associated with a binfo is given by
+@code{BINFO_TYPE}.  It is not always the case that @code{BINFO_TYPE
+(TYPE_BINFO (x))}, because of typedefs and qualified types.  Neither is
+it the case that @code{TYPE_BINFO (BINFO_TYPE (y))} is the same binfo as
+@code{y}.  The reason is that if @code{y} is a binfo representing a
+base-class @code{B} of a derived class @code{D}, then @code{BINFO_TYPE
+(y)} will be @code{B}, and @code{TYPE_BINFO (BINFO_TYPE (y))} will be
+@code{B} as its own base-class, rather than as a base-class of @code{D}.
 
-The @code{BINFO_BASETYPES} is a @code{TREE_VEC} (@pxref{Containers}).
-Base types appear in left-to-right order in this vector.  You can tell
-whether or @code{public}, @code{protected}, or @code{private}
-inheritance was used by using the @code{TREE_VIA_PUBLIC},
-@code{TREE_VIA_PROTECTED}, and @code{TREE_VIA_PRIVATE} macros.  Each of
-these macros takes a @code{BINFO} and is true if and only if the
-indicated kind of inheritance was used.  If @code{TREE_VIA_VIRTUAL}
-holds of a binfo, then its @code{BINFO_TYPE} was inherited from
-virtually.
+The access to a base type can be found with @code{BINFO_BASE_ACCESS}.
+This will produce @code{access_public_node}, @code{access_private_node}
+or @code{access_protected_node}.  If bases are always public,
+@code{BINFO_BASE_ACCESSES} may be @code{NULL}.
+
+@code{BINFO_VIRTUAL_P} is used to specify whether the binfo is inherited
+virtually or not.  The other flags, @code{BINFO_MARKED_P} and
+@code{BINFO_FLAG_1} to @code{BINFO_FLAG_6} can be used for language
+specific use.
 
 The following macros can be used on a tree node representing a class-type.
 

@@ -57,7 +57,6 @@ static tree make_field_value (tree);
 static tree get_dispatch_vector (tree);
 static tree get_dispatch_table (tree, tree);
 static int supers_all_compiled (tree type);
-static void add_interface_do (tree, tree, int);
 static tree maybe_layout_super_class (tree, tree);
 static void add_miranda_methods (tree, tree);
 static int assume_compiled (const char *);
@@ -476,16 +475,14 @@ set_super_info (int access_flags, tree this_class,
   if (super_class)
     total_supers++;
 
-  TYPE_BINFO (this_class) = make_tree_binfo (0);
+  TYPE_BINFO (this_class) = make_tree_binfo (total_supers);
   TYPE_VFIELD (this_class) = TYPE_VFIELD (object_type_node);
-  BINFO_BASE_BINFOS (TYPE_BINFO (this_class)) = make_tree_vec (total_supers);
   if (super_class)
     {
       tree super_binfo = make_tree_binfo (0);
       BINFO_TYPE (super_binfo) = super_class;
       BINFO_OFFSET (super_binfo) = integer_zero_node;
-      TREE_VEC_ELT (BINFO_BASE_BINFOS (TYPE_BINFO (this_class)), 0)
-	= super_binfo;
+      BINFO_BASE_APPEND (TYPE_BINFO (this_class), super_binfo);
       CLASS_HAS_SUPER_FLAG (TYPE_BINFO (this_class)) = 1;
     }
 
@@ -530,26 +527,23 @@ class_depth (tree clas)
 int
 interface_of_p (tree type1, tree type2)
 {
-  int n, i;
-  tree basetype_vec;
+  int i;
+  tree binfo, base_binfo;
 
   if (! TYPE_BINFO (type2))
     return 0;
-  basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (type2));
-  n = TREE_VEC_LENGTH (basetype_vec);
-  for (i = 0; i < n; i++)
-    {
-      tree vec_elt = TREE_VEC_ELT (basetype_vec, i);
-      if (vec_elt && BINFO_TYPE (vec_elt) == type1)
-	return 1;
-    }
-  for (i = 0; i < n; i++)
-    {
-      tree vec_elt = TREE_VEC_ELT (basetype_vec, i);
-      if (vec_elt && BINFO_TYPE (vec_elt) 
-	  && interface_of_p (type1, BINFO_TYPE (vec_elt)))
-	return 1;
-    }
+
+  for (binfo = TYPE_BINFO (type2), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    if (BINFO_TYPE (base_binfo) == type1)
+      return 1;
+  
+  for (binfo = TYPE_BINFO (type2), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++) /*  */
+    if (BINFO_TYPE (base_binfo)
+	&& interface_of_p (type1, BINFO_TYPE (base_binfo)))
+      return 1;
+  
   return 0;
 }
 
@@ -636,17 +630,6 @@ common_enclosing_instance_p (tree type1, tree type2)
   return 0;
 }
 
-static void
-add_interface_do (tree basetype_vec, tree interface_class, int i)
-{
-  tree interface_binfo = make_tree_binfo (0);
-  BINFO_TYPE (interface_binfo) = interface_class;
-  BINFO_OFFSET (interface_binfo) = integer_zero_node;
-  BINFO_VPTR_FIELD (interface_binfo) = integer_zero_node;
-  BINFO_VIRTUAL_P (interface_binfo) = 1;
-  TREE_VEC_ELT (basetype_vec, i) = interface_binfo;
-}
-
 /* Add INTERFACE_CLASS to THIS_CLASS iff INTERFACE_CLASS can't be
    found in THIS_CLASS. Returns NULL_TREE upon success, INTERFACE_CLASS
    if attempt is made to add it twice. */
@@ -654,22 +637,14 @@ add_interface_do (tree basetype_vec, tree interface_class, int i)
 tree
 maybe_add_interface (tree this_class, tree interface_class)
 {
-  tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (this_class));
+  tree binfo, base_binfo;
   int i;
-  int n = TREE_VEC_LENGTH (basetype_vec);
-  for (i = 0; ; i++)
-    {
-      if (i >= n)
-	{
-	  error ("internal error - too many interface type");
-	  return NULL_TREE;
-	}
-      else if (TREE_VEC_ELT (basetype_vec, i) == NULL_TREE)
-	break;
-      else if (BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i)) == interface_class)
-	return interface_class;
-    } 
-  add_interface_do (basetype_vec, interface_class, i);
+
+  for (binfo = TYPE_BINFO (this_class), i = 0;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    if (BINFO_TYPE (base_binfo) == interface_class)
+      return interface_class;
+  add_interface (this_class, interface_class);
   return NULL_TREE;
 }
 
@@ -678,20 +653,14 @@ maybe_add_interface (tree this_class, tree interface_class)
 void
 add_interface (tree this_class, tree interface_class)
 {
-  tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (this_class));
-  int i;
-  int n = TREE_VEC_LENGTH (basetype_vec);
-  for (i = 0; ; i++)
-    {
-      if (i >= n)
-	{
-	  error ("internal error - too many interface type");
-	  return;
-	}
-      else if (TREE_VEC_ELT (basetype_vec, i) == NULL_TREE)
-	break;
-    }
-  add_interface_do (basetype_vec, interface_class, i);
+  tree interface_binfo = make_tree_binfo (0);
+  
+  BINFO_TYPE (interface_binfo) = interface_class;
+  BINFO_OFFSET (interface_binfo) = integer_zero_node;
+  BINFO_VPTR_FIELD (interface_binfo) = integer_zero_node;
+  BINFO_VIRTUAL_P (interface_binfo) = 1;
+  
+  BINFO_BASE_APPEND (TYPE_BINFO (this_class), interface_binfo);
 }
 
 #if 0
@@ -1666,9 +1635,10 @@ make_class_data (tree type)
 	= build_prim_array_type (class_ptr_type, interface_len);
       idecl = build_decl (VAR_DECL, mangled_classname ("_IF_", type),
 			  interface_array_type);
+      
       for (i = interface_len;  i > 0; i--)
 	{
-	  tree child = TREE_VEC_ELT (BINFO_BASE_BINFOS (TYPE_BINFO (type)), i);
+	  tree child = BINFO_BASE_BINFO (TYPE_BINFO (type), i);
 	  tree iclass = BINFO_TYPE (child);
 	  tree index;
 	  if (! flag_indirect_dispatch
@@ -2063,27 +2033,21 @@ layout_class (tree this_class)
      of this itself.  */
   if (!CLASS_FROM_SOURCE_P (this_class))
     {
-      tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (this_class));
-
-      if (basetype_vec)
+      int i;
+      
+      for (i = BINFO_N_BASE_BINFOS (TYPE_BINFO (this_class)) - 1; i > 0; i--)
 	{
-	  int n = TREE_VEC_LENGTH (basetype_vec) - 1;
-	  int i;
-	  for (i = n; i > 0; i--)
+	  tree binfo = BINFO_BASE_BINFO (TYPE_BINFO (this_class), i);
+	  tree super_interface = BINFO_TYPE (binfo);
+	  tree maybe_super_interface 
+	    = maybe_layout_super_class (super_interface, NULL_TREE);
+	  if (maybe_super_interface == NULL
+	      || TREE_CODE (TYPE_SIZE (maybe_super_interface)) == ERROR_MARK)
 	    {
-	      tree vec_elt = TREE_VEC_ELT (basetype_vec, i);
-	      tree super_interface = BINFO_TYPE (vec_elt);
-
-	      tree maybe_super_interface 
-		= maybe_layout_super_class (super_interface, NULL_TREE);
-	      if (maybe_super_interface == NULL
-		  || TREE_CODE (TYPE_SIZE (maybe_super_interface)) == ERROR_MARK)
-		{
-		  TYPE_SIZE (this_class) = error_mark_node;
-		  CLASS_BEING_LAIDOUT (this_class) = 0;
-		  class_list = TREE_CHAIN (class_list);
-		  return;
-		}
+	      TYPE_SIZE (this_class) = error_mark_node;
+	      CLASS_BEING_LAIDOUT (this_class) = 0;
+	      class_list = TREE_CHAIN (class_list);
+	      return;
 	    }
 	}
     }
@@ -2099,15 +2063,14 @@ layout_class (tree this_class)
 static void
 add_miranda_methods (tree base_class, tree search_class)
 {
-  tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (search_class));
-  int i, n = TREE_VEC_LENGTH (basetype_vec);
-  for (i = 1; i < n; ++i)
+  tree binfo, base_binfo;
+  int i;
+  
+  for (binfo = TYPE_BINFO (search_class), i = 1;
+       BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
       tree method_decl;
-      tree elt = TREE_VEC_ELT (basetype_vec, i);
-      if (elt == NULL_TREE)
-	break;
-      elt = BINFO_TYPE (elt);
+      tree elt = BINFO_TYPE (base_binfo);
 
       /* Ensure that interface methods are seen in declared order.  */
       layout_class_methods (elt);
