@@ -7012,8 +7012,11 @@ ia64_ld_address_bypass_p (producer, consumer)
     mem = XVECEXP (mem, 0, 0);
   while (GET_CODE (mem) == SUBREG || GET_CODE (mem) == ZERO_EXTEND)
     mem = XEXP (mem, 0);
-  if (GET_CODE (mem) != MEM)
+
+  /* Note that LO_SUM is used for GOT loads.  */
+  if (GET_CODE (mem) != LO_SUM && GET_CODE (mem) != MEM)
     abort ();
+
   return reg_mentioned_p (reg, mem);
 }
 
