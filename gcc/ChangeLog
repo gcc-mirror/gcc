@@ -10,6 +10,8 @@ Thu Dec 10 07:21:44 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* xm-mn10300.h, rs6000/xm-sysv4.h, xm-v850.h: Likewise.
 	* xm-alpha.h: Likewise.
 	(string.h): Remove reundant #include.
+	* rtl.h (free): Remove declaration.
+	* tree.h (free): Likewise.
 
 	* gcov.c (fatal): New function.
 
