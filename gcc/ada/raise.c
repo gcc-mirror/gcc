@@ -597,21 +597,48 @@ __gnat_eh_personality (version, actions, exception_class, ue_header, context)
 }
 
 
-#else   /* IN_RTS - For eh personality routine   */
+/* If the underlying GCC scheme for exception handling is SJLJ, the standard
+   propagation routine (_Unwind_RaiseException) is actually renamed using a
+   #define directive (see unwing-sjlj.c). We need a consistently named
+   interface to import from a-except, so stubs are defined here.  */
+
+#ifdef __USING_SJLJ_EXCEPTIONS__
+
+_Unwind_Reason_Code
+__gnat_Unwind_RaiseException (e)
+     struct _Unwind_Exception *e;
+{
+  return _Unwind_SjLj_RaiseException (e);
+}
+
+#else
+/* __USING_SJLJ_EXCEPTIONS__ not defined */
+
+void
+__gnat_Unwind_RaiseException (e)
+     struct _Unwind_Exception *e;
+{
+  return _Unwind_RaiseException (e);
+}
+ 
+#endif
+
+#else
+/* IN_RTS not defined */
 
 /* The calls to the GCC runtime interface for exception raising are currently
    issued from a-except.adb, which is used by both the runtime library and
    the compiler. As the compiler binary is not linked against the GCC runtime
    library, we need a stub for this interface in the compiler case.  */
 
+/* Since we don't link the compiler with a host libgcc, we should not be
+   using the GCC eh mechanism for the compiler and so expect this function
+   never to be called.  */
 
 _Unwind_Reason_Code
-_Unwind_RaiseException (e)
+__gnat_Unwind_RaiseException (e)
      struct _Unwind_Exception *e ATTRIBUTE_UNUSED;
 {
-  /* Since we don't link the compiler with a host libgcc, we should not be
-     using the GCC eh mechanism for the compiler and so expect this function
-     never to be called.  */
   abort ();
 }
 
