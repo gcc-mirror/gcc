@@ -2167,13 +2167,26 @@ expand_call (tree exp, rtx target, int ignore)
 	  (*lang_hooks.mark_addressable) (fndecl);
 	}
 
+      if (ignore
+	  && lookup_attribute ("warn_unused_result",
+			       TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+	warning ("ignoring return value of `%D', "
+		 "declared with attribute warn_unused_result", fndecl);
+
       flags |= flags_from_decl_or_type (fndecl);
     }
 
   /* If we don't have specific function to call, see if we have a
      attributes set in the type.  */
   else
-    flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
+    {
+      if (ignore
+	  && lookup_attribute ("warn_unused_result",
+			       TYPE_ATTRIBUTES (TREE_TYPE (TREE_TYPE (p)))))
+	warning ("ignoring return value of function "
+		 "declared with attribute warn_unused_result");
+      flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
+    }
 
   struct_value = targetm.calls.struct_value_rtx (fndecl ? TREE_TYPE (fndecl) : 0, 0);
 

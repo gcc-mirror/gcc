@@ -773,6 +773,8 @@ static tree handle_vector_size_attribute (tree *, tree, tree, int,
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_cleanup_attribute (tree *, tree, tree, int, bool *);
+static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
+						 bool *);
 static tree vector_size_helper (tree, tree);
 
 static void check_function_nonnull (tree, tree);
@@ -850,6 +852,8 @@ const struct attribute_spec c_common_attribute_table[] =
   { "may_alias",	      0, 0, false, true, false, NULL },
   { "cleanup",		      1, 1, true, false, false,
 			      handle_cleanup_attribute },
+  { "warn_unused_result",     0, 0, false, true, true,
+			      handle_warn_unused_result_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -4007,6 +4011,26 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
 	bool preserve_result = false;
 	bool return_target = false;
 
+	if (STMT_EXPR_WARN_UNUSED_RESULT (exp) && target == const0_rtx)
+	  {
+	    tree stmt = STMT_EXPR_STMT (exp);
+	    tree scope;
+
+	    for (scope = COMPOUND_BODY (stmt);
+		 scope && TREE_CODE (scope) != SCOPE_STMT;
+		 scope = TREE_CHAIN (scope));
+
+	    if (scope && SCOPE_STMT_BLOCK (scope))
+	      warning ("%Hignoring return value of `%D', "
+		       "declared with attribute warn_unused_result",
+		       &expr_wfl_stack->location,
+		       BLOCK_ABSTRACT_ORIGIN (SCOPE_STMT_BLOCK (scope)));
+	    else
+	      warning ("%Hignoring return value of function "
+		       "declared with attribute warn_unused_result",
+		       &expr_wfl_stack->location);
+	  }
+
 	/* Since expand_expr_stmt calls free_temp_slots after every
 	   expression statement, we must call push_temp_slots here.
 	   Otherwise, any temporaries in use now would be considered
@@ -5493,6 +5517,23 @@ handle_cleanup_attribute (tree *node, tree name, tree args,
 
   /* That the function has proper type is checked with the
      eventual call to build_function_call.  */
+
+  return NULL_TREE;
+}
+
+/* Handle a "warn_unused_result" attribute.  No special handling.  */
+
+static tree
+handle_warn_unused_result_attribute (tree *node, tree name,
+			       tree args ATTRIBUTE_UNUSED,
+			       int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  /* Ignore the attribute for functions not returning any value.  */
+  if (VOID_TYPE_P (TREE_TYPE (*node)))
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
 
   return NULL_TREE;
 }

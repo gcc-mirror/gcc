@@ -1,3 +1,21 @@
+2003-09-16  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (handle_warn_unused_result_attribute): New function.
+	(c_common_attribute_table): Add warn_unused_result.
+	(c_expand_expr): Issue warning when result of inlined function
+	with warn_unused_result attribute is ignored.
+	* calls.c (expand_call): Issue warning when result of function
+	with warn_unused_result attribute is ignored.
+	* c-common.h (STMT_EXPR_WARN_UNUSED_RESULT): Define.
+	* expr.c (expr_wfl_stack): Define.
+	(expand_expr) <case EXPR_WITH_FILE_LOCATION>: If ignore,
+	pass const0_rtx as target.  Chain locations into expr_wfl_stack.
+	* tree-inline.c (expand_call_inline): Set STMT_EXPR_WARN_UNUSED_RESULT
+	bit if inlined function has warn_unused_result attribute.
+	* input.h (expr_wfl_stack): Declare.
+	* doc/extend.texi: Document warn_unused_result attribute.
+
 2003-09-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cpplib.c (do_pragma): Remove unnecessary cb_line_change.

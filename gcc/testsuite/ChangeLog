@@ -1,3 +1,8 @@
+2003-09-16  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/attr-warn-unused-result.c: New test.
+
 2003-09-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/12184

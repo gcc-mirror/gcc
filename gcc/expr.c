@@ -235,6 +235,9 @@ enum insn_code movstr_optab[NUM_MACHINE_MODES];
 /* This array records the insn_code of insns to perform block clears.  */
 enum insn_code clrstr_optab[NUM_MACHINE_MODES];
 
+/* Stack of EXPR_WITH_FILE_LOCATION nested expressions.  */
+struct file_stack *expr_wfl_stack;
+
 /* SLOW_UNALIGNED_ACCESS is nonzero if unaligned accesses are very slow.  */
 
 #ifndef SLOW_UNALIGNED_ACCESS
@@ -6959,14 +6962,23 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
     case EXPR_WITH_FILE_LOCATION:
       {
 	rtx to_return;
-	location_t saved_loc = input_location;
+	struct file_stack fs;
+
+	fs.location = input_location;
+	fs.next = expr_wfl_stack;
 	input_filename = EXPR_WFL_FILENAME (exp);
 	input_line = EXPR_WFL_LINENO (exp);
+	expr_wfl_stack = &fs;
 	if (EXPR_WFL_EMIT_LINE_NOTE (exp))
 	  emit_line_note (input_location);
 	/* Possibly avoid switching back and forth here.  */
-	to_return = expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
-	input_location = saved_loc;
+	to_return = expand_expr (EXPR_WFL_NODE (exp),
+				 (ignore ? const0_rtx : target),
+				 tmode, modifier);
+	if (expr_wfl_stack != &fs)
+	  abort ();
+	input_location = fs.location;
+	expr_wfl_stack = fs.next;
 	return to_return;
       }
 
