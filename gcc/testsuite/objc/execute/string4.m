@@ -6,8 +6,7 @@
 
 int main(int argc, void **args)
 {
-  if (strcmp ([@"this " @"is " @"a " @"string" cString],
-              "this " "is " "a " "string"))
+  if ([@"this is a string" length] != strlen ("this is a string"))
     abort ();
   return 0;
 }

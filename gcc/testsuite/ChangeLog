@@ -1,3 +1,12 @@
+2001-03-06  Zack Weinberg  <zackw@stanford.edu>
+
+        * objc/execute/string1.m, objc/execute/string2.m: Compare the
+        result of -cString against what we expect it to be; don't just
+        print it out for no one to read.
+
+	* objc/execute/string3.m, objc/execute/string4.m: New tests.
+	Based on testcases provided by Nicola Pero.
+
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/macro7.c: New test.
