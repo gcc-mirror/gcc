@@ -4,6 +4,12 @@
 	deleted.
 	* configure: Rebuild.
 
+2003-05-12  Corinna Vinschen  <corinna@vinschen.de>
+
+	* configure.in (FLAGS_FOR_TARGET): Remove $$s/newlib/libc/sys/cygwin
+	and $$s/newlib/libc/sys/cygwin32 include paths.
+	* configure: Ditto.
+
 2003-05-12  Michael Meissner  <gnu@the-meissners.org>
 
 	* MAINTAINERS: Update my email addresses.
