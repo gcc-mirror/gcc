@@ -112,7 +112,7 @@ extern int target_flags;
 #endif
 
 #define DBX_DEBUGGING_INFO
-#define DEFAULT_GDB_EXTENSIONS 0
+#define DEFAULT_GDB_EXTENSIONS 1
 
 #if (TARGET_DEFAULT & 1) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
