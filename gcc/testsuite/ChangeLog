@@ -1,3 +1,8 @@
+1998-09-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.other/typedef5.C: add some more tests involving 
+	checks involving function types and aliases
+
 1998-09-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/typedef5.C: check whether typedefs can be
