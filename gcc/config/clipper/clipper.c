@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Clipper
-   Copyright (C) 1987, 88, 91, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -35,7 +35,8 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "flags.h"
-#include "machmode.h"
+#include "recog.h"
+#include "tm_p.h"
 
 extern char regs_ever_live[];
 
@@ -134,7 +135,7 @@ output_function_prologue (file, lsize)
 void
 output_function_epilogue (file, size)
      FILE *file;
-     int size;				/* ignored */
+     int size ATTRIBUTE_UNUSED;
 {
   int i, offset;
 
@@ -282,13 +283,13 @@ clipper_movstr (operands)
 }
 
 
+void
 print_operand_address (file, addr)
      FILE *file;
      register rtx addr;
 {
   rtx op0,op1;
 
- retry:
   switch (GET_CODE (addr))
     {
     case REG:
@@ -329,7 +330,7 @@ print_operand_address (file, addr)
 }
 
 
-char *
+const char *
 rev_cond_name (op)
      rtx op;
 {
@@ -507,7 +508,7 @@ clipper_va_start (stdarg_p, valist, nextarg)
   /* Set the four entries of __va_reg.  */
 
   t = build1 (NOP_EXPR, ptr_type_node, save_area);
-  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (0, 0));
+  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int_2 (0, 0));
   t = build (MODIFY_EXPR, ptr_type_node, u, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -515,7 +516,7 @@ clipper_va_start (stdarg_p, valist, nextarg)
   t = fold (build (PLUS_EXPR, integer_type_node, save_area,
 		   build_int_2 (8, 0)));
   t = build1 (NOP_EXPR, ptr_type_node, save_area);
-  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (1, 0));
+  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int_2 (1, 0));
   t = build (MODIFY_EXPR, ptr_type_node, u, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -523,7 +524,7 @@ clipper_va_start (stdarg_p, valist, nextarg)
   t = fold (build (PLUS_EXPR, integer_type_node, save_area,
 		   build_int_2 (4, 0)));
   t = build1 (NOP_EXPR, ptr_type_node, save_area);
-  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (2, 0));
+  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int_2 (2, 0));
   t = build (MODIFY_EXPR, ptr_type_node, u, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -531,7 +532,7 @@ clipper_va_start (stdarg_p, valist, nextarg)
   t = fold (build (PLUS_EXPR, integer_type_node, save_area,
 		   build_int_2 (16, 0)));
   t = build1 (NOP_EXPR, ptr_type_node, save_area);
-  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (3, 0));
+  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int_2 (3, 0));
   t = build (MODIFY_EXPR, ptr_type_node, u, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
