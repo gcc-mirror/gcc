@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.36 2001/06/26 23:23:32 jsm28 Exp $
+@comment $Id: install.texi,v 1.37 2001/06/27 00:04:38 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -181,7 +181,7 @@ GCC is distributed via CVS and FTP tarballs compressed with @command{gzip} or
 components.
 
 Please refer to our @uref{http://gcc.gnu.org/releases.html,,releases web page}
-for information on how to obtain GCC.
+for information on how to obtain GCC@.
 
 The full distribution includes the C, C++, Objective-C, Fortran, Java,
 and Chill compilers.  The full distribution also includes runtime libraries
@@ -293,7 +293,7 @@ implies that the host defaults to @var{target}.
 @heading Options specification
 
 Use @var{options} to override several configure time options for
-GCC.  A partial list of supported @var{options}:
+GCC@.  A partial list of supported @var{options}:
 
 @table @code
 @item --prefix=@var{dirname}
@@ -320,7 +320,7 @@ Specify the installation directory for the executables called by users
 
 @item --libdir=@var{dirname}
 Specify the installation directory for object code libraries and
-internal parts of GCC.  The default is @file{@var{exec-prefix}/lib}.
+internal parts of GCC@.  The default is @file{@var{exec-prefix}/lib}.
 
 @item --with-slibdir=@var{dirname}
 Specify the installation directory for the shared libgcc library.  The
@@ -364,7 +364,7 @@ logical.
 
 The purpose of @option{--prefix} is to specify where to @emph{install
 GCC}.  The local header files in @file{/usr/local/include}---if you put
-any in that directory---are not part of GCC.  They are part of other
+any in that directory---are not part of GCC@.  They are part of other
 programs---perhaps many others.  (GCC installs its own header files in
 another directory which is based on the @option{--prefix} value.)
 
@@ -377,7 +377,7 @@ file corrections made by the @code{fixincludes} script.
 
 Indications are that people who use this option use it based on mistaken
 ideas of what it is for.  People use it as if it specified where to
-install part of GCC.  Perhaps they make this assumption because
+install part of GCC@.  Perhaps they make this assumption because
 installing GCC creates the directory.
 
 @item --enable-shared[=@var{package}[,@dots{}]]
@@ -463,11 +463,11 @@ uses.  Normally GCC uses the same debug format as the host system.
 On MIPS based systems and on Alphas, you must specify whether you want
 GCC to create the normal ECOFF debugging format, or to use BSD-style
 stabs passed through the ECOFF symbol table.  The normal ECOFF debug
-format cannot fully handle languages other than C.  BSD stabs format can
-handle other languages, but it only works with the GNU debugger GDB.
+format cannot fully handle languages other than C@.  BSD stabs format can
+handle other languages, but it only works with the GNU debugger GDB@.
 
 Normally, GCC uses the ECOFF debugging format by default; if you
-prefer BSD stabs, specify @option{--with-stabs} when you configure GCC.
+prefer BSD stabs, specify @option{--with-stabs} when you configure GCC@.
 
 No matter which default you choose when you configure GCC, the user
 can use the @option{-gcoff} and @option{-gstabs+} options to specify explicitly
@@ -518,7 +518,7 @@ AIX thread support.
 @item dce
 DCE thread support.
 @item mach
-Generic MACH thread support, known to work on NEXTSTEP.  (Please note
+Generic MACH thread support, known to work on NEXTSTEP@.  (Please note
 that the file needed to support this configuration, @file{gthr-mach.h}, is
 missing and thus this setting will cause a known bootstrap failure.)
 @item no
@@ -545,7 +545,7 @@ Microsoft Win32 API thread support.
 Specify which cpu variant the
 compiler should generate code for by default.  This is currently
 only supported on the some ports, specifically arm, powerpc, and
-SPARC.  If configure does not recognize the model name (e.g.@: arm700,
+SPARC@.  If configure does not recognize the model name (e.g.@: arm700,
 603e, or ultrasparc) you provide, please check the configure script
 for a complete list of supported models.
 
@@ -643,7 +643,7 @@ of tree node types when referencing fields of that node, and some other
 internal consistency checks.  This does not change the generated code,
 but adds error checking within the compiler.  This will slow down the
 compiler and may only work properly if you are building the compiler
-with GCC.  This is on by default when building from CVS or snapshots,
+with GCC@.  This is on by default when building from CVS or snapshots,
 but off for releases.  More control over the checks may be had by
 specifying @var{list}; the categories of checks available are
 @samp{misc}, @samp{tree}, @samp{gc}, @samp{rtl} and @samp{gcac}.  The
@@ -655,7 +655,7 @@ checks @samp{rtl} and @samp{gcac} are very expensive.
 The @option{--enable-nls} option enables Native Language Support (NLS),
 which lets GCC output diagnostics in languages other than American
 English.  Native Language Support is enabled by default if not doing a
-canadian cross build.  The @option{--disable-nls} option disables NLS.
+canadian cross build.  The @option{--disable-nls} option disables NLS@.
 
 @item --with-included-gettext
 If NLS is enabled, the @option{--with-included-gettext} option causes the build
@@ -752,7 +752,7 @@ result in a failure to fix the declaration of @code{size_t} in
 @file{sys/types.h}.  If you find that @code{size_t} is a signed type and
 that type mismatches occur, this could be the cause.
 
-The solution is not to use such a directory for building GCC.
+The solution is not to use such a directory for building GCC@.
 
 When building from CVS or snapshots, or if you modify parser sources,
 you need the Bison parser generator installed.  Any version 1.25 or
@@ -839,7 +839,7 @@ for information about building cross compilers.
 
 When building a cross compiler, it is not generally possible to do a
 3-stage bootstrap of the compiler.  This makes for an interesting problem
-as parts of GCC can only be built with GCC.
+as parts of GCC can only be built with GCC@.
 
 To build a cross compiler, we first recommend building and installing a
 native compiler.  You can then use the native GCC compiler to build the
@@ -874,7 +874,7 @@ Note that if an error occurs in any step the make process will exit.
 If you have a multiprocessor system you can use @samp{make bootstrap
 MAKE="make -j 2" -j 2} or just @samp{make -j 2 bootstrap}
 for GNU Make 3.79 and above instead of just @samp{make bootstrap}
-when building GCC.  You can use a bigger number instead of two if
+when building GCC@.  You can use a bigger number instead of two if
 you like.  In most cases, it won't help to use a number bigger than
 the number of processors in your machine.
 
@@ -1068,7 +1068,7 @@ If you don't mind, please quickly review the
 @uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,build status page}.
 If your system is not listed, send a note to
 @uref{mailto:gcc@@gcc.gnu.org,,gcc@@gcc.gnu.org} indicating
-that you successfully built and installed GCC.
+that you successfully built and installed GCC@.
 
 Include the output from running @file{@var{srcdir}/config.guess}.  (Do
 not send us the config.guess file itself, just the one-line output from
@@ -1084,7 +1084,7 @@ subdirectories of @file{@var{objdir}}; these may be converted for
 printing with programs such as @command{dvips}.  You can also
 @uref{http://www.gnu.org/order/order.html,,buy printed manuals from the
 Free Software Foundation}, though such manuals may not be for the most
-recent version of GCC.
+recent version of GCC@.
 
 @html
 <hr>
@@ -1110,7 +1110,7 @@ recent version of GCC.
 @cindex Binaries
 @cindex Installing GCC: Binaries
 
-We are often asked about pre-compiled versions of GCC.  While we cannot
+We are often asked about pre-compiled versions of GCC@.  While we cannot
 provide these for all platforms, below you'll find links to binaries for
 various platforms where creating them by yourself is not easy due to various
 reasons.
@@ -1411,13 +1411,13 @@ MIL-STD-1750A processors.
 
 The MIL-STD-1750A cross configuration produces output for
 @code{as1750}, an assembler/linker available under the GNU Public
-License for the 1750A.  @code{as1750} can be obtained at
+License for the 1750A@.  @code{as1750} can be obtained at
 @uref{ftp://ftp.fta-berlin.de/pub/crossgcc/1750gals/}.
 A similarly licensed simulator for
 the 1750A is available from same address.
 
 You should ignore a fatal error during the building of libgcc (libgcc is
-not yet implemented for the 1750A.)
+not yet implemented for the 1750A@.)
 
 The @code{as1750} assembler requires the file @file{ms1750.inc}, which is
 found in the directory @file{config/1750a}.
@@ -1436,13 +1436,13 @@ The read/write (RAM) data section.
 The read-only (ROM) constants section.
 
 @item Init
-Initialization section (code to copy KREL to SREL).
+Initialization section (code to copy KREL to SREL)@.
 @end table
 
 The smallest addressable unit is 16 bits (BITS_PER_UNIT is 16).  This
 means that type @code{char} is represented with a 16-bit word per character.
 The 1750A's ``Load/Store Upper/Lower Byte'' instructions are not used by
-GCC.
+GCC@.
 
 @html
 </p>
@@ -1473,7 +1473,7 @@ AMD Am29050 used in a system running a variant of BSD Unix.
 
 This section contains general configuration information for all
 alpha-based platforms using ELF (in particular, ignore this section for
-DEC OSF/1, Digital UNIX and Tru64 UNIX).  In addition to reading this
+DEC OSF/1, Digital UNIX and Tru64 UNIX)@.  In addition to reading this
 section, please read all other sections that match your target.
 
 We require binutils 2.11.1 (as of yet unreleased), binutils with
@@ -1549,7 +1549,7 @@ unless the comparisons fail without that option.  If you add
 @samp{.s} files after each series of compilations.
 
 GCC now supports both the native (ECOFF) debugging format used by DBX
-and GDB and an encapsulated STABS format for use only with GDB.  See the
+and GDB and an encapsulated STABS format for use only with GDB@.  See the
 discussion of the @option{--with-stabs} option of @file{configure} above
 for more information on these formats and how to select them.
 
@@ -1562,7 +1562,7 @@ side-effect that code addresses when @option{-O} is specified are
 different depending on whether or not @option{-g} is also specified.
 
 To avoid this behavior, specify @option{-gstabs+} and use GDB instead of
-DBX.  DEC is now aware of this problem with the assembler and hopes to
+DBX@.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
 
 @html
@@ -1628,7 +1628,7 @@ applications.  There are no standard Unix configurations.  @xref{AVR
 Options,, AVR Options, gcc, Using and Porting the GNU Compiler
 Collection (GCC)}, for the list of supported MCU types.
 
-Use @samp{configure --target=avr --enable-languages="c"} to configure GCC.
+Use @samp{configure --target=avr --enable-languages="c"} to configure GCC@.
 
 Further installation notes and other useful information about AVR tools
 can also be obtained from:
@@ -1693,7 +1693,7 @@ Dec's version of OSF/1.
 
 @item decstation-osfrose
 Open Software Foundation reference port of OSF/1 which uses the
-OSF/rose object file format instead of ECOFF.  Normally, you
+OSF/rose object file format instead of ECOFF@.  Normally, you
 would not select this configuration.
 @end table
 
@@ -1732,7 +1732,7 @@ A port to the AT&T DSP1610 family of processors.
 @end html
 @heading @anchor{elxsi-elxsi-bsd}elxsi-elxsi-bsd
 The Elxsi's C compiler has known limitations that prevent it from
-compiling GCC.  Please contact @email{mrs@@cygnus.com} for more details.
+compiling GCC@.  Please contact @email{mrs@@cygnus.com} for more details.
 
 @html
 </p>
@@ -1794,7 +1794,7 @@ and @env{SHELL} to @file{/bin/ksh} in your environment.
 @heading @anchor{hppa*-hp-hpux10}hppa*-hp-hpux10
 
 For hpux10.20, we @emph{highly} recommend you pick up the latest sed patch
-@code{PHCO_19798} from HP.  HP has two sites which provide patches free of
+@code{PHCO_19798} from HP@.  HP has two sites which provide patches free of
 charge:
 
 @itemize @bullet
@@ -1854,10 +1854,10 @@ of the configuration used in the stock FreeBSD configuration of gcc.  In
 particular, @option{--enable-threads} is now configured by default.
 However, as a general user, do not attempt to replace the system
 compiler with this release.  Known to bootstrap and check with good
-results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3 and 5-CURRENT.
+results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3 and 5-CURRENT@.
 
 At this time, @option{--enable-threads} is not compatible with
-@option{--enable-libgcj} on FreeBSD.
+@option{--enable-libgcj} on FreeBSD@.
 
 @html
 </p>
@@ -1887,10 +1887,10 @@ applied in the GCC source tree, fixes the compatibility problems.
 @end html
 
 Currently Glibc 2.2.3 (and older releases) and GCC 3.0 are out of sync
-since the latest exception handling changes for GCC.  Compiling glibc
+since the latest exception handling changes for GCC@.  Compiling glibc
 with GCC 3.0 will give a binary incompatible glibc and therefore cause
 lots of problems and might make your system completly unusable.  This
-will definitly need fixes in glibc but might also need fixes in GCC.  We
+will definitly need fixes in glibc but might also need fixes in GCC@.  We
 strongly advise to wait for glibc 2.2.4 and to read the release notes of
 glibc 2.2.4 whether patches for GCC 3.0 are needed.  You can use glibc
 2.2.3 with GCC 3.0, just do not try to recompile it.
@@ -1954,7 +1954,7 @@ Earlier versions of GCC emitted Dwarf-1 when generating ELF to allow
 the system debugger to be used.  That support was too burdensome to
 maintain.  GCC now emits only dwarf-2 for this target.  This means you
 may use either the UDK debugger or GDB to debug programs built by this
-version of GCC.
+version of GCC@.
 
 If you are building languages other than C, you must follow the instructions
 about invoking @samp{make bootstrap} because the native OpenServer
@@ -1976,7 +1976,7 @@ errors of the basic form:
 
 are symptoms of this problem.  You may work around this by not
 building affected files with that flag, by using the GNU assembler, or
-by using the assembler provided with the current version of the OS.
+by using the assembler provided with the current version of the OS@.
 Users of GNU assembler should see the note below for hazards on doing
 so.
 
@@ -2015,7 +2015,7 @@ code, only G77-compiled code has been observed to cause this abort.
 If you are getting core dumps immediately upon execution of your
 g77 program---and especially if it's compiled with @option{-fPIC}---try applying
 @uref{sco_osr5_g77.patch,,@file{sco_osr5_g77.patch}} to your libf2c and
-rebuilding GCC.
+rebuilding GCC@.
 Affected faults, when analyzed in a debugger, will show a stack
 backtrace with a fault occurring in @code{rtld()} and the program
 running as @file{/usr/lib/ld.so.1}.  This problem has been reported to SCO
@@ -2035,9 +2035,9 @@ package be installed.  (If it is installed, you will have a
 but is meant to be used when hosting on a system where UDK isn't the
 default compiler such as OpenServer 5 or Unixware 2.  This target will
 generate binaries that will run on OpenServer, Unixware 2, or Unixware 7,
-with the same warnings and caveats as the SCO UDK.
+with the same warnings and caveats as the SCO UDK@.
 
-You can stage1 with either your native compiler or with UDK.   If you
+You can stage1 with either your native compiler or with UDK@.   If you
 don't do a full bootstrap when initially building with your native compiler
 you will have an utterly unusable pile of bits as your reward.
 
@@ -2119,7 +2119,7 @@ use BASH (the GNU shell) to run @code{fixproto}.
 @heading @anchor{i860-intel-osf*}i860-intel-osf*
 On the Intel Paragon (an i860 machine), if you are using operating
 system version 1.0, you will get warnings or errors about redefinition
-of @code{va_arg} when you build GCC.
+of @code{va_arg} when you build GCC@.
 
 If this happens, then you need to link most programs with the library
 @file{iclib.a}.  You must also modify @file{stdio.h} as follows: before
@@ -2179,7 +2179,7 @@ newer is recommended to build on this platform.
 
 Errors involving @code{alloca} when building GCC generally are due
 to an incorrect definition of @var{CC} in the Makefile or mixing files
-compiled with the native C compiler and GCC.  During the stage1 phase of
+compiled with the native C compiler and GCC@.  During the stage1 phase of
 the build, the native AIX compiler @strong{must} be invoked as @command{cc}
 (not @command{xlc}).  Once @command{configure} has been informed of
 @command{xlc}, one needs to use @samp{make distclean} to remove the
@@ -2194,7 +2194,7 @@ Toolbox for Linux: GNU and Open Source tools for AIX};
 website does work.  Binutils 2.11 is expected to include AIX 4.3
 support.  The GNU Assembler is necessary for libstdc++ to build.  The
 AIX native ld still is recommended.  The native AIX tools do
-interoperate with GCC.
+interoperate with GCC@.
 
 Linking executables and shared libraries may produce warnings of
 duplicate symbols.  The assembly files generated by GCC for AIX always
@@ -2215,14 +2215,14 @@ routines is shipped with AIX 4.3.2.
 
 Some versions of the AIX binder (linker) can fail with a relocation
 overflow severe error when the @option{-bbigtoc} option is used to link
-GCC-produced object files into an executable that overflows the TOC.  A fix
+GCC-produced object files into an executable that overflows the TOC@.  A fix
 for APAR IX75823 (OVERFLOW DURING LINK WHEN USING GCC AND -BBIGTOC) is
 available from IBM Customer Support and from its
 @uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
 website as PTF U455193.
 
 The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
-with a segmentation fault when invoked by any version of GCC.  A fix for
+with a segmentation fault when invoked by any version of GCC@.  A fix for
 APAR IX87327 is available from IBM Customer Support and from its
 @uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
 website as PTF U461879.  This fix is incorporated in AIX 4.3.3 and above.
@@ -2233,7 +2233,7 @@ TO ASSEMBLE/BIND) is available from IBM Customer Support and from its
 @uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
 website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.
 
-AIX provides National Language Support (NLS).  Compilers and assemblers
+AIX provides National Language Support (NLS)@.  Compilers and assemblers
 use NLS to support locale-specific representations of various data
 formats including floating-point numbers (e.g., @samp{.}  vs @samp{,} for
 separating decimal fractions).  There have been problems reported where
@@ -2260,7 +2260,7 @@ This configuration is intended for embedded systems.
 <hr>
 @end html
 @heading @anchor{m68000-hp-bsd}m68000-hp-bsd
-HP 9000 series 200 running BSD.  Note that the C compiler that comes
+HP 9000 series 200 running BSD@.  Note that the C compiler that comes
 with this system cannot compile GCC; contact @email{law@@cygnus.com}
 to get binaries of GCC for bootstrapping.
 
@@ -2293,7 +2293,7 @@ Also, you must fix a kernel bug.  Details in the file @file{README.ALTOS}.
 <hr>
 @end html
 @heading @anchor{m68k-apple-aux}m68k-apple-aux
-Apple Macintosh running A/UX.
+Apple Macintosh running A/UX@.
 You may configure GCC  to use either the system assembler and
 linker or the GNU assembler and linker.  You should use the GNU configuration
 if you can, especially if you also want to use G++.  You enabled
@@ -2301,7 +2301,7 @@ that configuration with + the @option{--with-gnu-as} and @option{--with-gnu-ld}
 options to @code{configure}.
 
 Note the C compiler that comes
-with this system cannot compile GCC.  You can find binaries of GCC
+with this system cannot compile GCC@.  You can find binaries of GCC
 for bootstrapping on @code{jagubox.gsfc.nasa.gov}.
 You will also a patched version of @file{/bin/ld} there that
 raises some of the arbitrary limits found in the original.
@@ -2311,7 +2311,7 @@ raises some of the arbitrary limits found in the original.
 <hr>
 @end html
 @heading @anchor{m68k-att-sysv}m68k-att-sysv
-AT&T 3b1, a.k.a.@: 7300 PC.  This version of GCC cannot
+AT&T 3b1, a.k.a.@: 7300 PC@.  This version of GCC cannot
 be compiled with the system C compiler, which is too buggy.
 You will need to get a previous version of GCC and use it to
 bootstrap.  Binaries are available from the OSU-CIS archive, at
@@ -2375,8 +2375,8 @@ and linking from that library.
 <hr>
 @end html
 @heading @anchor{m68k-hp-hpux}m68k-hp-hpux
-HP 9000 series 300 or 400 running HP-UX.  HP-UX version 8.0 has a bug in
-the assembler that prevents compilation of GCC.  This
+HP 9000 series 300 or 400 running HP-UX@.  HP-UX version 8.0 has a bug in
+the assembler that prevents compilation of GCC@.  This
 bug manifests itself during the first stage of compilation, while
 building @file{libgcc2.a}:
 
@@ -2503,7 +2503,7 @@ MAXUMEM = 4096
 @heading @anchor{m68k-sun}m68k-sun
 Sun 3.  We do not provide a configuration file to use the Sun FPA by
 default, because programs that establish signal handlers for floating
-point traps inherently cannot work with the FPA.
+point traps inherently cannot work with the FPA@.
 
 @html
 </p>
@@ -2536,7 +2536,7 @@ if you have one.
 <hr>
 @end html
 @heading @anchor{m88k-*-dgux}m88k-*-dgux
-Motorola m88k running DG/UX.  To build 88open BCS native or cross
+Motorola m88k running DG/UX@.  To build 88open BCS native or cross
 compilers on DG/UX, specify the configuration name as
 @samp{m88k-*-dguxbcs} and build in the 88open BCS software development
 environment.  To build ELF native or cross compilers on DG/UX, specify
@@ -2772,7 +2772,7 @@ If you see:
 
 then your version of @command{cc} uses the O32 ABI default.  You
 should set the environment variable @env{CC} to @samp{cc -n32}
-before configuring GCC.
+before configuring GCC@.
 
 GCC does not currently support generating O32 ABI binaries in the
 mips-sgi-irix6 configurations.  It used to be possible to create a GCC
@@ -2803,8 +2803,8 @@ information about using GCC on IRIX platforms.
 <hr>
 @end html
 @heading @anchor{mips-sony-sysv}mips-sony-sysv
-Sony MIPS NEWS.  This works in NEWSOS 5.0.1, but not in 5.0.2 (which
-uses ELF instead of COFF).  Support for 5.0.2 will probably be provided
+Sony MIPS NEWS@.  This works in NEWSOS 5.0.1, but not in 5.0.2 (which
+uses ELF instead of COFF)@.  Support for 5.0.2 will probably be provided
 soon by volunteers.  In particular, the linker does not like the
 code generated by GCC when shared libraries are linked in.
 
@@ -2814,7 +2814,7 @@ code generated by GCC when shared libraries are linked in.
 <hr>
 @end html
 @heading @anchor{ns32k-encore}ns32k-encore
-Encore ns32000 system.  Encore systems are supported only under BSD.
+Encore ns32000 system.  Encore systems are supported only under BSD@.
 
 @html
 </p>
@@ -2860,7 +2860,7 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
 You will need
 @uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils,,binutils-2.9.4.0.8}
-or newer for a working GCC.  It is strongly recommended to recompile binutils
+or newer for a working GCC@.  It is strongly recommended to recompile binutils
 if you initially built it with gcc-2.7.2.x.
 
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
@@ -2931,7 +2931,7 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 <hr>
 @end html
 @heading @anchor{powerpcle-*-winnt}powerpcle-*-winnt, powerpcle-*-pe
-PowerPC system in little endian mode running Windows NT.
+PowerPC system in little endian mode running Windows NT@.
 
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
@@ -2942,7 +2942,7 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 @end html
 @heading @anchor{romp-*-aos}romp-*-aos, romp-*-mach
 The only operating systems supported for the IBM RT PC are AOS and
-MACH.  GCC does not support AIX running on the RT.  We recommend you
+MACH@.  GCC does not support AIX running on the RT@.  We recommend you
 compile GCC with an earlier version of itself; if you compile GCC
 with @code{hc}, the Metaware compiler, it will work, but you will get
 mismatches between the stage 2 and stage 3 compilers in various files.
@@ -2985,7 +2985,7 @@ Another possibility that sometimes helps is to remove
 @end html
 @heading @anchor{sparc-sun-*}sparc-sun-*
 Sometimes on a Sun 4 you may observe a crash in the program
-@code{genflags} or @code{genoutput} while building GCC.  This is said to
+@code{genflags} or @code{genoutput} while building GCC@.  This is said to
 be due to a bug in @code{sh}.  You can probably get around it by running
 @code{genflags} or @code{genoutput} manually and then retrying the
 @code{make}.
@@ -3071,7 +3071,7 @@ for two reasons.  First, you must install 106950 on all hosts that
 run code generated by GCC; it doesn't suffice to install it only on
 the hosts that run GCC itself.  Second, Sun says that 106950-03 is
 only a partial fix for bug 4210064, but Sun doesn't know whether the
-partial fix is adequate for GCC.  Revision -08 or later should fix
+partial fix is adequate for GCC@.  Revision -08 or later should fix
 the bug, but (as of 1999-10-06) it is still being tested.
 @end itemize
 
@@ -3212,7 +3212,7 @@ system's linker seems to be unable to handle such a large program with
 debugging information.
 
 The system's compiler runs out of capacity when compiling @file{stmt.c}
-in GCC.  You can work around this by building @file{cpp} in GCC
+in GCC@.  You can work around this by building @file{cpp} in GCC
 first, then use that instead of the system's preprocessor with the
 system's C compiler to compile @file{stmt.c}.  Here is how:
 
@@ -3288,7 +3288,7 @@ support for more modern targets.
 
 Support for old systems as hosts for GCC can cause problems if the
 workarounds for compiler, library and operating system bugs affect the
-cleanliness or maintainability of the rest of GCC.  In some cases, to
+cleanliness or maintainability of the rest of GCC@.  In some cases, to
 bring GCC up on such a system, if still possible with current GCC, may
 require first installing an old version of GCC which did work on that
 system, and using it to compile a more recent GCC, to avoid bugs in

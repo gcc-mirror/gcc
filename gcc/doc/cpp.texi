@@ -196,7 +196,7 @@ C-family languages.  If a Makefile is preprocessed, all the hard tabs
 will be removed, and the Makefile will not work.
 
 Having said that, you can often get away with using cpp on things which
-are not C.  Other Algol-ish programming languages are often safe
+are not C@.  Other Algol-ish programming languages are often safe
 (Pascal, Ada, etc.) So is assembly, with caution.  @option{-traditional}
 mode preserves more white space, and is otherwise more permissive.  Many
 of the problems can be avoided by writing C or C++ style comments
@@ -273,7 +273,7 @@ single characters.
 
 These are nine three-character sequences, all starting with @samp{??},
 that are defined by ISO C to stand for single characters.  They permit
-obsolete systems that lack some of C's punctuation to use C.  For
+obsolete systems that lack some of C's punctuation to use C@.  For
 example, @samp{??/} stands for @samp{\}, so @t{'??/n'} is a character
 constant for a newline.  By default, GCC ignores trigraphs, but if you
 request a strictly conforming mode with the @option{-std} option, then
@@ -560,7 +560,7 @@ characters other than NUL (all bits zero).  (Note that @samp{$} is
 normally considered a letter.)  All characters with the high bit set
 (numeric range 0x7F--0xFF) are also ``other'' in the present
 implementation.  This will change when proper support for international
-character sets is added to GCC.
+character sets is added to GCC@.
 
 NUL is a special case because of the high probability that its
 appearance is accidental, and because it may be invisible to the user
@@ -575,7 +575,7 @@ have the same meaning.
 @end example
 
 @noindent
-(where @samp{^@@} is ASCII NUL).  Within string or character constants,
+(where @samp{^@@} is ASCII NUL)@.  Within string or character constants,
 NULs are preserved.  In the latter two cases the preprocessor emits a
 warning message.
 
@@ -1801,7 +1801,7 @@ constant of the form @code{@var{yyyy}@var{mm}L} where @var{yyyy} and
 @var{mm} are the year and month of the Standard version.  This signifies
 which version of the C Standard the compiler conforms to.  Like
 @code{__STDC__}, this is not necessarily accurate for the entire
-implementation, unless GNU CPP is being used with GCC.
+implementation, unless GNU CPP is being used with GCC@.
 
 The value @code{199409L} signifies the 1989 C standard as amended in
 1994, which is the current default; the value @code{199901L} signifies
@@ -1842,7 +1842,7 @@ underscores.
 @itemx __GNUC_MINOR__
 @itemx __GNUC_PATCHLEVEL__
 These macros are defined by all GNU compilers that use the C
-preprocessor: C, C++, and Objective-C.  Their values are the major
+preprocessor: C, C++, and Objective-C@.  Their values are the major
 version, minor version, and patch level of the compiler, as integer
 constants.  For example, GCC 3.2.1 will define @code{__GNUC__} to 3,
 @code{__GNUC_MINOR__} to 2, and @code{__GNUC_PATCHLEVEL__} to 1.  They
@@ -2678,7 +2678,7 @@ group in one file and end it in another.
 
 Even if a conditional fails, the @var{controlled text} inside it is
 still run through initial transformations and tokenization.  Therefore,
-it must all be lexically valid C.  Normally the only way this matters is
+it must all be lexically valid C@.  Normally the only way this matters is
 that all comments and string literals inside a failing conditional group
 must still be properly ended.
 
@@ -2758,7 +2758,7 @@ code.
 Arithmetic operators for addition, subtraction, multiplication,
 division, bitwise operations, shifts, comparisons, and logical
 operations (@code{&&} and @code{||}).  The latter two obey the usual
-short-circuiting rules of standard C.
+short-circuiting rules of standard C@.
 
 @item
 Macros.  All macros in the expression are expanded before actual
@@ -3152,7 +3152,7 @@ some systems, that string constant is copied into a special segment of
 the object file.  On other systems, the directive is ignored.
 
 This directive is not part of the C standard, but it is not an official
-GNU extension either.  We believe it came from System V.
+GNU extension either.  We believe it came from System V@.
 
 @findex #sccs
 The @samp{#sccs} directive is recognized on some systems, because it
@@ -3386,7 +3386,7 @@ reliance on behaviour described here, as it is possible that it will
 change subtly in future implementations.
 
 Also documented here are obsolete features and changes from previous
-versions of GNU CPP.
+versions of GNU CPP@.
 
 @menu
 * Implementation-defined behavior::
@@ -3526,7 +3526,7 @@ may not be a limitation.
 
 GNU CPP has a number of features which are present mainly for
 compatibility with older programs.  We discourage their use in new code.
-In some cases, we plan to remove the feature in a future version of GCC.
+In some cases, we plan to remove the feature in a future version of GCC@.
 
 @menu
 * Assertions::
@@ -3631,7 +3631,7 @@ called @samp{#import} which includes a file, but does so at most once.
 If you use @samp{#import} instead of @samp{#include}, then you don't
 need the conditionals inside the header file to prevent multiple
 inclusion of the contents.  GCC permits the use of @samp{#import} in C
-and C++ as well as Objective-C.  However, it is not in standard C or C++
+and C++ as well as Objective-C@.  However, it is not in standard C or C++
 and should therefore not be used by portable programs.
 
 @samp{#import} is not a well designed feature.  It requires the users of
@@ -3683,7 +3683,7 @@ This is the same as @code{#pragma GCC poison}.  The version without the
 
 GCC currently allows a string constant to extend across multiple logical
 lines of the source file.  This extension is deprecated and will be
-removed in a future version of GCC.  Such string constants are already
+removed in a future version of GCC@.  Such string constants are already
 rejected in all directives apart from @samp{#define}.
 
 Instead, make use of ISO C concatenation of adjacent string literals, or
@@ -3696,7 +3696,7 @@ use @samp{\n} followed by a backslash-newline.
 @cindex differences from previous versions
 
 This section details behavior which has changed from previous versions
-of GNU CPP.  We do not plan to change it again in the near future, but
+of GNU CPP@.  We do not plan to change it again in the near future, but
 we do not promise not to, either.
 
 The ``previous versions'' discussed here are 2.95 and before.  The
@@ -4053,7 +4053,7 @@ The 1990 C standard, as amended in 1994.
 @itemx iso9899:199x
 @itemx c9x
 The revised ISO C standard, published in December 1999.  Before
-publication, this was known as C9X.
+publication, this was known as C9X@.
 
 @item gnu89
 The 1990 C standard plus GNU extensions.  This is the default.
@@ -4246,7 +4246,7 @@ Process trigraph sequences.  @xref{Initial processing}.
 
 @item -remap
 Enable special code to work around file systems which only permit very
-short file names, such as MS-DOS.
+short file names, such as MS-DOS@.
 
 @item -$
 Forbid the use of @samp{$} in identifiers.  The C standard allows
