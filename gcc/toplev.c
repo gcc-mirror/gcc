@@ -3575,7 +3575,7 @@ rest_of_compilation (decl)
 	  && flag_reorder_blocks)
 	{
 	  reorder_basic_blocks ();
-	  cleanup_cfg (CLEANUP_EXPENSIVE);
+	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
 	}
     }
 
@@ -3584,26 +3584,6 @@ rest_of_compilation (decl)
 
   ggc_collect ();
 #endif
-  if (optimize > 0)
-    {
-      timevar_push (TV_REORDER_BLOCKS);
-      open_dump_file (DFI_bbro, decl);
-
-      /* Last attempt to optimize CFG, as scheduling, peepholing and insn
-	 splitting possibly introduced more crossjumping opportunities.
-	 Except that we can't actually run crossjumping without running
-	 another DCE pass, which we can't do after reg-stack.  */
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
-		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
-      if (flag_reorder_blocks)
-	{
-	  reorder_basic_blocks ();
-	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
-	}
-
-      close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
-      timevar_pop (TV_REORDER_BLOCKS);
-    }
   compute_alignments ();
 
   /* CFG is no longer maintained up-to-date.  */

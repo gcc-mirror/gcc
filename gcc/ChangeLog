@@ -1,3 +1,8 @@
+Sat Feb 22 20:22:19 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation):  Apply fotgotten hunk
+	of track scheduling patch.
+
 Sat Feb 22 19:29:28 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/linux.h (TARGET_HAS_F_SETLKW): Define.
