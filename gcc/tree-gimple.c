@@ -447,6 +447,34 @@ is_gimple_reg (tree t)
 	  && ! needs_to_live_in_memory (t));
 }
 
+/* Returns true if T is a GIMPLE temporary variable, false otherwise.  */
+
+bool
+is_gimple_tmp_var (tree t)
+{
+  /* FIXME this could trigger for other local artificials, too.  */
+  return (TREE_CODE (t) == VAR_DECL && DECL_ARTIFICIAL (t)
+	  && !TREE_STATIC (t) && !DECL_EXTERNAL (t));
+}
+
+/* Returns true if T is a GIMPLE temporary register variable.  */
+
+bool
+is_gimple_tmp_reg (tree t)
+{
+  /* The intent of this is to get hold of a value that won't change.
+     An SSA_NAME qualifies no matter if its of a user variable or not.  */
+  if (TREE_CODE (t) == SSA_NAME)
+    return true;
+
+  /* We don't know the lifetime characteristics of user variables.  */
+  if (TREE_CODE (t) != VAR_DECL || !DECL_ARTIFICIAL (t))
+    return false;
+
+  /* Finally, it must be capable of being placed in a register.  */
+  return is_gimple_reg (t);
+}
+
 /* Return true if T is a GIMPLE variable whose address is not needed.  */
 
 bool

@@ -1,5 +1,13 @@
 2004-07-20  Richard Henderson  <rth@redhat.com>
 
+	* gimplify.c (is_gimple_tmp_var): Move to tree-gimple.c.
+	(gimplify_compound_lval): Use is_gimple_tmp_reg.
+	* tree-gimple.c (is_gimple_tmp_var): Move from gimplify.c.
+	(is_gimple_tmp_reg): New.
+	* tree-gimple.h (is_gimple_tmp_reg): Declare.
+
+2004-07-20  Richard Henderson  <rth@redhat.com>
+
 	* tree-pretty-print.c (dump_generic_node): Dump
 	CALL_EXPR_HAS_RETURN_SLOT_ADDR.
 

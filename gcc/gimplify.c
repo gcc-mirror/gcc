@@ -476,16 +476,6 @@ get_initialized_tmp_var (tree val, tree *pre_p, tree *post_p)
   return internal_get_tmp_var (val, pre_p, post_p, false);
 }
 
-/*  Returns true if T is a GIMPLE temporary variable, false otherwise.  */
-
-bool
-is_gimple_tmp_var (tree t)
-{
-  /* FIXME this could trigger for other local artificials, too.  */
-  return (TREE_CODE (t) == VAR_DECL && DECL_ARTIFICIAL (t)
-	  && !TREE_STATIC (t) && !DECL_EXTERNAL (t));
-}
-
 /* Declares all the variables in VARS in SCOPE.  */
 
 void
@@ -1569,7 +1559,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 		{
 	          TREE_OPERAND (t, 2) = low;
 		  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
-					is_gimple_tmp_var, fb_rvalue);
+					is_gimple_tmp_reg, fb_rvalue);
 		  ret = MIN (ret, tret);
 		}
 	    }
@@ -1588,7 +1578,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 		{
 	          TREE_OPERAND (t, 3) = elmt_size;
 		  tret = gimplify_expr (&TREE_OPERAND (t, 3), pre_p, post_p,
-					is_gimple_tmp_var, fb_rvalue);
+					is_gimple_tmp_reg, fb_rvalue);
 		  ret = MIN (ret, tret);
 		}
 	    }
@@ -1610,7 +1600,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 		{
 	          TREE_OPERAND (t, 2) = offset;
 		  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
-					is_gimple_tmp_var, fb_rvalue);
+					is_gimple_tmp_reg, fb_rvalue);
 		  ret = MIN (ret, tret);
 		}
 	    }
@@ -1641,7 +1631,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 	  if (!is_gimple_min_invariant (TREE_OPERAND (t, 1)))
 	    {
 	      tret = gimplify_expr (&TREE_OPERAND (t, 1), pre_p, post_p,
-				    is_gimple_tmp_var, fb_rvalue);
+				    is_gimple_tmp_reg, fb_rvalue);
 	      ret = MIN (ret, tret);
 	    }
 	}
