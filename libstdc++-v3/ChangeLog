@@ -53,6 +53,7 @@
 
 2004-01-26  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/12540
 	* config/locale/gnu/monetary_members.cc: Don't leak memory
 	on exception.
 	
