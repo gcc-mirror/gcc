@@ -1,3 +1,8 @@
+2001-06-12  Zack Weinberg  <zackw@stanford.edu>
+
+	* configure.in (ALL_LINGUAS): Set to nothing.
+	* configure: Regenerate.
+
 2001-06-12  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): Always use
