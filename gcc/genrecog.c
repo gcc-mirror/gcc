@@ -227,6 +227,9 @@ static const char * special_mode_pred_table[] = {
 #define NUM_SPECIAL_MODE_PREDS \
   (sizeof (special_mode_pred_table) / sizeof (special_mode_pred_table[0]))
 
+static void message_with_line
+  PVPROTO ((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
+
 static struct decision *new_decision
   PROTO((const char *, struct decision_head *));
 static struct decision_test *new_decision_test
@@ -234,7 +237,7 @@ static struct decision_test *new_decision_test
 static rtx find_operand
   PROTO((rtx, int));
 static void validate_pattern
-  PROTO((rtx, rtx, int));
+  PROTO((rtx, rtx, rtx));
 static struct decision *add_to_sequence
   PROTO((rtx, struct decision_head *, const char *, enum routine_type, int));
 
@@ -418,13 +421,14 @@ find_operand (pattern, n)
   return NULL;
 }
 
-/* Check for various errors in patterns.  */
+/* Check for various errors in patterns.  SET is nonnull for a destination,
+   and is the complete set pattern.  */
 
 static void
-validate_pattern (pattern, insn, set_dest)
+validate_pattern (pattern, insn, set)
      rtx pattern;
      rtx insn;
-     int set_dest;
+     rtx set;
 {
   const char *fmt;
   RTX_CODE code;
@@ -502,41 +506,8 @@ validate_pattern (pattern, insn, set_dest)
 		}
 	  }
 
-	/* Allowing non-lvalues in destinations -- particularly CONST_INT --
-	   while not likely to occur at runtime, results in less efficient
-	   code from insn-recog.c.  */
-	if (set_dest
-	    && pred_name[0] != '\0'
-	    && allows_non_lvalue)
-	  {
-	    message_with_line (pattern_lineno,
-			"warning: destination operand 0 allows non-lvalue",
-			XINT (pattern, 0));
-	  }
-
-	/* A modeless MATCH_OPERAND can be handy when we can
-	   check for multiple modes in the c_test.  In most other cases,
-	   it is a mistake.  Only DEFINE_INSN is eligible, since SPLIT
-	   and PEEP2 can FAIL within the output pattern.  Exclude 
-	   address_operand, since its mode is related to the mode of
-	   the memory not the operand.  */
-
-	if (GET_MODE (pattern) == VOIDmode
-	    && code == MATCH_OPERAND
-	    && GET_CODE (insn) == DEFINE_INSN
-	    && allows_non_const
-	    && ! special_mode_pred
-	    && pred_name[0] != '\0'
-	    && strcmp (pred_name, "address_operand") != 0
-	    && strstr (c_test, "operands") == NULL)
-	  {
-	    message_with_line (pattern_lineno,
-			       "warning: operand %d missing mode?",
-			       XINT (pattern, 0));
-	  }
-
 	/* A MATCH_OPERAND that is a SET should have an output reload.  */
-	if (set_dest
+	if (set
 	    && code == MATCH_OPERAND
 	    && XSTR (pattern, 2)[0] != '\0'
 	    && XSTR (pattern, 2)[0] != '='
@@ -548,6 +519,42 @@ validate_pattern (pattern, insn, set_dest)
 	    error_count++;
 	  }
 
+	/* Allowing non-lvalues in destinations -- particularly CONST_INT --
+	   while not likely to occur at runtime, results in less efficient
+	   code from insn-recog.c.  */
+	if (set
+	    && pred_name[0] != '\0'
+	    && allows_non_lvalue)
+	  {
+	    message_with_line (pattern_lineno,
+			"warning: destination operand %d allows non-lvalue",
+			XINT (pattern, 0));
+	  }
+
+	/* A modeless MATCH_OPERAND can be handy when we can
+	   check for multiple modes in the c_test.  In most other cases,
+	   it is a mistake.  Only DEFINE_INSN is eligible, since SPLIT
+	   and PEEP2 can FAIL within the output pattern.  Exclude 
+	   address_operand, since its mode is related to the mode of
+	   the memory not the operand.  Exclude the SET_DEST of a call
+	   instruction, as that is a common idiom.  */
+
+	if (GET_MODE (pattern) == VOIDmode
+	    && code == MATCH_OPERAND
+	    && GET_CODE (insn) == DEFINE_INSN
+	    && allows_non_const
+	    && ! special_mode_pred
+	    && pred_name[0] != '\0'
+	    && strcmp (pred_name, "address_operand") != 0
+	    && strstr (c_test, "operands") == NULL
+	    && ! (set
+		  && GET_CODE (set) == SET
+		  && GET_CODE (SET_SRC (set)) == CALL))
+	  {
+	    message_with_line (pattern_lineno,
+			       "warning: operand %d missing mode?",
+			       XINT (pattern, 0));
+	  }
 	return;
       }
 
@@ -600,6 +607,8 @@ validate_pattern (pattern, insn, set_dest)
 	else if (dmode != smode
 		 && GET_CODE (dest) != PC
 		 && GET_CODE (dest) != CC0
+		 && GET_CODE (src) != PC
+		 && GET_CODE (src) != CC0
 		 && GET_CODE (src) != CONST_INT)
 	  {
 	    const char *which;
@@ -609,14 +618,14 @@ validate_pattern (pattern, insn, set_dest)
 	  }
 
 	if (dest != SET_DEST (pattern))
-	  validate_pattern (dest, insn, 1);
-	validate_pattern (SET_DEST (pattern), insn, 1);
-        validate_pattern (SET_SRC (pattern), insn, 0);
+	  validate_pattern (dest, insn, pattern);
+	validate_pattern (SET_DEST (pattern), insn, pattern);
+        validate_pattern (SET_SRC (pattern), insn, NULL_RTX);
         return;
       }
 
     case CLOBBER:
-      validate_pattern (SET_DEST (pattern), insn, 1);
+      validate_pattern (SET_DEST (pattern), insn, pattern);
       return;
 
     case LABEL_REF:
@@ -640,12 +649,12 @@ validate_pattern (pattern, insn, set_dest)
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  validate_pattern (XEXP (pattern, i), insn, 0);
+	  validate_pattern (XEXP (pattern, i), insn, NULL_RTX);
 	  break;
 
 	case 'E':
 	  for (j = 0; j < XVECLEN (pattern, i); j++)
-	    validate_pattern (XVECEXP (pattern, i, j), insn, 0);
+	    validate_pattern (XVECEXP (pattern, i, j), insn, NULL_RTX);
 	  break;
 
 	case 'i': case 'w': case '0': case 's':
@@ -1219,7 +1228,17 @@ nodes_identical (d1, d2)
     }
 
   /* For success, they should now both be null.  */
-  return t1 == t2;
+  if (t1 != t2)
+    return 0;
+
+  /* Check that their subnodes are at the same position, as any one set
+     of sibling decisions must be at the same position.  */
+  if (d1->success.first
+      && d2->success.first
+      && strcmp (d1->success.first->position, d2->success.first->position))
+    return 0;
+
+  return 1;
 }
 
 /* A subroutine of merge_trees; given two nodes that have been declared
@@ -2313,7 +2332,7 @@ make_insn_sequence (insn, type)
       PUT_MODE (x, VOIDmode);
     }
 
-  validate_pattern (x, insn, 0);
+  validate_pattern (x, insn, NULL_RTX);
 
   memset(&head, 0, sizeof(head));
   last = add_to_sequence (x, &head, "", type, 1);

@@ -954,6 +954,8 @@ read_rtx (infile)
 		      obstack_grow (rtl_obstack, "\\n\\t", 4);
 		      continue;
 		    }
+		  if (c == '\n')
+		    read_rtx_lineno++;
 		}
 	      else if (c == '"')
 		break;
