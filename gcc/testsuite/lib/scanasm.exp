@@ -19,10 +19,16 @@
 
 # Utility for scanning compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
-proc scan-assembler { testcase pattern args } {
-    global subdir
+proc scan-assembler { pattern args } {
+    # This assumes that we are two frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new dejagnu release.
+    set testcase [uplevel 2 { concat "$name" }]
 
-    set fd [open [file rootname $testcase].s r]
+    # This must match the rule in gcc-dg.exp.
+    set output_file "[file rootname [file tail $testcase]].s"
+
+    set fd [open $output_file r]
     set text [read $fd]
     close $fd
 
@@ -32,17 +38,18 @@ proc scan-assembler { testcase pattern args } {
     }
 
     if [regexp -- $pattern $text] {
-	pass "$subdir/$testcase scan-assembler $vmessage"
+	pass "$testcase scan-assembler $vmessage"
     } else {
-	fail "$subdir/$testcase scan-assembler $vmessage"
+	fail "$testcase scan-assembler $vmessage"
     }
 }
 
 # Call pass if pattern is not present, otherwise fail.
-proc scan-assembler-not { testcase pattern args } {
-    global subdir
+proc scan-assembler-not { pattern args } {
+    set testcase [uplevel 2 { concat "$name" }]
+    set output_file "[file rootname [file tail $testcase]].s"
 
-    set fd [open [file rootname $testcase].s r]
+    set fd [open $output_file r]
     set text [read $fd]
     close $fd
 
@@ -52,16 +59,15 @@ proc scan-assembler-not { testcase pattern args } {
     }
 
     if ![regexp -- $pattern $text] {
-	pass "$subdir/$testcase scan-assembler-not $vmessage"
+	pass "$testcase scan-assembler-not $vmessage"
     } else {
-	fail "$subdir/$testcase scan-assembler-not $vmessage"
+	fail "$testcase scan-assembler-not $vmessage"
     }
 }
 
 # Utility for scanning demangled compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
-proc scan-assembler-dem { testcase pattern args } {
-    global subdir
+proc scan-assembler-dem { pattern args } {
     global cxxfilt
     global base_dir
 
@@ -73,7 +79,10 @@ proc scan-assembler-dem { testcase pattern args } {
 	verbose -log "c++filt is $cxxfilt"
     }
 
-    set fd [open "| $cxxfilt < [file rootname $testcase].s" r]
+    set testcase [uplevel 2 { concat "$name" }]
+    set output_file "[file rootname [file tail $testcase]].s"
+
+    set fd [open "| $cxxfilt < $output_file" r]
     set text [read $fd]
     close $fd
 
@@ -83,15 +92,14 @@ proc scan-assembler-dem { testcase pattern args } {
     }
 
     if [regexp -- $pattern $text] {
-	pass "$subdir/$testcase scan-assembler $vmessage"
+	pass "$testcase scan-assembler $vmessage"
     } else {
-	fail "$subdir/$testcase scan-assembler $vmessage"
+	fail "$testcase scan-assembler $vmessage"
     }
 }
 
 # Call pass if demangled pattern is not present, otherwise fail.
-proc scan-assembler-dem-not { testcase pattern args } {
-    global subdir
+proc scan-assembler-dem-not { pattern args } {
     global cxxfilt
     global base_dir
 
@@ -103,7 +111,10 @@ proc scan-assembler-dem-not { testcase pattern args } {
 	verbose -log "c++filt is $cxxfilt"
     }
 
-    set fd [open "| $cxxfilt < [file rootname $testcase].s" r]
+    set testcase [uplevel 2 { concat "$name" }]
+    set output_file "[file rootname [file tail $testcase]].s"
+
+    set fd [open "| $cxxfilt < $output_file" r]
     set text [read $fd]
     close $fd
 
@@ -113,8 +124,8 @@ proc scan-assembler-dem-not { testcase pattern args } {
     }
 
     if ![regexp -- $pattern $text] {
-	pass "$subdir/$testcase scan-assembler-not $vmessage"
+	pass "$testcase scan-assembler-not $vmessage"
     } else {
-	fail "$subdir/$testcase scan-assembler-not $vmessage"
+	fail "$testcase scan-assembler-not $vmessage"
     }
 }

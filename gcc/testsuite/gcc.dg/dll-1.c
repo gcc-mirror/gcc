@@ -6,5 +6,5 @@ __declspec (dllimport) void imp ();
 
 __declspec (dllexport) void exp () { imp (); }
 
-/* { dg-final { scan-assembler dll-1.c "\.section\[ \t\]*.drectve\n\[^\n\]*-export:exp.*__imp_imp" } } */
-/* { dg-final { scan-assembler-not dll-1.c "__imp_exp" } } */
+/* { dg-final { scan-assembler "\.section\[ \t\]*.drectve\n\[^\n\]*-export:exp.*__imp_imp" } } */
+/* { dg-final { scan-assembler-not "__imp_exp" } } */

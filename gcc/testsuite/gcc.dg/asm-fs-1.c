@@ -10,5 +10,5 @@ void foo (void) {}
 extern int foobar asm ("_baz");
 int foobar = 3;
 
-/* { dg-final { scan-assembler-not asm-fs-1.c "\\*_bar" } } */
-/* { dg-final { scan-assembler-not asm-fs-1.c "\\*_baz" } } */
+/* { dg-final { scan-assembler-not "\\*_bar" } } */
+/* { dg-final { scan-assembler-not "\\*_baz" } } */

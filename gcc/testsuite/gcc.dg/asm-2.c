@@ -6,4 +6,4 @@ int f()
   asm volatile ("foo%%bar" : : );
 }
 
-/* { dg-final { scan-assembler asm-2.c "foo%bar" } } */
+/* { dg-final { scan-assembler "foo%bar" } } */
