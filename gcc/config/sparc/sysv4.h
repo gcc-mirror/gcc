@@ -96,7 +96,7 @@ Boston, MA 02111-1307, USA.  */
 #define STRING_ASM_OP		"\t.asciz\t"
 #define COMMON_ASM_OP		"\t.common\t"
 #define SKIP_ASM_OP		"\t.skip\t"
-#define UNALIGNED_DOUBLE_INT_ASM_OP "\t.uaxword\t"
+#define UNALIGNED_DOUBLE_INT_ASM_OP (TARGET_ARCH64 ? "\t.uaxword\t" : NULL)
 #define UNALIGNED_INT_ASM_OP	"\t.uaword\t"
 #define UNALIGNED_SHORT_ASM_OP	"\t.uahalf\t"
 #define PUSHSECTION_ASM_OP	"\t.pushsection\t"
