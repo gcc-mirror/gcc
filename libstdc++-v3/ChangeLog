@@ -1,3 +1,8 @@
+2002-11-13  Loren J. Rittle  <ljrittle@acm.org>
+
+	libstdc++/7445
+	* src/locale.cc (std::locale::classic()): Weaken locking protocol.
+
 2002-11-13  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/install.html, docs/html/22_locale/locale.html: HTML fix.
