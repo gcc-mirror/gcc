@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation
 
 load_lib "libgloss.exp"
 
@@ -175,11 +175,15 @@ proc libjava_find_lib {dir name} {
     foreach sub {.libs _libs} {
 	if {$gp != ""} {
 	    if {[file exists $gp/$dir/$sub/lib${name}.a]} then {
-		return "$gp/$dir/lib${name}.la -L$gp/$dir/$sub"
+		# Just return the `-L' option.  The library itself
+		# will be picked up via the spec file.
+		return "-L$gp/$dir/$sub"
 	    }
 	}
+	# Just return the `-L' option.  The library itself will be
+	# picked up via the spec file.
 	set lib [findfile $base_dir/../../$dir/$sub/lib${name}.a \
-		   "$base_dir/../../$dir/lib${name}.la -L$base_dir/../../$dir/$sub" \
+		   "-L$base_dir/../../$dir/$sub" \
 		   ""]
 	if {$lib != ""} {
 	    return $lib
