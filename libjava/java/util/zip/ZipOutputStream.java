@@ -1,5 +1,5 @@
-/* ZipOutputStream.java - Create a file in zip format
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* java.util.zip.ZipOutputStream
+   Copyright (C) 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,286 +36,362 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.util.zip;
+import java.io.OutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Vector;
+import java.util.Enumeration;
 
-import java.io.*;
-
-/* Written using on-line Java Platform 1.2 API Specification
- * and JCL book.
- * Believed complete and correct.
+/**
+ * This is a FilterOutputStream that writes the files into a zip
+ * archive one after another.  It has a special method to start a new
+ * zip entry.  The zip entries contains information about the file name
+ * size, compressed size, CRC, etc.
+ *
+ * It includes support for STORED and DEFLATED entries.
+ *
+ * This class is not thread safe.
+ *
+ * @author Jochen Hoenicke 
  */
-
-public class ZipOutputStream extends DeflaterOutputStream
-  implements ZipConstants
+public class ZipOutputStream extends DeflaterOutputStream implements ZipConstants
 {
-  public static final int STORED = 0;
-  public static final int DEFLATED = 8;
+  private Vector entries = new Vector();
+  private CRC32 crc = new CRC32();
+  private ZipEntry curEntry = null;
 
-  public void close () throws IOException
+  private int curMethod;
+  private int size;
+  private int offset = 0;
+
+  private byte[] zipComment = new byte[0];
+  private int defaultMethod = DEFLATED;
+
+  /**
+   * Our Zip version is hard coded to 1.0 resp. 2.0
+   */
+  private final static int ZIP_STORED_VERSION   = 10;
+  private final static int ZIP_DEFLATED_VERSION = 20;
+
+  /**
+   * Compression method.  This method doesn't compress at all.
+   */
+  public final static int STORED      =  0;
+  /**
+   * Compression method.  This method uses the Deflater.
+   */
+  public final static int DEFLATED    =  8;
+
+  /**
+   * Creates a new Zip output stream, writing a zip archive.
+   * @param out the output stream to which the zip archive is written.
+   */
+  public ZipOutputStream(OutputStream out)
   {
-    finish ();
-    out.close();
+    super(out, new Deflater(Deflater.DEFAULT_COMPRESSION, true));
   }
 
-  public void closeEntry ()  throws IOException
+  /**
+   * Set the zip file comment.
+   * @param comment the comment.
+   * @exception IllegalArgumentException if encoding of comment is
+   * longer than 0xffff bytes.
+   */
+  public void setComment(String comment)
   {
-    int compressed_size;
-    if (current.method == STORED)
-      {
-	compressed_size = uncompressed_size;
-      }
-    else
-      {
-	super.finish();
-	compressed_size = def.getTotalOut();
-      }
-    long crc = sum.getValue();
-
-    bytes_written += compressed_size;
-
-    if (current.getCrc() == -1 || current.getCompressedSize() == -1
-	|| current.getSize() == -1)
-      {
-	current.setCrc(crc);
-	current.compressedSize = compressed_size;
-	current.setSize(uncompressed_size);
-	put4 (0x08074b50);
-	put4 ((int) (current.getCrc()));
-	put4 ((int) (current.getCompressedSize()));
-	put4 ((int) (current.getSize()));
-	bytes_written += 16;
-      }
-    else if (current.getCrc() != crc
-	     || current.getCompressedSize() != compressed_size
-	     || current.getSize() != uncompressed_size)
-      throw new ZipException ("zip entry field incorrect");
-
-    current.next = chain;
-    chain = current;
-    current = null;
+    byte[] commentBytes;
+    commentBytes = comment.getBytes();
+    if (commentBytes.length > 0xffff)
+      throw new IllegalArgumentException("Comment too long.");
+    zipComment = commentBytes;
+  }
+  
+  /**
+   * Sets default compression method.  If the Zip entry specifies
+   * another method its method takes precedence.
+   * @param method the method.
+   * @exception IllegalArgumentException if method is not supported.
+   * @see #STORED
+   * @see #DEFLATED
+   */
+  public void setMethod(int method)
+  {
+    if (method != STORED && method != DEFLATED)
+      throw new IllegalArgumentException("Method not supported.");
+    defaultMethod = method;
   }
 
-  public void write (int bval) throws IOException
+  /**
+   * Sets default compression level.  The new level will be activated
+   * immediately.  
+   * @exception IllegalArgumentException if level is not supported.
+   * @see Deflater
+   */
+  public void setLevel(int level)
   {
-    if (current.method == STORED)
-      {
-	out.write(bval);
-      }
-    else
-      super.write(bval);
-    sum.update(bval);
-    uncompressed_size += 1;
+    def.setLevel(level);
+  }
+  
+  /**
+   * Write an unsigned short in little endian byte order.
+   */
+  private final void writeLeShort(int value) throws IOException 
+  {
+    out.write(value & 0xff);
+    out.write((value >> 8) & 0xff);
   }
 
-  public void write (byte[] buf, int off, int len) throws IOException
+  /**
+   * Write an int in little endian byte order.
+   */
+  private final void writeLeInt(int value) throws IOException 
   {
-    if (current.method == STORED)
-      out.write(buf, off, len);
-    else
-      super.write(buf, off, len);
-    sum.update(buf, off, len);
-    uncompressed_size += len;
+    writeLeShort(value);
+    writeLeShort(value >> 16);
   }
 
-  public void finish () throws IOException
+  /**
+   * Starts a new Zip entry. It automatically closes the previous
+   * entry if present.  If the compression method is stored, the entry
+   * must have a valid size and crc, otherwise all elements (except
+   * name) are optional, but must be correct if present.  If the time
+   * is not set in the entry, the current time is used.
+   * @param entry the entry.
+   * @exception IOException if an I/O error occured.
+   * @exception IllegalStateException if stream was finished
+   */
+  public void putNextEntry(ZipEntry entry) throws IOException
   {
-    if (current != null)
-      closeEntry ();
+    if (entries == null)
+      throw new IllegalStateException("ZipOutputStream was finished");
 
-    // Write the central directory.
-    long offset = bytes_written;
-    int count = 0;
-    int bytes = 0;
-    while (chain != null)
+    int method = entry.getMethod();
+    int flags = 0;
+    if (method == -1)
+      method = defaultMethod;
+
+    if (method == STORED)
       {
-	bytes += write_entry (chain, false);
-	++count;
-	chain = chain.next;
-      }
-
-    // Write the end of the central directory record.
-    put4 (0x06054b50);
-    // Disk number.
-    put2 (0);
-    // Another disk number.
-    put2 (0);
-    put2 (count);
-    put2 (count);
-    put4 (bytes);
-    put4 ((int) offset);
-
-    byte[] c = comment.getBytes("8859_1");
-    put2 (c.length);
-    out.write(c);
-  }
-
-  // Helper for finish and putNextEntry.
-  private int write_entry (ZipEntry entry, boolean is_local)
-    throws IOException
-  {
-    int bytes = put4 (is_local ? 0x04034b50 : 0x02014b50);
-    if (! is_local)
-      bytes += put_version ();
-    bytes += put_version ();
-
-    boolean crc_after = false;
-    if (is_local
-	&& (entry.getCrc() == -1 || entry.getCompressedSize() == -1
-	    || entry.getSize() == -1))
-      crc_after = true;
-    // For the bits field we always indicate `normal' compression,
-    // even if that isn't true.
-    bytes += put2 (crc_after ? (1 << 3) : 0);
-    bytes += put2 (entry.method);
-
-    bytes += put2(0);  // time - FIXME
-    bytes += put2(0);  // date - FIXME
-
-    if (crc_after)
-      {
-	// CRC, compressedSize, and Size are always 0 in this header.
-	// The actual values are given after the entry.
-	bytes += put4 (0);
-	bytes += put4 (0);
-	bytes += put4 (0);
-      }
-    else
-      {
-	bytes += put4 ((int) (entry.getCrc()));
-	bytes += put4 ((int) (entry.getCompressedSize()));
-	bytes += put4 ((int) (entry.getSize()));
-      }
-
-    byte[] name = entry.name.getBytes("8859_1");
-    bytes += put2 (name.length);
-    bytes += put2 (entry.extra == null ? 0 : entry.extra.length);
-
-    byte[] comment = null;
-    if (! is_local)
-      {
-	if (entry.getComment() == null)
-	  bytes += put2 (0);
-	else
+	if (entry.getCompressedSize() >= 0)
 	  {
-	    comment = entry.getComment().getBytes("8859_1");
-	    bytes += put2 (comment.length);
+	    if (entry.getSize() < 0)
+	      entry.setSize(entry.getCompressedSize());
+	    else if (entry.getSize() != entry.getCompressedSize())
+	      throw new ZipException
+		("Method STORED, but compressed size != size");
 	  }
+	else
+	  entry.setCompressedSize(entry.getSize());
 
-	// Disk number start.
-	bytes += put2 (0);
-	// Internal file attributes.
-	bytes += put2 (0);
-	// External file attributes.
-	bytes += put4 (0);
-	// Relative offset of local header.
-	bytes += put4 ((int) entry.relativeOffset);
+	if (entry.getSize() < 0)
+	  throw new ZipException("Method STORED, but size not set");
+	if (entry.getCrc() < 0)
+	  throw new ZipException("Method STORED, but crc not set");
+      }
+    else if (method == DEFLATED)
+      {
+	if (entry.getCompressedSize() < 0
+	    || entry.getSize() < 0 || entry.getCrc() < 0)
+	  flags |= 8;
       }
 
-    out.write (name);
-    bytes += name.length;
-    if (entry.extra != null)
+    if (curEntry != null)
+      closeEntry();
+
+    if (entry.getTime() < 0)
+      entry.setTime(System.currentTimeMillis());
+
+    entry.flags = flags;
+    entry.offset = offset;
+    entry.setMethod(method);
+    curMethod = method;
+    /* Write the local file header */
+    writeLeInt(LOCSIG);
+    writeLeShort(method == STORED
+		 ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
+    writeLeShort(flags);
+    writeLeShort(method);
+    writeLeInt(entry.getDOSTime());
+    if ((flags & 8) == 0)
       {
-	out.write(entry.extra);
-	bytes += entry.extra.length;
+	writeLeInt((int)entry.getCrc());
+	writeLeInt((int)entry.getCompressedSize());
+	writeLeInt((int)entry.getSize());
       }
-    if (comment != null)
+    else
       {
+	writeLeInt(0);
+	writeLeInt(0);
+	writeLeInt(0);
+      }
+    byte[] name = entry.getName().getBytes();
+    if (name.length > 0xffff)
+      throw new ZipException("Name too long.");
+    byte[] extra = entry.getExtra();
+    if (extra == null)
+      extra = new byte[0];
+    writeLeShort(name.length);
+    writeLeShort(extra.length);
+    out.write(name);
+    out.write(extra);
+
+    offset += LOCHDR + name.length + extra.length;
+
+    /* Activate the entry. */
+
+    curEntry = entry;
+    crc.reset();
+    if (method == DEFLATED)
+      def.reset();
+    size = 0;
+  }
+
+  /**
+   * Closes the current entry.
+   * @exception IOException if an I/O error occured.
+   * @exception IllegalStateException if no entry is active.
+   */
+  public void closeEntry() throws IOException
+  {
+    if (curEntry == null)
+      throw new IllegalStateException("No open entry");
+
+    /* First finish the deflater, if appropriate */
+    if (curMethod == DEFLATED)
+      super.finish();
+
+    int csize = curMethod == DEFLATED ? def.getTotalOut() : size;
+
+    if (curEntry.getSize() < 0)
+      curEntry.setSize(size);
+    else if (curEntry.getSize() != size)
+      throw new ZipException("size was "+size
+			     +", but I expected "+curEntry.getSize());
+
+    if (curEntry.getCompressedSize() < 0)
+      curEntry.setCompressedSize(csize);
+    else if (curEntry.getCompressedSize() != csize)
+      throw new ZipException("compressed size was "+csize
+			     +", but I expected "+curEntry.getSize());
+
+    if (curEntry.getCrc() < 0)
+      curEntry.setCrc(crc.getValue());
+    else if (curEntry.getCrc() != crc.getValue())
+      throw new ZipException("crc was " + Long.toHexString(crc.getValue())
+			     + ", but I expected " 
+			     + Long.toHexString(curEntry.getCrc()));
+
+    offset += csize;
+
+    /* Now write the data descriptor entry if needed. */
+    if (curMethod == DEFLATED && (curEntry.flags & 8) != 0)
+      {
+	writeLeInt(EXTSIG);
+	writeLeInt((int)curEntry.getCrc());
+	writeLeInt((int)curEntry.getCompressedSize());
+	writeLeInt((int)curEntry.getSize());
+	offset += EXTHDR;
+      }
+
+    entries.addElement(curEntry);
+    curEntry = null;
+  }
+
+  /**
+   * Writes the given buffer to the current entry.
+   * @exception IOException if an I/O error occured.
+   * @exception IllegalStateException if no entry is active.
+   */
+  public void write(byte[] b, int off, int len) throws IOException
+  {
+    if (curEntry == null)
+      throw new IllegalStateException("No open entry.");
+
+    switch (curMethod)
+      {
+      case DEFLATED:
+	super.write(b, off, len);
+	break;
+	
+      case STORED:
+	out.write(b, off, len);
+	break;
+      }
+
+    crc.update(b, off, len);
+    size += len;
+  }
+
+  /**
+   * Finishes the stream.  This will write the central directory at the
+   * end of the zip file and flush the stream.
+   * @exception IOException if an I/O error occured.
+   */
+  public void finish() throws IOException
+  {
+    if (entries == null)
+      return;
+    if (curEntry != null)
+      closeEntry();
+
+    int numEntries = 0;
+    int sizeEntries = 0;
+    
+    Enumeration enum = entries.elements();
+    while (enum.hasMoreElements())
+      {
+	ZipEntry entry = (ZipEntry) enum.nextElement();
+	
+	int method = entry.getMethod();
+	writeLeInt(CENSIG);
+	writeLeShort(method == STORED
+		     ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
+	writeLeShort(method == STORED
+		     ? ZIP_STORED_VERSION : ZIP_DEFLATED_VERSION);
+	writeLeShort(entry.flags);
+	writeLeShort(method);
+	writeLeInt(entry.getDOSTime());
+	writeLeInt((int)entry.getCrc());
+	writeLeInt((int)entry.getCompressedSize());
+	writeLeInt((int)entry.getSize());
+
+	byte[] name = entry.getName().getBytes();
+	if (name.length > 0xffff)
+	  throw new ZipException("Name too long.");
+	byte[] extra = entry.getExtra();
+	if (extra == null)
+	  extra = new byte[0];
+	String strComment = entry.getComment();
+	byte[] comment = strComment != null
+	  ? strComment.getBytes() : new byte[0];
+	if (comment.length > 0xffff)
+	  throw new ZipException("Comment too long.");
+
+	writeLeShort(name.length);
+	writeLeShort(extra.length);
+	writeLeShort(comment.length);
+	writeLeShort(0); /* disk number */
+	writeLeShort(0); /* internal file attr */
+	writeLeInt(0);   /* external file attr */
+	writeLeInt(entry.offset);
+
+	out.write(name);
+	out.write(extra);
 	out.write(comment);
-	bytes += comment.length;
+	numEntries++;
+	sizeEntries += CENHDR + name.length + extra.length + comment.length;
       }
 
-    bytes_written += bytes;
-    return bytes;
+    writeLeInt(ENDSIG);
+    writeLeShort(0); /* disk number */
+    writeLeShort(0); /* disk with start of central dir */
+    writeLeShort(numEntries);
+    writeLeShort(numEntries);
+    writeLeInt(sizeEntries);
+    writeLeInt(offset);
+    writeLeShort(zipComment.length);
+    out.write(zipComment);
+    out.flush();
+    entries = null;
   }
-
-  public void putNextEntry (ZipEntry entry) throws IOException
-  {
-    if (current != null)
-      closeEntry ();
-
-    if (entry.method < 0 )
-      entry.method = method;
-    if (entry.method == STORED)
-      {
-	if (entry.getSize() == -1 || entry.getCrc() == -1)
-	  throw new ZipException ("required entry not set");
-	// Just in case.
-	entry.compressedSize = entry.getSize();
-      }
-    entry.relativeOffset = bytes_written;
-    write_entry (entry, true);
-    current = entry;
-    int compr = (method == STORED) ? Deflater.NO_COMPRESSION : level;
-    def.reset();
-    def.setLevel(compr);
-    sum.reset();
-    uncompressed_size = 0;
-  }
-
-  public void setLevel (int level)
-  {
-    if (level != Deflater.DEFAULT_COMPRESSION
-	&& (level < Deflater.NO_COMPRESSION
-	    || level > Deflater.BEST_COMPRESSION))
-      throw new IllegalArgumentException ();
-    this.level = level;
-  }
-
-  public void setMethod (int method)
-  {
-    if (method != DEFLATED && method != STORED)
-      throw new IllegalArgumentException ();
-    this.method = method;
-  }
-
-  public void setComment (String comment)
-  {
-    if (comment.length() > 65535)
-      throw new IllegalArgumentException ();
-    this.comment = comment;
-  }
-
-  public ZipOutputStream (OutputStream out)
-  {
-    super (out, new Deflater (Deflater.DEFAULT_COMPRESSION, true), 8192);
-    sum = new CRC32 ();
-  }
-
-  private int put2 (int i) throws IOException
-  {
-    out.write (i);
-    out.write (i >> 8);
-    return 2;
-  }
-
-  private int put4 (int i) throws IOException
-  {
-    out.write (i);
-    out.write (i >> 8);
-    out.write (i >> 16);
-    out.write (i >> 24);
-    return 4;
-  }
-
-  private int put_version () throws IOException
-  {
-    // FIXME: for now we assume Unix, and we ignore the version
-    // number.
-    return put2 (3 << 8);
-  }
-
-  // The entry we are currently writing, or null if we've called
-  // closeEntry.
-  private ZipEntry current;
-  // The chain of entries which have been written to this file.
-  private ZipEntry chain;
-
-  private int method = DEFLATED;
-  private int level = Deflater.DEFAULT_COMPRESSION;
-  private String comment = "";
-  private long bytes_written;
-
-  private int uncompressed_size;
-
-  /** The checksum object. */
-  private Checksum sum;
 }

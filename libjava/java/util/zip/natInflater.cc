@@ -1,6 +1,6 @@
 // natInflater.cc - Implementation of Inflater native methods.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -149,6 +149,8 @@ java::util::zip::Inflater::reset ()
   z_streamp s = (z_streamp) zstream;
   // Just ignore errors.
   inflateReset (s);
+  is_finished = false;
+  dict_needed = false;
 }
 
 void

@@ -1,5 +1,5 @@
-/* ZipFile.java - Read contents of a ZIP file
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* java.util.zip.ZipFile
+   Copyright (C) 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,233 +36,422 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.util.zip;
+import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.EOFException;
+import java.io.RandomAccessFile;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
-import java.io.*;
-
-/* Written using on-line Java Platform 1.2 API Specification
- * and JCL book.
- * Believed complete and correct.
+/**
+ * This class represents a Zip archive.  You can ask for the contained
+ * entries, or get an input stream for a file entry.  The entry is
+ * automatically decompressed.
+ *
+ * This class is thread safe:  You can open input streams for arbitrary
+ * entries in different threads.
+ *
+ * @author Jochen Hoenicke
  */
-
 public class ZipFile implements ZipConstants
 {
-  public static final int OPEN_READ = 1;
-  public static final int OPEN_DELETE = 4;
 
-  public ZipFile (String fname) throws IOException
+  /** Mode flag to open a zip file for reading 
+   *
+   */
+
+  public static final int OPEN_READ = 0x1;
+
+  /** Mode flag to delete a zip file after reading 
+   *
+   */
+
+  public static final int OPEN_DELETE = 0x4;
+
+  private String name;
+  RandomAccessFile raf;
+  ZipEntry[] entries;
+
+  /**
+   * Opens a Zip file with the given name for reading.
+   * @exception IOException if a i/o error occured.
+   * @exception ZipException if the file doesn't contain a valid zip
+   * archive.  
+   */
+  public ZipFile(String name) throws ZipException, IOException
   {
-    this(new File(fname));
+    this.raf = new RandomAccessFile(name, "r");
+    this.name = name;
+    readEntries();
   }
 
-  public ZipFile (File f) throws IOException
+  /**
+   * Opens a Zip file reading the given File.
+   * @exception IOException if a i/o error occured.
+   * @exception ZipException if the file doesn't contain a valid zip
+   * archive.  
+   */
+  public ZipFile(File file) throws ZipException, IOException
   {
-    this(f, OPEN_READ);
+    this.raf = new RandomAccessFile(file, "r");
+    this.name = file.getName();
+    readEntries();
   }
 
-  public ZipFile (File f, int mode) throws IOException
+  /**
+   * Opens a Zip file reading the given File in the given mode.
+   *
+   * If the OPEN_DELETE mode is specified, the zip file will be deleted at some time moment
+   * after it is opened. It will be deleted before the zip file is closed or the Virtual Machine
+   * exits.
+   * 
+   * The contents of the zip file will be accessible until it is closed.
+   *
+   * The OPEN_DELETE mode is currently unimplemented in this library
+   * 
+   * @since JDK1.3
+   * @param mode Must be one of OPEN_READ or OPEN_READ | OPEN_DELETE
+   *
+   * @exception IOException if a i/o error occured.
+   * @exception ZipException if the file doesn't contain a valid zip
+   * archive.  
+   */
+  public ZipFile(File file, int mode) throws ZipException, IOException
   {
-    if (mode != OPEN_READ && mode != (OPEN_READ | OPEN_DELETE))
-        throw new IllegalArgumentException
-            ("mode can only be OPEN_READ or OPEN_READ | OPEN_DELETE");
-
     if ((mode & OPEN_DELETE) != 0)
       {
-	delete_on_close = f;
-	f.deleteOnExit();
+	throw new IllegalArgumentException("OPEN_DELETE mode not supported yet in java.util.zip.ZipFile");
       }
-    else
-      {
-	delete_on_close = null;
-      }
-
-    file = new RandomAccessFile(f, "r");
-    name = f.getName();
-    readDirectory ();
+    this.raf = new RandomAccessFile(file, "r");
+    this.name = file.getName();
+    readEntries();
   }
 
-  void readDirectory () throws IOException
+  /**
+   * Read an unsigned short in little endian byte order.
+   * @exception IOException if a i/o error occured.
+   * @exception EOFException if the file ends prematurely
+   */
+  private final int readLeShort() throws IOException {
+    return raf.readUnsignedByte() | raf.readUnsignedByte() << 8;
+  }
+
+  /**
+   * Read an int in little endian byte order.
+   * @exception IOException if a i/o error occured.
+   * @exception EOFException if the file ends prematurely
+   */
+  private final int readLeInt() throws IOException {
+    return readLeShort() | readLeShort() << 16;
+  }
+
+  /**
+   * Read the central directory of a zip file and fill the entries
+   * array.  This is called exactly once by the constructors.
+   * @exception IOException if a i/o error occured.
+   * @exception ZipException if the central directory is malformed 
+   */
+  private void readEntries() throws ZipException, IOException
   {
-    long size = file.length ();
-    if (size < ZipConstants.END_CENTRAL_DIR_SIZE)
-      throw new ZipException ("zipfile too short");
-    // We do not handle a "zipfile comment", which the appnote says can
-    // be at the end of a .zip file.  We could handle this by seeking
-    // to the beginning and reading forwards.
-    file.seek(size - ZipConstants.END_CENTRAL_DIR_SIZE);
-    if (file.read() != 'P'
-	|| file.read() != 'K'
-	|| file.read() != '\005'
-	|| file.read() != '\006')
-      throw new ZipException("not a valid zipfile");
-    file.skipBytes(6);
-    numEntries = readu2();
-    int dir_size = read4 ();  // Read "size of the central directory".
-    file.seek(size - (dir_size + ZipConstants.END_CENTRAL_DIR_SIZE));
-
-    ZipEntry last = null;
-    for (int i = 0;  i < numEntries;  i++)
+    /* Search for the End Of Central Directory.  When a zip comment is 
+     * present the directory may start earlier.
+     * FIXME: This searches the whole file in a very slow manner if the
+     * file isn't a zip file.
+     */
+    long pos = raf.length() - ENDHDR;
+    do
       {
-	file.skipBytes(10);
-	int method = readu2();
-	int modtime = readu2();
-	int moddate = readu2();
-	int crc = read4();
-	int compressedSize = read4();
-	int uncompressedSize = read4();
-	int filenameLength = readu2();
-	int extraLength = readu2();
-	int commentLength = readu2();
-	int diskNumberStart = readu2();
-	int intAttributes = readu2();
-	int extAttributes = read4();
-	int relativeOffset = read4();
-	byte[] bname = new byte[filenameLength];
-	file.readFully(bname);
-	ZipEntry entry = new ZipEntry(new String(bname, "8859_1"));
-	if (extraLength > 0)
+	if (pos < 0)
+	  throw new ZipException
+	    ("central directory not found, probably not a zip file");
+	raf.seek(pos--);
+      }
+    while (readLeInt() != ENDSIG);
+    if (raf.skipBytes(ENDTOT - ENDNRD) != ENDTOT - ENDNRD)
+      throw new EOFException();
+    int count = readLeShort();
+    if (raf.skipBytes(ENDOFF - ENDSIZ) != ENDOFF - ENDSIZ)
+      throw new EOFException();
+    int centralOffset = readLeInt();
+
+    entries = new ZipEntry[count];
+    raf.seek(centralOffset);
+    for (int i = 0; i < count; i++)
+      {
+	if (readLeInt() != CENSIG)
+	  throw new ZipException("Wrong Central Directory signature");
+	if (raf.skipBytes(CENHOW - CENVEM) != CENHOW - CENVEM)
+	  throw new EOFException();
+	int method = readLeShort();
+	int dostime = readLeInt();
+	int crc = readLeInt();
+	int csize = readLeInt();
+	int size = readLeInt();
+	int nameLen = readLeShort();
+	int extraLen = readLeShort();
+	int commentLen = readLeShort();
+	if (raf.skipBytes(CENOFF - CENDSK) != CENOFF - CENDSK)
+	  throw new EOFException();
+	int offset = readLeInt();
+
+	byte[] buffer = new byte[Math.max(nameLen, commentLen)];
+
+	raf.readFully(buffer, 0, nameLen);
+	String name = new String(buffer, 0, nameLen);
+
+	ZipEntry entry = new ZipEntry(name);
+	entry.setMethod(method);
+	entry.setCrc(crc & 0xffffffffL);
+	entry.setSize(size & 0xffffffffL);
+	entry.setCompressedSize(csize & 0xffffffffL);
+	entry.setDOSTime(dostime);
+	if (extraLen > 0)
 	  {
-	    byte[] bextra = new byte[extraLength];
-	    file.readFully(bextra);
-	    entry.extra = bextra;
+	    byte[] extra = new byte[extraLen];
+	    raf.readFully(extra);
+	    entry.setExtra(extra);
 	  }
-	if (commentLength > 0)
+	if (commentLen > 0)
 	  {
-	    byte[] bcomment = new byte[commentLength];
-	    file.readFully(bcomment);
-	    entry.comment = new String(bcomment, "8859_1");
+	    raf.readFully(buffer, 0, commentLen);
+	    entry.setComment(new String(buffer, 0, commentLen));
 	  }
-	entry.compressedSize = compressedSize;
-	entry.size = uncompressedSize;
-	entry.crc = (long) crc & 0xffffffffL;
-	entry.method = method;
-	entry.relativeOffset = relativeOffset;
-	entry.time = ZipEntry.timeFromDOS(moddate, modtime);
-	if (last == null)
-	  entries = entry;
-	else
-	  last.next = entry;
-	last = entry;
+	entry.zipFileIndex = i;
+	entry.offset = offset;
+	entries[i] = entry;
       }
   }
 
-  public java.util.Enumeration entries()
-  {
-    return new ZipEnumeration(this);
-  }
-
+  /**
+   * Closes the ZipFile.  This also closes all input streams given by
+   * this class.  After this is called, no further method should be
+   * called.
+   * @exception IOException if a i/o error occured.
+   */
   public void close() throws IOException
   {
-    file.close();
     entries = null;
-    numEntries = 0;
-    if (delete_on_close != null)
-	delete_on_close.delete();
+    synchronized (raf)
+      {
+	raf.close();
+      }
   }
 
+  /**
+   * Returns an enumeration of all Zip entries in this Zip file.
+   */
+  public Enumeration entries()
+  {
+    if (entries == null)
+      throw new IllegalStateException("ZipFile has closed");
+    return new ZipEntryEnumeration(entries);
+  }
+
+  private int getEntryIndex(String name)
+  {
+    for (int i = 0; i < entries.length; i++)
+      if (name.equals(entries[i].getName()))
+	return i;
+    return -1;
+  }
+
+  /**
+   * Searches for a zip entry in this archive with the given name.
+   * @param the name. May contain directory components separated by
+   * slashes ('/').
+   * @return the zip entry, or null if no entry with that name exists.
+   * @see #entries */
   public ZipEntry getEntry(String name)
   {
-    for (ZipEntry entry = entries;  entry != null;  entry = entry.next)
-      {
-	if (name.equals(entry.getName()))
-	  return entry;
-      }
-    return null;
+    if (entries == null)
+      throw new IllegalStateException("ZipFile has closed");
+    int index = getEntryIndex(name);
+    return index >= 0 ? (ZipEntry) entries[index].clone() : null;
   }
 
-  public InputStream getInputStream(ZipEntry ze)  throws IOException
+  /**
+   * Checks, if the local header of the entry at index i matches the
+   * central directory, and returns the offset to the data.
+   * @return the start offset of the (compressed) data.
+   * @exception IOException if a i/o error occured.
+   * @exception ZipException if the local header doesn't match the 
+   * central directory header
+   */
+  private long checkLocalHeader(ZipEntry entry) throws IOException
   {
-    byte[] buffer = new byte[(int) ze.getCompressedSize()];
+    synchronized (raf)
+      {
+	raf.seek(entry.offset);
+	if (readLeInt() != LOCSIG)
+	  throw new ZipException("Wrong Local header signature");
 
-    /* Read the size of the extra field, and skip to the start of the
-       data.  */
-    file.seek (ze.relativeOffset + ZipConstants.LOCAL_FILE_HEADER_SIZE - 2);
-    int extraFieldLength = readu2();
-    file.skipBytes (ze.getName().length() + extraFieldLength);
+	/* skip version and flags */
+	if (raf.skipBytes(LOCHOW - LOCVER) != LOCHOW - LOCVER)
+	  throw new EOFException();
 
-    file.readFully(buffer);
+	if (entry.getMethod() != readLeShort())
+	  throw new ZipException("Compression method mismatch");
 
-    InputStream is = new ByteArrayInputStream (buffer);
-    if (ze.getMethod() == ZipEntry.DEFLATED)
-      // Data in zipfile entries does not have a zlib header, so construct
-      // an Inflater with the `nowrapper' option.
-      is = new InflaterInputStream (is, new Inflater (true), 512);
-    return is;
+	/* Skip time, crc, size and csize */
+	if (raf.skipBytes(LOCNAM - LOCTIM) != LOCNAM - LOCTIM)
+	  throw new EOFException();
+
+	if (entry.getName().length() != readLeShort())
+	  throw new ZipException("file name length mismatch");
+
+	int extraLen = entry.getName().length() + readLeShort();
+	return entry.offset + LOCHDR + extraLen;
+      }
   }
 
-  public String getName ()
+  /**
+   * Creates an input stream reading the given zip entry as
+   * uncompressed data.  Normally zip entry should be an entry
+   * returned by getEntry() or entries().
+   * @return the input stream.
+   * @exception IOException if a i/o error occured.
+   * @exception ZipException if the Zip archive is malformed.  
+   */
+  public InputStream getInputStream(ZipEntry entry) throws IOException
+  {
+    if (entries == null)
+      throw new IllegalStateException("ZipFile has closed");
+    int index = entry.zipFileIndex;
+    if (index < 0 || index >= entries.length
+	|| entries[index].getName() != entry.getName())
+      {
+	index = getEntryIndex(entry.getName());
+	if (index < 0)
+	  throw new NoSuchElementException();
+      }
+
+    long start = checkLocalHeader(entries[index]);
+    int method = entries[index].getMethod();
+    InputStream is = new PartialInputStream
+      (raf, start, entries[index].getCompressedSize());
+    switch (method)
+      {
+      case ZipOutputStream.STORED:
+	return is;
+      case ZipOutputStream.DEFLATED:
+	return new InflaterInputStream(is, new Inflater(true));
+      default:
+	throw new ZipException("Unknown compression method " + method);
+      }
+  }
+  
+  /**
+   * Returns the name of this zip file.
+   */
+  public String getName()
   {
     return name;
   }
 
   /**
-   * Returns the number of entries in this ZipFile.
-   * @exception IllegalStateException if the ZipFile has been closed.
-   *
-   * @since 1.2
+   * Returns the number of entries in this zip file.
    */
-  public int size ()
+  public int size()
   {
-    if (entries == null)
-      throw new IllegalStateException("ZipFile already closed");
-    else
-      return numEntries;
+    try
+      {
+	return entries.length;
+      }
+    catch (NullPointerException ex)
+      {
+	throw new IllegalStateException("ZipFile has closed");
+      }
+  }
+  
+  private static class ZipEntryEnumeration implements Enumeration
+  {
+    ZipEntry[] array;
+    int ptr = 0;
+
+    public ZipEntryEnumeration(ZipEntry[] arr)
+    {
+      array = arr;
+    }
+
+    public boolean hasMoreElements()
+    {
+      return ptr < array.length;
+    }
+
+    public Object nextElement()
+    {
+      try
+	{
+	  /* We return a clone, just to be safe that the user doesn't
+	   * change the entry.  
+	   */
+	  return array[ptr++].clone();
+	}
+      catch (ArrayIndexOutOfBoundsException ex)
+	{
+	  throw new NoSuchElementException();
+	}
+    }
   }
 
-  protected void finalize () throws IOException
+  private static class PartialInputStream extends InputStream
   {
-    close();
-  }
+    RandomAccessFile raf;
+    long filepos, end;
 
-  private int readu2 () throws IOException
-  {
-    int byte0 = file.read();
-    int byte1 = file.read();
-    if (byte0 < 0 || byte1 < 0)
-      throw new ZipException (".zip archive ended prematurely");
-    return ((byte1 & 0xFF) << 8) | (byte0 & 0xFF);
-  }
-
-  private int read4 () throws IOException
-  {
-    int byte0 = file.read();
-    int byte1 = file.read();
-    int byte2 = file.read();
-    int byte3 = file.read();
-    if (byte3 < 0)
-      throw new ZipException (".zip archive ended prematurely");
-    return ((byte3 & 0xFF) << 24) + ((byte2 & 0xFF) << 16)
-      + ((byte1 & 0xFF) << 8) + (byte0 & 0xFF);
-  }
-
-  ZipEntry entries;
-  int numEntries;
-  RandomAccessFile file;
-  String name;
-  /** File to delete on close or null. */
-  File delete_on_close;
+    public PartialInputStream(RandomAccessFile raf, long start, long len)
+    {
+      this.raf = raf;
+      filepos = start;
+      end = start + len;
+    }
     
-}
+    public int available()
+    {
+      long amount = end - filepos;
+      if (amount > Integer.MAX_VALUE)
+	return Integer.MAX_VALUE;
+      return (int) amount;
+    }
+    
+    public int read() throws IOException
+    {
+      if (filepos == end)
+	return -1;
+      synchronized (raf)
+	{
+	  raf.seek(filepos++);
+	  return raf.read();
+	}
+    }
 
-final class ZipEnumeration implements java.util.Enumeration
-{
-  ZipEntry entry;
+    public int read(byte[] b, int off, int len) throws IOException
+    {
+      if (len > end - filepos)
+	{
+	  len = (int) (end - filepos);
+	  if (len == 0)
+	    return -1;
+	}
+      synchronized (raf)
+	{
+	  raf.seek(filepos);
+	  int count = raf.read(b, off, len);
+	  if (count > 0)
+	    filepos += len;
+	  return count;
+	}
+    }
 
-  ZipEnumeration (ZipFile zfile)
-  {
-    entry = zfile.entries;
-  }
-
-  public boolean hasMoreElements ()
-  {
-    return entry != null;
-  }
-
-  public Object nextElement ()
-  {
-    ZipEntry cur = entry;
-    if (cur == null)
-      throw new java.util.NoSuchElementException();
-    entry = cur.next;
-    return cur;
+    public long skip(long amount)
+    {
+      if (amount < 0)
+	throw new IllegalArgumentException();
+      if (amount > end - filepos)
+	amount = end - filepos;
+      filepos += amount;
+      return amount;
+    }
   }
 }
