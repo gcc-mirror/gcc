@@ -2453,9 +2453,9 @@ record_edge_info (basic_block bb)
 		    }
 		}
 
-	      if (is_gimple_min_invariant (op0)
-		  && (TREE_CODE (op1) == SSA_NAME
-		       || is_gimple_min_invariant (op1)))
+	      else if (is_gimple_min_invariant (op0)
+		       && (TREE_CODE (op1) == SSA_NAME
+			   || is_gimple_min_invariant (op1)))
 		{
 		  tree inverted = invert_truthvalue (cond);
 		  struct edge_info *edge_info;
@@ -2479,9 +2479,9 @@ record_edge_info (basic_block bb)
 		    }
 		}
 
-	      if (TREE_CODE (op0) == SSA_NAME
-		  && (is_gimple_min_invariant (op1)
-		      || TREE_CODE (op1) == SSA_NAME))
+	      else if (TREE_CODE (op0) == SSA_NAME
+		       && (is_gimple_min_invariant (op1)
+			   || TREE_CODE (op1) == SSA_NAME))
 		{
 		  tree inverted = invert_truthvalue (cond);
 		  struct edge_info *edge_info;
