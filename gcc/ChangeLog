@@ -1,3 +1,8 @@
+2000-07-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-typeck.c (build_indirect_ref): Use COMPLETE_OR_VOID_TYPE_P
+	and VOID_TYPE_P.
+
 2000-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpplib.h (struct cpp_reader): New field include_depth.
