@@ -1,6 +1,6 @@
 // prims.cc - Code for core of runtime environment.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -928,23 +928,7 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   LTDL_SET_PRELOADED_SYMBOLS ();
 #endif
 
-#ifdef WIN32
-  // Initialise winsock for networking
-  WSADATA data;
-  if (WSAStartup (MAKEWORD (1, 1), &data))
-      MessageBox (NULL, "Error initialising winsock library.", "Error", MB_OK | MB_ICONEXCLAMATION);
-  // Install exception handler
-  SetUnhandledExceptionFilter (win32_exception_handler);
-#elif defined(HAVE_SIGACTION)
-  // We only want this on POSIX systems.
-  struct sigaction act;
-  act.sa_handler = SIG_IGN;
-  sigemptyset (&act.sa_mask);
-  act.sa_flags = 0;
-  sigaction (SIGPIPE, &act, NULL);
-#else
-  signal (SIGPIPE, SIG_IGN);
-#endif
+  _Jv_platform_initialize ();
 
   _Jv_JNI_Init ();
 

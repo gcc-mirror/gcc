@@ -1,6 +1,6 @@
 // posix.cc -- Helper functions for POSIX-flavored OSs.
 
-/* Copyright (C) 2000, 2001  Free Software Foundation
+/* Copyright (C) 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,6 +13,7 @@ details.  */
 #include "posix.h"
 
 #include <errno.h>
+#include <signal.h>
 
 #include <jvm.h>
 #include <java/lang/Thread.h>
@@ -24,7 +25,7 @@ extern "C" unsigned long long _clock (void);
 
 // gettimeofday implementation.
 void
-_Jv_gettimeofday (struct timeval *tv)
+_Jv_platform_gettimeofday (struct timeval *tv)
 {
 #if defined (HAVE_GETTIMEOFDAY)
   gettimeofday (tv, NULL);
@@ -47,6 +48,22 @@ _Jv_gettimeofday (struct timeval *tv)
 #endif
 }
 
+// Platform-specific VM initialization.
+void
+_Jv_platform_initialize (void)
+{
+#if defined (HAVE_SIGACTION)
+  // We only want this on POSIX systems.
+  struct sigaction act;
+  act.sa_handler = SIG_IGN;
+  sigemptyset (&act.sa_mask);
+  act.sa_flags = 0;
+  sigaction (SIGPIPE, &act, NULL);
+#else
+  signal (SIGPIPE, SIG_IGN);
+#endif
+}
+
 // A wrapper for select() which ignores EINTR.
 int
 _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
@@ -57,7 +74,7 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
   struct timeval end, delay;
   if (timeout)
     {
-      _Jv_gettimeofday (&end);
+      _Jv_platform_gettimeofday (&end);
       end.tv_usec += timeout->tv_usec;
       if (end.tv_usec >= 1000000)
 	{
@@ -87,7 +104,7 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
       struct timeval after;
       if (timeout)
 	{
-	  _Jv_gettimeofday (&after);
+	  _Jv_platform_gettimeofday (&after);
 	  // Now compute new timeout argument.
 	  delay.tv_usec = end.tv_usec - after.tv_usec;
 	  delay.tv_sec = end.tv_sec - after.tv_sec;

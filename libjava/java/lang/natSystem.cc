@@ -159,7 +159,7 @@ jlong
 java::lang::System::currentTimeMillis (void)
 {
   struct timeval tv;
-  _Jv_gettimeofday (&tv);
+  _Jv_platform_gettimeofday (&tv);
   return (jlong) tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 

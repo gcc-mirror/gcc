@@ -9,9 +9,10 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
-#include <windows.h>
 
-LONG CALLBACK
+#include "platform.h"
+
+static LONG CALLBACK
 win32_exception_handler (LPEXCEPTION_POINTERS e)
 {
   if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
@@ -20,4 +21,17 @@ win32_exception_handler (LPEXCEPTION_POINTERS e)
     throw new java::lang::ArithmeticException;
   else
     return EXCEPTION_CONTINUE_SEARCH;
+}
+
+// Platform-specific VM initialization.
+void
+_Jv_platform_initialize (void)
+{
+  // Initialise winsock for networking
+  WSADATA data;
+  if (WSAStartup (MAKEWORD (1, 1), &data))
+    MessageBox (NULL, "Error initialising winsock library.", "Error",
+		MB_OK | MB_ICONEXCLAMATION);
+  // Install exception handler
+  SetUnhandledExceptionFilter (win32_exception_handler);
 }

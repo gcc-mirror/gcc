@@ -1,5 +1,18 @@
 2002-02-07  Tom Tromey  <tromey@redhat.com>
 
+	* prims.cc (_Jv_CreateJavaVM): Call _Jv_platform_initialize.
+	* win32.cc (win32_exception_handler): Now static.
+	* include/win32.h (_Jv_platform_initialize): Declare.
+	(win32_exception_handler): Don't declare.
+	* java/lang/natSystem.cc (currentTimeMillis): Use
+	_Jv_platform_gettimeofday.
+	* posix.cc (_Jv_platform_gettimeofday): Renamed.
+	(_Jv_select): Use new name.
+	(_Jv_platform_initialize): New function.
+	* include/posix.h (_Jv_platform_gettimeofday): Renamed from
+	_Jv_gettimeofday.
+	(_Jv_platform_initialize): Declare.
+
 	* configure: Rebuilt.
 	* configure.in: Removed unnecessary parens.
 
