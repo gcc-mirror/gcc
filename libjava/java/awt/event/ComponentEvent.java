@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -9,12 +9,34 @@ details.  */
 package java.awt.event;
 import java.awt.*;
 
-/* A very incomplete placeholder. */
+/**
+ * @author Tom Tromey <tromey@cygnus.com>
+ * @date April 8, 2000
+ */
+
+/* Status: Believed complete and correct to JDK 1.2.  */
 
 public class ComponentEvent extends AWTEvent
 {
-  public ComponentEvent (Object source, int id)
+  public static final int COMPONENT_FIRST = 100;
+  public static final int COMPONENT_HIDDEN = 103;
+  public static final int COMPONENT_LAST = 103;
+  public static final int COMPONENT_MOVED = 100;
+  public static final int COMPONENT_RESIZED = 101;
+  public static final int COMPONENT_SHOWN = 102;
+
+  public ComponentEvent (Component source, int id)
   {
     super(source, id);
+  }
+
+  public Component getComponent ()
+  {
+    return (Component) source;
+  }
+
+  public String paramString ()
+  {
+    return super.paramString ();
   }
 }
