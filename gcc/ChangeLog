@@ -1,3 +1,12 @@
+Thu Aug  5 01:14:13 1999  Daniel Jacobowitz <drow@false.org>
+
+	* rs6000.c (current_file_function_operand): Return zero for
+	weak functions.
+	(rs6000_encode_section_info): Do not set SYMBOL_REF_FLAG for
+	weak symbols.
+	* rs6000.h (ENCODE_SECTION_NIFO): Do not set SYMBOL_REF_FLAG
+	for weak symbols.
+
 Thu Aug  5 00:56:30 1999  Geoffrey Keating   <geoffk@cygnus.com>
 
 	* rs6000.c (rs6000_stack_info): For ABI_V4/ABI_SOLARIS -fpic, always
