@@ -85,9 +85,6 @@ typedef unsigned char U_CHAR;
 #include <fcntl.h>
 #endif /* USG */
 #endif /* not VMS */
-  
-extern char *index ();
-extern char *rindex ();
 
 /* VMS-specific definitions */
 #ifdef VMS
@@ -102,6 +99,8 @@ extern char *rindex ();
 #define open(fname,mode,prot)	VMS_open(fname,mode,prot)
 #define fopen(fname,mode)	VMS_fopen(fname,mode)
 #define freopen(fname,mode,ofile) VMS_freopen(fname,mode,ofile)
+#define strncat(dst,src,cnt) VMS_strncat(dst,src,cnt)
+static char * VMS_strncat ();
 static int VMS_read ();
 static int VMS_write ();
 static int VMS_open ();
@@ -115,6 +114,9 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define BSTRING			/* VMS/GCC supplies the bstring routines */
 #endif /* __GNUC__ */
 #endif /* VMS */
+  
+extern char *index ();
+extern char *rindex ();
 
 #ifndef O_RDONLY
 #define O_RDONLY 0
@@ -299,7 +301,7 @@ static U_CHAR *skip_quoted_string ();
 static U_CHAR *skip_paren_group ();
 
 static char *check_precompiled ();
-static struct macrodef create_definition ();
+/* static struct macrodef create_definition ();	[moved below] */
 static void dump_single_macro ();
 
 #ifndef FAILURE_EXIT_CODE
@@ -594,6 +596,8 @@ struct macrodef
   U_CHAR *symnam;
   int symlen;
 };
+
+static struct macrodef create_definition ();
 
 
 /* Structure allocated for every #define.  For a simple replacement
@@ -8867,4 +8871,23 @@ open (fname, flags, prot)
   return open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
 }
 
+/* Avoid run-time library bug, where copying M out of N+M characters with
+   N >= 65535 results in VAXCRTL's strncat falling into an infinite loop.
+   gcc-cpp exercises this particular bug.  */
+
+static char *
+strncat (dst, src, cnt)
+     char *dst;
+     const char *src;
+     unsigned cnt;
+{
+  register char *d = dst, *s = (char *) src;
+  register int n = cnt;	/* convert to _signed_ type */
+
+  while (*d) d++;	/* advance to end */
+  while (--n >= 0)
+    if (!(*d++ = *s++)) break;
+  if (n < 0) *d = '\0';
+  return dst;
+}
 #endif /* VMS */
