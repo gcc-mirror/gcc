@@ -87,8 +87,8 @@ write_upcase (str)
     char *str;
 {
   for (; *str; str++)
-    if (*str >= 'a' && *str <= 'z')
-      printf ("%c", *str - 'a' + 'A');
+    if (ISLOWER(*str))
+      printf ("%c", toupper(*str));
     else
       printf ("%c", *str);
 }
@@ -120,8 +120,8 @@ gen_attr (attr)
 	      write_upcase (XSTR (attr, 0));
 	      printf ("_");
 	    }
-	  else if (*p >= 'a' && *p <= 'z')
-	    printf ("%c", *p - 'a' + 'A');
+	  else if (ISLOWER(*p))
+	    printf ("%c", toupper(*p));
 	  else
 	    printf ("%c", *p);
 	}

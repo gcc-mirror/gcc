@@ -10073,9 +10073,9 @@ initialize_char_syntax ()
    * refer to them.
    */
   for (i = 'a'; i <= 'z'; i++) {
-    is_idchar[i - 'a' + 'A'] = 1;
+    is_idchar[toupper(i)] = 1;
     is_idchar[i] = 1;
-    is_idstart[i - 'a' + 'A'] = 1;
+    is_idstart[toupper(i)] = 1;
     is_idstart[i] = 1;
   }
   for (i = '0'; i <= '9'; i++)

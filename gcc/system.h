@@ -83,7 +83,7 @@ extern int fputs_unlocked PROTO ((const char *, FILE *));
    character >= 128 which gets sign-extended to a negative value.
    The macro ISUPPER protects against this as well."  */
 
-#if defined (STDC_HEADERS) || (!defined (isascii) && !defined (HAVE_ISASCII))
+#if defined (STDC_HEADERS) || (!defined (isascii) && !defined (HAVE_ISASCII)) || defined(HOST_EBCDIC)
 # define IN_CTYPE_DOMAIN(c) 1
 #else
 # define IN_CTYPE_DOMAIN(c) isascii(c)
@@ -120,7 +120,6 @@ extern int fputs_unlocked PROTO ((const char *, FILE *));
    it's important to use the locale's definition of `digit' even when the
    host does not conform to Posix.  */
 #define ISDIGIT(c) ((unsigned) (c) - '0' <= 9)
-
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>

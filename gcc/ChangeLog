@@ -1,3 +1,11 @@
+Tue Sep  7 23:46:35 1999  Linas Vepstas  <linas@linas.org>
+
+	* c-common.c: Use ISGRAPH, ISLOWER, toupper.
+	* c-lex.c, cccp.c, cexp.c, cexp.y, cppexp.c, dwarf2out.c, genattr.c,
+	genattrtab.c, genemit.c, genextract.c, genpeep.c, tree.c: Likewise.
+	* system.h (IN_CTYPE_DOMAIN): Define to 1 if HOST_EBCDIC.
+	* defaults.h (TARGET_ESC): Add default.
+
 Tue Sep  7 23:36:59 1999  Linas Vepstas  <linas@linas.org>
 
 	* configure.in: add i370-*-openedition, i370-*-mvs and
