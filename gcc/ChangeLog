@@ -1,3 +1,8 @@
+2003-07-04  Roger Sayle  <roger@eyesopen.com>
+
+	* config/rs6000/aix51.h (TARGET_C99_FUNCTIONS): Define.
+	* config/rs6000/aix52.h (TARGET_C99_FUNCTIONS): Likewise.
+
 2003-07-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c++/5287, PR c++/7910, PR c++/11021
