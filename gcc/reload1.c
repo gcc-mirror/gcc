@@ -2298,8 +2298,8 @@ eliminate_regs (x, mem_mode, insn)
 	      return plus_constant (ep->to_rtx, ep->previous_offset);
 
 	}
-      else if (reg_renumber[regno] < 0 && reg_equiv_constant
-	       && reg_equiv_constant[regno]
+      else if (reg_renumber && reg_renumber[regno] < 0
+	       && reg_equiv_constant && reg_equiv_constant[regno]
 	       && ! CONSTANT_P (reg_equiv_constant[regno]))
 	return eliminate_regs (copy_rtx (reg_equiv_constant[regno]),
 			       mem_mode, insn);
@@ -2365,7 +2365,7 @@ eliminate_regs (x, mem_mode, insn)
 	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
 	rtx new1 = eliminate_regs (XEXP (x, 1), mem_mode, insn);
 
-	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
+	if (reg_renumber && (new0 != XEXP (x, 0) || new1 != XEXP (x, 1)))
 	  {
 	    /* If one side is a PLUS and the other side is a pseudo that
 	       didn't get a hard register but has a reg_equiv_constant,
@@ -2473,7 +2473,8 @@ eliminate_regs (x, mem_mode, insn)
 	{
 	  new = eliminate_regs (XEXP (x, 1), mem_mode, insn);
 	  if (new != XEXP (x, 1))
-	    return gen_rtx_fmt_ee (GET_CODE (x), GET_MODE (x), XEXP (x, 0), new);
+	    return
+	      gen_rtx_fmt_ee (GET_CODE (x), GET_MODE (x), XEXP (x, 0), new);
 	}
       return x;
 
