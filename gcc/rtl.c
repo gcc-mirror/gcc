@@ -298,6 +298,7 @@ static void fatal_with_file_and_line PARAMS ((FILE *, const char *, ...))
   ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
 static void fatal_expected_char PARAMS ((FILE *, int, int)) ATTRIBUTE_NORETURN;
 static void read_name		PARAMS ((char *, FILE *));
+static char *read_string	PARAMS ((struct obstack *, FILE *));
 static unsigned def_hash PARAMS ((const void *));
 static int def_name_eq_p PARAMS ((const void *, const void *));
 static void read_constants PARAMS ((FILE *infile, char *tmp_char));
@@ -858,6 +859,63 @@ read_name (str, infile)
 	strcpy (str, p);
     }
 }
+
+/* Read a double-quoted string onto the obstack.  */
+
+static char *
+read_string (ob, infile)
+     struct obstack *ob;
+     FILE *infile;
+{
+  char *stringbuf;
+  int saw_paren = 0;
+  int c;
+
+  c = read_skip_spaces (infile);
+  if (c == '(')
+    {
+      saw_paren = 1;
+      c = read_skip_spaces (infile);
+    }
+  if (c != '"')
+    fatal_expected_char (infile, '"', c);
+
+  while (1)
+    {
+      c = getc (infile); /* Read the string  */
+      if (c == '\n')
+	read_rtx_lineno++;
+      else if (c == '\\')
+	{
+	  c = getc (infile);	/* Read the string  */
+	  /* \; makes stuff for a C string constant containing
+	     newline and tab.  */
+	  if (c == ';')
+	    {
+	      obstack_grow (ob, "\\n\\t", 4);
+	      continue;
+	    }
+	  if (c == '\n')
+	    read_rtx_lineno++;
+	}
+      else if (c == '"')
+	break;
+
+      obstack_1grow (ob, c);
+    }
+
+  obstack_1grow (ob, 0);
+  stringbuf = (char *) obstack_finish (ob);
+
+  if (saw_paren)
+    {
+      c = read_skip_spaces (infile);
+      if (c != ')')
+	fatal_expected_char (infile, ')', c);
+    }
+
+  return stringbuf;
+}
 
 /* Provide a version of a function to read a long long if the system does
    not provide one.  */
@@ -1153,49 +1211,15 @@ again:
 
       case 's':
 	{
-	  int saw_paren = 0;
-	  register char *stringbuf;
-	  int saw_anything = 0;
+	  char *stringbuf;
 
-	  c = read_skip_spaces (infile);
-	  if (c == '(')
-	    {
-	      saw_paren = 1;
-	      c = read_skip_spaces (infile);
-	    }
-	  if (c != '"')
-	    fatal_expected_char (infile, '"', c);
-
-	  while (1)
-	    {
-	      c = getc (infile); /* Read the string  */
-	      if (c == '\n')
-		read_rtx_lineno++;
-	      if (c == '\\')
-		{
-		  c = getc (infile);	/* Read the string  */
-		  /* \; makes stuff for a C string constant containing
-		     newline and tab.  */
-		  if (c == ';')
-		    {
-		      obstack_grow (&rtl_obstack, "\\n\\t", 4);
-		      continue;
-		    }
-		  if (c == '\n')
-		    read_rtx_lineno++;
-		}
-	      else if (c == '"')
-		break;
-
-	      obstack_1grow (&rtl_obstack, c);
-	      saw_anything = 1;
-	    }
+	  stringbuf = read_string (&rtl_obstack, infile);
 
 	  /* For insn patterns, we want to provide a default name
 	     based on the file and line, like "*foo.md:12", if the
 	     given name is blank.  These are only for define_insn and
 	     define_insn_and_split, to aid debugging.  */
-	  if (!saw_anything
+	  if (*stringbuf == '\0'
 	      && i == 0
 	      && (GET_CODE (return_rtx) == DEFINE_INSN
 		  || GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT))
@@ -1209,18 +1233,10 @@ again:
 	      obstack_1grow (&rtl_obstack, '*');
 	      obstack_grow (&rtl_obstack, fn, strlen (fn));
 	      sprintf (line_name, ":%d", read_rtx_lineno);
-	      obstack_grow (&rtl_obstack, line_name, strlen (line_name));
+	      obstack_grow (&rtl_obstack, line_name, strlen (line_name)+1);
+	      stringbuf = (char *) obstack_finish (&rtl_obstack);
 	    }
 
-	  obstack_1grow (&rtl_obstack, 0);
-	  stringbuf = (char *) obstack_finish (&rtl_obstack);
-
-	  if (saw_paren)
-	    {
-	      c = read_skip_spaces (infile);
-	      if (c != ')')
-		fatal_expected_char (infile, ')', c);
-	    }
 	  XSTR (return_rtx, i) = stringbuf;
 	}
 	break;
