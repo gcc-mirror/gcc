@@ -203,14 +203,7 @@ int warn_ctor_dtor_privacy = 1;
 /* True if we want to implement vtables using "thunks".
    The default is off.  */
 
-#if ENABLE_NEW_GXX_ABI
 int flag_vtable_thunks = 1;
-#else
-#ifndef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 0
-#endif
-int flag_vtable_thunks = DEFAULT_VTABLE_THUNKS;
-#endif
 
 /* Nonzero means generate separate instantiation control files and juggle
    them at link time.  */
@@ -424,11 +417,7 @@ int flag_weak = 1;
 
 /* Nonzero to enable experimental ABI changes.  */
 
-#if ENABLE_NEW_GXX_ABI
 int flag_new_abi = 1;
-#else
-int flag_new_abi;
-#endif
 
 /* Nonzero to use __cxa_atexit, rather than atexit, to register
    destructors for local statics and global objects.  */

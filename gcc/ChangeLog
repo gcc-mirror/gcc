@@ -1,3 +1,10 @@
+2001-02-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (GXX_ABI_FLAG): Don't define.
+	* configure.in (--enable-new-gxx-abi): Remove option.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
 2001-02-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* lcm.c (compute_earliest): Let EXIT_BLOCK be handled as a regular

@@ -446,9 +446,6 @@
 /* Define if your assembler supports dwarf2 .file/.loc directives. */
 #undef HAVE_AS_DWARF2_DEBUG_LINE
 
-/* Define if you want to always select the new-abi for g++. */
-#undef ENABLE_NEW_GXX_ABI
-
 /* Define to 1 if you want to enable namespaces (-fhonor-std) by default. */
 #undef ENABLE_STD_NAMESPACE
 

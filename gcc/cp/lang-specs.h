@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
   {"@c++",
    /* cc1plus has an integrated ISO C preprocessor.  We should invoke
       the external preprocessor if -save-temps is given.  */
-#if ENABLE_NEW_GXX_ABI
     "%{E|M|MM:cpp0 -lang-c++ -D_GNU_SOURCE %{!no-gcc:-D__GNUG__=%v1}\
        %{!fno-exceptions:-D__EXCEPTIONS}\
        %{!fno-new-abi:-D__GXX_ABI_VERSION=100}\
@@ -50,26 +49,6 @@ Boston, MA 02111-1307, USA.  */
        %{ansi:-trigraphs -$}\
        %(cc1_options) %2 %{+e1*}\
        %{!fsyntax-only:%(invoke_as)}}}}"
-#else
-    "%{E|M|MM:cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
-       %{!fno-exceptions:-D__EXCEPTIONS}\
-       %{fnew-abi:-D__GXX_ABI_VERSION=100}\
-       %{ansi:-D__STRICT_ANSI__ -trigraphs -$} %(cpp_options)}\
-     %{!E:%{!M:%{!MM:\
-       %{save-temps:cpp0 -lang-c++ \
-		    %{!no-gcc:-D__GNUG__=%v1}\
-		    %{fnew-abi:-D__GXX_ABI_VERSION=100}\
-		    %{ansi:-D__STRICT_ANSI__ -trigraphs -$}\
-		    %(cpp_options) %b.ii \n}\
-      cc1plus %{save-temps:-fpreprocessed %b.ii}\
-              %{!save-temps:%(cpp_options)\
-			    %{!no-gcc:-D__GNUG__=%v1}\
-			    %{fnew-abi:-D__GXX_ABI_VERSION=100}\
-			    %{ansi:-D__STRICT_ANSI__}}\
-       %{ansi:-trigraphs -$}\
-       %(cc1_options) %2 %{+e*}\
-       %{!fsyntax-only:%(invoke_as)}}}}"
-#endif
 #ifdef CPLUSPLUS_CPP_SPEC
      , CPLUSPLUS_CPP_SPEC
 #endif
