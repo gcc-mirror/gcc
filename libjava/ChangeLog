@@ -1,3 +1,7 @@
+2004-12-31  Andreas Jaeger  <aj@suse.de>
+
+	* testsuite/lib/libjava.exp (libjava_find_gij): Handle multilibs.
+
 2004-12-20  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault):
@@ -42,7 +46,7 @@
 
 	PR libgcj/7305
 	* configure.ac: Use TL_AC_GXX_INCLUDE_DIR.
-	* Makefile.am (install-data-local): Install headers into 
+	* Makefile.am (install-data-local): Install headers into
 	$(gxx_include_dir) rather than $(includedir).
 	(AM_MAKEFLAGS): Pass down gxx_include_dir.
 	* gcj/Makefile.am (gcjdir): Set to $(gxx_include_dir)/gcj.
@@ -74,7 +78,7 @@
 2004-12-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/18699
-	* testsuite/libjava.lang/PR18699.java, 
+	* testsuite/libjava.lang/PR18699.java,
 	testsuite/libjava.lang/PR18699.out: New test.
 
 2004-11-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
@@ -350,7 +354,7 @@
 
 2004-11-30  Graydon Hoare  <graydon@redhat.com>
 
-	* javax/swing/plaf/basic/BasicTextUI.java: 
+	* javax/swing/plaf/basic/BasicTextUI.java:
 	Listen to focus events, indicate focus via caret.
 	* javax/swing/text/GapContent.java (getString): Return substring.
 	* javax/swing/text/PlainDocument.java (reindex): New method.
@@ -386,18 +390,18 @@
 	(getComponentGraphics): Build new Graphics for each sub-paint.
 	(getTransferHandler): New method.
 	(setTransferHandler): New method.
-	* javax/swing/JDesktopPane.java 
+	* javax/swing/JDesktopPane.java
 	(setDragMode): Force LIVE_DRAG_MODE.
 	* javax/swing/JMenuItem.java
 	(menuSelectionChanged): Protect against null parent.
 	* javax/swing/JTable.java (setDefaultRenderer): New method.
 	* javax/swing/JTree.java: Get basic ctors and UI working.
 	* javax/swing/JViewport.java (JViewport): Set scroll mode.
-	* javax/swing/RepaintManager.java 
+	* javax/swing/RepaintManager.java
 	(addDirtyRegion): Skip empty regions.
 	* javax/swing/ScrollPaneLayout.java (minimumLayoutSize): Do not
 	bound scrollpane minimum by central view minimum.
-	* javax/swing/ToolTipManager.java 
+	* javax/swing/ToolTipManager.java
 	(showTip): Guard against null component.
 	* javax/swing/TransferHandler.java: Stub out.
 	* javax/swing/plaf/basic/BasicLookAndFeel.java:
@@ -412,7 +416,7 @@
 	* javax/swing/plaf/basic/BasicTextPaneUI.java: New file.
 	* javax/swing/plaf/basic/BasicTextUI.java
 	(modelChanged): Make resilient against nulls.
-	* javax/swing/plaf/basic/BasicTreeUI.java: 
+	* javax/swing/plaf/basic/BasicTreeUI.java:
 	Add some simplistic config / painting functions.
 	* javax/swing/plaf/basic/BasicViewportUI.java
 	(paintSimple): Add new non-backingstore paint mode.
@@ -547,7 +551,7 @@
 	(init_dpi_conversion_factor): Correct prototype.
 
 2004-11-30  Sven de Marothy  <sven@physto.se>
-        
+
 	* java/awt/image/ConvolveOp.java: Added missing
 	copyright notice.
 
@@ -662,7 +666,7 @@
 
 	* java/awt/image/ColorModel.java (cloneColorModel): Fix line
 	wrap.  Use Boolean.valueOf.
-	
+
 2004-11-30  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
@@ -1430,7 +1434,7 @@
 
 2004-11-30  Graydon Hoare  <graydon@redhat.com>
 
-	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
 	(install_font_peer): Minor bug fixes to track cairo font semantics.
 
 2004-11-30  Jerry Quinn  <jlquinn@optonline.net>
@@ -1450,11 +1454,11 @@
 	(gnu/java/awt/peer/gtk/GdkFontPeer.java)
 	(gnu/java/awt/peer/ClasspathTextLayoutPeer.java): Add
 	* Makefile.in: Regenerate.
-	* gnu/awt/xlib/XToolkit.java 
+	* gnu/awt/xlib/XToolkit.java
 	(getClasspathTextLayoutPeer): Add stub.
-	* gnu/java/awt/ClasspathToolkit.java 
+	* gnu/java/awt/ClasspathToolkit.java
 	(getClasspathTextLayoutPeer) Add.
-	* gnu/java/awt/peer/ClasspathFontPeer.java 
+	* gnu/java/awt/peer/ClasspathFontPeer.java
 	(copyStyleToAttrs)
 	(copySizeToAttrs): Make public.
 	* gnu/java/awt/peer/ClasspathTextLayoutPeer.java: New file.
@@ -1463,7 +1467,7 @@
 	* gnu/java/awt/peer/gtk/GdkFontMetrics.java: Rewrite.
 	* gnu/java/awt/peer/gtk/GdkFontPeer.java: New file.
 	* gnu/java/awt/peer/gtk/GdkGlyphVector.java: Adjust type names.
-	* gnu/java/awt/peer/gtk/GdkGraphics.java 
+	* gnu/java/awt/peer/gtk/GdkGraphics.java
 	(getFontPeer): New function.
 	(drawString): Pass font peer to native side.
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
@@ -1494,7 +1498,7 @@
 	(cairoDrawString)
 	(getFontPeer): New functions.
 	* gnu/java/awt/peer/gtk/GdkTextLayout.java: New file.
-	* gnu/java/awt/peer/gtk/GtkComponentPeer.java 
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
 	(getFontMetrics): Get metrics via toolkit, to hit cache.
 	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java: Use getFontMetrics.
 	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java: Likewise.
@@ -1508,9 +1512,9 @@
 	(getFontPeer): Route through getClasspathFontPeer.
 	* java/awt/Font.java (attrsToMap): Remove, adjust ctors.
 	* java/awt/font/TextLayout.java: Implement in terms of peer.
-	* javax/swing/plaf/basic/BasicSliderUI.java 
+	* javax/swing/plaf/basic/BasicSliderUI.java
 	(paintThumb): Use polyline rather than polygon.
-	* javax/swing/plaf/basic/BasicGraphicsUtils.java: 
+	* javax/swing/plaf/basic/BasicGraphicsUtils.java:
 	Update comment but, alas, still do not switch to using TextLayouts.
 	* javax/swing/text/Utilities.java (drawTabbedText):
 	Draw text run-at-a-time, not char-at-a-time.
@@ -1537,7 +1541,7 @@
 	(getPeerFontMetrics)
 	(cairoDrawGdkTextLayout)
 	(cairoDrawGdkGlyphVector): New native methods.
-	(cairoDrawString): Rewrite, leaving layout-based version 
+	(cairoDrawString): Rewrite, leaving layout-based version
 	commented out for the time being.
 	* jni/gtk-peer/gtkpeer.h (graphics): Add fields for pango stuff.
 
@@ -1576,7 +1580,7 @@
 
 	* javax/swing/plaf/basic/BasicComboPopup.java:
 	Added javadocs for undocumented fields.
-	(show): scroll down to the selected item and 
+	(show): scroll down to the selected item and
 	highlight selected item.
 	(startAutoScrolling): Implemented.
 	(stopAutoScrolling): Implemented.
@@ -1743,7 +1747,7 @@
 	* java/awt/image/BandedSampleModel.java: Implement.
 	* Makefile.am: Add java/awt/image/BandedSampleModel.java.
 	* Makefile.in: Regenerated.
-	
+
 2004-11-30  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/Window.java: Fixed whitespace difference with GNU
@@ -1762,7 +1766,7 @@
 
 2004-11-30  Andreas Tobler  <a.tobler@schweiz.ch>
 
-	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c
 	(init_dpi_conversion_factor): Apply the patch from main correctly.
 	2004-06-26  Andreas Tobler  <a.tobler@schweiz.ch>
 
@@ -1787,7 +1791,7 @@
 	(NumberEditor): added serialization UID
 	* javax/swing/text/html/HTML.java
 	(UnknownTag): added serialization UID
-	
+
 2004-11-30  Jeroen Frijters  <jeroen@frijters.net>
 
 	* javax/swing/JInternalFrame.java
@@ -1944,21 +1948,21 @@
 2004-11-30  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/plaf/basic/BasicComboBoxUI.java:
-	(paintCurrentValue): Pass correct parameters to 
+	(paintCurrentValue): Pass correct parameters to
 	getListCellRendererComponent().
-	(ListDataHandler.intervalRemoved): Implemented. 
+	(ListDataHandler.intervalRemoved): Implemented.
 	(PropertyChangeHandler.propertyChange): Handle changes in
 	MODEL_CHANGED_PROPERTY of the JComboBox
 	* javax/swing/plaf/basic/BasicComboPopup.java:
-	(BasicComboPopup): Moved code that configures popup to 
-	configurePopup() and call it instead. 
+	(BasicComboPopup): Moved code that configures popup to
+	configurePopup() and call it instead.
 	(firePopupMenuWillBecomeVisible): Implemented.
 	(firePopupMenuWillBecomeInvisible): Likewise.
 	(firePopupMenuCanceled): Likewise.
-	(configureList): Set list's visibleRowCount same as 
+	(configureList): Set list's visibleRowCount same as
 	comboBox's visibleRowCount.
 	(configurePopup): Implemented.
-	(getPopupHeightForRowCount): Get item's from JComboBox's model and 
+	(getPopupHeightForRowCount): Get item's from JComboBox's model and
 	not from model of the JList.
 	(ListMouseMotionHandler.mouseMoved): Implemented.
 	(PropertyChangeHandler.propertyChange): Handles change in the
@@ -2285,11 +2289,11 @@
 	(stateChanged): Only update the image and the track if
 	the values are not being adjusted.
 	(updateChooser): Grab the new mouse point from the
-	spinner values. Update the image and track only if 
-	the values are not being adjusted. 
+	spinner values. Update the image and track only if
+	the values are not being adjusted.
 	(getHSBValues): New method.
 	* javax/swing/colorchooser/DefaultRGBChooserPanel.java:
-	(SliderHandler::stateChanged): Changed internalChange 
+	(SliderHandler::stateChanged): Changed internalChange
 	to updateChange. Set sliderChange.
 	(SpinnerHandler::stateChanged): Ditto. Set spinnerChange.
 	(spinnerChange): New variable.
@@ -2416,7 +2420,7 @@
 	(GdkGlyphVector_setChars): Replace assert() with if block when
 	pango_itemize() returns null. PR AWT/17295.
 	(GdkGlyphVector_allInkExtents): Likewise when vec->glyphitems is null.
-	
+
 2004-11-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (gtk_c_source_files): Add
@@ -2634,7 +2638,7 @@
 	* configure.host: Define libgcj_ld_symbolic for Linux hosts.
 	* Makefile.am (lib_*_la_LDFLAGS): Add LIBGCJ_LD_SYMBOLIC.
 	* configure: Regenerate.
-	* Makefile.in: Regenerate.	
+	* Makefile.in: Regenerate.
 
 2004-11-15  Andrew Haley  <aph@redhat.com>
 
@@ -2712,13 +2716,13 @@
 
 2004-11-05  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* link.cc: Include VerifyError.h. 
+	* link.cc: Include VerifyError.h.
 	(_Jv_Linker::verify_type_assertions): New. Read and evaluate entries
 	in the type assertion table.
 	* include/execution.h (_Jv_CompiledEngine::do_verify): Use
 	verify_type_assertions.
 	* include/jvm.h (_Jv_Linker::verify_type_assertions): declare.
-	* java/lang/Class.h (JV_ASSERT_END_OF_TABLE, 
+	* java/lang/Class.h (JV_ASSERT_END_OF_TABLE,
 	JV_ASSERT_TYPES_COMPATIBLE, JV_ASSERT_IS_INSTANTIABLE): Declare
 	assertion code values.
 	(struct _Jv_TypeAssertion): Declare.
@@ -2734,13 +2738,13 @@
 	"gnu.gcj.precompiled.db" to "gnu.gcj.precompiled.db.path".
 	* gnu/gcj/tools/gcj_dbtool/Main.java: moved here from
 	jv_dbtool.java.
-	
+
 2004-11-05  Andrew Haley  <aph@redhat.com>
 
 	* jv_dbtool.java (main): Allow the user to specify the size of the
 	database.  Display the capacity and the size.
 	(usage): Show the new option.
-		
+
 2004-11-04  Tom Tromey  <tromey@redhat.com>
 
 	* include/jvm.h (_Jv_Linker::set_vtable_entries): Updated.
@@ -3215,7 +3219,7 @@
 2004-08-05  Andrew Haley  <aph@redhat.com>
 
 	* java/net/URLClassLoader.java (JarURLLoader.JarURLLoader): Look
-	aside for "GCJLIBS" in directory where jarfiles are loaded.	
+	aside for "GCJLIBS" in directory where jarfiles are loaded.
 	(JarURLLoader.getClass): New method.
 	(JarURLLoader.toString):  New method.
 	(FileResource.toString):  New method.
@@ -3284,10 +3288,10 @@
 	superclass.
 	(_Jv_LayoutClass): Moved here; it was part of _Jv_PrepareClass in
 	resolve.cc.
-	
+
 	* java/lang/VMSecurityManager.java: Check for the system class
 	loader as well as loader != null.
-	
+
 	* java/lang/SecurityManager.java (checkPermission): Remove
 	security check.
 	(checkRead): Likewise.
@@ -3319,7 +3323,7 @@
 	(depth): New field.
 	* java/io/natObjectInputStream.cc (getCallersClassLoader): New
 	method.
-	
+
 	(readObject): ENDBLOCKDATA is generated if the class has a write
 	method, not if it has a read method.
 
@@ -4105,7 +4109,7 @@
 2004-10-27  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	PR libgcj/18104
-	* Makefile.am (CLASSPATH_SEPARATOR): Use instead of a 
+	* Makefile.am (CLASSPATH_SEPARATOR): Use instead of a
 	colon.
 	* Makefile.in: Regenerate.
 	* configure: Regenerate.
@@ -4134,7 +4138,7 @@
 	* darwin.cc: New file.
 	* include/jvm.h (_Jv_RegisterClasses): Constify.
 	(_Jv_RegisterClasses_Counted): New prototype.
-	* java/lang/Class.h: Include stddef.h.  
+	* java/lang/Class.h: Include stddef.h.
 	(_Jv_RegisterClasses): Constify.
 	(_Jv_RegisterClasses_Counted): New prototype.
 	(Object): Make '_Jv_RegisterClasses_Counted' a friend.
@@ -4565,7 +4569,7 @@
 	PR java/18036:
 	* gnu/gcj/runtime/natStackTrace.cc (fillInStackTrace): Reorganize
 	and correct logic used to find interpreter.
-	
+
 2004-10-18  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/util/logging/LogManager.java
@@ -4640,7 +4644,7 @@
 	Fixed copyrigth years.
 	* java/net/JarURLConnection.java:
 	Fixed HTML in @author tags.
-	
+
 
 2004-10-18  Michael Koch  <konqueror@gmx.de>
 
@@ -4841,8 +4845,8 @@
 
 	* java/util/Calendar.java (set): Invalidate DST_OFFSET
 	field as a DST boundary may have been crossed.
-	* java/util/GregorianCalendar.java (add): Throw 
-	IllegalArgumentException on attempt to add to DST_OFFSET or 
+	* java/util/GregorianCalendar.java (add): Throw
+	IllegalArgumentException on attempt to add to DST_OFFSET or
 	ZONE_OFFSET fields. Update javadoc.
 
 2004-10-09  Michael Koch  <konqueror@gmx.de>
@@ -5608,7 +5612,7 @@
 
 	* configure.host: Use -fno-use-divide-subroutine for mips*-*-linux*.
 	* include/mips-signal.h: Added HANDLE_FPE support.
-	
+
 2004-08-31  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/plaf/basic/BasicTextAreaUI.java
@@ -5657,7 +5661,7 @@
 
 2004-08-31  Graydon Hoare  <graydon@redhat.com>
 
-	* javax/swing/JColorChooser.java: 
+	* javax/swing/JColorChooser.java:
 	Make a couple inner classes static, for jikes.
 
 2004-08-31  Michael Koch  <konqueror@gmx.de>
@@ -5686,7 +5690,7 @@
 	* javax/swing/ButtonGroup.java: Run Jalopy.
 	(setSelected): Reimplement.
 	* javax/swing/DefaultButtonModel.java: Run Jalopy.
-	(changeState): Let ButtonGroup know that the button 
+	(changeState): Let ButtonGroup know that the button
 	is changing state.
 	* javax/swing/JColorChooser.java: Implement.
 	* javax/swing/JLabel.java: Run Jalopy.
@@ -5749,12 +5753,12 @@
 	* javax/swing/JList.java:
 	(locationToIndex): New Method. Implemented.
 	(indexToLocation): New Method.
-	* javax/swing/JPopupMenu.java: 
+	* javax/swing/JPopupMenu.java:
 	(visible): New field.
 	(isVisible): Changed to use new field above.
 	(setVisible): Likewise.
 	* javax/swing/MutableComboBoxModel.java: Added javadocs.
-	* javax/swing/plaf/basic/BasicArrowButton.java: 
+	* javax/swing/plaf/basic/BasicArrowButton.java:
 	(shadow): Changed default color to Color.gray.
 	* javax/swing/plaf/basic/BasicComboBoxUI.java: New File.
 	UI delegate for JComboBox.
@@ -5770,7 +5774,7 @@
 	style.
 	* javax/swing/plaf/basic/ComboPopup.java: Added javadocs and missing
 	methods signatures.
-	
+
 2004-08-31  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/text/AbstractDocument.java
@@ -5794,7 +5798,7 @@
 
 2004-08-31  Graydon Hoare  <graydon@redhat.com>
 
-	* java/awt/Component.java 
+	* java/awt/Component.java
 	(isFocusTraversable): Predicate on isLightweight()
 	(setFocusable): Set isFocusTraversableOverridden.
 	(requestFocus): Predicate peer dispatch on !isLightweight()
@@ -5804,7 +5808,7 @@
 	(dispatchEventImpl): Predicate on event mask.
 	(LightweightDispatcher): Remove focus machinery.
 	* java/awt/DefaultFocusTraversalPolicy.java
-	(accept): Expand predicate to include isFocusable(). 
+	(accept): Expand predicate to include isFocusable().
 	* java/awt/DefaultKeyboardFocusManager.java:
 	Globally change c.dispatchEvent(e) to redispatchEvent(c,e)
 	* java/awt/KeyboardFocusManager.java
@@ -5812,8 +5816,8 @@
 	* javax/swing/AbstractButton.java
 	(ButtonFocusListener): Remove class.
 	(init): Set focusPainted, focusable.
-	* javax/swing/ActionMap.java (get): Check parent for null. 
-	* javax/swing/InputMap.java (get): Likewise. 
+	* javax/swing/ActionMap.java (get): Check parent for null.
+	* javax/swing/InputMap.java (get): Likewise.
 	* javax/swing/JComponent.java
 	(inputMap_whenFocused): New InputMap.
 	(inputMap_whenAncestorOfFocused): Likewise.
@@ -5846,7 +5850,7 @@
 	(uninstallKeyboardActions): Likewise.
 	(paintFocus): Rewrite.
 	* javax/swing/plaf/basic/BasicLookAndFeel.java
-	(Button.focus): New default, midPurple. 
+	(Button.focus): New default, midPurple.
 	* javax/swing/plaf/basic/BasicTextUI.java
 	(kit): Make static.
 	(installUI): Get doc from kit, load defaults.
@@ -6183,11 +6187,11 @@
 
 2004-08-31  Craig Black  <craig.black@aonix.com>
 
-	* gnu/java/awt/peer/gtk/GdkGraphics.java 
+	* gnu/java/awt/peer/gtk/GdkGraphics.java
 	(drawImage): Add support for scaling pixmaps.
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c
 	(copyAndScalePixmap): New native method.
- 
+
 2004-08-31  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR AWT/16121
@@ -6280,7 +6284,7 @@
 2004-08-31  Graydon Hoare  <graydon@redhat.com>
 
 	PR SWING/16576
-	* javax/swing/JLayeredPane.java 
+	* javax/swing/JLayeredPane.java
 	(setLayer): Permit changing layer after addition.
 	(setPosition): Permit over-length positions.
 	(layerToRange): Compare intValue()s.
@@ -6301,7 +6305,7 @@
 	removed from the Container.
 	(handleEvent): Consume the MouseEvents.
 	* javax/swing/RepaintManager.java:
-	(paintDirtyRegions): Do not add to list of 
+	(paintDirtyRegions): Do not add to list of
 	damaged areas if the component has no root.
 
 2004-08-31  Michael Koch  <konqueror@gmx.de>
@@ -6347,7 +6351,7 @@
 
 2004-08-31  Steven Augart  <augart@watson.ibm.com>
 
-	* jni/gtk-peer/gthread-jni.c (c-font-lock-extra-types): 
+	* jni/gtk-peer/gthread-jni.c (c-font-lock-extra-types):
 	Added jfieldID, jmethodID.
 
 2004-08-31  Mark Wielaard  <mark@klomp.org>
@@ -6362,13 +6366,13 @@
 
 2004-08-31  Steven Augart  <augart@watson.ibm.com>
 
-	* gnu/java/awt/peer/gtk/GtkMainThread.java (run): Pass the value of 
+	* gnu/java/awt/peer/gtk/GtkMainThread.java (run): Pass the value of
 	the gnu.classpath.awt.gtk.portable.native.sync system property to C.
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c
 	(Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit): New argument,
 	portableNativeSync.  Delegate PORTABLE_NATIVE_SYNC work to
-	init_glib_threads. 
+	init_glib_threads.
 	(init_glib_threads): New function.
 
 2004-08-31  Mark Wielaard  <mark@klomp.org>
@@ -6387,7 +6391,7 @@
 	Implemented missing functions for GTK2.
 	Added error handling.
 	Renamed static functions out of the g_ namespace.
-	Added TRACE_API_CALLS, EXPLAIN_TROUBLE, EXPLAIN_BROKEN, 
+	Added TRACE_API_CALLS, EXPLAIN_TROUBLE, EXPLAIN_BROKEN,
 	EXPLAIN_BADLY_BROKEN, and DELETE_LOCAL_REFS options.
 	Rewrote global-reference code.
 	Eliminated cascading errors.
@@ -6577,7 +6581,7 @@
 	(create): Call new create method.
 	(getArgs): Remove method.
 	* gnu/java/awt/peer/gtk/GtkCheckboxPeer.java,
-	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c 
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c
 	(nativeCreate): Rename to create.
 	(gtkSetLabel): Rename to gtkButtonSetLabel.
 	(gtkToggleButtonSetActive): New method.
@@ -6626,7 +6630,7 @@
 	* gcj/Makefile.in: Regenerate
 	* include/Makefile.in:
 	* java/awt/Container.java:
-	(acquireComponentForMouseEvent): Respect 
+	(acquireComponentForMouseEvent): Respect
 	the event mask when looking for candidate.
 	* javax/swing/JComponent.java:
 	Remove toolTip field.
@@ -6923,7 +6927,7 @@
 	* java/util/natTimeZone.cc (getSystemTimeZone): Renamed to
 	getDefaultTimeZoneId and rewritten.
 	(getDefaultTimeZoneId): Rewritten in java.
-	
+
 2004-08-25  David Daney  <daney@avtrex.com>
 
 	* Makefile.am (AM_GCJFLAGS):  Add LIBGCJ_JAVAFLAGS.
@@ -6936,7 +6940,7 @@
 	(jvmpi_notify_alloc): Don't check if jvmpi is enabled here.
 	(_Jv_AllocObjectNoFinalizer): Use JVMPI_NOTIFY_ALLOC.
 	(_Jv_AllocString): Likewise.
-	(_Jv_AllocPtrFreeObject): Likewise.	
+	(_Jv_AllocPtrFreeObject): Likewise.
 
 2004-08-23  Hans Boehm  <Hans.Boehm@hp.com>
 
@@ -6970,7 +6974,7 @@
 	    Michael Koch  <konqueror@gmx.de>
 
 	* configure.in,	Makefile.am: Ported to automake 1.9.
-	* Makefile.in, aclocal.m4, configure, gcj/Makefile.in, 
+	* Makefile.in, aclocal.m4, configure, gcj/Makefile.in,
 	include/Makefile.in, testsuite/Makefile.in, include/config.h.in:
 	Regenerated.
 
@@ -6995,7 +6999,7 @@
 
 2004-08-18  David Daney  <ddaney@avtrex.com>
 
-	* java/lang/natPosixProcess.cc (waitForSignal): Use sigsuspend 
+	* java/lang/natPosixProcess.cc (waitForSignal): Use sigsuspend
 	instead of sigwait.
 
 2004-08-17  Michael Koch  <konqueror@gmx.de>
@@ -7026,20 +7030,20 @@
 
 2004-08-14  Andreas Tobler  <a.tobler@schweiz.ch>
 
-	* java/net/natInetAddressPosix.cc (lookup): Reflect rename of 
+	* java/net/natInetAddressPosix.cc (lookup): Reflect rename of
 	localhostAddress to loopbackAddress.
 	* java/net/natInetAddressWin32.cc (lookup): Likewise.
 
 2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* configure.in (GCINCS): Don't use "boehm-cflags". Instead, -I 
+	* configure.in (GCINCS): Don't use "boehm-cflags". Instead, -I
 	boehm-gc's include dirs.
 	* configure: Rebuilt.
 	* include/boehm-gc.h: Include gc_config.h.
 
 2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* java/net/InetAddress.java (loopbackAddress): Renamed from 
+	* java/net/InetAddress.java (loopbackAddress): Renamed from
 	localhostAddress.
 	(getByName): Return loopback address for null hostname, without
 	security check. Use lookup(), not getAllByName.
@@ -7137,7 +7141,7 @@
 
 2004-08-05  Andreas Tobler  <a.tobler@schweiz.ch>
 
-	* Makefile.am: Fix missing rename from x_nat_headers to 
+	* Makefile.am: Fix missing rename from x_nat_headers to
 	xlib_nat_headers.
 	* Makefile.in: Regenerated.
 
@@ -7297,7 +7301,7 @@
 	Reduce sleep time.
 	* testsuite/libjava.lang/Thread_HoldsLock.java: Modify to work around
 	compiler bug.
-	* testsuite/libjava.lang/Thread_Interrupt.java: Remove old email 
+	* testsuite/libjava.lang/Thread_Interrupt.java: Remove old email
 	address. Reduce sleep times. Synchronize with target threads before
 	attempting to interrupt them. Don't try to calibrate yeild count,
 	instead, always loop for a fixed time.
@@ -7308,16 +7312,16 @@
 	* testsuite/libjava.lang/Thread_Wait_Interrupt.java: Likewise.
 	* testsuite/libjava.lang/pr179.java: Likewise.
 	* testsuite/libjava.lang/Thread_Sleep.java: Likewise. Reduce sleep
-	time. Remove upper bounds check on sleep time. 
+	time. Remove upper bounds check on sleep time.
 
 2004-07-27  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.lang/Thread_HoldsLock.java: New test case.
-	* testsuite/libjava.lang/Thread_HoldsLock.out: New.	
+	* testsuite/libjava.lang/Thread_HoldsLock.out: New.
 
 2004-07-27  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* java/io/File.java (toURI): Throw RuntimeException, not 
+	* java/io/File.java (toURI): Throw RuntimeException, not
 	InternalError.
 	* java/lang/Runtime.java (exit): Qualify static sleep() call with
 	class name, not instance.
@@ -7363,7 +7367,7 @@
 	(getClassUID): Likewise.
 	(findMethod): Likewise.
 	* gnu/java/security/action/GetPropertyAction.java: New class.
-	* gnu/java/security/action/SetAccessibleAction.java: New class.	
+	* gnu/java/security/action/SetAccessibleAction.java: New class.
 
 2004-07-23  Bryce McKinlay  <mckinlay@redhat.com>
 
@@ -7399,9 +7403,9 @@
 	DefaultContentHandlerFactory.java.
 	* Makefile.in: Rebuilt.
 	* java/net/URLConnection.java (defaultFactory): New field.
-	(getContent): 
-	(getContentHandler): Renamed from 'setContentHandler'. Try 
-	defaultFactory after user-set factory, if any. Search for content 
+	(getContent):
+	(getContentHandler): Renamed from 'setContentHandler'. Try
+	defaultFactory after user-set factory, if any. Search for content
 	handler implementations in gnu.java.net.content, not gnu.gcj.content.
 	* gnu/java/net/protocol/file/Connection.java (getHeaderField):
 	Implemented.
@@ -7417,7 +7421,7 @@
 	Default implementation.
 	* gnu/java/awt/peer/gtk/GtkToolkit.java (createImageProducer): New.
 	Implement using GdkPixbufDecoder.
-	
+
 2004-07-21  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/JTextArea.java
@@ -7513,7 +7517,7 @@
 	(filenameFilterCallback): New method.
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c
 	(create): Configure dialog to show hidden files.
-	(filenameFilterCallback): New function. 
+	(filenameFilterCallback): New function.
 	(nativeSetFilenameFilter): New function.
 	(nativeSetDirectory): New function.
 
@@ -7542,24 +7546,24 @@
 
 	* javax/swing/DefaultDesktopManager.java:
 	(findMinimum): Removed.
-	(resizeFrame): Trust the UI to pass valid 
+	(resizeFrame): Trust the UI to pass valid
 	bounds.
 	* javax/swing/JOptionPane.java:
 	Implemented showInternalXXXDialog methods.
 	(startModal): New method.
 	* javax/swing/plaf/basic/BasicInternalFrameUI.java:
-	(BorderListener::mouseDragged): Verify that the new 
+	(BorderListener::mouseDragged): Verify that the new
 	bounds are valid before passing them to the DesktopManager.
 	(preferredLayoutSize): Delegate
 	to getSize.
 	(minimumLayoutSize): Ditto.
 	(getSize): New method.
-	(GlassPaneDispatcher): Reimplemented by copying 
+	(GlassPaneDispatcher): Reimplemented by copying
 	a stripped down LightweightDispatcher from Container.
 	(getMinimumSize): Call minimumLayoutSize.
 	* javax/swing/plaf/basic/BasicOptionPaneUI.java:
 	Ran Jalopy.
-	(mousePressed): Add ability to properly close 
+	(mousePressed): Add ability to properly close
 	JInternalFrames.
 	* javax/swing/plaf/basic/BasicToolBarUI.java:
 	(DragWindow): Set owner for DragWindow.
@@ -7613,7 +7617,7 @@
 	* javax/swing/JPopupMenuUI.java: Fixed javadocs.
 	(LABEL_CHANGED_PROPERTY): New property.
 	(add): changed to use createActionComponent.
-	(createActionComponent): Implemented.	
+	(createActionComponent): Implemented.
 	(setLabel): Fire PropertyChangeEvent if label property
 	changes.
 	* javax/swing/JRadioButtonMenuItem.java: Fixed javadocs.
@@ -7637,7 +7641,7 @@
 	* javax/swing/JToolBar.java:
 	(layoutContainer): Use getComponents.
 	* javax/swing/plaf/basic/BasicToolBarUI.java:
-	(DragWindow): Don't use SwingUtilities' 
+	(DragWindow): Don't use SwingUtilities'
 	getOwnerFrame
 	(ToolBarDialog): ditto.
 
@@ -7645,7 +7649,7 @@
 
 	* javax/swing/JRootPane.java:
 	Ran jalopy.
-	(layoutContainer): Set the glasspane's size to 
+	(layoutContainer): Set the glasspane's size to
 	be the same as the content pane.
 	(createGlassPane): Set opaque property to false.
 
@@ -7827,26 +7831,26 @@
 
 2004-07-21  Graydon Hoare  <graydon@redhat.com>
 
-	* gnu/java/awt/peer/gtk/GtkToolkit.java (bufferedImageOrError): 
+	* gnu/java/awt/peer/gtk/GtkToolkit.java (bufferedImageOrError):
 	Make method non-static.
 	* javax/swing/AbstractButton.java:
 	Rename fields to match property names where possible.
 	(iconTextGap): New property.
 	* javax/swing/JCheckBox.java: Match AbstractButton changes.
 	(init) New method, call from after various constructors.
-	* javax/swing/JComponent.java (revalidate): 
+	* javax/swing/JComponent.java (revalidate):
 	Invalidate before queueing repair.
 	* javax/swing/JList.java (getPreferredScrollableViewportSize):
 	Reimplement in terms of visibleRowCount property.
 	* javax/swing/JMenuButton.java: Match AbstractButton changes.
-	* javax/swing/JScrollPane.java (createScrollListener): 
+	* javax/swing/JScrollPane.java (createScrollListener):
 	Remove tracing chatter.
 	* javax/swing/JToggleButton.java: Match AbstractButton changes.
-	* javax/swing/RepaintManager.java (addInvalidComponent): 
+	* javax/swing/RepaintManager.java (addInvalidComponent):
 	Don't invalidate.
 	* javax/swing/ScrollPaneLayout.java: Various corrections to layout
 	calculations.
-	* javax/swing/SwingUtilities.java (layoutCompoundLabel): 
+	* javax/swing/SwingUtilities.java (layoutCompoundLabel):
 	Mimic sun behavior on top left/right positioning.
 	* javax/swing/ViewportLayout.java (preferredLayoutSize):
 	Remove mistaken use of preferredScrollableViewportSize here.
@@ -7858,7 +7862,7 @@
 	Remove tracing chatter, correct various minor calculations.
 	(getCellBounds): Update layout state before calculating.
 	* javax/swing/plaf/basic/BasicLookAndFeel.java (Button.Margin):
-	Use margin default similar to sun's.	
+	Use margin default similar to sun's.
 	* javax/swing/plaf/basic/BasicScrollBarUI.java (ArrowIcon):
 	(createIncreaseIcon): Center icon, minimize margins.
 	(createDecreaseIcon): Likewise.
@@ -7873,7 +7877,7 @@
 	Set clip before painting.
 
 2004-07-21  Olga Rodimina <rodimina@redhat.com>
-	
+
 	* javax/swing/JMenuItem.java:
 	(processMouseEvent): Reimplemented to deal with
 	mouse drag events.
@@ -7882,7 +7886,7 @@
 	* javax/swing/MenuSelectionManager.java
 	(componentForPoint): Implemented.
 	(isComponentPartOfCurrentMenu): Made public.
-	(processMouseEvent): Reimplemented to deal with 
+	(processMouseEvent): Reimplemented to deal with
 	mouse drag events.
 	(setSelectedPath): Corrected small mistake that caused
 	path to be set incorrectly.
@@ -7893,16 +7897,16 @@
 	(getPreferredSize): Call getPreferredMenuItemSize().
 	(getPreferredItemSize): Moved code from getPreferredSize to here.
 	(installListeners): Install MouseMotionListeners.
-	(MouseInputHandler): Pass mouse release event to MenuSelectionManager 
+	(MouseInputHandler): Pass mouse release event to MenuSelectionManager
 	if mouse wasn't released in the bounds of this menu item.
 	(MenuDragMouseHandler): Implemented.
 	* javax/swing/plaf/basic/BasicMenuUI.java:
-	(installListeners): Install MouseMotionListener and 
+	(installListeners): Install MouseMotionListener and
 	MenuDrageMouseListener.
 	(MenuDragMouseHandler): Implemented.
 	* javax/swing/plaf/basic/BasicPopupMenuUI.java:
 	(uninstallListeners): Implemented.
-	
+
 2004-07-21  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/JCheckBox.java: Reformated.
@@ -7932,7 +7936,7 @@
 2004-07-21  Graydon Hoare  <graydon@redhat.com>
 
 	* java/awt/image/BufferedImage.java (getSource): Remove tracing chatter.
-	* gnu/java/awt/peer/gtk/GtkToolkit.java 
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
 	(GtkErrorImage): New helper class.
 	(bufferedImageOrError): New helper method.
 	(createImage): Use it.
@@ -7957,7 +7961,7 @@
 2004-07-21  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/JMenu.java:
-	(setSelected): Display popup menu only if this menu 
+	(setSelected): Display popup menu only if this menu
 	is showing on the screen.
 	* javax/swing/JPopupMenu.java:
 	(processMouseEvent): Added comment.
@@ -7972,7 +7976,7 @@
 	* javax/swing/plaf/basic/BasicPopupMenuUI.java:
 	(installUI): Correct setDefaultLightWeightPopupEnabled call.
 	(popupMenuCanceled): Reimplemented.
-	(popupMenuWillBecomeVisible): Select first menu item by default 
+	(popupMenuWillBecomeVisible): Select first menu item by default
 	when displaying free floating popup menus.
 	(TopWindowListener): Reimplemented.
 
@@ -7983,9 +7987,9 @@
 
 2004-07-21  Olga Rodimina  <rodimina@redhat.com>
 
-	* java/awt/Window.java: Reverted changes from my 
+	* java/awt/Window.java: Reverted changes from my
 	previous patch for creating window without an owner.
-	* javax/swing/SwingUtilities.java: 
+	* javax/swing/SwingUtilities.java:
 	(SwingUtilities.OwnerFrame): made static.
 	(OwnerFrame.setVisible): New method. Overridden with
 	empty implementation.
@@ -8032,16 +8036,16 @@
 
 2004-07-21  Olga Rodimina  <rodimina@redhat.com>
 
-	*  javax/swing/AbstractButton.java: 
+	*  javax/swing/AbstractButton.java:
 	(configurePropertiesFromAction): Set action command
-	to button's text by default if action command is not 
+	to button's text by default if action command is not
 	explicitely specified.
 	* javax/swing/JMenu.java: Remove unnecessary listener
 	and methods relevant to it.
 	(setSelected): Reimplemented.
 	(menuSelectionChanged): Moved most part of implementation to
 	setSelected() and call it instead.
-	* javax/swing/JMenuItem.java: 
+	* javax/swing/JMenuItem.java:
 	(init): Comment out statement that sets paint_border to false.
 	(configurePropertiesFromAction): Do not set accelerator
 	for JMenu.
@@ -8052,21 +8056,21 @@
 	instead of GridBagConstraints.HORIZONTAL.
 	(insert): Likewise.
 	(createActionChangeListener): Implemented.
-	(setVisible): Correct location of HeavyWeightMenu and 
+	(setVisible): Correct location of HeavyWeightMenu and
 	don't firePopupMenuCanceled().
 	(menuSelectionChanged): Implemented.
 	(ActionChangeListener): New Listener. Implemented.
 	* javax/swing/plaf/basic/BasicMenuBarUI.java:
 	(BasicMenuBarUI.ContainerHandler): Implemented.
 	* javax/swing/plaf/basic/BasicMenuItemUI.java:
-	(paintMenuItem): Uncommented out code that paints 
+	(paintMenuItem): Uncommented out code that paints
 	icon, now that icons are working properly.
 	(PropertyChangeListener): Implemented.
 	* javax/swing/plaf/basic/BasicPopupMenuUI.java:
 	Added javadocs.
 	(topWindowListener): New field.
 	(Constructor): initialize topWindowListener.
-	(BasicPopupMenuUI.TopWindowListener): Implemented.	
+	(BasicPopupMenuUI.TopWindowListener): Implemented.
 	(BasicPopupMenuUI.PopupMenuHandler): Implemented.
 	(BasicPopupMenuUI.TopWindowListener): New ComponentListener.
 	Implemented.
@@ -8205,11 +8209,11 @@
 
 2004-07-21  Graydon Hoare  <graydon@redhat.com>
 
-	* java/awt/image/BufferedImage.java 
+	* java/awt/image/BufferedImage.java
 	(getSource): Implement.
-	* javax/swing/ImageIcon.java 
+	* javax/swing/ImageIcon.java
 	(ImageIcon): Implement ctor.
-	* javax/swing/ScrollPaneLayout.java 
+	* javax/swing/ScrollPaneLayout.java
 	(preferredLayoutSize): Be more careful about nulls.
 
 2004-07-21  Michael Koch  <konqueror@gmx.de>
@@ -8407,16 +8411,16 @@
 	* javax/swing/plaf/basic/BasicMenuUI.java:
 	(MouseInputHandler.mouseEntered): Do not raise
 	popup menu if this menu is already selected.
-	(MouseInputHandler.mousePressed): Do not fire 
+	(MouseInputHandler.mousePressed): Do not fire
 	MenuEvents.
-	(MenuHandler): Implemented.	
+	(MenuHandler): Implemented.
 
 2004-07-21  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/JCheckBoxMenuItem.java: Added Javadoc.
 	(getSelectedObjects): Implemented.
 	* javax/swing/JRadioButtonMenuItem.java: Added Javadoc.
-	* javax/swing/plaf/basic/BasicCheckBoxMenuItemUI.java: 
+	* javax/swing/plaf/basic/BasicCheckBoxMenuItemUI.java:
 	Added javadoc for few methods.
 	(processMouseEvent): Made public.
 	* javax/swing/plaf/basic/BasicRadioButtonMenuItemUI.java
@@ -8431,7 +8435,7 @@
 	(getDisplayedMnemonicIndex): Change method signature
 	by removing 'index' parameter.
 	* javax/swing/plaf/basic/BasicLookAndFeel.java:
-	Added default for Menu.selectionBackground.	
+	Added default for Menu.selectionBackground.
 	* javax/swing/plaf/basic/BasicMenuItemUI.java:
 	(paintMenuItem): Change background color of the selected
 	menu item.
@@ -8440,9 +8444,9 @@
 	(paintAccelerator): Paint accelerator differently
 	if menu item is disabled.
 	* javax/swing/plaf/basic/BasicMenuUI.java:
-	(installDefaults): Install defaults for 
+	(installDefaults): Install defaults for
 	selectionForeground and selectionBackground.
-	(uninstallDefaults): Uninstall defauls for 
+	(uninstallDefaults): Uninstall defauls for
 	selectionForeground and selectionBackground.
 
 2004-07-21  Michael Koch  <konqueror@gmx.de>
@@ -8478,10 +8482,10 @@
 	to 'this' before firing it to button listeners.
 	(fireActionPerformed): Likewise.
 	(fireStateChanged): Likewise.
-	(createActionListener): Do not set source 
-	of the event to AbstractButton.                                  
+	(createActionListener): Do not set source
+	of the event to AbstractButton.
 	* javax/swing/plaf/basic/BasicMenuBarUI.java:
-	(ContainerHandler.componentAdded): Removed 
+	(ContainerHandler.componentAdded): Removed
 	print out statement.
 	(ContainerHandler.componentRemoved): Likewise.
 
@@ -8747,7 +8751,7 @@
 	correctly. Truncate extra zeros.
 	(before): Compare getNanos() only if getTime() is equal.
 	(after): Likewise.
-	
+
 2004-07-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* acinclude.m4: "Inline" LIBGCJ_CONFIGURE macro into...
@@ -8791,7 +8795,7 @@
 
 2004-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* configure.host (DIVIDESPEC) [s390*-*-*]: Set to 
+	* configure.host (DIVIDESPEC) [s390*-*-*]: Set to
 	-fno-use-divide-subroutine.
 	* include/s390-signal.h: Include <ucontext.h> and <limits.h>.
 	(HANDLE_FPE): Define.
@@ -8799,8 +8803,8 @@
 	(struct old_s390_kernel_sigaction): Likewise for k_sa_handler.
 	(HANDLE_DIVIDE_OVERFLOW): Define.
 
-2004-07-14  Michael Koch  <konqueror@gmx.de> 
-	    Matthias Klose  <doko@debian.org> 
+2004-07-14  Michael Koch  <konqueror@gmx.de>
+	    Matthias Klose  <doko@debian.org>
 
 	* java/awt/im/InputContext.java: Initialize in, line.
 
@@ -8817,14 +8821,14 @@
 	(run): Lock compile_mutex before calling compile() if compilation is
 	required.
 	* prims.cc (_Jv_CreateJavaVM): Call _Jv_InitInterpreter().
-	* include/java-interp.h (_Jv_InitInterpreter): Declare.	
+	* include/java-interp.h (_Jv_InitInterpreter): Declare.
 
 2004-07-12  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/15713
 	* include/jvm.h (_Jv_value): New union type.
-	* gcj/field.h (_Jv_Field): Add new _addr union field variants 
-	* interperet.cc (run): Use _Jv_value union type and *_addr _Jv_Field 
+	* gcj/field.h (_Jv_Field): Add new _addr union field variants
+	* interperet.cc (run): Use _Jv_value union type and *_addr _Jv_Field
 	union members.
 
 2004-07-12  Scott Gilbertson  <scottg@mantatest.com>
@@ -8840,12 +8844,12 @@
 	  (setHints): New method.
 	  (setPixels): New method.
 	  (setProperties): New method.
-	* gnu/gcj/xlib/GC.java (drawPoint): New native method. 
+	* gnu/gcj/xlib/GC.java (drawPoint): New native method.
 	* gnu/gcj/xlib/natGC.cc (drawPoint): New native method.
 
 2004-07-11  Bryce McKinlay  <mckinlay@redhat.com>
 
-	PR libgcj/16478	
+	PR libgcj/16478
 	* prims.cc (_Jv_CreateJavaVM): Fix comment.
 	* gnu/gcj/runtime/FinalizerThread.java (init): New. Native.
 	(finalizerReady): Now native.
@@ -8894,7 +8898,7 @@
 	(ctorArgTypes): New private static field. Singleton argument for
 	calendar class constructor lookup.
 	(getInstance): Cache Locale->Calendar class mappings using HashMap.
-	Optimize by bypassing reflection instantiation for the 
+	Optimize by bypassing reflection instantiation for the
 	GregorianCalendar case.
 
 2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
@@ -8909,7 +8913,7 @@
 	* java/text/DateFormatSymbols.java: Likewise.
 	* java/text/DecimalFormatSymbols.java: Likewise.
 	* java/text/NumberFormat.java: Likewise.
-	* java/awt/Window.java: Likewise.	
+	* java/awt/Window.java: Likewise.
 
 2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
 
@@ -8922,16 +8926,16 @@
 	(BundleKey): New private class. HashMap key for bundle cache lookup.
 	(lookupKey): New. Singleton instance of BundleKey.
 	(nullEntry): New. Cache entry to represent failed lookups.
-	(getBundle(String, Locale, ClassLoader)): Re-written to use new 
+	(getBundle(String, Locale, ClassLoader)): Re-written to use new
 	caching strategy, no-allocation lookup, and new tryBundle methods.
-	(tryBundle(String, ClassLoader)): New. Load a locale-qualified bundle 
+	(tryBundle(String, ClassLoader)): New. Load a locale-qualified bundle
 	name using given classloader.
-	(tryBundle(String, Locale, ClassLoader, boolean): New. Qualify 
+	(tryBundle(String, Locale, ClassLoader, boolean): New. Qualify
 	baseName for given Locale and attempt to load bundle.
 
 2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* javax/swing/plaf/basic/BasicMenuUI.java (mousePressed): Remove 
+	* javax/swing/plaf/basic/BasicMenuUI.java (mousePressed): Remove
 	illegal protected method calls.
 
 2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
@@ -8951,7 +8955,7 @@
 	* gnu/gcj/convert/UnicodeCharacterDatabase-3.0.0.html,
 	gnu/gcj/convert/UnicodeData-3.0.0.txt:
 	Removed, these can directly be downloaded from www.unicode.org if
-	needed. 
+	needed.
 	* gnu/java/lang/CharData.java: Regenerated.
 	* include/java-chartables.h: Regenerated.
 	* Makefile.am (ordinary_java_source_files):
@@ -9130,7 +9134,7 @@
 	* java/util/Locale.java (hashcode): Made transient.
 	(hashCode): No longer synchronized.
 	(equals): Remove comment.
-	(writeObject): No longer synchronized. Implement using writeObject 
+	(writeObject): No longer synchronized. Implement using writeObject
 	calls instead of tweaking hashCode field. Update doc.
 	(readObject): Implement using readObject calls.
 
@@ -9218,7 +9222,7 @@
 2004-06-22  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/16134:
-	* gnu/gcj/convert/BytesToUnicode.java (getDecoder): Canonicalize 
+	* gnu/gcj/convert/BytesToUnicode.java (getDecoder): Canonicalize
 	encoding name before cache lookup. Thanks to Hannes Wallnoefer.
 	* gnu/gcj/convert/UnicodeToBytes.java (getEncoder): Likewise.
 
@@ -9284,11 +9288,11 @@
 	* javax/swing/JPopupMenu.java:
 	(JPopupMenu.Separator): Implemented.
 	* javax/swing/MenuSelectionManager.java:
-	(processMouseEvent): Use java.awt.Component 
-	for event source instead of javax.swing.JComponent. 
+	(processMouseEvent): Use java.awt.Component
+	for event source instead of javax.swing.JComponent.
 	* javax/swing/plaf/basic/BasicPopupMenuSeparatorUI.java:
 	New File. Implemented.
-	
+
 2004-06-16  David Jee  <djee@redhat.com>
 
 	* java/awt/GridBagLayout.java
@@ -9298,7 +9302,7 @@
 2004-04-16  Andrew Overholt  <overholt@redhat.com>
 
 	* Makefile.am: Add new file.
-	* Makefile.in: Re-generate.     
+	* Makefile.in: Re-generate.
 	* javax/swing/JToolBar.java
 	Partially implemented.
 	* javax/swing/plaf/basic/BasicToolBarUI.java
@@ -9306,7 +9310,7 @@
 
 2004-06-16  Graydon Hoare  <graydon@redhat.com>
 
-	* gnu/java/awt/peer/gtk/GdkGraphics2D.java 
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
 	(setComposite): Accept AlphaComposite arguments.
 	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java
 	(createBufferedImage): Add new overloads.
@@ -9472,15 +9476,15 @@
 
 	* javax/swing/ImageIcon.java (ImageIcon): New constructor.
 	* javax/swing/JFrame.java (defaultLookAndFeelDecorated): New property.
-	* javax/swing/JViewport.java 
+	* javax/swing/JViewport.java
 	(getExtentSize): Return size rather than preferred size.
 	(toViewCoordinates): New methods.
 	(getViewSize): Return size rather than preferred size.
 	(setViewSize): Note view size as set.
 	* javax/swing/ViewportLayout.java (layoutContainer): Reimplement.
-	* javax/swing/plaf/basic/BasicScrollBarUI.java 
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
 	(getPreferredSize): Don't redo layout.
-	* javax/swing/plaf/basic/BasicViewportUI.java 
+	* javax/swing/plaf/basic/BasicViewportUI.java
 	(paint): Translate image properly and eat exceptions.
 
 2004-06-15  Kim Ho  <kho@redhat.com>
@@ -9488,7 +9492,7 @@
 	* javax/swing/JTabbedPane.java
 	(setComponent): Remove old component and
 	add new component.
-	(setSelectedIndex): Don't operate on the 
+	(setSelectedIndex): Don't operate on the
 	components if they're null. Don't set index
 	on the model if the index is the same.
 	(insertTab): Don't add or hide the component
@@ -9552,17 +9556,17 @@
 2004-06-14  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/JPopupMenu.java:
-	(setVisible): Corrected location of a 
+	(setVisible): Corrected location of a
 	heavyweight popup menu.
 
 2004-06-14  Olga Rodimina  <rodimina@redhat.com>
 
-	* javax/swing/MenuSelectionManager.java: 
+	* javax/swing/MenuSelectionManager.java:
 	Ran through jalopy to fix formatting style.
 
 2004-06-14  Olga Rodimina  <rodimina@redhat.com>
-	
-	* javax/swing/JLayeredPane.java: 
+
+	* javax/swing/JLayeredPane.java:
 	(remove): Revalidate and repaint layered pane after
 	the component was removed.
 	javax/swing/JMenu.java:
@@ -9697,31 +9701,31 @@
 
 2004-06-10  Olga Rodimina  <rodimina@redhat.com>
 
-	* javax/swing/JMenu.java: Fixed file name 
+	* javax/swing/JMenu.java: Fixed file name
 	in the file comment.
 
 2004-06-10  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/JMenu.java: Added javadoc.
-	(JMenu): Added MenuChangeListener to listen to 
-	ChangeEvents occuring in menu's model. 
-	(insert): Throw IllegalArgumentException if 
+	(JMenu): Added MenuChangeListener to listen to
+	ChangeEvents occuring in menu's model.
+	(insert): Throw IllegalArgumentException if
 	index is less than 0
 	(setSelected): Reimplement.
 	(setPopupMenuVisible): Call menu's model isEnabled()
-	(setDelay): Throw IllegalArgumentException if 
+	(setDelay): Throw IllegalArgumentException if
 	given amount of delay is less than 0.
 	(createActionComponent): Implemented.
 	(createActionChangeListener): Implemented.
 	(addSeparator): Implemented.
-	(getItem): Throw IllegalArgumentException if index is 
+	(getItem): Throw IllegalArgumentException if index is
 	less than 0.
 	(getItemCount): Implemented.
 	(fireMenuSelected): Changed to use menuEvent.
 	(fireMenuDeselected): Likewise.
 	(fireMenuCanceled): Likewise.
-	(setAccelerator): Changed to throw an error if this 
-	method is used. 
+	(setAccelerator): Changed to throw an error if this
+	method is used.
 	(doClick): Implemented.
 	(JMenu.ActionChangedListener): New inner class to handle
 	PropertyChangeEvents occuring in the actions associated with menu.
@@ -9901,7 +9905,7 @@
 	(paintMenuItem): Paint margin area of menu item.
 	(MouseInputHandler.mouseEntered): Set selection in MenuSelectionManager.
 	(MouseInputHandler.mouseReleased): Check if mouse was pressed inside
-	menu item's bounds before clearing the selection. 	
+	menu item's bounds before clearing the selection.
 
 2004-06-09  David Jee  <djee@redhat.com>
 
@@ -10316,7 +10320,7 @@
 	* javax/swing/plaf/basic/BasicRadioButtonMenuItemUI.java: Likewise.
 
 2004-05-31  Olga Rodimina  <rodimina@redhat.com>
-	
+
 	* javax/swing/plaf/basic/BasicMenuUI.java:
 	(MouseEntered): Do not call getPath() from MenuSelectionManager.
 	Call getPath() from super class instead.
@@ -10524,7 +10528,7 @@
 2004-06-01  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/ObjectStreamField.java: Style and javadoc cleanup.
-      
+
 2004-06-01  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/Writer.java (Writer(Object)): Fixed API doc.
@@ -10693,7 +10697,7 @@
 
 2004-05-21  Graydon Hoare  <graydon@redhat.com>
 
-	* gnu/java/awt/peer/gtk/GdkGraphics2D.java 
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
 	(setClip): Minor correction to order of operations.
 
 	* javax/swing/JScrollPane.java: Extend sketchy implementation.
@@ -10705,7 +10709,7 @@
 	* javax/swing/RepaintManager.java: Likewise.
 
 	* javax/swing/JLayeredPane.java: Change validate() to revalidate().
-	* javax/swing/JList.java 
+	* javax/swing/JList.java
 	(setSelectedIndices):
 	(getSelectedIndices):
 	(getSelectedValues): New functions.
@@ -10728,15 +10732,15 @@
 	* javax/swing/plaf/basic/BasicSeparatorUI.java: Likewise.
 	* javax/swing/plaf/basic/BasicSliderUI.java: Likewise.
 	* javax/swing/plaf/basic/BasicTabbedPaneUI.java: Likewise.
-	* javax/swing/plaf/basic/BasicRootPaneUI.java: 
+	* javax/swing/plaf/basic/BasicRootPaneUI.java:
 	Likewise, and set background.
-	* javax/swing/plaf/basic/BasicListUI.java: 
+	* javax/swing/plaf/basic/BasicListUI.java:
 	Likewise, and improve a bit.
-	* javax/swing/plaf/basic/BasicScrollBarUI.java: 
+	* javax/swing/plaf/basic/BasicScrollBarUI.java:
 	Likewise, and adjust calculations.
 	* javax/swing/plaf/basic/BasicViewportUI.java:
 	Likewise, and improve a bit.
-	* javax/swing/plaf/basic/BasicLookAndFeel.java 
+	* javax/swing/plaf/basic/BasicLookAndFeel.java
 	(Button.margin): Shrink.
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c:
@@ -10757,11 +10761,11 @@
 	(update): Implemented.
 	* javax/swing/plaf/basic/BasicMenuUI.MouseInputHandler:
 	(mouseEntered): Take insets of popup menu into account when
-	calculating position of popup menu.	
- 	
+	calculating position of popup menu.
+
 2004-05-18  Olga Rodimina  <rodimina@redhat.com>
 
-	* Makefile.am: Added new file. 
+	* Makefile.am: Added new file.
 	* Makefile.in: Regenerate.
 	* javax/swing/JMenuBar.java:
 	Started implementation.
@@ -10818,21 +10822,21 @@
 
 	* Makefile.am: Added new file.
 	* Makefile.in: Regenerate.
-	* javax/swing/JMenu.java: Started 
+	* javax/swing/JMenu.java: Started
 	implementation.
 	* javax/swing/JPopupMenu.java:
 	(insert): If specified index is -1, then
 	add component at the end.
 	(isPopupTrigger): Reimplemented.
 	(JPopupMenu.LightWeightPopup): setBounds
-	of the lightWeightPopup before adding it 
+	of the lightWeightPopup before adding it
 	to the layeredPane.
 	(javax/swing/plaf/basic/BasicIconFactory.java):
 	(getMenuArrowIcon): Implemented.
 	* javax/swing/plaf/basic/BasicMenuItemUI.java:
-	(getPreferredSize): Add size of the arrow icon 
+	(getPreferredSize): Add size of the arrow icon
 	if this menu item is instance of JMenu.
-	(paintMenuItem): Paint arrow icon if this 
+	(paintMenuItem): Paint arrow icon if this
 	menu item is a submenu.
 	* javax/swing/plaf/basic/BasicMenuUI.java:
 	New File. UI Delegate for JMenu.
@@ -10847,15 +10851,15 @@
 2004-05-17  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/JRootPane.java
-	(JRootPane.RootLayout): Reimplemented to 
+	(JRootPane.RootLayout): Reimplemented to
 	set bounds of contentPane and menuBar.
 	(setJMenuBar): Add menu bar to the layered pane.
 	(createLayeredPane): Set layout of layeredPane
 	to null.
 	* javax/swing/JLayeredPane.java:
 	(addImpl): Calculate index of the component in the
-	layeredPane according to the specified position within 
-	the layer.	
+	layeredPane according to the specified position within
+	the layer.
 
 2004-05-17  David Jee  <djee@redhat.com>
 
@@ -10981,7 +10985,7 @@
 2004-05-06  Kim Ho  <kho@redhat.com>
 
 	* javax/swing/Box.java:
-	(getAccessibleContext): Return an instance of the 
+	(getAccessibleContext): Return an instance of the
 	correct class.
 
 2004-05-05  David Jee  <djee@redhat.com>
@@ -11032,7 +11036,7 @@
 	* javax/swing/event/SwingPropertyChangeSupport.java:
 	(firePropertyChange): Fix early exit condition.
 	* javax/swing/plaf/basic/BasicLabelUI.java:
-	(paint): Avoid painting text if it is null 
+	(paint): Avoid painting text if it is null
 	or empty.
 	* javax/swing/plaf/basic/BasicOptionPaneUI.java:
 	Implement.
@@ -11053,10 +11057,10 @@
 
 	* javax/swing/JApplet.java: Indicated that JApplet
 	implements RootPaneContainer and made method of this
-	interface public. 
+	interface public.
 	* javax/swing/JFrame.java: Ditto.
 	* javax/swing/JWindow.java: Ditto.
-	
+
 2004-04-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
@@ -11086,16 +11090,16 @@
 	* javax/swing/plaf/basic/BasicMenuItemUI.java
 	(doClick): Imlemented.
 	* javax/swing/plaf/basic/BasicMenuItemUI.MouseInputHandler:
-	Don't handle mouse events here. Pass them to 
+	Don't handle mouse events here. Pass them to
 	MenuSelectionManager.
-	
+
 2004-04-26  Olga Rodimina  <rodimina@redhat.com>
 	Used correct version of jalopy configuration
 	file to fix style in the files below.
 
 2004-04-26  Olga Rodimina  <rodimina@redhat.com>
 
-	* javax/swing/JCheckBoxMenuItem.java: 
+	* javax/swing/JCheckBoxMenuItem.java:
 	Fixed style and removed unnecessary comments.
 	* javax/swing/JMenuItem.java: Ditto.
 	* javax/swing/JRadioButtonMenuItem.java: Ditto.
@@ -11177,7 +11181,7 @@
 2004-04-21  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/MenuSelectionManager.java
-	(componentForPoint): Added new method. 
+	(componentForPoint): Added new method.
 	(defaultManager): New Method. Implemented.
 	(getSelectedPath): Ditto.
 	(isComponentPartOfCurrentMenu): Ditto.
@@ -11188,7 +11192,7 @@
 
 2004-04-19  Kim Ho  <kho@redhat.com>
 
-	* java/awt/Container.java: 
+	* java/awt/Container.java:
 	(remove): Set the component's parent to null.
 	(getComponentAt): Implement.
 	* javax/swing/JComponent.java:
@@ -11206,7 +11210,7 @@
 	Added comments and ran through jalopy.
 	(setBasicSplitPaneUI): Get reference to hidden divider
 	and set up one touch buttons if necessary.
-	(setBorder): Fire propertyChangeEvent only if 
+	(setBorder): Fire propertyChangeEvent only if
 	borders are different.
 	(getPreferredSize): Defer to layout manager.
 	(propertyChange): Implement.
@@ -11241,8 +11245,8 @@
 
 2004-05-21  Bryce McKinlay  <mckinlay@redhat.com>
 
-	Layout interfaces during preparation, not initialization. 
-	* java/lang/natClass.cc (initializeClass): Move 
+	Layout interfaces during preparation, not initialization.
+	* java/lang/natClass.cc (initializeClass): Move
 	_Jv_LayoutInterfaceMethods call...
 	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): to here.
 
@@ -11552,8 +11556,8 @@
 
 2004-05-06  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* defineclass.cc (_Jv_ClassReader::prepare_pool_entry): Use 
-	verify_field_signature and verify_method_signature, not 
+	* defineclass.cc (_Jv_ClassReader::prepare_pool_entry): Use
+	verify_field_signature and verify_method_signature, not
 	_Jv_VerifyFieldSignature and _Jv_VerifyMethodSigntature.
 	(_Jv_ClassReader::handleField): Likewise.
 	(_Jv_ClassReader::handleMethod): Likewise.
@@ -11821,14 +11825,14 @@
 	gnu/java/text/AttributedFormatBuffer.java,
 	gnu/java/text/StringFormatBuffer.java: New classes to implement
 	attributed iterators in java.text.
-	* gnu/java/text/FormatCharacterIterator.java: Moved 
+	* gnu/java/text/FormatCharacterIterator.java: Moved
 	from java/text as it is an internal class.
 	* java/text/FormatCharacterIterator.java: Removed.
 	* java/text/Format.java:
 	Import gnu.java.text.FormatCharacterIterator.
 	* Makefile.am (java_source_files): Added new files.
 	* Makefile.in: Regenerated.
-	
+
 
 2004-05-04  Mark Wielaard  <mark@klomp.org>
 
@@ -11918,7 +11922,7 @@
 	ceil and floor.
 
 2004-04-25  Ranjit Mathew  <rmathew@hotmail.com>
-	
+
 	* testsuite/libjava.jacks/jacks.exp (gcj_jacks_write): Explicitly
 	limit the maximum heap size to avoid unnecessary thrashing.
 
@@ -12264,7 +12268,7 @@
 
 2004-04-20  Ingo Proetel  <proetel@aicas.com>
 
-	* java/awt/event/MouseEvent.java (<init>): fixed field assignment 
+	* java/awt/event/MouseEvent.java (<init>): fixed field assignment
 
 2004-04-20  Jeroen Frijters  <jeroen@frijters.net>
 
@@ -12514,7 +12518,7 @@
 	(getWidth): simple default implementation
 	* java/awt/Polygon.java (getBoundingBox): Use correct y-coordinate
 	in Rectangle constructor.
-	* java/awt/image/Raster.java (toString): Added method. 
+	* java/awt/image/Raster.java (toString): Added method.
 	* java/awt/image/SampleModel.java (<init>): Added error cause
 	information to thrown exception.
 	* java/awt/image/SinglePixelPackedSampleModel.java (getDataElements):
@@ -12615,8 +12619,8 @@
 	* Makefile.in: Regenerated.
 
 2004-04-19  Bryce McKinlay  <mckinlay@redhat.com>
- 
-	* gcj/cni.h (JvAllocObject): Remove these obsolete, 
+
+	* gcj/cni.h (JvAllocObject): Remove these obsolete,
 	undocumented CNI calls.
 	* include/java-interp.h (_Jv_InterpClass): No longer
 	extends java.lang.Class.
@@ -12636,7 +12640,7 @@
 	* java/lang/natVMClassLoader.cc (defineClass): Don't use
 	JvAllocObject. Allocate klass->aux_info here for interpreted
 	class.
-	
+
 2004-04-17  Mark Wielaard  <mark@klomp.org>
 
 	* javax/swing/JToggleButton.java (ToggleButtonModel):
@@ -12664,20 +12668,20 @@
 
 	* Makefile.am: Added new file.
 	* Makefile.in: Regenerate.
-	* javax/swing/ImageIcon.java: 
-	(ImageIcon(file)): set description of the icon 
+	* javax/swing/ImageIcon.java:
+	(ImageIcon(file)): set description of the icon
 	to the file name
 	* javax/swing/JCheckBoxMenuItem.java:
 	Mostly Implemented. Work in progress.
 	* javax/swing/JRadioButtonMenuItem.java:
- 	Reimplement constructors to use JToggleButtonModel.
+	Reimplement constructors to use JToggleButtonModel.
 	* javax/swing/plaf/basic/BasicIconFactory.java:
 	(getCheckBoxMenuItemIcon): return check box
 	icon.
 	* javax/swing/plaf/basic/BasicMenuItemUI.java:
-	paint menu item selected only when it is armed and 
-	pressed. 
- 
+	paint menu item selected only when it is armed and
+	pressed.
+
 2004-04-02  David Jee  <djee@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkMenuItemPeer.java
@@ -12705,14 +12709,14 @@
 	(getPreferredSize): Add size of checkIcon if it
 	exists.
 	(installDefaults): Don't initialize checkIcon.
-	It's value will be set in subclasses. 
-	(uninstallDefaults): remove uninstallation of 
+	It's value will be set in subclasses.
+	(uninstallDefaults): remove uninstallation of
 	checkIcon.
 	(paint): Moved code to paintMenuItem().
 	(paintMenuItem): Implemented.
 	* javax/swing/plaf/basic/BasicRadioButtonMenuItemUI.java:
 	UI delegate for JRadioButtonMenuItem.
-	
+
 2004-03-29  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/plaf/basic/BasicMenuItemUI.java:
@@ -12720,15 +12724,15 @@
 
 2004-03-29  Olga Rodimina  <rodimina@redhat.com>
 
-	* Makefile.am: Added new file. 
+	* Makefile.am: Added new file.
 	* Makefile.in: Regenerate.
-	* javax/swing/JMenuItem.java: Partly 
+	* javax/swing/JMenuItem.java: Partly
 	implemented. Work in progress
 	* javax/swing/plaf/basic/BasicLookAndFeel.java:
 	Changed default value of acceleratorDelimiter.
 	* javax/swing/plaf/basic/BasicMenuItemUI.java:
 	New class. Partly implemented.
-		
+
 2004-03-26  Mark Wielaard  <mark@klomp.org>
 
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
@@ -12780,10 +12784,10 @@
 
 2004-03-23  Graydon Hoare  <graydon@redhat.com>
 
-	* java/text/AttributedString.java 
+	* java/text/AttributedString.java
 	(addAttribute): Fix off-by-one.
-	(getIterator): Likewise.	
-	* java/text/AttributedStringIterator.java 
+	(getIterator): Likewise.
+	* java/text/AttributedStringIterator.java
 	(getRunLimit): Correct logic.
 	(getRunStart): Likewise.
 	(getAttribute): Fix inequality.
@@ -12862,7 +12866,7 @@
 	* javax/swing/JComponent.java: Turn off double buffer by default.
 	* javax/swing/plaf/basic/BasicViewportUI.java: Clear rects before painting.
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
-	(Java_gnu_java_awt_peer_gtk_GdkGraphics2D_gdkDrawDrawable): 
+	(Java_gnu_java_awt_peer_gtk_GdkGraphics2D_gdkDrawDrawable):
 	Use cairo to copy areas.
 	(Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoClip):
 	Initialize and set clip region.
@@ -12880,24 +12884,24 @@
 	Helper function that every drawImage method will
 	use.
 	(drawRaster): Added new parameter, bgcolor. All
-	transparent pixels are changed to bgcolor before 
+	transparent pixels are changed to bgcolor before
 	image is drawn.
 	(drawRenderedImage): Fixed to use changed drawRaster().
-	(drawImage(image,xform,obs): Fixed to use new helper function 
+	(drawImage(image,xform,obs): Fixed to use new helper function
 	(drawImage(image,op,x,y)): Ditto.
 	(drawImage (img,x,y,observer)): Ditto.
 	((PainterThread) bgcolor): New Field.
-	((PainterThread) (setPixels)): Changed all transparent pixels 
-	to bgcolor.	
-	(drawImage(img,x,y,width,height,bgcolor,observer)): 
-	Fixed FIXME - all the transparent pixels are 
-	changed to the specified bgcolor. 
-	(drawImage(img, x, y, width, height, observer): Changed to 
+	((PainterThread) (setPixels)): Changed all transparent pixels
+	to bgcolor.
+	(drawImage(img,x,y,width,height,bgcolor,observer)):
+	Fixed FIXME - all the transparent pixels are
+	changed to the specified bgcolor.
+	(drawImage(img, x, y, width, height, observer): Changed to
 	use function above.
-	(drawImage (img,dx1,dy1,dx2,dy2,sx1,sy1,sx2,sy2,bgcolor,observer)): 
+	(drawImage (img,dx1,dy1,dx2,dy2,sx1,sy1,sx2,sy2,bgcolor,observer)):
 	Fixed FIXME- changed all transparent pixels to bgcolor.
 	(drawImage (img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, observer)):
-	Changed to use function above. 
+	Changed to use function above.
 
 2004-03-14  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
@@ -12921,8 +12925,8 @@
 	(_Jv_AllocObjectNoInitNoFinalizer): Likewise.
 	(_Jv_AllocPtrFreeObject): Likewise.
 	(_Jv_AllocString): Moved from natString.cc. Call collector interface
-	directly even in the JVMPI case.	
-	* gcj/cni.h (JvAllocObject): Remove `size' argument from 
+	directly even in the JVMPI case.
+	* gcj/cni.h (JvAllocObject): Remove `size' argument from
 	_Jv_AllocObject calls.
 	* gcj/javaprims.h: Update prototypes.
 	* gnu/gcj/natCore.cc (_Jv_create_core): Use `new', not _Jv_AllocObject.
@@ -12940,7 +12944,7 @@
 	* testsuite/libjava.lang/InvokeInterface.out: New file.
 
 2004-04-09  Ranjit Mathew  <rmathew@hotmail.com>
-	
+
 	* java/lang/VMThrowable.java (getStackTrace): Pass trace as-is to
 	modified lookup().
 	* gnu/gcj/runtime/NameFinder.java (lookup): Change to take in a
@@ -13075,7 +13079,7 @@
 	happy.
 
 2004-02-10  Randolph Chung  <tausq@debian.org>
- 
+
 	* configure.in: Build java for hppa target.
 	* configure: Regenerate.
 	* libjava/configure.host (hppa-*): Add target.
@@ -13144,7 +13148,7 @@
 2004-03-12  Graydon Hoare  <graydon@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: Clipping fixes.
-	* javax/swing/JComponent.java (paint): Use persistent double buffer. 
+	* javax/swing/JComponent.java (paint): Use persistent double buffer.
 	* javax/swing/JList.java (ListListener): Revalidate on changes.
 	* javax/swing/JScrollPane.java: Reimplement.
 	* javax/swing/JViewport.java: Reimplement.
@@ -13201,7 +13205,7 @@
 
 2004-03-09  Graydon Hoare  <graydon@redhat.com>
 
-	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c: 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c:
 	Fix double <-> fixed macros, reset font transform.
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetrics.c:
 	Likewise.
@@ -13268,23 +13272,23 @@
 	(setPaint): Changed implementation of Texture
 	Paint to use AffineTransformOp.
 	* java/awt/image/AffineTransformOp.java
-	(createCompatibleDestRaster): Throw RasterFormatException 
+	(createCompatibleDestRaster): Throw RasterFormatException
 	if resulting width or height of raster is 0.
 
 2004-03-04  Olga Rodimina  <rodimina@redhat.com>
 
 	* java/awt/image/AffineTransformOp.java:
 	Removed unnecessary field interpolationType.
-	Formatted some of the lines to be consistent with 
+	Formatted some of the lines to be consistent with
 	the GNU style.
-	(AffineTransformOp): Create new RenderingHints 
+	(AffineTransformOp): Create new RenderingHints
 	containing specified interpolation type.
 	(createCompatibleDestImage): Implemented.
 	(createCompatibleDestRaster): Implemented.
 	(filter): Implemented.
 	(getBounds2D(BufferedImage)): Implemented.
 	(getBounds2D(Raster)): Implemented.
-	(getInterpolationType): Get interpolation value from 
+	(getInterpolationType): Get interpolation value from
 	rendering hints.
 
 2004-03-04  David Jee  <djee@redhat.com>
@@ -13356,21 +13360,21 @@
 	(fill3DRect): Ditto.
 	(clearRect): Ditto.
 	(drawRaster): Ditto.
-	(drawImage) : Ditto. Update only in case of GtkOffScreenImage with 
+	(drawImage) : Ditto. Update only in case of GtkOffScreenImage with
 	no affine transformation.
 	(drawGlyphVector): Ditto.
 
 2004-02-26  Olga Rodimina <rodimina@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
-	(isBufferedImageGraphics): New Helper function. 
-	Returns true if this graphics2d can be used to draw 
+	(isBufferedImageGraphics): New Helper function.
+	Returns true if this graphics2d can be used to draw
 	into buffered image and false otherwise.
-	(updateImagePixels): New Helper function. 
+	(updateImagePixels): New Helper function.
 	Updates pixels in the BufferedImage.
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
 	(getImagePixels): New function. Returns pixels
-	of the buffered image associated with 
+	of the buffered image associated with
 	this Graphics2D.
 
 2004-02-26  David Jee  <djee@redhat.com>
@@ -13386,7 +13390,7 @@
 
 	* Makefile.am: Add new files.
 	* Makefile.in: Re-generate.
-	* javax/swing/JProgressBar.java: 
+	* javax/swing/JProgressBar.java:
 	(JProgressBar(int, int int)): Throw
 	IllegalArgumentException if orientation is
 	invalid.
@@ -13397,7 +13401,7 @@
 	* javax/swing/JScrollBar.java: Implement.
 	* javax/swing/JSeparator.java: Implement.
 	* javax/swing/JSlider.java:
-	(JSlider(int, int, int, int)): Throw 
+	(JSlider(int, int, int, int)): Throw
 	IllegalArgumentException if orientation
 	is invalid.
 	(getChangeListeners): Fix method name.
@@ -13410,7 +13414,7 @@
 	Implement.
 	* javax/swing/plaf/basic/BasicSeparatorUI.java:
 	Implement.
-	* javax/swing/plaf/basic/BasicSliderUI.java: 
+	* javax/swing/plaf/basic/BasicSliderUI.java:
 	(propertyChange): If the model changes, change
 	the listeners accordingly.
 
@@ -13458,7 +13462,7 @@
 	(GdkGraphics2D): New Constructor. Constructs Graphics
 	object that can be used to draw into the Buffered Image.
 	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java:
-	(GdkGraphicsEnvironment): Fixed to include public 
+	(GdkGraphicsEnvironment): Fixed to include public
 	keyword.
 	(createGraphics): Implemented.
 	* gnu/java/awt/peer/gtk/GtkToolkit.java
@@ -13467,7 +13471,7 @@
 	(getLocalGraphicsEnvironment): Implemented.
 	* java/awt/image/BufferedImage.java:
 	(createGraphics): Implemented.
-		
+
 2004-02-24  David Jee  <djee@redhat.com>
 
 	* java/awt/Component.java
@@ -13477,17 +13481,17 @@
 
 2004-02-23  Olga Rodimina  <rodimina@redhat.com>
 
-	* Makefile.am: Added 
+	* Makefile.am: Added
 	gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
 	* Makefile.in: Re-generated.
 	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java:
-	New Class. 
-	
+	New Class.
+
 2004-02-19  Kim Ho  <kho@redhat.com>
 
 	* Makefile.am: Add BasicProgressBarUI
 	* Makefile.in: Regenerate.
-	* javax/swing/JProgressBar.java: 
+	* javax/swing/JProgressBar.java:
 	Re-implement.
 	* javax/swing/plaf/basic/BasicLookAndFeel.java
 	Add constants for JProgressBar.
@@ -13518,7 +13522,7 @@
 	modifiers.
 	* javax/swing/JLabel.java: Re-order
 	modifiers.
-	* javax/swing/JComponent.java: 
+	* javax/swing/JComponent.java:
 	(addPropertyChangeListener):
 	Implement.
 	(removePropertyChangeListener):
@@ -13570,7 +13574,7 @@
 
 2004-02-17  Kim Ho  <kho@redhat.com>
 
-	* javax/swing/JLabel.java: Changed 
+	* javax/swing/JLabel.java: Changed
 	property strings to constants.
 	(DISPLAYED_MNEMONIC_INDEX_CHANGED_PROPERTY):
 	New property.
@@ -13600,9 +13604,9 @@
 
 2004-02-16  Graydon Hoare  <graydon@redhat.com>
 
-	* javax/swing/plaf/basic/BasicLabelUI.java 
+	* javax/swing/plaf/basic/BasicLabelUI.java
 	(getPreferredSize): Use layoutCL.
-	* javax/swing/plaf/basic/BasicGraphicsUtils.java 
+	* javax/swing/plaf/basic/BasicGraphicsUtils.java
 	(getPreferredButtonSize): Start with empty view rect, layout using
 	component's preferred alignment.
 	* javax/swing/plaf/basic/BasicLookAndFeel.java: Add some Label and
@@ -13626,13 +13630,13 @@
 2004-02-16  Olga Rodimina  <rodimina@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java:
-	(setRenderingHint): Added implementation of 
+	(setRenderingHint): Added implementation of
 	Interpolation rendering hints.
 	(setRenderingHints): Ditto.
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c:
-	(drawPixels): fixed to allow user to choose type 
+	(drawPixels): fixed to allow user to choose type
 	of filtering that should be used when displaying images.
-	(cairoSurfaceSetFilter): New method. Sets filter type for 
+	(cairoSurfaceSetFilter): New method. Sets filter type for
 	interpolation of pixel values.
 
 2004-02-16  David Jee  <djee@redhat.com>
@@ -13655,7 +13659,7 @@
 	(setModel): Remove null check to conform with Sun's.
 	(setOrientation): Throw exception if not
 	HORIZONTAL or VERTICAL.
-	(getInverted): Use private variable instead of 
+	(getInverted): Use private variable instead of
 	ComponentOrientation.
 	(setInverted): ditto.
 	* javax/swing/plaf/basic/BasicSliderUI.java:
@@ -13665,7 +13669,7 @@
 	(getMinimumSize): Return preferred size.
 	(getMaximumSize): ditto.
 	(calculateFocusRect): Don't relocate rectangle.
-	(drawInverted): Return XOR of the slider's inversion and 
+	(drawInverted): Return XOR of the slider's inversion and
 	the component's orientation.
 	(paint): Update leftToRightCache
 
@@ -13833,7 +13837,7 @@
 	(getAllAttributesKey): Return only keys concerned
 	by the current iterator.
 	(getAttributes): Use strict inequality for
-	end_index. 
+	end_index.
 
 2004-03-11  Michael Koch  <konqueror@gmx.de>
 
@@ -14093,7 +14097,7 @@
 	* java/nio/IntViewBufferImpl.java:  Likewise.
 	* java/nio/LongViewBufferImpl.java:  Likewise.
 	* java/nio/ShortViewBufferImpl.java:  Likewise.
-	
+
 	* java/nio/ByteBuffer.java (endian):  Make non-private so other
 	java.nio classes can inherit it.
 	(<init>):  Don't bother clearing array_offset.
@@ -14152,9 +14156,9 @@
 	* Makefile.in: Regenerate.
 
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: Initialize default hints.
-	* javax/swing/AbstractButton.java 
+	* javax/swing/AbstractButton.java
 	(AbstractButton): Initialize fields correctly in ctor.
-	* javax/swing/JCheckbox.java 
+	* javax/swing/JCheckbox.java
 	(JCheckBox): Override painting flags.
 	* javax/swing/DefaultButtonModel.java: Conform to sun.
 	* javax/swing/JComponent.java (paint): Fill with background color
@@ -14166,11 +14170,11 @@
 	(getUIClassID): Return "ComponentUI" not "JComponent"
 	* javax/swing/JFrame.java: Remove some debugging chatter.
 	(JFrame): Subscribe to window events.
-	* javax/swing/JRadioButton.java 
+	* javax/swing/JRadioButton.java
 	(JRadioButton): Override painting flags.
-	* javax/swing/JRootPane.java 
+	* javax/swing/JRootPane.java
 	(JRootPane): Set background from UIDefaults.
-	* javax/swing/JToggleButton.java 
+	* javax/swing/JToggleButton.java
 	(ToggleButtonModel): New inner class.
 	(JToggleButton): Override layout alighment.
 	* javax/swing/SwingUtilities.java:
@@ -14179,7 +14183,7 @@
 	(layoutCompoundLabel): Provide overridden form.
 	(layoutCompoundLabel): Correct bugs.
 	* javax/swing/UIDefaults.java: Correct comment.
-	* javax/swing/plaf/basic/BasicButtonUI.java: 
+	* javax/swing/plaf/basic/BasicButtonUI.java:
 	Move most logic into defaults, external listener.
 	(paintIcon): Implement icon painting.
 	(paint): Fix state painting to conform to changes in model.
@@ -14189,14 +14193,14 @@
 	* javax/swing/plaf/basic/BasicIconFactory.java:
 	(DummyIcon): New class.
 	(getMenuItemCheckIcon)
-	(getMenuItemArrowIcon) 
+	(getMenuItemArrowIcon)
 	(getMenuArrowIcon)
 	(getCheckBoxMenuItemIcon)
 	(getRadioButtonMenuItemIcon)
 	(createEmptyFrameIcon): Return DummyIcons, not null.
 	(getCheckBoxIcon): Implement an icon that looks like sun's.
 	(getRadioButtonIcon): Implement an icon that looks like sun's.
-	* javax/swing/plaf/basic/BasicLookAndFeel.java 
+	* javax/swing/plaf/basic/BasicLookAndFeel.java
 	(initComponentDefaults): Fix impossible values, add some missing.
 	* javax/swing/plaf/basic/BasicPanelUI.java (gap): Remove field.
 	* javax/swing/plaf/basic/BasicRadioButtonUI.java:
@@ -14211,21 +14215,21 @@
 	(Java_gnu_java_awt_peer_gtk_GdkGraphics_clearRect):
 	Implement "clearing" as drawing, when on pixmap drawables.
 
-	* javax/swing/JButton.java (getUIClassID): 
+	* javax/swing/JButton.java (getUIClassID):
 	* javax/swing/JCheckBox.java (getUIClassID):
 	* javax/swing/JEditorPane.java (getUIClassID):
-	* javax/swing/JLabel.java (getUIClassID): 
-	* javax/swing/JList.java (getUIClassID): 
-	* javax/swing/JOptionPane.java (getUIClassID): 
-	* javax/swing/JPanel.java (getUIClassID): 
-	* javax/swing/JPasswordField.java (uiClassID): 
-	* javax/swing/JRadioButton.java (getUIClassID): 
-	* javax/swing/JRootPane.java (getUIClassID): 
-	* javax/swing/JScrollPane.java (getUIClassID): 
-	* javax/swing/JTabbedPane.java (getUIClassID): 
-	* javax/swing/JToggleButton.java (getUIClassID): 
-	* javax/swing/JTree.java (getUIClassID): 
-	* javax/swing/JViewport.java (getUIClassID): 
+	* javax/swing/JLabel.java (getUIClassID):
+	* javax/swing/JList.java (getUIClassID):
+	* javax/swing/JOptionPane.java (getUIClassID):
+	* javax/swing/JPanel.java (getUIClassID):
+	* javax/swing/JPasswordField.java (uiClassID):
+	* javax/swing/JRadioButton.java (getUIClassID):
+	* javax/swing/JRootPane.java (getUIClassID):
+	* javax/swing/JScrollPane.java (getUIClassID):
+	* javax/swing/JTabbedPane.java (getUIClassID):
+	* javax/swing/JToggleButton.java (getUIClassID):
+	* javax/swing/JTree.java (getUIClassID):
+	* javax/swing/JViewport.java (getUIClassID):
 	* javax/swing/text/JTextComponent.java (getUIClassID):
 	Return "fooUI" not "Jfoo"
 
@@ -14478,12 +14482,12 @@
 
 	* javax/swing/SwingUtilities.java: Many new functions.
 	* java/awt/Container.java (LightweightDispatcher): Reimplement.
-	* javax/swing/basic/BasicGraphicsUtils.java 
+	* javax/swing/basic/BasicGraphicsUtils.java
 	(getPreferredButtonSize): Start layout from top-left corner.
 
 2004-02-04  Olga Rodimina  <rodimina@redhat.com>
 
-	* java/awt/geom/AffineTransform.java: 
+	* java/awt/geom/AffineTransform.java:
 	Corrected comments on the field definitions for
 	m11 and m10.
 	(shear): Fixed few errors that caused shear
@@ -14563,7 +14567,7 @@
 
 2004-01-30  Mohan Embar  <gnustuff@thisiscool.com>
 
-	* gnu/java/net/PlainSocketImpl.java 
+	* gnu/java/net/PlainSocketImpl.java
 	(inChannelOperation): New field.
 	(isInChannelOperation): New accessor.
 	(setInChannelOperation): New modifier.
@@ -14621,7 +14625,7 @@
 2004-01-29  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/java/awt/peer/ClasspathFontPeer.java (getTransform): Never
-	return null. 
+	return null.
 
 2004-01-29  Kim Ho  <kho@redhat.com>
 
@@ -14910,7 +14914,7 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/VMClassLoader.java: Reworked imports.
-	
+
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/AbstractAction.java: Reformated.
@@ -15129,8 +15133,8 @@
 	through the vbox's children to find layout.
 
 2004-01-22  Graydon Hoare  <graydon@redhat.com>
-	
-	* gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java: 
+
+	* gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java:
 	* gnu/java/awt/peer/gtk/GdkGlyphVector.java:
 	Predicate static initialization on GtkToolkit.useGraphics2D().
 	* java/awt/Component.java (processPaintEvent): Consume event.
@@ -15139,12 +15143,12 @@
 	* javax/swing/JComponent.java (paint): Use double buffer.
 	(listenerList): Enable member.
 	* javax/swing/ToggleButtonModel.java: Remove incorrect constructor.
-	* javax/swing/JToggleButton.java 
+	* javax/swing/JToggleButton.java
 	(JToggleButton): Modify model constructor.
-	* javax/swing/SwingUtilities.java 
+	* javax/swing/SwingUtilities.java
 	(layoutCompoundLabel): Adjust arithmetic.
 	* javax/swing/plaf/basic/BasicButtonUI.java: Reimplement, document.
-	* javax/swing/plaf/basic/BasicGraphicsUtils.java 
+	* javax/swing/plaf/basic/BasicGraphicsUtils.java
 	(getPreferredButtonSize): Include margins in calculation.
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
 	(Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals):
@@ -15321,7 +15325,7 @@
 2004-01-16  Olga Rodimina <rodimina@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java:
-	(doPolygon): set fill rule of polygon to 
+	(doPolygon): set fill rule of polygon to
 	WIND_EVEN_ODD by default.
 
 2004-01-15  Olga Rodimina <rodimina@redhat.com>
@@ -15344,7 +15348,7 @@
 2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in: Add in AC_PREREQ(2.13)
-	* libltdl/configure.ac: Update to AC_PREREQ(2.57).  Delete 
+	* libltdl/configure.ac: Update to AC_PREREQ(2.57).  Delete
 	FIXME comment.
 
 2004-01-14  Nathan Bryant  <nbryant@optonline.net>
@@ -15419,10 +15423,10 @@
 	Update postConfigureEvent signature.
 
 2004-01-13  Fernando Nasser  <fnasser@redhat.com>
- 
+
 	* gnu/java/awt/peer/gtk/TestAWT.java (DialogWindow): Add WindowAdapter
 	to handle Window "Closing" events.
- 
+
 2004-01-13  David Jee  <djee@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkContainerPeer.java
@@ -15941,4 +15945,3 @@
 
 	* java/util/Date.java (parse):  Fix a number of problems.
 	(skipParens):  Remove no-longer-needed method.
-

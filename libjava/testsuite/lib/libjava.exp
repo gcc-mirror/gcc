@@ -277,10 +277,11 @@ proc libjava_find_spec {} {
 proc libjava_find_gij {} {
     global base_dir objdir
 
-    if {! [file exists $objdir/../gij]} {
+    set gijdir [lookfor_file [get_multilibs] libjava];
+    if {! [file exists $gijdir/gij]} {
 	return ""
     }
-    return $objdir/../gij
+    return $gijdir/gij
 }
 
 # Remove a bunch of files.
