@@ -1989,8 +1989,7 @@ covariant_return_p (brettype, drettype)
 {
   tree binfo;
 
-  if (TREE_CODE (brettype) == FUNCTION_DECL
-      || TREE_CODE (brettype) == THUNK_DECL)
+  if (TREE_CODE (brettype) == FUNCTION_DECL)
     {
       brettype = TREE_TYPE (TREE_TYPE (brettype));
       drettype = TREE_TYPE (TREE_TYPE (drettype));

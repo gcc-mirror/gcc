@@ -128,10 +128,6 @@ cplus_expand_expr (exp, target, tmode, modifier)
 			    target, tmode, EXPAND_NORMAL);
       }
 
-    case THUNK_DECL:
-      my_friendly_assert (DECL_RTL (exp) != NULL_RTX, 20000115);
-      return DECL_RTL (exp);
-
     case THROW_EXPR:
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
       expand_internal_throw ();

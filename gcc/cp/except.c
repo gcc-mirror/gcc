@@ -1097,7 +1097,7 @@ nothrow_libfn_p (fn)
 
   if (TREE_PUBLIC (fn)
       && DECL_EXTERNAL (fn)
-      && DECL_LANGUAGE (fn) == lang_c)
+      && DECL_EXTERN_C_P (fn))
     /* OK */;
   else
     /* Can't be a C library function.  */
