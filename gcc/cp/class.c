@@ -1882,15 +1882,8 @@ finish_struct_bits (t)
   /* If this type has a copy constructor or a destructor, force its mode to
      be BLKmode, and force its TREE_ADDRESSABLE bit to be nonzero.  This
      will cause it to be passed by invisible reference and prevent it from
-     being returned in a register.
-
-     Also do this if the class has BLKmode but can still be returned in
-     registers, since function_cannot_inline_p won't let us inline
-     functions returning such a type.  This affects the HP-PA.  */
-  if (! TYPE_HAS_TRIVIAL_INIT_REF (t)
-      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-      || (TYPE_MODE (t) == BLKmode && ! aggregate_value_p (t)
-	  && CLASSTYPE_NON_AGGREGATE (t)))
+     being returned in a register.  */
+  if (! TYPE_HAS_TRIVIAL_INIT_REF (t) || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     {
       tree variants;
       DECL_MODE (TYPE_MAIN_DECL (t)) = BLKmode;
