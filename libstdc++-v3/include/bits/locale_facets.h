@@ -175,63 +175,51 @@ namespace std
 
    protected:
       virtual 
-      ~ctype() { }
+      ~ctype();
 
       virtual bool 
-      do_is(mask __m, char_type __c) const
-      { return false; }
+      do_is(mask __m, char_type __c) const;
 
       virtual const char_type*
-      do_is(const char_type* __lo, const char_type* __hi, mask* __vec) const
-      { return __hi; }
+      do_is(const char_type* __lo, const char_type* __hi, mask* __vec) const;
 
       virtual const char_type*
-      do_scan_is(mask __m, const char_type* __lo, const char_type* __hi) const
-      { return __hi; }
+      do_scan_is(mask __m, const char_type* __lo, const char_type* __hi) const;
 
       virtual const char_type*
       do_scan_not(mask __m, const char_type* __lo,
-		  const char_type* __hi) const
-      { return __hi; }
+		  const char_type* __hi) const;
 
       virtual char_type 
-      do_toupper(char_type __c) const
-      { return __c; }
+      do_toupper(char_type __c) const;
 
       virtual const char_type*
-      do_toupper(char_type* __lo, const char_type* __hi) const
-      { return __hi; }
+      do_toupper(char_type* __lo, const char_type* __hi) const;
 
       virtual char_type 
-      do_tolower(char_type __c) const
-      { return __c; }
+      do_tolower(char_type __c) const;
 
       virtual const char_type*
-      do_tolower(char_type* __lo, const char_type* __hi) const
-      { return __hi; }
-      
+      do_tolower(char_type* __lo, const char_type* __hi) const;
+
       virtual char_type 
-      do_widen(char __c) const
-      { return char_type(); }
+      do_widen(char __c) const;
 
       virtual const char*
-      do_widen(const char* __lo, const char* __hi, char_type* __dest) const
-      { return __hi; }
+      do_widen(const char* __lo, const char* __hi, char_type* __dest) const;
 
       virtual char 
-      do_narrow(char_type, char __dfault) const
-      { return __dfault; }
+      do_narrow(char_type, char __dfault) const;
 
       virtual const char_type*
       do_narrow(const char_type* __lo, const char_type* __hi,
-		char __dfault, char* __dest) const
-      { return __hi; }
+		char __dfault, char* __dest) const;
     };
 
   template<typename _CharT>
     locale::id ctype<_CharT>::id;
 
-  // 22.2.1.3  ctype specializations
+  // 22.2.1.3  ctype<char> specialization.
   template<>
     class ctype<char> : public __ctype_abstract_base<char>
     {
@@ -253,6 +241,10 @@ namespace std
 
       explicit 
       ctype(const mask* __table = 0, bool __del = false, size_t __refs = 0);
+
+      explicit 
+      ctype(__c_locale __cloc, const mask* __table = 0, bool __del = false, 
+	    size_t __refs = 0);
 
       inline bool 
       is(mask __m, char __c) const;
@@ -322,7 +314,7 @@ namespace std
     use_facet<ctype<char> >(const locale& __loc);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
-  // ctype<wchar_t> specialization
+  // 22.2.1.3  ctype<wchar_t> specialization
   template<>
     class ctype<wchar_t> : public __ctype_abstract_base<wchar_t>
     {
@@ -336,6 +328,9 @@ namespace std
 
       explicit 
       ctype(size_t __refs = 0);
+
+      explicit 
+      ctype(__c_locale __cloc, size_t __refs = 0);
 
     protected:
       __wmask_type

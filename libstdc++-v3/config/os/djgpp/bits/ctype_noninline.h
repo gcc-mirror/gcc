@@ -33,15 +33,19 @@
   
 // Information as gleaned from DJGPP <ctype.h>
 
+  ctype<char>::ctype(__c_locale, const mask* __table = 0, bool __del = false, 
+		     size_t __refs = 0) 
+  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  _M_toupper(__dj_ctype_toupper), _M_tolower(__dj_ctype_tolower),
+  _M_ctable(NULL), _M_table(__table == 0 ? __dj_ctype_flags : __table) 
+  { }
+
   ctype<char>::ctype(const mask* __table = 0, bool __del = false, 
-	size_t __refs = 0) 
-    : __ctype_abstract_base<char>(__refs), 
-      _M_del(__table != 0 && __del), 
-      _M_toupper(__dj_ctype_toupper), 
-      _M_tolower(__dj_ctype_tolower),
-      _M_ctable(NULL), 
-      _M_table(__table == 0 ? __dj_ctype_flags : __table) 
-    { }
+		     size_t __refs = 0) 
+  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  _M_toupper(__dj_ctype_toupper), _M_tolower(__dj_ctype_tolower),
+  _M_ctable(NULL), _M_table(__table == 0 ? __dj_ctype_flags : __table) 
+  { }
 
   char
   ctype<char>::do_toupper(char __c) const

@@ -484,8 +484,11 @@ namespace std
 
   // NB: These ctype<wchar_t> methods are not configuration-specific,
   // unlike the ctype<char> bits.
-  ctype<wchar_t>::ctype(size_t __refs) : __ctype_abstract_base<wchar_t>(__refs)
-  { }
+  ctype<wchar_t>::ctype(size_t __refs) 
+  : __ctype_abstract_base<wchar_t>(__refs) { }
+
+  ctype<wchar_t>::ctype(__c_locale /*__cloc*/, size_t __refs) 
+  : __ctype_abstract_base<wchar_t>(__refs) { }
 
   wchar_t
   ctype<wchar_t>::do_toupper(wchar_t __c) const
