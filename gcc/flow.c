@@ -597,7 +597,7 @@ find_basic_blocks_1 (f, nonlocal_labels)
   if (n_basic_blocks > 0)
     {
       int something_marked = 1;
-      int deleted;
+      int deleted = 0;
 
       /* Pass over all blocks, marking each block that is reachable
 	 and has not yet been marked.
@@ -631,7 +631,8 @@ find_basic_blocks_1 (f, nonlocal_labels)
 	    && LABEL_REFS (basic_block_head[i]) == basic_block_head[i])
 	  abort ();
 
-      deleted = delete_unreachable_blocks ();
+      if (! reload_completed)
+	deleted = delete_unreachable_blocks ();
 
       /* There are pathological cases where one function calling hundreds of
 	 nested inline functions can generate lots and lots of unreachable
