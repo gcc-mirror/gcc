@@ -1,6 +1,6 @@
 /*
   jartool.c - main functions for fastjar utility
-  Copyright (C) 2002, 2004  Free Software Foundation
+  Copyright (C) 2002, 2004, 2005  Free Software Foundation
   Copyright (C) 1999, 2000, 2001  Bryan Burns
   
   This program is free software; you can redistribute it and/or
@@ -335,7 +335,8 @@ static const struct option options[] =
   { NULL, no_argument, NULL, 0 }
 };
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
 
   char *mfile = NULL;
   
@@ -602,9 +603,7 @@ static int args_current_g;
 static char **args_g;
 
 static void 
-init_args(args, current)
-     char **args;
-     int current;
+init_args(char **args, int current)
 {
   if(!read_names_from_stdin)
     {
@@ -614,7 +613,7 @@ init_args(args, current)
 }
 
 static char *
-get_next_arg ()
+get_next_arg (void)
 {
   static int reached_end = 0;
 
@@ -674,7 +673,8 @@ get_next_arg ()
     }
 }
 
-void init_headers(){
+void init_headers(void)
+{
   /* packing file header */
   /* magic number */
   file_header[0] = 0x50;
@@ -725,7 +725,8 @@ void init_headers(){
   
 }
 
-void add_entry(struct zipentry *ze){
+void add_entry(struct zipentry *ze)
+{
 
   if(ziplist == NULL){
     ziplist = ze;
@@ -906,7 +907,8 @@ int read_entries (int fd)
   return 0;
 }
 
-int make_manifest(int jfd, const char *mf_name, int updating){
+int make_manifest(int jfd, const char *mf_name, int updating)
+{
   time_t current_time;
   int nlen;   /* length of file name */
   int mod_time; /* file modification time */
@@ -2212,7 +2214,7 @@ void usage(const char *filename){
   exit (1);
 }
 
-void version ()
+void version (void)
 {
   printf("jar (%s) %s\n\n", PACKAGE, VERSION);
   printf("Copyright 1999, 2000, 2001  Bryan Burns\n");
@@ -2264,8 +2266,7 @@ Example 2: use an existing manifest file 'mymanifest' and archive all the\n\
 }
 
 static char *
-jt_strdup(s)
-     char *s;
+jt_strdup(char *s)
 {
   char *result = (char*)malloc(strlen(s) + 1);
   if (result == (char*)0)
