@@ -27,6 +27,8 @@
 	* stor-layout.c (set_alignment): Remove.
 	* tree.h: Remove the corresponding prototype.
 
+	* tree-ssa-pre.c (has_abnormal_preds): Make it static.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.
