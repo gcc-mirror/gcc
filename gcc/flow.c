@@ -4000,6 +4000,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	     || GET_CODE (reg) == ZERO_EXTRACT
 	     || GET_CODE (reg) == SIGN_EXTRACT
 	     || GET_CODE (reg) == STRICT_LOW_PART);
+      if (GET_CODE (reg) == MEM)
+	break;
       not_dead = REGNO_REG_SET_P (pbi->reg_live, REGNO (reg));
       /* FALLTHRU */
 

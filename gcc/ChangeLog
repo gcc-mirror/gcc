@@ -1,3 +1,7 @@
+Thu Apr 27 17:33:05 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (epilogue_done): Pass whole insn to record_insns.
+
 Thu Apr 27 16:55:28 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (CSE_ADDRESS_COST): Remove.
