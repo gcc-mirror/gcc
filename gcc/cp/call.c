@@ -1341,11 +1341,6 @@ implicit_conversion (to, from, expr, flags)
       || expr == error_mark_node)
     return NULL_TREE;
 
-  /* Make sure both the FROM and TO types are complete so that
-     user-defined conversions are available.  */
-  complete_type (from);
-  complete_type (to);
-
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, flags);
   else
