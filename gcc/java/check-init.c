@@ -543,7 +543,6 @@ check_init (exp, before)
       {
 	tree try_clause = TREE_OPERAND (exp, 0);
 	tree clause = TREE_OPERAND (exp, 1);
-        tree finally = TREE_OPERAND (exp, 2);
 	words save = ALLOC_WORDS (num_current_words);
 	words tmp = ALLOC_WORDS (num_current_words);
 	struct alternatives alt;
@@ -559,16 +558,21 @@ check_init (exp, before)
 	    check_init (catch_clause, tmp);
 	    done_alternative (tmp, &alt);
 	  }
-	if (finally != NULL_TREE)
-	  {
-	    check_init (finally, save);
-	    UNION (alt.combined, alt.combined, save);
-	  }
 	FREE_WORDS (tmp);
 	FREE_WORDS (save);
 	END_ALTERNATIVES (before, alt);
       }
     return;
+
+    case TRY_FINALLY_EXPR:
+      {
+	words tmp = ALLOC_WORDS (num_current_words);
+	COPY (tmp, before);
+	check_init (TREE_OPERAND (exp, 0), tmp);
+	check_init (TREE_OPERAND (exp, 1), before);
+	FREE_WORDS (tmp);
+      }
+      return;
 
     case RETURN_EXPR:
     case THROW_EXPR:
