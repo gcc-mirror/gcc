@@ -1,3 +1,32 @@
+Mon Oct  1 06:43:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (keep_stack_depressed): Don't use delete_insn.
+
+	* expr.h (set_mem_alias_set): Move decl to here.
+	* rtl.h (mem_attrs): New typedef and struct.
+	(union rtunion_def): Add field for mem_attrs.
+	(X0MEMATTR, MEM_ATTRS): New macros.
+	(MEM_ALIAS_SET): Use MEM_ATTRS.
+	(MEM_DECL, MEM_OFFSET, MEM_SIZE, MEM_ALIGN): New macros.
+	(MEM_COPY_ATTRIBUTES): Copy MEM_ATTRS.
+	(set_mem_alias_set): Delete decl from here.
+	
+	* alias.c (set_mem_alias_set): Delete from here.
+	* emit-rtl.c (mem_attrs_htab): New variable.
+	(rtx_htab_mark, rtx_htab_mark_1): Deleted.
+	(mem_attrs_htab_hash, mem_attrs_htab_eq): New functions.
+	(mem_attrs_mark, get_mem_attrs): Likewise.
+	(gen_rtx_MEM): Clear MEM_ATTRS.
+	(set_mem_attributes): Move to here.
+	(set_mem_alias_set): Likewise, and call get_mem_attrs.
+	(init_emit_once): const_int_htab now deletable htab.
+	Initialize mem_attrs_htab.
+	* explow.c (set_mem_attributes): Delete from here.
+	* function.c (put_var_into_stack): Clear MEM_ATTRS.
+	(gen_mem_addressof): Likewise; rework to use set_mem_attributes.
+	* ggc-common.c (ggc_mark_rtx_children, case MEM): New case.
+	* reload1.c (reload): Rework changing REG to MEM.
+
 2001-09-30  H.J. Lu <hjl@gnu.org>
 
 	* acconfig.h (PREFIX_INCLUDE_DIR): New variable.

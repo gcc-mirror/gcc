@@ -298,6 +298,9 @@ ggc_mark_rtx_children (r)
 	 have any right poking our noses in?  */
       switch (code)
 	{
+	case MEM:
+	  ggc_mark (MEM_ATTRS (r));
+	  break;
 	case JUMP_INSN:
 	  ggc_mark_rtx (JUMP_LABEL (r));
 	  break;

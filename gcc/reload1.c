@@ -1130,16 +1130,6 @@ reload (first, global)
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
       rtx addr = 0;
-      int in_struct = 0;
-      int is_scalar = 0;
-      int is_readonly = 0;
-
-      if (reg_equiv_memory_loc[i])
-	{
-	  in_struct = MEM_IN_STRUCT_P (reg_equiv_memory_loc[i]);
-	  is_scalar = MEM_SCALAR_P (reg_equiv_memory_loc[i]);
-	  is_readonly = RTX_UNCHANGING_P (reg_equiv_memory_loc[i]);
-	}
 
       if (reg_equiv_mem[i])
 	addr = XEXP (reg_equiv_mem[i], 0);
@@ -1152,15 +1142,18 @@ reload (first, global)
 	  if (reg_renumber[i] < 0)
 	    {
 	      rtx reg = regno_reg_rtx[i];
+
 	      PUT_CODE (reg, MEM);
 	      XEXP (reg, 0) = addr;
 	      REG_USERVAR_P (reg) = 0;
-	      RTX_UNCHANGING_P (reg) = is_readonly;
-	      MEM_IN_STRUCT_P (reg) = in_struct;
-	      MEM_SCALAR_P (reg) = is_scalar;
-	      /* We have no alias information about this newly created
-		 MEM.  */
-	      set_mem_alias_set (reg, 0);
+	      if (reg_equiv_memory_loc[i])
+		MEM_COPY_ATTRIBUTES (reg, reg_equiv_memory_loc[i]);
+	      else
+		{
+		  RTX_UNCHANGING_P (reg) = MEM_IN_STRUCT_P (reg)
+		    = MEM_SCALAR_P (reg) = 0;
+		  MEM_ATTRS (reg) = 0;
+		}
 	    }
 	  else if (reg_equiv_mem[i])
 	    XEXP (reg_equiv_mem[i], 0) = addr;

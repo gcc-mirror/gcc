@@ -602,6 +602,9 @@ extern rtx memory_address PARAMS ((enum machine_mode, rtx));
 /* Like `memory_address' but pretent `flag_force_addr' is 0.  */
 extern rtx memory_address_noforce PARAMS ((enum machine_mode, rtx));
 
+/* Set the alias set of MEM to SET.  */
+extern void set_mem_alias_set PARAMS ((rtx, HOST_WIDE_INT));
+
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR.
    (VOIDmode means don't change the mode.

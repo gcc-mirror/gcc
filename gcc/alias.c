@@ -276,24 +276,6 @@ alias_sets_conflict_p (set1, set2)
   return 0;
 }
 
-/* Set the alias set of MEM to SET.  */
-
-void
-set_mem_alias_set (mem, set)
-     rtx mem;
-     HOST_WIDE_INT set;
-{
-  /* We would like to do this test but can't yet since when converting a
-     REG to a MEM, the alias set field is undefined.  */
-#if 0
-  /* If the new and old alias sets don't conflict, something is wrong.  */
-  if (!alias_sets_conflict_p (set, MEM_ALIAS_SET (mem)))
-    abort ();
-#endif
-
-  MEM_ALIAS_SET (mem) = set;
-}
-
 /* Return 1 if TYPE is a RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE and has
    has any readonly fields.  If any of the fields have types that
    contain readonly fields, return true as well.  */

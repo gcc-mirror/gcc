@@ -144,6 +144,9 @@ rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
 static htab_t const_int_htab;
 
+/* A hash table storing memory attribute structures.  */
+static htab_t mem_attrs_htab;
+
 /* start_sequence and gen_sequence can make a lot of rtx expressions which are
    shortly thrown away.  We use two mechanisms to prevent this waste:
 
@@ -182,13 +185,16 @@ static void mark_label_nuses		PARAMS ((rtx));
 static hashval_t const_int_htab_hash    PARAMS ((const void *));
 static int const_int_htab_eq            PARAMS ((const void *,
 						 const void *));
-static int rtx_htab_mark_1              PARAMS ((void **, void *));
-static void rtx_htab_mark               PARAMS ((void *));
+static hashval_t mem_attrs_htab_hash    PARAMS ((const void *));
+static int mem_attrs_htab_eq            PARAMS ((const void *,
+						 const void *));
+static void mem_attrs_mark		PARAMS ((const void *));
+static mem_attrs *get_mem_attrs		PARAMS ((HOST_WIDE_INT, tree, rtx,
+						 rtx, unsigned int));
 
 /* Probability of the conditional branch currently proceeded by try_split.
    Set to -1 otherwise.  */
 int split_branch_probability = -1;
-
 
 /* Returns a hash code for X (which is a really a CONST_INT).  */
 
@@ -211,26 +217,83 @@ const_int_htab_eq (x, y)
   return (INTVAL ((const struct rtx_def *) x) == *((const HOST_WIDE_INT *) y));
 }
 
-/* Mark the hash-table element X (which is really a pointer to an
-   rtx).  */
+/* Returns a hash code for X (which is a really a mem_attrs *).  */
 
-static int
-rtx_htab_mark_1 (x, data)
-     void **x;
-     void *data ATTRIBUTE_UNUSED;
+static hashval_t
+mem_attrs_htab_hash (x)
+     const void *x;
 {
-  ggc_mark_rtx (*x);
-  return 1;
+  mem_attrs *p = (mem_attrs *) x;
+
+  return (p->alias ^ (p->align * 1000)
+	  ^ ((p->offset ? INTVAL (p->offset) : 0) * 50000)
+	  ^ ((p->size ? INTVAL (p->size) : 0) * 2500000)
+	  ^ (long) p->decl);
 }
 
-/* Mark all the elements of HTAB (which is really an htab_t full of
-   rtxs).  */
+/* Returns non-zero if the value represented by X (which is really a
+   mem_attrs *) is the same as that given by Y (which is also really a
+   mem_attrs *).  */
+
+static int
+mem_attrs_htab_eq (x, y)
+     const void *x;
+     const void *y;
+{
+  mem_attrs *p = (mem_attrs *) x;
+  mem_attrs *q = (mem_attrs *) y;
+
+  return (p->alias == q->alias && p->decl == q->decl && p->offset == q->offset
+	  && p->size == q->size && p->align == q->align);
+}
+
+/* This routine is called when we determine that we need a mem_attrs entry.
+   It marks the associated decl and RTL as being used, if present.  */
 
 static void
-rtx_htab_mark (htab)
-     void *htab;
+mem_attrs_mark (x)
+     const void *x;
 {
-  htab_traverse (*((htab_t *) htab), rtx_htab_mark_1, NULL);
+  mem_attrs *p = (mem_attrs *) x;
+
+  if (p->decl)
+    ggc_mark_tree (p->decl);
+
+  if (p->offset)
+    ggc_mark_rtx (p->offset);
+
+  if (p->size)
+    ggc_mark_rtx (p->size);
+}
+
+/* Allocate a new mem_attrs structure and insert it into the hash table if
+   one identical to it is not already in the table.  */
+
+static mem_attrs *
+get_mem_attrs (alias, decl, offset, size, align)
+     HOST_WIDE_INT alias;
+     tree decl;
+     rtx offset;
+     rtx size;
+     unsigned int align;
+{
+  mem_attrs attrs;
+  void **slot;
+
+  attrs.alias = alias;
+  attrs.decl = decl;
+  attrs.offset = offset;
+  attrs.size = size;
+  attrs.align = align;
+
+  slot = htab_find_slot (mem_attrs_htab, &attrs, INSERT);
+  if (*slot == 0)
+    {
+      *slot = ggc_alloc (sizeof (mem_attrs));
+      memcpy (*slot, &attrs, sizeof (mem_attrs));
+    }
+
+  return *slot;
 }
 
 /* Generate a new REG rtx.  Make sure ORIGINAL_REGNO is set properly, and
@@ -350,7 +413,7 @@ gen_rtx_MEM (mode, addr)
 
   /* This field is not cleared by the mere allocation of the rtx, so
      we clear it here.  */
-  MEM_ALIAS_SET (rt) = 0;
+  MEM_ATTRS (rt) = 0;
 
   return rt;
 }
@@ -377,9 +440,9 @@ gen_rtx_SUBREG (mode, reg, offset)
   return gen_rtx_fmt_ei (SUBREG, mode, reg, offset);
 }
 
-/* Generate a SUBREG representing the least-significant part
- * of REG if MODE is smaller than mode of REG, otherwise
- * paradoxical SUBREG.  */
+/* Generate a SUBREG representing the least-significant part of REG if MODE
+   is smaller than mode of REG, otherwise paradoxical SUBREG.  */
+
 rtx
 gen_lowpart_SUBREG (mode, reg)
      enum machine_mode mode;
@@ -556,7 +619,6 @@ gen_rtvec_v (n, argp)
 
   return rt_val;
 }
-
 
 /* Generate a REG rtx for a new pseudo register of mode MODE.
    This pseudo is assigned the next sequential register number.  */
@@ -1567,6 +1629,103 @@ reverse_comparison (insn)
       else
 	SET_SRC (XVECEXP (body, 0, 0)) = new;
     }
+}
+
+
+/* Given REF, a MEM, and T, either the type of X or the expression
+   corresponding to REF, set the memory attributes.  OBJECTP is nonzero
+   if we are making a new object of this type.  */
+
+void
+set_mem_attributes (ref, t, objectp)
+     rtx ref;
+     tree t;
+     int objectp;
+{
+  tree type;
+
+  /* It can happen that type_for_mode was given a mode for which there
+     is no language-level type.  In which case it returns NULL, which
+     we can see here.  */
+  if (t == NULL_TREE)
+    return;
+
+  type = TYPE_P (t) ? t : TREE_TYPE (t);
+
+  /* Get the alias set from the expression or type (perhaps using a
+     front-end routine) and then copy bits from the type.  */
+
+  /* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY (type)
+     here, because, in C and C++, the fact that a location is accessed
+     through a const expression does not mean that the value there can
+     never change.  */
+
+  /* If we have already set DECL_RTL = ref, get_alias_set will get the
+     wrong answer, as it assumes that DECL_RTL already has the right alias
+     info.  Callers should not set DECL_RTL until after the call to
+     set_mem_attributes.  */
+  if (DECL_P (t) && ref == DECL_RTL_IF_SET (t))
+    abort ();
+
+  set_mem_alias_set (ref, get_alias_set (t));
+
+  MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
+  MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
+
+  /* If we are making an object of this type, we know that it is a scalar if
+     the type is not an aggregate.  */
+  if (objectp && ! AGGREGATE_TYPE_P (type))
+    MEM_SCALAR_P (ref) = 1;
+
+  /* If T is a type, this is all we can do.  Otherwise, we may be able
+     to deduce some more information about the expression.  */
+  if (TYPE_P (t))
+    return;
+
+  maybe_set_unchanging (ref, t);
+  if (TREE_THIS_VOLATILE (t))
+    MEM_VOLATILE_P (ref) = 1;
+
+  /* Now see if we can say more about whether it's an aggregate or
+     scalar.  If we already know it's an aggregate, don't bother.  */
+  if (MEM_IN_STRUCT_P (ref))
+    return;
+
+  /* Now remove any NOPs: they don't change what the underlying object is.
+     Likewise for SAVE_EXPR.  */
+  while (TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR
+	 || TREE_CODE (t) == NON_LVALUE_EXPR || TREE_CODE (t) == SAVE_EXPR)
+    t = TREE_OPERAND (t, 0);
+
+  /* Since we already know the type isn't an aggregate, if this is a decl,
+     it must be a scalar.  Or if it is a reference into an aggregate,
+     this is part of an aggregate.   Otherwise we don't know.  */
+  if (DECL_P (t))
+    MEM_SCALAR_P (ref) = 1;
+  else if (TREE_CODE (t) == COMPONENT_REF || TREE_CODE (t) == ARRAY_REF
+	   || TREE_CODE (t) == ARRAY_RANGE_REF
+	   || TREE_CODE (t) == BIT_FIELD_REF)
+    MEM_IN_STRUCT_P (ref) = 1;
+}
+
+/* Set the alias set of MEM to SET.  */
+
+void
+set_mem_alias_set (mem, set)
+     rtx mem;
+     HOST_WIDE_INT set;
+{
+  /* It would be nice to enable this check, but we can't quite yet.  */
+#if 0
+#ifdef ENABLE_CHECKING	
+  /* If the new and old alias sets don't conflict, something is wrong.  */
+  if (!alias_sets_conflict_p (set, MEM_ALIAS_SET (mem)))
+    abort ();
+#endif
+#endif
+
+  MEM_ATTRS (mem) = get_mem_attrs (set, MEM_DECL (mem), MEM_OFFSET (mem),
+				   MEM_SIZE (mem), MEM_ALIGN (mem));
 }
 
 /* Return a memory reference like MEMREF, but with its mode changed
@@ -4281,11 +4440,14 @@ init_emit_once (line_numbers)
   enum machine_mode mode;
   enum machine_mode double_mode;
 
-  /* Initialize the CONST_INT hash table.  */
+  /* Initialize the CONST_INT and memory attribute hash tables.  */
   const_int_htab = htab_create (37, const_int_htab_hash,
 				const_int_htab_eq, NULL);
-  ggc_add_root (&const_int_htab, 1, sizeof (const_int_htab),
-		rtx_htab_mark);
+  ggc_add_deletable_htab (const_int_htab, 0, 0);
+
+  mem_attrs_htab = htab_create (37, mem_attrs_htab_hash,
+				mem_attrs_htab_eq, NULL);
+  ggc_add_deletable_htab (mem_attrs_htab, 0, mem_attrs_mark);
 
   no_line_numbers = ! line_numbers;
 

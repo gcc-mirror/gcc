@@ -1406,6 +1406,7 @@ put_var_into_stack (decl)
 
       /* Change the CONCAT into a combined MEM for both parts.  */
       PUT_CODE (reg, MEM);
+      MEM_ATTRS (reg) = 0;
 
       /* set_mem_attributes uses DECL_RTL to avoid re-generating of
          already computed alias sets.  Here we want to re-generate.  */
@@ -1476,6 +1477,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
   PUT_CODE (reg, MEM);
   PUT_MODE (reg, decl_mode);
   XEXP (reg, 0) = XEXP (new, 0);
+  MEM_ATTRS (reg) = 0;
   /* `volatil' bit means one thing for MEMs, another entirely for REGs.  */
   MEM_VOLATILE_P (reg) = volatile_p;
 
@@ -1490,6 +1492,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
 			   AGGREGATE_TYPE_P (type) || MEM_IN_STRUCT_P (new));
       set_mem_alias_set (reg, get_alias_set (type));
     }
+
   if (used_p)
     schedule_fixup_var_refs (function, reg, type, promoted_mode, ht);
 }
@@ -2840,29 +2843,35 @@ gen_mem_addressof (reg, decl)
   RTX_UNCHANGING_P (XEXP (r, 0)) = RTX_UNCHANGING_P (reg);
 
   PUT_CODE (reg, MEM);
+  MEM_ATTRS (reg) = 0;
   XEXP (reg, 0) = r;
+
   if (decl)
     {
       tree type = TREE_TYPE (decl);
       enum machine_mode decl_mode
 	= (TREE_CODE (decl) == SAVE_EXPR ? TYPE_MODE (TREE_TYPE (decl))
 	   : DECL_MODE (decl));
+      rtx decl_rtl = decl ? DECL_RTL_IF_SET (decl) : 0;
 
       PUT_MODE (reg, decl_mode);
-      MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
-      MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (type));
+
+      /* Clear DECL_RTL momentarily so functions below will work
+	 properly, then set it again.  */
+      if (decl_rtl == reg)
+	SET_DECL_RTL (decl, 0);
+
+      set_mem_attributes (reg, decl, 1);
       set_mem_alias_set (reg, set);
+
+      if (decl_rtl == reg)
+	SET_DECL_RTL (decl, reg);
 
       if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
 	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), 0);
     }
   else
-    {
-      /* We have no alias information about this newly created MEM.  */
-      set_mem_alias_set (reg, 0);
-
-      fixup_var_refs (reg, GET_MODE (reg), 0, 0);
-    }
+    fixup_var_refs (reg, GET_MODE (reg), 0, 0);
 
   return reg;
 }
@@ -7141,8 +7150,11 @@ keep_stack_depressed (seq)
 	  else
 	    sp_modified_unknown = 1;
 
-	  /* Don't allow the SP modification to happen.  */
-	  delete_insn (insn);
+	  /* Don't allow the SP modification to happen.  We don't call
+	     delete_insn here since INSN isn't in any chain.  */
+	  PUT_CODE (insn, NOTE);
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (insn) = 0;
 	}
       else if (reg_referenced_p (stack_pointer_rtx, PATTERN (insn)))
 	{

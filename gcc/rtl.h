@@ -31,8 +31,8 @@ struct function;
 #undef ABS /* Likewise.  */
 #undef PC /* Likewise.  */
 
-/* Value used by some passes to "recognize" noop moves as valid instructions.
- */
+/* Value used by some passes to "recognize" noop moves as valid
+ instructions. */
 #define NOOP_MOVE_INSN_CODE	INT_MAX
 
 /* Register Transfer Language EXPRESSIONS CODES */
@@ -71,15 +71,32 @@ typedef struct
   unsigned min_align: 8;
   /* Flags: */
   unsigned base_after_vec: 1; /* BASE is after the ADDR_DIFF_VEC.  */
-  unsigned min_after_vec: 1;  /* minimum address target label is after the ADDR_DIFF_VEC.  */
-  unsigned max_after_vec: 1;  /* maximum address target label is after the ADDR_DIFF_VEC.  */
-  unsigned min_after_base: 1; /* minimum address target label is after BASE.  */
-  unsigned max_after_base: 1; /* maximum address target label is after BASE.  */
+  unsigned min_after_vec: 1;  /* minimum address target label is
+				 after the ADDR_DIFF_VEC.  */
+  unsigned max_after_vec: 1;  /* maximum address target label is
+				 after the ADDR_DIFF_VEC.  */
+  unsigned min_after_base: 1; /* minimum address target label is
+				 after BASE.  */
+  unsigned max_after_base: 1; /* maximum address target label is
+				 after BASE.  */
   /* Set by the actual branch shortening process - ONLY WHEN OPTIMIZING - : */
   unsigned offset_unsigned: 1; /* offsets have to be treated as unsigned.  */
   unsigned : 2;
   unsigned scale : 8;
 } addr_diff_vec_flags;
+
+/* Structure used to describe the attributes of a MEM.  These are hashed
+   so MEMs that the same attributes share a data structure.  This means
+   they cannot be modified in place.  If any element is nonzero, it means
+   the value of the corresponding attribute is unknown.  */
+typedef struct
+{
+  HOST_WIDE_INT alias;		/* Memory alias set. */
+  tree decl;			/* decl corresponding to MEM. */
+  rtx offset;			/* Offset from start of DECL, as CONST_INT. */
+  rtx size;			/* Size in bytes, as a CONST_INT.  */
+  unsigned int align;		/* Alignment of MEM in bytes.  */
+} mem_attrs;
 
 /* Common union for an element of an rtx.  */
 
@@ -97,6 +114,7 @@ typedef union rtunion_def
   struct bitmap_head_def *rtbit;
   tree rttree;
   struct basic_block_def *bb;
+  mem_attrs *rtmem;
 } rtunion;
 
 /* RTL expression ("rtx").  */
@@ -340,6 +358,7 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 #define X0BBDEF(RTX, N)	   (RTL_CHECK1(RTX, N, '0').bb)
 #define X0ADVFLAGS(RTX, N) (RTL_CHECK1(RTX, N, '0').rt_addr_diff_vec_flags)
 #define X0CSELIB(RTX, N)   (RTL_CHECK1(RTX, N, '0').rt_cselib)
+#define X0MEMATTR(RTX, N)  (RTL_CHECK1(RTX, N, '0').rtmem)
 
 #define XCWINT(RTX, N, C)     (RTL_CHECKC1(RTX, N, C).rtwint)
 #define XCINT(RTX, N, C)      (RTL_CHECKC1(RTX, N, C).rtint)
@@ -862,6 +881,10 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
     }						\
 } while (0)
 
+/* The memory attribute block.  We provide access macros for each value
+   in the block and provide defaults if none specified.  */
+#define MEM_ATTRS(RTX) X0MEMATTR (RTX, 1)
+
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
    set, and may alias anything.  Otherwise, the MEM can only alias
    MEMs in the same alias set.  This value is set in a
@@ -871,15 +894,30 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
    some front-ends, these numbers may correspond in some way to types,
    or other language-level entities, but they need not, and the
    back-end makes no such assumptions.  */
-#define MEM_ALIAS_SET(RTX) XCWINT(RTX, 1, MEM)
+#define MEM_ALIAS_SET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->alias)
+
+/* For a MEM rtx, the decl it is known to refer to, if it is known to
+   refer to part of a DECL.  */
+#define MEM_DECL(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->decl)
+
+/* For a MEM rtx, the offset from the start of MEM_DECL, if known, as a
+   RTX that is always a CONST_INT.  */
+#define MEM_OFFSET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->offset)
+
+/* For a MEM rtx, the size in bytes of the MEM, if known, as an RTX that
+   is always a CONST_INT.  */
+#define MEM_SIZE(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->size)
+
+/* For a MEM rtx, the alignment in bytes.  */
+#define MEM_ALIGN(RTX) (MEM_ATTRS (RTX) == 0 ? 1 : MEM_ATTRS (RTX)->align)
 
 /* Copy the attributes that apply to memory locations from RHS to LHS.  */
 #define MEM_COPY_ATTRIBUTES(LHS, RHS)			\
   (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),		\
    MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),	\
    MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),		\
-   MEM_ALIAS_SET (LHS) = MEM_ALIAS_SET (RHS),		\
-   RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS))
+   RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS),	\
+   MEM_ATTRS (LHS) = MEM_ATTRS (RHS))
 
 /* For a LABEL_REF, 1 means that this reference is to a label outside the
    loop containing the reference.  */
@@ -2010,7 +2048,6 @@ extern void init_alias_once		PARAMS ((void));
 extern void init_alias_analysis		PARAMS ((void));
 extern void end_alias_analysis		PARAMS ((void));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
-extern void set_mem_alias_set		PARAMS ((rtx, HOST_WIDE_INT));
 
 /* In sibcall.c */
 typedef enum {
