@@ -154,7 +154,7 @@ void *hash_value_for_key (cache_ptr cache, const void *key);
    except for those likely to be 0 due to alignment.)  */
 
 static inline unsigned int 
-hash_int (cache_ptr cache, const void *key)
+hash_ptr (cache_ptr cache, const void *key)
 {
   return ((unsigned int)key / sizeof (void *)) & cache->mask;
 }
@@ -178,11 +178,11 @@ hash_string (cache_ptr cache, const void *key)
 }
 
 
-/* Compare two integers.  */
+/* Compare two pointers for equality.  */
 static inline int 
-compare_ints (const void *k1, const void *k2)
+compare_ptrs (const void *k1, const void *k2)
 {
-  return !((int)k1 - (int)k2);
+  return !(k1 - k2);
 }
 
 
