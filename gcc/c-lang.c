@@ -53,10 +53,23 @@ lang_identify ()
   return "c";
 }
 
+void
+print_lang_statistics ()
+{
+}
+
 /* Used by c-lex.c, but only for objc.  */
+
 tree
 lookup_interface (arg)
      tree arg;
+{
+  return 0;
+}
+
+tree
+is_class_name (arg)
+    tree arg;
 {
   return 0;
 }
@@ -68,8 +81,16 @@ maybe_objc_check_decl (decl)
 }
 
 int
-maybe_objc_comptypes (lhs, rhs)
+maybe_objc_comptypes (lhs, rhs, reflexive)
      tree lhs, rhs;
+     int reflexive;
+{
+  return 2;
+}
+
+tree
+maybe_objc_method_name (decl)
+    tree decl;
 {
   return 0;
 }
@@ -86,9 +107,13 @@ recognize_objc_keyword ()
   return 0;
 }
 
-void
-print_lang_statistics ()
+tree
+build_objc_string (len, str)
+    int len;
+    char *str;
 {
+  abort ();
+  return NULL_TREE;
 }
 
 void
