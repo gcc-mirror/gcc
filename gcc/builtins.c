@@ -2040,7 +2040,7 @@ expand_builtin_strcpy (exp, target, mode)
     return 0;
 
   len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
-  if (len == 0)
+  if (len == 0 || TREE_SIDE_EFFECTS (len))
     return 0;
 
   len = size_binop (PLUS_EXPR, len, ssize_int (1));
