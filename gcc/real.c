@@ -4371,7 +4371,7 @@ etoasc (x, string, ndigs)
 	  if (y[k] != 0)
 	    goto tnzro;		/* denormalized number */
 	}
-      goto isone;		/* legal all zeros */
+      goto isone;		/* valid all zeros */
     }
  tnzro:
 
