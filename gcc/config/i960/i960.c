@@ -626,13 +626,15 @@ i960_output_ldconst (dst, src)
   else if (mode == SFmode)
     {
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-      union { long l; float f; } flt;
+      REAL_VALUE_TYPE d;
+      long value;
 
-      flt.f = (float) *((double *) &CONST_DOUBLE_LOW (src));
+      REAL_VALUE_FROM_CONST_DOUBLE (d, src);
+      REAL_VALUE_TO_TARGET_SINGLE (d, value);
 
       output_asm_insn ("# ldconst	%1,%0",operands);
       operands[0] = gen_rtx (REG, SImode, REGNO (dst));
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, flt.l);
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, value);
       output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 		      operands);
 #else
