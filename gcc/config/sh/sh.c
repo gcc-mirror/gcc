@@ -1694,6 +1694,7 @@ dump_table (scan)
 	case HImode:
 	  break;
 	case SImode:
+	case SFmode:
 	  if (need_align)
 	    {
 	      need_align = 0;
@@ -1703,6 +1704,7 @@ dump_table (scan)
 	  scan = emit_label_after (p->label, scan);
 	  scan = emit_insn_after (gen_consttable_4 (p->value), scan);
 	  break;
+	case DFmode:
 	case DImode:
 	  if (need_align)
 	    {
@@ -1746,21 +1748,26 @@ static int
 broken_move (insn)
      rtx insn;
 {
-  if (GET_CODE (insn) == INSN
-      && GET_CODE (PATTERN (insn)) == SET
-      /* We can load any 8 bit value if we don't care what the high
-	 order bits end up as.  */
-      && GET_MODE (SET_DEST (PATTERN (insn))) != QImode
-      && CONSTANT_P (SET_SRC (PATTERN (insn)))
-      && ! (GET_CODE (SET_SRC (PATTERN (insn))) == CONST_DOUBLE
-	    && (fp_zero_operand (SET_SRC (PATTERN (insn)))
-		|| fp_one_operand (SET_SRC (PATTERN (insn))))
-	    && GET_CODE (SET_DEST (PATTERN (insn))) == REG
-	    && REGNO (SET_DEST (PATTERN (insn))) >= FIRST_FP_REG
-	    && REGNO (SET_DEST (PATTERN (insn))) <= LAST_FP_REG)
-      && (GET_CODE (SET_SRC (PATTERN (insn))) != CONST_INT
-	  || ! CONST_OK_FOR_I (INTVAL (SET_SRC (PATTERN (insn))))))
-    return 1;
+  if (GET_CODE (insn) == INSN)
+    {
+      rtx pat = PATTERN (insn);
+      if (GET_CODE (pat) == PARALLEL)
+	pat = XVECEXP (pat, 0, 0);
+      if (GET_CODE (pat) == SET
+	  /* We can load any 8 bit value if we don't care what the high
+	     order bits end up as.  */
+	  && GET_MODE (SET_DEST (pat)) != QImode
+	  && CONSTANT_P (SET_SRC (pat))
+	  && ! (GET_CODE (SET_SRC (pat)) == CONST_DOUBLE
+		&& (fp_zero_operand (SET_SRC (pat))
+		    || fp_one_operand (SET_SRC (pat)))
+		&& GET_CODE (SET_DEST (pat)) == REG
+		&& REGNO (SET_DEST (pat)) >= FIRST_FP_REG
+		&& REGNO (SET_DEST (pat)) <= LAST_FP_REG)
+	  && (GET_CODE (SET_SRC (pat)) != CONST_INT
+	      || ! CONST_OK_FOR_I (INTVAL (SET_SRC (pat)))))
+	return 1;
+    }
 
   return 0;
 }
@@ -2306,13 +2313,18 @@ machine_dependent_reorg (first)
 	    {
 	      if (broken_move (scan))
 		{
-		  rtx pat = PATTERN (scan);
-		  rtx src = SET_SRC (pat);
-		  rtx dst = SET_DEST (pat);
-		  enum machine_mode mode = GET_MODE (dst);
+		  rtx *patp = &PATTERN (scan), pat = *patp;
+		  rtx src, dst;
 		  rtx lab;
 		  rtx newinsn;
 		  rtx newsrc;
+		  enum machine_mode mode;
+
+		  if (GET_CODE (pat) == PARALLEL)
+		    patp = &XVECEXP (pat, 0, 0), pat = *patp;
+		  src = SET_SRC (pat);
+		  dst = SET_DEST (pat);
+		  mode = GET_MODE (dst);
 
 		  if (mode == SImode && hi_const (src))
 		    {
@@ -2331,22 +2343,8 @@ machine_dependent_reorg (first)
 		  newsrc = gen_rtx (MEM, mode,
 				    gen_rtx (LABEL_REF, VOIDmode, lab));
 		  RTX_UNCHANGING_P (newsrc) = 1;
-		  newinsn = emit_insn_after (gen_rtx (SET, VOIDmode,
-						      dst, newsrc), scan);
-		  REG_NOTES (newinsn) = REG_NOTES (scan);
-		  REG_NOTES (scan) = NULL_RTX;
-		  /* If not optimizing, then delete_insn doesn't remove the
-		     insn from the chain, and hence is not useful.  We
-		     convert the instruction to a NOTE in that case.  */
-		  if (optimize)
-		    delete_insn (scan);
-		  else
-		    {
-		      PUT_CODE (scan, NOTE);
-		      NOTE_LINE_NUMBER (scan) = NOTE_INSN_DELETED;
-		      NOTE_SOURCE_FILE (insn) = 0;
-		    }
-		  scan = newinsn;
+		  *patp = gen_rtx (SET, VOIDmode, dst, newsrc);
+		  INSN_CODE (scan) = -1;
 		}
 	    }
 	  dump_table (barrier);
