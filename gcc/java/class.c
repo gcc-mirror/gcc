@@ -2316,7 +2316,7 @@ emit_register_classes (void)
       input_location = DECL_SOURCE_LOCATION (init_decl);
       expand_function_end ();
       poplevel (1, 0, 1);
-      rest_of_compilation (init_decl);
+      rest_of_compilation ();
       current_function_decl = NULL_TREE;
 
       if (targetm.have_ctors_dtors)

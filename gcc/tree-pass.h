@@ -75,6 +75,10 @@ struct tree_opt_pass
 #define PROP_pta		(1 << 5)
 #define PROP_ssa		(1 << 6)
 #define PROP_no_crit_edges      (1 << 7)
+#define PROP_rtl		(1 << 8)
+
+#define PROP_trees \
+  (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh)
 
 /* To-do flags.  */
 #define TODO_dump_func		(1 << 0)	/* pass doesn't dump itself */
@@ -125,6 +129,8 @@ extern struct tree_opt_pass pass_dse;
 extern struct tree_opt_pass pass_nrv;
 extern struct tree_opt_pass pass_remove_useless_vars;
 extern struct tree_opt_pass pass_rename_ssa_copies;
+extern struct tree_opt_pass pass_expand;
+extern struct tree_opt_pass pass_rest_of_compilation;
 
 
 #endif /* GCC_TREE_PASS_H */
