@@ -221,7 +221,6 @@ case $machine in
  | m88k-*-sysv4*    \
  | mips-sni-sysv4   \
  | mn10200-*-*      \
- | ns32k-*-netbsd*  \
  | ns32k-*-openbsd* \
  | romp-*-openbsd*  \
  )
