@@ -445,6 +445,7 @@ java/awt/geom/PathIterator.java	\
 java/awt/geom/Point2D.java \
 java/awt/geom/Rectangle2D.java \
 java/awt/geom/RectangularShape.java \
+java/awt/geom/RoundRectangle2D.java \
 java/awt/image/BufferedImage.java \
 java/awt/image/ColorModel.java \
 java/awt/image/ComponentColorModel.java	\
@@ -1385,6 +1386,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/geom/PathIterator.P .deps/java/awt/geom/Point2D.P \
 .deps/java/awt/geom/Rectangle2D.P \
 .deps/java/awt/geom/RectangularShape.P \
+.deps/java/awt/geom/RoundRectangle2D.P \
 .deps/java/awt/image/BufferedImage.P .deps/java/awt/image/ColorModel.P \
 .deps/java/awt/image/ComponentColorModel.P \
 .deps/java/awt/image/ComponentSampleModel.P \
