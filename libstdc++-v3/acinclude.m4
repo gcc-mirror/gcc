@@ -1623,7 +1623,7 @@ gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([
 gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
 gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include/g++
 glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
-glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}
+glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
 changequote([,])dnl
 ],version_specific_libs=no)
 AC_MSG_RESULT($version_specific_libs)
