@@ -10,13 +10,6 @@
    This function is required for alloca.c support on those systems.  */
 #undef CRAY_STACKSEG_END
 
-/* Define to the type of elements in the array set by `getgroups'.
-   Usually this is either `int' or `gid_t'.  */
-#undef GETGROUPS_T
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef gid_t
-
 /* Define if you have alloca, as a function or macro.  */
 #undef HAVE_ALLOCA
 
@@ -70,9 +63,6 @@
 
 /* Define if you can safely include both <sys/time.h> and <time.h>.  */
 #undef TIME_WITH_SYS_TIME
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef uid_t
 
 /* Define vfork as fork if vfork does not work.  */
 #undef vfork
