@@ -268,7 +268,7 @@ extern tree build_array_ref (tree, tree);
 extern tree build_external_ref (tree, int);
 extern tree parser_build_binary_op (enum tree_code, tree, tree);
 extern int c_tree_expr_nonnegative_p (tree);
-extern void readonly_warning (tree, const char *);
+extern void readonly_error (tree, const char *);
 extern tree build_conditional_expr (tree, tree, tree);
 extern tree build_compound_expr (tree);
 extern tree c_cast_expr (tree, tree);

@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "cgraph.h"
 #include "intl.h"
-
+#include "diagnostic.h"
 
 /* This should be eventually be generalized to other languages, but
    this would require a shared function-as-trees infrastructure.  */
@@ -1615,6 +1615,12 @@ optimize_inline_calls (tree fn)
 {
   inline_data id;
   tree prev_fn;
+
+  /* There is no point in performing inlining if errors have already
+     occurred -- and we might crash if we try to inline invalid
+     code.  */
+  if (errorcount || sorrycount)
+    return;
 
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));

@@ -1,5 +1,11 @@
 2004-02-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR middle-end/13448
+	* gcc.dg/inline-5.c: New test.
+	* gcc.dg/always-inline.c: Split out tests into ...
+	* gcc.dg/always-inline2.c: ... this and ...
+	* gcc.dg/always-inline3.c: ... this.
+
 	PR debug/12103
 	* g++.dg/debug/crash1.C: New test.
 

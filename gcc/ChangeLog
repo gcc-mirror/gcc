@@ -1,3 +1,16 @@
+2004-02-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR middle-end/13448
+	* c-tree.h (readonly_warning): Rename to ...
+	(readonly_error): ... this.
+	* c-typeck.c (build_unary_op): Adjust accordingly.
+	(readonly_warning): Rename to ...
+	(readonly_error): ... this and issue errors, not warnings.
+	(build_modify_expr): Call readonly_error, not readonly_warning.
+	(c_expand_asm_operands): Likewise.
+	* tree-inline.c (optimize_inline_calls): Do not inline functions
+	after errors have occurred.
+
 2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/cppopts.texi: Fix a typo.
