@@ -1,3 +1,9 @@
+Tue Jun 16 23:33:24 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_before_p): RELOAD_FOR_OUTADDR_ADDRESS
+	is earlier than RELOAD_FOR_OUTPUT_ADDRESS; RELOAD_FOR_INPADDR_ADDRESS
+	is earlier than RELOAD_FOR_INPUT_ADDRESS.
+
 Tue Jun 16 13:15:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* libgcc1-test.c (memcpy): Define.
