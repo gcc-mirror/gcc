@@ -1,3 +1,8 @@
+2003-03-02  Ashif Harji  <asharji@uwaterloo.ca>
+
+	* lang-specs.h (default_compilers): Add -no-integrated-cpp flag to
+	  invoke an external cpp during compilation.
+
 2003-03-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (duplicate_decls): Convert use of warning_with_decl() to

@@ -911,11 +911,11 @@ static const struct compiler default_compilers[] =
       %{!E:%{!M:%{!MM:\
           %{traditional|ftraditional:\
 %eGNU C no longer supports -traditional without -E}\
-	  %{save-temps|traditional-cpp:%(trad_capable_cpp) \
-		%(cpp_options) %b.i \n\
-		    cc1 -fpreprocessed %b.i %(cc1_options)}\
-	  %{!save-temps:%{!traditional-cpp:\
-		cc1 %(cpp_unique_options) %(cc1_options)}}\
+	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
+		%(cpp_options) %{save-temps:%b.i} %{!save-temps:%g.i} \n\
+		    cc1 -fpreprocessed %{save-temps:%b.i} %{!save-temps:%g.i} %(cc1_options)}\
+	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
+		cc1 %(cpp_unique_options) %(cc1_options)}}}\
         %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {"-",
    "%{!E:%e-E required when input is from standard input}\
@@ -1038,6 +1038,7 @@ static const struct option_map option_map[] =
    {"--library-directory", "-L", "a"},
    {"--machine", "-m", "aj"},
    {"--machine-", "-m", "*j"},
+   {"--no-integrated-cpp", "-no-integrated-cpp", 0},
    {"--no-line-commands", "-P", 0},
    {"--no-precompiled-includes", "-noprecomp", 0},
    {"--no-standard-includes", "-nostdinc", 0},

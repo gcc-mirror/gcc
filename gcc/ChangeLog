@@ -1,3 +1,11 @@
+2003-03-02  Ashif Harji  <asharji@uwaterloo.ca>
+
+	* gcc.c (default_compilers): Add -no-integrated-cpp flag to invoke
+	  an external cpp during compilation.
+	(option_map): Likewise.
+	* objc/lang-specs.h (default_compilers): Similarly.
+	* doc/invoke.texi: Document -no-integrated-cpp flag.
+
 2003-03-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (zero_extendqisi2): Change to an
