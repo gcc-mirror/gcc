@@ -1,5 +1,5 @@
 /* gnu.java.math.MPN
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -482,7 +482,7 @@ public class MPN
   }
 
   /** Compare x[0:size-1] with y[0:size-1], treating them as unsigned integers.
-   * @result -1, 0, or 1 depending on if x<y, x==y, or x>y.
+   * @result -1, 0, or 1 depending on if x&lt;y, x==y, or x&gt;y.
    * This is basically the same as gmp's mpn_cmp function.
    */
   public static int cmp (int[] x, int[] y, int size)
@@ -502,22 +502,24 @@ public class MPN
     return 0;
   }
 
-  /** Compare x[0:xlen-1] with y[0:ylen-1], treating them as unsigned integers.
-   * @result -1, 0, or 1 depending on if x<y, x==y, or x>y.
+  /**
+   * Compare x[0:xlen-1] with y[0:ylen-1], treating them as unsigned integers.
+   * 
+   * @return -1, 0, or 1 depending on if x&lt;y, x==y, or x&gt;y.
    */
   public static int cmp (int[] x, int xlen, int[] y, int ylen)
   {
     return xlen > ylen ? 1 : xlen < ylen ? -1 : cmp (x, y, xlen);
   }
 
-  /* Shift x[x_start:x_start+len-1] count bits to the "right"
+  /**
+   * Shift x[x_start:x_start+len-1] count bits to the "right"
    * (i.e. divide by 2**count).
    * Store the len least significant words of the result at dest.
    * The bits shifted out to the right are returned.
    * OK if dest==x.
-   * Assumes: 0 < count < 32
+   * Assumes: 0 &lt; count &lt; 32
    */
-
   public static int rshift (int[] dest, int[] x, int x_start,
 			    int len, int count)
   {
@@ -535,11 +537,12 @@ public class MPN
     return retval;
   }
 
-  /* Shift x[x_start:x_start+len-1] count bits to the "right"
+  /**
+   * Shift x[x_start:x_start+len-1] count bits to the "right"
    * (i.e. divide by 2**count).
    * Store the len least significant words of the result at dest.
    * OK if dest==x.
-   * Assumes: 0 <= count < 32
+   * Assumes: 0 &lt;= count &lt; 32
    * Same as rshift, but handles count==0 (and has no return value).
    */
   public static void rshift0 (int[] dest, int[] x, int x_start,
@@ -556,7 +559,7 @@ public class MPN
   * @param x a two's-complement "bignum"
   * @param len the number of significant words in x
   * @param count the shift count
-  * @return (long)(x[0..len-1] >> count).
+  * @return (long)(x[0..len-1] &gt;&gt; count).
   */
   public static long rshift_long (int[] x, int len, int count)
   {
@@ -579,7 +582,7 @@ public class MPN
   /* Shift x[0:len-1] left by count bits, and store the len least
    * significant words of the result in dest[d_offset:d_offset+len-1].
    * Return the bits shifted out from the most significant digit.
-   * Assumes 0 < count < 32.
+   * Assumes 0 &lt; count &lt; 32.
    * OK if dest==x.
    */
 
@@ -601,7 +604,7 @@ public class MPN
     return retval;
   }
 
-  /** Return least i such that word&(1<<i). Assumes word!=0. */
+  /** Return least i such that word &amp; (1&lt;&lt;i). Assumes word!=0. */
 
   public static int findLowestBit (int word)
   {
@@ -621,7 +624,7 @@ public class MPN
     return i;
   }
 
-  /** Return least i such that words & (1<<i). Assumes there is such an i. */
+  /** Return least i such that words &amp; (1&lt;&lt;i). Assumes there is such an i. */
 
   public static int findLowestBit (int[] words)
   {

@@ -50,7 +50,7 @@ import java.util.NoSuchElementException;
  * and while the angle can be any value, the path iterator only traverses the
  * first 360 degrees. Storage is up to the subclasses.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4, but still missing functionality
  */
@@ -527,7 +527,7 @@ public abstract class Arc2D extends RectangularShape
    * This class is used to iterate over an arc. Since ellipses are a subclass
    * of arcs, this is used by Ellipse2D as well.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   static final class ArcIterator implements PathIterator
   {
@@ -766,7 +766,7 @@ public abstract class Arc2D extends RectangularShape
   /**
    * This class implements an arc in double precision.
    *
-   * @author Eric Blake <ebb9@email.byu.edu
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.2
    */
   public static class Double extends Arc2D
@@ -985,7 +985,7 @@ public abstract class Arc2D extends RectangularShape
   /**
    * This class implements an arc in float precision.
    *
-   * @author Eric Blake <ebb9@email.byu.edu
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.2
    */
   public static class Float extends Arc2D
