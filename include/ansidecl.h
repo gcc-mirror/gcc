@@ -103,10 +103,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define	PTRCONST	void *CONST
 #define	LONG_DOUBLE	long double
 
+#ifndef IN_GCC
 #define	AND		,
 #define	NOARGS		void
 #define	VOLATILE	volatile
 #define	SIGNED		signed
+#endif /* ! IN_GCC */
 
 #define PARAMS(paramlist)		paramlist
 #define ANSI_PROTOTYPES			1
@@ -115,12 +117,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define VA_START(va_list,var)		va_start(va_list,var)
 
 /* These are obsolete.  Do not use.  */
+#ifndef IN_GCC
 #define CONST				const
 #define DOTS				, ...
 #define PROTO(type, name, arglist)	type name arglist
 #define EXFUN(name, proto)		name proto
 #define DEFUN(name, arglist, args)	name(args)
 #define DEFUN_VOID(name)		name(void)
+#endif /* ! IN_GCC */
 
 #else	/* Not ANSI C.  */
 
@@ -128,13 +132,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define	PTRCONST	PTR
 #define	LONG_DOUBLE	double
 
+#ifndef IN_GCC
 #define	AND		;
 #define	NOARGS
+#define	VOLATILE
+#define	SIGNED
+#endif /* !IN_GCC */
+
 #ifndef const /* some systems define it in header files for non-ansi mode */
 #define	const
 #endif
-#define	VOLATILE
-#define	SIGNED
 
 #define PARAMS(paramlist)		()
 
@@ -142,12 +149,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define VA_START(va_list,var)		va_start(va_list)
 
 /* These are obsolete.  Do not use.  */
+#ifndef IN_GCC
 #define CONST
 #define DOTS
 #define PROTO(type, name, arglist)	type name ()
 #define EXFUN(name, proto)		name()
 #define DEFUN(name, arglist, args)	name arglist args;
 #define DEFUN_VOID(name)		name()
+#endif /* ! IN_GCC */
 
 #endif	/* ANSI C.  */
 

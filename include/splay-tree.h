@@ -33,11 +33,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#ifdef IN_GCC
-#define PARAMS(ARGS) PROTO(ARGS)
-#else /* ! IN_GCC */
+#ifndef IN_GCC
 #include <ansidecl.h>
-#endif /* IN_GCC */
+#endif /* ! IN_GCC */
 
 /* Use typedefs for the key and data types to facilitate changing
    these types, if necessary.  These types should be sufficiently wide

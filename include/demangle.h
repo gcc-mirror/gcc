@@ -20,11 +20,9 @@
 #if !defined (DEMANGLE_H)
 #define DEMANGLE_H
 
-#ifdef IN_GCC
-#define PARAMS(ARGS) PROTO(ARGS)
-#else /* ! IN_GCC */
+#ifndef IN_GCC
 #include <ansidecl.h>
-#endif /* IN_GCC */
+#endif /* ! IN_GCC */
 
 /* Options passed to cplus_demangle (in 2nd parameter). */
 
