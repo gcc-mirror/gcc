@@ -578,8 +578,8 @@ do_add (r, a, b, subtract_p)
   switch (CLASS2 (a->class, b->class))
     {
     case CLASS2 (rvc_zero, rvc_zero):
-      /* +-0 +/- +-0 = +0.  */
-      get_zero (r, 0);
+      /* -0 + -0 = -0, -0 - +0 = -0; all other cases yield +0.  */
+      get_zero (r, sign & !subtract_p);
       return;
 
     case CLASS2 (rvc_zero, rvc_normal):
@@ -838,8 +838,6 @@ do_divide (r, a, b)
     {
     case CLASS2 (rvc_zero, rvc_zero):
       /* 0 / 0 = NaN.  */
-    case CLASS2 (rvc_inf, rvc_zero):
-      /* Inf / 0 = NaN.  */
     case CLASS2 (rvc_inf, rvc_inf):
       /* Inf / Inf = NaN.  */
       get_canonical_qnan (r, sign);
@@ -856,6 +854,8 @@ do_divide (r, a, b)
 
     case CLASS2 (rvc_normal, rvc_zero):
       /* R / 0 = Inf.  */
+    case CLASS2 (rvc_inf, rvc_zero):
+      /* Inf / 0 = Inf.  */
       get_inf (r, sign);
       return;
 
