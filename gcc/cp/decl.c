@@ -10525,7 +10525,9 @@ grokdeclarator (tree declarator,
 
       if (type == error_mark_node)
 	{
-	  if (TREE_CODE (declarator) == SCOPE_REF)
+	  if (declarator == error_mark_node)
+	    return error_mark_node;
+	  else if (TREE_CODE (declarator) == SCOPE_REF)
 	    declarator = TREE_OPERAND (declarator, 1);
 	  else
 	    declarator = TREE_OPERAND (declarator, 0);
