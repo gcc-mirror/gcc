@@ -1,3 +1,7 @@
+2000-04-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* timevar.c (init_timevar): DeANSIfy function definition.
+
 2000-04-27  Alex Samuel  <samuel@codesourcery.com>
 
 	* Makefile.in (timevar.o): Depend on flags.h.
