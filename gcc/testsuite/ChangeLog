@@ -1,3 +1,8 @@
+2004-01-13  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* ada/acats/run_all.sh: Add more verbose output in acats.log
+	when compiling tests.
+
 2004-01-12  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 13656

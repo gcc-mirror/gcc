@@ -10,7 +10,7 @@
 # gnatflags="-gnatN"
 
 gccflags=""
-gnatflags="-q -gnatws"
+gnatflags="-gnatws"
 
 target_run () {
 $*
@@ -52,6 +52,7 @@ target_gnatchop () {
 }
 
 target_gnatmake () {
+  echo gnatmake --GCC="$GCC" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC="$GCC"
   gnatmake --GCC="$GCC" $gnatflags $gccflags $* -largs $EXTERNAL_OBJECTS --GCC="$GCC"
 }
 
@@ -145,8 +146,8 @@ fi
 
 target_gnatchop *.adt >> $dir/acats.log 2>&1
 
-target_gnatmake -c -gnato -gnatE *.ads > /dev/null 2>&1
-target_gnatmake -c -gnato -gnatE *.adb
+target_gnatmake -c -gnato -gnatE *.ads >> $dir/acats.log 2>&1
+target_gnatmake -c -gnato -gnatE *.adb >> $dir/acats.log 2>&1
 
 display " done."
 display ""
