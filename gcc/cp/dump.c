@@ -596,7 +596,11 @@ dequeue_and_dump (di)
       dump_int (di, "algn", DECL_ALIGN (t));
 
       if (TREE_CODE (t) == FIELD_DECL && dump_children_p)
-	dump_child ("bpos", DECL_FIELD_BITPOS (t));
+	{
+	  if (DECL_C_BIT_FIELD (t))
+	    dump_string (di, "bitfield");
+	  dump_child ("bpos", DECL_FIELD_BITPOS (t));
+	}
       break;
 
     case FUNCTION_DECL:

@@ -566,6 +566,12 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* Global state.  */
 
+struct stmt_tree {
+  tree x_last_stmt;
+  tree x_last_expr_type;
+  int stmts_are_full_exprs_p; 
+};
+
 struct saved_scope {
   tree old_bindings;
   tree old_namespace;
@@ -580,13 +586,14 @@ struct saved_scope {
   tree template_parms;
   tree x_previous_class_type;
   tree x_previous_class_values;
+  tree x_saved_tree;
 
   HOST_WIDE_INT x_processing_template_decl;
   int x_processing_specialization;
   int x_processing_explicit_instantiation;
   int need_pop_function_context;
 
-  char *firstobj;
+  struct stmt_tree x_stmt_tree;
 
   struct binding_level *class_bindings;
   struct binding_level *bindings;
@@ -640,10 +647,6 @@ struct saved_scope {
 
 #define previous_class_values scope_chain->x_previous_class_values
 
-/* The low-water mark on the class-cache obstack.  */
-
-#define class_cache_firstobj scope_chain->firstobj
-
 extern struct saved_scope *scope_chain;
 
 /* Global state pertinent to the current function.  */
@@ -657,8 +660,6 @@ struct language_function
   tree x_member_init_list;
   tree x_current_class_ptr;
   tree x_current_class_ref;
-  tree x_last_tree;
-  tree x_last_expr_type;
   tree x_eh_spec_try_block;
   tree x_scope_stmt_stack;
   tree x_in_charge_parm;
@@ -676,9 +677,10 @@ struct language_function
   int static_labelno;
   int in_function_try_handler;
   int x_expanding_p;
-  int stmts_are_full_exprs_p; 
   int name_declared;
   int vtbls_set_up_p;
+
+  struct stmt_tree x_stmt_tree;
 
   struct named_label_list *x_named_label_uses;
   struct binding_level *bindings;
@@ -722,16 +724,23 @@ struct language_function
 #define current_class_ref \
   (current_function ? cp_function_chain->x_current_class_ref : NULL_TREE)
 
-/* When building a statement-tree, this is the last node added to the
-   tree.  */
+/* Information about the current statement tree.  */
 
-#define last_tree cp_function_chain->x_last_tree
+#define current_stmt_tree			\
+  (current_function 				\
+   ? &cp_function_chain->x_stmt_tree		\
+   : &scope_chain->x_stmt_tree)
+
+/* When building a statement-tree, this is the last statement added to
+   the tree.  */
+
+#define last_tree current_stmt_tree->x_last_stmt
 
 /* The type of the last expression-statement we have seen.  This is
    required because the type of a statement-expression is the type of
    the last expression statement.  */
 
-#define last_expr_type cp_function_chain->x_last_expr_type
+#define last_expr_type current_stmt_tree->x_last_expr_type
 
 /* The TRY_BLOCK for the exception-specifiers for the current
    function, if any.  */
@@ -796,8 +805,7 @@ struct language_function
 /* Non-zero if we are in the semantic analysis phase for the current
    function.  */
 
-#define doing_semantic_analysis_p() \
-  (!expanding_p || !current_function->x_whole_function_mode_p)
+#define doing_semantic_analysis_p() (!expanding_p)
 
 /* Non-zero if we should treat statements as full expressions.  In
    particular, this variable is no-zero if at the end of a statement
@@ -811,7 +819,8 @@ struct language_function
    within the statement expression should not result in cleanups being
    run until the entire enclosing statement is complete.  */
 
-#define stmts_are_full_exprs_p cp_function_chain->stmts_are_full_exprs_p
+#define stmts_are_full_exprs_p \
+  current_stmt_tree->stmts_are_full_exprs_p
 
 #define in_function_try_handler cp_function_chain->in_function_try_handler
 
@@ -3719,8 +3728,6 @@ extern void do_type_instantiation		PROTO((tree, tree));
 extern tree instantiate_decl			PROTO((tree));
 extern tree get_bindings			PROTO((tree, tree, tree));
 extern void add_tree				PROTO((tree));
-extern void begin_tree                          PROTO((void));
-extern void end_tree                            PROTO((void));
 extern void add_maybe_template			PROTO((tree, tree));
 extern void pop_tinst_level			PROTO((void));
 extern int more_specialized_class		PROTO((tree, tree));
@@ -3879,15 +3886,14 @@ extern void finish_decl_cleanup                 PROTO((tree, tree));
 extern void finish_named_return_value           PROTO((tree, tree));
 extern tree expand_stmt                         PROTO((tree));
 extern void expand_body                         PROTO((tree));
-extern void begin_stmt_tree                     PROTO((tree));
-extern void finish_stmt_tree                    PROTO((tree));
+extern void begin_stmt_tree                     PROTO((tree *));
+extern void finish_stmt_tree                    PROTO((tree *));
 extern void prep_stmt                           PROTO((tree));
 extern void do_pushlevel                        PROTO((void));
 extern tree do_poplevel                         PROTO((void));
 /* Non-zero if we are presently building a statement tree, rather
    than expanding each statement as we encounter it.  */
-#define building_stmt_tree()					  \
-  (current_function && (processing_template_decl || !expanding_p))
+#define building_stmt_tree() (last_tree != NULL_TREE)
 
 /* in spew.c */
 extern void init_spew				PROTO((void));

@@ -3314,11 +3314,9 @@ simple_stmt:
 	| GOTO identifier ';'
                 { finish_goto_stmt ($2); }
 	| label_colon stmt
-		{ finish_stmt (); }
 	| label_colon '}'
 		{ error ("label must be followed by statement");
-		  yyungetc ('}', 0);
-		  finish_stmt (); }
+		  yyungetc ('}', 0); }
 	| ';'
 		{ finish_stmt (); }
 	| try_block

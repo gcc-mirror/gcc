@@ -233,14 +233,6 @@ cplus_expand_expr (exp, target, tmode, modifier)
       expand_internal_throw ();
       return NULL;
 
-    case VEC_INIT_EXPR:
-      return expand_expr
-	(build_vec_init
-	 (NULL_TREE, TREE_OPERAND (exp, 0),
-	  build_binary_op (MINUS_EXPR, TREE_OPERAND (exp, 2),
-			   integer_one_node),
-	  TREE_OPERAND (exp, 1), 0), target, tmode, modifier);
-
     case STMT_EXPR:
       {
 	tree rtl_expr = begin_stmt_expr ();
