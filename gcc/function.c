@@ -6378,17 +6378,19 @@ expand_function_start (subr, parms_have_cleanups)
 	= hard_function_value (TREE_TYPE (DECL_RESULT (subr)),
 			       subr, 1);
 
-      /* Since we know the return value is not an aggregate, we should
-	 have a REG here.  */
-      if (!REG_P (hard_reg))
-	abort ();
+      /* Structures that are returned in registers are not aggregate_value_p,
+	 so we may see a PARALLEL.  Don't play pseudo games with this.  */
+      if (! REG_P (hard_reg))
+	SET_DECL_RTL (DECL_RESULT (subr), hard_reg);
+      else
+	{
+	  /* Create the pseudo.  */
+	  SET_DECL_RTL (DECL_RESULT (subr), gen_reg_rtx (GET_MODE (hard_reg)));
 
-      /* Create the pseudo.  */
-      SET_DECL_RTL (DECL_RESULT (subr), 
-		    gen_reg_rtx (GET_MODE (hard_reg)));
-      /* Needed because we may need to move this to memory
-	 in case it's a named return value whose address is taken.  */
-      DECL_REGISTER (DECL_RESULT (subr)) = 1;
+	  /* Needed because we may need to move this to memory
+	     in case it's a named return value whose address is taken.  */
+	  DECL_REGISTER (DECL_RESULT (subr)) = 1;
+	}
     }
 
   /* Initialize rtx for parameters and local variables.
