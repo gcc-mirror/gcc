@@ -2497,7 +2497,7 @@ for machine in $build $host $target; do
         sparc-hal-solaris2*)
                 xm_file=sparc/xm-sol2.h
                 tm_file="sparc/sol2.h sparc/hal.h"
-                tmake_file=sparc/t-halos
+                tmake_file="sparc/t-halos sparc/t-sol2"
                 xmake_file=sparc/x-sysv4
                 extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
                 fixincludes=fixinc.svr4
