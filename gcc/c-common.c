@@ -25,7 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "flags.h"
 #include "obstack.h"
-#include <ctype.h>
 
 #ifndef WCHAR_TYPE_SIZE
 #ifdef INT_TYPE_SIZE
@@ -55,6 +54,7 @@ static void init_attributes		PROTO((void));
 static void record_function_format	PROTO((tree, tree, enum format_type,
 					       int, int));
 static void record_international_format	PROTO((tree, tree, int));
+static void tfaff			PROTO((void));
 
 /* Keep a stack of if statements.  The value recorded is the number of
    compound statements seen up to the if keyword.  */
@@ -1127,7 +1127,11 @@ record_international_format (name, assembler_name, format_num)
   info->format_num = format_num;
 }
 
-static char	tfaff[] = "too few arguments for format";
+static void
+tfaff ()
+{
+  warning ("too few arguments for format");
+}
 
 /* Check the argument list of a call to printf, scanf, etc.
    NAME is the function identifier.
@@ -1292,7 +1296,7 @@ check_format_info (info, params)
 	  suppressed = *format_chars == '*';
 	  if (suppressed)
 	    ++format_chars;
-	  while (isdigit (*format_chars))
+	  while (is_C_digit (*format_chars))
 	    ++format_chars;
 	}
       else if (info->format_type == strftime_format_type)
@@ -1315,7 +1319,7 @@ check_format_info (info, params)
 		  flag_chars[i] = 0;
 		}
 	    }
-	  while (isdigit ((unsigned char) *format_chars))
+	  while (is_C_digit ((unsigned char) *format_chars))
 	    {
 	      wide = TRUE;
               ++format_chars;
@@ -1394,7 +1398,7 @@ check_format_info (info, params)
 	      ++format_chars;
 	      if (params == 0)
 		{
-		  warning (tfaff);
+		  tfaff ();
 		  return;
 		}
 	      if (info->first_arg_num != 0)
@@ -1416,7 +1420,7 @@ check_format_info (info, params)
 	    }
 	  else
 	    {
-	      while (isdigit (*format_chars))
+	      while (is_C_digit (*format_chars))
 		{
 		  wide = TRUE;
 		  ++format_chars;
@@ -1426,7 +1430,7 @@ check_format_info (info, params)
 	    {
 	      precise = TRUE;
 	      ++format_chars;
-	      if (*format_chars != '*' && !isdigit (*format_chars))
+	      if (*format_chars != '*' && !is_C_digit (*format_chars))
 		warning ("`.' not followed by `*' or digit in format");
 	      /* "...a...precision...may be indicated by an asterisk.
 		 In this case, an int argument supplies the...precision."  */
@@ -1437,7 +1441,7 @@ check_format_info (info, params)
 		      ++format_chars;
 		      if (params == 0)
 		        {
-			  warning (tfaff);
+			  tfaff ();
 			  return;
 			}
 		      cur_param = TREE_VALUE (params);
@@ -1451,7 +1455,7 @@ check_format_info (info, params)
 		}
 	      else
 		{
-		  while (isdigit (*format_chars))
+		  while (is_C_digit (*format_chars))
 		    ++format_chars;
 		}
 	    }
@@ -1620,7 +1624,7 @@ check_format_info (info, params)
 	continue;
       if (params == 0)
 	{
-	  warning (tfaff);
+	  tfaff ();
 	  return;
 	}
       cur_param = TREE_VALUE (params);
@@ -1646,9 +1650,9 @@ check_format_info (info, params)
 	      continue;
 	    }
 	  if (TREE_CODE (cur_type) != ERROR_MARK)
-	    warning ("format argument is not a %s (arg %d)",
-		     ((fci->pointer_count + aflag == 1)
-		      ? "pointer" : "pointer to a pointer"),
+	    warning ((fci->pointer_count + aflag == 1
+		      ? "format argument is not a pointer (arg %d)"
+		      : "format argument is not a pointer to a pointer (arg %d)"),
 		     arg_num);
 	  break;
 	}
