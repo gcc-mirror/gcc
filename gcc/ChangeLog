@@ -1,3 +1,7 @@
+Thu Sep 24 22:17:54 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (sqrtsf2): Fix mode of sqrt.
+
 Thu Sep 24 21:48:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): Also try inheritance when
