@@ -47,7 +47,7 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 
   argp = stack;
 
-  if (ecif->cif->rtype->type == FFI_TYPE_STRUCT)
+  if (ecif->cif->flags == FFI_TYPE_STRUCT)
     {
       *(void **) argp = ecif->rvalue;
       argp += 4;
@@ -121,7 +121,9 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   switch (cif->rtype->type)
     {
     case FFI_TYPE_VOID:
+#ifndef X86_WIN32
     case FFI_TYPE_STRUCT:
+#endif
     case FFI_TYPE_SINT64:
     case FFI_TYPE_FLOAT:
     case FFI_TYPE_DOUBLE:
@@ -132,6 +134,31 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     case FFI_TYPE_UINT64:
       cif->flags = FFI_TYPE_SINT64;
       break;
+
+#ifdef X86_WIN32
+    case FFI_TYPE_STRUCT:
+      if (cif->rtype->size == 1)
+        {
+          cif->flags = FFI_TYPE_SINT8; /* same as char size */
+        }
+      else if (cif->rtype->size == 2)
+        {
+          cif->flags = FFI_TYPE_SINT16; /* same as short size */
+        }
+      else if (cif->rtype->size == 4)
+        {
+          cif->flags = FFI_TYPE_INT; /* same as int type */
+        }
+      else if (cif->rtype->size == 8)
+        {
+          cif->flags = FFI_TYPE_SINT64; /* same as int64 type */
+        }
+      else
+        {
+          cif->flags = FFI_TYPE_STRUCT;
+        }
+      break;
+#endif
 
     default:
       cif->flags = FFI_TYPE_INT;
@@ -177,7 +204,7 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
   /* value address then we need to make one		        */
 
   if ((rvalue == NULL) && 
-      (cif->rtype->type == FFI_TYPE_STRUCT))
+      (cif->flags == FFI_TYPE_STRUCT))
     {
       /*@-sysunrecog@*/
       ecif.rvalue = alloca(cif->rtype->size);
@@ -274,6 +301,16 @@ ffi_closure_SYSV (closure)
 	   : : "r"(resp)
 	   : "eax", "edx");
     }
+#ifdef X86_WIN32
+  else if (rtype == FFI_TYPE_SINT8) /* 1-byte struct  */
+    {
+      asm ("movsbl (%0),%%eax" : : "r" (resp) : "eax");
+    }
+  else if (rtype == FFI_TYPE_SINT16) /* 2-bytes struct */
+    {
+      asm ("movswl (%0),%%eax" : : "r" (resp) : "eax");
+    }
+#endif
 }
 
 /*@-exportheader@*/
@@ -289,7 +326,7 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 
   argp = stack;
 
-  if ( cif->rtype->type == FFI_TYPE_STRUCT ) {
+  if ( cif->flags == FFI_TYPE_STRUCT ) {
     *rvalue = *(void **) argp;
     argp += 4;
   }
