@@ -124,7 +124,7 @@ static void modify_all_direct_vtables PROTO((tree, int, tree, tree,
 static void modify_all_indirect_vtables PROTO((tree, int, int, tree,
 					       tree, tree));
 static void build_class_init_list PROTO((tree));
-static int finish_base_struct PROTO((tree, struct base_info *, tree));
+static int finish_base_struct PROTO((tree, struct base_info *));
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;
@@ -1526,17 +1526,14 @@ struct base_info
    offsets include that offset in theirs.
 
    Returns the index of the first base class to have virtual functions,
-   or -1 if no such base class.
-
-   Note that at this point TYPE_BINFO (t) != t_binfo.  */
+   or -1 if no such base class.  */
 
 static int
-finish_base_struct (t, b, t_binfo)
+finish_base_struct (t, b)
      tree t;
      struct base_info *b;
-     tree t_binfo;
 {
-  tree binfos = BINFO_BASETYPES (t_binfo);
+  tree binfos = TYPE_BINFO_BASETYPES (t);
   int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
   int first_vfn_base_index = -1;
   bzero ((char *) b, sizeof (struct base_info));
@@ -1545,6 +1542,13 @@ finish_base_struct (t, b, t_binfo)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree basetype = BINFO_TYPE (base_binfo);
+
+      /* Effective C++ rule 14.  We only need to check TYPE_VIRTUAL_P
+	 here because the case of virtual functions but non-virtual
+	 dtor is handled in finish_struct_1.  */
+      if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
+	  && TYPE_HAS_DESTRUCTOR (basetype))
+	cp_warning ("base class `%#T' has a non-virtual destructor", basetype);
 
       /* If the type of basetype is incomplete, then
 	 we already complained about that fact
@@ -1592,36 +1596,6 @@ finish_base_struct (t, b, t_binfo)
       TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
       TYPE_OVERLOADS_ARROW (t) |= TYPE_OVERLOADS_ARROW (basetype);
 
-      if (! TREE_VIA_VIRTUAL (base_binfo)
-	  && BINFO_BASETYPES (base_binfo))
-	{
-	  tree base_binfos = BINFO_BASETYPES (base_binfo);
-	  tree chain = NULL_TREE;
-	  int j;
-
-	  /* Now unshare the structure beneath BASE_BINFO.  */
-	  for (j = TREE_VEC_LENGTH (base_binfos)-1;
-	       j >= 0; j--)
-	    {
-	      tree base_base_binfo = TREE_VEC_ELT (base_binfos, j);
-	      if (! TREE_VIA_VIRTUAL (base_base_binfo))
-		TREE_VEC_ELT (base_binfos, j)
-		  = make_binfo (BINFO_OFFSET (base_base_binfo),
-				base_base_binfo,
-				BINFO_VTABLE (base_base_binfo),
-				BINFO_VIRTUALS (base_base_binfo),
-				chain);
-	      chain = TREE_VEC_ELT (base_binfos, j);
-	      TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
-	      TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
-	      BINFO_INHERITANCE_CHAIN (chain) = base_binfo;
-	    }
-
-	  /* Completely unshare potentially shared data, and
-	     update what is ours.  */
-	  propagate_binfo_offsets (base_binfo, BINFO_OFFSET (base_binfo));
-	}
-
       if (! TREE_VIA_VIRTUAL (base_binfo))
 	CLASSTYPE_N_SUPERCLASSES (t) += 1;
 
@@ -1644,8 +1618,8 @@ finish_base_struct (t, b, t_binfo)
 	      /* Update these two, now that we know what vtable we are
 		 going to extend.  This is so that we can add virtual
 		 functions, and override them properly.  */
-	      BINFO_VTABLE (t_binfo) = TYPE_BINFO_VTABLE (basetype);
-	      BINFO_VIRTUALS (t_binfo) = TYPE_BINFO_VIRTUALS (basetype);
+	      TYPE_BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (basetype);
+	      TYPE_BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (basetype);
 	      b->has_virtual = CLASSTYPE_VSIZE (basetype);
 	      b->vfield = CLASSTYPE_VFIELD (basetype);
 	      b->vfields = copy_list (CLASSTYPE_VFIELDS (basetype));
@@ -1693,8 +1667,8 @@ finish_base_struct (t, b, t_binfo)
 		  /* Update these two, now that we know what vtable we are
 		     going to extend.  This is so that we can add virtual
 		     functions, and override them properly.  */
-		  BINFO_VTABLE (t_binfo) = TYPE_BINFO_VTABLE (basetype);
-		  BINFO_VIRTUALS (t_binfo) = TYPE_BINFO_VIRTUALS (basetype);
+		  TYPE_BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (basetype);
+		  TYPE_BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (basetype);
 		  b->has_virtual = CLASSTYPE_VSIZE (basetype);
 		  b->vfield = CLASSTYPE_VFIELD (basetype);
 		  CLASSTYPE_VFIELD (t) = b->vfield;
@@ -1720,25 +1694,27 @@ finish_base_struct (t, b, t_binfo)
 	}
     }
 
-  /* Must come after offsets are fixed for all bases.  */
+  /* This comment said "Must come after offsets are fixed for all bases."
+     Well, now this happens before the offsets are fixed, but it seems to
+     work fine.  Guess we'll see...  */
   for (i = 0; i < n_baseclasses; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree basetype = BINFO_TYPE (base_binfo);
 
-      if (get_base_distance (basetype, t_binfo, 0, (tree*)0) == -2)
+      if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
 	{
 	  cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
 		      basetype, t);
 	}
     }
   {
-    tree v = get_vbase_types (t_binfo);
+    tree v = get_vbase_types (t);
 
     for (; v; v = TREE_CHAIN (v))
       {
 	tree basetype = BINFO_TYPE (v);
-	if (get_base_distance (basetype, t_binfo, 0, (tree*)0) == -2)
+	if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
 	  {
 	    if (extra_warnings)
 	      cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
@@ -3088,7 +3064,6 @@ finish_struct_1 (t, warn_anon)
   int const_sans_init = 0;
   int ref_sans_init = 0;
   int nonprivate_method = 0;
-  tree t_binfo = TYPE_BINFO (t);
   tree access_decls = NULL_TREE;
   int aggregate = 1;
   int empty = 1;
@@ -3125,13 +3100,6 @@ finish_struct_1 (t, warn_anon)
     }
 #endif
 
-#if 0
-  if (flag_rtti)
-    build_t_desc (t, 0);
-#endif
-
-  TYPE_BINFO (t) = NULL_TREE;
-
   old = suspend_momentary ();
 
   /* Install struct as DECL_FIELD_CONTEXT of each field decl.
@@ -3141,8 +3109,8 @@ finish_struct_1 (t, warn_anon)
      Store 0 there, except for ": 0" fields (so we can find them
      and delete them, below).  */
 
-  if (t_binfo && BINFO_BASETYPES (t_binfo))
-    n_baseclasses = TREE_VEC_LENGTH (BINFO_BASETYPES (t_binfo));
+  if (TYPE_BINFO_BASETYPES (t))
+    n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (t));
   else
     n_baseclasses = 0;
 
@@ -3150,13 +3118,7 @@ finish_struct_1 (t, warn_anon)
     {
       struct base_info base_info;
 
-      /* If using multiple inheritance, this may cause variants of our
-	 basetypes to be used (instead of their canonical forms).  */
-      tree vf = layout_basetypes (t, BINFO_BASETYPES (t_binfo));
-      last_x = tree_last (vf);
-      fields = chainon (vf, fields);
-
-      first_vfn_base_index = finish_base_struct (t, &base_info, t_binfo);
+      first_vfn_base_index = finish_base_struct (t, &base_info);
       /* Remember where we got our vfield from.  */
       CLASSTYPE_VFIELD_PARENT (t) = first_vfn_base_index;
       has_virtual = base_info.has_virtual;
@@ -3168,8 +3130,8 @@ finish_struct_1 (t, warn_anon)
       cant_have_default_ctor = base_info.cant_have_default_ctor;
       cant_have_const_ctor = base_info.cant_have_const_ctor;
       no_const_asn_ref = base_info.no_const_asn_ref;
-      n_baseclasses = TREE_VEC_LENGTH (BINFO_BASETYPES (t_binfo));
       aggregate = 0;
+      empty = 0;
     }
   else
     {
@@ -3179,7 +3141,6 @@ finish_struct_1 (t, warn_anon)
       vfield = NULL_TREE;
       vfields = NULL_TREE;
       CLASSTYPE_RTTI (t) = NULL_TREE;
-      last_x = NULL_TREE;
       cant_have_default_ctor = 0;
       cant_have_const_ctor = 0;
       no_const_asn_ref = 0;
@@ -3198,8 +3159,6 @@ finish_struct_1 (t, warn_anon)
   /* The three of these are approximations which may later be
      modified.  Needed at this point to make add_virtual_function
      and modify_vtable_entries work.  */
-  TREE_CHAIN (t_binfo) = TYPE_BINFO (t);
-  TYPE_BINFO (t) = t_binfo;
   CLASSTYPE_VFIELDS (t) = vfields;
   CLASSTYPE_VFIELD (t) = vfield;
 
@@ -3250,7 +3209,8 @@ finish_struct_1 (t, warn_anon)
 	}
     }
 
-  for (x = TYPE_FIELDS (t); x; x = TREE_CHAIN (x))
+  last_x = NULL_TREE;
+  for (x = fields; x; x = TREE_CHAIN (x))
     {
       GNU_xref_member (current_class_name, x);
 
@@ -3797,6 +3757,9 @@ finish_struct_1 (t, warn_anon)
     
   }
 
+  if (n_baseclasses)
+    fields = chainon (build_vbase_pointer_fields (t), fields);
+
   if (vfield == NULL_TREE && has_virtual)
     {
       /* We build this decl with ptr_type_node, and
@@ -3888,21 +3851,8 @@ finish_struct_1 (t, warn_anon)
 
   TYPE_FIELDS (t) = fields;
 
-  /* Pass layout information about base classes to layout_type, if any.  */
   if (n_baseclasses)
-    {
-      tree pseudo_basetype = TREE_TYPE (base_layout_decl);
-
-      TREE_CHAIN (base_layout_decl) = TYPE_FIELDS (t);
-      TYPE_FIELDS (t) = base_layout_decl;
-
-      TYPE_SIZE (pseudo_basetype) = CLASSTYPE_SIZE (t);
-      TYPE_MODE (pseudo_basetype) = TYPE_MODE (t);
-      TYPE_ALIGN (pseudo_basetype) = CLASSTYPE_ALIGN (t);
-      DECL_ALIGN (base_layout_decl) = TYPE_ALIGN (pseudo_basetype);
-      /* Don't re-use old size.  */
-      DECL_SIZE (base_layout_decl) = NULL_TREE;
-    }
+    TYPE_FIELDS (t) = chainon (build_base_fields (t), fields);
   else if (empty)
     {
       /* C++: do not let empty structures exist.  */
@@ -3914,15 +3864,12 @@ finish_struct_1 (t, warn_anon)
 
   layout_type (t);
 
-  /* Remember the size, mode and alignment of the class before adding
+  /* Remember the size and alignment of the class before adding
      the virtual bases.  */
   CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
   CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
 
   finish_struct_anon (t);
-
-  if (n_baseclasses || empty)
-    TYPE_FIELDS (t) = TREE_CHAIN (TYPE_FIELDS (t));
 
   /* Set the TYPE_DECL for this type to contain the right
      value for DECL_OFFSET, so that we can use it as part
@@ -3935,11 +3882,16 @@ finish_struct_1 (t, warn_anon)
      virtual function table.  */
   pending_hard_virtuals = nreverse (pending_hard_virtuals);
 
+  if (n_baseclasses)
+    /* layout_basetypes will remove the base subobject fields.  */
+    max_has_virtual = layout_basetypes (t, max_has_virtual);
+  else if (empty)
+    TYPE_FIELDS (t) = fields;
+
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {
       tree vbases;
 
-      max_has_virtual = layout_vbasetypes (t, max_has_virtual);
       vbases = CLASSTYPE_VBASECLASSES (t);
       CLASSTYPE_N_VBASECLASSES (t) = list_length (vbases);
 

@@ -42,6 +42,8 @@ static void list_hash_add PROTO((int, tree));
 static int list_hash PROTO((tree, tree, tree));
 static tree list_hash_lookup PROTO((int, int, int, int, tree, tree,
 				    tree));
+static void propagate_binfo_offsets PROTO((tree, tree));
+static void unshare_base_binfos PROTO((tree));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -548,7 +550,7 @@ cp_build_type_variant (type, constp, volatilep)
    Note that we don't have to worry about having two paths to the
    same base type, since this type owns its association list.  */
 
-void
+static void
 propagate_binfo_offsets (binfo, offset)
      tree binfo;
      tree offset;
@@ -588,31 +590,8 @@ propagate_binfo_offsets (binfo, offset)
 #else
 	  BINFO_OFFSET (base_binfo) = offset;
 #endif
-	  if (base_binfos)
-	    {
-	      int k;
-	      tree chain = NULL_TREE;
 
-	      /* Now unshare the structure beneath BASE_BINFO.  */
-	      for (k = TREE_VEC_LENGTH (base_binfos)-1;
-		   k >= 0; k--)
-		{
-		  tree base_base_binfo = TREE_VEC_ELT (base_binfos, k);
-		  if (! TREE_VIA_VIRTUAL (base_base_binfo))
-		    TREE_VEC_ELT (base_binfos, k)
-		      = make_binfo (BINFO_OFFSET (base_base_binfo),
-				    base_base_binfo,
-				    BINFO_VTABLE (base_base_binfo),
-				    BINFO_VIRTUALS (base_base_binfo),
-				    chain);
-		  chain = TREE_VEC_ELT (base_binfos, k);
-		  TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
-		  TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
-		  BINFO_INHERITANCE_CHAIN (chain) = base_binfo;
-		}
-	      /* Now propagate the offset to the base types.  */
-	      propagate_binfo_offsets (base_binfo, offset);
-	    }
+	  unshare_base_binfos (base_binfo);
 
 	  /* Go to our next class that counts for offset propagation.  */
 	  i = j;
@@ -622,19 +601,59 @@ propagate_binfo_offsets (binfo, offset)
     }
 }
 
-/* Compute the actual offsets that our virtual base classes
-   will have *for this type*.  This must be performed after
-   the fields are laid out, since virtual baseclasses must
-   lay down at the end of the record.
+/* Makes new binfos for the indirect bases under BASE_BINFO, and updates
+   BINFO_OFFSET for them and their bases.  */
 
-   Returns the maximum number of virtual functions any of the virtual
+static void
+unshare_base_binfos (base_binfo)
+     tree base_binfo;
+{
+  if (BINFO_BASETYPES (base_binfo))
+    {
+      tree base_binfos = BINFO_BASETYPES (base_binfo);
+      tree chain = NULL_TREE;
+      int j;
+
+      /* Now unshare the structure beneath BASE_BINFO.  */
+      for (j = TREE_VEC_LENGTH (base_binfos)-1;
+	   j >= 0; j--)
+	{
+	  tree base_base_binfo = TREE_VEC_ELT (base_binfos, j);
+	  if (! TREE_VIA_VIRTUAL (base_base_binfo))
+	    TREE_VEC_ELT (base_binfos, j)
+	      = make_binfo (BINFO_OFFSET (base_base_binfo),
+			    base_base_binfo,
+			    BINFO_VTABLE (base_base_binfo),
+			    BINFO_VIRTUALS (base_base_binfo),
+			    chain);
+	  chain = TREE_VEC_ELT (base_binfos, j);
+	  TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
+	  TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
+	  BINFO_INHERITANCE_CHAIN (chain) = base_binfo;
+	}
+
+      /* Completely unshare potentially shared data, and
+	 update what is ours.  */
+      propagate_binfo_offsets (base_binfo, BINFO_OFFSET (base_binfo));
+    }
+}
+
+/* Finish the work of layout_record, now taking virtual bases into account.
+   Also compute the actual offsets that our base classes will have.
+   This must be performed after the fields are laid out, since virtual
+   baseclasses must lay down at the end of the record.
+
+   Returns the maximum number of virtual functions any of the
    baseclasses provide.  */
 
 int
-layout_vbasetypes (rec, max)
+layout_basetypes (rec, max)
      tree rec;
      int max;
 {
+  tree binfos = TYPE_BINFO_BASETYPES (rec);
+  int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
   /* Get all the virtual base types that this type uses.
      The TREE_VALUE slot holds the virtual baseclass type.  */
   tree vbase_types = get_vbase_types (rec);
@@ -672,8 +691,7 @@ layout_vbasetypes (rec, max)
       else
 	{
 	  /* Give each virtual base type the alignment it wants.  */
-	  const_size = CEIL (const_size, TYPE_ALIGN (basetype))
-	    * TYPE_ALIGN (basetype);
+	  const_size = CEIL (const_size, desired_align) * desired_align;
 	  offset = size_int (CEIL (const_size, BITS_PER_UNIT));
 	}
 
@@ -704,85 +722,106 @@ layout_vbasetypes (rec, max)
   if (const_size != nonvirtual_const_size)
     TYPE_SIZE (rec) = size_int (const_size);
 
-  /* Now propagate offset information throughout the lattice
-     under the vbase type.  */
+  /* Now propagate offset information throughout the lattice.  */
+  for (i = 0; i < n_baseclasses; i++)
+    {
+      register tree base_binfo = TREE_VEC_ELT (binfos, i);
+      register tree basetype = BINFO_TYPE (base_binfo);
+      tree field = TYPE_FIELDS (rec);
+
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	continue;
+
+      my_friendly_assert (TREE_TYPE (field) == basetype, 23897);
+      BINFO_OFFSET (base_binfo)
+	= size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)),
+			  BITS_PER_UNIT));
+      unshare_base_binfos (base_binfo);
+      TYPE_FIELDS (rec) = TREE_CHAIN (field);
+    }
+
   for (vbase_types = CLASSTYPE_VBASECLASSES (rec); vbase_types;
        vbase_types = TREE_CHAIN (vbase_types))
     {
-      tree base_binfos = BINFO_BASETYPES (vbase_types);
-
       BINFO_INHERITANCE_CHAIN (vbase_types) = TYPE_BINFO (rec);
-
-      if (base_binfos)
-	{
-	  tree chain = NULL_TREE;
-	  int j;
-	  /* Now unshare the structure beneath BASE_BINFO.  */
-
-	  for (j = TREE_VEC_LENGTH (base_binfos)-1;
-	       j >= 0; j--)
-	    {
-	      tree base_base_binfo = TREE_VEC_ELT (base_binfos, j);
-	      if (! TREE_VIA_VIRTUAL (base_base_binfo))
-		TREE_VEC_ELT (base_binfos, j)
-		  = make_binfo (BINFO_OFFSET (base_base_binfo),
-				base_base_binfo,
-				BINFO_VTABLE (base_base_binfo),
-				BINFO_VIRTUALS (base_base_binfo),
-				chain);
-	      chain = TREE_VEC_ELT (base_binfos, j);
-	      TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
-	      TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
-	      BINFO_INHERITANCE_CHAIN (chain) = vbase_types;
-	    }
-
-	  propagate_binfo_offsets (vbase_types, BINFO_OFFSET (vbase_types));
-	}
+      unshare_base_binfos (vbase_types);
     }
 
   return max;
 }
 
-/* Lay out the base types of a record type, REC.
-   Tentatively set the size and alignment of REC
-   according to the base types alone.
-
-   Offsets for immediate nonvirtual baseclasses are also computed here.
-
-   TYPE_BINFO (REC) should be NULL_TREE on entry, and this routine
-   creates a list of base_binfos in TYPE_BINFO (REC) from BINFOS.
-
-   Returns list of virtual base class pointers in a FIELD_DECL chain.  */
+/* Returns a list of fields to stand in for the base class subobjects
+   of REC.  These fields are later removed by layout_basetypes.  */
 
 tree
-layout_basetypes (rec, binfos)
-     tree rec, binfos;
+build_base_fields (rec)
+     tree rec;
+{
+  /* Chain to hold all the new FIELD_DECLs which stand in for base class
+     subobjects.  */
+  tree base_decls = NULL_TREE;
+  tree binfos = TYPE_BINFO_BASETYPES (rec);
+  int n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree decl;
+  int i;
+  unsigned int base_align = 0;
+
+  for (i = 0; i < n_baseclasses; ++i)
+    {
+      register tree base_binfo = TREE_VEC_ELT (binfos, i);
+      register tree basetype = BINFO_TYPE (base_binfo);
+
+      if (TYPE_SIZE (basetype) == 0)
+	/* This error is now reported in xref_tag, thus giving better
+	   location information.  */
+	continue;
+
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	continue;
+
+      decl = build_lang_field_decl (FIELD_DECL, NULL_TREE, basetype);
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_FIELD_CONTEXT (decl) = DECL_CLASS_CONTEXT (decl) = rec;
+      DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
+      DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
+      TREE_CHAIN (decl) = base_decls;
+      base_decls = decl;
+
+      /* Brain damage for backwards compatibility.  For no good reason, the
+	 old layout_basetypes made every base at least as large as the
+	 alignment for the bases up to that point, gratuitously wasting
+	 space.  So we do the same thing here.  */
+      base_align = MAX (base_align, DECL_ALIGN (decl));
+      DECL_SIZE (decl) = size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
+					base_align));
+    }
+
+  /* Reverse the list of fields so we allocate the bases in the proper
+     order.  */
+  return nreverse (base_decls);
+}
+
+/* Returns list of virtual base class pointers in a FIELD_DECL chain.  */
+
+tree
+build_vbase_pointer_fields (rec)
+     tree rec;
 {
   /* Chain to hold all the new FIELD_DECLs which point at virtual
      base classes.  */
   tree vbase_decls = NULL_TREE;
-  unsigned record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
-
-  /* Record size so far is CONST_SIZE bits, where CONST_SIZE is an integer.  */
-  register unsigned const_size = 0;
-  int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  /* Packed structures don't need to have minimum size.  */
-  if (! TYPE_PACKED (rec))
-    record_align = MAX (record_align, STRUCTURE_SIZE_BOUNDARY);
-#endif
+  tree binfos = TYPE_BINFO_BASETYPES (rec);
+  int n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree decl;
+  int i;
 
   /* Handle basetypes almost like fields, but record their
      offsets differently.  */
 
   for (i = 0; i < n_baseclasses; i++)
     {
-      int inc;
-      unsigned int desired_align;
       register tree base_binfo = TREE_VEC_ELT (binfos, i);
       register tree basetype = BINFO_TYPE (base_binfo);
-      tree decl, offset;
 
       if (TYPE_SIZE (basetype) == 0)
 	/* This error is now reported in xref_tag, thus giving better
@@ -811,7 +850,9 @@ layout_basetypes (rec, binfos)
 	      tree other_base_binfo = TREE_VEC_ELT (binfos, j);
 	      if (! TREE_VIA_VIRTUAL (other_base_binfo)
 		  && binfo_member (basetype,
-				   CLASSTYPE_VBASECLASSES (BINFO_TYPE (other_base_binfo))))
+				   CLASSTYPE_VBASECLASSES (BINFO_TYPE
+							   (other_base_binfo))
+				   ))
 		goto got_it;
 	    }
 	  sprintf (name, VBASE_NAME_FORMAT, TYPE_NAME_STRING (basetype));
@@ -835,50 +876,9 @@ layout_basetypes (rec, binfos)
 
 	got_it:
 	  /* The space this decl occupies has already been accounted for.  */
-	  continue;
+	  ;
 	}
-
-      /* Effective C++ rule 14.  We only need to check TYPE_VIRTUAL_P
-	 here because the case of virtual functions but non-virtual
-	 dtor is handled in finish_struct_1.  */
-      if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
-	  && TYPE_HAS_DESTRUCTOR (basetype))
-	cp_warning ("base class `%#T' has a non-virtual destructor", basetype);
-
-      if (const_size == 0)
-	offset = integer_zero_node;
-      else
-	{
-	  /* Give each base type the alignment it wants.  */
-	  const_size = CEIL (const_size, TYPE_ALIGN (basetype))
-	    * TYPE_ALIGN (basetype);
-	  offset = size_int ((const_size + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
-	}
-      BINFO_OFFSET (base_binfo) = offset;
-      if (CLASSTYPE_VSIZE (basetype))
-	{
-	  BINFO_VTABLE (base_binfo) = TYPE_BINFO_VTABLE (basetype);
-	  BINFO_VIRTUALS (base_binfo) = TYPE_BINFO_VIRTUALS (basetype);
-	}
-      TREE_CHAIN (base_binfo) = TYPE_BINFO (rec);
-      TYPE_BINFO (rec) = base_binfo;
-
-      /* Add only the amount of storage not present in
-	 the virtual baseclasses.  */
-      inc = MAX (record_align, TREE_INT_CST_LOW (CLASSTYPE_SIZE (basetype)));
-
-      /* Record must have at least as much alignment as any field.  */
-      desired_align = TYPE_ALIGN (basetype);
-      record_align = MAX (record_align, desired_align);
-
-      const_size += inc;
     }
-
-  if (const_size)
-    CLASSTYPE_SIZE (rec) = size_int (const_size);
-  else
-    CLASSTYPE_SIZE (rec) = integer_zero_node;
-  CLASSTYPE_ALIGN (rec) = record_align;
 
   return vbase_decls;
 }
