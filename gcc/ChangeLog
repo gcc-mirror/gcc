@@ -1,5 +1,8 @@
 2000-07-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-lex.c (init_lex): Keep the "inline" keyword in C99 mode.
+	(yylex): Don't pedwarn for "inline" in C99 mode.
+
 	* bitmap.c (debug_bitmap_file): Cast pointers to PTR for printing
 	with %p.
 	* ggc-page.c (debug_print_page_list, alloc_page, free_page,
