@@ -107,7 +107,7 @@ static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 static cpp_chunk *new_chunk PARAMS ((unsigned int));
 static int chunk_suitable PARAMS ((cpp_chunk *, unsigned int));
 static unsigned int hex_digit_value PARAMS ((unsigned int));
-static _cpp_buff *new_buff PARAMS ((unsigned int));
+static _cpp_buff *new_buff PARAMS ((size_t));
 
 /* Utility routine:
 
@@ -2052,7 +2052,7 @@ struct dummy
    of the buffer, so that buffer overflows will cause immediate chaos.  */
 static _cpp_buff *
 new_buff (len)
-     unsigned int len;
+     size_t len;
 {
   _cpp_buff *result;
   unsigned char *base;
@@ -2088,13 +2088,13 @@ _cpp_release_buff (pfile, buff)
 _cpp_buff *
 _cpp_get_buff (pfile, min_size)
      cpp_reader *pfile;
-     unsigned int min_size;
+     size_t min_size;
 {
   _cpp_buff *result, **p;
 
   for (p = &pfile->free_buffs;; p = &(*p)->next)
     {
-      unsigned int size;
+      size_t size;
 
       if (*p == NULL)
 	return new_buff (min_size);
@@ -2119,9 +2119,9 @@ _cpp_buff *
 _cpp_extend_buff (pfile, buff, min_extra)
      cpp_reader *pfile;
      _cpp_buff *buff;
-     unsigned int min_extra;
+     size_t min_extra;
 {
-  unsigned int size = EXTENDED_BUFF_SIZE (buff, min_extra);
+  size_t size = EXTENDED_BUFF_SIZE (buff, min_extra);
 
   buff->next = _cpp_get_buff (pfile, size);
   memcpy (buff->next->base, buff->cur, buff->limit - buff->cur);

@@ -1,3 +1,9 @@
+2001-09-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (new_buff, _cpp_get_buff, _cpp_extend_buff):
+	Use size_t everywhere, make definitions consistent with
+	prototypes.	
+
 Fri Sep 28 14:59:34 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (replace_store_insn): Use delete_insn.
