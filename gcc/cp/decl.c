@@ -7409,7 +7409,8 @@ grok_reference_init (decl, type, init)
      first.  */
   tmp = convert_to_reference
     (type, init, CONV_IMPLICIT,
-     LOOKUP_SPECULATIVELY|LOOKUP_NORMAL|DIRECT_BIND, decl);
+     LOOKUP_ONLYCONVERTING|LOOKUP_SPECULATIVELY|LOOKUP_NORMAL|DIRECT_BIND,
+     decl);
 
   if (tmp == error_mark_node)
     return;
