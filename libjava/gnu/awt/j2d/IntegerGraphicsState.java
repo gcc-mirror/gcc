@@ -69,7 +69,6 @@ public class IntegerGraphicsState extends AbstractGraphicsState
     super.dispose();
   }
   
-
   // -------- Graphics methods:
   
   public void setColor(Color color)
@@ -101,7 +100,7 @@ public class IntegerGraphicsState extends AbstractGraphicsState
   {
     if (clip instanceof Rectangle)
       {
-	Rectangle clipRect = (Rectangle) clip.clone();
+	Rectangle clipRect = (Rectangle) ((Rectangle) clip).clone();
 	clipRect.x += tx;
 	clipRect.y += ty;
 	
