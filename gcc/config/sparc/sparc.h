@@ -449,6 +449,27 @@ extern int target_flags;
 #define MASK_FPU_SET 0x400000
 #define TARGET_FPU_SET (target_flags & MASK_FPU_SET)
 
+/* Use the UltraSPARC Visual Instruction Set extensions.  */
+#define MASK_VIS 0x1000000          
+#define TARGET_VIS (target_flags & MASK_VIS)
+
+/* Compile for Solaris V8+.  64 bit instructions are available but the
+   high 32 bits of all registers except the globals and current outs may
+   be cleared at any time.  */                 
+#define MASK_V8PLUS 0x2000000                 
+#define TARGET_V8PLUS (target_flags & MASK_V8PLUS)                            
+
+/* See sparc.md */
+#define TARGET_HARD_MUL32				\
+  ((TARGET_V8 || TARGET_SPARCLITE			\
+    || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS)	\
+   && ! TARGET_V8PLUS)
+
+#define TARGET_HARD_MUL					\
+  (TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET	\
+   || TARGET_DEPRECATED_V8_INSNS || TARGET_V8PLUS)                        
+
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -474,12 +495,14 @@ extern int target_flags;
     {"no-app-regs", -MASK_APP_REGS},	\
     {"hard-quad-float", MASK_HARD_QUAD}, \
     {"soft-quad-float", -MASK_HARD_QUAD}, \
+    {"vis", MASK_VIS},			\
     /* ??? These are deprecated, coerced to -mcpu=.  Delete in 2.9.  */ \
     {"cypress", 0},			\
     {"sparclite", 0},			\
     {"f930", 0},			\
     {"f934", 0},			\
     {"v8", 0},				\
+    {"v8plus", 0},			\
     {"supersparc", 0},			\
     /* End of deprecated options.  */	\
     /* -mptrNN exists for *experimental* purposes.  */ \
@@ -1242,17 +1265,20 @@ extern char leaf_reg_remap[];
 
 /* Get reg_class from a letter such as appears in the machine description.
    In the not-v9 case, coerce v9's 'e' class to 'f', so we can use 'e' in the
-   .md file for v8 and v9.  */
+   .md file for v8 and v9.
+   Use 'd' and 'b' for single precision VIS operations if TARGET_VIS.  */
 
-#define REG_CLASS_FROM_LETTER(C) \
-(TARGET_V9			\
- ? ((C) == 'f' ? FP_REGS	\
-    : (C) == 'e' ? EXTRA_FP_REGS \
-    : (C) == 'c' ? FPCC_REGS	\
-    : NO_REGS)			\
- : ((C) == 'f' ? FP_REGS	\
-    : (C) == 'e' ? FP_REGS	\
-    : (C) == 'c' ? FPCC_REGS	\
+#define REG_CLASS_FROM_LETTER(C)		\
+(TARGET_V9					\
+ ? ((C) == 'f' ? FP_REGS			\
+    : (C) == 'e' ? EXTRA_FP_REGS 		\
+    : (C) == 'c' ? FPCC_REGS			\
+    : ((C) == 'd' && TARGET_VIS) ? FP_REGS	\
+    : ((C) == 'b' && TARGET_VIS) ? FP_REGS	\
+    : NO_REGS)					\
+ : ((C) == 'f' ? FP_REGS			\
+    : (C) == 'e' ? FP_REGS			\
+    : (C) == 'c' ? FPCC_REGS			\
     : NO_REGS))
 
 /* The letters I, J, K, L and M in a register constraint string
@@ -2683,11 +2709,13 @@ extern struct rtx_def *legitimize_pic_address ();
 #define ADDRESS_COST(RTX)  1
 
 /* Compute extra cost of moving data between one register class
-   and another.
-   ??? v9: We ignore FPCC_REGS on the assumption they'll never be seen.  */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2) \
-  (((FP_REG_CLASS_P (CLASS1) && (CLASS2) == GENERAL_REGS) \
-    || ((CLASS1) == GENERAL_REGS && FP_REG_CLASS_P (CLASS2))) ? 6 : 2)
+   and another.  */
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)			\
+  (((FP_REG_CLASS_P (CLASS1) && (CLASS2) == GENERAL_REGS)	\
+    || ((CLASS1) == GENERAL_REGS && FP_REG_CLASS_P (CLASS2))	\
+    || (CLASS1) == FPCC_REGS || (CLASS2) == FPCC_REGS)		\
+   ? (sparc_cpu == PROCESSOR_ULTRASPARC ? 12 : 6)		\
+   : 2)
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  The purpose for the cost of MULT is to encourage
@@ -2698,8 +2726,7 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
-    return (TARGET_V8 || TARGET_SPARCLITE)              \
-	? COSTS_N_INSNS (5) : COSTS_N_INSNS (25);	\
+    return TARGET_HARD_MUL ? COSTS_N_INSNS (5) : COSTS_N_INSNS (25); \
   case DIV:						\
   case UDIV:						\
   case MOD:						\
@@ -2711,16 +2738,24 @@ extern struct rtx_def *legitimize_pic_address ();
   case FIX:						\
     return 19;
 
+#define ISSUE_RATE  sparc_issue_rate()
+
 /* Adjust the cost of dependencies.  */
-#define ADJUST_COST(INSN,LINK,DEP,COST) \
-  if (sparc_cpu == PROCESSOR_SUPERSPARC) \
-    (COST) = supersparc_adjust_cost (INSN, LINK, DEP, COST)
+#define ADJUST_COST(INSN,LINK,DEP,COST)				\
+do {								\
+  if (sparc_cpu == PROCESSOR_SUPERSPARC)			\
+    (COST) = supersparc_adjust_cost (INSN, LINK, DEP, COST);	\
+  else if (sparc_cpu == PROCESSOR_ULTRASPARC)			\
+    (COST) = ultrasparc_adjust_cost (INSN, LINK, DEP, COST);	\
+} while (0)
 
 /* Conditional branches with empty delay slots have a length of two.  */
-#define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
+#define ADJUST_INSN_LENGTH(INSN, LENGTH)				\
+do {									\
   if (GET_CODE (INSN) == CALL_INSN					\
       || (GET_CODE (INSN) == JUMP_INSN && ! simplejump_p (insn)))	\
-    LENGTH += 1;
+    LENGTH += 1;							\
+} while (0)
 
 /* Control the assembler format that we output.  */
 
