@@ -1,3 +1,9 @@
+2003-11-11  Tom Tromey  <tromey@redhat.com>
+
+	PR java/12915:
+	* parse.y (merge_string_cste): Handle case where we have a
+	pointer that happens to be zero, not null_pointer_node.
+
 2003-11-10  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (classify_zip_file): Correctly compare
