@@ -707,6 +707,22 @@ reg_or_cmp_int16_operand (op, mode)
   return CMP_INT16_P (INTVAL (op));
 }
 
+/* Return true if OP is a const_int requiring two instructions to load.  */
+
+int
+two_insn_const_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+  if (INT16_P (INTVAL (op))
+      || UINT24_P (INTVAL (op))
+      || UPPER16_P (INTVAL (op)))
+    return 0;
+  return 1;
+}
+
 /* Return true if OP is an acceptable argument for a single word
    move source.  */
 
@@ -1665,6 +1681,18 @@ m32r_print_operand (file, x, code)
 	output_addr_const (file, GEN_INT (- INTVAL (x)));
       else
 	output_operand_lossage ("invalid operand to %N code");
+      return;
+
+    case 'X' :
+      /* Print a const_int in hex.  Used in comments.  */
+      if (GET_CODE (x) == CONST_INT)
+	fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		 "0x%x",
+#else
+		 "0x%lx",
+#endif
+		 INTVAL (x));
       return;
 
     case '#' :
