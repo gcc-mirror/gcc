@@ -1,6 +1,10 @@
 1999-06-21  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcjgc_la_LDFLAGS): Use -version-info, not
+	-release.
+
+	* Makefile.in: Rebuilt.
 	* Makefile.am (toolexeclibdir): Define as libdir when
 	appropriate.
 	* configure: Rebuilt.
