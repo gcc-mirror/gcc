@@ -127,7 +127,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define CPP_SPEC "\
 %(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) \
-%(cpp_endian) %(subtarget_cpp_spec) %(cpp_isa)"
+%(cpp_endian) %(subtarget_cpp_spec) %(cpp_isa) %(cpp_interwork)"
 
 #define CPP_ISA_SPEC "%{mthumb:-Dthumb -D__thumb__} %{!mthumb:-Darm -D__arm__}"
 
@@ -234,6 +234,20 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Default is little endian.  */
 #define CPP_ENDIAN_DEFAULT_SPEC "-D__ARMEL__ %{mthumb:-D__THUMBEL__}"
 
+/* Add a define for interworking.  Needed when building libgcc.a.  
+   This must define __THUMB_INTERWORK__ to the pre-processor if
+   interworking is enabled by default.  */
+#ifndef CPP_INTERWORK_DEFAULT_SPEC
+#define CPP_INTERWORK_DEFAULT_SPEC ""
+#endif
+
+#define CPP_INTERWORK_SPEC "						\
+%{mthumb-interwork:							\
+  %{mno-thumb-interwork: %eIncompatible interworking options}		\
+  -D__THUMB_INTERWORK__}						\
+%{!mthumb-interwork:%{!mno-thumb-interwork:%(cpp_interwork_default)}}	\
+"
+
 #define CC1_SPEC ""
 
 /* This macro defines names of additional specifications to put in the specs
@@ -255,6 +269,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   { "cpp_endian",		CPP_ENDIAN_SPEC },		\
   { "cpp_endian_default",	CPP_ENDIAN_DEFAULT_SPEC },	\
   { "cpp_isa",			CPP_ISA_SPEC },			\
+  { "cpp_interwork",		CPP_INTERWORK_SPEC },		\
+  { "cpp_interwork_default",	CPP_INTERWORK_DEFAULT_SPEC },	\
   { "subtarget_cpp_spec",	SUBTARGET_CPP_SPEC },           \
   SUBTARGET_EXTRA_SPECS
 
