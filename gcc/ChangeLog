@@ -3,6 +3,37 @@ Wed Aug  4 09:06:14 1999  Richard Earnshaw (rearnsha@arm.com)
 	* recog.c (preproces_constraints): Zero recog_op_alt before 
 	processing the constraints.
 
+	* arm.c (typedef minipool_node): Renamed from pool_node.
+	(minipool_vector, minipool_size, minipool_vector_label): Similarly.
+	(add_minipool_constant): New function.
+	(dump_minipool): New function.
+	(find_barrier): Remove special case for getting the insn size of
+	an insn that references the constant pool.
+	(minipool_fixup): New structure.
+	(push_minipool_barrier): New function.
+	(push_minipool_fix): New function.
+	(note_invalid_constants): New function.
+	(add_pool_constant, dump_table, fixit, broken_move): Delete.
+	(arm_reorg): Rewrite code to fix up the constant pool into a
+	series of mini-pools embedded in the insn stream.
+	(arm_output_epilogue): New function, made mainly from the body
+	of output_func_epilogue.
+	(output_func_epilogue): Move insn generation part of epilogue code
+	to arm_output_epilogue.
+	* arm.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY): Delete.
+	* arm.md (pool_range): New attribute.
+	(zero_extendqidi2): Add attribute pool_range.
+	(zero_extend_hisi_insn, load_extendqisi, extendhisi_insn,
+	extendqihi_insn, extendqisi_insn, movdi, movsi_insn, pic_load_addr,
+	pic_load_addr_based_insn, movhi_insn_arch4, movhi_insn_littleend,
+	movhi_insn_bigend, loadhi_si_bigend, movsf_hard_insn, movsf_soft_insn,
+	movdf_hard_insn, movdf_soft_insn, movxf_hard_insn): Likewise.
+	(epilogue): New expand.
+	(epilogue_insn): New insn.  Call arm_output_epilogue.
+
+	* arm.c (arm_poke_function_name): Undo change of July 17.  Tidy up.
+	* arm.h (TARGET_SWITCHES): Add missing doc string for TARGET_DEFAULT.
+
 Mon Aug  2 19:18:44 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.

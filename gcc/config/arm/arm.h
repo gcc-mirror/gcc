@@ -1,8 +1,8 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991, 93, 94, 95, 96, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93-98, 1999 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
-   More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
+   More major hacks by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
 This file is part of GNU CC.
@@ -394,7 +394,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
      "Do not load the PIC register in function prologues" },	\
   {"no-single-pic-base",       -ARM_FLAG_SINGLE_PIC_BASE, "" },	\
   SUBTARGET_SWITCHES						\
-  {"",				TARGET_DEFAULT }		\
+  {"",				TARGET_DEFAULT, "" }		\
 }
 
 #define TARGET_OPTIONS						\
@@ -1961,10 +1961,6 @@ extern struct rtx_def * arm_compare_op1;
    point in the code.  */
 #define MACHINE_DEPENDENT_REORG(INSN)	arm_reorg ((INSN))
 
-/* The pool is empty, since we have moved everything into the code.  */
-#define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE,X,MODE,ALIGN,LABELNO,JUMPTO)	\
-  goto JUMPTO
-
 /* Output an internal label definition.  */
 #ifndef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)		\
@@ -2304,6 +2300,7 @@ void   arm_poke_function_name STDIO_PROTO ((FILE *, char *));
 void   output_func_prologue STDIO_PROTO ((FILE *, int));
 void   output_func_epilogue STDIO_PROTO ((FILE *, int));
 void   arm_expand_prologue PROTO ((void));
+char * arm_output_epilogue PROTO ((void));
 void   arm_print_operand STDIO_PROTO ((FILE *, Rtx, int));
 void   arm_final_prescan_insn PROTO ((Rtx));
 int    short_branch PROTO ((int, int));
