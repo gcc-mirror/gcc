@@ -2183,7 +2183,7 @@ do {                                                                    \
     return ((GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	     && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (X, 1))		\
 					   + 0x8000) >= 0x10000)	\
-	     && (INTVAL (XEXP (X, 1)) & 0xffff != 0))			\
+	     && ((INTVAL (XEXP (X, 1)) & 0xffff) != 0))			\
 	    ? COSTS_N_INSNS (2)						\
 	    : COSTS_N_INSNS (1));					\
   case AND:								\
@@ -2191,7 +2191,7 @@ do {                                                                    \
   case XOR:								\
     return ((GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	     && (INTVAL (XEXP (X, 1)) & (~ (HOST_WIDE_INT) 0xffff)) != 0 \
-	     && (INTVAL (XEXP (X, 1)) & 0xffff != 0))			\
+	     && ((INTVAL (XEXP (X, 1)) & 0xffff) != 0))			\
 	    ? COSTS_N_INSNS (2)						\
 	    : COSTS_N_INSNS (1));					\
   case MULT:								\
@@ -3240,6 +3240,9 @@ extern void rs6000_set_default_type_attributes ();
 extern struct rtx_def *rs6000_dll_import_ref ();
 extern struct rtx_def *rs6000_longcall_ref ();
 extern int function_arg_padding ();
+extern void toc_section ();
+extern void private_data_section ();
+extern int trap_comparison_operator ();
 
 /* See nonlocal_goto_receiver for when this must be set.  */
 

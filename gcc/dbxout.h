@@ -25,6 +25,9 @@ extern void dbxout_start_new_source_file 	PROTO ((char *));
 extern void dbxout_resume_previous_source_file	PROTO ((void));
 
 extern void dbxout_symbol		PROTO ((tree, int));
+extern void dbxout_parms		PROTO ((tree));
+extern void dbxout_reg_parms		PROTO ((tree));
+extern void dbxout_syms			PROTO ((tree));
 extern void dbxout_function		PROTO ((tree));
 extern void dbxout_source_line		PROTO ((FILE *, char*, int));
 extern void dbxout_begin_function	PROTO ((tree));

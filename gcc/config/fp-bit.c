@@ -855,13 +855,13 @@ _fpmul_parts ( fp_number_type *  a,
   /* Calculate the mantissa by multiplying both 64bit numbers to get a
      128 bit number */
   {
-    fractype x = a->fraction.ll;
-    fractype ylow = b->fraction.ll;
-    fractype yhigh = 0;
-    int bit;
-
 #if defined(NO_DI_MODE)
     {
+      fractype x = a->fraction.ll;
+      fractype ylow = b->fraction.ll;
+      fractype yhigh = 0;
+      int bit;
+
       /* ??? This does multiplies one bit at a time.  Optimize.  */
       for (bit = 0; bit < FRAC_NBITS; bit++)
 	{
@@ -1000,14 +1000,10 @@ _fpdiv_parts (fp_number_type * a,
 	      fp_number_type * b,
 	      fp_number_type * tmp)
 {
-  fractype low = 0;
-  fractype high = 0;
-  fractype r0, r1, y0, y1, bit;
-  fractype q;
+  fractype bit;
   fractype numerator;
   fractype denominator;
   fractype quotient;
-  fractype remainder;
 
   if (isnan (a))
     {
@@ -1042,9 +1038,6 @@ _fpdiv_parts (fp_number_type * a,
   /* Calculate the mantissa by multiplying both 64bit numbers to get a
      128 bit number */
   {
-    int carry;
-    intfrac d0, d1;		/* weren't unsigned before ??? */
-
     /* quotient =
        ( numerator / denominator) * 2^(numerator exponent -  denominator exponent)
      */

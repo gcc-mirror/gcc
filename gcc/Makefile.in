@@ -1409,7 +1409,7 @@ dwarf2out.o : dwarf2out.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf2.h \
    flags.h insn-config.h insn-codes.h reload.h output.h defaults.h \
    hard-reg-set.h regs.h expr.h toplev.h dwarf2out.h
 xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
-   flags.h
+   flags.h toplev.h output.h dbxout.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    except.h function.h regs.h insn-config.h insn-codes.h $(RECOG_H) real.h \
    expr.h obstack.h hard-reg-set.h bitmap.h

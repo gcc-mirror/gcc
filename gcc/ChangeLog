@@ -1,3 +1,63 @@
+Thu Jun 25 15:47:55 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (xcoffout.o): Depend on toplev.h, output.h and dbxout.h.
+
+	* config/fp-bit.c (_fpmul_parts): Move variables `x', `ylow',
+ 	`yhigh' and `bit' into the scope in which they are used.
+	(_fpdiv_parts): Remove unused variables `low', `high', `r0', `r1',
+	`y0', `y1', `q', `remainder', `carry', `d0' and `d1'.
+
+	* rs6000.c: Move include of output.h below tree.h.  Include toplev.h.
+	(any_operand): Mark unused parameters `op' and `mode' with
+	ATTRIBUTE_UNUSED. 
+	(count_register_operand): Likewise for parameter `mode'.
+	(fpmem_operand): Likewise.
+	(short_cint_operand): Likewise.
+	(u_short_cint_operand): Likewise.
+	(non_short_cint_operand): Likewise.
+	(got_operand): Likewise.
+	(got_no_const_operand): Likewise.
+	(non_add_cint_operand): Likewise.
+	(non_logical_cint_operand): Likewise.
+	(mask_operand): Likewise.
+	(current_file_function_operand): Likewise.
+	(small_data_operand): Likewise for parameters `op' and `mode' but
+	only when !TARGET_ELF.
+	(init_cumulative_args): Mark parameters `libname' with
+ 	ATTRIBUTE_UNUSED.
+	(function_arg_pass_by_reference): Likewise for parameters `cum',
+	`mode' and `named'.
+	(expand_builtin_saveregs): Likewise for parameter `args'.
+	(load_multiple_operation): Likewise for parameter `mode'.
+	(store_multiple_operation): Likewise.
+	(branch_comparison_operator): Likewise.
+	(secondary_reload_class): Likewise.
+	(print_operand): Add parentheses around & operation.
+	(output_prolog): Mark parameter `size' with ATTRIBUTE_UNUSED.
+	(output_epilog): Likewise.  Cast argument to fprintf to int.
+	(rs6000_adjust_cost): Mark parameter `dep_insn' with ATTRIBUTE_UNUSED.
+	(rs6000_valid_decl_attribute_p): Likewise for parameters `decl',
+	`attributes', `identifier' and `args'.
+	(rs6000_valid_type_attribute_p): Likewise for parameter `attributes'.
+	(rs6000_comp_type_attributes): Likewise for parameters `type1' and
+	`type2'.
+	(rs6000_set_default_type_attributes): Likewise for parameter `type'.
+
+	* rs6000.h (RTX_COSTS): Add parentheses around & operation.
+	(toc_section, private_data_section, trap_comparison_operator): Add
+	prototypes.
+
+	* dbxout.h (dbxout_parms, dbxout_reg_parms, dbxout_syms): Add
+	prototypes.
+
+	* xcoffout.c: Include toplev.h, outout.h and dbxout.h.
+
+	* xcoffout.h (stab_to_sclass, xcoffout_begin_function,
+	xcoffout_begin_block, xcoffout_end_epilogue,
+	xcoffout_end_function, xcoffout_end_block,
+	xcoff_output_standard_types, xcoffout_declare_function,
+	xcoffout_source_line): Add prototypes.
+
 Thu Jun 25 09:54:55 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h (REG_ALLOC_ORDER): Add ARG_POINTER_REGNUM,
