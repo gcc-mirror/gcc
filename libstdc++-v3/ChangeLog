@@ -1,3 +1,7 @@
+2000-06-27  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* docs/install.html:  Fix minor typo as reported.
+
 2000-06-13  Brent Verner <brent@rcfile.org>
 
 	* bits/string.tcc (string::rfind): Fix.
