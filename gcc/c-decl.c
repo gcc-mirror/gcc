@@ -4796,11 +4796,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	pedwarn ("ANSI C forbids const or volatile function types");
       if (constp || volatilep)
 	type = c_build_type_variant (type, constp, volatilep);
-      pop_obstacks ();
       decl = build_decl (TYPE_DECL, declarator, type);
       if ((specbits & (1 << (int) RID_SIGNED))
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
+      pop_obstacks ();
       return decl;
     }
 
