@@ -1711,38 +1711,38 @@ install-gnatlib: ../stamp-gnatlib
 #	Create the directory before deleting it, in case the directory is
 #	a list of directories (as it may be on VMS). This ensures we are
 #	deleting the right one.
-	-$(MKDIR) $(ADA_RTL_OBJ_DIR)
-	-$(MKDIR) $(ADA_INCLUDE_DIR)
-	$(RMDIR) $(ADA_RTL_OBJ_DIR)
-	$(RMDIR) $(ADA_INCLUDE_DIR)
-	-$(MKDIR) $(ADA_RTL_OBJ_DIR)
-	-$(MKDIR) $(ADA_INCLUDE_DIR)
-	-$(INSTALL_DATA) ada/rts/Makefile.adalib $(ADA_RTL_OBJ_DIR)
+	-$(MKDIR) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
+	-$(MKDIR) $(DESTDIR)$(ADA_INCLUDE_DIR)
+	$(RMDIR) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
+	$(RMDIR) $(DESTDIR)$(ADA_INCLUDE_DIR)
+	-$(MKDIR) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
+	-$(MKDIR) $(DESTDIR)$(ADA_INCLUDE_DIR)
+	-$(INSTALL_DATA) ada/rts/Makefile.adalib $(DESTDIR)$(ADA_RTL_OBJ_DIR)
 	for file in ada/rts/*.ali; do \
-	    $(INSTALL_DATA) $$file $(ADA_RTL_OBJ_DIR); \
+	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 	-for file in ada/rts/*$(arext);do \
-	    $(INSTALL_DATA) $$file $(ADA_RTL_OBJ_DIR); \
+	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(targ))),)
 	-for file in ada/rts/lib*$(soext);do \
-	    $(INSTALL_DATA) $$file $(ADA_RTL_OBJ_DIR); \
+	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 else
 	-for file in ada/rts/lib*-**$(soext);do \
-	    $(INSTALL_DATA) $$file $(ADA_RTL_OBJ_DIR); \
+	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 endif
-	-$(LN_S) $(ADA_RTL_OBJ_DIR)/libgnat-*$(soext) \
-	       $(ADA_RTL_OBJ_DIR)/libgnat$(soext)
-	-$(LN_S) $(ADA_RTL_OBJ_DIR)/libgnarl-*$(soext) \
-	       $(ADA_RTL_OBJ_DIR)/libgnarl$(soext)
+	-( cd $(DESTDIR)$(ADA_RTL_OBJ_DIR) && \
+	  $(LN_S) libgnat-*$(soext) libgnat$(soext) )
+	-( cd $(DESTDIR)$(ADA_RTL_OBJ_DIR) && \
+	  $(LN_S) libgnarl-*$(soext) libgnarl$(soext) )
 # This copy must be done preserving the date on the original file.
 	for file in ada/rts/*.adb ada/rts/*.ads; do \
-	    $(INSTALL_DATA_DATE) $$file $(ADA_INCLUDE_DIR); \
+	    $(INSTALL_DATA_DATE) $$file $(DESTDIR)$(ADA_INCLUDE_DIR); \
 	done
-	cd $(ADA_INCLUDE_DIR); $(CHMOD) a-wx *.adb
-	cd $(ADA_INCLUDE_DIR); $(CHMOD) a-wx *.ads
+	cd $(DESTDIR)$(ADA_INCLUDE_DIR); $(CHMOD) a-wx *.adb
+	cd $(DESTDIR)$(ADA_INCLUDE_DIR); $(CHMOD) a-wx *.ads
 
 ../stamp-gnatlib2:
 	$(RM) rts/s-*.ali
@@ -1795,7 +1795,7 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 	$(MAKE) -C rts CC="../../xgcc -B../../" \
 	        INCLUDES="$(INCLUDES_FOR_SUBDIR) -I./../.." \
                 CFLAGS="$(GNATLIBCFLAGS_FOR_C)" \
-		srcdir=$(fsrcdir) \
+		srcdir=$(fsrcdir) VPATH=$(fsrcdir) \
 	        -f ../Makefile $(LIBGNAT_OBJS) prefix.o
 	$(MAKE) -C rts CC="../../xgcc -B../../" \
 	        ADA_INCLUDES="$(ADA_INCLUDES_FOR_SUBDIR)" \
@@ -1854,7 +1854,7 @@ prepare-rts:
         endif
 
 install-rts: force
-	$(CP) -r rts-$(RTS_NAME) $(libsubdir)/
+	$(CP) -r rts-$(RTS_NAME) $(DESTDIR)$(libsubdir)/
 
 rts-none: force
 	$(MAKE) $(FLAGS_TO_PASS) prepare-rts \
