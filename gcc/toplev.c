@@ -52,6 +52,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "rtl.h"
 #include "flags.h"
 #include "insn-attr.h"
+#include "defaults.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -1495,6 +1496,17 @@ output_file_directive (asm_file, input_name)
 #endif
 }
 
+/* Routine to build language identifier for object file. */
+static void
+output_lang_identify (asm_out_file)
+     FILE *asm_out_file;
+{
+  int len = strlen (lang_identify ()) + sizeof ("__gnu_compiled_") + 1;
+  char *s = (char *) alloca (len);
+  sprintf (s, "__gnu_compiled_%s", lang_identify ());
+  ASM_OUTPUT_LABEL (asm_out_file, s);
+}
+
 /* Compile an entire file of output from cpp, named NAME.
    Write a file of assembly output and various debugging dumps.  */
 
@@ -1789,6 +1801,12 @@ compile_file (name)
 #else
   ASM_IDENTIFY_GCC (asm_out_file);
 #endif
+
+  /* Output something to identify which front-end produced this file. */
+#ifdef ASM_IDENTIFY_LANGUAGE
+  ASM_IDENTIFY_LANGUAGE (asm_out_file);
+#endif
+
   /* Don't let the first function fall at the same address
      as gcc_compiled., if profiling.  */
   if (profile_flag || profile_block_flag)

@@ -1427,6 +1427,9 @@ extern void init_decl_processing		PROTO((void));
 extern void lang_init				PROTO((void));
 extern void lang_finish				PROTO((void));
 
+/* Funtion to identify which front-end produced the output file. */
+extern char *lang_identify			PROTO((void));
+
 /* Function called with no arguments to parse and compile the input.  */
 extern int yyparse				PROTO((void));
 /* Function called with option as argument
