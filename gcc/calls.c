@@ -942,10 +942,14 @@ expand_call (exp, target, ignore)
 	 These decisions are driven by the FUNCTION_... macros and must agree
 	 with those made by function.c.  */
 
-#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       /* See if this argument should be passed by invisible reference.  */
-      if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, TYPE_MODE (type), type,
-					  argpos < n_named_args))
+      if ((TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+	   && contains_placeholder_p (TYPE_SIZE (type)))
+#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
+	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, TYPE_MODE (type),
+					     type, argpos < n_named_args)
+#endif
+	  )
 	{
 #ifdef FUNCTION_ARG_CALLEE_COPIES
 	  if (FUNCTION_ARG_CALLEE_COPIES (args_so_far, TYPE_MODE (type), type,
@@ -1000,7 +1004,6 @@ expand_call (exp, target, ignore)
 	      type = build_pointer_type (type);
 	    }
 	}
-#endif /* FUNCTION_ARG_PASS_BY_REFERENCE */
 
       mode = TYPE_MODE (type);
 
