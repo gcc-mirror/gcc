@@ -59,10 +59,6 @@ enum cpp_token {
 typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
 typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
 
-extern void parse_set_mark	PARAMS ((cpp_reader *));
-extern void parse_clear_mark	PARAMS ((cpp_reader *));
-extern void parse_goto_mark	PARAMS ((cpp_reader *));
-
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
@@ -356,9 +352,9 @@ struct cpp_options {
 
   char chill;
 
-  /* Nonzero means copy comments into the output file.  */
+  /* Nonzero means don't copy comments into the output file.  */
 
-  char put_out_comments;
+  char discard_comments;
 
   /* Nonzero means process the ANSI trigraph sequences.  */
 

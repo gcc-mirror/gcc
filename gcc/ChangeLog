@@ -1,3 +1,32 @@
+2000-02-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (macarg): Hoist all the flag diddling out of the
+	function...
+	(macroexpand): ... and out of the loop that calls macarg.
+	Skip over the initial paren before macro arguments with
+	cpp_get_non_space_token; point may be some distance before
+	that paren.  Abort if it's not there.
+
+	* cpplib.c (parse_clear_mark): Delete function.
+	(parse_set_mark, parse_goto_mark): Make static.
+	(ACTIVE_MARK_P): New macro.
+	(skip_block_comment, skip_line_comment): Do not bump the line
+	if ACTIVE_MARK_P is true.
+	(cpp_pop_buffer): The buffer to be popped may not have an
+	active mark.
+	(cpp_get_token): When looking for the initial paren before
+	macro arguments, only set a mark in a file buffer, Always
+	return to that mark before proceeding to call macroexpand or
+	return a NAME token.
+
+	* cpplib.h: Remove prototypes of parse_set_mark,
+	parse_clear_mark, parse_goto_mark.
+	(struct cpp_options): Rename 'put_out_comments' to
+	'discard_comments' and invert its sense.
+	* cppinit.c, cpphash.c, cpplib.c: All users of
+	put_out_comments changed to use discard_comments, with
+	opposite sense.
+
 2000-02-09  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* function.c (thread_prologue_and_epilogue_insns): Don't delete
