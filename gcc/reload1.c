@@ -2162,6 +2162,20 @@ reload (first, global, dumpfile)
       }
 #endif
 
+  /* If we are doing stack checking, give a warning if this function's
+     frame size is larger than we expect.  */
+  if (flag_stack_check && ! STACK_CHECK_BUILTIN)
+    {
+      HOST_WIDE_INT size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (regs_ever_live[i] && ! fixed_regs[i] && call_used_regs[i])
+	  size += UNITS_PER_WORD;
+
+      if (size > STACK_CHECK_MAX_FRAME_SIZE)
+	warning ("frame size too large for reliable stack checking");
+    }
+	
   /* Indicate that we no longer have known memory locations or constants.  */
   reg_equiv_constant = 0;
   reg_equiv_memory_loc = 0;
