@@ -1614,9 +1614,8 @@ gnu_special (work, mangled, declp)
 	  success = demangle_template (work, mangled, declp, 0);
 	  break;
 	default:
-	  n = consume_count (mangled);
-	  string_appendn (declp, *mangled, n);
-	  (*mangled) += n;
+	  success = demangle_fund_type (work, mangled, declp);
+	  break;
 	}
       if (success && **mangled != '\0')
 	success = 0;
