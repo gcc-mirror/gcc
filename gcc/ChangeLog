@@ -1,5 +1,7 @@
 2000-07-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* cpplex.c (is_macro_disabled): Use CPP_TRADITIONAL.
+
 	* c-decl.c (set_current_function_name_declared, anon_aggr_type_p,
 	lang_expand_stmt): Mark parameters with ATTRIBUTE_UNUSED.
 	
