@@ -2809,6 +2809,8 @@ m32r_expand_block_move (rtx operands[])
       rtx final_src = NULL_RTX;
       rtx at_a_time = GEN_INT (MAX_MOVE_BYTES);
       rtx rounded_total = GEN_INT (bytes);
+      rtx new_dst_reg = gen_reg_rtx (SImode);
+      rtx new_src_reg = gen_reg_rtx (SImode);
 
       /* If we are going to have to perform this loop more than
 	 once, then generate a label and compute the address the
@@ -2834,7 +2836,10 @@ m32r_expand_block_move (rtx operands[])
 	 to the word after the end of the source block, and dst_reg to point
 	 to the last word of the destination block, provided that the block
 	 is MAX_MOVE_BYTES long.  */
-      emit_insn (gen_movstrsi_internal (dst_reg, src_reg, at_a_time));
+      emit_insn (gen_movstrsi_internal (dst_reg, src_reg, at_a_time,
+					new_dst_reg, new_src_reg));
+      emit_move_insn (dst_reg, new_dst_reg);
+      emit_move_insn (src_reg, new_src_reg);
       emit_insn (gen_addsi3 (dst_reg, dst_reg, GEN_INT (4)));
       
       if (bytes > MAX_MOVE_BYTES)
@@ -2845,7 +2850,9 @@ m32r_expand_block_move (rtx operands[])
     }
 
   if (leftover)
-    emit_insn (gen_movstrsi_internal (dst_reg, src_reg, GEN_INT (leftover)));
+    emit_insn (gen_movstrsi_internal (dst_reg, src_reg, GEN_INT (leftover),
+				      gen_reg_rtx (SImode),
+				      gen_reg_rtx (SImode)));
 }
 
 
@@ -2881,17 +2888,17 @@ m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 	{
 	  if (first_time)
 	    {
-	      output_asm_insn ("ld\t%3, %p1", operands);
-	      output_asm_insn ("ld\t%4, %p1", operands);
-	      output_asm_insn ("st\t%3, @%0", operands);
-	      output_asm_insn ("st\t%4, %s0", operands);
+	      output_asm_insn ("ld\t%5, %p1", operands);
+	      output_asm_insn ("ld\t%6, %p1", operands);
+	      output_asm_insn ("st\t%5, @%0", operands);
+	      output_asm_insn ("st\t%6, %s0", operands);
 	    }
 	  else
 	    {
-	      output_asm_insn ("ld\t%3, %p1", operands);
-	      output_asm_insn ("ld\t%4, %p1", operands);
-	      output_asm_insn ("st\t%3, %s0", operands);
-	      output_asm_insn ("st\t%4, %s0", operands);
+	      output_asm_insn ("ld\t%5, %p1", operands);
+	      output_asm_insn ("ld\t%6, %p1", operands);
+	      output_asm_insn ("st\t%5, %s0", operands);
+	      output_asm_insn ("st\t%6, %s0", operands);
 	    }
 
 	  bytes -= 8;
@@ -2901,15 +2908,15 @@ m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 	  if (bytes > 4)
 	    got_extra = 1;
 	  
-	  output_asm_insn ("ld\t%3, %p1", operands);
+	  output_asm_insn ("ld\t%5, %p1", operands);
 	  
 	  if (got_extra)
-	    output_asm_insn ("ld\t%4, %p1", operands);
+	    output_asm_insn ("ld\t%6, %p1", operands);
 		
 	  if (first_time)
-	    output_asm_insn ("st\t%3, @%0", operands);
+	    output_asm_insn ("st\t%5, @%0", operands);
 	  else
-	    output_asm_insn ("st\t%3, %s0", operands);
+	    output_asm_insn ("st\t%5, %s0", operands);
 
 	  bytes -= 4;
 	}
@@ -2921,20 +2928,25 @@ m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 	     valid memory [since we don't get called if things aren't properly
 	     aligned].  */
 	  int dst_offset = first_time ? 0 : 4;
+	  /* The amount of increment we have to make to the
+	     destination pointer.  */
+	  int dst_inc_amount = dst_offset + bytes - 4;
+	  /* The same for the source pointer.  */
+	  int src_inc_amount = bytes;
 	  int last_shift;
 	  rtx my_operands[3];
 
 	  /* If got_extra is true then we have already loaded
 	     the next word as part of loading and storing the previous word.  */
 	  if (! got_extra)
-	    output_asm_insn ("ld\t%4, @%1", operands);
+	    output_asm_insn ("ld\t%6, @%1", operands);
 
 	  if (bytes >= 2)
 	    {
 	      bytes -= 2;
 
-	      output_asm_insn ("sra3\t%3, %4, #16", operands);
-	      my_operands[0] = operands[3];
+	      output_asm_insn ("sra3\t%5, %6, #16", operands);
+	      my_operands[0] = operands[5];
 	      my_operands[1] = GEN_INT (dst_offset);
 	      my_operands[2] = operands[0];
 	      output_asm_insn ("sth\t%0, @(%1,%2)", my_operands);
@@ -2955,13 +2967,35 @@ m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 
 	  if (bytes > 0)
 	    {
-	      my_operands[0] = operands[4];
+	      my_operands[0] = operands[6];
 	      my_operands[1] = GEN_INT (last_shift);
 	      output_asm_insn ("srai\t%0, #%1", my_operands);
-	      my_operands[0] = operands[4];
+	      my_operands[0] = operands[6];
 	      my_operands[1] = GEN_INT (dst_offset);
 	      my_operands[2] = operands[0];
 	      output_asm_insn ("stb\t%0, @(%1,%2)", my_operands);
+	    }
+
+	  /* Update the destination pointer if needed.  We have to do
+	     this so that the patterns matches what we output in this
+	     function.  */
+	  if (dst_inc_amount
+	      && !find_reg_note (insn, REG_UNUSED, operands[0]))
+	    {
+	      my_operands[0] = operands[0];
+	      my_operands[1] = GEN_INT (dst_inc_amount);
+	      output_asm_insn ("addi\t%0, #%1", my_operands);
+	    }
+	  
+	  /* Update the source pointer if needed.  We have to do this
+	     so that the patterns matches what we output in this
+	     function.  */
+	  if (src_inc_amount
+	      && !find_reg_note (insn, REG_UNUSED, operands[1]))
+	    {
+	      my_operands[0] = operands[1];
+	      my_operands[1] = GEN_INT (src_inc_amount);
+	      output_asm_insn ("addi\t%0, #%1", my_operands);
 	    }
 	  
 	  bytes = 0;
