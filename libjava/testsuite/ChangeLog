@@ -1,3 +1,8 @@
+1999-07-05  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava.lang/Final.java: Added.
+	* libjava.lang/Final.out: Added.
+
 1999-07-02  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/Finalize_1.out: Removed.
