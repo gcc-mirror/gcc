@@ -1,3 +1,8 @@
+Thu Dec  3 15:08:30 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-dump.c (main):  Fix error message.
+	* jcf-path.c (add_entry):  Style fix.
+
 Wed Dec  2 15:52:25 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class_method): Call build_java_argument_signature
