@@ -1,3 +1,8 @@
+2002-03-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/sparc/sparc.h (RETURN_ADDR_RTX): Include v9 stack bias in
+	address calculation.
+
 2002-03-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (reload_insi, reload_indi): Change mode of
