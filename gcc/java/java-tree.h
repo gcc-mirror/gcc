@@ -253,7 +253,8 @@ extern tree double_array_vtable;
 extern tree TYPE_identifier_node;      /* "TYPE" */
 extern tree init_identifier_node;      /* "<init>" */
 extern tree clinit_identifier_node;      /* "<clinit>" */
-extern tree finit_identifier_node;      /* "$finit$" */
+extern tree finit_identifier_node;      /* "finit$" */
+extern tree finit_leg_identifier_node;  /* "$finit$" */
 extern tree void_signature_node;       /* "()V" */
 extern tree length_identifier_node;  /* "length" */
 extern tree this_identifier_node;  /* "this" */
@@ -821,7 +822,12 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 /* Predicates on method identifiers. Kept close to other macros using
    them  */
 #define ID_INIT_P(ID)   ((ID) == init_identifier_node)
-#define ID_FINIT_P(ID)  ((ID) == finit_identifier_node)
+/* Match ID to either `$finit$' or `finit$', so that `$finit$'
+   continues to be recognized as an equivalent to `finit$' which is
+   now the prefered name used for the field initialization special
+   method.  */
+#define ID_FINIT_P(ID)  ((ID) == finit_identifier_node \
+			 || (ID) == finit_leg_identifier_node)
 #define ID_CLINIT_P(ID) ((ID) == clinit_identifier_node)
 
 /* Access flags etc for a variable/field (a FIELD_DECL): */

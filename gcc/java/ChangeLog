@@ -1,3 +1,16 @@
+2000-08-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (finit_leg_identifier_node): New global.
+	(init_decl_processing): Use `finit$' to initialize
+	finit_identifier_node. Use `$finit$' to initialize
+	finit_leg_identifier_node.
+	* expr.c (expand_java_field_op): Use ID_FINIT_P.
+	* java-tree.h (finit_identifier_node): Changed attached comment.
+	(finit_leg_identifier_node): New declaration.
+	(ID_FINIT_P): Take finit_identifier_node and
+	finit_leg_identifier_node into account. This is a backward
+	compatibility hack.
+
 2000-08-14  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_conditional): Re-installed lost
@@ -40,7 +53,7 @@ Sun Aug 13 09:41:49 2000  Anthony Green  <green@redhat.com>
 	`case' statement.
 	(patch_assignment): Set DECL_INITIAL on integral final local.
 
-2000-08-07  Alexandre Petit-Bianco  <apbianco@cygnus.com
+2000-08-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (build_dot_class_method_invocation): Changed parameter
 	name to `type.' Build signature from `type' and convert it to a

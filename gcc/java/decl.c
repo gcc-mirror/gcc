@@ -360,6 +360,7 @@ tree TYPE_identifier_node;
 tree init_identifier_node;
 tree clinit_identifier_node;
 tree finit_identifier_node;
+tree finit_leg_identifier_node;
 tree void_signature_node;
 tree length_identifier_node;
 tree this_identifier_node;
@@ -646,7 +647,12 @@ init_decl_processing ()
   TYPE_identifier_node = get_identifier ("TYPE");
   init_identifier_node = get_identifier ("<init>");
   clinit_identifier_node = get_identifier ("<clinit>");
-  finit_identifier_node = get_identifier ("$finit$");
+  /* Legacy `$finit$' special method identifier. This needs to be
+     recognized as equivalent to `finit$' but isn't generated anymore.  */
+  finit_leg_identifier_node = get_identifier ("$finit$");
+  /* The new `finit$' special method identifier. This one is now
+     generated in place of `$finit$'.  */
+  finit_identifier_node = get_identifier ("finit$");
   void_signature_node = get_identifier ("()V");
   length_identifier_node = get_identifier ("length");
   this_identifier_node = get_identifier ("this");

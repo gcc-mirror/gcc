@@ -2210,7 +2210,7 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
 	    {
 	      tree cfndecl_name = DECL_NAME (current_function_decl);
 	      if (! DECL_CONSTRUCTOR_P (current_function_decl)
-		  && (cfndecl_name != finit_identifier_node))
+		  && !ID_FINIT_P (cfndecl_name))
 		error_with_decl (field_decl, "assignment to final field `%s' not in constructor");
 	    }
 	}
