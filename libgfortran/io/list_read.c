@@ -1313,8 +1313,13 @@ set_value:
       break;
 
     case BT_CHARACTER:
-      m = (len < saved_used) ? len : saved_used;
-      memcpy (p, saved_string, m);
+      if (saved_string)
+       { 
+          m = (len < saved_used) ? len : saved_used;
+          memcpy (p, saved_string, m);
+       }
+      else    /* just delimeters encountered, nothing to copy but SPACE */
+        m = 0;
 
       if (m < len)
 	memset (((char *) p) + m, ' ', len - m);

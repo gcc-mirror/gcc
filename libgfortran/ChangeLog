@@ -1,3 +1,8 @@
+2004-06-19  Bud Davis  <bdavis9659@comcast.net>
+
+	PR gfortran/16080
+	* io/list_read.c(set_value): don't copy if the string is null.
+
 2004-06-14  Bud Davis  <bdavis9659@comcast.net>
 
 	PR gfortran/15292

@@ -1,3 +1,8 @@
+2004-06-19  Bud Davis  <bdavis9659@comcast.net>
+ 
+        PR gfortran/16080
+	* gfortran.fortran-torture/execute/read_null_string.f90: New file.
+
 2004-06-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/lookup/crash3.C: Use __SIZE_TYPE__
