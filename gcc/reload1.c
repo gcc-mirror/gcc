@@ -2750,6 +2750,7 @@ elimination_effects (x, mem_mode)
 /* Descend through rtx X and verify that no references to eliminable registers
    remain.  If any do remain, mark the involved register as not
    eliminable.  */
+
 static void
 check_eliminable_occurrences (x)
      rtx x;
@@ -3227,6 +3228,7 @@ verify_initial_elim_offsets ()
 }
 
 /* Reset all offsets on eliminable registers to their initial values.  */
+
 static void
 set_initial_elim_offsets ()
 {
@@ -3266,6 +3268,7 @@ set_initial_label_offsets ()
 
 /* Set all elimination offsets to the known values for the code label given
    by INSN.  */
+
 static void
 set_offsets_for_label (insn)
      rtx insn;
@@ -3369,6 +3372,7 @@ update_eliminables (pset)
 }
 
 /* Initialize the table of registers to eliminate.  */
+
 static void
 init_elim_table ()
 {
@@ -5751,6 +5755,7 @@ choose_reload_regs (chain)
 
 /* Deallocate the reload register for reload R.  This is called from
    remove_address_replacements.  */
+
 void
 deallocate_reload_reg (r)
      int r;
@@ -6609,9 +6614,7 @@ do_input_reload (chain, rl, j)
       && (! reload_inherited[j] || (rl->out && ! rl->out_reg))
       && ! rtx_equal_p (rl->reg_rtx, old)
       && rl->reg_rtx != 0)
-    {
-      emit_input_reload_insns (chain, rld + j, old, j);
-    }
+    emit_input_reload_insns (chain, rld + j, old, j);
 
   /* When inheriting a wider reload, we have a MEM in rl->in,
      e.g. inheriting a SImode output reload for
