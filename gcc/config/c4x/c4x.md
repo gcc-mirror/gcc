@@ -1158,14 +1158,15 @@
   "TARGET_SMALL
    && (TARGET_C3X || (reload_completed
                       && ! std_reg_operand (operands[0], QImode)))"
-  [(set (match_dup 0) (match_dup 1))]
+  [(set (match_dup 0) (match_dup 2))
+   (use (match_dup 1))]
   "
 {  
    rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
-   operands[1] = force_const_mem (Pmode, operands[1]);
-   operands[1] = change_address (operands[1], QImode,
+   operands[2] = force_const_mem (Pmode, operands[1]);
+   operands[2] = change_address (operands[2], QImode,
 			         gen_rtx_LO_SUM (Pmode, dp_reg,
-                                                 XEXP (operands[1], 0)));
+                                                 XEXP (operands[2], 0)));
 }")
 
 (define_insn "load_immed_address"
@@ -4355,7 +4356,7 @@
 ; CALL
 ;
 (define_insn "*call_c3x"
- [(call (mem:QI (match_operand:QI 0 "call_address_operand" ""))
+ [(call (mem:QI (match_operand:QI 0 "call_address_operand" "Ur"))
         (match_operand:QI 1 "general_operand" ""))
   (clobber (reg:QI 31))]
   ;; Operand 1 not really used on the C4x.  The C30 doesn't have reg 31.
@@ -4366,7 +4367,7 @@
 
 ; LAJ requires R11 (31) for the return address
 (define_insn "*laj"
- [(call (mem:QI (match_operand:QI 0 "call_address_operand" ""))
+ [(call (mem:QI (match_operand:QI 0 "call_address_operand" "Ur"))
         (match_operand:QI 1 "general_operand" ""))
   (clobber (reg:QI 31))]
   ;; Operand 1 not really used on the C4x.
@@ -4380,15 +4381,21 @@
   [(set_attr "type" "laj")])
 
 (define_expand "call"
- [(parallel [(call (mem:QI (match_operand:QI 0 "call_address_operand" ""))
+ [(parallel [(call (match_operand:QI 0 "" "")
                    (match_operand:QI 1 "general_operand" ""))
              (clobber (reg:QI 31))])]
  ""
- "")
+ "
+{
+  if (GET_CODE (operands[0]) == MEM
+      && ! call_address_operand (XEXP (operands[0], 0), Pmode))
+    operands[0] = gen_rtx_MEM (GET_MODE (operands[0]),
+			       force_reg (Pmode, XEXP (operands[0], 0)));
+}")
 
 (define_insn "*callv_c3x"
  [(set (match_operand 0 "" "=r")
-       (call (mem:QI (match_operand:QI 1 "call_address_operand" ""))
+       (call (mem:QI (match_operand:QI 1 "call_address_operand" "Ur"))
              (match_operand:QI 2 "general_operand" "")))
   (clobber (reg:QI 31))]
   ;; Operand 0 and 2 not really used for the C4x. 
@@ -4401,7 +4408,7 @@
 ; LAJ requires R11 (31) for the return address
 (define_insn "*lajv"
  [(set (match_operand 0 "" "=r")
-       (call (mem:QI (match_operand:QI 1 "call_address_operand" ""))
+       (call (mem:QI (match_operand:QI 1 "call_address_operand" "Ur"))
              (match_operand:QI 2 "general_operand" "")))
   (clobber (reg:QI 31))]
   ;; Operand 0 and 2 not really used in the C30 instruction.
@@ -4416,11 +4423,17 @@
 
 (define_expand "call_value"
  [(parallel [(set (match_operand 0 "" "")
-                  (call (mem:QI (match_operand:QI 1 "call_address_operand" ""))
+                  (call (match_operand:QI 1 "" "")
                         (match_operand:QI 2 "general_operand" "")))
              (clobber (reg:QI 31))])]
  ""
- "")
+ "
+{
+  if (GET_CODE (operands[0]) == MEM
+      && ! call_address_operand (XEXP (operands[1], 0), Pmode))
+    operands[0] = gen_rtx_MEM (GET_MODE (operands[1]),
+                               force_reg (Pmode, XEXP (operands[1], 0)));
+}")
 
 (define_insn "return"
   [(return)]
@@ -6229,7 +6242,7 @@
    (return)]
   "c4x_null_epilogue_p ()"
   "*
-   if (GET_CODE (XEXP (operands[0], 0)) == REG)
+   if (REG_P (operands[0]))
      return \"bu%#\\t%C0\";
    else
      return \"br%#\\t%C0\";"
@@ -6243,7 +6256,7 @@
    (return)]
   "c4x_null_epilogue_p ()"
   "*
-   if (GET_CODE (XEXP (operands[1], 0)) == REG)
+   if (REG_P (operands[1]))
      return \"bu%#\\t%C1\";
    else
      return \"br%#\\t%C1\";"

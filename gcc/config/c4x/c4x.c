@@ -1701,16 +1701,10 @@ c4x_print_operand (file, op, letter)
       return;
 
     case 'C':			/* call */
-      if (code != MEM)
-	fatal_insn ("c4x_print_operand: %%C inconsistency", op);
-      op = XEXP (op, 0);
-      code = GET_CODE (op);
       break;
 
     case 'U':			/* call/callu */
-      if (code != MEM)
-	fatal_insn ("c4x_print_operand: %%U inconsistency", op);
-      if (GET_CODE (XEXP (op, 0)) != SYMBOL_REF)
+      if (code != SYMBOL_REF)
 	asm_fprintf (file, "u");
       return;
 
@@ -2100,7 +2094,7 @@ c4x_process_after_reload (first)
 
 	  if (1)
 	    {
-	      char *template;
+	      const char *template;
 
 	      template = insn_template[insn_code_number];
 	      if (template && template[0] == '#' && template[1] == '\0')
