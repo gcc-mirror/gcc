@@ -1,3 +1,10 @@
+Mon Apr 24 10:19:48 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (strength_reduce): Simplify test to INSN_P.
+	(record_giv): Attempt to simplify the add value, use CONSTANT_P
+	expressions instead of CONST_INT.
+	(express_from_1): Likewise.
+
 2000-04-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* regs.h (reg_n_max): Don't declare.

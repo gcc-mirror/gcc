@@ -3977,8 +3977,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
       if (GET_CODE (p) == CALL_INSN)
 	call_seen = 1;
 
-      if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
-	  || GET_CODE (p) == CALL_INSN)
+      if (INSN_P (p))
 	note_stores (PATTERN (p), record_initial, NULL);
 
       /* Record any test of a biv that branches around the loop if no store
@@ -4124,13 +4123,13 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 
 		  for (next = NEXT_INSN (dominator); ; next = NEXT_INSN (next))
 		    {
-		      if ((GET_RTX_CLASS (GET_CODE (next)) == 'i'
+		      if ((INSN_P (next)
 			   && (reg_mentioned_p (giv, PATTERN (next))
 			       || reg_set_p (bl2->biv->src_reg, next)))
 			  || GET_CODE (next) == JUMP_INSN)
 			break;
 #ifdef HAVE_cc0
-		      if (GET_RTX_CLASS (GET_CODE (next)) != 'i'
+		      if (INSN_P (next)
 			  || ! sets_cc0_p (PATTERN (next)))
 #endif
 			dominator = next;
@@ -4283,7 +4282,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 		   p != next->insn;
 		   p = next_insn_in_loop (loop, p))
 		{
-		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+		  if (!INSN_P (p))
 		    continue;
 		  if (reg_mentioned_p (old_reg, PATTERN (p)))
 		    {
@@ -5445,6 +5444,12 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   struct induction *b;
   struct iv_class *bl;
   rtx set = single_set (insn);
+  rtx temp;
+
+  /* Attempt to prove constantness of the values.  */
+  temp = simplify_rtx (add_val);
+  if (temp)
+    add_val = temp;
 
   v->insn = insn;
   v->src_reg = src_reg;
@@ -5603,11 +5608,11 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
     v->no_const_addval = 1;
     if (tem == const0_rtx)
       ;
-    else if (GET_CODE (tem) == CONST_INT)
+    else if (CONSTANT_P (add_val))
       v->no_const_addval = 0;
-    else if (GET_CODE (tem) == PLUS)
+    if (GET_CODE (tem) == PLUS)
       {
-        while (1)
+	while (1)
 	  {
 	    if (GET_CODE (XEXP (tem, 0)) == PLUS)
 	      tem = XEXP (tem, 0);
@@ -5616,8 +5621,8 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
 	    else
 	      break;
 	  }
-        if (GET_CODE (XEXP (tem, 1)) == CONST_INT)
-          v->no_const_addval = 0;
+	if (CONSTANT_P (XEXP (tem, 1)))
+	  v->no_const_addval = 0;
       }
   }
 
@@ -6868,6 +6873,10 @@ express_from_1 (a, b, mult)
   else if (GET_CODE (a) == CONST_INT)
     {
       return plus_constant (b, -INTVAL (a) * INTVAL (mult));
+    }
+  else if (CONSTANT_P (a))
+    {
+      return simplify_gen_binary (MINUS, GET_MODE (b), const0_rtx, a);
     }
   else if (GET_CODE (b) == PLUS)
     {
