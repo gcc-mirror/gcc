@@ -1,3 +1,8 @@
+2003-09-04  Eric Christopher  <echristo@redhat.com>
+
+	* config/frv/t-frv: Fix path for frv-abi.h.
+	* config/frv/frv-asm.h: Fix string concatenation.
+
 2003-09-04  DJ Delorie  <dj@redhat.com>
 
 	* builtins.c (apply_args_size): Guard against a NULL cfun.
@@ -12,7 +17,7 @@
 	* configure: Regenerate.
 	* config.in: Likewise.
 	* config/i386/i386.c: Rename CMOV_SUN_AS_SYNTAX to
-	HAVE_AS_IX86_CMOV_SUN_SYNTAX. 
+	HAVE_AS_IX86_CMOV_SUN_SYNTAX.
 	* config/i386/sol2.h (CMOV_SUN_AS_SYNTAX): Remove.
 	Fixes PR target/12101.
 
@@ -20,7 +25,7 @@
 
 	* c-common.c (fname_as_string): Use lang_hooks.decl_printable_name
 	with verbosity 0, instead of DECL_NAME, for human-readable string.
-	
+
 2003-09-04  Eric Christopher  <echristo@redhat.com>
 
 	* targhooks.c (default_return_in_memory): Allow
