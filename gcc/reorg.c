@@ -1069,10 +1069,13 @@ mostly_true_jump (jump_insn, condition)
 
   /* If TARGET_LABEL has no jumps between it and the end of the function,
      this is essentially a conditional return, so predict it as false.  */
-  for (insn = NEXT_INSN (target_label);
-       insn && GET_CODE (insn) != JUMP_INSN;
-       insn = NEXT_INSN (insn))
-    ;
+  for (insn = NEXT_INSN (target_label); insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+	insn = XVECEXP (PATTERN (insn), 0, 0);
+      if (GET_CODE (insn) == JUMP_INSN)
+	break;
+    }
 
   if (insn == 0)
     return 0;
@@ -1085,6 +1088,16 @@ mostly_true_jump (jump_insn, condition)
        insn = PREV_INSN (insn))
     if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
       return 2;
+
+  /* If this is a jump to the test of a loop, it is likely true.  We scan
+     forwards from the target label.  If we find a NOTE_INSN_LOOP_VTOP
+     before the next real insn, we assume the branch is to the loop branch
+     test.  */
+  for (insn = NEXT_INSN (target_label);
+       insn && GET_CODE (insn) == NOTE;
+       insn = PREV_INSN (insn))
+    if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP)
+      return 1;
 
   /* If we couldn't figure out what this jump was, assume it won't be 
      taken.  This should be rare.  */
