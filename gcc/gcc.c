@@ -973,8 +973,8 @@ char *
 my_strerror(e)
      int e;
 {
-
 #ifdef HAVE_STRERROR
+
   return strerror(e);
 
 #else
@@ -4557,18 +4557,6 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
      char *errmsg_fmt;
      char *errmsg_arg;
 {
-  char buf[30];
-  char *s;
-
-  /* ??? Why doesn't my_strerror handle this?  */
-  if (errno < sys_nerr)
-    s = my_strerror (errno);
-  else
-    {
-      sprintf (buf, "unknown error %d", errno);
-      s = buf;
-    }
-
   if (errmsg_arg)
     {
       /* Space for trailing '\0' is in %s.  */
@@ -4577,7 +4565,7 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
       errmsg_fmt = msg;
     }
 
-  fatal ("%s: %s", errmsg_fmt, s);
+  fatal ("%s: %s", errmsg_fmt, my_strerror (errno));
 }
 
 /* More 'friendly' abort that prints the line and file.
