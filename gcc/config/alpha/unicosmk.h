@@ -293,19 +293,6 @@ do {								\
 #undef EPILOGUE_USES
 #define EPILOGUE_USES(REGNO)  ((REGNO) == 26 || (REGNO) == 15)
 
-/* Machine-specific function data.  */
-
-struct machine_function
-{
-  /* List of call information words for calls from this function.  */
-  struct rtx_def *first_ciw;
-  struct rtx_def *last_ciw;
-  int ciw_count;
-
-  /* List of deferred case vectors.  */
-  struct rtx_def *addr_list;
-};
-
 /* Would have worked, only the stack doesn't seem to be executable
 #undef TRAMPOLINE_TEMPLATE
 #define TRAMPOLINE_TEMPLATE(FILE)			\

@@ -1,3 +1,49 @@
+2002-05-31  Richard Henderson  <rth@redhat.com>
+
+	* configure.in (HAVE_AS_TLS): Add alpha tests.
+	* configure: Rebuild.
+	* config/alpha/alpha.c (TARGET_AS_TLS): New.
+	(alpha_tls_size, alpha_tls_size_string): New.
+	(overide_options): Set it.  Always install machine_status hooks.
+	(input_operand): Accept got tls predicates.
+	(local_symbol_p): Merge into ...
+	(local_symbolic_operand): ... here.  Reject tls symbols.
+	(global_symbolic_operand): Likewise.
+	(tls_symbolic_operand_1, dtp16_symbolic_operand): New.
+	(dtp32_symbolic_operand, gotdtp_symbolic_operand): New.
+	(tp16_symbolic_operand, tp32_symbolic_operand): New.
+	(gottp_symbolic_operand, tls_symbolic_operand_type): New.
+	(alpha_encode_section_info): Handle TLS symbols.
+	(alpha_strip_name_encoding): Likewise.
+	(alpha_legitimate_address_p): Likewise.
+	(alpha_legitimize_address): Likewise.
+	(alpha_expand_mov): Early exit to avoid nop moves.
+	(struct machine_function): Move from unicosmk.h.  Add some_ld_name.
+	(alpha_init_machine_status, alpha_mark_machine_status,
+	alpha_free_machine_status): Always define.
+	(get_some_local_dynamic_name, get_some_local_dynamic_name_1): New.
+	(print_operand, print_operand_address): Add TLS relocs.
+	* config/alpha/alpha.h (HAVE_AS_TLS): Default 0.
+	(MASK_TLS_KERNEL, TARGET_TLS_KERNEL): New.
+	(TARGET_SWITCHES): Add -mtls-kernel.
+	(alpha_tls_size, alpha_tls_size_string): New.
+	(TARGET_OPTIONS): Add -mtls-size=.
+	(reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS,
+	REGNO_REG_CLASS, REG_CLASS_FROM_LETTER): Add R0_REG.
+	(ASM_OUTPUT_LABELREF): Skip %.
+	(PRINT_OPERAND_PUNCT_VALID_P): Add &.
+	(PREDICATE_CODES): Update.
+	* config/alpha/alpha.md (UNSPEC_TLSGD_CALL, UNSPEC_TLSLDM_CALL,
+	UNSPEC_TLSGD, UNSPEC_TLSLDM, UNSPEC_DTPREL, UNSPEC_TPREL,
+	UNSPEC_TP, UNSPECV_SET_TP): New.
+	(adddi_er_lo16_dtp, adddi_er_hi32_dtp, adddi_er_lo32_dtp,
+	adddi_er_lo16_tp, adddi_er_hi32_tp, adddi_er_lo32_tp, load_tp,
+	set_tp, movdi_er_tlsgd, movdi_er_tlsldm, movdi_er_gotdtp,
+	movdi_er_gottp, call_value_osf_tlsgd, call_value_osf_tlsldm): New.
+	(call_value_osf_2_er): Accept anything as op4.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/unicosmk.h (struct machine_function): Move to alpha.c.
+
 2002-05-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* cppinit.c (append_include_chain): Always pay attention to
