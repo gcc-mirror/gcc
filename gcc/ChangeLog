@@ -1,3 +1,8 @@
+Fri Mar 12 20:45:30 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* unroll.c (loop_iterations): Don't return a final value for EQ
+	comparison loops.
+
 Fri Mar 12 12:35:01 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* reload1.c (calculate_needs_all_insns): When ignore equivalence
