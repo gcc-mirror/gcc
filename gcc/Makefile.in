@@ -407,7 +407,7 @@ CPLUS_OBJS = cp-parse.o cp-decl.o cp-decl2.o \
    cp-cvt.o cp-search.o cp-lex.o cp-gc.o cp-call.o \
    cp-class.o cp-init.o cp-method.o cp-except.o \
    cp-expr.o cp-pt.o cp-edsel.o cp-xref.o \
-   $(CPLUS_INPUT) cp-spew.o c-common.o
+   $(CPLUS_INPUT) cp-spew.o c-common.o cp-error.o cp-errfn.o
 
 # Files specific to the C interpreter bytecode compiler(s).
 BC_OBJS = bc-emit.o bc-optab.o
