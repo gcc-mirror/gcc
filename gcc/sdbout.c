@@ -440,7 +440,7 @@ static void
 sdbout_record_type_name (type)
      tree type;
 {
-  char *name = 0;
+  const char *name = 0;
   int no_name;
 
   if (KNOWN_TYPE_TAG (type))
@@ -449,6 +449,7 @@ sdbout_record_type_name (type)
   if (TYPE_NAME (type) != 0)
     {
       tree t = 0;
+
       /* Find the IDENTIFIER_NODE for the type name.  */
       if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
 	t = TYPE_NAME (type);
