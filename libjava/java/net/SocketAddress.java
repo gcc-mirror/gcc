@@ -1,4 +1,4 @@
-/* PortUnreachableException.java -- received an ICMP port unreachable datagram
+/* SocketAddress.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,36 +37,18 @@ exception statement from your version. */
 
 package java.net;
 
-/**
- * This exception signals that an ICMP port unreachable datagram has been
- * received.
- *
- * @author Eric Blake <ebb9@email.byu.edu>
- * @since 1.4
- * @status updated to 1.4
+import java.io.*;
+
+/** 
+ * Abstract base class for InetSocketAddress.
+ * InetSocketAddress is to my knowledge the only derived
+ * class. [Ronald]
  */
-public class PortUnreachableException extends SocketException
+
+public abstract class SocketAddress implements Serializable
 {
-  /**
-   * Compatible with JDK 1.0+.
-   */
-  private static final long serialVersionUID = 8462541992376507323L;
-
-  /**
-   * Create a new instance without a descriptive error message.
-   */
-  public PortUnreachableException()
-  {
-  }
-
-  /**
-   * Create a new instance with a descriptive error message.
-   *
-   * @param message a message describing the error that occurred
-   */
-  public PortUnreachableException(String message)
-  {
-    super(message);
-  }
-} // class PortUnreachableException
+    public SocketAddress()
+    {
+    }
+}
 

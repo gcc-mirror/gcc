@@ -1,4 +1,4 @@
-/* PortUnreachableException.java -- received an ICMP port unreachable datagram
+/* InetSocketAddress.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,36 +37,92 @@ exception statement from your version. */
 
 package java.net;
 
-/**
- * This exception signals that an ICMP port unreachable datagram has been
- * received.
- *
- * @author Eric Blake <ebb9@email.byu.edu>
- * @since 1.4
- * @status updated to 1.4
+/** 
+ * InetSocketAddress instances represent socket addresses
+ * in the java.nio package. They encapsulate a InetAddress and
+ * a port number.
  */
-public class PortUnreachableException extends SocketException
+
+public class InetSocketAddress extends SocketAddress
 {
-  /**
-   * Compatible with JDK 1.0+.
-   */
-  private static final long serialVersionUID = 8462541992376507323L;
+    InetAddress addr;
+    int port;
+    
+    public InetSocketAddress(InetAddress addr, int port)
+    {
+	this.addr = addr;
+	this.port = port;
+    }
 
-  /**
-   * Create a new instance without a descriptive error message.
-   */
-  public PortUnreachableException()
-  {
-  }
+    public InetSocketAddress(int port)
+    {
+	this.port = port;
+	try {
+	    this.addr = InetAddress.getLocalHost();
+	} catch (Exception e) {
+	}
+    }
 
-  /**
-   * Create a new instance with a descriptive error message.
-   *
-   * @param message a message describing the error that occurred
-   */
-  public PortUnreachableException(String message)
-  {
-    super(message);
-  }
-} // class PortUnreachableException
 
+    public InetSocketAddress(String hostname, int port)
+    {
+	this.port = port;
+	try {
+	    this.addr = InetAddress.getByName(hostname);
+	} catch (Exception e) {
+	}
+    }
+ 
+    /** 
+     * Test if obj is a InetSocketAddress and
+     * has the same address & port
+     */
+    public boolean equals(Object obj)
+    {
+	if (obj instanceof InetSocketAddress)
+	    {
+		InetSocketAddress a = (InetSocketAddress) obj;
+		return addr.equals(a.addr) && a.port == port;
+	    }
+	return false;
+    }
+
+    public InetAddress getAddress()
+    {
+	return addr;
+    }
+
+    public String getHostName()
+    {
+	return addr.getHostName();
+    }
+
+    public int getPort()
+    {
+	return port;
+    }
+    
+    /**
+     * TODO: see what sun does here.
+     */
+    public int hashCode()
+    {
+	return port + addr.hashCode();
+    }
+
+    /**
+     * TODO: see what sun does here.
+     */
+    public boolean isUnresolved()
+    {
+	return addr == null;
+    }
+    
+    /**
+     * TODO: see what sun does here.
+     */
+    public String toString()
+    {
+	return "SA:"+addr+":"+port;
+    }
+}

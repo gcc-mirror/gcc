@@ -1648,6 +1648,7 @@ java/net/DatagramSocketImpl.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java	\
 java/net/InetAddress.java \
+java/net/InetSocketAddress.java \
 java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
 java/net/MulticastSocket.java \
@@ -1660,6 +1661,7 @@ java/net/PortUnreachableException.java \
 java/net/ProtocolException.java	\
 java/net/ServerSocket.java \
 java/net/Socket.java \
+java/net/SocketAddress.java \
 java/net/SocketException.java \
 java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
@@ -2858,7 +2860,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
 .deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
 .deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
-.deps/java/net/InetAddress.P .deps/java/net/JarURLConnection.P \
+.deps/java/net/InetAddress.P .deps/java/net/InetSocketAddress.P \
+.deps/java/net/JarURLConnection.P \
 .deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
 .deps/java/net/NetPermission.P .deps/java/net/NoRouteToHostException.P \
 .deps/java/net/PasswordAuthentication.P \
@@ -2866,9 +2869,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/PlainSocketImpl.P \
 .deps/java/net/PortUnreachableException.P \
 .deps/java/net/ProtocolException.P .deps/java/net/ServerSocket.P \
-.deps/java/net/Socket.P .deps/java/net/SocketException.P \
-.deps/java/net/SocketImpl.P .deps/java/net/SocketImplFactory.P \
-.deps/java/net/SocketOptions.P .deps/java/net/SocketPermission.P \
+.deps/java/net/Socket.P .deps/java/net/SocketAddress.P \
+.deps/java/net/SocketException.P .deps/java/net/SocketImpl.P \
+.deps/java/net/SocketImplFactory.P .deps/java/net/SocketOptions.P \
+.deps/java/net/SocketPermission.P \
 .deps/java/net/SocketTimeoutException.P \
 .deps/java/net/URISyntaxException.P .deps/java/net/URL.P \
 .deps/java/net/URLClassLoader.P .deps/java/net/URLConnection.P \
