@@ -2055,9 +2055,6 @@ sjlj_mark_call_sites (lp_info)
   int last_call_site = -2;
   rtx insn, mem;
 
-  mem = adjust_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),
-			sjlj_fc_call_site_ofs);
-
   for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
     {
       struct eh_region *region;
@@ -2103,6 +2100,8 @@ sjlj_mark_call_sites (lp_info)
          before = find_first_parameter_load (insn, NULL_RTX);
 
       start_sequence ();
+      mem = adjust_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),
+			    sjlj_fc_call_site_ofs);
       emit_move_insn (mem, GEN_INT (this_call_site));
       p = get_insns ();
       end_sequence ();

@@ -1,3 +1,7 @@
+2001-09-25  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* except.c (sjlj_mark_call_sites): Change address inside sequence.
+
 2001-09-24  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* config/sh/linux.h (LINK_SPEC): Set dynamic-linker to agree with
