@@ -682,7 +682,15 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (temp1 = prev_nonnote_insn (JUMP_LABEL (insn))) != 0
 	      && (GET_CODE (temp1) == BARRIER
 		  || (GET_CODE (temp1) == INSN
-		      && rtx_equal_p (PATTERN (temp), PATTERN (temp1)))))
+		      && rtx_equal_p (PATTERN (temp), PATTERN (temp1))))
+	      /* Don't do this optimization if we have a loop containing only
+		 the USE instruction, and the loop start label has a usage
+		 count of 1.  This is because we will redo this optimization
+		 everytime through the outer loop, and jump opt will never
+		 exit.  */
+	      && ! ((temp2 = prev_nonnote_insn (temp)) != 0
+		    && temp2 == JUMP_LABEL (insn)
+		    && LABEL_NUSES (temp2) == 1))
 	    {
 	      if (GET_CODE (temp1) == BARRIER)
 		{
