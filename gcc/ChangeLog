@@ -1,3 +1,9 @@
+Mon Aug 30 12:23:53 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* fixinc/Makefile.in (subdir): New.
+	(fixincl.x, inclhack.sh, fixincl.sh): Use cp instead of $(CP).
+	(Makefile): New.
+	
 Mon Aug 30 01:02:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* dwarf2out.c (mem_loc_descriptor): New argument MODE.  All callers
