@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -335,7 +335,7 @@ init_final (filename)
 
 void
 end_final (filename)
-     char *filename;
+  const char *filename;
 {
   int i;
 
@@ -3300,7 +3300,7 @@ alter_cond (cond)
 
 void
 output_operand_lossage (str)
-     char *str;
+  const char *str;
 {
   if (this_is_asm_operands)
     error_for_asm (this_is_asm_operands, "invalid `asm': %s", str);
@@ -3680,11 +3680,11 @@ output_addr_const (file, x)
    We handle alternate assembler dialects here, just like output_asm_insn.  */
 
 void
-asm_fprintf VPROTO((FILE *file, char *p, ...))
+asm_fprintf VPROTO((FILE *file, const char *p, ...))
 {
 #ifndef ANSI_PROTOTYPES
   FILE *file;
-  char *p;
+  const char *p;
 #endif
   va_list argptr;
   char buf[10];
@@ -3694,7 +3694,7 @@ asm_fprintf VPROTO((FILE *file, char *p, ...))
 
 #ifndef ANSI_PROTOTYPES
   file = va_arg (argptr, FILE *);
-  p = va_arg (argptr, char *);
+  p = va_arg (argptr, const char *);
 #endif
 
   buf[0] = '%';

@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 88, 89, 92-8, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -162,56 +162,51 @@ extern void print_rtl ();
 extern void print_rtl_with_bb ();
 
 void rest_of_decl_compilation ();
-void error_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
-void error_with_decl PVPROTO((tree decl, char *s, ...));
-void error PVPROTO((char *s, ...));
-void fatal PVPROTO((char *s, ...));
-void warning_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
-void warning_with_decl PVPROTO((tree decl, char *s, ...));
-void warning PVPROTO((char *s, ...));
-void pedwarn PVPROTO((char *s, ...));
-void pedwarn_with_decl PVPROTO((tree decl, char *s, ...));
-void pedwarn_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
-void sorry PVPROTO((char *s, ...));
-static void set_target_switch PROTO((char *));
+static void set_target_switch PROTO((const char *));
 static char *decl_name PROTO((tree, int));
-static void vmessage PROTO((char *, char *, va_list));
-static void v_message_with_file_and_line PROTO((char *, int, char *,
-						char *, va_list));
-static void v_message_with_decl PROTO((tree, char *, char *, va_list));
+static void vmessage PROTO((const char *, const char *, va_list));
+static void v_message_with_file_and_line PROTO((const char *, int,
+						const char *, const char *,
+						va_list));
+static void v_message_with_decl PROTO((tree, const char *,
+				       const char *, va_list));
 static void file_and_line_for_asm PROTO((rtx, char **, int *));
-static void v_error_with_file_and_line PROTO((char *, int, char *, va_list));
-static void v_error_with_decl PROTO((tree, char *, va_list));
-static void v_error_for_asm PROTO((rtx, char *, va_list));
-static void verror PROTO((char *, va_list));
-static void vfatal PROTO((char *, va_list)) ATTRIBUTE_NORETURN;
-static void v_warning_with_file_and_line PROTO ((char *, int, char *, va_list));
-static void v_warning_with_decl PROTO((tree, char *, va_list));
-static void v_warning_for_asm PROTO((rtx, char *, va_list));
-static void vwarning PROTO((char *, va_list));
-static void vpedwarn PROTO((char *, va_list));
-static void v_pedwarn_with_decl PROTO((tree, char *, va_list));
-static void v_pedwarn_with_file_and_line PROTO((char *, int, char *, va_list));
-static void vsorry PROTO((char *, va_list));
-static void v_really_sorry PROTO((char *, va_list)) ATTRIBUTE_NORETURN;
+static void v_error_with_file_and_line PROTO((const char *, int,
+					      const char *, va_list));
+static void v_error_with_decl PROTO((tree, const char *, va_list));
+static void v_error_for_asm PROTO((rtx, const char *, va_list));
+static void verror PROTO((const char *, va_list));
+static void vfatal PROTO((const char *, va_list)) ATTRIBUTE_NORETURN;
+static void v_warning_with_file_and_line PROTO ((const char *, int,
+						 const char *, va_list));
+static void v_warning_with_decl PROTO((tree, const char *, va_list));
+static void v_warning_for_asm PROTO((rtx, const char *, va_list));
+static void vwarning PROTO((const char *, va_list));
+static void vpedwarn PROTO((const char *, va_list));
+static void v_pedwarn_with_decl PROTO((tree, const char *, va_list));
+static void v_pedwarn_with_file_and_line PROTO((const char *, int,
+						const char *, va_list));
+static void vsorry PROTO((const char *, va_list));
+static void v_really_sorry PROTO((const char *, va_list)) ATTRIBUTE_NORETURN;
 static void float_signal PROTO((int)) ATTRIBUTE_NORETURN;
 static void pipe_closed PROTO((int)) ATTRIBUTE_NORETURN;
 #ifdef ASM_IDENTIFY_LANGUAGE
 /* This might or might not be used in ASM_IDENTIFY_LANGUAGE. */
 static void output_lang_identify PROTO((FILE *)) ATTRIBUTE_UNUSED;
 #endif
-static void open_dump_file PROTO((char *, char *));
+static void open_dump_file PROTO((const char *, const char *));
 static void close_dump_file PROTO((void (*) (FILE *, rtx), rtx));
-static void dump_rtl PROTO((char *, tree, void (*) (FILE *, rtx), rtx));
-static void clean_dump_file PROTO((char *));
+static void dump_rtl PROTO((const char *, tree, void (*) (FILE *, rtx), rtx));
+static void clean_dump_file PROTO((const char *));
 static void compile_file PROTO((char *));
 static void display_help PROTO ((void));
 
-static void print_version PROTO((FILE *, char *));
-static int print_single_switch PROTO((FILE *, int, int, char *, char *, char *,
-				      char *, char *));
-static void print_switch_values PROTO((FILE *, int, int, char *, char *,
-				       char *));
+static void print_version PROTO((FILE *, const char *));
+static int print_single_switch PROTO((FILE *, int, int, const char *,
+				      const char *, const char *,
+				      const char *, const char *));
+static void print_switch_values PROTO((FILE *, int, int, const char *,
+				       const char *, const char *));
 
 void print_rtl_graph_with_bb PROTO ((const char *, const char *, rtx));
 void clean_graph_dump_file PROTO ((const char *, const char *));
@@ -258,7 +253,7 @@ extern tree current_function_decl;
 
 /* Name to use as base of names for dump output files.  */
 
-char *dump_base_name;
+const char *dump_base_name;
 
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
@@ -737,12 +732,12 @@ int flag_instrument_function_entry_exit = 0;
 /* Table of supported debugging formats.  */
 static struct
 {
-  char * arg;
+  const char * arg;
   /* Since PREFERRED_DEBUGGING_TYPE isn't necessarily a
      constant expression, we use NO_DEBUG in its place.  */
   enum debug_info_type debug_type;
   int use_extensions_p;
-  char * description;
+  const char * description;
 } *da,
 debug_args[] =
 {
@@ -773,10 +768,10 @@ debug_args[] =
 
 typedef struct
 {
-  char * string;
+  const char * string;
   int *  variable;
   int    on_value;
-  char * description;
+  const char * description;
 }
 lang_independent_options;
 
@@ -784,7 +779,7 @@ lang_independent_options;
 int flag_leading_underscore = -1;
 
 /* The user symbol prefix after having resolved same.  */
-char *user_label_prefix;
+const char *user_label_prefix;
 
 /* A default for same.  */
 #ifndef USER_LABEL_PREFIX
@@ -946,8 +941,8 @@ lang_independent_options f_options[] =
 
 static struct lang_opt
 {
-  char * option;
-  char * description;
+  const char * option;
+  const char * description;
 }
 documented_lang_options[] =
 {
@@ -1115,9 +1110,9 @@ documented_lang_options[] =
 
 struct
 {
-  char * name;
+  const char * name;
   int    value;
-  char * description;
+  const char * description;
 }
 target_switches [] = TARGET_SWITCHES;
 
@@ -1126,9 +1121,9 @@ target_switches [] = TARGET_SWITCHES;
 #ifdef TARGET_OPTIONS
 struct
 {
-  char *  prefix;
-  char ** variable;
-  char *  description;
+  const char *  prefix;
+  const char ** variable;
+  const char *  description;
 }
 target_options [] = TARGET_OPTIONS;
 #endif
@@ -1323,7 +1318,7 @@ do { int otime = get_run_time (); BODY; VAR += get_run_time () - otime; } while 
 
 void
 print_time (str, total)
-     char *str;
+     const char *str;
      int total;
 {
   fprintf (stderr,
@@ -1362,7 +1357,7 @@ count_error (warningp)
 
 void
 pfatal_with_name (name)
-     char *name;
+  const char *name;
 {
   fprintf (stderr, "%s: ", progname);
   perror (name);
@@ -1371,7 +1366,7 @@ pfatal_with_name (name)
 
 void
 fatal_io_error (name)
-     char *name;
+  const char *name;
 {
   fprintf (stderr, "%s: %s: I/O error\n", progname, name);
   exit (FATAL_EXIT_CODE);
@@ -1382,7 +1377,7 @@ fatal_io_error (name)
 
 void
 fatal_insn (message, insn)
-     char *message;
+     const char *message;
      rtx insn;
 {
   error (message);
@@ -1456,11 +1451,11 @@ announce_function (decl)
 
 void
 default_print_error_function (file)
-     char *file;
+  const char *file;
 {
   if (last_error_function != current_function_decl)
     {
-      char *kind = "function";
+      const char *kind = "function";
       if (current_function_decl != 0
 	  && TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
 	kind = "method";
@@ -1483,14 +1478,15 @@ default_print_error_function (file)
 /* Called by report_error_function to print out function name.
  * Default may be overridden by language front-ends.  */
 
-void (*print_error_function) PROTO((char *)) = default_print_error_function;
+void (*print_error_function) PROTO((const char *)) =
+  default_print_error_function;
 
 /* Prints out, if necessary, the name of the current function
   that caused an error.  Called from all error and warning functions.  */
 
 void
 report_error_function (file)
-     char *file;
+  const char *file;
 {
   struct file_stack *p;
 
@@ -1522,8 +1518,8 @@ report_error_function (file)
 
 static void
 vmessage (prefix, s, ap)
-     char *prefix;
-     char *s;
+     const char *prefix;
+     const char *s;
      va_list ap;
 {
   if (prefix)
@@ -1536,10 +1532,10 @@ vmessage (prefix, s, ap)
 
 static void
 v_message_with_file_and_line (file, line, prefix, s, ap)
-     char *file;
+     const char *file;
      int line;
-     char *prefix;
-     char *s;
+     const char *prefix;
+     const char *s;
      va_list ap;
 {
   if (file)
@@ -1556,11 +1552,11 @@ v_message_with_file_and_line (file, line, prefix, s, ap)
 static void
 v_message_with_decl (decl, prefix, s, ap)
      tree decl;
-     char *prefix;
-     char *s;
+     const char *prefix;
+     const char *s;
      va_list ap;
 {
-  char *p;
+  const char *p;
 
   fprintf (stderr, "%s:%d: ",
 	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
@@ -1595,7 +1591,7 @@ v_message_with_decl (decl, prefix, s, ap)
 
   if (*p == '%')		/* Print the name.  */
     {
-      char *n = (DECL_NAME (decl)
+      const char *n = (DECL_NAME (decl)
 		 ? (*decl_printable_name) (decl, 2)
 		 : "((anonymous))");
       fputs (n, stderr);
@@ -1654,9 +1650,9 @@ file_and_line_for_asm (insn, pfile, pline)
 
 static void
 v_error_with_file_and_line (file, line, s, ap)
-     char *file;
+     const char *file;
      int line;
-     char *s;
+     const char *s;
      va_list ap;
 {
   count_error (0);
@@ -1665,21 +1661,22 @@ v_error_with_file_and_line (file, line, s, ap)
 }
 
 void
-error_with_file_and_line VPROTO((char *file, int line, char *s, ...))
+error_with_file_and_line VPROTO((const char *file, int line,
+				 const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *file;
+  const char *file;
   int line;
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, char *);
+  file = va_arg (ap, const char *);
   line = va_arg (ap, int);
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_error_with_file_and_line (file, line, s, ap);
@@ -1693,7 +1690,7 @@ error_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 static void
 v_error_with_decl (decl, s, ap)
      tree decl;
-     char *s;
+     const char *s;
      va_list ap;
 {
   count_error (0);
@@ -1702,11 +1699,11 @@ v_error_with_decl (decl, s, ap)
 }
 
 void
-error_with_decl VPROTO((tree decl, char *s, ...))
+error_with_decl VPROTO((tree decl, const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
   tree decl;
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
@@ -1714,7 +1711,7 @@ error_with_decl VPROTO((tree decl, char *s, ...))
 
 #ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_error_with_decl (decl, s, ap);
@@ -1728,7 +1725,7 @@ error_with_decl VPROTO((tree decl, char *s, ...))
 static void
 v_error_for_asm (insn, s, ap)
      rtx insn;
-     char *s;
+     const char *s;
      va_list ap;
 {
   char *file;
@@ -1741,11 +1738,11 @@ v_error_for_asm (insn, s, ap)
 }
 
 void
-error_for_asm VPROTO((rtx insn, char *s, ...))
+error_for_asm VPROTO((rtx insn, const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
   rtx insn;
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
@@ -1753,7 +1750,7 @@ error_for_asm VPROTO((rtx insn, char *s, ...))
 
 #ifndef ANSI_PROTOTYPES
   insn = va_arg (ap, rtx);
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_error_for_asm (insn, s, ap);
@@ -1764,24 +1761,24 @@ error_for_asm VPROTO((rtx insn, char *s, ...))
 
 static void
 verror (s, ap)
-     char *s;
+     const char *s;
      va_list ap;
 {
   v_error_with_file_and_line (input_filename, lineno, s, ap);
 }
 
 void
-error VPROTO((char *s, ...))
+error VPROTO((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   verror (s, ap);
@@ -1792,7 +1789,7 @@ error VPROTO((char *s, ...))
 
 static void
 vfatal (s, ap)
-     char *s;
+     const char *s;
      va_list ap;
 {
   verror (s, ap);
@@ -1800,17 +1797,17 @@ vfatal (s, ap)
 }
 
 void
-fatal VPROTO((char *s, ...))
+fatal VPROTO((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   vfatal (s, ap);
@@ -1821,9 +1818,9 @@ fatal VPROTO((char *s, ...))
 
 static void
 v_warning_with_file_and_line (file, line, s, ap)
-     char *file;
+     const char *file;
      int line;
-     char *s;
+     const char *s;
      va_list ap;
 {
   if (count_error (1))
@@ -1834,21 +1831,22 @@ v_warning_with_file_and_line (file, line, s, ap)
 }
 
 void
-warning_with_file_and_line VPROTO((char *file, int line, char *s, ...))
+warning_with_file_and_line VPROTO((const char *file, int line,
+				   const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *file;
+  const char *file;
   int line;
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, char *);
+  file = va_arg (ap, const char *);
   line = va_arg (ap, int);
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_warning_with_file_and_line (file, line, s, ap);
@@ -1862,7 +1860,7 @@ warning_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 static void
 v_warning_with_decl (decl, s, ap)
      tree decl;
-     char *s;
+     const char *s;
      va_list ap;
 {
   if (count_error (1))
@@ -1873,11 +1871,11 @@ v_warning_with_decl (decl, s, ap)
 }
 
 void
-warning_with_decl VPROTO((tree decl, char *s, ...))
+warning_with_decl VPROTO((tree decl, const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
   tree decl;
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
@@ -1885,7 +1883,7 @@ warning_with_decl VPROTO((tree decl, char *s, ...))
 
 #ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_warning_with_decl (decl, s, ap);
@@ -1899,7 +1897,7 @@ warning_with_decl VPROTO((tree decl, char *s, ...))
 static void
 v_warning_for_asm (insn, s, ap)
      rtx insn;
-     char *s;
+     const char *s;
      va_list ap;
 {
   if (count_error (1))
@@ -1914,11 +1912,11 @@ v_warning_for_asm (insn, s, ap)
 }
 
 void
-warning_for_asm VPROTO((rtx insn, char *s, ...))
+warning_for_asm VPROTO((rtx insn, const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
   rtx insn;
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
@@ -1926,7 +1924,7 @@ warning_for_asm VPROTO((rtx insn, char *s, ...))
 
 #ifndef ANSI_PROTOTYPES
   insn = va_arg (ap, rtx);
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_warning_for_asm (insn, s, ap);
@@ -1937,24 +1935,24 @@ warning_for_asm VPROTO((rtx insn, char *s, ...))
 
 static void
 vwarning (s, ap)
-     char *s;
+     const char *s;
      va_list ap;
 {
   v_warning_with_file_and_line (input_filename, lineno, s, ap);
 }
 
 void
-warning VPROTO((char *s, ...))
+warning VPROTO((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   vwarning (s, ap);
@@ -1966,7 +1964,7 @@ warning VPROTO((char *s, ...))
 
 static void
 vpedwarn (s, ap)
-     char *s;
+     const char *s;
      va_list ap;
 {
   if (flag_pedantic_errors)
@@ -1976,17 +1974,17 @@ vpedwarn (s, ap)
 }
 
 void
-pedwarn VPROTO((char *s, ...))
+pedwarn VPROTO((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   vpedwarn (s, ap);
@@ -1996,7 +1994,7 @@ pedwarn VPROTO((char *s, ...))
 static void
 v_pedwarn_with_decl (decl, s, ap)
      tree decl;
-     char *s;
+     const char *s;
      va_list ap;
 {
   /* We don't want -pedantic-errors to cause the compilation to fail from
@@ -2016,11 +2014,11 @@ v_pedwarn_with_decl (decl, s, ap)
 }
 
 void
-pedwarn_with_decl VPROTO((tree decl, char *s, ...))
+pedwarn_with_decl VPROTO((tree decl, const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
   tree decl;
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
@@ -2028,7 +2026,7 @@ pedwarn_with_decl VPROTO((tree decl, char *s, ...))
 
 #ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_pedwarn_with_decl (decl, s, ap);
@@ -2037,9 +2035,9 @@ pedwarn_with_decl VPROTO((tree decl, char *s, ...))
 
 static void
 v_pedwarn_with_file_and_line (file, line, s, ap)
-     char *file;
+     const char *file;
      int line;
-     char *s;
+     const char *s;
      va_list ap;
 {
   if (flag_pedantic_errors)
@@ -2049,21 +2047,22 @@ v_pedwarn_with_file_and_line (file, line, s, ap)
 }
 
 void
-pedwarn_with_file_and_line VPROTO((char *file, int line, char *s, ...))
+pedwarn_with_file_and_line VPROTO((const char *file, int line,
+				   const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *file;
+  const char *file;
   int line;
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, char *);
+  file = va_arg (ap, const char *);
   line = va_arg (ap, int);
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_pedwarn_with_file_and_line (file, line, s, ap);
@@ -2074,7 +2073,7 @@ pedwarn_with_file_and_line VPROTO((char *file, int line, char *s, ...))
 
 static void
 vsorry (s, ap)
-     char *s;
+     const char *s;
      va_list ap;
 {
   sorrycount++;
@@ -2087,17 +2086,17 @@ vsorry (s, ap)
 }
 
 void
-sorry VPROTO((char *s, ...))
+sorry VPROTO((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   vsorry (s, ap);
@@ -2108,7 +2107,7 @@ sorry VPROTO((char *s, ...))
 
 static void
 v_really_sorry (s, ap)
-     char *s;
+     const char *s;
      va_list ap;
 {
   sorrycount++;
@@ -2121,17 +2120,17 @@ v_really_sorry (s, ap)
 }
 
 void
-really_sorry VPROTO((char *s, ...))
+really_sorry VPROTO((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *s;
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
 #ifndef ANSI_PROTOTYPES
-  s = va_arg (ap, char *);
+  s = va_arg (ap, const char *);
 #endif
 
   v_really_sorry (s, ap);
@@ -2166,7 +2165,7 @@ do_abort ()
 
 void
 botch (s)
-  char * s ATTRIBUTE_UNUSED;
+  const char * s ATTRIBUTE_UNUSED;
 {
   abort ();
 }
@@ -2382,7 +2381,7 @@ strip_off_ending (name, len)
 void
 output_quoted_string (asm_file, string)
      FILE *asm_file;
-     char *string;
+     const char *string;
 {
 #ifdef OUTPUT_QUOTED_STRING
   OUTPUT_QUOTED_STRING (asm_file, string);
@@ -2405,10 +2404,10 @@ output_quoted_string (asm_file, string)
 void
 output_file_directive (asm_file, input_name)
      FILE *asm_file;
-     char *input_name;
+     const char *input_name;
 {
   int len = strlen (input_name);
-  char *na = input_name + len;
+  const char *na = input_name + len;
 
   /* NA gets INPUT_NAME sans directory names.  */
   while (na > input_name)
@@ -2451,8 +2450,8 @@ output_lang_identify (asm_out_file)
 /* Routine to open a dump file.  */
 static void
 open_dump_file (suffix, function_name)
-     char *suffix;
-     char *function_name;
+     const char *suffix;
+     const char *function_name;
 {
   char *dumpname;
 
@@ -2505,7 +2504,7 @@ close_dump_file (func, insns)
 /* Routine to dump rtl into a file.  */
 static void
 dump_rtl (suffix, decl, func, insns)
-     char *suffix;
+     const char *suffix;
      tree   decl;
      void (*func) PROTO ((FILE *, rtx));
      rtx    insns;
@@ -2517,7 +2516,7 @@ dump_rtl (suffix, decl, func, insns)
 /* Routine to empty a dump file.  */
 static void
 clean_dump_file (suffix)
-     char *suffix;
+  const char *suffix;
 {
   char *dumpname;
 
@@ -3301,7 +3300,7 @@ compile_file (name)
 void
 rest_of_decl_compilation (decl, asmspec, top_level, at_end)
      tree decl;
-     char *asmspec;
+     const char *asmspec;
      int top_level;
      int at_end;
 {
@@ -4254,7 +4253,7 @@ display_help ()
 {
   int    undoc;
   unsigned long	 i;
-  char * lang;
+  const char * lang;
   
 #ifndef USE_CPPLIB  
   printf ("Usage: %s input [switches]\n", progname);
@@ -4266,7 +4265,7 @@ display_help ()
 
   for (i = NUM_ELEM (f_options); i--;)
     {
-      char * description = f_options[i].description;
+      const char * description = f_options[i].description;
       
       if (description != NULL && * description != 0)
 	printf ("  -f%-21s %s\n",
@@ -4282,7 +4281,7 @@ display_help ()
   
   for (i = NUM_ELEM (W_options); i--;)
     {
-      char * description = W_options[i].description;
+      const char * description = W_options[i].description;
       
       if (description != NULL && * description != 0)
 	printf ("  -W%-21s %s\n",
@@ -4335,8 +4334,8 @@ display_help ()
 
       for (i = 0; i < NUM_ELEM (documented_lang_options); i++)
 	{
-	  char * description = documented_lang_options[i].description;
-	  char * option      = documented_lang_options[i].option;
+	  const char * description = documented_lang_options[i].description;
+	  const char * option      = documented_lang_options[i].option;
 
 	  if (description == NULL)
 	    {
@@ -4381,8 +4380,8 @@ display_help ()
 
       for (i = NUM_ELEM (target_switches); i--;)
 	{
-	  char * option      = target_switches[i].name;
-	  char * description = target_switches[i].description;
+	  const char * option      = target_switches[i].name;
+	  const char * description = target_switches[i].description;
 
 	  if (option == NULL || * option == 0)
 	    continue;
@@ -4400,8 +4399,8 @@ display_help ()
 #ifdef TARGET_OPTIONS      
       for (i = NUM_ELEM (target_options); i--;)
 	{
-	  char * option      = target_options[i].prefix;
-	  char * description = target_options[i].description;
+	  const char * option      = target_options[i].prefix;
+	  const char * description = target_options[i].description;
 
 	  if (option == NULL || * option == 0)
 	    continue;
@@ -4982,7 +4981,7 @@ main (argc, argv)
 		 -gdwarf -g3 is equivalent to -gdwarf3.  */
 	      static int type_explicitly_set_p = 0;
 	      /* Indexed by enum debug_info_type.  */
-	      static char *debug_type_names[] =
+	      static const char *debug_type_names[] =
 	      {
 		"none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff"
 	      };
@@ -5223,7 +5222,7 @@ main (argc, argv)
 
 static void
 set_target_switch (name)
-     char *name;
+  const char *name;
 {
   register size_t j;
   int valid = 0;
@@ -5262,7 +5261,7 @@ set_target_switch (name)
 static void
 print_version (file, indent)
      FILE *file;
-     char *indent;
+     const char *indent;
 {
   fprintf (file, "%s%s%s version %s", indent, *indent != 0 ? " " : "",
 	   language_string, version_string);
@@ -5285,7 +5284,7 @@ static int
 print_single_switch (file, pos, max, indent, sep, term, type, name)
      FILE *file;
      int pos, max;
-     char *indent, *sep, *term, *type, *name;
+     const char *indent, *sep, *term, *type, *name;
 {
   /* The ultrix fprintf returns 0 on success, so compute the result we want
      here since we need it for the following test.  */
@@ -5316,7 +5315,7 @@ static void
 print_switch_values (file, pos, max, indent, sep, term)
      FILE *file;
      int pos, max;
-     char *indent, *sep, *term;
+     const char *indent, *sep, *term;
 {
   size_t j;
   char **p;

@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986, 87, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-98, 1999 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -23,4 +23,4 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "output.h"
 
-char *user_label_prefix = 0;
+const char *user_label_prefix = 0;
