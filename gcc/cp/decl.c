@@ -2939,6 +2939,12 @@ warn_extern_redeclared_static (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == TYPE_DECL)
     return;
+  
+  /* Don't get confused by static member functions; that's a different
+     use of `static'.  */
+  if (TREE_CODE (newdecl) == FUNCTION_DECL
+      && DECL_STATIC_FUNCTION_P (newdecl))
+    return;
 
   /* If the old declaration was `static', or the new one isn't, then
      then everything is OK.  */
@@ -3284,6 +3290,7 @@ duplicate_decls (newdecl, olddecl)
       DECL_ABSTRACT_VIRTUAL_P (newdecl) |= DECL_ABSTRACT_VIRTUAL_P (olddecl);
       DECL_VIRTUAL_P (newdecl) |= DECL_VIRTUAL_P (olddecl);
       DECL_NEEDS_FINAL_OVERRIDER_P (newdecl) |= DECL_NEEDS_FINAL_OVERRIDER_P (olddecl);
+      DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
       new_defines_function = DECL_INITIAL (newdecl) != NULL_TREE;
       
       /* Optionally warn about more than one declaration for the same
@@ -7987,9 +7994,12 @@ expand_static_init (decl, init)
 	  || (init && TREE_CODE (init) == TREE_LIST))
 	assignment = build_aggr_init (decl, init, 0);
       else if (init)
-	/* The initialization we're doing here is just a bitwise
-	   copy.  */
-	assignment = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
+	{
+	  /* The initialization we're doing here is just a bitwise
+	     copy.  */
+	  assignment = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
+	  TREE_SIDE_EFFECTS (assignment) = 1;
+	}
       else
 	assignment = NULL_TREE;
 
