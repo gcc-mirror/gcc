@@ -1191,6 +1191,7 @@ extern tree array_type_nelts		PROTO((tree));
 extern tree value_member		PROTO((tree, tree));
 extern tree purpose_member		PROTO((tree, tree));
 extern tree binfo_member		PROTO((tree, tree));
+extern int attribute_in_list		PROTO((tree, tree));
 extern int attribute_list_equal		PROTO((tree, tree));
 extern int attribute_list_contained	PROTO((tree, tree));
 extern int tree_int_cst_equal		PROTO((tree, tree));
