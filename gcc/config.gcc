@@ -2741,7 +2741,7 @@ rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	xm_defines=POSIX
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix51.h"
+	tm_file="${tm_file} rs6000/aix.h rs6000/rs6000.h rs6000/aix.h rs6000/aix51.h"
 	tmake_file=rs6000/t-aix43
 	float_format=none
 	use_collect2=yes
@@ -2760,7 +2760,7 @@ rs6000-bull-bosx)
 	use_collect2=yes
 	;;
 rs6000-*-mach*)
-	tm_file=rs6000/mach.h
+	tm_file="rs6000/rs6000.h rs6000/mach.h"
 	xm_defines=POSIX
 	use_collect2=yes
 	;;
