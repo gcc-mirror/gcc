@@ -84,6 +84,8 @@ static void v_fatal (const char *, va_list)
      ATTRIBUTE_PRINTF (1,0) ATTRIBUTE_NORETURN;
 static void fatal (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
+struct line_maps line_table;
+
 sstring buf;
 
 int verbose = 0;
@@ -590,7 +592,6 @@ read_scan_file (char *in_fname, int argc, char **argv)
   struct fn_decl *fn;
   int i, strings_processed;
   struct symbol_list *cur_symbols;
-  struct line_maps line_table;
 
   obstack_init (&scan_file_obstack);
 

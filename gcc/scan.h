@@ -70,3 +70,5 @@ extern int source_lineno;
 extern sstring source_filename;
 /* Current physical line number */
 extern int lineno;
+
+extern struct line_maps line_table;

@@ -1,3 +1,10 @@
+2004-02-14  Per Bothner  <per@bothner.com>
+
+	* fix-header.c (line_table):  Move local variable in main to global.
+	* scan.h (line_table):  Use it.
+	* scan-decls.c (scan_decls):  Need to call linemap_lookup on token's
+	line (recently renamed to src_loc) before calling recognized_function.
+
 2004-02-14  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* Makefile.in: Fix comment typos.
