@@ -198,6 +198,7 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 libffi_basedir=${libffi_basedir}
 CC="${CC}"
 DEFS="$DEFS"
+ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 test ! -d include && mkdir include
 test ! -f include/fficonfig.h && cp fficonfig.h include/fficonfig.h
 if cmp -s fficonfig.h include/fficonfig.h 2>/dev/null; then 

@@ -1,3 +1,9 @@
+2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to
+	config.status.
+	* configure: Rebuilt.
+
 2003-02-03  Andreas Jaeger  <aj@suse.de>
 
 	* libU77/configure.in (AC_PROG_CC_WORKS): Define _GNU_SOURCE.

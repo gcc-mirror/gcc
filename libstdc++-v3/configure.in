@@ -496,6 +496,7 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 glibcpp_basedir=${glibcpp_basedir}
 CC="${CC}"
 CXX="${CXX}"
+ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 )
 dnl  In autoconf 2.5x, AC_OUTPUT is replaced by three AC_ macros:
 dnl  AC_CONFIG_FILES(Makefile \
