@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 88, 91-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
