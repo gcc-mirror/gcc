@@ -1,3 +1,10 @@
+Mon Mar 23 07:27:19 1998  Philippe De Muyter  <phdm@macqel.be>
+
+	* m68k.md (zero_extend[qh]idi2, iordi_zext): New patterns.
+	(zero_extendsidi2): Avoid useless copy.
+	(iorsi_zexthi_ashl16): Avoid "0" constraint for operand 2.
+	(iorsi_zext): New name for old unnamed pattern; indentation fixes.
+
 Mon Mar 23 07:12:05 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* final.c (only_leaf_regs_used): If pic_offset_table_rtx used,
