@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
-   Copyright (C) 1994, 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 95, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,14 +36,16 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "recog.h"
+#include "toplev.h"
+#include "tm_p.h"
 
 /* Which cpu we're compiling for (NULL(=base), ???).  */
-char *arc_cpu_string;
+const char *arc_cpu_string;
 int arc_cpu_type;
 
 /* Name of mangle string to add to symbols to separate code compiled for each
    cpu (or NULL).  */
-char *arc_mangle_cpu;
+const char *arc_mangle_cpu;
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -51,14 +53,14 @@ rtx arc_compare_op0, arc_compare_op1;
 
 /* Name of text, data, and rodata sections, as specified on command line.
    Selected by -m{text,data,rodata} flags.  */
-char *arc_text_string = ARC_DEFAULT_TEXT_SECTION;
-char *arc_data_string = ARC_DEFAULT_DATA_SECTION;
-char *arc_rodata_string = ARC_DEFAULT_RODATA_SECTION;
+const char *arc_text_string = ARC_DEFAULT_TEXT_SECTION;
+const char *arc_data_string = ARC_DEFAULT_DATA_SECTION;
+const char *arc_rodata_string = ARC_DEFAULT_RODATA_SECTION;
 
 /* Name of text, data, and rodata sections used in varasm.c.  */
-char *arc_text_section;
-char *arc_data_section;
-char *arc_rodata_section;
+const char *arc_text_section;
+const char *arc_data_section;
+const char *arc_rodata_section;
 
 /* Array of valid operand punctuation characters.  */
 char arc_punct_chars[256];
@@ -80,15 +82,17 @@ static int arc_ccfsm_target_label;
    arc_print_operand.  */
 static int last_insn_set_cc_p;
 static int current_insn_set_cc_p;
-static void record_cc_ref ();
-
-void arc_init_reg_tables ();
+static void record_cc_ref PARAMS ((rtx));
+static void arc_init_reg_tables PARAMS ((void));
+static int get_arc_condition_code PARAMS ((rtx));
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
 void
 arc_init (void)
 {
+  char *tmp;
+  
   if (arc_cpu_string == 0
       || !strcmp (arc_cpu_string, "base"))
     {
@@ -108,12 +112,12 @@ arc_init (void)
     }
 
   /* Set the pseudo-ops for the various standard sections.  */
-  arc_text_section = xmalloc (strlen (arc_text_string) + sizeof (ARC_SECTION_FORMAT) + 1);
-  sprintf (arc_text_section, ARC_SECTION_FORMAT, arc_text_string);
-  arc_data_section = xmalloc (strlen (arc_data_string) + sizeof (ARC_SECTION_FORMAT) + 1);
-  sprintf (arc_data_section, ARC_SECTION_FORMAT, arc_data_string);
-  arc_rodata_section = xmalloc (strlen (arc_rodata_string) + sizeof (ARC_SECTION_FORMAT) + 1);
-  sprintf (arc_rodata_section, ARC_SECTION_FORMAT, arc_rodata_string);
+  arc_text_section = tmp = xmalloc (strlen (arc_text_string) + sizeof (ARC_SECTION_FORMAT) + 1);
+  sprintf (tmp, ARC_SECTION_FORMAT, arc_text_string);
+  arc_data_section = tmp = xmalloc (strlen (arc_data_string) + sizeof (ARC_SECTION_FORMAT) + 1);
+  sprintf (tmp, ARC_SECTION_FORMAT, arc_data_string);
+  arc_rodata_section = tmp = xmalloc (strlen (arc_rodata_string) + sizeof (ARC_SECTION_FORMAT) + 1);
+  sprintf (tmp, ARC_SECTION_FORMAT, arc_rodata_string);
 
   arc_init_reg_tables ();
 
@@ -127,7 +131,7 @@ arc_init (void)
 }
 
 /* The condition codes of the ARC, and the inverse function.  */
-static char *arc_condition_codes[] =
+static const char *const arc_condition_codes[] =
 {
   "al", 0, "eq", "ne", "p", "n", "c", "nc", "v", "nv",
   "gt", "le", "ge", "lt", "hi", "ls", "pnz", 0
@@ -167,7 +171,7 @@ get_arc_condition_code (comparison)
 enum machine_mode
 arc_select_cc_mode (op, x, y)
      enum rtx_code op;
-     rtx x, y;
+     rtx x, y ATTRIBUTE_UNUSED;
 {
   switch (op)
     {
@@ -187,6 +191,8 @@ arc_select_cc_mode (op, x, y)
 	case ASHIFTRT :
 	case LSHIFTRT :
 	  return CCZNCmode;
+	default:
+	  break;
 	}
     }
   return CCmode;
@@ -238,7 +244,7 @@ unsigned int arc_mode_class [NUM_MACHINE_MODES];
 
 enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
-void
+static void
 arc_init_reg_tables ()
 {
   int i;
@@ -309,8 +315,8 @@ arc_init_reg_tables ()
 
 int
 arc_valid_machine_decl_attribute (type, attributes, identifier, args)
-     tree type;
-     tree attributes;
+     tree type ATTRIBUTE_UNUSED;
+     tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
      tree args;
 {
@@ -333,7 +339,7 @@ arc_valid_machine_decl_attribute (type, attributes, identifier, args)
 
 int
 arc_comp_type_attributes (type1, type2)
-     tree type1, type2;
+     tree type1 ATTRIBUTE_UNUSED, type2 ATTRIBUTE_UNUSED;
 {
   return 1;
 }
@@ -342,7 +348,7 @@ arc_comp_type_attributes (type1, type2)
 
 void
 arc_set_default_type_attributes (type)
-     tree type;
+     tree type ATTRIBUTE_UNUSED;
 {
 }
 
@@ -374,7 +380,7 @@ call_operand (op, mode)
 int
 symbolic_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -393,7 +399,7 @@ symbolic_operand (op, mode)
 int
 symbolic_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -409,7 +415,7 @@ symbolic_memory_operand (op, mode)
 int
 short_immediate_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -422,7 +428,7 @@ short_immediate_operand (op, mode)
 int
 long_immediate_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -437,6 +443,8 @@ long_immediate_operand (op, mode)
 	 represented this way (the multiplication patterns can cause these
 	 to be generated).  They also occur for SFmode values.  */
       return 1;
+    default:
+      break;
     }
   return 0;
 }
@@ -450,7 +458,7 @@ long_immediate_operand (op, mode)
 int
 long_immediate_loadstore_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != MEM)
     return 0;
@@ -480,6 +488,8 @@ long_immediate_loadstore_operand (op, mode)
 	  && !SMALL_INT (INTVAL (XEXP (op, 1))))
 	return 1;
       return 0;
+    default:
+      break;
     }
   return 0;
 }
@@ -644,7 +654,7 @@ nonvol_nonimm_operand (op, mode)
 int
 const_sint32_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   /* All allowed constants will fit a CONST_INT.  */
   return (GET_CODE (op) == CONST_INT
@@ -658,7 +668,7 @@ const_sint32_operand (op, mode)
 int
 const_uint32_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
@@ -679,7 +689,7 @@ const_uint32_operand (op, mode)
 int
 proper_comparison_operator (op, mode)
     rtx op;
-    enum machine_mode mode;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -759,7 +769,7 @@ void
 arc_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
-     tree type;
+     tree type ATTRIBUTE_UNUSED;
      int *pretend_size;
      int no_rtl;
 {
@@ -843,6 +853,8 @@ arc_address_cost (addr)
 	  }
 	break;
       }
+    default:
+      break;
     }
 
   return 4;
@@ -1381,7 +1393,7 @@ arc_finalize_pic ()
 int
 shift_operator (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -1408,15 +1420,14 @@ shift_operator (op, mode)
 /* ??? We use the loop register here.  We don't use it elsewhere (yet) and
    using it here will give us a chance to play with it.  */
 
-char *
+const char *
 output_shift (operands)
      rtx *operands;
 {
-  static int loopend_lab;
   rtx shift = operands[3];
   enum machine_mode mode = GET_MODE (shift);
   enum rtx_code code = GET_CODE (shift);
-  char *shift_one;
+  const char *shift_one;
 
   if (mode != SImode)
     abort ();
@@ -1472,6 +1483,8 @@ output_shift (operands)
 	      /* The ARC doesn't have a rol insn.  Use something else.  */
 	      output_asm_insn ("asl.f 0,%0\n\tadc %0,0,0", operands);
 	      break;
+	    default:
+	      break;
 	    }
 	}
       /* Must loop.  */
@@ -1487,7 +1500,7 @@ output_shift (operands)
 	  if (optimize)
 	    {
 	      if (flag_pic)
-		sprintf ("lr %%4,[status]\n\tadd %%4,%%4,6\t%s single insn loop start",
+		sprintf (buf, "lr %%4,[status]\n\tadd %%4,%%4,6\t%s single insn loop start",
 			 ASM_COMMENT_START);
 	      else
 		sprintf (buf, "mov %%4,%%%%st(1f)\t%s (single insn loop start) >> 2",
@@ -1531,7 +1544,7 @@ output_shift (operands)
 
 void
 arc_initialize_trampoline (tramp, fnaddr, cxt)
-     rtx tramp, fnaddr, cxt;
+     rtx tramp ATTRIBUTE_UNUSED, fnaddr ATTRIBUTE_UNUSED, cxt ATTRIBUTE_UNUSED;
 {
 }
 
@@ -1601,9 +1614,11 @@ arc_print_operand (file, x, code)
 			     arc_condition_codes[arc_ccfsm_current_cc]);
 		}
 	      else
-		/* This insn is executed for either path, so don't
-		   conditionalize it at all.  */
-		; /* nothing to do */
+	        {
+		  /* This insn is executed for either path, so don't
+		     conditionalize it at all.  */
+		  ; /* nothing to do */
+		}
 	    }
 	  else
 	    {
@@ -1677,7 +1692,7 @@ arc_print_operand (file, x, code)
 
 	  split_double (x, &first, &second);
 	  fprintf (file, "0x%08lx",
-		   code == 'L' ? INTVAL (first) : INTVAL (second));
+		   (long)(code == 'L' ? INTVAL (first) : INTVAL (second)));
 	}
       else
 	output_operand_lossage ("invalid operand to %H/%L code");
@@ -1882,8 +1897,8 @@ record_cc_ref (insn)
 void
 arc_final_prescan_insn (insn, opvec, noperands)
      rtx insn;
-     rtx *opvec;
-     int noperands;
+     rtx *opvec ATTRIBUTE_UNUSED;
+     int noperands ATTRIBUTE_UNUSED;
 {
   /* BODY will hold the body of INSN.  */
   register rtx body = PATTERN (insn);
@@ -2167,7 +2182,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
 
 void
 arc_ccfsm_at_label (prefix, num)
-     char *prefix;
+     const char *prefix;
      int num;
 {
   if (arc_ccfsm_state == 3 && arc_ccfsm_target_label == num
