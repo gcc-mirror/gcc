@@ -1,5 +1,11 @@
 2003-07-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
+	* config/i386/xm-mingw32.h (HOST_BIT_BUCKET): Define
+	as "nul".
+	* config/i386/xm-mingw32.h: Change GNU CC to GCC.
+
+2003-07-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
 	* config/i386/winnt.c (associated_type): Artificial methods are not
 	affected by the import/export status of their class unless they are
 	COMDAT.
