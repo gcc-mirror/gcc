@@ -1,9 +1,9 @@
 /* Calculate (post)dominators in slightly super-linear time.
    Copyright (C) 2000 Free Software Foundation, Inc.
    Contributed by Michael Matz (matz@ifh.de).
-  
+
    This file is part of GCC.
- 
+
    GCC is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2, or (at your option)
@@ -119,17 +119,19 @@ static void idoms_to_doms		PARAMS ((struct dom_info *,
 /* Helper macro for allocating and initializing an array,
    for aesthetic reasons.  */
 #define init_ar(var, type, num, content)			\
-  do {								\
-    unsigned int i = 1;    /* Catch content == i.  */		\
-    if (! (content))						\
-      (var) = (type *) xcalloc ((num), sizeof (type));		\
-    else							\
-      {								\
-        (var) = (type *) xmalloc ((num) * sizeof (type));	\
-	for (i = 0; i < num; i++)				\
-	  (var)[i] = (content);					\
-      }								\
-  } while (0)
+  do								\
+    {								\
+      unsigned int i = 1;    /* Catch content == i.  */		\
+      if (! (content))						\
+	(var) = (type *) xcalloc ((num), sizeof (type));	\
+      else							\
+	{							\
+	  (var) = (type *) xmalloc ((num) * sizeof (type));	\
+	  for (i = 0; i < num; i++)				\
+	    (var)[i] = (content);				\
+	}							\
+    }								\
+  while (0)
 
 /* Allocate all needed memory in a pessimistic fashion (so we round up).
    This initialises the contents of DI, which already must be allocated.  */

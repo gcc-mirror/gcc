@@ -669,7 +669,7 @@ dbxout_global_decl (decl)
       && ! DECL_EXTERNAL (decl)
       && DECL_RTL_SET_P (decl))	/* Not necessary?  */
     dbxout_symbol (decl, 0);
-} 
+}
 
 /* At the end of compilation, finish writing the symbol table.
    Unless you define DBX_OUTPUT_MAIN_SOURCE_FILE_END, the default is
@@ -959,7 +959,7 @@ dbxout_type_methods (type)
 	}
       if (!need_prefix)
 	{
-          putc (';', asmfile);
+	  putc (';', asmfile);
 	  CHARS (1);
 	}
     }
@@ -1219,7 +1219,7 @@ dbxout_type (type, full)
 	 write it as a subtype.  */
       else if (TREE_TYPE (type) != 0
 	       && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
-        {
+	{
 	  /* If the size is non-standard, say what it is if we can use
 	     GDB extensions.  */
 
@@ -1232,10 +1232,10 @@ dbxout_type (type, full)
 	    }
 
 	  dbxout_range_type (type);
-        }
+	}
 
       else
-  	{
+	{
 	  /* If the size is non-standard, say what it is if we can use
 	     GDB extensions.  */
 
@@ -1259,7 +1259,7 @@ dbxout_type (type, full)
 	     larger.  This is because we print the bounds as signed decimal,
 	     and hence they can't span same size unsigned types.  */
 
- 	  if (use_gnu_debug_info_extensions
+	  if (use_gnu_debug_info_extensions
 	      && TYPE_MIN_VALUE (type) != 0
 	      && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
 	      && TYPE_MAX_VALUE (type) != 0
@@ -1288,7 +1288,7 @@ dbxout_type (type, full)
 	  else
 	    /* Output other integer types as subranges of `int'.  */
 	    dbxout_range_type (type);
-  	}
+	}
 
       break;
 
@@ -1801,7 +1801,7 @@ print_wide_int (c)
 
   CHARS (digs);
 }
-      
+
 /* Output the name of type TYPE, with no punctuation.
    Such names can be set up either by typedef declarations
    or by struct, enum and union tags.  */
@@ -1947,7 +1947,7 @@ dbxout_symbol (decl, local)
 		&& !TREE_ASM_WRITTEN (TYPE_NAME (type))
 		/* Distinguish the implicit typedefs of C++
 		   from explicit ones that might be found in C.  */
-                && DECL_ARTIFICIAL (decl)
+		&& DECL_ARTIFICIAL (decl)
 		/* Do not generate a tag for records of variable size,
 		   since this type can not be properly described in the
 		   DBX format, and it confuses some tools such as objdump.  */
@@ -1979,7 +1979,7 @@ dbxout_symbol (decl, local)
 		&& TYPE_NAME (type) == decl
 		/* Distinguish the implicit typedefs of C++
 		   from explicit ones that might be found in C.  */
-                && DECL_ARTIFICIAL (decl))
+		&& DECL_ARTIFICIAL (decl))
 	      {
 		if (use_gnu_debug_info_extensions && have_used_extensions)
 		  {
@@ -2112,7 +2112,7 @@ dbxout_symbol (decl, local)
 
       result = dbxout_symbol_location (decl, type, 0, DECL_RTL (decl));
       break;
-      
+
     default:
       break;
     }
@@ -2136,7 +2136,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 
   /* Don't mention a variable at all
      if it was completely optimized into nothingness.
-     
+
      If the decl was from an inline function, then its rtl
      is not identically the rtl that was used in this
      particular compilation.  */
@@ -2215,7 +2215,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 		      || GET_CODE (tmp) == LABEL_REF)
 		    current_sym_addr = tmp;
 		}
-  
+
 	      /* Ultrix `as' seems to need this.  */
 #ifdef DBX_STATIC_STAB_DATA_SECTION
 	      data_section ();
@@ -2504,7 +2504,7 @@ dbxout_parms (parms)
 	      }
 
 	    /* It is quite tempting to use:
-	       
+
 	           dbxout_type (TREE_TYPE (parms), 0);
 
 	       as the next statement, rather than using DECL_ARG_TYPE(), so
@@ -2517,7 +2517,7 @@ dbxout_parms (parms)
 	       double on the stack, but if we emit a stab saying the type is a
 	       float, then gdb will only read in a single value, and this will
 	       produce an erroneous value.  */
- 	    dbxout_type (DECL_ARG_TYPE (parms), 0);
+	    dbxout_type (DECL_ARG_TYPE (parms), 0);
 	    current_sym_value = DEBUGGER_ARG_OFFSET (current_sym_value, addr);
 	    dbxout_finish_symbol (parms);
 	  }
@@ -2635,13 +2635,13 @@ dbxout_parms (parms)
 	    const char *const decl_name = (DECL_NAME (parms)
 				     ? IDENTIFIER_POINTER (DECL_NAME (parms))
 				     : "(anon)");
-           if (GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 0)) == REG)
-              current_sym_value = 0;
+	    if (GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 0)) == REG)
+	      current_sym_value = 0;
 	    else
 	      current_sym_value
 	        = INTVAL (XEXP (XEXP (XEXP (DECL_RTL (parms), 0), 0), 1));
 	    current_sym_addr = 0;
-	      
+
 	    FORCE_TEXT;
 	    fprintf (asmfile, "%s\"%s:v", ASM_STABS_OP, decl_name);
 
@@ -2679,7 +2679,7 @@ dbxout_parms (parms)
 		&& TYPE_MODE (TREE_TYPE (parms)) != GET_MODE (DECL_RTL (parms))
 		&& GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms))) < UNITS_PER_WORD)
 	      {
-		current_sym_value += 
+		current_sym_value +=
 		    GET_MODE_SIZE (GET_MODE (DECL_RTL (parms)))
 		    - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms)));
 	      }
@@ -2789,7 +2789,7 @@ dbxout_block (block, depth, args)
   int blocknum = -1;
 
 #if DBX_BLOCKS_FUNCTION_RELATIVE
-  const char *begin_label; 
+  const char *begin_label;
   if (current_function_func_begin_label != NULL_TREE)
     begin_label = IDENTIFIER_POINTER (current_function_func_begin_label);
   else

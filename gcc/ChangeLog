@@ -1,3 +1,16 @@
+2002-05-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dbxout.c: Fix formatting.
+	* dependence.c: Likewise.
+	* df.c: Likewise.
+	* diagnostic.c: Likewise.
+	* doloop.c: Likewise.
+	* dominance.c: Likewise.
+	* doschk.c: Likewise.
+	* dwarf2asm.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+
 2002-05-10  Richard Henderson  <rth@redhat.com>
 
 	* final.c (end_final): Tidy whitespace.  Don't honor flag_pack_struct.
