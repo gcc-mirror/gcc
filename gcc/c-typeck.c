@@ -2514,44 +2514,24 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 					  TREE_READONLY (arg),
 					  TREE_THIS_VOLATILE (arg));
 
-      argtype = build_pointer_type (argtype);
-
       if (!c_mark_addressable (arg))
 	return error_mark_node;
 
-      {
-	tree addr;
+      if (TREE_CODE (arg) == COMPONENT_REF
+	  && DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
+	{
+	  error ("attempt to take address of bit-field structure member `%D'",
+		 TREE_OPERAND (arg, 1));
+	  return error_mark_node;
+	}
 
-	if (TREE_CODE (arg) == COMPONENT_REF)
-	  {
-	    tree field = TREE_OPERAND (arg, 1);
+      argtype = build_pointer_type (argtype);
+      val = build1 (ADDR_EXPR, argtype, arg);
 
-	    addr = build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0), flag);
+      if (TREE_CODE (arg) == COMPOUND_LITERAL_EXPR)
+	TREE_INVARIANT (val) = TREE_CONSTANT (val) = 1;
 
-	    if (DECL_C_BIT_FIELD (field))
-	      {
-		error ("attempt to take address of bit-field structure member `%s'",
-		       IDENTIFIER_POINTER (DECL_NAME (field)));
-		return error_mark_node;
-	      }
-
-	    addr = fold (build2 (PLUS_EXPR, argtype,
-				 convert (argtype, addr),
-				 convert (argtype, byte_position (field))));
-	    
-	    /* If the folded PLUS_EXPR is not a constant address, wrap
-               it in an ADDR_EXPR.  */
-	    if (!TREE_CONSTANT (addr))
-	      addr = build1 (ADDR_EXPR, argtype, arg);
-	  }
-	else
-	  addr = build1 (ADDR_EXPR, argtype, arg);
-
-	if (TREE_CODE (arg) == COMPOUND_LITERAL_EXPR)
-	  TREE_INVARIANT (addr) = TREE_CONSTANT (addr) = 1;
-
-	return addr;
-      }
+      return val;
 
     default:
       break;
