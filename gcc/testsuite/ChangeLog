@@ -1,3 +1,8 @@
+2004-12-23  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/19071
+	* gfortran.dg/complex_write.f90: New test.
+ 
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17595

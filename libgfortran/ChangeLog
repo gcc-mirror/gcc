@@ -1,3 +1,9 @@
+2004-12-23  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/19071
+	* io/tranfer.c (formatted_transfer): moved check for 
+	format reversion inside the processing loop.
+
 2004-12-19  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	PR libfortran/19074
