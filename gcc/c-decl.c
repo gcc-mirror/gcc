@@ -712,7 +712,6 @@ c_decode_option (p)
     warn_missing_braces = 0;
   else if (!strcmp (p, "-Wall"))
     {
-      extra_warnings = 1;
       /* We save the value of warn_uninitialized, since if they put
 	 -Wuninitialized on the command line, we need to generate a
 	 warning about not using it without also specifying -O.  */
