@@ -561,7 +561,7 @@ call_address_operand (op, mode)
 }
 
 /* What (if any) secondary registers are needed to move IN with mode
-   MODE into a register from in register class CLASS. 
+   MODE into a register in register class CLASS. 
 
    We might be able to simplify this.  */
 enum reg_class
