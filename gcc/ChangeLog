@@ -1,5 +1,7 @@
 Fri Mar 13 07:10:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* calls.c (expand_call): Fix typo in previous change.
+
 	* sparc.c (sparc_type_code): Avoid infinite loop when have
 	pointer to array of same pointer.
 	(sparc_type_code, case REAL_TYPE): Process subtypes here too.
