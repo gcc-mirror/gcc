@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.84 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -302,6 +302,7 @@ begin
       --  Output any messages for unreferenced entities
 
       Output_Unreferenced_Messages;
+      Sem_Warn.Check_Unused_Withs;
    end if;
 
    --  Qualify all entity names in inner packages, package bodies, etc.,
