@@ -1149,6 +1149,8 @@ __builtin_saveregs ()
 #endif
 
 #ifdef L_eprintf
+#ifndef inhibit_eprintf
+
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
 /* This is used by the `assert' macro.  */
@@ -1163,6 +1165,8 @@ __eprintf (string, expression, line, filename)
   fflush (stderr);
   abort ();
 }
+
+#endif
 #endif
 
 #ifdef L_bb
