@@ -195,6 +195,11 @@ int flag_vtable_thunks = DEFAULT_VTABLE_THUNKS;
 
 int flag_use_repository;
 
+/* Nonzero if we want to issue diagnostics that the standard says are not
+   required.  */
+
+int flag_optional_diags = 1;
+
 /* Nonzero means give string constants the type `const char *'
    to get extra warnings from them.  These warnings will be too numerous
    to be useful, except in thoroughly ANSIfied programs.  */
@@ -281,7 +286,11 @@ int warn_old_style_cast;
 
 /* Warn about #pragma directives that are not recognised.  */      
 
-int warn_unknown_pragmas = 0; /* Tri state variable.  */  
+int warn_unknown_pragmas; /* Tri state variable.  */  
+
+/* Nonzero means warn about use of multicharacter literals.  */
+
+int warn_multichar = 1;
 
 /* Nonzero means `$' can be in an identifier.  */
 
@@ -487,6 +496,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
   {"operator-names", &flag_operator_names, 1},
+  {"optional-diags", &flag_optional_diags, 1},
   {"check-new", &flag_check_new, 1},
   {"repo", &flag_use_repository, 1},
   {"for-scope", &flag_new_for_scope, 2},
@@ -718,6 +728,10 @@ lang_decode_option (argc, argv)
 	warn_sign_promo = setting;
       else if (!strcmp (p, "old-style-cast"))
 	warn_old_style_cast = setting;
+      else if (!strcmp (p, "overloaded-virtual"))
+	warn_overloaded_virtual = setting;
+      else if (!strcmp (p, "multichar"))
+	warn_multichar = setting;
       else if (!strcmp (p, "unknown-pragmas"))
 	/* Set to greater than 1, so that even unknown pragmas in
 	   system headers will be warned about.  */  
@@ -743,6 +757,7 @@ lang_decode_option (argc, argv)
 	  warn_sign_compare = setting;
 	  warn_extern_inline = setting;
 	  warn_nonvdtor = setting;
+	  warn_multichar = setting;
 	  /* We save the value of warn_uninitialized, since if they put
 	     -Wuninitialized on the command line, we need to generate a
 	     warning about not using it without also specifying -O.  */
@@ -754,9 +769,6 @@ lang_decode_option (argc, argv)
 	     headers.  */                                        
 	  warn_unknown_pragmas = 1;                  
 	}
-
-      else if (!strcmp (p, "overloaded-virtual"))
-	warn_overloaded_virtual = setting;
       else return strings_processed;
     }
   else if (!strcmp (p, "-ansi"))

@@ -3971,7 +3971,7 @@ real_yylex ()
 	    num_chars = max_chars;
 	    error ("character constant too long");
 	  }
-	else if (num_chars != 1)
+	else if (num_chars != 1 && warn_multichar)
 	  warning ("multi-character character constant");
 
 	/* If char type is signed, sign-extend the constant.  */

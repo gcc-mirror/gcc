@@ -3740,6 +3740,7 @@ pushdecl_class_level (x)
 	  tree icv = IDENTIFIER_CLASS_VALUE (name);
 
 	  if (icv && icv != x
+	      && flag_optional_diags
 	      /* Don't complain about inherited names.  */
 	      && id_in_current_class (name)
 	      /* Or shadowed tags.  */
@@ -11074,6 +11075,17 @@ xref_tag (code_type_node, name, binfo, globalize)
   register tree ref, t;
   struct binding_level *b = inner_binding_level;
   int got_type = 0;
+  tree attributes = NULL_TREE;
+
+  /* If we are called from the parser, code_type_node will sometimes be a
+     TREE_LIST.  This indicates that the user wrote
+     "class __attribute__ ((foo)) bar".  Extract the attributes so we can
+     use them later.  */
+  if (TREE_CODE (code_type_node) == TREE_LIST)
+    {
+      attributes = TREE_PURPOSE (code_type_node);
+      code_type_node = TREE_VALUE (code_type_node);
+    }
 
   tag_code = (enum tag_types) TREE_INT_CST_LOW (code_type_node);
   switch (tag_code)
@@ -11248,6 +11260,8 @@ xref_tag (code_type_node, name, binfo, globalize)
     }
 
   pop_obstacks ();
+
+  TREE_TYPE (ref) = attributes;
 
   return ref;
 }
@@ -12500,7 +12514,7 @@ finish_function (lineno, call_poplevel, nested)
 			{
 			  tree vb = get_vbase
 			    (BINFO_TYPE (vbases),
-			     TYPE_BINFO (current_class_type));
+			     TYPE_BINFO (current_class_type), 0);
 			  expand_expr_stmt
 			    (build_scoped_method_call
 			     (current_class_ref, vb, dtor_identifier,
