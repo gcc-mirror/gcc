@@ -76,7 +76,7 @@ EOF_SED
 tmp="'$progname'"
 for ac_arg
 do
-  tmp="$tmp '"`echo "$ac_arg" | sed -fconftestsed`
+  tmp="$tmp '"`echo "$ac_arg" | sed -f conftestsed`
 done
 rm -f conftestsed
 TOPLEVEL_CONFIGURE_ARGUMENTS="$tmp"
@@ -1783,7 +1783,7 @@ s/ [[^' -][^ ]*] / /
 s/^ *//;s/ *$//
 s,\\,\\\\,g; s,\$,$$,g
 EOF_SED
-baseargs=`echo " ${ac_configure_args} " | sed -fconftestsed`
+baseargs=`echo " ${ac_configure_args} " | sed -f conftestsed`
 rm -f conftestsed
 
 # For the build-side libraries, we just need to pretend we're native,

@@ -1,3 +1,8 @@
+2003-09-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Ensure arguments to sed are properly spaced.
+	* configure: Regenerate.
+
 2003-08-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* MAINTAINERS: Update my e-mail address.
