@@ -243,10 +243,12 @@ public class Statement
 	    }
 	      
 	    
-	    if (ptypes.length != args.length)  continue;
+	    if (ptypes.length != args.length)
+	      continue;
 
 	    // Check if method matches
-	    if (!compatible(ptypes, argTypes)) continue;
+	    if (!compatible(ptypes, argTypes))
+	      continue;
 
 	    // Use method[i] if it is more specific. 
 	    // FIXME: should this check both directions and throw if
@@ -270,12 +272,15 @@ public class Statement
     for (int i = 0; i < methods.length; i++)
       {
 	// Skip methods with wrong name or number of args.
-	if (!methods[i].getName().equals(methodName)) continue;
+	if (!methods[i].getName().equals(methodName))
+	  continue;
 	Class ptypes[] = methods[i].getParameterTypes();
-	if (ptypes.length != args.length)  continue;
+	if (ptypes.length != args.length)
+	  continue;
 
 	// Check if method matches
-	if (!compatible(ptypes, argTypes)) continue;
+	if (!compatible(ptypes, argTypes))
+	  continue;
 
 	// Use method[i] if it is more specific. 
 	// FIXME: should this check both directions and throw if
