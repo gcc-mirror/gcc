@@ -154,8 +154,8 @@ generate_tasking_code_variable (name, tasking_code_ptr, quasi_flag)
       /* check for value should be assigned is out of range */
       if (TREE_INT_CST_LOW (*tasking_code_ptr) >
 	  TREE_INT_CST_LOW (TYPE_MAX_VALUE (chill_taskingcode_type_node)))
-	  error ("Tasking code %d out of range for `%s'.",
-		 TREE_INT_CST_LOW (*tasking_code_ptr),
+	  error ("Tasking code %ld out of range for `%s'.",
+		 (long) TREE_INT_CST_LOW (*tasking_code_ptr),
 		 IDENTIFIER_POINTER (name));
     }
 
@@ -201,8 +201,8 @@ decl_tasking_code_variable (name, tasking_code_ptr, quasi_flag)
       /* check for value should be assigned is out of range */
       if (TREE_INT_CST_LOW (*tasking_code_ptr) >
 	  TREE_INT_CST_LOW (TYPE_MAX_VALUE (chill_taskingcode_type_node)))
-	  error ("Tasking code %d out of range for `%s'.",
-		 TREE_INT_CST_LOW (*tasking_code_ptr),
+	  error ("Tasking code %ld out of range for `%s'.",
+		 (long) TREE_INT_CST_LOW (*tasking_code_ptr),
 		 IDENTIFIER_POINTER (name));
     }
 

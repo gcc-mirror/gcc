@@ -897,7 +897,9 @@ print_lang_decl (file, node, indent)
      int  indent;
 {
   indent_to (file, indent + 3);
-  fprintf (file, "nesting_level %d ", DECL_NESTING_LEVEL (node));
+  fputs ("nesting_level ", file);
+  fprintf (file, HOST_WIDE_INT_PRINT_DEC, DECL_NESTING_LEVEL (node));
+  fputs (" ", file);
   if (DECL_WEAK_NAME (node))
     fprintf (file, "weak_name ");
   if (CH_DECL_SIGNAL (node))
@@ -1437,12 +1439,22 @@ print_mode (mode)
 	  {
 	    tree itype = TYPE_DOMAIN (mode);
 	    if (CH_STRING_TYPE_P (mode))
-	      printf (" STRING (%d) OF ",
-		      TREE_INT_CST_LOW (TYPE_MAX_VALUE (itype)));
+	      {
+		fputs (" STRING (", stdout);
+		printf (HOST_WIDE_INT_PRINT_DEC,
+			TREE_INT_CST_LOW (TYPE_MAX_VALUE (itype)));
+		fputs (") OF ", stdout);
+	      }
 	    else
-	      printf (" ARRAY (%d:%d) OF ",
-		      TREE_INT_CST_LOW (TYPE_MIN_VALUE (itype)),
-		      TREE_INT_CST_LOW (TYPE_MAX_VALUE (itype)));
+	      {
+		fputs (" ARRAY (", stdout);
+		printf (HOST_WIDE_INT_PRINT_DEC,
+			TREE_INT_CST_LOW (TYPE_MIN_VALUE (itype)));
+		fputs (":", stdout);
+		printf (HOST_WIDE_INT_PRINT_DEC,
+			TREE_INT_CST_LOW (TYPE_MAX_VALUE (itype)));
+		fputs (") OF ", stdout);
+	      }
 	    mode = TREE_TYPE (mode);
 	    break;
 	  }
@@ -3697,16 +3709,16 @@ init_decl_processing ()
          tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
          (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
           * sizeof (char)));
-  bcopy (chill_tree_code_length,
-         tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
+  bcopy ((char *) chill_tree_code_length,
+         (char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
          (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
           * sizeof (int)));
-  bcopy (chill_tree_code_name,
-         tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
+  bcopy ((char *) chill_tree_code_name,
+         (char *) (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
          (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
           * sizeof (char *)));
   boolean_code_name = (char **) xmalloc (sizeof (char *) * (int) LAST_CHILL_TREE_CODE);
-  bzero (boolean_code_name, sizeof (char *) * (int) LAST_CHILL_TREE_CODE);
+  bzero ((char *) boolean_code_name, sizeof (char *) * (int) LAST_CHILL_TREE_CODE);
 
   boolean_code_name[EQ_EXPR] = "=";
   boolean_code_name[NE_EXPR] = "/=";

@@ -564,7 +564,7 @@ satisfy (exp, chain)
 			else if (CH_IS_TEXT_MODE (exp) &&
 				 DECL_NAME (decl) == get_identifier ("__textlength"))
 			  DECL_INITIAL (decl)
-			    = check_text_length (exp, DECL_INITIAL (decl));
+			    = check_text_length (DECL_INITIAL (decl));
 		      }
 		  }
 		else if (TREE_CODE (decl) == FIELD_DECL)
