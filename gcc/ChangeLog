@@ -1,3 +1,25 @@
+2000-11-12  Neil Booth  <neilb@earthling.net>
+
+        * cppexp.c: Don't worry about pfile->skipping.
+        * cpplib.c (struct if_stack): Make was_skipping unsigned char.
+        (cpp_handle_directive): Save pfile->skipping in struct cpp_buffer
+        for handled directives.
+        (skip_rest_of_line): Use _cpp_lex_token after popping contexts
+        and releasing lookaheads.
+        (do_ifdef, do_ifndef, do_if): Use buffer->was_skipping.
+        (do_else, do_elif, push_conditional): Update logic.
+        (do_endif): Set buffer->was_skipping rather than pfile->skipping.
+        (unwind_if_stack): Inline into cpp_pop_buffer.
+        (cpp_push_buffer): Clear ifs->was_skipping for cpp_handle_directive.
+        * cpplex.c (_cpp_lex_token): Clear skipping on EOF.  Handle
+        multiple-include optimisation.
+        * cpplib.h (struct cpp_buffer): New member was_skipping.
+        * cppmacro.c (_cpp_get_token): Loop whilst pfile->skipping.  This
+        works because skipping == 0 in directives.
+        (_cpp_release_lookahead): Renamed from release_lookahead.
+        (cpp_get_token): No need to check skipping as _cpp_get_token does
+        this for us.  No need to handle MI optimisation.
+
 Sat Nov 11 21:14:02 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* fixinc/inclhack.def (sunos_matherr_decl): Bypass matherr

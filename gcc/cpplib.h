@@ -290,6 +290,9 @@ struct cpp_buffer
      for preprocessed input, command line directives, and _Pragma
      buffers.  */
   unsigned char from_stage3;
+
+  /* Temporary storage for pfile->skipping whilst in a directive.  */
+  unsigned char was_skipping;
 };
 
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for

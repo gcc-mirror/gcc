@@ -874,6 +874,7 @@ _cpp_lex_token (pfile, result)
       if (pfile->lexer_pos.col != 0 && !buffer->from_stage3)
 	cpp_pedwarn (pfile, "no newline at end of file");
       pfile->state.next_bol = 1;
+      pfile->skipping = 0;	/* In case missing #endif.  */
       result->type = CPP_EOF;
       break;
 
@@ -1270,6 +1271,12 @@ _cpp_lex_token (pfile, result)
       result->val.c = c;
       break;
     }
+
+  /* Non-comment tokens invalidate any controlling macros.  */
+  if (result->type != CPP_COMMENT
+      && result->type != CPP_EOF
+      && !pfile->state.in_directive)
+    pfile->mi_state = MI_FAILED;
 }
 
 /* An upper bound on the number of bytes needed to spell a token,

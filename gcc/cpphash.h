@@ -160,6 +160,7 @@ extern int _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
 extern void _cpp_pop_context		PARAMS ((cpp_reader *));
 extern void _cpp_get_token 		PARAMS ((cpp_reader *, cpp_token *));
 extern void _cpp_free_lookaheads	PARAMS ((cpp_reader *));
+extern void _cpp_release_lookahead	PARAMS ((cpp_reader *));
 extern void _cpp_push_token		PARAMS ((cpp_reader *, const cpp_token *,
 						 const cpp_lexer_pos *));
 
