@@ -2084,6 +2084,31 @@ legitimize_address (x, oldx, mode)
 
   x = eliminate_constant_term (x, &constant_term);
 
+  /* Optimize loading of large displacements by splitting them
+     into the multiple of 4K and the rest; this allows the
+     former to be CSE'd if possible. 
+
+     Don't do this if the displacement is added to a register
+     pointing into the stack frame, as the offsets will
+     change later anyway.  */
+
+  if (GET_CODE (constant_term) == CONST_INT
+      && (INTVAL (constant_term) < 0
+          || INTVAL (constant_term) >= 4096)
+      && !(REG_P (x) && REGNO_PTR_FRAME_P (REGNO (x))))
+    {
+      HOST_WIDE_INT lower = INTVAL (constant_term) & 0xfff;
+      HOST_WIDE_INT upper = INTVAL (constant_term) ^ lower;
+
+      rtx temp = gen_reg_rtx (Pmode);
+      rtx val  = force_operand (GEN_INT (upper), temp);
+      if (val != temp)
+	emit_move_insn (temp, val);
+
+      x = gen_rtx_PLUS (Pmode, x, temp);
+      constant_term = GEN_INT (lower);
+    }
+
   if (GET_CODE (x) == PLUS)
     {
       if (GET_CODE (XEXP (x, 0)) == REG)
