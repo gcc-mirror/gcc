@@ -300,6 +300,10 @@ struct cpp_options
   /* Zero means dollar signs are punctuation.  */
   unsigned char dollars_in_ident;
 
+  /* True if we should warn about dollars in identifiers or numbers
+     for this translation unit.  */
+  unsigned char warn_dollars;
+
   /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
   unsigned char warn_undef;
 

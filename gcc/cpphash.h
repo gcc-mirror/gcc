@@ -378,10 +378,6 @@ struct cpp_reader
   cpp_token avoid_paste;
   cpp_token eof;
 
-  /* True if we should warn about dollars in identifiers or numbers
-     for this translation unit.  */
-  bool warn_dollars;
-
   /* Opaque handle to the dependencies of mkdeps.c.  */
   struct deps *deps;
 

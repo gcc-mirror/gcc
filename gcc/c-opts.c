@@ -225,6 +225,11 @@ c_common_init_options (lang)
 				ident_hash);
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
+
+  /* Reset to avoid warnings on internal definitions.  We set it just
+     before passing on command-line options to cpplib.  */
+  cpp_opts->warn_dollars = 0;
+
   if (flag_objc)
     cpp_opts->objc = 1;
 
@@ -1356,6 +1361,18 @@ finish_options ()
       cpp_change_file (parse_in, LC_RENAME, _("<built-in>"));
       cpp_init_builtins (parse_in, flag_hosted);
       c_cpp_builtins (parse_in);
+
+      /* We're about to send user input to cpplib, so make it warn for
+	 things that we previously (when we sent it internal definitions)
+	 told it to not warn.
+
+	 C99 permits implementation-defined characters in identifiers.
+	 The documented meaning of -std= is to turn off extensions that
+	 conflict with the specified standard, and since a strictly
+	 conforming program cannot contain a '$', we do not condition
+	 their acceptance on the -std= setting.  */
+      cpp_opts->warn_dollars = (cpp_opts->pedantic && !cpp_opts->c99);
+
       cpp_change_file (parse_in, LC_RENAME, _("<command line>"));
       for (i = 0; i < deferred_count; i++)
 	{

@@ -151,6 +151,7 @@ cpp_create_reader (lang, table)
   CPP_OPTION (pfile, warn_deprecated) = 1;
   CPP_OPTION (pfile, warn_long_long) = !CPP_OPTION (pfile, c99);
   CPP_OPTION (pfile, dollars_in_ident) = 1;
+  CPP_OPTION (pfile, warn_dollars) = 1;
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */
@@ -570,11 +571,4 @@ post_options (pfile)
       CPP_OPTION (pfile, trigraphs) = 0;
       CPP_OPTION (pfile, warn_trigraphs) = 0;
     }
-
-  /* C99 permits implementation-defined characters in identifiers.
-     The documented meaning of -std= is to turn off extensions that
-     conflict with the specified standard, and since a strictly
-     conforming program cannot contain a '$', we do not condition
-     their acceptance on the -std= setting.  */
-  pfile->warn_dollars = CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, c99);
 }
