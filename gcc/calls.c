@@ -4491,7 +4491,8 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	     emit_push_insn for BLKmode is careful to avoid it.  */
 	  excess = (arg->size.constant - int_size_in_bytes (TREE_TYPE (pval))
 		    + partial * UNITS_PER_WORD);
-	  size_rtx = expr_size (pval);
+	  size_rtx = expand_expr (size_in_bytes (TREE_TYPE (pval)),
+				  NULL_RTX, TYPE_MODE (sizetype), 0);
 	}
 
       if ((flags & ECF_SIBCALL) && GET_CODE (arg->value) == MEM)
