@@ -3127,18 +3127,28 @@ unextend (c, p, unsignedp, mask)
   if (p == modesize || unsignedp)
     return c;
 
-  if (TREE_UNSIGNED (type))
-    c = convert (signed_type (type), c);
-
   /* We work by getting just the sign bit into the low-order bit, then
      into the high-order bit, then sign-extend.  We then XOR that value
      with C.  */
   temp = const_binop (RSHIFT_EXPR, c, size_int (p - 1), 0);
   temp = const_binop (BIT_AND_EXPR, temp, size_int (1), 0);
+
+  /* We must use a signed type in order to get an arithmetic right shift.
+     However, we must also avoid introducing accidental overflows, so that
+     a subsequent call to integer_zerop will work.  Hence we must 
+     do the type conversion here.  At this point, the constant is either
+     zero or one, and the conversion to a signed type can never overflow.
+     We could get an overflow if this conversion is done anywhere else.  */
+  if (TREE_UNSIGNED (type))
+    temp = convert (signed_type (type), temp);
+
   temp = const_binop (LSHIFT_EXPR, temp, size_int (modesize - 1), 0);
   temp = const_binop (RSHIFT_EXPR, temp, size_int (modesize - p - 1), 0);
   if (mask != 0)
     temp = const_binop (BIT_AND_EXPR, temp, convert (TREE_TYPE (c), mask), 0);
+  /* If necessary, convert the type back to match the type of C.  */
+  if (TREE_UNSIGNED (type))
+    temp = convert (type, temp);
 
   return convert (type, const_binop (BIT_XOR_EXPR, c, temp, 0));
 }
