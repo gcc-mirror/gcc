@@ -564,17 +564,30 @@ extern char leaf_reg_backmap[];
    a register of class CLASS in MODE.
 
    On the SPARC, when PIC, we need a temporary when loading some addresses
-   into a register.  */
+   into a register.
 
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN) \
-  (flag_pic && pic_address_needs_scratch (IN) ? GENERAL_REGS : NO_REGS)
+   Also, we need a temporary when loading/storing a HImode/QImode value
+   between memory and the FPU registers.  This can happen when combine puts
+   a paradoxical subreg in a float/fix conversion insn.  */
+
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN)		\
+  (flag_pic && pic_address_needs_scratch (IN) ? GENERAL_REGS	\
+   : ((CLASS) == FP_REGS && ((MODE) == HImode || (MODE) == QImode)\
+      && (GET_CODE (IN) == MEM					\
+	  || ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
+	      && true_regnum (IN) == -1))) ? GENERAL_REGS : NO_REGS)
+
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, IN)		\
+  ((CLASS) == FP_REGS && ((MODE) == HImode || (MODE) == QImode)	\
+   && (GET_CODE (IN) == MEM					\
+       || ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
+	   && true_regnum (IN) == -1)) ? GENERAL_REGS : NO_REGS)
 
 /* On SPARC it is not possible to directly move data between 
    GENERAL_REGS and FP_REGS.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)  \
-  ((CLASS1 == FP_REGS && CLASS2 == GENERAL_REGS)	\
-   || (CLASS1 == GENERAL_REGS && CLASS2 == FP_REGS))
-	
+  (((CLASS1) == FP_REGS && (CLASS2) == GENERAL_REGS)	\
+   || ((CLASS1) == GENERAL_REGS && (CLASS2) == FP_REGS))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
