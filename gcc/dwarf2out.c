@@ -7831,7 +7831,12 @@ mem_loc_descriptor (rtl, mode)
 	 by a different symbol.  */
       if (GET_CODE (rtl) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (rtl))
-	rtl = get_pool_constant (rtl);
+	{
+	  rtx tmp = get_pool_constant (rtl);
+	  /* Doesn't work for floating point constants.  */
+	  if (! (GET_CODE (tmp) == CONST_DOUBLE && GET_MODE (tmp) != VOIDmode))
+	    rtl = tmp;
+	}
 
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
