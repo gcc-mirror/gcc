@@ -1,3 +1,7 @@
+Fri Aug 21 03:14:04 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/980526-2.c: Disable for targets with 16bit ints.
+
 1998-08-19  Mark Mitchell  <mark@markmitchell.com>
 
 	* lib/old-dejagnu.exp (old-dejagnu): Remove sig6/sig11 handling
