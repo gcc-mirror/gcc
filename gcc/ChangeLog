@@ -1,3 +1,7 @@
+2002-05-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install.texi: State GNAT version requirements.
+
 2002-05-01  Jeff Law  <law@redhat.com>
 
 	* pa.h (EXTRA_CONSTRAINT): Don't accept PIC addresses for the
