@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -95,14 +95,12 @@ struct arg_data
   /* Place that this stack area has been saved, if needed.  */
   rtx save_area;
 #endif
-#ifdef STRICT_ALIGNMENT
   /* If an argument's alignment does not permit direct copying into registers,
      copy in smaller-sized pieces into pseudos.  These are stored in a
      block pointed to by this field.  The next field says how many
      word-sized pseudos we made.  */
   rtx *aligned_regs;
   int n_aligned_regs;
-#endif
 };
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
@@ -1739,68 +1737,67 @@ expand_call (exp, target, ignore)
       store_one_arg (&args[i], argblock, may_be_alloca,
 		     args_size.var != 0, fndecl, reg_parm_stack_space);
 
-#ifdef STRICT_ALIGNMENT
   /* If we have a parm that is passed in registers but not in memory
      and whose alignment does not permit a direct copy into registers,
      make a group of pseudos that correspond to each register that we
      will later fill.  */
 
-  for (i = 0; i < num_actuals; i++)
-    if (args[i].reg != 0 && ! args[i].pass_on_stack
+  if (STRICT_ALIGNMENT)
+    for (i = 0; i < num_actuals; i++)
+      if (args[i].reg != 0 && ! args[i].pass_on_stack
 	&& args[i].mode == BLKmode
-	&& (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
-	    < MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
-      {
-	int bytes = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
-	int big_endian_correction = 0;
+	  && (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
+	      < MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
+	{
+	  int bytes = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
+	  int big_endian_correction = 0;
 
-	args[i].n_aligned_regs
-	  = args[i].partial ? args[i].partial
-	    : (bytes + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
+	  args[i].n_aligned_regs
+	    = args[i].partial ? args[i].partial
+	      : (bytes + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
 
-	args[i].aligned_regs = (rtx *) alloca (sizeof (rtx)
-					       * args[i].n_aligned_regs);
+	  args[i].aligned_regs = (rtx *) alloca (sizeof (rtx)
+						 * args[i].n_aligned_regs);
 
-	/* Structures smaller than a word are aligned to the least significant
-	   byte (to the right).  On a BYTES_BIG_ENDIAN machine, this means we
-	   must skip the empty high order bytes when calculating the bit
-	   offset.  */
-	if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
-	  big_endian_correction = (BITS_PER_WORD  - (bytes * BITS_PER_UNIT));
+	  /* Structures smaller than a word are aligned to the least
+	     significant byte (to the right).  On a BYTES_BIG_ENDIAN machine,
+	     this means we must skip the empty high order bytes when
+	     calculating the bit offset.  */
+	  if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
+	    big_endian_correction = (BITS_PER_WORD  - (bytes * BITS_PER_UNIT));
 
-	for (j = 0; j < args[i].n_aligned_regs; j++)
-	  {
-	    rtx reg = gen_reg_rtx (word_mode);
-	    rtx word = operand_subword_force (args[i].value, j, BLKmode);
-	    int bitsize = TYPE_ALIGN (TREE_TYPE (args[i].tree_value));
-	    int bitpos;
+	  for (j = 0; j < args[i].n_aligned_regs; j++)
+	    {
+	      rtx reg = gen_reg_rtx (word_mode);
+	      rtx word = operand_subword_force (args[i].value, j, BLKmode);
+	      int bitsize = TYPE_ALIGN (TREE_TYPE (args[i].tree_value));
+	      int bitpos;
 
-	    args[i].aligned_regs[j] = reg;
+	      args[i].aligned_regs[j] = reg;
 
-	    /* Clobber REG and move each partword into it.  Ensure we don't
-	       go past the end of the structure.  Note that the loop below
-	       works because we've already verified that padding
-	       and endianness are compatible.  */
+	      /* Clobber REG and move each partword into it.  Ensure we don't
+		 go past the end of the structure.  Note that the loop below
+		 works because we've already verified that padding
+		 and endianness are compatible.  */
 
-	    emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
+	      emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
 
-	    for (bitpos = 0;
-		 bitpos < BITS_PER_WORD && bytes > 0;
-		 bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
-	      {
-		int xbitpos = bitpos + big_endian_correction;
+	      for (bitpos = 0;
+		   bitpos < BITS_PER_WORD && bytes > 0;
+		   bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
+		{
+		  int xbitpos = bitpos + big_endian_correction;
 
-		store_bit_field (reg, bitsize, xbitpos, word_mode,
-				 extract_bit_field (word, bitsize, bitpos, 1,
-						    NULL_RTX, word_mode,
-						    word_mode,
-						    bitsize / BITS_PER_UNIT,
-						    BITS_PER_WORD),
-				 bitsize / BITS_PER_UNIT, BITS_PER_WORD);
-	      }
-	  }
-      }
-#endif
+		  store_bit_field (reg, bitsize, xbitpos, word_mode,
+				   extract_bit_field (word, bitsize, bitpos, 1,
+						      NULL_RTX, word_mode,
+						      word_mode,
+						      bitsize / BITS_PER_UNIT,
+						      BITS_PER_WORD),
+				   bitsize / BITS_PER_UNIT, BITS_PER_WORD);
+		}
+	    }
+	}
 
   /* Now store any partially-in-registers parm.
      This is the last place a block-move can happen.  */
@@ -1881,7 +1878,6 @@ expand_call (exp, target, ignore)
 	  if (nregs == -1)
 	    emit_move_insn (reg, args[i].value);
 
-#ifdef STRICT_ALIGNMENT
 	  /* If we have pre-computed the values to put in the registers in
 	     the case of non-aligned structures, copy them in now.  */
 
@@ -1889,7 +1885,6 @@ expand_call (exp, target, ignore)
 	    for (j = 0; j < args[i].n_aligned_regs; j++)
 	      emit_move_insn (gen_rtx (REG, word_mode, REGNO (reg) + j),
 			      args[i].aligned_regs[j]);
-#endif
 
 	  else if (args[i].partial == 0 || args[i].pass_on_stack)
 	    move_block_to_reg (REGNO (reg),
@@ -3035,12 +3030,10 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
        this case.   */
     abort ();
 
-#ifdef STRICT_ALIGNMENT
   /* If this arg needs special alignment, don't load the registers
      here.  */
   if (arg->n_aligned_regs != 0)
     reg = 0;
-#endif
   
   /* If this is being partially passed in a register, but multiple locations
      are specified, we assume that the one partially used is the one that is
