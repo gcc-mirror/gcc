@@ -1,3 +1,11 @@
+2001-05-25  Zack Weinberg  <zackw@stanford.edu>
+
+	* aclocal.m4: Quote final argument of patsubst.  Use
+	3-argument form of AC_DEFINE.  Restore quotes to [] while
+	using AC_FD_CC.
+	* configure.in: Remove unnecessary changequote calls.
+	* configure, config.in: Regenerate.
+
 2001-05-25  Sam TH  <sam@uchicago.edu>
 
 	* basic-block.h: Fix header include guards.
