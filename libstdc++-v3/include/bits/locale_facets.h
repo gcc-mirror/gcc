@@ -577,34 +577,31 @@ namespace std
   template<typename _CharT>
     struct __numpunct_cache : public locale::facet
     {
-      // Types:
-      typedef _CharT          		char_type;
-
       const char* 			_M_grouping;
       bool				_M_use_grouping;
-      const char_type* 			_M_truename;
-      const char_type*			_M_falsename;
-      char_type 			_M_decimal_point;
-      char_type 			_M_thousands_sep;
+      const _CharT* 			_M_truename;
+      const _CharT*			_M_falsename;
+      _CharT 				_M_decimal_point;
+      _CharT 				_M_thousands_sep;
       
       // A list of valid numeric literals for output: in the standard
       // "C" locale, this is "-+xX0123456789abcdef0123456789ABCDEF".
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
-      char_type                    	_M_atoms_out[__num_base::_S_oend + 1];
+      _CharT                    	_M_atoms_out[__num_base::_S_oend + 1];
 
       // A list of valid numeric literals for output: in the standard
       // "C" locale, this is "0123456789eEabcdfABCDF"
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
-      char_type                    	_M_atoms_in[__num_base::_S_iend + 1];
+      _CharT                    	_M_atoms_in[__num_base::_S_iend + 1];
 
       bool				_M_allocated;
 
       __numpunct_cache(size_t __refs = 0) : locale::facet(__refs), 
       _M_grouping(NULL), _M_use_grouping(false), _M_truename(NULL), 
-      _M_falsename(NULL), _M_decimal_point(char_type()), 
-      _M_thousands_sep(char_type()), _M_allocated(false)
+      _M_falsename(NULL), _M_decimal_point(_CharT()), 
+      _M_thousands_sep(_CharT()), _M_allocated(false)
       { } 
 
       ~__numpunct_cache();

@@ -89,18 +89,38 @@ namespace std
   // Routine to access a cache for the facet.  If the cache didn't
   // exist before, it gets constructed on the fly.
   template<typename _Facet>
-    const _Facet&
-    __use_cache(const locale& __loc);
+    struct __use_cache
+    {
+      const _Facet*
+      operator() (const locale& __loc) const;
+    };
 
-  template<>
-    const __numpunct_cache<char>&
-    __use_cache(const locale& __loc);
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<>
-    const __numpunct_cache<wchar_t>&
-    __use_cache(const locale& __loc);
-#endif
+  template<typename _CharT>
+    struct __use_cache<__numpunct_cache<_CharT> >
+    {
+      const __numpunct_cache<_CharT>*
+      operator() (const locale& __loc) const
+      {
+	size_t __i = numpunct<_CharT>::id._M_id();
+	const locale::facet** __caches = __loc._M_impl->_M_caches;
+	if (!__caches[__i])
+	  {
+	    __numpunct_cache<_CharT>* __tmp;
+	    try
+	      {
+		__tmp = new __numpunct_cache<_CharT>;
+		__tmp->_M_cache(__loc);
+	      }
+	    catch(...)
+	      {
+		delete __tmp;
+		__throw_exception_again;
+	      }
+	    __loc._M_impl->_M_install_cache(__tmp, __i);
+	  }
+	return static_cast<const __numpunct_cache<_CharT>*>(__caches[__i]);
+      }
+    };
 
   // Stage 1: Determine a conversion specifier.
   template<typename _CharT, typename _InIter>
@@ -785,9 +805,10 @@ namespace std
 		     _ValueT __v) const
       {
 	typedef typename numpunct<_CharT>::__cache_type  __cache_type;
+	__use_cache<__cache_type> __uc;
 	const locale& __loc = __io._M_getloc();
-	const __cache_type& __lc = __use_cache<__cache_type>(__loc);
-	const _CharT* __lit = __lc._M_atoms_out;
+	const __cache_type* __lc = __uc(__loc);
+	const _CharT* __lit = __lc->_M_atoms_out;
 
  	// Long enough to hold hex, dec, and octal representations.
 	int __ilen = 4 * sizeof(_ValueT);
@@ -801,13 +822,13 @@ namespace std
 	
 	// Add grouping, if necessary. 
 	_CharT* __cs2;
-	if (__lc._M_use_grouping)
+	if (__lc->_M_use_grouping)
 	  {
 	    // Grouping can add (almost) as many separators as the
 	    // number of digits, but no more.
 	    __cs2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							  * __len * 2));
-	    _M_group_int(__lc._M_grouping, __lc._M_thousands_sep, __io, 
+	    _M_group_int(__lc->_M_grouping, __lc->_M_thousands_sep, __io, 
 			 __cs2, __cs, __len);
 	    __cs = __cs2;
 	  }
@@ -890,8 +911,9 @@ namespace std
 	  __prec = static_cast<streamsize>(6);
 
 	typedef typename numpunct<_CharT>::__cache_type  __cache_type;
+	__use_cache<__cache_type> __uc;
 	const locale& __loc = __io._M_getloc();
-	const __cache_type& __lc = __use_cache<__cache_type>(__loc);
+	const __cache_type* __lc = __uc(__loc);
 
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	int __len;
@@ -944,20 +966,20 @@ namespace std
       
       // Replace decimal point.
       const _CharT __cdec = __ctype.widen('.');
-      const _CharT __dec = __lc._M_decimal_point;
+      const _CharT __dec = __lc->_M_decimal_point;
       const _CharT* __p;
       if (__p = char_traits<_CharT>::find(__ws, __len, __cdec))
 	__ws[__p - __ws] = __dec;
 
       // Add grouping, if necessary. 
       _CharT* __ws2;
-      if (__lc._M_use_grouping)
+      if (__lc->_M_use_grouping)
 	{
 	    // Grouping can add (almost) as many separators as the
 	    // number of digits, but no more.
 	    __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							  * __len * 2));
-	    _M_group_float(__lc._M_grouping, __lc._M_thousands_sep, __p,
+	    _M_group_float(__lc->_M_grouping, __lc->_M_thousands_sep, __p,
 			   __ws2, __ws, __len);
 	    __ws = __ws2;
 	}
@@ -992,15 +1014,16 @@ namespace std
       else
         {
 	  typedef typename numpunct<_CharT>::__cache_type  __cache_type;
+	  __use_cache<__cache_type> __uc;
 	  const locale& __loc = __io._M_getloc();
-	  const __cache_type& __lc = __use_cache<__cache_type>(__loc);
+	  const __cache_type* __lc = __uc(__loc);
 
 	  typedef basic_string<_CharT> 	__string_type;
 	  __string_type __name;
           if (__v)
-	    __name = __lc._M_truename;
+	    __name = __lc->_M_truename;
           else
-	    __name = __lc._M_falsename;
+	    __name = __lc->_M_falsename;
 
 	  const _CharT* __cs = __name.c_str();
 	  int __len = __name.size();
@@ -1339,7 +1362,8 @@ namespace std
       // decimal digit, '\0'. 
       const int __cs_size = numeric_limits<long double>::max_exponent10 + 5;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = std::__convert_from_v(__cs, 0, "%.01Lf", __units, _S_c_locale);
+      int __len = std::__convert_from_v(__cs, 0, "%.01Lf", __units, 
+					_S_c_locale);
 #endif
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							   * __cs_size));
@@ -2280,8 +2304,8 @@ namespace std
     {
       if (__last - __first > *__gbeg)
         {
-          __s = std::__add_grouping(__s,  __sep, 
-				    (__gbeg + 1 == __gend ? __gbeg : __gbeg + 1),
+	  const bool __bump = __gbeg + 1 != __gend;
+          __s = std::__add_grouping(__s,  __sep, __gbeg + __bump,
 				    __gend, __first, __last - *__gbeg);
           __first = __last - *__gbeg;
           *__s++ = __sep;

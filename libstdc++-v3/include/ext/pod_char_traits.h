@@ -98,7 +98,7 @@ namespace std
       length(const char_type* __s)
       { 
 	const char_type* __p = __s; 
-	while (*__p) 
+	while (__p->value) 
 	  ++__p; 
 	return (__p - __s); 
       }

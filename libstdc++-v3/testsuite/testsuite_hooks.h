@@ -127,16 +127,6 @@ namespace __gnu_cxx_test
     int i;
   };
   
-  struct pod_unsigned_int
-  {
-    unsigned int i;
-  };
-  
-  struct pod_long
-  {
-    unsigned long i;
-  };
-  
   struct state
   {
     unsigned long l;
