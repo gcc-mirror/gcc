@@ -1,3 +1,9 @@
+Thu Oct 14 03:23:08 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (call-1): Supply missing mode for operator.
+	(*): Add missing output reload constraints.  Remove constraints
+	from define_splits.
+
 Thu Oct 14 03:59:57 1999  Stephane Carrez  <stcarrez@worldnet.fr>
 
 	* stor-layout.c (layout_union): Use HOST_WIDE_INT for const_size;
