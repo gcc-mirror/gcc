@@ -676,7 +676,7 @@ poplevel (int keep, int dummy ATTRIBUTE_UNUSED, int functionbody)
     IDENTIFIER_TAG_VALUE (TREE_PURPOSE (p)) = TREE_VALUE (p);
 
   /* Dispose of the block that we just made inside some higher level.  */
-  if (scope->function_body)
+  if (scope->function_body && current_function_decl)
     DECL_INITIAL (current_function_decl) = block;
   else if (scope->outer)
     {
@@ -6088,11 +6088,13 @@ finish_function (void)
  	}
     }
 
-  BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
+  if (DECL_INITIAL (fndecl) != error_mark_node && DECL_INITIAL (fndecl))
+    BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   /* Must mark the RESULT_DECL as being in this function.  */
 
-  DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
+  if (DECL_RESULT (fndecl) != error_mark_node && DECL_RESULT (fndecl))
+    DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
   if (MAIN_NAME_P (DECL_NAME (fndecl)) && flag_hosted)
     {
@@ -6192,7 +6194,7 @@ c_expand_body_1 (tree fndecl, int nested_p)
       /* Squirrel away our current state.  */
       push_function_context ();
     }
-
+    
   tree_rest_of_compilation (fndecl, nested_p);
 
   if (nested_p)
@@ -6223,7 +6225,9 @@ c_expand_body_1 (tree fndecl, int nested_p)
 void
 c_expand_body (tree fndecl)
 {
-  c_expand_body_1 (fndecl, 0);
+
+  if (DECL_INITIAL (fndecl) != error_mark_node && DECL_INITIAL (fndecl))
+    c_expand_body_1 (fndecl, 0);
 }
 
 /* Check the declarations given in a for-loop for satisfying the C99
