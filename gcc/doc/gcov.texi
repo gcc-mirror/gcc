@@ -120,6 +120,7 @@ gcov @r{[}@var{options}@r{]} @var{sourcefile}
 @ignore
 @c man begin SYNOPSIS
 gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
+     [@option{-a}|@option{--all-blocks}]
      [@option{-b}|@option{--branch-probabilities}]
      [@option{-c}|@option{--branch-counts}]
      [@option{-n}|@option{--no-output}]
@@ -127,6 +128,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-p}|@option{--preserve-paths}]
      [@option{-f}|@option{--function-summaries}]
      [@option{-o}|@option{--object-directory} @var{directory|file}] @var{sourcefile}
+     [@option{-u}|@option{--unconditional-branches}]
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7), gcc(1) and the Info entry for @file{gcc}.
@@ -145,11 +147,23 @@ exit without doing any further processing.
 Display the @command{gcov} version number (on the standard output),
 and exit without doing any further processing.
 
+@item -a
+@itemx --all-blocks
+Write individual execution counts for every basic block. Normally gcov
+outputs execution counts only for the main blocks of a line. With this
+option you can determine if blocks within a single line are not being
+executed. In this mode each block is shown, and contributes to the
+occupancy and execution count of, the first line of source that it
+contains. A multi-line block will only contribute to that first line,
+and other lines will not be show to contain code, unless a subsequent
+block begins on those lines.
+
 @item -b
 @itemx --branch-probabilities
 Write branch frequencies to the output file, and write branch summary
 info to the standard output.  This option allows you to see how often
-each branch in your program was taken.
+each branch in your program was taken. Unconditional branches will not
+be shown, unless the @option{-u} option is given.
 
 @item -c
 @itemx --branch-counts
@@ -191,6 +205,11 @@ is specified, the data files are in that directory and named after the
 source file name, without its extension. If a file is specified here,
 the data files are named after that file, without its extension. If this
 option is not supplied, it defaults to the current directory.
+
+@item -u
+@itemx --unconditional-branches
+When branch counts are given, include those of unconditional branches.
+Unconditional branches are normally not interesting.
 
 @end table
 
@@ -248,10 +267,14 @@ Here is a sample:
 
 @smallexample
         -:    0:Source:tmp.c
-        -:    0:Object:tmp.bb
+        -:    0:Graph:tmp.bbg
+        -:    0:Data:tmp.da
+        -:    0:Runs:1
+        -:    0:Programs:1
         -:    1:#include <stdio.h>
         -:    2:
         -:    3:int main (void)
+function main called 1 returned 1 blocks executed 75%
         1:    4:@{
         1:    5:  int i, total;
         -:    6:  
@@ -265,8 +288,46 @@ Here is a sample:
         -:   14:  else
         1:   15:    printf ("Success\n");
         1:   16:  return 0;
-        1:   17:@}
+        -:   17:@}
 @end smallexample
+
+When you use the @option{-a} option, you will get individual block
+counts, and the output looks like this:
+
+@smallexample
+        -:    0:Source:tmp.c
+        -:    0:Graph:tmp.bbg
+        -:    0:Data:tmp.da
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:
+        -:    3:int main (void)
+function main called 1 returned 1 blocks executed 75%
+        1:    4:@{
+        1:    4-block  0
+        1:    5:  int i, total;
+        -:    6:  
+        1:    7:  total = 0;
+        -:    8:  
+       11:    9:  for (i = 0; i < 10; i++)
+       11:    9-block  0
+       10:   10:    total += i;
+       10:   10-block  0
+        -:   11:  
+        1:   12:  if (total != 45)
+        1:   12-block  0
+    #####:   13:    printf ("Failure\n");
+    $$$$$:   13-block  0
+        -:   14:  else
+        1:   15:    printf ("Success\n");
+        1:   15-block  0
+        1:   16:  return 0;
+        1:   16-block  0
+        -:   17:@}
+@end smallexample
+
+As you can see, line 13 contains a basic block that was not executed.
 
 @need 450
 When you use the @option{-b} option, your output looks like this:
@@ -284,31 +345,34 @@ Here is a sample of a resulting @file{tmp.c.gcov} file:
 
 @smallexample
         -:    0:Source:tmp.c
-        -:    0:Object:tmp.bb
+        -:    0:Graph:tmp.bbg
+        -:    0:Data:tmp.da
+        -:    0:Runs:1
+        -:    0:Programs:1
         -:    1:#include <stdio.h>
         -:    2:
         -:    3:int main (void)
+function main called 1 returned 1 blocks executed 75%
         1:    4:@{
         1:    5:  int i, total;
         -:    6:  
         1:    7:  total = 0;
         -:    8:  
        11:    9:  for (i = 0; i < 10; i++)
-branch  0: taken 90%
-branch  1: taken 100%
-branch  2: taken 100%
+branch  0 taken 91% (fallthrough)
+branch  1 taken 9%
        10:   10:    total += i;
         -:   11:  
         1:   12:  if (total != 45)
-branch  0: taken 100%
+branch  0 taken 0% (fallthrough)
+branch  1 taken 100%
     #####:   13:    printf ("Failure\n");
-call    0: never executed
-branch  1: never executed
+call    0 never executed
         -:   14:  else
         1:   15:    printf ("Success\n");
-call    0: returns 100%
+call    0 called 1 returned 100%
         1:   16:  return 0;
-        1:   17:@}
+        -:   17:@}
 @end smallexample
 
 For each basic block, a line is printed after the last line of the basic

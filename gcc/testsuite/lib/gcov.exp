@@ -168,7 +168,7 @@ proc verify-calls { testcase file } {
     set n 0
     while { [gets $fd line] >= 0 } {
 	regexp "^\[^:\]+: *(\[0-9\]+):" "$line" all n
-	if [regexp "returns" $line] {
+	if [regexp "return" $line] {
 	    verbose "Processing returns line $n: $line" 3
 	    if [regexp "returns\\((\[0-9 \]+)\\)" "$line" all new_shouldbe] {
 		# All percentages in the current list should have been seen.
@@ -179,12 +179,12 @@ proc verify-calls { testcase file } {
 		}
 	        # Record the percentages to check for.
 		set shouldbe $new_shouldbe
-	    } elseif [regexp "call +\[0-9\]+ returns (-\[0-9\]+)%" "$line" \
+	    } elseif [regexp "call +\[0-9\]+ returned (-\[0-9\]+)%" "$line" \
 			all returns] {
 		# Percentages should never be negative.
 		fail "$n: negative percentage: $returns"
 		incr failed
-	    } elseif [regexp "call +\[0-9\]+ returns (\[0-9\]+)%" "$line" \
+	    } elseif [regexp "call +\[0-9\]+ returned (\[0-9\]+)%" "$line" \
 			all returns] {
 		# For branches we check that percentages are not greater than
 		# 100 but call return percentages can be, as for setjmp(), so
