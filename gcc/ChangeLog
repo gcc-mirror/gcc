@@ -1,5 +1,14 @@
 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* gcc.c (execute): If a subprocess gets a fatal signal, report
+	strsignal() of the signal number, and ask for a bug report.
+	Do not do this for SIGPIPE if there's already been an error.
+
+	* tradcpp.c: Don't include signal.h.  Don't catch SIGPIPE.
+	Delete pipe_closed.
+
+2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* final.c (profile_function): Do not emit profile counters in
 	the data section, if NO_PROFILE_COUNTERS is defined.
 	* tm.texi: Document NO_PROFILE_COUNTERS.  Update doc for
@@ -63,13 +72,13 @@ Wed Jul 12 13:24:30 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c (C specs [!USE_CPPLIB]): Invoke tradcpp if any of
 	-traditional, -ftraditional, or -traditional-cpp was given.
-	Do not pass -traditional to the preprocessor.              
+	Do not pass -traditional to the preprocessor.
 	(.S spec): Likewise.  Don't bother defining __ASSEMBLER__, the
 	preprocessor does it automatically.
 	* objc/lang-specs.h: Likewise.  Don't bother defining __OBJC__.
 
 	* ch/lang-specs.h: Always use tradcpp.  Do not pass
-	-traditional, -trigraphs, or -pedantic to the preprocessor.  
+	-traditional, -trigraphs, or -pedantic to the preprocessor.
 	* f/lang-specs.h (.F spec): Likewise.  Don't bother defining
 	_LANGUAGE_FORTRAN.
 
@@ -109,7 +118,7 @@ Wed Jul 12 13:15:16 2000  Marc Espie <espie@openbsd.org>
 
 	* c-decl.c (set_current_function_name_declared, anon_aggr_type_p,
 	lang_expand_stmt): Mark parameters with ATTRIBUTE_UNUSED.
-	
+
 	* c-parse.in (stmt): Delete unused variables.
 
 	* convert.c (convert_to_vector): Likewise.
@@ -159,7 +168,7 @@ Wed Jul 12 13:15:16 2000  Marc Espie <espie@openbsd.org>
 	* c-parse.y: Likewise.
 	* objc/objc-parse.c: Likewise.
 	* objc/objc-pasre.y: Likewise.
-	
+
 2000-07-11  Rodney Brown  <RodneyBrown@pmsc.com>
 
 	* gcc.texi: Fix minor typos
@@ -188,7 +197,7 @@ Wed Jul 12 13:15:16 2000  Marc Espie <espie@openbsd.org>
 	line_wrap_cutoff, ideal_line_wrap_cutoff, prefix_was_emitted_for,
 	prefixing_policy, output_buffer_ptr_to_format_args): New macros
 	(set_real_maximum_length, output_set_maximum_length,
-	output_set_prefix, output_get_prefix, output_set_maximum_length, 
+	output_set_prefix, output_get_prefix, output_set_maximum_length,
 	output_destroy_prefix, init_output_buffer,
 	reshape_diagnostic_buffer, output_space_left, output_emit_prefix,
 	output_add_newline, output_add_character, output_add_space,
@@ -200,8 +209,8 @@ Wed Jul 12 13:15:16 2000  Marc Espie <espie@openbsd.org>
 	(struct output_state): Move to...
 
 	* diagnostic.h: ...Here
-	(struct output_buffer): Adjust. 
-	
+	(struct output_buffer): Adjust.
+
 2000-07-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (parse_name): No longer inline (premature optimization).
@@ -324,7 +333,7 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	(output_format): Adjust arguments extraction. Tweak.
 	(output_verbatim, verbatim): End variable argument list.
 	(report_diagnostic): Improve documentation.
-	
+
 2000-07-10  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* c-common.h (build_stmt): Declare.
@@ -349,7 +358,7 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* c-parse.y: Regenerate.
 	* c-pasre.c: Likewise.
-	
+
 2000-07-09  Jason Merrill  <jason@redhat.com>
 
 	* expr.c (expand_expr): Bail earlier if we get an error_mark_node.
@@ -377,7 +386,7 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	(report_diagnostic): Define.
 
 	* diagnostic.h (report_diagnostic): Prototype.
-	
+
 2000-07-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c (_cpp_parse_expr): Don't use unary plus.
@@ -409,7 +418,7 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	(output_state): New data type.
 	(digit_buffer): Make global.
 	(output_add_integer): Rename to output_decimal. Squeeze
-	digit_buffer. 
+	digit_buffer.
 	(output_long_decimal, output_unsigned_decimal,
 	output_long_unsigned_decimal, output_octal, output_long_octal,
 	output_hexadecimal, output_long_hexadecimal): New functions.
@@ -423,7 +432,7 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	(output_printf): Tweak.
 	(line_wrapper_printf): Likewise.
 	(vline_wrapper_message_with_location): Adjust call to renamed
-	functions. 
+	functions.
 	(v_message_with_decl): Likewise.
 	(default_print_error_function): Likewise.
 	(save_output_state): New function.
@@ -477,12 +486,12 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	node pointer.  Inline.
 	(maybe_paste_with_next): If the result of paste is a NAME,
 	then look up the pasted text and store its node pointer.
-	(lex_line): Adjust for new parse_name interface.  
+	(lex_line): Adjust for new parse_name interface.
 	Check for L"str", L'str' using spec_nodes->n_L.
 	(spell_token): SPELL_IDENT tokens have their spelling in
 	val.node->name.  Handle SPELL_STRING tokens that don't have
 	string delimiters.
-	(_cpp_expand_name_space, 
+	(_cpp_expand_name_space,
 	(can_paste): Check for L ## "str" using spec_nodes->n_L.
 	(cpp_get_token, special_symbol): No need to call cpp_lookup.
 	(cpp_idcmp): Now cpp_ideq; take a token * and a const char *;
@@ -508,7 +517,7 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	(_cpp_init_stacks): Also initialize the spec_nodes structure.
 
 	* cppinit.c (cpp_reader_init): Call _cpp_init_stacks after
-	_cpp_init_macros. 
+	_cpp_init_macros.
 	(cpp_cleanup): Free pfile->spec_nodes.  Call _cpp_cleanup_* in
 	reverse order from the corresponding _cpp_init_* routines.
 
@@ -820,7 +829,7 @@ Mon Jul  3 21:31:43 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	(strtoul_for_line, get_define_node, dump_macro_name,
 	_cpp_check_linemarker, _cpp_parse_assertion): New.
 	(_cpp_handle_directive, do_pragma_default): Delete.
-	
+
 	* cpphash.h (struct predicate): Now struct answer.
 	(enum spell_type, struct token_spelling, struct directive,
 	directive_handler): New.
@@ -829,7 +838,7 @@ Mon Jul  3 21:31:43 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	structure definitions, and fields.
 
 	* cpperror.c (print_containing_files, v_message): Adjust.
-	* cppexp.c (parse_assertion, lex, parse_escape, 
+	* cppexp.c (parse_assertion, lex, parse_escape,
 	_cpp_parse_expr): Adjust.
 	* cppfiles.c (open_include_file, _cpp_execute_include,
 	_cpp_compare_file_date, cpp_read_file, read_include_file):
@@ -936,7 +945,7 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 	(genrtl_finish_compound_stmt): Likewise.
 	(genrtl_compound_stmt): Change to return void.
 
-	* c-semantics.c (genrtl_begin_compound_stmt): Remove function and 
+	* c-semantics.c (genrtl_begin_compound_stmt): Remove function and
 	move code from here to ...
 	(genrtl_compound_stmt): ... here.
 	(genrtl_finish_compound_stmt): Remove.
@@ -964,7 +973,7 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (C_AND_OBJC_OBJS): Added c-semantics.o.
 	(c-semantics.o): New target.
-	
+
 	* c-common.h (TREE_LANG_FLAG_?): Added documentation.
 	(genrtl_do_pushlevel): Moved from cp/cp-tree.h.
 	(genrtl_clear_out_block): Likewise.
@@ -1006,7 +1015,7 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 	(anon_aggr_type_p): Likewise.
 	(lang_expand_expr_stmt): Likewise.
 	(build_case_label): Likewise.
-	
+
 	* c-decl.c (lang_expand_expr_stmt): Initialize.
 	(stmts_are_full_exprs_p): Define.
 	(current_function_name_declared): Likewise.
@@ -1014,7 +1023,7 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 	(lang_expand_stmt): Likewise.
 	(set_current_function_name_declared): Likewise.
 	(anon_aggr_type_p): Likewise.
-	
+
 	* c-semantics.c: New file.
 	(expand_cond): Moved from cp/semantics.c.
 	(genrtl_do_pushlevel): Likewise.
@@ -1044,7 +1053,7 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 	* c-tree.h: (c_expand_asm_operands): Moved to c-common.h.
 	(c_expand_return): Likewise.
 	(c_expand_start_case): Likewise.
-		
+
 2000-07-01  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (symbolic_operand): Reject CONST expressions
@@ -1067,7 +1076,7 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 	(NORID): Likewise.
 	(RID_FIRST_MODIFIER): Likewise.
 	(ridpointers): Likewise.
-	
+
 2000-06-30  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa/som.h (ASM_WEAKEN_LABEL): Export weak data symbols so that they
@@ -1079,7 +1088,7 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 	always an error.
 
 2000-06-30  Catherine Moore  <clm@cygnus.com>
- 
+
 	* c-common.c (decl_attributes):  Differentiate between
 	types and type decls for alignment.
 
@@ -1143,11 +1152,11 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 	(flag_traditional): Likewise.
 	(flag_isoc99): Likewise.
 	(warn_parentheses): Likewise.
-	
+
 2000-06-29  James E. Wilson  <wilson@cygnus.com>
 
 	* config/ia64/linux.h (LINK_SPEC): Change so.1 to so.2.
-	
+
 	* config/ia64/ia64.h (MODES_TIEABLE_P): Only tie if mode class is the
 	same.  Only tie XFmode with XFmode.
 
@@ -1221,7 +1230,7 @@ Wed Jun 28 15:39:26 2000  Donn Terry (donnte@microsoft.com)
 2000-06-28  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (open_include_file): If open(2) returns EMFILE or
-	ENFILE, close all cached file descriptors and try again.      
+	ENFILE, close all cached file descriptors and try again.
 	(_cpp_execute_include): Keep a count of the number of times
 	each header is included.
 	(close_cached_fd): New function.
@@ -1244,7 +1253,7 @@ Wed Jun 28 14:46:58 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-06-27  Andrew Macleod <amacleod@cygnus.com>
 
-	* dwarf2out.c (ASM_OUTPUT_DWARF_DATA2): Provide default when no 
+	* dwarf2out.c (ASM_OUTPUT_DWARF_DATA2): Provide default when no
 	unsigned macros available.
 
 2000-06-27  Richard Henderson  <rth@cygnus.com>
@@ -1297,7 +1306,7 @@ Tue Jun 27 12:03:03 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* riscix.h: Likewise.
 	* c4x.h: Likewise.
 	* clipper.h: Likewise.
-	* convex.h: Likewise. 
+	* convex.h: Likewise.
 	* elxsi.h: Likewise.
 	* fr30.h: Likewise.
 	* fx80.h: Likewise.
@@ -1408,11 +1417,11 @@ Tue Jun 27 12:03:03 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	and comments.
 	(rename_equivalent_regs_in_insn): Don't handle SUBREGs specially.
 	(rename_equivalent_regs): Expand SEQUENCEs out to individual insns.
-	
+
 2000-06-26  Andrew Macleod <amacleod@cygnus.com>
 	    Jason Merrill <jason@redhat.com>
 
-	* dwarf2.h (enum dwarf_call_frame_info): Add 
+	* dwarf2.h (enum dwarf_call_frame_info): Add
 	DW_CFA_def_cfa_expression.
 	* dwarf2out.c (union dw_cfi_oprnd_struct): Add a pointer to a
 	dw_loc_descr_struct entry.
@@ -1432,7 +1441,7 @@ Tue Jun 27 12:03:03 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	sequences for the new DW_CFA_def_cfa_expression record.
 	(dwarf2out_frame_debug): Use new variables/fields.A
 	(output_cfi): Handle DW_CFA_def_cfa_expression.
-	(output_cfa_loc): New function to generate a CFI record for 
+	(output_cfa_loc): New function to generate a CFI record for
 	DW_CFA_def_cfa_expression.
 	(get_cfa_from_loc_descr): New function to get a cfa_loc record from
 	a dw_loc_descr sequeunce.
@@ -1513,7 +1522,7 @@ Tue Jun 27 12:03:03 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	compiler found.
 	AM_GNU_GETTEXT: Don't set CATALOGS if create_catalogs=no.
 	* configure: Rebuilt.
-	
+
 2000-06-25  John David Anglin  <dave.anglin@nrc.ca>
 
 	* config/vax/vax.h (TARGET_SWITCHES): Provide descriptions.
@@ -1585,7 +1594,7 @@ Tue Jun 27 12:03:03 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-06-24  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* cpp.texi: Clarify #pragma GCC namespace.	
+	* cpp.texi: Clarify #pragma GCC namespace.
 
 2000-06-24  Philipp Thomas  <pthomas@suse.de>
 
@@ -1677,7 +1686,7 @@ Tue Jun 27 12:03:03 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* cppinit.c: Include splay-tree.h.
 	(cpp_reader_init, cpp_cleanup): Update.
 
-	* cpplib.h (struct cpp_buffer): Change ihash field to 
+	* cpplib.h (struct cpp_buffer): Change ihash field to
 	'struct include_file *inc'.  Remove system_header_p.
 	(struct cpp_reader): Change all_include_files to a
 	struct splay_tree_s *.
