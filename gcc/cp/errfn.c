@@ -149,18 +149,15 @@ cp_thing (errfn, atarg1, format, ap)
 	}
       else if (*f == '%')
 	{
-	  /* A `%%' has occurred in the input string.  Since the
-	     string we produce here will be passed to vprintf we must
-	     preserve both `%' characters.  */
+	  /* A `%%' has occurred in the input string. Replace it with
+	     a `%' in the formatted message buf. */
 
-	  len += 2;
-	  if (len > buflen)
+	  if (++len > buflen)
 	    {
 	      buflen = len;
 	      buf = xrealloc (buf, len);
 	    }
-	  strcpy (buf + offset, "%%");
-	  offset += 2;
+	  buf[offset++] = '%';
 	}
       else
 	{
@@ -190,10 +187,10 @@ cp_thing (errfn, atarg1, format, ap)
     {
       char *file = cp_file_of (atarg);
       int   line = cp_line_of (atarg);
-      (*errfn) (file, line, buf);
+      (*errfn) (file, line, "%s", buf);
     }
   else
-    (*errfn) (buf);
+    (*errfn) ("%s", buf);
 
 }
 

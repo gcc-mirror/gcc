@@ -1,3 +1,9 @@
+1998-10-04  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* errfn.c (cp_thing): Print buf as a string not as a printf format
+	to avoid problems with the operator%. Consequently, `%%' sequences
+	in format are copied as `%' in buf.
+
 1998-10-04  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (pop_tinst_level): Call extract_interface_info.
