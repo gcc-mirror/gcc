@@ -90,14 +90,10 @@ insn_template[24] to be "clrd %0", and insn_n_operands[24] to be 1.
 It would not make an case in output_insn_hairy because the template
 given in the entry is a constant (it does not start with `*').  */
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 /* No instruction can have more operands than this.
    Sorry for this arbitrary limit, but what machine will
@@ -111,18 +107,13 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
-extern rtx read_rtx ();
-
-char *xmalloc ();
+char *xmalloc PROTO((unsigned));
 static void fatal ();
-void fancy_abort ();
+void fancy_abort PROTO((void));
 static void error ();
 static void mybcopy ();
 static void mybzero ();
-static int n_occurrences ();
+static int n_occurrences PROTO((int, char *));
 
 /* insns in the machine description are assigned sequential code numbers
    that are used by insn-recog.c (produced by genrecog) to communicate

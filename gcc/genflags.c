@@ -22,14 +22,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
@@ -37,14 +33,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
-extern rtx read_rtx ();
-
-char *xmalloc ();
+char *xmalloc PROTO((unsigned));
 static void fatal ();
-void fancy_abort ();
+void fancy_abort PROTO((void));
 
 /* Names for patterns.  Need to allow linking with print-rtl.  */
 char **insn_name_ptr;

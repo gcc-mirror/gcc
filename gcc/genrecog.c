@@ -46,25 +46,16 @@ Boston, MA 02111-1307, USA.  */
    which returns 0 if the rtl could not be split, or
    it returns the split rtl in a SEQUENCE.  */
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
-extern rtx read_rtx ();
 
 /* Data structure for a listhead of decision trees.  The alternatives
    to a node are kept in a doublely-linked list so we can easily add nodes
