@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ARM with COFF obj format.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
    
 This file is part of GNU CC.
@@ -34,9 +34,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* ??? Is a big-endian default intended to be supported?  */
 #if 0 /*TARGET_CPU_DEFAULT & ARM_FLAG_BIG_END*/
-#define MULTILIB_DEFAULTS { "mbe", "mbig-endian" }
+#define MULTILIB_DEFAULTS { "mbig-endian" }
 #else
-#define MULTILIB_DEFAULTS { "mle", "mlittle-endian" }
+#define MULTILIB_DEFAULTS { "mlittle-endian" }
 #endif
 
 /* ??? Does arm.h really need to set this to 32?  */
