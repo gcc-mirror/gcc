@@ -1,3 +1,9 @@
+Thu Aug 20 13:56:53 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* config/i386/winnt.c: Include system.h, not stdio.h to get
+	sys/param.h pulled in before rtl.h in case the system defines MIN
+	and MAX.
+
 Thu Aug 20 13:44:20 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (movqi, movhi): Add CONSTANT_P_RTX.
