@@ -1,3 +1,9 @@
+Wed Jan  6 10:43:29 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* config/m68k/m68k.c (const_uint32_operand): Remove CONSTANT_P_RTX
+	handling.
+	(const_sint32_operand): Likewise.
+
 Wed Jan  6 09:44:51 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.h: In addition to checking _JBLEN, also check if `setjmp'
