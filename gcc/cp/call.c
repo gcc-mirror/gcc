@@ -4312,6 +4312,7 @@ build_java_interface_fn_ref (fn, instance)
     tree fn, instance;
 {
   tree lookup_args, lookup_fn, method, idx;
+  tree klass_ref, iface, iface_ref;
   int i;
   
   if (!java_iface_lookup_fn)
@@ -4330,12 +4331,12 @@ build_java_interface_fn_ref (fn, instance)
 
   /* Look up the pointer to the runtime java.lang.Class object for `instance'. 
      This is the first entry in the vtable. */
-  tree klass_ref = build_vtbl_ref (build_indirect_ref (instance, 0), 
-				   integer_zero_node);
+  klass_ref = build_vtbl_ref (build_indirect_ref (instance, 0), 
+			      integer_zero_node);
 
   /* Get the java.lang.Class pointer for the interface being called. */
-  tree iface = DECL_CONTEXT (fn);
-  tree iface_ref = lookup_field (iface, get_identifier ("class$"), 0, 0);
+  iface = DECL_CONTEXT (fn);
+  iface_ref = lookup_field (iface, get_identifier ("class$"), 0, 0);
   if (!iface_ref || TREE_CODE (iface_ref) != VAR_DECL
       || DECL_CONTEXT (iface_ref) != iface)
     {

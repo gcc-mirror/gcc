@@ -1,5 +1,9 @@
 2001-03-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
+	* call.c (java_iface_lookup_fn): Fix local declarations.
+
+2001-03-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	Add support for Java interface method calls.
 	* cp-tree.h (struct lang_type): Add java_interface flag.
 	(TYPE_JAVA_INTERFACE): New macro.
