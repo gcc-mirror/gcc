@@ -13,6 +13,12 @@
 
 2004-05-13  Jeff Law  <law@redhat.com>
 
+	* tree-into-ssa.c (compute_global_livein): Use EXECUTE_IF_SET_IN_BITMAP
+	rather than iterating through the blocks testing each bit in
+	livein to initialize the worklist.
+	(mark_def_sites): Remove useless checks of KILLS for virtual
+	operands.
+
 	* tree-ssa-forwprop.c (record_single_argument_cond_exprs): Accept
 	new parameters for the statement and variable worklist as well
 	as a bitmap of interesting SSA_NAMEs.  Walk over the statement
