@@ -1,4 +1,6 @@
-Wed Jul 17 16:57:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Wed Jul 17 17:05:27 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (cmpgtudi_media): Remove spurious @.
 
 	* config/sh/lib1funcs.asm (FMOVD_WORKS): Don't define for little endian.
 	* sh.h (OVERRIDE_OPTIONS): Don't set FMOVD_BIT for little endian.
