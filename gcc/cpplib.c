@@ -227,6 +227,7 @@ static char *savestring ();
 
 static void conditional_skip ();
 static void skip_if_group ();
+static void print_help ();
 
 /* Last arg to output_line_command.  */
 enum file_change_code {same_file, enter_file, leave_file};
@@ -6211,6 +6212,78 @@ push_pending (pfile, cmd, arg)
   CPP_OPTIONS (pfile)->pending = pend;
 }
 
+
+static void
+print_help ()
+{
+  printf ("Usage: %s [switches] input output\n", progname);
+  printf ("Switches:\n");
+  /* start-sanitize-obscured-headers */
+  printf ("  -fgenobscured=<args>      Generate obscured versions of header files used\n");
+  printf ("  -fuseobscured=<args>      Search for obscured versions of header files\n");
+  /* end-sanitize-obscured-headers */
+  printf ("  -include <file>           Include the contents of <file> before other files\n");
+  printf ("  -imacros <file>           Accept definition of marcos in <file>\n");
+  printf ("  -iprefix <path>           Specify <path> as a prefix for next two options\n");
+  printf ("  -iwithprefix <dir>        Add <dir> to the end of the system include paths\n");
+  printf ("  -iwithprefixbefore <dir>  Add <dir> to the end of the main include paths\n");
+  printf ("  -isystem <dir>            Add <dir> to the start of the system include paths\n");
+  printf ("  -idirafter <dir>          Add <dir> to the end of the system include paths\n");
+  printf ("  -I <dir>                  Add <dir> to the end of the main include paths\n");
+  printf ("  -nostdinc                 Do not search the system include directories\n");
+  printf ("  -nostdinc++               Do not search the system include directories for C++\n");
+  printf ("  -o <file>                 Put output into <file>\n");
+  printf ("  -pedantic                 Issue all warnings demanded by strict ANSI C\n");
+  printf ("  -traditional              Follow K&R pre-processor behaviour\n");
+  printf ("  -trigraphs                Support ANSI C trigraphs\n");
+  printf ("  -lang-c                   Assume that the input sources are in C\n");
+  printf ("  -lang-c89                 Assume that the input sources are in C89\n");
+  printf ("  -lang-c++                 Assume that the input sources are in C++\n");
+  printf ("  -lang-objc                Assume that the input sources are in ObjectiveC\n");
+  printf ("  -lang-objc++              Assume that the input sources are in ObjectiveC++\n");
+  printf ("  -lang-asm                 Assume that the input sources are in assembler\n");
+  printf ("  -lang-chill               Assume that the input sources are in Chill\n");
+  printf ("  -+                        Allow parsing of C++ style features\n");
+  printf ("  -w                        Inhibit warning messages\n");
+  printf ("  -Wtrigraphs               Warn if trigraphs are encountered\n");
+  printf ("  -Wno-trigraphs            Do not warn about trigraphs\n");
+  printf ("  -Wcomment{s}              Warn if one comment starts inside another\n");
+  printf ("  -Wno-comment{s}           Do not warn about comments\n");
+  printf ("  -Wtraditional             Warn if a macro argument is/would be turned into\n");
+  printf ("                             a string if -tradtional is specified\n");
+  printf ("  -Wno-traditional          Do not warn about stringification\n");
+  printf ("  -Wundef                   Warn if an undefined macro is used by #if\n");
+  printf ("  -Wno-undef                Do not warn about testing udefined macros\n");
+  printf ("  -Wimport                  Warn about the use of the #import directive\n");
+  printf ("  -Wno-import               Do not warn about the use of #import\n");
+  printf ("  -Werror                   Treat all warnings as errors\n");
+  printf ("  -Wno-error                Do not treat warnings as errors\n");
+  printf ("  -Wall                     Enable all preprocessor warnings\n");
+  printf ("  -M                        Generate make dependencies\n");
+  printf ("  -MM                       As -M, but ignore system header files\n");
+  printf ("  -MD                       As -M, but put output in a .d file\n");
+  printf ("  -MMD                      As -MD, but ignore system header files\n");
+  printf ("  -MG                       Treat missing header file as generated files\n");
+  printf ("  -g                        Include #define and #undef directives in the output\n");
+  printf ("  -D<macro>                 Define a <macro> with string '1' as its value\n");
+  printf ("  -D<macro>=<val>           Define a <macro> with <val> as its value\n");
+  printf ("  -A<question> (<answer>)   Assert the <answer> to <question>\n");
+  printf ("  -U<macro>                 Undefine <macro> \n");
+  printf ("  -u or -undef              Do not predefine any macros\n");
+  printf ("  -v                        Display the version number\n");
+  printf ("  -H                        Print the name of header files as they are used\n");
+  printf ("  -C                        Do not discard comments\n");
+  printf ("  -dM                       Display a list of macro definitions active at end\n");
+  printf ("  -dD                       Preserve macro definitions in output\n");
+  printf ("  -dN                       As -dD except that only the names are preserved\n");
+  printf ("  -dI                       Include #include directives in the output\n");
+  printf ("  -ifoutput                 Describe skipped code blocks in output \n");
+  printf ("  -P                        Do not generate #line directives\n");
+  printf ("  -$                        Do not include '$' in identifiers\n");
+  printf ("  -remap                    Remap file names when including files.\n");
+  printf ("  -h or --help              Display this information\n");
+}
+
 /* Handle command-line options in (argc, argv).
    Can be called multiple times, to handle multiple sets of options.
    Returns if an unrecognized option is seen.
@@ -6228,7 +6301,8 @@ cpp_handle_options (pfile, argc, argv)
     if (argv[i][0] != '-') {
       if (opts->out_fname != NULL)
 	{
-	  cpp_fatal (pfile, "Usage: %s [switches] input output", argv[0]);
+	  print_help ();
+	  cpp_fatal (pfile, "Too many arguments");
 	  return argc;
 	}
       else if (opts->in_fname != NULL)
@@ -6554,6 +6628,12 @@ cpp_handle_options (pfile, argc, argv)
 	  opts->debug_output = 1;
 	break;
 
+      case '-':
+	if (strcmp (argv[i], "--help") != 0)
+	  return i;
+	print_help ();
+	break;
+	
       case 'v':
 	cpp_notice ("GNU CPP version %s", version_string);
 #ifdef TARGET_VERSION
