@@ -2828,8 +2828,7 @@ beq\t%2,%.,1b\;\
   "!TARGET_MIPS16"
   "<load>l\t%0,%2"
   [(set_attr "type" "load")
-   (set_attr "mode" "<MODE>")
-   (set_attr "hazard" "none")])
+   (set_attr "mode" "<MODE>")])
 
 (define_insn "mov_<load>r"
   [(set (match_operand:GPR 0 "register_operand" "=d")
