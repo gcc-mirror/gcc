@@ -1,5 +1,12 @@
 2004-11-18  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (num_get<>::do_get(void*&)):
+	If the failbit is set, don't set it again.
+	(money_get<>::_M_extract): Minor stylistic tweak: consistently
+	with the other functions, take care of eofbit at the end.
+
+2004-11-18  Paolo Carlini  <pcarlini@suse.de>
+
 	DR 434. bitset::to_string() hard to use [Ready]
 	* include/std/std_bitset.h (to_string): Add three overloads, taking
 	fewer template arguments.
