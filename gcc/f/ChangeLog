@@ -1,3 +1,7 @@
+Wed Mar  3 00:43:49 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Add remaining changes pending from Dave Love.
+
 Wed Mar  3 00:38:42 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi, news.texi: Conditionalize cross-references
