@@ -6286,26 +6286,24 @@ check_float_value (mode, d, overflow)
       memcpy (&r, d, sizeof (REAL_VALUE_TYPE));
       if (REAL_VALUES_LESS (fvptr[0], r))
 	{
-	  bcopy ((char *) &fvptr[0], (char *) d,
-		 sizeof (REAL_VALUE_TYPE));
+	  memcpy (d, &fvptr[0], sizeof (REAL_VALUE_TYPE));
 	  return 1;
 	}
       else if (REAL_VALUES_LESS (r, fvptr[1]))
 	{
-	  bcopy ((char *) &fvptr[1], (char *) d,
-		 sizeof (REAL_VALUE_TYPE));
+	  memcpy (d, &fvptr[1], sizeof (REAL_VALUE_TYPE));
 	  return 1;
 	}
       else if (REAL_VALUES_LESS (dconst0, r)
 		&& REAL_VALUES_LESS (r, fvptr[2]))
 	{
-	  bcopy ((char *) &dconst0, (char *) d, sizeof (REAL_VALUE_TYPE));
+	  memcpy (d, &dconst0, sizeof (REAL_VALUE_TYPE));
 	  return 1;
 	}
       else if (REAL_VALUES_LESS (r, dconst0)
 		&& REAL_VALUES_LESS (fvptr[3], r))
 	{
-	  bcopy ((char *) &dconst0, (char *) d, sizeof (REAL_VALUE_TYPE));
+	  memcpy (d, &dconst0, sizeof (REAL_VALUE_TYPE));
 	  return 1;
 	}
     }
