@@ -25,6 +25,11 @@ int main()
   if (strstr (foo + 1, "world") != foo + 6)
     abort();
 
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  if (__builtin_strstr (foo + 1, "world") != foo + 6)
+    abort();
+  
   return 0;
 }
 

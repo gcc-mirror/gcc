@@ -7,6 +7,7 @@
 
 extern void abort (void);
 extern char *strchr (const char *, int);
+extern char *index (const char *, int);
 
 int main()
 {
@@ -20,11 +21,16 @@ int main()
     abort ();
   if (strchr (foo, '\0')  != foo + 11)
     abort ();
-  /* For systems which don't have index, we test the __builtin_
-     version to avoid spurious link failures at -O0.  We only need to
-     test one case since everything is handled in the same code path
-     as builtin strchr.  */
-  if (__builtin_index ("hello", 'z')  != 0)
+  /* Test only one instance of index since the code path is the same
+     as that of strchr. */
+  if (index ("hello", 'z')  != 0)
+    abort ();
+
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  if (__builtin_strchr (foo, 'o')  != foo + 4)
+    abort ();
+  if (__builtin_index (foo, 'o')  != foo + 4)
     abort ();
 
   return 0;
@@ -33,7 +39,14 @@ int main()
 static char *
 index (const char *s, int c)
 {
+  /* For systems which don't have index, we ensure no link failures
+     occur by always providing a backup definition.  During
+     optimization this function aborts to catch errors.  */
+#ifdef __OPTIMIZE__
   abort ();
+#else
+  return strchr(s, c);
+#endif
 }
 
 #ifdef __OPTIMIZE__

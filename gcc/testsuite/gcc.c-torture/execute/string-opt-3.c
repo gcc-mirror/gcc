@@ -9,6 +9,7 @@ extern void abort (void);
 extern __SIZE_TYPE__ strlen (const char *);
 extern int strcmp (const char *, const char *);
 extern char *strrchr (const char *, int);
+extern char *rindex (const char *, int);
 
 int x = 6;
 char *bar = "hi world";
@@ -67,11 +68,20 @@ int main()
     abort ();
   if (x != 8)
     abort ();
-  /* For systems which don't have rindex, we test the __builtin_
-     version to avoid spurious link failures at -O0.  We only need to
-     test one case since everything is handled in the same code path
-     as builtin strrchr.  */
-  if (__builtin_rindex ("hello", 'z') != 0)
+  /* Test only one instance of rindex since the code path is the same
+     as that of strrchr. */
+  if (rindex ("hello", 'z') != 0)
+    abort ();
+
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  if (__builtin_rindex (foo, 'o') != foo + 7)
+    abort ();
+  if (__builtin_strrchr (foo, 'o') != foo + 7)
+    abort ();
+  if (__builtin_strlen (foo) != 11)
+    abort ();
+  if (__builtin_strcmp (foo, "hello") <= 0)
     abort ();
 
   return 0;
@@ -80,7 +90,14 @@ int main()
 static char *
 rindex (const char *s, int c)
 {
+  /* For systems which don't have rindex, we ensure no link failures
+     occur by always providing a backup definition.  During
+     optimization this function aborts to catch errors.  */
+#ifdef __OPTIMIZE__
   abort ();
+#else
+  return strrchr(s, c);
+#endif
 }
 
 #ifdef __OPTIMIZE__

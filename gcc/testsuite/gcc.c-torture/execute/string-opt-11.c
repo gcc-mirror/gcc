@@ -46,6 +46,11 @@ int main ()
   if (strspn ("", ++d2+5) != 0 || d2 != dst+1)
     abort();
 
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  if (__builtin_strspn (s1, "hello") != 5)
+    abort();
+
   return 0;
 }
 

@@ -31,6 +31,13 @@ int main()
   if (memcpy (p + 3, "FGHI", 4) != p + 3 || memcmp (p, "A\0CFGHIj", 9))
     abort ();
 
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  if (__builtin_strcpy (p, "abcde") != p || memcmp (p, "abcde", 6))
+    abort ();
+  if (__builtin_memcpy (p, "ABCDE", 6) != p || memcmp (p, "ABCDE", 6))
+    abort ();
+
   return 0;
 }
 

@@ -33,6 +33,12 @@ int main ()
   if (strcat (++d2+5, s1+11) != dst+6 || d2 != dst+1 || strcmp (dst, s1))
     abort();
 
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  strcpy (dst, s1);
+  if (__builtin_strcat (dst, "") != dst || strcmp (dst, s1))
+    abort();
+
   return 0;
 }
 

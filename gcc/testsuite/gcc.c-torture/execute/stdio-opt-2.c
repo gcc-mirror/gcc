@@ -30,6 +30,10 @@ int main()
   printf ("\n");
   printf ("hello world\n");
   
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  __builtin_printf ("%s\n", "hello");
+
   return 0;
 }
 
