@@ -2192,7 +2192,7 @@ immed_double_const (i0, i1, mode)
 
   push_obstacks_nochange ();
   rtl_in_saveable_obstack ();
-  r = gen_rtx (CONST_DOUBLE, mode, 0, i0, i1);
+  r = gen_rtx (CONST_DOUBLE, mode, NULL_RTX, i0, i1);
   pop_obstacks ();
 
   /* Don't touch const_double_chain in nested function; see force_const_mem.
