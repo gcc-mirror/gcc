@@ -1013,8 +1013,10 @@ reloads_to_loads (struct rewrite_info *ri, struct ref **refs,
       if (is_death)
 	{
 	  int old_num_r = num_reloads;
+	  bitmap_iterator bi;
+
 	  bitmap_clear (ri->scratch);
-	  EXECUTE_IF_SET_IN_BITMAP (ri->need_reload, 0, j,
+	  EXECUTE_IF_SET_IN_BITMAP (ri->need_reload, 0, j, bi)
 	    {
 	      struct web *web2 = ID2WEB (j);
 	      struct web *aweb2 = alias (find_web_for_subweb (web2));
@@ -1030,7 +1032,7 @@ reloads_to_loads (struct rewrite_info *ri, struct ref **refs,
 		  bitmap_set_bit (ri->scratch, j);
 		  num_reloads--;
 		}
-	    });
+	    }
 	  if (num_reloads != old_num_r)
 	    bitmap_operation (ri->need_reload, ri->need_reload, ri->scratch,
 			      BITMAP_AND_COMPL);
@@ -1062,6 +1064,8 @@ rewrite_program2 (bitmap new_deaths)
       basic_block last_bb = NULL;
       rtx last_block_insn;
       int i, j;
+      bitmap_iterator bi;
+
       if (!INSN_P (insn))
 	insn = prev_real_insn (insn);
       while (insn && !(bb = BLOCK_FOR_INSN (insn)))
@@ -1073,7 +1077,7 @@ rewrite_program2 (bitmap new_deaths)
 
       sbitmap_zero (ri.live);
       CLEAR_HARD_REG_SET (ri.colors_in_use);
-      EXECUTE_IF_SET_IN_BITMAP (live_at_end[i - 2], 0, j,
+      EXECUTE_IF_SET_IN_BITMAP (live_at_end[i - 2], 0, j, bi)
 	{
 	  struct web *web = use2web[j];
 	  struct web *aweb = alias (find_web_for_subweb (web));
@@ -1090,7 +1094,7 @@ rewrite_program2 (bitmap new_deaths)
 	      if (aweb->type != SPILLED)
 	        update_spill_colors (&(ri.colors_in_use), web, 1);
 	    }
-	});
+	}
 
       bitmap_clear (ri.need_reload);
       ri.num_reloads = 0;
@@ -1130,7 +1134,9 @@ rewrite_program2 (bitmap new_deaths)
 	  if (INSN_P (insn) && BLOCK_FOR_INSN (insn) != last_bb)
 	    {
 	      int index = BLOCK_FOR_INSN (insn)->index + 2;
-	      EXECUTE_IF_SET_IN_BITMAP (live_at_end[index - 2], 0, j,
+	      bitmap_iterator bi;
+
+	      EXECUTE_IF_SET_IN_BITMAP (live_at_end[index - 2], 0, j, bi)
 		{
 		  struct web *web = use2web[j];
 		  struct web *aweb = alias (find_web_for_subweb (web));
@@ -1139,9 +1145,9 @@ rewrite_program2 (bitmap new_deaths)
 		      SET_BIT (ri.live, web->id);
 		      update_spill_colors (&(ri.colors_in_use), web, 1);
 		    }
-		});
+		}
 	      bitmap_clear (ri.scratch);
-	      EXECUTE_IF_SET_IN_BITMAP (ri.need_reload, 0, j,
+	      EXECUTE_IF_SET_IN_BITMAP (ri.need_reload, 0, j, bi)
 		{
 		  struct web *web2 = ID2WEB (j);
 		  struct web *supweb2 = find_web_for_subweb (web2);
@@ -1156,7 +1162,7 @@ rewrite_program2 (bitmap new_deaths)
 		      bitmap_set_bit (ri.scratch, j);
 		      ri.num_reloads--;
 		    }
-		});
+		}
 	      bitmap_operation (ri.need_reload, ri.need_reload, ri.scratch,
 				BITMAP_AND_COMPL);
 	      last_bb = BLOCK_FOR_INSN (insn);
@@ -1344,26 +1350,28 @@ rewrite_program2 (bitmap new_deaths)
 	  int in_ir = 0;
 	  edge e;
 	  int num = 0;
+	  bitmap_iterator bi;
+
 	  HARD_REG_SET cum_colors, colors;
 	  CLEAR_HARD_REG_SET (cum_colors);
 	  for (e = bb->pred; e && num < 5; e = e->pred_next, num++)
 	    {
 	      int j;
 	      CLEAR_HARD_REG_SET (colors);
-	      EXECUTE_IF_SET_IN_BITMAP (live_at_end[e->src->index], 0, j,
+	      EXECUTE_IF_SET_IN_BITMAP (live_at_end[e->src->index], 0, j, bi)
 		{
 		  struct web *web = use2web[j];
 		  struct web *aweb = alias (find_web_for_subweb (web));
 		  if (aweb->type != SPILLED)
 		    update_spill_colors (&colors, web, 1);
-		});
+		}
 	      IOR_HARD_REG_SET (cum_colors, colors);
 	    }
 	  if (num == 5)
 	    in_ir = 1;
 
 	  bitmap_clear (ri.scratch);
-	  EXECUTE_IF_SET_IN_BITMAP (ri.need_reload, 0, j,
+	  EXECUTE_IF_SET_IN_BITMAP (ri.need_reload, 0, j, bi)
 	    {
 	      struct web *web2 = ID2WEB (j);
 	      struct web *supweb2 = find_web_for_subweb (web2);
@@ -1384,7 +1392,7 @@ rewrite_program2 (bitmap new_deaths)
 		  bitmap_set_bit (ri.scratch, j);
 		  ri.num_reloads--;
 		}
-	    });
+	  }
 	  bitmap_operation (ri.need_reload, ri.need_reload, ri.scratch,
 			    BITMAP_AND_COMPL);
 	}
@@ -1458,6 +1466,8 @@ detect_web_parts_to_rebuild (void)
         struct web *web = DLIST_WEB (d);
 	struct conflict_link *wl;
 	unsigned int j;
+	bitmap_iterator bi;
+
 	/* This check is only needed for coalesced nodes, but hey.  */
 	if (alias (web)->type != SPILLED)
 	  continue;
@@ -1494,14 +1504,14 @@ detect_web_parts_to_rebuild (void)
 	    SET_BIT (already_webs, wl->t->id);
 	    mark_refs_for_checking (wl->t, uses_as_bitmap);
 	  }
-	EXECUTE_IF_SET_IN_BITMAP (web->useless_conflicts, 0, j,
+	EXECUTE_IF_SET_IN_BITMAP (web->useless_conflicts, 0, j, bi)
 	  {
 	    struct web *web2 = ID2WEB (j);
 	    if (TEST_BIT (already_webs, web2->id))
 	      continue;
 	    SET_BIT (already_webs, web2->id);
 	    mark_refs_for_checking (web2, uses_as_bitmap);
-	  });
+	  }
       }
 
   /* We also recheck unconditionally all uses of any hardregs.  This means
@@ -1550,10 +1560,12 @@ static void
 delete_useless_defs (void)
 {
   unsigned int i;
+  bitmap_iterator bi;
+
   /* If the insn only sets the def without any sideeffect (besides
      clobbers or uses), we can delete it.  single_set() also tests
      for INSN_P(insn).  */
-  EXECUTE_IF_SET_IN_BITMAP (useless_defs, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (useless_defs, 0, i, bi)
     {
       rtx insn = DF_REF_INSN (df->defs[i]);
       rtx set = single_set (insn);
@@ -1566,7 +1578,7 @@ delete_useless_defs (void)
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	  df_insn_modify (df, BLOCK_FOR_INSN (insn), insn);
 	}
-    });
+    }
 }
 
 /* Look for spilled webs, on whose behalf no insns were emitted.
@@ -1617,7 +1629,9 @@ void
 actual_spill (void)
 {
   int i;
+  bitmap_iterator bi;
   bitmap new_deaths = BITMAP_XMALLOC ();
+
   reset_changed_flag ();
   spill_coalprop ();
   choose_spill_colors ();
@@ -1633,8 +1647,10 @@ actual_spill (void)
   insns_with_deaths = sbitmap_alloc (get_max_uid ());
   death_insns_max_uid = get_max_uid ();
   sbitmap_zero (insns_with_deaths);
-  EXECUTE_IF_SET_IN_BITMAP (new_deaths, 0, i,
-    { SET_BIT (insns_with_deaths, i);});
+  EXECUTE_IF_SET_IN_BITMAP (new_deaths, 0, i, bi)
+    {
+      SET_BIT (insns_with_deaths, i);
+    }
   detect_non_changed_webs ();
   detect_web_parts_to_rebuild ();
   BITMAP_XFREE (new_deaths);

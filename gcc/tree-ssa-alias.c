@@ -382,10 +382,11 @@ init_alias_info (void)
   if (aliases_computed_p)
     {
       size_t i;
+      bitmap_iterator bi;
 
       /* Clear the call-clobbered set.  We are going to re-discover
 	  call-clobbered variables.  */
-      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
+      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
 	{
 	  tree var = referenced_var (i);
 
@@ -394,7 +395,7 @@ init_alias_info (void)
 	     code, so we can't remove them from CALL_CLOBBERED_VARS.  */
 	  if (!is_call_clobbered (var))
 	    bitmap_clear_bit (call_clobbered_vars, var_ann (var)->uid);
-	});
+	}
 
       /* Similarly, clear the set of addressable variables.  In this
 	 case, we can just clear the set because addressability is
@@ -589,6 +590,7 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	  bitmap addr_taken;
 	  tree stmt = bsi_stmt (si);
 	  bool stmt_escapes_p = is_escape_site (stmt, &ai->num_calls_found);
+	  bitmap_iterator bi;
 
 	  /* Mark all the variables whose address are taken by the
 	     statement.  Note that this will miss all the addresses taken
@@ -597,13 +599,13 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	  get_stmt_operands (stmt);
 	  addr_taken = addresses_taken (stmt);
 	  if (addr_taken)
-	    EXECUTE_IF_SET_IN_BITMAP (addr_taken, 0, i,
-		{
-		  tree var = referenced_var (i);
-		  bitmap_set_bit (ai->addresses_needed, var_ann (var)->uid);
-		  if (stmt_escapes_p)
-		    mark_call_clobbered (var);
-		});
+	    EXECUTE_IF_SET_IN_BITMAP (addr_taken, 0, i, bi)
+	      {
+		tree var = referenced_var (i);
+		bitmap_set_bit (ai->addresses_needed, var_ann (var)->uid);
+		if (stmt_escapes_p)
+		  mark_call_clobbered (var);
+	      }
 
 	  if (stmt_escapes_p)
 	    block_ann->has_escape_site = 1;
@@ -618,11 +620,11 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	  if (addr_taken
 	      && TREE_CODE (stmt) == MODIFY_EXPR
 	      && !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 0))))
-	    EXECUTE_IF_SET_IN_BITMAP (addr_taken, 0, i,
-		{
-		  tree var = referenced_var (i);
-		  mark_call_clobbered (var);
-		});
+	    EXECUTE_IF_SET_IN_BITMAP (addr_taken, 0, i, bi)
+	      {
+		tree var = referenced_var (i);
+		mark_call_clobbered (var);
+	      }
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
 	    {
@@ -835,6 +837,7 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
       tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
       var_ann_t v_ann = var_ann (SSA_NAME_VAR (ptr));
+      bitmap_iterator bi;
 
       if (pi->value_escapes_p || pi->pt_anything)
 	{
@@ -847,16 +850,20 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 	    mark_call_clobbered (v_ann->type_mem_tag);
 
 	  if (pi->pt_vars)
-	    EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j,
-		mark_call_clobbered (referenced_var (j)));
+	    EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
+	      {
+		mark_call_clobbered (referenced_var (j));
+	      }
 	}
 
       /* Set up aliasing information for PTR's name memory tag (if it has
 	 one).  Note that only pointers that have been dereferenced will
 	 have a name memory tag.  */
       if (pi->name_mem_tag && pi->pt_vars)
-	EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j,
-	    add_may_alias (pi->name_mem_tag, referenced_var (j)));
+	EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
+	  {
+	    add_may_alias (pi->name_mem_tag, referenced_var (j));
+	  }
 
       /* If the name tag is call clobbered, so is the type tag
 	 associated with the base VAR_DECL.  */
@@ -1476,13 +1483,17 @@ static void
 maybe_create_global_var (struct alias_info *ai)
 {
   size_t i, n_clobbered;
+  bitmap_iterator bi;
   
   /* No need to create it, if we have one already.  */
   if (global_var == NULL_TREE)
     {
       /* Count all the call-clobbered variables.  */
       n_clobbered = 0;
-      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, n_clobbered++);
+      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
+	{
+	  n_clobbered++;
+	}
 
       /* Create .GLOBAL_VAR if we have too many call-clobbered
 	 variables.  We also create .GLOBAL_VAR when there no
@@ -1510,7 +1521,7 @@ maybe_create_global_var (struct alias_info *ai)
   /* If the function has calls to clobbering functions and .GLOBAL_VAR has
      been created, make it an alias for all call-clobbered variables.  */
   if (global_var)
-    EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
+    EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
       {
 	tree var = referenced_var (i);
 	if (var != global_var)
@@ -1518,7 +1529,7 @@ maybe_create_global_var (struct alias_info *ai)
 	     add_may_alias (var, global_var);
 	     bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
 	  }
-      });
+      }
 }
 
 
@@ -2315,13 +2326,14 @@ dump_points_to_info_for (FILE *file, tree ptr)
       if (pi->pt_vars)
 	{
 	  unsigned ix;
+	  bitmap_iterator bi;
 
 	  fprintf (file, ", points-to vars: { ");
-	  EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, ix,
-	      {
-		print_generic_expr (file, referenced_var (ix), dump_flags);
-		fprintf (file, " ");
-	      });
+	  EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, ix, bi)
+	    {
+	      print_generic_expr (file, referenced_var (ix), dump_flags);
+	      fprintf (file, " ");
+	    }
 	  fprintf (file, "}");
 	}
     }

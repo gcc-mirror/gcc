@@ -1086,12 +1086,13 @@ compute_dominance_frontiers_1 (bitmap *frontiers, basic_block bb, sbitmap done)
        c = next_dom_son (CDI_DOMINATORS, c))
     {
       int x;
+      bitmap_iterator bi;
 
-      EXECUTE_IF_SET_IN_BITMAP (frontiers[c->index], 0, x,
+      EXECUTE_IF_SET_IN_BITMAP (frontiers[c->index], 0, x, bi)
 	{
 	  if (get_immediate_dominator (CDI_DOMINATORS, BASIC_BLOCK (x)) != bb)
 	    bitmap_set_bit (frontiers[bb->index], x);
-	});
+	}
     }
 }
 

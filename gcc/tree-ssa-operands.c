@@ -1264,24 +1264,25 @@ get_asm_expr_operands (tree stmt)
     if (strcmp (TREE_STRING_POINTER (TREE_VALUE (link)), "memory") == 0)
       {
 	size_t i;
+	bitmap_iterator bi;
 
 	/* Clobber all call-clobbered variables (or .GLOBAL_VAR if we
 	   decided to group them).  */
 	if (global_var)
 	  add_stmt_operand (&global_var, stmt, opf_is_def);
 	else
-	  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
+	  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
 	      {
 		tree var = referenced_var (i);
 		add_stmt_operand (&var, stmt, opf_is_def);
-	      });
+	      }
 
 	/* Now clobber all addressables.  */
-	EXECUTE_IF_SET_IN_BITMAP (addressable_vars, 0, i,
+	EXECUTE_IF_SET_IN_BITMAP (addressable_vars, 0, i, bi)
 	    {
 	      tree var = referenced_var (i);
 	      add_stmt_operand (&var, stmt, opf_is_def);
-	    });
+	    }
 
 	break;
       }
@@ -1597,6 +1598,7 @@ add_call_clobber_ops (tree stmt, tree callee)
     {
       size_t i;
       bitmap not_read_b = NULL, not_written_b = NULL;
+      bitmap_iterator bi;
 
       /* Get info for module level statics.  There is a bit set for
 	 each static if the call being processed does not read or
@@ -1609,7 +1611,7 @@ add_call_clobber_ops (tree stmt, tree callee)
 	  not_written_b = get_global_statics_not_written (callee);
 	}
 
-      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
+      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
 	{
 	  tree var = referenced_var (i);
 
@@ -1648,7 +1650,7 @@ add_call_clobber_ops (tree stmt, tree callee)
 	      else
 		add_stmt_operand (&var, stmt, opf_is_def);
 	    }
-	});
+	}
     }
 }
 
@@ -1659,6 +1661,8 @@ add_call_clobber_ops (tree stmt, tree callee)
 static void
 add_call_read_ops (tree stmt, tree callee)
 {
+  bitmap_iterator bi;
+
   /* Otherwise, if the function is not pure, it may reference memory.  Add
      a VUSE for .GLOBAL_VAR if it has been created.  Otherwise, add a VUSE
      for each call-clobbered variable.  See add_referenced_var for the
@@ -1671,14 +1675,14 @@ add_call_read_ops (tree stmt, tree callee)
       bitmap not_read_b = callee 
 	? get_global_statics_not_read (callee) : NULL; 
 
-      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
+      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
 	{
 	  tree var = referenced_var (i);
 	  bool not_read = not_read_b 
 	    ? bitmap_bit_p(not_read_b, i) : false;
 	  if (!not_read)
 	  add_stmt_operand (&var, stmt, opf_none);
-	});
+	}
     }
 }
 

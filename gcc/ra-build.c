@@ -1056,17 +1056,21 @@ livethrough_conflicts_bb (basic_block bb)
   if (deaths > 0
       || contains_call
       || bitmap_first_set_bit (all_defs) >= 0)
-    EXECUTE_IF_SET_IN_BITMAP (info->live_throughout, first, use_id,
-      {
-        struct web_part *wp = &web_parts[df->def_id + use_id];
-        unsigned int bl = rtx_to_bits (DF_REF_REG (wp->ref));
-        bitmap conflicts;
-        wp = find_web_part (wp);
-        wp->spanned_deaths += deaths;
-	wp->crosses_call |= contains_call;
-        conflicts = get_sub_conflicts (wp, bl);
-        bitmap_operation (conflicts, conflicts, all_defs, BITMAP_IOR);
-      });
+    {
+      bitmap_iterator bi;
+
+      EXECUTE_IF_SET_IN_BITMAP (info->live_throughout, first, use_id, bi)
+	{
+	  struct web_part *wp = &web_parts[df->def_id + use_id];
+	  unsigned int bl = rtx_to_bits (DF_REF_REG (wp->ref));
+	  bitmap conflicts;
+	  wp = find_web_part (wp);
+	  wp->spanned_deaths += deaths;
+	  wp->crosses_call |= contains_call;
+	  conflicts = get_sub_conflicts (wp, bl);
+	  bitmap_operation (conflicts, conflicts, all_defs, BITMAP_IOR);
+	}
+    }
 
   BITMAP_XFREE (all_defs);
 }
@@ -2191,6 +2195,8 @@ conflicts_between_webs (struct df *df)
 	  {
 	    int j;
 	    struct web *web1 = find_subweb_2 (supweb1, cl->size_word);
+	    bitmap_iterator bi;
+
 	    if (have_ignored)
 	      bitmap_operation (cl->conflicts, cl->conflicts, ignore_defs,
 			        BITMAP_AND_COMPL);
@@ -2205,8 +2211,7 @@ conflicts_between_webs (struct df *df)
 	    pass++;
 
 	    /* Note, that there are only defs in the conflicts bitset.  */
-	    EXECUTE_IF_SET_IN_BITMAP (
-	      cl->conflicts, 0, j,
+	    EXECUTE_IF_SET_IN_BITMAP (cl->conflicts, 0, j, bi)
 	      {
 		struct web *web2 = def2web[j];
 		unsigned int id2 = web2->id;
@@ -2215,7 +2220,7 @@ conflicts_between_webs (struct df *df)
 		    pass_cache[id2] = pass;
 		    record_conflict (web1, web2);
 		  }
-	      });
+	      }
 	  }
     }
 

@@ -769,16 +769,18 @@ bitmap_print_value_set (FILE *outfile, bitmap_set_t set,
   if (set)
     {
       int i;
-      EXECUTE_IF_SET_IN_BITMAP (set->expressions, 0, i,
-      {
-	print_generic_expr (outfile, ssa_name (i), 0);
+      bitmap_iterator bi;
+
+      EXECUTE_IF_SET_IN_BITMAP (set->expressions, 0, i, bi)
+	{
+	  print_generic_expr (outfile, ssa_name (i), 0);
 	
-	fprintf (outfile, " (");
-	print_generic_expr (outfile, get_value_handle (ssa_name (i)), 0);
-	fprintf (outfile, ") ");
-	if (bitmap_last_set_bit (set->expressions) != i)
-	  fprintf (outfile, ", ");
-      });
+	  fprintf (outfile, " (");
+	  print_generic_expr (outfile, get_value_handle (ssa_name (i)), 0);
+	  fprintf (outfile, ") ");
+	  if (bitmap_last_set_bit (set->expressions) != i)
+	    fprintf (outfile, ", ");
+	}
     }
   fprintf (outfile, " }\n");
 }
@@ -1416,12 +1418,14 @@ insert_aux (basic_block block)
       if (dom)
 	{
 	  int i;
+	  bitmap_iterator bi;
+
 	  bitmap_set_t newset = NEW_SETS (dom);
-	  EXECUTE_IF_SET_IN_BITMAP (newset->expressions, 0, i,
-          {
-	    bitmap_insert_into_set (NEW_SETS (block), ssa_name (i));
-	    bitmap_value_replace_in_set (AVAIL_OUT (block), ssa_name (i));
-	  });
+	  EXECUTE_IF_SET_IN_BITMAP (newset->expressions, 0, i, bi)
+	    {
+	      bitmap_insert_into_set (NEW_SETS (block), ssa_name (i));
+	      bitmap_value_replace_in_set (AVAIL_OUT (block), ssa_name (i));
+	    }
 	  if (block->pred->pred_next)
 	    {
 	      value_set_node_t node;

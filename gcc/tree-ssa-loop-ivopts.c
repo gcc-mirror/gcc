@@ -944,6 +944,7 @@ find_induction_variables (struct ivopts_data *data)
 {
   unsigned i;
   struct loop *loop = data->current_loop;
+  bitmap_iterator bi;
 
   if (!find_bivs (data))
     return false;
@@ -975,11 +976,11 @@ find_induction_variables (struct ivopts_data *data)
  
       fprintf (dump_file, "Induction variables:\n\n");
 
-      EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i,
+      EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
 	{
 	  if (ver_info (data, i)->iv)
 	    dump_iv (dump_file, ver_info (data, i)->iv);
-	});
+	}
     }
 
   return true;
@@ -1524,9 +1525,11 @@ find_interesting_uses (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
+      bitmap_iterator bi;
+
       fprintf (dump_file, "\n");
 
-      EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i,
+      EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
 	{
 	  info = ver_info (data, i);
 	  if (info->inv_id)
@@ -1536,7 +1539,7 @@ find_interesting_uses (struct ivopts_data *data)
 	      fprintf (dump_file, " is invariant (%d)%s\n",
 		       info->inv_id, info->has_nonlin_use ? "" : ", eliminable");
 	    }
-	});
+	}
 
       fprintf (dump_file, "\n");
     }
@@ -1718,13 +1721,14 @@ add_old_ivs_candidates (struct ivopts_data *data)
 {
   unsigned i;
   struct iv *iv;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
     {
       iv = ver_info (data, i)->iv;
       if (iv && iv->biv_p && !zero_p (iv->step))
 	add_old_iv_candidates (data, iv);
-    });
+    }
 }
 
 /* Adds candidates based on the value of the induction variable IV and USE.  */
@@ -1896,6 +1900,7 @@ alloc_use_cost_map (struct ivopts_data *data)
   for (i = 0; i < n_iv_uses (data); i++)
     {
       struct iv_use *use = iv_use (data, i);
+      bitmap_iterator bi;
 
       if (data->consider_all_candidates)
 	{
@@ -1905,7 +1910,10 @@ alloc_use_cost_map (struct ivopts_data *data)
       else
 	{
 	  size = n_imp;
-	  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, j, size++);
+	  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, j, bi)
+	    {
+	      size++;
+	    }
 	  use->n_map_members = 0;
 	}
 
@@ -3204,12 +3212,14 @@ determine_use_iv_costs (struct ivopts_data *data)
 	}
       else
 	{
-	  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, j,
+	  bitmap_iterator bi;
+
+	  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, j, bi)
 	    {
 	      cand = iv_cand (data, j);
 	      if (!cand->important)
 	        determine_use_iv_cost (data, use, cand);
-	    });
+	    }
 	}
     }
 
@@ -3331,6 +3341,7 @@ determine_set_costs (struct ivopts_data *data)
   unsigned j, n;
   tree phi, op;
   struct loop *loop = data->current_loop;
+  bitmap_iterator bi;
 
   /* We use the following model (definitely improvable, especially the
      cost function -- TODO):
@@ -3375,13 +3386,13 @@ determine_set_costs (struct ivopts_data *data)
       n++;
     }
 
-  EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, j,
+  EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, j, bi)
     {
       struct version_info *info = ver_info (data, j);
 
       if (info->inv_id && info->has_nonlin_use)
 	n++;
-    });
+    }
 
   loop_data (loop)->regs_used = n;
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3412,6 +3423,7 @@ find_best_candidate (struct ivopts_data *data,
   unsigned best_cost = INFTY, cost;
   struct iv_cand *cnd = NULL, *acnd;
   bitmap depends_on = NULL, asol;
+  bitmap_iterator bi, bi1;
 
   if (data->consider_all_candidates)
     asol = sol;
@@ -3421,34 +3433,37 @@ find_best_candidate (struct ivopts_data *data,
       bitmap_a_and_b (asol, sol, use->related_cands);
     }
 
-  EXECUTE_IF_SET_IN_BITMAP (asol, 0, c,
+  EXECUTE_IF_SET_IN_BITMAP (asol, 0, c, bi)
     {
       acnd = iv_cand (data, c);
       cost = get_use_iv_cost (data, use, acnd, &depends_on);
 
       if (cost == INFTY)
-	goto next_cand;
+	continue;
       if (cost > best_cost)
-	goto next_cand;
+	continue;
       if (cost == best_cost)
 	{
 	  /* Prefer the cheaper iv.  */
 	  if (acnd->cost >= cnd->cost)
-	    goto next_cand;
+	    continue;
 	}
 
       if (depends_on)
 	{
-	  EXECUTE_IF_AND_COMPL_IN_BITMAP (depends_on, inv, 0, d,
-					  goto next_cand);
+	  EXECUTE_IF_AND_COMPL_IN_BITMAP (depends_on, inv, 0, d, bi1)
+	    {
+	      goto next_cand;
+	    }
 	  if (used_inv)
 	    bitmap_a_or_b (used_inv, used_inv, depends_on);
 	}
 
       cnd = acnd;
       best_cost = cost;
+
 next_cand: ;
-    });
+    }
 
   if (cnd && used_ivs)
     bitmap_set_bit (used_ivs, cnd->id);
@@ -3475,6 +3490,7 @@ set_cost_up_to (struct ivopts_data *data, bitmap sol, bitmap inv,
   struct iv_use *use;
   struct iv_cand *cand;
   bitmap used_ivs = BITMAP_XMALLOC (), used_inv = BITMAP_XMALLOC ();
+  bitmap_iterator bi;
 
   for (i = 0; i < max_use; i++)
     {
@@ -3490,7 +3506,7 @@ set_cost_up_to (struct ivopts_data *data, bitmap sol, bitmap inv,
       cost += acost;
     }
 
-  EXECUTE_IF_SET_IN_BITMAP (used_ivs, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (used_ivs, 0, i, bi)
     {
       cand = iv_cand (data, i);
 
@@ -3499,8 +3515,11 @@ set_cost_up_to (struct ivopts_data *data, bitmap sol, bitmap inv,
 	size++;
 
       cost += cand->cost;
-    });
-  EXECUTE_IF_SET_IN_BITMAP (used_inv, 0, i, size++);
+    }
+  EXECUTE_IF_SET_IN_BITMAP (used_inv, 0, i, bi)
+    {
+      size++;
+    }
   cost += ivopts_global_cost_for_size (data, size);
 
   bitmap_copy (sol, used_ivs);
@@ -3774,12 +3793,13 @@ create_new_ivs (struct ivopts_data *data, bitmap set)
 {
   unsigned i;
   struct iv_cand *cand;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP (set, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
     {
       cand = iv_cand (data, i);
       create_new_iv (data, cand);
-    });
+    }
 }
 
 /* Removes statement STMT (real or a phi node).  If INCLUDING_DEFINED_NAME
@@ -4270,8 +4290,9 @@ static void
 remove_unused_ivs (struct ivopts_data *data)
 {
   unsigned j;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, j,
+  EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, j, bi)
     {
       struct version_info *info;
 
@@ -4282,7 +4303,7 @@ remove_unused_ivs (struct ivopts_data *data)
 	  && !info->iv->have_use_for
 	  && !info->preserve_biv)
 	remove_statement (SSA_NAME_DEF_STMT (info->iv->ssa_name), true);
-    });
+    }
 }
 
 /* Frees data allocated by the optimization of a single loop.  */
@@ -4291,8 +4312,9 @@ static void
 free_loop_data (struct ivopts_data *data)
 {
   unsigned i, j;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
     {
       struct version_info *info;
 
@@ -4303,7 +4325,7 @@ free_loop_data (struct ivopts_data *data)
       info->has_nonlin_use = false;
       info->preserve_biv = false;
       info->inv_id = 0;
-    });
+    }
   bitmap_clear (data->relevant);
 
   for (i = 0; i < n_iv_uses (data); i++)

@@ -192,8 +192,12 @@ and again mark them read/write.
   do							\
     {							\
       unsigned int node_;				\
-      EXECUTE_IF_SET_IN_BITMAP (BITMAP, MIN, node_,	\
-      {(BB) = BASIC_BLOCK (node_); CODE;});		\
+      bitmap_iterator bi;				\
+      EXECUTE_IF_SET_IN_BITMAP (BITMAP, MIN, node_, bi)	\
+	{						\
+	  (BB) = BASIC_BLOCK (node_);			\
+	  CODE;						\
+	}						\
     }							\
   while (0)
 
@@ -1829,6 +1833,7 @@ df_bb_reg_info_compute (struct df *df, basic_block bb, bitmap live)
       unsigned int uid = INSN_UID (insn);
       unsigned int regno;
       struct df_link *link;
+      bitmap_iterator bi;
 
       if (! INSN_P (insn))
 	continue;
@@ -1854,10 +1859,10 @@ df_bb_reg_info_compute (struct df *df, basic_block bb, bitmap live)
 	}
 
       /* Increment lifetimes of all live registers.  */
-      EXECUTE_IF_SET_IN_BITMAP (live, 0, regno,
-      {
-	reg_info[regno].lifetime++;
-      });
+      EXECUTE_IF_SET_IN_BITMAP (live, 0, regno, bi)
+	{
+	  reg_info[regno].lifetime++;
+	}
     }
 }
 
@@ -2251,10 +2256,12 @@ df_refs_update (struct df *df, bitmap blocks)
     }
   else
     {
-      EXECUTE_IF_AND_IN_BITMAP (df->bbs_modified, blocks, 0, bbno,
+      bitmap_iterator bi;
+
+      EXECUTE_IF_AND_IN_BITMAP (df->bbs_modified, blocks, 0, bbno, bi)
 	{
 	  count += df_bb_refs_update (df, BASIC_BLOCK (bbno));
-	});
+	}
     }
 
   df_refs_process (df);

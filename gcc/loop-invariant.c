@@ -599,6 +599,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
   unsigned aregs_needed;
   unsigned depno;
   struct invariant *dep;
+  bitmap_iterator bi;
 
   *comp_cost = 0;
   *regs_needed = 0;
@@ -610,7 +611,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
   (*regs_needed)++;
   (*comp_cost) += inv->cost;
 
-  EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, depno,
+  EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, depno, bi)
     {
       dep = VARRAY_GENERIC_PTR_NOGC (invariants, depno);
 
@@ -631,7 +632,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
 
       (*regs_needed) += aregs_needed;
       (*comp_cost) += acomp_cost;
-    });
+    }
 }
 
 /* Calculates gain for eliminating invariant INV.  REGS_USED is the number
@@ -696,6 +697,7 @@ static void
 set_move_mark (unsigned invno)
 {
   struct invariant *inv = VARRAY_GENERIC_PTR_NOGC (invariants, invno);
+  bitmap_iterator bi;
 
   if (inv->move)
     return;
@@ -704,7 +706,10 @@ set_move_mark (unsigned invno)
   if (dump_file)
     fprintf (dump_file, "Decided to move invariant %d\n", invno);
 
-  EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, invno, set_move_mark (invno));
+  EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, invno, bi)
+    {
+      set_move_mark (invno);
+    }
 }
 
 /* Determines which invariants to move.  DF is the dataflow object.  */
@@ -761,6 +766,7 @@ move_invariant_reg (struct loop *loop, unsigned invno, struct df *df)
   basic_block preheader = loop_preheader_edge (loop)->src;
   rtx reg, set;
   struct use *use;
+  bitmap_iterator bi;
 
   if (inv->processed)
     return;
@@ -768,10 +774,10 @@ move_invariant_reg (struct loop *loop, unsigned invno, struct df *df)
 
   if (inv->depends_on)
     {
-      EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, i,
+      EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, i, bi)
 	{
 	  move_invariant_reg (loop, i, df);
-	});
+	}
     }
 
   /* Move the set out of the loop.  If the set is always executed (we could

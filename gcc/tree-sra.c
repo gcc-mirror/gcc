@@ -1011,6 +1011,7 @@ scan_function (void)
   static const struct sra_walk_fns fns = {
     scan_use, scan_copy, scan_init, scan_ldst, true
   };
+  bitmap_iterator bi;
 
   sra_walk_function (&fns);
 
@@ -1019,13 +1020,13 @@ scan_function (void)
       size_t i;
 
       fputs ("\nScan results:\n", dump_file);
-      EXECUTE_IF_SET_IN_BITMAP (sra_candidates, 0, i,
+      EXECUTE_IF_SET_IN_BITMAP (sra_candidates, 0, i, bi)
 	{
 	  tree var = referenced_var (i);
 	  struct sra_elt *elt = lookup_element (NULL, var, NULL, NO_INSERT);
 	  if (elt)
 	    scan_dump (elt);
-	});
+	}
       fputc ('\n', dump_file);
     }
 }
@@ -1351,13 +1352,14 @@ decide_instantiations (void)
   unsigned int i;
   bool cleared_any;
   struct bitmap_head_def done_head;
+  bitmap_iterator bi;
 
   /* We cannot clear bits from a bitmap we're iterating over,
      so save up all the bits to clear until the end.  */
   bitmap_initialize (&done_head, 1);
   cleared_any = false;
 
-  EXECUTE_IF_SET_IN_BITMAP (sra_candidates, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (sra_candidates, 0, i, bi)
     {
       tree var = referenced_var (i);
       struct sra_elt *elt = lookup_element (NULL, var, NULL, NO_INSERT);
@@ -1372,7 +1374,7 @@ decide_instantiations (void)
 	  bitmap_set_bit (&done_head, i);
 	  cleared_any = true;
 	}
-    });
+    }
 
   if (cleared_any)
     {
@@ -1957,13 +1959,14 @@ scalarize_parms (void)
 {
   tree list = NULL;
   size_t i;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP (needs_copy_in, 0, i,
+  EXECUTE_IF_SET_IN_BITMAP (needs_copy_in, 0, i, bi)
     {
       tree var = referenced_var (i);
       struct sra_elt *elt = lookup_element (NULL, var, NULL, NO_INSERT);
       generate_copy_inout (elt, true, var, &list);
-    });
+    }
 
   if (list)
     insert_edge_copies (list, ENTRY_BLOCK_PTR);

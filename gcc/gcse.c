@@ -2272,14 +2272,18 @@ static void
 clear_modify_mem_tables (void)
 {
   int i;
+  bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP
-    (modify_mem_list_set, 0, i, free_INSN_LIST_list (modify_mem_list + i));
+  EXECUTE_IF_SET_IN_BITMAP (modify_mem_list_set, 0, i, bi)
+    {
+      free_INSN_LIST_list (modify_mem_list + i);
+    }
   bitmap_clear (modify_mem_list_set);
 
-  EXECUTE_IF_SET_IN_BITMAP
-    (canon_modify_mem_list_set, 0, i,
-     free_insn_expr_list_list (canon_modify_mem_list + i));
+  EXECUTE_IF_SET_IN_BITMAP (canon_modify_mem_list_set, 0, i, bi)
+    {
+      free_insn_expr_list_list (canon_modify_mem_list + i);
+    }
   bitmap_clear (canon_modify_mem_list_set);
 }
 
