@@ -67,17 +67,15 @@ typedef struct {
 
 #define FIXUP_TABLE \
   _FT_( "format",           format_fix ) \
-  _FT_( "IO_use",	    IO_use_fix ) \
-  _FT_( "CTRL_use",	    CTRL_use_fix) \
-  _FT_( "IO_defn",	    IO_defn_fix ) \
-  _FT_( "CTRL_defn",	    CTRL_defn_fix ) \
+  _FT_( "char_macro_use",   char_macro_use_fix ) \
+  _FT_( "char_macro_def",   char_macro_def_fix ) \
   _FT_( "machine_name",	    machine_name_fix )
 
 
 #define FIX_PROC_HEAD( fix ) \
 static void fix ( filname, text, p_fixd ) \
     const char* filname; \
-    char* text; \
+    static char* text; \
     tFixDesc* p_fixd;
 
 
