@@ -4889,6 +4889,11 @@ expand_expr (exp, target, tmode, modifier)
 	    return op0;
 	  }
 
+	/* If the result is BLKmode, use that to access the object
+	   now as well.  */
+	if (mode == BLKmode)
+	  mode1 = BLKmode;
+
 	/* Get a reference to just this component.  */
 	if (modifier == EXPAND_CONST_ADDRESS
 	    || modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
