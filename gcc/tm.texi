@@ -7224,6 +7224,23 @@ thus speeding up the compiler.  The most important predicates to include
 in the list specified by this macro are those used in the most insn
 patterns.
 
+@item SPECIAL_MODE_PREDICATES
+@findex SPECIAL_MODE_PREDICATES
+Define this if you have special predicates that know special things
+about modes.  Genrecog will warn about certain forms of 
+@code{match_operand} without a mode; if the operand predicate is
+listed in @code{SPECIAL_MODE_PREDICATES}, the warning will be 
+suppressed.
+
+Here is an example from the IA-32 port (@code{ext_register_operand}
+specially checks for @code{HImode} or @code{SImode} in preparation
+for a byte extraction from @code{%ah} etc.).
+
+@smallexample
+#define SPECIAL_MODE_PREDICATES \
+  "ext_register_operand",
+@end smallexample
+
 @findex CASE_VECTOR_MODE
 @item CASE_VECTOR_MODE
 An alias for a machine mode name.  This is the machine mode that

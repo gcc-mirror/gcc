@@ -1,3 +1,14 @@
+Thu Oct 14 01:49:54 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (special_mode_pred_table): New.
+	(NUM_SPECIAL_MODE_PREDS): New.
+	(find_operand): New.
+	(validate_pattern): New argument `insn'.  Warn for assignment to
+	any predicate accepting non-lvalues.  Conditionaly warn for
+	match_operand without a mode.  Try much harder to match source
+	and destination modes on a set.
+	* tm.texi (SPECIAL_MODE_PREDICATES): Document.
+
 Thu Oct 14 02:54:13 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fold-const.c (fold): Detect rotates built from BIT_XOR_EXPRs.
