@@ -169,6 +169,7 @@ static void output_constructor		PARAMS ((tree, HOST_WIDE_INT,
 #ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PARAMS ((const char *));
 #endif
+static void globalize_decl		PARAMS ((tree));
 static int in_named_entry_eq		PARAMS ((const PTR, const PTR));
 static hashval_t in_named_entry_hash	PARAMS ((const PTR));
 #ifdef ASM_OUTPUT_BSS
@@ -1237,18 +1238,7 @@ assemble_start_function (decl, fnname)
 	    weak_global_object_name = name;
 	}
 
-#ifdef ASM_WEAKEN_LABEL
-      if (DECL_WEAK (decl))
-	{
-	  ASM_WEAKEN_LABEL (asm_out_file, fnname);
-	  /* Remove this function from the pending weak list so that
-	     we do not emit multiple .weak directives for it.  */
-	  remove_from_pending_weak_list
-	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-	}
-      else
-#endif
-      ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
+      globalize_decl (decl);
     }
 
   /* Do any machine/system dependent processing of the function name */
@@ -1437,6 +1427,7 @@ asm_emit_uninitialised (decl, name, size, rounded)
     {
 #ifdef ASM_EMIT_BSS
     case asm_dest_bss:
+      globalize_decl (decl);
       ASM_EMIT_BSS (decl, name, size, rounded);
       break;
 #endif
@@ -1643,20 +1634,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* First make the assembler name(s) global if appropriate.  */
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
-    {
-#ifdef ASM_WEAKEN_LABEL
-      if (DECL_WEAK (decl))
-	{
-	  ASM_WEAKEN_LABEL (asm_out_file, name);
-	   /* Remove this variable from the pending weak list so that
-	      we do not emit multiple .weak directives for it.  */
-	  remove_from_pending_weak_list
-	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-	}
-      else
-#endif
-      ASM_GLOBALIZE_LABEL (asm_out_file, name);
-    }
+    globalize_decl (decl);
 
   /* Output any data that we will need to use the address of.  */
   if (DECL_INITIAL (decl) == error_mark_node)
@@ -5107,6 +5085,32 @@ remove_from_pending_weak_list (name)
 }
 #endif /* ASM_WEAKEN_LABEL */
 
+/* Emit the assembly bits to indicate that DECL is globally visible.  */
+
+static void
+globalize_decl (decl)
+     tree decl;
+{
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+#if defined (ASM_WEAKEN_LABEL) || defined (ASM_WEAKEN_DECL)
+  if (DECL_WEAK (decl))
+    {
+#ifdef ASM_WEAKEN_DECL
+      ASM_WEAKEN_DECL (asm_out_file, decl, name, 0);
+#else
+      ASM_WEAKEN_LABEL (asm_out_file, name);
+#endif
+      /* Remove this function from the pending weak list so that
+	 we do not emit multiple .weak directives for it.  */
+      remove_from_pending_weak_list (name);
+      return;
+    }
+  /* else */
+#endif
+  ASM_GLOBALIZE_LABEL (asm_out_file, name);
+}
+
 /* Emit an assembler directive to make the symbol for DECL an alias to
    the symbol for TARGET.  */
 
@@ -5124,22 +5128,8 @@ assemble_alias (decl, target)
 
 #ifdef ASM_OUTPUT_DEF
   /* Make name accessible from other files, if appropriate.  */
-
   if (TREE_PUBLIC (decl))
-    {
-#ifdef ASM_WEAKEN_LABEL
-      if (DECL_WEAK (decl))
- 	{
-	  ASM_WEAKEN_LABEL (asm_out_file, name);
-	  /* Remove this function from the pending weak list so that
-	     we do not emit multiple .weak directives for it.  */
-	  remove_from_pending_weak_list
-	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-	}
-      else
-#endif
-	ASM_GLOBALIZE_LABEL (asm_out_file, name);
-    }
+    globalize_decl (decl);
 
 #ifdef ASM_OUTPUT_DEF_FROM_DECLS
   ASM_OUTPUT_DEF_FROM_DECLS (asm_out_file, decl, target);
