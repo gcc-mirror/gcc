@@ -3179,7 +3179,7 @@ pa_output_function_prologue (file, size)
     {
       unsigned int old_total = total_code_bytes;
 
-      total_code_bytes += INSN_ADDRESSES (INSN_UID (get_last_insn ()));
+      total_code_bytes += INSN_ADDRESSES (INSN_UID (get_last_nonnote_insn ()));
       total_code_bytes += FUNCTION_BOUNDARY / BITS_PER_UNIT;
 
       /* Be prepared to handle overflows.  */

@@ -1342,6 +1342,8 @@ extern rtx get_insns			PARAMS ((void));
 extern const char *get_insn_name	PARAMS ((int));
 extern rtx get_last_insn		PARAMS ((void));
 extern rtx get_last_insn_anywhere	PARAMS ((void));
+extern rtx get_first_nonnote_insn	PARAMS ((void));
+extern rtx get_last_nonnote_insn	PARAMS ((void));
 extern void start_sequence		PARAMS ((void));
 extern void push_to_sequence		PARAMS ((rtx));
 extern void end_sequence		PARAMS ((void));

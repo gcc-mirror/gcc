@@ -2710,6 +2710,42 @@ get_last_insn_anywhere ()
   return 0;
 }
 
+/* Return the first nonnote insn emitted in current sequence or current
+   function.  This routine looks inside SEQUENCEs.  */
+
+rtx
+get_first_nonnote_insn ()
+{
+  rtx insn = first_insn;
+
+  while (insn)
+    {
+      insn = next_insn (insn);
+      if (insn == 0 || GET_CODE (insn) != NOTE)
+	break;
+    }
+
+  return insn;
+}
+
+/* Return the last nonnote insn emitted in current sequence or current
+   function.  This routine looks inside SEQUENCEs.  */
+
+rtx
+get_last_nonnote_insn ()
+{
+  rtx insn = last_insn;
+
+  while (insn)
+    {
+      insn = previous_insn (insn);
+      if (insn == 0 || GET_CODE (insn) != NOTE)
+	break;
+    }
+
+  return insn;
+}
+
 /* Return a number larger than any instruction's uid in this function.  */
 
 int
