@@ -335,7 +335,6 @@ static void close_dump_file PARAMS ((enum dump_file_index,
 
 int rtl_dump_and_exit;
 int flag_print_asm_name;
-static int flag_print_mem;
 static int version_flag;
 static char *filename;
 enum graph_dump_types graph_dump_format;
@@ -1648,11 +1647,10 @@ float_signal (signo)
 {
   if (float_handled == 0)
     crash_signal (signo);
-#if defined (USG) || defined (hpux)
-  /* Re-enable the signal catcher.  */
-  signal (SIGFPE, float_signal);
-#endif
   float_handled = 0;
+
+  /* On System-V derived systems, we must reinstall the signal handler.
+     This is harmless on BSD-derived systems.  */
   signal (SIGFPE, float_signal);
   longjmp (float_handler, 1);
 }
@@ -4027,9 +4025,6 @@ decode_d_option (arg)
       case 'A':
 	flag_debug_asm = 1;
 	break;
-      case 'm':
-	flag_print_mem = 1;
-	break;
       case 'p':
 	flag_print_asm_name = 1;
 	break;
@@ -4939,24 +4934,6 @@ toplev_main (argc, argv)
     }
 
   compile_file (filename);
-
-#if !defined(OS2) && !defined(VMS) && (!defined(_WIN32) || defined (__CYGWIN__)) && !defined(__INTERIX)
-  if (flag_print_mem)
-    {
-      char *lim = (char *) sbrk (0);
-
-      fnotice (stderr, "Data size %ld.\n", (long) (lim - (char *) &environ));
-      fflush (stderr);
-
-#ifndef __MSDOS__
-#ifdef USG
-      system ("ps -l 1>&2");
-#else /* not USG  */
-      system ("ps v");
-#endif /* not USG  */
-#endif
-    }
-#endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN) && ! __INTERIX  */
 
   if (errorcount)
     return (FATAL_EXIT_CODE);
