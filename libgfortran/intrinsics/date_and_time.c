@@ -23,10 +23,9 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include <string.h>
 #include <assert.h>
-#include "libgfortran.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+#include "libgfortran.h"
 
 #undef HAVE_NO_DATE_TIME
 #if TIME_WITH_SYS_TIME

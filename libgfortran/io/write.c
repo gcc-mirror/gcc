@@ -21,10 +21,10 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include <string.h>
 #include <float.h>
-#include "libgfortran.h"
-#include "io.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "libgfortran.h"
+#include "io.h"
 
 
 #define star_fill(p, n) memset(p, '*', n)
