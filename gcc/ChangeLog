@@ -1,3 +1,9 @@
+2000-11-30  J. David Anglin  <dave.anglin@nrc.ca>
+            Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def(): prevent dual double definition protection
+	* fixinc/fixincl.x: regenerate
+
 2000-11-29  Loren J. Rittle  <ljrittle@acm.org>
 
         * fixinc/Makefile.in (fixincl.x): Explicitly state the
