@@ -217,7 +217,7 @@ timevar_accumulate (timer, start_time, stop_time)
 /* Initialize timing variables.  */
 
 void
-init_timevar (void)
+init_timevar ()
 {
   if (!TIMEVAR_ENABLE)
     return;
