@@ -1,3 +1,7 @@
+Wed Jan 28 11:45:27 1998  Per Bothner  <bothner@cygnus.com>
+
+	* toplev.c (strip_off_ending):  Generalize to endings up to 5 chars.
+
 Tue Jan 27 23:15:55 1998  Lassi A. Tuura  <lat@iki.fi>
 
 	* config.sub: More accurate determination of HP processor types.
