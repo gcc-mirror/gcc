@@ -6205,11 +6205,11 @@ make_nan (nan, sign, mode)
       abort ();
     }
   if (REAL_WORDS_BIG_ENDIAN)
-    *nan++ = (sign << 15) | *p++;
+    *nan++ = (sign << 15) | (*p++ & 0x7fff);
   while (--n != 0)
     *nan++ = *p++;
   if (! REAL_WORDS_BIG_ENDIAN)
-    *nan = (sign << 15) | *p;
+    *nan = (sign << 15) | (*p & 0x7fff);
 }
 
 /* This is the inverse of the function `etarsingle' invoked by
