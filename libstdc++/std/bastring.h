@@ -220,9 +220,9 @@ public:
   basic_string& insert (size_type pos, size_type n, charT c)
     { return replace (pos, 0, n, c); }
   iterator insert(iterator p, charT c)
-    { size_type pos = p - begin (); insert (pos, 1, c); return pos +begin (); }
+    { insert (p - ibegin (), 1, c); return p; }
   iterator insert(iterator p, size_type n, charT c)
-    { size_type pos = p - begin (); insert (pos, n, c); return pos +begin (); }
+    { insert (p - ibegin (), n, c); return p; }
 #ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
     void insert(iterator p, InputIterator first, InputIterator last)
@@ -231,12 +231,12 @@ public:
 #endif
     { replace (p, p, first, last); }
 
-  basic_string& remove (size_type pos = 0, size_type n = npos)
+  basic_string& erase (size_type pos = 0, size_type n = npos)
     { return replace (pos, n, (size_type)0, (charT)0); }
-  basic_string& remove (iterator pos)
-    { return replace (pos - begin (), 1, (size_type)0, (charT)0); }
-  basic_string& remove (iterator first, iterator last)
-    { return replace (first - begin (), last - first, (size_type)0, (charT)0);}
+  iterator erase(iterator p)
+    { replace (p - ibegin (), 1, (size_type)0, (charT)0); return p; }
+  iterator erase(iterator f, iterator l)
+    { replace (f - ibegin (), l - f, (size_type)0, (charT)0); return f; }
 
   basic_string& replace (size_type pos1, size_type n1, const basic_string& str,
 			 size_type pos2 = 0, size_type n2 = npos);
@@ -248,13 +248,13 @@ public:
   basic_string& replace (size_type pos, size_type n, charT c)
     { return replace (pos, n, 1, c); }
   basic_string& replace (iterator i1, iterator i2, const basic_string& str)
-    { return replace (i1 - begin (), i2 - i1, str); }
+    { return replace (i1 - ibegin (), i2 - i1, str); }
   basic_string& replace (iterator i1, iterator i2, const charT* s, size_type n)
-    { return replace (i1 - begin (), i2 - i1, s, n); }
+    { return replace (i1 - ibegin (), i2 - i1, s, n); }
   basic_string& replace (iterator i1, iterator i2, const charT* s)
-    { return replace (i1 - begin (), i2 - i1, s); }
+    { return replace (i1 - ibegin (), i2 - i1, s); }
   basic_string& replace (iterator i1, iterator i2, size_type n, charT c)
-    { return replace (i1 - begin (), i2 - i1, n, c); }
+    { return replace (i1 - ibegin (), i2 - i1, n, c); }
 #ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
     basic_string& replace(iterator i1, iterator i2,

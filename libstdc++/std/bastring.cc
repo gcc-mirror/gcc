@@ -220,7 +220,7 @@ resize (size_t n, charT c)
   if (n > length ())
     append (n - length (), c);
   else
-    remove (n);
+    erase (n);
 }
 
 template <class charT, class traits>
