@@ -5666,8 +5666,7 @@ build_enumerator (name, value)
 			 && TREE_UNSIGNED (type)));
 
   decl = build_decl (CONST_DECL, name, type);
-  DECL_INITIAL (decl) = value;
-  TREE_TYPE (value) = type;
+  DECL_INITIAL (decl) = convert (type, value);
   pushdecl (decl);
 
   return tree_cons (decl, value, NULL_TREE);

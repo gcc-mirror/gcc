@@ -1,3 +1,8 @@
+2000-05-24  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* c-decl.c (build_enumerator): Don't modify the value's type,
+	convert it.
+
 2000-05-24  Andreas Jaeger  <aj@suse.de>
 
 	* mips.h (LINKER_ENDIAN_SPEC): Pass -EL to linker by default.
