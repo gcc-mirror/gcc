@@ -1075,26 +1075,28 @@ ada/sdefault.adb: ada/stamp-sdefault ; @true
 ada/stamp-sdefault : $(srcdir)/version.c $(srcdir)/move-if-change \
  Makefile
 	$(ECHO) "pragma Style_Checks (Off);" >tmp-sdefault.adb
+	$(ECHO) "with Osint; use Osint;" >>tmp-sdefault.adb
 	$(ECHO) "package body Sdefault is" >>tmp-sdefault.adb
-	$(ECHO) "   S1 : aliased constant String := \"$(ADA_INCLUDE_DIR)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   S2 : aliased constant String := \"$(ADA_RTL_OBJ_DIR)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   S3 : aliased constant String := \"$(target)/\";" >>tmp-sdefault.adb
-	$(ECHO) "   S4 : aliased constant String := \"$(libsubdir)/\";" >>tmp-sdefault.adb
+	$(ECHO) "   S0 : constant String := \"$(prefix)/\";" >>tmp-sdefault.adb
+	$(ECHO) "   S1 : constant String := \"$(ADA_INCLUDE_DIR)/\";" >>tmp-sdefault.adb
+	$(ECHO) "   S2 : constant String := \"$(ADA_RTL_OBJ_DIR)/\";" >>tmp-sdefault.adb
+	$(ECHO) "   S3 : constant String := \"$(target)/\";" >>tmp-sdefault.adb
+	$(ECHO) "   S4 : constant String := \"$(libsubdir)/\";" >>tmp-sdefault.adb
 	$(ECHO) "   function Include_Dir_Default_Name return String_Ptr is" >>tmp-sdefault.adb
 	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return new String'(S1);" >>tmp-sdefault.adb
+	$(ECHO) "      return Relocate_Path (S0, S1);" >>tmp-sdefault.adb
 	$(ECHO) "   end Include_Dir_Default_Name;" >>tmp-sdefault.adb
 	$(ECHO) "   function Object_Dir_Default_Name return String_Ptr is" >>tmp-sdefault.adb
 	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return new String'(S2);" >>tmp-sdefault.adb
+	$(ECHO) "      return Relocate_Path (S0, S2);" >>tmp-sdefault.adb
 	$(ECHO) "   end Object_Dir_Default_Name;" >>tmp-sdefault.adb
 	$(ECHO) "   function Target_Name return String_Ptr is" >>tmp-sdefault.adb
 	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return new String'(S3);" >>tmp-sdefault.adb
+	$(ECHO) "      return Relocate_Path (S0, S3);" >>tmp-sdefault.adb
 	$(ECHO) "   end Target_Name;" >>tmp-sdefault.adb
 	$(ECHO) "   function Search_Dir_Prefix return String_Ptr is" >>tmp-sdefault.adb
 	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return new String'(S4);" >>tmp-sdefault.adb
+	$(ECHO) "      return Relocate_Path (S0, S4);" >>tmp-sdefault.adb
 	$(ECHO) "   end Search_Dir_Prefix;" >>tmp-sdefault.adb
 	$(ECHO) "end Sdefault;" >> tmp-sdefault.adb
 	$(srcdir)/move-if-change tmp-sdefault.adb ada/sdefault.adb

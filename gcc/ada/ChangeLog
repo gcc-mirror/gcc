@@ -1,3 +1,12 @@
+2003-11-10  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR 12950
+	* osint.ads, osint.adb (Relocate_Path, Executable_Suffix): New
+	functions. Used to handle dynamic prefix relocation, via set_std_prefix.
+	Replace GNAT_ROOT by GCC_ROOT.
+
+	* Make-lang.in: Use new function Relocate_Path to generate sdefault.adb
+
 2003-11-06  Zack Weinberg  <zack@codesourcery.com>
 
 	* misc.c (fp_prec_to_size, fp_size_to_prec): Use GET_MODE_PRECISION

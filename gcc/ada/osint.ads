@@ -202,6 +202,17 @@ package Osint is
       return           String_Access;
    --  Convert a canonical syntax file specification to host syntax.
 
+   function Relocate_Path
+     (Prefix : String;
+      Path   : String) return String_Ptr;
+   --  Given an absolute path and a prefix, if Path starts with Prefix,
+   --  replace the Prefix substring with the root installation directory.
+   --  By default, try to compute the root installation directory by looking
+   --  at the executable name as it was typed on the command line and, if
+   --  needed, use the PATH environment variable.
+   --  If the above computation fails, return Path.
+   --  This function assumes that Prefix'First = Path'First
+
    -------------------------
    -- Search Dir Routines --
    -------------------------
