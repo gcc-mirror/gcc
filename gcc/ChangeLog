@@ -1,3 +1,10 @@
+2000-03-16  Neil Booth  <NeilB@earthling.net>
+
+	* cppinit.c (handle_option):  Implement #unassert directive
+        as -A- command line option.
+	(print_help):  Update.
+	* cpptexi.c:  Update.
+
 Thu Mar 16 02:14:16 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* md.texi (Standard Names): Document `jump'.
