@@ -197,6 +197,13 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_SKIP(FILE, SIZE)  \
   fprintf ((FILE), "\t.set\t.,.+%u\n", (SIZE))
 
+/* This is how to output assembler code to declare an
+   uninitialized external linkage data object.  */
+
+#undef ASM_OUTPUT_ALIGNED_BSS
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
 /* Output before read-only data.  */
 
 #define TEXT_SECTION_ASM_OP ".text"

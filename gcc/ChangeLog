@@ -1,3 +1,7 @@
+2002-02-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/linux.h (ASM_OUTPUT_ALIGNED_BSS): New.
+
 2002-02-14  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Update the prototype for
