@@ -534,8 +534,10 @@ namespace std
     _M_check_same_name()
     {
       bool __ret = true;
-      for (size_t __i = 0; __ret && __i < _S_categories_size - 1; ++__i)
-	__ret = std::strcmp(_M_names[__i], _M_names[__i + 1]) == 0;
+      if (_M_names[1])
+	// We must actually compare all the _M_names: can be all equal!
+	for (size_t __i = 0; __ret && __i < _S_categories_size - 1; ++__i)
+	  __ret = std::strcmp(_M_names[__i], _M_names[__i + 1]) == 0;
       return __ret;
     }
 
@@ -569,30 +571,15 @@ namespace std
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
 
-      char* _M_tmp_names[_S_categories_size];
-      size_t __i = 0;
       try
-	{
-	  for (; __i < _S_categories_size; ++__i)
-	    {
-	      _M_tmp_names[__i] = new char[2];
-	      std::strcpy(_M_tmp_names[__i], "*");
-	    }
-	  _M_impl->_M_install_facet(&_Facet::id, __f);
-	}
+	{ _M_impl->_M_install_facet(&_Facet::id, __f); }
       catch(...)
 	{
 	  _M_impl->_M_remove_reference();
-	  for (size_t __j = 0; __j < __i; ++__j)
-	    delete [] _M_tmp_names[__j];
 	  __throw_exception_again;
 	}
-
-      for (size_t __k = 0; __k < _S_categories_size; ++__k)
-	{
-	  delete [] _M_impl->_M_names[__k];
-	  _M_impl->_M_names[__k] = _M_tmp_names[__k];
-	}
+      delete [] _M_impl->_M_names[0];
+      _M_impl->_M_names[0] = 0;   // Unnamed.
     }
 } // namespace std
 

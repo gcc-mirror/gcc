@@ -114,9 +114,10 @@ namespace std
     __glibcxx_mutex_lock(__gnu_internal::locale_global_mutex);
     _Impl* __old = _S_global;
     __other._M_impl->_M_add_reference();
-    _S_global = __other._M_impl; 
-    if (__other.name() != "*")
-      setlocale(LC_ALL, __other.name().c_str());
+    _S_global = __other._M_impl;
+    const string __other_name = __other.name();
+    if (__other_name != "*")
+      setlocale(LC_ALL, __other_name.c_str());
    __glibcxx_mutex_unlock(__gnu_internal::locale_global_mutex);
 
     // Reference count sanity check: one reference removed for the
@@ -255,13 +256,12 @@ namespace std
     for (size_t __i = 0; __i < _M_facets_size; ++__i)
       _M_facets[__i] = _M_caches[__i] = 0;
 
-    // Name all the categories.
+    // Name the categories.
     _M_names = new (&name_vec) char*[_S_categories_size];
-    for (size_t __i = 0; __i < _S_categories_size; ++__i)
-      {
-	_M_names[__i] = new (&name_c[__i]) char[2];
-	std::strcpy(_M_names[__i], locale::facet::_S_get_c_name());
-      }
+    _M_names[0] = new (&name_c[0]) char[2];
+    std::memcpy(_M_names[0], locale::facet::_S_get_c_name(), 2);
+    for (size_t __i = 1; __i < _S_categories_size; ++__i)
+      _M_names[__i] = 0;
 
     // This is needed as presently the C++ version of "C" locales
     // != data in the underlying locale model for __timepunct,
