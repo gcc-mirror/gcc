@@ -496,7 +496,7 @@ enum dwarf_call_frame_info
     DW_CFA_MIPS_advance_loc8 = 0x1d,
 
     /* GNU extensions */
-    DW_CFA_GNU_window_save = 0x2d,
+    DW_CFA_GNU_window_save = 0x2d
   };
 
 #define DW_CIE_ID	  0xffffffff
