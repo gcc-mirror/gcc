@@ -349,13 +349,18 @@ simplify_replace_rtx (x, old, new)
 	}
       return x;
 
-    default:
-      if (GET_CODE (x) == MEM)
-	return
-	  replace_equiv_address_nv (x,
-				    simplify_replace_rtx (XEXP (x, 0),
-							  old, new));
+    case 'o':
+      if (code == MEM)
+	return replace_equiv_address_nv (x,
+					 simplify_replace_rtx (XEXP (x, 0),
+							       old, new));
 
+      if (REG_P (x) && REG_P (old) && REGNO (x) == REGNO (old))
+	return new;
+
+      return x;
+
+    default:
       return x;
     }
   return x;
