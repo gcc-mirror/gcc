@@ -2199,7 +2199,7 @@ print_operand (file, x, code)
       /* Write second word of DImode or DFmode reference.  Works on register
 	 or non-indexed memory only.  */
       if (GET_CODE (x) == REG)
-	fprintf (file, "%d", REGNO (x) + 1);
+	fprintf (file, "%s", reg_names[REGNO (x) + 1]);
       else if (GET_CODE (x) == MEM)
 	{
 	  /* Handle possible auto-increment.  Since it is pre-increment and
@@ -2413,7 +2413,7 @@ print_operand (file, x, code)
     case 'Y':
       /* Like 'L', for third word of TImode  */
       if (GET_CODE (x) == REG)
-	fprintf (file, "%d", REGNO (x) + 2);
+	fprintf (file, "%s", reg_names[REGNO (x) + 2]);
       else if (GET_CODE (x) == MEM)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
@@ -2461,7 +2461,7 @@ print_operand (file, x, code)
     case 'Z':
       /* Like 'L', for last word of TImode.  */
       if (GET_CODE (x) == REG)
-	fprintf (file, "%d", REGNO (x) + 3);
+	fprintf (file, "%s", reg_names[REGNO (x) + 3]);
       else if (GET_CODE (x) == MEM)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
@@ -3126,7 +3126,7 @@ output_prolog (file, size)
   if (info->main_save_p)
     {
       int regno;
-      int loc = info->main_save_offset;
+      int loc = info->main_save_offset + sp_offset;
       int size = info->main_size;
 
       for (regno = 3; size > 0; regno++, loc -= reg_size, size -= reg_size)
@@ -3256,16 +3256,12 @@ output_prolog (file, size)
 		asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[1]);
 	    }
 	  else
-	    {			/* for large AIX/NT frames, reg 0 above contains -frame size */
-				/* for V.4, we need to reload -frame size */
-	      loc = info->main_save_offset;
-	      if (DEFAULT_ABI == ABI_V4 && info->total_size > 32767)
-		{
-		  int neg_size = - info->total_size;
-		  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
-			       reg_names[0], (neg_size >> 16) & 0xffff,
-			       reg_names[0], reg_names[0], neg_size & 0xffff);
-		}
+	    {
+	      int neg_size = info->main_save_offset - info->total_size;
+	      loc = 0;
+	      asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+			   reg_names[0], (neg_size >> 16) & 0xffff,
+			   reg_names[0], reg_names[0], neg_size & 0xffff);
 
 	      asm_fprintf (file, "\t{sf|subf} %s,%s,%s\n", reg_names[0], reg_names[0],
 			   reg_names[1]);
