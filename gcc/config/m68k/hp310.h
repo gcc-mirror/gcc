@@ -5,6 +5,10 @@
 
 #include "m68k/hp320.h"
 
+/* Don't try using XFmode.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 64
+
 #undef CPP_SPEC
 #undef ASM_SPEC
 

@@ -31,6 +31,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef TARGET_DEFAULT
 #define	TARGET_DEFAULT 0
 
+/* Don't try using XFmode.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 64
+
 /* -m68020 requires special flags to the assembler.  */
 
 #undef ASM_SPEC

@@ -43,6 +43,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define TARGET_DEFAULT 5                      /* set to 5 if on a '020 box */
 
+/* Don't try using XFmode.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 64
+
 #define CPP_SPEC "%{m68881:-D__HAVE_68881__}"
 #define CPP_PREDEFINES "-Dm68 -Dunix -Dplexus"
 

@@ -24,6 +24,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define TARGET_DEFAULT 0
 
+/* Don't try using XFmode.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 64
+
 /* Define __HAVE_68881 in preprocessor only if -m68881 is specified.
    This will control the use of inline 68881 insns in certain macros.
    Also inform the program which CPU this is for.  */
