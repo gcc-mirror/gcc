@@ -3319,7 +3319,7 @@ if test "$ac_cv_search_gettext" != "no"; then
   test "$ac_cv_search_gettext" = "none required" || LIBS="$ac_cv_search_gettext $LIBS"
   
 else :
-  
+  USE_NLS=no
 fi
   fi
 

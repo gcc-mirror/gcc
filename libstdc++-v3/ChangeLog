@@ -1,3 +1,8 @@
+2003-04-30  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4:  Add bit missing from previous patch.
+	* aclocal.m4, configure:  Regenerated.
+
 2003-04-29  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/mainpage.html:  Bring up to date.

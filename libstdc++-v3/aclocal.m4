@@ -1304,7 +1304,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
 
   # A standalone libintl (e.g., GNU libintl) may be in use.
   if test $USE_NLS = yes; then
-    AC_SEARCH_LIBS(gettext, intl)
+    AC_SEARCH_LIBS(gettext, intl,, USE_NLS=no)
   fi
 
   AC_SUBST(USE_NLS)
