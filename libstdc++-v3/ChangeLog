@@ -1,3 +1,14 @@
+2004-03-11  Paul Kienzle  <pkienzle@nist.gov>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13450
+	* include/std/std_complex.h (pow(const complex&, const _Tp&),
+	pow(const _Tp&, const complex&)): Use cmath pow only when safe.
+	* testsuite/26_numerics/complex/13450.cc: New.
+
+	* testsuite/26_numerics/cmath/overloads.C: Rename to overloads.cc.
+	* testsuite/26_numerics/complex/pow.C: Rename to pow.cc and fix.
+
 2004-03-11  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	PR libstdc++/11706
