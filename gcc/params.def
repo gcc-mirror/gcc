@@ -63,7 +63,7 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
 	  "The maximum number of instructions when automatically inlining",
-	  150)
+	  100)
 
 /* For languages that (still) use the RTL inliner, we can specify
    limits for the RTL inliner separately.
@@ -110,7 +110,7 @@ DEFPARAM(PARAM_MAX_PENDING_LIST_LENGTH,
 DEFPARAM(PARAM_LARGE_FUNCTION_INSNS,
 	 "large-function-insns",
 	 "The size of function body to be considered large",
-	 10000)
+	 3000)
 DEFPARAM(PARAM_LARGE_FUNCTION_GROWTH,
 	 "large-function-growth",
 	 "Maximal growth due to inlining of large function (in percent)",

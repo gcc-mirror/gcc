@@ -5780,6 +5780,24 @@ c_estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 	  *count += ((size + MOVE_MAX_PIECES - 1) / MOVE_MAX_PIECES);
       }
       break;
+    case CALL_EXPR:
+      {
+	tree decl = get_callee_fndecl (x);
+
+	if (decl && DECL_BUILT_IN (decl))
+	  switch (DECL_FUNCTION_CODE (decl))
+	    {
+	    case BUILT_IN_CONSTANT_P:
+	      *walk_subtrees = 0;
+	      return NULL_TREE;
+	    case BUILT_IN_EXPECT:
+	      return NULL_TREE;
+	    default:
+	      break;
+	    }
+	*count += 10;
+	break;
+      }
     /* Few special cases of expensive operations.  This is usefull
        to avoid inlining on functions having too many of these.  */
     case TRUNC_DIV_EXPR:
@@ -5791,7 +5809,6 @@ c_estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case RDIV_EXPR:
-    case CALL_EXPR:
       *count += 10;
       break;
     /* Various containers that will produce no code themselves.  */
