@@ -1,3 +1,7 @@
+Wed Nov 25 00:50:58 1998  Marc Espie <espie@quatramaran.ens.fr>
+
+	* jcf-write.c (generate_bytecode_conditional): Fix typo.
+
 Tue Nov 24 17:06:38 1998  Per Bothner  <bothner@cygnus.com>
 
 	* (generate_classfile): Always write class access flag with
