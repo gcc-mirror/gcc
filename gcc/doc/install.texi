@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.2 2001/05/16 14:57:06 dje Exp $
+@comment $Id: install.texi,v 1.3 2001/05/17 18:12:27 mmitchel Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1634,49 +1634,7 @@ is wrong for C++, and is now wrong for C99 also.
 g++ accepts such (illegal) constructs with the option @option{-fpermissive}; it
 will assume that any missing type is 'int' (as defined by C89).
 
-For Solaris 8, t<h3><a name="older"></a>Older systems</h3>
-
-<p>GCC contains support files for many older (1980s and early
-1990s) Unix variants.  For the most part, support for these systems
-has not been deliberately removed, but it has not been maintained for
-several years and may suffer from bitrot.  Support from some systems
-has been removed from GCC 3: fx80, ns32-ns-genix, pyramid, tahoe,
-gmicro, spur; most of these targets had not been updated since GCC
-version 1.</p>
-
-<p>Support for older systems as targets for cross-compilation is less
-problematic than support for them as hosts for GCC; if an
-enthusiast wishes to make such a target work again
-(including resurrecting any of the targets that never worked with GCC
-2, starting from the last CVS version before they were removed),
-patches <a href="../contribute.html">following the usual
-requirements</a> would be likely to be accepted, since they should not
-affect the support for more modern targets.</p>
-
-<p>Support for old systems as hosts for GCC can cause problems if the
-workarounds for compiler, library and operating system bugs affect the
-cleanliness or maintainability of the rest of GCC.  In some cases, to
-bring GCC up on such a system, if still possible with current GCC, may
-require first installing an old version of GCC which did work on that
-system, and using it to compile a more recent GCC, to avoid bugs in
-the vendor compiler.  Old releases of GCC 1 and GCC 2 are available in
-the old-releases directory on the <a href="../mirrors.html">GCC mirror
-sites</a>.  Header bugs may generally be avoided using
-<code>fixincludes</code>, but bugs or deficiencies in libraries and
-the operating system may still cause problems.</p>
-
-<p>For some systems, old versions of GNU binutils may also be useful,
-and are available from pub/binutils/old-releases on <a
-href="http://sources.redhat.com/mirrors.html">sources.redhat.com
-mirror sites</a>.</p>
-
-<p>Some of the information on specific systems above relates to
-such older systems, but much of the information
-about GCC on such systems (which may no longer be applicable to
-current GCC) is to be found in the GCC texinfo manual.</p>
-
-<hr>
-his is fixed by revision 24 or later of patch 108652
+For Solaris 8, this is fixed by revision 24 or later of patch 108652
 (for SPARCs) or 108653 (for Intels).
 
 
