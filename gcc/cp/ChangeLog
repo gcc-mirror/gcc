@@ -1,3 +1,20 @@
+2001-12-05  Jason Merrill  <jason@redhat.com>
+
+	* cp-lang.c (LANG_HOOKS_TREE_INLINING_START_INLINING): Define.
+	(LANG_HOOKS_TREE_INLINING_END_INLINING): Define.
+	* tree.c (cp_start_inlining, cp_end_inlining): New fns.
+	* pt.c (push_tinst_level): No longer static.
+	* cp-tree.h: Declare them.
+
+	* init.c (resolve_offset_ref): Don't check access for the base
+	conversion to access a FIELD_DECL.
+
+	* cp-tree.h (TYPE_REFFN_P): New macro.
+	* decl.c (bad_specifiers): Check it, too.
+
+	* rtti.c (create_pseudo_type_info): Set CLASSTYPE_INTERFACE_ONLY
+	on the __*_type_info type if we haven't seen a definition.
+
 2001-12-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* decl.c: Include c-common.h.

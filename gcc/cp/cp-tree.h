@@ -2487,6 +2487,9 @@ extern int flag_new_for_scope;
 #define TYPE_PTRFN_P(NODE)				\
   (TREE_CODE (NODE) == POINTER_TYPE			\
    && TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE)
+#define TYPE_REFFN_P(NODE)				\
+  (TREE_CODE (NODE) == REFERENCE_TYPE			\
+   && TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE)
 
 /* Nonzero for _TYPE node means that this type is a pointer to member
    function type.  */
@@ -3968,6 +3971,7 @@ extern void do_decl_instantiation		PARAMS ((tree, tree, tree));
 extern void do_type_instantiation		PARAMS ((tree, tree, int));
 extern tree instantiate_decl			PARAMS ((tree, int));
 extern tree get_bindings			PARAMS ((tree, tree, tree));
+extern int push_tinst_level			PARAMS ((tree));
 extern void pop_tinst_level			PARAMS ((void));
 extern int more_specialized_class		PARAMS ((tree, tree));
 extern int is_member_template                   PARAMS ((tree));
@@ -4240,6 +4244,8 @@ extern int cp_is_overload_p PARAMS ((tree));
 extern int cp_auto_var_in_fn_p PARAMS ((tree,tree));
 extern tree cp_copy_res_decl_for_inlining PARAMS ((tree, tree, tree, void*,
 						   int*, void*));
+extern int cp_start_inlining			PARAMS ((tree));
+extern void cp_end_inlining			PARAMS ((tree));
 
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));

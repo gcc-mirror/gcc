@@ -1,3 +1,14 @@
+2001-12-04  Jason Merrill  <jason@redhat.com>
+
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Add
+	start_inlining, end_inlining.
+	* tree-inline.c (expand_call_inline): Call them.
+	* langhooks-def.h (LANG_HOOKS_TREE_INLINING_START_INLINING): Define.
+	(LANG_HOOKS_TREE_INLINING_END_INLINING): Define.
+	(LANG_HOOKS_TREE_INLINING_INITIALIZER): Add them.
+	* langhooks.c (lhd_tree_inlining_start_inlining): New fn.
+	(lhd_tree_inlining_end_inlining): New fn.
+
 2001-12-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (shadow_warning): New function, moved from cp/decl.c.
