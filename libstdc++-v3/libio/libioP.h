@@ -23,11 +23,7 @@
    other reasons why the executable file might be covered by the GNU
    General Public License.  */
 
-#ifdef __cplusplus
-# include <cerrno>
-#else 
 # include <errno.h>
-#endif
 
 #ifndef __set_errno
 # define __set_errno(Val) errno = (Val)
@@ -620,10 +616,18 @@ extern void (*_IO_cleanup_registration_needed) __PMT ((void));
 
 #if _G_HAVE_MMAP
 
+#ifdef __cplusplus
+} 
+#endif
+
 # include <unistd.h>
 # include <fcntl.h>
 # include <sys/mman.h>
 # include <sys/param.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 # if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
 #  define MAP_ANONYMOUS MAP_ANON

@@ -45,35 +45,3 @@ namespace _C_legacy {
 # undef _IN_C_LEGACY_
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

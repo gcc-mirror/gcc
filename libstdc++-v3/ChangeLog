@@ -1,3 +1,24 @@
+2000-10-16  Benjamin Kosnik  <bkoz@gnu.org>
+
+	Shadow headers would work if libsupc++ was strict about namespaces.
+	This only possible if g++ maps std::size_t -> size_t. (Hint hint.)
+	* include/c_std/assert.h: Add guards.
+	* include/c_std/bits/std_climits.h: Correct typo.
+	* include/c_std/ctype.h: Remove #error.
+
+	* libio/libioP.h: Break up extern "C" bits around includes.
+	* libio/libio.h: Only include C headers, or else _C_legacy namespaces
+	will be nested.
+	* libio/libioP.h: Same here.
+
+2000-10-15 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* include/c_std/unistd.h: Define some types only when defined in
+	the original unistd.h.
+    	* include/c_std/bits/std_cstddef.h: Explicitly ask for the
+	definition of size_t, ptrdiff_t and NULL.
+    	* include/c_std/bits/wrap_unistd.h: Blank lines removal.
+
 2000-10-15  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/configopts.html:  Remove libgcc-rebuild; HTML formatting.

@@ -33,7 +33,6 @@
 
 # ifdef _IN_C_LEGACY_  /* sub-included by a C header */
       // get out of the "legacy"
-#error ctype.h
     } // close extern "C"
   }   // close namespace _C_legacy::
 #  undef _IN_C_LEGACY_

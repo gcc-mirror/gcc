@@ -28,7 +28,9 @@
 // the GNU General Public License.
 
 
-// no include guard here.
+#ifndef  _INCLUDED_CPP_ASSERT_H_
+# define _INCLUDED_CPP_ASSERT_H_ 1
+
 #ifdef _IN_C_LEGACY_  /* sub-included by a C header */
       // get out of the "legacy"
     } // close extern "C"
@@ -49,3 +51,5 @@
 # define _IN_C_LEGACY_
 # undef _ASSERT_NEED_C_LEGACY_
 #endif /* _ASSERT_NEED_C_LEGACY_ */
+#endif /* _INCLUDED_CPP_ASSERT_H_ */
+
