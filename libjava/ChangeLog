@@ -1,3 +1,10 @@
+2004-10-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* configure.ac (SIGNAL_HANDLER): Set to include/sh-signal.h
+	for all sh*-*-linux* targets.
+	* configure: Regenerate.
+	* include/sh-signal.h: New file.
+
 2004-10-21  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* java/lang/ieeefp.h: Add m32r support.
