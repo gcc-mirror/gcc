@@ -435,7 +435,7 @@ optimization off, regardless of the optimization level in use.
 @item --disable-assertions[=@var{class-or-package}]
 Don't include code for checking assertions in the compiled code.
 If @code{=@var{class-or-package}} is missing disables assertion code
-generation for all classes, unless overrideen by a more
+generation for all classes, unless overridden by a more
 specific @code{--enable-assertions} flag.
 If @var{class-or-package} is a class name, only disables generating
 assertion checks within the named class or its inner classes.
@@ -443,7 +443,7 @@ If @var{class-or-package} is a package name, disables generating
 assertion checks within the named package or a subpackage.
 
 By default, assertions are enabled when generating class files
-or when not optimizaing, and disabled when generating optimized binaries.
+or when not optimizing, and disabled when generating optimized binaries.
 
 @item --enable-assertions[=@var{class-or-package}]
 Generates code to check assertions.  The option is perhaps misnamed,

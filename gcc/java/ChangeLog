@@ -1,3 +1,8 @@
+2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* class.c, gjavah.c, lang.c: Fix comment typos.
+	* gcj.texi: Fix typos.
+
 2004-03-19  Per Bothner  <per@bothner.com>
 
 	* gcj.texi (Code Generation):  Document new flags and assert defaults.

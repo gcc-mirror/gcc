@@ -201,7 +201,7 @@ add_assume_compiled (const char *ident, int excludep)
   add_class_flag (&assume_compiled_tree, ident, excludep);
 }
 
-/* The default value returned by enable_asserstions. */
+/* The default value returned by enable_assertions. */
 
 #define DEFAULT_ENABLE_ASSERT (flag_emit_class_files || optimize == 0)
 
@@ -240,7 +240,7 @@ assume_compiled (const char *ident)
 bool
 enable_assertions (tree klass)
 {
-  /* Check if command-line specifies whether we should check asserrtions. */
+  /* Check if command-line specifies whether we should check assertions. */
 
   if (klass != NULL_TREE && DECL_NAME (klass) && enable_assert_tree != NULL)
     {
