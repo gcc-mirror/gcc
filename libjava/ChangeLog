@@ -1,5 +1,10 @@
 2001-09-26  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/classpath/Configuration.java.in (INIT_LOAD_LIBRARY): New
+	constant.
+	* java/io/StreamTokenizer.java, java/util/ResourceBundle.java:
+	Re-merged with Classpath.
+
 	* java/io/DataInputStream.java (readChar): Use readFully.
 	(readInt): Likewise.
 	(readLong): Likewise.

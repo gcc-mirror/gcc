@@ -28,6 +28,7 @@ executable file might be covered by the GNU General Public License. */
 package java.util;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import gnu.classpath.Configuration;
 
 /**
  * A resource bundle contains locale-specific data.  If you need
@@ -73,6 +74,14 @@ import java.lang.ref.SoftReference;
  * @author Jochen Hoenicke */
 public abstract class ResourceBundle
 {
+  static 
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+	System.loadLibrary ("javautil");
+      }
+  }
+
   /**
    * The parent bundle.  This is consulted when you call getObject
    * and there is no such resource in the current bundle.  This
