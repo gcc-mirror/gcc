@@ -583,23 +583,6 @@ extern void		sbss_section PARAMS ((void));
 #endif
 #endif
 
-/* This macro is similar to `TARGET_SWITCHES' but defines names of
-   command options that have values.  Its definition is an
-   initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   fixed part of the option name, and the address of a variable.
-   The variable, type `char *', is set to the variable part of the
-   given option if the fixed part matches.  The actual option name
-   is made by appending `-m' to the specified name.
-
-   Here is an example which defines `-mshort-data-NUMBER'.  If the
-   given option is `-mshort-data-512', the variable `m88k_short_data'
-   will be set to the string `"512"'.
-
-	extern char *m88k_short_data;
-	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
-
 #define TARGET_OPTIONS							\
 {									\
   SUBTARGET_TARGET_OPTIONS						\
@@ -2761,9 +2744,6 @@ extern struct mips_frame_info current_frame_info;
 #define RETURN_IN_MEMORY(TYPE)	\
   (TYPE_MODE (TYPE) == BLKmode)
 
-/* A code distinguishing the floating point format of the target
-   machine.  There are three defined values: IEEE_FLOAT_FORMAT,
-   VAX_FLOAT_FORMAT, and UNKNOWN_FLOAT_FORMAT.  */
 
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 

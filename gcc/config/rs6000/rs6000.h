@@ -417,23 +417,6 @@ extern enum processor_type rs6000_cpu;
    and the old mnemonics are dialect zero.  */
 #define ASSEMBLER_DIALECT (TARGET_NEW_MNEMONICS ? 1 : 0)
 
-/* This macro is similar to `TARGET_SWITCHES' but defines names of
-   command options that have values.  Its definition is an
-   initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   fixed part of the option name, and the address of a variable.
-   The variable, type `char *', is set to the variable part of the
-   given option if the fixed part matches.  The actual option name
-   is made by appending `-m' to the specified name.
-
-   Here is an example which defines `-mshort-data-NUMBER'.  If the
-   given option is `-mshort-data-512', the variable `m88k_short_data'
-   will be set to the string `"512"'.
-
-	extern char *m88k_short_data;
-	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
-
 /* This is meant to be overridden in target specific files.  */
 #define	SUBTARGET_OPTIONS
 

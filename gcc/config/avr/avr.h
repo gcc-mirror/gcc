@@ -23,23 +23,6 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine. */
 
 #define CPP_PREDEFINES "-DAVR"
-/* Define this to be a string constant containing `-D' options to
-   define the predefined macros that identify this machine and system.
-   These macros will be predefined unless the `-ansi' option is
-   specified.
-
-   In addition, a parallel set of macros are predefined, whose names
-   are made by appending `__' at the beginning and at the end.  These
-   `__' macros are permitted by the ANSI standard, so they are
-   predefined regardless of whether `-ansi' is specified.
-
-   For example, on the Sun, one can use the following value:
-
-   "-Dmc68000 -Dsun -Dunix"
-
-   The result is to define the macros `__mc68000__', `__sun__' and
-   `__unix__' unconditionally, and the macros `mc68000', `sun' and
-   `unix' provided `-ansi' is not specified.  */
 
 
 /* This declaration should be present. */
@@ -71,25 +54,6 @@ extern int target_flags;
 #define TARGET_RTL_DUMP		(target_flags & MASK_RTL_DUMP)
 #define TARGET_ALL_DEBUG 	(target_flags & MASK_ALL_DEBUG)
 
-/* `TARGET_...'
-   This series of macros is to allow compiler command arguments to
-   enable or disable the use of optional features of the target
-   machine.  For example, one machine description serves both the
-   68000 and the 68020; a command argument tells the compiler whether
-   it should use 68020-only instructions or not.  This command
-   argument works by means of a macro `TARGET_68020' that tests a bit
-   in `target_flags'.
-
-   Define a macro `TARGET_FEATURENAME' for each such option.  Its
-   definition should test a bit in `target_flags'; for example:
-
-   #define TARGET_68020 (target_flags & 1)
-
-   One place where these macros are used is in the
-   condition-expressions of instruction patterns.  Note how
-   `TARGET_68020' appears frequently in the 68000 machine description
-   file, `m68k.md'.  Another place they are used is in the
-   definitions of the other macros in the `MACHINE.h' file.  */
 
 
 
@@ -110,27 +74,6 @@ extern int target_flags;
     N_("Output instruction sizes to the asm file") },			\
   { "deb", MASK_ALL_DEBUG, NULL },					\
   { "", 0, NULL } }
-/* This macro defines names of command options to set and clear bits
-   in `target_flags'.  Its definition is an initializer with a
-   subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   option name, and a number, which contains the bits to set in
-   `target_flags'.  A negative number says to clear bits instead; the
-   negative of the number is which bits to clear.  The actual option
-   name is made by appending `-m' to the specified name.
-
-   One of the subgroupings should have a null string.  The number in
-   this grouping is the default value for `target_flags'.  Any target
-   options act starting with that value.
-
-   Here is an example which defines `-m68000' and `-m68020' with
-   opposite meanings, and picks the latter as the default:
-
-   #define TARGET_SWITCHES \
-   { { "68020", 1},      \
-   { "68000", -1},     \
-   { "", 1}}  */
 
 extern const char *avr_init_stack;
 extern const char *avr_mcu_name;
@@ -143,23 +86,6 @@ extern int avr_enhanced_p;
 #define TARGET_OPTIONS {						      \
  { "init-stack=", &avr_init_stack, N_("Specify the initial stack address") }, \
  { "mcu=", &avr_mcu_name, N_("Specify the MCU name") } }
-/* This macro is similar to `TARGET_SWITCHES' but defines names of
-   command options that have values.  Its definition is an
-   initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   fixed part of the option name, and the address of a variable.  The
-   variable, type `char *', is set to the variable part of the given
-   option if the fixed part matches.  The actual option name is made
-   by appending `-m' to the specified name.
-
-   Here is an example which defines `-mshort-data-NUMBER'.  If the
-   given option is `-mshort-data-512', the variable `m88k_short_data'
-   will be set to the string `"512"'.
-
-   extern char *m88k_short_data;
-   #define TARGET_OPTIONS \
-   { { "short-data-", &m88k_short_data } }  */
 
 #define TARGET_VERSION fprintf (stderr, " (GNU assembler syntax)");
 /* This macro is a C statement to print on `stderr' a string

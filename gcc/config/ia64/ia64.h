@@ -205,23 +205,9 @@ extern const char *ia64_fixed_range_string;
   "%{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__}	\
    -D__LONG_MAX__=9223372036854775807L"
 
-/* If this macro is defined, the preprocessor will not define the builtin macro
-   `__SIZE_TYPE__'.  The macro `__SIZE_TYPE__' must then be defined by
-   `CPP_SPEC' instead.
-
-   This should be defined if `SIZE_TYPE' depends on target dependent flags
-   which are not accessible to the preprocessor.  Otherwise, it should not be
-   defined.  */
 /* This is always "long" so it doesn't "change" in ILP32 vs. LP64.  */
 /* #define NO_BUILTIN_SIZE_TYPE */
 
-/* If this macro is defined, the preprocessor will not define the builtin macro
-   `__PTRDIFF_TYPE__'.  The macro `__PTRDIFF_TYPE__' must then be defined by
-   `CPP_SPEC' instead.
-
-   This should be defined if `PTRDIFF_TYPE' depends on target dependent flags
-   which are not accessible to the preprocessor.  Otherwise, it should not be
-   defined.  */
 /* This is always "long" so it doesn't "change" in ILP32 vs. LP64.  */
 /* #define NO_BUILTIN_PTRDIFF_TYPE */
 
@@ -245,9 +231,6 @@ extern const char *ia64_fixed_range_string;
 
 #define BITS_BIG_ENDIAN 0
 
-/* Define this macro to have the value 1 if the most significant byte in a word
-   has the lowest number.  This macro need not be a constant.  */
-
 #define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
 /* Define this macro to have the value 1 if, in a multiword object, the most
@@ -255,29 +238,18 @@ extern const char *ia64_fixed_range_string;
 
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
-/* Define this macro if WORDS_BIG_ENDIAN is not constant.  This must be a
-   constant value with the same meaning as WORDS_BIG_ENDIAN, which will be used
-   only when compiling libgcc2.c.  Typically the value will be set based on
-   preprocessor defines.  */
 #if defined(__BIG_ENDIAN__)
 #define LIBGCC2_WORDS_BIG_ENDIAN 1
 #else
 #define LIBGCC2_WORDS_BIG_ENDIAN 0
 #endif
 
-/* Define this macro to be the number of bits in an addressable storage unit
-   (byte); normally 8.  */
 #define BITS_PER_UNIT 8
 
-/* Number of bits in a word; normally 32.  */
 #define BITS_PER_WORD 64
 
-/* Number of storage units in a word; normally 4.  */
 #define UNITS_PER_WORD 8
 
-/* Width of a pointer, in bits.  You must specify a value no wider than the
-   width of `Pmode'.  If it is not equal to the width of `Pmode', you must
-   define `POINTERS_EXTEND_UNSIGNED'.  */
 #define POINTER_SIZE (TARGET_ILP32 ? 32 : 64)
 
 /* A C expression whose value is zero if pointers that need to be extended
@@ -301,22 +273,12 @@ do									\
   }									\
 while (0)
 
-/* Define this macro if the promotion described by `PROMOTE_MODE' should also
-   be done for outgoing function arguments.  */
 /* ??? ABI doesn't allow us to define this.  */
 /* #define PROMOTE_FUNCTION_ARGS */
 
-/* Define this macro if the promotion described by `PROMOTE_MODE' should also
-   be done for the return value of functions.
-
-   If this macro is defined, `FUNCTION_VALUE' must perform the same promotions
-   done by `PROMOTE_MODE'.  */
 /* ??? ABI doesn't allow us to define this.  */
 /* #define PROMOTE_FUNCTION_RETURN */
 
-/* Normal alignment required for function parameters on the stack, in bits.
-   All stack parameters receive at least this much alignment regardless of data
-   type.  On most machines, this is the same as the size of an integer.  */
 #define PARM_BOUNDARY 64
 
 /* Define this macro if you wish to preserve a certain alignment for the stack
@@ -330,11 +292,8 @@ while (0)
 #define IA64_STACK_ALIGN(LOC) (((LOC) + 15) & ~15)
 #endif
 
-/* Alignment required for a function entry point, in bits.  */
 #define FUNCTION_BOUNDARY 128
 
-/* Biggest alignment that any data type can require on this machine,
-   in bits.  */
 /* Optional x86 80-bit float, quad-precision 128-bit float, and quad-word
    128 bit integers all require 128 bit alignment.  */
 #define BIGGEST_ALIGNMENT 128
@@ -358,9 +317,6 @@ while (0)
   (TREE_CODE (EXP) == STRING_CST	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Define this macro to be the value 1 if instructions will fail to work if
-   given data not on the nominal alignment.  If instructions will merely go
-   slower in that case, define this macro as 0.  */
 #define STRICT_ALIGNMENT 1
 
 /* Define this if you wish to imitate the way many other C compilers handle
@@ -391,45 +347,22 @@ while (0)
 
 /* Layout of Source Language Data Types */
 
-/* A C expression for the size in bits of the type `int' on the target machine.
-   If you don't define this, the default is one word.  */
 #define INT_TYPE_SIZE 32
 
-/* A C expression for the size in bits of the type `short' on the target
-   machine.  If you don't define this, the default is half a word.  (If this
-   would be less than one storage unit, it is rounded up to one unit.)  */
 #define SHORT_TYPE_SIZE 16
 
-/* A C expression for the size in bits of the type `long' on the target
-   machine.  If you don't define this, the default is one word.  */
 #define LONG_TYPE_SIZE (TARGET_ILP32 ? 32 : 64)
 
-/* Maximum number for the size in bits of the type `long' on the target
-   machine.  If this is undefined, the default is `LONG_TYPE_SIZE'.  Otherwise,
-   it is the constant value that is the largest value that `LONG_TYPE_SIZE' can
-   have at run-time.  This is used in `cpp'.  */
 #define MAX_LONG_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `long long' on the target
-   machine.  If you don't define this, the default is two words.  If you want
-   to support GNU Ada on your machine, the value of macro must be at least 64.  */
 #define LONG_LONG_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `char' on the target
-   machine.  If you don't define this, the default is one quarter of a word.
-   (If this would be less than one storage unit, it is rounded up to one unit.)  */
 #define CHAR_TYPE_SIZE 8
 
-/* A C expression for the size in bits of the type `float' on the target
-   machine.  If you don't define this, the default is one word.  */
 #define FLOAT_TYPE_SIZE 32
 
-/* A C expression for the size in bits of the type `double' on the target
-   machine.  If you don't define this, the default is two words.  */
 #define DOUBLE_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `long double' on the target
-   machine.  If you don't define this, the default is two words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
 
 /* Tell real.c that this is the 80-bit Intel extended float format
@@ -437,9 +370,6 @@ while (0)
 
 #define INTEL_EXTENDED_IEEE_FORMAT 1
 
-/* An expression whose value is 1 or 0, according to whether the type `char'
-   should be signed or unsigned by default.  The user can always override this
-   default with the options `-fsigned-char' and `-funsigned-char'.  */
 #define DEFAULT_SIGNED_CHAR 1
 
 /* A C expression for a string describing the name of the data type to use for
@@ -463,12 +393,6 @@ while (0)
 /* A C expression for the size in bits of the data type for wide characters.
    This is used in `cpp', which cannot make use of `WCHAR_TYPE'.  */
 /* #define WCHAR_TYPE_SIZE */
-
-/* Maximum number for the size in bits of the data type for wide characters.
-   If this is undefined, the default is `WCHAR_TYPE_SIZE'.  Otherwise, it is
-   the constant value that is the largest value that `WCHAR_TYPE_SIZE' can have
-   at run-time.  This is used in `cpp'.  */
-/* #define MAX_WCHAR_TYPE_SIZE */
 
 
 /* Register Basics */
