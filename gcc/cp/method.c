@@ -63,10 +63,10 @@ static void dicat PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
 static void flush_repeats PROTO((tree));
 static void build_overload_identifier PROTO((tree));
 static void build_overload_nested_name PROTO((tree));
-static void build_overload_int PROTO((tree));
+static void build_overload_int PROTO((tree, int));
 static void build_overload_identifier PROTO((tree));
 static void build_qualified_name PROTO((tree));
-static void build_overload_value PROTO((tree, tree));
+static void build_overload_value PROTO((tree, tree, int));
 static char *thunk_printable_name PROTO((tree));
 static void do_build_assign_ref PROTO((tree));
 static void do_build_copy_constructor PROTO((tree));
@@ -409,8 +409,9 @@ build_overload_nested_name (decl)
 /* Encoding for an INTEGER_CST value.  */
 
 static void
-build_overload_int (value)
+build_overload_int (value, in_template)
      tree value;
+     int in_template;
 {
   if (TREE_CODE (value) == TEMPLATE_CONST_PARM)
     {
@@ -422,7 +423,7 @@ build_overload_int (value)
 	OB_PUTC ('_');
       return;
     }
-  else if (processing_template_decl
+  else if (in_template
 	   && TREE_CODE (value) != INTEGER_CST)
     /* We don't ever want this output, but it's inconvenient not to
        be able to build the string.  This should cause assembler
@@ -451,8 +452,9 @@ build_overload_int (value)
 }
 
 static void
-build_overload_value (type, value)
+build_overload_value (type, value, in_template)
      tree type, value;
+     int in_template;
 {
   while (TREE_CODE (value) == NON_LVALUE_EXPR
 	 || TREE_CODE (value) == NOP_EXPR)
@@ -488,7 +490,7 @@ build_overload_value (type, value)
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
       {
-	build_overload_int (value);
+	build_overload_int (value, in_template);
 	numeric_output_need_bar = 1;
 	return;
       }
@@ -574,9 +576,9 @@ build_overload_value (type, value)
 	      if (TREE_CODE (a1) == INTEGER_CST
 		  && TREE_CODE (a2) == INTEGER_CST)
 		{
-		  build_overload_int (a1);
+		  build_overload_int (a1, in_template);
 		  OB_PUTC ('_');
-		  build_overload_int (a2);
+		  build_overload_int (a2, in_template);
 		  OB_PUTC ('_');
 		  if (TREE_CODE (a3) == ADDR_EXPR)
 		    {
@@ -591,7 +593,7 @@ build_overload_value (type, value)
 		  else if (TREE_CODE (a3) == INTEGER_CST)
 		    {
 		      OB_PUTC ('i');
-		      build_overload_int (a3);
+		      build_overload_int (a3, in_template);
 		      numeric_output_need_bar = 1;
 		      return;
 		    }
@@ -603,7 +605,7 @@ build_overload_value (type, value)
       if (TREE_CODE (value) == INTEGER_CST
 	  || TREE_CODE (value) == TEMPLATE_CONST_PARM)
 	{
-	  build_overload_int (value);
+	  build_overload_int (value, in_template);
 	  numeric_output_need_bar = 1;
 	  return;
 	}
@@ -668,7 +670,7 @@ build_overload_identifier (name)
 			     TREE_VEC_LENGTH (arglist), NULL_TREE);
 	      /* It's a PARM_DECL.  */
 	      build_overload_name (TREE_TYPE (parm), 0, 0);
-	      build_overload_value (parm, arg);
+	      build_overload_value (parm, arg, uses_template_parms (arglist));
 	    }
 	}
     }

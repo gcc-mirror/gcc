@@ -1,5 +1,12 @@
 Tue Sep  2 12:09:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* method.c (build_overload_value): Add in_template parm.
+	(build_overload_int): Likewise.
+	(build_overload_identifier): Pass it.
+
+	* decl.c (duplicate_decls): Don't bash a previous template
+ 	definition with a redeclaration.
+
 	* pt.c (unify): float doesn't match double.
 
 	* pt.c (do_type_instantiation): Handle getting a _TYPE or a
