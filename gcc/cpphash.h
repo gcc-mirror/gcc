@@ -270,7 +270,7 @@ struct cpp_buffer
   const uchar *cur;		/* Current location.  */
   const uchar *line_base;	/* Start of current physical line.  */
   const uchar *next_line;	/* Start of to-be-cleaned logical line.  */
-  
+
   const uchar *buf;		/* Entire character buffer.  */
   const uchar *rlimit;		/* Writable byte at end of file.  */
 
@@ -313,6 +313,10 @@ struct cpp_buffer
 
   /* Used for buffer overlays by cpptrad.c.  */
   const uchar *saved_cur, *saved_rlimit;
+
+  /* Descriptor for converting from the input character set to the
+     source character set.  */
+  struct cset_converter input_cset_desc;
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
@@ -557,6 +561,9 @@ extern void _cpp_init_internal_pragmas (cpp_reader *);
 extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 				 unsigned int, unsigned int);
 extern void _cpp_pop_buffer (cpp_reader *);
+extern uchar *_cpp_input_to_utf8 (cpp_reader *, const unsigned char *, cppchar_t);
+extern void _cpp_init_iconv_buffer (cpp_reader *, const char *);
+extern void _cpp_close_iconv_buffer (cpp_reader *);
 
 /* In cpptrad.c.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *);

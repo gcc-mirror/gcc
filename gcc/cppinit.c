@@ -161,6 +161,9 @@ cpp_create_reader (enum c_lang lang, hash_table *table)
   CPP_OPTION (pfile, narrow_charset) = 0;
   CPP_OPTION (pfile, wide_charset) = 0;
 
+  /* Default the input character set to iso-8859-1 for now. */
+  CPP_OPTION (pfile, input_charset) = "ISO-8859-1";
+
   /* A fake empty "directory" used as the starting point for files
      looked up without a search path.  Name cannot be '/' because we
      don't want to prepend anything at all to filenames using it.  All

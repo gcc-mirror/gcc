@@ -549,14 +549,14 @@ do_undef (cpp_reader *pfile)
 /* Undefine a single macro/assertion/whatever.  */
 
 static int
-undefine_macros (cpp_reader *pfile, cpp_hashnode *h, 
+undefine_macros (cpp_reader *pfile, cpp_hashnode *h,
 		 void *data_p ATTRIBUTE_UNUSED)
 {
   switch (h->type)
     {
     case NT_VOID:
       break;
-      
+
     case NT_MACRO:
       if (pfile->cb.undef)
         (*pfile->cb.undef) (pfile, pfile->directive_line, h);
@@ -855,7 +855,7 @@ do_linemarker (cpp_reader *pfile)
       cpp_string s = { 0, 0 };
       if (_cpp_interpret_string_notranslate (pfile, &token->val.str, &s))
 	new_file = (const char *)s.text;
-      
+
       new_sysp = 0;
       flag = read_flag (pfile, 0);
       if (flag == 1)
@@ -1159,7 +1159,7 @@ do_pragma (cpp_reader *pfile)
       (*p->u.handler) (pfile);
       if (pfile->cb.line_change)
 	(*pfile->cb.line_change) (pfile, pfile->cur_token, false);
-      
+
     }
   else if (pfile->cb.def_pragma)
     {
@@ -1925,6 +1925,7 @@ cpp_push_buffer (cpp_reader *pfile, const uchar *buffer, size_t len,
 		 int from_stage3)
 {
   cpp_buffer *new = xobnew (&pfile->buffer_ob, cpp_buffer);
+  const char *input = CPP_OPTION (pfile, input_charset);
 
   /* Clears, amongst other things, if_stack and mi_cmacro.  */
   memset (new, 0, sizeof (cpp_buffer));
@@ -1936,6 +1937,8 @@ cpp_push_buffer (cpp_reader *pfile, const uchar *buffer, size_t len,
   new->need_line = true;
 
   pfile->buffer = new;
+  _cpp_init_iconv_buffer (pfile, input);
+
   return new;
 }
 
@@ -1956,6 +1959,8 @@ _cpp_pop_buffer (cpp_reader *pfile)
 
   /* In case of a missing #endif.  */
   pfile->state.skipping = 0;
+
+  _cpp_close_iconv_buffer (pfile);
 
   /* _cpp_do_file_change expects pfile->buffer to be the new one.  */
   pfile->buffer = buffer->prev;
