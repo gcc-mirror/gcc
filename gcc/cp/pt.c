@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm.h"
 #include "obstack.h"
 #include "tree.h"
+#include "pointer-set.h"
 #include "flags.h"
 #include "cp-tree.h"
 #include "tree-inline.h"
@@ -113,7 +114,8 @@ static tree convert_nontype_argument (tree, tree);
 static tree convert_template_argument (tree, tree, tree,
 				       tsubst_flags_t, int, tree);
 static tree get_bindings_overload (tree, tree, tree);
-static int for_each_template_parm (tree, tree_fn_t, void*, htab_t);
+static int for_each_template_parm (tree, tree_fn_t, void*,
+				   struct pointer_set_t*);
 static tree build_template_parm_index (int, int, int, tree, tree);
 static int inline_needs_template_parms (tree);
 static void push_inline_template_parms_recursive (tree, int);
@@ -4683,7 +4685,7 @@ struct pair_fn_data
 {
   tree_fn_t fn;
   void *data;
-  htab_t visited;
+  struct pointer_set_t *visited;
 };
 
 /* Called from for_each_template_parm via walk_tree.  */
@@ -4865,7 +4867,8 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
    considered to be the function which always returns 1.  */
 
 static int
-for_each_template_parm (tree t, tree_fn_t fn, void* data, htab_t visited)
+for_each_template_parm (tree t, tree_fn_t fn, void* data,
+			struct pointer_set_t *visited)
 {
   struct pair_fn_data pfd;
   int result;
@@ -4882,8 +4885,7 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data, htab_t visited)
   if (visited)
     pfd.visited = visited;
   else
-    pfd.visited = htab_create (37, htab_hash_pointer, htab_eq_pointer, 
-			       NULL);
+    pfd.visited = pointer_set_create ();
   result = walk_tree (&t, 
 		      for_each_template_parm_r, 
 		      &pfd,
@@ -4891,7 +4893,10 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data, htab_t visited)
 
   /* Clean up.  */
   if (!visited)
-    htab_delete (pfd.visited);
+    {
+      pointer_set_destroy (pfd.visited);
+      pfd.visited = 0;
+    }
 
   return result;
 }

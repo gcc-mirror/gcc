@@ -1,3 +1,11 @@
+2004-10-14  Matt Austern  <austern@apple.com>
+
+	* Make-lang.in (pt.o): depends on pointer-set.h
+	* cp-tree.h (cp_walk_subtrees): Last argument is pointer_set_t* now.
+	* pt.c (struct pair_fn_data): Use pointer_set_t, not htab_t
+	(for_each_template_parm): Convert from htab_t to pointer_set_t.
+	* tree.c (cp_walk_subtrees): Last argument is pointer_set_t* now.
+	
 2004-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/17661

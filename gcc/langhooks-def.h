@@ -73,7 +73,7 @@ extern size_t lhd_tree_size (enum tree_code);
 
 /* Declarations of default tree inlining hooks.  */
 extern tree lhd_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
-					     void *, void *);
+					     void *, struct pointer_set_t*);
 extern int lhd_tree_inlining_cannot_inline_tree_fn (tree *);
 extern int lhd_tree_inlining_disregard_inline_limits (tree);
 extern tree lhd_tree_inlining_add_pending_fn_decls (void *, tree);

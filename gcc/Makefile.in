@@ -914,7 +914,7 @@ OBJS-common = \
  params.o postreload.o postreload-gcse.o predict.o			   \
  insn-preds.o integrate.o intl.o jump.o langhooks.o lcm.o lists.o 	   \
  local-alloc.o loop.o modulo-sched.o optabs.o options.o opts.o		   \
- params.o postreload.o postreload-gcse.o predict.o			   \
+ params.o pointer-set.o postreload.o postreload-gcse.o predict.o 	   \
  print-rtl.o print-tree.o value-prof.o var-tracking.o			   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
@@ -1592,7 +1592,7 @@ tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(RTL_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h insn-config.h \
    $(INTEGRATE_H) $(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) toplev.h \
    langhooks.h $(C_COMMON_H) tree-inline.h $(CGRAPH_H) intl.h function.h \
-   $(TREE_GIMPLE_H)
+   pointer-set.h $(TREE_GIMPLE_H)
 print-tree.o : print-tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(GGC_H) langhooks.h real.h
 stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -1686,7 +1686,7 @@ tree-iterator.o : tree-iterator.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
    coretypes.h $(GGC_H) tree-iterator.h tree-gimple.h gt-tree-iterator.h
 tree-dfa.o : tree-dfa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) output.h diagnostic.h \
-   errors.h tree-inline.h $(HASHTAB_H) $(FLAGS_H) function.h $(TIMEVAR_H) \
+   errors.h tree-inline.h $(HASHTAB_H) pointer-set.h $(FLAGS_H) function.h $(TIMEVAR_H) \
    convert.h $(TM_H) coretypes.h langhooks.h \
    $(TREE_DUMP_H) tree-pass.h params.h $(CGRAPH_H)
 tree-ssa-operands.o : tree-ssa-operands.c $(TREE_FLOW_H) $(CONFIG_H) \
@@ -1923,7 +1923,7 @@ cgraph.o : cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    output.h intl.h
 cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h tree-inline.h toplev.h $(FLAGS_H) $(GGC_H)  $(TARGET_H) $(CGRAPH_H) intl.h \
-   function.h $(TREE_GIMPLE_H) $(TREE_FLOW_H)
+   pointer-set.h function.h $(TREE_GIMPLE_H) $(TREE_FLOW_H)
 coverage.o : coverage.c gcov-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) function.h \
    toplev.h $(GGC_H) $(TARGET_H) langhooks.h $(COVERAGE_H) libfuncs.h \
@@ -2172,6 +2172,7 @@ lambda-code.o: lambda-code.c $(LAMBDA_H) $(GGC_H) $(SYSTEM_H) $(CONFIG_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) cfgloop.h \
    $(TREE_DATA_REF_H) $(SCEV_H)
 params.o : params.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(PARAMS_H) toplev.h
+pointer-set.o: pointer-set.c pointer-set.h $(CONFIG_H) $(SYSTEM_H)
 hooks.o: hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(HOOKS_H)
 pretty-print.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h $(PRETTY_PRINT_H) \
    $(TREE_H)

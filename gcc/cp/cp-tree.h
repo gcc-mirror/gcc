@@ -4215,7 +4215,7 @@ extern void verify_stmt_tree                    (tree);
 extern tree find_tree                           (tree, tree);
 extern linkage_kind decl_linkage                (tree);
 extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
-				      void*, void*);
+				      void*, struct pointer_set_t*);
 extern int cp_cannot_inline_tree_fn (tree*);
 extern tree cp_add_pending_fn_decls (void*,tree);
 extern int cp_is_overload_p (tree);

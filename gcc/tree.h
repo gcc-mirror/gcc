@@ -3790,10 +3790,14 @@ extern void dwarf2out_return_reg (const char *, unsigned);
 
 /* In tree-inline.c  */
 
+/* The type of a set of already-visited pointers.  Functions for creating
+   and manipulating it are declared in pointer-set.h */
+struct pointer_set_t;
+
 /* The type of a callback function for walking over tree structure.  */
 
 typedef tree (*walk_tree_fn) (tree *, int *, void *);
-extern tree walk_tree (tree*, walk_tree_fn, void*, void*);
+extern tree walk_tree (tree*, walk_tree_fn, void*, struct pointer_set_t*);
 extern tree walk_tree_without_duplicates (tree*, walk_tree_fn, void*);
 
 /* In tree-dump.c */

@@ -1,3 +1,8 @@
+2004-10-14  Matt Austern  <austern@apple.com>
+
+	* lang.c (java_tree_inlining_walk_subtrees): Last arg is struct
+	pointer_set_t* now.
+	
 2004-10-13  Tom Tromey  <tromey@redhat.com>
 
 	PR java/15578:

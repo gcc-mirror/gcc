@@ -58,7 +58,7 @@ static void put_decl_string (const char *, int);
 static void put_decl_node (tree);
 static void java_print_error_function (diagnostic_context *, const char *);
 static tree java_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
-					      void *, void *);
+					      void *, struct pointer_set_t *);
 static int merge_init_test_initialization (void * *, void *);
 static int inline_init_test_initialization (void * *, void *);
 static bool java_can_use_bit_fields_p (void);
@@ -706,7 +706,7 @@ java_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
 				  int *subtrees ATTRIBUTE_UNUSED,
 				  walk_tree_fn func ATTRIBUTE_UNUSED,
 				  void *data ATTRIBUTE_UNUSED,
-				  void *htab ATTRIBUTE_UNUSED)
+				  struct pointer_set_t *pset ATTRIBUTE_UNUSED)
 {
   enum tree_code code;
   tree result;
@@ -714,7 +714,7 @@ java_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
 #define WALK_SUBTREE(NODE)				\
   do							\
     {							\
-      result = walk_tree (&(NODE), func, data, htab);	\
+      result = walk_tree (&(NODE), func, data, pset);	\
       if (result)					\
 	return result;					\
     }							\
