@@ -1,3 +1,9 @@
+2003-08-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR optimization/5079
+	* call.c (build_conditional_expr): Use decl_constant_value to
+	simplify the arguments.
+
 2003-08-26  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* parser.c (struct cp_token): Use enum bitfields.
