@@ -1,3 +1,9 @@
+2005-03-02  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/linux-elf.h (ARM_FUNCTION_PROFILER): Do not use (PLT)
+	for Thumb.
+	* config/arm/netbsd-elf.h (ARM_FUNCTION_PROFILER): Likewise.
+
 2005-03-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgloop.h, cfgloopanal.c, cfgloopmanip.c, conflict.c,

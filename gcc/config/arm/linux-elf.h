@@ -1,5 +1,6 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
-   Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+   2005
    Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
@@ -123,7 +124,8 @@
 #undef  ARM_FUNCTION_PROFILER
 #define ARM_FUNCTION_PROFILER(STREAM, LABELNO)  			\
 {									\
-  fprintf (STREAM, "\tbl\tmcount%s\n", NEED_PLT_RELOC ? "(PLT)" : "");	\
+  fprintf (STREAM, "\tbl\tmcount%s\n",					\
+	   (TARGET_ARM && NEED_PLT_RELOC) ? "(PLT)" : "");		\
 }
 
 /* The linux profiler clobbers the link register.  Make sure the
