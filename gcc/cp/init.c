@@ -48,7 +48,7 @@ static tree initializing_context PARAMS ((tree));
 static void expand_cleanup_for_base PARAMS ((tree, tree));
 static tree get_temp_regvar PARAMS ((tree, tree));
 static tree dfs_initialize_vtbl_ptrs PARAMS ((tree, void *));
-static tree build_default_init PARAMS ((tree));
+static tree build_default_init PARAMS ((tree, tree));
 static tree build_new_1	PARAMS ((tree));
 static tree get_cookie_size PARAMS ((tree));
 static tree build_dtor_call PARAMS ((tree, special_function_kind, int));
@@ -159,12 +159,14 @@ initialize_vtbl_ptrs (addr)
    that T is a scalar), or a CONSTRUCTOR (in the case that T is an
    aggregate).  In either case, the value can be used as DECL_INITIAL
    for a decl of the indicated TYPE; it is a valid static initializer.
-   If STATIC_STORAGE_P is TRUE, initializers are only generated for
-   entities for which zero-initialization does not simply mean filling
-   the storage with zero bytes.  */
+   If NELTS is non-NULL, and TYPE is an ARRAY_TYPE, NELTS is the
+   number of elements in the array.  If STATIC_STORAGE_P is TRUE,
+   initializers are only generated for entities for which
+   zero-initialization does not simply mean filling the storage with
+   zero bytes.  */
 
 tree
-build_zero_init (tree type, bool static_storage_p)
+build_zero_init (tree type, tree nelts, bool static_storage_p)
 {
   tree init = NULL_TREE;
 
@@ -217,6 +219,7 @@ build_zero_init (tree type, bool static_storage_p)
 	  if (static_storage_p && !zero_init_p (TREE_TYPE (field)))
 	    inits = tree_cons (field, 
 			       build_zero_init (TREE_TYPE (field),
+						/*nelts=*/NULL_TREE,
 						static_storage_p),
 			       inits);
 
@@ -236,11 +239,13 @@ build_zero_init (tree type, bool static_storage_p)
       init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
       /* Iterate over the array elements, building initializations.  */
       inits = NULL_TREE;
-      for (index = size_zero_node, max_index = array_type_nelts (type);
+      max_index = nelts ? nelts : array_type_nelts (type);
+      for (index = size_zero_node;
 	   !tree_int_cst_lt (max_index, index);
 	   index = size_binop (PLUS_EXPR, index, size_one_node))
 	inits = tree_cons (index,
-			   build_zero_init (TREE_TYPE (type), 
+			   build_zero_init (TREE_TYPE (type),
+					    /*nelts=*/NULL_TREE,
 					    static_storage_p),
 			   inits);
       CONSTRUCTOR_ELTS (init) = nreverse (inits);
@@ -257,14 +262,17 @@ build_zero_init (tree type, bool static_storage_p)
   return init;
 }
 
-/* Build an expression for the default-initialization of an object
-   with type T.  If initialization T requires calling constructors,
-   this function returns NULL_TREE; the caller is responsible for
-   arranging for the constructors to be called.  */
+/* Build an expression for the default-initialization of an object of
+   the indicated TYPE.  If NELTS is non-NULL, and TYPE is an
+   ARRAY_TYPE, NELTS is the number of elements in the array.  If
+   initialization of TYPE requires calling constructors, this function
+   returns NULL_TREE; the caller is responsible for arranging for the
+   constructors to be called.  */
 
 static tree
-build_default_init (type)
+build_default_init (type, nelts)
      tree type;
+     tree nelts;
 {
   /* [dcl.init]:
 
@@ -298,7 +306,7 @@ build_default_init (type)
       
   /* At this point, TYPE is either a POD class type, an array of POD
      classes, or something even more inoccuous.  */
-  return build_zero_init (type, /*static_storage_p=*/false);
+  return build_zero_init (type, nelts, /*static_storage_p=*/false);
 }
 
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
@@ -364,7 +372,7 @@ perform_member_init (tree member, tree init)
 	{
 	  if (explicit)
 	    {
-	      init = build_default_init (type);
+	      init = build_default_init (type, /*nelts=*/NULL_TREE);
 	      if (TREE_CODE (type) == REFERENCE_TYPE)
 		warning
 		  ("default-initialization of `%#D', which has reference type",
@@ -2367,7 +2375,7 @@ build_new_1 (exp)
       init_expr = build_indirect_ref (alloc_node, NULL);
 
       if (init == void_zero_node)
-	init = build_default_init (full_type);
+	init = build_default_init (full_type, nelts);
       else if (init && pedantic && has_array)
 	pedwarn ("ISO C++ forbids initialization in array new");
 

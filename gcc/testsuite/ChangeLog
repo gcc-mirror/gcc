@@ -1,3 +1,8 @@
+2003-02-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9879
+	* testsuite/g++.dg/init/new4.C: New test.
+
 2003-02-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.dg/arm-asm.c: Enable for StrongARM and XScale targets.
