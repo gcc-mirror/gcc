@@ -952,6 +952,9 @@ while (0)
 #endif
 
 /* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
+/* Note, we will need to adjust the following if we ever find a MIPS variant
+   that has 32-bit GPRs and 64-bit FPRs as well as fix all of the reload bugs
+   that show up in this case.  */
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
@@ -962,6 +965,7 @@ while (0)
 %{mfp64:%{msingle-float:%emay not use both -mfp64 and -msingle-float}} \
 %{mfp64:%{m4650:%emay not use both -mfp64 and -m4650}} \
 %{mint64|mlong64|mlong32:-mexplicit-type-size }\
+%{mgp32: %{mfp64:%emay not use both -mgp32 and -mfp64} %{!mfp32: -mfp32}} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
@@ -999,6 +1003,15 @@ while (0)
 #endif
 #endif
 
+/* Define appropriate macros for fpr register size.  */
+#ifndef CPP_FPR_SPEC
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_FLOAT64)
+#define CPP_FPR_SPEC "-D__mips_fpr=64"
+#else
+#define CPP_FPR_SPEC "-D__mips_fpr=32"
+#endif
+#endif
+
 /* For C++ we need to ensure that _LANGUAGE_C_PLUS_PLUS is defined independent
    of the source file extension.  */
 #undef CPLUSPLUS_CPP_SPEC
@@ -1017,6 +1030,7 @@ while (0)
 %{mips3:-U__mips -D__mips=3 -D__mips64} \
 %{mips4:-U__mips -D__mips=4 -D__mips64} \
 %{mgp32:-U__mips64} %{mgp64:-D__mips64} \
+%{mfp32:-D__mips_fpr=32} %{mfp64:-D__mips_fpr=64} %{!mfp32: %{!mfp64: %{mgp32:-D__mips_fpr=32} %{!mgp32: %(cpp_fpr_spec)}}} \
 %{msingle-float:%{!msoft-float:-D__mips_single_float}} \
 %{m4650:%{!msoft-float:-D__mips_single_float}} \
 %{msoft-float:-D__mips_soft_float} \
@@ -1044,6 +1058,7 @@ while (0)
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
   { "subtarget_cpp_size_spec", SUBTARGET_CPP_SIZE_SPEC },		\
   { "long_max_spec", LONG_MAX_SPEC },					\
+  { "cpp_fpr_spec", CPP_FPR_SPEC },					\
   { "mips_as_asm_spec", MIPS_AS_ASM_SPEC },				\
   { "gas_asm_spec", GAS_ASM_SPEC },					\
   { "target_asm_spec", TARGET_ASM_SPEC },				\

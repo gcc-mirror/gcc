@@ -1,3 +1,19 @@
+2001-09-11  Michael Meissner  <meissner@redhat.com>
+
+	* config/mips/mips.h (CC1_SPEC): If -mgp32 default to -mfp32, and
+	give an error if the user uses -mfp32.
+	(CPP_FPR_SPEC): Define __mips_fpr to be 32 or 64 depending on the
+	default options.
+	(CPP_SPEC): Define __mips_fpr to be 32 or 64, depending on the
+	floating point register size.
+	(EXTRA_SPECS): Add CPP_FPR_SPEC.
+
+	* config/mips/netbsd.h (ASM_FINISH_DECLARE_OBJECT): Use
+	HOST_WIDE_INT_PRINT_DEC to properly print the result of
+	int_size_in_bytes.
+	* config/mips/elf.h (ASM_FINISH_DECLARE_OBJECT): Ditto.
+	* config/mips/elf64.h (ASM_FINISH_DECLARE_OBJECT): Ditto.
+
 2001-09-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* dbxout.c (dbxout_parms): Fix typo in comment.
