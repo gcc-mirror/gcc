@@ -1,3 +1,10 @@
+1998-07-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (do_identifier): Look for class value even if we don't
+	have a global value.  Do implicit declaration if parsing is 2.
+	* semantics.c (finish_call_expr): Pass 2 if we're doing Koenig
+	lookup.
+
 1998-07-19  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (pushtag): Revert previous change.

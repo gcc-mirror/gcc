@@ -2817,17 +2817,17 @@ do_identifier (token, parsing, args)
      tree args;
 {
   register tree id;
+  int lexing = (parsing == 1);
+  int in_call = (parsing == 2);
 
-  if (! parsing || IDENTIFIER_OPNAME_P (token))
+  if (! lexing || IDENTIFIER_OPNAME_P (token))
     id = lookup_name (token, 0);
   else
     id = lastiddecl;
 
-  if (parsing && yychar == YYEMPTY)
-    yychar = yylex ();
   /* Scope class declarations before global
      declarations.  */
-  if (id && is_global (id)
+  if ((!id || is_global (id))
       && current_class_type != 0
       && TYPE_SIZE (current_class_type) == 0)
     {
@@ -2894,7 +2894,7 @@ do_identifier (token, parsing, args)
 	    cp_error ("`%D' not defined", token);
 	  id = error_mark_node;
 	}
-      else if (parsing && (yychar == '(' || yychar == LEFT_RIGHT))
+      else if (in_call)
 	{
 	  id = implicitly_declare (token);
 	}
