@@ -796,7 +796,7 @@ struct cum_arg
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-#define LEGITIMATE_CONSTANT_P(X) (1)
+#define LEGITIMATE_CONSTANT_P(X) (h8300_legitimate_constant_p (X))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -879,31 +879,23 @@ struct cum_arg
    (C) == 'U' ? OK_FOR_U (OP) :			\
    0)
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
-
-   The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
-   except for CONSTANT_ADDRESS_P which is actually
-   machine-independent.
-
-   On the H8/300, a legitimate address has the form
-   REG, REG+CONSTANT_ADDRESS or CONSTANT_ADDRESS.  */
-
-/* Accept either REG or SUBREG where a register is valid.  */
-
-#define RTX_OK_FOR_BASE_P(X)				\
-  ((REG_P (X) && REG_OK_FOR_BASE_P (X))			\
-   || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))	\
-       && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
-  if (RTX_OK_FOR_BASE_P (X)) goto ADDR;			\
-  if (CONSTANT_ADDRESS_P (X)) goto ADDR;		\
-  if (GET_CODE (X) == PLUS				\
-      && CONSTANT_ADDRESS_P (XEXP (X, 1))		\
-      && RTX_OK_FOR_BASE_P (XEXP (X, 0))) goto ADDR;
+#ifndef REG_OK_STRICT
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
+  do						\
+    {						\
+      if (h8300_legitimate_address_p ((X), 0))	\
+	goto ADDR;				\
+    }						\
+  while (0)
+#else
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
+  do						\
+    {						\
+      if (h8300_legitimate_address_p ((X), 1))	\
+	goto ADDR;				\
+    }						\
+  while (0)
+#endif
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.

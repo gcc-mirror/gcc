@@ -4552,6 +4552,51 @@ h8300_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
 
   return 1;
 }
+
+/* Return nonzero if X is a legitimate constant.  */
+
+int
+h8300_legitimate_constant_p (rtx x ATTRIBUTE_UNUSED)
+{
+  return 1;
+}
+
+/* Return nonzero if X is a REG or SUBREG suitable as a base register.  */
+
+static int
+h8300_rtx_ok_for_base_p (rtx x, int strict)
+{
+  /* Strip off SUBREG if any.  */
+  if (GET_CODE (x) == SUBREG)
+    x = SUBREG_REG (x);
+
+  return (REG_P (x)
+	  && (strict
+	      ? REG_OK_FOR_BASE_STRICT_P (x)
+	      : REG_OK_FOR_BASE_NONSTRICT_P (x)));
+}
+
+/* Return nozero if X is a legitimate address.  On the H8/300, a
+   legitimate address has the form REG, REG+CONSTANT_ADDRESS or
+   CONSTANT_ADDRESS.  */
+
+int
+h8300_legitimate_address_p (rtx x, int strict)
+{
+  /* The register indirect addresses like @er0 is always valid.  */
+  if (h8300_rtx_ok_for_base_p (x, strict))
+    return 1;
+
+  if (CONSTANT_ADDRESS_P (x))
+    return 1;
+
+  if (GET_CODE (x) == PLUS
+      && CONSTANT_ADDRESS_P (XEXP (x, 1))
+      && h8300_rtx_ok_for_base_p (XEXP (x, 0), strict))
+    return 1;
+
+  return 0;
+}
 
 /* Perform target dependent optabs initialization.  */
 static void
