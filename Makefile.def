@@ -172,8 +172,6 @@ flags_to_pass = { flag= infodir ; };
 flags_to_pass = { flag= libdir ; };
 flags_to_pass = { flag= libexecdir ; };
 flags_to_pass = { flag= lispdir ; };
-flags_to_pass = { flag= libstdcxx_incdir ; };
-flags_to_pass = { flag= libsubdir ; };
 flags_to_pass = { flag= localstatedir ; };
 flags_to_pass = { flag= mandir ; };
 flags_to_pass = { flag= oldincludedir ; };
@@ -183,9 +181,6 @@ flags_to_pass = { flag= sharedstatedir ; };
 flags_to_pass = { flag= sysconfdir ; };
 flags_to_pass = { flag= tooldir ; };
 flags_to_pass = { flag= build_tooldir ; };
-flags_to_pass = { flag= gxx_include_dir ; };
-flags_to_pass = { flag= gcc_version ; };
-flags_to_pass = { flag= gcc_version_trigger ; };
 flags_to_pass = { flag= target_alias ; };
 
 // Build tools

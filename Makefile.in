@@ -72,21 +72,12 @@ LN_S = @LN_S@
 # Miscellaneous non-standard autoconf-set variables
 # -------------------------------------------------
 
-# The file containing GCC's version number.
-gcc_version_trigger = @gcc_version_trigger@
-gcc_version = @gcc_version@
-
 # The gcc driver likes to know the arguments it was configured with.
 TOPLEVEL_CONFIGURE_ARGUMENTS=@TOPLEVEL_CONFIGURE_ARGUMENTS@
-
-gxx_include_dir = @gxx_include_dir@
-libstdcxx_incdir = @libstdcxx_incdir@
 
 tooldir = @tooldir@
 build_tooldir = @build_tooldir@
 
-# Directory in which the compiler finds executables, libraries, etc.
-libsubdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)
 GDB_NLM_DEPS = 
 
 # This is the name of the environment variable used for the path to
@@ -520,8 +511,6 @@ BASE_FLAGS_TO_PASS = \
 	"libdir=$(libdir)" \
 	"libexecdir=$(libexecdir)" \
 	"lispdir=$(lispdir)" \
-	"libstdcxx_incdir=$(libstdcxx_incdir)" \
-	"libsubdir=$(libsubdir)" \
 	"localstatedir=$(localstatedir)" \
 	"mandir=$(mandir)" \
 	"oldincludedir=$(oldincludedir)" \
@@ -531,9 +520,6 @@ BASE_FLAGS_TO_PASS = \
 	"sysconfdir=$(sysconfdir)" \
 	"tooldir=$(tooldir)" \
 	"build_tooldir=$(build_tooldir)" \
-	"gxx_include_dir=$(gxx_include_dir)" \
-	"gcc_version=$(gcc_version)" \
-	"gcc_version_trigger=$(gcc_version_trigger)" \
 	"target_alias=$(target_alias)" \
 	"BISON=$(BISON)" \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
@@ -35515,7 +35501,7 @@ $(srcdir)/Makefile.in: @MAINT@ $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
 Makefile: $(srcdir)/Makefile.in config.status
 	CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-config.status: configure $(gcc_version_trigger)
+config.status: configure
 	CONFIG_SHELL="$(SHELL)" $(SHELL) ./config.status --recheck
 
 # Rebuilding configure.

@@ -1,3 +1,15 @@
+2005-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.def: Remove libstdcxx_incdir, libsubdir, gxx_include_dir,
+	gcc_version, and gcc_version_trigger from set of flags to pass.
+	* Makefile.tpl: Remove definitions of above variables.
+	(config.status): Remove dependency on $(gcc_version_trigger).
+	* Makefile.in: Regenerate.
+	* configure.in: Do not reference config/gcc-version.m4 nor
+	config/gxx-include-dir.m4.  Do not invoke TL_AC_GCC_VERSION nor
+	TL_AC_GXX_INCLUDE_DIR.  Do not set gcc_version_trigger.
+	* configure: Regenerate.
+
 2005-03-16  Manfred Hollstein  <manfred.h@gmx.net>
 	    Andrew Pinski <pinskia@physics.uc.edu>
 
@@ -380,7 +392,7 @@
 2004-10-05  Tomer Levi  <Tomer.Levi@nsc.com>
 
 	* configure.in: Enable target-libgloss for crx-*-*.
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2004-10-04  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -592,7 +604,7 @@
 	* configure.in: add test for powerpc-*-darwin* to specify makefile frag
 	* configure: regenerate
 	* config/mh-ppc-darwin: create file, override BOOT_CFLAGS for
-        -mdynamic-no-pic
+	-mdynamic-no-pic
 
 
 2004-08-31  Paolo Bonzini  <bonzini@gnu.org>
