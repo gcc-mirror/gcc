@@ -1671,6 +1671,13 @@ duplicate_decls (newdecl, olddecl)
       /* Merge the initialization information.  */
       if (DECL_INITIAL (newdecl) == 0)
 	DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
+
+      /* Merge the section attribute.
+         We want to issue an error if the sections conflict but that must be
+	 done later in decl_attributes since we are called before attributes
+	 are assigned.  */
+      if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
+	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
     }
   /* If cannot merge, then use the new type and qualifiers,
      and don't preserve the old rtl.  */
