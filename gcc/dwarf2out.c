@@ -2827,9 +2827,16 @@ build_cfa_loc (cfa)
     abort ();
 
   if (cfa->base_offset)
-    head = new_loc_descr (DW_OP_breg0 + cfa->reg, cfa->base_offset, 0);
-  else
+    {
+      if (cfa->reg <= 31)
+	head = new_loc_descr (DW_OP_breg0 + cfa->reg, cfa->base_offset, 0);
+      else
+	head = new_loc_descr (DW_OP_bregx, cfa->reg, cfa->base_offset);
+    }
+  else if (cfa->reg <= 31)
     head = new_loc_descr (DW_OP_reg0 + cfa->reg, 0, 0);
+  else
+    head = new_loc_descr (DW_OP_regx, cfa->reg, 0);
   head->dw_loc_oprnd1.val_class = dw_val_class_const;
   tmp = new_loc_descr (DW_OP_deref, 0, 0);
   add_loc_descr (&head, tmp);

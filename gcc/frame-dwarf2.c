@@ -514,6 +514,7 @@ decode_stack_op (unsigned char *buf, struct frame_state *state)
     case DW_OP_regx:
       buf = decode_sleb128 (buf, &offset);
       state->cfa_reg = offset;
+      break;
     case DW_OP_breg0:
     case DW_OP_breg1:
     case DW_OP_breg2:
