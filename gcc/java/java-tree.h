@@ -220,6 +220,7 @@ extern tree boolean_true_node, boolean_false_node;
 extern tree integer_negative_one_node;
 extern tree integer_two_node;
 extern tree integer_four_node;
+extern tree empty_stmt_node;
 
 /* The type for struct methodtable. */
 extern tree methodtable_type;

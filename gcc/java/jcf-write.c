@@ -50,34 +50,25 @@ char *jcf_write_base_directory = NULL;
 /* Make sure bytecode.data is big enough for at least N more bytes. */
 
 #define RESERVE(N) \
-  do { if (state->bytecode.ptr + (N) > state->bytecode.limit) \
+  do { CHECK_OP(state); \
+    if (state->bytecode.ptr + (N) > state->bytecode.limit) \
     buffer_grow (&state->bytecode, N); } while (0)
 
 /* Add a 1-byte instruction/operand I to bytecode.data,
    assuming space has already been RESERVE'd. */
 
-#define OP1(I) (*state->bytecode.ptr++ = (I))
+#define OP1(I) (*state->bytecode.ptr++ = (I), CHECK_OP(state))
 
 /* Like OP1, but I is a 2-byte big endian integer. */
 
 #define OP2(I) \
-  do { int _i = (I);  OP1 (_i >> 8);  OP1 (_i); } while (0)
+  do { int _i = (I); OP1 (_i >> 8);  OP1 (_i); CHECK_OP(state); } while (0)
 
 /* Like OP1, but I is a 4-byte big endian integer. */
 
 #define OP4(I) \
   do { int _i = (I);  OP1 (_i >> 24);  OP1 (_i >> 16); \
-       OP1 (_i >> 8); OP1 (_i); } while (0)
-
-/* The current stack size (stack pointer) in the current method. */
-
-int code_SP = 0;
-
-/* The largest extent of stack size (stack pointer) in the current method. */
-
-int code_SP_max = 0;
-
-CPool *code_cpool;
+       OP1 (_i >> 8); OP1 (_i); CHECK_OP(state); } while (0)
 
 /* Macro to call each time we push I words on the JVM stack. */
 
@@ -138,7 +129,13 @@ struct jcf_block
   } u;
 };
 
+/* A "relocation" type for the 0-3 bytes of padding at the start
+   of a tableswitch or a lookupswitch. */
 #define SWITCH_ALIGN_RELOC 4
+
+/* A relocation type for the labels in a tableswitch or a lookupswitch;
+   these are relative to the start of the instruction, but (due to
+   th 0-3 bytes of padding), we don't know the offset before relocation. */
 #define BLOCK_START_RELOC 1
 
 struct jcf_relocation
@@ -253,10 +250,26 @@ static void generate_bytecode_insns PROTO ((tree, int, struct jcf_partial *));
    We assume a local variable 'ptr' points into where we want to
    write next, and we assume enoygh space has been allocated. */
 
-#define PUT1(X)  (*ptr++ = (X))
+#ifdef ENABLE_CHECKING
+int
+CHECK_PUT(ptr, state, i)
+     void *ptr;
+     struct jcf_partial *state;
+     int i;
+{
+  if (ptr < state->chunk->data
+      || (char*)ptr + i > state->chunk->data + state->chunk->size)
+    fatal ("internal error - CHECK_PUT failed");
+  return 0;
+}
+#else
+#define CHECK_PUT(PTR, STATE, I) 0
+#endif
+
+#define PUT1(X)  (CHECK_PUT(ptr, state, 1), *ptr++ = (X))
 #define PUT2(X)  (PUT1((X) >> 8), PUT1((X) & 0xFF))
 #define PUT4(X)  (PUT2((X) >> 16), PUT2((X) & 0xFFFF))
-#define PUTN(P, N)  (memcpy(ptr, P, N), ptr += (N))
+#define PUTN(P, N)  (CHECK_PUT(ptr, state, N), memcpy(ptr, P, N), ptr += (N))
 
 
 /* Allocate a new chunk on obstack WORK, and link it in after LAST.
@@ -283,6 +296,20 @@ alloc_chunk (last, data, size, work)
     last->next = chunk;
   return chunk;
 }
+
+#ifdef ENABLE_CHECKING
+int
+CHECK_OP(struct jcf_partial *state)
+{
+  if (state->bytecode.ptr > state->bytecode.limit)
+    {
+      fatal("internal error - CHECK_OP failed");
+    }
+  return 0;
+}
+#else
+#define CHECK_OP(STATE) 0
+#endif
 
 unsigned char *
 append_chunk (data, size, state)
@@ -574,6 +601,9 @@ write_chunks (stream, chunks)
     fwrite (chunks->data, chunks->size, 1, stream);
 }
 
+/* Push a 1-word constant in the constant pool at the given INDEX.
+   (Caller is responsible for doing NOTE_PUSH.) */
+
 static void
 push_constant1 (index, state)
      int index;
@@ -591,6 +621,9 @@ push_constant1 (index, state)
       OP2 (index);
     }
 }
+
+/* Push a 2-word constant in the constant pool at the given INDEX.
+   (Caller is responsible for doing NOTE_PUSH.) */
 
 static void
 push_constant2 (index, state)
@@ -622,7 +655,6 @@ push_int_const (i, state)
     {
       OP1(OPCODE_sipush);
       OP2(i);
-      NOTE_PUSH (1);
     }
   else
     {
@@ -1257,6 +1289,7 @@ generate_bytecode_insns (exp, target, state)
       break;
     case STRING_CST:
       push_constant1 (find_string_constant (&state->cpool, exp), state);
+      NOTE_PUSH (1);
       break;
     case VAR_DECL:
       if (TREE_STATIC (exp))
@@ -1473,12 +1506,16 @@ generate_bytecode_insns (exp, target, state)
 		OP4 (sw_state.max_case);
 		for (i = sw_state.min_case; ; )
 		  {
-		    if (i == sw_state.min_case + index)
-		      emit_case_reloc (relocs[index++], state);
+		    reloc = relocs[index];
+		    if (i == reloc->offset)
+		      {
+			emit_case_reloc (reloc, state);
+			if (i == sw_state.max_case)
+			  break;
+			index++;
+		      }
 		    else
 		      emit_switch_reloc (sw_state.default_label, state);
-		    if (i == sw_state.max_case)
-		      break;
 		    i++;
 		  }
 	      }
@@ -1619,12 +1656,8 @@ generate_bytecode_insns (exp, target, state)
 	  if (target != IGNORE_TARGET && post_op)
 	    emit_load (exp, state);
 	  emit_iinc (exp, value, state);
-	  if (target != IGNORE_TARGET)
-	    {
-	      if (! post_op)
-		emit_load (exp, state);
-	      NOTE_PUSH (1);
-	    }
+	  if (target != IGNORE_TARGET && ! post_op)
+	    emit_load (exp, state);
 	  break;
 	}
       if (TREE_CODE (exp) == COMPONENT_REF)
@@ -2225,6 +2258,8 @@ perform_relocations (state)
 	      *--new_ptr = 0;
 	      *--new_ptr = - reloc->kind;
 	    }
+	  if (new_ptr != chunk->data)
+	    fatal ("internal error - perform_relocations");
 	}
     }
   state->code_length = pc;
@@ -2352,7 +2387,9 @@ generate_classfile (clas, state)
   for (part = TYPE_METHODS (clas);  part;  part = TREE_CHAIN (part))
     {
       struct jcf_block *block;
-      tree body = BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (part));
+      tree function_body = DECL_FUNCTION_BODY (part);
+      tree body = function_body == NULL_TREE ? NULL_TREE
+	: BLOCK_EXPR_BODY (function_body);
       tree name = DECL_CONSTRUCTOR_P (part) ? init_identifier_node
 	: DECL_NAME (part);
       tree type = TREE_TYPE (part);
