@@ -1,3 +1,8 @@
+2001-11-05  Felix Natter  <fnatter@gmx.net>
+
+	* docs/html/17_intro/porting-howto.xml:  check in v0.9.4
+	* docs/html/17_intro/porting-howto.html:  regenerate
+
 2001-11-02  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/bits/stl_threads.h (_Atomic_swap): Only enable path
