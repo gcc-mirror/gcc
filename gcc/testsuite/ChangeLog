@@ -1,5 +1,8 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/ppc64-toc.c: Don't explicitly use -m64.
+	* gcc.dg/ppc-eabi.c: Don't explicity use -m32.
+
 	* gcc.dg/ppc64-abi-3.c: Add xfail for error checks.
 
 2005-02-01  Richard Henderson  <rth@redhat.com>
