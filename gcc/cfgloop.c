@@ -644,7 +644,7 @@ flow_loops_find (loops, flags)
   sbitmap *dom;
   int *dfs_order;
   int *rc_order;
-  basic_block header;
+  basic_block header, bb;
 
   /* This function cannot be repeatedly called with different
      flags to build up the loop information.  The loop tree
@@ -768,10 +768,16 @@ flow_loops_find (loops, flags)
 	     These are often the same as the loop header and
 	     loop latch respectively, but this is not always
 	     the case.  */
-	  loop->first
-	    = BASIC_BLOCK (sbitmap_first_set_bit (loop->nodes));
-	  loop->last
-	    = BASIC_BLOCK (sbitmap_last_set_bit (loop->nodes));
+
+	  FOR_EACH_BB (bb)
+	    if (TEST_BIT (loop->nodes, bb->index))
+	      break;
+	  loop->first = bb;
+
+	  FOR_EACH_BB_REVERSE (bb)
+	    if (TEST_BIT (loop->nodes, bb->index))
+	      break;
+	  loop->last = bb;
 
 	  flow_loop_scan (loops, loop, flags);
 	}
