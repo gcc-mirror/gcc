@@ -1031,7 +1031,7 @@
   [(set (pc)
 	(if_then_else
 	 (match_operator 3 "comparison_operator"
-			 [(match_operand:SI 1 "register_operand" "r")
+			 [(match_operand:SI 1 "reg_or_0_operand" "rM")
 			  (match_operand:SI 2 "arith5_operand" "rL")])
 	 (label_ref (match_operand 0 "" ""))
 	 (pc)))]
@@ -1059,7 +1059,7 @@
   [(set (pc)
 	(if_then_else
 	 (match_operator 3 "comparison_operator"
-			 [(match_operand:SI 1 "register_operand" "r")
+			 [(match_operand:SI 1 "reg_or_0_operand" "rM")
 			  (match_operand:SI 2 "arith5_operand" "rL")])
 	 (pc)
 	 (label_ref (match_operand 0 "" ""))))]
