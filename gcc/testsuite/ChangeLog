@@ -1,3 +1,8 @@
+2000-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.abi/ptrflags.C: New test.
+	* g++.eh/catchptr1.C: Test incomplete pointer chains.
+
 2000-04-19  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/20000419-1.c: New test.
