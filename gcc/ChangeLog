@@ -1,5 +1,11 @@
 2001-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-lang.c (finish_file): Backout 2001-11-16
+	changes, instead set DECL_DEFER_OUTPUT for static inline functions
+	before calling c_expand_deferred_function.
+
+2001-11-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* unwind-dw2-fde.c (__register_frame_info_bases, __register_frame):
 	Don't register empty .eh_frame sections.
 	(__deregister_frame_info_bases, __deregister_frame): Don't

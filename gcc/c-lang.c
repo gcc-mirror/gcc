@@ -271,38 +271,20 @@ void
 finish_file ()
 {
   unsigned int i;
-  bool reconsider;
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
     {
       tree decl = VARRAY_TREE (deferred_fns, i);
 
-      if (! TREE_ASM_WRITTEN (decl) && TREE_PUBLIC (decl))
+      if (! TREE_ASM_WRITTEN (decl))
 	{
+	  /* For static inline functions, delay the decision whether to
+	     emit them or not until wrapup_global_declarations.  */
+	  if (! TREE_PUBLIC (decl))
+	    DECL_DEFER_OUTPUT (decl) = 1;
 	  c_expand_deferred_function (decl);
-	  VARRAY_TREE (deferred_fns, i) = NULL;
 	}
     }
-
-  do
-    {
-      reconsider = false;
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
-	{
-	  tree decl = VARRAY_TREE (deferred_fns, i);
-
-	  if (decl
-	      && ! TREE_ASM_WRITTEN (decl)
-	      && (flag_keep_inline_functions
-		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
-	    {
-	      c_expand_deferred_function (decl);
-	      VARRAY_TREE (deferred_fns, i) = NULL;
-	      reconsider = true;
-	    }
-	}
-    } while (reconsider);
-
   VARRAY_FREE (deferred_fns);
 
   if (static_ctors)
