@@ -182,6 +182,7 @@ static int compare_operands PARAMS ((struct operand_data *,
 static void place_operands PARAMS ((struct data *));
 static void process_template PARAMS ((struct data *, const char *));
 static void validate_insn_alternatives PARAMS ((struct data *));
+static void validate_insn_operands PARAMS ((struct data *));
 static void gen_insn PARAMS ((rtx, int));
 static void gen_peephole PARAMS ((rtx, int));
 static void gen_expand PARAMS ((rtx, int));
@@ -737,6 +738,22 @@ validate_insn_alternatives (d)
   /* Record the insn's overall number of alternatives.  */
   d->n_alternatives = n;
 }
+
+/* Verify that there are no gaps in operand numbers for INSNs.  */
+
+static void
+validate_insn_operands (d)
+     struct data *d;
+{
+  int i;
+
+  for (i = 0; i < d->n_operands; ++i)
+    if (d->operand[i].seen == 0)
+      {
+	message_with_line (d->lineno, "missing operand %d", i);
+	have_error = 1;
+      }
+}
 
 /* Look at a define_insn just read.  Assign its code number.  Record
    on idata the template and the number of arguments.  If the insn has
@@ -774,6 +791,7 @@ gen_insn (insn, lineno)
   d->n_operands = max_opno + 1;
   d->n_dups = num_dups;
 
+  validate_insn_operands (d);
   validate_insn_alternatives (d);
   place_operands (d);
   process_template (d, XSTR (insn, 3));

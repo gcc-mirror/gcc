@@ -1708,11 +1708,11 @@
 	 (and:SI (match_operand:SI 0 "s_register_operand" "r,r")
 		 (match_operand:SI 1 "arm_not_operand" "rI,K"))
 	 (const_int 0)))
-   (clobber (match_scratch:SI 3 "=X,r"))]
+   (clobber (match_scratch:SI 2 "=X,r"))]
   "TARGET_ARM"
   "@
    tst%?\\t%0, %1
-   bic%?s\\t%3, %0, #%B1"
+   bic%?s\\t%2, %0, #%B1"
   [(set_attr "conds" "set")]
 )
 

@@ -8113,19 +8113,19 @@
 ;; Optimize (1LL<<x)-1
 ;; XXX this also needs to be fixed to handle equal subregs
 ;; XXX first before we could re-enable it.
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=h")
-	(plus:DI (ashift:DI (const_int 1)
-			    (match_operand:SI 2 "arith_operand" "rI"))
-		 (const_int -1)))]
-  "0 && TARGET_V8PLUS"
-  "*
-{
-  if (GET_CODE (operands[2]) == REG && REGNO (operands[2]) == REGNO (operands[0]))
-    return \"mov\\t1, %L0\;sllx\\t%L0, %2, %L0\;sub\\t%L0, 1, %L0\;srlx\\t%L0, 32, %H0\";
-  return \"mov\\t1, %H0\;sllx\\t%H0, %2, %L0\;sub\\t%L0, 1, %L0\;srlx\\t%L0, 32, %H0\";
-}"
-  [(set_attr "length" "4")])
+;(define_insn ""
+;  [(set (match_operand:DI 0 "register_operand" "=h")
+;	(plus:DI (ashift:DI (const_int 1)
+;			    (match_operand:SI 1 "arith_operand" "rI"))
+;		 (const_int -1)))]
+;  "0 && TARGET_V8PLUS"
+;  "*
+;{
+;  if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == REGNO (operands[0]))
+;    return \"mov\\t1, %L0\;sllx\\t%L0, %1, %L0\;sub\\t%L0, 1, %L0\;srlx\\t%L0, 32, %H0\";
+;  return \"mov\\t1, %H0\;sllx\\t%H0, %1, %L0\;sub\\t%L0, 1, %L0\;srlx\\t%L0, 32, %H0\";
+;}"
+;  [(set_attr "length" "4")])
 
 (define_insn "*cmp_cc_ashift_1"
   [(set (reg:CC_NOOV 100)

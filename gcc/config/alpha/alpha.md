@@ -986,23 +986,23 @@
 ;; expanded by the assembler.
 (define_insn "*divmodsi_internal"
   [(set (reg:DI 27)
-	(sign_extend:DI (match_operator:SI 1 "divmod_operator"
+	(sign_extend:DI (match_operator:SI 0 "divmod_operator"
 			[(reg:DI 24) (reg:DI 25)])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "!TARGET_OPEN_VMS"
-  "%E1 $24,$25,$27"
+  "%E0 $24,$25,$27"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
 (define_insn "*divmoddi_internal"
   [(set (reg:DI 27)
-	(match_operator:DI 1 "divmod_operator"
+	(match_operator:DI 0 "divmod_operator"
 			[(reg:DI 24) (reg:DI 25)]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "!TARGET_OPEN_VMS"
-  "%E1 $24,$25,$27"
+  "%E0 $24,$25,$27"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
