@@ -1,3 +1,8 @@
+2000-11-16  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.c (ia64_encode_section_info): Disallow decls with
+	DECL_EXTERNAL set.
+
 2000-11-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (output_arm_prologue): Note nested functions.
