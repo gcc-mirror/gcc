@@ -1,3 +1,7 @@
+2000-02-24  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_process_after_reload): Split all insns.
+
 2000-02-23  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* cpplib.h (enum cpp_token): Added CPP_WCHAR and CPP_WSTRING.
