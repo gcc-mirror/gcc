@@ -83,7 +83,7 @@
 # define volatile
 #endif
 
-STATIC volatile bool read_pipe_timeout;
+STATIC volatile t_bool read_pipe_timeout;
 
 static t_pchar def_args[] =
 { (char *) NULL, (char *) NULL };
