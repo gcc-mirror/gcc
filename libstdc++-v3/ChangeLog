@@ -11,6 +11,13 @@
 	* include/ext/pool_allocator.h: Include c++config.h.
 	* include/ext/mt_allocator.h: Include c++config.h.
 
+	* testsuite/ext/stdio_filebuf/char/10063-2.cc: Treat unbuffered.
+	* testsuite/ext/stdio_filebuf/char/10063-3.cc: New test.  Like -2 but
+	use __gnu_cxx::stdio_sync_filebuf<char> instead; allow buffered stream.
+
+	* testsuite/27_io/ios_base/storage/11584.cc: Correct new and
+	delete declarations, add include and test variable.
+
 2004-02-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14071

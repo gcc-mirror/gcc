@@ -36,6 +36,7 @@ void test2()
   fbuf.close();
 
   FILE* file = fopen("tmp_10063-2", "r");
+  setbuf(file, NULL);
   int c = getc(file);
   VERIFY(c == '0');
   c = getc(file);
