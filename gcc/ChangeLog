@@ -1,3 +1,7 @@
+2003-12-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/ns32k/ns32k.c: Convert to ISO-C.
+
 2003-12-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/ia64.c (ia64_va_arg): Pass pointer for
