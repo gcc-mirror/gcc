@@ -53,3 +53,19 @@ do {  \
        output_file_directive ((FILE), main_input_filename); \
    } while (0)
 
+/* Under hpux10, the normal location of the `ld' and `as' programs is the
+   /usr/ccs/bin directory.  */
+
+#ifndef CROSS_COMPILE
+#undef MD_EXEC_PREFIX
+#define MD_EXEC_PREFIX "/usr/ccs/bin/"
+#endif
+
+/* Under hpux10, the normal location of the various *crt*.o files is the
+   /usr/ccs/lib directory.  */
+
+#ifndef CROSS_COMPILE
+#undef MD_STARTFILE_PREFIX
+#define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
+#endif
+
