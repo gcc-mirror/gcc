@@ -438,9 +438,8 @@ build_simple_base_path (tree expr, tree binfo)
        field; field = TREE_CHAIN (field))
     /* Is this the base field created by build_base_field?  */
     if (TREE_CODE (field) == FIELD_DECL
-	&& TREE_TYPE (field) == type
-	&& DECL_ARTIFICIAL (field)
-	&& DECL_IGNORED_P (field))
+	&& DECL_FIELD_IS_BASE (field)
+	&& TREE_TYPE (field) == type)
       return build_class_member_access_expr (expr, field,
 					     NULL_TREE, false);
 
@@ -3642,6 +3641,7 @@ build_base_field (record_layout_info rli, tree binfo,
       DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
       DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
       DECL_IGNORED_P (decl) = 1;
+      DECL_FIELD_IS_BASE (decl) = 1;
 
       /* Try to place the field.  It may take more than one try if we
 	 have a hard time placing the field without putting two
@@ -5300,6 +5300,10 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
       return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
 
     case COMPONENT_REF:
+      /* If this component is really a base class reference, then the field
+	 itself isn't definitive.  */
+      if (DECL_FIELD_IS_BASE (TREE_OPERAND (instance, 1)))
+        return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
       return fixed_type_or_null (TREE_OPERAND (instance, 1), nonnull, cdtorp);
 
     case VAR_DECL:
