@@ -1,3 +1,7 @@
+1998-10-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokfndecl): Also check ctype when checking for ::main().
+
 1998-10-15  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokfndecl): ::main and __builtin_* get C linkage.

@@ -8026,6 +8026,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       /* context == 0 could mean global scope or not set yet; either is fine
 	 for us here, as we check current_namespace.  */
       && DECL_CONTEXT (decl) == NULL_TREE
+      && ctype == NULL_TREE
       && current_namespace == global_namespace)
     DECL_LANGUAGE (decl) = lang_c;
 
