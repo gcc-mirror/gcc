@@ -1,5 +1,7 @@
 2002-10-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Remove material now in src-release.  (Finally!)
+
 	* Makefile.tpl: Add configure-target (for src-release in src)
 	* Makefile.in: Regenerate.
 
