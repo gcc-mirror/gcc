@@ -5182,7 +5182,7 @@ instantiate_type (lhstype, rhs, complain)
 			save_elem = instantiate_template (elem, t);
 			/* Check the return type.  */
 			if (! comptypes (TREE_TYPE (lhstype),
-					 TREE_TYPE (TREE_TYPE (t)), 1))
+					 TREE_TYPE (TREE_TYPE (save_elem)), 1))
 			  save_elem = 0;
 		      }
 		  }
