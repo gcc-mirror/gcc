@@ -5289,8 +5289,11 @@
       if (TARGET_V8PLUS)
 	emit_insn (gen_const_mulsidi3_v8plus (operands[0], operands[1],
 					      operands[2]));
-      else
+      else if (TARGET_ARCH32)
 	emit_insn (gen_const_mulsidi3_sp32 (operands[0], operands[1],
+					    operands[2]));
+      else 
+	emit_insn (gen_const_mulsidi3_sp64 (operands[0], operands[1],
 					    operands[2]));
       DONE;
     }
@@ -5495,8 +5498,11 @@
       if (TARGET_V8PLUS)
 	emit_insn (gen_const_umulsidi3_v8plus (operands[0], operands[1],
 					       operands[2]));
-      else
+      else if (TARGET_ARCH32)
 	emit_insn (gen_const_umulsidi3_sp32 (operands[0], operands[1],
+					     operands[2]));
+      else 
+	emit_insn (gen_const_umulsidi3_sp64 (operands[0], operands[1],
 					     operands[2]));
       DONE;
     }
