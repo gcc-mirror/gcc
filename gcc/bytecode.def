@@ -286,8 +286,8 @@ define_operator(postinc,
 		 (BI, (SU, SU, P, SI), (SI))))
 
 # Jumps.
-define_operator(jumpif, if \($S1\) pc = code->pc0 + $L1, ((, (T),, (SI))))
-define_operator(jumpifnot, if \(! $S1\) pc = code->pc0 + $L1, ((, (T),, (SI))))
+define_operator(xjumpif, if \($S1\) pc = code->pc0 + $L1, ((, (T),, (SI))))
+define_operator(xjumpifnot, if \(! $S1\) pc = code->pc0 + $L1, ((, (T),, (SI))))
 define_operator(jump, pc = code->pc0 + $L1, ((,,,(SI))))
 
 # This is for GCC2. It jumps to the address on the stack.
