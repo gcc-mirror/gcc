@@ -1,3 +1,9 @@
+2005-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ada/13470
+	* a-stunau.adb (Get_String): Don't return U.Reference, but Ret that is
+	set to the new string.
+
 2005-01-18  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* system-linux-ppc.ads: Set ZCX_By_Default and GCC_ZCX_Support
