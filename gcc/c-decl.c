@@ -973,8 +973,12 @@ poplevel (keep, reverse, functionbody)
       {
 	/* If this decl was copied from a file-scope decl
 	   on account of a block-scope extern decl,
-	   propagate TREE_ADDRESSABLE to the file-scope decl.  */
-	if (DECL_ABSTRACT_ORIGIN (decl) != 0)
+	   propagate TREE_ADDRESSABLE to the file-scope decl.
+
+	   DECL_ABSTRACT_ORIGIN can be set to itself if warn_return_type is
+	   true, since then the decl goes through save_for_inline_copying.  */
+	if (DECL_ABSTRACT_ORIGIN (decl) != 0
+	    && DECL_ABSTRACT_ORIGIN (decl) != decl)
 	  TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (decl)) = 1;
 	else
 	  {
