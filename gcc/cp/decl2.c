@@ -2957,14 +2957,6 @@ cp_finish_file (void)
 					 pending_statics_used))
 	reconsider = true;
 
-      /* Ask the back end to emit functions and variables that are
-	 enqueued.  These emissions may result in marking more entities
-	 as needed.  */
-      if (!flag_unit_at_a_time && cgraph_assemble_pending_functions ())
-	reconsider = true;
-      if (!flag_unit_at_a_time && cgraph_varpool_assemble_pending_decls ())
-	reconsider = true;
-
       retries++;
     } 
   while (reconsider);
