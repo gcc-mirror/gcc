@@ -1,3 +1,17 @@
+2004-10-27  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	PR libgcj/18104
+	* Makefile.am (CLASSPATH_SEPARATOR): Use instead of a 
+	colon.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (CLASSPATH_SEPARATOR): Define.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/lib/libjava.exp (libjava_arguments): Fix
+	CLASSPATH separator handling for Windows.
+
 2004-10-26  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/http/Connection.java

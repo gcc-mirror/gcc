@@ -4138,6 +4138,7 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECKREFSPEC = @CHECKREFSPEC@
+CLASSPATH_SEPARATOR = @CLASSPATH_SEPARATOR@
 COMPPATH = @COMPPATH@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -23171,7 +23172,7 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 @ONESTEP_TRUE@	-@rm -f libgcj-@gcc_version@.jar
 @ONESTEP_TRUE@	@echo Compiling Java sourcefiles...
 @ONESTEP_TRUE@	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
-@ONESTEP_TRUE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) @libgcj.sourcelist
+@ONESTEP_TRUE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir) -d $(here) @libgcj.sourcelist
 @ONESTEP_TRUE@	(find java gnu javax org -type d -o -type f -name '*.class'; \
 @ONESTEP_TRUE@	for file in $(all_property_files); do \
 @ONESTEP_TRUE@	  echo "x-C" | sed -e 's/^.//'; \
@@ -23191,7 +23192,7 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 # Compile each classfile individually.
 
 @ONESTEP_FALSE@.java.class:
-@ONESTEP_FALSE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $<
+@ONESTEP_FALSE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir) -d $(here) $<
 
 @ONESTEP_FALSE@libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
 @ONESTEP_FALSE@	-@rm -f libgcj-@gcc_version@.jar
@@ -23455,31 +23456,31 @@ TexinfoDoclet.class: $(srcdir)/scripts/TexinfoDoclet.java
 texinfo: TexinfoDoclet.class
 	langsource=`ls $(srcdir)/java/lang/*.java`; \
 	lang=`echo $$langsource | sed -e 's/[^ ].*EcosProcess.java//g' | sed -e 's/[^ ].*PosixProcess.java//g'`; \
-	javadoc -outfile $(srcdir)/doc/java-lang.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $$lang
-	javadoc -outfile $(srcdir)/doc/java-lang-ref.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/lang/ref/*.java
-	javadoc -outfile $(srcdir)/doc/java-lang-reflect.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/lang/reflect/*.java
-	javadoc -outfile $(srcdir)/doc/java-applet.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/applet/*.java
-	javadoc -outfile $(srcdir)/doc/java-awt.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/awt/*.java
-	javadoc -outfile $(srcdir)/doc/java-awt-color.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/awt/color/*.java
-	javadoc -outfile $(srcdir)/doc/java-awt-datatransfer.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/awt/datatransfer/*.java
-	javadoc -outfile $(srcdir)/doc/java-awt-event.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/awt/event/*.java
-	javadoc -outfile $(srcdir)/doc/java-awt-geom.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/awt/geom/*.java
-	javadoc -outfile $(srcdir)/doc/java-awt-image.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/awt/image/*.java
-	javadoc -outfile $(srcdir)/doc/java-awt-peer.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/awt/peer/*.java
-	javadoc -outfile $(srcdir)/doc/java-beans.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/beans/*.java
-	javadoc -outfile $(srcdir)/doc/java-beans-beancontext.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/beans/beancontext/*.java
-	javadoc -outfile $(srcdir)/doc/java-io.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/io/*.java
-	javadoc -outfile $(srcdir)/doc/java-math.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/math/*.java
-	javadoc -outfile $(srcdir)/doc/java-net.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/net/*.java
-	javadoc -outfile $(srcdir)/doc/java-security.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/security/*.java
-	javadoc -outfile $(srcdir)/doc/java-security-cert.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/security-cert/*.java
-	javadoc -outfile $(srcdir)/doc/java-security-spec.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/security/spec/*.java
-	javadoc -outfile $(srcdir)/doc/java-security-interfaces.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/security/spec/interfaces/*.java
-	javadoc -outfile $(srcdir)/doc/java-sql.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/sql/*.java
-	javadoc -outfile $(srcdir)/doc/java-text.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/text/*.java
-	javadoc -outfile $(srcdir)/doc/java-util.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/util/*.java
-	javadoc -outfile $(srcdir)/doc/java-util-jar.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/util/jar/*.java
-	javadoc -outfile $(srcdir)/doc/java-util-zip.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/util/zip/*.java
+	javadoc -outfile $(srcdir)/doc/java-lang.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $$lang
+	javadoc -outfile $(srcdir)/doc/java-lang-ref.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/lang/ref/*.java
+	javadoc -outfile $(srcdir)/doc/java-lang-reflect.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/lang/reflect/*.java
+	javadoc -outfile $(srcdir)/doc/java-applet.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/applet/*.java
+	javadoc -outfile $(srcdir)/doc/java-awt.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/awt/*.java
+	javadoc -outfile $(srcdir)/doc/java-awt-color.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/awt/color/*.java
+	javadoc -outfile $(srcdir)/doc/java-awt-datatransfer.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/awt/datatransfer/*.java
+	javadoc -outfile $(srcdir)/doc/java-awt-event.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/awt/event/*.java
+	javadoc -outfile $(srcdir)/doc/java-awt-geom.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/awt/geom/*.java
+	javadoc -outfile $(srcdir)/doc/java-awt-image.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/awt/image/*.java
+	javadoc -outfile $(srcdir)/doc/java-awt-peer.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/awt/peer/*.java
+	javadoc -outfile $(srcdir)/doc/java-beans.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/beans/*.java
+	javadoc -outfile $(srcdir)/doc/java-beans-beancontext.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/beans/beancontext/*.java
+	javadoc -outfile $(srcdir)/doc/java-io.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/io/*.java
+	javadoc -outfile $(srcdir)/doc/java-math.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/math/*.java
+	javadoc -outfile $(srcdir)/doc/java-net.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/net/*.java
+	javadoc -outfile $(srcdir)/doc/java-security.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/security/*.java
+	javadoc -outfile $(srcdir)/doc/java-security-cert.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/security-cert/*.java
+	javadoc -outfile $(srcdir)/doc/java-security-spec.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/security/spec/*.java
+	javadoc -outfile $(srcdir)/doc/java-security-interfaces.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/security/spec/interfaces/*.java
+	javadoc -outfile $(srcdir)/doc/java-sql.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/sql/*.java
+	javadoc -outfile $(srcdir)/doc/java-text.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/text/*.java
+	javadoc -outfile $(srcdir)/doc/java-util.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/util/*.java
+	javadoc -outfile $(srcdir)/doc/java-util-jar.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/util/jar/*.java
+	javadoc -outfile $(srcdir)/doc/java-util-zip.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/util/zip/*.java
 
 all-recursive: libgcj-@gcc_version@.jar $(nat_headers) $(xlib_nat_headers)
 

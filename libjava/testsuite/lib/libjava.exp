@@ -332,6 +332,7 @@ proc libjava_arguments {{mode compile}} {
     global tool_root_dir
     global libgcj_jar
     global libjava_libgcc_s_path
+    global target_triplet
 
     if [info exists LIBJAVA] {
 	set libjava $LIBJAVA;
@@ -370,10 +371,18 @@ proc libjava_arguments {{mode compile}} {
 
     verbose "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
 
+    # Determine CLASSPATH separator
+    if { [string match "i?86-pc-mingw32*" $target_triplet] } {
+	set sep ";"
+    } else {
+	set sep ":"
+    }
+
     # Set the CLASSPATH environment variable
-    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$libgcj_jar"
     global env
-    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$libgcj_jar"
+    set env(CLASSPATH) \
+	[join [list . $srcdir/$subdir $objdir $libgcj_jar] $sep]
+    verbose "CLASSPATH is $env(CLASSPATH)"
 
     if {$mode == "link"} {
 	global wrapper_file wrap_compile_flags
