@@ -134,7 +134,7 @@ do {									\
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
-  { "darwin_arch", "ppc" },
+  { "darwin_arch", "%{m64:ppc64} %{!m64:ppc}" },
 
 /* Output a .machine directive.  */
 #undef TARGET_ASM_FILE_START

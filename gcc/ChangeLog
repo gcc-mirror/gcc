@@ -1,3 +1,9 @@
+2004-10-28  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/darwin.h (SUBTARGET_EXTRA_SPECS): Handle -m64.
+	* config/rs6000/rs6000.c (rs6000_darwin_file_start): Add ppc64
+	case.
+
 2004-10-28  Frank Ch. Eigler  <fche@redhat.com>
 
 	* tree-mudflap.c (mudflap_init): Mark cache-lookup decls to
