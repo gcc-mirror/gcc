@@ -1,3 +1,23 @@
+2003-03-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/tm.texi (Frame Registers): Document DWARF_REG_TO_UNWIND_COLUMN.
+
+        * unwind-dw2.c (DWARF_REG_TO_UNWIND_COLUMN): Define.
+        (_Unwind_GetGR): Use DWARF_REG_TO_UNWIND_COLUMN.
+        (_Unwind_SetGR): Same.
+        (_Unwind_GetGRPtr): New.
+        (_Unwind_SetGRPtr): New.
+        (uw_update_context_1): Use accesor functions instead of accessing
+        context->reg[] directly.
+        (uw_install_context_1): Same.
+        (execute_cfa_program): Same.
+        (__frame_state_for): Same.
+
+        * config/rs6000/rs6000.c (spe_synthesize_frame_save): Use 1200 as
+        the synthetic register offset.
+
+        * config/rs6000/rs6000.h (DWARF_REG_TO_UNWIND_COLUMN): New.
+
 2003-03-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md: Remove lingering EGCS reference.

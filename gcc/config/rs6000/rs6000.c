@@ -10235,7 +10235,7 @@ spe_synthesize_frame_save (real)
 
   /* For the SPE, registers saved in 64-bits, get a PARALLEL for their
      frame related note.  The parallel contains a set of the register
-     being saved, and another set to a synthetic register (n+113).
+     being saved, and another set to a synthetic register (n+1200).
      This is so we can differentiate between 64-bit and 32-bit saves.
      Words cannot describe this nastiness.  */
 
@@ -10249,7 +10249,7 @@ spe_synthesize_frame_save (real)
             (reg z))
      into:
        (set (mem (plus (reg x) (const y+4)))
-            (reg z+113))
+            (reg z+1200))
   */
 
   real2 = copy_rtx (real);
@@ -10265,10 +10265,9 @@ spe_synthesize_frame_save (real)
     }
 
   reg = SET_SRC (synth);
-  /* FIXME: the ABI says REGNO+1200, but this creates a huge hole
-     in the unwinder tables.  I'm still unsure what to do.  */
+
   synth = replace_rtx (synth, reg,
-		       gen_rtx_REG (SImode, REGNO (reg) + 113));
+		       gen_rtx_REG (SImode, REGNO (reg) + 1200));
 
   offset = XEXP (XEXP (SET_DEST (synth), 0), 1);
   synth = replace_rtx (synth, offset,

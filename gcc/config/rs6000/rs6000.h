@@ -708,6 +708,16 @@ extern int rs6000_default_long_calls;
    synthetic registers are 113 through 145.  */
 #define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER + 32)
 
+/* The SPE has an additional 32 synthetic registers starting at 1200.
+   We must map them here to sane values in the unwinder to avoid a
+   huge hole in the unwind tables.
+
+   FIXME: the AltiVec ABI has AltiVec registers being 1124-1155, and
+   the VRSAVE SPR (SPR256) assigned to register 356.  When AltiVec EH
+   is verified to be working, this macro should be changed
+   accordingly.  */
+#define DWARF_REG_TO_UNWIND_COLUMN(r) ((r) > 1200 ? ((r) - 1200 + 113) : (r))
+
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
