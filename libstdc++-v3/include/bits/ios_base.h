@@ -453,10 +453,10 @@ namespace std
       ~Init();
       
       static void
-      _S_ios_create(bool __sync);
+      _S_create_buffers(bool __sync);
       
       static void
-      _S_ios_destroy();
+      _S_destroy_buffers();
 
       // NB: Allows debugger applications use of the standard streams
       // from operator new. _S_ios_base_init must be incremented in

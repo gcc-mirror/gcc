@@ -154,39 +154,34 @@ namespace std
   { return _M_name; }
 
   void
-  ios_base::Init::_S_ios_create(bool __sync)
+  ios_base::Init::_S_create_buffers(bool __sync)
   {
     size_t __out_size = __sync ? 0 : static_cast<size_t>(BUFSIZ);
     size_t __in_size = __sync ? 1 : static_cast<size_t>(BUFSIZ);
 
-    // NB: The file globals.cc creates the four standard files
-    // with NULL buffers. At this point, we swap out the dummy NULL
-    // [io]stream objects and buffers with the real deal.
+    // Create stream buffers for the standard streams and use those
+    // buffers without destroying and recreating the streams.
     new (&buf_cout) stdio_filebuf<char>(stdout, ios_base::out, __out_size);
     new (&buf_cin) stdio_filebuf<char>(stdin, ios_base::in, __in_size);
     new (&buf_cerr) stdio_filebuf<char>(stderr, ios_base::out, __out_size);
-    new (&cout) ostream(&buf_cout);
-    new (&cin) istream(&buf_cin);
-    new (&cerr) ostream(&buf_cerr);
-    new (&clog) ostream(&buf_cerr);
-    cin.tie(&cout);
-    cerr.flags(ios_base::unitbuf);
+    cout.rdbuf(&buf_cout);
+    cin.rdbuf(&buf_cin);
+    cerr.rdbuf(&buf_cerr);
+    clog.rdbuf(&buf_cerr);
     
 #ifdef _GLIBCPP_USE_WCHAR_T
     new (&buf_wcout) stdio_filebuf<wchar_t>(stdout, ios_base::out, __out_size);
     new (&buf_wcin) stdio_filebuf<wchar_t>(stdin, ios_base::in, __in_size);
     new (&buf_wcerr) stdio_filebuf<wchar_t>(stderr, ios_base::out, __out_size);
-    new (&wcout) wostream(&buf_wcout);
-    new (&wcin) wistream(&buf_wcin);
-    new (&wcerr) wostream(&buf_wcerr);
-    new (&wclog) wostream(&buf_wcerr);
-    wcin.tie(&wcout);
-    wcerr.flags(ios_base::unitbuf);
+    wcout.rdbuf(&buf_wcout);
+    wcin.rdbuf(&buf_wcin);
+    wcerr.rdbuf(&buf_wcerr);
+    wclog.rdbuf(&buf_wcerr);
 #endif
   }
 
   void
-  ios_base::Init::_S_ios_destroy()
+  ios_base::Init::_S_destroy_buffers()
   {
     // Explicitly call dtors to free any memory that is dynamically
     // allocated by filebuf ctor or member functions, but don't
@@ -208,15 +203,52 @@ namespace std
       {
 	// Standard streams default to synced with "C" operations.
 	ios_base::Init::_S_synced_with_stdio = true;
-	_S_ios_create(ios_base::Init::_S_synced_with_stdio);
+
+	// The standard streams are constructed once only and never destroyed.
+	// The stream buffers are set in _S_create_buffers below.
+	new (&cout) ostream(NULL);
+	new (&cin) istream(NULL);
+	new (&cerr) ostream(NULL);
+	new (&clog) ostream(NULL);
+	cin.tie(&cout);
+	cerr.flags(ios_base::unitbuf);
+	
+#ifdef _GLIBCPP_USE_WCHAR_T
+	new (&wcout) wostream(NULL);
+	new (&wcin) wistream(NULL);
+	new (&wcerr) wostream(NULL);
+	new (&wclog) wostream(NULL);
+	wcin.tie(&wcout);
+	wcerr.flags(ios_base::unitbuf);
+#endif
+
+	_S_create_buffers(ios_base::Init::_S_synced_with_stdio);
+	_S_ios_base_init = 1;
       }
     ++_S_ios_base_init;
   }
 
   ios_base::Init::~Init()
   {
-    if (--_S_ios_base_init == 0)
-      _S_ios_destroy();
+    if (--_S_ios_base_init == 1)
+      {
+	// Catch any exceptions thrown by basic_ostream::flush()
+	try
+	  { 
+	    // Flush standard output streams as required by 27.4.2.1.6
+	    cout.flush();
+	    cerr.flush();
+	    clog.flush();
+    
+#ifdef _GLIBCPP_USE_WCHAR_T
+	    wcout.flush();
+	    wcerr.flush();
+	    wclog.flush();    
+#endif
+	  }
+	catch (...)
+	  { }
+      }
   } 
 
   // 27.4.2.5  ios_base storage functions
@@ -355,9 +387,9 @@ namespace std
     // currently synchronized.
     if (!__sync && __ret)
       {
-	ios_base::Init::_S_synced_with_stdio = false;
-	ios_base::Init::_S_ios_destroy();
-	ios_base::Init::_S_ios_create(ios_base::Init::_S_synced_with_stdio);
+	ios_base::Init::_S_synced_with_stdio = __sync;
+	ios_base::Init::_S_destroy_buffers();
+	ios_base::Init::_S_create_buffers(__sync);
       }
     return __ret; 
   }
