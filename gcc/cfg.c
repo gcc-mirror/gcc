@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -505,7 +505,7 @@ dump_flow_info (file)
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
   for (i = 0; i < n_basic_blocks; i++)
     {
-      basic_block bb = BASIC_BLOCK (i), dom_bb;
+      basic_block bb = BASIC_BLOCK (i);
       edge e;
       int sum;
       gcov_type lsum;
