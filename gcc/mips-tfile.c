@@ -3666,7 +3666,7 @@ parse_stabs_common (string_start, string_end, rest)
 
   if (code == (int)N_SLINE)
     {
-      SYMR *sym_ptr;
+      SYMR *sym_ptr, dummy_symr;
       shash_t *shash_ptr;
 
       /* Skip ,0, */
@@ -3684,9 +3684,16 @@ parse_stabs_common (string_start, string_end, rest)
 	  return;
 	}
 
-      if (code < 0 || code >= 0x100000)
+      /* Ignore line number 0 for now until G++ bug that generates them is fixed.  */
+      if (code == 0)
+	return;
+
+      dummy_symr.index = code;
+      if (dummy_symr.index != code)
 	{
-	  error ("Line number for .stabs/.stabn directive cannot fit in index field (20 bits)");
+	  error ("Line number (%d) for .stabs/.stabn directive cannot fit in index field (20 bits)",
+		 code);
+
 	  return;
 	}
 
