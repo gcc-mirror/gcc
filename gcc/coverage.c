@@ -50,7 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 struct function_list
 {
   struct function_list *next; 	 /* next function */
-  const char *name; 		 /* function name */
+  unsigned ident; 		 /* function ident */
   unsigned checksum;	         /* function checksum */
   unsigned n_ctrs[GCOV_COUNTERS];/* number of counters.  */
 };
@@ -59,7 +59,7 @@ struct function_list
 typedef struct counts_entry
 {
   /* We hash by  */
-  char *function_name;
+  unsigned ident;
   unsigned ctr;
   
   /* Store  */
@@ -72,6 +72,7 @@ typedef struct counts_entry
   
 } counts_entry_t;
 
+static unsigned fn_ident = 1;
 static struct function_list *functions_head = 0;
 static struct function_list **functions_tail = &functions_head;
 
@@ -118,7 +119,7 @@ htab_counts_entry_hash (of)
 {
   const counts_entry_t *entry = of;
 
-  return htab_hash_string (entry->function_name) ^ entry->ctr;
+  return entry->ident * GCOV_COUNTERS + entry->ctr;
 }
 
 static int
@@ -129,8 +130,7 @@ htab_counts_entry_eq (of1, of2)
   const counts_entry_t *entry1 = of1;
   const counts_entry_t *entry2 = of2;
 
-  return !strcmp (entry1->function_name, entry2->function_name)
-    && entry1->ctr == entry2->ctr;
+  return entry1->ident == entry2->ident && entry1->ctr == entry2->ctr;
 }
 
 static void
@@ -139,7 +139,6 @@ htab_counts_entry_del (of)
 {
   counts_entry_t *entry = of;
 
-  free (entry->function_name);
   free (entry->counts);
   free (entry);
 }
@@ -149,7 +148,7 @@ htab_counts_entry_del (of)
 static void
 read_counts_file ()
 {
-  char *function_name_buffer = NULL;
+  unsigned fn_ident = 0;
   unsigned version, ix, checksum = -1;
   counts_entry_t *summaried = NULL;
   unsigned seen_summary = 0;
@@ -193,9 +192,7 @@ read_counts_file ()
       offset = gcov_position ();
       if (tag == GCOV_TAG_FUNCTION)
 	{
-	  const char *string = gcov_read_string ();
-	  free (function_name_buffer);
-	  function_name_buffer = string ? xstrdup (string) : NULL;
+	  fn_ident = gcov_read_unsigned ();
 	  checksum = gcov_read_unsigned ();
 	  if (seen_summary)
 	    {
@@ -231,13 +228,13 @@ read_counts_file ()
 	      entry->summary.sum_max += csum->sum_max;
 	    }
 	}
-      else if (GCOV_TAG_IS_COUNTER (tag) && function_name_buffer)
+      else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
 	{
 	  counts_entry_t **slot, *entry, elt;
 	  unsigned n_counts = length / 8;
 	  unsigned ix;
 
-	  elt.function_name = function_name_buffer;
+	  elt.ident = fn_ident;
 	  elt.ctr = GCOV_COUNTER_FOR_TAG (tag);
 
 	  slot = (counts_entry_t **) htab_find_slot
@@ -246,7 +243,7 @@ read_counts_file ()
 	  if (!entry)
 	    {
 	      *slot = entry = xcalloc (1, sizeof (counts_entry_t));
-	      entry->function_name = xstrdup (elt.function_name);
+	      entry->ident = elt.ident;
 	      entry->ctr = elt.ctr;
 	      entry->checksum = checksum;
 	      entry->summary.num = n_counts;
@@ -255,7 +252,7 @@ read_counts_file ()
 	  else if (entry->checksum != checksum
 		   || entry->summary.num != n_counts)
 	    {
-	      warning ("profile mismatch for `%s'", function_name_buffer);
+	      warning ("coverage mismatch for function %u", fn_ident);
 	      htab_delete (counts_hash);
 	      break;
 	    }
@@ -281,7 +278,6 @@ read_counts_file ()
 	}
     }
 
-  free (function_name_buffer);
   gcov_close ();
 }
 
@@ -304,24 +300,24 @@ get_coverage_counts (unsigned counter, unsigned expected,
       return NULL;
     }
 
-  elt.function_name
-    = (char *) IDENTIFIER_POINTER
-    (DECL_ASSEMBLER_NAME (current_function_decl));
+  elt.ident = fn_ident;
   elt.ctr = counter;
   entry = htab_find (counts_hash, &elt);
   if (!entry)
     {
-      warning ("No profile for function '%s' found.", elt.function_name);
+      warning ("no coverage for function '%s' found.", IDENTIFIER_POINTER
+	       (DECL_ASSEMBLER_NAME (current_function_decl)));
       return 0;
     }
   
   if (expected != entry->summary.num
       || compute_checksum () != entry->checksum)
     {
-      warning ("profile mismatch for `%s'", elt.function_name);
+      warning ("coverage mismatch for `%s'", IDENTIFIER_POINTER
+	       (DECL_ASSEMBLER_NAME (current_function_decl)));
       return NULL;
     }
-
+  
   if (summary)
     *summary = &entry->summary;
 
@@ -426,9 +422,10 @@ coverage_begin_output ()
       
       /* Announce function */
       offset = gcov_write_tag (GCOV_TAG_FUNCTION);
+      gcov_write_unsigned (fn_ident);
+      gcov_write_unsigned (compute_checksum ());
       gcov_write_string (IDENTIFIER_POINTER
 			 (DECL_ASSEMBLER_NAME (current_function_decl)));
-      gcov_write_unsigned (compute_checksum ());
       gcov_write_string (file);
       gcov_write_unsigned (line);
       gcov_write_length (offset);
@@ -456,15 +453,14 @@ coverage_end_function ()
     {
       struct function_list *item;
       
-      /* ??? Probably should re-use the existing struct function.  */
       item = xmalloc (sizeof (struct function_list));
       
       *functions_tail = item;
       functions_tail = &item->next;
 	
       item->next = 0;
-      item->name = xstrdup (IDENTIFIER_POINTER
-			    (DECL_ASSEMBLER_NAME (current_function_decl)));
+      /* It would be nice to use the unique source location. */
+      item->ident = fn_ident;
       item->checksum = compute_checksum ();
       for (i = 0; i != GCOV_COUNTERS; i++)
 	{
@@ -476,6 +472,7 @@ coverage_end_function ()
       fn_ctr_mask = 0;
     }
   bbg_function_announced = 0;
+  fn_ident++;
 }
 
 /* Creates the gcov_fn_info RECORD_TYPE.  */
@@ -486,13 +483,10 @@ build_fn_info_type (counters)
 {
   tree type = (*lang_hooks.types.make_type) (RECORD_TYPE);
   tree field, fields;
-  tree string_type =
-	  build_pointer_type (build_qualified_type (char_type_node,
-						    TYPE_QUAL_CONST));
   tree array_type;
   
-  /* name */
-  fields = build_decl (FIELD_DECL, NULL_TREE, string_type);
+  /* ident */
+  fields = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
 
   /* checksum */
   field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
@@ -523,20 +517,13 @@ build_fn_info_value (function, type)
 {
   tree value = NULL_TREE;
   tree fields = TYPE_FIELDS (type);
-  size_t name_len = strlen (function->name);
-  tree fname = build_string (name_len + 1, function->name);
-  tree string_type =
-	  build_pointer_type (build_qualified_type (char_type_node,
-						    TYPE_QUAL_CONST));
   unsigned ix;
   tree array_value = NULL_TREE;
   
-  /* name */
-  TREE_TYPE (fname) =
-	  build_array_type (char_type_node,
-			    build_index_type (build_int_2 (name_len, 0)));
+  /* ident */
   value = tree_cons (fields,
-		     build1 (ADDR_EXPR, string_type, fname),
+		     convert (unsigned_type_node,
+			      build_int_2 (function->ident, 0)),
 		     value);
   fields = TREE_CHAIN (fields);
   
@@ -854,16 +841,17 @@ coverage_init (filename)
 {
   int len = strlen (filename);
 
+  /* Name of da file.  */
   da_file_name = (char *) xmalloc (len + strlen (GCOV_DATA_SUFFIX) + 1);
   strcpy (da_file_name, filename);
   strcat (da_file_name, GCOV_DATA_SUFFIX);
   
-  read_counts_file ();
-
-  /* Open the bbg output file.  */
+  /* Name of bbg file.  */
   bbg_file_name = (char *) xmalloc (len + strlen (GCOV_GRAPH_SUFFIX) + 1);
   strcpy (bbg_file_name, filename);
   strcat (bbg_file_name, GCOV_GRAPH_SUFFIX);
+
+  read_counts_file ();
 }
 
 /* Performs file-level cleanup.  Close graph file, generate coverage

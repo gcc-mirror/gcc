@@ -1,3 +1,21 @@
+2003-04-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	New GCOV_TAG_FUNCTION layout
+	* coverage.c (struct function_list): Replace name with ident.
+	(struct counts_entry): Likewise.
+	(fn_ident): New.
+	(htab_counts_entry_hash, htab_counts_entry_eq,
+	htab_counts_entry_del): Adjust.
+	(reads_count_file, get_coverage_counts,
+	coverage_begin_output, coverage_end_function): Adjust.
+	(build_fn_info_type, build_fn_info_value): Likewise.
+	* gcov-dump.c (tag_function): Adjust.
+	* gcov-io.c (gcov_write_string, gcov_read_string): Not in LIBGCOV.
+	* gcov-io.h (gcov_write_string, gcov_read_string): Not in LIBGCOV.
+	* gcov.c (struct function_info): Add ident.
+	(read_graph_file, read_count_file): Adjust.
+	* libgcov.c (gcov_exit): Adjust.
+
 2003-04-23  Richard Henderson  <rth@redhat.com>
 
 	PR opt/8300

@@ -95,10 +95,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    file and [a1..ff] for the counter file.
 
    The basic block graph file contains the following records
-   	bbg:  function-graph*
+   	bbg:  unit function-graph*
+	unit: header int32:checksum string:source
 	function-graph: announce_function basic_blocks {arcs | lines}*
-	announce_function: header string:name int32:checksum
-		string:source int32:lineno
+	announce_function: header int32:ident int32:checksum
+		string:name string:source int32:lineno
 	basic_block: header int32:flags*
 	arcs: header int32:block_no arc*
 	arc:  int32:dest_block int32:flags
@@ -123,9 +124,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    blocks they are for.
 
    The data file contains the following records.
-        da:   {function-data* summary:object summary:program*}*
+        da: {unit function-data* summary:object summary:program*}*
+	unit: header int32:checksum
         function-data:	announce_function arc_counts
-	announce_function: header string:name int32:checksum
+	announce_function: header int32:ident int32:checksum
 	arc_counts: header int64:count*
 	summary: int32:checksum {count-summary}GCOV_COUNTERS
 	count-summary:	int32:num int32:runs int64:sum
@@ -279,7 +281,7 @@ struct gcov_summary
    explicitly calculate the correct array stride.  */
 struct gcov_fn_info
 {
-  const char *name;	        /* (mangled) name of function */
+  unsigned ident;               /* unique ident of function */
   unsigned checksum;		/* function checksum */
   unsigned n_ctrs[0];		/* instrumented counters */
 };
@@ -339,8 +341,9 @@ GCOV_LINKAGE unsigned char *gcov_write_bytes (unsigned);
 GCOV_LINKAGE void gcov_write_unsigned (unsigned);
 #if IN_LIBGCOV
 GCOV_LINKAGE void gcov_write_counter (gcov_type);
-#endif
+#else
 GCOV_LINKAGE void gcov_write_string (const char *);
+#endif
 GCOV_LINKAGE unsigned long gcov_write_tag (unsigned);
 GCOV_LINKAGE void gcov_write_length (unsigned long /*position*/);
 #if IN_LIBGCOV
@@ -350,9 +353,10 @@ GCOV_LINKAGE void gcov_write_summary (unsigned, const struct gcov_summary *);
 GCOV_LINKAGE const unsigned char *gcov_read_bytes (unsigned);
 GCOV_LINKAGE unsigned gcov_read_unsigned (void);
 GCOV_LINKAGE gcov_type gcov_read_counter (void);
+#if !IN_LIBGCOV
 GCOV_LINKAGE const char *gcov_read_string (void);
+#endif
 GCOV_LINKAGE void gcov_read_summary (struct gcov_summary *);
-
 static unsigned long gcov_position (void);
 static void gcov_seek (unsigned long /*base*/, unsigned /*length */);
 static unsigned long gcov_seek_end (void);
