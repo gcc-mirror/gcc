@@ -1,3 +1,10 @@
+1999-10-28  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (SUBDIRS): New macro.
+	(mostlyclean, clean, distclean, maintainer-clean): Adjust to
+	avoid multiple subdirectory cleaning.
+	(*-subdir): Use SUBDIRS.
+
 1999-10-25  Jim Kingdon  <http://developer.redhat.com/>
 
 	* cplus-dem.c: Move declarations of standard_symbol_characters and
