@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
    doubt or guess work, and since this file is used for both a.out and other
    file formats, we use one of them.  */
 
-#if 0 /* ??? However, not every port uses binutils 2.6 yet.  */
+#ifdef HAVE_GAS_BALIGN_AND_P2ALIGN 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
   if ((LOG)!=0) fprintf ((FILE), "\t.balign %d\n", 1<<(LOG))

@@ -5237,6 +5237,15 @@ elif [ -f $srcdir/../gas/configure.in ]; then
 	done
 	gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
+	# Gas version 2.6 and later support for .balign and .p2align.
+	# bytes to skip when using .p2align.
+	if [ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 6 -o "$gcc_cv_gas_major_version" -gt 2 ]; then
+		gcc_cv_as_alignment_features=".balign and .p2align"
+		cat >> confdefs.h <<\EOF
+#define HAVE_GAS_BALIGN_AND_P2ALIGN 1
+EOF
+
+	fi
 	# Gas version 2.8 and later support specifying the maximum
 	# bytes to skip when using .p2align.
 	if [ "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2 ]; then
@@ -5251,6 +5260,17 @@ elif [ x$host = x$target ]; then
 	gcc_cv_as=as$host_exeext
 fi
 if [ x$gcc_cv_as != x ]; then
+	# Check if we have .balign and .p2align
+	echo ".balign  4" > conftest.s
+	echo ".p2align  2" >> conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_alignment_features=".balign and .p2align"
+		cat >> confdefs.h <<\EOF
+#define HAVE_GAS_BALIGN_AND_P2ALIGN 1
+EOF
+
+	fi
+	rm -f conftest.s conftest.o
 	# Check if specifying the maximum bytes to skip when
 	# using .p2align is supported.
 	echo ".p2align 4,,7" > conftest.s

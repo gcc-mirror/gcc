@@ -1,5 +1,11 @@
 Wed Jul  8 21:43:14 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in: Check if the assembler supports ".balign" and
+	".p2align" and define HAVE_GAS_BALIGN_AND_P2ALIGN appropriately.
+	* acconfig.h (HAVE_GAS_BALIGN_AND_P2ALIGN): New tag.
+	* i386/gas.h (ASM_OUTPUT_ALIGN): If the assembler has support for
+	".balign" then use it.
+
 	* print-rtl.c (print_rtx): Revert previous patch.
 
 	* jump.c (duplicate_loop_exit_test): Do not duplicate the loop exit
