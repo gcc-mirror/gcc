@@ -1,3 +1,11 @@
+2001-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* stor-layout.c (place_union_field): If any field was aligned with
+	attribute aligned, set record type's TYPE_USER_ALIGN.
+	(place_field): Likewise.
+	(finalize_record_size): Don't clear TYPE_USER_ALIGN.
+	(layout_type) [ARRAY_TYPE]: Copy element's TYPE_USER_ALIGN.
+
 2001-10-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-common.h (struct c_common_identifier): Remove rid_code field.
