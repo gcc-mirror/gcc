@@ -1,3 +1,10 @@
+2004-01-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR optimization/13819
+	* config/sh/sh.c (sh_reorg): Compensate for sharing of CLOBBERs 
+	introduced by 2004-01-20's Jan Hubicka's copy_insn change.
+	(sh_handle_sp_switch_attribute): Remove warning.
+
 2003-11-30  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_emit_restore_regs_using_mov):  Deal with large offsets.
