@@ -1,3 +1,8 @@
+Fri Jun 18 15:44:18 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_expand_block_move): Use get_insns rather than
+	gen_sequence as argument to emit_no_conflict_block.
+
 Fri Jun 18 06:48:30 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/inclhack.def (ioctl_fix_ctrl): Fix the definition of _*ISCTRL().
