@@ -1,3 +1,7 @@
+2003-05-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add Daniel Berlin.
+
 2003-05-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/{603.md,6xx.md,7450.md,7xx.md,rs64.md}: Decrease

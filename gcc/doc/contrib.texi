@@ -51,6 +51,10 @@ Wolfgang Bangerth for processing tons of bug reports.
 Jon Beniston for his Win32 port of Java.
 
 @item
+Daniel Berlin for better DWARF2 support, faster/better optimizations,
+improved alias analysis, plus migrating us to Bugzilla.
+
+@item
 Geoff Berry for his Java object serialization work and various patches.
 
 @item
