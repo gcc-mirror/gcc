@@ -1,5 +1,13 @@
 2004-07-23  Richard Henderson  <rth@redhat.com>
 
+	PR c++/16277
+	* gimplify.c (gimplify_cond_expr): Gimplify TARGET to a min_lval;
+	unshare it properly.
+	(gimplify_modify_expr_rhs): Push assignment from a conditional into
+	the conditional for all non-register types.
+
+2004-07-23  Richard Henderson  <rth@redhat.com>
+
 	* expr.c (expand_expr_real_1): Don't handle non-local variables.
 	* expr.h (fix_lexical_addr): Remove.
 	* function.c (NEED_SEPARATE_AP): Remove.

@@ -2191,7 +2191,7 @@ static enum gimplify_status
 gimplify_cond_expr (tree *expr_p, tree *pre_p, tree target)
 {
   tree expr = *expr_p;
-  tree tmp, type;
+  tree tmp, tmp2, type;
   enum gimplify_status ret;
 
   type = TREE_TYPE (expr);
@@ -2204,12 +2204,16 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree target)
     {
       if (target)
 	{
+	  ret = gimplify_expr (&target, pre_p, NULL,
+			       is_gimple_min_lval, fb_lvalue);
+	  if (ret != GS_ERROR)
+	    ret = GS_OK;
 	  tmp = target;
-	  ret = GS_OK;
+	  tmp2 = unshare_expr (target);
 	}
       else
 	{
-	  tmp = create_tmp_var (TREE_TYPE (expr), "iftmp");
+	  tmp2 = tmp = create_tmp_var (TREE_TYPE (expr), "iftmp");
 	  ret = GS_ALL_DONE;
 	}
 
@@ -2222,15 +2226,15 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree target)
       /* Build the else clause, 't1 = b;'.  */
       if (TREE_TYPE (TREE_OPERAND (expr, 2)) != void_type_node)
 	TREE_OPERAND (expr, 2)
-	  = build (MODIFY_EXPR, void_type_node, tmp, TREE_OPERAND (expr, 2));
+	  = build (MODIFY_EXPR, void_type_node, tmp2, TREE_OPERAND (expr, 2));
 
       TREE_TYPE (expr) = void_type_node;
       recalculate_side_effects (expr);
 
-      /* Move the COND_EXPR to the prequeue and use the temp in its place.  */
+      /* Move the COND_EXPR to the prequeue.  */
       gimplify_and_add (expr, pre_p);
-      *expr_p = tmp;
 
+      *expr_p = tmp;
       return ret;
     }
 
@@ -2689,10 +2693,11 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	return gimplify_init_constructor (expr_p, pre_p, post_p, want_value);
 
       case COND_EXPR:
-	/* If we're assigning from a ?: expression with ADDRESSABLE type, push
-	   the assignment down into the branches, since we can't generate a
-	   temporary of such a type.  */
-	if (TREE_ADDRESSABLE (TREE_TYPE (*from_p)))
+	/* If we're assigning to a non-register type, push the assignment
+	   down into the branches.  This is mandatory for ADDRESSABLE types,
+	   since we cannot generate temporaries for such, but it saves a 
+	   copy in other cases as well.  */
+	if (!is_gimple_reg_type (TREE_TYPE (*from_p)))
 	  {
 	    *expr_p = *from_p;
 	    return gimplify_cond_expr (expr_p, pre_p, *to_p);
