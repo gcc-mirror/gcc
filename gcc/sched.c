@@ -142,6 +142,8 @@ static int *sched_reg_live_length;
    by splitting insns.  */
 static rtx *reg_last_uses;
 static rtx *reg_last_sets;
+static regset reg_pending_sets;
+static int reg_pending_sets_all;
 
 /* Vector indexed by INSN_UID giving the original ordering of the insns.  */
 static int *insn_luid;
@@ -1688,7 +1690,8 @@ sched_analyze_1 (x, insn)
 	      if (reg_last_sets[regno + i])
 		add_dependence (insn, reg_last_sets[regno + i],
 				REG_DEP_OUTPUT);
-	      reg_last_sets[regno + i] = insn;
+	      reg_pending_sets[(regno + i) / REGSET_ELT_BITS]
+		|= (REGSET_ELT_TYPE) 1 << ((regno + i) % REGSET_ELT_BITS);
 	      if ((call_used_regs[i] || global_regs[i])
 		  && last_function_call)
 		/* Function calls clobber all call_used regs.  */
@@ -1704,7 +1707,8 @@ sched_analyze_1 (x, insn)
 	  reg_last_uses[regno] = 0;
 	  if (reg_last_sets[regno])
 	    add_dependence (insn, reg_last_sets[regno], REG_DEP_OUTPUT);
-	  reg_last_sets[regno] = insn;
+	  reg_pending_sets[regno / REGSET_ELT_BITS]
+	    |= (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
 
 	  /* Pseudos that are REG_EQUIV to something may be replaced
 	     by that during reloading.  We need only add dependencies for
@@ -1951,8 +1955,8 @@ sched_analyze_2 (x, insn)
 		reg_last_uses[i] = 0;
 		if (reg_last_sets[i])
 		  add_dependence (insn, reg_last_sets[i], 0);
-		reg_last_sets[i] = insn;
 	      }
+	    reg_pending_sets_all = 1;
 
 	    flush_pending_lists (insn);
 	  }
@@ -2006,6 +2010,8 @@ sched_analyze_insn (x, insn)
 {
   register RTX_CODE code = GET_CODE (x);
   rtx link;
+  int maxreg = max_reg_num ();
+  int i;
 
   if (code == SET || code == CLOBBER)
     sched_analyze_1 (x, insn);
@@ -2043,6 +2049,25 @@ sched_analyze_insn (x, insn)
       for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	if (REG_NOTE_KIND (note) == REG_DEAD)
 	  sched_analyze_2 (XEXP (note, 0), insn);
+    }
+
+  for (i = 0; i < regset_size; i++)
+    {
+      REGSET_ELT_TYPE sets = reg_pending_sets[i];
+      if (sets)
+	{
+	  register int bit;
+	  for (bit = 0; bit < REGSET_ELT_BITS; bit++)
+	    if (sets & ((REGSET_ELT_TYPE) 1 << bit))
+	      reg_last_sets[i * REGSET_ELT_BITS + bit] = insn;
+	  reg_pending_sets[i] = 0;
+	}
+    }
+  if (reg_pending_sets_all)
+    {
+      for (i = 0; i < maxreg; i++)
+	reg_last_sets[i] = insn;
+      reg_pending_sets_all = 0;
     }
 
   /* Handle function calls and function returns created by the epilogue
@@ -2132,8 +2157,8 @@ sched_analyze (head, tail)
 		  reg_last_uses[i] = 0;
 		  if (reg_last_sets[i])
 		    add_dependence (insn, reg_last_sets[i], 0);
-		  reg_last_sets[i] = insn;
 		}
+	      reg_pending_sets_all = 1;
 
 	      /* Add a fake REG_NOTE which we will later convert
 		 back into a NOTE_INSN_SETJMP note.  */
@@ -2150,7 +2175,8 @@ sched_analyze (head, tail)
 		    reg_last_uses[i] = 0;
 		    if (reg_last_sets[i])
 		      add_dependence (insn, reg_last_sets[i], REG_DEP_ANTI);
-		    reg_last_sets[i] = insn;
+		    reg_pending_sets[i / REGSET_ELT_BITS]
+		      |= (REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS);
 		  }
 	    }
 
@@ -3042,6 +3068,9 @@ schedule_block (b, file)
   bzero (reg_last_uses, i * sizeof (rtx));
   reg_last_sets = (rtx *) alloca (i * sizeof (rtx));
   bzero (reg_last_sets, i * sizeof (rtx));
+  reg_pending_sets = (regset) alloca (regset_bytes);
+  bzero (reg_pending_sets, regset_bytes);
+  reg_pending_sets_all = 0;
   clear_units ();
 
   /* Remove certain insns at the beginning from scheduling,
