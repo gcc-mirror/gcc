@@ -1,3 +1,7 @@
+Fri May 8 21:48:50 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Fri May  8 18:23:08 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* final.c (final_scan_insn): Call fatal_insn instead of abort if
