@@ -1,3 +1,7 @@
+2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/debug/typedef3.C: New test.
+
 2005-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/19472
