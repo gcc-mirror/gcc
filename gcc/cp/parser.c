@@ -5472,7 +5472,12 @@ cp_parser_statement (cp_parser* parser, bool in_statement_expr_p)
    labeled-statement:
      identifier : statement
      case constant-expression : statement
-     default : statement  
+     default : statement
+
+   GNU Extension:
+   
+   labeled-statement:
+     case constant-expression ... constant-expression : statement
 
    Returns the new CASE_LABEL, for a `case' or `default' label.  For
    an ordinary label, returns a LABEL_STMT.  */
@@ -5496,7 +5501,8 @@ cp_parser_labeled_statement (cp_parser* parser, bool in_statement_expr_p)
     {
     case RID_CASE:
       {
-	tree expr;
+	tree expr, expr_hi;
+	cp_token *ellipsis;
 
 	/* Consume the `case' token.  */
 	cp_lexer_consume_token (parser->lexer);
@@ -5504,10 +5510,26 @@ cp_parser_labeled_statement (cp_parser* parser, bool in_statement_expr_p)
 	expr = cp_parser_constant_expression (parser, 
 					      /*allow_non_constant_p=*/false,
 					      NULL);
+
+	ellipsis = cp_lexer_peek_token (parser->lexer);
+	if (ellipsis->type == CPP_ELLIPSIS)
+	  {
+            /* Consume the `...' token.  */
+	    cp_lexer_consume_token (parser->lexer);
+	    expr_hi =
+	      cp_parser_constant_expression (parser,
+	    				     /*allow_non_constant_p=*/false,
+					     NULL);
+	    /* We don't need to emit warnings here, as the common code
+	       will do this for us.  */
+	  }
+	else
+	  expr_hi = NULL_TREE;
+
 	if (!parser->in_switch_statement_p)
 	  error ("case label `%E' not within a switch statement", expr);
 	else
-	  statement = finish_case_label (expr, NULL_TREE);
+	  statement = finish_case_label (expr, expr_hi);
       }
       break;
 

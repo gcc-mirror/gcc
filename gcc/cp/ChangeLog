@@ -1,3 +1,7 @@
+2004-01-30  Michael Matz  <matz@suse.de>
+
+	* parser.c (cp_parser_labeled_statement): Accept case ranges.
+
 2004-01-28  Jan Hubicka  <jh@suse.czi
 
 	* semantics.c (expand_body)  Do emit_associated_thunks before
