@@ -1,5 +1,10 @@
 1998-05-24  Mark Mitchell  <mark@markmitchell.com>
 
+	* call.c (maybe_handle_implicit_object): Handle QUAL_CONVs.  Make
+	sure the type of the REF_BIND is a reference type.
+	(maybe_handle_ref_bind, compare_ics): Rename reference_type to
+	target_type for clarity.
+
 	* parse.y (xcond): Move call to condition_conversion ...
 	* semantics.c (finish_for_cond): Here.
 	* parse.c: Regenerated.
