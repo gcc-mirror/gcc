@@ -3756,7 +3756,9 @@ start_decl (tree declarator,
 	}
       else
 	{
-	  tree field = check_classfn (context, decl);
+	  tree field = check_classfn (context, decl,
+				      processing_template_decl
+				      > template_class_depth (context));
 	  if (field && duplicate_decls (decl, field))
 	    decl = field;
 	}
@@ -5661,7 +5663,9 @@ grokfndecl (tree ctype,
     {
       tree old_decl;
 
-      old_decl = check_classfn (ctype, decl);
+      old_decl = check_classfn (ctype, decl,
+				processing_template_decl
+				> template_class_depth (ctype));
 
       if (old_decl && TREE_CODE (old_decl) == TEMPLATE_DECL)
 	/* Because grokfndecl is always supposed to return a

@@ -1,3 +1,16 @@
+2003-11-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/5369
+	* g++.dg/template/memfriend1.C: New test.
+	* g++.dg/template/memfriend2.C: Likewise.
+	* g++.dg/template/memfriend3.C: Likewise.
+	* g++.dg/template/memfriend4.C: Likewise.
+	* g++.dg/template/memfriend5.C: Likewise.
+	* g++.dg/template/memfriend6.C: Likewise.
+	* g++.dg/template/memfriend7.C: Likewise.
+	* g++.dg/template/memfriend8.C: Likewise.
+	* g++.old-deja/g++.pt/friend44.C: Remove a bogus error.
+
 2003-11-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12515

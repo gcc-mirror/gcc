@@ -1,3 +1,20 @@
+2003-11-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/5369
+	* friend.c (is_friend): Handle member function of a class
+	template as template friend.
+	(do_friend): Likewise.
+	* decl2.c (check_classfn): Add template_header_p parameter.
+	* decl.c (start_decl): Adjust check_classfn call.
+	(grokfndecl): Likewise.
+	* pt.c (is_specialization_of_friend): New function.
+	(uses_template_parms_level): Likewise.
+	(push_template_decl_real): Use uses_template_parms_level.
+	(tsubst_friend_function): Adjust check_classfn call.
+	* cp-tree.h (check_classfn): Adjust declaration.
+	(uses_template_parms_level): Add declaration.
+	(is_specialization_of_friend): Likewise.
+
 2003-11-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12515

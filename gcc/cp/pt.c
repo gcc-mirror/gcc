@@ -876,6 +876,140 @@ is_specialization_of (tree decl, tree tmpl)
   return 0;
 }
 
+/* Returns nonzero iff DECL is a specialization of friend declaration
+   FRIEND according to [temp.friend].  */
+
+bool
+is_specialization_of_friend (tree decl, tree friend)
+{
+  bool need_template = true;
+  int template_depth;
+
+  my_friendly_assert (TREE_CODE (decl) == FUNCTION_DECL, 0);
+
+  /* For [temp.friend/6] when FRIEND is an ordinary member function
+     of a template class, we want to check if DECL is a specialization
+     if this.  */
+  if (TREE_CODE (friend) == FUNCTION_DECL
+      && DECL_TEMPLATE_INFO (friend)
+      && !DECL_USE_TEMPLATE (friend))
+    {
+      friend = DECL_TI_TEMPLATE (friend);
+      need_template = false;
+    }
+
+  /* There is nothing to do if this is not a template friend.  */
+  if (TREE_CODE (friend) != TEMPLATE_DECL)
+    return 0;
+
+  if (is_specialization_of (decl, friend))
+    return 1;
+
+  /* [temp.friend/6]
+     A member of a class template may be declared to be a friend of a
+     non-template class.  In this case, the corresponding member of
+     every specialization of the class template is a friend of the
+     class granting friendship.
+     
+     For example, given a template friend declaration
+
+       template <class T> friend void A<T>::f();
+
+     the member function below is considered a friend
+
+       template <> struct A<int> {
+	 void f();
+       };
+
+     For this type of template friend, TEMPLATE_DEPTH below will be
+     non-zero.  To determine if DECL is a friend of FRIEND, we first
+     check if the enclosing class is a specialization of another.  */
+
+  template_depth = template_class_depth (DECL_CONTEXT (friend));
+  if (template_depth
+      && DECL_CLASS_SCOPE_P (decl)
+      && is_specialization_of (TYPE_NAME (DECL_CONTEXT (decl)), 
+			       CLASSTYPE_TI_TEMPLATE (DECL_CONTEXT (friend))))
+    {
+      /* Next, we check the members themselves.  In order to handle
+	 a few tricky cases like
+
+	   template <class T> friend void A<T>::g(T t);
+	   template <class T> template <T t> friend void A<T>::h();
+
+	 we need to figure out what ARGS is (corresponding to `T' in above
+	 examples) from DECL for later processing.  */
+
+      tree context = DECL_CONTEXT (decl);
+      tree args = NULL_TREE;
+      int current_depth = 0;
+      while (current_depth < template_depth)
+	{
+	  if (CLASSTYPE_TEMPLATE_INFO (context))
+	    {
+	      if (current_depth == 0)
+		args = TYPE_TI_ARGS (context);
+	      else
+		args = add_to_template_args (TYPE_TI_ARGS (context), args);
+	      current_depth++;
+	    }
+	  context = TYPE_CONTEXT (context);
+	}
+
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  bool is_template;
+	  tree friend_type;
+	  tree decl_type;
+	  tree friend_args_type;
+	  tree decl_args_type;
+
+	  /* Make sure that both DECL and FRIEND are templates or
+	     non-templates.  */
+	  is_template = DECL_TEMPLATE_INFO (decl)
+			&& PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl));
+	  if (need_template ^ is_template)
+	    return 0;
+	  else if (is_template)
+	    {
+	      /* If both are templates, check template paramter list.  */
+	      tree friend_parms
+		= tsubst_template_parms (DECL_TEMPLATE_PARMS (friend),
+					 args, tf_none);
+	      if (!comp_template_parms
+		     (DECL_TEMPLATE_PARMS (DECL_TI_TEMPLATE (decl)),
+		      friend_parms))
+		return 0;
+
+	      decl_type = TREE_TYPE (DECL_TI_TEMPLATE (decl));
+	    }
+	  else
+	    decl_type = TREE_TYPE (decl);
+
+	  friend_type = tsubst_function_type (TREE_TYPE (friend), args,
+					      tf_none, NULL_TREE);
+	  if (friend_type == error_mark_node)
+	    return 0;
+
+	  /* Check if return types match.  */
+	  if (!same_type_p (TREE_TYPE (decl_type), TREE_TYPE (friend_type)))
+	    return 0;
+
+	  /* Check if function parameter types match, ignoring the
+	     `this' parameter.  */
+	  friend_args_type = TYPE_ARG_TYPES (friend_type);
+	  decl_args_type = TYPE_ARG_TYPES (decl_type);
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (friend))
+	    friend_args_type = TREE_CHAIN (friend_args_type);
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	    decl_args_type = TREE_CHAIN (decl_args_type);
+	  if (compparms (decl_args_type, friend_args_type))
+	    return 1;
+	}
+    }
+  return 0;
+}
+
 /* Register the specialization SPEC as a specialization of TMPL with
    the indicated ARGS.  Returns SPEC, or an equivalent prior
    declaration, if available.  */
@@ -2861,10 +2995,8 @@ push_template_decl_real (tree decl, int is_friend)
 	  /* It is a conversion operator. See if the type converted to
 	     depends on innermost template operands.  */
 	  
-	  if (for_each_template_parm (TREE_TYPE (TREE_TYPE (tmpl)),
-				      template_parm_this_level_p,
-				      &depth,
-				      NULL))
+	  if (uses_template_parms_level (TREE_TYPE (TREE_TYPE (tmpl)),
+					 depth))
 	    DECL_TEMPLATE_CONV_FN_P (tmpl) = 1;
 	}
     }
@@ -4602,10 +4734,20 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data, htab_t visited)
   return result;
 }
 
+/* Returns true if T depends on any template parameter.  */
+
 int
 uses_template_parms (tree t)
 {
   return for_each_template_parm (t, 0, 0, NULL);
+}
+
+/* Returns true if T depends on any template parameter with level LEVEL.  */
+
+int
+uses_template_parms_level (tree t, int level)
+{
+  return for_each_template_parm (t, template_parm_this_level_p, &level, NULL);
 }
 
 static int tinst_depth;
@@ -4917,7 +5059,7 @@ tsubst_friend_function (tree decl, tree args)
       /* Check to see that the declaration is really present, and,
 	 possibly obtain an improved declaration.  */
       tree fn = check_classfn (DECL_CONTEXT (new_friend),
-			       new_friend);
+			       new_friend, false);
       
       if (fn)
 	new_friend = fn;

@@ -23,7 +23,7 @@ public:
 template <class T> int A<T>::f (T)
 {
   B b;
-  return b.a; // { dg-bogus "" "" { xfail *-*-* } }
+  return b.a;
 }
 
 template <class T> int A<T>::AI::f (T)
