@@ -167,7 +167,7 @@ static char direct_store[NUM_MACHINE_MODES];
 #endif
 
 /* This array records the insn_code of insns to perform block moves.  */
-static enum insn_code movstr_optab[NUM_MACHINE_MODES];
+enum insn_code movstr_optab[NUM_MACHINE_MODES];
 
 /* SLOW_UNALIGNED_ACCESS is non-zero if unaligned accesses are very slow. */
 
@@ -245,32 +245,9 @@ init_expr_once ()
 	    if (recog (pat, insn, &num_clobbers) >= 0)
 	      direct_store[(int) mode] = 1;
 	  }
-
-      movstr_optab[(int) mode] = CODE_FOR_nothing;
     }
 
   end_sequence ();
-
-#ifdef HAVE_movstrqi
-  if (HAVE_movstrqi)
-    movstr_optab[(int) QImode] = CODE_FOR_movstrqi;
-#endif
-#ifdef HAVE_movstrhi
-  if (HAVE_movstrhi)
-    movstr_optab[(int) HImode] = CODE_FOR_movstrhi;
-#endif
-#ifdef HAVE_movstrsi
-  if (HAVE_movstrsi)
-    movstr_optab[(int) SImode] = CODE_FOR_movstrsi;
-#endif
-#ifdef HAVE_movstrdi
-  if (HAVE_movstrdi)
-    movstr_optab[(int) DImode] = CODE_FOR_movstrdi;
-#endif
-#ifdef HAVE_movstrti
-  if (HAVE_movstrti)
-    movstr_optab[(int) TImode] = CODE_FOR_movstrti;
-#endif
 }
       
 /* This is run at the start of compiling a function.  */
