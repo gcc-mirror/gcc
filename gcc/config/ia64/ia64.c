@@ -1438,12 +1438,12 @@ spill_tfmode_operand (in, force)
       && GET_MODE (SUBREG_REG (in)) == TImode
       && GET_CODE (SUBREG_REG (in)) == REG)
     {
-      rtx mem = gen_mem_addressof (SUBREG_REG (in), NULL_TREE);
+      rtx mem = gen_mem_addressof (SUBREG_REG (in), NULL_TREE, /*rescan=*/true);
       return gen_rtx_MEM (TFmode, copy_to_reg (XEXP (mem, 0)));
     }
   else if (force && GET_CODE (in) == REG)
     {
-      rtx mem = gen_mem_addressof (in, NULL_TREE);
+      rtx mem = gen_mem_addressof (in, NULL_TREE, /*rescan=*/true);
       return gen_rtx_MEM (TFmode, copy_to_reg (XEXP (mem, 0)));
     }
   else if (GET_CODE (in) == MEM

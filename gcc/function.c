@@ -1313,7 +1313,7 @@ init_temp_slots ()
 void
 put_var_into_stack (decl, rescan)
      tree decl;
-     bool rescan;
+     int rescan;
 {
   rtx reg;
   enum machine_mode promoted_mode, decl_mode;
@@ -2887,7 +2887,7 @@ rtx
 gen_mem_addressof (reg, decl, rescan)
      rtx reg;
      tree decl;
-     bool rescan;
+     int rescan;
 {
   rtx r = gen_rtx_ADDRESSOF (Pmode, gen_reg_rtx (GET_MODE (reg)),
 			     REGNO (reg), decl);
