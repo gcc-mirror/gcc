@@ -6534,14 +6534,14 @@ These @samp{-m} options are defined for the i386 family of computers:
 Assume the defaults for the machine type @var{cpu type} when scheduling
 instructions.  The choices for @var{cpu type} are @samp{i386},
 @samp{i486}, @samp{i586}, @samp{i686}, @samp{pentium},
-@samp{pentiumpro}, @samp{k6}, and @samp{athlon}
+@samp{pentiumpro}, @samp{pentium4}, @samp{k6}, and @samp{athlon}
 
 While picking a specific @var{cpu type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that
 does not run on the i386 without the @samp{-march=@var{cpu type}} option
 being used.  @samp{i586} is equivalent to @samp{pentium} and @samp{i686}
-is equivalent to @samp{pentiumpro}.  @samp{k6} is the AMD chip as
-opposed to the Intel ones.
+is equivalent to @samp{pentiumpro}.  @samp{k6} and @samp{athlon} sre the
+AMD chips as opposed to the Intel ones.
 
 @item -march=@var{cpu type}
 Generate instructions for the machine type @var{cpu type}.  The choices

@@ -239,6 +239,38 @@ struct processor_costs athlon_cost = {
   6					/* MMX or SSE register to integer */
 };
 
+struct processor_costs pentium4_cost = {
+  1,					/* cost of an add instruction */
+  1,					/* cost of a lea instruction */
+  8,					/* variable shift costs */
+  8,					/* constant shift costs */
+  30,					/* cost of starting a multiply */
+  0,					/* cost of multiply per each bit set */
+  112,					/* cost of a divide/mod */
+  16,					/* "large" insn */
+  6,					/* MOVE_RATIO */
+  2,					/* cost for loading QImode using movzbl */
+  {4, 5, 4},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {2, 3, 2},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {2, 2, 6},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {4, 4, 6},				/* cost of loading integer registers */
+  2,					/* cost of moving MMX register */
+  {2, 2},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {2, 2},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  12,					/* cost of moving SSE register */
+  {12, 12, 12},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {2, 2, 8},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  10,					/* MMX or SSE register to integer */
+};
+
 struct processor_costs *ix86_cost = &pentium_cost;
 
 /* Processor feature/optimization bitmasks.  */
@@ -248,19 +280,18 @@ struct processor_costs *ix86_cost = &pentium_cost;
 #define m_PPRO (1<<PROCESSOR_PENTIUMPRO)
 #define m_K6  (1<<PROCESSOR_K6)
 #define m_ATHLON  (1<<PROCESSOR_ATHLON)
+#define m_PENT4  (1<<PROCESSOR_PENTIUM4)
 
 const int x86_use_leave = m_386 | m_K6 | m_ATHLON;
-const int x86_push_memory = m_386 | m_K6 | m_ATHLON;
+const int x86_push_memory = m_386 | m_K6 | m_ATHLON | m_PENT4;
 const int x86_zero_extend_with_and = m_486 | m_PENT;
-const int x86_movx = m_ATHLON | m_PPRO /* m_386 | m_K6 */;
+const int x86_movx = m_ATHLON | m_PPRO | m_PENT4 /* m_386 | m_K6 */;
 const int x86_double_with_add = ~m_386;
 const int x86_use_bit_test = m_386;
 const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON | m_K6;
-const int x86_use_q_reg = m_PENT | m_PPRO | m_K6;
-const int x86_use_any_reg = m_486;
-const int x86_cmove = m_PPRO | m_ATHLON;
-const int x86_deep_branch = m_PPRO | m_K6 | m_ATHLON;
-const int x86_use_sahf = m_PPRO | m_K6;
+const int x86_cmove = m_PPRO | m_ATHLON | m_PENT4;
+const int x86_deep_branch = m_PPRO | m_K6 | m_ATHLON | m_PENT4;
+const int x86_use_sahf = m_PPRO | m_K6 | m_PENT4;
 const int x86_partial_reg_stall = m_PPRO;
 const int x86_use_loop = m_K6;
 const int x86_use_fiop = ~(m_PPRO | m_ATHLON | m_PENT);
@@ -270,18 +301,18 @@ const int x86_read_modify_write = ~m_PENT;
 const int x86_read_modify = ~(m_PENT | m_PPRO);
 const int x86_split_long_moves = m_PPRO;
 const int x86_promote_QImode = m_K6 | m_PENT | m_386 | m_486;
-const int x86_single_stringop = m_386;
+const int x86_single_stringop = m_386 | m_PENT4;
 const int x86_qimode_math = ~(0);
 const int x86_promote_qi_regs = 0;
 const int x86_himode_math = ~(m_PPRO);
 const int x86_promote_hi_regs = m_PPRO;
-const int x86_sub_esp_4 = m_ATHLON | m_PPRO;
-const int x86_sub_esp_8 = m_ATHLON | m_PPRO | m_386 | m_486;
-const int x86_add_esp_4 = m_ATHLON | m_K6;
-const int x86_add_esp_8 = m_ATHLON | m_PPRO | m_K6 | m_386 | m_486;
-const int x86_integer_DFmode_moves = ~m_ATHLON;
-const int x86_partial_reg_dependency = m_ATHLON;
-const int x86_memory_mismatch_stall = m_ATHLON;
+const int x86_sub_esp_4 = m_ATHLON | m_PPRO | m_PENT4;
+const int x86_sub_esp_8 = m_ATHLON | m_PPRO | m_386 | m_486 | m_PENT4;
+const int x86_add_esp_4 = m_ATHLON | m_K6 | m_PENT4;
+const int x86_add_esp_8 = m_ATHLON | m_PPRO | m_K6 | m_386 | m_486 | m_PENT4;
+const int x86_integer_DFmode_moves = ~(m_ATHLON | m_PENT4);
+const int x86_partial_reg_dependency = m_ATHLON | m_PENT4;
+const int x86_memory_mismatch_stall = m_ATHLON | m_PENT4;
 
 #define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
 
@@ -577,7 +608,8 @@ override_options ()
       {&pentium_cost, 0, 0, -4, -4, -4, 1},
       {&pentiumpro_cost, 0, 0, 4, -4, 4, 1},
       {&k6_cost, 0, 0, -5, -5, 4, 1},
-      {&athlon_cost, 0, 0, 4, -4, 4, 1}
+      {&athlon_cost, 0, 0, 4, -4, 4, 1},
+      {&pentium4_cost, 0, 0, 2, 2, 2, 1}
     };
 
   static struct pta
@@ -595,6 +627,7 @@ override_options ()
       {"pentiumpro", PROCESSOR_PENTIUMPRO},
       {"k6", PROCESSOR_K6},
       {"athlon", PROCESSOR_ATHLON},
+      {"pentium4", PROCESSOR_PENTIUM4},
     };
 
   int const pta_size = sizeof (processor_alias_table) / sizeof (struct pta);
@@ -1202,6 +1235,10 @@ incdec_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
+  /* On Pentium4, the inc and dec operations causes extra dependancy on flag
+     registers, since carry flag is not set.  */
+  if (TARGET_PENTIUM4 && !optimize_size)
+    return 0;
   if (op == const1_rtx || op == constm1_rtx)
     return 1;
   if (GET_CODE (op) != CONST_INT)
@@ -6900,6 +6937,8 @@ ix86_issue_rate ()
       return 2;
 
     case PROCESSOR_PENTIUMPRO:
+    case PROCESSOR_PENTIUM4:
+    case PROCESSOR_ATHLON:
       return 3;
 
     default:

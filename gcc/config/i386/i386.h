@@ -184,11 +184,12 @@ extern int target_flags;
 #define TARGET_PENTIUMPRO (ix86_cpu == PROCESSOR_PENTIUMPRO)
 #define TARGET_K6 (ix86_cpu == PROCESSOR_K6)
 #define TARGET_ATHLON (ix86_cpu == PROCESSOR_ATHLON)
+#define TARGET_PENTIUM4 (ix86_cpu == PROCESSOR_PENTIUM4)
 
 #define CPUMASK (1 << ix86_cpu)
 extern const int x86_use_leave, x86_push_memory, x86_zero_extend_with_and;
 extern const int x86_use_bit_test, x86_cmove, x86_deep_branch;
-extern const int x86_unroll_strlen, x86_use_q_reg, x86_use_any_reg;
+extern const int x86_unroll_strlen;
 extern const int x86_double_with_add, x86_partial_reg_stall, x86_movx;
 extern const int x86_use_loop, x86_use_fiop, x86_use_mov0;
 extern const int x86_use_cltd, x86_read_modify_write;
@@ -204,8 +205,6 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 #define TARGET_ZERO_EXTEND_WITH_AND (x86_zero_extend_with_and & CPUMASK)
 #define TARGET_USE_BIT_TEST (x86_use_bit_test & CPUMASK)
 #define TARGET_UNROLL_STRLEN (x86_unroll_strlen & CPUMASK)
-#define TARGET_USE_Q_REG (x86_use_q_reg & CPUMASK)
-#define TARGET_USE_ANY_REG (x86_use_any_reg & CPUMASK)
 /* For sane SSE instruction set generation we need fcomi instruction.  It is
    safe to enable all CMOVE instructions.  */
 #define TARGET_CMOVE ((x86_cmove & (1 << ix86_arch)) || TARGET_SSE)
@@ -345,6 +344,7 @@ enum processor_type
   PROCESSOR_PENTIUMPRO,
   PROCESSOR_K6,
   PROCESSOR_ATHLON,
+  PROCESSOR_PENTIUM4,
   PROCESSOR_max
 };
 
@@ -431,6 +431,9 @@ extern int ix86_arch;
 #if TARGET_CPU_DEFAULT == 5
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_athlon__"
 #endif
+#if TARGET_CPU_DEFAULT == 6
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_pentium4__"
+#endif
 #ifndef CPP_CPU_DEFAULT_SPEC
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_i386__"
 #endif
@@ -449,12 +452,14 @@ extern int ix86_arch;
   %{!mcpu*:-D__tune_i686__ -D__tune_pentiumpro__ }}\
 %{march=k6:-D__k6 -D__k6__ %{!mcpu*:-D__tune_k6__ }}\
 %{march=athlon:-D__athlon -D__athlon__ %{!mcpu*:-D__tune_athlon__ }}\
+%{mpentium4=pentium4:-D__pentium4 -D__pentium4__ %{!mcpu*:-D__tune_pentium4__ }}\
 %{m386|mcpu=i386:-D__tune_i386__ }\
 %{m486|mcpu=i486:-D__tune_i486__ }\
 %{mpentium|mcpu=pentium|mcpu=i586:-D__tune_i586__ -D__tune_pentium__ }\
 %{mpentiumpro|mcpu=pentiumpro|mcpu=i686:-D__tune_i686__ -D__tune_pentiumpro__ }\
 %{mcpu=k6:-D__tune_k6__ }\
 %{mcpu=athlon:-D__tune_athlon__ }\
+%{mcpu=pentium4:-D__tune_pentium4__ }\
 %{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
 #endif
 
