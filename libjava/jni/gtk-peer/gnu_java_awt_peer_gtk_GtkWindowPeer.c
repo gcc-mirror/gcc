@@ -44,6 +44,16 @@ exception statement from your version. */
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 
+static void window_get_frame_extents (GtkWidget *window,
+                                      int *top, int *left,
+                                      int *bottom, int *right);
+
+static void request_frame_extents (GtkWidget *window);
+
+static int property_notify_predicate (Display *xdisplay,
+                                      XEvent  *event,
+                                      XPointer window_id);
+
 static void window_delete_cb (GtkWidget *widget, GdkEvent *event,
 			      jobject peer);
 static void window_destroy_cb (GtkWidget *widget, GdkEvent *event,
@@ -59,6 +69,9 @@ static gboolean window_window_state_cb (GtkWidget *widget,
 					GdkEvent *event,
 					jobject peer);
 static jint window_get_new_state (GtkWidget *widget);
+static gboolean window_property_changed_cb (GtkWidget *widget,
+					    GdkEventProperty *event,
+					    jobject peer);
 
 /*
  * Make a new window.
@@ -67,12 +80,21 @@ static jint window_get_new_state (GtkWidget *widget);
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create 
   (JNIEnv *env, jobject obj, jint type, jboolean decorated,
-   jint width, jint height, jobject parent)
+   jint width, jint height, jobject parent, jintArray jinsets)
 {
   GtkWidget *window_widget;
   GtkWindow *window;
   void *window_parent;
-  GtkWidget *vbox, *layout;
+  GtkWidget *vbox;
+  GtkWidget *layout;
+  int top = 0;
+  int left = 0;
+  int bottom = 0;
+  int right = 0;
+  jint *insets;
+
+  insets = (*env)->GetIntArrayElements (env, jinsets, 0);
+  insets[0] = insets[1] = insets[2] = insets[3] = 0;
 
   /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
@@ -81,19 +103,6 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   
   window_widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   window = GTK_WINDOW (window_widget);
-
-  // Avoid GTK runtime assertion failures.
-  width = (width < 1) ? 1 : width;
-  height = (height < 1) ? 1 : height;
-
-  gtk_window_set_default_size (window, width, height);
-
-  /* We must set this window's size requisition.  Otherwise when a
-     resize is queued (when gtk_widget_queue_resize is called) the
-     window will snap to its default requisition of 0x0.  If we omit
-     this call, Frames and Dialogs shrink to degenerate 1x1 windows
-     when their resizable property changes. */
-  gtk_widget_set_size_request (window_widget, width, height);
 
   /* Keep this window in front of its parent, if it has one. */
   if (parent)
@@ -115,8 +124,32 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
 
   gtk_widget_show (layout);
   gtk_widget_show (vbox);
+  gtk_widget_realize (window_widget);
+
+  if (decorated)
+    window_get_frame_extents (window_widget, &top, &left, &bottom, &right);
+
+  gtk_window_set_default_size (window,
+			       MAX (1, width - left - right),
+			       MAX (1, height - top - bottom));
+
+  /* We must set this window's size requisition.  Otherwise when a
+     resize is queued (when gtk_widget_queue_resize is called) the
+     window will snap to its default requisition of 0x0.  If we omit
+     this call, Frames and Dialogs shrink to degenerate 1x1 windows
+     when their resizable property changes. */
+  gtk_widget_set_size_request (window_widget,
+			       MAX (1, width - left - right),
+			       MAX (1, height - top - bottom));
+
+  insets[0] = top;
+  insets[1] = left;
+  insets[2] = bottom;
+  insets[3] = right;
 
   gdk_threads_leave ();
+
+  (*env)->ReleaseIntArrayElements (env, jinsets, insets, 0);
 
   NSA_SET_PTR (env, obj, window_widget);
 }
@@ -175,6 +208,9 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectJObject
   gtk_widget_realize (ptr);
 
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
+
+  g_signal_connect (G_OBJECT (ptr), "property-notify-event",
+		    G_CALLBACK (window_property_changed_cb), obj);
 
   gdk_threads_leave ();
 }
@@ -291,7 +327,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_setSize
 {
   void *ptr = NSA_GET_PTR (env, obj);
 
-  // Avoid GTK runtime assertion failures.
+  /* Avoid GTK runtime assertion failures. */
   width = (width < 1) ? 1 : width;
   height = (height < 1) ? 1 : height;
 
@@ -306,7 +342,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBounds
 {
   void *ptr = NSA_GET_PTR (env, obj);
 
-  // Avoid GTK runtime assertion failures.
+  /* Avoid GTK runtime assertion failures. */
   width = (width < 1) ? 1 : width;
   height = (height < 1) ? 1 : height;
 
@@ -362,6 +398,112 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_getMenuBarHeight
   gdk_threads_leave ();
 
   return height;
+}
+
+static void
+window_get_frame_extents (GtkWidget *window,
+                          int *top, int *left, int *bottom, int *right)
+{
+  unsigned long *extents = NULL;
+
+  /* Guess frame extents in case _NET_FRAME_EXTENTS is not
+     supported. */
+  *top = 23;
+  *left = 6;
+  *bottom = 6;
+  *right = 6;
+
+  /* Request that the window manager set window's
+     _NET_FRAME_EXTENTS property. */
+  request_frame_extents (window);
+
+  /* Attempt to retrieve window's frame extents. */
+  if (gdk_property_get (window->window,
+                        gdk_atom_intern ("_NET_FRAME_EXTENTS", FALSE),
+                        gdk_atom_intern ("CARDINAL", FALSE),
+                        0,
+                        sizeof (unsigned long) * 4,
+                        FALSE,
+                        NULL,
+                        NULL,
+                        NULL,
+                        (guchar **)&extents))
+    {
+      *left = extents [0];
+      *right = extents [1];
+      *top = extents [2];
+      *bottom = extents [3];
+    }
+}
+
+static Atom extents_atom = 0;
+
+/* Requests that the window manager set window's
+   _NET_FRAME_EXTENTS property. */
+static void
+request_frame_extents (GtkWidget *window)
+{
+  const char *request_str = "_NET_REQUEST_FRAME_EXTENTS";
+  GdkAtom request_extents = gdk_atom_intern (request_str, FALSE);
+
+  /* Check if the current window manager supports
+     _NET_REQUEST_FRAME_EXTENTS. */
+  if (gdk_net_wm_supports (request_extents))
+    {
+      GdkDisplay *display = gtk_widget_get_display (window);
+      Display *xdisplay = GDK_DISPLAY_XDISPLAY (display);
+
+      GdkWindow *root_window = gdk_get_default_root_window ();
+      Window xroot_window = GDK_WINDOW_XID (root_window);
+
+      Atom extents_request_atom =
+	gdk_x11_get_xatom_by_name_for_display (display, request_str);
+
+      XEvent xevent;
+      XEvent notify_xevent;
+
+      unsigned long window_id = GDK_WINDOW_XID (GDK_DRAWABLE(window->window));
+
+      if (!extents_atom)
+	{
+	  const char *extents_str = "_NET_FRAME_EXTENTS";
+	  extents_atom =
+	    gdk_x11_get_xatom_by_name_for_display (display, extents_str);
+	}
+
+      xevent.xclient.type = ClientMessage;
+      xevent.xclient.message_type = extents_request_atom;
+      xevent.xclient.display = xdisplay;
+      xevent.xclient.window = window_id;
+      xevent.xclient.format = 32;
+      xevent.xclient.data.l[0] = 0;
+      xevent.xclient.data.l[1] = 0;
+      xevent.xclient.data.l[2] = 0;
+      xevent.xclient.data.l[3] = 0;
+      xevent.xclient.data.l[4] = 0;
+
+      XSendEvent (xdisplay, xroot_window, False,
+		  (SubstructureRedirectMask | SubstructureNotifyMask),
+                  &xevent);
+
+      XIfEvent(xdisplay, &notify_xevent,
+	       property_notify_predicate, (XPointer) &window_id);
+    }
+}
+
+static int
+property_notify_predicate (Display *xdisplay __attribute__((unused)),
+                           XEvent  *event,
+                           XPointer window_id)
+{
+  unsigned long *window = (unsigned long *) window_id;
+
+  if (event->xany.type == PropertyNotify
+      && event->xany.window == *window
+      && event->xproperty.atom == extents_atom)
+        return True;
+
+  return False;
 }
 
 static void
@@ -513,4 +655,45 @@ window_get_new_state (GtkWidget *widget)
       XFree (atom_list);
     }
   return new_state;
+}
+
+static gboolean
+window_property_changed_cb (GtkWidget *widget __attribute__((unused)),
+                            GdkEventProperty *event,
+                            jobject peer)
+{
+  unsigned long *extents;
+
+  static int id_set = 0;
+  static jmethodID postInsetsChangedEventID;
+
+  if (!id_set)
+    {
+      jclass gtkwindowpeer = (*gdk_env)->FindClass (gdk_env,
+				 "gnu/java/awt/peer/gtk/GtkWindowPeer");
+      postInsetsChangedEventID = (*gdk_env)->GetMethodID (gdk_env,
+						      gtkwindowpeer,
+						      "postInsetsChangedEvent",
+						      "(IIII)V");
+    }
+
+  if (gdk_atom_intern ("_NET_FRAME_EXTENTS", FALSE) == event->atom
+      && gdk_property_get (event->window,
+                           gdk_atom_intern ("_NET_FRAME_EXTENTS", FALSE),
+                           gdk_atom_intern ("CARDINAL", FALSE),
+                           0,
+                           sizeof (unsigned long) * 4,
+                           FALSE,
+                           NULL,
+                           NULL,
+                           NULL,
+                           (guchar **)&extents))
+    (*gdk_env)->CallVoidMethod (gdk_env, peer,
+				postInsetsChangedEventID,
+				(jint) extents[2],  /* top */
+				(jint) extents[0],  /* left */
+				(jint) extents[3],  /* bottom */
+				(jint) extents[1]); /* right */
+
+  return FALSE;
 }
