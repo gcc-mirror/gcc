@@ -608,7 +608,8 @@ struct builtin
 };
 #define DUMP 0x01
 #define STDC 0x02
-#define ULP  0x10
+#define VERS 0x04
+#define ULP  0x08
 
 static const struct builtin builtin_array[] =
 {
@@ -618,7 +619,7 @@ static const struct builtin builtin_array[] =
   { "__BASE_FILE__",		0, T_BASE_FILE,		0    },
   { "__LINE__",			0, T_SPECLINE,		0    },
   { "__INCLUDE_LEVEL__",	0, T_INCLUDE_LEVEL,	0    },
-  { "__VERSION__",		0, T_VERSION,		DUMP },
+  { "__VERSION__",		0, T_VERSION,		DUMP|VERS },
   { "__STDC__",			0, T_STDC,		DUMP|STDC },
 
   { "__USER_LABEL_PREFIX__",	0,		 T_CONST, ULP  },
@@ -651,9 +652,14 @@ initialize_builtins (pfile)
       if ((b->flags & STDC) && CPP_TRADITIONAL (pfile))
 	continue;
 
-      val = (b->flags & ULP) ? user_label_prefix : b->value;
-      len = strlen (b->name);
+      if (b->flags & ULP)
+	val = user_label_prefix;
+      else if (b->flags & VERS)
+	val = version_string;
+      else
+	val = b->value;
 
+      len = strlen (b->name);
       hp = _cpp_make_hashnode (b->name, len, b->type, -1);
       hp->value.cpval = val;
       *(htab_find_slot (pfile->hashtab, (void *)hp, 1)) = hp;
@@ -665,6 +671,7 @@ initialize_builtins (pfile)
 }
 #undef DUMP
 #undef STDC
+#undef VERS
 #undef ULP
 
 /* Another subroutine of cpp_start_read.  This one sets up to do

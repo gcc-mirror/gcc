@@ -1,5 +1,14 @@
 2000-03-12  Zack Weinberg  <zack@wolery.cumb.org>
 
+ 	* cpphash.c: Don't include version.h.
+	(special_symbol) [case T_VERSION]: Look for the string in
+	hp->value.cpval; don't use version_string.
+	* cppinit.c (initialize_builtins): Set hp->value.cpval for
+	__VERSION__ to version_string.
+	* Makefile.in (cpphash.o): Update deps.
+
+2000-03-12  Zack Weinberg  <zack@wolery.cumb.org>
+
 	Convert cpplib to use libiberty/hashtab.c.
 
 	* cpplib.h (struct cpp_reader): Make hashtab and
