@@ -219,6 +219,13 @@ extern rtx ix86_tls_get_addr PARAMS ((void));
 extern void x86_machine_dependent_reorg PARAMS ((rtx));
 
 /* In winnt.c  */
+extern int i386_pe_dllexport_name_p PARAMS ((const char *));
+extern int i386_pe_dllimport_name_p PARAMS ((const char *));
+extern void i386_pe_unique_section PARAMS ((tree, int));
+extern void i386_pe_declare_function_type PARAMS ((FILE *, const char *, int));
+extern void i386_pe_record_external_function PARAMS ((const char *));
+extern void i386_pe_record_exported_symbol PARAMS ((const char *, int));
+extern void i386_pe_asm_file_end PARAMS ((FILE *));
 extern void i386_pe_encode_section_info PARAMS ((tree, int));
 extern const char *i386_pe_strip_name_encoding PARAMS ((const char *));
 extern const char *i386_pe_strip_name_encoding_full PARAMS ((const char *));

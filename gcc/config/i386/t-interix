@@ -1,6 +1,6 @@
 LIB1ASMSRC = i386/cygwin.asm
 LIB1ASMFUNCS = _chkstk
 
-winnt.o: $(srcdir)/config/i386/winnt.c
+winnt.o: $(srcdir)/config/i386/winnt.c $(TM_P_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c
 
