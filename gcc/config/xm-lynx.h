@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Lynx.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,16 +17,13 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* This file defines machine-independent things specific to a host
+   running Lynx.  This file should not be specified as $xm_file itself;
+   instead $xm_file should be CPU/xm-lynx.h, which should include this one.  */
+
 /* #defines that need visibility everywhere.  */
 #define FALSE 0
 #define TRUE 1
-
-/* This describes the machine the compiler is hosted on.  */
-#define HOST_BITS_PER_CHAR 8
-#define HOST_BITS_PER_SHORT 16
-#define HOST_BITS_PER_INT 32
-#define HOST_BITS_PER_LONG 32
-#define HOST_BITS_PER_LONGLONG 64
 
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
@@ -35,8 +32,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Lynx has no vfork system call.  */
 #define vfork fork
 
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
+/* Lynx has a non-standard mktemp function.  */
+/* ??? This is simpler than creating YATM: Yet Another Target Macro.  */
+#define mktemp lynx_mktemp
 
-#include "tm.h"
-
+#define lynx_mktemp(template) \
+do {				\
+  int pid = getpid ();		\
+  char *t = template;		\
+  char *p;			\
+  p = t + strlen (t);		\
+  while (*--p == 'X')		\
+    {				\
+      *p = (pid % 10) + '0';	\
+      pid /= 10;		\
+    }				\
+} while (0)
