@@ -1,3 +1,8 @@
+2003-02-09  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* tree.h (struct tree_decl): Remove unused live_range_rtl field.
+	(DECL_LIVE_RANGE_RTL): Remove. 
+
 2003-02-10  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/aof.h, config/arm/aout.h, config/arm/arm-modes.def,

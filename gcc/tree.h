@@ -1520,10 +1520,6 @@ struct tree_type GTY(())
 /* The DECL_RTL for NODE, if it is set, or NULL, if it is not set.  */
 #define DECL_RTL_IF_SET(NODE) (DECL_RTL_SET_P (NODE) ? DECL_RTL (NODE) : NULL)
 
-/* Holds an INSN_LIST of all of the live ranges in which the variable
-   has been moved to a possibly different register.  */
-#define DECL_LIVE_RANGE_RTL(NODE) (DECL_CHECK (NODE)->decl.live_range_rtl)
-
 /* For PARM_DECL, holds an RTL for the stack slot or register
    where the data was actually passed.  */
 #define DECL_INCOMING_RTL(NODE) (PARM_DECL_CHECK (NODE)->decl.u2.r)
@@ -1864,7 +1860,6 @@ struct tree_decl GTY(())
   tree section_name;
   tree attributes;
   rtx rtl;	/* RTL representation for object.  */
-  rtx live_range_rtl;
 
   /* In FUNCTION_DECL, if it is inline, holds the saved insn chain.
      In FIELD_DECL, is DECL_FIELD_BIT_OFFSET.
