@@ -576,7 +576,7 @@ case "${host}" in
      noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
      ;;
   *-*-cygwin*)
-     noconfigdirs="autoconf automake send-pr rcs guile perl texinfo apache inet"
+     noconfigdirs="autoconf automake send-pr rcs guile perl apache inet"
     ;;
   *-*-netbsd*)
     noconfigdirs="rcs"
