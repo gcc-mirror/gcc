@@ -1,3 +1,8 @@
+2000-06-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (pushdecl): Look up functions by DECL_NAME, not
+	DECL_ASSEMBLER_NAME.
+
 2000-06-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (c_language): Define.

@@ -3800,7 +3800,6 @@ pushdecl (x)
   my_friendly_assert (!cfun || doing_semantic_analysis_p (),
 		      19990913);
 
-  name = DECL_ASSEMBLER_NAME (x);
   need_new_binding = 1;
 
   if (DECL_TEMPLATE_PARM_P (x))
@@ -3832,12 +3831,7 @@ pushdecl (x)
 	DECL_LOCAL_FUNCTION_P (x) = 1;
     }
 
-  /* Type are looked up using the DECL_NAME, as that is what the rest of the
-     compiler wants to use.  */
-  if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL
-      || TREE_CODE (x) == NAMESPACE_DECL)
-    name = DECL_NAME (x);
-
+  name = DECL_NAME (x);
   if (name)
     {
 #if 0
@@ -3853,21 +3847,35 @@ pushdecl (x)
 	t = namespace_binding (name, DECL_CONTEXT (x));
       else
 	t = lookup_name_current_level (name);
+
+      /* If we are declaring a function, and the result of name-lookup
+	 was an OVERLOAD, look for an overloaded instance that is
+	 actually the same as the function we are declaring.  (If
+	 there is one, we have to merge our declaration with the
+	 previous declaration.)  */
+      if (t && TREE_CODE (t) == OVERLOAD && TREE_CODE (x) == FUNCTION_DECL)
+	{
+	  tree match;
+
+	  for (match = t; match; match = OVL_NEXT (match))
+	    if (DECL_ASSEMBLER_NAME (OVL_CURRENT (t))
+		== DECL_ASSEMBLER_NAME (x))
+	      break;
+
+	  if (match)
+	    t = OVL_CURRENT (match);
+	  else
+	    t = NULL_TREE;
+	}
+
       if (t == error_mark_node)
 	{
 	  /* error_mark_node is 0 for a while during initialization!  */
 	  t = NULL_TREE;
 	  cp_error_at ("`%#D' used prior to declaration", x);
 	}
-
       else if (t != NULL_TREE)
 	{
-#if 0
-	  /* This is turned off until I have time to do it right (bpk).  */
-	  /* With the code below that uses it...  */
-	  file = DECL_SOURCE_FILE (t);
-	  line = DECL_SOURCE_LINE (t);
-#endif
 	  if (TREE_CODE (t) == PARM_DECL)
 	    {
 	      if (DECL_CONTEXT (t) == NULL_TREE)
@@ -3896,36 +3904,6 @@ pushdecl (x)
 	    }
 	  else if (duplicate_decls (x, t))
 	    {
-#if 0
-	      /* This is turned off until I have time to do it right (bpk).  */
-
-	      /* Also warn if they did a prototype with `static' on it, but
-		 then later left the `static' off.  */
-	      if (! TREE_PUBLIC (name) && TREE_PUBLIC (x))
-		{
-		  if (DECL_LANG_SPECIFIC (t) && DECL_FRIEND_P (t))
-		    return t;
-
-		  if (extra_warnings)
-		    {
-		      cp_warning ("`static' missing from declaration of `%D'",
-				  t);
-		      warning_with_file_and_line (file, line,
-						  "previous declaration of `%s'",
-						  decl_as_string (t, 0));
-		    }
-
-		  /* Now fix things so it'll do what they expect.  */
-		  if (current_function_decl)
-		    TREE_PUBLIC (current_function_decl) = 0;
-		}
-	      /* Due to interference in memory reclamation (X may be
-		 obstack-deallocated at this point), we must guard against
-		 one really special case.  [jason: This should be handled
-		 by start_function]  */
-	      if (current_function_decl == x)
-		current_function_decl = t;
-#endif
 	      if (TREE_CODE (t) == TYPE_DECL)
 		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (t));
 	      else if (TREE_CODE (t) == FUNCTION_DECL)
@@ -4048,7 +4026,11 @@ pushdecl (x)
 	     warn if we later see static one.  */
 	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && TREE_PUBLIC (x))
 	    TREE_PUBLIC (name) = 1;
-
+	  
+	  /* Bind the mangled name for the entity.  In the future, we
+	     should not need to do this; mangled names are an
+	     implementation detail of which the front-end should not
+	     need to be aware.  */
 	  if (!(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
 		&& t != NULL_TREE)
 	      /* For an ordinary function, we create a binding from
@@ -4057,11 +4039,19 @@ pushdecl (x)
 		 ordinary name are the same so we need not do this.  */
 	      && !DECL_EXTERN_C_FUNCTION_P (x))
 	    {
+	      tree mangled_name;
+
+	      if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL
+		  || TREE_CODE (x) == NAMESPACE_DECL)
+		mangled_name = name;
+	      else
+		mangled_name = DECL_ASSEMBLER_NAME (x);
+
 	      if (TREE_CODE (x) == FUNCTION_DECL)
 		my_friendly_assert
-		  ((IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE)
-		  || (IDENTIFIER_GLOBAL_VALUE (name) == x), 378);
-	      SET_IDENTIFIER_NAMESPACE_VALUE (name, x);
+		  ((IDENTIFIER_GLOBAL_VALUE (mangled_name) == NULL_TREE)
+		  || (IDENTIFIER_GLOBAL_VALUE (mangled_name) == x), 378);
+	      SET_IDENTIFIER_NAMESPACE_VALUE (mangled_name, x);
 	    }
 
 	  /* Don't forget if the function was used via an implicit decl.  */
