@@ -1,4 +1,10 @@
+2001-08-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* configure.target: Set LIMITSH for powerpc-*-*.
+	* config/cpu/powerpc/bits/limits.h: New file.
+
 2001-08-16  Marc Espie <espie@openbsd.org>
+
 	* configure.in:  Check for <sys/types.h>.
 	* configure:  Rebuild.
 	* config.h.in:  Rebuild.
