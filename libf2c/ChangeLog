@@ -1,3 +1,8 @@
+2004-05-06  Bud Davis  <bdavis9659@comcast.net>
+
+	PR libf2c/15151
+	* libI77/wrtfmt.c(wrt_L):  Make sizes and types consistent.
+
 2004-04-18  Release Manager
 
 	* GCC 3.4.0 released.

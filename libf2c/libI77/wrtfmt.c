@@ -251,13 +251,19 @@ int
 wrt_L (Uint * n, int len, ftnlen sz)
 {
   int i;
-  long x;
-  if (sizeof (long) == sz)
-    x = n->il;
-  else if (sz == sizeof (char))
-    x = n->ic;
+  longint x;
+#ifdef Allow_TYQUAD
+  if (sizeof (longint) == sz)
+    x = n->ili;
   else
+#endif
+  if (sizeof (short ) == sz)
     x = n->is;
+  else if (sizeof (char) == sz)
+    x = n->ic;
+  else if (sizeof (integer) == sz)
+    x = n->il;
+
   for (i = 0; i < len - 1; i++)
     (*f__putn) (' ');
   if (x)
