@@ -1,3 +1,10 @@
+Fri Apr  2 11:58:22 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_emit_move_sequence): Force invalid QImode
+	constants into memory if we get called directly from gen_move_insn
+	rather than emit_move_insn.
+	(c4x_legitimize_address): Fix up LABEL_REF addresses.
+
 Thu Apr  1 12:04:05 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* expr.c (store_field): When check direct_store, assume all complex

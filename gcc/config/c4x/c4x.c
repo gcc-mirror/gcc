@@ -1058,6 +1058,13 @@ c4x_emit_move_sequence (operands, mode)
 	 constants...  */
       op1 = force_const_mem (mode, op1);
     }
+  else if (mode == QImode && CONSTANT_P (op1) && ! LEGITIMATE_CONSTANT_P (op1))
+    {
+      /* We shouldn't need this test if only emit_move_insn was called.
+	 However, some routines call gen_move_insn which doesn't check that
+	 the constants are legitimate.  */
+      op1 = force_const_mem (mode, op1);
+    }
   else if (mode == HImode && CONSTANT_P (op1) && ! LEGITIMATE_CONSTANT_P (op1))
     {
       /* We could load all sorts of constants in two goes by pulling all
@@ -1431,7 +1438,8 @@ c4x_legitimize_address (orig, mode)
      rtx orig ATTRIBUTE_UNUSED;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_CODE (orig) == SYMBOL_REF)
+  if (GET_CODE (orig) == SYMBOL_REF
+      || GET_CODE (orig) == LABEL_REF)
     {
       if (mode == HImode || mode == HFmode)
 	{
@@ -2183,9 +2191,9 @@ static int
 c4x_K_constant (op)
      rtx op;
 {
-  if (TARGET_C3X)
+  if (TARGET_C3X || ! c4x_immed_int_constant (op))
     return 0;
-  return c4x_immed_int_constant (op) && IS_INT5_CONST (INTVAL (op));
+  return IS_INT5_CONST (INTVAL (op));
 }
 
 
@@ -2876,7 +2884,7 @@ call_address_operand (op, mode)
 }
 
 
-/* Symbolic operand.  */
+/* Symbolic address operand.  */
 
 int
 symbolic_address_operand (op, mode)
@@ -4387,4 +4395,3 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
   else
     abort ();
 }
-
