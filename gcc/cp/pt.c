@@ -171,6 +171,8 @@ static void copy_default_args_to_explicit_spec PARAMS ((tree));
 static int invalid_nontype_parm_type_p PARAMS ((tree, tsubst_flags_t));
 static int eq_local_specializations (const void *, const void *);
 static tree template_for_substitution (tree);
+static bool value_dependent_expression_p (tree);
+static bool dependent_template_id_p (tree, tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -11185,6 +11187,285 @@ invalid_nontype_parm_type_p (type, complain)
     error ("`%#T' is not a valid type for a template constant parameter",
               type);
   return 1;
+}
+
+/* Returns TRUE if TYPE is dependent, in the sense of
+   [temp.dep.type].  */
+
+bool
+dependent_type_p (type)
+     tree type;
+{
+  tree scope;
+
+  /* If there are no template parameters in scope, then there can't be
+     any dependent types.  */
+  if (!processing_template_decl)
+    return false;
+
+  /* If the type is NULL, we have not computed a type for the entity
+     in question; in that case, the type is dependent.  */
+  if (!type)
+    return true;
+
+  /* Erroneous types can be considered non-dependent.  */
+  if (type == error_mark_node)
+    return false;
+
+  /* [temp.dep.type]
+
+     A type is dependent if it is:
+
+     -- a template parameter.  */
+  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+    return true;
+  /* -- a qualified-id with a nested-name-specifier which contains a
+        class-name that names a dependent type or whose unqualified-id
+	names a dependent type.  */
+  if (TREE_CODE (type) == TYPENAME_TYPE)
+    return true;
+  /* -- a cv-qualified type where the cv-unqualified type is
+        dependent.  */
+  type = TYPE_MAIN_VARIANT (type);
+  /* -- a compound type constructed from any dependent type.  */
+  if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+    return (dependent_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
+	    || dependent_type_p (TYPE_PTRMEM_POINTED_TO_TYPE 
+					   (type)));
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   || TREE_CODE (type) == REFERENCE_TYPE)
+    return dependent_type_p (TREE_TYPE (type));
+  else if (TREE_CODE (type) == FUNCTION_TYPE
+	   || TREE_CODE (type) == METHOD_TYPE)
+    {
+      tree arg_type;
+
+      if (dependent_type_p (TREE_TYPE (type)))
+	return true;
+      for (arg_type = TYPE_ARG_TYPES (type); 
+	   arg_type; 
+	   arg_type = TREE_CHAIN (arg_type))
+	if (dependent_type_p (TREE_VALUE (arg_type)))
+	  return true;
+      return false;
+    }
+  /* -- an array type constructed from any dependent type or whose
+        size is specified by a constant expression that is
+	value-dependent.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      if (TYPE_DOMAIN (type)
+	  && ((value_dependent_expression_p 
+	       (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	      || (type_dependent_expression_p
+		  (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))))
+	return true;
+      return dependent_type_p (TREE_TYPE (type));
+    }
+  /* -- a template-id in which either the template name is a template
+        parameter or any of the template arguments is a dependent type or
+	an expression that is type-dependent or value-dependent.  
+
+     This language seems somewhat confused; for example, it does not
+     discuss template template arguments.  Therefore, we use the
+     definition for dependent template arguments in [temp.dep.temp].  */
+  if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
+      && (dependent_template_id_p
+	  (CLASSTYPE_TI_TEMPLATE (type),
+	   CLASSTYPE_TI_ARGS (type))))
+    return true;
+  else if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+    return true;
+  /* All TYPEOF_TYPEs are dependent; if the argument of the `typeof'
+     expression is not type-dependent, then it should already been
+     have resolved.  */
+  if (TREE_CODE (type) == TYPEOF_TYPE)
+    return true;
+  /* The standard does not specifically mention types that are local
+     to template functions or local classes, but they should be
+     considered dependent too.  For example:
+
+       template <int I> void f() { 
+         enum E { a = I }; 
+	 S<sizeof (E)> s;
+       }
+
+     The size of `E' cannot be known until the value of `I' has been
+     determined.  Therefore, `E' must be considered dependent.  */
+  scope = TYPE_CONTEXT (type);
+  if (scope && TYPE_P (scope))
+    return dependent_type_p (scope);
+  else if (scope && TREE_CODE (scope) == FUNCTION_DECL)
+    return type_dependent_expression_p (scope);
+
+  /* Other types are non-dependent.  */
+  return false;
+}
+
+/* Returns TRUE if the EXPRESSION is value-dependent.  */
+
+static bool
+value_dependent_expression_p (tree expression)
+{
+  if (!processing_template_decl)
+    return false;
+
+  /* A name declared with a dependent type.  */
+  if (DECL_P (expression)
+      && dependent_type_p (TREE_TYPE (expression)))
+    return true;
+  /* A non-type template parameter.  */
+  if ((TREE_CODE (expression) == CONST_DECL
+       && DECL_TEMPLATE_PARM_P (expression))
+      || TREE_CODE (expression) == TEMPLATE_PARM_INDEX)
+    return true;
+  /* A constant with integral or enumeration type and is initialized 
+     with an expression that is value-dependent.  */
+  if (TREE_CODE (expression) == VAR_DECL
+      && DECL_INITIAL (expression)
+      && (CP_INTEGRAL_TYPE_P (TREE_TYPE (expression))
+	  || TREE_CODE (TREE_TYPE (expression)) == ENUMERAL_TYPE)
+      && value_dependent_expression_p (DECL_INITIAL (expression)))
+    return true;
+  /* These expressions are value-dependent if the type to which the
+     cast occurs is dependent.  */
+  if ((TREE_CODE (expression) == DYNAMIC_CAST_EXPR
+       || TREE_CODE (expression) == STATIC_CAST_EXPR
+       || TREE_CODE (expression) == CONST_CAST_EXPR
+       || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
+       || TREE_CODE (expression) == CAST_EXPR)
+      && dependent_type_p (TREE_TYPE (expression)))
+    return true;
+  /* A `sizeof' expression where the sizeof operand is a type is
+     value-dependent if the type is dependent.  If the type was not
+     dependent, we would no longer have a SIZEOF_EXPR, so any
+     SIZEOF_EXPR is dependent.  */
+  if (TREE_CODE (expression) == SIZEOF_EXPR)
+    return true;
+  /* A constant expression is value-dependent if any subexpression is
+     value-dependent.  */
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expression))))
+    {
+      switch (TREE_CODE_CLASS (TREE_CODE (expression)))
+	{
+	case '1':
+	  return (value_dependent_expression_p 
+		  (TREE_OPERAND (expression, 0)));
+	case '<':
+	case '2':
+	  return ((value_dependent_expression_p 
+		   (TREE_OPERAND (expression, 0)))
+		  || (value_dependent_expression_p 
+		      (TREE_OPERAND (expression, 1))));
+	case 'e':
+	  {
+	    int i;
+	    for (i = 0; 
+		 i < TREE_CODE_LENGTH (TREE_CODE (expression));
+		 ++i)
+	      if (value_dependent_expression_p
+		  (TREE_OPERAND (expression, i)))
+		return true;
+	    return false;
+	  }
+	}
+    }
+
+  /* The expression is not value-dependent.  */
+  return false;
+}
+
+/* Returns TRUE if the EXPRESSION is type-dependent, in the sense of
+   [temp.dep.expr].  */
+
+bool
+type_dependent_expression_p (expression)
+     tree expression;
+{
+  if (!processing_template_decl)
+    return false;
+
+  /* Some expression forms are never type-dependent.  */
+  if (TREE_CODE (expression) == PSEUDO_DTOR_EXPR
+      || TREE_CODE (expression) == SIZEOF_EXPR
+      || TREE_CODE (expression) == ALIGNOF_EXPR
+      || TREE_CODE (expression) == TYPEID_EXPR
+      || TREE_CODE (expression) == DELETE_EXPR
+      || TREE_CODE (expression) == VEC_DELETE_EXPR
+      || TREE_CODE (expression) == THROW_EXPR)
+    return false;
+
+  /* The types of these expressions depends only on the type to which
+     the cast occurs.  */
+  if (TREE_CODE (expression) == DYNAMIC_CAST_EXPR
+      || TREE_CODE (expression) == STATIC_CAST_EXPR
+      || TREE_CODE (expression) == CONST_CAST_EXPR
+      || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
+      || TREE_CODE (expression) == CAST_EXPR)
+    return dependent_type_p (TREE_TYPE (expression));
+  /* The types of these expressions depends only on the type created
+     by the expression.  */
+  else if (TREE_CODE (expression) == NEW_EXPR
+	   || TREE_CODE (expression) == VEC_NEW_EXPR)
+    return dependent_type_p (TREE_OPERAND (expression, 1));
+
+  if (TREE_CODE (expression) == FUNCTION_DECL
+      && DECL_LANG_SPECIFIC (expression)
+      && DECL_TEMPLATE_INFO (expression)
+      && (dependent_template_id_p
+	  (DECL_TI_TEMPLATE (expression),
+	   INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
+    return true;
+
+  return (dependent_type_p (TREE_TYPE (expression)));
+}
+
+/* Returns TRUE if the ARG (a template argument) is dependent.  */
+
+bool
+dependent_template_arg_p (tree arg)
+{
+  if (!processing_template_decl)
+    return false;
+
+  if (TREE_CODE (arg) == TEMPLATE_DECL
+      || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+    return dependent_template_p (arg);
+  else if (TYPE_P (arg))
+    return dependent_type_p (arg);
+  else
+    return (type_dependent_expression_p (arg)
+	    || value_dependent_expression_p (arg));
+}
+
+/* Returns TRUE if the specialization TMPL<ARGS> is dependent.  */
+
+static bool
+dependent_template_id_p (tree tmpl, tree args)
+{
+  int i;
+
+  if (dependent_template_p (tmpl))
+    return true;
+  for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
+    if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
+      return true;
+  return false;
+}
+
+/* Returns TRUE if the template TMPL is dependent.  */
+
+bool
+dependent_template_p (tree tmpl)
+{
+  /* Template template parameters are dependent.  */
+  if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)
+      || TREE_CODE (tmpl) == TEMPLATE_TEMPLATE_PARM)
+    return true;
+  /* So are member templates of dependent classes.  */
+  if (TYPE_P (CP_DECL_CONTEXT (tmpl)))
+    return dependent_type_p (DECL_CONTEXT (tmpl));
+  return false;
 }
 
 #include "gt-cp-pt.h"

@@ -1,3 +1,12 @@
+2003-01-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9285
+	PR c++/9294
+	* g++.dg/parse/expr2.C: New test.
+
+	PR c++/9388
+	* g++.dg/parse/lookup2.C: Likewise.
+
 Tue Jan 21 18:01:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/990208-1.c:  Add noinline attributes as needed.

@@ -1,3 +1,37 @@
+2003-01-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9388
+	* class.c (currently_open_derived_class): Use dependent_type_p.
+	* cp-tree.h (dependent_type_p): New function.
+	(dependent_template_arg_p): Likewise.
+	(dependent_template_p): Likewise.
+	(type_dependent_expression_p): Likewise.
+	* parser.c (cp_parser_dependent_type_p): Remove.
+	(cp_parser_value_dependent_type_p): Likewise.
+	(cp_parser_type_dependent_expression_p): Likewise.
+	(cp_parser_dependent_template_arg_p): Likewise.
+	(cp_parser_dependent_template_id_p): Likewise.
+	(cp_parser_dependent_template_p): Likewise.
+	(cp_parser_diagnose_invalid_type_name): Replace
+	cp_parser_dependent_type_p with dependent_type_p, etc.
+	(cp_parser_primary_expresion): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_postfix_expression): Likewise.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_template_name): Likewise.
+	(cp_parser_class_name): Likewise.
+	(cp_parser_lookup_name): Likewise.
+	* pt.c (dependent_type_p): New function.
+	(value_dependent_expression_p): Likewise.
+	(type_dependent_expression_p): Likewise.
+	(dependent_template_arg_p): Likewise.
+	(dependent_template_id_p): Likewise.
+	(dependent_template_p): Likewise.
+	
+	PR c++/9285
+	PR c++/9294
+	* parser.c (cp_parser_simple_declaration): 
+
 2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Make-lang.in (cp/decl.o-warn): Add -Wno-error.
