@@ -49,6 +49,7 @@ static int complete_ptr_ref_or_void_ptr_p PARAMS ((tree, tree));
 static bool is_admissible_throw_operand PARAMS ((tree));
 static int can_convert_eh PARAMS ((tree, tree));
 static void check_handlers_1 PARAMS ((tree, tree));
+static tree cp_protect_cleanup_actions PARAMS ((void));
 
 #include "decl.h"
 #include "obstack.h"
@@ -72,8 +73,6 @@ init_exception_processing ()
   if (flag_honor_std)
     pop_namespace ();
 
-  protect_cleanup_actions = build_call (terminate_node, NULL_TREE);
-
   /* void __cxa_call_unexpected(void *); */
   tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
   tmp = build_function_type (void_type_node, tmp);
@@ -85,7 +84,21 @@ init_exception_processing ()
 					     : "__gxx_personality_v0");
 
   lang_eh_runtime_type = build_eh_type_type;
+  lang_protect_cleanup_actions = &cp_protect_cleanup_actions;
 }
+
+/* Returns an expression to be executed if an unhandled exception is
+   propogated out of a cleanup region.  */
+
+static tree
+cp_protect_cleanup_actions ()
+{
+  /* [except.terminate]
+
+     When the destruction of an object during stack unwinding exits
+     using an exception ... void terminate(); is called.  */
+  return build_call (terminate_node, NULL_TREE);
+}     
 
 static tree
 prepare_eh_type (type)

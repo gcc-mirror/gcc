@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1 2001/05/11 22:10:54 gerald Exp $
+@comment $Id: install.texi,v 1.2 2001/05/16 14:57:06 dje Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1550,31 +1550,18 @@ bootstrap and install GCC you first have to install a pre-built
 compiler, see our @uref{binaries.html,,binaries page} for
 details.
 
+You must use GNU Make to build GCC on Solaris 2.  If you don't have GNU
+Make installed, you can use the prebuilt compiler mentioned above to
+build it.
+
 Sun as 4.X is broken in that it cannot cope with long symbol names.
 A typical error message might look similar to the following:
 
 @samp{/usr/ccs/bin/as: "/var/tmp/ccMsw135.s", line 11041: 
 error: can't compute value of an expression involving an external symbol.}
 
-This is Sun bug 4237974.  See the @uref{../faq.html#squangle,,How to work around too long C++
-symbol names?} FAQ entry for further information and a workaround.  This is fixed with patch 
-108908-02 and has been fixed in later (5.x) versions of the assembler.
-
-Sun make in all known Solaris 1 (SunOS 4) and Solaris 2 releases has a
-broken @emph{VPATH} mechanism, which means you must either:
-@itemize @bullet
-@item
-Use GNU make (recommended), @emph{or:}
-@item
-Always build in the source directory, @emph{or:}
-@item
-@emph{(For GCC 2.95.1 only)}
-apply the patches mentioned at
-@uref{http://www.gnu.org/software/gcc/extensions.html#sun-make,,
-http://www.gnu.org/software/gcc/extensions.html#sun-make}.
-@end itemize
-
-
+This is Sun bug 4237974.  This is fixed with patch 108908-02 and has
+been fixed in later (5.x) versions of the assembler.
 @html
 <p>
 <hr>
