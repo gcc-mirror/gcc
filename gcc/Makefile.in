@@ -916,11 +916,13 @@ $(srcdir)/c-parse.c $(srcdir)/c-parse.h: $(srcdir)/c-parse.y
 $(srcdir)/c-parse.y: $(srcdir)/c-parse.in
 	sed -e "/^ifobjc$$/,/^end ifobjc$$/d" \
 	  -e "/^ifc$$/d" -e "/^end ifc$$/d" \
-	  $(srcdir)/c-parse.in > $(srcdir)/c-parse.y
+	  $(srcdir)/c-parse.in >tmp-c-parse.y
+	$(srcdir)/move-if-change tmp-c-parse.y $(srcdir)/c-parse.y
 
 $(srcdir)/c-gperf.h: $(srcdir)/c-parse.gperf
 	gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$$ \
-	   $(srcdir)/c-parse.gperf > $(srcdir)/c-gperf.h
+	   $(srcdir)/c-parse.gperf >tmp-gperf.h
+	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
 c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h
@@ -957,7 +959,8 @@ $(srcdir)/objc-parse.c : $(srcdir)/objc-parse.y
 $(srcdir)/objc-parse.y: $(srcdir)/c-parse.in
 	sed -e "/^ifc$$/,/^end ifc$$/d" \
 	  -e "/^ifobjc$$/d" -e "/^end ifobjc$$/d" \
-	  $(srcdir)/c-parse.in > $(srcdir)/objc-parse.y
+	  $(srcdir)/c-parse.in >tmp-objc-parse.y
+	$(srcdir)/move-if-change tmp-objc-parse.y $(srcdir)/objc-parse.y
 
 objc-act.o : objc-act.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h c-lex.h \
    flags.h objc-act.h input.h function.h $(srcdir)/c-parse.h
@@ -1731,6 +1734,7 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 # Delete other temporary files.
 	-rm -f tmp-float.h tmp-gcc.xtar.gz
 	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
+	-rm tmp-c-parse.y tmp-objc-parse.y tmp-gperf.h
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
 	-rm -f */stamp-* */tmp-*
