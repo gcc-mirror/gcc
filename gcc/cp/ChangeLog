@@ -1,3 +1,8 @@
+2002-05-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	* init.c (build_vec_init): Test for trivial copy-assignment when
+	copy-assigning arrays.
+
 2002-05-20  Andreas Jaeger  <aj@suse.de>
 
 	* init.c (build_default_init): Remove unused variable.
