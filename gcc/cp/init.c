@@ -1785,6 +1785,9 @@ build_member_call (cname, name, parmlist)
 
   decl = build_indirect_ref (decl, NULL_PTR);
 
+  if (method_name == constructor_name (type)
+      || method_name == constructor_name_full (type))
+    return build_functional_cast (type, parmlist);
   if (t = lookup_fnfields (basetype_path, method_name, 0))
     return build_method_call (decl, method_name, parmlist, basetype_path,
 			      LOOKUP_NORMAL|LOOKUP_NONVIRTUAL);
@@ -2999,7 +3002,7 @@ build_new (placement, decl, init, use_global_new)
     {
       rval = build_opfncall (code, LOOKUP_GLOBAL|LOOKUP_COMPLAIN,
 			     ptr_type_node, size, placement);
-      rval = convert (TYPE_POINTER_TO (true_type), rval);
+      rval = convert (build_pointer_type (true_type), rval);
     }
   else if (! has_array && flag_this_is_variable > 0
 	   && TYPE_NEEDS_CONSTRUCTING (true_type) && init != void_type_node)

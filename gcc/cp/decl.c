@@ -9071,9 +9071,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    decl = grokfndecl (ctype, type, declarator,
 			       virtualp, flags, quals,
 			       raises, friendp ? -1 : 0, publicp);
-	    decl = build_decl_attribute_variant (decl, decl_machine_attr);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
+	    decl = build_decl_attribute_variant (decl, decl_machine_attr);
 
 	    if (explicitp == 2)
 	      DECL_NONCONVERTING_P (decl) = 1;
@@ -10904,13 +10904,6 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	DECL_EXTERNAL (decl1) = current_extern_inline;
       DECL_INTERFACE_KNOWN (decl1) = 1;
     }
-  else if (current_extern_inline)
-    {
-      /* `extern inline' acts like a declaration except for
-	 defining how to inline.  So set DECL_EXTERNAL in that case.  */
-      DECL_EXTERNAL (decl1) = 1;
-      DECL_INTERFACE_KNOWN (decl1) = 1;
-    }
   else
     {
       /* This is a definition, not a reference.
@@ -10918,7 +10911,8 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
       DECL_EXTERNAL (decl1) = 0;
       
       if (DECL_INLINE (decl1) && (DECL_FUNCTION_MEMBER_P (decl1)
-				  || DECL_TEMPLATE_INSTANTIATION (decl1)))
+				  || DECL_TEMPLATE_INSTANTIATION (decl1)
+				  || current_extern_inline))
 	/* We know nothing yet */;
       else
 	{

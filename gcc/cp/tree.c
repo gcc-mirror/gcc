@@ -1782,15 +1782,18 @@ copy_to_permanent (t)
 {
   register struct obstack *ambient_obstack = current_obstack;
   register struct obstack *ambient_saveable_obstack = saveable_obstack;
+  int resume;
 
   if (t == NULL_TREE || TREE_PERMANENT (t))
     return t;
 
   saveable_obstack = &permanent_obstack;
   current_obstack = saveable_obstack;
+  resume = suspend_momentary ();
 
   t = make_deep_copy (t);
 
+  resume_momentary (resume);
   current_obstack = ambient_obstack;
   saveable_obstack = ambient_saveable_obstack;
 

@@ -1392,6 +1392,7 @@ build_m_component_ref (datum, component)
   tree type;
   tree objtype = TREE_TYPE (datum);
   tree rettype;
+  tree binfo;
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (component)))
     {
@@ -1424,13 +1425,16 @@ build_m_component_ref (datum, component)
       cp_error ("which is of non-aggregate type `%T'", objtype);
       return error_mark_node;
     }
-  
-  if (! comptypes (TYPE_METHOD_BASETYPE (type), objtype, 0))
+
+  binfo = get_binfo (TYPE_METHOD_BASETYPE (type), objtype, 1);
+  if (binfo == NULL_TREE)
     {
       cp_error ("member type `%T::' incompatible with object type `%T'",
 		TYPE_METHOD_BASETYPE (type), objtype);
       return error_mark_node;
     }
+  else if (binfo == error_mark_node)
+    return error_mark_node;
 
   return build (OFFSET_REF, rettype, datum, component);
 }
@@ -1491,7 +1495,7 @@ build_functional_cast (exp, parms)
     {
       name = TYPE_NAME (type);
       if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NAME (name);
+	name = DECL_NESTED_TYPENAME (name);
     }
 
   if (! IS_AGGR_TYPE (type))

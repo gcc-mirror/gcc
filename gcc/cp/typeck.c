@@ -389,7 +389,12 @@ common_type (t1, t2)
 	  t1 = build_pointer_type (target);
 	else
 	  t1 = build_reference_type (target);
-	return build_type_attribute_variant (t1, attributes);
+	t1 = build_type_attribute_variant (t1, attributes);
+
+	if (TREE_CODE (target) == METHOD_TYPE)
+	  t1 = build_ptrmemfunc_type (t1);
+
+	return t1;
       }
 #if 0
     case POINTER_TYPE:
@@ -464,13 +469,24 @@ common_type (t1, t2)
 	compiler_error ("common_type called with uncommon aggregate types");
 
     case METHOD_TYPE:
-      if (comptypes (TYPE_METHOD_BASETYPE (t1), TYPE_METHOD_BASETYPE (t2), 1)
-	  && TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2)))
+      if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2)))
 	{
 	  /* Get this value the long way, since TYPE_METHOD_BASETYPE
 	     is just the main variant of this.  */
-	  tree basetype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t1)));
+	  tree basetype;
 	  tree raises, t3;
+
+	  tree b1 = TYPE_OFFSET_BASETYPE (t1);
+	  tree b2 = TYPE_OFFSET_BASETYPE (t2);
+
+	  if (DERIVED_FROM_P (b1, b2) && binfo_or_else (b1, b2))
+	    basetype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t2)));
+	  else
+	    {
+	      if (binfo_or_else (b2, b1) == NULL_TREE)
+		compiler_error ("common_type called with uncommon method types");
+	      basetype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t1)));
+	    }
 
 	  raises = TYPE_RAISES_EXCEPTIONS (t1);
 
@@ -489,16 +505,15 @@ common_type (t1, t2)
       return build_type_attribute_variant (t1, attributes);
 
     case OFFSET_TYPE:
-      if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2)))
+      if (TREE_TYPE (t1) == TREE_TYPE (t2))
 	{
 	  tree b1 = TYPE_OFFSET_BASETYPE (t1);
 	  tree b2 = TYPE_OFFSET_BASETYPE (t2);
-	  tree base;
 
 	  if (DERIVED_FROM_P (b1, b2) && binfo_or_else (b1, b2))
-	    return build_type_attribute_variant (t1, attributes);
-	  else if (binfo_or_else (b2, b1))
 	    return build_type_attribute_variant (t2, attributes);
+	  else if (binfo_or_else (b2, b1))
+	    return build_type_attribute_variant (t1, attributes);
 	}
       compiler_error ("common_type called with uncommon member types");
 
@@ -782,10 +797,7 @@ comp_target_types (ttl, ttr, nptrs)
 
       if (nptrs > 0)
 	{
-	  if (TREE_CODE (ttl) == POINTER_TYPE
-	      || TREE_CODE (ttl) == ARRAY_TYPE)
-	    return comp_ptr_ttypes (ttl, ttr);
-	  else if (TREE_CODE (ttl) == VOID_TYPE
+	  if (TREE_CODE (ttl) == VOID_TYPE
 		   && TREE_CODE (ttr) != FUNCTION_TYPE
 		   && TREE_CODE (ttr) != METHOD_TYPE
 		   && TREE_CODE (ttr) != OFFSET_TYPE)
@@ -795,6 +807,9 @@ comp_target_types (ttl, ttr, nptrs)
 		   && TREE_CODE (ttl) != METHOD_TYPE
 		   && TREE_CODE (ttl) != OFFSET_TYPE)
 	    return -1;
+	  else if (TREE_CODE (ttl) == POINTER_TYPE
+		   || TREE_CODE (ttl) == ARRAY_TYPE)
+	    return comp_ptr_ttypes (ttl, ttr);
 	}
 
       return comp_target_types (ttl, ttr, nptrs - 1);
@@ -4588,7 +4603,7 @@ build_conditional_expr (ifexp, op1, op2)
     {
       if (code2 == ENUMERAL_TYPE)
 	{
-	  message_2_types (error, "enumeral mismatch in conditional expression: `%s' vs `%s'", type1, type2);
+	  cp_error ("enumeral mismatch in conditional expression: `%T' vs `%T'", type1, type2);
 	  return error_mark_node;
 	}
       else if (extra_warnings && ! IS_AGGR_TYPE_CODE (code2))
@@ -4602,12 +4617,16 @@ build_conditional_expr (ifexp, op1, op2)
     {
       op1 = default_conversion (op1);
       type1 = TREE_TYPE (op1);
+      if (TYPE_PTRMEMFUNC_P (type1))
+	type1 = TYPE_PTRMEMFUNC_FN_TYPE (type1);
       code1 = TREE_CODE (type1);
     }
   if (code2 != VOID_TYPE)
     {
       op2 = default_conversion (op2);
       type2 = TREE_TYPE (op2);
+      if (TYPE_PTRMEMFUNC_P (type2))
+	type2 = TYPE_PTRMEMFUNC_FN_TYPE (type2);
       code2 = TREE_CODE (type2);
     }
 
@@ -4721,7 +4740,7 @@ build_conditional_expr (ifexp, op1, op2)
 	 an aggregate value, try converting to a scalar type.  */
       if (code1 == RECORD_TYPE && code2 == RECORD_TYPE)
 	{
-	  message_2_types (error, "aggregate mismatch in conditional expression: `%s' vs `%s'", type1, type2);
+	  cp_error ("aggregate mismatch in conditional expression: `%T' vs `%T'", type1, type2);
 	  return error_mark_node;
 	}
       if (code1 == RECORD_TYPE && TYPE_HAS_CONVERSION (type1))
@@ -6765,8 +6784,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
     return convert (type, rhs);
 
   /* C++ */
-  else if (((coder == POINTER_TYPE && TREE_CODE (rhs) == ADDR_EXPR
-	     && TREE_CODE (rhstype) == POINTER_TYPE
+  else if (((coder == POINTER_TYPE
 	     && TREE_CODE (TREE_TYPE (rhstype)) == METHOD_TYPE)
 	    || integer_zerop (rhs)
 	    || TYPE_PTRMEMFUNC_P (rhstype))
