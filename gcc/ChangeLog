@@ -1,5 +1,12 @@
 2004-11-15  Mark Mitchell <mark@codesourcery.com>
 
+	* config/i386/sol2.h (ASM_OUTPUT_CALL): Use print_operand.
+	* config/sparc/sol2.h (ASM_OUTPUT_CALL): Likewise.
+	* config/sol2.c (solaris_output_init_fini): Update calls to
+	ASM_OUTPUT_CALL.  Include "rtl.h".
+
+2004-11-15  Mark Mitchell <mark@codesourcery.com>
+
 	* config/sol2-c.c (cmn_err_char_table): Add "p".
 
 2004-11-15  Mark Mitchell <mark@codesourcery.com>
