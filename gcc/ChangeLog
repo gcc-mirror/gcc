@@ -1,3 +1,34 @@
+2001-08-01  Ziemowit Laski  <zlaski@apple.com>
+
+        * c-parse.in (OBJC_NEED_RAW_IDENTIFIER): Define macro and flag for
+	contextualizing Objective-C class name lookup by the lexer.
+	(typespec_reserved_nonattr): Disable ObjC class name lookup after
+	seeing a TYPESPEC.
+	(protocoldef): Add support for forward @protocol declarations.
+	(yylexname): Suppress ObjC class name lookup in certain contexts;
+	re-enable after lookup is complete.
+	(_yylex): Re-enable ObjC class name lookup when certain
+	punctuation marks are seen.
+
+	* objc/objc-act.c (check_protocol_recursively): New function used
+	for finding circular dependencies in protocols.
+	(objc_declare_protocols): New function for handling forward
+	@protocol declarations.
+	(receiver_is_class_object): Detect the case when 'self' is used
+	inside of a class method.
+	(build_message_expr): Issue a warning if class method is desired
+	but instance method is found instead.
+	(conforms_to_protocol): Streamline.
+	(objc_comptypes): Detect the fact that 'Bar<Foo> foo' conforms to
+	protocol Foo, even if 'Bar foo' does not.
+	(check_protocols): Streamline.
+	(start_protocol): Add checks for circular and duplicate protocol
+	definitions.
+	(encode_aggregate_within): For typedefs of structs, encode the
+	underlying struct.
+	* objc/objc-act.h (PROTOCOL_DEFINED): New tree accessor.
+	(objc_declare_protocols): New prototype.
+
 2001-08-01  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* cpphash.h (struct cpp_reader): New members line, pseudo_newlines.

@@ -1,5 +1,5 @@
 /* Declarations for objc-act.c.
-   Copyright (C) 1990, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -59,6 +59,7 @@ extern tree objc_ellipsis_node;
 
 void objc_declare_alias				PARAMS ((tree, tree));
 void objc_declare_class				PARAMS ((tree));
+void objc_declare_protocols			PARAMS ((tree));
 
 extern int objc_receiver_context;
 
@@ -101,6 +102,7 @@ tree build_encode_expr				PARAMS ((tree));
 #define PROTOCOL_NST_METHODS(CLASS) ((CLASS)->type.minval)
 #define PROTOCOL_CLS_METHODS(CLASS) ((CLASS)->type.maxval)
 #define PROTOCOL_FORWARD_DECL(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 1)
+#define PROTOCOL_DEFINED(CLASS) TREE_USED (CLASS)
 #define TYPE_PROTOCOL_LIST(TYPE) ((TYPE)->type.context)
 
 /* Define the Objective-C or Objective-C++ language-specific tree codes.  */
