@@ -790,9 +790,6 @@ java::lang::Class::initializeClass (void)
 	}
     }
 
-  if (isInterface ())
-    _Jv_LayoutInterfaceMethods (this);
-
   _Jv_PrepareConstantTimeTables (this);
 
   if (vtable == NULL)
