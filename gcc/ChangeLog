@@ -1,3 +1,9 @@
+Sun Oct 17 11:02:52 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (ggc-common.o): Depend on genrtl.h.
+	(ggc-simple.o): Likewise.
+	(ggc-page.o): Likewise.
+
 Sun Oct 17 02:09:50 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* basic-block.h (pre_edge_lcm, pre_edge_rev_lcm, compute_available):
