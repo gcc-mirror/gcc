@@ -163,7 +163,7 @@
 
    struct Toupper
    {
-       Toupper (std::locale const&amp; l) : loc(l) {;}
+       Toupper(std::locale const&amp; l) : loc(l) {;}
        char operator() (char c)  { return std::toupper(c,loc); }
    private:
        std::locale const&amp; loc;
@@ -171,7 +171,7 @@
    
    struct Tolower
    {
-       Tolower (std::locale const&amp; l) : loc(l) {;}
+       Tolower(std::locale const&amp; l) : loc(l) {;}
        char operator() (char c)  { return std::tolower(c,loc); }
    private:
        std::locale const&amp; loc;
@@ -179,26 +179,21 @@
    
    int main ()
    {
-      std::string  s ("Some Kind Of Initial Input Goes Here");
-      Toupper      up   ( std::locale("C") );
-      Tolower      down ( std::locale("C") );
+      std::string  s("Some Kind Of Initial Input Goes Here");
+      std::locale loc_c("C");
+      Toupper      up(loc_c);
+      Tolower      down(loc_c);
    
-      // Change everything into upper case
-      std::transform (s.begin(), s.end(), s.begin(),
-                      up
-                     );
+      // Change everything into upper case.
+      std::transform(s.begin(), s.end(), s.begin(), up);
    
-      // Change everything into lower case
-      std::transform (s.begin(), s.end(), s.begin(),
-                      down
-                     );
+      // Change everything into lower case.
+      std::transform(s.begin(), s.end(), s.begin(), down);
    
       // Change everything back into upper case, but store the
-      // result in a different string
+      // result in a different string.
       std::string  capital_s;
-      std::transform (s.begin(), s.end(), std::back_inserter(capital_s),
-                      up
-                     );
+      std::transform(s.begin(), s.end(), std::back_inserter(capital_s), up);
    }</pre>
    </p>
    <p>The final version of the code uses <code>bind2nd</code> to eliminate

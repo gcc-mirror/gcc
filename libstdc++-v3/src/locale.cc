@@ -284,11 +284,11 @@ namespace std
   const locale&
   locale::classic()
   {
-    static _STL_mutex_lock __lock __STL_MUTEX_INITIALIZER;
-    _STL_auto_lock __auto(__lock);
-
     if (!_S_classic)
       {
+	static _STL_mutex_lock __lock __STL_MUTEX_INITIALIZER;
+	_STL_auto_lock __auto(__lock);
+
 	try 
 	  {
 	    // 26 Standard facets, 2 references.
