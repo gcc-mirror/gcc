@@ -2147,7 +2147,7 @@ __bb_init_prg ()
       bb_hashbuckets = (struct bb_edge **) 
                    malloc (BB_BUCKETS * sizeof (struct bb_edge *));
       if (bb_hashbuckets)
-        bzero ((char *) bb_hashbuckets, BB_BUCKETS);
+        bzero ((char *) bb_hashbuckets, BB_BUCKETS * sizeof (struct bb_edge *))
     }
 
   if (bb_mode & 12)
