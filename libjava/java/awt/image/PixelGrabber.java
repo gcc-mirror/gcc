@@ -155,15 +155,7 @@ public class PixelGrabber implements ImageConsumer
      */
     public boolean grabPixels() throws InterruptedException
     {
-	startGrabbing();
-	while ( (status != ImageObserver.ALLBITS ) ||
-		(status != ImageObserver.ERROR ) ||
-		(status != ImageObserver.ABORT ) );
-
-	if( status == ImageObserver.ALLBITS )
-	    return true;
-	else
-	    return false;
+      return grabPixels(0);
     }
 
     /**
@@ -176,24 +168,17 @@ public class PixelGrabber implements ImageConsumer
      */
     public synchronized boolean grabPixels(long ms) throws InterruptedException
     {
-	long start = System.currentTimeMillis();
 	startGrabbing();
-	while ( (status != ImageObserver.ALLBITS ) ||
-		(status != ImageObserver.ERROR ) ||
-		(status != ImageObserver.ABORT ) )
-	    {
-		if( (System.currentTimeMillis() - start ) >= ms )
-		    {
-			abortGrabbing();
-			throw new InterruptedException();
-		    }
-	    }
-
-	if( status == ImageObserver.ALLBITS )
+	
+	if (ms < 0)
+	  return (status == ImageObserver.ALLBITS);
+	
+	wait(ms);
+	
+	if (status == ImageObserver.ALLBITS)
 	    return true;
 	else
 	    return false;
-	
     }
 
     /**
