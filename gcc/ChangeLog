@@ -1,3 +1,8 @@
+Tue Sep 21 11:15:03 1999  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* extend.texi (Bound member functions): Document unbound pmf
+	conversion.
+
 Tue Sep 21 14:55:11 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* flow.c (split_edge): Handle insertion on a fallthrough edge which
