@@ -3188,14 +3188,14 @@ can_throw_external (rtx insn)
   return can_throw_external_1 (INTVAL (XEXP (note, 0)));
 }
 
-/* Set current_function_nothrow and cfun->all_throwers_are_sibcalls.  */
+/* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */
 
 void
 set_nothrow_function_flags (void)
 {
   rtx insn;
 
-  current_function_nothrow = 1;
+  TREE_NOTHROW (current_function_decl) = 1;
 
   /* Assume cfun->all_throwers_are_sibcalls until we encounter
      something that can throw an exception.  We specifically exempt
@@ -3211,7 +3211,7 @@ set_nothrow_function_flags (void)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (can_throw_external (insn))
       {
-	current_function_nothrow = 0;
+        TREE_NOTHROW (current_function_decl) = 0;
 
 	if (GET_CODE (insn) != CALL_INSN || !SIBLING_CALL_P (insn))
 	  {
@@ -3224,7 +3224,7 @@ set_nothrow_function_flags (void)
        insn = XEXP (insn, 1))
     if (can_throw_external (insn))
       {
-	current_function_nothrow = 0;
+        TREE_NOTHROW (current_function_decl) = 0;
 
 	if (GET_CODE (insn) != CALL_INSN || !SIBLING_CALL_P (insn))
 	  {
