@@ -1,3 +1,7 @@
+Sat Feb 26 19:50:23 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Make-lang.in (CXX_SRCS): Add .h files and sort list.
+
 2000-02-26  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Make-lang.in: Delete refs to LIBGCC2_DEPS.

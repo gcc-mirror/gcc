@@ -1,5 +1,6 @@
 # Top level makefile fragment for GNU C++.
-#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000
+#   Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -108,17 +109,17 @@ $(DEMANGLER_PROG): cxxmain.o underscore.o $(LIBDEPS)
 	$(CC) -o $@ $(ALL_CFLAGS) $(LDFLAGS) \
 	  cxxmain.o underscore.o $(LIBS)
 
-CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
- $(srcdir)/cp/except.c $(srcdir)/cp/input.c $(srcdir)/cp/pt.c \
- $(srcdir)/cp/spew.c $(srcdir)/cp/xref.c $(srcdir)/cp/class.c \
- $(srcdir)/cp/expr.c $(srcdir)/cp/lex.c \
- $(srcdir)/cp/ptree.c $(srcdir)/cp/tree.c $(srcdir)/cp/cvt.c \
- $(srcdir)/cp/errfn.c $(srcdir)/cp/rtti.c $(srcdir)/cp/method.c \
- $(srcdir)/cp/search.c $(srcdir)/cp/typeck.c $(srcdir)/cp/decl.c \
- $(srcdir)/cp/error.c $(srcdir)/cp/friend.c $(srcdir)/cp/init.c \
- $(srcdir)/cp/parse.y $(srcdir)/cp/typeck2.c \
- $(srcdir)/cp/repo.c $(srcdir)/cp/semantics.c \
- $(srcdir)/cp/dump.c $(srcdir)/cp/optimize.c
+CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/class.c $(srcdir)/cp/cp-tree.def \
+ $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cvt.c $(srcdir)/cp/decl.c \
+ $(srcdir)/cp/decl.h $(srcdir)/cp/decl2.c $(srcdir)/cp/dump.c \
+ $(srcdir)/cp/errfn.c $(srcdir)/cp/error.c $(srcdir)/cp/except.c \
+ $(srcdir)/cp/expr.c $(srcdir)/cp/friend.c $(srcdir)/cp/init.c \
+ $(srcdir)/cp/input.c $(srcdir)/cp/lex.c $(srcdir)/cp/lex.h \
+ $(srcdir)/cp/method.c $(srcdir)/cp/optimize.c $(srcdir)/cp/parse.y \
+ $(srcdir)/cp/pt.c $(srcdir)/cp/ptree.c $(srcdir)/cp/repo.c \
+ $(srcdir)/cp/rtti.c $(srcdir)/cp/search.c $(srcdir)/cp/semantics.c \
+ $(srcdir)/cp/spew.c $(srcdir)/cp/tree.c $(srcdir)/cp/typeck.c \
+ $(srcdir)/cp/typeck2.c $(srcdir)/cp/xref.c
 
 cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o \
         c-pragma.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \
