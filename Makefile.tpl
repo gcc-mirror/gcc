@@ -64,14 +64,10 @@ man7dir = $(mandir)/man7
 man8dir = $(mandir)/man8
 man9dir = $(mandir)/man9
 
-# INSTALL_PROGRAM_ARGS is changed by configure.in to use -x for a
-# cygwin host.
-INSTALL_PROGRAM_ARGS =
-
-INSTALL = $(SHELL) $$s/install-sh -c
-INSTALL_PROGRAM = $(INSTALL) $(INSTALL_PROGRAM_ARGS)
-INSTALL_SCRIPT = $(INSTALL)
-INSTALL_DATA = $(INSTALL) -m 644
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+INSTALL_DATA = @INSTALL_DATA@
 
 # -------------------------------------------------
 # Miscellaneous non-standard autoconf-set variables
