@@ -967,11 +967,11 @@ from C, such as C++ and Objective-C) that the compiler accepts:
 @cindex ISO support
 @item -ansi
 @opindex ansi
-In C mode, support all ISO C89 programs.  In C++ mode,
+In C mode, support all ISO C90 programs.  In C++ mode,
 remove GNU extensions that conflict with ISO C++.
 
 This turns off certain features of GCC that are incompatible with ISO
-C89 (when compiling C code), or of standard C++ (when compiling C++ code),
+C90 (when compiling C code), or of standard C++ (when compiling C++ code),
 such as the @code{asm} and @code{typeof} keywords, and
 predefined macros such as @code{unix} and @code{vax} that identify the
 type of system you are using.  It also enables the undesirable and
@@ -1012,10 +1012,10 @@ possible values are
 @table @samp
 @item c89
 @itemx iso9899:1990
-ISO C89 (same as @option{-ansi}).
+ISO C90 (same as @option{-ansi}).
 
 @item iso9899:199409
-ISO C89 as modified in amendment 1.
+ISO C90 as modified in amendment 1.
 
 @item c99
 @itemx c9x
@@ -1026,7 +1026,7 @@ ISO C99.  Note that this standard is not yet fully supported; see
 names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
 @item gnu89
-Default, ISO C89 plus GNU extensions (including some C99 features).
+Default, ISO C90 plus GNU extensions (including some C99 features).
 
 @item gnu99
 @item gnu9x
@@ -1041,7 +1041,7 @@ previous C standards.  For example, you may use @code{__restrict__} even
 when @option{-std=c99} is not specified.
 
 The @option{-std} options specifying some version of ISO C have the same
-effects as @option{-ansi}, except that features that were not in ISO C89
+effects as @option{-ansi}, except that features that were not in ISO C90
 but are in the specified version (for example, @samp{//} comments and
 the @code{inline} keyword in ISO C99) are not disabled.
 
@@ -1837,7 +1837,7 @@ attributes (@pxref{Function Attributes}), in the @code{printf},
 not in the C standard) families.
 
 The formats are checked against the format features supported by GNU
-libc version 2.2.  These include all ISO C89 and C99 features, as well
+libc version 2.2.  These include all ISO C90 and C99 features, as well
 as features from the Single Unix Specification and some BSD and GNU
 extensions.  Other library implementations may not support all these
 features; GCC does not support warning about features that go beyond a
