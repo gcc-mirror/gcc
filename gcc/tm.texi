@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,97,98,1999 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92-99,2000 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -4719,10 +4719,11 @@ recognize RTL structures like this:
 and likewise for @code{HImode}.
 
 @findex SLOW_UNALIGNED_ACCESS
-@item SLOW_UNALIGNED_ACCESS
-Define this macro to be the value 1 if unaligned accesses have a cost
-many times greater than aligned accesses, for example if they are
-emulated in a trap handler.
+@item SLOW_UNALIGNED_ACCESS (@var{mode}, @var{alignment})
+Define this macro to be the value 1 if memory accesses described by the
+@var{mode} and @var{alignment} parameters have a cost many times greater
+than aligned accesses, for example if they are emulated in a trap
+handler.
 
 When this macro is non-zero, the compiler will act as if
 @code{STRICT_ALIGNMENT} were non-zero when generating code for block
