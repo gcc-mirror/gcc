@@ -1496,7 +1496,8 @@ extraclean: distclean
 	-rm -f config/*/*.orig config/*/*.rej
 	-rm -f objc/=* objc/"#"* objc/*~*
 	-rm -f objc/*.orig objc/*.rej
-	-rm -f *.dvi *.oaux *.d *.[zZ] *.tar *.xtar *diff
+	-rm -f *.dvi *.oaux *.d *.[zZ] *.gz
+	-rm -f *.tar *.xtar *diff *.diff.* *.tar.* *.xtar.* *diffs
 	-rm -f *lose config/*lose config/*/*lose
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
 
