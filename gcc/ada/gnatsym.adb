@@ -111,7 +111,8 @@ procedure Gnatsym is
          Write_Eol;
          Write_Str ("GNATSYMB ");
          Write_Str (Gnat_Version_String);
-         Write_Str (" Copyright 2003-2004 Free Software Foundation, Inc");
+         Write_Eol;
+         Write_Str ("Copyright 2003-2004 Free Software Foundation, Inc");
          Write_Eol;
          Copyright_Displayed := True;
       end if;

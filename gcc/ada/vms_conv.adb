@@ -661,8 +661,8 @@ package body VMS_Conv is
    procedure Output_Version is
    begin
       Put ("GNAT ");
-      Put (Gnatvsn.Gnat_Version_String);
-      Put_Line (" Copyright 1996-2004 Free Software Foundation, Inc.");
+      Put_Line (Gnatvsn.Gnat_Version_String);
+      Put_Line ("Copyright 1996-2004 Free Software Foundation, Inc.");
    end Output_Version;
 
    -----------
