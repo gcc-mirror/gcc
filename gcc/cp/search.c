@@ -1639,9 +1639,12 @@ tree
 dfs_walk_once (tree binfo, tree (*pre_fn) (tree, void *),
 	       tree (*post_fn) (tree, void *), void *data)
 {
+  static int active = 0;  /* We must not be called recursively. */
   tree rval;
 
   gcc_assert (pre_fn || post_fn);
+  gcc_assert (!active);
+  active++;
   
   if (!CLASSTYPE_DIAMOND_SHAPED_P (BINFO_TYPE (binfo)))
     /* We are not diamond shaped, and therefore cannot encounter the
@@ -1666,6 +1669,9 @@ dfs_walk_once (tree binfo, tree (*pre_fn) (tree, void *),
       else
 	dfs_unmark_r (binfo);
     }
+
+  active--;
+  
   return rval;
 }
 

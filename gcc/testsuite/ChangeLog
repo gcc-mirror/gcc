@@ -1,3 +1,8 @@
+2005-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19891
+	* g++.dg/abi/covariant4.C: New.
+
 2005-02-13  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/pr15784-1.c, gcc.dg/pr15784-2.c, gcc.dg/pr15784-3.c: New tests.

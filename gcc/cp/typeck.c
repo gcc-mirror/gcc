@@ -1750,7 +1750,7 @@ build_class_member_access_expr (tree object, tree member,
 	 expression itself.  */
       if (type_quals & TYPE_QUAL_CONST)
 	TREE_READONLY (result) = 1;
-      else if (type_quals & TYPE_QUAL_VOLATILE)
+      if (type_quals & TYPE_QUAL_VOLATILE)
 	TREE_THIS_VOLATILE (result) = 1;
     }
   else if (BASELINK_P (member))

@@ -408,7 +408,18 @@ build_simple_base_path (tree expr, tree binfo)
 
   if (d_binfo == NULL_TREE)
     {
+      tree temp;
+      
       gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (expr)) == type);
+      
+      /* Transform `(a, b).x' into `(*(a, &b)).x', `(a ? b : c).x'
+     	 into `(*(a ?  &b : &c)).x', and so on.  A COND_EXPR is only
+     	 an lvalue in the frontend; only _DECLs and _REFs are lvalues
+     	 in the backend.  */
+      temp = unary_complex_lvalue (ADDR_EXPR, expr);
+      if (temp)
+	expr = build_indirect_ref (temp, NULL);
+
       return expr;
     }
 
@@ -421,8 +432,27 @@ build_simple_base_path (tree expr, tree binfo)
     if (TREE_CODE (field) == FIELD_DECL
 	&& DECL_FIELD_IS_BASE (field)
 	&& TREE_TYPE (field) == type)
-      return build_class_member_access_expr (expr, field,
-					     NULL_TREE, false);
+      {
+	/* We don't use build_class_member_access_expr here, as that
+	   has unnecessary checks, and more importantly results in
+	   recursive calls to dfs_walk_once.  */
+	int type_quals = cp_type_quals (TREE_TYPE (expr));
+
+	expr = build3 (COMPONENT_REF,
+		       cp_build_qualified_type (type, type_quals),
+		       expr, field, NULL_TREE);
+	expr = fold_if_not_in_template (expr);
+	
+	/* Mark the expression const or volatile, as appropriate.
+	   Even though we've dealt with the type above, we still have
+	   to mark the expression itself.  */
+	if (type_quals & TYPE_QUAL_CONST)
+	  TREE_READONLY (expr) = 1;
+	if (type_quals & TYPE_QUAL_VOLATILE)
+	  TREE_THIS_VOLATILE (expr) = 1;
+	
+	return expr;
+      }
 
   /* Didn't find the base field?!?  */
   gcc_unreachable ();
@@ -1996,6 +2026,9 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
          also be converting to the return type of FN, we have to
          combine the two conversions here.  */
       tree fixed_offset, virtual_offset;
+
+      over_return = TREE_TYPE (over_return);
+      base_return = TREE_TYPE (base_return);
       
       if (DECL_THUNK_P (fn))
 	{
@@ -2011,32 +2044,47 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 	   overriding function. We will want the vbase offset from
 	   there.  */
 	virtual_offset = binfo_for_vbase (BINFO_TYPE (virtual_offset),
-					  TREE_TYPE (over_return));
-      else if (!same_type_p (TREE_TYPE (over_return),
-			     TREE_TYPE (base_return)))
+					  over_return);
+      else if (!same_type_ignoring_top_level_qualifiers_p
+	       (over_return, base_return))
 	{
 	  /* There was no existing virtual thunk (which takes
-	     precedence).  */
-	  tree thunk_binfo;
-	  base_kind kind;
-	  
-	  thunk_binfo = lookup_base (TREE_TYPE (over_return),
-				     TREE_TYPE (base_return),
-				     ba_check | ba_quiet, &kind);
+	     precedence).  So find the binfo of the base function's
+	     return type within the overriding function's return type.
+	     We cannot call lookup base here, because we're inside a
+	     dfs_walk, and will therefore clobber the BINFO_MARKED
+	     flags.  Fortunately we know the covariancy is valid (it
+	     has already been checked), so we can just iterate along
+	     the binfos, which have been chained in inheritance graph
+	     order.  Of course it is lame that we have to repeat the
+	     search here anyway -- we should really be caching pieces
+	     of the vtable and avoiding this repeated work.  */
+	  tree thunk_binfo, base_binfo;
 
-	  if (thunk_binfo && (kind == bk_via_virtual
-			      || !BINFO_OFFSET_ZEROP (thunk_binfo)))
+	  /* Find the base binfo within the overriding function's
+	     return type.  */
+	  for (base_binfo = TYPE_BINFO (base_return),
+	       thunk_binfo = TYPE_BINFO (over_return);
+	       !SAME_BINFO_TYPE_P (BINFO_TYPE (thunk_binfo),
+				   BINFO_TYPE (base_binfo));
+	       thunk_binfo = TREE_CHAIN (thunk_binfo))
+	    continue;
+
+	  /* See if virtual inheritance is involved.  */
+	  for (virtual_offset = thunk_binfo;
+	       virtual_offset;
+	       virtual_offset = BINFO_INHERITANCE_CHAIN (virtual_offset))
+	    if (BINFO_VIRTUAL_P (virtual_offset))
+	      break;
+	  
+	  if (virtual_offset || !BINFO_OFFSET_ZEROP (thunk_binfo))
 	    {
 	      tree offset = convert (ssizetype, BINFO_OFFSET (thunk_binfo));
 
-	      if (kind == bk_via_virtual)
+	      if (virtual_offset)
 		{
-		  /* We convert via virtual base. Find the virtual
-		     base and adjust the fixed offset to be from there.  */
-		  while (!BINFO_VIRTUAL_P (thunk_binfo))
-		    thunk_binfo = BINFO_INHERITANCE_CHAIN (thunk_binfo);
-
-		  virtual_offset = thunk_binfo;
+		  /* We convert via virtual base.  Adjust the fixed
+		     offset to be from there.  */
 		  offset = size_diffop
 		    (offset, convert
 		     (ssizetype, BINFO_OFFSET (virtual_offset)));
