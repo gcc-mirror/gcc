@@ -1,3 +1,8 @@
+2003-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/10320
+	* gcc.c-torture/execute/20030718-1.c: New test.
+
 2003-07-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
         PR optimization/11536
