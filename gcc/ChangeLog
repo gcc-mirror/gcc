@@ -1,5 +1,9 @@
 Sat Jun 13 08:26:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload.c (find_reloads, case 'o'): All reloaded addresses
+	are offsettable.
+	(find_reloads_address): If replacing address, don't return 1.
+
 	* profile.c (output_func_start_profiler): Add missing steps in
 	defining function.
 
