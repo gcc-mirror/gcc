@@ -147,7 +147,7 @@ uninstall:
 	  dists="$(DISTFILES.common)"; \
 	  for file in $$dists; do \
 	    rm -f $(gettextsrcdir)/$$file; \
-	  done
+	  done; \
 	else \
 	  : ; \
 	fi

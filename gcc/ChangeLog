@@ -1,3 +1,7 @@
+Tue Feb  2 19:43:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* intl/Makefile.in (uninstall): Add missing "; \".
+
 Tue Feb  2 18:21:23 1999  Stan Cox  <scox@cygnus.com>
 
 	* sparc.h (TARGET_CPU_sparc86x): Added. TARGET_CPU_sparclite86x synonym.
