@@ -2640,16 +2640,14 @@ extern tree handle_class_head			PROTO((tree, tree, tree));
 extern tree lookup_arg_dependent                PROTO((tree, tree, tree));
 
 /* in errfn.c */
-#ifndef NO_CP_ERROR_FNS
-extern void cp_error				();
-extern void cp_error_at				();
-extern void cp_warning				();
-extern void cp_warning_at			();
-extern void cp_pedwarn				();
-extern void cp_pedwarn_at			();
-extern void cp_compiler_error			();
-extern void cp_sprintf				();
-#endif
+extern void cp_error				PVPROTO((error_code, ...));
+extern void cp_error_at				PVPROTO((error_code, ...));
+extern void cp_warning				PVPROTO((error_code, ...));
+extern void cp_warning_at			PVPROTO((error_code, ...));
+extern void cp_pedwarn				PVPROTO((error_code, ...));
+extern void cp_pedwarn_at			PVPROTO((error_code, ...));
+extern void cp_compiler_error			PVPROTO((error_code, ...));
+extern void cp_sprintf				PVPROTO((error_code, ...));
 extern void cp_enable_warning                   PROTO((int, int));
 
 /* in error.c */

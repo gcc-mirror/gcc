@@ -1,3 +1,18 @@
+1998-09-07  Mark Mitchell  <mark@markmitchell.com>
+	    and Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	
+	* cp-tree.h (cp_error): Prototype.
+	(cp_error_at): Likewise.
+	(cp_warning): Likewise.
+	(cp_warning_at): Likewise.
+	(cp_pedwarn): Likewise.
+	(cp_pedwarn_at): Likewise.
+	(cp_compiler_error): Likewise.
+	(cp_sprintf): Likewise.
+	(cp_enable_warning): Likewise.
+	* errfn.c: Remove hack to avoid error-function prototypes when
+	including cp-tree.h.
+	
 1998-09-06  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-error.def: New file.
