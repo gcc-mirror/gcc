@@ -1,3 +1,38 @@
+2002-09-16  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c: (legitimize_la_operand): Remove, replace by ...
+	(s390_load_address): ... this new function.
+	(s390_decompose_address): Allow the argument pointer and all
+	virtual registers as 'pointer' registers.
+	(s390_expand_plus_operand): Use s390_load_address.
+	config/s390/s390.md (movti, movdi, movdf splitters): Likewise.
+	("force_la_31"): New insn pattern.
+	config/s390/s390-protos.h (legitimize_la_operand): Remove.
+	(s390_load_address): Add prototype.
+
+	* config/s390/s390.c: Include "optabs.h".
+	(s390_expand_movstr, s390_expand_clrstr, s390_expand_cmpstr): New.
+	config/s390/s390-protos.h (s390_expand_movstr, s390_expand_clrstr, 
+	s390_expand_cmpstr): Add prototypes.
+	config/s390/s390.md ("movstrdi", "movstrsi"): Call s390_expand_movstr.
+	("movstrdi_short"): Rename to "movstr_short_64".  Change predicates
+	for operands 0 and 1 to "memory_operand".  Add type attribute.
+	("movstrsi_short"): Rename to "movstr_short_31".  Change predicates
+	for operands 0 and 1 to "memory_operand".  Add type attribute.
+	("movstrdi_long", "movstrsi_long"): Remove.
+	("movstrdi_64"): Rename to "movstr_long_64". Add type attribute.
+	("movstrsi_31"): Rename to "movstr_long_31". Add type attribute.
+	("clrstrdi", "clrstrsi"): Call s390_expand_clrstr.
+	("clrstrsico"): Remove, replace by ...
+	("clrstr_short_64", "clrstr_short_31"): ... these new patterns.
+	("clrstrsi_64"): Rename to "clrstr_long_64".
+	("clrstrsi_31"): Rename to "clrstr_long_31".
+	("cmpstrdi", "cmpstrsi"): Call s390_expand_cmpstr.
+	("cmpstr_const"): Remove, replace by ...
+	("cmpstr_short_64", "cmpstr_short_31"): ... these new patterns.
+	("cmpstr_64"): Rename to "cmpstr_long_64".
+	("cmpstr_31"): Rename to "cmpstr_long_31".
+
 2002-09-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ABOUT-NLS: Follow spelling conventions.
