@@ -4252,6 +4252,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	invalidate_mems_from_autoinc (pbi, insn);
 
       if (GET_CODE (reg) == MEM && ! side_effects_p (reg)
+	  /* ??? With more effort we could track conditional memory life.  */
+	  && ! cond
 	  /* We do not know the size of a BLKmode store, so we do not track
 	     them for redundant store elimination.  */
 	  && GET_MODE (reg) != BLKmode
