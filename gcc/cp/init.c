@@ -1812,7 +1812,7 @@ resolve_offset_ref (exp)
       base = current_class_ref;
     }
 
-  if (BASELINK_P (member))
+  if (BASELINK_P (member) || TREE_CODE (member) == TEMPLATE_ID_EXPR)
     return build_unary_op (ADDR_EXPR, exp, 0);
   
   if (TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
@@ -1824,7 +1824,7 @@ resolve_offset_ref (exp)
       
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
-
+  
   if ((TREE_CODE (member) == VAR_DECL
        && ! TYPE_PTRMEMFUNC_P (TREE_TYPE (member))
        && ! TYPE_PTRMEM_P (TREE_TYPE (member)))
