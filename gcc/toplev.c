@@ -179,6 +179,11 @@ const char *dump_base_name;
 
 extern int target_flags;
 
+/* A mask of target_flags that includes bit X if X was set or cleared
+   on the command line.  */
+
+int target_flags_explicit;
+
 /* Debug hooks - dependent upon command line options.  */
 
 const struct gcc_debug_hooks *debug_hooks = &do_nothing_debug_hooks;
@@ -4411,6 +4416,13 @@ set_target_switch (name)
 	  target_flags &= ~-target_switches[j].value;
 	else
 	  target_flags |= target_switches[j].value;
+	if (name[0] != 0)
+	  {
+	    if (target_switches[j].value < 0)
+	      target_flags_explicit |= -target_switches[j].value;
+	    else
+	      target_flags_explicit |= target_switches[j].value;
+	  }
 	valid_target_option = 1;
       }
 

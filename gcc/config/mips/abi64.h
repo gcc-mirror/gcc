@@ -21,11 +21,6 @@ Boston, MA 02111-1307, USA.  */
 /* Macros to implement the 64 bit ABI.  This file is meant to be included
    after mips.h.  */
 
-#undef SUBTARGET_TARGET_OPTIONS
-#define SUBTARGET_TARGET_OPTIONS \
-  { "abi=", &mips_abi_string,						\
-      "Specify ABI to use"},
-
 #undef STACK_BOUNDARY
 #define STACK_BOUNDARY \
   ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
