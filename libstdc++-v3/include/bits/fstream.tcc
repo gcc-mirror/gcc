@@ -252,7 +252,9 @@ namespace std
       
       if (__testout)
 	{
-	  if (__testput)
+	  if (traits_type::eq_int_type(__c, traits_type::eof()))
+	    __ret = traits_type::not_eof(__c);
+	  else if (__testput)
 	    {
 	      *this->_M_out_cur = traits_type::to_char_type(__c);
 	      _M_out_cur_move(1);
