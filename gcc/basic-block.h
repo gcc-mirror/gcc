@@ -138,6 +138,8 @@ typedef struct edge_def {
 #define EDGE_EH			16
 #define EDGE_FAKE		32
 
+#define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
+
 
 /* Basic block information indexed by block number.  */
 typedef struct basic_block_def {
