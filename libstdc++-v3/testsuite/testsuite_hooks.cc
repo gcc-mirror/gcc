@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -278,8 +278,7 @@ namespace __gnu_test
   };
 #endif
 
-  semaphore::semaphore ()
-  {
+  semaphore::semaphore() {
 #ifdef _GLIBCXX_SYSV_SEM
     // Remeber the PID for the process that created the semaphore set
     // so that only one process will destroy the set.
@@ -295,42 +294,40 @@ namespace __gnu_test
 #endif
 
     // Get a semaphore set with one semaphore.
-    sem_set_ = semget (IPC_PRIVATE, 1, SEM_R | SEM_A);
+    sem_set_ = semget(IPC_PRIVATE, 1, SEM_R | SEM_A);
     if (sem_set_ == -1)
       throw std::runtime_error ("could not obtain semaphore set");
 
     // Initialize the semaphore.
     union semun val;
     val.val = 0;
-    if (semctl (sem_set_, 0, SETVAL, val) == -1)
-      throw std::runtime_error ("could not initialize semaphore");
+    if (semctl(sem_set_, 0, SETVAL, val) == -1)
+      throw std::runtime_error("could not initialize semaphore");
 #else
     // There are no semaphores on this system.  We have no way to mark
     // a test as "unsupported" at runtime, so we just exit, pretending
     // that the test passed.
-    exit (0);
+    exit(0);
 #endif
   }
 
-  semaphore::~semaphore ()
-  {
+  semaphore::~semaphore() {
 #ifdef _GLIBCXX_SYSV_SEM
     union semun val;
     // Destroy the semaphore set only in the process that created it. 
-    if (pid_ == getpid ())
-      semctl (sem_set_, 0, IPC_RMID, val);
+    if (pid_ == getpid())
+      semctl(sem_set_, 0, IPC_RMID, val);
 #endif
   }
 
   void
-  semaphore::signal ()
-  {
+  semaphore::signal() {
 #ifdef _GLIBCXX_SYSV_SEM
     struct sembuf op[1] = {
       { 0, 1, 0 }
     };
-    if (semop (sem_set_, op, 1) == -1)
-      throw std::runtime_error ("could not signal semaphore");
+    if (semop(sem_set_, op, 1) == -1)
+      throw std::runtime_error("could not signal semaphore");
 #endif
   }
 
@@ -340,8 +337,8 @@ namespace __gnu_test
     struct sembuf op[1] = {
       { 0, -1, SEM_UNDO }
     };
-    if (semop (sem_set_, op, 1) == -1)
-      throw std::runtime_error ("could not wait for semaphore");
+    if (semop(sem_set_, op, 1) == -1)
+      throw std::runtime_error("could not wait for semaphore");
 #endif    
   }
 }; // namespace __gnu_test
