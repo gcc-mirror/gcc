@@ -3123,7 +3123,7 @@
             (const_int 4)
 
 ;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
                 (const_int 0))
             (const_int 8)
 
@@ -3177,7 +3177,7 @@
             (const_int 4)
 
 ;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
                 (const_int 0))
             (const_int 8)
 
@@ -3230,7 +3230,7 @@
             (const_int 4)
 
 ;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
                 (const_int 0))
             (const_int 8)
 
@@ -3280,7 +3280,7 @@
             (const_int 4)
 
 ;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
                 (const_int 0))
             (const_int 8)
 
@@ -3330,7 +3330,7 @@
             (const_int 4)
 
 ;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
                 (const_int 0))
             (const_int 8)
 
@@ -4145,7 +4145,7 @@
   rtx xoperands[2];
 
   /* First the special case for kernels, level 0 systems, etc.  */
-  if (TARGET_NO_SPACE_REGS)
+  if (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS)
     return \"ble 0(%%sr4,%%r22)\;copy %%r31,%%r2\";
 
   /* Now the normal case -- we can reach $$dyncall directly or
@@ -4181,7 +4181,7 @@
    (set (attr "length")
      (cond [
 ;; First NO_SPACE_REGS
-	    (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+	    (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
 		(const_int 0))
 	    (const_int 8)
 
@@ -4305,7 +4305,7 @@
   rtx xoperands[2];
 
   /* First the special case for kernels, level 0 systems, etc.  */
-  if (TARGET_NO_SPACE_REGS)
+  if (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS)
     return \"ble 0(%%sr4,%%r22)\;copy %%r31,%%r2\";
 
   /* Now the normal case -- we can reach $$dyncall directly or
@@ -4341,7 +4341,7 @@
    (set (attr "length")
      (cond [
 ;; First NO_SPACE_REGS
-	    (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+	    (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
 		(const_int 0))
 	    (const_int 8)
 
@@ -5214,7 +5214,7 @@
             (const_int 28)
 
 ;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
                 (const_int 0))
             (const_int 32)
 

@@ -116,7 +116,7 @@ override_options ()
       warning ("PIC code generation is not supported in the portable runtime model\n");
     }
 
-  if (flag_pic && TARGET_NO_SPACE_REGS)
+  if (flag_pic && (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS))
    {
       warning ("PIC code generation is not compatable with fast indirect calls\n");
    }
@@ -4550,7 +4550,7 @@ output_millicode_call (insn, call_dest)
 
       /* If we're allowed to use be/ble instructions, then this is the
 	 best sequence to use for a long millicode call.  */
-      if (TARGET_NO_SPACE_REGS
+      if (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS
 	  || ! (flag_pic  || TARGET_PORTABLE_RUNTIME))
 	{
 	  xoperands[0] = call_dest;
