@@ -1,3 +1,8 @@
+Sat Jun 27 23:23:18 1998  Carlo Wood  <carlo@runaway.xs4all.nl>
+
+	* gcc.c-torture/special/special.exp: Handle newer versions of
+	dejagnu.
+
 Fri Jun 26 17:57:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980626-1.c: New test.
