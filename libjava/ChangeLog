@@ -1,3 +1,9 @@
+2000-09-02  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GCJCOMPILE): Use -fclasspath, not the CLASSPATH
+	environment variable.
+
 2000-09-01  Andrew Haley  <aph@redhat.com>
 
         * java/io/StreamTokenizer.java: Don't throw a
