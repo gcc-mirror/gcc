@@ -1,3 +1,8 @@
+1999-07-05  Dave Brolley  <brolley@cygnus.com>
+
+	* lex.c (errorcount): Declare it.
+	(finish_parse): Update errorcount for when using CPPLIB.
+
 1999-07-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (IS_AGGR_TYPE): Include instantiated template template
