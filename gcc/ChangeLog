@@ -1,3 +1,9 @@
+2005-03-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/20331
+	* rtlanal.c (modified_between_p): Check its address first for MEM.
+	(modified_in_p): Likewise.
+
 2005-03-11  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config.gcc (hppa*64*-*-hpux11*): Use pa/t-hpux-shlib.

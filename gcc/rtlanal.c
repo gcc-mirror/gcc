@@ -817,10 +817,10 @@ modified_between_p (rtx x, rtx start, rtx end)
       return 1;
 
     case MEM:
-      if (MEM_READONLY_P (x))
-	return 0;
       if (modified_between_p (XEXP (x, 0), start, end))
 	return 1;
+      if (MEM_READONLY_P (x))
+	return 0;
       for (insn = NEXT_INSN (start); insn != end; insn = NEXT_INSN (insn))
 	if (memory_modified_in_insn_p (x, insn))
 	  return 1;
@@ -875,10 +875,10 @@ modified_in_p (rtx x, rtx insn)
       return 1;
 
     case MEM:
-      if (MEM_READONLY_P (x))
-	return 0;
       if (modified_in_p (XEXP (x, 0), insn))
 	return 1;
+      if (MEM_READONLY_P (x))
+	return 0;
       if (memory_modified_in_insn_p (x, insn))
 	return 1;
       return 0;
