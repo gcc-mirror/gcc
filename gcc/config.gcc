@@ -2602,6 +2602,12 @@ powerpc-*-sysv*)
 	extra_headers=ppc-asm.h
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	;;
+powerpc-*-netbsd*)
+	xm_defines=POSIX
+	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/netbsd.h"
+	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
+	extra_headers=ppc-asm.h
+	;;
 powerpc-*-chorusos*)
 	xm_defines=POSIX
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h chorus.h"

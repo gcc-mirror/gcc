@@ -275,6 +275,8 @@ do {									\
     rs6000_current_abi = ABI_AIX;					\
   else if (!strcmp (rs6000_abi_name, "linux"))				\
     rs6000_current_abi = ABI_V4;					\
+  else if (!strcmp (rs6000_abi_name, "netbsd"))				\
+    rs6000_current_abi = ABI_V4;					\
   else if (!strcmp (rs6000_abi_name, "solaris"))			\
     rs6000_current_abi = ABI_SOLARIS;					\
   else if (!strcmp (rs6000_abi_name, "i960-old"))			\
@@ -1113,7 +1115,8 @@ do {									\
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-solaris: -mlittle -msolaris} \
     %{mcall-i960-old: -mlittle} \
-    %{mcall-linux: -mbig} }}}}"
+    %{mcall-linux: -mbig} \
+    %{mcall-netbsd: -mbig} }}}}"
 
 #define	CC1_ENDIAN_BIG_SPEC ""
 
@@ -1135,9 +1138,10 @@ do {									\
     %{mcall-solaris: -mlittle %(cc1_endian_little) } \
     %{mcall-i960-old: -mlittle %(cc1_endian_little) } \
     %{mcall-linux: -mbig %(cc1_endian_big) } \
-    %{!mcall-aixdesc: %{!mcall-solaris: %{!mcall-i960-old: %{!mcall-linux: \
+    %{mcall-netbsd: -mbig %(cc1_endian_big) } \
+    %{!mcall-aixdesc: %{!mcall-solaris: %{!mcall-i960-old: %{!mcall-linux: %{!mcall-netbsd: \
 	    %(cc1_endian_default) \
-    }}}} \
+    }}}}} \
 }}}} \
 %{mcall-solaris: -mregnames } \
 %{mno-sdata: -msdata=none } \
@@ -1146,7 +1150,8 @@ do {									\
     %{mrelocatable: -meabi } \
     %{mcall-solaris: -mno-eabi } \
     %{mcall-i960-old: -meabi } \
-    %{mcall-linux: -mno-eabi }}} \
+    %{mcall-linux: -mno-eabi } \
+    %{mcall-netbsd: -mno-eabi }}} \
 %{msdata: -msdata=default} \
 %{mno-sdata: -msdata=none} \
 %{profile: -p}"
@@ -1175,8 +1180,9 @@ do {									\
 %{mmvme: %(link_start_mvme) } \
 %{msim: %(link_start_sim) } \
 %{mcall-linux: %(link_start_linux) } \
+%{mcall-netbsd: %(link_start_netbsd) } \
 %{mcall-solaris: %(link_start_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(link_start_default) }}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(link_start_default) }}}}}}}"
 
 #define LINK_START_DEFAULT_SPEC ""
 
@@ -1230,8 +1236,9 @@ do {									\
 %{mmvme: %(link_os_mvme) } \
 %{msim: %(link_os_sim) } \
 %{mcall-linux: %(link_os_linux) } \
+%{mcall-netbsd: %(link_os_netbsd) } \
 %{mcall-solaris: %(link_os_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(link_os_default) }}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(link_os_default) }}}}}}}"
 
 #define LINK_OS_DEFAULT_SPEC ""
 
@@ -1278,9 +1285,10 @@ do {									\
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-solaris: %(cpp_endian_solaris) } \
     %{mcall-linux: %(cpp_endian_big) } \
+    %{mcall-netbsd: %(cpp_endian_big) } \
     %{mcall-i960-old: %(cpp_endian_little) } \
     %{mcall-aixdesc:  %(cpp_endian_big) } \
-    %{!mcall-solaris: %{!mcall-linux: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}"
+    %{!mcall-solaris: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}}"
 
 #define	CPP_ENDIAN_DEFAULT_SPEC "%(cpp_endian_big)"
 
@@ -1292,8 +1300,9 @@ do {									\
 %{mmvme: %(cpp_os_mvme) } \
 %{msim: %(cpp_os_sim) } \
 %{mcall-linux: %(cpp_os_linux) } \
+%{mcall-netbsd: %(cpp_os_netbsd) } \
 %{mcall-solaris: %(cpp_os_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(cpp_os_default) }}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(cpp_os_default) }}}}}}}"
 
 #define	CPP_OS_DEFAULT_SPEC ""
 
@@ -1305,8 +1314,9 @@ do {									\
 %{mmvme: %(startfile_mvme) } \
 %{msim: %(startfile_sim) } \
 %{mcall-linux: %(startfile_linux) } \
+%{mcall-netbsd: %(startfile_netbsd) } \
 %{mcall-solaris: %(startfile_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(startfile_default) }}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(startfile_default) }}}}}}}"
 
 #define	STARTFILE_DEFAULT_SPEC ""
 
@@ -1318,8 +1328,9 @@ do {									\
 %{mmvme: %(lib_mvme) } \
 %{msim: %(lib_sim) } \
 %{mcall-linux: %(lib_linux) } \
+%{mcall-netbsd: %(lib_netbsd) } \
 %{mcall-solaris: %(lib_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(lib_default) }}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(lib_default) }}}}}}}"
 
 #define LIB_DEFAULT_SPEC ""
 
@@ -1331,9 +1342,10 @@ do {									\
 %{mmvme: %(endfile_mvme)} \
 %{msim: %(endfile_sim)} \
 %{mcall-linux: %(endfile_linux) } \
+%{mcall-netbsd: %(endfile_netbsd) } \
 %{mcall-solaris: %(endfile_solaris)} \
 %{mvxworks: %(endfile_vxworks) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %{!mvxworks: %(endfile_default) }}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %{!mvxworks: %(endfile_default) }}}}}}}}"
 
 #define	ENDFILE_DEFAULT_SPEC ""
 
@@ -1428,6 +1440,29 @@ do {									\
     %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		\
 -Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
 #endif
+
+/* NetBSD support.  */
+#define LIB_NETBSD_SPEC "\
+%{profile:-lgmon -lc_p} %{!profile:-lc}"
+
+#define	STARTFILE_NETBSD_SPEC "\
+ncrti.o%s crt0.o%s \
+%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+
+#define ENDFILE_NETBSD_SPEC "\
+%{!shared:crtend.o%s} %{shared:crtendS.o%s} \
+ncrtn.o%s"
+
+#define LINK_START_NETBSD_SPEC "\
+"
+
+#define LINK_OS_NETBSD_SPEC "\
+%{!shared: %{!static: \
+  %{rdynamic:-export-dynamic} \
+  %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}}"
+
+#define CPP_OS_NETBSD_SPEC "\
+-D__powerpc__ -D__NetBSD__ -D__ELF__ -D__KPRINTF_ATTRIBUTE__"
 
 /* Solaris support.  */
 /* For Solaris, Gcc automatically adds in one of the files
@@ -1524,6 +1559,7 @@ do {									\
   { "lib_mvme",			LIB_MVME_SPEC },			\
   { "lib_sim",			LIB_SIM_SPEC },				\
   { "lib_linux",		LIB_LINUX_SPEC },			\
+  { "lib_netbsd",		LIB_NETBSD_SPEC },			\
   { "lib_solaris",		LIB_SOLARIS_SPEC },			\
   { "lib_vxworks",		LIB_VXWORKS_SPEC },			\
   { "lib_default",		LIB_DEFAULT_SPEC },			\
@@ -1532,6 +1568,7 @@ do {									\
   { "startfile_mvme",		STARTFILE_MVME_SPEC },			\
   { "startfile_sim",		STARTFILE_SIM_SPEC },			\
   { "startfile_linux",		STARTFILE_LINUX_SPEC },			\
+  { "startfile_netbsd",		STARTFILE_NETBSD_SPEC },		\
   { "startfile_solaris",	STARTFILE_SOLARIS_SPEC },		\
   { "startfile_vxworks",	STARTFILE_VXWORKS_SPEC },		\
   { "startfile_default",	STARTFILE_DEFAULT_SPEC },		\
@@ -1540,6 +1577,7 @@ do {									\
   { "endfile_mvme",		ENDFILE_MVME_SPEC },			\
   { "endfile_sim",		ENDFILE_SIM_SPEC },			\
   { "endfile_linux",		ENDFILE_LINUX_SPEC },			\
+  { "endfile_netbsd",		ENDFILE_NETBSD_SPEC },			\
   { "endfile_solaris",		ENDFILE_SOLARIS_SPEC },			\
   { "endfile_vxworks",		ENDFILE_VXWORKS_SPEC },			\
   { "endfile_default",		ENDFILE_DEFAULT_SPEC },			\
@@ -1552,6 +1590,7 @@ do {									\
   { "link_start_mvme",		LINK_START_MVME_SPEC },			\
   { "link_start_sim",		LINK_START_SIM_SPEC },			\
   { "link_start_linux",		LINK_START_LINUX_SPEC },		\
+  { "link_start_netbsd",	LINK_START_NETBSD_SPEC },		\
   { "link_start_solaris",	LINK_START_SOLARIS_SPEC },		\
   { "link_start_vxworks",	LINK_START_VXWORKS_SPEC },		\
   { "link_start_default",	LINK_START_DEFAULT_SPEC },		\
@@ -1561,6 +1600,7 @@ do {									\
   { "link_os_mvme",		LINK_OS_MVME_SPEC },			\
   { "link_os_sim",		LINK_OS_SIM_SPEC },			\
   { "link_os_linux",		LINK_OS_LINUX_SPEC },			\
+  { "link_os_netbsd",		LINK_OS_NETBSD_SPEC },			\
   { "link_os_solaris",		LINK_OS_SOLARIS_SPEC },			\
   { "link_os_vxworks",		LINK_OS_VXWORKS_SPEC },			\
   { "link_os_default",		LINK_OS_DEFAULT_SPEC },			\
@@ -1577,6 +1617,7 @@ do {									\
   { "cpp_os_mvme",		CPP_OS_MVME_SPEC },			\
   { "cpp_os_sim",		CPP_OS_SIM_SPEC },			\
   { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\
+  { "cpp_os_netbsd",		CPP_OS_NETBSD_SPEC },			\
   { "cpp_os_solaris",		CPP_OS_SOLARIS_SPEC },			\
   { "cpp_os_vxworks",		CPP_OS_VXWORKS_SPEC },			\
   { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },

@@ -1359,6 +1359,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#powerpc-*-linux-gnu*,,powerpc-*-linux-gnu*}
 @item
+@uref{#powerpc-*-netbsd*,,powerpc-*-netbsd*}
+@item
 @uref{#powerpc-*-eabiaix,,powerpc-*-eabiaix}
 @item
 @uref{#powerpc-*-eabisim,,powerpc-*-eabisim}
@@ -2869,6 +2871,15 @@ if you initially built it with gcc-2.7.2.x.
 </p>
 <hr>
 @end html
+@heading @anchor{powerpc-*-netbsd*}powerpc-*-netbsd*
+PowerPC system in big endian mode running NetBSD@.  To build the
+documentation you will need Texinfo version 4.0 (NetBSD 1.5.1 included
+Texinfo version 3.12).
+
+@html
+</p>
+<hr>
+@end html
 @heading @anchor{powerpc-*-eabiaix}powerpc-*-eabiaix
 Embedded PowerPC system in big endian mode with @option{-mcall-aix} selected as
 the default.
@@ -2972,6 +2983,11 @@ the @command{pkginfo} command.  To add an optional package, use the
 @command{pkgadd} command.  For further details, see the Solaris
 documentation.
 
+For Solaris 2.0 and 2.1, GCC needs six packages: @samp{SUNWarc},
+@samp{SUNWbtool}, @samp{SUNWesu}, @samp{SUNWhea}, @samp{SUNWlibm}, and
+@samp{SUNWtoo}.
+
+=======
 On some versions of Solaris, trying to use the linker and other tools in
 @file{/usr/ucb} to install GCC has been observed to cause trouble.
 For example, the linker may hang indefinitely.  The fix is to remove
