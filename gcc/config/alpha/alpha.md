@@ -2520,16 +2520,6 @@
 ;; Next are all the integer comparisons, and conditional moves and branches
 ;; and some of the related define_expand's and define_split's.
 
-(define_insn "*setne_internal"
-  [(set (match_operand 0 "register_operand" "=r")
-	(ne (match_operand:DI 1 "reg_or_8bit_operand" "rI")
-	    (const_int 0)))]
-  "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT
-   && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8
-   && GET_MODE (operands[0]) == GET_MODE (SET_SRC (PATTERN (insn)))"
-  "cmpult $31,%1,%0"
-  [(set_attr "type" "icmp")])
-
 (define_insn "*setcc_internal"
   [(set (match_operand 0 "register_operand" "=r")
 	(match_operator 1 "alpha_comparison_operator"
@@ -2550,6 +2540,18 @@
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8
    && GET_MODE (operands[0]) == GET_MODE (operands[1])"
   "cmp%c1 %r3,%2,%0"
+  [(set_attr "type" "icmp")])
+
+(define_insn "*setne_internal"
+  [(set (match_operand 0 "register_operand" "=r")
+	(match_operator 1 "signed_comparison_operator"
+			  [(match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			   (const_int 0)]))]
+  "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT
+   && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8
+   && GET_CODE (operands[1]) == NE
+   && GET_MODE (operands[0]) == GET_MODE (operands[1])"
+  "cmpult $31,%2,%0"
   [(set_attr "type" "icmp")])
 
 ;; The mode folding trick can't be used with const_int operands, since

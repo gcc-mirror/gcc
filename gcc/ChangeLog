@@ -1,3 +1,8 @@
+2000-05-30  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/alpha.md (*setne_internal): Use match_operator
+	instead of working down from insn.
+
 2000-05-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* invoke.texi (-Wtraditional): Update WRT function macros.
