@@ -1,3 +1,7 @@
+Thu Jul  8 15:38:50 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Describe DATE intrinsic fix.
+
 Tue Jun 29 10:10:25 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi: Undo Friday's change, as there's now a fix

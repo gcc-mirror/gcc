@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-06-29
+@set last-update-news 1999-07-08
 
 @include root.texi
 
@@ -206,6 +206,12 @@ not necessarily starting at @samp{K(6)}.
 @item
 @c Tim Prince reported this, regarding the TEST_FPU benchmark.
 Automatic arrays now seem to be working on HP-UX systems.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+The @code{Date} intrinsic now returns the correct result
+on big-endian systems.
 @end ifclear
 
 @ifclear USERVISONLY
