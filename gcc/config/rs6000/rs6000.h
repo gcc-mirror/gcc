@@ -1708,6 +1708,8 @@ typedef struct machine_function GTY(())
   const char *some_ld_name;
   /* Whether the instruction chain has been scanned already.  */
   int insn_chain_scanned_p;
+  /* Flags if __builtin_return_address (0) was used.  */
+  int ra_need_lr;
 } machine_function;
 
 /* Define a data type for recording info about an argument list

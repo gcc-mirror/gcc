@@ -1,3 +1,9 @@
+2003-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.h (machine_function): Add ra_need_lr.
+	* config/rs6000/rs6000.c (rs6000_return_addr): Set it.
+	(rs6000_emit_prologue): Save FPRs inline if set.
+
 2003-07-21  H.J. Lu <hongjiu.lu@intel.com>
 
 	* config/ia64/ia64.md (prefetch): Support predicate.
