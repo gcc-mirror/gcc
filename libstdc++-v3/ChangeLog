@@ -1,3 +1,10 @@
+2002-04-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/os/solaris/solaris2.5/bits/os_defines.h: Remove
+	_G_USING_THUNKS.
+	* config/os/solaris/solaris2.6/bits/os_defines.h: Same.
+	* config/os/solaris/solaris2.7/bits/os_defines.h: Same.
+
 2002-04-26  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.h (replace(__pos, __n1, __s, __n2):
