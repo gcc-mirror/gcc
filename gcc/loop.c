@@ -8132,10 +8132,12 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  enum machine_mode mode = GET_MODE (reg);
 		  enum insn_code icode
 		    = add_optab->handlers[(int) mode].insn_code;
-		  if (! (*insn_operand_predicate[icode][0]) (reg, mode)
-		      || ! ((*insn_operand_predicate[icode][1])
+
+		  if (! (*insn_data[icode].operand[0].predicate) (reg, mode)
+		      || ! ((*insn_data[icode].operand[1].predicate)
 			    (comparison_value, mode))
-		      || ! (*insn_operand_predicate[icode][2]) (offset, mode))
+		      || ! ((*insn_data[icode].operand[2].predicate)
+			    (offset, mode)))
 		    return 0;
 		  start_value
 		    = gen_rtx_PLUS (mode, comparison_value, offset);
@@ -8151,10 +8153,10 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  enum machine_mode mode = GET_MODE (reg);
 		  enum insn_code icode
 		    = sub_optab->handlers[(int) mode].insn_code;
-		  if (! (*insn_operand_predicate[icode][0]) (reg, mode)
-		      || ! ((*insn_operand_predicate[icode][1])
+		  if (! (*insn_data[icode].operand[0].predicate) (reg, mode)
+		      || ! ((*insn_data[icode].operand[1].predicate)
 			    (comparison_value, mode))
-		      || ! ((*insn_operand_predicate[icode][2])
+		      || ! ((*insn_data[icode].operand[2].predicate)
 			    (initial_value, mode)))
 		    return 0;
 		  start_value

@@ -32,9 +32,6 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
-char **insn_name_ptr = 0;
-
 /* A range of values.  */
 
 struct range
@@ -410,4 +407,12 @@ from the machine description file `md'.  */\n\n");
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
   /* NOTREACHED */
   return 0;
+}
+
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+const char *
+get_insn_name (code)
+     int code;
+{
+  return NULL;
 }

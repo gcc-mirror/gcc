@@ -5442,22 +5442,22 @@ expand_end_case (orig_index)
 	      index = protect_from_queue (index, 0);
 	      do_pending_stack_adjust ();
 
-	      op_mode = insn_operand_mode[(int)CODE_FOR_casesi][0];
-	      if (! (*insn_operand_predicate[(int)CODE_FOR_casesi][0])
+	      op_mode = insn_data[(int)CODE_FOR_casesi].operand[0].mode;
+	      if (! (*insn_data[(int)CODE_FOR_casesi].operand[0].predicate)
 		  (index, op_mode))
 		index = copy_to_mode_reg (op_mode, index);
 
 	      op1 = expand_expr (minval, NULL_RTX, VOIDmode, 0);
 
-	      op_mode = insn_operand_mode[(int)CODE_FOR_casesi][1];
-	      if (! (*insn_operand_predicate[(int)CODE_FOR_casesi][1])
+	      op_mode = insn_data[(int)CODE_FOR_casesi].operand[1].mode;
+	      if (! (*insn_data[(int)CODE_FOR_casesi].operand[1].predicate)
 		  (op1, op_mode))
 		op1 = copy_to_mode_reg (op_mode, op1);
 
 	      op2 = expand_expr (range, NULL_RTX, VOIDmode, 0);
 
-	      op_mode = insn_operand_mode[(int)CODE_FOR_casesi][2];
-	      if (! (*insn_operand_predicate[(int)CODE_FOR_casesi][2])
+	      op_mode = insn_data[(int)CODE_FOR_casesi].operand[2].mode;
+	      if (! (*insn_data[(int)CODE_FOR_casesi].operand[2].predicate)
 		  (op2, op_mode))
 		op2 = copy_to_mode_reg (op_mode, op2);
 

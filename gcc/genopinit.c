@@ -118,9 +118,6 @@ const char *optabs[] =
   "movstr_optab[(int) %A] = CODE_FOR_%(movstr%a%)",
   "clrstr_optab[(int) %A] = CODE_FOR_%(clrstr%a%)" };
 
-/* Allow linking with print-rtl.c.  */
-char **insn_name_ptr;
-
 static void gen_insn PROTO((rtx));
 
 static void
@@ -362,4 +359,12 @@ from the machine description file `md'.  */\n\n");
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
   /* NOTREACHED */
   return 0;
+}
+
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+const char *
+get_insn_name (code)
+     int code;
+{
+  return NULL;
 }

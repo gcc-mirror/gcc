@@ -5752,14 +5752,17 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   if (in_dest)
     {
       wanted_inner_reg_mode
-	= (insn_operand_mode[(int) CODE_FOR_insv][0] == VOIDmode
-	   ? word_mode
-	   : insn_operand_mode[(int) CODE_FOR_insv][0]);
-      pos_mode = (insn_operand_mode[(int) CODE_FOR_insv][2] == VOIDmode
-		  ? word_mode : insn_operand_mode[(int) CODE_FOR_insv][2]);
-      extraction_mode = (insn_operand_mode[(int) CODE_FOR_insv][3] == VOIDmode
-			 ? word_mode
-			 : insn_operand_mode[(int) CODE_FOR_insv][3]);
+	= insn_data[(int) CODE_FOR_insv].operand[0].mode;
+      if (wanted_inner_reg_mode == VOIDmode)
+	wanted_inner_reg_mode = word_mode;
+
+      pos_mode = insn_data[(int) CODE_FOR_insv].operand[2].mode;
+      if (pos_mode == VOIDmode)
+	pos_mode = word_mode;
+
+      extraction_mode = insn_data[(int) CODE_FOR_insv].operand[3].mode;
+      if (extraction_mode == VOIDmode)
+	extraction_mode = word_mode;
     }
 #endif
 
@@ -5767,14 +5770,17 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   if (! in_dest && unsignedp)
     {
       wanted_inner_reg_mode
-	= (insn_operand_mode[(int) CODE_FOR_extzv][1] == VOIDmode
-	   ? word_mode
-	   : insn_operand_mode[(int) CODE_FOR_extzv][1]);
-      pos_mode = (insn_operand_mode[(int) CODE_FOR_extzv][3] == VOIDmode
-		  ? word_mode : insn_operand_mode[(int) CODE_FOR_extzv][3]);
-      extraction_mode = (insn_operand_mode[(int) CODE_FOR_extzv][0] == VOIDmode
-			 ? word_mode
-			 : insn_operand_mode[(int) CODE_FOR_extzv][0]);
+	= insn_data[(int) CODE_FOR_extzv].operand[1].mode;
+      if (wanted_inner_reg_mode == VOIDmode)
+	wanted_inner_reg_mode = word_mode;
+
+      pos_mode = insn_data[(int) CODE_FOR_extzv].operand[3].mode;
+      if (pos_mode == VOIDmode)
+	pos_mode = word_mode;
+
+      extraction_mode = insn_data[(int) CODE_FOR_extzv].operand[0].mode;
+      if (extraction_mode == VOIDmode)
+	extraction_mode = word_mode;
     }
 #endif
 
@@ -5782,14 +5788,17 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   if (! in_dest && ! unsignedp)
     {
       wanted_inner_reg_mode
-	= (insn_operand_mode[(int) CODE_FOR_extv][1] == VOIDmode
-	   ? word_mode
-	   : insn_operand_mode[(int) CODE_FOR_extv][1]);
-      pos_mode = (insn_operand_mode[(int) CODE_FOR_extv][3] == VOIDmode
-		  ? word_mode : insn_operand_mode[(int) CODE_FOR_extv][3]);
-      extraction_mode = (insn_operand_mode[(int) CODE_FOR_extv][0] == VOIDmode
-			 ? word_mode
-			 : insn_operand_mode[(int) CODE_FOR_extv][0]);
+	= insn_data[(int) CODE_FOR_extv].operand[1].mode;
+      if (wanted_inner_reg_mode == VOIDmode)
+	wanted_inner_reg_mode = word_mode;
+
+      pos_mode = insn_data[(int) CODE_FOR_extv].operand[3].mode;
+      if (pos_mode == VOIDmode)
+	pos_mode = word_mode;
+
+      extraction_mode = insn_data[(int) CODE_FOR_extv].operand[0].mode;
+      if (extraction_mode == VOIDmode)
+	extraction_mode = word_mode;
     }
 #endif
 
@@ -9901,7 +9910,7 @@ simplify_comparison (code, pop0, pop1)
 	      if (BITS_BIG_ENDIAN)
 		{
 #ifdef HAVE_extzv
-		  mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+		  mode = insn_data[(int) CODE_FOR_extzv].operand[1].mode;
 		  if (mode == VOIDmode)
 		    mode = word_mode;
 		  i = (GET_MODE_BITSIZE (mode) - 1 - i);

@@ -32,9 +32,6 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-/* Names for patterns.  Need to allow linking with print-rtl.  */
-char **insn_name_ptr;
-
 /* This structure contains all the information needed to describe one
    set of extractions methods.  Each method may be used by more than 
    one pattern if the operands are in the same place.
@@ -526,4 +523,12 @@ from the machine description file `md'.  */\n\n");
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
   /* NOTREACHED */
   return 0;
+}
+
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+const char *
+get_insn_name (code)
+     int code;
+{
+  return NULL;
 }

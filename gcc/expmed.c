@@ -234,11 +234,12 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   register rtx op0 = str_rtx;
 #ifdef HAVE_insv
   int insv_bitsize;
+  enum machine_mode op_mode;
 
-  if (insn_operand_mode[(int) CODE_FOR_insv][3] == VOIDmode)
-    insv_bitsize = GET_MODE_BITSIZE (word_mode);
-  else
-    insv_bitsize = GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_insv][3]);
+  op_mode = insn_data[(int) CODE_FOR_insv].operand[3].mode;
+  if (op_mode == VOIDmode)
+    op_mode = word_mode;
+  insv_bitsize = GET_MODE_BITSIZE (op_mode);
 #endif
 
   if (GET_CODE (str_rtx) == MEM && ! MEM_IN_STRUCT_P (str_rtx))
@@ -349,7 +350,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       else
 	{
 	  int icode = movstrict_optab->handlers[(int) fieldmode].insn_code;
-	  if (! (*insn_operand_predicate[icode][1]) (value, fieldmode))
+	  if (! (*insn_data[icode].operand[1].predicate) (value, fieldmode))
 	    value = copy_to_mode_reg (fieldmode, value);
 
 	  if (GET_CODE (op0) == SUBREG)
@@ -478,7 +479,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       enum machine_mode maxmode;
       int save_volatile_ok = volatile_ok;
 
-      maxmode = insn_operand_mode[(int) CODE_FOR_insv][3];
+      maxmode = insn_data[(int) CODE_FOR_insv].operand[3].mode;
       if (maxmode == VOIDmode)
 	maxmode = word_mode;
 
@@ -489,7 +490,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       /* This used to check flag_force_mem, but that was a serious
 	 de-optimization now that flag_force_mem is enabled by -O2.  */
       if (GET_CODE (op0) == MEM
-	  && ! ((*insn_operand_predicate[(int) CODE_FOR_insv][0])
+	  && ! ((*insn_data[(int) CODE_FOR_insv].operand[0].predicate)
 		(op0, VOIDmode)))
 	{
 	  rtx tempreg;
@@ -586,7 +587,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
       /* If this machine's insv insists on a register,
 	 get VALUE1 into a register.  */
-      if (! ((*insn_operand_predicate[(int) CODE_FOR_insv][3])
+      if (! ((*insn_data[(int) CODE_FOR_insv].operand[3].predicate)
 	     (value1, maxmode)))
 	value1 = force_reg (maxmode, value1);
 
@@ -963,24 +964,25 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   rtx spec_target_subreg = 0;
 #ifdef HAVE_extv
   int extv_bitsize;
+  enum machine_mode extv_mode;
 #endif
 #ifdef HAVE_extzv
   int extzv_bitsize;
+  enum machine_mode extzv_mode;
 #endif
 
 #ifdef HAVE_extv
-  if (insn_operand_mode[(int) CODE_FOR_extv][0] == VOIDmode)
-    extv_bitsize = GET_MODE_BITSIZE (word_mode);
-  else
-    extv_bitsize = GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extv][0]);
+  extv_mode = insn_data[(int) CODE_FOR_extv].operand[0].mode;
+  if (extv_mode == VOIDmode)
+    extv_mode = word_mode;
+  extv_bitsize = GET_MODE_BITSIZE (extv_mode);
 #endif
 
 #ifdef HAVE_extzv
-  if (insn_operand_mode[(int) CODE_FOR_extzv][0] == VOIDmode)
-    extzv_bitsize = GET_MODE_BITSIZE (word_mode);
-  else
-    extzv_bitsize
-      = GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extzv][0]);
+  extzv_mode = insn_data[(int) CODE_FOR_extzv].operand[0].mode;
+  if (extzv_mode == VOIDmode)
+    extzv_mode = word_mode;
+  extzv_bitsize = GET_MODE_BITSIZE (extzv_mode);
 #endif
 
   /* Discount the part of the structure before the desired byte.
@@ -1210,7 +1212,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  rtx pat;
 	  enum machine_mode maxmode;
 
-	  maxmode = insn_operand_mode[(int) CODE_FOR_extzv][0];
+	  maxmode = insn_data[(int) CODE_FOR_extzv].operand[0].mode;
 	  if (maxmode == VOIDmode)
 	    maxmode = word_mode;
 
@@ -1220,7 +1222,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	      volatile_ok = 1;
 
 	      /* Is the memory operand acceptable?  */
-	      if (! ((*insn_operand_predicate[(int) CODE_FOR_extzv][1])
+	      if (! ((*insn_data[(int) CODE_FOR_extzv].operand[1].predicate)
 		     (xop0, GET_MODE (xop0))))
 		{
 		  /* No, load into a reg and extract from there.  */
@@ -1304,7 +1306,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
 	  /* If this machine's extzv insists on a register target,
 	     make sure we have one.  */
-	  if (! ((*insn_operand_predicate[(int) CODE_FOR_extzv][0])
+	  if (! ((*insn_data[(int) CODE_FOR_extzv].operand[0].predicate)
 		 (xtarget, maxmode)))
 	    xtarget = gen_reg_rtx (maxmode);
 
@@ -1350,14 +1352,14 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  rtx pat;
 	  enum machine_mode maxmode;
 
-	  maxmode = insn_operand_mode[(int) CODE_FOR_extv][0];
+	  maxmode = insn_data[(int) CODE_FOR_extv].operand[0].mode;
 	  if (maxmode == VOIDmode)
 	    maxmode = word_mode;
 
 	  if (GET_CODE (xop0) == MEM)
 	    {
 	      /* Is the memory operand acceptable?  */
-	      if (! ((*insn_operand_predicate[(int) CODE_FOR_extv][1])
+	      if (! ((*insn_data[(int) CODE_FOR_extv].operand[1].predicate)
 		     (xop0, GET_MODE (xop0))))
 		{
 		  /* No, load into a reg and extract from there.  */
@@ -1440,7 +1442,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
 	  /* If this machine's extv insists on a register target,
 	     make sure we have one.  */
-	  if (! ((*insn_operand_predicate[(int) CODE_FOR_extv][0])
+	  if (! ((*insn_data[(int) CODE_FOR_extv].operand[0].predicate)
 		 (xtarget, maxmode)))
 	    xtarget = gen_reg_rtx (maxmode);
 
@@ -4210,6 +4212,8 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 
   if (icode != CODE_FOR_nothing)
     {
+      insn_operand_predicate_fn pred;
+
       /* We think we may be able to do this with a scc insn.  Emit the
 	 comparison and then the scc insn.
 
@@ -4235,10 +4239,11 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	abort ();
 
       /* Get a reference to the target in the proper mode for this insn.  */
-      compare_mode = insn_operand_mode[(int) icode][0];
+      compare_mode = insn_data[(int) icode].operand[0].mode;
       subtarget = target;
+      pred = insn_data[(int) icode].operand[0].predicate;
       if (preserve_subexpressions_p ()
-	  || ! (*insn_operand_predicate[(int) icode][0]) (subtarget, compare_mode))
+	  || ! (*pred) (subtarget, compare_mode))
 	subtarget = gen_reg_rtx (compare_mode);
 
       pattern = GEN_FCN (icode) (subtarget);

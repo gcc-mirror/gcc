@@ -427,8 +427,8 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	   : reload_out_optab[(int) reload_mode]);
 
   if (icode != CODE_FOR_nothing
-      && insn_operand_predicate[(int) icode][in_p]
-      && (! (insn_operand_predicate[(int) icode][in_p]) (x, reload_mode)))
+      && insn_data[(int) icode].operand[in_p].predicate
+      && (! (insn_data[(int) icode].operand[in_p].predicate) (x, reload_mode)))
     icode = CODE_FOR_nothing;
 
   /* If we will be using an insn, see if it can directly handle the reload
@@ -444,25 +444,27 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	 in operand 1.  Outputs should have an initial "=", which we must
 	 skip.  */
 
-      char insn_letter = insn_operand_constraint[(int) icode][!in_p][in_p];
+      char insn_letter
+	= insn_data[(int) icode].operand[!in_p].constraint[in_p];
       enum reg_class insn_class
 	= (insn_letter == 'r' ? GENERAL_REGS
 	   : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
 
       if (insn_class == NO_REGS
-	  || (in_p && insn_operand_constraint[(int) icode][!in_p][0] != '=')
+	  || (in_p
+	      && insn_data[(int) icode].operand[!in_p].constraint[0] != '=')
 	  /* The scratch register's constraint must start with "=&".  */
-	  || insn_operand_constraint[(int) icode][2][0] != '='
-	  || insn_operand_constraint[(int) icode][2][1] != '&')
+	  || insn_data[(int) icode].operand[2].constraint[0] != '='
+	  || insn_data[(int) icode].operand[2].constraint[1] != '&')
 	abort ();
 
       if (reg_class_subset_p (reload_class, insn_class))
-	mode = insn_operand_mode[(int) icode][2];
+	mode = insn_data[(int) icode].operand[2].mode;
       else
 	{
-	  char t_letter = insn_operand_constraint[(int) icode][2][2];
+	  char t_letter = insn_data[(int) icode].operand[2].constraint[2];
 	  class = insn_class;
-	  t_mode = insn_operand_mode[(int) icode][2];
+	  t_mode = insn_data[(int) icode].operand[2].mode;
 	  t_class = (t_letter == 'r' ? GENERAL_REGS
 		     : REG_CLASS_FROM_LETTER ((unsigned char) t_letter));
 	  t_icode = icode;
@@ -1785,9 +1787,9 @@ combine_reloads ()
   if (INSN_CODE (this_insn) == -1)
     return;
 
-  for (i = 1; i < insn_n_operands[INSN_CODE (this_insn)]; i++)
-    if (insn_operand_constraint[INSN_CODE (this_insn)][i][0] == '='
-	|| insn_operand_constraint[INSN_CODE (this_insn)][i][0] == '+')
+  for (i = 1; i < insn_data[INSN_CODE (this_insn)].n_operands; i++)
+    if (insn_data[INSN_CODE (this_insn)].operand[i].constraint[0] == '='
+	|| insn_data[INSN_CODE (this_insn)].operand[i].constraint[0] == '+')
       return;
 
   /* See if some hard register that dies in this insn and is not used in
@@ -3700,7 +3702,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     (modified[i] == RELOAD_READ
 			      ? VOIDmode : operand_mode[i]),
 			     (insn_code_number < 0 ? 0
-			      : insn_operand_strict_low[insn_code_number][i]),
+			      : insn_data[insn_code_number].operand[i].strict_low),
 			     0, i, operand_type[i]);
 	  }
 	/* In a matching pair of operands, one must be input only
@@ -3790,7 +3792,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			   (modified[i] == RELOAD_READ
 			    ? VOIDmode : operand_mode[i]),
 			   (insn_code_number < 0 ? 0
-			    : insn_operand_strict_low[insn_code_number][i]),
+			    : insn_data[insn_code_number].operand[i].strict_low),
 			   1, i, operand_type[i]);
 	/* If a memory reference remains (either as a MEM or a pseudo that
 	   did not get a hard register), yet we can't make an optional
@@ -3886,13 +3888,13 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      it doesn't expect.  */
 
   if (insn_code_number >= 0 && replace)
-    for (i = insn_n_dups[insn_code_number] - 1; i >= 0; i--)
+    for (i = insn_data[insn_code_number].n_dups - 1; i >= 0; i--)
       {
 	int opno = recog_data.dup_num[i];
 	*recog_data.dup_loc[i] = *recog_data.operand_loc[opno];
 	if (operand_reloadnum[opno] >= 0)
 	  push_replacement (recog_data.dup_loc[i], operand_reloadnum[opno],
-			    insn_operand_mode[insn_code_number][opno]);
+			    insn_data[insn_code_number].operand[opno].mode);
       }
 
 #if 0
@@ -4274,7 +4276,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       int is_set_dest = GET_CODE (body) == SET && (i == 0);
 
       if (insn_code_number >= 0)
-	if (insn_operand_address_p[insn_code_number][i])
+	if (insn_data[insn_code_number].operand[i].address_p)
 	  find_reloads_address (VOIDmode, NULL_PTR,
 				recog_data.operand[i],
 				recog_data.operand_loc[i],
@@ -5333,8 +5335,10 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		  && ! sets_cc0_p (PATTERN (insn))
 #endif
 		  && ! (icode != CODE_FOR_nothing
-			&& (*insn_operand_predicate[icode][0]) (equiv, Pmode)
-			&& (*insn_operand_predicate[icode][1]) (equiv, Pmode)))
+			&& ((*insn_data[icode].operand[0].predicate)
+			    (equiv, Pmode))
+			&& ((*insn_data[icode].operand[1].predicate)
+			    (equiv, Pmode))))
 		{
 		  loc = &XEXP (x, 0);
 		  x = XEXP (x, 0);
@@ -6730,13 +6734,13 @@ debug_reload_to_stream (f)
       if (reload_secondary_in_icode[r] != CODE_FOR_nothing)
 	{
 	  fprintf (stderr, "%ssecondary_in_icode = %s", prefix,
-		   insn_name[reload_secondary_in_icode[r]]);
+		   insn_data[reload_secondary_in_icode[r]].name);
 	  prefix = ", ";
 	}
 
       if (reload_secondary_out_icode[r] != CODE_FOR_nothing)
 	fprintf (stderr, "%ssecondary_out_icode = %s", prefix,
-		 insn_name[reload_secondary_out_icode[r]]);
+		 insn_data[reload_secondary_out_icode[r]].name);
 
       fprintf (f, "\n");
     }

@@ -818,7 +818,7 @@ convert_move (to, from, unsignedp)
 	{
 #ifdef HAVE_slt
 	  if (HAVE_slt
-	      && insn_operand_mode[(int) CODE_FOR_slt][0] == word_mode
+	      && insn_data[(int) CODE_FOR_slt].operand[0].mode == word_mode
 	      && STORE_FLAG_VALUE == -1)
 	    {
 	      emit_cmp_insn (lowfrom, const0_rtx, NE, NULL_RTX,
@@ -1591,6 +1591,7 @@ emit_block_move (x, y, size, align)
 	   mode = GET_MODE_WIDER_MODE (mode))
 	{
 	  enum insn_code code = movstr_optab[(int) mode];
+	  insn_operand_predicate_fn pred;
 
 	  if (code != CODE_FOR_nothing
 	      /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
@@ -1601,21 +1602,20 @@ emit_block_move (x, y, size, align)
 		   && ((unsigned HOST_WIDE_INT) INTVAL (size)
 		       <= (GET_MODE_MASK (mode) >> 1)))
 		  || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
-	      && (insn_operand_predicate[(int) code][0] == 0
-		  || (*insn_operand_predicate[(int) code][0]) (x, BLKmode))
-	      && (insn_operand_predicate[(int) code][1] == 0
-		  || (*insn_operand_predicate[(int) code][1]) (y, BLKmode))
-	      && (insn_operand_predicate[(int) code][3] == 0
-		  || (*insn_operand_predicate[(int) code][3]) (opalign,
-							       VOIDmode)))
+	      && ((pred = insn_data[(int) code].operand[0].predicate) == 0
+		  || (*pred) (x, BLKmode))
+	      && ((pred = insn_data[(int) code].operand[1].predicate) == 0
+		  || (*pred) (y, BLKmode))
+	      && ((pred = insn_data[(int) code].operand[3].predicate) == 0
+		  || (*pred) (opalign, VOIDmode)))
 	    {
 	      rtx op2;
 	      rtx last = get_last_insn ();
 	      rtx pat;
 
 	      op2 = convert_to_mode (mode, size, 1);
-	      if (insn_operand_predicate[(int) code][2] != 0
-		  && ! (*insn_operand_predicate[(int) code][2]) (op2, mode))
+	      pred = insn_data[(int) code].operand[2].predicate;
+	      if (pred != 0 && ! (*pred) (op2, mode))
 		op2 = copy_to_mode_reg (mode, op2);
 
 	      pat = GEN_FCN ((int) code) (x, y, op2, opalign);
@@ -2365,6 +2365,7 @@ clear_storage (object, size, align)
 	       mode = GET_MODE_WIDER_MODE (mode))
 	    {
 	      enum insn_code code = clrstr_optab[(int) mode];
+	      insn_operand_predicate_fn pred;
 
 	      if (code != CODE_FOR_nothing
 		  /* We don't need MODE to be narrower than
@@ -2375,21 +2376,18 @@ clear_storage (object, size, align)
 		       && ((unsigned HOST_WIDE_INT) INTVAL (size)
 			   <= (GET_MODE_MASK (mode) >> 1)))
 		      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
-		  && (insn_operand_predicate[(int) code][0] == 0
-		      || (*insn_operand_predicate[(int) code][0]) (object,
-								   BLKmode))
-		  && (insn_operand_predicate[(int) code][2] == 0
-		      || (*insn_operand_predicate[(int) code][2]) (opalign,
-								   VOIDmode)))
+		  && ((pred = insn_data[(int) code].operand[0].predicate) == 0
+		      || (*pred) (object, BLKmode))
+		  && ((pred = insn_data[(int) code].operand[2].predicate) == 0
+		      || (*pred) (opalign, VOIDmode)))
 		{
 		  rtx op1;
 		  rtx last = get_last_insn ();
 		  rtx pat;
 
 		  op1 = convert_to_mode (mode, size, 1);
-		  if (insn_operand_predicate[(int) code][1] != 0
-		      && ! (*insn_operand_predicate[(int) code][1]) (op1,
-								     mode))
+		  pred = insn_data[(int) code].operand[1].predicate;
+		  if (pred != 0 && ! (*pred) (op1, mode))
 		    op1 = copy_to_mode_reg (mode, op1);
 
 		  pat = GEN_FCN ((int) code) (object, op1, opalign);
@@ -2984,29 +2982,26 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 		   mode = GET_MODE_WIDER_MODE (mode))
 		{
 		  enum insn_code code = movstr_optab[(int) mode];
+		  insn_operand_predicate_fn pred;
 
 		  if (code != CODE_FOR_nothing
 		      && ((GET_CODE (size) == CONST_INT
 			   && ((unsigned HOST_WIDE_INT) INTVAL (size)
 			       <= (GET_MODE_MASK (mode) >> 1)))
 			  || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
-		      && (insn_operand_predicate[(int) code][0] == 0
-			  || ((*insn_operand_predicate[(int) code][0])
-			      (target, BLKmode)))
-		      && (insn_operand_predicate[(int) code][1] == 0
-			  || ((*insn_operand_predicate[(int) code][1])
-			      (xinner, BLKmode)))
-		      && (insn_operand_predicate[(int) code][3] == 0
-			  || ((*insn_operand_predicate[(int) code][3])
-			      (opalign, VOIDmode))))
+		      && (!(pred = insn_data[(int) code].operand[0].predicate)
+			  || ((*pred) (target, BLKmode)))
+		      && (!(pred = insn_data[(int) code].operand[1].predicate)
+			  || ((*pred) (xinner, BLKmode)))
+		      && (!(pred = insn_data[(int) code].operand[3].predicate)
+			  || ((*pred) (opalign, VOIDmode))))
 		    {
 		      rtx op2 = convert_to_mode (mode, size, 1);
 		      rtx last = get_last_insn ();
 		      rtx pat;
 
-		      if (insn_operand_predicate[(int) code][2] != 0
-			  && ! ((*insn_operand_predicate[(int) code][2])
-				(op2, mode)))
+		      pred = insn_data[(int) code].operand[2].predicate;
+		      if (pred != 0 && ! (*pred) (op2, mode))
 			op2 = copy_to_mode_reg (mode, op2);
 
 		      pat = GEN_FCN ((int) code) (target, xinner,
@@ -8373,9 +8368,9 @@ expand_increment (exp, post, ignore)
       if (icode != (int) CODE_FOR_nothing
 	  /* Make sure that OP0 is valid for operands 0 and 1
 	     of the insn we want to queue.  */
-	  && (*insn_operand_predicate[icode][0]) (op0, mode)
-	  && (*insn_operand_predicate[icode][1]) (op0, mode)
-	  && (*insn_operand_predicate[icode][2]) (op1, mode))
+	  && (*insn_data[icode].operand[0].predicate) (op0, mode)
+	  && (*insn_data[icode].operand[1].predicate) (op0, mode)
+	  && (*insn_data[icode].operand[2].predicate) (op1, mode))
 	single_insn = 1;
     }
 
@@ -8429,10 +8424,10 @@ expand_increment (exp, post, ignore)
       if (icode != (int) CODE_FOR_nothing
 	  /* Make sure that OP0 is valid for operands 0 and 1
 	     of the insn we want to queue.  */
-	  && (*insn_operand_predicate[icode][0]) (op0, mode)
-	  && (*insn_operand_predicate[icode][1]) (op0, mode))
+	  && (*insn_data[icode].operand[0].predicate) (op0, mode)
+	  && (*insn_data[icode].operand[1].predicate) (op0, mode))
 	{
-	  if (! (*insn_operand_predicate[icode][2]) (op1, mode))
+	  if (! (*insn_data[icode].operand[2].predicate) (op1, mode))
 	    op1 = force_reg (mode, op1);
 
 	  return enqueue_insn (op0, GEN_FCN (icode) (op0, op0, op1));
@@ -8446,7 +8441,7 @@ expand_increment (exp, post, ignore)
 
 	  op0 = change_address (op0, VOIDmode, addr);
 	  temp = force_reg (GET_MODE (op0), op0);
-	  if (! (*insn_operand_predicate[icode][2]) (op1, mode))
+	  if (! (*insn_data[icode].operand[2].predicate) (op1, mode))
 	    op1 = force_reg (mode, op1);
 
 	  /* The increment queue is LIFO, thus we have to `queue'
@@ -9590,7 +9585,7 @@ do_store_flag (exp, target, mode, only_cheap)
     return 0;
   icode = setcc_gen_code[(int) code];
   if (icode == CODE_FOR_nothing
-      || (only_cheap && insn_operand_mode[(int) icode][0] != mode))
+      || (only_cheap && insn_data[(int) icode].operand[0].mode != mode))
     {
       /* We can only do this if it is one of the special cases that
 	 can be handled without an scc insn.  */

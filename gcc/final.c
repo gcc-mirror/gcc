@@ -2898,10 +2898,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	/* If the proper template needs to be chosen by some C code,
 	   run that code and get the real template.  */
 
-	template = insn_template[insn_code_number];
+	template = insn_data[insn_code_number].template;
 	if (template == 0)
 	  {
-	    template = ((*insn_outfun[insn_code_number])
+	    template = ((*insn_data[insn_code_number].outfun)
 			(recog_data.operand, insn));
 
 	    /* If the C code returns 0, it means that it is a jump insn
@@ -3359,11 +3359,13 @@ output_asm_name ()
 	{
 	  register int num = INSN_CODE (debug_insn);
 	  fprintf (asm_out_file, "\t%s %d\t%s", 
-		   ASM_COMMENT_START, INSN_UID (debug_insn), insn_name[num]);
-	  if (insn_n_alternatives[num] > 1)
+		   ASM_COMMENT_START, INSN_UID (debug_insn),
+		   insn_data[num].name);
+	  if (insn_data[num].n_alternatives > 1)
 	    fprintf (asm_out_file, "/%d", which_alternative + 1);
 #ifdef HAVE_ATTR_length
-	  fprintf (asm_out_file, "\t[length = %d]", get_attr_length (debug_insn));
+	  fprintf (asm_out_file, "\t[length = %d]",
+		   get_attr_length (debug_insn));
 #endif
 	  /* Clear this so only the first assembler insn
 	     of any rtl insn will get the special comment for -dp.  */
