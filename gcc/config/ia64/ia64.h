@@ -1968,11 +1968,14 @@ do {									\
 /* Decode SYM_NAME and store the real name part in VAR, sans the characters
    that encode section info.  */
 
-#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME) \
-  (VAR) = ((SYMBOL_NAME)                        \
-	   + (*(SYMBOL_NAME) == '*' || *(SYMBOL_NAME) == SDATA_NAME_FLAG_CHAR))
-
-
+#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)	\
+do {						\
+  (VAR) = (SYMBOL_NAME);			\
+  if ((VAR)[0] == SDATA_NAME_FLAG_CHAR)		\
+    (VAR)++;					\
+  if ((VAR)[0] == '*')				\
+    (VAR)++;					\
+} while (0)
 
 /* Position Independent Code.  */
 
@@ -2547,23 +2550,6 @@ do {									\
 #define UNALIGNED_SHORT_ASM_OP		"\tdata2.ua\t"
 #define UNALIGNED_INT_ASM_OP		"\tdata4.ua\t"
 #define UNALIGNED_DOUBLE_INT_ASM_OP	"\tdata8.ua\t"
-
-/* We need to override the default definition for this in dwarf2out.c so that
-   we can emit the necessary # postfix.  */
-#define ASM_NAME_TO_STRING(STR, NAME)			\
-  do {							\
-      if ((NAME)[0] == '*')				\
-	dyn_string_append (STR, NAME + 1);		\
-      else						\
-	{						\
-	  char *newstr;					\
-	  STRIP_NAME_ENCODING (newstr, NAME);		\
-	  dyn_string_append (STR, user_label_prefix);	\
-	  dyn_string_append (STR, newstr);		\
-	  dyn_string_append (STR, "#");			\
-	}						\
-  }							\
-  while (0)
 
 #define DWARF2_ASM_LINE_DEBUG_INFO (TARGET_DWARF2_ASM)
 
