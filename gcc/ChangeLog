@@ -1,3 +1,54 @@
+2000-06-27  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	Add MMX and SSE registers to i386 machine description.
+	* i386-protos.h (ix86_constant_alignment, ix86_data_alignment,
+	ix86_local_alignment): Declare.
+
+	* i386.h (TARGET_MMX, TARGET_SSE): New.
+	(FIRST_PSEUDO_REGISTER, FIXED_REGISTERS, CALL_USED_REGISTERS,
+	REG_ALLOC_ORDER, HARD_REGNO_NREGS, HARD_REGNO_MODE_OK,
+	REG_CLASS_NAMES, REG_CLASS_CONTENTS,REG_CLASS_FROM_LETTER,
+	enum reg_class, HI_REGISTER_NAMES): Added MMX/SSE registers.
+	(FIRST_SSE_REG, LAST_SSE_REG, SSE_REGNO_P): New.
+	(FIRST_MMX_REG, LAST_MMX_REG, MMX_REGNO_P, MMX_REG_P): New macros.
+	(RETURN_IN_MEMORY): Handle MMX/SSE.
+	(REG_PARM_STACK_SPACE): Added so the first three TImode parameters
+	also get stack space.
+	(MUST_PASS_IN_STACK): Added TImode to the default definition.
+	(CUMULATIVE_ARGS): Added sse_nregs, sse_regno and sse_words.
+	(MMX_REGISTER_NAMES): New.
+	(ALIGN_MODE_128): New macro.
+	(CONSTANT_ALIGNMENT): Code moved out-of-line; just call the function.
+	(DATA_ALIGNMENT): Likewise.
+	(LOCAL_ALIGNMENT): Likewise.
+	(CONDITIONAL_REGISTER_USAGE): Make MMX/SSE regs fixed if not
+	TARGET_MMX/TARGET_SSE.
+	(VALID_SSE_REG_MODE, VALID_MMX_REG_MODE): New macros.
+	(REG_CLASS_FROM_LETTER): 'y' for MMX regs.
+	(SECONDARY_MEMORY_NEEDED): Be conservative about copying between
+	SSE/MMX regs and something else.
+	(CLASS_MAX_NREGS): 1 for SSE and MMX regs.
+	(REGISTER_MOVE_COST): 10 if trying to move between MMX and SSE regs,
+	3 if moving between MMX regs and something else.
+
+	* i386.c (reg_class): Add SSE_REGS, MMX_REGS.
+	(regclass_map): Add MMX/SSE registers.
+	(print_operand): Add code to print XMMWORD as appropriate.
+	(ix86_split_movdi): Abort for MMX regs.
+	(init_cumulative_args): Also allow SSE_REGS
+	(function_arg_advance, function_arg): Likewise
+	(print_reg): Support 'm'.  Add case for TImode.
+	(override_options): TARGET_SSE implies TARGET_MMX.
+	(ix86_constant_alignment, ix86_data_alignment, ix86_local_alignment):
+	New functions.
+
+	* config/i386/unix.h (VALUE_REGNO): VECTOR_MODE values go to
+	FIRST_SSE_REG.
+	* config/i386/ptx4-i.h (RETURN_IN_MEMORY): Return MMX values in
+	memory.
+	* config/i386/sysv4.h (RETURN_IN_MEMORY): Likewise.
+	* config/i386/i386elf.h (RETURN_IN_MEMORY): Likewise.
+
 2000-06-26  Geoff Keating  <geoffk@cygnus.com>
 
 	* ssa.c (struct rename_set_data): Change the name of field

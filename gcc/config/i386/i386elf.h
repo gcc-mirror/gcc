@@ -39,7 +39,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef RETURN_IN_MEMORY
 #define RETURN_IN_MEMORY(TYPE) \
-  (TYPE_MODE (TYPE) == BLKmode)
+  (TYPE_MODE (TYPE) == BLKmode \
+   || (VECTOR_MODE_P (TYPE_MODE (TYPE)) && int_size_in_bytes (TYPE) == 8))
 
 /* This used to define X86, but james@bigtex.cactus.org says that
    is supposed to be defined optionally by user programs--not by default.  */

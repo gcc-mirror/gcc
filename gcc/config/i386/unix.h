@@ -73,7 +73,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define VALUE_REGNO(MODE) \
   (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
-   && TARGET_FLOAT_RETURNS_IN_80387 ? FIRST_FLOAT_REG : 0)
+   && TARGET_FLOAT_RETURNS_IN_80387 ? FIRST_FLOAT_REG		\
+   : (MODE) == TImode || VECTOR_MODE_P (MODE) ? FIRST_SSE_REG	\
+   : 0)
 
 /* 1 if N is a possible register number for a function value. */
 

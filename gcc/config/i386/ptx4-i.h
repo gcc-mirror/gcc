@@ -34,7 +34,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef RETURN_IN_MEMORY
 #define RETURN_IN_MEMORY(TYPE) \
-  (TYPE_MODE (TYPE) == BLKmode)
+  (TYPE_MODE (TYPE) == BLKmode \
+   || (VECTOR_MODE_P (TYPE_MODE (TYPE)) && int_size_in_bytes (TYPE) == 8))
 
 /* Define which macros to predefine.  _SEQUENT_ is our extension.  */
 /* This used to define X86, but james@bigtex.cactus.org says that

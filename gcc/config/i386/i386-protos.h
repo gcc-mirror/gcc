@@ -135,6 +135,10 @@ extern int ix86_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
 extern int ix86_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 extern int ix86_comp_type_attributes PARAMS ((tree, tree));
 extern int ix86_return_pops_args PARAMS ((tree, tree, int));
+
+extern int ix86_data_alignment PARAMS ((tree, int));
+extern int ix86_local_alignment PARAMS ((tree, int));
+extern int ix86_constant_alignment PARAMS ((tree, int));
 #endif
 
 
