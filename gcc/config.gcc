@@ -1245,7 +1245,11 @@ ia64*-*-linux*)
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	if test x"$use_libunwind_exceptions" = xyes; then
-	  tmake_file="$tmake_file t-libunwind"
+	  if test x"$libunwind_has_eh_support" = xyes; then
+	    tmake_file="$tmake_file t-libunwind"
+	  else
+	    tmake_file="$tmake_file t-libunwind-no-eh"
+	  fi
 	fi
 	;;
 ia64*-*-hpux*)

@@ -1,3 +1,15 @@
+2003-12-11  David Mosberger  <davidm@hpl.hp.com>
+
+	* unwind-libunwind.c (_Unwind_SetGR): Clear the NaT bit as
+	required by C++ ABI for Itanium.
+	* config/t-libunwind (LIB2ADDEH): Remove unwind-libunwind.c.
+	* config/t-libunwind-no-eh: New file.
+	* configure.in: Check libunwind for _Unwind_Resume() and if it's
+	present, set libunwind_has_eh_support to "yes".
+	* configure: Regenerate.
+	* config.gcc (ia64*-*-linux*): If $libunwind_has_eh_support is
+	set to yes, use t-libunwind, otherwise, use t-libunwind-no-eh.
+
 2003-12-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_global_pointer): Force functions with
