@@ -28,21 +28,25 @@ Boston, MA 02111-1307, USA.  */
    There is probably other stuff missing.  */
 
 #undef CPP_SPEC
-#define CPP_SPEC "\
-%{posix: -D_POSIX_SOURCE} \
-%{mrelocatable*: -D_RELOCATABLE} \
-%{!mcpu*: \
-  %{mpowerpc*: -D_ARCH_PPC -DCPU=PPC603} \
-  %{!mno-powerpc: -D_ARCH_PPC -DCPU=PPC603}} \
-%{mcpu=powerpc: -D_ARCH_PPC -DCPU=PPC603} \
-%{mcpu=403: -D_ARCH_PPC -DCPU=PPC403} \
-%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR -DCPU=PPC601} \
-%{mcpu=603: -D_ARCH_PPC -DCPU=PPC603} \
-%{mcpu=604: -D_ARCH_PPC -DCPU=PPC604}"
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_sysv) %(cpp_endian) %(cpp_cpu) \
+%{mads: %(cpp_os_ads) } \
+%{myellowknife: %(cpp_os_yellowknife) } \
+%{mmvme: %(cpp_os_mvme) } \
+%{msim: %(cpp_os_sim) } \
+%{mcall-linux: %(cpp_os_linux) } \
+%{mcall-solaris: %(cpp_os_solaris) } \
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(cpp_os_default) }}}}}} \
+%{!DCPU=*: \
+  %{!mcpu*: -DCPU=PPC603} \
+  %{mcpu=powerpc: -DCPU=PPC603} \
+  %{mcpu=403: -DCPU=PPC403} \
+  %{mcpu=601: -DCPU=PPC601} \
+  %{mcpu=603: -DCPU=PPC603} \
+  %{mcpu=604: -DCPU=PPC604}}"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
--D__vxworks -D__vxworks__ -Asystem(vxworks) -Asystem(embedded) \
+-D__vxworks -Asystem(vxworks) -Asystem(embedded) \
 -Acpu(powerpc) -Amachine(powerpc)"
 
 /* VxWorks does all the library stuff itself.  */
