@@ -12,7 +12,7 @@ void f(array &arg)
 {
 }
 
-main()
+int main()
 {
     array var;
     f(var);

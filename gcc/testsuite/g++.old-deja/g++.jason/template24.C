@@ -14,7 +14,7 @@ ostream & operator<< (ostream & os, A<T> & a)
   return os;
 }
 
-main ()
+int main ()
 {
   A<int> a = { 1 };
   cout << a << endl;

@@ -2,7 +2,7 @@ struct A { virtual void f() { } };
 struct B { virtual void g() { } };
 struct C : public A, public B { };
 
-main ()
+int main ()
 {
   C* cp = 0;
   B* bp = 0;

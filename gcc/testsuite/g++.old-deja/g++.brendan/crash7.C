@@ -1,5 +1,6 @@
 // Build don't link: 
 // GROUPS passed templates
+
 template<class T>
 class Vector
 {
@@ -16,7 +17,7 @@ template<class T>// ERROR - previous definition of T
 struct Comparator
 {
   typedef T T;// ERROR - use of template type T in typedef to T
-  static lessthan (T &a, T &b) { return a < b; }
+  static int lessthan (T &a, T &b) { return a < b; }
 };
 
 template<class Comp>

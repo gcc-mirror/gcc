@@ -12,7 +12,7 @@ struct A {
 
 void * operator new (size_t size, int, int) { return operator new (size); }
 
-main ()
+int main ()
 {
   try {
     A* ap = new (1, 5) A;

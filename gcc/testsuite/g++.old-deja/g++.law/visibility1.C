@@ -51,7 +51,7 @@ derived_friend()
 
 
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 //==========================
 {
     base b;

@@ -15,7 +15,7 @@ void f(void)
   r = 0;
 }
 
-main()
+int main()
 {
   struct xx p;
 

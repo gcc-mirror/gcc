@@ -13,7 +13,7 @@ void Class<I>::func1(int n) {}
 //void Class<I>::func1(int n=1) {}
 //the code compiles.
 
-main() {
+int main() {
   Class<int> C;
   return 0;
 }

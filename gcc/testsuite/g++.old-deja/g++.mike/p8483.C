@@ -25,7 +25,7 @@ private:
   A d[2][2][2];
 };
 
-main() {
+int main() {
   { A a; }
   { B b; }
   { C c; }

@@ -31,7 +31,7 @@ void foo::operator delete (void *data)
   overloaded_delete++;
 }
 
-main ()
+int main ()
 {
   foo *f = new foo;
   foo *ff = ::new foo;

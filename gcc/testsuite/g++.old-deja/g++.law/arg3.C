@@ -11,7 +11,7 @@ template <class T> void func(T, const Ptr& p);
 Ptr& return_ref();
 
 
-main()
+int main()
 {
   char* x;
 

@@ -4,7 +4,7 @@ struct A {
   const A * get_this () const { return this; }
 };
 
-main ()
+int main ()
 {
   A a;
   int r = 0;

@@ -7,7 +7,7 @@
 // From: "Malcolm C. Strickland" <chucks@orl.mmc.com>
 
 
-        main()
+int main()
         {
           double *d;
           d = new double(10);

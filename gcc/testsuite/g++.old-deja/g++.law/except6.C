@@ -13,7 +13,7 @@ struct Exception
      Exception(int i) { v = i; };
  };
 
- inc(int &i)
+void inc(int &i)
  {
      try {
          if (i == 0)

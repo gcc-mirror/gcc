@@ -19,7 +19,7 @@ public:
   virtual ~ParentTwo() {};
 private:
   int MoreData[12];
-  virtual foo() { return 0; }
+  virtual int foo() { return 0; }
 };
 
 struct Child : public ParentOne, public ParentTwo {
@@ -60,7 +60,7 @@ struct Student : public Child {
   }
 };
 
-main() {
+int main() {
   Student  o;
   o.LocalPrintThis();
   o.ForcedPrintThis();

@@ -7,7 +7,7 @@ public:
 
 extern void bar(int*);
 
-main()
+int main()
 {
   int (C::*mfp)() = &C::func;
   bar((int*)mfp);		// ERROR - no clear semantics

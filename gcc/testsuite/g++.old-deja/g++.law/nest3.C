@@ -18,7 +18,7 @@ struct outer {
   }
 };
 
-main() {
+int main() {
   outer::f();
   cout << endl;
   return 0;

@@ -19,7 +19,7 @@ struct B {
         A a;
 };
 
-main(void)
+int main(void)
 {
         B(A());
 	if (pass)

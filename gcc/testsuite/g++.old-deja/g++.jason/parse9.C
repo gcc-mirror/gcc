@@ -9,7 +9,7 @@ public:
   void print() { }
 };
 
-main(int argc, char * argv[])
+int main(int argc, char * argv[])
 {
   int * i = &argc;
 

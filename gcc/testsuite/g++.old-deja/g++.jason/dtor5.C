@@ -12,7 +12,7 @@ template <class T> struct A {
   ~A() { p[--i].~T(); r = i; }
 };
 
-main()
+int main()
 {
   { A<int> a; }
 

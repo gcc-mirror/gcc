@@ -51,7 +51,7 @@ public:
 };
 
 
-main()
+int main()
 {
   C *cp= new C;
   cp->va();

@@ -16,7 +16,7 @@ int barney()
   return 1;
 }
 
-main()
+int main()
 {
   return fred::barney();
 }

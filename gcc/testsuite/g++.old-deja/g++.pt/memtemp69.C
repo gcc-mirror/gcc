@@ -24,7 +24,7 @@ struct X
   void f(const T1&) {}
 };
 
-main(int ac, char* av[]) {
+int main(int ac, char* av[]) {
   S s;
   s.g();
   int i[] = {1,2,3,4,5};

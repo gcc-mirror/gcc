@@ -25,7 +25,7 @@ extern AAA arr1[];
 
 AAA arr1[] = {(int)E1 };
 
-main()
+int main()
 {
   return 0;
 }

@@ -13,7 +13,7 @@ struct Test {
 };
 
 
-main()
+int main()
 {
     Test<int> i, j;
 

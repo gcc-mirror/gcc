@@ -9,7 +9,7 @@ public:
 
 Class varOfClass;
 
-main() {
+int main() {
   // This MUST be 'const' to generate the error...
   const Class	arrayOfClass[1] = { varOfClass }; // causes abort
 }

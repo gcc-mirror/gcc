@@ -4,7 +4,7 @@
 const int ci=10, *pc = &ci, *const cpc = pc, **ppc;
 int i, *p, *const cp = &i;
 
-main()
+int main()
 {
   ci = 1;	// ERROR - bad
   ci++;		// ERROR - bad

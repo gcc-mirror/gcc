@@ -28,16 +28,16 @@ void Test<T>::doThat()
 class A 
 { 
  public: 
-  thiss() {}; 
+  void thiss() {}; 
 };
 
 class B
 { 
  public: 
-  that() {}; 
+  void that() {}; 
 };
 
-main() 
+int main() 
 { 
   Test<A> a; 
   a.doThiss();			// a.doThat() is not well formed, but then

@@ -16,7 +16,7 @@ template<class R> void f(R)
    accumulate(0, static_cast<int (*)(int, R&)>(p) );
 }
 
-main()
+int main()
 {
    f(0);
 }

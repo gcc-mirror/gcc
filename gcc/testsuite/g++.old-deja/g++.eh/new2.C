@@ -17,7 +17,7 @@ void foo (B*);
 
 int newed, created;
 
-main ()
+int main ()
 {
   try {
     foo (new B (A ()));

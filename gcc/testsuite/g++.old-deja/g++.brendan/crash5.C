@@ -96,6 +96,7 @@ class	Dummy
 		Dummy()	{}
 };
 
+int
 main()
 {
 	SimpleSet<Dummy *>		bs1;

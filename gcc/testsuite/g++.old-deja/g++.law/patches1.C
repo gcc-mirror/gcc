@@ -12,7 +12,7 @@ int type(long double) { return 3; }
 
 extern "C" int printf( const char *, ...);
 
-main()
+int main()
 {
       int i = 0;
       if (type(0.0) != 2)

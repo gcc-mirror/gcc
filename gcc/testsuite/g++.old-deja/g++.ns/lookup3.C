@@ -8,7 +8,7 @@ int A::f()
   return i;
 }
 
-main()
+int main()
 {
   return A::f();
 }

@@ -58,6 +58,7 @@ public:
 
 int operator != (const BaseClass irv, int x) { return irv.i != x; }
 
+int
 main ()
 {
     DerivedClass a;

@@ -13,7 +13,7 @@ public:
     void func(U v1) {}
 };
 
-main()
+int main()
 {
   A<float> a;
   a.func(3);

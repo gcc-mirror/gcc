@@ -6,7 +6,7 @@
 // Subject:  Bug report
 // Message-ID: <9308101450.AA28016@methusalix.ert.rwth-aachen.de>
 
-main()
+int main()
 {
         class foo
         {

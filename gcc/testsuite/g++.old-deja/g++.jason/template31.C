@@ -30,7 +30,7 @@ private:
     CopyMe myStrvec;
 };
 
-main(int argc, char**argv)   {
+int main(int argc, char**argv)   {
     IncludeIt foo;
     IncludeIt* bar;
     exit(0);

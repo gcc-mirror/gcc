@@ -36,7 +36,7 @@ AFX_MSGMAP_ENTRY  CDialog ::_messageEntries[] = {
   { (AFX_PMSG)0 }
 }; 
 
-main() {
+int main() {
   CDialog d;
   (d.*((CDialog::_messageEntries)[0]).pfn)();	// This should call CDialog::OnMyMsg
   return fail;

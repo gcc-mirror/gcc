@@ -6,7 +6,7 @@ struct B {
   ~B();
 };
 
-main()
+int main()
 {
   A a;
   a.~B();			// ERROR - wrong name

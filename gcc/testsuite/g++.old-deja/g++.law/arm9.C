@@ -21,7 +21,7 @@ public:
 };
 void B::set (f2 f) { cout << "called B\n";} // ERROR - candidate
 
-main() {
+int main() {
     B b;
     b.set(F1); // ARM page 309: should call A.set(f1) and that what g++ does,// ERROR - .*
                // but 13.1 of ARM clearly states that it should call B::set()

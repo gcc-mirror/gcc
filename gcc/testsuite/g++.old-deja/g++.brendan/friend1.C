@@ -16,4 +16,4 @@ public:
 
 B b;
 
-main () {}
+int main () {}

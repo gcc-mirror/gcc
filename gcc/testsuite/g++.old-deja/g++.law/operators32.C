@@ -37,7 +37,7 @@ if( allocate1d(d1, array) != 0 )
 return array;
 }
 
-main()
+int main()
 {
 long d1 = 3, d2 = 4;
 class foo

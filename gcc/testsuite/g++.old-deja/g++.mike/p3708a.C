@@ -8,19 +8,19 @@ void *ptr;
 class A {
 public:
   A() { printf ("A is constructed.\n"); }
-  virtual xx(int doit) { printf ("A is destructed.\n"); }
+  virtual void xx(int doit) { printf ("A is destructed.\n"); }
 };
 
 class A1 {
 public:
   A1() { printf ("A1 is constructed.\n"); }
-  virtual xx(int doit) { printf ("A1 is destructed.\n"); }
+  virtual void xx(int doit) { printf ("A1 is destructed.\n"); }
 };
 
 class B :  public A1, public virtual A {
 public:
   B() { printf ("B is constructed.\n"); }
-  virtual xx(int doit) {
+  virtual void xx(int doit) {
     printf ("B is destructed.\n");
     A1::xx (1);
     if (doit) A::xx (1);
@@ -34,7 +34,7 @@ public:
   C() { ++num; printf ("C is constructed.\n");
       ptr = this;
       }
-  virtual xx(int doit) {
+  virtual void xx(int doit) {
     --num;
     if (ptr != this)
       printf("FAIL\n%x != %x\n", ptr, this);

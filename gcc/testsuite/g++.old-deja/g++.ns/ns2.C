@@ -19,7 +19,7 @@ void andere_funktion()
   var=4;
 }
 
-main(int,char**)
+int main(int,char**)
 {
   andere_funktion();
   return 0;

@@ -14,7 +14,7 @@ public:
 
 int g() { return 0; } // gets bogus error - referenced below XFAIL *-*-*
 
-main()
+int main()
 {
     int try1;
     B( try1 ).f();   // no syntax error

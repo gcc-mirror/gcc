@@ -19,7 +19,7 @@ void operator>>(xistream& i, int j)
   i.j = 0;
 }
 
-main() {
+int main() {
   int i;
   xifstream ifs;
   

@@ -10,7 +10,7 @@ union Double_alignt{
 
 };
 
-main(){
+int main(){
 
 	
 	Double_alignt<20000> heap;

@@ -6,7 +6,7 @@ struct A {
 template <class T>
 T A<T>::arr[5] = { 0, 1, 2, 3, 4 };
 
-main ()
+int main ()
 {
   return A<int>::arr[0];
 }

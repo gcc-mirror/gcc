@@ -41,7 +41,7 @@ BugStream& operator<<(ostream& os, Eval_)
     return ((BugStream&)os).eval();
 }
 
-main() {
+int main() {
     BugStream bs;
     bs << "PASS" << eval;
 }

@@ -12,7 +12,7 @@ public:
       int f (int); // ERROR - candidates are
 };
 
-main ()
+int main ()
 {
   Bar b;
 

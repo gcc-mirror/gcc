@@ -21,7 +21,7 @@ public:
 
 int complex::count=0;
 
-main()
+int main()
 {
         complex v[6] = {1, complex(1,2), complex(), 2 }; // ARM Sect. 12.6.1
         int i;                                           // page 289

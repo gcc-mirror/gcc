@@ -26,5 +26,5 @@ void Bar::doit(void)
   printf("i = %d\n", j);
 }
 Thing::Thing(int y) { x = y; }
-main(){ Bar x; x.doit(); }
+int main(){ Bar x; x.doit(); }
 

@@ -28,7 +28,7 @@ Derived a;
 /* Bar<Derived, &Signal::Name> dispatcher1; */
 Bar<Derived, &Derived::Name> dispatcher2;
 
-main() {
+int main() {
   /* int i1 = dispatcher1.value(&a); */
   int i2 = dispatcher2.value(&a);
   return /* i1 != 1 || */ i2 != 2;

@@ -31,7 +31,7 @@ eh_test (int level)
     }
 }
 
-main ()
+int main ()
 {
   std::set_terminate (&eh_terminate);
   eh_test (0);

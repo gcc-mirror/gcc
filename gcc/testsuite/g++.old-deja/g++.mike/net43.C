@@ -5,7 +5,7 @@ class foo {
    friend int operator ^(const foo&, const foo&);
 };
 
-main ()
+int main ()
 {
    int (*funptr) (const foo &, const foo &)  = operator ^;
 }

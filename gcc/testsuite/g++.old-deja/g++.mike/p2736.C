@@ -23,6 +23,6 @@ foo() {
 
 A a(2);
 
-main() {
+int main() {
   foo();
 }

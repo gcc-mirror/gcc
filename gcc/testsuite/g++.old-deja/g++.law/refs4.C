@@ -14,7 +14,7 @@ void foo(const int m, const int n)
 	  printf("FAIL\n");
 }
 
-main()
+int main()
 {
         foo(min(2, 1), min(100, 200));
         return 0;

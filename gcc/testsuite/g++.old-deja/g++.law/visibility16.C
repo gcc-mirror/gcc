@@ -29,7 +29,7 @@ class C : public A {
     }
 };
 
-main() {
+int main() {
     C cvar;
     B bvar(&cvar);
 }

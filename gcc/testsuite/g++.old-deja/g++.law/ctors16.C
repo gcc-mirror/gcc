@@ -38,7 +38,7 @@ public:
 };
 
 
-main() {
+int main() {
     C c;
     D d;
     E e;

@@ -12,7 +12,7 @@ struct A {
 A a;
 A foo () { return a; }
 
-main()
+int main()
 {
   const A& ar = foo();
   const A& ar2 = A();

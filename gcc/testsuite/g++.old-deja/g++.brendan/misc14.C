@@ -9,4 +9,4 @@ public:
     static int New(int);// ERROR -  declaration.*
 };
 
-main() {}
+int main() {}

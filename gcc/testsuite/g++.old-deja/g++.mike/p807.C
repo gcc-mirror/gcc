@@ -26,7 +26,7 @@ class B
 int foo(B& b);			// ERROR - referenced below
 
 
-main()
+int main()
 {
    AX a;
    foo(a);  // ERROR - Ambiguous B(a) or a.operator B()  //  See ARM 12.3.2

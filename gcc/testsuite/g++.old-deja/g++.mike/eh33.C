@@ -7,9 +7,9 @@ void my_unexpected() {
   throw 42;
 }
 
-foo() throw (int) { throw "Hi"; }
+void foo() throw (int) { throw "Hi"; }
 
-main() {
+int main() {
   std::set_unexpected (my_unexpected);
   try {
     foo();

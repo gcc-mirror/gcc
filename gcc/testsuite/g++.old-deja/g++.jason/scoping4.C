@@ -22,7 +22,7 @@ A::A(Ptr string) {		// gets bogus error -
   s = string;			// gets bogus error - 
 }
 
-main() {
+int main() {
   A a("testing");
   A *a_ptr;
   B b(&a);

@@ -8,7 +8,7 @@ int foo () { return 1; }
 
 int A<int>::t = foo ();
 
-main ()
+int main ()
 {
   return (A<int>::t != 1);
 }

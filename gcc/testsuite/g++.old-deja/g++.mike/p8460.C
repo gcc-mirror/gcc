@@ -9,7 +9,7 @@ public:
 private:
 };
 
-main()
+int main()
 {
   A a;
   

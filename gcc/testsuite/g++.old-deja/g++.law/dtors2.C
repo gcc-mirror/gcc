@@ -25,7 +25,7 @@ public:
              //         passed as value)
 };
 
-main() {
+int main() {
 
         ulk dumm;
 

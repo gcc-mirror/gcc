@@ -27,7 +27,7 @@ ostream& operator<< (ostream& out, const Vector<char>&)
   return out;
 }
 
-main()
+int main()
 {
   Vector<char> vc;
   ostream out;

@@ -5,7 +5,7 @@ struct Foo {
   Foo(int i = 25) { }		// ERROR - candidate
 };
 
-main()
+int main()
 {
   Foo* f1 = new Foo();		// ERROR - ambiguous
 }

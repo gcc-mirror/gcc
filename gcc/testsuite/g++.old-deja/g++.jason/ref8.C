@@ -7,7 +7,7 @@ struct B {
 };
 struct C : public B, public A {};
 
-main() {
+int main() {
     C c;
 
     A& ar = c;

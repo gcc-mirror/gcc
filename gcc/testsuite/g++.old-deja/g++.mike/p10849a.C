@@ -27,7 +27,7 @@ struct D : public B, public C
   D() : B(41), C(42) { }
 } d;
 
-main() {
+int main() {
   if (! d.g())
     return 1;
 }

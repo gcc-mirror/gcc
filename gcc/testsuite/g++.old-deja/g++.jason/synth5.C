@@ -11,4 +11,4 @@ struct A {
 struct B: public A {
 };
 #line 5 "synth5.C"
-main() { }
+int main() { }

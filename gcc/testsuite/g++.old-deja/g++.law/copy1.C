@@ -54,7 +54,7 @@ test(person argp)
   ;
 }
 
-main()
+int main()
 {
   person mainp;
   test(mainp);

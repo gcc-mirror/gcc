@@ -33,7 +33,7 @@ public:
   virtual ~Main() { did_fail = 0; }
 };
 
-main() {
+int main() {
   Main* m;
   did_fail = 1;
   delete new Main;

@@ -31,7 +31,7 @@ public:
 // bar1 should get built before bar2
 foo::foo (int x, int y) : b(x), a(y) {}
 
-main()
+int main()
 {
   foo f (1, 2);
   printf ("PASS\n");

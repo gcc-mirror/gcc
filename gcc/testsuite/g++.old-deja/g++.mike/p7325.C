@@ -48,7 +48,7 @@ void g ()
   A::match_this = 0;
 }
 
-main() {
+int main() {
   f();
   g();
   return fail;

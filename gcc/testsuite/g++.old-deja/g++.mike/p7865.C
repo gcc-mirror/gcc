@@ -22,7 +22,7 @@ int bar()
   return 0;
 }
 
-main() {
+int main() {
   bar();
   return count;
 }

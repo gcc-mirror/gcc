@@ -17,7 +17,7 @@ X<A,C> f(X<A,B>,X<B,C>)
   return result;
 }
 
-main()
+int main()
 {
   X<1,3> x;
   X<1,2> y;

@@ -36,6 +36,7 @@ void C::f() {
 }
 
 B b(3);
+int
 main() {
  A *z = &b; // ERROR - 
 }

@@ -15,7 +15,7 @@ public:
 
 typedef char * cp;
 
-main ()
+int main ()
 {
   A<int> a;
   A<cp> b;

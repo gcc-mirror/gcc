@@ -21,7 +21,7 @@ B GLOBAL_B;
 
 B& foo() {return GLOBAL_B;}
 
-main()
+int main()
 {
   // build_scoped_method_call and build_scoped_ref should know how
   // to deal with a reference for this

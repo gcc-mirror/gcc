@@ -14,7 +14,7 @@ func (int const& i)
 {}
 
 
-main ()
+int main ()
 { 
   Foo<int const> foo;
   printf ("PASS\n");

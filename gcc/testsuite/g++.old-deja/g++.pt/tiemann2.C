@@ -19,7 +19,7 @@ int operator >(const complex& x, const complex &y)
   return c1 > c2;
 }
 
-main ()
+int main ()
 {
   complex c1 (1, 0);
   complex c2 (2, 0);

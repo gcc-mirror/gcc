@@ -3,7 +3,7 @@
 extern int i, j;
 static const int foo [] = { i, j };
 int i = 5, j = 42;
-main()
+int main()
 {
   return foo[1] != 42;
 }

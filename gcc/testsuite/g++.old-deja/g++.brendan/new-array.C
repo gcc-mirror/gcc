@@ -13,6 +13,6 @@ void MakeBug() {
 	job = new AStruct;
 }
 
-main () {
+int main () {
 	MakeBug();
 }

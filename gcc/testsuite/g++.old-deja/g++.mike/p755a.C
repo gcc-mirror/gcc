@@ -7,7 +7,7 @@ void operator delete(void *p) throw() {
   exit(0);
 }
 
-main () {
+int main () {
   int* i = new int;
   delete i;
   return 1;

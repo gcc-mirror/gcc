@@ -2,7 +2,7 @@
 // GROUPS passed temporaries
 #include <stdio.h>
 
-main ()
+int main ()
 {
         int a = 2;
 

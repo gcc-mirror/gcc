@@ -5,6 +5,6 @@
 template <class T> inline T min (T a, T b) { return a<b?a:b; }
 double min (double, double);
 
-main () {
+int main () {
   return (int) min (0, 1.0);
 }

@@ -64,7 +64,7 @@ void foo(Compound a)
   die (5);
 }
 
-
+int
 main()
 {
   Compound a;

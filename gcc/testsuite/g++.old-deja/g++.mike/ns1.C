@@ -1,11 +1,11 @@
 namespace Foo {
-  bar() {
+  int bar() {
     return 0;
   }
 }
 
 using namespace Foo;
 
-main() {
+int main() {
   bar();
 }

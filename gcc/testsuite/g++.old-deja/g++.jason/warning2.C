@@ -7,7 +7,7 @@ struct A {
 
 struct B: public A { int f () { } };
 
-main()
+int main()
 {
   B* bp;
   A& ar = (A&)bp;		// WARNING - 

@@ -9,7 +9,7 @@ struct A {
   operator int () { return 1; }
 };
 
-main ()
+int main ()
 {
   A::A();
   return c;

@@ -3,12 +3,12 @@
 
 extern "C" int printf(const char *, ...);
 
-main1() {
+void main1() {
   throw 1;
 }
 
 
-main() {
+int main() {
   try {
     main1();
   } catch (...) {

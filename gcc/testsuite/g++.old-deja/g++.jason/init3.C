@@ -35,7 +35,7 @@ My_string::My_string(const My_string &string)
    memcpy(str, string.str, len);
 }
 
-main()
+int main()
 {
    My_string str1 = strings[0];
    return strcmp ("first string", str1.char_p ()) != 0;

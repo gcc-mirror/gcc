@@ -51,6 +51,6 @@ class interproc_jump_edge : public eel_interproc_jump_edge,
 public:
 };
 
-main () {
+int main () {
   void *vp = new interproc_jump_edge();
 }

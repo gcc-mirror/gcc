@@ -8,7 +8,7 @@ public:
   ~C() { }
 };
 
-main(int argc, char**argv) {
+int main(int argc, char**argv) {
   C c,d;
   c = (argc&1) ? C() : d;
   return 0;

@@ -16,7 +16,7 @@ void A::d() {
   (this->*(f()))();
 }
 
-main() {
+int main() {
   A a;
   a.d();
 }

@@ -14,7 +14,7 @@ struct B : public A
     void func() { foo(); }	// ERROR - 
 };
 
-main()
+int main()
 {
     B b;
     b.func();

@@ -9,7 +9,7 @@ struct B {
   int f () { return (*p)(42); }	// gets bogus error
 };
 
-main ()
+int main ()
 {
   B b = { new A };
 

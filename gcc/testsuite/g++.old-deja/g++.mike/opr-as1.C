@@ -6,6 +6,6 @@ class C {
 
 C a, b;
 
-main() {
+int main() {
   a = b;
 }

@@ -21,7 +21,7 @@ public:
   }
 };
 
-main()
+int main()
 {
   Flock<Chicken> x;
   printf ("%s\n", typeid(x).name());

@@ -15,6 +15,6 @@ void f()
   };
 }
 
-main()
+int main()
 {
 }

@@ -7,7 +7,7 @@ namespace A{
   }
 }
 
-main()
+int main()
 {
   return A::i-A::B::i;
 }

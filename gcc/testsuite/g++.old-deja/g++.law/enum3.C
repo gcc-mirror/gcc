@@ -16,6 +16,6 @@ public:
   virtual void off(void) { toggle = on; };// ERROR - .*
 };
 
-main()
+int main()
 {
 }

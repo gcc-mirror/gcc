@@ -14,7 +14,7 @@ void f(char *& x)
   x++;
 }
 
-main()
+int main()
 {
   f ("foo");// ERROR - init of non-const ref from char*
 }

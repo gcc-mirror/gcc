@@ -62,7 +62,7 @@ int PTcl::three(int, char** argv) {
 	return 0;
 }
 
-main (int argc, char** argv) {
+int main (int argc, char** argv) {
 	PTcl obj;
 	obj.dispatcher(1,argc,argv);
 	return 0;

@@ -16,7 +16,7 @@ public:
     operator B & () { return *p; }
 };
 
-main()
+int main()
 {
     A a;
     B &b = (B &)a;

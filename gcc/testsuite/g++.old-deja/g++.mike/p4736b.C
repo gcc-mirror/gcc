@@ -31,7 +31,7 @@ public:
   virtual int foo() { return 5; }
 };
 
-main() {
+int main() {
   Main m;
   if (m.foo() != 5)
     return 1;

@@ -1,4 +1,4 @@
-main ()
+int main ()
 {
   bool b = false;
   int i = b++;

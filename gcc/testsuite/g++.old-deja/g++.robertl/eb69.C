@@ -6,4 +6,4 @@
                 typedef int an_int;
                 bar() : bar::an_int(3) {};  // will call foo::foo(3)
         };
-        main() { bar b; }
+int main() { bar b; }

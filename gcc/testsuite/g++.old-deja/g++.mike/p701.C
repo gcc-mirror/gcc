@@ -27,7 +27,7 @@ A::Safe() const
    Munge(i);	// ERROR - should not be able to modify a const object
 }
 
-main()
+int main()
 {
    const A a(1);
    a.Safe();

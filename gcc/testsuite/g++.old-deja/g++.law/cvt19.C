@@ -18,7 +18,7 @@ class A {
 };
 
 
-main()
+int main()
 {
     A a;
     if (a!=0) {

@@ -20,7 +20,7 @@ public:
   void *lookup(const char *) {}
 };
 
-main()
+int main()
 {
   char buf[2048];
   dictionary exceptions;

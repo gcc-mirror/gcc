@@ -16,7 +16,7 @@ class B:public A
     void SetProp() { if (!aset) { printf ("FAIL\n"); exit (0);} aset--;}
 };
 
-main()
+int main()
 {
     A a;
     B b;

@@ -19,7 +19,7 @@ template <class T> void g1 (const T&);
 template <class T> void g2 (T&);
 template <class T> void g3 (T);
 
-main()
+int main()
 {
   g1 (f1 ());
   g1 (f2 ());

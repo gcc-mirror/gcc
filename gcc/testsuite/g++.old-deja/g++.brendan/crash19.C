@@ -1,4 +1,4 @@
-// Special g++ Options: 
+// Special g++ Options:
 // Build don't link: 
 // GROUPS passed old-abort
 typedef unsigned long _G_clock_t;
@@ -1394,7 +1394,7 @@ class queue : public object {
 		DESTROYER destroy_f;
 		STRINGER string_f;
 		int count;
-		swap()
+	        int swap()
 		{
 			QUEUE tmp = Q;
 			Q = Q2;

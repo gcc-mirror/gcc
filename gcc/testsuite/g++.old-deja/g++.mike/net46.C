@@ -9,7 +9,7 @@ static void *operator new(size_t size) throw (std::bad_alloc) {
   return (void*) 0;
 }
 
-main() {
+int main() {
   cout << "";
   new int;
   return fail;

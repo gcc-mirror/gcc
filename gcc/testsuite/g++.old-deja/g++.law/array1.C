@@ -22,7 +22,7 @@ public:
 
 foo* foo::array = new foo [5];
 
-main()
+int main()
 {
   if (i != 5)
     printf ("FAIL\n");

@@ -17,7 +17,7 @@ public:
 
 void EP::operator=(T *) { }
 
-main()
+int main()
 {
   EP ep1, ep2;
   ep1 = ep2;

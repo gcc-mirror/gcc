@@ -23,7 +23,7 @@ class rM : public M {
 class D : public lM, rM {
 } d;				// ERROR - ambiguous function
 
-main() {
+int main() {
   ((lM*)&d)->i = 1;
   ((rM*)&d)->i = 2;
   ((rM*)&d)->f();

@@ -12,7 +12,7 @@ struct B {
   friend void g () { f (); }
 };
 
-main ()
+int main ()
 {
   g ();
 }

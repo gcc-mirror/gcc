@@ -14,7 +14,7 @@ struct C2 : public B2 { };
 struct D2 : public B2 { };
 struct E2 : public C2, public D2 { };
 
-main ()
+int main ()
 {
   E e;
   E2 e2;

@@ -15,7 +15,7 @@ public :
     int find();
 };
 
-main()
+int main()
 {
     int z = Foo::bar.find();
 }

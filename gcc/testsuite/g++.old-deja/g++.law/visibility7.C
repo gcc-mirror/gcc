@@ -59,7 +59,7 @@ class C {
 };
 
 
-main()
+int main()
 {
   B* bobject = new B(2, 1);
   C* cobject = new C(bobject);

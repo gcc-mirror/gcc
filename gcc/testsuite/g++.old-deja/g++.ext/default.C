@@ -11,7 +11,7 @@ public:
 
 A*(*A::ptr)(int) = &A::func;
 
-main()
+int main()
 {
   A foo;
 

@@ -71,7 +71,7 @@ public:
   friend class DataBase;
 };
 
-main()
+int main()
 {
   DBpathrec a(), b();
 

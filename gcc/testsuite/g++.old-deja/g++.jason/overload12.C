@@ -9,7 +9,7 @@ struct B {
 B b_;
 const B &b () { return b_; }
 
-main()
+int main()
 {
   return b().foo();
 }

@@ -2,7 +2,7 @@
 
 extern "C" int printf (const char *, ...);
 
-main()
+int main()
 {
   int j = 0, k = 0;
   1 ? j : k = 5;		// should be parsed 1 ? j : (k = 5)

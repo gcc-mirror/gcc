@@ -14,7 +14,7 @@ int f (enum foo ef)
     }
 }
 
-main ()
+int main ()
 {
   return f (one);
 }

@@ -7,7 +7,7 @@ public:
 class Child : public Parent {
 };				// ERROR - called
 
-main() {
+int main() {
   Child c( "String initializer" );	// ERROR - bad
   return 0;
 }

@@ -12,7 +12,7 @@ int foo() {
   return A();
 }
 
-main() {
+int main() {
   return foo() != 7;
 }
 

@@ -32,4 +32,5 @@ gen_op Spul_U_axis()
   U1 = Fe();
 }; // ERROR - reaches end of non-void function
 
+int
 main () {};

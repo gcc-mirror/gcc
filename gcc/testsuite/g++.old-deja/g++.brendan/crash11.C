@@ -18,6 +18,7 @@ class B : public A {
 	friend virtual void f2() { printf("i=%d j=%d\n",i,j); }// ERROR -  virtual.*// ERROR -  member.*// ERROR -  member.*
 };
 
+int
 main() {
 	A * a = new A;
 }

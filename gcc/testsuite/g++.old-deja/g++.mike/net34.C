@@ -30,7 +30,7 @@ public:
         }
 };
 
-main() {
+int main() {
         multiple m(1,2);
         m.print();
 }

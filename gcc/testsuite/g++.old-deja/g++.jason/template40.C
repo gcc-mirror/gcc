@@ -13,7 +13,7 @@ private:
   int size;
 };
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   Array<long> ia;	// looping occurs on this line
 }

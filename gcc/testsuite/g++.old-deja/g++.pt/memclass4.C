@@ -15,7 +15,7 @@ struct alloc_traits
   typedef typename Allocator::template rebind<T>::other allocator_type;
 };
 
-main ()
+int main ()
 {
   typedef alloc_traits<int, allocator<void> >::allocator_type at;
 

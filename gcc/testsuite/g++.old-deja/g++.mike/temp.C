@@ -25,7 +25,7 @@ public:
 
 int foo() { return getenv("TEST") == 0; }
 
-main() {
+int main() {
   int i = foo() ? s+b : s;
   return i != 2;
 }

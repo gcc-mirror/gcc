@@ -14,7 +14,7 @@ class X : public ParX
                 void fn2() { cout << "hi" << endl; }
         };
 
-main()
+int main()
         {
         X               x;
         ParX*   pParX                   = &x;

@@ -43,6 +43,7 @@ public:
     ExchangeableList	i_theWatchList; // Instruments being monitored
 };
 
+int
 main()
 {
 }

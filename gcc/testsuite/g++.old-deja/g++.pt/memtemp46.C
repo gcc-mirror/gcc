@@ -13,7 +13,7 @@ public:
   void func(V v1 = 0) {}
 };
 
-main()
+int main()
 {
   A<float, int> a;
   a.func("abc");

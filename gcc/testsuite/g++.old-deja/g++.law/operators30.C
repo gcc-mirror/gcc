@@ -7,11 +7,11 @@
 
 #include <stdio.h>
 
-nop()
+void nop()
 {
-} // ERROR - non-void
+}
 
-main ()
+int main ()
 {
         int a = 2;
 

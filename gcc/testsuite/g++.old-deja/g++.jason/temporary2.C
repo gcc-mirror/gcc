@@ -9,7 +9,7 @@ public:
 
 X foo() { X x; return x; }
 
-main() 
+int main() 
 {
   X   x(foo()); // ERROR - Compiler doesn't warn about temporary reference.
   x.bar(foo()); // ERROR - The same mistake is warned about in this case.

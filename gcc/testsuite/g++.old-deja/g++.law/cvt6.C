@@ -22,7 +22,7 @@ public:
 };
 
 
-main() {
+int main() {
   foo f;
   f.test(34);  // line 18
 }

@@ -11,7 +11,7 @@ public:
   int operator== (const A& r) { return 1; }
 };
 
-main() {
+int main() {
   {
     A a (1);
     if (a == 2 || a == 1)

@@ -12,7 +12,7 @@ template <class T> inline T func(const T& x) { return x; }
 inline int func(const int& x) { return x; }
 
 
-main()
+int main()
 { int x;
   func(x);
   printf ("PASS\n");

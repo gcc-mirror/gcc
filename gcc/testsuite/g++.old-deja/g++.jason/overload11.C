@@ -7,7 +7,7 @@ public:
   void foo(int &i) { i = 1; }
 };
 
-main()
+int main()
 {
   A a;
   const A& b = a;

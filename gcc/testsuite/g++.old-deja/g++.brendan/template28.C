@@ -7,7 +7,7 @@ public:
         operator const char*() { return fptr; }
 };
 
-main(){
+int main(){
         X x1("1234");
         X x2(x1+1);
 }

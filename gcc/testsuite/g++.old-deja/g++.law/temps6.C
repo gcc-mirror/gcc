@@ -14,7 +14,7 @@ int& test(str *arg1, int str::*arg2)
   return (arg1->*arg2);
 }
 
-main()
+int main()
 {
   test(&xxx, &str::i) = 5;
   if (xxx.i == 0)

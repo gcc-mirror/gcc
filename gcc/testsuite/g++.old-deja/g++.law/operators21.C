@@ -9,7 +9,7 @@ int operator()(A x,float y) {// ERROR - .*
         return 1;
 }
 
-main() {
+int main() {
         A x;
         x(1.0); // ERROR - no match
 }

@@ -28,7 +28,7 @@ void f(A &a) { // ERROR - in passing argument
         printf("A at %x is %d\n", &a, a.i);
 }
 
-main() {
+int main() {
         B b;
         b.i = 99;
         f(b);// ERROR - .*

@@ -6,7 +6,7 @@ struct B: public A {
   virtual B* f () { return 0; }
 };
 
-main ()
+int main ()
 {
   A* ap = new B;
   return (ap->f () != 0);

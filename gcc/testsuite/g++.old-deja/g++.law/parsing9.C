@@ -21,7 +21,7 @@ T bar()
 T baz()
 { return 30; }
 
-main()
+int main()
 {
 T (*apfrt[10])();
 

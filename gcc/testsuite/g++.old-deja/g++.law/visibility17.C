@@ -25,7 +25,7 @@ public:
   Derived(int n, char* str);
   Derived(int n);
 
-  getNum() {return num_;}
+  int getNum() {return num_;}
 private:
   int num_;
 };

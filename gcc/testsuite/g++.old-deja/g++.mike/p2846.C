@@ -46,7 +46,7 @@ B A::compute(void) const {
   return sub;
 }
 
-main ()
+int main ()
 {
   A titi;
   A toto = titi.compute();

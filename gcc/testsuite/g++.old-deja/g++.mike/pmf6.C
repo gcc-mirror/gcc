@@ -6,7 +6,7 @@ public:
   void foo() {
     pmf();			// WARNING - 
   }
-  static foo1(S* sp) {
+  static void foo1(S* sp) {
     (sp->pmf)();		// ERROR - 
   }
 };

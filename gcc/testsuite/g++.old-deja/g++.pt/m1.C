@@ -3,7 +3,7 @@
 int f1 () {
   struct A {
     A() : b (2) { }
-    fred () { return b.hi_mom; }
+    int fred () { return b.hi_mom; }
     struct B {
       int hi_mom;
       B (int a) { hi_mom = a; }

@@ -12,7 +12,7 @@ struct myint {
   }
   myint(const myint& mi) {
   }
-  operator=(const myint& mi) {
+  myint& operator=(const myint& mi) {
   }
 };
 

@@ -44,7 +44,7 @@ B A::compute(void) const
   return sub;
 }
 
-main ()
+int main ()
 {
   A titi;
   titi.compute().beefy();

@@ -7,7 +7,7 @@ public:
   foo();
 };
 
-main()
+int main()
 {
   static foo& a = *(new foo);
 }

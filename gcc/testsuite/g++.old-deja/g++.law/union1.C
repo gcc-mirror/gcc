@@ -24,6 +24,6 @@ op_to_charp BINOPS[] = { {"+", PLUS},
                          {"/", DIV},
                          {"^", POWR} };
 
-main() {
+int main() {
   int dummy;
 }

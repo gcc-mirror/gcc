@@ -94,7 +94,7 @@ try_array( Array_RC<Type> &rc )
     try_array( ((Array<Type>&)rc) );
 }
 
-main()
+int main()
 {
     static int ia[10] = { 12, 7, 14, 9, 128, 17, 6, 3, 27, 5 };
     Array_RC<int> iA(ia, 10);// ERROR - instantiated from here

@@ -13,7 +13,7 @@ class X : public ifstream {
     public:
       X(int a, char *b) {} // ERROR - candidate
 }; // ERROR - candidate
-main()
+int main()
 {
     X *y = new X(10, "123");
     // the compiler must reject this constructor call:

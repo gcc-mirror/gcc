@@ -8,7 +8,7 @@ public:
   operator int () { return 0; }
 };
 
-
+int
 main ()
 {
   C c1 (1);

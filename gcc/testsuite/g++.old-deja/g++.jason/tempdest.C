@@ -12,7 +12,7 @@ public:
 
 typedef unsigned int ui;
 
-main()
+int main()
 {
   A<ui> *ap = new A<ui>;
 

@@ -21,7 +21,7 @@ public:
 	void bar() { b::foo();}
 };
 
-main() {
+int main() {
 	c test;
 	test.bar();
 }

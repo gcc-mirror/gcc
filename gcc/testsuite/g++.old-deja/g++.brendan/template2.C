@@ -9,6 +9,6 @@ public:
 template <class Q>
 int Conc<Q>::body() {return 0;}
 
-main () {
+int main () {
 	Conc<int> s2;
 }

@@ -16,7 +16,7 @@ public:
   };
 };
 
-main() {
+int main() {
   Outer::Inner A;
   Outer Thing;
 

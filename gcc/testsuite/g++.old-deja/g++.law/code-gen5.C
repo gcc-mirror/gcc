@@ -261,7 +261,7 @@ operator=( double d )
 
 int makeforms( Vector cen, Vector **a, Vector **b );
 
-main()
+int main()
 {
 	Vector *a[8], *b[8], disp(3);
 	Vector cen(3), cen2(3);

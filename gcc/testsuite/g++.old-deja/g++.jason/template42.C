@@ -10,7 +10,7 @@ struct A {
   void f (T t = T()) { }
 };
 
-main ()
+int main ()
 {
   A<X> a;
   X x (1);

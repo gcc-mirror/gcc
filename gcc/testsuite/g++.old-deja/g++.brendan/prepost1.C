@@ -5,7 +5,7 @@ public:
       operator ++ (); // ERROR - no type or storage class
 };
 
-main()
+int main()
 {
   foo x;
 

@@ -8,7 +8,7 @@ template <class T> struct A {
   };
 };
 
-main ()
+int main ()
 {
   A<int>::B<char> b;
   b.f (42);

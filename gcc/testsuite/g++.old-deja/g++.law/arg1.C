@@ -19,7 +19,7 @@ public:
       void f(double* p) { cout << "B(double*)\n"; } // ERROR - candidate
 };
 
-main()
+int main()
 {
     A a;
     B b;

@@ -25,6 +25,6 @@ void A::B::g (int val)
 	}
 
 
-main ()
+int main ()
 	{
 	}

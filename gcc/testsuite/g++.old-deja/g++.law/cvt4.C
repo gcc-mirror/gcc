@@ -18,7 +18,7 @@ int destruct = 2;
      ~Test() {if (--destruct == 0) printf ("PASS\n");}
   };
 
-  main()
+int main()
   {
      long i=1;
      Test t;

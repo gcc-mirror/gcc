@@ -22,7 +22,7 @@ void ovf(          int, short, unsigned long) { printf ("FAIL\n"); }
 // (unsigned long => int, unsigned int => short) and a promotion
 // (unsigned int => unsigned long).
 
-main(int, char**)
+int main(int, char**)
 {
     unsigned long pixmap = 0;
     unsigned int x = 0;

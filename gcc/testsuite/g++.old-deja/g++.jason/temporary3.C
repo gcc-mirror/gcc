@@ -15,7 +15,7 @@ struct A {
 A f ()
 { return 1; }
 
-main ()
+int main ()
 {
   {
     A a (1);

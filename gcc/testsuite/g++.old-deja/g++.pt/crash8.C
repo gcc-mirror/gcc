@@ -27,7 +27,7 @@ void doit(T x) {
   p2 = TestClass2(); // ERROR - template used as expression
 }
 
-main() {
+int main() {
   double x;
   doit(x);
 }

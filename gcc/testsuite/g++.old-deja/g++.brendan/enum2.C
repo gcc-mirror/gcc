@@ -12,7 +12,7 @@ public:
 
 class derv : public foo, public foo2 { };
 
-main()
+int main()
 {
   foo::bar x = foo::baz;
   derv::bar2 y = derv::bat2;

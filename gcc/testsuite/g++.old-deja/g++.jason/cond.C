@@ -2,7 +2,7 @@
 // GROUPS passed rtti
 // Negative testcase for decls in conditions.
 
-main()
+int main()
 {
   float i;
   

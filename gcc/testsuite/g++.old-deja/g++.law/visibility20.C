@@ -27,7 +27,7 @@ Derived::noticeThisFunction(Base *b) {
                                 // since it is not called on 'this'
 }
 
-main() {
+int main() {
     Base b;
     Derived d;
     d.noticeThisFunction(&b);

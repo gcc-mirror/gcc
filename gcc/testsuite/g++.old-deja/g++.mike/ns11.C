@@ -3,16 +3,16 @@ class Foo {
 
 namespace A {
   namespace Foo {
-    bar() {
+    int bar() {
       return 0;
     }
   }
 
-  mymain() {
+  int mymain() {
     return Foo::bar();
   }
 }
 
-main() {
+int main() {
   return A::mymain();
 }

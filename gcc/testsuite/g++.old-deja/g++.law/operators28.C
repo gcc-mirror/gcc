@@ -21,7 +21,7 @@ void* new_test::operator new(size_t sz, int count, int type)
   return p;
 };
 
-main()
+int main()
 {
   new_test *test;
   int count = 13;

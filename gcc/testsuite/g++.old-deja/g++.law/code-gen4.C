@@ -18,7 +18,7 @@ A oA;
 
 extern "C" int printf( const char *, ...);
 
-main()
+int main()
 {
         oA.c = 'q';
 

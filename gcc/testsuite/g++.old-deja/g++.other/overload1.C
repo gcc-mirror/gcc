@@ -4,7 +4,7 @@ struct A {
 
 A operator+ (A, float);
 
-main ()
+int main ()
 {
   A a;
   a + 1;

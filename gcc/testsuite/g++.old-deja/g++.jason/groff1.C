@@ -29,7 +29,7 @@ void S::foo(const A &pos)
     exit (1);
 }
 
-main()
+int main()
 {
   A pos;
   pos.x = 17;

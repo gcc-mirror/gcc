@@ -26,7 +26,7 @@ void TCRCB::eat () {
  this->itc();
 }
 
-main() {
+int main() {
   TCRCB a;
   a.eat();
   return fail;

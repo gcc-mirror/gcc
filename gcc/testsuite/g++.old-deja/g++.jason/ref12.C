@@ -1,5 +1,5 @@
 void f (char *const &) { }
-main ()
+int main ()
 {
   f ("hi");
 }

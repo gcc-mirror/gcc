@@ -24,7 +24,7 @@ public:
   virtual void f2() { printf("Test3::f2\n"); }
 };
 
-main() {
+int main() {
     Test3 t3;
     return 0;
 }

@@ -35,7 +35,7 @@ class B
    void operator delete(void*){}
 };
 
-main()
+int main()
 {
    B* p = new B;
    delete p;

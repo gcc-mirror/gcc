@@ -12,7 +12,7 @@ struct A {
 void foo (A a)
 { }
 
-main()
+int main()
 {
   foo (1);
   return count;

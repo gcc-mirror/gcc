@@ -17,7 +17,7 @@ public:
    int& geti()            {return i;} // same thing, but different
 };
 
-main()
+int main()
 {
    test t(3.14, 5);  // Create an object t of class "test"
    int x = (int&)t;  // This should call operator int&() but it does not ...
