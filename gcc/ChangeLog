@@ -1,5 +1,15 @@
 2002-07-21  Neil Booth  <neil@daikokuya.co.uk>
 
+	* gengenrtl.c (gencode): Don't define obstack_alloc_rtx.
+	* function.c (SYMBOL__MAIN): Remove definition.
+	* global.c (SET_CONFLICT, REGBITP, ALLOCNO_LIVE_P): Remove.
+	* predict.c (PROB_NEVER, PROB_LIKELY, PROB_UNLIKELY): Remove.	
+	* profile.c (GCOV_INDEX_TO_BB): Remove.
+	* sched-rgn.c (ABS_VALUE, MIN_DIFF_PRIORITY, MIN_PROB_DIFF): Remove.
+	* simplify-rtx.c (FIXED_BASE_PLUS_P): Remove.
+
+2002-07-21  Neil Booth  <neil@daikokuya.co.uk>
+
 	* c-lex.c (GET_ENVIRONMENT): Remove.
 	* collect2.c (GET_ENV_PATH_LIST): Remove.
 	(prefix_from_env): Use GET_ENVIRONMENT.

@@ -75,7 +75,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    must define both, or neither.  */
 #ifndef NAME__MAIN
 #define NAME__MAIN "__main"
-#define SYMBOL__MAIN __main
 #endif
 
 /* Round a value to the lowest integer less than it that is a multiple of
