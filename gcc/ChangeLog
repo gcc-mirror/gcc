@@ -1,5 +1,8 @@
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (emit_all_insn_group_barriers): Flush state
+	at barrier insns.  Emit stop bits before barriers.
+
 	* flow.c (flow_find_cross_jump): Don't consider unconditional
 	return insns for commoning.
 
