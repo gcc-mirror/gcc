@@ -80,12 +80,6 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
    } while (0)
 #endif
 
-/* Provide default for ASM_OUTPUT_ALTERNATE_LABEL_NAME.  */
-#ifndef ASM_OUTPUT_ALTERNATE_LABEL_NAME
-#define ASM_OUTPUT_ALTERNATE_LABEL_NAME(FILE,INSN) \
-do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
-#endif
-
 /* choose a reasonable default for ASM_OUTPUT_ASCII.  */
 
 #ifndef ASM_OUTPUT_ASCII

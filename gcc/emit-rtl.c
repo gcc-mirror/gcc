@@ -2185,14 +2185,8 @@ widen_memory_access (memref, mode, offset)
 rtx
 gen_label_rtx ()
 {
-  rtx label;
-
-  label = gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX, NULL_RTX,
-		  	      NULL, label_num++, NULL, NULL);
-
-  LABEL_NUSES (label) = 0;
-  LABEL_ALTERNATE_NAME (label) = NULL;
-  return label;
+  return gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX, NULL_RTX,
+		  	     NULL, label_num++, NULL);
 }
 
 /* For procedure integration.  */

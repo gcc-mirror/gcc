@@ -1,3 +1,27 @@
+2002-07-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* rtl.def (CODE_LABEL): Remove slot 8.
+	* rtl.h (struct rtx_def): Document new uses of jump and call fields.
+	(LABEL_ALTERNATE_NAME): Delete.
+	(LABEL_KIND, SET_LABEL_KIND, LABEL_ALT_ENTRY_P): New.
+	* defaults.h: Remove default for ASM_OUTPUT_ALTERNATE_LABEL_NAME.
+
+	* final.c (output_alternate_entry_point): New.
+	(final_scan_insn): Use it instead of
+	ASM_OUTPUT_ALTERNATE_LABEL_NAME.  Do not consider possibility
+	of a case label being an alternate entry point.
+
+	* cfgbuild.c (make_edges, find_bb_boundaries): Use LABEL_ALT_ENTRY_P.
+	* emit-rtl.c (gen_label_rtx): Adjust call to gen_rtx_CODE_LABEL.
+	Do not clear LABEL_NUSES (unnecessary) or LABEL_ALTERNATE_NAME
+	(field deleted).
+	* print-rtl.c, ra-debug.c: Update code to output CODE_LABELs.
+
+	* doc/rtl.texi: Document LABEL_KIND, SET_LABEL_KIND, and
+	LABEL_ALT_ENTRY_P; not LABEL_ALTERNATE_NAME.
+	* doc/tm.texi: Delete documentation of
+	ASM_OUTPUT_ALTERNATE_LABEL_NAME.
+
 2002-07-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris5gas.h (DWARF2_DEBUGGING_INFO): Define.

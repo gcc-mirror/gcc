@@ -130,9 +130,10 @@ struct rtx_def
   /* 1 in a MEM if we should keep the alias set for this mem unchanged
      when we access a component.
      1 in a CALL_INSN if it is a sibling call.
-     1 in a SET that is for a return.  */
+     1 in a SET that is for a return.
+     In a CODE_LABEL, part of the two-bit alternate entry field.  */
   unsigned int jump : 1;
-  /* This flag is currently unused.  */
+  /* In a CODE_LABEL, part of the two-bit alternate entry field.  */
   unsigned int call : 1;
   /* 1 in a REG, MEM, or CONCAT if the value is set at most once, anywhere.
      1 in a SUBREG if it references an unsigned object whose mode has been
@@ -876,8 +877,55 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
 #define LABEL_NUSES(RTX) XCINT (RTX, 4, CODE_LABEL)
 
-/* Associate a name with a CODE_LABEL.  */
-#define LABEL_ALTERNATE_NAME(RTX) XCSTR (RTX, 8, CODE_LABEL)
+/* Labels carry a two-bit field composed of the ->jump and ->call
+   bits.  This field indicates whether the label is an alternate
+   entry point, and if so, what kind.  */
+enum label_kind
+{
+  LABEL_NORMAL = 0,	/* ordinary label */
+  LABEL_STATIC_ENTRY,	/* alternate entry point, not exported */
+  LABEL_GLOBAL_ENTRY,	/* alternate entry point, exported */
+  LABEL_WEAK_ENTRY	/* alternate entry point, exported as weak symbol */
+};
+
+#if defined ENABLE_RTL_FLAG_CHECKING && (GCC_VERSION > 2007)
+
+/* Retrieve the kind of LABEL.  */
+#define LABEL_KIND(LABEL) __extension__					\
+({ rtx const _label = (LABEL);						\
+   if (GET_CODE (_label) != CODE_LABEL)					\
+     rtl_check_failed_flag ("LABEL_KIND", _label, __FILE__, __LINE__,	\
+			    __FUNCTION__);				\
+   (enum label_kind) ((_label->jump << 1) | _label->call); })
+
+/* Set the kind of LABEL.  */
+#define SET_LABEL_KIND(LABEL, KIND) do {				\
+   rtx _label = (LABEL);						\
+   unsigned int _kind = (KIND);						\
+   if (GET_CODE (_label) != CODE_LABEL)					\
+     rtl_check_failed_flag ("SET_LABEL_KIND", _label, __FILE__, __LINE__, \
+			    __FUNCTION__);				\
+   _label->jump = ((_kind >> 1) & 1);					\
+   _label->call = (_kind & 1);						\
+} while (0)
+
+#else
+
+/* Retrieve the kind of LABEL.  */
+#define LABEL_KIND(LABEL) \
+   ((enum label_kind) (((LABEL)->jump << 1) | (LABEL)->call))
+
+/* Set the kind of LABEL.  */
+#define SET_LABEL_KIND(LABEL, KIND) do {				\
+   rtx _label = (LABEL);						\
+   unsigned int _kind = (KIND);						\
+   _label->jump = ((_kind >> 1) & 1);					\
+   _label->call = (_kind & 1);						\
+} while (0)
+
+#endif /* rtl flag checking */
+
+#define LABEL_ALT_ENTRY_P(LABEL) (LABEL_KIND (LABEL) != LABEL_NORMAL)
 
 /* The original regno this ADDRESSOF was built for.  */
 #define ADDRESSOF_REGNO(RTX) XCUINT (RTX, 1, ADDRESSOF)
