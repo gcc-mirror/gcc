@@ -1,3 +1,8 @@
+2002-04-12  Loren J. Rittle <ljrittle@acm.org>
+
+	* libjava.lang/SyncGlobal.java, libjava.lang/SyncGlobal.out:
+	New test case.
+
 2002-04-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* libjava.lang/PR6204.java, libjava.lang/PR6204.out: New test case.
