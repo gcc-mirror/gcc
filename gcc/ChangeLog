@@ -1,3 +1,8 @@
+2001-01-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/semi.h (ASM_SPEC): Pass -k to the assembler when 
+	compiling PIC.
+
 2001-01-14  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (get_shift_alg): Update comments.

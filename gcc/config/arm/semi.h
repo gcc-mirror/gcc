@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  ARM on semi-hosted platform
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
-   Contributed by Richard Earnshaw (richard.earnshaw@armltd.co.uk)
+   Copyright (C) 1994, 1995, 1996, 1997, 2001 Free Software Foundation, Inc.
+   Contributed by Richard Earnshaw (richard.earnshaw@arm.com)
 
 This file is part of GNU CC.
 
@@ -39,8 +39,16 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_EXTRA_ASM_SPEC
 #endif
 
+/* The compiler supports PIC code generation, even though the binutils
+   may not.  If we are asked to compile position independent code, we
+   always pass -k to the assembler.  If it doesn't recognize it, then
+   it will barf, which probably means that it doesn't know how to
+   assemble PIC code.  This is what we want, since otherwise tools
+   may incorrectly assume we support PIC compilation even if the
+   binutils can't.  */
 #ifndef ASM_SPEC
 #define ASM_SPEC "\
+%{fpic: -k} %{fPIC: -k} \
 %{mbig-endian:-EB} \
 %{mcpu=*:-m%*} \
 %{march=*:-m%*} \
