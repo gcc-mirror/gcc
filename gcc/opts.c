@@ -137,7 +137,7 @@ static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
 				 unsigned int lang_mask);
 static void handle_options (unsigned int, const char **, unsigned int);
-static void wrap_help (const char *help, const char *item, size_t item_width);
+static void wrap_help (const char *help, const char *item, int item_width);
 static void print_help (void);
 
 /* Perform a binary search to find which option the command-line INPUT
@@ -1524,9 +1524,9 @@ print_help (void)
 /* Output ITEM, of length ITEM_WIDTH, in the left column, followed by
    word-wrapped HELP in a second column.  */
 static void
-wrap_help (const char *help, const char *item, size_t item_width)
+wrap_help (const char *help, const char *item, int item_width)
 {
-  const unsigned int columns = 80, col_width = 27;
+  const int columns = 80, col_width = 27;
   unsigned int remaining, room, len;
 
   remaining = strlen (help);

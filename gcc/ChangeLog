@@ -1,3 +1,8 @@
+2003-07-09  Andreas Jaeger  <aj@suse.de>
+
+	* opts.c (wrap_help): Only pass int arguments as arguments to
+	printf's '*' modifier.  Change argument of function.
+
 2003-07-08  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* doc/invoke.texi: Fix misspelling of "@item".
