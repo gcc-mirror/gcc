@@ -333,6 +333,8 @@ expand_end_java_handler (range)
       start_catch_handler (prepare_eh_table_type (TREE_PURPOSE (handler)));
       /* Push the thrown object on the top of the stack */
       expand_goto (TREE_VALUE (handler));
+      expand_resume_after_catch ();
+      end_catch_handler ();
     }
   expand_end_all_catch ();
 }
