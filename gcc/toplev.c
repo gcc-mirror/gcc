@@ -2248,6 +2248,19 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP, END)
 #endif
 
+  /* We deferred calling assemble_alias so that we could collect
+     other attributes such as visibility.  Emit the alias now.  */
+  {
+    tree alias;
+    alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl));
+    if (alias)
+      {
+	alias = TREE_VALUE (TREE_VALUE (alias));
+	alias = get_identifier (TREE_STRING_POINTER (alias));
+        assemble_alias (decl, alias);
+      }
+  }
+
   /* Forward declarations for nested functions are not "external",
      but we need to treat them as if they were.  */
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl)

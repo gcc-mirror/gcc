@@ -1,3 +1,25 @@
+2002-05-26  Richard Henderson  <rth@redhat.com>
+
+	2002-05-25  Richard Henderson  <rth@redhat.com>
+	* c-pragma.c (apply_pragma_weak): Convert value identifier to 
+	string for decl_attributes.
+	(handle_pragma_weak): Call assemble_alias if we're modifying
+	an existing decl.
+
+	2002-05-15  Richard Henderson  <rth@redhat.com>
+	* varasm.c (merge_weak): Remove special case for extern and common.
+
+	2002-05-15  Richard Henderson  <rth@redhat.com>
+	* varasm.c (merge_weak): Error for any weakening after definition.
+	Adjust weakening after use warning to catch more cases.
+	(assemble_alias): Set TREE_USED and TREE_ASM_WRITTEN consistently.
+	* config/alpha/alpha.c (alpha_encode_section_info): Do not abort.
+
+	2002-03-02  Richard Henderson  <rth@redhat.com>
+	* attribs.c (handle_alias_attribute): Don't call assemble_alias.
+	* toplev.c (rest_of_decl_compilation): Invoke assemble_alias when
+	needed.
+
 2002-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* cse.c (fold_rtx): Don't optimize if SUBREG changes mode class.

@@ -1664,7 +1664,11 @@ alpha_encode_section_info (decl)
       XSTR (XEXP (DECL_RTL (decl), 0), 0) = string;
     }
   else if (symbol_str[0] == '@')
-    abort ();
+    {
+      /* We're hosed.  This can happen when the user adds a weak
+	 attribute after rtl generation.  They should have gotten
+	 a warning about unspecified behaviour from varasm.c.  */
+    }
 }
 
 /* legitimate_address_p recognizes an RTL expression that is a valid

@@ -9,18 +9,18 @@
 /* { dg-final { if [string match h8300-*-hms $target_triplet ] {return} } } */
 /* { dg-final { if [string match i?86-pc-cygwin $target_triplet ] {return} } } */
 /* { dg-final { if [string match *-*-coff $target_triplet ] {return} } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1a" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1b" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1c" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1d" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1e" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1f" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1g" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1h" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1i" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1j" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1k" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1l" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1a" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1b" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1c" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1d" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1e" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1f" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1g" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1h" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1i" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1j" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1k" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1l" } } */
 
 /* test variable addresses with __attribute__ ((weak)) */
 
@@ -45,7 +45,7 @@ void * foo1c (void)
 {
   return (void *)&vfoo1c;
 }
-extern int vfoo1c __attribute__((weak)); /* { dg-warning "weak declaration" "weak declaration" } */
+extern int vfoo1c __attribute__((weak)); /* { dg-warning "unspecified behavior" } */
 
 
 extern int vfoo1d __attribute__((weak));
@@ -69,7 +69,7 @@ void * foo1f (void)
 {
   return (void *)&vfoo1f;
 }
-extern int vfoo1f __attribute__((weak));
+extern int vfoo1f __attribute__((weak)); /* { dg-warning "unspecified behavior" } */
 
 
 extern int vfoo1g;
@@ -77,7 +77,7 @@ void * foo1g (void)
 {
   return (void *)&vfoo1g;
 }
-int vfoo1g __attribute__((weak));
+int vfoo1g __attribute__((weak)); /* { dg-warning "unspecified behavior" } */
 
 
 extern int vfoo1h __attribute__((weak));
@@ -112,6 +112,4 @@ int vfoo1k = 1;
 
 
 int vfoox1l = 1;
-extern int vfoo1l __attribute__((alias ("vfoox1l")));
 extern int vfoo1l __attribute__((weak, alias ("vfoox1l")));
-

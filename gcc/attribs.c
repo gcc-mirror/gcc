@@ -1050,7 +1050,6 @@ handle_alias_attribute (node, name, args, flags, no_add_attrs)
 	DECL_INITIAL (decl) = error_mark_node;
       else
 	DECL_EXTERNAL (decl) = 0;
-      assemble_alias (decl, id);
     }
   else
     {
