@@ -62,6 +62,7 @@ char leaf_reg_remap[] =
   48, 49, 50, 51, 52, 53, 54, 55,
   56, 57, 58, 59, 60, 61, 62, 63};
 
+#if 0 /* not used anymore */
 char leaf_reg_backmap[] =
 { 0, 1, 2, 3, 4, 5, 6, 7,
   24, 25, 26, 27, 28, 29, 14, 31,
@@ -73,12 +74,13 @@ char leaf_reg_backmap[] =
   48, 49, 50, 51, 52, 53, 54, 55,
   56, 57, 58, 59, 60, 61, 62, 63};
 #endif
+#endif
 
 /* Global variables set by FUNCTION_PROLOGUE.  */
 /* Size of frame.  Need to know this to emit return insns from
    leaf procedures.  */
-int apparent_fsize;
-int actual_fsize;
+static int apparent_fsize;
+static int actual_fsize;
 
 /* Name of where we pretend to think the frame pointer points.
    Normally, this is "%fp", but if we are in a leaf procedure,
@@ -269,46 +271,6 @@ move_pic_label (op, mode)
   /* Special case for PIC.  */
   if (flag_pic && GET_CODE (op) == LABEL_REF)
     return 1;
-  return 0;
-}
-
-/* The rtx for the global offset table which is a special form
-   that *is* a position independent symbolic constant.  */
-rtx pic_pc_rtx;
-
-/* Ensure that we are not using patterns that are not OK with PIC.  */
-
-int
-check_pic (i)
-     int i;
-{
-  switch (flag_pic)
-    {
-    case 1:
-      if (GET_CODE (recog_operand[i]) == SYMBOL_REF
-	  || (GET_CODE (recog_operand[i]) == CONST
-	      && ! rtx_equal_p (pic_pc_rtx, recog_operand[i])))
-	abort ();
-    case 2:
-    default:
-      return 1;
-    }
-}
-
-/* Return true if X is an address which needs a temporary register when 
-   reloaded while generating PIC code.  */
-
-int
-pic_address_needs_scratch (x)
-     rtx x;
-{
-  /* An address which is a symbolic plus a non SMALL_INT needs a temp reg.  */
-  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-      && ! SMALL_INT (XEXP (XEXP (x, 0), 1)))
-    return 1;
-
   return 0;
 }
 
@@ -621,6 +583,46 @@ reg_unused_after (reg, insn)
   return 1;
 }
 
+/* The rtx for the global offset table which is a special form
+   that *is* a position independent symbolic constant.  */
+static rtx pic_pc_rtx;
+
+/* Ensure that we are not using patterns that are not OK with PIC.  */
+
+int
+check_pic (i)
+     int i;
+{
+  switch (flag_pic)
+    {
+    case 1:
+      if (GET_CODE (recog_operand[i]) == SYMBOL_REF
+	  || (GET_CODE (recog_operand[i]) == CONST
+	      && ! rtx_equal_p (pic_pc_rtx, recog_operand[i])))
+	abort ();
+    case 2:
+    default:
+      return 1;
+    }
+}
+
+/* Return true if X is an address which needs a temporary register when 
+   reloaded while generating PIC code.  */
+
+int
+pic_address_needs_scratch (x)
+     rtx x;
+{
+  /* An address which is a symbolic plus a non SMALL_INT needs a temp reg.  */
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && ! SMALL_INT (XEXP (XEXP (x, 0), 1)))
+    return 1;
+
+  return 0;
+}
+
 /* Legitimize PIC addresses.  If the address is already position-independent,
    we return ORIG.  Newly generated position-independent addresses go into a
    reg.  This is REG if non zero, otherwise we allocate register(s) as
@@ -1526,6 +1528,8 @@ find_addr_reg (addr)
   abort ();
 }
 
+#if 0 /* not currently used */
+
 void
 output_sized_memop (opname, mode, signedp)
      char *opname;
@@ -1560,6 +1564,7 @@ output_move_with_extension (operands)
   else
     abort ();
 }
+#endif /* not currently used */
 
 #if 0
 /* ??? These are only used by the movstrsi pattern, but we get better code
