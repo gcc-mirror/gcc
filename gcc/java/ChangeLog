@@ -28,6 +28,16 @@ Wed Nov 03 02:16:00 PST 1999  Pekka Nikander  <pekka.nikander@hut.fi>
 	* jv-scan.c (help): Likewise.
 	* jcf-dump.c (help): Likewise.
 
+Thu Feb 17 14:30:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (generate_bytecode_insns): Don't generate empty
+ 	`finally' clauses.
+
+Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (load_class): Call `fatal' if no file containing
+	the target class are found.
+
 2000-02-16  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (PARSE_C, PARSE_SCAN_C): Move dependencies on

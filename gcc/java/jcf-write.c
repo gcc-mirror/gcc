@@ -2297,31 +2297,52 @@ generate_bytecode_insns (exp, target, state)
       break;
     case TRY_FINALLY_EXPR:
       {
+	struct jcf_block *finished_label, *finally_label, *start_label;
+	struct jcf_handler *handler;
+	int worthwhile_finally = 1;
 	tree try_block = TREE_OPERAND (exp, 0);
 	tree finally = TREE_OPERAND (exp, 1);
-	struct jcf_block *finished_label = gen_jcf_label (state);
-	struct jcf_block *finally_label = gen_jcf_label (state);
-	struct jcf_block *start_label = get_jcf_label_here (state);
-	tree return_link = build_decl (VAR_DECL, NULL_TREE,
-				       return_address_type_node);
-	tree exception_type = build_pointer_type (throwable_type_node);
-	tree exception_decl = build_decl (VAR_DECL, NULL_TREE, exception_type);
-	struct jcf_handler *handler;
+	tree return_link, exception_type, exception_decl;
 
-	finally_label->pc = PENDING_CLEANUP_PC;
-	finally_label->next = state->labeled_blocks;
-	state->labeled_blocks = finally_label;
-	state->num_finalizers++;
+	/* If the finally clause happens to be empty, set a flag so we
+           remember to just skip it. */
+	if (BLOCK_EXPR_BODY (finally) == empty_stmt_node)
+	  worthwhile_finally = 0;
+
+	if (worthwhile_finally)
+	  {
+	    return_link = build_decl (VAR_DECL, NULL_TREE,
+				      return_address_type_node);
+	    exception_type = build_pointer_type (throwable_type_node);
+	    exception_decl = build_decl (VAR_DECL, NULL_TREE, exception_type);
+
+	    finished_label = gen_jcf_label (state);
+	    finally_label = gen_jcf_label (state);
+	    start_label = get_jcf_label_here (state);
+	    finally_label->pc = PENDING_CLEANUP_PC;
+	    finally_label->next = state->labeled_blocks;
+	    state->labeled_blocks = finally_label;
+	    state->num_finalizers++;
+	  }
 
 	generate_bytecode_insns (try_block, target, state);
-	if (state->labeled_blocks != finally_label)
-	  abort();
-	state->labeled_blocks = finally_label->next;
-	emit_jsr (finally_label, state);
+
+	if (worthwhile_finally)
+	  {
+	    if (state->labeled_blocks != finally_label)
+	      abort();
+	    state->labeled_blocks = finally_label->next;
+	    emit_jsr (finally_label, state);
+	  }
+
 	if (CAN_COMPLETE_NORMALLY (try_block))
 	  emit_goto (finished_label, state);
 
 	/* Handle exceptions. */
+
+	if (!worthwhile_finally)
+	  break;
+
 	localvar_alloc (return_link, state);
 	handler = alloc_handler (start_label, NULL_PTR, state);
 	handler->end_label = handler->handler_label;
