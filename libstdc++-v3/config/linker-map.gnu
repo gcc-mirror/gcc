@@ -271,6 +271,26 @@ GLIBCXX_3.4.3 {
     _ZN9__gnu_cxx6__poolILb[01]EE17_M_reclaim_memoryEPc[jm];
     _ZN9__gnu_cxx20__common_pool_policyILb[01]EE11_S_get_poolEv;
  
+    # stub functions from libmath
+    acosf;
+    acosl;
+    asinf;
+    asinl;
+    atanf;
+    atanl;
+    ceilf;
+    ceill;
+    floorf;
+    floorl;
+    fmodf;
+    fmodl;
+    frexpf;
+    frexpl;
+    ldexpf;
+    ldexpl;
+    modff;
+    modfl;
+
 } GLIBCXX_3.4.2;
 
 # Symbols in the support library (libsupc++) have their own tag.

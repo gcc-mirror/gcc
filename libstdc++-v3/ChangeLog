@@ -1,3 +1,10 @@
+2004-10-04  Roger Sayle  <roger@eyesopen.com>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR libstdc++/17505
+	* config/linker-map.gnu: Synchronize the current list of stub
+	functions from libmath.
+
 2004-10-03  Roger Sayle  <roger@eyesopen.com>
 
 	* config/locale/generic/c_locale.cc (__convert_to_v): Use
