@@ -883,8 +883,6 @@ struct language_function
 {
   tree x_ctor_label;
   tree x_dtor_label;
-  tree x_base_init_list;
-  tree x_member_init_list;
   tree x_current_class_ptr;
   tree x_current_class_ref;
   tree x_eh_spec_try_block;
@@ -926,19 +924,6 @@ struct language_function
    the pointer to the initialized object.  */
 
 #define ctor_label cp_function_chain->x_ctor_label
-
-/* In C++, structures with well-defined constructors are initialized by
-   those constructors, unasked.  CURRENT_BASE_INIT_LIST
-   holds a list of stmts for a BASE_INIT term in the grammar.
-   This list has one element for each base class which must be
-   initialized.  The list elements are [basename, init], with
-   type basetype.  This allows the possibly anachronistic form
-   (assuming d : a, b, c) "d (int a) : c(a+5), b (a-4), a (a+3)"
-   where each successive term can be handed down the constructor
-   line.  Perhaps this was not intended.  */
-
-#define current_base_init_list cp_function_chain->x_base_init_list
-#define current_member_init_list cp_function_chain->x_member_init_list
 
 /* When we're processing a member function, current_class_ptr is the
    PARM_DECL for the `this' pointer.  The current_class_ref is an
@@ -4082,7 +4067,7 @@ extern int copy_assignment_arg_p		PARAMS ((tree, int));
 extern void cplus_decl_attributes		PARAMS ((tree, tree, tree)); 
 extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
-extern void setup_vtbl_ptr			PARAMS ((void));
+extern void setup_vtbl_ptr			PARAMS ((tree, tree));
 extern void defer_fn             		PARAMS ((tree));
 extern tree get_temp_name			PARAMS ((tree, int));
 extern void finish_anon_union			PARAMS ((tree));
@@ -4174,8 +4159,8 @@ extern tree do_friend				PARAMS ((tree, tree, tree, tree, tree, enum overload_fl
 
 /* in init.c */
 extern void init_init_processing		PARAMS ((void));
-extern void emit_base_init			PARAMS ((void));
-extern void expand_member_init			PARAMS ((tree, tree, tree));
+extern void emit_base_init			PARAMS ((tree, tree));
+extern tree expand_member_init			PARAMS ((tree, tree, tree));
 extern tree build_aggr_init			PARAMS ((tree, tree, int));
 extern int is_aggr_type				PARAMS ((tree, int));
 extern tree get_aggr_from_typedef		PARAMS ((tree, int));
@@ -4209,7 +4194,6 @@ extern void lang_finish				PARAMS ((void));
 #if 0
 extern void reinit_lang_specific		PARAMS ((void));
 #endif
-extern void reinit_parse_for_function		PARAMS ((void));
 extern void print_parse_statistics		PARAMS ((void));
 extern void extract_interface_info		PARAMS ((void));
 extern void do_pending_inlines			PARAMS ((void));

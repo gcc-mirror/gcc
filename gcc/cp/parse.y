@@ -389,7 +389,8 @@ cp_parse_init ()
 %type <itype> new delete
 /* %type <ttype> primary_no_id */
 %type <ttype> maybe_parmlist
-%type <itype> member_init_list
+%type <ttype> member_init
+%type <ftype> member_init_list
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type_parm template_template_parm
 %type <code>  template_close_bracket
@@ -853,9 +854,40 @@ return_init:
 base_init:
 	  ':' .set_base_init member_init_list
 		{
-		  if ($3 == 0)
-		    error ("no base initializers given following ':'");
-		  setup_vtbl_ptr ();
+		  tree member_init_list = NULL_TREE;
+		  tree base_init_list = NULL_TREE;
+		  tree init;
+		  tree next;
+		  int seen_member_init_p;
+
+		  if ($3.new_type_flag == 0)
+		    error ("no base or member initializers given following ':'");
+		  
+		  seen_member_init_p = 0;
+		  for (init = $3.t; init; init = next)
+		    {
+		      next = TREE_CHAIN (init);
+		      if (TREE_CODE (TREE_PURPOSE (init)) == FIELD_DECL)
+			{
+			  TREE_CHAIN (init) = member_init_list;
+			  member_init_list = init;
+			  seen_member_init_p = 1;
+			}
+		      else
+			{
+			  if (warn_reorder && seen_member_init_p)
+			    {
+			      cp_warning ("base initializer for `%T'",
+					  TREE_PURPOSE (init));
+			      warning ("   will be re-ordered to precede member initializations");
+			    }
+			    
+			  TREE_CHAIN (init) = base_init_list;
+			  base_init_list = init;
+			}
+		    }
+
+		  setup_vtbl_ptr (member_init_list, base_init_list);
 		}
 	;
 
@@ -877,10 +909,26 @@ base_init:
 
 member_init_list:
 	  /* empty */
-		{ $$ = 0; }
+		{ 
+		  $$.new_type_flag = 0; 
+		  $$.t = NULL_TREE; 
+		}
 	| member_init
-		{ $$ = 1; }
+		{ 
+		  $$.new_type_flag = 1; 
+		  $$.t = $1; 
+		}
 	| member_init_list ',' member_init
+                { 
+		  if ($3) 
+		    {
+		      $$.new_type_flag = 1; 
+		      TREE_CHAIN ($3) = $1.t;
+		      $$.t = $3;
+		    }
+		  else
+		    $$ = $1;
+		}
 	| member_init_list error
 	;
 
@@ -889,29 +937,36 @@ member_init:
 		{
 		  if (current_class_name)
 		    pedwarn ("anachronistic old style base class initializer");
-		  expand_member_init (current_class_ref, NULL_TREE, $2);
+		  $$ = expand_member_init (current_class_ref, NULL_TREE, $2);
 		}
 	| LEFT_RIGHT
 		{
 		  if (current_class_name)
 		    pedwarn ("anachronistic old style base class initializer");
-		  expand_member_init (current_class_ref, NULL_TREE, void_type_node);
+		  $$ = expand_member_init (current_class_ref,
+					   NULL_TREE, 
+					   void_type_node);
 		}
 	| notype_identifier '(' nonnull_exprlist ')'
-		{ expand_member_init (current_class_ref, $1, $3); }
+		{ $$ = expand_member_init (current_class_ref, $1, $3); }
 	| notype_identifier LEFT_RIGHT
-		{ expand_member_init (current_class_ref, $1, void_type_node); }
+		{ $$ = expand_member_init (current_class_ref, $1,
+					   void_type_node); }
 	| nonnested_type '(' nonnull_exprlist ')'
-		{ expand_member_init (current_class_ref, $1, $3); }
+		{ $$ = expand_member_init (current_class_ref, $1, $3); }
 	| nonnested_type LEFT_RIGHT
-		{ expand_member_init (current_class_ref, $1, void_type_node); }
+		{ $$ = expand_member_init (current_class_ref, $1,
+					   void_type_node); }
 	| typename_sub '(' nonnull_exprlist ')'
-		{ expand_member_init (current_class_ref, TYPE_MAIN_DECL ($1),
-				      $3); }
+		{ $$ = expand_member_init (current_class_ref,
+					   TYPE_MAIN_DECL ($1),
+					   $3); }
 	| typename_sub LEFT_RIGHT
-		{ expand_member_init (current_class_ref, TYPE_MAIN_DECL ($1),
-				      void_type_node); }
+		{ $$ = expand_member_init (current_class_ref,
+					   TYPE_MAIN_DECL ($1),
+					   void_type_node); }
         | error
+                { $$ = NULL_TREE }
 	;
 
 identifier:
@@ -1654,7 +1709,7 @@ nodecls:
 		{
 		  if (! current_function_parms_stored)
 		    store_parm_decls ();
-		  setup_vtbl_ptr ();
+		  setup_vtbl_ptr (NULL_TREE, NULL_TREE);
 		}
 	;
 
@@ -2096,8 +2151,7 @@ fn.defpen:
 	PRE_PARSED_FUNCTION_DECL
 		{ start_function (NULL_TREE, $1->fndecl, NULL_TREE, 
 				  (SF_DEFAULT | SF_PRE_PARSED 
-				   | SF_INCLASS_INLINE));
-		  reinit_parse_for_function (); }
+				   | SF_INCLASS_INLINE)); }
 
 pending_inline:
 	  fn.defpen maybe_return_init ctor_initializer_opt compstmt_or_error

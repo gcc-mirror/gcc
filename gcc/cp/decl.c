@@ -14090,8 +14090,6 @@ save_function_data (decl)
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 
   /* Clear out the bits we don't need.  */
-  f->x_base_init_list = NULL_TREE;
-  f->x_member_init_list = NULL_TREE;
   f->x_stmt_tree.x_last_stmt = NULL_TREE;
   f->x_stmt_tree.x_last_expr_type = NULL_TREE;
   f->x_result_rtx = NULL_RTX;
@@ -14972,8 +14970,6 @@ mark_lang_function (p)
 
   ggc_mark_tree (p->x_ctor_label);
   ggc_mark_tree (p->x_dtor_label);
-  ggc_mark_tree (p->x_base_init_list);
-  ggc_mark_tree (p->x_member_init_list);
   ggc_mark_tree (p->x_current_class_ptr);
   ggc_mark_tree (p->x_current_class_ref);
   ggc_mark_tree (p->x_eh_spec_try_block);

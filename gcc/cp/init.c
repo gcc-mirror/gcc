@@ -40,11 +40,11 @@ static void expand_aggr_init_1 PARAMS ((tree, tree, tree, tree, int));
 static void expand_default_init PARAMS ((tree, tree, tree, tree, int));
 static tree build_vec_delete_1 PARAMS ((tree, tree, tree, special_function_kind, int));
 static void perform_member_init PARAMS ((tree, tree, int));
-static void sort_base_init PARAMS ((tree, tree *, tree *));
+static void sort_base_init PARAMS ((tree, tree, tree *, tree *));
 static tree build_builtin_delete_call PARAMS ((tree));
 static int member_init_ok_or_else PARAMS ((tree, tree, const char *));
 static void expand_virtual_init PARAMS ((tree, tree));
-static tree sort_member_init PARAMS ((tree));
+static tree sort_member_init PARAMS ((tree, tree));
 static tree initializing_context PARAMS ((tree));
 static void expand_cleanup_for_base PARAMS ((tree, tree));
 static tree get_temp_regvar PARAMS ((tree, tree));
@@ -213,7 +213,7 @@ perform_member_init (member, init, explicit)
   else if (TYPE_NEEDS_CONSTRUCTING (type)
 	   || (init && TYPE_HAS_CONSTRUCTOR (type)))
     {
-      /* Since `init' is already a TREE_LIST on the current_member_init_list,
+      /* Since `init' is already a TREE_LIST on the member_init_list,
 	 only build it into one if we aren't already a list.  */
       if (init != NULL_TREE && TREE_CODE (init) != TREE_LIST)
 	init = build_tree_list (NULL_TREE, init);
@@ -338,11 +338,17 @@ build_field_list (t, list, uses_unions_p)
   return list;
 }
 
-/* Subroutine of emit_member_init.  */
+/* The MEMBER_INIT_LIST is a TREE_LIST.  The TREE_PURPOSE of each list
+   gives a FIELD_DECL in T that needs initialization.  The TREE_VALUE
+   gives the initializer, or list of initializer arguments.  Sort the
+   MEMBER_INIT_LIST, returning a version that contains the same
+   information but in the order that the fields should actually be
+   initialized.  Perform error-checking in the process.  */
 
 static tree
-sort_member_init (t)
+sort_member_init (t, member_init_list)
      tree t;
+     tree member_init_list;
 {
   tree init_list;
   tree last_field;
@@ -355,7 +361,7 @@ sort_member_init (t)
   /* Go through the explicit initializers, adding them to the
      INIT_LIST.  */
   last_field = init_list;
-  for (init = current_member_init_list; init; init = TREE_CHAIN (init))
+  for (init = member_init_list; init; init = TREE_CHAIN (init))
     {
       tree f;
       tree initialized_field;
@@ -492,9 +498,15 @@ sort_member_init (t)
   return init_list;
 }
 
+/* Like sort_member_init, but used for initializers of base classes.
+   *RBASE_PTR is filled in with the initializers for non-virtual bases;
+   vbase_ptr gets the virtual bases.  */
+
 static void
-sort_base_init (t, rbase_ptr, vbase_ptr)
-     tree t, *rbase_ptr, *vbase_ptr;
+sort_base_init (t, base_init_list, rbase_ptr, vbase_ptr)
+     tree t;
+     tree base_init_list;
+     tree *rbase_ptr, *vbase_ptr;
 {
   tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
   int n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
@@ -513,7 +525,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
   /* First walk through and splice out vbase and invalid initializers.
      Also replace names with binfos.  */
 
-  last = tree_cons (NULL_TREE, NULL_TREE, current_base_init_list);
+  last = tree_cons (NULL_TREE, NULL_TREE, base_init_list);
   for (x = TREE_CHAIN (last); x; x = TREE_CHAIN (x))
     {
       tree basetype = TREE_PURPOSE (x);
@@ -580,20 +592,24 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 
   for (i = 0; i < n_baseclasses; ++i)
     {
+      /* The base for which we're currently initializing.  */
       tree base_binfo = TREE_VEC_ELT (binfos, i);
+      /* The initializer for BASE_BINFO.  */
+      tree init;
       int pos;
 
       if (TREE_VIA_VIRTUAL (base_binfo))
 	continue;
 
-      for (x = current_base_init_list, pos = 0; x; x = TREE_CHAIN (x), ++pos)
+      /* We haven't found the BASE_BINFO yet.  */
+      init = NULL_TREE;
+      /* Loop through all the explicitly initialized bases, looking
+	 for an appropriate initializer.  */
+      for (x = base_init_list, pos = 0; x; x = TREE_CHAIN (x), ++pos)
 	{
 	  tree binfo = TREE_PURPOSE (x);
 
-	  if (binfo == NULL_TREE)
-	    continue;
-
-	  if (binfo == base_binfo)
+	  if (binfo == base_binfo && !init)
 	    {
 	      if (warn_reorder)
 		{
@@ -609,17 +625,22 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 
 	      /* Make sure we won't try to work on this init again.  */
 	      TREE_PURPOSE (x) = NULL_TREE;
-	      x = build_tree_list (binfo, TREE_VALUE (x));
-	      goto got_it;
+	      init = build_tree_list (binfo, TREE_VALUE (x));
+	    }
+	  else if (binfo == base_binfo)
+	    {
+	      cp_error ("base class `%T' already initialized", 
+			BINFO_TYPE (binfo));
+	      break;
 	    }
 	}
 
       /* If we didn't find BASE_BINFO in the list, create a dummy entry
 	 so the two lists (RBASES and the list of bases) will be
 	 symmetrical.  */
-      x = build_tree_list (NULL_TREE, NULL_TREE);
-    got_it:
-      rbases = chainon (rbases, x);
+      if (!init)
+	init = build_tree_list (NULL_TREE, NULL_TREE);
+      rbases = chainon (rbases, init);
     }
 
   *rbase_ptr = rbases;
@@ -627,10 +648,9 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 }
 
 /* Perform whatever initializations have yet to be done on the base
-   class of the class variable.  These actions are in the global
-   variable CURRENT_BASE_INIT_LIST.  Such an action could be
-   NULL_TREE, meaning that the user has explicitly called the base
-   class constructor with no arguments.
+   class, and non-static data members, of the CURRENT_CLASS_TYPE.
+   These actions are given by the BASE_INIT_LIST and MEM_INIT_LIST,
+   respectively.
 
    If there is a need for a call to a constructor, we must surround
    that call with a pushlevel/poplevel pair, since we are technically
@@ -640,10 +660,11 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
    classes.  That is done specially, elsewhere.  */
 
 void
-emit_base_init ()
+emit_base_init (mem_init_list, base_init_list)
+     tree mem_init_list;
+     tree base_init_list;
 {
   tree member;
-  tree mem_init_list;
   tree rbase_init_list, vbase_init_list;
   tree t = current_class_type;
   tree t_binfo = TYPE_BINFO (t);
@@ -651,11 +672,8 @@ emit_base_init ()
   int i;
   int n_baseclasses = BINFO_N_BASETYPES (t_binfo);
 
-  mem_init_list = sort_member_init (t);
-  current_member_init_list = NULL_TREE;
-
-  sort_base_init (t, &rbase_init_list, &vbase_init_list);
-  current_base_init_list = NULL_TREE;
+  mem_init_list = sort_member_init (t, mem_init_list);
+  sort_base_init (t, base_init_list, &rbase_init_list, &vbase_init_list);
 
   /* First, initialize the virtual base classes, if we are
      constructing the most-derived object.  */
@@ -1004,13 +1022,9 @@ member_init_ok_or_else (field, type, member_name)
 
    We do not yet have a fixed-point finder to instantiate types
    being fed to overloaded constructors.  If there is a unique
-   constructor, then argument types can be got from that one.
+   constructor, then argument types can be got from that one.  */
 
-   If INIT is non-NULL, then it the initialization should
-   be placed in `current_base_init_list', where it will be processed
-   by `emit_base_init'.  */
-
-void
+tree
 expand_member_init (exp, name, init)
      tree exp, name, init;
 {
@@ -1018,7 +1032,7 @@ expand_member_init (exp, name, init)
   tree type;
 
   if (exp == NULL_TREE)
-    return;			/* complain about this later */
+    return NULL_TREE;
 
   type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
@@ -1033,14 +1047,14 @@ expand_member_init (exp, name, init)
       {
       case 0:
 	error ("base class initializer specified, but no base class to initialize");
-	return;
+	return NULL_TREE;
       case 1:
 	basetype = TYPE_BINFO_BASETYPE (type, 0);
 	break;
       default:
 	error ("initializer for unnamed base class ambiguous");
 	cp_error ("(type `%T' uses multiple inheritance)", type);
-	return;
+	return NULL_TREE;
       }
 
   my_friendly_assert (init != NULL_TREE, 0);
@@ -1056,8 +1070,6 @@ expand_member_init (exp, name, init)
 
   if (name == NULL_TREE || basetype)
     {
-      tree base_init;
-
       if (name == NULL_TREE)
 	{
 #if 0
@@ -1084,43 +1096,23 @@ expand_member_init (exp, name, init)
 	  else
 	    cp_error ("type `%T' is not an immediate basetype for `%T'",
 		      basetype, type);
-	  return;
+	  return NULL_TREE;
 	}
 
-      if (purpose_member (basetype, current_base_init_list))
-	{
-	  cp_error ("base class `%T' already initialized", basetype);
-	  return;
-	}
-
-      if (warn_reorder && current_member_init_list)
-	{
-	  cp_warning ("base initializer for `%T'", basetype);
-	  warning ("   will be re-ordered to precede member initializations");
-	}
-
-      base_init = build_tree_list (basetype, init);
-      current_base_init_list = chainon (current_base_init_list, base_init);
+      init = build_tree_list (basetype, init);
     }
   else
     {
-      tree member_init;
-
     try_member:
       field = lookup_field (type, name, 1, 0);
 
       if (! member_init_ok_or_else (field, type, IDENTIFIER_POINTER (name)))
-	return;
+	return NULL_TREE;
 
-      if (purpose_member (name, current_member_init_list))
-	{
-	  cp_error ("field `%D' already initialized", field);
-	  return;
-	}
-
-      member_init = build_tree_list (field, init);
-      current_member_init_list = chainon (current_member_init_list, member_init);
+      init = build_tree_list (field, init);
     }
+
+  return init;
 }
 
 /* This is like `expand_member_init', only it stores one aggregate

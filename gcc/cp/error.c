@@ -1741,7 +1741,12 @@ dump_expr (t, flags)
 
     case ADDR_EXPR:
       if (TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL
-	  || TREE_CODE (TREE_OPERAND (t, 0)) == STRING_CST)
+	  || TREE_CODE (TREE_OPERAND (t, 0)) == STRING_CST
+	  /* An ADDR_EXPR can have reference type.  In that case, we
+	     shouldn't print the `&' doing so indicates to the user
+	     that the expression has pointer type.  */
+	  || (TREE_TYPE (t) 
+	      && TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE))
 	dump_expr (TREE_OPERAND (t, 0), flags | TS_EXPR_PARENS);
       else
 	dump_unary_op ("&", t, flags);

@@ -1235,7 +1235,9 @@ finish_named_return_value (return_id, init)
    more than one virtual function call is made this function.  */
 
 void
-setup_vtbl_ptr ()
+setup_vtbl_ptr (member_init_list, base_init_list)
+     tree member_init_list;
+     tree base_init_list;
 {
   my_friendly_assert (doing_semantic_analysis_p (), 19990919);
 
@@ -1248,7 +1250,7 @@ setup_vtbl_ptr ()
       if (processing_template_decl)
 	add_tree (build_min_nt
 		  (CTOR_INITIALIZER,
-		   current_member_init_list, current_base_init_list));
+		   member_init_list, base_init_list));
       else
 	{
 	  tree ctor_stmt;
@@ -1259,7 +1261,7 @@ setup_vtbl_ptr ()
 	  add_tree (ctor_stmt);
 	  
 	  /* And actually initialize the base-classes and members.  */
-	  emit_base_init ();
+	  emit_base_init (member_init_list, base_init_list);
 	}
     }
   else if (DECL_DESTRUCTOR_P (current_function_decl)
@@ -1776,7 +1778,6 @@ begin_function_definition (decl_specs, declarator)
   deferred_type_access_control ();
   type_lookups = error_mark_node;
 
-  reinit_parse_for_function ();
   /* The things we're about to see are not directly qualified by any
      template headers we've seen thus far.  */
   reset_specialization ();
