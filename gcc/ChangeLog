@@ -1,3 +1,8 @@
+2005-04-06  James A. Morrison  <phython@gcc.gnu.org>
+
+	* c-common.c (handle_malloc_atttribute): Only set DECL_IS_MALLOC if
+	the function returns a pointer type.
+
 2005-04-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* params.def (PARAM_SALIAS_MAX_IMPLICIT_FIELDS): New

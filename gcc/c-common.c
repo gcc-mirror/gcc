@@ -4808,9 +4808,9 @@ static tree
 handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 			 int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  if (TREE_CODE (*node) == FUNCTION_DECL)
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
     DECL_IS_MALLOC (*node) = 1;
-  /* ??? TODO: Support types.  */
   else
     {
       warning ("%qE attribute ignored", name);
