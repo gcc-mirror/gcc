@@ -1,3 +1,8 @@
+2004-07-06  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* java/net/URLStreamHandler.java (parseURL): Canonicalize
+	file portion of URL in addition to spec for file: protocol.
+
 2004-07-05  Anthony Green  <green@redhat.com>
 	
 	* java/io/File.java (toURI): Merge from Classpath.
