@@ -1,3 +1,7 @@
+1999-10-18  Manfred Hollstein  <mhollstein@cygnus.com>
+
+	* POTFILES.in: Track files recently added/deleted/moved.
+
 1999-09-05  Jeff Garzik  <garzik@havoc.gtf.org>
 
 	* POTFILES.in: Add cppfiles.c, cppinit.c, cppspec.c.
