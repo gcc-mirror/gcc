@@ -2723,7 +2723,7 @@ rest_of_compilation (decl)
 
   timevar_push (TV_JUMP);
 
-  if (flag_delete_null_pointer_checks || flag_if_conversion)
+  if (flag_delete_null_pointer_checks)
     {
       open_dump_file (DFI_null, decl);
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
@@ -2735,10 +2735,6 @@ rest_of_compilation (decl)
       if (flag_delete_null_pointer_checks)
 	delete_null_pointer_checks (insns);
 
-      timevar_push (TV_IFCVT);
-      if (flag_if_conversion)
-	if_convert (0);
-      timevar_pop (TV_IFCVT);
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       close_dump_file (DFI_null, print_rtl_with_bb, insns);
     }
