@@ -126,6 +126,7 @@ extern tree last_assemble_variable_decl;
 
 static void general_init PARAMS ((char *));
 static void parse_options_and_default_flags PARAMS ((int, char **));
+static void do_compile PARAMS ((void));
 static void process_options PARAMS ((void));
 static void lang_independent_init PARAMS ((void));
 static int lang_dependent_init PARAMS ((const char *));
@@ -1177,7 +1178,7 @@ lang_independent_options f_options[] =
   {"mem-report", &mem_report, 1,
    N_("Report on permanent memory allocation at end of run") },
   { "trapv", &flag_trapv, 1,
-   N_("Trap for signed overflow in addition / subtraction / multiplication.") },
+   N_("Trap for signed overflow in addition / subtraction / multiplication") },
 };
 
 /* Table of language-specific options.  */
@@ -4787,7 +4788,8 @@ parse_options_and_default_flags (argc, argv)
 	}
     }
 
-  /* All command line options have been processed.  */
+  /* All command line options have been parsed; allow the front end to
+     perform consistency checks, etc.  */
   (*lang_hooks.post_options) ();
 }
 
@@ -4837,7 +4839,7 @@ process_options ()
 
   if (profile_block_flag == 3)
     {
-      warning ("`-ax' and `-a' are conflicting options. `-a' ignored.");
+      warning ("`-ax' and `-a' are conflicting options. `-a' ignored");
       profile_block_flag = 2;
     }
 
@@ -4951,12 +4953,12 @@ process_options ()
     {
       if (flag_function_sections)
 	{
-	  warning ("-ffunction-sections not supported for this target.");
+	  warning ("-ffunction-sections not supported for this target");
 	  flag_function_sections = 0;
 	}
       if (flag_data_sections)
 	{
-	  warning ("-fdata-sections not supported for this target.");
+	  warning ("-fdata-sections not supported for this target");
 	  flag_data_sections = 0;
 	}
     }
@@ -4964,13 +4966,13 @@ process_options ()
   if (flag_function_sections
       && (profile_flag || profile_block_flag))
     {
-      warning ("-ffunction-sections disabled; it makes profiling impossible.");
+      warning ("-ffunction-sections disabled; it makes profiling impossible");
       flag_function_sections = 0;
     }
 
 #ifndef OBJECT_FORMAT_ELF
   if (flag_function_sections && write_symbols != NO_DEBUG)
-    warning ("-ffunction-sections may affect debugging on some targets.");
+    warning ("-ffunction-sections may affect debugging on some targets");
 #endif
 }
 
@@ -5127,29 +5129,10 @@ finalize ()
   (*lang_hooks.finish) ();
 }
 
-/* Entry point of cc1, cc1plus, jc1, f771, etc.
-   Decode command args, then call compile_file.
-   Exit code is FATAL_EXIT_CODE if can't open files or if there were
-   any errors, or SUCCESS_EXIT_CODE if compilation succeeded.
-
-   It is not safe to call this function more than once.  */
-
-int
-toplev_main (argc, argv)
-     int argc;
-     char **argv;
+/* Initialize the compiler, and compile the input file.  */
+static void
+do_compile ()
 {
-  /* Initialization of GCC's environment, and diagnostics.  */
-  general_init (argv [0]);
-
-  /* Parse the options and do minimal processing; basically just
-     enough to default flags appropriately.  */
-  parse_options_and_default_flags (argc, argv);
-
-  /* Exit early if we can (e.g. -help).  */
-  if (exit_after_options)
-    return (SUCCESS_EXIT_CODE);
-
   /* The bulk of command line switch processing.  */
   process_options ();
 
@@ -5171,6 +5154,30 @@ toplev_main (argc, argv)
   /* Stop timing and print the times.  */
   timevar_stop (TV_TOTAL);
   timevar_print (stderr);
+}
+
+/* Entry point of cc1, cc1plus, jc1, f771, etc.
+   Decode command args, then call compile_file.
+   Exit code is FATAL_EXIT_CODE if can't open files or if there were
+   any errors, or SUCCESS_EXIT_CODE if compilation succeeded.
+
+   It is not safe to call this function more than once.  */
+
+int
+toplev_main (argc, argv)
+     int argc;
+     char **argv;
+{
+  /* Initialization of GCC's environment, and diagnostics.  */
+  general_init (argv [0]);
+
+  /* Parse the options and do minimal processing; basically just
+     enough to default flags appropriately.  */
+  parse_options_and_default_flags (argc, argv);
+
+  /* Exit early if we can (e.g. -help).  */
+  if (!exit_after_options)
+    do_compile ();
 
   if (errorcount || sorrycount)
     return (FATAL_EXIT_CODE);

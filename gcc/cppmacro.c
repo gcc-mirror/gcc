@@ -82,7 +82,7 @@ static _cpp_buff *funlike_invocation_p PARAMS ((cpp_reader *, cpp_hashnode *));
 
 static cpp_token *alloc_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
 static cpp_token *lex_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
-static int warn_of_redefinition PARAMS ((cpp_reader *, const cpp_hashnode *,
+static int warn_of_redefinition PARAMS ((const cpp_hashnode *,
 					 const cpp_macro *));
 static int save_parameter PARAMS ((cpp_reader *, cpp_macro *, cpp_hashnode *));
 static int parse_params PARAMS ((cpp_reader *, cpp_macro *));
@@ -380,6 +380,7 @@ paste_tokens (pfile, plhs, rhs)
       && (rhs->type == CPP_MULT || rhs->type == CPP_DIV))
     *end++ = ' ';
   end = cpp_spell_token (pfile, rhs, end);
+  *end = '\0';
 
   cpp_push_buffer (pfile, buf, end - buf, /* from_stage3 */ true, 1);
 
@@ -1112,8 +1113,7 @@ _cpp_backup_tokens (pfile, count)
 
 /* Returns non-zero if a macro redefinition warning is required.  */
 static int
-warn_of_redefinition (pfile, node, macro2)
-     cpp_reader *pfile;
+warn_of_redefinition (node, macro2)
      const cpp_hashnode *node;
      const cpp_macro *macro2;
 {
@@ -1408,7 +1408,7 @@ _cpp_create_definition (pfile, node)
 
   if (node->type != NT_VOID)
     {
-      if (warn_of_redefinition (pfile, node, macro))
+      if (warn_of_redefinition (node, macro))
 	{
 	  cpp_pedwarn_with_line (pfile, pfile->directive_line, 0,
 				 "\"%s\" redefined", NODE_NAME (node));

@@ -478,7 +478,7 @@ static varray_type deferred_fns;
 static void
 objc_post_options ()
 {
-  cpp_post_options (parse_in);
+  c_common_post_options ();
 }
 
 /* Some platforms pass small structures through registers versus through
@@ -547,8 +547,7 @@ generate_struct_by_value_array ()
 static void
 objc_init_options ()
 {
-  parse_in = cpp_create_reader (CLK_OBJC);
-  c_language = clk_objective_c;
+  c_common_init_options (clk_objective_c);
 }
 
 static const char *
@@ -557,7 +556,7 @@ objc_init (filename)
 {
   c_init_decl_processing ();
 
-  filename = c_common_lang_init (filename);
+  filename = c_common_init (filename);
 
   add_c_tree_codes ();
 

@@ -88,32 +88,13 @@ static varray_type deferred_fns;
 static void
 c_post_options ()
 {
-  cpp_post_options (parse_in);
-
-  /* Use tree inlining if possible.  Function instrumentation is only
-     done in the RTL level, so we disable tree inlining.  */
-  if (! flag_instrument_function_entry_exit)
-    {
-      if (!flag_no_inline)
-	{
-	  flag_inline_trees = 1;
-	  flag_no_inline = 1;
-	}
-      if (flag_inline_functions)
-	{
-	  flag_inline_trees = 2;
-	  flag_inline_functions = 0;
-	}
-    }
+  c_common_post_options ();
 }
 
 static void
 c_init_options ()
 {
-  parse_in = cpp_create_reader (CLK_GNUC89);
-
-  /* Mark as "unspecified".  */
-  flag_bounds_check = -1;
+  c_common_init_options (clk_c);
 }
 
 static const char *
@@ -122,7 +103,7 @@ c_init (filename)
 {
   c_init_decl_processing ();
 
-  filename = c_common_lang_init (filename);
+  filename = c_common_init (filename);
 
   add_c_tree_codes ();
 
