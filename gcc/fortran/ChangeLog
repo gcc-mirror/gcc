@@ -1,5 +1,9 @@
 2004-05-17  Steve Kargl  <kargls@comcast.net>
 
+	* arith.c (gfc_arith_power): Complex number raised to 0 power is 1.
+
+2004-05-17  Steve Kargl  <kargls@comcast.net>
+
 	* arith.c (gfc_real2complex): Range checking wrong part of complex
         number. 
 	
