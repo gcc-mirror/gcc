@@ -3,6 +3,9 @@
 /* { dg-do run { target mips*-*-* } } */
 /* { dg-options "-mtune=rm7000" } */
 
+extern void abort (void);
+extern void exit (int);
+
 #if !defined(__mips16)
 
 #define DECLARE(TYPE)							\

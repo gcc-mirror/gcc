@@ -2,6 +2,9 @@
    the low part of u.ll on little-endian 32-bit targets.  */
 /* { dg-do run { target mips*-*-* } } */
 
+extern void abort (void);
+extern void exit (int);
+
 #if !defined(__mips16)
 unsigned int g;
 
