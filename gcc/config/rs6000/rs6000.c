@@ -5563,7 +5563,7 @@ altivec_expand_predicate_builtin (enum insn_code icode, const char *opcode,
   scratch = gen_reg_rtx (mode0);
 
   pat = GEN_FCN (icode) (scratch, op0, op1,
-			 gen_rtx (SYMBOL_REF, Pmode, opcode));
+			 gen_rtx_SYMBOL_REF (Pmode, opcode));
   if (! pat)
     return 0;
   emit_insn (pat);
@@ -9606,8 +9606,8 @@ rs6000_generate_compare (enum rtx_code code)
 	     However, we must be careful to emit correct RTL in
 	     the meantime, so optimizations don't get confused.  */
 
-	  or1 = gen_rtx (NE, SImode, compare_result, const0_rtx);
-	  or2 = gen_rtx (NE, SImode, compare_result2, const0_rtx);
+	  or1 = gen_rtx_NE (SImode, compare_result, const0_rtx);
+	  or2 = gen_rtx_NE (SImode, compare_result2, const0_rtx);
 
 	  /* OR them together.  */
 	  cmp = gen_rtx_SET (VOIDmode, or_result,
@@ -15112,7 +15112,7 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
 	      return machopic_legitimize_pic_address (mem, Pmode, reg);
 	    }
 	}
-      return gen_rtx (PLUS, Pmode, base, offset);
+      return gen_rtx_PLUS (Pmode, base, offset);
     }
 
   /* Fall back on generic machopic code.  */

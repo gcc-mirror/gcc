@@ -6567,7 +6567,7 @@ epilogue_renumber (register rtx *where, int test)
       if (REGNO (*where) >= 8 && REGNO (*where) < 24)      /* oX or lX */
 	return 1;
       if (! test && REGNO (*where) >= 24 && REGNO (*where) < 32)
-	*where = gen_rtx (REG, GET_MODE (*where), OUTGOING_REGNO (REGNO(*where)));
+	*where = gen_rtx_REG (GET_MODE (*where), OUTGOING_REGNO (REGNO(*where)));
     case SCRATCH:
     case CC0:
     case PC:
@@ -7354,7 +7354,7 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
   /* Call __enable_execute_stack after writing onto the stack to make sure
      the stack address is accessible.  */
 #ifdef TRANSFER_FROM_TRAMPOLINE
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
                      LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
 #endif
 
@@ -7395,7 +7395,7 @@ sparc64_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
   /* Call __enable_execute_stack after writing onto the stack to make sure
      the stack address is accessible.  */
 #ifdef TRANSFER_FROM_TRAMPOLINE
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
                      LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
 #endif
 }

@@ -1122,13 +1122,13 @@ typedef struct m68hc11_args
       The high part is passed in X and the low part in D.
       For GCC, the register number must be HARD_X_REGNUM.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
-     gen_rtx (REG, TYPE_MODE (VALTYPE),					\
+     gen_rtx_REG (TYPE_MODE (VALTYPE),					\
               ((TYPE_MODE (VALTYPE) == BLKmode				\
 	        || GET_MODE_SIZE (TYPE_MODE (VALTYPE)) <= 2)		\
 		   ? HARD_D_REGNUM : HARD_X_REGNUM))
 
 #define LIBCALL_VALUE(MODE)						\
-     gen_rtx (REG, MODE,						\
+     gen_rtx_REG (MODE,						\
               (((MODE) == BLKmode || GET_MODE_SIZE (MODE) <= 2)		\
                    ? HARD_D_REGNUM : HARD_X_REGNUM))
 

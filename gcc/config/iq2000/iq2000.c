@@ -1176,7 +1176,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
 
   if (test == ITEST_NE)
     {
-      convert_move (result, gen_rtx (GTU, mode, reg, const0_rtx), 0);
+      convert_move (result, gen_rtx_GTU (mode, reg, const0_rtx), 0);
       if (p_invert != NULL)
 	*p_invert = 0;
       invert = 0;
@@ -1194,7 +1194,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
       rtx one;
 
       one = const1_rtx;
-      convert_move (result, gen_rtx (XOR, mode, reg, one), 0);
+      convert_move (result, gen_rtx_XOR (mode, reg, one), 0);
     }
 
   return result;
@@ -1538,7 +1538,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
   if (mode == VOIDmode)
     {
       if (cum->num_adjusts > 0)
-	ret = gen_rtx (PARALLEL, (enum machine_mode) cum->fp_code,
+	ret = gen_rtx_PARALLEL ((enum machine_mode) cum->fp_code,
 		       gen_rtvec_v (cum->num_adjusts, cum->adjust));
     }
 
@@ -2273,14 +2273,14 @@ save_restore_insns (int store_p)
 	{
 	  rtx reg_rtx;
 	  rtx mem_rtx
-	    = gen_rtx (MEM, gpr_mode,
-		       gen_rtx (PLUS, Pmode, base_reg_rtx,
+	    = gen_rtx_MEM (gpr_mode,
+		       gen_rtx_PLUS (Pmode, base_reg_rtx,
 				GEN_INT (gp_offset - base_offset)));
 
 	  if (! current_function_calls_eh_return)
 	    RTX_UNCHANGING_P (mem_rtx) = 1;
 
-	  reg_rtx = gen_rtx (REG, gpr_mode, regno);
+	  reg_rtx = gen_rtx_REG (gpr_mode, regno);
 
 	  if (store_p)
 	    iq2000_emit_frame_related_store (mem_rtx, reg_rtx, gp_offset);
@@ -2434,9 +2434,9 @@ iq2000_expand_prologue (void)
       for (; regno <= GP_ARG_LAST; regno++)
 	{
 	  if (offset != 0)
-	    ptr = gen_rtx (PLUS, Pmode, stack_pointer_rtx, GEN_INT (offset));
-	  emit_move_insn (gen_rtx (MEM, gpr_mode, ptr),
-			  gen_rtx (REG, gpr_mode, regno));
+	    ptr = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+	  emit_move_insn (gen_rtx_MEM (gpr_mode, ptr),
+			  gen_rtx_REG (gpr_mode, regno));
 
 	  offset += GET_MODE_SIZE (gpr_mode);
 	}
@@ -2449,7 +2449,7 @@ iq2000_expand_prologue (void)
 
       if (tsize > 32767)
 	{
-	  adjustment_rtx = gen_rtx (REG, Pmode, IQ2000_TEMP1_REGNUM);
+	  adjustment_rtx = gen_rtx_REG (Pmode, IQ2000_TEMP1_REGNUM);
 	  emit_move_insn (adjustment_rtx, tsize_rtx);
 	}
       else
@@ -2532,14 +2532,14 @@ iq2000_expand_epilogue (void)
   if (current_function_calls_eh_return)
     {
       /* Perform the additional bump for __throw.  */
-      emit_move_insn (gen_rtx (REG, Pmode, HARD_FRAME_POINTER_REGNUM),
+      emit_move_insn (gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM),
 		      stack_pointer_rtx);
-      emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, Pmode,
+      emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode,
 						  HARD_FRAME_POINTER_REGNUM)));
       emit_jump_insn (gen_eh_return_internal ());
     }
   else
-      emit_jump_insn (gen_return_internal (gen_rtx (REG, Pmode,
+      emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode,
 						  GP_REG_FIRST + 31)));
 }
 

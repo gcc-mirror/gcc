@@ -3761,7 +3761,7 @@ track_dp_reload (insn, dp_current, dp_current_ok, modifying)
 				+ GET_MODE_SIZE (GET_MODE (XEXP (set, 0))));
           *dp_current = gen_rtx_MEM (HImode,
 				     gen_rtx_PLUS (Pmode,
-				 	           gen_rtx_REG(HImode, REG_SP),
+				 	           gen_rtx_REG (HImode, REG_SP),
 						   GEN_INT (disp)));
 	  return 1;
 	}

@@ -1088,7 +1088,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  break;
 		case GT:
 		  if (GET_CODE (y) == CONST_INT)
-		    tmp = gen_rtx (PLUS, SImode, y, const1_rtx);
+		    tmp = gen_rtx_PLUS (SImode, y, const1_rtx);
 		  else
 		    emit_insn (gen_addsi3 (tmp, y, constm1_rtx));
 		  emit_insn (gen_cmp_ltsi_insn (x, tmp));
@@ -1128,7 +1128,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  break;
 		case GTU:
 		  if (GET_CODE (y) == CONST_INT)
-		    tmp = gen_rtx (PLUS, SImode, y, const1_rtx);
+		    tmp = gen_rtx_PLUS (SImode, y, const1_rtx);
 		  else
 		    emit_insn (gen_addsi3 (tmp, y, constm1_rtx));
 		  emit_insn (gen_cmp_ltusi_insn (x, tmp));
@@ -2205,7 +2205,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
       emit_insn (gen_pic_load_addr (address, orig));
 
       emit_insn (gen_addsi3 (address, address, pic_offset_table_rtx));
-      pic_ref = gen_rtx (MEM, Pmode, address);
+      pic_ref = gen_rtx_MEM (Pmode, address);
 
       RTX_UNCHANGING_P (pic_ref) = 1;
       insn = emit_move_insn (reg, pic_ref);
@@ -2213,7 +2213,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
 #if 0
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
          by loop.  */
-      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL, orig,
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, orig,
                   REG_NOTES (insn));
 #endif
       return reg;
@@ -2256,7 +2256,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
             abort ();
         }
 
-      return gen_rtx (PLUS, Pmode, base, offset);
+      return gen_rtx_PLUS (Pmode, base, offset);
     }
 
   return orig;
@@ -2760,13 +2760,13 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
 
 #ifdef TARGET_MEM_FUNCTIONS
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "memcpy"), 0,
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "memcpy"), 0,
 		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
 				      TREE_UNSIGNED (sizetype)),
 		     TYPE_MODE (sizetype));
 #else
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "bcopy"), 0,
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "bcopy"), 0,
 		     VOIDmode, 3, src_reg, Pmode, dest_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (integer_type_node), bytes_rtx,
 				      TREE_UNSIGNED (integer_type_node)),

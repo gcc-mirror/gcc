@@ -12284,10 +12284,10 @@ thumb_expand_prologue (void)
 
 	  if (regno > LAST_LO_REGNUM) /* Very unlikely.  */
 	    {
-	      rtx spare = gen_rtx (REG, SImode, IP_REGNUM);
+	      rtx spare = gen_rtx_REG (SImode, IP_REGNUM);
 
 	      /* Choose an arbitrary, non-argument low register.  */
-	      reg = gen_rtx (REG, SImode, LAST_LO_REGNUM);
+	      reg = gen_rtx_REG (SImode, LAST_LO_REGNUM);
 
 	      /* Save it by copying it into a high, scratch register.  */
 	      emit_insn (gen_movsi (spare, reg));
@@ -12318,7 +12318,7 @@ thumb_expand_prologue (void)
 	    }
 	  else
 	    {
-	      reg = gen_rtx (REG, SImode, regno);
+	      reg = gen_rtx_REG (SImode, regno);
 
 	      emit_insn (gen_movsi (reg, GEN_INT (- amount)));
 
@@ -12363,7 +12363,7 @@ thumb_expand_epilogue (void)
       else
 	{
 	  /* r3 is always free in the epilogue.  */
-	  rtx reg = gen_rtx (REG, SImode, LAST_ARG_REGNUM);
+	  rtx reg = gen_rtx_REG (SImode, LAST_ARG_REGNUM);
 
 	  emit_insn (gen_movsi (reg, GEN_INT (amount)));
 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, reg));
@@ -12661,8 +12661,8 @@ thumb_load_double_from_address (rtx *operands)
   switch (GET_CODE (addr))
     {
     case REG:
-      operands[2] = gen_rtx (MEM, SImode,
-			     plus_constant (XEXP (operands[1], 0), 4));
+      operands[2] = gen_rtx_MEM (SImode,
+				 plus_constant (XEXP (operands[1], 0), 4));
 
       if (REGNO (operands[0]) == REGNO (addr))
 	{
@@ -12678,8 +12678,8 @@ thumb_load_double_from_address (rtx *operands)
       
     case CONST:
       /* Compute <address> + 4 for the high order load.  */
-      operands[2] = gen_rtx (MEM, SImode,
-			     plus_constant (XEXP (operands[1], 0), 4));
+      operands[2] = gen_rtx_MEM (SImode,
+				 plus_constant (XEXP (operands[1], 0), 4));
       
       output_asm_insn ("ldr\t%0, %1", operands);
       output_asm_insn ("ldr\t%H0, %2", operands);
@@ -12722,8 +12722,8 @@ thumb_load_double_from_address (rtx *operands)
       else
 	{
 	  /* Compute <address> + 4 for the high order load.  */
-	  operands[2] = gen_rtx (MEM, SImode,
-				 plus_constant (XEXP (operands[1], 0), 4));
+	  operands[2] = gen_rtx_MEM (SImode,
+				     plus_constant (XEXP (operands[1], 0), 4));
 	  
 	  /* If the computed address is held in the low order register
 	     then load the high order register first, otherwise always
@@ -12744,8 +12744,8 @@ thumb_load_double_from_address (rtx *operands)
     case LABEL_REF:
       /* With no registers to worry about we can just load the value
          directly.  */
-      operands[2] = gen_rtx (MEM, SImode,
-			     plus_constant (XEXP (operands[1], 0), 4));
+      operands[2] = gen_rtx_MEM (SImode,
+				 plus_constant (XEXP (operands[1], 0), 4));
 	  
       output_asm_insn ("ldr\t%H0, %2", operands);
       output_asm_insn ("ldr\t%0, %1", operands);
@@ -12832,8 +12832,8 @@ thumb_expand_movstrqi (rtx *operands)
   if (len >= 4)
     {
       rtx reg = gen_reg_rtx (SImode);
-      emit_insn (gen_movsi (reg, gen_rtx (MEM, SImode, in)));
-      emit_insn (gen_movsi (gen_rtx (MEM, SImode, out), reg));
+      emit_insn (gen_movsi (reg, gen_rtx_MEM (SImode, in)));
+      emit_insn (gen_movsi (gen_rtx_MEM (SImode, out), reg));
       len -= 4;
       offset += 4;
     }
@@ -12841,9 +12841,9 @@ thumb_expand_movstrqi (rtx *operands)
   if (len >= 2)
     {
       rtx reg = gen_reg_rtx (HImode);
-      emit_insn (gen_movhi (reg, gen_rtx (MEM, HImode, 
-					  plus_constant (in, offset))));
-      emit_insn (gen_movhi (gen_rtx (MEM, HImode, plus_constant (out, offset)),
+      emit_insn (gen_movhi (reg, gen_rtx_MEM (HImode, 
+					      plus_constant (in, offset))));
+      emit_insn (gen_movhi (gen_rtx_MEM (HImode, plus_constant (out, offset)),
 			    reg));
       len -= 2;
       offset += 2;
@@ -12852,9 +12852,9 @@ thumb_expand_movstrqi (rtx *operands)
   if (len)
     {
       rtx reg = gen_reg_rtx (QImode);
-      emit_insn (gen_movqi (reg, gen_rtx (MEM, QImode,
-					  plus_constant (in, offset))));
-      emit_insn (gen_movqi (gen_rtx (MEM, QImode, plus_constant (out, offset)),
+      emit_insn (gen_movqi (reg, gen_rtx_MEM (QImode,
+					      plus_constant (in, offset))));
+      emit_insn (gen_movqi (gen_rtx_MEM (QImode, plus_constant (out, offset)),
 			    reg));
     }
 }

@@ -371,8 +371,8 @@
   operands[5] = addr0;
   operands[6] = addr1;
 
-  operands[0] = gen_rtx (MEM, BLKmode, addr0);
-  operands[1] = gen_rtx (MEM, BLKmode, addr1);
+  operands[0] = gen_rtx_MEM (BLKmode, addr0);
+  operands[1] = gen_rtx_MEM (BLKmode, addr1);
 }")
 
 (define_insn "*movstrqi_insn"
@@ -444,7 +444,7 @@
   addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
   operands[4] = addr0;
   
-  operands[0] = gen_rtx (MEM, BLKmode, addr0);
+  operands[0] = gen_rtx_MEM (BLKmode, addr0);
 }")
 
 (define_insn "*clrstrqi"
@@ -499,7 +499,7 @@
   if (! (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == 0))
     FAIL;
   addr = copy_to_mode_reg (Pmode, XEXP (operands[1],0));
-  operands[1] = gen_rtx (MEM, BLKmode, addr); 
+  operands[1] = gen_rtx_MEM (BLKmode, addr); 
   operands[5] = addr;
   operands[4] = gen_reg_rtx (HImode);
 }")

@@ -499,13 +499,12 @@ typedef struct iq2000_args
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	iq2000_function_value (VALTYPE, FUNC)
 
-#define LIBCALL_VALUE(MODE)						\
-  gen_rtx (REG,								\
-	   ((GET_MODE_CLASS (MODE) != MODE_INT				\
-	     || GET_MODE_SIZE (MODE) >= 4)				\
-	    ? (MODE)							\
-	    : SImode),							\
-	   GP_RETURN)
+#define LIBCALL_VALUE(MODE)				\
+  gen_rtx_REG (((GET_MODE_CLASS (MODE) != MODE_INT	\
+		 || GET_MODE_SIZE (MODE) >= 4)		\
+		? (MODE)				\
+		: SImode),				\
+	       GP_RETURN)
 
 /* On the IQ2000, R2 and R3 are the only register thus used.  */
 
@@ -641,7 +640,7 @@ typedef struct iq2000_args
     {									\
       X = gen_rtx_LO_SUM (Pmode,					\
 			  copy_to_mode_reg (Pmode,			\
-					    gen_rtx (HIGH, Pmode, X)),	\
+					    gen_rtx_HIGH (Pmode, X)),	\
 			  X);						\
       goto WIN;								\
     }									\

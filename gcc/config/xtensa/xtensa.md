@@ -1648,7 +1648,7 @@
 	(match_dup 1))]
   ""
 {
-  operands[1] = gen_rtx (EQ, SImode, branch_cmp[0], branch_cmp[1]);
+  operands[1] = gen_rtx_EQ (SImode, branch_cmp[0], branch_cmp[1]);
   if (!xtensa_expand_scc (operands))
     FAIL;
   DONE;
@@ -1659,7 +1659,7 @@
 	(match_dup 1))]
   ""
 {
-  operands[1] = gen_rtx (NE, SImode, branch_cmp[0], branch_cmp[1]);
+  operands[1] = gen_rtx_NE (SImode, branch_cmp[0], branch_cmp[1]);
   if (!xtensa_expand_scc (operands))
     FAIL;
   DONE;
@@ -1670,7 +1670,7 @@
 	(match_dup 1))]
   ""
 {
-  operands[1] = gen_rtx (GT, SImode, branch_cmp[0], branch_cmp[1]);
+  operands[1] = gen_rtx_GT (SImode, branch_cmp[0], branch_cmp[1]);
   if (!xtensa_expand_scc (operands))
     FAIL;
   DONE;
@@ -1681,7 +1681,7 @@
 	(match_dup 1))]
   ""
 {
-  operands[1] = gen_rtx (GE, SImode, branch_cmp[0], branch_cmp[1]);
+  operands[1] = gen_rtx_GE (SImode, branch_cmp[0], branch_cmp[1]);
   if (!xtensa_expand_scc (operands))
     FAIL;
   DONE;
@@ -1692,7 +1692,7 @@
 	(match_dup 1))]
   ""
 {
-  operands[1] = gen_rtx (LT, SImode, branch_cmp[0], branch_cmp[1]);
+  operands[1] = gen_rtx_LT (SImode, branch_cmp[0], branch_cmp[1]);
   if (!xtensa_expand_scc (operands))
     FAIL;
   DONE;
@@ -1703,7 +1703,7 @@
 	(match_dup 1))]
   ""
 {
-  operands[1] = gen_rtx (LE, SImode, branch_cmp[0], branch_cmp[1]);
+  operands[1] = gen_rtx_LE (SImode, branch_cmp[0], branch_cmp[1]);
   if (!xtensa_expand_scc (operands))
     FAIL;
   DONE;

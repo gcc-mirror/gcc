@@ -1801,7 +1801,7 @@ typedef struct
   assemble_name (STREAM, ARM_MCOUNT_NAME);		\
   fputc ('\n', STREAM);					\
   ASM_GENERATE_INTERNAL_LABEL (temp, "LP", LABELNO);	\
-  sym = gen_rtx (SYMBOL_REF, Pmode, temp);		\
+  sym = gen_rtx_SYMBOL_REF (Pmode, temp);		\
   assemble_aligned_integer (UNITS_PER_WORD, sym);	\
 }
 #endif

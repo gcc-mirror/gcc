@@ -1249,16 +1249,16 @@
   last = emit_move_insn(temp, temp);
   {
     rtx divdi, moddi, divsi, modsi;
-    divsi = gen_rtx (UDIV, SImode, operands[1], operands[2]);
-    modsi = gen_rtx (UMOD, SImode, operands[1], operands[2]);
-    divdi = gen_rtx (ZERO_EXTEND, DImode, divsi);
-    moddi = gen_rtx (ZERO_EXTEND, DImode, modsi);
-    REG_NOTES (first) = gen_rtx (INSN_LIST, REG_LIBCALL, last,
+    divsi = gen_rtx_UDIV (SImode, operands[1], operands[2]);
+    modsi = gen_rtx_UMOD (SImode, operands[1], operands[2]);
+    divdi = gen_rtx_ZERO_EXTEND (DImode, divsi);
+    moddi = gen_rtx_ZERO_EXTEND (DImode, modsi);
+    REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
 			         REG_NOTES (first));
-    REG_NOTES (last) = gen_rtx (INSN_LIST, REG_RETVAL, first,
-                                gen_rtx (EXPR_LIST, REG_EQUAL,
-                       gen_rtx (IOR, DImode, moddi,
-                               gen_rtx (ASHIFT, DImode, divdi, GEN_INT(32))),
+    REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
+                                gen_rtx_EXPR_LIST (REG_EQUAL,
+                       gen_rtx_IOR (DImode, moddi,
+                               gen_rtx_ASHIFT (DImode, divdi, GEN_INT(32))),
                        REG_NOTES (last)));
   }
 
@@ -1314,14 +1314,14 @@
 ;;  last = emit_move_insn(temp, temp);
 ;;  {
 ;;    rtx divdi, moddi, divhi, modhi;
-;;    divhi = gen_rtx (UDIV, HImode, operands[1], operands[2]);
-;;    modhi = gen_rtx (UMOD, HImode, operands[1], operands[2]);
-;;    divdi = gen_rtx (ZERO_EXTEND, DImode, divhi);
-;;    moddi = gen_rtx (ZERO_EXTEND, DImode, modhi);
-;;    REG_NOTES (first) = gen_rtx (INSN_LIST, REG_LIBCALL, last,
+;;    divhi = gen_rtx_UDIV (HImode, operands[1], operands[2]);
+;;    modhi = gen_rtx_UMOD (HImode, operands[1], operands[2]);
+;;    divdi = gen_rtx_ZERO_EXTEND (DImode, divhi);
+;;    moddi = gen_rtx_ZERO_EXTEND (DImode, modhi);
+;;    REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
 ;;			         REG_NOTES (first));
-;;    REG_NOTES (last) = gen_rtx (INSN_LIST, REG_RETVAL, first,
-;;                                gen_rtx (EXPR_LIST, REG_EQUAL,
+;;    REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
+;;                                gen_rtx_EXPR_LIST (REG_EQUAL,
 ;;                       gen_rtx(IOR, DImode, moddi,
 ;;                               gen_rtx(ASHIFT, DImode, divdi, GEN_INT(32))),
 ;;                       REG_NOTES (last)));
@@ -1371,14 +1371,14 @@
 ;;  last = emit_move_insn(temp, temp);
 ;;  {
 ;;    rtx divdi, moddi, divqi, modqi;
-;;    divqi = gen_rtx (UDIV, QImode, operands[1], operands[2]);
-;;    modqi = gen_rtx (UMOD, QImode, operands[1], operands[2]);
-;;    divdi = gen_rtx (ZERO_EXTEND, DImode, divqi);
-;;    moddi = gen_rtx (ZERO_EXTEND, DImode, modqi);
-;;    REG_NOTES (first) = gen_rtx (INSN_LIST, REG_LIBCALL, last,
+;;    divqi = gen_rtx_UDIV (QImode, operands[1], operands[2]);
+;;    modqi = gen_rtx_UMOD (QImode, operands[1], operands[2]);
+;;    divdi = gen_rtx_ZERO_EXTEND (DImode, divqi);
+;;    moddi = gen_rtx_ZERO_EXTEND (DImode, modqi);
+;;    REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
 ;;			         REG_NOTES (first));
-;;    REG_NOTES (last) = gen_rtx (INSN_LIST, REG_RETVAL, first,
-;;                                gen_rtx (EXPR_LIST, REG_EQUAL,
+;;    REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
+;;                                gen_rtx_EXPR_LIST (REG_EQUAL,
 ;;                       gen_rtx(IOR, DImode, moddi,
 ;;                               gen_rtx(ASHIFT, DImode, divdi, GEN_INT(32))),
 ;;                       REG_NOTES (last)));

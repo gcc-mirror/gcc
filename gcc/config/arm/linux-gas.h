@@ -45,9 +45,9 @@
 #undef  INITIALIZE_TRAMPOLINE
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 8)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 8)),	\
 		  (CXT));						\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
 		     0, VOIDmode, 2, TRAMP, Pmode,			\

@@ -366,17 +366,17 @@ void
 create_regs_rtx (void)
 {
   /*  regs_inited = 1; */
-  ix_reg = gen_rtx (REG, HImode, HARD_X_REGNUM);
-  iy_reg = gen_rtx (REG, HImode, HARD_Y_REGNUM);
-  d_reg = gen_rtx (REG, HImode, HARD_D_REGNUM);
-  m68hc11_soft_tmp_reg = gen_rtx (REG, HImode, SOFT_TMP_REGNUM);
+  ix_reg = gen_rtx_REG (HImode, HARD_X_REGNUM);
+  iy_reg = gen_rtx_REG (HImode, HARD_Y_REGNUM);
+  d_reg = gen_rtx_REG (HImode, HARD_D_REGNUM);
+  m68hc11_soft_tmp_reg = gen_rtx_REG (HImode, SOFT_TMP_REGNUM);
 
-  stack_push_word = gen_rtx (MEM, HImode,
-			     gen_rtx (PRE_DEC, HImode,
-				      gen_rtx (REG, HImode, HARD_SP_REGNUM)));
-  stack_pop_word = gen_rtx (MEM, HImode,
-			    gen_rtx (POST_INC, HImode,
-				     gen_rtx (REG, HImode, HARD_SP_REGNUM)));
+  stack_push_word = gen_rtx_MEM (HImode,
+			     gen_rtx_PRE_DEC (HImode,
+				      gen_rtx_REG (HImode, HARD_SP_REGNUM)));
+  stack_pop_word = gen_rtx_MEM (HImode,
+			    gen_rtx_POST_INC (HImode,
+				     gen_rtx_REG (HImode, HARD_SP_REGNUM)));
 
 }
 
@@ -828,19 +828,19 @@ m68hc11_reload_operands (rtx operands[])
 	  offset = GEN_INT (vl);
 	  if (!VALID_CONSTANT_OFFSET_P (offset, mode))
 	    {
-	      emit_insn (gen_rtx (SET, VOIDmode, reg,
-				  gen_rtx (PLUS, HImode, reg, big_offset)));
+	      emit_insn (gen_rtx_SET (VOIDmode, reg,
+				  gen_rtx_PLUS (HImode, reg, big_offset)));
 	      offset = const0_rtx;
 	    }
 	  else
 	    {
-	      emit_insn (gen_rtx (SET, VOIDmode, reg,
-				  gen_rtx (PLUS, HImode, reg,
+	      emit_insn (gen_rtx_SET (VOIDmode, reg,
+				  gen_rtx_PLUS (HImode, reg,
 					   GEN_INT (vh << 8))));
 	    }
 	  emit_move_insn (operands[0],
-			  gen_rtx (MEM, GET_MODE (operands[1]),
-				   gen_rtx (PLUS, Pmode, reg, offset)));
+			  gen_rtx_MEM (GET_MODE (operands[1]),
+				   gen_rtx_PLUS (Pmode, reg, offset)));
 	  return 1;
 	}
     }
@@ -1501,13 +1501,13 @@ m68hc11_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (mode != BLKmode)
     {
       if (GET_MODE_SIZE (mode) == 2 * HARD_REG_SIZE)
-	return gen_rtx (REG, mode, HARD_X_REGNUM);
+	return gen_rtx_REG (mode, HARD_X_REGNUM);
 
       if (GET_MODE_SIZE (mode) > HARD_REG_SIZE)
 	{
 	  return NULL_RTX;
 	}
-      return gen_rtx (REG, mode, HARD_D_REGNUM);
+      return gen_rtx_REG (mode, HARD_D_REGNUM);
     }
   return NULL_RTX;
 }
@@ -1653,9 +1653,9 @@ expand_prologue (void)
     {
       emit_move_after_reload (stack_push_word, m68hc11_soft_tmp_reg, scratch);
       emit_move_after_reload (stack_push_word,
-			      gen_rtx (REG, HImode, SOFT_Z_REGNUM), scratch);
+			      gen_rtx_REG (HImode, SOFT_Z_REGNUM), scratch);
       emit_move_after_reload (stack_push_word,
-			      gen_rtx (REG, HImode, SOFT_SAVED_XY_REGNUM),
+			      gen_rtx_REG (HImode, SOFT_SAVED_XY_REGNUM),
 			      scratch);
     }
 
@@ -1704,7 +1704,7 @@ expand_prologue (void)
       if (regs_ever_live[regno] && !call_used_regs[regno])
 	{
 	  emit_move_after_reload (stack_push_word,
-				  gen_rtx (REG, HImode, regno), scratch);
+				  gen_rtx_REG (HImode, regno), scratch);
 	}
     }
 }
@@ -1742,7 +1742,7 @@ expand_epilogue (void)
     {
       if (regs_ever_live[regno] && !call_used_regs[regno])
 	{
-	  emit_move_after_reload (gen_rtx (REG, HImode, regno),
+	  emit_move_after_reload (gen_rtx_REG (HImode, regno),
 				  stack_pop_word, scratch);
 	}
     }
@@ -1782,9 +1782,9 @@ expand_epilogue (void)
   /* For an interrupt handler, restore ZTMP, ZREG and XYREG.  */
   if (current_function_interrupt)
     {
-      emit_move_after_reload (gen_rtx (REG, HImode, SOFT_SAVED_XY_REGNUM),
+      emit_move_after_reload (gen_rtx_REG (HImode, SOFT_SAVED_XY_REGNUM),
 			      stack_pop_word, scratch);
-      emit_move_after_reload (gen_rtx (REG, HImode, SOFT_Z_REGNUM),
+      emit_move_after_reload (gen_rtx_REG (HImode, SOFT_Z_REGNUM),
 			      stack_pop_word, scratch);
       emit_move_after_reload (m68hc11_soft_tmp_reg, stack_pop_word, scratch);
     }
@@ -1805,12 +1805,12 @@ expand_epilogue (void)
 	  emit_move_after_reload (scratch, stack_pointer_rtx, 0);
 	  addr_reg = scratch;
 	}
-      emit_move_after_reload (gen_rtx (MEM, HImode,
-				       gen_rtx (PLUS, HImode, addr_reg,
+      emit_move_after_reload (gen_rtx_MEM (HImode,
+				       gen_rtx_PLUS (HImode, addr_reg,
 						GEN_INT (1))), d_reg, 0);
       if (return_size > HARD_REG_SIZE)
-	emit_move_after_reload (gen_rtx (MEM, HImode,
-					 gen_rtx (PLUS, HImode, addr_reg,
+	emit_move_after_reload (gen_rtx_MEM (HImode,
+					 gen_rtx_PLUS (HImode, addr_reg,
 						  GEN_INT (3))), ix_reg, 0);
     }
 
@@ -1830,7 +1830,7 @@ m68hc11_gen_lowpart (enum machine_mode mode, rtx x)
      correct order.  */
   if (GET_CODE (x) == MEM && m68hc11_auto_inc_p (XEXP (x, 0)))
     {
-      return gen_rtx (MEM, mode, XEXP (x, 0));
+      return gen_rtx_MEM (mode, XEXP (x, 0));
     }
 
   /* Note that a CONST_DOUBLE rtx could represent either an integer or a
@@ -1875,7 +1875,7 @@ m68hc11_gen_lowpart (enum machine_mode mode, rtx x)
     }
 
   if (mode == QImode && D_REG_P (x))
-    return gen_rtx (REG, mode, HARD_B_REGNUM);
+    return gen_rtx_REG (mode, HARD_B_REGNUM);
 
   /* gen_lowpart crashes when it is called with a SUBREG.  */
   if (GET_CODE (x) == SUBREG && SUBREG_BYTE (x) != 0)
@@ -1905,7 +1905,7 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
      correct order.  */
   if (GET_CODE (x) == MEM && m68hc11_auto_inc_p (XEXP (x, 0)))
     {
-      return gen_rtx (MEM, mode, XEXP (x, 0));
+      return gen_rtx_MEM (mode, XEXP (x, 0));
     }
 
   /* Note that a CONST_DOUBLE rtx could represent either an integer or a
@@ -1963,7 +1963,7 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
 	}
     }
   if (mode == QImode && D_REG_P (x))
-    return gen_rtx (REG, mode, HARD_A_REGNUM);
+    return gen_rtx_REG (mode, HARD_A_REGNUM);
 
   /* There is no way in GCC to represent the upper part of a word register.
      To obtain the 8-bit upper part of a soft register, we change the
@@ -1976,20 +1976,20 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
       /* Avoid the '*' for direct addressing mode when this
          addressing mode is disabled.  */
       pos = TARGET_NO_DIRECT_MODE ? 1 : 0;
-      return gen_rtx (MEM, QImode,
-		      gen_rtx (SYMBOL_REF, Pmode,
+      return gen_rtx_MEM (QImode,
+		      gen_rtx_SYMBOL_REF (Pmode,
 			       &reg_names[REGNO (x)][pos]));
     }
 
   /* gen_highpart crashes when it is called with a SUBREG.  */
   if (GET_CODE (x) == SUBREG)
     {
-      return gen_rtx (SUBREG, mode, XEXP (x, 0), XEXP (x, 1));
+      return gen_rtx_SUBREG (mode, XEXP (x, 0), XEXP (x, 1));
     }
   if (GET_CODE (x) == REG)
     {
       if (REGNO (x) < FIRST_PSEUDO_REGISTER)
-        return gen_rtx (REG, mode, REGNO (x));
+        return gen_rtx_REG (mode, REGNO (x));
       else
         return gen_rtx_SUBREG (mode, x, 0);
     }
@@ -2023,7 +2023,7 @@ dead_register_here (rtx x, rtx reg)
   rtx p;
 
   if (D_REG_P (reg))
-    x_reg = gen_rtx (REG, SImode, HARD_X_REGNUM);
+    x_reg = gen_rtx_REG (SImode, HARD_X_REGNUM);
   else
     x_reg = 0;
 
@@ -2814,7 +2814,7 @@ m68hc11_split_move (rtx to, rtx from, rtx scratch)
 
   if (TARGET_M6812
       && IS_STACK_PUSH (to)
-      && reg_mentioned_p (gen_rtx (REG, HImode, HARD_SP_REGNUM), from))
+      && reg_mentioned_p (gen_rtx_REG (HImode, HARD_SP_REGNUM), from))
     {
       if (mode == SImode)
         {
@@ -2975,7 +2975,7 @@ m68hc11_emit_logical (enum machine_mode mode, int code, rtx *operands)
       if (!H_REG_P (operands[0]) && operands[3])
 	{
 	  emit_move_insn (operands[3], operands[1]);
-	  emit_insn (gen_rtx (SET, mode,
+	  emit_insn (gen_rtx_SET (mode,
 			      operands[3],
 			      gen_rtx (code, mode,
 				       operands[3], operands[2])));
@@ -2983,7 +2983,7 @@ m68hc11_emit_logical (enum machine_mode mode, int code, rtx *operands)
 	}
       else
 	{
-	  insn = emit_insn (gen_rtx (SET, mode,
+	  insn = emit_insn (gen_rtx_SET (mode,
 				     operands[0],
 				     gen_rtx (code, mode,
 					      operands[0], operands[2])));
@@ -3077,10 +3077,10 @@ m68hc11_output_swap (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 	{
 	  cc_status = cc_prev_status;
 	  if (D_REG_P (cc_status.value1))
-	    cc_status.value1 = gen_rtx (REG, GET_MODE (cc_status.value1),
+	    cc_status.value1 = gen_rtx_REG (GET_MODE (cc_status.value1),
 					HARD_X_REGNUM);
 	  else
-	    cc_status.value1 = gen_rtx (REG, GET_MODE (cc_status.value1),
+	    cc_status.value1 = gen_rtx_REG (GET_MODE (cc_status.value1),
 					HARD_D_REGNUM);
 	}
       else
@@ -3096,10 +3096,10 @@ m68hc11_output_swap (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 	{
 	  cc_status = cc_prev_status;
 	  if (D_REG_P (cc_status.value1))
-	    cc_status.value1 = gen_rtx (REG, GET_MODE (cc_status.value1),
+	    cc_status.value1 = gen_rtx_REG (GET_MODE (cc_status.value1),
 					HARD_Y_REGNUM);
 	  else
-	    cc_status.value1 = gen_rtx (REG, GET_MODE (cc_status.value1),
+	    cc_status.value1 = gen_rtx_REG (GET_MODE (cc_status.value1),
 					HARD_D_REGNUM);
 	}
       else
@@ -4733,7 +4733,7 @@ m68hc11_find_z_replacement (rtx insn, struct replace_info *info)
   if (info->regno >= 0)
     {
       reg = info->regno;
-      info->replace_reg = gen_rtx (REG, HImode, reg);
+      info->replace_reg = gen_rtx_REG (HImode, reg);
     }
   else if (info->can_use_d)
     {
@@ -4785,26 +4785,26 @@ m68hc11_z_replacement (rtx insn)
 
       if (Z_REG_P (dst) && (H_REG_P (src) && !SP_REG_P (src)))
 	{
-	  XEXP (body, 0) = gen_rtx (REG, GET_MODE (dst), SOFT_Z_REGNUM);
+	  XEXP (body, 0) = gen_rtx_REG (GET_MODE (dst), SOFT_Z_REGNUM);
 	  return;
 	}
       else if (Z_REG_P (src)
 	       && ((H_REG_P (dst) && !SP_REG_P (src)) || dst == cc0_rtx))
 	{
-	  XEXP (body, 1) = gen_rtx (REG, GET_MODE (src), SOFT_Z_REGNUM);
+	  XEXP (body, 1) = gen_rtx_REG (GET_MODE (src), SOFT_Z_REGNUM);
 	  return;
 	}
       else if (D_REG_P (dst)
 	       && m68hc11_arith_operator (src, GET_MODE (src))
 	       && D_REG_P (XEXP (src, 0)) && Z_REG_P (XEXP (src, 1)))
 	{
-	  XEXP (src, 1) = gen_rtx (REG, GET_MODE (src), SOFT_Z_REGNUM);
+	  XEXP (src, 1) = gen_rtx_REG (GET_MODE (src), SOFT_Z_REGNUM);
 	  return;
 	}
       else if (Z_REG_P (dst) && GET_CODE (src) == CONST_INT
 	       && INTVAL (src) == 0)
 	{
-	  XEXP (body, 0) = gen_rtx (REG, GET_MODE (dst), SOFT_Z_REGNUM);
+	  XEXP (body, 0) = gen_rtx_REG (GET_MODE (dst), SOFT_Z_REGNUM);
           /* Force it to be re-recognized.  */
           INSN_CODE (insn) = -1;
 	  return;
@@ -4822,19 +4822,19 @@ m68hc11_z_replacement (rtx insn)
       rtx dst;
 
       if (info.must_push_reg && 0)
-	dst = gen_rtx (MEM, HImode,
-		       gen_rtx (PRE_DEC, HImode,
-				gen_rtx (REG, HImode, HARD_SP_REGNUM)));
+	dst = gen_rtx_MEM (HImode,
+		       gen_rtx_PRE_DEC (HImode,
+				gen_rtx_REG (HImode, HARD_SP_REGNUM)));
       else
-	dst = gen_rtx (REG, HImode, SOFT_SAVED_XY_REGNUM);
+	dst = gen_rtx_REG (HImode, SOFT_SAVED_XY_REGNUM);
 
       emit_insn_before (gen_movhi (dst,
-				   gen_rtx (REG, HImode, info.regno)), insn);
+				   gen_rtx_REG (HImode, info.regno)), insn);
     }
   if (info.must_load_z && !info.must_push_reg)
     {
-      emit_insn_before (gen_movhi (gen_rtx (REG, HImode, info.regno),
-				   gen_rtx (REG, HImode, SOFT_Z_REGNUM)),
+      emit_insn_before (gen_movhi (gen_rtx_REG (HImode, info.regno),
+				   gen_rtx_REG (HImode, SOFT_Z_REGNUM)),
 			insn);
     }
 
@@ -4894,7 +4894,7 @@ m68hc11_z_replacement (rtx insn)
 	  if (reg_mentioned_p (z_reg, insn))
 	    {
 	      if (replace_reg_qi == NULL_RTX)
-		replace_reg_qi = gen_rtx (REG, QImode, REGNO (replace_reg));
+		replace_reg_qi = gen_rtx_REG (QImode, REGNO (replace_reg));
 	      validate_replace_rtx (z_reg_qi, replace_reg_qi, insn);
 	    }
 
@@ -4926,8 +4926,8 @@ m68hc11_z_replacement (rtx insn)
       if (info.save_before_last)
 	save_pos_insn = PREV_INSN (save_pos_insn);
 
-      emit_insn_before (gen_movhi (gen_rtx (REG, HImode, SOFT_Z_REGNUM),
-				   gen_rtx (REG, HImode, info.regno)),
+      emit_insn_before (gen_movhi (gen_rtx_REG (HImode, SOFT_Z_REGNUM),
+				   gen_rtx_REG (HImode, info.regno)),
 			save_pos_insn);
     }
 
@@ -4936,12 +4936,12 @@ m68hc11_z_replacement (rtx insn)
       rtx new_body, body;
 
       body = PATTERN (info.last);
-      new_body = gen_rtx (PARALLEL, VOIDmode,
+      new_body = gen_rtx_PARALLEL (VOIDmode,
 			  gen_rtvec (3, body,
-				     gen_rtx (USE, VOIDmode,
+				     gen_rtx_USE (VOIDmode,
 					      replace_reg),
-				     gen_rtx (USE, VOIDmode,
-					      gen_rtx (REG, HImode,
+				     gen_rtx_USE (VOIDmode,
+					      gen_rtx_REG (HImode,
 						       SOFT_Z_REGNUM))));
       PATTERN (info.last) = new_body;
 
@@ -4961,13 +4961,13 @@ m68hc11_z_replacement (rtx insn)
       rtx dst;
 
       if (info.must_push_reg && 0)
-	dst = gen_rtx (MEM, HImode,
-		       gen_rtx (POST_INC, HImode,
-				gen_rtx (REG, HImode, HARD_SP_REGNUM)));
+	dst = gen_rtx_MEM (HImode,
+		       gen_rtx_POST_INC (HImode,
+				gen_rtx_REG (HImode, HARD_SP_REGNUM)));
       else
-	dst = gen_rtx (REG, HImode, SOFT_SAVED_XY_REGNUM);
+	dst = gen_rtx_REG (HImode, SOFT_SAVED_XY_REGNUM);
 
-      emit_insn_before (gen_movhi (gen_rtx (REG, HImode, info.regno),
+      emit_insn_before (gen_movhi (gen_rtx_REG (HImode, info.regno),
 				   dst), insn);
     }
 
@@ -4983,10 +4983,10 @@ m68hc11_reassign_regs (rtx first)
 {
   rtx insn;
 
-  ix_reg = gen_rtx (REG, HImode, HARD_X_REGNUM);
-  iy_reg = gen_rtx (REG, HImode, HARD_Y_REGNUM);
-  z_reg = gen_rtx (REG, HImode, HARD_Z_REGNUM);
-  z_reg_qi = gen_rtx (REG, QImode, HARD_Z_REGNUM);
+  ix_reg = gen_rtx_REG (HImode, HARD_X_REGNUM);
+  iy_reg = gen_rtx_REG (HImode, HARD_Y_REGNUM);
+  z_reg = gen_rtx_REG (HImode, HARD_Z_REGNUM);
+  z_reg_qi = gen_rtx_REG (QImode, HARD_Z_REGNUM);
 
   /* Scan all insns to replace Z by X or Y preserving the old value
      of X/Y and restoring it afterward.  */
@@ -5049,7 +5049,7 @@ m68hc11_reorg (void)
   rtx insn, first;
 
   z_replacement_completed = 0;
-  z_reg = gen_rtx (REG, HImode, HARD_Z_REGNUM);
+  z_reg = gen_rtx_REG (HImode, HARD_Z_REGNUM);
   first = get_insns ();
 
   /* Some RTX are shared at this point.  This breaks the Z register

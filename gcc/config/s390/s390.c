@@ -6131,7 +6131,7 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       if (cum->fprs + 1 > (TARGET_64BIT? 4 : 2))
 	return 0;
       else
-	return gen_rtx (REG, mode, cum->fprs + 16);
+	return gen_rtx_REG (mode, cum->fprs + 16);
     }
   else if (s390_function_arg_integer (mode, type))
     {
@@ -6141,7 +6141,7 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       if (cum->gprs + n_gprs > 5)
 	return 0;
       else
-	return gen_rtx (REG, mode, cum->gprs + 2);
+	return gen_rtx_REG (mode, cum->gprs + 2);
     }
 
   /* After the real arguments, expand_call calls us once again

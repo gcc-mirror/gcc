@@ -207,14 +207,14 @@ output_stack_adjust (int direction, int size)
   /* If extending stack a lot, we do it incrementally.  */
   if (direction < 0 && size > mcore_stack_increment && mcore_stack_increment > 0)
     {
-      rtx tmp = gen_rtx (REG, SImode, 1);
+      rtx tmp = gen_rtx_REG (SImode, 1);
       rtx memref;
 
       emit_insn (gen_movsi (tmp, GEN_INT (mcore_stack_increment)));
       do
 	{
 	  emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tmp));
-	  memref = gen_rtx (MEM, SImode, stack_pointer_rtx);
+	  memref = gen_rtx_MEM (SImode, stack_pointer_rtx);
 	  MEM_VOLATILE_P (memref) = 1;
 	  emit_insn (gen_movsi (memref, stack_pointer_rtx));
 	  size -= mcore_stack_increment;
@@ -232,7 +232,7 @@ output_stack_adjust (int direction, int size)
 
       if (size > 32)
 	{
-	  rtx nval = gen_rtx (REG, SImode, 1);
+	  rtx nval = gen_rtx_REG (SImode, 1);
 	  emit_insn (gen_movsi (nval, val));
 	  val = nval;
 	}
@@ -550,7 +550,7 @@ mcore_gen_compare_reg (enum rtx_code code)
 {
   rtx op0 = arch_compare_op0;
   rtx op1 = arch_compare_op1;
-  rtx cc_reg = gen_rtx (REG, CCmode, CC_REG);
+  rtx cc_reg = gen_rtx_REG (CCmode, CC_REG);
 
   if (CONSTANT_P (op1) && GET_CODE (op1) != CONST_INT)
     op1 = force_reg (SImode, op1);
@@ -623,7 +623,7 @@ mcore_gen_compare_reg (enum rtx_code code)
       break;
     }
 
-  emit_insn (gen_rtx (SET, VOIDmode, cc_reg, gen_rtx (code, CCmode, op0, op1)));
+  emit_insn (gen_rtx_SET (VOIDmode, cc_reg, gen_rtx (code, CCmode, op0, op1)));
   
   return cc_reg;
 }
@@ -1641,14 +1641,14 @@ mcore_expand_insv (rtx operands[])
       if ((INTVAL(operands[3])&1) == 0)
 	{
 	  mask = ~(1 << posn);
-	  emit_insn (gen_rtx (SET, SImode, operands[0],
-			      gen_rtx (AND, SImode, operands[0], GEN_INT (mask))));
+	  emit_insn (gen_rtx_SET (SImode, operands[0],
+			      gen_rtx_AND (SImode, operands[0], GEN_INT (mask))));
 	}
       else
 	{
 	  mask = 1 << posn;
-	  emit_insn (gen_rtx (SET, SImode, operands[0],
-			    gen_rtx (IOR, SImode, operands[0], GEN_INT (mask))));
+	  emit_insn (gen_rtx_SET (SImode, operands[0],
+			    gen_rtx_IOR (SImode, operands[0], GEN_INT (mask))));
 	}
       
       return 1;
@@ -1677,8 +1677,8 @@ mcore_expand_insv (rtx operands[])
       INTVAL (operands[3]) == ((1 << width) - 1))
     {
       mreg = force_reg (SImode, GEN_INT (INTVAL (operands[3]) << posn));
-      emit_insn (gen_rtx (SET, SImode, operands[0],
-                         gen_rtx (IOR, SImode, operands[0], mreg)));
+      emit_insn (gen_rtx_SET (SImode, operands[0],
+                         gen_rtx_IOR (SImode, operands[0], mreg)));
       return 1;
     }
 
@@ -1686,8 +1686,8 @@ mcore_expand_insv (rtx operands[])
   mreg = force_reg (SImode, GEN_INT (~(((1 << width) - 1) << posn)));
 
   /* Clear the field, to overlay it later with the source.  */
-  emit_insn (gen_rtx (SET, SImode, operands[0], 
-		      gen_rtx (AND, SImode, operands[0], mreg)));
+  emit_insn (gen_rtx_SET (SImode, operands[0], 
+		      gen_rtx_AND (SImode, operands[0], mreg)));
 
   /* If the source is constant 0, we've nothing to add back.  */
   if (GET_CODE (operands[3]) == CONST_INT && INTVAL (operands[3]) == 0)
@@ -1706,17 +1706,17 @@ mcore_expand_insv (rtx operands[])
   if (width + posn != (int) GET_MODE_SIZE (SImode))
     {
       ereg = force_reg (SImode, GEN_INT ((1 << width) - 1));      
-      emit_insn (gen_rtx (SET, SImode, sreg,
-                          gen_rtx (AND, SImode, sreg, ereg)));
+      emit_insn (gen_rtx_SET (SImode, sreg,
+                          gen_rtx_AND (SImode, sreg, ereg)));
     }
 
   /* Insert source value in dest.  */
   if (posn != 0)
-    emit_insn (gen_rtx (SET, SImode, sreg,
-		        gen_rtx (ASHIFT, SImode, sreg, GEN_INT (posn))));
+    emit_insn (gen_rtx_SET (SImode, sreg,
+		        gen_rtx_ASHIFT (SImode, sreg, GEN_INT (posn))));
   
-  emit_insn (gen_rtx (SET, SImode, operands[0],
-		      gen_rtx (IOR, SImode, operands[0], sreg)));
+  emit_insn (gen_rtx_SET (SImode, operands[0],
+		      gen_rtx_IOR (SImode, operands[0], sreg)));
 
   return 1;
 }
@@ -1870,19 +1870,19 @@ block_move_sequence (rtx dest, rtx dst_mem, rtx src, rtx src_mem,
 	    }
 	  
 	  size -= amount[next];
-	  srcp = gen_rtx (MEM,
+	  srcp = gen_rtx_MEM (
 #if 0
 			  MEM_IN_STRUCT_P (src_mem) ? mode[next] : BLKmode,
 #else
 			  mode[next],
 #endif
-			  gen_rtx (PLUS, Pmode, src,
-				   gen_rtx (CONST_INT, SImode, offset_ld)));
+			  gen_rtx_PLUS (Pmode, src,
+					gen_rtx_CONST_INT (SImode, offset_ld)));
 	  
 	  RTX_UNCHANGING_P (srcp) = RTX_UNCHANGING_P (src_mem);
 	  MEM_VOLATILE_P (srcp) = MEM_VOLATILE_P (src_mem);
 	  MEM_IN_STRUCT_P (srcp) = 1;
-	  emit_insn (gen_rtx (SET, VOIDmode, temp[next], srcp));
+	  emit_insn (gen_rtx_SET (VOIDmode, temp[next], srcp));
 	  offset_ld += amount[next];
 	  active[next] = TRUE;
 	}
@@ -1891,19 +1891,19 @@ block_move_sequence (rtx dest, rtx dst_mem, rtx src, rtx src_mem,
 	{
 	  active[phase] = FALSE;
 	  
-	  dstp = gen_rtx (MEM,
+	  dstp = gen_rtx_MEM (
 #if 0
 			  MEM_IN_STRUCT_P (dst_mem) ? mode[phase] : BLKmode,
 #else
 			  mode[phase],
 #endif
-			  gen_rtx (PLUS, Pmode, dest,
-				   gen_rtx (CONST_INT, SImode, offset_st)));
+			  gen_rtx_PLUS (Pmode, dest,
+					gen_rtx_CONST_INT (SImode, offset_st)));
 	  
 	  RTX_UNCHANGING_P (dstp) = RTX_UNCHANGING_P (dst_mem);
 	  MEM_VOLATILE_P (dstp) = MEM_VOLATILE_P (dst_mem);
 	  MEM_IN_STRUCT_P (dstp) = 1;
-	  emit_insn (gen_rtx (SET, VOIDmode, dstp, temp[phase]));
+	  emit_insn (gen_rtx_SET (VOIDmode, dstp, temp[phase]));
 	  offset_st += amount[phase];
 	}
     }
@@ -1940,7 +1940,7 @@ mcore_expand_block_move (rtx dst_mem, rtx src_mem, rtx * operands)
     }
 
   /* If we get here, just use the library routine.  */
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "memcpy"), 0, VOIDmode, 3,
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "memcpy"), 0, VOIDmode, 3,
 		     operands[0], Pmode, operands[1], Pmode, operands[2],
 		     SImode);
 }
@@ -2303,9 +2303,9 @@ mcore_expand_prolog (void)
       for (offset = fi.arg_offset; remaining >= 4; offset -= 4, rn--, remaining -= 4)
         {
           emit_insn (gen_movsi
-                     (gen_rtx (MEM, SImode,
+                     (gen_rtx_MEM (SImode,
                                plus_constant (stack_pointer_rtx, offset)),
-                      gen_rtx (REG, SImode, rn)));
+                      gen_rtx_REG (SImode, rn)));
         }
     }
 
@@ -2328,8 +2328,8 @@ mcore_expand_prolog (void)
 	        first_reg--;
 	      first_reg++;
 
-	      emit_insn (gen_store_multiple (gen_rtx (MEM, SImode, stack_pointer_rtx),
-					     gen_rtx (REG, SImode, first_reg),
+	      emit_insn (gen_store_multiple (gen_rtx_MEM (SImode, stack_pointer_rtx),
+					     gen_rtx_REG (SImode, first_reg),
 					     GEN_INT (16 - first_reg)));
 
 	      i -= (15 - first_reg);
@@ -2338,9 +2338,9 @@ mcore_expand_prolog (void)
           else if (fi.reg_mask & (1 << i))
 	    {
 	      emit_insn (gen_movsi
-		         (gen_rtx (MEM, SImode,
+		         (gen_rtx_MEM (SImode,
 			           plus_constant (stack_pointer_rtx, offs)),
-		          gen_rtx (REG, SImode, i)));
+		          gen_rtx_REG (SImode, i)));
 	      offs += 4;
 	    }
         }
@@ -2422,8 +2422,8 @@ mcore_expand_epilog (void)
 	  
 	  first_reg++;
 
-	  emit_insn (gen_load_multiple (gen_rtx (REG, SImode, first_reg),
-					gen_rtx (MEM, SImode, stack_pointer_rtx),
+	  emit_insn (gen_load_multiple (gen_rtx_REG (SImode, first_reg),
+					gen_rtx_MEM (SImode, stack_pointer_rtx),
 					GEN_INT (16 - first_reg)));
 
 	  i -= (15 - first_reg);
@@ -2432,8 +2432,8 @@ mcore_expand_epilog (void)
       else if (fi.reg_mask & (1 << i))
 	{
 	  emit_insn (gen_movsi
-		     (gen_rtx (REG, SImode, i),
-		      gen_rtx (MEM, SImode,
+		     (gen_rtx_REG (SImode, i),
+		      gen_rtx_MEM (SImode,
 			       plus_constant (stack_pointer_rtx, offs))));
 	  offs += 4;
 	}
@@ -3224,7 +3224,7 @@ mcore_mark_dllexport (tree decl)
   idp = get_identifier (newname);
 
   XEXP (DECL_RTL (decl), 0) =
-    gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
+    gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
 }
 
 /* Mark a DECL as being dllimport'd.  */
@@ -3285,8 +3285,8 @@ mcore_mark_dllimport (tree decl)
   /* ??? At least I think that's why we do this.  */
   idp = get_identifier (newname);
 
-  newrtl = gen_rtx (MEM, Pmode,
-		    gen_rtx (SYMBOL_REF, Pmode,
+  newrtl = gen_rtx_MEM (Pmode,
+		    gen_rtx_SYMBOL_REF (Pmode,
 			     IDENTIFIER_POINTER (idp)));
   XEXP (DECL_RTL (decl), 0) = newrtl;
 }
@@ -3337,7 +3337,7 @@ mcore_encode_section_info (tree decl, rtx rtl ATTRIBUTE_UNUSED, int first ATTRIB
     {
       const char * oldname = XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0);
       tree idp = get_identifier (oldname + 9);
-      rtx newrtl = gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
+      rtx newrtl = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
 
       XEXP (DECL_RTL (decl), 0) = newrtl;
 

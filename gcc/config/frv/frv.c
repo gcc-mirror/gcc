@@ -1933,7 +1933,7 @@ frv_expand_builtin_saveregs (void)
     fprintf (stderr, "expand_builtin_saveregs: offset from ap = %d\n",
 	     offset);
 
-  return gen_rtx (PLUS, Pmode, virtual_incoming_args_rtx, GEN_INT (- offset));
+  return gen_rtx_PLUS (Pmode, virtual_incoming_args_rtx, GEN_INT (- offset));
 }
 
 
@@ -2991,7 +2991,7 @@ frv_function_arg (CUMULATIVE_ARGS *cum,
 
   else if (arg_num <= LAST_ARG_REGNUM)
     {
-      ret = gen_rtx (REG, xmode, arg_num);
+      ret = gen_rtx_REG (xmode, arg_num);
       debstr = reg_names[arg_num];
     }
 
