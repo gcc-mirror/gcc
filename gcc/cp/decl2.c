@@ -1009,9 +1009,16 @@ grokclassfn (ctype, function, flags, quals)
       /* Right now we just make this a pointer.  But later
 	 we may wish to make it special.  */
       tree type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (function)));
+      tree qual_type;
+      tree parm;
 
-      tree parm = build_decl (PARM_DECL, this_identifier,
-                         cp_build_qualified_type (type, this_quals | TYPE_QUAL_CONST));
+      /* The `this' parameter is implicitly `const'; it cannot be
+	 assigned to.  */
+      this_quals |= TYPE_QUAL_CONST;
+      qual_type = cp_build_qualified_type (type, this_quals);
+      parm = build_decl (PARM_DECL, this_identifier, qual_type);
+      c_apply_type_quals_to_decl (this_quals, parm);
+
       /* Mark the artificial `this' parameter as "artificial".  */
       SET_DECL_ARTIFICIAL (parm);
       DECL_ARG_TYPE (parm) = type;

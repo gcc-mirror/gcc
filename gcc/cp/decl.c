@@ -4938,7 +4938,7 @@ void
 push_switch ()
 {
   struct cp_switch *p
-    = (struct cp_switch *) oballoc (sizeof (struct cp_switch));
+    = (struct cp_switch *) xmalloc (sizeof (struct cp_switch));
   p->level = current_binding_level;
   p->next = switch_stack;
   switch_stack = p;
@@ -4947,7 +4947,11 @@ push_switch ()
 void
 pop_switch ()
 {
+  struct cp_switch *cs;
+  
+  cs = switch_stack;
   switch_stack = switch_stack->next;
+  free (cs);
 }
 
 /* Note that we've seen a definition of a case label, and complain if this

@@ -1,5 +1,5 @@
 # Makefile for GNU F77 compiler.
-#   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -225,7 +225,7 @@ ASSERT_H = $(srcdir)/assert.j $(srcdir)/../assert.h
 CONFIG_H = $(srcdir)/config.j ../config.h
 CONVERT_H = $(srcdir)/convert.j $(srcdir)/../convert.h
 FLAGS_H = $(srcdir)/flags.j $(srcdir)/../flags.h
-GGC_H = $(srcdir)/ggc.j $(srcdir)/../ggc.h
+GGC_H = $(srcdir)/ggc.j $(srcdir)/../ggc.h $(srcdir)/../varray.h
 GLIMITS_H = $(srcdir)/glimits.j $(srcdir)/../glimits.h
 HCONFIG_H = $(srcdir)/hconfig.j ../hconfig.h
 INPUT_H = $(srcdir)/input.j $(srcdir)/../input.h

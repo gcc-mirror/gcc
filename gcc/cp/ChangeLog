@@ -1,3 +1,20 @@
+2000-04-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (GGC_H): New variable.  Use it throughout in place
+	of ggc.h.
+	
+	* call.c: Don't include obstack.h.  Include ggc.h.
+	(obstack_chunk_alloc): Don't define.
+	(obstack_chunk_free): Likewise.
+	(add_candidate): Allocate the z_candidate with ggc_alloc_obj.
+	* decl.c (push_switch): Use xmalloc to allocate the cp_switch.
+	(pop_switch): Free it.
+
+	* decl2.c (grokclassfn): Set TREE_READONLY for PARM_DECLs.
+
+	* dump.c (dequeue_and_dump): Don't try to print the bit_position
+	if we don't have a DECL_FIELD_OFFSET.
+
 Wed Apr  5 15:12:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* optimize.c (calls_setjmp_r): Use setjmp_call_p instead of

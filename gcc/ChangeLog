@@ -1,3 +1,24 @@
+2000-04-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* final.c (final): Use xcalloc to allocate line_note_exists.
+	* function.c (free_after_compilation): Free the temp_slots.
+	(assign_stack_temp_for_type): Use xmalloc to allocate temp_slots.
+	(combine_temp_slot): Free temp_slots when they get combined.
+	(purge_addressof): Fix typo in comment.
+	* stmt.c (mark_goto_fixup): Mark the fixup itself.
+	(expand_fixup): Allocate the fixup with ggc_alloc_obj.
+
+	* ggc.h: Include varray.h.
+	(ggc_pending_trees): Declare.
+	(ggc_mark_tree_children): Remove declaration.
+	(ggc_mark_tree): Just push unmarked trees on ggc_pending_trees.
+	* ggc-common.c (ggc_pending_trees): New variable.
+	(ggc_mark_roots): Call ggc_mark_trees.
+	(ggc_mark_tree_children): Rename to ggc_mark_trees.  Process all
+	the ggc_pending_trees.
+	* Makefile.in (GGC_H): New variable.  Use it throughout in place
+	of ggc.h.
+	
 Thu Apr  6 00:30:50 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (FUNCTION_ARG_PARTIAL_NREGS): Accomodate an unsigned

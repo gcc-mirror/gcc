@@ -34,10 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "defaults.h"
 #include "expr.h"
-
-#include "obstack.h"
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
+#include "ggc.h"
 
 extern int inhibit_warnings;
 
@@ -1232,18 +1229,12 @@ add_candidate (candidates, fn, convs, viable)
      tree fn, convs;
      int viable;
 {
-  /* FIXME: This is a memory leak.  Presumably, we should use
-     ggc_alloc instead.  */
   struct z_candidate *cand
-    = (struct z_candidate *) expralloc (sizeof (struct z_candidate));
+    = (struct z_candidate *) ggc_alloc_obj (sizeof (struct z_candidate), 1);
 
   cand->fn = fn;
   cand->convs = convs;
-  cand->second_conv = NULL_TREE;
   cand->viable = viable;
-  cand->basetype_path = NULL_TREE;
-  cand->template = NULL_TREE;
-  cand->warnings = NULL_TREE;
   cand->next = candidates;
 
   return cand;
