@@ -1,3 +1,16 @@
+Mon Oct 20 02:00:18 1997  Klaus Kaempf <kkaempf@progis.de>
+			  Jeff Law <law@cygnus.com>
+			  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
+
+	* alpha/alpha.c (vmskrunch): Delete
+	* alpha/vms.h (ENCODE_SECTION_INFO, ASM_DECLARE_FUNCTION_NAME): Delete.
+	* alpha.c (output_prolog, VMS): Use alloca for entry_label and don't
+	truncate to 64 characters.
+
+	* make-l2.com: Support openVMS/Alpha.
+
+	* vmsconfig.com: Fix to work on openVMS/Alpha and openVMS/VAX.
+
 Sun Oct 19 19:00:35 1997 J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* longlong.h (count_leading_zeros): Add missing casts to USItype.
