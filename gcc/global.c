@@ -133,12 +133,6 @@ static int allocno_row_words;
  (conflicts[(I) * allocno_row_words + (unsigned)(J) / INT_BITS]	\
   |= ((INT_TYPE) 1 << ((unsigned)(J) % INT_BITS)))
 
-/* CYGNUS LOCAL LRS */
-#define CLEAR_CONFLICT(I, J) \
- (conflicts[(I) * allocno_row_words + (J) / INT_BITS]   \
-  &= ~ ((INT_TYPE) 1 << ((J) % INT_BITS)))
-/* END CYGNUS LOCAL */
-
 /* Set of hard regs currently live (during scan of all insns).  */
 
 static HARD_REG_SET hard_regs_live;
