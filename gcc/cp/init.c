@@ -2452,16 +2452,6 @@ build_new (placement, decl, init, use_global_new)
       return error_mark_node;
     }
 
-  /* If the first placement arg is of type nothrow_t, it's allowed to
-     return 0 on allocation failure.  */
-  nothrow = (placement && TREE_VALUE (placement)
-	     && TREE_TYPE (TREE_VALUE (placement))
-	     && IS_AGGR_TYPE (TREE_TYPE (TREE_VALUE (placement)))
-	     && (TYPE_IDENTIFIER (TREE_TYPE (TREE_VALUE (placement)))
-		 == get_identifier ("nothrow_t")));
-
-  check_new = flag_check_new || nothrow;
-
 #if 1
   /* Get a little extra space to store a couple of things before the new'ed
      array, if this isn't the default placement new.  */
@@ -2512,6 +2502,30 @@ build_new (placement, decl, init, use_global_new)
 	 LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL));
       rval = cp_convert (build_pointer_type (true_type), rval);
     }
+
+  /*        unless an allocation function is declared with an empty  excep-
+     tion-specification  (_except.spec_),  throw(), it indicates failure to
+     allocate storage by throwing a bad_alloc exception  (clause  _except_,
+     _lib.bad.alloc_); it returns a non-null pointer otherwise If the allo-
+     cation function is declared  with  an  empty  exception-specification,
+     throw(), it returns null to indicate failure to allocate storage and a
+     non-null pointer otherwise.
+
+     So check for a null exception spec on the op new we just called.  */
+
+  nothrow = 0;
+  if (rval)
+    {
+      /* The CALL_EXPR.  */
+      tree t = TREE_OPERAND (rval, 0);
+      /* The function.  */
+      t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+      t = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (t));
+
+      if (t && TREE_VALUE (t) == NULL_TREE)
+	nothrow = 1;
+    }
+  check_new = flag_check_new || nothrow;
 
   if (flag_exceptions && rval)
     {
