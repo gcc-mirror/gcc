@@ -1,3 +1,12 @@
+Sun Oct 31 23:42:37 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* toplev.c (rest_of_compilation): Fix thinko in this change:
+	
+	Fri Oct 29 15:25:07 1999  Arnaud Charlet  <charlet@ACT-Europe.FR>
+
+	(rest_of_compilation): If inside an inlined external function,
+	pretend we are just being declared.
+
 Sun Oct 31 23:03:25 1999  Jeffrey A Law  (law@cygnus.com)
 
         * integrate.c (expand_inline_function): Fix bugs in previous
