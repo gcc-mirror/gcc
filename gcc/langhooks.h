@@ -180,6 +180,9 @@ struct lang_hooks_for_decls
   /* Obtain a list of globals and do final output on them at end
      of compilation */
   void (*final_write_globals) PARAMS ((void));
+
+  /* True if this decl may be called via a sibcall.  */
+  bool (*ok_for_sibcall) PARAMS ((tree));
 };
 
 /* Language-specific hooks.  See langhooks-def.h for defaults.  */

@@ -1,3 +1,8 @@
+2003-06-10  Andrew Haley  <aph@redhat.com>
+
+	* lang.c (LANG_HOOKS_DECL_OK_FOR_SIBCALL): New.
+	(java_decl_ok_for_sibcall): New.
+
 2003-06-09  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in (JAVA_OBJS, java/lang.o): Update.
