@@ -1,3 +1,8 @@
+2004-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* genoutput.c (process_template): Strip trailing whitespace in @
+	templates and issue a warning if there was any.
+
 2004-02-21  Christopher Faylor  <cgf@redhat.com>
 
 	* config.gcc (i[34567]86-*-pe|i[34567]86-*-cygwin*): Specify extra host

@@ -682,11 +682,22 @@ process_template (struct data *d, const char *template)
 
       for (i = 0, cp = &template[1]; *cp; )
 	{
+	  const char *ep, *sp;
+
 	  while (ISSPACE (*cp))
 	    cp++;
 
 	  printf ("  \"");
-	  while (!IS_VSPACE (*cp) && *cp != '\0')
+
+	  for (ep = sp = cp; !IS_VSPACE (*ep) && *ep != '\0'; ++ep)
+	    if (!ISSPACE (*ep))
+	      sp = ep + 1;
+
+	  if (sp != ep)
+	    message_with_line (d->lineno,
+			       "trailing whitespace in output template");
+
+	  while (cp < sp)
 	    {
 	      putchar (*cp);
 	      cp++;
