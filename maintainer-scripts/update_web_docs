@@ -1,0 +1,80 @@
+#!/bin/sh -x
+
+# Run this from /tmp.
+CVSROOT=/cvs/gcc
+export CVSROOT
+
+PATH=/usr/local/bin:$PATH
+WWWBASE=/www/gcc/htdocs
+
+WORKDIR=/tmp/gcc-doc-update.$$
+
+/bin/rm -rf $WORKDIR
+/bin/mkdir $WORKDIR
+cd $WORKDIR
+
+# Find all the texi files in the repository, except those in directories
+# we do not care about (Attic, texinfo, etc).
+find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc_exclude | sed -e s#$CVSROOT/##g -e s#,v##g > FILES
+
+
+# Checkout all the texi files and get them into a single directory.
+# If we ever have texi files with the same name we'll have to do this
+# differently.
+cvs -Q co `cat FILES`
+mv `find . -name \*.texi -print` .
+
+# Now convert the relavent files from texi to html 
+for file in c-tree cpp chill gcc gcov gxxint g77 iostream objc-features; do 
+  /home/gccadmin/scripts/texi2html -glossary -menu -split_chapter ${file}.texi
+done
+
+# Then build a gzipped copy of each of the resulting .html files
+for file in *.html; do
+  cat $file | gzip --best > $file.gz
+done
+
+news_file=`grep "News About GNU Fortran" $WWWBASE/onlinedocs/g77_toc.html | sed -e '/HREF=.*[^.]/  s#^.*HREF="##g' | sed -e 's%#SEC.*%%g'`
+bugs_file=`grep "Known Causes of Trouble with GNU Fortran" $WWWBASE/onlinedocs/g77_toc.html | sed -e '/HREF=.*[^.]/  s#^.*HREF="##g' | sed -e 's%#SEC.*%%g'`
+contrib_file=`grep "Contributors to GCC" $WWWBASE/onlinedocs/gcc_toc.html | sed -e '/HREF=.*[^.]/  s#^.*HREF="##g' | sed -e 's%#SEC.*%%g'`
+
+# On the 15th of the month, wipe all the old files from the
+# web server.
+today=`date +%d`
+if test $today = 15; then
+  find $WWWBASE/onlinedocs -type f -print | grep -v index.html | xargs rm
+fi
+
+# And copy the resulting html files to the web server
+for file in *.html; do
+  cat $WWWBASE/onlinedocs/$file | 
+    sed -e '/^This document was generated on/d' \
+        -e '/^<!-- Created by texi/d' > file1
+  cat $file |
+    sed -e '/^This document was generated on/d' \
+        -e '/^<!-- Created by texi/d' > file2
+  if cmp -s file1 file2; then
+    :
+  else
+    cp $file ${file}.gz $WWWBASE/onlinedocs
+  fi
+done
+
+cd $WWWBASE/onlinedocs
+
+rm -f g77_news.html
+rm -f g77_bugs.html
+rm -f g77_news.html.gz
+rm -f g77_bugs.html.gz
+ln $news_file g77_news.html
+ln $bugs_file g77_bugs.html
+ln ${news_file}.gz g77_news.html.gz
+ln ${bugs_file}.gz g77_bugs.html.gz
+
+cd $WWWBASE
+rm -f thanks.html
+rm -f thanks.html.gz
+ln onlinedocs/$contrib_file thanks.html
+ln onlinedocs/${contrib_file}.gz thanks.html.gz
+
+rm -rf $WORKDIR

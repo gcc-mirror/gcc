@@ -1,0 +1,6 @@
+This directory contains various files used by the gccadmin account on
+gcc.gnu.org, mainly for automated tasks such as the daily update of
+the date in version.c.  There isn't presently any scheme for files
+checked in here to be automatically checked out and used by gccadmin,
+so the files in CVS and those used by gccadmin must be kept in sync
+manually.

@@ -1,0 +1,3 @@
+16 0 * * * sh /home/gccadmin/scripts/update_version
+16 0 * * * sh /home/gccadmin/scripts/update_branch_version
+50 0 * * * sh /home/gccadmin/scripts/update_web_docs
