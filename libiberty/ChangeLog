@@ -1,5 +1,11 @@
 Wed May 26 03:58:20 1999  "Melissa O'Neill" <oneill@cs.sfu.ca>
 
+	* Makefile.in (CFILES): Add putenv.c and setenv.c.
+	* configure.in (funcs): Add putenv and setenv.
+	(AC_CHECK_FUNCS): Check for putenv and setenv.
+	* configure: Rebuilt.
+	* putenv.c setenv.c: New files.
+
 	* getcwd.c (getcwd): If pathname is NULL, then obtain SIZE
 	bytes of space using malloc.
 
