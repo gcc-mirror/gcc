@@ -1,5 +1,17 @@
 2000-12-07  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (check_field_decls): Don't special case anonymous
+	fields in error messages.
+	(note_name_declared_in_class): Use %D on diagnostic.
+	
+	* tree.c (pod_type_p): Use strip_array_types.
+	(cp_valid_lang_attribute): Likewise.
+	* typeck.c (cp_type_quals): Strip arrays separately, to avoid
+	multiple evaluations.
+	(cp_has_mutable_p): Use strip_array_types.	
+
+2000-12-07  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (sufficient_parms_p): Declare new function.
 	* call.c (sufficient_parms_p): New function, broken out of ...
 	(add_function_candidate): ... here. Use it.
