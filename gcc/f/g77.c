@@ -979,7 +979,7 @@ pexecute (search_flag, program, argv, not_last)
 
 #endif
 
-#if !defined(__MSDOS__) && !defined(OS2) && !defined(_WIN32)
+#if (!defined(__MSDOS__) && !defined(OS2) && !defined(_WIN32)) || defined (__CYGWIN32__)
 
 static int
 pexecute (search_flag, program, argv, not_last)
@@ -1084,7 +1084,7 @@ pexecute (search_flag, program, argv, not_last)
 }
 #endif /* OS2 */
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined (__CYGWIN32__)
 
 static int
 pexecute (search_flag, program, argv, not_last)
@@ -1109,7 +1109,7 @@ doit (char *program, char **argv)
 #ifdef __MSDOS__
   status = pid;
 #else
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__CYGWIN32__)
   pid = cwait (&status, pid, WAIT_CHILD);
 #else
   pid = wait (&status);
