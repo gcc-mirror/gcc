@@ -573,12 +573,15 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
     AC_TRY_LINK(
       [#include <unistd.h>
        #include <stdio.h>
+       #include <sys/stat.h>
       ],
       [FILE* fp;
        fopen64("t", "w");
        fseeko64(fp, 0, SEEK_CUR);
        ftello64(fp);
-       lseek64(1, 0, SEEK_CUR);],	
+       lseek64(1, 0, SEEK_CUR);
+       struct stat64 buf;
+       fstat64(1, &buf);],
       [glibcxx_cv_LFS=yes],
       [glibcxx_cv_LFS=no])
   ])
