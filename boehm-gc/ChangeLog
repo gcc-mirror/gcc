@@ -1,3 +1,44 @@
+2001-04-04  Hans Boehm  <hans_boehm@hp.com>
+
+	* finalize.c:
+	- Accomodate finalization requests for static objects.
+	  (Will be required by hash synchronization.  May be needed
+	  in some configurations now.)
+
+	* gc_priv.h:
+	- Define MIN_WORDS.  All allocation requests are rounded
+	  up to at least this size.  Removes a subtle assumption that
+	  Java objects have a 2 word header.
+
+	* gcconfig.h:
+	- Adjust Linux/IA64 configuration for non-ancient kernels.
+	  (Necessary fix for IA64.)
+
+	* linux_threads.c:
+	- Fix syntax error in currently unused code.  Will be needed
+	  for Linux/PA-RISC.
+
+	* malloc.c:
+	- Handle MIN_WORDS.
+
+	* misc.c:
+	- Handle MIN_WORDS.
+	- Change stack cleaning code to typically clear about one tenth
+	  the memory it used to in the threads configuration.  Occasionally
+	  still clear more.  (This is really a fix for a long-standing
+	  and fairly significant performance bug with threads.)
+
+	* os_dep.c:
+	- Fix the code for finding the beginning of the data segment under
+	  Linux.  I believe this is necessary for some IA64 Linux
+	  distributions.  It will also helo other platforms, though those
+	  may additionally require a gcconfig.h adjustment.  (This basically
+	  works around the absence of a data_start or __data_start
+	  definition in glibc.)
+
+	* test.c:
+	- Handle rounding due to MIN_WORDS.
+
 2001-03-22  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.am (gctest_LDFLAGS): Use -shared-libgcc.
