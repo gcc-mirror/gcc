@@ -3855,7 +3855,7 @@ output_prolog (file, size)
       int loc = info->main_save_offset + sp_offset;
       int size = info->main_size;
 
-      for (regno = 3; size > 0; regno++, loc -= reg_size, size -= reg_size)
+      for (regno = 3; size > 0; regno++, loc += reg_size, size -= reg_size)
 	asm_fprintf (file, store_reg, reg_names[regno], loc, reg_names[sp_reg]);
     }
 #endif
@@ -3959,7 +3959,7 @@ output_prolog (file, size)
 	  if (info->total_size < 32767)
 	    {
 	      loc = info->total_size + info->main_save_offset;
-	      for (regno = 3; size > 0; regno++, size -= reg_size, loc -= reg_size)
+	      for (regno = 3; size > 0; regno++, size -= reg_size, loc += reg_size)
 		asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[1]);
 	    }
 	  else
@@ -3973,7 +3973,7 @@ output_prolog (file, size)
 	      asm_fprintf (file, "\t{sf|subf} %s,%s,%s\n", reg_names[0], reg_names[0],
 			   reg_names[1]);
 
-	      for (regno = 3; size > 0; regno++, size -= reg_size, loc -= reg_size)
+	      for (regno = 3; size > 0; regno++, size -= reg_size, loc += reg_size)
 		asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[0]);
 	    }
 	}
