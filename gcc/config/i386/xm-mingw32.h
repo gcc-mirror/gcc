@@ -35,10 +35,6 @@ Boston, MA 02111-1307, USA. */
 #define USE_PROTOTYPES 1
 #endif
 
-#ifndef HAVE_VPRINTF
-#define HAVE_VPRINTF 1
-#endif
-
 #define NO_SYS_SIGLIST 1
 #define bcmp(a,b,c) memcmp (a,b,c)
 #define bcopy(a,b,c) memcpy (b,a,c)
