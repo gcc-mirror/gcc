@@ -1,3 +1,8 @@
+2004-11-25  Olivier Hainque  <hainque@adacore.com>
+
+	* tb-gcc.c: GCC infrastructure based implementation of
+	__gnat_backtrace.
+
 2004-11-24  Steven Bosscher  <stevenb@suse.de>
 
 	* misc.c (gnat_post_options): Don't clear
