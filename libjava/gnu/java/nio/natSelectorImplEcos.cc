@@ -1,6 +1,6 @@
 // natSelectorImplEcos.cc
 
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,12 +14,12 @@ details.  */
 #include <errno.h>
 #include <string.h>
 
-#include <gnu/java/nio/SelectorImpl.h>
+#include <gnu/java/nio/VMSelector.h>
 #include <java/io/IOException.h>
 
 jint
-gnu::java::nio::SelectorImpl::implSelect (jintArray read, jintArray write,
-                                          jintArray except, jlong timeout)
+gnu::java::nio::VMSelector::select (jintArray read, jintArray write,
+                                    jintArray except, jlong timeout)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("implSelect() not implemented"));
 }

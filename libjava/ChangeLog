@@ -1,3 +1,22 @@
+2004-09-24  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/PipeImpl.java: Use VMPipe for native stuff.
+	* gnu/java/nio/SelectorImpl.java: Use VMSelector for native stuff.
+	* gnu/java/nio/VMPipe.java,
+	gnu/java/nio/VMSelector.java:
+	New files.
+	* gnu/java/nio/natPipeImplEcos.cc,
+	gnu/java/nio/natPipeImplPosix.cc,
+	gnu/java/nio/natPipeImplWin32.cc:
+	Ported to VMPipe.
+	* gnu/java/nio/natSelectorImplEcos.cc,
+	gnu/java/nio/natSelectorImplPosix.cc,
+	gnu/java/nio/natSelectorImplWin32.cc:
+	Ported to VMSelector.
+	* Makefile.am: Added new files gnu/java/nio/VMPipe.java and
+	gnu/java/nio/VMSelector.java.
+	* Makefile.in: Regenerated.
+
 2004-09-24  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/lang/StackTraceElement.java

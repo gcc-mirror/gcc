@@ -1,6 +1,6 @@
 // natSelectorImplPosix.cc
 
-/* Copyright (C) 2002, 2003  Free Software Foundation
+/* Copyright (C) 2002, 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,7 +14,7 @@ details.  */
 #include <errno.h>
 #include <string.h>
 
-#include <gnu/java/nio/SelectorImpl.h>
+#include <gnu/java/nio/VMSelector.h>
 #include <java/io/InterruptedIOException.h>
 #include <java/io/IOException.h>
 #include <java/lang/Thread.h>
@@ -60,8 +60,8 @@ helper_reset (jintArray& fdArray)
 }
 
 jint
-gnu::java::nio::SelectorImpl::implSelect (jintArray read, jintArray write,
-                                          jintArray except, jlong timeout)
+gnu::java::nio::VMSelector::select (jintArray read, jintArray write,
+                                    jintArray except, jlong timeout)
 {
   jint result;
   int max_fd = 0;
