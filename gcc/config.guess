@@ -270,7 +270,7 @@ esac
 #echo "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" 1>&2
 
 cat >dummy.c <<EOF
-main()
+main ()
 {
 #if defined (sony)
 #if defined (MIPSEB)
@@ -278,71 +278,75 @@ main()
      I don't know....  */
   printf ("mips-sony-bsd\n"); exit (0);
 #else
-  printf("m68k-sony-newsos\n"); exit(0);
+  printf ("m68k-sony-newsos\n"); exit (0);
 #endif
 #endif
 
 #if defined (__arm) && defined (__acorn) && defined (__unix)
-  printf("arm-acorn-riscix"); exit (0);
+  printf ("arm-acorn-riscix"); exit (0);
 #endif
 
-#if defined(hp300) && !defined(hpux)
-  printf("m68k-hp-bsd\n"); exit(0);
+#if defined (hp300) && !defined (hpux)
+  printf ("m68k-hp-bsd\n"); exit (0);
 #endif
 
-#if defined(NeXT)
-#if !defined(__ARCHITECTURE__)
+#if defined (NeXT)
+#if !defined (__ARCHITECTURE__)
 #define __ARCHITECTURE__ "m68k"
 #endif
   int version;
   version=`(hostinfo | sed -n 's/.*NeXT Mach \([0-9]*\).*/\1/p') 2>/dev/null`;
   if (version==2)
     {
-      printf("%s-next-ns2\n", __ARCHITECTURE__);
-      exit(0);
+      printf ("%s-next-ns2\n", __ARCHITECTURE__);
+      exit (0);
     }
   else
     {
-      printf("%s-next-ns3\n", __ARCHITECTURE__);
-      exit(0);
+      printf ("%s-next-ns3\n", __ARCHITECTURE__);
+      exit (0);
     }
 #endif
 
 #if defined (MULTIMAX) || defined (n16)
 #if defined (UMAXV)
-  printf("ns32k-encore-sysv\n"); exit(0);
+  printf ("ns32k-encore-sysv\n"); exit (0);
 #else
 #if defined (CMU)
-  printf("ns32k-encore-mach\n"); exit(0);
+  printf ("ns32k-encore-mach\n"); exit (0);
 #else
-  printf("ns32k-encore-bsd\n"); exit(0);
+  printf ("ns32k-encore-bsd\n"); exit (0);
 #endif
 #endif
 #endif
 
-#if defined(__386BSD__) || (defined(__bsdi__) && defined(__i386__))
-  printf("i386-unknown-bsd\n"); exit(0);
+#if defined (__386BSD__) || (defined (__bsdi__) && defined (__i386__))
+  printf ("i386-unknown-bsd\n"); exit (0);
 #endif
 
-#if defined(sequent)
-#if defined(i386)
-  printf("i386-sequent-dynix\n"); exit(0);
+#if defined (sequent)
+#if defined (i386)
+  printf ("i386-sequent-dynix\n"); exit (0);
 #endif
 #if defined (ns32000)
-  printf("ns32k-sequent-dynix\n"); exit(0);
+  printf ("ns32k-sequent-dynix\n"); exit (0);
 #endif
 #endif
 
-#if defined(_SEQUENT_)
-  printf("i386-sequent-ptx\n"); exit(0);
+#if defined (_SEQUENT_)
+  printf ("i386-sequent-ptx\n"); exit (0);
 #endif
 
-#if defined(vax)
-#if !defined(ultrix)
-  printf("vax-dec-bsd\n"); exit(0);
+#if defined (vax)
+#if !defined (ultrix)
+  printf ("vax-dec-bsd\n"); exit (0);
 #else
-  printf("vax-dec-ultrix\n"); exit(0);
+  printf ("vax-dec-ultrix\n"); exit (0);
 #endif
+#endif
+
+#if defined (alliant) && defined (i860)
+  printf ("i860-alliant-bsd\n"); exit (0);
 #endif
 
   exit (1);
