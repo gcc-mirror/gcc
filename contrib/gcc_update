@@ -82,7 +82,7 @@ gcc/ada/nmake.ads: gcc/ada/sinfo.ads gcc/ada/nmake.adt gcc/ada/xnmake.adb
 gcc/ada/gnat_ug_unx.texi: gcc/ada/gnat_ug.texi gcc/ada/xgnatug.adb gcc/ada/ug_words
 gcc/ada/gnat_ug_vms.texi: gcc/ada/gnat_ug.texi gcc/ada/xgnatug.adb gcc/ada/ug_words
 gcc/ada/gnat_ug_vxw.texi: gcc/ada/gnat_ug.texi gcc/ada/xgnatug.adb gcc/ada/ug_words
-gcc/ada/gnat_ug_w32.texi: gcc/ada/gnat_ug.texi gcc/ada/xgnatug.adb gcc/ada/ug_words
+gcc/ada/gnat_ug_wnt.texi: gcc/ada/gnat_ug.texi gcc/ada/xgnatug.adb gcc/ada/ug_words
 # testsuite
 # Without this, _Pragma3.c can have a false negative.
 gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h

@@ -1,3 +1,8 @@
+2003-12-10  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc_update (files_and_dependencies): Correct typo in the filename
+	gnat_ug_wnt.texi.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.
