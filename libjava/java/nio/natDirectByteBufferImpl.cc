@@ -43,3 +43,12 @@ java::nio::DirectByteBufferImpl::putImpl (jint index, jbyte value)
   jbyte* pointer = reinterpret_cast<jbyte*> (address) + offset + index;
   *pointer = value;
 }
+
+void
+java::nio::DirectByteBufferImpl::shiftDown
+(jint dst_offset, jint src_offset, jint count)
+{
+  jbyte* dst = reinterpret_cast<jbyte*> (address) + offset + dst_offset;
+  jbyte* src = reinterpret_cast<jbyte*> (address) + offset + src_offset;
+  ::memmove(dst, src, count);
+}

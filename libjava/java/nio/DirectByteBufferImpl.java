@@ -1,5 +1,5 @@
 /* DirectByteBufferImpl.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -117,18 +117,18 @@ class DirectByteBufferImpl extends ByteBuffer
     return this;
   }
   
+  native void shiftDown (int dst_offset, int src_offset, int count);
+
   public ByteBuffer compact ()
   {
-    // FIXME this can sure be optimized using memcpy()  
-    int copied = 0;
-    
-    while (remaining () > 0)
+    int pos = position();
+    if (pos > 0)
       {
-	put (copied, get ());
-	copied++;
+	int count = remaining();
+	shiftDown(0, pos, count);
+	position(count);
+	limit(capacity());
       }
-
-    position (copied);
     return this;
   }
 
@@ -161,197 +161,163 @@ class DirectByteBufferImpl extends ByteBuffer
 
   public CharBuffer asCharBuffer ()
   {
-    return new CharViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+    return new CharViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
   }
   
   public DoubleBuffer asDoubleBuffer ()
   {
-    return new DoubleViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+    return new DoubleViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
   }
   
   public FloatBuffer asFloatBuffer ()
   {
-    return new FloatViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+    return new FloatViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
   }
   
   public IntBuffer asIntBuffer ()
   {
-    return new IntViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+    return new IntViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
   }
   
   public LongBuffer asLongBuffer ()
   {
-    return new LongViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+    return new LongViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
   }
   
   public ShortBuffer asShortBuffer ()
   {
-    return new ShortViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+    return new ShortViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
   }
   
   final public char getChar ()
   {
-    // FIXME: this handles little endian only
-    return (char) (((get () & 0xff) << 8)
-                   + (get () & 0xff));
+    return ByteBufferHelper.getChar(this, order());
   }
   
   final public ByteBuffer putChar (char value)
   {
-    // FIXME: this handles little endian only
-    put ((byte) ((((int) value) & 0xff00) >> 8));
-    put ((byte) (((int) value) & 0x00ff));
+    ByteBufferHelper.putChar(this, value, order());
     return this;
   }
   
   final public char getChar (int index)
   {
-    // FIXME: this handles little endian only
-    return (char) (((get (index) & 0xff) << 8)
-                   + (get (index + 1) & 0xff));
+    return ByteBufferHelper.getChar(this, index, order());
   }
   
   final public ByteBuffer putChar (int index, char value)
   {
-    // FIXME: this handles little endian only
-    put (index, (byte) ((((int) value) & 0xff00) >> 8));
-    put (index + 1, (byte) (((int) value) & 0x00ff));
+    ByteBufferHelper.putChar(this, index, value, order());
     return this;
   }
 
   final public short getShort ()
   {
-    // FIXME: this handles little endian only
-    return (short) (((get () & 0xff) << 8)
-                    + (get () & 0xff));
+    return ByteBufferHelper.getShort(this, order());
   }
   
   final public ByteBuffer putShort (short value)
   {
-    // FIXME: this handles little endian only
-    put ((byte) ((((int) value) & 0xff00) >> 8));
-    put ((byte) (((int) value) & 0x00ff));
+    ByteBufferHelper.putShort(this, value, order());
     return this;
   }
   
   final public short getShort (int index)
   {
-    // FIXME: this handles little endian only
-    return (short) (((get (index) & 0xff) << 8)
-                    + (get (index + 1) & 0xff));
+    return ByteBufferHelper.getShort(this, index, order());
   }
   
   final public ByteBuffer putShort (int index, short value)
   {
-    // FIXME: this handles little endian only
-    put (index, (byte) ((((int) value) & 0xff00) >> 8));
-    put (index + 1, (byte) (((int) value) & 0x00ff));
+    ByteBufferHelper.putShort(this, index, value, order());
     return this;
   }
 
   final public int getInt ()
   {
-    // FIXME: this handles little endian only
-    return (int) (((get () & 0xff) << 24)
-                  + ((get () & 0xff) << 16)
-                  + ((get () & 0xff) << 8)
-                  + (get () & 0xff));
+    return ByteBufferHelper.getInt(this, order());
   }
   
   final public ByteBuffer putInt (int value)
   {
-    // FIXME: this handles little endian only
-    put ((byte) ((((int) value) & 0xff000000) >> 24));
-    put ((byte) ((((int) value) & 0x00ff0000) >> 16));
-    put ((byte) ((((int) value) & 0x0000ff00) >> 8));
-    put ((byte) (((int) value) & 0x000000ff));
+    ByteBufferHelper.putInt(this, value, order());
     return this;
   }
   
   final public int getInt (int index)
   {
-    // FIXME: this handles little endian only
-    return (int) (((get (index) & 0xff) << 24)
-                  + ((get (index + 1) & 0xff) << 16)
-                  + ((get (index + 2) & 0xff) << 8)
-                  + (get (index + 3) & 0xff));
+    return ByteBufferHelper.getInt(this, index, order());
   }
   
   final public ByteBuffer putInt (int index, int value)
   {
-    // FIXME: this handles little endian only
-    put (index, (byte) ((((int) value) & 0xff000000) >> 24));
-    put (index + 1, (byte) ((((int) value) & 0x00ff0000) >> 16));
-    put (index + 2, (byte) ((((int) value) & 0x0000ff00) >> 8));
-    put (index + 3, (byte) (((int) value) & 0x000000ff));
+    ByteBufferHelper.putInt(this, index, value, order());
     return this;
   }
 
   final public long getLong ()
   {
-    // FIXME: this handles little endian only
-    return (long) (((get () & 0xff) << 56)
-                   + ((get () & 0xff) << 48)
-                   + ((get () & 0xff) << 40)
-                   + ((get () & 0xff) << 32)
-                   + ((get () & 0xff) << 24)
-                   + ((get () & 0xff) << 16)
-                   + ((get () & 0xff) << 8)
-                   + (get () & 0xff));
+    return ByteBufferHelper.getLong(this, order());
   }
   
   final public ByteBuffer putLong (long value)
   {
-    return ByteBufferHelper.putLong (this, value);
+    ByteBufferHelper.putLong (this, value, order());
+    return this;
   }
   
   final public long getLong (int index)
   {
-    return ByteBufferHelper.getLong (this, index);
+    return ByteBufferHelper.getLong (this, index, order());
   }
   
   final public ByteBuffer putLong (int index, long value)
   {
-    return ByteBufferHelper.putLong (this, index, value);
+    ByteBufferHelper.putLong (this, index, value, order());
+    return this;
   }
 
   final public float getFloat ()
   {
-    return ByteBufferHelper.getFloat (this);
+    return ByteBufferHelper.getFloat (this, order());
   }
   
   final public ByteBuffer putFloat (float value)
   {
-    return ByteBufferHelper.putFloat (this, value);
+    ByteBufferHelper.putFloat (this, value, order());
+    return this;
   }
   
   public final float getFloat (int index)
   {
-    return ByteBufferHelper.getFloat (this, index);
+    return ByteBufferHelper.getFloat (this, index, order());
   }
 
   final public ByteBuffer putFloat (int index, float value)
   {
-    return ByteBufferHelper.putFloat (this, index, value);
+    ByteBufferHelper.putFloat (this, index, value, order());
+    return this;
   }
 
   final public double getDouble ()
   {
-    return ByteBufferHelper.getDouble (this);
+    return ByteBufferHelper.getDouble (this, order());
   }
 
   final public ByteBuffer putDouble (double value)
   {
-    return ByteBufferHelper.putDouble (this, value);
+    ByteBufferHelper.putDouble (this, value, order());
+    return this;
   }
   
   final public double getDouble (int index)
   {
-    return ByteBufferHelper.getDouble (this, index);
+    return ByteBufferHelper.getDouble (this, index, order());
   }
   
   final public ByteBuffer putDouble (int index, double value)
   {
-    return ByteBufferHelper.putDouble (this, index, value);
+    ByteBufferHelper.putDouble (this, index, value, order());
+    return this;
   }
 }

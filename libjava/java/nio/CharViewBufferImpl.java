@@ -1,5 +1,5 @@
 /* CharViewBufferImpl.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,54 +40,47 @@ package java.nio;
 
 class CharViewBufferImpl extends CharBuffer
 {
-  private boolean readOnly;
+  /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;
   private ByteBuffer bb;
+  private boolean readOnly;
   private ByteOrder endian;
   
-  public CharViewBufferImpl (ByteBuffer bb, boolean readOnly)
-  {
-    super (bb.remaining () >> 1, bb.remaining () >> 1, bb.position (), 0);
-    this.bb = bb;
-    this.readOnly = readOnly;
-    // FIXME: What if this is called from CharByteBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
-  }
-
   public CharViewBufferImpl (ByteBuffer bb, int offset, int capacity,
-                               int limit, int position, int mark,
-                               boolean readOnly)
+			     int limit, int position, int mark,
+			     boolean readOnly, ByteOrder endian)
   {
     super (limit >> 1, limit >> 1, position >> 1, mark >> 1);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from CharViewBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
+    this.endian = endian;
   }
 
   public char get ()
   {
-    char result = bb.getChar ((position () << 1) + offset);
-    position (position () + 1);
+    int p = position();
+    char result = ByteBufferHelper.getChar(bb, (p << 1) + offset, endian);
+    position(p + 1);
     return result;
   }
 
   public char get (int index)
   {
-    return bb.getChar ((index << 1) + offset);
+    return ByteBufferHelper.getChar(bb, (index << 1) + offset, endian);
   }
 
   public CharBuffer put (char value)
   {
-    bb.putChar ((position () << 1) + offset, value);
-    position (position () + 1);
+    int p = position();
+    ByteBufferHelper.putChar(bb, (p << 1) + offset, value, endian);
+    position(p + 1);
     return this;
   }
   
   public CharBuffer put (int index, char value)
   {
-    bb.putChar ((index << 1) + offset, value);
+    ByteBufferHelper.putChar(bb, (index << 1) + offset, value, endian);
     return this;
   }
 
@@ -95,59 +88,54 @@ class CharViewBufferImpl extends CharBuffer
   {
     if (position () > 0)
       {
-        // Copy all data from position() to limit() to the beginning of the
-        // buffer, set position to end of data and limit to capacity
-        // XXX: This can surely be optimized, for direct and non-direct buffers
-        
         int count = limit () - position ();
-              
-        for (int i = 0; i < count; i++)
-          {
-            bb.putChar ((i >> 1) + offset,
-                          bb.getChar (((i + position ()) >> 1) + offset));
-          }
-
+	bb.shiftDown(offset, offset + 2 * position(), 2 * count);
         position (count);
         limit (capacity ());
       }
-
     return this;
-  }
-  
-  public CharBuffer duplicate ()
-  {
-    // Create a copy of this object that shares its content
-    // FIXME: mark is not correct
-    return new CharViewBufferImpl (bb, offset, capacity (), limit (),
-                                     position (), -1, isReadOnly ());
   }
   
   public CharBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
     return new CharViewBufferImpl (bb, (position () >> 1) + offset,
-                                      remaining (), remaining (), 0, -1,
-                                     isReadOnly ());
+				   remaining (), remaining (), 0, -1,
+				   isReadOnly (), endian);
   }
   
-  public CharSequence subSequence (int start, int end)
+  CharBuffer duplicate (boolean readOnly)
   {
-    if (start < 0
-        || start > length ()
-        || end < start
-        || end > length ())
-      throw new IndexOutOfBoundsException ();
-
-    return new CharViewBufferImpl (bb, array_offset, capacity (), position () + end, position () + start, -1, isReadOnly ());
+    int pos = position();
+    reset();
+    int mark = position();
+    position(pos);
+    return new CharViewBufferImpl (bb, offset, capacity(), limit(),
+                                     pos, mark, readOnly, endian);
+  }
+  
+  public CharBuffer duplicate ()
+  {
+    return duplicate(readOnly);
   }
 
   public CharBuffer asReadOnlyBuffer ()
   {
-    // Create a copy of this object that shares its content and is read-only
-    return new CharViewBufferImpl (bb, (position () >> 1) + offset,
-                                     remaining (), remaining (), 0, -1, true);
+    return duplicate(true);
   }
-  
+
+  public CharSequence subSequence (int start, int end)
+  {
+    if (start < 0
+        || end < start
+        || end > length ())
+      throw new IndexOutOfBoundsException ();
+
+    return new CharViewBufferImpl (bb, array_offset, capacity (),
+				   position () + end, position () + start,
+				   -1, isReadOnly (), endian);
+  }
+
   public boolean isReadOnly ()
   {
     return readOnly;
@@ -160,6 +148,6 @@ class CharViewBufferImpl extends CharBuffer
   
   public ByteOrder order ()
   {
-    return ByteOrder.LITTLE_ENDIAN;
+    return endian;
   }
 }
