@@ -1,3 +1,8 @@
+2003-12-25  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* libltdl/ltdl.c (HAVE_DYLD): Remove ifdef conditional for 
+	darwin. Fixed by fixinclude now.
+
 2003-12-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/ServerSocket.java bind():
