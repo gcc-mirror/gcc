@@ -59,11 +59,6 @@ extern int add_weak PARAMS ((const char *, const char *));
 
 extern void init_pragma PARAMS ((void));
 
-/* If cpplib is in use, it handles dispatch.  */
-#if !USE_CPPLIB
-extern void dispatch_pragma PARAMS ((void));
-#endif
-
 /* Duplicate prototypes for the register_pragma stuff and the typedef for
    cpp_reader, to avoid dragging cpplib.h in almost everywhere... */
 #ifndef __GCC_CPPLIB__

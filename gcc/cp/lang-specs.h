@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
   {".c++", "@c++"},
   {".C",   "@c++"},
   {"@c++",
-#if USE_CPPLIB
    /* cc1plus has an integrated ISO C preprocessor.  We should invoke
       the external preprocessor if -save-temps is given.  */
     "%{E|M|MM:cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
@@ -44,16 +43,7 @@ Boston, MA 02111-1307, USA.  */
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
        %(cc1_options) %2 %{+e*}\
-       %{!fsyntax-only:%(invoke_as)}}}}"
-#else /* ! USE_CPPLIB */
-    "cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
-       %{fnew-abi:-D__GXX_ABI_VERSION=100}\
-       %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)\
-       %{!M:%{!MM:%{!E:%{!pipe:%g.ii} |\n\
-     cc1plus -lang-c++ %{!pipe:%g.ii} %(cc1_options) %2 %{+e*}\
-     %{!fsyntax-only:%(invoke_as)}}}}\n"
-#endif /* ! USE_CPPLIB */
-  },
+       %{!fsyntax-only:%(invoke_as)}}}}"},
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\

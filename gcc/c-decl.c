@@ -41,11 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "ggc.h"
 #include "tm_p.h"
-
-#if USE_CPPLIB
 #include "cpplib.h"
 extern cpp_reader parse_in;
-#endif
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -512,11 +509,8 @@ c_decode_option (argc, argv)
   int strings_processed;
   const char *option_value = NULL;
   char *p = argv[0];
-#if USE_CPPLIB
+
   strings_processed = cpp_handle_option (&parse_in, argc, argv);
-#else
-  strings_processed = 0;
-#endif /* ! USE_CPPLIB */
 
   if (!strcmp (p, "-lang-objc"))
     c_language = clk_objective_c;

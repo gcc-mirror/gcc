@@ -463,13 +463,8 @@ extern void overflow_warning			PARAMS ((tree));
 extern void unsigned_conversion_warning		PARAMS ((tree, tree));
 
 /* Read the rest of the current #-directive line.  */
-#if USE_CPPLIB
 extern char *get_directive_line			PARAMS ((void));
 #define GET_DIRECTIVE_LINE() get_directive_line ()
-#else
-extern char *get_directive_line			PARAMS ((FILE *));
-#define GET_DIRECTIVE_LINE() get_directive_line (finput)
-#endif
 
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types

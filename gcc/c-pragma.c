@@ -32,16 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "tm_p.h"
 
-#if USE_CPPLIB
 extern cpp_reader parse_in;
-#else
-struct pragma_entry;
-static struct pragma_entry *pragmas;
-
-void cpp_register_pragma PARAMS ((cpp_reader *, const char *, const char *,
-				  void (*) PARAMS ((cpp_reader *)) ));
-void cpp_register_pragma_space PARAMS ((cpp_reader *, const char *));
-#endif
 
 #define BAD(msgid) do { warning (msgid); return; } while (0)
 #define BAD2(msgid, arg) do { warning (msgid, arg); return; } while (0)
@@ -312,151 +303,11 @@ handle_pragma_weak (dummy)
 }
 #endif
 
-#if !USE_CPPLIB
-/* Glue version of cpplib's pragma registration and dispatch system.  */
-struct pragma_entry
-{
-  struct pragma_entry *next;
-  const char *name;
-  size_t len;
-  int isnspace;
-  union {
-    void (*handler) PARAMS ((cpp_reader *));
-    struct pragma_entry *space;
-  } u;
-};
-
-void
-cpp_register_pragma_space (pfile, space)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const char *space;
-{
-  struct pragma_entry *new;
-  const struct pragma_entry *p = pragmas;
-  size_t len = strlen (space);
-
-  while (p)
-    {
-      if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
-	return;
-      p = p->next;
-    }
-
-  new = (struct pragma_entry *) xmalloc (sizeof (struct pragma_entry));
-  new->name = space;
-  new->len = len;
-  new->isnspace = 1;
-  new->u.space = 0;
-
-  new->next = pragmas;
-  pragmas = new;
-}
-
-void
-cpp_register_pragma (pfile, space, name, handler)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const char *space;
-     const char *name;
-     void (*handler) PARAMS ((cpp_reader *));
-{
-  struct pragma_entry **x, *new;
-  size_t len;
-
-  x = &pragmas;
-  if (space)
-    {
-      struct pragma_entry *p = pragmas;
-      len = strlen (space);
-      while (p)
-	{
-	  if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
-	    {
-	      x = &p->u.space;
-	      goto found;
-	    }
-	  p = p->next;
-	}
-      abort ();
-    }
-
- found:
-  new = (struct pragma_entry *) xmalloc (sizeof (struct pragma_entry));
-  new->name = name;
-  new->len = strlen (name);
-  new->isnspace = 0;
-  new->u.handler = handler;
-
-  new->next = *x;
-  *x = new;
-}
-
-/* Called from process_directive() for #pragma lines.  */
-void
-dispatch_pragma ()
-{
-  enum cpp_ttype t;
-  tree x;
-  const struct pragma_entry *p;
-  const char *name, *space = 0;
-  size_t len;
-
-  p = pragmas;
-
- new_space:
-  t = c_lex (&x);
-  if (t == CPP_EOF)
-    return;
-
-  if (t != CPP_NAME)
-    {
-      warning ("malformed #pragma directive");
-      return;
-    }
-
-  name = IDENTIFIER_POINTER (x);
-  len = IDENTIFIER_LENGTH (x);
-  while (p)
-    {
-      if (strlen (p->name) == len && !memcmp (p->name, name, len))
-	{
-	  if (p->isnspace)
-	    {
-	      space = p->name;
-	      p = p->u.space;
-	      goto new_space;
-	    }
-	  else
-	    {
-	      (*p->u.handler) (0);
-	      return;
-	    }
-	}
-      p = p->next;
-    }
-
-  /* Issue a warning message if we have been asked to do so.  Ignore
-     unknown pragmas in system headers unless an explicit
-     -Wunknown-pragmas has been given. */
-  if (warn_unknown_pragmas > in_system_header)
-    {
-      if (space)
-	warning ("ignoring #pragma %s %s", space, name);
-      else
-	warning ("ignoring #pragma %s", name);
-    }
-}
-
-#endif
-
 void
 init_pragma ()
 {
   cpp_reader *pfile ATTRIBUTE_UNUSED;
-#if !USE_CPPLIB
-  pfile = 0;
-#else
   pfile = &parse_in;
-#endif
 
 #ifdef HANDLE_PRAGMA_PACK
   cpp_register_pragma (pfile, 0, "pack", handle_pragma_pack);

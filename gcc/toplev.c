@@ -3781,10 +3781,6 @@ display_help ()
   unsigned long i;
   const char *lang;
 
-#ifndef USE_CPPLIB
-  printf (_("Usage: %s input [switches]\n"), progname);
-  printf (_("Switches:\n"));
-#endif
   printf (_("  -ffixed-<register>      Mark <register> as being unavailable to the compiler\n"));
   printf (_("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n"));
   printf (_("  -fcall-saved-<register> Mark <register> as being preserved across functions\n"));

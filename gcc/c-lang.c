@@ -34,13 +34,10 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "c-tree.h"
 #include "c-lex.h"
-
-static int c_tree_printer PARAMS ((output_buffer *));
-
-#if USE_CPPLIB
 #include "cpplib.h"
+
 extern cpp_reader  parse_in;
-#endif
+static int c_tree_printer PARAMS ((output_buffer *));
 
 /* Each of the functions defined here
    is an alternative to a function in objc-actions.c.  */
@@ -56,10 +53,9 @@ lang_decode_option (argc, argv)
 void
 lang_init_options ()
 {
-#if USE_CPPLIB
   cpp_init ();
   cpp_reader_init (&parse_in, CLK_GNUC89);
-#endif
+
   /* Mark as "unspecified".  */
   flag_bounds_check = -1;
 }
@@ -79,13 +75,6 @@ lang_init ()
       else
 	mesg_implicit_function_declaration = 0;
     }
-
-  /* the beginning of the file is a new line; check for # */
-  /* With luck, we discover the real source file's name from that
-     and put it in input_filename.  */
-#if !USE_CPPLIB
-  ungetc (check_newline (), finput);
-#endif
 
   save_lang_status = &push_c_function_context;
   restore_lang_status = &pop_c_function_context;

@@ -271,19 +271,7 @@ elif test x$withval != xno; then
   cpp_install_dir=$withval
 fi])
 
-# Link cpplib into the compiler proper, for C/C++/ObjC.  Defaults to on.
 maybe_cpplib=libcpp.a
-AC_ARG_ENABLE(c-cpplib,
-[  --enable-c-cpplib       link cpplib directly into C and C++ compilers
-                           (HIGHLY EXPERIMENTAL).],
-[if test x$enable_c_cpplib != xyes; then
-  maybe_cpplib=
-fi]
-)
-if test x$maybe_cpplib != x ; then
-  AC_DEFINE(USE_CPPLIB, 1,
-  [Define if you want the preprocessor merged into the C and C++ compilers.])
-fi
 AC_SUBST(maybe_cpplib)
 
 # Enable Multibyte Characters for C/C++
