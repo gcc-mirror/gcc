@@ -53,7 +53,10 @@ void test_06()
     }
 
   std::filebuf fbuf;
-  std::filebuf* r = fbuf.open(name, std::ios_base::out | std::ios_base::ate);
+  std::filebuf* r = fbuf.open(name,
+			      std::ios_base::in 
+			      | std::ios_base::out
+			      | std::ios_base::ate);
   VERIFY( !fbuf.is_open() );
   VERIFY( r == NULL );
 }

@@ -1,3 +1,29 @@
+2004-02-04  Benjamin Kosnik  <bkoz@redhat.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* config/io/basic_file_stdio.cc (__gnu_internal::fopen_mode):
+	New function.
+	(__basic_file<char>::sys_open, __basic_file<char>::open): Use it.
+	(__basic_file<char>::_M_open_mode): Delete.
+	* config/io/basic_file_stdio.cc: Delete declaration of _M_open_mode.
+
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc:
+	Correct flags to filebuf::open calls.
+
+	* config/abi/alpha-freebsd5/baseline_symbols.txt
+	* config/abi/alpha-linux-gnu/baseline_symbols.txt
+	* config/abi/hppa-linux-gnu/baseline_symbols.txt
+	* config/abi/i386-freebsd4/baseline_symbols.txt
+	* config/abi/i386-freebsd5/baseline_symbols.txt
+	* config/abi/i486-linux-gnu/baseline_symbols.txt
+	* config/abi/ia64-linux-gnu/baseline_symbols.txt
+	* config/abi/mips-linux-gnu/baseline_symbols.txt
+	* config/abi/sparc-freebsd5/baseline_symbols.txt
+	* config/abi/sparc-linux-gnu/baseline_symbols.txt
+	* config/abi/x86_64-linux-gnu/baseline_symbols.txt:
+	Remove entry for __basic_file<char>::_M_open_mode.
+
 2004-02-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/performance/20_util/allocator/insert.cc (main): Tweak.
@@ -6,16 +32,16 @@
 
 	* testsuite/performance/20_util/producer_consumer.cc: New.
 	* testsuite/performance/20_util/allocator/insert_insert.cc: Two loops.
-	
+
 2004-02-04  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/performance/20_util/allocator.cc: Move to..
-	* testsuite/performance/20_util/allocator/insert.cc: ...here.	
+	* testsuite/performance/20_util/allocator/insert.cc: ...here.
 	* testsuite/performance/20_util/allocator_thread.cc: Move to...
 	* testsuite/performance/20_util/allocator/insert_insert.cc: ...here.
 	* testsuite/performance/20_util/allocator_map_thread.cc: Move to...
 	* testsuite/performance/20_util/allocator/map_thread.cc: ...here.
-	
+
 2004-02-04  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/faq/index.html: Recommend using LD_LIBRARY_PATH.
@@ -32,11 +58,11 @@
 
 2004-02-03  Felix Yen  <fwy@alumni.brown.edu>
 	    Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/performance/20_util/allocator.cc: Add map,
 	deque, set tests.
 	* testsuite/performance/20_util/allocator_thread.cc: Same.
-	
+
 2004-02-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (insert(iterator)): Remove,
@@ -71,29 +97,29 @@
 
 2004-02-02  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * docs/html/19_diagnostics/howto.html: Move verbose terminate
-        documentation...
-        * docs/html/18_support/howto.html: Here. 
-        * docs/html/documentation.html: Add reference here.
- 
+	* docs/html/19_diagnostics/howto.html: Move verbose terminate
+	documentation...
+	* docs/html/18_support/howto.html: Here.
+	* docs/html/documentation.html: Add reference here.
+
 2004-02-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/c++locale_internal.h: Remove prototypes
 	of no longer used GLIBC thread locale functions.
 
 2004-02-02  Eric Christopher  <echristo@redhat.com>
-            Zack Weinberg  <zack@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
 
 	* testsuite/22_locale/collate/compare/wchar_t/2.cc: Remove xfail. Use
-        -finput-charset.
-        * testsuite/22_locale/collate/compare/wchar_t/wrapped_env.cc: Ditto.
-        * testsuite/22_locale/collate/compare/wchar_t/wrapped_locale.cc: Ditto
+	-finput-charset.
+	* testsuite/22_locale/collate/compare/wchar_t/wrapped_env.cc: Ditto.
+	* testsuite/22_locale/collate/compare/wchar_t/wrapped_locale.cc: Ditto
 	* testsuite/22_locale/collate/hash/wchar_t/2.cc: Ditto.
-        * testsuite/22_locale/collate/hash/wchar_t/wrapped_env.cc: Ditto.
-        * testsuite/22_locale/collate/hash/wchar_t/wrapped_locale.cc: Ditto.
-        * testsuite/22_locale/collate/transform/wchar_t/2.cc: Ditto.
-        * testsuite/22_locale/collate/transform/wchar_t/wrapped_env.cc: Ditto.
-        * testsuite/22_locale/collate/transform/wchar_t/wrapped_locale.cc:
+	* testsuite/22_locale/collate/hash/wchar_t/wrapped_env.cc: Ditto.
+	* testsuite/22_locale/collate/hash/wchar_t/wrapped_locale.cc: Ditto.
+	* testsuite/22_locale/collate/transform/wchar_t/2.cc: Ditto.
+	* testsuite/22_locale/collate/transform/wchar_t/wrapped_env.cc: Ditto.
+	* testsuite/22_locale/collate/transform/wchar_t/wrapped_locale.cc:
 	Ditto.
 
 2004-02-02  Paolo Carlini  <pcarlini@suse.de>
@@ -380,10 +406,10 @@
 
 	PR libstdc++/11584
 	* include/bits/ios_base.h (ios_base::_M_grow_words):  Add
-        iword/pword selector.
+	iword/pword selector.
 	(ios_base::iword, ios_base::pword):  Use it.
 	* src/ios.cc (ios_base::_M_grow_words):  Clear _M_word_zero
-        iword or pword member on alloc failure.
+	iword or pword member on alloc failure.
 	* testsuite/27_io/ios_base/storage/11584.cc:  New test.
 
 2004-01-27  Ulrich Weigand  <uweigand@de.ibm.com>
@@ -964,28 +990,28 @@
 	* include/bits/stl_list.h:
 	* include/bits/list.tc:
 	* src/list.cc:
-        Performance enhancements for destructor, push_front(),
-        push_back(), pop_front(), pop_back(), sort()
-        Eliminated static_casts where possible.
-        Moved code out of header files into new src/list.cc
-        implementation file for library where possible.
-        Remove inheritance from iterator class and create separate
-        classes for non-constant and constant iterators.
+	Performance enhancements for destructor, push_front(),
+	push_back(), pop_front(), pop_back(), sort()
+	Eliminated static_casts where possible.
+	Moved code out of header files into new src/list.cc
+	implementation file for library where possible.
+	Remove inheritance from iterator class and create separate
+	classes for non-constant and constant iterators.
 	* include/bits/stl_tree.h (_Rb_tree class):
 	* src/tree.cc:
-        Only erase contents in destructor.
-        Eliminate unnecessary initialization in assignment operator.
-        Optimize for the nominal case by not checking whether
-        container is empty in clear().
-        Re-order test in _M_insert() to improve performance.
-        Move initialization of new node's left & right pointers to
-        src/tree.cc to where new node's colour is initialized
-        and to reduce the amount of inline code.
-        Use  _M_leftmost() and _M_end() to improve readability where
-        appropriate.
-        Create separate classes for non-constant and constant
-        iterators to clarify code, avoid extra template parameters and
-        casting away constness.
+	Only erase contents in destructor.
+	Eliminate unnecessary initialization in assignment operator.
+	Optimize for the nominal case by not checking whether
+	container is empty in clear().
+	Re-order test in _M_insert() to improve performance.
+	Move initialization of new node's left & right pointers to
+	src/tree.cc to where new node's colour is initialized
+	and to reduce the amount of inline code.
+	Use  _M_leftmost() and _M_end() to improve readability where
+	appropriate.
+	Create separate classes for non-constant and constant
+	iterators to clarify code, avoid extra template parameters and
+	casting away constness.
 
 2004-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1040,7 +1066,7 @@
 	redundant #include.
 
 2004-01-06  Benjamin Kosnik  <bkoz@redhat.com>
-            Stefan Olsson  <stefan@snon.net>
+	    Stefan Olsson  <stefan@snon.net>
 
 	* scripts/check_performance: Use -pthread.
 	* testsuite/performance/allocator.cc: Tweaks, add list.
