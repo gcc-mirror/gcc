@@ -1,3 +1,12 @@
+2004-09-22  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/14446:
+	* java/util/zip/GZIPInputStream.java (read): Avoid sign extension
+	when comparing CRCs.
+	* java/util/zip/InflaterInputStream.java (onebytebuffer): New
+	field.
+	(read()): New overload.
+
 2004-09-21  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA):
