@@ -7745,7 +7745,7 @@ epilogue_done:
 	 note before the end of the first basic block, if there isn't
 	 one already there.
 
-	 ??? This behaviour is completely broken when dealing with
+	 ??? This behavior is completely broken when dealing with
 	 multiple entry functions.  We simply place the note always
 	 into first basic block and let alternate entry points
 	 to be missed.

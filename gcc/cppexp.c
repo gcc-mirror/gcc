@@ -383,7 +383,7 @@ cpp_interpret_integer (pfile, token, type)
 		   "integer constant is too large for its type");
       /* If too big to be signed, consider it unsigned.  Only warn for
 	 decimal numbers.  Traditional numbers were always signed (but
-	 we still honour an explicit U suffix); but we only have
+	 we still honor an explicit U suffix); but we only have
 	 traditional semantics in directives.  */
       else if (!result.unsignedp
 	       && !(CPP_OPTION (pfile, traditional)
@@ -774,7 +774,7 @@ _cpp_parse_expr (pfile)
 	}
       else if (want_value)
 	{
-	  /* Ordering here is subtle and intended to favour the
+	  /* Ordering here is subtle and intended to favor the
 	     missing parenthesis diagnostics over alternatives.  */
 	  if (op.op == CPP_CLOSE_PAREN)
 	    {

@@ -367,7 +367,7 @@ doloop_valid_p (loop, jump_insn)
 	 If the absolute increment is not 1, the loop can be infinite
 	 even with LTU/GTU, e.g. for (i = 3; i > 0; i -= 2)
 
-	 Note that with LE and GE, the loop behaviour is undefined
+	 Note that with LE and GE, the loop behavior is undefined
 	 (C++ standard section 5 clause 5) if an overflow occurs, say
 	 between INT_MAX and INT_MAX + 1.  We thus don't have to worry
 	 about these two cases.
@@ -375,7 +375,7 @@ doloop_valid_p (loop, jump_insn)
 	 ??? We could compute these conditions at run-time and have a
 	 additional jump around the loop to ensure an infinite loop.
 	 However, it is very unlikely that this is the intended
-	 behaviour of the loop and checking for these rare boundary
+	 behavior of the loop and checking for these rare boundary
 	 conditions would pessimize all other code.
 
 	 If the loop is executed only a few times an extra check to

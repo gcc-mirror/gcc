@@ -704,7 +704,7 @@ insert_phi_nodes (idfs, evals, nregs)
 /* Rename the registers to conform to SSA.
 
    This is essentially the algorithm presented in Figure 7.8 of Morgan,
-   with a few changes to reduce pattern search time in favour of a bit
+   with a few changes to reduce pattern search time in favor of a bit
    more memory usage.  */
 
 /* One of these is created for each set.  It will live in a list local

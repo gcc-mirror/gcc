@@ -830,7 +830,7 @@ scan_loop (loop, flags)
 			  the loop starts, or the value before the set is
 			  needed before the set occurs...
 
-			  ??? Note we have quadratic behaviour here, mitigated
+			  ??? Note we have quadratic behavior here, mitigated
 			  by the fact that the previous test will often fail for
 			  large loops.  Rather than re-scanning the entire loop
 			  each time for register usage, we should build tables

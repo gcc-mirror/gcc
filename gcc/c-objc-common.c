@@ -121,7 +121,7 @@ inline_forbidden_p (nodep, walk_subtrees, fn)
       /* We will not inline a function which uses computed goto.  The
 	 addresses of its local labels, which may be tucked into
 	 global storage, are of course not constant across
-	 instantiations, which causes unexpected behaviour.  */
+	 instantiations, which causes unexpected behavior.  */
       if (TREE_CODE (t) != LABEL_DECL)
 	return node;
 

@@ -1,3 +1,30 @@
+2002-09-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ABOUT-NLS: Follow spelling conventions.
+	* ChangeLog: Likewise.
+	* ChangeLog.1: Likewise.
+	* ChangeLog.2: Likewise.
+	* ChangeLog.3: Likewise.
+	* ChangeLog.4: Likewise.
+	* ChangeLog.5: Likewise.
+	* ChangeLog.6: Likewise.
+	* FSFChangeLog.10: Likewise.
+	* FSFChangeLog.11: Likewise.
+	* c-common.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* cppexp.c: Likewise.
+	* cppinit.c: Likewise.
+	* cpplex.c: Likewise.
+	* doloop.c: Likewise.
+	* flow.c: Likewise.
+	* function.c: Likewise.
+	* integrate.c: Likewise.
+	* loop.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reload.h: Likewise.
+	* ssa.c: Likewise.
+
 2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Follow spelling conventions.
@@ -285,8 +312,8 @@
 2002-09-13 Dhananjay Deshpande  <dhananjayd@kpit.com>
 
 	* config/h8300/h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): Add support
-	for H8/300, H8/S aa:8 mode.
-	(TINY_CONSTANT_ADDRESS_P): Add support for H8/S aa:16 mode.
+	for H8/300, H8S aa:8 mode.
+	(TINY_CONSTANT_ADDRESS_P): Add support for H8S aa:16 mode.
 	* config/h8300/h8300.c (h8300_adjust_insn_length): Adjust length
 	for H8/300 aa:8 mode.
 
@@ -3903,7 +3930,7 @@ Tue Jul 30 11:21:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(Identifiers implementation): Document that there's normally no
 	limit on identifier names.
 	(Integers implementation): Document two's complement.
-	(Hints implementation): Document that GCC honours 'inline', mostly.
+	(Hints implementation): Document that GCC honors 'inline', mostly.
 	(Preprocessing directives implementation): Document that GCC
 	requires the current time.
 
@@ -8824,7 +8851,7 @@ Mon Jun 10 18:02:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* configure.in (remaining_languages_check):
 	Added check that all languages specified were found.
-	Exit if not found. Previous behaviour was silent failure.
+	Exit if not found. Previous behavior was silent failure.
 	* configure: Regenerated.
 
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
@@ -12782,7 +12809,7 @@ objc:
 2002-05-21  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* bb-reorder.c (make_reorder_chain_1): Use prev_bb/next_bb to get to
-	neighbouring basic blocks.  Use ENTRY_BLOCK_PTR->next_bb instead of
+	neighboring basic blocks.  Use ENTRY_BLOCK_PTR->next_bb instead of
 	BASIC_BLOCK (0).  Use EXIT_BLOCK_PTR->prev_bb instead of
 	BASIC_BLOCK (n_basic_blocks - 1).
 	* cfganal.c (can_fallthru, flow_call_edges_add,
@@ -27119,7 +27146,7 @@ Thu Jan 10 11:19:18 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-01-08  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (get_shift_alg): Fix 15-bit LSHIFTRT on
-	H8/300H and H8/S.
+	H8/300H and H8S.
 
 2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 

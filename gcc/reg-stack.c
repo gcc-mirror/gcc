@@ -564,7 +564,7 @@ get_true_reg (pat)
     switch (GET_CODE (*pat))
       {
       case SUBREG:
-	/* Eliminate FP subregister accesses in favour of the
+	/* Eliminate FP subregister accesses in favor of the
 	   actual FP register in use.  */
 	{
 	  rtx subreg;

@@ -24,7 +24,7 @@
 	* gcc.c (process_command): Append a DIR_SEPARATOR to a path
 	specified by the -B switch, if doing so would create a valid
 	directory name.
-	* doc/invoke.texi: Document changed behaviour of -B.
+	* doc/invoke.texi: Document changed behavior of -B.
 
 2001-06-29  DJ Delorie  <dj@redhat.com>
 
@@ -77,7 +77,7 @@ Fri Jun 29 12:27:24 2001  Jeffrey A Law  (law@cygnus.com)
 	* config/arc/arc-protos.h, config/arc/arc.c, config/arc/arc.h
 	(arc_comp_type_attributes, arc_set_default_type_attributes,
 	COMP_TYPE_ATTRIBUTES, SET_DEFAULT_TYPE_ATTRIBUTES): Remove
-	functions and macros with default behaviour.
+	functions and macros with default behavior.
 	* config/m32r/m32r-protos.h, config/m32r/m32r.c,
 	config/m32r/m32r.h (m32r_comp_type_attributes,
 	m32r_set_default_type_attributes, COMP_TYPE_ATTRIBUTES,
@@ -1131,7 +1131,7 @@ Fri Jun 15 18:05:22 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Fri Jun 15 19:35:38 CEST 2001 Jan Hubicka  <jh@suse.cz>
 
-	* optabs.c (expand_twoval_binop): Avoid undefined behaviour.
+	* optabs.c (expand_twoval_binop): Avoid undefined behavior.
 
 2001-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
@@ -2885,7 +2885,7 @@ Thu May 24 15:56:48 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-05-22  Richard Henderson  <rth@redhat.com>
 
-	* unwind-dw2-fde.c (__deregister_frame_info): Stubbify in favour of...
+	* unwind-dw2-fde.c (__deregister_frame_info): Stubbify in favor of...
 	(__deregister_frame_info_bases): New.
 	* unwind-dw2-fde.h: Declare it.
 	* libgcc-std.ver: Export it.
@@ -4498,7 +4498,7 @@ Fri May  4 13:10:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(ix86_align_loops): Delete.
 	(ix86_align_jumps): Delete.
 	(override_options): Mark -malign-* as obsolete.  Emulate their
-	behaviour with the -falign-* options.  Default -falign-* from
+	behavior with the -falign-* options.  Default -falign-* from
 	the processor table.
 	* i386.h (FUNCTION_BOUNDARY): Define to 16; revert Richard Kenner's
 	patch of Wed May 2 13:09:36 2001.
@@ -11700,7 +11700,7 @@ Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 	* cppinit.c (cpp_start_read): Remove deps_add_dep call.
 	* tradcpp.c (main): Add -imacros or -include'd dependencies
 	for -M*.
-	* cpp.texi (-M, -MM): Document -M -include behaviour.
+	* cpp.texi (-M, -MM): Document -M -include behavior.
 
 2001-01-24  Roger Collins <roger@ProProject.com>
 
@@ -13179,7 +13179,7 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 	(emit_a_shift): Adopt to the new calling prototype of
 	get_shift_alg.
 	(function_prologue): Fix code for a monitor
-	function.  Support H8/S.
+	function.  Support H8S.
 	(function_epilogue): Do not output pop for a monitor function.
 
 2001-01-09  Nick Clifton  <nickc@redhat.com>
@@ -13876,7 +13876,7 @@ Fri Jan  5 16:29:49 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-	* cpp.texi: Update for -MP.  Clarify behaviour of -MT.
+	* cpp.texi: Update for -MP.  Clarify behavior of -MT.
 	* cppinit.c (initialize_dependency_output):  Update.
 	(cpp_finish): Output dummy targets for -MP.
 	(OPT_MP): New.

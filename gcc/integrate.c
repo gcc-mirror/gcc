@@ -245,7 +245,7 @@ function_cannot_inline_p (fndecl)
 
   /* We will not inline a function which uses computed goto.  The addresses of
      its local labels, which may be tucked into global storage, are of course
-     not constant across instantiations, which causes unexpected behaviour.  */
+     not constant across instantiations, which causes unexpected behavior.  */
   if (current_function_has_computed_jump)
     return N_("function with computed jump cannot inline");
 

@@ -3811,7 +3811,7 @@ Tue Nov 14 12:34:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-11-14  Jakub Jelinek  <jakub@redhat.com>
 
-	* reload1.c (emit_input_reload_insns): Honour forcing of constants
+	* reload1.c (emit_input_reload_insns): Honor forcing of constants
 	into memory by PREFERRED_RELOAD_CLASS NO_REGS.
 
 2000-11-14  Michael Matz  <matzmich@cs.tu-berlin.de>
@@ -8025,7 +8025,7 @@ Mon 18-Sep-2000 19:21:35 BST  Neil Booth  <NeilB@earthling.net>
 	(struct cpp_buffer): read_ahead, pfile and col_adjust are
 	new members.
 	(struct lexer_state): New structure that determines the state
-	and behaviour of the lexer.
+	and behavior of the lexer.
 	(IN_DIRECTIVE, KNOWN_DIRECTIVE): New macros.
 	(struct cpp_reader): New member "state". Rename
 	multiline_string_line and multiline_string_column. Delete
@@ -8101,7 +8101,7 @@ Mon 18-Sep-2000 19:21:35 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
-	* c-common.c (check_format_types): Reorganise and clean up,
+	* c-common.c (check_format_types): Reorganize and clean up,
 	checking earlier for ERROR_MARKs and making cur_type into its
 	TYPE_MAIN_VARIANT where convenient.
 
@@ -8547,9 +8547,9 @@ Fri 15-Sep-2000 06:49:07 BST  Neil Booth  <NeilB@earthling.net>
 	* config/h8300.h (TARGET_MAC): New.
 	(TARGET_SWITCHES): Add -ms2600 and -mno-s2600.
 	(CONDITIONA_REGISTER_USAGE): Disable the mac register on any
-	machine other than H8/S2600.
-	* config/h8300.md: Accept mac instructions on the H8/S2600 instead
-	of the H8/S2000.
+	machine other than H8S/2600.
+	* config/h8300.md: Accept mac instructions on the H8S/2600 instead
+	of the H8S/2000.
 
 2000-09-14  Alexandre Oliva  <aoliva@redhat.com>, Bernd Schmidt  <bernds@redhat.co.uk>
 
@@ -11556,7 +11556,7 @@ Mon Aug 14 18:51:44 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	rather than DECL_OFFSET_ALIGN.
 	(place_field): Likewise.
 	* expmed.c (store_bit_field): Abort on align==0 to avoid
-	antisocial machine behaviour.
+	antisocial machine behavior.
 
 2000-08-12  Richard Henderson  <rth@cygnus.com>
 
@@ -12487,7 +12487,7 @@ Thu Aug  3 15:53:03 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 2000-08-03  Kazu Hirata  <kazu@hxi.com>
 
 	* h8300.c: Fix a comment typo.
-	* h8300.h (OK_FOR_U): Accept a 32-bit constant address on H8/S.
+	* h8300.h (OK_FOR_U): Accept a 32-bit constant address on H8S.
 
 	* jump.c: Fix formatting.
 
@@ -12911,7 +12911,7 @@ Mon Jul 31 20:35:50 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* h8300.h (MODES_TIEABLE_P): Accept a combination of QImode and
 	HImode on all architectures and a combination of HImode and SImode
-	on H8/300H and H8/S.
+	on H8/300H and H8S.
 
 	* h8300.c (split_adds_subs): Rearrange code for conciseness.
 
@@ -14169,7 +14169,7 @@ Fri Jul 14 10:25:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	* c-common.h (flag_digraphs): New.
 	* c-decl.c (c_decode_option): Set flag_digraphs as appropriate.
 	* c-lex.c (yylex): Use flag_digraphs to decide whether to
-	honour digraphs.
+	honor digraphs.
 
 2000-07-13  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -14482,7 +14482,7 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	(handle_option): Set digraphs according to standard.
 	Merge OPT_lang_c89 handler with OPT_std_c89.
 
-	* cpplex.c: (lex_line, can_paste): Honour digraphs in
+	* cpplex.c: (lex_line, can_paste): Honor digraphs in
 	accordance with	the digraphs flag.
 
 	* cpplib.h: (struct cpp_options): New option digraphs.
