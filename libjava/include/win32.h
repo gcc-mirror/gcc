@@ -16,6 +16,7 @@ details.  */
 
 #undef __INSIDE_CYGWIN__
 #include <winsock.h>
+#define IP_TOS 3
 #include <gcj/cni.h>
 #include <java/util/Properties.h>
 
