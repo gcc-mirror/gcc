@@ -1,3 +1,14 @@
+2001-04-08  Per Bothner  <per@bothner.com>
+
+	* java/lang/natString.cc (_Jv_NewStringUtf8Const):  Register finalizer.
+	Recalculate hash, since Utf8Const's hash is only 16 bits.
+
+	* java/lang/natString.cc (_Jv_StringFindSlot, rehash):  Use high-order
+	bits of hash to calculate step for chaining.
+
+	* java/lang/natString.cc (intern, _Jv_NewStringUtf8Const):  Rehash
+	when 2/3 full, rather than 3/4 full.
+
 2001-04-06  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (wrap_value<jobject>, wrap_value<jclass>): Removed.
