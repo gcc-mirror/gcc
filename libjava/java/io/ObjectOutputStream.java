@@ -162,6 +162,9 @@ public class ObjectOutputStream extends OutputStream
    * @exception NotSerializableException An attempt was made to
    * serialize an <code>Object</code> that is not serializable.
    *
+   * @exception InvalidClassException Somebody tried to serialize
+   * an object which is wrongly formatted.
+   *
    * @exception IOException Exception from underlying
    * <code>OutputStream</code>.
    */
@@ -447,7 +450,7 @@ public class ObjectOutputStream extends OutputStream
 
     if (fieldsAlreadyWritten)
       throw new IOException
-	("Only one of putFields and defaultWriteObject may be called, and it may only be called once");
+	("Only one of writeFields and defaultWriteObject may be called, and it may only be called once");
 
     fieldsAlreadyWritten = true;
   }
@@ -870,142 +873,150 @@ public class ObjectOutputStream extends OutputStream
 
   public PutField putFields() throws IOException
   {
-    if (currentPutField == null)
+    if (currentPutField != null)
+      return currentPutField;
+
+    currentPutField = new PutField()
       {
-	currentPutField = new PutField ()
-	  {
-	    private byte[] prim_field_data =
-	      new byte[currentObjectStreamClass.primFieldSize];
-	    private Object[] objs =
-	      new Object[currentObjectStreamClass.objectFieldCount];
+	private byte[] prim_field_data
+	  = new byte[currentObjectStreamClass.primFieldSize];
+	private Object[] objs
+	  = new Object[currentObjectStreamClass.objectFieldCount];
 
-	    public void put (String name, boolean value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      checkType (field, 'Z');
-	      prim_field_data[field.getOffset ()] = (byte)(value ? 1 : 0);
-	    }
+	private ObjectStreamField getField (String name)
+	{
+	  ObjectStreamField field
+	    = currentObjectStreamClass.getField(name);
+	  
+	  if (field == null)
+	    throw new IllegalArgumentException("no such serializable field " + name);
+	  
+	  return field;
+	}
+	
+	public void put(String name, boolean value)
+	{
+	  ObjectStreamField field = getField(name);
 
-	    public void put (String name, byte value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      checkType (field, 'B');
-	      prim_field_data[field.getOffset ()] = value;
-	    }
+	  checkType(field, 'Z');
+	  prim_field_data[field.getOffset ()] = (byte)(value ? 1 : 0);
+	}
 
-	    public void put (String name, char value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      checkType (field, 'C');
-	      int off = field.getOffset ();
-	      prim_field_data[off++] = (byte)(value >>> 8);
-	      prim_field_data[off] = (byte)value;
-	    }
+	public void put(String name, byte value)
+	{
+	  ObjectStreamField field = getField(name);
 
-	    public void put (String name, double value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      checkType (field, 'D');
-	      int off = field.getOffset ();
-	      long l_value = Double.doubleToLongBits (value);
-	      prim_field_data[off++] = (byte)(l_value >>> 52);
-	      prim_field_data[off++] = (byte)(l_value >>> 48);
-	      prim_field_data[off++] = (byte)(l_value >>> 40);
-	      prim_field_data[off++] = (byte)(l_value >>> 32);
-	      prim_field_data[off++] = (byte)(l_value >>> 24);
-	      prim_field_data[off++] = (byte)(l_value >>> 16);
-	      prim_field_data[off++] = (byte)(l_value >>> 8);
-	      prim_field_data[off] = (byte)l_value;
-	    }
+	  checkType(field, 'B');
+	  prim_field_data[field.getOffset()] = value;
+	}
 
-	    public void put (String name, float value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      checkType (field, 'F');
-	      int off = field.getOffset ();
-	      int i_value = Float.floatToIntBits (value);
-	      prim_field_data[off++] = (byte)(i_value >>> 24);
-	      prim_field_data[off++] = (byte)(i_value >>> 16);
-	      prim_field_data[off++] = (byte)(i_value >>> 8);
-	      prim_field_data[off] = (byte)i_value;
-	    }
+	public void put(String name, char value)
+	{
+	  ObjectStreamField field = getField(name);
 
-	    public void put (String name, int value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      checkType (field, 'I');
-	      int off = field.getOffset ();
-	      prim_field_data[off++] = (byte)(value >>> 24);
-	      prim_field_data[off++] = (byte)(value >>> 16);
-	      prim_field_data[off++] = (byte)(value >>> 8);
-	      prim_field_data[off] = (byte)value;
-	    }
+	  checkType(field, 'C');
+	  int off = field.getOffset();
+	  prim_field_data[off++] = (byte)(value >>> 8);
+	  prim_field_data[off] = (byte)value;
+	}
 
-	    public void put (String name, long value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      checkType (field, 'J');
-	      int off = field.getOffset ();
-	      prim_field_data[off++] = (byte)(value >>> 52);
-	      prim_field_data[off++] = (byte)(value >>> 48);
-	      prim_field_data[off++] = (byte)(value >>> 40);
-	      prim_field_data[off++] = (byte)(value >>> 32);
-	      prim_field_data[off++] = (byte)(value >>> 24);
-	      prim_field_data[off++] = (byte)(value >>> 16);
-	      prim_field_data[off++] = (byte)(value >>> 8);
-	      prim_field_data[off] = (byte)value;
-	    }
+	public void put(String name, double value)
+	{
+	  ObjectStreamField field = getField (name);
 
-	    public void put (String name, short value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      checkType (field, 'S');
-	      int off = field.getOffset ();
-	      prim_field_data[off++] = (byte)(value >>> 8);
-	      prim_field_data[off] = (byte)value;
-	    }
+	  checkType(field, 'D');
+	  int off = field.getOffset();
+	  long l_value = Double.doubleToLongBits (value);
+	  prim_field_data[off++] = (byte)(l_value >>> 52);
+	  prim_field_data[off++] = (byte)(l_value >>> 48);
+	  prim_field_data[off++] = (byte)(l_value >>> 40);
+	  prim_field_data[off++] = (byte)(l_value >>> 32);
+	  prim_field_data[off++] = (byte)(l_value >>> 24);
+	  prim_field_data[off++] = (byte)(l_value >>> 16);
+	  prim_field_data[off++] = (byte)(l_value >>> 8);
+	  prim_field_data[off] = (byte)l_value;
+	}
 
-	    public void put (String name, Object value)
-	    {
-	      ObjectStreamField field
-		= currentObjectStreamClass.getField (name);
-	      if (field == null)
-		throw new IllegalArgumentException ();
-	      if (value != null &&
-		  ! field.getType ().isAssignableFrom (value.getClass ()))
-		throw new IllegalArgumentException ();
-	      objs[field.getOffset ()] = value;
-	    }
+	public void put(String name, float value)
+	{
+	  ObjectStreamField field = getField(name);
 
-	    public void write (ObjectOutput out) throws IOException
-	    {
-	      // Apparently Block data is not used with PutField as per
-	      // empirical evidence against JDK 1.2.  Also see Mauve test
-	      // java.io.ObjectInputOutput.Test.GetPutField.
-	      boolean oldmode = setBlockDataMode (false);
-	      out.write (prim_field_data);
-	      for (int i = 0; i < objs.length; ++ i)
-		out.writeObject (objs[i]);
-	      setBlockDataMode (oldmode);
-	    }
+	  checkType(field, 'F');
+	  int off = field.getOffset();
+	  int i_value = Float.floatToIntBits(value);
+	  prim_field_data[off++] = (byte)(i_value >>> 24);
+	  prim_field_data[off++] = (byte)(i_value >>> 16);
+	  prim_field_data[off++] = (byte)(i_value >>> 8);
+	  prim_field_data[off] = (byte)i_value;
+	}
 
-	    private void checkType (ObjectStreamField field, char type)
-	      throws IllegalArgumentException
-	    {
-	      if (TypeSignature.getEncodingOfClass(field.getType ()).charAt(0)
-		  != type)
-		throw new IllegalArgumentException ();
-	    }
-	  };
-      }
+	public void put(String name, int value)
+	{
+	  ObjectStreamField field = getField(name);
+	  checkType(field, 'I');
+	  int off = field.getOffset();
+	  prim_field_data[off++] = (byte)(value >>> 24);
+	  prim_field_data[off++] = (byte)(value >>> 16);
+	  prim_field_data[off++] = (byte)(value >>> 8);
+	  prim_field_data[off] = (byte)value;
+	}
+
+	public void put(String name, long value)
+	{
+	  ObjectStreamField field = getField(name);
+	  checkType(field, 'J');
+	  int off = field.getOffset();
+	  prim_field_data[off++] = (byte)(value >>> 52);
+	  prim_field_data[off++] = (byte)(value >>> 48);
+	  prim_field_data[off++] = (byte)(value >>> 40);
+	  prim_field_data[off++] = (byte)(value >>> 32);
+	  prim_field_data[off++] = (byte)(value >>> 24);
+	  prim_field_data[off++] = (byte)(value >>> 16);
+	  prim_field_data[off++] = (byte)(value >>> 8);
+	  prim_field_data[off] = (byte)value;
+	}
+
+	public void put(String name, short value)
+	{
+	  ObjectStreamField field = getField(name);
+	  checkType(field, 'S');
+	  int off = field.getOffset();
+	  prim_field_data[off++] = (byte)(value >>> 8);
+	  prim_field_data[off] = (byte)value;
+	}
+
+	public void put(String name, Object value)
+	{
+	  ObjectStreamField field = getField(name);
+
+	  if (value != null &&
+	      ! field.getType().isAssignableFrom(value.getClass ()))	    
+	    throw new IllegalArgumentException("Class " + value.getClass() +
+					       " cannot be cast to " + field.getType());
+	  objs[field.getOffset()] = value;
+	}
+
+	public void write(ObjectOutput out) throws IOException
+	{
+	  // Apparently Block data is not used with PutField as per
+	  // empirical evidence against JDK 1.2.  Also see Mauve test
+	  // java.io.ObjectInputOutput.Test.GetPutField.
+	  boolean oldmode = setBlockDataMode(false);
+	  out.write(prim_field_data);
+	  for (int i = 0; i < objs.length; ++ i)
+	    out.writeObject(objs[i]);
+	  setBlockDataMode(oldmode);
+	}
+
+	private void checkType(ObjectStreamField field, char type)
+	  throws IllegalArgumentException
+	{
+	  if (TypeSignature.getEncodingOfClass(field.getType()).charAt(0)
+	      != type)
+	    throw new IllegalArgumentException();
+	}
+      };
+    // end PutFieldImpl
 
     return currentPutField;
   }
@@ -1016,11 +1027,8 @@ public class ObjectOutputStream extends OutputStream
     if (currentPutField == null)
       throw new NotActiveException("writeFields can only be called after putFields has been called");
 
-    // putFields may be called more than once, but not writeFields.
     markFieldsWritten();
-
     currentPutField.write(this);
-    currentPutField = null;
   }
 
 
@@ -1210,6 +1218,7 @@ public class ObjectOutputStream extends OutputStream
     throws IOException
   {
     Class klass = osc.forClass();
+    currentPutField = null;
     try
       {
 	Class classArgs[] = {ObjectOutputStream.class};
@@ -1255,6 +1264,15 @@ public class ObjectOutputStream extends OutputStream
 	boolean b = f.getBoolean(obj);
 	return b;
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException
+	  ("invalid requested type for field " + field_name + " in class " + klass.getName());
+      }
+    catch (IOException e)
+      {
+	throw e;
+      }
     catch (Exception _)
       {
 	throw new IOException("Unexpected exception " + _);
@@ -1269,6 +1287,15 @@ public class ObjectOutputStream extends OutputStream
 	Field f = getField (klass, field_name);
 	byte b = f.getByte (obj);
 	return b;
+      }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException
+	  ("invalid requested type for field " + field_name + " in class " + klass.getName());
+      }
+    catch (IOException e)
+      {
+	throw e;
       }
     catch (Exception _)
       {
@@ -1285,6 +1312,15 @@ public class ObjectOutputStream extends OutputStream
 	char b = f.getChar (obj);
 	return b;
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException
+	  ("invalid requested type for field " + field_name + " in class " + klass.getName());
+      }
+    catch (IOException e)
+      {
+	throw e;
+      }
     catch (Exception _)
       {
 	throw new IOException("Unexpected exception " + _);
@@ -1299,6 +1335,15 @@ public class ObjectOutputStream extends OutputStream
 	Field f = getField (klass, field_name);
 	double b = f.getDouble (obj);
 	return b;
+      }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException
+	  ("invalid requested type for field " + field_name + " in class " + klass.getName());
+      }
+    catch (IOException e)
+      {
+	throw e;
       }
     catch (Exception _)
       {
@@ -1315,6 +1360,15 @@ public class ObjectOutputStream extends OutputStream
 	float b = f.getFloat (obj);
 	return b;
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException
+	  ("invalid requested type for field " + field_name + " in class " + klass.getName());
+      }
+    catch (IOException e)
+      {
+	throw e;
+      }
     catch (Exception _)
       {
 	throw new IOException("Unexpected exception " + _);
@@ -1329,6 +1383,15 @@ public class ObjectOutputStream extends OutputStream
 	Field f = getField (klass, field_name);
 	int b = f.getInt (obj);
 	return b;
+      }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException
+	  ("invalid requested type for field " + field_name + " in class " + klass.getName());
+      }
+    catch (IOException e)
+      {
+	throw e;
       }
     catch (Exception _)
       {
@@ -1345,6 +1408,15 @@ public class ObjectOutputStream extends OutputStream
 	long b = f.getLong (obj);
 	return b;
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException
+	  ("invalid requested type for field " + field_name + " in class " + klass.getName());
+      }
+    catch (IOException e)
+      {
+	throw e;
+      }
     catch (Exception _)
       {
 	throw new IOException("Unexpected exception " + _);
@@ -1360,6 +1432,15 @@ public class ObjectOutputStream extends OutputStream
 	short b = f.getShort (obj);
 	return b;
       }
+    catch (IllegalArgumentException _)
+      {
+	throw new InvalidClassException
+	  ("invalid requested type for field " + field_name + " in class " + klass.getName());
+      }
+    catch (IOException e)
+      {
+       throw e;
+      }
     catch (Exception _)
       {
 	throw new IOException("Unexpected exception " + _);
@@ -1372,9 +1453,20 @@ public class ObjectOutputStream extends OutputStream
     try
       {
 	Field f = getField (klass, field_name);
+	ObjectStreamField of = new ObjectStreamField(f.getName(), f.getType());
+
+	if (of.getTypeString() == null ||
+	    !of.getTypeString().equals(type_code))
+	  throw new InvalidClassException
+	    ("invalid type code for " + field_name + " in class " + klass.getName());
+
 	Object o = f.get (obj);
 	// FIXME: We should check the type_code here
 	return o;
+      }
+    catch (IOException e)
+      {
+	throw e;
       }
     catch (Exception e)
       {
@@ -1383,18 +1475,26 @@ public class ObjectOutputStream extends OutputStream
   }
 
   private static Field getField (Class klass, String name)
-    throws java.lang.NoSuchFieldException
+    throws java.io.InvalidClassException
   {
-    final Field f = klass.getDeclaredField(name);
-    AccessController.doPrivileged(new PrivilegedAction()
+    try
       {
-	public Object run()
-	{
-	  f.setAccessible(true);
-	  return null;
-	}
-      });
-    return f;
+	final Field f = klass.getDeclaredField(name);
+	AccessController.doPrivileged(new PrivilegedAction()
+	  {
+	    public Object run()
+	    {
+	      f.setAccessible(true);
+	      return null;
+	    }
+	  });
+	return f;
+      }
+    catch (java.lang.NoSuchFieldException e)
+      {
+	throw new InvalidClassException
+	  ("no field called " + name + " in class " + klass.getName());
+      }
   }
 
   private static Method getMethod (Class klass, String name, Class[] args)
