@@ -4980,12 +4980,12 @@ override_options ()
 	  mips_tune = PROCESSOR_R8000;
 	  break;
 	case 32:
-	  mips_arch_string = "4kc";
-	  mips_arch = PROCESSOR_R4KC;
+	  mips_tune_string = "4kc";
+	  mips_tune = PROCESSOR_R4KC;
 	  break;
 	case 64:
-	  mips_arch_string = "5kc";
-	  mips_arch = PROCESSOR_R5KC;
+	  mips_tune_string = "5kc";
+	  mips_tune = PROCESSOR_R5KC;
 	  break;
 	}
 
@@ -4999,14 +4999,6 @@ override_options ()
 	  mips_tune_string = "default";
 	}
     }
-
-  /* Handle processor configuration based on architecture.  */
-  if (TARGET_MIPS4100
-      || TARGET_MIPS3900
-      || TARGET_MIPS4KC
-      || TARGET_MIPS5KC)
-    target_flags |= MASK_SOFT_FLOAT;
-
 
   if ((mips_arch == PROCESSOR_R3000 && (mips_isa != 1))
       || (mips_arch == PROCESSOR_R4KC && mips_isa != 32)

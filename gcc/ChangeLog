@@ -1,3 +1,8 @@
+2001-11-28  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (override_options): Fix thinko in mips_tune
+	for mips32/mips64. Remove MASK_SOFT_FLOAT configuration bits.
+
 Thu Nov 29 00:24:15 EST 2001  John Wehle  (john@feith.com)
 
 	* alpha.md (tablejump): Use pic_offset_table_rtx
@@ -18,7 +23,7 @@ Wed Nov 28 14:51:23 2001  Douglas B. Rupp  <rupp@gnat.com>
 	* config.gcc (i[34567]86-*-interix3*): New case.
 	* config/x-interix3, config/interix3.h, config/i386/i386-interix3.h:
 	New files.
-	
+
 2001-11-28  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (sibcall_osf_1, sibcall_value_osf_1): Use
@@ -362,12 +367,12 @@ Mon Nov 26 11:36:20 CET 2001  Jan Hubicka  <jh@suse.cz>
 2001-11-25  Daniel Berlin  <dan@cgsoftware.com>
 
 	* df.c: Add prototypes for hybrid_search_bitmap and
-	hybrid_search_sbitmap. 
+	hybrid_search_sbitmap.
 	(hybrid_search_bitmap): New function.
 	(hybrid_search_sbitmap): New function.
 	(iterative_dataflow_sbitmap): Change to use hybrid_search_sbitmap.
 	(iterative_dataflow_bitmap): Ditto.
-	
+
 2001-11-25  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md (peephole2): New peephole2 to optimize
