@@ -38,6 +38,7 @@ extern void mmix_output_quoted_string (FILE *, const char *, int);
 extern void mmix_asm_output_source_line  (FILE *, int);
 extern void mmix_asm_output_ascii (FILE *, const char *, int);
 extern void mmix_asm_output_label (FILE *, const char *);
+extern void mmix_asm_output_internal_label (FILE *, const char *);
 extern void mmix_asm_weaken_label (FILE *, const char *);
 extern void mmix_asm_output_labelref (FILE *, const char *);
 extern void mmix_asm_output_def (FILE *, const char *, const char *);

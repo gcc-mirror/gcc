@@ -900,6 +900,9 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define ASM_OUTPUT_LABEL(STREAM, NAME) \
  mmix_asm_output_label (STREAM, NAME)
 
+#define ASM_OUTPUT_INTERNAL_LABEL(STREAM, NAME) \
+ mmix_asm_output_internal_label (STREAM, NAME)
+
 #define ASM_DECLARE_REGISTER_GLOBAL(STREAM, DECL, REGNO, NAME) \
  mmix_asm_declare_register_global (STREAM, DECL, REGNO, NAME)
 
