@@ -1,3 +1,13 @@
+2002-05-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/6512, PR target/5628
+	* config/sparc/sparc.md (movdf_insn_v9only_novis): Don't allow >= %f32
+	when memory is not aligned.
+	(movdf_insn_v9only_vis): Likewise.
+	* config/sparc/sparc.h (SECONDARY_INPUT_RELOAD_CLASS): Request a FP_REGS
+	temporary for EXTRA_FP_REGS DFmode load from unaligned memory.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Similarly.
+
 2002-05-01  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-7.c: New.
