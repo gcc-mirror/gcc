@@ -37,6 +37,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define I386 1
 
+/* Stubs for half-pic support if not OSF/1 reference platform.  */
+
+#ifndef HALF_PIC_P
+#define HALF_PIC_P() 0
+#define HALF_PIC_NUMBER_PTRS 0
+#define HALF_PIC_NUMBER_REFS 0
+#define HALF_PIC_ENCODE(DECL)
+#define HALF_PIC_DECLARE(NAME)
+#define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it.")
+#define HALF_PIC_ADDRESS_P(X) 0
+#define HALF_PIC_PTR(X) X
+#define HALF_PIC_FINISH(STREAM)
+#endif
+
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
@@ -86,7 +100,12 @@ extern int target_flags;
     { "nosvr3-shlib", -040},			\
     { "ieee-fp", 0100},				\
     { "noieee-fp", -0100},			\
+    SUBTARGET_SWITCHES                          \
     { "", TARGET_DEFAULT}}
+
+/* This is meant to be redefined in the host dependent files */
+#define SUBTARGET_SWITCHES
+
 
 /* target machine storage layout */
 
