@@ -212,20 +212,24 @@ do {									 \
 do {									   \
   int len, size, sec;							   \
   char *name, *string, *prefix;						   \
-  static char *prefixes[4][2] = {					   \
+  static char *prefixes[5][2] = {					   \
     { ".text.", ".gnu.linkonce.t." },					   \
     { ".rodata.", ".gnu.linkonce.r." },					   \
     { ".data.", ".gnu.linkonce.d." },					   \
-    { ".sdata.", ".gnu.linkonce.s." }					   \
+    { ".sdata.", ".gnu.linkonce.s." },					   \
+    { "", "" }								   \
   };									   \
 									   \
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		   \
   size = int_size_in_bytes (TREE_TYPE (decl));				   \
 									   \
   /* Determine the base section we are interested in:			   \
-     0=text, 1=rodata, 2=data, 3=sdata.  */				   \
+     0=text, 1=rodata, 2=data, 3=sdata, [4=bss].  */			   \
   if (TREE_CODE (DECL) == FUNCTION_DECL)				   \
     sec = 0;								   \
+  else if (DECL_INITIAL (DECL) == 0					   \
+           || DECL_INITIAL (DECL) == error_mark_node)			   \
+    sec = 4;								   \
   else if ((TARGET_EMBEDDED_PIC || TARGET_MIPS16)			   \
       && TREE_CODE (decl) == STRING_CST					   \
       && !flag_writable_strings)					   \

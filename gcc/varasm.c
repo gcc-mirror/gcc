@@ -202,10 +202,12 @@ static enum in_section { no_section, in_text, in_data, in_named
 } in_section = no_section;
 
 /* Return a non-zero value if DECL has a section attribute.  */
+#ifndef IN_NAMED_SECTION
 #define IN_NAMED_SECTION(DECL) \
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
    && DECL_SECTION_NAME (DECL) != NULL_TREE)
-
+#endif
+     
 /* Text of section name when in_section == in_named.  */
 static char *in_named_name;
 
@@ -1233,7 +1235,8 @@ asm_emit_uninitialised (decl, name, size, rounded)
      int size;
      int rounded ATTRIBUTE_UNUSED;
 {
-  enum {
+  enum
+  {
     asm_dest_common,
     asm_dest_bss,
     asm_dest_local
@@ -1274,6 +1277,12 @@ asm_emit_uninitialised (decl, name, size, rounded)
 	}
     }
 
+#ifdef ASM_OUTPUT_SECTION_NAME
+  /* We already know that DECL_SECTION_NAME() == NULL.  */
+  if (flag_data_sections != 0 || UNIQUE_SECTION_P (decl))
+    UNIQUE_SECTION (decl, NULL);
+#endif
+  
   switch (destination)
     {
 #ifdef ASM_EMIT_BSS
@@ -1486,7 +1495,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #if ! defined ASM_EMIT_BSS
       && DECL_COMMON (decl)
 #endif
-      && DECL_SECTION_NAME (decl) == 0
+      && DECL_SECTION_NAME (decl) == NULL_TREE
       && ! dont_output_data)
     {
       int size = TREE_INT_CST_LOW (size_tree);
@@ -1575,8 +1584,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     reloc = output_addressed_constants (DECL_INITIAL (decl));
 
 #ifdef ASM_OUTPUT_SECTION_NAME
-  if ((flag_data_sections != 0
-       && DECL_SECTION_NAME (decl) == NULL_TREE)
+  if ((flag_data_sections != 0 && DECL_SECTION_NAME (decl) == NULL_TREE)
       || UNIQUE_SECTION_P (decl))
     UNIQUE_SECTION (decl, reloc);
 #endif

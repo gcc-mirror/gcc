@@ -1,3 +1,37 @@
+2000-01-05  Nick Clifton  <nickc@cygnus.com>
+
+	* varasm.c (IN_NAMED_SECTION): Allow targets to provide their
+	own definition of this macro.
+	(asm_emit_uninitialised): Invoke UNIQUE_SECTION if either
+	flag_data_sections or UNIQUE_SECTION_P are true.
+
+	* tm.texi (UNIQUE)SECTION): Document that it can be called for
+	unitialised data decls.
+
+	* config/i386/winnt.c (i386_pe_unique_section): Cope with
+	being called for uninitialised data.
+
+	* config/i386/interix.c (i386_pe_unique_section): Cope with
+	being called for uninitialised data.
+
+	* config/mips/elf.h (UNIQUE_SECTION): Cope with being called
+	for uninitialised data. 
+
+	* config/mips/elf64.h (UNIQUE_SECTION): Cope with being called
+	for uninitialised data. 
+
+	* config/mips/iri6gld.h (UNIQUE_SECTION): Cope with being called
+	for uninitialised data. 
+
+	* config/arm/unknown-elf.h (IN_NAMED_SECTION): Define.
+	(UNIQUE_SECTION_P): Always generate a unique section if
+	flag_data_sections is true.
+	(UNIQUE_SECTION): Also generate unique sections for
+	uninitialised data.
+	(ASM_OUTPUT_ALIGNED_BSS): Redefine to use named_section().
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Redefine to use
+	named_section(). 
+	
 2000-01-06  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/t-c4x (TARGET_LIBGCC2_CFLAGS): Don't redefine SF, DF,
