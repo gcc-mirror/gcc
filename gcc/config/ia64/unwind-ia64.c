@@ -121,6 +121,17 @@ struct unw_reg_info
   int when;			/* when the register gets saved */
 };
 
+struct unw_reg_state {
+	struct unw_reg_state *next;	/* next (outer) element on state stack */
+	struct unw_reg_info reg[UNW_NUM_REGS];	/* register save locations */
+};
+
+struct unw_labeled_state {
+	struct unw_labeled_state *next;		/* next labeled state (or NULL) */
+	unsigned long label;			/* label for this state */
+	struct unw_reg_state saved_state;
+};
+
 typedef struct unw_state_record
 {
   unsigned int first_region : 1;	/* is this the first region? */
@@ -141,11 +152,8 @@ typedef struct unw_state_record
   unsigned char gr_save_loc;	/* next general register to use for saving */
   unsigned char return_link_reg; /* branch register for return link */
 
-  struct unw_reg_state {
-    struct unw_reg_state *next;
-    unsigned long label;	/* label of this state record */
-    struct unw_reg_info reg[UNW_NUM_REGS];
-  } curr, *stack, *reg_state_list;
+  struct unw_labeled_state *labeled_states;	/* list of all labeled states */
+  struct unw_reg_state curr;	/* current state */
 
   _Unwind_Personality_Fn personality;
   
@@ -226,7 +234,7 @@ static unsigned char const save_order[] =
 
 #define MIN(X, Y) ((X) < (Y) ? (X) : (Y))
 
-/* Unwind decoder routines */
+/* Routines to manipulate the state stack.  */
 
 static void
 push (struct unw_state_record *sr)
@@ -235,19 +243,55 @@ push (struct unw_state_record *sr)
 
   rs = malloc (sizeof (struct unw_reg_state));
   memcpy (rs, &sr->curr, sizeof (*rs));
-  rs->next = sr->stack;
-  sr->stack = rs;
+  sr->curr.next = rs;
 }
 
 static void
 pop (struct unw_state_record *sr)
 {
-  struct unw_reg_state *rs;
+  struct unw_reg_state *rs = sr->curr.next;
 
-  rs = sr->stack;
-  sr->stack = rs->next;
+  if (!rs)
+    abort();
+  memcpy(&sr->curr, rs, sizeof(*rs));
   free (rs);
 }
+
+/* Make a copy of the state stack.  Non-recursive to avoid stack overflows.  */
+static struct unw_reg_state *
+dup_state_stack (struct unw_reg_state *rs)
+{
+  struct unw_reg_state *copy, *prev = NULL, *first = NULL;
+
+  while (rs)
+    {
+      copy = malloc(sizeof(struct unw_state_record));
+      memcpy(copy, rs, sizeof(*copy));
+      if (first)
+	prev->next = copy;
+      else
+	first = copy;
+      rs = rs->next;
+      prev = copy;
+    }
+  return first;
+}
+
+/* Free all stacked register states (but not RS itself).  */
+static void
+free_state_stack (struct unw_reg_state *rs)
+{
+  struct unw_reg_state *p, *next;
+
+  for (p = rs->next; p != NULL; p = next)
+    {
+      next = p->next;
+      free(p);
+    }
+  rs->next = NULL;
+}
+
+/* Unwind decoder routines */
 
 static enum unw_register_index __attribute__((const))
 decode_abreg (unsigned char abreg, int memory)
@@ -396,7 +440,7 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
   sr->first_region = 0;
 
   /* Check if we're done.  */
-  if (body && sr->when_target < sr->region_start + sr->region_len)
+  if (sr->when_target < sr->region_start + sr->region_len) 
     {
       sr->done = 1;
       return;
@@ -631,13 +675,15 @@ desc_epilogue (unw_word t, unw_word ecount, struct unw_state_record *sr)
 static inline void
 desc_copy_state (unw_word label, struct unw_state_record *sr)
 {
-  struct unw_reg_state *rs;
+  struct unw_labeled_state *ls;
 
-  for (rs = sr->reg_state_list; rs; rs = rs->next)
+  for (ls = sr->labeled_states; ls; ls = ls->next)
     {
-      if (rs->label == label)
-	{
-	  memcpy (&sr->curr, rs, sizeof(sr->curr));
+      if (ls->label == label)
+        {
+	  free_state_stack(&sr->curr);
+   	  memcpy(&sr->curr, &ls->saved_state, sizeof(sr->curr));
+	  sr->curr.next = dup_state_stack(ls->saved_state.next);
 	  return;
 	}
     }
@@ -647,13 +693,16 @@ desc_copy_state (unw_word label, struct unw_state_record *sr)
 static inline void
 desc_label_state (unw_word label, struct unw_state_record *sr)
 {
-  struct unw_reg_state *rs;
+  struct unw_labeled_state *ls;
 
-  rs = malloc (sizeof (struct unw_reg_state));
-  memcpy (rs, &sr->curr, sizeof (*rs));
-  rs->label = label;
-  rs->next = sr->reg_state_list;
-  sr->reg_state_list = rs;
+  ls = malloc(sizeof(struct unw_labeled_state));
+  ls->label = label;
+  memcpy(&ls->saved_state, &sr->curr, sizeof(ls->saved_state));
+  ls->saved_state.next = dup_state_stack(sr->curr.next);
+
+  /* insert into list of labeled states: */
+  ls->next = sr->labeled_states;
+  sr->labeled_states = ls;
 }
 
 /*

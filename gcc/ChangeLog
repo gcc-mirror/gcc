@@ -1,3 +1,8 @@
+2002-03-14  David Mosberger <davidm@hpl.hp.com>, Hans Boehm <Hans_Boehm@hp.com>
+
+	* config/ia64/unwind-ia64.c: Handle copy_state and label_state
+	  descriptors correctly.
+
 2002-03-14  Zack Weinberg  <zack@codesourcery.com>
 
 	* cpphash.h (struct lexer_state): Remove line_extension member.
