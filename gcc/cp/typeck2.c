@@ -302,7 +302,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 366.  Free: */
+/* First used: 0 (reserved), Last used: 367.  Free: */
 
 static int abortcount = 0;
 
@@ -1091,7 +1091,8 @@ process_init_constructor (type, init, elts)
 
       /* Find the first named field.  ANSI decided in September 1990
 	 that only named fields count here.  */
-      while (field && DECL_NAME (field) == 0)
+      while (field && (DECL_NAME (field) == 0
+		       || TREE_CODE (field) != FIELD_DECL))
 	field = TREE_CHAIN (field);
 
       /* If this element specifies a field, initialize via that field.  */

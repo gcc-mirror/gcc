@@ -3017,8 +3017,8 @@ extern int interface_only, interface_unknown;
    or otherwise in a type-consistent manner.  */
 
 tree
-finish_struct_1 (t, attributes, warn_anon)
-     tree t, attributes;
+finish_struct_1 (t, warn_anon)
+     tree t;
      int warn_anon;
 {
   int old;
@@ -3072,8 +3072,6 @@ finish_struct_1 (t, attributes, warn_anon)
 
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
-
-  cplus_decl_attributes (t, attributes, NULL_TREE);
 
 #if 0
   /* This is in general too late to do this.  I moved the main case up to
@@ -4371,6 +4369,8 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
   *tail = NULL_TREE;
   TYPE_FIELDS (t) = fields;
 
+  cplus_decl_attributes (t, attributes, NULL_TREE);
+
   if (processing_template_decl)
     {
       tree d = getdecls ();
@@ -4395,7 +4395,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
       TYPE_SIZE (t) = integer_zero_node;
     }      
   else
-    t = finish_struct_1 (t, attributes, warn_anon);
+    t = finish_struct_1 (t, warn_anon);
 
   TYPE_BEING_DEFINED (t) = 0;
 
@@ -4997,7 +4997,7 @@ instantiate_type (lhstype, rhs, complain)
 		    int i, d = 0;
 		    i = type_unification (DECL_TEMPLATE_PARMS (elem), t,
 					  TYPE_ARG_TYPES (TREE_TYPE (elem)),
-					  TYPE_ARG_TYPES (lhstype), &d, 0);
+					  TYPE_ARG_TYPES (lhstype), &d, 0, 1);
 		    if (i == 0)
 		      {
 			if (save_elem)

@@ -1181,6 +1181,8 @@ instantiate_class_template (type)
     = TYPE_USES_COMPLEX_INHERITANCE (pattern);
   TYPE_USES_VIRTUAL_BASECLASSES (type)
     = TYPE_USES_VIRTUAL_BASECLASSES (pattern);
+  TYPE_PACKED (type) = TYPE_PACKED (pattern);
+  TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
 
   if (! uses_template_parms (type))
     {
@@ -1189,8 +1191,7 @@ instantiate_class_template (type)
 	if (TREE_CODE (tmp) == FIELD_DECL)
 	  require_complete_type (tmp);
 
-      /* XXX handle attributes */
-      type = finish_struct_1 (type, NULL_TREE, 0);
+      type = finish_struct_1 (type, 0);
       CLASSTYPE_GOT_SEMICOLON (type) = 1;
 
       repo_template_used (type);
@@ -2265,6 +2266,13 @@ tsubst_expr (t, args, nargs, in_decl)
 	error ("break statement not within loop or switch");
       break;
 
+    case CONTINUE_STMT:
+      lineno = TREE_COMPLEXITY (t);
+      emit_line_note (input_filename, lineno);
+      if (! expand_continue_loop (0))
+	error ("continue statement not within a loop");
+      break;
+
     case SWITCH_STMT:
       {
 	tree val, tmp;
@@ -2403,12 +2411,15 @@ overload_template_name (type)
 
    If SUBR is 1, we're being called recursively (to unify the arguments of
    a function or method parameter of a function template), so don't zero
-   out targs and don't fail on an incomplete match.  */
+   out targs and don't fail on an incomplete match.
+
+   If STRICT is 1, the match must be exact (for casts of overloaded
+   addresses, explicit instantiation, and more_specialized).  */
 
 int
-type_unification (tparms, targs, parms, args, nsubsts, subr)
+type_unification (tparms, targs, parms, args, nsubsts, subr, strict)
      tree tparms, *targs, parms, args;
-     int *nsubsts, subr;
+     int *nsubsts, subr, strict;
 {
   tree parm, arg;
   int i;
@@ -2472,7 +2483,7 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
 	      parm = tree_cons (NULL_TREE, parm, NULL_TREE);
 	      return type_unification (DECL_TEMPLATE_PARMS (arg), targs,
 				       TYPE_ARG_TYPES (TREE_TYPE (arg)),
-				       parm, &nsubsts, 0);
+				       parm, &nsubsts, 0, strict);
 	    }
 	  arg = TREE_TYPE (arg);
 	}
@@ -2491,7 +2502,7 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
 	    arg = TYPE_MAIN_VARIANT (arg);
 	}
 
-      switch (unify (tparms, targs, ntparms, parm, arg, nsubsts))
+      switch (unify (tparms, targs, ntparms, parm, arg, nsubsts, strict))
 	{
 	case 0:
 	  break;
@@ -2521,9 +2532,9 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
 /* Tail recursion is your friend.  */
 
 static int
-unify (tparms, targs, ntparms, parm, arg, nsubsts)
+unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
      tree tparms, *targs, parm, arg;
-     int *nsubsts, ntparms;
+     int *nsubsts, ntparms, strict;
 {
   int idx;
 
@@ -2546,6 +2557,9 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
     case TEMPLATE_TYPE_PARM:
       (*nsubsts)++;
       idx = TEMPLATE_TYPE_IDX (parm);
+      if (strict && (TYPE_READONLY (arg) < TYPE_READONLY (parm)
+		     || TYPE_VOLATILE (arg) < TYPE_VOLATILE (parm)))
+	return 1;
 #if 0
       /* Template type parameters cannot contain cv-quals; i.e.
          template <class T> void f (T& a, T& b) will not generate
@@ -2606,26 +2620,27 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
     case POINTER_TYPE:
       if (TREE_CODE (arg) == RECORD_TYPE && TYPE_PTRMEMFUNC_FLAG (arg))
 	return unify (tparms, targs, ntparms, parm,
-		      TYPE_PTRMEMFUNC_FN_TYPE (arg), nsubsts);
+		      TYPE_PTRMEMFUNC_FN_TYPE (arg), nsubsts, strict);
 
       if (TREE_CODE (arg) != POINTER_TYPE)
 	return 1;
       return unify (tparms, targs, ntparms, TREE_TYPE (parm), TREE_TYPE (arg),
-		    nsubsts);
+		    nsubsts, strict);
 
     case REFERENCE_TYPE:
       if (TREE_CODE (arg) == REFERENCE_TYPE)
 	arg = TREE_TYPE (arg);
-      return unify (tparms, targs, ntparms, TREE_TYPE (parm), arg, nsubsts);
+      return unify (tparms, targs, ntparms, TREE_TYPE (parm), arg,
+		    nsubsts, strict);
 
     case ARRAY_TYPE:
       if (TREE_CODE (arg) != ARRAY_TYPE)
 	return 1;
       if (unify (tparms, targs, ntparms, TYPE_DOMAIN (parm), TYPE_DOMAIN (arg),
-		 nsubsts) != 0)
+		 nsubsts, strict) != 0)
 	return 1;
       return unify (tparms, targs, ntparms, TREE_TYPE (parm), TREE_TYPE (arg),
-		    nsubsts);
+		    nsubsts, strict);
 
     case REAL_TYPE:
     case INTEGER_TYPE:
@@ -2635,12 +2650,12 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
       if (TREE_CODE (parm) == INTEGER_TYPE)
 	{
 	  if (TYPE_MIN_VALUE (parm) && TYPE_MIN_VALUE (arg)
-	      && unify (tparms, targs, ntparms,
-			TYPE_MIN_VALUE (parm), TYPE_MIN_VALUE (arg), nsubsts))
+	      && unify (tparms, targs, ntparms, TYPE_MIN_VALUE (parm),
+			TYPE_MIN_VALUE (arg), nsubsts, strict))
 	    return 1;
 	  if (TYPE_MAX_VALUE (parm) && TYPE_MAX_VALUE (arg)
-	      && unify (tparms, targs, ntparms,
-			TYPE_MAX_VALUE (parm), TYPE_MAX_VALUE (arg), nsubsts))
+	      && unify (tparms, targs, ntparms, TYPE_MAX_VALUE (parm),
+			TYPE_MAX_VALUE (arg), nsubsts, strict))
 	    return 1;
 	}
       /* As far as unification is concerned, this wins.	 Later checks
@@ -2660,7 +2675,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	t2 = TREE_OPERAND (parm, 1);
 	return unify (tparms, targs, ntparms, t1,
 		      fold (build (PLUS_EXPR, integer_type_node, arg, t2)),
-		      nsubsts);
+		      nsubsts, strict);
       }
 
     case TREE_VEC:
@@ -2673,7 +2688,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	for (i = TREE_VEC_LENGTH (parm) - 1; i >= 0; i--)
 	  if (unify (tparms, targs, ntparms,
 		     TREE_VEC_ELT (parm, i), TREE_VEC_ELT (arg, i),
-		     nsubsts))
+		     nsubsts, strict))
 	    return 1;
 	return 0;
       }
@@ -2681,7 +2696,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_FLAG (parm))
 	return unify (tparms, targs, ntparms, TYPE_PTRMEMFUNC_FN_TYPE (parm),
-		      arg, nsubsts);
+		      arg, nsubsts, strict);
 
       /* Allow trivial conversions.  */
       if (TREE_CODE (arg) != RECORD_TYPE
@@ -2689,13 +2704,22 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	  || TYPE_VOLATILE (parm) < TYPE_VOLATILE (arg))
 	return 1;
 
-      if (CLASSTYPE_TEMPLATE_INFO (parm) && CLASSTYPE_TEMPLATE_INFO (arg)
-	  && uses_template_parms (parm))
+      if (CLASSTYPE_TEMPLATE_INFO (parm) && uses_template_parms (parm))
 	{
-	  if (CLASSTYPE_TI_TEMPLATE (parm) != CLASSTYPE_TI_TEMPLATE (arg))
+	  tree t = NULL_TREE;
+#ifdef NEW_OVER
+	  if (! strict)
+	    t = get_template_base (CLASSTYPE_TI_TEMPLATE (parm), arg);
+	  else
+#endif
+	  if (CLASSTYPE_TEMPLATE_INFO (arg)
+	      && CLASSTYPE_TI_TEMPLATE (parm) == CLASSTYPE_TI_TEMPLATE (arg))
+	    t = arg;
+	  if (! t || t == error_mark_node)
 	    return 1;
+
 	  return unify (tparms, targs, ntparms, CLASSTYPE_TI_ARGS (parm),
-			CLASSTYPE_TI_ARGS (arg), nsubsts);
+			CLASSTYPE_TI_ARGS (t), nsubsts, strict);
 	}
       else if (TYPE_MAIN_VARIANT (parm) != TYPE_MAIN_VARIANT (arg))
 	return 1;
@@ -2711,19 +2735,19 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	return 1;
      check_args:
       if (unify (tparms, targs, ntparms, TREE_TYPE (parm),
-		 TREE_TYPE (arg), nsubsts))
+		 TREE_TYPE (arg), nsubsts, strict))
 	return 1;
       return type_unification (tparms, targs, TYPE_ARG_TYPES (parm),
-			       TYPE_ARG_TYPES (arg), nsubsts, 1);
+			       TYPE_ARG_TYPES (arg), nsubsts, 1, strict);
 
     case OFFSET_TYPE:
       if (TREE_CODE (arg) != OFFSET_TYPE)
 	return 1;
       if (unify (tparms, targs, ntparms, TYPE_OFFSET_BASETYPE (parm),
-		 TYPE_OFFSET_BASETYPE (arg), nsubsts))
+		 TYPE_OFFSET_BASETYPE (arg), nsubsts, strict))
 	return 1;
       return unify (tparms, targs, ntparms, TREE_TYPE (parm),
-		    TREE_TYPE (arg), nsubsts);
+		    TREE_TYPE (arg), nsubsts, strict);
 
     default:
       sorry ("use of `%s' in template type unification",
@@ -2748,6 +2772,44 @@ mark_decl_instantiated (result, extern_p)
     }
 }
 
+/* Given two function templates PAT1 and PAT2, return:
+
+   1 if PAT1 is more specialized than PAT2 as described in [temp.func.order].
+   -1 if PAT2 is more specialized than PAT1.
+   0 if neither is more specialized.  */
+   
+int
+more_specialized (pat1, pat2)
+     tree pat1, pat2;
+{
+  int ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (pat1));
+  tree *targs = (tree *) malloc (sizeof (tree) * ntparms);
+  int i, dummy = 0, winner = 0;
+
+  i = type_unification (DECL_TEMPLATE_PARMS (pat1), targs,
+			TYPE_ARG_TYPES (TREE_TYPE (pat1)),
+			TYPE_ARG_TYPES (TREE_TYPE (pat2)),
+			&dummy, 0, 1);
+
+  free (targs);
+  if (i == 0)
+    --winner;
+
+  ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (pat2));
+  targs = (tree *) malloc (sizeof (tree) * ntparms);
+
+  i = type_unification (DECL_TEMPLATE_PARMS (pat2), targs,
+			TYPE_ARG_TYPES (TREE_TYPE (pat2)),
+			TYPE_ARG_TYPES (TREE_TYPE (pat1)),
+			&dummy, 0, 1);
+
+  free (targs);
+  if (i == 0)
+    ++winner;
+
+  return winner;
+}
+  
 /* called from the parser.  */
 
 void
@@ -2794,11 +2856,19 @@ do_function_instantiation (declspecs, declarator, storage)
 	    i = type_unification (DECL_TEMPLATE_PARMS (fn), targs,
 				  TYPE_ARG_TYPES (TREE_TYPE (fn)),
 				  TYPE_ARG_TYPES (TREE_TYPE (decl)),
-				  &dummy, 0);
+				  &dummy, 0, 1);
 	    if (i == 0)
 	      {
 		if (result)
-		  cp_error ("ambiguous template instantiation for `%D' requested", decl);
+		  {
+		    int win = more_specialized (DECL_TI_TEMPLATE (result), fn);
+
+		    if (win == 0)
+		      cp_error ("ambiguous template instantiation for `%D' requested", decl);
+		    else if (win == -1)
+		      result = instantiate_template (fn, targs);
+		    /* else keep current winner */
+		  }
 		else
 		  result = instantiate_template (fn, targs);
 	      }

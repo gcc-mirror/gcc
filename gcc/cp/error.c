@@ -720,6 +720,8 @@ dump_decl (t, v)
 
 	if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)
 	  dump_type (TREE_TYPE (t), v);
+	else if (TREE_TYPE (t) == NULL_TREE)
+	   my_friendly_abort (353);
 	else switch (NEXT_CODE (t))
 	  {
 	  case METHOD_TYPE:
@@ -738,7 +740,7 @@ dump_decl (t, v)
       break;
 
     case CONST_DECL:
-      if (NEXT_CODE (t) == ENUMERAL_TYPE
+      if ((TREE_TYPE (t) != NULL_TREE && NEXT_CODE (t) == ENUMERAL_TYPE)
 	  || TREE_CODE (DECL_INITIAL (t)) == TEMPLATE_CONST_PARM)
 	goto general;
       else
@@ -1075,7 +1077,7 @@ dump_expr (t, nop)
 	if (TREE_CODE (fn) == ADDR_EXPR)
 	  fn = TREE_OPERAND (fn, 0);
 
-	if (NEXT_CODE (fn) == METHOD_TYPE)
+	if (TREE_TYPE (fn) != NULL_TREE && NEXT_CODE (fn) == METHOD_TYPE)
 	  {
 	    tree ob = TREE_VALUE (args);
 	    if (TREE_CODE (ob) == ADDR_EXPR)
@@ -1198,7 +1200,8 @@ dump_expr (t, nop)
 	}
       else
 	{
-	  if (NEXT_CODE (TREE_OPERAND (t, 0)) == REFERENCE_TYPE)
+	  if (TREE_OPERAND (t,0) != NULL_TREE
+	      && NEXT_CODE (TREE_OPERAND (t, 0)) == REFERENCE_TYPE)
 	    dump_expr (TREE_OPERAND (t, 0), nop);
 	  else
 	    dump_unary_op ("*", t, nop);
@@ -1225,7 +1228,7 @@ dump_expr (t, nop)
       /* FIXME: This is a KLUDGE workaround for a parsing problem.  There
 	 should be another level of INDIRECT_REF so that I don't have to do
 	 this.  */
-      if (NEXT_CODE (t) == POINTER_TYPE)
+      if (TREE_TYPE (t) != NULL_TREE && NEXT_CODE (t) == POINTER_TYPE)
 	{
 	  tree next = TREE_TYPE (TREE_TYPE (t));
 
@@ -1251,7 +1254,7 @@ dump_expr (t, nop)
 
     case CONSTRUCTOR:
       OB_PUTC ('{');
-      dump_expr_list (CONSTRUCTOR_ELTS (t), 0);
+      dump_expr_list (CONSTRUCTOR_ELTS (t));
       OB_PUTC ('}');
       break;
 
@@ -1296,7 +1299,7 @@ dump_expr (t, nop)
 	{
 	  dump_type (TREE_TYPE (t), 0);
 	  OB_PUTC ('(');
-	  dump_expr_list (TREE_OPERAND (t, 0), 0);
+	  dump_expr_list (TREE_OPERAND (t, 0));
 	  OB_PUTC (')');
 	}
       else

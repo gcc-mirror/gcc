@@ -50,8 +50,6 @@ Boston, MA 02111-1307, USA.  */
   "-fno-for-scope",
   "-fgnu-keywords",
   "-fno-gnu-keywords",
-  "-fhandle-exceptions",
-  "-fno-handle-exceptions",
   "-fhandle-signatures",
   "-fno-handle-signatures",
   "-fhuge-objects",

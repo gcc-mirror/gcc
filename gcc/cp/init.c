@@ -245,7 +245,7 @@ perform_member_init (member, name, init, explicit, protect_list)
 
       if (expr != error_mark_node)
 	{
-	  start_protect ();
+	  expand_eh_region_start ();
 	  *protect_list = tree_cons (NULL_TREE, expr, *protect_list);
 	}
     }
@@ -618,7 +618,7 @@ emit_base_init (t, immediately)
 
       if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
 	{
-	  start_protect ();
+	  expand_eh_region_start ();
 
 	  /* All cleanups must be on the function_obstack.  */
 	  push_obstacks_nochange ();
@@ -3369,7 +3369,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
       expand_start_cond (build (GE_EXPR, boolean_type_node,
 				iterator, integer_zero_node), 0);
       if (TYPE_NEEDS_DESTRUCTOR (type))
-	start_protect ();
+	expand_eh_region_start ();
       expand_start_loop_continue_elsewhere (1);
 
       if (from_array)
@@ -3429,7 +3429,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	    use_variable (DECL_RTL (base2));
 	}
       expand_end_loop ();
-      if (TYPE_NEEDS_DESTRUCTOR (type) && flag_handle_exceptions)
+      if (TYPE_NEEDS_DESTRUCTOR (type) && flag_exceptions)
 	{
 	  /* We have to ensure that this can live to the cleanup
 	     expansion time, since we know it is only ever needed
@@ -3450,7 +3450,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	    expand_expr (e1, const0_rtx, VOIDmode, 0);
 	    RTL_EXPR_SEQUENCE (e2) = get_insns ();
 	    end_sequence ();
-	    end_protect (e2);
+	    expand_eh_region_end (e2);
 	  }
 	  pop_obstacks ();
 	}

@@ -238,7 +238,7 @@ search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../
 tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 ptree.o : ptree.c $(CONFIG_H) $(CXX_TREE_H)
 rtti.o : rtti.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
-except.o : except.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
+except.o : except.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) $(srcdir)/../except.h
 expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
   $(srcdir)/../expr.h ../insn-codes.h
 xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../input.h

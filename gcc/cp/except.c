@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-95, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -22,8 +22,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* High-level class interface. */
-
 #include "config.h"
 #include "tree.h"
 #include "rtl.h"
@@ -32,48 +30,13 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "expr.h"
 #include "output.h"
+#include "except.h"
+#include "function.h"
 
-tree protect_list;
-
-extern void (*interim_eh_hook)	PROTO((tree));
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
-static void end_eh_unwinder PROTO((rtx));
 
 /* holds the fndecl for __builtin_return_address () */
 tree builtin_return_address_fndecl;
-tree throw_fndecl;
-
-static int
-doing_eh (do_warn)
-     int do_warn;
-{
-  if (! flag_handle_exceptions)
-    {
-      static int warned = 0;
-      if (! warned && do_warn)
-	{
-	  error ("exception handling disabled, use -fhandle-exceptions to enable.");
-	  warned = 1;
-	}
-      return 0;
-    }
-  return 1;
-}
-
-
-/*
-NO GNEWS IS GOOD GNEWS WITH GARRY GNUS: This version is much closer
-to supporting exception handling as per ANSI C++ working draft.
-It is a complete rewrite of all the EH stuff that was here before
-	Shortcomings:
-		1. Throw specifications of functions still don't work.
-	Cool Things:
-		1. Destructors are called properly :-)
-		2. No overhead for the non-exception thrown case.
-		3. Fixing shortcoming 1 is simple.
-			-Tad Hunt	(tad@mail.csh.rit.edu)
-
-*/
 
 /* A couple of backend routines from m88k.c */
 
@@ -83,20 +46,6 @@ static tree BuiltinReturnAddress;
 
 #include <stdio.h>
 
-/* XXX - Tad: for EH */
-/* output an exception table entry */
-
-static void
-output_exception_table_entry (file, start_label, end_label, eh_label)
-     FILE *file;
-     rtx start_label, end_label, eh_label;
-{
-  assemble_integer (start_label, GET_MODE_SIZE (Pmode), 1);
-  assemble_integer (end_label, GET_MODE_SIZE (Pmode), 1);
-  assemble_integer (eh_label, GET_MODE_SIZE (Pmode), 1);
-  putc ('\n', file);		/* blank line */
-}
-   
 static void
 easy_expand_asm (str)
      char *str;
@@ -115,8 +64,8 @@ easy_expand_asm (str)
 
 #ifdef EXCEPT_SECTION_ASM_OP
 typedef struct {
-    void *start_protect;
-    void *end_protect;
+    void *start_region;
+    void *end_region;
     void *exception_handler;
  } exception_table;
 #endif /* EXCEPT_SECTION_ASM_OP */
@@ -145,45 +94,9 @@ asm (TEXT_SECTION_ASM_OP);
 
 #endif
 
-static void
-exception_section ()
-{
-#ifdef ASM_OUTPUT_SECTION_NAME
-  named_section (NULL_TREE, ".gcc_except_table");
-#else
-  if (flag_pic)
-    data_section ();
-  else
-#if defined (TARGET_POWERPC) /* are we on a __rs6000? */
-    data_section ();
-#else
-    readonly_data_section ();
-#endif
-#endif
-}
-
-
-
-
-/* from: my-cp-except.c */
-
-/* VI: ":set ts=4" */
-#if 0
-#include <stdio.h> */
-#include "config.h"
-#include "tree.h"
-#include "rtl.h"
-#include "cp-tree.h"
-#endif
 #include "decl.h"
-#if 0
-#include "flags.h"
-#endif
 #include "insn-flags.h"
 #include "obstack.h"
-#if 0
-#include "expr.h"
-#endif
 
 /* ======================================================================
    Briefly the algorithm works like this:
@@ -194,15 +107,15 @@ exception_section ()
      output to start the protection for that block.
 
      When a destructor or end try block is encountered, pop_eh_entry
-     (&eh_stack) is called.  Pop_eh_entry () returns the ehEntry it
-     created when push_eh_entry () was called.  The ehEntry structure
+     (&eh_stack) is called.  Pop_eh_entry () returns the eh_entry it
+     created when push_eh_entry () was called.  The eh_entry structure
      contains three things at this point.  The start protect label,
      the end protect label, and the exception handler label.  The end
      protect label should be output before the call to the destructor
      (if any). If it was a destructor, then its parse tree is stored
-     in the finalization variable in the ehEntry structure.  Otherwise
+     in the finalization variable in the eh_entry structure.  Otherwise
      the finalization variable is set to NULL to reflect the fact that
-     is the the end of a try block.  Next, this modified ehEntry node
+     is the the end of a try block.  Next, this modified eh_entry node
      is enqueued in the finalizations queue by calling
      enqueue_eh_entry (&queue,entry).
 
@@ -231,12 +144,12 @@ exception_section ()
      any of those finalizations throw an exception, we must call
      terminate according to the ARM (section r.15.6.1).  What this
      means is that we need to dequeue and emit finalizations for each
-     entry in the ehQueue until we get to an entry with a NULL
+     entry in the eh_queue until we get to an entry with a NULL
      finalization field.  For any of the finalization entries, if it
      is not a call to terminate (), we must protect it by giving it
      another start label, end label, and exception handler label,
      setting its finalization tree to be a call to terminate (), and
-     enqueue'ing this new ehEntry to be output at an outer level.
+     enqueue'ing this new eh_entry to be output at an outer level.
      Finally, after all that is done, we can get around to outputting
      the catch block which basically wraps all the "catch (...) {...}"
      statements in a big if/then/else construct that matches the
@@ -252,7 +165,7 @@ extern rtx gen_nop		PROTO(());
 
 /* used to cache "terminate ()", "unexpected ()", "set_terminate ()", and
    "set_unexpected ()" after default_conversion. (lib-except.c)  */
-static tree Terminate, Unexpected, SetTerminate, SetUnexpected, CatchMatch, Throw;
+static tree Terminate, Unexpected, SetTerminate, SetUnexpected, CatchMatch;
 
 /* used to cache __find_first_exception_table_match ()
    for throw (lib-except.c)  */
@@ -269,46 +182,6 @@ static tree empty_fndecl;
 /* ====================================================================== */
 
 
-
-/* data structures for my various quick and dirty stacks and queues
-   Eventually, most of this should go away, because I think it can be
-   integrated with stuff already built into the compiler.  */
-
-/* =================================================================== */
-
-struct labelNode {
-  union {
-    rtx rlabel;
-    tree tlabel;
-  } u;
-  struct labelNode *chain;
-};
-
-
-/* this is the most important structure here.  Basically this is how I store
-   an exception table entry internally. */
-struct ehEntry {
-  rtx start_label;
-  rtx end_label;
-  rtx exception_handler_label;
-
-  tree finalization;
-  tree context;
-};
-
-struct ehNode {
-  struct ehEntry *entry;
-  struct ehNode *chain;
-};
-
-struct ehStack {
-  struct ehNode *top;
-};
-
-struct ehQueue {
-  struct ehNode *head;
-  struct ehNode *tail;
-};
 /* ========================================================================= */
 
 
@@ -329,264 +202,13 @@ static tree saved_cleanup;
 /* Indicates if we are in a catch clause.  */
 static tree saved_in_catch;
 
-static int throw_used;
+extern int throw_used;
+extern rtx catch_clauses;
 
-static rtx catch_clauses;
-
-static struct ehStack ehstack;
-static struct ehQueue ehqueue;
-static struct ehQueue eh_table_output_queue;
-static struct labelNode *false_label_stack = NULL;
-static struct labelNode *caught_return_label_stack = NULL;
 /* ========================================================================= */
 
-/* function prototypes */
-static struct ehEntry *pop_eh_entry	PROTO((struct ehStack *stack));
-static void enqueue_eh_entry		PROTO((struct ehQueue *queue, struct ehEntry *entry));
-static rtx push_eh_entry		PROTO((struct ehStack *stack));
-static struct ehEntry *dequeue_eh_entry	PROTO((struct ehQueue *queue));
-static void new_eh_queue		PROTO((struct ehQueue *queue));
-static void new_eh_stack		PROTO((struct ehStack *stack));
-static void push_label_entry		PROTO((struct labelNode **labelstack, rtx rlabel, tree tlabel));
-static rtx pop_label_entry		PROTO((struct labelNode **labelstack));
-static tree top_label_entry		PROTO((struct labelNode **labelstack));
-static struct ehEntry *copy_eh_entry	PROTO((struct ehEntry *entry));
+/* Cheesyness to save some typing.  Returns the return value rtx.  */
 
-
-/* Routines to save and restore eh context information.  */
-struct eh_context {
-  struct ehStack ehstack;
-  struct ehQueue ehqueue;
-  rtx catch_clauses;
-  struct labelNode *false_label_stack;
-  struct labelNode *caught_return_label_stack;
-  tree protect_list;
-};
-
-/* Save the context and push into a new one.  */
-void*
-push_eh_context ()
-{
-  struct eh_context *p
-    = (struct eh_context*)xmalloc (sizeof (struct eh_context));
-
-  p->ehstack = ehstack;
-  p->ehqueue = ehqueue;
-  p->catch_clauses = catch_clauses;
-  p->false_label_stack = false_label_stack;
-  p->caught_return_label_stack = caught_return_label_stack;
-  p->protect_list = protect_list;
-
-  new_eh_stack (&ehstack);
-  new_eh_queue (&ehqueue);
-  catch_clauses = NULL_RTX;
-  false_label_stack = NULL;
-  caught_return_label_stack = NULL;
-  protect_list = NULL_TREE;
-  
-  return p;
-}
-
-/* Pop and restore the context.  */
-void
-pop_eh_context (vp)
-     void *vp;
-{
-  struct eh_context *p = (struct eh_context *)vp;
-
-  protect_list = p->protect_list;
-  caught_return_label_stack = p->caught_return_label_stack;
-  false_label_stack = p->false_label_stack;
-  catch_clauses	= p->catch_clauses;
-  ehqueue = p->ehqueue;
-  ehstack = p->ehstack;
-
-  free (p);
-}
-
-
-
-/* All my cheesy stack/queue/misc data structure handling routines
-
-   ========================================================================= */
-
-static void
-push_label_entry (labelstack, rlabel, tlabel)
-     struct labelNode **labelstack;
-     rtx rlabel;
-     tree tlabel;
-{
-  struct labelNode *newnode=(struct labelNode*)xmalloc (sizeof (struct labelNode));
-
-  if (rlabel)
-    newnode->u.rlabel = rlabel;
-  else
-    newnode->u.tlabel = tlabel;
-  newnode->chain = *labelstack;
-  *labelstack = newnode;
-}
-
-static rtx
-pop_label_entry (labelstack)
-     struct labelNode **labelstack;
-{
-  rtx label;
-  struct labelNode *tempnode;
-
-  if (! *labelstack) return NULL_RTX;
-
-  tempnode = *labelstack;
-  label = tempnode->u.rlabel;
-  *labelstack = (*labelstack)->chain;
-  free (tempnode);
-
-  return label;
-}
-
-static tree
-top_label_entry (labelstack)
-     struct labelNode **labelstack;
-{
-  if (! *labelstack) return NULL_TREE;
-
-  return (*labelstack)->u.tlabel;
-}
-
-/* Push to permanent obstack for rtl generation.
-   One level only!  */
-static struct obstack *saved_rtl_obstack;
-
-static void
-push_rtl_perm ()
-{
-  extern struct obstack permanent_obstack;
-  extern struct obstack *rtl_obstack;
-  
-  saved_rtl_obstack = rtl_obstack;
-  rtl_obstack = &permanent_obstack;
-}
-
-/* Pop back to normal rtl handling.  */
-static void
-pop_rtl_from_perm ()
-{
-  extern struct obstack *rtl_obstack;
-  rtl_obstack = saved_rtl_obstack;
-}
-
-static rtx
-push_eh_entry (stack)
-     struct ehStack *stack;
-{
-  struct ehNode *node = (struct ehNode*)xmalloc (sizeof (struct ehNode));
-  struct ehEntry *entry = (struct ehEntry*)xmalloc (sizeof (struct ehEntry));
-
-  /* These are saved for the exception table.  */
-  push_rtl_perm ();
-  entry->start_label = gen_label_rtx ();
-  entry->end_label = gen_label_rtx ();
-  entry->exception_handler_label = gen_label_rtx ();
-  pop_rtl_from_perm ();
-
-  LABEL_PRESERVE_P (entry->start_label) = 1;
-  LABEL_PRESERVE_P (entry->end_label) = 1;
-  LABEL_PRESERVE_P (entry->exception_handler_label) = 1;
-
-  entry->finalization = NULL_TREE;
-  entry->context = current_function_decl;
-
-  node->entry = entry;
-  node->chain = stack->top;
-  stack->top = node;
-
-  enqueue_eh_entry (&eh_table_output_queue, copy_eh_entry (entry));
-
-  return entry->start_label;
-}
-
-/* Pop an entry from the given STACK.  */
-static struct ehEntry *
-pop_eh_entry (stack)
-     struct ehStack *stack;
-{
-  struct ehNode *tempnode;
-  struct ehEntry *tempentry;
-  
-  tempnode = stack->top;
-  tempentry = tempnode->entry;
-  stack->top = stack->top->chain;
-  free (tempnode);
-
-  return tempentry;
-}
-
-static struct ehEntry *
-copy_eh_entry (entry)
-     struct ehEntry *entry;
-{
-  struct ehEntry *newentry;
-
-  newentry = (struct ehEntry*)xmalloc (sizeof (struct ehEntry));
-  memcpy ((void*)newentry, (void*)entry, sizeof (struct ehEntry));
-
-  return newentry;
-}
-
-static void
-enqueue_eh_entry (queue, entry)
-     struct ehQueue *queue;
-     struct ehEntry *entry;
-{
-  struct ehNode *node = (struct ehNode*)xmalloc (sizeof (struct ehNode));
-
-  node->entry = entry;
-  node->chain = NULL;
-
-  if (queue->head == NULL)
-    {
-      queue->head = node;
-    }
-  else
-    {
-      queue->tail->chain = node;
-    }
-  queue->tail = node;
-}
-
-static struct ehEntry *
-dequeue_eh_entry (queue)
-     struct ehQueue *queue;
-{
-  struct ehNode *tempnode;
-  struct ehEntry *tempentry;
-
-  if (queue->head == NULL)
-    return NULL;
-
-  tempnode = queue->head;
-  queue->head = queue->head->chain;
-
-  tempentry = tempnode->entry;
-  free (tempnode);
-
-  return tempentry;
-}
-
-static void
-new_eh_queue (queue)
-     struct ehQueue *queue;
-{
-  queue->head = queue->tail = NULL;
-}
-
-static void
-new_eh_stack (stack)
-     struct ehStack *stack;
-{
-  stack->top = NULL;
-}
-
-/* cheesyness to save some typing. returns the return value rtx */
 static rtx
 do_function_call (func, params, return_type)
      tree func, params, return_type;
@@ -599,30 +221,7 @@ do_function_call (func, params, return_type)
   return NULL_RTX;
 }
 
-static void
-expand_internal_throw (pc)
-     rtx pc;
-{
-  emit_move_insn (DECL_RTL (saved_pc), pc);
-#ifdef JUMP_TO_THROW
-  emit_indirect_jump (gen_rtx (SYMBOL_REF, Pmode, "__throw"));
-#else
-  do_function_call (Throw, NULL_TREE, NULL_TREE);
-#endif
-  throw_used = 1;
-}
-
 /* ========================================================================= */
-
-static void
-lang_interim_eh (finalization)
-     tree finalization;
-{
-  if (finalization)
-    end_protect (finalization);
-  else
-    start_protect ();
-}
 
 extern tree auto_function PROTO((tree, tree, enum built_in_function));
 
@@ -630,11 +229,7 @@ extern tree auto_function PROTO((tree, tree, enum built_in_function));
    start of compilation.
 
    This includes:
-		- Setting up all the function call trees
-		- Initializing the ehqueue
-		- Initializing the eh_table_output_queue
-		- Initializing the ehstack
-*/
+		- Setting up all the function call trees.  */
 
 void
 init_exception_processing ()
@@ -671,8 +266,6 @@ init_exception_processing ()
   terminate_fndecl = auto_function (get_identifier ("terminate"),
 				    vtype, NOT_BUILT_IN);
 
-  interim_eh_hook = lang_interim_eh;
-
   push_lang_context (lang_name_c);
 
   catch_match_fndecl =
@@ -697,12 +290,6 @@ init_exception_processing ()
 					   tree_cons (NULL_TREE, ptr_type_node,
 						      void_list_node)),
 		      NOT_BUILT_IN, NULL_PTR);
-  throw_fndecl =
-    builtin_function ("__throw",
-		      build_function_type (void_type_node, void_list_node),
-		      NOT_BUILT_IN, NULL_PTR);
-  DECL_EXTERNAL (throw_fndecl) = 0;
-  TREE_PUBLIC (throw_fndecl) = 0;
   empty_fndecl =
     builtin_function ("__empty",
 		      build_function_type (void_type_node, void_list_node),
@@ -717,16 +304,11 @@ init_exception_processing ()
   CatchMatch = default_conversion (catch_match_fndecl);
   FirstExceptionMatch = default_conversion (find_first_exception_match_fndecl);
   Unwind = default_conversion (unwind_fndecl);
-  Throw = default_conversion (throw_fndecl);
   BuiltinReturnAddress = default_conversion (builtin_return_address_fndecl);
 
   TerminateFunctionCall = build_function_call (Terminate, NULL_TREE);
 
   pop_lang_context ();
-
-  new_eh_queue (&ehqueue);
-  new_eh_queue (&eh_table_output_queue);
-  new_eh_stack (&ehstack);
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("void"), NULL_TREE);
   d = build_parse_node (INDIRECT_REF, get_identifier ("__eh_pc"));
@@ -765,150 +347,26 @@ init_exception_processing ()
   saved_in_catch = lookup_name (get_identifier ("__eh_in_catch"), 0);
 }
 
-/* call this to begin a block of unwind protection (ie: when an object is
-   constructed) */
-void
-start_protect ()
-{
-  if (! doing_eh (0))
-    return;
+/* Call this on start of a try block.  */
 
-  emit_label (push_eh_entry (&ehstack));
-}
-   
-/* call this to end a block of unwind protection.  the finalization tree is
-   the finalization which needs to be run in order to cleanly unwind through
-   this level of protection. (ie: call this when a scope is exited)*/
-void
-end_protect (finalization)
-     tree finalization;
-{
-  struct ehEntry *entry;
-
-  if (! doing_eh (0))
-    return;
-
-  entry = pop_eh_entry (&ehstack);
-
-  emit_label (entry->end_label);
-  /* Put in something that takes up space, as otherwise the end
-     address for the EH region could have the exact same address as
-     the outer region, causing us to miss the fact that resuming
-     exception handling with this PC value would be inside the outer
-     region.  */
-  emit_insn (gen_nop ());
-
-  entry->finalization = finalization;
-
-  enqueue_eh_entry (&ehqueue, entry);
-}
-
-/* call this on start of a try block. */
 void
 expand_start_try_stmts ()
 {
   if (! doing_eh (1))
     return;
 
-  start_protect ();
+  expand_eh_region_start ();
 }
 
 void
 expand_end_try_stmts ()
 {
-  end_protect (integer_zero_node);
-}
-
-
-/* call this to start processing of all the catch blocks. */
-void
-expand_start_all_catch ()
-{
-  struct ehEntry *entry;
-  tree label;
-
-  if (! doing_eh (1))
-    return;
-
-  emit_line_note (input_filename, lineno);
-  label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-  /* The label for the exception handling block we will save.  This is
-     Lresume, in the documention.  */
-  expand_label (label);
-  
-  /* Put in something that takes up space, as otherwise the end
-     address for the EH region could have the exact same address as
-     the outer region, causing us to miss the fact that resuming
-     exception handling with this PC value would be inside the outer
-     region.  */
-  emit_insn (gen_nop ());
-
-  push_label_entry (&caught_return_label_stack, NULL_RTX, label);
-
-  /* Start a new sequence for all the catch blocks.  We will add this
-     to the gloabl sequence catch_clauses, when we have completed all
-     the handlers in this handler-seq.  */
-  start_sequence ();
-
-  while (1)
-    {
-      entry = dequeue_eh_entry (&ehqueue);
-      emit_label (entry->exception_handler_label);
-
-      expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
-
-      /* When we get down to the matching entry, stop.  */
-      if (entry->finalization == integer_zero_node)
-	break;
-
-      /* The below can be optimized away, and we could just fall into the
-	 next EH handler, if we are certain they are nested.  */
-      /* Code to throw out to outer context, if we fall off end of the
-	 handler.  */
-      expand_internal_throw (gen_rtx (LABEL_REF,
-				      Pmode,
-				      entry->end_label));
-      free (entry);
-    }
-}
-
-/* call this to end processing of all the catch blocks. */
-void
-expand_end_all_catch ()
-{
-  rtx new_catch_clause;
-
-  if (! doing_eh (1))
-    return;
-
-  /* Code to throw out to outer context, if we fall off end of catch
-     handlers.  This is rethrow (Lresume, same id, same obj); in the
-     documentation.  */
-  expand_internal_throw (gen_rtx (LABEL_REF,
-				  Pmode,
-				  DECL_RTL (top_label_entry (&caught_return_label_stack))));
-
-  /* Now we have the complete catch sequence.  */
-  new_catch_clause = get_insns ();
-  end_sequence ();
-  
-  /* this level of catch blocks is done, so set up the successful catch jump
-     label for the next layer of catch blocks. */
-  pop_label_entry (&caught_return_label_stack);
-
-  /* Add the new sequence of catchs to the main one for this
-     function.  */
-  push_to_sequence (catch_clauses);
-  emit_insns (new_catch_clause);
-  catch_clauses = get_insns ();
-  end_sequence ();
-  
-  /* Here we fall through into the continuation code.  */
+  expand_eh_region_end (integer_zero_node);
 }
 
 /* Build a type value for use at runtime for a type that is matched
    against by the exception handling system.  */
+
 static tree
 build_eh_type_type (type)
      tree type;
@@ -938,6 +396,7 @@ build_eh_type_type (type)
 
 /* Build a type value for use at runtime for a exp that is thrown or
    matched against by the exception handling system.  */
+
 static tree
 build_eh_type (exp)
      tree exp;
@@ -951,6 +410,7 @@ build_eh_type (exp)
 }
 
 /* This routine creates the cleanup for the exception handling object.  */
+
 static void
 push_eh_cleanup ()
 {
@@ -973,12 +433,12 @@ push_eh_cleanup ()
    matter.  If typename is NULL, that means its a "catch (...)" or catch
    everything.  In that case we don't need to do any type checking.
    (ie: it ends up as the "else" clause rather than an "else if" clause) */
+
 void
 expand_start_catch_block (declspecs, declarator)
      tree declspecs, declarator;
 {
   rtx false_label_rtx;
-  rtx protect_label_rtx;
   tree decl = NULL_TREE;
   tree init;
 
@@ -989,12 +449,7 @@ expand_start_catch_block (declspecs, declarator)
   expand_start_bindings (0);
 
   false_label_rtx = gen_label_rtx ();
-  /* This is saved for the exception table.  */
-  push_rtl_perm ();
-  protect_label_rtx = gen_label_rtx ();
-  pop_rtl_from_perm ();
   push_label_entry (&false_label_stack, false_label_rtx, NULL_TREE);
-  push_label_entry (&false_label_stack, protect_label_rtx, NULL_TREE);
 
   if (declspecs)
     {
@@ -1008,6 +463,9 @@ expand_start_catch_block (declspecs, declarator)
       if (decl == NULL_TREE)
 	{
 	  error ("invalid catch parameter");
+
+	  /* This is cheap, but we want to maintain the data structures.  */
+	  expand_eh_region_start ();
 	  return;
 	}
 
@@ -1058,115 +516,62 @@ expand_start_catch_block (declspecs, declarator)
     }
 
   emit_move_insn (DECL_RTL (saved_in_catch), const1_rtx);
-  /* This is the starting of something to protect.  */
-  emit_label (protect_label_rtx);
+
+  /* Because we are reordered out of line, we arrange
+     to rethrow in the outer context, should we encounter
+     an exception in the catch handler.
+
+     Matches the end in expand_end_catch_block ().  */
+  expand_eh_region_start ();
 
   emit_line_note (input_filename, lineno);
 }
 
 
-/* this is called from expand_exception_blocks and
-   expand_end_catch_block to expand the toplevel finalizations for a
-   function.  We return the first label emitted, if any, otherwise
-   return NULL_RTX.  */
-static rtx
-expand_leftover_cleanups ()
-{
-  struct ehEntry *entry;
-  rtx first_label = NULL_RTX;
-
-  while ((entry = dequeue_eh_entry (&ehqueue)) != 0)
-    {
-      if (! first_label)
-	first_label = entry->exception_handler_label;
-      emit_label (entry->exception_handler_label);
-
-      expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
-
-      /* The below can be optimized away, and we could just fall into the
-	 next EH handler, if we are certain they are nested.  */
-      /* Code to throw out to outer context, if we fall off end of the
-	 handler.  */
-      expand_internal_throw (gen_rtx (LABEL_REF,
-				      Pmode,
-				      entry->end_label));
-
-      /* leftover try block, opps.  */
-      if (entry->finalization == integer_zero_node)
-	abort ();
-
-      free (entry);
-    }
-
-  return first_label;
-}
 
 /* Call this to end a catch block.  Its responsible for emitting the
    code to handle jumping back to the correct place, and for emitting
    the label to jump to if this catch block didn't match.  */
+
 void expand_end_catch_block ()
 {
-  rtx start_protect_label_rtx;
-  rtx end_protect_label_rtx;
-  tree decls;
-  struct ehEntry entry;
+  rtx start_region_label_rtx;
+  rtx end_region_label_rtx;
+  tree decls, t;
 
   if (! doing_eh (1))
     return;
 
-  /* fall to outside the try statement when done executing handler and
+  /* Fall to outside the try statement when done executing handler and
      we fall off end of handler.  This is jump Lresume in the
      documentation.  */
   expand_goto (top_label_entry (&caught_return_label_stack));
 
-  /* We end the rethrow protection region as soon as we hit a label. */
-  end_protect_label_rtx = expand_leftover_cleanups ();
+  t = make_node (RTL_EXPR);
+  TREE_TYPE (t) = void_type_node;
+  RTL_EXPR_RTL (t) = const0_rtx;
+  TREE_SIDE_EFFECTS (t) = 1;
+  start_sequence_for_rtl_expr (t);
+  expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
+  RTL_EXPR_SEQUENCE (t) = get_insns ();
+  end_sequence ();
 
-  /* Code to throw out to outer context, if we get a throw from within
-     our catch handler. */
-  /* These are saved for the exception table.  */
-  push_rtl_perm ();
-  entry.exception_handler_label = gen_label_rtx ();
-  pop_rtl_from_perm ();
-  /* This label is Lhandler in the documentation.  */
-  emit_label (entry.exception_handler_label);
-  expand_internal_throw (gen_rtx (LABEL_REF,
-				  Pmode,
-				  DECL_RTL (top_label_entry (&caught_return_label_stack))));
+  /* Matches the start in expand_start_catch_block ().  */
+  expand_eh_region_end (t);
 
-  /* No associated finalization.  */
-  entry.finalization = NULL_TREE;
-  entry.context = current_function_decl;
-
-  if (end_protect_label_rtx == NULL_RTX)
-    end_protect_label_rtx = entry.exception_handler_label;
-
-  /* Because we are emitted out of line, we have to protect this. */
-  /* label for the start of the protection region.  */
-  start_protect_label_rtx = pop_label_entry (&false_label_stack);
+  expand_leftover_cleanups ();
 
   /* Cleanup the EH parameter.  */
   decls = getdecls ();
   expand_end_bindings (decls, decls != NULL_TREE, 0);
       
-  /* label we emit to jump to if this catch block didn't match. */
+  /* label we emit to jump to if this catch block didn't match.  */
   /* This the closing } in the `if (eq) {' of the documentation.  */
   emit_label (pop_label_entry (&false_label_stack));
-
-  /* Because we are reordered out of line, we have to protect this. */
-  entry.start_label = start_protect_label_rtx;
-  entry.end_label = end_protect_label_rtx;
-
-  LABEL_PRESERVE_P (entry.start_label) = 1;
-  LABEL_PRESERVE_P (entry.end_label) = 1;
-  LABEL_PRESERVE_P (entry.exception_handler_label) = 1;
-
-  /* These set up a call to throw the caught exception into the outer
-     context.  */
-  enqueue_eh_entry (&eh_table_output_queue, copy_eh_entry (&entry));
 }
 
-/* unwind the stack. */
+/* unwind the stack.  */
+
 static void
 do_unwind (inner_throw_label)
      rtx inner_throw_label;
@@ -1248,48 +653,6 @@ do_unwind (inner_throw_label)
 }
 
 
-/* Given the return address, compute the new pc to throw.  This has to
-   work for the current frame of the current function, and the one
-   above it in the case of throw.  */
-static rtx
-eh_outer_context (addr)
-     rtx addr;
-{
-#if defined (ARM_FRAME_RTX)  /* was __arm */
-  /* On the ARM, '__builtin_return_address',  must have 4
-     subtracted from it. */
-  emit_insn (gen_add2_insn (addr, GEN_INT (-4)));
-
-  /* If we are generating code for an ARM2/ARM3 machine or for an ARM6
-     in 26 bit mode, the condition codes must be masked out of the
-     return value, or else they will confuse BuiltinReturnAddress.
-     This does not apply to ARM6 and later processors when running in
-     32 bit mode. */
-  if (!TARGET_6)
-    emit_insn (gen_rtx (SET, Pmode,
-			addr,
-			gen_rtx (AND, Pmode,
-				 addr, GEN_INT (0x03fffffc))));
-#else
-#if ! defined (SPARC_STACK_ALIGN) /* was sparc */
-#if defined (TARGET_SNAKE)
-  /* On HPPA, the low order two bits hold the priviledge level, so we
-     must get rid of them.  */
-  emit_insn (gen_rtx (SET, Pmode,
-		      addr,
-		      gen_rtx (AND, Pmode,
-			       addr, GEN_INT (0xfffffffc))));
-#endif
-
-  /* On the SPARC, __builtin_return_address is already -8 or -12, no
-     need to subtract any more from it. */
-  addr = plus_constant (addr, -1);
-#endif
-#endif
-
-  return addr;
-}
-
 /* is called from expand_exception_blocks () to generate the code in a function
    to "throw" if anything in the function needs to perform a throw.
 
@@ -1303,9 +666,8 @@ eh_outer_context (addr)
 	gotta_rethrow_it:
 		saved_pc = __builtin_return_address (0);
 		pop_to_previous_level ();
-		goto throw;
+		goto throw;  */
 
- */
 void
 expand_builtin_throw ()
 {
@@ -1391,7 +753,7 @@ expand_builtin_throw ()
   return_val_rtx = eh_outer_context (return_val_rtx);
 
   /* Yes it did.  */
-  emit_move_insn (DECL_RTL (saved_pc), return_val_rtx);
+  emit_move_insn (eh_saved_pc_rtx, return_val_rtx);
 
   do_unwind (gen_rtx (LABEL_REF, Pmode, top_of_loop));
   emit_jump (top_of_loop);
@@ -1429,7 +791,7 @@ expand_builtin_throw ()
 void
 expand_start_eh_spec ()
 {
-  start_protect ();
+  expand_eh_region_start ();
 }
 
 static void
@@ -1472,11 +834,11 @@ expand_end_eh_spec (raises)
   emit_jump (check);
   emit_label (cont);
   jumpif (make_tree (integer_type_node, flag), end);
-  start_protect ();
+  expand_eh_region_start ();
   do_function_call (Unexpected, NULL_TREE, NULL_TREE);
   assemble_external (TREE_OPERAND (Unexpected, 0));
   emit_barrier ();
-  end_protect (second_try);
+  expand_eh_region_end (second_try);
   
   emit_label (check);
   emit_move_insn (flag, const1_rtx);
@@ -1511,17 +873,19 @@ expand_end_eh_spec (raises)
   RTL_EXPR_SEQUENCE (expr) = get_insns ();
   end_sequence ();
   
-  end_protect (expr);
+  expand_eh_region_end (expr);
 }
 
 /* This is called to expand all the toplevel exception handling
    finalization for a function.  It should only be called once per
    function.  */
+
 void
 expand_exception_blocks ()
 {
   rtx funcend;
   rtx insns;
+  rtx eh_spec_insns = NULL_RTX;
 
   start_sequence ();
 
@@ -1540,11 +904,22 @@ expand_exception_blocks ()
   insns = get_insns ();
   end_sequence ();
   
-  /* Do this after we expand leftover cleanups, so that the end_protect
-     that expand_end_eh_spec does will match the right start_protect,
+  /* Do this after we expand leftover cleanups, so that the expand_eh_region_end
+     that expand_end_eh_spec does will match the right expand_eh_region_start,
      and make sure it comes out before the terminate protected region.  */
   if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
     {
+#if 1
+      {
+	rtx insns;
+	/* New...  */
+	start_sequence ();
+	expand_start_eh_spec ();
+	eh_spec_insns = get_insns ();
+	end_sequence ();
+      }
+#endif
+
       expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)));
       push_to_sequence (insns);
 
@@ -1557,39 +932,22 @@ expand_exception_blocks ()
 
   if (insns)
     {
-      struct ehEntry entry;
-
-      /* These are saved for the exception table.  */
-      push_rtl_perm ();
-      entry.start_label = gen_label_rtx ();
-      entry.end_label = gen_label_rtx ();
-      entry.exception_handler_label = gen_label_rtx ();
-      entry.finalization = TerminateFunctionCall;
-      entry.context = current_function_decl;
+      /* Is this necessary?  */
       assemble_external (TREE_OPERAND (Terminate, 0));
-      pop_rtl_from_perm ();
 
-      LABEL_PRESERVE_P (entry.start_label) = 1;
-      LABEL_PRESERVE_P (entry.end_label) = 1;
-      LABEL_PRESERVE_P (entry.exception_handler_label) = 1;
-
-      emit_label (entry.start_label);
+      expand_eh_region_start ();
       emit_insns (insns);
-
-      enqueue_eh_entry (&eh_table_output_queue, copy_eh_entry (&entry));
-
-      emit_label (entry.exception_handler_label);
-      expand_expr (entry.finalization, const0_rtx, VOIDmode, 0);
-      emit_label (entry.end_label);
-      emit_barrier ();
+      expand_eh_region_end (TerminateFunctionCall);
+      expand_leftover_cleanups ();
     }
 
   {
     /* Mark the end of the stack unwinder.  */
     rtx unwind_insns;
     start_sequence ();
-    end_eh_unwinder (funcend);
-    expand_leftover_cleanups ();
+#if 0
+    end_eh_unwinder ();
+#endif
     unwind_insns = get_insns ();
     end_sequence ();
     if (unwind_insns)
@@ -1606,6 +964,14 @@ expand_exception_blocks ()
   if (insns)
     insns = get_insns ();
   end_sequence ();
+
+#if 1
+  if (eh_spec_insns)
+    emit_insns_after (eh_spec_insns, get_insns ());
+#else
+  if (eh_spec_insns)
+    store_after_parms (eh_spec_insns);
+#endif
 
   emit_insns (insns);
 }
@@ -1661,7 +1027,7 @@ end_anon_func ()
   pop_cp_function_context (NULL_TREE);
 }
 
-/* call this to expand a throw statement.  This follows the following
+/* Expand a throw statement.  This follows the following
    algorithm:
 
 	1. Allocate space to save the current PC onto the stack.
@@ -1670,6 +1036,7 @@ end_anon_func ()
 	3. If this is the first call to throw in this function:
 		generate a label for the throw block
 	4. jump to the throw block label.  */
+
 void
 expand_throw (exp)
      tree exp;
@@ -1678,12 +1045,6 @@ expand_throw (exp)
 
   if (! doing_eh (1))
     return;
-
-  /* This is the label that represents where in the code we were, when
-     we got an exception.  This needs to be updated when we rethrow an
-     exception, so that the matching routine knows to search out.  */
-  label = gen_label_rtx ();
-  emit_label (label);
 
   if (exp)
     {
@@ -1760,75 +1121,17 @@ expand_throw (exp)
       /* This part is easy, as we don't have to do anything else.  */
     }
 
-  expand_internal_throw (gen_rtx (LABEL_REF, Pmode, label));
-}
+  /* This is the label that represents where in the code we were, when
+     we got an exception.  This needs to be updated when we rethrow an
+     exception, so that the matching routine knows to search out.  */
+  label = gen_label_rtx ();
+  emit_label (label);
 
-void
-end_protect_partials () {
-  while (protect_list)
-    {
-      end_protect (TREE_VALUE (protect_list));
-      protect_list = TREE_CHAIN (protect_list);
-    }
-}
-
-int
-might_have_exceptions_p ()
-{
-  if (eh_table_output_queue.head)
-    return 1;
-  return 0;
-}
-
-/* Output the exception table.
- Return the number of handlers.  */
-void
-emit_exception_table ()
-{
-  int count = 0;
-  extern FILE *asm_out_file;
-  struct ehEntry *entry;
-
-  if (! doing_eh (0))
-    return;
-
-  exception_section ();
-
-  /* Beginning marker for table. */
-  assemble_align (GET_MODE_ALIGNMENT (Pmode));
-  assemble_label ("__EXCEPTION_TABLE__");
-  output_exception_table_entry (asm_out_file,
-				const0_rtx, const0_rtx, const0_rtx);
-
- while (entry = dequeue_eh_entry (&eh_table_output_queue))
-   {
-     tree context = entry->context;
-
-     if (context && ! TREE_ASM_WRITTEN (context))
-       continue;
-
-     count++;
-     output_exception_table_entry (asm_out_file,
-				   entry->start_label, entry->end_label,
-				   entry->exception_handler_label);
-  }
-
-  /* Ending marker for table. */
-  assemble_label ("__EXCEPTION_END__");
-  output_exception_table_entry (asm_out_file,
-				constm1_rtx, constm1_rtx, constm1_rtx);
-}
-
-void
-register_exception_table ()
-{
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__register_exceptions"), 0,
-		     VOIDmode, 1,
-		     gen_rtx (SYMBOL_REF, Pmode, "__EXCEPTION_TABLE__"),
-		     Pmode);
+  expand_internal_throw (label);
 }
 
 /* Build a throw expression.  */
+
 tree
 build_throw (e)
      tree e;
@@ -1842,59 +1145,4 @@ build_throw (e)
       TREE_USED (e) = 1;
     }
   return e;
-}
-
-void
-start_eh_unwinder ()
-{
-  start_protect ();
-}
-
-static void
-end_eh_unwinder (end)
-     rtx end;
-{
-  tree expr;
-  rtx return_val_rtx, ret_val, label;
-
-  if (! doing_eh (0))
-    return;
-
-  expr = make_node (RTL_EXPR);
-  TREE_TYPE (expr) = void_type_node;
-  RTL_EXPR_RTL (expr) = const0_rtx;
-  TREE_SIDE_EFFECTS (expr) = 1;
-  start_sequence_for_rtl_expr (expr);
-
-  ret_val = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
-					0, hard_frame_pointer_rtx);
-  return_val_rtx = copy_to_reg (ret_val);
-
-  return_val_rtx = eh_outer_context (return_val_rtx);
-
-  emit_move_insn (DECL_RTL (saved_pc), return_val_rtx);
-  
-#ifdef JUMP_TO_THROW
-  emit_move_insn (ret_val, gen_rtx (SYMBOL_REF, Pmode, "__throw"));
-#else
-  label = gen_label_rtx ();
-  emit_move_insn (ret_val, gen_rtx (LABEL_REF, Pmode, label));
-#endif
-
-#ifdef RETURN_ADDR_OFFSET
-  return_val_rtx = plus_constant (ret_val, -RETURN_ADDR_OFFSET);
-  if (return_val_rtx != ret_val)
-    emit_move_insn (ret_val, return_val_rtx);
-#endif
-  
-  emit_jump (end);  
-
-#ifndef JUMP_TO_THROW
-  emit_label (label);
-  do_function_call (Throw, NULL_TREE, NULL_TREE);
-#endif
-  
-  RTL_EXPR_SEQUENCE (expr) = get_insns ();
-  end_sequence ();
-  end_protect (expr);
 }
