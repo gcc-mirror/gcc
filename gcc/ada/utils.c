@@ -853,7 +853,7 @@ finish_record_type (record_type, fieldlist, has_rep, defer_debug)
 
 #ifdef ROUND_TYPE_SIZE
   size = ROUND_TYPE_SIZE (record_type, size, TYPE_ALIGN (record_type));
-  size_unit = ROUND_TYPE_SIZE_UNIT (record_size, size_unit,
+  size_unit = ROUND_TYPE_SIZE_UNIT (record_type, size_unit,
 				    TYPE_ALIGN (record_type) / BITS_PER_UNIT);
 #else
   size = round_up (size, TYPE_ALIGN (record_type));

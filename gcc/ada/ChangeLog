@@ -1,3 +1,7 @@
+2002-05-02  Jim Wilson  <wilson@redhat.com>
+
+	* utils.c (finish_record_type): Change record_size to record_type.
+
 2001-05-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* ada/Makefile.in (X_ADA_CFLAGS, T_ADA_CFLAGS): New fragment overrides.
