@@ -5299,7 +5299,8 @@ output_return_instruction (operand, really_return, reverse)
 
       /* Otherwise, trap an attempted return by aborting. */
       ops[0] = operand;
-      ops[1] = gen_rtx_SYMBOL_REF (Pmode, "abort");
+      ops[1] = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_GOT ? "abort(PLT)" 
+				   : "abort");
       assemble_external_libcall (ops[1]);
       output_asm_insn (reverse ? "bl%D0\t%a1" : "bl%d0\t%a1", ops);
       return "";
@@ -5553,7 +5554,8 @@ output_func_epilogue (f, frame_size)
   /* A volatile function should never return.  Call abort.  */
   if (TARGET_ABORT_NORETURN && volatile_func)
     {
-      rtx op = gen_rtx_SYMBOL_REF (Pmode, "abort");
+      rtx op;
+      op = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_GOT ? "abort(PLT)" : "abort");
       assemble_external_libcall (op);
       output_asm_insn ("bl\t%a0", &op);
       goto epilogue_done;

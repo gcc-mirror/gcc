@@ -1,3 +1,14 @@
+Sat May  8 06:23:21 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	Based on patch by Scott Bambrough:
+	* config/arm/arm.h (NEED_PLT_GOT): New macro.  Set to 0 if not
+	already defined.
+	* config/arm/elf.h (NEED_PLT_GOT): Define to flag_pic.
+	* config/arm/arm.md (call_symbol, call_value_symbol et al.): If 
+	NEED_PLT_GOT is true, add explicit "(PLT)" to generated branches.
+	* config/arm/arm.c (output_func_epilogue, 
+	output_return_instruction): Likewise for calls to abort.
+
 Sat May  8 01:57:58 1999  Donn Terry (donn@interix.com)
 
 	* calls.c (rtx_for_function_call): Extend function pointer being
