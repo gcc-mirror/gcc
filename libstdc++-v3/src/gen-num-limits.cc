@@ -342,7 +342,7 @@ template<typename T>
 const int value<T>::digits =
       bits_per_byte * sizeof(T) - int(predicate<T>::is_signed);
 
-// Non integer types should specialize this.  Alwyas two for
+// Non integer types should specialize this.  Always two for
 // integer types.
 template<typename T>
 const int value<T>::radix = 2;
@@ -366,15 +366,37 @@ SPECIALIZE_RADIX(long double, FLT_RADIX);
 
 #undef SPECIALIZE_RADIX
 
+// Non integer types should specialize this.  
+// Unfortunately, systems that don't deal with weak linking correctly
+// (Ie, hpux and aix), cannot use this sophisticated yet sane method. So,
+// explicitly instantiate all the data members here so that they will
+// be happy.
 
+// sophisticated, sane method
+#if 0
 template<typename T>
 const char value<T>::epsilon[] = "0";
-
-template<typename T>
-const char value<T>::round_error[] = "0";
+#endif
 
 #define SPECIALIZE_EPSILON(T, E) DO_SPECIALIZE_EPSILON(T, E)
 #define DO_SPECIALIZE_EPSILON(T, E) const char value< T >::epsilon[] = #E
+
+// unsophisticated, gross method
+#if 1
+SPECIALIZE_EPSILON(bool, 0);
+SPECIALIZE_EPSILON(char, 0);
+SPECIALIZE_EPSILON(unsigned char, 0);
+SPECIALIZE_EPSILON(signed char, 0);
+SPECIALIZE_EPSILON(wchar_t, 0);
+SPECIALIZE_EPSILON(short, 0);
+SPECIALIZE_EPSILON(unsigned short, 0);
+SPECIALIZE_EPSILON(int, 0);
+SPECIALIZE_EPSILON(unsigned int, 0);
+SPECIALIZE_EPSILON(long, 0);
+SPECIALIZE_EPSILON(unsigned long, 0);
+SPECIALIZE_EPSILON(long long, 0);
+SPECIALIZE_EPSILON(unsigned long long, 0);
+#endif
 
 SPECIALIZE_EPSILON(float, FLT_EPSILON);
 SPECIALIZE_EPSILON(double, DBL_EPSILON);
@@ -384,7 +406,35 @@ SPECIALIZE_EPSILON(long double, LDBL_EPSILON);
 #undef SPECIALIZE_EPSILON
 
 
+// Non integer types should specialize this.  
+// Unfortunately, systems that don't deal with weak linking correctly
+// (Ie, hpux and aix), cannot use this sophisticated yet sane method. So,
+// explicitly instantiate all the data members here so that they will
+// be happy.
+
+// sophisticated, sane method
+#if 0
+template<typename T>
+const char value<T>::round_error[] = "0";
+#endif
+
 #define SPECIALIZE_ROUND_ERROR(T, R) const char value< T >::round_error[] = #R
+// unsophisticated, gross method
+#if 1
+SPECIALIZE_ROUND_ERROR(bool, 0);
+SPECIALIZE_ROUND_ERROR(char, 0);
+SPECIALIZE_ROUND_ERROR(unsigned char, 0);
+SPECIALIZE_ROUND_ERROR(signed char, 0);
+SPECIALIZE_ROUND_ERROR(wchar_t, 0);
+SPECIALIZE_ROUND_ERROR(short, 0);
+SPECIALIZE_ROUND_ERROR(unsigned short, 0);
+SPECIALIZE_ROUND_ERROR(int, 0);
+SPECIALIZE_ROUND_ERROR(unsigned int, 0);
+SPECIALIZE_ROUND_ERROR(long, 0);
+SPECIALIZE_ROUND_ERROR(unsigned long, 0);
+SPECIALIZE_ROUND_ERROR(long long, 0);
+SPECIALIZE_ROUND_ERROR(unsigned long long, 0);
+#endif
 
 SPECIALIZE_ROUND_ERROR(float, 1.0f);
 SPECIALIZE_ROUND_ERROR(double, 1.0);
