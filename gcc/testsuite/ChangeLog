@@ -1,3 +1,9 @@
+1998-09-18  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.other/nested2.C: different virtual base classes
+ 	that happen to have the same base name, but in different scopes,
+ 	are incorrectly rejected
+
 1998-09-16  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.brendan/array1.C: Size array via arithmetic based
