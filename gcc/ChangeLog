@@ -1,3 +1,20 @@
+Thu Dec 12 16:24:59 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (reg_class_from_letter): No longer const.  Add 'e' entry.
+	(sh_register_move_cost): Add clause for SImode fp-fp moves.
+	Increase cost for moves involving multiple general purpose registers.
+	* sh.h (OVERRIDE_OPTIONS): Set reg_class_from_letter['e'] according to
+	TARGET_FMOVD.
+	(HARD_REGNO_MODE_OK): Allow V2SFmode and V4SFmode in general purpose
+	registers, and SImode in fp registers, for ! TARGET_SHMEDIA.
+	(enum reg_class reg_class_from_letter): No longer const.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Use REGCLASS_HAS_FP_REG /
+	REGCLASS_HAS_GENERAL_REG.
+	Handle SImode moves from/to fp registers.
+	! TARGET_SHMEDIA && TARGET_FMOVD.
+	(SECONDARY_INPUT_RELOAD_CLASS): Use REGCLASS_HAS_FP_REG.
+	* sh.md (movsi_ie): Add alternatives to move from / to fp regisyters.
+
 2002-12-12  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.c (ia64_hpux_asm_file_end): Fix typo in last

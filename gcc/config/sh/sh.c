@@ -154,16 +154,17 @@ char sh_additional_register_names[ADDREGNAMES_SIZE] \
   = SH_ADDITIONAL_REGISTER_NAMES_INITIALIZER;
 
 /* Provide reg_class from a letter such as appears in the machine
-   description.  */
+   description.  *: target independently reserved letter.
+   reg_class_from_letter['e'] is set to NO_REGS for TARGET_FMOVD.  */
 
-const enum reg_class reg_class_from_letter[] =
+enum reg_class reg_class_from_letter[] =
 {
-  /* a */ ALL_REGS, /* b */ TARGET_REGS, /* c */ FPSCR_REGS, /* d */ DF_REGS,
-  /* e */ NO_REGS, /* f */ FP_REGS, /* g */ NO_REGS, /* h */ NO_REGS,
-  /* i */ NO_REGS, /* j */ NO_REGS, /* k */ SIBCALL_REGS, /* l */ PR_REGS,
-  /* m */ NO_REGS, /* n */ NO_REGS, /* o */ NO_REGS, /* p */ NO_REGS,
-  /* q */ NO_REGS, /* r */ NO_REGS, /* s */ NO_REGS, /* t */ T_REGS,
-  /* u */ NO_REGS, /* v */ NO_REGS, /* w */ FP0_REGS, /* x */ MAC_REGS,
+  /* a */ ALL_REGS,  /* b */ TARGET_REGS, /* c */ FPSCR_REGS, /* d */ DF_REGS,
+  /* e */ FP_REGS,   /* f */ FP_REGS,  /* g **/ NO_REGS,     /* h */ NO_REGS,
+  /* i **/ NO_REGS,  /* j */ NO_REGS,  /* k */ SIBCALL_REGS, /* l */ PR_REGS,
+  /* m **/ NO_REGS,  /* n **/ NO_REGS, /* o **/ NO_REGS,     /* p **/ NO_REGS,
+  /* q */ NO_REGS,   /* r **/ NO_REGS, /* s **/ NO_REGS,     /* t */ T_REGS,
+  /* u */ NO_REGS,   /* v */ NO_REGS,  /* w */ FP0_REGS,     /* x */ MAC_REGS,
   /* y */ FPUL_REGS, /* z */ R0_REGS
 };
 
@@ -7784,9 +7785,8 @@ sh_mark_label (address, nuses)
 /* Compute extra cost of moving data between one register class
    and another.  */
 
-/* Regclass always uses 2 for moves in the same register class;
-   If SECONDARY*_RELOAD_CLASS says something about the src/dst pair,
-   it uses this information.  Hence, the general register <-> floating point
+/* If SECONDARY*_RELOAD_CLASS says something about the src/dst pair, regclass
+   uses this information.  Hence, the general register <-> floating point
    register information here is not used for SFmode.  */
 
 int
@@ -7796,6 +7796,11 @@ sh_register_move_cost (mode, srcclass, dstclass)
 {
   if (dstclass == T_REGS || dstclass == PR_REGS)
     return 10;
+
+  if (mode == SImode && ! TARGET_SHMEDIA && TARGET_FMOVD
+      && REGCLASS_HAS_FP_REG (srcclass)
+      && REGCLASS_HAS_FP_REG (dstclass))
+    return 4;
 
   if ((REGCLASS_HAS_FP_REG (dstclass)
        && REGCLASS_HAS_GENERAL_REG (srcclass))
@@ -7824,7 +7829,13 @@ sh_register_move_cost (mode, srcclass, dstclass)
       || (dstclass == FPSCR_REGS && ! REGCLASS_HAS_GENERAL_REG (srcclass)))
   return 4;
 
-  return 2 * ((GET_MODE_SIZE (mode) + 7) / 8U);
+  if (TARGET_SHMEDIA
+      || (TARGET_FMOVD
+	  && ! REGCLASS_HAS_GENERAL_REG (srcclass)
+	  && ! REGCLASS_HAS_GENERAL_REG (dstclass)))
+    return 2 * ((GET_MODE_SIZE (mode) + 7) / 8U);
+
+  return 2 * ((GET_MODE_SIZE (mode) + 3) / 4U);
 }
 
 #include "gt-sh.h"
