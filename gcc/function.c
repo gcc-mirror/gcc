@@ -4860,6 +4860,12 @@ expand_function_start (subr, parms_have_cleanups)
 #endif
       last_ptr = copy_to_reg (gen_rtx (MEM, Pmode,
 				       memory_address (Pmode, last_ptr)));
+
+      /* If we are not optimizing, ensure that we know that this
+	 piece of context is live over the entire function.  */
+      if (! optimize)
+	save_expr_regs = gen_rtx (EXPR_LIST, VOIDmode, last_ptr,
+				  save_expr_regs);
     }
 
   /* After the display initializations is where the tail-recursion label
