@@ -1,4 +1,8 @@
-2003-04-23  Benjamin Kosnik  <bkoz@belmont.constant.com>
+2003-04-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/generic/c_locale.h: Fix placement for old parser.
+
+2003-04-23  Benjamin Kosnik  <bkoz@redhat.com>
  
         * config/locale/generic/c_locale.h (__convert_from_v): Use
         attribute unused.
