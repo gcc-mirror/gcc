@@ -1330,7 +1330,7 @@ distclean: clean
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
 extraclean: distclean
-	-rm -rf =* #* *~* config/=* config/#* config/*~*
+	-rm -rf =* ./"#"* *~* config/=* config/"#"* config/*~*
 	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
 	-rm -f *.dvi *.oaux *.d *.Z *.tar *.xtar *diff
 	-rm -f *lose config/*lose
