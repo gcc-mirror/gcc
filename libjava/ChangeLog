@@ -1,3 +1,9 @@
+2004-08-14  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* java/net/natInetAddressPosix.cc (lookup): Reflect rename of 
+	localhostAddress to loopbackAddress.
+	* java/net/natInetAddressWin32.cc (lookup): Likewise.
+
 2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* configure.in (GCINCS): Don't use "boehm-cflags". Instead, -I 
