@@ -51,5 +51,8 @@
 // GCC does not use thunks on IRIX. 
 #define _G_USING_THUNKS 0
 
+// FINOREAD takes an "off_t *" as argument.
+#define _GLIBCXX_FIONREAD_TAKES_OFF_T
+
 #endif
 

@@ -1,3 +1,10 @@
+2004-02-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/os/irix/irix6.5/os_defines.h (_GLIBCXX_FIONREAD_TAKES_OFF_T):
+	Define.
+	* config/io/basic_file_stdio.cc (__basic_file<char>::showmanyc): Use
+	it to decide whether FIONREAD should take an off_t or int argument.
+
 2004-02-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_function.h: Minor formatting changes.

@@ -267,7 +267,11 @@ namespace std
   {
 #ifdef FIONREAD
     // Pipes and sockets.    
+#ifdef _GLIBCXX_FIONREAD_TAKES_OFF_T
+    off_t __num = 0;
+#else
     int __num = 0;
+#endif
     int __r = ioctl(this->fd(), FIONREAD, &__num);
     if (!__r && __num >= 0)
       return __num; 
