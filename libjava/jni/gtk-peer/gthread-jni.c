@@ -35,116 +35,430 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+/************************************************************************/
+/* Header				     				*/
+/************************************************************************/
+
+/*
+ * Julian Dolby (dolby@us.ibm.com)
+ * February 7, 2003
+ *
+ *  This code implements the GThreadFunctions interface for GLIB using 
+ * Java threading primitives.  All of the locking and conditional variable
+ * functionality required by GThreadFunctions is implemented using the
+ * monitor and wait/notify functionality of Java objects.  The thread-
+ * local fucntionality uses the java.lang.ThreadLocal class. 
+ *
+ *  This code is designed to be portable in that it makes no assumptions
+ * about the underlying VM beyond that it implements the JNI functionality
+ * that this code uses.
+ *
+ *  The one piece that does not really work is trylock for mutexes.  The
+ * Java locking model does not include such functionality, and I do not
+ * see how to implement it without knowing something about how the VM
+ * implements locking.  
+ *
+ * NOTES:
+ *
+ *  I have tested it only on JikesRVM---the CVS head as of early February
+ * 2003.
+ *
+ *  Currently, use of this code is governed by the configuration option
+ * --enable-portable-native-sync
+ *
+ */
+
+
+/************************************************************************/
+/* Global data				     				*/
+/************************************************************************/
 
 #include "gthread-jni.h"
 
-/*
- * This code has been written specifically to be used with GTK+ 1.2.
- * `Real' GLIB threading is not supported.  We fake things where necessary.
- * Once we know we're running on a 1.2 VM, we can write a real implementation.
- */
+/*  The VM handle.  This is set in GtkToolkitMain.gtkInit */
+JavaVM *gdk_vm;
 
-static GMutex *
-g_mutex_new_jni_impl (void)
-{
+
+/************************************************************************/
+/* Utilities to reflect exceptions back to the VM			*/
+/************************************************************************/
+
+/*  This function checks for a pending exception, and rethrows it with
+ * a wrapper RuntimeException to deal with possible type problems (in
+ * case some calling piece of code does not expect the exception being
+ * thrown) and to include the given extra message.
+ */
+static void maybe_rethrow(JNIEnv *gdk_env, char *message, char *file, int line) {
+  jthrowable cause;
+
+  /* rethrow if an exception happened */
+  if ((cause = (*gdk_env)->ExceptionOccurred(gdk_env)) != NULL) {
+    jstring jmessage;
   jclass obj_class;
-  jobject *mutex;
+    jobject obj;
+    jmethodID ctor;
+
+    /* allocate local message in Java */
+    int len = strlen(message) + strlen(file) + 25;
+    char buf[ len ];
+    bzero(buf, len);
+    sprintf(buf, "%s (at %s:%d)", message, file, line);
+    jmessage = (*gdk_env)->NewStringUTF(gdk_env, buf);
+    
+    /* create RuntimeException wrapper object */
+    obj_class = (*gdk_env)->FindClass (gdk_env, "java/lang/RuntimeException");
+    ctor = (*gdk_env)->GetMethodID(gdk_env, obj_class, "<init>", "(Ljava/langString;Ljava/lang/Throwable)V");
+    obj = (*gdk_env)->NewObject (gdk_env, obj_class, ctor, jmessage, cause);
+
+    /* throw it */
+    (*gdk_env)->Throw(gdk_env, (jthrowable)obj);
+    }
+}
+
+/* This macro is used to include a source location in the exception message */
+#define MAYBE_RETHROW(_class, _message) \
+maybe_rethrow(_class, _message, __FILE__, __LINE__)
+
+
+/************************************************************************/
+/* Utilities to allocate and free java.lang.Objects			*/
+/************************************************************************/
+
+/*  Both the mutexes and the condition variables are java.lang.Object objects,
+ * which this method allocates and returns a global ref.  Note that global
+ * refs must be explicitly freed (isn't C fun?).
+ */
+static jobject *allocatePlainObject() {
+  jclass obj_class;
+  jobject *obj;
+  JNIEnv *gdk_env;
+  jmethodID ctor;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
 
   obj_class = (*gdk_env)->FindClass (gdk_env, "java/lang/Object");
-  if (obj_class == NULL)
-    return NULL;
+  MAYBE_RETHROW(gdk_env, "cannot find Object");
 
-  mutex = (jobject *) g_malloc (sizeof (jobject));
-  *mutex = (*gdk_env)->AllocObject (gdk_env, obj_class);
-  if (*mutex == NULL)
-    {
-      g_free (mutex);
-      return NULL;
-    }
-  *mutex = (*gdk_env)->NewGlobalRef (gdk_env, *mutex);
+  ctor = (*gdk_env)->GetMethodID(gdk_env, obj_class, "<init>", "()V");
+  MAYBE_RETHROW(gdk_env, "cannot find constructor");
 
-  return (GMutex *) mutex;
+  obj = (jobject *) g_malloc (sizeof (jobject));
+  *obj = (*gdk_env)->NewObject (gdk_env, obj_class, ctor);
+  MAYBE_RETHROW(gdk_env, "cannot allocate object");
+  
+  *obj = (*gdk_env)->NewGlobalRef (gdk_env, *obj);
+  MAYBE_RETHROW(gdk_env, "cannot make global ref");
+
+  return obj;
 }
 
-static void
-g_mutex_lock_jni_impl (GMutex *mutex)
-{
-  if (mutex && mutex == gdk_threads_mutex)
-    (*gdk_env)->MonitorEnter (gdk_env, *((jobject *)mutex));
+/*  Frees a Java object given a global ref (isn't C fun?) */
+static void freePlainObject(jobject *obj) {
+  JNIEnv *gdk_env;
+
+  if (obj) {
+    (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+    (*gdk_env)->DeleteGlobalRef (gdk_env, *obj);
+    MAYBE_RETHROW(gdk_env, "cannot delete global ref");
+  
+    g_free (obj);
+  }
 }
 
-static gboolean
-g_mutex_trylock_jni_impl (GMutex *mutex)
-{
-  return FALSE;
+
+/************************************************************************/
+/* Locking code				     				*/
+/************************************************************************/
+
+/* Lock a Java object */
+static void takeLock(JNIEnv *gdk_env, void *mutex) {
+  (*gdk_env)->MonitorEnter (gdk_env, *((jobject *)mutex));
+  MAYBE_RETHROW(gdk_env, "cannot get lock");
 }
 
-static void
-g_mutex_unlock_jni_impl (GMutex *mutex)
-{
-  if (mutex && mutex == gdk_threads_mutex)
+/* Unlock a Java object */
+static void releaseLock(JNIEnv *gdk_env, void *mutex) {
     (*gdk_env)->MonitorExit (gdk_env, *((jobject *)mutex));
+  MAYBE_RETHROW(gdk_env, "cannot release lock");
 }
 
-static void
-g_mutex_free_jni_impl (GMutex *mutex)
-{
-  if (mutex && mutex == gdk_threads_mutex)
-    {
-      (*gdk_env)->DeleteGlobalRef (gdk_env, *((jobject *)mutex));
-      g_free (mutex);
-    }
+/* Create a mutex, which is a java.lang.Object for us */
+static GMutex *g_mutex_new_jni_impl (void) {
+  return (GMutex*) allocatePlainObject();
 }
 
-static GPrivate *
-g_private_new_jni_impl (GDestroyNotify notify)
-{
-  return NULL;
+/* Lock a mutex. */
+static void g_mutex_lock_jni_impl (GMutex *mutex) {
+  JNIEnv *gdk_env;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  takeLock(gdk_env, mutex);
 }
 
-static gpointer
-g_private_get_jni_impl (GPrivate *private)
-{
-  return NULL;
-}
-
-static void
-g_private_set_jni_impl (GPrivate *private, gpointer data)
-{
-}
-
-static GCond *
-g_cond_new_jni_impl ()
-{
-  return NULL;
-}
-
-static void
-g_cond_signal_jni_impl (GCond *cond)
-{
-}
-
-static void
-g_cond_broadcast_jni_impl (GCond *cond)
-{
-}
-
-static void
-g_cond_wait_jni_impl (GCond *cond, GMutex *mutex)
-{
-}
-
-static gboolean
-g_cond_timed_wait_jni_impl (GCond *cond, GMutex *mutex)
-{
+/*  Try to lock a mutex.  Actually, do not try because Java objects
+ * do not provide such an interface.  To be at least minimally correct,
+ * pretend we tried and failed.
+ */
+static gboolean g_mutex_trylock_jni_impl (GMutex *mutex) {
+  // Shall we implement this in a JikesRVM-specific way under a flag?
   return FALSE;
 }
 
-static void
-g_cond_free_jni_impl (GCond *cond)
-{
+/* Unlock a mutex. */
+static void g_mutex_unlock_jni_impl (GMutex *mutex) {
+  JNIEnv *gdk_env;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  releaseLock(gdk_env, mutex);
 }
 
+/* Free a mutex (isn't C fun?) */
+static void g_mutex_free_jni_impl (GMutex *mutex)
+{
+  freePlainObject( (jobject*)mutex );
+}
+
+
+/************************************************************************/
+/* Condition variable code		     				*/
+/************************************************************************/
+
+/* Create a new condition variable.  This is a java.lang.Object for us. */
+static GCond *g_cond_new_jni_impl () {
+  return (GCond*)allocatePlainObject();
+}
+
+/*  Signal on a condition variable.  This is simply calling Object.notify
+ * for us.
+ */
+static void g_cond_signal_jni_impl (GCond *cond) {
+  jclass lcl_class;
+  jmethodID signal_mth;
+  JNIEnv *gdk_env;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  lcl_class = (*gdk_env)->FindClass (gdk_env, "java.lang.Object");
+  MAYBE_RETHROW(gdk_env, "cannot find Object");
+  
+  signal_mth = (*gdk_env)->GetMethodID(gdk_env, lcl_class, "notify", "()V");
+  MAYBE_RETHROW(gdk_env, "cannot find Object.<notify>");
+
+  /* Must have locked an object to call notify */
+  takeLock(gdk_env, cond);
+
+  (*gdk_env)->CallVoidMethod(gdk_env, *(jobject*)cond, signal_mth);
+  MAYBE_RETHROW(gdk_env, "cannot signal mutex");
+
+  releaseLock(gdk_env, cond);
+}
+
+/*  Broadcast to all waiting on a condition variable.  This is simply 
+ * calling Object.notifyAll for us.
+ */
+static void g_cond_broadcast_jni_impl (GCond *cond) {
+  jclass lcl_class;
+  jmethodID bcast_mth;
+  JNIEnv *gdk_env;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  lcl_class = (*gdk_env)->FindClass (gdk_env, "java.lang.Object");
+  MAYBE_RETHROW(gdk_env, "cannot find Object");
+  
+  bcast_mth = (*gdk_env)->GetMethodID(gdk_env, lcl_class, "notifyAll", "()V");
+  MAYBE_RETHROW(gdk_env, "cannot find Object.<notifyAll>");
+
+  /* Must have locked an object to call notifyAll */
+  takeLock(gdk_env, cond);
+
+  (*gdk_env)->CallVoidMethod(gdk_env, *(jobject*)cond, bcast_mth);
+  MAYBE_RETHROW(gdk_env, "cannot broadcast to mutex");
+
+  releaseLock(gdk_env, cond);
+}
+
+
+/*  Wait on a condition variable.  For us, this simply means call
+ * Object.wait.
+ */
+static void g_cond_wait_jni_impl (GCond *cond, GMutex *mutex) {
+  jclass lcl_class;
+  jmethodID wait_mth;
+  JNIEnv *gdk_env;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  lcl_class = (*gdk_env)->FindClass (gdk_env, "java.lang.Object");
+  MAYBE_RETHROW(gdk_env, "cannot find Object");
+  
+  wait_mth = (*gdk_env)->GetMethodID(gdk_env, lcl_class, "wait", "()V");
+  MAYBE_RETHROW(gdk_env, "cannot find Object.<wait>");
+
+  /* Must have locked an object to call wait */
+  takeLock(gdk_env, cond);
+
+  (*gdk_env)->CallVoidMethod(gdk_env, *(jobject*)cond, wait_mth);
+  MAYBE_RETHROW(gdk_env, "cannot wait on mutex");
+
+  releaseLock(gdk_env, cond);
+}
+
+/*  Wait on a condition vairable until a timeout.  This is a little tricky
+ * for us.  We first call Object.wait(J) giving it the appropriate timeout
+ * value.  On return, we check whether an InterruptedException happened.  If
+ * so, that is Java-speak for wait timing out.
+ */
+static gboolean
+g_cond_timed_wait_jni_impl (GCond *cond, GMutex *mutex, GTimeVal *end_time) {
+  jclass lcl_class;
+  jmethodID wait_mth;
+  JNIEnv *gdk_env;
+  jlong time;
+  jthrowable cause;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  lcl_class = (*gdk_env)->FindClass (gdk_env, "java.lang.Object");
+  MAYBE_RETHROW(gdk_env, "cannot find Object");
+  
+  wait_mth = (*gdk_env)->GetMethodID(gdk_env, lcl_class, "wait", "(J)V");
+  MAYBE_RETHROW(gdk_env, "cannot find Object.<wait(J)>");
+  
+  time = end_time->tv_sec*1000;
+  time += end_time->tv_usec/1000;
+
+  /* Must have locked an object to call wait */
+  takeLock(gdk_env, cond);
+
+  (*gdk_env)->CallVoidMethod(gdk_env, *(jobject*)cond, wait_mth, time);
+
+  if ((cause = (*gdk_env)->ExceptionOccurred(gdk_env)) != NULL) {
+    jclass intr = (*gdk_env)->FindClass (gdk_env, "java.lang.InterruptedException");
+    if ( (*gdk_env)->IsInstanceOf(gdk_env, cause, intr) ) {
+      releaseLock(gdk_env, cond);
+  return FALSE;
+    } else {
+      MAYBE_RETHROW(gdk_env, "error in timed wait");
+    }
+  }
+
+  releaseLock(gdk_env, cond);
+
+  return TRUE;
+}
+
+/* Free a condition variable.  (isn't C fun?) */
+static void g_cond_free_jni_impl (GCond *cond) {
+  freePlainObject( (jobject*)cond );
+}
+
+
+/************************************************************************/
+/* Thread-local data code		     				*/
+/************************************************************************/
+
+/*  Create a new thread-local key.  We use java.lang.ThreadLocal objects
+ * for this.
+ */
+static GPrivate *g_private_new_jni_impl (GDestroyNotify notify) {
+  jclass lcl_class;
+  jobject *local;
+  JNIEnv *gdk_env;
+  jmethodID ctor;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  lcl_class = (*gdk_env)->FindClass (gdk_env, "java.lang.ThreadLocal");
+  MAYBE_RETHROW(gdk_env, "cannot find ThreadLocal");
+
+  ctor = (*gdk_env)->GetMethodID(gdk_env, lcl_class, "<init>", "()V");
+  MAYBE_RETHROW(gdk_env, "cannot find ThreadLocal.<init>");
+
+  local = (jobject *) g_malloc (sizeof (jobject));
+  *local = (*gdk_env)->NewObject(gdk_env, lcl_class, ctor);
+  MAYBE_RETHROW(gdk_env, "cannot allocate a ThreadLocal");
+  
+  *local = ((*gdk_env)->NewGlobalRef (gdk_env, *local));
+  MAYBE_RETHROW(gdk_env, "cannot create a GlobalRef");
+
+  return (GPrivate*) local;
+}
+
+/*  Get this thread's value for a thread-local key.  This is simply
+ * ThreadLocal.get for us.
+ */
+static gpointer g_private_get_jni_impl (GPrivate *private) {
+  jclass lcl_class;
+  jobject lcl_obj;
+  JNIEnv *gdk_env;
+  jmethodID get_mth;
+  jclass int_class;
+  jmethodID val_mth;
+  jint int_val;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  lcl_class = (*gdk_env)->FindClass (gdk_env, "java.lang.ThreadLocal");
+  MAYBE_RETHROW(gdk_env, "cannot find ThreadLocal");
+
+  get_mth = (*gdk_env)->GetMethodID(gdk_env, lcl_class, "get", "()Ljava/lang/Object;");
+  MAYBE_RETHROW(gdk_env, "cannot find ThreadLocal.<get>");
+
+  lcl_obj = (*gdk_env)->CallObjectMethod(gdk_env, *(jobject*)private, get_mth);
+  MAYBE_RETHROW(gdk_env, "cannot find thread-local object");
+
+  int_class = (*gdk_env)->FindClass (gdk_env, "java.lang.Integer");
+  MAYBE_RETHROW(gdk_env, "cannot find Integer");
+
+  val_mth = (*gdk_env)->GetMethodID(gdk_env, int_class, "intValue", "()I");
+  MAYBE_RETHROW(gdk_env, "cannot find Integer.<intValue>");
+
+  int_val = (*gdk_env)->CallIntMethod(gdk_env, lcl_obj, val_mth);
+  MAYBE_RETHROW(gdk_env, "cannot get thread local value");
+
+  return (gpointer) int_val;
+}
+
+/*  Set this thread's value for a thread-local key.  This is simply
+ * ThreadLocal.set for us.
+ */
+static void g_private_set_jni_impl (GPrivate *private, gpointer data) {
+  jclass lcl_class, int_class;
+  jobject lcl_obj;
+  JNIEnv *gdk_env;
+  jmethodID new_int, set_mth;
+
+  (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
+
+  int_class = (*gdk_env)->FindClass (gdk_env, "java.lang.Integer");
+  MAYBE_RETHROW(gdk_env, "cannot find Integer");
+
+  new_int = (*gdk_env)->GetMethodID(gdk_env, int_class, "<init>", "(I)V");
+  MAYBE_RETHROW(gdk_env, "cannot find Integer.<init>");
+
+  lcl_obj = (*gdk_env)->NewObject(gdk_env, int_class, new_int, (jint)data);
+  MAYBE_RETHROW(gdk_env, "cannot create an Integer");
+
+  lcl_class = (*gdk_env)->FindClass (gdk_env, "java.lang.ThreadLocal");
+  MAYBE_RETHROW(gdk_env, "cannot find ThreadLocal");
+
+  set_mth = (*gdk_env)->GetMethodID(gdk_env, lcl_class, "set", "(Ljava/lang/Object;)V");
+  MAYBE_RETHROW(gdk_env, "cannot find ThreadLocal.<set>");
+
+  (*gdk_env)->CallVoidMethod(gdk_env, *(jobject*)private, set_mth, lcl_obj);
+  MAYBE_RETHROW(gdk_env, "cannot set thread local value");
+}
+
+
+/************************************************************************/
+/* GLIB interface			     				*/
+/************************************************************************/
+
+/* set of function pointers to give to glib. */
 GThreadFunctions g_thread_jni_functions =
 {
   g_mutex_new_jni_impl,	      /* mutex_new */
@@ -163,7 +477,7 @@ GThreadFunctions g_thread_jni_functions =
   g_private_set_jni_impl      /* private_set */
 };
 
-void
-gdk_threads_wake ()
-{
+/* ??? */
+void gdk_threads_wake () {
+
 }

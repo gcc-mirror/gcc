@@ -93,17 +93,37 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectHooks
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
+  GtkVBox* vbox;
   GtkWidget *layout;
-
+  GList* children;
+  char* name;
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
-  layout = GTK_WIDGET (gtk_container_children (GTK_CONTAINER (GTK_BIN (ptr)->child))->data);
+
+   children = gtk_container_get_children(GTK_CONTAINER(ptr));
+   vbox = children->data;
+   name = GTK_OBJECT_TYPE_NAME(vbox);
+   if(!GTK_IS_VBOX(vbox))
+     {
+       printf("*** this is not a vbox\n");
+     }
+   children = gtk_container_get_children(GTK_CONTAINER(vbox));
+   layout = children->data;
+   name = GTK_OBJECT_TYPE_NAME(layout);
+   if(!GTK_IS_LAYOUT(layout))
+     {
+      printf("*** widget is not a layout ***");
+     }
+
   gtk_widget_realize (layout);
+
   connect_awt_hook (env, obj, 1, GTK_LAYOUT (layout)->bin_window);
   
-  gtk_widget_realize (GTK_WIDGET (ptr));
+    gtk_widget_realize (ptr);
+
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
+  
   gdk_threads_leave ();
 }
 
@@ -112,8 +132,8 @@ setup_window (JNIEnv *env, jobject obj, GtkWidget *window, jint width,
 	      jint height, jboolean visible)
 {
   GtkWidget *layout, *vbox;
-  gint x, y;
 
+  gdk_threads_enter();
   gtk_window_set_policy (GTK_WINDOW (window), 1, 1, 0);
   gtk_widget_set_usize (window, width, height);
 
@@ -131,6 +151,7 @@ setup_window (JNIEnv *env, jobject obj, GtkWidget *window, jint width,
 
   connect_awt_hook (env, obj, 1, window->window);
   set_visible (window, visible);
+  gdk_threads_leave ();
 }
 
 /*
@@ -212,9 +233,6 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_toFront (JNIEnv *env,
 static void
 setBounds (GtkWidget *widget, jint x, jint y, jint width, jint height)
 {
-  gint current_x, current_y;
-  gint origin_x, origin_y;
-
 /*    gdk_window_get_root_origin (widget->window, &current_x, &current_y); */
 
 /*    if (current_x != x || current_y != y) */
@@ -295,16 +313,12 @@ gdk_window_get_root_geometry (GdkWindow *window,
 			      gint      *border,
 			      gint      *depth)
 {
-  GdkWindowPrivate *private;
-  Window xwindow;
-  Window xparent;
-  Window root;
-  Window *children;
+  GdkWindow *private;
   unsigned int nchildren;
   
   g_return_if_fail (window != NULL);
   
-  private = (GdkWindowPrivate*) window;
+  private = (GdkWindow*) window;
   if (x)
     *x = 0;
   if (y)
@@ -318,48 +332,14 @@ gdk_window_get_root_geometry (GdkWindow *window,
   if (depth)
     *depth = 0;
 
-  if (private->destroyed)
+  if (GDK_WINDOW_DESTROYED (private))
     return;
   
-  while (private->parent && ((GdkWindowPrivate*) private->parent)->parent)
-    private = (GdkWindowPrivate*) private->parent;
-  if (private->destroyed)
+  private = gdk_window_get_toplevel (private);
+  if (GDK_WINDOW_DESTROYED(private))
     return;
   
-  xparent = private->xwindow;
-  do
-    {
-      xwindow = xparent;
-      if (!XQueryTree (private->xdisplay, xwindow,
-		       &root, &xparent,
-		       &children, &nchildren))
-	return;
+  gdk_window_get_geometry (private, x, y, width, height, depth);
       
-      if (children)
-	XFree (children);
-    }
-  while (xparent != root);
-  
-  if (xparent == root)
-    {
-      unsigned int ww, wh, wb, wd;
-      int wx, wy;
-      
-      if (XGetGeometry (private->xdisplay, xwindow, &root, &wx, &wy, &ww, &wh, &wb, &wd))
-	{
-	  if (x)
-	    *x = wx;
-	  if (y)
-	    *y = wy;
-	  if (width)
-	    *width = ww;
-	  if (height)
-	    *height = wh;
-	  if (border)
-	    *border = wb;
-	  if (depth)
-	    *depth = wd;
-	}
-    }
 }
 

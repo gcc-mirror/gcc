@@ -43,10 +43,10 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_create
   (JNIEnv *env, jobject obj)
 {
-  gpointer widget;
+  GtkWidget *widget;
 
   gdk_threads_enter ();
-  widget = gtk_type_new (gtk_entry_get_type ());
+  widget = gtk_entry_new ();
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, widget);
@@ -68,36 +68,6 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_connectHooks
   gdk_threads_leave ();
 }
 
-
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_old_create
-  (JNIEnv *env, jobject obj, jobject parent_obj, jstring text)
-{
-  GtkWidget *entry;
-  const char *str;
-  void *parent;
-
-  parent = NSA_GET_PTR (env, parent_obj);
-
-  str = (*env)->GetStringUTFChars (env, text, NULL);
-  gdk_threads_enter ();
-
-  entry = gtk_entry_new ();
-  gtk_entry_set_text (GTK_ENTRY (entry), str);
-
-  set_parent (entry, GTK_CONTAINER (parent));
-
-  gtk_widget_realize (entry);
-  connect_awt_hook (env, obj, 2, 
-		    entry->window, GTK_ENTRY (entry)->text_area);
-
-  NSA_SET_PTR (env, obj, entry);
-
-  gdk_threads_leave ();
-  (*env)->ReleaseStringUTFChars (env, text, str);
-}
-
-
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkEntryGetSize
   (JNIEnv *env, jobject obj, jint cols, jintArray jdims)
@@ -105,19 +75,16 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkEntryGetSize
   void *ptr;
   jint *dims;
   GtkRequisition myreq;
-  GtkEntry *entry;
+  GtkWidget *entry;
   
   ptr = NSA_GET_PTR (env, obj);
   dims = (*env)->GetIntArrayElements (env, jdims, 0);  
   
   gdk_threads_enter ();
-  entry = GTK_ENTRY (ptr);
-
-  gtk_signal_emit_by_name (GTK_OBJECT (entry), "size_request", &myreq);  
   
-  dims[0]=myreq.width-150 + (cols * 
-			     gdk_char_width (GTK_WIDGET (entry)->style->font,
-					    'W'));
+  entry = GTK_WIDGET (ptr);
+  gtk_widget_size_request(entry, &myreq);
+  dims[0]=myreq.width;
   dims[1]=myreq.height;
   
   gdk_threads_leave ();
@@ -153,31 +120,24 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkSetFont
   (JNIEnv *env, jobject obj, jstring jname, jint size)
 {
-  const char *xlfd;
-# define FBUFSZ 200
-  char buf[FBUFSZ];
+  const char *font_name;
   void *ptr;
-  GdkFont * new_font;
-  GtkStyle * style;
-  GtkWidget * text;
+  GtkWidget *entry;
+  PangoFontDescription *font_desc;
 
   ptr = NSA_GET_PTR (env, obj);
-  text = GTK_WIDGET (ptr);
   
-  xlfd = (*env)->GetStringUTFChars (env, jname, NULL);
-  snprintf(buf, FBUFSZ, xlfd, size);
-  (*env)->ReleaseStringUTFChars (env, jname, xlfd);
+  entry = GTK_WIDGET (ptr);
+  font_name = (*env)->GetStringUTFChars (env, jname, NULL);
+
   gdk_threads_enter();
-  new_font = gdk_font_load(buf);  /* FIXME: deprecated. Replacement?	*/
-  if (new_font == NULL)
-    {
-      /* Fail quietly for now. */
-      gdk_threads_leave();
-      return;
-    }
-  style = gtk_style_copy (gtk_widget_get_style (text));
-  style -> font = new_font;
-  gtk_widget_set_style (text , style);
-  /* FIXME: Documentation varies as to whether we should unref style. */
+
+  font_desc = pango_font_description_from_string (font_name);
+  pango_font_description_set_size (font_desc, size);
+  gtk_widget_modify_font (GTK_WIDGET(entry), font_desc);
+  pango_font_description_free (font_desc);
+
   gdk_threads_leave();
+
+  (*env)->ReleaseStringUTFChars (env, jname, font_name);
 }

@@ -42,47 +42,43 @@ exception statement from your version. */
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
   (JNIEnv *env, jobject obj)
 {
-  gpointer widget;
+  GtkButton *button;
 
   gdk_threads_enter ();
-  widget = gtk_type_new (gtk_button_get_type ());
+  button = gtk_button_new();
+  gtk_widget_show (GTK_WIDGET(button));
   gdk_threads_leave ();
-
-  NSA_SET_PTR (env, obj, widget);
+  NSA_SET_PTR (env, obj, button);
 }
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetFont
   (JNIEnv *env, jobject obj, jstring jname, jint size)
 {
-  const char *xlfd;
-# define FBUFSZ 200
-  char buf[FBUFSZ];
+  const char *font_name;
   void *ptr;
-  GdkFont * new_font;
-  GtkStyle * style;
-  GtkWidget * button;
-  GtkWidget * label;
+  GtkWidget *button;
+  GtkWidget *label;
+  PangoFontDescription *font_desc;
 
   ptr = NSA_GET_PTR (env, obj);
+
   button = GTK_WIDGET (ptr);
-  label = GTK_BIN(button)->child;
+  label = gtk_bin_get_child (GTK_BIN(button));
   
-  if (label == NULL) return;
-  xlfd = (*env)->GetStringUTFChars (env, jname, NULL);
-  snprintf(buf, FBUFSZ, xlfd, size);
-  (*env)->ReleaseStringUTFChars (env, jname, xlfd);
-  gdk_threads_enter();
-  new_font = gdk_font_load (buf);  /* FIXME: deprecated. Replacement?	*/
-  if (new_font == NULL)
-    {
-      /* Fail quietly for now. */
-      gdk_threads_leave();
+  if (!label)
       return;
-    }
-  style = gtk_style_copy (gtk_widget_get_style (label));
-  style -> font = new_font;
-  gtk_widget_set_style (label, style);
-  /* FIXME: Documentation varies as to whether we should unref style. */
+
+  font_name = (*env)->GetStringUTFChars (env, jname, NULL);
+
+  gdk_threads_enter();
+
+  font_desc = pango_font_description_from_string (font_name);
+  pango_font_description_set_size (font_desc, size);
+  gtk_widget_modify_font (GTK_WIDGET(label), font_desc);
+  pango_font_description_free (font_desc);
+
   gdk_threads_leave();
+
+  (*env)->ReleaseStringUTFChars (env, jname, font_name);
 }
