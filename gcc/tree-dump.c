@@ -569,7 +569,7 @@ dequeue_and_dump (di)
       break;
 
     case CONSTRUCTOR:
-      dump_child ("elts", TREE_OPERAND (t, 1));
+      dump_child ("elts", TREE_OPERAND (t, 0));
       break;
 
     case BIND_EXPR:
