@@ -1,3 +1,7 @@
+2001-07-17  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/20010717-1.c: New.
+
 2001-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/compile/20010714-1.c, gcc.dg/format/attr-4.c: New

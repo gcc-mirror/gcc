@@ -1,3 +1,8 @@
+2001-07-17  Richard Henderson  <rth@redhat.com>
+
+	* c-typeck.c (build_binary_op): Do not shorten unsigned
+	right shift after sign extension.
+
 Tue Jul 17 16:56:05 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (combine_simplify_rtx): Attempt to simplify
