@@ -1751,9 +1751,11 @@ emit_thunk (thunk_fndecl)
     abort ();
   current_function_decl = thunk_fndecl;
 #ifdef ASM_OUTPUT_MI_THUNK
+  temporary_allocation ();
   assemble_start_function (thunk_fndecl, fnname);
   ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
   assemble_end_function (thunk_fndecl, fnname);
+  permanent_allocation (1);
 #else
   save_ofp = flag_omit_frame_pointer;
   flag_omit_frame_pointer = 1;
@@ -1995,8 +1997,12 @@ do_build_copy_constructor (fndecl)
 	    (build_reference_type (basetype), parm,
 	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
-	  current_base_init_list = tree_cons (basetype,
-					      p, current_base_init_list);
+
+	  if (p == error_mark_node)
+	    cp_error ("in default copy constructor");
+	  else 
+	    current_base_init_list = tree_cons (basetype,
+						p, current_base_init_list);
 	}
 	
       for (i = 0; i < n_bases; ++i)
@@ -2009,9 +2015,15 @@ do_build_copy_constructor (fndecl)
 	  p = convert_to_reference
 	    (build_reference_type (basetype), parm,
 	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
-	  p = convert_from_reference (p);
-	  current_base_init_list = tree_cons (basetype,
-					      p, current_base_init_list);
+
+	  if (p == error_mark_node) 
+	    cp_error ("in default copy constructor");
+	  else 
+	    {
+	      p = convert_from_reference (p);
+	      current_base_init_list = tree_cons (basetype,
+						  p, current_base_init_list);
+	    }
 	}
       for (; fields; fields = TREE_CHAIN (fields))
 	{
@@ -2080,16 +2092,13 @@ do_build_assign_ref (fndecl)
       for (i = 0; i < n_bases; ++i)
 	{
 	  tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-	  if (TYPE_HAS_ASSIGN_REF (basetype))
-	    {
-	      tree p = convert_to_reference
-		(build_reference_type (basetype), parm,
-		 CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
-	      p = convert_from_reference (p);
-	      p = build_member_call (basetype, ansi_opname [MODIFY_EXPR],
-				     build_tree_list (NULL_TREE, p));
-	      expand_expr_stmt (p);
-	    }
+	  tree p = convert_to_reference
+	    (build_reference_type (basetype), parm,
+	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
+	  p = convert_from_reference (p);
+	  p = build_member_call (basetype, ansi_opname [MODIFY_EXPR],
+				 build_tree_list (NULL_TREE, p));
+	  expand_expr_stmt (p);
 	}
       for (; fields; fields = TREE_CHAIN (fields))
 	{
@@ -2098,6 +2107,24 @@ do_build_assign_ref (fndecl)
 
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
+
+	  if (TREE_READONLY (field))
+	    {
+	      if (DECL_NAME (field))
+		cp_error ("non-static const member `%#D', can't use default assignment operator", field);
+	      else
+		cp_error ("non-static const member in type `%T', can't use default assignment operator", current_class_type);
+	      continue;
+	    }
+	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
+	    {
+	      if (DECL_NAME (field))
+		cp_error ("non-static reference member `%#D', can't use default assignment operator", field);
+	      else
+		cp_error ("non-static reference member in type `%T', can't use default assignment operator", current_class_type);
+	      continue;
+	    }
+
 	  if (DECL_NAME (field))
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))

@@ -2750,24 +2750,6 @@ identifier_typedecl_value (node)
   return NULL_TREE;
 }
 
-struct try_type
-{
-  tree *node_var;
-  char unsigned_flag;
-  char long_flag;
-  char long_long_flag;
-};
-
-struct try_type type_sequence[] = 
-{
-  { &integer_type_node, 0, 0, 0},
-  { &unsigned_type_node, 1, 0, 0},
-  { &long_integer_type_node, 0, 1, 0},
-  { &long_unsigned_type_node, 1, 1, 0},
-  { &long_long_integer_type_node, 0, 1, 1},
-  { &long_long_unsigned_type_node, 1, 1, 1}
-};
-
 int
 real_yylex ()
 {
@@ -3528,83 +3510,10 @@ real_yylex ()
 	    yylval.ttype = build_int_2 (low, high);
 	    TREE_TYPE (yylval.ttype) = long_long_unsigned_type_node;
 
-#if 0
-	    /* Find the first allowable type that the value fits in.  */
-	    type = 0;
-	    for (i = 0; i < sizeof (type_sequence) / sizeof (type_sequence[0]);
-		 i++)
-	      if (!(spec_long && !type_sequence[i].long_flag)
-		  && !(spec_long_long && !type_sequence[i].long_long_flag)
-		  && !(spec_unsigned && !type_sequence[i].unsigned_flag)
-		  /* A hex or octal constant traditionally is unsigned.  */
-		  && !(base != 10 && flag_traditional
-		       && !type_sequence[i].unsigned_flag)
-		  /* A decimal constant can't be unsigned int
-		     unless explicitly specified.  */
-		  && !(base == 10 && !spec_unsigned
-		       && *type_sequence[i].node_var == unsigned_type_node))
-		if (int_fits_type_p (yylval.ttype, *type_sequence[i].node_var))
-		  {
-		    type = *type_sequence[i].node_var;
-		    break;
-		  }
-	    if (flag_traditional && type == long_unsigned_type_node
-		&& !spec_unsigned)
-	      type = long_integer_type_node;
-	      
-	    if (type == 0)
-	      {
-		type = long_long_integer_type_node;
-		warning ("integer constant out of range");
-	      }
-
-	    /* Warn about some cases where the type of a given constant
-	       changes from traditional C to ANSI C.  */
-	    if (warn_traditional)
-	      {
-		tree other_type = 0;
-
-		/* This computation is the same as the previous one
-		   except that flag_traditional is used backwards.  */
-		for (i = 0; i < sizeof (type_sequence) / sizeof (type_sequence[0]);
-		     i++)
-		  if (!(spec_long && !type_sequence[i].long_flag)
-		      && !(spec_long_long && !type_sequence[i].long_long_flag)
-		      && !(spec_unsigned && !type_sequence[i].unsigned_flag)
-		      /* A hex or octal constant traditionally is unsigned.  */
-		      && !(base != 10 && !flag_traditional
-			   && !type_sequence[i].unsigned_flag)
-		      /* A decimal constant can't be unsigned int
-			 unless explicitly specified.  */
-		      && !(base == 10 && !spec_unsigned
-			   && *type_sequence[i].node_var == unsigned_type_node))
-		    if (int_fits_type_p (yylval.ttype, *type_sequence[i].node_var))
-		      {
-			other_type = *type_sequence[i].node_var;
-			break;
-		      }
-		if (!flag_traditional && type == long_unsigned_type_node
-		    && !spec_unsigned)
-		  type = long_integer_type_node;
-	      
-		if (other_type != 0 && other_type != type)
-		  {
-		    if (flag_traditional)
-		      warning ("type of integer constant would be different without -traditional");
-		    else
-		      warning ("type of integer constant would be different with -traditional");
-		  }
-	      }
-
-#else /* 1 */
 	    if (!spec_long && !spec_unsigned
 		&& !(flag_traditional && base != 10)
 		&& int_fits_type_p (yylval.ttype, integer_type_node))
 	      {
-#if 0
-		if (warn_traditional && base != 10)
-		  warning ("small nondecimal constant becomes signed in ANSI C++");
-#endif
 		type = integer_type_node;
 	      }
 	    else if (!spec_long && (base != 10 || spec_unsigned)
@@ -3622,10 +3531,6 @@ real_yylex ()
 		     && int_fits_type_p (yylval.ttype,
 					 long_unsigned_type_node))
 	      {
-#if 0
-		if (warn_traditional && !spec_unsigned)
-		  warning ("large integer constant becomes unsigned in ANSI C++");
-#endif
 		if (flag_traditional && !spec_unsigned)
 		  type = long_integer_type_node;
 		else
@@ -3642,11 +3547,6 @@ real_yylex ()
 	    else if (int_fits_type_p (yylval.ttype,
 				      long_long_unsigned_type_node))
 	      {
-#if 0
-		if (warn_traditional && !spec_unsigned)
-		  warning ("large nondecimal constant is unsigned in ANSI C++");
-#endif
-
 		if (flag_traditional && !spec_unsigned)
 		  type = long_long_integer_type_node;
 		else
@@ -3661,7 +3561,6 @@ real_yylex ()
 		if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
 		  warning ("decimal integer constant is so large that it is unsigned");
 	      }
-#endif
 
 	    TREE_TYPE (yylval.ttype) = type;
 	    *p = 0;

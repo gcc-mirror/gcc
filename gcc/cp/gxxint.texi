@@ -9,7 +9,7 @@
 @chapter Internal Architecture of the Compiler
 
 This is meant to describe the C++ front-end for gcc in detail.
-Questions and comments to mrs@@cygnus.com.
+Questions and comments to Mike Stump @code{<mrs@@cygnus.com>}.
 
 @menu
 * Limitations of g++::          
@@ -310,9 +310,7 @@ vtables.  See also vtable and vfield.
 
 This section describes some of the macros used on trees.  The list
 should be alphabetical.  Eventually all macros should be documented
-here.  There are some postscript drawings that can be used to better
-understand from of the more complex data structures, contact Mike Stump
-(@code{mrs@@cygnus.com}) for information about them.
+here.
 
 @table @code
 @item BINFO_BASETYPES

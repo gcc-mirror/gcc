@@ -641,10 +641,10 @@ user_harshness (type, parmtype)
     {
       struct harshness_code tmp;
 
-      if (winner && TREE_PURPOSE (winner) == TREE_PURPOSE (conv))
+      if (winner && TREE_VALUE (winner) == TREE_VALUE (conv))
 	continue;
 
-      if (tmp = convert_harshness (type, TREE_VALUE (conv), NULL_TREE),
+      if (tmp = convert_harshness (type, TREE_PURPOSE (conv), NULL_TREE),
 	  (tmp.code < USER_CODE) && (tmp.distance >= 0))
 	{
 	  if (winner)
@@ -2531,8 +2531,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
     {
       int sub_flags = DECL_CONSTRUCTOR_P (function) ? flags : LOOKUP_NORMAL;
       basetype = TREE_TYPE (instance);
-      if (TYPE_METHOD_BASETYPE (TREE_TYPE (function)) != TYPE_MAIN_VARIANT (basetype)
-	  && TYPE_USES_COMPLEX_INHERITANCE (basetype))
+      if (TYPE_METHOD_BASETYPE (TREE_TYPE (function))
+	  != TYPE_MAIN_VARIANT (basetype))
 	{
 	  basetype = DECL_CLASS_CONTEXT (function);
 	  instance_ptr = convert_pointer_to (basetype, instance_ptr);

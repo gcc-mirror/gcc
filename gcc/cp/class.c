@@ -1408,8 +1408,6 @@ struct base_info
   tree rtti;
   char cant_have_default_ctor;
   char cant_have_const_ctor;
-  char cant_synth_copy_ctor;
-  char cant_synth_asn_ref;
   char no_const_asn_ref;
   char base_has_virtual;
 };
@@ -1465,13 +1463,8 @@ finish_base_struct (t, b, t_binfo)
 	    TREE_VEC_ELT (binfos, j) = TREE_VEC_ELT (binfos, j+1);
 	}
 
-      if (TYPE_HAS_INIT_REF (basetype)
-	  && !TYPE_HAS_CONST_INIT_REF (basetype))
+      if (! TYPE_HAS_CONST_INIT_REF (basetype))
 	b->cant_have_const_ctor = 1;
-      if (! TYPE_HAS_INIT_REF (basetype)
-	  || (TYPE_HAS_NONPUBLIC_CTOR (basetype) == 2
-	      && ! is_friend_type (t, basetype)))
-	b->cant_synth_copy_ctor = 1;
 
       if (TYPE_HAS_CONSTRUCTOR (basetype)
 	  && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype))
@@ -1488,11 +1481,6 @@ finish_base_struct (t, b, t_binfo)
       if (TYPE_HAS_ASSIGN_REF (basetype)
 	  && !TYPE_HAS_CONST_ASSIGN_REF (basetype))
 	b->no_const_asn_ref = 1;
-      if (! TYPE_HAS_ASSIGN_REF (basetype)
-	  || TYPE_HAS_ABSTRACT_ASSIGN_REF (basetype)
-	  || (TYPE_HAS_NONPUBLIC_ASSIGN_REF (basetype) == 2
-	      && ! is_friend_type (t, basetype)))
-	b->cant_synth_asn_ref = 1;
 
       b->n_ancestors += CLASSTYPE_N_SUPERCLASSES (basetype);
       TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (basetype);
@@ -1645,8 +1633,6 @@ finish_base_struct (t, b, t_binfo)
 	{
 	  cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
 		      basetype, t);
-	  b->cant_synth_asn_ref = 1;
-	  b->cant_synth_copy_ctor = 1;
 	}
     }
   {
@@ -1660,8 +1646,6 @@ finish_base_struct (t, b, t_binfo)
 	    if (extra_warnings)
 	      cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
 			  basetype, t);
-	    b->cant_synth_asn_ref = 1;
-	    b->cant_synth_copy_ctor = 1;
 	  }
       }
   }    
@@ -3016,8 +3000,6 @@ finish_struct_1 (t, attributes, warn_anon)
   tree vfields;
   int cant_have_default_ctor;
   int cant_have_const_ctor;
-  int cant_synth_copy_ctor;
-  int cant_synth_asn_ref;
   int no_const_asn_ref;
 
   /* The index of the first base class which has virtual
@@ -3108,8 +3090,6 @@ finish_struct_1 (t, attributes, warn_anon)
       CLASSTYPE_RTTI (t) = base_info.rtti;
       cant_have_default_ctor = base_info.cant_have_default_ctor;
       cant_have_const_ctor = base_info.cant_have_const_ctor;
-      cant_synth_copy_ctor = base_info.cant_synth_copy_ctor;
-      cant_synth_asn_ref = base_info.cant_synth_asn_ref;
       no_const_asn_ref = base_info.no_const_asn_ref;
       base_has_virtual = base_info.base_has_virtual;
       n_baseclasses = TREE_VEC_LENGTH (BINFO_BASETYPES (t_binfo));
@@ -3126,8 +3106,6 @@ finish_struct_1 (t, attributes, warn_anon)
       last_x = NULL_TREE;
       cant_have_default_ctor = 0;
       cant_have_const_ctor = 0;
-      cant_synth_copy_ctor = 0;
-      cant_synth_asn_ref = 0;
       no_const_asn_ref = 0;
       base_has_virtual = 0;
     }
@@ -3273,7 +3251,7 @@ finish_struct_1 (t, attributes, warn_anon)
 
 #if 0
       if (DECL_NAME (x) == constructor_name (t))
-	cant_have_default_ctor = cant_synth_copy_ctor = 1;
+	cant_have_default_ctor = 1;
 #endif
 
       if (TREE_TYPE (x) == error_mark_node)
@@ -3313,8 +3291,8 @@ finish_struct_1 (t, attributes, warn_anon)
 	     aggregate, initialization by a brace-enclosed list) is the
 	     only way to initialize nonstatic const and reference
 	     members.  */
-	  cant_synth_asn_ref = 1;
 	  cant_have_default_ctor = 1;
+	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
 	    {
@@ -3336,8 +3314,8 @@ finish_struct_1 (t, attributes, warn_anon)
 	     aggregate, initialization by a brace-enclosed list) is the
 	     only way to initialize nonstatic const and reference
 	     members.  */
-	  cant_synth_asn_ref = 1;
 	  cant_have_default_ctor = 1;
+	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && !IS_SIGNATURE (t)
 	      && extra_warnings)
@@ -3508,18 +3486,10 @@ finish_struct_1 (t, attributes, warn_anon)
 		  TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (type);
 		}
 
-	      if (! TYPE_HAS_INIT_REF (type)
-		  || (TYPE_HAS_NONPUBLIC_CTOR (type)
-		      && ! is_friend (t, type)))
-		cant_synth_copy_ctor = 1;
-	      else if (!TYPE_HAS_CONST_INIT_REF (type))
+	      if (!TYPE_HAS_CONST_INIT_REF (type))
 		cant_have_const_ctor = 1;
 
-	      if (! TYPE_HAS_ASSIGN_REF (type)
-		  || (TYPE_HAS_NONPUBLIC_ASSIGN_REF (type)
-		      && ! is_friend (t, type)))
-		cant_synth_asn_ref = 1;
-	      else if (!TYPE_HAS_CONST_ASSIGN_REF (type))
+	      if (!TYPE_HAS_CONST_ASSIGN_REF (type))
 		no_const_asn_ref = 1;
 
 	      if (TYPE_HAS_CONSTRUCTOR (type)
@@ -3614,8 +3584,7 @@ finish_struct_1 (t, attributes, warn_anon)
     }
 
   /* Create default copy constructor, if needed.  */
-  if (! TYPE_HAS_INIT_REF (t) && ! cant_synth_copy_ctor
-      && ! IS_SIGNATURE (t))
+  if (! TYPE_HAS_INIT_REF (t) && ! IS_SIGNATURE (t))
     {
       /* ARM 12.18: You get either X(X&) or X(const X&), but
 	 not both.  --Chip  */
@@ -3630,8 +3599,7 @@ finish_struct_1 (t, attributes, warn_anon)
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);
 
-  if (! TYPE_HAS_ASSIGN_REF (t) && ! cant_synth_asn_ref
-      && ! IS_SIGNATURE (t))
+  if (! TYPE_HAS_ASSIGN_REF (t) && ! IS_SIGNATURE (t))
     {
       tree default_fn = cons_up_default_function (t, name,
 						  5 + no_const_asn_ref);

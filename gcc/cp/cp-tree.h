@@ -2403,7 +2403,6 @@ extern void print_lang_statistics		PROTO((void));
 extern tree array_type_nelts_total		PROTO((tree));
 extern tree array_type_nelts_top		PROTO((tree));
 extern tree break_out_target_exprs		PROTO((tree));
-extern int cp_expand_decl_cleanup		PROTO((tree, tree));
 extern tree get_type_decl			PROTO((tree));
 extern tree vec_binfo_member			PROTO((tree, tree));
 extern tree hack_decl_function_context 		PROTO((tree));

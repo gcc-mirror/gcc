@@ -300,6 +300,16 @@ tree pfn_identifier, index_identifier, delta_identifier, delta2_identifier;
 tree pfn_or_delta2_identifier, tag_identifier;
 tree vt_off_identifier;
 
+struct named_label_list
+{
+  struct binding_level *binding_level;
+  tree names_in_scope;
+  tree label_decl;
+  char *filename_o_goto;
+  int lineno_o_goto;
+  struct named_label_list *next;
+};
+
 /* A list (chain of TREE_LIST nodes) of named label uses.
    The TREE_PURPOSE field is the list of variables defined
    the the label's scope defined at the point of use.
@@ -307,11 +317,17 @@ tree vt_off_identifier;
    The TREE_TYPE field holds `current_binding_level' at the
    point of the label's use.
 
+   BWAHAHAAHAHahhahahahaah.  No, no, no, said the little chicken.
+
+   Look at the pretty struct named_label_list. See the pretty struct
+   with the pretty named fields that describe what they do. See the
+   pretty lack of gratuitous casts. Notice the code got a lot cleaner.
+
    Used only for jumps to as-yet undefined labels, since
    jumps to defined labels can have their validity checked
    by stmt.c.  */
 
-static tree named_label_uses;
+static struct named_label_list *named_label_uses = NULL;
 
 /* A list of objects which have constructors or destructors
    which reside in the global scope.  The decl is stored in
@@ -1199,12 +1215,12 @@ poplevel (keep, reverse, functionbody)
     level_chain = current_binding_level->level_chain;
     if (level_chain)
       {
-	tree labels;
-	for (labels = named_label_uses; labels; labels = TREE_CHAIN (labels))
-	  if (TREE_TYPE (labels) == (tree)current_binding_level)
+	struct named_label_list *labels;
+	for (labels = named_label_uses; labels; labels = labels->next)
+	  if (labels->binding_level == current_binding_level)
 	    {
-	      TREE_TYPE (labels) = (tree)level_chain;
-	      TREE_PURPOSE (labels) = level_chain->names;
+	      labels->binding_level = level_chain;
+	      labels->names_in_scope = level_chain->names;
 	    }
       }
   }
@@ -1739,11 +1755,9 @@ struct saved_scope {
   tree old_bindings;
   struct saved_scope *prev;
   tree class_name, class_type, function_decl;
-  tree base_init_list, member_init_list;
   struct binding_level *class_bindings;
   tree *lang_base, *lang_stack, lang_name;
   int lang_stacksize;
-  tree named_labels;
   int minimal_parse_mode;
   tree last_function_parms;
   tree template_parms;
@@ -1803,6 +1817,9 @@ maybe_push_to_top_level (pseudo)
   struct binding_level *b = inner_binding_level;
   tree old_bindings = NULL_TREE;
 
+  if (current_function_decl)
+    push_cp_function_context (NULL_TREE);
+
   if (previous_class_type)
     old_bindings = store_bindings (previous_class_values, old_bindings);
 
@@ -1832,19 +1849,17 @@ maybe_push_to_top_level (pseudo)
   s->class_name = current_class_name;
   s->class_type = current_class_type;
   s->function_decl = current_function_decl;
-  s->base_init_list = current_base_init_list;
-  s->member_init_list = current_member_init_list;
   s->class_bindings = class_binding_level;
   s->lang_stack = current_lang_stack;
   s->lang_base = current_lang_base;
   s->lang_stacksize = current_lang_stacksize;
   s->lang_name = current_lang_name;
-  s->named_labels = named_labels;
   s->minimal_parse_mode = minimal_parse_mode;
   s->last_function_parms = last_function_parms;
   s->template_parms = current_template_parms;
   s->previous_class_type = previous_class_type;
   s->previous_class_values = previous_class_values;
+
   current_class_name = current_class_type = NULL_TREE;
   current_function_decl = NULL_TREE;
   class_binding_level = (struct binding_level *)0;
@@ -1902,8 +1917,6 @@ pop_from_top_level ()
     }
   current_class_name = s->class_name;
   current_class_type = s->class_type;
-  current_base_init_list = s->base_init_list;
-  current_member_init_list = s->member_init_list;
   current_function_decl = s->function_decl;
   class_binding_level = s->class_bindings;
   free (current_lang_base);
@@ -1915,7 +1928,6 @@ pop_from_top_level ()
     strict_prototype = strict_prototypes_lang_cplusplus;
   else if (current_lang_name == lang_name_c)
     strict_prototype = strict_prototypes_lang_c;
-  named_labels = s->named_labels;
   minimal_parse_mode = s->minimal_parse_mode;
   last_function_parms = s->last_function_parms;
   current_template_parms = s->template_parms;
@@ -1923,6 +1935,9 @@ pop_from_top_level ()
   previous_class_values = s->previous_class_values;
 
   free (s);
+
+  if (current_function_decl)
+    pop_cp_function_context (NULL_TREE);
 }
 
 /* Push a definition of struct, union or enum tag "name".
@@ -3717,13 +3732,20 @@ lookup_label (id)
 
   if ((decl == NULL_TREE
       || DECL_SOURCE_LINE (decl) == 0)
-      && (named_label_uses == NULL_TREE
-	  || TREE_PURPOSE (named_label_uses) != current_binding_level->names
-	  || TREE_VALUE (named_label_uses) != decl))
+      && (named_label_uses == NULL
+	  || named_label_uses->names_in_scope != current_binding_level->names
+	  || named_label_uses->label_decl != decl))
     {
-      named_label_uses
-	= tree_cons (current_binding_level->names, decl, named_label_uses);
-      TREE_TYPE (named_label_uses) = (tree)current_binding_level;
+      struct named_label_list *new_ent;
+      new_ent
+	= (struct named_label_list*)oballoc (sizeof (struct named_label_list));
+      new_ent->label_decl = decl;
+      new_ent->names_in_scope = current_binding_level->names;
+      new_ent->binding_level = current_binding_level;
+      new_ent->lineno_o_goto = lineno;
+      new_ent->filename_o_goto = input_filename;
+      new_ent->next = named_label_uses;
+      named_label_uses = new_ent;
     }
 
   /* Use a label already defined or ref'd with this name.  */
@@ -3754,7 +3776,7 @@ lookup_label (id)
   SET_IDENTIFIER_LABEL_VALUE (id, decl);
 
   named_labels = tree_cons (NULL_TREE, decl, named_labels);
-  TREE_VALUE (named_label_uses) = decl;
+  named_label_uses->label_decl = decl;
 
   return decl;
 }
@@ -3830,7 +3852,7 @@ define_label (filename, line, name)
     }
   else
     {
-      tree uses, prev;
+      struct named_label_list *uses, *prev;
       int identified = 0;
 
       /* Mark label as having been defined.  */
@@ -3839,17 +3861,17 @@ define_label (filename, line, name)
       DECL_SOURCE_FILE (decl) = filename;
       DECL_SOURCE_LINE (decl) = line;
 
-      for (prev = NULL_TREE, uses = named_label_uses;
-	   uses;
-	   prev = uses, uses = TREE_CHAIN (uses))
-	if (TREE_VALUE (uses) == decl)
+      prev = NULL;
+      uses = named_label_uses;
+      while (uses != NULL)
+	if (uses->label_decl == decl)
 	  {
 	    struct binding_level *b = current_binding_level;
 	    while (b)
 	      {
 		tree new_decls = b->names;
-		tree old_decls = ((tree)b == TREE_TYPE (uses)
-				  ? TREE_PURPOSE (uses) : NULL_TREE);
+		tree old_decls = (b == uses->binding_level)
+				  ? uses->names_in_scope : NULL_TREE;
 		while (new_decls != old_decls)
 		  {
 		    if (TREE_CODE (new_decls) == VAR_DECL
@@ -3862,23 +3884,35 @@ define_label (filename, line, name)
 			     && DECL_INITIAL (new_decls) != error_mark_node)
 			    || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (new_decls))))
 		      {
-			if (! identified)
-			  cp_error ("jump to label `%D'", decl);
-			identified = 1;
+			if (! identified) 
+			  {
+			    cp_error ("jump to label `%D'", decl);
+			    error_with_file_and_line (uses->filename_o_goto,
+						      uses->lineno_o_goto,
+						      "  from here");
+			    identified = 1;
+			}
 			cp_error_at ("  crosses initialization of `%#D'",
 				     new_decls);
 		      }
 		    new_decls = TREE_CHAIN (new_decls);
 		  }
-		if ((tree)b == TREE_TYPE (uses))
+		if (b == uses->binding_level)
 		  break;
 		b = b->level_chain;
 	      }
 
-	    if (prev)
-	      TREE_CHAIN (prev) = TREE_CHAIN (uses);
+	    if (prev != NULL)
+	      prev->next = uses->next;
 	    else
-	      named_label_uses = TREE_CHAIN (uses);
+	      named_label_uses = uses->next;
+
+	    uses = uses->next;
+	  }
+	else
+	  {
+	    prev = uses;
+	    uses = uses->next;
 	  }
       current_function_return_value = NULL_TREE;
       return decl;
@@ -4665,7 +4699,7 @@ init_decl_processing ()
 
   current_function_decl = NULL_TREE;
   named_labels = NULL_TREE;
-  named_label_uses = NULL_TREE;
+  named_label_uses = NULL;
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
 
@@ -5797,8 +5831,13 @@ start_decl (declarator, declspecs, initialized, raises)
 	  tree field = lookup_field (context, DECL_NAME (decl), 0, 0);
 	  if (field == NULL_TREE || TREE_CODE (field) != VAR_DECL)
 	    cp_error ("`%#D' is not a static member of `%#T'", decl, context);
-	  else if (duplicate_decls (decl, field))
-	    decl = field;
+	  else
+	    {
+	      if (DECL_CONTEXT (field) != context)
+		cp_pedwarn ("ANSI C++ does not permit `%T::%D' to be defined as `%T::%D'", DECL_CONTEXT (field), DECL_NAME (decl), context, DECL_NAME (decl));
+	      if (duplicate_decls (decl, field))
+		decl = field;
+	    }
 	}
       else
 	{
@@ -6034,25 +6073,7 @@ grok_reference_init (decl, type, init, cleanupp)
     goto fail;
   else if (tmp != NULL_TREE)
     {
-      tree subtype = TREE_TYPE (type);
       init = tmp;
-
-      /* Associate the cleanup with the reference so that we
-	 don't get burned by "aggressive" cleanup policy.  */
-      if (TYPE_NEEDS_DESTRUCTOR (subtype))
-	{
-	  if (TREE_CODE (tmp) == ADDR_EXPR)
-	    tmp = TREE_OPERAND (tmp, 0);
-	  if (TREE_CODE (tmp) == TARGET_EXPR)
-	    {
-	      *cleanupp = build_delete
-		(build_pointer_type (subtype),
-		 build_unary_op (ADDR_EXPR, TREE_OPERAND (tmp, 0), 0),
-		 integer_two_node, LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
-	      TREE_OPERAND (tmp, 2) = error_mark_node;
-	    }
-	}
-
       DECL_INITIAL (decl) = save_expr (init);
     }
   else
@@ -6620,7 +6641,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		{
 		  /* XXX: Why don't we use decl here?  */
 		  /* Ans: Because it was already expanded? */
-		  if (! cp_expand_decl_cleanup (NULL_TREE, cleanup))
+		  if (! expand_decl_cleanup (NULL_TREE, cleanup))
 		    cp_error ("parser lost in parsing declaration of `%D'",
 			      decl);
 		  /* Cleanup used up here.  */
@@ -6710,7 +6731,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      /* Store the cleanup, if there was one.  */
 	      if (cleanup)
 		{
-		  if (! cp_expand_decl_cleanup (decl, cleanup))
+		  if (! expand_decl_cleanup (decl, cleanup))
 		    cp_error ("parser lost in parsing declaration of `%D'",
 			      decl);
 		}
@@ -7113,6 +7134,8 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
       if (check)
 	{
 	  tmp = check_classfn (ctype, decl);
+	  if (tmp && DECL_ARTIFICIAL (tmp))
+	    cp_error ("definition of implicitly-declared `%D'", tmp);
 	  if (tmp && duplicate_decls (decl, tmp))
 	    return tmp;
 	}
@@ -7159,6 +7182,8 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 	      revert_static_member_fn (&decl, NULL, NULL);
 	      last_function_parms = TREE_CHAIN (last_function_parms);
 	    }
+	  if (tmp && DECL_ARTIFICIAL (tmp))
+	    cp_error ("definition of implicitly-declared `%D'", tmp);
 	  if (tmp && duplicate_decls (decl, tmp))
 	    return tmp;
 	}
@@ -7224,7 +7249,7 @@ grokvardecl (type, declarator, specbits, initialized, constp)
       DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype, declarator);
     }
   else
-    decl = build_decl (VAR_DECL, declarator, type);
+    decl = build_decl (VAR_DECL, declarator, complete_type (type));
 
   DECL_ASSEMBLER_NAME (decl) = current_namespace_id (DECL_ASSEMBLER_NAME (decl));
 
@@ -9118,7 +9143,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	    return NULL_TREE;
 	  }
 
-	decl = build_decl (PARM_DECL, declarator, type);
+	decl = build_decl (PARM_DECL, declarator, complete_type (type));
 
 	bad_specifiers (decl, "parameter", virtualp, quals != NULL_TREE,
 			inlinep, friendp, raises != NULL_TREE);
@@ -11279,7 +11304,7 @@ store_parm_decls ()
 		  && (cleanup = maybe_build_cleanup (parm), cleanup))
 		{
 		  expand_decl (parm);
-		  if (! cp_expand_decl_cleanup (parm, cleanup))
+		  if (! expand_decl_cleanup (parm, cleanup))
 		    cp_error ("parser lost in parsing declaration of `%D'",
 			      parm);
 		  parms_have_cleanups = 1;
@@ -11973,7 +11998,7 @@ finish_function (lineno, call_poplevel, nested)
       current_function_decl = NULL_TREE;
     }
 
-  named_label_uses = NULL_TREE;
+  named_label_uses = NULL;
   current_class_ptr = NULL_TREE;
   current_class_ref = NULL_TREE;
 }
@@ -12200,7 +12225,7 @@ hack_incomplete_structures (type)
 	      expand_decl (decl);
 	      cleanup = maybe_build_cleanup (decl);
 	      expand_decl_init (decl);
-	      if (! cp_expand_decl_cleanup (decl, cleanup))
+	      if (! expand_decl_cleanup (decl, cleanup))
 		cp_error ("parser lost in parsing declaration of `%D'",
 			  decl);
 	    }
