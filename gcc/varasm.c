@@ -149,45 +149,45 @@ int size_directive_output;
 
 tree last_assemble_variable_decl;
 
-static const char *strip_reg_name	PROTO((const char *));
-static int contains_pointers_p		PROTO((tree));
-static void decode_addr_const		PROTO((tree, struct addr_const *));
-static int const_hash			PROTO((tree));
-static int compare_constant		PROTO((tree,
+static const char *strip_reg_name	PARAMS ((const char *));
+static int contains_pointers_p		PARAMS ((tree));
+static void decode_addr_const		PARAMS ((tree, struct addr_const *));
+static int const_hash			PARAMS ((tree));
+static int compare_constant		PARAMS ((tree,
 					       struct constant_descriptor *));
-static char *compare_constant_1		PROTO((tree, char *));
-static struct constant_descriptor *record_constant PROTO((tree));
-static void record_constant_1		PROTO((tree));
-static tree copy_constant		PROTO((tree));
-static void output_constant_def_contents  PROTO((tree, int, int));
-static void decode_rtx_const		PROTO((enum machine_mode, rtx,
+static char *compare_constant_1		PARAMS ((tree, char *));
+static struct constant_descriptor *record_constant PARAMS ((tree));
+static void record_constant_1		PARAMS ((tree));
+static tree copy_constant		PARAMS ((tree));
+static void output_constant_def_contents  PARAMS ((tree, int, int));
+static void decode_rtx_const		PARAMS ((enum machine_mode, rtx,
 					       struct rtx_const *));
-static int const_hash_rtx		PROTO((enum machine_mode, rtx));
-static int compare_constant_rtx		PROTO((enum machine_mode, rtx,
+static int const_hash_rtx		PARAMS ((enum machine_mode, rtx));
+static int compare_constant_rtx		PARAMS ((enum machine_mode, rtx,
 					       struct constant_descriptor *));
-static struct constant_descriptor *record_constant_rtx PROTO((enum machine_mode,
+static struct constant_descriptor *record_constant_rtx PARAMS ((enum machine_mode,
 							      rtx));
-static struct pool_constant *find_pool_constant PROTO((struct function *, rtx));
-static void mark_constant_pool		PROTO((void));
-static void mark_constants		PROTO((rtx));
-static int output_addressed_constants	PROTO((tree));
-static void output_after_function_constants PROTO((void));
-static void output_constructor		PROTO((tree, int));
+static struct pool_constant *find_pool_constant PARAMS ((struct function *, rtx));
+static void mark_constant_pool		PARAMS ((void));
+static void mark_constants		PARAMS ((rtx));
+static int output_addressed_constants	PARAMS ((tree));
+static void output_after_function_constants PARAMS ((void));
+static void output_constructor		PARAMS ((tree, int));
 #ifdef ASM_WEAKEN_LABEL
-static void remove_from_pending_weak_list	PROTO ((char *));
+static void remove_from_pending_weak_list	PARAMS ((char *));
 #endif
 #ifdef ASM_OUTPUT_BSS
-static void asm_output_bss		PROTO((FILE *, tree, char *, int, int));
+static void asm_output_bss		PARAMS ((FILE *, tree, char *, int, int));
 #endif
 #ifdef BSS_SECTION_ASM_OP
 #ifdef ASM_OUTPUT_ALIGNED_BSS
-static void asm_output_aligned_bss	PROTO((FILE *, tree, char *, int, int));
+static void asm_output_aligned_bss	PARAMS ((FILE *, tree, char *, int, int));
 #endif
 #endif /* BSS_SECTION_ASM_OP */
-static void mark_pool_constant          PROTO((struct pool_constant *));
-static void mark_pool_sym_hash_table	PROTO((struct pool_sym **));
-static void mark_const_hash_entry	PROTO((void *));
-static void asm_emit_uninitialised	PROTO((tree, char *, int, int));
+static void mark_pool_constant          PARAMS ((struct pool_constant *));
+static void mark_pool_sym_hash_table	PARAMS ((struct pool_sym **));
+static void mark_const_hash_entry	PARAMS ((void *));
+static void asm_emit_uninitialised	PARAMS ((tree, char *, int, int));
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
