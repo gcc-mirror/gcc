@@ -3543,7 +3543,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
      int insn_count;
      rtx loop_start;
      rtx loop_end;
-     int unroll_p, bct_p ATTRIBUTE_UNUSED;
+     int unroll_p, bct_p;
 {
   rtx p;
   rtx set;
