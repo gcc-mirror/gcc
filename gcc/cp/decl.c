@@ -8026,6 +8026,7 @@ start_cleanup_fn ()
       DECL_ARGUMENTS (fndecl) = parmdecl;
     }
 
+  pushdecl (fndecl);
   start_function (/*specs=*/NULL_TREE, fndecl, NULL_TREE, SF_PRE_PARSED);
   do_pushlevel ();
 
