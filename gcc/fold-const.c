@@ -5803,13 +5803,11 @@ fold (tree expr)
     associate:
       /* In most languages, can't associate operations on floats through
 	 parentheses.  Rather than remember where the parentheses were, we
-	 don't associate floats at all.  It shouldn't matter much.  However,
-	 associating multiplications is only very slightly inaccurate, so do
-	 that if -funsafe-math-optimizations is specified.  */
+	 don't associate floats at all, unless the user has specified
+	 -funsafe-math-optimizations.  */
 
       if (! wins
-	  && (! FLOAT_TYPE_P (type)
-	      || (flag_unsafe_math_optimizations && code == MULT_EXPR)))
+	  && (! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations))
 	{
 	  tree var0, con0, lit0, minus_lit0;
 	  tree var1, con1, lit1, minus_lit1;

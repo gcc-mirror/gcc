@@ -1,3 +1,8 @@
+2003-08-11  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold): Optimize any associative floating point
+	operator with -funsafe-math-optimizations, not just MULT_EXPR.
+
 2003-08-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/lib1funcs.asm (__udivdi3): Add .type and .size
