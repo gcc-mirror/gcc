@@ -1,3 +1,10 @@
+2004-05-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/altivec.md ("one_cmplv16qi2"): Change vnot to
+	vnor.
+	("one_cmplv8hi2"): Same.
+	("one_cmplv4si2"): Same.
+
 2004-05-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/15130
