@@ -1,3 +1,7 @@
+2001-06-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* release: Remove.
+
 2001-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_build: Output information about the commands used to 
