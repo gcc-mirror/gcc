@@ -1,3 +1,9 @@
+2003-09-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i860/i860.c: Follow spelling conventions.
+	* config/i860/i860.h: Likewise.
+	* config/sh/sh.h: Likewise.
+
 2003-09-05  Nitin Yewale  <NitinY@KPITCummins.com>
 
 	* config/h8300/h8300-protos.h: Declare h8300_hard_regno_rename_ok
