@@ -580,8 +580,10 @@ dump_file (name)
   fclose (stream);
 }
 
-/* Decide whether the given symbol is:
-   a constructor (1), a destructor (2), or neither (0).  */
+/* Decide whether the given symbol is: a constructor (1), a destructor
+   (2), a routine in a shared object that calls all the constructors
+   (3) or destructors (4), a DWARF exception-handling table (5), or
+   nothing special (0).  */
 
 static int
 is_ctor_dtor (s)
@@ -1278,6 +1280,14 @@ main (argc, argv)
     for (; list; list = list->next)
       scan_prog_file (list->name, PASS_FIRST);
   }
+
+  if (frame_tables.number > 0 && shared_obj)
+    {
+      /* If there are any frames, then we will need
+         the frame table handling functions.  */
+      add_to_list (&imports, "__register_frame_info_table");
+      add_to_list (&imports, "__deregister_frame_info");
+    }
 
   if (exports.first)
     {
@@ -2850,6 +2860,20 @@ scan_prog_file (prog_name, which_pass)
 			case 5:
 			  if (! is_shared)
 			    add_to_list (&frame_tables, name);
+#ifdef COLLECT_EXPORT_LIST
+			  if (which_pass == PASS_OBJ)
+			    add_to_list (&exports, name);
+			  /* If we are building an import list, we
+			     should add the symbol to the list.  
+			     We'd like to do it only if the symbol
+			     is not defined, but we can't tell
+			     that here (it is only known whether a symbol
+			     is referenced and not defined, but who
+			     would reference an EH table entry?).  */
+			  else
+			    if (import_flag)
+			      add_to_list (&imports, name);
+#endif
 			  break;
 
 			default:	/* not a constructor or destructor */
