@@ -932,6 +932,7 @@ record_set (dest, set, data)
 {
   unsigned regno;
   rtx src;
+  int n;
 
   if (GET_CODE (dest) != REG)
     return;
@@ -940,6 +941,22 @@ record_set (dest, set, data)
 
   if (regno >= reg_base_value_size)
     abort ();
+
+  /* If this spans multiple hard registers, then we must indicate that every
+     register has an unusable value.  */
+  if (regno < FIRST_PSEUDO_REGISTER)
+    n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
+  else
+    n = 1;
+  if (n != 1)
+    {
+      while (--n >= 0)
+	{
+	  reg_seen[regno + n] = 1;
+	  new_reg_base_value[regno + n] = 0;
+	}
+      return;
+    }
 
   if (set)
     {
