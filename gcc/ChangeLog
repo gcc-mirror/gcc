@@ -1,5 +1,11 @@
 Tue Sep 29 09:57:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload.h (last_output_reload_regno): New declaration.
+	* reload.c (find_reloads): No longer make it static and get last value.
+	* reload1.c (last_output_reload_regno): New definition.
+	(reload): Initialize it before each scan.
+	(reload_as_needed): Likewise, and also when insn has no reloads.
+	
 	* combine.c (simplify_comparison, case AND): Properly check for
 	SUBREG of a low part and exclude paradoxcal SUBREG, not low part,
 	for non-WORD_REGISTER_OPERATIONS machines.
