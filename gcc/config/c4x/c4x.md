@@ -5040,6 +5040,40 @@
   "
   [(set_attr "type" "db,jmpc,jmpc,jmpc")])
 
+(define_insn "*db_noclobber"
+  [(set (pc)
+        (if_then_else (ne (match_operand:QI 0 "addr_reg_operand" "+a")
+                          (const_int 0))
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))
+   (set (match_dup 0)
+        (plus:QI (match_dup 0)
+                 (const_int -1)))]
+  "reload_completed && TARGET_DB && TARGET_LOOP_UNSIGNED"
+  "dbu%#\\t%0,%l1"
+  [(set_attr "type" "db")])
+
+(define_split
+  [(set (pc)
+        (if_then_else (ne (match_operand:QI 0 "addr_reg_operand" "")
+			  (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))
+   (set (match_dup 0)
+        (plus:QI (match_dup 0)
+                 (const_int -1)))
+   (clobber (reg:CC_NOOV 21))]
+  "reload_completed && TARGET_DB && TARGET_LOOP_UNSIGNED"
+  [(parallel [(set (pc)
+                   (if_then_else (ne (match_dup 0)
+			             (const_int 0))
+		                 (label_ref (match_dup 1))
+		                 (pc)))
+              (set (match_dup 0)
+                   (plus:QI (match_dup 0)
+                            (const_int -1)))])]
+  "")
+  
 
 ; This insn is used for some loop tests, typically loops reversed when
 ; strength reduction is used.  It is actually created when the instruction
@@ -5075,6 +5109,45 @@
     return c4x_output_cbranch (\"push\\tr0\\n\\tldi\\t%0,r0\\n\\tsubi\\t1,r0\\n\\tsti\\tr0,%0\\n\\tpop\\tr0\\n\\tbhs\", insn);
   "
   [(set_attr "type" "db,jmpc,jmpc,jmpc")])
+
+(define_insn "*decrement_and_branch_until_zero_noclobber"
+  [(set (pc)
+        (if_then_else (ge (plus:QI (match_operand:QI 0 "addr_reg_operand" "+a")
+			           (const_int -1))
+			  (const_int 0))
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))
+   (set (match_dup 0)
+        (plus:QI (match_dup 0)
+                 (const_int -1)))]
+  "reload_completed && (TARGET_DB && (find_reg_note (insn, REG_NONNEG, 0)
+	                || TARGET_LOOP_UNSIGNED))"
+  "dbu%#\\t%0,%l1"
+  [(set_attr "type" "db")])
+
+(define_split
+  [(set (pc)
+        (if_then_else (ge (plus:QI (match_operand:QI 0 "addr_reg_operand" "")
+			           (const_int -1))
+			  (const_int 0))
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))
+   (set (match_dup 0)
+        (plus:QI (match_dup 0)
+                 (const_int -1)))
+   (clobber (reg:CC_NOOV 21))]
+  "reload_completed && (TARGET_DB && (find_reg_note (insn, REG_NONNEG, 0)
+	                || TARGET_LOOP_UNSIGNED))"
+  [(parallel [(set (pc)
+        	   (if_then_else (ge (plus:QI (match_dup 0)
+			                      (const_int -1))
+			             (const_int 0))
+                                 (label_ref (match_dup 1))
+                                 (pc)))
+              (set (match_dup 0)
+                   (plus:QI (match_dup 0)
+                            (const_int -1)))])]
+  "")
 
 ;
 ; MISC INSTRUCTIONS
