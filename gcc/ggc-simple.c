@@ -25,7 +25,6 @@
 #include "tm_p.h"
 #include "flags.h"
 #include "varray.h"
-#include "hash.h"
 #include "ggc.h"
 
 #ifndef offsetof
