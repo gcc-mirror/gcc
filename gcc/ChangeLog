@@ -1,3 +1,10 @@
+2002-07-04  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in: Correct typos: gcc_cv_as_gdwarf2_debug_flag to
+	gcc_cv_as_gdwarf2_flag and gcc_cv_as_gstabs_debug_flag
+	to gcc_cv_as_gstabs_flag.
+	* configure: Rebuilt.
+
 2002-07-04  Geoffrey Keating  <geoffk@redhat.com>
 
 	* ggc.h (ggc_add_root): Document as obsolete.
