@@ -161,6 +161,30 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "_%s", NAME)
 
+/* This is how to output an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.
+
+   For most svr3 systems, the convention is that any symbol which begins
+   with a period is not put into the linker symbol table by the assembler.
+*/
+
+#undef ASM_OUTPUT_INTERNAL_LABEL
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
+  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
+
+/* This is how to store into the string LABEL
+   the symbol_ref name of an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.
+   This is suitable for output with `assemble_name'.
+
+   For most svr3 systems, the convention is that any symbol which begins
+   with a period is not put into the linker symbol table by the assembler.
+*/
+
+#undef ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
+  sprintf (LABEL, ".%s%d", PREFIX, NUM)
+
 /* Support const sections and the ctors and dtors sections for g++.
    Note that there appears to be two different ways to support const
    sections at the moment.  You can either #define the symbol
