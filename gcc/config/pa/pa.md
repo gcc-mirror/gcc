@@ -1124,10 +1124,11 @@
    (set_attr "length" "4")])
 
 ;; For pic
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "pic_operand" "i"))
-   (clobber (match_scratch:SI 2 "=a"))]
+;; Note since this pattern can be created at reload time (via movsi), all
+;; the same rules for movsi apply here.  (no new pseudos, no temporaries).
+(define_insn "pic_load_label"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(match_operand:SI 1 "pic_label_operand" ""))]
   ""
   "*
 {
@@ -1138,14 +1139,43 @@
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
   xoperands[2] = label_rtx;
-  output_asm_insn (\"bl .+8,%0\;addil L'%1-%2,%0\", xoperands);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\", CODE_LABEL_NUMBER (label_rtx));
-  output_asm_insn (\"ldo R'%1-%2(1),%0\", xoperands);
+  output_asm_insn (\"bl .+8,%0\", xoperands);
+  output_asm_insn (\"depi 0,31,2,%0\", xoperands);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+			     CODE_LABEL_NUMBER (label_rtx));
+
+  /* If we're trying to load the address of a label that happens to be
+     close, then we can use a shorter sequence.  */
+  if (GET_CODE (operands[1]) == LABEL_REF
+      && insn_addresses
+      && abs (insn_addresses[INSN_UID (XEXP (operands[1], 0))]
+	        - insn_current_address) < 8100)
+    {
+      /* Prefixing with R% here is wrong, it extracts just 11 bits and is
+	 always non-negative.  */
+      output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
+    }
+  else
+    {
+      output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+      output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+    }
   return \"\";
-  }
-"
+}"
   [(set_attr "type" "multi")
-   (set_attr "length" "12")])
+   (set_attr "length" "16")])		; 12 or 16
+
+(define_insn "pic_highpart"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(plus (match_operand:SI 1 "register_operand" "r")
+	      (high:SI (match_operand 2 "" ""))))]
+  "symbolic_operand (operands[2], Pmode)
+   && ! function_label_operand (operands[2])
+   && ! read_only_operand (operands[2])
+   && flag_pic == 2"
+  "addil LT'%G2,%1"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
 
 ;; Always use addil rather than ldil;add sequences.  This allows the
 ;; HP linker to eliminate the dp relocation if the symbolic operand
@@ -1155,9 +1185,9 @@
 	(high:SI (match_operand 1 "" "")))]
   "symbolic_operand (operands[1], Pmode)
    && ! function_label_operand (operands[1])
-   && ! read_only_operand (operands[1])"
-  "@
-   addil L'%G1,%%r27"
+   && ! read_only_operand (operands[1])
+   && ! flag_pic"
+  "addil L'%G1,%%r27"
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
@@ -1199,7 +1229,8 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
-  "check_pic (1) && !is_function_label_plus_const (operands[1])"
+  "(!flag_pic || !symbolic_operand (operands[1]), Pmode)
+    && !is_function_label_plus_const (operands[1])"
   "ldil L'%G1,%0"
   [(set_attr "type" "move")
    (set_attr "length" "4")])
@@ -1233,7 +1264,15 @@
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "immediate_operand" "i")))]
   "!is_function_label_plus_const (operands[2])"
-  "ldo R'%G2(%1),%0"
+  "*
+{
+  if (flag_pic == 2 && symbolic_operand (operands[2], Pmode))
+    return \"ldw RT'%G2(%1),%0\";
+  else if (flag_pic == 1 && symbolic_operand (operands[2], Pmode))
+    abort ();
+  else
+    return \"ldo R'%G2(%1),%0\";
+}"
   [(set_attr "length" "4")])
 
 ;; Now that a symbolic_address plus a constant is broken up early
@@ -1245,7 +1284,7 @@
   [(set (match_operand:SI 0 "register_operand" "")
 	(match_operand:SI 1 "symbolic_operand" ""))
    (clobber (match_operand:SI 2 "register_operand" ""))]
-  ""
+  "! (flag_pic && pic_label_operand (operands[1], SImode))"
   [(set (match_dup 2) (high:SI (match_dup 1)))
    (set (match_dup 0) (lo_sum:SI (match_dup 2) (match_dup 1)))]
   "")
@@ -1337,8 +1376,8 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(high:HI (match_operand 1 "" "")))]
-  "check_pic (1)"
+	(high:HI (match_operand 1 "const_int_operand" "")))]
+  ""
   "ldil L'%G1,%0"
   [(set_attr "type" "move")
    (set_attr "length" "4")])
@@ -1346,7 +1385,7 @@
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(lo_sum:HI (match_operand:HI 1 "register_operand" "r")
-		   (match_operand 2 "immediate_operand" "i")))]
+		   (match_operand 2 "const_int_operand" "i")))]
   ""
   "ldo R'%G2(%1),%0"
   [(set_attr "length" "4")])
@@ -1651,7 +1690,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "" "")))]
-  "check_pic (1)"
+  ""
   "*
 {
   rtx op0 = operands[0];
@@ -3102,10 +3141,7 @@
   "
 {
   rtx op;
-
-  if (flag_pic)
-    emit_insn (gen_rtx (USE, VOIDmode,
-			gen_rtx (REG, Pmode, PIC_OFFSET_TABLE_REGNUM)));
+  rtx call_insn;
 
   if (TARGET_LONG_CALLS)
     op = force_reg (SImode, XEXP (operands[0], 0));
@@ -3118,17 +3154,27 @@
      to change the named call into an indirect call in some cases (using
      two patterns keeps CSE from performing this optimization).  */
   if (GET_CODE (op) == SYMBOL_REF)
-    emit_call_insn (gen_call_internal_symref (op, operands[1]));
+    call_insn = emit_call_insn (gen_call_internal_symref (op, operands[1]));
   else
-    emit_call_insn (gen_call_internal_reg (force_reg (SImode, op),
-					   operands[1]));
+    call_insn = emit_call_insn (gen_call_internal_reg (force_reg (SImode, op),
+						       operands[1]));
 
   if (flag_pic)
     {
+      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
+
       if (!hppa_save_pic_table_rtx)
-	hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
-      emit_insn (gen_rtx (SET, VOIDmode,
-			  gen_rtx (REG, Pmode, PIC_OFFSET_TABLE_REGNUM),
+	{
+	  hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
+	  push_topmost_sequence ();
+	  emit_insn_after (gen_rtx (SET, VOIDmode,
+				    hppa_save_pic_table_rtx,
+				    pic_offset_table_rtx),
+			   get_insns ());
+	  pop_topmost_sequence ();
+	}
+
+      emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
 			  hppa_save_pic_table_rtx));
     }
   DONE;
@@ -3173,15 +3219,11 @@
 		   (call (match_operand:SI 1 "" "")
 			 (match_operand 2 "" "")))
 	      (clobber (reg:SI 2))])]
-  ;;- Don't use operand 1 for most machines.
   ""
   "
 {
   rtx op;
-
-  if (flag_pic)
-    emit_insn (gen_rtx (USE, VOIDmode,
-			gen_rtx (REG, Pmode, PIC_OFFSET_TABLE_REGNUM)));
+  rtx call_insn;
 
   if (TARGET_LONG_CALLS)
     op = force_reg (SImode, XEXP (operands[1], 0));
@@ -3194,19 +3236,30 @@
      to change the named call into an indirect call in some cases (using
      two patterns keeps CSE from performing this optimization).  */
   if (GET_CODE (op) == SYMBOL_REF)
-    emit_call_insn (gen_call_value_internal_symref (operands[0], op,
-						    operands[2]));
+    call_insn = emit_call_insn (gen_call_value_internal_symref (operands[0],
+								op,
+								operands[2]));
   else
-    emit_call_insn (gen_call_value_internal_reg (operands[0],
-						 force_reg (SImode, op),
-						 operands[2]));
+    call_insn = emit_call_insn (gen_call_value_internal_reg (operands[0],
+							     force_reg (SImode, op),
+							     operands[2]));
 
   if (flag_pic)
     {
+      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
+
       if (!hppa_save_pic_table_rtx)
-	hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
-      emit_insn (gen_rtx (SET, VOIDmode,
-			  gen_rtx (REG, Pmode, PIC_OFFSET_TABLE_REGNUM),
+	{
+	  hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
+	  push_topmost_sequence ();
+	  emit_insn_after (gen_rtx (SET, VOIDmode,
+				    hppa_save_pic_table_rtx,
+				    pic_offset_table_rtx),
+			   get_insns ());
+	  pop_topmost_sequence ();
+	}
+
+      emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
 			  hppa_save_pic_table_rtx));
     }
   DONE;
@@ -3234,7 +3287,6 @@
 	      (match_operand 2 "" "i")))
    (clobber (reg:SI 2))
    (use (const_int 1))]
-  ;;- Don't use operand 1 for most machines.
   ""
   "*
 {
