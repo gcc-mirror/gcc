@@ -1645,7 +1645,7 @@ do { union { float f; long l;} tem;			\
        sp@, (sp) or (%sp) depending on the style of syntax.
    '#' for an immediate operand prefix (# in MIT and Motorola syntax
        but & in SGS syntax).
-   '!' for the cc register (used in an `and to cc' insn).
+   '!' for the fpcr register (used in some float-to-fixed conversions).
    '$' for the letter `s' in an op code, but only on the 68040.
    '&' for the letter `d' in an op code, but only on the 68040.
 
