@@ -4874,11 +4874,46 @@ int_fits_type_p (tree c, tree type)
 {
   tree type_low_bound = TYPE_MIN_VALUE (type);
   tree type_high_bound = TYPE_MAX_VALUE (type);
-  int ok_for_low_bound, ok_for_high_bound;
+  bool ok_for_low_bound, ok_for_high_bound;
+  tree tmp;
 
-  /* Perform some generic filtering first, which may allow making a decision
-     even if the bounds are not constant.  First, negative integers never fit
-     in unsigned types, */
+  /* If at least one bound of the type is a constant integer, we can check
+     ourselves and maybe make a decision. If no such decision is possible, but
+     this type is a subtype, try checking against that.  Otherwise, use
+     force_fit_type, which checks against the precision.
+
+     Compute the status for each possibly constant bound, and return if we see
+     one does not match. Use ok_for_xxx_bound for this purpose, assigning -1
+     for "unknown if constant fits", 0 for "constant known *not* to fit" and 1
+     for "constant known to fit".  */
+
+  /* Check if C >= type_low_bound.  */
+  if (type_low_bound && TREE_CODE (type_low_bound) == INTEGER_CST)
+    {
+      if (tree_int_cst_lt (c, type_low_bound))
+	return 0;
+      ok_for_low_bound = true;
+    }
+  else
+    ok_for_low_bound = false;
+
+  /* Check if c <= type_high_bound.  */
+  if (type_high_bound && TREE_CODE (type_high_bound) == INTEGER_CST)
+    {
+      if (tree_int_cst_lt (type_high_bound, c))
+	return 0;
+      ok_for_high_bound = true;
+    }
+  else
+    ok_for_high_bound = false;
+
+  /* If the constant fits both bounds, the result is known.  */
+  if (ok_for_low_bound && ok_for_high_bound)
+    return 1;
+
+  /* Perform some generic filtering which may allow making a decision
+     even if the bounds are not constant.  First, negative integers
+     never fit in unsigned types, */
   if (TYPE_UNSIGNED (type) && tree_int_cst_sgn (c) < 0)
     return 0;
 
@@ -4892,53 +4927,17 @@ int_fits_type_p (tree c, tree type)
       && tree_int_cst_msb (c))
     return 0;
 
-  /* If at least one bound of the type is a constant integer, we can check
-     ourselves and maybe make a decision. If no such decision is possible, but
-     this type is a subtype, try checking against that.  Otherwise, use
-     force_fit_type, which checks against the precision.
-
-     Compute the status for each possibly constant bound, and return if we see
-     one does not match. Use ok_for_xxx_bound for this purpose, assigning -1
-     for "unknown if constant fits", 0 for "constant known *not* to fit" and 1
-     for "constant known to fit".  */
-
-  ok_for_low_bound = -1;
-  ok_for_high_bound = -1;
-
-  /* Check if C >= type_low_bound.  */
-  if (type_low_bound && TREE_CODE (type_low_bound) == INTEGER_CST)
-    {
-      ok_for_low_bound = ! tree_int_cst_lt (c, type_low_bound);
-      if (! ok_for_low_bound)
-	return 0;
-    }
-
-  /* Check if c <= type_high_bound.  */
-  if (type_high_bound && TREE_CODE (type_high_bound) == INTEGER_CST)
-    {
-      ok_for_high_bound = ! tree_int_cst_lt (type_high_bound, c);
-      if (! ok_for_high_bound)
-	return 0;
-    }
-
-  /* If the constant fits both bounds, the result is known.  */
-  if (ok_for_low_bound == 1 && ok_for_high_bound == 1)
-    return 1;
-
   /* If we haven't been able to decide at this point, there nothing more we
      can check ourselves here. Look at the base type if we have one.  */
-  else if (TREE_CODE (type) == INTEGER_TYPE && TREE_TYPE (type) != 0)
+  if (TREE_CODE (type) == INTEGER_TYPE && TREE_TYPE (type) != 0)
     return int_fits_type_p (c, TREE_TYPE (type));
 
   /* Or to force_fit_type, if nothing else.  */
-  else
-    {
-      tree n = copy_node (c);
-      TREE_TYPE (n) = type;
-      n = force_fit_type (n, -1, false, false);
-      return TREE_INT_CST_HIGH (n) == TREE_INT_CST_HIGH (c)
-             && TREE_INT_CST_LOW (n) == TREE_INT_CST_LOW (c);
-    }
+  tmp = copy_node (c);
+  TREE_TYPE (tmp) = type;
+  tmp = force_fit_type (tmp, -1, false, false);
+  return TREE_INT_CST_HIGH (tmp) == TREE_INT_CST_HIGH (c)
+         && TREE_INT_CST_LOW (tmp) == TREE_INT_CST_LOW (c);
 }
 
 /* Subprogram of following function.  Called by walk_tree.
