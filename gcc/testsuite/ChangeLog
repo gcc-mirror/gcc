@@ -1,3 +1,10 @@
+2004-01-15  Marcus Comstedt <marcus@mc.pp.se>
+	    Dan Kegel <dank@kegel.com>
+	    J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR target/9365
+	* gcc.dg/pr9365-1.c: New test.
+
 2004-01-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/8856
