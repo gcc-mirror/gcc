@@ -287,45 +287,44 @@ extern void __gcov_flush (void);
 /* Because small reads and writes, interspersed with seeks cause lots
    of disk activity, we buffer the entire count files.  */
 
-static FILE *gcov_file;
-static size_t gcov_position;
-static size_t gcov_length;
-static unsigned char *gcov_buffer;
-static size_t gcov_alloc;
-static int gcov_modified;
-static int gcov_errored = 1;
+static struct gcov_var
+{
+  FILE *file;
+  size_t position;
+  size_t length;
+  size_t alloc;
+  unsigned modified;
+  int error;
+  unsigned char *buffer;
+} gcov_var;
 
 /* Functions for reading and writing gcov files.  */
 static int gcov_open (const char */*name*/, int /*truncate*/);
 static int gcov_close (void);
 #if !IN_GCOV
 static unsigned char *gcov_write_bytes (unsigned);
-static int gcov_write_unsigned (unsigned);
+static void gcov_write_unsigned (unsigned);
 #if IN_LIBGCOV
-static int gcov_write_counter (gcov_type);
+static void gcov_write_counter (gcov_type);
 #endif
-static int gcov_write_string (const char *);
-static unsigned long gcov_reserve_length (void);
-static int gcov_write_length (unsigned long /*position*/);
+static void gcov_write_string (const char *);
+static unsigned long gcov_write_tag (unsigned);
+static void gcov_write_length (unsigned long /*position*/);
 #if IN_LIBGCOV
-static int gcov_write_summary (unsigned, const struct gcov_summary *);
+static void gcov_write_summary (unsigned, const struct gcov_summary *);
 #endif
 #endif /* !IN_GCOV */
 static const unsigned char *gcov_read_bytes (unsigned);
-static int gcov_read_unsigned (unsigned *);
-static int gcov_read_counter (gcov_type *);
-#if !IN_LIBGCOV
-static int gcov_read_string (char **);
-#endif
-static int gcov_read_summary (struct gcov_summary *);
-static unsigned long gcov_save_position (void);
-static int gcov_resync (unsigned long /*base*/, unsigned /*length */);
+static unsigned gcov_read_unsigned (void);
+static gcov_type gcov_read_counter (void);
+static const char *gcov_read_string (void);
+static void gcov_read_summary (struct gcov_summary *);
+
+static unsigned long gcov_position (void);
+static void gcov_seek (unsigned long /*base*/, unsigned /*length */);
 static unsigned long gcov_seek_end (void);
-static int gcov_skip (unsigned /*length*/);
-static int gcov_skip_string (unsigned /*length*/);
-static int gcov_ok (void);
-static int gcov_error (void);
-static int gcov_eof (void);
+static int gcov_is_eof (void);
+static int gcov_is_error (void);
 #if IN_GCOV > 0
 static time_t gcov_time (void);
 #endif
@@ -353,62 +352,63 @@ gcov_open (const char *name, int mode)
   s_flock.l_pid = getpid ();
 #endif
   
-  if (gcov_file)
+  if (gcov_var.file)
     abort ();
-  gcov_position = gcov_length = 0;
-  gcov_errored = gcov_modified = 0;
+  gcov_var.position = gcov_var.length = 0;
+  gcov_var.error = gcov_var.modified = 0;
   if (mode >= 0)
-    gcov_file = fopen (name, "r+b");
-  if (!gcov_file && mode <= 0)
+    gcov_var.file = fopen (name, "r+b");
+  if (!gcov_var.file && mode <= 0)
     {
       result = -1;
-      gcov_file = fopen (name, "w+b");
+      gcov_var.file = fopen (name, "w+b");
     }
-  if (!gcov_file)
+  if (!gcov_var.file)
     return 0;
 
 #if defined (TARGET_HAS_F_SETLKW) && IN_LIBGCOV
-  while (fcntl (fileno (gcov_file), F_SETLKW, &s_flock)
+  while (fcntl (fileno (gcov_var.file), F_SETLKW, &s_flock)
 	 && errno == EINTR)
     continue;
 #endif
 
   if (result >= 0)
     {
-      if (fseek (gcov_file, 0, SEEK_END))
+      if (fseek (gcov_var.file, 0, SEEK_END))
 	{
-	  fclose (gcov_file);
-	  gcov_file = 0;
+	  fclose (gcov_var.file);
+	  gcov_var.file = 0;
 	  return 0;
 	}
-      gcov_length = ftell (gcov_file);
-      fseek (gcov_file, 0, SEEK_SET);
-      alloc += gcov_length;
+      gcov_var.length = ftell (gcov_var.file);
+      fseek (gcov_var.file, 0, SEEK_SET);
+      alloc += gcov_var.length;
     }
-  if (alloc > gcov_alloc)
+  if (alloc > gcov_var.alloc)
     {
-      if (gcov_buffer)
-	free (gcov_buffer);
-      gcov_alloc = alloc;
+      if (gcov_var.buffer)
+	free (gcov_var.buffer);
+      gcov_var.alloc = alloc;
 #if IN_LIBGCOV
-      gcov_buffer = malloc (gcov_alloc);
-      if (!gcov_buffer)
+      gcov_var.buffer = malloc (gcov_var.alloc);
+      if (!gcov_var.buffer)
 	{
-	  fclose (gcov_file);
-	  gcov_file = 0;
-	  gcov_length = 0;
-	  gcov_alloc = 0;
+	  fclose (gcov_var.file);
+	  gcov_var.file = 0;
+	  gcov_var.length = 0;
+	  gcov_var.alloc = 0;
 	  return 0;
 	}
 #else
-      gcov_buffer = xmalloc (gcov_alloc);
+      gcov_var.buffer = xmalloc (gcov_var.alloc);
 #endif
     }
-  if (result >= 0 && fread (gcov_buffer, gcov_length, 1, gcov_file) != 1)
+  if (result >= 0
+      && fread (gcov_var.buffer, gcov_var.length, 1, gcov_var.file) != 1)
     {
-      fclose (gcov_file);
-      gcov_file = 0;
-      gcov_length = 0;
+      fclose (gcov_var.file);
+      gcov_var.file = 0;
+      gcov_var.length = 0;
       return 0;
     }
   return result;
@@ -422,17 +422,23 @@ gcov_close ()
 {
   int result = 0;
   
-  if (gcov_file)
+  if (gcov_var.file)
     {
-      if (gcov_modified
-	  && (fseek (gcov_file, 0, SEEK_SET)
-	      || fwrite (gcov_buffer, gcov_length, 1, gcov_file) != 1))
-	result = -1;
-      fclose (gcov_file);
-      gcov_file = 0;
-      gcov_length = 0;
+      if (gcov_var.modified
+	  && (fseek (gcov_var.file, 0, SEEK_SET)
+	      || fwrite (gcov_var.buffer, gcov_var.length,
+			 1, gcov_var.file) != 1))
+	result = 1;
+      fclose (gcov_var.file);
+      gcov_var.file = 0;
+      gcov_var.length = 0;
     }
-  return result || gcov_errored;
+#if !IN_LIBGCOV
+  free (gcov_var.buffer);
+  gcov_var.alloc = 0;
+  gcov_var.buffer = 0;
+#endif
+  return result ? 1 : gcov_var.error;
 }
 
 #if !IN_GCOV
@@ -444,167 +450,177 @@ gcov_write_bytes (unsigned bytes)
 {
   char unsigned *result;
 
-  if (gcov_position + bytes > gcov_alloc)
+  if (gcov_var.position + bytes > gcov_var.alloc)
     {
-      size_t new_size = (gcov_alloc + bytes) * 3 / 2;
+      size_t new_size = (gcov_var.alloc + bytes) * 3 / 2;
 
-      if (!gcov_buffer)
+      if (!gcov_var.buffer)
 	return 0;
 #if IN_LIBGCOV
-      result = realloc (gcov_buffer, new_size);
+      result = realloc (gcov_var.buffer, new_size);
       if (!result)
 	{
-	  free (gcov_buffer);
-	  gcov_buffer = 0;
-	  gcov_alloc = 0;
-	  gcov_position = gcov_length = 0;
+	  free (gcov_var.buffer);
+	  gcov_var.buffer = 0;
+	  gcov_var.alloc = 0;
+	  gcov_var.position = gcov_var.length = 0;
+	  gcov_var.error = 1;
 	  return 0;
 	}
 #else
-      result = xrealloc (gcov_buffer, new_size);
+      result = xrealloc (gcov_var.buffer, new_size);
 #endif
-      gcov_alloc = new_size;
-      gcov_buffer = result;
+      gcov_var.alloc = new_size;
+      gcov_var.buffer = result;
     }
   
-  result = &gcov_buffer[gcov_position];
-  gcov_position += bytes;
-  gcov_modified = 1;
-  if (gcov_position > gcov_length)
-    gcov_length = gcov_position;
+  result = &gcov_var.buffer[gcov_var.position];
+  gcov_var.position += bytes;
+  gcov_var.modified = 1;
+  if (gcov_var.position > gcov_var.length)
+    gcov_var.length = gcov_var.position;
   return result;
 }
 
-/* Write VALUE to coverage file.  Return nonzero if failed due to
-   file i/o error, or value error.  */
+/* Write unsigned VALUE to coverage file.  Sets error flag
+   appropriately.  */
 
-static int
+static void
 gcov_write_unsigned (unsigned value)
 {
   unsigned char *buffer = gcov_write_bytes (4);
   unsigned ix;
 
   if (!buffer)
-    return 1;
-  
+    return;
   for (ix = 4; ix--; )
     {
       buffer[ix] = value;
       value >>= 8;
     }
-  return sizeof (value) > 4 && value;
+  if (sizeof (value) > 4 && value)
+    gcov_var.error = -1;
+
+  return;
 }
 
-/* Write VALUE to coverage file.  Return nonzero if failed due to
-   file i/o error, or value error.  Negative values are not checked
-   here -- they are checked in gcov_read_counter.  */
+/* Write counter VALUE to coverage file.  Sets error flag
+   appropriately.  */
 
 #if IN_LIBGCOV
-static int
+static void
 gcov_write_counter (gcov_type value)
 {
   unsigned char *buffer = gcov_write_bytes (8);
   unsigned ix;
 
   if (!buffer)
-    return 1;
-  
+    return;
   for (ix = 8; ix--; )
     {
       buffer[ix] = value;
       value >>= 8;
     }
-  return sizeof (value) > 8 && value;
+  if ((sizeof (value) > 8 && value) || value < 0)
+    gcov_var.error = -1;
+  return;
 }
 #endif /* IN_LIBGCOV */
 
-/* Write VALUE to coverage file.  Return nonzero if failed due to
-   file i/o error, or value error.  */
+/* Write STRING to coverage file.  Sets error flag on file
+   error, overflow flag on overflow */
 
-static int
+static void
 gcov_write_string (const char *string)
 {
+  unsigned length = 0;
+  unsigned pad = 0;
+  unsigned rem = 0;
+  unsigned char *buffer;
+
   if (string)
     {
-      unsigned length = strlen (string);
-      unsigned pad = 0;
-      unsigned rem = 4 - (length & 3);
-      unsigned char *buffer;
-
-      if (gcov_write_unsigned (length))
-	return 1;
-      buffer = gcov_write_bytes (length + rem);
-      if (!buffer)
-	return 1;
-      memcpy (buffer, string, length);
-      memcpy (buffer + length, &pad, rem);
-      return 0;
+      length = strlen (string);
+      rem = 4 - (length & 3);
     }
-  else
-    return gcov_write_unsigned (0);
+  
+  buffer = gcov_write_bytes (4 + length + rem);
+  if (buffer)
+    {
+      unsigned ix;
+      unsigned value = length;
+      
+      for (ix = 4; ix--; )
+	{
+	  buffer[ix] = value;
+	  value >>= 8;
+	}
+      memcpy (buffer + 4, string, length);
+      memcpy (buffer + 4 + length, &pad, rem);
+    }
 }
 
-/* Allocate space to write a record tag length.  Return a value to be
-   used for gcov_write_length.  */
+/* Write a tag TAG and reserve space for the record length. Return a
+   value to be used for gcov_write_length.  */
 
 static unsigned long
-gcov_reserve_length (void)
+gcov_write_tag (unsigned tag)
 {
-  unsigned long result = gcov_position;
-  unsigned char *buffer = gcov_write_bytes (4);
+  unsigned long result = gcov_var.position;
+  unsigned char *buffer = gcov_write_bytes (8);
+  unsigned ix;
 
   if (!buffer)
     return 0;
-  memset (buffer, 0, 4);
+  for (ix = 4; ix--; )
+    {
+      buffer[ix] = tag;
+      tag >>= 8;
+    }
+  memset (buffer + 4, 0, 4);
   return result;
 }
 
-/* Write a record length at PLACE.  The current file position is the
-   end of the record, and is restored before returning.  Returns
-   nonzero on failure.  */
+/* Write a record length using POSITION, which was returned by
+   gcov_write_tag.  The current file position is the end of the
+   record, and is restored before returning.  Returns nonzero on
+   overflow.  */
 
-static int
+static void
 gcov_write_length (unsigned long position)
 {
-  unsigned length = gcov_position - position - 4;
-  unsigned char *buffer = &gcov_buffer[position];
-  unsigned ix;
-
-  if (!position)
-    return 1;
-  for (ix = 4; ix--; )
+  if (position)
     {
-      buffer[ix] = length;
-      length >>= 8;
+      unsigned length = gcov_var.position - position - 8;
+      unsigned char *buffer = &gcov_var.buffer[position + 4];
+      unsigned ix;
+      
+      for (ix = 4; ix--; )
+	{
+	  buffer[ix] = length;
+	  length >>= 8;
+	}
     }
-  return 0;
 }
 
 #if IN_LIBGCOV
-/* Write a summary structure to the gcov file.  */
+/* Write a summary structure to the gcov file.  Return non-zero on
+   overflow.  */
 
-static int
+static void
 gcov_write_summary (unsigned tag, const struct gcov_summary *summary)
 {
-  volatile unsigned long base; /* volatile is necessary to work around
-				  a compiler bug. */
+  unsigned long base;
 
-  if (gcov_write_unsigned (tag))
-    return 1;
-  base = gcov_reserve_length ();
-  if (gcov_write_unsigned (summary->checksum))
-    return 1;
-  if (gcov_write_unsigned (summary->runs)
-      || gcov_write_unsigned (summary->arcs))
-    return 1;
-  if (gcov_write_counter (summary->arc_sum)
-      || gcov_write_counter (summary->arc_max_one)
-      || gcov_write_counter (summary->arc_max_sum)
-      || gcov_write_counter (summary->arc_sum_max))
-    return 1;
-  if (gcov_write_length (base))
-    return 1;
-  return 0;
+  base = gcov_write_tag (tag);
+  gcov_write_unsigned (summary->checksum);
+  gcov_write_unsigned (summary->runs);
+  gcov_write_unsigned (summary->arcs);
+  gcov_write_counter (summary->arc_sum);
+  gcov_write_counter (summary->arc_max_one);
+  gcov_write_counter (summary->arc_max_sum);
+  gcov_write_counter (summary->arc_sum_max);
+  gcov_write_length (base);
 }
 #endif /* IN_LIBGCOV */
 
@@ -618,127 +634,118 @@ gcov_read_bytes (unsigned bytes)
 {
   const unsigned char *result;
   
-  if (gcov_position + bytes > gcov_length)
-    return 0;
-  result = &gcov_buffer[gcov_position];
-  gcov_position += bytes;
+  if (gcov_var.position + bytes > gcov_var.length)
+    {
+      gcov_var.error = 1;
+      return 0;
+    }
+  
+  result = &gcov_var.buffer[gcov_var.position];
+  gcov_var.position += bytes;
   return result;
 }
 
-/* Read *VALUE_P from coverage file.  Return nonzero if failed
-   due to file i/o error, or range error.  */
+/* Read unsigned value from a coverage file. Sets error flag on file
+   error, overflow flag on overflow */
 
-static int
-gcov_read_unsigned (unsigned *value_p)
+static unsigned
+gcov_read_unsigned ()
 {
   unsigned value = 0;
   unsigned ix;
   const unsigned char *buffer = gcov_read_bytes (4);
 
   if (!buffer)
-    return 1;
+    return 0;
   for (ix = sizeof (value); ix < 4; ix++)
     if (buffer[ix])
-      return 1;
+      gcov_var.error = -1;
   for (ix = 0; ix != 4; ix++)
     {
       value <<= 8;
       value |= buffer[ix];
     }
-  *value_p = value;
-  return 0;
+  return value;
 }
 
-/* Read *VALUE_P from coverage file.  Return nonzero if failed
-   due to file i/o error, or range error.  */
+/* Read counter value from a coverage file. Sets error flag on file
+   error, overflow flag on overflow */
 
-static int
-gcov_read_counter (gcov_type *value_p)
+static gcov_type
+gcov_read_counter ()
 {
   gcov_type value = 0;
   unsigned ix;
   const unsigned char *buffer = gcov_read_bytes (8);
 
   if (!buffer)
-    return 1;
+    return 0;
   for (ix = sizeof (value); ix < 8; ix++)
     if (buffer[ix])
-      return 1;
+      gcov_var.error = -1;
   for (ix = 0; ix != 8; ix++)
     {
       value <<= 8;
       value |= buffer[ix];
     }
-
-  *value_p = value;
-  return value < 0;
+  if (value < 0)
+    gcov_var.error = -1;
+  return value;
 }
 
-#if !IN_LIBGCOV
+/* Read string from coverage file. Returns a pointer to a static
+   buffer, or NULL on empty string. You must copy the string before
+   calling another gcov function.  */
 
-/* Read string from coverage file.  A buffer is allocated and returned
-   in *STRING_P.  Return nonzero if failed due to file i/o error, or
-   range error.  Uses xmalloc to allocate the string buffer.  */
-
-static int
-gcov_read_string (char **string_p)
+static const char *
+gcov_read_string ()
 {
-  unsigned length;
-  const unsigned char *buffer;
-
-  if (gcov_read_unsigned (&length))
-    return 1;
-
-  free (*string_p);
-  *string_p = NULL;
+  unsigned length = gcov_read_unsigned ();
+  
   if (!length)
     return 0;
 
   length += 4 - (length & 3);
-  buffer = gcov_read_bytes (length);
-  if (!buffer)
-    return 1;
-  
-  *string_p = xmalloc (length);
-  if (!*string_p)
-    return 1;
-
-  memcpy (*string_p, buffer, length);
-  return 0;
+  return (const char *) gcov_read_bytes (length);
 }
 
-#endif /* !IN_LIBGCOV */
-
 #define GCOV_SUMMARY_LENGTH 44
-static int
+static void
 gcov_read_summary (struct gcov_summary *summary)
 {
-  return (gcov_read_unsigned (&summary->checksum)
-	  || gcov_read_unsigned (&summary->runs)
-	  || gcov_read_unsigned (&summary->arcs)
-	  || gcov_read_counter (&summary->arc_sum)
-	  || gcov_read_counter (&summary->arc_max_one)
-	  || gcov_read_counter (&summary->arc_max_sum)
-	  || gcov_read_counter (&summary->arc_sum_max));
+  summary->checksum = gcov_read_unsigned ();
+  summary->runs = gcov_read_unsigned ();
+  summary->arcs = gcov_read_unsigned ();
+  summary->arc_sum = gcov_read_counter ();
+  summary->arc_max_one = gcov_read_counter ();
+  summary->arc_max_sum =  gcov_read_counter ();
+  summary->arc_sum_max = gcov_read_counter ();
 }
 
 /* Save the current position in the gcov file.  */
 
 static inline unsigned long
-gcov_save_position (void)
+gcov_position (void)
 {
-  return gcov_position;
+  return gcov_var.position;
 }
 
 /* Reset to a known position.  BASE should have been obtained from
    gcov_save_position, LENGTH should be a record length, or zero.  */
 
-static inline int
-gcov_resync (unsigned long base, unsigned length)
+static inline void
+gcov_seek (unsigned long base, unsigned length)
 {
-  if (gcov_buffer)
-    gcov_position = base + length;
-  return 0;
+  if (gcov_var.buffer)
+    {
+      base += length;
+      if (gcov_var.length < base)
+	{
+	  gcov_var.error = 1;
+	  base = gcov_var.length;
+	}
+      gcov_var.position = base;
+    }
 }
 
 /* Move to the end of the gcov file.  */
@@ -746,53 +753,24 @@ gcov_resync (unsigned long base, unsigned length)
 static inline unsigned long
 gcov_seek_end ()
 {
-  gcov_position = gcov_length;
-  return gcov_position;
-}
-
-/* Skip LENGTH bytes in the file.  */
-
-static inline int
-gcov_skip (unsigned length)
-{
-  if (gcov_length < gcov_position + length)
-    return 1;
-  gcov_position += length;
-  return 0;
-}
-
-/* Skip a string of LENGTH bytes.  */
-
-static inline int
-gcov_skip_string (unsigned length)
-{
-  return gcov_skip (length + 4 - (length & 3));
+  gcov_var.position = gcov_var.length;
+  return gcov_var.position;
 }
 
 /* Tests whether we have reached end of .da file.  */
 
 static inline int
-gcov_eof ()
+gcov_is_eof ()
 {
-  return gcov_position == gcov_length;
+  return gcov_var.position == gcov_var.length;
 }
 
 /* Return non-zero if the error flag is set.  */
 
 static inline int
-gcov_ok ()
+gcov_is_error ()
 {
-  return gcov_file != 0 && !gcov_errored;
-}
-
-/* Set the error flag. */
-static inline int
-gcov_error ()
-{
-  int error = gcov_errored;
-  
-  gcov_errored = 1;
-  return error;
+  return gcov_var.file ? gcov_var.error : 1;
 }
 
 #if IN_GCOV > 0
@@ -803,7 +781,7 @@ gcov_time ()
 {
   struct stat status;
   
-  if (fstat (fileno (gcov_file), &status))
+  if (fstat (fileno (gcov_var.file), &status))
     return 0;
   else
     return status.st_mtime;

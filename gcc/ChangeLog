@@ -1,3 +1,37 @@
+2003-04-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Makefile.in (loop-init.o): Do not depend on gcov-io.h,
+	gcov-iov.h.
+
+	Simplify interface to gcov reading and writing.
+	* gcov-io.h (gcov_file, gcov_position, gcov_length, gcov_buffer,
+	gcov_alloc, gcov_modified, gcov_errored): Move into ...
+	(struct gcov_var gcov_var): ... this static structure.
+	(gcov_write_unsigned, gcov_write_counter, gcov_write_string):
+	Return void.
+	(gcov_read_unsigned, gcov_read_couter, gcov_read_string): Return
+	read object.
+	(gcov_read_bytes, gcov_write_bytes): Set error flag on error.
+	(gcov_reserve_length): Remove.
+	(gcov_write_tag): New.
+	(gcov_write_length): Adjust.
+	(gcov_read_summary, gcov_write_summary): Adjust.
+	(gcov_eof, gcov_ok): Rename to ...
+	(gcov_is_eof, gcov_is_error): ... here. Return error code.
+	(gcov_save_position, gcov_resync): Rename to ...
+	(gcov_position, gcov_seek): ... here.
+	(gcov_skip, gcov_skip_string): Remove.
+	(gcov_error): Remove.
+	(gcov_open, gcov_close): Adjust.
+	* gcov.c (find_source): Take const char *, copy it on allocation.
+	(read_graph_file): Adjust.
+	(read_count_file): Adjust.
+	* libgcov.c (gcov_exit): Adjust.
+	* gcov-dump.c (tag_function, tag_blocks, tag_arcs, tag_lines,
+	tag_arc_counts, tag_summary): Return void. Adjust.
+	(struct tag_format): Adjust proc member.
+	(dump_file): Adjust gcov calls.
+
 2003-04-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (fixinc.sh): Pass BUILD_LIBERTY as LIBERTY to

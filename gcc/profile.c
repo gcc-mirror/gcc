@@ -274,7 +274,7 @@ static void
 read_counts_file (const char *name)
 {
   char *function_name_buffer = NULL;
-  unsigned magic, version, ix, checksum;
+  unsigned version, ix, checksum;
   counts_entry_t *summaried = NULL;
   unsigned seen_summary = 0;
   
@@ -284,21 +284,21 @@ read_counts_file (const char *name)
       return;
     }
   
-  if (gcov_read_unsigned (&magic) || magic != GCOV_DATA_MAGIC)
+  if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
     {
       warning ("`%s' is not a gcov data file", name);
       gcov_close ();
       return;
     }
-  else if (gcov_read_unsigned (&version) || version != GCOV_VERSION)
+  else if ((version = gcov_read_unsigned ()) != GCOV_VERSION)
     {
       char v[4], e[4];
-      magic = GCOV_VERSION;
+      unsigned required = GCOV_VERSION;
       
-      for (ix = 4; ix--; magic >>= 8, version >>= 8)
+      for (ix = 4; ix--; required >>= 8, version >>= 8)
 	{
 	  v[ix] = version;
-	  e[ix] = magic;
+	  e[ix] = required;
 	}
       warning ("`%s' is version `%.4s', expected version `%.4s'", name, v, e);
       gcov_close ();
@@ -308,27 +308,21 @@ read_counts_file (const char *name)
   counts_hash = htab_create (10,
 			     htab_counts_entry_hash, htab_counts_entry_eq,
 			     htab_counts_entry_del);
-  while (1)
+  while (!gcov_is_eof ())
     {
       unsigned tag, length;
-      long offset;
+      unsigned long offset;
+      int error;
       
-      offset = gcov_save_position ();
-      if (gcov_read_unsigned (&tag) || gcov_read_unsigned (&length))
-	{
-	  if (gcov_eof ())
-	    break;
-	corrupt:;
-	  warning ("`%s' is corrupted", name);
-	cleanup:
-	  htab_delete (counts_hash);
-	  break;
-	}
+      tag = gcov_read_unsigned ();
+      length = gcov_read_unsigned ();
+      offset = gcov_position ();
       if (tag == GCOV_TAG_FUNCTION)
 	{
-	  if (gcov_read_string (&function_name_buffer)
-	      || gcov_read_unsigned (&checksum))
-	    goto corrupt;
+	  const char *string = gcov_read_string ();
+	  free (function_name_buffer);
+	  function_name_buffer = string ? xstrdup (string) : NULL;
+	  checksum = gcov_read_unsigned ();
 	  if (seen_summary)
 	    {
 	      /* We have already seen a summary, this means that this
@@ -352,10 +346,7 @@ read_counts_file (const char *name)
 	  counts_entry_t *entry;
 	  struct gcov_summary summary;
 	  
-	  if (length != GCOV_SUMMARY_LENGTH
-	      || gcov_read_summary (&summary))
-	    goto corrupt;
-
+	  gcov_read_summary (&summary);
 	  seen_summary = 1;
 	  for (entry = summaried; entry; entry = entry->chain)
 	    {
@@ -370,7 +361,6 @@ read_counts_file (const char *name)
 	  counts_entry_t **slot, *entry, elt;
 	  unsigned n_counts = length / 8;
 	  unsigned ix;
-	  gcov_type count;
 
 	  elt.function_name = function_name_buffer;
 	  elt.section = tag;
@@ -390,7 +380,8 @@ read_counts_file (const char *name)
 	  else if (entry->checksum != checksum || entry->n_counts != n_counts)
 	    {
 	      warning ("profile mismatch for `%s'", function_name_buffer);
-	      goto cleanup;
+	      htab_delete (counts_hash);
+	      break;
 	    }
 	  
 	  /* This should always be true for a just allocated entry,
@@ -402,15 +393,16 @@ read_counts_file (const char *name)
 	      summaried = entry;
 	    }
 	  for (ix = 0; ix != n_counts; ix++)
-	    {
-	      if (gcov_read_counter (&count))
-		goto corrupt;
-	      entry->counts[ix] += count;
-	    }
+	    entry->counts[ix] += gcov_read_counter ();
 	}
-      else
-	if (gcov_skip (length))
-	  goto corrupt;
+      gcov_seek (offset, length);
+      if ((error = gcov_is_error ()))
+	{
+	  warning (error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",
+		   name);
+	  htab_delete (counts_hash);
+	  break;
+	}
     }
 
   free (function_name_buffer);
@@ -1007,42 +999,34 @@ branch_prob ()
      edge output the source and target basic block numbers.
      NOTE: The format of this file must be compatible with gcov.  */
 
-  if (gcov_ok ())
+  if (!gcov_is_error ())
     {
       long offset;
       const char *file = DECL_SOURCE_FILE (current_function_decl);
       unsigned line = DECL_SOURCE_LINE (current_function_decl);
       
       /* Announce function */
-      if (gcov_write_unsigned (GCOV_TAG_FUNCTION)
-	  || !(offset = gcov_reserve_length ())
-	  || gcov_write_string (name)
-	  || gcov_write_unsigned (profile_info.current_function_cfg_checksum)
-	  || gcov_write_string (file)
-	  || gcov_write_unsigned (line)
-	  || gcov_write_length (offset))
-	goto bbg_error;
+      offset = gcov_write_tag (GCOV_TAG_FUNCTION);
+      gcov_write_string (name);
+      gcov_write_unsigned (profile_info.current_function_cfg_checksum);
+      gcov_write_string (file);
+      gcov_write_unsigned (line);
+      gcov_write_length (offset);
 
       /* Basic block flags */
-      if (gcov_write_unsigned (GCOV_TAG_BLOCKS)
-	  || !(offset = gcov_reserve_length ()))
-	goto bbg_error;
+      offset = gcov_write_tag (GCOV_TAG_BLOCKS);
       for (i = 0; i != (unsigned) (n_basic_blocks + 2); i++)
-	if (gcov_write_unsigned (0))
-	  goto bbg_error;
-      if (gcov_write_length (offset))
-	goto bbg_error;
+	gcov_write_unsigned (0);
+      gcov_write_length (offset);
       
       /* Arcs */
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
 	{
 	  edge e;
 
-	  if (gcov_write_unsigned (GCOV_TAG_ARCS)
-	      || !(offset = gcov_reserve_length ())
-	      || gcov_write_unsigned (BB_TO_GCOV_INDEX (bb)))
-	    goto bbg_error;
-
+	  offset = gcov_write_tag (GCOV_TAG_ARCS);
+	  gcov_write_unsigned (BB_TO_GCOV_INDEX (bb));
+	  
 	  for (e = bb->succ; e; e = e->succ_next)
 	    {
 	      struct edge_info *i = EDGE_INFO (e);
@@ -1057,14 +1041,12 @@ branch_prob ()
 		  if (e->flags & EDGE_FALLTHRU)
 		    flag_bits |= GCOV_ARC_FALLTHROUGH;
 
-		  if (gcov_write_unsigned (BB_TO_GCOV_INDEX (e->dest))
-		      || gcov_write_unsigned (flag_bits))
-		    goto bbg_error;
+		  gcov_write_unsigned (BB_TO_GCOV_INDEX (e->dest));
+		  gcov_write_unsigned (flag_bits);
 	        }
 	    }
 
-	  if (gcov_write_length (offset))
-	    goto bbg_error;
+	  gcov_write_length (offset);
 	}
 
       /* Output line number information about each basic block for
@@ -1104,13 +1086,12 @@ branch_prob ()
 		      ignore_next_note = 0;
 		    else
 		      {
-			if (offset)
-			  /*NOP*/;
-			else if (gcov_write_unsigned (GCOV_TAG_LINES)
-				 || !(offset = gcov_reserve_length ())
-				 || (gcov_write_unsigned
-				     (BB_TO_GCOV_INDEX (bb))))
-			  goto bbg_error;
+			if (!offset)
+			  {
+			    offset = gcov_write_tag (GCOV_TAG_LINES);
+			    gcov_write_unsigned (BB_TO_GCOV_INDEX (bb));
+			  }
+
 			/* If this is a new source file, then output
 			   the file's name to the .bb file.  */
 			if (!prev_file_name
@@ -1118,12 +1099,10 @@ branch_prob ()
 				       prev_file_name))
 			  {
 			    prev_file_name = NOTE_SOURCE_FILE (insn);
-			    if (gcov_write_unsigned (0)
-				|| gcov_write_string (prev_file_name))
-			      goto bbg_error;
+			    gcov_write_unsigned (0);
+			    gcov_write_string (prev_file_name);
 			  }
-			if (gcov_write_unsigned (NOTE_LINE_NUMBER (insn)))
-			  goto bbg_error;
+			gcov_write_unsigned (NOTE_LINE_NUMBER (insn));
 		      }
 		  }
 		insn = NEXT_INSN (insn);
@@ -1131,15 +1110,13 @@ branch_prob ()
 
 	    if (offset)
 	      {
-		if (gcov_write_unsigned (0)
-		    || gcov_write_string (NULL)
-		    || gcov_write_length (offset))
-		  {
-		  bbg_error:;
-		    warning ("error writing `%s'", bbg_file_name);
-		    gcov_error ();
-		  }
+		/* A file of NULL indicates the end of run.  */
+		gcov_write_unsigned (0);
+		gcov_write_string (NULL);
+		gcov_write_length (offset);
 	      }
+	    if (gcov_is_error ())
+	      warning ("error writing `%s'", bbg_file_name);
 	  }
       }
     }
@@ -1328,13 +1305,9 @@ init_branch_prob (filename)
       strcpy (bbg_file_name, filename);
       strcat (bbg_file_name, GCOV_GRAPH_SUFFIX);
       if (!gcov_open (bbg_file_name, -1))
-	{
-	  error ("cannot open %s", bbg_file_name);
-	  gcov_error ();
-	}
-      else if (gcov_write_unsigned (GCOV_GRAPH_MAGIC)
-	       || gcov_write_unsigned (GCOV_VERSION))
-	gcov_error ();
+	error ("cannot open %s", bbg_file_name);
+      gcov_write_unsigned (GCOV_GRAPH_MAGIC);
+      gcov_write_unsigned (GCOV_VERSION);
     }
 
   if (profile_arc_flag)
