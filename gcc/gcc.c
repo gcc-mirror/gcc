@@ -3610,10 +3610,21 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			t->next = temp_names;
 			temp_names = t;
 		      }
-		    t->length = p - suffix;
-		    t->suffix = save_string (suffix, p - suffix);
-		    t->unique = (c != 'g');
-		    temp_filename = make_temp_file (suffix);
+		    if (strncmp (suffix, "%O", 2) == 0)
+		      {
+			t->length = strlen(OBJECT_SUFFIX);
+			t->suffix = save_string (OBJECT_SUFFIX,
+						 strlen(OBJECT_SUFFIX));
+			t->unique = (c != 'g');
+			temp_filename = make_temp_file (OBJECT_SUFFIX);
+		      }
+		    else
+		      {
+			t->length = p - suffix;
+			t->suffix = save_string (suffix, p - suffix);
+			t->unique = (c != 'g');
+			temp_filename = make_temp_file (suffix);
+		      }
 		    temp_filename_length = strlen (temp_filename);
 		    t->filename = temp_filename;
 		    t->filename_length = temp_filename_length;
