@@ -49,7 +49,7 @@ int main()
     exit (0);
   
   c(0x3690000000000000ULL, 0x00000000U);
-#if (defined __arm__ || defined __thumb__) && ! defined __ARMEB__
+#if (defined __arm__ || defined __thumb__) && ! (defined __ARMEB__ || defined __VFP_FP__)
   /* The ARM always stores FP numbers in big-wordian format,
      even when running in little-byteian mode.  */
   c(0x0000000136900000ULL, 0x00000001U);
