@@ -10888,6 +10888,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   /* Now TYPE has the actual type.  */
 
+  /* Did array size calculations overflow?  */
+
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && COMPLETE_TYPE_P (type)
+      && TREE_OVERFLOW (TYPE_SIZE (type)))
+    {
+      error ("size of array `%s' is too large", name);
+      /* If we proceed with the array type as it is, we'll eventully
+	 crash in tree_low_cst().  */
+      type = error_mark_node;
+    }
+
   if (explicitp == 1 || (explicitp && friendp))
     {
       /* [dcl.fct.spec] The explicit specifier shall only be used in
@@ -11037,8 +11049,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
      a distinct type, so that each identifier's size can be
      controlled separately by its own initializer.  */
 
-  if (type == typedef_type && TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_DOMAIN (type) == NULL_TREE)
+  if (type != 0 && typedef_type != 0
+      && TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == 0
+      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (typedef_type))
     {
       type = build_cplus_array_type (TREE_TYPE (type), TYPE_DOMAIN (type));
     }
