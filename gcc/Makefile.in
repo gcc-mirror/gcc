@@ -1514,7 +1514,7 @@ except.o : except.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 expr.o : expr.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h \
    $(REGS_H) insn-flags.h insn-codes.h $(EXPR_H) insn-config.h $(RECOG_H) \
    output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h except.h \
-   ggc.h
+   ggc.h intl.h
 builtins.o : builtins.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h $(REGS_H) insn-flags.h insn-codes.h $(EXPR_H) insn-config.h \
    $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \
