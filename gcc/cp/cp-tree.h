@@ -3067,20 +3067,20 @@ extern void cp_deprecated                       PROTO((const char*));
 
 /* in error.c */
 extern void init_error				PROTO((void));
-extern char *fndecl_as_string			PROTO((tree, int));
-extern char *type_as_string			PROTO((tree, int));
-extern char *type_as_string_real		PROTO((tree, int, int));
-extern char *args_as_string			PROTO((tree, int));
-extern char *decl_as_string			PROTO((tree, int));
-extern char *expr_as_string			PROTO((tree, int));
-extern char *code_as_string			PROTO((enum tree_code, int));
-extern char *language_as_string			PROTO((enum languages, int));
-extern char *parm_as_string			PROTO((int, int));
-extern char *op_as_string			PROTO((enum tree_code, int));
-extern char *assop_as_string			PROTO((enum tree_code, int));
-extern char *cv_as_string			PROTO((tree, int));
-extern char *lang_decl_name			PROTO((tree, int));
-extern char *cp_file_of				PROTO((tree));
+extern const char *fndecl_as_string		PROTO((tree, int));
+extern const char *type_as_string		PROTO((tree, int));
+extern const char *type_as_string_real		PROTO((tree, int, int));
+extern const char *args_as_string		PROTO((tree, int));
+extern const char *decl_as_string		PROTO((tree, int));
+extern const char *expr_as_string		PROTO((tree, int));
+extern const char *code_as_string		PROTO((enum tree_code, int));
+extern const char *language_as_string		PROTO((enum languages, int));
+extern const char *parm_as_string		PROTO((int, int));
+extern const char *op_as_string			PROTO((enum tree_code, int));
+extern const char *assop_as_string		PROTO((enum tree_code, int));
+extern const char *cv_as_string			PROTO((tree, int));
+extern const char *lang_decl_name		PROTO((tree, int));
+extern const char *cp_file_of			PROTO((tree));
 extern int cp_line_of				PROTO((tree));
 
 /* in except.c */
@@ -3459,7 +3459,7 @@ extern tree fnaddr_from_vtable_entry		PROTO((tree));
 extern tree function_arg_chain			PROTO((tree));
 extern int promotes_to_aggr_type		PROTO((tree, enum tree_code));
 extern int is_aggr_type_2			PROTO((tree, tree));
-extern char *lang_printable_name		PROTO((tree, int));
+extern const char *lang_printable_name		PROTO((tree, int));
 extern tree build_exception_variant		PROTO((tree, tree));
 extern tree copy_template_template_parm		PROTO((tree));
 extern tree copy_to_permanent			PROTO((tree));
