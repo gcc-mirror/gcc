@@ -3536,7 +3536,7 @@ builtin:
      used to determine what the corresponding new looked like.
    SIZE is the size of the memory block to be deleted.
    FLAGS are the usual overloading flags.
-   PLACEMENT is the corresponding placement new call, or 0.  */
+   PLACEMENT is the corresponding placement new call, or NULL_TREE.  */
 
 tree
 build_op_delete_call (code, addr, size, flags, placement)
@@ -3611,23 +3611,50 @@ build_op_delete_call (code, addr, size, flags, placement)
 	argtypes = tree_cons (NULL_TREE, ptr_type_node,
 			      tree_cons (NULL_TREE, sizetype, 
 					 void_list_node));
-
       fntype = build_function_type (void_type_node, argtypes);
-      fn = instantiate_type (fntype, fns, itf_no_attributes);
 
-      if (fn != error_mark_node)
+      /* Go through the `operator delete' functions looking for one
+	 with a matching type.  */
+      for (fn = BASELINK_P (fns) ? TREE_VALUE (fns) : fns; 
+	   fn; 
+	   fn = OVL_NEXT (fn))
 	{
-	  /* Member functions.  */
-	  if (BASELINK_P (fns))
-	    enforce_access (type, fn);
+	  tree t;
 
-	  if (pass == 0)
-	    args = tree_cons (NULL_TREE, addr, args);
-	  else
-	    args = tree_cons (NULL_TREE, addr, 
-			      build_tree_list (NULL_TREE, size));
-	  return build_function_call (fn, args);
+	  /* Exception specifications on the `delete' operator do not
+	     matter.  */
+	  t = build_exception_variant (TREE_TYPE (OVL_CURRENT (fn)),
+				       NULL_TREE);
+	  /* We also don't compare attributes.  We're really just
+	     trying to check the types of the first two parameters.  */
+	  if (comptypes (t, fntype, COMPARE_NO_ATTRIBUTES))
+	    break;
 	}
+
+      /* If we found a match, we're done.  */
+      if (fn)
+	break;
+    }
+
+  /* If we have a matching function, call it.  */
+  if (fn)
+    {
+      /* Make sure we have the actual function, and not an
+	 OVERLOAD.  */
+      fn = OVL_CURRENT (fn);
+
+      /* If the FN is a member function, make sure that it is
+	 accessible.  */
+      if (DECL_CLASS_SCOPE_P (fn))
+	enforce_access (type, fn);
+
+      if (pass == 0)
+	args = tree_cons (NULL_TREE, addr, args);
+      else
+	args = tree_cons (NULL_TREE, addr, 
+			  build_tree_list (NULL_TREE, size));
+
+      return build_function_call (fn, args);
     }
 
   /* If we are doing placement delete we do nothing if we don't find a
