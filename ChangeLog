@@ -1,3 +1,7 @@
+2000-01-12  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Don't build some bits for beos.
+
 2000-01-12  Joel Sherrill (joel@OARcorp.com)
 
 	* Makefile.in (CC_FOR_TARGET): Use newlib libraries as well
