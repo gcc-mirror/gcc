@@ -193,6 +193,10 @@ enum dwarf_attribute
     DW_AT_MIPS_loop_unroll_factor = 0x2005,
     DW_AT_MIPS_software_pipeline_depth = 0x2006,
     DW_AT_MIPS_linkage_name = 0x2007,
+    DW_AT_MIPS_stride = 0x2008,
+    DW_AT_MIPS_abstract_name = 0x2009,
+    DW_AT_MIPS_clone_origin = 0x200a,
+    DW_AT_MIPS_has_inlines = 0x200b,
     /* GNU extensions.  */
     DW_AT_sf_names = 0x2101,
     DW_AT_src_info = 0x2102,
