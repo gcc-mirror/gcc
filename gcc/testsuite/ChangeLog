@@ -1,3 +1,7 @@
+2004-02-10  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.dg/debug/20020327-1.c: xfail for powerpc64.
+
 2004-02-09  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/compile/20040209-1.c: New test case.
