@@ -1,5 +1,10 @@
 2002-04-15  Richard Henderson  <rth@redhat.com>
 
+	* config/mips/abi64.h (SUBTARGET_CONDITIONAL_REGISTER_USAGE): Set
+	call_really_used_regs too.
+
+2002-04-15  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/gnu.h (CPP_PREDEFINES): Underscores for gnu_hurd.
 
 2002-04-15  David S. Miller  <davem@redhat.com>
