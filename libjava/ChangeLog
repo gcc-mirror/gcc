@@ -1,3 +1,13 @@
+2004-02-04  Olga Rodimina  <rodimina@redhat.com>
+
+	* java/awt/geom/AffineTransform.java: 
+	Corrected comments on the field definitions for
+	m11 and m10.
+	(shear): Fixed few errors that caused shear
+	transformation to be performed incorrectly.
+	(createInverse): Fixed to return correct
+	inverse of the given matrix.
+
 2004-02-03  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natPosixProcess.cc (startProcess): Handle case where

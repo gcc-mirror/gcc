@@ -226,7 +226,7 @@ public class AffineTransform implements Cloneable, Serializable
   private double m00;
 
   /**
-   * The Y coordinate scaling element of the transform matrix.
+   * The Y coordinate shearing element of the transform matrix.
    *
    * @serial matrix[1,0]
    */
@@ -240,7 +240,7 @@ public class AffineTransform implements Cloneable, Serializable
   private double m01;
 
   /**
-   * The Y coordinate shearing element of the transform matrix.
+   * The Y coordinate scaling element of the transform matrix.
    *
    * @serial matrix[1,1]
    */
@@ -738,10 +738,10 @@ public class AffineTransform implements Cloneable, Serializable
    */
   public void shear(double shx, double shy)
   {
-    double n00 = m00 + shx * m01;
-    double n01 = shx * m00 + m01;
-    double n10 = m10 * shy + m11;
-    double n11 = shx * m10 + m11;
+    double n00 = m00 + (shy * m01);
+    double n01 = m01 + (shx * m00);
+    double n10 = m10 + (shy * m11);
+    double n11 = m11 + (shx * m10);
     m00 = n00;
     m01 = n01;
     m10 = n10;
@@ -996,6 +996,38 @@ public class AffineTransform implements Cloneable, Serializable
    * map multiple points to the same line or point). A transform exists only
    * if getDeterminant() has a non-zero value.
    *
+   * The inverse is calculated as:
+   * 
+   * <pre>
+   *
+   * Let A be the matrix for which we want to find the inverse:
+   *
+   * A = [ m00 m01 m02 ]
+   *     [ m10 m11 m12 ]
+   *     [ 0   0   1   ] 
+   *
+   *
+   *                 1    
+   * inverse (A) =  ---   x  adjoint(A) 
+   *                det 
+   *
+   *
+   *
+   *             =   1       [  m11  -m01   m01*m12-m02*m11  ]
+   *                ---   x  [ -m10   m00  -m00*m12+m10*m02  ]
+   *                det      [  0     0     m00*m11-m10*m01  ]
+   *
+   *
+   *
+   *             = [  m11/det  -m01/det   m01*m12-m02*m11/det ]
+   *               [ -m10/det   m00/det  -m00*m12+m10*m02/det ]
+   *               [   0           0          1               ]
+   *
+   *
+   * </pre>
+   *
+   *
+   *
    * @return a new inverse transform
    * @throws NoninvertibleTransformException if inversion is not possible
    * @see #getDeterminant()
@@ -1006,8 +1038,15 @@ public class AffineTransform implements Cloneable, Serializable
     double det = getDeterminant();
     if (det == 0)
       throw new NoninvertibleTransformException("can't invert transform");
-    return new AffineTransform(m11 / det, -m10 / det, m01 / det, -m00 / det,
-                               -m02, -m12);
+    
+    double im00 = m11 / det;
+    double im10 = -m10 / det;
+    double im01 = -m01 / det;
+    double im11 = m00 / det;
+    double im02 = (m01 * m12 - m02 * m11) / det;
+    double im12 = (-m00 * m12 + m10 * m02) / det;
+    
+    return new AffineTransform (im00, im10, im01, im11, im02, im12);
   }
 
   /**
