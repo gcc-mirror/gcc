@@ -1,5 +1,9 @@
 2000-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* g++.old-deja/g++.pt/ttp65.C: New test.
+
+2000-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	* g++.old-deja/g++.pt/ttp64.C: New test.
 
 2000-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
