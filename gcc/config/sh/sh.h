@@ -1430,10 +1430,12 @@ extern int pragma_interrupt;
       && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)		\
     MODE = SImode;
 
-/* PROMOTE_FUNCTION_ARGS and PROMOTE_FUNCTION_RETURN appear to have no
-   effect, because all unprototyped char/shorts are already promoted to
-   int, and because PROMOTE_PROTOTYPES causes all prototypes char/shorts
-   to be promoted to it.  */
+/* Defining PROMOTE_FUNCTION_ARGS eliminates some unnecessary zero/sign
+   extensions applied to char/short functions arguments.  Defining
+   PROMOTE_FUNCTION_RETURN does the same for function returns.  */
+
+#define PROMOTE_FUNCTION_ARGS
+#define PROMOTE_FUNCTION_RETURN
 
 /* ??? Define ACCUMULATE_OUTGOING_ARGS?  This is more efficient than pushing
    and poping arguments.  However, we do have push/pop instructions, and
