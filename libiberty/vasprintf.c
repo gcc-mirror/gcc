@@ -1,6 +1,6 @@
 /* Like vsprintf but provides a pointer to malloc'd storage, which must
    be freed by the caller.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2003 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -52,7 +52,7 @@ you pass a pointer to a pointer.  This function will compute the size
 of the buffer needed, allocate memory with @code{malloc}, and store a
 pointer to the allocated memory in @code{*@var{resptr}}.  The value
 returned is the same as @code{vsprintf} would return.  If memory could
-not be allocated, zero is returned and @code{NULL} is stored in
+not be allocated, minus one is returned and @code{NULL} is stored in
 @code{*@var{resptr}}.
 
 @end deftypefn
@@ -142,7 +142,7 @@ int_vasprintf (result, format, args)
   if (*result != NULL)
     return vsprintf (*result, format, *args);
   else
-    return 0;
+    return -1;
 }
 
 int

@@ -1,6 +1,6 @@
 /* Like sprintf but provides a pointer to malloc'd storage, which must
    be freed by the caller.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2003 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of the libiberty library.
@@ -37,7 +37,7 @@ pass a pointer to a pointer.  This function will compute the size of
 the buffer needed, allocate memory with @code{malloc}, and store a
 pointer to the allocated memory in @code{*@var{resptr}}.  The value
 returned is the same as @code{sprintf} would return.  If memory could
-not be allocated, zero is returned and @code{NULL} is stored in
+not be allocated, minus one is returned and @code{NULL} is stored in
 @code{*@var{resptr}}.
 
 @end deftypefn
