@@ -1,3 +1,7 @@
+2004-06-08  Per Bothner  <per@bothner.com>
+
+	* configure.ac:  New --enable-mapped-location sets USE_MAPPED_LOCATION.
+
 2004-06-08  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* toplev.c (floor_log2_wide): Correct casts for 64-bit hosts.

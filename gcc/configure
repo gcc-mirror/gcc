@@ -869,6 +869,7 @@ Optional Features:
 			  enable only specific categories of checks.
 			  Categories are: misc,tree,rtl,rtlflag,gc,gcac,fold;
 			  default is misc,tree,gc,rtlflag
+  --enable-mapped-location   location_t is fileline integer cookie
   --enable-coverage=LEVEL
 			  enable compiler\'s code coverage collection.
 			  Use to measure compiler performance and locate
@@ -4583,6 +4584,22 @@ fi
 
 
 
+# Check whether --enable-mapped-location or --disable-mapped-location was given.
+if test "${enable_mapped_location+set}" = set; then
+  enableval="$enable_mapped_location"
+
+else
+  enable_mapped_location=no
+fi;
+
+if test "$enable_mapped_location" = yes ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define USE_MAPPED_LOCATION 1
+_ACEOF
+
+fi
+
 # Enable code coverage collection
 # Check whether --enable-coverage or --disable-coverage was given.
 if test "${enable_coverage+set}" = set; then
@@ -5234,7 +5251,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:5237: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:5254: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)

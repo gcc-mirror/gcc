@@ -542,6 +542,9 @@
 /* Define if gcc should use -lunwind. */
 #undef USE_LIBUNWIND_EXCEPTIONS
 
+/* Define if location_t is fileline integer cookie. */
+#undef USE_MAPPED_LOCATION
+
 /* Define to be the last portion of registry key on windows hosts. */
 #undef WIN32_REGISTRY_KEY
 
