@@ -1,7 +1,7 @@
 # ltmain.sh - Provide generalized library-building support services.
 # NOTE: Changing this file will not affect anything until you rerun ltconfig.
 #
-# Copyright (C) 1996-2000 Free Software Foundation, Inc.
+# Copyright (C) 1996-2000, 2001 Free Software Foundation, Inc.
 # Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 #
 # This program is free software; you can redistribute it and/or modify
@@ -5006,12 +5006,24 @@ $echo "Try \`$modename --help' for more information about other modes."
 
 exit 0
 
+# The TAGs below are defined such that we never get into a situation
+# in which we disable both kinds of libraries.  Given conflicting
+# choices, we go for a static library, that is the most portable,
+# since we can't tell whether shared libraries were disabled because
+# the user asked for that or because the platform doesn't support
+# them.  This is particularly important on AIX, because we don't
+# support having both static and shared libraries enabled at the same
+# time on that platform, so we default to a shared-only configuration.
+# If a disable-shared tag is given, we'll fallback to a static-only
+# configuration.  But we'll never go from static-only to shared-only.
+
 ### BEGIN LIBTOOL TAG CONFIG: disable-shared
 build_libtool_libs=no
+build_old_libs=yes
 ### END LIBTOOL TAG CONFIG: disable-shared
 
 ### BEGIN LIBTOOL TAG CONFIG: disable-static
-build_old_libs=no
+build_old_libs=`case $build_libtool_libs in yes) echo no;; *) echo yes;; esac`
 ### END LIBTOOL TAG CONFIG: disable-static
 
 # Local Variables:

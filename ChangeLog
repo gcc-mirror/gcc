@@ -1,5 +1,9 @@
 2001-01-24  Alexandre Oliva  <aoliva@redhat.com>
 
+	* ltmain.sh (TAG disable-shared, TAG disable-static): Make sure we
+	keep at least one of build_libtool_libs or build_old_libs set to
+	yes.
+
 	* ltcf-gcj.sh (lt_simple_link_test_code): Remove stray `(0)'.
 	* libtool.m4 (_AC_LIBTOOL_GCJ): Pass $CPPFLAGS on.
 
