@@ -1,4 +1,5 @@
 #define LIBFFI_ASM
+#include <ffi.h>
 #include <powerpc/asm.h>
 
         .file   "ppc_closure.S"

@@ -1,3 +1,7 @@
+2003-06-19  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* src/powerpc/ppc_closure.S: Include ffi.h.
+
 2003-06-13  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* src/x86/sysv.S: Avoid gas-only .uleb128/.sleb128 directives.
