@@ -1,5 +1,17 @@
 2003-12-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/11971
+	* tree.c (build_local_temp): Split out from build_cplus_new.
+	(force_target_expr): New fn.
+	* call.c (call_builtin_trap): Call it.  Take a type parm.
+	(convert_arg_to_ellipsis): Pass it.
+	(build_x_va_arg): Use call_builtin_trap.
+
+	PR c++/11929
+	* call.c (magic_varargs_p): New fn.
+	(build_over_call): Do no ellipsis conversions for arguments to 
+	functions with magic varargs.
+
 	* name-lookup.c, init.c, except.c: Revert Giovanni's patch from
 	yesterday.
 

@@ -3692,6 +3692,7 @@ extern int walk_namespaces                      (walk_namespaces_fn,
 extern int wrapup_globals_for_namespace         (tree, void *);
 extern tree create_implicit_typedef             (tree, tree);
 extern tree maybe_push_decl                     (tree);
+extern tree force_target_expr			(tree, tree);
 extern tree build_target_expr_with_type         (tree, tree);
 extern int local_variable_p                     (tree);
 extern int nonstatic_local_decl_p               (tree);

@@ -49,6 +49,7 @@ static tree build_target_expr (tree, tree);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
 static tree find_tree_r (tree *, int *, void *);
+static tree build_local_temp (tree);
 
 static tree handle_java_interface_attribute (tree *, tree, tree, int, bool *);
 static tree handle_com_interface_attribute (tree *, tree, tree, int, bool *);
@@ -242,6 +243,19 @@ build_target_expr (tree decl, tree value)
   return t;
 }
 
+/* Return an undeclared local temporary of type TYPE for use in building a
+   TARGET_EXPR.  */
+
+static tree
+build_local_temp (tree type)
+{
+  tree slot = build_decl (VAR_DECL, NULL_TREE, type);
+  DECL_ARTIFICIAL (slot) = 1;
+  DECL_CONTEXT (slot) = current_function_decl;
+  layout_decl (slot, 0);
+  return slot;
+}
+
 /* INIT is a CALL_EXPR which needs info about its target.
    TYPE is the type that this initialization should appear to have.
 
@@ -269,10 +283,7 @@ build_cplus_new (tree type, tree init)
 	     && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 	     && DECL_CONSTRUCTOR_P (TREE_OPERAND (fn, 0)));
 
-  slot = build_decl (VAR_DECL, NULL_TREE, type);
-  DECL_ARTIFICIAL (slot) = 1;
-  DECL_CONTEXT (slot) = current_function_decl;
-  layout_decl (slot, 0);
+  slot = build_local_temp (type);
 
   /* We split the CALL_EXPR into its function and its arguments here.
      Then, in expand_expr, we put them back together.  The reason for
@@ -306,7 +317,6 @@ tree
 build_target_expr_with_type (tree init, tree type)
 {
   tree slot;
-  tree rval;
 
   if (TREE_CODE (init) == TARGET_EXPR)
     return init;
@@ -321,13 +331,19 @@ build_target_expr_with_type (tree init, tree type)
        aggregate; there's no additional work to be done.  */
     return force_rvalue (init);
 
-  slot = build_decl (VAR_DECL, NULL_TREE, type);
-  DECL_ARTIFICIAL (slot) = 1;
-  DECL_CONTEXT (slot) = current_function_decl;
-  layout_decl (slot, 0);
-  rval = build_target_expr (slot, init);
+  slot = build_local_temp (type);
+  return build_target_expr (slot, init);
+}
 
-  return rval;
+/* Like the above function, but without the checking.  This function should
+   only be used by code which is deliberately trying to subvert the type
+   system, such as call_builtin_trap.  */
+
+tree
+force_target_expr (tree type, tree init)
+{
+  tree slot = build_local_temp (type);
+  return build_target_expr (slot, init);
 }
 
 /* Like build_target_expr_with_type, but use the type of INIT.  */

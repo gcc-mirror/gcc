@@ -104,11 +104,12 @@ static tree direct_reference_binding (tree, tree);
 static bool promoted_arithmetic_type_p (tree);
 static tree conditional_conversion (tree, tree);
 static char *name_as_c_string (tree, tree, bool *);
-static tree call_builtin_trap (void);
+static tree call_builtin_trap (tree);
 static tree prep_operand (tree);
 static void add_candidates (tree, tree, tree, bool, tree, tree,
 			    int, struct z_candidate **);
 static tree merge_conversion_sequences (tree, tree);
+static bool magic_varargs_p (tree);
 
 tree
 build_vfield_ref (tree datum, tree type)
@@ -4191,16 +4192,18 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
 		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
 }
 
-/* Build a call to __builtin_trap which can be used in an expression.  */
+/* Build a call to __builtin_trap which can be used as an expression of
+   type TYPE.  */
 
 static tree
-call_builtin_trap (void)
+call_builtin_trap (tree type)
 {
   tree fn = IDENTIFIER_GLOBAL_VALUE (get_identifier ("__builtin_trap"));
 
   my_friendly_assert (fn != NULL, 20030927);
   fn = build_call (fn, NULL_TREE);
-  fn = build (COMPOUND_EXPR, integer_type_node, fn, integer_zero_node);
+  fn = build (COMPOUND_EXPR, type, fn, error_mark_node);
+  fn = force_target_expr (type, fn);
   return fn;
 }
 
@@ -4239,7 +4242,7 @@ convert_arg_to_ellipsis (tree arg)
       warning ("cannot pass objects of non-POD type `%#T' through `...'; \
 call will abort at runtime",
 	       TREE_TYPE (arg));
-      arg = call_builtin_trap ();
+      arg = call_builtin_trap (TREE_TYPE (arg));
     }
 
   return arg;
@@ -4261,8 +4264,10 @@ build_x_va_arg (tree expr, tree type)
   if (! pod_type_p (type))
     {
       /* Undefined behavior [expr.call] 5.2.2/7.  */
-      warning ("cannot receive objects of non-POD type `%#T' through `...'",
-		  type);
+      warning ("cannot receive objects of non-POD type `%#T' through `...'; \
+call will abort at runtime",
+	       type);
+      return call_builtin_trap (type);
     }
   
   return build_va_arg (expr, type);
@@ -4366,6 +4371,29 @@ convert_for_arg_passing (tree type, tree val)
 				   TYPE_SIZE (integer_type_node)))
     val = perform_integral_promotions (val);
   return val;
+}
+
+/* Returns true iff FN is a function with magic varargs, i.e. ones for
+   which no conversions at all should be done.  This is true for some
+   builtins which don't act like normal functions.  */
+
+static bool
+magic_varargs_p (tree fn)
+{
+  if (DECL_BUILT_IN (fn))
+    switch (DECL_FUNCTION_CODE (fn))
+      {
+      case BUILT_IN_CLASSIFY_TYPE:
+      case BUILT_IN_CONSTANT_P:
+      case BUILT_IN_NEXT_ARG:
+      case BUILT_IN_STDARG_START:
+      case BUILT_IN_VA_START:
+	return true;
+
+      default:;
+      }
+
+  return false;
 }
 
 /* Subroutine of the various build_*_call functions.  Overload resolution
@@ -4517,10 +4545,14 @@ build_over_call (struct z_candidate *cand, int flags)
 
   /* Ellipsis */
   for (; arg; arg = TREE_CHAIN (arg))
-    converted_args 
-      = tree_cons (NULL_TREE,
-		   convert_arg_to_ellipsis (TREE_VALUE (arg)),
-		   converted_args);
+    {
+      tree a = TREE_VALUE (arg);
+      if (magic_varargs_p (fn))
+	/* Do no conversions for magic varargs.  */;
+      else
+	a = convert_arg_to_ellipsis (a);
+      converted_args = tree_cons (NULL_TREE, a, converted_args);
+    }
 
   converted_args = nreverse (converted_args);
 
