@@ -7137,7 +7137,9 @@ expand_expr (exp, target, tmode, modifier)
 	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 	    || (mode1 != BLKmode && ! direct_load[(int) mode1]
 		&& GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
-		&& GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+		&& GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT
+		&& modifier != EXPAND_CONST_ADDRESS
+		&& modifier != EXPAND_INITIALIZER)
 	    /* If the field isn't aligned enough to fetch as a memref,
 	       fetch it as a bit field.  */
 	    || (mode1 != BLKmode
