@@ -1359,6 +1359,8 @@ make_class_data (type)
       TREE_STATIC (class_dtable_decl) = 1;
       DECL_ARTIFICIAL (class_dtable_decl) = 1;
       DECL_IGNORED_P (class_dtable_decl) = 1;
+      if (is_compiled_class (class_type_node) != 2)
+	DECL_EXTERNAL (class_dtable_decl) = 1;
       rest_of_decl_compilation (class_dtable_decl, (char*) 0, 1, 0);
     }
 

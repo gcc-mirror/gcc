@@ -1,5 +1,8 @@
 2001-03-13  Per Bothner  <per@bothner.com>
 
+	* class.c (make_class_data):  The class_dtable_decl (i.e. the
+	vtable for Class) should be external, except when compiling Class.
+
 	* jvspec.c (lang_specific_driver):  Fix -C handling.
 	Check -save-temps to see if temp @FILE should be deleted.
 	Follow-up to/fix for February 16 patch.
