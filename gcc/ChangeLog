@@ -1,3 +1,13 @@
+2005-01-31  Steven Bosscher  <stevenb@suse.de>
+
+	PR c/19333
+	* c-decl.c (start_decl): Do not warn about arrays of elements with
+	an incomplete type here.
+	(grokdeclarator): Do it here by making a pedwarn an error.
+	* c-typeck.c (push_init_level): If there were previous errors with
+	the constructor type, do not warn about braces for initializers.
+	(process_init_element): Likewise for excess initializer elements.
+
 2005-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (delete_trivially_dead_insn): Don't iterate.

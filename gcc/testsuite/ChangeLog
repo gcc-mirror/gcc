@@ -1,3 +1,15 @@
+2005-01-31  Steven Bosscher  <stevenb@suse.de>
+
+	PR c/19333
+	* testsuite/gcc.c-torture/compile/20011130-1.c: Reorder to make
+	the test case valid.
+	* testsuite/gcc.dg/20030815-1.c: Remove invalid tests.
+	* testsuite/gcc.dg/array-7.c: Adjust expected result.
+	* testsuite/gcc.dg/pr18596-3.c: Likewise.
+	* testsuite/gcc.dg/noncompile/20000901-1.c: Likewise.
+	* testsuite/gcc.dg/noncompile/init-2.c: Likewise.
+	* testsuite/gcc.dg/noncompile/init-4.c: Likewise.
+
 2005-01-31  Dale Johannesen  <dalej@apple.com>
 
 	* g++.dg/opt/pr19650.C:  New test.
@@ -378,7 +390,7 @@
 	* gfortran.dg/write_to_null.f90: New test.
 
 2005-01-14  Andrew Pinski  <pinskia@physics.uc.edu>
-            John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR other/19328
 	* gcc.dg/attr-alias-2.c: dg-require-alias takes an
@@ -617,7 +629,7 @@
 
 2005-01-06  Mark Mitchell  <mark@codesourcery.com>
 
-        PR c++/19244
+	PR c++/19244
 	* g++.dg/parser/ctor2.C: New test.
 
 2004-01-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
@@ -752,7 +764,7 @@
 2004-12-30  Alexander Malmberg  <alexander@malmberg.org>
 	    Ziemowit Laski  <zlaski@apple.com>
 
-        PR objc/18971
+	PR objc/18971
 	* objc.dg/encode-5.m: New test.
 
 2004-12-29  Richard Henderson  <rth@redhat.com>
@@ -1100,7 +1112,7 @@
 	* cpp/inc/pragma-once-1a.h: Likewise.
 
 2004-12-15  Bud Davis  <bdavis9659@comcast.net>
-            Steven G. Kargl  <kargls@comcast.net>
+	    Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/17597
 	* gfortran.dg/list_read_3.f90: New test.
@@ -1525,7 +1537,7 @@
 
 2004-11-30  Loren James Rittle  <ljrittle@acm.org>
 
-        * g++.old-deja/g++.eh/badalloc1.C (arena_size): Bump up to 262144
+	* g++.old-deja/g++.eh/badalloc1.C (arena_size): Bump up to 262144
 	to support new requirements on FreeBSD 5.
 
 2004-11-30  Devang Patel  <dpatel@apple.com>
@@ -1651,7 +1663,7 @@
 
 2004-11-28  Bud Davis  <bdavis9659@comcast.net>
 
-        * gfortran.dg/direct_io_2.f90: New test.
+	* gfortran.dg/direct_io_2.f90: New test.
 
 2004-11-28  Hans-Peter Nilsson  <hp@bitrange.com>
 
@@ -1900,7 +1912,7 @@
 	* gcc.dg/vect/vect.exp (sparc*-*-*): Fix a couple of nits.
 
 2004-11-19  Mark Mitchell  <mark@codesourcery.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp (check_visibility_available): Really
 	test the compiler.
@@ -1925,12 +1937,12 @@
 	* gcc.dg/ppc-mov-1.c: Ditto
 
 2004-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
-            Mark Mitchell  <mark@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/gcc.dg/pragma-init-fini-2.c: New test.
 
 2004-11-17  Janis Johnson  <janis187@us.ibm.com>
-            Aldy Hernandez  <aldyh@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_int): New
 	(check_effective_target_vect_float): New
@@ -2224,7 +2236,7 @@
 	* gcc.dg/vect/pr18400.c: New test.
 
 2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
-            Andrew Pinski  <pinskia@physics.uc.edu>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18425
 	* gcc.dg/vect/pr18425.c: New test.
@@ -2473,7 +2485,7 @@
 
 2004-11-10  Fariborz Jahanian <fjahanian@apple.com>
 
-        * gcc.c-torture/execute/ieee/unsafe-fp-assoc-1.c:
+	* gcc.c-torture/execute/ieee/unsafe-fp-assoc-1.c:
 	New test for PR tree-optimization/17892.
 
 2004-11-09  Mark Mitchell  <mark@codesourcery.com>
@@ -3137,7 +3149,7 @@
 2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/16567
-        * gcc.c-torture/compile/nested-1.c: New test.
+	* gcc.c-torture/compile/nested-1.c: New test.
 
 2004-10-14  Dorit Naishlos  <dorit@il.ibm.com>
 

@@ -10,5 +10,3 @@ int foo ()
   static int j () = /* { dg-error "invalid storage class" } */
 	{ 0, 0.0 };
 }
-/* { dg-warning "excess elements" "" { target *-*-* } 11 } */
-/* { dg-warning "near initialization" "" { target *-*-* } 11 } */

@@ -1,1 +1,1 @@
-struct foo bar[] = { {"baz"} }; /* { dg-error "have incomplete type|excess elements|near|assumed|storage size" } */
+struct foo bar[] = { {"baz"} }; /* { dg-error "array type has incomplete element type" } */
