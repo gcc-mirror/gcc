@@ -1275,8 +1275,8 @@ build_unary_op (op_code, result_type, operand)
 	  TREE_READONLY (result) = TREE_READONLY (TREE_TYPE (type));
 	}
 
-      side_effects = flag_volatile 
-	|| (! TYPE_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)));
+      side_effects = (! TYPE_FAT_POINTER_P (type)
+		      && TYPE_VOLATILE (TREE_TYPE (type)));
       break;
 
     case NEGATE_EXPR:

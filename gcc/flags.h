@@ -337,18 +337,6 @@ extern int flag_omit_frame_pointer;
 
 extern int flag_no_peephole;
 
-/* Nonzero means all references through pointers are volatile.  */
-
-extern int flag_volatile;
-
-/* Nonzero means treat all global and extern variables as volatile.  */
-
-extern int flag_volatile_global;
-
-/* Nonzero means treat all static variables as volatile.  */
-
-extern int flag_volatile_static;
-
 /* Nonzero allows GCC to optimize sibling and tail recursive calls.  */
 
 extern int flag_optimize_sibling_calls;

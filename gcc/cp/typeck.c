@@ -2352,7 +2352,6 @@ build_indirect_ref (ptr, errorstring)
           return error_mark_node;
         }
       else if (TREE_CODE (pointer) == ADDR_EXPR
-	       && !flag_volatile
 	       && same_type_p (t, TREE_TYPE (TREE_OPERAND (pointer, 0))))
 	/* The POINTER was something like `&x'.  We simplify `*&x' to
 	   `x'.  */
@@ -2367,8 +2366,7 @@ build_indirect_ref (ptr, errorstring)
 	  TREE_READONLY (ref) = CP_TYPE_CONST_P (t);
 	  TREE_THIS_VOLATILE (ref) = CP_TYPE_VOLATILE_P (t);
 	  TREE_SIDE_EFFECTS (ref)
-	    = (TREE_THIS_VOLATILE (ref) || TREE_SIDE_EFFECTS (pointer)
-	       || flag_volatile);
+	    = (TREE_THIS_VOLATILE (ref) || TREE_SIDE_EFFECTS (pointer));
 	  return ref;
 	}
     }

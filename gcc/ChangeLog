@@ -1,3 +1,16 @@
+2003-02-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* flags.h (flag_volatile): Remove declaration.
+	(flag_volatile_global, flag_volatile_static): Likewise.
+	* c-typeck.c (build_indirect_ref): Don't check flag_volatile.
+	* toplev.c (flag_volatile): Remove definition.
+	(flag_volatile_global, flag_volatile_static): Likewise.
+	(f_options): Remove corresponding entries here.
+	* varasm.c (make_decl_rtl): Don't check flag_volatile_global
+	or flag_volatile_static.
+	* doc/invoke.texi: Remove documentation of -fvolatile,
+	-fvolatile-global and -fvolatile-static.
+
 2003-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_output_function_prologue, pa_output_function_epilogue): Move

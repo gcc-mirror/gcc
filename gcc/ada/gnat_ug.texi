@@ -24047,7 +24047,7 @@ For a list of all available switches, refer to the sections describing
 Here is an example that passes the option @code{-v} to the GNAT compiler :
 @smallexample
 -g -mstrict-align -prjtype $(PRJ_TYPE) -ansi -nostdinc -DRW_MULTI_THREAD -D_REENTRANT
--fvolatile -fno-builtin -fno-for-scope -I. -I/usr/windppc-2.0/target/h -DCPU=PPC604
+-fno-builtin -fno-for-scope -I. -I/usr/windppc-2.0/target/h -DCPU=PPC604
 -cargs -v
 @end smallexample
 
@@ -24056,7 +24056,7 @@ Here is an example that passes the option @code{-v} to the GNAT compiler, binder
 and @code{-v} and @code{-g} to the compiler :
 @smallexample
 -g -mstrict-align -prjtype $(PRJ_TYPE) -ansi -nostdinc -DRW_MULTI_THREAD -D_REENTRANT
--fvolatile -fno-builtin -fno-for-scope -I. -I/usr/windppc-2.0/target/h -DCPU=PPC604
+-fno-builtin -fno-for-scope -I. -I/usr/windppc-2.0/target/h -DCPU=PPC604
 -cargs -v -g -O2 -bargs -v -largs -v
 @end smallexample
 
@@ -24065,7 +24065,7 @@ In both examples, the following arguments have been automatically added by the P
 Facility, and will be used by the C compiler.
 @smallexample
 -g -mstrict-align -prjtype $(PRJ_TYPE) -ansi -nostdinc -DRW_MULTI_THREAD -D_REENTRANT
--fvolatile -fno-builtin -fno-for-scope -I. -I/usr/windppc-2.0/target/h -DCPU=PPC604
+-fno-builtin -fno-for-scope -I. -I/usr/windppc-2.0/target/h -DCPU=PPC604
 @end smallexample
 
 @noindent

@@ -1,7 +1,6 @@
 // Origin: asharji@uwaterloo.ca
 
 // { dg-do compile }
-// { dg-options "-fvolatile" }
 
 class bar {
   public :
