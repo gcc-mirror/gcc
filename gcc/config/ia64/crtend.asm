@@ -34,10 +34,8 @@ __JCR_END__:
 	data8	0
 
 #ifdef HAVE_INITFINI_ARRAY
-
-.section .init_array, "a"
-	data8 @fptr(__do_global_ctors_aux)
-
+	.global __do_global_ctors_aux
+	.hidden	__do_global_ctors_aux
 #else /* !HAVE_INITFINI_ARRAY */
 /*
  * Fragment of the ELF _init routine that invokes our dtor cleanup.
