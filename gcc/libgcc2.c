@@ -3067,10 +3067,6 @@ __empty ()
 #include <stdio.h>
 #endif
 
-/* This is a safeguard for dynamic handler chain. */
-
-static void *top_elt[2];
-
 /* Allocate and return a new EH context structure. */
 
 extern void __throw ();
@@ -3078,15 +3074,26 @@ extern void __throw ();
 static void *
 new_eh_context ()
 {
-  struct eh_context *eh = (struct eh_context *) malloc (sizeof *eh);
-  if (! eh)
+  struct eh_full_context {
+    struct eh_context c;
+    void *top_elt[2];
+  } *ehfc = (struct eh_full_context *) malloc (sizeof *ehfc);
+
+  if (! ehfc)
     __terminate ();
 
-  memset (eh, 0, sizeof *eh);
+  memset (ehfc, 0, sizeof *ehfc);
 
-  eh->dynamic_handler_chain = top_elt;
+  ehfc->c.dynamic_handler_chain = (void **) ehfc->top_elt;
 
-  return eh;
+  /* This should optimize out entirely.  This should always be true,
+     but just in case it ever isn't, don't allow bogus code to be
+     generated.  */
+
+  if ((void*)(&ehfc->c) != (void*)ehfc)
+    __terminate ();
+
+  return &ehfc->c;
 }
 
 #if __GTHREADS
@@ -3180,6 +3187,8 @@ eh_context_static ()
 {
   static struct eh_context eh;
   static int initialized;
+  static void *top_elt[2];
+
   if (! initialized)
     {
       initialized = 1;
@@ -3290,7 +3299,7 @@ __sjthrow ()
   /* We must call terminate if we try and rethrow an exception, when
      there is no exception currently active and when there are no
      handlers left.  */
-  if (! eh->info || (*dhc) == top_elt)
+  if (! eh->info || (*dhc)[0] == 0)
     __terminate ();
     
   /* Find the jmpbuf associated with the top element of the dynamic
