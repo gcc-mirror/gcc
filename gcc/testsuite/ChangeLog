@@ -1,3 +1,8 @@
+2002-06-11  Bob Wilson  <bob.wilson@acm.org>
+
+	* g++.old-deja/g++.pt/static11.C: Add xtensa-*-elf* to the
+	list of targets to skip.
+
 2002-06-10  Bob Wilson  <bob.wilson@acm.org>
 
 	* gcc.c-torture/compile/20001226-1.x: Only xfail for Xtensa
