@@ -1,5 +1,9 @@
 Wed Dec 29 22:47:43 1999  Jeffrey A Law  (law@cygnus.com)
 
+	1999-12-12  Stephen L Moshier <moshier@mediaone.net>
+	* loop.c (load_mems): Don't hoist written floating point mem
+	if -ffloat-store.
+
 	* cppinit.c (is_idchar): Only use special initialization for
 	gcc-2.8 and later versions of the compiler.
 

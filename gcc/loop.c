@@ -9555,6 +9555,10 @@ load_mems (scan_start, end, loop_top, start)
 	      mem_list_entry = XEXP (mem_list_entry, 1);
 	    }
 	  
+	  if (flag_float_store && written
+	      && GET_MODE_CLASS (GET_MODE (mem)) == MODE_FLOAT)
+	    loop_mems[i].optimize = 0;
+
 	  /* If this MEM is written to, we must be sure that there
 	     are no reads from another MEM that aliases this one.  */ 
 	  if (loop_mems[i].optimize && written)
