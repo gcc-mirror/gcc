@@ -278,10 +278,11 @@ int switch_table_difference_label_flag;
 #undef LEGITIMATE_PIC_OPERAND_P
 #define LEGITIMATE_PIC_OPERAND_P(X) \
   ((! symbolic_operand (X, VOIDmode) \
-    && ! (GET_CODE (X) == CONST_DOUBLE && CONST_DOUBLE_MEM (X)	\
-	  && GET_CODE (CONST_DOUBLE_MEM (X)) == MEM		\
-	  && symbolic_operand (XEXP (CONST_DOUBLE_MEM (X), 0), VOIDmode))) \
-   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))       \
+    && ! (GET_CODE (X) == CONST_DOUBLE && mem_for_const_double (X) != 0	\
+	  && GET_CODE (mem_for_const_double (X)) == MEM			\
+	  && symbolic_operand (XEXP (mem_for_const_double (X), 0),	\
+			       VOIDmode))) 				\
+   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))       	\
    || PCREL_GENERAL_OPERAND_OK)
 
 /* Turn off function cse if we are doing PIC. We always want function call
