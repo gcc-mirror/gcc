@@ -1,3 +1,7 @@
+Tue Sep  1 01:58:21 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* egcs-1.1 Released.
+
 Sat Aug 29 14:32:55 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
         * configure.in: Use mh-aix43.
