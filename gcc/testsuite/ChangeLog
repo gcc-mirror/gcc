@@ -1,3 +1,8 @@
+2003-06-19  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c-torture/execute/simd-4.c (main): Make expected value
+	endian-dependent.
+
 2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* lib/g++.exp (g++_include_flags): Tweak path to testsuite_flags.
