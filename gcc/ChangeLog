@@ -1,3 +1,9 @@
+2002-03-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (PAD_VARARGS_DOWN): Define.
+	* config/rs6000/rs6000.c (rs6000_va_arg): Use
+	std_expand_builtin_va_arg if not ABI_V4.
+
 2002-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/5626
