@@ -195,7 +195,7 @@ case "${host}" in
     host_makefile_frag="${host_makefile_frag} config/mh-go32"
     ;;
   *-cygwin32*)
-    host_makefile_frag="${host_makefile_frag} config/mh-cygwin32"
+    host_makefile_frag="${host_makefile_frag} config/mh-cygwin"
     ;;
   *-mingw32*)
     host_makefile_frag="${host_makefile_frag} config/mh-mingw32"
@@ -523,7 +523,7 @@ case "${host}" in
      noconfigdirs="expect dejagnu cvs autoconf automake send-pr gprof rcs guile perl texinfo apache inet libtool"
 	;;
   *-*-cygwin32)
-     noconfigdirs="autoconf automake send-pr gprof rcs guile perl texinfo apache inet"
+     noconfigdirs="autoconf automake send-pr gprof rcs guile perl apache inet"
     ;;
   *-*-windows*)
 # This is only used to build WinGDB...
