@@ -1,3 +1,8 @@
+2002-09-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* ABOUT-GCC-NLS: Remove reference to enquire, and out-of-date
+	statement that the only translation is to en_UK.
+
 2002-09-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/alpha/alpha.c: Follow spelling conventions.
