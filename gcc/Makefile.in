@@ -473,6 +473,7 @@ HOST_DOPRINT=$(DOPRINT)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME = `t='$(program_transform_name)'; echo gcc | sed -e $$t`
+CPP_INSTALL_NAME = `t='$(program_transform_name)'; echo cpp | sed -e $$t`
 PROTOIZE_INSTALL_NAME = `t='$(program_transform_name)'; echo protoize | sed -e $$t`
 UNPROTOIZE_INSTALL_NAME = `t='$(program_transform_name)'; echo unprotoize | sed -e $$t`
 GCOV_INSTALL_NAME = `t='$(program_transform_name)'; echo gcov | sed -e $$t`
@@ -700,7 +701,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
  gencheck$(build_exeext) \
- xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
+ xgcc$(exeext) xcpp$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
@@ -836,9 +837,10 @@ all.internal: start.encap rest.encap doc
 all.cross: native gcc-cross specs stmp-headers $(STMP_FIXPROTO) $(LIBGCC) \
 	$(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross doc
 # This is what to compile if making gcc with a cross-compiler.
-all.build: native xgcc$(exeext) $(EXTRA_PARTS) lang.all.build
+all.build: native xgcc$(exeext) xcpp$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
-start.encap: native xgcc$(exeext) specs $(LIBGCC1) xlimits.h lang.start.encap
+start.encap: native xgcc$(exeext) xcpp$(exeext) specs $(LIBGCC1) \
+	xlimits.h lang.start.encap
 # These can't be made until after GCC can run.
 rest.encap: stmp-headers $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
@@ -881,6 +883,16 @@ stamp-objlist: $(OBJS)
 xgcc$(exeext): gcc.o gccspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o gccspec.o intl.o \
+	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+
+# We call this executable `xcpp' rather than `cpp'
+# since the real preprocessor is named `cpp'.  It too is renamed
+# when it is installed.
+# The only difference from xgcc is that it's linked with cppspec.o
+# instead of gccspec.o.
+xcpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
+   version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o cppspec.o intl.o \
 	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
@@ -1398,6 +1410,7 @@ gcc.o: gcc.c $(CONFIG_H) system.h intl.h multilib.h \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
 gccspec.o: gccspec.c $(CONFIG_H) system.h
+cppspec.o: cppspec.c $(CONFIG_H) system.h
 
 tree-check.h: s-check ; @true
 s-check : gencheck $(srcdir)/move-if-change
@@ -2416,12 +2429,12 @@ install-build: force
 install-cross-rest: install-float-h-cross
 
 # Handle cpp installation.
-install-cpp: cpp.sh
-	-rm -f $(bindir)/cpp
-	$(INSTALL_PROGRAM) -m 755 cpp.sh $(bindir)/cpp
+install-cpp: xcpp$(exeext)
+	-rm -f $(bindir)/$(CPP_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) -m 755 xcpp$(exeext) $(bindir)/$(CPP_INSTALL_NAME)$(exeext)
 	if [ x$(cpp_install_dir) != x ]; then \
-	  rm -f $(prefix)/$(cpp_install_dir)/cpp; \
-	  $(INSTALL_PROGRAM) -m 755 cpp.sh $(prefix)/$(cpp_install_dir)/cpp; \
+	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) -m 755 xcpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
 	else true; fi
 
 uninstall-cpp:
