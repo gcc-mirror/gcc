@@ -1,3 +1,7 @@
+2002-10-31  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Set for non-floats.
+
 Thu Oct 31  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/darwin.h:  Correct formatting in previous.
