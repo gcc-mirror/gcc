@@ -1,3 +1,10 @@
+2004-10-03  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux.h (TARGET_C99_FUNCTIONS): Define.
+	(OS_MISSING_POWERPC64): Move, and comment.
+	* config/rs6000/linux64.h (TARGET_C99_FUNCTIONS): Define.
+	(OS_MISSING_POWERPC64): Move, and comment.
+
 2004-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.c (TARGET_BUILD_BUILTIN_VA_LIST_TYPE):
