@@ -1,3 +1,5 @@
+// Build don't link:
+
 template<class T>
 struct A {
     typedef T T1;

@@ -1,3 +1,5 @@
+// Build don't link:
+
 template<int N_length>
 struct B
 {
