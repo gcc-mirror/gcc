@@ -67,7 +67,8 @@
       means for a library (not a general program).  We currently use the
       <a href="http://www.sgi.com/tech/stl/thread_safety.html">same
       definition that SGI</a> uses for their STL subset.
-      <em>Please see the many cautions given in HOWTOs on containers.</em>
+      <em>Please see the many cautions given in
+      <a href="../23_containers/howto.html">HOWTOs on containers</a>.</em>
    </p>
    <p>Here is another attempt at explaining the dangers of using the
       STL with threading support without understanding some important
@@ -109,46 +110,21 @@
       &quot;Thread Next&quot; to move down the thread.  This farm is in
       latest-to-oldest order.
       <ul>
+        <li>Our threading expert Loren gives a breakdown of
+        <a href="http://gcc.gnu.org/ml/libstdc++/2001-10/msg00024.html">the
+        six situations involving threads</a> for the 3.0 release series.
         <li><a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00384.html">
-        inspired this most recent updating of issues with threading
+        This message</a> inspired a recent updating of issues with threading
         and the SGI STL library.  It also contains some example
-        POSIX-multithreaded STL code.</a>
-        <li> <a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">
-        an early analysis of why __USE_MALLOC should be disabled for
-        the 3.0 release of libstdc++.</a>
+        POSIX-multithreaded STL code.
+        <li><a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">
+        Here</a> is an early analysis of why __USE_MALLOC should be disabled
+        for the 3.0 release of libstdc++.</a>
       </ul>
-      <br>
-      Here are discussions that took place before the current snapshot;
-      they are still relevant and instructive.  (Some of them may not work;
-      as the drive containing some of the 1999 archives crashed, and nobody
-      has had time to recover the backups.)
-      <br>
-      <ul>
-        <li>One way of preventing memory leaks by the old default memory
-            allocator in multithreaded code is
-            <a href="http://gcc.gnu.org/ml/gcc/1999-11n/msg00431.html">discussed here</a>.
-        <li><a href="http://gcc.gnu.org/ml/libstdc++/1999-q3/msg00167.html">This thread
-            concerns strings</a>.
-        <li><a href="http://gcc.gnu.org/ml/libstdc++/1999-q2/msg00339.html">So does this
-            one</a>.  This initial message also refers to another
-            thread in the GCC mailing list...
-        <li><a href="http://gcc.gnu.org/ml/gcc/1999-06n/msg00680.html">which is here</a>,
-            and goes on for some time.  Ironically, the initial message
-            in this thread also mentions another threading thread...
-        <li><a href="http://gcc.gnu.org/ml/gcc-bugs/1999-04n/msg00777.html">beginning here</a>,
-            and talking about pthreads.  (Note that a much more recent
-            message from the first thread in this list notes that
-            <a href="http://gcc.gnu.org/ml/libstdc++/1999-q3/msg00176.html">pthreads
-            should not be used as a starting point</a> for making
-            libstdc++ threadsafe.)
-        <li><a href="http://gcc.gnu.org/ml/libstdc++/1999-q2/msg00168.html">This
-            message</a>,
-            <a href="http://gcc.gnu.org/ml/libstdc++/1999-q2/msg00159.html">this one</a>,
-            and <a href="http://gcc.gnu.org/ml/libstdc++/1999-q2/msg00156.html">this one</a>
-            are the tops of related threads (all within the same time
-            period) discussing threading and the IO library.  Much of it
-            is dealing with the C library, but C++ is included as well.
-      </ul>
+      (A large selection of links to older messages has been removed; many
+      of the messages from 1999 were lost in a disk crash, and the few
+      people with access to the backup tapes have been too swamped with work
+      to restore them.  Many of the points have been superceded anyhow.)
    </p>
    <p>This section will be updated as new and interesting issues come
       to light.

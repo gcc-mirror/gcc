@@ -548,15 +548,45 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 5.6 Is libstdc++-v3 thread-safe?
 
-   Quick  answer:  no,  as  of  3.0,  most of the library is not safe for
-   multithreaded access. The string class is MT-safe.
+   When   the   system's   libc  is  itself  thread-safe,  a  non-generic
+   implementation  of  atomicity.h  exists  for the architecture, and gcc
+   itself  reports a thread model other than single; libstdc++-v3 strives
+   to  be thread-safe. The user-code must guard against concurrent method
+   calls   which  may  access  any  particular  library  object's  state.
+   Typically, the application programmer may infer what object locks must
+   be  held  based  on  the  objects referenced in a method call. Without
+   getting   into  great  detail,  here  is  an  example  which  requires
+   user-level locks:
+     library_class_a shared_object_a;
 
-   This  is  assuming  that  your  idea of "multithreaded" is the same as
-   ours...  The  general  question  of multithreading and libstdc++-v3 is
-   addressed in the chapter-specific advice for [80]Library Introduction.
-   Threadsafe  containers  are covered in more detail in [81]the Received
-   Wisdom  section  on  containers.  Threading  and  I/O are discussed in
-   [82]the I/O chapter.
+     thread_main () {
+       library_class_b *object_b = new library_class_b;
+       shared_object_a.add_b (object_b);   // must hold lock for shared_object_
+a
+       shared_object_a.mutate ();          // must hold lock for shared_object_
+a
+     }
+
+     // Multiple copies of thread_main() are started in independent threads.
+
+   Under  the  assumption that object_a and object_b are never exposed to
+   another  thread,  here  is  an  example  that  should  not require any
+   user-level locks:
+     thread_main () {
+       library_class_a object_a;
+       library_class_b *object_b = new library_class_b;
+       object_a.add_b (object_b);
+       object_a.mutate ();
+     }
+
+   All library objects are safe to use in a multithreaded program as long
+   as each thread carefully locks out access by any other thread while it
+   uses  any  object visible to another thread. This requirement includes
+   both  read and write access to objects; do not assume that two threads
+   may read a shared standard container at the same time.
+
+   See  chapters  [80]17 (library introduction), [81]23 (containers), and
+   [82]27 (I/O) for more information.
      _________________________________________________________________
 
 5.7 How do I get a copy of the ISO C++ Standard?
@@ -660,8 +690,8 @@ References
   78. http://www.sgi.com/Technology/STL/
   79. ../ext/howto.html
   80. ../17_intro/howto.html#3
-  81. ../23_containers/howto.html
-  82. ../27_io/howto.html
+  81. ../23_containers/howto.html#3
+  82. ../27_io/howto.html#9
   83. http://www.ansi.org/
   84. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
   85. http://www.iso.ch/

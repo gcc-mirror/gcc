@@ -1,3 +1,11 @@
+2001-10-17  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/17_intro/howto.html:  Remove 1999 links (and explain
+	why).  Add link to recent message.
+	* docs/html/faq/index.html (5.6):  Reformat text only; fixup <pre>
+	markup.
+	* docs/html/faq/index.txt:  Regenerate.
+
 2001-10-12  Loren J. Rittle  <ljrittle@acm.org>
 
 	* docs/html/faq/index.html (Is libstdc++-v3 thread-safe?): Update
