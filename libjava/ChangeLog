@@ -1,5 +1,10 @@
 2003-07-22  Tom Tromey  <tromey@redhat.com>
 
+	* boehm.cc (_Jv_BuildGCDescr): Wrote.
+	Include limits.h.
+
+2003-07-22  Tom Tromey  <tromey@redhat.com>
+
 	* java/awt/Window.java (getWarningString): Just return the
 	string.
 	(Window): Set warningString; check with security manager.
