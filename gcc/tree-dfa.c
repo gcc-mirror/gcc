@@ -189,7 +189,7 @@ compute_immediate_uses (int flags, bool (*calc_for)(tree))
 }
 
 
-/* Invalidates dataflow information for a statement STMT.   */
+/* Invalidates dataflow information for a statement STMT.  */
 
 void
 free_df_for_stmt (tree stmt)

@@ -247,7 +247,7 @@ reset_lists (void)
     }
 
 #ifdef ENABLE_CHECKING
-  /* Sanity check, that we only have free, initial or precolored webs. */
+  /* Sanity check, that we only have free, initial or precolored webs.  */
   {
     unsigned int i;
 
@@ -2493,7 +2493,7 @@ ok_class (struct web *target, struct web *source)
      branch on count transformation (i.e. DoLoop) since the target, which
      prefers the CTR, was being coalesced with a source which preferred
      GENERAL_REGS. If only one web has a preferred class with 1 free reg
-     then set it as the preferred color of the other web.   */
+     then set it as the preferred color of the other web.  */
   enum reg_class t_class, s_class;
   t_class = reg_preferred_class (target->regno);
   s_class = reg_preferred_class (source->regno);

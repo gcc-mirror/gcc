@@ -254,7 +254,7 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
   t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, min, ratio);
   div = gimplify_build2 (bsi, PLUS_EXPR, inner_type, t1, max);
 
-  /* Result is now ((ar + ai*ratio)/div) + i((ai - ar*ratio)/div). */
+  /* Result is now ((ar + ai*ratio)/div) + i((ai - ar*ratio)/div).  */
   t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ai, ratio);
   t2 = gimplify_build2 (bsi, PLUS_EXPR, inner_type, ar, t1);
   rr = gimplify_build2 (bsi, code, inner_type, t2, div);

@@ -1049,7 +1049,7 @@ get_exit_conditions_rec (struct loop *loop,
 }
 
 /* Select the candidate loop nests for the analysis.  This function
-   initializes the EXIT_CONDITIONS array.   */
+   initializes the EXIT_CONDITIONS array.  */
 
 static void
 select_loops_exit_conditions (struct loops *loops, 

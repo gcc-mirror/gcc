@@ -567,7 +567,7 @@ ei_start_1 (VEC(edge) **ev)
 }
 
 /* Return an iterator pointing to the last element of an edge
-   vector. */
+   vector.  */
 static inline edge_iterator
 ei_last_1 (VEC(edge) **ev)
 {

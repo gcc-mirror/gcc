@@ -607,7 +607,7 @@ pp_base_string (pretty_printer *pp, const char *str)
   pp_maybe_wrap_text (pp, str, str + (str ? strlen (str) : 0));
 }
 
-/* Maybe print out a whitespace if needed.   */
+/* Maybe print out a whitespace if needed.  */
 
 void
 pp_base_maybe_space (pretty_printer *pp)

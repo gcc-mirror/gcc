@@ -770,7 +770,7 @@ ssa_rewrite_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
 /* SSA Rewriting Step 3.  Visit all the successor blocks of BB looking for
    PHI nodes.  For every PHI node found, add a new argument containing the
    current reaching definition for the variable and the edge through which
-   that definition is reaching the PHI node.   */
+   that definition is reaching the PHI node.  */
 
 static void
 rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,

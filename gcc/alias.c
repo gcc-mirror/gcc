@@ -482,7 +482,7 @@ get_alias_set (tree t)
 		       type, then we would believe that other subsets
 		       of the pointed-to type (such as fields of that
 		       type) do not conflict with the type pointed to
-		       by the restricted pointer.   */
+		       by the restricted pointer.  */
 		    DECL_POINTER_ALIAS_SET (decl)
 		      = pointed_to_alias_set;
 		  else

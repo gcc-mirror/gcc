@@ -422,7 +422,7 @@ thread_block (basic_block bb)
    It is the caller's responsibility to fix the dominance information
    and rewrite duplicated SSA_NAMEs back into SSA form.
 
-   Returns true if one or more edges were threaded, false otherwise.   */
+   Returns true if one or more edges were threaded, false otherwise.  */
 
 bool
 thread_through_all_blocks (void)

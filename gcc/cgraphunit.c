@@ -236,8 +236,8 @@ static FILE *cgraph_dump_file;
 static GTY((param1_is(tree), param2_is(tree)))
      splay_tree static_vars_to_consider_by_tree;
 
-/* FIXME -- PROFILE-RESTRUCTURE: change comment from DECL_UID to var-ann. */    
-/* same as above but indexed by DECL_UID */
+/* FIXME -- PROFILE-RESTRUCTURE: change comment from DECL_UID to var-ann.  */    
+/* Same as above but indexed by DECL_UID.  */
 static GTY((param1_is(int), param2_is(tree)))
      splay_tree static_vars_to_consider_by_uid;
 
@@ -246,10 +246,10 @@ static GTY((param1_is(int), param2_is(tree)))
    uid.  */
 static bitmap module_statics_escape;
 
-/* FIXME -- PROFILE-RESTRUCTURE: change comment from DECL_UID to var-ann. */    
+/* FIXME -- PROFILE-RESTRUCTURE: change comment from DECL_UID to var-ann.  */    
 /* A bit is set for every module static we are considering and is
    indexed by DECL_UID.  This is ored into the local info when asm
-   code is found that clobbers all memory. */
+   code is found that clobbers all memory.  */
 static GTY(()) bitmap all_module_statics;
 
 /* Holds the value of "memory".  */
@@ -344,7 +344,7 @@ print_order (const char * note, struct cgraph_node** order, int count)
   fprintf (cgraph_dump_file, "\n");
 }
 
-/* FIXME -- PROFILE-RESTRUCTURE: Remove this function, it becomes a nop. */    
+/* FIXME -- PROFILE-RESTRUCTURE: Remove this function, it becomes a nop.  */    
 /* Convert IN_DECL bitmap which is indexed by DECL_UID to IN_ANN, a
    bitmap indexed by var_ann (VAR_DECL)->uid.  */
 
@@ -411,7 +411,7 @@ new_static_vars_info(struct cgraph_node* node,
 
 
 /* FIXME -- PROFILE-RESTRUCTURE: Remove this function, it becomes a
-   nop. */    
+   nop.  */    
 /* The bitmaps used to represent the static global variables are
    indexed by DECL_UID however, this is not used inside of functions
    to index the ssa variables.  The denser var_ann (VAR_DECL)->uid is
@@ -1218,7 +1218,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v)
 /* Topsort the call graph by caller relation.  Put the result in ORDER.
 
    The REDUCE flag is true if you want the cycles reduced to single
-   nodes.  Only consider nodes that have the output bit set. */
+   nodes.  Only consider nodes that have the output bit set.  */
 
 static int
 cgraph_reduced_inorder (struct cgraph_node **order, bool reduce)
@@ -2018,7 +2018,7 @@ cgraph_inline_p (struct cgraph_edge *e, const char **reason)
 /* FIXME this needs to be enhanced.  If we are compiling a single
    module this returns true if the variable is a module level static,
    but if we are doing whole program compilation, this could return
-   true if TREE_PUBLIC is true. */
+   true if TREE_PUBLIC is true.  */
 /* Return true if the variable T is the right kind of static variable to
    perform compilation unit scope escape analysis.  */
 
@@ -2045,7 +2045,7 @@ check_rhs_var (struct cgraph_node *fn, tree t)
 		     lang_hooks.decl_printable_name (x, 2));
 	  
 	  /* FIXME -- PROFILE-RESTRUCTURE: Change the call from
-	     DECL_UID to get the uid from the var_ann field. */    
+	     DECL_UID to get the uid from the var_ann field.  */    
 	  bitmap_set_bit (module_statics_escape, DECL_UID (x));
 	}
     }
@@ -2057,7 +2057,7 @@ check_rhs_var (struct cgraph_node *fn, tree t)
 	fprintf (cgraph_dump_file, "\nadding rhs:%s",
 		 lang_hooks.decl_printable_name (t, 2));
       /* FIXME -- PROFILE-RESTRUCTURE: Change the call from
-	 DECL_UID to get the uid from the var_ann field. */    
+	 DECL_UID to get the uid from the var_ann field.  */    
       bitmap_set_bit (fn->static_vars_info->local->statics_read_by_decl_uid, 
 		      DECL_UID (t));
     }
@@ -2080,7 +2080,7 @@ check_lhs_var (struct cgraph_node *fn, tree t)
 		 lang_hooks.decl_printable_name (t, 2));
       
       /* FIXME -- PROFILE-RESTRUCTURE: Change the call from
-	 DECL_UID to get the uid from the var_ann field. */    
+	 DECL_UID to get the uid from the var_ann field.  */    
       bitmap_set_bit (fn->static_vars_info->local->statics_written_by_decl_uid,
 		      DECL_UID (t));
     }
@@ -2137,7 +2137,7 @@ get_asm_expr_operands (struct cgraph_node * fn, tree stmt)
   for (link = ASM_CLOBBERS (stmt); link; link = TREE_CHAIN (link))
     if (TREE_VALUE (link) == memory_identifier) 
       {
-	/* Abandon all hope, ye who enter here. */
+	/* Abandon all hope, ye who enter here.  */
 	local_static_vars_info_t l = fn->static_vars_info->local;
 	bitmap_a_or_b (l->statics_read_by_decl_uid,
 		       l->statics_read_by_decl_uid,
@@ -2184,7 +2184,7 @@ process_call_for_static_vars(struct cgraph_node * caller, tree call_expr)
       tree callee_t = get_callee_fndecl (call_expr);
       if (callee_t == NULL) 
 	{
-	  /* Indirect call. */
+	  /* Indirect call.  */
 	  caller->local.calls_read_all = true;
 	  caller->local.calls_write_all = true;
 	}
@@ -2225,10 +2225,10 @@ scan_for_static_refs (tree *tp,
     {
     case MODIFY_EXPR:
       {
-	/* First look on the lhs and see what variable is stored to */
+	/* First look on the lhs and see what variable is stored to.  */
 	tree rhs = TREE_OPERAND (t, 1);
 	check_lhs_var (fn, TREE_OPERAND (t, 0));
-	/* Next check the operands on the rhs to see if they are ok. */
+	/* Next check the operands on the rhs to see if they are ok.  */
 	switch (TREE_CODE_CLASS (TREE_CODE (rhs))) {
 	case tcc_binary:
 	  check_rhs_var (fn, TREE_OPERAND (rhs, 0));
@@ -2302,7 +2302,7 @@ cgraph_characterize_statics_local (struct cgraph_node *fn)
 }
 
 /* Lookup the tree node for the static variable that has UID and
-   conver the name to a string for debugging. */
+   conver the name to a string for debugging.  */
 static const char *
 cgraph_get_static_name_by_uid (int index)
 {
@@ -2397,7 +2397,7 @@ cgraph_characterize_statics (void)
   struct cgraph_varpool_node *vnode;
   tree global;
 
-  /* get rid of the splay trees from the previous compilation unit. */
+  /* Get rid of the splay trees from the previous compilation unit.  */
   
   static_vars_to_consider_by_tree =
     splay_tree_new_ggc (splay_tree_compare_pointers);
@@ -2415,7 +2415,7 @@ cgraph_characterize_statics (void)
       all_module_statics = BITMAP_GGC_ALLOC ();
     }
 
-  /* Find all of the global variables that we wish to analyze. */
+  /* Find all of the global variables that we wish to analyze.  */
   for (vnode = cgraph_varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     {
       global = vnode->decl;
@@ -2426,7 +2426,7 @@ cgraph_characterize_statics (void)
 			     (splay_tree_key) global, 
 			     (splay_tree_value) global);
 	  /* FIXME -- PROFILE-RESTRUCTURE: Change the call from
-	     DECL_UID to get the uid from the var_ann field. */    
+	     DECL_UID to get the uid from the var_ann field.  */    
 	  splay_tree_insert (static_vars_to_consider_by_uid,
 			     DECL_UID (global), (splay_tree_value)global);
 	  
@@ -2434,7 +2434,7 @@ cgraph_characterize_statics (void)
 	    fprintf (cgraph_dump_file, "\nConsidering global:%s",
 		     lang_hooks.decl_printable_name (global, 2));
 	  /* FIXME -- PROFILE-RESTRUCTURE: Change the call from
-	     DECL_UID to get the uid from the var_ann field. */    
+	     DECL_UID to get the uid from the var_ann field.  */    
 	  bitmap_set_bit (all_module_statics, DECL_UID (global));
 	}
     }
@@ -2537,7 +2537,7 @@ cgraph_characterize_statics (void)
       write_all = node->local.calls_write_all;
 
       /* If any node in a cycle is calls_read_all or calls_write_all
-	 they all are. */
+	 they all are.  */
       w = node->next_cycle;
       while (w)
 	{
@@ -2639,7 +2639,7 @@ cgraph_characterize_statics (void)
 	}
     }
 
-  /* Cleanup. */
+  /* Cleanup.  */
   for (i = order_pos - 1; i >= 0; i--)
     {
       static_vars_info_t node_info;

@@ -323,7 +323,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    
    Find the first position in which VAL could be inserted without
    changing the ordering of V.  LESSTHAN is a function that returns
-   true if the first argument is strictly less than the second.   */
+   true if the first argument is strictly less than the second.  */
    
 #define VEC_lower_bound(TDEF,V,O,LT)    \
        (VEC_OP(TDEF,lower_bound)(V,O,LT VEC_CHECK_INFO))

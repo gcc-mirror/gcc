@@ -201,7 +201,7 @@ struct vrp_element
 static htab_t vrp_data;
 
 /* An entry in the VRP_DATA hash table.  We record the variable and a
-   varray of VRP_ELEMENT records associated with that variable.   */
+   varray of VRP_ELEMENT records associated with that variable.  */
 
 struct vrp_hash_elt
 {
@@ -404,7 +404,7 @@ tree_ssa_dominator_optimize (void)
   /* And finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
 
-  /* Free nonzero_vars.   */
+  /* Free nonzero_vars.  */
   BITMAP_XFREE (nonzero_vars);
   BITMAP_XFREE (need_eh_cleanup);
 
@@ -694,7 +694,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	  /* If we have a known destination for the conditional, then
 	     we can perform this optimization, which saves at least one
 	     conditional jump each time it applies since we get to
-	     bypass the conditional at our original destination.   */
+	     bypass the conditional at our original destination.  */
 	  if (dest)
 	    {
 	      update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
@@ -2312,7 +2312,7 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
     def = TREE_OPERAND (stmt, 0);
 
   /* Certain expressions on the RHS can be optimized away, but can not
-     themselves be entered into the hash tables.   */
+     themselves be entered into the hash tables.  */
   if (ann->makes_aliased_stores
       || ! def
       || TREE_CODE (def) != SSA_NAME
@@ -3075,7 +3075,7 @@ get_eq_expr_value (tree if_stmt,
   retval.dst = NULL;
 
   /* If the conditional is a single variable 'X', return 'X = 1' for
-     the true arm and 'X = 0' on the false arm.   */
+     the true arm and 'X = 0' on the false arm.  */
   if (TREE_CODE (cond) == SSA_NAME)
     {
       retval.dst = cond;

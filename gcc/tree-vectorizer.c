@@ -616,7 +616,7 @@ make_loop_iterate_ntimes (struct loop *loop, tree niters,
 
   if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
     cond = build2 (GE_EXPR, boolean_type_node, indx_after_incr, niters);
-  else /* 'then' edge loops back.   */
+  else /* 'then' edge loops back.  */
     cond = build2 (LT_EXPR, boolean_type_node, indx_after_incr, niters);
 
   begin_label = build1 (GOTO_EXPR, void_type_node, begin_label);
@@ -800,7 +800,7 @@ verify_loop_for_duplication (struct loop *loop,
       return false;
     }
 
-  /* Only loops with 1 exit. */
+  /* Only loops with 1 exit.  */
   if (loop->num_exits != 1)
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop))	
@@ -809,7 +809,7 @@ verify_loop_for_duplication (struct loop *loop,
       return false;
     }
 
-  /* Only loops with 1 entry. */
+  /* Only loops with 1 entry.  */
   if (loop->num_entries != 1)
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop))	
@@ -1578,7 +1578,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
   tree dest, new_stmt;
 
   /* Only the access function of the last index is relevant (i_n in
-     a[i_1][i_2]...[i_n]), the others correspond to loop invariants. */
+     a[i_1][i_2]...[i_n]), the others correspond to loop invariants.  */
   access_fn = DR_ACCESS_FN (dr, 0);
   ok = vect_is_simple_iv_evolution (loop->num, access_fn, &init_oval, &step, 
 				    true);
@@ -2705,7 +2705,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo, tree *ni_name_p,
   ni_name = vect_build_loop_niters (loop_vinfo);
 
   /* ratio = ni / vf.
-     vf is power of 2; then if ratio =  = n >> log2 (vf).   */
+     vf is power of 2; then if ratio =  = n >> log2 (vf).  */
   vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   ratio = vect_build_symbol_bound (ni_name, vf, loop);
        
@@ -2760,7 +2760,7 @@ vect_build_symbol_bound (tree n, int vf, struct loop * loop)
 
   var_name = make_ssa_name (var, NULL_TREE);
 
-  /* vf is power of 2; then n/vf = n >> log2 (vf).   */
+  /* vf is power of 2; then n/vf = n >> log2 (vf).  */
 
   i = exact_log2 (vf);
   stmt = build2 (MODIFY_EXPR, void_type_node, var_name,
@@ -2834,7 +2834,7 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
   if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
     cond = build2 (GE_EXPR, boolean_type_node, 
 		   indx_after_incr, new_loop_bound);
-  else /* 'then' edge loops back.   */
+  else /* 'then' edge loops back.  */
     cond = build2 (LT_EXPR, boolean_type_node, 
 		   indx_after_incr, new_loop_bound);
 
@@ -3818,7 +3818,7 @@ vect_analyze_data_ref_dependence (struct data_reference *dra,
    exist any data dependences between them.
 
    TODO: dependences which distance is greater than the vectorization factor
-         can be ignored.   */
+         can be ignored.  */
 
 static bool
 vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo)
@@ -4067,7 +4067,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr,
           fprintf (dump_file, " scalar_type: ");
           print_generic_expr (dump_file, scalar_type, TDF_DETAILS);
         }
-      /* It is not possible to vectorize this data reference. */
+      /* It is not possible to vectorize this data reference.  */
       return false;
     }
   gcc_assert (TREE_CODE (ref) == ARRAY_REF || TREE_CODE (ref) == INDIRECT_REF);
@@ -4184,7 +4184,7 @@ vect_compute_array_ref_alignment (struct data_reference *dr,
   tree nbits;
 
   if (TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE)
-    /* The reference is an array without its last index. */
+    /* The reference is an array without its last index.  */
     next_ref = vect_compute_array_base_alignment (ref, vectype, &dims, 
 						  &misalign);
   else
@@ -4495,7 +4495,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 				      loop_containing_stmt (DR_STMT (dr))->num))
 	{
 	  /* Evolution part is not NULL in this loop (it is neither constant 
-	     nor invariant). */
+	     nor invariant).  */
 	  if (vect_debug_details (NULL))
 	    {
 	      fprintf (dump_file, 
@@ -4579,7 +4579,7 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo)
    MEMREF - a data-ref in STMT, which is an INDIRECT_REF.
 
    If the data-ref access is vectorizable, return a data_reference structure
-   that represents it (DR). Otherwise - return NULL.   */
+   that represents it (DR). Otherwise - return NULL.  */
 
 static struct data_reference *
 vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read)
@@ -4751,7 +4751,7 @@ vect_get_symbl_and_dr (tree memref, tree stmt, bool is_read,
       /* Store the array base in the stmt info. 
 	 For one dimensional array ref a[i], the base is a,
 	 for multidimensional a[i1][i2]..[iN], the base is 
-	 a[i1][i2]..[iN-1]. */
+	 a[i1][i2]..[iN-1].  */
       array_base = TREE_OPERAND (memref, 0);
       STMT_VINFO_VECT_DR_BASE (stmt_info) = array_base;	     
 
@@ -4809,7 +4809,7 @@ vect_get_symbl_and_dr (tree memref, tree stmt, bool is_read,
 
    FORNOW: Handle aligned INDIRECT_REFs and ARRAY_REFs 
 	   which base is really an array (not a pointer) and which alignment 
-	   can be forced. This restriction will be relaxed.   */
+	   can be forced. This restriction will be relaxed.  */
 
 static bool
 vect_analyze_data_refs (loop_vec_info loop_vinfo)

@@ -459,7 +459,7 @@ static struct globals
    allocation routines.  The first page is used, the rest go onto the
    free list.  This cannot be larger than HOST_BITS_PER_INT for the
    in_use bitmask for page_group.  Hosts that need a different value
-   can override this by defining GGC_QUIRE_SIZE explicitly. */
+   can override this by defining GGC_QUIRE_SIZE explicitly.  */
 #ifndef GGC_QUIRE_SIZE
 # ifdef USING_MMAP
 #  define GGC_QUIRE_SIZE 256

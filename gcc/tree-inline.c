@@ -889,7 +889,7 @@ declare_return_variable (inline_data *id, tree return_slot_addr,
 		 DECL_STRUCT_FUNCTION (caller)->unexpanded_var_list);
 
   /* Do not have the rest of GCC warn about this variable as it should
-     not be visible to the user.   */
+     not be visible to the user.  */
   TREE_NO_WARNING (var) = 1;
 
   /* Build the use expr.  If the return type of the function was
