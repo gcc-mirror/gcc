@@ -1272,7 +1272,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
 	      if (j == -4)	/* `memory', don't cache memory across asm */
 		{
-		  XVECEXP (body, 0, i++) = gen_rtx (CLOBBER, VOIDmode, const0_rtx);
+		  XVECEXP (body, 0, i++)
+		    = gen_rtx (CLOBBER, VOIDmode,
+			       gen_rtx (MEM, QImode,
+					gen_rtx (SCRATCH, VOIDmode, 0)));
 		  continue;
 		}
 
