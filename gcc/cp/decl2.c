@@ -2551,10 +2551,10 @@ import_export_vtable (decl, type, final)
     return;
 
   /* +e0 or +e1 */
-  if (write_virtuals < 2 && write_virtuals != 0)
+  if (write_virtuals < 0 || write_virtuals == 1 || TYPE_FOR_JAVA (type))
     {
       TREE_PUBLIC (decl) = 1;
-      if (write_virtuals < 0)
+      if (write_virtuals < 0 || TYPE_FOR_JAVA (type))
 	DECL_EXTERNAL (decl) = 1;
       DECL_INTERFACE_KNOWN (decl) = 1;
     }
