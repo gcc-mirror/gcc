@@ -1,5 +1,6 @@
 2003-04-14  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/10377
 	* config/cris/cris.md ("*mov_sideqi", "*mov_sidehi")
 	("*mov_sidesi", "*mov_sideqi_mem", "*mov_sidehi_mem")
 	("*mov_sidesi_mem", "*clear_sidesi", "*clear_sidehi")
