@@ -1,5 +1,8 @@
 Fri Feb 27 11:17:50 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (add_to_template_args): Fix thinko.
+	(instantiate_class_template): Call it later.
+
 	* pt.c (get_class_bindings): Add outer_args parm.
 	(most_specialized_class): Likewise.
 	(instantiate_class_template): Pass it.
