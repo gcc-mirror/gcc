@@ -344,7 +344,7 @@ s390_branch_condition_mnemonic (code, inv)
      rtx code;
      int inv;
 {
-  static const char *mnemonic[16] =
+  static const char *const mnemonic[16] =
     {
       NULL, "o", "h", "nle",
       "l", "nhe", "lh", "ne",
@@ -600,7 +600,7 @@ override_options ()
 
 /* Map for smallest class containing reg regno.  */
 
-enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
+const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 { GENERAL_REGS, ADDR_REGS, ADDR_REGS, ADDR_REGS,
   ADDR_REGS,    ADDR_REGS, ADDR_REGS, ADDR_REGS,
   ADDR_REGS,    ADDR_REGS, ADDR_REGS, ADDR_REGS,

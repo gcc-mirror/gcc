@@ -1264,7 +1264,7 @@ cris_print_operand (file, x, code)
   rtx operand = x;
 
   /* Size-strings corresponding to MULT expressions.  */
-  static const char *mults[] = { "BAD:0", ".b", ".w", "BAD:3", ".d" };
+  static const char *const mults[] = { "BAD:0", ".b", ".w", "BAD:3", ".d" };
 
   /* New code entries should just be added to the switch below.  If
      handling is finished, just return.  If handling was just a

@@ -2884,7 +2884,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
     int unsignedp;		/* != 0 for unsigned comparisons.  */
   };
 
-  static struct cmp_info info[ (int)ITEST_MAX ] = {
+  static const struct cmp_info info[ (int)ITEST_MAX ] = {
 
     { XOR,	 0,  65535,  0,	 0,  0,	 0, 0 },	/* EQ  */
     { XOR,	 0,  65535,  0,	 0,  1,	 1, 0 },	/* NE  */
@@ -2900,7 +2900,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 
   enum internal_test test;
   enum machine_mode mode;
-  struct cmp_info *p_info;
+  const struct cmp_info *p_info;
   int branch_p;
   int eqne_p;
   int invert;
