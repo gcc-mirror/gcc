@@ -215,6 +215,11 @@ Fri May 12 19:03:58 2000  Philippe De Muyter  <phdm@macqel.be>
 	(DWARF2_ASM_LINE_DEBUG_INFO): Define.
 	(ASM_OUTPUT_DWARF2_ADDR_CONST): Define.
 
+2000-05-11  Robert Lipe <robertlipe@usa.net>
+
+	* fixinc/inclhack.def (hpux8_bogus_inlines): Delete bypass for SCO.
+	* fixincl.x: Regenerate.
+
 2000-05-11  Richard Henderson  <rth@cygnus.com>
 
 	* calls.c: Revert both 05-09 patches.
