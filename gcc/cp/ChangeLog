@@ -1,3 +1,9 @@
+2004-03-23  Ziemowit Laski  <zlaski@apple.com>
+
+	* Make-lang.in (cp/mangle.o): Depend on $(TARGET_H).
+	* mangle.c (write_type): Add call to 'mangle_fundamental_type'
+	target hook.
+
 2004-03-23  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 12267, 12391, 12560, 13129, 14114, 14133

@@ -1,3 +1,14 @@
+2004-03-23  Ziemowit Laski  <zlaski@apple.com>
+
+	* hooks.c (hook_constcharptr_tree_null): New hook.
+	* hooks.h (hook_constcharptr_tree_null): New prototype.
+	* target-def.h (TARGET_MANGLE_FUNDAMENTAL_TYPE): New target hook.
+	* target.h (mangle_fundamental_type): New target hook.
+	* config/rs6000/rs6000.c (TARGET_MANGLE_FUNDAMENTAL_TYPE): Point
+	target hook at rs6000_mangle_fundamental_type.
+	(rs6000_mangle_fundamental_type): New function.
+	* doc/tm.texi (TARGET_MANGLE_FUNDAMENTAL_TYPE): Document.
+
 2004-03-23  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 12267, 12391, 12560, 13129, 14114, 14133
