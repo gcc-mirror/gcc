@@ -368,12 +368,17 @@ else
    # Look for these functions in the thread library.
    save_LIBS="$LIBS"
    LIBS="$LIBS $THREADLIBS"
-   AC_CHECK_FUNCS(pthread_mutexattr_settype pthread_mutexattr_setkind_np sched_yield)
-   # Look for sched_yield.  Sometimes it is in the posix4 library.
+   AC_CHECK_FUNCS(pthread_mutexattr_settype pthread_mutexattr_setkind_np)
+
+   # Look for sched_yield.  Sometimes it is in the posix4 library
+   # (Solaris) and sometimes in -lrt (x86 Solaris).
    AC_CHECK_FUNCS(sched_yield, , [
      AC_CHECK_LIB(posix4, sched_yield, [
        AC_DEFINE(HAVE_SCHED_YIELD)
-       THREADLIBS="$THREADLIBS -lposix4"])])
+       THREADLIBS="$THREADLIBS -lposix4"], [
+       AC_CHECK_LIB(rt, sched_yield, [
+         AC_DEFINE(HAVE_SCHED_YIELD)
+	 THREADLIBS="$THREADLIBS -lrt"])])])
    LIBS="$save_LIBS"
 
    # We require a way to get the time.
