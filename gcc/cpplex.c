@@ -1094,8 +1094,8 @@ _cpp_lex_direct (pfile)
   return result;
 }
 
-/* An upper bound on the number of bytes needed to spell TOKEN,
-   including preceding whitespace.  */
+/* An upper bound on the number of bytes needed to spell TOKEN.
+   Does not include preceding whitespace.  */
 unsigned int
 cpp_token_len (token)
      const cpp_token *token;
@@ -1104,12 +1104,12 @@ cpp_token_len (token)
 
   switch (TOKEN_SPELL (token))
     {
-    default:		len = 0;				break;
+    default:		len = 4;				break;
     case SPELL_LITERAL:	len = token->val.str.len;		break;
     case SPELL_IDENT:	len = NODE_LEN (token->val.node);	break;
     }
-  /* 1 for whitespace, 4 for comment delimiters.  */
-  return len + 5;
+
+  return len;
 }
 
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
@@ -1167,8 +1167,8 @@ unsigned char *
 cpp_token_as_text (pfile, token)
      cpp_reader *pfile;
      const cpp_token *token;
-{
-  unsigned int len = cpp_token_len (token);
+{ 
+  unsigned int len = cpp_token_len (token) + 1;
   unsigned char *start = _cpp_unaligned_alloc (pfile, len), *end;
 
   end = cpp_spell_token (pfile, token, start);

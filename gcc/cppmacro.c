@@ -1715,7 +1715,7 @@ cpp_macro_definition (pfile, node)
 	  if (token->type == CPP_MACRO_ARG)
 	    len += NODE_LEN (macro->params[token->val.arg_no - 1]);
 	  else
-	    len += cpp_token_len (token); /* Includes room for ' '.  */
+	    len += cpp_token_len (token) + 1; /* Includes room for ' '.  */
 	  if (token->flags & STRINGIFY_ARG)
 	    len++;			/* "#" */
 	  if (token->flags & PASTE_LEFT)
