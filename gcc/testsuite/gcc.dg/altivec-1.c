@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc-*altivec powerpc-*-*-*altivec } } */
+/* { dg-do run { target powerpc-*-*altivec powerpc-*-*-*altivec } } */
 /* { dg-options "-maltivec" } */
 
 /* Program to test PowerPC AltiVec instructions.  */

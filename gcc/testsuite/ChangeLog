@@ -1,3 +1,7 @@
+2001-11-17  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/altivec-1.c: Fix typo.
+
 2001-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-intconst-1.c, gcc.dg/c99-intconst-1.c: New tests.
