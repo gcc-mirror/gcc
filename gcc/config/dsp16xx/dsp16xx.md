@@ -1,5 +1,5 @@
 ;;- Machine description for the AT&T DSP1600 for GNU C compiler
-;;  Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+;;  Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
 ;;  Contributed by Michael Collison (collison@world.std.com).
 
 ;; This file is part of GNU CC.
@@ -1136,8 +1136,8 @@
   operands[5] = addr0;
   operands[6] = addr1;
 
-  operands[0] = gen_rtx (MEM, BLKmode, addr0);
-  operands[1] = gen_rtx (MEM, BLKmode, addr1);
+  operands[0] = change_address (operands[0], VOIDmode, addr0);
+  operands[1] = change_address (operands[1], VOIDmode, addr1);
 }")
 
 (define_insn ""
