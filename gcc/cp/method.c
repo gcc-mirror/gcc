@@ -377,7 +377,7 @@ check_ktype (node, add)
       if (maxksize <= maxktype)
         {
           maxksize = maxksize* 3 / 2;
-          ktypelist = (tree *)xrealloc (sizeof (tree) * maxksize);
+          ktypelist = (tree *)xrealloc (ktypelist, sizeof (tree) * maxksize);
         }
       ktypelist[maxktype++] = localnode;
     }
@@ -1160,7 +1160,7 @@ check_btype (node)
   if (maxbsize <= maxbtype) 
     {
       maxbsize = maxbsize * 3 / 2;
-      btypelist = (tree *)xrealloc (sizeof (tree) * maxbsize); 
+      btypelist = (tree *)xrealloc (btypelist, sizeof (tree) * maxbsize); 
     }
   btypelist[maxbtype++] = node;
   return 0;
