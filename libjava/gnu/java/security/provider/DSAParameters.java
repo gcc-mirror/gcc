@@ -1,5 +1,5 @@
 /* DSAParameters.java --- DSA Parameters Implementation
-   Copyright (C) 1999,2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 20032, 004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,30 +38,20 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import java.math.BigInteger;
-
-import java.security.AlgorithmParametersSpi;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.DSAParameterSpec;
-import java.security.spec.InvalidParameterSpecException;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import gnu.java.io.ASN1ParsingException;
 import gnu.java.security.der.DER;
-import gnu.java.security.der.DEREncodingException;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 import gnu.java.security.der.DERWriter;
 
-import gnu.java.security.util.Prime;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.AlgorithmParametersSpi;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.DSAParameterSpec;
+import java.security.spec.InvalidParameterSpecException;
+import java.util.ArrayList;
 
 /*
 	ASN.1 Encoding for DSA from rfc2459 

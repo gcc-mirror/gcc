@@ -1,5 +1,5 @@
 /* X500DistinguishedName.java -- X.500 name.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,24 +38,21 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
-
-import java.security.Principal;
-
-import java.util.HashSet;
-import java.util.LinkedList;
-
 import gnu.java.io.ASN1ParsingException;
 import gnu.java.security.OID;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 import gnu.java.security.der.DERWriter;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * A X.500 distinguished name. Distinguished names are sequences of

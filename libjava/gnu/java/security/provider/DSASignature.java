@@ -1,5 +1,5 @@
-/* DSASignature.java
-   Copyright (C) 1999,2003 Free Software Foundation, Inc.
+/* DSASignature.java --
+   Copyright (C) 1999, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,14 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.security.provider;
 
-import java.io.ByteArrayInputStream;
+import gnu.java.security.der.DER;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+import gnu.java.security.der.DERWriter;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import java.math.BigInteger;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
@@ -57,17 +60,8 @@ import java.security.SignatureSpi;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
-
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-
-import gnu.java.io.ASN1ParsingException;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DEREncodingException;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
-import gnu.java.security.der.DERWriter;
 
 public class DSASignature extends SignatureSpi
 {
