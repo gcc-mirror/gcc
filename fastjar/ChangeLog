@@ -1,3 +1,10 @@
+2003-12-01  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am: Define AM_MAKINFOFLAGS.  Remove Automake 1.4 hack.
+	* Makefile.in: Regenerate with automake 1.7.6 & autoconf 2.57 tools.
+	* aclocal.m4, config.h.in, configure: Likewise.
+	* install-sh, missing, mkinstalldirs, stamp-h.in: Remove.
+
 2003-11-21  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* .cvsignore: Delete.

@@ -57,6 +57,7 @@ grepjar_LDADD = $(ZLIBS) $(LIBIBERTY)
 grepjar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
 
 AM_CFLAGS = @fastjar_warn_cflags@
+AM_MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
 
 TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
 info_TEXINFOS = fastjar.texi
@@ -65,16 +66,6 @@ fastjar_TEXINFOS = \
 	../gcc/doc/include/gpl.texi
 man_MANS = jar.1 grepjar.1
 EXTRA_DIST = $(man_MANS)
-
-## This is a hack.  We can't set AM_MAKEINFOFLAGS, since that isn't
-## available in 1.4.  Nor can we override or append to MAKEINFO or
-## MAKEINFOFLAGS, since these are overridden by the top-level
-## Makefile.  So, we just duplicate the rules.  FIXME: remove this
-## when we upgrade automake. 
-my_makei_flags += -I $(srcdir)/../gcc/doc/include
-fastjar.info: fastjar.texi $(fastjar_TEXINFOS)
-	rm -f $@ $@-[0-9] $@-[0-9][0-9]
-	$(MAKEINFO) $(my_makei_flags) -o $@ $<
 
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
 POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"

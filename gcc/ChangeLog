@@ -1,3 +1,8 @@
+2003-12-01  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* doc/install.texi: Note that fastjar is built with automake 1.7.x
+	and autoconf 2.57.
+
 2003-12-01  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Test
