@@ -1,3 +1,8 @@
+2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install.texi: Document that configure options not listed in
+	this file are unsupported.  Document --with-system-zlib.
+
 Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.h (mem_for_const_double): New declaration.
