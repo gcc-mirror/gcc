@@ -589,6 +589,21 @@ null_ptr_cst_p (t)
   return 0;
 }
 
+
+/* Returns non-zero if PARMLIST consists of only default parms and/or
+   ellipsis. */
+
+int
+sufficient_parms_p (parmlist)
+     tree parmlist;
+{
+  for (; parmlist && parmlist != void_list_node;
+       parmlist = TREE_CHAIN (parmlist))
+    if (!TREE_PURPOSE (parmlist))
+      return 0;
+  return 1;
+}
+
 static tree
 build_conv (code, type, from)
      enum tree_code code;
@@ -1324,13 +1339,8 @@ add_function_candidate (candidates, fn, ctype, arglist, flags)
     viable = 0;
 
   /* Make sure there are default args for the rest of the parms.  */
-  else for (; parmnode && parmnode != void_list_node;
-	    parmnode = TREE_CHAIN (parmnode))
-    if (! TREE_PURPOSE (parmnode))
-      {
-	viable = 0;
-	break;
-      }
+  else if (!sufficient_parms_p (parmnode))
+    viable = 0;
 
   if (! viable)
     goto out;
@@ -1471,13 +1481,8 @@ add_conv_candidate (candidates, fn, obj, arglist)
   if (i < len)
     viable = 0;
 
-  for (; parmnode && parmnode != void_list_node;
-       parmnode = TREE_CHAIN (parmnode))
-    if (! TREE_PURPOSE (parmnode))
-      {
-	viable = 0;
-	break;
-      }
+  if (!sufficient_parms_p (parmnode))
+    viable = 0;
 
   return add_candidate (candidates, totype, convs, viable);
 }

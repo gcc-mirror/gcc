@@ -3736,6 +3736,7 @@ extern tree build_addr_func			PARAMS ((tree));
 extern tree build_call				PARAMS ((tree, tree));
 extern tree build_method_call			PARAMS ((tree, tree, tree, tree, int));
 extern int null_ptr_cst_p			PARAMS ((tree));
+extern int sufficient_parms_p                   PARAMS ((tree));
 extern tree type_decays_to			PARAMS ((tree));
 extern tree build_user_type_conversion		PARAMS ((tree, tree, int));
 extern tree build_new_function_call		PARAMS ((tree, tree));
@@ -4269,7 +4270,7 @@ extern tree lookup_conversions			PARAMS ((tree));
 extern tree binfo_for_vtable			PARAMS ((tree));
 extern tree binfo_from_vbase			PARAMS ((tree));
 extern tree dfs_walk                            PARAMS ((tree,
-						       tree (*)(tree, void *),
+						       tree (*) (tree, void *),
 						       tree (*) (tree, void *),
 						       void *));
 extern tree dfs_walk_real                      PARAMS ((tree,

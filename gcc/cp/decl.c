@@ -12137,9 +12137,7 @@ grok_ctor_properties (ctype, decl)
      other parameters have default arguments.  */
   if (TREE_CODE (parmtype) == REFERENCE_TYPE
       && TYPE_MAIN_VARIANT (TREE_TYPE (parmtype)) == ctype
-      && (TREE_CHAIN (parmtypes) == NULL_TREE
-	  || TREE_CHAIN (parmtypes) == void_list_node
-	  || TREE_PURPOSE (TREE_CHAIN (parmtypes)))
+      && sufficient_parms_p (TREE_CHAIN (parmtypes))
       && !(DECL_TEMPLATE_INSTANTIATION (decl)
 	   && is_member_template (DECL_TI_TEMPLATE (decl))))
     {
@@ -12163,9 +12161,7 @@ grok_ctor_properties (ctype, decl)
      existence.  Theoretically, they should never even be
      instantiated, but that's hard to forestall.  */
   else if (TYPE_MAIN_VARIANT (parmtype) == ctype
-	   && (TREE_CHAIN (parmtypes) == NULL_TREE
-	       || TREE_CHAIN (parmtypes) == void_list_node
-	       || TREE_PURPOSE (TREE_CHAIN (parmtypes)))
+	   && sufficient_parms_p (TREE_CHAIN (parmtypes))
 	   && !(DECL_TEMPLATE_INSTANTIATION (decl)
 		&& is_member_template (DECL_TI_TEMPLATE (decl))))
     {
