@@ -1,3 +1,13 @@
+2001-06-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/c-tree.texi, doc/contrib.texi, doc/extend.texi,
+	doc/gcc.texi, doc/gcov.texi, doc/install-old.texi,
+	doc/invoke.texi, doc/md.texi, doc/rtl.texi, doc/tm.texi: Use more
+	logical markup.  Use TeX quotes and dashes.  Use @dots{} and
+	@minus{}.  Avoid spaces inside @var.  Update last modification
+	date in gcc.texi.
+	* doc/gcc.1, doc/gcov.1: Regenerate.
+
 2001-06-14  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* fixinc/inclhack.def (hpux10_cpp_pow_inline): New hack.

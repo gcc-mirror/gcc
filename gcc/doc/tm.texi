@@ -21,7 +21,7 @@ includes @file{tm.h} and most compiler source files include
 
 @menu
 * Driver::              Controlling how the driver runs the compilation passes.
-* Run-time Target::     Defining @samp{-m} options like @samp{-m68000} and @samp{-m68020}.
+* Run-time Target::     Defining @samp{-m} options like @option{-m68000} and @option{-m68020}.
 * Per-Function Data::   Defining data structures for per-function information.
 * Storage Layout::      Defining sizes and alignments of data.
 * Type Layout::         Defining sizes and properties of basic user data types.
@@ -54,7 +54,7 @@ You can control the compilation driver.
 @table @code
 @findex SWITCH_TAKES_ARG
 @item SWITCH_TAKES_ARG (@var{char})
-A C expression which determines whether the option @samp{-@var{char}}
+A C expression which determines whether the option @option{-@var{char}}
 takes arguments.  The value should be the number of arguments that
 option takes--zero, for many options.
 
@@ -67,7 +67,7 @@ additional options.
 
 @findex WORD_SWITCH_TAKES_ARG
 @item WORD_SWITCH_TAKES_ARG (@var{name})
-A C expression which determines whether the option @samp{-@var{name}}
+A C expression which determines whether the option @option{-@var{name}}
 takes arguments.  The value should be the number of arguments that
 option takes--zero, for many options.  This macro rather than
 @code{SWITCH_TAKES_ARG} is used for multi-character option names.
@@ -81,7 +81,7 @@ additional options.
 
 @findex SWITCH_CURTAILS_COMPILATION
 @item SWITCH_CURTAILS_COMPILATION (@var{char})
-A C expression which determines whether the option @samp{-@var{char}}
+A C expression which determines whether the option @option{-@var{char}}
 stops compilation before the generation of an executable.  The value is
 boolean, non-zero if the option does stop an executable from being
 generated, zero otherwise.
@@ -159,7 +159,7 @@ be defined.
 @item SIGNED_CHAR_SPEC
 A C string constant that tells the GCC driver program options to
 pass to CPP.  By default, this macro is defined to pass the option
-@samp{-D__CHAR_UNSIGNED__} to CPP if @code{char} will be treated as
+@option{-D__CHAR_UNSIGNED__} to CPP if @code{char} will be treated as
 @code{unsigned char} by @code{cc1}.
 
 Do not define this macro unless you need to override the default
@@ -171,7 +171,7 @@ A C string constant that tells the GCC driver program options to
 pass to @code{cc1}, @code{cc1plus}, @code{f771}, and the other language
 front ends.
 It can also specify how to translate options you give to GCC into options
-for GCC to pass to front ends..
+for GCC to pass to front ends.
 
 Do not define this macro if it does not need to do anything.
 
@@ -229,7 +229,7 @@ linker command line.  This constant is placed both before and after
 the value of @code{LIB_SPEC}.
 
 If this macro is not defined, the GCC driver provides a default that
-passes the string @samp{-lgcc} to the linker.
+passes the string @option{-lgcc} to the linker.
 
 @findex STARTFILE_SPEC
 @item STARTFILE_SPEC
@@ -271,7 +271,7 @@ string constant that provides the specification.
 Do not define this macro if it does not need to do anything.
 
 @code{EXTRA_SPECS} is useful when an architecture contains several
-related targets, which have various @code{..._SPECS} which are similar
+related targets, which have various @code{@dots{}_SPECS} which are similar
 to each other, and the maintainer would like one central place to keep
 these definitions.
 
@@ -313,18 +313,18 @@ while the @file{config/rs6000/eabiaix.h} target file defines
 @findex LINK_LIBGCC_SPECIAL
 @item LINK_LIBGCC_SPECIAL
 Define this macro if the driver program should find the library
-@file{libgcc.a} itself and should not pass @samp{-L} options to the
+@file{libgcc.a} itself and should not pass @option{-L} options to the
 linker.  If you do not define this macro, the driver program will pass
-the argument @samp{-lgcc} to tell the linker to do the search and will
-pass @samp{-L} options to it.
+the argument @option{-lgcc} to tell the linker to do the search and will
+pass @option{-L} options to it.
 
 @findex LINK_LIBGCC_SPECIAL_1
 @item LINK_LIBGCC_SPECIAL_1
 Define this macro if the driver program should find the library
 @file{libgcc.a}.  If you do not define this macro, the driver program will pass
-the argument @samp{-lgcc} to tell the linker to do the search.
+the argument @option{-lgcc} to tell the linker to do the search.
 This macro is similar to @code{LINK_LIBGCC_SPECIAL}, except that it does
-not affect @samp{-L} options.
+not affect @option{-L} options.
 
 @findex LINK_COMMAND_SPEC
 @item LINK_COMMAND_SPEC
@@ -356,7 +356,7 @@ the target makefile fragment or if none of the options listed in
 @findex RELATIVE_PREFIX_NOT_LINKDIR
 @item RELATIVE_PREFIX_NOT_LINKDIR
 Define this macro to tell @code{gcc} that it should only translate
-a @samp{-B} prefix into a @samp{-L} linker option if the prefix
+a @option{-B} prefix into a @option{-L} linker option if the prefix
 indicates an absolute file name.
 
 @findex STANDARD_EXEC_PREFIX
@@ -369,7 +369,7 @@ try when searching for the executable files of the compiler.
 @item MD_EXEC_PREFIX
 If defined, this macro is an additional prefix to try after
 @code{STANDARD_EXEC_PREFIX}.  @code{MD_EXEC_PREFIX} is not searched
-when the @samp{-b} option is used, or the compiler is built as a cross
+when the @option{-b} option is used, or the compiler is built as a cross
 compiler.  If you define @code{MD_EXEC_PREFIX}, then be sure to add it
 to the list of directories used to find the assembler in @file{configure.in}.
 
@@ -383,13 +383,13 @@ try when searching for startup files such as @file{crt0.o}.
 @item MD_STARTFILE_PREFIX
 If defined, this macro supplies an additional prefix to try after the
 standard prefixes.  @code{MD_EXEC_PREFIX} is not searched when the
-@samp{-b} option is used, or when the compiler is built as a cross
+@option{-b} option is used, or when the compiler is built as a cross
 compiler.
 
 @findex MD_STARTFILE_PREFIX_1
 @item MD_STARTFILE_PREFIX_1
 If defined, this macro supplies yet another prefix to try after the
-standard prefixes.  It is not searched when the @samp{-b} option is
+standard prefixes.  It is not searched when the @option{-b} option is
 used, or when the compiler is built as a cross compiler.
 
 @findex INIT_ENVIRONMENT
@@ -424,8 +424,8 @@ indicate whether the string should be inserted or deleted, and the string
 to be inserted or deleted (a string constant).
 
 For example, on a machine where @samp{64} at the end of the
-configuration name denotes a 64-bit target and you want the @samp{-32}
-and @samp{-64} switches to select between 32- and 64-bit targets, you would
+configuration name denotes a 64-bit target and you want the @option{-32}
+and @option{-64} switches to select between 32- and 64-bit targets, you would
 code
 
 @smallexample
@@ -502,7 +502,7 @@ Here is the order of prefixes tried for exec files:
 
 @enumerate
 @item
-Any prefixes specified by the user with @samp{-B}.
+Any prefixes specified by the user with @option{-B}.
 
 @item
 The environment variable @code{GCC_EXEC_PREFIX}, if any.
@@ -524,7 +524,7 @@ Here is the order of prefixes tried for startfiles:
 
 @enumerate
 @item
-Any prefixes specified by the user with @samp{-B}.
+Any prefixes specified by the user with @option{-B}.
 
 @item
 The environment variable @code{GCC_EXEC_PREFIX}, if any.
@@ -567,7 +567,7 @@ Here are run-time target specifications.
 @table @code
 @findex CPP_PREDEFINES
 @item CPP_PREDEFINES
-Define this to be a string constant containing @samp{-D} options to
+Define this to be a string constant containing @option{-D} options to
 define the predefined macros that identify this machine and system.
 These macros will be predefined unless the @option{-ansi} option (or a
 @option{-std} option for strict ISO C conformance) is specified.
@@ -586,7 +586,7 @@ For example, on the Sun, one can use the following value:
 
 The result is to define the macros @code{__mc68000__}, @code{__sun__}
 and @code{__unix__} unconditionally, and the macros @code{mc68000},
-@code{sun} and @code{unix} provided @samp{-ansi} is not specified.
+@code{sun} and @code{unix} provided @option{-ansi} is not specified.
 
 @findex extern int target_flags
 @item extern int target_flags;
@@ -644,7 +644,7 @@ One of the subgroupings should have a null string.  The number in
 this grouping is the default value for @code{target_flags}.  Any
 target options act starting with that value.
 
-Here is an example which defines @samp{-m68000} and @samp{-m68020}
+Here is an example which defines @option{-m68000} and @option{-m68020}
 with opposite meanings, and picks the latter as the default:
 
 @smallexample
@@ -669,8 +669,8 @@ given option if the fixed part matches.  The actual option name is made
 by appending @samp{-m} to the specified name.  Again, each option should
 also be documented in @file{invoke.texi}.
 
-Here is an example which defines @samp{-mshort-data-@var{number}}.  If the
-given option is @samp{-mshort-data-512}, the variable @code{m88k_short_data}
+Here is an example which defines @option{-mshort-data-@var{number}}.  If the
+given option is @option{-mshort-data-512}, the variable @code{m88k_short_data}
 will be set to the string @code{"512"}.
 
 @smallexample
@@ -705,7 +705,7 @@ defined, is executed once just after all the command options have been
 parsed.
 
 Don't use this macro to turn on various extra optimizations for
-@samp{-O}.  That is what @code{OPTIMIZATION_OPTIONS} is for.
+@option{-O}.  That is what @code{OPTIMIZATION_OPTIONS} is for.
 
 @findex OPTIMIZATION_OPTIONS
 @item OPTIMIZATION_OPTIONS (@var{level}, @var{size})
@@ -715,10 +715,10 @@ just after the optimization level is determined and before the remainder
 of the command options have been parsed.  Values set in this macro are
 used as the default values for the other command line options.
 
-@var{level} is the optimization level specified; 2 if @samp{-O2} is
-specified, 1 if @samp{-O} is specified, and 0 if neither is specified.
+@var{level} is the optimization level specified; 2 if @option{-O2} is
+specified, 1 if @option{-O} is specified, and 0 if neither is specified.
 
-@var{size} is non-zero if @samp{-Os} is specified and zero otherwise.
+@var{size} is non-zero if @option{-Os} is specified and zero otherwise.
 
 You should not use this macro to change options that are not
 machine-specific.  These should uniformly selected by the same
@@ -733,7 +733,7 @@ generated code.
 @item CAN_DEBUG_WITHOUT_FP
 Define this macro if debugging can be performed even without a frame
 pointer.  If this macro is defined, GCC will turn on the
-@samp{-fomit-frame-pointer} option whenever @samp{-O} is specified.
+@option{-fomit-frame-pointer} option whenever @option{-O} is specified.
 @end table
 
 @node Per-Function Data
@@ -1262,7 +1262,7 @@ machine and @code{HOST_FLOAT_WORDS_BIG_ENDIAN} for the host.
 @findex DEFAULT_VTABLE_THUNKS
 @item DEFAULT_VTABLE_THUNKS
 GCC supports two ways of implementing C++ vtables:  traditional or with
-so-called ``thunks''.  The flag @samp{-fvtable-thunk} chooses between them.
+so-called ``thunks''.  The flag @option{-fvtable-thunk} chooses between them.
 Define this macro to be a C expression for the default value of that flag.
 If @code{DEFAULT_VTABLE_THUNKS} is 0, GCC uses the traditional
 implementation by default.  The ``thunk'' implementation is more efficient
@@ -1271,7 +1271,7 @@ implementation by default.  The ``thunk'' implementation is more efficient
 compatible with code compiled using the traditional implementation.
 If you are writing a new port, define @code{DEFAULT_VTABLE_THUNKS} to 1.
 
-If you do not define this macro, the default for @samp{-fvtable-thunk} is 0.
+If you do not define this macro, the default for @option{-fvtable-thunk} is 0.
 @end table
 
 @node Type Layout
@@ -1365,8 +1365,8 @@ is the default.
 @item DEFAULT_SIGNED_CHAR
 An expression whose value is 1 or 0, according to whether the type
 @code{char} should be signed or unsigned by default.  The user can
-always override this default with the options @samp{-fsigned-char}
-and @samp{-funsigned-char}.
+always override this default with the options @option{-fsigned-char}
+and @option{-funsigned-char}.
 
 @findex DEFAULT_SHORT_ENUMS
 @item DEFAULT_SHORT_ENUMS
@@ -1593,8 +1593,8 @@ register @var{n} is fixed, 0 otherwise.
 The table initialized from this macro, and the table initialized by
 the following one, may be overridden at run time either automatically,
 by the actions of the macro @code{CONDITIONAL_REGISTER_USAGE}, or by
-the user with the command options @samp{-ffixed-@var{reg}},
-@samp{-fcall-used-@var{reg}} and @samp{-fcall-saved-@var{reg}}.
+the user with the command options @option{-ffixed-@var{reg}},
+@option{-fcall-used-@var{reg}} and @option{-fcall-saved-@var{reg}}.
 
 @findex CALL_USED_REGISTERS
 @item CALL_USED_REGISTERS
@@ -1635,8 +1635,8 @@ Before the macro is called @code{fixed_regs}, @code{call_used_regs}
 @code{reg_class_contents} and @code{reg_names} have been initialized
 from @code{FIXED_REGISTERS}, @code{CALL_USED_REGISTERS},
 @code{REG_CLASS_CONTENTS} and @code{REGISTER_NAMES}, respectively,
-@code{global_regs} has been cleared, and any @samp{-ffixed-@var{reg}},
-@samp{-fcall-used-@var{reg}} and @samp{-fcall-saved-@var{reg}} command
+@code{global_regs} has been cleared, and any @option{-ffixed-@var{reg}},
+@option{-fcall-used-@var{reg}} and @option{-fcall-saved-@var{reg}} command
 options have been applied.
 
 This is necessary in case the fixed or call-clobbered registers depend
@@ -1900,7 +1900,7 @@ A C expression whose value is the register number to which @var{regno}
 should be renumbered, when a function is treated as a leaf function.
 
 If @var{regno} is a register number which should not appear in a leaf
-function before renumbering, then the expression should yield -1, which
+function before renumbering, then the expression should yield @minus{}1, which
 will cause the compiler to abort.
 
 Define this macro only if the target machine offers a way to optimize the
@@ -2213,7 +2213,7 @@ Their classes are obtained from the constraints in the insn pattern.
 
 @var{x} might be a pseudo-register or a @code{subreg} of a
 pseudo-register, which could either be in a hard register or in memory.
-Use @code{true_regnum} to find out; it will return -1 if the pseudo is
+Use @code{true_regnum} to find out; it will return @minus{}1 if the pseudo is
 in memory and the hard register number if it is in a register.
 
 These macros should not be used in the case where a particular class of
@@ -2654,7 +2654,7 @@ has the effect of disabling gcc's builtin @samp{alloca}, though
 @subsection Specifying How Stack Checking is Done
 
 GCC will check that stack references are within the boundaries of
-the stack, if the @samp{-fstack-check} is specified, in one of three ways:
+the stack, if the @option{-fstack-check} is specified, in one of three ways:
 
 @enumerate
 @item
@@ -2727,7 +2727,7 @@ use the default of four words.
 @item STACK_CHECK_MAX_VAR_SIZE
 The maximum size, in bytes, of an object that GCC will place in the
 fixed area of the stack frame when the user specifies
-@samp{-fstack-check}.
+@option{-fstack-check}.
 GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end table
@@ -3354,7 +3354,7 @@ values---values that can fit in registers.
 @table @code
 @findex TRADITIONAL_RETURN_FLOAT
 @item TRADITIONAL_RETURN_FLOAT
-Define this macro if @samp{-traditional} should not cause functions
+Define this macro if @option{-traditional} should not cause functions
 declared to return @code{float} to convert the value to @code{double}.
 
 @findex FUNCTION_VALUE
@@ -3473,7 +3473,7 @@ always returned.  Here @var{type} will be a C expression of type
 @code{tree}, representing the data type of the value.
 
 Note that values of mode @code{BLKmode} must be explicitly handled
-by this macro.  Also, the option @samp{-fpcc-struct-return}
+by this macro.  Also, the option @option{-fpcc-struct-return}
 takes effect regardless of this macro.  On most systems, it is
 possible to leave the macro undefined; this causes a default
 definition to be used, whose value is the constant 1 for @code{BLKmode}
@@ -3533,8 +3533,8 @@ the address of a static variable containing the value.
 Do not define this if the usual system convention is for the caller to
 pass an address to the subroutine.
 
-This macro has effect in @samp{-fpcc-struct-return} mode, but it does
-nothing when you use @samp{-freg-struct-return} mode.
+This macro has effect in @option{-fpcc-struct-return} mode, but it does
+nothing when you use @option{-freg-struct-return} mode.
 @end table
 
 @node Caller Saves
@@ -3549,9 +3549,9 @@ must live across calls.
 @item DEFAULT_CALLER_SAVES
 Define this macro if function calls on the target machine do not preserve
 any registers; in other words, if @code{CALL_USED_REGISTERS} has 1
-for all registers.  When defined, this macro enables @samp{-fcaller-saves}
+for all registers.  When defined, this macro enables @option{-fcaller-saves}
 by default for all optimization levels.  It has no effect for optimization
-levels 2 and higher, where @samp{-fcaller-saves} is the default.
+levels 2 and higher, where @option{-fcaller-saves} is the default.
 
 @findex CALLER_SAVE_PROFITABLE
 @item CALLER_SAVE_PROFITABLE (@var{refs}, @var{calls})
@@ -3718,7 +3718,7 @@ is nonzero for such a function.  @xref{Leaf Functions}.
 
 On some machines, some functions pop their arguments on exit while
 others leave that for the caller to do.  For example, the 68020 when
-given @samp{-mrtd} pops arguments in functions that take a fixed
+given @option{-mrtd} pops arguments in functions that take a fixed
 number of arguments.
 
 @findex current_function_pops_args
@@ -5383,7 +5383,7 @@ containing the assembler operation to identify the following data as
 uninitialized global data.  If not defined, and neither
 @code{ASM_OUTPUT_BSS} nor @code{ASM_OUTPUT_ALIGNED_BSS} are defined,
 uninitialized global data will be output in the data section if
-@samp{-fno-common} is passed, otherwise @code{ASM_OUTPUT_COMMON} will be
+@option{-fno-common} is passed, otherwise @code{ASM_OUTPUT_COMMON} will be
 used.
 
 @findex SHARED_BSS_SECTION_ASM_OP
@@ -5507,7 +5507,7 @@ the characters that encode section info.  Define this macro if
 A C expression which evaluates to true if @var{decl} should be placed
 into a unique section for some target-specific reason.  If you do not
 define this macro, the default is @samp{0}.  Note that the flag
-@samp{-ffunction-sections} will also cause functions to be placed into
+@option{-ffunction-sections} will also cause functions to be placed into
 unique sections.
 
 @findex UNIQUE_SECTION
@@ -6137,7 +6137,7 @@ If you don't define this macro, @file{defaults.h} provides a default
 definition.  If @code{ASM_WEAKEN_LABEL} is defined, the default
 definition is @samp{1}; otherwise, it is @samp{0}.  Define this macro if
 you want to control weak symbol support with a compiler flag such as
-@samp{-melf}.
+@option{-melf}.
 
 @findex MAKE_DECL_ONE_ONLY (@var{decl})
 @item MAKE_DECL_ONE_ONLY
@@ -6926,8 +6926,8 @@ This macro need not be defined on most platforms.
 A C expression to switch to the section in which the main
 exception table is to be placed (@pxref{Sections}).  The default is a
 section named @code{.gcc_except_table} on machines that support named
-sections via @code{ASM_OUTPUT_SECTION_NAME}, otherwise if @samp{-fpic}
-or @samp{-fPIC} is in effect, the @code{data_section}, otherwise the
+sections via @code{ASM_OUTPUT_SECTION_NAME}, otherwise if @option{-fpic}
+or @option{-fPIC} is in effect, the @code{data_section}, otherwise the
 @code{readonly_data_section}.
 
 @findex EH_FRAME_SECTION_ASM_OP
@@ -7135,7 +7135,7 @@ computation assumes that @var{x} is based on the frame-pointer and
 gives the offset from the frame-pointer.  This is required for targets
 that produce debugging output for DBX or COFF-style debugging output
 for SDB and allow the frame-pointer to be eliminated when the
-@samp{-g} options is used.
+@option{-g} options is used.
 
 @findex DEBUGGER_ARG_OFFSET
 @item DEBUGGER_ARG_OFFSET (@var{offset}, @var{x})
@@ -7146,13 +7146,13 @@ having address @var{x} (an RTL expression).  The nominal offset is
 @findex PREFERRED_DEBUGGING_TYPE
 @item PREFERRED_DEBUGGING_TYPE
 A C expression that returns the type of debugging output GCC should
-produce when the user specifies just @samp{-g}.  Define
+produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
 debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
 @code{SDB_DEBUG}, @code{DWARF_DEBUG}, @code{DWARF2_DEBUG}, and
 @code{XCOFF_DEBUG}.
 
-When the user specifies @samp{-ggdb}, GCC normally also uses the
+When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
 exceptions.  If @code{DWARF2_DEBUGGING_INFO} is defined and
 @code{LINKER_DOES_NOT_WORK_WITH_DWARF2} is not defined, GCC uses the
@@ -7160,8 +7160,8 @@ value @code{DWARF2_DEBUG}.  Otherwise, if @code{DBX_DEBUGGING_INFO} is
 defined, GCC uses @code{DBX_DEBUG}.
 
 The value of this macro only affects the default debugging output; the
-user can always get a specific type of output by using @samp{-gstabs},
-@samp{-gcoff}, @samp{-gdwarf-1}, @samp{-gdwarf-2}, or @samp{-gxcoff}.
+user can always get a specific type of output by using @option{-gstabs},
+@option{-gcoff}, @option{-gdwarf-1}, @option{-gdwarf-2}, or @option{-gxcoff}.
 @end table
 
 @node DBX Options
@@ -7174,12 +7174,12 @@ These are specific options for DBX output.
 @findex DBX_DEBUGGING_INFO
 @item DBX_DEBUGGING_INFO
 Define this macro if GCC should produce debugging output for DBX
-in response to the @samp{-g} option.
+in response to the @option{-g} option.
 
 @findex XCOFF_DEBUGGING_INFO
 @item XCOFF_DEBUGGING_INFO
 Define this macro if GCC should produce XCOFF format debugging output
-in response to the @samp{-g} option.  This is a variant of DBX format.
+in response to the @option{-g} option.  This is a variant of DBX format.
 
 @findex DEFAULT_GDB_EXTENSIONS
 @item DEFAULT_GDB_EXTENSIONS
@@ -7471,17 +7471,17 @@ Here are macros for SDB and DWARF output.
 @findex SDB_DEBUGGING_INFO
 @item SDB_DEBUGGING_INFO
 Define this macro if GCC should produce COFF-style debugging output
-for SDB in response to the @samp{-g} option.
+for SDB in response to the @option{-g} option.
 
 @findex DWARF_DEBUGGING_INFO
 @item DWARF_DEBUGGING_INFO
 Define this macro if GCC should produce dwarf format debugging output
-in response to the @samp{-g} option.
+in response to the @option{-g} option.
 
 @findex DWARF2_DEBUGGING_INFO
 @item DWARF2_DEBUGGING_INFO
 Define this macro if GCC should produce dwarf version 2 format
-debugging output in response to the @samp{-g} option.
+debugging output in response to the @option{-g} option.
 
 To support optional call frame debugging information, you must also
 define @code{INCOMING_RETURN_ADDR_RTX} and either set
@@ -7499,7 +7499,7 @@ information not matter how you define @code{DWARF2_FRAME_INFO}.
 @findex LINKER_DOES_NOT_WORK_WITH_DWARF2
 @item LINKER_DOES_NOT_WORK_WITH_DWARF2
 Define this macro if the linker does not work with Dwarf version 2.
-Normally, if the user specifies only @samp{-ggdb} GCC will use Dwarf
+Normally, if the user specifies only @option{-ggdb} GCC will use Dwarf
 version 2 if available; this macro disables this.  See the description
 of the @code{PREFERRED_DEBUGGING_TYPE} macro for more details.
 
@@ -7763,7 +7763,7 @@ The position of the initializer in the initializer - starting counting at
 zero - determines the integer that is used to refer to the mode-switched
 entity in question.
 In macros that take mode arguments / yield a mode result, modes are
-represented as numbers 0 .. N - 1.  N is used to specify that no mode
+represented as numbers 0 @dots{} N @minus{} 1.  N is used to specify that no mode
 switch is needed / supplied.
 
 @findex MODE_NEEDED
@@ -7786,8 +7786,8 @@ This macro specifies the order in which modes for ENTITY are processed.
 0 is the highest priority, NUM_MODES_FOR_MODE_SWITCHING[ENTITY] - 1 the
 lowest.  The value of the macro should be an integer designating a mode
 for ENTITY.  For any fixed @var{entity}, @code{mode_priority_to_mode}
-(@var{entity}, @var{n}) shall be a bijection in 0 ..
-@code{num_modes_for_mode_switching}[@var{entity}] - 1 .
+(@var{entity}, @var{n}) shall be a bijection in 0 @dots{}
+@code{num_modes_for_mode_switching}[@var{entity}] @minus{} 1 .
 
 @findex EMIT_MODE_SET
 @item EMIT_MODE_SET (@var{entity}, @var{mode}, @var{hard_regs_live})
@@ -7993,8 +7993,8 @@ with an integral mode and stored by a store-flag instruction
 apply to @emph{all} the @samp{s@var{cond}} patterns and all the
 comparison operators whose results have a @code{MODE_INT} mode.
 
-A value of 1 or -1 means that the instruction implementing the
-comparison operator returns exactly 1 or -1 when the comparison is true
+A value of 1 or @minus{}1 means that the instruction implementing the
+comparison operator returns exactly 1 or @minus{}1 when the comparison is true
 and 0 when the comparison is false.  Otherwise, the value indicates
 which bits of the result are guaranteed to be 1 when the comparison is
 true.  This value is interpreted in the mode of the comparison
@@ -8003,7 +8003,7 @@ operation, which is given by the mode of the first operand in the
 @code{STORE_FLAG_VALUE} be on.  Presently, only those bits are used by
 the compiler.
 
-If @code{STORE_FLAG_VALUE} is neither 1 or -1, the compiler will
+If @code{STORE_FLAG_VALUE} is neither 1 or @minus{}1, the compiler will
 generate code that depends only on the specified bits.  It can also
 replace comparison operators with equivalent operations if they cause
 the required bits to be set, even if the remaining bits are undefined.
@@ -8054,7 +8054,7 @@ comparison operators to do so because there may be opportunities to
 combine the normalization with other operations.
 
 @item
-For equal-length sequences, use a value of 1 or -1, with -1 being
+For equal-length sequences, use a value of 1 or @minus{}1, with @minus{}1 being
 slightly preferred on machines with expensive jumps and 1 preferred on
 other machines.
 
@@ -8161,7 +8161,7 @@ If the pragma can be implemented by attributes then the macro
 
 Preprocessor macros that appear on pragma lines are not expanded.  All
 @samp{#pragma} directives that do not match any registered pragma are
-silently ignored, unless the user specifies @samp{-Wunknown-pragmas}.
+silently ignored, unless the user specifies @option{-Wunknown-pragmas}.
 
 @deftypefun void cpp_register_pragma (cpp_reader *@var{pfile}, const char *@var{space}, const char *@var{name}, void (*@var{callback}) (cpp_reader *))
 
@@ -8405,7 +8405,7 @@ A C statement which is executed by the scheduler at the
 beginning of each block of instructions that are to be scheduled.
 @var{file} is either a null pointer, or a stdio stream to write any
 debug output to.  @var{verbose} is the verbose level provided by
-@samp{-fsched-verbose-}@var{n}.  @var{max_ready} is the maximum number
+@option{-fsched-verbose-@var{n}}.  @var{max_ready} is the maximum number
 of insns in the current scheduling region that can be live at the same
 time.  This can be used to allocate scratch space if it is needed.
 
@@ -8416,7 +8416,7 @@ of instructions that are to be scheduled.  It can be used to perform
 cleanup of any actions done by the other scheduling macros.
 @var{file} is either a null pointer, or a stdio stream to write any
 debug output to.  @var{verbose} is the verbose level provided by
-@samp{-fsched-verbose-}@var{n}.
+@option{-fsched-verbose-@var{n}}.
 
 @findex MD_SCHED_REORDER
 @item MD_SCHED_REORDER (@var{file}, @var{verbose}, @var{ready}, @var{n_ready}, @var{clock}, @var{can_issue_more})
@@ -8425,7 +8425,7 @@ has scheduled the ready list to allow the machine description to reorder
 it (for example to combine two small instructions together on
 @samp{VLIW} machines).  @var{file} is either a null pointer, or a stdio
 stream to write any debug output to.  @var{verbose} is the verbose level
-provided by @samp{-fsched-verbose-}@var{n}.  @var{ready} is a pointer to
+provided by @option{-fsched-verbose-@var{n}}.  @var{ready} is a pointer to
 the ready list of instructions that are ready to be scheduled.
 @var{n_ready} is the number of elements in the ready list.  The
 scheduler reads the ready list in reverse order, starting with
@@ -8450,11 +8450,11 @@ these other insns can then be taken into account properly.
 A C statement which is executed by the scheduler after it
 has scheduled an insn from the ready list.  @var{file} is either a null
 pointer, or a stdio stream to write any debug output to.  @var{verbose}
-is the verbose level provided by @samp{-fsched-verbose-}@var{n}.
+is the verbose level provided by @option{-fsched-verbose-@var{n}}.
 @var{insn} is the instruction that was scheduled.  @var{more} is the
 number of instructions that can be issued in the current cycle.  The
 @samp{MD_SCHED_VARIABLE_ISSUE} macro is responsible for updating the
-value of @var{more} (typically by @var{more}--).
+value of @var{more} (typically by @samp{@var{more}--}).
 
 @findex MAX_INTEGER_COMPUTATION_MODE
 @item MAX_INTEGER_COMPUTATION_MODE

@@ -1392,7 +1392,7 @@ void process_stmt (stmt)
           /* More processing here.  */
           break;
 
-        ...
+        @dots{}
         @}
 
       stmt = TREE_CHAIN (stmt);
@@ -1546,7 +1546,7 @@ evaluated, the statement should be executed.  Then, the
 This representation is used to handle C++ code like this:
 
 @example
-if (int i = 7) ...
+if (int i = 7) @dots{}
 @end example
 
 where there is a new local variable (or variables) declared within the
@@ -1568,7 +1568,7 @@ the @code{LABEL_DECL} with @code{DECL_NAME}.
 If the function uses the G++ ``named return value'' extension, meaning
 that the function has been defined like:
 @example
-S f(int) return s @{...@}
+S f(int) return s @{@dots{}@}
 @end example
 then there will be a @code{RETURN_INIT}.  There is never a named
 returned value for a constructor.  The first argument to the
@@ -1910,7 +1910,7 @@ floating-point value.  The single operand will have integral type, while
 the complete expression will have a floating-point type.
 
 FIXME: How is the operand supposed to be rounded?  Is this dependent on
--mieee?
+@option{-mieee}?
 
 @item COMPLEX_EXPR
 These nodes are used to represent complex numbers constructed from two

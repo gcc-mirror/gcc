@@ -966,7 +966,7 @@ Similarly, there is only one object for the integer whose value is
 @code{STORE_FLAG_VALUE}.  It is found in @code{const_true_rtx}.  If
 @code{STORE_FLAG_VALUE} is one, @code{const_true_rtx} and
 @code{const1_rtx} will point to the same object.  If
-@code{STORE_FLAG_VALUE} is -1, @code{const_true_rtx} and
+@code{STORE_FLAG_VALUE} is @minus{}1, @code{const_true_rtx} and
 @code{constm1_rtx} will point to the same object.@refill
 
 @findex const_double
@@ -1643,8 +1643,8 @@ in case it exists in the context of the particular insn involved.
 Inequality comparisons come in two flavors, signed and unsigned.  Thus,
 there are distinct expression codes @code{gt} and @code{gtu} for signed and
 unsigned greater-than.  These can produce different results for the same
-pair of integer values: for example, 1 is signed greater-than -1 but not
-unsigned greater-than, because -1 when regarded as unsigned is actually
+pair of integer values: for example, 1 is signed greater-than @minus{}1 but not
+unsigned greater-than, because @minus{}1 when regarded as unsigned is actually
 @code{0xffffffff} which is greater than 1.
 
 The signed comparisons are also used for floating point values.  Floating
@@ -2682,9 +2682,9 @@ each element of the @code{parallel} must be one these codes, except that
 @findex INSN_CODE
 @item INSN_CODE (@var{i})
 An integer that says which pattern in the machine description matches
-this insn, or -1 if the matching has not yet been attempted.
+this insn, or @minus{}1 if the matching has not yet been attempted.
 
-Such matching is never attempted and this field remains -1 on an insn
+Such matching is never attempted and this field remains @minus{}1 on an insn
 whose pattern consists of a single @code{use}, @code{clobber},
 @code{asm_input}, @code{addr_vec} or @code{addr_diff_vec} expression.
 

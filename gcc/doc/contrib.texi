@@ -339,7 +339,7 @@ Gary Miller ported GCC to Charles River Data Systems machines.
 @item
 Mark Mitchell for his direction via the steering committee, mountains of
 C++ work, load/store hoisting out of loops, alias analysis improvements,
-ISO "restrict" support, and serving as release manager for GCC 3.0.
+ISO C @code{restrict} support, and serving as release manager for GCC 3.0.
 
 @item
 Alan Modra for various Linux bits and testing.
