@@ -1,3 +1,34 @@
+2004-12-07  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386-protos.h (ix86_split_fp_branch): New rtx
+	argument.
+
+	* config/i386/i386.c (output_fp_compare): Fix is_sse condition.
+	Use EFLAGS_P only when fcomi insn should be used. Fix handling
+	of eflags_p variable. Change alt table accordingly. For non-fcomi
+	compare insn always use trailing fnstsw insn. Fix intmode
+	calculation for ficom insn.
+	(ix86_split_fp_branch): Add "rtx pushed" as new parameter. Call
+	ix86_free_from_memory when "pushed" is specified.
+	(ix86_expand_branch): Change call to ix86_split_fp_branch.
+
+	* config/i386/i386.md (*cmpfp_0_sf, *cmpfp_0_df, *cmpfp_0_xf):
+	Change eflags_p parameter in call to output_fp_compare.
+	(*cmpfp_2_sf, *cmpfp_2_df, *cmpfp_2_xf): Remove.
+	(*cmpfp_2_sf_1, *cmpfp_2_df_1, *cmpfp_2_xf_1): Rename to
+	*cmpfp_2_sf, *cmpfp_2_df, *cmpfp_2_xf. 	Change eflags_p
+	parameter in call to output_fp_compare.
+	(*cmpfp_2_u): Remove.
+	(*cmpfp_2_u_1): Rename to *cmpfp_2_u. Change eflags_p parameter
+	in call to output_fp_compare.
+	(*ficom_1): Remove insn definition and corresponding define_split.
+	(*cmpfp_si): New insn definition.
+	(*fp_jcc_8): New insn definition. Add new splitters for
+	"memory_operand" and "register_operand".
+	(define_split): Add new parameter in call to ix86_split_fp_branch.
+
+	config/i386/predicates.md (float_operator): New predicate.
+
 2004-12-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c (verify_tree): Don't check code length if we know

@@ -7208,25 +7208,24 @@ output_fix_trunc (rtx insn, rtx *operands)
 }
 
 /* Output code for INSN to compare OPERANDS.  EFLAGS_P is 1 when fcomi
-   should be used and 2 when fnstsw should be used.  UNORDERED_P is true
-   when fucom should be used.  */
+   should be used.  UNORDERED_P is true when fucom should be used.  */
 
 const char *
 output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
 {
   int stack_top_dies;
   rtx cmp_op0, cmp_op1;
-  int is_sse = SSE_REG_P (operands[0]) | SSE_REG_P (operands[1]);
+  int is_sse = SSE_REG_P (operands[0]) || SSE_REG_P (operands[1]);
 
-  if (eflags_p == 2)
-    {
-      cmp_op0 = operands[1];
-      cmp_op1 = operands[2];
-    }
-  else
+  if (eflags_p)
     {
       cmp_op0 = operands[0];
       cmp_op1 = operands[1];
+    }
+  else
+    {
+      cmp_op0 = operands[1];
+      cmp_op1 = operands[2];
     }
 
   if (is_sse)
@@ -7268,7 +7267,7 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
 	 is also a stack register that dies, then this must be a
 	 `fcompp' float compare */
 
-      if (eflags_p == 1)
+      if (eflags_p)
 	{
 	  /* There is no double popping fcomi variant.  Fortunately,
 	     eflags is immune from the fstp's cc clobbering.  */
@@ -7280,35 +7279,25 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
 	}
       else
 	{
-	  if (eflags_p == 2)
-	    {
-	      if (unordered_p)
-		return "fucompp\n\tfnstsw\t%0";
-	      else
-		return "fcompp\n\tfnstsw\t%0";
-	    }
+	  if (unordered_p)
+	    return "fucompp\n\tfnstsw\t%0";
 	  else
-	    {
-	      if (unordered_p)
-		return "fucompp";
-	      else
-		return "fcompp";
-	    }
+	    return "fcompp\n\tfnstsw\t%0";
 	}
     }
   else
     {
       /* Encoded here as eflags_p | intmode | unordered_p | stack_top_dies.  */
 
-      static const char * const alt[24] =
+      static const char * const alt[16] =
       {
-	"fcom%z1\t%y1",
-	"fcomp%z1\t%y1",
-	"fucom%z1\t%y1",
-	"fucomp%z1\t%y1",
+	"fcom%z2\t%y2\n\tfnstsw\t%0",
+	"fcomp%z2\t%y2\n\tfnstsw\t%0",
+	"fucom%z2\t%y2\n\tfnstsw\t%0",
+	"fucomp%z2\t%y2\n\tfnstsw\t%0",
 
-	"ficom%z1\t%y1",
-	"ficomp%z1\t%y1",
+	"ficom%z2\t%y2\n\tfnstsw\t%0",
+	"ficomp%z2\t%y2\n\tfnstsw\t%0",
 	NULL,
 	NULL,
 
@@ -7320,16 +7309,6 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
 	NULL,
 	NULL,
 	NULL,
-	NULL,
-
-	"fcom%z2\t%y2\n\tfnstsw\t%0",
-	"fcomp%z2\t%y2\n\tfnstsw\t%0",
-	"fucom%z2\t%y2\n\tfnstsw\t%0",
-	"fucomp%z2\t%y2\n\tfnstsw\t%0",
-
-	"ficom%z2\t%y2\n\tfnstsw\t%0",
-	"ficomp%z2\t%y2\n\tfnstsw\t%0",
-	NULL,
 	NULL
       };
 
@@ -7337,11 +7316,11 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
       const char *ret;
 
       mask  = eflags_p << 3;
-      mask |= (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT) << 2;
+      mask |= (GET_MODE_CLASS (GET_MODE (cmp_op1)) == MODE_INT) << 2;
       mask |= unordered_p << 1;
       mask |= stack_top_dies;
 
-      if (mask >= 24)
+      if (mask >= 16)
 	abort ();
       ret = alt[mask];
       if (ret == NULL)
@@ -8458,7 +8437,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	  {
 	    ix86_split_fp_branch (code, ix86_compare_op0, ix86_compare_op1,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
-				  pc_rtx, NULL_RTX);
+				  pc_rtx, NULL_RTX, NULL_RTX);
 	  }
 	else
 	  {
@@ -8606,7 +8585,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 /* Split branch based on floating point condition.  */
 void
 ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
-		      rtx target1, rtx target2, rtx tmp)
+		      rtx target1, rtx target2, rtx tmp, rtx pushed)
 {
   rtx second, bypass;
   rtx label = NULL_RTX;
@@ -8624,6 +8603,10 @@ ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
 
   condition = ix86_expand_fp_compare (code, op1, op2,
 				      tmp, &second, &bypass);
+
+  /* Remove pushed operand from stack.  */
+  if (pushed)
+    ix86_free_from_memory (GET_MODE (pushed));
 
   if (split_branch_probability >= 0)
     {
