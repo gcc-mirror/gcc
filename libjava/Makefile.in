@@ -742,6 +742,10 @@ gnu/java/io/ObjectIdentityWrapper.java \
 gnu/java/lang/ArrayHelper.java \
 gnu/java/lang/ClassHelper.java \
 gnu/java/lang/reflect/TypeSignature.java \
+gnu/java/locale/Calendar.java \
+gnu/java/locale/Calendar_de.java \
+gnu/java/locale/Calendar_en.java \
+gnu/java/locale/Calendar_nl.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
@@ -1256,6 +1260,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/io/ObjectIdentityWrapper.P \
 .deps/gnu/java/lang/ArrayHelper.P .deps/gnu/java/lang/ClassHelper.P \
 .deps/gnu/java/lang/reflect/TypeSignature.P \
+.deps/gnu/java/locale/Calendar.P .deps/gnu/java/locale/Calendar_de.P \
+.deps/gnu/java/locale/Calendar_en.P .deps/gnu/java/locale/Calendar_nl.P \
 .deps/gnu/java/security/provider/Gnu.P \
 .deps/gnu/java/security/provider/SHA.P \
 .deps/gnu/java/security/provider/SHA1PRNG.P .deps/interpret.P \

@@ -1,3 +1,36 @@
+2000-10-27  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am: Added locale files from Classpath.
+	* Makefile.in: Rebuilt.
+	* gnu/java/locale/Calendar.java: New file.
+	* gnu/java/locale/Calendar_de.java: New file.
+	* gnu/java/locale/Calendar_en.java: New file.
+	* gnu/java/locale/Calendar_nl.java: New file.
+	* java/lang/ClassNotFoundException.java: Replaced with Classpath file.
+	* java/math/BigDecimal.java (intVal): Renamed from 'num' for
+	serialization compatibility.
+	(scale): Made private.
+	(serialVersionUID): New field.
+	* java/math/BigInteger.java (ival): Made transient.
+	(words): Made transient.
+	(bitCount): New serialization field.
+	(bitLength): Ditto.
+	(firstNonzeroByteNum): Ditto.
+	(lowestSetBit): Ditto.
+	(magnitude): Ditto.
+	(signum): Ditto.
+	(serialVersionUID): New field.
+	(readObject): New method.
+	(writeObject): New method.
+	* java/util/BitSet.java (serialVersionUID): New field.
+	* java/util/Calendar.java: Replaced with Classpath file.
+	* java/util/GregorianCalendar.java (GregorianCalendar): Pass result
+	of getDefault() for TimeZone or Locale instead of passing nulls.
+	* java/util/Locale.java (serialVersionUID): New field.
+	(writeObject): New method.
+	(readObject): New method.
+	* java/util/SimpleTimeZone.java: Replaced with Classpath file.
+
 2000-10-25  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am (GCJCOMPILE): Pass --tag=GCJ to libtool.

@@ -174,4 +174,5 @@ public final class BitSet implements Cloneable, Serializable
 
   // The actual bits.
   private long[] bits;
+  private static final long serialVersionUID = 7997698588986878753L;
 }

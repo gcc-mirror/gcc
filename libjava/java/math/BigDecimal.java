@@ -29,8 +29,9 @@ package java.math;
 import java.math.BigInteger;
 
 public class BigDecimal extends Number implements Comparable {
-  BigInteger num;
-  int scale;
+  private BigInteger intVal;
+  private int scale;
+  private static final long serialVersionUID = 6108874887143696463L;
 
   private final static BigDecimal ZERO = 
     new BigDecimal (BigInteger.valueOf (0), 0);
@@ -56,7 +57,7 @@ public class BigDecimal extends Number implements Comparable {
   {
     if (scale < 0) 
       throw new NumberFormatException ("scale of " + scale + " is < 0");
-    this.num = num;
+    this.intVal = num;
     this.scale = scale;
   }
 
@@ -68,7 +69,7 @@ public class BigDecimal extends Number implements Comparable {
   public BigDecimal (String num) throws NumberFormatException 
   {
     int point = num.indexOf('.');
-    this.num = new BigInteger (point == -1 ? num :
+    this.intVal = new BigInteger (point == -1 ? num :
 			       num.substring (0, point) + 
 			       num.substring (point + 1));
     scale = num.length() - (point == -1 ? num.length () : point + 1);
@@ -99,8 +100,8 @@ public class BigDecimal extends Number implements Comparable {
     // For addition, need to line up decimals.  Note that the movePointRight
     // method cannot be used for this as it might return a BigDecimal with
     // scale == 0 instead of the scale we need.
-    BigInteger op1 = num;
-    BigInteger op2 = val.num;
+    BigInteger op1 = intVal;
+    BigInteger op2 = val.intVal;
     if (scale < val.scale)
       op1 = op1.multiply (BigInteger.valueOf (10).pow (val.scale - scale));
     else if (scale > val.scale)
@@ -116,7 +117,7 @@ public class BigDecimal extends Number implements Comparable {
 
   public BigDecimal multiply (BigDecimal val) 
   {
-    return new BigDecimal (num.multiply (val.num), scale + val.scale);
+    return new BigDecimal (intVal.multiply (val.intVal), scale + val.scale);
   }
 
   public BigDecimal divide (BigDecimal val, int roundingMode) 
@@ -135,13 +136,13 @@ public class BigDecimal extends Number implements Comparable {
     if (scale < 0)
       throw new ArithmeticException ("scale is negative: " + scale);
 
-    if (num.signum () == 0)	// handle special case of 0.0/0.0
+    if (intVal.signum () == 0)	// handle special case of 0.0/0.0
       return ZERO;
     
-    BigInteger dividend = num.multiply (BigInteger.valueOf (10).pow 
+    BigInteger dividend = intVal.multiply (BigInteger.valueOf (10).pow 
 					(newScale + 1 - (scale - val.scale)));
     
-    BigInteger parts[] = dividend.divideAndRemainder (val.num);
+    BigInteger parts[] = dividend.divideAndRemainder (val.intVal);
 //      System.out.println("int: " + parts[0]);
 //      System.out.println("rem: " + parts[1]);
 
@@ -194,12 +195,12 @@ public class BigDecimal extends Number implements Comparable {
   public int compareTo (BigDecimal val) 
   {
     if (scale == val.scale)
-      return num.compareTo (val.num);
+      return intVal.compareTo (val.intVal);
 
     BigInteger thisParts[] = 
-      num.divideAndRemainder (BigInteger.valueOf (10).pow (scale));
+      intVal.divideAndRemainder (BigInteger.valueOf (10).pow (scale));
     BigInteger valParts[] =
-      val.num.divideAndRemainder (BigInteger.valueOf (10).pow (val.scale));
+      val.intVal.divideAndRemainder (BigInteger.valueOf (10).pow (val.scale));
     
     int compare;
     if ((compare = thisParts[0].compareTo (valParts[0])) != 0)
@@ -263,7 +264,7 @@ public class BigDecimal extends Number implements Comparable {
 
   public BigDecimal movePointLeft (int n)
   {
-    return (n < 0) ? movePointRight (-n) : new BigDecimal (num, scale + n);
+    return (n < 0) ? movePointRight (-n) : new BigDecimal (intVal, scale + n);
   }
 
   public BigDecimal movePointRight (int n)
@@ -272,15 +273,15 @@ public class BigDecimal extends Number implements Comparable {
       return movePointLeft (-n);
 
     if (scale >= n)
-      return new BigDecimal (num, scale - n);
+      return new BigDecimal (intVal, scale - n);
 
-    return new BigDecimal (num.multiply 
+    return new BigDecimal (intVal.multiply 
 			   (BigInteger.valueOf (10).pow (n - scale)), 0);
   }
 
   public int signum () 
   {
-    return num.signum ();
+    return intVal.signum ();
   }
 
   public int scale () 
@@ -290,17 +291,17 @@ public class BigDecimal extends Number implements Comparable {
   
   public BigDecimal abs () 
   {
-    return new BigDecimal (num.abs (), scale);
+    return new BigDecimal (intVal.abs (), scale);
   }
 
   public BigDecimal negate () 
   {
-    return new BigDecimal (num.negate (), scale);
+    return new BigDecimal (intVal.negate (), scale);
   }
 
   public String toString () 
   {
-    String bigStr = num.toString();
+    String bigStr = intVal.toString();
     if (scale == 0) 
       return bigStr;
 
@@ -322,7 +323,8 @@ public class BigDecimal extends Number implements Comparable {
 
   public BigInteger toBigInteger () 
   {
-    return scale == 0 ? num : num.divide (BigInteger.valueOf (10).pow (scale));
+    return scale == 0 ? intVal :
+      intVal.divide (BigInteger.valueOf (10).pow (scale));
   }
 
 

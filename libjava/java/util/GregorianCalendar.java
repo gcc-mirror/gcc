@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -93,17 +93,17 @@ public class GregorianCalendar extends Calendar {
 
   public GregorianCalendar ()
   {
-    this(null, null);
+    this(TimeZone.getDefault (), Locale.getDefault ());
   }
 
   public GregorianCalendar (TimeZone zone)
   {
-    this (zone, null);
+    this (zone, Locale.getDefault ());
   }
 
   public GregorianCalendar (Locale locale)
   {
-    this (null, locale);
+    this (TimeZone.getDefault (), locale);
   }
 
   public GregorianCalendar (TimeZone zone, Locale locale)
