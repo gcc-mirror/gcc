@@ -1,7 +1,7 @@
 /* PR 20249 */
 
 /* { dg-do compile } */
-/* dg-options "-O2 -fprofile-arcs" } */
+/* { dg-options "-O2 -fprofile-arcs" } */
 
 extern int *g (int x, void* y);
 extern void fg (long long x, int y);
