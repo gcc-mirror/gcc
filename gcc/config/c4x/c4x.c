@@ -60,7 +60,7 @@ rtx floatunshihf2_libfunc;
 
 static int c4x_leaf_function;
 
-static char *float_reg_names[] = FLOAT_REGISTER_NAMES;
+static const char *float_reg_names[] = FLOAT_REGISTER_NAMES;
 
 /* Array of the smallest class containing reg number REGNO, indexed by
    REGNO.  Used by REGNO_REG_CLASS in c4x.h.  We assume that all these
@@ -161,6 +161,27 @@ static tree pure_tree = NULL_TREE;
 static tree noreturn_tree = NULL_TREE;
 static tree interrupt_tree = NULL_TREE;
 
+/* Forward declarations */
+static void c4x_add_gc_roots PARAMS ((void));
+static int c4x_isr_reg_used_p PARAMS ((unsigned int));
+static int c4x_leaf_function_p PARAMS ((void));
+static int c4x_assembler_function_p PARAMS ((void));
+static int c4x_immed_float_p PARAMS ((rtx));
+static int c4x_a_register PARAMS ((rtx));
+static int c4x_x_register PARAMS ((rtx));
+static int c4x_immed_int_constant PARAMS ((rtx));
+static int c4x_immed_float_constant PARAMS ((rtx));
+static int c4x_K_constant PARAMS ((rtx));
+static int c4x_N_constant PARAMS ((rtx));
+static int c4x_O_constant PARAMS ((rtx));
+static int c4x_R_indirect PARAMS ((rtx));
+static int c4x_S_indirect PARAMS ((rtx));
+static void c4x_S_address_parse PARAMS ((rtx , int *, int *, int *, int *));
+static int c4x_valid_operands PARAMS ((enum rtx_code, rtx *,
+				       enum machine_mode, int));
+static int c4x_arn_reg_operand PARAMS ((rtx, enum machine_mode, unsigned int));
+static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
+static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
 
 /* Called to register all of our global variables with the garbage
    collector.  */
@@ -374,7 +395,7 @@ c4x_output_ascii (stream, ptr, len)
 
 int
 c4x_hard_regno_mode_ok (regno, mode)
-     int regno;
+     unsigned int regno;
      enum machine_mode mode;
 {
   switch (mode)
@@ -688,7 +709,7 @@ c4x_va_arg (valist, type)
 
 static int
 c4x_isr_reg_used_p (regno)
-     int regno;
+     unsigned int regno;
 {
   /* Don't save/restore FP or ST, we handle them separately.  */
   if (regno == FRAME_POINTER_REGNUM
@@ -752,7 +773,7 @@ c4x_assembler_function_p ()
 }
 
 
-static int
+int
 c4x_interrupt_function_p ()
 {
   if (lookup_attribute ("interrupt",
@@ -769,55 +790,75 @@ c4x_interrupt_function_p ()
     && ISDIGIT (current_function_name[6]);
 }
 
-
-/* Write function prologue.  */
-
 void
-c4x_function_prologue (file, size)
-     FILE *file;
-     int size;
+c4x_expand_prologue ()
 {
-  int regno;
+  unsigned int regno;
+  int size = get_frame_size ();
+  rtx insn;
 
-/* In functions where ar3 is not used but frame pointers are still
-   specified, frame pointers are not adjusted (if >= -O2) and this is
-   used so it won't be needlessly push the frame pointer.  */
+  /* In functions where ar3 is not used but frame pointers are still
+     specified, frame pointers are not adjusted (if >= -O2) and this
+     is used so it won't needlessly push the frame pointer.  */
   int dont_push_ar3;
 
   /* For __assembler__ function don't build a prologue.  */
   if (c4x_assembler_function_p ())
     {
-      fprintf (file, "; *** Assembler Function ***\n");
       return;
     }
+  
+#ifdef FUNCTION_BLOCK_PROFILER_EXIT
+  if (profile_block_flag == 2)
+    {
+      FUNCTION_BLOCK_PROFILER_EXIT
+    }
+#endif
 
   /* For __interrupt__ function build specific prologue.  */
   if (c4x_interrupt_function_p ())
     {
       c4x_leaf_function = c4x_leaf_function_p ();
-      fprintf (file, "; *** Interrupt Entry %s ***\n",
-	       c4x_leaf_function ? "(leaf)" : "");
-
-      fprintf (file, "\tpush\tst\n");
+      
+      insn = emit_insn (gen_push_st ());
+      RTX_FRAME_RELATED_P (insn) = 1;
       if (size)
 	{
-	  fprintf (file, "\tpush\tar3\n\tldi\tsp,ar3\n");
+          insn = emit_insn (gen_pushqi ( gen_rtx_REG (QImode, AR3_REGNO)));
+          RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = emit_insn (gen_movqi (gen_rtx_REG (QImode, AR3_REGNO),
+				       gen_rtx_REG (QImode, SP_REGNO)));
+          RTX_FRAME_RELATED_P (insn) = 1;
 	  /* FIXME: Assume ISR doesn't require more than 32767 words
 	     of local variables.  */
 	  if (size > 32767)
 	    error ("ISR %s requires %d words of local variables, "
 		   "maximum is 32767.", current_function_name, size);
-	  fprintf (file, "\taddi\t%d,sp\n", size);
+	  insn = emit_insn (gen_addqi3 (gen_rtx_REG (QImode, SP_REGNO),
+				        gen_rtx_REG (QImode, SP_REGNO),
+					GEN_INT(size)));
+          RTX_FRAME_RELATED_P (insn) = 1;
 	}
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	{
 	  if (c4x_isr_reg_used_p (regno))
 	    {
-	      fprintf (file, "\tpush\t%s\n", reg_names[regno]);
-	      if (IS_EXT_REGNO (regno))	/* Save 32MSB of R0--R11.  */
-		fprintf (file, "\tpushf\t%s\n",
-			 TARGET_TI ? reg_names[regno]
-				   : float_reg_names[regno]);
+	      if (regno == DP_REGNO)
+		{
+		  insn = emit_insn (gen_push_dp ());
+                  RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      else
+		{
+                  insn = emit_insn (gen_pushqi (gen_rtx_REG (QImode, regno)));
+                  RTX_FRAME_RELATED_P (insn) = 1;
+		  if (IS_EXT_REGNO (regno))
+		    {
+                      insn = emit_insn (gen_pushqf
+					(gen_rtx_REG (QFmode, regno)));
+                      RTX_FRAME_RELATED_P (insn) = 1;
+		    }
+		}
 	    }
 	}
       /* We need to clear the repeat mode flag if the ISR is
@@ -826,14 +867,20 @@ c4x_function_prologue (file, size)
       if (regs_ever_live[RC_REGNO] 
 	  || regs_ever_live[RS_REGNO] 
 	  || regs_ever_live[RE_REGNO])
-	fprintf (file, "\tandn\t0100h,st\n");
+	{
+          insn = emit_insn (gen_andn_st (GEN_INT(~0x100)));
+          RTX_FRAME_RELATED_P (insn) = 1;
+	}
 
       /* Reload DP reg if we are paranoid about some turkey
          violating small memory model rules.  */
       if (TARGET_SMALL && TARGET_PARANOID)
-	fprintf (file, TARGET_C3X ?
-		 "\tldp\t@data_sec\n" :
-		 "\tldpk\t@data_sec\n");
+	{
+          insn = emit_insn (gen_set_ldp_prologue
+			    (gen_rtx_REG (QImode, DP_REGNO),
+			     gen_rtx_SYMBOL_REF (QImode, "data_sec")));
+          RTX_FRAME_RELATED_P (insn) = 1;
+	}
     }
   else
     {
@@ -843,8 +890,11 @@ c4x_function_prologue (file, size)
 	      || (current_function_args_size != 0)
 	      || (optimize < 2))
 	    {
-	      fprintf (file, "\tpush\tar3\n");
-	      fprintf (file, "\tldi\tsp,ar3\n");
+              insn = emit_insn (gen_pushqi ( gen_rtx_REG (QImode, AR3_REGNO)));
+              RTX_FRAME_RELATED_P (insn) = 1;
+	      insn = emit_insn (gen_movqi (gen_rtx_REG (QImode, AR3_REGNO),
+				           gen_rtx_REG (QImode, SP_REGNO)));
+              RTX_FRAME_RELATED_P (insn) = 1;
 	      dont_push_ar3 = 1;
 	    }
 	  else
@@ -865,28 +915,46 @@ c4x_function_prologue (file, size)
 	      size += 1;
 	    }
 	}
-
+      
       if (size > 32767)
 	{
 	  /* Local vars are too big, it will take multiple operations
 	     to increment SP.  */
 	  if (TARGET_C3X)
 	    {
-	      fprintf (file, "\tldi\t%d,r1\n", size >> 16);
-	      fprintf (file, "\tlsh\t16,r1\n");
+	      insn = emit_insn (gen_movqi (gen_rtx_REG (QImode, R1_REGNO),
+					   GEN_INT(size >> 16)));
+              RTX_FRAME_RELATED_P (insn) = 1;
+	      insn = emit_insn (gen_lshrqi3 (gen_rtx_REG (QImode, R1_REGNO),
+					     gen_rtx_REG (QImode, R1_REGNO),
+					     GEN_INT(-16)));
+              RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
-	    fprintf (file, "\tldhi\t%d,r1\n", size >> 16);
-	  fprintf (file, "\tor\t%d,r1\n", size & 0xffff);
-	  fprintf (file, "\taddi\tr1,sp\n");
+	    {
+	      insn = emit_insn (gen_movqi (gen_rtx_REG (QImode, R1_REGNO),
+					   GEN_INT(size & ~0xffff)));
+              RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+	  insn = emit_insn (gen_iorqi3 (gen_rtx_REG (QImode, R1_REGNO),
+				        gen_rtx_REG (QImode, R1_REGNO),
+					GEN_INT(size & 0xffff)));
+          RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = emit_insn (gen_addqi3 (gen_rtx_REG (QImode, SP_REGNO),
+				        gen_rtx_REG (QImode, SP_REGNO),
+				        gen_rtx_REG (QImode, R1_REGNO)));
+          RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else if (size != 0)
 	{
 	  /* Local vars take up less than 32767 words, so we can directly
 	     add the number.  */
-	  fprintf (file, "\taddi\t%d,sp\n", size);
+	  insn = emit_insn (gen_addqi3 (gen_rtx_REG (QImode, SP_REGNO),
+				        gen_rtx_REG (QImode, SP_REGNO),
+				        GEN_INT (size)));
+          RTX_FRAME_RELATED_P (insn) = 1;
 	}
-
+      
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	{
 	  if (regs_ever_live[regno] && ! call_used_regs[regno])
@@ -895,14 +963,18 @@ c4x_function_prologue (file, size)
 		{
 		  /* R6 and R7 are saved as floating point.  */
 		  if (TARGET_PRESERVE_FLOAT)
-		    fprintf (file, "\tpush\t%s\n", reg_names[regno]);
-		  fprintf (file, "\tpushf\t%s\n",
-			   TARGET_TI ? reg_names[regno]
-				     : float_reg_names[regno]);
+		    {
+                      insn = emit_insn (gen_pushqi
+					(gen_rtx_REG (QImode, regno)));
+		      RTX_FRAME_RELATED_P (insn) = 1;
+		    }
+                  insn = emit_insn (gen_pushqf (gen_rtx_REG (QFmode, regno)));
+		  RTX_FRAME_RELATED_P (insn) = 1;
 		}
 	      else if ((! dont_push_ar3) || (regno != AR3_REGNO))
 		{
-		  fprintf (file, "\tpush\t%s\n", reg_names[regno]);
+                  insn = emit_insn (gen_pushqi ( gen_rtx_REG (QImode, regno)));
+		  RTX_FRAME_RELATED_P (insn) = 1;
 		}
 	    }
 	}
@@ -910,39 +982,22 @@ c4x_function_prologue (file, size)
 }
 
 
-/* Write function epilogue.  */
-
 void
-c4x_function_epilogue (file, size)
-     FILE *file;
-     int size;
+c4x_expand_epilogue()
 {
   int regno;
-  int restore_count = 0;
-  int delayed_jump = 0;
+  int jump = 0;
   int dont_pop_ar3;
   rtx insn;
-
-  insn = get_last_insn ();
-  if (insn && GET_CODE (insn) == NOTE)
-    insn = prev_nonnote_insn (insn);
-
-  if (insn && GET_CODE (insn) == BARRIER)
-    return;
-
+  int size = get_frame_size ();
+  
   /* For __assembler__ function build no epilogue.  */
   if (c4x_assembler_function_p ())
     {
-      fprintf (file, "\trets\n");	/* Play it safe.  */
+      insn = emit_jump_insn (gen_return_from_epilogue ());
+      RTX_FRAME_RELATED_P (insn) = 1;
       return;
     }
-
-#ifdef FUNCTION_BLOCK_PROFILER_EXIT
-  if (profile_block_flag == 2)
-    {
-      FUNCTION_BLOCK_PROFILER_EXIT (file);
-    }
-#endif
 
   /* For __interrupt__ function build specific epilogue.  */
   if (c4x_interrupt_function_p ())
@@ -951,19 +1006,39 @@ c4x_function_epilogue (file, size)
 	{
 	  if (! c4x_isr_reg_used_p (regno))
 	    continue;
-	  if (IS_EXT_REGNO (regno))
-	    fprintf (file, "\tpopf\t%s\n",
-		     TARGET_TI ? reg_names[regno]
-			       : float_reg_names[regno]);
-	  fprintf (file, "\tpop\t%s\n", reg_names[regno]);
+	  if (regno == DP_REGNO)
+	    {
+	      insn = emit_insn (gen_pop_dp ());
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+	  else
+	    {
+	      /* We have to use unspec because the compiler will delete insns
+	         that are not call-saved.  */
+	      if (IS_EXT_REGNO (regno))
+		{
+                  insn = emit_insn (gen_popqf_unspec
+				    (gen_rtx_REG (QFmode, regno)));
+	          RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      insn = emit_insn (gen_popqi_unspec (gen_rtx_REG (QImode, regno)));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
 	}
       if (size)
 	{
-	  fprintf (file, "\tsubi\t%d,sp\n", size);
-	  fprintf (file, "\tpop\tar3\n");
+	  insn = emit_insn (gen_subqi3 (gen_rtx_REG (QImode, SP_REGNO),
+				        gen_rtx_REG (QImode, SP_REGNO),
+					GEN_INT(size)));
+          RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = emit_insn (gen_popqi
+			    (gen_rtx_REG (QImode, AR3_REGNO)));
+          RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      fprintf (file, "\tpop\tst\n");
-      fprintf (file, "\treti\n");
+      insn = emit_insn (gen_pop_st ());
+      RTX_FRAME_RELATED_P (insn) = 1;
+      insn = emit_jump_insn (gen_return_from_interrupt_epilogue ());
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
     {
@@ -973,14 +1048,19 @@ c4x_function_epilogue (file, size)
 	      || (current_function_args_size != 0) 
 	      || (optimize < 2))
 	    {
-	      /* R2 holds the return value.  */
-	      fprintf (file, "\tldi\t*-ar3(1),r2\n");
-
+	      insn = emit_insn
+		(gen_movqi (gen_rtx_REG (QImode, R2_REGNO),
+			    gen_rtx_MEM (QImode,
+					 gen_rtx_PLUS 
+					 (QImode, gen_rtx_REG (QImode,
+							       AR3_REGNO),
+					  GEN_INT(-1)))));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      
 	      /* We already have the return value and the fp,
 	         so we need to add those to the stack.  */
 	      size += 2;
-	      delayed_jump = 1;
-	      restore_count = 1;
+	      jump = 1;
 	      dont_pop_ar3 = 1;
 	    }
 	  else
@@ -1001,41 +1081,7 @@ c4x_function_epilogue (file, size)
 	      size += 1;
 	    }
 	}
-
-      /* Now get the number of instructions required to restore the
-         registers.  */
-      for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
-	{
-	  if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	      && ((! dont_pop_ar3) || (regno != AR3_REGNO)))
-	    {
-	      restore_count++;
-	      if (TARGET_PRESERVE_FLOAT
-		  && ((regno == R6_REGNO) || (regno == R7_REGNO)))
-	        restore_count++;
-	    }
-	}
-
-      /* Get the number of instructions required to restore the stack.  */
-      if (size > 32767)
-	restore_count += (TARGET_C3X ? 4 : 3);
-      else if (size != 0)
-	restore_count += 1;
-
-      if (delayed_jump && (restore_count < 3))
-	{
-	  /* We don't have enough instructions to account for the delayed
-	     branch, so put some nops in.  */
-
-	  fprintf (file, "\tbud\tr2\n");
-	  while (restore_count < 3)
-	    {
-	      fprintf (file, "\tnop\n");
-	      restore_count++;
-	    }
-	  restore_count = 0;
-	}
-
+      
       /* Now restore the saved registers, putting in the delayed branch
          where required.  */
       for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
@@ -1044,33 +1090,28 @@ c4x_function_epilogue (file, size)
 	    {
 	      if (regno == AR3_REGNO && dont_pop_ar3)
 		continue;
-
-	      if (delayed_jump && (restore_count == 3))
-		fprintf (file, "\tbud\tr2\n");
-
+	      
 	      /* R6 and R7 are saved as floating point.  */
 	      if ((regno == R6_REGNO) || (regno == R7_REGNO))
 		{
-		  fprintf (file, "\tpopf\t%s\n",
-		           TARGET_TI ? reg_names[regno]
-			             : float_reg_names[regno]);
+		  insn = emit_insn (gen_popqf_unspec
+				    (gen_rtx_REG (QFmode, regno)));
+		  RTX_FRAME_RELATED_P (insn) = 1;
 		  if (TARGET_PRESERVE_FLOAT)
 		    {
-	              restore_count--;
-	              if (delayed_jump && (restore_count == 3))
-		        fprintf (file, "\tbud\tr2\n");
-		      fprintf (file, "\tpop\t%s\n", reg_names[regno]);
+                      insn = emit_insn (gen_popqi_unspec
+					(gen_rtx_REG (QImode, regno)));
+		      RTX_FRAME_RELATED_P (insn) = 1;
 		    }
 		}
 	      else
-		fprintf (file, "\tpop\t%s\n", reg_names[regno]);
-	      restore_count--;
+		{
+		  insn = emit_insn (gen_popqi (gen_rtx_REG (QImode, regno)));
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		}
 	    }
 	}
-
-      if (delayed_jump && (restore_count == 3))
-	fprintf (file, "\tbud\tr2\n");
-
+      
       if (frame_pointer_needed)
 	{
 	  if ((size != 0)
@@ -1078,41 +1119,68 @@ c4x_function_epilogue (file, size)
 	      || (optimize < 2))
 	    {
 	      /* Restore the old FP.  */
-	      fprintf (file, "\tldi\t*ar3,ar3\n");
-	      restore_count--;
-
-	      if (delayed_jump && (restore_count == 3))
-		fprintf (file, "\tbud\tr2\n");
+	      insn = emit_insn 
+		(gen_movqi 
+		 (gen_rtx_REG (QImode, AR3_REGNO),
+		  gen_rtx_MEM (QImode, gen_rtx_REG (QImode, AR3_REGNO))));
+	      
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	}
-
+      
       if (size > 32767)
 	{
 	  /* Local vars are too big, it will take multiple operations
 	     to decrement SP.  */
 	  if (TARGET_C3X)
 	    {
-	      fprintf (file, "\tldi\t%d,r3\n", size >> 16);
-	      if (delayed_jump)
-		fprintf (file, "\tbud\tr2\n");
-	      fprintf (file, "\tlsh\t16,r3\n");
+	      insn = emit_insn (gen_movqi (gen_rtx_REG (QImode, R3_REGNO),
+					   GEN_INT(size >> 16)));
+              RTX_FRAME_RELATED_P (insn) = 1;
+	      insn = emit_insn (gen_lshrqi3 (gen_rtx_REG (QImode, R3_REGNO),
+					     gen_rtx_REG (QImode, R3_REGNO),
+					     GEN_INT(-16)));
+              RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
-	    fprintf (file, "\tldhi\t%d,r3\n", size >> 16);
-	  fprintf (file, "\tor\t%d,r3\n", size & 0xffff);
-	  fprintf (file, "\tsubi\tr3,sp\n");
+	    {
+	      insn = emit_insn (gen_movqi (gen_rtx_REG (QImode, R3_REGNO),
+					   GEN_INT(size & ~0xffff)));
+              RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+	  insn = emit_insn (gen_iorqi3 (gen_rtx_REG (QImode, R3_REGNO),
+				        gen_rtx_REG (QImode, R3_REGNO),
+					GEN_INT(size & 0xffff)));
+          RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = emit_insn (gen_subqi3 (gen_rtx_REG (QImode, SP_REGNO),
+				        gen_rtx_REG (QImode, SP_REGNO),
+				        gen_rtx_REG (QImode, R3_REGNO)));
+          RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else if (size != 0)
 	{
 	  /* Local vars take up less than 32768 words, so we can directly
 	     subtract the number.  */
-	  fprintf (file, "\tsubi\t%d,sp\n", size);
+	  insn = emit_insn (gen_subqi3 (gen_rtx_REG (QImode, SP_REGNO),
+				        gen_rtx_REG (QImode, SP_REGNO),
+				        GEN_INT(size)));
+          RTX_FRAME_RELATED_P (insn) = 1;
 	}
-
-      if (! delayed_jump)
-	fprintf (file, "\trets\n");
+      
+      if (jump)
+	{
+	  insn = emit_insn (gen_indirect_jump (
+					       gen_rtx_REG (QImode, R2_REGNO)));
+          RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      else
+	{
+          insn = emit_jump_insn (gen_return_from_epilogue ());
+          RTX_FRAME_RELATED_P (insn) = 1;
+	}
     }
 }
+
 
 int
 c4x_null_epilogue_p ()
@@ -1136,6 +1204,7 @@ c4x_null_epilogue_p ()
     }
   return 0;
 }
+
 
 int
 c4x_emit_move_sequence (operands, mode)
@@ -1259,6 +1328,42 @@ c4x_emit_move_sequence (operands, mode)
       return 1;
     }
 
+  if (mode == QImode
+      && reg_operand (op0, mode)
+      && const_int_operand (op1, mode)
+      && ! IS_INT16_CONST (INTVAL (op1))
+      && ! IS_HIGH_CONST (INTVAL (op1)))
+    {
+      emit_insn (gen_loadqi_big_constant (op0, op1));
+      return 1;
+    }
+
+  if (mode == HImode
+      && reg_operand (op0, mode)
+      && const_int_operand (op1, mode))
+    {
+      emit_insn (gen_loadhi_big_constant (op0, op1));
+      return 1;
+    }
+
+  if (mode == QImode
+      && reg_operand (op0, mode)
+      && const_int_operand (op1, mode)
+      && ! IS_INT16_CONST (INTVAL (op1))
+      && ! IS_HIGH_CONST (INTVAL (op1)))
+    {
+      emit_insn (gen_loadqi_big_constant (op0, op1));
+      return 1;
+    }
+
+  if (mode == HImode
+      && reg_operand (op0, mode)
+      && const_int_operand (op1, mode))
+    {
+      emit_insn (gen_loadhi_big_constant (op0, op1));
+      return 1;
+    }
+
   /* Adjust operands in case we have modified them.  */
   operands[0] = op0;
   operands[1] = op1;
@@ -1313,7 +1418,7 @@ c4x_emit_libcall3 (libcall, code, mode, operands)
      enum machine_mode mode;
      rtx *operands;
 {
-  return c4x_emit_libcall (libcall, code, mode, mode, 3, operands);
+  c4x_emit_libcall (libcall, code, mode, mode, 3, operands);
 }
 
 
@@ -1738,7 +1843,7 @@ c4x_gen_compare_reg (code, x, y)
 
 char *
 c4x_output_cbranch (form, seq)
-     char *form;
+     const char *form;
      rtx seq;
 {
   int delayed = 0;
@@ -3684,7 +3789,7 @@ static int
 c4x_valid_operands (code, operands, mode, force)
      enum rtx_code code;
      rtx *operands;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      int force;
 {
   rtx op1;
@@ -3716,9 +3821,9 @@ c4x_valid_operands (code, operands, mode, force)
 
   if (code1 == MEM && code2 == MEM)
     {
-      if (c4x_S_indirect (op1, mode) && c4x_S_indirect (op2, mode))
+      if (c4x_S_indirect (op1) && c4x_S_indirect (op2))
 	return 1;
-      return c4x_R_indirect (op1, mode) && c4x_R_indirect (op2, mode);
+      return c4x_R_indirect (op1) && c4x_R_indirect (op2);
     }
 
   if (code1 == code2)
@@ -3972,7 +4077,7 @@ static int
 c4x_arn_reg_operand (op, mode, regno)
      rtx op;
      enum machine_mode mode;
-     int regno;
+     unsigned int regno;
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -3986,7 +4091,7 @@ static int
 c4x_arn_mem_operand (op, mode, regno)
      rtx op;
      enum machine_mode mode;
-     int regno;
+     unsigned int regno;
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -4523,7 +4628,7 @@ c4x_file_end (fp)
 
 static void
 c4x_check_attribute (attrib, list, decl, attributes)
-     char *attrib;
+     const char *attrib;
      tree list, decl, *attributes;
 {
   while (list != NULL_TREE

@@ -1133,6 +1133,23 @@
 
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))
+   (clobber (reg:QI 16))]
+  "! TARGET_C3X
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && ! IS_HIGH_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && std_reg_operand (operands[0], QImode)"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0) (ior:QI (match_dup 0) (match_dup 3)))]
+  "
+{
+   operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & ~0xffff);
+   operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
 	(match_operand:QI 1 "const_int_operand" ""))]
   "! TARGET_C3X
    && ! IS_INT16_CONST (INTVAL (operands[1]))
@@ -1145,6 +1162,28 @@
 {
    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & ~0xffff);
    operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))
+   (clobber (reg:QI 16))]
+  "TARGET_C3X && ! TARGET_SMALL
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && std_reg_operand (operands[0], QImode)
+   && c4x_shiftable_constant (operands[1]) < 0"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0) (ashift:QI (match_dup 0) (match_dup 4)))
+   (set (match_dup 0) (ior:QI (match_dup 0) (match_dup 3)))]
+  "
+{
+   /* Generate two's complement value of 16 MSBs.  */
+   operands[2] = gen_rtx (CONST_INT, VOIDmode,
+			  (((INTVAL (operands[1]) >> 16) & 0xffff)
+			   - 0x8000) ^ ~0x7fff);
+   operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
+   operands[4] = gen_rtx (CONST_INT, VOIDmode, 16);
 }")
 
 (define_split
@@ -1170,6 +1209,28 @@
 
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))
+   (clobber (reg:QI 16))]
+  "TARGET_C3X
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && std_reg_operand (operands[0], QImode)
+   && c4x_shiftable_constant (operands[1]) >= 0"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0) (ashift:QI (match_dup 0) (match_dup 3)))]
+  "
+{
+   /* Generate two's complement value of MSBs.  */
+   int shift = c4x_shiftable_constant (operands[1]);
+
+   operands[2] = gen_rtx (CONST_INT, VOIDmode,
+			  (((INTVAL (operands[1]) >> shift) & 0xffff)
+			   - 0x8000) ^ ~0x7fff);
+   operands[3] = gen_rtx (CONST_INT, VOIDmode, shift);
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
 	(match_operand:QI 1 "const_int_operand" ""))]
   "TARGET_C3X
    && ! IS_INT16_CONST (INTVAL (operands[1]))
@@ -1187,6 +1248,29 @@
 			  (((INTVAL (operands[1]) >> shift) & 0xffff)
 			   - 0x8000) ^ ~0x7fff);
    operands[3] = gen_rtx (CONST_INT, VOIDmode, shift);
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))
+   (clobber (reg:QI 16))]
+  "! TARGET_SMALL
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && ! IS_HIGH_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && ! std_reg_operand (operands[0], QImode)"
+  [(set (match_dup 2) (high:QI (match_dup 3)))
+   (set (match_dup 0) (match_dup 4))
+   (use (match_dup 1))]
+  "
+{
+   rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
+   operands[2] = dp_reg;
+   operands[3] = force_const_mem (Pmode, operands[1]);
+   operands[4] = change_address (operands[3], QImode,
+			         gen_rtx_LO_SUM (Pmode, dp_reg,
+                                                 XEXP (operands[3], 0)));
+   operands[3] = XEXP (operands[3], 0);
 }")
 
 (define_split
@@ -1213,6 +1297,27 @@
 
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))
+   (clobber (reg:QI 16))]
+  "TARGET_SMALL
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && ! IS_HIGH_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && ((TARGET_C3X && c4x_shiftable_constant (operands[1]) < 0)
+       || ! std_reg_operand (operands[0], QImode))"
+  [(set (match_dup 0) (match_dup 2))
+   (use (match_dup 1))]
+  "
+{
+   rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
+   operands[2] = force_const_mem (Pmode, operands[1]);
+   operands[2] = change_address (operands[2], QImode,
+			         gen_rtx_LO_SUM (Pmode, dp_reg,
+                                                 XEXP (operands[2], 0)));
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
 	(match_operand:QI 1 "const_int_operand" ""))]
   "TARGET_SMALL
    && ! IS_INT16_CONST (INTVAL (operands[1]))
@@ -1233,7 +1338,8 @@
 
 (define_split
   [(set (match_operand:HI 0 "reg_operand" "")
-	(match_operand:HI 1 "const_int_operand" ""))]
+	(match_operand:HI 1 "const_int_operand" ""))
+   (clobber (reg:QI 16))]
   "reload_completed"
   [(set (match_dup 2) (match_dup 4))
    (set (match_dup 3) (match_dup 5))]
@@ -1315,7 +1421,8 @@
 
 (define_insn "loadhi_big_constant"
   [(set (match_operand:HI 0 "reg_operand" "=c*d")
-        (match_operand:HI 1 "const_int_operand" ""))]
+        (match_operand:HI 1 "const_int_operand" ""))
+   (clobber (reg:QI 16))]
   ""
   "#"
   [(set_attr "type" "multi")])
@@ -1336,7 +1443,8 @@
 
 (define_insn "loadqi_big_constant"
   [(set (match_operand:QI 0 "reg_operand" "=c*d")
-        (match_operand:QI 1 "const_int_operand" ""))]
+        (match_operand:QI 1 "const_int_operand" ""))
+   (clobber (reg:QI 16))]
   "! IS_INT16_CONST (INTVAL (operands[1]))
    && ! IS_HIGH_CONST (INTVAL (operands[1]))"
   "#"
