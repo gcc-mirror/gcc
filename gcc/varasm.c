@@ -4141,7 +4141,7 @@ initializer_constant_valid_p (value, endtype)
 	  return valid0;
 	/* Win if both arguments have the same relocation.
 	   Then the value is absolute.  */
-	if (valid0 == valid1)
+	if (valid0 == valid1 && valid0 != 0)
 	  return null_pointer_node;
 	return 0;
       }
