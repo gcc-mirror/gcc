@@ -167,7 +167,7 @@ static void clear_by_pieces_1	PROTO((rtx (*) (), enum machine_mode,
 				       struct clear_by_pieces *));
 static int is_zeros_p		PROTO((tree));
 static int mostly_zeros_p	PROTO((tree));
-static void store_constructor	PROTO((tree, rtx));
+static void store_constructor	PROTO((tree, rtx, int));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int, int));
 static int get_inner_unaligned_p PROTO((tree));
@@ -3212,6 +3212,8 @@ is_zeros_p (exp)
       return REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst0);
 
     case CONSTRUCTOR:
+      if (TREE_TYPE (exp) && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
+	return CONSTRUCTOR_ELTS (exp) == NULL_TREE;
       for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
 	if (! is_zeros_p (TREE_VALUE (elt)))
 	  return 0;
@@ -3228,14 +3230,26 @@ static int
 mostly_zeros_p (exp)
      tree exp;
 {
-  tree elt;
-  int elts = 0, zeros = 0;
-
   if (TREE_CODE (exp) == CONSTRUCTOR)
     {
-      for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt), elts++)
-	if (mostly_zeros_p (TREE_VALUE (elt)))
-	  zeros++;
+      int elts = 0, zeros = 0;
+      tree elt = CONSTRUCTOR_ELTS (exp);
+      if (TREE_TYPE (exp) && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
+	{
+	  /* If there are no ranges of true bits, it is all zero.  */
+	  return elt == NULL_TREE;
+	}
+      for (; elt; elt = TREE_CHAIN (elt))
+	{
+	  /* We do not handle the case where the index is a RANGE_EXPR,
+	     so the statistic will be somewhat inaccurate.
+	     We do make a more accurate count in store_constructor itself,
+	     so since this function is only used for nested array elements,
+	     this should be close enough. */
+	  if (mostly_zeros_p (TREE_VALUE (elt)))
+	    zeros++;
+	  elts++;
+	}
 
       return 4 * zeros >= 3 * elts;
     }
@@ -3243,13 +3257,45 @@ mostly_zeros_p (exp)
   return is_zeros_p (exp);
 }
 
-/* Store the value of constructor EXP into the rtx TARGET.
-   TARGET is either a REG or a MEM.  */
+/* Helper function for store_constructor.
+   TARGET, BITSIZE, BITPOS, MODE, EXP are as for store_field.
+   TYPE is the type of the CONSTRUCTOR, not the element type.
+   CLEARED is as for store_constructor.  */
 
 static void
-store_constructor (exp, target)
+store_constructor_field (target, bitsize, bitpos,
+			 mode, exp, type, cleared)
+     rtx target;
+     int bitsize, bitpos;
+     enum machine_mode mode;
+     tree exp, type;
+     int cleared;
+{
+  if (TREE_CODE (exp) == CONSTRUCTOR
+      && (bitpos % BITS_PER_UNIT) == 0)
+    {
+      bitpos /= BITS_PER_UNIT;
+      store_constructor (exp,
+			 change_address (target, VOIDmode,
+					 plus_constant (XEXP (target, 0),
+							bitpos)),
+			 cleared);
+    }
+  else
+    store_field (target, bitsize, bitpos, mode, exp,
+		 VOIDmode, 0, TYPE_ALIGN (type) / BITS_PER_UNIT,
+		 int_size_in_bytes (type));
+}
+
+/* Store the value of constructor EXP into the rtx TARGET.
+   TARGET is either a REG or a MEM.
+   CLEARED is true if TARGET is known to have been zero'd. */
+
+static void
+store_constructor (exp, target, cleared)
      tree exp;
      rtx target;
+     int cleared;
 {
   tree type = TREE_TYPE (exp);
 
@@ -3261,7 +3307,7 @@ store_constructor (exp, target)
   if (GET_CODE (target) == REG && REGNO (target) < FIRST_PSEUDO_REGISTER)
     {
       rtx temp = gen_reg_rtx (GET_MODE (target));
-      store_constructor (exp, temp);
+      store_constructor (exp, temp, 0);
       emit_move_insn (target, temp);
       return;
     }
@@ -3271,7 +3317,6 @@ store_constructor (exp, target)
       || TREE_CODE (type) == QUAL_UNION_TYPE)
     {
       register tree elt;
-      int cleared = CONSTRUCTOR_TARGET_CLEARED_P (exp);
 
       /* Inform later passes that the whole union value is dead.  */
       if (TREE_CODE (type) == UNION_TYPE
@@ -3327,14 +3372,8 @@ store_constructor (exp, target)
 	  if (field == 0)
 	    continue;
 
-	  if (cleared)
-	    {
-	      if (is_zeros_p (TREE_VALUE (elt)))
-		continue;
-
-	      else if (TREE_CODE (TREE_VALUE (elt)) == CONSTRUCTOR)
-		CONSTRUCTOR_TARGET_CLEARED_P (TREE_VALUE (elt)) = cleared;
-	    }
+	  if (cleared && is_zeros_p (TREE_VALUE (elt)))
+	    continue;
 
 	  bitsize = TREE_INT_CST_LOW (DECL_SIZE (field));
 	  unsignedp = TREE_UNSIGNED (field);
@@ -3374,7 +3413,6 @@ store_constructor (exp, target)
 				  gen_rtx (PLUS, ptr_mode, XEXP (to_rtx, 0),
 					   force_reg (ptr_mode, offset_rtx)));
 	    }
-
 	  if (TREE_READONLY (field))
 	    {
 	      if (GET_CODE (to_rtx) == MEM)
@@ -3383,39 +3421,65 @@ store_constructor (exp, target)
 	      RTX_UNCHANGING_P (to_rtx) = 1;
 	    }
 
-	  store_field (to_rtx, bitsize, bitpos, mode, TREE_VALUE (elt),
-		       /* The alignment of TARGET is
-			  at least what its type requires.  */
-		       VOIDmode, 0,
-		       TYPE_ALIGN (type) / BITS_PER_UNIT,
-		       int_size_in_bytes (type));
-
-	  if (TREE_CODE (TREE_VALUE (elt)) == CONSTRUCTOR)
-	    CONSTRUCTOR_TARGET_CLEARED_P (TREE_VALUE (elt)) = 0;
+	  store_constructor_field (to_rtx, bitsize, bitpos,
+				   mode, TREE_VALUE (elt), type, cleared);
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
       register tree elt;
       register int i;
+      int need_to_clear;
       tree domain = TYPE_DOMAIN (type);
       HOST_WIDE_INT minelt = TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain));
       HOST_WIDE_INT maxelt = TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain));
       tree elttype = TREE_TYPE (type);
-      int cleared = CONSTRUCTOR_TARGET_CLEARED_P (exp);
 
-      /* If the constructor has fewer fields than the structure,
-	 clear the whole structure first.  Similarly if this this is
-	 static constructor of a non-BLKmode object.  */
-
-      if (list_length (CONSTRUCTOR_ELTS (exp)) < maxelt - minelt + 1
-	  || mostly_zeros_p (exp)
-	  || (GET_CODE (target) == REG && TREE_STATIC (exp)))
+      /* If the constructor has fewer elements than the array,
+         clear the whole array first.  Similarly if this this is
+         static constructor of a non-BLKmode object.  */
+      if (cleared || (GET_CODE (target) == REG && TREE_STATIC (exp)))
+	need_to_clear = 1;
+      else
+	{
+	  HOST_WIDE_INT count = 0, zero_count = 0;
+	  need_to_clear = 0;
+	  /* This loop is a more accurate version of the loop in
+	     mostly_zeros_p (it handles RANGE_EXPR in an index).
+	     It is also needed to check for missing elements.  */
+	  for (elt = CONSTRUCTOR_ELTS (exp);
+	       elt != NULL_TREE;
+	       elt = TREE_CHAIN (elt), i++)
+	    {
+	      tree index = TREE_PURPOSE (elt);
+	      HOST_WIDE_INT this_node_count;
+	      if (index != NULL_TREE && TREE_CODE (index) == RANGE_EXPR)
+		{
+		  tree lo_index = TREE_OPERAND (index, 0);
+		  tree hi_index = TREE_OPERAND (index, 1);
+		  if (TREE_CODE (lo_index) != INTEGER_CST
+		      || TREE_CODE (hi_index) != INTEGER_CST)
+		    {
+		      need_to_clear = 1;
+		      break;
+		    }
+		  this_node_count = TREE_INT_CST_LOW (hi_index)
+		    - TREE_INT_CST_LOW (lo_index) + 1;
+		}
+	      else
+		this_node_count = 1;
+	      count += this_node_count;
+	      if (mostly_zeros_p (TREE_VALUE (elt)))
+		zero_count += this_node_count;
+	    }
+	  if (4 * zero_count >= 3 * count)
+	    need_to_clear = 1;
+	}
+      if (need_to_clear)
 	{
 	  if (! cleared)
 	    clear_storage (target, expr_size (exp),
 			   TYPE_ALIGN (type) / BITS_PER_UNIT);
-
 	  cleared = 1;
 	}
       else
@@ -3433,38 +3497,123 @@ store_constructor (exp, target)
 	  int bitsize;
 	  int bitpos;
 	  int unsignedp;
+	  tree value = TREE_VALUE (elt);
 	  tree index = TREE_PURPOSE (elt);
 	  rtx xtarget = target;
 
-	  if (cleared)
-	    {
-	      if (is_zeros_p (TREE_VALUE (elt)))
-		continue;
-
-	      else if (TREE_CODE (TREE_VALUE (elt)) == CONSTRUCTOR)
-		CONSTRUCTOR_TARGET_CLEARED_P (TREE_VALUE (elt)) = cleared;
-	    }
+	  if (cleared && is_zeros_p (value))
+	    continue;
 
 	  mode = TYPE_MODE (elttype);
 	  bitsize = GET_MODE_BITSIZE (mode);
 	  unsignedp = TREE_UNSIGNED (elttype);
 
-	  if ((index != 0 && TREE_CODE (index) != INTEGER_CST)
+	  if (index != NULL_TREE && TREE_CODE (index) == RANGE_EXPR)
+	    {
+	      tree lo_index = TREE_OPERAND (index, 0);
+	      tree hi_index = TREE_OPERAND (index, 1);
+	      rtx index_r, pos_rtx, addr, hi_r, loop_top, loop_end;
+	      struct nesting *loop;
+		tree position;
+
+	      if (TREE_CODE (lo_index) == INTEGER_CST
+		  && TREE_CODE (hi_index) == INTEGER_CST)
+		{
+		  HOST_WIDE_INT lo = TREE_INT_CST_LOW (lo_index);
+		  HOST_WIDE_INT hi = TREE_INT_CST_LOW (hi_index);
+		  HOST_WIDE_INT count = hi - lo + 1;
+
+		  /* If the range is constant and "small", unroll the loop.
+		     We must also use store_field if the target is not MEM. */
+		  if (GET_CODE (target) != MEM
+		      || count <= 2
+		      || (TREE_CODE (TYPE_SIZE (elttype)) == INTEGER_CST
+			  && TREE_INT_CST_LOW (TYPE_SIZE (elttype)) * count
+			  <= 40 * 8))
+		    {
+		      lo -= minelt;  hi -= minelt;
+		      for (; lo <= hi; lo++)
+			{
+			  bitpos = lo * TREE_INT_CST_LOW (TYPE_SIZE (elttype));
+			  store_constructor_field (target, bitsize, bitpos,
+						   mode, value, type, cleared);
+			}
+		    }
+		}
+	      else
+		{
+		  hi_r = expand_expr (hi_index, NULL_RTX, VOIDmode, 0);
+		  loop_top = gen_label_rtx ();
+		  loop_end = gen_label_rtx ();
+
+		  unsignedp = TREE_UNSIGNED (domain);
+
+		  index = build_decl (VAR_DECL, NULL_TREE, domain);
+
+		  DECL_RTL (index) = index_r
+		    = gen_reg_rtx (promote_mode (domain, DECL_MODE (index),
+						 &unsignedp, 0));
+
+		  if (TREE_CODE (value) == SAVE_EXPR
+		      && SAVE_EXPR_RTL (value) == 0)
+		    {
+		      /* Make sure value gets expanded once before the loop. */
+		      expand_expr (value, const0_rtx, VOIDmode, 0);
+		      emit_queue ();
+		    }
+		  store_expr (lo_index, index_r, 0);
+		  loop = expand_start_loop (0);
+
+		  /* Assign value to element index. */
+		  position = size_binop (EXACT_DIV_EXPR, TYPE_SIZE (elttype),
+					 size_int (BITS_PER_UNIT));
+		  position = size_binop (MULT_EXPR,
+					 size_binop (MINUS_EXPR, index,
+						     TYPE_MIN_VALUE (domain)),
+					 position);
+		  pos_rtx = expand_expr (position, 0, VOIDmode, 0);
+		  addr = gen_rtx (PLUS, Pmode, XEXP (target, 0), pos_rtx);
+		  xtarget = change_address (target, mode, addr);
+		  if (TREE_CODE (value) == CONSTRUCTOR)
+		    store_constructor (exp, xtarget, cleared);
+		  else
+		    store_expr (value, xtarget, 0);
+
+		  expand_exit_loop_if_false (loop,
+					     build (LT_EXPR, integer_type_node,
+						    index, hi_index));
+
+		  expand_increment (build (PREINCREMENT_EXPR,
+					   TREE_TYPE (index),
+					   index, integer_one_node), 0);
+		  expand_end_loop ();
+		  emit_label (loop_end);
+
+		  /* Needed by stupid register allocation. to extend the
+		     lifetime of pseudo-regs used by target past the end
+		     of the loop.  */
+		  emit_insn (gen_rtx (USE, GET_MODE (target), target));
+		}
+	    }
+	  else if ((index != 0 && TREE_CODE (index) != INTEGER_CST)
 	      || TREE_CODE (TYPE_SIZE (elttype)) != INTEGER_CST)
 	    {
-	      rtx pos_rtx, addr, xtarget;
+	      rtx pos_rtx, addr;
 	      tree position;
 
 	      if (index == 0)
 		index = size_int (i);
 
+	      if (minelt)
+		index = size_binop (MINUS_EXPR, index,
+				    TYPE_MIN_VALUE (domain));
 	      position = size_binop (EXACT_DIV_EXPR, TYPE_SIZE (elttype),
 				     size_int (BITS_PER_UNIT));
 	      position = size_binop (MULT_EXPR, index, position);
 	      pos_rtx = expand_expr (position, 0, VOIDmode, 0);
 	      addr = gen_rtx (PLUS, Pmode, XEXP (target, 0), pos_rtx);
 	      xtarget = change_address (target, mode, addr);
-	      store_expr (TREE_VALUE (elt), xtarget, 0);
+	      store_expr (value, xtarget, 0);
 	    }
 	  else
 	    {
@@ -3473,28 +3622,18 @@ store_constructor (exp, target)
 			  * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
 	      else
 		bitpos = (i * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
-
-	      store_field (xtarget, bitsize, bitpos, mode, TREE_VALUE (elt),
-			   /* The alignment of TARGET is
-			      at least what its type requires.  */
-			   VOIDmode, 0,
-			   TYPE_ALIGN (type) / BITS_PER_UNIT,
-			   int_size_in_bytes (type));
+	      store_constructor_field (target, bitsize, bitpos,
+				       mode, value, type, cleared);
 	    }
-
-	  if (TREE_CODE (TREE_VALUE (elt)) == CONSTRUCTOR)
-	    CONSTRUCTOR_TARGET_CLEARED_P (TREE_VALUE (elt)) = 0;
 	}
     }
   /* set constructor assignments */
   else if (TREE_CODE (type) == SET_TYPE)
     {
-      tree elt;
+      tree elt = CONSTRUCTOR_ELTS (exp);
       rtx xtarget = XEXP (target, 0);
       int set_word_size = TYPE_ALIGN (type);
-      int nbytes = int_size_in_bytes (type);
-      tree non_const_elements;
-      int need_to_clear_first;
+      int nbytes = int_size_in_bytes (type), nbits;
       tree domain = TYPE_DOMAIN (type);
       tree domain_min, domain_max, bitlength;
 
@@ -3509,15 +3648,13 @@ store_constructor (exp, target)
 	 bzero/memset), and set the bits we want. */
        
       /* Check for all zeros. */
-      if (CONSTRUCTOR_ELTS (exp) == NULL_TREE)
+      if (elt == NULL_TREE)
 	{
-	  clear_storage (target, expr_size (exp),
-			 TYPE_ALIGN (type) / BITS_PER_UNIT);
+	  if (!cleared)
+	    clear_storage (target, expr_size (exp),
+			   TYPE_ALIGN (type) / BITS_PER_UNIT);
 	  return;
 	}
-
-      if (nbytes < 0)
-	abort ();
 
       domain_min = convert (sizetype, TYPE_MIN_VALUE (domain));
       domain_max = convert (sizetype, TYPE_MAX_VALUE (domain));
@@ -3525,17 +3662,16 @@ store_constructor (exp, target)
 			      size_binop (MINUS_EXPR, domain_max, domain_min),
 			      size_one_node);
 
-      /* Check for range all ones, or at most a single range.
-       (This optimization is only a win for big sets.) */
-      if (GET_MODE (target) == BLKmode && nbytes > 16
-	  && TREE_CHAIN (CONSTRUCTOR_ELTS (exp)) == NULL_TREE)
+      if (nbytes < 0 || TREE_CODE (bitlength) != INTEGER_CST)
+	abort ();
+      nbits = TREE_INT_CST_LOW (bitlength);
+
+      /* For "small" sets, or "medium-sized" (up to 32 bytes) sets that
+	 are "complicated" (more than one range), initialize (the
+	 constant parts) by copying from a constant.  */	 
+      if (GET_MODE (target) != BLKmode || nbits <= 2 * BITS_PER_WORD
+	  || (nbytes <= 32 && TREE_CHAIN (elt) != NULL_TREE))
 	{
-	  need_to_clear_first = 1;
-	  non_const_elements = CONSTRUCTOR_ELTS (exp);
-	}
-      else
-	{
-	  int nbits = nbytes * BITS_PER_UNIT;
 	  int set_word_size = TYPE_ALIGN (TREE_TYPE (exp));
 	  enum machine_mode mode = mode_for_size (set_word_size, MODE_INT, 1);
 	  char *bit_buffer = (char*) alloca (nbits);
@@ -3543,8 +3679,7 @@ store_constructor (exp, target)
 	  int bit_pos = 0;
 	  int ibit = 0;
 	  int offset = 0;  /* In bytes from beginning of set. */
-	  non_const_elements = get_set_constructor_bits (exp,
-							 bit_buffer, nbits);
+	  elt = get_set_constructor_bits (exp, bit_buffer, nbits);
 	  for (;;)
 	    {
 	      if (bit_buffer[ibit])
@@ -3557,19 +3692,23 @@ store_constructor (exp, target)
 	      bit_pos++;  ibit++;
 	      if (bit_pos >= set_word_size || ibit == nbits)
 		{
-		  rtx datum = GEN_INT (word);
-		  rtx to_rtx;
-		  /* The assumption here is that it is safe to use XEXP if
-		     the set is multi-word, but not if it's single-word. */
-		  if (GET_CODE (target) == MEM)
-		    to_rtx = change_address (target, mode,
-					     plus_constant (XEXP (target, 0),
-							    offset));
-		  else if (offset == 0) 
-		    to_rtx = target;
-		  else
-		    abort ();
-		  emit_move_insn (to_rtx, datum);
+		  if (word != 0 || ! cleared)
+		    {
+		      rtx datum = GEN_INT (word);
+		      rtx to_rtx;
+		      /* The assumption here is that it is safe to use XEXP if
+			 the set is multi-word, but not if it's single-word. */
+		      if (GET_CODE (target) == MEM)
+			{
+			  to_rtx = plus_constant (XEXP (target, 0), offset);
+			  to_rtx = change_address (target, mode, to_rtx);
+			}
+		      else if (offset == 0) 
+			to_rtx = target;
+		      else
+			abort ();
+		      emit_move_insn (to_rtx, datum);
+		    }
 		  if (ibit == nbits)
 		    break;
 		  word = 0;
@@ -3577,10 +3716,23 @@ store_constructor (exp, target)
 		  offset += set_word_size / BITS_PER_UNIT;
 		}
 	    }
-	  need_to_clear_first = 0;
 	}
-
-      for (elt = non_const_elements; elt != NULL_TREE; elt = TREE_CHAIN (elt))
+      else if (!cleared)
+	{
+	  /* Don't bother clearing storage if the set is all ones. */
+	  if (TREE_CHAIN (elt) != NULL_TREE
+	      || (TREE_PURPOSE (elt) == NULL_TREE
+		  ? nbits != 1
+		  : (TREE_CODE (TREE_VALUE (elt)) != INTEGER_CST
+		     || TREE_CODE (TREE_PURPOSE (elt)) != INTEGER_CST
+		     || (TREE_INT_CST_LOW (TREE_VALUE (elt))
+			 - TREE_INT_CST_LOW (TREE_PURPOSE (elt)) + 1
+			 != nbits))))
+	    clear_storage (target, expr_size (exp),
+			   TYPE_ALIGN (type) / BITS_PER_UNIT);
+	}
+	  
+      for (; elt != NULL_TREE; elt = TREE_CHAIN (elt))
 	{
 	  /* start of range of element or NULL */
 	  tree startbit = TREE_PURPOSE (elt);
@@ -3629,17 +3781,12 @@ store_constructor (exp, target)
 	  if (TREE_CODE (startbit) == INTEGER_CST
 	      && TREE_CODE (endbit) == INTEGER_CST
 	      && (startb = TREE_INT_CST_LOW (startbit)) % BITS_PER_UNIT == 0
-	      && (endb = TREE_INT_CST_LOW (endbit)) % BITS_PER_UNIT == 0)
+	      && (endb = TREE_INT_CST_LOW (endbit) + 1) % BITS_PER_UNIT == 0)
 	    {
-		
-	      if (need_to_clear_first
-		  && endb - startb != nbytes * BITS_PER_UNIT)
-		clear_storage (target, expr_size (exp),
-			       TYPE_ALIGN (type) / BITS_PER_UNIT);
-	      need_to_clear_first = 0;
 	      emit_library_call (memset_libfunc, 0,
 				 VOIDmode, 3,
-				 plus_constant (XEXP (targetx, 0), startb),
+				 plus_constant (XEXP (targetx, 0),
+						startb / BITS_PER_UNIT),
 				 Pmode,
 				 constm1_rtx, TYPE_MODE (integer_type_node),
 				 GEN_INT ((endb - startb) / BITS_PER_UNIT),
@@ -3648,12 +3795,6 @@ store_constructor (exp, target)
 	  else
 #endif
 	    {
-	      if (need_to_clear_first)
-		{
-		  clear_storage (target, expr_size (exp),
-				 TYPE_ALIGN (type) / BITS_PER_UNIT);
-		  need_to_clear_first = 0;
-		}
 	      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__setbits"),
 				 0, VOIDmode, 4, XEXP (targetx, 0), Pmode,
 				 bitlength_rtx, TYPE_MODE (sizetype),
@@ -4884,7 +5025,7 @@ expand_expr (exp, target, tmode, modifier)
 	      RTX_UNCHANGING_P (target) = 1;
 	    }
 
-	  store_constructor (exp, target);
+	  store_constructor (exp, target, 0);
 	  return target;
 	}
 
