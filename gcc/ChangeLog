@@ -1,3 +1,21 @@
+2001-04-04  Alan Modra  <alan@linuxcare.com.au>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Support adjusting
+	stack pointer via a LO_SUM.  Ditto for setting a temp register
+	used to save to the stack.  Set cfa_temp when setting fp, and
+	allow matches to cfa_temp in addition to cfa_store when saving
+	regs.  Handle POST_INC and LO_SUM register stores.  Document the
+	changes and errors in rule 12 doco.
+
+	* pa.c (set_reg_plus_d, store_reg, load_reg): Return last insn.
+	(actual_fsize, local_fsize, save_fregs): Move for store_reg to see.
+	(load_reg): Move closer to epilogue code.
+	(DO_FRAME_NOTES): Define to control the following..
+	(FRP): Define to set RTX_FRAME_RELATED_P on insns.
+	(hppa_expand_prologue): Use FRP and REG_FRAME_RELATED_EXPR
+	notes as necessary.
+	(hppa_expand_epilogue): Likewise.
+
 2001-04-03  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (gcc_cv_as_leb128): Reject gas before 2.11.
