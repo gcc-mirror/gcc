@@ -4304,7 +4304,7 @@ type_requires_array_cookie (type)
      tree type;
 {
   tree fns;
-  bool has_two_argument_delete_p;
+  bool has_two_argument_delete_p = false;
 
   my_friendly_assert (CLASS_TYPE_P (type), 20010712);
 
