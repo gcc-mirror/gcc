@@ -1,3 +1,12 @@
+2001-05-12  Zack Weinberg  <zackw@stanford.edu>
+
+	* except.c (choose_personality_routine): Export.  Add
+	explanatory comment.  Take an enum languages, not a boolean.
+	(initialize_handler_parm): Adjust to match.
+	* cp-tree.h: Prototype choose_personality_routine.
+	* lex.c (handle_pragma_java_exceptions): New function.
+	(init_cp_pragma): Register #pragma GCC java_exceptions.
+
 2001-05-12  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* method.c (build_mangled_C99_name): Remove unused prototype.

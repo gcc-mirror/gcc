@@ -1,3 +1,7 @@
+2001-05-12  Zack Weinberg  <zackw@stanford.edu>
+
+	* extend.texi: Document #pragma GCC java_exceptions.
+
 2001-05-12  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* c-parse.in (bison parser, init_reswords): Remove uses of

@@ -3811,6 +3811,7 @@ Predefined Macros,cpp.info,The C Preprocessor}).
 * Bound member functions:: You can extract a function pointer to the
                         method denoted by a @samp{->*} or @samp{.*} expression.
 * C++ Attributes::      Variable, function, and type attributes for C++ only.
+* Java Exceptions::     Tweaking exception handling to work with Java.
 * Deprecated Features:: Things might disappear from g++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
 @end menu
@@ -4379,6 +4380,41 @@ Calls to methods declared in this interface will be dispatched using GCJ's
 interface table mechanism, instead of regular virtual table dispatch.
 
 @end table
+
+@node Java Exceptions
+@section Java Exceptions
+
+The Java language uses a slightly different exception handling model
+from C++.  Normally, GNU C++ will automatically detect when you are
+writing C++ code that uses Java exceptions, and handle them
+appropriately.  However, if C++ code only needs to execute destructors
+when Java exceptions are thrown through it, GCC will guess incorrectly.
+Sample problematic code:
+
+@example
+  struct S @{ ~S(); @};
+  extern void bar();    // is implemented in Java and may throw exceptions
+  void foo()
+  @{
+    S s;
+    bar();
+  @}
+@end example
+
+@noindent
+The usual effect of an incorrect guess is a link failure, complaining of
+a missing routine called @samp{__gxx_personality_v0}.
+
+You can inform the compiler that Java exceptions are to be used in a
+translation unit, irrespective of what it might think, by writing
+@samp{@w{#pragma GCC java_exceptions}} at the head of the file.  This
+@samp{#pragma} must appear before any functions that throw or catch
+exceptions, or run destructors when exceptions are thrown through them.
+
+You cannot mix Java and C++ exceptions in the same translation unit.  It
+is believed to be safe to throw a C++ exception from one file through
+another file compiled for the for the Java exception model, or vice
+versa, but there may be bugs in this area.
 
 @node Deprecated Features
 @section Deprecated Features

@@ -43,7 +43,6 @@ static int dtor_nothrow PARAMS ((tree));
 static tree do_end_catch PARAMS ((tree));
 static void push_eh_cleanup PARAMS ((tree));
 static bool decl_is_java_type PARAMS ((tree decl, int err));
-static void choose_personality_routine PARAMS ((bool));
 static void initialize_handler_parm PARAMS ((tree, tree));
 static tree do_allocate_exception PARAMS ((tree));
 static int complete_ptr_ref_or_void_ptr_p PARAMS ((tree, tree));
@@ -259,9 +258,15 @@ decl_is_java_type (decl, err)
   return r;
 }
 
-static void
-choose_personality_routine (is_java)
-     bool is_java;
+/* Select the personality routine to be used for exception handling,
+   or issue an error if we need two different ones in the same
+   translation unit.
+   ??? At present eh_personality_libfunc is set to
+   __gxx_personality_(sj|v)0 in init_exception_processing - should it
+   be done here instead?  */
+void
+choose_personality_routine (lang)
+     enum languages lang;
 {
   static enum {
     chose_none,
@@ -272,28 +277,44 @@ choose_personality_routine (is_java)
 
   switch (state)
     {
-    case chose_none:
-      /* We defaulted to C++ in init_exception_processing.
-	 Reconfigure for Java if we changed our minds.  */
-      if (is_java)
-	eh_personality_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
-						   ? "__gcj_personality_sj0"
-						   : "__gcj_personality_v0");
-      state = (is_java ? chose_java : chose_cpp);
-      break;
+    case gave_error:
+      return;
 
     case chose_cpp:
+      if (lang != lang_cplusplus)
+	goto give_error;
+      return;
+
     case chose_java:
-      if (state != (is_java ? chose_java : chose_cpp))
-	{
-	  error ("mixing C++ and Java catches in a single translation unit");
-	  state = gave_error;
-	}
+      if (lang != lang_java)
+	goto give_error;
+      return;
+
+    case chose_none:
+      ; /* proceed to language selection */
+    }
+
+  switch (lang)
+    {
+    case lang_cplusplus:
+      state = chose_cpp;
       break;
 
-    case gave_error:
+    case lang_java:
+      state = chose_java;
+      eh_personality_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
+						 ? "__gcj_personality_sj0"
+						 : "__gcj_personality_v0");
       break;
+
+    default:
+      abort ();
     }
+  return;
+
+ give_error:
+  error ("mixing C++ and Java catches in a single translation unit");
+  state = gave_error;
 }
 
 /* Initialize the catch parameter DECL.  */
@@ -318,7 +339,8 @@ initialize_handler_parm (decl, exp)
       && TREE_CODE (init_type) != REFERENCE_TYPE)
     init_type = build_reference_type (init_type);
 
-  choose_personality_routine (decl_is_java_type (init_type, 0));
+  choose_personality_routine (decl_is_java_type (init_type, 0)
+			      ? lang_java : lang_cplusplus);
 
   /* Since pointers are passed by value, initialize a reference to
      pointer catch parm with the address of the temporary.  */
