@@ -74,7 +74,8 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo sparc-sun-solaris3`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
     sun4*:SunOS:*:*)
-	echo sparc-sun-sunos${UNAME_RELEASE}
+	# Japanese Language versions have a version number like `4.1.3-JL'.
+	echo sparc-sun-sunos`echo ${UNAME_RELEASE}|sed -e 's/-/_/'`
 	exit 0 ;;
     sun3*:SunOS:*:*)
 	echo m68k-sun-sunos${UNAME_RELEASE}
@@ -168,11 +169,7 @@ EOF
 	    9000/7?? | 9000/8?7 ) HP_ARCH=hppa1.1 ;;
 	    9000/8?? )            HP_ARCH=hppa1.0 ;;
 	esac
-	case ${UNAME_RELEASE} in
-	    *.B7.* )          HPUX_REV=7 ;;
-	    *.[B0]8.* )       HPUX_REV=8 ;;
-	    *.09.* )          HPUX_REV=9 ;;
-	esac
+	HPUX_REV=`echo ${UNAME_RELEASE}|sed -e 's/[^.]*.[0B]*//'`
 	echo ${HP_ARCH}-hp-hpux${HPUX_REV}
 	exit 0 ;;
     3050*:HI-UX:*:*)
