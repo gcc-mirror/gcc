@@ -1,6 +1,6 @@
 // Verbose terminate_handler -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,76 +32,66 @@
 #include <exception>
 #include <exception_defines.h>
 #include <cxxabi.h>
-
-#ifdef _GLIBCXX_HAVE_UNISTD_H
-# include <unistd.h>
-# define writestr(str)  write(2, str, __builtin_strlen(str))
-#else
 # include <cstdio>
-# define writestr(str)  std::fputs(str, stderr)
-#endif
 
 using namespace std;
 using namespace abi;
 
 namespace __gnu_cxx
 {
-  /* A replacement for the standard terminate_handler which prints
-   more information about the terminating exception (if any) on
-   stderr.  */
+  // A replacement for the standard terminate_handler which prints
+  // more information about the terminating exception (if any) on
+  // stderr.
   void __verbose_terminate_handler()
   {
     static bool terminating;
-
     if (terminating)
       {
-	writestr ("terminate called recursively\n");
+	fputs("terminate called recursively\n", stderr);
 	abort ();
       }
- 
-   terminating = true;
+    terminating = true;
 
     // Make sure there was an exception; terminate is also called for an
     // attempt to rethrow when there is no suitable exception.
     type_info *t = __cxa_current_exception_type();
     if (t)
       {
-	char const *name = t->name();
 	// Note that "name" is the mangled name.
-	
+	char const *name = t->name();
 	{
 	  int status = -1;
 	  char *dem = 0;
 	  
 	  dem = __cxa_demangle(name, 0, 0, &status);
 
-	  writestr("terminate called after throwing an instance of '");
+	  fputs("terminate called after throwing an instance of '", stderr);
 	  if (status == 0)
-	    writestr(dem);
+	    fputs(dem, stderr);
 	  else
-	    writestr(name);
-	  writestr("'\n");
+	    fputs(name, stderr);
+	  fputs("'\n", stderr);
 
 	  if (status == 0)
 	    free(dem);
 	}
 
-	// If the exception is derived from std::exception, we can give more
-	// information.
+	// If the exception is derived from std::exception, we can
+	// give more information.
 	try { __throw_exception_again; }
 #ifdef __EXCEPTIONS
 	catch (exception &exc)
 	  {
 	    char const *w = exc.what();
-	    writestr("  what():  ");
-	    writestr(w);
-	    writestr("\n");
+	    fputs("  what():  ", stderr);
+	    fputs(w, stderr);
+	    fputs("\n", stderr);
           }
 #endif
 	catch (...) { }
       }
     else
-      writestr("terminate called without an active exception\n");
+      fputs("terminate called without an active exception\n", stderr);
     
     abort();
   }
