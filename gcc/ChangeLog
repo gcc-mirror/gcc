@@ -1,3 +1,11 @@
+2002-04-08  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.in (auto-build.h): Use target_alias and build_alias
+	when running configure.
+	(gcc_cv_as, gcc_cv_ld): Search install paths when build != host too.
+	(gcc_cv_nm, gcc_cv_objdump): Set for build != host too.
+	* configure: Regenerate.
+
 2002-04-07  David S. Miller  <davem@redhat.com>
 
 	* config.gcc (sparc64-*-linux*): Add t-crtfm to tmake_file.
