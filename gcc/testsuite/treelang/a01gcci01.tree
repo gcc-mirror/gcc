@@ -1,0 +1,39 @@
+// -*- c -*- c mode in emacs
+
+external_definition int add(int arg1, int arg2);
+external_definition int subtract(int arg3, int arg4);
+external_definition int first_nonzero(int arg5, int arg6);
+external_definition int double_plus_one(int arg7);
+
+add 
+{
+  return arg1 + arg2;
+}
+
+        
+subtract 
+{
+  return arg3 - arg4;
+}
+
+double_plus_one
+{
+  automatic int aaa;
+  aaa=add(arg7, arg7);
+  aaa=add(aaa, aaa);
+  aaa=subtract(subtract(aaa, arg7), arg7) + 1;
+  return aaa;
+}
+
+first_nonzero
+{
+  if (arg5)
+    {
+      return arg5;
+    }
+  else
+    {
+    }
+  return arg6;
+}
+

@@ -1,0 +1,40 @@
+2002-04-13  Tim Josling  <tej@melbpc.org.au>
+      * treetree.c (tree_code_create_function_initial)
+      Remove duplicate call to layout_decl
+
+2001-12-02  Tim Josling  <tej@melbpc.org.au>
+      * Make-lang.in
+      Ensure directory is built during install (installdirs dependency)
+
+      * lex.l
+      Work around poisoned malloc (undef IN_GCC)
+      Remove fake definition of tree.
+
+      * parse.y
+      Work around poisoned malloc (undef IN_GCC)
+
+      * tree1.c
+      New front end interface. 
+      (top level) New structure lang_hooks.
+      (tree_post_options) Remove. 
+      errorcount now a macro so do not define it.
+      current_nesting_level => work_nesting_level due to clash. 
+
+      * treelang.h
+      errorcount now a macro so do not reference it.
+
+      * treetree.c
+      Replace NULL_PTR by NULL.
+      (tree_code_get_expression) Mark op3 unused.
+      Do not init builtins.
+
+2001-06-11  Tim Josling  <tej@melbpc.org.au>
+
+	* treelang.exp (global) remove COBOL specific code. 
+
+2001-05-24  Tim Josling  <tej@melbpc.org.au>
+
+        Created this directory and its tests. All derived from the cobol
+	test swamp which was also all written by me.
+	
+

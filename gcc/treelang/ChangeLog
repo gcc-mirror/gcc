@@ -1,0 +1,24 @@
+2002-05-05  Tim Josling  <tej@melbpc.org.au>
+
+	* Updated for gcc3.2 experimental. Major changes throughout.
+
+2002-03-31  Tim Josling  <tej@melbpc.org.au>
+
+	* Make-lang.in: Changes so build and check work more reliably
+
+2001-07-30  Tim Josling  <tej@melbpc.org.au>
+
+	* root.texi: remove
+	* treelang.texi: updates based on feedback
+
+2001-06-11  Tim Josling  <tej@melbpc.org.au>
+
+	* all (all) Revamp code to conform to GCC coding standards, fix
+	typos in texi files. 
+
+2001-05-11  Tim Josling  <tej@melbpc.org.au>
+
+        Create the new language.
+
+	
+	
