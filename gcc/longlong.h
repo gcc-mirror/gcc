@@ -1,5 +1,5 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992 Free Software Foundation, Inc.
 
    This definition file is free software; you can redistribute it
    and/or modify it under the terms of the GNU General Public
@@ -68,7 +68,17 @@
 
    Please add support for more CPUs here, or improve the current support
    for the CPUs below!
-   (E.g. WE32100, HP-PA (xmpyu?), i960, IBM360, TRON.)  */
+   (E.g. WE32100, i960, IBM360.)  */
+
+/* We sometimes need to clobber "cc" with gcc2, but that would not be
+   understood by gcc1.  Use cpp to avoid major code duplication.  */
+#if __GNUC__ < 2
+#define __CLOBBER_CC
+#define __AND_CLOBBER_CC
+#else /* __GNUC__ >= 2 */
+#define __CLOBBER_CC : "cc"
+#define __AND_CLOBBER_CC , "cc"
+#endif /* __GNUC__ < 2 */
 
 #if defined (__GNUC__) && !defined (NO_ASM)
 
@@ -76,30 +86,43 @@
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add %1,%4,%5
 	addc %0,%2,%3"							\
-	 : "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl)) \
-	 : "%r" ((unsigned long int)(ah)), "rI" ((unsigned long int)(bh)), \
-	   "%r" ((unsigned long int)(al)), "rI" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	    "=&r" ((unsigned long int)(sl))				\
+	   : "%r" ((unsigned long int)(ah)),				\
+	     "rI" ((unsigned long int)(bh)),				\
+	     "%r" ((unsigned long int)(al)),				\
+	     "rI" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("sub %1,%4,%5
 	subc %0,%2,%3"							\
-	 : "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl)) \
-	 : "r" ((unsigned long int)(ah)), "rI" ((unsigned long int)(bh)), \
-	   "r" ((unsigned long int)(al)), "rI" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "r" ((unsigned long int)(ah)),				\
+	     "rI" ((unsigned long int)(bh)),				\
+	     "r" ((unsigned long int)(al)),				\
+	     "rI" ((unsigned long int)(bl)))
 #define umul_ppmm(xh, xl, m0, m1) \
   do {									\
     unsigned long int __m0 = (m0), __m1 = (m1);				\
-    __asm__ ("multiplu %0,%1,%2" : "=r" ((unsigned long int)(xl))	\
-	     : "r" (__m0), "r" (__m1));					\
-    __asm__ ("multmu %0,%1,%2" : "=r" ((unsigned long int)(xh))		\
-	     : "r" (__m0), "r" (__m1));					\
+    __asm__ ("multiplu %0,%1,%2"					\
+	     : "=r" ((unsigned long int)(xl))				\
+	     : "r" (__m0),						\
+	       "r" (__m1));						\
+    __asm__ ("multmu %0,%1,%2"						\
+	     : "=r" ((unsigned long int)(xh))				\
+	     : "r" (__m0),						\
+	       "r" (__m1));						\
   } while (0)
 #define udiv_qrnnd(q, r, n1, n0, d) \
   __asm__ ("dividu %0,%3,%4"						\
-	: "=r" ((unsigned long int)(q)), "=q" ((unsigned long int)(r))	\
-	: "1" ((unsigned long int)(n1)), "r" ((unsigned long int)(n0)),	\
-	  "r" ((unsigned long int)(d)))
+	   : "=r" ((unsigned long int)(q)),				\
+	     "=q" ((unsigned long int)(r))				\
+	   : "1" ((unsigned long int)(n1)),				\
+	     "r" ((unsigned long int)(n0)),				\
+	     "r" ((unsigned long int)(d)))
 #define count_leading_zeros(count, x) \
-    __asm__ ("clz %0,%1" : "=r" ((unsigned long int)(count))		\
+    __asm__ ("clz %0,%1"						\
+	     : "=r" ((unsigned long int)(count))			\
 	     : "r" ((unsigned long int)(x)))
 #endif /* __a29k__ */
 
@@ -107,82 +130,135 @@
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("adds %1,%4,%5
 	adc %0,%2,%3"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl)) \
-	: "%r" ((unsigned long int)(ah)), "rI" ((unsigned long int)(bh)), \
-	  "%r" ((unsigned long int)(al)), "rI" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "%r" ((unsigned long int)(ah)),				\
+	     "rI" ((unsigned long int)(bh)),				\
+	     "%r" ((unsigned long int)(al)),				\
+	     "rI" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("subs %1,%4,%5
 	sbc %0,%2,%3"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl)) \
-	: "r" ((unsigned long int)(ah)), "rI" ((unsigned long int)(bh)), \
-	  "r" ((unsigned long int)(al)), "rI" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "r" ((unsigned long int)(ah)),				\
+	     "rI" ((unsigned long int)(bh)),				\
+	     "r" ((unsigned long int)(al)),				\
+	     "rI" ((unsigned long int)(bl)))
 #endif /* __arm__ */
 
 #if defined (__gmicro__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add.w %5,%1
 	addx %3,%0"							\
-       : "=g" ((unsigned long int)(sh)), "=&g" ((unsigned long int)(sl))\
-       : "%0" ((unsigned long int)(ah)), "g" ((unsigned long int)(bh)),	\
-	 "%1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=g" ((unsigned long int)(sh)),				\
+	     "=&g" ((unsigned long int)(sl))				\
+	   : "%0" ((unsigned long int)(ah)),				\
+	     "g" ((unsigned long int)(bh)),				\
+	     "%1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("sub.w %5,%1
 	subx %3,%0"							\
-       : "=g" ((unsigned long int)(sh)), "=&g" ((unsigned long int)(sl))\
-       : "0" ((unsigned long int)(ah)), "g" ((unsigned long int)(bh)),	\
-	 "1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=g" ((unsigned long int)(sh)),				\
+	     "=&g" ((unsigned long int)(sl))				\
+	   : "0" ((unsigned long int)(ah)),				\
+	     "g" ((unsigned long int)(bh)),				\
+	     "1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #define umul_ppmm(ph, pl, m0, m1) \
   __asm__ ("mulx %3,%0,%1"						\
-	: "=g" ((unsigned long int)(ph)), "=r" ((unsigned long int)(pl))\
-	: "%0" ((unsigned long int)(m0)), "g" ((unsigned long int)(m1)))
+	   : "=g" ((unsigned long int)(ph)),				\
+	     "=r" ((unsigned long int)(pl))				\
+	   : "%0" ((unsigned long int)(m0)),				\
+	     "g" ((unsigned long int)(m1)))
 #define udiv_qrnnd(q, r, nh, nl, d) \
   __asm__ ("divx %4,%0,%1"						\
-	: "=g" ((unsigned long int)(q)), "=r" ((unsigned long int)(r))	\
-	: "1" ((unsigned long int)(nh)), "0" ((unsigned long int)(nl)),	\
-	  "g" ((unsigned long int)(d)))
+	   : "=g" ((unsigned long int)(q)),				\
+	     "=r" ((unsigned long int)(r))				\
+	   : "1" ((unsigned long int)(nh)),				\
+	     "0" ((unsigned long int)(nl)),				\
+	     "g" ((unsigned long int)(d)))
 #define count_leading_zeros(count, x) \
   __asm__ ("bsch/1 %1,%0"						\
-	: "=g" (count)							\
-	: "g" ((unsigned long int)(x)), "0" (0UL))
+	   : "=g" (count)						\
+	   : "g" ((unsigned long int)(x)),				\
+	     "0" (0UL))
 #endif
 
 #if defined (__hppa)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add %4,%5,%1
 	addc %2,%3,%0"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "%r" ((unsigned long int)(ah)), "r" ((unsigned long int)(bh)),\
-	  "%r" ((unsigned long int)(al)), "r" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "%rM" ((unsigned long int)(ah)),				\
+	     "rM" ((unsigned long int)(bh)),				\
+	     "%rM" ((unsigned long int)(al)),				\
+	     "rM" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("sub %5,%4,%1
 	subb %3,%2,%0"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "r" ((unsigned long int)(ah)), "r" ((unsigned long int)(bh)),	\
-	  "r" ((unsigned long int)(al)), "r" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "rM" ((unsigned long int)(ah)),				\
+	     "rM" ((unsigned long int)(bh)),				\
+	     "rM" ((unsigned long int)(al)),				\
+	     "rM" ((unsigned long int)(bl)))
+#if defined (_PA_RISC1_1)
+#define umul_ppmm(w1, w0, u, v) \
+  do {									\
+    union								\
+      {									\
+	long long __f;							\
+	struct {unsigned long int __w1, __w0;} __w1w0;			\
+      } __t;								\
+    __asm__ ("xmpyu %1,%2,%0"						\
+	     : "=x" (__t.__f)						\
+	     : "x" ((u)),						\
+	       "x" ((v)));						\
+    (w1) = __t.__w1w0.__w1;						\
+    (w0) = __t.__w1w0.__w0;						\
+     } while (0)
+#define UMUL_TIME 8
+#else
+#define UMUL_TIME 30
+#endif
+#define UDIV_TIME 40
 #endif
 
 #if defined (__i386__) || defined (__i486__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("addl %5,%1
 	adcl %3,%0"							\
-       : "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-       : "%0" ((unsigned long int)(ah)), "g" ((unsigned long int)(bh)),	\
-	 "%1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "%0" ((unsigned long int)(ah)),				\
+	     "g" ((unsigned long int)(bh)),				\
+	     "%1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("subl %5,%1
 	sbbl %3,%0"							\
-       : "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-       : "0" ((unsigned long int)(ah)), "g" ((unsigned long int)(bh)),	\
-	 "1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "0" ((unsigned long int)(ah)),				\
+	     "g" ((unsigned long int)(bh)),				\
+	     "1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("mull %3"							\
-	: "=a" ((unsigned long int)(w0)), "=d" ((unsigned long int)(w1))\
-	: "%0" ((unsigned long int)(u)), "rm" ((unsigned long int)(v)))
+	   : "=a" ((unsigned long int)(w0)),				\
+	     "=d" ((unsigned long int)(w1))				\
+	   : "%0" ((unsigned long int)(u)),				\
+	     "rm" ((unsigned long int)(v)))
 #define udiv_qrnnd(q, r, n1, n0, d) \
   __asm__ ("divl %4"							\
-	: "=a" ((unsigned long int)(q)), "=d" ((unsigned long int)(r))	\
-	: "0" ((unsigned long int)(n0)), "1" ((unsigned long int)(n1)),	\
-	  "rm" ((unsigned long int)(d)))
+	   : "=a" ((unsigned long int)(q)),				\
+	     "=d" ((unsigned long int)(r))				\
+	   : "0" ((unsigned long int)(n0)),				\
+	     "1" ((unsigned long int)(n1)),				\
+	     "rm" ((unsigned long int)(d)))
 #define count_leading_zeros(count, x) \
   do {									\
     unsigned long int __cbtmp;						\
@@ -190,6 +266,8 @@
 	     : "=r" (__cbtmp) : "rm" ((unsigned long int)(x)));		\
     (count) = __cbtmp ^ 31;						\
   } while (0)
+#define UMUL_TIME 40
+#define UDIV_TIME 40
 #endif /* 80x86 */
 
 #if defined (__i860__)
@@ -229,109 +307,99 @@
 
 #if defined (___IBMR2__) /* IBM RS6000 */
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("a %1,%4,%5
+  __asm__ ("a%I5 %1,%4,%5
 	ae %0,%2,%3"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "%r" ((unsigned long int)(ah)), "r" ((unsigned long int)(bh)),\
-	  "%r" ((unsigned long int)(al)), "r" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "%r" ((unsigned long int)(ah)),				\
+	     "r" ((unsigned long int)(bh)),				\
+	     "%r" ((unsigned long int)(al)),				\
+	     "rI" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sf %1,%5,%4
+  __asm__ ("sf%I4 %1,%5,%4
 	sfe %0,%3,%2"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "r" ((unsigned long int)(ah)), "r" ((unsigned long int)(bh)),	\
-	  "r" ((unsigned long int)(al)), "r" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "r" ((unsigned long int)(ah)),				\
+	     "r" ((unsigned long int)(bh)),				\
+	     "rI" ((unsigned long int)(al)),				\
+	     "r" ((unsigned long int)(bl)))
 #define umul_ppmm(xh, xl, m0, m1) \
   do {									\
     unsigned long int __m0 = (m0), __m1 = (m1);				\
     __asm__ ("mul %0,%2,%3"						\
-	: "=r" ((unsigned long int)(xh)), "=q" ((unsigned long int)(xl))\
-	: "r" (__m0), "r" (__m1));					\
+	     : "=r" ((unsigned long int)(xh)),				\
+	       "=q" ((unsigned long int)(xl))				\
+	     : "r" (__m0),						\
+	       "r" (__m1));						\
     (xh) += ((((signed long int) __m0 >> 31) & __m1)			\
 	     + (((signed long int) __m1 >> 31) & __m0));		\
   } while (0)
+#define smul_ppmm(xh, xl, m0, m1) \
+  __asm__ ("mul %0,%2,%3"						\
+	   : "=r" ((unsigned long int)(xh)),				\
+	     "=q" ((unsigned long int)(xl))				\
+	   : "r" (m0),							\
+	     "r" (m1))
 #define UMUL_TIME 8
-#if 0 /* Overflow for nh>=FFFFFFFE, d==FFFFFFFF.  Find a good fix later.  */
-#define udiv_qrnnd(q, r, nh, nl, d) \
-  do { /* Use the signed "div" insn, and adjust the result. */		\
-    unsigned long int __q, __r, __nh, __nl, __d, __xh, __xl;		\
-    __nh = 0;								\
-    __nl = (((unsigned long int)(nh)) << 30) | ((unsigned long int)(nl) >> 2);\
-    __nh = (unsigned long int)(nh) >> 2;				\
-    __d = ((unsigned long int)(d) >> 1);				\
-    __asm__ ("div %0,%2,%4"						\
-	     : "=r" (__q), "=q" (__r)					\
-	     : "r" (__nh), "1" (__nl), "r" (__d));			\
-    __q <<= 1;								\
-    __asm__ ("mul %0,%2,%3"						\
-	     : "=r" (__xh), "=q" (__xl)					\
-	     : "r" (__q), "r" ((unsigned long int)(d)));		\
-    __xh += (((signed long int) __q >> 31) & (d)) + __q;		\
-    if ((nh) < __xh || ((nh) == __xh && (nl) < __xl))			\
-      {									\
-	do								\
-	  {								\
-	    sub_ddmmss (__xh, __xl, __xh, __xl, 0, (d));		\
-	    __q--;							\
-	  }								\
-	while ((nh) < __xh || ((nh) == __xh && (nl) < __xl));		\
-	__xl = (nl) - __xl;						\
-      }									\
-    else								\
-      {									\
-	sub_ddmmss (__xh, __xl, (nh), (nl), __xh, __xl);		\
-	if (__xh != 0)							\
-	  {								\
-	    do								\
-	      {								\
-		sub_ddmmss (__xh, __xl, __xh, __xl, 0, (d));		\
-		__q++;							\
-	      }								\
-	    while (__xh != 0);						\
-	  }								\
-	if (__xl >= (d))						\
-	  {								\
-	    __xl -= (d);						\
-	    __q++;							\
-	  }								\
-      }									\
-    (q) = __q;								\
-    (r) = __xl;								\
-  } while (0)
+#define sdiv_qrnnd(q, r, nh, nl, d) \
+  __asm__ ("div %0,%2,%4"						\
+	   : "=r" (q), "=q" (r)						\
+	   : "r" (nh), "1" (nl), "r" (d))
 #define UDIV_TIME 40
 #define UDIV_NEEDS_NORMALIZATION 1
-#endif
 #define count_leading_zeros(count, x) \
   __asm__ ("cntlz %0,%1"						\
-	: "=r" ((unsigned long int)(count)) : "r" ((unsigned long int)(x)))
+	   : "=r" ((unsigned long int)(count))				\
+	   : "r" ((unsigned long int)(x)))
 #endif /* ___IBMR2__ */
 
 #if defined (__mc68000__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add%.l %5,%1
 	addx%.l %3,%0"							\
-       : "=d" ((unsigned long int)(sh)), "=&d" ((unsigned long int)(sl))\
-       : "%0" ((unsigned long int)(ah)), "d" ((unsigned long int)(bh)),	\
-	 "%1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=d" ((unsigned long int)(sh)),				\
+	     "=&d" ((unsigned long int)(sl))				\
+	   : "%0" ((unsigned long int)(ah)),				\
+	     "d" ((unsigned long int)(bh)),				\
+	     "%1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("sub%.l %5,%1
 	subx%.l %3,%0"							\
-       : "=d" ((unsigned long int)(sh)), "=&d" ((unsigned long int)(sl))\
-       : "0" ((unsigned long int)(ah)), "d" ((unsigned long int)(bh)),	\
-	 "1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=d" ((unsigned long int)(sh)),				\
+	     "=&d" ((unsigned long int)(sl))				\
+	   : "0" ((unsigned long int)(ah)),				\
+	     "d" ((unsigned long int)(bh)),				\
+	     "1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #if defined (__mc68020__) || defined (__NeXT__) || defined(mc68020)
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("mulu%.l %3,%1:%0"						\
-	: "=d" ((unsigned long int)(w0)), "=d" ((unsigned long int)(w1))\
-	: "%0" ((unsigned long int)(u)), "dmi" ((unsigned long int)(v)))
+	   : "=d" ((unsigned long int)(w0)),				\
+	     "=d" ((unsigned long int)(w1))				\
+	   : "%0" ((unsigned long int)(u)),				\
+	     "dmi" ((unsigned long int)(v)))
+#define UMUL_TIME 45
 #define udiv_qrnnd(q, r, n1, n0, d) \
   __asm__ ("divu%.l %4,%1:%0"						\
-	: "=d" ((unsigned long int)(q)), "=d" ((unsigned long int)(r))	\
-	: "0" ((unsigned long int)(n0)), "1" ((unsigned long int)(n1)),	\
-	  "dmi" ((unsigned long int)(d)))
+	   : "=d" ((unsigned long int)(q)),				\
+	     "=d" ((unsigned long int)(r))				\
+	   : "0" ((unsigned long int)(n0)),				\
+	     "1" ((unsigned long int)(n1)),				\
+	     "dmi" ((unsigned long int)(d)))
+#define UDIV_TIME 90
+#define sdiv_qrnnd(q, r, n1, n0, d) \
+  __asm__ ("divs%.l %4,%1:%0"						\
+	   : "=d" ((unsigned long int)(q)),				\
+	     "=d" ((unsigned long int)(r))				\
+	   : "0" ((unsigned long int)(n0)),				\
+	     "1" ((unsigned long int)(n1)),				\
+	     "dmi" ((unsigned long int)(d)))
 #define count_leading_zeros(count, x) \
   __asm__ ("bfffo %1{%b2:%b2},%0"					\
-	: "=d" ((unsigned long int)(count))				\
-	: "od" ((unsigned long int)(x)), "n" (0))
+	   : "=d" ((unsigned long int)(count))				\
+	   : "od" ((unsigned long int)(x)), "n" (0))
 #else /* not mc68020 */
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("| Inlined umul_ppmm
@@ -360,9 +428,13 @@
 	movel	d2,%1
 	addl	d1,d0
 	movel	d0,%0"							\
-       : "=g" ((unsigned long int)(xh)), "=g" ((unsigned long int)(xl))	\
-       :"g" ((unsigned long int)(a)), "g" ((unsigned long int)(b))	\
-       : "d0", "d1", "d2", "d3", "d4")
+	   : "=g" ((unsigned long int)(xh)),				\
+	     "=g" ((unsigned long int)(xl))				\
+	   : "g" ((unsigned long int)(a)),				\
+	     "g" ((unsigned long int)(b))				\
+	   : "d0", "d1", "d2", "d3", "d4")
+#define UMUL_TIME 100
+#define UDIV_TIME 400
 #endif /* not mc68020 */
 #endif /* mc68000 */
 
@@ -370,24 +442,55 @@
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("addu.co %1,%r4,%r5
 	addu.ci %0,%r2,%r3"						\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "%rJ" ((unsigned long int)(ah)), "rJ" ((unsigned long int)(bh)),\
-	  "%rJ" ((unsigned long int)(al)), "rJ" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "%rJ" ((unsigned long int)(ah)),				\
+	     "rJ" ((unsigned long int)(bh)),				\
+	     "%rJ" ((unsigned long int)(al)),				\
+	     "rJ" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("subu.co %1,%r4,%r5
 	subu.ci %0,%r2,%r3"						\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "rJ" ((unsigned long int)(ah)), "rJ" ((unsigned long int)(bh)),\
-	  "rJ" ((unsigned long int)(al)), "rJ" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "rJ" ((unsigned long int)(ah)),				\
+	     "rJ" ((unsigned long int)(bh)),				\
+	     "rJ" ((unsigned long int)(al)),				\
+	     "rJ" ((unsigned long int)(bl)))
 #define UMUL_TIME 17
 #define UDIV_TIME 150
 #define count_leading_zeros(count, x) \
   do {									\
     unsigned long int __cbtmp;						\
     __asm__ ("ff1 %0,%1"						\
-	     : "=r" (__cbtmp) : "r" ((unsigned long int)(x)));		\
+	     : "=r" (__cbtmp)						\
+	     : "r" ((unsigned long int)(x)));				\
     (count) = __cbtmp ^ 31;						\
   } while (0)
+#if defined (__mc88110__)
+#define umul_ppmm(w1, w0, u, v) \
+  __asm__ ("mulu.d	r10,%2,%3
+	or	%0,r10,0
+	or	%1,r11,0"						\
+	   : "=r" (w1),							\
+	     "=r" (w0)							\
+	   : "r" (u),							\
+	     "r" (v)							\
+	   : "r10", "r11")
+#define udiv_qrnnd(q, r, n1, n0, d) \
+  __asm__ ("or	r10,%2,0
+	or	r11,%3,0
+	divu.d	r10,r10,%4
+	mulu	%1,%4,r11
+	subu	%1,%3,%1
+	or	%0,r11,0"						\
+	   : "=r" (q),							\
+	     "=&r" (r)							\
+	   : "r" (n1),							\
+	     "r" (n0),							\
+	     "r" (d)							\
+	   : "r10", "r11")
+#endif
 #endif /* __m88000__ */
 
 #if defined (__mips__)
@@ -395,8 +498,10 @@
   __asm__ ("multu %2,%3
 	mflo %0
 	mfhi %1"							\
-	: "=r" ((unsigned long int)(w0)), "=r" ((unsigned long int)(w1))\
-	: "r" ((unsigned long int)(u)), "r" ((unsigned long int)(v)))
+	   : "=r" ((unsigned long int)(w0)),				\
+	     "=r" ((unsigned long int)(w1))				\
+	   : "r" ((unsigned long int)(u)),				\
+	     "r" ((unsigned long int)(v)))
 #define UMUL_TIME 5
 #define UDIV_TIME 100
 #endif /* __mips__ */
@@ -404,57 +509,75 @@
 #if defined (__ns32000__)
 #define __umulsidi3(u, v) \
   ({long long int __w;							\
-      __asm__ ("meid %2,%0" : "=g" (__w)				\
-	: "%0" ((unsigned long int)(u)), "g" ((unsigned long int)(v)));	\
-      __w; })
+    __asm__ ("meid %2,%0"						\
+	     : "=g" (__w)						\
+	     : "%0" ((unsigned long int)(u)),				\
+	       "g" ((unsigned long int)(v)));				\
+    __w; })
 #define div_qrnnd(q, r, n1, n0, d) \
   __asm__ ("movd %2,r0
 	movd %3,r1
 	deid %4,r0
 	movd r1,%0
 	movd r0,%1"							\
-	: "=g" ((unsigned long int)(q)), "=g" ((unsigned long int)(r))	\
-	: "g" ((unsigned long int)(n0)), "g" ((unsigned long int)(n1)),	\
-	  "g" ((unsigned long int)(d)) : "r0", "r1")
+	   : "=g" ((unsigned long int)(q)),				\
+	     "=g" ((unsigned long int)(r))				\
+	   : "g" ((unsigned long int)(n0)),				\
+	     "g" ((unsigned long int)(n1)),				\
+	     "g" ((unsigned long int)(d))				\
+	   : "r0", "r1")
 #endif /* __ns32000__ */
 
 #if defined (__pyr__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("addw	%5,%1
 	addwc	%3,%0"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "%0" ((unsigned long int)(ah)), "g" ((unsigned long int)(bh)),\
-	  "%1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "%0" ((unsigned long int)(ah)),				\
+	     "g" ((unsigned long int)(bh)),				\
+	     "%1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("subw	%5,%1
 	subwb	%3,%0"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "0" ((unsigned long int)(ah)), "g" ((unsigned long int)(bh)),	\
-	  "1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "0" ((unsigned long int)(ah)),				\
+	     "g" ((unsigned long int)(bh)),				\
+	     "1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 /* This insn doesn't work on ancient pyramids.  */
 #define umul_ppmm(w1, w0, u, v) \
-  __asm__ ("movw %2,tr11
-	uemul %3,tr10
-	movw tr10,%0
-	movw tr11,%1"							\
-	: "=r" ((unsigned long int)(w1)), "=r" ((unsigned long int)(w0))\
-	: "r" ((unsigned long int)(u)), "r" ((unsigned long int)(v))	\
-	: "tr10", "tr11")
+  ({union {long long int ll;struct {unsigned long int h, l;} i;} __xx;	\
+  __xx.i.l = u;								\
+  __asm__ ("uemul %3,%0"						\
+	   : "=r" (__xx.i.h),						\
+	     "=r" (__xx.i.l)						\
+	   : "1" (__xx.i.l),						\
+	     "g" (v));							\
+  (w1) = __xx.i.h; (w0) = __xx.i.l;})
 #endif /* __pyr__ */
 
 #if defined (__ibm032__) /* RT/ROMP */
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("a %1,%5
 	ae %0,%3"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "%0" ((unsigned long int)(ah)), "r" ((unsigned long int)(bh)),\
-	  "%1" ((unsigned long int)(al)), "r" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "%0" ((unsigned long int)(ah)),				\
+	     "r" ((unsigned long int)(bh)),				\
+	     "%1" ((unsigned long int)(al)),				\
+	     "r" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("s %1,%5
 	se %0,%3"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "0" ((unsigned long int)(ah)), "r" ((unsigned long int)(bh)),	\
-	  "1" ((unsigned long int)(al)), "r" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "0" ((unsigned long int)(ah)),				\
+	     "r" ((unsigned long int)(bh)),				\
+	     "1" ((unsigned long int)(al)),				\
+	     "r" ((unsigned long int)(bl)))
 #define umul_ppmm(ph, pl, m0, m1) \
   do {									\
     unsigned long int __m0 = (m0), __m1 = (m1);				\
@@ -479,12 +602,16 @@
 	m	r2,%3
 	cas	%0,r2,r0
 	mfs	r10,%1"							\
-       : "=r" ((unsigned long int)(ph)), "=r" ((unsigned long int)(pl))	\
-       : "%r" (__m0), "r" (__m1)					\
-       : "r2");								\
+	     : "=r" ((unsigned long int)(ph)),				\
+	       "=r" ((unsigned long int)(pl))				\
+	     : "%r" (__m0),						\
+		"r" (__m1)						\
+	     : "r2");							\
     (ph) += ((((signed long int) __m0 >> 31) & __m1)			\
 	     + (((signed long int) __m1 >> 31) & __m0));		\
   } while (0)
+#define UMUL_TIME 20
+#define UDIV_TIME 200
 #define count_leading_zeros(count, x) \
   do {									\
     if ((x) >= 0x10000)							\
@@ -505,25 +632,37 @@
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("addcc %4,%5,%1
 	addx %2,%3,%0"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "%r" ((unsigned long int)(ah)), "rI" ((unsigned long int)(bh)),\
-	  "%r" ((unsigned long int)(al)), "rI" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "%r" ((unsigned long int)(ah)),				\
+	     "rI" ((unsigned long int)(bh)),				\
+	     "%r" ((unsigned long int)(al)),				\
+	     "rI" ((unsigned long int)(bl))				\
+	   __CLOBBER_CC)
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("subcc %4,%5,%1
 	subx %2,%3,%0"							\
-	: "=r" ((unsigned long int)(sh)), "=&r" ((unsigned long int)(sl))\
-	: "r" ((unsigned long int)(ah)), "rI" ((unsigned long int)(bh)),\
-	  "r" ((unsigned long int)(al)), "rI" ((unsigned long int)(bl)))
+	   : "=r" ((unsigned long int)(sh)),				\
+	     "=&r" ((unsigned long int)(sl))				\
+	   : "r" ((unsigned long int)(ah)),				\
+	     "rI" ((unsigned long int)(bh)),				\
+	     "r" ((unsigned long int)(al)),				\
+	     "rI" ((unsigned long int)(bl))				\
+	   __CLOBBER_CC)
 #if defined (__sparc8__)	/* How do we recog. version 8 SPARC?  */
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("umul %2,%3,%1;rd %%y,%0"					\
-	: "=r" ((unsigned long int)(w1)), "=r" ((unsigned long int)(w0))\
-	: "r" ((unsigned long int)(u)), "r" ((unsigned long int)(v)))
+	   : "=r" ((unsigned long int)(w1)),				\
+	     "=r" ((unsigned long int)(w0))				\
+	   : "r" ((unsigned long int)(u)),				\
+	     "r" ((unsigned long int)(v)))
 #define udiv_qrnnd(q, r, n1, n0, d) \
   __asm__ ("mov %2,%%y;nop;nop;nop;udiv %3,%4,%0;umul %0,%4,%1;sub %3,%1,%1"\
-	: "=&r" ((unsigned long int)(q)), "=&r" ((unsigned long int)(r))\
-	: "r" ((unsigned long int)(n1)), "r" ((unsigned long int)(n0)),	\
-	  "r" ((unsigned long int)(d)))
+	   : "=&r" ((unsigned long int)(q)),				\
+	     "=&r" ((unsigned long int)(r))				\
+	   : "r" ((unsigned long int)(n1)),				\
+	     "r" ((unsigned long int)(n0)),				\
+	     "r" ((unsigned long int)(d)))
 #else
 /* SPARC without integer multiplication and divide instructions.
    (i.e. at least Sun4/20,40,60,65,75,110,260,280,330,360,380,470,490) */
@@ -568,9 +707,11 @@
 	mulscc	%%g1,0,%%g1
 	add	%%g1,%%g2,%0
 	rd	%%y,%1"							\
-	: "=r" ((unsigned long int)(w1)), "=r" ((unsigned long int)(w0))\
-	: "%rI" ((unsigned long int)(u)), "r" ((unsigned long int)(v))	\
-       : "%g1", "%g2")
+	   : "=r" ((unsigned long int)(w1)),				\
+	     "=r" ((unsigned long int)(w0))				\
+	   : "%rI" ((unsigned long int)(u)),				\
+	     "r" ((unsigned long int)(v))				\
+	   : "%g1", "%g2" __AND_CLOBBER_CC)
 #define UMUL_TIME 39		/* 39 instructions */
 /* It's quite necessary to add this much assembler for the sparc.
    The default udiv_qrnnd (in C) is more than 10 times slower!  */
@@ -599,32 +740,42 @@
 	sub	%1,%2,%1
 3:	xnor	%0,0,%0
 	! End of inline udiv_qrnnd"					\
-	: "=r&" ((unsigned long int)(q)), "=r&" ((unsigned long int)(r))\
-	: "r" ((unsigned long int)(d)), "1" ((unsigned long int)(n1)),	\
-	  "0" ((unsigned long int)(n0)) : "%g1")
+	   : "=&r" ((unsigned long int)(q)),				\
+	     "=&r" ((unsigned long int)(r))				\
+	   : "r" ((unsigned long int)(d)),				\
+	     "1" ((unsigned long int)(n1)),				\
+	     "0" ((unsigned long int)(n0)) : "%g1" __AND_CLOBBER_CC)
 #define UDIV_TIME (3+7*32)	/* 7 instructions/iteration. 32 iterations. */
-#endif
 #endif /* __sparc8__ */
+#endif /* __sparc__ */
 
 #if defined (__vax__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("addl2 %5,%1
 	adwc %3,%0"							\
-	: "=g" ((unsigned long int)(sh)), "=&g" ((unsigned long int)(sl))\
-	: "%0" ((unsigned long int)(ah)), "g" ((unsigned long int)(bh)),\
-	  "%1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=g" ((unsigned long int)(sh)),				\
+	     "=&g" ((unsigned long int)(sl))				\
+	   : "%0" ((unsigned long int)(ah)),				\
+	     "g" ((unsigned long int)(bh)),				\
+	     "%1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("subl2 %5,%1
 	sbwc %3,%0"							\
-	: "=g" ((unsigned long int)(sh)), "=&g" ((unsigned long int)(sl))\
-	: "0" ((unsigned long int)(ah)), "g" ((unsigned long int)(bh)),	\
-	  "1" ((unsigned long int)(al)), "g" ((unsigned long int)(bl)))
+	   : "=g" ((unsigned long int)(sh)),				\
+	     "=&g" ((unsigned long int)(sl))				\
+	   : "0" ((unsigned long int)(ah)),				\
+	     "g" ((unsigned long int)(bh)),				\
+	     "1" ((unsigned long int)(al)),				\
+	     "g" ((unsigned long int)(bl)))
 #define umul_ppmm(xh, xl, m0, m1) \
   do {									\
     union {long long int ll;struct {unsigned long int l, h;} i;} __xx;	\
     unsigned long int __m0 = (m0), __m1 = (m1);				\
     __asm__ ("emul %1,%2,$0,%0"						\
-	 : "=r" (__xx.ll) : "g" (__m0), "g" (__m1));			\
+	     : "=r" (__xx.ll)						\
+	     : "g" (__m0),						\
+	       "g" (__m1));						\
     (xh) = __xx.i.h; (xl) = __xx.i.l;					\
     (xh) += ((((signed long int) __m0 >> 31) & __m1)			\
 	     + (((signed long int) __m1 >> 31) & __m0));		\
@@ -688,12 +839,8 @@
     __w.ll; })
 #endif
 
-#if !defined (udiv_qrnnd)  || defined (__LLDEBUG__)
-#define UDIV_NEEDS_NORMALIZATION 1
-#ifndef __LLDEBUG__
-#define udiv_qrnnd udiv_qrnnd_c
-#endif
-#define udiv_qrnnd_c(q, r, n1, n0, d) \
+/* Define this unconditionally, so it can be used for debugging.  */
+#define __udiv_qrnnd_c(q, r, n1, n0, d) \
   do {									\
     unsigned int __d1, __d0, __q1, __q0;				\
     unsigned long int __r1, __r0, __m;					\
@@ -729,21 +876,33 @@
     (q) = (unsigned long int) __q1 * __ll_B | __q0;			\
     (r) = __r0;								\
   } while (0)
+/* If udiv_qrnnd was not defined for this processor, use __udiv_qrnnd_c.  */
+#if !defined (udiv_qrnnd)
+#define UDIV_NEEDS_NORMALIZATION 1
+#define udiv_qrnnd __udiv_qrnnd_c
 #endif
 
 #if !defined (count_leading_zeros)
 extern const unsigned char __clz_tab[];
-
 #define count_leading_zeros(count, x) \
   do {									\
-    unsigned long int xr = (x);						\
-    unsigned int a;							\
+    unsigned long int __xr = (x);					\
+    unsigned int __a;							\
 									\
-    a = xr < (1<<2*__BITS4)						\
-      ? (xr < (1<<__BITS4) ? 0 : __BITS4)				\
-      : (xr < (1<<3*__BITS4) ?  2*__BITS4 : 3*__BITS4);			\
+    if (LONG_TYPE_SIZE <= 32)						\
+      {									\
+	__a = __xr < (1<<2*__BITS4)					\
+	  ? (__xr < (1<<__BITS4) ? 0 : __BITS4)				\
+	  : (__xr < (1<<3*__BITS4) ?  2*__BITS4 : 3*__BITS4);		\
+      }									\
+    else								\
+      {									\
+	for (__a = LONG_TYPE_SIZE - 8; __a > 0; __a -= 8)		\
+	  if (((__xr >> __a) & 0xff) != 0)				\
+	    break;							\
+      }									\
 									\
-    (count) = 4*__BITS4 - (__clz_tab[xr >> a] + a);			\
+    (count) = LONG_TYPE_SIZE - (__clz_tab[__xr >> __a] + __a);		\
   } while (0)
 #endif
 
