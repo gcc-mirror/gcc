@@ -8,7 +8,7 @@
 	DECL_INTEGRAL_CONSTANT_VAR_P.
 	* semantics.c (finish_id_expression): Likewise.
 
-	PR c++~/16489
+	PR c++/16489
 	* decl.c (duplicate_decls): Reject duplicate namespace
 	declarations.
 
