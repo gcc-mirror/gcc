@@ -2626,7 +2626,7 @@ package body Bld is
                Put_Directory_Separator;
                Put ("share");
                Put_Directory_Separator;
-               Put ("make");
+               Put ("gnat");
                Put_Directory_Separator;
                Put ("Makefile.prolog");
                New_Line;
@@ -3347,7 +3347,7 @@ package body Bld is
                Put_Directory_Separator;
                Put ("share");
                Put_Directory_Separator;
-               Put ("make");
+               Put ("gnat");
                Put_Directory_Separator;
                Put ("Makefile.generic");
                New_Line;

@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2003 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2004 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1272,6 +1272,8 @@ endif
 ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<4lintnam.ads \
+  a-numaux.adb<86numaux.adb \
+  a-numaux.ads<86numaux.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-intman.adb<7sintman.adb \
   s-osinte.ads<5iosinte.ads \
@@ -2016,7 +2018,7 @@ b_gnatm.o : b_gnatm.c
 
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
-ADA_SHARE_MAKE_DIR = $(prefix)/share/make
+ADA_SHARE_MAKE_DIR = $(prefix)/share/gnat
 
 # force no sibling call optimization on s-traceb.o so the number of stack
 # frames to be skipped when computing a call chain is not modified by
