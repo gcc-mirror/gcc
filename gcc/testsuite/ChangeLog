@@ -1,3 +1,8 @@
+2005-02-28  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.test-framework/dg-error-exp-P.c: Update message for new C parser.
+	* gcc.test-framework/dg-error-exp-XP.c: Ditto.
+
 2005-02-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/20245

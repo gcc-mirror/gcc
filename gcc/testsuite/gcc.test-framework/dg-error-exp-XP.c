@@ -5,7 +5,7 @@
 int main (int argc, char *argv[])
 {
   +;
-              /* { dg-error "syntax error" "error test" { xfail *-*-* } 7 } */
+              /* { dg-error "expected expression" "error test" { xfail *-*-* } 7 } */
   return 0;
 }
 /* { dg-excess-errors "expect failure" { xfail *-*-* } } */
