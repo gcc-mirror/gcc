@@ -1,3 +1,9 @@
+2002-11-25  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	PR c/8639
+	* fold-const.c (extract_muldiv): Don't propagate division unless
+	both arguments are multiples of C.
+
 2002-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8275
