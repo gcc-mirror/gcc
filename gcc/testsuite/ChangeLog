@@ -1,3 +1,7 @@
+2005-03-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/vmx/darwin-abi-3.c: Delete.
+
 2005-03-11  Per Bothner  <per@bothner.com>
 
 	* gcc.dg/cpp/direct2.c: With new lexer changes, error "before string
