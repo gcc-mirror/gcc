@@ -127,7 +127,9 @@ namespace std
       operator[] (size_t __i) const
       { return _M_expr[_M_index[__i]]; }
       
-      size_t size() const { return _M_index.size(); }
+      size_t
+      size() const
+      { return _M_index.size(); }
 
     private:
       const _Dom&	      _M_expr;

@@ -1,3 +1,10 @@
+2004-08-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/indirect_array.h: Trivial formatting fixes.
+	* include/bits/valarray_after.h: Likewise.
+	* include/bits/valarray_array.h: Likewise.
+	* src/valarray-inst.cc: Likewise.
+
 2004-08-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_stringstream/rdbuf/char/2832.cc: Remove junk.

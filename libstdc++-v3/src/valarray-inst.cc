@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,6 @@ namespace std
   template valarray<size_t>::~valarray();
   template size_t valarray<size_t>::size() const;
   template size_t& valarray<size_t>::operator[](size_t);
-
 
   inline size_t
   __valarray_product(const valarray<size_t>& __a)
@@ -110,7 +109,7 @@ namespace std
   
   gslice::_Indexer::_Indexer(size_t __o, const valarray<size_t>& __l,
                              const valarray<size_t>& __s)
-      : _M_count(1), _M_start(__o), _M_size(__l), _M_stride(__s),
-        _M_index(__l.size() == 0 ? 0 : __valarray_product(__l))
+  : _M_count(1), _M_start(__o), _M_size(__l), _M_stride(__s),
+    _M_index(__l.size() == 0 ? 0 : __valarray_product(__l))
   { __gslice_to_index(__o, __l, __s, _M_index); }  
 } // namespace std
