@@ -527,10 +527,11 @@ queued_subexp_p (x)
     case MULT:
     case PLUS:
     case MINUS:
-      return queued_subexp_p (XEXP (x, 0))
-	|| queued_subexp_p (XEXP (x, 1));
+      return (queued_subexp_p (XEXP (x, 0))
+	      || queued_subexp_p (XEXP (x, 1)));
+    default:
+      return 0;
     }
-  return 0;
 }
 
 /* Perform all the pending incrementations.  */
@@ -768,6 +769,9 @@ convert_move (to, from, unsignedp)
 	    case TFmode:
 	      libcall = extendsftf2_libfunc;
 	      break;
+	      
+	    default:
+	      break;
 	    }
 	  break;
 
@@ -785,6 +789,9 @@ convert_move (to, from, unsignedp)
 	    case TFmode:
 	      libcall = extenddftf2_libfunc;
 	      break;
+	      
+	    default:
+	      break;
 	    }
 	  break;
 
@@ -797,6 +804,9 @@ convert_move (to, from, unsignedp)
 
 	    case DFmode:
 	      libcall = truncxfdf2_libfunc;
+	      break;
+	      
+	    default:
 	      break;
 	    }
 	  break;
@@ -811,7 +821,13 @@ convert_move (to, from, unsignedp)
 	    case DFmode:
 	      libcall = trunctfdf2_libfunc;
 	      break;
+	      
+	    default:
+	      break;
 	    }
+	  break;
+	  
+	default:
 	  break;
 	}
 
@@ -3458,9 +3474,10 @@ is_zeros_p (exp)
 	  return 0;
 
       return 1;
+      
+    default:
+      return 0;
     }
-
-  return 0;
 }
 
 /* Return 1 if EXP contains mostly (3/4)  zeros.  */
@@ -4708,6 +4725,9 @@ safe_from_p (x, exp)
 	case METHOD_CALL_EXPR:
 	  /* This takes a rtx argument, but shouldn't appear here.  */
 	  abort ();
+	  
+	default:
+	  break;
 	}
 
       /* If we have an rtx, we do not need to scan our operands.  */
@@ -7768,6 +7788,9 @@ bc_expand_expr (exp)
 	
 	return;
       }
+      
+    default:
+      abort ();
     }
   
   abort ();
@@ -9929,6 +9952,9 @@ preexpand_calls (exp)
     case SAVE_EXPR:
       if (SAVE_EXPR_RTL (exp) != 0)
 	return;
+      
+    default:
+      break;
     }
 
   nops = tree_code_length[(int) TREE_CODE (exp)];
