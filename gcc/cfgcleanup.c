@@ -941,9 +941,7 @@ try_crossjump_to_edge (mode, e1, e2)
   /* Update CFG.  */
   while (src1->succ)
     remove_edge (src1->succ);
-  make_edge (NULL, src1, redirect_to, 0);
-  src1->succ->probability = REG_BR_PROB_BASE;
-  src1->succ->count = src1->count;
+  make_single_succ_edge (src1, redirect_to, 0);
 
   return true;
 }

@@ -707,7 +707,7 @@ ssa_eliminate_dead_code ()
 
 	/* Create an edge from this block to the post dominator.  
 	   What about the PHI nodes at the target?  */
-	make_edge (NULL, bb, pdom_bb, 0);
+	make_edge (bb, pdom_bb, 0);
 
 	/* Third, transform this insn into an unconditional
 	   jump to the label for the immediate postdominator.  */

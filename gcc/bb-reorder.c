@@ -737,10 +737,8 @@ fixup_reorder_chain ()
       RBI (bb)->next = nb;
 
       /* Link to new block.  */
-      make_edge (NULL, nb, e_fall->dest, 0);
+      make_single_succ_edge (nb, e_fall->dest, 0);
       redirect_edge_succ (e_fall, nb);
-      nb->succ->count = e_fall->count;
-      nb->succ->probability = REG_BR_PROB_BASE;
 
       /* Don't process this new block.  */
       bb = nb;

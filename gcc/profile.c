@@ -563,7 +563,7 @@ branch_prob ()
 		  || insn != NEXT_INSN (bb->head))
 		{
 		  e = split_block (bb, PREV_INSN (insn));
-		  make_edge (NULL, ENTRY_BLOCK_PTR, e->dest, EDGE_FAKE);
+		  make_edge (ENTRY_BLOCK_PTR, e->dest, EDGE_FAKE);
 		  break;
 		}
 	      else
@@ -572,7 +572,7 @@ branch_prob ()
 		     be the very first instruction of function.  */
 		  if (!i)
 		    abort ();
-		  make_edge (NULL, ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
+		  make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
 		}
 	    }
 	}
@@ -599,14 +599,14 @@ branch_prob ()
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Adding fake exit edge to bb %i\n",
 		     bb->index);
-          make_edge (NULL, bb, EXIT_BLOCK_PTR, EDGE_FAKE);
+          make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
 	}
       if (need_entry_edge && !have_entry_edge)
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Adding fake entry edge to bb %i\n",
 		     bb->index);
-          make_edge (NULL, ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
+          make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
 	}
     }
 

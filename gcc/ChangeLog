@@ -1,3 +1,27 @@
+Tue Sep 11 11:37:52 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (cached_make_edge, make_single_succ): New.
+	(make_edge): Remove first parameter.
+	* bb-reroder.c (fixup_reorder_chain): Use make_single_succ_edge.
+	* cfg.c (cached_make_edge): Rename from make_edge; return newly
+	created edge; use obstack allocation.
+	(make_edge, make_single_succ_edge): New.
+	(first_removed_edge): New static variable.
+	(init_flow): Initialize first_removed_edge and n_edges.
+	(clear_edges): Use remove_edge.
+	(flow_delete_block): Likewise.
+	(remove_edge): Add removed edges to the removed edges list.
+	(split_block, redirect_edge_and_branch_force, split_edge):
+	Use make_edge.
+	* cfganal.c (flow_call_edges_add): Updaet make_edge call.
+	(add_noreturn_fake_exit_edges): Likewise.
+	(connect_infinite_loops_to_exit): Liekwise.
+	* cfgbuild.c (make_label_edge, make_edges, find_sub_basic_blocks):
+	Use cached_make_edge.
+	* cfgcleanup.c (try_crossjump_to_edge): Use make_single_succ_edge.
+	* profile.c (branch_prob): Update make_edge call.
+	* ssa-dce.c (ssa_eliminate_dead_code): Likewise.
+
 2001-09-11  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c: Tidy formatting.

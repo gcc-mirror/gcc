@@ -34,7 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	 compute_bb_for_insn, update_bb_for_insn, set_block_for_insn,
 	 set_block_for_new_insns
      - Edge manipulation
-	 make_edge, remove_edge
+	 make_edge, make_single_succ_edge, cached_make_edge, remove_edge
 	 - Low level edge redirection (without updating instruction chain)
 	     redirect_edge_succ, redirect_edge_succ_nodup, redirect_edge_pred
 	 - High level edge redirection (with updating and optimizing instruction
@@ -79,6 +79,10 @@ int n_basic_blocks;
 /* Number of edges in the current function.  */
 
 int n_edges;
+
+/* First edge in the deleted edges chain.  */
+
+edge first_deleted_edge;
 
 /* The basic block array.  */
 
@@ -151,6 +155,9 @@ init_flow ()
 {
   static int initialized;
 
+  first_deleted_edge = 0;
+  n_edges = 0;
+
   if (!initialized)
     {
       gcc_obstack_init (&flow_obstack);
@@ -170,32 +177,20 @@ void
 clear_edges ()
 {
   int i;
-  edge n, e;
 
   for (i = 0; i < n_basic_blocks; ++i)
     {
       basic_block bb = BASIC_BLOCK (i);
 
-      for (e = bb->succ; e; e = n)
-	{
-	  n = e->succ_next;
-	  free (e);
-	}
-
-      bb->succ = 0;
-      bb->pred = 0;
+      while (bb->succ)
+	remove_edge (bb->succ);
     }
 
-  for (e = ENTRY_BLOCK_PTR->succ; e; e = n)
-    {
-      n = e->succ_next;
-      free (e);
-    }
+  while (ENTRY_BLOCK_PTR->succ)
+    remove_edge (ENTRY_BLOCK_PTR->succ);
 
-  ENTRY_BLOCK_PTR->succ = 0;
-  EXIT_BLOCK_PTR->pred = 0;
-
-  n_edges = 0;
+  if (n_edges)
+    abort ();
 }
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
@@ -458,26 +453,10 @@ flow_delete_block (b)
   /* Remove the edges into and out of this block.  Note that there may
      indeed be edges in, if we are removing an unreachable loop.  */
   {
-    edge e, next, *q;
-
-    for (e = b->pred; e; e = next)
-      {
-	for (q = &e->src->succ; *q != e; q = &(*q)->succ_next)
-	  continue;
-	*q = e->succ_next;
-	next = e->pred_next;
-	n_edges--;
-	free (e);
-      }
-    for (e = b->succ; e; e = next)
-      {
-	for (q = &e->dest->pred; *q != e; q = &(*q)->pred_next)
-	  continue;
-	*q = e->pred_next;
-	next = e->succ_next;
-	n_edges--;
-	free (e);
-      }
+    while (b->pred != NULL)
+      remove_edge (b->pred);
+    while (b->succ != NULL)
+      remove_edge (b->succ);
 
     b->pred = NULL;
     b->succ = NULL;
@@ -589,8 +568,10 @@ set_block_for_new_insns (insn, bb)
     }
 }
 
-void
-make_edge (edge_cache, src, dst, flags)
+/* Create an edge connecting SRC and DST with FLAGS optionally using
+   edge cache CACHE.  Return the new edge, NULL if already exist. */
+edge
+cached_make_edge (edge_cache, src, dst, flags)
      sbitmap *edge_cache;
      basic_block src, dst;
      int flags;
@@ -614,7 +595,7 @@ make_edge (edge_cache, src, dst, flags)
 
       /* The edge exists; early exit if no work to do.  */
       if (flags == 0)
-	return;
+	return NULL;
 
       /* FALLTHRU */
     case 0:
@@ -622,12 +603,21 @@ make_edge (edge_cache, src, dst, flags)
 	if (e->dest == dst)
 	  {
 	    e->flags |= flags;
-	    return;
+	    return NULL;
 	  }
       break;
     }
 
-  e = (edge) xcalloc (1, sizeof (*e));
+  if (first_deleted_edge)
+    {
+      e = first_deleted_edge;
+      first_deleted_edge = e->succ_next;
+    }
+  else
+    {
+      e = (edge) obstack_alloc (&flow_obstack, sizeof (*e));
+      memset (e, 0, sizeof (*e));
+    }
   n_edges++;
 
   e->succ_next = src->succ;
@@ -641,6 +631,34 @@ make_edge (edge_cache, src, dst, flags)
 
   if (use_edge_cache)
     SET_BIT (edge_cache[src->index], dst->index);
+
+  return e;
+}
+
+/* Create an edge connecting SRC and DEST with flags FLAGS.  Return newly
+   created edge or NULL if already exist.  */
+
+edge
+make_edge (src, dest, flags)
+     basic_block src, dest;
+     int flags;
+{
+  return cached_make_edge (NULL, src, dest, flags);
+}
+
+/* Create an edge connecting SRC to DEST and set probability by knowling
+   that it is the single edge leaving SRC.  */
+
+edge
+make_single_succ_edge (src, dest, flags)
+     basic_block src, dest;
+     int flags;
+{
+  edge e = make_edge (src, dest, flags);
+
+  e->probability = REG_BR_PROB_BASE;
+  e->count = src->count;
+  return e;
 }
 
 /* This function will remove an edge from the flow graph.  */
@@ -676,7 +694,9 @@ remove_edge (e)
     dest->pred = e->pred_next;
 
   n_edges--;
-  free (e);
+  memset (e, 0, sizeof (*e));
+  e->succ_next = first_deleted_edge;
+  first_deleted_edge = e;
 }
 
 /* Redirect an edge's successor from one block to another.  */
@@ -766,8 +786,6 @@ split_block (bb, insn)
 
   /* Create the new structures.  */
   new_bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*new_bb));
-  new_edge = (edge) xcalloc (1, sizeof (*new_edge));
-  n_edges++;
 
   memset (new_bb, 0, sizeof (*new_bb));
 
@@ -776,21 +794,17 @@ split_block (bb, insn)
   bb->end = insn;
 
   new_bb->succ = bb->succ;
-  bb->succ = new_edge;
-  new_bb->pred = new_edge;
+  bb->succ = NULL;
+  new_bb->pred = NULL;
   new_bb->count = bb->count;
   new_bb->frequency = bb->frequency;
   new_bb->loop_depth = bb->loop_depth;
 
-  new_edge->src = bb;
-  new_edge->dest = new_bb;
-  new_edge->flags = EDGE_FALLTHRU;
-  new_edge->probability = REG_BR_PROB_BASE;
-  new_edge->count = bb->count;
-
   /* Redirect the src of the successor edges of bb to point to new_bb.  */
   for (e = new_bb->succ; e; e = e->succ_next)
     e->src = new_bb;
+
+  new_edge = make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
 
   /* Place the new block just after the block being split.  */
   VARRAY_GROW (basic_block_info, ++n_basic_blocks);
@@ -1262,21 +1276,15 @@ redirect_edge_and_branch_force (e, target)
 
   /* Create the new structures.  */
   new_bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*new_bb));
-  new_edge = (edge) xcalloc (1, sizeof (*new_edge));
-  n_edges++;
 
   memset (new_bb, 0, sizeof (*new_bb));
 
   new_bb->end = new_bb->head = last_loop_beg_note (e->src->end);
   new_bb->succ = NULL;
-  new_bb->pred = new_edge;
+  new_bb->pred = NULL;
   new_bb->count = e->count;
   new_bb->frequency = EDGE_FREQUENCY (e);
   new_bb->loop_depth = e->dest->loop_depth;
-
-  new_edge->flags = EDGE_FALLTHRU;
-  new_edge->probability = e->probability;
-  new_edge->count = e->count;
 
   if (target->global_live_at_start)
     {
@@ -1288,11 +1296,9 @@ redirect_edge_and_branch_force (e, target)
     }
 
   /* Wire edge in.  */
-  new_edge->src = e->src;
-  new_edge->dest = new_bb;
-  new_edge->succ_next = e->src->succ;
-  e->src->succ = new_edge;
-  new_edge->pred_next = NULL;
+  new_edge = make_edge (e->src, new_bb, EDGE_FALLTHRU);
+  new_edge->probability = e->probability;
+  new_edge->count = e->count;
 
   /* Redirect old edge.  */
   redirect_edge_succ (e, target);
@@ -1487,8 +1493,6 @@ split_edge (edge_in)
 
   /* Create the new structures.  */
   bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*bb));
-  edge_out = (edge) xcalloc (1, sizeof (*edge_out));
-  n_edges++;
 
   memset (bb, 0, sizeof (*bb));
 
@@ -1502,21 +1506,13 @@ split_edge (edge_in)
     }
 
   /* Wire them up.  */
-  bb->succ = edge_out;
+  bb->succ = NULL;
   bb->count = edge_in->count;
   bb->frequency = EDGE_FREQUENCY (edge_in);
 
   edge_in->flags &= ~EDGE_CRITICAL;
 
-  edge_out->pred_next = old_succ->pred;
-  edge_out->succ_next = NULL;
-  edge_out->src = bb;
-  edge_out->dest = old_succ;
-  edge_out->flags = EDGE_FALLTHRU;
-  edge_out->probability = REG_BR_PROB_BASE;
-  edge_out->count = edge_in->count;
-
-  old_succ->pred = edge_out;
+  edge_out = make_single_succ_edge (bb, old_succ, EDGE_FALLTHRU);
 
   /* Tricky case -- if there existed a fallthru into the successor
      (and we're not it) we must add a new unconditional jump around
