@@ -29,6 +29,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "obstack.h"
 #undef AND
 #include "rtl.h"
+#include "flags.h"
 #include "java-opcodes.h"
 #include "parse.h" /* for BLOCK_EXPR_BODY */
 #include "buffer.h"
@@ -525,7 +526,8 @@ localvar_alloc (decl, state)
   info->decl = decl;
   info->start_label = start_label;
 
-  if (DECL_NAME (decl) != NULL_TREE)
+  if (debug_info_level > DINFO_LEVEL_TERSE
+      && DECL_NAME (decl) != NULL_TREE)
     {
       /* Generate debugging info. */
       info->next = NULL;
@@ -1329,7 +1331,8 @@ generate_bytecode_insns (exp, target, state)
 	  break;
 	input_filename = EXPR_WFL_FILENAME (exp);
 	lineno = EXPR_WFL_LINENO (exp);
-	if (EXPR_WFL_EMIT_LINE_NOTE (exp) && lineno > 0)
+	if (EXPR_WFL_EMIT_LINE_NOTE (exp) && lineno > 0
+	    && debug_info_level > DINFO_LEVEL_NONE)
 	  put_linenumber (lineno, state);
 	generate_bytecode_insns (body, target, state);
 	input_filename = saved_input_filename;
