@@ -339,6 +339,7 @@ doloop_valid_p (loop, jump_insn)
      condition at run-time and have an additional jump around the loop
      to ensure an infinite loop.  */
   if (loop_info->comparison_code == NE
+      && !loop_info->preconditioned
       && INTVAL (loop_info->increment) != -1
       && INTVAL (loop_info->increment) != 1)
     {
