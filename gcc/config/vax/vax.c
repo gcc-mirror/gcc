@@ -578,6 +578,35 @@ vax_rtx_cost (x)
   return c;
 }
 
+/* Linked list of all externals that are to be emitted when optimizing
+   for the global pointer if they haven't been declared by the end of
+   the program with an appropriate .comm or initialization.  */
+
+struct extern_list {
+  struct extern_list *next;	/* next external */
+  char *name;			/* name of the external */
+} *extern_head = 0;
+
+/* Return 1 if NAME has already had an external definition;
+   0 if it has not (so caller should output one).  */
+
+int
+vms_check_external (name)
+     char *name;
+{
+  register struct extern_list *p;
+
+  for (p = extern_head; p; p = p->next)
+    if (!strcmp (p->name, name))
+      return 1;
+
+  p = (struct extern_list *)permalloc ((long) sizeof (struct extern_list));
+  p->next = extern_head;
+  p->name = name;
+  extern_head = p;
+  return 0;
+}
+
 #ifdef VMS
 /* Additional support code for VMS. */
 
