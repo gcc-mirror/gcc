@@ -1187,7 +1187,7 @@
   "zapnot %1,15,%0"
   [(set_attr "type" "shift")])
 
-(define_insn  "*andnot"
+(define_insn "andnotdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (not:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI"))
 		(match_operand:DI 2 "reg_or_0_operand" "rJ")))]
@@ -1876,35 +1876,12 @@
 (define_insn_and_split "*abstf_internal"
   [(set (match_operand:TF 0 "register_operand" "=r")
 	(abs:TF (match_operand:TF 1 "reg_or_fp0_operand" "rG")))
-   (use (match_operand:DI 2 "register_operand" "=r"))]
+   (use (match_operand:DI 2 "register_operand" "r"))]
   "TARGET_HAS_XFLOATING_LIBS"
   "#"
   "&& reload_completed"
   [(const_int 0)]
-  "
-{
-  int move;
-  rtx tmp;
-
-  alpha_split_tfmode_pair (operands);
-
-  move = 1;
-  if (rtx_equal_p (operands[0], operands[2]))
-    move = 0;
-  else if (rtx_equal_p (operands[1], operands[2]))
-    move = -1;
-
-  if (move < 0)
-    emit_move_insn (operands[0], operands[2]);
-
-  tmp = gen_rtx_NOT (DImode, operands[4]);
-  tmp = gen_rtx_AND (DImode, tmp, operands[3]);
-  emit_insn (gen_rtx_SET (VOIDmode, operands[1], tmp));
-	
-  if (move > 0)
-    emit_move_insn (operands[0], operands[2]);
-  DONE;
-}")
+  "alpha_split_tfmode_frobsign (operands, gen_andnotdi3); DONE;")
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -1937,32 +1914,12 @@
 (define_insn_and_split "*negtf_internal"
   [(set (match_operand:TF 0 "register_operand" "=r")
 	(neg:TF (match_operand:TF 1 "reg_or_fp0_operand" "rG")))
-   (use (match_operand:DI 2 "register_operand" "=r"))]
+   (use (match_operand:DI 2 "register_operand" "r"))]
   "TARGET_HAS_XFLOATING_LIBS"
   "#"
   "&& reload_completed"
   [(const_int 0)]
-  "
-{
-  int move;
-
-  alpha_split_tfmode_pair (operands);
-
-  move = 1;
-  if (rtx_equal_p (operands[0], operands[2]))
-    move = 0;
-  else if (rtx_equal_p (operands[1], operands[2]))
-    move = -1;
-
-  if (move < 0)
-    emit_move_insn (operands[0], operands[2]);
-
-  emit_insn (gen_xordi3 (operands[1], operands[3], operands[4]));
-	
-  if (move > 0)
-    emit_move_insn (operands[0], operands[2]);
-  DONE;
-}")
+  "alpha_split_tfmode_frobsign (operands, gen_xordi3); DONE;")
 
 (define_insn "*addsf_ieee"
   [(set (match_operand:SF 0 "register_operand" "=&f")
@@ -4595,7 +4552,7 @@
 
 (define_insn_and_split "*movtf_internal"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
-	(match_operand:TF 1 "input_operand" "roG,r"))]
+	(match_operand:TF 1 "input_operand" "roG,rG"))]
   "register_operand (operands[0], TFmode)
    || reg_or_fp0_operand (operands[1], TFmode)"
   "#"

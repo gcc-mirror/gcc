@@ -1,3 +1,12 @@
+2000-11-21  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_split_tfmode_frobsign): New.
+	* config/alpha/alpha-protos.h: Declare it.
+	* config/alpha/alpha.md (abstf_internal): Use it.
+	(negtf_internal): Likewise.
+	(andnotdi3): Unstar the name.
+	(movtf_internal): Add o/G alternative.
+
 2000-11-21  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* stringpool.c (stringpool_statistics): Also report number and

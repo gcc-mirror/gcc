@@ -90,6 +90,8 @@ extern int alpha_split_conditional_move PARAMS ((enum rtx_code, rtx, rtx,
 extern void alpha_emit_xfloating_arith PARAMS ((enum rtx_code, rtx[]));
 extern void alpha_emit_xfloating_cvt PARAMS ((enum rtx_code, rtx[]));
 extern void alpha_split_tfmode_pair PARAMS ((rtx[]));
+extern void alpha_split_tfmode_frobsign PARAMS ((rtx[],
+						 rtx (*)(rtx, rtx, rtx)));
 extern void alpha_expand_unaligned_load PARAMS ((rtx, rtx, HOST_WIDE_INT,
 						HOST_WIDE_INT, int));
 extern void alpha_expand_unaligned_store PARAMS ((rtx, rtx, HOST_WIDE_INT,
