@@ -179,13 +179,13 @@ case "${host_os}" in
     echo "Please specify the full version of Solaris, ie. solaris2.9 " 1>&2
     exit 1;
     ;;
-  solaris2.5*)
+  solaris2.5 | solaris2.5.[0-9])
     os_include_dir="os/solaris/solaris2.5"
     ;;
-  solaris2.6*)
+  solaris2.6)
     os_include_dir="os/solaris/solaris2.6"
     ;;
-  solaris2.[789]*)
+  solaris2.[789] | solaris2.1[0-9])
     os_include_dir="os/solaris/solaris2.7"
     ;;
   windiss*)

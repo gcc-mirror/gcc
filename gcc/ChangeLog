@@ -1,3 +1,12 @@
+2003-09-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config.gcc (sparc-*-solaris2*): Handle Solaris 10 and up like
+	Solaris 7-9.
+
+	* fixinc/inclhack.def (solaris_widec): Replace solaris2.[0-5]* by
+	wildcards which explicitly match micro versions.
+	* fixinc/fixincl.x: Regenerate.
+
 2003-09-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold): Fold (A & ~B) - (A & B) into
