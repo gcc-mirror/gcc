@@ -74,6 +74,22 @@ enum processor_type {
 /* Recast the cpu class to be the cpu attribute.  */
 #define mips_cpu_attr ((enum attr_cpu)mips_cpu)
 
+/* Which ABI to use.  This is only used by the Irix 6 port currently.  */
+
+enum mips_abi_type {
+  ABI_32,
+  ABI_N32,
+  ABI_64
+};
+
+#ifndef MIPS_ABI_DEFAULT
+/* We define this away so that there is no extra runtime cost if the target
+   doesn't support multiple ABIs.  */
+#define mips_abi ABI_32
+#else
+extern enum mips_abi_type mips_abi;
+#endif
+
 /* Whether to emit abicalls code sequences or not.  */
 
 enum mips_abicalls_type {
@@ -119,6 +135,7 @@ extern enum mips_abicalls_type mips_abicalls;/* for svr4 abi pic calls */
 extern int mips_isa;			/* architectural level */
 extern char *mips_cpu_string;		/* for -mcpu=<xxx> */
 extern char *mips_isa_string;		/* for -mips{1,2,3,4} */
+extern char *mips_abi_string;		/* for -misa={32,n32,64} */
 extern int dslots_load_total;		/* total # load related delay slots */
 extern int dslots_load_filled;		/* # filled load delay slots */
 extern int dslots_jump_total;		/* total # jump related delay slots */
@@ -450,9 +467,13 @@ extern char	       *mktemp ();
 
 #define TARGET_OPTIONS							\
 {									\
+  SUBTARGET_TARGET_OPTIONS						\
   { "cpu=",	&mips_cpu_string	},				\
   { "ips",	&mips_isa_string	}				\
 }
+
+/* This is meant to be redefined in the host dependent files.  */
+#define SUBTARGET_TARGET_OPTIONS
 
 /* Macros to decide whether certain features are available or not,
    depending on the instruction set architecture level.  */
@@ -530,7 +551,7 @@ do									\
   }									\
 while (0)
 
-/* This is meant to be redefined in the host dependent files */
+/* This is meant to be redefined in the host dependent files.  */
 #define SUBTARGET_CONDITIONAL_REGISTER_USAGE
 
 /* Show we can debug even without a frame pointer.  */
@@ -1635,10 +1656,6 @@ extern enum reg_class	mips_secondary_reload_class ();
 
 /* Stack layout; function entry, exit and calling.  */
 
-/* Don't enable support for the 64 bit ABI calling convention.
-   Some embedded code depends on the old 64 bit calling convention.  */
-#define ABI_64BIT 0
-
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD
@@ -1790,7 +1807,7 @@ extern struct mips_frame_info current_frame_info;
 	    && ((TO) == FRAME_POINTER_REGNUM				 \
 		|| (TO) == STACK_POINTER_REGNUM))			 \
     (OFFSET) = (current_frame_info.total_size				 \
-		- (ABI_64BIT && mips_isa >= 3				 \
+		- (mips_abi != ABI_32					 \
 		   ? current_function_pretend_args_size			 \
 		   : 0));						 \
   else if ((FROM) == RETURN_ADDRESS_POINTER_REGNUM			 \
@@ -2371,7 +2388,7 @@ typedef struct mips_args {
           /* ??? Reject combining an address with a register for the MIPS  \
 	     64 bit ABI, because the SGI assembler can not handle this.  */ \
 	  if (!TARGET_DEBUG_A_MODE					\
-	      && ! ABI_64BIT						\
+	      && mips_abi == ABI_32					\
 	      && CONSTANT_ADDRESS_P (xplus1)				\
 	      && (!TARGET_EMBEDDED_PIC					\
 		  || code1 != CONST					\
@@ -2400,7 +2417,7 @@ typedef struct mips_args {
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
     || (GET_CODE (X) == CONST						\
 	&& ! (flag_pic && pic_address_needs_scratch (X))		\
-	&& ! ABI_64BIT))						\
+	&& mips_abi == ABI_32))						\
    && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
 
 /* Define this, so that when PIC, reload won't try to reload invalid
@@ -2419,7 +2436,7 @@ typedef struct mips_args {
 #define LEGITIMATE_CONSTANT_P(X)					\
   ((GET_CODE (X) != CONST_DOUBLE					\
     || mips_const_double_ok (X, GET_MODE (X)))				\
-   && ! (GET_CODE (X) == CONST && ABI_64BIT))
+   && ! (GET_CODE (X) == CONST && mips_abi != ABI_32))
 
 /* A C compound statement that attempts to replace X with a valid
    memory address for an operand of mode MODE.  WIN will be a C
@@ -2473,7 +2490,7 @@ typedef struct mips_args {
   if (GET_CODE (xinsn) == CONST						\
       && ((flag_pic && pic_address_needs_scratch (xinsn))		\
 	  /* ??? SGI's Irix 6 assembler can't handle CONST.  */		\
-	  || ABI_64BIT))						\
+	  || mips_abi != ABI_32))					\
     {									\
       rtx ptr_reg = gen_reg_rtx (Pmode);				\
       rtx constant = XEXP (XEXP (xinsn, 0), 1);				\
@@ -3594,15 +3611,14 @@ do {									\
     fprintf (STREAM, "\t%s\t%sL%d-%sLS%d\n",				\
 	     TARGET_LONG64 ? ".dword" : ".word",			\
 	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
-  else if (! ABI_64BIT)							\
+  else if (mips_abi == ABI_32)						\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
 	     TARGET_LONG64 ? ".gpdword" : ".gpword",			\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
   else									\
-    /* ??? Why does this one use . and not LOCAL_LABEL_PREFIX?  */	\
-    fprintf (STREAM, "\t%s\t.L%d\n",					\
+    fprintf (STREAM, "\t%s\t%sL%d\n",					\
 	     TARGET_LONG64 ? ".dword" : ".word",			\
-	     VALUE);							\
+	     LOCAL_LABEL_PREFIX, VALUE);				\
 } while (0)
 
 /* When generating embedded PIC code we want to put the jump table in
