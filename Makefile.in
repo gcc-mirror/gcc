@@ -234,7 +234,7 @@ AS_FOR_TARGET = ` \
   elif [ -f $$r/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=as ; \
   else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
+    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(AS); \
     else \
        t='$(program_transform_name)'; echo as | sed -e 's/x/x/' $$t ; \
@@ -247,7 +247,7 @@ LD_FOR_TARGET = ` \
   elif [ -f $$r/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=ld ; \
   else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
+    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(LD); \
     else \
        t='$(program_transform_name)'; echo ld | sed -e 's/x/x/' $$t ; \
@@ -258,7 +258,7 @@ DLLTOOL_FOR_TARGET = ` \
   if [ -f $$r/binutils/dlltool ] ; then \
     echo $$r/binutils/dlltool ; \
   else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
+    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(DLLTOOL); \
     else \
        t='$(program_transform_name)'; echo dlltool | sed -e 's/x/x/' $$t ; \
@@ -269,7 +269,7 @@ WINDRES_FOR_TARGET = ` \
   if [ -f $$r/binutils/windres ] ; then \
     echo $$r/binutils/windres ; \
   else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
+    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(WINDRES); \
     else \
        t='$(program_transform_name)'; echo windres | sed -e 's/x/x/' $$t ; \
@@ -280,7 +280,7 @@ AR_FOR_TARGET = ` \
   if [ -f $$r/binutils/ar ] ; then \
     echo $$r/binutils/ar ; \
   else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
+    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(AR); \
     else \
        t='$(program_transform_name)'; echo ar | sed -e 's/x/x/' $$t ; \
@@ -291,8 +291,8 @@ RANLIB_FOR_TARGET = ` \
   if [ -f $$r/binutils/ranlib ] ; then \
     echo $$r/binutils/ranlib ; \
   else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
-      if [ x"$(RANLIB)" != x ]; then \
+    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+      if [ x'$(RANLIB)' != x ]; then \
          echo $(RANLIB); \
       else \
          echo ranlib; \
@@ -308,7 +308,7 @@ NM_FOR_TARGET = ` \
   elif [ -f $$r/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=nm ; \
   else \
-    if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
+    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(NM); \
     else \
        t='$(program_transform_name)'; echo nm | sed -e 's/x/x/' $$t ; \
@@ -976,16 +976,15 @@ $(DO_X):
 	    case $$i in \
 	    gcc) \
 	      for flag in $(EXTRA_GCC_FLAGS); do \
-		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'|"`; \
+		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	      done; \
 	      ;; \
 	    *) \
 	      for flag in $(EXTRA_HOST_FLAGS); do \
-		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'|"`; \
+		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	      done; \
 	      ;; \
 	    esac ; \
-	    export AR AS CC CXX LD NM RANLIB DLLTOOL WINDRES; \
 	    if (cd ./$$i; \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
@@ -1002,9 +1001,8 @@ $(DO_X):
 	for i in $(TARGET_CONFIGDIRS) -dummy-; do \
 	  if [ -f $(TARGET_SUBDIR)/$$i/Makefile ]; then \
 	    for flag in $(EXTRA_TARGET_FLAGS); do \
-		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'|"`; \
+		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	    done; \
-	    export AR AS CC CXX LD NM RANLIB DLLTOOL WINDRES; \
 	    if (cd $(TARGET_SUBDIR)/$$i; \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
@@ -1215,7 +1213,7 @@ $(ALL_MODULES) all-gui all-libproc:
 
 .PHONY: $(CHECK_MODULES) $(NATIVE_CHECK_MODULES) $(CROSS_CHECK_MODULES)
 $(NATIVE_CHECK_MODULES):
-	@if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
+	@if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
 	  dir=`echo $@ | sed -e 's/check-//'`; \
 	  if [ -f ./$${dir}/Makefile ] ; then \
 	    r=`pwd`; export r; \
