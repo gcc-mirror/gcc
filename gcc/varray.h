@@ -33,30 +33,6 @@
 #include "tm.h"
 #endif
 
-/* Auxiliary structure used inside the varray structure, used for
-   function integration data.  */
-
-struct const_equiv_data GTY(()) {
-  /* Map pseudo reg number in calling function to equivalent constant.  We
-     cannot in general substitute constants into parameter pseudo registers,
-     since some machine descriptions (many RISCs) won't always handle
-     the resulting insns.  So if an incoming parameter has a constant
-     equivalent, we record it here, and if the resulting insn is
-     recognizable, we go with it.
-
-     We also use this mechanism to convert references to incoming arguments
-     and stacked variables.  copy_rtx_and_substitute will replace the virtual
-     incoming argument and virtual stacked variables registers with new
-     pseudos that contain pointers into the replacement area allocated for
-     this inline instance.  These pseudos are then marked as being equivalent
-     to the appropriate address and substituted if valid.  */
-  rtx rtx;
-
-  /* Record the valid age for each entry.  The entry is invalid if its
-     age is less than const_age.  */
-  unsigned age;
-};
-
 /* Enum indicating what the varray contains.
    If this is changed, `element' in varray.c needs to be updated.  */
 
@@ -79,7 +55,6 @@ enum varray_data_enum {
   VARRAY_DATA_TREE,
   VARRAY_DATA_BITMAP,
   VARRAY_DATA_REG,
-  VARRAY_DATA_CONST_EQUIV,
   VARRAY_DATA_BB,
   VARRAY_DATA_TE,
   VARRAY_DATA_EDGE,
@@ -125,8 +100,6 @@ typedef union varray_data_tag GTY (()) {
 				tag ("VARRAY_DATA_BITMAP")))	bitmap[1];
   struct reg_info_def	 *GTY ((length ("%0.num_elements"), skip,
 				tag ("VARRAY_DATA_REG")))	reg[1];
-  struct const_equiv_data GTY ((length ("%0.num_elements"),
-			tag ("VARRAY_DATA_CONST_EQUIV")))	const_equiv[1];
   struct basic_block_def *GTY ((length ("%0.num_elements"), skip,
 				tag ("VARRAY_DATA_BB")))	bb[1];
   struct elt_list	 *GTY ((length ("%0.num_elements"),
@@ -206,9 +179,6 @@ extern varray_type varray_init (size_t, enum varray_data_enum, const char *);
 
 #define VARRAY_REG_INIT(va, num, name) \
   va = varray_init (num, VARRAY_DATA_REG, name)
-
-#define VARRAY_CONST_EQUIV_INIT(va, num, name) \
-  va = varray_init (num, VARRAY_DATA_CONST_EQUIV, name)
 
 #define VARRAY_BB_INIT(va, num, name) \
   va = varray_init (num, VARRAY_DATA_BB, name)
@@ -298,7 +268,6 @@ extern void varray_underflow (varray_type, const char *, int, const char *)
 #define VARRAY_TREE(VA, N)		VARRAY_CHECK (VA, N, tree)
 #define VARRAY_BITMAP(VA, N)		VARRAY_CHECK (VA, N, bitmap)
 #define VARRAY_REG(VA, N)		VARRAY_CHECK (VA, N, reg)
-#define VARRAY_CONST_EQUIV(VA, N)	VARRAY_CHECK (VA, N, const_equiv)
 #define VARRAY_BB(VA, N)		VARRAY_CHECK (VA, N, bb)
 #define VARRAY_ELT_LIST(VA, N)		VARRAY_CHECK (VA, N, te)
 #define VARRAY_EDGE(VA, N)		VARRAY_CHECK (VA, N, e)
@@ -323,7 +292,6 @@ extern void varray_underflow (varray_type, const char *, int, const char *)
 #define VARRAY_PUSH_TREE(VA, X)		VARRAY_PUSH (VA, tree, X)
 #define VARRAY_PUSH_BITMAP(VA, X)	VARRAY_PUSH (VA, bitmap, X)
 #define VARRAY_PUSH_REG(VA, X)		VARRAY_PUSH (VA, reg, X)
-#define VARRAY_PUSH_CONST_EQUIV(VA, X)	VARRAY_PUSH (VA, const_equiv, X)
 #define VARRAY_PUSH_BB(VA, X)		VARRAY_PUSH (VA, bb, X)
 #define VARRAY_PUSH_EDGE(VA, X)		VARRAY_PUSH (VA, e, X)
 #define VARRAY_PUSH_TREE_PTR(VA, X)	VARRAY_PUSH (VA, tp, X)
@@ -349,7 +317,6 @@ extern void varray_underflow (varray_type, const char *, int, const char *)
 #define VARRAY_TOP_TREE(VA)		VARRAY_TOP (VA, tree)
 #define VARRAY_TOP_BITMAP(VA)	        VARRAY_TOP (VA, bitmap)
 #define VARRAY_TOP_REG(VA)		VARRAY_TOP (VA, reg)
-#define VARRAY_TOP_CONST_EQUIV(VA)	VARRAY_TOP (VA, const_equiv)
 #define VARRAY_TOP_BB(VA)		VARRAY_TOP (VA, bb)
 #define VARRAY_TOP_EDGE(VA)		VARRAY_TOP (VA, e)
 #define VARRAY_TOP_TREE_PTR(VA)		VARRAY_TOP (VA, tp)

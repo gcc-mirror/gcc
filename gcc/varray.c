@@ -113,7 +113,6 @@ static const struct {
   { sizeof (union tree_node *), 1 },
   { sizeof (struct bitmap_head_def *), 1 },
   { sizeof (struct reg_info_def *), 0 },
-  { sizeof (struct const_equiv_data), 0 },
   { sizeof (struct basic_block_def *), 1 },
   { sizeof (struct elt_list *), 1 },
   { sizeof (struct edge_def *), 1 },

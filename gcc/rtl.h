@@ -220,16 +220,11 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      promoted mode.
      1 in a CODE_LABEL if the label is used for nonlocal gotos
      and must not be deleted even if its count is zero.
-     1 in a LABEL_REF if this is a reference to a label outside the
-     current loop.
      1 in an INSN, JUMP_INSN or CALL_INSN if this insn must be scheduled
      together with the preceding insn.  Valid only within sched.
      1 in an INSN, JUMP_INSN, or CALL_INSN if insn is in a delay slot and
      from the target of a branch.  Valid from reorg until end of compilation;
-     cleared before used.
-     1 in an INSN, JUMP_INSN or CALL_INSN or related rtx if this insn is
-     dead code.  Valid only during dead-code elimination phase; cleared
-     before use.  */
+     cleared before used.  */
   unsigned int in_struct : 1;
   /* At the end of RTL generation, 1 if this rtx is used.  This is used for
      copying shared structure.  See `unshare_all_rtl'.
@@ -642,7 +637,6 @@ do {				\
 #define XCBITMAP(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_bit)
 #define XCTREE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_tree)
 #define XCBBDEF(RTX, N, C)    (RTL_CHECKC1 (RTX, N, C).rt_bb)
-#define XCADVFLAGS(RTX, N, C) (RTL_CHECKC1 (RTX, N, C).rt_addr_diff_vec_flags)
 #define XCCSELIB(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_cselib)
 
 #define XCVECEXP(RTX, N, M, C)	RTVEC_ELT (XCVEC (RTX, N, C), M)
@@ -698,11 +692,6 @@ do {				\
 #define INSN_ANNULLED_BRANCH_P(RTX)					\
   (RTL_FLAG_CHECK3("INSN_ANNULLED_BRANCH_P", (RTX), JUMP_INSN, CALL_INSN, INSN)->unchanging)
 
-/* 1 if RTX is an insn that is dead code.  Valid only for dead-code
-   elimination phase.  */
-#define INSN_DEAD_CODE_P(RTX)						\
-  (RTL_FLAG_CHECK3("INSN_DEAD_CODE_P", (RTX), INSN, CALL_INSN, JUMP_INSN)->in_struct)
-
 /* 1 if RTX is an insn in a delay slot and is from the target of the branch.
    If the branch insn has INSN_ANNULLED_BRANCH_P set, this insn should only be
    executed if the branch is taken.  For annulled branches with this bit
@@ -710,8 +699,12 @@ do {				\
 #define INSN_FROM_TARGET_P(RTX)						\
   (RTL_FLAG_CHECK3("INSN_FROM_TARGET_P", (RTX), INSN, JUMP_INSN, CALL_INSN)->in_struct)
 
+/* In an ADDR_DIFF_VEC, the flags for RTX for use by branch shortening.
+   See the comments for ADDR_DIFF_VEC in rtl.def.  */
 #define ADDR_DIFF_VEC_FLAGS(RTX) X0ADVFLAGS(RTX, 4)
 
+/* In a VALUE, the value cselib has assigned to RTX.
+   This is a "struct cselib_val_struct", see cselib.h.  */
 #define CSELIB_VAL_PTR(RTX) X0CSELIB(RTX, 0)
 
 /* Holds a list of notes on what this insn does to various REGs.
@@ -719,7 +712,6 @@ do {				\
    chain pointer and the first operand is the REG being described.
    The mode field of the EXPR_LIST contains not a real machine mode
    but a value from enum reg_note.  */
-
 #define REG_NOTES(INSN)	XEXP(INSN, 8)
 
 enum reg_note
@@ -756,8 +748,6 @@ extern const char * const reg_note_name[];
    is made from `L' and the label-number printed in decimal.
    Label numbers are unique in a compilation.  */
 #define CODE_LABEL_NUMBER(INSN)	XINT (INSN, 6)
-
-#define LINE_NUMBER NOTE
 
 /* In a NOTE that is a line number, this is a string for the file name that the
    line is in.  We use the same field to record block numbers temporarily in
@@ -908,14 +898,10 @@ enum label_kind
 
 /* This is the field in the LABEL_REF through which the circular chain
    of references to a particular label is linked.
-   This chain is set up in flow.c.  */
-
+   FIXME: This chain is used in loop.c and in the SH backend.
+	  Since loop.c is about to go away, it could be a win to replace
+	  the uses of this in the SH backend with something else.  */
 #define LABEL_NEXTREF(REF) XCEXP (REF, 1, LABEL_REF)
-
-/* Once basic blocks are found in flow.c,
-   Each LABEL_REF points to its containing instruction with this field.  */
-
-#define CONTAINING_INSN(RTX) XCEXP (RTX, 2, LABEL_REF)
 
 /* For a REG rtx, REGNO extracts the register number.  ORIGINAL_REGNO holds
    the number the register originally had; for a pseudo register turned into
@@ -948,7 +934,6 @@ enum label_kind
 #define HARD_REGISTER_NUM_P(REG_NO) ((REG_NO) < FIRST_PSEUDO_REGISTER)
 
 /* For a CONST_INT rtx, INTVAL extracts the integer.  */
-
 #define INTVAL(RTX) XCWINT(RTX, 0, CONST_INT)
 
 /* For a CONST_DOUBLE:
@@ -1161,10 +1146,6 @@ do {						\
 /* 1 if RTX is a code_label that should always be considered to be needed.  */
 #define LABEL_PRESERVE_P(RTX)						\
   (RTL_FLAG_CHECK2("LABEL_PRESERVE_P", (RTX), CODE_LABEL, NOTE)->in_struct)
-
-/* 1 if RTX is a reg that is used only in an exit test of a loop.  */
-#define REG_LOOP_TEST_P(RTX)						\
-  (RTL_FLAG_CHECK1("REG_LOOP_TEST_P", (RTX), REG)->in_struct)
 
 /* During sched, 1 if RTX is an insn that must be scheduled together
    with the preceding insn.  */

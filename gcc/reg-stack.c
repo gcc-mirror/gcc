@@ -265,7 +265,6 @@ static int convert_regs_2 (FILE *, basic_block);
 static int convert_regs (FILE *);
 static void print_stack (FILE *, stack);
 static rtx next_flags_user (rtx);
-static void record_label_references (rtx, rtx);
 static bool compensate_edge (edge, FILE *);
 
 /* Return nonzero if any stack register is mentioned somewhere within PAT.  */
@@ -491,58 +490,7 @@ reg_to_stack (FILE *file)
   free_aux_for_blocks ();
   return true;
 }
-
-/* Check PAT, which is in INSN, for LABEL_REFs.  Add INSN to the
-   label's chain of references, and note which insn contains each
-   reference.  */
 
-static void
-record_label_references (rtx insn, rtx pat)
-{
-  enum rtx_code code = GET_CODE (pat);
-  int i;
-  const char *fmt;
-
-  if (code == LABEL_REF)
-    {
-      rtx label = XEXP (pat, 0);
-      rtx ref;
-
-      gcc_assert (LABEL_P (label));
-
-      /* If this is an undefined label, LABEL_REFS (label) contains
-         garbage.  */
-      if (INSN_UID (label) == 0)
-	return;
-
-      /* Don't make a duplicate in the code_label's chain.  */
-
-      for (ref = LABEL_REFS (label);
-	   ref && ref != label;
-	   ref = LABEL_NEXTREF (ref))
-	if (CONTAINING_INSN (ref) == insn)
-	  return;
-
-      CONTAINING_INSN (pat) = insn;
-      LABEL_NEXTREF (pat) = LABEL_REFS (label);
-      LABEL_REFS (label) = pat;
-
-      return;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	record_label_references (insn, XEXP (pat, i));
-      if (fmt[i] == 'E')
-	{
-	  int j;
-	  for (j = 0; j < XVECLEN (pat, i); j++)
-	    record_label_references (insn, XVECEXP (pat, i, j));
-	}
-    }
-}
 
 /* Return a pointer to the REG expression within PAT.  If PAT is not a
    REG, possible enclosed by a conversion rtx, return the inner part of
