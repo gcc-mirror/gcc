@@ -642,7 +642,7 @@ build_dynamic_cast (type, expr)
     return error_mark_node;
   
   if (processing_template_decl)
-    return build_min (DYNAMIC_CAST_EXPR, type, expr);
+    return build_min (DYNAMIC_CAST_EXPR, copy_to_permanent (type), expr);
 
   return convert_from_reference (build_dynamic_cast_1 (type, expr));
 }

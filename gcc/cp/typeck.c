@@ -5264,7 +5264,8 @@ build_static_cast (type, expr)
 
   if (processing_template_decl)
     {
-      tree t = build_min (STATIC_CAST_EXPR, type, expr);
+      tree t = build_min (STATIC_CAST_EXPR, copy_to_permanent (type),
+			  expr); 
       return t;
     }
 
@@ -5356,7 +5357,8 @@ build_reinterpret_cast (type, expr)
 
   if (processing_template_decl)
     {
-      tree t = build_min (REINTERPRET_CAST_EXPR, type, expr);
+      tree t = build_min (REINTERPRET_CAST_EXPR, 
+			  copy_to_permanent (type), expr);
       return t;
     }
 
@@ -5456,7 +5458,8 @@ build_const_cast (type, expr)
 
   if (processing_template_decl)
     {
-      tree t = build_min (CONST_CAST_EXPR, type, expr);
+      tree t = build_min (CONST_CAST_EXPR, copy_to_permanent (type),
+			  expr);
       return t;
     }
 
