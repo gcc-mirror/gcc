@@ -112,7 +112,7 @@ public final class Double extends Number
     if (s == null)
       throw new NullPointerException ();
 
-    return new Double (doubleValueOf (s));
+    return new Double (parseDouble (s));
   }
 
   public boolean isNaN ()
