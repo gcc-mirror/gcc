@@ -1257,9 +1257,7 @@ build_instanceof (value, type)
       /* Anything except `null' is an instance of Object.  Likewise,
 	 if the object is known to be an instance of the class, then
 	 we only need to check for `null'.  */
-      expr = build (COND_EXPR, itype,
-		    value,
-		    boolean_true_node, boolean_false_node);
+      expr = build (NE_EXPR, itype, value, null_pointer_node);
     }
   else if (! TYPE_ARRAY_P (type)
 	   && ! TYPE_ARRAY_P (valtype)
