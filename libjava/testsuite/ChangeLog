@@ -1,6 +1,7 @@
 2002-05-23  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* libjava.lang/PR6729.java: New file.
+	* libjava.lang/PR6729.out: New file.
 
 2002-05-04  Mark Wielaard  <mark@klomp.org>
 
