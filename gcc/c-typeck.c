@@ -253,7 +253,8 @@ composite_type (tree t1, tree t2)
 	tree pointed_to_2 = TREE_TYPE (t2);
 	tree target = composite_type (pointed_to_1, pointed_to_2);
 	t1 = build_pointer_type (target);
-	return build_type_attribute_variant (t1, attributes);
+	t1 = build_type_attribute_variant (t1, attributes);
+	return qualify_type (t1, t2);
       }
 
     case ARRAY_TYPE:
@@ -266,7 +267,8 @@ composite_type (tree t1, tree t2)
 	  return build_type_attribute_variant (t2, attributes);
 	/* Merge the element types, and have a size if either arg has one.  */
 	t1 = build_array_type (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
-	return build_type_attribute_variant (t1, attributes);
+	t1 = build_type_attribute_variant (t1, attributes);
+	return qualify_type (t1, t2);
       }
 
     case FUNCTION_TYPE:
@@ -289,13 +291,15 @@ composite_type (tree t1, tree t2)
 	/* Simple way if one arg fails to specify argument types.  */
 	if (TYPE_ARG_TYPES (t1) == 0)
 	 {
-	   t1 = build_function_type (valtype, TYPE_ARG_TYPES (t2));
-	   return build_type_attribute_variant (t1, attributes);
+	    t1 = build_function_type (valtype, TYPE_ARG_TYPES (t2));
+	    t1 = build_type_attribute_variant (t1, attributes);
+	    return qualify_type (t1, t2);
 	 }
 	if (TYPE_ARG_TYPES (t2) == 0)
 	 {
 	   t1 = build_function_type (valtype, TYPE_ARG_TYPES (t1));
-	   return build_type_attribute_variant (t1, attributes);
+	   t1 = build_type_attribute_variant (t1, attributes);
+	   return qualify_type (t1, t2);
 	 }
 
 	/* If both args specify argument types, we must merge the two
@@ -365,6 +369,7 @@ composite_type (tree t1, tree t2)
 
 	c_override_global_bindings_to_false = false;
 	t1 = build_function_type (valtype, newargs);
+	t1 = qualify_type (t1, t2);
 	/* ... falls through ...  */
       }
 

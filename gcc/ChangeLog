@@ -1,3 +1,11 @@
+2004-06-23  Andrew Pinski  <apinski@apple.com>
+
+	* c-typeck.c (composite_type):
+	<case POINTER_TYPE>: Build a qualified type of
+	the new type.
+	<case ARRAY_TYPE>: Likewise.
+	<case FUNCTION_TYPE>: Likewise.
+
 2004-06-23  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR optimization/15633

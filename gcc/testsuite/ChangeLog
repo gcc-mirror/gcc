@@ -1,3 +1,7 @@
+2006-06-23  Andrew Pinski  <apinski@apple.com>
+
+	* gcc.dg/c90-array-quals.c: New test.
+
 2006-06-22  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/noreturn-1.c (foo5): Update function does return lineno.
