@@ -1,3 +1,11 @@
+2003-07-16  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/11528
+	* include/bits/locale_facets.tcc (money_get::do_get):
+	Strip only _leading_ zeros.
+	* testsuite/22_locale/money_get/get/char/11528.cc: Add.
+	* testsuite/22_locale/money_get/get/wchar_t/11528.cc: Add.
+
 2003-07-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* include/ext/hash_map (class hash_multimap): Remove extra
