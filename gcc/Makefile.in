@@ -2901,6 +2901,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
 	  FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"; export FIXPROTO_DEFINES; \
+	  FIX_HEADER="build/fix-header$(build_exeext)"; export FIX_HEADER; \
 	  mkinstalldirs="$(mkinstalldirs)"; \
 	    export mkinstalldirs; \
 	  if [ -d "$(SYSTEM_HEADER_DIR)" ]; then \
