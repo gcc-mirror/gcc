@@ -963,6 +963,7 @@ java/beans/Customizer.java \
 java/beans/DesignMode.java \
 java/beans/EventSetDescriptor.java \
 java/beans/ExceptionListener.java \
+java/beans/Expression.java \
 java/beans/FeatureDescriptor.java \
 java/beans/IndexedPropertyDescriptor.java \
 java/beans/IntrospectionException.java \
@@ -978,6 +979,7 @@ java/beans/PropertyEditor.java \
 java/beans/PropertyEditorManager.java \
 java/beans/PropertyEditorSupport.java \
 java/beans/PropertyVetoException.java \
+java/beans/Statement.java \
 java/beans/SimpleBeanInfo.java \
 java/beans/VetoableChangeListener.java \
 java/beans/VetoableChangeListenerProxy.java \
@@ -3084,8 +3086,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/classpath/ServiceFactory.P \
 .deps/gnu/classpath/ServiceProviderLoadingAction.P .deps/gnu/gcj/Core.P \
 .deps/gnu/gcj/RawData.P .deps/gnu/gcj/RawDataManaged.P \
-.deps/gnu/gcj/convert/BytesToUnicode.P \
-.deps/gnu/gcj/convert/Convert.P .deps/gnu/gcj/convert/IOConverter.P \
+.deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
+.deps/gnu/gcj/convert/IOConverter.P \
 .deps/gnu/gcj/convert/Input_8859_1.P \
 .deps/gnu/gcj/convert/Input_ASCII.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \
@@ -3480,8 +3482,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/util/prefs/MemoryBasedFactory.P \
 .deps/gnu/java/util/prefs/MemoryBasedPreferences.P \
 .deps/gnu/java/util/prefs/NodeReader.P \
-.deps/gnu/java/util/prefs/NodeWriter.P \
-.deps/gnu/regexp/CharIndexed.P \
+.deps/gnu/java/util/prefs/NodeWriter.P .deps/gnu/regexp/CharIndexed.P \
 .deps/gnu/regexp/CharIndexedCharArray.P \
 .deps/gnu/regexp/CharIndexedInputStream.P \
 .deps/gnu/regexp/CharIndexedString.P \
@@ -3723,7 +3724,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/beans/BeanDescriptor.P .deps/java/beans/BeanInfo.P \
 .deps/java/beans/Beans.P .deps/java/beans/Customizer.P \
 .deps/java/beans/DesignMode.P .deps/java/beans/EventSetDescriptor.P \
-.deps/java/beans/ExceptionListener.P \
+.deps/java/beans/ExceptionListener.P .deps/java/beans/Expression.P \
 .deps/java/beans/FeatureDescriptor.P \
 .deps/java/beans/IndexedPropertyDescriptor.P \
 .deps/java/beans/IntrospectionException.P \
@@ -3737,7 +3738,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/beans/PropertyEditorManager.P \
 .deps/java/beans/PropertyEditorSupport.P \
 .deps/java/beans/PropertyVetoException.P \
-.deps/java/beans/SimpleBeanInfo.P \
+.deps/java/beans/SimpleBeanInfo.P .deps/java/beans/Statement.P \
 .deps/java/beans/VetoableChangeListener.P \
 .deps/java/beans/VetoableChangeListenerProxy.P \
 .deps/java/beans/VetoableChangeSupport.P .deps/java/beans/Visibility.P \

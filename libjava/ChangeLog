@@ -1,3 +1,10 @@
+2004-06-28  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/beans/Expression.java: New file.
+	* java/beans/Statement.java: New file.
+	* Makefile.am: Added new files.
+	* Makefile.in: Re-generate.
+
 2004-06-27 Mark Wielaard  <mark@klomp.org>
 
 	* java/io/FilePermission.java (usingPerms): Removed.
