@@ -1,3 +1,10 @@
+Sat Oct 31 12:30:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (jump_optimize): Initialize mappings from INSN_UID to
+	EH region if exceptions are enabled and we're performing cross
+	jump optimizations.
+	(find_cross_jump): Exit loop if the insns are in different EH regions.
+
 Sat Oct 31 10:02:48 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* dwarf2out.c (output_call_frame_info): Use
