@@ -2321,11 +2321,9 @@ tree
 bit_position (field)
      tree field;
 {
-  return size_binop (PLUS_EXPR, DECL_FIELD_BIT_OFFSET (field),
-		     size_binop (MULT_EXPR,
-				 convert (bitsizetype,
-					  DECL_FIELD_OFFSET (field)),
-				 bitsize_unit_node));
+
+  return bit_from_pos (DECL_FIELD_OFFSET (field),
+		       DECL_FIELD_BIT_OFFSET (field));
 }
 
 /* Likewise, but return as an integer.  Abort if it cannot be represented
@@ -2346,11 +2344,8 @@ tree
 byte_position (field)
      tree field;
 {
-  return size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
-		     convert (sizetype,
-			      size_binop (FLOOR_DIV_EXPR,
-					  DECL_FIELD_BIT_OFFSET (field),
-					  bitsize_unit_node)));
+  return byte_from_pos (DECL_FIELD_OFFSET (field),
+			DECL_FIELD_BIT_OFFSET (field));
 }
 
 /* Likewise, but return as an integer.  Abort if it cannot be represented

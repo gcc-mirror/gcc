@@ -433,6 +433,86 @@ start_record_layout (t)
   return rli;
 }
 
+/* These four routines perform computations that convert between
+   the offset/bitpos forms and byte and bit offsets.  */
+
+tree
+bit_from_pos (offset, bitpos)
+     tree offset, bitpos;
+{
+  return size_binop (PLUS_EXPR, bitpos,
+		     size_binop (MULT_EXPR, convert (bitsizetype, offset),
+				 bitsize_unit_node));
+}
+
+tree
+byte_from_pos (offset, bitpos)
+     tree offset, bitpos;
+{
+  return size_binop (PLUS_EXPR, offset,
+		     convert (sizetype,
+			      size_binop (CEIL_DIV_EXPR, bitpos,
+					  bitsize_unit_node)));
+}
+
+void
+pos_from_byte (poffset, pbitpos, off_align, pos)
+     tree *poffset, *pbitpos;
+     unsigned int off_align;
+     tree pos;
+{
+  *poffset
+    = size_binop (MULT_EXPR,
+		  convert (sizetype,
+			   size_binop (FLOOR_DIV_EXPR, pos,
+				       bitsize_int (off_align
+						    / BITS_PER_UNIT))),
+		  size_int (off_align / BITS_PER_UNIT));
+  *pbitpos = size_binop (MULT_EXPR,
+			 size_binop (FLOOR_MOD_EXPR, pos,
+				     bitsize_int (off_align / BITS_PER_UNIT)),
+			 bitsize_unit_node);
+}
+
+void
+pos_from_bit (poffset, pbitpos, off_align, pos)
+     tree *poffset, *pbitpos;
+     unsigned int off_align;
+     tree pos;
+{
+  *poffset = size_binop (MULT_EXPR,
+			 convert (sizetype,
+				  size_binop (FLOOR_DIV_EXPR, pos,
+					      bitsize_int (off_align))),
+			 size_int (off_align / BITS_PER_UNIT));
+  *pbitpos = size_binop (FLOOR_MOD_EXPR, pos, bitsize_int (off_align));
+}
+
+/* Given a pointer to bit and byte offsets and an offset alignment,
+   normalize the offsets so they are within the alignment.  */
+
+void
+normalize_offset (poffset, pbitpos, off_align)
+     tree *poffset, *pbitpos;
+     unsigned int off_align;
+{
+  /* If the bit position is now larger than it should be, adjust it
+     downwards.  */
+  if (compare_tree_int (*pbitpos, off_align) >= 0)
+    {
+      tree extra_aligns = size_binop (FLOOR_DIV_EXPR, *pbitpos,
+				      bitsize_int (off_align));
+
+      *poffset
+	= size_binop (PLUS_EXPR, *poffset,
+		      size_binop (MULT_EXPR, convert (sizetype, extra_aligns),
+				  size_int (off_align / BITS_PER_UNIT)));
+				
+      *pbitpos
+	= size_binop (FLOOR_MOD_EXPR, *pbitpos, bitsize_int (off_align));
+    }
+}
+
 /* Print debugging information about the information in RLI.  */
 
 void
@@ -462,22 +542,7 @@ void
 normalize_rli (rli)
      record_layout_info rli;
 {
-  /* If the bit position is now larger than it should be, adjust it
-     downwards.  */
-  if (compare_tree_int (rli->bitpos, rli->offset_align) >= 0)
-    {
-      tree extra_aligns = size_binop (FLOOR_DIV_EXPR, rli->bitpos,
-				      bitsize_int (rli->offset_align));
-
-      rli->offset
-	= size_binop (PLUS_EXPR, rli->offset,
-		      size_binop (MULT_EXPR, convert (sizetype, extra_aligns),
-				  size_int (rli->offset_align
-					    / BITS_PER_UNIT)));
-				
-      rli->bitpos = size_binop (FLOOR_MOD_EXPR, rli->bitpos,
-				bitsize_int (rli->offset_align));
-    }
+  normalize_offset (&rli->offset, &rli->bitpos, rli->offset_align);
 }
 
 /* Returns the size in bytes allocated so far.  */
@@ -486,10 +551,7 @@ tree
 rli_size_unit_so_far (rli)
      record_layout_info rli;
 {
-  return size_binop (PLUS_EXPR, rli->offset,
-		     convert (sizetype,
-			      size_binop (CEIL_DIV_EXPR, rli->bitpos,
-					  bitsize_unit_node)));
+  return byte_from_pos (rli->offset, rli->bitpos);
 }
 
 /* Returns the size in bits allocated so far.  */
@@ -498,9 +560,7 @@ tree
 rli_size_so_far (rli)
      record_layout_info rli;
 {
-  return size_binop (PLUS_EXPR, rli->bitpos,
-		     size_binop (MULT_EXPR, convert (bitsizetype, rli->offset),
-				 bitsize_unit_node));
+  return bit_from_pos (rli->offset, rli->bitpos);
 }
 
 /* Called from place_field to handle unions.  */
