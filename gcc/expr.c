@@ -8703,7 +8703,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	      if (! can_handle_constant_p)
 		{
 		  warning ("Delayed evaluation of __builtin_constant_p not supported on this target.");
-		  warning ("Please report this as a bug to egcs-bugs@cygnus.com.");
+		  warning ("Please report this as a bug to egcs-bugs@egcs.cygnus.com.");
 		  return const0_rtx;
 		}
 	      return gen_rtx_CONSTANT_P_RTX (TYPE_MODE (integer_type_node),

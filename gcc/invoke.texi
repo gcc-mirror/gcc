@@ -2425,7 +2425,7 @@ These two options are intended to be removed someday, once
 they have helped determine the efficacy of various
 approaches to improving loop optimizations.
 
-Please let us (@code{egcs@@cygnus.com} and @code{fortran@@gnu.org})
+Please let us (@code{egcs@@egcs.cygnus.com} and @code{fortran@@gnu.org})
 know how use of these options affects
 the performance of your production code.
 We're very interested in code that runs @emph{slower}

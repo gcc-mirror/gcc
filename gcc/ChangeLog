@@ -1,5 +1,7 @@
 Sat Feb  6 16:03:36 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* invoke.texi, expr.c: Update email addresses.
+
 	* gcc.c, gcc.texi: Update email addresses.
 
 Sat Jan 30 05:27:25 1999  Jeffrey A Law  (law@cygnus.com)
