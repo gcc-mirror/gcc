@@ -29,6 +29,9 @@
 	simplify_const_binary_operation): Likewise.
 	* stor-layout.c (get_mode_bounds): Likewise.
 
+	* fold-const.c (fold_binary): New.
+	(fold): Call fold_binary on binary expressions.
+
 2005-03-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Document new MIPS -msym32 and -mno-sym32 options.
