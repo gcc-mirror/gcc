@@ -1,3 +1,9 @@
+1999-07-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c: Remove prototype for largest_union_member.
+	* pt.c (determine_specialization): Fix uninitialized warning.
+	* lex.c (real_yylex): Likewise.
+
 1999-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (override_one_vtable): Adjust the use of BINFO_VIRTUALS

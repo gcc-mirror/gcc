@@ -71,7 +71,6 @@ static void process_modifiers PROTO((tree));
 static void process_overload_item PROTO((tree,int));
 static void do_build_assign_ref PROTO((tree));
 static void do_build_copy_constructor PROTO((tree));
-static tree largest_union_member PROTO((tree));
 static void build_template_template_parm_names PROTO((tree));
 static void build_template_parm_names PROTO((tree, tree));
 static void build_underscore_int PROTO((int));

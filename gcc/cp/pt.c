@@ -955,7 +955,6 @@ determine_specialization (template_id, decl, targs_out,
      tree* targs_out;
      int need_member_template;
 {
-  tree fn;
   tree fns;
   tree targs;
   tree explicit_targs;
@@ -979,7 +978,7 @@ determine_specialization (template_id, decl, targs_out,
 
   if (!is_overloaded_fn (fns))
     {
-      cp_error ("`%D' is not a function template", fn);
+      cp_error ("`%D' is not a function template", fns);
       return error_mark_node;
     }
 
@@ -987,7 +986,7 @@ determine_specialization (template_id, decl, targs_out,
     {
       tree tmpl;
 
-      fn = OVL_CURRENT (fns);
+      tree fn = OVL_CURRENT (fns);
 
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	/* DECL might be a specialization of FN.  */
