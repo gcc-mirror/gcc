@@ -54,11 +54,12 @@ sh port			Alexandre Oliva		aoliva@redhat.com
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Jakub Jelinek		jakub@redhat.com
-x86-64 port		Jan Hubicka		jh@suse.cz
-xstormy16 port		Geoffrey Keating	geoffk@redhat.com
 v850 port		Nick Clifton		nickc@redhat.com
 v850 port		Michael Meissner	meissner@redhat.com
 vax port		Dave Anglin		dave.anglin@nrc.ca
+x86-64 port		Jan Hubicka		jh@suse.cz
+xstormy16 port		Geoffrey Keating	geoffk@redhat.com
+xtensa port		Bob Wilson		bob.wilson@acm.org
 
 			OS Port Maintainers	(OS alphabetical order)
 
@@ -219,7 +220,6 @@ Tom Rix						trix@redhat.com
 Richard Stallman				rms@gnu.org
 Graham Stott					grahams@redhat.com
 Florian Weimer					fw@deneb.enyo.de
-Bob Wilson					bob.wilson@acm.org
 Adam Megacz					adam@xwt.org
 
 GNATS only accounts
