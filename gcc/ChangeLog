@@ -1,3 +1,11 @@
+2003-06-29  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	* doc/install.texi: Remove install documentation for obsoleted targets
+	i?86-*-sco, i?86-*-sco3.2v4, powerpcle-*-pe, powerpcle-*-winnt,
+	arm-*-aof.
+	Update information about IA64 toolchain, AIX make requirements,
+	and binutils for m68k-*-hpux and *-*-linuxaout targets.
+
 Mon Jun 30 00:50:43 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* regmove.c (regmove_optimize): Don't try to make src and dst match
