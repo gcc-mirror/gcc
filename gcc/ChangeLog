@@ -1,3 +1,7 @@
+Wed Nov 26 11:12:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* toplev.c (main): Complain about -gdwarfn.
+
 Tue Nov 25 23:37:27 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* integrate.c (output_inline_function): Just unset DECL_INLINE.
