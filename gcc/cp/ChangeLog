@@ -1,5 +1,8 @@
 2004-07-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (get_aggr_typedef): Remove.
+	* init.c (get_aggr_typedef): Likewise.
+
 	* name-lookup.c (push_class_level_binding): Simplify.
 
 2004-07-12  Andrew Pinski  <apinski@apple.com>

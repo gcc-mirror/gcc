@@ -3860,7 +3860,6 @@ extern void emit_mem_initializers		(tree);
 extern tree build_aggr_init			(tree, tree, int);
 extern tree build_init				(tree, tree, int);
 extern int is_aggr_type				(tree, int);
-extern tree get_aggr_from_typedef		(tree, int);
 extern tree get_type_value			(tree);
 extern tree build_zero_init       		(tree, tree, bool);
 extern tree build_offset_ref			(tree, tree, bool);
