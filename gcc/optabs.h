@@ -152,8 +152,12 @@ enum optab_index
   OTI_sincos,
   /* Sine */
   OTI_sin,
+  /* Inverse sine */
+  OTI_asin,
   /* Cosine */
   OTI_cos,
+  /* Inverse cosine */
+  OTI_acos,
   /* Exponential */
   OTI_exp,
   /* Base-10 Exponential */
@@ -271,7 +275,9 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define sqrt_optab (optab_table[OTI_sqrt])
 #define sincos_optab (optab_table[OTI_sincos])
 #define sin_optab (optab_table[OTI_sin])
+#define asin_optab (optab_table[OTI_asin])
 #define cos_optab (optab_table[OTI_cos])
+#define acos_optab (optab_table[OTI_acos])
 #define exp_optab (optab_table[OTI_exp])
 #define exp10_optab (optab_table[OTI_exp10])
 #define exp2_optab (optab_table[OTI_exp2])

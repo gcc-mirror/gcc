@@ -5380,7 +5380,9 @@ init_optabs (void)
   nearbyint_optab = init_optab (UNKNOWN);
   sincos_optab = init_optab (UNKNOWN);
   sin_optab = init_optab (UNKNOWN);
+  asin_optab = init_optab (UNKNOWN);
   cos_optab = init_optab (UNKNOWN);
+  acos_optab = init_optab (UNKNOWN);
   exp_optab = init_optab (UNKNOWN);
   exp10_optab = init_optab (UNKNOWN);
   exp2_optab = init_optab (UNKNOWN);

@@ -1,3 +1,19 @@
+2004-04-20  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_asin and OTI_acos.
+	(asin_optab, acos_optab): Define corresponding macros.
+	* optabs.c (init_optabs): Initialize asin_optab and acos_optab.
+	* genopinit.c (optabs): Implement asin_optab and acos_optab
+	using asin?f2 and acos?f2 patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_ASIN{,F,L}
+	using asin_optab, and BUILT_IN_ACOS{,F,L} using acos_optab.
+	(expand_builtin): Expand BUILT_IN_ASIN{,F,L} and BUILT_IN_ACOS{,F,L}
+	using expand_builtin_mathfn if flag_unsafe_math_optimizations is set.
+
+	* config/i386/i386.md (asindf2, asinsf2, asinxf2, acosdf2,
+	acossf2, acosxf2): New expanders to implement asin, asinf, asinl,
+	acos, acosf and acosl built-ins as inline x87 intrinsics.
+
 2004-04-20  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_legitimate_address_p): Use rtx_equal_p.
