@@ -1,3 +1,8 @@
+Mon Oct  1 09:26:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/i386/i386.c (ix86_va_arg): Call set_mem_alias_set.
+	(ix86_setup_incoming_varargs): Likewise.
+
 2001-10-01  Jason Merrill  <jason_merrill@redhat.com>
 
 	* stor-layout.c (layout_type): Don't complain about too-large
