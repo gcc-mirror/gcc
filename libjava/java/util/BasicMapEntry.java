@@ -33,8 +33,6 @@ package java.util;
  * Hashtable.
  *
  * @author      Jon Zeppieri
- * @version     $Revision: 1.5 $
- * @modified    $Id: BasicMapEntry.java,v 1.5 2000/10/26 10:19:00 bryce Exp $
  */
 class BasicMapEntry implements Map.Entry
 {
