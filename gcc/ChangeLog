@@ -1,3 +1,9 @@
+2002-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/6205
+	* config/i386/i386.md (movsf_1): Use pxor only if TARGET_SSE2,
+	otherwise xorps.
+
 2002-04-18  Loren J. Rittle  <ljrittle@acm.org>
 
 	Revert this change:
