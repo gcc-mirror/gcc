@@ -1,5 +1,5 @@
 /* URLEncoder.java -- Class to convert strings to a properly encoded URL
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,8 @@ import java.io.UnsupportedEncodingException;
   * US alphabet remain as is, the space character (' ') is replaced with
   * '+' sign, and all other characters are converted to a "%XX" format
   * where XX is the hexadecimal representation of that character in a
-  * certain encoding (by default "UTF-8").
+  * certain encoding (by default, the platform encoding, though the
+  * standard is "UTF-8").
   * <p>
   * This method is very useful for encoding strings to be sent to CGI scripts
   *
@@ -65,8 +66,9 @@ public class URLEncoder
 {
   /**
    * This method translates the passed in string into x-www-form-urlencoded
-   * format using the standard "UTF-8" character encoding to hex-encode the
-   * unsafe characters.
+   * format using the default encoding.  The standard encoding is
+   * "UTF-8", and the two-argument form of this method should be used
+   * instead.
    *
    * @param s The String to convert
    *
@@ -78,11 +80,13 @@ public class URLEncoder
   {
     try
       {
-        return encode(s, "UTF-8");
+	// We default to 8859_1 for compatibility with the same
+	// default elsewhere in the library.
+        return encode(s, System.getProperty("file.encoding", "8859_1"));
       }
     catch (UnsupportedEncodingException uee)
       {
-        // Should never happen since UTF-8 should always be supported
+        // Should never happen since default should always be supported
 	return s;
       }
   }
@@ -139,7 +143,9 @@ public class URLEncoder
 	  for (int j = 0; j < bytes.length; j++)
 	    {
 	      result.append('%');
-	      result.append(Integer.toHexString(((int) bytes[j]) & 0xFF));
+	      int val = bytes[j];
+	      result.append(hex.charAt((val & 0xf0) >> 4));
+	      result.append(hex.charAt(val & 0x0f));
 	    }
 	}
       start = i;
@@ -166,4 +172,11 @@ public class URLEncoder
    */
   private URLEncoder() { }
 
+  /**
+   * Used to convert to hex.  We don't use Integer.toHexString, since
+   * it converts to lower case (and the Sun docs pretty clearly
+   * specify upper case here), and because it doesn't provide a
+   * leading 0.
+   */
+  private static final String hex = "0123456789ABCDEF";
 } // class URLEncoder
