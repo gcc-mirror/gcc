@@ -347,6 +347,5 @@ public final class String implements Serializable, Comparable
   private native void init (byte[] chars, int hibyte, int offset, int count);
   private native void init (byte[] chars, int offset, int count, String enc)
     throws UnsupportedEncodingException;
-  private static native void unintern (Object obj);
   private static native void rehash ();
 }
