@@ -1,3 +1,8 @@
+2002-11-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* config/os/hpux/os_defines.h (_GLIBCPP_INST_ATOMICITY_LOCK): Define
+	on hppa when there is no weak support.
+
 2002-11-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/8230
