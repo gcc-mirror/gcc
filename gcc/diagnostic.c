@@ -1399,6 +1399,20 @@ default_diagnostic_finalizer (context, diagnostic)
 }
 
 void
+inform VPARAMS ((const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, lineno,
+                       DK_NOTE);
+  report_diagnostic (&diagnostic);
+  VA_CLOSE (ap);
+}
+
+void
 warn_deprecated_use (node)
      tree node;
 {
