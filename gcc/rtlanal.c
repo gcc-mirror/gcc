@@ -3432,8 +3432,10 @@ subreg_offset_representable_p (xregno, xmode, offset, ymode)
      redesigned.  */
   if (GET_MODE_SIZE (xmode) % GET_MODE_SIZE (ymode)
       || GET_MODE_SIZE (ymode) % nregs_ymode
-      || mode_for_size (GET_MODE_SIZE (ymode) / nregs_ymode,
-	      		MODE_INT, 0) == VOIDmode
+      || (GET_MODE_BITSIZE (mode_for_size (GET_MODE_BITSIZE (xmode)
+			      		   / nregs_xmode,
+					   MODE_INT, 0))
+	  != GET_MODE_BITSIZE (xmode) / nregs_xmode)
       || nregs_xmode % nregs_ymode)
     abort ();
 #endif
@@ -3441,9 +3443,10 @@ subreg_offset_representable_p (xregno, xmode, offset, ymode)
   /* The XMODE value can be seen as an vector of NREGS_XMODE
      values.  The subreg must represent an lowpart of given field.
      Compute what field it is.  */
-  offset -= subreg_lowpart_offset (mode_for_size (GET_MODE_SIZE (ymode)
-			  			  / nregs_ymode,
-						  MODE_INT, 0), xmode);
+  offset -= subreg_lowpart_offset (ymode, 
+		  		   mode_for_size (GET_MODE_BITSIZE (xmode)
+			  			  / nregs_xmode,
+						  MODE_INT, 0));
 
   /* size of ymode must not be greater than the size of xmode.  */
   mode_multiple = GET_MODE_SIZE (xmode) / GET_MODE_SIZE (ymode);

@@ -1,3 +1,8 @@
+Sat Apr 19 14:56:17 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* rtlanal.c (subreg_offset_representable_p):  Fix call of
+	subreg_lowpart.
+
 2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpphash.h (struct cpp_reader): New member warned_dollar.
