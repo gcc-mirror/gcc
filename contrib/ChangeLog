@@ -1,3 +1,8 @@
+2001-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_build: Output information about the commands used to 
+	configure the compiler.
+
 2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gennews: Update for GCC 3.0.
