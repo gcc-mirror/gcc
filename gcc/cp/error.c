@@ -2594,4 +2594,5 @@ print_instantiation_context ()
 {
   print_instantiation_partial_context
     (diagnostic_buffer, current_instantiation (), input_filename, lineno);
+  flush_diagnostic_buffer ();
 }

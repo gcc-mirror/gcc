@@ -362,6 +362,13 @@ output_finish (buffer)
   return (const char *) obstack_finish (&buffer->obstack);
 }
 
+void
+flush_diagnostic_buffer ()
+{
+  output_to_stream (diagnostic_buffer, stderr);
+  fflush (stderr);
+}
+
 /* Return the amount of characters BUFFER can accept to
    make a full line.  */
 
@@ -823,7 +830,7 @@ output_do_printf (buffer, msgid)
   char *message = vbuild_message_string (msgid,
                                          output_buffer_format_args (buffer));
 
-  output_add_string (buffer, message);
+  wrap_text (buffer, message, message + strlen (message));
   free (message);
 }
 
@@ -1214,21 +1221,19 @@ default_print_error_function (file)
       output_set_prefix (diagnostic_buffer, prefix);
       
       if (current_function_decl == NULL)
-        {
           output_add_string (diagnostic_buffer, "At top level:");
-          output_add_newline (diagnostic_buffer);
-        }
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
             output_printf
-              (diagnostic_buffer, "In method `%s':\n",
+              (diagnostic_buffer, "In method `%s':",
                (*decl_printable_name) (current_function_decl, 2));
 	  else
             output_printf
-              (diagnostic_buffer, "In function `%s':\n",
+              (diagnostic_buffer, "In function `%s':",
                (*decl_printable_name) (current_function_decl, 2));
 	}
+      output_add_newline (diagnostic_buffer);
 
       record_last_error_function ();
       output_to_stream (diagnostic_buffer, stderr);
