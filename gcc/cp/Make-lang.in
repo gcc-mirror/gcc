@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU C++.
-#   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -278,6 +278,6 @@ c++.distdir:
 	done
 	cd inc; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/cp/inc >/dev/null 2>&1 \
-	   || cp $$file ../tmp/cp/inc; \
+	  ln $$file ../../tmp/cp/inc >/dev/null 2>&1 \
+	   || cp $$file ../../tmp/cp/inc; \
 	done
