@@ -1,3 +1,9 @@
+2000-03-07  Andrew Haley  <aph@cygnus.com>
+
+	* config/mips/mips.h (PTRDIFF_TYPE): Revert broken change;
+	PTRDIFF_TYPE should be based solely on Pmode.
+	(SIZE_TYPE): ditto.
+
 2000-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.h (rtunion_def): Constify member `rtstr'.
