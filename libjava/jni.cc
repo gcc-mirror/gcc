@@ -13,9 +13,6 @@ details.  */
 #include <stddef.h>
 #include <string.h>
 
-// Define this before including jni.h.
-#define __GCJ_JNI_IMPL__
-
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java-assert.h>
@@ -41,7 +38,6 @@ details.  */
 #include <java/lang/Integer.h>
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/Thread.h>
-#include <gnu/gcj/runtime/JNIWeakRef.h>
 
 #include <gcj/method.h>
 #include <gcj/field.h>
