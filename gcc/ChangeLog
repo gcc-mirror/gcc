@@ -1,5 +1,29 @@
 2001-09-19  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (local_symbol_p): Split out from ...
+	(local_symbolic_operand): ... here.
+	(small_symbolic_operand): Check mode.
+	(global_symbolic_operand): New.
+	(input_operand): Reject symbolics if explicit relocs.
+	(call_operand): Tidy.
+	(alpha_legitimize_address): Use movdi_er_high_g.
+	(alpha_expand_mov): Likewise.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.h (PREDICATE_CODES): Update.
+	* config/alpha/alpha.md (UNSPEC_LITERAL, UNSPEC_LITUSE): New.
+	(UNSPEC_LDGP2, UNSPECV_PLDGP2): New.
+	(UNSPECV_LDGP2): Remove.
+	(all call patterns): Use 's' not 'i' for symbolic constraint.
+	(call_osf call_value_osf): Use call_operand.
+	(all osf call patterns): Use $gp.  New peepholes for explicit relocs.
+	(movdi_er_nofix, movdi_er_fix): Remove symbolic alternative.
+	(prologue_ldgp_1_er): Remove.
+	(ldgp_er_1, ldgp_er_2, prologue_ldgp_er_2): New.
+	(builtin_setjmp_receiver_er patterns): Use them.
+	(exception_receiver_er): Likewise.
+
+2001-09-19  Richard Henderson  <rth@redhat.com>
+
 	* cfgbuild.c (find_sub_basic_blocks): Handle insns that can throw.
 
 	* emit-rtl.c (try_split): Copy NORETURN, SETJMP, ALWAYS_RETURN

@@ -114,6 +114,8 @@ int alpha_this_literal_sequence_number;
 int alpha_this_gpdisp_sequence_number;
 
 /* Declarations of static functions.  */
+static bool local_symbol_p
+  PARAMS ((rtx));
 static void alpha_set_memflags_1
   PARAMS ((rtx, int, int, int));
 static rtx alpha_emit_set_const_1
@@ -795,6 +797,9 @@ input_operand (op, mode)
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST:
+      if (TARGET_EXPLICIT_RELOCS)
+	return 0;
+
       /* This handles both the Windows/NT and OSF cases.  */
       return mode == ptr_mode || mode == DImode;
 
@@ -840,16 +845,32 @@ current_file_function_operand (op, mode)
 	      || op == XEXP (DECL_RTL (current_function_decl), 0)));
 }
 
-/* Return true if OP is a SYMBOL_REF or CONST referencing a variable
-   known to be defined in this file.  */
+/* Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
+   a variable known to be defined in this file.  */
+
+static bool
+local_symbol_p (op)
+     rtx op;
+{
+  const char *str = XSTR (op, 0);
+
+  /* ??? SYMBOL_REF_FLAG is set for local function symbols, but we
+     run into problems with the rtl inliner in that the symbol was
+     once external, but is local after inlining, which results in
+     unrecognizable insns.  */
+
+  return (CONSTANT_POOL_ADDRESS_P (op)
+	  /* If @, then ENCODE_SECTION_INFO sez it's local.  */
+	  || str[0] == '@'
+	  /* If *$, then ASM_GENERATE_INTERNAL_LABEL sez it's local.  */
+	  || (str[0] == '*' && str[1] == '$'));
+}
 
 int
 local_symbolic_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  const char *str;
-
   if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
     return 0;
 
@@ -864,18 +885,7 @@ local_symbolic_operand (op, mode)
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
 
-  str = XSTR (op, 0);
-
-  /* ??? SYMBOL_REF_FLAG is set for local function symbols, but we
-     run into problems with the rtl inliner in that the symbol was
-     once external, but is local after inlining, which results in
-     unrecognizable insns.  */
-
-  return (CONSTANT_POOL_ADDRESS_P (op)
-	  /* If @, then ENCODE_SECTION_INFO sez it's local.  */
-	  || str[0] == '@'
-	  /* If *$, then ASM_GENERATE_INTERNAL_LABEL sez it's local.  */
-	  || (str[0] == '*' && str[1] == '$'));
+  return local_symbol_p (op);
 }
 
 /* Return true if OP is a SYMBOL_REF or CONST referencing a variable
@@ -891,6 +901,9 @@ small_symbolic_operand (op, mode)
   if (! TARGET_SMALL_DATA)
     return 0;
 
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
@@ -900,12 +913,34 @@ small_symbolic_operand (op, mode)
     return 0;
 
   if (CONSTANT_POOL_ADDRESS_P (op))
-    return GET_MODE_SIZE (get_pool_mode (op)) <= g_switch_value;
+    return GET_MODE_SIZE (get_pool_mode (op)) <= (unsigned) g_switch_value;
   else
     {
       str = XSTR (op, 0);
       return str[0] == '@' && str[1] == 's';
     }
+}
+
+/* Return true if OP is a SYMBOL_REF or CONST referencing a variable
+   not known (or known not) to be defined in this file.  */
+
+int
+global_symbolic_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+    op = XEXP (XEXP (op, 0), 0);
+
+  if (GET_CODE (op) != SYMBOL_REF)
+    return 0;
+
+  return ! local_symbol_p (op);
 }
 
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
@@ -918,10 +953,6 @@ call_operand (op, mode)
   if (mode != Pmode)
     return 0;
 
-  if (TARGET_ABI_UNICOSMK)
-    return GET_CODE (op) == REG;
-  if (GET_CODE (op) == SYMBOL_REF)
-    return 1;
   if (GET_CODE (op) == REG)
     {
       if (TARGET_ABI_OSF)
@@ -929,6 +960,10 @@ call_operand (op, mode)
       else
 	return 1;
     }
+  if (TARGET_ABI_UNICOSMK)
+    return 0;
+  if (GET_CODE (op) == SYMBOL_REF)
+    return 1;
 
   return 0;
 }
@@ -1593,26 +1628,36 @@ alpha_legitimize_address (x, oldx, mode)
     }
 
   /* If this is a local symbol, split the address into HIGH/LO_SUM parts.  */
-  if (TARGET_EXPLICIT_RELOCS && local_symbolic_operand (x, Pmode))
+  if (TARGET_EXPLICIT_RELOCS && symbolic_operand (x, Pmode))
     {
       rtx scratch;
+      if (local_symbolic_operand (x, Pmode))
+	{
+	  if (small_symbolic_operand (x, Pmode))
+	    scratch = pic_offset_table_rtx;
+	  else
+	    {
+	      rtx insn, tmp;
 
-      if (small_symbolic_operand (x, Pmode))
-	scratch = pic_offset_table_rtx;
+	      scratch = gen_reg_rtx (Pmode);
+
+	      tmp = gen_rtx_HIGH (Pmode, x);
+	      tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
+              insn = emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, tmp,
+						    REG_NOTES (insn));
+	    }
+
+	  return gen_rtx_LO_SUM (Pmode, scratch, x);
+	}
       else
 	{
-	  rtx insn, tmp;
-
 	  scratch = gen_reg_rtx (Pmode);
-
-	  tmp = gen_rtx_HIGH (Pmode, x);
-	  tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
-          insn = emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp));
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, tmp,
-						REG_NOTES (insn));
+	  emit_insn (gen_movdi_er_high_g (scratch, pic_offset_table_rtx,
+					  x, const0_rtx));
+	  /* ??? FIXME: Tag the use of scratch with a lituse.  */
+	  return scratch;
 	}
-
-      return gen_rtx_LO_SUM (Pmode, scratch, x);
     }
 
   return NULL;
@@ -2172,27 +2217,36 @@ alpha_expand_mov (mode, operands)
       && ! reg_or_0_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
 
-  if (TARGET_EXPLICIT_RELOCS && local_symbolic_operand (operands[1], mode))
+  if (TARGET_EXPLICIT_RELOCS && symbolic_operand (operands[1], mode))
     {
-      rtx scratch;
+      if (local_symbolic_operand (operands[1], mode))
+	{
+	  rtx scratch;
 
-      if (small_symbolic_operand (operands[1], Pmode))
-	scratch = pic_offset_table_rtx;
+	  if (small_symbolic_operand (operands[1], Pmode))
+	    scratch = pic_offset_table_rtx;
+	  else
+	    {
+	      rtx insn, tmp;
+
+	      scratch = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+
+	      tmp = gen_rtx_HIGH (Pmode, operands[1]);
+	      tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
+              insn = emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, tmp,
+						    REG_NOTES (insn));
+	    }
+
+          operands[1] = gen_rtx_LO_SUM (Pmode, scratch, operands[1]);
+	  return false;
+	}
       else
 	{
-	  rtx insn, tmp;
-
-	  scratch = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
-
-	  tmp = gen_rtx_HIGH (Pmode, operands[1]);
-	  tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
-          insn = emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp));
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, tmp,
-						REG_NOTES (insn));
+	  emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
+					  operands[1], const0_rtx));
+	  return true;
 	}
-
-      operands[1] = gen_rtx_LO_SUM (Pmode, scratch, operands[1]);
-      return false;
     }
 
   /* Early out for non-constants and valid constants.  */

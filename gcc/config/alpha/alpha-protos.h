@@ -18,6 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+extern int alpha_next_sequence_number;
+
 extern void literal_section PARAMS ((void));
 extern void override_options PARAMS ((void));
 extern int zap_mask PARAMS ((HOST_WIDE_INT));
@@ -55,6 +57,8 @@ extern int some_ni_operand PARAMS ((rtx, enum machine_mode));
 extern int input_operand PARAMS ((rtx, enum machine_mode));
 extern int current_file_function_operand PARAMS ((rtx, enum machine_mode));
 extern int local_symbolic_operand PARAMS ((rtx, enum machine_mode));
+extern int small_symbolic_operand PARAMS ((rtx, enum machine_mode));
+extern int global_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_operand PARAMS ((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int alpha_comparison_operator PARAMS ((rtx, enum machine_mode));
