@@ -1,3 +1,9 @@
+Sat Jan 17 23:22:59 1998  John Wehle  (john@feith.com)
+
+	* i386.md: Remove redundant integer push patterns.
+	Don't bother checking for TARGET_PUSH_MEMORY when
+	pushing constants or registers.
+
 Sat Jan 17 22:35:39 1998  Mumit Khan <khan@xraylith.wisc.edu>
 			  J.J VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
 	
