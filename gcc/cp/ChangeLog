@@ -1,3 +1,7 @@
+Sun Feb  8 23:47:38 1998  scott snyder  <sss@d0linux01.fnal.gov>
+
+	* method.c (make_thunk): Avoid name buffer overflow.
+
 Sat Feb  7 16:48:54 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_decl): Call cp_finish_decl for vars even if we
