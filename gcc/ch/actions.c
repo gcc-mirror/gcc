@@ -64,7 +64,7 @@ extern char *dump_base_name;
    grant file written, generating no code. */
 int grant_only_flag = 0;
 
-char *
+const char *
 lang_identify ()
 {
   return "chill";

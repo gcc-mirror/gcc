@@ -1,3 +1,10 @@
+1999-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * actions.c (lang_identify): Constify a char*.
+
+        * lang.c (chill_print_error_function): Likewise.
+        (lang_init): Remove redundant prototype for `print_error_function'.
+
 1999-07-25  Richard Henderson  <rth@cygnus.com>
 
 	* decl.c (va_list_type_node): New.
