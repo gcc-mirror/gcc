@@ -4647,8 +4647,8 @@ asctoeg (ss, y, oprec)
   while (*s == ' ')		/* skip leading spaces */
     ++s;
   sp = lstr;
-  while ((*sp++ = *s++) == '\0')
-	;
+  while ((*sp++ = *s++) != '\0')
+    ;
   s = lstr;
 
   rndsav = rndprc;
