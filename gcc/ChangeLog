@@ -1,3 +1,7 @@
+Sat Oct 20 15:16:10 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (split_di): Handle splitting of DFmode.
+
 Sat Oct 20 07:27:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* emit-rtl.c (set_mem_attributes): Alignment is in bits.

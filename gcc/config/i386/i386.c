@@ -5937,8 +5937,12 @@ split_di (operands, num, lo_half, hi_half)
 	}
       else
 	{
-	  lo_half[num] = simplify_gen_subreg (SImode, op, DImode, 0);
-	  hi_half[num] = simplify_gen_subreg (SImode, op, DImode, 4);
+	  lo_half[num] = simplify_gen_subreg (SImode, op,
+					      GET_MODE (op) == VOIDmode
+					      ? DImode : GET_MODE (op), 0);
+	  hi_half[num] = simplify_gen_subreg (SImode, op,
+					      GET_MODE (op) == VOIDmode
+					      ? DImode : GET_MODE (op), 4);
 	}
     }
 }
