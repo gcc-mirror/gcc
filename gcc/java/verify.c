@@ -348,6 +348,9 @@ start_pc_cmp (xp, yp)
 #define VERIFICATION_ERROR(MESSAGE) \
   do { message = MESSAGE;  goto verify_error; } while (0)
 
+#define VERIFICATION_ERROR_WITH_INDEX(MESSAGE) \
+  do { message = MESSAGE;  goto error_with_index; } while (0)
+
 /* Recursive helper function to pop argument types during verifiation.
    ARG_TYPES is the list of formal parameter types.
    Return NULL on success and a freshly malloc'd error message on failure. */
@@ -412,6 +415,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
   const char *message;
   char *pmessage;
   int i;
+  int index;
   register unsigned char *p;
   struct eh_range *prev_eh_ranges = NULL_EH_RANGE;
   struct eh_range *eh_ranges;
@@ -476,7 +480,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
 
   for (PC = 0;;)
     {
-      int index;
       tree type, tmp;
       if (((PC != INVALID_PC
 	   && instruction_bits [PC] & BCODE_TARGET) != 0)
@@ -640,9 +643,13 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	if (index < 0
 	    || (index + TYPE_IS_WIDE (type)
 		>= DECL_MAX_LOCALS (current_function_decl)))
-	  VERIFICATION_ERROR ("invalid local variable index in load");
+	  VERIFICATION_ERROR_WITH_INDEX
+	    ("invalid local variable index %d in load");
 	tmp = type_map[index];
-	if (tmp == TYPE_UNKNOWN || tmp == TYPE_SECOND
+	if (tmp == TYPE_UNKNOWN)
+	  VERIFICATION_ERROR_WITH_INDEX
+	    ("loading local variable %d which has unknown type");
+	else if (tmp == TYPE_SECOND
 	    || (TYPE_IS_WIDE (type)
 		&& type_map[index+1] != void_type_node)
 	    || (type == ptr_type_node
@@ -650,7 +657,8 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		: type == int_type_node
 		? (! INTEGRAL_TYPE_P (tmp) || TYPE_PRECISION (tmp) > 32)
 		: type != tmp))
-	  VERIFICATION_ERROR("invalid local variable type in load");
+	  VERIFICATION_ERROR_WITH_INDEX
+	    ("loading local variable %d which has invalid type");
 	PUSH_TYPE (tmp);
 	goto note_used;
 	case OPCODE_istore:  type = int_type_node;  goto general_store;
@@ -687,7 +695,8 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	    || (index + TYPE_IS_WIDE (type)
 		>= DECL_MAX_LOCALS (current_function_decl)))
 	  {
-	    VERIFICATION_ERROR ("invalid local variable index in store");
+	    VERIFICATION_ERROR_WITH_INDEX
+	      ("invalid local variable index %d in store");
 	    return 0;
 	  }
 	POP_TYPE_CONV (type, type, NULL);
@@ -1409,6 +1418,10 @@ verify_jvm_instructions (jcf, byte_ops, length)
  bad_pc:
   message = "program counter out of range";
   goto verify_error;
+ error_with_index:
+  error ("verification error at PC=%d", oldpc);
+  error (message, index);
+  return 0;
  verify_error:
   error ("verification error at PC=%d", oldpc);
   error ("%s", message);
