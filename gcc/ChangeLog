@@ -1,3 +1,8 @@
+2004-07-26  Falk Hueffner  <falk@debian.org>>
+
+	* config/alpha/alpha.c (alpha_rtx_cost_data): Tweak int_div
+	costs.
+
 2004-07-25  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (output_fp_compare): Use ffreep to pop top
