@@ -1,5 +1,11 @@
 2004-01-30  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	DR206
+	PR c++/13813
+	* g++.dg/template/member4.C: New test.
+
+2004-01-30  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/13683
 	* g++.dg/template/sizeof6.C: New test.
 
