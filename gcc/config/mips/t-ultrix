@@ -1,6 +1,1 @@
 CONFIG2_H	= $(srcdir)/config/mips/mips.h
-
-# Suppress building libgcc1.a, since the MIPS compiler port is complete
-# and does not need anything from libgcc1.a.
-LIBGCC1 =
-CROSS_LIBGCC1 =

@@ -1372,24 +1372,6 @@ extern const char *i860_reg_prefix;
     }								\
 }
 
-/* The following #defines are used when compiling the routines in
-   libgcc1.c.  Since the i860 calling conventions require single
-   precision floats to be passed in the floating-point registers
-   (rather than in the general registers) we have to build the
-   libgcc1.c routines in such a way that they know the actual types
-   of their formal arguments and the actual types of their return
-   values.  Otherwise, gcc will generate calls to the libgcc1.c
-   routines, passing arguments in the floating-point registers,
-   but the libgcc1.c routines will expect their arguments on the
-   stack (where the i860 calling conventions require structs &
-   unions to be passed).  */
-
-#define FLOAT_VALUE_TYPE	float
-#define INTIFY(FLOATVAL)	(FLOATVAL)
-#define FLOATIFY(INTVAL)	(INTVAL)
-#define FLOAT_ARG_TYPE		float
-
-
 /* Optionally define this if you have added predicates to
    `MACHINE.c'.  This macro is called within an initializer of an
    array of structures.  The first field in the structure is the

@@ -235,18 +235,12 @@ Boston, MA 02111-1307, USA.  */
 /* Undefine some things defined in i860.h because the native C compiler
    on the FX/2800 emits code to do these operations inline.  For GCC,
    we will use the default implementation of these things... i.e.
-   generating calls to libgcc1 routines.  */
+   generating calls to libgcc routines.  */
 
 #undef DIVSI3_LIBCALL
 #undef UDIVSI3_LIBCALL
 #undef REMSI3_LIBCALL
 #undef UREMSI3_LIBCALL
-
-/* The Alliant compiler's mod function gives the wrong result after a
-   shift operation. This bug typically hits in hash functions. */
-
-#define perform_umodsi3(a, b)	a %= b; if (a == b) a=0; return a
-#define perform_modsi3(a, b)	a %= b; if (a == b) a=0; return a
 
 /* Global pointer needs to be 8 byte aligned? Link error if not... */
 

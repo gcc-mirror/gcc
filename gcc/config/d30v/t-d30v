@@ -1,6 +1,3 @@
-# Build libgcc1 from assembler sources
-LIBGCC1 = libgcc1-asm.a
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = d30v/libgcc1.asm
 LIB1ASMFUNCS = _udivsi3 _divsi3
 

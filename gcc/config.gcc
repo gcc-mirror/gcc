@@ -517,7 +517,7 @@ arm-semi-aout | armel-semi-aout)
 	;;
 arm-semi-aof | armel-semi-aof)
 	tm_file=arm/semiaof.h
-	tmake_file=arm/t-semiaof
+	tmake_file=arm/t-semi
 	;;
 arm*-*-netbsd*)
 	tm_file=arm/netbsd.h
@@ -866,17 +866,15 @@ i370-*-opened*)			 # IBM 360/370/390 Architecture
 	xm_defines='POSIX FATAL_EXIT_CODE=12'
 	tm_file=i370/oe.h
 	xmake_file=i370/x-oe
-	tmake_file=i370/t-oe
 	;;
 i370-*-mvs*)
 	xm_defines='POSIX FATAL_EXIT_CODE=12'
 	tm_file=i370/mvs.h
-	tmake_file=i370/t-mvs
 	;;
 i370-*-linux*)
 	xmake_file=x-linux
 	tm_file="i370/linux.h ${tm_file}"
-	tmake_file="t-linux i370/t-linux"
+	tmake_file=t-linux
 	# broken_install=yes
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	# extra_parts="crtbegin.o crtend.o"
@@ -982,12 +980,10 @@ i386-sun-sunos*)		# Sun i386 roadrunner
 	;;
 i[34567]86-wrs-vxworks*)
 	tm_file=i386/vxi386.h
-	tmake_file=i386/t-i386bare
 	thread_file='vxworks'
 	;;
 i[34567]86-*-aout*)
 	tm_file=i386/i386-aout.h
-	tmake_file=i386/t-i386bare
 	;;
 i[34567]86-*-beoself* | i[34567]86-*-beos*)
 	xm_defines=POSIX
@@ -1007,11 +1003,11 @@ i[34567]86-*-bsd*)
 #	use_collect2=yes
 	;;
 i[34567]86-*-freebsd[12] | i[34567]86-*-freebsd[12].* | i[34567]86-*-freebsd*aout*)
-	tm_file="i386/freebsd-aout.h i386/perform.h"
+	tm_file=i386/freebsd-aout.h
 	tmake_file=t-freebsd
 	;;
 i[34567]86-*-freebsd*)
-	tm_file="i386/i386.h i386/att.h svr4.h freebsd.h i386/freebsd.h i386/perform.h"
+	tm_file="i386/i386.h i386/att.h svr4.h freebsd.h i386/freebsd.h"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	tmake_file=t-freebsd
 	gas=yes
@@ -1035,7 +1031,6 @@ i[34567]86-*-openbsd*)
 	;;
 i[34567]86-*-coff*)
 	tm_file=i386/i386-coff.h
-	tmake_file=i386/t-i386bare
 	;;
 i[34567]86-*-isc*)		# 80386 running ISC system
 	xm_defines=POSIX
@@ -1049,7 +1044,6 @@ i[34567]86-*-isc*)		# 80386 running ISC system
 		tmake_file=i386/t-crtstuff
 		extra_parts="crtbegin.o crtend.o"
 	fi
-	tmake_file="$tmake_file i386/t-i386bare"
 	install_headers_dir=install-headers-cpio
 	;;
 i[34567]86-*-linux*oldld*)	# Intel 80386's running GNU/Linux
@@ -1103,7 +1097,6 @@ i[34567]86-go32-msdos | i[34567]86-*-go32*)
 i[34567]86-pc-msdosdjgpp*)
 	xm_file=i386/xm-djgpp.h
 	tm_file=i386/djgpp.h
-	tmake_file=i386/t-djgpp
 	xmake_file=i386/x-djgpp
 	gnu_ld=yes
 	gas=yes
@@ -1127,7 +1120,6 @@ i[34567]86-*-lynxos*)
 	else
 		tm_file=i386/lynx-ng.h
 	fi
-	tmake_file=i386/t-i386bare
 	;;
 i[34567]86-*-mach*)
 	tm_file=i386/mach.h
@@ -1157,7 +1149,7 @@ i[34567]86-go32-rtems*)
 i[34567]86-*-rtemscoff*)
 	cpu_type=i386
 	tm_file=i386/rtems.h
-	tmake_file="i386/t-i386bare t-rtems"
+	tmake_file=t-rtems
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
@@ -1183,7 +1175,6 @@ i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 	else
 		tmake_file=i386/t-sco5
 	fi
-	tmake_file="$tmake_file i386/t-i386bare"
 	extra_parts="crti.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	;;
 i[34567]86-*-solaris2*)
@@ -1193,7 +1184,7 @@ i[34567]86-*-solaris2*)
 		# Only needed if gas does not support -s
 		tm_file="i386/sol2gas.h ${tm_file}"
 	fi
-	tmake_file="i386/t-i386bare i386/t-sol2"
+	tmake_file=i386/t-sol2
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 	xmake_file=x-svr4
 	if test x${enable_threads} = x; then
@@ -1217,7 +1208,7 @@ i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
        then
                tm_file="${tm_file} dbx.h"
        fi
-       tmake_file="i386/t-i386bare i386/t-crtpic"
+       tmake_file=i386/t-crtpic
        xmake_file=x-svr4
        extra_parts="crtbegin.o crtend.o"
        if test x$enable_threads = xyes; then
@@ -1231,14 +1222,14 @@ i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
 	then
 		tm_file="${tm_file} dbx.h"
 	fi
-	tmake_file="i386/t-i386bare i386/t-crtpic"
+	tmake_file=i386/t-crtpic
 	xmake_file=x-svr4
 	extra_parts="crtbegin.o crtend.o"
 	;;
 i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
 	xm_defines=POSIX
 	tm_file=i386/udk.h
-	tmake_file="i386/t-i386bare i386/t-crtpic i386/t-udk"
+	tmake_file="i386/t-crtpic i386/t-udk"
 	xmake_file=x-svr4
 	extra_parts="crtbegin.o crtend.o"
 	install_headers_dir=install-headers-cpio
@@ -1280,7 +1271,6 @@ i[34567]86-*-sysv*)		# Intel 80386's running system V
 i386-*-vsta)			# Intel 80386's running VSTa kernel
 	xm_file=i386/xm-vsta.h
 	tm_file=i386/vsta.h
-	tmake_file=i386/t-vsta
 	;;
 i[34567]86-*-win32)
 	xm_defines=POSIX
@@ -1463,7 +1453,6 @@ ia64*-*-linux*)
 	;;
 ia64*-*-hpux*)
 	tm_file="ia64/ia64.h svr4.h ia64/sysv4.h ia64/hpux.h"
-	tmake_file="ia64/t-ia64 ia64/t-hpux"
 	target_cpu_default="MASK_GNU_AS"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -2035,7 +2024,6 @@ mips-sni-sysv4)
 		tm_file=mips/sni-svr4.h
 	fi
 	xm_defines=POSIX
-        tmake_file=mips/t-mips-gas
         if test x$gnu_ld != xyes
         then
                 use_collect2=yes
@@ -2056,7 +2044,6 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 	xm_file=mips/xm-iris5.h
 	xmake_file=mips/x-iris
 	# mips-tfile doesn't work yet
-	tmake_file=mips/t-mips-gas
 	# See comment in mips/iris5.h file.
 	use_collect2=yes
 #	if test x$enable_threads = xyes; then
@@ -2071,8 +2058,7 @@ mips-sgi-irix4loser*)		# Mostly like a MIPS.
 	xm_defines=POSIX
 	xmake_file=mips/x-iris
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		extra_passes="mips-tfile mips-tdump"
 	fi
@@ -2092,8 +2078,7 @@ mips-sgi-irix4*)		# Mostly like a MIPS.
 	xm_defines=POSIX
 	xmake_file=mips/x-iris
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		extra_passes="mips-tfile mips-tdump"
 	fi
@@ -2112,8 +2097,7 @@ mips-sgi-*)			# Mostly like a MIPS.
 	fi
 	xm_defines=POSIX
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		extra_passes="mips-tfile mips-tdump"
 	fi
@@ -2124,7 +2108,6 @@ mips-sgi-*)			# Mostly like a MIPS.
 	;;
 mips-dec-osfrose*)		# Decstation running OSF/1 reference port with OSF/rose.
 	tm_file="mips/osfrose.h ${tm_file}"
-	tmake_file=mips/t-osfrose
 	extra_objs=halfpic.o
 	use_collect2=yes
 	;;
@@ -2134,8 +2117,7 @@ mips-dec-osf*)			# Decstation running OSF/1 as shipped by DIGITAL
 		tm_file="${tm_file} dbx.h"
 	fi
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		tmake_file=mips/t-ultrix
 		extra_passes="mips-tfile mips-tdump"
@@ -2148,8 +2130,7 @@ mips-dec-osf*)			# Decstation running OSF/1 as shipped by DIGITAL
 mips-dec-bsd*)                  # Decstation running 4.4 BSD
       tm_file=mips/dec-bsd.h
       if test x$gas = xyes
-      then
-	   	tmake_file=mips/t-mips-gas
+      then	:
       else
 		tmake_file=mips/t-ultrix
 		extra_passes="mips-tfile mips-tdump"
@@ -2191,8 +2172,7 @@ mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 		tm_file="${tm_file} dbx.h"
 	fi
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		extra_passes="mips-tfile mips-tdump"
 	fi
@@ -2210,8 +2190,7 @@ mips-sony-sysv*)		# Sony NEWS 3800 with NEWSOS5.0.
 	fi
 	xm_defines=POSIX
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		extra_passes="mips-tfile mips-tdump"
 	fi
@@ -2228,10 +2207,8 @@ mips-tandem-sysv4*)		# Tandem S2 running NonStop UX
 	xm_defines=POSIX
 	if test x$gas = xyes
 	then
-		tmake_file=mips/t-mips-gas
 		extra_parts="crtbegin.o crtend.o"
 	else
-		tmake_file=mips/t-mips
 		extra_passes="mips-tfile mips-tdump"
 	fi
 	if test x$gnu_ld != xyes
@@ -2245,8 +2222,7 @@ mips-*-ultrix* | mips-dec-mach3)	# Decstation.
 		tm_file="${tm_file} dbx.h"
 	fi
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		tmake_file=mips/t-ultrix
 		extra_passes="mips-tfile mips-tdump"
@@ -2367,8 +2343,7 @@ mips-*-riscos[56789]*)		# Default MIPS RISC-OS 5.0.
 		tm_file="${tm_file} dbx.h"
 	fi
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		extra_passes="mips-tfile mips-tdump"
 	fi
@@ -2444,8 +2419,7 @@ mips-*-*)				# Default MIPS RISC-OS 4.0.
 		tm_file="${tm_file} dbx.h"
 	fi
 	if test x$gas = xyes
-	then
-		tmake_file=mips/t-mips-gas
+	then	:
 	else
 		extra_passes="mips-tfile mips-tdump"
 	fi
@@ -2969,7 +2943,6 @@ sparc-*-solaris2*)
 	;;
 sparc-*-sunos4.0*)
 	tm_file=sparc/sunos4.h
-	tmake_file=sparc/t-sunos40
 	use_collect2=yes
 	;;
 sparc-*-sunos4*)
@@ -3022,11 +2995,9 @@ sparc86x-*-elf*)
         extra_parts="crtbegin.o crtend.o"
 	;;
 sparc64-*-aout*)
-	tmake_file=sparc/t-sp64
 	tm_file=sparc/sp64-aout.h
 	;;
 sparc64-*-elf*)
-	tmake_file=sparc/t-sp64
 	tm_file=sparc/sp64-elf.h
 	extra_parts="crtbegin.o crtend.o"
 	;;
@@ -3107,7 +3078,6 @@ vax-*-netbsd*)
 	use_collect2=yes
 	;;
 vax-*-openbsd*)
-	tmake_file="${tmake_file} vax/t-openbsd"
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h ${tm_file}"
 	float_format=vax
 	use_collect2=yes

@@ -1,10 +1,3 @@
-LIBGCC1=libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
-LIB1ASMSRC =
-LIB1ASMFUNCS =
-
-LIBGCC1_TEST =
-
 ADA_CFLAGS=-mdisable-indexing
 
 LIB2FUNCS_EXTRA=lib2funcs.asm 
@@ -13,7 +6,6 @@ LIB2FUNCS_EXTRA=lib2funcs.asm
 # floating point emulation libraries.
 FPBIT = fp-bit.c
 DPBIT = dp-bit.c
-
 
 dp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c > dp-bit.c

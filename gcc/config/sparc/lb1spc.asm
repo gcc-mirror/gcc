@@ -1,5 +1,5 @@
-/* This is an assembly language implementation of libgcc1.c for the sparc
-   processor.
+/* This is an assembly language implementation of mulsi3, divsi3, and modsi3
+   for the sparc processor.
 
    These routines are derived from the Sparc Architecture Manual, version 8,
    slightly edited to match the desired calling convention, and also to

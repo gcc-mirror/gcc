@@ -1,3 +1,1 @@
-LIBGCC1=libgcc1.null
-CROSS_LIBGCC1=libgcc1.null
 CRTSTUFF_T_FLAGS_S=-fPIC

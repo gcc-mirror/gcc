@@ -1,4 +1,3 @@
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = arc/lib1funcs.asm
 LIB1ASMFUNCS = _mulsi3 _umulsidi3 _udivsi3 _divsi3 _umodsi3 _modsi3 _divmod_tools
 

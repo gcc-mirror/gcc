@@ -1,12 +1,5 @@
 CONFIG2_H	= $(srcdir)/config/mips/ecoff.h
 
-# Suppress building libgcc1.a, since the MIPS compiler port is complete
-# and does not need anything from libgcc1.a.
-LIBGCC1 =
-
-# When building a cross compiler, put the mips16 support functions in
-# libgcc1.a.
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = mips/mips16.S
 LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 	_m16eqsf2 _m16nesf2 _m16gtsf2 _m16gesf2 _m16lesf2 _m16ltsf2 \
@@ -26,8 +19,6 @@ LIB1ASMFUNCS = _m16addsf3 _m16subsf3 _m16mulsf3 _m16divsf3 \
 # without the $gp register.
 TARGET_LIBGCC2_CFLAGS = -G 0
 
-# fp-bit and dp-bit are really part of libgcc1, but this will cause
-# them to be built correctly, so... [taken from t-sparclite]
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
 FPBIT = fp-bit.c

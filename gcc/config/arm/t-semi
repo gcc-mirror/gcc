@@ -6,11 +6,6 @@ LIBGCC2_DEBUG_CFLAGS = -g0
 # Don't build enquire
 ENQUIRE=
 
-# Can't test libgcc1 since it tries to bring in things like malloc, and
-# there probably isn't a libc to link against until we have a compiler.
-LIBGCC1_TEST =
-
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = arm/lib1funcs.asm
 LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _call_via_rX _interwork_call_via_rX
 

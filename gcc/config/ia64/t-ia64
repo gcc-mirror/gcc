@@ -1,8 +1,3 @@
-# Name of assembly file containing libgcc1 functions.
-# This entry must be present, but it can be empty if the target does
-# not need any assembler functions to support its code generation.
-CROSS_LIBGCC1 = libgcc1-asm.a
-LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC    = ia64/lib1funcs.asm
 
 # ??? We change the names of the DImode div/mod files so that they won't

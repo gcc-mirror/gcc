@@ -1,4 +1,3 @@
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = sparc/lb1spc.asm
 LIB1ASMFUNCS = _divsi3 _modsi3
 

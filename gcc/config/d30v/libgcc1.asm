@@ -1,4 +1,4 @@
-/* Assembly support functions for libgcc1.
+/* Assembly support functions for libgcc.
  *
  *   Copyright (C) 1997 Free Software Foundation, Inc.
  *   Contributed by Cygnus Support

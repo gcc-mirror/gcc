@@ -1,8 +1,3 @@
-# Name of assembly file containing libgcc1 functions.
-# This entry must be present, but it can be empty if the target does
-# not need any assembler functions to support its code generation.
-
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC    = mcore/lib1.asm
 LIB1ASMFUNCS  = _divsi3 _udivsi3 _modsi3 _umodsi3
 

@@ -1,11 +1,5 @@
 # Common support for PowerPC ELF targets (both EABI and SVR4).
 
-# Do not build libgcc1.
-LIBGCC1 =
-CROSS_LIBGCC1 =
-
-# These are really part of libgcc1, but this will cause them to be
-# built correctly, so... [taken from t-sparclite]
 LIB2FUNCS_EXTRA = tramp.S
 
 # This one can't end up in shared libgcc

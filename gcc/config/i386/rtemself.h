@@ -86,9 +86,6 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES  "-Drtems -D__rtems__ -Asystem=rtems"
 
-/* Get perform_* macros to build libgcc.a.  */
-#include "i386/perform.h"
-
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named
    NAME whose size is SIZE bytes and alignment is ALIGN bytes.

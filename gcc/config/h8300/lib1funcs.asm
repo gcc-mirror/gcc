@@ -1,4 +1,4 @@
-;; libgcc1 routines for the Hitachi H8/300 CPU.
+;; libgcc routines for the Hitachi H8/300 CPU.
 ;; Contributed by Steve Chamberlain <sac@cygnus.com>
 
 /* Copyright (C) 1994, 2000 Free Software Foundation, Inc.

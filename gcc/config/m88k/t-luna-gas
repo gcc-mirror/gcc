@@ -8,6 +8,4 @@ $(MOVE_ASM): $(srcdir)/config/m88k/m88k-move.sh
 	$(SHELL) $(srcdir)/config/m88k/m88k-move.sh -no-tdesc
 
 LIB2FUNCS_EXTRA = $(MOVE_ASM)
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
 T_CPPFLAGS = -DUSE_GAS

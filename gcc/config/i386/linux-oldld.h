@@ -70,6 +70,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC ""
-
-/* Get perform_* macros to build libgcc.a.  */
-#include <i386/perform.h>

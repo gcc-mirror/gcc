@@ -20,9 +20,3 @@ SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $$(slibdir)/@shlib_base_nam
 	$(LN_S) @shlib_base_name@.so.0 $$(slibdir)/@shlib_base_name@.so
 SHLIB_MKMAP = $(srcdir)/mkmap-symver.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver $(srcdir)/config/libgcc-glibc.ver
-
-# Do not build libgcc1. Let gcc generate those functions. The GNU/Linux
-# C library can handle them.
-LIBGCC1 =
-CROSS_LIBGCC1 =
-LIBGCC1_TEST =

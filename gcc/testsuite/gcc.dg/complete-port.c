@@ -1,7 +1,7 @@
-/* This small function uses all the arithmetic operators that
-   libgcc1.c can handle.  If you can link it, then
-   you have provided replacements for all the libgcc1.c functions that
-   your target machine needs.  */
+/* This small program uses all the arithmetic operators that may
+   generate calls to library routines which must be implemented in
+   port-specific assembly language.  */
+/* { dg-do link } */
 
 #include <stddef.h>
 
@@ -10,11 +10,8 @@ double dfoo ();
 void discard (int);
 void ddiscard (double);
 
-/* We don't want __main here because that can drag in atexit (among other
-   things) which won't necessarily exist yet.  */
-
 int
-main_without__main ()
+main (void)
 {
   int a = foo (), b = foo ();
   unsigned int au = foo (), bu = foo ();
@@ -97,23 +94,3 @@ dfoo ()
 
   return table[idx++];
 }
-
-/* Provide functions that some versions of the linker use to default
-   the start address if -e symbol is not used, to avoid the warning
-   message saying the start address is defaulted.  */
-extern void start() __asm__("start");
-extern void _start() __asm__("_start");
-extern void __start() __asm__("__start");
-
-/* Provide functions that might be needed by soft-float emulation routines.  */
-void *memcpy(void *to,
-	     const void *from __attribute__((__unused__)),
-	     size_t len __attribute__((__unused__)))
-{
-  return to;
-}
-
-void start() {}
-void _start() {}
-void __start() {}
-void mainCRTStartup() {}

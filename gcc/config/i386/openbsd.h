@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include <i386/gstabs.h>
 
-/* Get perform_* macros to build libgcc.a.  */
-#include <i386/perform.h>
-
 /* Get generic OpenBSD definitions.  */
 #define OBSD_OLD_GAS
 #include <openbsd.h>

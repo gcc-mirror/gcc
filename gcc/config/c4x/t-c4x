@@ -1,4 +1,3 @@
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = c4x/libgcc.S
 LIB1ASMFUNCS = _divsf3 _divsi3 _udivsi3 _umodsi3 _modsi3 _mulsi3 \
 	_muldf3 _divdf3 _unsfltconst _unsfltcompare \
@@ -15,6 +14,3 @@ MULTILIB_EXCEPTIONS =
 MULTILIB_EXTRA_OPTS =
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-# Don't make libgcc1-test since require crt0.o
-LIBGCC1_TEST =

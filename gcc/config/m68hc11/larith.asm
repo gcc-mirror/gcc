@@ -1,4 +1,4 @@
-/* libgcc1 routines for M68HC11 & M68HC12.
+/* libgcc routines for M68HC11 & M68HC12.
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

@@ -1,5 +1,2 @@
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
-
 # Our header files are supposed to be correct, nein?
 STMP_FIXPROTO =

@@ -1,6 +1,3 @@
-LIBGCC1=libgcc1.null
-CROSS_LIBGCC1=libgcc1-asm.a
-
 LIB1ASMFUNCS =  _divI _divU _remI _remU _div_const
 LIB1ASMSRC = pa/milli64.S
 TARGET_LIBGCC2_CFLAGS = -fPIC -Dpa64=1 -DELF=1
@@ -17,4 +14,3 @@ LIB2FUNCS_EXTRA=quadlib.c
 quadlib.c: $(srcdir)/config/pa/quadlib.c
 	rm -f quadlib.c
 	cp $(srcdir)/config/pa/quadlib.c .
-

@@ -30,7 +30,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This file is a bit like libgcc1.c/libgcc2.c in that it is compiled
+/* This file is a bit like libgcc2.c in that it is compiled
    multiple times and yields multiple .o files.
 
    This file is useful on target machines where the object file format

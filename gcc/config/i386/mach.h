@@ -6,9 +6,6 @@
 
 #include "i386/gstabs.h"
 
-/* Get perform_* macros to build libgcc.a.  */
-#include "i386/perform.h"
-
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -DMACH -Asystem=unix -Asystem=mach"
 

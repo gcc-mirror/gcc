@@ -1,6 +1,3 @@
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
-
 # For svr4 we build crtbegin.o and crtend.o which serve to add begin and
 # end labels to the .ctors and .dtors section when we link using gcc.
 

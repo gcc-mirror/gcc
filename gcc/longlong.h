@@ -222,7 +222,7 @@ extern const UQItype __clz_tab[];
 	     "rIJ" ((USItype) (bh)),					\
 	     "r" ((USItype) (al)),					\
 	     "rIJ" ((USItype) (bl)))
-/* Call libgcc1 routine.  */
+/* Call libgcc routine.  */
 #define umul_ppmm(w1, w0, u, v) \
 do {									\
   DWunion __w;								\

@@ -1,6 +1,3 @@
-# lib1funcs.asm is currently empty.
-CROSS_LIBGCC1 =
-
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
 FPBIT = fp-bit.c

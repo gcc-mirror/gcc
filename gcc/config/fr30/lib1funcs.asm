@@ -1,4 +1,4 @@
-/* libgcc1 routines for the FR30.
+/* libgcc routines for the FR30.
    Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

@@ -1,4 +1,4 @@
-/* libgcc1 routines for NEC V850.
+/* libgcc routines for NEC V850.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

@@ -1,4 +1,3 @@
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = v850/lib1funcs.asm
 LIB1ASMFUNCS	= _mulsi3 \
 		  _divsi3 \

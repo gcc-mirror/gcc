@@ -3,9 +3,6 @@
 
 #include <i386/gstabs.h>
 
-/* Get perform_* macros to build libgcc.a.  */
-#include <i386/perform.h>
-
 /* Get generic NetBSD definitions.  */
 #include <netbsd.h>
 

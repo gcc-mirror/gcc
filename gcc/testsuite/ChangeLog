@@ -1,3 +1,7 @@
+2001-05-16  Zack Weinberg  <zackw@stanford.edu>
+
+	* gcc.dg/complete-port.c: New (revised version of libgcc1-test.c)
+
 Wed May 16 20:33:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/20010516-1.c: New test.

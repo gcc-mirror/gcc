@@ -1,7 +1,3 @@
-# t-interix
-LIBGCC1 = libgcc1-asm.a
-CROSS_LIBGCC1 = libgcc1-asm.a
-
 LIB1ASMSRC = i386/cygwin.asm
 LIB1ASMFUNCS = _chkstk
 
@@ -11,6 +7,3 @@ interix.o: $(srcdir)/config/i386/interix.c
 # System headers will track gcc's needs.
 # Even LANG_EXTRA_HEADERS may be temporary.
 USER_H=$(LANG_EXTRA_HEADERS)
-
-# We don't want this one either.
-INSTALL_ASSERT_H=

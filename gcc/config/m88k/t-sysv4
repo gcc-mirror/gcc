@@ -10,8 +10,6 @@ $(MOVE_ASM): $(srcdir)/config/m88k/m88k-move.sh
 	$(srcdir)/config/m88k/m88k-move.sh -abi
 
 LIB2FUNCS_EXTRA = $(MOVE_ASM)
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
 
 # We need to use -fPIC when we are using gcc to compile the routines in
 # crtstuff.c.  This is only really needed when we are going to use gcc/g++

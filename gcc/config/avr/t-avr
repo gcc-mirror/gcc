@@ -2,7 +2,6 @@
 AR_FOR_TARGET = avr-ar
 RANLIB_FOR_TARGET = avr-ranlib
 
-CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = avr/libgcc.S
 LIB1ASMFUNCS = \
 	_mulqi3 \
@@ -19,9 +18,6 @@ LIB1ASMFUNCS = \
 	_exit \
 	_cleanup \
 	_tablejump
-
-# libgcc...
-LIBGCC1_TEST =
 
 # We do not have the DF type.
 # Most of the C functions in libgcc2 use almost all registers,
