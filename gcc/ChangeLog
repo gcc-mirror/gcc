@@ -1,3 +1,7 @@
+2003-01-16  Herman A.J. ten Brugge <hermantenbrugge@home.nl>
+
+        * config/c4x/c4x.md (epilogue): Correct last patch.
+
 2003-01-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (find_lo_sum_using_gp): Rename from find_lo_sum;

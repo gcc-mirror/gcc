@@ -5484,7 +5484,7 @@
 
 (define_expand "epilogue"
   [(const_int 1)]
-  "! c4x_null_epilogue_p ()"
+  ""
   "c4x_expand_epilogue (); DONE;")
 
 ;
