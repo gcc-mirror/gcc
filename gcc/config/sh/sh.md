@@ -3482,8 +3482,9 @@ else
   [(set (match_operand:SI 0 "" "")
 	(const (minus:SI
 		(unspec [(match_operand:SI 1 "" "")] 6)
-		(const (plus:SI (label_ref (match_operand:SI 2 "" ""))
-				(const_int 2))))))]
+		(const (plus:SI
+			(unspec [(label_ref (match_operand:SI 2 "" ""))] 6)
+			(const_int 2))))))]
   "" "")
 
 (define_expand "symGOT2reg"
@@ -3514,8 +3515,10 @@ else
 	(const (minus:SI
 		(plus:SI (pc)
 			 (unspec [(match_operand:SI 1 "" "")] 9))
-		(const (plus:SI (label_ref (match_operand:SI 2 "" ""))
-				(const_int 2))))))
+		(const
+		 (plus:SI
+		  (unspec [(label_ref (match_operand:SI 2 "" ""))] 6)
+		  (const_int 2))))))
    (use (match_dup 3))]
   ;; Even though the PIC register is not really used by the call
   ;; sequence in which this is expanded, the PLT code assumes the PIC

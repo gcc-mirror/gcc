@@ -1,3 +1,9 @@
+2000-09-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.c (nonpic_symbol_mentioned_p): Check LABEL_REFs.
+	* config/sh/sh.md (sym_label2reg, symPLT_label2reg): Protect
+	LABEL_REFs with a PIC-safe unspec.
+
 2000-09-18  Will Cohen  <wcohen@redhat.com>
 
 	* extend.texi (Zero Length): State that static initializers for
