@@ -5,6 +5,8 @@ Mon May 17 19:45:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.tpl: Removed no-op pipe.
 
+	* fixinc/inclhack.sh fixinc/fixincl.sh: regenerate
+
 Mon May 17 07:23:34 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.def (TYPE_NONCOPIED_PARTS): Revise documentation to match

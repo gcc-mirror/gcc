@@ -395,7 +395,7 @@ echo 'Removing unneeded directories:'
 cd $LIB
 all_dirs=`find . -type d -print | sort -r`
 for file in $all_dirs; do
-  rmdir $LIB/$file > /dev/null 2>&1 | :
+  rmdir $LIB/$file > /dev/null 2>&1
 done
 
 # # # # # # # # # # # # # # # # # # # # #
