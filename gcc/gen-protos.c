@@ -27,6 +27,16 @@ int verbose = 0;
 
 sstring linebuf;
 
+/* Avoid error if config defines abort as fancy_abort.
+   It's not worth "really" implementing this because ordinary
+   compiler users never run fix-header.  */
+
+void
+fancy_abort ()
+{
+  abort ();
+}
+
 int
 main (argc, argv)
      int argc;
@@ -109,7 +119,7 @@ main (argc, argv)
 
       /* NOTE:  If you edit this,
 	 also edit lookup_std_proto in fix-header.c !! */
-      i = hash(name_start) % HASH_SIZE;
+      i = hash (name_start) % HASH_SIZE;
       i0 = i;
       if (hash_tab[i] != 0)
 	{
@@ -117,7 +127,7 @@ main (argc, argv)
 	    {
 	      i = (i+1) % HASH_SIZE;
 	      if (i == i0)
-		abort();
+		abort ();
 	      if (hash_tab[i] == 0)
 		break;
 	    }
