@@ -1248,11 +1248,11 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 	  
 	  if (DECL_MUTABLE_P (decl))
 	    quals &= ~TYPE_QUAL_CONST;
-	  
+
 	  quals |= cp_type_quals (TREE_TYPE (decl));
 	  type = cp_build_qualified_type (type, quals);
 	}
-
+      
       return build_min (COMPONENT_REF, type, object, decl);
     }
   else
@@ -2522,11 +2522,80 @@ finish_id_expression (tree id_expression,
 	  else if (TYPE_P (scope))
 	    decl = build (SCOPE_REF, TREE_TYPE (decl), scope, decl);
 	}
-      else
-	/* Transform references to non-static data members into
-	   COMPONENT_REFs.  */
-	decl = hack_identifier (decl, id_expression);
+      else if (TREE_CODE (decl) == NAMESPACE_DECL)
+	{
+	  error ("use of namespace `%D' as expression", decl);
+	  return error_mark_node;
+	}
+      else if (DECL_CLASS_TEMPLATE_P (decl))
+	{
+	  error ("use of class template `%T' as expression", decl);
+	  return error_mark_node;
+	}
+      else if (TREE_CODE (decl) == TREE_LIST)
+	{
+	  /* Ambiguous reference to base members.  */
+	  error ("request for member `%D' is ambiguous in "
+		 "multiple inheritance lattice", id_expression);
+	  print_candidates (decl);
+	  return error_mark_node;
+	}
+      else if (TREE_CODE (decl) == FIELD_DECL)
+	decl = finish_non_static_data_member (decl, current_class_ref,
+					      /*qualifying_scope=*/NULL_TREE);
+      else if (is_overloaded_fn (decl))
+	{
+	  tree first_fn = OVL_CURRENT (decl);
 
+	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
+	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
+	  
+	  if (TREE_CODE (first_fn) == FUNCTION_DECL
+	      && DECL_FUNCTION_MEMBER_P (first_fn))
+	    {
+	      /* A set of member functions.  */
+	      decl = maybe_dummy_object (DECL_CONTEXT (first_fn), 0);
+	      return finish_class_member_access_expr (decl, id_expression);
+	    }
+	  else if (!really_overloaded_fn (decl))
+	    /* not really overloaded function */
+	    mark_used (first_fn);
+	}
+      else
+	{
+	  if (TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == PARM_DECL
+	      || TREE_CODE (decl) == RESULT_DECL)
+	    {
+	      tree context = decl_function_context (decl);
+	      
+	      if (context != NULL_TREE && context != current_function_decl
+		  && ! TREE_STATIC (decl))
+		{
+		  error ("use of %s from containing function",
+			 (TREE_CODE (decl) == VAR_DECL
+			  ? "`auto' variable" : "parameter"));
+		  cp_error_at ("  `%#D' declared here", decl);
+		  return error_mark_node;
+		}
+	    }
+	  
+	  if (DECL_P (decl) && DECL_NONLOCAL (decl)
+	      && DECL_CLASS_SCOPE_P (decl)
+	      && DECL_CONTEXT (decl) != current_class_type)
+	    {
+	      tree path;
+	      
+	      path = currently_open_derived_class (DECL_CONTEXT (decl));
+	      perform_or_defer_access_check (TYPE_BINFO (path), decl);
+	    }
+	  
+	  mark_used (decl);
+	  
+	  if (! processing_template_decl)
+	    decl = convert_from_reference (decl);
+	}
+      
       /* Resolve references to variables of anonymous unions
 	 into COMPONENT_REFs.  */
       if (TREE_CODE (decl) == ALIAS_DECL)
