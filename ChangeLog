@@ -1,3 +1,8 @@
+2000-08-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config-ml.in: Adjust multilib search paths to the
+	appropriate multilib tree.
+
 2000-08-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (CHILL_FOR_TARGET, CXX_FOR_TARGET): Convert blanks to

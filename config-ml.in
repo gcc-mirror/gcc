@@ -753,7 +753,40 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
         break
       fi
     done
-    ml_config_env='CC="${CC} $flags"'
+    ml_config_env='CC="${CC_} $flags" CXX="${CXX_} $flags"'
+
+    if [ "${with_target_subdir}" = "." ]; then
+	CC_=$CC
+	CXX_=$CXX
+    else
+	# Create a regular expression that matches any string as long
+	# as ML_POPDIR.
+	popdir_rx=`echo ${ML_POPDIR} | sed 's,.,.,g'`
+	CC_=
+	for arg in ${CC}; do
+	  case $arg in
+	  -[BIL]"${ML_POPDIR}"/*)
+	    CC_="${CC_} "`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\1/p"` ;;
+	  "${ML_POPDIR}"/*)
+	    CC_="${CC_} "`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p""`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"` ;;
+	  *)
+	    CC_="${CC_} ${arg}" ;;
+	  esac
+	done
+
+	CXX_=
+	for arg in ${CXX}; do
+	  case $arg in
+	  -[BIL]"${ML_POPDIR}"/*)
+	    CXX_="${CXX_} "`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"` ;;
+	  "${ML_POPDIR}"/*)
+	    CXX_="${CXX_} "`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"` ;;
+	  *)
+	    CXX_="${CXX_} ${arg}" ;;
+	  esac
+	done
+
+    fi
 
     if eval ${ml_config_env} ${ml_config_shell} ${ml_recprog} \
 	--with-multisubdir=${ml_dir} --with-multisrctop=${multisrctop} \
