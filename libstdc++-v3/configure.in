@@ -161,6 +161,26 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
     *-windiss*)
       os_include_dir="config/os/windiss"
       ;;
+    *-qnx6.[12]*)
+      SECTION_FLAGS='-ffunction-sections -fdata-sections'
+      AC_SUBST(SECTION_FLAGS) 
+      GLIBCPP_CHECK_LINKER_FEATURES
+      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      os_include_dir="config/os/qnx/qnx6.1"
+      AC_DEFINE(HAVE_COSF)
+      AC_DEFINE(HAVE_COSL)
+      AC_DEFINE(HAVE_COSHF)
+      AC_DEFINE(HAVE_COSHL)
+      AC_DEFINE(HAVE_LOGF)
+      AC_DEFINE(HAVE_LOGL)
+      AC_DEFINE(HAVE_LOG10F)
+      AC_DEFINE(HAVE_LOG10L)
+      AC_DEFINE(HAVE_SINF)
+      AC_DEFINE(HAVE_SINL)
+      AC_DEFINE(HAVE_SINHF)
+      AC_DEFINE(HAVE_SINHL)
+      ;;
     *)
       os_include_dir="config/os/newlib"
       AC_DEFINE(HAVE_HYPOT)
