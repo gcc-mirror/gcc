@@ -629,7 +629,7 @@ combine_instructions (f, nregs)
 	      for (nextlinks = LOG_LINKS (link);
 		   nextlinks;
 		   nextlinks = XEXP (nextlinks, 1))
-		if ((next = try_combine (insn, XEXP (links, 0),
+		if ((next = try_combine (insn, link,
 					 XEXP (nextlinks, 0),
 					 &new_direct_jump_p)) != 0)
 		  goto retry;
