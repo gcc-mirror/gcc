@@ -764,13 +764,6 @@ not_yes:
 	      matches++;
 	      break;		/* Skip */
 
-	    case 'I':
-	    case 'L':
-	    case 'C':
-	      if (*p++ == 'e')
-		goto undo_expr;
-	      break;
-
 	    /* Matches that don't have to be undone */
 	    case 'o':
 	    case 'l':
@@ -780,9 +773,7 @@ not_yes:
 	      break;
 
 	    case 'e':
-	    case 'E':
 	    case 'v':
-	    undo_expr:
 	      vp = va_arg (argp, void **);
 	      gfc_free_expr (*vp);
 	      *vp = NULL;

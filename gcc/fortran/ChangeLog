@@ -1,5 +1,9 @@
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* match.c (gfc_match): Eliminate dead code.
+
+2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* parse.c (gfc_statement_next_fixed): (Change from Andy's tree)
 	Detect bad continuation line in fixed form sources.
 
