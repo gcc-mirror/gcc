@@ -3012,6 +3012,13 @@ output_function_epilogue (file, size, leaf_function)
       final_scan_insn (get_last_insn (), file, 0, 0, 1);
     }
 
+#ifdef FUNCTION_BLOCK_PROFILER_EXIT
+  else if (profile_block_flag == 2)
+    {
+      FUNCTION_BLOCK_PROFILER_EXIT(file);
+    }
+#endif
+
   /* Restore any call saved registers.  */
   if (num_gfregs)
     {
