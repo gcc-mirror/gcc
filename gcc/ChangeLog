@@ -1,3 +1,15 @@
+Fri Oct 15 01:47:51 1999  Vladimir Makarov  <vmakarov@loony.cygnus.com>
+
+	* cse.c: Include hashtab.h instead of splay-tree.h
+	(struct cse_reg_info): No longer use variant union.  Add new
+	field "regno".  All references changed to avoid union.
+	(cse_reg_info_used_list, cse_reg_info_used_list_end): New variables.
+	(free_cse_reg_info): Remove.
+	(hash_cse_reg_info, cse_reg_info_equal_p): New functions.
+	(get_cse_reg_info): Revamp to use expandable hash tables instead
+	of splay trees.  Initialize new fields in cse_reg_info structure.
+	(new_basic_block): Similarly.
+
 Thu Oct 14 23:51:56 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (message_with_line): Prototype.
