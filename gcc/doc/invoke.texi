@@ -449,6 +449,8 @@ in the following sections.
 -mcall-aix -mcall-sysv -mcall-netbsd @gol
 -maix-struct-return -msvr4-struct-return
 -mabi=altivec -mabi=no-altivec @gol
+-mabi=spe -mabi=no-spe @gol
+-misel=yes -misel=no @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
 -msdata=@var{opt}  -mvxworks -mwindiss -G @var{num} -pthread}
@@ -6492,6 +6494,21 @@ These switches enable or disable the use of built-in functions that
 allow access to the AltiVec instruction set.  You may also need to set
 @option{-mabi=altivec} to adjust the current ABI with AltiVec ABI
 enhancements.
+
+@item -mabi=spe
+@opindex mabi=spe
+Extend the current ABI with SPE ABI extensions.  This does not change
+the default ABI, instead it adds the SPE ABI extensions to the current
+ABI@.
+
+@item -mabi=no-spe
+@opindex mabi=no-spe
+Disable Booke SPE ABI extensions for the current ABI.
+
+@item -misel=@var{yes/no}
+@itemx -misel
+@opindex misel
+This switch enables or disables the generation of ISEL instructions.
 
 @item -mfull-toc
 @itemx -mno-fp-in-toc
