@@ -532,3 +532,8 @@ extern void i386_pe_asm_file_end STDIO_PROTO((FILE *));
 #undef PCC_BITFIELDS_TYPE_MATTERS
 #define PCC_BITFIELDS_TYPE_MATTERS 0
 
+/* Enable alias attribute support.  */
+#ifndef SET_ASM_OP
+#define SET_ASM_OP "\t.set"
+#endif
+
