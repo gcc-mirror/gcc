@@ -1,3 +1,7 @@
+2004-02-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* cfganal.c (flow_call_edges_add): Never split a libcall block.
+
 2004-02-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (TARGET_GPWORD): Return false for TARGET_NEWABI
