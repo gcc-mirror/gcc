@@ -1,5 +1,13 @@
 2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/fr30/fr30.h: Fix comment typos.
+	* config/frv/frv.c: Likewise.
+	* config/i386/xmmintrin.h: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/sh/sh.c: Likewise.
+
+2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* haifa-sched.c: Follow spelling conventions.
 	* regclass.c: Likewise.
 	* regrename.c: Likewise.
