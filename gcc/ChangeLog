@@ -1,3 +1,9 @@
+2003-04-19  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin):  Don't expand a pure or const
+	built-in function if the result will be ignored and none of
+	its arguments are volatile.
+
 2003-04-19  Kean Johnston  <jkj@sco.com>
 
 	* unwind-dw2.c (_Unwind_GetCFA): cast return to avoid warning
