@@ -1,3 +1,19 @@
+2003-07-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* common.opt:  Document --param.
+	* opts.c (columns, undocumented_msg): New.
+	(print_help): Get number of columns from environment.  Print
+	--param help.  Tweak newline handling.
+	(print_param_help): New.
+	(print_filtered_help): Better handling of duplicates.  Complain
+	about undocumented switches.
+	(print_switch): New.
+	(wrap_help): Improve wrapping, use COLUMNS.
+	* opts.sh: Ignore comments in records.
+	* params.def: Fix typos and remove trailing periods.
+	* toplev.c (display_help): Don't dump --param help.
+	* doc/sourcebuild.texi: Update.
+
 2003-07-18  Richard Henderson  <rth@redhat.com>
 
 	PR target/11556

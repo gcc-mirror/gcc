@@ -601,12 +601,9 @@ Move to the stage directory files not included in @code{stagestuff} in
 
 @item lang.opt
 This file registers the set of switches that the front end accepts on
-the command line.  The file format is documented in the file
-@file{c.opt}.  These files are processed by the script @file{opts.sh}.
-@item lang-options.h
-This file provides entries for @code{documented_lang_options} in
-@file{toplev.c} describing command-line options the front end accepts
-for @option{--help} output.
+the command line, and their --help text.  The file format is
+documented in the file @file{c.opt}.  These files are processed by the
+script @file{opts.sh}.
 @item lang-specs.h
 This file provides entries for @code{default_compilers} in
 @file{gcc.c} which override the default of giving an error that a

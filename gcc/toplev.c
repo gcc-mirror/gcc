@@ -3591,18 +3591,6 @@ display_help (void)
 {
   unsigned long i;
 
-  for (i = LAST_PARAM; i--;)
-    {
-      const char *description = compiler_params[i].help;
-      const int length = 21 - strlen (compiler_params[i].option);
-
-      if (description != NULL && *description != 0)
-	printf ("  --param %s=<value>%.*s%s\n",
-		compiler_params[i].option,
-		length > 0 ? length : 1, "                     ",
-		_(description));
-    }
-
   for (i = ARRAY_SIZE (debug_args); i--;)
     {
       if (debug_args[i].description != NULL)

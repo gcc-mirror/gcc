@@ -1,3 +1,7 @@
+2003-07-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.opt: Don't show -MD_ and -MDD_.
+
 2003-07-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-options.h: Remove.
