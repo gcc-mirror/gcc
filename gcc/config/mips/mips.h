@@ -645,7 +645,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 36]"
+#define MIPS_VERSION "[AL 1.1, MM 37]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -1454,10 +1454,15 @@ extern enum reg_class mips_char_to_class[];
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
+#define CLASS_UNITS(mode, num)						\
+  ((GET_MODE_SIZE (mode) + ((num) * UNITS_PER_WORD) + 1) / ((num) * UNITS_PER_WORD))
+
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
- ((((MODE) == DFmode) || ((MODE) == SFmode)) ? 2			\
-  : ((MODE) == VOIDmode)? ((CLASS) == FP_REGS ? 2 : 1)			\
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+  (((CLASS) == FP_REGS && TARGET_FLOAT64)				\
+	? CLASS_UNITS (MODE, 2)						\
+	: (((CLASS) == FP_REGS)						\
+		? (2*CLASS_UNITS (MODE, 1))				\
+		: CLASS_UNITS (MODE, 1)))
 
 /* If defined, this is a C expression whose value should be
    nonzero if the insn INSN has the effect of mysteriously
