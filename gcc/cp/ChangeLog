@@ -1,3 +1,10 @@
+2003-12-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13166
+	* parser.c (cp_parser_late_parsing_default_args): Make sure the
+	context is a class before calling push_nested_class and
+	pop_nested_class.
+
 2003-12-03  James E Wilson  <wilson@specifixinc.com>
 
 	* g++spec.c (lang_specific_driver): Delete USE_LIBUNWIND_EXCEPTIONS

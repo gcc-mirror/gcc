@@ -14239,10 +14239,10 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
       parser->local_variables_forbidden_p = true;
        /* Parse the assignment-expression.  */
-      if (DECL_CONTEXT (fn))
+      if (DECL_CLASS_SCOPE_P (fn))
 	push_nested_class (DECL_CONTEXT (fn));
       TREE_PURPOSE (parameters) = cp_parser_assignment_expression (parser);
-      if (DECL_CONTEXT (fn))
+      if (DECL_CLASS_SCOPE_P (fn))
 	pop_nested_class ();
 
        /* Restore saved state.  */
