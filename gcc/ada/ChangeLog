@@ -1,3 +1,8 @@
+2004-10-04  Laurent GUERBY <laurent@guerby.net>
+
+	PR ada/15156
+	* Makefile.in: Define and use RANLIB_FLAGS.
+	
 2004-10-04  Pascal Obry  <obry@gnat.com>
 
 	* tracebak.c: Always set LOWEST_ADDR to 0 on Win32 (as done on all
