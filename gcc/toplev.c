@@ -254,6 +254,12 @@ struct rtx_def *(*lang_expand_expr) ();
 
 void (*incomplete_decl_finalize_hook) () = 0;
 
+/* Pointer to function for interim exception handling implementation.
+   This interface will change, and it is only here until a better interface
+   replaces it.  */
+
+void (*interim_eh_hook)	PROTO((tree));
+
 /* Nonzero if generating code to do profiling.  */
 
 int profile_flag = 0;
@@ -995,6 +1001,15 @@ decl_name (decl, kind)
      char **kind;
 {
   return IDENTIFIER_POINTER (DECL_NAME (decl));
+}
+
+/* This is the default interim_eh_hook function.  */
+
+void
+interim_eh (finalization)
+     tree finalization;
+{
+  /* Don't do anything by default.  */
 }
 
 static int need_error_newline;
@@ -3341,6 +3356,7 @@ main (argc, argv, envp)
 
   decl_printable_name = decl_name;
   lang_expand_expr = (struct rtx_def *(*)()) do_abort;
+  interim_eh_hook = interim_eh;
 
   /* Initialize whether `char' is signed.  */
   flag_signed_char = DEFAULT_SIGNED_CHAR;
