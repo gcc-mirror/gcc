@@ -1,3 +1,10 @@
+2000-07-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/awt/EventQueue.java (invokeAndWait): Call postEvent() within
+	synchronized block.
+	* java/awt/event/InvocationEvent (dispatch): Synchronize on notifier
+	before calling notifyAll().
+
 2000-07-13  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Add missing files from last check-in:
