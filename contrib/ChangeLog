@@ -1,3 +1,9 @@
+Tue Aug 11 17:55:53 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+                          Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* egcs_update: New switch --nostdflags and documentation
+	enhancements.
+
 Tue Aug 11 17:33:19 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* egcs_update: New script.
