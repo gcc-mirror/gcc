@@ -1,3 +1,8 @@
+2003-04-07  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test Suites): Document testing support for
+	gcov and profile-directed optimizations; describe gcc.misc-tests.
+
 Mon Apr  7 22:19:59 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/10077
