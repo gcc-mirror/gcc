@@ -1,5 +1,10 @@
 2003-03-31  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/font/TextAttribute.java
+	(readResolve): Throws java.io.InvalidObjectException.
+
+2003-03-31  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/server/LoaderHandler.java
 	(loadClass): Deprecated.
 	(getSecurityContext): Deprecated.
