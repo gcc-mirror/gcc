@@ -1,4 +1,8 @@
-Mon Nov 26 11:36:20 CET 2001 Jan Hubicka  <jh@suse.cz>
+Mon Nov 26 13:49:41 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (walk_alter_subreg): Fix return value.
+
+Mon Nov 26 11:36:20 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* sparc.c (sparc_absnegfloat_split_legitimate): Do not call
 	alter_subreg.
