@@ -1,3 +1,7 @@
+2004-09-08  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/rtl.texi (Insns): Document NOTE_INSN_FUNCTION_BEG.
+
 2004-09-07  Frank Ch. Eigler  <fche@redhat.com>
 
 	* builtins.c (std_gimplify_va_arg_expr): Mark INDIRECT_REF nodes

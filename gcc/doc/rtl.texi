@@ -3097,6 +3097,11 @@ those loops in which the exit test has been duplicated.  This position
 becomes another virtual start of the loop when considering loop
 invariants.
 
+@findex NOTE_INSN_FUNCTION_BEG
+@item NOTE_INSN_FUNCTION_END
+Appears at the start of the function body, after the function
+prologue.
+
 @findex NOTE_INSN_FUNCTION_END
 @item NOTE_INSN_FUNCTION_END
 Appears near the end of the function body, just before the label that
