@@ -11276,11 +11276,17 @@ qualify_ambiguous_name (id)
 
     else if (code == INTEGER_CST)
       name = qual_wfl;
-    
+
     else if (code == CONVERT_EXPR &&
 	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
       name = TREE_OPERAND (qual_wfl, 0);
-    
+
+    else if (code == CONVERT_EXPR
+	     && TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == CALL_EXPR
+	     && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (qual_wfl, 0), 0))
+		 == EXPR_WITH_FILE_LOCATION))
+      name = TREE_OPERAND (TREE_OPERAND (qual_wfl, 0), 0);
+
     else if ((code == ARRAY_REF || code == CALL_EXPR || code == MODIFY_EXPR) &&
 	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
       name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
