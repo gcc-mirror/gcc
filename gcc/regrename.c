@@ -1309,7 +1309,7 @@ find_oldest_value_reg (class, reg, vd)
 	&& (vd->e[i].mode == mode
 	    || mode_change_ok (vd->e[i].mode, mode, regno)))
       {
-	rtx new = gen_rtx_REG (mode, i);
+	rtx new = gen_rtx_raw_REG (mode, i);
 	ORIGINAL_REGNO (new) = ORIGINAL_REGNO (reg);
 	return new;
       }
@@ -1596,7 +1596,7 @@ copyprop_hardreg_forward_1 (bb, vd)
 	       i = vd->e[i].next_regno)
 	    if (mode == vd->e[regno].mode)
 	      {
-		new = gen_rtx_REG (mode, i);
+		new = gen_rtx_raw_REG (mode, i);
 		if (validate_change (insn, &SET_SRC (set), new, 0))
 		  {
 		    ORIGINAL_REGNO (new) = ORIGINAL_REGNO (src);

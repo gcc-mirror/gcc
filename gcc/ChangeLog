@@ -1,3 +1,8 @@
+2002-01-09  Richard Henderson  <rth@redhat.com>
+
+	* regrename.c (find_oldest_value_reg): Use gen_rtx_raw_REG.
+	(copyprop_hardreg_forward_1): Likewise.
+
 2002-01-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (decrement_and_branch_until_zero): Change predicate for
