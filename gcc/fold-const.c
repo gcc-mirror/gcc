@@ -4734,10 +4734,8 @@ fold (expr)
 	      STRIP_SIGN_NOPS (op);
 	    }
 	  else
-	    {
-	      /* Strip any conversions that don't change the mode.  */
-	      STRIP_NOPS (op);
-	    }
+	    /* Strip any conversions that don't change the mode.  */
+	    STRIP_NOPS (op);
 	  
 	  if (TREE_CODE (op) == COMPLEX_CST)
 	    subop = TREE_REALPART (op);
@@ -5226,7 +5224,7 @@ fold (expr)
 
     case CONJ_EXPR:
       if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
-	return arg0;
+	return convert (type, arg0);
       else if (TREE_CODE (arg0) == COMPLEX_EXPR)
 	return build (COMPLEX_EXPR, type,
 		      TREE_OPERAND (arg0, 0),
@@ -5881,7 +5879,7 @@ fold (expr)
 
     case MIN_EXPR:
       if (operand_equal_p (arg0, arg1, 0))
-	return arg0;
+	return omit_one_operand (type, arg0, arg1);
       if (INTEGRAL_TYPE_P (type)
 	  && operand_equal_p (arg1, TYPE_MIN_VALUE (type), 1))
 	return omit_one_operand (type, arg1, arg0);
@@ -5889,7 +5887,7 @@ fold (expr)
 
     case MAX_EXPR:
       if (operand_equal_p (arg0, arg1, 0))
-	return arg0;
+	return omit_one_operand (type, arg0, arg1);
       if (INTEGRAL_TYPE_P (type)
 	  && TYPE_MAX_VALUE (type)
 	  && operand_equal_p (arg1, TYPE_MAX_VALUE (type), 1))
@@ -5913,13 +5911,13 @@ fold (expr)
 	 ("true" is a fixed value perhaps depending on the language.)  */
       /* If first arg is constant zero, return it.  */
       if (integer_zerop (arg0))
-	return arg0;
+	return convert (type, arg0);
     case TRUTH_AND_EXPR:
       /* If either arg is constant true, drop it.  */
       if (TREE_CODE (arg0) == INTEGER_CST && ! integer_zerop (arg0))
-	return non_lvalue (arg1);
+	return non_lvalue (convert (type, arg1));
       if (TREE_CODE (arg1) == INTEGER_CST && ! integer_zerop (arg1))
-	return non_lvalue (arg0);
+	return non_lvalue (convert (type, arg0));
       /* If second arg is constant zero, result is zero, but first arg
 	 must be evaluated.  */
       if (integer_zerop (arg1))
@@ -5999,13 +5997,13 @@ fold (expr)
 	 ("true" is a fixed value perhaps depending on the language.)  */
       /* If first arg is constant true, return it.  */
       if (TREE_CODE (arg0) == INTEGER_CST && ! integer_zerop (arg0))
-	return arg0;
+	return convert (type, arg0);
     case TRUTH_OR_EXPR:
       /* If either arg is constant zero, drop it.  */
       if (TREE_CODE (arg0) == INTEGER_CST && integer_zerop (arg0))
-	return non_lvalue (arg1);
+	return non_lvalue (convert (type, arg1));
       if (TREE_CODE (arg1) == INTEGER_CST && integer_zerop (arg1))
-	return non_lvalue (arg0);
+	return non_lvalue (convert (type, arg0));
       /* If second arg is constant true, result is true, but we must
 	 evaluate first arg.  */
       if (TREE_CODE (arg1) == INTEGER_CST && ! integer_zerop (arg1))
@@ -6019,14 +6017,14 @@ fold (expr)
     case TRUTH_XOR_EXPR:
       /* If either arg is constant zero, drop it.  */
       if (integer_zerop (arg0))
-	return non_lvalue (arg1);
+	return non_lvalue (convert (type, arg1));
       if (integer_zerop (arg1))
-	return non_lvalue (arg0);
+	return non_lvalue (convert (type, arg0));
       /* If either arg is constant true, this is a logical inversion.  */
       if (integer_onep (arg0))
-	return non_lvalue (invert_truthvalue (arg1));
+	return non_lvalue (convert (type, invert_truthvalue (arg1)));
       if (integer_onep (arg1))
-	return non_lvalue (invert_truthvalue (arg0));
+	return non_lvalue (convert (type, invert_truthvalue (arg0)));
       return t;
 
     case EQ_EXPR:
@@ -7022,8 +7020,8 @@ fold (expr)
 	return t;
       /* Don't let (0, 0) be null pointer constant.  */
       if (integer_zerop (arg1))
-	return build1 (NOP_EXPR, TREE_TYPE (arg1), arg1);
-      return arg1;
+	return build1 (NOP_EXPR, type, arg1);
+      return convert (type, arg1);
 
     case COMPLEX_EXPR:
       if (wins)

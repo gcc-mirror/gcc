@@ -1,3 +1,14 @@
+Tue Mar 28 11:55:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_constructor): SIZE now signed.
+	For EXPR_SIZE, don't evaluate size; just needed if constant.
+	* fold-const.c (fold): Fix a number of cases when folded tree is
+	wrong type.
+	* function.c (flush_addressof): Reenable.
+	* tree.h (flush_addressof): Likewise.
+	* toplev.c (independent_decode_option): Look at strings_processed.
+	* config/alpha/alpha.h (MINIMUM_ATOMIC_ALIGNMENT): Cast to unsigned.
+
 Tue Mar 28 08:29:46 2000  Jan Hubicka  <jh@suse.cz>
 
 	* regmove.c (struct csa_memlist): Make mem field rtx *.

@@ -170,7 +170,8 @@ static void decode_d_option PARAMS ((const char *));
 static int  decode_f_option PARAMS ((const char *));
 static int  decode_W_option PARAMS ((const char *));
 static int  decode_g_option PARAMS ((const char *));
-static unsigned independent_decode_option PARAMS ((int, char **, unsigned));
+static unsigned int independent_decode_option PARAMS ((int, char **,
+						       unsigned int));
 
 static void print_version PARAMS ((FILE *, const char *));
 static int print_single_switch PARAMS ((FILE *, int, int, const char *,
@@ -4434,13 +4435,13 @@ ignoring option `%s' due to invalid debug level specification",
    number of strings that have already been decoded in a language
    specific fashion before this function was invoked.  */
    
-static unsigned
+static unsigned int
 independent_decode_option (argc, argv, strings_processed)
      int argc;
-     char ** argv;
-     unsigned strings_processed ATTRIBUTE_UNUSED;
+     char **argv;
+     unsigned int strings_processed;
 {
-  char * arg = argv[0];
+  char *arg = argv[0];
   
   if (arg[0] != '-' || arg[1] == 0)
     {
@@ -4463,7 +4464,7 @@ independent_decode_option (argc, argv, strings_processed)
   if (* arg == 'Y')
     arg ++;
   
-  switch (* arg)
+  switch (*arg)
     {
     default:
       return 0;
@@ -4480,7 +4481,10 @@ independent_decode_option (argc, argv, strings_processed)
       return decode_f_option (arg + 1);
 	    
     case 'g':
-      return decode_g_option (arg + 1);
+      if (strings_processed == 0)
+	return decode_g_option (arg + 1);
+      else
+	return strings_processed;
 
     case 'd':
       if (!strcmp (arg, "dumpbase"))
@@ -4777,8 +4781,8 @@ main (argc, argv)
   /* Perform normal command line switch decoding.  */
   for (i = 1; i < argc;)
     {
-      unsigned lang_processed;
-      unsigned indep_processed;
+      unsigned int lang_processed;
+      unsigned int indep_processed;
 
       /* Give the language a chance to decode the option for itself.  */
       lang_processed = lang_decode_option (argc - i, argv + i);
@@ -4786,7 +4790,7 @@ main (argc, argv)
       /* Now see if the option also has a language independent meaning.
 	 Some options are both language specific and language independent,
 	 eg --help.  It is possible that there might be options that should
-	 only be decoded in a language independent way if the were not
+	 only be decoded in a language independent way if they were not
 	 decoded in a langauge specific way, which is why 'lang_processed'
 	 is passed in.  */
       indep_processed = independent_decode_option (argc - i, argv + i,

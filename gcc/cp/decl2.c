@@ -572,7 +572,6 @@ lang_decode_option (argc, argv)
 #endif
   ;
      char **argv;
-
 {
   int strings_processed;
   char *p = argv[0];

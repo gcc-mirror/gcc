@@ -147,7 +147,7 @@ static void store_constructor_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
 					     HOST_WIDE_INT, enum machine_mode,
 					     tree, tree, unsigned int, int));
 static void store_constructor	PARAMS ((tree, rtx, unsigned int, int,
-					 unsigned HOST_WIDE_INT));
+					 HOST_WIDE_INT));
 static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
 					 HOST_WIDE_INT, enum machine_mode,
 					 tree, enum machine_mode, int,
@@ -4121,11 +4121,11 @@ store_constructor (exp, target, align, cleared, size)
      rtx target;
      unsigned int align;
      int cleared;
-     unsigned HOST_WIDE_INT size;
+     HOST_WIDE_INT size;
 {
   tree type = TREE_TYPE (exp);
 #ifdef WORD_REGISTER_OPERATIONS
-  rtx exp_size = expr_size (exp);
+  HOST_WIDE_INT exp_size = int_size_in_bytes (type);
 #endif
 
   /* We know our target cannot conflict, since safe_from_p has been called.  */
@@ -4285,8 +4285,8 @@ store_constructor (exp, target, align, cleared, size)
 	      && bitpos % BITS_PER_WORD == 0
 	      && GET_MODE_CLASS (mode) == MODE_INT
 	      && TREE_CODE (value) == INTEGER_CST
-	      && GET_CODE (exp_size) == CONST_INT
-	      && bitpos + BITS_PER_WORD <= INTVAL (exp_size) * BITS_PER_UNIT)
+	      && exp_size >= 0
+	      && bitpos + BITS_PER_WORD <= exp_size * BITS_PER_UNIT)
 	    {
 	      tree type = TREE_TYPE (value);
 	      if (TYPE_PRECISION (type) < BITS_PER_WORD)
