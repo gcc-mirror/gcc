@@ -3744,7 +3744,6 @@ extern bool have_extern_spec;
 
 /* in decl2.c */
 extern int check_java_method			PARAMS ((tree));
-extern int cxx_decode_option			PARAMS ((int, char **));
 extern int grok_method_quals			PARAMS ((tree, tree, tree));
 extern void warn_if_unknown_interface		PARAMS ((tree));
 extern void grok_x_components			PARAMS ((tree));

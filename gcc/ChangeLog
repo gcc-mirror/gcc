@@ -1,3 +1,19 @@
+2002-08-07  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in (c-opts.o, c-common.o, C_AND_OBJC_OBJS): Update.
+	* c-common.c: Don't include tree-inline.h.
+	(c_common_init_options, c_common_post_options): Move to c-opts.c.
+	* c-common.h (c_common_decode_option): New.
+	* c-decl.c (c_decode_option): Remove.
+	* c-lang.c (LANG_HOOKS_DECODE_OPTION): Use c_common_decode_option.
+	* c-opts.c: New file.
+	* c-tree.h (c_decode_option): Remove.
+	* doc/passes.texi: Update.
+	* objc/objc-act.c (objc_decode_option): Remove.
+	* objc/objc-act.h (objc_decode_option): Remove.
+	* objc/ojbc-lang.c (LANG_HOOKS_DECODE_OPTION): Use
+	c_common_decode_option.
+
 2002-08-07  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md (sunlt_sf, suneq_sf, sunle_sf): Remove

@@ -851,6 +851,7 @@ extern tree handle_format_attribute		PARAMS ((tree *, tree, tree,
 extern tree handle_format_arg_attribute		PARAMS ((tree *, tree, tree,
 							 int, bool *));
 extern void c_common_insert_default_attributes	PARAMS ((tree));
+extern int c_common_decode_option		PARAMS ((int, char **));
 extern tree c_common_type_for_mode		PARAMS ((enum machine_mode,
 							 int));
 extern tree c_common_type_for_size		PARAMS ((unsigned int, int));

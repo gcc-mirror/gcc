@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 /*** Public Interface (procedures) ***/
 
 const char *objc_init				PARAMS ((const char *));
-int objc_decode_option				PARAMS ((int, char **));
 const char *objc_printable_name			PARAMS ((tree, int));
 
 /* used by yyparse */
