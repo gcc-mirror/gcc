@@ -1900,8 +1900,22 @@ output_plussi (operands)
 
   if (TARGET_H8300)
     {
-      /* Currently we do not support H8/300 here yet.  */
-      abort ();
+      if (GET_CODE (operands[2]) == REG)
+	return "add.w\t%f2,%f0\n\taddx\t%y2,%y0\n\taddx\t%z2,%z0";
+
+      if (GET_CODE (operands[2]) == CONST_INT)
+	{
+	  HOST_WIDE_INT n = INTVAL (operands[2]);
+
+	  if ((n & 0xffffff) == 0)
+	    return "add\t%z2,%z0";
+	  if ((n & 0xffff) == 0)
+	    return "add\t%y2,%y0\n\taddx\t%z2,%z0";
+	  if ((n & 0xff) == 0)
+	    return "add\t%x2,%x0\n\taddx\t%y2,%y0\n\taddx\t%z2,%z0";
+	}
+
+      return "add\t%w2,%w0\n\taddx\t%x2,%x0\n\taddx\t%y2,%y0\n\taddx\t%z2,%z0";
     }
   else
     {
@@ -1960,8 +1974,22 @@ compute_plussi_length (operands)
 
   if (TARGET_H8300)
     {
-      /* Currently we do not support H8/300 here yet.  */
-      abort ();
+      if (GET_CODE (operands[2]) == REG)
+	return 6;
+
+      if (GET_CODE (operands[2]) == CONST_INT)
+	{
+	  HOST_WIDE_INT n = INTVAL (operands[2]);
+
+	  if ((n & 0xffffff) == 0)
+	    return 2;
+	  if ((n & 0xffff) == 0)
+	    return 4;
+	  if ((n & 0xff) == 0)
+	    return 6;
+	}
+
+      return 8;
     }
   else
     {
@@ -2015,8 +2043,7 @@ compute_plussi_cc (operands)
 
   if (TARGET_H8300)
     {
-      /* Currently we do not support H8/300 here yet.  */
-      abort ();
+      return CC_CLOBBER;
     }
   else
     {

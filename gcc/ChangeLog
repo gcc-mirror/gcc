@@ -1,3 +1,11 @@
+2003-01-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (output_plussi): Support H8/300.
+	(compute_plussi_length): Likewise.
+	(compute_plussi_cc): Likewise.
+	* config/h8300/h8300.md (addsi_h8300): Use output_plussi to
+	output assembly instructions.
+
 2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calls.c (fix_unsafe_tree): Prototype.
