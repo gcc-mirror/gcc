@@ -3428,8 +3428,8 @@ package body Exp_Ch3 is
             --  initialize scalars mode, and these types are treated specially
             --  and do not need initialization procedures.
 
-            elsif Base = Standard_String
-              or else Base = Standard_Wide_String
+            elsif Root_Type (Base) = Standard_String
+              or else Root_Type (Base) = Standard_Wide_String
             then
                null;
 

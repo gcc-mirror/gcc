@@ -1,3 +1,60 @@
+2003-10-27  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.generic: Add missing substitution on object_deps handling.
+
+	PR ada/5909:
+	* Make-lang.in (check-ada): Enable ACATS test suite.
+
+2003-10-27  Robert Dewar  <dewar@gnat.com>
+
+	* exp_ch3.adb: 
+	(Freeze_Array_Type): We do not need an initialization routine for types
+	derived from String or Wide_String. They should be treated the same
+	as String and Wide_String themselves. This caused problems with the
+	use of Initialize_Scalars.
+
+	* exp_ch5.adb: 
+	(Expand_Assign_Record): Do component-wise assignment of non-byte aligned
+	composites. This allows use of component clauses that are not byte
+	aligned.
+
+	* sem_prag.adb: 
+	(Analyze_Pragma, case Pack): Generate warning and ignore pack if there
+	is an attempt to pack an array of atomic objects.
+
+	* make.adb, prj-env.adb, prj-env.ads: Minor reformatting
+
+2003-10-27  Pascal Obry  <obry@gnat.com>
+
+	* g-dirope.adb: 
+	(Basename): Check for drive letters in a pathname only on DOS based OS.
+
+2003-10-27  Vincent Celier  <celier@gnat.com>
+
+	* make.adb: 
+	(Gnatmake): When unable to change dir to the object dir, display the
+	content of the parent dir of the obj dir, to try to understand why this
+	happens.
+
+2003-10-27  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
+2003-10-27  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch12.adb: 
+	(Inline_Instance_Body): Indicate that the save/restore of use_clauses
+	should not be done in Save/Restore_Scope_Stack, because it is performed
+	locally.
+
+	* sem_ch8.adb: 
+	(Save_Scope_Stack, Restore_Scope_Stack): Add parameter to indicate
+	whether use clauses should be removed/restored.
+
+	* sem_ch8.ads: 
+	(Save_Scope_Stack, Restore_Scope_Stack): Add parameter to indicate
+	whether use clauses should be removed/restored.
+
 2003-10-26  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in: Remove duplicated lines.

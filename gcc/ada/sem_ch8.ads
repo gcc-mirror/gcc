@@ -135,14 +135,18 @@ package Sem_Ch8 is
    --  or else a with-clause on system. N is absent when the function is
    --  called to find the visibility of implicit operators.
 
-   procedure Restore_Scope_Stack;
-   procedure Save_Scope_Stack;
+   procedure Restore_Scope_Stack (Handle_Use : Boolean := True);
+   procedure Save_Scope_Stack (Handle_Use : Boolean := True);
    --  These two procedures are called from Semantics, when a unit U1 is
    --  to be compiled in the course of the compilation of another unit U2.
    --  This happens whenever Rtsfind is called. U1, the unit retrieved by
    --  Rtsfind, must be compiled in its own context, and the current scope
    --  stack containing U2 and local scopes must be made unreachable. On
    --  return, the contents of the scope stack must be made accessible again.
+   --  The flag Handle_Use indicates whether local use clauses must be
+   --  removed/installed. In the case of inlining of instance bodies, the
+   --  visiblity handling is done fully in Inline_Instance_Body, and use
+   --  clauses are handled there.
 
    procedure Set_Use (L : List_Id);
    --  Find use clauses that are declarative items in a package declaration

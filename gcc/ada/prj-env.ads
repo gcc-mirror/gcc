@@ -66,8 +66,7 @@ package Prj.Env is
 
    function Ada_Include_Path
      (Project   : Project_Id;
-      Recursive : Boolean)
-      return      String;
+      Recursive : Boolean) return String;
    --  Get the ADA_INCLUDE_PATH of a Project file. If Recursive it True,
    --  get all the source directories of the imported and modified project
    --  files (recursively). If Recursive is False, just get the path for the
@@ -76,8 +75,7 @@ package Prj.Env is
 
    function Ada_Objects_Path
      (Project             : Project_Id;
-      Including_Libraries : Boolean := True)
-      return                String_Access;
+      Including_Libraries : Boolean := True) return String_Access;
    --  Get the ADA_OBJECTS_PATH of a Project file. For the first call, compute
    --  it and cache it. When Including_Libraries is False, do not include the
    --  object directories of the library projects, and do not cache the result.
@@ -86,7 +84,7 @@ package Prj.Env is
      (Project             : Project_Id;
       Including_Libraries : Boolean);
    --  Set the env vars for additional project path files, after
-   --  creating if necessary the path files.
+   --  creating the path files if necessary.
 
    procedure Delete_All_Path_Files;
    --  Delete all temporary path files that have been created by
@@ -94,22 +92,23 @@ package Prj.Env is
 
    function Path_Name_Of_Library_Unit_Body
      (Name    : String;
-      Project : Project_Id)
-      return    String;
-   --  Returns the Path of a library unit.
+      Project : Project_Id) return String;
+   --  Returns the Path of a library unit
 
    function File_Name_Of_Library_Unit_Body
      (Name              : String;
       Project           : Project_Id;
       Main_Project_Only : Boolean := True;
-      Full_Path         : Boolean := False)
-      return              String;
+      Full_Path         : Boolean := False) return String;
    --  Returns the file name of a library unit, in canonical case. Name may or
    --  may not have an extension (corresponding to the naming scheme of the
    --  project). If there is no body with this name, but there is a spec, the
    --  name of the spec is returned.
+   --
    --  If Full_Path is False (the default), the simple file name is returned.
+   --
    --  If Full_Path is True, the absolute path name is returned.
+   --
    --  If neither a body nor a spec can be found, an empty string is returned.
    --  If Main_Project_Only is True, the unit must be an immediate source of
    --  Project. If it is False, it may be a source of one of its imported
@@ -117,8 +116,7 @@ package Prj.Env is
 
    function Project_Of
      (Name         : String;
-      Main_Project : Project_Id)
-      return         Project_Id;
+      Main_Project : Project_Id) return Project_Id;
    --  Get the project of a source. The source file name may be truncated
    --  (".adb" or ".ads" may be missing). If the source is in a project being
    --  extended, return the ultimate extending project. If it is not a source

@@ -5072,7 +5072,7 @@ package body Sem_Ch8 is
    -- Restore_Scope_Stack --
    -------------------------
 
-   procedure Restore_Scope_Stack is
+   procedure Restore_Scope_Stack (Handle_Use : Boolean := True) is
       E         : Entity_Id;
       S         : Entity_Id;
       Comp_Unit : Node_Id;
@@ -5174,6 +5174,7 @@ package body Sem_Ch8 is
 
       if SS_Last >= Scope_Stack.First
         and then Scope_Stack.Table (SS_Last).Entity /= Standard_Standard
+        and then Handle_Use
       then
          Install_Use_Clauses (Scope_Stack.Table (SS_Last).First_Use_Clause);
       end if;
@@ -5183,7 +5184,7 @@ package body Sem_Ch8 is
    -- Save_Scope_Stack --
    ----------------------
 
-   procedure Save_Scope_Stack is
+   procedure Save_Scope_Stack (Handle_Use : Boolean := True) is
       E       : Entity_Id;
       S       : Entity_Id;
       SS_Last : constant Int := Scope_Stack.Last;
@@ -5192,8 +5193,9 @@ package body Sem_Ch8 is
       if SS_Last >= Scope_Stack.First
         and then Scope_Stack.Table (SS_Last).Entity /= Standard_Standard
       then
-
-         End_Use_Clauses (Scope_Stack.Table (SS_Last).First_Use_Clause);
+         if Handle_Use then
+            End_Use_Clauses (Scope_Stack.Table (SS_Last).First_Use_Clause);
+         end if;
 
          --  If the call is from within a compilation unit, as when
          --  called from Rtsfind, make current entries in scope stack
