@@ -183,24 +183,24 @@ float_const_operand (op, mode)
    general-purpose register.  */
 
 int
-gen_reg_or_float_constant_operand (op, mode)
+gpc_reg_or_float_constant_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return float_const_operand (op, mode) || gen_reg_operand (op, mode);
+  return float_const_operand (op, mode) || gpc_reg_operand (op, mode);
 }
 
 /* Returns 1 if OP is an integer constant of the proper mode or a
    general-purpose register.  */
 
 int
-gen_reg_or_integer_constant_operand (op, mode)
+gpc_reg_or_integer_constant_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_MODE (op) == VOIDmode
 	   && (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE))
-	  || gen_reg_operand (op, mode));
+	  || gpc_reg_operand (op, mode));
 }
      
 /* Returns 1 if OP is a special machine register.  */
@@ -228,7 +228,7 @@ accum_reg_operand (op, mode)
 /* Returns 1 if OP is a normal data register.  */
 
 int
-gen_reg_operand (op, mode)
+gpc_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
@@ -267,18 +267,18 @@ srcb_operand (op, mode)
   if (GET_MODE (op) != mode && mode != VOIDmode)
     return 0;
 
-  return gen_reg_operand (op, mode);
+  return gpc_reg_operand (op, mode);
 }
 
 /* Return 1 if OP is either an immediate or a general register.  This is used
    for the input operand of mtsr/mtrsim.  */
 
 int
-gen_reg_or_immediate_operand (op, mode)
+gpc_reg_or_immediate_operand (op, mode)
      rtx op;
      enum machine_mode;
 {
-  return gen_reg_operand (op, mode) || immediate_operand (op, mode);
+  return gpc_reg_operand (op, mode) || immediate_operand (op, mode);
 }
 
 /* Return 1 if OP can be used as the second operand of and AND insn.  This
@@ -370,7 +370,7 @@ out_operand (op, mode)
     op = SUBREG_REG (op);
 
   if (GET_CODE (op) == REG)
-    return (mode == SImode || gen_reg_operand (orig_op, mode)
+    return (mode == SImode || gpc_reg_operand (orig_op, mode)
 	    || (GET_MODE_CLASS (mode) == MODE_FLOAT
 		&& accum_reg_operand (orig_op, mode)));
 
