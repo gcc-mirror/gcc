@@ -2423,11 +2423,11 @@ simplify_subreg (outermode, op, innermode, byte)
      of real and imaginary part.  */
   if (GET_CODE (op) == CONCAT)
     {
-      int is_realpart = byte < GET_MODE_UNIT_SIZE (innermode) / 2;
+      int is_realpart = byte < GET_MODE_UNIT_SIZE (innermode);
       rtx part = is_realpart ? XEXP (op, 0) : XEXP (op, 1);
       unsigned int final_offset;
 
-      final_offset = byte % (GET_MODE_UNIT_SIZE (innermode) / 2);
+      final_offset = byte % (GET_MODE_UNIT_SIZE (innermode));
       return simplify_subreg (outermode, part, GET_MODE (part), final_offset);
     }
 
