@@ -74,21 +74,55 @@
 (define_predicate "sdata_symbolic_operand" 
   (match_code "symbol_ref,const")
 {
+  HOST_WIDE_INT offset = 0, size = 0;
+
   switch (GET_CODE (op))
     {
     case CONST:
       op = XEXP (op, 0);
       if (GET_CODE (op) != PLUS
-	  || GET_CODE (XEXP (op, 0)) != SYMBOL_REF)
+	  || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
 	return false;
+      offset = INTVAL (XEXP (op, 1));
       op = XEXP (op, 0);
       /* FALLTHRU */
 
     case SYMBOL_REF:
       if (CONSTANT_POOL_ADDRESS_P (op))
-	return GET_MODE_SIZE (get_pool_mode (op)) <= ia64_section_threshold;
+	{
+	  size = GET_MODE_SIZE (get_pool_mode (op));
+	  if (size > ia64_section_threshold)
+	    return false;
+	}
       else
-	return SYMBOL_REF_LOCAL_P (op) && SYMBOL_REF_SMALL_P (op);
+	{
+	  tree t;
+
+	  if (!SYMBOL_REF_LOCAL_P (op) || !SYMBOL_REF_SMALL_P (op))
+	    return false;
+
+	  /* Note that in addition to DECLs, we can get various forms
+	     of constants here.  */
+	  t = SYMBOL_REF_DECL (op);
+	  if (DECL_P (t))
+	    t = DECL_SIZE_UNIT (t);
+	  else
+	    t = TYPE_SIZE_UNIT (TREE_TYPE (t));
+	  if (t && host_integerp (t, 0))
+	    {
+	      size = tree_low_cst (t, 0);
+	      if (size < 0)
+		size = 0;
+	    }
+	}
+
+      /* Deny the stupid user trick of addressing outside the object.  Such
+	 things quickly result in GPREL22 relocation overflows.  Of course,
+	 they're also highly undefined.  From a pure pedant's point of view
+	 they deserve a slap on the wrist (such as provided by a relocation
+	 overflow), but that just leads to bugzilla noise.  */
+      return (offset >= 0 && offset <= size);
 
     default:
       abort ();
