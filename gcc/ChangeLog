@@ -1,3 +1,9 @@
+2003-06-07  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* configure.in (HAVE_LD_RO_RW_SECTION_MIXING): Remove quotes in
+	section names.
+	* configure: Regenerate.
+
 2003-06-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (CRT_CALL_STATIC_FUNCTION): Define.
