@@ -4,8 +4,9 @@
    PowerPC Foreign Function Interface 
 
    Darwin ABI support (c) 2001 John Hornkvist
+   AIX ABI support (c) 2002 Free Software Foundation, Inc.
 
-   $Id: ffi.c,v 1.1.1.1 1998/11/29 16:48:16 green Exp $
+   $Id: ffi_darwin.c,v 1.1 2002/01/16 05:32:15 bryce Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -202,7 +203,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   /* Space for the frame pointer, callee's LR, CR, etc, and for 
      the asm's temp regs.  */
 
-  bytes = (6 + ASM_NEEDS_REGISTERS) * sizeof(int);
+  bytes = (6 + ASM_NEEDS_REGISTERS) * sizeof(long);
 
   /* Return value handling.  The rules are as follows:
      - 32-bit (or less) integer values are returned in gpr3;
@@ -210,10 +211,16 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
      - 64-bit integer values and structures between 5 and 8 bytes are returned
        in gpr3 and gpr4;
      - Single/double FP values are returned in fpr1;
-     - Larger structures and long double (if not equivalent to double) values
-       are allocated space and a pointer is passed as the first argument.  */
+     - Long double FP (if not equivalent to double) values are returned in
+       fpr1 and fpr2;
+     - Larger structures values are allocated space and a pointer is passed
+       as the first argument.  */
   switch (cif->rtype->type)
     {
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+    case FFI_TYPE_LONGDOUBLE:
+#endif
+      /* Fall through.  */
     case FFI_TYPE_DOUBLE:
       flags |= FLAG_RETURNS_64BITS;
       /* Fall through.  */
@@ -227,10 +234,6 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       break;
 
     case FFI_TYPE_STRUCT:
-      /* Fall through.  */
-#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
-    case FFI_TYPE_LONGDOUBLE:
-#endif
       flags |= FLAG_RETVAL_REFERENCE;
       flags |= FLAG_RETURNS_NOTHING;
       intarg_count++;
@@ -301,9 +304,9 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
   /* Stack space.  */
   if ((intarg_count + 2 * fparg_count) > NUM_GPR_ARG_REGISTERS)
-    bytes += (intarg_count + 2 * fparg_count) * sizeof(int);
+    bytes += (intarg_count + 2 * fparg_count) * sizeof(long);
   else
-    bytes += NUM_GPR_ARG_REGISTERS * sizeof(int);
+    bytes += NUM_GPR_ARG_REGISTERS * sizeof(long);
 
   /* The stack space allocated needs to be a multiple of 16 bytes.  */
   bytes = (bytes + 15) & ~0xF;
@@ -316,11 +319,16 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
 /*@-declundef@*/
 /*@-exportheader@*/
+extern void ffi_call_AIX(/*@out@*/ extended_cif *, 
+			 unsigned, unsigned, 
+			 /*@out@*/ unsigned *, 
+			 void (*fn)(),
+			 void (*fn2)());
 extern void ffi_call_DARWIN(/*@out@*/ extended_cif *, 
-			  unsigned, unsigned, 
-			  /*@out@*/ unsigned *, 
+			    unsigned, unsigned, 
+			    /*@out@*/ unsigned *, 
 			    void (*fn)(),
-			  void (*fn2)());
+			    void (*fn2)());
 /*@=declundef@*/
 /*@=exportheader@*/
 
@@ -349,10 +357,16 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
     
   switch (cif->abi) 
     {
+    case FFI_AIX:
+      /*@-usedef@*/
+      ffi_call_AIX(&ecif, -cif->bytes, 
+		   cif->flags, ecif.rvalue, fn, ffi_prep_args);
+      /*@=usedef@*/
+      break;
     case FFI_DARWIN:
       /*@-usedef@*/
       ffi_call_DARWIN(&ecif, -cif->bytes, 
-		    cif->flags, ecif.rvalue, fn, ffi_prep_args);
+		      cif->flags, ecif.rvalue, fn, ffi_prep_args);
       /*@=usedef@*/
       break;
     default:
