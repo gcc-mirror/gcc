@@ -168,7 +168,7 @@ public abstract class ImageReaderWriterSpi
    * subclasses must ensure that they set all inherited fields to
    * meaningful values.
    */
-  protected ImageReaderWriterSpi()
+  public ImageReaderWriterSpi()
   {
   }
 
