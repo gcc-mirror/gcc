@@ -1,3 +1,8 @@
+2004-03-31  Andrew Haley  <aph@redhat.com>
+
+	PR java/14104
+	* jcf-io.c (opendir_in_zip): Tidy up error handling.
+
 2004-03-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* builtins.c, expr.c, jcf.h, parse.h: Use new shorter
