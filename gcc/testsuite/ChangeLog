@@ -1,3 +1,8 @@
+2005-01-24  James E Wilson  <wilson@specifixinc.com>
+
+	* gcc.c-torture/execute/builtins/lib/strstr.c (strstr): Correct exit
+	test for successful match.
+
 2005-01-25  Alexander Malmberg  <alexander@malmberg.org>
 
 	PR objc/18408
