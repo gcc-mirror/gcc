@@ -1,3 +1,11 @@
+2003-01-31  Paolo Carlini  <pcarlini@unitus.it>
+
+	Further tweaks for Bison-1.875.
+	* g++.dg/lookup/using2.C: Test for "(parse|syntax) error".
+	* g++.dg/other/do1.C: Likewise.
+	* g++.dg/parse/angle-bracket.C: Likewise.
+	* g++.dg/template/typename3.C: Likewise.
+
 2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8849

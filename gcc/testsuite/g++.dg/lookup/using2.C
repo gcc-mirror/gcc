@@ -25,7 +25,7 @@ namespace N
   template<int> void f() {}
 }
 
-using N;             // { dg-error "parse error" "" }
+using N;             // { dg-error "(parse|syntax) error" "" }
 using ::N;           // { dg-error "using-declaration" "" }
 using N::f< 0 >;     // { dg-error "using-declaration" "" }
 
@@ -41,6 +41,6 @@ struct B : A {
 
 struct C : A {
   using A::f<double>; // { dg-error "using-declaration" "" }
-  using A::X<int>;    // { dg-error "parse error" "" }
+  using A::X<int>;    // { dg-error "(parse|syntax) error" "" }
 };
 
