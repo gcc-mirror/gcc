@@ -1313,7 +1313,7 @@ find_oldest_value_reg (class, reg, vd)
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
     if (TEST_HARD_REG_BIT (reg_class_contents[class], i)
 	&& (vd->e[i].mode == mode
-	    || mode_change_ok (vd->e[i].mode, mode, regno)))
+	    || mode_change_ok (vd->e[i].mode, mode, i)))
       {
 	rtx new = gen_rtx_raw_REG (mode, i);
 	ORIGINAL_REGNO (new) = ORIGINAL_REGNO (reg);
@@ -1600,7 +1600,8 @@ copyprop_hardreg_forward_1 (bb, vd)
 	  /* Otherwise, try all valid registers and see if its valid.  */
 	  for (i = vd->e[regno].oldest_regno; i != regno;
 	       i = vd->e[i].next_regno)
-	    if (mode == vd->e[regno].mode)
+	    if (vd->e[i].mode == mode
+		|| mode_change_ok (vd->e[i].mode, mode, i))
 	      {
 		new = gen_rtx_raw_REG (mode, i);
 		if (validate_change (insn, &SET_SRC (set), new, 0))
