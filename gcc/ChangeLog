@@ -1,3 +1,9 @@
+2002-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* stor-layout.c (update_alignment_for_field): New function.
+	(place_union_field): Use it.
+	(place_field): Likewise.
+	
 2002-10-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.c (cc1_options): Add space on -auxbase-strip.
