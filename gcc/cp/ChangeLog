@@ -1,3 +1,8 @@
+2004-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* mangle.c (write_expression): Issue a sorry for zero-operand
+	functional casts.
+
 2004-07-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13092
