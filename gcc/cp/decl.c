@@ -6136,7 +6136,12 @@ record_builtin_java_type (name, size)
     }
   record_builtin_type (RID_MAX, name, type);
   decl = TYPE_NAME (type);
+
+  /* Suppress generate debug symbol entries for these types,
+     since for normal C++ they are just clutter.
+     However, push_lang_context undoes this if extern "Java" is seen. */
   DECL_IGNORED_P (decl) = 1;
+
   TYPE_FOR_JAVA (type) = 1;
   return type;
 }

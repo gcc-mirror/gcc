@@ -4618,10 +4618,27 @@ push_lang_context (name)
       current_lang_stacksize += 10;
     }
 
-  if (name == lang_name_cplusplus || name == lang_name_java)
+  if (name == lang_name_cplusplus)
     {
       strict_prototype = strict_prototypes_lang_cplusplus;
       current_lang_name = name;
+    }
+  else if (name == lang_name_java)
+    {
+      strict_prototype = strict_prototypes_lang_cplusplus;
+      current_lang_name = name;
+      /* DECL_IGNORED_P is initially set for these types, to avoid clutter.
+	 (See record_builtin_java_type in decl.c.)  However, that causes
+	 incorrect debug entries if these types are actually used.
+	 So we re-enable debug output after extern "Java". */
+      DECL_IGNORED_P (java_byte_type_node) = 0;
+      DECL_IGNORED_P (java_short_type_node) = 0;
+      DECL_IGNORED_P (java_int_type_node) = 0;
+      DECL_IGNORED_P (java_long_type_node) = 0;
+      DECL_IGNORED_P (java_float_type_node) = 0;
+      DECL_IGNORED_P (java_double_type_node) = 0;
+      DECL_IGNORED_P (java_char_type_node) = 0;
+      DECL_IGNORED_P (java_boolean_type_node) = 0;
     }
   else if (name == lang_name_c)
     {
