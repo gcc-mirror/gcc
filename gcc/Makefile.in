@@ -1596,11 +1596,11 @@ install-include-dir:
 
 # Install the include directory using tar.
 install-headers-tar: stmp-headers install-include-dir
-	( cd include; tar cf - . ) | (cd $(libsubdir)/include; tar xpBf - )
+	cd include; tar cf - . | (cd $(libsubdir)/include; tar xpBf - )
 
 # Install the include directory using cpio.
 install-headers-cpio: stmp-headers install-include-dir
-	( cd include; find . -print | cpio -pdum $(libsubdir)/include )
+	cd include; find . -print | cpio -pdum $(libsubdir)/include
 
 # Put assert.h in /usr/local/include, so it won't override GNU libc's assert.h.
 # Don't replace the assert.h already there if it is not from GCC.
