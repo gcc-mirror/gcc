@@ -1,3 +1,8 @@
+2003-11-11  James E Wilson  <wilson@specifixinc.com>
+
+	* expmed.c (store_bit_field, extract_bit_field): Revert last two
+	changes.
+
 2003-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm: Replace DenHighZero with
