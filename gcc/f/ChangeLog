@@ -1,3 +1,10 @@
+Mon Jun 28 10:43:11 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (ffecom_prepare_expr_): A COMPLEX intrinsic needs
+	a temp even if -fno-f2c.
+
+	* version.c: Bump version.
+
 Fri Jun 25 11:06:32 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi: Describe K(5)=10*3 NAMELIST-read bug.
