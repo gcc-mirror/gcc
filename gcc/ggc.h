@@ -223,8 +223,6 @@ extern void *ggc_alloc_cleared_zone (size_t, struct alloc_zone *);
 extern void *ggc_realloc (void *, size_t);
 /* Like ggc_alloc_cleared, but performs a multiplication.  */
 extern void *ggc_calloc (size_t, size_t);
-/* Free a block.  To be used when known for certain it's not reachable.  */
-extern void ggc_free (void *);
 
 #define ggc_alloc_rtx(CODE)                    \
   ((rtx) ggc_alloc_typed (gt_ggc_e_7rtx_def, RTX_SIZE (CODE)))
