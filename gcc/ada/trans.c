@@ -3500,6 +3500,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	tree gnu_ret_val = NULL_TREE;
 	/* The place to put the return value.  */
 	tree gnu_lhs;
+	/* Avoid passing error_mark_node to RETURN_EXPR.  */
+	gnu_result = NULL_TREE;
 
 	/* If we are dealing with a "return;" from an Ada procedure with
 	   parameters passed by copy in copy out, we need to return a record
