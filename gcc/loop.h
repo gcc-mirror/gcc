@@ -1,5 +1,6 @@
 /* Loop optimization definitions for GNU C-Compiler
-   Copyright (C) 1991, 1995, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -416,4 +417,3 @@ rtx loop_insn_hoist PARAMS((const struct loop *, rtx));
 
 /* Forward declarations for non-static functions declared in doloop.c.  */
 int doloop_optimize PARAMS ((const struct loop *));
-rtx doloop_condition_get PARAMS ((rtx));

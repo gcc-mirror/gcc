@@ -1,3 +1,7 @@
+2001-01-12  Andreas Jaeger  <aj@suse.de>
+
+	* loop.h: Remove wrong declaration of doloop_condition_get.
+
 2001-01-12  Phil Edwards  <pme@sources.redhat.com>
 
 	* extend.texi:  Move C++-extension-related node from the C section
@@ -11,10 +15,10 @@
 Fri Jan 12 12:08:12 MET 2001  Andreas Jaeger  <aj@suse.de>
 			      Jan Hubicka  <jh@suse.cz>
 
- 	* combine.c (reversed_comparison): Fix typo in last patch.
+	* combine.c (reversed_comparison): Fix typo in last patch.
 	Check X for NULL.
- 	(combine_reversed_comparison_code): Make static to follow
- 	prototype declaration.
+	(combine_reversed_comparison_code): Make static to follow
+	prototype declaration.
 
 2001-01-12  Phil Edwards  <pme@sources.redhat.com>
 
