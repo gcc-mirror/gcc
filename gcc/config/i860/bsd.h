@@ -1,5 +1,3 @@
-#include "i860/i860.h"
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i860, BSD)")
 
