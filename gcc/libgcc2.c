@@ -1332,275 +1332,146 @@ static int num_digits (long long value, int base) __attribute__ ((const));
 void
 __bb_exit_func (void)
 {
-  FILE *da_file, *file;
+  FILE *da_file;
   long time_value;
   int i;
+  struct bb *ptr;
 
   if (bb_head == 0)
     return;
 
   i = strlen (bb_head->filename) - 3;
 
-  if (!strcmp (bb_head->filename+i, ".da"))
+
+  for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
     {
-      /* Must be -fprofile-arcs not -a.
-	 Dump data in a form that gcov expects.  */
+      int firstchar;
 
-      struct bb *ptr;
+      /* Make sure the output file exists -
+         but don't clobber exiting data.  */
+      if ((da_file = fopen (ptr->filename, "a")) != 0)
+	fclose (da_file);
 
-      for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
+      /* Need to re-open in order to be able to write from the start.  */
+      da_file = fopen (ptr->filename, "r+b");
+      /* Some old systems might not allow the 'b' mode modifier.
+         Therefore, try to open without it.  This can lead to a race
+         condition so that when you delete and re-create the file, the
+         file might be opened in text mode, but then, you shouldn't
+         delete the file in the first place.  */
+      if (da_file == 0)
+	da_file = fopen (ptr->filename, "r+");
+      if (da_file == 0)
 	{
-	  int firstchar;
+	  fprintf (stderr, "arc profiling: Can't open output file %s.\n",
+		   ptr->filename);
+	  continue;
+	}
 
-	  /* Make sure the output file exists -
-	     but don't clobber exiting data.  */
-	  if ((da_file = fopen (ptr->filename, "a")) != 0)
-	    fclose (da_file);
+      /* After a fork, another process might try to read and/or write
+         the same file simultanously.  So if we can, lock the file to
+         avoid race conditions.  */
+#if defined (TARGET_HAS_F_SETLKW)
+      {
+	struct flock s_flock;
 
-	  /* Need to re-open in order to be able to write from the start.  */
-	  da_file = fopen (ptr->filename, "r+b");
-	  /* Some old systems might not allow the 'b' mode modifier.
-	     Therefore, try to open without it.  This can lead to a race
-	     condition so that when you delete and re-create the file, the
-	     file might be opened in text mode, but then, you shouldn't
-	     delete the file in the first place.  */
-	  if (da_file == 0)
-	    da_file = fopen (ptr->filename, "r+");
-	  if (da_file == 0)
+	s_flock.l_type = F_WRLCK;
+	s_flock.l_whence = SEEK_SET;
+	s_flock.l_start = 0;
+	s_flock.l_len = 1;
+	s_flock.l_pid = getpid ();
+
+	while (fcntl (fileno (da_file), F_SETLKW, &s_flock)
+	       && errno == EINTR);
+      }
+#endif
+
+      /* If the file is not empty, and the number of counts in it is the
+         same, then merge them in.  */
+      firstchar = fgetc (da_file);
+      if (firstchar == EOF)
+	{
+	  if (ferror (da_file))
 	    {
-	      fprintf (stderr, "arc profiling: Can't open output file %s.\n",
+	      fprintf (stderr, "arc profiling: Can't read output file ");
+	      perror (ptr->filename);
+	    }
+	}
+      else
+	{
+	  long n_counts = 0;
+
+	  if (ungetc (firstchar, da_file) == EOF)
+	    rewind (da_file);
+	  if (__read_long (&n_counts, da_file, 8) != 0)
+	    {
+	      fprintf (stderr, "arc profiling: Can't read output file %s.\n",
 		       ptr->filename);
 	      continue;
 	    }
 
-	  /* After a fork, another process might try to read and/or write
-	     the same file simultanously.  So if we can, lock the file to
-	     avoid race conditions.  */
-#if defined (TARGET_HAS_F_SETLKW)
-	  {
-	    struct flock s_flock;
-
-	    s_flock.l_type = F_WRLCK;
-	    s_flock.l_whence = SEEK_SET;
-	    s_flock.l_start = 0;
-	    s_flock.l_len = 1;
-	    s_flock.l_pid = getpid ();
-
-	    while (fcntl (fileno (da_file), F_SETLKW, &s_flock)
-		   && errno == EINTR);
-	  }
-#endif
-
-	  /* If the file is not empty, and the number of counts in it is the
-	     same, then merge them in.  */
-	  firstchar = fgetc (da_file);
-	  if (firstchar == EOF)
+	  if (n_counts == ptr->ncounts)
 	    {
-	      if (ferror (da_file))
-		{
-		  fprintf (stderr, "arc profiling: Can't read output file ");
-		  perror (ptr->filename);
-		}
-	    }
-	  else
-	    {
-	      long n_counts = 0;
+	      int i;
 
-	      if (ungetc (firstchar, da_file) == EOF)
-		rewind (da_file);
-	      if (__read_long (&n_counts, da_file, 8) != 0)
+	      for (i = 0; i < n_counts; i++)
 		{
-		  fprintf (stderr, "arc profiling: Can't read output file %s.\n",
-			   ptr->filename);
-		  continue;
-		}
+		  gcov_type v = 0;
 
-	      if (n_counts == ptr->ncounts)
-		{
-		  int i;
-
-		  for (i = 0; i < n_counts; i++)
+		  if (__read_gcov_type (&v, da_file, 8) != 0)
 		    {
-		      gcov_type v = 0;
-
-		      if (__read_gcov_type (&v, da_file, 8) != 0)
-			{
-			  fprintf (stderr, "arc profiling: Can't read output file %s.\n",
-				   ptr->filename);
-			  break;
-			}
-		      ptr->counts[i] += v;
-		    }
-		}
-
-	    }
-
-	  rewind (da_file);
-
-	  /* ??? Should first write a header to the file.  Preferably, a 4 byte
-	     magic number, 4 bytes containing the time the program was
-	     compiled, 4 bytes containing the last modification time of the
-	     source file, and 4 bytes indicating the compiler options used.
-
-	     That way we can easily verify that the proper source/executable/
-	     data file combination is being used from gcov.  */
-
-	  if (__write_gcov_type (ptr->ncounts, da_file, 8) != 0)
-	    {
-
-	      fprintf (stderr, "arc profiling: Error writing output file %s.\n",
-		       ptr->filename);
-	    }
-	  else
-	    {
-	      int j;
-	      gcov_type *count_ptr = ptr->counts;
-	      int ret = 0;
-	      for (j = ptr->ncounts; j > 0; j--)
-		{
-		  if (__write_gcov_type (*count_ptr, da_file, 8) != 0)
-		    {
-		      ret=1;
+		      fprintf (stderr,
+			       "arc profiling: Can't read output file %s.\n",
+			       ptr->filename);
 		      break;
 		    }
-		  count_ptr++;
+		  ptr->counts[i] += v;
 		}
-	      if (ret)
-		fprintf (stderr, "arc profiling: Error writing output file %s.\n",
-			 ptr->filename);
 	    }
 
-	  if (fclose (da_file) == EOF)
-	    fprintf (stderr, "arc profiling: Error closing output file %s.\n",
+	}
+
+      rewind (da_file);
+
+      /* ??? Should first write a header to the file.  Preferably, a 4 byte
+         magic number, 4 bytes containing the time the program was
+         compiled, 4 bytes containing the last modification time of the
+         source file, and 4 bytes indicating the compiler options used.
+
+         That way we can easily verify that the proper source/executable/
+         data file combination is being used from gcov.  */
+
+      if (__write_gcov_type (ptr->ncounts, da_file, 8) != 0)
+	{
+
+	  fprintf (stderr, "arc profiling: Error writing output file %s.\n",
+		   ptr->filename);
+	}
+      else
+	{
+	  int j;
+	  gcov_type *count_ptr = ptr->counts;
+	  int ret = 0;
+	  for (j = ptr->ncounts; j > 0; j--)
+	    {
+	      if (__write_gcov_type (*count_ptr, da_file, 8) != 0)
+		{
+		  ret = 1;
+		  break;
+		}
+	      count_ptr++;
+	    }
+	  if (ret)
+	    fprintf (stderr, "arc profiling: Error writing output file %s.\n",
 		     ptr->filename);
 	}
 
-      return;
+      if (fclose (da_file) == EOF)
+	fprintf (stderr, "arc profiling: Error closing output file %s.\n",
+		 ptr->filename);
     }
 
-  /* Must be basic block profiling.  Emit a human readable output file.  */
-
-  file = fopen ("bb.out", "a");
-
-  if (!file)
-    perror ("bb.out");
-
-  else
-    {
-      struct bb *ptr;
-
-      /* This is somewhat type incorrect, but it avoids worrying about
-	 exactly where time.h is included from.  It should be ok unless
-	 a void * differs from other pointer formats, or if sizeof (long)
-	 is < sizeof (time_t).  It would be nice if we could assume the
-	 use of rationale standards here.  */
-
-      time ((void *) &time_value);
-      fprintf (file, "Basic block profiling finished on %s\n",
-	       ctime ((void *) &time_value));
-
-      /* We check the length field explicitly in order to allow compatibility
-	 with older GCC's which did not provide it.  */
-
-      for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
-	{
-	  int i;
-	  int func_p	= (ptr->nwords >= (long) sizeof (struct bb)
-			   && ptr->nwords <= 1000
-			   && ptr->functions);
-	  int line_p	= (func_p && ptr->line_nums);
-	  int file_p	= (func_p && ptr->filenames);
-	  int addr_p	= (ptr->addresses != 0);
-	  long ncounts	= ptr->ncounts;
-	  gcov_type cnt_max  = 0;
-	  long line_max = 0;
-	  long addr_max = 0;
-	  int file_len	= 0;
-	  int func_len	= 0;
-	  int blk_len	= num_digits (ncounts, 10);
-	  int cnt_len;
-	  int line_len;
-	  int addr_len;
-
-	  fprintf (file, "File %s, %ld basic blocks \n\n",
-		   ptr->filename, ncounts);
-
-	  /* Get max values for each field.  */
-	  for (i = 0; i < ncounts; i++)
-	    {
-	      const char *p;
-	      int len;
-
-	      if (cnt_max < ptr->counts[i])
-		cnt_max = ptr->counts[i];
-
-	      if (addr_p && (unsigned long) addr_max < ptr->addresses[i])
-		addr_max = ptr->addresses[i];
-
-	      if (line_p && line_max < ptr->line_nums[i])
-		line_max = ptr->line_nums[i];
-
-	      if (func_p)
-		{
-		  p = (ptr->functions[i]) ? (ptr->functions[i]) : "<none>";
-		  len = strlen (p);
-		  if (func_len < len)
-		    func_len = len;
-		}
-
-	      if (file_p)
-		{
-		  p = (ptr->filenames[i]) ? (ptr->filenames[i]) : "<none>";
-		  len = strlen (p);
-		  if (file_len < len)
-		    file_len = len;
-		}
-	    }
-
-	  addr_len = num_digits (addr_max, 16);
-	  cnt_len  = num_digits (cnt_max, 10);
-	  line_len = num_digits (line_max, 10);
-
-	  /* Now print out the basic block information.  */
-	  for (i = 0; i < ncounts; i++)
-	    {
-#if LONG_TYPE_SIZE == GCOV_TYPE_SIZE
-	      fprintf (file,
-		       "    Block #%*d: executed %*ld time(s)",
-		       blk_len, i+1,
-		       cnt_len, ptr->counts[i]);
-#else
-	      fprintf (file,
-		       "    Block #%*d: executed %*lld time(s)",
-		       blk_len, i+1,
-		       cnt_len, ptr->counts[i]);
-#endif
-
-	      if (addr_p)
-		fprintf (file, " address= 0x%.*lx", addr_len,
-			 ptr->addresses[i]);
-
-	      if (func_p)
-		fprintf (file, " function= %-*s", func_len,
-			 (ptr->functions[i]) ? ptr->functions[i] : "<none>");
-
-	      if (line_p)
-		fprintf (file, " line= %*ld", line_len, ptr->line_nums[i]);
-
-	      if (file_p)
-		fprintf (file, " file= %s",
-			 (ptr->filenames[i]) ? ptr->filenames[i] : "<none>");
-
-	      fprintf (file, "\n");
-	    }
-
-	  fprintf (file, "\n");
-	  fflush (file);
-	}
-
-      fprintf (file, "\n\n");
-      fclose (file);
-    }
+  return;
 }
 
 void

@@ -1,3 +1,7 @@
+Tue Dec 18 16:37:42 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* libgcc2.c (__bb_exit_func): Kill -ax dumping code.
+
 2001-12-18  Jason Merrill  <jason@redhat.com>
 
 	C++ ABI change: destroy value arguments in caller.
