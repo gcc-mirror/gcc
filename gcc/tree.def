@@ -620,11 +620,15 @@ DEFTREECODE (BIT_AND_EXPR, "bit_and_expr", '2', 2)
 DEFTREECODE (BIT_ANDTC_EXPR, "bit_andtc_expr", '2', 2)
 DEFTREECODE (BIT_NOT_EXPR, "bit_not_expr", '1', 1)
 
-/* Combination of boolean values or of integers considered only
-   as zero or nonzero.  ANDIF and ORIF allow the second operand
-   not to be computed if the value of the expression is determined
-   from the first operand.  AND, OR, and XOR always compute the second
-   operand whether its value is needed or not (for side effects).  */
+/* ANDIF and ORIF allow the second operand not to be computed if the
+   value of the expression is determined from the first operand.  AND,
+   OR, and XOR always compute the second operand whether its value is
+   needed or not (for side effects).  The operand may have
+   BOOLEAN_TYPE or INTEGER_TYPE.  In either case, the argument will be
+   either zero or one.  For example, a TRUTH_NOT_EXPR will never have
+   a INTEGER_TYPE VAR_DECL as its argument; instead, a NE_EXPR will be
+   used to compare the VAR_DECL to zero, thereby obtaining a node with
+   value zero or one.  */
 DEFTREECODE (TRUTH_ANDIF_EXPR, "truth_andif_expr", 'e', 2)
 DEFTREECODE (TRUTH_ORIF_EXPR, "truth_orif_expr", 'e', 2)
 DEFTREECODE (TRUTH_AND_EXPR, "truth_and_expr", 'e', 2)

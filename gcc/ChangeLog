@@ -1,3 +1,7 @@
+2001-01-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.def (TRUTH_NOT_EXPR): Improve documentation.
+
 Tue Jan  2 10:47:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.
 
 	* expr.c (store_constructor_field): Update ALIGN before calling
