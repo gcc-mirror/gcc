@@ -2047,7 +2047,7 @@ ia64_expand_prologue ()
   /* We don't need an alloc instruction if we've used no outputs or locals.  */
   if (current_frame_info.n_local_regs == 0
       && current_frame_info.n_output_regs == 0
-      && current_frame_info.n_input_regs <= current_function_args_info.words)
+      && current_frame_info.n_input_regs <= current_function_args_info.int_regs)
     {
       /* If there is no alloc, but there are input registers used, then we
 	 need a .regstk directive.  */
@@ -3188,14 +3188,14 @@ ia64_function_arg_advance (cum, mode, type, named)
      FR registers, then FP values must also go in general registers.  This can
      happen when we have a SFmode HFA.  */
   else if (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS)
-    return;
+    cum->int_regs = cum->words;
 
   /* If there is a prototype, then FP values go in a FR register when
      named, and in a GR registeer when unnamed.  */
   else if (cum->prototype)
     {
       if (! named)
-	return;
+	cum->int_regs = cum->words;
       else
 	/* ??? Complex types should not reach here.  */
 	cum->fp_regs += (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
@@ -3203,10 +3203,11 @@ ia64_function_arg_advance (cum, mode, type, named)
   /* If there is no prototype, then FP values go in both FR and GR
      registers.  */
   else
-    /* ??? Complex types should not reach here.  */
-    cum->fp_regs += (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
-
-  return;
+    { 
+      /* ??? Complex types should not reach here.  */
+      cum->fp_regs += (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
+      cum->int_regs = cum->words;
+    }
 }
 
 /* Implement va_start.  */
