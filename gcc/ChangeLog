@@ -1,3 +1,8 @@
+2004-09-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/c-tree.texi (Classes): Remove index entries for
+	TREE_VIA_{PUBLIC,PROTECTED,PRIVATE}.
+
 2004-09-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* fold-const.c (fold): Fold difference of addresses.

@@ -703,9 +703,6 @@ This function cannot be used with namespaces that have
 @findex CLASSTYPE_DECLARED_CLASS
 @findex TYPE_BINFO
 @findex BINFO_TYPE
-@findex TREE_VIA_PUBLIC
-@findex TREE_VIA_PROTECTED
-@findex TREE_VIA_PRIVATE
 @findex TYPE_FIELDS
 @findex TYPE_VFIELD
 @findex TYPE_METHODS
