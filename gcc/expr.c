@@ -6507,6 +6507,28 @@ static enum machine_mode apply_args_mode[FIRST_PSEUDO_REGISTER];
    INCOMING_REGNO gives the corresponding inbound register.  */
 static enum machine_mode apply_result_mode[FIRST_PSEUDO_REGISTER];
 
+/* For each register that may be used for calling a function, this
+   gives the offset of that register into the block returned by
+   __bultin_apply_args.  0 indicates that the register is not
+   used for calling a function. */
+static int apply_args_reg_offset[FIRST_PSEUDO_REGISTER];
+
+/* Return the offset of register REGNO into the block returned by 
+   __builtin_apply_args.  This is not declared static, since it is
+   needed in objc-act.c. */
+int 
+apply_args_register_offset (int regno)
+{
+  apply_args_size ();
+
+  /* Arguments are always put in outgoing registers (in the argument
+     block) if such make sense. */
+#ifdef OUTGOING_REGNO
+  regno = OUTGOING_REGNO(regno);
+#endif
+  return apply_args_reg_offset[regno];
+}
+
 /* Return the size required for the block returned by __builtin_apply_args,
    and initialize apply_args_mode.  */
 static int
@@ -6557,11 +6579,15 @@ apply_args_size ()
 	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
 	    if (size % align != 0)
 	      size = CEIL (size, align) * align;
+	    apply_args_reg_offset[regno] = size;
 	    size += GET_MODE_SIZE (mode);
 	    apply_args_mode[regno] = mode;
 	  }
 	else
-	  apply_args_mode[regno] = VOIDmode;
+	  {
+	    apply_args_mode[regno] = VOIDmode;
+	    apply_args_reg_offset[regno] = 0;
+	  }
     }
   return size;
 }
