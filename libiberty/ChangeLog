@@ -1,6 +1,7 @@
-2002-05-14  Release Manager
+2002-05-31  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
-	* GCC 3.1 Released.
+	* configure.in: Fix typo in the code checking for sys_errlist.
+	* configure: Regenerated.
 
 2002-05-14  Release Manager
 
