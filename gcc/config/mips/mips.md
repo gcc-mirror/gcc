@@ -2497,6 +2497,36 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"DI")
    (set_attr "length"	"1,1,2")])
 
+;; These can be created when a paradoxical subreg operand with an implicit
+;; sign_extend operator is reloaded.  Because of the subreg, this is really
+;; a zero extend.
+;; ??? It might be possible to eliminate the need for these patterns by adding
+;; more support to reload for implicit sign_extend operators.
+(define_insn "*paradoxical_extendhidi2"
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+	(sign_extend:DI
+	 (subreg:SI (match_operand:HI 1 "memory_operand" "R,m") 0)))]
+  "TARGET_64BIT"
+  "*
+{
+  return mips_move_1word (operands, insn, TRUE);
+}"
+  [(set_attr "type"	"load,load")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"1,2")])
+
+(define_insn "*paradoxical_extendqidi2"
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+	(sign_extend:DI
+	 (subreg:SI (match_operand:QI 1 "memory_operand" "R,m") 0)))]
+  "TARGET_64BIT"
+  "*
+{
+  return mips_move_1word (operands, insn, TRUE);
+}"
+  [(set_attr "type"	"load,load")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"1,2")])
 
 ;;
 ;;  ....................
