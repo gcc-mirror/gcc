@@ -251,7 +251,7 @@ build_cplus_new (type, init)
     = (TREE_CODE (fn) == ADDR_EXPR
        && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
        && DECL_CONSTRUCTOR_P (TREE_OPERAND (fn, 0)));
-  rval = build (TARGET_EXPR, type, slot, rval, NULL_TREE, NULL_TREE);
+  rval = build_target_expr (slot, rval);
   TREE_SIDE_EFFECTS (rval) = 1;
 
   return rval;
@@ -269,8 +269,7 @@ get_target_expr (init)
   slot = build (VAR_DECL, TREE_TYPE (init));
   DECL_ARTIFICIAL (slot) = 1;
   layout_decl (slot, 0);
-  rval = build (TARGET_EXPR, TREE_TYPE (init), slot, init,
-		NULL_TREE, NULL_TREE);
+  rval = build_target_expr (slot, init);
   TREE_SIDE_EFFECTS (rval) = 1;
 
   return rval;

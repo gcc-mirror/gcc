@@ -1,3 +1,16 @@
+1999-09-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (build_target_expr): New function.
+	* call.c (build_conditional_expr): Use build_target_expr.
+	(convert_like): Likewise.
+	(build_over_call): Likewise.
+	* cvt.c (build_up_reference): Likewise.
+	* decl.c (build_cleanup_on_safe_obstack): Fold into ...
+	(destroy_local_var): Here.
+	(build_target_expr): New function.
+	* tree.c (build_cplus_new): Use it.
+	(get_target_expr): Likewise.
+
 1999-09-13  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (expr_sizeof): Don't decay arrays and functions.

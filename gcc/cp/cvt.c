@@ -364,7 +364,7 @@ build_up_reference (type, arg, flags)
     {
       tree slot = build_decl (VAR_DECL, NULL_TREE, argtype);
       DECL_ARTIFICIAL (slot) = 1;
-      arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
+      arg = build_target_expr (slot, arg);
       TREE_SIDE_EFFECTS (arg) = 1;
     }
 
