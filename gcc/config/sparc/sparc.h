@@ -807,7 +807,7 @@ if (TARGET_ARCH64				\
 
 /* Argument passing regs.  */
 #define SPARC_OUTGOING_INT_ARG_FIRST 8
-#define SPARC_INCOMING_INT_ARG_FIRST 24
+#define SPARC_INCOMING_INT_ARG_FIRST (TARGET_FLAT ? 8 : 24)
 #define SPARC_FP_ARG_FIRST           32
 
 /* 1 for registers that have pervasive standard uses
