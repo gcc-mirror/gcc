@@ -1905,7 +1905,7 @@ handle_pragma_token (string, token)
 	      fputc ('\n', asm_out_file);
 	      if (state == ps_value)
 		{
-		  fprintf (asm_out_file, "\t%s\t", DEF_ASM_OP);
+		  fprintf (asm_out_file, "\t%s\t", SET_ASM_OP);
 		  ASM_OUTPUT_LABELREF (asm_out_file, name);
 		  fputc (',', asm_out_file);
 		  ASM_OUTPUT_LABELREF (asm_out_file, value);
