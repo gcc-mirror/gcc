@@ -1,3 +1,10 @@
+Wed Jun  2 12:25:55 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (override_options): Thinko in last patch.
+
+	* alpha/osf.h (CPP_SUBTARGET_SPEC): Define.
+	(LIB_SPEC): Recognize -pthread.
+
 Wed Jun  2 06:36:14 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.md (zero_extendqidi2): Don't allow operand1 to be a memory

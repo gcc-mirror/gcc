@@ -30,9 +30,14 @@ Boston, MA 02111-1307, USA.  */
 -Dunix -D__osf__ -D_LONGLONG -DSYSTYPE_BSD \
 -D_SYSTYPE_BSD -Asystem(unix) -Asystem(xpg4)"
 
+#define CPP_SUBTARGET_SPEC \
+"%{pthread:-D_REENTRANT}"
+
 /* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
 
-#define LIB_SPEC "%{p:-lprof1 -lpdf} %{pg:-lprof1 -lpdf} %{a:-lprof2} -lc"
+#define LIB_SPEC \
+"%{p:-lprof1 -lpdf} %{pg:-lprof1 -lpdf} %{a:-lprof2} \
+ %{pthread: -lpthread -lmach -lexc} -lc"
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
    optimizing, -O1 if we are not.  Pass -shared, -non_shared or
