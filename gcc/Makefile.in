@@ -1286,12 +1286,12 @@ bi-run.o:	$(srcdir)/bi-run.c $(srcdir)/bi-run.h $(srcdir)/bc-typecd.h bc-opname.
 bi-parser.c: $(srcdir)/bi-parser.y $(srcdir)/bi-parser.h
 
 bi-parser.o:	$(srcdir)/bi-parser.c $(srcdir)/bi-defs.h
-	$(CC) $(CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
 
 bi-lexer.c:	$(srcdir)/bi-lexer.l $(srcdir)/bi-parser.h
 
 bi-lexer.o:	bi-lexer.c bi-parser.h
-	$(CC) $(CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
 
 bc-arity.h:	$(srcdir)/bytecode.def bi-arity
 	-rm -f $@
