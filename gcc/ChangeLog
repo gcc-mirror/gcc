@@ -1,3 +1,9 @@
+2000-01-12  Richard Earnshaw <rearnsha@arm.com>
+
+	* haifa-sched.c (split_edges): Pass edgeset_size as second arg to
+	extract_bitlst.
+	(extract_bitlist): Declare bitlen.
+
 2000-01-12  Zack Weinberg  <zack@wolery.cumb.org
 
 	* cccp.c: Accept and ignore -lang-fortran.

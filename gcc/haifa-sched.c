@@ -1222,6 +1222,7 @@ static void
 extract_bitlst (set, len, bitlen, bl)
      bitset set;
      int len;
+     int bitlen;
      bitlst *bl;
 {
   int i, j, offset;
@@ -1896,7 +1897,7 @@ split_edges (bb_src, bb_trg, bl)
   while (es--)
     src[es] = (pot_split[bb_src])[es];
   BITSET_DIFFER (src, pot_split[bb_trg], edgeset_size);
-  extract_bitlst (src, es, edgeset_bitsize, bl);
+  extract_bitlst (src, edgeset_size, edgeset_bitsize, bl);
   free (src);
 }
 
