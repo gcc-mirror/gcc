@@ -558,6 +558,12 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   secondary_reload_class (CLASS, MODE, IN)
 
+/* If we are copying between FP registers and anything else, we need a memory
+   location.  */
+
+#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
+ ((CLASS1) != (CLASS2) && ((CLASS1) == FLOAT_REGS || (CLASS2) == FLOAT_REGS))
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
 
