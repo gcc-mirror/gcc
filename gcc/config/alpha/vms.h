@@ -155,41 +155,6 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
   (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	\
   (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-
-extern enum avms_arg_type alpha_arg_type ();
-
-/* Determine where to put an argument to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode (or VOIDmode for no more args).
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
-
-   On Alpha the first 6 words of args are normally in registers
-   and the rest are pushed.  */
-
-extern struct rtx_def *alpha_arg_info_reg_val ();
-#undef FUNCTION_ARG
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
-((MODE) == VOIDmode ? alpha_arg_info_reg_val (CUM)		\
- : ((CUM.num_args) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
-    ? gen_rtx_REG ((MODE),					\
-		   ((CUM).num_args + 16				\
-		    + ((TARGET_FPREGS				\
-			&& (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
-			    || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
-		       * 32)))			\
-    : 0))
-
 #undef FUNCTION_ARG_ADVANCE
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
   if (MUST_PASS_IN_STACK (MODE, TYPE))					\
@@ -333,6 +298,12 @@ dtors_section ()						\
     }								\
 }
 
+extern void readonly_section	PARAMS ((void));
+extern void link_section	PARAMS ((void));
+extern void literals_section	PARAMS ((void));
+extern void ctors_section	PARAMS ((void));
+extern void dtors_section	PARAMS ((void));
+
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) abort ()
 
@@ -419,7 +390,6 @@ do {									\
 
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
   (vms_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
-extern int vms_valid_decl_attribute_p ();
 
 #undef SDB_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO

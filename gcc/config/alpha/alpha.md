@@ -3914,24 +3914,9 @@
   emit_move_insn (gen_rtx_REG (DImode, 25), operands[1]);
   if (GET_CODE (operands[0]) == SYMBOL_REF)
     {
-      extern char *savealloc ();
-      const char *symbol = XSTR (operands[0], 0);
-      char *linksym;
-      rtx linkage;
-
-      if (*symbol == '*')
-	symbol++;
-      linksym = savealloc (strlen (symbol) + 6);
-
-      alpha_need_linkage (symbol, 0);
-
-      linksym[0] = '$';
-      strcpy (linksym+1, symbol);
-      strcat (linksym, \"..lk\");
-      linkage = gen_rtx_SYMBOL_REF (Pmode, linksym);
+      rtx linkage = alpha_need_linkage (XSTR (operands[0], 0), 0);
 
       emit_move_insn (gen_rtx_REG (Pmode, 26), gen_rtx_MEM (Pmode, linkage));
-
       operands[2]
 	= validize_mem (gen_rtx_MEM (Pmode, plus_constant (linkage, 8)));
     }
@@ -3939,7 +3924,6 @@
     {
       emit_move_insn (gen_rtx_REG (Pmode, 26),
 		      gen_rtx_MEM (Pmode, plus_constant (operands[0], 8)));
-
       operands[2] = operands[0];
     }
 
@@ -4035,23 +4019,9 @@
   emit_move_insn (gen_rtx_REG (DImode, 25), operands[2]);
   if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
-      extern char *savealloc ();
-      const char *symbol = XSTR (operands[1], 0);
-      char *linksym;
-      rtx linkage;
-
-      if (*symbol == '*')
-	symbol++;
-      linksym = savealloc (strlen (symbol) + 6);
-
-      alpha_need_linkage (symbol, 0);
-      linksym[0] = '$';
-      strcpy (linksym+1, symbol);
-      strcat (linksym, \"..lk\");
-      linkage = gen_rtx_SYMBOL_REF (Pmode, linksym);
+      rtx linkage = alpha_need_linkage (XSTR (operands[1], 0), 0);
 
       emit_move_insn (gen_rtx_REG (Pmode, 26), gen_rtx_MEM (Pmode, linkage));
-
       operands[3]
 	= validize_mem (gen_rtx_MEM (Pmode, plus_constant (linkage, 8)));
     }
@@ -4059,7 +4029,6 @@
     {
       emit_move_insn (gen_rtx_REG (Pmode, 26),
 		      gen_rtx_MEM (Pmode, plus_constant (operands[1], 8)));
-
       operands[3] = operands[1];
     }
 }")

@@ -109,11 +109,17 @@ extern int check_float_value PARAMS ((enum machine_mode,
 #ifdef HAVE_MACHINE_MODES
 extern enum avms_arg_type alpha_arg_type PARAMS ((enum machine_mode));
 #endif
+#ifdef RTX_CODE
 extern rtx alpha_arg_info_reg_val PARAMS ((CUMULATIVE_ARGS));
+#endif
+#ifdef BUFSIZ
 extern void alpha_write_linkage PARAMS ((FILE *));
+#endif
 #endif /* OPEN_VMS */
 
-extern void alpha_need_linkage PARAMS ((const char *, int));
+#ifdef RTX_CODE
+extern rtx alpha_need_linkage PARAMS ((const char *, int));
+#endif
 
 #ifdef TREE_CODE
 extern tree alpha_build_va_list PARAMS ((void));
