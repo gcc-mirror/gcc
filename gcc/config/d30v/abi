@@ -1,0 +1,231 @@
+-*- Text -*-
+
+This document describes the proposed ABI for the D30V processor.  This is
+revision 2 of the document.
+
+Revision history:
+
+Revision 1:
+	Original revision of this document.
+
+Revision 2:
+	Done after consultation with Mitsubshi about the calling sequence.
+	This revision now reduces the number of registers the compiler will not
+	touch from 18 registers down to 8.
+
+	Register 1 is now a normal temporary register, since mvfacc rx,ay,32 is
+	legal.
+
+	Arguments greater than 4 bytes must be passed in an even register or at
+	a double word alignment.
+
+	The va_list type is a structure, not a char *.
+
+	The stack must be aligned to 8 byte boundary.  Doubles and long longs
+	must also be aligned to 8 byte boundaries.
+
+	System calls are specified via trap 31.
+
+Revision 3:
+	I added discussion about compiler switches.
+
+Register usage:
+===============
+
+	Registers	Call Status	Usage
+	---------	-----------	-----
+	R0		hardware	Hardwired to 0
+	R1		volatile	temp
+	R2		volatile	Arg 1 and main return value.
+	R3		volatile	Arg 2 and low bits of 64 bit returns
+	R4 - R17	volatile	Args 3-16
+	R18		volatile	Static chain if used
+	R19 - R25	volatile	temps
+	R26 - R33	saved		Reserved for user use
+	R34 - R60	saved		Registers preserved across calls
+	R61		saved		Frame pointer if needed.
+	R62		saved		Return address pointer (hardware)
+	R63		saved		Stack pointer
+	CR0 - CR3	hardware	{normal,backup} {psw,pc}
+	CR4 - CR6	hardware	Reserved for future use
+	CR7 - CR9	volatile	Repeat count, addresses
+	CR10 - CR11	saved		Modulo start/end
+	CR12 - CR14	hardware	Reserved for future use
+	CR15 - CR17	hardware	Interrupt support
+	F0 - F1		volatile	Execution flags
+	F2 - F3		volatile	General flags
+	F4 - F7		volatile	Special purpose flags
+	A0		volatile	Accumulator
+	A1		saved		Accumulator
+
+Notes on the register usage:
+============================
+
+   1)	R61 will hold the frame pointer if it is needed.  Normally the frame
+	pointer will not be needed, in which case this will become another
+	saved register.
+
+   2)	Repeat instructions and delayed branches cannot cross call boundaries.
+	Similarly, all flags are assumed to not be preserved across calls.
+
+   3)	Since so many registers are available, I reserved 8 registers (r26-r33)
+	for the user to use for any purpose (global variables, interrupt
+	routines, thread pointer, etc.).  These registers will not be used by
+	the compiler for any purpose.
+
+   4)	One of the two accumulators is saved across calls.
+
+   5)	Doubles and long longs will only be allocated to even/odd register
+	pairs to allow use of the ld2w/st2w instructions.
+
+Miscellaneous call information:
+===============================
+
+   1)	Structures are passed in registers, rounding them up to word
+	boundaries.
+
+   2)	Any argument that is greater than word size (4 bytes) must be aligned
+	to a double word boundary and/or start in an even register.  The
+	intention here is to be able to use the ld2w/st2w instructions for
+	moving doubles and long longs.
+
+   3)	Variable argument functions are called with the same calling sequence
+	as non-variable argument functions.  When called, a variable argument
+	function first saves the 16 registers (R2 - R17) used for passing
+	arguments.  The va_list type is a structure.  The first element of the
+	structure is a pointer to the first word saved on the stack, and the
+	second element is a number that gives which argument number is being
+	processed.
+
+   4)	Word and double word sized structures/unions are returned in registers,
+	other functions returning structures expect a temporary area address to
+	be passed as the first argument.
+
+
+The stack frame when a function is called looks like:
+
+high		|  ....				|
+		+-------------------------------+
+		| Argument word #20		|
+		+-------------------------------+
+		| Argument word #19		|
+		+-------------------------------+
+		| Argument word #18		|
+		+-------------------------------+
+		| Argument word #17		|
+low	SP---->	+-------------------------------+
+
+After the prologue is executed, the stack frame will look like:
+
+high		|  ....				|
+		+-------------------------------+
+		| Argument word #20		|
+		+-------------------------------+
+		| Argument word #19		|
+		+-------------------------------+
+		| Argument word #18		|
+		+-------------------------------+
+		| Argument word #17		|
+	Prev sp	+-------------------------------+
+		|				|
+		| Save for arguments 1..16 if	|
+		| the func. uses stdarg/varargs	|
+		|				|
+		+-------------------------------+
+		|				|
+		| Save area for preserved regs	|
+		|				|
+		+-------------------------------+
+		|				|
+		| Local variables		|
+		|				|
+		+-------------------------------+
+		|				|
+		| alloca space if used		|
+		|				|
+		+-------------------------------+
+		|				|
+		| Space for outgoing arguments	|
+		|				|
+low	SP---->	+-------------------------------+
+
+System Calls
+============
+
+System calls will be done using "TRAP 31".  Input arguments will be in R2 - R5,
+and the system call number will be in R6.  Return values from the system call
+will be in R2.  Negative values of the return indicate the system call failed,
+and the value is the negative of the error code.  Here are the assigned system
+call numbers (value in R6):
+
+	exit	1
+	open	2
+	close	3
+	read	4
+	write	5
+	lseek	6
+	unlink	7
+	getpid	8
+	kill	9
+	fstat   10
+			(11 is reserved for sbrk)
+	argvlen	12
+	argv	13
+	chdir	14
+	stat	15
+	chmod 	16
+	utime 	17
+	time 	18
+
+Compiler Switches
+=================
+
+The following d30v specific compiler switches are currently supported:
+
+    -mextmem		Link .text/.data/.bss/etc in external memory.
+
+    -mextmemory		Same as -mextmem.
+
+    -monchip		Link .text/.data/.bss/etc in the onchip data/text
+			memory.
+
+    -mno-asm-optimize	Do not pass -O to the assembler when optimizing (the -O
+			switch will mark two short instructions that don't
+			interfere with each other as being done parallel
+			instead of sequentially).
+
+    -masm-optimize	[default] If optimizing, pass -O to the assembler.
+
+    -mbranch-cost=n	Increase the internal costs of branches to n.  Higher
+			costs means that the compiler will issue more
+			instructions to avoid doing a branch. The default is
+			2.
+
+    -mcond-exec=n	Replace branches around n insns with conditional
+			execution if we can.  Default is 4.
+
+
+Sections
+========
+
+You can override the effect of the -mextmem/-monchip options by putting
+functions into either the ".stext" or ".etext" sections.  If you put them into
+the ".stext" section, the linker will always link the function into the onchip
+memory area.  Similarly, if you put the function in the ".etext" section, the
+linker will always link the function into the external memory area.
+
+Data can be controlled as well.  If you put the data in the ".sdata" section,
+the linker will put the data into the onchip data area.  Similarly, if you put
+the data in the ".edata" section, the linker will put the data into the
+external memory.
+
+
+Stack pointer
+=============
+
+The crt0.o that we ship loads up the stack pointer with the value of the label
+__stack.  If you do not define a value for __stack, the linker will choose the
+top of the onchip data area (0x20008000) for the stack pointer.  You can set a
+new value via the options:
+
+	-Wl,-defsym,__stack=0x20008000
