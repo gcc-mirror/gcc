@@ -521,10 +521,10 @@ parse_identifier (pfile, c)
 	cpp_error (pfile, "attempt to use poisoned \"%s\"", result->name);
 
       /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
-	 replacement list of a variable-arguments macro.  */
+	 replacement list of a variadic macro.  */
       if (result == pfile->spec_nodes.n__VA_ARGS__
 	  && !pfile->state.va_args_ok)
-	cpp_pedwarn (pfile, "__VA_ARGS__ can only appear in the expansion of a C99 variable-argument macro");
+	cpp_pedwarn (pfile, "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro");
     }
 
   return result;
@@ -907,7 +907,8 @@ _cpp_lex_token (pfile, result)
       buffer->read_ahead = c;
       pfile->state.next_bol = 1;
       result->type = CPP_EOF;
-      break;
+      /* Don't break; pfile->skipping might be true.  */
+      return;
 
     case '?':
     case '\\':

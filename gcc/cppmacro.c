@@ -42,7 +42,7 @@ struct cpp_macro
   unsigned int count;		/* Number of tokens in expansion.  */
   unsigned short paramc;	/* Number of parameters.  */
   unsigned int fun_like : 1;	/* If a function-like macro.  */
-  unsigned int var_args : 1;	/* If a variable-args macro.  */
+  unsigned int variadic : 1;	/* If a variadic macro.  */
   unsigned int disabled : 1;	/* If macro is disabled.  */
 };
 
@@ -475,13 +475,13 @@ paste_all_tokens (pfile, lhs)
 }
 
 /* Reads the unexpanded tokens of a macro argument into ARG.  VAR_ARGS
-   is non-zero if this is a variable argument.  Returns the type of
-   the token that caused reading to finish.  */
+   is non-zero if this is a variadic macro.  Returns the type of the
+   token that caused reading to finish.  */
 static enum cpp_ttype
-parse_arg (pfile, arg, var_args)
+parse_arg (pfile, arg, variadic)
      cpp_reader *pfile;
      struct macro_arg *arg;
-     int var_args;
+     int variadic;
 {
   enum cpp_ttype result;
   unsigned int paren = 0;
@@ -509,8 +509,8 @@ parse_arg (pfile, arg, var_args)
 	paren++;
       else if (result == CPP_CLOSE_PAREN && paren-- == 0)
 	break;
-      /* Commas are not terminators within parantheses or var_args.  */
-      else if (result == CPP_COMMA && paren == 0 && !var_args)
+      /* Commas are not terminators within parantheses or variadic.  */
+      else if (result == CPP_COMMA && paren == 0 && !variadic)
 	break;
       else if (result == CPP_EOF)
 	break;		/* Error reported by caller.  */
@@ -541,7 +541,7 @@ parse_args (pfile, node)
     {
       argc++;
 
-      type = parse_arg (pfile, cur, argc == macro->paramc && macro->var_args);
+      type = parse_arg (pfile, cur, argc == macro->paramc && macro->variadic);
       if (type == CPP_CLOSE_PAREN || type == CPP_EOF)
 	break;
 
@@ -566,7 +566,7 @@ parse_args (pfile, node)
 	 This is exactly the same as if there had been an empty rest
 	 argument - debug("string", ).  */
 
-      if (argc + 1 == macro->paramc && macro->var_args)
+      if (argc + 1 == macro->paramc && macro->variadic)
 	{
 	  if (CPP_PEDANTIC (pfile))
 	    cpp_pedwarn (pfile, "ISO C99 requires rest arguments to be used");
@@ -794,7 +794,7 @@ replace_args (pfile, macro, args, list)
 		   given no actual arguments (not merely if b is an
 		   empty argument); otherwise pasting is turned off.  */
 		if (dest[-1].type == CPP_COMMA
-		    && macro->var_args
+		    && macro->variadic
 		    && src->val.arg_no == macro->paramc)
 		  {
 		    if (count == 0)
@@ -1182,7 +1182,7 @@ check_macro_redefinition (pfile, node, macro2)
   if (macro1->count != macro2->count
       || macro1->paramc != macro2->paramc
       || macro1->fun_like != macro2->fun_like
-      || macro1->var_args != macro2->var_args)
+      || macro1->variadic != macro2->variadic)
     return 0;
 
   /* Check each token.  */
@@ -1287,18 +1287,17 @@ parse_params (pfile, macro)
 	  continue;
 
 	case CPP_ELLIPSIS:
-	  macro->var_args = 1;
+	  macro->variadic = 1;
 	  if (!prev_ident)
 	    {
 	      save_parameter (pfile, macro, pfile->spec_nodes.n__VA_ARGS__);
 	      pfile->state.va_args_ok = 1;
 	      if (! CPP_OPTION (pfile, c99) && CPP_OPTION (pfile, pedantic))
 		cpp_pedwarn (pfile,
-		     "anonymous variable arguments were introduced in C99");
+		     "anonymous variadic macros were introduced in C99");
 	    }
 	  else if (CPP_OPTION (pfile, pedantic))
-	    cpp_pedwarn (pfile,
-			 "ISO C does not permit named variable arguments");
+	    cpp_pedwarn (pfile, "ISO C does not permit named variadic macros");
 
 	  /* We're at the end, and just expect a closing parenthesis.  */
 	  _cpp_lex_token (pfile, &token);
@@ -1368,7 +1367,7 @@ _cpp_create_definition (pfile, node)
   macro->params = 0;
   macro->paramc = 0;
   macro->fun_like = 0;
-  macro->var_args = 0;
+  macro->variadic = 0;
   macro->count = 0;
   macro->expansion = (cpp_token *) POOL_FRONT (&pfile->macro_pool);
 
@@ -1598,7 +1597,7 @@ cpp_macro_definition (pfile, node)
 
 	  if (i + 1 < macro->paramc)
 	    *buffer++ = ',', *buffer++ = ' ';
-	  else if (macro->var_args)
+	  else if (macro->variadic)
 	    *buffer++ = '.', *buffer++ = '.', *buffer++ = '.';
 	}
       *buffer++ = ')';

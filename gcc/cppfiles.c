@@ -80,6 +80,16 @@ struct include_file
   unsigned char defined;	/* cmacro prevents inclusion in this state */
 };
 
+/* The cmacro works like this: If it's NULL, the file is to be
+   included again.  If it's NEVER_REREAD, the file is never to be
+   included again.  Otherwise it is a macro hashnode, and the file is
+   to be included again if the macro is defined or not as specified by
+   DEFINED.  */
+#define NEVER_REREAD ((const cpp_hashnode *)-1)
+#define DO_NOT_REREAD(inc) \
+((inc)->cmacro && ((inc)->cmacro == NEVER_REREAD \
+		   || ((inc)->cmacro->type == NT_MACRO) == (inc)->defined))
+
 static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
 static char *read_filename_string PARAMS ((int, FILE *));
