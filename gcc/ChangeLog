@@ -1,3 +1,8 @@
+2004-02-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-objc-common.c (c_cannot_inline_tree_fn): Fix a typo in a
+	warning.
+
 2004-02-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* README.Portability: Change "ISO C89" to "ISO C90".
