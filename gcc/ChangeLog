@@ -1,3 +1,8 @@
+2004-08-17  Richard Henderson  <rth@redhat.com>
+
+	PR 17051
+	* tree-sra.c (scalarize_use): Mark all v_defs for !is_output too.
+
 2004-08-17  DJ Delorie  <dj@redhat.com>
 
 	* doc/extend.texi: Document new xstormy16 attribute.

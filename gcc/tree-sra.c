@@ -1780,11 +1780,9 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
       generate_copy_inout (elt, is_output, generate_element_ref (elt), &list);
       if (list == NULL)
 	return;
+      mark_all_v_defs (expr_first (list));
       if (is_output)
-	{
-	  mark_all_v_defs (expr_first (list));
-	  sra_insert_after (bsi, list);
-	}
+	sra_insert_after (bsi, list);
       else
 	sra_insert_before (bsi, list);
     }
