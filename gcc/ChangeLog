@@ -5,6 +5,8 @@
 
 2003-03-18  Geoffrey Keating  <geoffk@apple.com>
 
+	* function.c (next_block_index): Mark with GTY.
+
 	* config/rs6000/rs6000.md (macho_correct_pic): Correct pattern.
 
 2003-03-18  Richard Henderson  <rth@redhat.com>
