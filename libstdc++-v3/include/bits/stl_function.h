@@ -339,7 +339,7 @@ namespace std
       _Predicate _M_pred;
     public:
       explicit binary_negate(const _Predicate& __x)
-	: _M_pred(__x) { }
+      : _M_pred(__x) { }
 
       bool
       operator()(const typename _Predicate::first_argument_type& __x, 
@@ -397,7 +397,7 @@ namespace std
     public:
       binder1st(const _Operation& __x,
 		const typename _Operation::first_argument_type& __y)
-	: op(__x), value(__y) {}
+      : op(__x), value(__y) {}
 
       typename _Operation::result_type
       operator()(const typename _Operation::second_argument_type& __x) const
@@ -431,7 +431,7 @@ namespace std
     public:
       binder2nd(const _Operation& __x,
 		const typename _Operation::second_argument_type& __y) 
-	: op(__x), value(__y) {}
+      : op(__x), value(__y) {}
 
       typename _Operation::result_type
       operator()(const typename _Operation::first_argument_type& __x) const
@@ -500,7 +500,7 @@ namespace std
   /// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
   template <class _Arg1, class _Arg2, class _Result>
     class pointer_to_binary_function
-      : public binary_function<_Arg1, _Arg2, _Result>
+    : public binary_function<_Arg1, _Arg2, _Result>
     {
     protected:
       _Result (*_M_ptr)(_Arg1, _Arg2);
@@ -603,7 +603,7 @@ namespace std
     {
     public:
       explicit const_mem_fun_t(_Ret (_Tp::*__pf)() const)
-	: _M_f(__pf) {}
+      : _M_f(__pf) {}
 
       _Ret
       operator()(const _Tp* __p) const
@@ -618,7 +618,7 @@ namespace std
     {
     public:
       explicit mem_fun_ref_t(_Ret (_Tp::*__pf)())
-	: _M_f(__pf) {}
+      : _M_f(__pf) {}
 
       _Ret
       operator()(_Tp& __r) const
