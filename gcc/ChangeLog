@@ -1,3 +1,9 @@
+Sun Sep  5 19:11:01 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* i386.h (MASK_{DEBUG_{ADDR,ARG},INTEL_SYNTAX}): Move so these
+	don't conflict with the bits that win32, cygwin, and dgux
+	defines.
+
 Sun Sep  5 09:31:56 1999  Richard Henderson  <rth@cygnus.com>
 	                  Bernd Schmidt <bernds@cygnus.co.uk>
 
