@@ -211,11 +211,9 @@
 
 /* Default target switches */
 
-/* Play safe, not the fastest code.  Note that setting PARALLEL_MPY
-flag will set SMALL_REGISTER_CLASSES which can be a price to pay,
-especially when MPY||ADD instructions are only generated very
-infrequenctly. */
-#define TARGET_DEFAULT		ALIASES_FLAG | RPTB_FLAG | PARALLEL_PACK_FLAG
+/* Play safe, not the fastest code. */
+#define TARGET_DEFAULT		ALIASES_FLAG | PARALLEL_PACK_FLAG \
+				| PARALLEL_MPY_FLAG | TARGET_RPTB_FLAG
 
 /* Caveats:
    Max iteration count for RPTB/RPTS is 2^31 + 1.
@@ -227,7 +225,7 @@ extern int target_flags;
 
 #define TARGET_INLINE		1 /* Inline MPYI */
 #define TARGET_PARALLEL	        1 /* Enable parallel insns in MD */
-#define TARGET_SMALL_REG_CLASS	1 
+#define TARGET_SMALL_REG_CLASS	0
 
 #define TARGET_SMALL		(target_flags & SMALL_MEMORY_FLAG)
 #define TARGET_MPYI		(!TARGET_C3X || (target_flags & MPYI_FLAG))
@@ -534,6 +532,11 @@ extern void c4x_optimization_options ();
 	     c4x_regclass_map[i] = NO_REGS;		\
 	 }						\
       }							\
+    if (TARGET_PRESERVE_FLOAT)				\
+      {							\
+	c4x_caller_save_map[R6_REGNO] = HFmode;		\
+	c4x_caller_save_map[R7_REGNO] = HFmode;		\
+      }							\
    }
 
 /* Order of Allocation of Registers  */
@@ -579,11 +582,10 @@ extern void c4x_optimization_options ();
    across a call in mode MODE.  This does not have to include the call used
    registers.  */
 
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)		            \
-     (((REGNO) == R6_REGNO || (REGNO) == R7_REGNO)                          \
-      && (MODE) != QFmode                                                   \
-      || ((REGNO) == R4_REGNO || (REGNO) == R5_REGNO || (REGNO == R8_REGNO) \
-	  && ((MODE) != QImode || (MODE) != HImode || (MODE) != Pmode)))
+#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)		              \
+     ((((REGNO) == R6_REGNO || (REGNO) == R7_REGNO) && ! ((MODE) == QFmode))  \
+      || (((REGNO) == R4_REGNO || (REGNO) == R5_REGNO || (REGNO == R8_REGNO)) \
+	  && ! ((MODE) == QImode || (MODE) == HImode || (MODE) == Pmode)))
 
 /* Specify the modes required to caller save a given hard regno.  */
 
@@ -668,26 +670,27 @@ enum reg_class
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
-   of length N_REG_CLASSES.  */
-
+   of length N_REG_CLASSES.  RC is not included in GENERAL_REGS
+   since the register allocator will often choose a general register
+   in preference to RC for the decrement_and_branch_on_count pattern.  */
 
 #define REG_CLASS_CONTENTS \
 {						\
- 0x00000000, /*     No registers */		\
- 0x00000003, /* 't' R0-R1	 */		\
- 0x0000000c, /* 'u' R2-R3	 */		\
- 0x000000ff, /* 'q' R0-R7	 */		\
- 0xf00000ff, /* 'f' R0-R11       */		\
- 0x0000ff00, /* 'a' AR0-AR7 */			\
- 0x00060000, /* 'x' IR0-IR1 */			\
- 0x00080000, /* 'k' BK */			\
- 0x00100000, /* 'b' SP */			\
- 0x08000000, /* 'v' RC */			\
- 0x0e1eff00, /* 'c' AR0-AR7, IR0-IR1, RC, RS, RE, BK, SP */	\
- 0xfe1effff, /* 'r' R0-R11, AR0-AR7, IR0-IR1, RC, RS, RE, BK, SP */\
- 0x00010000, /* 'z' DP */			\
- 0x00200000, /* 'y' ST */			\
- 0xffffffff, /*     All registers */		\
+ {0x00000000}, /*     No registers */		\
+ {0x00000003}, /* 't' R0-R1	 */		\
+ {0x0000000c}, /* 'u' R2-R3	 */		\
+ {0x000000ff}, /* 'q' R0-R7	 */		\
+ {0xf00000ff}, /* 'f' R0-R11       */		\
+ {0x0000ff00}, /* 'a' AR0-AR7 */		\
+ {0x00060000}, /* 'x' IR0-IR1 */		\
+ {0x00080000}, /* 'k' BK */			\
+ {0x00100000}, /* 'b' SP */			\
+ {0x08000000}, /* 'v' RC */			\
+ {0x0e1eff00}, /* 'c' AR0-AR7, IR0-IR1, BK, SP, RS, RE, RC */	\
+ {0xfe1effff}, /* 'r' R0-R11, AR0-AR7, IR0-IR1, BK, SP, RS, RE, RC */\
+ {0x00010000}, /* 'z' DP */			\
+ {0x00200000}, /* 'y' ST */			\
+ {0xffffffff}, /*     All registers */		\
 }
 
 /* The same information, inverted:
@@ -697,22 +700,18 @@ enum reg_class
 
 #define REGNO_REG_CLASS(REGNO) (c4x_regclass_map[REGNO])
 
-/* When SMALL_REGISTER_CLASSES is defined, the compiler allows
-registers explicitly used in the rtl to be used as spill registers but
-prevents the compiler from extending the lifetime of these registers.
-Problems can occur if reload has to spill a register used explicitly
-in the RTL if it has a long lifetime.   This is only likely to be a problem
-with a function having many variables and thus lots of spilling.  
+/* When SMALL_REGISTER_CLASSES is defined, the lifetime of registers
+   explicitly used in the rtl is kept as short as possible.
 
-We only need to define SMALL_REGISTER_CLASSES if TARGET_PARALLEL_MPY
-is defined since the MPY|ADD insns require the classes R0R1_REGS and
-R2R3_REGS which are used by the function return registers (R0,R1) and
-the register arguments (R2,R3), respectively.  I'm reluctant to define
-this macro since it stomps on many potential optimisations.  Ideally
-it should have a register class argument so that not all the register
-classes gets penalised for the sake of a naughty few...  For long
-double arithmetic we need two additional registers that we can use as
-spill registers.  */
+   We only need to define SMALL_REGISTER_CLASSES if TARGET_PARALLEL_MPY
+   is defined since the MPY|ADD insns require the classes R0R1_REGS and
+   R2R3_REGS which are used by the function return registers (R0,R1) and
+   the register arguments (R2,R3), respectively.  I'm reluctant to define
+   this macro since it stomps on many potential optimisations.  Ideally
+   it should have a register class argument so that not all the register
+   classes gets penalised for the sake of a naughty few...  For long
+   double arithmetic we need two additional registers that we can use as
+   spill registers.  */
 
 #define SMALL_REGISTER_CLASSES (TARGET_SMALL_REG_CLASS && TARGET_PARALLEL_MPY)
 
@@ -720,7 +719,7 @@ spill registers.  */
 #define INDEX_REG_CLASS INDEX_REGS
 
 /*
-  Constraints for the C4x
+  Register constraints for the C4x
  
   a - address reg (ar0-ar7)
   b - stack reg (sp)
@@ -736,6 +735,8 @@ spill registers.  */
   x - index register (ir0-ir1)
   y - status register (st)
   z - dp reg (dp) 
+
+  Memory/constant constraints for the C4x
 
   G - short float 16-bit
   I - signed 16-bit constant (sign extended)
@@ -1528,6 +1529,8 @@ extern struct rtx_def *c4x_gen_compare_reg ();
 #define HAVE_PRE_MODIFY_DISP 1
 #define HAVE_POST_MODIFY_DISP 1
 
+#define HAVE_MULTIPLE_PACK 2
+
 /* What about LABEL_REF?  */
 #define CONSTANT_ADDRESS_P(X) (GET_CODE (X) == SYMBOL_REF)
 
@@ -1976,7 +1979,7 @@ dtors_section ()							\
 {   long l;						\
     char str[30];					\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-    REAL_VALUE_TO_DECIMAL (VALUE, "%20f", str);		\
+    REAL_VALUE_TO_DECIMAL (VALUE, "%20lf", str);	\
     if (sizeof (int) == sizeof (long))			\
       fprintf (FILE, "\t.word\t0%08xh\t; %s\n", l, str);\
     else						\
@@ -1995,7 +1998,7 @@ dtors_section ()							\
 {   long l[2];						\
     char str[30];					\
     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-    REAL_VALUE_TO_DECIMAL (VALUE, "%20f", str);		\
+    REAL_VALUE_TO_DECIMAL (VALUE, "%20lf", str);	\
     l[1] = (l[0] << 8) | ((l[1] >> 24) & 0xff);		\
     if (sizeof (int) == sizeof (long))			\
       fprintf (FILE, "\t.word\t0%08xh\t; %s\n\t.word\t0%08xh\n", \
@@ -2580,9 +2583,59 @@ extern int rc_reg_operand ();
 
 extern int st_reg_operand ();
 
+extern int ar0_reg_operand ();
+
+extern int ar0_mem_operand ();
+
+extern int ar1_reg_operand ();
+
+extern int ar1_mem_operand ();
+
+extern int ar2_reg_operand ();
+
+extern int ar2_mem_operand ();
+
+extern int ar3_reg_operand ();
+
+extern int ar3_mem_operand ();
+
+extern int ar4_reg_operand ();
+
+extern int ar4_mem_operand ();
+
+extern int ar5_reg_operand ();
+
+extern int ar5_mem_operand ();
+
+extern int ar6_reg_operand ();
+
+extern int ar6_mem_operand ();
+
+extern int ar7_reg_operand ();
+
+extern int ar7_mem_operand ();
+
+extern int ir0_reg_operand ();
+
+extern int ir0_mem_operand ();
+
+extern int ir1_reg_operand ();
+
+extern int ir1_mem_operand ();
+
+extern int group1_reg_operand ();
+
+extern int group1_mem_operand ();
+
+extern int arx_reg_operand ();
+
 extern int call_operand ();
 
 extern int par_ind_operand ();
+
+extern int not_rc_reg ();
+
+extern int not_modify_reg ();
 
 extern int c4x_H_constant ();
 
@@ -2605,12 +2658,6 @@ extern void c4x_emit_libcall ();
 extern void c4x_emit_libcall3 ();
 
 extern void c4x_emit_libcall_mulhi ();
-
-extern int c4x_group1_reg_operand ();
-
-extern int c4x_group1_mem_operand ();
-
-extern int c4x_arx_reg_operand ();
 
 extern int legitimize_operands ();
 
