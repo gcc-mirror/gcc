@@ -1,5 +1,14 @@
 2002-03-02  Richard Henderson  <rth@redhat.com>
 
+	* attribs.c (handle_alias_attribute): Don't call assemble_alias.
+	(handle_visibility_attribute): Don't call assemble_visibility.
+	* toplev.c (rest_of_decl_compilation): Invoke make_decl_rtl even
+	without asmspec.  Invoke assemble_alias when needed.
+	* varasm.c (maybe_assemble_visibility): New.
+	(assemble_start_function, assemble_variable, assemble_alias): Use it.
+
+2002-03-02  Richard Henderson  <rth@redhat.com>
+
 	* varasm.c (make_decl_rtl): Remove call to REDO_SECTION_INFO_P;
 	invoke ENCODE_SECTION_INFO with first call flag.
 

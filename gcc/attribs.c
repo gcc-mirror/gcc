@@ -1054,7 +1054,6 @@ handle_alias_attribute (node, name, args, flags, no_add_attrs)
 	DECL_INITIAL (decl) = error_mark_node;
       else
 	DECL_EXTERNAL (decl) = 0;
-      assemble_alias (decl, id);
     }
   else
     {
@@ -1102,8 +1101,6 @@ handle_visibility_attribute (node, name, args, flags, no_add_attrs)
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
-
-      assemble_visibility (decl, TREE_STRING_POINTER (id));
     }
 
   return NULL_TREE;

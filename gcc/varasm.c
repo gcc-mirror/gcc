@@ -171,6 +171,7 @@ static void mark_weak_decls		PARAMS ((void *));
 #if defined (ASM_WEAKEN_LABEL) || defined (ASM_WEAKEN_DECL)
 static void remove_from_pending_weak_list	PARAMS ((const char *));
 #endif
+static void maybe_assemble_visibility	PARAMS ((tree));
 static int in_named_entry_eq		PARAMS ((const PTR, const PTR));
 static hashval_t in_named_entry_hash	PARAMS ((const PTR));
 #ifdef ASM_OUTPUT_BSS
@@ -1252,6 +1253,8 @@ assemble_start_function (decl, fnname)
       else
 #endif
       ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
+
+      maybe_assemble_visibility (decl);
     }
 
   /* Do any machine/system dependent processing of the function name */
@@ -1602,6 +1605,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      from it in get_pointer_alignment.  */
   DECL_ALIGN (decl) = align;
   set_mem_align (decl_rtl, align);
+
+  if (TREE_PUBLIC (decl))
+    maybe_assemble_visibility (decl);
 
   /* Handle uninitialized definitions.  */
 
@@ -5181,6 +5187,8 @@ assemble_alias (decl, target)
       else
 #endif
 	ASM_GLOBALIZE_LABEL (asm_out_file, name);
+
+      maybe_assemble_visibility (decl);
     }
 
 #ifdef ASM_OUTPUT_DEF_FROM_DECLS
@@ -5223,6 +5231,21 @@ assemble_visibility (decl, visibility_type)
 #else
   warning ("visibility attribute not supported in this configuration; ignored");
 #endif
+}
+
+/* A helper function to call assemble_visibility when needed for a decl.  */
+
+static void
+maybe_assemble_visibility (decl)
+     tree decl;
+{
+  tree visibility = lookup_attribute ("visibility", DECL_ATTRIBUTES (decl));
+  if (visibility)
+    {
+      const char *type
+	= TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (visibility)));
+      assemble_visibility (decl, type);
+    }
 }
 
 /* Returns 1 if the target configuration supports defining public symbols
