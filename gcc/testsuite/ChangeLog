@@ -4,7 +4,7 @@
 
 2004-08-13  Bud Davis  <bdavis9659@comcast.net>
 
-	* gfortran.fortran-torture/execute/open_rewind.f90: New test.
+	* gfortran.fortran-torture/execute/pr16935.f90: New test.
 
 2004-08-13  Janis Johnson  <janis187@us.ibm.com>
 
