@@ -5562,7 +5562,8 @@
        (match_operand:HF 1 "memory_operand" ""))]
  "reload_completed"
  [(set (match_dup 0) (float_extend:HF (match_dup 2)))
-  (set (match_dup 0) (unspec[(subreg:QI (match_dup 0) 0) (match_dup 3)] 8))]
+  (set (match_dup 0) (unspec:HF [(subreg:QI (match_dup 0) 0)
+                                            (match_dup 3)] 8))]
  "operands[2] = c4x_operand_subword (operands[1], 0, 1, HFmode);
   operands[3] = c4x_operand_subword (operands[1], 1, 1, HFmode);
   PUT_MODE (operands[2], QFmode);
@@ -5573,7 +5574,8 @@
        (match_operand:HF 1 "const_operand" ""))]
  "reload_completed && 0"
  [(set (match_dup 0) (float_extend:HF (match_dup 2)))
-  (set (match_dup 0) (unspec[(subreg:QI (match_dup 0) 0) (match_dup 3)] 8))]
+  (set (match_dup 0) (unspec:HF [(subreg:QI (match_dup 0) 0)
+                                            (match_dup 3)] 8))]
  "operands[2] = c4x_operand_subword (operands[1], 0, 1, HFmode);
   operands[3] = c4x_operand_subword (operands[1], 1, 1, HFmode);
   PUT_MODE (operands[2], QFmode);
@@ -5601,7 +5603,7 @@
 (define_insn "*loadhf_int"
  [(set (match_operand:HF 0 "reg_operand" "=h")
        (unspec:HF [(subreg:QI (match_dup 0) 0)
-               (match_operand:QI 1 "src_operand" "rIm")] 8))]
+                   (match_operand:QI 1 "src_operand" "rIm")] 8))]
  ""
  "@
   ldiu\\t%1,%0"
@@ -5689,7 +5691,7 @@
                    (float_extend:HF (mem:QF (post_dec:QI (reg:QI 20)))))
               (clobber (reg:CC 21))])
    (parallel [(set (match_dup 0)
-                   (unspec[(subreg:QI (match_dup 0) 0)
+                   (unspec:HF [(subreg:QI (match_dup 0) 0)
                    (mem:QI (post_dec:QI (reg:QI 20)))] 8))
               (clobber (reg:CC 21))])]
  "")
@@ -5697,7 +5699,7 @@
 (define_insn "*pophf_int"
  [(set (match_operand:HF 0 "reg_operand" "=h")
        (unspec:HF [(subreg:QI (match_dup 0) 0)
-               (mem:QI (post_dec:QI (reg:QI 20)))] 8))
+                   (mem:QI (post_dec:QI (reg:QI 20)))] 8))
   (clobber (reg:CC 21))]
  ""
  "@
@@ -6808,7 +6810,7 @@
 (define_insn "cmphi_cc"
   [(set (reg:CC 21)
         (unspec:CC [(compare:CC (match_operand:HI 0 "src_operand" "rR,rS<>")
-                             (match_operand:HI 1 "src_operand" "R,rS<>"))] 4))
+                                (match_operand:HI 1 "src_operand" "R,rS<>"))] 4))
    (clobber (match_scratch:QI 2 "=&d,&d"))
    (clobber (match_scratch:QI 3 "=&c,&c"))]
   "valid_operands (COMPARE, operands, HImode)"
@@ -6823,9 +6825,8 @@
 
 (define_insn "cmphi_cc_noov"
   [(set (reg:CC_NOOV 21)
-        (unspec:CC_NOOV [
-          (compare:CC_NOOV (match_operand:HI 0 "src_operand" "rR,rS<>")
-                           (match_operand:HI 1 "src_operand" "R,rS<>"))] 4))
+        (unspec:CC_NOOV [(compare:CC_NOOV (match_operand:HI 0 "src_operand" "rR,rS<>")
+                                     (match_operand:HI 1 "src_operand" "R,rS<>"))] 4))
    (clobber (match_scratch:QI 2 "=&d,&d"))
    (clobber (match_scratch:QI 3 "=&c,&c"))]
   "valid_operands (COMPARE, operands, HImode)"
@@ -6903,6 +6904,7 @@
 ;
 ; Which moves the bCC condition outside the inner loop for free.
 ;
+
 (define_peephole
   [(set (pc) (if_then_else (match_operator 3 "comparison_operator"
                            [(reg:CC 21) (const_int 0)])
@@ -6918,8 +6920,7 @@
             (pc)))
      (set (match_dup 0)
           (plus:QI (match_dup 0)
-                   (const_int -1)))
-     (clobber (reg:CC_NOOV 21))])]
+                   (const_int -1)))])]
   "! c4x_label_conflict (insn, operands[2], operands[1])"
   "db%I3\\t%0,%l1\\n\\tb%3\\t%l2"
   [(set_attr "type" "multi")])
@@ -6938,8 +6939,7 @@
             (pc)))
      (set (match_dup 0)
           (plus:QI (match_dup 0)
-                   (const_int -1)))
-     (clobber (reg:CC_NOOV 21))])]
+                   (const_int -1)))])]
   "! c4x_label_conflict (insn, operands[2], operands[1])"
   "db%I3\\t%0,%l1\\n\\tb%3\\t%l2"
   [(set_attr "type" "multi")])
@@ -6986,6 +6986,7 @@
              (clobber (reg:CC_NOOV 21))])]
  ""
  "ldf\\t*%1++,%0\\n\\tldf\\t*%1++,%2")
+
 
 ; This peephole should be unnecessary with my patches to flow.c
 ; for better autoincrement detection
