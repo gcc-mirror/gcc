@@ -597,6 +597,20 @@ convert_from_reference (val)
     return build_indirect_ref (val, NULL_PTR);
   return val;
 }
+
+/* Implicitly convert the lvalue EXPR to another lvalue of type TOTYPE,
+   preserving cv-qualification.  */
+
+tree
+convert_lvalue (totype, expr)
+     tree totype, expr;
+{
+  totype = cp_build_qualified_type (totype, TYPE_QUALS (TREE_TYPE (expr)));
+  totype = build_reference_type (totype);
+  expr = convert_to_reference (totype, expr, CONV_IMPLICIT, LOOKUP_NORMAL,
+			       NULL_TREE);
+  return convert_from_reference (expr);
+}
 
 /* Call this when we know (for any reason) that expr is not, in fact,
    zero.  This routine is like convert_pointer_to, but it pays

@@ -1,3 +1,13 @@
+2001-07-25  Jason Merrill  <jason_merrill@redhat.com>
+
+	PR c++/3529
+	Copied from mainline.
+	* cvt.c (convert_lvalue): New fn.
+	* cp-tree.h: Declare it.
+	* method.c (do_build_assign_ref): Use it.
+        (do_build_copy_constructor): Convert parm to base types
+	before calling base constructors.
+
 2001-07-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3543

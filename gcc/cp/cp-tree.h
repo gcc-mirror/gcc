@@ -3776,6 +3776,7 @@ extern tree get_primary_binfo                   PARAMS ((tree));
 /* in cvt.c */
 extern tree convert_to_reference		PARAMS ((tree, tree, int, int, tree));
 extern tree convert_from_reference		PARAMS ((tree));
+extern tree convert_lvalue			PARAMS ((tree, tree));
 extern tree convert_pointer_to_real		PARAMS ((tree, tree));
 extern tree convert_pointer_to			PARAMS ((tree, tree));
 extern tree ocp_convert				PARAMS ((tree, tree, int, int));

@@ -560,25 +560,31 @@ do_build_copy_constructor (fndecl)
       int cvquals = CP_TYPE_QUALS (TREE_TYPE (parm));
       int i;
 
-      /* Initialize all the base-classes.  */
+      /* Initialize all the base-classes with the parameter converted to
+         their type so that we get their copy constructor and not another
+         constructor that takes current_class_type.  */
       for (t = CLASSTYPE_VBASECLASSES (current_class_type); t;
 	   t = TREE_CHAIN (t))
-	base_init_list 
-	  = tree_cons (BINFO_TYPE (TREE_VALUE (t)), parm, 
-		       base_init_list);
+	{
+	  tree type = BINFO_TYPE (TREE_VALUE (t));
+	  base_init_list = tree_cons (type, convert_lvalue (type, parm),
+				      base_init_list);
+	}
+
       for (i = 0; i < n_bases; ++i)
 	{
 	  t = TREE_VEC_ELT (binfos, i);
 	  if (TREE_VIA_VIRTUAL (t))
 	    continue; 
 
-	  base_init_list 
-	    = tree_cons (BINFO_TYPE (t), parm, base_init_list);
+	  t = BINFO_TYPE (t);
+	  base_init_list = tree_cons (t, convert_lvalue (t, parm),
+				      base_init_list);
 	}
 
       for (; fields; fields = TREE_CHAIN (fields))
 	{
-	  tree init, t;
+	  tree init;
 	  tree field = fields;
 
 	  if (TREE_CODE (field) != FIELD_DECL)
@@ -648,12 +654,7 @@ do_build_assign_ref (fndecl)
       for (i = 0; i < n_bases; ++i)
 	{
 	  tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-	  tree p = build_qualified_type (basetype, cvquals);
-
-	  p = convert_to_reference
-	    (build_reference_type (p), parm,
-	     CONV_IMPLICIT, LOOKUP_COMPLAIN, NULL_TREE);
-	  p = convert_from_reference (p);
+	  tree p = convert_lvalue (basetype, parm);
 	  p = build_member_call (basetype, ansi_assopname (NOP_EXPR),
 				 build_tree_list (NULL_TREE, p));
 	  finish_expr_stmt (p);
