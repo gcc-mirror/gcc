@@ -326,7 +326,7 @@ w_ed(struct syl *p, char *ptr, ftnlen len)
 		sig_die(f__fmtbuf, 1);
 	case I:	return(wrt_I((Uint *)ptr,p->p1,len, 10));
 	case IM:
-		return(wrt_IM((Uint *)ptr,p->p1,p->p2,len,10));
+		return(wrt_IM((Uint *)ptr,p->p1,p->p2.i[0],len,10));
 
 		/* O and OM don't work right for character, double, complex, */
 		/* or doublecomplex, and they differ from Fortran 90 in */
@@ -334,7 +334,7 @@ w_ed(struct syl *p, char *ptr, ftnlen len)
 
 	case O:	return(wrt_I((Uint *)ptr, p->p1, len, 8));
 	case OM:
-		return(wrt_IM((Uint *)ptr,p->p1,p->p2,len,8));
+		return(wrt_IM((Uint *)ptr,p->p1,p->p2.i[0],len,8));
 	case L:	return(wrt_L((Uint *)ptr,p->p1, len));
 	case A: return(wrt_A(ptr,len));
 	case AW:
@@ -342,17 +342,17 @@ w_ed(struct syl *p, char *ptr, ftnlen len)
 	case D:
 	case E:
 	case EE:
-		return(wrt_E((ufloat *)ptr,p->p1,p->p2,p->p3,len));
+		return(wrt_E((ufloat *)ptr,p->p1,p->p2.i[0],p->p2.i[1],len));
 	case G:
 	case GE:
-		return(wrt_G((ufloat *)ptr,p->p1,p->p2,p->p3,len));
-	case F:	return(wrt_F((ufloat *)ptr,p->p1,p->p2,len));
+		return(wrt_G((ufloat *)ptr,p->p1,p->p2.i[0],p->p2.i[1],len));
+	case F:	return(wrt_F((ufloat *)ptr,p->p1,p->p2.i[0],len));
 
 		/* Z and ZM assume 8-bit bytes. */
 
 	case Z: return(wrt_Z((Uint *)ptr,p->p1,0,len));
 	case ZM:
-		return(wrt_Z((Uint *)ptr,p->p1,p->p2,len));
+		return(wrt_Z((Uint *)ptr,p->p1,p->p2.i[0],len));
 	}
 }
 #ifdef KR_headers
@@ -378,8 +378,8 @@ w_ned(struct syl *p)
 		f__cursor += p->p1;
 		return(1);
 	case APOS:
-		return(wrt_AP(*(char **)&p->p2));
+		return(wrt_AP(p->p2.s));
 	case H:
-		return(wrt_H(p->p1,*(char **)&p->p2));
+		return(wrt_H(p->p1,p->p2.s));
 	}
 }

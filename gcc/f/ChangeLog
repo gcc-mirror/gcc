@@ -1,3 +1,27 @@
+Mon Sep 29 16:18:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* stu.c (ffestu_list_exec_transition_,
+	ffestu_dummies_transition_): Specify `bool' type for
+	`in_progress' variables.
+
+	* com.h (assemble_string): Declare this routine (instead
+	of #include'ing "output.h" from gcc) to eliminate warnings
+	from lex.c.
+
+Fri Sep 19 01:12:27 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* expr.c (ffeexpr_reduced_eqop2_): 
+	(ffeexpr_reduced_relop2_): Minor fixes to diagnostic code.
+
+	* fini.c (main): Change return type to `int'.
+
+Wed Sep 17 10:47:08 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* com-rt.def (FFECOM_gfrtDSIGN, FFECOM_gfrtISIGN,
+	FFECOM_gfrtSIGN): Add second argument.
+
+	* expr.c (ffeexpr_cb_comma_c_): Trivial fixes.
+
 Tue Sep  9 01:59:35 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* Version 0.5.21 released.
