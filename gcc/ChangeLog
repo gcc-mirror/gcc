@@ -1,3 +1,9 @@
+2001-02-08  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.c (function_arg_record_value_3): Fix
+	calculation of the number of integer registers required.
+	(function_arg_record_value): Likewise.
+
 2001-02-08  Jason Merrill  <jason@redhat.com>
 
 	* diagnostic.c (internal_error): Say "confused" after 1 error, not
