@@ -1,3 +1,7 @@
+Fri Apr 24 15:57:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Use CC_FOR_BUILD, not BUILD_CC.
+
 Fri Apr 24 16:11:47 1998  John Carr  <jfc@mit.edu>
 
 	* expr.c (expand_builtin, case MEMSET): Set MEM_IN_STRUCT_P
