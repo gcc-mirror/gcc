@@ -43,5 +43,29 @@ proc gfortran-dg-prune { system text } {
 # Modified dg-runtest that can cycle through a list of optimization options
 # as c-torture does.
 proc gfortran-dg-runtest { testcases default-extra-flags } {
-    return [gcc-dg-runtest $testcases ${default-extra-flags}]
+    global runtests
+    global TORTURE_OPTIONS
+
+    foreach test $testcases {
+	# If we're only testing specific files and this isn't one of
+	# them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+        }
+
+	# look if this is dg-do-run test, in which case
+	# we cycle through the option list, otherwise we don't
+	if [expr [search_for $test "dg-do run"]] {
+	    set option_list $TORTURE_OPTIONS			         
+	} else {
+	    set option_list [list { -O } ]
+	}
+
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach flags $option_list {
+	    verbose "Testing $nshort, $flags" 1
+	    dg-test $test $flags ${default-extra-flags}
+	}
+    }
 }

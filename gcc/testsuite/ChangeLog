@@ -1,3 +1,10 @@
+2004-07-16  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* lib/fortran-torture.exp (fortran-torture): Don't test compile
+	tests with full	list of options.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Only test with all
+	of TORTURE_OPTIONS if test contains 'dg-do run'.
+
 2004-07-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR rtl-optimization/16536

@@ -300,7 +300,6 @@ proc search_for_re { file pattern } {
 proc fortran-torture { args } {
     global srcdir subdir
     global compiler_conditional_xfail_data
-    global TORTURE_OPTIONS
 
     set src [lindex $args 0];
     if { [llength $args] > 1 } {
@@ -325,7 +324,7 @@ proc fortran-torture { args } {
     }
    
     # loop through all the options
-    set option_list $TORTURE_OPTIONS
+    set option_list [list { "-O" } ]
     foreach option $option_list {
 
 	# torture_compile_xfail is set by the .x script (if present)
