@@ -1,3 +1,18 @@
+2002-03-14  Michael Meissner  <meissner@redhat.com>
+
+	* params.def (PARAM_MAX_UNROLLED_INSNS): New macro, default to
+	100, allowing MAX_UNROLLED_INSNS to be overridden.
+
+	* params.h (MAX_UNROLLED_INSNS): Define so it can be overridden by
+	--param.
+
+	* unroll.c (params.h): Include.
+	(MAX_UNROLLED_INSNS): Delete, now in params.h.
+
+	* doc/invoke.texi (--param max-unroll-insns): Document.
+
+	* Makefile.in (unroll.o): Add $(PARAMS_H) dependency.
+
 2002-03-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md: Fix warnings about constraints in peepholes and splits.

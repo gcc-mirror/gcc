@@ -147,6 +147,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "predict.h"
+#include "params.h"
 
 /* The prime factors looked for when trying to unroll a loop by some
    number which is modulo the total number of iterations.  Just checking
@@ -168,13 +169,6 @@ enum unroll_types
   UNROLL_MODULO,
   UNROLL_NAIVE
 };
-
-/* This controls which loops are unrolled, and by how much we unroll
-   them.  */
-
-#ifndef MAX_UNROLLED_INSNS
-#define MAX_UNROLLED_INSNS 100
-#endif
 
 /* Indexed by register number, if non-zero, then it contains a pointer
    to a struct induction for a DEST_REG giv which has been combined with
