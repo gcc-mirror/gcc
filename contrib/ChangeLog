@@ -1,3 +1,7 @@
+2003-04-04  Mike Stump  <mrs@apple.com>
+
+	* compare_tests: Fix exit status and be more flexible with spacing.
+
 2003-03-08  Phil Edwards  <pme@gcc.gnu.org>
 
 	* test_summary:  Add -h, print existing comments as help.
