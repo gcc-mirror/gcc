@@ -1,3 +1,11 @@
+Thu May  7 18:14:31  Paul Eggert  <eggert@twinsun.com>
+
+	* fixinc.wrap: Renamed from fixinc.math.  Put wrapper around
+	curses.h if it contains `typedef char bool;', as suggested by
+	Manfred Hollstein <manfred@s-direktnet.de>.
+
+	* configure.in: Rename fixinc.math to fixinc.wrap.
+
 Wed May  6 06:44:28 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (simplify_rtx, case TRUNCATE): Reflect that it sign-extends
