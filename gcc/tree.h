@@ -1940,14 +1940,6 @@ extern int immediate_size_expand;
 
 extern tree current_function_decl;
 
-/* Nonzero if function being compiled can call setjmp.  */
-
-extern int current_function_calls_setjmp;
-
-/* Nonzero if function being compiled can call longjmp.  */
-
-extern int current_function_calls_longjmp;
-
 /* Nonzero means all ..._TYPE nodes should be allocated permanently.  */
 
 extern int all_types_permanent;

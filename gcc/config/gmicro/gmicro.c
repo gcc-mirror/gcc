@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "conditions.h"
 #include "insn-flags.h"
 #include "output.h"
+#include "function.h"
 #include "insn-attr.h"
 
 mypr (s, a1, a2, a3, a4, a5)
