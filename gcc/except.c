@@ -2993,6 +2993,16 @@ expand_builtin_extract_return_addr (addr_tree)
 {
   rtx addr = expand_expr (addr_tree, NULL_RTX, Pmode, 0);
 
+  if (GET_MODE (addr) != Pmode
+      && GET_MODE (addr) != VOIDmode)
+    {
+#ifdef POINTERS_EXTEND_UNSIGNED
+      addr = convert_memory_address (Pmode, addr);
+#else
+      addr = convert_to_mode (Pmode, addr, 0);
+#endif
+    }
+
   /* First mask out any unwanted bits.  */
 #ifdef MASK_RETURN_ADDR
   expand_and (Pmode, addr, MASK_RETURN_ADDR, addr);
