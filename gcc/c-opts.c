@@ -1330,7 +1330,7 @@ c_common_post_options ()
   if (out_fname == NULL || !strcmp (out_fname, "-"))
     out_fname = "";
 
-  if (cpp_opts->deps.style != DEPS_NONE)
+  if (cpp_opts->deps.style == DEPS_NONE)
     check_deps_environment_vars ();
 
   handle_deferred_opts ();
