@@ -15,14 +15,14 @@
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
+
 /* Define if you have the <ndir.h> header file.  */
 #undef HAVE_NDIR_H
 
 /* Define if you have the <stdlib.h> header file.  */
 #undef HAVE_STDLIB_H
-
-/* Define if you have the <limits.h> header file.  */
-#undef HAVE_LIMITS_H
 
 /* Define if you have the <sys/dir.h> header file.  */
 #undef HAVE_SYS_DIR_H
@@ -61,7 +61,13 @@ single argument. */
 /* The number of bytes in type long long */
 #undef SIZEOF_LONG_LONG
 
+/* whether byteorder is bigendian */
+#undef WORDS_BIGENDIAN
+
 /* Define if the host machine stores words of multi-word integers in
    big-endian order. */
-#undef WORDS_BIG_ENDIAN
+#undef HOST_WORDS_BIG_ENDIAN
+
+/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
+#undef BYTEORDER
 
