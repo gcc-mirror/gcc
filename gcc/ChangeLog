@@ -1,3 +1,8 @@
+Mon Mar 30 11:12:24 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* config/m68k/m68k.c (standard_68881_constant_p): Don't use
+	fmovecr on the 68060.
+
 Mon Mar 30 00:21:03 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* genemit.c (DONE): Rework so that it works in the true arm if
