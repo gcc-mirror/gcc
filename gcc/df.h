@@ -63,7 +63,12 @@ enum df_ref_flags
     /* This flag is set, if we stripped the subreg from the reference.
        In this case we must make conservative guesses, at what the
        outer mode was.  */
-    DF_REF_STRIPPED = 4
+    DF_REF_STRIPPED = 4,
+
+    /* This flag is set during register allocation if it's okay for
+    the reference's INSN to have one of its operands replaced with a
+    memory reference.  */
+    DF_REF_MEM_OK = 8
   };
 
 

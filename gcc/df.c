@@ -906,9 +906,17 @@ df_def_record_1 (df, x, bb, insn)
      basic_block bb;
      rtx insn;
 {
-  rtx *loc = &SET_DEST (x);
-  rtx dst = *loc;
+  rtx *loc;
+  rtx dst;
   enum df_ref_flags flags = 0;
+
+ /* We may recursivly call ourselves on EXPR_LIST when dealing with PARALLEL
+     construct.  */  
+  if (GET_CODE (x) == EXPR_LIST || GET_CODE (x) == CLOBBER)
+    loc = &XEXP (x, 0);
+  else
+    loc = &SET_DEST (x);
+  dst = *loc;
 
   /* Some targets place small structures in registers for
      return values of functions.  */
@@ -917,12 +925,19 @@ df_def_record_1 (df, x, bb, insn)
       int i;
 
       for (i = XVECLEN (dst, 0) - 1; i >= 0; i--)
-	df_def_record_1 (df, XVECEXP (dst, 0, i), bb, insn);
+	{
+	  rtx temp = XVECEXP (dst, 0, i);
+	  if (GET_CODE (temp) == EXPR_LIST || GET_CODE (temp) == CLOBBER
+	      || GET_CODE (temp) == SET)
+	    df_def_record_1 (df, temp, bb, insn);
+	}
       return;
     }
 
 #ifdef CLASS_CANNOT_CHANGE_MODE
-  if (GET_CODE (dst) == SUBREG)
+  if (GET_CODE (dst) == SUBREG
+      && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
+				     GET_MODE (SUBREG_REG (dst))))
     flags |= DF_REF_MODE_CHANGE;
 #endif
 
@@ -942,7 +957,9 @@ df_def_record_1 (df, x, bb, insn)
 	  dst = *loc;
 	}
 #ifdef CLASS_CANNOT_CHANGE_MODE
-      if (GET_CODE (dst) == SUBREG)
+      if (GET_CODE (dst) == SUBREG
+	  && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
+				         GET_MODE (SUBREG_REG (dst))))
         flags |= DF_REF_MODE_CHANGE;
 #endif
       loc = &XEXP (dst, 0);
@@ -1042,6 +1059,8 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 	  return;
 	}
 #ifdef CLASS_CANNOT_CHANGE_MODE
+      if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (x),
+				      GET_MODE (SUBREG_REG (x))))
       flags |= DF_REF_MODE_CHANGE;
 #endif
 
@@ -1067,6 +1086,8 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 		{
 		  use_flags = DF_REF_READ_WRITE;
 #ifdef CLASS_CANNOT_CHANGE_MODE
+		  if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
+						  GET_MODE (SUBREG_REG (dst))))
 		  use_flags |= DF_REF_MODE_CHANGE;
 #endif
 		  df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
@@ -1091,6 +1112,8 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 		abort ();
 	      use_flags = DF_REF_READ_WRITE;
 #ifdef CLASS_CANNOT_CHANGE_MODE
+	      if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
+					      GET_MODE (SUBREG_REG (dst))))
 	      use_flags |= DF_REF_MODE_CHANGE;
 #endif
 	      df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
@@ -2142,6 +2165,7 @@ df_analyse_1 (df, blocks, flags, update)
     {
       df_reg_info_compute (df, df->all_blocks);
     }
+  
   free (df->dfs_order);
   free (df->rc_order);
   free (df->rts_order);

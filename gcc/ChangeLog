@@ -1,3 +1,16 @@
+2003-03-20  Daniel Berlin  <dberlin@dberlin.org>
+	Merge changes from new-regalloc-branch 
+
+	From Michael Matz  <matz@suse.de>
+	* df.c (df_ref_record_1): Move init of loc to safe point.
+	Only recurse on interesting things in parallels.
+	Handle CLASS_CANNOT_CHANGE_MODE smarter.
+	(df_uses_record): Ditto.
+	
+	* df.h (DF_REF_MEM_OK): New enum member, used to mark ref's which
+	it's already okay to use memory operands in (IE doesn't require
+	adding another insn or anything).
+
 2003-03-20  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/6348
