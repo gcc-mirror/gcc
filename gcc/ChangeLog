@@ -1,3 +1,10 @@
+Tue Sep  3 11:32:14 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	PR objc/5956:
+	* objc/objc-act.c (build_typed_selector_reference): Fix typo which
+	was causing the new selector never to match the existing ones 
+        (Patch by Alexander Malmberg <alexander@malmberg.org>). 
+
 2002-09-03  Graham Stott  <graham.stott@btinternet.com>
 
 	* config/i386/i386.md ("femms"): Add "memory" attr "none".
