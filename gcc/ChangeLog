@@ -1,3 +1,12 @@
+2001-01-12  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.h (total_biv_increment): Constify iv_class pointer.
+	(struct induction): Replace `mem_mode' with `mem' rtx.
+	* unroll.c (total_biv_increment): Constify iv_class pointer.
+	* loop.c (loop_giv_reduce_benefit): Derive mem mode from mem rtx.
+	(find_mem_givs, combine_givs_p): Likewise.
+	(debug_ivs, debug_iv_class, loop_ivs_dump, loop_iv_class_dump): New.
+
 2001-01-10  Thomas Pfaff <tpfaff@gmx.net>
 
 	* gthr-win32.h (__gthread_objc_thread_get_data): Save and restore Win32

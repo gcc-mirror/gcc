@@ -87,7 +87,7 @@ struct induction
 				/* For a biv, this is the place where add_val
 				   was found.  */
   enum machine_mode mode;	/* The mode of this biv or giv */
-  enum machine_mode mem_mode;	/* For DEST_ADDR, mode of the memory object.  */
+  rtx mem;			/* For DEST_ADDR, the memory object.  */
   rtx mult_val;			/* Multiplicative factor for src_reg.  */
   rtx add_val;			/* Additive constant for that product.  */
   int benefit;			/* Gain from eliminating this insn.  */
@@ -398,7 +398,7 @@ rtx express_from PARAMS ((struct induction *, struct induction *));
 rtx extend_value_for_giv PARAMS ((struct induction *, rtx));
 
 void unroll_loop PARAMS ((struct loop *, int, int));
-rtx biv_total_increment PARAMS ((struct iv_class *));
+rtx biv_total_increment PARAMS ((const struct iv_class *));
 unsigned HOST_WIDE_INT loop_iterations PARAMS ((struct loop *));
 int precondition_loop_p PARAMS ((const struct loop *,
 				 rtx *, rtx *, rtx *,
@@ -416,3 +416,4 @@ rtx loop_insn_hoist PARAMS((const struct loop *, rtx));
 
 /* Forward declarations for non-static functions declared in doloop.c.  */
 int doloop_optimize PARAMS ((const struct loop *));
+rtx doloop_condition_get PARAMS ((rtx));
