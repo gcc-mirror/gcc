@@ -1,3 +1,10 @@
+1997-09-21  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.c (output_function_prologue): Add dwarf2 support.
+
+	* m68k.h (INCOMING_RETURN_ADDR_RTX, DWARF_FRAME_REGNUM,
+	INCOMING_FRAME_SP_OFFSET): New definitions.
+ 
 Mon Sep 22 11:36:42 1997  David S. Miller  <davem@tanya.rutgers.edu>
 
 	* combine.c (try_combine): Use NULL_RTX instead of '0' where

@@ -1792,6 +1792,18 @@ __transfer_from_trampoline ()					\
 
 #define DBX_REGISTER_NUMBER(REGNO) ((REGNO) < 16 ? (REGNO) : (REGNO) + 2)
 
+/* Before the prologue, RA is at 0(%sp).  */
+#define INCOMING_RETURN_ADDR_RTX \
+  gen_rtx (MEM, VOIDmode, gen_rtx (REG, VOIDmode, STACK_POINTER_REGNUM))
+
+/* We must not use the DBX register numbers for the DWARF 2 CFA column
+   numbers because that maps to numbers beyond FIRST_PSEUDO_REGISTER.
+   Instead use the identity mapping.  */
+#define DWARF_FRAME_REGNUM(REG) REG
+
+/* Before the prologue, the top of the frame is at 4(%sp).  */
+#define INCOMING_FRAME_SP_OFFSET 4
+
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 
