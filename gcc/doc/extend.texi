@@ -1,4 +1,5 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002,
+@c 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -4537,6 +4538,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex atan2l
 @findex bcmp
 @findex bzero
+@findex ceil
+@findex ceilf
+@findex ceill
 @findex cimag
 @findex cimagf
 @findex cimagl
@@ -4559,6 +4563,12 @@ v4si f (v4si a, v4si b, v4si c)
 @findex fabsf
 @findex fabsl
 @findex ffs
+@findex floor
+@findex floorf
+@findex floorl
+@findex fmod
+@findex fmodf
+@findex fmodl
 @findex fprintf
 @findex fprintf_unlocked
 @findex fputs
@@ -4573,12 +4583,18 @@ v4si f (v4si a, v4si b, v4si c)
 @findex memcmp
 @findex memcpy
 @findex memset
+@findex nearbyint
+@findex nearbyintf
+@findex nearbyintl
 @findex pow
 @findex powf
 @findex powl
 @findex printf
 @findex printf_unlocked
 @findex rindex
+@findex round
+@findex roundf
+@findex roundl
 @findex sin
 @findex sinf
 @findex sinl
@@ -4598,21 +4614,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex strrchr
 @findex strspn
 @findex strstr
-@findex floor
-@findex floorf
-@findex floorl
-@findex ceil
-@findex ceilf
-@findex ceill
-@findex round
-@findex roundf
-@findex roundl
 @findex trunc
 @findex truncf
 @findex truncl
-@findex nearbyint
-@findex nearbyintf
-@findex nearbyintl
 
 GCC provides a large number of built-in functions other than the ones
 mentioned above.  Some of these are for internal use in the processing
@@ -4633,39 +4637,36 @@ be emitted.
 
 @opindex ansi
 @opindex std
-The functions @code{abort}, @code{exit}, @code{_Exit} and @code{_exit}
-are recognized and presumed not to return, but otherwise are not built
-in.  @code{_exit} is not recognized in strict ISO C mode (@option{-ansi},
-@option{-std=c89} or @option{-std=c99}).  @code{_Exit} is not recognized in
-strict C89 mode (@option{-ansi} or @option{-std=c89}).  All these functions
-have corresponding versions prefixed with @code{__builtin_}, which may be
-used even in strict C89 mode.
-
-Outside strict ISO C mode, the functions @code{alloca}, @code{bcmp},
-@code{bzero}, @code{index}, @code{rindex}, @code{ffs}, @code{fputs_unlocked},
-@code{printf_unlocked} and @code{fprintf_unlocked} may be handled as
-built-in functions.  All these functions have corresponding versions
+Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
+@option{-std=c99}), the functions @code{alloca}, @code{bcmp},
+@code{bzero}, @code{_exit}, @code{ffs}, @code{fprintf_unlocked},
+@code{fputs_unlocked}, @code{index}, @code{printf_unlocked},
+and @code{rindex} may be handled as built-in functions.
+All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C89
 mode.
 
 The ISO C99 functions @code{conj}, @code{conjf}, @code{conjl}, @code{creal},
 @code{crealf}, @code{creall}, @code{cimag}, @code{cimagf}, @code{cimagl},
+@code{_Exit},
 @code{llabs}, @code{imaxabs}, @code{round}, @code{roundf}, @code{roundl},
 @code{trunc}, @code{truncf}, @code{truncl}, @code{nearbyint},
 @code{nearbyintf} and @code{nearbyintl} are handled as built-in functions
-except in strict ISO C90 mode.
+except in strict ISO C90 mode (@option{-ansi} or @option{-std=c89}).
 
 There are also built-in versions of the ISO C99 functions @code{atan2f},
 @code{atan2l}, @code{ceilf}, @code{ceill}, @code{cosf}, @code{cosl},
 @code{expf}, @code{expl}, @code{fabsf}, @code{fabsl}, @code{floorf},
-@code{floorl}, @code{logf}, @code{logl}, @code{powf}, @code{powl},
+@code{floorl}, @code{fmodf}, @code{fmodl},
+@code{logf}, @code{logl}, @code{powf}, @code{powl},
 @code{sinf}, @code{sinl}, @code{sqrtf} and @code{sqrtl}
 that are recognized in any mode since ISO C90 reserves these names for
 the purpose to which ISO C99 puts them.  All these functions have
 corresponding versions prefixed with @code{__builtin_}.
 
-The ISO C90 functions @code{abs}, @code{atan2}, @code{ceil}, @code{cos},
-@code{exp}, @code{fabs}, @code{floor},
+The ISO C90 functions @code{abort}, @code{abs}, @code{atan2}, @code{ceil},
+@code{cos}, @code{exit},
+@code{exp}, @code{fabs}, @code{floor}, @code{fmod},
 @code{fprintf}, @code{fputs}, @code{labs}, @code{log},
 @code{memcmp}, @code{memcpy}, @code{memset}, @code{pow}, @code{printf},
 @code{sin}, @code{sqrt}, @code{strcat}, @code{strchr}, @code{strcmp},
