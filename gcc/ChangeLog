@@ -1,3 +1,13 @@
+Sat Jan 16 12:47:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (not_repeat_reg): Allow ldp instruction
+	in delay slot of RPTBD.
+
+Sat Jan 16 12:26:40 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/libgcc.S (___divhi3, ___modhi3): Fix long long
+	divide and modulo sign problem.
+
 Fri Jan 15 11:02:31 1999   Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* unroll.c (loop_iterations): Return 0 if the last loop insn
