@@ -169,7 +169,7 @@ void cgraph_varpool_finalize_decl (tree);
 bool cgraph_varpool_assemble_pending_decls (void);
 
 /* In cgraphunit.c  */
-void cgraph_finalize_function (tree, tree);
+void cgraph_finalize_function (tree);
 void cgraph_finalize_compilation_unit (void);
 void cgraph_create_edges (tree, tree);
 void cgraph_optimize (void);
