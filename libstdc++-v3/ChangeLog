@@ -1,3 +1,9 @@
+2002-07-16  Andreas Schwab  <schwab@suse.de>
+
+	* libsupc++/new (set_new_handler): Declare to not throw any
+	exceptions.
+	* libsupc++/new_handler.cc (set_new_handler): Likewise.
+
 2002-07-16  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* include/Makefile.am (bits_headers): Remove slice.h

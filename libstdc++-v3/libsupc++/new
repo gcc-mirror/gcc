@@ -62,7 +62,7 @@ namespace std
    *  be of this type.  */
   typedef void (*new_handler)();
   /// Takes a replacement handler as the argument, returns the previous handler.
-  new_handler set_new_handler(new_handler);
+  new_handler set_new_handler(new_handler) throw();
 } // namespace std
 
 //@{
