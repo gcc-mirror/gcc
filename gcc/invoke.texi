@@ -2042,18 +2042,10 @@ Dump after delayed branch scheduling, to @file{@var{file}.dbr}.
 @item D
 Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
-@item y
-Dump debugging information during parsing, to standard error.
 @item r
 Dump after RTL generation, to @file{@var{file}.rtl}.
-@item x
-Just generate RTL for a function instead of compiling it.  Usually used
-with @samp{r}.
 @item j
 Dump after first jump optimization, to @file{@var{file}.jump}.
-@item s
-Dump after CSE (including the jump optimization that sometimes
-follows CSE), to @file{@var{file}.cse}.
 @item F
 Dump after purging ADDRESSOF, to @file{@var{file}.addressof}.
 @item f
@@ -2089,9 +2081,6 @@ Dump after the first instruction scheduling pass, to @file{@var{file}.sched}.
 @item t
 Dump after the second CSE pass (including the jump optimization that
 sometimes follows CSE), to @file{@var{file}.cse2}. 
-@item x
-Just generate RTL for a function instead of compiling it.  Usually used
-with @samp{r}.
 @item a
 Produce all the dumps listed above.
 @item m
@@ -2100,6 +2089,9 @@ standard error.
 @item p
 Annotate the assembler output with a comment indicating which
 pattern and alternative was used.
+@item x
+Just generate RTL for a function instead of compiling it.  Usually used
+with @samp{r}.
 @item y
 Dump debugging information during parsing, to standard error.
 @item A
@@ -4856,7 +4848,7 @@ are 32 bits, and longs are 64 bits wide.  The width of pointer types is
 the smaller of the width of longs or the width of general purpose
 registers (which in turn depends on the ISA).
 
-@itemx -mabi=32
+@item -mabi=32
 @itemx -mabi=o64
 @itemx -mabi=n32
 @itemx -mabi=64
@@ -5236,8 +5228,8 @@ next release of binutils (current is 2.9.1) will probably contain PA 2.0
 support.  
 
 @item -mpa-risc-1-0
-@item -mpa-risc-1-1
-@item -mpa-risc-2-0
+@itemx -mpa-risc-1-1
+@itemx -mpa-risc-2-0
 Synonyms for -march=1.0, -march=1.1, and -march=2.0 respectively.
 
 @item -mbig-switch
@@ -5658,7 +5650,7 @@ These @samp{-m} options are defined for the Clipper implementations:
 @item -mc300
 Produce code for a C300 Clipper processor. This is the default.
 
-@itemx -mc400
+@item -mc400
 Produce code for a C400 Clipper processor i.e. use floating point
 registers f8..f15.
 @end table
