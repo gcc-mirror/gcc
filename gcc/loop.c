@@ -1885,7 +1885,6 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 	     extra cost because something else was already moved.  */
 
 	  if (already_moved[regno]
-	      || flag_move_all_movables
 	      || (threshold * savings * m->lifetime) >=
 		 (regs->array[regno].moved_once ? insn_count * 2 : insn_count)
 	      || (m->forces && m->forces->done
@@ -5122,8 +5121,7 @@ strength_reduce (struct loop *loop, int flags)
 	     of such giv's whether or not we know they are used after the loop
 	     exit.  */
 
-	  if (! flag_reduce_all_givs
-	      && v->lifetime * threshold * benefit < insn_count
+	  if (v->lifetime * threshold * benefit < insn_count
 	      && ! bl->reversed)
 	    {
 	      if (loop_dump_stream)

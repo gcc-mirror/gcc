@@ -715,17 +715,6 @@ find_invariants_to_move (struct df *df)
   unsigned i, regs_used, n_inv_uses, regs_needed = 0, new_regs;
   struct invariant *inv = NULL;
 
-  if (flag_move_all_movables)
-    {
-      /* This is easy & stupid.  */
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (invariants); i++)
-	{
-	  inv = VARRAY_GENERIC_PTR_NOGC (invariants, i);
-	  inv->move = true;
-	}
-      return;
-    }
-
   if (!VARRAY_ACTIVE_SIZE (invariants))
     return;
 
