@@ -1,3 +1,10 @@
+Wed Jun 16 11:38:58 1999  Craig Burley  <craig@jcb-sc.com>
+
+	From Ian Watson <WATSON_IAN_A@Lilly.com> 1999-06-12:
+	* libI77/backspace.c: Reload file descriptor after
+	calling t_runc.
+	* libI77/Version.c: Bump libg2c version.
+
 Wed May 26 14:26:35 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* libF77/Version.c, libI77/Version.c, libU77/Version.c:
