@@ -1945,7 +1945,7 @@ canon_hash (x, mode)
 	  do_not_record = 1;
 	  return 0;
 	}
-      if (! RTX_UNCHANGING_P (x))
+      if (! RTX_UNCHANGING_P (x) || FIXED_BASE_PLUS_P (XEXP (x, 0)))
 	{
 	  hash_arg_in_memory = 1;
 	  if (MEM_IN_STRUCT_P (x)) hash_arg_in_struct = 1;
@@ -7377,7 +7377,9 @@ cse_insn (insn, in_libcall_block)
 	elt = insert (dest, sets[i].src_elt,
 		      sets[i].dest_hash, GET_MODE (dest));
 	elt->in_memory = (GET_CODE (sets[i].inner_dest) == MEM
-			  && ! RTX_UNCHANGING_P (sets[i].inner_dest));
+			  && (! RTX_UNCHANGING_P (sets[i].inner_dest)
+			      || FIXED_BASE_PLUS_P (XEXP (sets[i].inner_dest,
+							  0))));
 
 	if (elt->in_memory)
 	  {
