@@ -1616,9 +1616,13 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
     id->current_node = edge->callee;
     copy = copy_body (id);
 
+    /* If the function uses a return slot, then it may legitimately
+       fall through while still returning a value, so we have to skip
+       the warning here.  */
     if (warn_return_type
 	&& !TREE_NO_WARNING (fn)
 	&& !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fn)))
+	&& return_slot_addr == NULL_TREE
 	&& block_may_fallthru (copy))
       {
 	warning ("control may reach end of non-void function %qD being inlined",
