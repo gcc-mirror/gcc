@@ -233,11 +233,13 @@ in_text_section ()
 }
 
 /* Determine if we're in the data section. */
+
 int
 in_data_section ()
 {
   return in_section == in_data;
 }
+
 /* Tell assembler to change to section NAME for DECL.
    If DECL is NULL, just switch to section NAME.
    If NAME is NULL, get the name from DECL.  */
@@ -248,7 +250,7 @@ named_section (decl, name)
      char *name;
 {
   if (decl != NULL_TREE
-      && (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL))
+      && TREE_CODE_CLASS (TREE_CODE (decl)) != 'd')
     abort ();
   if (name == NULL)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
