@@ -1,3 +1,8 @@
+1999-08-06  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Look for sched_yield in -lrt.
+
 1999-08-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in (CXXFLAGS): The buggy g++ -g work-around was buggy
