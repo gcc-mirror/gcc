@@ -1,3 +1,13 @@
+2003-05-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_simplify_dwarf_addr): Remove.
+	(mips_delegitimize_address): Declare.
+	* config/mips/mips.h (ASM_SIMPLIFY_DWARF_ADDR): Undefine.
+	(FIND_BASE_TERM): Define.
+	* config/mips/mips.c (TARGET_DELEGITIMIZE_ADDRESS): Define.
+	(mips_delegitimize_address): Renamed from mips_simplify_dwarf_addr.
+	Handle small-data addresses.
+
 2003-05-05  Roger Sayle  <roger@eyesopen.com>
 
 	* real.c (real_powi): New function to calculate the value of

@@ -881,6 +881,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_RTX_COSTS mips_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST mips_address_cost
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS mips_delegitimize_address
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mips_encode_section_info
@@ -2193,23 +2195,11 @@ mips_legitimize_move (mode, dest, src)
 }
 
 
-/* Simplify an address for dwarf debugging info.  The main purpose of
-   this function is to convert GOT references back into symbolic form.
-
-   For example, suppose a pseudo register R is found to be equivalent
-   to a GOT reference.  This reference would be stored in reg_equiv_mem[R].
-   The dwarf code may try to use this reference as the location of the
-   variable associated with R.  Normally, an address like:
-
-        (plus $gp (unspec [FOO] RELOC))
-
-   would be converted into individual components, but we can't emit
-   (unspec [FOO] RELOC) in .word directives.  We avoid this problem
-   (and generate better debug information) by converting the reference
-   back into its original form.  */
+/* Convert GOT and GP-relative accesses back into their original form.
+   Used by bothh TARGET_DELEGITIMIZE_ADDRESS and FIND_BASE_TERM.  */
 
 rtx
-mips_simplify_dwarf_addr (x)
+mips_delegitimize_address (x)
      rtx x;
 {
   struct mips_constant_info c;
@@ -2219,6 +2209,14 @@ mips_simplify_dwarf_addr (x)
       && mips_classify_constant (&c, XEXP (XEXP (x, 0), 1)) == CONSTANT_RELOC
       && mips_classify_symbol (XVECEXP (c.symbol, 0, 0)) == SYMBOL_GOT_GLOBAL)
     return XVECEXP (c.symbol, 0, 0);
+
+  if (GET_CODE (x) == PLUS
+      && (XEXP (x, 0) == pic_offset_table_rtx
+	  || XEXP (x, 0) == cfun->machine->mips16_gp_pseudo_rtx)
+      && mips_classify_constant (&c, XEXP (x, 1)) == CONSTANT_RELOC
+      && mips_classify_symbol (XVECEXP (c.symbol, 0, 0)) == SYMBOL_SMALL_DATA)
+    return plus_constant (XVECEXP (c.symbol, 0, 0), c.offset);
+
   return x;
 }
 
