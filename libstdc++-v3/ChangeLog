@@ -1,4 +1,10 @@
 2005-03-02  Jonathan Wakely  <redi@gcc.gnu.org>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/
+	cons/auto_ptr_neg.cc: Correct line numbers.
+
+2005-03-02  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/tr1/memory: Replace checked_deleter with (unchecked)
 	_Sp_deleter as GCC warns about delete on incomplete types anyway.
