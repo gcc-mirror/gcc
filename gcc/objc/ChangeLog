@@ -1,3 +1,11 @@
+2004-09-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* objc-act.c: Change annotate_with_locus to SET_EXPR_LOCATION
+	throughout.
+	(objc_init): Only set input_line to 0 #ifndef USE_MAPPED_LOCATION.
+	(build_selector_translation_table): Use %J in diagnostic
+	instead of diddling input_line.  Fix spelling.
+
 2004-09-21  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_fold_objc_type_ref): New function.
@@ -225,7 +233,7 @@
 	(gen_type_name, gen_type_name_0): New functions.
 	(gen_method_decl): Remove second parameter; call gen_type_name()
 	instead of gen_declaration_1().
-	(dump_interface): Adjust calls to gen_declaration() and 
+	(dump_interface): Adjust calls to gen_declaration() and
 	gen_method_decl(); do not allocate a separate string buffer.
 	(init_objc): Allocate a larger string buffer to accommodate
 	dump_interface(); adjust call to build_module_descriptor();
@@ -263,7 +271,7 @@
 	objc_check_decl, build_encode_expr): Remove prototypes.
 	(imp_count, cat_count): Make GGC-aware.
 	(OBJC_SET_TYPE_NAME): New macro.
-	
+
 2004-09-03  Ziemowit Laski  <zlaski@apple.com>
 
 	* config-lang.in: Update copyright notice.
@@ -292,7 +300,7 @@
 	(build_protocol_expr): Rename prototype to objc_build_prototype_expr().
 	(build_objc_string_object): Rename prototype to
 	objc_build_string_object().
-	
+
 2004-09-01  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (lookup_interface): Make function 'static' and add a
@@ -300,7 +308,7 @@
 	(objc_check_decl, get_class_reference, objc_declare_alias,
 	objc_declare_class, objc_is_object_ptr): Call objc_is_class_name()
 	instead of is_class_name().
-	(get_super_receiver, objc_clear_super_receiver): Call 
+	(get_super_receiver, objc_clear_super_receiver): Call
 	objc_get_current_scope() instead of get_current_scope().
 	(is_class_name): Rename to objc_is_class_name.
 	(lookup_objc_ivar): Rename to objc_lookup_ivar.
@@ -324,11 +332,11 @@
 	(LANG_HOOKS_FINISH, LANG_HOOKS_INIT_OPTIONS,
 	LANG_HOOKS_INITIALIZE_DIAGNOSTICS, LANG_HOOKS_HANDLE_OPTION,
 	LANG_HOOKS_MISSING_ARGUMENT, LANG_HOOKS_POST_OPTIONS,
-	LANG_HOOKS_GET_ALIAS_SET, LANG_HOOKS_SAFE_FROM_P, 
-	LANG_HOOKS_EXPAND_EXPR, LANG_HOOKS_MARK_ADDRESSABLE, 
+	LANG_HOOKS_GET_ALIAS_SET, LANG_HOOKS_SAFE_FROM_P,
+	LANG_HOOKS_EXPAND_EXPR, LANG_HOOKS_MARK_ADDRESSABLE,
 	LANG_HOOKS_PARSE_FILE, LANG_HOOKS_TRUTHVALUE_CONVERSION,
 	LANG_HOOKS_FINISH_INCOMPLETE_DECL, LANG_HOOKS_UNSAFE_FOR_REEVAL,
-	LANG_HOOKS_STATICP, LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, 
+	LANG_HOOKS_STATICP, LANG_HOOKS_SET_DECL_ASSEMBLER_NAME,
 	LANG_HOOKS_NO_BODY_BLOCKS, LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL,
 	LANG_HOOKS_PRINT_IDENTIFIER, LANG_HOOKS_FUNCTION_ENTER_NESTED,
 	LANG_HOOKS_FUNCTION_LEAVE_NESTED, LANG_HOOKS_DUP_LANG_SPECIFIC_DECL,

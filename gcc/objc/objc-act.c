@@ -534,10 +534,12 @@ objc_init (void)
 #endif
     return false;
 
+#ifndef USE_MAPPED_LOCATION
   /* Force the line number back to 0; check_newline will have
      raised it to 1, which will make the builtin functions appear
      not to be built in.  */
   input_line = 0;
+#endif
 
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)
@@ -2305,15 +2307,8 @@ build_selector_translation_table (void)
               }
           }
         if (!found)
-          {
-            /* Adjust line number for warning message.  */
-            int save_lineno = input_line;
-            if (flag_next_runtime && TREE_PURPOSE (chain))
-              input_line = DECL_SOURCE_LINE (TREE_PURPOSE (chain));
-            warning ("creating selector for non existant method %s",
-                     IDENTIFIER_POINTER (TREE_VALUE (chain)));
-            input_line = save_lineno;
-          }
+	  warning ("%Jcreating selector for nonexistent method %qE",
+		   TREE_PURPOSE (chain), TREE_VALUE (chain));
       }
 
       expr = build_selector (TREE_VALUE (chain));
@@ -3031,11 +3026,11 @@ next_sjlj_build_catch_list (void)
     {
       t = build (MODIFY_EXPR, void_type_node, cur_try_context->rethrow_decl,
 		 cur_try_context->caught_decl);
-      annotate_with_locus (t, cur_try_context->end_catch_locus);
+      SET_EXPR_LOCATION (t, cur_try_context->end_catch_locus);
       append_to_statement_list (t, last);
 
       t = next_sjlj_build_try_exit ();
-      annotate_with_locus (t, cur_try_context->end_catch_locus);
+      SET_EXPR_LOCATION (t, cur_try_context->end_catch_locus);
       append_to_statement_list (t, last);
     }
 
@@ -3096,18 +3091,18 @@ next_sjlj_build_try_catch_finally (void)
 
   /* Build the outermost varible binding level.  */
   bind = build (BIND_EXPR, void_type_node, rethrow_decl, NULL, NULL);
-  annotate_with_locus (bind, cur_try_context->try_locus);
+  SET_EXPR_LOCATION (bind, cur_try_context->try_locus);
   TREE_SIDE_EFFECTS (bind) = 1;
 
   /* Initialize rethrow_decl.  */
   t = build (MODIFY_EXPR, void_type_node, rethrow_decl,
 	     convert (objc_object_type, null_pointer_node));
-  annotate_with_locus (t, cur_try_context->try_locus);
+  SET_EXPR_LOCATION (t, cur_try_context->try_locus);
   append_to_statement_list (t, &BIND_EXPR_BODY (bind));
 
   /* Build the outermost TRY_FINALLY_EXPR.  */
   try_fin = build (TRY_FINALLY_EXPR, void_type_node, NULL, NULL);
-  annotate_with_locus (try_fin, cur_try_context->try_locus);
+  SET_EXPR_LOCATION (try_fin, cur_try_context->try_locus);
   TREE_SIDE_EFFECTS (try_fin) = 1;
   append_to_statement_list (try_fin, &BIND_EXPR_BODY (bind));
 
@@ -3127,11 +3122,11 @@ next_sjlj_build_try_catch_finally (void)
     }
   else
     catch_seq = next_sjlj_build_exc_extract (rethrow_decl);
-  annotate_with_locus (catch_seq, cur_try_context->end_try_locus);
+  SET_EXPR_LOCATION (catch_seq, cur_try_context->end_try_locus);
 
   /* Build the main register-and-try if statement.  */
   t = next_sjlj_build_enter_and_setjmp ();
-  annotate_with_locus (t, cur_try_context->try_locus);
+  SET_EXPR_LOCATION (t, cur_try_context->try_locus);
   COND_EXPR_THEN (t) = catch_seq;
   COND_EXPR_ELSE (t) = cur_try_context->try_body;
   TREE_OPERAND (try_fin, 0) = t;
@@ -3141,7 +3136,7 @@ next_sjlj_build_try_catch_finally (void)
   t = build_stmt (COND_EXPR,
 		  lang_hooks.truthvalue_conversion (rethrow_decl),
 		  NULL, t);
-  annotate_with_locus (t, cur_try_context->finally_locus);
+  SET_EXPR_LOCATION (t, cur_try_context->finally_locus);
   append_to_statement_list (t, &TREE_OPERAND (try_fin, 1));
 
   append_to_statement_list (cur_try_context->finally_body,
@@ -3152,7 +3147,7 @@ next_sjlj_build_try_catch_finally (void)
   t = build_stmt (COND_EXPR,
 		  lang_hooks.truthvalue_conversion (rethrow_decl),
 		  t, NULL);
-  annotate_with_locus (t, cur_try_context->end_finally_locus);
+  SET_EXPR_LOCATION (t, cur_try_context->end_finally_locus);
   append_to_statement_list (t, &TREE_OPERAND (try_fin, 1));
 
   return bind;
@@ -3293,12 +3288,12 @@ objc_finish_try_stmt (void)
       if (c->catch_list)
 	{
           stmt = build_stmt (TRY_CATCH_EXPR, stmt, c->catch_list);
-	  annotate_with_locus (stmt, cur_try_context->try_locus);
+	  SET_EXPR_LOCATION (stmt, cur_try_context->try_locus);
 	}
       if (c->finally_body)
 	{
 	  stmt = build_stmt (TRY_FINALLY_EXPR, stmt, c->finally_body);
-	  annotate_with_locus (stmt, cur_try_context->try_locus);
+	  SET_EXPR_LOCATION (stmt, cur_try_context->try_locus);
 	}
     }
   add_stmt (stmt);
@@ -3345,13 +3340,13 @@ objc_build_synchronized (location_t start_locus, tree mutex, tree body)
   mutex = save_expr (mutex);
   args = tree_cons (NULL, mutex, NULL);
   call = build_function_call (objc_sync_enter_decl, args);
-  annotate_with_locus (call, start_locus);
+  SET_EXPR_LOCATION (call, start_locus);
   add_stmt (call);
 
   /* Build the mutex unlock.  */
   args = tree_cons (NULL, mutex, NULL);
   call = build_function_call (objc_sync_exit_decl, args);
-  annotate_with_locus (call, input_location);
+  SET_EXPR_LOCATION (call, input_location);
 
   /* Put the that and the body in a TRY_FINALLY.  */
   objc_begin_try_stmt (start_locus, body);
