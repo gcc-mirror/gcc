@@ -1,3 +1,9 @@
+2003-04-16  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config.gcc: Add t-spe for eabispe.
+
+        * config/rs6000/t-spe: New.
+
 2003-04-16  J"orn Rennecke <joern.rennecke@superh.com>
 
 	Re-apply this patch:
