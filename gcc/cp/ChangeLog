@@ -1,5 +1,12 @@
 2004-12-21  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/14075
+	* decl.c (check_initializer): Check string initializer of array is
+	not parenthesized.
+	* cp-tree.h (PAREN_STRING_LITERAL_P): New.
+	* semantics.c (finish_parenthesized_expr): Mark a STRING_CST.
+	* error.c (dump_expr): <STRING_CST case> Add parens, if needed.
+
 	* cp-tree.def (TEMPLATE_TYPE_PARM,
 	BOUND_TEMPLATE_TEMPLATE_PARM, TYPE_OF_TYPE, TYPENAME_TYPE): Reorder 
 	for better code efficiency.
