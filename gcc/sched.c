@@ -4238,7 +4238,7 @@ schedule_insns (dump_file)
   /* Create an insn here so that we can hang dependencies off of it later.  */
   sched_before_next_call
     = gen_rtx (INSN, VOIDmode, 0, NULL_RTX, NULL_RTX,
-	       NULL_RTX, 0, NULL_RTX, 0);
+	       NULL_RTX, 0, NULL_RTX, NULL_RTX);
 
   /* Initialize the unused_*_lists.  We can't use the ones left over from
      the previous function, because gcc has freed that memory.  We can use

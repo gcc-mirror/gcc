@@ -3362,7 +3362,7 @@ flush_pending_lists (insn, only_write)
     add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
   last_pending_memory_flush =
-    gen_rtx (INSN_LIST, VOIDmode, insn, 0);
+    gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
 }
 
 /* Analyze a single SET or CLOBBER rtx, X, creating all dependencies generated
@@ -3830,7 +3830,7 @@ sched_analyze_insn (x, insn, loop_notes)
 			     {
 			       /* reg_last_sets[r] is now a list of insns */
 			       reg_last_sets[i]
-				 = gen_rtx (INSN_LIST, VOIDmode, insn, 0);
+				 = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
 			     });
   CLEAR_REG_SET (reg_pending_sets);
 
@@ -3840,7 +3840,7 @@ sched_analyze_insn (x, insn, loop_notes)
 
 	/* reg_last_sets[r] is now a list of insns */
 	reg_last_sets[i]
-	  = gen_rtx (INSN_LIST, VOIDmode, insn, 0);
+	  = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
 
       reg_pending_sets_all = 0;
     }
@@ -3988,7 +3988,7 @@ sched_analyze (head, tail)
 
 	  /* last_function_call is now a list of insns */
 	  last_function_call
-	    = gen_rtx (INSN_LIST, VOIDmode, insn, 0);
+	    = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
 	}
 
       /* See comments on reemit_notes as to why we do this.  */
@@ -7060,7 +7060,7 @@ init_rgn_data_dependences (n_bbs)
     {
       bb_sched_before_next_call[bb] =
 	gen_rtx (INSN, VOIDmode, 0, NULL_RTX, NULL_RTX,
-		 NULL_RTX, 0, NULL_RTX, 0);
+		 NULL_RTX, 0, NULL_RTX, NULL_RTX);
       LOG_LINKS (bb_sched_before_next_call[bb]) = 0;
     }
 }
@@ -7191,7 +7191,7 @@ compute_block_backward_dependences (bb)
       last_pending_memory_flush = 0;
       sched_before_next_call
 	= gen_rtx (INSN, VOIDmode, 0, NULL_RTX, NULL_RTX,
-		   NULL_RTX, 0, NULL_RTX, 0);
+		   NULL_RTX, 0, NULL_RTX, NULL_RTX);
       LOG_LINKS (sched_before_next_call) = 0;
     }
   else

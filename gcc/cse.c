@@ -8200,7 +8200,7 @@ cse_main (f, nregs, after_loop, file)
 
   /* Allocate scratch rtl here.  cse_insn will fill in the memory reference
      and change the code and mode as appropriate.  */
-  memory_extend_rtx = gen_rtx (ZERO_EXTEND, VOIDmode, 0);
+  memory_extend_rtx = gen_rtx (ZERO_EXTEND, VOIDmode, NULL_RTX);
 #endif
 
   /* Discard all the free elements of the previous function
