@@ -2865,6 +2865,9 @@ point mode @var{n} as a signed number and store in operand 0 (which
 has mode @var{n}).  This instruction's result is defined only when
 the value of operand 1 is an integer.
 
+If the machine description defines this pattern, it also needs to
+define the @code{ftrunc} pattern.
+
 @cindex @code{fixuns@var{mn}2} instruction pattern
 @item @samp{fixuns@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed

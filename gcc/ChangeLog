@@ -1,5 +1,14 @@
 2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
  
+        * doc/md.texi (Standard Names): Document additional dependency on
+        fix pattern.
+ 
+        * optabs.c (ftruncify): Remove.
+        (expand_fix): Manually inline ftruncify above.
+        (can_fix_p): Add FIXME note.
+
+2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
+ 
         * config/rs6000/spe.md (spe_fixunssfsi2): Rename to
         spe_fixuns_truncsfsi2.
  

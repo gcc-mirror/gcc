@@ -105,7 +105,6 @@ static void prepare_cmp_insn (rtx *, rtx *, enum rtx_code *, rtx,
 static enum insn_code can_fix_p (enum machine_mode, enum machine_mode, int,
 				 int *);
 static enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
-static rtx ftruncify (rtx);
 static optab new_optab (void);
 static convert_optab new_convert_optab (void);
 static inline optab init_optab (enum rtx_code);
@@ -4434,6 +4433,9 @@ can_fix_p (enum machine_mode fixmode, enum machine_mode fltmode,
       return icode;
     }
 
+  /* FIXME: This requires a port to define both FIX and FTRUNC pattern
+     for this to work. We need to rework the fix* and ftrunc* patterns
+     and documentation.  */
   tab = unsignedp ? ufix_optab : sfix_optab;
   icode = tab->handlers[fixmode][fltmode].insn_code;
   if (icode != CODE_FOR_nothing
@@ -4673,15 +4675,8 @@ expand_float (rtx to, rtx from, int unsignedp)
     }
 }
 
-/* expand_fix: generate code to convert FROM to fixed point
-   and store in TO.  FROM must be floating point.  */
-
-static rtx
-ftruncify (rtx x)
-{
-  rtx temp = gen_reg_rtx (GET_MODE (x));
-  return expand_unop (GET_MODE (x), ftrunc_optab, x, temp, 0);
-}
+/* Generate code to convert FROM to fixed point and store in TO.  FROM
+   must be floating point.  */
 
 void
 expand_fix (rtx to, rtx from, int unsignedp)
@@ -4716,7 +4711,11 @@ expand_fix (rtx to, rtx from, int unsignedp)
 	      from = convert_to_mode (fmode, from, 0);
 
 	    if (must_trunc)
-	      from = ftruncify (from);
+	      {
+		rtx temp = gen_reg_rtx (GET_MODE (from));
+		from = expand_unop (GET_MODE (from), ftrunc_optab, from,
+				    temp, 0);
+	      }
 
 	    if (imode != GET_MODE (to))
 	      target = gen_reg_rtx (imode);
