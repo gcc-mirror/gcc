@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-04-23
+@set last-update 1999-05-06
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -9468,7 +9468,8 @@ is not intended to be comprehensive.
 
 @menu
 * Language Extensions::  Features used by Fortran code.
-* Compiler Options::     Features helpful during development.
+* Diagnostic Abilities:: Abilities to spot problems early.
+* Compiler Options::     Features helpful to accommodate legacy code, etc.
 * Compiler Speed::       Speed of the compilation process.
 * Program Speed::        Speed of the generated, optimized code.
 * Ease of Debugging::    Debugging ease-of-use at the source level.
@@ -9478,20 +9479,108 @@ is not intended to be comprehensive.
 @node Language Extensions
 @subsection Language Extensions
 
-@code{g77} offers several extensions to the Fortran language that @code{f2c}
-doesn't.
+@code{g77} offers several extensions to FORTRAN 77 language that @code{f2c}
+doesn't:
 
-However, @code{f2c} offers a few that @code{g77} doesn't, like
-fairly complete support for @code{INTEGER*2}.
+@itemize @bullet
+@item
+Automatic arrays
+
+@item
+@code{CYCLE} and @code{EXIT}
+
+@item
+Construct names
+
+@item
+@code{SELECT CASE}
+
+@item
+@code{KIND=} and @code{LEN=} notation
+
+@item
+Semicolon as statement separator
+
+@item
+Constant expressions in @code{FORMAT} statements
+(such as @samp{FORMAT(I<J>)},
+where @samp{J} is a @code{PARAMETER} named constant)
+
+@item
+@code{MvBits} intrinsic
+
+@item
+@code{libU77} (Unix-compatibility) library,
+with routines known to compiler as intrinsics
+(so they work even when compiler options are used
+to change the interfaces used by Fortran routines)
+@end itemize
+
+@code{g77} also implements iterative @code{DO} loops
+so that they work even in the presence of certain ``extreme'' inputs,
+unlike @code{f2c}.
+@xref{Loops}.
+
+However, @code{f2c} offers a few that @code{g77} doesn't, such as:
+
+@itemize @bullet
+@item
+Intrinsics in @code{PARAMETER} statements
+
+@item
+Array bounds expressions (such as @samp{REAL M(N(2))})
+
+@item
+@code{AUTOMATIC} statement
+@end itemize
+
 It is expected that @code{g77} will offer some or all of these missing
 features at some time in the future.
-(Version 0.5.18 of @code{g77} offers some rudimentary support for some
-of these features.)
+
+@node Diagnostic Abilities
+@subsection Diagnostic Abilities
+
+@code{g77} offers better diagnosis of problems in @code{FORMAT} statements.
+@code{f2c} doesn't, for example, emit any diagnostic for
+@samp{FORMAT(XZFAJG10324)},
+leaving that to be diagnosed, at run time, by
+the @code{libf2c} run-time library.
 
 @node Compiler Options
 @subsection Compiler Options
 
-@code{g77} offers a whole bunch of compiler options that @code{f2c} doesn't.
+@code{g77} offers compiler options that @code{f2c} doesn't,
+most of which are designed to more easily accommodate
+legacy code:
+
+@itemize @bullet
+@item
+Two that control the automatic appending of extra
+underscores to external names
+
+@item
+One that allows dollar signs (@samp{$}) in symbol names
+
+@item
+A variety that control acceptance of various
+``ugly'' constructs
+
+@item
+Several that specify acceptable use of upper and lower case
+in the source code
+
+@item
+Many that enable, disable, delete, or hide
+groups of intrinsics
+
+@item
+One to specify the length of fixed-form source lines
+(normally 72)
+
+@item
+One to specify the the source code is written in
+Fortran-90-style free-form
+@end itemize
 
 However, @code{f2c} offers a few that @code{g77} doesn't,
 like an option to have @code{REAL} default to @code{REAL*8}.
