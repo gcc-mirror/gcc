@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -1279,8 +1279,7 @@ build_unary_op (op_code, result_type, operand)
       else
 	{
 	  result = fold (build1 (op_code, TREE_TYPE (type), operand));
-	  TREE_READONLY (result) = TREE_STATIC (result)
-	    = TREE_READONLY (TREE_TYPE (type));
+	  TREE_READONLY (result) = TREE_READONLY (TREE_TYPE (type));
 	}
 
       side_effects = flag_volatile 

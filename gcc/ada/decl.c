@@ -2730,6 +2730,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	     : In_Extended_Main_Code_Unit (gnat_desig_type));
 	int got_fat_p = 0;
 	int made_dummy = 0;
+	tree gnu_desig_type = 0;
 
 	if (No (gnat_desig_full)
 	    && (Ekind (gnat_desig_type) == E_Class_Wide_Type
@@ -2838,8 +2839,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	/* If we already know what the full type is, use it.  */
 	else if (Present (gnat_desig_full)
 		 && present_gnu_tree (gnat_desig_full))
-	  gnu_type
-	    = build_pointer_type (TREE_TYPE (get_gnu_tree (gnat_desig_full)));
+	  gnu_desig_type = TREE_TYPE (get_gnu_tree (gnat_desig_full));
 
 	/* Get the type of the thing we are to point to and build a pointer
 	   to it.  If it is a reference to an incomplete or private type with a
@@ -2851,7 +2851,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 		 && ! present_gnu_tree (gnat_desig_full)
 		 && Is_Record_Type (gnat_desig_full))
 	  {
-	    gnu_type = build_pointer_type (make_dummy_type (gnat_desig_type));
+	    gnu_desig_type = make_dummy_type (gnat_desig_type);
 	    made_dummy = 1;
 	  }
 
@@ -2867,7 +2867,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 			 && (Is_Record_Type (gnat_desig_full)
 			     || Is_Array_Type (gnat_desig_full)))))
 	  {
-	    gnu_type = build_pointer_type (make_dummy_type (gnat_desig_type));
+	    gnu_desig_type = make_dummy_type (gnat_desig_type);
 	    made_dummy = 1;
 	  }
 	else if (gnat_desig_type == gnat_entity)
@@ -2876,7 +2876,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	    TREE_TYPE (gnu_type) = TYPE_POINTER_TO (gnu_type) = gnu_type;
 	  }
 	else
-	  gnu_type = build_pointer_type (gnat_to_gnu_type (gnat_desig_type));
+	  gnu_desig_type = gnat_to_gnu_type (gnat_desig_type);
 
 	/* It is possible that the above call to gnat_to_gnu_type resolved our
 	   type.  If so, just return it.  */
@@ -2884,6 +2884,21 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	  {
 	    maybe_present = 1;
 	    break;
+	  }
+
+	/* If we have a GCC type for the designated type, possibly
+	   modify it if we are pointing only to constant objects and then
+	   make a pointer to it.  Don't do this for unconstrained arrays.  */
+	if (gnu_type == 0 && gnu_desig_type != 0)
+	  {
+	    if (Is_Access_Constant (gnat_entity)
+		&& TREE_CODE (gnu_desig_type) != UNCONSTRAINED_ARRAY_TYPE)
+	      gnu_desig_type
+		= build_qualified_type (gnu_desig_type,
+					(TYPE_QUALS (gnu_desig_type)
+					 | TYPE_QUAL_CONST));
+
+	    gnu_type = build_pointer_type (gnu_desig_type);
 	  }
 
 	/* If we are not defining this object and we made a dummy pointer,
@@ -2912,8 +2927,8 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	    this_made_decl = saved = 1;
 
 	    if (defer_incomplete_level == 0)
-	      update_pointer_to
-		(gnu_old_type, gnat_to_gnu_type (gnat_desig_type));
+	      update_pointer_to (TYPE_MAIN_VARIANT (gnu_old_type),
+				 gnat_to_gnu_type (gnat_desig_type));
 	    else
 	      {
 		struct incomplete *p
@@ -3808,7 +3823,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	  next = incp->next;
 
 	  if (incp->old_type != 0)
-	    update_pointer_to (incp->old_type,
+	    update_pointer_to (TYPE_MAIN_VARIANT (incp->old_type),
 			       gnat_to_gnu_type (incp->full_type));
 	  free (incp);
 	}
@@ -3823,7 +3838,8 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
       for (incp = defer_incomplete_list; incp; incp = incp->next)
 	if (incp->old_type != 0 && incp->full_type == gnat_entity)
 	  {
-	    update_pointer_to (incp->old_type, TREE_TYPE (gnu_decl));
+	    update_pointer_to (TYPE_MAIN_VARIANT (incp->old_type),
+			       TREE_TYPE (gnu_decl));
 	    incp->old_type = 0;
 	  }
     }
