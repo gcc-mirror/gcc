@@ -1,5 +1,9 @@
 Wed Sep 10 00:29:29 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* xm-m88k.h (USG): Only define if it hasn't already been defined.
+
+	* Makefile.in (risky-stage1): Delete gratutious whitespace.
+
 	* Makefile.in (clean): Delete libgcc1-test.
 
 	* Makefile.in (INSTALL): cd to $(srcdir) before running texinfo.
