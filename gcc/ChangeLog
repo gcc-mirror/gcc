@@ -1,5 +1,9 @@
 Sat Apr 11 16:01:11 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* cccp.c (do_warning): Give pedantic warning if -pedantic and not
+	in system file.
+	* cpplib.c (do_warning): Likewise.
+
 	* function.c (target_temp_slot_level): Define here.
 	(push_temp_slots_for_target, {get,set}_target_temp_slot_level): New.
 	* stmt.c (target_temp_slot_level): Don't define here.
