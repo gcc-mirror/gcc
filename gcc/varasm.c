@@ -703,8 +703,7 @@ make_decl_rtl (decl, asmspec, top_level)
       else if (TREE_CODE (decl) == VAR_DECL
 	       && DECL_SECTION_NAME (decl) != NULL_TREE
 	       && DECL_INITIAL (decl) == NULL_TREE
-	       && DECL_COMMON (decl)
-	       && ! flag_no_common)
+	       && DECL_COMMON (decl))
 	{
 	  warning_with_decl (decl,
 			     "section attribute ignored for uninitialized variable `%s'");
@@ -734,6 +733,7 @@ make_decl_rtl (decl, asmspec, top_level)
 
 	  DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl),
 				     gen_rtx (SYMBOL_REF, Pmode, name));
+	  DECL_ASSEMBLER_NAME (decl) = get_identifier (name);
 
 	  /* If this variable is to be treated as volatile, show its
 	     tree node has side effects.  If it has side effects, either
