@@ -4737,13 +4737,15 @@ subst_reg_equivs (ad)
 /* Compute the sum of X and Y, making canonicalizations assumed in an
    address, namely: sum constant integers, surround the sum of two
    constants with a CONST, put the constant as the second operand, and
-   group the constant on the outermost sum.
+   group the constant on the outermost sum.  If DIFF_P is nonzero,
+   compute the difference instead. 
 
-   This routine assumes both inputs are already in canonical form.  */
+   This routine assumes X and Y are already in canonical form.  */
 
 rtx
-form_sum (x, y)
+form_sum (x, y, diff_p)
      rtx x, y;
+     int diff_p;
 {
   rtx tem;
   enum machine_mode mode = GET_MODE (x);
@@ -4754,20 +4756,20 @@ form_sum (x, y)
   if (mode == VOIDmode)
     mode = Pmode;
 
-  if (GET_CODE (x) == CONST_INT)
+  if (! diff_p && GET_CODE (x) == CONST_INT)
     return plus_constant (y, INTVAL (x));
   else if (GET_CODE (y) == CONST_INT)
-    return plus_constant (x, INTVAL (y));
-  else if (CONSTANT_P (x))
+    return plus_constant (x, diff_p ? - INTVAL (y) : INTVAL (y));
+  else if (! diff_p && CONSTANT_P (x))
     tem = x, x = y, y = tem;
 
   if (GET_CODE (x) == PLUS && CONSTANT_P (XEXP (x, 1)))
-    return form_sum (XEXP (x, 0), form_sum (XEXP (x, 1), y));
+    return form_sum (XEXP (x, 0), form_sum (y, XEXP (x, 1), diff_p), 0);
 
   /* Note that if the operands of Y are specified in the opposite
      order in the recursive calls below, infinite recursion will occur.  */
   if (GET_CODE (y) == PLUS && CONSTANT_P (XEXP (y, 1)))
-    return form_sum (form_sum (x, XEXP (y, 0)), XEXP (y, 1));
+    return form_sum (form_sum (x, XEXP (y, 0), diff_p), XEXP (y, 1), diff_p);
 
   /* If both constant, encapsulate sum.  Otherwise, just form sum.  A
      constant will have been placed second.  */
@@ -4778,10 +4780,11 @@ form_sum (x, y)
       if (GET_CODE (y) == CONST)
 	y = XEXP (y, 0);
 
-      return gen_rtx (CONST, VOIDmode, gen_rtx (PLUS, mode, x, y));
+      return gen_rtx (CONST, VOIDmode,
+		      gen_rtx (diff_p ? MINUS: PLUS, mode, x, y));
     }
 
-  return gen_rtx (PLUS, mode, x, y);
+  return gen_rtx (diff_p ? MINUS: PLUS, mode, x, y);
 }
 
 /* If ADDR is a sum containing a pseudo register that should be
@@ -4835,9 +4838,9 @@ subst_indexed_address (addr)
 
       /* Compute the sum.  */
       if (op2 != 0)
-	op1 = form_sum (op1, op2);
+	op1 = form_sum (op1, op2, 0);
       if (op1 != 0)
-	op0 = form_sum (op0, op1);
+	op0 = form_sum (op0, op1, 0);
 
       return op0;
     }
