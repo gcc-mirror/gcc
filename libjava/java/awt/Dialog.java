@@ -49,7 +49,7 @@ import java.awt.peer.ComponentPeer;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@redhat.com>
   */
-public class Dialog extends Window implements java.io.Serializable
+public class Dialog extends Window
 {
 
 /*
@@ -92,6 +92,10 @@ private String title;
   * parent, that is not resizable and not modal, and which has no title.
   *
   * @param parent The parent frame of this dialog box.
+  *
+  * @exception IllegalArgumentException If the owner's GraphicsConfiguration
+  * is not from a screen device, or if owner is null. This exception is always
+  * thrown when GraphicsEnvironment.isHeadless() returns true.
   */
 public
 Dialog(Frame parent)
@@ -108,6 +112,10 @@ Dialog(Frame parent)
   * @param parent The parent frame of this dialog box.
   * @param modal <true> if this dialog box is modal, <code>false</code>
   * otherwise.
+  *
+  * @exception IllegalArgumentException If the owner's GraphicsConfiguration
+  * is not from a screen device, or if owner is null. This exception is always
+  * thrown when GraphicsEnvironment.isHeadless() returns true.
   */
 public
 Dialog(Frame parent, boolean modal)
@@ -124,6 +132,10 @@ Dialog(Frame parent, boolean modal)
   *
   * @param parent The parent frame of this dialog box.
   * @param title The title string for this dialog box.
+  *
+  * @exception IllegalArgumentException If the owner's GraphicsConfiguration
+  * is not from a screen device, or if owner is null. This exception is always
+  * thrown when GraphicsEnvironment.isHeadless() returns true.
   */
 public
 Dialog(Frame parent, String title)
@@ -160,12 +172,30 @@ Dialog (Dialog owner)
   this (owner, "", false);
 }
 
+/**
+ * Initializes a new instance of <code>Dialog</code> with the specified,
+ * parent and title, that is not resizable.
+ *
+ * @exception IllegalArgumentException If parent is null. This exception is
+ * always thrown when GraphicsEnvironment.isHeadless() returns true.
+ *
+ * @since 1.2
+ */
 public
 Dialog (Dialog owner, String title)
 {
   this (owner, title, false);
 }
 
+/**
+ * Initializes a new instance of <code>Dialog</code> with the specified,
+ * parent, title and modality, that is not resizable.
+ *
+ * @exception IllegalArgumentException If parent is null. This exception is
+ * always thrown when GraphicsEnvironment.isHeadless() returns true.
+ *
+ * @since 1.2
+ */
 public
 Dialog (Dialog owner, String title, boolean modal)
 {

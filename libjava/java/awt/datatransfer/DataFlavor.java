@@ -47,6 +47,8 @@ import java.io.ObjectInput;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 
 /**
   * This class represents a particular data format used for transferring
@@ -998,6 +1000,60 @@ public Reader getReaderForText(Transferable transferable)
 
     throw new UnsupportedFlavorException(this);
 }
+
+  /**
+   * Returns whether the representation class for this DataFlavor is
+   * @see java.nio.ByteBuffer or a subclass thereof.
+   *
+   * @since 1.4
+   */
+  public boolean isRepresentationClassByteBuffer ()
+  {
+    try
+      {
+        return ByteBuffer.class.isAssignableFrom (representationClass);
+      }
+    catch (ClassNotFoundException e)
+      {
+        return false;
+      }
+  }
+
+  /**
+   * Returns whether the representation class for this DataFlavor is
+   * @see java.nio.CharBuffer or a subclass thereof.
+   *
+   * @since 1.4
+   */
+  public boolean isRepresentationClassCharBuffer ()
+  {
+    try
+      {
+        return CharBuffer.class.isAssignableFrom (representationClass);
+      }
+    catch (ClassNotFoundException e)
+      {
+        return false;
+      }
+  }
+
+  /**
+   * Returns whether the representation class for this DataFlavor is
+   * @see java.io.Reader or a subclass thereof.
+   *
+   * @since 1.4
+   */
+  public boolean isRepresentationClassReader ()
+  {
+    try
+      {
+        return Reader.class.isAssignableFrom (representationClass);
+      }
+    catch (ClassNotFoundException e)
+      {
+        return false;
+      }
+  }
 
 } // class DataFlavor
 

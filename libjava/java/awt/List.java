@@ -45,6 +45,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.peer.ListPeer;
 import java.awt.peer.ComponentPeer;
+import java.util.EventListener;
 import java.util.Vector;
 import javax.accessibility.Accessible;
 
@@ -1030,4 +1031,38 @@ paramString()
   return "multiple=" + multipleMode + ",rows=" + rows + super.paramString();
 }
 
+  /**
+   * Returns an array of all the objects currently registered as FooListeners
+   * upon this <code>List</code>. FooListeners are registered using the 
+   * addFooListener method.
+   *
+   * @exception ClassCastException If listenerType doesn't specify a class or
+   * interface that implements java.util.EventListener.
+   */
+  public EventListener[] getListeners (Class listenerType)
+  {
+    if (listenerType == ActionListener.class)
+      return AWTEventMulticaster.getListeners (action_listeners, listenerType);
+    
+    if (listenerType == ItemListener.class)
+      return AWTEventMulticaster.getListeners (item_listeners, listenerType);
+
+    return super.getListeners (listenerType);
+  }
+
+  /**
+   * Returns all action listeners registered to this object.
+   */
+  public ActionListener[] getActionListeners ()
+  {
+    return (ActionListener[]) getListeners (ActionListener.class);
+  }
+  
+  /**
+   * Returns all action listeners registered to this object.
+   */
+  public ItemListener[] getItemListeners ()
+  {
+    return (ItemListener[]) getListeners (ItemListener.class);
+  }
 } // class List

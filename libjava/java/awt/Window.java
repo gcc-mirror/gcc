@@ -39,7 +39,9 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
 import java.awt.peer.WindowPeer;
 import java.awt.peer.ComponentPeer;
 import java.util.EventListener;
@@ -61,6 +63,8 @@ public class Window extends Container
   private int windowSerializedDataVersion = 0; // FIXME
 
   private transient WindowListener windowListener;
+  private transient WindowFocusListener windowFocusListener;
+  private transient WindowStateListener windowStateListener;
   private transient GraphicsConfiguration graphicsConfiguration;
 
   /** 
@@ -378,6 +382,68 @@ public class Window extends Container
     return (WindowListener[])
       AWTEventMulticaster.getListeners(windowListener,
                                        WindowListener.class);
+  }
+
+  /**
+   * Returns an array of all the window focus listeners registered on this
+   * window.
+   *
+   * @since 1.4
+   */
+  public synchronized WindowFocusListener[] getWindowFocusListeners()
+  {
+    return (WindowFocusListener[])
+      AWTEventMulticaster.getListeners(windowFocusListener,
+                                       WindowFocusListener.class);
+  }
+  
+  /**
+   * Returns an array of all the window state listeners registered on this
+   * window.
+   *
+   * @since 1.4
+   */
+  public synchronized WindowStateListener[] getWindowStateListeners()
+  {
+    return (WindowStateListener[])
+      AWTEventMulticaster.getListeners(windowStateListener,
+                                       WindowStateListener.class);
+  }
+
+  /**
+   * Adds the specified listener to this window.
+   */
+  public void addWindowFocusListener (WindowFocusListener wfl)
+  {
+    AWTEventMulticaster.add (windowFocusListener, wfl);
+  }
+  
+  /**
+   * Adds the specified listener to this window.
+   *
+   * @since 1.4
+   */
+  public void addWindowStateListener (WindowStateListener wsl)
+  {
+    AWTEventMulticaster.add (windowStateListener, wsl);  
+  }
+  
+  /**
+   * Removes the specified listener from this window.
+   */
+  public void removeWindowFocusListener (WindowFocusListener wfl)
+  {
+    AWTEventMulticaster.remove (windowFocusListener, wfl);
+  }
+  
+  /**
+   * Removes the specified listener from this window.
+   *
+   * @since 1.4
+   */
+  public void removeWindowStateListener (WindowStateListener wsl)
+  {
+    AWTEventMulticaster.remove (windowStateListener, wsl);
   }
 
   /**

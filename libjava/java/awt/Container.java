@@ -728,6 +728,9 @@ public class Container extends Component
    * upon this Container. FooListeners are registered using the addFooListener
    * method.
    *
+   * @exception ClassCastException If listenerType doesn't specify a class or
+   * interface that implements @see java.util.EventListener.
+   *
    * @since 1.3
    */
   public EventListener[] getListeners(Class listenerType)
@@ -994,15 +997,48 @@ public class Container extends Component
       }
   }
 
-  public void setFocusTraversalKeys(int id, Set keys)
+  /**
+   * Sets the focus traversal keys for a given traversal operation for this
+   * Container.
+   *
+   * @exception IllegalArgumentException If id is not one of
+   * KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+   * KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+   * KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
+   * or KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS,
+   * or if keystrokes contains null, or if any Object in keystrokes is not an
+   * AWTKeyStroke, or if any keystroke represents a KEY_TYPED event, or if any
+   * keystroke already maps to another focus traversal operation for this
+   * Container.
+   *
+   * @since 1.4
+   */
+  public void setFocusTraversalKeys(int id, Set keystrokes)
   {
     if (id != KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS &&
         id != KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS &&
         id != KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS &&
         id != KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS)
       throw new IllegalArgumentException ();
+
+    if (keystrokes == null)
+      throw new IllegalArgumentException ();
+
+    throw new Error ("not implemented");
   }
   
+  /**
+   * Returns the Set of focus traversal keys for a given traversal operation for
+   * this Container.
+   *
+   * @exception IllegalArgumentException If id is not one of
+   * KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+   * KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+   * KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
+   * or KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS.
+   *
+   * @since 1.4
+   */
   public Set getFocusTraversalKeys(int id)
   {
     if (id != KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS &&
@@ -1014,6 +1050,20 @@ public class Container extends Component
     return null;
   }
   
+  /**
+   * Returns whether the Set of focus traversal keys for the given focus
+   * traversal operation has been explicitly defined for this Container.
+   * If this method returns false, this Container is inheriting the Set from
+   * an ancestor, or from the current KeyboardFocusManager.
+   *
+   * @exception IllegalArgumentException If id is not one of
+   * KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+   * KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+   * KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
+   * or KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS.
+   *
+   * @since 1.4
+   */
   public boolean areFocusTraversalKeysSet(int id)
   {
     if (id != KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS &&
@@ -1060,8 +1110,16 @@ public class Container extends Component
   public void transferFocusDownCycle()
   {
   }
-  
-  public void applyComponentOrientation(ComponentOrientation o)
+
+  /**
+   * Sets the ComponentOrientation property of this container and all components
+   * contained within it.
+   *
+   * @exception NullPointerException If orientation is null
+   *
+   * @since 1.4
+   */
+  public void applyComponentOrientation (ComponentOrientation orientation)
   {
     if (orientation == null)
       throw new NullPointerException ();

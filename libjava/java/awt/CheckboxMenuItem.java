@@ -43,6 +43,7 @@ import java.awt.peer.MenuItemPeer;
 import java.awt.peer.MenuComponentPeer;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.EventListener;
 
 /**
   * This class implements a menu item that has a checkbox on it indicating
@@ -51,8 +52,7 @@ import java.awt.event.ItemListener;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@redhat.com>
   */
-public class CheckboxMenuItem extends MenuItem implements ItemSelectable,
-                                                          java.io.Serializable
+public class CheckboxMenuItem extends MenuItem implements ItemSelectable
 {
 
 /*
@@ -296,5 +296,29 @@ paramString()
 	  + "," + super.paramString());
 }
 
+  /**
+   * Returns an array of all the objects currently registered as FooListeners
+   * upon this <code>CheckboxMenuItem</code>. FooListeners are registered using
+   * the addFooListener method.
+   *
+   * @exception ClassCastException If listenerType doesn't specify a class or
+   * interface that implements java.util.EventListener.
+   */
+  public EventListener[] getListeners (Class listenerType)
+  {
+    if (listenerType == ItemListener.class)
+      return AWTEventMulticaster.getListeners (item_listeners, listenerType); 
+	      
+    return super.getListeners (listenerType);
+  }
+
+  /**
+   * Returns an aray of all item listeners currently registered to this
+   * <code>CheckBoxMenuItem</code>.
+   */
+  public ItemListener[] getItemListeners ()
+  {
+    return (ItemListener[]) getListeners (ItemListener.class);
+  }
 } // class CheckboxMenuItem
 

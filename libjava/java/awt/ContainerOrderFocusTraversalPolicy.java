@@ -48,8 +48,11 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
 {
   static final long serialVersionUID = 486933713763926351L;
 
-  private boolean downCycle = true;
+  private boolean implicitDownCycleTraversal = true;
 
+  /**
+   * Creates the <code>ContainerOrderFocusTraversalPolicy</code> object.
+   */
   public ContainerOrderFocusTraversalPolicy()
   {
     throw new Error("not implemented");
@@ -82,17 +85,19 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
 
   public void setImplicitDownCycleTraversal(boolean value)
   {
-    downCycle = value;
+    boolean implicitDownCycleTraversal = value;
   }
 
   public boolean getImplicitDownCycleTraversal()
   {
-    return downCycle;
+    return implicitDownCycleTraversal;
   }
 
   protected boolean accept(Component current)
   {
-    return current.visible && current.isDisplayable() && current.enabled
-      && current.focusable;
+    return (current.visible
+            && current.isDisplayable()
+            && current.enabled
+            && current.focusable);
   }
 } // class ContainerOrderFocusTraversalPolicy
