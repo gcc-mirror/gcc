@@ -1,4 +1,4 @@
-winnt.o: $(srcdir)/config/i386/winnt.c
+winnt.o: $(srcdir)/config/i386/winnt.c $(RTL_H) $(TREE_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c
 oldnames.o: $(srcdir)/config/winnt/oldnames.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/winnt/oldnames.c

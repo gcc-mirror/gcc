@@ -12,5 +12,5 @@ LIMITS_H_TEST = true
 # first.
 LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/include
 
-winnt.o: $(srcdir)/config/i386/winnt.c
+winnt.o: $(srcdir)/config/i386/winnt.c $(RTL_H) $(TREE_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c
