@@ -675,7 +675,13 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
    (This much is the easy part.)  */
 #define GO_IF_NONINDEXED_ADDRESS(X, ADDR)  \
 { register rtx xfoob = (X);						\
-  if (GET_CODE (xfoob) == REG) goto ADDR;				\
+  if (GET_CODE (xfoob) == REG)						\
+    {									\
+      if (! reload_in_progress						\
+	  || reg_equiv_mem[REGNO (xfoob)] == 0				\
+	  || INDIRECTABLE_ADDRESS_P (reg_equiv_mem[REGNO (xfoob)]))	\
+	goto ADDR;							\
+    }									\
   if (CONSTANT_ADDRESS_P (xfoob)) goto ADDR;				\
   if (INDIRECTABLE_ADDRESS_P (xfoob)) goto ADDR;			\
   xfoob = XEXP (X, 0);							\
