@@ -54,18 +54,35 @@ do {									\
 
 /* The # tells the Intel assembler that this is not a register name.
    However, we can't emit the # in a label definition, so we set a variable
-   in ASM_OUTPUT_LABEL to control whether we want the postfix here or not.  */
+   in ASM_OUTPUT_LABEL to control whether we want the postfix here or not.
+   We append the # to the label name, but since NAME can be an expression
+   we have to scan it for a non-label character and insert the # there.  */
 
 #undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(STREAM, NAME) \
-do									\
-  {									\
-    const char *real_name;						\
-    STRIP_NAME_ENCODING (real_name, NAME);				\
-    asm_fprintf (STREAM, "%U%s%s", real_name,				\
-		 (ia64_asm_output_label ? "" : "#"));			\
-  }									\
-while (0)
+#define ASM_OUTPUT_LABELREF(STREAM, NAME) 				\
+  do									\
+    {									\
+      const char * real_name;						\
+      const char * name_end;						\
+									\
+      STRIP_NAME_ENCODING (real_name, NAME);				\
+      name_end = strchr (real_name, '+');				\
+									\
+      if (name_end)							\
+	* name_end = 0;							\
+									\
+      asm_fprintf (STREAM, "%U%s", real_name);				\
+									\
+      if (ia64_asm_output_label)					\
+	asm_fprintf (STREAM, "#");					\
+									\
+      if (name_end)							\
+	{								\
+	  * name_end = '+';						\
+	  asm_fprintf (STREAM, name_end);				\
+	}								\
+    }									\
+  while (0)
 
 /* Intel assembler requires both flags and type if declaring a non-predefined
    section.  */
