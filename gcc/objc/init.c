@@ -243,10 +243,10 @@ __objc_init_protocols (struct objc_protocol_list* protos)
     {
       if (((size_t)((id)protos->list[i])->class_pointer) == PROTOCOL_VERSION)
 	((id)protos->list[i])->class_pointer = proto_class;
-      else
+      else if (((id)protos->list[i])->class_pointer != proto_class)
 	{
 	  fprintf (stderr,
-		   "Version %d doesn't protocol version %d\n",
+		   "Version %d doesn't match runtime protocol version %d\n",
 		   ((size_t)((id)protos->list[i])->class_pointer),
 		   PROTOCOL_VERSION);
 	  abort ();
