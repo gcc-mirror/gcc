@@ -727,32 +727,32 @@ java_parse_escape_sequence ()
     case '\\':
       return (unicode_t)0x5c;
     case '0': case '1': case '2': case '3': case '4':
-    case '5': case '6': case '7': case '8': case '9':
+    case '5': case '6': case '7':
       {
 	int octal_escape[3];
 	int octal_escape_index = 0;
-	
-	for (; octal_escape_index < 3 && RANGE (c, '0', '9');
+	int max = 3;
+	int i, shift;
+
+	for (; octal_escape_index < max && RANGE (c, '0', '7');
 	     c = java_get_unicode ())
-	  octal_escape [octal_escape_index++] = c;
+	  {
+	    if (octal_escape_index == 0 && c > '3')
+	      {
+		/* According to the grammar, `\477' has a well-defined
+		   meaning -- it is `\47' followed by `7'.  */
+		--max;
+	      }
+	    octal_escape [octal_escape_index++] = c;
+	  }
 
 	java_unget_unicode ();
 
-	if ((octal_escape_index == 3) && (octal_escape [0] > '3'))
-	  {
-	    java_lex_error ("Literal octal escape out of range", 0);
-	    return JAVA_CHAR_ERROR;
-	  }
-	else
-	  {
-	    int i, shift;
-	    for (char_lit=0, i = 0, shift = 3*(octal_escape_index-1);
-		 i < octal_escape_index; i++, shift -= 3)
-	      char_lit |= (octal_escape [i] - '0') << shift;
+	for (char_lit=0, i = 0, shift = 3*(octal_escape_index-1);
+	     i < octal_escape_index; i++, shift -= 3)
+	  char_lit |= (octal_escape [i] - '0') << shift;
 
-	    return (char_lit);
-	  }
-	break;
+	return char_lit;
       }
     case '\n':
       return '\n';		/* ULT, caught latter as a specific error */
