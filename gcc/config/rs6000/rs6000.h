@@ -632,7 +632,7 @@ extern int rs6000_default_long_calls;
 #define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
   (TARGET_SPE && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE)
 
-/* A bitfield declared as `int' forces `int' alignment for the struct.  */
+/* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /* Make strings word-aligned so strcpy from constants will be faster.

@@ -1575,14 +1575,14 @@ do {							\
    handle alignment of bitfields and the structures that contain
    them.
 
-   The behavior is that the type written for a bitfield (`int',
+   The behavior is that the type written for a bit-field (`int',
    `short', or other integer type) imposes an alignment for the
    entire structure, as if the structure really did contain an
-   ordinary field of that type.  In addition, the bitfield is placed
+   ordinary field of that type.  In addition, the bit-field is placed
    within the structure so that it would fit within such a field,
    not crossing a boundary for it.
 
-   Thus, on most machines, a bitfield whose type is written as `int'
+   Thus, on most machines, a bit-field whose type is written as `int'
    would not cross a four-byte boundary, and would force four-byte
    alignment for the whole structure.  (The alignment used may not
    be four bytes; it is controlled by the other alignment

@@ -2124,7 +2124,7 @@
 }")
 
 ;; extract(base, width, offset)
-;; Signed bitfield extraction is not supported in hardware on the
+;; Signed bit-field extraction is not supported in hardware on the
 ;; NS 32032.  It is therefore better to let GCC figure out a
 ;; good strategy for generating the proper instruction sequence
 ;; and represent it as rtl.
@@ -2169,7 +2169,7 @@
 }")
 
 ;; The exts/ext instructions have the problem that they always access
-;; 32 bits even if the bitfield is smaller. For example the instruction
+;; 32 bits even if the bit-field is smaller. For example the instruction
 ;; 	extsd 7(r1),r0,2,5
 ;; would read not only at address 7(r1) but also at 8(r1) to 10(r1).
 ;; If these addresses are in a different (unmapped) page a memory fault

@@ -941,7 +941,7 @@ jump_address_operand (op, mode)
   return 0;
 }
 
-/* Recognize valid operands for bitfield instructions.  */
+/* Recognize valid operands for bit-field instructions.  */
 
 extern int rtx_equal_function_value_matters;
 

@@ -784,7 +784,7 @@ extern int x86_prefetch_sse;
 
 /* If bit field type is int, don't let it cross an int,
    and give entire struct the alignment of an int.  */
-/* Required on the 386 since it doesn't have bitfield insns.  */
+/* Required on the 386 since it doesn't have bit-field insns.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /* Standard register usage.  */

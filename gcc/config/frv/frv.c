@@ -7858,7 +7858,7 @@ frv_adjust_field_align (field, computed)
 
       /* If this isn't a :0 field and if the previous element is a bitfield
 	 also, see if the type is different, if so, we will need to align the
-	 bitfield to the next boundary */
+	 bit-field to the next boundary */
       if (prev
 	  && ! DECL_PACKED (field)
 	  && ! integer_zerop (DECL_SIZE (field))

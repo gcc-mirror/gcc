@@ -1990,9 +1990,9 @@ do {									\
 
 #define OBJC_PROLOGUE {}
 /* A C statement to output any assembler statements which are
-   required to precede any Objective C object definitions or message
+   required to precede any Objective-C object definitions or message
    sending.  The statement is executed only when compiling an
-   Objective C program.  */
+   Objective-C program.  */
 
 #define ASM_OUTPUT_DOUBLE(STREAM, VALUE) \
   fprintf ((STREAM), ".double %.20e\n", (VALUE))

@@ -1,3 +1,45 @@
+2002-09-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/elfos.h: Follow spelling conventions.
+	* config/alpha/alpha.h: Likewise.
+	* config/arc/arc.h: Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/avr/avr.h: Likewise.
+	* config/cris/cris.md: Likewise.
+	* config/d30v/d30v.h: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/frv/frv.h: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/h8300/h8300.md: Likewise.
+	* config/i386/cygwin.h: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/sysv3.h: Likewise.
+	* config/i960/i960.h: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/ia64/ia64.md: Likewise.
+	* config/ip2k/ip2k.h: Likewise.
+	* config/m32r/m32r.h: Likewise.
+	* config/m68k/m68k.h: Likewise.
+	* config/m88k/m88k.h: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mcore/mcore.h: Likewise.
+	* config/mcore/mcore.md: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mmix/mmix.h: Likewise.
+	* config/mmix/mmix.md: Likewise.
+	* config/ns32k/netbsd.h: Likewise.
+	* config/ns32k/ns32k.h: Likewise.
+	* config/ns32k/ns32k.md: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/romp/romp.h: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/stormy16/stormy-abi: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/vax/vax.h: Likewise.
+
 2002-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* version.c (version_string): Now const char[].
@@ -577,7 +619,7 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	remaining_in_alignment.
 
 	* doc/tm.texi: (TARGET_MS_BITFIELD_LAYOUT_P): Update.
-	(pragma pack): Add paragraph on MSVC bitfield packing.
+	(pragma pack): Add paragraph on MSVC bit-field packing.
 
 2002-09-18  Richard Earnshaw  (reanrsha@arm.com)
 
@@ -6441,7 +6483,7 @@ Tue Jul 16 19:32:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(TARGET_SWITCHES): Add -mieee-compare option.
 	(OVERRIDE_OPTIONS): 32332 is a subset of
 	32532. Don't use IEEE_COMPARE -funsafe-math-optimizations.
-	(TARGET_SWITCHES): Fix description of bitfield option.
+	(TARGET_SWITCHES): Fix description of bit-field option.
 	* config/ns32k/netbsd.h (TARGET_DEFAULT): Add
 	-mieee-compare option. Remove 32332 flag.
 

@@ -149,7 +149,7 @@ the storage unit being relocated.
 
 In the 'Field' column, the first number indicates whether the
 relocation refers to a byte, word or doubleword.  The second number,
-if any, indicates the size of the bitfield into which the relocation
+if any, indicates the size of the bit-field into which the relocation
 is to occur (and also the size for overflow checking).  The third
-number indicates the first bit of the bitfield in the word or
+number indicates the first bit of the bit-field in the word or
 doubleword, counting the LSB as bit 0.

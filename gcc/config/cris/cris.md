@@ -4689,7 +4689,7 @@
 ;; Please also add a self-contained test-case.
 
 ;; We have trouble with and:s and shifts.  Maybe something is broken in
-;; gcc?  Or it could just be that bitfield insn expansion is a bit
+;; gcc?  Or it could just be that bit-field insn expansion is a bit
 ;; suboptimal when not having extzv insns.
 
 (define_peephole

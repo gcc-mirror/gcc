@@ -126,7 +126,7 @@ extern int target_flags;
 
 #define TARGET_HIMEM (target_flags & MASK_HIMEM)
 
-/* Compile using bitfield insns.  */
+/* Compile using bit-field insns.  */
 #define TARGET_BITFIELD ((target_flags & MASK_NO_BITFIELD) == 0)
 
 #define TARGET_IEEE_COMPARE (target_flags & MASK_IEEE_COMPARE)
@@ -276,7 +276,7 @@ while (0)
 
 /* If bit field type is int, don't let it cross an int,
    and give entire struct the alignment of an int.  */
-/* Required on the 386 since it doesn't have a full set of bitfield insns.
+/* Required on the 386 since it doesn't have a full set of bit-field insns.
    (There is no signed extv insn.)  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 

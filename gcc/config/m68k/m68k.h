@@ -69,7 +69,7 @@ extern int target_flags;
 #define MASK_68881	2
 #define TARGET_68881 (target_flags & MASK_68881)
 
-/* Compile using 68020 bitfield insns.  */
+/* Compile using 68020 bit-field insns.  */
 #define MASK_BITFIELD	4
 #define TARGET_BITFIELD (target_flags & MASK_BITFIELD)
 

@@ -1126,7 +1126,7 @@ struct cum_args { int ca_nregparms; int ca_nstackparms; };
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
 /* Nonzero if access to memory by bytes is no faster than for words.
-   Value changed to 1 after reports of poor bitfield code with g++.
+   Value changed to 1 after reports of poor bit-field code with g++.
    Indications are that code is usually as good, sometimes better.  */   
 
 #define SLOW_BYTE_ACCESS 1

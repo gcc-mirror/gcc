@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
 
-/* Writing `int' for a bitfield forces int alignment for the structure.  */
+/* Writing `int' for a bit-field forces int alignment for the structure.  */
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
 

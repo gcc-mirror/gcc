@@ -2222,7 +2222,7 @@ typedef struct machine_function GTY(())
    Defined in svr4.h.  */
 /* #define TARGET_MEM_FUNCTIONS */
 
-/* Define this macro to generate code for Objective C message sending using the
+/* Define this macro to generate code for Objective-C message sending using the
    calling convention of the NeXT system.  This calling convention involves
    passing the object, the selector and the method arguments all at once to the
    method-lookup library function.
@@ -2800,8 +2800,8 @@ extern const char *d30v_branch_cost_string;
 /* #define ASM_OUTPUT_IDENT(STREAM, STRING) */
 
 /* A C statement to output any assembler statements which are required to
-   precede any Objective C object definitions or message sending.  The
-   statement is executed only when compiling an Objective C program.  */
+   precede any Objective-C object definitions or message sending.  The
+   statement is executed only when compiling an Objective-C program.  */
 /* #define OBJC_PROLOGUE */
 
 
@@ -4129,7 +4129,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    instructions.
 
    If both types of instructions truncate the count (for shifts) and position
-   (for bitfield operations), or if no variable-position bitfield instructions
+   (for bit-field operations), or if no variable-position bit-field instructions
    exist, you should define this macro.
 
    However, on some machines, such as the 80386 and the 680x0, truncation only
