@@ -11,8 +11,8 @@
 2001-12-03  Mumit Khan  <khan@nanotech.wisc.edu>
 
 	PR c++/3394
-	*  decl.c (xref_basetypes): Handle attributes between 
-	  'class' and name.
+	* decl.c (xref_basetypes): Handle attributes between
+	'class' and name.
 
 2001-12-03  Nathan Sidwell  <nathan@codesourcery.com>
 
