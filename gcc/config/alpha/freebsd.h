@@ -24,10 +24,19 @@ Boston, MA 02111-1307, USA.  */
    the GCC option `-posix', and PIC issues as on all FreeBSD platforms, we must
    deal with the Alpha's FP issues.  */
 
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      if (flag_pic)				\
+	{					\
+	  builtin_define ("__PIC__");		\
+	  builtin_define ("__pic__");		\
+	}					\
+    }
+  while (0)
+
 #undef  CPP_SPEC
-#define CPP_SPEC "%(cpp_subtarget)					\
-  %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__}		\
-  %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_subtarget) %{posix:-D_POSIX_SOURCE}"
 
 #define LINK_SPEC "%{G*} %{relax:-relax}				\
   %{p:%e`-p' not supported; use `-pg' and gprof(1)}			\

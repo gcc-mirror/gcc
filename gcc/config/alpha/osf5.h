@@ -21,13 +21,6 @@
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE  128
 
-/* Tru64 UNIX V5 has a 16 byte long double type and requires __X_FLOAT to be
-   defined to get the appropriate prototypes for the long double functions
-   in <math.h>.  */
-
-#undef CPP_XFLOAT_SPEC
-#define CPP_XFLOAT_SPEC "-D__X_FLOAT"
-
 /* In Tru64 UNIX V5.1, Compaq introduced a new assembler
    (/usr/lib/cmplrs/cc/adu) which currently (versions between 3.04.29 and
    3.04.32) breaks mips-tfile.  Passing the undocumented -oldas flag reverts

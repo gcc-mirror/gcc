@@ -4374,6 +4374,7 @@ cb_register_builtins (pfile)
 
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
+  #define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)
   TARGET_CPU_CPP_BUILTINS ();
   TARGET_OS_CPP_BUILTINS ();
 }
@@ -4407,10 +4408,6 @@ builtin_define_std (macro)
   /* If it was in user's namespace...  */
   if (p != buff + 2)
     {
-      /* Define the original macro if permitted.  */
-      if (!flag_iso)
-	cpp_define (parse_in, macro);
-
       /* Define the macro with leading and following __.  */
       if (q[-1] != '_')
 	*q++ = '_';
@@ -4418,6 +4415,10 @@ builtin_define_std (macro)
 	*q++ = '_';
       *q = '\0';
       cpp_define (parse_in, p);
+
+      /* Finally, define the original macro if permitted.  */
+      if (!flag_iso)
+	cpp_define (parse_in, macro);
     }
 }
 

@@ -39,14 +39,15 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("_SYSTYPE_BSD");	\
 	builtin_define ("__osf__");		\
 	builtin_define ("_LONGLONG");		\
+	builtin_define ("__EXTERN_PREFIX");	\
 	builtin_assert ("system=unix");		\
 	builtin_assert ("system=xpg4");		\
+	/* Tru64 UNIX V5 has a 16 byte long	\
+	   double type and requires __X_FLOAT	\
+	   to be defined for <math.h>.  */	\
+        if (LONG_DOUBLE_TYPE_SIZE == 128)	\
+          builtin_define ("__X_FLOAT");		\
     } while (0)
-
-/* Tru64 UNIX V5 requires additional definitions for 16 byte long double
-   support.  Empty by default.  */
-
-#define CPP_XFLOAT_SPEC ""
 
 /* Accept DEC C flags for multithreaded programs.  We use _PTHREAD_USE_D4
    instead of PTHREAD_USE_D4 since both have the same effect and the former
@@ -54,8 +55,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC \
-"%{pthread|threads:-D_REENTRANT} %{threads:-D_PTHREAD_USE_D4} %(cpp_xfloat) \
--D__EXTERN_PREFIX"
+"%{pthread|threads:-D_REENTRANT} %{threads:-D_PTHREAD_USE_D4}"
 
 /* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
 
@@ -143,9 +143,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #undef SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS		\
-  { "cpp_xfloat", CPP_XFLOAT_SPEC },	\
-  { "asm_oldas", ASM_OLDAS_SPEC }
+#define SUBTARGET_EXTRA_SPECS { "asm_oldas", ASM_OLDAS_SPEC }
 
 /* Indicate that we have a stamp.h to use.  */
 #ifndef CROSS_COMPILE

@@ -609,6 +609,13 @@ and possibly @code{unix}; passing @code{_mips} defines @code{__mips},
 @code{__mips__} and possibly @code{_mips}, and passing @code{_ABI64}
 defines only @code{_ABI64}.
 
+You can also test for the C dialect being compiled.  The variable
+@code{c_language} is set to one of @code{clk_c}, @code{clk_cplusplus}
+or @code{clk_objective_c}.  Note that if we are preprocessing
+assembler, this variable will be @code{clk_c} but the function-like
+macro @code{preprocessing_asm_p()} will return true, so you might want
+to check for that first.
+
 With @code{TARGET_OS_CPP_BUILTINS} this macro obsoletes the
 @code{CPP_PREDEFINES} target macro.
 

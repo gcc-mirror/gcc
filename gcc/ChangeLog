@@ -1,3 +1,24 @@
+2002-05-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (preprocessing_asm): New macro.
+	* c-lex.h (builtin_define, builtin_assert): Use pfile.
+doc:
+	* tm.texi: Update.
+config/alpha:
+	* alpha.h (CPLUSPLUS_CPP_SPEC): Remove.
+	(CPP_SPEC): Simplify.
+	(TARGET_CPU_CPP_BUILTINS): Update.
+	* freebsd.h (TARGET_OS_CPP_BUILTINS): New.
+	(CPP_SPEC): Simplify.
+	* linux.h (CPLUSPLUS_CPP_SPEC): Remove.
+	(TARGET_OS_CPP_BUILTINS): Update.
+	* osf.h (CPP_XFLOAT_SPEC): Kill.
+	(TARGET_OS_CPP_BUILTINS): Update.
+	(CPP_SUBTARGET_SPEC, SUBTARGET_EXTRA_SPECS): Simplify.
+	* osf5.h (CPP_XFLOAT_SPEC): Kill.
+	* vms.h (CPP_SUBTARGET_SPEC): Kill.
+	(TARGET_OS_CPP_BUILTINS): Update.
+
 2002-05-19  Richard Henderson  <rth@redhat.com>
 
 	* varasm.c (default_binds_local_p): Fix typo.

@@ -35,8 +35,8 @@ extern int indent_level;
 struct cpp_reader;
 extern struct cpp_reader* parse_in;
 
-#define builtin_define(TXT) cpp_define (parse_in, TXT)
-#define builtin_assert(TXT) cpp_assert (parse_in, TXT)
+#define builtin_define(TXT) cpp_define (pfile, TXT)
+#define builtin_assert(TXT) cpp_assert (pfile, TXT)
 
 /* Pass an object-like macro.  If it doesn't lie in the user's
    namespace, defines it unconditionally.  Otherwise define a version

@@ -35,13 +35,11 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("VMS");		\
 	builtin_define ("__ALPHA");		\
 	builtin_assert ("system=vms");		\
+	if (TARGET_FLOAT_VAX)			\
+	  builtin_define ("__G_FLOAT");		\
+	else					\
+	  builtin_define ("__IEEE_FLOAT");	\
     } while (0)
-
-#undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC "\
-%{mfloat-ieee:-D__IEEE_FLOAT} \
-%{mfloat-vax:-D__G_FLOAT} \
-%{!mfloat-vax:-D__IEEE_FLOAT}"
 
 /* By default, allow $ to be part of an identifier.  */
 #define DOLLARS_IN_IDENTIFIERS 2
