@@ -4744,7 +4744,7 @@ override_options (void)
 	 -mbranch-likely.  */
       if (ISA_HAS_BRANCHLIKELY
 	  && !(ISA_MIPS32 || ISA_MIPS32R2 || ISA_MIPS64)
-	  && !(TUNE_SB1))
+	  && !(TUNE_MIPS5500 || TUNE_SB1))
 	target_flags |= MASK_BRANCHLIKELY;
       else
 	target_flags &= ~MASK_BRANCHLIKELY;
