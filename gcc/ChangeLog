@@ -1,3 +1,7 @@
+2000-05-03 Rodney Brown	<RodneyBrown@mynd.com>
+
+	* pa.h (FUNCTION_ARG_ADVANCE): Warning removal.
+
 Fri May  5 10:29:21 2000  Marc Espie <espie@cvs.openbsd.org>
 
 	* config/openbsd.h (LINK_SPEC): pass correct flags to ld 
