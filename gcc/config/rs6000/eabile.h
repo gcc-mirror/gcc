@@ -47,14 +47,6 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
-%{mcpu=mpc403: -D_ARCH_PPC} \
-%{mcpu=ppc403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=mpc601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=ppc601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=mpc603: -D_ARCH_PPC} \
-%{mcpu=ppc603: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=mpc604: -D_ARCH_PPC} \
-%{mcpu=ppc604: -D_ARCH_PPC}"
+%{mcpu=604: -D_ARCH_PPC}"
