@@ -113,6 +113,7 @@
     {						\
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
       fixed_regs[PIC_OFFSET_TABLE_REGNUM_SAVED] = 1;\
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM_SAVED] = 1;\
     }						\
 }
 
