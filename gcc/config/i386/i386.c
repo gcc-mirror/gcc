@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel X86.
-   Copyright (C) 1988, 92, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3828,7 +3828,10 @@ output_387_binary_op (insn, operands)
 	}
 
       if (find_regno_note (insn, REG_DEAD, REGNO (operands[2])))
-	return strcat (buf, AS2 (p,%2,%0));
+	if (STACK_TOP_P (operands[0]))
+	  return strcat (buf, AS2 (p,%0,%2));
+	else
+	  return strcat (buf, AS2 (p,%2,%0));
 
       if (STACK_TOP_P (operands[0]))
 	return strcat (buf, AS2C (%y2,%0));
@@ -3859,10 +3862,16 @@ output_387_binary_op (insn, operands)
 	abort ();
 
       if (find_regno_note (insn, REG_DEAD, REGNO (operands[2])))
-	return strcat (buf, AS2 (rp,%2,%0));
+	if (STACK_TOP_P (operands[0]))
+	  return strcat (buf, AS2 (p,%0,%2));
+	else
+	  return strcat (buf, AS2 (rp,%2,%0));
 
       if (find_regno_note (insn, REG_DEAD, REGNO (operands[1])))
-	return strcat (buf, AS2 (p,%1,%0));
+	if (STACK_TOP_P (operands[0]))
+	  return strcat (buf, AS2 (rp,%0,%1));
+	else
+	  return strcat (buf, AS2 (p,%1,%0));
 
       if (STACK_TOP_P (operands[0]))
 	{
