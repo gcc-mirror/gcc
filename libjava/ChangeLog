@@ -1,5 +1,12 @@
 2001-03-21  Tom Tromey  <tromey@redhat.com>
 
+	* configure: Rebuilt.
+	* configure.in (GCJFLAGS): Subst.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (jv_convert_LDFLAGS): Added -shared-libgcc.
+	(gij_LDFLAGS): Likewise.
+	(JC1FLAGS): Added GCJFLAGS and removed -g.
+
 	* java/io/natFileDescriptorPosix.cc (open): Add O_CREAT in
 	read/write case.  Fixes PR libgcj/2338.
 
