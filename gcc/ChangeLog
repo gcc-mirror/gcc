@@ -1,3 +1,13 @@
+2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c (c_lex): Remove CPP_INT, CPP_FLOAT cases.
+	* c-parse.in (yyerror, _yylex): Similarly.
+	* cppexp.c (parse_number, parse_defined, lex, _cpp_parse_expr):
+	Don't use CPP_INT, CPP_FLOAT; CPP_NUMBER is enough.
+	Update comments.
+	* cpplib.h (CPP_INT, CPP_FLOAT): Remove.
+	* cp/spew.c (read_token, yyerror): Remove CPP_INT, CPP_FLOAT cases.
+
 2001-07-18  Jeff Sturm  <jsturm@one-point.com>
 
 	* dwarf2out.c (dwarf2out_abstract_function): Don't emit

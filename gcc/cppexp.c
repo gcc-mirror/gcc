@@ -61,8 +61,6 @@ struct op
 #define SYNTAX_ERROR2(msgid, arg) \
   do { cpp_error (pfile, msgid, arg); goto syntax_error; } while(0)
 
-/* Parse and convert an integer for #if.  Accepts decimal, hex, or octal
-   with or without size suffixes.  */
 struct suffix
 {
   unsigned char s[4];
@@ -86,6 +84,10 @@ const struct suffix vsuf_3[] = {
   { "llu", 1, 2 }, { "LLU", 1, 2 }, { "LLu", 1, 2 }, { "llU", 1, 2 }
 };
 #define Nsuff(tab) (sizeof tab / sizeof (struct suffix))
+
+/* Parse and convert an integer for #if.  Accepts decimal, hex, or
+   octal with or without size suffixes.  Returned op is CPP_ERROR on
+   error, otherwise it is a CPP_NUMBER.  */
 
 static struct op
 parse_number (pfile, tok)
@@ -198,7 +200,7 @@ parse_number (pfile, tok)
     }
 
   op.value = n;
-  op.op = CPP_INT;
+  op.op = CPP_NUMBER;
   return op;
 
  invalid_suffix:
@@ -263,7 +265,7 @@ parse_defined (pfile)
     {
       op.value = node->type == NT_MACRO;
       op.unsignedp = 0;
-      op.op = CPP_INT;
+      op.op = CPP_NUMBER;
 
       /* No macros?  At top of file?  */
       if (pfile->mi_state == MI_OUTSIDE && pfile->mi_cmacro == 0
@@ -281,7 +283,10 @@ parse_defined (pfile)
   return op;
 }
 
-/* Read one token.  */
+/* Read a token.  The returned type is CPP_NUMBER for a valid number
+   (an interpreted preprocessing number or character constant, or the
+   result of the "defined" or "#" operators), CPP_ERROR on error,
+   CPP_EOF, or the type of an operator token.  */
 
 static struct op
 lex (pfile, skip_evaluation, token)
@@ -295,7 +300,6 @@ lex (pfile, skip_evaluation, token)
 
   switch (token->type)
     {
-    case CPP_INT:
     case CPP_NUMBER:
       return parse_number (pfile, token);
 
@@ -306,7 +310,7 @@ lex (pfile, skip_evaluation, token)
 
 	/* This is always a signed type.  */
 	op.unsignedp = 0;
-	op.op = CPP_INT;
+	op.op = CPP_NUMBER;
 	op.value = cpp_interpret_charconst (pfile, token, 1, 0, &chars_seen);
 	return op;
       }
@@ -314,9 +318,6 @@ lex (pfile, skip_evaluation, token)
     case CPP_STRING:
     case CPP_WSTRING:
       SYNTAX_ERROR ("string constants are not valid in #if");
-
-    case CPP_FLOAT:
-      SYNTAX_ERROR ("floating point numbers are not valid in #if");
 
     case CPP_OTHER:
       if (ISGRAPH (token->val.c))
@@ -336,7 +337,7 @@ lex (pfile, skip_evaluation, token)
 	       && (token->val.node == pfile->spec_nodes.n_true
 		   || token->val.node == pfile->spec_nodes.n_false))
 	{
-	  op.op = CPP_INT;
+	  op.op = CPP_NUMBER;
 	  op.unsignedp = 0;
 	  op.value = (token->val.node == pfile->spec_nodes.n_true);
 
@@ -354,7 +355,7 @@ lex (pfile, skip_evaluation, token)
 	     could become macros in the future).  */
 	  pfile->mi_state = MI_FAILED;
 
-	  op.op = CPP_INT;
+	  op.op = CPP_NUMBER;
 	  op.unsignedp = 0;
 	  op.value = 0;
 
@@ -368,7 +369,7 @@ lex (pfile, skip_evaluation, token)
       {
 	int temp;
 
-	op.op = CPP_INT;
+	op.op = CPP_NUMBER;
 	if (_cpp_test_assertion (pfile, &temp))
 	  op.op = CPP_ERROR;
 	op.unsignedp = 0;
@@ -627,7 +628,7 @@ _cpp_parse_expr (pfile)
 	case CPP_ERROR:
 	  goto syntax_error;
 	push_immediate:
-	case CPP_INT:
+	case CPP_NUMBER:
 	  /* Push a value onto the stack.  */
 	  if (top->flags & HAVE_VALUE)
 	    SYNTAX_ERROR ("missing binary operator");

@@ -124,8 +124,6 @@ struct ht;
   OP(CPP_ATSIGN,	"@")  /* used in Objective C */ \
 \
   TK(CPP_NAME,		SPELL_IDENT)	/* word */			\
-  TK(CPP_INT,		SPELL_STRING)	/* 23 */			\
-  TK(CPP_FLOAT,		SPELL_STRING)	/* 3.14159 */			\
   TK(CPP_NUMBER,	SPELL_STRING)	/* 34_be+ta  */			\
 \
   TK(CPP_CHAR,		SPELL_STRING)	/* 'char' */			\
