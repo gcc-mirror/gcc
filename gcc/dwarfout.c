@@ -1860,7 +1860,7 @@ output_bound_representation (bound, dim_num, u_or_l)
 
 	    if (TREE_CODE (bound) == SAVE_EXPR)
 	      output_loc_descriptor
-		(eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
+		(eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX, 0));
 	  }
 
 	ASM_OUTPUT_LABEL (asm_out_file, end_label);
@@ -2130,7 +2130,7 @@ location_attribute (rtl)
 
   if (! is_pseudo_reg (rtl)
       && (GET_CODE (rtl) != MEM || ! is_pseudo_reg (XEXP (rtl, 0))))
-    output_loc_descriptor (eliminate_regs (rtl, 0, NULL_RTX));
+    output_loc_descriptor (eliminate_regs (rtl, 0, NULL_RTX, 0));
 
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
 }

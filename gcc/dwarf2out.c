@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).  Derived from the
    DWARF 1 implementation written by Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -5708,7 +5708,7 @@ add_location_attribute (die, rtl)
       && (GET_CODE (rtl) != MEM
 	  || !is_pseudo_reg (XEXP (rtl, 0))))
     {
-      loc_descr = loc_descriptor (eliminate_regs (rtl, 0, NULL_RTX));
+      loc_descr = loc_descriptor (eliminate_regs (rtl, 0, NULL_RTX, 0));
     }
 
 #ifdef MIPS_DEBUGGING_INFO
@@ -6115,7 +6115,7 @@ add_bound_info (subrange_die, bound_attr, bound)
       if (!optimize)
 	{
 	  bound_loc = mem_loc_descriptor
-	    (eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
+	    (eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX, 0));
 	  add_AT_loc (subrange_die, bound_attr, bound_loc);
 	}
       /* else leave out the attribute.  */
