@@ -1,3 +1,7 @@
+2003-04-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): New.
+
 2003-04-02  Richard Henderson  <rth@redhat.com>
 
 	* except.c (sjlj_find_directly_reachable_regions): Recognize when
