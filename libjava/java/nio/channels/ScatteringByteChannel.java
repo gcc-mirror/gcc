@@ -59,7 +59,7 @@ public interface ScatteringByteChannel
    * @exception NonReadableChannelException If this channel was not opened for
    * reading
    */
-  public long read(ByteBuffer[] srcs, int offset, int length)
+  long read (ByteBuffer[] srcs, int offset, int length)
     throws IOException;
 
   /**
@@ -75,5 +75,5 @@ public interface ScatteringByteChannel
    * @exception NonReadableChannelException If this channel was not opened for
    * reading
    */
-  public long read(ByteBuffer[] srcs) throws IOException;
+  long read (ByteBuffer[] srcs) throws IOException;
 }

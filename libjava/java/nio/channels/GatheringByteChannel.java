@@ -59,7 +59,7 @@ public interface GatheringByteChannel
    * @exception NonWritableChannelException If this channel was not opened for
    * writing
    */
-  public long write(ByteBuffer[] srcs, int offset, int length)
+  long write (ByteBuffer[] srcs, int offset, int length)
     throws IOException;
   
   /**
@@ -75,5 +75,5 @@ public interface GatheringByteChannel
    * @exception NonWritableChannelException If this channel was not opened for
    * writing
    */
-  public long write(ByteBuffer[] srcs) throws IOException;
+  long write (ByteBuffer[] srcs) throws IOException;
 }

@@ -1,5 +1,14 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/channels/Channel.java,
+	java/nio/channels/GatheringByteChannel.java,
+	java/nio/channels/ReadableByteChannel.java,
+	java/nio/channels/ScatteringByteChannel.java,
+	java/nio/channels/WritableByteChannel.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/activation/ActivationInstantiator.java,
 	java/rmi/activation/ActivationMonitor.java,
 	java/rmi/activation/ActivationSystem.java,
