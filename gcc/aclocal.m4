@@ -42,6 +42,22 @@ GCC_NEED_DECLARATION($ac_func)
 done
 ])
 
+dnl Check if we have vprintf and possibly _doprnt.
+dnl Note autoconf checks for vprintf even though we care about vfprintf.
+AC_DEFUN(GCC_FUNC_VFPRINTF_DOPRNT,
+[AC_FUNC_VPRINTF
+vfprintf=
+doprint=
+if test $ac_cv_func_vprintf != yes ; then
+  vfprintf=vfprintf.o
+  if test $ac_cv_func__doprnt != yes ; then
+    doprint=doprint.o
+  fi
+fi
+AC_SUBST(vfprintf)
+AC_SUBST(doprint)
+])    
+
 dnl See if the printf functions in libc support %p in format strings.
 AC_DEFUN(GCC_FUNC_PRINTF_PTR,
 [AC_CACHE_CHECK(whether the printf functions support %p,

@@ -26,27 +26,13 @@ Boston, MA 02111-1307, USA.
    
 %{
 #include "config.h"
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#ifdef __STDC__
 # include <stdarg.h>
-# define VA_START(va_list, var) va_start (va_list, var)
-# define PRINTF_ALIST(msg) char *msg, ...
-# define PRINTF_DCL(msg)
-# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
 #else
 # include <varargs.h>
-# define VA_START(va_list, var) va_start (va_list)
-# define PRINTF_ALIST(msg) msg, va_alist
-# define PRINTF_DCL(msg) char *msg; va_dcl
-# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
-# define vfprintf(file, msg, args) \
-    { \
-      char *a0 = va_arg(args, char *); \
-      char *a1 = va_arg(args, char *); \
-      char *a2 = va_arg(args, char *); \
-      char *a3 = va_arg(args, char *); \
-      fprintf (file, msg, a0, a1, a2, a3); \
-    }
 #endif
+
+#define PRINTF_PROTO(ARGS, m, n) PVPROTO (ARGS) ATTRIBUTE_PRINTF(m, n)
 
 #define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 
@@ -58,6 +44,8 @@ Boston, MA 02111-1307, USA.
 #include <locale.h>
 #endif
 
+#include "gansidecl.h"
+
 typedef unsigned char U_CHAR;
 
 /* This is used for communicating lists of keywords with cccp.c.  */
@@ -67,24 +55,6 @@ struct arglist {
   int length;
   int argno;
 };
-
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef GENERIC_PTR
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define GENERIC_PTR void *
-#else
-#define GENERIC_PTR char *
-#endif
-#endif
-
-#ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR) 0)
-#endif
 
 /* Find the largest host integer type and set its size and type.
    Watch out: on some crazy hosts `long' is shorter than `int'.  */
@@ -117,18 +87,6 @@ struct arglist {
 
 #ifndef HOST_BITS_PER_WIDE_INT
 #define HOST_BITS_PER_WIDE_INT (CHAR_BIT * sizeof (HOST_WIDE_INT))
-#endif
-
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-# define __attribute__(x)
-#endif
-
-#ifndef PROTO
-# if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#  define PROTO(ARGS) ARGS
-# else
-#  define PROTO(ARGS) ()
-# endif
 #endif
 
 HOST_WIDE_INT parse_c_expression PROTO((char *, int));
@@ -1179,12 +1137,19 @@ initialize_random_junk ()
 }
 
 void
-error (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+error VPROTO ((char * msg, ...))
 {
+#ifndef __STDC__
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+ 
+#ifndef __STDC__
+  msg = va_arg (args, char *);
+#endif
+ 
   fprintf (stderr, "error: ");
   vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
@@ -1192,12 +1157,19 @@ error (PRINTF_ALIST (msg))
 }
 
 void
-pedwarn (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+pedwarn VPROTO ((char * msg, ...))
 {
+#ifndef __STDC__
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+ 
+#ifndef __STDC__
+  msg = va_arg (args, char *);
+#endif
+ 
   fprintf (stderr, "pedwarn: ");
   vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
@@ -1205,12 +1177,19 @@ pedwarn (PRINTF_ALIST (msg))
 }
 
 void
-warning (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+warning VPROTO ((char * msg, ...))
 {
+#ifndef __STDC__
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+ 
+#ifndef __STDC__
+  msg = va_arg (args, char *);
+#endif
+ 
   fprintf (stderr, "warning: ");
   vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");

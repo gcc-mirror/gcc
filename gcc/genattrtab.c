@@ -366,12 +366,7 @@ rtx pic_offset_table_rtx;
 static void attr_hash_add_rtx	PROTO((int, rtx));
 static void attr_hash_add_string PROTO((int, char *));
 static rtx attr_rtx		PVPROTO((enum rtx_code, ...));
-#ifdef HAVE_VPRINTF
 static char *attr_printf	PVPROTO((int, char *, ...));
-#else
-static char *attr_printf ();
-#endif
-
 static char *attr_string        PROTO((char *, int));
 static rtx check_attr_test	PROTO((rtx, int));
 static rtx check_attr_value	PROTO((rtx, struct attr_desc *));
@@ -736,8 +731,6 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 
    rtx attr_printf (len, format, [arg1, ..., argn])  */
 
-#ifdef HAVE_VPRINTF
-
 /*VARARGS2*/
 static char *
 attr_printf VPROTO((register int len, char *fmt, ...))
@@ -763,24 +756,6 @@ attr_printf VPROTO((register int len, char *fmt, ...))
 
   return attr_string (str, strlen (str));
 }
-
-#else /* not HAVE_VPRINTF */
-
-static char *
-attr_printf (len, fmt, arg1, arg2, arg3)
-     int len;
-     char *fmt;
-     char *arg1, *arg2, *arg3; /* also int */
-{
-  register char *str;
-
-  /* Print the string into a temporary location.  */
-  str = (char *) alloca (len);
-  sprintf (str, fmt, arg1, arg2, arg3);
-
-  return attr_string (str, strlen (str));
-}
-#endif /* not HAVE_VPRINTF */
 
 rtx
 attr_eq (name, value)

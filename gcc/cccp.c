@@ -19,25 +19,13 @@ Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
 #include "config.h"
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#ifdef __STDC__
 # include <stdarg.h>
-# define PRINTF_ALIST(msg) char *msg, ...
-# define PRINTF_DCL(msg)
-# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
 #else
 # include <varargs.h>
-# define PRINTF_ALIST(msg) msg, va_alist
-# define PRINTF_DCL(msg) char *msg; va_dcl
-# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
-# define vfprintf(file, msg, args) \
-    { \
-      char *a0 = va_arg(args, char *); \
-      char *a1 = va_arg(args, char *); \
-      char *a2 = va_arg(args, char *); \
-      char *a3 = va_arg(args, char *); \
-      fprintf (file, msg, a0, a1, a2, a3); \
-    }
 #endif
+
+#define PRINTF_PROTO(ARGS, m, n) PVPROTO (ARGS) ATTRIBUTE_PRINTF(m, n)
 
 #define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 #define PRINTF_PROTO_2(ARGS) PRINTF_PROTO(ARGS, 2, 3)
@@ -59,10 +47,6 @@ typedef unsigned char U_CHAR;
 
 #ifndef GET_ENVIRONMENT
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
-#endif
-
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-# define __attribute__(x)
 #endif
 
 #ifndef STANDARD_INCLUDE_DIR
@@ -8881,12 +8865,19 @@ my_strerror (errnum)
 /* error - print error message and increment count of errors.  */
 
 void
-error (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+error VPROTO ((char * msg, ...))
 {
+#ifndef __STDC__
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+
+#ifndef __STDC__
+  msg = va_arg (args, char *);
+#endif
+
   verror (msg, args);
   va_end (args);
 }
@@ -8947,12 +8938,19 @@ error_from_errno (name)
 /* Print error message but don't count it.  */
 
 void
-warning (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+warning VPROTO ((char * msg, ...))
 {
+#ifndef __STDC__
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+
+#ifndef __STDC__
+  msg = va_arg (args, char *);
+#endif
+
   vwarning (msg, args);
   va_end (args);
 }
@@ -8989,17 +8987,21 @@ vwarning (msg, args)
 }
 
 static void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
-error_with_line (int line, PRINTF_ALIST (msg))
-#else
-error_with_line (line, PRINTF_ALIST (msg))
-     int line;
-     PRINTF_DCL (msg)
-#endif
+error_with_line VPROTO ((int line, char * msg, ...))
 {
+#ifndef __STDC__
+  int line;
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+
+#ifndef __STDC__
+  line = va_arg (args, int);
+  msg = va_arg (args, char *);
+#endif
+
   verror_with_line (line, msg, args);
   va_end (args);
 }
@@ -9031,17 +9033,21 @@ verror_with_line (line, msg, args)
 }
 
 static void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
-warning_with_line (int line, PRINTF_ALIST (msg))
-#else
-warning_with_line (line, PRINTF_ALIST (msg))
-     int line;
-     PRINTF_DCL (msg)
-#endif
+warning_with_line VPROTO ((int line, char * msg, ...))
 {
+#ifndef __STDC__
+  int line;
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+
+#ifndef __STDC__
+  line = va_arg (args, int);
+  msg = va_arg (args, char *);
+#endif
+
   vwarning_with_line (line, msg, args);
   va_end (args);
 }
@@ -9081,12 +9087,19 @@ vwarning_with_line (line, msg, args)
 /* Print an error message and maybe count it.  */
 
 void
-pedwarn (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+pedwarn VPROTO ((char * msg, ...))
 {
+#ifndef __STDC__
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+ 
+#ifndef __STDC__
+  msg = va_arg (args, char *);
+#endif
+ 
   if (pedantic_errors)
     verror (msg, args);
   else
@@ -9095,17 +9108,21 @@ pedwarn (PRINTF_ALIST (msg))
 }
 
 void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
-pedwarn_with_line (int line, PRINTF_ALIST (msg))
-#else
-pedwarn_with_line (line, PRINTF_ALIST (msg))
-     int line;
-     PRINTF_DCL (msg)
-#endif
+pedwarn_with_line VPROTO ((int line, char * msg, ...))
 {
+#ifndef __STDC__
+  int line;
+  char * msg;
+#endif
   va_list args;
 
   VA_START (args, msg);
+ 
+#ifndef __STDC__
+  line = va_arg (args, int);
+  msg = va_arg (args, char *);
+#endif
+ 
   if (pedantic_errors)
     verror_with_line (line, msg, args);
   else
@@ -9117,17 +9134,15 @@ pedwarn_with_line (line, PRINTF_ALIST (msg))
    giving specified file name and line number, not current.  */
 
 static void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
-pedwarn_with_file_and_line (char *file, size_t file_len, int line,
-			    PRINTF_ALIST (msg))
-#else
-pedwarn_with_file_and_line (file, file_len, line, PRINTF_ALIST (msg))
-     char *file;
-     size_t file_len;
-     int line;
-     PRINTF_DCL (msg)
-#endif
+pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
+				    char * msg, ...))
 {
+#ifndef __STDC__
+  char *file;
+  size_t file_len;
+  int line;
+  char * msg;
+#endif
   va_list args;
 
   if (!pedantic_errors && inhibit_warnings)
@@ -9141,6 +9156,14 @@ pedwarn_with_file_and_line (file, file_len, line, PRINTF_ALIST (msg))
   if (!pedantic_errors)
     fprintf (stderr, "warning: ");
   VA_START (args, msg);
+ 
+#ifndef __STDC__
+  file = va_arg (args, char *);
+  file_len = va_arg (args, size_t);
+  line = va_arg (args, int);
+  msg = va_arg (args, char *);
+#endif
+ 
   vfprintf (stderr, msg, args);
   va_end (args);
   fprintf (stderr, "\n");
@@ -10147,13 +10170,20 @@ deps_output (string, spacer)
 }
 
 static void
-fatal (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+fatal VPROTO ((char * msg, ...))
 {
+#ifndef __STDC__
+  char * msg;
+#endif
   va_list args;
 
   fprintf (stderr, "%s: ", progname);
   VA_START (args, msg);
+ 
+#ifndef __STDC__
+  msg = va_arg (args, char *);
+#endif
+ 
   vfprintf (stderr, msg, args);
   va_end (args);
   fprintf (stderr, "\n");

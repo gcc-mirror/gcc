@@ -47,6 +47,12 @@
 /* Whether abort must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_ABORT
 
+/* Define if you don't have vprintf but do have _doprnt.  */
+#undef HAVE_DOPRNT
+
+/* Define if you have the vprintf function.  */
+#undef HAVE_VPRINTF
+
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
@@ -113,9 +119,6 @@
 /* Define if you have the sysconf function.  */
 #undef HAVE_SYSCONF
 
-/* Define if you have the vprintf function.  */
-#undef HAVE_VPRINTF
-
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
@@ -152,9 +155,6 @@
 /* Define if you have the <sys/times.h> header file.  */
 #undef HAVE_SYS_TIMES_H
 
-/* Define if you have the <sys/varargs.h> header file.  */
-#undef HAVE_SYS_VARARGS_H
-
 /* Define if you have the <sys/wait.h> header file.  */
 #undef HAVE_SYS_WAIT_H
 
@@ -163,9 +163,6 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-/* Define if you have the <varargs.h> header file.  */
-#undef HAVE_VARARGS_H
 
 /* Define if you have the <wait.h> header file.  */
 #undef HAVE_WAIT_H
