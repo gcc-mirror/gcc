@@ -146,7 +146,7 @@ do {									\
 %token ATTRIBUTE EXTENSION LABEL
 %token REALPART IMAGPART VA_ARG CHOOSE_EXPR TYPES_COMPATIBLE_P
 %token PTR_VALUE PTR_BASE PTR_EXTENT
-%token FUNC_NAME
+%token FUNC_NAME OFFSETOF
 
 /* Add precedence rules to solve dangling else s/r conflict */
 %nonassoc IF
@@ -199,6 +199,7 @@ do {									\
 %type <ttype> maybe_type_quals_attrs typespec_nonattr typespec_attr
 %type <ttype> typespec_reserved_nonattr typespec_reserved_attr
 %type <ttype> typespec_nonreserved_nonattr
+%type <ttype> offsetof_member_designator
 
 %type <ttype> scspec SCSPEC STATIC TYPESPEC TYPE_QUAL maybe_volatile
 %type <ttype> initdecls notype_initdecls initdcl notype_initdcl init
@@ -674,17 +675,25 @@ primary:
 	| VA_ARG '(' expr_no_commas ',' typename ')'
 		{ $$ = build_va_arg ($3, groktypename ($5)); }
 
-      | CHOOSE_EXPR '(' expr_no_commas ',' expr_no_commas ',' expr_no_commas ')'
+	| OFFSETOF '(' typename ',' offsetof_member_designator ')'
+		{ $$ = build_offsetof (groktypename ($3), $5); }
+	| OFFSETOF '(' error ')'
+		{ $$ = error_mark_node; }
+	| CHOOSE_EXPR '(' expr_no_commas ',' expr_no_commas ','
+			  expr_no_commas ')'
 		{
                   tree c;
 
                   c = fold ($3);
                   STRIP_NOPS (c);
                   if (TREE_CODE (c) != INTEGER_CST)
-                    error ("first argument to __builtin_choose_expr not a constant");
+                    error ("first argument to __builtin_choose_expr not"
+			   " a constant");
                   $$ = integer_zerop (c) ? $7 : $5;
 		}
-      | TYPES_COMPATIBLE_P '(' typename ',' typename ')'
+	| CHOOSE_EXPR '(' error ')'
+		{ $$ = error_mark_node; }
+	| TYPES_COMPATIBLE_P '(' typename ',' typename ')'
 		{
 		  tree e1, e2;
 
@@ -694,27 +703,16 @@ primary:
 		  $$ = comptypes (e1, e2, COMPARE_STRICT)
 		    ? build_int_2 (1, 0) : build_int_2 (0, 0);
 		}
+	| TYPES_COMPATIBLE_P '(' error ')'
+		{ $$ = error_mark_node; }
 	| primary '[' expr ']'   %prec '.'
 		{ $$ = build_array_ref ($1, $3); }
 	| primary '.' identifier
-		{
-@@ifobjc
-		    if (!is_public ($1, $3))
-		      $$ = error_mark_node;
-		    else
-@@end_ifobjc
-		      $$ = build_component_ref ($1, $3);
-		}
+		{ $$ = build_component_ref ($1, $3); }
 	| primary POINTSAT identifier
 		{
                   tree expr = build_indirect_ref ($1, "->");
-
-@@ifobjc
-		      if (!is_public (expr, $3))
-			$$ = error_mark_node;
-		      else
-@@end_ifobjc
-			$$ = build_component_ref (expr, $3);
+		  $$ = build_component_ref (expr, $3);
 		}
 	| primary PLUSPLUS
 		{ $$ = build_unary_op (POSTINCREMENT_EXPR, $1, 0); }
@@ -732,6 +730,21 @@ primary:
 	| OBJC_STRING
 		{ $$ = build_objc_string_object ($1); }
 @@end_ifobjc
+	;
+
+/* This is the second argument to __builtin_offsetof.  We must have one
+   identifier, and beyond that we want to accept sub structure and sub
+   array references.  We return tree list where each element has
+   PURPOSE set for component refs or VALUE set for array refs.  We'll
+   turn this into something real inside build_offsetof.  */
+
+offsetof_member_designator:
+	  identifier
+		{ $$ = tree_cons ($1, NULL_TREE, NULL_TREE); }
+	| offsetof_member_designator '.' identifier
+		{ $$ = tree_cons ($3, NULL_TREE, $1); }
+	| offsetof_member_designator '[' expr ']'
+		{ $$ = tree_cons (NULL_TREE, $3, $1); }
 	;
 
 old_style_parm_decls:
@@ -3273,6 +3286,7 @@ static const struct resword reswords[] =
   { "__attribute",	RID_ATTRIBUTE,	0 },
   { "__attribute__",	RID_ATTRIBUTE,	0 },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, 0 },
+  { "__builtin_offsetof", RID_OFFSETOF, 0 },
   { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, 0 },
   { "__builtin_va_arg",	RID_VA_ARG,	0 },
   { "__complex",	RID_COMPLEX,	0 },
@@ -3469,7 +3483,7 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_FALSE */	0,
   /* RID_NAMESPACE */	0,
   /* RID_NEW */		0,
-  /* RID_OFFSETOF */    0,
+  /* RID_OFFSETOF */    OFFSETOF,
   /* RID_OPERATOR */	0,
   /* RID_THIS */	0,
   /* RID_THROW */	0,

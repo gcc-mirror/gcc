@@ -1,3 +1,22 @@
+2004-06-01  Richard Henderson  <rth@redhat.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* c-parse.in (OFFSETOF, offsetof_member_designator): New.
+	(primary): Handle offsetof.  Add error productions for faux functions.
+	Move component_ref objc checking to build_component_ref.
+	(reswords): Add offsetof.
+	(rid_to_yy): Add offsetof.
+	* c-tree.h (build_offsetof): Declare.
+	* c-common.h (objc_is_public): Declare.
+	* c-typeck.c (build_component_ref): Check objc_is_public.
+	(build_offsetof): New.
+	* stub-objc.c (objc_is_public): New.
+	* objc/objc-act.c, objc/objc-act.h (objc_is_public): Rename
+	from is_public.
+	* ginclude/stddef.h (offsetof): Use __builtin_offsetof.
+	* doc/extend.texi (Offsetof): Move from C++ section to C section
+	and rewrite for __builtin_offsetof.
+
 2004-06-01  Peter Barada  <peter@the-baradas.com>
             Peter Jakubek  <peter@laseranimation.com>
 

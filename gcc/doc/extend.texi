@@ -469,6 +469,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 			 function.
 * Return Address::      Getting the return or frame address of a function.
 * Vector Extensions::   Using vector instructions through built-in functions.
+* Offsetof::            Special syntax for implementing @code{offsetof}.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Pragmas::             Pragmas accepted by GCC.
@@ -4704,6 +4705,33 @@ v4si f (v4si a, v4si b, v4si c)
 
 @end smallexample
 
+@node Offsetof
+@section Offsetof
+@findex __builtin_offsetof
+
+GCC implements for both C and C++ a syntactic extension to implement
+the @code{offsetof} macro.
+
+@smallexample
+primary:
+	"__builtin_offsetof" "(" @code{typename} "," offsetof_member_designator ")"
+
+offsetof_member_designator:
+	  @code{identifier}
+	| offsetof_member_designator "." @code{identifier}
+	| offsetof_member_designator "[" @code{expr} "]"
+@end smallexample
+
+This extension is sufficient such that
+
+@smallexample
+#define offsetof(@var{type}, @var{member})  __builtin_offsetof (@var{type}, @var{member})
+@end smallexample
+
+is a suitable definition of the @code{offsetof} macro.  In C++, @var{type}
+may be dependent.  In either case, @var{member} may consist of a single
+identifier, or a sequence of member accesses and array references.
+
 @node Other Builtins
 @section Other built-in functions provided by GCC
 @cindex built-in functions
@@ -7620,7 +7648,6 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
                         method denoted by a @samp{->*} or @samp{.*} expression.
 * C++ Attributes::      Variable, function, and type attributes for C++ only.
 * Strong Using::      Strong using-directives for namespace composition.
-* Offsetof::            Special syntax for implementing @code{offsetof}.
 * Java Exceptions::     Tweaking exception handling to work with Java.
 * Deprecated Features:: Things will disappear from g++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
@@ -8264,25 +8291,6 @@ int main()
   f (std::A<int>());
 @}
 @end smallexample
-
-@node Offsetof
-@section Offsetof
-
-G++ uses a syntactic extension to implement the @code{offsetof} macro.
-
-In particular:
-
-@smallexample
-  __offsetof__ (expression)
-@end smallexample
-
-is equivalent to the parenthesized expression, except that the
-expression is considered an integral constant expression even if it
-contains certain operators that are not normally permitted in an
-integral constant expression.  Users should never use
-@code{__offsetof__} directly; the only valid use of
-@code{__offsetof__} is to implement the @code{offsetof} macro in
-@code{<stddef.h>}.
 
 @node Java Exceptions
 @section Java Exceptions

@@ -1232,9 +1232,6 @@ typedef struct cp_parser GTY(())
      been seen that makes the expression non-constant.  */
   bool non_integral_constant_expression_p;
 
-  /* TRUE if we are parsing the argument to "__offsetof__".  */
-  bool in_offsetof_p;
-
   /* TRUE if local variable names and `this' are forbidden in the
      current context.  */
   bool local_variables_forbidden_p;
@@ -1342,6 +1339,10 @@ static tree cp_parser_class_or_namespace_name
   (cp_parser *, bool, bool, bool, bool, bool);
 static tree cp_parser_postfix_expression
   (cp_parser *, bool);
+static tree cp_parser_postfix_open_square_expression
+  (cp_parser *, tree, bool);
+static tree cp_parser_postfix_dot_deref_expression
+  (cp_parser *, enum cpp_ttype, tree, bool, cp_id_kind *);
 static tree cp_parser_parenthesized_expression_list
   (cp_parser *, bool, bool *);
 static void cp_parser_pseudo_destructor_name
@@ -1398,6 +1399,8 @@ static tree cp_parser_expression
   (cp_parser *);
 static tree cp_parser_constant_expression
   (cp_parser *, bool, bool *);
+static tree cp_parser_builtin_offsetof
+  (cp_parser *);
 
 /* Statements [gram.stmt.stmt]  */
 
@@ -2324,9 +2327,6 @@ cp_parser_new (void)
   parser->allow_non_integral_constant_expression_p = false;
   parser->non_integral_constant_expression_p = false;
 
-  /* We are not parsing offsetof.  */
-  parser->in_offsetof_p = false;
-
   /* Local variable names are not forbidden.  */
   parser->local_variables_forbidden_p = false;
 
@@ -2603,27 +2603,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	  }
 
 	case RID_OFFSETOF:
-	  {
-	    tree expression;
-	    bool saved_in_offsetof_p;
-
-	    /* Consume the "__offsetof__" token.  */
-	    cp_lexer_consume_token (parser->lexer);
-	    /* Consume the opening `('.  */
-	    cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
-	    /* Parse the parenthesized (almost) constant-expression.  */
-	    saved_in_offsetof_p = parser->in_offsetof_p;
-	    parser->in_offsetof_p = true;
-	    expression
-	      = cp_parser_constant_expression (parser,
-					       /*allow_non_constant_p=*/false,
-					       /*non_constant_p=*/NULL);
-	    parser->in_offsetof_p = saved_in_offsetof_p;
-	    /* Consume the closing ')'.  */
-	    cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
-
-	    return expression;
-	  }
+	  return cp_parser_builtin_offsetof (parser);
 
 	default:
 	  cp_parser_error (parser, "expected primary-expression");
@@ -3520,9 +3500,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	if (parser->integral_constant_expression_p
 	    && !dependent_type_p (type)
 	    && !INTEGRAL_OR_ENUMERATION_TYPE_P (type)
-	    /* A cast to pointer or reference type is allowed in the
-	       implementation of "offsetof".  */
-	    && !(parser->in_offsetof_p && POINTER_TYPE_P (type))
 	    && (cp_parser_non_integral_constant_expression 
 		(parser,
 		 "a cast to a type other than an integral or "
@@ -3765,29 +3742,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
       switch (token->type)
 	{
 	case CPP_OPEN_SQUARE:
-	  /* postfix-expression [ expression ] */
-	  {
-	    tree index;
-
-	    /* Consume the `[' token.  */
-	    cp_lexer_consume_token (parser->lexer);
-	    /* Parse the index expression.  */
-	    index = cp_parser_expression (parser);
-	    /* Look for the closing `]'.  */
-	    cp_parser_require (parser, CPP_CLOSE_SQUARE, "`]'");
-
-	    /* Build the ARRAY_REF.  */
-	    postfix_expression
-	      = grok_array_decl (postfix_expression, index);
-	    idk = CP_ID_KIND_NONE;
-	    /* Array references are not permitted in
-	       constant-expressions (but they are allowed
-	       in offsetof).  */
-	    if (!parser->in_offsetof_p
-		&& cp_parser_non_integral_constant_expression
-		    (parser, "an array reference"))
-	      postfix_expression = error_mark_node;
-	  }
+	  postfix_expression
+	    = cp_parser_postfix_open_square_expression (parser,
+							postfix_expression,
+							false);
+	  idk = CP_ID_KIND_NONE;
 	  break;
 
 	case CPP_OPEN_PAREN:
@@ -3891,132 +3850,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	     postfix-expression . pseudo-destructor-name
 	     postfix-expression -> template [opt] id-expression
 	     postfix-expression -> pseudo-destructor-name */
-	  {
-	    tree name;
-	    bool dependent_p;
-	    bool template_p;
-	    tree scope = NULL_TREE;
-	    enum cpp_ttype token_type = token->type;
+	
+	  /* Consume the `.' or `->' operator.  */
+	  cp_lexer_consume_token (parser->lexer);
 
-	    /* If this is a `->' operator, dereference the pointer.  */
-	    if (token->type == CPP_DEREF)
-	      postfix_expression = build_x_arrow (postfix_expression);
-	    /* Check to see whether or not the expression is
-	       type-dependent.  */
-	    dependent_p = type_dependent_expression_p (postfix_expression);
-	    /* The identifier following the `->' or `.' is not
-	       qualified.  */
-	    parser->scope = NULL_TREE;
-	    parser->qualifying_scope = NULL_TREE;
-	    parser->object_scope = NULL_TREE;
-	    idk = CP_ID_KIND_NONE;
-	    /* Enter the scope corresponding to the type of the object
-	       given by the POSTFIX_EXPRESSION.  */
-	    if (!dependent_p
-		&& TREE_TYPE (postfix_expression) != NULL_TREE)
-	      {
-		scope = TREE_TYPE (postfix_expression);
-		/* According to the standard, no expression should
-		   ever have reference type.  Unfortunately, we do not
-		   currently match the standard in this respect in
-		   that our internal representation of an expression
-		   may have reference type even when the standard says
-		   it does not.  Therefore, we have to manually obtain
-		   the underlying type here.  */
-		scope = non_reference (scope);
-		/* The type of the POSTFIX_EXPRESSION must be
-		   complete.  */
-		scope = complete_type_or_else (scope, NULL_TREE);
-		/* Let the name lookup machinery know that we are
-		   processing a class member access expression.  */
-		parser->context->object_type = scope;
-		/* If something went wrong, we want to be able to
-		   discern that case, as opposed to the case where
-		   there was no SCOPE due to the type of expression
-		   being dependent.  */
-		if (!scope)
-		  scope = error_mark_node;
-		/* If the SCOPE was erroneous, make the various
-		   semantic analysis functions exit quickly -- and
-		   without issuing additional error messages.  */
-		if (scope == error_mark_node)
-		  postfix_expression = error_mark_node;
-	      }
-
-	    /* Consume the `.' or `->' operator.  */
-	    cp_lexer_consume_token (parser->lexer);
-	    /* If the SCOPE is not a scalar type, we are looking at an
-	       ordinary class member access expression, rather than a
-	       pseudo-destructor-name.  */
-	    if (!scope || !SCALAR_TYPE_P (scope))
-	      {
-		template_p = cp_parser_optional_template_keyword (parser);
-		/* Parse the id-expression.  */
-		name = cp_parser_id_expression (parser,
-						template_p,
-						/*check_dependency_p=*/true,
-						/*template_p=*/NULL,
-						/*declarator_p=*/false);
-		/* In general, build a SCOPE_REF if the member name is
-		   qualified.  However, if the name was not dependent
-		   and has already been resolved; there is no need to
-		   build the SCOPE_REF.  For example;
-
-                     struct X { void f(); };
-                     template <typename T> void f(T* t) { t->X::f(); }
-
-                   Even though "t" is dependent, "X::f" is not and has
-		   been resolved to a BASELINK; there is no need to
-		   include scope information.  */
-
-		/* But we do need to remember that there was an explicit
-		   scope for virtual function calls.  */
-		if (parser->scope)
-		  idk = CP_ID_KIND_QUALIFIED;
-
-		if (name != error_mark_node
-		    && !BASELINK_P (name)
-		    && parser->scope)
-		  {
-		    name = build_nt (SCOPE_REF, parser->scope, name);
-		    parser->scope = NULL_TREE;
-		    parser->qualifying_scope = NULL_TREE;
-		    parser->object_scope = NULL_TREE;
-		  }
-		if (scope && name && BASELINK_P (name))
-		  adjust_result_of_qualified_name_lookup 
-		    (name, BINFO_TYPE (BASELINK_BINFO (name)), scope);
-		postfix_expression
-		  = finish_class_member_access_expr (postfix_expression, name);
-	      }
-	    /* Otherwise, try the pseudo-destructor-name production.  */
-	    else
-	      {
-		tree s = NULL_TREE;
-		tree type;
-
-		/* Parse the pseudo-destructor-name.  */
-		cp_parser_pseudo_destructor_name (parser, &s, &type);
-		/* Form the call.  */
-		postfix_expression
-		  = finish_pseudo_destructor_expr (postfix_expression,
-						   s, TREE_TYPE (type));
-	      }
-
-	    /* We no longer need to look up names in the scope of the
-	       object on the left-hand side of the `.' or `->'
-	       operator.  */
-	    parser->context->object_type = NULL_TREE;
-	    /* These operators may not appear in constant-expressions.  */
-	    if (/* The "->" operator is allowed in the implementation
-		   of "offsetof".  The "." operator may appear in the
-		   name of the member.  */
-		!parser->in_offsetof_p
-		&& (cp_parser_non_integral_constant_expression 
-		    (parser,
-		     token_type == CPP_DEREF ? "'->'" : "`.'")))
-	      postfix_expression = error_mark_node;
-	  }
+	  postfix_expression
+	    = cp_parser_postfix_dot_deref_expression (parser, token->type,
+						      postfix_expression,
+						      false, &idk);
 	  break;
 
 	case CPP_PLUS_PLUS:
@@ -4057,6 +3898,183 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
   /* We should never get here.  */
   abort ();
   return error_mark_node;
+}
+
+/* A subroutine of cp_parser_postfix_expression that also gets hijacked
+   by cp_parser_builtin_offsetof.  We're looking for
+
+     postfix-expression [ expression ]
+
+   FOR_OFFSETOF is set if we're being called in that context, which
+   changes how we deal with integer constant expressions.  */
+
+static tree
+cp_parser_postfix_open_square_expression (cp_parser *parser,
+					  tree postfix_expression,
+					  bool for_offsetof)
+{
+  tree index;
+
+  /* Consume the `[' token.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  /* Parse the index expression.  */
+  /* ??? For offsetof, there is a question of what to allow here.  If
+     offsetof is not being used in an integral constant expression context,
+     then we *could* get the right answer by computing the value at runtime.
+     If we are in an integral constant expression context, then we might
+     could accept any constant expression; hard to say without analysis.
+     Rather than open the barn door too wide right away, allow only integer
+     constant expresions here.  */
+  if (for_offsetof)
+    index = cp_parser_constant_expression (parser, false, NULL);
+  else
+    index = cp_parser_expression (parser);
+
+  /* Look for the closing `]'.  */
+  cp_parser_require (parser, CPP_CLOSE_SQUARE, "`]'");
+
+  /* Build the ARRAY_REF.  */
+  postfix_expression = grok_array_decl (postfix_expression, index);
+
+  /* When not doing offsetof, array references are not permitted in
+     constant-expressions.  */
+  if (!for_offsetof
+      && (cp_parser_non_integral_constant_expression
+	  (parser, "an array reference")))
+    postfix_expression = error_mark_node;
+
+  return postfix_expression;
+}
+
+/* A subroutine of cp_parser_postfix_expression that also gets hijacked
+   by cp_parser_builtin_offsetof.  We're looking for
+
+     postfix-expression . template [opt] id-expression
+     postfix-expression . pseudo-destructor-name
+     postfix-expression -> template [opt] id-expression
+     postfix-expression -> pseudo-destructor-name
+
+   FOR_OFFSETOF is set if we're being called in that context.  That sorta
+   limits what of the above we'll actually accept, but nevermind.
+   TOKEN_TYPE is the "." or "->" token, which will already have been
+   removed from the stream.  */
+
+static tree
+cp_parser_postfix_dot_deref_expression (cp_parser *parser,
+					enum cpp_ttype token_type,
+					tree postfix_expression,
+					bool for_offsetof, cp_id_kind *idk)
+{
+  tree name;
+  bool dependent_p;
+  bool template_p;
+  tree scope = NULL_TREE;
+
+  /* If this is a `->' operator, dereference the pointer.  */
+  if (token_type == CPP_DEREF)
+    postfix_expression = build_x_arrow (postfix_expression);
+  /* Check to see whether or not the expression is type-dependent.  */
+  dependent_p = type_dependent_expression_p (postfix_expression);
+  /* The identifier following the `->' or `.' is not qualified.  */
+  parser->scope = NULL_TREE;
+  parser->qualifying_scope = NULL_TREE;
+  parser->object_scope = NULL_TREE;
+  *idk = CP_ID_KIND_NONE;
+  /* Enter the scope corresponding to the type of the object
+     given by the POSTFIX_EXPRESSION.  */
+  if (!dependent_p && TREE_TYPE (postfix_expression) != NULL_TREE)
+    {
+      scope = TREE_TYPE (postfix_expression);
+      /* According to the standard, no expression should ever have
+	 reference type.  Unfortunately, we do not currently match
+	 the standard in this respect in that our internal representation
+	 of an expression may have reference type even when the standard
+	 says it does not.  Therefore, we have to manually obtain the
+	 underlying type here.  */
+      scope = non_reference (scope);
+      /* The type of the POSTFIX_EXPRESSION must be complete.  */
+      scope = complete_type_or_else (scope, NULL_TREE);
+      /* Let the name lookup machinery know that we are processing a
+	 class member access expression.  */
+      parser->context->object_type = scope;
+      /* If something went wrong, we want to be able to discern that case,
+	 as opposed to the case where there was no SCOPE due to the type
+	 of expression being dependent.  */
+      if (!scope)
+	scope = error_mark_node;
+      /* If the SCOPE was erroneous, make the various semantic analysis
+	 functions exit quickly -- and without issuing additional error
+	 messages.  */
+      if (scope == error_mark_node)
+	postfix_expression = error_mark_node;
+    }
+
+  /* If the SCOPE is not a scalar type, we are looking at an
+     ordinary class member access expression, rather than a
+     pseudo-destructor-name.  */
+  if (!scope || !SCALAR_TYPE_P (scope))
+    {
+      template_p = cp_parser_optional_template_keyword (parser);
+      /* Parse the id-expression.  */
+      name = cp_parser_id_expression (parser, template_p,
+				      /*check_dependency_p=*/true,
+				      /*template_p=*/NULL,
+				      /*declarator_p=*/false);
+      /* In general, build a SCOPE_REF if the member name is qualified.
+	 However, if the name was not dependent and has already been
+	 resolved; there is no need to build the SCOPE_REF.  For example;
+
+             struct X { void f(); };
+             template <typename T> void f(T* t) { t->X::f(); }
+
+	 Even though "t" is dependent, "X::f" is not and has been resolved
+	 to a BASELINK; there is no need to include scope information.  */
+
+      /* But we do need to remember that there was an explicit scope for
+	 virtual function calls.  */
+      if (parser->scope)
+	*idk = CP_ID_KIND_QUALIFIED;
+
+      if (name != error_mark_node && !BASELINK_P (name) && parser->scope)
+	{
+	  name = build_nt (SCOPE_REF, parser->scope, name);
+	  parser->scope = NULL_TREE;
+	  parser->qualifying_scope = NULL_TREE;
+	  parser->object_scope = NULL_TREE;
+	}
+      if (scope && name && BASELINK_P (name))
+	adjust_result_of_qualified_name_lookup 
+	  (name, BINFO_TYPE (BASELINK_BINFO (name)), scope);
+      postfix_expression
+	= finish_class_member_access_expr (postfix_expression, name);
+    }
+  /* Otherwise, try the pseudo-destructor-name production.  */
+  else
+    {
+      tree s = NULL_TREE;
+      tree type;
+
+      /* Parse the pseudo-destructor-name.  */
+      cp_parser_pseudo_destructor_name (parser, &s, &type);
+      /* Form the call.  */
+      postfix_expression
+	= finish_pseudo_destructor_expr (postfix_expression,
+					 s, TREE_TYPE (type));
+    }
+
+  /* We no longer need to look up names in the scope of the object on
+     the left-hand side of the `.' or `->' operator.  */
+  parser->context->object_type = NULL_TREE;
+
+  /* Outside of offsetof, these operators may not appear in
+     constant-expressions.  */
+  if (!for_offsetof
+      && (cp_parser_non_integral_constant_expression 
+	  (parser, token_type == CPP_DEREF ? "'->'" : "`.'")))
+    postfix_expression = error_mark_node;
+
+  return postfix_expression;
 }
 
 /* Parse a parenthesized expression-list.
@@ -4420,10 +4438,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	  break;
 
 	case ADDR_EXPR:
-	  /* The "&" operator is allowed in the implementation of
-	     "offsetof".  */
-	  if (!parser->in_offsetof_p)
-	    non_constant_p = "`&'";
+	  non_constant_p = "`&'";
 	  /* Fall through.  */
 	case BIT_NOT_EXPR:
 	  expression = build_x_unary_op (unary_operator, cast_expression);
@@ -5455,6 +5470,93 @@ cp_parser_constant_expression (cp_parser* parser,
   parser->non_integral_constant_expression_p = saved_non_integral_constant_expression_p;
 
   return expression;
+}
+
+/* Parse __builtin_offsetof.
+
+   offsetof-expression:
+     "__builtin_offsetof" "(" type-id "," offsetof-member-designator ")"
+
+   offsetof-member-designator:
+     id-expression
+     | offsetof-member-designator "." id-expression
+     | offsetof-member-designator "[" expression "]"
+*/
+
+static tree
+cp_parser_builtin_offsetof (cp_parser *parser)
+{
+  int save_ice_p, save_non_ice_p;
+  tree type, expr;
+  cp_id_kind dummy;
+
+  /* We're about to accept non-integral-constant things, but will
+     definitely yield an integral constant expression.  Save and
+     restore these values around our local parsing.  */
+  save_ice_p = parser->integral_constant_expression_p;
+  save_non_ice_p = parser->non_integral_constant_expression_p;
+
+  /* Consume the "__builtin_offsetof" token.  */
+  cp_lexer_consume_token (parser->lexer);
+  /* Consume the opening `('.  */
+  cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
+  /* Parse the type-id.  */
+  type = cp_parser_type_id (parser);
+  /* Look for the `,'.  */
+  cp_parser_require (parser, CPP_COMMA, "`,'");
+
+  /* Build the (type *)null that begins the traditional offsetof macro.  */
+  expr = build_static_cast (build_pointer_type (type), null_pointer_node);
+
+  /* Parse the offsetof-member-designator.  We begin as if we saw "expr->".  */
+  expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DEREF, expr,
+						 true, &dummy);
+  while (true)
+    {
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      switch (token->type)
+	{
+	case CPP_OPEN_SQUARE:
+	  /* offsetof-member-designator "[" expression "]" */
+	  expr = cp_parser_postfix_open_square_expression (parser, expr, true);
+	  break;
+
+	case CPP_DOT:
+	  /* offsetof-member-designator "." identifier */
+	  cp_lexer_consume_token (parser->lexer);
+	  expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DOT, expr,
+							 true, &dummy);
+	  break;
+
+	case CPP_CLOSE_PAREN:
+	  /* Consume the ")" token.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  goto success;
+
+	default:
+	  /* Error.  We know the following require will fail, but
+	     that gives the proper error message.  */
+	  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+	  cp_parser_skip_to_closing_parenthesis (parser, true, false, true);
+	  expr = error_mark_node;
+	  goto failure;
+	}
+    }
+
+ success:
+  /* We've finished the parsing, now finish with the semantics.  At present
+     we're just mirroring the traditional macro implementation.  Better
+     would be to do the lowering of the ADDR_EXPR to flat pointer arithmetic
+     here rather than in build_x_unary_op.  */
+  expr = build_reinterpret_cast (build_reference_type (char_type_node), expr);
+  expr = build_x_unary_op (ADDR_EXPR, expr);
+  expr = build_reinterpret_cast (size_type_node, expr);
+
+ failure:
+  parser->integral_constant_expression_p = save_ice_p;
+  parser->non_integral_constant_expression_p = save_non_ice_p;
+
+  return expr;
 }
 
 /* Statements [gram.stmt.stmt]  */

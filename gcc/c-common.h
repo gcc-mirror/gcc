@@ -1236,6 +1236,7 @@ extern tree objc_message_selector (void);
 extern tree lookup_objc_ivar (tree);
 extern void *get_current_scope (void);
 extern void objc_mark_locals_volatile (void *);
+extern int objc_is_public (tree, tree);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);

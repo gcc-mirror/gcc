@@ -69,3 +69,8 @@ objc_message_selector (void)
   return 0;
 }
 
+int
+objc_is_public (tree expr ATTRIBUTE_UNUSED, tree identifier ATTRIBUTE_UNUSED)
+{
+  return 1;
+}

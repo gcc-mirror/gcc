@@ -1,4 +1,5 @@
-/* Copyright (C) 1989, 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1997, 1998, 1999, 2000, 2002, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -410,16 +411,8 @@ typedef __WINT_TYPE__ wint_t;
 #ifdef _STDDEF_H
 
 /* Offset of member MEMBER in a struct of type TYPE. */
-#ifndef __cplusplus
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#else
-/* The cast to "char &" below avoids problems with user-defined
-   "operator &", which can appear in a POD type.  */
-#define offsetof(TYPE, MEMBER)				\
-  (__offsetof__ (reinterpret_cast <size_t>		\
-                 (&reinterpret_cast <char &>		\
-                  (static_cast<TYPE *> (0)->MEMBER))))
-#endif /* C++ */
+#define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
+
 #endif /* _STDDEF_H was defined this time */
 
 #endif /* !_STDDEF_H && !_STDDEF_H_ && !_ANSI_STDDEF_H && !__STDDEF_H__

@@ -1,3 +1,16 @@
+2004-06-01  Richard Henderson  <rth@redhat.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* lex.c (reswords): Rename "__offsetof" to "__builtin_offsetof".
+	* parser.c (struct cp_parser): Remove in_offsetof.
+	(cp_parser_new): Don't set it.
+	(cp_parser_unary_expression): Don't check it.
+	(cp_parser_postfix_open_square_expression): Split out from ...
+	(cp_parser_postfix_expression): ... here.
+	(cp_parser_postfix_dot_deref_expression): Likewise.
+	(cp_parser_builtin_offsetof): New.
+	(cp_parser_primary_expression): Use it.
+
 2004-06-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14932

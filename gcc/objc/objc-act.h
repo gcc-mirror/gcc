@@ -52,7 +52,7 @@ tree objc_build_finally_epilogue (void);
 
 tree is_ivar (tree, tree);
 int is_private (tree);
-int is_public (tree, tree);
+int objc_is_public (tree, tree);
 tree add_instance_variable (tree, int, tree, tree, tree);
 tree objc_add_method (tree, tree, int);
 tree get_super_receiver (void);
@@ -126,7 +126,7 @@ tree build_encode_expr (tree);
 	 ? (TYPE)->type.context : NULL_TREE)
 #define SET_TYPE_PROTOCOL_LIST(TYPE, P) (TYPE_CHECK (TYPE)->type.context = (P))
 
-/* Set by `continue_class' and checked by `is_public'.  */
+/* Set by `continue_class' and checked by `objc_is_public'.  */
 
 #define TREE_STATIC_TEMPLATE(record_type) (TREE_PUBLIC (record_type))
 #define TYPED_OBJECT(type) \
