@@ -1,3 +1,9 @@
+2003-11-11  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.jacks/jacks.exp (gcj_jacks_write): Enable "assert"
+	constraint.
+	* libjava.jacks/jacks.xfail: Added new xfails.
+
 2003-11-10  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/12996:

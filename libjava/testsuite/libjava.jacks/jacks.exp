@@ -32,6 +32,7 @@ proc gcj_jacks_write {filename} {
   puts $fd "set JAVAC_ENCODING_FLAG --encoding="
   puts $fd "set tcltest::testConstraints(encoding) 1"
   puts $fd "set tcltest::testConstraints(gcj) 1"
+  puts $fd "set tcltest::testConstraints(assert) 1"
   # "Time-consuming JVM limitation tests".
   # puts $fd "set tcltest::testConstraints(jvm) 1"
   close $fd
