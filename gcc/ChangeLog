@@ -1,3 +1,9 @@
+2002-07-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppinit.c (cpp_handle_option):  Suppress warnings with an
+	implicit "-w" for "-M" and "-MM".
+	* doc/cppopts.texi: Update.
+
 2002-07-01  Roger Sayle  <roger@eyesopen.com>
 
 	* config/sh/sh.c (sh_media_init_builtins): Change use of poisoned
