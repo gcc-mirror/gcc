@@ -1,3 +1,9 @@
+2001-07-24  lars brinkhoff  <lars@nocrew.org>
+
+	* rtl.texi (REG_POINTER): Document.
+	(Machine Modes): Document BImode, OImode, PQImode, PHImode,
+	QFmode, HFmode, TQFmode, QCmode, and HCmode.
+
 Tue Jul 24 10:49:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (delete_noop_moves): Do not confuse libcall regions.
