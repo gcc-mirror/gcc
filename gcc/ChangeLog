@@ -1,3 +1,8 @@
+2001-11-17  Richard Henderson  <rth@redhat.com>
+
+	* unroll.c (loop_iterations): Move last change ...
+	* doloop.c (doloop_modify_runtime): ... here.
+
 2001-11-17  Corey Minyard  <minyard@acm.org>
 	    Richard Henderson  <rth@redhat.com>
 

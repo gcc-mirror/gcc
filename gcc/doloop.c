@@ -596,6 +596,46 @@ doloop_modify_runtime (loop, iterations_max,
 			      copy_rtx (neg_inc ? final_value : initial_value),
 			      NULL_RTX, unsigned_p, OPTAB_LIB_WIDEN);
 
+  /* Some code transformations can result in code akin to
+
+	  tmp = i + 1;
+	  ...
+	  goto scan_start;
+	top:
+	  tmp = tmp + 1;
+	scan_start:
+	  i = tmp;
+	  if (i < n) goto top;
+
+     We'll have already detected this form of loop in scan_loop,
+     and set loop->top and loop->scan_start appropriately.
+
+     In this situation, we skip the increment the first time through
+     the loop, which results in an incorrect estimate of the number
+     of iterations.  Adjust the difference to compensate.  */
+  /* ??? Logically, it would seem this belongs in loop_iterations.
+     However, this causes regressions e.g. on x86 execute/20011008-3.c,
+     so I do not believe we've properly characterized the exact nature
+     of the problem.  In the meantime, this fixes execute/20011126-2.c
+     on ia64 and some Ada front end miscompilation on ppc.  */
+
+  if (loop->scan_start)
+    {
+      struct loop_ivs *ivs = LOOP_IVS (loop);
+      struct iv_class *bl
+	= REG_IV_CLASS (ivs, REGNO (loop_info->iteration_var));
+
+      if (INSN_LUID (bl->biv->insn) < INSN_LUID (loop->scan_start))
+	{
+	  if (loop_dump_stream)
+	    fprintf (loop_dump_stream,
+	         "Doloop: Basic induction var skips initial incr.\n");
+
+	  diff = expand_simple_binop (mode, PLUS, diff, increment, diff,
+				      unsigned_p, OPTAB_LIB_WIDEN);
+	}
+    }
+
   if (abs_inc * loop_info->unroll_number != 1)
     {
       int shift_count;
