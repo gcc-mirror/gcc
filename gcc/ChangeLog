@@ -1,3 +1,7 @@
+2003-11-03  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/install-old.texi: Remove VMS documentation.
+
 2003-11-03  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (override_options):  Remove hack enabling 128bit long double
