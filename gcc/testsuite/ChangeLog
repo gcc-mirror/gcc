@@ -1,3 +1,12 @@
+2002-10-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/20021014-1.c: Bypass errors on solaris2 and irix6.
+
+2002-10-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/20021014-1.c: Use dg-error, not dg-build.
+	* gcc.dg/20021014-1.c: Expect build failure on mmix-*-*.
+
 2002-10-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* g++.dg/ext/vla1.C, gcc.dg/vla-2.c,
