@@ -9,5 +9,5 @@ func(void)
 {
   FOO(i
       = 4)
-  else;  /* { dg-error "parse error" "error on this line" { target native } { 12 } } */ 
+  else;  /* { dg-error "parse error" "error on this line" { target *-*-* } { 12 } } */ 
 }

@@ -1,3 +1,11 @@
+1999-08-09  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.misc-tests/m-un-2.c: Expect the warnings for all builds, not
+	just native ones.
+
+	* gcc.dg/990413-1.c: Expect the parse error for all builds, not
+	just native ones.
+
 1999-08-05  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/local3.C: Removed XFAIL.
