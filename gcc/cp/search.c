@@ -2232,6 +2232,13 @@ get_matching_virtual (binfo, fndecl, dtorp)
   tree tmp = NULL_TREE;
   int i;
 
+  if (TREE_CODE (fndecl) == TEMPLATE_DECL)
+    /* In [temp.mem] we have:
+
+         A specialization of a member function template does not
+         override a virtual function from a base class.  */
+    return NULL_TREE;
+
   /* Breadth first search routines start searching basetypes
      of TYPE, so we must perform first ply of search here.  */
   if (dtorp)
