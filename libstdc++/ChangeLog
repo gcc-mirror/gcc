@@ -1,3 +1,12 @@
+Fri Oct 10 00:40:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/bastring.h: Use ibegin internally.  Return passed iterator
+	instead of recalculating it were appropriate.
+	* std/bastring.cc: Adjust for erase.
+
+	From Yotam Medini:
+	* std/bastring.h: Replace remove with erase.
+
 Thu Oct  9 23:24:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stdexcepti.cc (__out_of_range): New fn.
