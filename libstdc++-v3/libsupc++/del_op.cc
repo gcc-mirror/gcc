@@ -30,6 +30,7 @@
 
 #include "new"
 
+// We can't rely on having stdlib.h if we're freestanding.
 extern "C" void free (void *);
 
 void

@@ -1,5 +1,5 @@
 // -*- C++ -*- Allocate exception objects.
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -94,7 +94,7 @@ emergency_mutex_init ()
 
 
 extern "C" void *
-__cxa_allocate_exception(std::size_t thrown_size)
+__cxa_allocate_exception(std::size_t thrown_size) throw()
 {
   void *ret;
 
@@ -141,7 +141,7 @@ __cxa_allocate_exception(std::size_t thrown_size)
 
 
 extern "C" void
-__cxa_free_exception(void *vptr)
+__cxa_free_exception(void *vptr) throw()
 {
   char *ptr = (char *) vptr;
   if (ptr >= &emergency_buffer[0][0]

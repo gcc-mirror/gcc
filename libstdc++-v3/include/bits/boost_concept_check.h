@@ -36,6 +36,12 @@ inline void __function_requires()
   void (_Concept::*__x)() _IsUnused = &_Concept::__constraints;
 }
 
+// No definition: if this is referenced, there's a problem with
+// the instantiating type not being one of the required integer types.
+// Unfortunately, this results in a link-time error, not a compile-time error.
+void __error_type_must_be_an_integer_type();
+void __error_type_must_be_an_unsigned_integer_type();
+void __error_type_must_be_a_signed_integer_type();
 
 // ??? Should the "concept_checking*" structs begin with more than _ ?
 #define _GLIBCXX_CLASS_REQUIRES(_type_var, _ns, _concept) \
@@ -88,7 +94,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
   template <class _Tp>
   struct _IntegerConcept {
     void __constraints() {
-      this->__error_type_must_be_an_integer_type();
+      __error_type_must_be_an_integer_type();
     }
   };
   template <> struct _IntegerConcept<short> { void __constraints() {} };
@@ -104,7 +110,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
   template <class _Tp>
   struct _SignedIntegerConcept {
     void __constraints() {
-      this->__error_type_must_be_a_signed_integer_type();
+      __error_type_must_be_a_signed_integer_type();
     }
   };
   template <> struct _SignedIntegerConcept<short> { void __constraints() {} };
@@ -115,7 +121,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
   template <class _Tp>
   struct _UnsignedIntegerConcept {
     void __constraints() {
-      this->__error_type_must_be_an_unsigned_integer_type();
+      __error_type_must_be_an_unsigned_integer_type();
     }
   };
   template <> struct _UnsignedIntegerConcept<unsigned short>

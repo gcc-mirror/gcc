@@ -202,12 +202,12 @@ namespace std
   {
     __basic_file* __ret = NULL;
     const char* __c_mode = __gnu_internal::fopen_mode(__mode);
-    if (__c_mode && !this->is_open() 
-	&& (_M_cfile = fdopen(__fd, __c_mode)))
+    if (__c_mode && !this->is_open() && (_M_cfile = fdopen(__fd, __c_mode)))
       {
+	char* __buf = NULL;
 	_M_cfile_created = true;
 	if (__fd == 0)
-	  setvbuf(_M_cfile, reinterpret_cast<char*>(NULL), _IONBF, 0);
+	  setvbuf(_M_cfile, __buf, _IONBF, 0);
 	__ret = this;
       }
     return __ret;

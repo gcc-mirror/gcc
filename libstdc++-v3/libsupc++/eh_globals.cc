@@ -1,5 +1,5 @@
 // -*- C++ -*- Manage the thread-local exception globals.
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -69,7 +69,7 @@ get_globals_init_once ()
 #endif
 
 extern "C" __cxa_eh_globals *
-__cxa_get_globals_fast ()
+__cxa_get_globals_fast () throw()
 {
 #if __GTHREADS
   if (use_thread_key)
@@ -82,7 +82,7 @@ __cxa_get_globals_fast ()
 }
 
 extern "C" __cxa_eh_globals *
-__cxa_get_globals ()
+__cxa_get_globals () throw()
 {
 #if __GTHREADS
   __cxa_eh_globals *g;
