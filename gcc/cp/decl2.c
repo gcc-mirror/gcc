@@ -655,6 +655,7 @@ tree
 check_classfn (tree ctype, tree function)
 {
   int ix;
+  int is_template;
   
   if (DECL_USE_TEMPLATE (function)
       && !(TREE_CODE (function) == TEMPLATE_DECL
@@ -671,6 +672,10 @@ check_classfn (tree ctype, tree function)
        reason we should, either.  We let our callers know we didn't
        find the method, but we don't complain.  */
     return NULL_TREE;
+
+  /* OK, is this a definition of a member template?  */
+  is_template = (TREE_CODE (function) == TEMPLATE_DECL
+		 || (processing_template_decl - template_class_depth (ctype)));
 
   ix = lookup_fnfields_1 (complete_type (ctype),
 			  DECL_CONSTRUCTOR_P (function) ? ctor_identifier :
@@ -704,6 +709,11 @@ check_classfn (tree ctype, tree function)
 	  if (DECL_STATIC_FUNCTION_P (fndecl)
 	      && TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
 	    p1 = TREE_CHAIN (p1);
+
+	  /* A member template definition only matches a member template
+	     declaration.  */
+	  if (is_template != (TREE_CODE (fndecl) == TEMPLATE_DECL))
+	    continue;
 	      
 	  if (same_type_p (TREE_TYPE (TREE_TYPE (function)),
 			   TREE_TYPE (TREE_TYPE (fndecl)))

@@ -1,3 +1,9 @@
+2003-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8660
+	* decl2.c (check_classfn): A member template only matches a 
+	member template.
+
 2003-03-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in (CXX_C_OBJS): Update.
