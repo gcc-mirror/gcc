@@ -61,6 +61,7 @@ definitions and other extensions.  */
 #include "zipfile.h"
 #include "convert.h"
 #include "buffer.h"
+#include "xref.h"
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
@@ -290,6 +291,10 @@ static tree java_lang_id = NULL_TREE;
 
 /* The "java.lang.Cloneable" qualified name.  */
 static tree java_lang_cloneable = NULL_TREE;
+
+/* Context and flag for static blocks */
+static tree current_static_block = NULL_TREE;
+
 %}
 
 %union {
@@ -931,11 +936,13 @@ method_body:
 static_initializer:
 	static block
 		{
-		  RULE ("STATIC_INITIALIZER");
+		  TREE_CHAIN ($2) = ctxp->static_initialized;
+		  ctxp->static_initialized = $2;
 		}
 |	static block SC_TK	/* Shouldn't be here. FIXME */
 		{
-		  RULE ("STATIC_INITIALIZER");
+		  TREE_CHAIN ($2) = ctxp->static_initialized;
+		  ctxp->static_initialized = $2;
 		}
 ;
 
@@ -2850,7 +2857,11 @@ maybe_create_class_interface_decl (decl, qualified_name, cl)
   
   /* Take care of the file and line business */
   DECL_SOURCE_FILE (decl) = EXPR_WFL_FILENAME (cl);
-  DECL_SOURCE_LINE (decl) = EXPR_WFL_LINENO (cl);
+  /* If we're emiting xrefs, store the line/col number information */
+  if (flag_emit_xref)
+    DECL_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (cl);
+  else
+    DECL_SOURCE_LINE (decl) = EXPR_WFL_LINENO (cl);
   CLASS_FROM_SOURCE_P (TREE_TYPE (decl)) = 1;
   CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (TREE_TYPE (decl)) =
     IS_A_COMMAND_LINE_FILENAME_P (EXPR_WFL_FILENAME_NODE (cl));
@@ -3142,7 +3153,10 @@ register_fields (flags, type, variable_list)
 
       /* Set lineno to the line the field was found and create a
          declaration for it. Eventually sets the @deprecated tag flag. */
-      lineno = EXPR_WFL_LINENO (cl);
+      if (flag_emit_xref)
+	lineno = EXPR_WFL_LINECOL (cl);
+      else
+	lineno = EXPR_WFL_LINENO (cl);
       field_decl = add_field (class_type, current_name, real_type, flags);
       CHECK_DEPRECATED (field_decl);
       
@@ -3470,6 +3484,9 @@ finish_method_declaration (method_body)
   /* Merge last line of the function with first line, directly in the
      function decl. It will be used to emit correct debug info. */
   DECL_SOURCE_LINE_MERGE (current_function_decl, ctxp->last_ccb_indent1);
+  /* So we don't have an irrelevant function declaration context for
+     the next static block we'll see. */
+  current_function_decl = NULL_TREE;
 }
 
 /* Build a an error message for constructor circularity errors.  */
@@ -5237,11 +5254,11 @@ declare_local_variables (modifier, type, vlist)
 
   /* Push a new block if statements were seen between the last time we
      pushed a block and now. Keep a cound of block to close */
-  if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (current_function_decl)))
+  if (BLOCK_EXPR_BODY (GET_CURRENT_BLOCK (current_function_decl)))
     {
-      tree body = DECL_FUNCTION_BODY (current_function_decl);
+      tree body = GET_CURRENT_BLOCK (current_function_decl);
       tree b = enter_block ();
-      BLOCK_EXPR_ORIGIN(b) = body;
+      BLOCK_EXPR_ORIGIN (b) = body;
     }
 
   if (modifier)
@@ -5498,7 +5515,7 @@ tree
 java_method_add_stmt (fndecl, expr)
      tree fndecl, expr;
 {
-  return add_stmt_to_block (DECL_FUNCTION_BODY (fndecl), NULL_TREE, expr);
+  return add_stmt_to_block (GET_CURRENT_BLOCK (fndecl), NULL_TREE, expr);
 }
 
 static tree
@@ -5689,6 +5706,8 @@ java_complete_expand_methods ()
 	{
 	  if (flag_emit_class_files)
 	    write_classfile (current_class);
+	  if (flag_emit_xref)
+	    expand_xref (current_class);
 	  else if (! flag_syntax_only)
 	    finish_class (current_class);
 	}
@@ -5729,8 +5748,13 @@ java_complete_expand_method (mdecl)
 
       if (block_body != NULL_TREE)
 	{
+	  /* Prevent the use of `this' inside <clinit> */
+	  if (DECL_NAME (current_function_decl) == clinit_identifier_node)
+	    ctxp->explicit_constructor_p = 1;
+
 	  block_body = java_complete_tree (block_body);
 	  check_for_initialization (block_body);
+	  ctxp->explicit_constructor_p = 0;
 	}
       BLOCK_EXPR_BODY (fbody) = block_body;
 
@@ -8270,7 +8294,12 @@ enter_a_block (b)
 {
   tree fndecl = current_function_decl; 
 
-  if (!DECL_FUNCTION_BODY (fndecl))
+  if (!fndecl) {
+    BLOCK_SUPERCONTEXT (b) = current_static_block;
+    current_static_block = b;
+  }
+
+  else if (!DECL_FUNCTION_BODY (fndecl))
     {
       BLOCK_SUPERCONTEXT (b) = fndecl;
       DECL_FUNCTION_BODY (fndecl) = b;
@@ -8290,11 +8319,20 @@ enter_a_block (b)
 static tree
 exit_block ()
 {
-  tree b = DECL_FUNCTION_BODY (current_function_decl);
+  tree b;
+  if (current_function_decl)
+    {
+      b = DECL_FUNCTION_BODY (current_function_decl);
+      if (BLOCK_SUPERCONTEXT (b) != current_function_decl)
+	DECL_FUNCTION_BODY (current_function_decl) = BLOCK_SUPERCONTEXT (b);
+    }
+  else
+    {
+      b = current_static_block;
 
-  if (BLOCK_SUPERCONTEXT (b) != current_function_decl)
-    DECL_FUNCTION_BODY (current_function_decl) = BLOCK_SUPERCONTEXT (b);
-
+      if (BLOCK_SUPERCONTEXT (b))
+	current_static_block = BLOCK_SUPERCONTEXT (b);
+    }
   return b;
 }
 
@@ -8306,7 +8344,7 @@ static tree
 lookup_name_in_blocks (name)
      tree name;
 {
-  tree b = DECL_FUNCTION_BODY (current_function_decl);
+  tree b = GET_CURRENT_BLOCK (current_function_decl);
 
   while (b != current_function_decl)
     {
@@ -8328,7 +8366,7 @@ lookup_name_in_blocks (name)
 static void
 maybe_absorb_scoping_blocks ()
 {
-  while (BLOCK_EXPR_ORIGIN (DECL_FUNCTION_BODY (current_function_decl)))
+  while (BLOCK_EXPR_ORIGIN (GET_CURRENT_BLOCK (current_function_decl)))
     {
       tree b = exit_block ();
       java_method_add_stmt (current_function_decl, b);
@@ -10273,6 +10311,10 @@ patch_return (node)
   if (return_exp && (mtype == void_type_node || DECL_CONSTRUCTOR_P (meth)))
     error_found = 1;
 
+  /* It's invalid to use a return statement in a static block */
+  if (DECL_NAME (current_function_decl) == clinit_identifier_node)
+    error_found = 1;
+
   /* It's invalid to have a no return value within a function that
      isn't declared with the keyword `void' */
   if (!return_exp && (mtype != void_type_node && !DECL_CONSTRUCTOR_P (meth)))
@@ -10280,7 +10322,11 @@ patch_return (node)
 
   if (error_found)
     {
-      if (!DECL_CONSTRUCTOR_P (meth))
+      if (DECL_NAME (current_function_decl) == clinit_identifier_node)
+	parse_error_context (wfl_operator,
+			     "`return' inside static initializer.");
+
+      else if (!DECL_CONSTRUCTOR_P (meth))
 	{
 	  char *t = strdup (lang_printable_name (mtype, 0));
 	  parse_error_context (wfl_operator, 
@@ -10983,8 +11029,7 @@ patch_throw_statement (node, wfl_op1)
      throws clause the declaration. */
   SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
   if (!unchecked_ok)
-    tryblock_throws_ok = 
-      check_thrown_exceptions_do (TREE_TYPE (expr));
+    tryblock_throws_ok = check_thrown_exceptions_do (TREE_TYPE (expr));
   if (!(unchecked_ok || tryblock_throws_ok))
     {
       /* If there is a surrounding try block that has no matching
@@ -10998,11 +11043,22 @@ patch_throw_statement (node, wfl_op1)
 			     lang_printable_name (type, 0));
       /* If we have no surrounding try statement and the method doesn't have
 	 any throws, report it now. FIXME */
+
+      /* We report that the exception can't be throw from a try block
+         in all circumstances but when the `throw' is inside a static
+         block. */
       else if (!EXCEPTIONS_P (currently_caught_type_list) 
 	       && !tryblock_throws_ok)
-	parse_error_context (wfl_operator, "Checked exception `%s' isn't "
-			     "thrown from a `try' block", 
-			     lang_printable_name (type, 0));
+	{
+	  if (DECL_NAME (current_function_decl) == clinit_identifier_node)
+	    parse_error_context (wfl_operator, "Checked exception `%s' can't "
+				 "be thrown in initializer",
+				 lang_printable_name (type, 0));
+	  else
+	    parse_error_context (wfl_operator, "Checked exception `%s' isn't "
+				 "thrown from a `try' block", 
+				 lang_printable_name (type, 0));
+	}
       /* Otherwise, the current method doesn't have the appropriate
          throws declaration */
       else
@@ -11013,11 +11069,6 @@ patch_throw_statement (node, wfl_op1)
       return error_mark_node;
     }
 
-  /* If a throw statement is contained in a static initializer, then a
-     compile-time check ensures that either its value is always an
-     unchecked exception or its value is always caught by some try
-     statement that contains it. FIXME, static initializer. */
-  
   if (! flag_emit_class_files)
     BUILD_THROW (node, expr);
   return node;
