@@ -1,3 +1,8 @@
+2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Correct CVS resurrection of invoke.texi.
+	* doc/invoke.texi: Document new tree dump flags.
+
 2001-06-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-typeck.c (build_c_cast): Use TYPE_MAIN_VARIANT when checking
