@@ -1,3 +1,13 @@
+2003-10-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc
+	(num_put::do_put(..., bool)): Prefer ?: to if-else.
+	(time_get::_M_extract_name): Qualify min with std::.
+	(__pad<>::_S_pad): Constify two variables; simplify an
+	if-else statement factoring out some code.
+
+	* include/bits/locale_facets.tcc: Minor cosmetic changes.
+
 2003-10-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
