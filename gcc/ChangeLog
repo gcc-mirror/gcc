@@ -1,3 +1,7 @@
+2002-12-17  Jerry Quinn  <jlquinn@optonline.net>
+
+	* doc/invoke.texi: Minor spelling and grammar fixes.
+
 2002-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* version.c (version_string): Mark as prerelease.
