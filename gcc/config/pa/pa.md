@@ -746,7 +746,9 @@
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
 			  "=r,r,Q,!r,!fx,!fx")
 	(match_operand:SI 1 "move_operand" "rM,Q,rM,!fxy,!r,!fx"))]
-  ""
+  "register_operand (operands[0], SImode)
+   || register_operand (operands[1], SImode)
+   || operands[1] == const0_rtx"
   "@
    copy %r1,%0
    ldw%M1 %1,%0
@@ -898,7 +900,9 @@
 (define_insn ""
   [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!r,!*fx,!*fx")
 	(match_operand:HI 1 "move_operand" "rM,Q,rM,*fx,r,!*fx"))]
-  ""
+  "register_operand (operands[0], HImode)
+   || register_operand (operands[1], HImode)
+   || operands[1] == const0_rtx"
   "@
    copy %r1,%0
    ldh%M1 %1,%0
@@ -959,7 +963,9 @@
 (define_insn ""
   [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,Q,!r,!*fx,!*fx")
 	(match_operand:QI 1 "move_operand" "rM,Q,rM,*fx,r,*fx"))]
-  ""
+  "register_operand (operands[0], QImode)
+   || register_operand (operands[1], QImode)
+   || operands[1] == const0_rtx"
   "@
    copy %r1,%0
    ldb%M1 %1,%0
@@ -1239,7 +1245,9 @@
 			  "=r,Q,&r,&r,fx,fx,r")
 	(match_operand:DI 1 "general_operand"
 			  "r,r,Q,i,r,fx,fx"))]
-  ""
+  "register_operand (operands[0], DImode)
+   || register_operand (operands[1], DImode)
+   || operands[1] == const0_rtx"
   "*
 {
   if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
@@ -1287,7 +1295,8 @@
 			  "=fx,r,r,fx,fx,r,Q,Q")
 	(match_operand:SF 1 "reg_or_nonsymb_mem_operand"
 			  "fx,r,!fx,!r,Q,Q,fx,r"))]
-  ""
+  "register_operand (operands[0], SFmode)
+   || register_operand (operands[1], SFmode)"
   "@
    fcpy,sgl %1,%0
    copy %1,%0
@@ -2325,14 +2334,24 @@
  ""
  "
 {
+  rtx op;
+  
   if (TARGET_LONG_CALLS) 
-    operands[0] = gen_rtx (MEM, SImode, 
-		  force_reg (SImode, XEXP (operands[0], 0)));
+    op = force_reg (SImode, XEXP (operands[0], 0));
   else
-    operands[0] = gen_rtx (MEM, SImode, XEXP (operands[0], 0));
+    op = XEXP (operands[0], 0);
+  emit_call_insn (gen_call_internal (op, operands[1]));
+  if (flag_pic)
+    {
+      if (!hppa_save_pic_table_rtx)
+	hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  gen_rtx (REG, Pmode, 19), hppa_save_pic_table_rtx));
+    }
+  DONE;
 }")
 
-(define_insn ""
+(define_insn "call_internal"
  [(call (mem:SI (match_operand:SI 0 "call_operand_address" "r,S"))
 	(match_operand 1 "" "i,i"))
   (clobber (reg:SI 31))
@@ -2361,14 +2380,24 @@
   ""
   "
 {
+  rtx op;
+  
   if (TARGET_LONG_CALLS) 
-    operands[1] = gen_rtx (MEM, SImode, 
-			   force_reg (SImode, XEXP (operands[1], 0)));
+    op = force_reg (SImode, XEXP (operands[1], 0));
   else
-    operands[1] = gen_rtx (MEM, SImode, XEXP (operands[1], 0));
+    op = XEXP (operands[1], 0);
+  emit_call_insn (gen_call_value_internal (operands[0], op, operands[2]));
+  if (flag_pic)
+    {
+      if (!hppa_save_pic_table_rtx)
+	hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  gen_rtx (REG, Pmode, 19), hppa_save_pic_table_rtx));
+    }
+  DONE;
 }")
 
-(define_insn ""
+(define_insn "call_value_internal"
   [(set (match_operand 0 "" "=rfx,rfx")
 	(call (mem:SI (match_operand:SI 1 "call_operand_address" "r,S"))
 	      (match_operand 2 "" "i,i")))
