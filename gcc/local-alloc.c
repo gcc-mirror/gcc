@@ -973,7 +973,7 @@ update_equiv_regs ()
     {
       rtx note;
       rtx set = single_set (insn);
-      rtx dest;
+      rtx dest, src;
       int regno;
 
       if (GET_CODE (insn) == NOTE)
@@ -989,6 +989,7 @@ update_equiv_regs ()
 	continue;
 
       dest = SET_DEST (set);
+      src = SET_SRC (set);
 
       /* If this sets a MEM to the contents of a REG that is only used
 	 in a single basic block, see if the register is always equivalent
@@ -1024,10 +1025,15 @@ update_equiv_regs ()
 	optimize_reg_copy_2 (insn, dest, SET_SRC (set));
 
       /* Otherwise, we only handle the case of a pseudo register being set
-	 once.  */
+	 once and only if neither the source nor the destination are
+	 in a register class that's likely to be spilled.  */
       if (GET_CODE (dest) != REG
 	  || (regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER
-	  || reg_n_sets[regno] != 1)
+	  || reg_n_sets[regno] != 1
+	  || CLASS_LIKELY_SPILLED_P (reg_preferred_class (REGNO (dest)))
+	  || (GET_CODE (src) == REG
+	      && REGNO (src) >= FIRST_PSEUDO_REGISTER
+	      && CLASS_LIKELY_SPILLED_P (reg_preferred_class (REGNO (src)))))
 	continue;
 
       note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
