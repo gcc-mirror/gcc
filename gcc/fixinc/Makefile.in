@@ -22,7 +22,7 @@
 # Its purpose is to build the any-platforms fixinc.sh script.
 
 CFLAGS = -g
-FIXINC_DEFS = $(CFLAGS) $(CPPFLAGS) @fixinc_defs@ $(INCLUDES)
+FIXINC_DEFS = -DIN_GCC $(CFLAGS) $(CPPFLAGS) @fixinc_defs@ $(INCLUDES)
 
 CC = @CC@
 SHELL = /bin/sh
@@ -77,8 +77,8 @@ gen : $(SH_TARGET) fixincl.x
 $(FIOBJ): $(HDR)
 
 fixincl: $(FIOBJ)
-	@echo $(CC) -o $@ $(FIOBJ) $(LIBERTY) $(LIB) ; \
-	if $(CC) -o $@ $(FIOBJ) $(LIBERTY) $(LIB) ; then : ; else \
+	@echo $(CC) $(FIXINC_DEFS) -o $@ $(FIOBJ) ; \
+	if $(CC) $(FIXINC_DEFS) -o $@ $(FIOBJ) ; then : ; else \
 	rm -f $@ ; (echo "#! /bin/sh" ; echo exit 1 ) > $@ ; \
 	chmod 777 $@ ; fi
 
@@ -90,13 +90,10 @@ fixtests: fixtests.c $(LIBOBJ)
 	$(CC) -o $@ $(FIXINC_DEFS) -DMAIN \
 		$(srcdir)/fixtests.c $(LIBOBJ) $(LIB)
 
-gnu-regex.o: gnu-regex.c
-	-$(CC) $(CFLAGS) $(FIXINC_DEFS) $(INCLUDES) -DREGEX_MALLOC \
-		-c $(srcdir)/gnu-regex.c
-
 fixincl.o : fixincl.x fixincl.c fixfixes.c fixtests.c
 server.o : server.c server.h
 procopen.o : procopen.c server.h
+fixlib.o: machname.h
 
 fixincl.x: fixincl.tpl inclhack.def
 	cd $(srcdir) ; ./genfixes $@
@@ -139,3 +136,16 @@ install: $(TARGETS)
 Makefile: Makefile.in ../config.status
 	cd .. \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+# Black magic.
+# Note dependency on ASCII. \040 = space, \011 = tab, \012 = newline.
+
+machname.h: ../specs
+	@tr -s '\040\011' '\012\012' < ../specs | \
+	    sed -n 's/^.*-D\([a-zA-Z_][a-zA-Z0-9_]*\).*$$/\1/p' | sort -u | \
+	    grep -v '^_[_A-Z]' > mn.T
+	@echo "Forbidden identifiers: `tr '\012' ' ' <mn.T`"
+	@sed 's/^/\\\\</; s/$$/\\\\>/' <mn.T | tr '\012' '|' | \
+	     sed 's/^/#define MN_NAME_PAT "/; s/|$$/"/' > machname.h
+	@echo >> machname.h
+	@-rm -f mn.T

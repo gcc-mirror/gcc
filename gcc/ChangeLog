@@ -1,3 +1,29 @@
+2000-01-20  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (fixinc.sh): Depend on specs.
+        * fixinc/Makefile.in: Add rule to create machname.h.
+        (fixlib.o): Depend on machname.h.
+        * fixinc/fixtests.c (machine_name): New test.
+        * fixinc/fixfixes.c (machine_name): New fix.
+        * fixinc/fixlib.c (mn_get_regexps): New helper function for
+        the machine_name test and fix.
+        * fixinc/fixlib.h: Prototype it.
+        * fixinc/inclhack.def (machine_name): Use the C test and fix.
+	* fixinc/fixincl.x, fixinc/inclhack.sh: Rebuild.
+
+        * gcc.c (do_spec_1) [case P]: Take care not to create
+        identifiers with three leading or trailing underscores.
+
+	* fixinc/Makefile.in (FIXINC_DEFS): Add -DIN_GCC.
+	(fixincl): Don't specify libraries twice on link line.
+	(gnu-regex.o): Remove special rule.
+	* fixinc/gnu-regex.c: Define REGEX_MALLOC if C_ALLOCA was
+	defined by config.h.  Do not define _REGEX_RE_COMP.
+	(regcomp): Allocate and initialize a fastmap.
+	* fixinc/gnu-regex.h: Do not define _REGEX_RE_COMP.
+	
+	
+
 2000-01-20  Brad Lucier  <lucier@math.purdue.edu>
 
 	* Makefile.in (predict.o): Depend on $(EXPR_H), not expr.h.

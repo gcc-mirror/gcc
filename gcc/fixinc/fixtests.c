@@ -58,7 +58,8 @@ typedef struct {
 
 #define FIX_TEST_TABLE \
   _FT_( "double_slash",     double_slash_test ) \
-  _FT_( "else_endif_label", else_endif_label_test )
+  _FT_( "else_endif_label", else_endif_label_test ) \
+  _FT_( "machine_name",     machine_name_test )
 
 
 #define TEST_FOR_FIX_PROC_HEAD( test ) \
@@ -265,6 +266,52 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
       text = pz_next;
     } /* for (entire file) loop */
 
+  return SKIP_FIX;
+}
+
+TEST_FOR_FIX_PROC_HEAD( machine_name_test )
+{
+  regex_t *label_re, *name_re;
+  regmatch_t match[2];
+  tCC *base, *limit;
+
+  mn_get_regexps(&label_re, &name_re, "machine_name_test");
+
+  for (base = text;
+       regexec (label_re, base, 2, match, 0) == 0;
+       base = limit)
+    {
+      base += match[0].rm_eo;
+      /* We're looking at an #if or #ifdef.  Scan forward for the
+	 next non-escaped newline.  */
+      limit = base;
+      do
+	{
+	  limit++;
+	  limit = strchr (limit, '\n');
+	  if (!limit)
+	    return SKIP_FIX;
+	}
+      while (limit[-1] == '\\');
+
+      /* If the 'name_pat' matches in between base and limit, we have
+	 a bogon.  It is not worth the hassle of excluding comments,
+	 because comments on #if/#ifdef/#ifndef lines are rare,
+	 and strings on such lines are illegal.
+
+	 REG_NOTBOL means 'base' is not at the beginning of a line, which
+	 shouldn't matter since the name_re has no ^ anchor, but let's
+	 be accurate anyway.  */
+
+      if (regexec (name_re, base, 1, match, REG_NOTBOL))
+	return SKIP_FIX;  /* No match in file - no fix needed */
+
+      /* Match; is it on the line?  */
+      if (match[0].rm_eo < limit - base)
+	return APPLY_FIX;  /* Yup */
+
+      /* Otherwise, keep looking... */
+    }
   return SKIP_FIX;
 }
 

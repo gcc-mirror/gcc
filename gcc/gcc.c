@@ -4263,7 +4263,12 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      char *y;
 
 	      /* Copy all of CPP_PREDEFINES into BUF,
-		 but put __ after every -D and at the end of each arg.  */
+		 but force them all into the reserved name space if they			 aren't already there.  The reserved name space is all
+		 identifiers beginning with two underscores or with one
+		 underscore and a capital letter.  We do the forcing by
+		 adding up to two underscores to the beginning and end
+		 of each symbol. e.g. mips, _mips, mips_, and _mips_ all
+		 become __mips__.  */
 	      y = cpp_predefines;
 	      while (*y != 0)
 		{
@@ -4279,7 +4284,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			      && ! ISUPPER ((unsigned char)*(y+1))))
 		        {
 			  /* Stick __ at front of macro name.  */
-			  *x++ = '_';
+			  if (*y != '_')
+			    *x++ = '_';
 			  *x++ = '_';
 			  /* Arrange to stick __ at the end as well.  */
 			  flag = 1;
@@ -4291,8 +4297,12 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 		      if (flag)
 		        {
-			  *x++ = '_';
-			  *x++ = '_';
+			  if (x[-1] != '_')
+			    {
+			      if (x[-2] != '_')
+				*x++ = '_';
+			      *x++ = '_';
+			    }
 			}
 
 		      /* Copy the value given, if any.  */
@@ -4324,7 +4334,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			  /* Stick -D__ at front of macro name.  */
 			  *x++ = '-';
 			  *x++ = 'D';
-			  *x++ = '_';
+			  if (*y != '_')
+			    *x++ = '_';
 			  *x++ = '_';
 
 			  /* Copy the macro name.  */

@@ -171,3 +171,34 @@ compile_re( pat, re, match, e1, e2 )
       exit (EXIT_FAILURE);
     }
 }
+
+/* * * * * * * * * * * * *
+
+   Helper routine and data for the machine_name test and fix.
+   machname.h is created by black magic in the Makefile.  */
+
+#include "machname.h"
+
+tSCC mn_label_pat[] = "^[ \t]*#[ \t]*(if|ifdef|ifndef)[ \t]+";
+static regex_t mn_label_re;
+
+tSCC mn_name_pat[] = MN_NAME_PAT;
+static regex_t mn_name_re;
+
+static int mn_compiled = 0;
+
+void
+mn_get_regexps( label_re, name_re, who )
+     regex_t **label_re;
+     regex_t **name_re;
+     tCC *who;
+{
+  if (! mn_compiled)
+    {
+      compile_re (mn_label_pat, &mn_label_re, 1, "label pattern", who);
+      compile_re (mn_name_pat, &mn_name_re, 1, "name pattern", who);
+      mn_compiled++;
+    }
+  *label_re = &mn_label_re;
+  *name_re = &mn_name_re;
+}

@@ -99,4 +99,6 @@ char * load_file_data _P_(( FILE* fp ));
 t_bool is_cxx_header  _P_(( tCC* filename, tCC* filetext ));
 void   compile_re     _P_(( tCC* pat, regex_t* re, int match,
 			    tCC *e1, tCC *e2 ));
+void   mn_get_regexps _P_(( regex_t** label_re, regex_t** name_re,
+			    tCC *who ));
 #endif /* FIXINCLUDES_FIXLIB_H */
