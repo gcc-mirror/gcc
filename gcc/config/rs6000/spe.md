@@ -283,12 +283,12 @@
    (set_attr  "length" "4")])
 
 (define_insn "spe_evlhhesplat"
-  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
-	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+  [(set (match_operand:V2SI 0 "gpc_reg_operand"  "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand"   "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 509)]
-  "TARGET_SPE"
-  "evlhhesplat %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evlhhesplat %0,%2*2(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -307,8 +307,8 @@
 	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 511)]
-  "TARGET_SPE"
-  "evlhhossplat %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evlhhossplat %0,%2*2(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -327,8 +327,8 @@
 	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 513)]
-  "TARGET_SPE"
-  "evlhhousplat %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evlhhousplat %0,%2*2(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -347,8 +347,8 @@
 	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 515)]
-  "TARGET_SPE"
-  "evlwhsplat %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evlwhsplat %0,%2*4(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -367,8 +367,8 @@
 	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 517)]
-  "TARGET_SPE"
-  "evlwwsplat %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evlwwsplat %0,%2*4(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -581,7 +581,9 @@
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evxor"
+;; vector xors
+
+(define_insn "xorv2si3"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (xor:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
 		  (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
@@ -589,6 +591,26 @@
   "evxor %0,%1,%2"
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
+
+(define_insn "xorv4hi3"
+  [(set (match_operand:V4HI 0 "gpc_reg_operand" "=r")
+        (xor:V4HI (match_operand:V4HI 1 "gpc_reg_operand" "r")
+		  (match_operand:V4HI 2 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evxor %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "xorv1di3"
+  [(set (match_operand:V1DI 0 "gpc_reg_operand" "=r")
+        (xor:V1DI (match_operand:V1DI 1 "gpc_reg_operand" "r")
+		  (match_operand:V1DI 2 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evxor %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+;; end of vector xors
 
 (define_insn "spe_evfsabs"
   [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
@@ -747,7 +769,7 @@
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 544)]
   "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
-  "evldd %0,%1,%2"
+  "evldd %0,%2*8(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -767,7 +789,7 @@
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 546)]
   "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
-  "evldh %0,%1,%2"
+  "evldh %0,%2*8(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -786,8 +808,8 @@
 	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 548)]
-  "TARGET_SPE"
-  "evldw %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evldw %0,%2*8(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -806,8 +828,8 @@
 	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 550)]
-  "TARGET_SPE"
-  "evlwhe %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evlwhe %0,%2*4(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -826,8 +848,8 @@
 	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 552)]
-  "TARGET_SPE"
-  "evlwhos %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evlwhos %0,%2*4(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -846,8 +868,8 @@
 	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
 			   (match_operand:QI 2 "immediate_operand" "i"))))
    (unspec [(const_int 0)] 554)]
-  "TARGET_SPE"
-  "evlwhou %0,%1,%2"
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evlwhou %0,%2*4(%1)"
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
@@ -1990,8 +2012,8 @@
 			   (match_operand:QI 1 "immediate_operand" "i")))
 	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
    (unspec [(const_int 0)] 686)]
-  "TARGET_SPE"
-  "evstdd %2,%0,%1"
+  "TARGET_SPE && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 31"
+  "evstdd %2,%1*8(%0)"
   [(set_attr "type" "vecstore")
    (set_attr  "length" "4")])
 
@@ -2010,8 +2032,8 @@
 			   (match_operand:QI 1 "immediate_operand" "i")))
 	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
    (unspec [(const_int 0)] 688)]
-  "TARGET_SPE"
-  "evstdh %2,%0,%1"
+  "TARGET_SPE && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 31"
+  "evstdh %2,%1*8(%0)"
   [(set_attr "type" "vecstore")
    (set_attr  "length" "4")])
 
@@ -2030,8 +2052,8 @@
 			   (match_operand:QI 1 "immediate_operand" "i")))
 	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
    (unspec [(const_int 0)] 690)]
-  "TARGET_SPE"
-  "evstdw %2,%0,%1"
+  "TARGET_SPE && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 31"
+  "evstdw %2,%1*8(%0)"
   [(set_attr "type" "vecstore")
    (set_attr  "length" "4")])
 
@@ -2050,8 +2072,8 @@
 			   (match_operand:QI 1 "immediate_operand" "i")))
 	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
    (unspec [(const_int 0)] 692)]
-  "TARGET_SPE"
-  "evstwhe %2,%0,%1"
+  "TARGET_SPE && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 31"
+  "evstwhe %2,%1*4(%0)"
   [(set_attr "type" "vecstore")
    (set_attr  "length" "4")])
 
@@ -2070,8 +2092,8 @@
 			   (match_operand:QI 1 "immediate_operand" "i")))
 	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
    (unspec [(const_int 0)] 694)]
-  "TARGET_SPE"
-  "evstwho %2,%0,%1"
+  "TARGET_SPE && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 31"
+  "evstwho %2,%1*4(%0)"
   [(set_attr "type" "vecstore")
    (set_attr  "length" "4")])
 
@@ -2090,8 +2112,8 @@
 			   (match_operand:QI 1 "immediate_operand" "i")))
 	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
    (unspec [(const_int 0)] 696)]
-  "TARGET_SPE"
-  "evstwwe %2,%0,%1"
+  "TARGET_SPE && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 31"
+  "evstwwe %2,%1*4(%0)"
   [(set_attr "type" "vecstore")
    (set_attr  "length" "4")])
 
@@ -2110,8 +2132,8 @@
 			   (match_operand:QI 1 "immediate_operand" "i")))
 	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
    (unspec [(const_int 0)] 698)]
-  "TARGET_SPE"
-  "evstwwo %2,%0,%1"
+  "TARGET_SPE && INTVAL (operands[1]) >= 0 && INTVAL (operands[1]) <= 31"
+  "evstwwo %2,%1*4(%0)"
   [(set_attr "type" "vecstore")
    (set_attr  "length" "4")])
 

@@ -1,3 +1,19 @@
+2003-02-09  Nick Clifton  <nickc@redhat.com>
+            Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.md: spe_evlhhesplat, spe_evlhhossplat,
+        spe_evlhhousplat, spe_evlwhsplat, spe_evlwwsplat, spe_evldd,
+        spe_evldh, spe_evldw, spe_evlwhe, spe_evlwhos, spe_evlwhou,
+        spe_evstdd, spe_evstdh, spe_evstdw, spe_evstdwx, spe_evstwhe,
+        spe_evstwho, spe_evstwwe, spe_evstwwo: Fix syntax to match newest
+        docs.  Add range test for immediate value.
+
+2003-02-09  Aldy Hernandez  <aldyh@redhat.com>
+
+        Rename spe_evxor to xorv2si3.
+        (xorv4hi3): New.
+        (xorv1di3): New.
+
 2003-02-10  Glen Nakamura  <glen@imodulo.com>
 		
 	* doc/extend.texi (C++98 Thread-Local Edits): Add missing @item
