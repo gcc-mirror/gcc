@@ -835,7 +835,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 	      max_log = log;
 	      max_skip = LABEL_ALIGN_MAX_SKIP;
 	    }
-	  next = NEXT_INSN (insn);
+	  next = next_nonnote_insn (insn);
 	  /* ADDR_VECs only take room if read-only data goes into the text
 	     section.  */
 	  if (JUMP_TABLES_IN_TEXT_SECTION || !HAVE_READONLY_DATA_SECTION)
@@ -1677,6 +1677,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #ifdef HAVE_cc0
   rtx set;
 #endif
+  rtx next;
 
   insn_counter++;
 
@@ -1932,10 +1933,11 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  fputs (ASM_APP_OFF, file);
 	  app_on = 0;
 	}
-      if (NEXT_INSN (insn) != 0
-	  && JUMP_P (NEXT_INSN (insn)))
+
+      next = next_nonnote_insn (insn);
+      if (next != 0 && JUMP_P (next))
 	{
-	  rtx nextbody = PATTERN (NEXT_INSN (insn));
+	  rtx nextbody = PATTERN (next);
 
 	  /* If this label is followed by a jump-table,
 	     make sure we put the label in the read-only section.  Also
@@ -1956,7 +1958,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		  targetm.asm_out.function_rodata_section (current_function_decl);
 
 #ifdef ADDR_VEC_ALIGN
-		  log_align = ADDR_VEC_ALIGN (NEXT_INSN (insn));
+		  log_align = ADDR_VEC_ALIGN (next);
 #else
 		  log_align = exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT);
 #endif
@@ -1967,7 +1969,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 #ifdef ASM_OUTPUT_CASE_LABEL
 	      ASM_OUTPUT_CASE_LABEL (file, "L", CODE_LABEL_NUMBER (insn),
-				     NEXT_INSN (insn));
+				     next);
 #else
 	      targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (insn));
 #endif
@@ -2021,6 +2023,11 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    if (prescan > 0)
 	      break;
+
+	    if (! JUMP_TABLES_IN_TEXT_SECTION)
+	      targetm.asm_out.function_rodata_section (current_function_decl);
+	    else
+	      function_section (current_function_decl);
 
 	    if (app_on)
 	      {
@@ -2157,7 +2164,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  {
 	    /* A delayed-branch sequence */
 	    int i;
-	    rtx next;
 
 	    if (prescan > 0)
 	      break;
