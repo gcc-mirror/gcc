@@ -45,6 +45,12 @@ somewhat more difficult.
 In `egcs' 1.2:
 ==============
 
+   * Fix the `IDate' Intrinsic (VXT) so the returned year is in the
+     documented, non-Y2K-compliant range of 0-99, instead of being
+     returned as 100 in the year 2000.
+
+     *Note IDate Intrinsic (VXT)::, for more information.
+
    * Fix `g77' so it no longer crashes when compiling I/O statements
      using keywords that define `INTEGER' values, such as `IOSTAT=J',
      where J is other than default `INTEGER' (such as `INTEGER*2').
