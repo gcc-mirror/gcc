@@ -1,3 +1,15 @@
+2005-01-15  Michael Koch  <konqueror@gmx.de>
+
+	PR libgcj/19444
+	* java/net/URI.java
+	(AUTHORITY_REGEXP): New regexp constant.
+	(AUTHORITY_USERINFO_GROUP): New constant.
+	(AUTHORITY_HOST_GROUP): Likewise.
+	(AUTHORITY_PORT_GROUP): Likewise.
+	(port): Changed default value to -1.
+	(parseURI): Parse authority part and initialize host,
+	port and userInfo.
+
 2005-01-14  Robin Green  <greenrd@greenrd.org>
 
 	* java/io/File.java (toURI): Generate a URI which we understand.

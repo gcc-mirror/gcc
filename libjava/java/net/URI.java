@@ -1,5 +1,5 @@
-/* URI.java - An URI class --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* URI.java -- An URI class
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.net;
 
 import java.io.IOException;
@@ -43,7 +44,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 /**
  * @author Ito Kazumitsu (ito.kazumitsu@hitachi-cable.co.jp)
@@ -63,6 +63,9 @@ public final class URI implements Comparable, Serializable
    */
   private static final String URI_REGEXP =
     "^(([^:/?#]+):)?((//([^/?#]*))?([^?#]*)(\\?([^#]*))?)?(#(.*))?";
+
+  private static final String AUTHORITY_REGEXP =
+    "^(([^?#]*)@([^?#]*):([^?#]*))?";
 
   /**
    * Valid characters (taken from rfc2396)
@@ -111,6 +114,11 @@ public final class URI implements Comparable, Serializable
    * Index of fragment component in parsed URI.
    */
   private static final int FRAGMENT_GROUP = 10;
+  
+  private static final int AUTHORITY_USERINFO_GROUP = 2;
+  private static final int AUTHORITY_HOST_GROUP = 3;
+  private static final int AUTHORITY_PORT_GROUP = 4;
+  
   private transient String scheme;
   private transient String rawSchemeSpecificPart;
   private transient String schemeSpecificPart;
@@ -120,7 +128,7 @@ public final class URI implements Comparable, Serializable
   private transient String userInfo;
   private transient String rawHost;
   private transient String host;
-  private transient int port;
+  private transient int port = -1;
   private transient String rawPath;
   private transient String path;
   private transient String rawQuery;
@@ -168,6 +176,7 @@ public final class URI implements Comparable, Serializable
   {
     Pattern pattern = Pattern.compile(URI_REGEXP);
     Matcher matcher = pattern.matcher(str);
+    
     if (matcher.matches())
       {
 	scheme = getURIGroup(matcher, SCHEME_GROUP);
@@ -180,10 +189,42 @@ public final class URI implements Comparable, Serializable
     else
       throw new URISyntaxException(str, "doesn't match URI regular expression");
 
+    if (rawAuthority != null)
+      {
+	pattern = Pattern.compile(AUTHORITY_REGEXP);
+	matcher = pattern.matcher(rawAuthority);
+
+	if (matcher.matches())
+	  {
+	    rawUserInfo = getURIGroup(matcher, AUTHORITY_USERINFO_GROUP);
+	    rawHost = getURIGroup(matcher, AUTHORITY_HOST_GROUP);
+
+	    String portStr = getURIGroup(matcher, AUTHORITY_PORT_GROUP);
+
+	    if (portStr != null)
+	      try
+		{
+		  port = Integer.parseInt(portStr);
+		}
+	      catch (NumberFormatException e)
+		{
+		  URISyntaxException use =
+		    new URISyntaxException
+		      (str, "doesn't match URI regular expression");
+		  use.initCause(e);
+		  throw use;
+		}
+	  }
+	else
+	  throw new URISyntaxException(str, "doesn't match URI regular expression");
+      }
+
     // We must eagerly unquote the parts, because this is the only time
     // we may throw an exception.
     schemeSpecificPart = unquote(rawSchemeSpecificPart);
     authority = unquote(rawAuthority);
+    userInfo = unquote(rawUserInfo);
+    host = unquote(rawHost);
     path = unquote(rawPath);
     query = unquote(rawQuery);
     fragment = unquote(rawFragment);
