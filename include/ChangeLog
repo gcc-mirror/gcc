@@ -1,3 +1,10 @@
+2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* demangle.h (demangling_styles): Remove trailing comma in enum.
+
+	* dyn-string.h (dyn_string_append_char): Change parameter from
+	char to int.
+
 2000-06-04  Alex Samuel  <samuel@codesourcery.com>
 
 	* dyn-string.h: Move here from gcc/dyn-string.h.  Add new functions.

@@ -845,7 +845,7 @@ echo "$ac_t""$ac_cv_prog_gcc" 1>&6
 
 if test $ac_cv_prog_gcc = yes; then
   GCC=yes
-  ac_libiberty_warn_cflags='-W -Wall -Wtraditional'
+  ac_libiberty_warn_cflags='-W -Wall -Wtraditional -pedantic'
   ac_test_CFLAGS="${CFLAGS+set}"
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS=
