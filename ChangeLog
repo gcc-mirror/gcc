@@ -1,3 +1,9 @@
+Wed Nov 26 16:08:50 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* From Franz Sirl.
+	* config.guess (powerpc*-*-linux): Handle glibc2 beta release
+	found on RedHat Linux systems.
+
 Fri Nov 21 09:51:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* config.guess (alpha stuff): Merge with FSF to avoid incorrect
