@@ -1,3 +1,8 @@
+2001-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.c (finish_file): Don't emit static inline functions if
+	they weren't referenced.
+
 2001-11-15  Stan Shebs  <shebs@apple.com>
 
 	* expr.c (expand_expr, case COMPONENT_REF): Fix variable ref.
