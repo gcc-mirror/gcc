@@ -149,6 +149,7 @@ echo "etime == time for executable to run" >> $RESULTS_FILE
 echo "text == size of the executable text section" >> $RESULTS_FILE
 echo "data == size of the executable data section" >> $RESULTS_FILE
 echo "total == size of the executable" >> $RESULTS_FILE
+echo "(First static, then shared.)" >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE
 
 echo "p" | awk '{printf("%s ", $1)}' >> $RESULTS_FILE
@@ -190,6 +191,16 @@ test_file()
 
     if [ -f $EXENAME ]; then
         case @host_os@ in
+          *solaris2.8*)
+            # These numbers seem to match up to text/data/total,
+            # although their meanings seem to be different.  Very
+            # important to not compare these numbers across platforms.
+            ## Get rid of the banner information.  I don't recall this
+            ## happening under previous Solarises.  Maybe it's an 8 thing.
+            TEXT="$(size $EXENAME | grep $EXENAME | awk '{print $1}')"
+            DATA="$(size $EXENAME | grep $EXENAME | awk '{print $3}')"
+            SIZE="$(size $EXENAME | grep $EXENAME | awk '{print $7}')"
+            ;;
           *solaris*)
             # These numbers seem to match up to text/data/total,
             # although their meanings seem to be different.  Very
