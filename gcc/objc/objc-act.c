@@ -7870,7 +7870,7 @@ get_super_receiver (void)
       /* Set receiver to self.  */
       super_expr = build_component_ref (UOBJC_SUPER_decl, self_id);
       super_expr = build_modify_expr (super_expr, NOP_EXPR, self_decl);
-      super_expr_list = build_tree_list (NULL_TREE, super_expr);
+      super_expr_list = super_expr;
 
       /* Set class to begin searching.  */
 #ifdef OBJCPLUS
@@ -7941,12 +7941,12 @@ get_super_receiver (void)
 					       super_class));
 	}
 
-      chainon (super_expr_list, build_tree_list (NULL_TREE, super_expr));
+      super_expr_list = build_compound_expr (super_expr_list, super_expr);
 
       super_expr = build_unary_op (ADDR_EXPR, UOBJC_SUPER_decl, 0);
-      chainon (super_expr_list, build_tree_list (NULL_TREE, super_expr));
+      super_expr_list = build_compound_expr (super_expr_list, super_expr);
 
-      return build_compound_expr (super_expr_list);
+      return super_expr_list;
     }
   else
     {

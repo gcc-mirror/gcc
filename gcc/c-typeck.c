@@ -62,7 +62,6 @@ static tree default_function_array_conversion (tree);
 static tree lookup_field (tree, tree);
 static tree convert_arguments (tree, tree, tree, tree);
 static tree pointer_diff (tree, tree);
-static tree internal_build_compound_expr (tree, int);
 static tree convert_for_assignment (tree, tree, const char *, tree, tree,
 				    int);
 static void warn_for_assignment (const char *, const char *, tree, int);
@@ -1182,9 +1181,8 @@ default_function_array_conversion (tree exp)
       exp = TREE_OPERAND (exp, 0);
     }
 
-  /* Preserve the original expression code.  */
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (exp))))
-    C_SET_EXP_ORIGINAL_CODE (exp, C_EXP_ORIGINAL_CODE (orig_exp));
+  if (TREE_NO_WARNING (orig_exp))
+    TREE_NO_WARNING (exp) = 1;
 
   if (code == FUNCTION_TYPE)
     {
@@ -1294,9 +1292,8 @@ default_conversion (tree exp)
 	     && TREE_TYPE (TREE_OPERAND (exp, 0)) == TREE_TYPE (exp)))
     exp = TREE_OPERAND (exp, 0);
 
-  /* Preserve the original expression code.  */
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (exp))))
-    C_SET_EXP_ORIGINAL_CODE (exp, C_EXP_ORIGINAL_CODE (orig_exp));
+  if (TREE_NO_WARNING (orig_exp))
+    TREE_NO_WARNING (exp) = 1;
 
   /* Normally convert enums to int,
      but convert wide enums to something wider.  */
@@ -2099,28 +2096,23 @@ convert_arguments (tree typelist, tree values, tree name, tree fundecl)
    we check for operands that were written with other binary operators
    in a way that is likely to confuse the user.  */
 
-tree
-parser_build_binary_op (enum tree_code code, tree arg1, tree arg2)
+struct c_expr
+parser_build_binary_op (enum tree_code code, struct c_expr arg1,
+			struct c_expr arg2)
 {
-  tree result = build_binary_op (code, arg1, arg2, 1);
+  struct c_expr result;
 
-  char class;
-  char class1 = TREE_CODE_CLASS (TREE_CODE (arg1));
-  char class2 = TREE_CODE_CLASS (TREE_CODE (arg2));
-  enum tree_code code1 = ERROR_MARK;
-  enum tree_code code2 = ERROR_MARK;
+  enum tree_code code1 = arg1.original_code;
+  enum tree_code code2 = arg2.original_code;
 
-  if (TREE_CODE (result) == ERROR_MARK)
-    return error_mark_node;
+  result.value = build_binary_op (code, arg1.value, arg2.value, 1);
+  result.original_code = code;
 
-  if (IS_EXPR_CODE_CLASS (class1))
-    code1 = C_EXP_ORIGINAL_CODE (arg1);
-  if (IS_EXPR_CODE_CLASS (class2))
-    code2 = C_EXP_ORIGINAL_CODE (arg2);
+  if (TREE_CODE (result.value) == ERROR_MARK)
+    return result;
 
   /* Check for cases such as x+y<<z which users are likely
-     to misinterpret.  If parens are used, C_EXP_ORIGINAL_CODE
-     is cleared to prevent these warnings.  */
+     to misinterpret.  */
   if (warn_parentheses)
     {
       if (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
@@ -2178,25 +2170,9 @@ parser_build_binary_op (enum tree_code code, tree arg1, tree arg2)
 
     }
 
-  unsigned_conversion_warning (result, arg1);
-  unsigned_conversion_warning (result, arg2);
-  overflow_warning (result);
-
-  class = TREE_CODE_CLASS (TREE_CODE (result));
-
-  /* Record the code that was specified in the source,
-     for the sake of warnings about confusing nesting.  */
-  if (IS_EXPR_CODE_CLASS (class))
-    C_SET_EXP_ORIGINAL_CODE (result, code);
-  else
-    {
-      /* We used to use NOP_EXPR rather than NON_LVALUE_EXPR
-	 so that convert_for_assignment wouldn't strip it.
-	 That way, we got warnings for things like p = (1 - 1).
-	 But it turns out we should not get those warnings.  */
-      result = build1 (NON_LVALUE_EXPR, TREE_TYPE (result), result);
-      C_SET_EXP_ORIGINAL_CODE (result, code);
-    }
+  unsigned_conversion_warning (result.value, arg1.value);
+  unsigned_conversion_warning (result.value, arg2.value);
+  overflow_warning (result.value);
 
   return result;
 }
@@ -2894,44 +2870,27 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
   return fold (build (COND_EXPR, result_type, ifexp, op1, op2));
 }
 
-/* Given a list of expressions, return a compound expression
-   that performs them all and returns the value of the last of them.  */
+/* Return a compound expression that performs two expressions and
+   returns the value of the second of them.  */
 
 tree
-build_compound_expr (tree list)
+build_compound_expr (tree expr1, tree expr2)
 {
-  return internal_build_compound_expr (list, TRUE);
-}
+  /* Convert arrays and functions to pointers.  */
+  expr2 = default_function_array_conversion (expr2);
 
-static tree
-internal_build_compound_expr (tree list, int first_p)
-{
-  tree rest;
+  /* Don't let (0, 0) be null pointer constant.  */
+  if (integer_zerop (expr2))
+    expr2 = non_lvalue (expr2);
 
-  if (TREE_CHAIN (list) == 0)
-    {
-      /* Convert arrays and functions to pointers when there
-	 really is a comma operator.  */
-      if (!first_p)
-	TREE_VALUE (list)
-	  = default_function_array_conversion (TREE_VALUE (list));
-
-      /* Don't let (0, 0) be null pointer constant.  */
-      if (!first_p && integer_zerop (TREE_VALUE (list)))
-	return non_lvalue (TREE_VALUE (list));
-      return TREE_VALUE (list);
-    }
-
-  rest = internal_build_compound_expr (TREE_CHAIN (list), FALSE);
-
-  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
+  if (! TREE_SIDE_EFFECTS (expr1))
     {
       /* The left-hand operand of a comma expression is like an expression
          statement: with -Wextra or -Wunused, we should warn if it doesn't have
 	 any side-effects, unless it was explicitly cast to (void).  */
       if (warn_unused_value
-           && ! (TREE_CODE (TREE_VALUE (list)) == CONVERT_EXPR
-                && VOID_TYPE_P (TREE_TYPE (TREE_VALUE (list)))))
+           && ! (TREE_CODE (expr1) == CONVERT_EXPR
+                && VOID_TYPE_P (TREE_TYPE (expr1))))
         warning ("left-hand operand of comma expression has no effect");
     }
 
@@ -2940,9 +2899,9 @@ internal_build_compound_expr (tree list, int first_p)
      `foo() + bar(), baz()' the result of the `+' operator is not used,
      so we should issue a warning.  */
   else if (warn_unused_value)
-    warn_if_unused_value (TREE_VALUE (list), input_location);
+    warn_if_unused_value (expr1, input_location);
 
-  return build (COMPOUND_EXPR, TREE_TYPE (rest), TREE_VALUE (list), rest);
+  return build (COMPOUND_EXPR, TREE_TYPE (expr2), expr1, expr2);
 }
 
 /* Build an expression representing a cast to type TYPE of expression EXPR.  */

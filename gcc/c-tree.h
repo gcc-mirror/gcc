@@ -80,10 +80,6 @@ struct lang_type GTY(())
 #define C_TYPE_VARIABLE_SIZE(TYPE) TYPE_LANG_FLAG_1 (TYPE)
 #define C_DECL_VARIABLE_SIZE(TYPE) DECL_LANG_FLAG_0 (TYPE)
 
-/* Store a value in that field.  */
-#define C_SET_EXP_ORIGINAL_CODE(EXP, CODE) \
-  (TREE_COMPLEXITY (EXP) = (int) (CODE))
-
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
 
@@ -115,6 +111,18 @@ struct lang_type GTY(())
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
    without prototypes.  */
 #define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_LANG_SLOT_1 (NODE)
+
+/* Record parser information about an expression that is irrelevant
+   for code generation alongside a tree representing its value.  */
+struct c_expr
+{
+  /* The value of the expression.  */
+  tree value;
+  /* Record the original binary operator of an expression, which may
+     have been changed by fold, or ERROR_MARK for other expressions
+     (including parenthesized expressions).  */
+  enum tree_code original_code;
+};
 
 /* Save and restore the variables in this file and elsewhere
    that keep track of the progress of compilation of the current function.
@@ -225,10 +233,11 @@ extern tree build_component_ref (tree, tree);
 extern tree build_indirect_ref (tree, const char *);
 extern tree build_array_ref (tree, tree);
 extern tree build_external_ref (tree, int);
-extern tree parser_build_binary_op (enum tree_code, tree, tree);
+extern struct c_expr parser_build_binary_op (enum tree_code, struct c_expr,
+					     struct c_expr);
 extern void readonly_error (tree, const char *);
 extern tree build_conditional_expr (tree, tree, tree);
-extern tree build_compound_expr (tree);
+extern tree build_compound_expr (tree, tree);
 extern tree c_cast_expr (tree, tree);
 extern tree build_c_cast (tree, tree);
 extern tree build_modify_expr (tree, enum tree_code, tree);

@@ -598,10 +598,6 @@ extern int skip_evaluation;
 #define C_TYPE_OBJECT_OR_INCOMPLETE_P(type) \
   (!C_TYPE_FUNCTION_P (type))
 
-/* Record in each node resulting from a binary operator
-   what operator was specified for it.  */
-#define C_EXP_ORIGINAL_CODE(exp) ((enum tree_code) TREE_COMPLEXITY (exp))
-
 /* Attribute table common to the C front ends.  */
 extern const struct attribute_spec c_common_attribute_table[];
 extern const struct attribute_spec c_common_format_attribute_table[];
