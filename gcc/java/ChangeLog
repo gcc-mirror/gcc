@@ -1,5 +1,10 @@
 2003-01-21  Tom Tromey  <tromey@redhat.com>
 
+	* class.c (supers_all_compiled): New function.
+	(make_class_data): Use it.
+
+2003-01-21  Tom Tromey  <tromey@redhat.com>
+
 	* parse.y (method_header): Native method can't be strictfp.
 	No method can be transient or volatile.
 

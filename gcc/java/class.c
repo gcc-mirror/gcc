@@ -54,6 +54,7 @@ static int32 hashUtf8String (const char *, int);
 static tree make_field_value (tree);
 static tree get_dispatch_vector (tree);
 static tree get_dispatch_table (tree, tree);
+static int supers_all_compiled (tree type);
 static void add_interface_do (tree, tree, int);
 static tree maybe_layout_super_class (tree, tree);
 static int assume_compiled (const char *);
@@ -1265,7 +1266,8 @@ static tree
 get_dispatch_vector (tree type)
 {
   tree vtable = TYPE_VTABLE (type);
-  if (vtable == NULL)
+
+  if (vtable == NULL_TREE)
     {
       HOST_WIDE_INT i;
       tree method;
@@ -1365,6 +1367,18 @@ get_dispatch_table (tree type, tree this_class_addr)
   return build (CONSTRUCTOR,
 		build_prim_array_type (nativecode_ptr_type_node, arraysize),
 		NULL_TREE, list);
+}
+
+static int
+supers_all_compiled (tree type)
+{
+  while (type != NULL_TREE)
+    {
+      if (!assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)))))
+	return 0;
+      type = CLASSTYPE_SUPER (type);
+    }
+  return 1;
 }
 
 void
@@ -1468,8 +1482,8 @@ make_class_data (tree type)
   DECL_IGNORED_P (methods_decl) = 1;
   rest_of_decl_compilation (methods_decl, (char*) 0, 1, 0);
 
-  if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
-      && ! CLASS_INTERFACE (type_decl) && !flag_indirect_dispatch)
+  if (supers_all_compiled (type) && ! CLASS_INTERFACE (type_decl)
+      && !flag_indirect_dispatch)
     {
       tree dtable = get_dispatch_table (type, this_class_addr);
       dtable_decl = build_dtable_decl (type);
@@ -1956,9 +1970,6 @@ layout_class_methods (tree this_class)
   TYPE_NVIRTUALS (this_class) = dtable_count;
 }
 
-/* Return 0 if NAME is equal to STR, -1 if STR is "less" than NAME,
-   and 1 if STR is "greater" than NAME.  */
-
 /* Lay METHOD_DECL out, returning a possibly new value of
    DTABLE_COUNT. Also mangle the method's name. */
 
@@ -1995,7 +2006,7 @@ layout_class_method (tree this_class, tree super_class,
     }
   else if (! METHOD_STATIC (method_decl) && !DECL_ARTIFICIAL (method_decl))
     {
-      tree method_sig = 
+      tree method_sig =
 	build_java_argument_signature (TREE_TYPE (method_decl));
       tree super_method = lookup_argument_method (super_class, method_name,
 						  method_sig);
