@@ -37,7 +37,7 @@ static GTY ((deletable (""))) rtx unused_expr_list;
 
 
 /* This function will free an entire list of either EXPR_LIST or INSN_LIST
-   nodes. This is to be used only only lists that consist exclusively of
+   nodes. This is to be used only on lists that consist exclusively of
    nodes of one type only.  This is only called by free_EXPR_LIST_list
    and free_INSN_LIST_list.  */
 static void
