@@ -86,6 +86,13 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
   fs->cfa_reg = STACK_POINTER_REGNUM;
   fs->cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
+#if _MIPS_SIM == _ABIO32 && defined __MIPSEB__
+  /* On o32 Linux, the register save slots in the sigcontext are
+     eight bytes.  We need the lower half of each register slot,
+     so slide our view of the structure back four bytes.  */
+  new_cfa -= 4;
+#endif
+
   for (i = 0; i < 32; i++) {
     fs->regs.reg[i].how = REG_SAVED_OFFSET;
     fs->regs.reg[i].loc.offset

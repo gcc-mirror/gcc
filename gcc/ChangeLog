@@ -1,3 +1,8 @@
+2005-02-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/mips/linux-unwind.h (mips_fallback_frame_state): Adjust
+	offsets for the big-endian 32-bit case.
+
 2005-02-11  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/ia64/hpux.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
