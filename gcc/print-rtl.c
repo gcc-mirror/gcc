@@ -345,3 +345,16 @@ print_rtl (outf, rtx_first)
 	print_rtx (rtx_first);
       }
 }
+
+/* Like print_rtx, except specify a file.  */
+
+void
+print_rtl_single (outf, x)
+     FILE *outf;
+     rtx x;
+{
+  outfile = outf;
+  sawclose = 0;
+  print_rtx (x);
+  putc ('\n', outf);
+}

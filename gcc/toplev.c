@@ -3314,7 +3314,7 @@ rest_of_compilation (decl)
   if (flow_dump)
     TIMEVAR (dump_time,
 	     {
-	       print_rtl (flow_dump_file, insns);
+	       print_rtl_with_bb (flow_dump_file, insns);
 	       fflush (flow_dump_file);
 	     });
 
@@ -3331,7 +3331,7 @@ rest_of_compilation (decl)
 	       fprintf (combine_dump_file, "\n;; Function %s\n\n",
 			(*decl_printable_name) (decl, 2));
 	       dump_combine_stats (combine_dump_file);
-	       print_rtl (combine_dump_file, insns);
+	       print_rtl_with_bb (combine_dump_file, insns);
 	       fflush (combine_dump_file);
 	     });
 
@@ -3358,7 +3358,7 @@ rest_of_compilation (decl)
   if (sched_dump)
     TIMEVAR (dump_time,
 	     {
-	       print_rtl (sched_dump_file, insns);
+	       print_rtl_with_bb (sched_dump_file, insns);
 	       fflush (sched_dump_file);
 	     });
 
@@ -3381,7 +3381,7 @@ rest_of_compilation (decl)
 			(*decl_printable_name) (decl, 2));
 	       dump_flow_info (local_reg_dump_file);
 	       dump_local_alloc (local_reg_dump_file);
-	       print_rtl (local_reg_dump_file, insns);
+	       print_rtl_with_bb (local_reg_dump_file, insns);
 	       fflush (local_reg_dump_file);
 	     });
 
@@ -3410,7 +3410,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       dump_global_regs (global_reg_dump_file);
-	       print_rtl (global_reg_dump_file, insns);
+	       print_rtl_with_bb (global_reg_dump_file, insns);
 	       fflush (global_reg_dump_file);
 	     });
 
@@ -3449,7 +3449,7 @@ rest_of_compilation (decl)
       if (sched2_dump)
 	TIMEVAR (dump_time,
 		 {
-		   print_rtl (sched2_dump_file, insns);
+		   print_rtl_with_bb (sched2_dump_file, insns);
 		   fflush (sched2_dump_file);
 		 });
     }
@@ -3477,7 +3477,7 @@ rest_of_compilation (decl)
 	     {
 	       fprintf (jump2_opt_dump_file, "\n;; Function %s\n\n",
 			(*decl_printable_name) (decl, 2));
-	       print_rtl (jump2_opt_dump_file, insns);
+	       print_rtl_with_bb (jump2_opt_dump_file, insns);
 	       fflush (jump2_opt_dump_file);
 	     });
 
@@ -3499,7 +3499,7 @@ rest_of_compilation (decl)
 		 {
 		   fprintf (dbr_sched_dump_file, "\n;; Function %s\n\n",
 			    (*decl_printable_name) (decl, 2));
-		   print_rtl (dbr_sched_dump_file, insns);
+		   print_rtl_with_bb (dbr_sched_dump_file, insns);
 		   fflush (dbr_sched_dump_file);
 		 });
 	}
@@ -3520,7 +3520,7 @@ rest_of_compilation (decl)
 	       {
 		 fprintf (stack_reg_dump_file, "\n;; Function %s\n\n",
 		          (*decl_printable_name) (decl, 2));
-		 print_rtl (stack_reg_dump_file, insns);
+		 print_rtl_with_bb (stack_reg_dump_file, insns);
 		 fflush (stack_reg_dump_file);
 	       });
     }
