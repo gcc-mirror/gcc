@@ -1,3 +1,12 @@
+Sun Sep  6 01:30:40 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* allgmem.c: Do not include config.h anymore.
+	* allmem.c allocate.c andps.c cardps.c cause.c copyps.c: Likewise.
+	* diffps.c eqps.c exh.c exhstack.c ffsetclrps.c ffsetps.c: Likewise.
+	* flsetclrps.c flsetps.c inbitstr.c inps.c leps.c ltps.c: Likewise.
+	* neps.c notps.c orps.c retmem.c rtsdummy.c setbitps.c: Likewise.
+	* setbits.c sliceps.c terminate.c unhex.c unhex1.c xorps.c: Likewise.
+
 Sat Sep  5 02:09:42 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Chill runtime moved into toplevel libchill.

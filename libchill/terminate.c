@@ -20,7 +20,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define __CHILL_LIB__
 
-#include "config.h"
 #include <stdlib.h>
 #include "rtltypes.h"
 

@@ -21,7 +21,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define __CHILL_LIB__
 
 #include <stdlib.h>
-#include "config.h"
 #include "rtltypes.h"
 
 extern void __cause_ex1 (char *exname, char *file, int lineno);
