@@ -375,9 +375,10 @@ create_bb (void *h, void *e, basic_block after)
 
   gcc_assert (!e);
 
-  /* Create and initialize a new basic block.  */
+  /* Create and initialize a new basic block.  Since alloc_block uses
+     ggc_alloc_cleared to allocate a basic block, we do not have to
+     clear the newly allocated basic block here.  */
   bb = alloc_block ();
-  memset (bb, 0, sizeof (*bb));
 
   bb->index = last_basic_block;
   bb->flags = BB_NEW;
