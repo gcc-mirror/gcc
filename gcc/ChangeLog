@@ -1,3 +1,9 @@
+2005-02-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc/haifa-sched.c (schedule_block): Make queued sched group
+	insns return to ready list in the next turn.
+
+
 2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/19402
