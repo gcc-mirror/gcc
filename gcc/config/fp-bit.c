@@ -1110,6 +1110,8 @@ _le_f2 (FLO_type arg_a, FLO_type arg_b)
 }
 #endif /* L_le_sf || L_le_df */
 
+#endif /* ! US_SOFTWARE_GOFAST */
+
 #if defined(L_unord_sf) || defined(L_unord_df)
 CMPtype
 _unord_f2 (FLO_type arg_a, FLO_type arg_b)
@@ -1127,8 +1129,6 @@ _unord_f2 (FLO_type arg_a, FLO_type arg_b)
   return (isnan (&a) || isnan (&b));
 }
 #endif /* L_unord_sf || L_unord_df */
-
-#endif /* ! US_SOFTWARE_GOFAST */
 
 #if defined(L_si_to_sf) || defined(L_si_to_df)
 FLO_type
