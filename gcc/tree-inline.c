@@ -863,7 +863,7 @@ initialize_inlined_parameters (inline_data *id, tree args, tree static_chain,
     }
 
   if (gimplify_init_stmts_p && lang_hooks.gimple_before_inlining)
-    gimplify_body (&init_stmts, fn);
+    gimplify_body (&init_stmts, current_function_decl);
 
   declare_inline_vars (bind_expr, vars);
   return init_stmts;
@@ -2038,19 +2038,19 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
       tree decl = DECL_EXPR_DECL (*tp);
       tree type = TREE_TYPE (decl);
 
-      /* Walk into fields of the DECL if it's not a type, then into fields
-	 of the type in both cases.  */
-
-      if (TREE_CODE (decl) != TYPE_DECL
-	  && TREE_CODE (decl) != FIELD_DECL && TREE_CODE (decl) != PARM_DECL)
+      /* Walk into fields of the DECL if it's not a type.  */
+      if (TREE_CODE (decl) != TYPE_DECL)
 	{
-	  WALK_SUBTREE (DECL_INITIAL (decl));
+	  if (TREE_CODE (decl) != FIELD_DECL && TREE_CODE (decl) != PARM_DECL)
+	    WALK_SUBTREE (DECL_INITIAL (decl));
+
 	  WALK_SUBTREE (DECL_SIZE (decl));
-	  WALK_SUBTREE (DECL_SIZE_UNIT (decl));
+	  WALK_SUBTREE_TAIL (DECL_SIZE_UNIT (decl));
 	}
 
-      /* First do the common fields via recursion, then the fields we only
-	 do when we are declaring the type or object.  */
+      /* Otherwise, we are declaring a type.  First do the common fields via
+	 recursion, then the fields we only do when we are declaring the type
+	 or object.  */
       WALK_SUBTREE (type);
       WALK_SUBTREE (TYPE_SIZE (type));
       WALK_SUBTREE (TYPE_SIZE_UNIT (type));
@@ -2198,6 +2198,28 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
+	  /* We have to worry about mutually recursive pointers.  These can't
+	     be written in C.  They can in Ada.  It's pathlogical, but
+	     there's an ACATS test (c38102a) that checks it.  Deal with this
+	     by checking if we're pointing to another pointer, that one
+	     points to another pointer, that one does too, and we have no htab.
+	     If so, get a hash table.  We check three levels deep to avoid
+	     the cost of the hash table if we don't need one.  */
+	  if (POINTER_TYPE_P (TREE_TYPE (*tp))
+	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*tp)))
+	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (TREE_TYPE (*tp))))
+	      && !htab)
+	    {
+	      result = walk_tree_without_duplicates (&TREE_TYPE (*tp),
+						     func, data);
+	      if (result)
+		return result;
+
+	      break;
+	    }
+
+	  /* ... fall through ... */
+
 	case COMPLEX_TYPE:
 	  WALK_SUBTREE_TAIL (TREE_TYPE (*tp));
 	  break;

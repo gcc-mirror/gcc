@@ -1,5 +1,10 @@
 2004-07-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-inline.c (initialize_inlined_parameters): Pass proper function
+	context to gimplify_body.
+	(walk_tree): Don't walk into types twice.
+	(walk_tree, case POINTER_TYPE): Deal with mutually recursive pointers.
+
 	* tree-sra.c (generate_element_init): Remove any useless conversions.
 	
 	* gimplify.c (gimplify_conversion): Remove stripping useless
