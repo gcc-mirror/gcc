@@ -1,3 +1,15 @@
+2005-02-17  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-analyze.c (vect_analyze_pointer_ref_access): Use
+	POINTER_TYPE_P when checking that type is a pointer.
+	(vect_get_memtag): Remove.
+	(vect_address_analysis): Use POINTER_TYPE_P. Call
+	vect_object_analysis with dummy parameter for memtag.
+	(vect_object_analysis): Extract memtag (functionality that
+	used to be in vect_get_memtag and moved here). Fix printings.
+	(vect_analyze_data_refs): Fix comment. Call vect_object_analysis
+	with correct parameters. Remove call to vect_get_memtag.
+
 2005-02-17  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* Makefile.in (tree-vect-analyze.o, tree-vect-transform.o): New.
