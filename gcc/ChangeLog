@@ -1,3 +1,10 @@
+2004-09-17  Devang Patel  <dpatel@apple.com>
+
+	* dbxout.c (get_lang_number): New.
+	(dbxout_init): Include lang number in N_SO  stab.
+	* dbxout.h (N_SO_AS, N_SO_C, N_SO_ANSI_C, N_SO_CC, N_SO_FORTRAN,
+	N_SO_PASCAL, N_SO_FORTRAN90, N_SO_OBJC, N_SO_OBJCPLUS): New #define.
+	
 2004-09-17  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17273

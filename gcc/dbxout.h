@@ -27,4 +27,15 @@ extern void dbxout_parms (tree);
 extern void dbxout_reg_parms (tree);
 extern int dbxout_syms (tree);
 
+/* Language description for N_SO stabs.  */
+#define N_SO_AS          1
+#define N_SO_C           2
+#define N_SO_ANSI_C      3
+#define N_SO_CC          4 /* c++*/
+#define N_SO_FORTRAN     5
+#define N_SO_PASCAL      6
+#define N_SO_FORTRAN90   7
+#define N_SO_OBJC        50
+#define N_SO_OBJCPLUS    51
+
 #endif /* GCC_DBXOUT_H */
