@@ -730,15 +730,10 @@ union lang_tree_node
 #define IDENTIFIER_LOCAL_VALUE(NODE)    \
   (((struct lang_identifier *)(NODE))->local_value)
 
-/* Given an identifier NODE, get the corresponding (non-handle) class.
-   For get_identifier ("java.lang.Number"), the result is
-   the struct whose DECL_ASSEMBLER_NAME is "Classjava_lang_Number". */
+/* Given an identifier NODE, get the corresponding class.
+   E.g. IDENTIFIER_CLASS_VALUE(get_identifier ("java.lang.Number"))
+   is the corresponding RECORD_TYPE. */
 #define IDENTIFIER_CLASS_VALUE(NODE) IDENTIFIER_GLOBAL_VALUE(NODE)
-
-/* Given an identifier NODE, get the corresponding handle class.
-   For get_identifier ("java.lang.Number"), the result is
-   the struct whose DECL_ASSEMBLER_NAME is "Hjava_lang_Number". */
-#define IDENTIFIER_HANDLECLASS_VALUE(NODE) ???
 
 /* Given a signature of a reference (or array) type, or a method, return the
    corresponding type (if one has been allocated).
