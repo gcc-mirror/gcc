@@ -174,6 +174,11 @@
 	  (and (eq_attr "extended_mips16" "yes")
 	       (ne (symbol_ref "TARGET_MIPS16") (const_int 0)))
 	  (const_int 8)
+	  (and (eq_attr "type" "idiv")
+	       (ne (symbol_ref "TARGET_CHECK_ZERO_DIV") (const_int 0)))
+	  (cond [(ne (symbol_ref "TARGET_MIPS16") (const_int 0))
+		 (const_int 12)]
+		(const_int 16))
 	  ] (const_int 4)))
 
 ;; Attribute describing the processor.  This attribute must match exactly
@@ -2833,539 +2838,53 @@
   [(set_attr "type"	"fdiv")
    (set_attr "mode"	"SF")])
 
-;; If optimizing, prefer the divmod functions over separate div and
-;; mod functions, since this will allow using one instruction for both
-;; the quotient and remainder.  At present, the divmod is not moved out
-;; of loops if it is constant within the loop, so allow -mdebugc to
-;; use the old method of doing things.
-
-;; 64 is the multiply/divide hi register
-;; 65 is the multiply/divide lo register
-
-;; ??? We can't accept constants here, because the MIPS assembler will replace
-;; a divide by power of 2 with a shift, and then the remainder is no longer
-;; available.
-
-(define_expand "divmodsi4"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(div:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "register_operand" "")))
-   (set (match_operand:SI 3 "register_operand" "")
-	(mod:SI (match_dup 1)
-		(match_dup 2)))]
-  "optimize"
-  "
-{
-  emit_insn (gen_divmodsi4_internal (operands[0], operands[1], operands[2],
-	     operands[3]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-  if (TARGET_CHECK_RANGE_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (-1)),
-			       GEN_INT (0x6)));
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode,
-						 GEN_INT
-						 (trunc_int_for_mode
-						  (BITMASK_HIGH, SImode))),
-			       GEN_INT (0x6)));
-    }
-
-  DONE;
-}")
-
-(define_insn "divmodsi4_internal"
+(define_insn "divmodsi4"
   [(set (match_operand:SI 0 "register_operand" "=l")
 	(div:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "register_operand" "d")))
    (set (match_operand:SI 3 "register_operand" "=h")
 	(mod:SI (match_dup 1)
 		(match_dup 2)))]
-  "optimize"
-  "div\\t$0,%1,%2"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"SI")])
-
-(define_expand "divmoddi4"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(div:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "register_operand" "")))
-   (set (match_operand:DI 3 "register_operand" "")
-	(mod:DI (match_dup 1)
-		(match_dup 2)))]
-  "TARGET_64BIT && optimize"
-  "
-{
-  emit_insn (gen_divmoddi4_internal (operands[0], operands[1], operands[2],
-             operands[3]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-  if (TARGET_CHECK_RANGE_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (-1)),
-			       GEN_INT (0x6)));
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode,
-						 GEN_INT (BITMASK_HIGH)),
-			       GEN_INT (0x6)));
-    }
-
-  DONE;
-}")
-
-(define_insn "divmoddi4_internal"
-  [(set (match_operand:DI 0 "register_operand" "=l")
-	(div:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "register_operand" "d")))
-   (set (match_operand:DI 3 "register_operand" "=h")
-	(mod:DI (match_dup 1)
-		(match_dup 2)))]
-  "TARGET_64BIT && optimize"
-  "ddiv\\t$0,%1,%2"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"SI")])
-
-(define_expand "udivmodsi4"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(udiv:SI (match_operand:SI 1 "register_operand" "")
-		 (match_operand:SI 2 "register_operand" "")))
-   (set (match_operand:SI 3 "register_operand" "")
-	(umod:SI (match_dup 1)
-		 (match_dup 2)))]
-  "optimize"
-  "
-{
-  emit_insn (gen_udivmodsi4_internal (operands[0], operands[1], operands[2],
-                                      operands[3]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-
-  DONE;
-}")
-
-(define_insn "udivmodsi4_internal"
-  [(set (match_operand:SI 0 "register_operand" "=l")
-	(udiv:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")))
-   (set (match_operand:SI 3 "register_operand" "=h")
-	(umod:SI (match_dup 1)
-		 (match_dup 2)))]
-  "optimize"
-  "divu\\t$0,%1,%2"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"SI")])
-
-(define_expand "udivmoddi4"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(udiv:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))
-   (set (match_operand:DI 3 "register_operand" "")
-	(umod:DI (match_dup 1)
-		 (match_dup 2)))]
-  "TARGET_64BIT && optimize"
-  "
-{
-  emit_insn (gen_udivmoddi4_internal (operands[0], operands[1], operands[2],
-                                      operands[3]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-
-  DONE;
-}")
-
-(define_insn "udivmoddi4_internal"
-  [(set (match_operand:DI 0 "register_operand" "=l")
-	(udiv:DI (match_operand:DI 1 "register_operand" "d")
-		 (match_operand:DI 2 "register_operand" "d")))
-   (set (match_operand:DI 3 "register_operand" "=h")
-	(umod:DI (match_dup 1)
-		 (match_dup 2)))]
-  "TARGET_64BIT && optimize"
-  "ddivu\\t$0,%1,%2"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"SI")])
-
-;; Division trap
-
-(define_expand "div_trap"
-  [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "true_reg_or_0_operand" "dJ"))
-            (match_operand 2 "immediate_operand" ""))]
   ""
-  "
-{
-  if (TARGET_MIPS16)
-    emit_insn (gen_div_trap_mips16 (operands[0],operands[1],operands[2]));
-  else
-    emit_insn (gen_div_trap_normal (operands[0],operands[1],operands[2]));
-  DONE;
-}")
-
-(define_insn "div_trap_normal"
-  [(trap_if (eq (match_operand 0 "register_operand" "d,d")
-		(match_operand 1 "true_reg_or_0_operand" "d,J"))
-            (match_operand 2 "immediate_operand" ""))]
-  "!TARGET_MIPS16"
-  "*
-{
-  rtx link;
-  int have_dep_anti = 0;
-
-  /* For divmod if one division is not needed then we don't need an extra
-     divide by zero trap, which is anti dependent on previous trap */
-  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-
-    if ((int) REG_DEP_ANTI == (int) REG_NOTE_KIND (link)
-        && GET_CODE (XEXP (link, 0)) == INSN
-        && GET_CODE (PATTERN (XEXP (link, 0))) == TRAP_IF
-	&& which_alternative == 1)
-      have_dep_anti = 1;
-  if (! have_dep_anti)
-    {
-      if (GENERATE_BRANCHLIKELY)
-	{
-          if (which_alternative == 1)
-	    return \"%(beql\\t%0,$0,1f\\n\\tbreak\\t%2\\n%~1:%)\";
-	  else
-	    return \"%(beql\\t%0,%1,1f\\n\\tbreak\\t%2\\n%~1:%)\";
-	}
-      else
-	{
-          if (which_alternative == 1)
-	    return \"%(bne\\t%0,$0,1f\\n\\tnop\\n\\tbreak\\t%2\\n%~1:%)\";
-	  else
-	    return \"%(bne\\t%0,%1,1f\\n\\tnop\\n\\tbreak\\t%2\\n%~1:%)\";
-	}
-    }
-  return \"\";
-}"
-  [(set_attr "type" "unknown")
-   (set_attr "length" "12")])
-
-
-;; The mips16 bne insns is a macro which uses reg 24 as an intermediate.
-
-(define_insn "div_trap_mips16"
-  [(trap_if (eq (match_operand 0 "register_operand" "d,d")
-		(match_operand 1 "true_reg_or_0_operand" "d,J"))
-            (match_operand 2 "immediate_operand" ""))
-   (clobber (reg:SI 24))]
-  "TARGET_MIPS16"
-  "*
-{
-  rtx link;
-  int have_dep_anti = 0;
-
-  /* For divmod if one division is not needed then we don't need an extra
-     divide by zero trap, which is anti dependent on previous trap */
-  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-
-    if ((int) REG_DEP_ANTI == (int) REG_NOTE_KIND (link)
-        && GET_CODE (XEXP (link, 0)) == INSN
-        && GET_CODE (PATTERN (XEXP (link, 0))) == TRAP_IF
-	&& which_alternative == 1)
-      have_dep_anti = 1;
-  if (! have_dep_anti)
-    {
-      /* No branch delay slots on mips16.  */
-      if (which_alternative == 1)
-        return \"%(bnez\\t%0,1f\\n\\tbreak\\t%2\\n%~1:%)\";
-      else
-        return \"%(bne\\t%0,%1,1f\\n\\tbreak\\t%2\\n%~1:%)\";
-    }
-  return \"\";
-}"
-  [(set_attr "type" "unknown")
-   (set_attr "length" "12")])
-
-(define_expand "divsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(div:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "register_operand" "")))]
-  "!optimize"
-  "
-{
-  emit_insn (gen_divsi3_internal (operands[0], operands[1], operands[2]));
-
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-  if (TARGET_CHECK_RANGE_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (-1)),
-			       GEN_INT (0x6)));
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode,
-						 GEN_INT
-						 (trunc_int_for_mode
-						  (BITMASK_HIGH, SImode))),
-			       GEN_INT (0x6)));
-    }
-
-  DONE;
-}")
-
-(define_insn "divsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=l")
-	(div:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))]
-  "!optimize"
-  "div\\t$0,%1,%2"
+  { return mips_output_division ("div\\t$0,%1,%2", operands); }
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")])
 
-(define_expand "divdi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(div:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "register_operand" "")))]
-  "TARGET_64BIT && !optimize"
-  "
-{
-  emit_insn (gen_divdi3_internal (operands[0], operands[1], operands[2]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-  if (TARGET_CHECK_RANGE_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (-1)),
-			       GEN_INT (0x6)));
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode,
-						 GEN_INT (BITMASK_HIGH)),
-			       GEN_INT (0x6)));
-    }
-
-  DONE;
-}")
-
-(define_insn "divdi3_internal"
+(define_insn "divmoddi4"
   [(set (match_operand:DI 0 "register_operand" "=l")
 	(div:DI (match_operand:DI 1 "register_operand" "d")
 		(match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))]
-  "TARGET_64BIT && !optimize"
-  "ddiv\\t$0,%1,%2"
+   (set (match_operand:DI 3 "register_operand" "=h")
+	(mod:DI (match_dup 1)
+		(match_dup 2)))]
+  "TARGET_64BIT"
+  { return mips_output_division ("ddiv\\t$0,%1,%2", operands); }
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")])
 
-(define_expand "modsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(mod:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "register_operand" "")))]
-  "!optimize"
-  "
-{
-  emit_insn (gen_modsi3_internal (operands[0], operands[1], operands[2]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-  if (TARGET_CHECK_RANGE_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (-1)),
-			       GEN_INT (0x6)));
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode,
-						 GEN_INT
-						 (trunc_int_for_mode
-						  (BITMASK_HIGH, SImode))),
-			       GEN_INT (0x6)));
-    }
-
-  DONE;
-}")
-
-(define_insn "modsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=h")
-	(mod:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=l"))]
-  "!optimize"
-  "div\\t$0,%1,%2"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"SI")])
-
-(define_expand "moddi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(mod:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "register_operand" "")))]
-  "TARGET_64BIT && !optimize"
-  "
-{
-  emit_insn (gen_moddi3_internal (operands[0], operands[1], operands[2]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-  if (TARGET_CHECK_RANGE_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (-1)),
-			       GEN_INT (0x6)));
-      emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode,
-						 GEN_INT (BITMASK_HIGH)),
-			       GEN_INT (0x6)));
-    }
-
-  DONE;
-}")
-
-(define_insn "moddi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=h")
-	(mod:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=l"))]
-  "TARGET_64BIT && !optimize"
-  "ddiv\\t$0,%1,%2"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"DI")])
-
-(define_expand "udivsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(udiv:SI (match_operand:SI 1 "register_operand" "")
-		 (match_operand:SI 2 "register_operand" "")))]
-  "!optimize"
-  "
-{
-  emit_insn (gen_udivsi3_internal (operands[0], operands[1], operands[2]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-
-  DONE;
-}")
-
-(define_insn "udivsi3_internal"
+(define_insn "udivmodsi4"
   [(set (match_operand:SI 0 "register_operand" "=l")
 	(udiv:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))]
-  "!optimize"
-  "divu\\t$0,%1,%2"
+   (set (match_operand:SI 3 "register_operand" "=h")
+	(umod:SI (match_dup 1)
+		 (match_dup 2)))]
+  ""
+  { return mips_output_division ("divu\\t$0,%1,%2", operands); }
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")])
 
-(define_expand "udivdi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(udiv:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))]
-  "TARGET_64BIT && !optimize"
-  "
-{
-  emit_insn (gen_udivdi3_internal (operands[0], operands[1], operands[2]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-
-  DONE;
-}")
-
-(define_insn "udivdi3_internal"
+(define_insn "udivmoddi4"
   [(set (match_operand:DI 0 "register_operand" "=l")
 	(udiv:DI (match_operand:DI 1 "register_operand" "d")
 		 (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))]
-  "TARGET_64BIT && !optimize"
-  "ddivu\\t$0,%1,%2"
+   (set (match_operand:DI 3 "register_operand" "=h")
+	(umod:DI (match_dup 1)
+		 (match_dup 2)))]
+  "TARGET_64BIT"
+  { return mips_output_division ("ddivu\\t$0,%1,%2", operands); }
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")])
-
-(define_expand "umodsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(umod:SI (match_operand:SI 1 "register_operand" "")
-		 (match_operand:SI 2 "register_operand" "")))]
-  "!optimize"
-  "
-{
-  emit_insn (gen_umodsi3_internal (operands[0], operands[1], operands[2]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-
-  DONE;
-}")
-
-(define_insn "umodsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=h")
-	(umod:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=l"))]
-  "!optimize"
-  "divu\\t$0,%1,%2"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"SI")])
-
-(define_expand "umoddi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(umod:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))]
-  "TARGET_64BIT && !optimize"
-  "
-{
-  emit_insn (gen_umoddi3_internal (operands[0], operands[1], operands[2]));
-  if (!TARGET_NO_CHECK_ZERO_DIV)
-    {
-      emit_insn (gen_div_trap (operands[2],
-			       GEN_INT (0),
-			       GEN_INT (0x7)));
-    }
-
-  DONE;
-}")
-
-(define_insn "umoddi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=h")
-	(umod:DI (match_operand:DI 1 "register_operand" "d")
-		 (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=l"))]
-  "TARGET_64BIT && !optimize"
-  "ddivu\\t$0,%1,%2"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"DI")])
-
 ;;
 ;;  ....................
 ;;

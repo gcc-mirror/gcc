@@ -201,15 +201,13 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_MIPS16	   0x00100000	/* Generate mips16 code */
 #define MASK_NO_CHECK_ZERO_DIV \
 			   0x00200000	/* divide by zero checking */
-#define MASK_CHECK_RANGE_DIV \
-			   0x00400000	/* divide result range checking */
+#define MASK_BRANCHLIKELY  0x00400000   /* Generate Branch Likely
+					   instructions.  */
 #define MASK_UNINIT_CONST_IN_RODATA \
 			   0x00800000	/* Store uninitialized
 					   consts in rodata */
 #define MASK_NO_FUSED_MADD 0x01000000   /* Don't generate floating point
 					   multiply-add operations.  */
-#define MASK_BRANCHLIKELY  0x02000000   /* Generate Branch Likely
-					   instructions.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -294,8 +292,7 @@ extern void		sbss_section PARAMS ((void));
 
 #define TARGET_4300_MUL_FIX     (target_flags & MASK_4300_MUL_FIX)
 
-#define TARGET_NO_CHECK_ZERO_DIV (target_flags & MASK_NO_CHECK_ZERO_DIV)
-#define TARGET_CHECK_RANGE_DIV  (target_flags & MASK_CHECK_RANGE_DIV)
+#define TARGET_CHECK_ZERO_DIV   (!(target_flags & MASK_NO_CHECK_ZERO_DIV))
 
 #define TARGET_BRANCHLIKELY	(target_flags & MASK_BRANCHLIKELY)
 
@@ -624,10 +621,6 @@ extern void		sbss_section PARAMS ((void));
      N_("Trap on integer divide by zero")},				\
   {"no-check-zero-division", MASK_NO_CHECK_ZERO_DIV,			\
      N_("Don't trap on integer divide by zero")},			\
-  {"check-range-division",MASK_CHECK_RANGE_DIV,				\
-     N_("Trap on integer divide overflow")},				\
-  {"no-check-range-division",-MASK_CHECK_RANGE_DIV,			\
-     N_("Don't trap on integer divide overflow")},			\
   { "branch-likely",      MASK_BRANCHLIKELY,				\
       N_("Use Branch Likely instructions, overriding default for arch")}, \
   { "no-branch-likely",  -MASK_BRANCHLIKELY,				\

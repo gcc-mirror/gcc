@@ -1,5 +1,25 @@
 2003-06-09  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips-protos.h (mips_output_division): Declare.
+	* config/mips/mips.h (MASK_CHECK_RANGE_DIV): Remove.
+	(MASK_BRANCHLIKELY): Use MASK_CHECK_RANGE_DIV's old number.
+	(TARGET_NO_CHECK_ZERO_DIV, TARGET_CHECK_RANGE_DIV): Remove.
+	(TARGET_CHECK_ZERO_DIV): New macro.
+	(TARGET_SWITCHES): Remove -mcheck-range-div & -mno-check-range-div.
+	* config/mips/mips.c (mips_output_division): New function.
+	* config/mips/mips.md (length): Take TARGET_CHECK_ZERO_DIV into
+	account when calculating the default length of a division.
+	(divmodsi4, divmoddi4, udivmodsi4, udivmoddi4): Turn into define_insns.
+	Enable regardless of optimization level.  Use mips_output_division.
+	(divmodsi4_internal, divmoddi4_internal, udivmodsi4_internal,
+	udivmoddi4_internal, div_trap, div_trap_normal, div_trap_mips16,
+	divsi3, divsi3_internal, divdi3, divdi3_internal, modsi3,
+	modsi3_internal, moddi3, moddi3_internal, udivsi3, udivsi3_internal,
+	udivdi3, udivdi3_internal, umodsi3, umodsi3_internal, umoddi3,
+	umoddi3_internal): Remove.
+
+2003-06-09  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_reg_names): Change hilo entry to "".
 	(mips_sw_reg_names): Likewise.
 	(mips_regno_to_class): Change hilo entry to NO_REGS.
