@@ -1,5 +1,10 @@
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (*mov[sd]f_on_*): Redefine using :SCALARF.
+	(mov[sd]fcc): Likewise.
+
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (cmp[sd]f): Redefine using :SCALARF.
 
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>

@@ -5548,35 +5548,20 @@ beq\t%2,%.,1b\;\
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*movsf_on_<MOVECC:mode>"
-  [(set (match_operand:SF 0 "register_operand" "=f,f")
-	(if_then_else:SF
+(define_insn "*mov<SCALARF:mode>_on_<MOVECC:mode>"
+  [(set (match_operand:SCALARF 0 "register_operand" "=f,f")
+	(if_then_else:SCALARF
 	 (match_operator:MOVECC 4 "equality_operator"
 		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
 		 (const_int 0)])
-	 (match_operand:SF 2 "register_operand" "f,0")
-	 (match_operand:SF 3 "register_operand" "0,f")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
+	 (match_operand:SCALARF 2 "register_operand" "f,0")
+	 (match_operand:SCALARF 3 "register_operand" "0,f")))]
+  "ISA_HAS_CONDMOVE"
   "@
-    mov%T4.s\t%0,%2,%1
-    mov%t4.s\t%0,%3,%1"
+    mov%T4.<fmt>\t%0,%2,%1
+    mov%t4.<fmt>\t%0,%3,%1"
   [(set_attr "type" "condmove")
-   (set_attr "mode" "SF")])
-
-(define_insn "*movdf_on_<MOVECC:mode>"
-  [(set (match_operand:DF 0 "register_operand" "=f,f")
-	(if_then_else:DF
-	 (match_operator:MOVECC 4 "equality_operator"
-		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
-		 (const_int 0)])
-	 (match_operand:DF 2 "register_operand" "f,0")
-	 (match_operand:DF 3 "register_operand" "0,f")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "@
-    mov%T4.d\t%0,%2,%1
-    mov%t4.d\t%0,%3,%1"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "DF")])
+   (set_attr "mode" "<SCALARF:MODE>")])
 
 ;; These are the main define_expand's used to make conditional moves.
 
@@ -5592,25 +5577,13 @@ beq\t%2,%.,1b\;\
   DONE;
 })
 
-(define_expand "movsfcc"
+(define_expand "mov<mode>cc"
   [(set (match_dup 4) (match_operand 1 "comparison_operator"))
-   (set (match_operand:SF 0 "register_operand")
-	(if_then_else:SF (match_dup 5)
-			 (match_operand:SF 2 "register_operand")
-			 (match_operand:SF 3 "register_operand")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
-{
-  gen_conditional_move (operands);
-  DONE;
-})
-
-(define_expand "movdfcc"
-  [(set (match_dup 4) (match_operand 1 "comparison_operator"))
-   (set (match_operand:DF 0 "register_operand")
-	(if_then_else:DF (match_dup 5)
-			 (match_operand:DF 2 "register_operand")
-			 (match_operand:DF 3 "register_operand")))]
-  "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+   (set (match_operand:SCALARF 0 "register_operand")
+	(if_then_else:SCALARF (match_dup 5)
+			      (match_operand:SCALARF 2 "register_operand")
+			      (match_operand:SCALARF 3 "register_operand")))]
+  "ISA_HAS_CONDMOVE"
 {
   gen_conditional_move (operands);
   DONE;
