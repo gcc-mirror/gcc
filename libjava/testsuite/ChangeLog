@@ -1,3 +1,8 @@
+2002-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/override.java: New file.
+	* libjava.lang/override.out: New file.
+
 2002-12-01  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jacks/jacks.exp (gcj_jacks_setup_xfail): New function.
