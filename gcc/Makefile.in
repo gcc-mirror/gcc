@@ -1976,7 +1976,7 @@ install-common: native install-dir xgcc $(EXTRA_PARTS) lang.install-common
 	  rm -f $(bindir)/$(GCC_INSTALL_NAME); \
 	  $(INSTALL_PROGRAM) xgcc $(bindir)/$(GCC_INSTALL_NAME); \
 	  rm -f $(bindir)/$(target)-gcc-1; \
-	  ln $(bindir)/gcc $(bindir)/$(target)-gcc-1; \
+	  ln $(bindir)/$(GCC_INSTALL_NAME) $(bindir)/$(target)-gcc-1; \
 	  mv $(bindir)/$(target)-gcc-1 $(bindir)/$(target)-gcc; \
 	fi
 # Install protoize if it was compiled.
