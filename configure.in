@@ -1,5 +1,5 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+#   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -868,20 +868,6 @@ if test -n "${target_configdirs}" ; then
   fi
 fi
 
-# Deconfigure all subdirectories, in case we are changing the
-# configuration from one where a subdirectory is supported to one where it
-# is not.
-if test -z "${norecursion}" && test -n "${configdirs}" ; then
-  for i in `echo ${configdirs} | sed -e s/target-//g` ; do
-    rm -f $i/Makefile
-  done
-fi
-if test -z "${norecursion}" && test -n "${target_configdirs}" ; then
-  for i in `echo ${target_configdirs} | sed -e s/target-//g` ; do
-    rm -f ${target_subdir}/$i/Makefile
-  done
-fi
-
 # Quietly strip out all directories which aren't configurable in this tree.
 # This relies on all configurable subdirectories being autoconfiscated, which
 # is now the case.
@@ -1668,13 +1654,24 @@ target_configdirs=`echo "${target_configdirs}" | sed -e 's/target-//g'`
 # This is the final value for target_configdirs.  configdirs already
 # has its final value.  It's time to create some lists of valid targets.
 
+# While at that, we remove Makefiles if we were started for recursive
+# configuration, such that the top-level Makefile reconfigures them,
+# like we used to do when configure itself was recursive.
+
 all_build_modules=
 configure_build_modules=
 # Only make build modules if build != host.
 # This should be done more generally, but at the moment it doesn't matter.
 if test ${host_alias} != ${build_alias} ; then
-  all_build_modules=all-build-libiberty
-  configure_build_modules=configure-build-libiberty
+  for module in libiberty ; do
+    all_build_modules=all-build-${module}
+    configure_build_modules=configure-build-${module}
+    if test -z "${no_recursion}" \
+       && test -f ${build_subdir}/${module}/Makefile; then
+      echo 1>&2 "*** removing ${build_subdir}/${module}/Makefile to force reconfigure"
+      rm -f ${build_subdir}/${module}/Makefile
+    fi
+  done
 fi
 
 all_host_modules=
@@ -1686,6 +1683,11 @@ for module in ${configdirs} ; do
   check_host_modules="${check_host_modules} check-${module}"
   install_host_modules="${install_host_modules} install-${module}"
   configure_host_modules="${configure_host_modules} configure-${module}"
+  if test -z "${no_recursion}" \
+     && test -f ${module}/Makefile; then
+    echo 1>&2 "*** removing ${module}/Makefile to force reconfigure"
+    rm -f ${module}/Makefile
+  fi
 done
 install_host_modules_nogcc=`echo "${install_host_modules}" | sed -e 's/install-gcc//g'`
 
@@ -1698,6 +1700,11 @@ for module in ${target_configdirs} ; do
   check_target_modules="${check_target_modules} check-target-${module}"
   install_target_modules="${install_target_modules} install-target-${module}"
   configure_target_modules="${configure_target_modules} configure-target-${module}"
+  if test -z "${no_recursion}" \
+     && test -f ${target_subdir}/${module}/Makefile; then
+    echo 1>&2 "*** removing ${target_subdir}/${module}/Makefile to force reconfigure"
+    rm -f ${target_subdir}/${module}/Makefile
+  fi
 done
 
 # Determine whether gdb needs tk/tcl or not.

@@ -1,3 +1,9 @@
+2003-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in: Remove Makefile in build, host and target modules
+	unless configure was run with --no-recursion.
+	* configure: Rebuilt.
+
 2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Makefile.tpl (BASE_FLAGS_TO_PASS): Also pass DESTDIR.
