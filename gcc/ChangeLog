@@ -1,3 +1,8 @@
+2003-05-07  Richard Henderson  <rth@redhat.com>
+
+	* unwind-dw2.c (_Unwind_GetGR): Cast pointer to _Unwind_Ptr,
+	not _Unwind_Word.
+
 2003-05-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* stmt.c (force_label_rtx): New function, based on logic
