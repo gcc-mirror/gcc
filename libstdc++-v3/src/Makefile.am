@@ -64,7 +64,6 @@ sources = \
 	basic_file.cc \
 	bitset.cc \
 	c++locale.cc \
-	cmath.cc \
 	codecvt.cc \
 	collate.cc \
 	complex_io.cc \

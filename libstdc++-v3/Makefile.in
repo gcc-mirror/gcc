@@ -196,9 +196,9 @@ AM_MAKEFLAGS = \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" 
 
+
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
-
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =  mkcheck testsuite_flags

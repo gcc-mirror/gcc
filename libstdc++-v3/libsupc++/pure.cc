@@ -39,8 +39,8 @@
 /*#  define write(fd, buf, n)	__write((fd), (buf), (n))*/
 # endif
 #else
-# include <stdio.h>
-# define writestr(str)	fputs(str, stderr)
+# include <cstdio>
+# define writestr(str)	std::fputs(str, stderr)
 #endif
 
 extern "C" void
