@@ -104,10 +104,6 @@
 	* configure.in: Set RAW_CXX_FOR_TARGET if unset.
 	* configure: Regenerated.
 
-2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
-
-	* config/no-executables.m4: New file.
-
 2003-08-23  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* MAINTAINERS: Update my email address.
@@ -921,10 +917,6 @@
 	Convert (cd foo; make) to (cd foo && make).  Clean up multilib.out.
 	* Makefile.in: Regenerate.
 	* configure.in: Remove unnecessary leftovers.
-
-2002-12-22  Geoffrey Keating  <geoffk@apple.com>
-
-	* config/mt-aix43: Delete.
 
 2002-12-21  Geoffrey Keating  <geoffk@apple.com>
 
@@ -2952,10 +2944,6 @@ Mon Nov  6 14:19:35 2000  Christopher Faylor <cgf@cygnus.com>
 	multi-language branch, to work around Solaris' /bin/sh bug.  Rebuilt
 	all affected `configure' scripts.
 
-2000-09-26  David Edelsohn  <edelsohn@gnu.org>
-
-	* config/mt-aix43 (NM_FOR_TARGET): Add -B bsd-style flag.
-
 Mon 25-Sep-2000 19:46:09 BST  Neil Booth  <neilb@earthling.net>
 
 	* MAINTAINERS: Add self as cpplib co-maintainer.
@@ -3732,8 +3720,6 @@ Fri Apr  2 15:11:32 1999  H.J. Lu  (hjl@gnu.org)
 
 Thu Mar 18 00:17:50 1999  Mark Elbrecht <snowball3@usa.net>
 
-	* config/mh-go32: Delete.
-	* config/mh-djgpp: New. Renamed from mh-go32.
 	* configure.in (pc-msdosdjgpp): Set host_makefile_frag to
 	config/mh-djgpp.
 
@@ -3784,7 +3770,6 @@ Wed Feb 24 13:51:40 1999  Drew Moseley  <dmoseley@cygnus.com>
 Wed Feb 24 12:52:17 1999  Stan Shebs  <shebs@andros.cygnus.com>
 
 	* configure.in (*-*-windows*): Remove, no longer used.
-	* config/mh-windows: Ditto.
 
 1999-02-19  Ben Elliston <bje@cygnus.com>
 
@@ -3850,7 +3835,6 @@ Sat Jan 30 08:04:00 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	* config.guess: Add support for i386-pc-interix.
 	* config.sub: Likewise.
 	* configure.in: Likewise.
-	* config/mh-interix: New file.
 
 Mon Jan 18 13:59:20 1999  Christopher Faylor <cgf@cygnus.com>
 
@@ -3863,7 +3847,6 @@ Wed Dec 30 20:34:52 1998  Christopher Faylor <cgf@cygnus.com>
 
 	* configure.in: makefile stub for cygwin target is probably
 	unnecessary.  Remove it for now.
-	* config/mt-cygwin: Remove.
 
 Wed Dec 30 01:13:03 1998  Christopher Faylor <cgf@cygnus.com>
 
@@ -3871,7 +3854,6 @@ Wed Dec 30 01:13:03 1998  Christopher Faylor <cgf@cygnus.com>
 	target as well as the host.
 	* config.guess: Allow mixed case in cygwin uname output.
 	* Makefile.in: Add libtermcap target.
-	* config/mt-cygwin: New file.  libtermcap target info.
 
 Wed Dec 23 00:20:50 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -4611,11 +4593,6 @@ Fri Feb  6 01:33:52 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 	* configure: Emit a definition for the new macro enable_shared
 	into each Makefile.
 
-	* config/mh-sparcpic (PICFLAG): Define to properly according
-	to current multilib configuration.
-	* config/mt-sparcpic (PICFLAG_FOR_TARGET): Define to properly
-	according to current multilib configuration.
-
 Thu Feb  5 17:01:12 1998  Jason Molenda  (crash@bugshack.cygnus.com)
 
 	* configure.in (host_tools, native_only): Add libtool.
@@ -4733,7 +4710,6 @@ Sun Jan  4 01:06:55 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* config.sub: Add mingw32 support.
 	* configure.in: Likewise.
-	* config/mh-mingw32: New file.
 
 Sat Jan  3 12:11:05 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
 
@@ -4951,8 +4927,6 @@ Thu Sep 18 15:37:42 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
 1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
 
-	* config/mt-linux: Define CXXFLAGS to make sure -fvtable-thunks is
-	used.
 	* configure.in: Name Linux target fragment.
 
 	* configure: Rewrite so that project Makefile fragment is inserted
@@ -4961,10 +4935,6 @@ Thu Sep 18 15:37:42 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 Tue Sep 16 09:55:07 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* Makefile.in (install-itcl): Install tcl first.
-
-Sun Sep 14 20:53:42 1997  Geoffrey Noer  <noer@cygnus.com>
-
-	* config/mh-cygwin32: ok to build split texinfo files
 
 Fri Sep 12 16:19:20 1997  Geoffrey Noer  <noer@cygnus.com>
 
@@ -5698,7 +5668,6 @@ Tue Oct 29 16:41:31 1996  Doug Evans  <dje@canuck.cygnus.com>
 Mon Oct 28 17:32:46 1996  Stu Grossman  (grossman@critters.cygnus.com)
 
 	* configure.in:  Exclude mmalloc from i386-windows.
-	* config/mh-windows:  Add rules for building MSVC makefiles.
 
 Thu Oct 24 09:22:46 1996  Stu Grossman  (grossman@critters.cygnus.com)
 
@@ -5714,8 +5683,6 @@ Thu Oct 24 09:02:07 1996  Stu Grossman  (grossman@critters.cygnus.com)
 
 	* Makefile.in (FLAGS_TO_PASS):  Add $(HOST_FLAGS) to allow the
 	host to add it's own flags.
-	* config/mh-windows (HOST_FLAGS):  Set srcroot, which is needed
-	for MSVC build procedure.
 
 Tue Oct 22 15:20:26 1996  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -5766,7 +5733,7 @@ Wed Oct  9 06:06:46 1996  Jeffrey A Law  (law@cygnus.com)
 
 Tue Oct  8 08:32:48 1996  Stu Grossman  (grossman@critters.cygnus.com)
 
-	* configure.in config/mh-windows:  Add support for windows host
+	* configure.in:  Add support for windows host
 	(that is a build done under the Microsoft build environment).
 
 Tue Oct  8 10:39:08 1996  Ian Lance Taylor  <ian@cygnus.com>
@@ -5839,25 +5806,9 @@ Mon Sep 16 17:00:52 1996  Ian Lance Taylor  <ian@cygnus.com>
 
 	* configure.in: Use a single line for host_tools and native_only.
 
-Tue Sep 16 09:55:07 1997  Andrew Cagney  <cagney@b1.cygnus.com>
-
-	* Makefile.in (install-itcl): Install tcl first.
-
-Sun Sep 14 20:53:42 1997  Geoffrey Noer  <noer@cygnus.com>
-
-	* config/mh-cygwin32: ok to build split texinfo files
-
-Fri Sep 12 16:19:20 1997  Geoffrey Noer  <noer@cygnus.com>
-
-	* configure.in: remove bison from noconfigdirs for Cygwin32 host
-
 Mon Sep  9 12:21:30 1996  Doug Evans  <dje@canuck.cygnus.com>
 
 	* config.sub, configure.in: Add entries for m32r.
-
-Mon Sep  8 20:46:20 1997  Ian Lance Taylor  <ian@cygnus.com>
-
-	* config.guess: Merge with FSF.
 
 Thu Sep  5 13:52:47 1996  Tom Tromey  <tromey@creche.cygnus.com>
 
@@ -5915,11 +5866,6 @@ Mon Aug 12 13:15:13 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 	* Makefile.in (CONFIGURE_TARGET_MODULES): If target compiler does
 	not support --print-multi-lib, don't abort.
-
-Sun Aug 11 20:51:50 1996  Stu Grossman  (grossman@critters.cygnus.com)
-
-	* config/mh-cygwin32 (CFLAGS):  Define _WIN32 to be compatible
-	with normal Windows compilation environment.
 
 Thu Aug  8 12:18:59 1996  Klaus Kaempf  <kkaempf@progis.de>
 
@@ -6561,12 +6507,6 @@ Mon Dec  4 12:38:15 1995  Ian Lance Taylor  <ian@cygnus.com>
 
 	* configure: Ignore new autoconf configure options.
 
-Thu Nov 30 14:45:25 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
-
-	* config/mt-v810 (CC_FOR_TARGET): Add -ansi flag.  NEC compiler
-	defaults to K&R mode, but doesn't have varargs.h, so we have to
-	compile in ANSI mode.
-
 Thu Nov 30 16:57:33 1995  Per Bothner  <bothner@wombat.gnu.ai.mit.edu>
 
 	* config.guess:  Recognize Pentium under SCO.
@@ -6575,8 +6515,6 @@ Thu Nov 30 16:57:33 1995  Per Bothner  <bothner@wombat.gnu.ai.mit.edu>
 Wed Nov 29 13:49:08 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
 
 	* configure.in (noconfigdirs): Disable target-libio on v810-*-*.
-	* config/mt-v810 (CC_FOR_TARGET, AS_FOR_TARGET, AR_FOR_TARGET,
-	RANLIB_FOR_TARGET): Set as appropriate for NEC v810 toolchain.
 
 Wed Nov 29 12:12:01 1995  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -6644,10 +6582,6 @@ Wed Nov 15 11:45:23 1995  Ian Lance Taylor  <ian@cygnus.com>
 
 	* configure: Handle LD and LD_FOR_TARGET when configuring a
 	Canadian Cross.
-
-Tue Nov 14 15:03:12 1995  Jason Molenda  (crash@phydeaux.cygnus.com)
-
-	* config/mh-i386win32: add LD_FOR_TARGET.
 
 Tue Nov 14 14:56:11 1995  Jason Molenda  (crash@phydeaux.cygnus.com)
 
@@ -6987,10 +6921,6 @@ Mon Sep 18 23:08:26 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
 	* configure.in (noconfigdirs): Disable bfd, binutils, gas, gcc,
 	gdb, ld and opcodes on v810-*-*.
 
-Sat Sep 16 18:31:08 PDT 1995  Angela Marie Thomas <angela@cygnus.com>
-
-	* config/mh-ncrsvr43: Removed AR_FLAGS
-
 Tue Sep 12 18:03:31 1995  Ian Lance Taylor  <ian@cygnus.com>
 
 	* Makefile.in (DO_X): Change do-realclean to do-maintainer-clean.
@@ -7170,8 +7100,6 @@ Mon Jun  5 18:26:36 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 	(FLAGS_TO_PASS): Pass them.
 	(EXTRA_TARGET_FLAGS): Ditto.
 
-	* config/m?-*pic: Define PICFLAG* instead of LIB*FLAGS*.
-
 Wed May 31 22:27:42 1995  Jim Wilson  <wilson@chestnut.cygnus.com>
 
 	* Makefile.in (all-libg++): Depend on all-libstdc++.
@@ -7335,16 +7263,11 @@ Thu Mar 30 13:51:43 1995  Ian Lance Taylor  <ian@cygnus.com>
 
 Tue Mar 28 14:47:34 1995  Jason Molenda (crash@phydeaux.cygnus.com)
 
-	build-all.mk,config/mh-solaris:  revert these two changes:
+	Revert this change:
 
 	Tue Mar 30 10:03:09 1993  Ian Lance Taylor  (ian@cygnus.com)
 
 		* build-all.mk: Use CC=cc -Xs on Solaris.
-
-	Mon Mar 29 19:59:26 1993  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
-
-		* config/mh-solaris: SunPRO C needs -Xs to be able to get a
-		working xmakefile for Emacs.
 
 Tue Mar 21 10:43:32 1995  Jim Kingdon  (kingdon@lioth.cygnus.com)
 
@@ -7484,7 +7407,7 @@ Sat Nov  5 18:43:30 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
 	(BASE_FLAGS_TO_PASS): Pass them.
 	(EXTRA_TARGET_FLAGS): Ditto.
 
-	* configure.in, config/m[th]-*pic: Support --enable-shared.
+	* configure.in: Support --enable-shared.
 
 Sat Nov  5 15:44:00 1994  Per Bothner  <bothner@kalessin.cygnus.com>
 
@@ -7942,7 +7865,6 @@ Fri May  6 14:19:25 1994  Steve Chamberlain  (sac@cygnus.com)
 	(HOST_CC, HOST_PREFIX, HOST_PREFIX_1): Undefine, they should
 	be set by incoming names or templates.
 	(INSTALL_LAST): New rule.
-	* config/mh-go32: New fragment.
 
 Thu May  5 17:35:05 1994  Stan Shebs  (shebs@andros.cygnus.com)
 
@@ -7950,8 +7872,6 @@ Thu May  5 17:35:05 1994  Stan Shebs  (shebs@andros.cygnus.com)
 
 Thu May  5 20:06:45 1994  Ken Raeburn  (raeburn@cujo.cygnus.com)
 
-	* config/mh-lynxrs6k: Renamed from mh-lynxosrs6k, to make it
-	unique in 8.3 naming schemes.
 	* configure.in (appdirs): New variable.  Currently empty, but will
 	be used in gas distribution.  If nonempty, lists a set of
 	directories at least one of which must get configured, or top
@@ -8183,10 +8103,6 @@ Wed Feb  2 14:53:05 1994  Jim Kingdon  (kingdon@lioth.cygnus.com)
 	* Makefile.in, test-build.mk: Remove MUNCH_NM; it was only needed
 	for GDB and GDB has been fixed to not need it.
 
-Mon Jan 31 18:40:55 1994  Stu Grossman  (grossman at cygnus.com)
-
-	* config/mh-lynxosrs6k:  Account for lack of ranlib!
-
 Sun Jan 30 17:58:06 1994  Ken Raeburn  (raeburn@cujo.cygnus.com)
 
 	* config.guess: Recognize vax hosts.
@@ -8272,7 +8188,6 @@ Thu Dec  2 14:35:54 1993  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 	libg++ or libio for any Alpha target.
 
 	* configure.in (mips*-sgi-irix5*): New target; use mh-irix5.
-	* config/mh-irix5. New file for Irix 5.
 
 Wed Dec  1 17:00:33 1993  Jason Merrill  (jason@deneb.cygnus.com)
 
@@ -8441,10 +8356,6 @@ Fri Oct  8 14:15:39 1993  Ken Raeburn  (raeburn@cygnus.com)
 	* config.sub: Accept linux*coff and linux*elf as operating
 	systems.
 
-Tue Oct  7 14:24:41 1997  Ian Lance Taylor  <ian@cygnus.com>
-
-	* ltmain.sh: Handle symlinks in generated script.
-
 Thu Oct  7 12:57:19 1993  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 
 	* config.sub: Recognize mips64, and mips3 as an alias for it.
@@ -8469,26 +8380,10 @@ Mon Oct  4 16:15:09 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 	--with options (but still pass them down on the command line,
 	if they were explicitly specified).
 
-Wed Oct  1 13:11:27 1997  Ian Lance Taylor  <ian@cygnus.com>
-
-	* configure: Handle autoconf style directory options: --bindir,
-	--datadir, --includedir, --infodir, --libdir, --libexecdir,
-	--mandir, --oldincludedir, --sbindir, --sharedstatedir,
-	--sysconfdir.
-	* Makefile.in (sbindir, libexecdir, sysconfdir): New variables.
-	(sharedstatedir, localstatedir, oldincludedir): New variables.
-	(BASE_FLAGS_TO_PASS): Pass down bindir, datadir, includedir,
-	infodir, libdir, libexecdir, localstatedir, mandir, oldincludedir,
-	sbindir, sharedstatedir, and sysconfdir.
-
 Fri Sep 24 19:11:13 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 
 	* configure: substitute SHELL value in Makefile.in with
 	${CONFIG_SHELL}
-
-Wed Sep 24 15:18:32 1997  Ian Lance Taylor  <ian@cygnus.com>
-
-	* ltmain.sh: Tweak shell pattern to avoid bug in NetBSD /bin/sh.
 
 Thu Sep 23 18:05:13 1993  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 
@@ -8983,8 +8878,6 @@ Sat Apr 17 17:19:50 1993  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
 	* configure.in: rename m88k-motorola-m88kbcs to m88k-motorola-sysv
 
-	* config/mh-delta88: remove extraneous GCC references
-
 Tue Apr 13 16:52:16 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)
 
 	* Makefile.in (PRMS): Set back to all-prms.
@@ -9060,8 +8953,7 @@ Wed Mar 31 21:20:58 1993  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 Wed Mar 31 12:31:56 1993  Ian Lance Taylor  (ian@cygnus.com)
 
-	* build-all.mk, config/mh-irix4: Bump -XNh value to 1500 to match
-	gcc requirements.
+	* build-all.mk: Bump -XNh value to 1500 to match gcc requirements.
 
 	* Makefile.in: Complete overhaul to merge many almost identical
 	targets.
@@ -9078,13 +8970,6 @@ Tue Mar 30 20:17:01 1993  Ken Raeburn  (raeburn@cambridge.cygnus.com)
 Tue Mar 30 10:03:09 1993  Ian Lance Taylor  (ian@cygnus.com)
 
 	* build-all.mk: Use CC=cc -Xs on Solaris.
-
-Mon Mar 29 19:59:26 1993  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
-
-	* config/mh-sun3: cc needs -J to compile cp-parse.c correctly
-
-	* config/mh-solaris: SunPRO C needs -Xs to be able to get a
-	working xmakefile for Emacs.
 
 Thu Mar 25 15:14:30 1993  Fred Fish  (fnf@cygnus.com)
 
@@ -9179,7 +9064,6 @@ Tue Mar  2 21:15:58 1993  Fred Fish  (fnf@cygnus.com)
 	(Ultrix 2.2 support from Michael Rendell <michael@mercury.cs.mun.ca>)
 	* configure.in (vax-*-ultrix2*):  Add Ultrix 2.2 triplet.
 	* config.guess:  Change 'VAX*:ULTRIX:*:*' to 'VAX*:ULTRIX*:*:*'.
-	* config/mh-vaxult2:  New file.
 
 Tue Mar  2 18:11:03 1993  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
@@ -9349,8 +9233,6 @@ Sat Jan 23 20:32:01 1993  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
 	* Makefile.in: define and pass down X11_LIB
 
-	* config/mh-sco: define X11_LIB to the mess that SCO ODT requires
-
 Sat Jan 23 13:49:40 1993  Per Bothner  (bothner@cygnus.com)
 
 	* guess-systype: Renamed to ...
@@ -9412,8 +9294,6 @@ Sun Jan  3 15:15:09 1993  Steve Chamberlain  (sac@thepub.cygnus.com)
 	* Makefile.in: added h8300sim
 
 Tue Dec 29 15:06:00 1992  Ian Lance Taylor  (ian@cygnus.com)
-
-	* config/mh-sco: Don't override BISON definition.
 
 	* build-all.mk: If canonhost is i386-unknown-sco3.2v4, change it
 	to i386-sco3.2v4.  Set TARGETS and CFLAGS for i386-sco3.2v4.
@@ -9479,10 +9359,6 @@ Fri Dec 11 20:18:02 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
 	* Makefile.in: m4 depends on libiberty
 
-Mon Dec  7 06:43:27 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
-
-	* config/mh-sco: don't default $(CC) to gcc
-
 Thu Dec  3 21:52:11 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
 	* configure.in: add m4, textutils, fileutils, sed, shellutils,
@@ -9495,23 +9371,12 @@ Mon Nov 30 14:54:34 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
 	* configure.in: use mh-sun for all *-sun-* hosts
 
-	* config/mh-solaris: rework standard X location to use
-	$OPENWINHOME, if defined.
-
-	* config/mh-sun: handle X11 include locations
-
-	* config/mh-decstation: define NeedFunctionPrototypes to 0, to
-	work around dain-bramaged DECwindows include files
-
 Fri Nov 27 18:35:54 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
 	* Makefile.in: define flags for X11 include files and library file
 	locations, pass them down to the programs that need this info
 
 	* build-all.mk: added a 'native' target, to 3stage the native toolchain
-
-	* config/{mh-hpux,mh-solaris}: define the "standard" locations for
-	the vendor supplied X11 headers and libraries
 
 Sun Nov 22 18:59:13 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
@@ -9769,11 +9634,6 @@ Tue Aug  4 01:12:43 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
 
 	* configure.texi, standards.texi: fix INFO-DIR-ENTRY
 
-Mon Aug  3 15:41:28 1992  david d `zoo' zuhn  (zoo at cirdan.cygnus.com)
-
-	* config/mh-solaris: removed the -xs from CFLAGS (let the people
-	with Sun's C compiler deal with it themselved)
-
 Mon Aug  3 00:34:17 1992  Fred Fish  (fnf@cygnus.com)
 
 	* config.sub (ncr3000):  Change i386 to i486.
@@ -9818,11 +9678,6 @@ Thu Jul 16 16:05:28 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* .cvsignore: ignore some stuff that comes from test-build.mk.
 
-Wed Jul  8 00:01:30 1992  Stu Grossman  (grossman at cygnus.com)
-
-	* config/mh-solaris:  Use -xs when compiling so that Sun-C puts
-	a symbol-table into the executable.
-
 Tue Jul  7 00:24:52 1992  Fred Fish  (fnf@cygnus.com)
 
 	* config.sub:  Add es1800 (m68k-ericsson-es1800).
@@ -9846,11 +9701,6 @@ Fri Jun 19 15:19:40 1992  Stu Grossman  (grossman at cygnus.com)
 
 	* config.sub:  HPPA merge.
 
-Mon Jun 15 12:31:52 1992  Fred Fish  (fnf@cygnus.com)
-
-	* config/mh-ncr3000 (INSTALL):  Don't use /usr/ucb/install,
-	it is broken on ncr 3000's.
-
 Sun Jun 14 10:29:19 1992  John Gilmore  (gnu at cygnus.com)
 
 	* Makefile.in:  Replace all-bison with all-byacc in all
@@ -9859,10 +9709,6 @@ Sun Jun 14 10:29:19 1992  John Gilmore  (gnu at cygnus.com)
 Fri Jun 12 22:21:57 1992  John Gilmore  (gnu at cygnus.com)
 
 	* config.sub:  Add sun4sol2 => sparc-sun-solaris2.
-
-Tue Jun  9 17:18:11 1992  Fred Fish  (fnf at cygnus.com)
-
-	* config/{mh-ncr3000, mh-sysv4}:  Add INSTALL.
 
 Thu Jun  4 12:07:32 1992  Mark Eichin  (eichin@cygnus.com)
 
@@ -9961,8 +9807,6 @@ Wed Apr 22 18:06:55 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 Wed Apr 22 14:38:34 1992  Fred Fish  (fnf@cygnus.com)
 
-	* config/mh-delta88, config/mh-ncr3000:  Replace MINUS_G with
-	CFLAGS per new configuration strategy.
 	* configure:  Test for existance of files before trying to mv
 	them, to avoid numerous non-existance messages.
 
@@ -10124,7 +9968,7 @@ Thu Mar  5 21:45:07 1992  K. Richard Pixley  (rich@sendai)
 
 Thu Mar  5 12:05:58 1992  Stu Grossman  (grossman at cygnus.com)
 
-	* config.sub configure.in config/mh-irix4 gdb/configure.in
+	* config.sub configure.in gdb/configure.in
 	gdb/mips-tdep.c gdb/mipsread.c gdb/procfs.c gdb/signame.h
 	gdb/tm-irix3.h gdb/tm-mips.h gdb/xm-irix4.h gdb/config/mt-irix3
 	gdb/config/mh-irix4 texinfo/configure.in:  Port to SGI Irix-4.x.
@@ -10185,7 +10029,7 @@ Fri Jan 31 02:27:32 1992  John Gilmore  (gnu at cygnus.com)
 
 Thu Jan 30 16:17:30 1992  Stu Grossman  (grossman at cygnus.com)
 
-	* bfd/configure.in, config/mh-sco, gdb/config/mh-i386sco,
+	* bfd/configure.in, gdb/config/mh-i386sco,
 	gdb/config/mt-i386v32, gdb/configure.in, readline/configure.in:
 	Fix SCO configuration stuff.
 
