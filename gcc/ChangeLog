@@ -1,3 +1,9 @@
+2002-10-24  Richard Henderson  <rth@redhat.com>
+
+	PR opt/7944
+	* reload.c (find_reloads_toplev): Use simplify_gen_subreg; mode
+	of X is not important when simplifying subregs of constants.
+
 2002-10-23  Robert Lipe  <robertlipe@usa.net>
 
 	* config.gcc (i[34567]86-*-sco3.2v5*): Fix tm_file.
