@@ -1,7 +1,8 @@
 2003-06-16  Mark Mitchell  <mark@codesourcery.com>
 
-	* gcc.c-torture/compile/simd-5.c: Correct SPARC XFAIL indications.
-	Remove spurious PowerPC-64 XFAIL indications.
+	* lib/gcc-dg.exp (dg-xfail-if): Fix thinko.
+	* gcc.c-torture/compile/simd-5.c: Remove spurious PowerPC-64 XFAIL
+	indications.
 
 2003-06-16  Roger Sayle  <roger@eyesopen.com>
 
