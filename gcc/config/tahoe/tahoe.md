@@ -1635,7 +1635,7 @@
 ; for the call = number bytes for args + 4
 
 (define_insn "call_value"
-  [(set (match_operand 0 "" "g")
+  [(set (match_operand 0 "" "=g")
 	(call (match_operand:QI 1 "memory_operand" "m")
 	      (match_operand:QI 2 "general_operand" "g")))]
   ""

@@ -1211,7 +1211,7 @@
 ")
 
 (define_insn "call_value"
-  [(set (match_operand 0 "" "rf")
+  [(set (match_operand 0 "" "=rf")
         (call (match_operand 1 "memory_operand" "m")
         (match_operand 2 "general_operand" "g")))
    (clobber (reg:SI 14))]

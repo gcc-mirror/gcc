@@ -1688,14 +1688,14 @@
   "neg.b %0")
 
 (define_insn "negsf2"
-  [(set (match_operand:SF 0 "general_operand" "f")
+  [(set (match_operand:SF 0 "general_operand" "=f")
 	(neg:SF (match_operand:SF 1 "general_operand" "fmF")))]
   "TARGET_FPU"
   "fneg.s %f1,%0")
 
 
 (define_insn "negdf2"
-  [(set (match_operand:DF 0 "general_operand" "f")
+  [(set (match_operand:DF 0 "general_operand" "=f")
 	(neg:DF (match_operand:DF 1 "general_operand" "fmF")))]
   "TARGET_FPU"
   "fneg.d %f1,%0")
@@ -1704,13 +1704,13 @@
 ;; Absolute value instructions
 
 (define_insn "abssf2"
-  [(set (match_operand:SF 0 "general_operand" "f")
+  [(set (match_operand:SF 0 "general_operand" "=f")
 	(abs:SF (match_operand:SF 1 "general_operand" "fmF")))]
   "TARGET_FPU"
   "fabs.s %f1,%0")
 
 (define_insn "absdf2"
-  [(set (match_operand:DF 0 "general_operand" "f")
+  [(set (match_operand:DF 0 "general_operand" "=f")
 	(abs:DF (match_operand:DF 1 "general_operand" "fmF")))]
   "TARGET_FPU"
   "fabs.d %f1,%0")
@@ -2634,7 +2634,7 @@
 
 (define_peephole
   [(set (reg:SI 15) (plus:SI (reg:SI 15) (const_int 4)))
-   (set (match_operand:DF 0 "register_operand" "f")
+   (set (match_operand:DF 0 "register_operand" "=f")
 	(match_operand:DF 1 "register_operand" "r"))]
   "FPU_REG_P (operands[0]) && ! FPU_REG_P (operands[1])"
   "*
