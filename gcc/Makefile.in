@@ -588,7 +588,7 @@ libgcc2.ready: $(GCC_PASSES) $(CROSS_TOOLS)
 	fi
 
 libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
-   longlong.h gbl-ctors.h config.status
+   machmode.h longlong.h gbl-ctors.h config.status
 # Actually build it in tmplibgcc2.a, then rename at end,
 # so that libgcc2.a itself remains nonexistent if compilation is aborted.
 	-rm -f tmplibgcc2.a
