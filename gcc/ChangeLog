@@ -1,3 +1,14 @@
+2003-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.h (DEFAULT_FUNCTION_ARG_PADDING): New.
+	(FUNCTION_ARG_PADDING): Use DEFAULT_FUNCTION_ARG_PADDING.
+	* config/ia64/ia64.c (ia64_hpux_function_arg_padding):
+	Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_function_arg_padding):
+	Likewise.
+	* config/rs6000/rs6000.c (function_arg_padding): Likewise.
+	* config/sparc/sparc.c (function_arg_padding): Likewise.
+
 2003-09-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* haifa-sched.c (schedule_block): Use ready_remove_first instead
