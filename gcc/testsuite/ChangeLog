@@ -1,3 +1,7 @@
+2004-01-09  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.dg/array-quals-1.c: Accept .data.rel.ro.
+
 2004-01-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* ada/acats/run_acats: Treat 'gnatchop' the same way
