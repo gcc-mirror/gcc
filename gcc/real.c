@@ -1579,12 +1579,13 @@ real_from_string (r, str)
      const char *str;
 {
   int exp = 0;
+  bool sign = false;
 
   get_zero (r, 0);
 
   if (*str == '-')
     {
-      r->sign = 1;
+      sign = true;
       str++;
     }
   else if (*str == '+')
@@ -1616,6 +1617,11 @@ real_from_string (r, str)
       if (*str == '.')
 	{
 	  str++;
+	  if (pos == SIGNIFICAND_BITS - 4)
+	    {
+	      while (*str == '0')
+		str++, exp -= 4;
+	    }
 	  while (1)
 	    {
 	      d = hex_value (*str);
@@ -1632,12 +1638,12 @@ real_from_string (r, str)
 	}
       if (*str == 'p' || *str == 'P')
 	{
-	  int exp_neg = 0;
+	  bool exp_neg = false;
 
 	  str++;
 	  if (*str == '-')
 	    {
-	      exp_neg = 1;
+	      exp_neg = true;
 	      str++;
 	    }
 	  else if (*str == '+')
@@ -1646,10 +1652,9 @@ real_from_string (r, str)
 	  d = 0;
 	  while (ISDIGIT (*str))
 	    {
-	      int t = d;
 	      d *= 10;
 	      d += *str - '0';
-	      if (d < t)
+	      if (d > MAX_EXP)
 		{
 		  /* Overflowed the exponent.  */
 		  if (exp_neg)
@@ -1667,13 +1672,6 @@ real_from_string (r, str)
 
       r->class = rvc_normal;
       r->exp = exp;
-      if (r->exp != exp)
-	{
-	  if (exp < 0)
-	    goto underflow;
-	  else
-	    goto overflow;
-	}
 
       normalize (r);
     }
@@ -1695,6 +1693,11 @@ real_from_string (r, str)
       if (*str == '.')
 	{
 	  str++;
+	  if (r->class == rvc_zero)
+	    {
+	      while (*str == '0')
+		str++, exp--;
+	    }
 	  while (ISDIGIT (*str))
 	    {
 	      d = *str++ - '0';
@@ -1707,12 +1710,12 @@ real_from_string (r, str)
 
       if (*str == 'e' || *str == 'E')
 	{
-	  int exp_neg = 0;
+	  bool exp_neg = false;
 
 	  str++;
 	  if (*str == '-')
 	    {
-	      exp_neg = 1;
+	      exp_neg = true;
 	      str++;
 	    }
 	  else if (*str == '+')
@@ -1721,10 +1724,9 @@ real_from_string (r, str)
 	  d = 0;
 	  while (ISDIGIT (*str))
 	    {
-	      int t = d;
 	      d *= 10;
 	      d += *str - '0';
-	      if (d < t)
+	      if (d > MAX_EXP)
 		{
 		  /* Overflowed the exponent.  */
 		  if (exp_neg)
@@ -1754,14 +1756,15 @@ real_from_string (r, str)
 	}
     }
 
+  r->sign = sign;
   return;
 
  underflow:
-  get_zero (r, r->sign);
+  get_zero (r, sign);
   return;
 
  overflow:
-  get_inf (r, r->sign);
+  get_inf (r, sign);
   return;
 }
 
