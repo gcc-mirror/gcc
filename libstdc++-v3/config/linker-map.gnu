@@ -255,6 +255,13 @@ GLIBCXX_3.4.1 {
  
 } GLIBCXX_3.4;
  
+GLIBCXX_3.4.2 {
+
+    _ZN9__gnu_cxx11__pool_base5_Lock7_S_lockE;
+    _ZN9__gnu_cxx11__pool_base9_M_refillEj;
+    _ZN9__gnu_cxx11__pool_base16_M_get_free_listEj;
+ 
+} GLIBCXX_3.4.1;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
