@@ -54,11 +54,11 @@ __cas_start_atomic(void)
   unsigned int tmp;
   __asm__ __volatile__(
 "1:	ldstub	[%1], %0\n"
-"	orcc	%0, 0x0, %g0\n"
+"	orcc	%0, 0x0, %%g0\n"
 "	be	3f\n"
 "	 nop\n"
 "2:	ldub	[%1], %0\n"
-"	orcc	%0, 0x0, %g0\n"
+"	orcc	%0, 0x0, %%g0\n"
 "	bne	2b\n"
 "	 nop\n"
 "3:"	: "=&r" (tmp)
