@@ -1,5 +1,8 @@
 1999-11-29  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* alpha.md: Delete useless patterns that tried to work around
+	register elimination problems.
+
 	* unroll.c (loop_iterations): Don't abort if iteration variable
 	was made by loop.
 
