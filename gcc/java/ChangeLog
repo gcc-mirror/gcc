@@ -1,3 +1,9 @@
+2001-04-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* decl.c (init_decl_processing): Add new class "protectionDomain"
+	field.
+	* class.c (make_class_data): Set initial value for "protectionDomain".
+
 2001-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jvspec.c (lang_specific_driver): Fix memory allocation

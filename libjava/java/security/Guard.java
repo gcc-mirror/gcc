@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -24,31 +24,27 @@ resulting executable to be covered by the GNU General Public License.
 This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
-
 package java.security;
 
 /**
-  * This interface specifies a mechanism for querying whether or not
-  * access is allowed to a guarded object.
-  *
-  * @version 0.0
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface specifies a mechanism for querying whether or not
+ * access is allowed to a guarded object.
+ *
+ * @version 0.0
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public interface Guard
 {
+  /**
+   * This method tests whether or not access is allowed to the specified
+   * guarded object.  Access is allowed if this method returns silently.  If
+   * access is denied, an exception is generated.
+   *
+   * @param obj The <code>Object</code> to test
+   *
+   * @exception SecurityException If access to the object is denied.
+   */
+  public abstract void checkGuard(Object obj) throws SecurityException;
 
-/**
-  * This method tests whether or not access is allowed to the specified
-  * guarded object.  Access is allowed if this method returns silently.  If
-  * access is denied, an exception is generated.
-  *
-  * @param obj The <code>Object</code> to test
-  *
-  * @exception SecurityException If access to the object is denied.
-  */
-public abstract void
-checkGuard(Object obj) throws SecurityException;
-
-} // interface Guard
-
+}

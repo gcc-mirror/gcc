@@ -65,18 +65,11 @@ final class VMClassLoader extends java.net.URLClassLoader
   /** This is overridden to search the internal hash table, which 
    * will only search existing linked-in classes.   This will make
    * the default implementation of loadClass (in ClassLoader) work right.
+   * The implementation of this method is in java/lang/natClassLoader.cc.
    */
-  protected final native Class findSystemClass(String name) 
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError;
-
-  // Return the sole VMClassLoader.
-  private static synchronized VMClassLoader getVMClassLoader ()
-  {
-    if (redirect == null)
-      redirect = new VMClassLoader ();
-    return redirect;
-  }
+  protected native Class findClass(String name) 
+    throws java.lang.ClassNotFoundException;
 
   // The only VMClassLoader that can exist.
-  private static VMClassLoader redirect;
+  public static VMClassLoader instance = new VMClassLoader ();
 }

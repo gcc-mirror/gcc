@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -24,7 +24,6 @@ resulting executable to be covered by the GNU General Public License.
 This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
-
 package java.security;
 
 import java.io.Serializable;
@@ -32,34 +31,28 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 
 /**
-  * This class implements a simple model for named permissions without an
-  * associated action list.  That is, either the named permission is granted
-  * or it is not.  
-  * <p>
-  * It also supports trailing wildcards to allow the
-  * easy granting of permissions in a hierarchical fashion.  (For example,
-  * the name "org.gnu.*" might grant all permissions under the "org.gnu"
-  * permissions hierarchy).  The only valid wildcard character is a '*'
-  * which matches anything.  It must be the rightmost element in the
-  * permission name and must follow a '.' or else the Permission name must
-  * consist of only a '*'.  Any other occurrence of a '*' is not valid.
-  * <p>
-  * This class ignores the action list.  Subclasses can choose to implement
-  * actions on top of this class if desired.
-  *
-  * @version 0.1
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public abstract class BasicPermission extends Permission implements Serializable
+ * This class implements a simple model for named permissions without an
+ * associated action list.  That is, either the named permission is granted
+ * or it is not.  
+ * <p>
+ * It also supports trailing wildcards to allow the
+ * easy granting of permissions in a hierarchical fashion.  (For example,
+ * the name "org.gnu.*" might grant all permissions under the "org.gnu"
+ * permissions hierarchy).  The only valid wildcard character is a '*'
+ * which matches anything.  It must be the rightmost element in the
+ * permission name and must follow a '.' or else the Permission name must
+ * consist of only a '*'.  Any other occurrence of a '*' is not valid.
+ * <p>
+ * This class ignores the action list.  Subclasses can choose to implement
+ * actions on top of this class if desired.
+ *
+ * @version 0.1
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
+public abstract class BasicPermission extends Permission implements
+  Serializable
 {
-
-  /*************************************************************************/
-
-  /*
-   * Constructors
-   */
-
   /**
    * This method initializes a new instance of <code>BasicPermission</code>
    * with the specified name.  If the name contains an illegal wildcard
@@ -70,22 +63,20 @@ public abstract class BasicPermission extends Permission implements Serializable
    * @exception IllegalArgumentException If the name contains an invalid wildcard character
    * @exception NullPointerException If the name is null
    */
-  public 
-  BasicPermission(String name) throws IllegalArgumentException, NullPointerException
+  public BasicPermission(String name) 
+    throws IllegalArgumentException, NullPointerException
   {
     super(name);
 
     if (name.indexOf("*") != -1)
       {
 	if (!name.endsWith(".*") && !name.equals("*"))
-          throw new IllegalArgumentException("Bad wildcard: " + name);
+	  throw new IllegalArgumentException("Bad wildcard: " + name);
 
 	if (name.indexOf("*") != name.lastIndexOf("*"))
-          throw new IllegalArgumentException("Bad wildcard: " + name);
+	  throw new IllegalArgumentException("Bad wildcard: " + name);
       }
   }
-
-  /*************************************************************************/
 
   /**
    * This method initializes a new instance of <code>BasicPermission</code>
@@ -99,14 +90,12 @@ public abstract class BasicPermission extends Permission implements Serializable
    * @exception IllegalArgumentException If the name contains an invalid wildcard character
    * @exception NullPointerException If the name is null
    */
-  public
-  BasicPermission(String name, String actions) throws IllegalArgumentException, NullPointerException
+  public BasicPermission(String name, String actions) 
+    throws IllegalArgumentException, NullPointerException
   {
     // ignore actions
     this(name);
   }
-
-  /*************************************************************************/
 
   /**
    * This method tests to see if the specified permission is implied by 
@@ -124,8 +113,7 @@ public abstract class BasicPermission extends Permission implements Serializable
    *
    * @return <code>true</code> if the specified permission is implied by this one or <code>false</code> otherwise.
    */
-  public boolean
-  implies(Permission perm)
+  public boolean implies(Permission perm)
   {
     if (!(perm instanceof BasicPermission))
       return false;
@@ -144,8 +132,6 @@ public abstract class BasicPermission extends Permission implements Serializable
     return false;
   }
 
-  /*************************************************************************/
-
   /**
    * This method tests to see if this object is equal to the specified
    * <code>Object</code>.  This will be true if and only if the specified
@@ -160,19 +146,16 @@ public abstract class BasicPermission extends Permission implements Serializable
    *
    * @return <code>true</code> if the specified <code>Object</code> is equal to this object or <code>false</code> otherwise.
    */
-  public boolean
-  equals(Object obj)
+  public boolean equals(Object obj)
   {
     if (!(obj instanceof BasicPermission))
-      return(false);
+      return (false);
 
-    if (!getName().equals(((BasicPermission)obj).getName()))
-      return(false);
+    if (!getName().equals(((BasicPermission) obj).getName()))
+      return (false);
 
-    return(true);
+    return (true);
   }
-
-  /*************************************************************************/
 
   /**
    * This method returns a hash code for this permission object.  The hash
@@ -181,13 +164,10 @@ public abstract class BasicPermission extends Permission implements Serializable
    *
    * @return A hash value for this object
    */
-  public int
-  hashCode()
+  public int hashCode()
   {
-    return(getName().hashCode());
+    return (getName().hashCode());
   }
-
-  /*************************************************************************/
 
   /**
    * This method returns a list of the actions associated with this 
@@ -196,13 +176,10 @@ public abstract class BasicPermission extends Permission implements Serializable
    *
    * @return The action list.
    */
-  public String
-  getActions()
+  public String getActions()
   {
-    return("");
+    return ("");
   }
-
-  /*************************************************************************/
 
   /**
    * This method returns an instance of <code>PermissionCollection</code>
@@ -214,58 +191,58 @@ public abstract class BasicPermission extends Permission implements Serializable
    *
    * @return A new empty <code>PermissionCollection</code> object.
    */
-  public PermissionCollection
-  newPermissionCollection()
+  public PermissionCollection newPermissionCollection()
   {
-    return new PermissionCollection() 
+    return new PermissionCollection()
+    {
+      Hashtable permissions = new Hashtable();
+      boolean allAllowed = false;
+
+      public void add(Permission permission)
       {
-	Hashtable permissions = new Hashtable();
-	boolean allAllowed = false;
-      
-	public void add(Permission permission) 
-	{
-	  if (isReadOnly())
-	    throw new IllegalStateException("readonly");
+	if (isReadOnly())
+	  throw new IllegalStateException("readonly");
 
-	  BasicPermission bp = (BasicPermission) permission;
-	  String name = bp.getName();
-	  if (name.equals("*"))
-	    allAllowed = true;
-	  permissions.put(name, bp);
-	}
-      
-	public boolean implies(Permission permission)
-	{
-	  if (!(permission instanceof BasicPermission))
-	    return false;
-	    
-	  if (allAllowed)
-	    return true;
+	BasicPermission bp = (BasicPermission) permission;
+	String name = bp.getName();
+	if (name.equals("*"))
+	  allAllowed = true;
+	permissions.put(name, bp);
+      }
 
-	  BasicPermission toImply = (BasicPermission) permission;
-	  String name = toImply.getName();
-	  if (name.equals("*"))
-	    return false;
+      public boolean implies(Permission permission)
+      {
+	if (!(permission instanceof BasicPermission))
+	  return false;
 
-	  int prefixLength = name.length();
-	  if (name.endsWith("*"))
-	    prefixLength -= 2;
+	if (allAllowed)
+	  return true;
 
-	  while (true) {
+	BasicPermission toImply = (BasicPermission) permission;
+	String name = toImply.getName();
+	if (name.equals("*"))
+	  return false;
+
+	int prefixLength = name.length();
+	if (name.endsWith("*"))
+	  prefixLength -= 2;
+
+	while (true)
+	  {
 	    if (permissions.get(name) != null)
 	      return true;
-	      
+
 	    prefixLength = name.lastIndexOf('.', prefixLength);
 	    if (prefixLength < 0)
 	      return false;
 	    name = name.substring(0, prefixLength + 1) + '*';
 	  }
-	}
-      
-	public Enumeration elements()
-	{
-	  return permissions.elements();
-	}
-      };
+      }
+
+      public Enumeration elements()
+      {
+	return permissions.elements();
+      }
+    };
   }
-} // class BasicPermission
+}

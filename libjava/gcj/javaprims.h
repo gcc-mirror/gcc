@@ -39,7 +39,6 @@ extern "Java"
   {
     namespace io
     {
-      class BlockDataException;
       class BufferedInputStream;
       class BufferedOutputStream;
       class BufferedReader;
@@ -176,6 +175,7 @@ extern "Java"
       class NumberFormatException;
       class Object;
       class OutOfMemoryError;
+      class Package;
       class Process;
       class Runnable;
       class Runtime;
@@ -233,10 +233,12 @@ extern "Java"
       class ArrayList;
       class Arrays;
       class Arrays$ListImpl;
+      class BasicMapEntry;
       class BitSet;
       class Calendar;
       class Collection;
       class Collections;
+      class Collections$ReverseComparator;
       class Collections$SynchronizedCollection;
       class Collections$SynchronizedIterator;
       class Collections$SynchronizedList;
@@ -302,6 +304,12 @@ extern "Java"
       class Timer$TaskQueue;
       class TimerTask;
       class TooManyListenersException;
+      class TreeMap;
+      class TreeMap$Node;
+      class TreeMap$SubMap;
+      class TreeMap$TreeIterator;
+      class TreeMap$VerifyResult;
+      class TreeSet;
       class Vector;
       class WeakHashMap;
       class WeakHashMap$Entry;

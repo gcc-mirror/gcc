@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -23,7 +23,6 @@ produce an executable, this library does not by itself cause the
 resulting executable to be covered by the GNU General Public License.
 This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
-
 
 package java.security;
 
@@ -42,12 +41,12 @@ import java.io.IOException;
 
    @version 0.0
    @author Mark Benvenuto <ivymccough@worldnet.att.net>
-*/
+ */
 public class DigestOutputStream extends FilterOutputStream
 {
   /**
      The message digest for the DigestOutputStream
-  */
+   */
   protected MessageDigest digest;
 
   //Manages the on flag
@@ -60,10 +59,10 @@ public class DigestOutputStream extends FilterOutputStream
 
      @param stream An OutputStream to associate this stream with
      @param digest A MessageDigest to hash the stream with
-  */
-  public DigestOutputStream (OutputStream stream, MessageDigest digest)
+   */
+  public DigestOutputStream(OutputStream stream, MessageDigest digest)
   {
-    super (stream);
+    super(stream);
     this.digest = digest;
   }
 
@@ -71,18 +70,18 @@ public class DigestOutputStream extends FilterOutputStream
      Returns the MessageDigest associated with this DigestOutputStream
 
      @return The MessageDigest used to hash this stream
-  */
-  public MessageDigest getMessageDigest ()
+   */
+  public MessageDigest getMessageDigest()
   {
     return digest;
   }
-  
+
   /**
      Sets the current MessageDigest to current parameter
-	
+
      @param digest A MessageDigest to associate with this stream
-  */
-  public void setMessageDigest (MessageDigest digest)
+   */
+  public void setMessageDigest(MessageDigest digest)
   {
     this.digest = digest;
   }
@@ -93,16 +92,16 @@ public class DigestOutputStream extends FilterOutputStream
      the underlying output stream.
 
      @param b A byte to write to the output stream
-     
+
      @exception IOException if the underlying output stream 
      cannot write the byte, this is thrown.
-  */
-  public void write (int b) throws IOException
+   */
+  public void write(int b) throws IOException
   {
     if (state)
-      digest.update ((byte)b);
-    
-    super.write (b);
+      digest.update((byte) b);
+
+    super.write(b);
   }
 
   /**
@@ -115,13 +114,13 @@ public class DigestOutputStream extends FilterOutputStream
 
      @exception IOException if the underlying output stream 
      cannot write the bytes, this is thrown.
-  */
-  public void write (byte[] b, int off, int len) throws IOException
+   */
+  public void write(byte[]b, int off, int len) throws IOException
   {
     if (state)
-      digest.update (b, off, len);
+      digest.update(b, off, len);
 
-    super.write (b, off, len);
+    super.write(b, off, len);
   }
 
   /**
@@ -129,8 +128,8 @@ public class DigestOutputStream extends FilterOutputStream
      digest in the write() methods. The default is on;
 
      @param on True means it digests stream, false means it does not
-  */
-  public void on (boolean on)
+   */
+  public void on(boolean on)
   {
     state = on;
   }
@@ -139,7 +138,7 @@ public class DigestOutputStream extends FilterOutputStream
      Converts the output stream and underlying message digest to a string.
 
      @return A string representing the output stream and message digest.
-  */
+   */
   public String toString()
   {
     return "[Digest Output Stream] " + digest.toString();
