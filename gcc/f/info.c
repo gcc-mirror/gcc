@@ -55,21 +55,21 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Static objects accessed by functions in this module.	 */
 
-static const char *ffeinfo_basictype_string_[]
+static const char *const ffeinfo_basictype_string_[]
 =
 {
 #define FFEINFO_BASICTYPE(KWD,LNAM,SNAM) SNAM,
 #include "info-b.def"
 #undef FFEINFO_BASICTYPE
 };
-static const char *ffeinfo_kind_message_[]
+static const char *const ffeinfo_kind_message_[]
 =
 {
 #define FFEINFO_KIND(KWD,LNAM,SNAM) LNAM,
 #include "info-k.def"
 #undef FFEINFO_KIND
 };
-static const char *ffeinfo_kind_string_[]
+static const char *const ffeinfo_kind_string_[]
 =
 {
 #define FFEINFO_KIND(KWD,LNAM,SNAM) SNAM,
@@ -77,7 +77,7 @@ static const char *ffeinfo_kind_string_[]
 #undef FFEINFO_KIND
 };
 static ffeinfoBasictype ffeinfo_combine_[FFEINFO_basictype][FFEINFO_basictype];
-static const char *ffeinfo_kindtype_string_[]
+static const char *const ffeinfo_kindtype_string_[]
 =
 {
   "",
@@ -91,7 +91,7 @@ static const char *ffeinfo_kindtype_string_[]
   "8",
   "*",
 };
-static const char *ffeinfo_where_string_[]
+static const char *const ffeinfo_where_string_[]
 =
 {
 #define FFEINFO_WHERE(KWD,LNAM,SNAM) SNAM,

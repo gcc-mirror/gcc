@@ -448,7 +448,7 @@ static tree ffecom_gfrt_[FFECOM_gfrt]
 
 /* Holds the external names of the functions.  */
 
-static const char *ffecom_gfrt_name_[FFECOM_gfrt]
+static const char *const ffecom_gfrt_name_[FFECOM_gfrt]
 =
 {
 #define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) NAME,
@@ -499,7 +499,7 @@ static ffecomRttype_ ffecom_gfrt_type_[FFECOM_gfrt]
 
 /* String of codes for the function's arguments.  */
 
-static const char *ffecom_gfrt_argstring_[FFECOM_gfrt]
+static const char *const ffecom_gfrt_argstring_[FFECOM_gfrt]
 =
 {
 #define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX,CONST) ARGS,

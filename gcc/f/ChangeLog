@@ -1,3 +1,21 @@
+Wed Sep 12 12:09:04 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bld.c (ffebld_op_string_): Const-ification.
+	* com.c (ffecom_gfrt_name_, ffecom_gfrt_argstring_): Likewise.
+	* fini.c (xspaces): Likewise.
+	* global.c (ffeglobal_type_string_): Likewise.
+	* info.c (ffeinfo_basictype_string_, ffeinfo_kind_message_,
+	ffeinfo_kind_string_, ffeinfo_kindtype_string_,
+	ffeinfo_where_string_): Likewise.
+	* lex.c (ffelex_type_string_): Likewise.
+	* malloc.c (malloc_types_): Likewise.
+	* stc.c (ffestc_subr_binsrch_, ffestc_R904, ffestc_R904,
+	ffestc_R907): Likewise.
+	* symbol.c (ffesymbol_state_name_, ffesymbol_attr_name_):
+	Likewise.
+	* version.c (ffe_version_string): Likewise.
+	* version.h (ffe_version_string): Likewise.
+
 2001-09-11  Richard Henderson  <rth@redhat.com>
 
 	* parse.c (finput): Mark extern.

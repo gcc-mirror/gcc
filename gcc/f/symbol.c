@@ -117,7 +117,7 @@ static ffesymbolRetract_ *ffesymbol_retract_list_;
 
 /* List of state names. */
 
-static const char *ffesymbol_state_name_[] =
+static const char *const ffesymbol_state_name_[] =
 {
   "?",
   "@",
@@ -127,7 +127,7 @@ static const char *ffesymbol_state_name_[] =
 
 /* List of attribute names. */
 
-static const char *ffesymbol_attr_name_[] =
+static const char *const ffesymbol_attr_name_[] =
 {
 #define DEFATTR(ATTR,ATTRS,NAME) NAME,
 #include "symbol.def"

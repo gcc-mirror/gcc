@@ -339,8 +339,8 @@ static void ffestc_shriek_where_ (bool ok);
 #if FFESTR_F90
 static void ffestc_shriek_wherethen_ (bool ok);
 #endif
-static int ffestc_subr_binsrch_ (const char **list, int size, ffestpFile *spec,
-				 const char *whine);
+static int ffestc_subr_binsrch_ (const char *const *list, int size,
+				 ffestpFile *spec, const char *whine);
 static ffestvFormat ffestc_subr_format_ (ffestpFile *spec);
 static bool ffestc_subr_is_branch_ (ffestpFile *spec);
 static bool ffestc_subr_is_format_ (ffestpFile *spec);
@@ -5044,7 +5044,8 @@ ffestc_shriek_wherethen_ (bool ok)
    using "etc" as the pick-one-of-these string.	 */
 
 static int
-ffestc_subr_binsrch_ (const char **list, int size, ffestpFile *spec, const char *whine)
+ffestc_subr_binsrch_ (const char *const *list, int size, ffestpFile *spec,
+		      const char *whine)
 {
   int lowest_tested;
   int highest_tested;
@@ -10202,7 +10203,7 @@ ffestc_R904 ()
 {
   int i;
   int expect_file;
-  const char *status_strs[]
+  const char *const status_strs[]
   =
   {
     "New",
@@ -10211,7 +10212,7 @@ ffestc_R904 ()
     "Scratch",
     "Unknown"
   };
-  const char *access_strs[]
+  const char *const access_strs[]
   =
   {
     "Append",
@@ -10219,20 +10220,20 @@ ffestc_R904 ()
     "Keyed",
     "Sequential"
   };
-  const char *blank_strs[]
+  const char *const blank_strs[]
   =
   {
     "Null",
     "Zero"
   };
-  const char *carriagecontrol_strs[]
+  const char *const carriagecontrol_strs[]
   =
   {
     "Fortran",
     "List",
     "None"
   };
-  const char *dispose_strs[]
+  const char *const dispose_strs[]
   =
   {
     "Delete",
@@ -10243,41 +10244,41 @@ ffestc_R904 ()
     "Submit",
     "Submit/Delete"
   };
-  const char *form_strs[]
+  const char *const form_strs[]
   =
   {
     "Formatted",
     "Unformatted"
   };
-  const char *organization_strs[]
+  const char *const organization_strs[]
   =
   {
     "Indexed",
     "Relative",
     "Sequential"
   };
-  const char *position_strs[]
+  const char *const position_strs[]
   =
   {
     "Append",
     "AsIs",
     "Rewind"
   };
-  const char *action_strs[]
+  const char *const action_strs[]
   =
   {
     "Read",
     "ReadWrite",
     "Write"
   };
-  const char *delim_strs[]
+  const char *const delim_strs[]
   =
   {
     "Apostrophe",
     "None",
     "Quote"
   };
-  const char *recordtype_strs[]
+  const char *const recordtype_strs[]
   =
   {
     "Fixed",
@@ -10287,7 +10288,7 @@ ffestc_R904 ()
     "Stream_LF",
     "Variable"
   };
-  const char *pad_strs[]
+  const char *const pad_strs[]
   =
   {
     "No",
@@ -10457,7 +10458,7 @@ ffestc_R904 ()
 void
 ffestc_R907 ()
 {
-  const char *status_strs[]
+  const char *const status_strs[]
   =
   {
     "Delete",

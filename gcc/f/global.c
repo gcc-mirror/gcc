@@ -60,7 +60,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #if FFEGLOBAL_ENABLED
 static ffenameSpace ffeglobal_filewide_ = NULL;
-static const char *ffeglobal_type_string_[] =
+static const char *const ffeglobal_type_string_[] =
 {
   [FFEGLOBAL_typeNONE] "??",
   [FFEGLOBAL_typeMAIN] "main program",
