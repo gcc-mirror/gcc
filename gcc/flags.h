@@ -474,6 +474,8 @@ extern int flag_verbose_asm;
 
 extern int flag_debug_asm;
 
+extern int flag_dump_rtl_in_asm;
+
 /* -fgnu-linker specifies use of the GNU linker for initializations.
    -fno-gnu-linker says that collect will be used.  */
 extern int flag_gnu_linker;
