@@ -479,7 +479,7 @@ static int multiline_string_line = 0;
    and for the dummy text used for -D and -U.
    It is zero for rescanning results of macro expansion
    and for expanding macro arguments.  */
-#define INPUT_STACK_MAX 200
+#define INPUT_STACK_MAX 400
 static struct file_buf {
   char *fname;
   /* Filename specified with #line command.  */
