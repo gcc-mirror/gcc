@@ -1,5 +1,12 @@
 1998-10-04  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (pop_tinst_level): Call extract_interface_info.
+	(instantiate_decl): Don't save and restore file position.
+
+	* decl.c (cp_finish_decl): Make statics in extern inlines and
+	templates common, if possible and the target doesn't support weak
+	symbols.
+
 	* decl.c (grokdeclarator): Remove redundant calls to
 	build_type_variant and some duplicated code.
 	* sig.c (build_signature_reference_type): Only take the type parm.
