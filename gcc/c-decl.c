@@ -215,9 +215,6 @@ struct c_scope GTY(())
     /* True means make a BLOCK for this scope regardless of all else.  */
     bool keep : 1;
 
-    /* True means make a BLOCK if this scope has any subblocks.  */
-    bool keep_if_subblocks : 1;
-
     /* List of decls in `names' that have incomplete structure or
        union types.  */
     tree incomplete_list;
@@ -250,9 +247,11 @@ static GTY(()) struct c_scope *global_scope;
 
 static bool keep_next_level_flag;
 
-/* True means make a BLOCK for the next scope pushed if it has subblocks.  */
+/* True means the next call to pushlevel will be the outermost scope
+   of a function body, so do not push a new scope, merely cease
+   expecting parameter decls.  */
 
-static bool keep_next_if_subblocks;
+static bool next_is_function_body;
 
 /* Functions called automatically at the beginning and end of execution.  */
 
@@ -408,25 +407,26 @@ in_parm_level_p (void)
 void
 pushlevel (int dummy ATTRIBUTE_UNUSED)
 {
-  if (keep_next_if_subblocks)
+  if (next_is_function_body)
     {
       /* This is the transition from the parameters to the top level
 	 of the function body.  These are the same scope
 	 (C99 6.2.1p4,6) so we do not push another scope structure.
+	 next_is_function_body is set only by store_parm_decls, which
+	 in turn is called when and only when we are about to
+	 encounter the opening curly brace for the function body.
 
-	 XXX Note kludge - keep_next_if_subblocks is set only by
-	 store_parm_decls, which in turn is called when and only
-	 when we are about to encounter the opening curly brace for
-	 the function body.  */
+	 The outermost block of a function always gets a BLOCK node,
+	 because the debugging output routines expect that each
+	 function has at least one BLOCK. */
       current_scope->parm_flag         = false;
       current_scope->function_body     = true;
-      current_scope->keep             |= keep_next_level_flag;
-      current_scope->keep_if_subblocks = true;
+      current_scope->keep              = true;
       current_scope->outer_function    = current_function_scope;
       current_function_scope           = current_scope;
 
       keep_next_level_flag = false;
-      keep_next_if_subblocks = false;
+      next_is_function_body = false;
     }
   else
     {
@@ -448,8 +448,8 @@ pushlevel (int dummy ATTRIBUTE_UNUSED)
    or tags lists are nonempty.
 
    If FUNCTIONBODY is nonzero, this level is the body of a function,
-   so create a block as if KEEP were set and also clear out all
-   label names.
+   so create a BLOCK as if KEEP were set, and save that BLOCK in
+   DECL_INITIAL of current_function_decl.
 
    If REVERSE is nonzero, reverse the order of decls before putting
    them into the BLOCK.  */
@@ -468,9 +468,9 @@ poplevel (int keep, int reverse, int functionbody)
 
   if (keep == KEEP_MAYBE)
     keep = (current_scope->names || current_scope->tags);
-  
-  keep |= (current_scope->keep || functionbody
-	   || (subblocks && current_scope->keep_if_subblocks));
+
+  keep |= current_scope->keep;
+  keep |= functionbody;
 
   /* We used to warn about unused variables in expand_end_bindings,
      i.e. while generating RTL.  But in function-at-a-time mode we may
@@ -6058,11 +6058,9 @@ store_parm_decls (void)
   else
     store_parm_decls_oldstyle ();
 
-  /* Make sure the scope for the top of the function body
-     gets a BLOCK if there are any in the function.
-     Otherwise, the dbx output is wrong.  */
+  /* The next call to pushlevel will be a function body.  */
 
-  keep_next_if_subblocks = 1;
+  next_is_function_body = true;
 
   /* Write a record describing this function definition to the prototypes
      file (if requested).  */
@@ -6121,15 +6119,16 @@ finish_function (int nested, int can_defer_p)
         void foo(void) { }
      (the argument list is irrelevant) the compstmt rule will not
      bother calling pushlevel/poplevel, which means we get here with
-     the scope stack out of sync.  Detect this situation by
-     noticing that current_scope is still as
-     store_parm_decls left it, and do a dummy push/pop to get back to
-     consistency.  Note that the call to pushlevel does not actually
-     push another scope - see there for details.  */
-  if (current_scope->parm_flag && keep_next_if_subblocks)
+     the scope stack out of sync.  Detect this situation by noticing
+     that current_scope is still as store_parm_decls left it, and do
+     a dummy push/pop to get back to consistency.
+     Note that the call to pushlevel does not actually push another
+     scope - see there for details.  */
+
+  if (current_scope->parm_flag && next_is_function_body)
     {
       pushlevel (0);
-      poplevel (1, 0, 0);
+      poplevel (0, 0, 0);
     }
 
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
