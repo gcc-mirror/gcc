@@ -1,3 +1,12 @@
+2004-07-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* expr.h (FUNCTION_ARG_PARTIAL_NREGS): Default to 0.
+	(FUNCTION_ARG_PASS_BY_REFERENCE): Likewise.
+	(FUNCTION_ARG_CALLEE_COPIES): Likewise.
+	* calls.c: Remove ifdefs of macros above.
+	* functions.c: Likewise.
+	* expr.c: Likewise.
+
 2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.md (UNSPECV_GOTO_V9): Delete.
