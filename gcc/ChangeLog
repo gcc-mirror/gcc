@@ -1,3 +1,7 @@
+2002-11-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa64-hpux.h (LDD_SUFFIX, PARSE_LDD_OUTPUT): Define.
+
 2002-11-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.md (call_value_multiple_internal2): Use dla for

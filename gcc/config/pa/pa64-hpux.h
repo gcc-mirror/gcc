@@ -135,6 +135,21 @@ do {  \
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: %{!symbolic: crt0.o%s}}"
+
+/* Since we are not yet using .init and .fini sections, we need to
+   explicitly arrange to run the global constructors and destructors.
+   HPUX 11 has ldd and we use it to determine the dependencies of
+   dynamic objects.  It might be possible to use the ld options for
+   running initializers and terminators and thereby avoid the necessity
+   of running ldd, but unfortunately the options are different for
+   the two linkers.  */
+#define LDD_SUFFIX "/usr/ccs/bin/ldd"
+/* Skip to first '>' then advance to '/' at the beginning of the filename.  */
+#define PARSE_LDD_OUTPUT(PTR)					\
+do {								\
+  while (*PTR != '>') PTR++;					\
+  while (*PTR != '/') PTR++;					\
+} while (0)
 #endif
 
 /* Switch into a generic section.  */
