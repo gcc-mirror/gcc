@@ -524,7 +524,7 @@ namespace std
       _M_range_check(size_type __n) const
       {
 	if (__n >= this->size())
-	  __throw_out_of_range("vector [] access out of range");
+	  __throw_out_of_range(__N("std::vector [] access out of range"));
       }
       
     public:

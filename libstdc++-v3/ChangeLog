@@ -1,3 +1,15 @@
+2003-04-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in:  Test for libintl.h.
+	* include/bits/c++config:  Define __N for everybody.
+	* include/bits/basic_string.h, include/bits/stl_bvector.h,
+	include/bits/stl_deque.h, include/bits/stl_vector.h,
+	include/std/std_bitset.h:  Wrap all __throw* text with __N.
+	* po/Makefile.am (pot):  New rule, mostly working.
+	* src/functexcept.cc:  Call gettext on all __throw* arguments when
+	-fexceptions is in effect.
+	* po/Makefile.in, config.h.in, configure:  Regenerate.
+
 2003-04-28  Petur Runolfsson  <peturr02@ru.is>
  
         PR libstdc++/9523

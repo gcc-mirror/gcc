@@ -275,7 +275,7 @@ namespace std
       _M_check(size_type __pos) const
       {
 	if (__pos > this->size())
-	  __throw_out_of_range("basic_string::_M_check");
+	  __throw_out_of_range(__N("basic_string::_M_check"));
 	return _M_ibegin() + __pos;
       }
 
@@ -447,7 +447,7 @@ namespace std
       at(size_type __n) const
       {
 	if (__n >= this->size())
-	  __throw_out_of_range("basic_string::at");
+	  __throw_out_of_range(__N("basic_string::at"));
 	return _M_data()[__n];
       }
 
@@ -455,7 +455,7 @@ namespace std
       at(size_type __n)
       {
 	if (__n >= size())
-	  __throw_out_of_range("basic_string::at");
+	  __throw_out_of_range(__N("basic_string::at"));
 	_M_leak();
 	return _M_data()[__n];
       }
@@ -818,7 +818,7 @@ namespace std
       substr(size_type __pos = 0, size_type __n = npos) const
       {
 	if (__pos > this->size())
-	  __throw_out_of_range("basic_string::substr");
+	  __throw_out_of_range(__N("basic_string::substr"));
 	return basic_string(*this, __pos, __n);
       }
 

@@ -22,6 +22,7 @@
 ## USA.
 
 PACKAGE = @PACKAGE@
+glibcpp_srcdir = @glibcpp_srcdir@
 
 # Location of installation directories.
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
@@ -76,6 +77,14 @@ install-data-local-yes: all-local-yes
 	  $(mkinstalldirs) $$install_dir; \
 	  $(INSTALL_DATA) $$cat $$install_dir/$(PACKAGE).mo; \
 	done
+
+# Maintainence of the .po template file.  This rule is never run automatically,
+# and updates the source directory.
+pot:
+	cd $(glibcpp_srcdir); \
+	xgettext --default-domain=$(PACKAGE) --add-comments --c++ --debug \
+	  --join-existing -o po/$(PACKAGE).pot --keyword=__N \
+	  `grep -r -l '__N(".*")' .`
 
 # Specify what gets cleaned up on a 'make clean'
 CLEANFILES = $(LOCALE_OUT) 
