@@ -279,10 +279,6 @@ named_section (decl, name, reloc)
 
   if (in_section != in_named || strcmp (name, in_named_name))
     {
-      in_named_name = obstack_alloc (&permanent_obstack, strlen (name) + 1);
-      strcpy (in_named_name, name);
-      in_section = in_named;
-    
 #ifdef ASM_OUTPUT_SECTION_NAME
       ASM_OUTPUT_SECTION_NAME (asm_out_file, decl, name, reloc);
 #else
@@ -291,6 +287,10 @@ named_section (decl, name, reloc)
 	 already have flagged this as an error.  */
       abort ();
 #endif
+
+      in_named_name = obstack_alloc (&permanent_obstack, strlen (name) + 1);
+      strcpy (in_named_name, name);
+      in_section = in_named;
     }
 }
 
