@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA. */
 #include "function.h"
 #include "recog.h"
 #include "expr.h"
+#include "toplev.h"
 
 #if HAVE_STDLIB_H
 #include <stdlib.h>                                                
