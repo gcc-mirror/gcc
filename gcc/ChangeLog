@@ -1,3 +1,8 @@
+2000-01-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c: Add " (cpplib)" to end of string printed by
+	-v / --version.
+
 2000-01-27  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_emit_conditional_move): Use VOIDmode when
