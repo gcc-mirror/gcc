@@ -30,6 +30,9 @@ extern int errno;
 
 #if HAVE_STDLIB_H
 # include <stdlib.h>
+#else
+#include <sys/types.h> /* For `size_t' */
+#include <stdio.h>     /* For `NULL' */
 #endif
 #if HAVE_STRING_H
 # include <string.h>
