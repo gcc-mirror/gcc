@@ -224,13 +224,6 @@ STMP_FIXPROTO = stmp-fixproto
 # Test to see whether <limits.h> exists in the system header files.
 LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
 
-# There may be a premade insn-attrtab.c for this machine.
-# (You could rebuild it with genattrtab as usual, but it takes a long time.)
-# PREMADE_ATTRTAB is the file name of the file to use.
-# PREMADE_ATTRTAB_MD is the md file it corresponds to.
-PREMADE_ATTRTAB_MD = Makefile  # Guaranteed not to cmp equal to md.
-PREMADE_ATTRTAB = 
-
 target=@target@
 target_alias=@target_alias@
 xmake_file=@dep_host_xmake_file@
@@ -1729,13 +1722,7 @@ s-attr : $(md_file) genattr $(srcdir)/move-if-change
 
 insn-attrtab.c: s-attrtab ; @true
 s-attrtab : $(md_file) genattrtab $(srcdir)/move-if-change
-	if cmp -s $(PREMADE_ATTRTAB_MD) $(md_file);	\
-	then					\
-	  echo Using $(PREMADE_ATTRTAB);	\
-	  cp $(PREMADE_ATTRTAB) tmp-attrtab.c;	\
-	else					\
-	  ./genattrtab $(md_file) > tmp-attrtab.c;	\
-	fi
+	./genattrtab $(md_file) > tmp-attrtab.c
 	$(srcdir)/move-if-change tmp-attrtab.c insn-attrtab.c
 	touch s-attrtab
 
