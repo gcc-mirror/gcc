@@ -50,7 +50,7 @@ using_eh_for_cleanups (void)
 /* Misc functions used in this file.  */
 
 /* Compare and hash for any structure which begins with a canonical
-   pointer.  Assumes all pointers are interchangable, which is sort
+   pointer.  Assumes all pointers are interchangeable, which is sort
    of already assumed by gcc elsewhere IIRC.  */
 
 static int

@@ -2658,7 +2658,7 @@ combine_bnp (rtx insn)
 
       if (and)
 	{
-	  /* Some mis-optimisations by GCC can generate a RIGHT-SHIFT
+	  /* Some mis-optimizations by GCC can generate a RIGHT-SHIFT
 	     followed by an AND like this:
 
                (parallel [(set (reg:HI r7) (lshiftrt:HI (reg:HI r7) (const_int 3)))

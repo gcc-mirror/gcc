@@ -1582,7 +1582,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
       /* We can get here for out-of-range string constant accesses, 
 	 such as "_"[3].  Bail out of the entire substitution search
 	 and arrange for the entire statement to be replaced by a
-	 call to __builtin_trap.  In all likelyhood this will all be
+	 call to __builtin_trap.  In all likelihood this will all be
 	 constant-folded away, but in the meantime we can't leave with
 	 something that get_expr_operands can't understand.  */
 

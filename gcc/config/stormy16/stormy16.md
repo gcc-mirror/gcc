@@ -1104,7 +1104,7 @@
 ;; the epilogue.  Using an epilogue insn is favored compared to putting
 ;; all of the instructions in the TARGET_ASM_FUNCTION_EPILOGUE macro,
 ;; since it allows the scheduler to intermix instructions with the
-;; restires of the caller saved registers.  In some cases, it might be
+;; restores of the caller saved registers.  In some cases, it might be
 ;; necessary to emit a barrier instruction as the first insn to
 ;; prevent such scheduling.
 (define_expand "epilogue"

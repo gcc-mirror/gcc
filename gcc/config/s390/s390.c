@@ -4130,7 +4130,7 @@ s390_output_dwarf_dtprel (FILE *file, int size, rtx x)
 }
 
 /* In the name of slightly smaller debug output, and to cater to
-   general assembler losage, recognize various UNSPEC sequences
+   general assembler lossage, recognize various UNSPEC sequences
    and turn them back into a direct symbol reference.  */
 
 static rtx

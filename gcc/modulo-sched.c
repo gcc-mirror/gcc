@@ -455,7 +455,7 @@ calculate_maxii (ddg_ptr g)
    true-dependence of distance 1): SCHED_TIME (def) < SCHED_TIME (use) and
    if so generate a register move.   The number of such moves is equal to:
               SCHED_TIME (use) - SCHED_TIME (def)       { 0 broken
-   nreg_moves = ----------------------------------- + 1 - {   dependecnce.
+   nreg_moves = ----------------------------------- + 1 - {   dependence.
                             ii                          { 1 if not.
 */
 static void

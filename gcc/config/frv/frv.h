@@ -351,7 +351,7 @@
 
    You should not use this macro to change options that are not
    machine-specific.  These should uniformly selected by the same optimization
-   level on all supported machines.  Use this macro to enable machbine-specific
+   level on all supported machines.  Use this macro to enable machine-specific
    optimizations.
 
    *Do not examine `write_symbols' in this macro!* The debugging options are

@@ -1206,7 +1206,7 @@
        (eq_attr "type" "sqrt_single"))
   "(f1|f0) + fr550_float")
 
-;; Synthetic units for enforcing media issue restructions.  Certain types
+;; Synthetic units for enforcing media issue restrictions.  Certain types
 ;; of insn in M2 conflict with certain types in M0:
 ;;
 ;;			     M2
@@ -5913,7 +5913,7 @@
 ;; Called after register allocation to add any instructions needed for the
 ;; epilogue.  Using an epilogue insn is favored compared to putting all of the
 ;; instructions in the FUNCTION_EPILOGUE macro, since it allows the scheduler
-;; to intermix instructions with the restires of the caller saved registers.
+;; to intermix instructions with the restores of the caller saved registers.
 ;; In some cases, it might be necessary to emit a barrier instruction as the
 ;; first insn to prevent such scheduling.
 (define_expand "epilogue"

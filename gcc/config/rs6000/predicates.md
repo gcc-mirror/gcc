@@ -593,7 +593,7 @@
   (match_code "symbol_ref,const,label_ref"))
 
 ;; Return 1 if op is a simple reference that can be loaded via the GOT,
-;; exclusing labels involving addition.
+;; excluding labels involving addition.
 (define_predicate "got_no_const_operand"
   (match_code "symbol_ref,label_ref"))
 

@@ -4428,7 +4428,7 @@ gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
 {
   /* We don't do anything if the value isn't there, is constant, or contains
      A PLACEHOLDER_EXPR.  We also don't want to do anything if it's already
-     a VAR_DECL.  If it's a VAR_DECL from another function, the gimplfier
+     a VAR_DECL.  If it's a VAR_DECL from another function, the gimplifier
      will want to replace it with a new variable, but that will cause problems
      if this type is from outside the function.  It's OK to have that here.  */
   if (*expr_p == NULL_TREE || TREE_CONSTANT (*expr_p)

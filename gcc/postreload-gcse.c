@@ -300,7 +300,7 @@ hash_expr_for_htab (const void *expp)
   return exp->hash;
 }
 
-/* Callbach for hashtab.
+/* Callback for hashtab.
    Return nonzero if exp1 is equivalent to exp2.  */
 
 static int

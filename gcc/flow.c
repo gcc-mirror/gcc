@@ -273,7 +273,7 @@ static int ndead;
    (remember, we are walking backward).  This can be computed as current
    pbi->insn_num - reg_deaths[regno].
    At the end of processing each basic block, the remaining live registers
-   are inspected and liferanges are increased same way so liverange of global
+   are inspected and live ranges are increased same way so liverange of global
    registers are computed correctly.
   
    The array is maintained clear for dead registers, so it can be safely reused

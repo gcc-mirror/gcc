@@ -1746,7 +1746,7 @@ add_string (varray_t *vp, shash_t **hash_tbl, const char *start,
 
 
 /* Add a local symbol.  The symbol string starts at STR_START and the
-   first byte after it is makred by STR_END_P1.  The symbol has type
+   first byte after it is marked by STR_END_P1.  The symbol has type
    TYPE and storage class STORAGE and value VALUE.  INDX is an index
    to local/aux. symbols.  */
 

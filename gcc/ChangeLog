@@ -1,3 +1,16 @@
+2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cgraphunit.c, dbxout.c, flow.c, gcse.c, gimplify.c,
+	lambda-code.c, loop.c, machmode.def, mips-tfile.c,
+	modulo-sched.c, passes.c, postreload-gcse.c, tree-eh.c,
+	tree-ssa-ccp.c, varasm.c, config/frv/frv.c, config/frv/frv.h,
+	config/frv/frv.md, config/i386/i386.c, config/i386/i386.h,
+	config/i386/i386.md, config/rs6000/predicates.md,
+	config/rs6000/rs6000.c, config/s390/fixdfdi.h,
+	config/s390/s390.c, config/stormy16/stormy16.c,
+	config/stormy16/stormy16.md, config/vax/vax.md: Fix comment
+	typos.
+
 2005-04-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/17855

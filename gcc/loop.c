@@ -8904,7 +8904,7 @@ combine_givs (struct loop_regs *regs, struct iv_class *bl)
       /* If a DEST_REG GIV is used only once, do not allow it to combine
 	 with anything, for in doing so we will gain nothing that cannot
 	 be had by simply letting the GIV with which we would have combined
-	 to be reduced on its own.  The losage shows up in particular with
+	 to be reduced on its own.  The lossage shows up in particular with
 	 DEST_ADDR targets on hosts with reg+reg addressing, though it can
 	 be seen elsewhere as well.  */
       if (g1->giv_type == DEST_REG

@@ -41,7 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    A CLASS argument must be one of the constants defined in
    mode-classes.def, less the leading MODE_ prefix; some statements
-   that take CLASS arguments have restructions on which classes are
+   that take CLASS arguments have restrictions on which classes are
    acceptable.  For instance, INT.
 
    A MODE argument must be the printable name of a machine mode,

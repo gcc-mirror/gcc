@@ -489,7 +489,7 @@ lcm (int a, int b)
 }
 
 /* Perform Fourier-Motzkin elimination to calculate the bounds of the
-   auxillary nest.
+   auxiliary nest.
    Fourier-Motzkin is a way of reducing systems of linear inequalities so that
    it is easy to calculate the answer and bounds.
    A sketch of how it works:
@@ -800,7 +800,7 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
 /* Compute the loop bounds for the target space, using the bounds of
    the auxiliary nest AUXILLARY_NEST, and the triangular matrix H.  
    The target space loop bounds are computed by multiplying the triangular
-   matrix H by the auxillary nest, to get the new loop bounds.  The sign of
+   matrix H by the auxiliary nest, to get the new loop bounds.  The sign of
    the loop steps (positive or negative) is then used to swap the bounds if
    the loop counts downwards.
    Return the target loopnest.  */
@@ -1057,8 +1057,8 @@ lambda_compute_step_signs (lambda_trans_matrix trans, lambda_vector stepsigns)
    2. Composing the dense base with the specified transformation (TRANS)
    3. Decomposing the combined transformation into a lower triangular portion,
    and a unimodular portion. 
-   4. Computing the auxillary nest using the unimodular portion.
-   5. Computing the target nest using the auxillary nest and the lower
+   4. Computing the auxiliary nest using the unimodular portion.
+   5. Computing the target nest using the auxiliary nest and the lower
    triangular portion.  */ 
 
 lambda_loopnest
