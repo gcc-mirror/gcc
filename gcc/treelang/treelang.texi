@@ -9,10 +9,7 @@
 
 @include gcc-common.texi
 
-@set version-treelang 2.0
-
-@set last-update 2004-09-28
-@set copyrights-treelang 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+@set copyrights-treelang 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005
 
 @set email-general gcc@@gcc.gnu.org
 @set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
@@ -154,10 +151,6 @@ documentation.
 @end ifclear
 @sp 2
 @center Tim Josling
-@sp 3
-@center Last updated @value{last-update}
-@sp 1
-@center for version @value{version-treelang}
 @page
 @vskip 0pt plus 1filll
 For the @value{which-treelang} Version*

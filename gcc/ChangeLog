@@ -1,5 +1,18 @@
 2005-02-06  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* doc/cpp.texi: Include gcc-common.texi.  Don't define gcctabopt
+	macro locally.  Don't give last revision date.  Use GCC version
+	number from gcc-common.texi.
+	* doc/cppinternals.texi: Include gcc-common.texi.  Don't give last
+	revision date.  Use GCC version number from gcc-common.texi.
+	Describe being a library as current state rather than as 3.x
+	history.
+	* doc/gcc.texi: Remove last update date.
+	* doc/gccint.texi: Likewise.  Update copyright dates.
+	* doc/install.texi: Update copyright dates.
+
+2005-02-06  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR other/7549
 	* doc/invoke.texi: Mention for each option included in -Wall that
 	it is included in -Wall.

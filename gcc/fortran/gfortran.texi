@@ -1,8 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set last-update 13 May 2004
-@set copyrights-gfortran 1999-2004
+@set copyrights-gfortran 1999-2005
 
 @include gcc-common.texi
 
@@ -83,10 +82,6 @@ Contributed by Steven Bosscher (@email{s.bosscher@@gcc.gnu.org}).
 @title Using GNU Fortran 95
 @sp 2
 @center Steven Bosscher
-@sp 3 
-@center Last updated @value{last-update}
-@sp 1
-@center for version @value {version-GCC}
 @page
 @vskip 0pt plus 1filll
 For the @value{version-GCC} Version*

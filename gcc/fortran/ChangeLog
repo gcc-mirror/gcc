@@ -1,3 +1,7 @@
+2005-02-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gfortran.texi: Don't give last update date.
+
 2006-01-30  Richard Henderson  <rth@redhat.com>
 
 	* options.c (gfc_init_options): Zero flag_errno_math.
