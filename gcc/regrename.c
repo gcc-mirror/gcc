@@ -51,7 +51,7 @@ struct du_chain
 
   rtx insn;
   rtx *loc;
-  enum reg_class class;
+  ENUM_BITFIELD(reg_class) class : 16;
   unsigned int need_caller_save_reg:1;
   unsigned int earlyclobber:1;
 };
