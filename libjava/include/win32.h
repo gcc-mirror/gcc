@@ -19,8 +19,7 @@ details.  */
 #include <gcj/cni.h>
 #include <java/util/Properties.h>
 
-// FIXME: remove this once the io.h issue is resolved
-extern "C" char*   getcwd (char*, int);
+#include <io.h>
 
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
