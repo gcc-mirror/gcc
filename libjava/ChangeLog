@@ -1,4 +1,4 @@
-2002-03-26  Loren J. Rittle  <ljrittle@acm.org>
+2002-04-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.host: Add case statement to support generic port
 	properties.  Add *-*-freebsd* section.
