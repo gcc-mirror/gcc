@@ -204,7 +204,7 @@ namespace std {
     static const seekdir cur = 		seekdir(SEEK_CUR);
     static const seekdir end = 		seekdir(SEEK_END);
 
-#ifdef _GLIBCPP_DEPRICATED
+#ifdef _GLIBCPP_DEPRECATED
     typedef int io_state;
     typedef int open_mode;
     typedef int seek_dir;

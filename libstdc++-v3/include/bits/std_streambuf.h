@@ -484,7 +484,7 @@ namespace std {
       overflow(int_type /* __c */ = traits_type::eof())
       { return traits_type::eof(); }
 
-#ifdef _GLIBCPP_DEPRICATED
+#ifdef _GLIBCPP_DEPRECATED
     public:
       void 
       stossc() 

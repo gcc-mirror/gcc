@@ -56,7 +56,7 @@
 //#define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
 
 // To enable older, ARM-style iostreams and other anachronisms use this.
-//#define _GLIBCPP_DEPRICATED 1
+//#define _GLIBCPP_DEPRECATED 1
 
 // Use corrected code from the committee library group's issues list.
 # define _GLIBCPP_RESOLVE_LIB_DEFECTS 1

@@ -1,3 +1,8 @@
+2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* include/bits/c++config, include/bits/ios_base.h,
+	include/bits/std_streambuf.h: Correct spelling of "deprecated".
+
 2000-11-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/exception_support.cc (__throw_bad_cast): Name it 
