@@ -1844,10 +1844,12 @@ while (0)
 	HOST_WIDE_INT value = INTVAL (XEXP (X, 1));			\
 									\
 	if (value == 1)							\
-	  return COSTS_N_INSNS (ix86_cost->add) + rtx_cost(XEXP (X, 0));\
+	  return COSTS_N_INSNS (ix86_cost->add) 			\
+				+ rtx_cost(XEXP (X, 0), OUTER_CODE);	\
 									\
 	if (value == 2 || value == 3)					\
-	  return COSTS_N_INSNS (ix86_cost->lea) + rtx_cost(XEXP (X, 0));\
+	  return COSTS_N_INSNS (ix86_cost->lea)				\
+				 + rtx_cost(XEXP (X, 0), OUTER_CODE);	\
       }									\
     /* fall through */							\
 		  							\
@@ -1865,12 +1867,12 @@ while (0)
 	return ((GET_CODE (XEXP (X, 1)) == AND				\
 		 ? COSTS_N_INSNS(ix86_cost->shift_var * 2)		\
 		 : COSTS_N_INSNS(ix86_cost->shift_var * 6 + 2))		\
-		+ rtx_cost(XEXP (X, 0)));				\
+		+ rtx_cost(XEXP (X, 0), OUTER_CODE));			\
       }									\
     return COSTS_N_INSNS (GET_CODE (XEXP (X, 1)) == CONST_INT		\
 			  ? ix86_cost->shift_const			\
 			  : ix86_cost->shift_var)			\
-      + rtx_cost(XEXP (X, 0));						\
+      + rtx_cost(XEXP (X, 0), OUTER_CODE);				\
 									\
   case MULT:								\
     if (GET_CODE (XEXP (X, 1)) == CONST_INT)				\
@@ -1879,10 +1881,11 @@ while (0)
 	int nbits = 0;							\
 									\
 	if (value == 2)							\
-	  return COSTS_N_INSNS (ix86_cost->add) + rtx_cost(XEXP (X, 0));\
-									\
+	  return COSTS_N_INSNS (ix86_cost->add)				\
+				 + rtx_cost(XEXP (X, 0), OUTER_CODE);	\
 	if (value == 4 || value == 8)					\
-	  return COSTS_N_INSNS (ix86_cost->lea) + rtx_cost(XEXP (X, 0));\
+	  return COSTS_N_INSNS (ix86_cost->lea)				\
+				 + rtx_cost(XEXP (X, 0), OUTER_CODE);	\
 									\
 	while (value != 0)						\
 	  {								\
@@ -1892,11 +1895,11 @@ while (0)
 									\
 	if (nbits == 1)							\
 	  return COSTS_N_INSNS (ix86_cost->shift_const)			\
-	    + rtx_cost(XEXP (X, 0));					\
+	    + rtx_cost(XEXP (X, 0), OUTER_CODE);			\
 									\
 	return COSTS_N_INSNS (ix86_cost->mult_init			\
 			      + nbits * ix86_cost->mult_bit)		\
-	  + rtx_cost(XEXP (X, 0));					\
+	  + rtx_cost(XEXP (X, 0), OUTER_CODE);				\
       }									\
 									\
     else			/* This is arbitrary */			\
@@ -1922,8 +1925,10 @@ while (0)
   case MINUS:								\
     if (GET_MODE (X) == DImode)						\
       return COSTS_N_INSNS (ix86_cost->add) * 2				\
-	+ (rtx_cost (XEXP (X, 0)) << (GET_MODE (XEXP (X, 0)) != DImode))\
-	+ (rtx_cost (XEXP (X, 1)) << (GET_MODE (XEXP (X, 1)) != DImode));\
+	+ (rtx_cost (XEXP (X, 0), OUTER_CODE)				\
+	   << (GET_MODE (XEXP (X, 0)) != DImode))			\
+	+ (rtx_cost (XEXP (X, 1), OUTER_CODE)				\
+ 	   << (GET_MODE (XEXP (X, 1)) != DImode));			\
   case NEG:								\
   case NOT:								\
     if (GET_MODE (X) == DImode)						\
