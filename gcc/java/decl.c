@@ -775,7 +775,7 @@ init_decl_processing ()
   t = tree_cons (NULL_TREE, int_type_node, 
 		 tree_cons (NULL_TREE, int_type_node, endlink));
   soft_newarray_node
-      = builtin_function ("_Jv_NewArray",
+      = builtin_function ("_Jv_NewPrimArray",
 			  build_function_type(ptr_type_node, t),
 			  0, NOT_BUILT_IN, NULL_PTR);
   DECL_IS_MALLOC (soft_newarray_node) = 1;
