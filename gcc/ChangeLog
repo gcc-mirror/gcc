@@ -1,5 +1,14 @@
 2004-05-30  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (combine_comparisons, optimize_bit_field_compare,
+	range_binop, fold_truthop, fold_binary_op_with_conditional_arg,
+	fold_mathfn_compare, fold_inf_compare, fold,
+	fold_relational_hi_lo, nondestructive_fold_binary_to_constant):
+	Use constant_boolean_node where appropriate.  Don't bother using
+	fold_convert on the second argument to omit_one_operand.
+
+2004-05-30  Roger Sayle  <roger@eyesopen.com>
+
 	* doc/c-tree.texi (Expressions): Document FLOOR_DIV_EXPR,
 	CEIL_DIV_EXPR, ROUND_DIV_EXPR, FLOOR_MOD_EXPR, CEIL_MOD_EXPR,
 	ROUND_MOD_EXPR, EXACT_DIV_EXPR.  Improve documentation of
