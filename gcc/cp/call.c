@@ -4900,7 +4900,7 @@ convert_like (convs, expr)
     case REF_BIND:
       return convert_to_reference
 	(TREE_TYPE (convs), expr,
-	 CONV_IMPLICIT, LOOKUP_NORMAL|LOOKUP_NO_CONVERSION|INDIRECT_BIND,
+	 CONV_IMPLICIT, LOOKUP_NORMAL|LOOKUP_NO_CONVERSION,
 	 error_mark_node);
     case LVALUE_CONV:
       return decay_conversion (expr);

@@ -243,6 +243,11 @@ extern int warn_format;
 
 extern int warn_nonvdtor;
 
+/* Non-zero means warn when we convert a pointer to member function
+   into a pointer to (void or function).  */
+
+extern int warn_pmf2ptr;
+
 /* Non-zero means warn when a function is declared extern and later inline.  */
 extern int warn_extern_inline;
 
@@ -1845,9 +1850,9 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
    LOOKUP_HAS_IN_CHARGE means that the "in charge" variable is already
      in the parameter list.
    LOOKUP_ONLYCONVERTING means that non-conversion constructors are not tried.
-   INDIRECT_BIND means that if a temporary is created, it should be created so
-     that it lives only as long as WITH_CLEANUP_EXPRs live, else if a temporary
-     is created then it should live as long as the current variable bindings.
+   DIRECT_BIND means that if a temporary is created, it should be created so
+     that it lives as long as the current variable bindings; otherwise it
+     only lives until the end of the complete-expression.
    LOOKUP_SPECULATIVELY means return NULL_TREE if we cannot find what we are
      after.  Note, LOOKUP_COMPLAIN is checked and error messages printed
      before LOOKUP_SPECULATIVELY is checked.
@@ -1865,7 +1870,7 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define LOOKUP_HAS_IN_CHARGE (32)
 #define LOOKUP_SPECULATIVELY (64)
 #define LOOKUP_ONLYCONVERTING (128)
-#define INDIRECT_BIND (256)
+#define DIRECT_BIND (256)
 #define LOOKUP_NO_CONVERSION (512)
 #define LOOKUP_DESTRUCTOR (512)
 #define LOOKUP_NO_TEMP_BIND (1024)
@@ -2290,6 +2295,7 @@ extern void begin_template_parm_list		PROTO((void));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
 extern void end_template_decl			PROTO((void));
+extern tree current_template_args		PROTO((void));
 extern void push_template_decl			PROTO((tree));
 extern tree lookup_template_class		PROTO((tree, tree, tree));
 extern int uses_template_parms			PROTO((tree));

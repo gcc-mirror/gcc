@@ -1592,6 +1592,16 @@ mapcar (t, func)
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
       return t;
+      break;
+
+    case RTL_EXPR:
+      t = copy_node (t);
+      if (RTL_EXPR_SEQUENCE (t))
+	RTL_EXPR_SEQUENCE (t) = copy_rtx (RTL_EXPR_SEQUENCE (t));
+      if (RTL_EXPR_RTL (t))
+	RTL_EXPR_RTL (t) = copy_rtx (RTL_EXPR_RTL (t));
+      return t;
+      break;
 
     case CONVERT_EXPR:
     case ADDR_EXPR:

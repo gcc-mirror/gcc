@@ -2116,7 +2116,9 @@ synthesize_method (fndecl)
   tree context = hack_decl_function_context (fndecl);
   tree base = DECL_CLASS_CONTEXT (fndecl);
 
-  if (nested)
+  if (! context)
+    push_to_top_level ();
+  else if (nested)
     push_cp_function_context (context);
 
   interface_unknown = 1;
@@ -2156,6 +2158,8 @@ synthesize_method (fndecl)
     }
 
   extract_interface_info ();
-  if (nested)
+  if (! context)
+    pop_from_top_level ();
+  else if (nested)
     pop_cp_function_context (context);
 }

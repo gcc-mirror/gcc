@@ -2539,9 +2539,20 @@ dfs_debug_mark (binfo)
 
   CLASSTYPE_DEBUG_REQUESTED (t) = 1;
 
-  /* If interface info is known, the value of (?@@?) is correct.  */
-  if (methods == 0
-      || CLASSTYPE_INTERFACE_KNOWN (t)
+  if (methods == 0)
+    return;
+
+  /* We can't do the TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
+     does not support name references between translation units.  */
+  if (write_symbols == DWARF_DEBUG)
+    {
+      rest_of_type_compilation (t, global_bindings_p ());
+      return;
+    }
+
+  /* If interface info is known, either we've already emitted the debug
+     info or we don't need to.  */
+  if (CLASSTYPE_INTERFACE_KNOWN (t)
       || (write_virtuals == 2 && TYPE_VIRTUAL_P (t)))
     return;
 
@@ -3120,6 +3131,10 @@ note_debug_info_needed (type)
      tree type;
 {
   tree field;
+
+  if (current_template_parms)
+    return;
+
   dfs_walk (TYPE_BINFO (type), dfs_debug_mark, dfs_debug_unmarkedp);
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     {

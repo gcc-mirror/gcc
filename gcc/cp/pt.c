@@ -198,26 +198,13 @@ end_template_decl ()
   (void) get_pending_sizes ();	/* Why? */
 }
 
-void
-push_template_decl (decl)
-     tree decl;
+/* Generate a valid set of template args from current_template_parms.  */
+
+tree
+current_template_args ()
 {
   tree header = current_template_parms;
-  tree tmpl;
   tree args = NULL_TREE;
-  tree info;
-  tree ctx = DECL_CONTEXT (decl) ? DECL_CONTEXT (decl) : current_class_type;
-  int primary = 0;
-
-  /* Kludge! */
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_FRIEND_P (decl)
-      && DECL_CLASS_CONTEXT (decl))
-    ;
-  /* Note that this template is a "primary template" */
-  else if (! ctx || ! CLASSTYPE_TEMPLATE_INFO (ctx)
-      /* || (processing_template_decl > CLASSTYPE_TEMPLATE_LEVEL (ctx)) */)
-    primary = 1;
-
   while (header)
     {
       tree a = copy_node (TREE_VALUE (header));
@@ -236,7 +223,31 @@ push_template_decl (decl)
       header = TREE_CHAIN (header);
     }
   args = nreverse (args);
+
+  /* FIXME Remove this when we support member templates.  */
   args = TREE_VALUE (args);
+
+  return args;
+}
+  
+void
+push_template_decl (decl)
+     tree decl;
+{
+  tree tmpl;
+  tree args = NULL_TREE;
+  tree info;
+  tree ctx = DECL_CONTEXT (decl) ? DECL_CONTEXT (decl) : current_class_type;
+  int primary = 0;
+
+  /* Kludge! */
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_FRIEND_P (decl)
+      && DECL_CLASS_CONTEXT (decl))
+    ;
+  /* Note that this template is a "primary template" */
+  else if (! ctx || ! CLASSTYPE_TEMPLATE_INFO (ctx)
+      /* || (processing_template_decl > CLASSTYPE_TEMPLATE_LEVEL (ctx)) */)
+    primary = 1;
 
   /* Partial specialization.  */
   if (TREE_CODE (decl) == TYPE_DECL
@@ -261,6 +272,8 @@ push_template_decl (decl)
       TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
       return;
     }
+
+  args = current_template_args ();
 
   if (! ctx || TYPE_BEING_DEFINED (ctx))
     {
