@@ -146,6 +146,7 @@ configure_gcc() {
     changedir ${OBJDIR}
 
     # Configure the tree.
+    echo "Configuring: ${DESTINATION}/configure ${CONFIGURE_OPTIONS}"
     eval ${DESTINATION}/configure ${CONFIGURE_OPTIONS} || \
 	error "Could not configure the compiler"
 }
@@ -159,6 +160,7 @@ bootstrap_gcc() {
     changedir ${OBJDIR}
 
     # Bootstrap the compiler
+    echo "Building: ${MAKE} ${MAKE_BOOTSTRAP_OPTIONS} bootstrap"
     eval ${MAKE} ${MAKE_BOOTSTRAP_OPTIONS} bootstrap || \
 	error "Could not bootstrap the compiler"
 }
