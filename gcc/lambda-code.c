@@ -489,6 +489,168 @@ lcm (int a, int b)
   return (abs (a) * abs (b) / gcd (a, b));
 }
 
+/* Perform Fourier-Motzkin elimination to calculate the bounds of the
+   auxillary nest.
+   Fourier-Motzkin is a way of reducing systems of linear inequality so that
+   it is easy to calculate the answer and bounds.
+   A sketch of how it works:
+   Given a system of linear inequalities, ai * xj >= bk, you can always
+   rewrite the constraints so they are all of the form
+   a <= x, or x <= b, or x >= constant for some x in x1 ... xj (and some b
+   in b1 ... bk, and some a in a1...ai)
+   You can then eliminate this x from the non-constant inequalities by
+   rewriting these as a <= b, x >= constant, and delete the x variable.
+   You can then repeat this for any remaining x variables, and then we have
+   an easy to use variable <= constant (or no variables at all) form that we
+   can construct our bounds from. 
+   
+   In our case, each time we eliminate, we construct part of the bound from
+   the ith variable, then delete the ith variable. 
+   
+   Remember the constant are in our vector a, our coefficient matrix is A,
+   and our invariant coefficient matrix is B.
+   
+   SIZE is the size of the matrices being passed.
+   DEPTH is the loop nest depth.
+   INVARIANTS is the number of loop invariants.
+   A, B, and a are the coefficient matrix, invariant coefficient, and a
+   vector of constants, respectively.  */
+
+static lambda_loopnest 
+compute_nest_using_fourier_motzkin (int size,
+				    int depth, 
+				    int invariants,
+				    lambda_matrix A,
+				    lambda_matrix B,
+				    lambda_vector a)
+{
+
+  int multiple, f1, f2;
+  int i, j, k;
+  lambda_linear_expression expression;
+  lambda_loop loop;
+  lambda_loopnest auxillary_nest;
+  lambda_matrix swapmatrix, A1, B1;
+  lambda_vector swapvector, a1;
+  int newsize;
+
+  A1 = lambda_matrix_new (128, depth);
+  B1 = lambda_matrix_new (128, invariants);
+  a1 = lambda_vector_new (128);
+
+  auxillary_nest = lambda_loopnest_new (depth, invariants);
+
+  for (i = depth - 1; i >= 0; i--)
+    {
+      loop = lambda_loop_new ();
+      LN_LOOPS (auxillary_nest)[i] = loop;
+      LL_STEP (loop) = 1;
+
+      for (j = 0; j < size; j++)
+	{
+	  if (A[j][i] < 0)
+	    {
+	      /* Any linear expression in the matrix with a coefficient less
+		 than 0 becomes part of the new lower bound.  */ 
+	      expression = lambda_linear_expression_new (depth, invariants);
+
+	      for (k = 0; k < i; k++)
+		LLE_COEFFICIENTS (expression)[k] = A[j][k];
+
+	      for (k = 0; k < invariants; k++)
+		LLE_INVARIANT_COEFFICIENTS (expression)[k] = -1 * B[j][k];
+
+	      LLE_DENOMINATOR (expression) = -1 * A[j][i];
+	      LLE_CONSTANT (expression) = -1 * a[j];
+
+	      /* Ignore if identical to the existing lower bound.  */
+	      if (!lle_equal (LL_LOWER_BOUND (loop),
+			      expression, depth, invariants))
+		{
+		  LLE_NEXT (expression) = LL_LOWER_BOUND (loop);
+		  LL_LOWER_BOUND (loop) = expression;
+		}
+
+	    }
+	  else if (A[j][i] > 0)
+	    {
+	      /* Any linear expression with a coefficient greater than 0
+		 becomes part of the new upper bound. */ 
+	      expression = lambda_linear_expression_new (depth, invariants);
+	      for (k = 0; k < i; k++)
+		LLE_COEFFICIENTS (expression)[k] = -1 * A[j][k];
+
+	      for (k = 0; k < invariants; k++)
+		LLE_INVARIANT_COEFFICIENTS (expression)[k] = B[j][k];
+
+	      LLE_DENOMINATOR (expression) = A[j][i];
+	      LLE_CONSTANT (expression) = a[j];
+
+	      /* Ignore if identical to the existing upper bound.  */
+	      if (!lle_equal (LL_UPPER_BOUND (loop),
+			      expression, depth, invariants))
+		{
+		  LLE_NEXT (expression) = LL_UPPER_BOUND (loop);
+		  LL_UPPER_BOUND (loop) = expression;
+		}
+
+	    }
+	}
+
+      /* This portion creates a new system of linear inequalities by deleting
+	 the i'th variable, reducing the system by one variable.  */
+      newsize = 0;
+      for (j = 0; j < size; j++)
+	{
+	  /* If the coefficient for the i'th variable is 0, then we can just
+	     eliminate the variable straightaway.  Otherwise, we have to
+	     multiply through by the coefficients we are eliminating.  */
+	  if (A[j][i] == 0)
+	    {
+	      lambda_vector_copy (A[j], A1[newsize], depth);
+	      lambda_vector_copy (B[j], B1[newsize], invariants);
+	      a1[newsize] = a[j];
+	      newsize++;
+	    }
+	  else if (A[j][i] > 0)
+	    {
+	      for (k = 0; k < size; k++)
+		{
+		  if (A[k][i] < 0)
+		    {
+		      multiple = lcm (A[j][i], A[k][i]);
+		      f1 = multiple / A[j][i];
+		      f2 = -1 * multiple / A[k][i];
+
+		      lambda_vector_add_mc (A[j], f1, A[k], f2,
+					    A1[newsize], depth);
+		      lambda_vector_add_mc (B[j], f1, B[k], f2,
+					    B1[newsize], invariants);
+		      a1[newsize] = f1 * a[j] + f2 * a[k];
+		      newsize++;
+		    }
+		}
+	    }
+	}
+
+      swapmatrix = A;
+      A = A1;
+      A1 = swapmatrix;
+
+      swapmatrix = B;
+      B = B1;
+      B1 = swapmatrix;
+
+      swapvector = a;
+      a = a1;
+      a1 = swapvector;
+
+      size = newsize;
+    }
+
+  return auxillary_nest;
+}
+
 /* Compute the loop bounds for the auxiliary space NEST.
    Input system used is Ax <= b.  TRANS is the unimodular transformation.  */
 
@@ -496,17 +658,14 @@ static lambda_loopnest
 lambda_compute_auxillary_space (lambda_loopnest nest,
 				lambda_trans_matrix trans)
 {
-  lambda_matrix A, B, A1, B1, temp0;
-  lambda_vector a, a1, temp1;
+  lambda_matrix A, B, A1, B1;
+  lambda_vector a, a1;
   lambda_matrix invertedtrans;
-  int determinant, depth, invariants, size, newsize;
-  int i, j, k;
-  lambda_loopnest auxillary_nest;
+  int determinant, depth, invariants, size;
+  int i, j;
   lambda_loop loop;
   lambda_linear_expression expression;
   lambda_lattice lattice;
-
-  int multiple, f1, f2;
 
   depth = LN_DEPTH (nest);
   invariants = LN_INVARIANTS (nest);
@@ -623,136 +782,8 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
   /* A = A1 inv(U).  */
   lambda_matrix_mult (A1, invertedtrans, A, size, depth, depth);
 
-  /* Perform Fourier-Motzkin elimination to calculate the bounds of the
-     auxillary nest.
-     Fourier-Motzkin is a way of reducing systems of linear inequality so that
-     it is easy to calculate the answer and bounds.
-     A sketch of how it works:
-     Given a system of linear inequalities, ai * xj >= bk, you can always
-     rewrite the constraints so they are all of the form
-     a <= x, or x <= b, or x >= constant for some x in x1 ... xj (and some b
-     in b1 ... bk, and some a in a1...ai)
-     You can then eliminate this x from the non-constant inequalities by
-     rewriting these as a <= b, x >= constant, and delete the x variable.
-     You can then repeat this for any remaining x variables, and then we have
-     an easy to use variable <= constant (or no variables at all) form that we
-     can construct our bounds from. 
-
-     In our case, each time we eliminate, we construct part of the bound from
-     the ith variable, then delete the ith variable. 
-
-     Remember the constant are in our vector a, our coefficient matrix is A,
-     and our invariant coefficient matrix is B  */
-
-  /* Swap B and B1, and a1 and a.  */
-  temp0 = B1;
-  B1 = B;
-  B = temp0;
-
-  temp1 = a1;
-  a1 = a;
-  a = temp1;
-
-  auxillary_nest = lambda_loopnest_new (depth, invariants);
-
-  for (i = depth - 1; i >= 0; i--)
-    {
-      loop = lambda_loop_new ();
-      LN_LOOPS (auxillary_nest)[i] = loop;
-      LL_STEP (loop) = 1;
-
-      for (j = 0; j < size; j++)
-	{
-	  if (A[j][i] < 0)
-	    {
-	      /* Lower bound.  */
-	      expression = lambda_linear_expression_new (depth, invariants);
-
-	      for (k = 0; k < i; k++)
-		LLE_COEFFICIENTS (expression)[k] = A[j][k];
-	      for (k = 0; k < invariants; k++)
-		LLE_INVARIANT_COEFFICIENTS (expression)[k] = -1 * B[j][k];
-	      LLE_DENOMINATOR (expression) = -1 * A[j][i];
-	      LLE_CONSTANT (expression) = -1 * a[j];
-	      /* Ignore if identical to the existing lower bound.  */
-	      if (!lle_equal (LL_LOWER_BOUND (loop),
-			      expression, depth, invariants))
-		{
-		  LLE_NEXT (expression) = LL_LOWER_BOUND (loop);
-		  LL_LOWER_BOUND (loop) = expression;
-		}
-
-	    }
-	  else if (A[j][i] > 0)
-	    {
-	      /* Upper bound.  */
-	      expression = lambda_linear_expression_new (depth, invariants);
-	      for (k = 0; k < i; k++)
-		LLE_COEFFICIENTS (expression)[k] = -1 * A[j][k];
-	      LLE_CONSTANT (expression) = a[j];
-
-	      for (k = 0; k < invariants; k++)
-		LLE_INVARIANT_COEFFICIENTS (expression)[k] = B[j][k];
-
-	      LLE_DENOMINATOR (expression) = A[j][i];
-	      /* Ignore if identical to the existing upper bound.  */
-	      if (!lle_equal (LL_UPPER_BOUND (loop),
-			      expression, depth, invariants))
-		{
-		  LLE_NEXT (expression) = LL_UPPER_BOUND (loop);
-		  LL_UPPER_BOUND (loop) = expression;
-		}
-
-	    }
-	}
-      /* creates a new system by deleting the i'th variable.  */
-      newsize = 0;
-      for (j = 0; j < size; j++)
-	{
-	  if (A[j][i] == 0)
-	    {
-	      lambda_vector_copy (A[j], A1[newsize], depth);
-	      lambda_vector_copy (B[j], B1[newsize], invariants);
-	      a1[newsize] = a[j];
-	      newsize++;
-	    }
-	  else if (A[j][i] > 0)
-	    {
-	      for (k = 0; k < size; k++)
-		{
-		  if (A[k][i] < 0)
-		    {
-		      multiple = lcm (A[j][i], A[k][i]);
-		      f1 = multiple / A[j][i];
-		      f2 = -1 * multiple / A[k][i];
-
-		      lambda_vector_add_mc (A[j], f1, A[k], f2,
-					    A1[newsize], depth);
-		      lambda_vector_add_mc (B[j], f1, B[k], f2,
-					    B1[newsize], invariants);
-		      a1[newsize] = f1 * a[j] + f2 * a[k];
-		      newsize++;
-		    }
-		}
-	    }
-	}
-
-      temp0 = A;
-      A = A1;
-      A1 = temp0;
-
-      temp0 = B;
-      B = B1;
-      B1 = temp0;
-
-      temp1 = a;
-      a = a1;
-      a1 = temp1;
-
-      size = newsize;
-    }
-
-  return auxillary_nest;
+  return compute_nest_using_fourier_motzkin (size, depth, invariants,
+					     A, B1, a1);
 }
 
 /* Compute the loop bounds for the target space, using the bounds of
@@ -1165,27 +1196,18 @@ gcc_tree_to_linear_expression (int depth, tree expr,
 /* Return true if OP is invariant in LOOP and all outer loops.  */
 
 static bool
-invariant_in_loop (struct loop *loop, tree op)
+invariant_in_loop_and_outer_loops (struct loop *loop, tree op)
 {
   if (is_gimple_min_invariant (op))
     return true;
   if (loop->depth == 0)
     return true;
-  if (TREE_CODE (op) == SSA_NAME)
-    {
-      tree def;
-      def = SSA_NAME_DEF_STMT (op);
-      if (TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL
-	  && IS_EMPTY_STMT (def))
-	return true;
-      if (IS_EMPTY_STMT (def))
-	return false;
-      if (loop->outer 
-	  && !invariant_in_loop (loop->outer, op))
-	  return false;
-      return !flow_bb_inside_loop_p (loop, bb_for_stmt (def));
-    }
-  return false;
+  if (!expr_invariant_in_loop_p (loop, op))
+    return false;
+  if (loop->outer 
+      && !invariant_in_loop_and_outer_loops (loop->outer, op))
+    return false;
+  return true;
 }
 
 /* Generate a lambda loop from a gcc loop LOOP.  Return the new lambda loop,
@@ -1352,10 +1374,10 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
     }
   /* One part of the test may be a loop invariant tree.  */
   if (TREE_CODE (TREE_OPERAND (test, 1)) == SSA_NAME
-      && invariant_in_loop (loop, TREE_OPERAND (test, 1)))
+      && invariant_in_loop_and_outer_loops (loop, TREE_OPERAND (test, 1)))
     VEC_safe_push (tree, *invariants, TREE_OPERAND (test, 1));
   else if (TREE_CODE (TREE_OPERAND (test, 0)) == SSA_NAME
-	   && invariant_in_loop (loop, TREE_OPERAND (test, 0)))
+	   && invariant_in_loop_and_outer_loops (loop, TREE_OPERAND (test, 0)))
     VEC_safe_push (tree, *invariants, TREE_OPERAND (test, 0));
   
   /* The non-induction variable part of the test is the upper bound variable.
@@ -1433,9 +1455,10 @@ find_induction_var_from_exit_cond (struct loop *loop)
     case LE_EXPR:
     case NE_EXPR:
       ivarop = TREE_OPERAND (test, 0);
-      break;
+      break;      
     case GT_EXPR:
     case GE_EXPR:
+    case EQ_EXPR:
       ivarop = TREE_OPERAND (test, 1);
       break;
     default:
@@ -1898,15 +1921,12 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       dataflow_t imm = get_immediate_uses (SSA_NAME_DEF_STMT (oldiv));
       for (j = 0; j < num_immediate_uses (imm); j++)
 	{
-	  size_t k;
 	  tree stmt = immediate_use (imm, j);
-	  use_optype uses;
-	  get_stmt_operands (stmt);
-	  uses = STMT_USE_OPS (stmt);
-	  for (k = 0; k < NUM_USES (uses); k++)
+	  use_operand_p use_p;
+	  ssa_op_iter iter;
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	    {
-	      use_operand_p use = USE_OP_PTR (uses, k);
-	      if (USE_FROM_PTR (use) == oldiv)
+	      if (USE_FROM_PTR (use_p) == oldiv)
 		{
 		  tree newiv, stmts;
 		  lambda_body_vector lbv;
@@ -1921,7 +1941,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 		  /* Insert the statements to build that
 		     expression.  */
 		  bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
-		  SET_USE (use, newiv);
+		  propagate_value (use_p, newiv);
 		  modify_stmt (stmt);
 		  
 		}
