@@ -1,4 +1,4 @@
-// wide string support -*- C++ -*-
+// Locale support -*- C++ -*-
 
 // Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
@@ -28,12 +28,42 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 21  Strings library
+// ISO C++ 14882: 22.1  Locales
 //
 
-#include <bits/c++config.h>
+#include <locale>
 
-#ifdef _GLIBCXX_USE_WCHAR_T
-#define C wchar_t
-#include "string-inst.cc"
+namespace std
+{
+  template
+    int
+    __convert_from_v(char*, const int, const char*, double, 
+		     const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const int, const char*, long double, 
+		     const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const int, const char*, long, 
+		     const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const int, const char*, unsigned long, 
+		     const __c_locale&, int);
+
+#ifdef _GLIBCXX_USE_LONG_LONG
+  template
+    int
+    __convert_from_v(char*, const int, const char*, long long, 
+		     const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const int, const char*, unsigned long long, 
+		     const __c_locale&, int);
 #endif
+} // namespace std

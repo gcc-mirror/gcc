@@ -1,6 +1,7 @@
-// wide string support -*- C++ -*-
+// Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,12 +29,32 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 21  Strings library
+// ISO C++ 14882: 27.4  Iostreams base classes
 //
 
-#include <bits/c++config.h>
+#include <ios>
+#include <locale>
 
-#ifdef _GLIBCXX_USE_WCHAR_T
-#define C wchar_t
-#include "string-inst.cc"
-#endif
+namespace std 
+{
+  // Called only by basic_ios<>::init.
+  void 
+  ios_base::_M_init()   
+  {
+    // NB: May be called more than once
+    _M_precision = 6;
+    _M_width = 0;
+    _M_flags = skipws | dec;
+    _M_ios_locale = locale();
+  }  
+  
+  // 27.4.2.3  ios_base locale functions
+  locale
+  ios_base::imbue(const locale& __loc)
+  {
+    locale __old = _M_ios_locale;
+    _M_ios_locale = __loc;
+    _M_call_callbacks(imbue_event);
+    return __old;
+  }
+} // namespace std

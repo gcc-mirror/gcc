@@ -34,17 +34,8 @@
 #include <locale>
 #include <bits/atomicity.h>
 
-namespace __gnu_cxx
-{
-  // Defined in globals.cc.
-  extern std::locale 		c_locale;
-  extern std::locale::_Impl 	c_locale_impl;
-} // namespace __gnu_cxx
-
 namespace std 
 {
-  using namespace __gnu_cxx;
-
   // Definitions for static const data members of locale.
   const locale::category 	locale::none;
   const locale::category 	locale::ctype;
@@ -55,10 +46,6 @@ namespace std
   const locale::category 	locale::messages;
   const locale::category 	locale::all;
 
-  // In the future, GLIBCXX_ABI > 5 should remove all uses of
-  // _GLIBCXX_ASM_SYMVER in this file, and remove exports of any
-  // static data members of locale.
-
   // These are no longer exported.
   locale::_Impl*                locale::_S_classic;
   locale::_Impl* 		locale::_S_global; 
@@ -68,112 +55,6 @@ namespace std
   __gthread_once_t 		locale::_S_once = __GTHREAD_ONCE_INIT;
 #endif
 
-  size_t
-  locale::id::_M_id() const
-  {
-    if (!_M_index)
-      _M_index = 1 + __exchange_and_add(&_S_highwater, 1);
-    return _M_index - 1;
-  }
-
-  // Definitions for static const data members of locale::id
-  _Atomic_word locale::id::_S_highwater;  // init'd to 0 by linker
-
-  // Definitions for static const data members of locale::_Impl
-  const locale::id* const
-  locale::_Impl::_S_id_ctype[] =
-  {
-    &std::ctype<char>::id, 
-    &codecvt<char, char, mbstate_t>::id,
-#ifdef _GLIBCXX_USE_WCHAR_T
-    &std::ctype<wchar_t>::id,
-    &codecvt<wchar_t, char, mbstate_t>::id,
-#endif
-    0
-  };
-
-  const locale::id* const
-  locale::_Impl::_S_id_numeric[] =
-  {
-    &num_get<char>::id,  
-    &num_put<char>::id,  
-    &numpunct<char>::id, 
-#ifdef _GLIBCXX_USE_WCHAR_T
-    &num_get<wchar_t>::id,
-    &num_put<wchar_t>::id,
-    &numpunct<wchar_t>::id,
-#endif
-    0
-  };
-  
-  const locale::id* const
-  locale::_Impl::_S_id_collate[] =
-  {
-    &std::collate<char>::id,
-#ifdef _GLIBCXX_USE_WCHAR_T
-    &std::collate<wchar_t>::id,
-#endif
-    0
-  };
-
-  const locale::id* const
-  locale::_Impl::_S_id_time[] =
-  {
-    &__timepunct<char>::id, 
-    &time_get<char>::id, 
-    &time_put<char>::id, 
-#ifdef _GLIBCXX_USE_WCHAR_T
-    &__timepunct<wchar_t>::id, 
-    &time_get<wchar_t>::id,
-    &time_put<wchar_t>::id,
-#endif
-    0
-  };
-  
-  const locale::id* const
-  locale::_Impl::_S_id_monetary[] =
-  {
-    &money_get<char>::id,        
-    &money_put<char>::id,        
-    &moneypunct<char, false>::id, 
-    &moneypunct<char, true >::id, 
-#ifdef _GLIBCXX_USE_WCHAR_T
-    &money_get<wchar_t>::id,
-    &money_put<wchar_t>::id,
-    &moneypunct<wchar_t, false>::id,
-    &moneypunct<wchar_t, true >::id,
-#endif
-    0
-  };
-
-  const locale::id* const
-  locale::_Impl::_S_id_messages[] =
-  {
-    &std::messages<char>::id, 
-#ifdef _GLIBCXX_USE_WCHAR_T
-    &std::messages<wchar_t>::id,
-#endif
-    0
-  };
-  
-  const locale::id* const* const
-  locale::_Impl::_S_facet_categories[] =
-  {
-    // Order must match the decl order in class locale.
-    locale::_Impl::_S_id_ctype,
-    locale::_Impl::_S_id_numeric,
-    locale::_Impl::_S_id_collate,
-    locale::_Impl::_S_id_time,
-    locale::_Impl::_S_id_monetary,
-    locale::_Impl::_S_id_messages,
-    0
-  };
-
-  locale::locale() throw()
-  { 
-    _S_initialize(); 
-    (_M_impl = _S_global)->_M_add_reference(); 
-  }
 
   locale::locale(const locale& __other) throw()
   { (_M_impl = __other._M_impl)->_M_add_reference(); }
@@ -183,130 +64,6 @@ namespace std
   // The lack of a reference increment is intentional.
   locale::locale(_Impl* __ip) throw() : _M_impl(__ip)
   { }
-
-  locale::locale(const char* __s)
-  {
-    if (__s)
-      {
-	_S_initialize(); 
-	if (std::strcmp(__s, "C") == 0 || std::strcmp(__s, "POSIX") == 0)
-	  (_M_impl = _S_classic)->_M_add_reference();
-	else if (std::strcmp(__s, "") != 0)
-	  _M_impl = new _Impl(__s, 1);
-	else
-	  {
-	    // Get it from the environment.
-	    char* __env = std::getenv("LC_ALL");
-	    // If LC_ALL is set we are done.
-	    if (__env && std::strcmp(__env, "") != 0)
-	      {
-		if (std::strcmp(__env, "C") == 0 
-		    || std::strcmp(__env, "POSIX") == 0)
-		  (_M_impl = _S_classic)->_M_add_reference();
-		else
-		  _M_impl = new _Impl(__env, 1);
-	      }
-	    else
-	      {
-		string __res;
-		// LANG may set a default different from "C".
-		char* __env = std::getenv("LANG");
-		if (!__env || std::strcmp(__env, "") == 0 
-		    || std::strcmp(__env, "C") == 0 
-		    || std::strcmp(__env, "POSIX") == 0)
-		  __res = "C";
-		else 
-		  __res = __env;
-		
-		// Scan the categories looking for the first one
-		// different from LANG.
-		size_t __i = 0;
-		if (__res == "C")
-		  for (; __i < _S_categories_size; ++__i)
-		    {
-		      __env = std::getenv(_S_categories[__i]);
-		      if (__env && std::strcmp(__env, "") != 0 
-			  && std::strcmp(__env, "C") != 0 
-			  && std::strcmp(__env, "POSIX") != 0)
-			break;
-		    }
-		else
-		  for (; __i < _S_categories_size; ++__i)
-		    {
-		      __env = std::getenv(_S_categories[__i]);
-		      if (__env && std::strcmp(__env, "") != 0
-			  && __res != __env)
-			break;
-		    }
-	
-		// If one is found, build the complete string of
-		// the form LC_CTYPE=xxx;LC_NUMERIC=yyy; and so on...
-		if (__i < _S_categories_size)
-		  {
-		    string __str;
-		    for (size_t __j = 0; __j < __i; ++__j)
-		      {
-			__str += _S_categories[__j];
-			__str += '=';
-			__str += __res;
-			__str += ';';
-		      }
-		    __str += _S_categories[__i];
-		    __str += '=';
-		    __str += __env;
-		    __str += ';';
-		    __i++;
-		    for (; __i < _S_categories_size; ++__i)
-		      {
-			__env = std::getenv(_S_categories[__i]);
-			if (!__env || std::strcmp(__env, "") == 0)
-			  {
-			    __str += _S_categories[__i];
-			    __str += '=';
-			    __str += __res;
-			    __str += ';';
-			  }
-			else if (std::strcmp(__env, "C") == 0
-				 || std::strcmp(__env, "POSIX") == 0)
-			  {
-			    __str += _S_categories[__i];
-			    __str += "=C;";
-			  }
-			else
-			  {
-			    __str += _S_categories[__i];
-			    __str += '=';
-			    __str += __env;
-			    __str += ';';
-			  }
-		      }
-		    __str.erase(__str.end() - 1);
-		    _M_impl = new _Impl(__str.c_str(), 1);
-		  }
-		// ... otherwise either an additional instance of
-		// the "C" locale or LANG.
-		else if (__res == "C")
-		  (_M_impl = _S_classic)->_M_add_reference();
-		else
-		  _M_impl = new _Impl(__res.c_str(), 1);
-	      }
-	  }
-      }
-    else
-      __throw_runtime_error("locale::locale NULL not valid");
-  }
-
-  locale::locale(const locale& __base, const char* __s, category __cat)
-  { 
-    // NB: There are complicated, yet more efficient ways to do
-    // this. Building up locales on a per-category way is tedious, so
-    // let's do it this way until people complain.
-    locale __add(__s);
-    _M_coalesce(__base, __add, __cat);
-  }
-
-  locale::locale(const locale& __base, const locale& __add, category __cat)
-  { _M_coalesce(__base, __add, __cat); }
 
   locale::~locale() throw()
   { _M_impl->_M_remove_reference(); }
@@ -326,27 +83,6 @@ namespace std
     _M_impl->_M_remove_reference();
     _M_impl = __other._M_impl;
     return *this;
-  }
-
-  locale
-  locale::global(const locale& __other)
-  {
-    _S_initialize();
-
-    // XXX MT
-    _Impl* __old = _S_global;
-    __other._M_impl->_M_add_reference();
-    _S_global = __other._M_impl; 
-    if (_S_global->_M_check_same_name() 
-	&& (std::strcmp(_S_global->_M_names[0], "*") != 0))
-      setlocale(LC_ALL, __other.name().c_str());
-
-    // Reference count sanity check: one reference removed for the
-    // subsition of __other locale, one added by return-by-value. Net
-    // difference: zero. When the returned locale object's destrutor
-    // is called, then the reference count is decremented and possibly
-    // destroyed.
-    return locale(__old);
   }
 
   string
@@ -369,50 +105,6 @@ namespace std
 	  }
       }
     return __ret;
-  }
-
-  const locale&
-  locale::classic()
-  {
-    _S_initialize();
-    return c_locale;
-  }
-
-  void
-  locale::_S_initialize_once()
-  {
-    // 2 references.
-    // One reference for _S_classic, one for _S_global
-    _S_classic = new (&c_locale_impl) _Impl(2);
-    _S_global = _S_classic; 	    
-    new (&c_locale) locale(_S_classic);
-  }
-
-  void  
-  locale::_S_initialize()
-  {
-#ifdef __GTHREADS
-    if (__gthread_active_p())
-      __gthread_once(&_S_once, _S_initialize_once);
-#endif
-    if (!_S_classic)
-      _S_initialize_once();
-  }
-
-  void
-  locale::_M_coalesce(const locale& __base, const locale& __add, 
-		      category __cat)
-  {
-    __cat = _S_normalize_category(__cat);  
-    _M_impl = new _Impl(*__base._M_impl, 1);  
-
-    try 
-      { _M_impl->_M_replace_categories(__add._M_impl, __cat); }
-    catch (...) 
-      { 
-	_M_impl->_M_remove_reference(); 
-	__throw_exception_again;
-      }
   }
 
   locale::category
@@ -457,6 +149,7 @@ namespace std
     return __ret;
   }
 
+  // locale::facet
   __c_locale locale::facet::_S_c_locale;
 
   const char locale::facet::_S_c_name[2] = "C";
@@ -464,9 +157,6 @@ namespace std
 #ifdef __GTHREADS
   __gthread_once_t locale::facet::_S_once = __GTHREAD_ONCE_INIT;
 #endif
-
-  locale::facet::
-  ~facet() { }
 
   void
   locale::facet::_S_initialize_once()
@@ -494,62 +184,182 @@ namespace std
   locale::facet::_S_get_c_name()
   { return _S_c_name; }
 
-  // Definitions for static const data members of time_base.
-  template<> 
-    const char*
-    __timepunct_cache<char>::_S_timezones[14] =
-    { 
-      "GMT", "HST", "AKST", "PST", "MST", "CST", "EST", "AST", "NST", "CET", 
-      "IST", "EET", "CST", "JST"  
-    };
- 
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<> 
-    const wchar_t*
-    __timepunct_cache<wchar_t>::_S_timezones[14] =
-    { 
-      L"GMT", L"HST", L"AKST", L"PST", L"MST", L"CST", L"EST", L"AST", 
-      L"NST", L"CET", L"IST", L"EET", L"CST", L"JST"  
-    };
-#endif
+  locale::facet::
+  ~facet() { }
 
-  // Definitions for static const data members of money_base.
-  const money_base::pattern 
-  money_base::_S_default_pattern =  { {symbol, sign, none, value} };
-
-  const char* __num_base::_S_atoms_in = "-+xX0123456789eEabcdfABCDF";
-  const char* __num_base::_S_atoms_out ="-+xX0123456789abcdef0123456789ABCDEF";
-
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // According to the resolution of DR 231, about 22.2.2.2.2, p11,
-  // "str.precision() is specified in the conversion specification".
-  void
-  __num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod)
+  // locale::_Impl
+  locale::_Impl::
+  ~_Impl() throw()
   {
-    ios_base::fmtflags __flags = __io.flags();
-    *__fptr++ = '%';
-    // [22.2.2.2.2] Table 60
-    if (__flags & ios_base::showpos)
-      *__fptr++ = '+';
-    if (__flags & ios_base::showpoint)
-      *__fptr++ = '#';
+    if (_M_facets)
+      for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	if (_M_facets[__i])
+	  _M_facets[__i]->_M_remove_reference();
+    delete [] _M_facets;
 
-    // As per DR 231: _always_, not only when 
-    // __flags & ios_base::fixed || __prec > 0
-    *__fptr++ = '.';
-    *__fptr++ = '*';
+    if (_M_caches)
+      for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	if (_M_caches[__i])
+	  _M_caches[__i]->_M_remove_reference(); 
+    delete [] _M_caches;
 
-    if (__mod)
-      *__fptr++ = __mod;
-    ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
-    // [22.2.2.2.2] Table 58
-    if (__fltfield == ios_base::fixed)
-      *__fptr++ = 'f';
-    else if (__fltfield == ios_base::scientific)
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'E' : 'e';
-    else
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'G' : 'g';
-    *__fptr = '\0';
+    if (_M_names)
+      for (size_t __i = 0; __i < _S_categories_size; ++__i)
+	delete [] _M_names[__i];  
+    delete [] _M_names;
+  }
+
+  // Clone existing _Impl object.
+  locale::_Impl::
+  _Impl(const _Impl& __imp, size_t __refs)
+  : _M_references(__refs), _M_facets_size(__imp._M_facets_size)
+  {
+    _M_facets = _M_caches = 0;
+    _M_names = 0;
+    try
+      {
+	_M_facets = new const facet*[_M_facets_size];
+	for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	  {
+	    _M_facets[__i] = __imp._M_facets[__i];
+	    if (_M_facets[__i])
+	      _M_facets[__i]->_M_add_reference();
+	  }
+	_M_caches = new const facet*[_M_facets_size];
+	for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	  {
+	    _M_caches[__i] = __imp._M_caches[__i];
+	    if (_M_caches[__i])
+	      _M_caches[__i]->_M_add_reference(); 	
+	  }
+	_M_names = new char*[_S_categories_size];
+	for (size_t __i = 0; __i < _S_categories_size; ++__i)
+	  _M_names[__i] = 0;
+
+	// Name all the categories.
+	for (size_t __i = 0; __i < _S_categories_size; ++__i)
+	  {
+	    char* __new = new char[std::strlen(__imp._M_names[__i]) + 1];
+	    std::strcpy(__new, __imp._M_names[__i]);
+	    _M_names[__i] = __new;
+	  }
+      }
+    catch(...)
+      {
+	this->~_Impl();
+	__throw_exception_again;
+      }
+  }
+
+  void
+  locale::_Impl::
+  _M_replace_category(const _Impl* __imp, const locale::id* const* __idpp)
+  {
+    for (; *__idpp; ++__idpp)
+      _M_replace_facet(__imp, *__idpp);
+  }
+  
+  void
+  locale::_Impl::
+  _M_replace_facet(const _Impl* __imp, const locale::id* __idp)
+  {
+    size_t __index = __idp->_M_id();
+    if ((__index > (__imp->_M_facets_size - 1)) || !__imp->_M_facets[__index])
+      __throw_runtime_error("locale::_Impl::_M_replace_facet");
+    _M_install_facet(__idp, __imp->_M_facets[__index]); 
+  }
+
+  void
+  locale::_Impl::
+  _M_install_facet(const locale::id* __idp, const facet* __fp)
+  {
+    if (__fp)
+      {
+	size_t __index = __idp->_M_id();
+
+	// Check size of facet vector to ensure adequate room.
+	if (__index > _M_facets_size - 1)
+	  {
+	    const size_t __new_size = __index + 4;
+
+	    // New facet array.
+	    const facet** __oldf = _M_facets;
+	    const facet** __newf;
+	    __newf = new const facet*[__new_size]; 
+	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	      __newf[__i] = _M_facets[__i];
+	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
+	      __newf[__i2] = 0;
+
+	    // New cache array.
+	    const facet** __oldc = _M_caches;
+	    const facet** __newc;
+	    try
+	      {
+		__newc = new const facet*[__new_size];
+	      }
+	    catch(...)
+	      {
+		delete [] __newf;
+		__throw_exception_again;
+	      }
+	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	      __newc[__i] = _M_caches[__i];
+	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
+	      __newc[__i2] = 0;
+
+	    _M_facets_size = __new_size;
+	    _M_facets = __newf;
+	    _M_caches = __newc;
+	    delete [] __oldf;
+	    delete [] __oldc;
+	  }
+
+	__fp->_M_add_reference();
+	const facet*& __fpr = _M_facets[__index];
+	if (__fpr)
+	  {
+	    // Replacing an existing facet. Order matters.
+	    __fpr->_M_remove_reference();
+	    __fpr = __fp;
+	  }
+	else
+	  {
+	    // Installing a newly created facet into an empty
+	    // _M_facets container, say a newly-constructed,
+	    // swanky-fresh _Impl.
+	    _M_facets[__index] = __fp;
+	  }
+
+	// Ideally, it would be nice to only remove the caches that
+	// are now incorrect. However, some of the caches depend on
+	// multiple facets, and we only know about one facet
+	// here. It's no great loss: the first use of the new facet
+	// will create a new, correctly cached facet anyway.
+	for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	  {
+	    const facet* __cpr = _M_caches[__i];
+	    if (__cpr)
+	      {
+		__cpr->_M_remove_reference();
+		_M_caches[__i] = 0;
+	      }
+	  }
+      }
+  }
+
+
+  // locale::id
+  // Definitions for static const data members of locale::id
+  _Atomic_word locale::id::_S_highwater;  // init'd to 0 by linker
+
+  size_t
+  locale::id::_M_id() const
+  {
+    if (!_M_index)
+      _M_index = 1 + __exchange_and_add(&_S_highwater, 1);
+    return _M_index - 1;
   }
 } // namespace std
+
 

@@ -91,33 +91,40 @@ basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 
 # Sources present in the src directory.
 sources = \
-	allocator-inst.cc \
 	codecvt.cc \
 	complex_io.cc \
-	concept-inst.cc \
 	ctype.cc \
 	demangle.cc \
-	ext-inst.cc \
-	fstream-inst.cc \
 	functexcept.cc \
-	globals.cc \
-	io-inst.cc \
+	globals_locale.cc \
+	globals_io.cc \
 	ios.cc \
 	ios_failure.cc \
-	istream-inst.cc \
+	ios_init.cc \
+	ios_locale.cc \
 	limits.cc \
 	locale.cc \
-	locale-inst.cc \
+	locale_init.cc \
+	locale_facets.cc \
 	localename.cc \
+	stdexcept.cc \
+	stl_tree.cc \
+	strstream.cc \
+	allocator-inst.cc \
+	concept-inst.cc \
+	fstream-inst.cc \
+	ext-inst.cc \
+	io-inst.cc \
+	istream-inst.cc \
+	locale-inst.cc \
+	locale-misc-inst.cc \
 	misc-inst.cc \
 	ostream-inst.cc \
 	sstream-inst.cc \
-	stdexcept.cc \
-	stl_tree.cc \
 	streambuf-inst.cc \
 	string-inst.cc \
-	strstream.cc \
 	valarray-inst.cc \
+	wlocale-inst.cc \
 	wstring-inst.cc \
 	${host_sources} \
 	${host_sources_extra}

@@ -1,4 +1,4 @@
-// wide string support -*- C++ -*-
+// Locale support -*- C++ -*-
 
 // Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
@@ -28,12 +28,12 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 21  Strings library
+// ISO C++ 14882: 22.1  Locales
 //
 
 #include <bits/c++config.h>
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 #define C wchar_t
-#include "string-inst.cc"
+#include "locale-inst.cc"
 #endif
