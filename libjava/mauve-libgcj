@@ -27,3 +27,7 @@ JDBC2.0
 # Character.unicode seems to be very broken (the test)
 # Does not give meaningfull test results at the moment.
 !java.lang.Character.unicode
+
+# These are almost certainly buggy test cases.
+# The behaviour of the garbarge collector cannot be predicted.
+!java.lang.ref
