@@ -127,9 +127,6 @@ else
   is_cross_compiler=yes
 fi	
 
-# Don't use libstdc++-v3's flags to configure/build itself.
-libstdcxx_flags='`case $$dir in libstdc++-v3 | libjava) ;; *) test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags --build-includes;; esac` -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
-
 # Work in distributions that contain no compiler tools, like Autoconf.
 tentative_cc=""
 if test -d ${srcdir}/config ; then
@@ -1557,6 +1554,9 @@ case $GCJ_FOR_TARGET in
 *' $(FLAGS_FOR_TARGET)') ;;
 *) GCJ_FOR_TARGET=$GCJ_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
 esac
+
+# Don't use libstdc++-v3's flags to configure/build itself.
+libstdcxx_flags='`case $$dir in libstdc++-v3 | libjava) ;; *) test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags --build-includes;; esac` -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
 
 if test "x${CXX_FOR_TARGET+set}" = xset; then
   :
