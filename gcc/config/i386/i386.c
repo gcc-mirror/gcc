@@ -5073,27 +5073,19 @@ ix86_expand_prologue (void)
     }
   else
     {
-      /* ??? Is this only valid for Win32?  */
+      /* Only valid for Win32 */
 
-      rtx arg0, sym;
+      const rtx eax = gen_rtx_REG (SImode, 0);
+      rtx rtx_allocate = GEN_INT(allocate);
 
       if (TARGET_64BIT)
-	abort ();
+        abort ();
 
-      arg0 = gen_rtx_REG (SImode, 0);
-      emit_move_insn (arg0, GEN_INT (allocate));
+      insn = emit_move_insn (eax, rtx_allocate);
+      RTX_FRAME_RELATED_P (insn) = 1;
 
-      sym = gen_rtx_MEM (FUNCTION_MODE,
-			 gen_rtx_SYMBOL_REF (Pmode, "_alloca"));
-      insn = emit_call_insn (gen_call (sym, const0_rtx, constm1_rtx));
-
-      CALL_INSN_FUNCTION_USAGE (insn)
-	= gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, arg0),
-			     CALL_INSN_FUNCTION_USAGE (insn));
-
-      /* Don't allow scheduling pass to move insns across __alloca
-         call.  */
-      emit_insn (gen_blockage (const0_rtx));
+      insn = emit_insn (gen_allocate_stack_worker (eax));
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
   if (frame.save_regs_using_mov && !TARGET_RED_ZONE)
     {
