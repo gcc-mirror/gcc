@@ -1310,7 +1310,7 @@ yylex ()
 		/* ERANGE is also reported for underflow,
 		   so test the value to distinguish overflow from that.  */
 		if (*p1 != 0 && (value > 1.0 || value < -1.0))
-		  warning ("floating point number exceeds range of `double'");
+		  pedwarn ("floating point number exceeds range of `double'");
 	      }
 #endif
 
