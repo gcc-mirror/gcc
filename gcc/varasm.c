@@ -2287,28 +2287,17 @@ const_hash_1 (const tree exp)
 	      + const_hash_1 (TREE_IMAGPART (exp)));
 
     case CONSTRUCTOR:
-      if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
-	{
-	  char *tmp;
-
-	  len = int_size_in_bytes (TREE_TYPE (exp));
-	  tmp = alloca (len);
-	  get_set_constructor_bytes (exp, (unsigned char *) tmp, len);
-	  p = tmp;
-	  break;
-	}
-      else
-	{
-	  tree link;
-
-	  hi = 5 + int_size_in_bytes (TREE_TYPE (exp));
-
-	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	    if (TREE_VALUE (link))
-	      hi = hi * 603 + const_hash_1 (TREE_VALUE (link));
-
-	  return hi;
-	}
+      {
+	tree link;
+	
+	hi = 5 + int_size_in_bytes (TREE_TYPE (exp));
+	
+	for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+	  if (TREE_VALUE (link))
+	    hi = hi * 603 + const_hash_1 (TREE_VALUE (link));
+	
+	return hi;
+      }
 
     case ADDR_EXPR:
     case FDESC_EXPR:
@@ -2407,72 +2396,53 @@ compare_constant (const tree t1, const tree t2)
 	      && compare_constant (TREE_IMAGPART (t1), TREE_IMAGPART (t2)));
 
     case CONSTRUCTOR:
-      typecode = TREE_CODE (TREE_TYPE (t1));
-      if (typecode != TREE_CODE (TREE_TYPE (t2)))
-	return 0;
+      {
+	tree l1, l2;
+	
+	typecode = TREE_CODE (TREE_TYPE (t1));
+	if (typecode != TREE_CODE (TREE_TYPE (t2)))
+	  return 0;
 
-      if (typecode == SET_TYPE)
-	{
-	  int len = int_size_in_bytes (TREE_TYPE (t2));
-	  unsigned char *tmp1, *tmp2;
+	if (typecode == ARRAY_TYPE)
+	  {
+	    HOST_WIDE_INT size_1 = int_size_in_bytes (TREE_TYPE (t1));
+	    /* For arrays, check that the sizes all match.  */
+	    if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2))
+		|| size_1 == -1
+		|| size_1 != int_size_in_bytes (TREE_TYPE (t2)))
+	      return 0;
+	  }
+	else
+	  {
+	    /* For record and union constructors, require exact type
+               equality.  */
+	    if (TREE_TYPE (t1) != TREE_TYPE (t2))
+	      return 0;
+	  }
 
-	  if (int_size_in_bytes (TREE_TYPE (t1)) != len)
-	    return 0;
-
-	  tmp1 = alloca (len);
-	  tmp2 = alloca (len);
-
-	  if (get_set_constructor_bytes (t1, tmp1, len) != NULL_TREE)
-	    return 0;
-	  if (get_set_constructor_bytes (t2, tmp2, len) != NULL_TREE)
-	    return 0;
-
-	  return memcmp (tmp1, tmp2, len) == 0;
-	}
-      else
-	{
-	  tree l1, l2;
-
-	  if (typecode == ARRAY_TYPE)
-	    {
-	      HOST_WIDE_INT size_1 = int_size_in_bytes (TREE_TYPE (t1));
-	      /* For arrays, check that the sizes all match.  */
-	      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2))
-		  || size_1 == -1
-		  || size_1 != int_size_in_bytes (TREE_TYPE (t2)))
-		return 0;
-	    }
-	  else
-	    {
-	      /* For record and union constructors, require exact type
-                 equality.  */
-	      if (TREE_TYPE (t1) != TREE_TYPE (t2))
-		return 0;
-	    }
-
-	  for (l1 = CONSTRUCTOR_ELTS (t1), l2 = CONSTRUCTOR_ELTS (t2);
-	       l1 && l2;
-	       l1 = TREE_CHAIN (l1), l2 = TREE_CHAIN (l2))
-	    {
-	      /* Check that each value is the same...  */
-	      if (! compare_constant (TREE_VALUE (l1), TREE_VALUE (l2)))
-		return 0;
-	      /* ... and that they apply to the same fields!  */
-	      if (typecode == ARRAY_TYPE)
-		{
-		  if (! compare_constant (TREE_PURPOSE (l1),
-					  TREE_PURPOSE (l2)))
-		    return 0;
-		}
-	      else
-		{
-		  if (TREE_PURPOSE (l1) != TREE_PURPOSE (l2))
-		    return 0;
-		}
-	    }
-
-	  return l1 == NULL_TREE && l2 == NULL_TREE;
-	}
+	for (l1 = CONSTRUCTOR_ELTS (t1), l2 = CONSTRUCTOR_ELTS (t2);
+	     l1 && l2;
+	     l1 = TREE_CHAIN (l1), l2 = TREE_CHAIN (l2))
+	  {
+	    /* Check that each value is the same...  */
+	    if (! compare_constant (TREE_VALUE (l1), TREE_VALUE (l2)))
+	      return 0;
+	    /* ... and that they apply to the same fields!  */
+	    if (typecode == ARRAY_TYPE)
+	      {
+		if (! compare_constant (TREE_PURPOSE (l1),
+					TREE_PURPOSE (l2)))
+		  return 0;
+	      }
+	    else
+	      {
+		if (TREE_PURPOSE (l1) != TREE_PURPOSE (l2))
+		  return 0;
+	      }
+	  }
+	
+	return l1 == NULL_TREE && l2 == NULL_TREE;
+      }
 
     case ADDR_EXPR:
     case FDESC_EXPR:
@@ -2562,9 +2532,6 @@ copy_constant (tree exp)
 	CONSTRUCTOR_ELTS (copy) = list;
 	for (tail = list; tail; tail = TREE_CHAIN (tail))
 	  TREE_VALUE (tail) = copy_constant (TREE_VALUE (tail));
-	if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
-	  for (tail = list; tail; tail = TREE_CHAIN (tail))
-	    TREE_PURPOSE (tail) = copy_constant (TREE_PURPOSE (tail));
 
 	return copy;
       }
@@ -3825,22 +3792,6 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	output_constructor (exp, size, align);
       else
 	abort ();
-      return;
-
-    case SET_TYPE:
-      if (TREE_CODE (exp) == INTEGER_CST)
-	assemble_integer (expand_expr (exp, NULL_RTX,
-				       VOIDmode, EXPAND_INITIALIZER),
-			  thissize, align, 1);
-      else if (TREE_CODE (exp) == CONSTRUCTOR)
-	{
-	  unsigned char *buffer = alloca (thissize);
-	  if (get_set_constructor_bytes (exp, buffer, thissize))
-	    abort ();
-	  assemble_string ((char *) buffer, thissize);
-	}
-      else
-	error ("unknown set constructor type");
       return;
 
     case ERROR_MARK:

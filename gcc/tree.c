@@ -1888,7 +1888,6 @@ type_contains_placeholder_1 (tree type)
 	      || CONTAINS_PLACEHOLDER_P (TYPE_MAX_VALUE (type)));
 
     case ARRAY_TYPE:
-    case SET_TYPE:
     case VECTOR_TYPE:
       /* We're already checked the component type (TREE_TYPE), so just check
 	 the index type.  */
@@ -3475,7 +3474,6 @@ type_hash_eq (const void *va, const void *vb)
 					  TYPE_ARG_TYPES (b->type)))));
 
     case ARRAY_TYPE:
-    case SET_TYPE:
       return TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type);
 
     case RECORD_TYPE:
@@ -4984,7 +4982,6 @@ variably_modified_type_p (tree type, tree fn)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case ARRAY_TYPE:
-    case SET_TYPE:
     case VECTOR_TYPE:
       if (variably_modified_type_p (TREE_TYPE (type), fn))
 	return true;
@@ -5870,10 +5867,6 @@ initializer_zerop (tree init)
       elt = CONSTRUCTOR_ELTS (init);
       if (elt == NULL_TREE)
 	return true;
-
-      /* A set is empty only if it has no elements.  */
-      if (TREE_CODE (TREE_TYPE (init)) == SET_TYPE)
-	return false;
 
       for (; elt ; elt = TREE_CHAIN (elt))
 	if (! initializer_zerop (TREE_VALUE (elt)))

@@ -461,10 +461,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	break;
       }
 
-    case SET_TYPE:
-      NIY;
-      break;
-
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:

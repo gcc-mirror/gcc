@@ -3963,7 +3963,6 @@ static tree member_declared_type (tree);
 static const char *decl_start_label (tree);
 #endif
 static void gen_array_type_die (tree, dw_die_ref);
-static void gen_set_type_die (tree, dw_die_ref);
 #if 0
 static void gen_entry_point_die (tree, dw_die_ref);
 #endif
@@ -8031,7 +8030,6 @@ is_base_type (tree type)
     case CHAR_TYPE:
       return 1;
 
-    case SET_TYPE:
     case ARRAY_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -10813,16 +10811,6 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   add_type_attribute (array_die, element_type, 0, 0, context_die);
 }
 
-static void
-gen_set_type_die (tree type, dw_die_ref context_die)
-{
-  dw_die_ref type_die
-    = new_die (DW_TAG_set_type, scope_die_for (type, context_die), type);
-
-  equate_type_number_to_die (type, type_die);
-  add_type_attribute (type_die, TREE_TYPE (type), 0, 0, context_die);
-}
-
 #if 0
 static void
 gen_entry_point_die (tree decl, dw_die_ref context_die)
@@ -12089,11 +12077,6 @@ gen_type_die (tree type, dw_die_ref context_die)
       /* Now output a DIE to represent this pointer-to-data-member type
 	 itself.  */
       gen_ptr_to_mbr_type_die (type, context_die);
-      break;
-
-    case SET_TYPE:
-      gen_type_die (TYPE_DOMAIN (type), context_die);
-      gen_set_type_die (type, context_die);
       break;
 
     case FILE_TYPE:

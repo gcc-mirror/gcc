@@ -309,8 +309,7 @@ browse_tree (tree begin)
 	  break;
 
 	case TB_DOMAIN:
-	  if (head && (TREE_CODE (head) == ARRAY_TYPE
-		       || TREE_CODE (head) == SET_TYPE))
+	  if (head && TREE_CODE (head) == ARRAY_TYPE)
 	    TB_SET_HEAD (TYPE_DOMAIN (head));
 	  else
 	    TB_WF;

@@ -1475,7 +1475,6 @@ type_to_class (tree type)
     case QUAL_UNION_TYPE:  return union_type_class;
     case ARRAY_TYPE:	   return (TYPE_STRING_FLAG (type)
 				   ? string_type_class : array_type_class);
-    case SET_TYPE:	   return set_type_class;
     case FILE_TYPE:	   return file_type_class;
     case LANG_TYPE:	   return lang_type_class;
     default:		   return no_type_class;

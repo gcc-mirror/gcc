@@ -1,3 +1,7 @@
+2004-12-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (gnat_substitute_in_type): Remove SET_TYPE case.
+
 2004-12-07  Ed Falis  <falis@adacore.com>
 
 	* s-intman-vxworks.adb (Notify_Exception): removed useless check for

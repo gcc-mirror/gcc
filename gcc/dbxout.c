@@ -1967,23 +1967,6 @@ dbxout_type (tree type, int full)
 	}
       break;
 
-    case SET_TYPE:
-      if (use_gnu_debug_info_extensions)
-	{
-	  have_used_extensions = 1;
-	  stabstr_S ("@s");
-	  stabstr_D (BITS_PER_UNIT * int_size_in_bytes (type));
-	  stabstr_C (';');
-
-	  /* Check if a bitstring type, which in Chill is
-	     different from a [power]set.  */
-	  if (TYPE_STRING_FLAG (type))
-	    stabstr_S ("@S;");
-	}
-      stabstr_C ('S');
-      dbxout_type (TYPE_DOMAIN (type), 0);
-      break;
-
     case ARRAY_TYPE:
       /* Make arrays of packed bits look like bitstrings for chill.  */
       if (TYPE_PACKED (type) && use_gnu_debug_info_extensions)

@@ -1763,40 +1763,6 @@ layout_type (tree type)
       }
       break;
 
-    case SET_TYPE:  /* Used by Chill and Pascal.  */
-      {
-	unsigned int alignment;
-	HOST_WIDE_INT size_in_bits;
-	HOST_WIDE_INT rounded_size;
-
-	gcc_assert (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
-		    == INTEGER_CST);
-	gcc_assert (TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (type)))
-		    == INTEGER_CST);
-
-#ifndef SET_WORD_SIZE
-#define SET_WORD_SIZE BITS_PER_WORD
-#endif
-	alignment = set_alignment ? set_alignment : SET_WORD_SIZE;
-	size_in_bits
-	  = (tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0)
-	     - tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0) + 1);
-	rounded_size
-	  = ((size_in_bits + alignment - 1) / alignment) * alignment;
-
-	if (rounded_size > (int) alignment)
-	  TYPE_MODE (type) = BLKmode;
-	else
-	  TYPE_MODE (type) = mode_for_size (alignment, MODE_INT, 1);
-
-	TYPE_SIZE (type) = bitsize_int (rounded_size);
-	TYPE_SIZE_UNIT (type) = size_int (rounded_size / BITS_PER_UNIT);
-	TYPE_ALIGN (type) = alignment;
-	TYPE_USER_ALIGN (type) = 0;
-	TYPE_PRECISION (type) = size_in_bits;
-      }
-      break;
-
     case FILE_TYPE:
       /* The size may vary in different languages, so the language front end
 	 should fill in the size.  */
