@@ -90,6 +90,7 @@ extern char *version_string, *language_string;
    to ASM_FINISH_DECLARE_OBJECT.  */
 
 extern int size_directive_output;
+extern tree last_assemble_variable_decl;
 
 extern void init_lex ();
 extern void init_decl_processing ();
@@ -2245,8 +2246,11 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 			&& (DECL_INITIAL (decl) == 0
 			    || DECL_INITIAL (decl) == error_mark_node)))
 		   assemble_variable (decl, top_level, at_end, 0);
-	       ASM_FINISH_DECLARE_OBJECT (asm_out_file, decl,
-					  top_level, at_end);
+	       if (decl == last_assemble_variable_decl)
+		 {
+		   ASM_FINISH_DECLARE_OBJECT (asm_out_file, decl,
+					      top_level, at_end);
+		 }
 	     });
   else if (DECL_REGISTER (decl) && asmspec != 0)
     {
