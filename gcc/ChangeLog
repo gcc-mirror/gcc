@@ -1,5 +1,10 @@
 2003-01-15  Josef Zlomek  <zlomekj@suse.cz>
 
+	* cfganal.c (set_edge_can_fallthru_flag): Clear the EDGE_CAN_FALLTHRU
+	flag before setting it.
+
+2003-01-15  Josef Zlomek  <zlomekj@suse.cz>
+
 	Segher Boessenkool  <segher@koffie.nl>
 
 	* predict.c (real_inv_br_prob_base): New variable.

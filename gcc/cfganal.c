@@ -223,10 +223,14 @@ set_edge_can_fallthru_flag ()
     {
       edge e;
 
-      /* The FALLTHRU edge is also CAN_FALLTHRU edge.  */
       for (e = bb->succ; e; e = e->succ_next)
-	if (e->flags & EDGE_FALLTHRU)
-	  e->flags |= EDGE_CAN_FALLTHRU;
+	{
+	  e->flags &= ~EDGE_CAN_FALLTHRU;
+
+	  /* The FALLTHRU edge is also CAN_FALLTHRU edge.  */
+	  if (e->flags & EDGE_FALLTHRU)
+	    e->flags |= EDGE_CAN_FALLTHRU;
+	}
 
       /* If the BB ends with an invertable condjump all (2) edges are
 	 CAN_FALLTHRU edges.  */
