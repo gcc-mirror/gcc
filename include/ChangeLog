@@ -1,3 +1,7 @@
+2003-03-17  Jan Hubicka  <jh@suse.cz>
+
+	* hashtab.h (htab_traverse_noresize): Declare.
+
 2003-02-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h: Document return value of physmem routines.

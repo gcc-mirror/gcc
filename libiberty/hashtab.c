@@ -603,16 +603,13 @@ htab_clear_slot (htab, slot)
    argument.  */
 
 void
-htab_traverse (htab, callback, info)
+htab_traverse_noresize (htab, callback, info)
      htab_t htab;
      htab_trav callback;
      PTR info;
 {
   PTR *slot;
   PTR *limit;
-
-  if ((htab->n_elements - htab->n_deleted) * 8 < htab->size)
-    htab_expand (htab);
 
   slot = htab->entries;
   limit = slot + htab->size;
@@ -626,6 +623,24 @@ htab_traverse (htab, callback, info)
 	  break;
     }
   while (++slot < limit);
+}
+
+/* Like htab_traverse_noresize, but does resize the table when it is
+   too empty to improve effectivity of subsequent calls.  */
+
+void
+htab_traverse (htab, callback, info)
+     htab_t htab;
+     htab_trav callback;
+     PTR info;
+{
+  PTR *slot;
+  PTR *limit;
+
+  if ((htab->n_elements - htab->n_deleted) * 8 < htab->size)
+    htab_expand (htab);
+
+  htab_traverse_noresize (htab, callback, info);
 }
 
 /* Return the current size of given hash table. */
