@@ -1,5 +1,5 @@
 /* Virtual array support.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GNU CC.
@@ -163,7 +163,7 @@ extern varray_type varray_grow	PROTO((varray_type, size_t));
 #define VARRAY_SIZE(VA)	((VA)->num_elements)
 
 /* Check for VARRAY_xxx macros being in bound.  */
-#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+#if defined ENABLE_CHECKING && (__GNUC__ > 2 || (__GNUC__ == 2 &&__GNUC_MINOR__ > 6))
 extern void varray_check_failed PROTO ((varray_type, size_t,
 					const char *, int,
 					const char *)) ATTRIBUTE_NORETURN;
