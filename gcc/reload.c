@@ -242,7 +242,7 @@ static int push_secondary_reload PARAMS ((int, rtx, int, int, enum reg_class,
 #endif
 static enum reg_class find_valid_class PARAMS ((enum machine_mode, int,
 						unsigned int));
-static int reload_inner_reg_of_subreg PARAMS ((rtx, enum machine_mode));
+static int reload_inner_reg_of_subreg PARAMS ((rtx, enum machine_mode, int));
 static void push_replacement	PARAMS ((rtx *, int, enum machine_mode));
 static void dup_replacements	PARAMS ((rtx *, rtx *));
 static void combine_reloads	PARAMS ((void));
@@ -795,9 +795,10 @@ find_reusable_reload (p_in, out, class, type, opnum, dont_share)
    SUBREG_REG expression.  */
 
 static int
-reload_inner_reg_of_subreg (x, mode)
+reload_inner_reg_of_subreg (x, mode, output)
      rtx x;
      enum machine_mode mode;
+     int output;
 {
   rtx inner;
 
@@ -825,6 +826,7 @@ reload_inner_reg_of_subreg (x, mode)
      word and the number of regs for INNER is not the same as the
      number of words in INNER, then INNER will need reloading.  */
   return (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	  && output
 	  && GET_MODE_SIZE (GET_MODE (inner)) > UNITS_PER_WORD
 	  && ((GET_MODE_SIZE (GET_MODE (inner)) / UNITS_PER_WORD)
 	      != (int) HARD_REGNO_NREGS (REGNO (inner), GET_MODE (inner))));
@@ -1048,7 +1050,7 @@ push_reload (in, out, inloc, outloc, class,
   /* Similar issue for (SUBREG constant ...) if it was not handled by the
      code above.  This can happen if SUBREG_BYTE != 0.  */
 
-  if (in != 0 && reload_inner_reg_of_subreg (in, inmode))
+  if (in != 0 && reload_inner_reg_of_subreg (in, inmode, 0))
     {
       enum reg_class in_class = class;
 
@@ -1145,7 +1147,7 @@ push_reload (in, out, inloc, outloc, class,
      However, we must reload the inner reg *as well as* the subreg in
      that case.  In this case, the inner reg is an in-out reload.  */
 
-  if (out != 0 && reload_inner_reg_of_subreg (out, outmode))
+  if (out != 0 && reload_inner_reg_of_subreg (out, outmode, 1))
     {
       /* This relies on the fact that emit_reload_insns outputs the
 	 instructions for output reloads of type RELOAD_OTHER in reverse
@@ -1733,7 +1735,8 @@ combine_reloads ()
 		&& ! (GET_CODE (rld[i].in) == REG
 		      && reg_overlap_mentioned_for_reload_p (rld[i].in,
 							     rld[output_reload].out))))
-	&& ! reload_inner_reg_of_subreg (rld[i].in, rld[i].inmode)
+	&& ! reload_inner_reg_of_subreg (rld[i].in, rld[i].inmode,
+					 rld[i].when_needed != RELOAD_FOR_INPUT)
 	&& (reg_class_size[(int) rld[i].class]
 	    || SMALL_REGISTER_CLASSES)
 	/* We will allow making things slightly worse by combining an
