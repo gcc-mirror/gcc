@@ -478,8 +478,8 @@ get_static_reference (interface)
 static tree
 create_builtin_decl (code, type, name)
      enum tree_code code;
-     char *name;
      tree type;
+     char *name;
 {
   tree decl = build_decl (code, get_identifier (name), type);
   if (code == VAR_DECL)
@@ -744,7 +744,7 @@ forward_declare_categories ()
 	  implementation_context = impent->imp_context;
 	  impent->class_decl
 	    = create_builtin_decl (VAR_DECL, objc_category_template,
-				   synth_id_with_class_suffix ("_OBJC_CATEGORY"));
+				   IDENTIFIER_POINTER (synth_id_with_class_suffix ("_OBJC_CATEGORY")));
 	}
     }
   implementation_context = sav;
@@ -2284,15 +2284,27 @@ static tree
 synth_id_with_class_suffix (preamble)
      char *preamble;
 {
+  char *string;
   if (TREE_CODE (implementation_context) == IMPLEMENTATION_TYPE)
-    sprintf (utlbuf, "%s_%s", preamble,
-	     IDENTIFIER_POINTER (CLASS_NAME (implementation_context)));
+    {
+      string = (char *) alloca (strlen (preamble)
+				+ strlen (IDENTIFIER_POINTER (CLASS_NAME (implementation_context)))
+				+ 3);
+      sprintf (string, "%s_%s", preamble,
+	       IDENTIFIER_POINTER (CLASS_NAME (implementation_context)));
+    }
   else
-    /* we have a category */
-    sprintf (utlbuf, "%s_%s_%s", preamble,
-	     IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
-	     IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)));
-  return get_identifier (utlbuf);
+    {
+      /* we have a category */
+      string = (char *) alloca (strlen (preamble)
+				+ strlen (IDENTIFIER_POINTER (CLASS_NAME (implementation_context)))
+				+ strlen (IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)))
+				+ 3);
+      sprintf (string, "%s_%s_%s", preamble,
+	       IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
+	       IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)));
+    }
+  return get_identifier (string);
 }
 
 /*
@@ -3594,21 +3606,29 @@ finish_class (class)
   else if (TREE_CODE (class) == INTERFACE_TYPE)
     {
       tree decl_specs;
+      char *string = (char *) alloca (strlen (IDENTIFIER_POINTER (CLASS_NAME (class))) + 3);
 
       /* extern struct objc_object *_<my_name>; */
 
-      sprintf (utlbuf, "_%s", IDENTIFIER_POINTER (CLASS_NAME (class)));
+      sprintf (string, "_%s", IDENTIFIER_POINTER (CLASS_NAME (class)));
 
       decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_EXTERN]);
       decl_specs = tree_cons (NULLT, objc_object_reference, decl_specs);
-      define_decl (build1 (INDIRECT_REF, NULLT, get_identifier (utlbuf)), decl_specs);
+      define_decl (build1 (INDIRECT_REF, NULLT, get_identifier (string)),
+		   decl_specs);
     }
 }
 
+/* "Encode" a data type into a string, whichg rows  in util_obstack.
+   ??? What is the FORMAT?  */
+
+#error rms is in middle of changing this part
+
+/* Encode a pointer type.  */
+
 static void
-encode_pointer (type, str, format)
+encode_pointer (type, format)
      tree type;
-     char *str;
      int format;
 {
   tree pointer_to = TREE_TYPE (type);
@@ -3620,21 +3640,21 @@ encode_pointer (type, str, format)
 	{
 	  char *name = IDENTIFIER_POINTER (TYPE_NAME (pointer_to));
 
-	  if ((strcmp (name, TAG_OBJECT) == 0) || /* '@' */
-	      (TREE_STATIC_TEMPLATE (pointer_to)))
+	  if ((strcmp (name, TAG_OBJECT) == 0) /* '@' */
+	      || TREE_STATIC_TEMPLATE (pointer_to))
 	    {
-	      strcat (str, "@");
+	      obstack_1grow (&util_obstack, '@');
 	      return;
 	    }
 	  else if (strcmp (name, TAG_CLASS) == 0) /* '#' */
 	    {
-	      strcat (str, "#");
+	      obstack_1grow (&util_obstack, '#');
 	      return;
 	    }
 #ifndef OBJC_INT_SELECTORS
 	  else if (strcmp (name, TAG_SELECTOR) == 0) /* ':' */
 	    {
-	      strcat (str, ":");
+	      obstack_1grow (&util_obstack, ':');
 	      return;
 	    }
 #endif /* OBJC_INT_SELECTORS */
@@ -3643,46 +3663,46 @@ encode_pointer (type, str, format)
   else if (TREE_CODE (pointer_to) == INTEGER_TYPE
 	   && TYPE_MODE (pointer_to) == QImode)
     {
-      strcat (str, "*");
+      obstack_1grow (&util_obstack, '*');
       return;
     }
 
   /* we have a type that does not get special treatment... */
 
   /* NeXT extension */
-  strcat (str, "^");
+  obstack_1grow (&util_obstack, '^');
   encode_type (pointer_to, str, format);
 }
 
 static void
-encode_array (type, str, format)
+encode_array (type, format)
      tree type;
-     char *str;
      int format;
 {
   tree anIntCst = TYPE_SIZE (type);
   tree array_of = TREE_TYPE (type);
+  char buffer[40];
 
   /* An incomplete array is treated like a pointer.  */
   if (anIntCst == NULL)
     {
       /* split for obvious reasons.  North-Keys 30 Mar 1991 */
-      encode_pointer (type, str, format);
+      encode_pointer (type, format);
       return;
     }
   
-  sprintf (str + strlen (str), "[%d",
+  sprintf (buffer, "[%d",
 	   TREE_INT_CST_LOW (anIntCst)
 	   / TREE_INT_CST_LOW (TYPE_SIZE (array_of)));
-  encode_type (array_of, str, format);
-  strcat (str, "]");
+  obstack_grow (&util_obstack, buffer, strlen (buffer));
+  encode_type (array_of, format);
+  obstack_1grow (&util_obstack, ']');
   return;
 }
 
 static void
-encode_aggregate (type, str, format)
+encode_aggregate (type, format)
      tree type;
-     char *str;
      int format;
 {
   enum tree_code code = TREE_CODE (type);
@@ -3691,77 +3711,65 @@ encode_aggregate (type, str, format)
     {
     case RECORD_TYPE:
       {
-	if (str[strlen (str)-1] == '^')
+	if (*obstack_next_free (&util_obstack) == '^'
+	    || format !=  OBJC_ENCODE_INLINE_DEFS)
 	  {
-	    /* we have a reference - this is a NeXT extension */
+	    /* we have a reference - this is a NeXT extension--
+	       or we don't want the details.  */
             if (TYPE_NAME (type)
 		&& (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE))
-	      sprintf (str + strlen (str), "{%s}",
-		       IDENTIFIER_POINTER (TYPE_NAME (type)));
-	    else		/* we have an untagged structure or a typedef */
-	      sprintf (str + strlen (str), "{?}");
+	      {
+		obstack_1grow (&util_obstack, '{');
+		obstack_grow (&util_obstack,
+			      IDENTIFIER_POINTER (TYPE_NAME (type)),
+			      strlen (IDENTIFIER_POINTER (TYPE_NAME (type))));
+		obstack_1grow (&util_obstack, '}');
+	      }
+	    else /* we have an untagged structure or a typedef */
+	      obstack_grow (&util_obstack, "{?}");
 	  }
 	else
 	  {
 	    tree fields = TYPE_FIELDS (type);
-
-            if (format == OBJC_ENCODE_INLINE_DEFS)
-              {
-		strcat (str, "{");
-		for ( ; fields; fields = TREE_CHAIN (fields))
-		  encode_field_decl (fields, str, format);
-		strcat (str, "}");
-              }
-            else
-              {
-		if (TYPE_NAME (type)
-		    && (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE))
-		  sprintf (str + strlen (str), "{%s}",
-			   IDENTIFIER_POINTER (TYPE_NAME (type)));
-		else		/* we have an untagged structure or a typedef */
-		  sprintf (str + strlen (str), "{?}");
-              }
+	    obstack_1grow (&util_obstack, '{');
+	    for ( ; fields; fields = TREE_CHAIN (fields))
+	      encode_field_decl (fields, format);
+	    obstack_1grow (&util_obstack, '}');
 	  }
 	break;
       }
     case UNION_TYPE:
       {
-	if (str[strlen (str)-1] == '^')
+	if (*obstack_next_free (&util_obstack) == '^'
+	    || format !=  OBJC_ENCODE_INLINE_DEFS)
 	  {
+	    /* we have a reference - this is a NeXT extension--
+	       or we don't want the details.  */
             if (TYPE_NAME (type)
 		&& (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE))
-	      /* we have a reference - this is a NeXT extension */
-	      sprintf (str + strlen (str), "(%s)",
-		       IDENTIFIER_POINTER (TYPE_NAME (type)));
-	    else		/* we have an untagged structure */
-	      sprintf (str + strlen (str), "(?)");
+	      {
+		obstack_1grow (&util_obstack, '<');
+		obstack_grow (&util_obstack,
+			      IDENTIFIER_POINTER (TYPE_NAME (type)),
+			      strlen (IDENTIFIER_POINTER (TYPE_NAME (type))));
+		obstack_1grow (&util_obstack, '>');
+	      }
+	    else /* we have an untagged structure or a typedef */
+	      obstack_grow (&util_obstack, "<?>");
 	  }
 	else
 	  {
 	    tree fields = TYPE_FIELDS (type);
-
-            if (format == OBJC_ENCODE_INLINE_DEFS)
-              {
-		strcat (str, "(");
-		for ( ; fields; fields = TREE_CHAIN (fields))
-		  encode_field_decl (fields, str, format);
-		strcat (str, ")");
-              }
-            else
-              {
-		if (TYPE_NAME (type) &&
-		    (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE))
-		  /* we have a reference - this is a NeXT extension */
-		  sprintf (str + strlen (str), "(%s)",
-			   IDENTIFIER_POINTER (TYPE_NAME (type)));
-		else		/* we have an untagged structure */
-		  sprintf (str + strlen (str), "(?)");
-              }
+	    obstack_1grow (&util_obstack, '<');
+	    for ( ; fields; fields = TREE_CHAIN (fields))
+	      encode_field_decl (fields, format);
+	    obstack_1grow (&util_obstack, '>');
 	  }
 	break;
       }
+
     case ENUMERAL_TYPE:
-      strcat (str, "i");
+      obstack_1grow (&util_obstack, 'i');
       break;
     }
 }
