@@ -372,11 +372,11 @@ if test ! -f stamp-sanity-warned; then
   touch stamp-sanity-warned
   echo ""
   echo "Please make certain that you read the installation information here:"
-  echo "  faster => ${srcdir}/docs/install.html"
+  echo "  faster => ${srcdir}/docs/html/install.html"
   echo "  slower => <URL:http://gcc.gnu.org/onlinedocs/libstdc++/install.html>"
   echo ""
   echo "and the configuration information here:"
-  echo "  faster => ${srcdir}/docs/configopts.html"
+  echo "  faster => ${srcdir}/docs/html/configopts.html"
   echo "  slower => <URL:http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html>"
   echo ""
   echo "before proceeding with ${_cv_gnu_make_command}."
