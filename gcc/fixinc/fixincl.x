@@ -37,7 +37,7 @@ tSCC zAix_SyswaitName[] =
  *  File name selection pattern
  */
 tSCC zAix_SyswaitList[] =
-        "|" "sys/wait.h" "|";
+  "|sys/wait.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -72,7 +72,7 @@ tSCC zAix_VolatileName[] =
  *  File name selection pattern
  */
 tSCC zAix_VolatileList[] =
-        "|" "sys/signal.h" "|";
+  "|sys/signal.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -106,8 +106,7 @@ tSCC zAlpha_GetoptName[] =
  *  File name selection pattern
  */
 tSCC zAlpha_GetoptList[] =
-        "|" "stdio.h"
-        "|" "stdlib.h" "|";
+  "|stdio.h|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
