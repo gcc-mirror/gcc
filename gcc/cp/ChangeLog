@@ -1,3 +1,10 @@
+2002-01-20  Graham Stott  <grahams@redhat.com>
+
+	* spew.c (YYCHAR): Uppercase macro parameter and add
+	parenthesis.
+	(YYCODE): Likewise.
+	(NAME): Uppercase macro parameter.
+
 2002-01-09  Graham Stott  <grahams@redhat.com>
 
 	* decl.h ( grokdeclarator): Wrap long line.

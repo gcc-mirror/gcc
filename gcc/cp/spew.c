@@ -1,6 +1,6 @@
 /* Type Analyzer for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Hacked... nay, bludgeoned... by Mark Eichin (eichin@cygnus.com)
 
 This file is part of GNU CC.
@@ -261,8 +261,8 @@ read_token (t)
 
   switch (last_token)
     {
-#define YYCHAR(yy)	t->yychar = yy;	break;
-#define YYCODE(c)	t->yylval.code = c;
+#define YYCHAR(YY)	t->yychar = (YY); break;
+#define YYCODE(C)	t->yylval.code = (C);
 
     case CPP_EQ:				YYCHAR('=');
     case CPP_NOT:				YYCHAR('!');
@@ -1465,7 +1465,7 @@ debug_yychar (yy)
 
 #endif
 
-#define NAME(type) cpp_type2name (type)
+#define NAME(TYPE) cpp_type2name (TYPE)
 
 void
 yyerror (msgid)
