@@ -52,6 +52,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include <splay-tree.h>
 #include "cfglayout.h"
+#include "tree-gimple.h"
 
 /* Specify which cpu to schedule for.  */
 
@@ -6398,6 +6399,139 @@ alpha_va_arg (tree valist, tree type)
 
   return addr;
 }
+
+static tree
+alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
+			 tree *pre_p, tree *post_p)
+{
+  tree type_size, rounded_size, ptr_type, addend, t, addr;
+  bool indirect;
+
+  if (type == error_mark_node
+      || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
+      || TREE_OVERFLOW (type_size))
+    rounded_size = size_zero_node;
+  else
+    rounded_size = fold (build (MULT_EXPR, sizetype,
+				fold (build (TRUNC_DIV_EXPR, sizetype,
+					     fold (build (PLUS_EXPR, sizetype,
+							  type_size,
+							  size_int (7))),
+					     size_int (8))),
+				size_int (8)));
+
+  /* If the type could not be passed in registers, skip the block
+     reserved for the registers.  */
+  if (MUST_PASS_IN_STACK (TYPE_MODE (type), type))
+    {
+      t = fold_convert (TREE_TYPE (offset), build_int_2 (6*8, 0));
+      t = build (MODIFY_EXPR, TREE_TYPE (offset), offset,
+		 build (MAX_EXPR, TREE_TYPE (offset), offset, t));
+      gimplify_and_add (t, pre_p);
+    }
+
+  addend = offset;
+  ptr_type = build_pointer_type (type);
+  indirect = false;
+
+  if (TYPE_MODE (type) == TFmode || TYPE_MODE (type) == TCmode)
+    {
+      type = ptr_type;
+      ptr_type = build_pointer_type (type);
+      indirect = true;
+      rounded_size = size_int (UNITS_PER_WORD);
+    }
+  else if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      tree real_part, imag_part, real_temp;
+
+      real_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base, offset,
+					   pre_p, post_p);
+      append_to_statement_list (*post_p, pre_p);
+      *post_p = NULL;
+
+      /* Copy the value into a temporary, lest the formal temporary
+	 be reused out from under us.  */
+      real_temp = create_tmp_var (TREE_TYPE (real_part), NULL);
+      t = build (MODIFY_EXPR, void_type_node, real_temp, real_part);
+      gimplify_and_add (t, pre_p);
+
+      imag_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base, offset,
+					   pre_p, post_p);
+
+      return build (COMPLEX_EXPR, type, real_temp, imag_part);
+    }
+  else if (TREE_CODE (type) == REAL_TYPE)
+    {
+      tree fpaddend, cond, fourtyeight;
+
+      fourtyeight = fold_convert (TREE_TYPE (addend), build_int_2 (6*8, 0));
+      fpaddend = fold (build (MINUS_EXPR, TREE_TYPE (addend),
+			      addend, fourtyeight));
+      cond = fold (build (LT_EXPR, boolean_type_node, addend, fourtyeight));
+      addend = fold (build (COND_EXPR, TREE_TYPE (addend), cond,
+			    fpaddend, addend));
+    }
+
+  /* Build the final address and force that value into a temporary.  */
+  addr = build (PLUS_EXPR, ptr_type, fold_convert (ptr_type, base),
+	        fold_convert (ptr_type, addend));
+  if (indirect)
+    addr = build (INDIRECT_REF, type, addr);
+  gimplify_expr (&addr, pre_p, post_p, is_gimple_val, fb_rvalue);
+  append_to_statement_list (*post_p, pre_p);
+  *post_p = NULL;
+
+  /* Update the offset field.  */
+  t = fold_convert (TREE_TYPE (offset), rounded_size);
+  t = build (MODIFY_EXPR, void_type_node, offset,
+	     build (PLUS_EXPR, TREE_TYPE (offset), offset, t));
+  gimplify_and_add (t, pre_p);
+
+  return build_fold_indirect_ref (addr);
+}
+
+static void
+alpha_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
+{
+  tree valist, type, offset_field, base_field, offset, base, t;
+
+  if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
+    {
+      std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
+      return;
+    }
+
+  valist = TREE_OPERAND (*expr_p, 0);
+  type = TREE_TYPE (*expr_p);
+
+  base_field = TYPE_FIELDS (va_list_type_node);
+  offset_field = TREE_CHAIN (base_field);
+  base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
+		      valist, base_field);
+  offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
+			valist, offset_field);
+
+  base = create_tmp_var (TREE_TYPE (base_field), NULL);
+  offset = create_tmp_var (lang_hooks.types.type_for_size (64, 0), NULL);
+
+  /* Pull the fields of the structure out into temporaries.  */
+  t = build (MODIFY_EXPR, void_type_node, base, base_field);
+  gimplify_and_add (t, pre_p);
+
+  t = build (MODIFY_EXPR, void_type_node, offset,
+	     fold_convert (TREE_TYPE (offset), offset_field));
+  gimplify_and_add (t, pre_p);
+
+  /* Find the value.  Note that this will be a stable indirection, or
+     a composite of stable indirections in the case of complex.  */
+  *expr_p = alpha_gimplify_va_arg_1 (type, base, offset, pre_p, post_p);
+
+  /* Stuff the offset temporary back into its field.  */
+  t = build (MODIFY_EXPR, void_type_node, offset_field,
+	     fold_convert (TREE_TYPE (offset_field), offset));
+  gimplify_and_add (t, pre_p);
+}
 
 /* Builtins.  */
 
@@ -10231,6 +10365,8 @@ alpha_init_libfuncs (void)
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED hook_bool_CUMULATIVE_ARGS_true
 #undef TARGET_SPLIT_COMPLEX_ARG
 #define TARGET_SPLIT_COMPLEX_ARG alpha_split_complex_arg
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR alpha_gimplify_va_arg
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST alpha_build_builtin_va_list
