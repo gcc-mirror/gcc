@@ -1,5 +1,6 @@
 2001-06-11  Loren J. Rittle  <ljrittle@acm.org>
 
+	bootstrap/3106
 	* strerror.c (sys_nerr): Hide the OS header version.
 	* strsignal.c (sys_nsig): Likewise.
 
