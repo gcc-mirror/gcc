@@ -938,7 +938,7 @@ do {									\
 #undef LINK_PATH_SPEC
 #ifndef CROSS_COMPILE
 #define LINK_PATH_SPEC "\
-%{!R*:%{L*:-R %*}}} \
+%{!R*:%{L*:-R %*}} \
 %{!nostdlib: %{!YP,*: \
     %{compat-bsd: \
 	%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
@@ -994,7 +994,7 @@ do {									\
 #else
 /* Shared libraries are not default.  */
 #define LINK_SHLIB_SPEC "\
-%{mshlib: %(link_path)} \
+%{mshlib: %(link_path) } \
 %{!mshlib: %{!shared: %{!symbolic: -dn -Bstatic}}} \
 %{static: } \
 %{shared:-G -dy -z text %{!h*:%{o*:-h %*}} %(link_path) } \
