@@ -1964,7 +1964,7 @@ hash_scan_set (pat, insn, set_p)
 	  /* Is SET_SRC something we want to gcse?  */
 	  && want_to_gcse_p (src)
 	  /* Don't CSE a nop.  */
-	  && src != dest)
+	  && ! set_noop_p (pat))
 	{
 	  /* An expression is not anticipatable if its operands are
 	     modified before this insn or if this is not the only SET in
