@@ -1,3 +1,14 @@
+2004-08-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Just abort
+	if trying to *store* to a non-offsettable address.
+	* config/rs6000/rs6000.md (movtf_internal): Don't move GPRs to
+	a nonoffsettable address.
+	(movdi_internal32): Don't move GPRs to a nonoffsettable address.
+	Clean up.
+	(movti_string): Don't move GPRs to a nonoffsettable address.
+	(movti_ppc64): Don't move GPRs to a nonoffsettable address.  Clean up.
+
 2004-08-02  Ben Elliston  <bje@au.ibm.com>
 
 	PR target/16155
