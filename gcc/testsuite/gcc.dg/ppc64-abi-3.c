@@ -1,4 +1,5 @@
 /* { dg-do compile { target powerpc64-*-linux* } } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-Wall" } */
 /* Testcase to check for ABI compliance of parameter passing
    for the PowerPC64 ABI.  */
