@@ -1113,35 +1113,6 @@ and Microsoft named libraries.  For example, if you specify
 @samp{-lfoo}, @file{ld.exe} will look first for @file{libfoo.a}
 and then for @file{foo.lib}.
 
-You may install GNU CC for Windows NT in one of two ways, depending on
-whether or not you have a Unix-like shell and various Unix-like
-utilities.
-
-@enumerate
-@item
-If you do not have a Unix-like shell and few Unix-like utilities, you
-will use a DOS style batch script called @file{configure.bat}.  Invoke
-it as @code{configure winnt} from an MSDOS console window or from the
-program manager dialog box.  @file{configure.bat} assumes you have
-already installed and have in your path a Unix-like @file{sed} program
-which is used to create a working @file{Makefile} from @file{Makefile.in}.
-
-@file{Makefile} uses the Microsoft Nmake program maintenance utility and
-the Visual C/C++ V8.00 compiler to build GNU CC.  You need only have the
-utilities @file{sed} and @file{touch} to use this installation method,
-which only automatically builds the compiler itself.  You must then
-examine what @file{fixinc.winnt} does, edit the header files by hand and
-build @file{libgcc.a} manually.
-
-@item
-The second type of installation assumes you are running a Unix-like
-shell, have a complete suite of Unix-like utilities in your path, and
-have a previous version of GNU CC already installed, either through
-building it via the above installation method or acquiring a pre-built
-binary.  In this case, use the @file{configure} script in the normal
-fashion.
-@end enumerate
-
 @item i860-intel-osf1
 This is the Paragon.
 @ifset INSTALLONLY
