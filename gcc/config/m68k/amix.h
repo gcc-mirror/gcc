@@ -52,7 +52,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)				\
 do {									\
   if (switch_table_difference_label_flag)				\
-    asm_fprintf ((FILE), "%s %LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM));\
+    asm_fprintf ((FILE), "\t%s %LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM));\
   switch_table_difference_label_flag = 0;				\
 } while (0)
 
@@ -85,7 +85,7 @@ do {									\
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  fprintf ((FILE), "%s\t%s,%u,%u\n",					\
+  fprintf ((FILE), "\t%s\t%s,%u,%u\n",					\
 	   BSS_ASM_OP, (NAME), (SIZE), MAX ((ALIGN) / BITS_PER_UNIT, 4)); \
 } while (0)
 
