@@ -10983,19 +10983,30 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	    }
 
 	  /* Convert (ne (and (lshiftrt (not X)) 1) 0) to
-	     (eq (and (lshiftrt X) 1) 0).  */
+	     (eq (and (lshiftrt X) 1) 0).
+	     Also handle the case where (not X) is expressed using xor.  */
 	  if (const_op == 0 && equality_comparison_p
 	      && XEXP (op0, 1) == const1_rtx
-	      && GET_CODE (XEXP (op0, 0)) == LSHIFTRT
-	      && GET_CODE (XEXP (XEXP (op0, 0), 0)) == NOT)
+	      && GET_CODE (XEXP (op0, 0)) == LSHIFTRT)
 	    {
-	      op0 = simplify_and_const_int
-		(op0, mode,
-		 gen_rtx_LSHIFTRT (mode, XEXP (XEXP (XEXP (op0, 0), 0), 0),
-				   XEXP (XEXP (op0, 0), 1)),
-		 (HOST_WIDE_INT) 1);
-	      code = (code == NE ? EQ : NE);
-	      continue;
+	      rtx shift_op = XEXP (XEXP (op0, 0), 0);
+	      rtx shift_count = XEXP (XEXP (op0, 0), 1);
+
+	      if (GET_CODE (shift_op) == NOT
+		  || (GET_CODE (shift_op) == XOR
+		      && GET_CODE (XEXP (shift_op, 1)) == CONST_INT
+		      && GET_CODE (shift_count) == CONST_INT
+		      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+		      && (INTVAL (XEXP (shift_op, 1))
+			  == (HOST_WIDE_INT) 1 << INTVAL (shift_count))))
+		{
+		  op0 = simplify_and_const_int
+		    (NULL_RTX, mode,
+		     gen_rtx_LSHIFTRT (mode, XEXP (shift_op, 0), shift_count),
+		     (HOST_WIDE_INT) 1);
+		  code = (code == NE ? EQ : NE);
+		  continue;
+		}
 	    }
 	  break;
 
