@@ -1,3 +1,11 @@
+2001-07-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/fio.h: Revert type of url from off_t to int.
+	* libI77/dfe.c (c_dfe): Cast offset expression in FSEEK to off_t.
+	* libI77/due.c (c_due): Ditto.  (e_rdue): Ditto.
+	* libI77/ftell_.c (G77_ftell_0): Cast result of FTELL to integer.
+	(G77_fseek_0): Cast offset argument of FSEEK to off_t.
+
 2001-07-07  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libI77/Makefile.in: Update config.h dependencies.

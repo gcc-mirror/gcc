@@ -14,7 +14,7 @@ unit_chk(integer Unit, char *who)
 	return f__units[Unit].ufd;
 	}
 
- off_t
+ integer
 #ifdef KR_headers
 G77_ftell_0 (Unit) integer *Unit;
 #else
@@ -22,7 +22,7 @@ G77_ftell_0 (integer *Unit)
 #endif
 {
 	FILE *f;
-	return (f = unit_chk(*Unit, "ftell")) ? FTELL(f) : -1L;
+	return (f = unit_chk(*Unit, "ftell")) ? (integer) FTELL(f) : -1L;
 	}
 
  integer
@@ -43,5 +43,5 @@ G77_fseek_0 (integer *Unit, integer *offset, integer *xwhence)
 	w = wohin[w];
 #endif
 	return	!(f = unit_chk(*Unit, "fseek"))
-		|| FSEEK(f, *offset, w) ? 1 : 0;
+		|| FSEEK(f, (off_t) *offset, w) ? 1 : 0;
 	}
