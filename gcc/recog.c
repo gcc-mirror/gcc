@@ -107,22 +107,6 @@ init_recog (void)
   volatile_ok = 1;
 }
 
-/* Try recognizing the instruction INSN,
-   and return the code number that results.
-   Remember the code so that repeated calls do not
-   need to spend the time for actual rerecognition.
-
-   This function is the normal interface to instruction recognition.
-   The automatically-generated function `recog' is normally called
-   through this one.  (The only exception is in combine.c.)  */
-
-int
-recog_memoized_1 (rtx insn)
-{
-  if (INSN_CODE (insn) < 0)
-    INSN_CODE (insn) = recog (PATTERN (insn), insn, 0);
-  return INSN_CODE (insn);
-}
 
 /* Check that X is an insn-body for an `asm' with operands
    and that the operands mentioned in it are legitimate.  */
