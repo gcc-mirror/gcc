@@ -1,3 +1,7 @@
+2002-03-30  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/i370/linux.h: Update copyright.
+
 2002-03-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.c (function_arg_pass_by_reference): Force to 0

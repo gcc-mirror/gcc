@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1996, 1997, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for Linux/390 by Linas Vepstas (linas@linas.org)
 
