@@ -1376,7 +1376,7 @@ while (0)
   case MOD:						\
   case UMOD:						\
     return COSTS_N_INSNS (60);				\
-   case PLUS: /* this includes shNadd insns */		\
+  case PLUS: /* this includes shNadd insns */		\
     return COSTS_N_INSNS (1) + 2;
 
 /* Conditional branches with empty delay slots have a length of two.  */
