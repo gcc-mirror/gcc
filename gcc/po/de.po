@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 3.4-b20040206\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-02-06 01:40+0000\n"
-"PO-Revision-Date: 2004-02-09 16:29+0100\n"
+"PO-Revision-Date: 2004-02-15 12:14+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -240,11 +240,11 @@ msgstr "Zeiger auf Funktion in Arithmetik verwendet"
 
 #: c-common.c:2528
 msgid "pointer to member function used in arithmetic"
-msgstr "Zeiger auf member-Funktion in Arithmetik verwendet"
+msgstr "Zeiger auf Elementfunktion in Arithmetik verwendet"
 
 #: c-common.c:2534
 msgid "pointer to a member used in arithmetic"
-msgstr "Zeiger auf member in Arithmetik verwendet"
+msgstr "Zeiger auf Element in Arithmetik verwendet"
 
 #: c-common.c:2623 f/com.c:14734
 msgid "struct type value used where scalar is required"
@@ -1104,7 +1104,7 @@ msgstr "Deklaration von »%s« als Feld von Funtionen"
 
 #: c-decl.c:3824
 msgid "invalid use of structure with flexible array member"
-msgstr "ungültige Verwendung einer Struktur mit flexiblem Feld"
+msgstr "ungültige Verwendung einer Struktur mit flexiblem Feldelement"
 
 #: c-decl.c:3843
 #, c-format
@@ -1138,7 +1138,7 @@ msgstr "Feldgröße von »%s« ist zu groß"
 
 #: c-decl.c:3927
 msgid "ISO C90 does not support flexible array members"
-msgstr "ISO-C90 unterstützt keine flexiblen Felder als Mitglied"
+msgstr "ISO-C90 unterstützt keine flexiblen Felder als Elemente"
 
 #: c-decl.c:3937
 msgid "array type has incomplete element type"
@@ -1285,7 +1285,7 @@ msgstr "Deklaration deklariert nichts"
 
 #: c-decl.c:4873 c-decl.c:4889
 msgid "%Jduplicate member '%D'"
-msgstr "%Jdoppelter Member »%D«"
+msgstr "%Jdoppeltes Element »%D«"
 
 #: c-decl.c:4923 c-decl.c:4926
 #, c-format
@@ -1311,11 +1311,11 @@ msgstr "struct"
 
 #: c-decl.c:4939
 msgid "named members"
-msgstr "benannte Member"
+msgstr "benannte Elemente"
 
 #: c-decl.c:4939
 msgid "members"
-msgstr "Member"
+msgstr "Elemente"
 
 #: c-decl.c:4978
 #, c-format
@@ -1324,19 +1324,19 @@ msgstr "Verschachtelte Redefinition von »%s«"
 
 #: c-decl.c:4998
 msgid "%Jflexible array member in union"
-msgstr "%Jflexibler Feld-Member in union"
+msgstr "%Jflexibles Feldelement in Union"
 
 #: c-decl.c:5000
 msgid "%Jflexible array member not at end of struct"
-msgstr "%Jflexibler Feld-Member nicht am Ende von struct"
+msgstr "%Jflexibles Feld-Element nicht am Ende von struct"
 
 #: c-decl.c:5002
 msgid "%Jflexible array member in otherwise empty struct"
-msgstr "%Jlexibler Feld-Member in ansonsten leerem struct"
+msgstr "%Jlexibler Feld-Element in ansonsten leerem struct"
 
 #: c-decl.c:5007
 msgid "%Jinvalid use of structure with flexible array member"
-msgstr "%Jungültige Verwendung einer Struktur mit flexiblem Feld-Member"
+msgstr "%Jungültige Verwendung einer Struktur mit flexiblem Feld-Element"
 
 #: c-decl.c:5102
 msgid "union cannot be made transparent"
@@ -2368,7 +2368,7 @@ msgstr "ISO-C unterstützt keine namenlosen structs/unions"
 
 #: c-parse.y:1754 objc/objc-parse.y:1809
 msgid "ISO C forbids member declarations with no members"
-msgstr "ISO-C verbietet Member-Deklarationen ohne Member"
+msgstr "ISO-C verbietet Elementdeklarationen ohne Elemente"
 
 #: c-parse.y:1915 objc/objc-parse.y:1970
 msgid "label at end of compound statement"
@@ -2635,7 +2635,7 @@ msgstr "falsche Benutzung eines void-Ausdruckes"
 
 #: c-typeck.c:150
 msgid "invalid use of flexible array member"
-msgstr "falsche Benutzung eines flexiblen Feld-Members"
+msgstr "falsche Benutzung eines flexiblen Feldelements"
 
 #: c-typeck.c:156
 msgid "invalid use of array with unspecified bounds"
@@ -2671,12 +2671,12 @@ msgstr "Arithmetik mit Zeiger auf unvollständigen Typen"
 #: c-typeck.c:1339
 #, c-format
 msgid "%s has no member named `%s'"
-msgstr "%s hat keinen Member »%s«"
+msgstr "%s hat kein Element namens »%s«"
 
 #: c-typeck.c:1375
 #, c-format
 msgid "request for member `%s' in something not a structure or union"
-msgstr "Anfrage nach Member »%s« in etwas, was keine Struktur oder union ist"
+msgstr "Anfrage nach Element »%s« in etwas, was keine Struktur oder Variante ist"
 
 #: c-typeck.c:1404
 msgid "dereferencing pointer to incomplete type"
@@ -2897,7 +2897,7 @@ msgstr "ungültiger L-Wert in unärem »&«"
 #: c-typeck.c:2501
 #, c-format
 msgid "attempt to take address of bit-field structure member `%s'"
-msgstr "Versuch, die Adresse des Bitfeldes »%s« einer Struktur zu verwenden"
+msgstr "Versuch, die Adresse des Bitfeld-Element »%s« einer Struktur zu verwenden"
 
 #: c-typeck.c:2634
 msgid "use of conditional expressions as lvalues is deprecated"
@@ -2914,7 +2914,7 @@ msgstr "die Verwendung von cast-Ausdrücken als L-Werte ist veraltet"
 #: c-typeck.c:2655
 #, c-format
 msgid "%s of read-only member `%s'"
-msgstr "%s des schreibgeschützten Members »%s«"
+msgstr "%s des schreibgeschützten Elementes »%s«"
 
 #: c-typeck.c:2659
 #, c-format
@@ -3206,11 +3206,11 @@ msgstr "geschweifte Klammern um Skalar-Initialisierung"
 
 #: c-typeck.c:4830
 msgid "initialization of flexible array member in a nested context"
-msgstr "Initialisierung flexibler Feld-Member in geschachteltem Kontext"
+msgstr "Initialisierung eines flexiblen Feld-Elements in geschachteltem Kontext"
 
 #: c-typeck.c:4832
 msgid "initialization of a flexible array member"
-msgstr "Initialisierung eines flexiblen Feld-Members"
+msgstr "Initialisierung eines flexiblen Feld-Elements"
 
 #: c-typeck.c:4863
 msgid "missing initializer"
@@ -3271,7 +3271,7 @@ msgstr "Elementüberschreitung in struct-Initialisierung"
 
 #: c-typeck.c:5928
 msgid "non-static initialization of a flexible array member"
-msgstr "nicht-statische Initialisierung eines flexiblen Feldmembers"
+msgstr "nicht-statische Initialisierung eines flexiblen Feldelements"
 
 #: c-typeck.c:5995
 msgid "excess elements in union initializer"
@@ -4830,7 +4830,7 @@ msgstr "zurückgelieferter Wert in block_exit_expr"
 #. We can't make a bitwise copy of this object, so fail.
 #: expr.c:8823
 msgid "cannot take the address of an unaligned member"
-msgstr "die Adresse eines nicht ausgerichteten Members kann nicht ermittelt werden"
+msgstr "die Adresse eines nicht ausgerichteten Elements kann nicht ermittelt werden"
 
 #: final.c:1058
 msgid "negative insn length"
@@ -6059,7 +6059,7 @@ msgstr "beschädigte Profilinformation: sum_all ist kleiner als sum_max"
 #: profile.c:336
 #, c-format
 msgid "corrupted profile info: edge from %i to %i exceeds maximal count"
-msgstr "Info zum beschädigten Profil: Kante von %i nach %i überschreitet Maximalzahl"
+msgstr "Info zum beschädigten Profil: Kante von %i nach %i überschreitet Höchstzahl"
 
 #: profile.c:499
 #, c-format
@@ -7007,11 +7007,11 @@ msgstr "-fprefetch-loop-arrays wird für dieses Ziel nicht unterstützt (versuch
 
 #: toplev.c:4449
 msgid "-fprefetch-loop-arrays is not supported with -Os"
-msgstr ""
+msgstr "-fprefetch-loop-arrays wird nicht mit -Os unterstützt"
 
 #: toplev.c:4455
 msgid "-ffunction-sections may affect debugging on some targets"
-msgstr ""
+msgstr "-ffunction-sections kann für verschiedene Ziele die Fehlersuche beeinträchtigen"
 
 #: toplev.c:4557
 #, c-format
@@ -7026,44 +7026,44 @@ msgstr "Fehler beim Schließen von %s: %m"
 #: tree-dump.c:692
 #, c-format
 msgid "could not open dump file `%s'"
-msgstr ""
+msgstr "Abzugsdatei »%s« konnte nicht geöffnet werden"
 
 #: tree-dump.c:763
 #, c-format
 msgid "ignoring unknown option `%.*s' in `-fdump-%s'"
-msgstr ""
+msgstr "unbekannte Option »%.*s« in »-fdump-%s« wird ignoriert"
 
 #: tree-inline.c:1016
 msgid "%Jfunction '%F' can never be inlined because it uses alloca (override using the always_inline attribute)"
-msgstr ""
+msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie alloca verwendet (zum Aufheben: Attribut »always_inline« verwenden)"
 
 #: tree-inline.c:1029
 msgid "%Jfunction '%F' can never be inlined because it uses setjmp"
-msgstr ""
+msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie setjmp verwendet"
 
 #: tree-inline.c:1044
 msgid "%Jfunction '%F' can never be inlined because it uses variable argument lists"
-msgstr ""
+msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie eine variable Argumentliste verwendet"
 
 #: tree-inline.c:1060
 msgid "%Jfunction '%F' can never be inlined because it uses setjmp-longjmp exception handling"
-msgstr ""
+msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie »setjmp-longjmp«-Ausnahmebehandlung verwendet"
 
 #: tree-inline.c:1078
 msgid "%Jfunction '%F' can never be inlined because it contains a nested function"
-msgstr ""
+msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie eine geschachtelte Funktion enthält"
 
 #: tree-inline.c:1095
 msgid "%Jfunction '%F' can never be inlined because it contains a computed goto"
-msgstr ""
+msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie ein berechnetes »goto« enthält"
 
 #: tree-inline.c:1105
 msgid "%Jfunction '%F' can never be inlined because it contains a nonlocal goto"
-msgstr ""
+msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie ein nichtlokales »goto« enthält"
 
 #: tree-inline.c:1128
 msgid "%Jfunction '%F' can never be inlined because it uses variable sized variables"
-msgstr ""
+msgstr "%Jdie Funktion »%F« kann nie »inline« sein, da sie Variablen variabler Größe verwendet"
 
 #: tree-inline.c:1338 tree-inline.c:1345
 msgid "%Jinlining failed in call to '%F': %s"
@@ -7079,39 +7079,39 @@ msgstr "%JGröße des Rückgabewertes von »%D« ist größer als %wd Bytes"
 
 #: tree.c:3800
 msgid "arrays of functions are not meaningful"
-msgstr ""
+msgstr "Felder von Funktionen sind sinnlos"
 
 #: tree.c:3855
 msgid "function return type cannot be function"
-msgstr ""
+msgstr "Rückgabetyp der Funktion kann keine Funktion sein"
 
 #: tree.c:4684
 msgid "invalid initializer for bit string"
-msgstr ""
+msgstr "ungültige Initialisierung für Bitstring"
 
 #: tree.c:4736
 #, c-format
 msgid "tree check: expected %s, have %s in %s, at %s:%d"
-msgstr ""
+msgstr "Baumprüfung: %s erwartet, haben %s in %s, bei %s:%d"
 
 #: tree.c:4749
 #, c-format
 msgid "tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d"
-msgstr ""
+msgstr "Baumprüfung: Klasse %c erwartet, haben '%c' (%s) in %s, bei %s:%d"
 
 #: tree.c:4762
 #, c-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
-msgstr ""
+msgstr "Baumprüfung: auf Elt %d von tree_vec mit %d Elts in %s bei %s:%d zugegriffen"
 
 #: tree.c:4774
 #, c-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
-msgstr "Baum-Überprüfung: Zugriff auf Operand %d von %s mit %d Operanden in %s, bei %s:%d"
+msgstr "Baumprüfung: auf Operand %d von %s mit %d Operanden in %s bei %s:%d zugegriffen"
 
 #: varasm.c:434
 msgid "%J%D causes a section type conflict"
-msgstr ""
+msgstr "%J%D löst einen Abschnittstypkonflikt aus"
 
 #: varasm.c:796
 msgid "%Jregister name not specified for '%D'"
@@ -7123,19 +7123,19 @@ msgstr "%Jungültiger Registername für »%D«"
 
 #: varasm.c:800
 msgid "%Jdata type of '%D' isn't suitable for a register"
-msgstr ""
+msgstr "%JDatentyp von »%D« eignet sich nicht für Register"
 
 #: varasm.c:803
 msgid "%Jregister specified for '%D' isn't suitable for data type"
-msgstr ""
+msgstr "%Jfür »%D« angegebenes Register eignet sich nicht für Datentyp"
 
 #: varasm.c:813
 msgid "global register variable has initial value"
-msgstr ""
+msgstr "globle Registervariable hat Anfangswert"
 
 #: varasm.c:816
 msgid "volatile register variables don't work as you might wish"
-msgstr ""
+msgstr "»volatile«-Registervariablen funktionieren oft nicht so wie erhofft"
 
 #: varasm.c:848
 msgid "%Jregister name given for non-register variable '%D'"
@@ -7147,32 +7147,32 @@ msgstr "%JSpeichergröße von »%D« ist unbekannt"
 
 #: varasm.c:1434
 msgid "%Jalignment of '%D' is greater than maximum object file alignment.  Using %d"
-msgstr ""
+msgstr "%JAusrichtung von »%D ist größer als maximale Objektdateiausrichtung. %d verwendet«"
 
 #: varasm.c:1480
 msgid "thread-local COMMON data not implemented"
-msgstr ""
+msgstr "Thread-lokale COMMON-Daten nicht implementiert"
 
 #: varasm.c:1505
 msgid "%Jrequested alignment for '%D' is greater than implemented alignment of %d"
-msgstr ""
+msgstr "%Jangeforderte Ausrichtung für »%D« ist größer als die implementierte Ausrichtung von %d"
 
 #: varasm.c:3787
 msgid "initializer for integer value is too complicated"
-msgstr ""
+msgstr "Initialisierung für Ganzzahlwert ist zu kompliziert"
 
 #: varasm.c:3792
 msgid "initializer for floating value is not a floating constant"
-msgstr ""
+msgstr "Initialisierung für Gleitkommawert ist keine Gleitkommakonstante"
 
 #: varasm.c:3858
 msgid "unknown set constructor type"
-msgstr ""
+msgstr "unbekannter Mengenkonstruktortyp"
 
 #: varasm.c:4077
 #, c-format
 msgid "invalid initial value for member `%s'"
-msgstr ""
+msgstr "ungültiger Anfangswert für Element »%s«"
 
 #: varasm.c:4264 varasm.c:4308
 msgid "%Jweak declaration of '%D' must precede definition"
@@ -7192,31 +7192,31 @@ msgstr "%Jschwache Deklaration von »%D« wird nicht unterstützt"
 
 #: varasm.c:4344 varasm.c:4434
 msgid "only weak aliases are supported in this configuration"
-msgstr ""
+msgstr "in dieser Konfiguration werden nur schwache Aliase unterstützt"
 
 #: varasm.c:4437
 msgid "alias definitions not supported in this configuration; ignored"
-msgstr ""
+msgstr "Alias-Definitionen werden in dieser Konfiguration nicht unterstützt; ignoriert"
 
 #: varasm.c:4466
 msgid "visibility attribute not supported in this configuration; ignored"
-msgstr ""
+msgstr "Sichtbarkeitsattribute werden in dieser Konfiguration nicht unterstützt; ignoriert"
 
 #: varray.c:194
 #, c-format
 msgid "virtual array %s[%lu]: element %lu out of bounds in %s, at %s:%d"
-msgstr ""
+msgstr "virtuelles Feld %s[%lu]: Element %lu außerhalb der Grenzen in %s, bei %s:%d"
 
 #: varray.c:204
 #, c-format
 msgid "underflowed virtual array %s in %s, at %s:%d"
-msgstr ""
+msgstr "Unterlauf im virtuellen Feld %s in %s bei %s:%d"
 
 #. Print an error message for unrecognized stab codes.
 #: xcoffout.c:173
 #, c-format
 msgid "no sclass for %s stab (0x%x)\n"
-msgstr ""
+msgstr "kein »sclass« für %s Stab (0x%x)\n"
 
 #.
 #. Local variables:
@@ -7237,95 +7237,95 @@ msgstr "Fehler: "
 
 #: diagnostic.def:4
 msgid "sorry, unimplemented: "
-msgstr ""
+msgstr "nicht implementiert: "
 
 #: diagnostic.def:6
 msgid "anachronism: "
-msgstr ""
+msgstr "Anachronismus: "
 
 #: diagnostic.def:7
 msgid "note: "
-msgstr ""
+msgstr "Anmerkung: "
 
 #: diagnostic.def:8
 msgid "debug: "
-msgstr ""
+msgstr "zur Fehlersuche: "
 
 #: params.def:53
 msgid "The maximum number of instructions in a single function eligible for inlining"
-msgstr ""
+msgstr "Die Höchstzahl der Anweisungen in einer einzelnen für »inline« geeigneten Funktion"
 
 #: params.def:65
 msgid "The maximum number of instructions when automatically inlining"
-msgstr ""
+msgstr "Die Höchstzahl der Anweisungen für automatisches »inline«"
 
 #: params.def:75
 msgid "The maximum number of instructions for the RTL inliner"
-msgstr ""
+msgstr "Die Höchstzahl der Anweisungen für RTL »inline«"
 
 #: params.def:86
 msgid "The maximum number of instructions to consider to fill a delay slot"
-msgstr ""
+msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um Verzögerungsschlitz zu füllen"
 
 #: params.def:97
 msgid "The maximum number of instructions to consider to find accurate live register information"
-msgstr ""
+msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um richtige aktive Registerinformationen zu finden"
 
 #: params.def:107
 msgid "The maximum length of scheduling's pending operations list"
-msgstr ""
+msgstr "Die Maximallänge der Liste der anhängigen geplanten Operationen"
 
 #: params.def:112
 msgid "The size of function body to be considered large"
-msgstr ""
+msgstr "Die Größe eines als groß angesehenen Funktionskörpers"
 
 #: params.def:116
 msgid "Maximal growth due to inlining of large function (in percent)"
-msgstr ""
+msgstr "Maximales Wachstum durch »inline« einer großen Funktion (in Prozent)"
 
 #: params.def:120
 msgid "how much can given compilation unit grow because of the inlining (in percent)"
-msgstr ""
+msgstr "um wie viel eine Übersetzungseinheit durch »inline« wachsen kann (in Prozent)"
 
 #: params.def:127
 msgid "The maximum amount of memory to be allocated by GCSE"
-msgstr ""
+msgstr "Maximalbetrag des von GCSE zu belegenden Speichers"
 
 #: params.def:132
 msgid "The maximum number of passes to make when doing GCSE"
-msgstr ""
+msgstr "Die Höchstzahl der Durchläufe für GCSE"
 
 #: params.def:139
 msgid "The maximum number of instructions to consider to unroll in a loop"
-msgstr ""
+msgstr "Die Höchstzahl der zum Aufrollen von Schleifen zu betrachtenden Anweisungen"
 
 #: params.def:145
 msgid "The maximum number of instructions to consider to unroll in a loop on average"
-msgstr ""
+msgstr "Die Höchstzahl der zum Aufrollen von Schleifen im Mittel zu betrachtenden Anweisungen"
 
 #: params.def:150
 msgid "The maximum number of unrollings of a single loop"
-msgstr ""
+msgstr "Die Höchstzahl der Iterationen zum Aufrollen in einzelner Schleife"
 
 #: params.def:155
 msgid "The maximum number of insns of a peeled loop"
-msgstr ""
+msgstr "Die Höchstzahl der insns einer geschälten Schleife"
 
 #: params.def:160
 msgid "The maximum number of peelings of a single loop"
-msgstr ""
+msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife"
 
 #: params.def:165
 msgid "The maximum number of insns of a completely peeled loop"
-msgstr ""
+msgstr "Die Höchstzahl der insns einer vollständig geschälten Schleife"
 
 #: params.def:170
 msgid "The maximum number of peelings of a single loop that is peeled completely"
-msgstr ""
+msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife, die vollständig geschält wird"
 
 #: params.def:175
 msgid "The maximum number of insns of a peeled loop that rolls only once"
-msgstr ""
+msgstr "Die Höchstzahl der insns einer geschälten Schleife, die nur einmal rollt"
 
 #: params.def:181
 msgid "The maximum number of insns of an unswitched loop"
@@ -14351,7 +14351,7 @@ msgstr ""
 
 #: cp/decl.c:7861
 msgid "%Jinvalid type qualifier for non-member function type"
-msgstr "%Jungültiger Typkennzeichner für Nicht-Member-Funktionstyp"
+msgstr "%Jungültiger Typkennzeichner für Nicht-Element-Funktionstyp"
 
 #: cp/decl.c:7925
 msgid "type qualifiers specified for friend class declaration"
@@ -14733,7 +14733,7 @@ msgstr ""
 
 #: cp/decl.c:10938
 msgid "invalid member function declaration"
-msgstr "ungültige Memberfunktionsdeklaration"
+msgstr "ungültige Elementfunktionsdeklaration"
 
 #: cp/decl.c:10955
 msgid "`%D' is already defined in class `%T'"
@@ -14869,7 +14869,7 @@ msgstr ""
 
 #: cp/decl2.c:1231
 msgid "anonymous union with no members"
-msgstr "anonymes union ohne Member"
+msgstr "anonymes union ohne Element"
 
 #: cp/decl2.c:1265
 msgid "`operator new' must return type `%T'"
@@ -15064,7 +15064,7 @@ msgstr ""
 
 #: cp/init.c:905
 msgid "`%#D' is not a non-static data member of `%T'"
-msgstr "»%#D« ist kein Nicht-static-Datenmember von »%T«"
+msgstr "»%#D« ist kein Nicht-static-Datenelement von »%T«"
 
 #: cp/init.c:944
 msgid "unnamed initializer for `%T', which has no base classes"
@@ -15132,11 +15132,11 @@ msgstr ""
 
 #: cp/init.c:1573
 msgid "invalid use of non-static member function `%D'"
-msgstr "ungültige Verwendung der Nicht-static-Memberfunktion »%D«"
+msgstr "ungültige Verwendung der Nicht-static-Elementfunktion »%D«"
 
 #: cp/init.c:1579 cp/semantics.c:1236
 msgid "invalid use of non-static data member `%D'"
-msgstr "ungültige Verwendung des Nicht-static-Datenmember »%D«"
+msgstr "ungültige Verwendung des Nicht-static-Datenelementes »%D«"
 
 #: cp/init.c:1718
 msgid "new of array type fails to specify size"
@@ -15969,7 +15969,7 @@ msgstr ""
 #. A destructor shall not be a member template.
 #: cp/pt.c:2820
 msgid "destructor `%D' declared as member template"
-msgstr "Destruktor »%D« als Member-Template deklariert"
+msgstr "Destruktor »%D« als Element-Template deklariert"
 
 #: cp/pt.c:2900
 msgid "`%D' does not declare a template type"
@@ -16467,7 +16467,7 @@ msgstr ""
 
 #: cp/semantics.c:2282
 msgid "`%D' is not a member of `%D'"
-msgstr "»%D« ist kein Member von »%D«"
+msgstr "»%D« ist kein Element von »%D«"
 
 #: cp/semantics.c:2400
 msgid "template parameter `%D' of type `%T' is not allowed in an integral constant expression because it is not of integral or enumeration type"
@@ -16566,7 +16566,7 @@ msgstr ""
 
 #: cp/typeck.c:563
 msgid "%s between distinct pointer-to-member types `%T' and `%T' lacks a cast"
-msgstr "%s zwischen verschiedenen Zeiger-auf-Member-Typen »%T« und »%T« fehlt eine Typkonvertierung"
+msgstr "%s zwischen verschiedenen Zeiger-auf-Element-Typen »%T« und »%T« fehlt eine Typkonvertierung"
 
 #: cp/typeck.c:1235
 #, c-format
@@ -16585,7 +16585,7 @@ msgstr "ISO-C++ verbietet Anwendung von »%s« auf einen Ausdruck mit Funktionst
 
 #: cp/typeck.c:1342
 msgid "invalid use of non-static member function"
-msgstr "falsche Benutzung einer nicht-statischen Memberfunktion"
+msgstr "falsche Benutzung einer nicht-statischen Elementfunktion"
 
 #: cp/typeck.c:1476
 msgid "deprecated conversion from string constant to `%T'"
@@ -16598,7 +16598,7 @@ msgstr ""
 #: cp/typeck.c:1614
 #, c-format
 msgid "invalid use of nonstatic data member '%E'"
-msgstr "ungültige Benutzung des nicht-statischen Datenmembers »%E«"
+msgstr "ungültige Benutzung des nicht-statischen Datenelements »%E«"
 
 #: cp/typeck.c:1666 cp/typeck.c:1688
 msgid "invalid access to non-static data member `%D' of NULL object"
@@ -16933,11 +16933,11 @@ msgstr ""
 #. This is a reinterpret cast, we choose to do nothing.
 #: cp/typeck.c:5332 cp/typeck.c:5347
 msgid "pointer to member cast via virtual base `%T'"
-msgstr "Typumwandlung von Zeiger in Member mit virtueller Basis »%T«"
+msgstr "Typumwandlung von Zeiger in Element über virtuelle Basis »%T«"
 
 #: cp/typeck.c:5350
 msgid "pointer to member conversion via virtual base `%T'"
-msgstr "Konvertierung von Zeiger in Member mit virtueller Basis »%T«"
+msgstr "Konvertierung von Zeiger in Element über virtuelle Basis »%T«"
 
 #: cp/typeck.c:5420
 msgid "invalid conversion to type `%T' from type `%T'"
@@ -19186,7 +19186,7 @@ msgstr "Instanzvariable »%s« hat unbekannte Größe"
 #: objc/objc-act.c:6428
 #, c-format
 msgid "type `%s' has virtual member functions"
-msgstr "der Typ »%s« hat virtuelle Memberfunktionen"
+msgstr "der Typ »%s« hat virtuelle Elementfunktionen"
 
 #: objc/objc-act.c:6429
 #, c-format
@@ -19903,7 +19903,7 @@ msgstr ""
 
 #: options.c:600
 msgid "Inline member functions by default"
-msgstr "Standardmäßig »inline«-Memberfunktionen"
+msgstr "Standardmäßig »inline«-Elementfunktionen"
 
 #: options.c:603
 msgid "Defer popping functions args from stack until later"
