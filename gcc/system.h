@@ -422,6 +422,39 @@ extern void abort ();
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
+/* Test if something is a character special file.  */
+#ifndef S_ISCHR
+#define S_ISCHR(m) (((m) & S_IFMT) == S_IFCHR)
+#endif
+
+/* Test if something is a socket.  */
+#ifndef S_ISSOCK
+# ifdef S_IFSOCK
+#   define S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
+# else
+#   define S_ISSOCK(m) 0
+# endif
+#endif
+
+/* Test if something is a FIFO.  */
+#ifndef S_ISFIFO
+# ifdef S_IFIFO
+#  define S_ISFIFO(m) (((m) & S_IFMT) == S_IFIFO)
+# else
+#  define S_ISFIFO(m) 0
+# endif
+#endif
+
+/* Approximate O_NONBLOCK.  */
+#ifndef O_NONBLOCK
+#define O_NONBLOCK O_NDELAY
+#endif
+
+/* Approximate O_NOCTTY.  */
+#ifndef O_NOCTTY
+#define O_NOCTTY 0
+#endif
+
 /* Get libiberty declarations. */
 #include "libiberty.h"
 
