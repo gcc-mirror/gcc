@@ -3757,8 +3757,16 @@ expand_assignment (tree to, tree from)
       /* Handle expand_expr of a complex value returning a CONCAT.  */
       if (GET_CODE (to_rtx) == CONCAT)
 	{
-	  gcc_assert (bitpos == 0 || bitpos == GET_MODE_BITSIZE (mode1));
-	  result = store_expr (from, XEXP (to_rtx, bitpos != 0), false);
+	  if (TREE_CODE (TREE_TYPE (from)) == COMPLEX_TYPE)
+	    {
+	      gcc_assert (bitpos == 0);
+	      result = store_expr (from, to_rtx, false);
+	    }
+	  else
+	    {
+	      gcc_assert (bitpos == 0 || bitpos == GET_MODE_BITSIZE (mode1));
+	      result = store_expr (from, XEXP (to_rtx, bitpos != 0), false);
+	    }
 	}
       else
 	{
