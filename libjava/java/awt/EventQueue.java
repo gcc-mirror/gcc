@@ -231,10 +231,11 @@ public class EventQueue
   public static void invokeAndWait(Runnable runnable)
     throws InterruptedException, InvocationTargetException
   {
+    if (isDispatchThread ())
+      throw new Error("Can't call invokeAndWait from event dispatch thread");
+
     EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
     Thread current = Thread.currentThread();
-    if (current == eq.dispatchThread)
-      throw new Error("Can't call invokeAndWait from event dispatch thread");
 
     InvocationEvent ie = 
       new InvocationEvent(eq, runnable, current, true);
