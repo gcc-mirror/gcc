@@ -1,5 +1,12 @@
 2003-12-02  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/jar/Connection.java
+	(Connection): Made class final, merged documentation with classpath.
+	(file_cache): Made private.
+	(jar_file): Renamed from jarfile.
+
+2003-12-02  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/http/Connection.java
 	(Connection): Initialize doOutput to false;
 	(connect): Initialize inputStream, moved "send request" code to new

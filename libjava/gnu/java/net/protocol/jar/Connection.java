@@ -47,29 +47,28 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.util.Hashtable;
 import java.util.jar.JarFile;
 import java.util.zip.ZipFile;
 
 /**
- * Written using on-line Java Platform 1.2 API Specification.
+ * This subclass of java.net.JarURLConnection models a URLConnection via
+ * the "jar" protocol.
  *
  * @author Kresten Krab Thorup <krab@gnu.org>
- * @date Aug 10, 1999.
  */
-public class Connection extends JarURLConnection
+public final class Connection extends JarURLConnection
 {
-  static Hashtable file_cache = new Hashtable();
-  private JarFile jarfile;
+  private static Hashtable file_cache = new Hashtable();
+  private JarFile jar_file;
 
-  public Connection(URL url)
+  protected Connection(URL url)
     throws MalformedURLException
   {
     super(url);
   }
 
-  public synchronized JarFile getJarFile() throws java.io.IOException
+  public synchronized JarFile getJarFile() throws IOException
   {
     if (!connected)
       connect();
@@ -77,8 +76,8 @@ public class Connection extends JarURLConnection
     if (! doInput)
       throw new ProtocolException("Can't open JarFile if doInput is false");
 
-    if (jarfile != null)
-      return jarfile;
+    if (jar_file != null)
+      return jar_file;
 
     URL jarFileURL = getJarFileURL();
 
@@ -87,15 +86,15 @@ public class Connection extends JarURLConnection
       {
 	if (getUseCaches())
 	  {
-	    jarfile = (JarFile) file_cache.get(jarFileURL);
-	    if (jarfile == null)
+	    jar_file = (JarFile) file_cache.get (jarFileURL);
+	    if (jar_file == null)
 	      {
-		jarfile = new JarFile (jarFileURL.getFile());
-		file_cache.put (jarFileURL, jarfile);
+		jar_file = new JarFile (jarFileURL.getFile());
+		file_cache.put (jarFileURL, jar_file);
 	      }
 	  }
 	else
-	  jarfile = new JarFile (jarFileURL.getFile());
+	  jar_file = new JarFile (jarFileURL.getFile());
       }
     else
       {
@@ -111,10 +110,10 @@ public class Connection extends JarURLConnection
 	// Always verify the Manifest, open read only and delete when done.
 	// XXX ZipFile.OPEN_DELETE not yet implemented.
 	// jf = new JarFile(f, true, ZipFile.OPEN_READ | ZipFile.OPEN_DELETE);
-	jarfile = new JarFile(f, true, ZipFile.OPEN_READ);
+	jar_file = new JarFile (f, true, ZipFile.OPEN_READ);
       }
 
-    return jarfile;
+    return jar_file;
   }
 
 }
