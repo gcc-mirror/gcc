@@ -1,3 +1,8 @@
+2003-03-11  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/faq/index.html: Update text about location of headers.
+	* docs/html/faq/index.txt: Regenerate.
+
 2003-03-11  Carlo Wood  <carlo@alinoe.com>
 
 	* include/bits/demangle.h: Prepend accessors of
