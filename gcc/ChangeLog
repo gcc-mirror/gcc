@@ -1,3 +1,7 @@
+2002-02-07  H.J. Lu <hjl@gnu.org>
+
+	* config/mips/linux.h (SUBTARGET_ASM_DEBUGGING_SPEC): Defined.
+
 2002-02-07  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* testsuite/gcc.dg/cpp/charconst-2.c: Add -fsigned-char option.
