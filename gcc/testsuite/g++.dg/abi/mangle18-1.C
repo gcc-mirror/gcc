@@ -17,7 +17,7 @@ template <void (*)()> struct S {};
 template <int *> struct T {};
 
 void f (S<Foo>){}
-// { dg-final { scan-assembler "\n_Z1f1SIXadL_Z3FooEEE:" } }
+// { dg-final { scan-assembler "\n_?_Z1f1SIXadL_Z3FooEEE\[: \t\n\]" } }
 
 void g (T<&NMS::V>){}
-// { dg-final { scan-assembler "\n_Z1g1TIXadL_Z1VEEE:" } }
+// { dg-final { scan-assembler "\n_?_Z1g1TIXadL_Z1VEEE\[: \t\n\]" } }

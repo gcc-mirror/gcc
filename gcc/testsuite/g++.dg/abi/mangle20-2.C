@@ -11,6 +11,6 @@ template <int I> void f(int (*)[2]) {}
 template <int I> void g(int (*)[I+2]) {}
 
 template void f<1>(int (*)[2]);  // { dg-warning "mangled name" }
-//  { dg-final { scan-assembler "\n_Z1fILi1EEvPALi2E_i:" } }
+//  { dg-final { scan-assembler "\n_?_Z1fILi1EEvPALi2E_i\[: \t\n\]" } }
 template void g<1>(int (*)[3]);
-//  { dg-final { scan-assembler "\n_Z1gILi1EEvPAplT_Li2E_i:" } }
+//  { dg-final { scan-assembler "\n_?_Z1gILi1EEvPAplT_Li2E_i\[: \t\n\]" } }

@@ -10,4 +10,4 @@
 extern int N;
 template <int &> struct S {};
 void n (S<N>) {}
-// { dg-final { scan-assembler "\n_Z1n1SILZ1NEE:" } }
+// { dg-final { scan-assembler "\n_?_Z1n1SILZ1NEE\[: \t\n\]" } }
