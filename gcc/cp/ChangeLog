@@ -1,3 +1,8 @@
+2004-01-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* Make-lang.in, call.c, class.c, decl2.c, except.c, expr.c,
+	init.c, mangle.c, typeck.c: Update copyright.
+
 2004-01-21  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* parser.c (cp_parser_class_specifier): Prevent garbage collection.
