@@ -2,9 +2,9 @@ Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95 Released.
 
-Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
-
-	* gcc-2.95 Released.
+	* libF77/Version.c: No longer a prerelease.
+	* libI77/Version.c: No longer a prerelease.
+	* libU77/Version.c: No longer a prerelease.
 
 Wed Jul  7 15:58:16 1999  Craig Burley  <craig@jcb-sc.com>
 
