@@ -46,10 +46,6 @@ static int machopic_data_defined_p PARAMS ((const char *));
 static int func_name_maybe_scoped PARAMS ((const char *));
 static void update_non_lazy_ptrs PARAMS ((const char *));
 
-/* Make everything that used to go in the text section really go there.  */
-
-int flag_no_mach_text_sections = 0;
-
 int
 name_needs_quotes (name)
      const char *name;
