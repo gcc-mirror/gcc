@@ -6386,7 +6386,7 @@ store_multiple_operation (op, mode)
 
 const char *
 rs6000_output_load_multiple (operands)
-     rtx operands[2];
+     rtx operands[3];
 {
   /* We have to handle the case where the pseudo used to contain the address
      is assigned to one of the output registers.  */
