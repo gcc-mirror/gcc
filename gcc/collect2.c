@@ -1192,6 +1192,8 @@ main (argc, argv)
       char *q = extract_string (&p);
       if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
 	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+      if (strcmp (q, "-EL") == 0 || strcmp (q, "-EB") == 0)
+	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
       if (strncmp (q, "-shared", sizeof ("-shared") - 1) == 0)
 	shared_obj = 1;
     }
