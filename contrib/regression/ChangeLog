@@ -1,3 +1,8 @@
+2002-03-09  Geoffrey Keating  <geoffk@redhat.com>
+
+	* btest-gcc.sh: For crosses, assume newlib and GNU binutils.
+	* site.exp: Correct mips-elf triplet.
+
 2002-01-31  Geoffrey Keating  <geoffk@redhat.com>
 
 	* btest-gcc.sh: New file.
