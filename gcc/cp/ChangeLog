@@ -1,3 +1,8 @@
+2000-07-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* parse.y (empty_parms): Use `()', not `(...)', when in the scope
+	of `extern "C++"'.
+
 2000-07-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Kill strict_prototype. Backwards compatibility only for

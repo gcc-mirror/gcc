@@ -102,7 +102,8 @@ empty_parms ()
   tree parms;
 
 #ifndef NO_IMPLICIT_EXTERN_C
-  if (in_system_header && current_class_type == NULL)
+  if (in_system_header && current_class_type == NULL 
+      && current_lang_name == lang_name_c)
     parms = NULL_TREE;
   else
 #endif
