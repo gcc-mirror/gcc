@@ -1,5 +1,9 @@
 1999-02-14  Craig Burley  <craig@jcb-sc.com>
 
+	* news.texi: Mention fix for SIGNAL invocation circa egcs-1.1.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
 	* g77.texi, g77install.texi, bugs.texi, g77install.texi: Clean
 	up and improve indexing, and some other areas of docs.
 
