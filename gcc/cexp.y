@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 1992, 1994, 1995, 1996, 1997 Free Software Foundation.
+   Copyright (C) 1987, 92, 94, 95, 96, 97, 1998 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -148,7 +148,7 @@ struct arglist {
 HOST_WIDE_INT parse_c_expression PROTO((char *, int));
 
 static int yylex PROTO((void));
-static void yyerror PROTO((char *)) __attribute__ ((noreturn));
+static void yyerror PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
 static HOST_WIDE_INT expression_value;
 #ifdef TEST_EXP_READER
 static int expression_signedp;
@@ -235,6 +235,7 @@ HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
 int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
 struct hashnode *lookup PROTO((U_CHAR *, int, int));
 void error PRINTF_PROTO_1((char *, ...));
+void verror PROTO((char *, va_list));
 void pedwarn PRINTF_PROTO_1((char *, ...));
 void warning PRINTF_PROTO_1((char *, ...));
 
@@ -554,12 +555,9 @@ parse_number (olen)
 	else {
 	  if (c == '.' || c == 'e' || c == 'E' || c == 'p' || c == 'P')
 	    yyerror ("Floating point numbers not allowed in #if expressions");
-	  else {
-	    char *buf = (char *) alloca (p - lexptr + 40);
-	    sprintf (buf, "missing white space after number `%.*s'",
+	  else
+	    yyerror ("missing white space after number `%.*s'",
 		     (int) (p - lexptr - 1), lexptr);
-	    yyerror (buf);
-	  }
 	}
 
 	if (--len == 0)
@@ -636,11 +634,7 @@ yylex ()
       if (c == *toktab->operator && tokstart[1] == toktab->operator[1]) {
 	lexptr += 2;
 	if (toktab->token == ERROR)
-	  {
-	    char *buf = (char *) alloca (40);
-	    sprintf (buf, "`%s' not allowed in operand of `#if'", toktab->operator);
-	    yyerror (buf);
-	  }
+	  yyerror ("`%s' not allowed in operand of `#if'", toktab->operator);
 	return toktab->token;
       }
 
@@ -1009,10 +1003,15 @@ parse_escape (string_ptr, result_mask)
 }
 
 static void
-yyerror (s)
-     char *s;
+yyerror (PRINTF_ALIST (msgid))
+     PRINTF_DCL (msgid)
 {
-  error ("%s", s);
+  va_list args;
+
+  VA_START (args, msgid);
+  verror (msgid, args);
+  va_end (args);
+
   skip_evaluation = 0;
   longjmp (parse_return_error, 1);
 }
@@ -1193,40 +1192,48 @@ initialize_random_junk ()
 }
 
 void
-error (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+verror (msgid, args)
+     char *msgid;
+     va_list args;
 {
-  va_list args;
-
-  VA_START (args, msg);
   fprintf (stderr, "error: ");
-  vfprintf (stderr, msg, args);
+  vfprintf (stderr, _(msgid), args);
   fprintf (stderr, "\n");
+}
+
+void
+error (PRINTF_ALIST (msgid))
+     PRINTF_DCL (msgid)
+{
+  va_list args;
+
+  VA_START (args, msgid);
+  verror (msgid, args);
   va_end (args);
 }
 
 void
-pedwarn (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+pedwarn (PRINTF_ALIST (msgid))
+     PRINTF_DCL (msgid)
 {
   va_list args;
 
-  VA_START (args, msg);
+  VA_START (args, msgid);
   fprintf (stderr, "pedwarn: ");
-  vfprintf (stderr, msg, args);
+  vfprintf (stderr, _(msgid), args);
   fprintf (stderr, "\n");
   va_end (args);
 }
 
 void
-warning (PRINTF_ALIST (msg))
-     PRINTF_DCL (msg)
+warning (PRINTF_ALIST (msgid))
+     PRINTF_DCL (msgid)
 {
   va_list args;
 
-  VA_START (args, msg);
+  VA_START (args, msgid);
   fprintf (stderr, "warning: ");
-  vfprintf (stderr, msg, args);
+  vfprintf (stderr, _(msgid), args);
   fprintf (stderr, "\n");
   va_end (args);
 }
