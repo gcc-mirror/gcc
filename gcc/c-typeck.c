@@ -2438,37 +2438,25 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 
 	  if (extra_warnings)
 	    {
-	      tree op0_type = TREE_TYPE (orig_op0);
-	      tree op1_type = TREE_TYPE (orig_op1);
-	      int op0_unsigned = TREE_UNSIGNED (op0_type);
-	      int op1_unsigned = TREE_UNSIGNED (op1_type);
- 
+	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
+	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
+
+	      tree comp_type = TREE_TYPE (op0);
+
 	      /* Give warnings for comparisons between signed and unsigned
-		 quantities that will fail.  Do not warn if the signed quantity
+		 quantities that may fail.  Do not warn if the signed quantity
 		 is an unsuffixed integer literal (or some static constant
 		 expression involving such literals) and it is positive.
-		 Do not warn if the width of the unsigned quantity is less
-		 than that of the signed quantity, since in this case all
-		 values of the unsigned quantity fit in the signed quantity.
-		 Do not warn if the signed type is the same size as the
-		 result_type since sign extension does not cause trouble in
-		 this case.  */
+		 Do not warn if the comparison is being done in a signed type,
+		 since the signed type will only be chosen if it can represent
+		 all the values of the unsigned type.  */
 	      /* Do the checking based on the original operand trees, so that
 		 casts will be considered, but default promotions won't be.  */
-	      if (op0_unsigned != op1_unsigned
-		  && ((op0_unsigned
-		       && TYPE_PRECISION (op0_type) >= TYPE_PRECISION (op1_type)
-		       && TYPE_PRECISION (op0_type) < TYPE_PRECISION (result_type)
-		       && (TREE_CODE (op1) != INTEGER_CST
-			   || (TREE_CODE (op1) == INTEGER_CST
-			       && INT_CST_LT (op1, integer_zero_node))))
-		      ||
-		      (op1_unsigned
-		       && TYPE_PRECISION (op1_type) >= TYPE_PRECISION (op0_type)
-		       && TYPE_PRECISION (op1_type) < TYPE_PRECISION (result_type)
-		       && (TREE_CODE (op0) != INTEGER_CST
-			   || (TREE_CODE (op0) == INTEGER_CST
-			       && INT_CST_LT (op0, integer_zero_node))))))
+	      if (TREE_UNSIGNED (comp_type)
+		  && ((op0_signed && (TREE_CODE (orig_op0) != INTEGER_CST
+				      || tree_int_cst_sgn (orig_op0) == -1))
+		      || (op1_signed && (TREE_CODE (orig_op1) != INTEGER_CST
+				       || tree_int_cst_sgn (orig_op1) == -1))))
 		warning ("comparison between signed and unsigned");
 	    }
 	}
