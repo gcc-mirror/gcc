@@ -785,7 +785,6 @@ scan_loop (loop_start, end, unroll_p)
 #ifdef AVOID_CCMODE_COPIES
   /* Don't try to move insns which set CC registers if we should not
      create CCmode register copies.  */
-     be avoiding
   for (i = FIRST_PSEUDO_REGISTER; i < nregs - loop_mems_idx; i++)
     if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
       may_not_optimize[i] = 1;
