@@ -3078,7 +3078,7 @@ simplify_unary_operation (code, mode, op, op_mode)
       if (width < HOST_BITS_PER_WIDE_INT
 	  && ((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
 	      != ((HOST_WIDE_INT) (-1) << (width - 1))))
-	val &= (1 << width) - 1;
+	val &= ((HOST_WIDE_INT) 1 << width) - 1;
 
       return GEN_INT (val);
     }
