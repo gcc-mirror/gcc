@@ -72,8 +72,9 @@ char *opcode_name[] =
 
 /* Commonly used modes.  */
 
-enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT */
-enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD */
+enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT. */
+enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD. */
+enum machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE. */
 
 /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
    After rtl generation, it is 1 plus the largest register number used.  */
@@ -3248,6 +3249,7 @@ init_emit ()
      all pointers.  */
   REGNO_POINTER_FLAG (STACK_POINTER_REGNUM) = 1;
   REGNO_POINTER_FLAG (FRAME_POINTER_REGNUM) = 1;
+  REGNO_POINTER_FLAG (HARD_FRAME_POINTER_REGNUM) = 1;
   REGNO_POINTER_FLAG (ARG_POINTER_REGNUM) = 1;
 
   REGNO_POINTER_FLAG (VIRTUAL_INCOMING_ARGS_REGNUM) = 1;
@@ -3290,6 +3292,8 @@ init_emit_once (line_numbers)
 	  && word_mode == VOIDmode)
 	word_mode = mode;
     }
+
+  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
 
   /* Create the unique rtx's for certain rtx codes and operand values.  */
 
