@@ -53,6 +53,26 @@ compilation is specified by a string called a "spec".  */
 #endif
 #include <stdio.h>
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+
 #ifndef R_OK
 #define R_OK 4
 #define W_OK 2
@@ -2101,25 +2121,6 @@ unused_prefix_warnings (pprefix)
     }
 }
 
-/* Get rid of all prefixes built up so far in *PLISTP.  */
-
-static void
-free_path_prefix (pprefix)
-     struct path_prefix *pprefix;
-{
-  struct prefix_list *pl = pprefix->plist;
-  struct prefix_list *temp;
-
-  while (pl)
-    {
-      temp = pl;
-      pl = pl->next;
-      free (temp->prefix);
-      free ((char *) temp);
-    }
-
-  pprefix->plist = (struct prefix_list *) 0;
-}
 
 /* Execute the command specified by the arguments on the current line of spec.
    When using pipes, this includes several piped-together commands
@@ -2697,7 +2698,6 @@ process_command (argc, argv)
 
 	    case 'B':
 	      {
-		int *temp = (int *) xmalloc (sizeof (int));
 		char *value;
 		if (p[1] == 0 && i + 1 == argc)
 		  fatal ("argument to `-B' is missing");
@@ -3136,7 +3136,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
   char *string;
   int value;
 
-  while (c = *p++)
+  while ((c = *p++))
     /* If substituting a switch, treat all chars like letters.
        Otherwise, NL, SPC, TAB and % are special.  */
     switch (inswitch ? 'a' : c)
@@ -4450,7 +4450,7 @@ main (argc, argv)
 	first_time = FALSE;
 	obstack_grow (&collect_obstack, "'-", 2);
         q = switches[i].part1;
-	while (p = (char *) index (q,'\''))
+	while ((p = (char *) index (q,'\'')))
           {
             obstack_grow (&collect_obstack, q, p-q);
             obstack_grow (&collect_obstack, "'\\''", 4);
@@ -4463,7 +4463,7 @@ main (argc, argv)
 	  {
 	    obstack_grow (&collect_obstack, " '", 2);
 	    q = *args;
-	    while (p = (char *) index (q,'\''))
+	    while ((p = (char *) index (q,'\'')))
 	      {
 		obstack_grow (&collect_obstack, q, p-q);
 		obstack_grow (&collect_obstack, "'\\''", 4);
@@ -4774,8 +4774,6 @@ main (argc, argv)
   if (error_count == 0)
     {
       int tmp = execution_count;
-      int i;
-      int first_time;
 
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
 	 for collect.  */
@@ -5090,7 +5088,7 @@ validate_all_switches ()
       for (i = 0; i < sizeof comp->spec / sizeof comp->spec[0] && comp->spec[i]; i++)
 	{
 	  p = comp->spec[i];
-	  while (c = *p++)
+	  while ((c = *p++))
 	    if (c == '%' && *p == '{')
 	      /* We have a switch spec.  */
 	      validate_switches (p + 1);
@@ -5101,14 +5099,14 @@ validate_all_switches ()
   for (spec = specs; spec ; spec = spec->next)
     {
       p = *(spec->ptr_spec);
-      while (c = *p++)
+      while ((c = *p++))
 	if (c == '%' && *p == '{')
 	  /* We have a switch spec.  */
 	  validate_switches (p + 1);
     }
 
   p = link_command_spec;
-  while (c = *p++)
+  while ((c = *p++))
     if (c == '%' && *p == '{')
       /* We have a switch spec.  */
       validate_switches (p + 1);
@@ -5257,7 +5255,6 @@ default_arg (p, len)
      int len;
 {
   char *start, *end;
-  int i;
 
   for (start = multilib_defaults; *start != '\0'; start = end+1)
     {

@@ -1,5 +1,15 @@
 Sat Feb  7 23:54:29 1998   Robert Lipe  <robertl@dgii.com>
 
+	* gcc.c: Include <strings.h>/<string.h>, <stdlib.h>, <unistd.h>,
+	<fcntl.h>.
+	(free_path_suffix): Remove unreferenced static function.
+	(process_command): Remove unused variable temp.
+	(default_arg): Remove unused variable i.
+	(do_spec_1):  Add parens for assignment used as truth value.
+	(main): Likewise.
+	(validate_all_switches): Likewise.
+	(main): Remove unused variables i, first_time>
+
 	* c-common.c: Include <stdlib.h> and <string.h>/<strings.h>.
 
         * calls.c (expand_call): Remove unused variables funtree,
