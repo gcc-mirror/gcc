@@ -2244,14 +2244,28 @@ expand_builtin_strcmp (exp, target, mode)
 
   if (p1 && p2)
     {
-      int i = strcmp (p1, p2);
-
-      return expand_expr (i < 0 ? build_int_2 (-1, -1)
-				: i == 0 ? integer_zero_node
-					 : integer_one_node,
-			  target, mode, EXPAND_NORMAL);
+      const int i = strcmp (p1, p2);
+      return (i < 0 ? constm1_rtx : (i > 0 ? const1_rtx : const0_rtx));
     }
 
+  /* If either arg is "", return an expression corresponding to
+     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
+  if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree ind1 =
+	fold (build1 (CONVERT_EXPR, integer_type_node,
+		      build1 (INDIRECT_REF, cst_uchar_node,
+			      build1 (NOP_EXPR, cst_uchar_ptr_node, arg1))));
+      tree ind2 =
+	fold (build1 (CONVERT_EXPR, integer_type_node,
+		      build1 (INDIRECT_REF, cst_uchar_node,
+			      build1 (NOP_EXPR, cst_uchar_ptr_node, arg2))));
+      tree result = fold (build (MINUS_EXPR, integer_type_node, ind1, ind2));
+      return expand_expr (result, target, mode, EXPAND_NORMAL);
+    }
+  
 #ifdef HAVE_cmpstrsi
   if (! HAVE_cmpstrsi)
     return 0;
@@ -2360,25 +2374,51 @@ expand_builtin_strncmp (exp, target, mode)
     return (r < 0 ? constm1_rtx : (r > 0 ? const1_rtx : const0_rtx));
   }
 
-  /* If either string parameter is constant and its strlen is strictly
-     less than the length parameter, call expand_builtin_strcmp().  */
-  if ((p1 && compare_tree_int (arg3, strlen (p1)) > 0)
-      || (p2 && compare_tree_int (arg3, strlen (p2)) > 0))
-  {
-    tree newarglist =
-      tree_cons (NULL_TREE, arg1, build_tree_list (NULL_TREE, arg2));
-    rtx result;
+  /* If len == 1 or (either string parameter is "" and (len >= 1)),
+      return (*(u_char*)arg1 - *(u_char*)arg2).  */
+  if (compare_tree_int (arg3, 1) == 0
+      || (compare_tree_int (arg3, 1) > 0
+	  && ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))))
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree ind1 =
+	fold (build1 (CONVERT_EXPR, integer_type_node,
+		      build1 (INDIRECT_REF, cst_uchar_node,
+			      build1 (NOP_EXPR, cst_uchar_ptr_node, arg1))));
+      tree ind2 =
+	fold (build1 (CONVERT_EXPR, integer_type_node,
+		      build1 (INDIRECT_REF, cst_uchar_node,
+			      build1 (NOP_EXPR, cst_uchar_ptr_node, arg2))));
+      tree result = fold (build (MINUS_EXPR, integer_type_node, ind1, ind2));
+      return expand_expr (result, target, mode, EXPAND_NORMAL);
+    }
 
-    /* Call expand_builtin_strcmp with the modified newarglist.  If
-       the expansion does not occur, do not allow strncmp to expand to
-       strcmp since strcmp requires that both strings be NULL
-       terminated whereas strncmp does not.  */
-    TREE_OPERAND (exp, 1) = newarglist;
-    result = expand_builtin_strcmp (exp, target, mode);
-    /* Always restore the original arguments.  */
-    TREE_OPERAND (exp, 1) = arglist;
-    return result;
-  }
+#ifdef HAVE_cmpstrsi
+  /* If the length parameter is constant (checked above) and either
+     string parameter is constant, call expand_builtin_memcmp() using
+     a length parameter equal to the lesser of the given length and
+     the strlen+1 of the constant string.  */
+  if (HAVE_cmpstrsi && (p1 || p2))
+    {
+      /* Exactly one of the strings is constant at this point, because
+	 if both were then we'd have expanded this at compile-time.  */
+      tree string_len = p1 ? c_strlen (arg1) : c_strlen (arg2);
+
+      string_len = size_binop (PLUS_EXPR, string_len, ssize_int (1));
+      
+      if (tree_int_cst_lt (string_len, arg3))
+        {
+	  /* The strlen+1 is strictly shorter, use it.  */
+	  tree newarglist = build_tree_list (NULL_TREE, string_len);
+	  newarglist = tree_cons (NULL_TREE, arg2, newarglist);
+	  newarglist = tree_cons (NULL_TREE, arg1, newarglist);
+	  return expand_builtin_memcmp (exp, newarglist, target);
+	}
+      else
+	return expand_builtin_memcmp (exp, arglist, target);
+    }
+#endif
   
   return 0;
 }
