@@ -276,9 +276,6 @@ static void pad_to_arg_alignment PARAMS ((struct args_size *, int,
 static void pad_below		PARAMS ((struct args_size *, enum machine_mode,
 					 tree));
 #endif
-#ifdef ARGS_GROW_DOWNWARD
-static tree round_down		PARAMS ((tree, int));
-#endif
 static rtx round_trampoline_addr PARAMS ((rtx));
 static tree *identify_blocks_1	PARAMS ((rtx, tree *, tree *, tree *));
 static void reorder_blocks_1	PARAMS ((rtx, tree, varray_type *));
