@@ -1,3 +1,8 @@
+2001-08-30  Kurt Garloff  <garloff@suse.de>
+ 
+	* optimize.c (inlinable_function_p): Allow only smaller single
+	functions. Halve inline limit after reaching recursive limit.
+ 
 2001-08-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (maybe_fold_nontype_arg): Use TREE_TYPE of ARG as the
