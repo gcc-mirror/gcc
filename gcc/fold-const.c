@@ -2836,10 +2836,20 @@ make_range (exp, pin_p, plow, phigh)
   while (1)
     {
       code = TREE_CODE (exp);
-      arg0 = TREE_OPERAND (exp, 0), arg1 = TREE_OPERAND (exp, 1);
-      if (TREE_CODE_CLASS (code) == '<' || TREE_CODE_CLASS (code) == '1'
-	  || TREE_CODE_CLASS (code) == '2')
-	type = TREE_TYPE (arg0);
+
+      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
+	{
+	  arg0 = TREE_OPERAND (exp, 0);
+	  if (TREE_CODE_CLASS (code) == '<' 
+	      || TREE_CODE_CLASS (code) == '1'
+	      || TREE_CODE_CLASS (code) == '2')
+	    type = TREE_TYPE (arg0);
+	  if (TREE_CODE_CLASS (code) == '2' 
+	      || TREE_CODE_CLASS (code) == '<'
+	      || (TREE_CODE_CLASS (code) == 'e' 
+		  && tree_code_length[(int) code] > 1))
+	    arg1 = TREE_OPERAND (exp, 1);
+	}
 
       switch (code)
 	{
