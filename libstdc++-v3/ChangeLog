@@ -1,3 +1,9 @@
+2003-10-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/10081
+	* include/bits/basic_ios.h (basic_ios::basic_ios): Initialize
+	_M_fctype, _M_fnumput, _M_fnumget.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.

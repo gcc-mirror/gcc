@@ -242,7 +242,8 @@ namespace std
        *  The parameter is passed by derived streams.
       */
       explicit 
-      basic_ios(basic_streambuf<_CharT, _Traits>* __sb) : ios_base() 
+      basic_ios(basic_streambuf<_CharT, _Traits>* __sb) 
+      : ios_base(), _M_fctype(0), _M_fnumput(0), _M_fnumget(0)
       { this->init(__sb); }
 
       /**
