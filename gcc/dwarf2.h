@@ -534,8 +534,8 @@ enum dwarf_source_language
     DW_LANG_Fortran90 = 0x0008,
     DW_LANG_Pascal83 = 0x0009,
     DW_LANG_Modula2 = 0x000a,
-    DW_LANG_Mips_Assembler = 0x8001,
-    DW_LANG_Java = 0x9af4
+    DW_LANG_Java = 0x000b,
+    DW_LANG_Mips_Assembler = 0x8001
   };
 
 
