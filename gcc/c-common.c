@@ -193,6 +193,10 @@ int warn_format_extra_args;
 
 int warn_format_nonliteral;
 
+/* Warn about possible security problems with calls to format functions.  */
+
+int warn_format_security;
+
 /* Nonzero means warn about possible violations of sequence point rules.  */
 
 int warn_sequence_point;
@@ -2363,7 +2367,7 @@ check_format_info (status, info, params)
 	      params = TREE_CHAIN (params);
 	      ++arg_num;
 	    }
-	  if (params == 0 && warn_format_nonliteral)
+	  if (params == 0 && (warn_format_nonliteral || warn_format_security))
 	    status_warning (status, "format not a string literal and no format arguments");
 	  else if (warn_format_nonliteral)
 	    status_warning (status, "format not a string literal, argument types not checked");
@@ -3401,7 +3405,10 @@ set_Wformat (setting)
   warn_format_y2k = setting;
   warn_format_extra_args = setting;
   if (setting != 1)
-    warn_format_nonliteral = setting;
+    {
+      warn_format_nonliteral = setting;
+      warn_format_security = setting;
+    }
 }
 
 /* Print a warning if a constant expression had overflow in folding.

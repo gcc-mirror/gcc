@@ -1,3 +1,7 @@
+2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl2.c (lang_decode_option): Handle -Wformat-security.
+
 2000-12-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (verify_class_unification): New function.
