@@ -5130,7 +5130,8 @@ perform_implicit_conversion (type, expr)
 				   LOOKUP_NORMAL);
   if (!conv || ICS_BAD_FLAG (conv))
     {
-      cp_error ("could not convert `%E' to `%T'", expr, type);
+      if (expr != error_mark_node)
+        cp_error ("could not convert `%E' to `%T'", expr, type);
       return error_mark_node;
     }
 
