@@ -536,7 +536,7 @@ record_component_aliases (type)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       for (field = TYPE_FIELDS (type); field != 0; field = TREE_CHAIN (field))
-	if (! DECL_NONADDRESSABLE_P (field))
+	if (TREE_CODE (field) == FIELD_DECL && ! DECL_NONADDRESSABLE_P (field))
 	  record_alias_subset (superset, get_alias_set (TREE_TYPE (field)));
       break;
 
