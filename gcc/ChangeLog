@@ -1,3 +1,9 @@
+2003-11-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/install-old.texi: Remove old documentation of building
+	cross-compilers.
+	* doc/install.texi: Move some of it to here.
+
 2003-11-05  Per Bothner  <pbothner@apple.com>
 
 	PR preprocessor/12891
