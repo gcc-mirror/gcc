@@ -6822,6 +6822,13 @@ ptr_reasonably_similar (to, from)
 			COMPARE_BASE | COMPARE_RELAXED))
 	continue;
 
+      if (TREE_CODE (to) == INTEGER_TYPE
+	  && TYPE_PRECISION (to) == TYPE_PRECISION (from))
+	return 1;
+
+      if (TREE_CODE (to) == FUNCTION_TYPE)
+	return 1;
+
       if (TREE_CODE (to) != POINTER_TYPE)
 	return comptypes
 	  (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), 

@@ -1367,7 +1367,8 @@ lookup_field_r (binfo, data)
 
   /* If we're looking up a type (as with an elaborated type specifier)
      we ignore all non-types we find.  */
-  if (lfi->want_type && TREE_CODE (nval) != TYPE_DECL)
+  if (lfi->want_type && TREE_CODE (nval) != TYPE_DECL
+      && !DECL_CLASS_TEMPLATE_P (nval))
     {
       if (lfi->name == TYPE_IDENTIFIER (type))
 	{
@@ -1727,9 +1728,9 @@ lookup_fnfields_1 (type, name)
 }
 
 /* Walk the class hierarchy dominated by TYPE.  FN is called for each
-   type in the hierarchy, in a breadth-first preorder traversal.  .
+   type in the hierarchy, in a breadth-first preorder traversal.
    If it ever returns a non-NULL value, that value is immediately
-   returned and the walk is terminated.  At each node FN, is passed a
+   returned and the walk is terminated.  At each node, FN is passed a
    BINFO indicating the path from the curently visited base-class to
    TYPE.  Before each base-class is walked QFN is called.  If the
    value returned is non-zero, the base-class is walked; otherwise it

@@ -13,4 +13,7 @@ int main ()
   f (i);
   f (v);
   g (v);
+  enum { a } b = i;
+  void (*p2)(int) = p;
+  unsigned *ip = &i;
 }

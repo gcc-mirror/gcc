@@ -5652,6 +5652,11 @@ make_typename_type (context, name, complain)
       if (TREE_CODE (name) == TEMPLATE_DECL)
 	name = TREE_OPERAND (fullname, 0) = DECL_NAME (name);
     }
+  if (TREE_CODE (name) == TEMPLATE_DECL)
+    {
+      cp_error ("`%D' used without template parameters", name);
+      return error_mark_node;
+    }
   if (TREE_CODE (name) != IDENTIFIER_NODE)
     my_friendly_abort (2000);
 

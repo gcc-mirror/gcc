@@ -1,3 +1,19 @@
+2001-11-15  Jason Merrill  <jason@redhat.com>
+
+	* parse.y: Add ... IDENTIFIER SCOPE and ... PTYPENAME SCOPE expansions.
+	* decl.c (make_typename_type): Handle getting a class template.
+	* search.c (lookup_field_r): A class template is good enough for
+	want_type.
+
+	* call.c (convert_like_real): Only use cp_convert for the bad part.
+	(standard_conversion): Also allow bad int->enum.
+	* typeck.c (ptr_reasonably_similar): Also allow functions to
+	interconvert.  Pointers to same-size integers are reasonably
+	similar.
+
+	* cvt.c (convert_to_void): If we build a new COND_EXPR, always
+	give it void type.
+
 2001-11-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/3154
@@ -17,12 +33,12 @@
 
 2001-11-14  Richard Sandiford  <rsandifo@redhat.com>
 
-        * decl.c (check_initializer): Try to complete the type of an
-        array element before checking whether it's complete.  Don't
-        complain about arrays with complete element types but an
-        unknown size.
-        (cp_finish_decl): Build the hierarchical constructor before
-        calling maybe_deduce_size_from_array_init.
+	* decl.c (check_initializer): Try to complete the type of an
+	array element before checking whether it's complete.  Don't
+	complain about arrays with complete element types but an
+	unknown size.
+	(cp_finish_decl): Build the hierarchical constructor before
+	calling maybe_deduce_size_from_array_init.
 
 2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
