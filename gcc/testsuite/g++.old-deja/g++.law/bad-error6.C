@@ -1,6 +1,6 @@
 // Build don't link: 
 // GROUPS passed bad-errors
-typedef unsigned long size_t;
+typedef __SIZE_TYPE__ size_t;
 
 class tt {
     public:
