@@ -2879,7 +2879,14 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  if (op_mode == VOIDmode)
 	    op_mode = mode;
 	  if (GET_MODE_BITSIZE (op_mode) == HOST_BITS_PER_INT)
-	    val = arg0;
+	    {
+	      /* If we were really extending the mode,
+		 we would have to distinguish between zero-extension
+		 and sign-extension.  */
+	      if (width != GET_MODE_BITSIZE (op_mode))
+		abort ();
+	      val = arg0;
+	    }
 	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_INT)
 	    val = arg0 & ~((-1) << GET_MODE_BITSIZE (op_mode));
 	  else
@@ -2890,7 +2897,14 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  if (op_mode == VOIDmode)
 	    op_mode = mode;
 	  if (GET_MODE_BITSIZE (op_mode) == HOST_BITS_PER_INT)
-	    val = arg0;
+	    {
+	      /* If we were really extending the mode,
+		 we would have to distinguish between zero-extension
+		 and sign-extension.  */
+	      if (width != GET_MODE_BITSIZE (op_mode))
+		abort ();
+	      val = arg0;
+	    }
 	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_INT)
 	    {
 	      val = arg0 & ~((-1) << GET_MODE_BITSIZE (op_mode));

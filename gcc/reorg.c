@@ -19,11 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-
-#include "insn-attr.h"
-
-#ifdef DELAY_SLOTS
-
 /* Instruction reorganization pass.
 
    This pass runs after register allocation and final jump
@@ -125,6 +120,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "output.h"
 #include "obstack.h"
+#include "insn-attr.h"
+
+#ifdef DELAY_SLOTS
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
