@@ -1,3 +1,8 @@
+2002-03-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* flow.c (calculate_global_regs_live): Clear aux fields of
+	ENTRY and EXIT.
+
 2002-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/v850/v850.c (v850_reorg): Only call alter_subreg on

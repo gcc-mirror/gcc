@@ -1080,6 +1080,11 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	}
     }
 
+  /* We clean aux when we remove the initially-enqueued bbs, but we
+     don't enqueue ENTRY and EXIT initially, so clean them upfront and
+     unconditionally.  */
+  ENTRY_BLOCK_PTR->aux = EXIT_BLOCK_PTR->aux = NULL;
+
   if (blocks_out)
     sbitmap_zero (blocks_out);
 
