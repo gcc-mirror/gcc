@@ -212,12 +212,11 @@ do {									 \
 do {									   \
   int len, size, sec;							   \
   char *name, *string, *prefix;						   \
-  static char *prefixes[5][2] = {					   \
+  static char *prefixes[4][2] = {					   \
     { ".text.", ".gnu.linkonce.t." },					   \
     { ".rodata.", ".gnu.linkonce.r." },					   \
     { ".data.", ".gnu.linkonce.d." },					   \
-    { ".sdata.", ".gnu.linkonce.s." },					   \
-    { "", "" }								   \
+    { ".sdata.", ".gnu.linkonce.s." }					   \
   };									   \
 									   \
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		   \
@@ -229,7 +228,7 @@ do {									   \
     sec = 0;								   \
   else if (DECL_INITIAL (DECL) == 0					   \
            || DECL_INITIAL (DECL) == error_mark_node)			   \
-    sec = 4;								   \
+    sec = 2;								   \
   else if ((TARGET_EMBEDDED_PIC || TARGET_MIPS16)			   \
       && TREE_CODE (decl) == STRING_CST					   \
       && !flag_writable_strings)					   \

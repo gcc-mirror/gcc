@@ -1,3 +1,13 @@
+2000-01-22  Alan Modra <alan@SPRI.Levels.UniSA.Edu.Au>
+
+        * config/elfos.h (UNIQUE_SECTION): Restore uninitialised data
+        section naming to that prior to 2000-01-07 patch.
+	* config/mips/elf.h (UNIQUE_SECTION): Ditto.
+	* config/mips/elf64.h (UNIQUE_SECTION): Ditto.
+	* config/mips/iris6gld.h (UNIQUE_SECTION): Ditto.
+	* config/i386/interix.c (UNIQUE_SECTION): Ditto.
+	* config/i386/winnt.c (UNIQUE_SECTION): Ditto.
+
 2000-01-22  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* config/arm/arm.c (soft_df_operand): Reject SUBREGs containing a
