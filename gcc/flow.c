@@ -876,6 +876,17 @@ life_analysis (f, nregs)
       basic_block_new_live_at_end[n_basic_blocks - 1]
 	[FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
 	  |= (REGSET_ELT_TYPE) 1 << (FRAME_POINTER_REGNUM % REGSET_ELT_BITS);
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+      /* If they are different, also mark the hard frame pointer as live */
+      basic_block_live_at_end[n_basic_blocks - 1]
+	[HARD_FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
+	  |= (REGSET_ELT_TYPE) 1 << (HARD_FRAME_POINTER_REGNUM
+				     % REGSET_ELT_BITS);
+      basic_block_new_live_at_end[n_basic_blocks - 1]
+	[HARD_FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
+	  |= (REGSET_ELT_TYPE) 1 << (HARD_FRAME_POINTER_REGNUM
+				     % REGSET_ELT_BITS);
+#endif      
       }
 
   /* Mark all global registers as being live at the end of the function
@@ -1549,6 +1560,9 @@ insn_dead_p (x, needed, call_ok)
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
 	      /* Make sure insns to set frame pointer aren't deleted.  */
 	      || regno == FRAME_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	      || regno == HARD_FRAME_POINTER_REGNUM
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	      /* Make sure insns to set arg pointer are never deleted
 		 (if the arg pointer isn't fixed, there will be a USE for
@@ -1776,6 +1790,9 @@ mark_set_1 (needed, dead, x, insn, significant)
 
   if (GET_CODE (reg) == REG
       && (regno = REGNO (reg), regno != FRAME_POINTER_REGNUM)
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+      && regno != HARD_FRAME_POINTER_REGNUM
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
@@ -2176,6 +2193,9 @@ mark_used_regs (needed, live, x, final, insn)
 	    /* For stack ptr or fixed arg pointer,
 	       nothing below can be necessary, so waste no more time.  */
 	    if (regno == STACK_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+		|| regno == HARD_FRAME_POINTER_REGNUM
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 		|| (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
@@ -2340,6 +2360,9 @@ mark_used_regs (needed, live, x, final, insn)
 
 	if (GET_CODE (testreg) == REG
 	    && (regno = REGNO (testreg), regno != FRAME_POINTER_REGNUM)
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	    && regno != HARD_FRAME_POINTER_REGNUM
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	    && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
