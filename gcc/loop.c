@@ -3209,8 +3209,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      && REGNO (dest_reg) >= FIRST_PSEUDO_REGISTER
 	      && reg_iv_type[REGNO (dest_reg)] != NOT_BASIC_INDUCT)
 	    {
-	      if (basic_induction_var (SET_SRC (set), dest_reg, p,
-				      &inc_val, &mult_val))
+	      if (basic_induction_var (SET_SRC (set), GET_MODE (SET_SRC (set)),
+				       dest_reg, p, &inc_val, &mult_val))
 		{
 		  /* It is a possible basic induction variable.
 		     Create and initialize an induction structure for it.  */
@@ -4704,7 +4704,9 @@ update_giv_derive (p)
 }
 
 /* Check whether an insn is an increment legitimate for a basic induction var.
-   X is the source of insn P.
+   X is the source of insn P, or a part of it.
+   MODE is the mode in which X should be interpreted.
+
    DEST_REG is the putative biv, also the destination of the insn.
    We accept patterns of these forms:
      REG = REG + INVARIANT (includes REG = REG - CONSTANT)
@@ -4738,8 +4740,9 @@ update_giv_derive (p)
    If we cannot find a biv, we return 0.  */
 
 static int
-basic_induction_var (x, dest_reg, p, inc_val, mult_val)
+basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
      register rtx x;
+     enum machine_mode mode;
      rtx p;
      rtx dest_reg;
      rtx *inc_val;
@@ -4769,7 +4772,7 @@ basic_induction_var (x, dest_reg, p, inc_val, mult_val)
       if (invariant_p (arg) != 1)
 	return 0;
 
-      *inc_val = convert_to_mode (GET_MODE (dest_reg), arg, 0);;
+      *inc_val = convert_modes (GET_MODE (dest_reg), GET_MODE (x), arg, 0);
       *mult_val = const1_rtx;
       return 1;
 
@@ -4777,8 +4780,8 @@ basic_induction_var (x, dest_reg, p, inc_val, mult_val)
       /* If this is a SUBREG for a promoted variable, check the inner
 	 value.  */
       if (SUBREG_PROMOTED_VAR_P (x))
-	  return basic_induction_var (SUBREG_REG (x), dest_reg, p,
-				    inc_val, mult_val);
+	return basic_induction_var (SUBREG_REG (x), GET_MODE (SUBREG_REG (x)),
+				    dest_reg, p, inc_val, mult_val);
 
     case REG:
       /* If this register is assigned in the previous insn, look at its
@@ -4794,7 +4797,11 @@ basic_induction_var (x, dest_reg, p, inc_val, mult_val)
 	set = single_set (insn);
 
       if (set != 0 && SET_DEST (set) == x)
-	return basic_induction_var (SET_SRC (set), dest_reg, insn,
+	return basic_induction_var (SET_SRC (set),
+				    (GET_MODE (SET_SRC (set)) == VOIDmode
+				     ? GET_MODE (x)
+				     : GET_MODE (SET_SRC (set))),
+				    dest_reg, insn,
 				    inc_val, mult_val);
       /* ... fall through ... */
 
@@ -4810,7 +4817,8 @@ basic_induction_var (x, dest_reg, p, inc_val, mult_val)
     case CONST:
       if (loops_enclosed == 1)
  	{
-	  *inc_val = convert_to_mode (GET_MODE (dest_reg), x, 0);;
+	  /* Possible bug here?  Perhaps we don't know the mode of X.  */
+	  *inc_val = convert_modes (GET_MODE (dest_reg), mode, x, 0);
  	  *mult_val = const0_rtx;
  	  return 1;
  	}
@@ -4818,8 +4826,8 @@ basic_induction_var (x, dest_reg, p, inc_val, mult_val)
  	return 0;
 
     case SIGN_EXTEND:
-      return basic_induction_var (XEXP (x, 0), dest_reg, p,
-				  inc_val, mult_val);
+      return basic_induction_var (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+				  dest_reg, p, inc_val, mult_val);
     case ASHIFTRT:
       /* Similar, since this can be a sign extension.  */
       for (insn = PREV_INSN (p);
@@ -4836,8 +4844,9 @@ basic_induction_var (x, dest_reg, p, inc_val, mult_val)
 	  && INTVAL (XEXP (x, 1)) >= 0
 	  && GET_CODE (SET_SRC (set)) == ASHIFT
 	  && XEXP (x, 1) == XEXP (SET_SRC (set), 1))
-	return basic_induction_var (XEXP (SET_SRC (set), 0), dest_reg, insn,
-				    inc_val, mult_val);
+	return basic_induction_var (XEXP (SET_SRC (set), 0),
+				    GET_MODE (XEXP (x, 0)),
+				    dest_reg, insn, inc_val, mult_val);
       return 0;
 
     default:
