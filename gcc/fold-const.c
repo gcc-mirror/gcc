@@ -9909,7 +9909,9 @@ fold_ternary (tree expr)
 	  && TREE_CODE (TREE_OPERAND (op0, 0)) == FUNCTION_DECL
 	  && DECL_BUILT_IN (TREE_OPERAND (op0, 0)))
 	{
-	  tree tmp = fold_builtin (t, false);
+	  tree fndecl = get_callee_fndecl (t);
+	  tree arglist = TREE_OPERAND (t, 1);
+	  tree tmp = fold_builtin (fndecl, arglist, false);
 	  if (tmp)
 	    return tmp;
 	}

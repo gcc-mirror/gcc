@@ -8296,12 +8296,9 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
    call node earlier than the warning is generated.  */
 
 tree
-fold_builtin (tree exp, bool ignore)
+fold_builtin (tree fndecl, tree arglist, bool ignore)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
-
-  exp = fold_builtin_1 (fndecl, arglist, ignore);
+  tree exp = fold_builtin_1 (fndecl, arglist, ignore);
   if (exp)
     {
       /* ??? Don't clobber shared nodes such as integer_zero_node.  */

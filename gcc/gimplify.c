@@ -1744,7 +1744,9 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   decl = get_callee_fndecl (*expr_p);
   if (decl && DECL_BUILT_IN (decl))
     {
-      tree new = fold_builtin (*expr_p, !want_value);
+      tree fndecl = get_callee_fndecl (*expr_p);
+      tree arglist = TREE_OPERAND (*expr_p, 1);
+      tree new = fold_builtin (fndecl, arglist, !want_value);
 
       if (new && new != *expr_p)
 	{
@@ -1758,8 +1760,6 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
 	  && DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_START)
         {
-	  tree arglist = TREE_OPERAND (*expr_p, 1);
-	  
 	  if (!arglist || !TREE_CHAIN (arglist))
 	    {
 	      error ("too few arguments to function %<va_start%>");
@@ -1802,7 +1802,9 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   /* Try this again in case gimplification exposed something.  */
   if (ret != GS_ERROR && decl && DECL_BUILT_IN (decl))
     {
-      tree new = fold_builtin (*expr_p, !want_value);
+      tree fndecl = get_callee_fndecl (*expr_p);
+      tree arglist = TREE_OPERAND (*expr_p, 1);
+      tree new = fold_builtin (fndecl, arglist, !want_value);
 
       if (new && new != *expr_p)
 	{

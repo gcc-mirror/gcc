@@ -1,3 +1,12 @@
+2005-03-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c (fold_builtin): Take decomposed arguments of
+	CALL_EXPR.
+	* fold-const.c (fold_ternary): Update a call to fold_builtin.
+	* gimplify.c (gimplify_call_expr): Likewise.
+	* tree-ssa-ccp.c (ccp_fold, ccp_fold_builtin): Likewise.
+	* tree.h: Update the prototype of fold_builtin.
+
 2005-03-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* rtl.h (struct rtx_hooks): Add gen_lowpart_no_emit.

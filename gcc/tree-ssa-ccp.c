@@ -938,6 +938,7 @@ ccp_fold (tree stmt)
       if (NUM_USES (uses) != 0)
 	{
 	  tree *orig;
+	  tree fndecl, arglist;
 	  size_t i;
 
 	  /* Preserve the original values of every operand.  */
@@ -947,7 +948,9 @@ ccp_fold (tree stmt)
 
 	  /* Substitute operands with their values and try to fold.  */
 	  replace_uses_in (stmt, NULL);
-	  retval = fold_builtin (rhs, false);
+	  fndecl = get_callee_fndecl (rhs);
+	  arglist = TREE_OPERAND (rhs, 1);
+	  retval = fold_builtin (fndecl, arglist, false);
 
 	  /* Restore operands to their original form.  */
 	  for (i = 0; i < NUM_USES (uses); i++)
@@ -1929,7 +1932,9 @@ ccp_fold_builtin (tree stmt, tree fn)
 
   /* First try the generic builtin folder.  If that succeeds, return the
      result directly.  */
-  result = fold_builtin (fn, ignore);
+  callee = get_callee_fndecl (fn);
+  arglist = TREE_OPERAND (fn, 1);
+  result = fold_builtin (callee, arglist, ignore);
   if (result)
   {
     if (ignore)
@@ -1938,13 +1943,11 @@ ccp_fold_builtin (tree stmt, tree fn)
   }
 
   /* Ignore MD builtins.  */
-  callee = get_callee_fndecl (fn);
   if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_MD)
     return NULL_TREE;
 
   /* If the builtin could not be folded, and it has no argument list,
      we're done.  */
-  arglist = TREE_OPERAND (fn, 1);
   if (!arglist)
     return NULL_TREE;
 
