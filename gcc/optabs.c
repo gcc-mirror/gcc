@@ -2639,7 +2639,8 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	 have them return something that isn't a double-word.  */
       if (unoptab == ffs_optab || unoptab == clz_optab || unoptab == ctz_optab
 	  || unoptab == popcount_optab || unoptab == parity_optab)
-	outmode = TYPE_MODE (integer_type_node);
+	outmode
+	    = GET_MODE (hard_libcall_value (TYPE_MODE (integer_type_node)));
 
       start_sequence ();
 
