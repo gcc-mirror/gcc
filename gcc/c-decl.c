@@ -489,6 +489,7 @@ c_decode_option (argc, argv)
     { "missing-prototypes", &warn_missing_prototypes },
     { "multichar", &warn_multichar },
     { "nested-externs", &warn_nested_externs },
+    { "nonnull", &warn_nonnull },
     { "parentheses", &warn_parentheses },
     { "pointer-arith", &warn_pointer_arith },
     { "redundant-decls", &warn_redundant_decls },

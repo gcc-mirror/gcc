@@ -426,6 +426,11 @@ extern int warn_format_nonliteral;
 
 extern int warn_format_security;
 
+/* Warn about NULL being passed to argument slots marked as requiring
+   non-NULL.  */
+
+extern int warn_nonnull;
+
 /* Warn about possible violations of sequence point rules.  */
 
 extern int warn_sequence_point;
@@ -522,6 +527,12 @@ extern const char *fname_as_string		PARAMS ((int));
 extern tree fname_decl				PARAMS ((unsigned, tree));
 extern const char *fname_string			PARAMS ((unsigned));
 
+extern void check_function_arguments		PARAMS ((tree, tree));
+extern void check_function_arguments_recurse	PARAMS ((void (*) (void *,
+								   tree,
+								   unsigned HOST_WIDE_INT),
+							 void *, tree,
+							 unsigned HOST_WIDE_INT));
 extern void check_function_format		PARAMS ((int *, tree, tree));
 extern void set_Wformat				PARAMS ((int));
 extern tree handle_format_attribute		PARAMS ((tree *, tree, tree,

@@ -1576,10 +1576,9 @@ build_function_call (function, params)
   coerced_params
     = convert_arguments (TYPE_ARG_TYPES (fntype), params, name, fundecl);
 
-  /* Check for errors in format strings.  */
+  /* Check that the arguments to the function are valid.  */
 
-  if (warn_format)
-    check_function_format (NULL, TYPE_ATTRIBUTES (fntype), coerced_params);
+  check_function_arguments (TYPE_ATTRIBUTES (fntype), coerced_params);
 
   /* Recognize certain built-in functions so we can make tree-codes
      other than CALL_EXPR.  We do this when it enables fold-const.c
