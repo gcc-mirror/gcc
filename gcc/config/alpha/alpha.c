@@ -7147,15 +7147,14 @@ alpha_expand_prologue (void)
 	     and subtract it to sp. 
 
 	     Yes, that's correct -- we have to reload the whole constant
-	     into a temporary via ldah+lda then subtract from sp.  To
-	     ensure we get ldah+lda, we use a special pattern.  */
+	     into a temporary via ldah+lda then subtract from sp.  */
 
 	  HOST_WIDE_INT lo, hi;
 	  lo = ((frame_size & 0xffff) ^ 0x8000) - 0x8000;
 	  hi = frame_size - lo;
 
 	  emit_move_insn (ptr, GEN_INT (hi));
-	  emit_insn (gen_nt_lda (ptr, GEN_INT (lo)));
+	  emit_insn (gen_adddi3 (ptr, ptr, GEN_INT (lo)));
 	  seq = emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
 				       ptr));
 	}

@@ -1,3 +1,21 @@
+2004-01-19  Richard Henderson  <rth@redhat.com>
+
+	* alpha.h (HARD_REGNO_MODE_OK): Disallow SImode in FP regs.
+	* alpha.md (UNSPEC_NT_LDA): Remove.
+	(UNSPEC_CVTLQ, cvtlq): New.
+	(extendsidi2_1): Rename from extendsidi2_nofix; remove f/f.
+	(extendsidi2_fix): Remove.
+	(extendsidi2 splitter): Use cvtlq.
+	(extendsidi2 fp peepholes): Remove.
+	(cvtql): Use SFmode instead of SImode.
+	(fix_trunc?fsi): Update to match.
+	(floatsisf2_ieee, floatsisf2, floatsidf2_ieee, floatsidf2): New.
+	(movsi): Rename from movsi_nofix, remove f alternatives.
+	(movsi_nt_vms): Similarly.
+	(movsi_fix, movsi_nt_vms_fix): Remove.
+	(nt_lda): Remove.
+	* alpha.c (alpha_expand_prologue): Use adddi3, not nt_lda.
+
 2004-01-19  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_remove_node): Fix removal from linked list.
@@ -228,11 +246,11 @@
 
 2004-01-16  Jan Hubicka  <jh@suse.cz>
 
-        PR opt/11350
-        * cfgcleanup.c (try_optimize_cfg): Suppress tablejump removal
+	PR opt/11350
+	* cfgcleanup.c (try_optimize_cfg): Suppress tablejump removal
 	after reload.
-        * cfgrtl.c (rtl_can_merge_blocks, cfglayout_can_merge_blocks,
-        rtl_try_redirect_by_replacing_branch): Likewise.
+	* cfgrtl.c (rtl_can_merge_blocks, cfglayout_can_merge_blocks,
+	rtl_try_redirect_by_replacing_branch): Likewise.
 
 2004-01-15  Geoffrey Keating  <geoffk@apple.com>
 
