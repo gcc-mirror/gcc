@@ -160,6 +160,10 @@ case $basic_machine in
 	spur)
 		basic_machine=spur-unknown
 		;;
+	paragon)
+		basic_machine=i860-intel
+		os=-osf
+		;;
 	alliant | fx80)
 		basic_machine=fx80-alliant
 		;;
