@@ -1,3 +1,7 @@
+Wed May  5 23:44:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* unroll.c (copy_loop_body): Don't copy VTOP notes from copy_notes_from.
+
 Wed May  5 16:26:13 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
 
 	* function.c (purge_addressof_replacements): Rename into
