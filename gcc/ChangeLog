@@ -1,3 +1,23 @@
+Fri 18-Aug-2000 18:33:45 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.h: Use HAVE_DESIGNATED_INITIALIZERS.
+	(_cpp_trigraph_map): Declaration moved from cpplex.c
+
+	* cppinit.c: Define _cpp_trigraph_map.  Use UCHAR_MAX + 1
+	instead	of 256.  Use consistent test for designated initializers.
+	(cpp_init): Initialize trigraph_map.
+	(initialize_standard_includes, parse_option):  Use memcmp
+	instead of strncmp.
+
+	* cpplex.c (init_trigraph_map): Remove.
+	(trigraph_ok, trigraph_replace, lex_line): Refer to
+	_cpp_trigraph_map.
+
+	* cpplib.c (str_match, WARNING, ERROR, ICE): Delete.
+	(do_unassert): Remove unused "next" local.
+
+	* system.h (HAVE_DESIGNATED_INITIALIZERS): New prototype.
+
 2000-08-18  Emmanuel Marty  <emarty@suntech.fr>
 
 	* arm/lib1funcs.asm (_umodsi3 THUMB VARIANT): Restore deleted return

@@ -165,13 +165,15 @@ struct spec_nodes
 #define is_nvspace(x)	((_cpp_IStable[x] & (ISspace | ISvspace)) == ISspace)
 #define is_space(x)	(_cpp_IStable[x] & ISspace)
 
-/* This table is constant if it can be initialized at compile time,
+/* These tables are constant if they can be initialized at compile time,
    which is the case if cpp was compiled with GCC >=2.7, or another
    compiler that supports C99.  */
-#if (GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)
-extern const unsigned char _cpp_IStable[256];
+#if HAVE_DESIGNATED_INITIALIZERS
+extern const unsigned char _cpp_IStable[UCHAR_MAX + 1];
+extern const unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #else
-extern unsigned char _cpp_IStable[256];
+extern unsigned char _cpp_IStable[UCHAR_MAX + 1];
+extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #endif
 
 /* Macros.  */

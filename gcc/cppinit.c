@@ -119,21 +119,34 @@ static int parse_option			PARAMS ((const char *));
 /* Fourth argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 
-/* If we have designated initializers (GCC >2.7) this table can be
-   initialized, constant data.  Otherwise, it has to be filled in at
+/* If we have designated initializers (GCC >2.7) these tables can be
+   initialized, constant data.  Otherwise, they have to be filled in at
    runtime.  */
+#if HAVE_DESIGNATED_INITIALIZERS
 
-#if (GCC_VERSION >= 2007)
 #define init_IStable()  /* nothing */
-#define ISTABLE __extension__ const unsigned char _cpp_IStable[256] = {
+#define ISTABLE __extension__ const U_CHAR _cpp_IStable[UCHAR_MAX + 1] = {
+
+#define init_trigraph_map()  /* nothing */
+#define TRIGRAPH_MAP \
+__extension__ const U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = {
+
 #define END };
 #define s(p, v) [p] = v,
+
 #else
-#define ISTABLE unsigned char _cpp_IStable[256] = { 0 }; \
+
+#define ISTABLE unsigned char _cpp_IStable[UCHAR_MAX + 1] = { 0 }; \
  static void init_IStable PARAMS ((void)) { \
  unsigned char *x = _cpp_IStable;
+
+#define TRIGRAPH_MAP U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = { 0 }; \
+ static void init_trigraph_map PARAMS ((void)) { \
+ unsigned char *x = _cpp_trigraph_map;
+
 #define END }
 #define s(p, v) x[p] = v;
+
 #endif
 
 #define A(x) s(x, ISidnum|ISidstart)
@@ -162,6 +175,12 @@ ISTABLE
   S('\0') S('\v') S('\f')
 END
 
+TRIGRAPH_MAP
+  s('=', '#')	s(')', ']')	s('!', '|')
+  s('(', '[')	s('\'', '^')	s('>', '}')
+  s('/', '\\')	s('<', '{')	s('-', '~')
+END
+
 #undef A
 #undef N
 #undef H
@@ -170,6 +189,7 @@ END
 #undef s
 #undef ISTABLE
 #undef END
+#undef TRIGRAPH_MAP
 
 /* Given a colon-separated list of file names PATH,
    add all the names to the search path for include files.  */
@@ -385,6 +405,10 @@ cpp_init (void)
   /* For non-ASCII hosts, the array needs to be sorted at runtime.  */
   qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
 #endif
+
+  /* Set up the trigraph map for trigraph_ok, trigraph_replace and
+     lex_line.  */
+  init_trigraph_map ();
 
   /* Set up the IStable.  This doesn't do anything if we were compiled
      with a compiler that supports C99 designated initializers.  */
@@ -720,7 +744,7 @@ initialize_standard_includes (pfile)
 		  && !CPP_OPTION (pfile, no_standard_cplusplus_includes)))
 	    {
 	      /* Does this dir start with the prefix?  */
-	      if (!strncmp (p->fname, default_prefix, default_len))
+	      if (!memcmp (p->fname, default_prefix, default_len))
 		{
 		  /* Yes; change prefix and add to search list.  */
 		  int flen = strlen (p->fname);
@@ -1087,7 +1111,7 @@ parse_option (input)
       md = (mn + mx) / 2;
 
       opt_len = cl_options[md].opt_len;
-      comp = strncmp (input, cl_options[md].opt_text, opt_len);
+      comp = memcmp (input, cl_options[md].opt_text, opt_len);
 
       if (comp > 0)
 	mn = md + 1;
@@ -1112,7 +1136,7 @@ parse_option (input)
 	      for (; mn < N_OPTS; mn++)
 		{
 		  opt_len = cl_options[mn].opt_len;
-		  if (strncmp (input, cl_options[mn].opt_text, opt_len))
+		  if (memcmp (input, cl_options[mn].opt_text, opt_len))
 		    break;
 		  if (input[opt_len] == '\0')
 		    return mn;

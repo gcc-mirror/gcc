@@ -61,10 +61,6 @@ static cpp_hashnode *
 	    get_define_node	PARAMS ((cpp_reader *));
 static void unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
 
-/* Utility.  */
-#define str_match(sym, len, str) \
-((len) == (sizeof (str) - 1) && !ustrncmp ((sym), U(str), sizeof (str) - 1))
-
 /* This is the table of directive handlers.  It is ordered by
    frequency of occurrence; the numbers at the end are directive
    counts from all the source code I have lying around (egcs and libc
@@ -1308,9 +1304,6 @@ _cpp_find_answer (node, candidate)
   return result;
 }
 
-#define WARNING(msgid) do { cpp_warning(pfile, msgid); goto error; } while (0)
-#define ERROR(msgid) do { cpp_error(pfile, msgid); goto error; } while (0)
-#define ICE(msgid) do { cpp_ice(pfile, msgid); goto error; } while (0)
 static void
 do_assert (pfile)
      cpp_reader *pfile;
@@ -1346,7 +1339,7 @@ do_unassert (pfile)
      cpp_reader *pfile;
 {
   cpp_hashnode *node;
-  struct answer *answer, *temp, *next;
+  struct answer *answer, *temp;
   
   node = _cpp_parse_assertion (pfile, &answer);
   if (node)
