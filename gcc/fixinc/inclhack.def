@@ -891,8 +891,13 @@ fix = {
     select    = "define[ \t]+[A-Z0-9_]+CTRL\\([a-zA-Z][,)]";
     c_fix     = char_macro_def;
     c_fix_arg = "CTRL";
-    test_text = "#define BSD43_CTRL(n, x) (('n'<<8)+x)\n"
-                "#define _CTRL(c) ('c'&037)";
+
+    /*
+     *  This is two tests in order to ensure that the "CTRL(c)" can
+     *  be selected in isolation from the multi-arg format
+     */
+    test_text = "#define BSD43_CTRL(n, x) (('n'<<8)+x)\n";
+    test_text = "#define _CTRL(c) ('c'&037)";
 };
 
 fix = {
@@ -1149,6 +1154,8 @@ fix = {
     "#define BSD43__IOWR(n, x) (('n'<<8)+x)\n"
     "#define _IOWN(x,y,t)  (_IOC_IN|(((t)&_IOCPARM_MASK)<<16)|('x'<<8)|y)\n"
     "#define _IO(x,y)      ('x'<<8|y)";
+    test_text =
+    "#define XX_IO(x)        ('x'<<8|256)";
 };
 
 fix = {
