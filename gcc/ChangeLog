@@ -1,3 +1,11 @@
+2003-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (BUILT_IN_BCOPY, BUILT_IN_MEMMOVE): New.
+	* builtin-types.def (BT_FN_VOID_CONST_PTR_PTR_SIZE): New.
+	* builtins.c (expand_builtin_memmove, expand_builtin_bcopy): New
+	functions.
+	(expand_builtin): Handle BUILT_IN_BCOPY and BUILT_IN_MEMMOVE.
+
 2003-04-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/elf.h (ASM_OUTPUT_ALIGNED_COMMON): Remove definition.
