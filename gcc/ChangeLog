@@ -1,3 +1,8 @@
+Mon Apr 13 06:40:17 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* configure.in (sparc-*-vxsim*): Include xm-siglist.h and
+	define USG and POSIX.
+
 Sun Apr 12 21:59:27 1998  Jeffrey A. Law  <law@cygnus.com>
 
 	* calls.c (expand_call): Fix typo in STRICT_ARGUMENT_NAMING.
