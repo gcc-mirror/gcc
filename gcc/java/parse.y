@@ -334,7 +334,7 @@ int java_warning_count;
 /* Tell when not to fold, when doing xrefs */
 int do_not_fold;
 /* Cyclic inheritance report, as it can be set by layout_class */
-char *cyclic_inheritance_report;
+const char *cyclic_inheritance_report;
  
 /* Tell when we're within an instance initializer */
 static int in_instance_initializer;
