@@ -43,7 +43,7 @@ static int optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_3	PROTO((rtx, rtx, rtx));
 static rtx gen_add3_insn	PROTO((rtx, rtx, rtx));
-static void copy_src_to_dest	PROTO((rtx, rtx, rtx, int));
+static void copy_src_to_dest	PROTO((rtx, rtx, rtx, int, int));
 static int *regmove_bb_head;
 
 struct match {
@@ -744,11 +744,12 @@ optimize_reg_copy_3 (insn, dest, src)
    instead moving the value to dest directly before the operation.  */
 
 static void
-copy_src_to_dest (insn, src, dest, loop_depth)
+copy_src_to_dest (insn, src, dest, loop_depth, old_max_uid)
      rtx insn;
      rtx src;
      rtx dest;
      int loop_depth;
+     int old_max_uid;
 {
   rtx seq;
   rtx link;
@@ -820,11 +821,14 @@ copy_src_to_dest (insn, src, dest, loop_depth)
       /* Is the insn the head of a basic block?  If so extend it */
       insn_uid = INSN_UID (insn);
       move_uid = INSN_UID (move_insn);
-      bb = regmove_bb_head[insn_uid];
-      if (bb >= 0)
+      if (insn_uid < old_max_uid)
 	{
-	  BLOCK_HEAD (bb) = move_insn;
-	  regmove_bb_head[insn_uid] = -1;
+	  bb = regmove_bb_head[insn_uid];
+	  if (bb >= 0)
+	    {
+	      BLOCK_HEAD (bb) = move_insn;
+	      regmove_bb_head[insn_uid] = -1;
+	    }
 	}
 
       /* Update the various register tables.  */
@@ -1534,7 +1538,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	  /* If we weren't able to replace any of the alternatives, try an
 	     alternative appoach of copying the source to the destination.  */
 	  if (!success && copy_src != NULL_RTX)
-	    copy_src_to_dest (insn, copy_src, copy_dst, loop_depth);
+	    copy_src_to_dest (insn, copy_src, copy_dst, loop_depth,
+			      old_max_uid);
 
 	}
     }
