@@ -1,7 +1,11 @@
+2004-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.target/sparc/align.c: Do not include <stdint.h>.
+	* gcc.target/sparc/pdist.c: Likewise.
+
 2004-11-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/16882
-
 	* g++.dg/conversion/simd1.C: New test.
 
 2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
