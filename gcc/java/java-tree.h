@@ -419,9 +419,6 @@ struct lang_identifier
    slot_number in decl_map. */
 #define DECL_LOCAL_SLOT_CHAIN(NODE) \
   (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->slot_chain)
-/* For a static field seen from the parser, it holds its associated
-   value, the one returned when the field is looked up. */
-#define DECL_LOCAL_STATIC_VALUE(NODE) DECL_LOCAL_SLOT_CHAIN (NODE)
 
 /* DECL_LANG_SPECIFIC for FUNCTION_DECLs. */
 struct lang_decl

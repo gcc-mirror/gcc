@@ -68,6 +68,7 @@ definitions and other extensions.  */
 #include "parse.h"
 #include "zipfile.h"
 #include "convert.h"
+#include "buffer.h"
 
 /* Local function prototypes */
 static char *java_accstring_lookup PROTO ((int));
@@ -593,11 +594,7 @@ type_import_on_demand_declaration:
 		{
 		  tree name = EXPR_WFL_NODE ($2);
 		  tree node = build_tree_list ($2, NULL_TREE);
-		  if (!IS_AN_IMPORT_ON_DEMAND_P (name))
-		    {
-		      read_import_dir ($2);
-		      IS_AN_IMPORT_ON_DEMAND_P (name) = 1;
-		    }
+		  read_import_dir ($2);
 		  TREE_CHAIN (node) = ctxp->import_demand_list;
 		  ctxp->import_demand_list = node;
 		}
@@ -4864,70 +4861,22 @@ find_in_imports (class_type)
   return 0;
 }
 
-/* Process a import on demand statement (lazy) */
-
 static int
-read_import_entry (jcf, dirp, returned_name)
-     JCF *jcf;
-     DIR *dirp;
-     char **returned_name;
+note_possible_classname (name, len)
+     char *name;
+     int len;
 {
-  if (dirp)
-    {
-      struct dirent *direntp = readdir (dirp);
-      if (!direntp)
-	{
-	  *returned_name = NULL;
-	  return 0;
-	}
-      else
-	{
-	  *returned_name = direntp->d_name;
-	  return (strlen (direntp->d_name));
-	}
-    }
+  tree node;
+  if (len > 5 && strncmp (&name [len-5], ".java", 5) == 0)
+    len = len - 5;
+  else if (len > 6 && strncmp (&name [len-6], ".class", 6) == 0)
+    len = len - 6;
   else
-    {
-      int current_dir_len = strlen (jcf->classname);
-      char *current_entry;
-      int current_entry_len;
-
-      /* Here we read a zip directory as a file directory. The files
-	 we're selecting must have the same root than the directory
-	 we're examining. */
-
-      ZipDirectory *zipd = (ZipDirectory *)jcf->zipd; 
-
-      while (zipd)
-	{
-	  current_entry = ZIPDIR_FILENAME (zipd);
-	  current_entry_len = zipd->filename_length;
-	  while (current_entry_len && current_entry [current_entry_len] != '/')
-	    current_entry_len--;
-	  /* If the path of the current file doesn't match the directory we're
-	     scanning, that the end of the search */
-	  current_entry_len++;
-	  if (strncmp (jcf->classname, current_entry, current_dir_len))
-	    {
-	      *returned_name = NULL;
-	      return 0;
-	    }
-	  /* Ok, we have at least the same path. The position of the last '/'
-	     of the current file we're examining should match the size of
-	     name of the directory we're browsing, otherwise that an entry
-	     belonging to a sub directory, we want to skip it. */
-	  if (current_entry_len != current_dir_len)
-	    zipd = ZIPDIR_NEXT (zipd);
-	  else
-	    {
-	      jcf->zipd = ZIPDIR_NEXT (zipd); /* Prepare next read */
-	      *returned_name = &current_entry [current_entry_len];
-	      return (zipd->filename_length - current_entry_len);
-	    }
-	}
-      *returned_name = NULL;
-      return 0;
-    }
+    return 0;
+  node = ident_subst (name, len, "", '/', '.', "");
+  IS_A_CLASSFILE_NAME (node) = 1; /* Or soon to be */
+  QUALIFIED_P (node) = 1; /* As soon as we turn / into . */
+  return 1;
 }
 
 /* Read a import directory, gathering potential match for further type
@@ -4938,24 +4887,104 @@ static void
 read_import_dir (wfl)
      tree wfl;
 {
-  char *name = IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl));
-  int name_len = IDENTIFIER_LENGTH (EXPR_WFL_NODE (wfl)), reclen;
+  tree package_id = EXPR_WFL_NODE (wfl);
+  char *package_name = IDENTIFIER_POINTER (package_id);
+  int package_length = IDENTIFIER_LENGTH (package_id);
   DIR *dirp = NULL;
   JCF jcfr, *jcf, *saved_jcf = current_jcf;
-  char *founddirname, *d_name;
 
-  jcf = &jcfr;
-  if (!(founddirname = find_class (name, name_len, jcf, 0)))
-    fatal ("Can't import `%s'", name);
-  if (jcf->outofsynch)
-    jcf_out_of_synch (jcf);
-  if (jcf->seen_in_zip)
-    jcf->zipd = ZIPDIR_NEXT ((ZipDirectory *)jcf->zipd);
+  int found = 0;
+  int k;
+  void *entry;
+  struct buffer filename[1];
 
-  else if (founddirname)
-    dirp = opendir (founddirname);
 
-  if (!founddirname && !dirp)
+  if (IS_AN_IMPORT_ON_DEMAND_P (package_id))
+    return;
+  IS_AN_IMPORT_ON_DEMAND_P (package_id) = 1;
+
+  BUFFER_INIT (filename);
+  buffer_grow (filename, package_length + 100);
+
+  for (entry = jcf_path_start (); entry != NULL; entry = jcf_path_next (entry))
+    {
+      char *entry_name = jcf_path_name (entry);
+      int entry_length = strlen (entry_name);
+      if (jcf_path_is_zipfile (entry))
+	{
+	  ZipFile *zipf;
+	  buffer_grow (filename, entry_length);
+	  memcpy (filename->data, entry_name, entry_length - 1);
+	  filename->data[entry_length-1] = '\0';
+	  zipf = opendir_in_zip (filename->data, jcf_path_is_system (entry));
+	  if (zipf == NULL)
+	    error ("malformed .zip archive in CLASSPATH: %s", entry_name);
+	  else
+	    {
+	      ZipDirectory *zipd = (ZipDirectory *) zipf->central_directory;
+	      BUFFER_RESET (filename);
+	      for (k = 0; k < package_length; k++)
+		{
+		  char ch = package_name[k];
+		  *filename->ptr++ = ch == '.' ? '/' : ch;
+		}
+	      *filename->ptr++ = '/';
+
+	      for (; k < zipf->count;  k++, zipd = ZIPDIR_NEXT (zipd))
+		{
+		  char *current_entry = ZIPDIR_FILENAME (zipd);
+		  int current_entry_len = zipd->filename_length;
+
+		  if (strncmp (filename->data, current_entry, 
+			       BUFFER_LENGTH (filename)) != 0)
+		    continue;
+		  found += note_possible_classname (current_entry,
+						    current_entry_len);
+		}
+	    }
+	}
+      else
+	{
+	  BUFFER_RESET (filename);
+	  buffer_grow (filename, entry_length + package_length + 4);
+	  strcpy (filename->data, entry_name);
+	  filename->ptr = filename->data + entry_length;
+	  for (k = 0; k < package_length; k++)
+	    {
+	      char ch = package_name[k];
+	      *filename->ptr++ = ch == '.' ? '/' : ch;
+	    }
+	  *filename->ptr = '\0';
+
+	  dirp = opendir (filename->data);
+	  if (dirp == NULL)
+	    continue;
+	  *filename->ptr++ = '/';
+	  for (;;)
+	    {
+	      int java_or_class = 0;
+	      int len; 
+	      char *d_name;
+	      struct dirent *direntp = readdir (dirp);
+	      if (!direntp)
+		break;
+	      d_name = direntp->d_name;
+	      len = strlen (direntp->d_name);
+	      buffer_grow (filename, len+1);
+	      strcpy (filename->ptr, d_name);
+	      found += note_possible_classname (filename->data + entry_length,
+						package_length+len+1);
+	    }
+	  if (dirp)
+	    closedir (dirp);
+	}
+    }
+
+  free (filename->data);
+
+  /* Here we should have a unified way of retrieving an entry, to be
+     indexed. */
+  if (!found)
     {
       static int first = 1;
       if (first)
@@ -4963,55 +4992,17 @@ read_import_dir (wfl)
 	  char buffer [256];
 	  sprintf (buffer, "Can't find default package `%s'. Check "
 		   "the CLASSPATH environment variable and the access to the "
-		   "archives.", name);
+		   "archives.", package_name);
 	  error (buffer);
 	  java_error_count++;
 	  first = 0;
 	}
       else
-	parse_error_context (wfl, "Package `%s' not found in import", name);
+	parse_error_context (wfl, "Package `%s' not found in import",
+			     package_name);
       current_jcf = saved_jcf;
       return;
     }
-
-  /* Here we should have a unified way of retrieving an entry, to be
-     indexed. */
-  while ((reclen = read_import_entry (jcf, dirp, &d_name)))
-    {
-      int java_or_class = 0;
-      int len; 
-      if ((reclen > 5) 
-	  && !strcmp (&d_name [reclen-5], ".java"))
-	{
-	  java_or_class = 1;
-	  len = reclen - 5;
-	}
-	  
-      if (!java_or_class && (reclen > 6) &&
-	  !strcmp (&d_name [reclen-6], ".class"))
-	{
-	  java_or_class = 2;
-	  len = reclen - 6;
-	}
-
-      if (java_or_class)
-	{
-	  char *id_name;
-	  tree node;
-
-	  obstack_grow (&temporary_obstack, name, name_len);
-	  obstack_1grow (&temporary_obstack, '/');
-	  obstack_grow0 (&temporary_obstack, d_name, len);
-	  id_name = obstack_finish (&temporary_obstack);
-
-	  node = get_identifier (id_name);
-	  IS_A_CLASSFILE_NAME (node) = 1; /* Or soon to be */
-	  QUALIFIED_P (node) = 1; /* As soon as we turn / into . */
-	}
-    }
-  if (dirp)
-    closedir (dirp);
-  
   current_jcf = saved_jcf;
 }
 
@@ -5033,7 +5024,7 @@ find_in_imports_on_demand (class_type)
       obstack_grow (&temporary_obstack, 
 		    IDENTIFIER_POINTER (EXPR_WFL_NODE (TREE_PURPOSE (import))),
 		    IDENTIFIER_LENGTH (EXPR_WFL_NODE (TREE_PURPOSE (import))));
-      obstack_1grow (&temporary_obstack, '/');
+      obstack_1grow (&temporary_obstack, '.');
       obstack_grow0 (&temporary_obstack, 
 		     IDENTIFIER_POINTER (TYPE_NAME (class_type)),
 		     IDENTIFIER_LENGTH (TYPE_NAME (class_type)));
@@ -5066,9 +5057,7 @@ find_in_imports_on_demand (class_type)
       tree decl;
       int saved_lineno = lineno;
       lineno = EXPR_WFL_LINENO (cl);
-      TYPE_NAME (class_type) = ident_subst (IDENTIFIER_POINTER (node_to_use),
-					    IDENTIFIER_LENGTH (node_to_use),
-					    "", '/', '.', "");
+      TYPE_NAME (class_type) = node_to_use;
       QUALIFIED_P (TYPE_NAME (class_type)) = 1;
       decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
       /* If there is no DECL set for the class or if the class isn't
@@ -5617,8 +5606,13 @@ java_complete_expand_methods ()
 
       /* Make the class data, register it and run the rest of decl
          compilation on it */
-      if (!java_error_count && ! flag_emit_class_files)
-	finish_class (current_class);
+      if (!java_error_count)
+	{
+	  if (flag_emit_class_files)
+	    write_classfile (current_class);
+	  else
+	    finish_class (current_class);
+	}
     }
 }
 
@@ -5809,8 +5803,6 @@ java_expand_classes ()
       java_parse_abort_on_error ();
       java_check_final ();            /* Check unitialized final  */
       java_parse_abort_on_error ();
-      if (flag_emit_class_files)
-	write_classfile (current_class);
     }
 }
 
@@ -7860,12 +7852,32 @@ java_complete_tree (node)
 	TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
       return patch_array_ref (node);
 
-#if 0 
-    COMPONENT_REF:
-      /* Planned re-write FIXME */
+    case RECORD_TYPE:
+      return node;;
+
+    case COMPONENT_REF:
+      /* The first step in the re-write of qualified name handling.  FIXME.
+	 So far, this is only to support PRIMTYPE.class -> PRIMCLASS.TYPE. */
       TREE_OPERAND (node, 0) = java_complete_tree (TREE_OPERAND (node, 0));
+      if (TREE_CODE (TREE_OPERAND (node, 0)) == RECORD_TYPE)
+	{
+	  tree name = TREE_OPERAND (node, 1);
+	  tree field = lookup_field_wrapper (TREE_OPERAND (node, 0), name);
+	  if (field == NULL_TREE)
+	    {
+	      error ("missing static field `%s'", IDENTIFIER_POINTER (name));
+	      return error_mark_node;
+	    }
+	  if (! FIELD_STATIC (field))
+	    {
+	      error ("not a static field `%s'", IDENTIFIER_POINTER (name));
+	      return error_mark_node;
+	    }
+	  return field;
+	}
+      else
+	fatal ("unimplemented java_complete_tree for COMPONENT_REF");
       break;
-#endif
 
     case THIS_EXPR:
       /* Can't use THIS in a static environment */
@@ -10726,9 +10738,13 @@ patch_synchronized_statement (node, wfl_op1)
   BUILD_MONITOR_ENTER (stmt, expr);
   compound = add_stmt_to_compound (NULL_TREE, int_type_node, stmt);
   compound = add_stmt_to_compound (compound, void_type_node, block);
-  BUILD_MONITOR_EXIT (stmt, expr);
-  compound = add_stmt_to_compound (compound, int_type_node, stmt);
+  if (CAN_COMPLETE_NORMALLY (block))
+    {
+      BUILD_MONITOR_EXIT (stmt, expr);
+      compound = add_stmt_to_compound (compound, int_type_node, stmt);
+    }
   try_block = build_expr_block (compound, NULL_TREE);
+  CAN_COMPLETE_NORMALLY (try_block) = CAN_COMPLETE_NORMALLY (block);
 
   /* CATCH_ALL block */
   decl = build_decl (VAR_DECL, generate_name (), ptr_type_node);
@@ -10744,7 +10760,7 @@ patch_synchronized_statement (node, wfl_op1)
 
   /* TRY-CATCH statement */
   compound = build (TRY_EXPR, void_type_node, try_block, catch_all, NULL_TREE);
-  CAN_COMPLETE_NORMALLY (compound) = CAN_COMPLETE_NORMALLY (block);
+  CAN_COMPLETE_NORMALLY (compound) = CAN_COMPLETE_NORMALLY (try_block);
   return compound;
 }
 
