@@ -242,7 +242,12 @@ struct cpp_pending {
 
 /* Forward declarations.  */
 
-extern char *xmalloc ();
+char *xmalloc ();
+void cpp_fatal ();
+void cpp_file_line_for_message PARAMS ((cpp_reader *, char *, int, int));
+void cpp_hash_cleanup PARAMS ((cpp_reader *));
+void cpp_message ();
+void cpp_print_containing_files PARAMS ((cpp_reader *));
 
 static void add_import ();
 static void append_include_chain ();
@@ -981,7 +986,7 @@ copy_rest_of_line (pfile)
 	  break;
 	case '/':
 	  nextc = PEEKC();
-	  if (nextc == '*' || (opts->cplusplus_comments && nextc == '*'))
+	  if (nextc == '*' || (opts->cplusplus_comments && nextc == '/'))
 	    goto scan_directive_token;
 	  break;
 	case '\f':
@@ -2133,7 +2138,7 @@ output_line_command (pfile, conditional, file_change)
     CPP_PUTS_Q (pfile, sharp_line, sizeof(sharp_line)-1);
   }
 
-  sprintf (CPP_PWRITTEN (pfile), "%d ", line);
+  sprintf (CPP_PWRITTEN (pfile), "%ld ", line);
   CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
 
   quote_string (pfile, ip->nominal_fname); 
@@ -2391,7 +2396,7 @@ special_symbol (hp, pfile)
 	adjust_position (CPP_LINE_BASE (ip), ip->cur, &line, &col);
 
 	buf = (char *) alloca (10);
-	sprintf (buf, "%d", line);
+	sprintf (buf, "%ld", line);
       }
       break;
 
