@@ -1,12 +1,39 @@
-// natCharacter.cc - Native part of Character class.
+/* java.lang.Character -- Wrapper class for char, and Unicode subsets
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+This file is part of GNU Classpath.
 
-   This file is part of libgcj.
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
 
 #include <config.h>
 
@@ -18,267 +45,69 @@ details.  */
 
 
 
-#define asize(x)  ((sizeof (x)) / sizeof (x[0]))
-
-static jchar
-to_lower_title (jchar ch)
+jchar
+java::lang::Character::readChar(jchar ch)
 {
-  for (unsigned int i = 0; i < asize (title_to_upper_table); ++i)
-    {
-      // We can assume that the entries in the two tables are
-      // parallel.  This is checked in the script.
-      if (title_to_upper_table[i][1] == ch
-	  || title_to_upper_table[i][0] == ch)
-	return title_to_lower_table[i][1];
-    }
-  return ch;
+  // Perform 16-bit addition to find the correct entry in data.
+  return data[(jchar) (blocks[ch >> SHIFT] + ch)];
 }
 
-static jchar
-to_upper_title (jchar ch)
+jint
+java::lang::Character::getType(jchar ch)
 {
-  for (unsigned int i = 0; i < asize (title_to_lower_table); ++i)
-    {
-      // We can assume that the entries in the two tables are
-      // parallel.  This is checked in the script.
-      if (title_to_lower_table[i][1] == ch
-	  || title_to_lower_table[i][0] == ch)
-	return title_to_upper_table[i][1];
-    }
-  return ch;
-}
-
-jboolean
-java::lang::Character::isTitleCase (jchar ch)
-{
-  for (unsigned int i = 0; i < asize (title_to_lower_table); ++i)
-    {
-      if (title_to_lower_table[i][0] == ch)
-	return true;
-    }
-  return false;
+  // Perform 16-bit addition to find the correct entry in data.
+  return (jint) (data[(jchar) (blocks[ch >> SHIFT] + ch)] & TYPE_MASK);
 }
 
 jchar
-java::lang::Character::toTitleCase (jchar ch)
+java::lang::Character::toLowerCase(jchar ch)
 {
-  // Both titlecase mapping tables have the same length.  This is
-  // checked in the chartables script.
-  for (unsigned int i = 0; i < asize (title_to_lower_table); ++i)
-    {
-      if (title_to_lower_table[i][0] == ch)
-	return ch;
-      if (title_to_lower_table[i][1] == ch)
-	return title_to_lower_table[i][0];
-      if (title_to_upper_table[i][1] == ch)
-	return title_to_upper_table[i][0];
-    }
-  return toUpperCase (ch);
-}
-
-#ifdef COMPACT_CHARACTER
-
-static int
-table_search (const jchar table[][2], int table_len, jchar ch)
-{
-  int low, high, i, old;
-
-  low = 0;
-  high = table_len;
-  i = high / 2;
-
-  while (true)
-    {
-      if (ch < table[i][0])
-	high = i;
-      else if (ch > table[i][1])
-	low = i;
-      else
-	return i;
-
-      old = i;
-      i = (high + low) / 2;
-      if (i == old)
-	break;
-    }
-
-  return -1;
-}
-
-jint
-java::lang::Character::digit_value (jchar ch)
-{
-  int index = table_search (digit_table, asize (digit_table), ch);
-  if (index == -1)
-    return -1;
-
-  jchar base = digit_table[index][0];
-  // Tamil doesn't have a digit `0'.  So we special-case it here.
-  if (base == TAMIL_DIGIT_ONE)
-    return ch - base + 1;
-  return ch - base;
-}
-
-jint
-java::lang::Character::getNumericValue (jchar ch)
-{
-  jint d = digit (ch, 36);
-  if (d != -1)
-    return d;
-
-  for (unsigned int i = 0; i < asize (numeric_table); ++i)
-    {
-      if (numeric_table[i] == ch)
-	return numeric_value[i];
-    }
-
-  return -1;
-}
-
-jint
-java::lang::Character::getType (jchar ch)
-{
-  int index = table_search (all_table, asize (all_table), ch);
-  if (index != -1)
-    return category_table[index];
-  return UNASSIGNED;
-}
-
-jboolean
-java::lang::Character::isLowerCase (jchar ch)
-{
-  if (ch >= 0x2000 && ch <= 0x2fff)
-    return false;
-  if (table_search (lower_case_table, asize (lower_case_table), ch) != -1)
-    return true;
-
-  int low, high, i, old;
-
-  low = 0;
-  high = asize (lower_anomalous_table);
-  i = high / 2;
-
-  while (true)
-    {
-      if (ch < lower_anomalous_table[i])
-	high = i;
-      else if (ch > lower_anomalous_table[i])
-	low = i;
-      else
-	return true;
-
-      old = i;
-      i = (high + low) / 2;
-      if (i == old)
-	break;
-    }
-
-  return false;
-}
-
-jboolean
-java::lang::Character::isSpaceChar (jchar ch)
-{
-  return table_search (space_table, asize (space_table), ch) != -1;
-}
-
-jboolean
-java::lang::Character::isUpperCase (jchar ch)
-{
-  if (ch >= 0x2000 && ch <= 0x2fff)
-    return false;
-  return table_search (upper_case_table, asize (upper_case_table), ch) != -1;
+  return (jchar) (ch + lower[readChar(ch) >> 7]);
 }
 
 jchar
-java::lang::Character::toLowerCase (jchar ch)
+java::lang::Character::toUpperCase(jchar ch)
 {
-  int index = table_search (upper_case_table, asize (upper_case_table), ch);
-  if (index == -1)
-    return to_lower_title (ch);
-  return (jchar) (ch - upper_case_table[index][0]
-		  + upper_case_map_table[index]);
+  return (jchar) (ch + upper[readChar(ch) >> 7]);
 }
 
 jchar
-java::lang::Character::toUpperCase (jchar ch)
+java::lang::Character::toTitleCase(jchar ch)
 {
-  int index = table_search (lower_case_table, asize (lower_case_table), ch);
-  if (index == -1)
-    return to_upper_title (ch);
-  return (jchar) (ch - lower_case_table[index][0]
-		  + lower_case_map_table[index]);
-}
-
-#else /* COMPACT_CHARACTER */
-
-jint
-java::lang::Character::digit_value (jchar ch)
-{
-  if (type_table[ch] == DECIMAL_DIGIT_NUMBER)
-    return attribute_table[ch];
-  return -1;
+  // As title is short, it doesn't hurt to exhaustively iterate over it.
+  for (int i = title_length - 2; i >= 0; i -= 2)
+    if (title[i] == ch)
+      return title[i + 1];
+  return toUpperCase(ch);
 }
 
 jint
-java::lang::Character::getNumericValue (jchar ch)
+java::lang::Character::digit(jchar ch, jint radix)
 {
-  jint d = digit (ch, 36);
-  if (d != -1)
-    return d;
-
-  // Some characters require two attributes.  We special-case them here.
-  if (ch >= ROMAN_START && ch <= ROMAN_END)
-    return secondary_attribute_table[ch - ROMAN_START];
-  if (type_table[ch] == LETTER_NUMBER || type_table[ch] == OTHER_NUMBER)
-    return attribute_table[ch];
-  return -1;
+  if (radix < MIN_RADIX || radix > MAX_RADIX)
+    return (jint) -1;
+  jchar attr = readChar(ch);
+  if (((1 << (attr & TYPE_MASK))
+       & ((1 << UPPERCASE_LETTER)
+          | (1 << LOWERCASE_LETTER)
+          | (1 << DECIMAL_DIGIT_NUMBER))))
+    {
+      // Signedness doesn't matter; 0xffff vs. -1 are both rejected.
+      jint digit = (jint) numValue[attr >> 7];
+      return (digit >= 0 && digit < radix) ? digit : (jint) -1;
+    }
+  return (jint) -1;
 }
 
 jint
-java::lang::Character::getType (jchar ch)
+java::lang::Character::getNumericValue(jchar ch)
 {
-  return type_table[ch];
+  // numValue is stored as an array of jshort, since 10000 is the maximum.
+  return (jint) numValue[readChar(ch) >> 7];
 }
 
-jboolean
-java::lang::Character::isLowerCase (jchar ch)
+jbyte
+java::lang::Character::getDirectionality(jchar ch)
 {
-  if (ch >= 0x2000 && ch <= 0x2fff)
-    return false;
-  return type_table[ch] == LOWERCASE_LETTER;
+  return direction[readChar(ch) >> 7];
 }
-
-jboolean
-java::lang::Character::isSpaceChar (jchar ch)
-{
-  return (type_table[ch] == SPACE_SEPARATOR
-	  || type_table[ch] == LINE_SEPARATOR
-	  || type_table[ch] == PARAGRAPH_SEPARATOR);
-}
-
-jboolean
-java::lang::Character::isUpperCase (jchar ch)
-{
-  if (ch >= 0x2000 && ch <= 0x2fff)
-    return false;
-  return type_table[ch] == UPPERCASE_LETTER;
-}
-
-jchar
-java::lang::Character::toLowerCase (jchar ch)
-{
-  if (type_table[ch] == UPPERCASE_LETTER)
-    return attribute_table[ch];
-  return to_lower_title (ch);
-}
-
-jchar
-java::lang::Character::toUpperCase (jchar ch)
-{
-  if (type_table[ch] == LOWERCASE_LETTER)
-    return attribute_table[ch];
-  return to_upper_title (ch);
-}
-
-#endif /* COMPACT_CHARACTER */

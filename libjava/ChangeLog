@@ -1,3 +1,25 @@
+2002-03-06  Eric Blake  <ebb9@email.byu.edu>
+
+	* scripts/unicode-decomp.pl: Move from chartables.pl, and remove
+	the code for generating include/java-chartables.h.
+	* scripts/unicode-blocks.pl: Move from scripts/blocks.pl, and
+	merge with Classpath.
+	* scripts/unicode-muncher.pl: Copy from Classpath.
+	* scritps/MakeCharTables.java: New file.
+	* gnu/gcj/convert/Blocks-3.txt: New file.
+	* gnu/gcj/convert/UnicodeData-3.0.0.txt: New file.
+	* gnu/gcj/convert/UnicodeCharacterDatabase-3.0.0.html: New file.
+	* gnu/java/lang/CharData.java: Copy from Classpath.
+	* Makefile.am (ordinary_java_source_files): Add
+	gnu/java/lang/CharData.java.
+	* configure.in: Remove --enable-fast-character option.
+	* java/lang/Character.java: Merge algorithms and Javadoc with
+	Classpath.
+	* java/lang/natCharacter.cc: Implement Unicode lookup table more
+	efficiently.
+	* include/java-chardecomp.h: Regenerate.
+	* include/java-chartables.h: Regenerate.
+
 2002-03-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/awt/MediaTracker.java: Implemented.
