@@ -2601,7 +2601,7 @@ expand_value_return (rtx val)
 static void
 expand_null_return_1 (rtx last_insn)
 {
-  rtx end_label = cleanup_label ? cleanup_label : return_label;
+  rtx end_label = return_label;
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();

@@ -436,7 +436,6 @@ free_after_compilation (struct function *f)
   f->return_rtx = NULL;
   f->internal_arg_pointer = NULL;
   f->x_nonlocal_goto_handler_labels = NULL;
-  f->x_cleanup_label = NULL;
   f->x_return_label = NULL;
   f->x_naked_return_label = NULL;
   f->x_save_expr_regs = NULL;
@@ -6310,7 +6309,7 @@ expand_pending_sizes (tree pending_sizes)
    the function's parameters, which must be run at any return statement.  */
 
 void
-expand_function_start (tree subr, int parms_have_cleanups)
+expand_function_start (tree subr)
 {
   /* Make sure volatile mem refs aren't considered
      valid operands of arithmetic insns.  */
@@ -6322,14 +6321,6 @@ expand_function_start (tree subr, int parms_have_cleanups)
 
   current_function_limit_stack
     = (stack_limit_rtx != NULL_RTX && ! DECL_NO_LIMIT_STACK (subr));
-
-  /* If the parameters of this function need cleaning up, get a label
-     for the beginning of the code which executes those cleanups.  This must
-     be done before doing anything with return_label.  */
-  if (parms_have_cleanups)
-    cleanup_label = gen_label_rtx ();
-  else
-    cleanup_label = 0;
 
   /* Make the label for return statements to jump to.  Do not special
      case machines with special return instructions -- they will be

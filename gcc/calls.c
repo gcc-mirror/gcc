@@ -2488,8 +2488,6 @@ expand_call (tree exp, rtx target, int ignore)
 
   preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
 
-  function_call_count++;
-
   /* We want to make two insn chains; one for a sibling call, the other
      for a normal call.  We will select one of the two chains after
      initial RTL generation is complete.  */

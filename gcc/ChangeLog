@@ -1,3 +1,18 @@
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
+	* function.h (struct function): Remove x_function_call_count.
+	(function_call_count): Remove.
+	* calls.c (expand_call): Don't set it.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+
+	* function.h (struct function): Remove x_cleanup_label.
+	(cleanup_label): Remove.
+	* stmt.c (expand_value_return): Don't use it.
+	* function.c (free_after_compilation): Don't set it.
+	(expand_function_start): Likewise.  Remove parms_have_cleanups arg.
+	* cfgexpand.c (tree_expand_cfg): Update call.
+	* tree.h (expand_function_start): Update decl.
+
 2004-07-01  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/1027

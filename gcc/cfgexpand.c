@@ -419,7 +419,7 @@ tree_expand_cfg (void)
   expand_used_vars ();
 
   /* Set up parameters and prepare for return, for the function.  */
-  expand_function_start (current_function_decl, 0);
+  expand_function_start (current_function_decl);
 
   /* If this function is `main', emit a call to `__main'
      to run global initializers, etc.  */

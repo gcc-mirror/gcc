@@ -439,13 +439,6 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
 	   && ! (CODE_LABEL_NUMBER (XEXP (copy, 0)) >= get_first_label_num ()
 		 && CODE_LABEL_NUMBER (XEXP (copy, 0)) < max_label_num ()));
 
-      /* If we have made a nonlocal label local, it means that this
-	 inlined call will be referring to our nonlocal goto handler.
-	 So make sure we create one for this block; we normally would
-	 not since this is not otherwise considered a "call".  */
-      if (LABEL_REF_NONLOCAL_P (orig) && ! LABEL_REF_NONLOCAL_P (copy))
-	function_call_count++;
-
       return copy;
 
     case PC:
