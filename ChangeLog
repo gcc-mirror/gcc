@@ -16,19 +16,11 @@
 	* Makefile.in: Eliminate 'apache' targets.
 	* configure.in: Eliminate 'apache' targets.
 
-2002-07-01  Nathanael Nerode <neroden@gcc.gnu.org>
-
 	* configure.in: Eliminate redundant tests.  Reorganize.
-
-2002-07-01  Nathanael Nerode <neroden@gcc.gnu.org>
 
 	* Makefile.in: Eliminate last reference to LIBGCC1_TEST.
 
-2002-07-01  Nathanael Nerode  <neroden@gcc.gnu.org>
-
 	* config-ml.in: Eliminate references to Cygnus configure.
-
-2002-07-01  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* Makefile.in: Eliminate references to building emacs.
 
