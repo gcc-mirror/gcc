@@ -1,5 +1,10 @@
 2002-09-25  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
+	* java/util/TimeZone.java (getDSTSavings): New method.
+	Fixes PR libgcj/7786.
+
+2002-09-25  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
+
 	* resolve.cc (_Jv_ResolvePoolEntry) [end_of_method_search]: Check
 	to see if `the_method == 0' before looking up vtable index.
 	Fixes PR libgcj/7709.
