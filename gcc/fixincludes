@@ -301,16 +301,22 @@ while [ $# != 0 ]; do
 		s/ bsd4\([0-9]\) / __bsd4\1__ /g
 		s/ _*host_mips / __host_mips__ /g
 		s/ _*i386 / __i386__ /g
+		s/ M32 / __M32__ /g
 		s/ is68k / __is68k__ /g
 		s/ m68k / __m68k__ /g
 		s/ mc680\([0-9]\)0 / __mc680\10__ /g
+		s/ m88k / __m88k__ /g
 		s/ _*mips / __mips__ /g
 		s/ news\([0-9]*\) / __news\1__ /g
 		s/ ns32000 / __ns32000__ /g
+		s/ pdp11 / __pdp11__ /g
 		s/ pyr / __pyr__ /g
 		s/ sony_news / __sony_news__ /g
 		s/ sparc / __sparc__ /g
 		s/ sun\([a-z0-9]*\) / __sun\1__ /g
+		s/ tower\([_0-9]*\) / __tower\1__ /g
+		s/ u370 / __u370__ /g
+		s/ u3b\([0-9]*\) / __u3b\1__ /g
 		s/ unix / __unix__ /g
 		s/ vax / __vax__ /g
 		s/ _*MIPSE\([LB]\) / __MIPSE\1__ /g
