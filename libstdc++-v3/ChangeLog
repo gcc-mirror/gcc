@@ -1,5 +1,17 @@
 2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
 
+	* include/std/std_bitset.h (_Base_bitset::_M_do_left_shift,
+	_Base_bitset::_M_do_right_shift): Expect a non-zero shift.
+	(bitset::operator<<=, bitset::operator>>=):  When shifting more bits
+	than are in the bitset, zero memory rather than segfault.
+	(operator>>(basic_istream,bitset):  Only call setstate once, after
+	all work has been done.
+
+	* testsuite/23_containers/bitset_members.cc (test03):  New test.
+	* testsuite/23_containers/bitset_shift.cc (test02):  New test.
+
+2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
+
 	* libsupc++/vterminate.cc (writestr):  Use __builtin_strlen.
 
 2002-12-26  Phil Edwards  <pme@gcc.gnu.org>

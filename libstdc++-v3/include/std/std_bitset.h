@@ -219,7 +219,7 @@ namespace std
     void
     _Base_bitset<_Nw>::_M_do_left_shift(size_t __shift)
     {
-      if (__shift != 0)
+      if (__builtin_expect(__shift != 0, 1))
 	{
 	  const size_t __wshift = __shift / _GLIBCPP_BITSET_BITS_PER_WORD;
 	  const size_t __offset = __shift % _GLIBCPP_BITSET_BITS_PER_WORD;
@@ -244,7 +244,7 @@ namespace std
     void
     _Base_bitset<_Nw>::_M_do_right_shift(size_t __shift)
     {
-      if (__shift != 0)
+      if (__builtin_expect(__shift != 0, 1))
 	{
 	  const size_t __wshift = __shift / _GLIBCPP_BITSET_BITS_PER_WORD;
 	  const size_t __offset = __shift % _GLIBCPP_BITSET_BITS_PER_WORD;
@@ -581,9 +581,11 @@ namespace std
    *  The template argument, @a _Nb, may be any non-negative number of type
    *  size_t.
    *
-   *  A %bitset of size N has N % (sizeof(unsigned long) * CHAR_BIT) unused
-   *  bits.  (They are the high-order bits in the highest word.)  It is
-   *  a class invariant that those unused bits are always zero.
+   *  A %bitset of size N uses U bits, where
+   *  U = (N % (sizeof(unsigned long) * CHAR_BIT)).
+   *  Thus, N - U bits are unused.  (They are the high-order bits in the
+   *  highest word.)  It is a class invariant that those unused bits are
+   *  always zero.
    *
    *  If you think of %bitset as "a simple array of bits," be aware that
    *  your mental picture is reversed:  a %bitset behaves the same way as
@@ -805,16 +807,26 @@ namespace std
     bitset<_Nb>&
     operator<<=(size_t __pos)
     {
-      this->_M_do_left_shift(__pos);
-      this->_M_do_sanitize();
+      if (__builtin_expect(__pos < _Nb, 1))
+        {
+          this->_M_do_left_shift(__pos);
+          this->_M_do_sanitize();
+        }
+      else
+	this->_M_do_reset();
       return *this;
     }
 
     bitset<_Nb>&
     operator>>=(size_t __pos)
     {
-      this->_M_do_right_shift(__pos);
-      this->_M_do_sanitize();
+      if (__builtin_expect(__pos < _Nb, 1))
+        {
+          this->_M_do_right_shift(__pos);
+          this->_M_do_sanitize();
+        }
+      else
+	this->_M_do_reset();
       return *this;
     }
     //@}
@@ -1183,6 +1195,7 @@ namespace std
       typename basic_istream<_CharT, _Traits>::sentry __sentry(__is);
       if (__sentry)
 	{
+	  ios_base::iostate  __state = ios_base::goodbit;
 	  basic_streambuf<_CharT, _Traits>* __buf = __is.rdbuf();
 	  for (size_t __i = 0; __i < _Nb; ++__i)
 	    {
@@ -1191,7 +1204,7 @@ namespace std
 	      typename _Traits::int_type __c1 = __buf->sbumpc();
 	      if (_Traits::eq_int_type(__c1, __eof))
 		{
-		  __is.setstate(ios_base::eofbit);
+		  __state |= ios_base::eofbit;
 		  break;
 		}
 	      else
@@ -1201,19 +1214,21 @@ namespace std
 
 		  if (__c == '0' || __c == '1')
 		    __tmp.push_back(__c);
-		  else if (_Traits::eq_int_type(__buf->sputbackc(__c2),
-						__eof))
+		  else if (_Traits::eq_int_type(__buf->sputbackc(__c2), __eof))
 		    {
-		      __is.setstate(ios_base::failbit);
+		      __state |= ios_base::failbit;
 		      break;
 		    }
 		}
 	    }
 
 	  if (__tmp.empty() && !_Nb)
-	    __is.setstate(ios_base::failbit);
+	    __state |= ios_base::failbit;
 	  else
 	    __x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb);
+
+	  if (__state != ios_base::goodbit)
+	    __is.setstate(__state);    // may throw an exception
 	}
 
       return __is;

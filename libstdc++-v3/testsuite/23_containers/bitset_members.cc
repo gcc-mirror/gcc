@@ -22,6 +22,7 @@
 
 #include <bitset>
 #include <stdexcept>
+#include <sstream>
 #include <testsuite_hooks.h>
 
 void 
@@ -52,9 +53,26 @@ void test02()
   bs.count();
 }
 
+void test03()
+{
+  std::bitset<5>      b;
+  std::stringstream   ss ("101");
+
+  ss.exceptions(std::ios_base::eofbit);
+
+  try
+  {
+    ss >> b;
+  }
+  catch (std::exception&) {}
+
+  VERIFY( b.to_ulong() == 5 );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }

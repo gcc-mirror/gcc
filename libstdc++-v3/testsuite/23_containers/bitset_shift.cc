@@ -106,9 +106,25 @@ test01() {
   return test;
 }
 
+bool
+test02()
+{
+  bool test = true;
+
+  std::bitset<66>  b;
+  b <<= 400;
+  VERIFY( b.count() == 0 );
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+  return test;
+}
+
 int
 main() {
   test01();
+  test02();
 
   return 0;
 }
