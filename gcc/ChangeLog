@@ -1,5 +1,10 @@
 Mon Aug 17 11:46:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* expr.c (move_by_pieces): No longer static.  Remove prototype.
+	* rtl.h (move_by_pieces): Add extern prototype.
+	* mips.c (expand_block_move): Handle aligned straight line copy by
+	calling move_by_pieces.
+
 	* expr.c (expand_expr): Allow assignments from TImode PARM_DECLs
 	and VAR_DECLs.
 

@@ -1403,6 +1403,8 @@ extern int preserve_subexpressions_p	PROTO ((void));
 
 /* In expr.c */
 extern void init_expr_once		PROTO ((void));
+extern void move_by_pieces		PROTO ((rtx, rtx, int, int));
+
 
 /* In stupid.c */
 #ifdef BUFSIZ
