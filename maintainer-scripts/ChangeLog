@@ -1,3 +1,8 @@
+2003-06-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release: Command "all" now creates .gz files only for
+	releases and pre-releases.
+
 2003-06-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (build_sources): Do not include gnats.html any longer.
