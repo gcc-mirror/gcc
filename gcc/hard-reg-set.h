@@ -431,6 +431,15 @@ extern HARD_REG_SET call_fixed_reg_set;
 
 extern char global_regs[FIRST_PSEUDO_REGISTER];
 
+/* Contains 1 for registers that are set or clobbered by calls.  */
+/* ??? Ideally, this would be just call_used_regs plus global_regs, but
+   for someone's bright idea to have call_used_regs strictly include
+   fixed_regs.  Which leaves us guessing as to the set of fixed_regs
+   that are actually preserved.  We know for sure that those associated
+   with the local stack frame are safe, but scant others.  */
+
+extern HARD_REG_SET regs_invalidated_by_call;
+
 #ifdef REG_ALLOC_ORDER
 /* Table of register numbers in the order in which to try to use them.  */
 
