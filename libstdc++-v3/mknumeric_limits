@@ -8,21 +8,6 @@
 
 echo "running mknumeric_limits"
 
-case `uname` in
-    CYGWIN*) 
-	LDFLAGS='-nodefaultlibs -lcygwin -lc -lkernel32 -lgcc' ;;
-    AIX*) 
-	case $CXX in
-	    *pthread*)
-		LDFLAGS='-nodefaultlibs -lgcc -L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a' ;;
-	    *)
-		LDFLAGS='-nodefaultlibs -lgcc -lc' ;;
-	esac
-	;;
-    *)
-	LDFLAGS='-nodefaultlibs -lgcc -lc' ;;
-esac
-
 BUILD_DIR=$1
 if [ ! -d "$BUILD_DIR" ]; then
   echo "build directory $BUILD_DIR not found, exiting."
@@ -62,7 +47,7 @@ if [ $XCOMPILE -eq 1 ]; then
   exit 0;
 fi   
 
-: ${CXX:="$BUILD_DIR/../../gcc/g++ -B$BUILD_DIR/../../gcc/"}
+: ${CC:="$BUILD_DIR/../../gcc/gcc -B$BUILD_DIR/../../gcc/"}
 
 # We output to a temporary file, so that we don't appear to have
 # succeeded unless we actually do.
@@ -178,13 +163,11 @@ namespace std {
 
 EOF
 
-echo "$CXX -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H \
-    -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc" \
-     $LDFLAGS"
+echo "$CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H \
+    -o $BUILD_DIR/src/gen-num-limits $SRC_DIR/src/gen-num-limits.cc"
 
-{ $CXX -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H \
-    -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc" \
-     $LDFLAGS
+{ $CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H \
+    -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc"
 } || {
   echo "gen-num-limits failed to build, exiting."
   exit 1

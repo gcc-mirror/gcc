@@ -1,3 +1,8 @@
+2001-02-23  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* mknumeric_limits: Remove special-casing on target.  Use gcc
+	instead of g++ to build gen-num-limits.cc
+
 2001-02-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* tests_flags.in (CXXFLAGS): Add -rpath to gcc build dir.
