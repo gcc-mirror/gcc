@@ -1,3 +1,8 @@
+2000-09-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (struct cpp_options): Add user_label_prefix member,
+	left out of commit which removed cppulp.c.
+
 2000-09-07  Richard Henderson  <rth@cygnus.com>
 
 	* bb-reorder.c (fixup_reorder_chain): Add jump in new block

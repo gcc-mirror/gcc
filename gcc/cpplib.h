@@ -301,6 +301,9 @@ struct cpp_options
   const char *include_prefix;
   unsigned int include_prefix_len;
 
+  /* -fleading_underscore sets this to "_".  */
+  const char *user_label_prefix;
+
   /* Non-0 means -v, so print the full set of include dirs.  */
   unsigned char verbose;
 
