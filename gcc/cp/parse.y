@@ -267,7 +267,7 @@ empty_parms ()
 %type <ttype> named_class_head_sans_basetype_defn
 %type <ttype> identifier_defn IDENTIFIER_DEFN TYPENAME_DEFN PTYPENAME_DEFN
 
-%type <ttype> self_template_type
+%type <ttype> self_template_type .finish_template_type
 
 %token NSNAME
 %type <ttype> NSNAME
@@ -556,22 +556,38 @@ template_parm:
 	;
 
 template_def:
-	  template_header
-	  extdef
-                { 
-                  if ($1) 
-                    end_template_decl (); 
-		  else
-		    end_specialization ();
-		}
-	| template_header
-	  error  %prec EMPTY
-		{ 
-                  if ($1) 
-                    end_template_decl ();
-		  else
-		    end_specialization (); 
-                }
+	  template_header template_extdef
+                { finish_template_decl ($1); }
+	| template_header error  %prec EMPTY
+                { finish_template_decl ($1); }
+	;
+
+template_extdef:
+	  fndef eat_saved_input
+		{ if (pending_inlines) do_pending_inlines (); }
+	| template_datadef
+		{ if (pending_inlines) do_pending_inlines (); }
+	| template_def
+		{ if (pending_inlines) do_pending_inlines (); }
+	| extern_lang_string .hush_warning fndef .warning_ok eat_saved_input
+		{ if (pending_inlines) do_pending_inlines ();
+		  pop_lang_context (); }
+	| extern_lang_string .hush_warning template_datadef .warning_ok
+		{ if (pending_inlines) do_pending_inlines ();
+		  pop_lang_context (); }
+	| extension template_extdef
+		{ pedantic = $<itype>1; }
+	;
+
+template_datadef:
+	  nomods_initdecls ';'
+	| declmods notype_initdecls ';'
+		{}
+	| typed_declspecs initdecls ';'
+                { note_list_got_semicolon ($1.t); }
+	| structsp ';'
+                { maybe_process_partial_specialization ($1.t);
+		  note_got_semicolon ($1.t); }
 	;
 
 datadef:
@@ -579,9 +595,7 @@ datadef:
 	| declmods notype_initdecls ';'
 		{}
 	| typed_declspecs initdecls ';'
-		{
-		  note_list_got_semicolon ($1.t);
-		}
+                { note_list_got_semicolon ($1.t); }
         | declmods ';'
 		{ pedwarn ("empty declaration"); }
 	| explicit_instantiation ';'
@@ -870,28 +884,28 @@ end_explicit_instantiation:
 
 template_type:
 	  PTYPENAME '<' template_arg_list_opt template_close_bracket
-		{
-		  $$ = lookup_template_class ($1, $3, NULL_TREE, NULL_TREE);
-		  if ($$ != error_mark_node)
-		    $$ = TYPE_STUB_DECL ($$);
-		}
+	    .finish_template_type
+                { $$ = $5; }
 	| TYPENAME  '<' template_arg_list_opt template_close_bracket
-		{
-		  $$ = lookup_template_class ($1, $3, NULL_TREE, NULL_TREE);
-		  if ($$ != error_mark_node)
-		    $$ = TYPE_STUB_DECL ($$);
-		}
+	    .finish_template_type
+                { $$ = $5; }
 	| self_template_type
 	;
 
 self_template_type:
 	  SELFNAME  '<' template_arg_list_opt template_close_bracket
-		{
-		  $$ = lookup_template_class ($1, $3, NULL_TREE, NULL_TREE);
-		  if ($$ != error_mark_node)
-		    $$ = TYPE_STUB_DECL ($$);
-		}
+	    .finish_template_type
+                { $$ = $5; }
 	;
+
+.finish_template_type:
+                { 
+		  if (yychar == YYEMPTY)
+		    yychar = YYLEX;
+
+		  $$ = finish_template_type ($<ttype>-3, $<ttype>-1, 
+					     yychar == SCOPE);
+		}
 
 template_close_bracket:
 	  '>'
@@ -2193,18 +2207,7 @@ named_class_head:
 		    cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
 		  if ($2)
 		    {
-		      if (IS_AGGR_TYPE ($$) && CLASSTYPE_USE_TEMPLATE ($$))
-		        {
-		          if (CLASSTYPE_IMPLICIT_INSTANTIATION ($$)
-			      && TYPE_SIZE ($$) == NULL_TREE)
-			    {
-			      SET_CLASSTYPE_TEMPLATE_SPECIALIZATION ($$);
-			      if (processing_template_decl)
-				push_template_decl (TYPE_MAIN_DECL ($$));
-			    }
-			  else if (CLASSTYPE_TEMPLATE_INSTANTIATION ($$))
-			    cp_error ("specialization after instantiation of `%T'", $$);
-			}
+		      maybe_process_partial_specialization ($$);
 		      xref_basetypes (current_aggr, $1, $$, $2); 
 		    }
 		}

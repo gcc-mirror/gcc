@@ -13,7 +13,7 @@ template <class T> class B
 template <class T> class C
 {
   template <class U>
-  friend class A<U>;
+  friend class A;
 
   static int i;
 };

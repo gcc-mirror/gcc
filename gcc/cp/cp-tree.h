@@ -27,7 +27,6 @@ Boston, MA 02111-1307, USA.  */
 /* Usage of TREE_LANG_FLAG_?:
    0: TREE_NONLOCAL_FLAG (in TREE_LIST or _TYPE).
       BINFO_MARKED (BINFO nodes).
-      TI_USES_TEMPLATE_PARMS.
       COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
@@ -1250,13 +1249,35 @@ struct lang_decl
 #define TI_TEMPLATE(NODE) (TREE_PURPOSE (NODE))
 #define TI_ARGS(NODE) (TREE_VALUE (NODE))
 #define TI_SPEC_INFO(NODE) (TREE_CHAIN (NODE))
-#define TI_USES_TEMPLATE_PARMS(NODE) TREE_LANG_FLAG_0 (NODE)
 #define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
 /* TI_PENDING_SPECIALIZATION_FLAG on a template-info node indicates
    that the template is a specialization of a member template, but
    that we don't yet know which one.  */
 #define TI_PENDING_SPECIALIZATION_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
+/* The TEMPLATE_DECL instantiated or specialized by NODE.  This
+   TEMPLATE_DECL will be the immediate parent, not the most general
+   template.  For example, in:
+
+      template <class T> struct S { template <class U> void f(U); }
+
+   the FUNCTION_DECL for S<int>::f<double> will have, as its
+   DECL_TI_TEMPLATE, `template <class U> S<int>::f<U>'. 
+
+   As a special case, for a member friend template of a template
+   class, this value will not be a TEMPLATE_DECL, but rather a
+   LOOKUP_EXPR indicating the name of the template and any explicit
+   template arguments provided.  For example, in:
+
+     template <class T> struct S { friend void f<int>(int, double); }
+
+   the DECL_TI_TEMPLATE will be a LOOKUP_EXPR for `f' and the
+   DECL_TI_ARGS will be {int}.  */ 
 #define DECL_TI_TEMPLATE(NODE)      TI_TEMPLATE (DECL_TEMPLATE_INFO (NODE))
+/* The template arguments used to obtain this decl from the most
+   general form of DECL_TI_TEMPLATE.  For the example given for
+   DECL_TI_TEMPLATE, the DECL_TI_ARGS will be {int, double}.  These
+   are always the full set of arguments required to instantiate this
+   declaration from the most general template specialized here.  */
 #define DECL_TI_ARGS(NODE)          TI_ARGS (DECL_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_TEMPLATE(NODE) TI_TEMPLATE (CLASSTYPE_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_ARGS(NODE)     TI_ARGS (CLASSTYPE_TEMPLATE_INFO (NODE))
@@ -1528,25 +1549,80 @@ extern int flag_new_for_scope;
 /* Accessor macros for C++ template decl nodes.  */
 
 /* The DECL_TEMPLATE_PARMS are a list.  The TREE_PURPOSE of each node
-   indicates the level of the template parameters, with 1 being the
-   outermost set of template parameters.  The TREE_VALUE is a vector,
-   whose elements are the template parameters at each level.  Each
-   element in the vector is a TREE_LIST, whose TREE_VALUE is a
-   PARM_DECL (if the parameter is a non-type parameter), or a
-   TYPE_DECL (if the parameter is a type parameter).  The TREE_PURPOSE
-   is the default value, if any.  The TEMPLATE_PARM_INDEX for the
-   parameter is avilable as the DECL_INITIAL (for a PARM_DECL) or as
-   the TREE_TYPE (for a TYPE_DECL).  */
+   is a INT_CST whose TREE_INT_CST_HIGH indicates the level of the
+   template parameters, with 1 being the outermost set of template
+   parameters.  The TREE_VALUE is a vector, whose elements are the
+   template parameters at each level.  Each element in the vector is a
+   TREE_LIST, whose TREE_VALUE is a PARM_DECL (if the parameter is a
+   non-type parameter), or a TYPE_DECL (if the parameter is a type
+   parameter).  The TREE_PURPOSE is the default value, if any.  The
+   TEMPLATE_PARM_INDEX for the parameter is avilable as the
+   DECL_INITIAL (for a PARM_DECL) or as the TREE_TYPE (for a
+   TYPE_DECL).  */
 #define DECL_TEMPLATE_PARMS(NODE)       DECL_ARGUMENTS(NODE)
 #define DECL_INNERMOST_TEMPLATE_PARMS(NODE) \
    INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (NODE))
 #define DECL_NTPARMS(NODE) \
    TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (NODE))
-/* For class templates.  */
-#define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE(NODE)
 /* For function, method, class-data templates.  */
 #define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT(NODE)
+/* For a static member variable template, the
+   DECL_TEMPLATE_INSTANTIATIONS list contains the explicitly and
+   implicitly generated instantiations of the variable.  There are no
+   partial instantiations of static member variables, so all of these
+   will be full instantiations.
+
+   For a class template the DECL_TEMPLATE_INSTANTIATIONS lists holds
+   all instantiations and specializations of the class type, including
+   partial instantiations and partial specializations.
+
+   In both cases, the TREE_PURPOSE of each node contains the arguments
+   used; the TREE_VALUE contains the generated variable.  The template
+   arguments are always complete.  For example, given:
+
+      template <class T> struct S1 {
+        template <class U> struct S2 {};
+	template <class U> struct S2<U*> {};
+      };
+
+   the record for the partial specialization will contain, as its
+   argument list, { {T}, {U*} }, and will be on the
+   DECL_TEMPLATE_INSTANTIATIONS list for `template <class T> template
+   <class U> struct S1<T>::S2'.
+
+   This list is not used for function templates.  */
 #define DECL_TEMPLATE_INSTANTIATIONS(NODE) DECL_VINDEX(NODE)
+/* For a function template, the DECL_TEMPLATE_SPECIALIZATIONS lists
+   contains all instantiations and specializations of the function,
+   including partial instantiations.  For a partial instantiation
+   which is a specialization, this list holds only full
+   specializations of the template that are instantiations of the
+   partial instantiation.  For example, given:
+
+      template <class T> struct S {
+        template <class U> void f(U);
+	template <> void f(T); 
+      };
+
+   the `S<int>::f<int>(int)' function will appear on the
+   DECL_TEMPLATE_SPECIALIZATIONS list for both `template <class T>
+   template <class U> void S<T>::f(U)' and `template <class T> void
+   S<int>::f(T)'.  In the latter case, however, it will have only the
+   innermost set of arguments (T, in this case).  The DECL_TI_TEMPLATE
+   for the function declaration will point at the specialization, not
+   the fully general template.
+
+   For a class template, this list contains the partial
+   specializations of this template.  (Full specializations are not
+   recorded on this list.)  The TREE_PURPOSE holds the innermost
+   arguments used in the partial specialization (e.g., for `template
+   <class T> struct S<T*, int>' this will be `T*'.)  The TREE_VALUE
+   holds the innermost template parameters for the specialization
+   (e.g., `T' in the example above.)  The TREE_TYPE is the _TYPE node
+   for the partial specialization.
+
+   This list is not used for static variable templates.  */
+#define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE(NODE)
 #define DECL_TEMPLATE_INJECT(NODE)	DECL_INITIAL(NODE)
 
 /* Nonzero for TEMPLATE_DECL nodes that represents template template
@@ -2649,7 +2725,9 @@ extern void do_inline_function_hair		PROTO((tree, tree));
 extern char *build_overload_name		PROTO((tree, int, int));
 extern tree build_static_name			PROTO((tree, tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));
-extern tree build_template_decl_overload        PROTO((tree, tree, tree, tree, tree, int));
+extern tree build_decl_overload_real            PROTO((tree, tree, tree, tree,
+						       tree, int)); 
+extern tree set_mangled_name_for_decl           PROTO((tree));
 extern tree build_typename_overload		PROTO((tree));
 extern tree build_overload_with_type		PROTO((tree, tree));
 extern tree build_destructor_name		PROTO((tree));
@@ -2661,7 +2739,7 @@ extern void synthesize_method			PROTO((tree));
 extern tree get_id_2				PROTO((char *, tree));
 
 /* in pt.c */
-extern tree innermost_args			PROTO ((tree, int));
+extern tree innermost_args			PROTO ((tree));
 extern tree tsubst				PROTO ((tree, tree, tree));
 extern tree tsubst_expr				PROTO ((tree, tree, tree));
 extern tree tsubst_copy				PROTO ((tree, tree, tree));
@@ -2684,7 +2762,7 @@ extern tree current_template_args		PROTO((void));
 extern tree push_template_decl			PROTO((tree));
 extern tree push_template_decl_real             PROTO((tree, int));
 extern void redeclare_class_template            PROTO((tree, tree));
-extern tree lookup_template_class		PROTO((tree, tree, tree, tree));
+extern tree lookup_template_class		PROTO((tree, tree, tree, tree, int));
 extern tree lookup_template_function            PROTO((tree, tree));
 extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
@@ -2708,8 +2786,6 @@ extern void begin_tree                          PROTO((void));
 extern void end_tree                            PROTO((void));
 extern void add_maybe_template			PROTO((tree, tree));
 extern void pop_tinst_level			PROTO((void));
-extern tree most_specialized			PROTO((tree, tree, tree));
-extern tree most_specialized_class		PROTO((tree, tree, tree));
 extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
@@ -2717,6 +2793,7 @@ extern int comp_template_parms                  PROTO((tree, tree));
 extern int template_class_depth                 PROTO((tree));
 extern int is_specialization_of                 PROTO((tree, tree));
 extern int comp_template_args                   PROTO((tree, tree));
+extern void maybe_process_partial_specialization PROTO((tree));
 
 extern int processing_specialization;
 extern int processing_explicit_instantiation;
@@ -2839,6 +2916,8 @@ extern tree finish_class_definition             PROTO((tree, tree, tree, int));
 extern void finish_default_args                 PROTO((void));
 extern void begin_inline_definitions            PROTO((void));
 extern tree finish_member_class_template        PROTO((tree, tree));
+extern void finish_template_decl                PROTO((tree));
+extern tree finish_template_type                PROTO((tree, tree, int));
 
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));

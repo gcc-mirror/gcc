@@ -587,7 +587,10 @@ common_type (t1, t2)
       else if (binfo_or_else (t2, t1))
 	return build_type_attribute_variant (t2, attributes);
       else
-	compiler_error ("common_type called with uncommon aggregate types");
+	{
+	  compiler_error ("common_type called with uncommon aggregate types");
+	  return error_mark_node;
+	}
 
     case METHOD_TYPE:
       if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2)))

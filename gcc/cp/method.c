@@ -71,8 +71,6 @@ static void process_overload_item PROTO((tree,int));
 static void do_build_assign_ref PROTO((tree));
 static void do_build_copy_constructor PROTO((tree));
 static tree largest_union_member PROTO((tree));
-static tree build_decl_overload_real PROTO((tree, tree, tree, tree,
-					    tree, int)); 
 static void build_template_template_parm_names PROTO((tree));
 static void build_template_parm_names PROTO((tree, tree));
 static void build_underscore_int PROTO((int));
@@ -922,7 +920,7 @@ build_overload_identifier (name)
       /* NAME is the TYPE_DECL for a template specialization.  */
       tree template, parmlist, arglist, tname;
       template = CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name));
-      arglist = innermost_args (TREE_VALUE (template), 0);
+      arglist = innermost_args (TREE_VALUE (template));
       template = TREE_PURPOSE (template);
       tname = DECL_NAME (template);
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
@@ -1499,7 +1497,10 @@ build_static_name (context, name)
   return get_identifier ((char *)obstack_base (&scratch_obstack));
 }
 
-static tree 
+/* FOR_METHOD should be 1 if the declaration in question is for a member
+   of a class (including a static member) and 2 if the declaration is
+   for a constructor.  */
+tree 
 build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 			  for_method) 
      tree dname;
@@ -1660,37 +1661,31 @@ build_decl_overload (dname, parms, for_method)
 				   NULL_TREE, for_method); 
 }
 
-
-/* Like build_decl_overload, but for template functions. */
+/* Set the mangled name (DECL_ASSEMBLER_NAME) for DECL.  */
 
 tree
-build_template_decl_overload (decl, parms, ret_type, tparms, targs,
-			      for_method) 
+set_mangled_name_for_decl (decl)
      tree decl;
-     tree parms;
-     tree ret_type;
-     tree tparms;
-     tree targs;
-     int for_method;
 {
-  tree res, saved_ctx;
+  tree parm_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
-  /* If the template is in a namespace, we need to put that into the
-     mangled name. Unfortunately, build_decl_overload_real does not
-     get the decl to mangle, so it relies on the current
-     namespace. Therefore, we set that here temporarily. */
+  if (DECL_STATIC_FUNCTION_P (decl))
+    parm_types = 
+      hash_tree_chain (build_pointer_type (DECL_CLASS_CONTEXT (decl)),
+					   parm_types);
+  else
+    /* The only member functions whose type is a FUNCTION_TYPE, rather
+       than a METHOD_TYPE, should be static members.  */
+    my_friendly_assert (!DECL_CONTEXT (decl)
+			|| !IS_AGGR_TYPE_CODE (TREE_CODE (DECL_CONTEXT (decl)))
+			|| TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE,
+			0);
 
-  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd', 980702);
-  saved_ctx = current_namespace;
-  current_namespace = CP_DECL_CONTEXT (decl);  
-
-  res = build_decl_overload_real (DECL_NAME (decl), parms, ret_type,
-				  tparms, targs, for_method); 
-
-  current_namespace = saved_ctx;
-  return res;
+  DECL_ASSEMBLER_NAME (decl)
+    = build_decl_overload (DECL_NAME (decl), parm_types, 
+			   DECL_FUNCTION_MEMBER_P (decl)
+			   + DECL_CONSTRUCTOR_P (decl));
 }
-
 
 /* Build an overload name for the type expression TYPE.  */
 

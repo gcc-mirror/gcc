@@ -912,34 +912,29 @@ grok_x_components (specs, components)
 	  break;
 
 	case RECORD_TYPE:
-	  /* This code may be needed for UNION_TYPEs as
-	     well.  */
-	  tcode = record_type_node;
+	case UNION_TYPE:
+	  if (TREE_CODE (t) == UNION_TYPE)
+	    tcode = union_type_node;
+	  else
+	    tcode = record_type_node;
 	  if (CLASSTYPE_DECLARED_CLASS (t))
 	    tcode = class_type_node;
 	  else if (IS_SIGNATURE (t))
 	    tcode = signature_type_node;
-
-	  if (CLASSTYPE_IS_TEMPLATE (t))
-	    /* In this case, the TYPE_IDENTIFIER will be something
-	       like S<T>, rather than S, so to get the correct name we
-	       look at the template.  */
-	    x = DECL_NAME (CLASSTYPE_TI_TEMPLATE (t));
+	  
+	  if (TYPE_LANG_SPECIFIC (t) 
+	      && CLASSTYPE_USE_TEMPLATE (t))
+	    /* We have already looked up this type.  */
+	    ;
 	  else
-	    x = TYPE_IDENTIFIER (t);
+	    {
+	      if (CLASSTYPE_IS_TEMPLATE (t))
+		x = DECL_NAME (CLASSTYPE_TI_TEMPLATE (t));
+	      else
+		x = TYPE_IDENTIFIER (t);
+	      t = xref_tag (tcode, x, NULL_TREE, 0);
+	    }
 
-	  t = xref_tag (tcode, x, NULL_TREE, 0);
-	  return NULL_TREE;
-	  break;
-
-	case UNION_TYPE:
-	case ENUMERAL_TYPE:
-	  if (TREE_CODE (t) == UNION_TYPE)
-	    tcode = union_type_node;
-	  else
-	    tcode = enum_type_node;
-
-	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
 	  if (ANON_UNION_TYPE_P (t))
 	    {
 	      /* See also shadow_tag.  */
@@ -972,11 +967,17 @@ grok_x_components (specs, components)
 	      for (; *p; *p = (*p)->next)
 		if (DECL_CONTEXT ((*p)->fndecl) != t)
 		  break;
+
+	      return x;
 	    }
-	  else if (TREE_CODE (t) == ENUMERAL_TYPE)
-	    x = grok_enum_decls (NULL_TREE);
-	  else
-	    x = NULL_TREE;
+
+	  return NULL_TREE;
+	  break;
+
+	case ENUMERAL_TYPE:
+	  tcode = enum_type_node;
+	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
+	  x = grok_enum_decls (NULL_TREE);
 	  return x;
 	  break;
 
@@ -1132,16 +1133,7 @@ grokclassfn (ctype, cname, function, flags, quals)
       TYPE_HAS_DESTRUCTOR (ctype) = 1;
     }
   else
-    {
-      if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
-	/* Only true for static member functions.  */
-	arg_types = hash_tree_chain (build_pointer_type (qualtype),
-				     arg_types);
-
-      DECL_ASSEMBLER_NAME (function)
-	= build_decl_overload (fn_name, arg_types,
-			       1 + DECL_CONSTRUCTOR_P (function));
-    }
+    set_mangled_name_for_decl (function);
 }
 
 /* Work on the expr used by alignof (this is only called by the parser).  */
@@ -4299,7 +4291,7 @@ arg_assoc_class (k, type)
   /* Process template arguments.  */
   if (CLASSTYPE_TEMPLATE_INFO (type))
     {
-      list = innermost_args (CLASSTYPE_TI_ARGS (type), 0);
+      list = innermost_args (CLASSTYPE_TI_ARGS (type));
       for (i = 0; i < TREE_VEC_LENGTH (list); ++i)
 	arg_assoc (k, TREE_VEC_ELT (list, i));
     }
@@ -4690,13 +4682,21 @@ mark_used (decl)
   if (processing_template_decl)
     return;
   assemble_external (decl);
+
   /* Is it a synthesized method that needs to be synthesized?  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_CLASS_CONTEXT (decl)
       && DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
       /* Kludge: don't synthesize for default args.  */
       && current_function_decl)
     synthesize_method (decl);
-  if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
+
+  /* If this is a function or variable that is an instance of some
+     template, we now know that we will need to actually do the
+     instantiation.  A TEMPLATE_DECL may also have DECL_TEMPLATE_INFO,
+     if it's a partial instantiation, but there's no need to
+     instantiate such a thing.  */
+  if (TREE_CODE (decl) != TEMPLATE_DECL
+      && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
     instantiate_decl (decl);
 }
 

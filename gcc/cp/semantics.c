@@ -1235,18 +1235,7 @@ begin_class_definition (t)
     push_template_decl (TYPE_STUB_DECL (t));
   pushclass (t, 0);
   TYPE_BEING_DEFINED (t) = 1;
-  if (IS_AGGR_TYPE (t) && CLASSTYPE_USE_TEMPLATE (t))
-    {
-      if (CLASSTYPE_IMPLICIT_INSTANTIATION (t)
-	  && TYPE_SIZE (t) == NULL_TREE)
-	{
-	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
-	  if (processing_template_decl)
-	    push_template_decl (TYPE_MAIN_DECL (t));
-	}
-      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
-	cp_error ("specialization after instantiation of `%T'", t);
-    }
+  maybe_process_partial_specialization (t);
   /* Reset the interface data, at the earliest possible
      moment, as it might have been set via a class foo;
      before.  */
@@ -1378,6 +1367,15 @@ finish_member_class_template (parms, types)
      tree parms;
      tree types;
 {
+  tree t;
+
+  /* If there are declared, but undefined, partial specializations
+     mixed in with the typespecs they will not yet have passed through
+     maybe_process_partial_specialization, so we do that here.  */
+  for (t = types; t != NULL_TREE; t = TREE_CHAIN (t))
+    if (IS_AGGR_TYPE_CODE (TREE_CODE (TREE_VALUE (t))))
+      maybe_process_partial_specialization (TREE_VALUE (t));
+
   note_list_got_semicolon (types);
   grok_x_components (types, NULL_TREE); 
   if (TYPE_CONTEXT (TREE_VALUE (types)) != current_class_type)
@@ -1390,4 +1388,38 @@ finish_member_class_template (parms, types)
      not store the new DECL on the list of
      component_decls.  */
   return NULL_TREE;
+}
+
+/* Finish processsing a complete template declaration.  The PARMS are
+   the template parameters.  */
+
+void
+finish_template_decl (parms)
+     tree parms;
+{
+  if (parms)
+    end_template_decl ();
+  else
+    end_specialization ();
+}
+
+/* Finish processing a a template-id (which names a type) of the form
+   NAME < ARGS >.  Return the TYPE_DECL for the type named by the
+   template-id.  If ENTERING_SCOPE is non-zero we are about to enter
+   the scope of template-id indicated.  */
+
+tree
+finish_template_type (name, args, entering_scope)
+     tree name;
+     tree args;
+     int entering_scope;
+{
+  tree decl;
+
+  decl = lookup_template_class (name, args,
+				NULL_TREE, NULL_TREE, entering_scope);
+  if (decl != error_mark_node)
+    decl = TYPE_STUB_DECL (decl);
+
+  return decl;
 }

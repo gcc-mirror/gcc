@@ -1,5 +1,7 @@
 // Build don't link: 
 // GROUPS passed old-abort
+// Special g++ Options:
+
 const bool FALSE = 0;
 const bool TRUE = 1;
 class ListDProto {
@@ -41,8 +43,8 @@ public:
     enum Action { NORMAL, REMOVE_CURRENT };
     Vix first() const;
     void first(Vix& x) const;
-    void next(Vix& x) const;// ERROR - candidate for call
-    void next(Vix& x, Action a = NORMAL);// ERROR - list of candidates
+    void next(Vix& x) const;
+    void next(Vix& x, Action a = NORMAL);
     Vix last() const;
     void last(Vix& x) const;
     void prev(Vix& x) const;
