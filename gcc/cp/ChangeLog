@@ -1,3 +1,9 @@
+2003-03-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8534
+	* decl.c (build_ptrmemfunc_type): Do not allow default arugments
+	in pointer-to-member-function types.
+
 2003-03-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* expr.c (cplus_expand_constant): Use C90 prototype style.
