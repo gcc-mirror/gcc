@@ -1,3 +1,8 @@
+2003-01-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/DisplayMode.java
+	(equals): Fixed argument type and implementation.
+
 2003-01-07  Tom Tromey  <tromey@redhat.com>
 
 	* include/posix.h (_Jv_platform_usleep): Wrap in ifdef
