@@ -60,13 +60,13 @@ case $machine in
         fixincludes=fixinc.ptx
         ;;
 
-    *-vxworks*)
-        fixincludes=fixinc.copy
-        ;;
-
-    *-vxworks*)
-        fixincludes=fixinc.copy
-        ;;
+##LATER:    *-vxworks*)
+##LATER:        fixincludes=fixinc.copy
+##LATER:        ;;
+##LATER:
+##LATER:    *-vxworks*)
+##LATER:        fixincludes=fixinc.copy
+##LATER:        ;;
 
     alpha*-dec-*vms* | \
     arm-semi-aout | \
