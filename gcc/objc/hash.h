@@ -21,10 +21,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.2 1991/11/07 22:30:54 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.3 1991/11/07 23:23:40 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/07 22:30:54 $
+  $Date: 1991/11/07 23:23:40 $
   $Log: hash.h,v $
+ * Revision 0.3  1991/11/07  23:23:40  dennisg
+ * implemented hash table expansion as suggested by rms.
+ *
  * Revision 0.2  1991/11/07  22:30:54  dennisg
  * added copyleft
  *
@@ -93,18 +96,6 @@ typedef struct cache {
                                                     "theNodeTable"). */
 							entriesInHash;											/* Current number of entries
 																										in ther hash table. */
-	/*
-	 * Variables used to compute hash
-	 *	values.
-	 */
-  u_int       mask,                               /* The number of bits set 
-																										in the mask that is
-																										contained in the next 
-																										member variable. */
-              numberOfMaskBits;                   /* Number of bits used for
-                                                    the mask.  Useful for 
-                                                    efficient hash value
-                                                    calculation. */
   /*
    * Variables used to implement indexing
    *  through the hash table.
