@@ -325,6 +325,14 @@ extern optab sin_optab;		/* Sine */
 extern optab cos_optab;		/* Cosine */
 extern optab strlen_optab;	/* String length */
 
+/* Tables of patterns for extending one integer mode to another.  */
+extern enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
+
+/* Tables of patterns for converting between fixed and floating point. */
+extern enum insn_code fixtab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
+extern enum insn_code fixtrunctab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
+extern enum insn_code floattab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
+
 /* Passed to expand_binop and expand_unop to say which options to try to use
    if the requested operation can't be open-coded on the requisite mode.
    Either OPTAB_LIB or OPTAB_LIB_WIDEN says try using a library call.
@@ -450,6 +458,9 @@ extern rtxfun bcc_gen_fctn[NUM_RTX_CODE];
    to test that condition.  */
 
 extern enum insn_code setcc_gen_code[NUM_RTX_CODE];
+
+/* This array records the insn_code of insns to perform block moves.  */
+extern enum insn_code movstr_optab[NUM_MACHINE_MODES];
 
 /* Define functions given in optabs.c.  */
 
