@@ -47,7 +47,6 @@ import gnu.gcj.convert.UnicodeToBytes;
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct, but only supports 8859_1.
  */
-
 public class OutputStreamWriter extends Writer
 {
   BufferedOutputStream out;

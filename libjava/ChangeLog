@@ -1,5 +1,28 @@
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/DataInputStream.java
+	(): Wrapped documentation line.
+	(): Fixed @return tag.
+	* java/io/DataOutputStream.java
+	(written): Moved to top of class.
+	(all methods): Merged documentation from classpath.
+	* java/io/File.java:
+	Merged copyright year with classpath.
+	* java/io/FileInputStream.java
+	(all methods): Merged documentation from classpath.
+	* java/io/LineNumberReader.java
+	(getLineNumber): Fixed @return tag.
+	* java/io/ObjectInputStream.java.
+	Reformatted.
+	* java/io/ObjectOutputStream.java:
+	Reformatted, fixed some @see tags.
+	* java/io/OutputStreamWriter.java:
+	Deleted empty line.
+	* java/io/Writer.java:
+	Reformatted.
+
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Frame.java
 	(DEFAULT_CURSOR): Fixed @deprecated tag.
 	(setCursor): Fixed @deprecated tag.
