@@ -1,3 +1,23 @@
+2004-12-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_member_object_pointer,
+	is_member_function_pointer. N.B. Due to c++/19076, the latter
+	doesn't really work at the moment (a rather ugly work around
+	will be provided in case the front-end bug doesn't get fixed
+	soon); generalize and extend the _DEFINE_SPEC macros.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_member_pointer/is_member_pointer.cc: New.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_member_pointer/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_member_function_pointer/is_member_function_pointer.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_member_function_pointer/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_member_object_pointer/is_member_object_pointer.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_member_object_pointer/typedefs.cc: Likewise.
+
 2004-12-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits_fwd.h: New, forward declarations.
