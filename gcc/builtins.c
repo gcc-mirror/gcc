@@ -844,8 +844,7 @@ apply_args_size ()
 		   mode != VOIDmode;
 		   mode = GET_MODE_WIDER_MODE (mode))
 		if (HARD_REGNO_MODE_OK (regno, mode)
-		    && (mov_optab->handlers[(int) mode].insn_code
-			!= CODE_FOR_nothing))
+		    && have_insn_for (SET, mode))
 		  best_mode = mode;
 
 	    mode = best_mode;
@@ -901,8 +900,7 @@ apply_result_size ()
 		   mode != VOIDmode;
 		   mode = GET_MODE_WIDER_MODE (mode))
 		if (HARD_REGNO_MODE_OK (regno, mode)
-		    && (mov_optab->handlers[(int) mode].insn_code
-			!= CODE_FOR_nothing))
+		    && have_insn_for (SET, mode))
 		  best_mode = mode;
 
 	    mode = best_mode;
@@ -1072,8 +1070,8 @@ expand_builtin_apply (function, arguments, argsize)
   emit_move_insn (incoming_args,
 		  gen_rtx_MEM (Pmode, arguments));
 #ifndef STACK_GROWS_DOWNWARD
-  incoming_args = expand_binop (Pmode, sub_optab, incoming_args, argsize,
-				incoming_args, 0, OPTAB_LIB_WIDEN);
+  incoming_args = expand_simple_binop (Pmode, MINUS, incoming_args, argsize,
+				       incoming_args, 0, OPTAB_LIB_WIDEN);
 #endif
 
   /* Perform postincrements before actually calling the function.  */

@@ -1502,11 +1502,11 @@ CUMULATIVE_ARGS;
       = init_one_libfunc (MODQI3_LIBCALL);		\
     umod_optab->handlers[(int) QImode].libfunc		\
       = init_one_libfunc (UMODQI3_LIBCALL);		\
-    flodiv_optab->handlers[(int) QFmode].libfunc	\
+    sdiv_optab->handlers[(int) QFmode].libfunc		\
       = init_one_libfunc (DIVQF3_LIBCALL);		\
     smul_optab->handlers[(int) HFmode].libfunc		\
       = init_one_libfunc (MULHF3_LIBCALL);		\
-    flodiv_optab->handlers[(int) HFmode].libfunc	\
+    sdiv_optab->handlers[(int) HFmode].libfunc		\
       = init_one_libfunc (DIVHF3_LIBCALL);		\
     smul_optab->handlers[(int) HImode].libfunc		\
       = init_one_libfunc (MULHI3_LIBCALL);		\

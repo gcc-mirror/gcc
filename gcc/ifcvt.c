@@ -30,7 +30,6 @@
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "expr.h"
-#include "optabs.h"
 #include "real.h"
 #include "output.h"
 #include "toplev.h"
@@ -698,42 +697,42 @@ noce_try_store_flag_constants (if_info)
 	 =>   x = 3 + (test == 0);  */
       if (diff == STORE_FLAG_VALUE || diff == -STORE_FLAG_VALUE)
 	{
-	  target = expand_binop (mode,
-				 (diff == STORE_FLAG_VALUE
-				  ? add_optab : sub_optab),
-				 GEN_INT (ifalse), target, if_info->x, 0,
-				 OPTAB_WIDEN);
+	  target = expand_simple_binop (mode,
+					(diff == STORE_FLAG_VALUE
+					 ? PLUS : MINUS),
+					GEN_INT (ifalse), target, if_info->x, 0,
+					OPTAB_WIDEN);
 	}
 
       /* if (test) x = 8; else x = 0;
 	 =>   x = (test != 0) << 3;  */
       else if (ifalse == 0 && (tmp = exact_log2 (itrue)) >= 0)
 	{
-	  target = expand_binop (mode, ashl_optab,
-				 target, GEN_INT (tmp), if_info->x, 0,
-				 OPTAB_WIDEN);
+	  target = expand_simple_binop (mode, ASHIFT,
+					target, GEN_INT (tmp), if_info->x, 0,
+					OPTAB_WIDEN);
 	}
 
       /* if (test) x = -1; else x = b;
 	 =>   x = -(test != 0) | b;  */
       else if (itrue == -1)
 	{
-	  target = expand_binop (mode, ior_optab,
-				 target, GEN_INT (ifalse), if_info->x, 0,
-				 OPTAB_WIDEN);
+	  target = expand_simple_binop (mode, IOR,
+					target, GEN_INT (ifalse), if_info->x, 0,
+					OPTAB_WIDEN);
 	}
 
       /* if (test) x = a; else x = b;
 	 =>   x = (-(test != 0) & (b - a)) + a;  */
       else
 	{
-	  target = expand_binop (mode, and_optab,
-				 target, GEN_INT (diff), if_info->x, 0,
-				 OPTAB_WIDEN);
+	  target = expand_simple_binop (mode, AND,
+					target, GEN_INT (diff), if_info->x, 0,
+					OPTAB_WIDEN);
 	  if (target)
-	    target = expand_binop (mode, add_optab,
-				   target, GEN_INT (ifalse), if_info->x, 0,
-				   OPTAB_WIDEN);
+	    target = expand_simple_binop (mode, PLUS,
+					  target, GEN_INT (ifalse),
+					  if_info->x, 0, OPTAB_WIDEN);
 	}
 
       if (! target)
@@ -796,9 +795,10 @@ noce_try_store_flag_inc (if_info)
 				     1, normalize);
 
       if (target)
-	target = expand_binop (GET_MODE (if_info->x),
-			       subtract ? sub_optab : add_optab,
-			       if_info->x, target, if_info->x, 0, OPTAB_WIDEN);
+	target = expand_simple_binop (GET_MODE (if_info->x),
+				      subtract ? MINUS : PLUS,
+				      if_info->x, target, if_info->x,
+				      0, OPTAB_WIDEN);
       if (target)
 	{
 	  if (target != if_info->x)
@@ -847,9 +847,9 @@ noce_try_store_flag_mask (if_info)
 				     gen_reg_rtx (GET_MODE (if_info->x)),
 				     reversep, -1);
       if (target)
-        target = expand_binop (GET_MODE (if_info->x), and_optab,
-			       if_info->x, target, if_info->x, 0,
-			       OPTAB_WIDEN);
+        target = expand_simple_binop (GET_MODE (if_info->x), AND,
+				      if_info->x, target, if_info->x, 0,
+				      OPTAB_WIDEN);
 
       if (target)
 	{
@@ -1283,9 +1283,8 @@ noce_try_minmax (if_info)
      struct noce_if_info *if_info;
 { 
   rtx cond, earliest, target, seq;
-  enum rtx_code code;
+  enum rtx_code code, op;
   int unsignedp;
-  optab op;
 
   /* ??? Can't guarantee that expand_binop won't create pseudos.  */
   if (no_new_pseudos)
@@ -1328,24 +1327,24 @@ noce_try_minmax (if_info)
     case LE:
     case UNLT:
     case UNLE:
-      op = smax_optab;
+      op = SMAX;
       unsignedp = 0;
       break;
     case GT:
     case GE:
     case UNGT:
     case UNGE:
-      op = smin_optab;
+      op = SMIN;
       unsignedp = 0;
       break;
     case LTU:
     case LEU:
-      op = umax_optab;
+      op = UMAX;
       unsignedp = 1;
       break;
     case GTU:
     case GEU:
-      op = umin_optab;
+      op = UMIN;
       unsignedp = 1;
       break;
     default:
@@ -1354,8 +1353,9 @@ noce_try_minmax (if_info)
 
   start_sequence ();
 
-  target = expand_binop (GET_MODE (if_info->x), op, if_info->a, if_info->b,
-			 if_info->x, unsignedp, OPTAB_WIDEN);
+  target = expand_simple_binop (GET_MODE (if_info->x), op,
+				if_info->a, if_info->b,
+				if_info->x, unsignedp, OPTAB_WIDEN);
   if (! target)
     {
       end_sequence ();
@@ -1466,12 +1466,12 @@ noce_try_abs (if_info)
 
   start_sequence ();
 
-  target = expand_unop (GET_MODE (if_info->x), abs_optab, b, if_info->x, 0);
+  target = expand_simple_unop (GET_MODE (if_info->x), ABS, b, if_info->x, 0);
 
   /* ??? It's a quandry whether cmove would be better here, especially
      for integers.  Perhaps combine will clean things up.  */
   if (target && negate)
-    target = expand_unop (GET_MODE (target), neg_optab, target, if_info->x, 0);
+    target = expand_simple_unop (GET_MODE (target), NEG, target, if_info->x, 0);
 
   if (! target)
     {

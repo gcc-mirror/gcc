@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "regs.h"
 #include "expr.h"
-#include "optabs.h"
 #include "function.h"
 #include "toplev.h"
 #include "ggc.h"
@@ -1072,8 +1071,8 @@ gen_edge_profiler (edgeno)
   tmp = plus_constant (tmp, GCOV_TYPE_SIZE / BITS_PER_UNIT * edgeno);
   mem_ref = validize_mem (gen_rtx_MEM (mode, tmp));
 
-  tmp = expand_binop (mode, add_optab, mem_ref, const1_rtx,
-		      mem_ref, 0, OPTAB_WIDEN);
+  tmp = expand_simple_binop (mode, PLUS, mem_ref, const1_rtx,
+			     mem_ref, 0, OPTAB_WIDEN);
 
   if (tmp != mem_ref)
     emit_move_insn (copy_rtx (mem_ref), tmp);

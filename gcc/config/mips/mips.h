@@ -4572,7 +4572,7 @@ do									\
 	  init_one_libfunc ("__mips16_subsf3");				\
 	smul_optab->handlers[(int) SFmode].libfunc =			\
 	  init_one_libfunc ("__mips16_mulsf3");				\
-	flodiv_optab->handlers[(int) SFmode].libfunc =			\
+	sdiv_optab->handlers[(int) SFmode].libfunc =			\
 	  init_one_libfunc ("__mips16_divsf3");				\
 									\
 	eqsf2_libfunc = init_one_libfunc ("__mips16_eqsf2");		\
@@ -4595,7 +4595,7 @@ do									\
 	      init_one_libfunc ("__mips16_subdf3");			\
 	    smul_optab->handlers[(int) DFmode].libfunc =		\
 	      init_one_libfunc ("__mips16_muldf3");			\
-	    flodiv_optab->handlers[(int) DFmode].libfunc =		\
+	    sdiv_optab->handlers[(int) DFmode].libfunc =		\
 	      init_one_libfunc ("__mips16_divdf3");			\
 									\
 	    extendsfdf2_libfunc =					\

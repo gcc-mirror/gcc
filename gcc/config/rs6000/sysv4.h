@@ -1518,7 +1518,7 @@ ncrtn.o%s"
 	  = init_one_libfunc (NEGTF2_LIBCALL);				\
 	smul_optab->handlers[(int) TFmode].libfunc			\
 	  = init_one_libfunc (MULTF3_LIBCALL);				\
-	flodiv_optab->handlers[(int) TFmode].libfunc			\
+	sdiv_optab->handlers[(int) TFmode].libfunc			\
 	  = init_one_libfunc (DIVTF3_LIBCALL);				\
 	eqtf2_libfunc = init_one_libfunc (EQTF2_LIBCALL);		\
 	netf2_libfunc = init_one_libfunc (NETF2_LIBCALL);		\

@@ -101,7 +101,9 @@ static enum insn_code can_fix_p	PARAMS ((enum machine_mode, enum machine_mode,
 static enum insn_code can_float_p PARAMS ((enum machine_mode, enum machine_mode,
 					 int));
 static rtx ftruncify	PARAMS ((rtx));
-static optab init_optab	PARAMS ((enum rtx_code));
+static optab new_optab	PARAMS ((void));
+static inline optab init_optab	PARAMS ((enum rtx_code));
+static inline optab init_optabv	PARAMS ((enum rtx_code));
 static void init_libfuncs PARAMS ((optab, int, int, const char *, int));
 static void init_integral_libfuncs PARAMS ((optab, const char *, int));
 static void init_floating_libfuncs PARAMS ((optab, const char *, int));
@@ -599,6 +601,25 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
   return 1;
 }
 
+/* Wrapper around expand_binop which takes an rtx code to specify
+   the operation to perform, not an optab pointer.  All other
+   arguments are the same.  */
+rtx
+expand_simple_binop (mode, code, op0, op1, target, unsignedp, methods)
+     enum machine_mode mode;
+     enum rtx_code code;
+     rtx op0, op1;
+     rtx target;
+     int unsignedp;
+     enum optab_methods methods;
+{
+  optab binop = code_to_optab [(int) code];
+  if (binop == 0)
+    abort ();
+
+  return expand_binop (mode, binop, op0, op1, target, unsignedp, methods);
+}
+
 /* Generate code to perform an operation specified by BINOPTAB
    on operands OP0 and OP1, with result having machine-mode MODE.
 
@@ -2014,6 +2035,24 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
   return 0;
 }
 
+/* Wrapper around expand_unop which takes an rtx code to specify
+   the operation to perform, not an optab pointer.  All other
+   arguments are the same.  */
+rtx
+expand_simple_unop (mode, code, op0, target, unsignedp)
+     enum machine_mode mode;
+     enum rtx_code code;
+     rtx op0;
+     rtx target;
+     int unsignedp;
+{
+  optab unop = code_to_optab [(int) code];
+  if (unop == 0)
+    abort ();
+
+  return expand_unop (mode, unop, op0, target, unsignedp);
+}
+
 /* Generate code to perform an operation specified by UNOPTAB
    on operand OP0, with result having machine-mode MODE.
 
@@ -3830,6 +3869,26 @@ gen_sub2_insn (x, y)
   return (GEN_FCN (icode) (x, x, y));
 }
 
+/* Generate and return an insn body to subtract r1 and c,
+   storing the result in r0.  */
+rtx
+gen_sub3_insn (r0, r1, c)
+     rtx r0, r1, c;
+{
+  int icode = (int) sub_optab->handlers[(int) GET_MODE (r0)].insn_code;
+
+    if (icode == CODE_FOR_nothing
+      || ! ((*insn_data[icode].operand[0].predicate)
+	    (r0, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (r1, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (c, insn_data[icode].operand[2].mode)))
+    return NULL_RTX;
+
+  return (GEN_FCN (icode) (r0, r1, c));
+}
+
 int
 have_sub2_insn (x, y)
      rtx x, y;
@@ -4495,22 +4554,53 @@ expand_fix (to, from, unsignedp)
     }
 }
 
-static optab
-init_optab (code)
+/* Report whether we have an instruction to perform the operation
+   specified by CODE on operands of mode MODE.  */
+int
+have_insn_for (code, mode)
      enum rtx_code code;
+     enum machine_mode mode;
+{
+  return (code_to_optab[(int) code] != 0
+	  && (code_to_optab[(int) code]->handlers[(int) mode].insn_code
+	      != CODE_FOR_nothing));
+}
+
+/* Create a blank optab.  */
+static optab
+new_optab ()
 {
   int i;
   optab op = (optab) xmalloc (sizeof (struct optab));
-  op->code = code;
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
       op->handlers[i].insn_code = CODE_FOR_nothing;
       op->handlers[i].libfunc = 0;
     }
 
-  if (code != UNKNOWN)
-    code_to_optab[(int) code] = op;
+  return op;
+}
 
+/* Same, but fill in its code as CODE, and write it into the
+   code_to_optab table.  */
+static inline optab
+init_optab (code)
+     enum rtx_code code;
+{
+  optab op = new_optab ();
+  op->code = code;
+  code_to_optab[(int) code] = op;
+  return op;
+}
+
+/* Same, but fill in its code as CODE, and do _not_ write it into
+   the code_to_optab table.  */
+static inline optab
+init_optabv (code)
+     enum rtx_code code;
+{
+  optab op = new_optab ();
+  op->code = code;
   return op;
 }
 
@@ -4656,23 +4746,22 @@ init_optabs ()
 #endif
 
   add_optab = init_optab (PLUS);
-  addv_optab = init_optab (PLUS);
+  addv_optab = init_optabv (PLUS);
   sub_optab = init_optab (MINUS);
-  subv_optab = init_optab (MINUS);
+  subv_optab = init_optabv (MINUS);
   smul_optab = init_optab (MULT);
-  smulv_optab = init_optab (MULT);
+  smulv_optab = init_optabv (MULT);
   smul_highpart_optab = init_optab (UNKNOWN);
   umul_highpart_optab = init_optab (UNKNOWN);
   smul_widen_optab = init_optab (UNKNOWN);
   umul_widen_optab = init_optab (UNKNOWN);
   sdiv_optab = init_optab (DIV);
-  sdivv_optab = init_optab (DIV);
+  sdivv_optab = init_optabv (DIV);
   sdivmod_optab = init_optab (UNKNOWN);
   udiv_optab = init_optab (UDIV);
   udivmod_optab = init_optab (UNKNOWN);
   smod_optab = init_optab (MOD);
   umod_optab = init_optab (UMOD);
-  flodiv_optab = init_optab (DIV);
   ftrunc_optab = init_optab (UNKNOWN);
   and_optab = init_optab (AND);
   ior_optab = init_optab (IOR);
@@ -4686,15 +4775,19 @@ init_optabs ()
   smax_optab = init_optab (SMAX);
   umin_optab = init_optab (UMIN);
   umax_optab = init_optab (UMAX);
-  mov_optab = init_optab (UNKNOWN);
-  movstrict_optab = init_optab (UNKNOWN);
-  cmp_optab = init_optab (UNKNOWN);
+
+  /* These three have codes assigned exclusively for the sake of
+     have_insn_for.  */
+  mov_optab = init_optab (SET);
+  movstrict_optab = init_optab (STRICT_LOW_PART);
+  cmp_optab = init_optab (COMPARE);
+
   ucmp_optab = init_optab (UNKNOWN);
   tst_optab = init_optab (UNKNOWN);
   neg_optab = init_optab (NEG);
-  negv_optab = init_optab (NEG);
+  negv_optab = init_optabv (NEG);
   abs_optab = init_optab (ABS);
-  absv_optab = init_optab (ABS);
+  absv_optab = init_optabv (ABS);
   one_cmpl_optab = init_optab (NOT);
   ffs_optab = init_optab (FFS);
   sqrt_optab = init_optab (SQRT);
@@ -4741,13 +4834,13 @@ init_optabs ()
   init_integral_libfuncs (smulv_optab, "mulv", '3');
   init_floating_libfuncs (smulv_optab, "mul", '3');
   init_integral_libfuncs (sdiv_optab, "div", '3');
+  init_floating_libfuncs (sdiv_optab, "div", '3');
   init_integral_libfuncs (sdivv_optab, "divv", '3');
   init_integral_libfuncs (udiv_optab, "udiv", '3');
   init_integral_libfuncs (sdivmod_optab, "divmod", '4');
   init_integral_libfuncs (udivmod_optab, "udivmod", '4');
   init_integral_libfuncs (smod_optab, "mod", '3');
   init_integral_libfuncs (umod_optab, "umod", '3');
-  init_floating_libfuncs (flodiv_optab, "div", '3');
   init_floating_libfuncs (ftrunc_optab, "ftrunc", '2');
   init_integral_libfuncs (and_optab, "and", '3');
   init_integral_libfuncs (ior_optab, "ior", '3');

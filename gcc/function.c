@@ -46,11 +46,11 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "expr.h"
-#include "optabs.h"
 #include "libfuncs.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
+#include "insn-codes.h"
 #include "recog.h"
 #include "output.h"
 #include "basic-block.h"
@@ -5693,12 +5693,13 @@ round_trampoline_addr (tramp)
 #ifdef TRAMPOLINE_ALIGNMENT
   /* Round address up to desired boundary.  */
   rtx temp = gen_reg_rtx (Pmode);
-  temp = expand_binop (Pmode, add_optab, tramp,
-		       GEN_INT (TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT - 1),
-		       temp, 0, OPTAB_LIB_WIDEN);
-  tramp = expand_binop (Pmode, and_optab, temp,
-			GEN_INT (-TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT),
-			temp, 0, OPTAB_LIB_WIDEN);
+  rtx addend = GEN_INT (TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT - 1);
+  rtx mask = GEN_INT (-TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT);
+
+  temp  = expand_simple_binop (Pmode, PLUS, tramp, addend,
+			       temp, 0, OPTAB_LIB_WIDEN);
+  tramp = expand_simple_binop (Pmode, AND, temp, mask,
+			       temp, 0, OPTAB_LIB_WIDEN);
 #endif
   return tramp;
 }
@@ -6321,15 +6322,15 @@ expand_main_function ()
       int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
       rtx tmp;
 
-      /* Forcably align the stack.  */
+      /* Forcibly align the stack.  */
 #ifdef STACK_GROWS_DOWNWARD
-      tmp = expand_binop (Pmode, and_optab, stack_pointer_rtx,
-			  GEN_INT (-align), stack_pointer_rtx, 1, OPTAB_WIDEN);
+      tmp = expand_simple_binop (Pmode, AND, stack_pointer_rtx, GEN_INT(-align),
+				 stack_pointer_rtx, 1, OPTAB_WIDEN);
 #else
-      tmp = expand_binop (Pmode, add_optab, stack_pointer_rtx,
-			  GEN_INT (align - 1), NULL_RTX, 1, OPTAB_WIDEN);
-      tmp = expand_binop (Pmode, and_optab, tmp, GEN_INT (-align),
-			  stack_pointer_rtx, 1, OPTAB_WIDEN);
+      tmp = expand_simple_binop (Pmode, PLUS, stack_pointer_rtx,
+				 GEN_INT (align - 1), NULL_RTX, 1, OPTAB_WIDEN);
+      tmp = expand_simple_binop (Pmode, AND, tmp, GEN_INT (-align),
+				 stack_pointer_rtx, 1, OPTAB_WIDEN);
 #endif
       if (tmp != stack_pointer_rtx)
 	emit_move_insn (stack_pointer_rtx, tmp);

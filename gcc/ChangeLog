@@ -1,3 +1,34 @@
+2001-08-18  Zack Weinberg  <zackw@panix.com>
+
+	* optabs.h (OTI_flodiv, flodiv_optab): Kill.
+	* genopinit.c: Put floating point divide insns in sdiv_optab.
+	* expr.c (expand_expr): Use sdiv_optab, not flodiv_optab.
+	* config/gofast.h, config/c4x/c4x.h,
+	config/ia64/hpux_longdouble.h, config/mips/mips.h,
+	config/pa/long_double.h, config/rs6000/sysv4.h,
+	config/sparc/sparc.h: Put floating point divide libcalls in sdiv_optab.
+	* optabs.c (init_optab): Break into new_optab, init_optab, init_optabv.
+	(init_optabs): Use init_optabv for overflow-trapping optabs.
+	Don't init flodiv_optab.  Give mov_optab, movstrict_optab, and
+	cmp_optab RTX codes so have_insn_for can find them.
+
+	* optabs.c (expand_simple_binop, expand_simple_unop,
+	have_insn_for, gen_sub3_insn): New interfaces.
+	* expr.h: Prototype new functions.
+	(enum optab_methods): Move here from optabs.h.
+
+	* builtins.c, combine.c, doloop.c, function.c, ifcvt.c,
+	loop.c, profile.c, simplify-rtx.c, stmt.c, unroll.c:
+	Use new	functions instead of working directly with optabs.
+	* doloop.c, ifcvt.c, loop.c, profile.c, simplify-rtx.c,
+	unroll.c: Don't include optabs.h.
+	* caller-save.c, combine.c, function.c, stmt.c: Just include
+	insn-codes.h, not optabs.h.
+	* Makefile.in: Update dependencies.
+
+	* combine.c (make_compound_operation, simplify_comparison):
+	Fix typos testing for this or that instruction.
+
 2001-08-18  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
 	* mklibgcc.in: Prefer LIB1ASMFUNCS over LIB2_DIVMOD_FUNCS when

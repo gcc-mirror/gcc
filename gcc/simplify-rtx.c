@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "function.h"
 #include "expr.h"
-#include "optabs.h"
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"
@@ -2520,8 +2519,7 @@ simplify_subreg (outermode, op, innermode, byte)
       /* Allow splitting of volatile memory references in case we don't
          have instruction to move the whole thing.  */
       && (! MEM_VOLATILE_P (op)
-	  || (mov_optab->handlers[(int) innermode].insn_code
-	      == CODE_FOR_nothing))
+	  || ! have_insn_for (SET, innermode))
       && GET_MODE_SIZE (outermode) <= GET_MODE_SIZE (GET_MODE (op)))
     return adjust_address_nv (op, outermode, byte);
 

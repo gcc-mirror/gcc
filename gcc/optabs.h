@@ -79,8 +79,6 @@ enum optab_index
   /* Signed remainder */
   OTI_smod,
   OTI_umod,
-  /* Optab for floating divide. */
-  OTI_flodiv,
   /* Convert float to integer in float fmt */
   OTI_ftrunc,
 
@@ -173,7 +171,6 @@ extern optab optab_table[OTI_MAX];
 #define udivmod_optab (optab_table[OTI_udivmod])
 #define smod_optab (optab_table[OTI_smod])
 #define umod_optab (optab_table[OTI_umod])
-#define flodiv_optab (optab_table[OTI_flodiv])
 #define ftrunc_optab (optab_table[OTI_ftrunc])
 #define and_optab (optab_table[OTI_and])
 #define ior_optab (optab_table[OTI_ior])
@@ -228,21 +225,6 @@ extern enum insn_code reload_out_optab[NUM_MACHINE_MODES];
 
 /* Contains the optab used for each rtx code.  */
 extern optab code_to_optab[NUM_RTX_CODE + 1];
-
-/* Passed to expand_binop and expand_unop to say which options to try to use
-   if the requested operation can't be open-coded on the requisite mode.
-   Either OPTAB_LIB or OPTAB_LIB_WIDEN says try using a library call.
-   Either OPTAB_WIDEN or OPTAB_LIB_WIDEN says try using a wider mode.
-   OPTAB_MUST_WIDEN says try widening and don't try anything else.  */
-
-enum optab_methods
-{
-  OPTAB_DIRECT,
-  OPTAB_LIB,
-  OPTAB_WIDEN,
-  OPTAB_LIB_WIDEN,
-  OPTAB_MUST_WIDEN
-};
 
 
 typedef rtx (*rtxfun) PARAMS ((rtx));

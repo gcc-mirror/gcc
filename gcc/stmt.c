@@ -43,8 +43,8 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "insn-config.h"
+#include "insn-codes.h"
 #include "expr.h"
-#include "optabs.h"
 #include "libfuncs.h"
 #include "hard-reg-set.h"
 #include "obstack.h"
@@ -5326,14 +5326,12 @@ expand_end_case (orig_index)
 	     generate the conversion.  */
 
 	  if (GET_MODE_CLASS (GET_MODE (index)) == MODE_INT
-	      && (cmp_optab->handlers[(int) GET_MODE (index)].insn_code
-		  == CODE_FOR_nothing))
+	      && ! have_insn_for (COMPARE, GET_MODE (index)))
 	    {
 	      enum machine_mode wider_mode;
 	      for (wider_mode = GET_MODE (index); wider_mode != VOIDmode;
 		   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
-		if (cmp_optab->handlers[(int) wider_mode].insn_code
-		    != CODE_FOR_nothing)
+		if (have_insn_for (COMPARE, wider_mode))
 		  {
 		    index = convert_to_mode (wider_mode, index, unsignedp);
 		    break;
@@ -6345,13 +6343,14 @@ emit_case_nodes (index, node, default_label, index_type)
 	      tree type = type_for_mode (mode, unsignedp);
 	      tree low = build1 (CONVERT_EXPR, type, node->low);
 	      tree high = build1 (CONVERT_EXPR, type, node->high);
-	      rtx new_index, new_bound;
+	      rtx low_rtx, new_index, new_bound;
 
 	      /* Instead of doing two branches, emit one unsigned branch for
 		 (index-low) > (high-low).  */
-	      new_index = expand_binop (mode, sub_optab, index,
-					expand_expr (low, NULL_RTX, mode, 0),
-				        NULL_RTX, unsignedp, OPTAB_WIDEN);
+	      low_rtx = expand_expr (low, NULL_RTX, mode, 0);
+	      new_index = expand_simple_binop (mode, MINUS, index, low_rtx,
+					       NULL_RTX, unsignedp,
+					       OPTAB_WIDEN);
 	      new_bound = expand_expr (fold (build (MINUS_EXPR, type,
 						    high, low)),
 				       NULL_RTX, mode, 0);

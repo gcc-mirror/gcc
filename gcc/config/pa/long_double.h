@@ -70,7 +70,7 @@ do { long value[4];                                                     \
       = gen_rtx_SYMBOL_REF (Pmode, SUBTF3_LIBCALL);			\
     smul_optab->handlers[(int) TFmode].libfunc				\
       = gen_rtx_SYMBOL_REF (Pmode, MULTF3_LIBCALL);			\
-    flodiv_optab->handlers[(int) TFmode].libfunc			\
+    sdiv_optab->handlers[(int) TFmode].libfunc				\
       = gen_rtx_SYMBOL_REF (Pmode, DIVTF3_LIBCALL);			\
     smin_optab->handlers[(int) TFmode].libfunc				\
       = gen_rtx_SYMBOL_REF (Pmode, SMINTF3_LIBCALL);			\
