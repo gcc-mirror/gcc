@@ -28,14 +28,19 @@
 # test_summary | sh     # so as to actually send e-mail and move log files
 
 # It accepts a few command line arguments.  For example:
-# -o: re-reads logs that have been mailed already (.sum.sent)
-# -t: prevents logs from being renamed
-# -p: prepend specified file (or list of files: -p "a b") to the report
-# -i: append specified file (or list of files: -i "a b") to the report
-# -m: specify the e-mail address to send notes to.  An appropriate default
-#     should be selected from the log files.
-# -f: force reports to be mailed; if omitted, only reports that differ
-#     from the sent.* version are sent.
+if test x"$1" = "x-h"; then
+  cat <<_EOF
+ -o: re-reads logs that have been mailed already (.sum.sent)
+ -t: prevents logs from being renamed
+ -p: prepend specified file (or list of files: -p "a b") to the report
+ -i: append specified file (or list of files: -i "a b") to the report
+ -m: specify the e-mail address to send notes to.  An appropriate default
+     should be selected from the log files.
+ -f: force reports to be mailed; if omitted, only reports that differ
+     from the sent.* version are sent.
+_EOF
+  exit 0
+fi
 
 # Find a good awk.
 if test -z "$AWK" ; then
