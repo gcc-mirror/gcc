@@ -1,5 +1,9 @@
 2004-06-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/compat/struct-by-value-22_main.c: New test.
+	* gcc.dg/compat/struct-by-value-22_x.c: New.
+	* gcc.dg/compat/struct-by-value-22_y.c: New.
+
 	* gcc.c-torture/execute/20040629-1.c: New test.
 
 2004-06-29  Jakub Jelinek  <jakub@redhat.com>
