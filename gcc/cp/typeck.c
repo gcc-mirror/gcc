@@ -1726,7 +1726,7 @@ decay_conversion (exp)
 	     is not the target type of the type of the ADDR_EXPR itself.
 	     Question is, can this lossage be avoided?  */
 	  adr = build1 (ADDR_EXPR, ptrtype, exp);
-	  if (mark_addressable (exp) == 0)
+	  if (!cxx_mark_addressable (exp))
 	    return error_mark_node;
 	  TREE_CONSTANT (adr) = staticp (exp);
 	  TREE_SIDE_EFFECTS (adr) = 0;   /* Default would be, same as EXP.  */
@@ -2446,7 +2446,7 @@ build_array_ref (array, idx)
 	      && (TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))))
 		  != INTEGER_CST)))
 	{
-	  if (mark_addressable (array) == 0)
+	  if (!cxx_mark_addressable (array))
 	    return error_mark_node;
 	}
 
@@ -2458,7 +2458,7 @@ build_array_ref (array, idx)
 	  && TYPE_VALUES (TREE_TYPE (array))
 	  && ! int_fits_type_p (idx, TYPE_VALUES (TREE_TYPE (array))))
 	{
-	  if (mark_addressable (array) == 0)
+	  if (!cxx_mark_addressable (array))
 	    return error_mark_node;
 	}
 
@@ -4539,7 +4539,7 @@ build_unary_op (code, xarg, noconvert)
       /* For &x[y], return x+y */
       if (TREE_CODE (arg) == ARRAY_REF)
 	{
-	  if (mark_addressable (TREE_OPERAND (arg, 0)) == 0)
+	  if (!cxx_mark_addressable (TREE_OPERAND (arg, 0)))
 	    return error_mark_node;
 	  return cp_build_binary_op (PLUS_EXPR, TREE_OPERAND (arg, 0),
 				     TREE_OPERAND (arg, 1));
@@ -4627,7 +4627,7 @@ build_unary_op (code, xarg, noconvert)
       if (argtype != error_mark_node)
 	argtype = build_pointer_type (argtype);
 
-      if (mark_addressable (arg) == 0)
+      if (!cxx_mark_addressable (arg))
 	return error_mark_node;
 
       {
@@ -4811,18 +4811,18 @@ unary_complex_lvalue (code, arg)
 
 /* Mark EXP saying that we need to be able to take the
    address of it; it should not be allocated in a register.
-   Value is 1 if successful.
+   Value is true if successful.
 
    C++: we do not allow `current_class_ptr' to be addressable.  */
 
-int
-mark_addressable (exp)
+bool
+cxx_mark_addressable (exp)
      tree exp;
 {
   register tree x = exp;
 
   if (TREE_ADDRESSABLE (x) == 1)
-    return 1;
+    return true;
 
   while (1)
     switch (TREE_CODE (x))
@@ -4840,7 +4840,7 @@ mark_addressable (exp)
 	  {
             error ("cannot take the address of `this', which is an rvalue expression");
 	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
-	    return 1;
+	    return true;
 	  }
       case VAR_DECL:
 	/* Caller should not be trying to mark initialized
@@ -4857,24 +4857,24 @@ mark_addressable (exp)
 	  warning ("address requested for `%D', which is declared `register'",
 		      x);
 	TREE_ADDRESSABLE (x) = 1;
-	return 1;
+	return true;
 
       case FUNCTION_DECL:
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (x)) = 1;
-	return 1;
+	return true;
 
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
-	return 1;
+	return true;
 
       case TARGET_EXPR:
 	TREE_ADDRESSABLE (x) = 1;
-	mark_addressable (TREE_OPERAND (x, 0));
-	return 1;
+	cxx_mark_addressable (TREE_OPERAND (x, 0));
+	return true;
 
       default:
-	return 1;
+	return true;
     }
 }
 

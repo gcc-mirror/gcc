@@ -6061,7 +6061,7 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
       /* The target must be a REFERENCE_TYPE.  Above, build_unary_op
 	 will mark the function as addressed, but here we must do it
 	 explicitly.  */
-      mark_addressable (fn);
+      cxx_mark_addressable (fn);
 
       return fn;
     }

@@ -266,6 +266,7 @@ static tree ffe_type_for_size PARAMS ((unsigned int, int));
 static tree ffe_unsigned_type PARAMS ((tree));
 static tree ffe_signed_type PARAMS ((tree));
 static tree ffe_signed_or_unsigned_type PARAMS ((int, tree));
+static bool ffe_mark_addressable PARAMS ((tree));
 static void ffecom_init_decl_processing PARAMS ((void));
 static tree ffecom_arglist_expr_ (const char *argstring, ffebld args);
 static tree ffecom_widest_expr_type_ (ffebld list);
@@ -860,7 +861,7 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 	return item;
 
       if (ffeinfo_where (ffebld_info (expr)) == FFEINFO_whereFLEETING
-	  && ! mark_addressable (item))
+	  && ! ffe_mark_addressable (item))
 	return error_mark_node;
     }
 
@@ -9531,7 +9532,7 @@ ffecom_1 (enum tree_code code, tree type, tree node)
 
   if (code == ADDR_EXPR)
     {
-      if (!mark_addressable (node))
+      if (!ffe_mark_addressable (node))
 	assert ("can't mark_addressable this node!" == NULL);
     }
 
@@ -14227,6 +14228,8 @@ static void ffe_mark_tree (tree);
 #define LANG_HOOKS_PARSE_FILE		ffe_parse_file
 #undef  LANG_HOOKS_MARK_TREE
 #define LANG_HOOKS_MARK_TREE		ffe_mark_tree
+#undef  LANG_HOOKS_MARK_ADDRESSABLE
+#define LANG_HOOKS_MARK_ADDRESSABLE	ffe_mark_addressable
 #undef  LANG_HOOKS_PRINT_IDENTIFIER
 #define LANG_HOOKS_PRINT_IDENTIFIER	ffe_print_identifier
 #undef  LANG_HOOKS_DECL_PRINTABLE_NAME
@@ -14346,8 +14349,8 @@ ffe_init_options ()
   flag_complex_divide_method = 1;
 }
 
-int
-mark_addressable (exp)
+static bool
+ffe_mark_addressable (exp)
      tree exp;
 {
   register tree x = exp;
@@ -14362,7 +14365,7 @@ mark_addressable (exp)
 
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
-	return 1;
+	return true;
 
       case VAR_DECL:
       case CONST_DECL:
@@ -14374,7 +14377,7 @@ mark_addressable (exp)
 	    if (TREE_PUBLIC (x))
 	      {
 		assert ("address of global register var requested" == NULL);
-		return 0;
+		return false;
 	      }
 	    assert ("address of register variable requested" == NULL);
 	  }
@@ -14383,7 +14386,7 @@ mark_addressable (exp)
 	    if (TREE_PUBLIC (x))
 	      {
 		assert ("address of global register var requested" == NULL);
-		return 0;
+		return false;
 	      }
 	    assert ("address of register var requested" == NULL);
 	  }
@@ -14398,7 +14401,7 @@ mark_addressable (exp)
 #endif
 
       default:
-	return 1;
+	return true;
       }
 }
 

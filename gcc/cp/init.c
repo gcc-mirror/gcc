@@ -1796,7 +1796,7 @@ resolve_offset_ref (exp)
       || TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE)
     {
       /* These were static members.  */
-      if (mark_addressable (member) == 0)
+      if (!cxx_mark_addressable (member))
 	return error_mark_node;
       return member;
     }

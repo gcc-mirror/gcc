@@ -421,7 +421,7 @@ tree_transform (gnat_node)
 	 right now.  */
       if (TREE_VALUE (gnu_except_ptr_stack) != 0)
 	{
-	  mark_addressable (gnu_result);
+	  gnat_mark_addressable (gnu_result);
 	  flush_addressof (gnu_result);
 	}
 
@@ -4764,9 +4764,10 @@ convert_with_check (gnat_type, gnu_expr, overflow_p, range_p, truncate_p)
   return convert (gnu_type, gnu_result);
 }
 
-/* Return 1 if GNU_EXPR can be directly addressed.  This is the case unless
-   it is an expression involving computation or if it involves a bitfield
-   reference.  This returns the same as mark_addressable in most cases.  */
+/* Return 1 if GNU_EXPR can be directly addressed.  This is the case
+   unless it is an expression involving computation or if it involves
+   a bitfield reference.  This returns the same as
+   gnat_mark_addressable in most cases.  */
 
 static int
 addressable_p (gnu_expr)

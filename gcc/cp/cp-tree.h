@@ -3672,6 +3672,7 @@ extern tree pushdecl				PARAMS ((tree));
 extern void cxx_init_decl_processing		PARAMS ((void));
 extern void cxx_mark_tree			PARAMS ((tree));
 extern void cxx_insert_default_attributes	PARAMS ((tree));
+extern bool cxx_mark_addressable		PARAMS ((tree));
 extern int toplevel_bindings_p			PARAMS ((void));
 extern int namespace_bindings_p			PARAMS ((void));
 extern void keep_next_level			PARAMS ((int));

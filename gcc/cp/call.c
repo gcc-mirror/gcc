@@ -355,7 +355,7 @@ build_addr_func (function)
 
       type = build_pointer_type (type);
 
-      if (mark_addressable (function) == 0)
+      if (!cxx_mark_addressable (function))
 	return error_mark_node;
 
       addr = build1 (ADDR_EXPR, type, function);
