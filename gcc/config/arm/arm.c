@@ -986,6 +986,33 @@ arm_split_constant (code, mode, val, target, source, subtargets)
   return arm_gen_constant (code, mode, val, target, source, subtargets, 1);
 }
 
+static int
+count_insns_for_constant (HOST_WIDE_INT remainder, int i)
+{
+  HOST_WIDE_INT temp1;
+  int num_insns = 0;
+  do
+    {
+      int end;
+	  
+      if (i <= 0)
+	i += 32;
+      if (remainder & (3 << (i - 2)))
+	{
+	  end = i - 8;
+	  if (end < 0)
+	    end += 32;
+	  temp1 = remainder & ((0x0ff << end)
+				    | ((i < end) ? (0xff >> (32 - end)) : 0));
+	  remainder &= ~temp1;
+	  num_insns++;
+	  i -= 6;
+	}
+      i -= 2;
+    } while (remainder);
+  return num_insns;
+}
+
 /* As above, but extra parameter GENERATE which, if clear, suppresses
    RTL generation.  */
 static int
@@ -1466,9 +1493,36 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	  }
       }
 
-    /* Now start emitting the insns, starting with the one with the highest
-       bit set: we do this so that the smallest number will be emitted last;
-       this is more likely to be combinable with addressing insns.  */
+    /* So long as it won't require any more insns to do so, it's
+       desirable to emit a small constant (in bits 0...9) in the last
+       insn.  This way there is more chance that it can be combined with
+       a later addressing insn to form a pre-indexed load or store
+       operation.  Consider:
+
+	       *((volatile int *)0xe0000100) = 1;
+	       *((volatile int *)0xe0000110) = 2;
+
+       We want this to wind up as:
+
+		mov rA, #0xe0000000
+		mov rB, #1
+		str rB, [rA, #0x100]
+		mov rB, #2
+		str rB, [rA, #0x110]
+
+       rather than having to synthesize both large constants from scratch.
+
+       Therefore, we calculate how many insns would be required to emit
+       the constant starting from `best_start', and also starting from 
+       zero (ie with bit 31 first to be output).  If `best_start' doesn't 
+       yield a shorter sequence, we may as well use zero.  */
+    if (best_start != 0
+	&& ((((unsigned HOST_WIDE_INT) 1) << best_start) < remainder)
+	&& (count_insns_for_constant (remainder, 0) <= 
+	    count_insns_for_constant (remainder, best_start)))
+      best_start = 0;
+
+    /* Now start emitting the insns.  */
     i = best_start;
     do
       {
