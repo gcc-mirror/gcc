@@ -136,9 +136,6 @@ extern enum processor_type arm_cpu;
    - if floating point is done by emulation, forget about instruction
      scheduling.  Note that this only saves compilation time; it doesn't
      matter for the final code.  */
-#ifndef TARGET_WHEN_DEBUGGING
-#define TARGET_WHEN_DEBUGGING  1
-#endif
 
 #define OVERRIDE_OPTIONS  \
 {								\
@@ -374,8 +371,7 @@ extern enum processor_type arm_cpu;
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)  \
-  (((MODE1) == SFmode || (MODE1) == DFmode)      \
-   == ((MODE2) == SFmode || (MODE2) == DFmode))
+  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -494,12 +490,16 @@ enum reg_class
 	I: immediate arithmetic operand (i.e. 8 bits shifted as required).
 	J: valid indexing constants.  
 	K: ~value ok in rhs argument of data operand.
-	L: -value ok in rhs argument of data operand. */
+	L: -value ok in rhs argument of data operand. 
+        M: 0..32, or a power of 2  (for shifts, or mult done by shift).  */
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  		\
   ((C) == 'I' ? const_ok_for_arm (VALUE) :		\
    (C) == 'J' ? ((VALUE) < 4096 && (VALUE) > -4096) :	\
    (C) == 'K' ? (const_ok_for_arm (~(VALUE))) :		\
-   (C) == 'L' ? (const_ok_for_arm (-(VALUE))) : 0)
+   (C) == 'L' ? (const_ok_for_arm (-(VALUE))) :		\
+   (C) == 'M' ? (((VALUE >= 0 && VALUE <= 32))		\
+		 || (((VALUE) & ((VALUE) - 1)) == 0))	\
+   : 0)
 
 /* For the ARM, `Q' means that this is a memory operand that is just
    an offset from a register.  
@@ -696,7 +696,6 @@ enum reg_class
     fprintf(STREAM, "\tmov\t%sip, %slr\n", ARM_REG_PREFIX, ARM_REG_PREFIX); \
     fprintf(STREAM, "\tbl\tmcount\n");					    \
     fprintf(STREAM, "\t.word\tLP%d\n", (LABELNO));			    \
-    arm_increase_location (12);						    \
 }
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
@@ -749,6 +748,7 @@ enum reg_class
    its replacement, at the start of a routine.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
 {									\
+  int volatile_func = arm_volatile_func ();				\
   if ((FROM) == ARG_POINTER_REGNUM && (TO) == HARD_FRAME_POINTER_REGNUM)\
     (OFFSET) = 0;							\
   else if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)\
@@ -759,19 +759,22 @@ enum reg_class
       int offset = 12;							\
       int saved_hard_reg = 0;						\
 									\
-      for (regno = 0; regno <= 10; regno++)				\
-	if (regs_ever_live[regno] && ! call_used_regs[regno])		\
-	  saved_hard_reg = 1, offset += 4;				\
-      for (regno = 16; regno <=23; regno++)				\
-	if (regs_ever_live[regno] && ! call_used_regs[regno])		\
-	  offset += 12;							\
+      if (! volatile_func)						\
+        {								\
+          for (regno = 0; regno <= 10; regno++)				\
+	    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
+	      saved_hard_reg = 1, offset += 4;				\
+          for (regno = 16; regno <=23; regno++)				\
+	    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
+	      offset += 12;						\
+	}								\
       if ((FROM) == FRAME_POINTER_REGNUM)				\
 	(OFFSET) = -offset;						\
       else								\
 	{								\
 	   if (! regs_ever_live[HARD_FRAME_POINTER_REGNUM])		\
 	     offset -= 16;						\
-	   if (regs_ever_live[14] || saved_hard_reg)			\
+	   if (! volatile_func && (regs_ever_live[14] || saved_hard_reg)) \
 	     offset += 4;						\
 	   (OFFSET) = (get_frame_size () + 3 & ~3) + offset;		\
          }								\
@@ -1049,47 +1052,65 @@ do									\
    On the ARM, try to convert [REG, #BIGCONST]
    into ADD BASE, REG, #UPPERCONST and [BASE, #VALIDCONST],
    where VALIDCONST == 0 in case of TImode.  */
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)  \
-{						        		     \
-  if (GET_CODE (X) == PLUS)			        		     \
-    {						        		     \
-      rtx xop0 = XEXP (X, 0);			        		     \
-      rtx xop1 = XEXP (X, 1);			        		     \
-						        		     \
-      if (BASE_REGISTER_RTX_P (xop0) && GET_CODE (xop1) == CONST_INT)	     \
-	{					        		     \
-	  int n = INTVAL (xop1);		        		     \
-	  int low_n = ((MODE) == TImode ? 0	        		     \
-		       : n >= 0 ? (n & 0xFFF) : -((-n) & 0xFFF));	     \
-	  rtx base_reg = gen_reg_rtx (SImode);	        		     \
-	  rtx val = force_operand (gen_rtx (PLUS, SImode, xop0,		     \
-					    gen_rtx (CONST_INT,		     \
-						     VOIDmode, n - low_n)),  \
-				   0);					     \
-          emit_move_insn (base_reg, val);				     \
-	  (X) = (low_n == 0 ? base_reg					     \
-		 : gen_rtx (PLUS, SImode, base_reg,			     \
-			    gen_rtx (CONST_INT, VOIDmode, low_n)));	     \
-	}								     \
-      else if (BASE_REGISTER_RTX_P (xop1) && GET_CODE (xop0) == CONST_INT)   \
-	{								     \
-	  int n = INTVAL (xop0);					     \
-	  int low_n = ((MODE) == TImode ? 0				     \
-		       : n >= 0 ? (n & 0xFFF) : -((-n) & 0xFFF));	     \
-	  rtx base_reg = gen_reg_rtx (SImode);				     \
-	  rtx val = force_operand (gen_rtx (PLUS, SImode, xop1,		     \
-					    gen_rtx (CONST_INT,		     \
-						     VOIDmode, n - low_n)),  \
-				   0);					     \
-	  emit_move_insn (base_reg, val);				     \
-	  (X) = (low_n == 0 ? base_reg					     \
-		 : gen_rtx (PLUS, SImode, base_reg,			     \
-			    gen_rtx (CONST_INT, VOIDmode, low_n)));	     \
-	}								     \
-    }									     \
-  if (memory_address_p (MODE, X))					     \
-    goto win;								     \
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				 \
+{									 \
+  if (GET_CODE (X) == PLUS)						 \
+    {									 \
+      rtx xop0 = XEXP (X, 0);						 \
+      rtx xop1 = XEXP (X, 1);						 \
+									 \
+      if (CONSTANT_P (xop0) && ! LEGITIMATE_CONSTANT_P (xop0))		 \
+	xop0 = force_reg (SImode, xop0);				 \
+      if (CONSTANT_P (xop1) && ! LEGITIMATE_CONSTANT_P (xop1))		 \
+	xop1 = force_reg (SImode, xop1);				 \
+      if (BASE_REGISTER_RTX_P (xop0) && GET_CODE (xop1) == CONST_INT)	 \
+	{								 \
+	  HOST_WIDE_INT n, low_n;					 \
+	  rtx base_reg, val;						 \
+	  n = INTVAL (xop1);						 \
+									 \
+	  if (MODE == DImode)						 \
+	    {								 \
+	      low_n = n & 0x0f;						 \
+	      n &= ~0x0f;						 \
+	      if (low_n > 4)						 \
+		{							 \
+		  n += 16;						 \
+		  low_n -= 16;						 \
+		}							 \
+	    }								 \
+	  else								 \
+	    {								 \
+	      low_n = ((MODE) == TImode ? 0				 \
+		       : n >= 0 ? (n & 0xfff) : -((-n) & 0xfff));	 \
+	      n -= low_n;						 \
+	    }								 \
+	  base_reg = gen_reg_rtx (SImode);				 \
+	  val = force_operand (gen_rtx (PLUS, SImode, xop0,		 \
+					GEN_INT (n)), NULL_RTX);	 \
+	  emit_move_insn (base_reg, val);				 \
+	  (X) = (low_n == 0 ? base_reg					 \
+		 : gen_rtx (PLUS, SImode, base_reg, GEN_INT (low_n)));	 \
+	}								 \
+      else if (xop0 != XEXP (X, 0) || xop1 != XEXP (x, 1))		 \
+	(X) = gen_rtx (PLUS, SImode, xop0, xop1);			 \
+    }									 \
+  else if (GET_CODE (X) == MINUS)					 \
+    {									 \
+      rtx xop0 = XEXP (X, 0);						 \
+      rtx xop1 = XEXP (X, 1);						 \
+									 \
+      if (CONSTANT_P (xop0))						 \
+	xop0 = force_reg (SImode, xop0);				 \
+      if (CONSTANT_P (xop1) && ! LEGITIMATE_CONSTANT_P (xop1))		 \
+	xop1 = force_reg (SImode, xop1);				 \
+      if (xop0 != XEXP (X, 0) || xop1 != XEXP (X, 1))			 \
+	(X) = gen_rtx (MINUS, SImode, xop0, xop1);			 \
+    }									 \
+  if (memory_address_p (MODE, X))					 \
+    goto WIN;								 \
 }
+
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
@@ -1118,7 +1139,7 @@ do									\
 /* signed 'char' is most compatible, but RISC OS wants it unsigned.
    unsigned is probably best, but may break some code.  */
 #ifndef DEFAULT_SIGNED_CHAR
-#define DEFAULT_SIGNED_CHAR  1
+#define DEFAULT_SIGNED_CHAR  0
 #endif
 
 /* Don't cse the address of the function being compiled.  */
@@ -1204,91 +1225,38 @@ do									\
        return -1;						\
     return(7);
 
+#define ARM_FRAME_RTX(X)				\
+  ((X) == frame_pointer_rtx || (X) == stack_pointer_rtx	\
+   || (X) == arg_pointer_rtx)
+
 #define RTX_COSTS(X,CODE,OUTER_CODE)                                    \
-  case MEM:                                                             \
-    {                                                                   \
-      int num_words = (GET_MODE_SIZE (GET_MODE (X)) > UNITS_PER_WORD) ? 2 : 1;\
-      return (COSTS_N_INSNS (10*num_words));                             \
-    }                                                                   \
-  case MULT:                                                            \
-    if (GET_CODE (XEXP (X, 1)) == CONST_INT                             \
-        && exact_log2 (INTVAL (XEXP (X, 1))) >= 0)                      \
-      return rtx_cost (XEXP (X, 0), GET_CODE (X))+1;                    \
-    return COSTS_N_INSNS (9);                                           \
-  case ASHIFT:								\
-  case LSHIFTRT:							\
-  case ASHIFTRT:							\
-    if (GET_CODE (XEXP (X, 1)) == CONST_INT)				\
-      return rtx_cost (XEXP (X, 0), GET_CODE (X))+1;			\
-    break;								\
-  case MINUS:								\
-  {									\
-    enum rtx_code code = GET_CODE (XEXP (X, 1));			\
-    if (code == MULT)							\
-      {									\
-	if (GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT		\
-	    && exact_log2 (INTVAL (XEXP (XEXP (X, 0), 1))) >= 0)	\
-	  return COSTS_N_INSNS (1);					\
-	break;								\
-      }									\
-    else if (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT)	\
-      return COSTS_N_INSNS (1);						\
-  } /* fall through */							\
-  case PLUS:								\
-  case IOR:								\
-  case XOR:								\
-  case AND:								\
-  {									\
-    enum rtx_code code = GET_CODE (XEXP (X, 0));			\
-    if (code == MULT)							\
-      {									\
-	if (GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
-	    && exact_log2 (INTVAL (XEXP (XEXP (X, 0), 1))) >= 0)	\
-	  return COSTS_N_INSNS (1);					\
-	if (GET_CODE (X) == PLUS)					\
-	  return COSTS_N_INSNS (12);					\
-	break;								\
-      }									\
-    else if (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT)	\
-      return COSTS_N_INSNS (1);						\
-    break;								\
-  }									\
-  case NOT:								\
-    return rtx_cost (XEXP (X, 0), GET_CODE (XEXP (X, 0)));		\
-  case IF_THEN_ELSE:                                                    \
-    {                                                                   \
-      if (GET_CODE (XEXP(X,1)) == PC || GET_CODE (XEXP(X,2)) == PC)     \
-        return COSTS_N_INSNS (4);                                       \
-      return COSTS_N_INSNS (1);                                 	\
-    }                                                                   \
-  case SIGN_EXTEND:                                                     \
-    return COSTS_N_INSNS (2);						\
-  case ZERO_EXTEND:							\
-    if (GET_MODE (XEXP (X, 0)) == QImode)				\
-      {									\
-	if (GET_CODE (XEXP (X, 0)) == MEM)				\
-	  return COSTS_N_INSNS (10);					\
-	return COSTS_N_INSNS (1);					\
-      }									\
-    break;								\
-  case COMPARE:								\
-    if (GET_CODE (XEXP (X, 1)) == REG)					\
-      return 4;								\
-  case SMIN:								\
-  case SMAX:								\
-  case UMIN:								\
-  case UMAX:								\
-    return COSTS_N_INSNS (3);						\
-  case ABS:								\
-    if (GET_MODE (X) == SImode)						\
-      return COSTS_N_INSNS (2);						\
-    return COSTS_N_INSNS (1);
+  default:								\
+   return arm_rtx_costs (X, CODE, OUTER_CODE);
 
 /* Moves to and from memory are quite expensive */
 #define MEMORY_MOVE_COST(MODE)  10
 
-/* All address computations that can be done are free */
-#define ADDRESS_COST(x) 2
+/* All address computations that can be done are free, but rtx cost returns
+   the same for practically all of them.  So we weight the differnt types
+   of address here in the order (most pref first):
+   PRE/POST_INC/DEC, SHIFT or NON-INT sum, INT sum, REG, MEM or LABEL. */
+#define ADDRESS_COST(X)							     \
+  (10 - ((GET_CODE (X) == MEM || GET_CODE (X) == LABEL_REF		     \
+	  || GET_CODE (X) == SYMBOL_REF)				     \
+	 ? 0								     \
+	 : ((GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC		     \
+	     || GET_CODE (X) == POST_INC || GET_CODE (X) == POST_DEC)	     \
+	    ? 10							     \
+	    : (((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS)		     \
+		? 6 + (GET_CODE (XEXP (X, 1)) == CONST_INT ? 2 		     \
+		       : ((GET_RTX_CLASS (GET_CODE (XEXP (X, 0))) == '2'     \
+			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 0))) == 'c'  \
+			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 1))) == '2'  \
+			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 1))) == 'c') \
+			  ? 1 : 0))					     \
+		: 4)))))
+	 
+   
 
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */
@@ -1342,7 +1310,7 @@ extern int arm_compare_fp;
   {"arm_not_operand", {SUBREG, REG, CONST_INT}},			\
   {"shiftable_operator", {PLUS, MINUS, AND, IOR, XOR}},			\
   {"minmax_operator", {SMIN, SMAX, UMIN, UMAX}},			\
-  {"shift_operator", {ASHIFT, ASHIFTRT, LSHIFTRT, MULT}},	\
+  {"shift_operator", {ASHIFT, ASHIFTRT, LSHIFTRT, ROTATERT, MULT}},	\
   {"di_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}},		\
   {"load_multiple_operation", {PARALLEL}},				\
   {"store_multiple_operation", {PARALLEL}},				\
@@ -1350,6 +1318,8 @@ extern int arm_compare_fp;
   {"arm_rhsm_operand", {SUBREG, REG, CONST_INT, MEM}},			\
   {"const_shift_operand", {CONST_INT}},					\
   {"index_operand", {SUBREG, REG, CONST_INT}},				\
+  {"reg_or_int_operand", {SUBREG, REG, CONST_INT}},			\
+  {"multi_register_push", {PARALLEL}},					\
   {"cc_register", {REG}},
 
 
@@ -1430,7 +1400,9 @@ extern int arm_compare_fp;
 #define DBX_DEBUGGING_INFO  1
 
 /* Acorn dbx moans about continuation chars, so don't use any.  */
+#ifndef DBX_CONTIN_LENGTH
 #define DBX_CONTIN_LENGTH  0
+#endif
 
 /* Output a source filename for the debugger. RISCiX dbx insists that the
    ``desc'' field is set to compiler version number >= 315 (sic).  */
@@ -1709,7 +1681,7 @@ do { char dstr[30];							\
 	  case ASHIFT:							\
 	  case ROTATERT:						\
 	  {								\
-	    fprintf (STREAM, "[%s%s, %s%s%s, ", ARM_REG_PREFIX,		\
+	    fprintf (STREAM, "[%s%s, %s%s%s", ARM_REG_PREFIX,		\
 		     base_reg_name, is_minus ? "-" : "", ARM_REG_PREFIX,\
 		     reg_names[REGNO (XEXP (index, 0))]);		\
 	    arm_print_operand (STREAM, index, 'S');			\
