@@ -726,11 +726,14 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	  if (rtx_equal_for_memref_p (x0, y0))
 	    return memrefs_conflict_p (xsize, x1, ysize, y1, c);
 	  if (GET_CODE (x1) == CONST_INT)
-	    if (GET_CODE (y1) == CONST_INT)
-	      return memrefs_conflict_p (xsize, x0, ysize, y0,
-					 c - INTVAL (x1) + INTVAL (y1));
-	    else
-	      return memrefs_conflict_p (xsize, x0, ysize, y, c - INTVAL (x1));
+	    {
+	      if (GET_CODE (y1) == CONST_INT)
+		return memrefs_conflict_p (xsize, x0, ysize, y0,
+					   c - INTVAL (x1) + INTVAL (y1));
+	      else
+		return memrefs_conflict_p (xsize, x0, ysize, y,
+					   c - INTVAL (x1));
+	    }
 	  else if (GET_CODE (y1) == CONST_INT)
 	    return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
 

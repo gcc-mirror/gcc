@@ -1,3 +1,9 @@
+Fri Aug 14 14:12:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* i386.h (MODES_TIEABLE_P): Reorganize to shut up warnings.
+	* alias.c (memrefs_conflict_p): Add braces to shut up warnings.
+	* cse.c (cse_basic_block): Add parens to shut up warnings.
+
 Fri Aug 14 12:58:21 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (sparc_emit_set_const64_quick2,
@@ -26,8 +32,8 @@ Fri Aug 14 21:52:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Fri Aug 14 16:50:10 1998  John Carr  <jfc@mit.edu>
 
-	* genrecog.c (add_to_sequence): Fatal error if the modes of the operands
-	of SET are incompatible.
+	* genrecog.c (add_to_sequence): Fatal error if the modes of the
+	operands of SET are incompatible.
 
 	* alpha.md: Fix max and min patterns so modes of SET operands match.
 

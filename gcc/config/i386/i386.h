@@ -664,8 +664,8 @@ extern int ix86_arch;
 
 #define MODES_TIEABLE_P(MODE1, MODE2)				\
   ((MODE1) == (MODE2)						\
-   || ((MODE1) == SImode && (MODE2) == HImode			\
-       || (MODE1) == HImode && (MODE2) == SImode))
+   || ((MODE1) == SImode && (MODE2) == HImode)			\
+   || ((MODE1) == HImode && (MODE2) == SImode))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
