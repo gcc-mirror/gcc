@@ -1,3 +1,17 @@
+2002-02-27  Graham Stott  <grahams@redhat.com>
+
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DELC):
+	Constify NAME.
+
+	* loop.c (prescan_loop): Handle PARALLEL.
+
+	* unroll.c (loop_iterations): Return 0 if the add_val for
+	a BIV is REG.
+
+	* final.c (output_operand_lossage): Constify PFX_STR.
+
+	* df.c (df_insn_refs_record): Use XEXP (x, 0) for USE.
+
 2002-02-26  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (ashldi_se): Re-enable.
