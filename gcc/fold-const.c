@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -60,6 +60,7 @@ static tree const_binop PROTO((enum tree_code, tree, tree, int));
 static tree fold_convert PROTO((tree, tree));
 static enum tree_code invert_tree_comparison PROTO((enum tree_code));
 static enum tree_code swap_tree_comparison PROTO((enum tree_code));
+static int truth_value_p PROTO((enum tree_code));
 static int operand_equal_for_comparison_p PROTO((tree, tree, tree));
 static int twoval_comparison_p PROTO((tree, tree *, tree *, int *));
 static tree eval_subst	PROTO((tree, tree, tree, tree, tree));
@@ -1737,6 +1738,18 @@ swap_tree_comparison (code)
       abort ();
     }
 }
+
+/* Return nonzero if CODE is a tree code that represents a truth value.  */
+
+static int
+truth_value_p (code)
+     enum tree_code code;
+{
+  return (TREE_CODE_CLASS (code) == '<'
+	  || code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
+	  || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
+	  || code == TRUTH_XOR_EXPR || code == TRUTH_NOT_EXPR);
+}
 
 /* Return nonzero if two operands are necessarily equal.
    If ONLY_CONST is non-zero, only return non-zero for constants.
@@ -3191,20 +3204,20 @@ fold (expr)
      expand_expr.
 
      Before we do that, see if this is a BIT_AND_EXPR or a BIT_OR_EXPR,
-     one of the operands is a comparison and the other is either a comparison
-     or a BIT_AND_EXPR with the constant 1.  In that case, the code below
-     would make the expression more complex.  Change it to a
+     one of the operands is a comparison and the other is a comparison, a
+     BIT_AND_EXPR with the constant 1, or a truth value.  In that case, the
+     code below would make the expression more complex.  Change it to a
      TRUTH_{AND,OR}_EXPR.  Likewise, convert a similar NE_EXPR to 
      TRUTH_XOR_EXPR and an EQ_EXPR to the inversion of a TRUTH_XOR_EXPR.  */
 
   if ((code == BIT_AND_EXPR || code == BIT_IOR_EXPR
        || code == EQ_EXPR || code == NE_EXPR)
-      && ((TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
-	   && (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
+      && ((truth_value_p (TREE_CODE (arg0))
+	   && (truth_value_p (TREE_CODE (arg1))
 	       || (TREE_CODE (arg1) == BIT_AND_EXPR
 		   && integer_onep (TREE_OPERAND (arg1, 1)))))
-	  || (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
-	      && (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
+	  || (truth_value_p (TREE_CODE (arg1))
+	      && (truth_value_p (TREE_CODE (arg0))
 		  || (TREE_CODE (arg0) == BIT_AND_EXPR
 		      && integer_onep (TREE_OPERAND (arg0, 1)))))))
     {
@@ -4119,6 +4132,36 @@ fold (expr)
 				  TREE_OPERAND (arg0, 1), arg1);
 	      if (tem)
 		return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
+	    }
+
+	  /* Check for things like (A || B) && (A || C).  We can convert
+	     this to A || (B && C).  Note that either operator can be any of
+	     the four truth and/or operations and the transformation will
+	     still be valid.  */
+	  if (TREE_CODE (arg0) == TREE_CODE (arg1)
+	      && (TREE_CODE (arg0) == TRUTH_ANDIF_EXPR
+		  || TREE_CODE (arg0) == TRUTH_ORIF_EXPR
+		  || TREE_CODE (arg0) == TRUTH_AND_EXPR
+		  || TREE_CODE (arg0) == TRUTH_OR_EXPR))
+	    {
+	      tree a00 = TREE_OPERAND (arg0, 0);
+	      tree a01 = TREE_OPERAND (arg0, 1);
+	      tree a10 = TREE_OPERAND (arg1, 0);
+	      tree a11 = TREE_OPERAND (arg1, 1);
+	      tree common = 0, op0, op1;
+
+	      if (operand_equal_p (a00, a10, 0))
+		common = a00, op0 = a01, op1 = a11;
+	      else if (operand_equal_p (a00, a11, 0))
+		common = a00, op0 = a01, op1 = a10;
+	      else if (operand_equal_p (a01, a10, 0))
+		common = a01, op0 = a00, op1 = a11;
+	      else if (operand_equal_p (a01, a11, 0))
+		common = a01, op0 = a00, op1 = a10;
+
+	      if (common)
+		return fold (build (TREE_CODE (arg0), type, common,
+				    fold (build (code, type, op0, op1))));
 	    }
 
 	  tem = fold_truthop (code, type, arg0, arg1);
