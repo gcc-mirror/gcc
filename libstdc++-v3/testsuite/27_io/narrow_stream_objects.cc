@@ -66,8 +66,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-//#include <testsuite_hooks.h>
-#define VERIFY(x) x
+#include <testsuite_hooks.h>
 
 // Include iostream last, just to make is as difficult as possible to
 // properly initialize the standard iostream objects.
