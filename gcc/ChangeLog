@@ -1,3 +1,9 @@
+2003-05-24  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/rs6000/440.md, config/stormy16/stormy16protos.h,
+	config/stormy16/stormy16.c, config/stormy16/stormy16.md:
+	Replace "GNU CC" with "GCC".
+
 2003-05-24  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* builtins.c (expand_builtin_memcpy): Use mode of dest_addr for
