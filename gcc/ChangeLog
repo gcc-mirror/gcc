@@ -1,3 +1,8 @@
+Tue Feb 29 10:45:59 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (hpux10, hpux11, PA32 mode): Use i128 float format.
+	* configure: Rebuilt.
+
 2000-02-29  Philip Blundell  <pb@futuretv.com>
 
 	* config/arm/conix-elf.h: New file.
