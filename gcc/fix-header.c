@@ -612,36 +612,35 @@ read_scan_file (in_fname, argc, argv)
      int argc;
      char **argv;
 {
-  cpp_reader scan_in;
+  cpp_reader* scan_in;
   struct fn_decl *fn;
   int i;
   register struct symbol_list *cur_symbols;
 
   obstack_init (&scan_file_obstack); 
 
-  cpp_init ();			/* Initialize cpplib.   */
-  cpp_reader_init (&scan_in, CLK_GNUC89);
-  scan_in.cb.change_file = cb_change_file;
+  scan_in = cpp_create_reader (CLK_GNUC89);
+  scan_in->cb.change_file = cb_change_file;
 
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */
-  CPP_OPTION (&scan_in, inhibit_warnings) = 1;
-  CPP_OPTION (&scan_in, inhibit_errors) = 1;
-  i = cpp_handle_options (&scan_in, argc, argv);
-  if (i < argc && ! CPP_FATAL_ERRORS (&scan_in))
-    cpp_fatal (&scan_in, "Invalid option `%s'", argv[i]);
-  if (CPP_FATAL_ERRORS (&scan_in))
+  CPP_OPTION (scan_in, inhibit_warnings) = 1;
+  CPP_OPTION (scan_in, inhibit_errors) = 1;
+  i = cpp_handle_options (scan_in, argc, argv);
+  if (i < argc && ! CPP_FATAL_ERRORS (scan_in))
+    cpp_fatal (scan_in, "Invalid option `%s'", argv[i]);
+  if (CPP_FATAL_ERRORS (scan_in))
     exit (FATAL_EXIT_CODE);
 
-  if (! cpp_start_read (&scan_in, in_fname))
+  if (! cpp_start_read (scan_in, in_fname))
     exit (FATAL_EXIT_CODE);
 
   /* We are scanning a system header, so mark it as such.  */
-  cpp_make_system_header (&scan_in, CPP_BUFFER (&scan_in), 1);
+  cpp_make_system_header (scan_in, CPP_BUFFER (scan_in), 1);
 
-  scan_decls (&scan_in, argc, argv);
+  scan_decls (scan_in, argc, argv);
   for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
-    check_macro_names (&scan_in, cur_symbols->names);
+    check_macro_names (scan_in, cur_symbols->names);
 
   /* Traditionally, getc and putc are defined in terms of _filbuf and _flsbuf.
      If so, those functions are also required.  */
@@ -650,8 +649,8 @@ read_scan_file (in_fname, argc, argv)
     {
       static const unsigned char getchar_call[] = "getchar();";
       int seen_filbuf = 0;
-      cpp_buffer *buf = CPP_BUFFER (&scan_in);
-      if (cpp_push_buffer (&scan_in, getchar_call,
+      cpp_buffer *buf = CPP_BUFFER (scan_in);
+      if (cpp_push_buffer (scan_in, getchar_call,
 			   sizeof(getchar_call) - 1) == NULL)
 	return;
 
@@ -660,11 +659,11 @@ read_scan_file (in_fname, argc, argv)
 	{
 	  cpp_token t;
 
-	  cpp_get_token (&scan_in, &t);
+	  cpp_get_token (scan_in, &t);
 	  if (t.type == CPP_EOF)
 	    {
-	      cpp_pop_buffer (&scan_in);
-	      if (CPP_BUFFER (&scan_in) == buf)
+	      cpp_pop_buffer (scan_in);
+	      if (CPP_BUFFER (scan_in) == buf)
 		break;
 	    }
 	  else if (cpp_ideq (&t, "_filbuf"))

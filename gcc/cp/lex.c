@@ -79,7 +79,6 @@ static void init_operators PARAMS ((void));
 #endif
 
 #include "cpplib.h"
-extern cpp_reader  parse_in;
 
 /* Pending language change.
    Positive is push count, negative is pop count.  */
@@ -246,8 +245,7 @@ static const char *cplus_tree_code_name[] = {
 void
 lang_init_options ()
 {
-  cpp_init ();
-  cpp_reader_init (&parse_in, CLK_GNUCXX);
+  parse_in = cpp_create_reader (CLK_GNUCXX);
 
   /* Default exceptions on.  */
   flag_exceptions = 1;
@@ -661,16 +659,16 @@ init_reswords ()
 static void
 init_cp_pragma ()
 {
-  cpp_register_pragma (&parse_in, 0, "vtable", handle_pragma_vtable);
-  cpp_register_pragma (&parse_in, 0, "unit", handle_pragma_unit);
+  cpp_register_pragma (parse_in, 0, "vtable", handle_pragma_vtable);
+  cpp_register_pragma (parse_in, 0, "unit", handle_pragma_unit);
 
-  cpp_register_pragma (&parse_in, 0, "interface", handle_pragma_interface);
-  cpp_register_pragma (&parse_in, 0, "implementation",
+  cpp_register_pragma (parse_in, 0, "interface", handle_pragma_interface);
+  cpp_register_pragma (parse_in, 0, "implementation",
 		       handle_pragma_implementation);
 
-  cpp_register_pragma_space (&parse_in, "GCC");
-  cpp_register_pragma (&parse_in, "GCC", "interface", handle_pragma_interface);
-  cpp_register_pragma (&parse_in, "GCC", "implementation",
+  cpp_register_pragma_space (parse_in, "GCC");
+  cpp_register_pragma (parse_in, "GCC", "interface", handle_pragma_interface);
+  cpp_register_pragma (parse_in, "GCC", "implementation",
 		       handle_pragma_implementation);
 }
 
@@ -742,8 +740,8 @@ init_parse (filename)
 void
 finish_parse ()
 {
-  cpp_finish (&parse_in);
-  errorcount += parse_in.errors;
+  cpp_finish (parse_in);
+  errorcount += parse_in->errors;
 }
 
 inline void
@@ -1150,7 +1148,7 @@ handle_pragma_implementation (dfile)
   else
     {
       main_filename = TREE_STRING_POINTER (fname);
-      if (cpp_included (&parse_in, main_filename))
+      if (cpp_included (parse_in, main_filename))
 	warning ("#pragma implementation for %s appears after file is included",
 		 main_filename);
     }

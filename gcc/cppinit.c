@@ -398,30 +398,6 @@ merge_include_chains (pfile)
   CPP_OPTION (pfile, bracket_include) = brack;
 }
 
-/* cpp_init initializes library global state.  It might not need to do
-   anything depending on the platform and compiler, so we have a static
-   flag to make sure it gets called before cpp_reader_init.  */
-
-static int cpp_init_completed = 0;
-
-void
-cpp_init ()
-{
-#ifdef HOST_EBCDIC
-  /* For non-ASCII hosts, the cl_options array needs to be sorted at
-     runtime.  */
-  qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
-#endif
-
-  /* Set up the trigraph map and the IStable.  These don't need to do
-     anything if we were compiled with a compiler that supports C99
-     designated initializers.  */
-  init_trigraph_map ();
-  init_IStable ();
-
-  cpp_init_completed = 1;
-}
-
 /* Sets internal flags correctly for a given language, and defines
    macros if necessary.  */
 static void
@@ -516,24 +492,40 @@ set_lang (pfile, lang)
     }
 }
 
+/* initialize initializes library global state.  It might not need to
+   do anything depending on the platform and compiler.  */
+
+static int initialized = 0;
+
+static void
+initialize ()
+{
+#ifdef HOST_EBCDIC
+  /* For non-ASCII hosts, the cl_options array needs to be sorted at
+     runtime.  */
+  qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
+#endif
+
+  /* Set up the trigraph map and the IStable.  These don't need to do
+     anything if we were compiled with a compiler that supports C99
+     designated initializers.  */
+  init_trigraph_map ();
+  init_IStable ();
+
+  initialized = 1;
+}
+
 /* Initialize a cpp_reader structure. */
-void
-cpp_reader_init (pfile, lang)
-     cpp_reader *pfile;
+cpp_reader *
+cpp_create_reader (lang)
      enum c_lang lang;
 {
   struct spec_nodes *s;
+  cpp_reader *pfile = (cpp_reader *) xcalloc (1, sizeof (cpp_reader));
 
-  memset ((char *) pfile, 0, sizeof (cpp_reader));
-
-  /* If cpp_init hasn't been called, generate a fatal error (by hand)
-     and call it here.  */
-  if (!cpp_init_completed)
-    {
-      fputs ("cpp_reader_init: internal error: cpp_init not called.\n", stderr);
-      pfile->errors = CPP_FATAL_LIMIT;
-      cpp_init ();
-    }
+  /* Initialise this instance of the library if it hasn't been already.  */
+  if (! initialized)
+    initialize ();
 
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
@@ -586,6 +578,8 @@ cpp_reader_init (pfile, lang)
   s->n__CHAR_UNSIGNED__ = cpp_lookup (pfile, DSC("__CHAR_UNSIGNED__"));
   s->n__VA_ARGS__       = cpp_lookup (pfile, DSC("__VA_ARGS__"));
   s->n__VA_ARGS__->flags |= NODE_DIAGNOSTIC;
+
+  return pfile;
 }
 
 /* Free resources used by PFILE.
