@@ -884,7 +884,9 @@ output_move_double (operands)
     } optype0, optype1;
   rtx latehalf[2];
   rtx middlehalf[2];
+  rtx xops[2];
   rtx addreg0 = 0, addreg1 = 0;
+  int dest_overlapped_low = 0;
   int size = GET_MODE_SIZE (GET_MODE (operands[0]));
 
   middlehalf[0] = 0;
@@ -1066,6 +1068,59 @@ output_move_double (operands)
       && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
     operands[1] = latehalf[1];
 
+  /* For (set (reg:DI N) (mem:DI ... (reg:SI N) ...)),
+     if the upper part of reg N does not appear in the MEM, arrange to
+     emit the move late-half first.  Otherwise, compute the MEM address
+     into the upper part of N and use that as a pointer to the memory
+     operand.  */
+  if (optype0 == REGOP
+      && (optype1 == OFFSOP || optype1 == MEMOP))
+    {
+      if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
+	  && reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
+	{
+	  /* If both halves of dest are used in the src memory address,
+	     compute the address into latehalf of dest.  */
+compadr:
+	  xops[0] = latehalf[0];
+	  xops[1] = XEXP (operands[1], 0);
+	  output_asm_insn ("lea%L0,%a1,%0", xops);
+	  if( GET_MODE (operands[1]) == XFmode )
+	    {
+	      operands[1] = gen_rtx (MEM, XFmode, latehalf[0]);
+	      middlehalf[1] = adj_offsettable_operand (operands[1], size-8);
+	      latehalf[1] = adj_offsettable_operand (operands[1], size-4);
+	    }
+	  else
+	    {
+	      operands[1] = gen_rtx (MEM, DImode, latehalf[0]);
+	      latehalf[1] = adj_offsettable_operand (operands[1], size-4);
+	    }
+	}
+      else if (size == 12
+		 && reg_mentioned_p (middlehalf[0], XEXP (operands[1], 0)))
+	{
+	  /* Check for two regs used by both source and dest. */
+	  if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
+		|| reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
+		goto compadr;
+
+	  /* JRV says this can't happen: */
+	  if (addreg0 || addreg1)
+	      abort();
+
+	  /* Only the middle reg conflicts; simply put it last. */
+	  output_asm_insn (singlemove_string (operands), operands);
+	  output_asm_insn (singlemove_string (latehalf), latehalf);
+	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
+	  return "";
+	}
+      else if (reg_mentioned_p (operands[0], XEXP (operands[1], 0)))
+	/* If the low half of dest is mentioned in the source memory
+	   address, the arrange to emit the move late half first.  */
+	dest_overlapped_low = 1;
+    }
+
   /* If one or both operands autodecrementing,
      do the two words, high-numbered first.  */
 
@@ -1077,7 +1132,8 @@ output_move_double (operands)
   if (optype0 == PUSHOP || optype1 == PUSHOP
       || (optype0 == REGOP && optype1 == REGOP
 	  && ((middlehalf[1] && REGNO (operands[0]) == REGNO (middlehalf[1]))
-	      || REGNO (operands[0]) == REGNO (latehalf[1]))))
+	      || REGNO (operands[0]) == REGNO (latehalf[1])))
+      || dest_overlapped_low)
     {
       /* Make any unoffsettable addresses point at high-numbered word.  */
       if (addreg0)
