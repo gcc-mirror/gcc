@@ -1,10 +1,11 @@
 Wed Mar 18 16:22:22 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* gcc.dg/980313-1.c: New test for fp conditional move on PPro.
 	* gcc.dg/980312-1.c: Fix typo in -march command.
 
 Mon Mar 16 20:01:30 1998  H.J. Lu  (hjl@gnu.org)
 
-	* gcc.dg/980312-1.c: Another new test for fp on PPro.
+	* gcc.dg/980312-1.c: New test for fp conditional move on PPro.
 
 Wed Mar 11 13:08:48 1998  Robert Lipe  <robertl@dgii.com>
 
