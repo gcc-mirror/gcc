@@ -475,7 +475,13 @@ cp_build_qualified_type (type, type_quals)
       type_quals &= ~TYPE_QUAL_RESTRICT;
     }
 
-  if (TREE_CODE (type) == ARRAY_TYPE)
+  if (type_quals != TYPE_UNQUALIFIED
+      && TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      cp_error ("`%T' cannot be `const'-, `volatile'-, or `restrict'-qualified", type);
+      type_quals = TYPE_UNQUALIFIED;
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree real_main_variant = TYPE_MAIN_VARIANT (type);
 

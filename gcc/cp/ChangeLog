@@ -1,3 +1,8 @@
+1999-05-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (cp_build_qualified_type): Don't allow qualified function
+	types.
+
 Wed May 19 02:50:53 1999  Arvind Sankar <arvinds@mit.edu>
 
 	* gxxint.texi: Fix typo.
