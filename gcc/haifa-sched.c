@@ -5433,6 +5433,8 @@ find_post_sched_live (bb)
   if (current_nr_blocks > 1)
     COPY_REG_SET (basic_block_live_at_start[b], bb_live_regs);
 
+
+  FREE_REG_SET (old_live_regs);
 }				/* find_post_sched_live */
 
 /* After scheduling the subroutine, restore information about uses of
@@ -7632,6 +7634,8 @@ schedule_region (rgn)
 
   /* Done with this region */
   free_pending_lists ();
+
+  FREE_REG_SET (reg_pending_sets);
 }
 
 /* Subroutine of split_hard_reg_notes.  Searches X for any reference to
@@ -8674,5 +8678,8 @@ schedule_insns (dump_file)
 	}
       fprintf (dump, "\n\n");
     }
+
+  if (bb_live_regs)
+    FREE_REG_SET (bb_live_regs);
 }
 #endif /* INSN_SCHEDULING */

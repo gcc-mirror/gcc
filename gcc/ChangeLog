@@ -1,3 +1,11 @@
+Fri Aug 15 23:48:32 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (find_post_sched_live): Call FREE_REG_SET as needed.
+	(schedule_region): Likewise.
+	(schedule_insns): Likewise.
+
+	* PROJECTS: Update with Haifa stuff.
+
 Fri Aug 15 12:49:56 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Change the version string to look like:
