@@ -33,7 +33,7 @@ extern int atexit (void (*__func) (void));
 extern void __init (void) __attribute__ ((__longcall__));
 extern void __fini (void) __attribute__ ((__longcall__));
 extern void _start(int argc, char *argv[], char *envp[], void *auxp, 
-		   void (*termfunc)());
+		   void (*termfunc)(void));
 extern void exit(int);
 extern int main (int argc, char *argv[], char *envp[], void *auxp);
 
@@ -84,7 +84,8 @@ deregister (void)
 
 /* Start function.  */
 void
-_start(int argc, char *argv[], char *envp[], void *auxp, void (*termfunc)())
+_start(int argc, char *argv[], char *envp[], void *auxp, 
+       void (*termfunc)(void))
 {
   int ret;
   int dummy = 0;

@@ -1,3 +1,10 @@
+2000-09-07  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/sol-c0.c (_start): Declare `termfunc' parameter
+	with a prototype.
+	* config/rs6000/rs6000.h (RS6000_ARG_SIZE): Use cast to suppress
+	warning.
+
 Fri Sep  8 03:26:38 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 	* sh.md (cmpeqsi_ior_t, cmpeqsi_and_t): Remove.
