@@ -1,3 +1,12 @@
+2003-06-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/10663
+	* configure.in (HAVE_LD_RO_RW_SECTION_MIXING): Redirect
+	assembler and linker output to /dev/null.
+	Use a 'sed' construct instead of 'grep -A1'.
+	* configure: Regenerate.
+
 2003-06-04  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (struct ix86_address): Add seg.
