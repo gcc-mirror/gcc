@@ -1070,10 +1070,9 @@ do_pragma (pfile)
     }
 
   cpp_stop_lookahead (pfile, drop);
-  pfile->state.prevent_expansion--;
-
   if (!drop && pfile->cb.def_pragma)
     (*pfile->cb.def_pragma) (pfile);
+  pfile->state.prevent_expansion--;
 }
 
 static void

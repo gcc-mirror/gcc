@@ -1,3 +1,7 @@
+2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplib.c (do_pragma): Never expand macros.
+
 2001-09-14  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (internal_label_prefix): New.
