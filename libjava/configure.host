@@ -222,6 +222,13 @@ EOF
   *-*-freebsd*)
 	slow_pthread_self=
 	;;
+  *-mingw*)
+  	# FIXME: win32_exception_handler( ) in win32.cc does not do the
+	# right stuff yet w.r.t. SEH. Live with the following for now.
+	can_unwind_signal=no
+	CHECKREFSPEC=-fcheck-references
+	DIVIDESPEC=-fuse-divide-subroutine
+	;;
   *-cygwin*)
   	# The cygwin linker doesn't do 8-byte alignment by default, so
 	# disable hash synchronization for now.
