@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Convex Version
-;;  Copyright (C) 1988, 1994, 1995 Free Software Foundation, Inc.
+;;  Copyright (C) 1988, 1994, 1995, 1998 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1518,7 +1518,7 @@
     }
   else
     {
-      output_cmp (gen_rtx (REG, SImode, 7), constm1_rtx, 'W');
+      output_cmp (gen_rtx_REG (SImode, 7), constm1_rtx, 'W');
       return \"psh.w s7\;ld.w %0,s7\;add.w #-1,s7\;st.w s7,%0\;pop.w s7\";
     }
 }")
@@ -1540,7 +1540,7 @@
     }
   else
     {
-      output_cmp (gen_rtx (REG, SImode, 7), const0_rtx, 'W');
+      output_cmp (gen_rtx_REG (SImode, 7), const0_rtx, 'W');
       return \"psh.w s7\;ld.w %0,s7\;add.w #-1,s7\;st.w s7,%0\;pop.w s7\";
     }
 }")
@@ -1561,7 +1561,7 @@
     }
   else
     {
-      output_cmp (gen_rtx (REG, HImode, 7), constm1_rtx, 'H');
+      output_cmp (gen_rtx_REG (HImode, 7), constm1_rtx, 'H');
       return \"psh.w s7\;ld.h %0,s7\;add.h #-1,s7\;st.h s7,%0\;pop.w s7\";
     }
 }")
@@ -1583,7 +1583,7 @@
     }
   else
     {
-      output_cmp (gen_rtx (REG, HImode, 7), const0_rtx, 'H');
+      output_cmp (gen_rtx_REG (HImode, 7), const0_rtx, 'H');
       return \"psh.w s7\;ld.h %0,s7\;add.h #-1,s7\;st.h s7,%0\;pop.w s7\";
     }
 }")

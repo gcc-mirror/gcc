@@ -1,5 +1,5 @@
 ;;- Machine description for the Hitachi SH.
-;;  Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+;;  Copyright (C) 1993, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -432,10 +432,12 @@
   "
 {
   rtx high0, high2, low0 = gen_lowpart (SImode, operands[0]);
-  high0 = gen_rtx (REG, SImode,
-		   true_regnum (operands[0]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  high2 = gen_rtx (REG, SImode,
-		   true_regnum (operands[2]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  high0 = gen_rtx_REG (SImode,
+		       true_regnum (operands[0])
+		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  high2 = gen_rtx_REG (SImode,
+		       true_regnum (operands[2])
+		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
   emit_insn (gen_clrt ());
   emit_insn (gen_addc (low0, low0, gen_lowpart (SImode, operands[2])));
   emit_insn (gen_addc1 (high0, high0, high2));
@@ -496,10 +498,12 @@
   "
 {
   rtx high0, high2, low0 = gen_lowpart (SImode, operands[0]);
-  high0 = gen_rtx (REG, SImode,
-		   true_regnum (operands[0]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
-  high2 = gen_rtx (REG, SImode,
-		   true_regnum (operands[2]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  high0 = gen_rtx_REG (SImode,
+		       true_regnum (operands[0])
+		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  high2 = gen_rtx_REG (SImode,
+		       true_regnum (operands[2])
+		       + (TARGET_LITTLE_ENDIAN ? 1 : 0));
   emit_insn (gen_clrt ());
   emit_insn (gen_subc (low0, low0, gen_lowpart (SImode, operands[2])));
   emit_insn (gen_subc1 (high0, high0, high2));
@@ -768,9 +772,9 @@
 
       emit_insn (gen_mulsidi3_i (operands[1], operands[2]));
 
-      emit_insn (gen_rtx (CLOBBER, VOIDmode, operands[0]));
-      emit_move_insn (low_dst, gen_rtx (REG, SImode, 21));
-      emit_move_insn (high_dst, gen_rtx (REG, SImode, 20));
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, operands[0]));
+      emit_move_insn (low_dst, gen_rtx_REG (SImode, 21));
+      emit_move_insn (high_dst, gen_rtx_REG (SImode, 20));
       DONE;
     }
 }")
@@ -801,9 +805,9 @@
 
       emit_insn (gen_umulsidi3_i (operands[1], operands[2]));
 
-      emit_insn (gen_rtx (CLOBBER, VOIDmode, operands[0]));
-      emit_move_insn (low_dst, gen_rtx (REG, SImode, 21));
-      emit_move_insn (high_dst, gen_rtx (REG, SImode, 20));
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, operands[0]));
+      emit_move_insn (low_dst, gen_rtx_REG (SImode, 21));
+      emit_move_insn (high_dst, gen_rtx_REG (SImode, 20));
       DONE;
     }
 }")
@@ -2062,7 +2066,7 @@
   emit_move_insn (operands[2], const_int);
   emit_move_insn (operands[0],
 		  change_address (operands[1], VOIDmode,
-				  gen_rtx (PLUS, SImode, reg, operands[2])));
+				  gen_rtx_PLUS (SImode, reg, operands[2])));
   DONE;
 }")
 
@@ -2087,7 +2091,7 @@
     FAIL;
   emit_move_insn (operands[2], const_int);
   emit_move_insn (change_address (operands[1], VOIDmode,
-				  gen_rtx (PLUS, SImode, reg, operands[2])),
+				  gen_rtx_PLUS (SImode, reg, operands[2])),
 		  operands[0]);
   DONE;
 }")
@@ -2524,7 +2528,7 @@
     {
       rtx lab = gen_label_rtx ();
       emit_jump_insn (gen_casesi_jump_2 (reg2,
-					 gen_rtx (LABEL_REF, VOIDmode, lab),
+					 gen_rtx_LABEL_REF (VOIDmode, lab),
 					 operands[3]));
       emit_label (lab);
       /* Put a fake jump after the label, lest some optimization might
@@ -2728,15 +2732,15 @@
     {
       if (TARGET_IEEE)
 	{
-	  rtx t_reg = gen_rtx (REG, SImode, T_REG);
+	  rtx t_reg = gen_rtx_REG (SImode, T_REG);
 	  rtx lab = gen_label_rtx ();
-	  emit_insn (gen_rtx (SET, VOIDmode, t_reg,
-			      gen_rtx (EQ, SImode, sh_compare_op0,
-				       sh_compare_op1)));
+	  emit_insn (gen_rtx_SET (VOIDmode, t_reg,
+				  gen_rtx_EQ (SImode, sh_compare_op0,
+					      sh_compare_op1)));
 	  emit_jump_insn (gen_branch_true (lab));
-	  emit_insn (gen_rtx (SET, VOIDmode, t_reg,
-			      gen_rtx (GT, SImode, sh_compare_op0,
-				       sh_compare_op1)));
+	  emit_insn (gen_rtx_SET (VOIDmode, t_reg,
+				  gen_rtx_GT (SImode, sh_compare_op0,
+					      sh_compare_op1)));
 	  emit_label (lab);
 	  emit_insn (gen_movt (operands[0]));
 	}
@@ -3154,14 +3158,14 @@
   emit_insn (gen_addsi3 (addr_target, orig_address, GEN_INT (size - 1)));
 
   operands[0] = change_address (operands[0], QImode, addr_target);
-  emit_insn (gen_movqi (operands[0], gen_rtx (SUBREG, QImode, shift_reg, 0)));
+  emit_insn (gen_movqi (operands[0], gen_rtx_SUBREG (QImode, shift_reg, 0)));
 
   while (size -= 1)
     {
       emit_insn (gen_lshrsi3_k (shift_reg, shift_reg, GEN_INT (8)));
       emit_insn (gen_addsi3 (addr_target, addr_target, GEN_INT (-1)));
       emit_insn (gen_movqi (operands[0],
-			    gen_rtx (SUBREG, QImode, shift_reg, 0)));
+			    gen_rtx_SUBREG (QImode, shift_reg, 0)));
     }
 
   DONE;

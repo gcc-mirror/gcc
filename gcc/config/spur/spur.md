@@ -1,5 +1,5 @@
 ;;- Machine description for SPUR chip for GNU C compiler
-;;   Copyright (C) 1988 Free Software Foundation, Inc.
+;;  Copyright (C) 1988 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -288,17 +288,17 @@
       rtx addr = force_reg (SImode, XEXP (operands[1], 0));
       rtx subreg;
 
-      emit_move_insn (tem, gen_rtx (MEM, SImode, addr));
+      emit_move_insn (tem, gen_rtx_MEM (SImode, addr));
       if (GET_CODE (operands[0]) == SUBREG)
-	subreg = gen_rtx (SUBREG, SImode, SUBREG_REG (operands[0]),
-			  SUBREG_WORD (operands[0]));
+	subreg = gen_rtx_SUBREG (SImode, SUBREG_REG (operands[0]),
+				 SUBREG_WORD (operands[0]));
       else
-	subreg = gen_rtx (SUBREG, SImode, operands[0], 0);
+	subreg = gen_rtx_SUBREG (SImode, operands[0], 0);
 
-      emit_insn (gen_rtx (SET, VOIDmode, subreg,
-			  gen_rtx (ZERO_EXTRACT, SImode, tem,
-				   gen_rtx (CONST_INT, VOIDmode, 8),
-				   addr)));
+      emit_insn (gen_rtx_SET (VOIDmode, subreg,
+			      gen_rtx_ZERO_EXTRACT (SImode, tem,
+						    GEN_INT (8),
+						    addr)));
     }
   else if (GET_CODE (operands[0]) == MEM)
     {
@@ -306,26 +306,26 @@
       rtx addr = force_reg (SImode, XEXP (operands[0], 0));
       rtx subreg;
 
-      emit_move_insn (tem, gen_rtx (MEM, SImode, addr));
+      emit_move_insn (tem, gen_rtx_MEM (SImode, addr));
       if (! CONSTANT_ADDRESS_P (operands[1]))
 	{
 	  if (GET_CODE (operands[1]) == SUBREG)
-	    subreg = gen_rtx (SUBREG, SImode, SUBREG_REG (operands[1]),
-			      SUBREG_WORD (operands[1]));
+	    subreg = gen_rtx_SUBREG (SImode, SUBREG_REG (operands[1]),
+				     SUBREG_WORD (operands[1]));
 	  else
-	    subreg = gen_rtx (SUBREG, SImode, operands[1], 0);
+	    subreg = gen_rtx_SUBREG (SImode, operands[1], 0);
 	}
 
-      emit_insn (gen_rtx (SET, VOIDmode,
-			  gen_rtx (ZERO_EXTRACT, SImode, tem,
-				   gen_rtx (CONST_INT, VOIDmode, 8),
-				   addr),
-			  subreg));
-      emit_move_insn (gen_rtx (MEM, SImode, addr), tem);
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      gen_rtx_ZERO_EXTRACT (SImode, tem,
+						    GEN_INT (8),
+						    addr),
+			      subreg));
+      emit_move_insn (gen_rtx_MEM (SImode, addr), tem);
     }
   else
     {
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
     }
   DONE;
 }")
@@ -376,7 +376,7 @@
 ;   && (unsigned) INTVAL (operands[1]) < 32"
 ;  "*
 ;{
-;  operands[1] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) / 8);
+;  operands[1] = GEN_INT (INTVAL (operands[1]) / 8);
 ;  return \"wr_insert 0,0,%1\;insert %0,%0,%2\";
 ;}")
 
@@ -443,10 +443,10 @@
   "
 {
   if (GET_CODE (operands[1]) == SUBREG)
-    operands[5] = gen_rtx (SUBREG, SImode, SUBREG_REG (operands[1]),
-			   SUBREG_WORD (operands[1]));
+    operands[5] = gen_rtx_SUBREG (SImode, SUBREG_REG (operands[1]),
+				  SUBREG_WORD (operands[1]));
   else
-    operands[5] = gen_rtx (SUBREG, SImode, operands[1], 0);
+    operands[5] = gen_rtx_SUBREG (SImode, operands[1], 0);
 }")
 
 ;; Like storehi but operands[1] is a CONST_INT.
@@ -467,9 +467,8 @@
    (set (mem:SI (match_dup 0))
 	(match_dup 2))]
   ""
-  " operands[5] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 255);
-    operands[6] = gen_rtx (CONST_INT, VOIDmode,
-			   (INTVAL (operands[1]) >> 8) & 255);
+  " operands[5] = GEN_INT (INTVAL (operands[1]) & 255);
+    operands[6] = GEN_INT (INTVAL (operands[1]) >> 8) & 255);
 ")
 
 ;; Main entry for generating insns to move halfwords.
@@ -491,8 +490,8 @@
 			       gen_reg_rtx (SImode), gen_reg_rtx (SImode),
 			       gen_reg_rtx (QImode)));
       /* Tell cse what value the loadhi produces, so it detect duplicates.  */
-      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL, operands[1],
-					     REG_NOTES (insn));
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
+					    REG_NOTES (insn));
     }
   else if (GET_CODE (operands[0]) == MEM)
     {
@@ -512,7 +511,7 @@
 	}
     }
   else
-    emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
   DONE;
 }")
 
@@ -563,7 +562,7 @@
 ;   && (unsigned) INTVAL (operands[1]) < 32"
 ;  "*
 ;{
-;  operands[1] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) / 8);
+;  operands[1] = GEN_INT (INTVAL (operands[1]) / 8);
 ;  return \"wr_insert 0,0,%1\;insert %0,%0,%2\";
 ;}")
 
@@ -580,7 +579,7 @@
     return output_fp_move_double (operands);
   if (operands[1] == CONST0_RTX (DFmode) && GET_CODE (operands[0]) == REG)
     {
-      operands[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+      operands[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
       return \"add_nt %0,r0,$0\;add_nt %1,r0,$0\";
     }
   if (operands[1] == CONST0_RTX (DFmode) && GET_CODE (operands[0]) == MEM)
@@ -631,7 +630,7 @@
 	  rtx xoperands[2];
 	  int offset = - get_frame_size () - 8;
 	  xoperands[1] = operands[1];
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, offset);
+	  xoperands[0] = GEN_INT (offset);
 	  output_asm_insn (\"st_32 %1,r25,%0\", xoperands);
 	  xoperands[1] = operands[0];
 	  output_asm_insn (\"ld_sgl %1,r25,%0\;nop\", xoperands);
@@ -645,7 +644,7 @@
 	{
 	  rtx xoperands[2];
 	  int offset = - get_frame_size () - 8;
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, offset);
+	  xoperands[0] = GEN_INT (offset);
 	  xoperands[1] = operands[1];
 	  output_asm_insn (\"st_sgl %1,r25,%0\", xoperands);
 	  xoperands[1] = operands[0];
@@ -700,12 +699,12 @@
   "
 {
   if (GET_CODE (operands[1]) == SUBREG)
-    operands[1] = gen_rtx (SUBREG, SImode, SUBREG_REG (operands[1]),
-			   SUBREG_WORD (operands[1]));
+    operands[1] = gen_rtx_SUBREG (SImode, SUBREG_REG (operands[1]),
+				  SUBREG_WORD (operands[1]));
   else
-    operands[1] = gen_rtx (SUBREG, SImode, operands[1], 0);
+    operands[1] = gen_rtx_SUBREG (SImode, operands[1], 0);
 
-  operands[2] = force_reg (SImode, gen_rtx (CONST_INT, VOIDmode, 65535));
+  operands[2] = force_reg (SImode, GEN_INT (65535));
 }")
 
 (define_insn "zero_extendqihi2"
@@ -737,15 +736,15 @@
   "
 {
   if (GET_CODE (operands[1]) == SUBREG)
-    operands[1] = gen_rtx (SUBREG, SImode, SUBREG_REG (operands[1]),
-			   SUBREG_WORD (operands[1]));
+    operands[1] = gen_rtx_SUBREG (SImode, SUBREG_REG (operands[1]),
+				  SUBREG_WORD (operands[1]));
   else
-    operands[1] = gen_rtx (SUBREG, SImode, operands[1], 0);
+    operands[1] = gen_rtx_SUBREG (SImode, operands[1], 0);
 
   operands[2] = gen_reg_rtx (SImode);
   operands[3] = gen_reg_rtx (SImode);
-  operands[4] = force_reg (SImode, gen_rtx (CONST_INT, VOIDmode, 65535));
-  operands[5] = force_reg (SImode, gen_rtx (CONST_INT, VOIDmode, -32768));
+  operands[4] = force_reg (SImode, GEN_INT (65535));
+  operands[5] = force_reg (SImode, GEN_INT (-32768));
 }")
 
 (define_expand "extendqihi2"
@@ -760,10 +759,10 @@
   "
 {
   if (GET_CODE (operands[1]) == SUBREG)
-    operands[1] = gen_rtx (SUBREG, HImode, SUBREG_REG (operands[1]),
-			   SUBREG_WORD (operands[1]));
+    operands[1] = gen_rtx_SUBREG (HImode, SUBREG_REG (operands[1]),
+				  SUBREG_WORD (operands[1]));
   else
-    operands[1] = gen_rtx (SUBREG, HImode, operands[1], 0);
+    operands[1] = gen_rtx_SUBREG (HImode, operands[1], 0);
 
   operands[2] = gen_reg_rtx (HImode);
   operands[3] = gen_reg_rtx (HImode);
@@ -780,10 +779,10 @@
   "
 {
   if (GET_CODE (operands[1]) == SUBREG)
-    operands[1] = gen_rtx (SUBREG, SImode, SUBREG_REG (operands[1]),
-			   SUBREG_WORD (operands[1]));
+    operands[1] = gen_rtx_SUBREG (SImode, SUBREG_REG (operands[1]),
+				  SUBREG_WORD (operands[1]));
   else
-    operands[1] = gen_rtx (SUBREG, SImode, operands[1], 0);
+    operands[1] = gen_rtx_SUBREG (SImode, operands[1], 0);
 
   operands[2] = gen_reg_rtx (SImode);
   operands[3] = gen_reg_rtx (SImode);

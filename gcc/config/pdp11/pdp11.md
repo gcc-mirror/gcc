@@ -1,5 +1,5 @@
 ;;- Machine description for the pdp11 for GNU C compiler
-;; Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
+;; Copyright (C) 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GNU CC.
@@ -731,7 +731,7 @@
      {
        output_asm_insn(\"stcdf %1, -(sp)\", operands);
        output_asm_insn(\"mov (sp)+, %0\", operands);
-       operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
+       operands[0] = gen_rtx_REG (HImode, REGNO (operands[0])+1);
        output_asm_insn(\"mov (sp)+, %0\", operands);
        return \"\";
      }
@@ -804,8 +804,8 @@
 
   /* make register pair available */
   latehalf[0] = operands[0];
-  operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
-    
+  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0])+ 1);
+
   output_asm_insn(\"movb %1, %0\", operands);
   output_asm_insn(\"sxt %0\", latehalf);
     
@@ -856,7 +856,7 @@
 
       /* make register pair available */
       latehalf[0] = operands[0];
-      operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
+      operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
 
       output_asm_insn(\"mov %1, %0\", operands);
       output_asm_insn(\"sxt %0\", latehalf);
@@ -882,7 +882,7 @@
   rtx lateoperands[2];
 
   lateoperands[0] = operands[0];
-  operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
+  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
 
   output_asm_insn(\"tst %0\", operands);
   sprintf(buf, \"bge extendhisi%d\", count);
@@ -917,7 +917,7 @@
        rtx latehalf[2];
 
        latehalf[0] = NULL; 
-       latehalf[1] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
+       latehalf[1] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
        output_asm_insn(\"mov %1, -(sp)\", latehalf);
        output_asm_insn(\"mov %1, -(sp)\", operands);
        
@@ -951,7 +951,7 @@
        output_asm_insn(\"stcdl %1, -(sp)\", operands);
        output_asm_insn(\"seti\", operands);
        output_asm_insn(\"mov (sp)+, %0\", operands);
-       operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
+       operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
        output_asm_insn(\"mov (sp)+, %0\", operands);
        return \"\";
      }
@@ -997,7 +997,7 @@
   lateoperands[0] = operands[0];
 
   if (REG_P (operands[0]))
-    operands[0] = gen_rtx(REG, HImode, REGNO(operands[0]) + 1);
+    operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
   else
     operands[0] = adj_offsettable_operand (operands[0], 2);
   
@@ -1006,7 +1006,7 @@
     lateoperands[2] = operands[2];
 
     if (REG_P (operands[2]))
-      operands[2] = gen_rtx(REG, HImode, REGNO(operands[2]) + 1);
+      operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
     else
       operands[2] = adj_offsettable_operand(operands[2], 2);
 
@@ -1016,8 +1016,8 @@
     return \"\";
   }
 
-  lateoperands[2] = gen_rtx(CONST_INT, VOIDmode, (INTVAL(operands[2]) >> 16) & 0xffff);
-  operands[2] = gen_rtx(CONST_INT, VOIDmode, INTVAL(operands[2]) & 0xffff);
+  lateoperands[2] = GEN_INT (INTVAL (operands[2]) >> 16) & 0xffff);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
   
   if (INTVAL(operands[2]))
   { 
@@ -1096,14 +1096,14 @@
   lateoperands[0] = operands[0];
 
   if (REG_P (operands[0]))
-    operands[0] = gen_rtx(REG, HImode, REGNO(operands[0]) + 1);
+    operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
   else
     operands[0] = adj_offsettable_operand (operands[0], 2);
   
   lateoperands[2] = operands[2];
 
   if (REG_P (operands[2]))
-    operands[2] = gen_rtx(REG, HImode, REGNO(operands[2]) + 1);
+    operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
   else
     operands[2] = adj_offsettable_operand(operands[2], 2);
 
@@ -1154,7 +1154,7 @@
 {
   extern rtx expand_unop ();
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+    operands[2] = GEN_INT (~INTVAL (operands[2]));
   else
     operands[2] = expand_unop (SImode, one_cmpl_optab, operands[2], 0, 1);
 }")
@@ -1168,7 +1168,7 @@
 {
   extern rtx expand_unop ();
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+    operands[2] = GEN_INT (~INTVAL (operands[2]));
   else
     operands[2] = expand_unop (HImode, one_cmpl_optab, operands[2], 0, 1);
 }")
@@ -1183,8 +1183,7 @@
   extern rtx expand_unop ();
   rtx op = operands[2];
   if (GET_CODE (op) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			   ((1 << 8) - 1) & ~INTVAL (op));
+    operands[2] = GEN_INT (((1 << 8) - 1) & ~INTVAL (op));
   else
     operands[2] = expand_unop (QImode, one_cmpl_optab, op, 0, 1);
 }")
@@ -1205,7 +1204,7 @@
   lateoperands[0] = operands[0];
 
   if (REG_P (operands[0]))
-    operands[0] = gen_rtx(REG, HImode, REGNO(operands[0]) + 1);
+    operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
   else
     operands[0] = adj_offsettable_operand (operands[0], 2);
   
@@ -1214,7 +1213,7 @@
     lateoperands[2] = operands[2];
 
     if (REG_P (operands[2]))
-      operands[2] = gen_rtx(REG, HImode, REGNO(operands[2]) + 1);
+      operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
     else
       operands[2] = adj_offsettable_operand(operands[2], 2);
 
@@ -1223,8 +1222,8 @@
     return \"\";
   }
 
-  lateoperands[2] = gen_rtx(CONST_INT, VOIDmode, (INTVAL(operands[2]) >> 16) & 0xffff);
-  operands[2] = gen_rtx(CONST_INT, VOIDmode, INTVAL(operands[2]) & 0xffff);
+  lateoperands[2] = GEN_INT ((INTVAL (operands[2]) >> 16) & 0xffff);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
   
   /* these have different lengths, so we should have 
      different constraints! */
@@ -1271,26 +1270,26 @@
   lateoperands[0] = operands[0];
 
   if (REG_P (operands[0]))
-    operands[0] = gen_rtx(REG, HImode, REGNO(operands[0]) + 1);
+    operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
   else
     operands[0] = adj_offsettable_operand (operands[0], 2);
   
   if (! CONSTANT_P(operands[2]))
-  {
-    lateoperands[2] = operands[2];
+    {
+      lateoperands[2] = operands[2];
 
-    if (REG_P (operands[2]))
-      operands[2] = gen_rtx(REG, HImode, REGNO(operands[2]) + 1);
-    else
-      operands[2] = adj_offsettable_operand(operands[2], 2);
+      if (REG_P (operands[2]))
+	operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
+      else
+	operands[2] = adj_offsettable_operand (operands[2], 2);
 
-    output_asm_insn (\"bis %2, %0\", operands);
-    output_asm_insn (\"bis %2, %0\", lateoperands);
-    return \"\";
-  }
+      output_asm_insn (\"bis %2, %0\", operands);
+      output_asm_insn (\"bis %2, %0\", lateoperands);
+      return \"\";
+    }
 
-  lateoperands[2] = gen_rtx(CONST_INT, VOIDmode, (INTVAL(operands[2]) >> 16) & 0xffff);
-  operands[2] = gen_rtx(CONST_INT, VOIDmode, INTVAL(operands[2]) & 0xffff);
+  lateoperands[2] = GEN_INT ((INTVAL (operands[2]) >> 16) & 0xffff);
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
   
   /* these have different lengths, so we should have 
      different constraints! */
@@ -1332,26 +1331,26 @@
   rtx lateoperands[3];
 
   lateoperands[0] = operands[0];
-  operands[0] = gen_rtx(REG, HImode, REGNO(operands[0]) + 1);
+  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
 
   if (REG_P(operands[2]))
-  {
-    lateoperands[2] = operands[2];
-    operands[2] = gen_rtx(REG, HImode, REGNO(operands[2]) + 1);
-    
-    output_asm_insn (\"xor %2, %0\", operands);
-    output_asm_insn (\"xor %2, %0\", lateoperands);
+    {
+      lateoperands[2] = operands[2];
+      operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
 
-    return \"\";
-  }
+      output_asm_insn (\"xor %2, %0\", operands);
+      output_asm_insn (\"xor %2, %0\", lateoperands);
 
-  lateoperands[2] = gen_rtx(CONST_INT, VOIDmode, (INTVAL(operands[2]) >> 16) & 0xffff);
-  operands[2] = gen_rtx(CONST_INT, VOIDmode, INTVAL(operands[2]) & 0xffff);
+      return \"\";
+    }
+
+  lateoperands[2] = GEN_INT ((INTVAL (operands[2]) >> 16) & 0xffff);
+  operands[2] = GEN_INT (INTVAL(operands[2]) & 0xffff);
   
-  if (INTVAL(operands[2]))
+  if (INTVAL (operands[2]))
     output_asm_insn (\"xor %2, %0\", operands);
 
-  if (INTVAL(lateoperands[2]))
+  if (INTVAL (lateoperands[2]))
     output_asm_insn (\"xor %2, %0\", lateoperands);
 
   return \"\";
@@ -1608,7 +1607,7 @@
 ;
 ;  /* allow REG_NOTES to be set on last insn (labels don't have enough
 ;     fields, and can't be used for REG_NOTES anyway).  */
-;  emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
+;  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
 ;  DONE;
 ;}")
 

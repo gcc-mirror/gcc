@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Clipper Version
-;;   Copyright (C) 1987, 88, 91, 93, 94, 1997 Free Software Foundation, Inc.
+;;  Copyright (C) 1987, 88, 91, 93, 94, 97, 1998 Free Software Foundation, Inc.
 ;; Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 ;; This file is part of GNU CC.
@@ -178,7 +178,7 @@
     {
       rtx xops[4];
       xops[0] = operands[0];
-      xops[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+      xops[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
       xops[2] = operands[1];
       xops[3] = adj_offsettable_operand (operands[1], 4);
       output_asm_insn (\"loadw  %2,%0\;loadw  %3,%1\", xops);
@@ -189,9 +189,9 @@
     {
       rtx xops[4];
       xops[0] = operands[0];
-      xops[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+      xops[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
       xops[2] = operands[1];
-      xops[3] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+      xops[3] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
       output_asm_insn (\"movw   %2,%0\;movw   %3,%1\", xops);
       return \"\";
     }
@@ -215,7 +215,7 @@
   xops[0] = operands[0];		/* r -> o */
   xops[1] = adj_offsettable_operand (operands[0], 4);
   xops[2] = operands[1];
-  xops[3] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+  xops[3] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   output_asm_insn (\"storw  %2,%0\;storw  %3,%1\", xops);
   return \"\";
 }"
@@ -317,12 +317,12 @@
 {
   rtx xoperands[2],yoperands[2];
 
-  xoperands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+  xoperands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
 
   if (which_alternative == 0)		/* r -> r */
     {
       output_asm_insn (\"movw   %1,%0\", operands);
-      xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+      xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
       output_asm_insn (\"movw   %1,%0\", xoperands);
       return \"\";
     }
@@ -340,12 +340,10 @@
 	abort ();
 
       yoperands[0] = operands[0];
-      yoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_LOW (operands[1]));
+      yoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
       output_asm_insn (\"loadi  %1,%0\", yoperands);
 
-      xoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_HIGH (operands[1]));
+      xoperands[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
       output_asm_insn (\"loadi  %1,%0\", xoperands);
       return \"\";
     }
@@ -368,7 +366,7 @@
   xops[0] = operands[0];
   xops[1] = adj_offsettable_operand (operands[0], 4);
   xops[2] = operands[1];
-  xops[3] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+  xops[3] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   output_asm_insn (\"storw  %2,%0\;storw  %3,%1\", xops);
   return \"\";
 }"
@@ -698,9 +696,9 @@
   rtx xoperands[4];
 
   xoperands[0] = operands[0];
-  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   xoperands[2] = operands[2];
-  xoperands[3] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
+  xoperands[3] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   output_asm_insn (\"addw   %2,%0\;addwc  %3,%1\", xoperands);
   return \"\";
 }"
@@ -735,7 +733,7 @@
 	  val = -val;
 
 	  xops[0] = operands[0];
-	  xops[1] = gen_rtx (CONST_INT, VOIDmode, val);
+	  xops[1] = GEN_INT (val);
 
 	  if (val >= 16)
 	    output_asm_insn (\"subi   %1,%0\", xops);
@@ -769,9 +767,9 @@
   rtx xoperands[4];
 
   xoperands[0] = operands[0];
-  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   xoperands[2] = operands[2];
-  xoperands[3] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
+  xoperands[3] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   output_asm_insn (\"subw   %2,%0\;subwc  %3,%1\", xoperands);
   return \"\";
 }"
@@ -993,7 +991,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1020,7 +1018,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1090,7 +1088,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1117,7 +1115,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1148,7 +1146,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1175,7 +1173,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""

@@ -1,5 +1,5 @@
 ;;- Machine description for ROMP chip for GNU C compiler
-;;   Copyright (C) 1988, 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+;;   Copyright (C) 1988, 91, 93, 94, 95, 1998 Free Software Foundation, Inc.
 ;;   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -180,8 +180,7 @@
 	       || (unsigned) ((- const_val) + 0x8000) < 0x10000)
 	{
 	  /* Can do this by loading the negative constant and then negating. */
-	  emit_move_insn (operands[0],
-			  gen_rtx (CONST_INT, VOIDmode, - const_val));
+	  emit_move_insn (operands[0], GEN_INT (- const_val));
 	  emit_insn (gen_negsi2 (operands[0], operands[0]));
 	  DONE;
 	}
@@ -195,10 +194,9 @@
 	  if (low_part >= 0x10 && exact_log2 (low_part) >= 0)
 	    i = high_part, high_part = low_part, low_part = i;
 
-	  emit_move_insn (operands[0],
-			  gen_rtx (CONST_INT, VOIDmode, low_part));
+	  emit_move_insn (operands[0], GEN_INT (low_part));
 	  emit_insn (gen_iorsi3 (operands[0], operands[0],
-				 gen_rtx (CONST_INT, VOIDmode, high_part)));
+				 GEN_INT (high_part)));
 	  DONE;
 	}
     }
@@ -482,11 +480,9 @@
 { operands[2] = operand_subword (operands[0], 1, 0, DImode);
   operands[3] = XEXP (operands[1], 0);
   operands[4] = operand_subword (operands[0], 0, 0, DImode);
-  operands[5] = gen_rtx (MEM, SImode, operands[2]);
+  operands[5] = gen_rtx_MEM (SImode, operands[2]);
   operands[6] = operands[2];
-  operands[7] = gen_rtx (MEM, SImode,
-			 gen_rtx (PLUS, SImode, operands[2],
-				  gen_rtx (CONST_INT, VOIDmode, 4)));
+  operands[7] = gen_rtx_MEM (SImode, plus_constant (operands[2], 4));
 
   if (operands[2] == 0 || operands[4] == 0)
     FAIL;
@@ -503,11 +499,9 @@
    (set (match_dup 6) (match_dup 7))]
   "
 { operands[3] = XEXP (operands[0], 0);
-  operands[4] = gen_rtx (MEM, SImode, operands[2]);
+  operands[4] = gen_rtx_MEM (SImode, operands[2]);
   operands[5] = operand_subword (operands[1], 0, 0, DImode);
-  operands[6] = gen_rtx (MEM, SImode,
-			 gen_rtx (PLUS, SImode, operands[2],
-				  gen_rtx (CONST_INT, VOIDmode, 4)));
+  operands[6] = gen_rtx_MEM (SImode, plus_constant (operands[4], 4));
   operands[7] = operand_subword (operands[1], 1, 0, DImode);
 
   if (operands[5] == 0 || operands[7] == 0)
@@ -607,8 +601,8 @@
     operands[7] = operands[8] = operands[6];
   else
     {
-      operands[7] = gen_rtx (SCRATCH, SImode);
-      operands[8] = gen_rtx (SCRATCH, SImode);
+      operands[7] = gen_rtx_SCRATCH (SImode);
+      operands[8] = gen_rtx_SCRATCH (SImode);
     }
 }")
 
@@ -631,7 +625,7 @@
 
   if (op0 == op1)
     {
-      emit_insn (gen_rtx (SET, VOIDmode, op0, op1));
+      emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
       DONE;
     }
 
@@ -686,7 +680,7 @@
   
   if (op0 == op1)
     {
-      emit_insn (gen_rtx (SET, VOIDmode, op0, op1));
+      emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
       DONE;
     }
 
@@ -706,7 +700,7 @@
       last = emit_move_insn (operand_subword (op0, 0, 1, SFmode),
 			     operand_subword_force (op1, 0, SFmode));
 
-      REG_NOTES (last) = gen_rtx (EXPR_LIST, REG_EQUAL, op1, REG_NOTES (last));
+      REG_NOTES (last) = gen_rtx_EXPR_LIST (REG_EQUAL, op1, REG_NOTES (last));
       DONE;
     }
 }")
@@ -812,11 +806,10 @@
   "
 { operands[2] = XEXP (operands[1], 0);
   operands[3] = operand_subword (operands[0], 0, 0, DFmode);
-  operands[4] = gen_rtx (MEM, SImode, gen_rtx (REG, SImode, 15));
+  operands[4] = gen_rtx_MEM (SImode, gen_rtx (REG, SImode, 15));
   operands[5] = operand_subword (operands[0], 1, 0, DFmode);
-  operands[6] = gen_rtx (MEM, SImode,
-			 gen_rtx (PLUS, SImode, gen_rtx (REG, SImode, 15),
-				  gen_rtx (CONST_INT, VOIDmode, 4)));
+  operands[6] = gen_rtx_MEM (SImode,
+			     plus_constant (gen_rtx (REG, SImode, 15), 4));
 
   if (operands[3] == 0 || operands[5] == 0)
     FAIL;
@@ -833,11 +826,10 @@
    (set (match_dup 5) (match_dup 6))]
   "
 { operands[2] = XEXP (operands[0], 0);
-  operands[3] = gen_rtx (MEM, SImode, gen_rtx (REG, SImode, 15));
+  operands[3] = gen_rtx_MEM (SImode, gen_rtx (REG, SImode, 15));
   operands[4] = operand_subword (operands[1], 0, 0, DFmode);
-  operands[5] = gen_rtx (MEM, SImode,
-			 gen_rtx (PLUS, SImode, gen_rtx (REG, SImode, 15),
-				  gen_rtx (CONST_INT, VOIDmode, 4)));
+  operands[5] = gen_rtx_MEM (SImode,
+			     plus_constant (gen_rtx_REG (SImode, 15), 4));
   operands[6] = operand_subword (operands[1], 1, 0, DFmode);
 
   if (operands[4] == 0 || operands[6] == 0)
@@ -870,11 +862,11 @@
     FAIL;
 
   if (reload_completed)
-    operands[6] = operands[7] = gen_rtx (REG, SImode, 15);
+    operands[6] = operands[7] = gen_rtx_REG (SImode, 15);
   else
     {
-      operands[6] = gen_rtx (SCRATCH, SImode);
-      operands[7] = gen_rtx (SCRATCH, SImode);
+      operands[6] = gen_rtx_SCRATCH (SImode);
+      operands[7] = gen_rtx_SCRATCH (SImode);
     }
 }")
 
@@ -1208,10 +1200,9 @@
       if (low & 0x8000)
 	high++, low |= 0xffff0000;
 
-      emit_insn (gen_addsi3 (operands[0], operands[1],
-			     gen_rtx (CONST_INT, VOIDmode, high << 16)));
+      emit_insn (gen_addsi3 (operands[0], operands[1], GEN_INT (high << 16)));
       operands[1] = operands[0];
-      operands[2] = gen_rtx (CONST_INT, VOIDmode, low);
+      operands[2] = GEN_INT (low);
     }
 }")
 
@@ -1259,8 +1250,7 @@
   if (GET_CODE (operands [2]) == CONST_INT)
     {
       emit_insn (gen_addsi3 (operands[0], operands[1], 
-			     gen_rtx (CONST_INT,
-				      VOIDmode, - INTVAL (operands[2]))));
+			     GEN_INT (- INTVAL (operands[2]))));
       DONE;
     }
   else
@@ -1367,16 +1357,16 @@
   rtx insn;
 
   emit_insn (gen_divmodsi4_doit (operands[1], operands[2]));
-  insn = emit_move_insn (operands[0], gen_rtx (REG, SImode, 2));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL,
-			      gen_rtx (DIV, SImode, operands[1],
-				       operands[2]),
-			      REG_NOTES (insn));
-  insn = emit_move_insn (operands[3], gen_rtx (REG, SImode, 3));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL,
-			      gen_rtx (MOD, SImode, operands[1],
-				       operands[2]),
-			      REG_NOTES (insn));
+  insn = emit_move_insn (operands[0], gen_rtx_REG (SImode, 2));
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
+					gen_rtx_DIV (SImode, operands[1],
+						     operands[2]),
+					REG_NOTES (insn));
+  insn = emit_move_insn (operands[3], gen_rtx_REG (SImode, 3));
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
+					gen_rtx_MOD (SImode, operands[1],
+						     operands[2]),
+					REG_NOTES (insn));
   DONE;
 }")
 
@@ -1417,16 +1407,16 @@
   rtx insn;
 
   emit_insn (gen_udivmodsi4_doit (operands[1], operands[2]));
-  insn = emit_move_insn (operands[0], gen_rtx (REG, SImode, 2));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL,
-			      gen_rtx (UDIV, SImode, operands[1],
-				       operands[2]),
-			      REG_NOTES (insn));
-  insn = emit_move_insn (operands[3], gen_rtx (REG, SImode, 3));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL,
-			      gen_rtx (UMOD, SImode, operands[1],
-				       operands[2]),
-			      REG_NOTES (insn));
+  insn = emit_move_insn (operands[0], gen_rtx_REG (SImode, 2));
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
+					gen_rtx_UDIV (SImode, operands[1],
+						      operands[2]),
+					REG_NOTES (insn));
+  insn = emit_move_insn (operands[3], gen_rtx_REG (SImode, 3));
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
+					gen_rtx_UMOD (SImode, operands[1],
+						      operands[2]),
+					REG_NOTES (insn));
   DONE;
 }")
 
@@ -1516,10 +1506,9 @@
       if (top != 0 && top != 0xffff && bottom != 0 && bottom != 0xffff)
 	{
 	  emit_insn (gen_andsi3 (operands[0], operands[1],
-				 gen_rtx (CONST_INT, VOIDmode,
-					  (top << 16) | 0xffff)));
+				 GEN_INT ((top << 16) | 0xffff)));
 	  operands[1] = operands[0];
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, 0xffff0000 | bottom);
+	  operands[2] = GEN_INT (0xffff0000 | bottom);
 	}
     }
 }");
@@ -1552,9 +1541,9 @@
       if (top != 0 && bottom != 0)
 	{
 	  emit_insn (gen_iorsi3 (operands[0], operands[1],
-				 gen_rtx (CONST_INT, VOIDmode, (top << 16))));
+				 GEN_INT (top << 16))));
 	  operands[1] = operands[0];
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, bottom);
+	  operands[2] = GEN_INT (bottom);
 	}
     }
 }");
@@ -1592,9 +1581,9 @@
       else if (top != 0 && bottom != 0)
 	{
 	  emit_insn (gen_xorsi3 (operands[0], operands[1],
-				 gen_rtx (CONST_INT, VOIDmode, (top << 16))));
+				 GEN_INT (top << 16)));
 	  operands[1] = operands[0];
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, bottom);
+	  operands[2] = GEN_INT (bottom);
 	}
     }
 }");
@@ -1666,7 +1655,7 @@
   ""
   "
 {
-  rtx reg0 = gen_rtx (REG, SImode, 0);
+  rtx reg0 = gen_rtx_REG (SImode, 0);
   rtx call_insn;
 
   if (GET_CODE (operands[0]) != MEM || GET_CODE (operands[1]) != CONST_INT)
@@ -1676,8 +1665,8 @@
   if (GET_CODE (operands[0]) == SYMBOL_REF)
     {
       extern rtx get_symref ();
-      char *real_fcnname =
-		(char *) alloca (strlen (XSTR (operands[0], 0)) + 2);
+      char *real_fcnname
+	= (char *) alloca (strlen (XSTR (operands[0], 0)) + 2);
 
       /* Copy the data area address to r0.  */
       emit_move_insn (reg0, force_reg (SImode, operands[0]));
@@ -1690,7 +1679,7 @@
       rtx data_access;
 
       emit_move_insn (reg0, force_reg (SImode, operands[0]));
-      data_access = gen_rtx (MEM, SImode, operands[0]);
+      data_access = gen_rtx_MEM (SImode, operands[0]);
       RTX_UNCHANGING_P (data_access) = 1;
       operands[0] = copy_to_reg (data_access);
     }
@@ -1725,7 +1714,7 @@
   ""
   "
 {
-  rtx reg0 = gen_rtx (REG, SImode, 0);
+  rtx reg0 = gen_rtx_REG (SImode, 0);
   rtx call_insn;
 
   if (GET_CODE (operands[1]) != MEM || GET_CODE (operands[2]) != CONST_INT)
@@ -1749,7 +1738,7 @@
       rtx data_access;
 
       emit_move_insn (reg0,force_reg (SImode, operands[1]));
-      data_access = gen_rtx (MEM, SImode, operands[1]);
+      data_access = gen_rtx_MEM (SImode, operands[1]);
       RTX_UNCHANGING_P (data_access) = 1;
       operands[1] = copy_to_reg (data_access);
     }
@@ -1979,8 +1968,7 @@
 
       result = expand_binop (SImode, xor_optab,
 			     operand_subword_force (operands[1], 0, SFmode),
-			     gen_rtx (CONST_INT, VOIDmode, 0x80000000),
-			     target, 0, OPTAB_WIDEN);
+			     GEN_INT (0x80000000), target, 0, OPTAB_WIDEN);
       if (result == 0)
 	abort ();
 
@@ -2013,8 +2001,7 @@
       start_sequence ();
       result = expand_binop (SImode, xor_optab,
 			     operand_subword_force (operands[1], 0, DFmode),
-			     gen_rtx (CONST_INT, VOIDmode, 0x80000000),
-			     target, 0, OPTAB_WIDEN);
+			     GEN_INT (0x80000000), target, 0, OPTAB_WIDEN);
       if (result == 0)
 	abort ();
 

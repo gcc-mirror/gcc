@@ -1,5 +1,5 @@
 ;; Machine description for GNU compiler, Tahoe version
-;; Copyright (C) 1989, 1994, 1996, 1997 Free Software Foundation, Inc.
+;; Copyright (C) 1989, 1994, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1015,7 +1015,7 @@
   "*
 {
   if (INTVAL (operands[1]) > 32767)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) + 0xffff0000);
+    operands[1] = GEN_INT (INTVAL (operands[1]) + 0xffff0000);
   return \"cmpw %0,%1\";
 }")
 
@@ -1062,7 +1062,7 @@
   "*
 {
   if (INTVAL (operands[1]) > 127)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) + 0xffffff00);
+    operands[1] = GEN_INT (INTVAL (operands[1]) + 0xffffff00);
   return \"cmpb %0,%1\";
 }")
 
@@ -1591,7 +1591,7 @@
   ""
   "*
 {
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, (INTVAL (operands[1]) + 4));
+  operands[1] = GEN_INT (INTVAL (operands[1]) + 4);
   if (GET_CODE(operands[0]) == MEM
       && CONSTANT_ADDRESS_P (XEXP(operands[0], 0))
       && INTVAL (operands[1]) < 64)
@@ -1609,7 +1609,7 @@
   ""
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (INTVAL (operands[2]) + 4));
+  operands[2] = GEN_INT (INTVAL (operands[2]) + 4));
   if (GET_CODE(operands[1]) == MEM
       && CONSTANT_ADDRESS_P (XEXP(operands[1], 0))
       && INTVAL (operands[2]) < 64)
@@ -2056,8 +2056,7 @@
 ;   && exact_log2 (INTVAL (operands[1])) >= 0"
 ;  "*
 ;{
-;  operands[1]
-;    = gen_rtx (CONST_INT, VOIDmode, exact_log2 (INTVAL (operands[1])));
+;  operands[1] = GEN_INT (exact_log2 (INTVAL (operands[1])));
 ;  return \"bbs %1,%0,%l2\";
 ;}")
 ;
@@ -2073,8 +2072,7 @@
 ;   && exact_log2 (INTVAL (operands[1])) >= 0"
 ;  "*
 ;{
-;  operands[1]
-;    = gen_rtx (CONST_INT, VOIDmode, exact_log2 (INTVAL (operands[1])));
+;  operands[1] = GEN_INT (exact_log2 (INTVAL (operands[1])));
 ;  return \"bbc %1,%0,%l2\";
 ;}")
 ;
@@ -2090,8 +2088,7 @@
 ;   && exact_log2 (INTVAL (operands[1])) >= 0"
 ;  "*
 ;{
-;  operands[1]
-;    = gen_rtx (CONST_INT, VOIDmode, exact_log2 (INTVAL (operands[1])));
+;  operands[1] = GEN_INT (exact_log2 (INTVAL (operands[1])));
 ;  return \"bbc %1,%0,%l2\";
 ;}")
 ;

@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Fujitsu Gmicro Version
-;;  Copyright (C) 1990, 1994, 1996 Free Software Foundation, Inc.
+;;  Copyright (C) 1990, 1994, 1996, 1998 Free Software Foundation, Inc.
 ;;  Contributed by M.Yuhara, Fujitsu Laboratories LTD.
 
 ;; This file is part of GNU CC.
@@ -271,7 +271,7 @@
   "*
 {
   register int log = exact_log2 (INTVAL (operands[1]));
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, log);
+  operands[1] = GEN_INT (log);
   return \"btst %1,%0.b\";
 }")
 
@@ -581,7 +581,7 @@
       if (FPU_REG_P (operands[0]))
 	{
 	  rtx xoperands[2];
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
 	  output_asm_insn (\"mov.w %1,%-\", xoperands);
 	  output_asm_insn (\"mov.w %1,%-\", operands);
 	  return \"fmov.d %+,%0\";
@@ -590,7 +590,7 @@
 	{
 	  output_asm_insn (\"fmov.d %f1,%-\", operands);
 	  output_asm_insn (\"mov.w %+,%0\", operands);
-	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
 	  return \"mov.w %+,%0\";
 	}
     }
@@ -616,7 +616,7 @@
       if (REG_P (operands[1]))
 	{
 	  rtx xoperands[2];
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
 	  output_asm_insn (\"mov.w %1,%-\", xoperands);
 	  output_asm_insn (\"mov.w %1,%-\", operands);
 	  return \"fmov.d %+,%0\";
@@ -630,7 +630,7 @@
       if (REG_P (operands[0]))
 	{
 	  output_asm_insn (\"fmov.d %f1,%-\;mov.w %+,%0\", operands);
-	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
 	  return \"mov.w %+,%0\";
 	}
       else
@@ -746,8 +746,7 @@
 	  return \"mov.w @(12,r0),@(12,r1)\";
 	}
 	    
-      operands[2] =
-	gen_rtx (CONST_INT, VOIDmode, op2const);
+      operands[2] = GEN_INT (op2const);
       output_asm_insn (\"mov.w %2,r2\", operands);
       return \"smov/n/f.w\";
     }
@@ -833,7 +832,7 @@
 	}
       else
 	{
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, wlen);
+	  xoperands[0] = GEN_INT (wlen);
 	  output_asm_insn (\"mov.w %0,r2\", xoperands);
 	  output_asm_insn (\"smov/n/f.w\", operands);
 	}
@@ -1517,8 +1516,7 @@
     { 
       if (GET_CODE (operands[0]) != REG)
         operands[0] = adj_offsettable_operand (operands[0], 2);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     INTVAL (operands[2]) & 0xffff);
+      operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
       /* Do not delete a following tstl %0 insn; that would be incorrect.  */
       CC_STATUS_INIT;
       return \"and.h %2,%0\";
@@ -1595,16 +1593,17 @@
 	{
 	  if (logval < 7)
 	    {
-	      operands[1] = gen_rtx (CONST_INT, VOIDmode, 7 - logval);
+	      operands[1] = GEN_INT (7 - logval);
 	      return \"bset.b %1,%0\";
 	    }
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, 31 - logval);
+	  operands[1] = GEN_INT (31 - logval);
 	  return \"bset.w %1,%0\";
 	}
       else
         {
-	  operands[0] = adj_offsettable_operand (operands[0], 3 - (logval / 8));
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, 7 - (logval % 8));
+	  operands[0]
+	    = adj_offsettable_operand (operands[0], 3 - (logval / 8));
+	  operands[1] = GEN_INT (7 - (logval % 8));
 	}
       return \"bset.b %1,%0\";
     }
@@ -1866,7 +1865,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1891,7 +1890,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, HImode, negate_rtx (HImode, operands[2]));
+    operands[2] = gen_rtx_NEG (HImode, negate_rtx (HImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1916,7 +1915,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, QImode, negate_rtx (QImode, operands[2]));
+    operands[2] = gen_rtx_NEG (QImode, negate_rtx (QImode, operands[2]));
 }")
 
 (define_insn ""
@@ -2255,7 +2254,7 @@
     output_asm_insn (\"mov.w %1,%0\", operands);
   if (INTVAL (operands[3]) != 0)
     output_asm_insn (\"shl.w %3,%0\", operands);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, -(32 - INTVAL (operands[2])));
+  operands[2] = GEN_INT (-(32 - INTVAL (operands[2])));
   return \"sha.w %3,%0\";
 }")
     
@@ -2272,7 +2271,7 @@
     output_asm_insn (\"mov.w %1,%0\", operands);
   if (INTVAL (operands[3]) != 0)
     output_asm_insn (\"shl.w %3,%0\", operands);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, -(32 - INTVAL (operands[2])));
+  operands[2] = GEN_INT (- (32 - INTVAL (operands[2])));
   return \"shl.w %3,%0\";
 }")
 
@@ -2732,7 +2731,7 @@
   "*
 {
   rtx xoperands[2];
-  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   output_asm_insn (\"mov.w %1,@sp\", xoperands);
   output_asm_insn (\"mov.w %1,%-\", operands);
   return \"fmov.d %+,%0\";

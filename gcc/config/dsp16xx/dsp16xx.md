@@ -195,15 +195,15 @@
     {
       rtx xoperands[2];
 
-      xoperands[0] = gen_rtx (REG, HImode, REG_A0);
+      xoperands[0] = gen_rtx_REG (HImode, REG_A0);
       xoperands[1] = operands[0];
       double_reg_from_memory (xoperands);
     }
 
   if (GET_CODE(operands[1]) == REG)
     {
-      if (REGNO (operands[1]) == REG_Y ||
-	  REGNO (operands[1]) == REG_PROD)
+      if (REGNO (operands[1]) == REG_Y
+	  || REGNO (operands[1]) == REG_PROD)
 	{
 	  output_asm_insn (\"a1=%1\", operands);
 	}
@@ -218,7 +218,7 @@
     {
       rtx xoperands[2];
 
-      xoperands[0] = gen_rtx (REG, HImode, REG_A1);
+      xoperands[0] = gen_rtx_REG (HImode, REG_A1);
       xoperands[1] = operands[1];
       double_reg_from_memory (xoperands);
     }
@@ -302,7 +302,7 @@
   "
 {
   if (!dsp16xx_cmphf3_libcall)
-    dsp16xx_cmphf3_libcall = gen_rtx (SYMBOL_REF, Pmode, CMPHF3_LIBCALL);
+    dsp16xx_cmphf3_libcall = gen_rtx_SYMBOL_REF (Pmode, CMPHF3_LIBCALL);
 
    dsp16xx_compare_gen = gen_compare_reg;
    dsp16xx_compare_op0 = operands[0];
@@ -426,7 +426,7 @@
   "
 {
   if (!dsp16xx_addhf3_libcall)
-    dsp16xx_addhf3_libcall = gen_rtx (SYMBOL_REF, Pmode, ADDHF3_LIBCALL);
+    dsp16xx_addhf3_libcall = gen_rtx_SYMBOL_REF (Pmode, ADDHF3_LIBCALL);
 
    emit_library_call (dsp16xx_addhf3_libcall, 1, HFmode, 2,
 		      operands[1], HFmode,
@@ -506,7 +506,7 @@
   "
 {
   if (!dsp16xx_subhf3_libcall)
-    dsp16xx_subhf3_libcall = gen_rtx (SYMBOL_REF, Pmode, SUBHF3_LIBCALL);
+    dsp16xx_subhf3_libcall = gen_rtx_SYMBOL_REF (Pmode, SUBHF3_LIBCALL);
   
   emit_library_call (dsp16xx_subhf3_libcall, 1, HFmode, 2,
 		     operands[1], HFmode,
@@ -529,7 +529,7 @@
 "
 {
   if (!dsp16xx_neghf2_libcall)
-    dsp16xx_neghf2_libcall = gen_rtx (SYMBOL_REF, Pmode, NEGHF2_LIBCALL);
+    dsp16xx_neghf2_libcall = gen_rtx_SYMBOL_REF (Pmode, NEGHF2_LIBCALL);
   
   emit_library_call (dsp16xx_neghf2_libcall, 1, HFmode, 1,
 		     operands[1], HFmode);
@@ -553,7 +553,7 @@
   "
 {
   if (!dsp16xx_mulhi3_libcall)
-    dsp16xx_mulhi3_libcall = gen_rtx (SYMBOL_REF, Pmode, MULHI3_LIBCALL);
+    dsp16xx_mulhi3_libcall = gen_rtx_SYMBOL_REF (Pmode, MULHI3_LIBCALL);
 
    emit_library_call (dsp16xx_mulhi3_libcall, 1, HImode, 2,
 		      operands[1], HImode,
@@ -595,7 +595,7 @@
   "
 {
   if (!dsp16xx_mulhf3_libcall)
-    dsp16xx_mulhf3_libcall = gen_rtx (SYMBOL_REF, Pmode, MULHF3_LIBCALL);
+    dsp16xx_mulhf3_libcall = gen_rtx_SYMBOL_REF (Pmode, MULHF3_LIBCALL);
   
   emit_library_call (dsp16xx_mulhf3_libcall, 1, HFmode, 2,
 		     operands[1], HFmode,
@@ -620,7 +620,7 @@
   "
 {
   if (!dsp16xx_divhi3_libcall)
-    dsp16xx_divhi3_libcall = gen_rtx (SYMBOL_REF, Pmode, DIVHI3_LIBCALL);
+    dsp16xx_divhi3_libcall = gen_rtx_SYMBOL_REF (Pmode, DIVHI3_LIBCALL);
 
    emit_library_call (dsp16xx_divhi3_libcall, 1, HImode, 2,
 		      operands[1], HImode,
@@ -637,7 +637,7 @@
   "
 {
   if (!dsp16xx_udivhi3_libcall)
-    dsp16xx_udivhi3_libcall = gen_rtx (SYMBOL_REF, Pmode, UDIVHI3_LIBCALL);
+    dsp16xx_udivhi3_libcall = gen_rtx_SYMBOL_REF (Pmode, UDIVHI3_LIBCALL);
   
   emit_library_call (dsp16xx_udivhi3_libcall, 1, HImode, 2,
 		     operands[1], HImode,
@@ -654,7 +654,7 @@
   "
 {
   if (!dsp16xx_divqi3_libcall)
-    dsp16xx_divqi3_libcall = gen_rtx (SYMBOL_REF, Pmode, DIVQI3_LIBCALL);
+    dsp16xx_divqi3_libcall = gen_rtx_SYMBOL_REF (Pmode, DIVQI3_LIBCALL);
   
   emit_library_call (dsp16xx_divqi3_libcall, 1, QImode, 2,
 		     operands[1], QImode,
@@ -671,7 +671,7 @@
   "
 {
   if (!dsp16xx_udivqi3_libcall)
-    dsp16xx_udivqi3_libcall = gen_rtx (SYMBOL_REF, Pmode, UDIVQI3_LIBCALL);
+    dsp16xx_udivqi3_libcall = gen_rtx_SYMBOL_REF (Pmode, UDIVQI3_LIBCALL);
 
    emit_library_call (dsp16xx_udivqi3_libcall, 1, QImode, 2,
 		      operands[1], QImode,
@@ -695,7 +695,7 @@
   "
 {
   if (!dsp16xx_modhi3_libcall)
-    dsp16xx_modhi3_libcall = gen_rtx (SYMBOL_REF, Pmode, MODHI3_LIBCALL);
+    dsp16xx_modhi3_libcall = gen_rtx_SYMBOL_REF (Pmode, MODHI3_LIBCALL);
   
   emit_library_call (dsp16xx_modhi3_libcall, 1, HImode, 2,
 		     operands[1], HImode,
@@ -712,7 +712,7 @@
   "
 {
   if (!dsp16xx_umodhi3_libcall)
-    dsp16xx_umodhi3_libcall = gen_rtx (SYMBOL_REF, Pmode, UMODHI3_LIBCALL);
+    dsp16xx_umodhi3_libcall = gen_rtx_SYMBOL_REF (Pmode, UMODHI3_LIBCALL);
   
   emit_library_call (dsp16xx_umodhi3_libcall, 1, HImode, 2,
 		     operands[1], HImode,
@@ -729,7 +729,7 @@
   "
 {
   if (!dsp16xx_modqi3_libcall)
-    dsp16xx_modqi3_libcall = gen_rtx (SYMBOL_REF, Pmode, MODQI3_LIBCALL);
+    dsp16xx_modqi3_libcall = gen_rtx_SYMBOL_REF (Pmode, MODQI3_LIBCALL);
   
   emit_library_call (dsp16xx_modqi3_libcall, 1, QImode, 2,
 		     operands[1], QImode,
@@ -746,7 +746,7 @@
   "
 {
   if (!dsp16xx_umodqi3_libcall)
-    dsp16xx_umodqi3_libcall = gen_rtx (SYMBOL_REF, Pmode, UMODQI3_LIBCALL);
+    dsp16xx_umodqi3_libcall = gen_rtx_SYMBOL_REF (Pmode, UMODQI3_LIBCALL);
   
   emit_library_call (dsp16xx_umodqi3_libcall, 1, QImode, 2,
 		     operands[1], QImode,
@@ -763,7 +763,7 @@
   "
 {
   if (!dsp16xx_divhf3_libcall)
-    dsp16xx_divhf3_libcall = gen_rtx (SYMBOL_REF, Pmode, DIVHF3_LIBCALL);
+    dsp16xx_divhf3_libcall = gen_rtx_SYMBOL_REF (Pmode, DIVHF3_LIBCALL);
   
   emit_library_call (dsp16xx_divhf3_libcall, 1, HFmode, 2,
 		     operands[1], HFmode,
@@ -1059,11 +1059,13 @@
   emit_move_insn (operands[0], addr_reg);
 
   /* Then generate the add insn */
-  emit_insn (gen_rtx (PARALLEL, VOIDmode, 
-		      gen_rtvec (2,
-				 gen_rtx (SET, VOIDmode, operands[0], 
-					  gen_rtx (PLUS, QImode, operands[0], offset)),
-				 gen_rtx (CLOBBER, VOIDmode, operands[2]))));
+  emit_insn (gen_rtx_PARALLEL
+	     (VOIDmode, 
+	      gen_rtvec (2,
+			 gen_rtx_SET (VOIDmode, operands[0], 
+				      gen_rtx_PLUS (QImode, operands[0],
+						    offset)),
+			 gen_rtx_CLOBBER (VOIDmode, operands[2]))));
   DONE;
 }")
 
@@ -1261,7 +1263,7 @@
   "
 {
 	operands[2] = gen_reg_rtx (HImode);
-	operands[3] = gen_rtx (SUBREG, QImode, operands[2], 1);
+	operands[3] = gen_rtx_SUBREG (QImode, operands[2], 1);
 }")
 
 ;;(define_insn "extendqihi2"
@@ -1311,7 +1313,7 @@
   "
 {
 	operands[2] = gen_reg_rtx (HImode);
-	operands[3] = gen_rtx (SUBREG, QImode, operands[2], 1);
+	operands[3] = gen_rtx_SUBREG (QImode, operands[2], 1);
 }")
 
 
@@ -1322,7 +1324,7 @@
   "
 {
   if (!dsp16xx_floathihf2_libcall)
-    dsp16xx_floathihf2_libcall = gen_rtx (SYMBOL_REF, Pmode, FLOATHIHF2_LIBCALL);
+    dsp16xx_floathihf2_libcall = gen_rtx_SYMBOL_REF (Pmode, FLOATHIHF2_LIBCALL);
   
   emit_library_call (dsp16xx_floathihf2_libcall, 1, HFmode, 1,
 		     operands[1], HImode);
@@ -1337,7 +1339,7 @@
   "
 {
   if (!dsp16xx_fixhfhi2_libcall)
-    dsp16xx_fixhfhi2_libcall = gen_rtx (SYMBOL_REF, Pmode, FIXHFHI2_LIBCALL);
+    dsp16xx_fixhfhi2_libcall = gen_rtx_SYMBOL_REF (Pmode, FIXHFHI2_LIBCALL);
   
   emit_library_call (dsp16xx_fixhfhi2_libcall, 1, HImode, 1,
 		     operands[1], HFmode);
@@ -1367,8 +1369,8 @@
       emit_jump_insn (gen_bge (label1));
 
       emit_insn (gen_fix_trunchfhi2 (operands[0], operands[1]));
-      emit_jump_insn (gen_rtx (SET, VOIDmode, pc_rtx,
-			       gen_rtx (LABEL_REF, VOIDmode, label2)));
+      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+				   gen_rtx_LABEL_REF (VOIDmode, label2)));
       emit_barrier ();
 
       emit_label (label1);
@@ -1382,7 +1384,7 @@
 
       /* allow REG_NOTES to be set on last insn (labels don't have enough
 	 fields, and can't be used for REG_NOTES anyway).  */
-      emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
+      emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
       DONE;
     }
 }")
@@ -1448,7 +1450,8 @@
 
 #if 0
 	if (!dsp16xx_ashrhi3_libcall)
-	  dsp16xx_ashrhi3_libcall = gen_rtx (SYMBOL_REF, Pmode, ASHRHI3_LIBCALL);
+	  dsp16xx_ashrhi3_libcall
+	    = gen_rtx_SYMBOL_REF (Pmode, ASHRHI3_LIBCALL);
 
 	  emit_library_call (dsp16xx_ashrhi3_libcall, 1, HImode, 2,
 			     operands[1], HImode,
@@ -1572,7 +1575,8 @@
 	  rtx label2 = gen_label_rtx ();
 #if 0
 	  if (!dsp16xx_lshrhi3_libcall)
-	    dsp16xx_lshrhi3_libcall = gen_rtx (SYMBOL_REF, Pmode, LSHRHI3_LIBCALL);
+	    dsp16xx_lshrhi3_libcall
+	      = gen_rtx_SYMBOL_REF (Pmode, LSHRHI3_LIBCALL);
 	  
 	  emit_library_call (dsp16xx_lshrhi3_libcall, 1, HImode, 2,
 			     operands[1], HImode,
@@ -1714,11 +1718,11 @@
 	rtx label2 = gen_label_rtx ();
 #if 0
 	if (!dsp16xx_ashlhi3_libcall)
-	  dsp16xx_ashlhi3_libcall = gen_rtx (SYMBOL_REF, Pmode, ASHLHI3_LIBCALL);
+	  dsp16xx_ashlhi3_libcall
+	    = gen_rtx_SYMBOL_REF (Pmode, ASHLHI3_LIBCALL);
 
 	  emit_library_call (dsp16xx_ashlhi3_libcall, 1, HImode, 2,
-			     operands[1], HImode,
-			     operands[2], QImode);
+			     operands[1], HImode, operands[2], QImode);
 	  emit_move_insn (operands[0], hard_libcall_value(HImode));
 	  DONE;
 #else
@@ -2038,8 +2042,8 @@
 {
   if (GET_CODE (operands[0]) == MEM
       && ! call_address_operand (XEXP (operands[0], 0), QImode))
-    operands[0] = gen_rtx (MEM, GET_MODE (operands[0]),
-			   force_reg (Pmode, XEXP (operands[0], 0)));
+    operands[0] = gen_rtx_MEM (GET_MODE (operands[0]),
+			       force_reg (Pmode, XEXP (operands[0], 0)));
 }")
 
 (define_insn ""
@@ -2069,8 +2073,8 @@
 {
   if (GET_CODE (operands[1]) == MEM
       && ! call_address_operand (XEXP (operands[1], 0), QImode))
-    operands[1] = gen_rtx (MEM, GET_MODE (operands[1]),
-			   force_reg (Pmode, XEXP (operands[1], 0)));
+    operands[1] = gen_rtx_MEM (GET_MODE (operands[1]),
+			       force_reg (Pmode, XEXP (operands[1], 0)));
 }")
 
 (define_insn ""
