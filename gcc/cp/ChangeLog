@@ -1,3 +1,10 @@
+Thu Mar 26 10:24:05 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* call.c (build_object_call): Complain about ambiguous operator(),
+	rather that crashing.
+	(build_new_op): Likewise.
+	(build_op_delete_call): Likewise.
+
 Thu Mar 26 10:23:24 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* cvt.c (perform_qualification_conversions): Use comp_target_types
