@@ -1,3 +1,8 @@
+2004-11-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/i386.c (i386_solaris_elf_named_section): Mark with
+	ATTRIBUTE_UNUSED.
+  
 2004-11-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* defaults.h, config/darwin.h: Don't define TARGET_SUPPORTS_HIDDEN.
