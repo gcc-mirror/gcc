@@ -1011,8 +1011,7 @@ read_count_file ()
 
       if (tag == GCOV_TAG_OBJECT_SUMMARY)
 	gcov_read_summary (&object_summary);
-      else if (tag == GCOV_TAG_PROGRAM_SUMMARY
-	       || tag == GCOV_TAG_INCORRECT_SUMMARY)
+      else if (tag == GCOV_TAG_PROGRAM_SUMMARY)
 	program_count++;
       else if (tag == GCOV_TAG_FUNCTION)
 	{
@@ -1045,7 +1044,7 @@ read_count_file ()
 	      goto cleanup;
 	    }
 	}
-      else if (tag == GCOV_TAG_ARC_COUNTS && fn)
+      else if (tag == GCOV_TAG_FOR_COUNTER (GCOV_COUNTER_ARCS) && fn)
 	{
 	  if (length != 8 * fn->num_counts)
 	    goto mismatch;
@@ -1801,7 +1800,8 @@ output_lines (gcov_file, src)
   fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, src->name);
   fprintf (gcov_file, "%9s:%5d:Graph:%s\n", "-", 0, bbg_file_name);
   fprintf (gcov_file, "%9s:%5d:Data:%s\n", "-", 0, da_file_name);
-  fprintf (gcov_file, "%9s:%5d:Runs:%u\n", "-", 0, object_summary.runs);
+  fprintf (gcov_file, "%9s:%5d:Runs:%u\n", "-", 0,
+	   object_summary.ctrs[GCOV_COUNTER_ARCS].runs);
   fprintf (gcov_file, "%9s:%5d:Programs:%u\n", "-", 0, program_count);
   
   source_file = fopen (src->name, "r");

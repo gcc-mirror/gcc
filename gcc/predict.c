@@ -120,11 +120,9 @@ bool
 maybe_hot_bb_p (bb)
      basic_block bb;
 {
-  if (profile_info.count_profiles_merged
-      && flag_branch_probabilities
+  if (profile_info && flag_branch_probabilities
       && (bb->count
-	  < profile_info.max_counter_in_program
-	  / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
+	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return false;
   if (bb->frequency < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
     return false;
@@ -137,11 +135,9 @@ bool
 probably_cold_bb_p (bb)
      basic_block bb;
 {
-  if (profile_info.count_profiles_merged
-      && flag_branch_probabilities
+  if (profile_info && flag_branch_probabilities
       && (bb->count
-	  < profile_info.max_counter_in_program
-	  / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
+	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return true;
   if (bb->frequency < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
     return true;
@@ -153,10 +149,8 @@ bool
 probably_never_executed_bb_p (bb)
 	basic_block bb;
 {
-  if (profile_info.count_profiles_merged
-      && flag_branch_probabilities)
-    return ((bb->count + profile_info.count_profiles_merged / 2)
-	    / profile_info.count_profiles_merged) == 0;
+  if (profile_info && flag_branch_probabilities)
+    return ((bb->count + profile_info->runs / 2) / profile_info->runs) == 0;
   return false;
 }
 
@@ -1266,8 +1260,7 @@ compute_function_frequency ()
 {
   basic_block bb;
 
-  if (!profile_info.count_profiles_merged
-      || !flag_branch_probabilities)
+  if (!profile_info || !flag_branch_probabilities)
     return;
   cfun->function_frequency = FUNCTION_FREQUENCY_UNLIKELY_EXECUTED;
   FOR_EACH_BB (bb)

@@ -305,15 +305,20 @@ gcov_write_length (unsigned long position)
 GCOV_LINKAGE void
 gcov_write_summary (unsigned tag, const struct gcov_summary *summary)
 {
+  unsigned ix;
+  const struct gcov_ctr_summary *csum;
   unsigned long base;
 
   base = gcov_write_tag (tag);
   gcov_write_unsigned (summary->checksum);
-  gcov_write_unsigned (summary->runs);
-  gcov_write_unsigned (summary->arcs);
-  gcov_write_counter (summary->arc_sum);
-  gcov_write_counter (summary->arc_max_one);
-  gcov_write_counter (summary->arc_sum_max);
+  for (csum = summary->ctrs, ix = GCOV_COUNTERS; ix--; csum++)
+    {
+      gcov_write_unsigned (csum->num);
+      gcov_write_unsigned (csum->runs);
+      gcov_write_counter (csum->sum_all);
+      gcov_write_counter (csum->run_max);
+      gcov_write_counter (csum->sum_max);
+    }
   gcov_write_length (base);
 }
 #endif /* IN_LIBGCOV */
@@ -406,14 +411,19 @@ gcov_read_string ()
 GCOV_LINKAGE void
 gcov_read_summary (struct gcov_summary *summary)
 {
+  unsigned ix;
+  struct gcov_ctr_summary *csum;
+  
   summary->checksum = gcov_read_unsigned ();
-  summary->runs = gcov_read_unsigned ();
-  summary->arcs = gcov_read_unsigned ();
-  summary->arc_sum = gcov_read_counter ();
-  summary->arc_max_one = gcov_read_counter ();
-  summary->arc_sum_max = gcov_read_counter ();
+  for (csum = summary->ctrs, ix = GCOV_COUNTERS; ix--; csum++)
+    {
+      csum->num = gcov_read_unsigned ();
+      csum->runs = gcov_read_unsigned ();
+      csum->sum_all = gcov_read_counter ();
+      csum->run_max = gcov_read_counter ();
+      csum->sum_max = gcov_read_counter ();
+    }
 }
-
 
 #if IN_GCOV > 0
 /* Return the modification time of the current gcov file.  */

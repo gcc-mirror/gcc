@@ -75,7 +75,7 @@ make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'" $LIB2ADDEHDEP"
 
 # Dependencies for libgcov.c
-libgcov_c_dep='stmp-dirs $(srcdir)/libgcov.c $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'
+libgcov_c_dep='stmp-dirs $(srcdir)/libgcov.c $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h gcov-io.h gcov-io.c gcov-iov.h'
 
 # Dependencies for fp-bit.c
 fpbit_c_dep='stmp-dirs config.status tsystem.h'

@@ -1,3 +1,77 @@
+2003-04-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Makefile.in (LIBGCC_DEPS): Add gcov headers.
+	(libgcov.a): Depends on LIBGCC_DEPS.
+	* basic-block.h (profile_info): Moved here from coverage.h. Made
+	a pointer.
+	* coverage.c (struct function_list): Fixed array of counter types.
+	(struct counts_entry): Keyed by counter type, contains summary.
+	(profile_info): Moved to profile.c.
+	(prg_ctr_mask, prg_n_ctrs, fn_ctr_mask, fn_n_ctrs): New global
+	vars.
+	(profiler_label): Remove.
+	(ctr_labels): New.
+	(set_purpose, label_for_tag, build_counter_section_fields,
+	build_counter_section_value, build_counter_section_data_fields,
+	build_counter_section_data_values, build_function_info_fields,
+	build_function_info_value, gcov_info_fields, gcov_info_value): Remove.
+	(build_fn_info_type, build_fn_info_value, build_ctr_info_type,
+	build_ctr_info_value, build_gcov_info): New.
+	(htab_counts_entry_hash, htab_counts_entry_eq): Adjust.
+	(reads_counts_file): Adjust.
+	(get_coverage_counts): Takes counter number. Add summary
+	parameter. Adjust.
+	(coverage_counter_ref): Tkaes counter number. Adjust. Lazily
+	create counter array labels.
+	(coverage_end_function): Adjust.
+	(create_coverage): Adjust.
+	(find_counters_section): Remove.
+	* coverage.h (MAX_COUNTER_SECTIONS): Remove.
+	(struct section_info, struct profile_info): Remove.
+	(profile_info): Moved to basic-block.h.
+	(coverage_counter_ref): Takes a counter number.
+	(get_coverage_counts): Takes a counter number. Added summary
+	parameter.
+	(find_counters_section): Remove.
+	* gcov-dump.c (tag_arc_counts): Rename to ...
+	(tag_counters): ... here. Adjust.
+	(tag_table): Move tag_counters to 3rd entry. Remove
+	PROGRAM_PLACEHOLDER and PROGRAM_INCORRECT entries.
+	(dump_file): Check for counter tag values here.
+	(tag_summary): Adjust.
+	* gcov-io.c (gcov_write_summary, gcov_read_summary): Adjust.
+	* gcov-io.h (GCOV_LOCKED): New.
+	(GCOV_TAG_ARC_COUNTS): Rename to ...
+	(GCOV_TAG_COUNTS_BASE): ... here.
+	(GCOV_TAG_PLACEHOLDER_SUMMARY, GCOV_TAG_INCORRECT_SUMMARY):
+	Remove.
+	(GCOV_COUNTER_ARCS, GCOV_COUNTERS, GCOV_NAMES): New.
+	(GCOV_TAG_FOR_COUNTER, GCOV_COUNTER_FOR_TAG,
+	GCOV_TAG_IS_COUNTER): New.
+	(struct gcov_ctr_summary): New.
+	(struct gcov_summary): Adjust.
+	(struct gcov_counter_section): Remove.
+	struct gcov_counter_section_data): Remove.
+	(struct gcov_function_info): Rename to ...
+	(struct gcov_fn_info): ... here. Adjust.
+	(struct gcov_ctr_info): New.
+	(struct gcov_info): Adjust.
+	* gcov.c (read_count_file): Adjust.
+	(output_lines): Adjust.
+	* libgcov.c (gcov_exit): Adjust.
+	(__gcov_flush): Adjust.
+	* mklibgcc.in (libgcc2_c_dep): Add gcov headers.
+	* predict.c (maybe_hot_bb_p, probably_cold_bb_p,
+	probably_never_executed_bb_p, compute_frequency_function): Adjust
+	profile_info use.
+	* profile.c (struct counts_entry): Remove.
+	(profile_info): Define here.
+	(get_exec_counts): Adjust get_coverage_counts call.
+	(compute_branch_probablilities): Remove find_counters_section
+	call.
+	(gen_edge_profiler): Adjust coverage_counter_ref call.
+	* tracer.c (tail_duplicate): Adjust profile_info use.
+
 2003-04-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/10339

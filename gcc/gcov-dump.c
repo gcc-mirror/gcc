@@ -35,7 +35,7 @@ static void tag_function PARAMS ((const char *, unsigned, unsigned));
 static void tag_blocks PARAMS ((const char *, unsigned, unsigned));
 static void tag_arcs PARAMS ((const char *, unsigned, unsigned));
 static void tag_lines PARAMS ((const char *, unsigned, unsigned));
-static void tag_arc_counts PARAMS ((const char *, unsigned, unsigned));
+static void tag_counters PARAMS ((const char *, unsigned, unsigned));
 static void tag_summary PARAMS ((const char *, unsigned, unsigned));
 extern int main PARAMS ((int, char **));
 
@@ -59,15 +59,13 @@ static const tag_format_t tag_table[] =
 {
   {0, "NOP", NULL},
   {0, "UNKNOWN", NULL},
+  {0, "COUNTERS", tag_counters},
   {GCOV_TAG_FUNCTION, "FUNCTION", tag_function},
   {GCOV_TAG_BLOCKS, "BLOCKS", tag_blocks},
   {GCOV_TAG_ARCS, "ARCS", tag_arcs},
   {GCOV_TAG_LINES, "LINES", tag_lines},
-  {GCOV_TAG_ARC_COUNTS, "ARC_COUNTS", tag_arc_counts},
   {GCOV_TAG_OBJECT_SUMMARY, "OBJECT_SUMMARY", tag_summary},
   {GCOV_TAG_PROGRAM_SUMMARY, "PROGRAM_SUMMARY", tag_summary},
-  {GCOV_TAG_PLACEHOLDER_SUMMARY, "PROGRAM_PLACEHOLDER", tag_summary},
-  {GCOV_TAG_INCORRECT_SUMMARY, "PROGRAM_INCORRECT", tag_summary},
   {0, NULL, NULL}
 };
 
@@ -208,7 +206,7 @@ dump_file (filename)
       for (format = tag_table; format->name; format++)
 	if (format->tag == tag)
 	  goto found;
-      format = &tag_table[1];
+      format = &tag_table[GCOV_TAG_IS_COUNTER (tag) ? 2 : 1];
     found:;
       if (tag)
 	{
@@ -364,14 +362,16 @@ tag_lines (filename, tag, length)
 }
 
 static void
-tag_arc_counts (filename, tag, length)
+tag_counters (filename, tag, length)
      const char *filename ATTRIBUTE_UNUSED;
      unsigned tag ATTRIBUTE_UNUSED;
      unsigned length ATTRIBUTE_UNUSED;
 {
+  static const char *const counter_names[] = GCOV_COUNTER_NAMES;
   unsigned n_counts = length / 8;
   
-  printf (" %u counts", n_counts);
+  printf (" %s %u counts",
+	  counter_names[GCOV_COUNTER_FOR_TAG (tag)], n_counts);
   if (flag_dump_contents)
     {
       unsigned ix;
@@ -395,20 +395,21 @@ tag_summary (filename, tag, length)
      unsigned length ATTRIBUTE_UNUSED;
 {
   struct gcov_summary summary;
-
-  gcov_read_summary (&summary);
+  unsigned ix;
   
+  gcov_read_summary (&summary);
   printf (" checksum=0x%08x", summary.checksum);
   
-  printf ("\n%s:\t\truns=%u, arcs=%u", filename,
-	  summary.runs, summary.arcs);
-  printf ("\n%s:\t\tarc_sum=", filename);
-  printf (HOST_WIDEST_INT_PRINT_DEC, 
-	  (HOST_WIDEST_INT)summary.arc_sum);
-  printf (", arc_max_one=");
-  printf (HOST_WIDEST_INT_PRINT_DEC, 
-	  (HOST_WIDEST_INT)summary.arc_max_one);
-  printf (", sum_max=");
-  printf (HOST_WIDEST_INT_PRINT_DEC, 
-	  (HOST_WIDEST_INT)summary.arc_sum_max);
+  for (ix = 0; ix != GCOV_COUNTERS; ix++)
+    {
+      printf ("\n%sL\t\tcounts=%u, runs=%u", filename,
+	      summary.ctrs[ix].num, summary.ctrs[ix].runs);
+      
+      printf (", sum_all=" HOST_WIDEST_INT_PRINT_DEC,
+	      (HOST_WIDEST_INT)summary.ctrs[ix].sum_all);
+      printf (", run_max=" HOST_WIDEST_INT_PRINT_DEC,
+	      (HOST_WIDEST_INT)summary.ctrs[ix].run_max);
+      printf (", sum_max=" HOST_WIDEST_INT_PRINT_DEC,
+	      (HOST_WIDEST_INT)summary.ctrs[ix].sum_max);
+    }
 }
