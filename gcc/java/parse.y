@@ -1954,9 +1954,12 @@ type_literals:
 |	array_type DOT_TK CLASS_TK
 		{ $$ = build_incomplete_class_ref ($2.location, $1); }
 |	primitive_type DOT_TK CLASS_TK
-		{ $$ = build_class_ref ($1); }
+                { $$ = build_incomplete_class_ref ($2.location, $1); }
 |	VOID_TK DOT_TK CLASS_TK
-		{ $$ = build_class_ref (void_type_node); }
+                { 
+                   $$ = build_incomplete_class_ref ($2.location,
+						    void_type_node);
+                }
 ;
 
 class_instance_creation_expression:
@@ -13778,8 +13781,11 @@ patch_incomplete_class_ref (node)
 
   if (!flag_emit_class_files || JPRIMITIVE_TYPE_P (ref_type))
     {
+      tree dot = build_class_ref (ref_type);
       /* A class referenced by `foo.class' is initialized.  */
-      return build_class_init (ref_type, build_class_ref (ref_type));
+      if (!flag_emit_class_files)
+       dot = build_class_init (ref_type, dot);
+      return java_complete_tree (dot);
     }
 
   /* If we're emitting class files and we have to deal with non
