@@ -1,3 +1,13 @@
+2004-06-04  Steven Bosscher  <stevenb@suse.de>
+
+	* except.c (for_each_eh_region): New function.
+	* except.h (for_each_eh_region): Add a prototype for it.
+	* tree-cfg.c (update_eh_labels): New function, callback for
+	for_each_eh_region.
+	(label_for_bb): Make global static, unfortunately.
+	(cleanup_dead_labels): Also update label references for
+	exception regions.
+
 2004-06-03  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.c (struct irix_section_align_entry): Fix
@@ -19,7 +29,7 @@
 	documentation to reflect the new macro name and to clarify its 
 	meaning.
 	
-2004-06-04  Steven Bosscher  <stevenb@suse.de>
+2004-06-03  Steven Bosscher  <stevenb@suse.de>
 
 	* rtl.def (VAR_LOCATION): Make RTX_EXTRA.
 
