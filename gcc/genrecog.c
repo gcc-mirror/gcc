@@ -540,10 +540,17 @@ add_to_sequence (pattern, last, position, insn_type, top)
 	  fputc ('\n', stderr);
 	  fatal ("mode mismatch in SET");
 	}
-
-      /* Everything else is standard.  */
       break;
       
+    case LABEL_REF:
+      if (GET_MODE (XEXP (pattern, 0)) != VOIDmode)
+	{
+	  print_rtl (stderr, pattern);
+	  fputc ('\n', stderr);
+	  fatal ("operand to LABEL_REF not VOIDmode");
+	}
+      break;
+
     default:
       break;
     }

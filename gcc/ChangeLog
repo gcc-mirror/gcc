@@ -1,3 +1,8 @@
+Wed Oct  6 12:22:50 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (add_to_sequence): Verify operand to label_ref is
+	VOIDmode.
+
 Wed Oct  6 10:21:15 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genconfig.c (main): Disable HAVE_conditional_arithmetic.
