@@ -4701,7 +4701,7 @@ digest_init (type, init, require_constant, constructor_constant)
 
   if (type == error_mark_node
       || init == error_mark_node
-      || TREE_TYPE (init)  == error_mark_node)
+      || TREE_TYPE (init) == error_mark_node)
     return error_mark_node;
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
@@ -6267,6 +6267,8 @@ output_init_element (value, type, field, pending)
 		  || TREE_CHAIN (field)))))
     return;
 
+  value = digest_init (type, value, require_constant_value,
+		       require_constant_elements);
   if (value == error_mark_node)
     {
       constructor_erroneous = 1;
@@ -6283,9 +6285,7 @@ output_init_element (value, type, field, pending)
 	  && tree_int_cst_lt (field, constructor_unfilled_index))
 	set_nonincremental_init ();
 
-      add_pending_init (field,
-			digest_init (type, value, require_constant_value, 
-				     require_constant_elements));
+      add_pending_init (field, value);
       return;
     }
   else if (TREE_CODE (constructor_type) == RECORD_TYPE
@@ -6311,9 +6311,7 @@ output_init_element (value, type, field, pending)
 	    }
 	}
 
-      add_pending_init (field,
-			digest_init (type, value, require_constant_value, 
-				     require_constant_elements));
+      add_pending_init (field, value);
       return;
     }
   else if (TREE_CODE (constructor_type) == UNION_TYPE
@@ -6332,10 +6330,7 @@ output_init_element (value, type, field, pending)
   if (field && TREE_CODE (field) == INTEGER_CST)
     field = copy_node (field);
   constructor_elements
-    = tree_cons (field, digest_init (type, value,
-				     require_constant_value, 
-				     require_constant_elements),
-		 constructor_elements);
+    = tree_cons (field, value, constructor_elements);
 
   /* Advance the variable that indicates sequential elements output.  */
   if (TREE_CODE (constructor_type) == ARRAY_TYPE)

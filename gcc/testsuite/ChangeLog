@@ -2,6 +2,8 @@
 
 	* gcc.c-torture/compile/20011130-1.c: New test.
 
+	* gcc.dg/noncompile/20011025-1.c: New test.
+
 2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/execute/20000722-1.x,
