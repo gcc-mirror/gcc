@@ -1,3 +1,8 @@
+2002-06-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_emit_minmax): Treat unsigned
+        max/mins as unsigned GE compares.
+
 2002-06-11  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (vax-*-bsd*): Add vax/bsd.h to ${tm_file}. 
