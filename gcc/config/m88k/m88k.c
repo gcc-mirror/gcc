@@ -532,13 +532,18 @@ expand_block_move (dest_mem, src_mem, operands)
 			 VOIDmode, 3,
 			 operands[0], Pmode,
 			 operands[1], Pmode,
-			 operands[2], SImode);
+			 convert_to_mode (TYPE_MODE (sizetype), operands[2],
+					  TREE_UNSIGNED (sizetype)),
+			 TYPE_MODE (sizetype));
 #else
       emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "bcopy"), 0,
 			 VOIDmode, 3,
 			 operands[1], Pmode,
 			 operands[0], Pmode,
-			 operands[2], SImode);
+			 convert_to_mode (TYPE_MODE (integer_type_node),
+					  operands[2],
+					  TREE_UNSIGNED (integer_type_node)),
+			 TYPE_MODE (integer_type_node));
 #endif
     }
 }
