@@ -4,6 +4,9 @@ Tue Aug 18 13:05:59 BST 1998  Richard Earnshaw (rearnsha@arm.com)
 
 Tue Aug 18 10:32:11 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* regmove.c (fixup_match_2): Do not call reg_overlap_mentioned_p
+	on notes.
+
 	* regmove.c (optimize_reg_copy_1): Update REG_N_CALLS_CROSSED
 	and REG_LIVE_LENGTH as successful substitutions are made.
 
