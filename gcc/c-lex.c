@@ -40,13 +40,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "splay-tree.h"
 #include "debug.h"
 
-/* MULTIBYTE_CHARS support only works for native compilers.
-   ??? Ideally what we want is to model widechar support after
-   the current floating point support.  */
-#ifdef CROSS_COMPILE
-#undef MULTIBYTE_CHARS
-#endif
-
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
 #include <locale.h>
@@ -1282,8 +1275,8 @@ lex_string (str, len, wide)
 	  c = cpp_parse_escape (parse_in, &p, limit, mask);
 	}
 	
-      /* Add this single character into the buffer either as a wchar_t
-	 or as a single byte.  */
+      /* Add this single character into the buffer either as a wchar_t,
+	 a multibyte sequence, or as a single byte.  */
       if (wide)
 	{
 	  unsigned charwidth = TYPE_PRECISION (char_type_node);
@@ -1304,6 +1297,16 @@ lex_string (str, len, wide)
 	    }
 	  q += WCHAR_BYTES;
 	}
+#ifdef MULTIBYTE_CHARS
+      else if (char_len > 1)
+	{
+	  /* We're dealing with a multibyte character. */
+	  for ( ; char_len >0; --char_len)
+	    {
+	      *q++ = *(p - char_len);
+	    }
+	}
+#endif
       else
 	{
 	  *q++ = c;

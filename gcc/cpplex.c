@@ -25,13 +25,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-/* MULTIBYTE_CHARS support only works for native compilers.
-   ??? Ideally what we want is to model widechar support after
-   the current floating point support.  */
-#ifdef CROSS_COMPILE
-#undef MULTIBYTE_CHARS
-#endif
-
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
 #include <locale.h>
@@ -312,14 +305,39 @@ skip_line_comment (pfile)
   cpp_buffer *buffer = pfile->buffer;
   unsigned int orig_line = pfile->line;
   cppchar_t c;
+#ifdef MULTIBYTE_CHARS
+  wchar_t wc;
+  int char_len;
+#endif
 
   pfile->state.lexing_comment = 1;
+#ifdef MULTIBYTE_CHARS
+  /* Reset multibyte conversion state.  */
+  (void) local_mbtowc (NULL, NULL, 0);
+#endif
   do
     {
       if (buffer->cur == buffer->rlimit)
 	goto at_eof;
 
+#ifdef MULTIBYTE_CHARS
+      char_len = local_mbtowc (&wc, (const char *) buffer->cur,
+			       buffer->rlimit - buffer->cur);
+      if (char_len == -1)
+	{
+	  cpp_error (pfile, DL_WARNING,
+		     "ignoring invalid multibyte character");
+	  char_len = 1;
+	  c = *buffer->cur++;
+	}
+      else
+	{
+	  buffer->cur += char_len;
+	  c = wc;
+	}
+#else
       c = *buffer->cur++;
+#endif
       if (c == '?' || c == '\\')
 	c = skip_escaped_newlines (pfile);
     }
@@ -617,10 +635,18 @@ parse_string (pfile, token, terminator)
   unsigned char *dest, *limit;
   cppchar_t c;
   bool warned_nulls = false;
+#ifdef MULTIBYTE_CHARS
+  wchar_t wc;
+  int char_len;
+#endif
 
   dest = BUFF_FRONT (pfile->u_buff);
   limit = BUFF_LIMIT (pfile->u_buff);
 
+#ifdef MULTIBYTE_CHARS
+  /* Reset multibyte conversion state.  */
+  (void) local_mbtowc (NULL, NULL, 0);
+#endif
   for (;;)
     {
       /* We need room for another char, possibly the terminating NUL.  */
@@ -632,8 +658,26 @@ parse_string (pfile, token, terminator)
 	  limit = BUFF_LIMIT (pfile->u_buff);
 	}
 
-      /* Handle trigraphs, escaped newlines etc.  */
+#ifdef MULTIBYTE_CHARS
+      char_len = local_mbtowc (&wc, (const char *) buffer->cur,
+			       buffer->rlimit - buffer->cur);
+      if (char_len == -1)
+	{
+	  cpp_error (pfile, DL_WARNING,
+		       "ignoring invalid multibyte character");
+	  char_len = 1;
+	  c = *buffer->cur++;
+	}
+      else
+	{
+	  buffer->cur += char_len;
+	  c = wc;
+	}
+#else
       c = *buffer->cur++;
+#endif
+
+      /* Handle trigraphs, escaped newlines etc.  */
       if (c == '?' || c == '\\')
 	c = skip_escaped_newlines (pfile);
 
@@ -666,8 +710,15 @@ parse_string (pfile, token, terminator)
 			 "null character(s) preserved in literal");
 	    }
 	}
-
-      *dest++ = c;
+#ifdef MULTIBYTE_CHARS
+      if (char_len > 1)
+	{
+	  for ( ; char_len > 0; --char_len)
+	    *dest++ = (*buffer->cur - char_len);
+	}
+      else
+#endif
+	*dest++ = c;
     }
 
   *dest = '\0';

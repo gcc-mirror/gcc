@@ -187,9 +187,9 @@ struct cpp_token
   } val;
 };
 
-/* A standalone character.  We may want to make it unsigned for the
-   same reason we use unsigned char - to avoid signedness issues.  */
-typedef int cppchar_t;
+/* A standalone character.  It is unsigned for the same reason we use
+   unsigned char - to avoid signedness issues.  */
+typedef unsigned int cppchar_t;
 
 /* Values for opts.dump_macros.
   dump_only means inhibit output of the preprocessed text
