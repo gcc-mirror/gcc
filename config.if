@@ -21,9 +21,16 @@ else
   if_topsrcdir=${top_srcdir}
 fi
 
-if [ -f ${if_topsrcdir}/libstdc++/Makefile.in ]; then
+if [ "${enable_libstdcxx_v3}" = "yes" ] ; then
+  libstdcxx_srcdir=${if_topsrcdir}/libstdc++-v3
+else
+  libstdcxx_srcdir=${if_topsrcdir}/libstdc++
+fi
+
+echo "${libstdcxx_srcdir} is where"
+if [ -f ${libstdcxx_srcdir}/Makefile.in ]; then
 # We check libstdc++ for libstdcxx_interface.
-libstdcxx_interface=`grep "^INTERFACE" ${if_topsrcdir}/libstdc++/Makefile.in | sed 's/INTERFACE[ 	]*=[ 	]*\(.*\)/\1/'`
+libstdcxx_interface=`grep "^INTERFACE" ${libstdcxx_srcdir}/Makefile.in | sed 's/INTERFACE[ 	]*=[ 	]*\(.*\)/\1/'`
 else
 libstdcxx_interface=
 fi

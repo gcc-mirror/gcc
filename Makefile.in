@@ -772,6 +772,7 @@ INSTALL_X11_MODULES = \
 ALL_TARGET_MODULES = \
 	all-target-libio \
 	all-target-libstdc++ \
+	all-target-libstdc++-v3 \
 	all-target-librx \
 	all-target-libg++ \
 	all-target-newlib \
@@ -795,6 +796,7 @@ ALL_TARGET_MODULES = \
 CONFIGURE_TARGET_MODULES = \
 	configure-target-libio \
 	configure-target-libstdc++ \
+	configure-target-libstdc++-v3 \
 	configure-target-librx \
 	configure-target-libg++ \
 	configure-target-newlib \
@@ -818,6 +820,7 @@ CONFIGURE_TARGET_MODULES = \
 CHECK_TARGET_MODULES = \
 	check-target-libio \
 	check-target-libstdc++ \
+	check-target-libstdc++-v3 \
 	check-target-libg++ \
 	check-target-newlib \
 	check-target-libf2c \
@@ -836,6 +839,7 @@ CHECK_TARGET_MODULES = \
 INSTALL_TARGET_MODULES = \
 	install-target-libio \
 	install-target-libstdc++ \
+	install-target-libstdc++-v3 \
 	install-target-libg++ \
 	install-target-newlib \
 	install-target-libf2c \
@@ -922,6 +926,7 @@ CLEAN_MODULES = \
 CLEAN_TARGET_MODULES = \
 	clean-target-libio \
 	clean-target-libstdc++ \
+	clean-target-libstdc++-v3 \
 	clean-target-librx \
 	clean-target-libg++ \
 	clean-target-newlib \
@@ -1634,7 +1639,9 @@ all-target-libjava: configure-target-libjava all-gcc all-zip all-target-newlib a
 configure-target-librx: $(ALL_GCC) configure-target-newlib
 all-target-librx: configure-target-librx
 configure-target-libstdc++: $(ALL_GCC)
+configure-target-libstdc++-v3: $(ALL_GCC)
 all-target-libstdc++: configure-target-libstdc++ all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio
+all-target-libstdc++-v3: configure-target-libstdc++-v3 all-gas all-ld all-gcc all-target-libiberty all-target-newlib 
 configure-target-libstub: $(ALL_GCC)
 all-target-libstub: configure-target-libstub
 all-libtool:
