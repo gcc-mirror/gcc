@@ -666,9 +666,9 @@ libobjc.a: cc1obj libgcc2.ready
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
-	$(MAKE) $(MAKEFLAGS) -f $$srcdir1/objc/Makefile libobjc.a \
-	  srcdir=$$srcdir1 tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
-	  GCC_FOR_TARGET="$$thisdir1/xgcc -B$$thisdir1/" \
+	$(MAKE) -f $${srcdir1}/objc/Makefile libobjc.a \
+	  srcdir=$${srcdir1} tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
+	  GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
 	  GCC_CFLAGS="$(GCC_CFLAGS)"
 	ln objc/libobjc.a .
 	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
