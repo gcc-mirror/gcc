@@ -1,3 +1,9 @@
+2003-11-15  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/install.texi (Prerequisites): Refine documentation of
+	autoconf, automake and perl requirements.  Document required
+	gettext version.
+
 2003-11-14  Jason Merrill  <jason@redhat.com>
 
 	* function.c (assign_parms): Use TREE_TYPE to determine the real
