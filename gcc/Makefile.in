@@ -209,6 +209,13 @@ LIBGCC2_INCLUDES =
 # Some targets override this to stmp-int-hdrs
 LIBGCC2_DEPS =
 
+# Enquire target (This is a variable so that a target can choose not to
+# build it.)
+ENQUIRE = enquire
+
+# Cross-test target (must also be overridable for a target)
+CROSS_TEST = cross-test
+
 # List of extra executables that should be compiled for this target machine
 # that are used for compiling from source code to object code.
 # The rules for compiling them should be in the t-* file for the machine.
@@ -477,7 +484,7 @@ all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
 # Note that we can compile enquire using the cross-compiler just build,
 # although we can't run it on this machine.
-all.cross: native gcc-cross g++-cross specs $(LIBGCC) stmp-headers $(STMP_FIXPROTO) cross-test enquire $(EXTRA_PARTS)
+all.cross: native gcc-cross g++-cross specs $(LIBGCC) stmp-headers $(STMP_FIXPROTO) $(CROSS_TEST) $(ENQUIRE) $(EXTRA_PARTS)
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc g++ $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
