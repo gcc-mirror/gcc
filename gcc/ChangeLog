@@ -1,3 +1,14 @@
+Thu Sep 24 21:22:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_cse_regs_1): Renamed from reload_cse_regs.
+	(reload_cse_regs): New function body: call reload_cse_regs_1,
+	reload_combine, reload_cse_move2add.
+	When doing expensive_optimizations, call reload_cse_regs_1 a
+	second time after reload_cse_move2add.
+	(reload_combine, reload_combine_note_store): New functions.
+	(reload_combine_note_use): New function.
+	(reload_cse_move2add, move2add_note_store): New functions.
+
 Thu Sep 24 18:48:43 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): In code to promote RELOAD_FOR_X_ADDR_ADDR
