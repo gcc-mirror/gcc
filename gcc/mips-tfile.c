@@ -950,6 +950,13 @@ typedef struct varray {
   OBJECTS_PER_PAGE (type),	/* objects_last_page */			\
 }
 
+#define INITIALIZE_VARRAY(x,type)			\
+do {							\
+  (x)->object_size = sizeof (type);			\
+  (x)->objects_per_page = OBJECTS_PER_PAGE (type); 	\
+  (x)->objects_last_page = OBJECTS_PER_PAGE (type);	\
+} while (0)
+
 /* Master type for indexes within the symbol table.  */
 typedef unsigned long symint_t;
 
@@ -1066,92 +1073,8 @@ typedef struct efdr {
 } efdr_t;
 
 /* Pre-initialized extended file structure.  */
-static efdr_t init_file = 
-{
-  {			/* FDR structure */
-#ifdef __alpha
-    0,			/* adr:		memory address of beginning of file */
-    0,			/* cbLineOffset: byte offset from header for this file ln's */
-    0,			/* cbLine:	size of lines for this file */
-    0,			/* cbSs:	number of bytes in the ss */
-    0,			/* rss:		file name (of source, if known) */
-    0,			/* issBase:	file's string space */
-    0,			/* isymBase:	beginning of symbols */
-    0,			/* csym:	count file's of symbols */
-    0,			/* ilineBase:	file's line symbols */
-    0,			/* cline:	count of file's line symbols */
-    0,			/* ioptBase:	file's optimization entries */
-    0,			/* copt:	count of file's optimization entries */
-    0,			/* ipdFirst:	start of procedures for this file */
-    0,			/* cpd:		count of procedures for this file */
-    0,			/* iauxBase:	file's auxiliary entries */
-    0,			/* caux:	count of file's auxiliary entries */
-    0,			/* rfdBase:	index into the file indirect table */
-    0,			/* crfd:	count file indirect entries */
-    langC,		/* lang:	language for this file */
-    1,			/* fMerge:	whether this file can be merged */
-    0,			/* fReadin:	true if read in (not just created) */
-#ifdef HOST_WORDS_BIG_ENDIAN
-    1,			/* fBigendian:	if 1, compiled on big endian machine */
-#else
-    0,			/* fBigendian:	if 1, compiled on big endian machine */
-#endif
-    0,			/* fTrim:	whether the symbol table was trimmed */
-    GLEVEL_2,		/* glevel:	level this file was compiled with */
-    0,			/* reserved:	reserved for future use */
-    0,			/* cbLineOffset: byte offset from header for this file ln's */
-    0,			/* cbLine:	size of lines for this file */
-#else
-    0,			/* adr:		memory address of beginning of file */
-    0,			/* rss:		file name (of source, if known) */
-    0,			/* issBase:	file's string space */
-    0,			/* cbSs:	number of bytes in the ss */
-    0,			/* isymBase:	beginning of symbols */
-    0,			/* csym:	count file's of symbols */
-    0,			/* ilineBase:	file's line symbols */
-    0,			/* cline:	count of file's line symbols */
-    0,			/* ioptBase:	file's optimization entries */
-    0,			/* copt:	count of file's optimization entries */
-    0,			/* ipdFirst:	start of procedures for this file */
-    0,			/* cpd:		count of procedures for this file */
-    0,			/* iauxBase:	file's auxiliary entries */
-    0,			/* caux:	count of file's auxiliary entries */
-    0,			/* rfdBase:	index into the file indirect table */
-    0,			/* crfd:	count file indirect entries */
-    langC,		/* lang:	language for this file */
-    1,			/* fMerge:	whether this file can be merged */
-    0,			/* fReadin:	true if read in (not just created) */
-#ifdef HOST_WORDS_BIG_ENDIAN
-    1,			/* fBigendian:	if 1, compiled on big endian machine */
-#else
-    0,			/* fBigendian:	if 1, compiled on big endian machine */
-#endif
-    GLEVEL_2,		/* glevel:	level this file was compiled with */
-    0,			/* reserved:	reserved for future use */
-    0,			/* cbLineOffset: byte offset from header for this file ln's */
-    0,			/* cbLine:	size of lines for this file */
-#endif
-  },
-
-  (FDR *) 0,		/* orig_fdr:	original file header pointer */
-  (char *) 0,		/* name:	pointer to filename */
-  0,			/* name_len:	length of filename */
-  0,			/* void_type:	ptr to aux node for void type */
-  0,			/* int_type:	ptr to aux node for int type */
-  (scope_t *) 0,	/* cur_scope:	current scope being processed */
-  0,			/* file_index:	current file # */
-  0,			/* nested_scopes: # nested scopes */
-  INIT_VARRAY (char),	/* strings:	local string varray */
-  INIT_VARRAY (SYMR),	/* symbols:	local symbols varray */
-  INIT_VARRAY (PDR),	/* procs:	procedure varray */
-  INIT_VARRAY (AUXU),	/* aux_syms:	auxiliary symbols varray */
-
-  (struct efdr *) 0,	/* next_file:	next file structure */
-
-  (shash_t **) 0,	/* shash_head:	string hash table */
-  { 0 },		/* thash_head:	type hash table */
-};
-
+static int init_file_initialized = 0;
+static efdr_t init_file;
 
 static efdr_t *first_file;			/* first file descriptor */
 static efdr_t **last_file_ptr = &first_file;	/* file descriptor tail */
@@ -1650,6 +1573,8 @@ STATIC void	add_unknown_tag	PARAMS ((tag_t *));
 
 STATIC void	add_procedure	PARAMS ((const char *,
 					 const char *));
+
+STATIC void	initialize_init_file	PARAMS ((void));
 
 STATIC void	add_file	PARAMS ((const char *,
 					 const char *));
@@ -2475,6 +2400,29 @@ add_procedure (func_start, func_end_p1)
 }
 
 
+/* Initialize the init_file structure.  */
+
+STATIC void
+initialize_init_file ()
+{
+  memset ((void*) &init_file, 0, sizeof (init_file));
+
+  init_file.fdr.lang = langC;
+  init_file.fdr.fMerge = 1;
+  init_file.fdr.glevel = GLEVEL_2;
+
+#ifdef HOST_WORDS_BIG_ENDIAN
+  init_file.fdr.fBigendian = 1;
+#endif
+
+  INITIALIZE_VARRAY (&init_file.strings, char);
+  INITIALIZE_VARRAY (&init_file.symbols, SYMR);
+  INITIALIZE_VARRAY (&init_file.procs, PDR);
+  INITIALIZE_VARRAY (&init_file.aux_syms, AUXU);
+
+  init_file_initialized = 1;
+}
+
 /* Add a new filename, and set up all of the file relative
    virtual arrays (strings, symbols, aux syms, etc.).  Record
    where the current file structure lives.  */
@@ -2512,6 +2460,9 @@ add_file (file_start, file_end_p1)
     {
       if (file_desc.objects_last_page == file_desc.objects_per_page)
 	add_varray_page (&file_desc);
+
+      if (! init_file_initialized)
+	initialize_init_file ();
 
       file_ptr = cur_file_ptr
 	= &file_desc.last->datum->file[ file_desc.objects_last_page++ ];

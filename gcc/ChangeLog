@@ -1,3 +1,10 @@
+2003-03-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR bootstrap/10051, PR bootstrap/10169.
+	* mips-tfile.c (init_file): Don't provide a static initializer.
+	(initialize_init_file): Initialize the contents of init_file.
+	(add_file): Call initialize_init_file if not already initialized.
+
 2003-03-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_optimize_prolog): Do not save/restore
