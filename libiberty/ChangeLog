@@ -1,3 +1,7 @@
+2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* memchr.c (memchr): Adjust condition to avoid infinite loop.
+
 2001-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-demangle.c (demangle_discriminator): `_0' is discriminator #1,

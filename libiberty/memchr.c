@@ -50,7 +50,7 @@ memchr (src_void, c, length)
 {
   const unsigned char *src = (const unsigned char *)src_void;
   
-  while (--length >= 0)
+  while (length-- > 0)
   {
     if (*src == c)
      return (PTR)src;
