@@ -2381,7 +2381,7 @@ extern int toc_initialized;
 
 #define ASM_OUTPUT_DEF_FROM_DECLS(FILE,decl,target)	\
 do {							\
-  char * alias = XSTR (XEXP (DECL_RTL (decl), 0), 0);	\
+  const char * alias = XSTR (XEXP (DECL_RTL (decl), 0), 0); \
   char * name = IDENTIFIER_POINTER (target);		\
   if (TREE_CODE (decl) == FUNCTION_DECL			\
       && DEFAULT_ABI == ABI_AIX)			\

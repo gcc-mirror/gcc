@@ -1,3 +1,20 @@
+2000-05-06  David Edelsohn  <edelsohn@gnu.org>
+
+	* xcoffout.c (xcoff_current_include_file,
+	xcoff_current_function_file, xcoff_lastfile): Constify char *.
+	(xcoffout_source_file, xcoffout_source_line): Make filename 'const
+	char *'.
+	(xcoffout_declare_function): Make name 'const char *'.
+	(xcoffout_end_epilogue): Make fname 'const char *'
+	* xcoffout.h (xcoff_current_include_file, xcoff_lastfile,
+	xcoffout_declare_function, xcoffout_source_line): Match above.
+
+	* aix43.h (SUBTARGET_OVERRIDE_OPTIONS): -mpowerpc64 without
+	-maix64	is error.
+	* rs6000.c (print_operand): Fix lossage typo.
+	(output_cbranch): Remove "cr" decoration for now.
+	* rs6000.h (ASM_OUTPUT_DEF_FROM_DECLS): Make alias 'const char *'. 
+
 Sat May  6 06:55:32 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (out_shift_with_cnt): Bugfix for shift by

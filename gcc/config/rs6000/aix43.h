@@ -53,10 +53,14 @@ do {									\
       target_flags &= ~NON_POWERPC_MASKS;				\
       warning ("-maix64 and POWER architecture are incompatible.");	\
     }									\
-  if (TARGET_64BIT && ! (target_flags & MASK_POWERPC64))		\
+  if (TARGET_64BIT && ! TARGET_POWERPC64)				\
     {									\
       target_flags |= MASK_POWERPC64;					\
       warning ("-maix64 requires PowerPC64 architecture remain enabled."); \
+    }									\
+  if (TARGET_POWERPC64 && ! TARGET_64BIT)				\
+    {									\
+      error ("-maix64 required: 64-bit computation with 32-bit addressing not yet supported."); \
     }									\
 } while (0);
 

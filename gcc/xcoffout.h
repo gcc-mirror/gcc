@@ -136,7 +136,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Name of the current include file.  */
 
-extern char *xcoff_current_include_file;
+extern const char *xcoff_current_include_file;
 
 /* Names of bss and data sections.  These should be unique names for each
    compilation unit.  */
@@ -147,7 +147,7 @@ extern char *xcoff_read_only_section_name;
 
 /* Last source file name mentioned in a NOTE insn.  */
 
-extern char *xcoff_lastfile;
+extern const char *xcoff_lastfile;
 
 /* Don't write out path name for main source file.  */
 #define DBX_OUTPUT_MAIN_SOURCE_DIRECTORY(FILE,FILENAME)
@@ -200,12 +200,12 @@ extern void xcoffout_end_block			PARAMS ((FILE *, int, int));
 #ifdef TREE_CODE
 extern void xcoff_output_standard_types		PARAMS ((tree));
 #ifdef BUFSIZ
-extern void xcoffout_declare_function		PARAMS ((FILE *, tree, char *));
+extern void xcoffout_declare_function		PARAMS ((FILE *, tree, const char *));
 #endif /* BUFSIZ */
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE
 #ifdef BUFSIZ
-extern void xcoffout_source_line		PARAMS ((FILE *, char *, rtx));
+extern void xcoffout_source_line		PARAMS ((FILE *, const char *, rtx));
 #endif /* BUFSIZ */
 #endif /* RTX_CODE */
