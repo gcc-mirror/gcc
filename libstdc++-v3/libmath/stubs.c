@@ -30,6 +30,14 @@
 #include <math.h>
 #include <bits/c++config.h>
 
+#ifndef _GLIBCPP_HAVE_ATAN2F
+float
+atan2f(float x, float y)
+{
+  return (float) atan2(x, y);
+}
+#endif
+
 #if !defined(_GLIBCPP_HAVE_COSF) && !defined(_GLIBCPP_HAVE___BUILTIN_COSF)
 float
 cosf(float x)
