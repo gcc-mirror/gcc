@@ -4,7 +4,7 @@ Library, slightly modified to work with g++.
 Note that this is based on a pre-Draft Standard for C++.
 Things are likely to change.  For example, the header file names
 are very likely to change.  The Allocator interface will change.  Etc, etc.
-CYGNUS MAKES NO COMMITTMENT (yet) TO SUPPORT BACKWARD COMPATIBILITY FOR STL.
+WE MAKE NO COMMITMENT (yet) TO SUPPORT BACKWARD COMPATIBILITY FOR STL.
 
 For examples of things that should work, look in the ../tests directory.
 
