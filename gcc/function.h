@@ -1,6 +1,6 @@
 /* Structure for saving state for a nested function.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -62,7 +62,7 @@ struct emit_status GTY(())
 
   /* The ends of the doubly-linked chain of rtl for the current function.
      Both are reset to null at the start of rtl generation for the function.
-   
+
      start_sequence saves both of these on `sequence_stack' along with
      `sequence_rtl_expr' and then starts a new, nested sequence of insns.  */
   rtx x_first_insn;
@@ -100,7 +100,7 @@ struct emit_status GTY(())
     regno_pointer_align;
 
   /* Indexed by pseudo register number, gives the rtx for that pseudo.
-     Allocated in parallel with regno_pointer_align. 
+     Allocated in parallel with regno_pointer_align.
 
      Note MEM expressions can appear in this array due to the actions
      of put_var_into_stack.  */
@@ -350,7 +350,7 @@ struct function GTY(())
      until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
      of TARGET_EXPRs.  */
   int x_target_temp_slot_level;
-  
+
   /* This slot is initialized as 0 and is added to
      during the nested function.  */
   struct var_refs_queue *fixup_var_refs_queue;
@@ -398,7 +398,7 @@ struct function GTY(())
   /* Nonzero if function being compiled needs to
      return the address of where it has put a structure value.  */
   unsigned int returns_pcc_struct : 1;
-  
+
   /* Nonzero if the current function returns a pointer type.  */
   unsigned int returns_pointer : 1;
 
@@ -410,7 +410,7 @@ struct function GTY(())
 
   /* Nonzero if function being compiled can call longjmp.  */
   unsigned int calls_longjmp : 1;
-  
+
   /* Nonzero if function being compiled can call alloca,
      either as a subroutine or builtin.  */
   unsigned int calls_alloca : 1;
@@ -446,7 +446,7 @@ struct function GTY(())
      function, however, should be treated as throwing if any of its callees
      can throw.  */
   unsigned int all_throwers_are_sibcalls : 1;
- 
+
   /* Nonzero if instrumentation calls for function entry and exit should be
      generated.  */
   unsigned int instrument_entry_exit : 1;
@@ -579,45 +579,45 @@ extern tree inline_function_decl;
 
 /* Given a function decl for a containing function,
    return the `struct function' for it.  */
-struct function *find_function_data PARAMS ((tree));
+struct function *find_function_data (tree);
 
 /* Set NOTE_BLOCK for each block note in the current function.  */
-extern void identify_blocks PARAMS ((void));
+extern void identify_blocks (void);
 
 /* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
    and create duplicate blocks.  */
-extern void reorder_blocks PARAMS ((void));
+extern void reorder_blocks (void);
 
 /* Set BLOCK_NUMBER for all the blocks in FN.  */
-extern void number_blocks PARAMS ((tree));
+extern void number_blocks (tree);
 
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
    the caller may have to do that.  */
-extern HOST_WIDE_INT get_frame_size	PARAMS ((void));
+extern HOST_WIDE_INT get_frame_size (void);
 /* Likewise, but for a different than the current function.  */
-extern HOST_WIDE_INT get_func_frame_size	PARAMS ((struct function *));
+extern HOST_WIDE_INT get_func_frame_size (struct function *);
 
 /* A pointer to a function to create target specific, per-function
    data structures.  */
-extern struct machine_function * (*init_machine_status)	PARAMS ((void));
+extern struct machine_function * (*init_machine_status) (void);
 
 /* Save and restore status information for a nested function.  */
-extern void restore_emit_status		PARAMS ((struct function *));
-extern void free_after_parsing		PARAMS ((struct function *));
-extern void free_after_compilation	PARAMS ((struct function *));
+extern void restore_emit_status (struct function *);
+extern void free_after_parsing (struct function *);
+extern void free_after_compilation (struct function *);
 
-extern void init_varasm_status		PARAMS ((struct function *));
+extern void init_varasm_status (struct function *);
 
 #ifdef RTX_CODE
-extern void diddle_return_value		PARAMS ((void (*)(rtx, void*), void*));
-extern void clobber_return_register	PARAMS ((void));
-extern void use_return_register		PARAMS ((void));
+extern void diddle_return_value (void (*)(rtx, void*), void*);
+extern void clobber_return_register (void);
+extern void use_return_register (void);
 #endif
 
-extern rtx get_arg_pointer_save_area	PARAMS ((struct function *));
+extern rtx get_arg_pointer_save_area (struct function *);
 
-extern void init_virtual_regs		PARAMS ((struct emit_status *));
+extern void init_virtual_regs (struct emit_status *);
 
 /* Called once, at initialization, to initialize function.c.  */
-extern void init_function_once          PARAMS ((void));
+extern void init_function_once (void);
