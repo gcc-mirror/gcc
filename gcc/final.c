@@ -161,7 +161,7 @@ static int new_block = 1;
    and assume that they will both give the same number to each block.
    Final uses these sequence numbers to generate assembler label names
    LBBnnn and LBEnnn for the beginning and end of the symbol-block.
-   Dbxout uses the sequence nunbers to generate references to the same labels
+   Dbxout uses the sequence numbers to generate references to the same labels
    from the dbx debugging information.
 
    Sdb records this level at the beginning of each function,
@@ -1029,7 +1029,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      if (GET_CODE (note) != NOTE && GET_CODE (note) != CODE_LABEL)
 		break;
 	      /* These types of notes can be significant
-		 so make sure the preceeding line number stays.  */
+		 so make sure the preceding line number stays.  */
 	      else if (GET_CODE (note) == NOTE
 		       && (NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_BEG
 			   || NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_END

@@ -1143,7 +1143,7 @@ dbxout_type (type, full, show_arg_types)
 	    }
 	  else
 	    {
-	      /* When outputing destructors, we need to write
+	      /* When outputting destructors, we need to write
 		 the argument types out longhand.  */
 	      dbxout_type (TYPE_METHOD_BASETYPE (type), 0, 0);
 	      putc (',', asmfile);

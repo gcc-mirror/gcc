@@ -4256,7 +4256,7 @@ emit_jump_if_reachable (label)
    current node are arranged to target the subordinates associated
    code for out of bound conditions on the current node node.
 
-   We can asume that when control reaches the code generated here,
+   We can assume that when control reaches the code generated here,
    the index value has already been compared with the parents
    of this node, and determined to be on the same side of each parent
    as this node is.  Thus, if this node tests for the value 51,

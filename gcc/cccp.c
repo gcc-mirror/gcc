@@ -614,7 +614,7 @@ union hashval {
  *		{ wow(1, 2, 3); }	->	{ process( 2, 3, 1,  2, 3); }
  *		{ wow(one, two); }	->	{ process( two, one,  two); }
  * if this "rest_arg" is used with the concat token '##' and if it is not
- * supplied then the token attached to with ## will not be outputed.  Ex:
+ * supplied then the token attached to with ## will not be outputted.  Ex:
  * 		#define wow(a, b...)		process(b ## , a, ## b)
  *		{ wow(1, 2); }		->	{ process( 2, 1,2); }
  *		{ wow(one); }		->	{ process( one); {
@@ -6836,7 +6836,7 @@ macroexpand (hp, op)
       if (rest_args)
 	continue;
       if (i < nargs || (nargs == 0 && i == 0)) {
-	/* if we are working on last arg which absorbes rest of args... */
+	/* if we are working on last arg which absorbs rest of args... */
 	if (i == nargs - 1 && defn->rest_args)
 	  rest_args = 1;
 	parse_error = macarg (&args[i], rest_args);

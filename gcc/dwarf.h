@@ -77,7 +77,7 @@ enum dwarf_tag {
 
 #define TAG_lo_user	0x8000  /* implementation-defined range start */
 #define TAG_hi_user	0xffff  /* implementation-defined range end */
-#define TAG_source_file TAG_compile_unit  /* for backward compatability */
+#define TAG_source_file TAG_compile_unit  /* for backward compatibility */
 
 /* Form names and codes.  */
 

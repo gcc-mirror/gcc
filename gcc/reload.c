@@ -1696,7 +1696,7 @@ immune_p (x, y, ydata)
   return (xdata.start >= ydata.end || ydata.start >= xdata.end);
 }
 
-/* Similiar, but calls decompose.  */
+/* Similar, but calls decompose.  */
 
 int
 safe_from_earlyclobber (op, clobber)

@@ -1694,7 +1694,7 @@ operand_equal_for_comparison_p (arg0, arg1, other)
   return 0;
 }
 
-/* See if ARG is an expression is either a comparison or is peforming
+/* See if ARG is an expression that is either a comparison or is performing
    arithmetic on comparisons.  The comparisons must only be comparing
    two different values, which will be stored in *CVAL1 and *CVAL2; if
    they are non-zero it means that some operands have already been found.
@@ -1780,7 +1780,7 @@ twoval_comparison_p (arg, cval1, cval2)
 
 /* ARG is a tree that is known to contain just arithmetic operations and
    comparisons.  Evaluate the operations in the tree substituting NEW0 for
-   any occurrance of OLD0 as an operand of a comparison and likewise for
+   any occurrence of OLD0 as an operand of a comparison and likewise for
    NEW1 and OLD1.  */
 
 static tree
@@ -2806,7 +2806,7 @@ fold (expr)
 	       && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 0), 0), 1))))
 	{
 	  /* Don't leave an assignment inside a conversion
-	     unless assiging a bitfield.  */
+	     unless assigning a bitfield.  */
 	  tree prev = TREE_OPERAND (t, 0);
 	  TREE_OPERAND (t, 0) = TREE_OPERAND (prev, 1);
 	  /* First do the assignment, then return converted constant.  */

@@ -2691,7 +2691,7 @@ st_to_string(symbol_type)
 
 /* Read a line from standard input, and return the start of the buffer
    (which is grows if the line is too big).  We split lines at the
-   semi-colon, and return each logical line indpendently.  */
+   semi-colon, and return each logical line independently.  */
 
 STATIC char *
 read_line __proto((void))
