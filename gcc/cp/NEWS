@@ -40,6 +40,9 @@
 
 * The "implicit typename" extension has been removed.
 
+* Default arguments in function types have been deprecated and will be
+removed.
+
 * G++ used to accept code like this:
 
     struct S {
