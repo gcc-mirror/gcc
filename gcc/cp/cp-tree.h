@@ -1452,6 +1452,11 @@ extern int flag_new_for_scope;
 
 #define ANON_UNION_P(NODE) (DECL_NAME (NODE) == 0)
 
+/* Nonzero if TYPE is an anonymous union type.  */
+#define ANON_UNION_TYPE_P(TYPE) \
+  (TREE_CODE (TYPE) == UNION_TYPE \
+   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (TYPE)))
+
 #define UNKNOWN_TYPE LANG_TYPE
 
 /* Define fields and accessors for nodes representing declared names.  */
@@ -2644,6 +2649,7 @@ extern int comp_template_args                   PROTO((tree, tree));
 
 extern int processing_specialization;
 extern int processing_explicit_instantiation;
+extern int processing_template_parmlist;
 
 /* in repo.c */
 extern void repo_template_used			PROTO((tree));

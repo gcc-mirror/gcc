@@ -969,8 +969,7 @@ compute_access (basetype_path, field)
   /* Fields coming from nested anonymous unions have their DECL_CLASS_CONTEXT
      slot set to the union type rather than the record type containing
      the anonymous union.  */
-  if (context && TREE_CODE (context) == UNION_TYPE
-      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (context)))
+  if (context && ANON_UNION_TYPE_P (context))
     context = TYPE_CONTEXT (context);
 
   /* Virtual function tables are never private.  But we should know that

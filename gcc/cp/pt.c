@@ -63,6 +63,7 @@ int minimal_parse_mode;
 
 int processing_specialization;
 int processing_explicit_instantiation;
+int processing_template_parmlist;
 static int template_header_count;
 
 static tree saved_trees;
@@ -114,6 +115,14 @@ static tree maybe_get_template_decl_from_type_decl PROTO((tree));
 static int check_cv_quals_for_unify PROTO((int, tree, tree));
 static tree tsubst_template_arg_vector PROTO((tree, tree));
 static void regenerate_decl_from_template PROTO((tree, tree));
+
+/* Nonzero if ARGVEC contains multiple levels of template arguments.  */
+#define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE) 		\
+  (NODE != NULL_TREE 					\
+   && TREE_CODE (NODE) == TREE_VEC 			\
+   && TREE_VEC_LENGTH (NODE) > 0 			\
+   && TREE_VEC_ELT (NODE, 0) != NULL_TREE               \
+   && TREE_CODE (TREE_VEC_ELT (NODE, 0)) == TREE_VEC)
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is
@@ -388,7 +397,7 @@ complete_template_args (tmpl, extra_args, unbound_only)
   my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 0);
   my_friendly_assert (TREE_CODE (extra_args) == TREE_VEC, 0);
 
-  if (TREE_CODE (TREE_VEC_ELT (extra_args, 0)) == TREE_VEC)
+  if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (extra_args))
     extra_arg_depth = TREE_VEC_LENGTH (extra_args);
   else
     extra_arg_depth = 1;
@@ -411,7 +420,7 @@ complete_template_args (tmpl, extra_args, unbound_only)
 	     TEMPLATE_DECL with DECL_TEMPLATE_INFO.  DECL_TI_ARGS is
 	     all the bound template arguments.  */
 	  args = DECL_TI_ARGS (tmpl);
-	  if (TREE_CODE (TREE_VEC_ELT (args, 0)) != TREE_VEC)
+	  if (!TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
 	    depth = 1;
 	  else
 	    depth = TREE_VEC_LENGTH (args);
@@ -485,7 +494,7 @@ add_to_template_args (args, extra_args)
 {
   tree new_args;
 
-  if (TREE_CODE (TREE_VEC_ELT (args, 0)) != TREE_VEC)
+  if (!TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
     {
       new_args = make_tree_vec (2);
       TREE_VEC_ELT (new_args, 0) = args;
@@ -529,6 +538,7 @@ begin_template_parm_list ()
   pushlevel (0);
   declare_pseudo_global_level ();
   ++processing_template_decl;
+  ++processing_template_parmlist;
   note_template_header (0);
 }
 
@@ -1451,6 +1461,8 @@ end_template_parm_list (parms)
 
   for (parm = parms, nparms = 0; parm; parm = TREE_CHAIN (parm), nparms++)
     TREE_VEC_ELT (saved_parmlist, nparms) = parm;
+
+  --processing_template_parmlist;
 
   return saved_parmlist;
 }
@@ -2858,9 +2870,10 @@ lookup_template_class (d1, arglist, in_decl, context)
 	{
 	  if (context)
 	    push_decl_namespace (context);
-	  template = 
-	    maybe_get_template_decl_from_type_decl
-	    (IDENTIFIER_CLASS_VALUE (d1));
+	  if (current_class_type != NULL_TREE)
+	    template = 
+	      maybe_get_template_decl_from_type_decl
+	      (IDENTIFIER_CLASS_VALUE (d1));
 	  if (template == NULL_TREE)
 	    template = lookup_name_nonclass (d1);
 	  if (context)
@@ -3993,7 +4006,7 @@ innermost_args (args, is_spec)
      tree args;
      int is_spec;
 {
-  if (args != NULL_TREE && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+  if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
     return TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1 - is_spec);
   return args;
 }
@@ -4189,8 +4202,7 @@ tsubst (t, args, in_decl)
 	  {
 	    tree arg = NULL_TREE;
 
-	    if (TREE_VEC_ELT (args, 0) != NULL_TREE
-		&& TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+	    if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
 	      {
 		levels = TREE_VEC_LENGTH (args);
 		if (level <= levels)
@@ -4275,7 +4287,7 @@ tsubst (t, args, in_decl)
 	    break;
 
 	  case TEMPLATE_PARM_INDEX:
-	    r = reduce_template_parm_level (t, TREE_TYPE (t), levels);
+	    r = reduce_template_parm_level (t, type, levels);
 	    break;
 	   
 	  default:
@@ -6220,14 +6232,14 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	/* The PARM is not one we're trying to unify.  Just check
 	   to see if it matches ARG.  */
 	return (TREE_CODE (arg) == TREE_CODE (parm)
-		&& cp_tree_equal (parm, arg)) ? 0 : 1;
+		&& cp_tree_equal (parm, arg) > 0) ? 0 : 1;
 
       idx = TEMPLATE_PARM_IDX (parm);
       targ = TREE_VEC_ELT (targs, idx);
 
       if (targ)
 	{
-	  int i = cp_tree_equal (targ, arg);
+	  int i = (cp_tree_equal (targ, arg) > 0);
 	  if (i == 1)
 	    return 0;
 	  else if (i == 0)
@@ -7082,17 +7094,6 @@ instantiate_decl (d)
   lineno = DECL_SOURCE_LINE (d);
   input_filename = DECL_SOURCE_FILE (d);
 
-  /* We need to set up DECL_INITIAL regardless of pattern_defined if the
-     variable is a static const initialized in the class body.  */
-  if (TREE_CODE (d) == VAR_DECL
-      && ! DECL_INITIAL (d) && DECL_INITIAL (code_pattern))
-    {
-      pushclass (DECL_CONTEXT (d), 2);
-      DECL_INITIAL (d) = tsubst_expr (DECL_INITIAL (code_pattern), args,
-				      tmpl);
-      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0, LOOKUP_NORMAL);
-    }
-
   if (pattern_defined)
     {
       repo_template_used (d);
@@ -7123,11 +7124,17 @@ instantiate_decl (d)
       && ! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d)))
     goto out;
 
-  /* Defer all templates except inline functions used in another function.  */
-  if (! pattern_defined
-      || (! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d) && nested)
-	  && ! at_eof))
+  if (TREE_CODE (d) == VAR_DECL 
+      && DECL_INITIAL (d) == NULL_TREE
+      && DECL_INITIAL (code_pattern) != NULL_TREE)
+    /* We need to set up DECL_INITIAL regardless of pattern_defined if
+	 the variable is a static const initialized in the class body.  */;
+  else if (! pattern_defined
+	   || (! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d) && nested)
+	       && ! at_eof))
     {
+      /* Defer all templates except inline functions used in another
+         function.  */
       lineno = line;
       input_filename = file;
 

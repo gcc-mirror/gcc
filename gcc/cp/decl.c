@@ -2291,9 +2291,15 @@ pushtag (name, type, globalize)
 		         friend class S2; 
 		       };
 
-		     declares S2 to be at global scope.  */
-		  || (processing_template_decl > 
-		      template_class_depth (current_class_type))))
+		     declares S2 to be at global scope.  We must be
+		     careful, however, of the following case:
+
+		       template <class A*> struct S;
+
+		     which declares a non-template class `A'.  */
+		  || (!processing_template_parmlist
+		      && (processing_template_decl > 
+			  template_class_depth (current_class_type)))))
 	    {
 	      d = push_template_decl_real (d, globalize);
 	      /* If the current binding level is the binding level for
@@ -8750,8 +8756,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   /* Static anonymous unions are dealt with here.  */
   if (staticp && decl_context == TYPENAME
       && TREE_CODE (declspecs) == TREE_LIST
-      && TREE_CODE (TREE_VALUE (declspecs)) == UNION_TYPE
-      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (TREE_VALUE (declspecs))))
+      && ANON_UNION_TYPE_P (TREE_VALUE (declspecs)))
     decl_context = FIELD;
 
   /* Give error if `const,' `volatile,' `inline,' `friend,' or `virtual'
@@ -9659,6 +9664,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	 refer to it, so nothing needs know about the name change.
 	 The TYPE_NAME field was filled in by build_struct_xref.  */
       if (type != error_mark_node
+	  && !TYPE_READONLY (type) && !TYPE_VOLATILE (type)
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))

@@ -515,7 +515,13 @@ build_overload_int (value, in_template)
 	  id = ansi_opname [(int) TREE_CODE (value)];
 	  my_friendly_assert (id != NULL_TREE, 0);
 	  name = IDENTIFIER_POINTER (id);
-	  my_friendly_assert (name[0] == '_' && name[1] == '_', 0);
+	  if (name[0] != '_' || name[1] != '_')
+	    /* On some erroneous inputs, we can get here with VALUE a
+	       LOOKUP_EXPR.  In that case, the NAME will be the
+	       identifier for "<invalid operator>".  We must survive
+	       this routine in order to issue a sensible error
+	       message, so we fall through to the case below.  */
+	    goto bad_value;
 
 	  for (i = 0; i < operands; ++i)
 	    {
@@ -553,6 +559,7 @@ build_overload_int (value, in_template)
 	     This should cause assembler errors we'll notice.  */
 	    
 	  static int n;
+	bad_value:
 	  sprintf (digit_buffer, " *%d", n++);
 	  OB_PUTCP (digit_buffer);
 	}
@@ -2180,8 +2187,7 @@ do_build_copy_constructor (fndecl)
 		continue;
 	    }
 	  else if ((t = TREE_TYPE (field)) != NULL_TREE
-		   && TREE_CODE (t) == UNION_TYPE
-		   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+		   && ANON_UNION_TYPE_P (t)
 		   && TYPE_FIELDS (t) != NULL_TREE)
 	    {
 	      do
@@ -2190,8 +2196,7 @@ do_build_copy_constructor (fndecl)
 		  field = largest_union_member (t);
 		}
 	      while ((t = TREE_TYPE (field)) != NULL_TREE
-		     && TREE_CODE (t) == UNION_TYPE
-		     && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+		     && ANON_UNION_TYPE_P (t)
 		     && TYPE_FIELDS (t) != NULL_TREE);
 	    }
 	  else
@@ -2290,8 +2295,7 @@ do_build_assign_ref (fndecl)
 		continue;
 	    }
 	  else if ((t = TREE_TYPE (field)) != NULL_TREE
-		   && TREE_CODE (t) == UNION_TYPE
-		   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+		   && ANON_UNION_TYPE_P (t)
 		   && TYPE_FIELDS (t) != NULL_TREE)
 	    {
 	      do
@@ -2301,8 +2305,7 @@ do_build_assign_ref (fndecl)
 		  field = largest_union_member (t);
 		}
 	      while ((t = TREE_TYPE (field)) != NULL_TREE
-		     && TREE_CODE (t) == UNION_TYPE
-		     && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+		     && ANON_UNION_TYPE_P (t)
 		     && TYPE_FIELDS (t) != NULL_TREE);
 	    }
 	  else

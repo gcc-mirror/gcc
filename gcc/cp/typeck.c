@@ -2065,8 +2065,8 @@ build_component_ref (datum, component, basetype_path, protect)
     {
       tree context = DECL_FIELD_CONTEXT (field);
       tree base = context;
-      while (base != basetype && TYPE_NAME (base)
-	     && ANON_AGGRNAME_P (TYPE_IDENTIFIER (base)))
+      while (!comptypes (base, basetype,1) && TYPE_NAME (base)
+	     && ANON_UNION_TYPE_P (base))
 	{
 	  base = TYPE_CONTEXT (base);
 	}
@@ -2096,7 +2096,7 @@ build_component_ref (datum, component, basetype_path, protect)
       basetype = base;
  
       /* Handle things from anon unions here...  */
-      if (TYPE_NAME (context) && ANON_AGGRNAME_P (TYPE_IDENTIFIER (context)))
+      if (TYPE_NAME (context) && ANON_UNION_TYPE_P (context))
 	{
 	  tree subfield = lookup_anon_field (basetype, context);
 	  tree subdatum = build_component_ref (datum, subfield,
