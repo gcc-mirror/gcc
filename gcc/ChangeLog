@@ -1,3 +1,10 @@
+2004-11-15  Eric Christopher  <echristo@redhat.com>
+
+	* sched-deps.c (set_sched_group_p): Delete.
+	(delete_all_dependencies): New function.
+	(fixup_sched_groups): Use. New function.
+	(sched_analyze_insn): Use.
+
 2004-11-15  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-common.c (binary_op_error): Don't allow LROTATE_EXPR,
@@ -221,7 +228,7 @@
 
 2004-11-13  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* doc/install.texi (automake): Correctly document that everything now 
+	* doc/install.texi (automake): Correctly document that everything now
 	will use automake 1.9.3.
 
 2004-11-13  Hans-Peter Nilsson  <hp@bitrange.com>
@@ -307,7 +314,7 @@
 	* doc/install.texi: Likewise.
 	* doc/makefile.texi: Likewise.
 	* doc/sourcebuild.texi: Likewise.
-	
+
 2004-11-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-loop-manip.c: Fix a comment typo.
@@ -352,12 +359,12 @@
 2004-11-12  Devang Patel  <dpatel@apple.com>
 
 	* optabs.c (vector_compare_rtx): Use COMPARISON_CLASS_P.
-	
+
 2004-11-12  Devang Patel  <dpatel@apple.com>
 
 	* tree-if-conv.c (clean_predicate_lists): Use loop header
 	and latch directly.
-	
+
 2004-11-12  Richard Henderson  <rth@redhat.com>
 
 	PR 17778
@@ -377,7 +384,7 @@
 	* passes.c (rest_of_decl_compilation): Do not look at DECL_RTL
 	when deciding whether to pass a variable to
 	cgraph_varpool_finalize_decl or assemble_variable.
-	* toplev.c (check_global_declarations): Do not clear DECL_RTL. 
+	* toplev.c (check_global_declarations): Do not clear DECL_RTL.
 
 2004-11-12  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -420,7 +427,7 @@
 2004-11-12  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR middle-end/18005
-	* tree-data-ref.c (estimate_niter_from_size_of_data): Ensure 
+	* tree-data-ref.c (estimate_niter_from_size_of_data): Ensure
 	that arguments of EXACT_DIV_EXPR are INTEGER_CST.
 
 2004-11-12  Steven Bosscher  <stevenb@suse.de>
@@ -484,7 +491,7 @@
 
 2004-11-11  Sebastian Pop  <pop@cri.ensmp.fr>
 
-	* tree-scalar-evolution.c (follow_ssa_edge_in_condition_phi): 
+	* tree-scalar-evolution.c (follow_ssa_edge_in_condition_phi):
 	Give up as soon as the evolution is known not computable.
 
 2004-11-11  Nathan Sidwell  <nathan@codesourcery.com>
