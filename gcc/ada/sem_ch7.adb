@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.335 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1308,6 +1308,11 @@ package body Sem_Ch7 is
         No (Discriminant_Specifications (N))
           and then not Unknown_Discriminants_Present (N));
 
+      --  Set tagged flag before processing discriminants, to catch
+      --  illegal usage.
+
+      Set_Is_Tagged_Type (Id, Tagged_Present (Def));
+
       Set_Discriminant_Constraint (Id, No_Elist);
       Set_Girder_Constraint (Id, No_Elist);
 
@@ -1323,7 +1328,6 @@ package body Sem_Ch7 is
       Set_Private_Dependents (Id, New_Elmt_List);
 
       if Tagged_Present (Def) then
-         Set_Is_Tagged_Type       (Id, True);
          Set_Ekind                (Id, E_Record_Type_With_Private);
          Make_Class_Wide_Type     (Id);
          Set_Primitive_Operations (Id, New_Elmt_List);

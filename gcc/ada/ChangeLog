@@ -1,5 +1,10 @@
 2001-12-04  Ed Schonberg <schonber@gnat.com>
 
+	* sem_ch7.adb (New_Private_Type): Set Is_Tagged_Type flag before 
+	processing discriminants to diagnose illegal default values.
+
+2001-12-04  Ed Schonberg <schonber@gnat.com>
+
 	* sem_attr.adb (Resolve_Attribute): Handle properly an non-classwide 
 	access discriminant within a type extension that constrains its 
 	parent discriminants.
