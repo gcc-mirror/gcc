@@ -304,7 +304,7 @@ for machine in $build $host $target; do
 	# Set the default macros to define for GNU/Linux systems.
 	case $machine in
 	*-*-linux-gnu*)
-		xm_defines="HAVE_ATEXIT POSIX NO_STAB_H BSTRING"
+		xm_defines="HAVE_ATEXIT POSIX BSTRING"
 		;;
 	esac
 
@@ -2367,7 +2367,6 @@ for machine in $build $host $target; do
 	powerpcle-*-pe | powerpcle-*-cygwin32)
 		tm_file=rs6000/cygwin32.h
 		xm_file="rs6000/xm-cygwin32.h ${xm_file}"
-		xm_defines=NO_STAB_H
 		tmake_file=rs6000/t-winnt
 		xmake_file=rs6000/x-cygwin32
 #		extra_objs=pe.o

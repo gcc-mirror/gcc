@@ -1,3 +1,14 @@
+Tue May 19 18:21:25 1998  Jim Wilson  <wilson@cygnus.com>
+
+	Finish incomplete change started by Kenner.
+	* configure.in (*-*-linux-gnu*): Delete NO_STAB_H from xm_defines.
+	(powerpcle-*-cygwin32): Delete xm_defines.
+	* final.c, mips-tfile.c, xcoffout.c, config/mips/mips.c: Use
+	HAVE_STAB_H instead of NO_STAB_H.
+	* config/xm-linux.h (NO_STAB_H): Delete.
+	(HAVE_STAB_H): Undefine.
+	* config/i386/xm-go32.h (NO_STAB_H): Delete.
+
 1998-05-19  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarfout.c (dwarfout_file_scope_decl, case TYPE_DECL): Ignore

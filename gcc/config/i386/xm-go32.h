@@ -20,8 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define __MSDOS__ 1
 
-#define NO_STAB_H
-
 #include "i386/xm-i386.h"
 
 /* Use semicolons to separate elements of a path.  */
