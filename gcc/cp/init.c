@@ -2157,7 +2157,6 @@ build_java_class_ref (type)
 {
   tree name, class_decl;
   static tree CL_prefix = NULL_TREE;
-  static tree alloc_decl = NULL_TREE;
   if (CL_prefix == NULL_TREE)
     CL_prefix = get_identifier("_CL_");
   if (jclass_node == NULL_TREE)
@@ -2301,7 +2300,7 @@ build_new_1 (exp)
     }
   else if (! placement && TYPE_FOR_JAVA (true_type))
     {
-      tree name, class_addr, alloc_decl;
+      tree class_addr, alloc_decl;
       tree class_decl = build_java_class_ref (true_type);
       tree class_size = size_in_bytes (true_type);
       static char alloc_name[] = "_Jv_AllocObject";

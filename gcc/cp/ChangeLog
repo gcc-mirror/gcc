@@ -1,5 +1,10 @@
 1998-08-27  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* class.c: #if 0 complete_type_p.
+	* init.c (build_java_class_ref, build_new_1): Remove unused locals.
+	* method.c (process_overload_item): Likewise.
+	* typeck.c (comp_target_types): Likewise.
+
 	Stop sharing binfos for indirect virtual bases.
 	* tree.c (propagate_binfo_offsets): Unshare vbases, too.
 	(layout_basetypes): Likewise.
