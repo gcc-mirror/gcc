@@ -96,7 +96,7 @@ $(SHARLIB): $(SHLIB)
 	$(RANLIB) $(SHARLIB)
 
 $(SHLINK):
-	ln -s -f $(SHLIB) $(SHLINK)
+	ln -f -s $(SHLIB) $(SHLINK)
 
 mshlink:
 	@$(MAKE) $(MSHLINK) "SHLINK=$(MSHLINK)"
@@ -274,11 +274,11 @@ install:
 	for FILE in $(LIBS) ; do \
 	  rm -f $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
 	  if [ $$FILE = $(SHLINK) ] ; then \
-	    ln -s -f $(SHLIB) $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	    ln -f -s $(SHLIB) $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
 	  elif [ $$FILE = mshlink ]; then \
 	    for FILE in $(MSHLINK) ; do \
 	      rm -f $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
-	      ln -s -f $(SHLIB) $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	      ln -f -s $(SHLIB) $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
 	    done; \
 	  elif [ $$FILE = $(SHLIB) ]; then \
 	    $(INSTALL_PROGRAM) $$FILE $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
