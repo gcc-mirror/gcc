@@ -1985,6 +1985,11 @@ extern GTY (()) unsigned binfo_lang_slots;
 #define DECL_DECLARED_INLINE_P(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->decl.declared_inline_flag)
 
+/* Nonzero in a decl means that the gimplifier has seen (or placed)
+   this variable in a BIND_EXPR.  */
+#define DECL_SEEN_IN_BIND_EXPR_P(NODE) \
+  (DECL_CHECK (NODE)->decl.seen_in_bind_expr)
+
 /* In a VAR_DECL, nonzero if the decl is a register variable with
    an explicit asm specification.  */
 #define DECL_HARD_REGISTER(NODE)  (DECL_CHECK (NODE)->decl.inline_flag)

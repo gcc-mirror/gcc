@@ -766,7 +766,7 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
   *vars = var;
 
   /* Make gimplifier happy about this variable.  */
-  var->decl.seen_in_bind_expr = lang_hooks.gimple_before_inlining;
+  DECL_SEEN_IN_BIND_EXPR_P (var) = lang_hooks.gimple_before_inlining;
 
   /* Even if P was TREE_READONLY, the new VAR should not be.
      In the original code, we would have constructed a
@@ -1951,6 +1951,100 @@ save_body (tree fn, tree *arg_copy)
   return body;
 }
 
+#define WALK_SUBTREE(NODE)				\
+  do							\
+    {							\
+      result = walk_tree (&(NODE), func, data, htab);	\
+      if (result)					\
+	return result;					\
+    }							\
+  while (0)
+
+/* This is a subroutine of walk_tree that walks field of TYPE that are to
+   be walked whenever a type is seen in the tree.  Rest of operands and return
+   value are as for walk_tree.  */
+
+static tree
+walk_type_fields (tree type, walk_tree_fn func, void *data, void *htab)
+{
+  tree result = NULL_TREE;
+
+  switch (TREE_CODE (type))
+    {
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      /* We have to worry about mutually recursive pointers.  These can't
+	 be written in C.  They can in Ada.  It's pathlogical, but
+	 there's an ACATS test (c38102a) that checks it.  Deal with this
+	 by checking if we're pointing to another pointer, that one
+	 points to another pointer, that one does too, and we have no htab.
+	 If so, get a hash table.  We check three levels deep to avoid
+	 the cost of the hash table if we don't need one.  */
+      if (POINTER_TYPE_P (TREE_TYPE (type))
+	  && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (type)))
+	  && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (TREE_TYPE (type))))
+	  && !htab)
+	{
+	  result = walk_tree_without_duplicates (&TREE_TYPE (type),
+						 func, data);
+	  if (result)
+	    return result;
+
+	  break;
+	}
+
+      /* ... fall through ... */
+
+    case COMPLEX_TYPE:
+      WALK_SUBTREE (TREE_TYPE (type));
+      break;
+
+    case METHOD_TYPE:
+      WALK_SUBTREE (TYPE_METHOD_BASETYPE (type));
+
+      /* Fall through.  */
+
+    case FUNCTION_TYPE:
+      WALK_SUBTREE (TREE_TYPE (type));
+      {
+	tree arg;
+
+	/* We never want to walk into default arguments.  */
+	for (arg = TYPE_ARG_TYPES (type); arg; arg = TREE_CHAIN (arg))
+	  WALK_SUBTREE (TREE_VALUE (arg));
+      }
+      break;
+
+    case ARRAY_TYPE:
+      /* Don't follow this nodes's type if a pointer for fear that we'll
+	 have infinite recursion.  Those types are uninteresting anyway. */
+      if (!POINTER_TYPE_P (TREE_TYPE (type))
+	  && TREE_CODE (TREE_TYPE (type)) != OFFSET_TYPE)
+	WALK_SUBTREE (TREE_TYPE (type));
+      WALK_SUBTREE (TYPE_DOMAIN (type));
+      break;
+
+    case BOOLEAN_TYPE:
+    case ENUMERAL_TYPE:
+    case INTEGER_TYPE:
+    case CHAR_TYPE:
+    case REAL_TYPE:
+      WALK_SUBTREE (TYPE_MIN_VALUE (type));
+      WALK_SUBTREE (TYPE_MAX_VALUE (type));
+      break;
+
+    case OFFSET_TYPE:
+      WALK_SUBTREE (TREE_TYPE (type));
+      WALK_SUBTREE (TYPE_OFFSET_BASETYPE (type));
+      break;
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
 /* Apply FUNC to all the sub-trees of TP in a pre-order traversal.  FUNC is
    called with the DATA and the address of each sub-tree.  If FUNC returns a
    non-NULL value, the traversal is aborted, and the value returned by FUNC
@@ -1964,15 +2058,6 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
   enum tree_code code;
   int walk_subtrees;
   tree result;
-
-#define WALK_SUBTREE(NODE)				\
-  do							\
-    {							\
-      result = walk_tree (&(NODE), func, data, htab);	\
-      if (result)					\
-	return result;					\
-    }							\
-  while (0)
 
 #define WALK_SUBTREE_TAIL(NODE)				\
   do							\
@@ -2025,43 +2110,42 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
   if (result || ! walk_subtrees)
     return result;
 
-  /* If this is a DECL_EXPR, walk into various fields of the type or variable
-     that it's defining.  We only want to walk into these fields of a decl
-     or type in this case.
+  /* If this is a DECL_EXPR, walk into various fields of the type that it's
+     defining.  We only want to walk into these fields of a type in this
+     case.  Note that decls get walked as part of the processing of a
+     BIND_EXPR.
 
      ??? Precisely which fields of types that we are supposed to walk in
      this case vs. the normal case aren't well defined.  */
   if (code == DECL_EXPR
-      && TREE_CODE (DECL_EXPR_DECL (*tp)) != ERROR_MARK
+      && TREE_CODE (DECL_EXPR_DECL (*tp)) == TYPE_DECL
       && TREE_CODE (TREE_TYPE (DECL_EXPR_DECL (*tp))) != ERROR_MARK)
     {
-      tree decl = DECL_EXPR_DECL (*tp);
-      tree type = TREE_TYPE (decl);
+      tree *type_p = &TREE_TYPE (DECL_EXPR_DECL (*tp));
 
-      /* Walk into fields of the DECL if it's not a type.  */
-      if (TREE_CODE (decl) != TYPE_DECL)
-	{
-	  if (TREE_CODE (decl) != FIELD_DECL && TREE_CODE (decl) != PARM_DECL)
-	    WALK_SUBTREE (DECL_INITIAL (decl));
+      /* Call the function for the type.  See if it returns anything or
+	 doesn't want us to continue.  If we are to continue, walk both
+	 the normal fields and those for the declaration case.  */
+      result = (*func) (type_p, &walk_subtrees, data);
+      if (result || !walk_subtrees)
+	return NULL_TREE;
 
-	  WALK_SUBTREE (DECL_SIZE (decl));
-	  WALK_SUBTREE_TAIL (DECL_SIZE_UNIT (decl));
-	}
+      result = walk_type_fields (*type_p, func, data, htab_);
+      if (result)
+	return result;
 
-      /* Otherwise, we are declaring a type.  First do the common fields via
-	 recursion, then the fields we only do when we are declaring the type
-	 or object.  */
-      WALK_SUBTREE (type);
-      WALK_SUBTREE (TYPE_SIZE (type));
-      WALK_SUBTREE (TYPE_SIZE_UNIT (type));
+      WALK_SUBTREE (TYPE_SIZE (*type_p));
+      WALK_SUBTREE (TYPE_SIZE_UNIT (*type_p));
 
       /* If this is a record type, also walk the fields.  */
-      if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
-	  || TREE_CODE (type) == QUAL_UNION_TYPE)
+      if (TREE_CODE (*type_p) == RECORD_TYPE
+	  || TREE_CODE (*type_p) == UNION_TYPE
+	  || TREE_CODE (*type_p) == QUAL_UNION_TYPE)
 	{
 	  tree field;
 
-	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	  for (field = TYPE_FIELDS (*type_p); field;
+	       field = TREE_CHAIN (field))
 	    {
 	      /* We'd like to look at the type of the field, but we can easily
 		 get infinite recursion.  So assume it's pointed to elsewhere
@@ -2072,7 +2156,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	      WALK_SUBTREE (DECL_FIELD_OFFSET (field));
 	      WALK_SUBTREE (DECL_SIZE (field));
 	      WALK_SUBTREE (DECL_SIZE_UNIT (field));
-	      if (TREE_CODE (type) == QUAL_UNION_TYPE)
+	      if (TREE_CODE (*type_p) == QUAL_UNION_TYPE)
 		WALK_SUBTREE (DECL_QUALIFIER (field));
 	    }
 	}
@@ -2114,6 +2198,13 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 #endif
     }
 
+  /* If this is a type, walk the needed fields in the type.  */
+  else if (TYPE_P (*tp))
+    {
+      result = walk_type_fields (*tp, func, data, htab_);
+      if (result)
+	return result;
+    }
   else
     {
       /* Not one of the easy cases.  We must explicitly go through the
@@ -2126,8 +2217,6 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	case REAL_CST:
 	case VECTOR_CST:
 	case STRING_CST:
-	case VECTOR_TYPE:
-	case VOID_TYPE:
 	case BLOCK:
 	case PLACEHOLDER_EXPR:
 	case SSA_NAME:
@@ -2183,7 +2272,6 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 		WALK_SUBTREE (DECL_INITIAL (decl));
 		WALK_SUBTREE (DECL_SIZE (decl));
 		WALK_SUBTREE (DECL_SIZE_UNIT (decl));
-		WALK_SUBTREE (TREE_TYPE (decl));
 	      }
 	    WALK_SUBTREE_TAIL (BIND_EXPR_BODY (*tp));
 	  }
@@ -2195,70 +2283,6 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	      WALK_SUBTREE (*tsi_stmt_ptr (i));
 	  }
 	  break;
-
-	case POINTER_TYPE:
-	case REFERENCE_TYPE:
-	  /* We have to worry about mutually recursive pointers.  These can't
-	     be written in C.  They can in Ada.  It's pathlogical, but
-	     there's an ACATS test (c38102a) that checks it.  Deal with this
-	     by checking if we're pointing to another pointer, that one
-	     points to another pointer, that one does too, and we have no htab.
-	     If so, get a hash table.  We check three levels deep to avoid
-	     the cost of the hash table if we don't need one.  */
-	  if (POINTER_TYPE_P (TREE_TYPE (*tp))
-	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*tp)))
-	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (TREE_TYPE (*tp))))
-	      && !htab)
-	    {
-	      result = walk_tree_without_duplicates (&TREE_TYPE (*tp),
-						     func, data);
-	      if (result)
-		return result;
-
-	      break;
-	    }
-
-	  /* ... fall through ... */
-
-	case COMPLEX_TYPE:
-	  WALK_SUBTREE_TAIL (TREE_TYPE (*tp));
-	  break;
-
-	case METHOD_TYPE:
-	  WALK_SUBTREE (TYPE_METHOD_BASETYPE (*tp));
-
-	  /* Fall through.  */
-
-	case FUNCTION_TYPE:
-	  WALK_SUBTREE (TREE_TYPE (*tp));
-	  {
-	    tree arg;
-
-	    /* We never want to walk into default arguments.  */
-	    for (arg = TYPE_ARG_TYPES (*tp); arg; arg = TREE_CHAIN (arg))
-	      WALK_SUBTREE (TREE_VALUE (arg));
-	  }
-	  break;
-
-	case ARRAY_TYPE:
-	  /* Don't follow this nodes's type if a pointer for fear that we'll
-	     have infinite recursion.  Those types are uninteresting anyway. */
-	  if (!POINTER_TYPE_P (TREE_TYPE (*tp))
-	      && TREE_CODE (TREE_TYPE (*tp)) != OFFSET_TYPE)
-	    WALK_SUBTREE (TREE_TYPE (*tp));
-	  WALK_SUBTREE_TAIL (TYPE_DOMAIN (*tp));
-
-	case BOOLEAN_TYPE:
-	case ENUMERAL_TYPE:
-	case INTEGER_TYPE:
-	case CHAR_TYPE:
-	case REAL_TYPE:
-	  WALK_SUBTREE (TYPE_MIN_VALUE (*tp));
-	  WALK_SUBTREE_TAIL (TYPE_MAX_VALUE (*tp));
-
-	case OFFSET_TYPE:
-	  WALK_SUBTREE (TREE_TYPE (*tp));
-	  WALK_SUBTREE_TAIL (TYPE_OFFSET_BASETYPE (*tp));
 
 	default:
 	  /* ??? This could be a language-defined node.  We really should make
@@ -2498,7 +2522,7 @@ declare_inline_vars (tree bind_expr, tree vars)
       tree t;
 
       for (t = vars; t; t = TREE_CHAIN (t))
-	vars->decl.seen_in_bind_expr = 1;
+	DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
     }
 
   add_var_to_bind_expr (bind_expr, vars);

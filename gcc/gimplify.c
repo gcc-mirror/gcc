@@ -509,20 +509,17 @@ declare_tmp_vars (tree vars, tree scope)
       temps = nreverse (last);
       TREE_CHAIN (last) = BIND_EXPR_VARS (scope);
       BIND_EXPR_VARS (scope) = temps;
-
-      /* We don't add the temps to the block for this BIND_EXPR, as we're
-	 not interested in debugging info for them.  */
     }
 }
 
 void
 gimple_add_tmp_var (tree tmp)
 {
-  if (TREE_CHAIN (tmp) || tmp->decl.seen_in_bind_expr)
+  if (TREE_CHAIN (tmp) || DECL_SEEN_IN_BIND_EXPR_P (tmp))
     abort ();
 
   DECL_CONTEXT (tmp) = current_function_decl;
-  tmp->decl.seen_in_bind_expr = 1;
+  DECL_SEEN_IN_BIND_EXPR_P (tmp) = 1;
 
   if (gimplify_ctxp)
     {
@@ -657,19 +654,6 @@ copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 	TREE_VISITED (t) = 1;
     }
 
-  /* Special-case BIND_EXPR.  We should never be copying these, therefore
-     we can omit examining BIND_EXPR_VARS.  Which also avoids problems with
-     double processing of the DECL_INITIAL, which could be seen via both
-     the BIND_EXPR_VARS and a DECL_EXPR.  */
-  else if (code == BIND_EXPR)
-    {
-      if (TREE_VISITED (t))
-	abort ();
-      TREE_VISITED (t) = 1;
-      *walk_subtrees = 0;
-      walk_tree (&BIND_EXPR_BODY (t), copy_if_shared_r, NULL, NULL);
-    }
-
   /* If this node has been visited already, unshare it and don't look
      any deeper.  */
   else if (TREE_VISITED (t))
@@ -713,8 +697,9 @@ unmark_visited_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
-/* Unshare all the trees in BODY_P, a pointer to the body of FNDECL, and the
-   bodies of any nested functions.  */
+/* Unshare all the trees in BODY_P, a pointer into the body of FNDECL, and the
+   bodies of any nested functions if we are unsharing the entire body of
+   FNDECL.  */
 
 static void
 unshare_body (tree *body_p, tree fndecl)
@@ -722,8 +707,9 @@ unshare_body (tree *body_p, tree fndecl)
   struct cgraph_node *cgn = cgraph_node (fndecl);
 
   walk_tree (body_p, copy_if_shared_r, NULL, NULL);
-  for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-    unshare_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
+  if (body_p == &DECL_SAVED_TREE (fndecl))
+    for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
+      unshare_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
 }
 
 /* Likewise, but mark all trees as not visited.  */
@@ -734,8 +720,9 @@ unvisit_body (tree *body_p, tree fndecl)
   struct cgraph_node *cgn = cgraph_node (fndecl);
 
   walk_tree (body_p, unmark_visited_r, NULL, NULL);
-  for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-    unvisit_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
+  if (body_p == &DECL_SAVED_TREE (fndecl))
+    for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
+      unvisit_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
 }
 
 /* Unshare T and all the trees reached from T via TREE_CHAIN.  */
@@ -890,7 +877,7 @@ gimplify_bind_expr (tree *expr_p, tree temp, tree *pre_p)
 
   /* Mark variables seen in this bind expr.  */
   for (t = BIND_EXPR_VARS (bind_expr); t ; t = TREE_CHAIN (t))
-    t->decl.seen_in_bind_expr = 1;
+    DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
 
   gimple_push_bind_expr (bind_expr);
   gimplify_ctxp->save_stack = false;
@@ -1668,7 +1655,8 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
   tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval, fallback);
   ret = MIN (ret, tret);
 
-  /* And finally, the indices and operands to BIT_FIELD_REF.  */
+  /* And finally, the indices and operands to BIT_FIELD_REF.  During this
+     loop we also remove any useless conversions.  */
   for (; VARRAY_ACTIVE_SIZE (stack) > 0; )
     {
       tree t = VARRAY_TOP_TREE (stack);
@@ -1700,7 +1688,9 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 				is_gimple_val, fb_rvalue);
 	  ret = MIN (ret, tret);
 	}
-	  
+
+      STRIP_USELESS_TYPE_CONVERSION (TREE_OPERAND (t, 0));
+
       /* The innermost expression P may have originally had TREE_SIDE_EFFECTS
 	 set which would have caused all the outer expressions in EXPR_P
 	 leading to P to also have had TREE_SIDE_EFFECTS set.  */
@@ -2321,7 +2311,7 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, bool want_value)
   to = TREE_OPERAND (*expr_p, 0);
   from = TREE_OPERAND (*expr_p, 1);
 
-  t = TYPE_SIZE_UNIT (TREE_TYPE (to));
+  t = TYPE_SIZE_UNIT (TREE_TYPE (from));
   t = unshare_expr (t);
   t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, to);
   t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, from);
@@ -2356,7 +2346,7 @@ gimplify_modify_expr_to_memset (tree *expr_p, bool want_value)
 
   to = TREE_OPERAND (*expr_p, 0);
 
-  t = TYPE_SIZE_UNIT (TREE_TYPE (to));
+  t = TYPE_SIZE_UNIT (TREE_TYPE (TREE_OPERAND (*expr_p, 1)));
   t = unshare_expr (t);
   t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, to);
   args = tree_cons (NULL, t, NULL);
@@ -2772,8 +2762,15 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
   /* If the value being copied is of variable width, expose the length
      if the copy by converting the whole thing to a memcpy/memset.
      Note that we need to do this before gimplifying any of the operands
-     so that we can resolve any PLACEHOLDER_EXPRs in the size.  */
-  if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (*to_p))) != INTEGER_CST)
+     so that we can resolve any PLACEHOLDER_EXPRs in the size. 
+     Also note that the RTL expander uses the size of the expression to
+     be copied, not of the destination, so that is what we must here.
+     The types on both sides of the MODIFY_EXPR should be the same,
+     but they aren't always and there are problems with class-wide types
+     in Ada where it's hard to make it "correct".  */
+  if (TREE_CODE (TREE_TYPE (*from_p)) != ERROR_MARK
+      && TYPE_SIZE_UNIT (TREE_TYPE (*from_p))
+      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (*from_p))) != INTEGER_CST)
     {
       if (TREE_CODE (*from_p) == CONSTRUCTOR)
 	return gimplify_modify_expr_to_memset (expr_p, want_value);
@@ -3361,7 +3358,7 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
       TREE_OPERAND (targ, 3) = init;
       TARGET_EXPR_INITIAL (targ) = NULL_TREE;
     }
-  else if (!temp->decl.seen_in_bind_expr)
+  else if (!DECL_SEEN_IN_BIND_EXPR_P (temp))
     /* We should have expanded this before.  */
     abort ();
 
@@ -3699,8 +3696,20 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case CONSTRUCTOR:
-	  /* Don't reduce this in place; let gimplify_init_constructor work
-	     its magic.  */
+	  /* Don't reduce this in place; let gimplify_init_constructor work its
+	     magic.  Buf if we're just elaborating this for side effects, just
+	     gimplify any element that has side-effects.  */
+	  if (fallback == fb_none)
+	    {
+	      for (tmp = CONSTRUCTOR_ELTS (*expr_p); tmp;
+		   tmp = TREE_CHAIN (tmp))
+		if (TREE_SIDE_EFFECTS (TREE_VALUE (tmp)))
+		  gimplify_expr (&TREE_VALUE (tmp), pre_p, post_p,
+				 gimple_test_f, fallback);
+
+	      *expr_p = NULL_TREE;
+	    }
+		  
 	  ret = GS_ALL_DONE;
 	  break;
 
@@ -3801,7 +3810,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  tmp = *expr_p;
 	  if (!TREE_STATIC (tmp) && !DECL_EXTERNAL (tmp)
 	      && decl_function_context (tmp) == current_function_decl
-	      && !tmp->decl.seen_in_bind_expr)
+	      && !DECL_SEEN_IN_BIND_EXPR_P (tmp))
 	    {
 #ifdef ENABLE_CHECKING
 	      if (!errorcount && !sorrycount)
