@@ -1,3 +1,16 @@
+2004-08-28  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-common.h: Update comments about ObjC/ObjC++ entry points.
+	(objc_is_reserved_word): New prototype.
+	(get_current_scope, objc_mark_locals_volatile): Move prototypes to
+	separate section; these are call-backs.
+	* c-lex.c (c_lex_with_flags): Call objc_is_reserved_word() to detect
+	ObjC/ObjC++ "@" keywords.
+	* c-tree.h (get_current_scope, objc_mark_locals_volatile): Remove
+	prototypes; they already live in c-common.h.
+	* stub-objc.c: Update copyright notice.
+	(objc_is_reserved_word): New stub.
+
 2004-08-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* system.h (gcc_assert): Remove __builtin_expect.  Evaluate EXPR

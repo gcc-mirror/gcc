@@ -896,20 +896,25 @@ extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);
 extern void c_parse_error (const char *, enum cpp_ttype, tree);
 
-/* The following have been moved here from c-tree.h, since they're needed
-   in the ObjC++ world, too.  What is more, stub-objc.c could use a few
-   prototypes.  */
+/* Objective-C / Objective-C++ entry points.  */
+
+/* The following ObjC/ObjC++ functions are called by the C and/or C++
+   front-ends; they all must have corresponding stubs in stub-objc.c.  */
 extern tree lookup_interface (tree);
 extern tree is_class_name (tree);
 extern tree objc_is_object_ptr (tree);
 extern void objc_check_decl (tree);
+extern int objc_is_reserved_word (tree);
 extern int objc_comptypes (tree, tree, int);
 extern tree objc_message_selector (void);
 extern tree lookup_objc_ivar (tree);
-extern void *get_current_scope (void);
-extern void objc_mark_locals_volatile (void *);
 extern void objc_clear_super_receiver (void);
 extern int objc_is_public (tree, tree);
+
+/* The following are provided by the C and C++ front-ends, and called by
+   ObjC/ObjC++.  */
+extern void *get_current_scope (void);
+extern void objc_mark_locals_volatile (void *);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);

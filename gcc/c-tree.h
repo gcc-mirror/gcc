@@ -307,8 +307,6 @@ extern bool c_eh_initialized_p;
 
 /* In c-decl.c */
 extern void c_finish_incomplete_decl (tree);
-extern void *get_current_scope (void);
-extern void objc_mark_locals_volatile (void *);
 extern void c_write_global_declarations (void);
 
 /* In order for the format checking to accept the C frontend

@@ -608,6 +608,23 @@ lookup_protocol_in_reflist (tree rproto_list, tree lproto)
   return 0;
 }
 
+/* Return 1 if IDENT is an ObjC/ObjC++ reserved keyword in the context of
+   an '@'.  */
+
+int
+objc_is_reserved_word (tree ident)
+{
+  unsigned char code = C_RID_CODE (ident);
+
+  return (OBJC_IS_AT_KEYWORD (code)
+#ifdef OBJCPLUS
+	  || code == RID_CLASS || code == RID_PUBLIC
+	  || code == RID_PROTECTED || code == RID_PRIVATE
+	  || code == RID_TRY || code == RID_THROW || code == RID_CATCH
+#endif
+	    );
+}
+
 /* Return true if TYPE is 'id'.  */
 
 static bool
