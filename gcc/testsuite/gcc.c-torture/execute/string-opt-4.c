@@ -28,7 +28,7 @@ int main()
 /* When optimizing, all the above cases should be transformed into
    something else.  So any remaining calls to the original function
    should abort.  */
-char *
+static char *
 strchr (const char *s, int c)
 {
   abort ();
