@@ -1,3 +1,13 @@
+2000-12-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (pushclass): Remove #if 0'd code.
+	* cp-tree.h (overload_template_name): Remove.
+	* decl.c (store_bindings): Simplify.
+	(pop_from_top_level): Likewise.
+	* pt.c (overload_template_name): Remove.
+	(instantiate_decl): Don't call push_to_top_level if it's not 
+	needed.
+
 2000-12-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (register_local_specialization): Don't return a value.
