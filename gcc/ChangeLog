@@ -1,5 +1,9 @@
 2003-07-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	PR bootstrap/11043
+	* config/arc/t-arc: Replace bogus references to "x-crtinit.o", 
+	"x-crtfini.o" with "crtinit.o", "crtfini.o".
+
 	* fixinc/inclhack.def (limits_ifndefs): Add select test.
 	* fixinc/fixincl.x: Rebuild.
 
