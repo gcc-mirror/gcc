@@ -612,6 +612,11 @@ copy_decl_tree (block)
   t = copy_node (block);
   BLOCK_VARS (t) = vars;
   BLOCK_SUBBLOCKS (t) = nreverse (subblocks);
+  /* If the BLOCK being cloned is already marked as having been instantiated
+     from something else, then leave that `origin' marking alone.  Elsewise,
+     mark the clone as having originated from the BLOCK we are cloning.  */
+  if (BLOCK_ABSTRACT_ORIGIN (t) == NULL_TREE)
+    BLOCK_ABSTRACT_ORIGIN (t) = block;
   return t;
 }
 
@@ -1096,7 +1101,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
      tree type;
      rtx structure_value_addr;
 {
-  tree formal, actual;
+  tree formal, actual, block;
   rtx header = DECL_SAVED_INSNS (fndecl);
   rtx insns = FIRST_FUNCTION_INSN (header);
   rtx parm_insns = FIRST_PARM_INSN (header);
@@ -1663,7 +1668,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
      and copied LABEL_DECLs.  */
 
   expand_end_bindings (getdecls (), 1, 1);
-  poplevel (1, 1, 0);
+  block = poplevel (1, 1, 0);
+  BLOCK_ABSTRACT_ORIGIN (block) = fndecl;
   poplevel (0, 0, 0);
   emit_line_note (input_filename, lineno);
 
@@ -1766,7 +1772,10 @@ integrate_decl_tree (let, level, map)
     {
       node = poplevel (1, 0, 0);
       if (node)
-	TREE_USED (node) = TREE_USED (let);
+	{
+	  TREE_USED (node) = TREE_USED (let);
+	  BLOCK_ABSTRACT_ORIGIN (node) = let;
+	}
     }
 }
 
@@ -2533,6 +2542,132 @@ restore_constants (px)
     }
 }
 
+/* Given a pointer to some BLOCK node, if the BLOCK_ABSTRACT_ORIGIN for the
+   given BLOCK node is NULL, set the BLOCK_ABSTRACT_ORIGIN for the node so
+   that it points to the node itself, thus indicating that the node is its
+   own (abstract) origin.  Additionally, if the BLOCK_ABSTRACT_ORIGIN for
+   the given node is NULL, recursively descend the decl/block tree which
+   it is the root of, and for each other ..._DECL or BLOCK node contained
+   therein whose DECL_ABSTRACT_ORIGINs or BLOCK_ABSTRACT_ORIGINs are also
+   still NULL, set *their* DECL_ABSTRACT_ORIGIN or BLOCK_ABSTRACT_ORIGIN
+   values to point to themselves.  */
+
+static void set_decl_origin_self ();
+
+static void
+set_block_origin_self (stmt)
+     register tree stmt;
+{
+  if (BLOCK_ABSTRACT_ORIGIN (stmt) == NULL_TREE)
+    {
+      BLOCK_ABSTRACT_ORIGIN (stmt) = stmt;
+
+      {
+        register tree local_decl;
+
+        for (local_decl = BLOCK_VARS (stmt);
+	     local_decl != NULL_TREE;
+	     local_decl = TREE_CHAIN (local_decl))
+          set_decl_origin_self (local_decl);	/* Potential recursion.  */
+      }
+
+      {
+        register tree subblock;
+
+        for (subblock = BLOCK_SUBBLOCKS (stmt);
+	     subblock != NULL_TREE;
+	     subblock = BLOCK_CHAIN (subblock))
+          set_block_origin_self (subblock);	/* Recurse.  */
+      }
+    }
+}
+
+/* Given a pointer to some ..._DECL node, if the DECL_ABSTRACT_ORIGIN for
+   the given ..._DECL node is NULL, set the DECL_ABSTRACT_ORIGIN for the
+   node to so that it points to the node itself, thus indicating that the
+   node represents its own (abstract) origin.  Additionally, if the
+   DECL_ABSTRACT_ORIGIN for the given node is NULL, recursively descend
+   the decl/block tree of which the given node is the root of, and for
+   each other ..._DECL or BLOCK node contained therein whose
+   DECL_ABSTRACT_ORIGINs or BLOCK_ABSTRACT_ORIGINs are also still NULL,
+   set *their* DECL_ABSTRACT_ORIGIN or BLOCK_ABSTRACT_ORIGIN values to
+   point to themselves.  */
+
+static void
+set_decl_origin_self (decl)
+     register tree decl;
+{
+  if (DECL_ABSTRACT_ORIGIN (decl) == NULL_TREE)
+    {
+      DECL_ABSTRACT_ORIGIN (decl) = decl;
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  register tree arg;
+
+	  for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
+	    DECL_ABSTRACT_ORIGIN (arg) = arg;
+	  if (DECL_INITIAL (decl) != NULL_TREE)
+	    set_block_origin_self (DECL_INITIAL (decl));
+	}
+    }
+}
+
+/* Given a pointer to some BLOCK node, and a boolean value to set the
+   "abstract" flags to, set that value into the BLOCK_ABSTRACT flag for
+   the given block, and for all local decls and all local sub-blocks
+   (recursively) which are contained therein.  */
+
+void set_decl_abstract_flags ();
+
+static void
+set_block_abstract_flags (stmt, setting)
+     register tree stmt;
+     register int setting;
+{
+  BLOCK_ABSTRACT (stmt) = setting;
+
+  {
+    register tree local_decl;
+
+    for (local_decl = BLOCK_VARS (stmt);
+	 local_decl != NULL_TREE;
+	 local_decl = TREE_CHAIN (local_decl))
+      set_decl_abstract_flags (local_decl, setting);
+  }
+
+  {
+    register tree subblock;
+
+    for (subblock = BLOCK_SUBBLOCKS (stmt);
+	 subblock != NULL_TREE;
+	 subblock = BLOCK_CHAIN (subblock))
+      set_block_abstract_flags (subblock, setting);
+  }
+}
+
+/* Given a pointer to some ..._DECL node, and a boolean value to set the
+   "abstract" flags to, set that value into the DECL_ABSTRACT flag for the
+   given decl, and (in the case where the decl is a FUNCTION_DECL) also
+   set the abstract flags for all of the parameters, local vars, local
+   blocks and sub-blocks (recursively) to the same setting.  */
+
+void
+set_decl_abstract_flags (decl, setting)
+     register tree decl;
+     register int setting;
+{
+  DECL_ABSTRACT (decl) = setting;
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      register tree arg;
+
+      for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
+	DECL_ABSTRACT (arg) = setting;
+      if (DECL_INITIAL (decl) != NULL_TREE)
+	set_block_abstract_flags (DECL_INITIAL (decl), setting);
+    }
+}
+
 /* Output the assembly language code for the function FNDECL
    from its DECL_SAVED_INSNS.  Used for inline functions that are output
    at end of compilation instead of where they came in the source.  */
@@ -2613,6 +2748,17 @@ output_inline_function (fndecl)
 
   set_new_first_and_last_insn (FIRST_PARM_INSN (head), last);
   set_new_first_and_last_label_num (FIRST_LABELNO (head), LAST_LABELNO (head));
+
+  /* We must have already output DWARF debugging information for the
+     original (abstract) inline function declaration/definition, so
+     we want to make sure that the debugging information we generate
+     for this special instance of the inline function refers back to
+     the information we already generated.  To make sure that happens,
+     we simply have to set the DECL_ABSTRACT_ORIGIN for the function
+     node (and for all of the local ..._DECL nodes which are its children)
+     so that they all point to themselves.  */
+
+  set_decl_origin_self (fndecl);
 
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
