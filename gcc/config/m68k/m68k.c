@@ -180,6 +180,11 @@ output_function_prologue (stream, size)
       mask &= ~ (1 << (15 - FRAME_POINTER_REGNUM));
       num_saved_regs--;
     }
+
+#if NEED_PROBE
+  fprintf (stream, "\ttstl sp@(%d)\n", NEED_PROBE - num_saved_regs * 4);
+#endif
+
   if (num_saved_regs <= 2)
     {
       /* Store each separately in the same order moveml uses.
