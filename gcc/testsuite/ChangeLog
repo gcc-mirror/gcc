@@ -1,3 +1,8 @@
+2004-01-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13635
+	* g++.dg/ext/typeof7.C: New test.
+
 2004-01-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/array-quals-1.c: xfail on powerpc*-*-aix*.

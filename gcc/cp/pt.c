@@ -7106,13 +7106,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case TYPEOF_TYPE:
       {
-	tree e1 = tsubst_expr (TYPE_FIELDS (t), args, complain, in_decl);
-	if (e1 == error_mark_node)
-	  return error_mark_node;
+	tree type;
 
-	return cp_build_qualified_type_real (TREE_TYPE (e1),
+	type = finish_typeof (tsubst_expr (TYPE_FIELDS (t), args, complain, 
+					   in_decl));
+	return cp_build_qualified_type_real (type,
 					     cp_type_quals (t)
-					     | cp_type_quals (TREE_TYPE (e1)),
+					     | cp_type_quals (type),
 					     complain);
       }
 
