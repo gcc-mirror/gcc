@@ -12638,7 +12638,7 @@ check_final_variable_indirect_assignment (stmt)
       return check_final_variable_indirect_assignment (EXPR_WFL_NODE (stmt));
     case COMPOUND_EXPR:
       res = check_final_variable_indirect_assignment (TREE_OPERAND (stmt, 0));
-      if (res)
+      if (res > 0)
 	return res;
       return check_final_variable_indirect_assignment (TREE_OPERAND (stmt, 1));
     case SAVE_EXPR:
@@ -12679,6 +12679,7 @@ check_final_variable_global_assignment_flag (class)
 {
   tree field, mdecl;
   int nnctor = 0;
+  int error_found = 0;
 
   /* We go through all natural ctors and see whether they're
      initializing all their final variables or not. */
@@ -12700,9 +12701,12 @@ check_final_variable_global_assignment_flag (class)
 		nnctor++;
 	      }
 	    else
-	      parse_error_context
-		(lookup_cl (mdecl),
-		 "Final variable initialization error in this constructor");
+	      {
+		parse_error_context
+		  (lookup_cl (mdecl),
+		   "Final variable initialization error in this constructor");
+		error_found = 1;
+	      }
 	  }
 	else
 	  nnctor++;
@@ -12713,9 +12717,9 @@ check_final_variable_global_assignment_flag (class)
     if (FINAL_VARIABLE_P (field)
 	/* If the field wasn't initialized upon declaration */
 	&& !DECL_FIELD_FINAL_IUD (field)
-	/* There wasn't natural ctor in which the field could have been
-	   initialized */
-	&& !nnctor
+	/* There wasn't a natural ctor in which the field could have been
+	   initialized or we found an error looking for one. */
+	&& (error_found || !nnctor)
 	/* If we never reported a problem with this field */
 	&& !DECL_FIELD_FINAL_IERR (field))
       {
@@ -12725,7 +12729,6 @@ check_final_variable_global_assignment_flag (class)
 	   "Final variable `%s' hasn't been initialized upon its declaration",
 	   IDENTIFIER_POINTER (DECL_NAME (field)));
       }
-
 }
 
 /* Return 1 if an assignment to a FINAL is attempted in a non suitable
