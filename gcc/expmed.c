@@ -1982,7 +1982,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 
       alg = synth_mult (absval, add_cost, shift_cost, mult_cost);
       neg_alg = synth_mult (- absval, add_cost, shift_cost,
-			    mult_cost - negate_cost);
+			    (alg.cost >= 0 ? alg.cost : mult_cost)
+			    - negate_cost);
 
       if (neg_alg.cost >= 0 && neg_alg.cost + negate_cost < alg.cost)
 	alg = neg_alg, negate = 1, absval = - absval;
@@ -2151,6 +2152,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   register rtx result = 0;
   enum machine_mode compute_mode;
   int log = -1;
+  int size;
   int can_clobber_op0;
   int mod_insn_no_good = 0;
   rtx adjusted_op0 = op0;
@@ -2247,6 +2249,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   if (compute_mode == VOIDmode)
     compute_mode = mode;
 
+  size = GET_MODE_BITSIZE (compute_mode);
+
   /* Now convert to the best mode to use.  Show we made a copy of OP0
      and hence we can clobber it (we cannot use a SUBREG to widen
      something.  */
@@ -2299,8 +2303,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
 				   build_int_2 (log - 1, 0), NULL_RTX, 0);
 	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
-				   build_int_2 (GET_MODE_BITSIZE (mode) - log,
-						0),
+				   build_int_2 (size - log, 0),
 				   temp, 1);
 	      expand_inc (adjusted_op0, temp);
 	    }
@@ -2398,7 +2401,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		  rtx temp = gen_reg_rtx (compute_mode);
 		  temp = copy_to_suggested_reg (adjusted_op0, temp, compute_mode);
 		  temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
-				       build_int_2 (GET_MODE_BITSIZE (mode) - 1, 0),
+				       build_int_2 (size - 1, 0),
 				       NULL_RTX, 0);
 		  op1 = expand_binop (compute_mode, xor_optab, op1, temp, op1,
 				      unsignedp, OPTAB_LIB_WIDEN);
