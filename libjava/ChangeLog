@@ -1,3 +1,17 @@
+2002-02-07  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFile.cc (_access): Use __builtin_alloca.
+	(_stat): Likewise.
+	(attr): Likewise.
+	(getCanonicalPath): Likewise.
+	(performList): Likewise.
+	(performMkdir): Likewise.
+	(performSetReadOnly): Likewise.
+	(performRenameTo): Likewise.
+	(performSetLastModified): Likewise.
+	(performCreate): Likewise.
+	(performDelete): Likewise.
+
 2002-02-08  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* HACKING: Fix URL for the automake-gcj.
