@@ -549,7 +549,7 @@ extern int flag_vtable_gc;
 
 /* Nonzero means make the default pedwarns warnings instead of errors.
    The value of this flag is ignored if -pedantic is specified.  */
-int flag_permissive;
+extern int flag_permissive;
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
