@@ -208,9 +208,8 @@ namespace std
 		// different from LANG.
 		size_t __i = 0;
 		if (strcmp(__res, "C") == 0)
-		  for (__i = 0; 
-		       __i < _S_categories_size + _S_extra_categories_size; 
-		       ++__i)
+		  for (; __i < _S_categories_size
+			 + _S_extra_categories_size; ++__i)
 		    {
 		      __env = getenv(_S_categories[__i]);
 		      if (__env && strcmp(__env, "") != 0 
@@ -219,9 +218,8 @@ namespace std
 			break;
 		    }
 		else
-		  for (__i = 0; 
-		       __i < _S_categories_size + _S_extra_categories_size; 
-		       ++__i)
+		  for (; __i < _S_categories_size
+			 + _S_extra_categories_size; ++__i)
 		    {
 		      __env = getenv(_S_categories[__i]);
 		      if (__env && strcmp(__env, "") != 0 
@@ -253,9 +251,9 @@ namespace std
 			if (!__env || strcmp(__env, "") == 0)
 			  {
 			    __str += _S_categories[__i];
-			    __str += '=';
+			    __str += "=";
 			    __str += __res;
-			    __str += ';';
+			    __str += ";";
 			  }
 			else if (strcmp(__env, "C") == 0
 				 || strcmp(__env, "POSIX") == 0)
