@@ -39,6 +39,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpphash.h"
 #include "gansidecl.h"
 
+#ifndef GET_ENVIRONMENT
+#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
+#endif
+
 extern char *update_path ();
 
 #ifndef O_RDONLY
@@ -5691,7 +5695,7 @@ cpp_start_read (pfile, fname)
   /* Some people say that CPATH should replace the standard include dirs,
      but that seems pointless: it comes before them, so it overrides them
      anyway.  */
-  p = (char *) getenv ("CPATH");
+  GET_ENVIRONMENT (p, "CPATH");
   if (p != 0 && ! opts->no_standard_includes)
     path_include (pfile, p);
 
@@ -5821,16 +5825,16 @@ cpp_start_read (pfile, fname)
     switch ((opts->objc << 1) + opts->cplusplus)
       {
       case 0:
-	epath = getenv ("C_INCLUDE_PATH");
+	GET_ENVIRONMENT (epath, "C_INCLUDE_PATH");
 	break;
       case 1:
-	epath = getenv ("CPLUS_INCLUDE_PATH");
+	GET_ENVIRONMENT (epath, "CPLUS_INCLUDE_PATH");
 	break;
       case 2:
-	epath = getenv ("OBJC_INCLUDE_PATH");
+	GET_ENVIRONMENT (epath, "OBJC_INCLUDE_PATH");
 	break;
       case 3:
-	epath = getenv ("OBJCPLUS_INCLUDE_PATH");
+	GET_ENVIRONMENT (epath, "OBJCPLUS_INCLUDE_PATH");
 	break;
       }
     /* If the environment var for this language is set,

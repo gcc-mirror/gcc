@@ -31,6 +31,25 @@ Boston, MA 02111-1307, USA. */
 /* Even though we support "/", allow "\" since everybody tests both.  */
 #define DIR_SEPARATOR '\\'
 
+/* If we allow both '/' and '\' as dir separators, then
+   allow both unix and win32 PATH syntax */
+#undef GET_ENVIRONMENT
+#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME)                   \
+{                                                             \
+  char *epath;                                                \
+  char *win32epath;                                           \
+                                                              \
+  epath = win32epath = getenv (ENV_NAME);                     \
+  /* if we have a posix path list, convert to win32 path list */ \
+  if (epath != NULL && *epath != 0 && cygwin32_posix_path_list_p (epath)) \
+    {                                                         \
+      win32epath = (char *) xmalloc                           \
+      (cygwin32_posix_to_win32_path_list_buf_size (epath));   \
+      cygwin32_posix_to_win32_path_list (epath, win32epath);  \
+    }                                                         \
+   ENV_VALUE = win32epath;                                    \
+}
+
 #define PATH_SEPARATOR ';'
 
 /* This is needed so that protoize will compile.  */
