@@ -1,3 +1,8 @@
+Fri Sep 10 13:21:21 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* except.c (start_dynamic_handler): Compute size using
+	STACK_SAVEAREA_MODE.
+
 Fri Sep 10 16:01:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* protoize.c: Remove various __STDC__ and POSIX hacks.  Don't
