@@ -38,7 +38,8 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 /**
  * FeatureDescriptor is the common superclass for all JavaBeans Descriptor

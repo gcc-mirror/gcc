@@ -1,5 +1,18 @@
 2003-12-04  Michael Koch  <konqueror@gmx.de>
 
+	* java/beans/BeanDescriptor.java,
+	java/beans/EventSetDescriptor.java,
+	java/beans/FeatureDescriptor.java,
+	java/beans/IndexedPropertyDescriptor.java,
+	java/beans/Introspector.java,
+	java/beans/MethodDescriptor.java,
+	java/beans/PropertyDescriptor.java,
+	java/beans/SimpleBeanInfo.java: Explicitely import used classes.
+	* java/beans/beancontext/BeanContextServicesSupport.java
+	(serialVersionUID): New field.
+
+2003-12-04  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/MenuComponent.java: Import java.io.Serialization.
 	* java/awt/MenuItem.java: Likewise.
 	* java/awt/TextComponent.java: Likewise.

@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.beans;
 
-import java.util.*;
-
 /**
  ** BeanDescriptor describes general information about a Bean, plus
  ** stores the Bean's Class and it's customizer's Class.<P>

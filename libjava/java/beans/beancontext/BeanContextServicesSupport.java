@@ -100,6 +100,8 @@ public class BeanContextServicesSupport
   protected static class BCSSServiceProvider
     implements Serializable
   {
+    private static final long serialVersionUID = 861278251667444782L;
+
     protected BeanContextServiceProvider serviceProvider;
 
     protected BeanContextServiceProvider getServiceProvider()
