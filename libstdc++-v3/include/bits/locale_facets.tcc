@@ -609,7 +609,9 @@ namespace std
       _M_convert_float(_OutIter __s, ios_base& __io, _CharT __fill, char __mod,
 		       _ValueT __v) const
       {
-	const int __max_digits = numeric_limits<_ValueT>::digits10;
+	// Note: digits10 is rounded down.  We need to add 1 to ensure
+	// we get the full available precision.
+	const int __max_digits = numeric_limits<_ValueT>::digits10 + 1;
 	streamsize __prec = __io.precision();
 	// Protect against sprintf() buffer overflows.
 	if (__prec > static_cast<streamsize>(__max_digits))
