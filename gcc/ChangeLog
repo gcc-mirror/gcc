@@ -1,3 +1,9 @@
+2004-12-17  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 18897
+	* toplev.c (compile_file): Call process_pending_assemble_externals
+	just before targetm.asm_out.file_end.
+
 2004-12-17  Diego Novillo  <dnovillo@redhat.com>
 
 	tree-optimization/18501
@@ -48,7 +54,7 @@
 
 2004-12-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390.c (s390_gimplify_va_arg): Set alias set to 
+	* config/s390/s390.c (s390_gimplify_va_arg): Set alias set to
 	s390_sr_alias_set.
 
 2004-12-17  Jan Beulich  <jbeulich@novell.com>
@@ -186,7 +192,7 @@
 2004-12-16  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.md (sqrt{s,d}f2_1, sqrt{s,d}f2_1_sse_only,
-	sqrt{s,d}f2_i387): Unify enable constraint with respect to 
+	sqrt{s,d}f2_i387): Unify enable constraint with respect to
 	TARGET_SSE, TARGET_SSE2, TARGET_USE_FANCY_MATH_387,
 	TARGET_SSE_MATH and TARGET_MIX_SSE_I387.
 	(sqrt{s,d}f2_1): Rename to *sqrt{s,d}f2_mixed.
@@ -217,7 +223,7 @@
 	-lunwind if possible.
 
 2004-12-15  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* cfgloop.c (flow_loops_dump): Don't print out levels.
 	(flow_loops_find): Don't set loop->levels.
 	(flow_loops_level_compute): Make void.
@@ -252,7 +258,7 @@
 	(calculate_reg_pav): Use code from modify_bb_reg_pav.
 	(temp_bitmap): New variable.
 	(calculate_reg_pav): Allocate/deallocate temp_bitmap.
-	
+
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
 	PR target/19010
@@ -570,7 +576,7 @@
 	* config/i386/i386.c (ix86_gimplify_va_arg): Fix type mismatch
 	errors across operations.
 
-2004-12-12  Di-an Jan  <dianj@freeshell.org>  
+2004-12-12  Di-an Jan  <dianj@freeshell.org>
 
 	* doc/passes.texi (Pass Manager): Correct list of source files.
 
@@ -675,7 +681,7 @@
 	PR 18732
 	* gcc.c (main): Do not break out of loop when error is reported while
 	processing one source file.
-	
+
 2004-12-10  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-into-ssa.c (REWRITE_THIS_STMT): Define.
