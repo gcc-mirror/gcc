@@ -44,9 +44,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack *function_maybepermanent_obstack;
 
-extern tree pushdecl ();
-extern tree poplevel ();
-
 /* Similar, but round to the next highest integer that meets the
    alignment.  */
 #define CEIL_ROUND(VALUE,ALIGN)	(((VALUE) + (ALIGN) - 1) & ~((ALIGN)- 1))
