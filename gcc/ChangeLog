@@ -1,3 +1,8 @@
+Mon Jul 28 20:13:06 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (memory attribute) Avoid accessing uninitialized memory
+	for ishift1 type instructions.
+
 2003-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (--enable-checking): Add fold category.
