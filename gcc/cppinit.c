@@ -210,7 +210,7 @@ enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 /* If gcc is in use (stage2/stage3) we can make these tables initialized
    data. */
 #if defined __GNUC__ && (__GNUC__ > 2 \
-			 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6))
+			 || (__GNUC__ == 2 && __GNUC_MINOR__ > 8))
 /* Table to tell if a character is legal as the second or later character
    of a C identifier. */
 U_CHAR is_idchar[256] =

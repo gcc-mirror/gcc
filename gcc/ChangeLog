@@ -1,5 +1,8 @@
 Wed Dec 29 22:47:43 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* cppinit.c (is_idchar): Only use special initialization for
+	gcc-2.8 and later versions of the compiler.
+
 	Wed Oct 27 01:42:26 1999  Scott Christley  <scottc@net-community.com>
 	* sparc.md (call): Don't bound structure return size to 0xfff.
 
