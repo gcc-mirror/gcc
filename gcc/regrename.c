@@ -1335,14 +1335,26 @@ find_oldest_value_reg (class, reg, vd)
     }
 
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
+    {
+      enum machine_mode oldmode = vd->e[i].mode;
+
     if (TEST_HARD_REG_BIT (reg_class_contents[class], i)
-	&& (vd->e[i].mode == mode
-	    || mode_change_ok (vd->e[i].mode, mode, i)))
+	&& (oldmode == mode
+	    || mode_change_ok (oldmode, mode, i)))
       {
-	rtx new = gen_rtx_raw_REG (mode, i);
+	int offset = GET_MODE_SIZE (oldmode) - GET_MODE_SIZE (mode);
+	int byteoffset = offset % UNITS_PER_WORD;
+	int wordoffset = offset - byteoffset;
+	rtx new;
+
+	offset = ((WORDS_BIG_ENDIAN ? wordoffset : 0)
+		  + (BYTES_BIG_ENDIAN ? byteoffset : 0));
+	new = (gen_rtx_raw_REG
+	       (mode, i + subreg_regno_offset (i, oldmode, offset, mode)));
 	ORIGINAL_REGNO (new) = ORIGINAL_REGNO (reg);
 	return new;
       }
+    }
 
   return NULL_RTX;
 }

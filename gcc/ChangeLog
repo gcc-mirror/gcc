@@ -1,3 +1,11 @@
+Tue Jul 16 11:57:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* expr.c (emit_move_insn_1): Handle arbitrary moves that are
+	the same size as a word.
+
+	* regrename.c (find_oldest_value_reg): Take WORDS_BIG_ENDIAN /
+	BYTES_BIG_ENDIAN into account.
+
 Tue Jul 16 12:22:44 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (prefetch): Fix for 64bit mode.
