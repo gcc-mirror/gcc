@@ -1,5 +1,7 @@
 1998-05-22  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (print_template_context): Use fprintf instead of cp_error.
+
 	* pt.c (determine_specialization): Just return an error_mark_node.
 	Also print the decl we want in error messages.  If we complain,
 	return error_mark_node.

@@ -3346,14 +3346,15 @@ print_template_context (err)
       if (current_function_decl == p->decl)
 	/* Avoid redundancy with the the "In function" line.  */;
       else if (current_function_decl == NULL_TREE)
-	cp_error ("In instantiation of `%D':", p->decl);
+	fprintf (stderr, "In instantiation of `%s':\n",
+		 decl_as_string (p->decl, 0));
       else
 	my_friendly_abort (980521);
 
       if (p)
 	{
-	  lineno = p->line;
-	  input_filename = p->file;
+	  line = p->line;
+	  file = p->file;
 	  p = p->next;
 	}
     }
@@ -3361,14 +3362,12 @@ print_template_context (err)
  next:
   for (; p; p = p->next)
     {
-      cp_error ("  instantiated from `%D'", p->decl);
-      lineno = p->line;
-      input_filename = p->file;
+      fprintf (stderr, "%s:%d:   instantiated from `%s'\n", file, line,
+	       decl_as_string (p->decl, 0));
+      line = p->line;
+      file = p->file;
     }
-  error ("  instantiated from here");
-
-  lineno = line;
-  input_filename = file;
+  fprintf (stderr, "%s:%d:   instantiated from here\n", file, line);
 }
 
 /* Called from cp_thing to print the template context for an error.  */
