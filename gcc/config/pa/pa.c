@@ -4346,11 +4346,12 @@ emit_hpdiv_const (operands, unsignedp)
       emit
 	(gen_rtx
 	 (PARALLEL, VOIDmode,
-	  gen_rtvec (5, gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, 29),
+	  gen_rtvec (6, gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, 29),
 				     gen_rtx_fmt_ee (unsignedp ? UDIV : DIV,
 						     SImode,
 						     gen_rtx_REG (SImode, 26),
 						     operands[2])),
+		     gen_rtx_CLOBBER (VOIDmode, operands[4]),
 		     gen_rtx_CLOBBER (VOIDmode, operands[3]),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 26)),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 25)),
