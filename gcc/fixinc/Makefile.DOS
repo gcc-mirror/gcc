@@ -23,16 +23,11 @@
 # Its purpose is to build the fixincl and applyfix programs for
 # the DJGPP (aka MS-DOS) port of GCC.
 
-CFLAGS = -Wall -g -O2
 FIXINC_DEFS = -DIN_GCC $(CFLAGS) $(CPPFLAGS) $(INCLUDES) \
  -D__MSDOS__ -DSEPARATE_FIX_PROC
 
-CC = gcc
-SHELL = /bin/sh
-
 target=i386-pc-msdosdjgpp
 # Directory where sources are, from where we are.
-srcdir = .
 VPATH = $(srcdir)
 subdir = fixinc
 
@@ -64,7 +59,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. \
 ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-LIBERTY = $(srcdir)/../../libiberty/libiberty.a
+LIBERTY = ../../libiberty/libiberty.a
 OBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
       gnu-regex.o fixlib.o
 
@@ -73,22 +68,22 @@ HDR = server.h gnu-regex.h fixlib.h machname.h
 TARGETS = fixincl.exe applyfix.exe
 
 all : $(TARGETS)
-gen : fixincl.x
+gen : $(srcdir)/fixincl.x
 
 FIXINCL_OBJ = fixincl.o fixlib.o fixtests.o gnu-regex.o
 
 fixincl.exe: $(FIXINCL_OBJ) $(LIBERTY)
-	$(CC) $(FIXINC_DEFS) -o $@ $(FIXINCL_OBJ) $(LIBERTY)
+	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(FIXINCL_OBJ) $(LIBERTY)
 
 APPLY_OBJ = fixfixes.o fixlib.o gnu-regex.o
 
 applyfix.exe: $(APPLY_OBJ) $(LIBERTY)
-	$(CC) $(FIXINC_DEFS) -o $@ $(APPLY_OBJ) $(LIBERTY)
+	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(APPLY_OBJ) $(LIBERTY)
 
 $(OBJ)      : $(HDR)
-fixincl.o   : fixincl.x fixincl.c
+fixincl.o   : $(srcdir)/fixincl.x fixincl.c
 fixtests.o  : fixtests.c
-fixfixes.o  : fixfixes.c fixincl.x
+fixfixes.o  : fixfixes.c $(srcdir)/fixincl.x
 server.o    : server.c
 procopen.o  : procopen.c
 gnu-regex.o : gnu-regex.c
@@ -100,11 +95,11 @@ fixlib.o    : fixlib.c
 machname.h: ../specs
 	$(SHELL) $(srcdir)/genfixes $@
 
-fixincl.x: fixincl.tpl inclhack.def
+$(srcdir)/fixincl.x: fixincl.tpl inclhack.def
 	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
 clean:
-	rm -f *.o $(TARGETS) machname.h *~ *.exe
+	rm -f *.o $(TARGETS) machname.h *~
 
 maintainer-clean : clean
 	rm -f $(srcdir)/fixincl.x
@@ -112,7 +107,7 @@ maintainer-clean : clean
 #  Build the executable and copy up into gcc dir.
 #  We still copy the script because we still have alternative scripts.
 #
-inst-bin : $(TARGETS)
+install-bin : $(TARGETS)
 	./fixincl.exe -v
 	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
