@@ -1,3 +1,14 @@
+2004-12-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/18153
+	* configure.ac: Define HAVE_LD_STATIC_DYNAMIC if linker supports
+	-Bstatic/-Bdynamic option.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
+	* gcc.c (init_spec): Pass -Bstatic/-Bdynamic to ld for static
+	-lunwind if possible.
+
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
         PR target/19010

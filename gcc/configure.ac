@@ -2617,6 +2617,25 @@ if test x"$gcc_cv_ld_pie" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_ld_pie)
 
+AC_MSG_CHECKING(linker -Bstatic/-Bdynamic option)
+gcc_cv_ld_static_dynamic=no
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10; then
+    gcc_cv_ld_static_dynamic=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+	# Check if linker supports -Bstatic/-Bdynamic option
+	if $gcc_cv_ld --help 2>/dev/null | grep -- -Bstatic > /dev/null \
+	  && $gcc_cv_ld --help 2>/dev/null | grep -- -Bdynamic > /dev/null; then
+		gcc_cv_ld_static_dynamic=yes
+	fi
+fi
+if test x"$gcc_cv_ld_static_dynamic" = xyes; then
+	AC_DEFINE(HAVE_LD_STATIC_DYNAMIC, 1,
+[Define if your linker supports -Bstatic/-Bdynamic option.])
+fi
+AC_MSG_RESULT($gcc_cv_ld_static_dynamic)
+
 case "$target" in
   *-*-linux*)
     AC_CACHE_CHECK(linker --as-needed support,
