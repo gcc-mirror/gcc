@@ -1,5 +1,7 @@
 1999-07-05  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* template3.C: Fixed.
+
 	* ns3.C: New test.
 
 1999-07-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
