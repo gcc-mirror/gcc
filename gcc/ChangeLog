@@ -1,3 +1,8 @@
+2001-03-01  Diego Novillo  <dnovillo@redhat.com>
+
+	* c-semantics.c (prune_unused_decls): Return error_mark_node
+	instead of (tree) 1 to stop traversing the tree chain.
+
 2001-03-01  Bernd Schmidt  <bernds@redhat.com>
 
 	Fix a problem introduced by Kenner's Feb 18 change.
