@@ -13115,24 +13115,3 @@ rs6000_xcoff_encode_section_info (decl, first)
       && ! DECL_WEAK (decl))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
-
-int
-rs6000_field_alignment (field, computed)
-     tree field;
-     int computed;
-{
-  tree type = get_inner_array_type (field);
-
-  if (DEFAULT_ABI == ABI_V4)
-    {
-      if (TARGET_ALTIVEC && TREE_CODE (type) == VECTOR_TYPE)
-	return 128;
-    }
-  else
-    {
-      if (TYPE_MODE (type) == DFmode)
-	return MIN (32, computed);
-    }
-
-  return computed;
-}
