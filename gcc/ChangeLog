@@ -1,5 +1,14 @@
 2002-05-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/t-linux64 (SHLIB_MAPFILES): Set.
+	* config/sparc/libgcc-sparc-glibc.ver: New file.
+	* config/i386/t-linux64 (SHLIB_MAPFILES): Add libgcc-x86_64-glibc.ver.
+	* config/i386/libgcc-x86_64-glibc.ver: New file.
+	* config/cris/t-linux (SHLIB_MAPFILES): Remove.
+	* mklibgcc.in: Preprocess SHLIB_MAPFILES with ml flags.
+
+2002-05-09  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/6429
 	* Makefile.in (libgcc.mk): Pass SHLIB_SLIBDIR_SUFFIXES to mklibgcc.
 	* mklibgcc.in: If SHLIB_SLIBDIR_SUFFIXES is defined, put libgcc_s
