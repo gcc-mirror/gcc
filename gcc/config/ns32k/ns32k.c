@@ -321,7 +321,7 @@ output_move_double (operands)
 
   /* Overlapping registers.  */
   if (optype0 == REGOP && optype1 == REGOP
-      && REGNO (op0) == REGNO (latehalf[1]))
+      && REGNO (operands[0]) == REGNO (latehalf[1]))
     {
       /* Do that word.  */
       output_asm_insn (singlemove_string (latehalf), latehalf);
@@ -330,26 +330,26 @@ output_move_double (operands)
     }
   /* Loading into a register which overlaps a register used in the address.  */
   else if (optype0 == REGOP && optype1 != REGOP
-	   && reg_overlap_mentioned_p (op0, op1))
+	   && reg_overlap_mentioned_p (operands[0], operands[1]))
     {
-      if (reg_mentioned_p (op0, XEXP (op1, 0))
-	  && reg_mentioned_p (latehalf[0], XEXP (op1, 0)))
+      if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
+	  && reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
 	{
 	  /* If both halves of dest are used in the src memory address,
-	     add the two regs and put them in the low reg (op0).
+	     add the two regs and put them in the low reg (operands[0]).
 	     Then it works to load latehalf first.  */
 	  rtx xops[2];
 	  xops[0] = latehalf[0];
-	  xops[1] = op0;
+	  xops[1] = operands[0];
 	  output_asm_insn ("addd %0,%1", xops);
-	  operands[1] = gen_rtx (MEM, DImode, op0);
+	  operands[1] = gen_rtx (MEM, DImode, operands[0]);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
 	  /* The first half has the overlap, Do the late half first.  */
 	  output_asm_insn (singlemove_string (latehalf), latehalf);
 	  /* Then clobber.  */
 	  return singlemove_string (operands);
 	}
-      if (reg_mentioned_p (op0, XEXP (op1, 0)))
+      if (reg_mentioned_p (operands[0], XEXP (operands[1], 0)))
 	{
 	  /* The first half has the overlap, Do the late half first.  */
 	  output_asm_insn (singlemove_string (latehalf), latehalf);
