@@ -749,7 +749,7 @@ HP9000/800 immediate field sizes:
 /* Arguments larger than eight bytes are passed by invisible reference */
 
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  ((TYPE) ? int_size_in_bytes (TYPE) > 8 : GET_MODE_SIZE (MODE) > 8)
+  ((TYPE) && int_size_in_bytes (TYPE) > 8)
 
 extern struct rtx_def *hppa_compare_op0, *hppa_compare_op1;
 extern enum cmp_type hppa_branch_type;
@@ -1317,8 +1317,12 @@ while (0)
 /* Compute extra cost of moving data between one register class
    and another.  */
 #define REGISTER_MOVE_COST(CLASS1, CLASS2) \
-  (((CLASS1 == FP_REGS && CLASS2 == GENERAL_REGS) \
-    || (CLASS1 == GENERAL_REGS && CLASS2 == FP_REGS)) ? 6 : 2)
+ ((((CLASS1 == FP_REGS || CLASS1 == SNAKE_FP_REGS	\
+     || CLASS1 == HI_SNAKE_FP_REGS)			\
+    && (CLASS2 == R1_REGS | CLASS2 == GENERAL_REGS))	\
+   || ((CLASS2 == R1_REGS | CLASS1 == GENERAL_REGS)	\
+       && (CLASS2 == FP_REGS || CLASS2 == SNAKE_FP_REGS	\
+	   || CLASS2 == HI_SNAKE_FP_REGS))) ? 6 : 2)	
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  The purpose for the cost of MULT is to encourage
@@ -1634,13 +1638,16 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
       output_operand (XEXP (addr, 0), 0);				\
       fputs (")", FILE);						\
       break;								\
+    case CONST_INT:							\
+      fprintf (FILE, "%d(0,0)", INTVAL (addr));				\
+      break;								\
     default:								\
       output_addr_const (FILE, addr);					\
     }}
 
 
 #define SMALL_INT(OP) INT_14_BITS (OP)
-/* Define functions in hppa.c and used in insn-output.c.  */
+/* Define functions in pa.c and used in insn-output.c.  */
 
 extern char *output_move_double ();
 extern char *output_fp_move_double ();
