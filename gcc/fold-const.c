@@ -2733,6 +2733,8 @@ fold (expr)
       /* Other kinds of FIX are not handled properly by fold_convert.  */
       /* Two conversions in a row are not needed unless:
 	 - the intermediate type is narrower than both initial and final, or
+	 - the intermediate type and innermost type differ in signedness,
+	   and the outermost type is wider than the intermediate, or
 	 - the initial type is a pointer type and the precisions of the
 	   intermediate and final types differ, or
 	 - the final type is a pointer type and the precisions of the 
@@ -2744,6 +2746,14 @@ fold (expr)
 	      ||
 	      TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
 	      > TYPE_PRECISION (TREE_TYPE (t)))
+	  && ! ((TREE_CODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
+		 == INTEGER_TYPE)
+		&& (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
+		    == INTEGER_TYPE)
+		&& (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (t, 0)))
+		    != TREE_UNSIGNED (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
+		&& (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
+		    < TYPE_PRECISION (TREE_TYPE (t))))
 	  && ((TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (t, 0)))
 	       && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
 		   > TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))))

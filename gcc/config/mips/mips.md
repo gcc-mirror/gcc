@@ -1220,7 +1220,7 @@ move\\t%0,%z4\\n\\
    and\\t%0,%1,%2
    andi\\t%0,%1,%x2
    lui\\t%3,(%X2)>>16\;and\\t%0,%1,%3
-   li\\t%@,%X2\;and\\t%0,%1,%@"
+   li\\t%3,%X2\;and\\t%0,%1,%3"
   [(set_attr "type"	"arith,arith,multi,multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2,3")
@@ -1336,7 +1336,7 @@ move\\t%0,%z4\\n\\
    or\\t%0,%1,%2
    ori\\t%0,%1,%x2
    lui\\t%3,(%X2)>>16\;or\\t%0,%1,%3
-   li\\t%@,%X2\;or\\t%0,%1,%@"
+   li\\t%3,%X2\;or\\t%0,%1,%3"
   [(set_attr "type"	"arith,arith,multi,multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2,3")
@@ -1452,7 +1452,7 @@ move\\t%0,%z4\\n\\
    xor\\t%0,%1,%2
    xori\\t%0,%1,%x2
    lui\\t%3,(%X2)>>16\;xor\\t%0,%1,%3
-   li\\t%@,%X2\;xor\\t%0,%1,%@"
+   li\\t%3,%X2\;xor\\t%0,%1,%3"
   [(set_attr "type"	"arith,arith,multi,multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2,3")
