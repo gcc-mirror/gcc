@@ -79,8 +79,7 @@ dnl     AC_DEFINE(KR_headers)])])
 dnl AC_MSG_RESULT($ac_cv_sys_proto)              
 
 AC_HEADER_TIME
-AC_CHECK_HEADERS(limits.h unistd.h sys/time.h string.h stdlib.h \
-  sys/param.h sys/times.h)
+AC_CHECK_HEADERS(limits.h unistd.h sys/time.h string.h stdlib.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -97,8 +96,7 @@ AC_STRUCT_TM
 
 dnl Checks for library functions.
 
-AC_CHECK_FUNCS(symlink getcwd getwd lstat gethostname strerror clock \
-  getrusage times alarm getlogin getgid getuid kill link ttyname)
+AC_CHECK_FUNCS(symlink getcwd getwd lstat gethostname strerror clock getrusage)
 test $ac_cv_func_symlink = yes && MAYBES="$MAYBES symlnk_.o"
 test $ac_cv_func_lstat = yes && MAYBES="$MAYBES lstat_.o"
 test $ac_cv_func_gethostname = yes && MAYBES="$MAYBES hostnm_.o"

@@ -33,10 +33,5 @@ integer G77_kill_0 (pid, signum)
 integer G77_kill_0 (const integer *pid, const integer *signum)
 #endif
 {
-#if defined (HAVE_KILL)
   return kill ((pid_t) *pid, *signum) ? errno : 0;
-#else
-  errno = ENOSYS;
-  return -1;
-#endif
 }

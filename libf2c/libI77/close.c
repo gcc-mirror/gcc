@@ -75,10 +75,6 @@ f_exit(void)
 	static cllist xx;
 	if (! (f__init & 1))
 		return;		/* Not initialized, so no open units. */
-	/* no more I/O to be done. If this is not done, then if the
-	   program is interrupted during I/O, f_clos thinks, incorrectly,
-	   that there is an I/O recursion. */
-	f__init &= ~2;
 	if (!xx.cerr) {
 		xx.cerr=1;
 		xx.csta=NULL;

@@ -71,33 +71,3 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-/* Define if you have the <sys/param.h> header file.  */
-#undef HAVE_SYS_PARAM_H
-
-/* Define if you have the <sys/times.h> header file.  */
-#undef HAVE_SYS_TIMES_H
-
-/* Define if you have the alarm function.  */
-#undef HAVE_ALARM
-
-/* Define if you have the times function.  */
-#undef HAVE_TIMES
-
-/* Define if you have the getlogin function.  */
-#undef HAVE_GETLOGIN
-
-/* Define if you have the getgid function.  */
-#undef HAVE_GETGID
-
-/* Define if you have the getuid function.  */
-#undef HAVE_GETUID
-
-/* Define if you have the kill function.  */
-#undef HAVE_KILL
-
-/* Define if you have the link function.  */
-#undef HAVE_LINK
-
-/* Define if you have the ttyname function.  */
-#undef HAVE_TTYNAME

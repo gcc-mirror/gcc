@@ -8,7 +8,6 @@
 
 
 extern char *f__fmtbuf;
-extern int f__fmtlen;
 
 #ifdef Allow_TYQUAD
 static longint f__llx;
@@ -519,7 +518,6 @@ c_le(cilist *a)
 	if(f__init != 1) f_init();
 	f__init = 3;
 	f__fmtbuf="list io";
-	f__fmtlen=7;
 	if(a->ciunit>=MXUNIT || a->ciunit<0)
 		err(a->cierr,101,"stler");
 	f__scale=f__recpos=0;

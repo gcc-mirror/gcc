@@ -19,65 +19,59 @@
 #the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #02111-1307, USA.
 
-SHELL = /bin/sh
-
 #### Start of system configuration section. ####
 
+# $(srcdir) must be set to the g77 runtime source directory
+# (g77/f/runtime/).
+
 srcdir = @srcdir@
+VPATH = @srcdir@
+
+top_srcdir = @top_srcdir@
+
+INSTALL = @INSTALL@		# installs aren't actually done from here
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+RANLIB = @RANLIB@
+RANLIB_TEST = @RANLIB_TEST@
+
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@ @DEFS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+CGFLAGS = -g0
+
+GCC_FOR_TARGET = @CC@
+CC = $(GCC_FOR_TARGET)
+
+CROSS = @CROSS@
+
+objext = .o
+
+transform=@program_transform_name@
+
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 
-bindir = $(exec_prefix)/bin
-libdir = $(exec_prefix)/lib
-datadir = $(prefix)/lib
-mandir = $(prefix)/man
-infodir = $(prefix)/info
-includedir = $(prefix)/include
-docdir = $(datadir)/doc
-
-TO_TOPDIR = ..
-
-INSTALL = $(srcdir)/$(TO_TOPDIR)/install-sh -c
-INSTALL_PROGRAM = $(INSTALL)
-INSTALL_DATA = $(INSTALL)
-
-AR = `if test -f $(TO_TOPDIR)/binutils/ar; then \
-   echo $(TO_TOPDIR)/binutils/ar; else echo ar; fi`
+AR = ar
 AR_FLAGS = rc
 
-RANLIB = `if test -f $(TO_TOPDIR)/binutils/ranlib; then \
-   echo $(TO_TOPDIR)/binutils/ranlib; else echo ranlib; fi`
+# Directory in which to install scripts.
+bindir = $(exec_prefix)/bin
 
-MAKEINFO = `if test -f $(TO_TOPDIR)/texinfo/C/makeinfo; then \
-   echo $(TO_TOPDIR)/texinfo/C/makeinfo; else echo makeinfo; fi`
+# Directory in which to install library files.
+libdir = $(prefix)/lib
 
-CC = gcc
-CFLAGS = -g
-LIBCFLAGS = $(CFLAGS)
+# Directory in which to install documentation info files.
+infodir = $(prefix)/info
 
-# List of variables to pass to sub-makes.  This should not be needed'
-# by GNU make or Sun make (both of which pass command-line variable'
-# overrides thouh $(MAKE)) but may be needed by older versions.'
+#### End of system configuration section. ####
 
-FLAGS_TO_PASS= \
-	"SHELL=$(SHELL)" \
-	"INSTALL=$(INSTALL)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
-	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-	"prefix=$(prefix)" \
-	"exec_prefix=$(exec_prefix)" \
-	"tooldir=$(tooldir)" \
-	"AR=$(AR)" \
-	"AR_FLAGS=$(AR_FLAGS)" \
-	"CC=$(CC)" \
-	"CFLAGS=$(CFLAGS)" \
-	"RANLIB=$(RANLIB)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"PICFLAG=$(PICFLAG)" \
-	"RUNTESTFLAGS=$(RUNTESTFLAGS)"
+SHELL = /bin/sh
 
+lib = ../../libf2c.a
 
-lib = libf2c.a
+SUBDIRS = libI77 libF77 libU77
 
 MISC =	libF77/F77_aloc.o libF77/VersionF.o libF77/main.o libF77/s_rnge.o \
 	libF77/abort_.o libF77/getarg_.o libF77/iargc_.o libF77/getenv_.o \
@@ -137,7 +131,7 @@ UOBJ =  libU77/VersionU.o libU77/gerror_.o libU77/perror_.o libU77/ierrno_.o \
 	libU77/vxtidate_.o libU77/gmtime_.o libU77/fdate_.o libU77/secnds_.o \
 	libU77/bes.o libU77/dbes.o libU77/chdir_.o libU77/chmod_.o \
 	libU77/lnblnk_.o libU77/hostnm_.o libU77/rename_.o libU77/fgetc_.o \
-	libU77/fputc_.o libU77/umask_.o libU77/sys_clock_.o libU77/date_.o \
+	libU77/fputc_.o libU77/umask_.o libU77/system_clock_.o libU77/date_.o \
 	libU77/second_.o libU77/flush1_.o libU77/alarm_.o libU77/mclock_.o \
 	libU77/symlnk_.o
 
@@ -150,79 +144,110 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	secnds second sleep srand stat symlnk sclock time ttynam umask unlink \
 	vxtidt vxttim alarm
 
-all: f2c.h $(lib)
+# flags_to_pass to recursive makes & configure (hence the quoting style)
+FLAGS_TO_PASS = \
+	CROSS="$(CROSS)" \
+	AR_FLAGS="$(AR_FLAGS)" \
+	AR="$(AR)" \
+	GCCFLAGS="$(GCCFLAGS)" \
+	GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	CC="$(GCC_FOR_TARGET)" \
+	LDFLAGS="$(LDFLAGS)" \
+	RANLIB="$(RANLIB)" \
+	RANLIB_TEST="$(RANLIB_TEST)" \
+	SHELL="$(SHELL)"
 
-$(lib): stamp-libf77 stamp-libi77 stamp-libu77 stamp-libe77
-	rm -f $(lib)
-	$(AR) $(AR_FLAGS) $(lib) $(FOBJ) $(IOBJ) $(UOBJ) $(F2CEXT:%=libE77/L%.o)
-	$(RANLIB) $(lib)
+CROSS_FLAGS_TO_PASS = \
+	CROSS="$(CROSS)" \
+	AR_FLAGS="$(AR_FLAGS)" \
+	AR="$(AR)" \
+	GCCFLAGS="$(GCCFLAGS)" \
+	GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	CC="$(GCC_FOR_TARGET)" \
+	LDFLAGS="$(LDFLAGS)" \
+	RANLIB="$(RANLIB)" \
+	RANLIB_TEST="$(RANLIB_TEST)" \
+	SHELL="$(SHELL)"
 
-stamp-libi77: libI77/Makefile
-	rm -f stamp-libi77
-	cd libI77; $(MAKE) -f Makefile $(FLAGS_TO_PASS) all
-	touch stamp-libi77
+all: ../../include/f2c.h libi77 libf77 libu77 $(lib)
 
-stamp-libf77: libF77/Makefile
-	rm -f stamp-libf77
-	cd libF77; $(MAKE) -f Makefile $(FLAGS_TO_PASS) all
-	touch stamp-libf77
-
-stamp-libu77: libU77/Makefile
-	rm -f stamp-libu77
-	cd libU77; $(MAKE) -f Makefile $(FLAGS_TO_PASS) all
-	touch stamp-libu77
-
-stamp-libe77: $(srcdir)/f2cext.c
+$(lib): stamp-lib ; @true
+stamp-lib: $(FOBJ) $(IOBJ) $(UOBJ)
+	rm -f stamp-lib
+	$(AR) $(AR_FLAGS) $(lib) $?
 	rm -fr libE77
 	mkdir libE77
 	for name in $(F2CEXT); \
 	do \
 	  echo $${name}; \
-	  $(CC) -c -I. -I$(srcdir) -I../../include $(CPPFLAGS) $(CFLAGS) \
-	    $(CGFLAGS) -DL$${name} $(srcdir)/f2cext.c \
-	    -o libE77/L$${name}.o; \
+	  $(GCC_FOR_TARGET) -c -I. -I$(srcdir) -I../../include $(CPPFLAGS) $(CFLAGS) $(CGFLAGS) \
+	    -DL$${name} $(srcdir)/f2cext.c -o libE77/L$${name}$(objext); \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	done
-	touch stamp-libe77
+	$(AR) $(AR_FLAGS) $(lib) libE77/*$(object)
+	rm -fr libE77
+	if $(RANLIB_TEST); then $(RANLIB) $(lib); \
+	  else true; fi
+	touch stamp-lib
+
+libi77: libI77/Makefile
+	if test "$(CROSS)"; then \
+	  cd libI77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
+	else \
+	  cd libI77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
+	fi
+
+libf77: libF77/Makefile
+	if test "$(CROSS)"; then \
+	  cd libF77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
+	else \
+	  cd libF77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
+	fi
+
+libu77: libU77/Makefile
+	if test "$(CROSS)"; then \
+	  cd libU77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
+	else \
+	  cd libU77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
+	fi
 
 ${srcdir}/configure: ${srcdir}/configure.in
 	rm -f config.cache && cd ${srcdir} && autoconf && rm -f config.cache
 ${srcdir}/libU77/configure: ${srcdir}/libU77/configure.in
 	rm -f libU77/config.cache && cd ${srcdir}/libU77 && autoconf && rm -f config.cache
+#../include/f2c.h libI77/Makefile libF77/Makefile libU77/Makefile Makefile: ${srcdir}/Makefile.in \
+#  config.status libU77/config.status
+#	$(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status
+#	cd libU77; $(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status
 
-f2c.h: $(srcdir)/f2c.h.in
+# Extra dependencies for the targets above:
+libI77/Makefile: $(srcdir)/libI77/Makefile.in
+libF77/Makefile: $(srcdir)/libF77/Makefile.in
+libU77/Makefile: $(srcdir)/libU77/Makefile.in
+../../include/f2c.h: $(srcdir)/f2c.h.in
 
-install:
-	$(INSTALL_DATA) $(lib) $(libdir)/$(lib).n
-	( cd $(libdir) ; $(RANLIB) $(lib).n )
-	mv -f $(libdir)/$(lib).n $(libdir)/$(lib)
-	$(INSTALL_DATA) f2c.h $(includedir)/f2c.h
+#config.status: ${srcdir}/configure
+#	$(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status --recheck
+#libU77/config.status: ${srcdir}/libU77/configure
+#	cd libU77; $(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status --recheck
 
 mostlyclean:
-	-rm -f stamp-*
-	for i in libI77 libF77 libU77; do \
-	  if [ -f $$i/Makefile ]; then \
-	    cd $$i; $(MAKE) -f Makefile mostlyclean; cd ..; \
-	  fi; \
-	done
-	rm -fr libE77
+	for i in libI77 libF77 libU77; do cd $$i; $(MAKE) -f Makefile mostlyclean; cd ..;  done
 
 clean:
-	-rm -f config.log stamp-*
-	for i in libI77 libF77 libU77; do \
-	  if [ -f $$i/Makefile ]; then \
-	    cd $$i; $(MAKE) -f Makefile clean; cd ..; \
-	  fi; \
-	done
-	rm -fr libE77
+	-rm -f config.log config.cache
+	for i in libI77 libF77 libU77; do cd $$i; $(MAKE) -f Makefile clean; cd ..;  done
 
 distclean: clean
-	-rm -f Makefile config.cache lib?77/Makefile config.status lib?77/config.status lib?77/config.cache lib?77/config.h f2c.h
+	-rm -f Makefile lib?77/Makefile config.status libU77/config.status ../../include/f2c.h
 
 maintainer-clean: distclean
 	-rm -f $(srcdir)/configure $(srcdir)/libU77/configure
 
+uninstall:
+	rm ../../include/f2c.h
+
 rebuilt: ${srcdir}/configure ${srcdir}/libU77/configure
 
-.PHONY: libf77 libi77 libu77 rebuilt mostlyclean clean distclean \
-  maintainer-clean all
+.PHONY: libf77 libi77 libu77 rebuilt mostlyclean clean distclean maintainer-clean \
+  uninstall all

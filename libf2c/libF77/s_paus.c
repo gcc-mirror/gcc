@@ -60,7 +60,7 @@ s_paus(char *s, ftnlen n)
 	if( isatty(fileno(stdin)) )
 		s_1paus(stdin);
 	else {
-#if (defined (MSDOS) && !defined (GO32)) || defined (_WIN32)
+#if (defined (MSDOS) && !defined (GO32)) || defined(__CYGWIN32__)
 		FILE *fin;
 		fin = fopen("con", "r");
 		if (!fin) {

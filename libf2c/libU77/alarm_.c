@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #  include <unistd.h>
 #endif
 
-#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 #ifndef RETSIGTYPE
@@ -51,14 +50,10 @@ integer G77_alarm_0 (integer *seconds, sig_proc proc)
 #endif
 {
   int status;
-#if defined (HAVE_ALARM) && defined (SIGALRM)
+
   if (signal(SIGALRM, (sig_type)proc) == SIG_ERR)
     status = -1;
   else
     status = alarm (*seconds);
-#else /* ! HAVE_ALARM || ! SIGALRM */
-  errno = ENOSYS;
-  status = -1;
-#endif
   return status;
 }

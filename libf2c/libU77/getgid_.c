@@ -23,7 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #include <unistd.h>
 #endif
 #include <sys/types.h>
-#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 #ifdef KR_headers
@@ -32,10 +31,5 @@ integer G77_getgid_0 ()
 integer G77_getgid_0 (void)
 #endif
 {
-#if defined (HAVE_GETGID)
   return getgid ();
-#else
-  errno = ENOSYS;
-  return -1;
-#endif
 }

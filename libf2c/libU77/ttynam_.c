@@ -19,7 +19,6 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <sys/types.h>
 #if STDC_HEADERS
 #  include <stdlib.h>
 #endif
@@ -32,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #else
 #  include <strings.h>
 #endif
-#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 #ifdef KR_headers
@@ -46,7 +44,6 @@ extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
 /* Character */ void G77_ttynam_0 (char *ret_val, ftnlen ret_val_len, integer *lunit)
 #endif
 {
-#if defined (HAVE_TTYNAME)
   size_t i;
   char *p;
 
@@ -57,8 +54,4 @@ extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
   } else {
     s_copy (ret_val, " ", ret_val_len, 1);
   }
-#else
-  errno = ENOSYS;
-  return -1;
-#endif
 }

@@ -1,7 +1,7 @@
 # Makefile for GNU F77 compiler runtime.
 # Copyright 1990 - 1994 by AT&T Bell Laboratories and Bellcore (see the
 # file `Notice').
-# Portions of this file Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+#   Portions of this file Copyright (C) 1995, 1996 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -28,18 +28,28 @@ VPATH = @srcdir@
 
 #### Start of system configuration section. ####
 
+# The _FOR_TARGET things are appropriate for a cross-make, passed by the
+# superior makefile
+GCC_FOR_TARGET = @CC@
+CC = $(GCC_FOR_TARGET)
+CFLAGS = @CFLAGS@ $(GCC_FLAGS)
 CPPFLAGS = @CPPFLAGS@
 DEFS = @DEFS@
+CGFLAGS = -g0
 # f2c.h should already be installed in xgcc's include directory but add that
 # to -I anyhow in case not using xgcc.
-ALL_CFLAGS = -I. -I$(srcdir) -I.. $(CPPFLAGS) $(DEFS) $(CFLAGS)
+ALL_CFLAGS = -I. -I$(srcdir) -I../../../include $(CPPFLAGS) $(DEFS) $(CFLAGS)
+AR = @AR@
+AR_FLAGS = rc
+RANLIB = @RANLIB@
+RANLIB_TEST = @RANLIB_TEST@
 CROSS = @CROSS@
 
 .SUFFIXES:
 .SUFFIXES: .c .o
 
 .c.o:
-	$(CC) -c -DSkip_f2c_Undefs -DAllow_TYQUAD $(ALL_CFLAGS) $<
+	$(CC) -c -DSkip_f2c_Undefs -DAllow_TYQUAD $(ALL_CFLAGS) $(CGFLAGS) $<
 
 OBJ =	VersionI.o backspace.o close.o dfe.o dolio.o due.o endfile.o err.o \
 	fmt.o fmtlib.o iio.o ilnw.o inquire.o lread.o lwrite.o open.o \
@@ -47,7 +57,7 @@ OBJ =	VersionI.o backspace.o close.o dfe.o dolio.o due.o endfile.o err.o \
 	util.o wref.o wrtfmt.o wsfe.o wsle.o wsne.o xwsne.o \
 	ftell_.o
 
-F2C_H = ../f2c.h
+F2C_H = ../../../include/f2c.h
 
 all: $(OBJ)
 

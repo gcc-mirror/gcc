@@ -15,7 +15,7 @@
 #endif
 #endif
 
- double
+ float
 #ifdef KR_headers
 dtime_(tarray) float *tarray;
 #else

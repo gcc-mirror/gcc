@@ -23,17 +23,12 @@ Boston, MA 02111-1307, USA.  */
 #  include <unistd.h>
 #endif
 #include <sys/types.h>
-#if HAVE_SYS_TIMES_H
-#  include <sys/times.h>
-#endif
-#if HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-#endif
+#include <sys/times.h>
+#include <sys/param.h>
 #if HAVE_GETRUSAGE
 #  include <sys/time.h>
 #  include <sys/resource.h>
 #endif
-#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 /* For dtime, etime we store the clock tick parameter (clk_tck) the
@@ -50,7 +45,6 @@ double G77_etime_0 (tarray)
 double G77_etime_0 (real tarray[2])
 #endif
 {
-#if defined (HAVE_GETRUSAGE) || defined (HAVE_TIMES)
   /* The getrusage version is only the default for convenience. */
 #ifdef HAVE_GETRUSAGE
   struct rusage rbuff;
@@ -72,8 +66,6 @@ double G77_etime_0 (real tarray[2])
   if (! clk_tck) clk_tck = CLOCKS_PER_SECOND;
 #  elif defined CLK_TCK
   if (! clk_tck) clk_tck = CLK_TCK;
-#  elif defined HZ
-  if (! clk_tck) clk_tck = HZ;
 #  elif defined HAVE_GETRUSAGE
 #  else
   #error Dont know clock tick length
@@ -83,8 +75,4 @@ double G77_etime_0 (real tarray[2])
   tarray[1] = (float) buffer.tms_stime / (float)clk_tck;
 #endif /* HAVE_GETRUSAGE */
   return (tarray[0]+tarray[1]);
-#else /* ! HAVE_GETRUSAGE && ! HAVE_TIMES */
-  errno = ENOSYS;
-  return 0.0;
-#endif /* ! HAVE_GETRUSAGE && ! HAVE_TIMES */
 }

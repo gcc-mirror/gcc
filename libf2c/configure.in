@@ -118,19 +118,6 @@ AC_CACHE_VAL(g77_cv_sys_cygwin32,
   g77_cv_sys_cygwin32=no))
 AC_MSG_RESULT($g77_cv_sys_cygwin32)
 
-# ditto for mingw32.
-AC_MSG_CHECKING([for mingw32])
-AC_CACHE_VAL(g77_cv_sys_mingw32,
-  AC_EGREP_CPP(yes,
-  [#ifdef __MINGW32__
-  yes
-#endif
-],
-  g77_cv_sys_mingw32=yes,
-  g77_cv_sys_mingw32=no))
-AC_MSG_RESULT($g77_cv_sys_mingw32)
-
-
 AC_CHECK_HEADER(fcntl.h,
    test $g77_cv_header_posix = yes && AC_DEFINE(_POSIX_SOURCE),
    AC_DEFINE(NO_FCNTL) AC_DEFINE(OPEN_DECL))
@@ -154,12 +141,10 @@ fi
 
 # This should always succeed on unix.
 # Apparently positive result on cygwin loses re. NON_UNIX_STDIO
-# (as of cygwin b18). Likewise on mingw.
+# (as of cygwin b18).
 AC_CHECK_FUNC(fstat)
 AC_MSG_CHECKING([need for NON_UNIX_STDIO])
-if test $g77_cv_sys_cygwin32 = yes \
-  || test $g77_cv_sys_mingw32 = yes \
-  || test $ac_cv_func_fstat = no; then
+if test $g77_cv_sys_cygwin32 = yes || test $ac_cv_func_fstat = no; then
   AC_MSG_RESULT(yes)
   AC_DEFINE(NON_UNIX_STDIO)
 else
@@ -230,7 +215,7 @@ AC_EGREP_CPP(yes,
   yes
 #endif
 ], is_unix=yes, is_unix=no)
-if test $g77_cv_sys_cygwin32 = yes || test $g77_cv_sys_mingw32 = yes; then
+if test $g77_cv_sys_cygwin32 = yes; then
   AC_MSG_RESULT(no)
 else
   if test $is_unix = yes; then
@@ -374,8 +359,7 @@ test -f libF77/makefile && mv libF77/makefile  libF77/makefile.ori
 test -f libI77/makefile && mv libI77/makefile  libI77/makefile.ori
 test -f libU77/makefile && mv libU77/makefile  libU77/makefile.ori
 
-AC_CONFIG_SUBDIRS(libU77)
-AC_OUTPUT(Makefile f2c.h libI77/Makefile libF77/Makefile)
+AC_OUTPUT(Makefile ../../include/f2c.h:f2c.h.in libI77/Makefile libF77/Makefile libU77/Makefile)
 
 dnl We might have configuration options to:
 dnl * allow non-standard string concatenation (use libF77 s_catow.o,

@@ -19,9 +19,7 @@ extern "C" {
 extern int creat(const char*,int), open(const char*,int);
 #endif
 extern int close(int);
-#if !(defined(_WIN32) && !defined(__CYGWIN32__))
 extern int read(int,void*,size_t), write(int,void*,size_t);
-#endif
 extern int unlink(const char*);
 #ifndef _POSIX_SOURCE
 #ifndef NON_UNIX_STDIO

@@ -28,9 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #  include <unistd.h>
 #endif
 #include <errno.h>
-#if HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-#endif
+#include <sys/param.h>
 #include "f2c.h"
 
 #ifdef KR_headers

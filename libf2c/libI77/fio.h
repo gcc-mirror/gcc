@@ -4,9 +4,6 @@
 /* ANSI C */
 #include <stddef.h>
 #endif
-#ifdef STDC_HEADERS
-#include <string.h>
-#endif
 
 #ifndef SEEK_SET
 #define SEEK_SET 0
