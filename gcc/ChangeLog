@@ -1,3 +1,11 @@
+2005-01-05  J"orn Rennecke <joern.rennecke@st.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/16482
+	* lcm.c (create_pre_exit): New.
+	(optimize_mode_switching): In MODE_ENTRY / MODE_EXIT case, set
+	ENTRY_EXIT_EXTRA to 3.  Use create_pre_exit.
+
 2004-01-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (TARGET_OPTIONS): Correctly record -mhard-float and
