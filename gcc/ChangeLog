@@ -1,5 +1,12 @@
 2002-07-21  Richard Henderson  <rth@redhat.com>
 
+	* loop.h (LOOP_AUTO_UNROLL): Rename from LOOP_FIRST_PASS.
+	* loop.c (strength_reduce): Update.
+	* toplev.c (rest_of_compilation): Do unrolling in the first
+	loop pass, not the second.
+
+2002-07-21  Richard Henderson  <rth@redhat.com>
+
 	* emit-rtl.c (set_mem_attributes): Preserve indirection of PARM_DECL
 	when flag_argument_noalias == 2.
 	* alias.c (nonoverlapping_memrefs_p): Handle that.
