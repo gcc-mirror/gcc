@@ -3184,10 +3184,9 @@ move\\t%0,%z4\\n\\
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
+  "reload_completed && !TARGET_64BIT && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
-
   [(set (subreg:SI (match_dup 0) 0) (subreg:SI (match_dup 1) 0))
    (set (subreg:SI (match_dup 0) 1) (subreg:SI (match_dup 1) 1))]
   "")
