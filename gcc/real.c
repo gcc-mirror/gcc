@@ -763,8 +763,8 @@ do_multiply (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
 	      continue;
 	    }
 
+	  memset (&u, 0, sizeof (u));
 	  u.class = rvc_normal;
-	  u.sign = 0;
 	  u.exp = exp;
 
 	  for (k = j; k < SIGSZ * 2; k += 2)
