@@ -1,3 +1,7 @@
+2005-01-07  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md (sse_loadhps splitter): Fix operand number typo.
+
 2005-01-07  Richard SAndiford  <rsandifo@redhat.com>
 
 	* tree.h (IS_EXPR_CODE_CLASS): Use a straight-forward range check.
