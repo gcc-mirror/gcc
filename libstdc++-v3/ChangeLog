@@ -1,3 +1,10 @@
+2004-10-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/sstream.tcc (seekpos): Minor rearrangement of two
+	conditionals consistently with seekoff.
+	* include/std/std_sstream.h (setbuf): Avoid a string temporary.
+	(_M_sync): Simplify a bit, clean-up comment.
+
 2004-09-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/10975 (DR 453)
