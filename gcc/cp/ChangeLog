@@ -1,3 +1,16 @@
+Mon Jan 12 01:35:18 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_new_1): Split out from build_new.
+	(build_new): Just return a NEW_EXPR.
+	* expr.c (cplus_expand_expr): Handle NEW_EXPR.
+
+	* decl2.c (get_temp_regvar): Tweak.
+
+	* cp-tree.h (TREE_CALLS_NEW): Comment out.
+	* class.c (resolves_to_fixed_type_p): Remove use.
+	* method.c (build_opfncall): Likewise.
+	* call.c (build_new_op): Likewise.
+
 Wed Jan  7 23:47:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* exception.cc (__eh_alloc, __eh_free): New fns.

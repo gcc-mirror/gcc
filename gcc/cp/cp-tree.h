@@ -1116,10 +1116,12 @@ struct lang_decl
    using a twos-complement negated operand.  */
 #define TREE_NEGATED_INT(NODE) (TREE_LANG_FLAG_0 (NODE))
 
+#if 0				/* UNUSED */
 /* Nonzero in any kind of _EXPR or _REF node means that it is a call
    to a storage allocation routine.  If, later, alternate storage
    is found to hold the object, this call can be ignored.  */
 #define TREE_CALLS_NEW(NODE) (TREE_LANG_FLAG_1 (NODE))
+#endif
 
 /* Nonzero in any kind of _TYPE that uses multiple inheritance
    or virtual baseclasses.  */
@@ -2227,6 +2229,7 @@ extern tree build_offset_ref			PROTO((tree, tree));
 extern tree resolve_offset_ref			PROTO((tree));
 extern tree decl_constant_value			PROTO((tree));
 extern tree build_new				PROTO((tree, tree, tree, int));
+extern tree build_new_1				PROTO((tree));
 extern tree expand_vec_init			PROTO((tree, tree, tree, tree, int));
 extern tree build_x_delete			PROTO((tree, tree, int, tree));
 extern tree build_delete			PROTO((tree, tree, tree, int, int));

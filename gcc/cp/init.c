@@ -2246,12 +2246,9 @@ build_new (placement, decl, init, use_global_new)
      tree decl, init;
      int use_global_new;
 {
-  tree type, true_type, size, rval;
-  tree nelts;
-  tree alloc_expr, alloc_node;
+  tree type, rval;
+  tree nelts, t;
   int has_array = 0;
-  enum tree_code code = NEW_EXPR;
-  int use_cookie, nothrow, check_new;
 
   tree pending_sizes = NULL_TREE;
 
@@ -2326,7 +2323,7 @@ build_new (placement, decl, init, use_global_new)
       else
 	TREE_VALUE (decl) = absdcl;
 
-      type = true_type = groktypename (decl);
+      type = groktypename (decl);
       if (! type || type == error_mark_node)
 	{
 	  immediate_size_expand = old_immediate_size_expand;
@@ -2355,23 +2352,19 @@ build_new (placement, decl, init, use_global_new)
 	  my_friendly_assert (TREE_CODE (decl) == TYPE_DECL, 215);
 	  type = TREE_TYPE (decl);
 	}
-      true_type = type;
     }
   else if (TREE_CODE (decl) == TYPE_DECL)
     {
       type = TREE_TYPE (decl);
-      true_type = type;
     }
   else
     {
       type = decl;
-      true_type = type;
       decl = TYPE_MAIN_DECL (type);
     }
 
   if (processing_template_decl)
     {
-      tree t;
       if (has_array)
 	t = min_tree_cons (min_tree_cons (NULL_TREE, type, NULL_TREE),
 			   build_min_nt (ARRAY_REF, NULL_TREE, nelts),
@@ -2390,7 +2383,7 @@ build_new (placement, decl, init, use_global_new)
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       error ("new cannot be applied to a reference type");
-      type = true_type = TREE_TYPE (type);
+      type = TREE_TYPE (type);
     }
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -2406,8 +2399,57 @@ build_new (placement, decl, init, use_global_new)
     {
       nelts = array_type_nelts_top (type);
       has_array = 1;
-      type = true_type = TREE_TYPE (type);
+      type = TREE_TYPE (type);
     }
+
+  if (has_array)
+    t = build_nt (ARRAY_REF, type, nelts);
+  else
+    t = type;
+
+  rval = build (NEW_EXPR, build_pointer_type (type), placement, t, init);
+  NEW_EXPR_USE_GLOBAL (rval) = use_global_new;
+  TREE_SIDE_EFFECTS (rval) = 1;
+
+  /* Wrap it in a NOP_EXPR so warn_if_unused_value doesn't complain.  */
+  rval = build1 (NOP_EXPR, TREE_TYPE (rval), rval);
+  TREE_NO_UNUSED_WARNING (rval) = 1;
+
+  if (pending_sizes)
+    rval = build_compound_expr (chainon (pending_sizes,
+					 build_expr_list (NULL_TREE, rval)));
+
+  return rval;
+}
+
+/* Called from cplus_expand_expr when expanding a NEW_EXPR.  The return
+   value is immediately handed to expand_expr.  */
+
+tree
+build_new_1 (exp)
+     tree exp;
+{
+  tree placement, init, t;
+  tree type, true_type, size, rval;
+  tree nelts;
+  tree alloc_expr, alloc_node;
+  int has_array = 0;
+  enum tree_code code = NEW_EXPR;
+  int use_cookie, nothrow, check_new;
+  int use_global_new;
+
+  placement = TREE_OPERAND (exp, 0);
+  type = TREE_OPERAND (exp, 1);
+  init = TREE_OPERAND (exp, 2);
+  use_global_new = NEW_EXPR_USE_GLOBAL (exp);
+
+  if (TREE_CODE (type) == ARRAY_REF)
+    {
+      has_array = 1;
+      nelts = TREE_OPERAND (type, 1);
+      type = TREE_OPERAND (type, 0);
+    }
+  true_type = type;
 
   if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
     type = TYPE_MAIN_VARIANT (type);
@@ -2543,21 +2585,21 @@ build_new (placement, decl, init, use_global_new)
     {
       tree extra = BI_header_size;
       tree cookie, exp1;
-      rval = cp_convert (ptr_type_node, rval);    /* convert to void * first */
-      rval = cp_convert (string_type_node, rval); /* lets not add void* and ints */
+      rval = convert (string_type_node, rval); /* for ptr arithmetic */
       rval = save_expr (build_binary_op (PLUS_EXPR, rval, extra, 1));
       /* Store header info.  */
-      cookie = build_indirect_ref (build (MINUS_EXPR, build_pointer_type (BI_header_type),
+      cookie = build_indirect_ref (build (MINUS_EXPR,
+					  build_pointer_type (BI_header_type),
 					  rval, extra), NULL_PTR);
       exp1 = build (MODIFY_EXPR, void_type_node,
-		    build_component_ref (cookie, nc_nelts_field_id, NULL_TREE, 0),
+		    build_component_ref (cookie, nc_nelts_field_id,
+					 NULL_TREE, 0),
 		    nelts);
       TREE_SIDE_EFFECTS (exp1) = 1;
       rval = cp_convert (build_pointer_type (true_type), rval);
-      TREE_CALLS_NEW (rval) = 1;
-      TREE_SIDE_EFFECTS (rval) = 1;
-      rval = build_compound_expr (expr_tree_cons (NULL_TREE, exp1,
-					     build_expr_list (NULL_TREE, rval)));
+      rval = build_compound_expr
+	(expr_tree_cons (NULL_TREE, exp1,
+			 build_expr_list (NULL_TREE, rval)));
     }
 
   if (rval == error_mark_node)
@@ -2596,7 +2638,6 @@ build_new (placement, decl, init, use_global_new)
 			rval);
 	  TREE_NO_UNUSED_WARNING (rval) = 1;
 	  TREE_SIDE_EFFECTS (rval) = 1;
-	  TREE_CALLS_NEW (rval) = 1;
 	}
       else if (! has_array)
 	{
@@ -2631,88 +2672,6 @@ build_new (placement, decl, init, use_global_new)
       else
 	rval = build (VEC_INIT_EXPR, TREE_TYPE (rval),
 		      save_expr (rval), init, nelts);
-#if 0	
-      else if (current_function_decl == NULL_TREE)
-	{
-	  extern tree static_aggregates;
-
-	  /* In case of static initialization, SAVE_EXPR is good enough.  */
-	  rval = save_expr (rval);
-	  rval = copy_to_permanent (rval);
-	  init = copy_to_permanent (init);
-	  init = expand_vec_init (decl, rval,
-				  build_binary_op (MINUS_EXPR, nelts,
-						   integer_one_node, 1),
-				  init, 0);
-	  init = copy_to_permanent (init);
-	  static_aggregates = perm_tree_cons (init, rval, static_aggregates);
-	}
-      else
-	{
-	  /* Have to wrap this in RTL_EXPR for two cases:
-	     in base or member initialization and if we
-	     are a branch of a ?: operator.  Since we
-	     can't easily know the latter, just do it always.  */
-	  tree xval = make_node (RTL_EXPR);
-
-	  /* If we want to check the value of the allocation expression,
-             and the number of elements in the array is not a constant, we
-             *must* expand the SAVE_EXPR for nelts in alloc_expr before we
-             expand it in the actual initialization.  So we need to build up
-             an RTL_EXPR for alloc_expr.  Sigh.  */
-	  if (alloc_expr && ! TREE_CONSTANT (nelts))
-	    {
-	      tree xval = make_node (RTL_EXPR);
-	      rtx rtxval;
-	      TREE_TYPE (xval) = TREE_TYPE (alloc_expr);
-	      do_pending_stack_adjust ();
-	      start_sequence_for_rtl_expr (xval);
-	      emit_note (0, -1);
-	      rtxval = expand_expr (alloc_expr, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-	      do_pending_stack_adjust ();
-	      TREE_SIDE_EFFECTS (xval) = 1;
-	      RTL_EXPR_SEQUENCE (xval) = get_insns ();
-	      end_sequence ();
-	      RTL_EXPR_RTL (xval) = rtxval;
-	      TREE_TYPE (xval) = TREE_TYPE (alloc_expr);
-	      alloc_expr = xval;
-	    }
-
-	  TREE_TYPE (xval) = TREE_TYPE (rval);
-	  do_pending_stack_adjust ();
-	  start_sequence_for_rtl_expr (xval);
-
-	  /* As a matter of principle, `start_sequence' should do this.  */
-	  emit_note (0, -1);
-
-	  rval = save_expr (rval);
-	  rval = expand_vec_init (decl, rval,
-				  build_binary_op (MINUS_EXPR, nelts,
-						   integer_one_node, 1),
-				  init, 0);
-
-	  do_pending_stack_adjust ();
-
-	  TREE_SIDE_EFFECTS (xval) = 1;
-	  TREE_CALLS_NEW (xval) = 1;
-	  RTL_EXPR_SEQUENCE (xval) = get_insns ();
-	  end_sequence ();
-
-	  if (TREE_CODE (rval) == SAVE_EXPR)
-	    {
-	      /* Errors may cause this to not get evaluated.  */
-	      if (SAVE_EXPR_RTL (rval) == 0)
-		SAVE_EXPR_RTL (rval) = const0_rtx;
-	      RTL_EXPR_RTL (xval) = SAVE_EXPR_RTL (rval);
-	    }
-	  else
-	    {
-	      my_friendly_assert (TREE_CODE (rval) == VAR_DECL, 217);
-	      RTL_EXPR_RTL (xval) = DECL_RTL (rval);
-	    }
-	  rval = xval;
-	}
-#endif
 
       /* If any part of the object initialization terminates by throwing
 	 an exception and the new-expression does not contain a
@@ -2810,10 +2769,6 @@ build_new (placement, decl, init, use_global_new)
       /* The type of new int [3][3] is not int *, but int [3] * */
       rval = build_c_cast (build_pointer_type (type), rval);
     }
-
-  if (pending_sizes)
-    rval = build_compound_expr (chainon (pending_sizes,
-					 build_expr_list (NULL_TREE, rval)));
 
   return rval;
 }
