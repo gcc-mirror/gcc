@@ -1,5 +1,10 @@
 2000-01-05  Nathan Sidwell  <nathan@acm.org>
 
+	* decl2.c (lookup_arg_dependent): Deal with FNS not being a
+	FUNCTION_DECL.
+
+2000-01-05  Nathan Sidwell  <nathan@acm.org>
+
 	* typeck.c (build_static_cast): Don't strip target qualifiers
 	when casting from a class.
 
