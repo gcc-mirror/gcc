@@ -1,3 +1,9 @@
+2005-01-18  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_fp_movcc): Remove TARGET_IEEE_FP
+	special case for sse.
+	* config/i386/predicates.md (sse_comparison_operator): Likewise.
+
 2005-01-18  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-inline.c (estimate_num_insns_1): Added cases for
