@@ -220,7 +220,6 @@ public class ObjectOutputStream extends OutputStream
 	      {
 		Class cl = (Class)obj;
 		ObjectStreamClass osc = ObjectStreamClass.lookupForClassObject(cl);
-		assignNewHandle(obj);
 		realOutput.writeByte(TC_CLASS);
 		if (!osc.isProxyClass)
 		  {
@@ -241,6 +240,7 @@ public class ObjectOutputStream extends OutputStream
 		    
 		    writeObject(osc.getSuper());
 		  }
+		assignNewHandle(obj);
 		break;
 	      }
 

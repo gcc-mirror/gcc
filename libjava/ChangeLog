@@ -1,3 +1,12 @@
+2004-11-06  Mattias Rehnberg  <Mattias.Rehnberg@home.se>
+
+	* java/io/Vector.java
+	(writeObject): New function to serialized output thread safe.
+
+	* java/io/ObjectOutputStream.java
+	(writeObject): Move the assignment of the class handle to after
+	the assignment of class descriptor handle.
+
 2004-11-06  Robert Schuster <thebohemian@gmx.net>
 
 	Fixes documentation and indentation
