@@ -187,14 +187,14 @@ static int rs6000_adjust_priority PARAMS ((rtx, int));
 static int rs6000_issue_rate PARAMS ((void));
 
 static void rs6000_init_builtins PARAMS ((void));
-static void altivec_init_builtins PARAMS ((void));
+static rtx rs6000_expand_unop_builtin PARAMS ((enum insn_code, tree, rtx));
+static rtx rs6000_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
+static rtx rs6000_expand_ternop_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx rs6000_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
-static rtx altivec_expand_builtin PARAMS ((tree, rtx));
-static rtx altivec_expand_unop_builtin PARAMS ((enum insn_code, tree, rtx));
-static rtx altivec_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
+static void altivec_init_builtins PARAMS ((void));
+static rtx altivec_expand_builtin PARAMS ((tree, rtx, bool *));
 static rtx altivec_expand_abs_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_predicate_builtin PARAMS ((enum insn_code, const char *, tree, rtx));
-static rtx altivec_expand_ternop_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_stv_builtin PARAMS ((enum insn_code, tree));
 static void rs6000_parse_abi_options PARAMS ((void));
 static void rs6000_parse_vrsave_option PARAMS ((void));
@@ -3567,7 +3567,7 @@ static const struct builtin_description bdesc_1arg[] =
 };
 
 static rtx
-altivec_expand_unop_builtin (icode, arglist, target)
+rs6000_expand_unop_builtin (icode, arglist, target)
      enum insn_code icode;
      tree arglist;
      rtx target;
@@ -3652,7 +3652,7 @@ altivec_expand_abs_builtin (icode, arglist, target)
 }
 
 static rtx
-altivec_expand_binop_builtin (icode, arglist, target)
+rs6000_expand_binop_builtin (icode, arglist, target)
      enum insn_code icode;
      tree arglist;
      rtx target;
@@ -3826,7 +3826,7 @@ altivec_expand_stv_builtin (icode, arglist)
 }
 
 static rtx
-altivec_expand_ternop_builtin (icode, arglist, target)
+rs6000_expand_ternop_builtin (icode, arglist, target)
      enum insn_code icode;
      tree arglist;
      rtx target;
@@ -3886,10 +3886,14 @@ altivec_expand_ternop_builtin (icode, arglist, target)
 
   return target;
 }
+
+/* Expand the builtin in EXP and store the result in TARGET.  Store
+   true in *EXPANDEDP if we found a builtin to expand.  */
 static rtx
-altivec_expand_builtin (exp, target)
+altivec_expand_builtin (exp, target, expandedp)
      tree exp;
      rtx target;
+     bool *expandedp;
 {
   struct builtin_description *d;
   struct builtin_description_predicates *dp;
@@ -3901,7 +3905,9 @@ altivec_expand_builtin (exp, target)
   rtx op0, op1, op2, pat;
   enum machine_mode tmode, mode0, mode1, mode2;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
-  
+
+  *expandedp = true;
+
   switch (fcode)
     {
     case ALTIVEC_BUILTIN_LD_INTERNAL_16qi:
@@ -4182,18 +4188,6 @@ altivec_expand_builtin (exp, target)
     if (d->code == fcode)
       return altivec_expand_abs_builtin (d->icode, arglist, target);
 
-  /* Handle simple unary operations.  */
-  d = (struct builtin_description *) bdesc_1arg;
-  for (i = 0; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
-    if (d->code == fcode)
-      return altivec_expand_unop_builtin (d->icode, arglist, target);
-
-  /* Handle simple binary operations.  */
-  d = (struct builtin_description *) bdesc_2arg;
-  for (i = 0; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
-    if (d->code == fcode)
-      return altivec_expand_binop_builtin (d->icode, arglist, target);
-
   /* Expand the AltiVec predicates.  */
   dp = (struct builtin_description_predicates *) bdesc_altivec_preds;
   for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, dp++)
@@ -4204,38 +4198,32 @@ altivec_expand_builtin (exp, target)
   switch (fcode)
     {
     case ALTIVEC_BUILTIN_LVSL:
-      return altivec_expand_binop_builtin (CODE_FOR_altivec_lvsl,
+      return rs6000_expand_binop_builtin (CODE_FOR_altivec_lvsl,
 					   arglist, target);
     case ALTIVEC_BUILTIN_LVSR:
-      return altivec_expand_binop_builtin (CODE_FOR_altivec_lvsr,
-					   arglist, target);
+      return rs6000_expand_binop_builtin (CODE_FOR_altivec_lvsr,
+					  arglist, target);
     case ALTIVEC_BUILTIN_LVEBX:
-      return altivec_expand_binop_builtin (CODE_FOR_altivec_lvebx,
-					   arglist, target);
+      return rs6000_expand_binop_builtin (CODE_FOR_altivec_lvebx,
+					  arglist, target);
     case ALTIVEC_BUILTIN_LVEHX:
-      return altivec_expand_binop_builtin (CODE_FOR_altivec_lvehx,
-					   arglist, target);
+      return rs6000_expand_binop_builtin (CODE_FOR_altivec_lvehx,
+					  arglist, target);
     case ALTIVEC_BUILTIN_LVEWX:
-      return altivec_expand_binop_builtin (CODE_FOR_altivec_lvewx,
-					   arglist, target);
+      return rs6000_expand_binop_builtin (CODE_FOR_altivec_lvewx,
+					  arglist, target);
     case ALTIVEC_BUILTIN_LVXL:
-      return altivec_expand_binop_builtin (CODE_FOR_altivec_lvxl,
-					   arglist, target);
+      return rs6000_expand_binop_builtin (CODE_FOR_altivec_lvxl,
+					  arglist, target);
     case ALTIVEC_BUILTIN_LVX:
-      return altivec_expand_binop_builtin (CODE_FOR_altivec_lvx,
-					   arglist, target);
+      return rs6000_expand_binop_builtin (CODE_FOR_altivec_lvx,
+					  arglist, target);
     default:
       break;
       /* Fall through.  */
     }
 
-  /* Handle simple ternary operations.  */
-  d = (struct builtin_description *) bdesc_3arg;
-  for (i = 0; i < ARRAY_SIZE  (bdesc_3arg); i++, d++)
-    if (d->code == fcode)
-      return altivec_expand_ternop_builtin (d->icode, arglist, target);
-
-  abort ();
+  *expandedp = false;
   return NULL_RTX;
 }
 
@@ -4253,10 +4241,42 @@ rs6000_expand_builtin (exp, target, subtarget, mode, ignore)
      enum machine_mode mode ATTRIBUTE_UNUSED;
      int ignore ATTRIBUTE_UNUSED;
 {
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  struct builtin_description *d;
+  size_t i;
+  rtx ret;
+  bool success;
+  
   if (TARGET_ALTIVEC)
-    return altivec_expand_builtin (exp, target);
+    {
+      ret = altivec_expand_builtin (exp, target, &success);
+
+      if (success)
+	return ret;
+    }
+
+  /* Handle simple unary operations.  */
+  d = (struct builtin_description *) bdesc_1arg;
+  for (i = 0; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
+    if (d->code == fcode)
+      return rs6000_expand_unop_builtin (d->icode, arglist, target);
+
+  /* Handle simple binary operations.  */
+  d = (struct builtin_description *) bdesc_2arg;
+  for (i = 0; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
+    if (d->code == fcode)
+      return rs6000_expand_binop_builtin (d->icode, arglist, target);
+
+  /* Handle simple ternary operations.  */
+  d = (struct builtin_description *) bdesc_3arg;
+  for (i = 0; i < ARRAY_SIZE  (bdesc_3arg); i++, d++)
+    if (d->code == fcode)
+      return rs6000_expand_ternop_builtin (d->icode, arglist, target);
 
   abort ();
+  return NULL_RTX;
 }
 
 static void
