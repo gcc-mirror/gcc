@@ -13,6 +13,10 @@ Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Thu Mar 30 13:30:40 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* c-parse.in (cast_expr): Move change from March 21 into c-parse.in
+	since it is used to generate c-parse.y.
+	* objc-parse.c, objc-parse.y: Regenerated.
+
 	* function.c (expand_function_end): Pass alignment argument to
 	emit_block_move in bits, not bytes.
 
