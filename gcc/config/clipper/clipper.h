@@ -483,6 +483,7 @@ do									      \
   if ((CUM).num < 2							      \
       && (GET_MODE_CLASS(MODE)==MODE_INT || GET_MODE_CLASS(MODE)==MODE_FLOAT) \
       && (GET_MODE_SIZE (MODE) <= 8)					      \
+      && ((TYPE) == NULL || !AGGREGATE_TYPE_P(TYPE))			      \
       && ((MODE) != DImode || (CUM).num == 0))				      \
     {									      \
       reg = 1;								      \
@@ -522,6 +523,7 @@ do									      \
   (((CUM).num < 2							     \
     && (GET_MODE_CLASS(MODE)==MODE_INT || GET_MODE_CLASS(MODE)==MODE_FLOAT)  \
     && (GET_MODE_SIZE (MODE) <= 8)					     \
+    && ((TYPE) == NULL || !AGGREGATE_TYPE_P(TYPE))			     \
     && ((MODE) != DImode || (CUM).num == 0))				     \
    ? gen_rtx (REG, (MODE),						     \
 	      GET_MODE_CLASS(MODE) == MODE_FLOAT ? (CUM).num+16 : (CUM).num) \
@@ -600,17 +602,18 @@ do									      \
 
 #define TRAMPOLINE_TEMPLATE(FILE)					      \
 {									      \
-  fputs ("\tcall   sp,.+4\n", FILE);					      \
+  fputs ("\t.word  0x459F,0x0004\t# call   sp,.+4\n", FILE);		      \
   fputs ("\tmovw   (sp),r3\n", FILE);					      \
   fputs ("\taddq   $4,sp\n", FILE);					      \
-  fputs ("\tloadw  32(r3),r2\n", FILE);					      \
-  fputs ("\tloadw  36(r3),r3\n", FILE);					      \
+  fputs ("\tloadw  20(r3),r2\n", FILE);					      \
+  fputs ("\tloadw  24(r3),r3\n", FILE);					      \
   fputs ("\tb      (r3)\n", FILE);					      \
+  fputs ("\t.long  0,0\n", FILE);					      \
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE 44
+#define TRAMPOLINE_SIZE 32
 
 /* Alignment required for a trampoline.  128 is used to find the
    beginning of a line in the instruction cache and to allow for
@@ -628,8 +631,8 @@ do									      \
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 36)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 40)), FNADDR); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 24)), CXT); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 28)), FNADDR); \
 }
 
 /* Addressing modes, and classification of registers for them.  */
