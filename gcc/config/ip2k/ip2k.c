@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on Ubicom IP2022
    Communications Controller.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc and Ubicom, Inc.
 
    This file is part of GNU CC.
@@ -74,6 +74,11 @@ static void mdr_try_wreg_elim PARAMS ((rtx));
 static int ip2k_check_can_adjust_stack_ref PARAMS ((rtx, int));
 static void ip2k_adjust_stack_ref PARAMS ((rtx *, int));
 static int ip2k_xexp_not_uses_reg_for_mem PARAMS ((rtx, unsigned int));
+static tree ip2k_handle_progmem_attribute PARAMS ((tree *, tree, tree, int,
+						   bool *));
+static tree ip2k_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int,
+						  bool *));
+const struct attribute_spec ip2k_attribute_table[];
 
 
 /* Initialize the GCC target structure.  */
@@ -91,6 +96,9 @@ static int ip2k_xexp_not_uses_reg_for_mem PARAMS ((rtx, unsigned int));
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO encode_section_info
+
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE ip2k_attribute_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3145,51 +3153,82 @@ class_likely_spilled_p(c)
 	  || c == PTR_REGS);
 }
 
-/* Only `progmem' attribute valid for type.  */
+/* Valid attributes:
+   progmem - put data to program memory;
+   naked     - don't generate function prologue/epilogue and `ret' command.
 
-int
-valid_machine_type_attribute(type, attributes, identifier, args)
-     tree type ATTRIBUTE_UNUSED;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args ATTRIBUTE_UNUSED;
+   Only `progmem' attribute valid for type.  */
+
+const struct attribute_spec ip2k_attribute_table[] =
 {
-  return is_attribute_p ("progmem", identifier);
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "progmem",   0, 0, false, false, false,  ip2k_handle_progmem_attribute },
+  { "naked",     0, 0, true,  false, false,  ip2k_handle_fndecl_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
+
+/* Handle a "progmem" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+ip2k_handle_progmem_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (DECL_P (*node))
+    {
+      if (TREE_CODE (*node) == TYPE_DECL)
+	{
+	  /* This is really a decl attribute, not a type attribute,
+	     but try to handle it for GCC 3.0 backwards compatibility.  */
+
+	  tree type = TREE_TYPE (*node);
+	  tree attr = tree_cons (name, args, TYPE_ATTRIBUTES (type));
+	  tree newtype = build_type_attribute_variant (type, attr);
+
+	  TYPE_MAIN_VARIANT (newtype) = TYPE_MAIN_VARIANT (type);
+	  TREE_TYPE (*node) = newtype;
+	  *no_add_attrs = true;
+	}
+      else if (TREE_STATIC (*node) || DECL_EXTERNAL (*node))
+	{
+	  if (DECL_INITIAL (*node) == NULL_TREE && !DECL_EXTERNAL (*node))
+	    {
+	      warning ("only initialized variables can be placed into "
+		       "program memory area");
+	      *no_add_attrs = true;
+	    }
+	}
+      else
+	{
+	  warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  *no_add_attrs = true;
+	}
+    }
+
+  return NULL_TREE;
 }
 
-/* If IDENTIFIER with arguments ARGS is a valid machine specific
-   attribute for DECL return 1.
-   Valid attributes:
-   progmem - put data to program memory;
-   naked   - don't generate function prologue/epilogue and `ret' command.  */
-
-int
-valid_machine_decl_attribute (decl, attributes, attr, args)
-     tree decl;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree attr;
+/* Handle an attribute requiring a FUNCTION_DECL; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+ip2k_handle_fndecl_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
      tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
 {
-  if (is_attribute_p ("naked", attr))
-    return TREE_CODE (decl) == FUNCTION_DECL;
-
-  if (is_attribute_p ("progmem", attr)
-      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+  if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      /* Data stored in program RAM or FLASH must be word aligned or
-         it won't be directly addressable.  */
-      if (DECL_ALIGN (decl) < FUNCTION_BOUNDARY)
-	DECL_ALIGN (decl) = FUNCTION_BOUNDARY;
-
-      if (DECL_INITIAL (decl) == NULL_TREE)
-	{
-	  warning ("Only initialized variables can be placed into "
-		   "program memory area.");
-	  return 0;
-	}
-      return 1;
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
     }
-  return 0;
+
+  return NULL_TREE;
 }
 
 /* Encode section information about tree DECL.  */
