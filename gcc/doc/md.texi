@@ -1,5 +1,5 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001, 2002
-@c Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
+@c 2002, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2604,6 +2604,27 @@ Store the natural logarithm of operand 1 into operand 0.
 
 The @code{log} built-in function of C always uses the mode which
 corresponds to the C data type @code{double} and the @code{logf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{pow@var{m}3} instruction pattern
+@item @samp{pow@var{m}3}
+Store the value of operand 1 raised to the exponent operand 2
+into operand 0.
+
+The @code{pow} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{powf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{atan2@var{m}3} instruction pattern
+@item @samp{atan2@var{m}3}
+Store the arc tangent (inverse tangent) of operand 1 divided by
+operand 2 into operand 0, using the signs of both arguments to
+determine the quadrant of the result.
+
+The @code{atan2} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{atan2f}
 built-in function uses the mode which corresponds to the C data
 type @code{float}.
 

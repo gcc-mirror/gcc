@@ -99,7 +99,9 @@ static rtx expand_builtin_apply		PARAMS ((rtx, rtx, rtx));
 static void expand_builtin_return	PARAMS ((rtx));
 static enum type_class type_to_class	PARAMS ((tree));
 static rtx expand_builtin_classify_type	PARAMS ((tree));
+static void expand_errno_check		PARAMS ((tree, rtx));
 static rtx expand_builtin_mathfn	PARAMS ((tree, rtx, rtx));
+static rtx expand_builtin_mathfn_2	PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_constant_p	PARAMS ((tree));
 static rtx expand_builtin_args_info	PARAMS ((tree));
 static rtx expand_builtin_next_arg	PARAMS ((tree));
@@ -1655,6 +1657,50 @@ mathfn_built_in (type, fn)
   return implicit_built_in_decls[fcode];
 }
 
+/* If errno must be maintained, expand the RTL to check if the result,
+   TARGET, of a built-in function call, EXP, is NaN, and if so set
+   errno to EDOM.  */
+
+static void
+expand_errno_check (exp, target)
+     tree exp;
+     rtx target;
+{
+  rtx lab;
+
+  if (flag_errno_math && errno_set && HONOR_NANS (GET_MODE (target)))
+    {
+      lab = gen_label_rtx ();
+
+      /* Test the result; if it is NaN, set errno=EDOM because
+	 the argument was not in the domain.  */
+      emit_cmp_and_jump_insns (target, target, EQ, 0, GET_MODE (target),
+			       0, lab);
+
+#ifdef TARGET_EDOM
+      {
+#ifdef GEN_ERRNO_RTX
+	rtx errno_rtx = GEN_ERRNO_RTX;
+#else
+	rtx errno_rtx
+	  = gen_rtx_MEM (word_mode, gen_rtx_SYMBOL_REF (Pmode, "errno"));
+#endif
+
+	emit_move_insn (errno_rtx, GEN_INT (TARGET_EDOM));
+      }
+#else
+      /* We can't set errno=EDOM directly; let the library call do it.
+	 Pop the arguments right away in case the call gets deleted.  */
+      NO_DEFER_POP;
+      expand_call (exp, target, 0);
+      OK_DEFER_POP;
+#endif
+
+      emit_label (lab);
+    }
+}
+
+
 /* Expand a call to one of the builtin math functions (sin, cos, or sqrt).
    Return 0 if a normal call should be emitted rather than expanding the
    function in-line.  EXP is the expression that is a call to the builtin
@@ -1760,40 +1806,104 @@ expand_builtin_mathfn (exp, target, subtarget)
       return 0;
     }
 
-  /* If errno must be maintained, we must set it to EDOM for NaN results.  */
+  expand_errno_check (exp, target);
 
-  if (flag_errno_math && errno_set && HONOR_NANS (argmode))
+  /* Output the entire sequence.  */
+  insns = get_insns ();
+  end_sequence ();
+  emit_insn (insns);
+
+  return target;
+}
+
+/* Expand a call to the builtin binary math functions (pow and atan2).
+   Return 0 if a normal call should be emitted rather than expanding the
+   function in-line.  EXP is the expression that is a call to the builtin
+   function; if convenient, the result should be placed in TARGET.
+   SUBTARGET may be used as the target for computing one of EXP's
+   operands.  */
+
+static rtx
+expand_builtin_mathfn_2 (exp, target, subtarget)
+     tree exp;
+     rtx target, subtarget;
+{
+  optab builtin_optab;
+  rtx op0, op1, insns;
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg0, arg1;
+  enum machine_mode argmode;
+  bool errno_set = true;
+  bool stable = true;
+
+  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  /* Stabilize the arguments.  */
+  if (TREE_CODE (arg0) != VAR_DECL && TREE_CODE (arg0) != PARM_DECL)
     {
-      rtx lab1;
-
-      lab1 = gen_label_rtx ();
-
-      /* Test the result; if it is NaN, set errno=EDOM because
-	 the argument was not in the domain.  */
-      emit_cmp_and_jump_insns (target, target, EQ, 0, GET_MODE (target),
-			       0, lab1);
-
-#ifdef TARGET_EDOM
-      {
-#ifdef GEN_ERRNO_RTX
-	rtx errno_rtx = GEN_ERRNO_RTX;
-#else
-	rtx errno_rtx
-	  = gen_rtx_MEM (word_mode, gen_rtx_SYMBOL_REF (Pmode, "errno"));
-#endif
-
-	emit_move_insn (errno_rtx, GEN_INT (TARGET_EDOM));
-      }
-#else
-      /* We can't set errno=EDOM directly; let the library call do it.
-	 Pop the arguments right away in case the call gets deleted.  */
-      NO_DEFER_POP;
-      expand_call (exp, target, 0);
-      OK_DEFER_POP;
-#endif
-
-      emit_label (lab1);
+      arg0 = save_expr (arg0);
+      TREE_VALUE (arglist) = arg0;
+      stable = false;
     }
+  if (TREE_CODE (arg1) != VAR_DECL && TREE_CODE (arg1) != PARM_DECL)
+    {
+      arg1 = save_expr (arg1);
+      TREE_VALUE (TREE_CHAIN (arglist)) = arg1;
+      stable = false;
+    }
+
+  if (! stable)
+    {
+      exp = copy_node (exp);
+      arglist = tree_cons (NULL_TREE, arg0,
+			   build_tree_list (NULL_TREE, arg1));
+      TREE_OPERAND (exp, 1) = arglist;
+    }
+
+  op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
+  op1 = expand_expr (arg1, 0, VOIDmode, 0);
+
+  /* Make a suitable register to place result in.  */
+  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+
+  emit_queue ();
+  start_sequence ();
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_POW:
+    case BUILT_IN_POWF:
+    case BUILT_IN_POWL:
+      builtin_optab = pow_optab; break;
+    case BUILT_IN_ATAN2:
+    case BUILT_IN_ATAN2F:
+    case BUILT_IN_ATAN2L:
+      builtin_optab = atan2_optab; break;
+    default:
+      abort ();
+    }
+
+  /* Compute into TARGET.
+     Set TARGET to wherever the result comes back.  */
+  argmode = TYPE_MODE (TREE_TYPE (arg0));
+  target = expand_binop (argmode, builtin_optab, op0, op1,
+			 target, 0, OPTAB_DIRECT);
+
+  /* If we were unable to expand via the builtin, stop the
+     sequence (without outputting the insns) and return 0, causing
+     a call to the library function.  */
+  if (target == 0)
+    {
+      end_sequence ();
+      return 0;
+    }
+
+  expand_errno_check (exp, target);
 
   /* Output the entire sequence.  */
   insns = get_insns ();
@@ -4043,6 +4153,19 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_NEARBYINTF:
     case BUILT_IN_NEARBYINTL:
       target = expand_builtin_mathfn (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_POW:
+    case BUILT_IN_POWF:
+    case BUILT_IN_POWL:
+    case BUILT_IN_ATAN2:
+    case BUILT_IN_ATAN2F:
+    case BUILT_IN_ATAN2L:
+      if (! flag_unsafe_math_optimizations)
+	break;
+      target = expand_builtin_mathfn_2 (exp, target, subtarget);
       if (target)
 	return target;
       break;
