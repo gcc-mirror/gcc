@@ -1,3 +1,16 @@
+2001-06-18  Jason Merrill  <jason_merrill@redhat.com>
+
+	* class.c (dfs_accumulate_vtbl_inits): Just point to the base we're
+	sharing a ctor vtable with.  Merge code for cases 1 and 2.
+	(binfo_ctor_vtable): New fn.
+	(build_vtt_inits, dfs_build_secondary_vptr_vtt_inits): Use it.
+
+	* class.c (dfs_find_final_overrider): Fix logic.
+
+	* pt.c (unify): Don't recurse between the POINTER_TYPE and the
+	OFFSET_TYPE.  If we're adding cv-quals, the extra ones would be on
+	PARM, not ARG.
+
 20010617 Release Manager
 
         * GCC 3.0 Released.

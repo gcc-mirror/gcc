@@ -8536,7 +8536,7 @@ unify (tparms, targs, parm, arg, strict)
     return 1;
 
   if (!(strict & UNIFY_ALLOW_OUTER_LEVEL)
-      && TYPE_P (arg) && !CP_TYPE_CONST_P (arg))
+      && TYPE_P (parm) && !CP_TYPE_CONST_P (parm))
     strict &= ~UNIFY_ALLOW_MORE_CV_QUAL;
   strict &= ~UNIFY_ALLOW_OUTER_LEVEL;
   strict &= ~UNIFY_ALLOW_DERIVED;
@@ -8744,6 +8744,18 @@ unify (tparms, targs, parm, arg, strict)
 	     level of pointers.  */
 	  strict |= (strict_in & UNIFY_ALLOW_DERIVED);
 
+	if (TREE_CODE (TREE_TYPE (parm)) == OFFSET_TYPE
+	    && TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE)
+	  {
+	    /* Avoid getting confused about cv-quals; don't recurse here.
+	       Pointers to members should really be just OFFSET_TYPE, not
+	       this two-level nonsense... */
+
+	    parm = TREE_TYPE (parm);
+	    arg = TREE_TYPE (arg);
+	    goto offset;
+	  }
+
 	return unify (tparms, targs, TREE_TYPE (parm), 
 		      TREE_TYPE (arg), strict);
       }
@@ -8896,6 +8908,7 @@ unify (tparms, targs, parm, arg, strict)
 				    DEDUCE_EXACT, 0, -1);
 
     case OFFSET_TYPE:
+    offset:
       if (TREE_CODE (arg) != OFFSET_TYPE)
 	return 1;
       if (unify (tparms, targs, TYPE_OFFSET_BASETYPE (parm),
