@@ -162,6 +162,7 @@ static tree fold_builtin_cabs (tree, tree, tree);
 static tree fold_builtin_trunc (tree);
 static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
+static tree fold_builtin_bitop (tree);
 
 /* Initialize mathematical constants for constant folding builtins.
    These constants need to be given to at least 160 bits precision.  */
@@ -5770,6 +5771,114 @@ fold_builtin_ceil (tree exp)
   return fold_trunc_transparent_mathfn (exp);
 }
 
+/* Fold function call to builtin ffs, clz, ctz, popcount and parity
+   and their long and long long variants (i.e. ffsl and ffsll).
+   Return NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_bitop (tree exp)
+{
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg;
+
+  if (! validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize for constant argument.  */
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == INTEGER_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      HOST_WIDE_INT hi, width, result;
+      unsigned HOST_WIDE_INT lo;
+      tree type, t;
+
+      type = TREE_TYPE (arg);
+      width = TYPE_PRECISION (type);
+      lo = TREE_INT_CST_LOW (arg);
+
+      /* Clear all the bits that are beyond the type's precision.  */
+      if (width > HOST_BITS_PER_WIDE_INT)
+	{
+	  hi = TREE_INT_CST_HIGH (arg);
+	  if (width < 2 * HOST_BITS_PER_WIDE_INT)
+	    hi &= ~((HOST_WIDE_INT) (-1) >> (width - HOST_BITS_PER_WIDE_INT));
+	}
+      else
+	{
+	  hi = 0;
+	  if (width < HOST_BITS_PER_WIDE_INT)
+	    lo &= ~((unsigned HOST_WIDE_INT) (-1) << width);
+	}
+
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_FFS:
+	case BUILT_IN_FFSL:
+	case BUILT_IN_FFSLL:
+	  if (lo != 0)
+	    result = exact_log2 (lo & -lo) + 1;
+	  else if (hi != 0)
+	    result = HOST_BITS_PER_WIDE_INT + exact_log2 (hi & -hi) + 1;
+	  else
+	    result = 0;
+	  break;
+
+	case BUILT_IN_CLZ:
+	case BUILT_IN_CLZL:
+	case BUILT_IN_CLZLL:
+	  if (hi != 0)
+	    result = width - floor_log2 (hi) - 1 - HOST_BITS_PER_WIDE_INT;
+	  else if (lo != 0)
+	    result = width - floor_log2 (lo) - 1;
+	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
+	    result = width;
+	  break;
+
+	case BUILT_IN_CTZ:
+	case BUILT_IN_CTZL:
+	case BUILT_IN_CTZLL:
+	  if (lo != 0)
+	    result = exact_log2 (lo & -lo);
+	  else if (hi != 0)
+	    result = HOST_BITS_PER_WIDE_INT + exact_log2 (hi & -hi);
+	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
+	    result = width;
+	  break;
+
+	case BUILT_IN_POPCOUNT:
+	case BUILT_IN_POPCOUNTL:
+	case BUILT_IN_POPCOUNTLL:
+	  result = 0;
+	  while (lo)
+	    result++, lo &= lo - 1;
+	  while (hi)
+	    result++, hi &= hi - 1;
+	  break;
+
+	case BUILT_IN_PARITY:
+	case BUILT_IN_PARITYL:
+	case BUILT_IN_PARITYLL:
+	  result = 0;
+	  while (lo)
+	    result++, lo &= lo - 1;
+	  while (hi)
+	    result++, hi &= hi - 1;
+	  result &= 1;
+	  break;
+
+	default:
+	  abort();
+	}
+
+      t = build_int_2 (result, 0);
+      TREE_TYPE (t) = TREE_TYPE (exp);
+      return t;
+    }
+
+  return NULL_TREE;
+}
+
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
 
@@ -6224,6 +6333,23 @@ fold_builtin (tree exp)
     case BUILT_IN_NEARBYINTF:
     case BUILT_IN_NEARBYINTL:
       return fold_trunc_transparent_mathfn (exp);
+
+    case BUILT_IN_FFS:
+    case BUILT_IN_FFSL:
+    case BUILT_IN_FFSLL:
+    case BUILT_IN_CLZ:
+    case BUILT_IN_CLZL:
+    case BUILT_IN_CLZLL:
+    case BUILT_IN_CTZ:
+    case BUILT_IN_CTZL:
+    case BUILT_IN_CTZLL:
+    case BUILT_IN_POPCOUNT:
+    case BUILT_IN_POPCOUNTL:
+    case BUILT_IN_POPCOUNTLL:
+    case BUILT_IN_PARITY:
+    case BUILT_IN_PARITYL:
+    case BUILT_IN_PARITYLL:
+      return fold_builtin_bitop (exp);
 
     default:
       break;
