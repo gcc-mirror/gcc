@@ -1,3 +1,9 @@
+2003-06-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (output_call_mem): If the address references the link-register
+	use an instruction sequence that avoids early-clobbering IP.
+	(eliminate_lr2ip): Delete.
+
 2003-06-12  Richard Henderson  <rth@redhat.com>
 
         PR target/11089

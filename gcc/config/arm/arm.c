@@ -67,7 +67,6 @@ static void      arm_add_gc_roots 		PARAMS ((void));
 static int       arm_gen_constant		PARAMS ((enum rtx_code, Mmode, Hint, rtx, rtx, int, int));
 static unsigned  bit_count 			PARAMS ((Ulong));
 static int       const_ok_for_op 		PARAMS ((Hint, enum rtx_code));
-static int       eliminate_lr2ip		PARAMS ((rtx *));
 static rtx	 emit_multi_reg_push		PARAMS ((int));
 static rtx	 emit_sfm			PARAMS ((int, int));
 #ifndef AOF_ASSEMBLER
@@ -6430,56 +6429,26 @@ output_call (operands)
   return "";
 }
 
-static int
-eliminate_lr2ip (x)
-     rtx * x;
-{
-  int something_changed = 0;
-  rtx x0 = * x;
-  int code = GET_CODE (x0);
-  int i, j;
-  const char * fmt;
-  
-  switch (code)
-    {
-    case REG:
-      if (REGNO (x0) == LR_REGNUM)
-        {
-	  *x = gen_rtx_REG (SImode, IP_REGNUM);
-	  return 1;
-        }
-      return 0;
-    default:
-      /* Scan through the sub-elements and change any references there.  */
-      fmt = GET_RTX_FORMAT (code);
-      
-      for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	if (fmt[i] == 'e')
-	  something_changed |= eliminate_lr2ip (&XEXP (x0, i));
-	else if (fmt[i] == 'E')
-	  for (j = 0; j < XVECLEN (x0, i); j++)
-	    something_changed |= eliminate_lr2ip (&XVECEXP (x0, i, j));
-      
-      return something_changed;
-    }
-}
-  
 /* Output a 'call' insn that is a reference in memory.  */
 
 const char *
 output_call_mem (operands)
      rtx * operands;
 {
-  operands[0] = copy_rtx (operands[0]); /* Be ultra careful.  */
-  /* Handle calls using lr by using ip (which may be clobbered in subr anyway).  */
-  if (eliminate_lr2ip (&operands[0]))
-    output_asm_insn ("mov%?\t%|ip, %|lr", operands);
-
   if (TARGET_INTERWORK)
     {
       output_asm_insn ("ldr%?\t%|ip, %0", operands);
       output_asm_insn ("mov%?\t%|lr, %|pc", operands);
       output_asm_insn ("bx%?\t%|ip", operands);
+    }
+  else if (regno_use_in (LR_REGNUM, operands[0]))
+    {
+      /* LR is used in the memory address.  We load the address in the
+	 first instruction.  It's safe to use IP as the target of the
+	 load since the call will kill it anyway.  */
+      output_asm_insn ("ldr%?\t%|ip, %0", operands);
+      output_asm_insn ("mov%?\t%|lr, %|pc", operands);
+      output_asm_insn ("mov%?\t%|pc, %|ip", operands);
     }
   else
     {
