@@ -1,6 +1,6 @@
 ;; Machine description for the TMS320C[34]x for GNU C compiler
 ;; Copyright (C) 1994, 1995, 1996, 1997, 1998,
-;; 1999, 2000 Free Software Foundation, Inc.
+;; 1999, 2000, 2002 Free Software Foundation, Inc.
 
 ;; Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
 ;;            and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl)
@@ -5702,7 +5702,7 @@
 ; BLOCK MOVE
 ; We should probably get RC loaded when using RPTB automagically...
 ; There's probably no need to call _memcpy() if we don't get
-; a immediate operand for the size.  We could do a better job here
+; an immediate operand for the size.  We could do a better job here
 ; than most memcpy() implementations.
 ; operand 2 is the number of bytes
 ; operand 3 is the shared alignment

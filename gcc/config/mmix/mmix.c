@@ -2830,7 +2830,7 @@ mmix_gen_compare_reg (code, x, y)
 /* Local (static) helper functions.  */
 
 /* Print operator suitable for doing something with a shiftable
-   wyde.  The type of operator is passed as a asm output modifier.  */
+   wyde.  The type of operator is passed as an asm output modifier.  */
 
 static void
 mmix_output_shiftvalue_op_from_str (stream, mainop, value)

@@ -1,5 +1,5 @@
 ;; XSTORMY16 Machine description template
-;; Copyright (C) 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
+;; Copyright (C) 1997, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
 ;; This file is part of GNU CC.
@@ -934,7 +934,7 @@
 }")
 
 ;; Called after register allocation to add any instructions needed for
-;; the epilogue.  Using a epilogue insn is favored compared to putting
+;; the epilogue.  Using an epilogue insn is favored compared to putting
 ;; all of the instructions in the TARGET_ASM_FUNCTION_EPILOGUE macro,
 ;; since it allows the scheduler to intermix instructions with the
 ;; restires of the caller saved registers.  In some cases, it might be

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
    This file is part of GNU CC.
@@ -4397,7 +4397,7 @@ _reg_unused_after (insn, reg)
 
       /* If this is a sequence, we must handle them all at once.
 	 We could have for instance a call that sets the target register,
-	 and a insn in a delay slot that uses the register.  In this case,
+	 and an insn in a delay slot that uses the register.  In this case,
 	 we must return 0.  */
       else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{

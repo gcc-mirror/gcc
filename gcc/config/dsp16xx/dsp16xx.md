@@ -1,5 +1,6 @@
 ;;- Machine description for the AT&T DSP1600 for GNU C compiler
-;;  Copyright (C) 1994, 1995, 1997, 1998, 2001 Free Software Foundation, Inc.
+;;  Copyright (C) 1994, 1995, 1997, 1998, 2001, 2002
+;;  Free Software Foundation, Inc.
 ;;  Contributed by Michael Collison (collison@isisinc.net).
 
 ;; This file is part of GNU CC.
@@ -1436,7 +1437,7 @@
 }")
 
 ;; The movqi pattern with the parallel is used for addqi insns (which have a parallel)
-;; that are turned into moveqi insns by the flow phase. This happens when a auto-increment
+;; that are turned into moveqi insns by the flow phase. This happens when an auto-increment
 ;; is detected.
 
 (define_insn "match_movqi1"

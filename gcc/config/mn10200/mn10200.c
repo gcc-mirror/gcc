@@ -1,5 +1,6 @@
 /* Subroutines for insn-output.c for Matsushita MN10200 series
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -615,7 +616,7 @@ expand_prologue ()
 		}
 	    }
 
-	  /* Now see if we could load the value into a address register.  */
+	  /* Now see if we could load the value into an address register.  */
 	  if (zero_dreg == NULL_RTX
 	      && areg_count > 2
 	      && (!regs_ever_live[5] || !regs_ever_live[6]))
