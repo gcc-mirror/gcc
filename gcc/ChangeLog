@@ -1,3 +1,8 @@
+Fri Apr 21 18:28:28 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (ADDITIONAL_REGISTER_NAMES): Added
+	aliases to AM33 registers.
+
 Fri Apr 21 18:26:17 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (REG_CLASS_CONTENTS): Added register 16
