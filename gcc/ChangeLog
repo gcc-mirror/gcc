@@ -1,3 +1,8 @@
+2002-01-15  Eric Christopher  <echristo@redhat.com>
+
+	* flow.c (propagate_one_insn): Add error message and print out
+	insn for debugging.
+
 2002-01-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* system.h (ASM_IDENTIFY_GCC, STDC_VALUE, TRAMPOLINE_ALIGN,

@@ -1295,8 +1295,8 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 
 
 /* This structure is used to pass parameters to an from the
-   the function find_regno_partial(). It is used to pass in the 
-   register number we are looking, as well as to return any rtx 
+   the function find_regno_partial(). It is used to pass in the
+   register number we are looking, as well as to return any rtx
    we find.  */
 
 typedef struct {
@@ -1308,7 +1308,7 @@ typedef struct {
 /* Find the rtx for the reg numbers specified in 'data' if it is
    part of an expression which only uses part of the register.  Return
    it in the structure passed in.  */
-static int 
+static int
 find_regno_partial (ptr, data)
      rtx *ptr;
      void *data;
@@ -1320,7 +1320,7 @@ find_regno_partial (ptr, data)
   if (*ptr == NULL_RTX)
     return 0;
 
-  switch (GET_CODE (*ptr)) 
+  switch (GET_CODE (*ptr))
     {
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
@@ -1333,7 +1333,7 @@ find_regno_partial (ptr, data)
       break;
 
     case SUBREG:
-      if (GET_CODE (SUBREG_REG (*ptr)) == REG 
+      if (GET_CODE (SUBREG_REG (*ptr)) == REG
 	  && REGNO (SUBREG_REG (*ptr)) == reg)
 	{
 	  param->retval = SUBREG_REG (*ptr);
@@ -1349,14 +1349,14 @@ find_regno_partial (ptr, data)
 }
 
 /* Process all immediate successors of the entry block looking for pseudo
-   registers which are live on entry. Find all of those whose first 
-   instance is a partial register reference of some kind, and initialize 
+   registers which are live on entry. Find all of those whose first
+   instance is a partial register reference of some kind, and initialize
    them to 0 after the entry block.  This will prevent bit sets within
-   registers whose value is unknown, and may contain some kind of sticky 
+   registers whose value is unknown, and may contain some kind of sticky
    bits we don't want.  */
 
 int
-initialize_uninitialized_subregs () 
+initialize_uninitialized_subregs ()
 {
   rtx insn;
   edge e;
@@ -1375,7 +1375,7 @@ initialize_uninitialized_subregs ()
 
 	  /* Find an insn which mentions the register we are looking for.
 	     Its preferable to have an instance of the register's rtl since
-	     there may be various flags set which we need to duplicate.  
+	     there may be various flags set which we need to duplicate.
 	     If we can't find it, its probably an automatic whose initial
 	     value doesn't matter, or hopefully something we don't care about.  */
 	  for (i = get_insns (); i && INSN_UID (i) != uid; i = NEXT_INSN (i))
@@ -1387,7 +1387,7 @@ initialize_uninitialized_subregs ()
 	      for_each_rtx (&i, find_regno_partial, &param);
 	      if (param.retval != NULL_RTX)
 		{
-		  insn = gen_move_insn (param.retval, 
+		  insn = gen_move_insn (param.retval,
 				        CONST0_RTX (GET_MODE (param.retval)));
 		  insert_insn_on_edge (insn, e);
 		  did_something = 1;
@@ -1566,7 +1566,11 @@ propagate_one_insn (pbi, insn)
 	      || (HAVE_sibcall_epilogue
 		  && sibcall_epilogue_contains (insn)))
 	  && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
-	abort ();
+	{
+	  internal_error ("Attempt to delete prologue/epilogue insn:\n");
+          debug_rtx (insn);
+	  abort ();
+	}
 
       /* Record sets.  Do this even for dead instructions, since they
 	 would have killed the values if they hadn't been deleted.  */
@@ -2010,7 +2014,7 @@ insn_dead_p (pbi, x, call_ok, notes)
       if (REG_NOTE_KIND (notes) == REG_INC)
 	{
 	  int regno = REGNO (XEXP (notes, 0));
-	  
+
 	  /* Don't delete insns to set global regs.  */
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
 	      || REGNO_REG_SET_P (pbi->reg_live, regno))
