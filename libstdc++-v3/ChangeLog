@@ -1,3 +1,34 @@
+2003-11-12  Carlo Wood  <carlo@alinoe.com>
+
+        PR libstdc++/12947
+	* bits/demangle.h
+	(_GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS): Added.
+	(_GLIBCXX_DEMANGLER_STYLE_SIZEOF_TYPENAME): Added.
+	(session<Allocator>::next_peek() const): Added.
+	(decode_non_negative_decimal_integer(string_type&)):
+	Renamed from decode_decimal_integer(string_type&).
+	(session<Allocator>::decode_nested_name):
+	Decode <template_param> as well.
+	(session<Allocator>::add_substitution):
+	Handle <template-param> for <nested-name>'s.
+	(enum xary_nt): Added.
+	(struct entry_st): Added member `xary_nt type' instead of `bool unary'.
+	(symbol_name_table_c): Updated for `entry_st::type' and additional
+	operators (unary `operator+' and `sizeof(type)').
+	(offset_table_c): Updated for new operators (causing a new hash map).
+	(decode_operator_name): Match the updated hash map.
+	(session<Allocator>::decode_expression):
+	Support for `sizeof ([typename] type)' (st),
+	dependent names (sr) and casting operator (cv).  Handle
+	`entry_st::type'.  Handle _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
+	and _GLIBCXX_DEMANGLER_STYLE_SIZEOF_TYPENAME.
+	(session<Allocator>::decode_type_with_postfix):
+	Support `extern "C"' function types (FY).
+	* testsuite/demangle/regression/cw-16.cc: Added tests for the
+	added functionality.
+	* testsuite/demangle/regression/3111-2.cc: sizeof now has a space
+	appended.
+
 2003-11-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/12875
