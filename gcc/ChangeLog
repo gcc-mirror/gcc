@@ -1,5 +1,8 @@
 Wed May  6 15:51:39 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* objc/Make-lang.h (objc-parse.o): Add toplev.h dependency.
+	* objc/objc-parse.y, objc/objc-parse.c: Regenerate.
+
 	* toplev.c: Include toplev.h.
 	* Makefile.in (c-common.o, c-convert.o, c-decl.o, c-iterate.o,
 	c-lex.o, c-parse.o, c-pragma.o, c-typeck.o, calls.o, convert.o,

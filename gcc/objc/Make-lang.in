@@ -69,7 +69,7 @@ cc1obj$(exeext): $(P) $(OBJC_OBJS) $(OBJS) $(LIBDEPS)
 # Objective C language specific files.
 
 objc-parse.o : $(srcdir)/objc/objc-parse.c \
-   $(CONFIG_H) $(TREE_H) \
+   $(CONFIG_H) $(TREE_H) $(srcdir)/toplev.h \
    $(srcdir)/c-lex.h $(srcdir)/c-tree.h $(srcdir)/input.h \
    $(srcdir)/flags.h $(srcdir)/output.h $(srcdir)/objc/objc-act.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
