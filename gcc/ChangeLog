@@ -1,5 +1,14 @@
 2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/arc/arc.h, config/arm/arm.h, config/frv/frv.h,
+	config/h8300/h8300.h, config/i386/i386.h, config/i860/i860.h,
+	config/iq2000/iq2000.h, config/m32r/m32r.h,
+	config/pdp11/pdp11.h, config/sparc/sparc.h,
+	config/xtensa/xtensa.h: Remove commented-out or useless
+	definitions of CASE_VECTOR_PC_RELATIVE.
+
+2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* loop.c (all_sets_invariant_p): Remove.
 
 2004-02-19  Eric Botcazou  <ebotcazou@libertysurf.fr>

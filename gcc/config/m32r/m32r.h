@@ -1725,15 +1725,6 @@ extern char m32r_punct_chars[256];
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE (flag_pic ? SImode : Pmode)
 
-/* Define as C expression which evaluates to nonzero if the tablejump
-   instruction expects the table to contain offsets from the address of the
-   table.
-   Do not define this if the table should contain absolute addresses.  */
-/* It's not clear what PIC will look like or whether we want to use -fpic
-   for the embedded form currently being talked about.  For now require -fpic
-   to get pc relative switch tables.  */
-/*#define CASE_VECTOR_PC_RELATIVE 1 */
-
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
 #define WORD_REGISTER_OPERATIONS
