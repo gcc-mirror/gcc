@@ -642,36 +642,28 @@ read_rtx (infile)
 	    }
 	  if (c != '"')
 	    dump_and_abort ('"', c, infile);
-	  j = 0;
-	  stringbufsize = 10;
-	  stringbuf = (char *) xmalloc (stringbufsize + 1);
 
 	  while (1)
 	    {
-	      if (j >= stringbufsize - 4)
+	      c = getc (infile); /* Read the string  */
+	      if (c == '\\')
 		{
-		  stringbufsize *= 2;
-		  stringbuf = (char *) xrealloc (stringbuf, stringbufsize + 1);
-		}
-	      stringbuf[j] = getc (infile); /* Read the string  */
-	      if (stringbuf[j] == '\\')
-		{
-		  stringbuf[j] = getc (infile);	/* Read the string  */
+		  c = getc (infile);	/* Read the string  */
 		  /* \; makes stuff for a C string constant containing
 		     newline and tab.  */
-		  if (stringbuf[j] == ';')
-		    {
-		      strcpy (&stringbuf[j], "\\n\\t");
-		      j += 3;
-		    }
+		  if (c == ';')
+		    obstack_grow (rtl_obstack, "\\n\\t", 4);
+		  else
+		    obstack_1grow (rtl_obstack, c);
 		}
-	      else if (stringbuf[j] == '"')
+	      else if (c == '"')
 		break;
-	      j++;
+
+	      obstack_1grow (rtl_obstack, c);
 	    }
 
-	  stringbuf[j] = 0;	/* NUL terminate the string  */
-	  stringbuf = (char *) xrealloc (stringbuf, j + 1);
+	  obstack_1grow (rtl_obstack, 0);
+	  stringbuf = (char *) obstack_finish (rtl_obstack);
 
 	  if (saw_paren)
 	    {

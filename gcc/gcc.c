@@ -94,6 +94,11 @@ extern int execv (), execvp ();
 
 #define MIN_FATAL_STATUS 1
 
+/* Flag saying to print the full filename of libgcc.a
+   as found through our usual search mechanism.  */
+
+static int print_libgcc_file_name;
+
 /* Flag indicating whether we should print the command and arguments */
 
 static int verbose_flag;
@@ -1826,6 +1831,10 @@ process_command (argc, argv)
 	  printf ("%s\n", version_string);
 	  exit (0);
 	}
+      else if (! strcmp (argv[i], "-print-libgcc-file-name"))
+	{
+	  print_libgcc_file_name = 1;
+	}
       else if (! strcmp (argv[i], "-Xlinker"))
 	{
 	  /* Pass the argument of this option to the linker when we link.  */
@@ -1938,6 +1947,8 @@ process_command (argc, argv)
   for (i = 1; i < argc; i++)
     {
       if (!strcmp (argv[i], "-Xlinker"))
+	i++;
+      else if (! strcmp (argv[i], "-print-libgcc-file-name"))
 	i++;
       else if (argv[i][0] == '-' && argv[i][1] != 0 && argv[i][1] != 'l')
 	{
@@ -3037,6 +3048,12 @@ main (argc, argv)
   for (i = 0; i < n_switches; i++)
     if (! switches[i].valid)
       error ("unrecognized option `-%s'", switches[i].part1);
+
+  if (print_libgcc_file_name)
+    {
+      printf ("%s\n", find_file ("libgcc.a"));
+      exit (0);
+    }
 
   /* Obey some of the options.  */
 
