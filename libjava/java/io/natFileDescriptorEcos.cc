@@ -54,7 +54,7 @@ java::io::FileDescriptor::sync (void)
   // as errors.
 #ifdef HAVE_FSYNC
 #else
-  JvThrow (new SyncFailedException (JvNewStringLatin1 (NO_FSYNC_MESSAGE)));
+  throw new SyncFailedException (JvNewStringLatin1 (NO_FSYNC_MESSAGE));
 #endif
 }
 
@@ -75,9 +75,9 @@ void
 java::io::FileDescriptor::write (jbyteArray b, jint offset, jint len)
 {
   if (! b)
-    JvThrow (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
   if (offset < 0 || len < 0 || offset + len > JvGetArrayLength (b))
-    JvThrow (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
   char *bytes = (char *)elements (b) + offset;
   ::diag_write (bytes, len);
 }
@@ -96,7 +96,7 @@ java::io::FileDescriptor::seek (jlong pos, jint whence)
   jlong here = getFilePointer ();
 
   if ((whence == SET && pos > len) || (whence == CUR && here + pos > len))
-    JvThrow (new EOFException);
+    throw new EOFException;
 
   return 0;
 }

@@ -104,7 +104,7 @@ java::io::File::getCanonicalPath (void)
 
   LPTSTR unused;
   if(!GetFullPathName(buf, MAX_PATH, buf2, &unused))
-    _Jv_Throw (new IOException (JvNewStringLatin1 ("GetFullPathName failed")));
+    throw new IOException (JvNewStringLatin1 ("GetFullPathName failed"));
 
   // FIXME: what encoding to assume for file names?  This affects many
   // calls.

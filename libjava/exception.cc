@@ -24,7 +24,7 @@ details.  */
 
 typedef struct {
   __eh_info eh_info;
-  void *value;
+  jthrowable value;
 } java_eh_info;
 
 
@@ -60,7 +60,7 @@ _Jv_type_matcher (java_eh_info *info, void* match_info,
       size_t mi = (size_t) match_info;
       if ((mi & 1) != 0)
 	match_info = _Jv_FindClass ((Utf8Const*) (mi - 1), NULL);
-      if (! _Jv_IsInstanceOf ((jobject) info->value, (jclass) match_info))
+      if (! _Jv_IsInstanceOf (info->value, (jclass) match_info))
 	return NULL;
     }
 
@@ -136,11 +136,15 @@ _Jv_setup_eh_info (__eh_info *)
 /* Perform a throw, Java style. Throw will unwind through this call,
    so there better not be any handlers or exception thrown here. */
 
+#ifdef SJLJ_EXCEPTIONS
+#define _Jv_Throw _Jv_Sjlj_Throw
+#endif
+
 extern "C" void
-_Jv_Throw (void *value)
+_Jv_Throw (jthrowable value)
 {
   if (value == NULL)
-    value = (void *) new java::lang::NullPointerException ();
+    value = new java::lang::NullPointerException;
   java_eh_info *ehinfo = *(__get_eh_info ());
   if (ehinfo == NULL)
     {

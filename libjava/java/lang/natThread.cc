@@ -116,7 +116,7 @@ void
 java::lang::Thread::join (jlong millis, jint nanos)
 {
   if (millis < 0 || nanos < 0 || nanos > 999999)
-    _Jv_Throw (new IllegalArgumentException);
+    throw new IllegalArgumentException;
 
   Thread *current = currentThread ();
 
@@ -135,7 +135,7 @@ java::lang::Thread::join (jlong millis, jint nanos)
   _Jv_MutexUnlock (&nt->join_mutex);
 
   if (current->isInterrupted (true))
-    _Jv_Throw (new InterruptedException);
+    throw new InterruptedException;
 }
 
 void
@@ -150,7 +150,7 @@ java::lang::Thread::setPriority (jint newPriority)
 {
   checkAccess ();
   if (newPriority < MIN_PRIORITY || newPriority > MAX_PRIORITY)
-    _Jv_Throw (new IllegalArgumentException);
+    throw new IllegalArgumentException;
 
   jint gmax = group->getMaxPriority();
   if (newPriority > gmax)
@@ -165,7 +165,7 @@ void
 java::lang::Thread::sleep (jlong millis, jint nanos)
 {
   if (millis < 0 || nanos < 0 || nanos > 999999)
-    _Jv_Throw (new IllegalArgumentException);
+    throw new IllegalArgumentException;
 
   if (millis == 0 && nanos == 0)
     ++nanos;
@@ -180,7 +180,7 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
   _Jv_MutexUnlock (&nt->join_mutex);
 
   if (current->isInterrupted (true))
-    _Jv_Throw (new InterruptedException);
+    throw new InterruptedException;
 }
 
 void
@@ -299,7 +299,7 @@ java::lang::Thread::start (void)
 
   // Its illegal to re-start() a thread, even if its dead.
   if (!startable_flag)
-    _Jv_Throw (new IllegalThreadStateException);
+    throw new IllegalThreadStateException;
 
   alive_flag = true;
   startable_flag = false;
@@ -310,16 +310,16 @@ java::lang::Thread::start (void)
 void
 java::lang::Thread::stop (java::lang::Throwable *)
 {
-  _Jv_Throw (new UnsupportedOperationException
-	     (JvNewStringLatin1 ("java::lang::Thread::stop unimplemented")));
+  throw new UnsupportedOperationException
+    (JvNewStringLatin1 ("java::lang::Thread::stop unimplemented"));
 }
 
 void
 java::lang::Thread::suspend (void)
 {
   checkAccess ();
-  _Jv_Throw (new UnsupportedOperationException 
-	     (JvNewStringLatin1 ("java::lang::Thread::suspend unimplemented")));
+  throw new UnsupportedOperationException 
+    (JvNewStringLatin1 ("java::lang::Thread::suspend unimplemented"));
 }
 
 void

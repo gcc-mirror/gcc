@@ -1,6 +1,6 @@
 // defineclass.cc - defining a class from .class format.
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1576,10 +1576,9 @@ _Jv_ClassNameSamePackage (_Jv_Utf8Const *name1, _Jv_Utf8Const *name2)
 static void
 throw_no_class_def_found_error (jstring msg)
 {
-  if (msg == 0)
-    JvThrow (new java::lang::NoClassDefFoundError);
-  else
-    JvThrow (new java::lang::NoClassDefFoundError (msg));
+  throw (msg
+	 ? new java::lang::NoClassDefFoundError (msg)
+	 : new java::lang::NoClassDefFoundError);
 }
 
 static void
@@ -1591,17 +1590,15 @@ throw_no_class_def_found_error (char *msg)
 static void
 throw_class_format_error (jstring msg)
 {
-  if (msg == 0)
-    JvThrow (new java::lang::ClassFormatError);
-  else
-    JvThrow (new java::lang::ClassFormatError (msg));
+  throw (msg
+	 ? new java::lang::ClassFormatError (msg)
+	 : new java::lang::ClassFormatError);
 }
 
 static void
 throw_internal_error (char *msg)
 {
-  JvThrow 
-    (new java::lang::InternalError (JvNewStringLatin1 (msg)));
+  throw new java::lang::InternalError (JvNewStringLatin1 (msg));
 }
 
 static jfloat int_bits_to_float (jint value)
@@ -1616,12 +1613,12 @@ static jdouble long_bits_to_double (jlong value)
 
 static void throw_incompatible_class_change_error (jstring msg)
 {
-  JvThrow (new java::lang::IncompatibleClassChangeError (msg));
+  throw new java::lang::IncompatibleClassChangeError (msg);
 }
 
 static void throw_class_circularity_error (jstring msg)
 {
-  JvThrow (new java::lang::ClassCircularityError (msg));
+  throw new java::lang::ClassCircularityError (msg);
 }
 
 #endif /* INTERPRETER */

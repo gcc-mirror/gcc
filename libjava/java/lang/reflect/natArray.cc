@@ -1,6 +1,6 @@
 // natField.cc - Implementation of java.lang.reflect.Field native methods.
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -64,7 +64,7 @@ java::lang::reflect::Array::getLength (jobject array)
 {
   jclass arrayType = array->getClass();
   if (! arrayType->isArray ())
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
   return ((__JArray*) array)->length;
 }
 
@@ -73,7 +73,7 @@ java::lang::reflect::Array::getElementType (jobject array, jint index)
 {
   jclass arrayType = array->getClass();
   if (! arrayType->isArray ())
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
   jint length = ((__JArray*) array)->length;
   if ((_Jv_uint) index >= (_Jv_uint) length)
     _Jv_ThrowBadArrayIndex(index);
@@ -86,7 +86,7 @@ java::lang::reflect::Array::getBoolean (jobject array, jint index)
   jclass elementType = getElementType (array, index);
   if (elementType == JvPrimClass (boolean))
     return elements ((jbooleanArray) array) [index];
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 jchar
@@ -95,7 +95,7 @@ java::lang::reflect::Array::getChar (jobject array, jint index)
   jclass elementType = getElementType (array, index);
   if (elementType == JvPrimClass (char))
     return elements ((jcharArray) array) [index];
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 jbyte
@@ -104,7 +104,7 @@ java::lang::reflect::Array::getByte (jobject array, jint index)
   jclass elementType = getElementType (array, index);
   if (elementType == JvPrimClass (byte))
     return elements ((jbyteArray) array) [index];
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 jshort
@@ -115,7 +115,7 @@ java::lang::reflect::Array::getShort (jobject array, jint index)
     return elements ((jshortArray) array) [index];
   if (elementType == JvPrimClass (byte))
     return elements ((jbyteArray) array) [index];
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 jint
@@ -130,7 +130,7 @@ java::lang::reflect::Array::getInt (jobject array, jint index)
     return elements ((jbyteArray) array) [index];
   if (elementType == JvPrimClass (char))
     return elements ((jcharArray) array) [index];
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 jlong
@@ -147,7 +147,7 @@ java::lang::reflect::Array::getLong (jobject array, jint index)
     return elements ((jbyteArray) array) [index];
   if (elementType == JvPrimClass (char))
     return elements ((jcharArray) array) [index];
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 jfloat
@@ -166,7 +166,7 @@ java::lang::reflect::Array::getFloat (jobject array, jint index)
     return elements ((jbyteArray) array) [index];
   if (elementType == JvPrimClass (char))
     return elements ((jcharArray) array) [index];
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 jdouble
@@ -187,7 +187,7 @@ java::lang::reflect::Array::getDouble (jobject array, jint index)
     return elements ((jbyteArray) array) [index];
   if (elementType == JvPrimClass (char))
     return elements ((jcharArray) array) [index];
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 jobject
@@ -218,7 +218,7 @@ java::lang::reflect::Array::get (jobject array, jint index)
       else
 	return java::lang::Boolean::FALSE;
     }
-  JvThrow (new java::lang::IllegalArgumentException());
+  throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -236,7 +236,7 @@ java::lang::reflect::Array::setChar (jobject array, jint index, jchar value)
   else if (elementType == JvPrimClass (double))
     elements ((jdoubleArray) array) [index] = value;
   else
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -256,7 +256,7 @@ java::lang::reflect::Array::setByte (jobject array, jint index, jbyte value)
   else if (elementType == JvPrimClass (double))
     elements ((jdoubleArray) array) [index] = value;
   else
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -274,7 +274,7 @@ java::lang::reflect::Array::setShort (jobject array, jint index, jshort value)
   else if (elementType == JvPrimClass (double))
     elements ((jdoubleArray) array) [index] = value;
   else
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -290,7 +290,7 @@ java::lang::reflect::Array::setInt (jobject array, jint index, jint value)
   else if (elementType == JvPrimClass (double))
     elements ((jdoubleArray) array) [index] = value;
   else
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -304,7 +304,7 @@ java::lang::reflect::Array::setLong (jobject array, jint index, jlong value)
   else if (elementType == JvPrimClass (double))
     elements ((jdoubleArray) array) [index] = value;
   else
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -316,7 +316,7 @@ java::lang::reflect::Array::setFloat (jobject array, jint index, jfloat value)
   else if (elementType == JvPrimClass (double))
     elements ((jdoubleArray) array) [index] = value;
   else
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -326,7 +326,7 @@ java::lang::reflect::Array::setDouble (jobject array, jint index, jdouble value)
   if (elementType == JvPrimClass (double))
     elements ((jdoubleArray) array) [index] = value;
   else
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -337,7 +337,7 @@ java::lang::reflect::Array::setBoolean (jobject array,
   if (elementType == JvPrimClass (boolean))
     elements ((jbooleanArray) array) [index] = value;
   else
-    JvThrow (new java::lang::IllegalArgumentException());
+    throw new java::lang::IllegalArgumentException;
 }
 
 void
@@ -345,6 +345,6 @@ java::lang::reflect::Array::set (jobject array, jint index,
 				       jobject value, jclass elType)
 {
   if (! _Jv_IsInstanceOf (value, elType))
-    JvThrow (new java::lang::IllegalArgumentException ());
+    throw new java::lang::IllegalArgumentException;
   elements ((jobjectArray) array) [index] = value;
 }

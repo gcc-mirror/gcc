@@ -1,6 +1,6 @@
 // natClassLoader.cc - Implementation of java.lang.ClassLoader native methods.
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -80,8 +80,8 @@ java::lang::ClassLoader::defineClass0 (jstring name,
       _Jv_Utf8Const *   name2 = _Jv_makeUtf8Const (name);
 
       if (! _Jv_VerifyClassName (name2))
-	JvThrow (new java::lang::ClassFormatError 
-		 (JvNewStringLatin1 ("erroneous class name")));
+	throw new java::lang::ClassFormatError
+	  (JvNewStringLatin1 ("erroneous class name"));
 
       klass->name = name2;
     }
@@ -104,7 +104,10 @@ java::lang::ClassLoader::defineClass0 (jstring name,
       // anything but ClassNotFoundException, 
       // or some kind of Error.
 
-      JvThrow (ex);
+      // FIXME: Rewrite this as a cleanup instead of
+      // as a catch handler.
+
+      throw ex;
     }
 
   // if everything proceeded sucessfully, we're loaded.
@@ -151,9 +154,7 @@ _Jv_WaitForState (jclass klass, int state)
   _Jv_MonitorExit (klass);
 
   if (klass->state == JV_STATE_ERROR)
-    {
-      _Jv_Throw (new java::lang::LinkageError ());
-    }
+    throw new java::lang::LinkageError;
 }
 
 // Finish linking a class.  Only called from ClassLoader::resolveClass.
@@ -253,7 +254,7 @@ _Jv_PrepareCompiledClass (jclass klass)
 	  if (! found)
 	    {
 	      jstring str = _Jv_NewStringUTF (name->data);
-	      JvThrow (new java::lang::ClassNotFoundException (str));
+	      throw new java::lang::ClassNotFoundException (str);
 	    }
 
 	  pool->data[index].clazz = found;

@@ -29,7 +29,7 @@ gnu::gcj::RawData* gnu::gcj::xlib::Font::loadFont(Display* display,
   XFontStruct* fontStruct = XLoadQueryFont(dpy, cName);
   if (fontStruct == 0)
     {
-      JvThrow(new XException(JvNewStringLatin1("font not found")));
+      throw new XException(JvNewStringLatin1("font not found"));
     }
 
   return reinterpret_cast<gnu::gcj::RawData*>(fontStruct);

@@ -398,7 +398,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
   if (r)
     {
       const char* msg = "Cannot create additional threads";
-      JvThrow (new java::lang::OutOfMemoryError (JvNewStringUTF (msg)));
+      throw new java::lang::OutOfMemoryError (JvNewStringUTF (msg));
     }
 }
 

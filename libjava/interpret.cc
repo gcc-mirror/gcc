@@ -337,7 +337,7 @@ void _Jv_InterpMethod::run_normal (ffi_cif* cif,
 		      + storage_size * sizeof (_Jv_word));
 
   jobject ex = _this->run (cif, ret, args, inv);
-  if (ex != 0) _Jv_Throw (ex);
+  if (ex != 0) throw static_cast<jthrowable>(ex);
 }
 
 void _Jv_InterpMethod::run_synch_object (ffi_cif* cif,
@@ -357,7 +357,7 @@ void _Jv_InterpMethod::run_synch_object (ffi_cif* cif,
   jobject ex = _this->run (cif, ret, args, inv);
   _Jv_MonitorExit (rcv);
 
-  if (ex != 0) _Jv_Throw (ex);
+  if (ex != 0) throw static_cast<jthrowable>(ex);
 }
 
 void _Jv_InterpMethod::run_synch_class (ffi_cif* cif,
@@ -377,7 +377,7 @@ void _Jv_InterpMethod::run_synch_class (ffi_cif* cif,
   jobject ex = _this->run (cif, ret, args, inv);
   _Jv_MonitorExit (sync);
 
-  if (ex != 0) _Jv_Throw (ex);
+  if (ex != 0) throw static_cast<jthrowable>(ex);
 }
 
 /*
@@ -679,7 +679,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	// working if the method is final.  So instead we do an
 	// explicit test.
 	if (! sp[0].o)
-	  throw new java::lang::NullPointerException ();
+	  throw new java::lang::NullPointerException;
 
 	if (rmeth->vtable_index == -1)
 	  {
@@ -1979,7 +1979,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jclass type = field->type;
 	jint field_offset = field->u.boffset;
 	if (field_offset > 0xffff)
-	  JvThrow (new java::lang::VirtualMachineError);
+	  throw new java::lang::VirtualMachineError;
 
 	jobject obj   = POPA();
 	NULLCHECK(obj);
@@ -2086,7 +2086,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	jint field_offset = field->u.boffset;
 	if (field_offset > 0xffff)
-	  JvThrow (new java::lang::VirtualMachineError);
+	  throw new java::lang::VirtualMachineError;
 
 	if (type->isPrimitive ())
 	  {
@@ -2237,7 +2237,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       SAVE_PC;
       {
 	jobject value = POPA();
-	JvThrow (value);
+	throw static_cast<jthrowable>(value);
       }
       NEXT_INSN;
 
@@ -2250,8 +2250,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	if (value != NULL && ! to->isInstance (value))
 	  {
-	    JvThrow (new java::lang::ClassCastException
-		     (to->getName()));
+	    throw new java::lang::ClassCastException (to->getName());
 	  }
 
 	PUSHA (value);
@@ -2412,13 +2411,13 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 static void
 throw_internal_error (char *msg)
 {
-  JvThrow (new java::lang::InternalError (JvNewStringLatin1 (msg)));
+  throw new java::lang::InternalError (JvNewStringLatin1 (msg));
 }
 
 static void 
 throw_incompatible_class_change_error (jstring msg)
 {
-  JvThrow (new java::lang::IncompatibleClassChangeError (msg));
+  throw new java::lang::IncompatibleClassChangeError (msg);
 }
 
 #ifndef HANDLE_SEGV
@@ -2429,7 +2428,7 @@ throw_null_pointer_exception ()
   if (null_pointer_exc == NULL)
     null_pointer_exc = new java::lang::NullPointerException;
 
-  JvThrow (null_pointer_exc);
+  throw null_pointer_exc;
 }
 #endif
 

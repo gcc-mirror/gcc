@@ -70,7 +70,7 @@ static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
 
 static void throw_incompatible_class_change_error (jstring msg)
 {
-  JvThrow (new java::lang::IncompatibleClassChangeError (msg));
+  throw new java::lang::IncompatibleClassChangeError (msg);
 }
 
 _Jv_word
@@ -98,7 +98,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       if (! found)
 	{
 	  jstring str = _Jv_NewStringUTF (name->data);
-	  JvThrow (new java::lang::ClassNotFoundException (str));
+	  throw new java::lang::ClassNotFoundException (str);
 	}
 
       if ((found->accflags & Modifier::PUBLIC) == Modifier::PUBLIC
@@ -110,7 +110,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	}
       else
 	{
-	  JvThrow (new java::lang::IllegalAccessError (found->getName()));
+	  throw new java::lang::IllegalAccessError (found->getName());
 	}
     }
     break;
@@ -185,17 +185,16 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 		    _Jv_ResolveField (field, cls->loader);
 
 		  if (field_type != 0 && field->type != field_type)
-		    JvThrow
-		      (new java::lang::LinkageError
-		       (JvNewStringLatin1 
-			("field type mismatch with different loaders")));
+		    throw new java::lang::LinkageError
+		      (JvNewStringLatin1 
+		       ("field type mismatch with different loaders"));
 
 		  the_field = field;
 		  goto end_of_field_search;
 		}
 	      else
 		{
-		  JvThrow (new java::lang::IllegalAccessError);
+		  throw new java::lang::IllegalAccessError;
 		}
 	    }
 	}
@@ -319,7 +318,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  msg = msg->concat (JvNewStringLatin1("."));
 	  msg = msg->concat (_Jv_NewStringUTF (method_name->data));
 	  msg = msg->concat (JvNewStringLatin1(" was not found."));
-	  JvThrow(new java::lang::NoSuchMethodError (msg));
+	  throw new java::lang::NoSuchMethodError (msg);
 	}
       
       pool->data[index].rmethod = 
@@ -366,7 +365,7 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
 	}
       else
 	{
-	  JvThrow (new java::lang::IllegalAccessError);
+	  throw new java::lang::IllegalAccessError;
 	}
     }
   return 0;
@@ -486,7 +485,7 @@ _Jv_DetermineVTableIndex (jclass klass,
 static void
 _Jv_abstractMethodError ()
 {
-  JvThrow (new java::lang::AbstractMethodError);
+  throw new java::lang::AbstractMethodError;
 }
 
 void 
@@ -684,8 +683,7 @@ _Jv_PrepareClass(jclass klass)
 	{
 	  clz->state = JV_STATE_ERROR;
 	  clz->notifyAll ();
-	  JvThrow (new java::lang::IncompatibleClassChangeError 
-		           (clz->getName ()));
+	  throw new java::lang::IncompatibleClassChangeError (clz->getName ());
 	}
 
       /* FIXME: At this point, if (loader != super_class->loader), we
@@ -1211,10 +1209,9 @@ _Jv_BuildResolvedMethod (_Jv_Method* method,
 static void
 throw_class_format_error (jstring msg)
 {
-  if (msg == 0)
-    JvThrow (new java::lang::ClassFormatError);
-  else
-    JvThrow (new java::lang::ClassFormatError (msg));
+  throw (msg
+	 ? new java::lang::ClassFormatError (msg)
+	 : new java::lang::ClassFormatError);
 }
 
 static void
@@ -1226,8 +1223,7 @@ throw_class_format_error (char *msg)
 static void
 throw_internal_error (char *msg)
 {
-  JvThrow 
-    (new java::lang::InternalError (JvNewStringLatin1 (msg)));
+  throw new java::lang::InternalError (JvNewStringLatin1 (msg));
 }
 
 

@@ -1,6 +1,6 @@
 // natObject.cc - Implementation of the Object class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -90,7 +90,7 @@ java::lang::Object::clone (void)
   else
     {
       if (! java::lang::Cloneable::class$.isAssignableFrom(klass))
-	JvThrow (new CloneNotSupportedException);
+	throw new CloneNotSupportedException;
 
       size = klass->size();
       r = JvAllocObject (klass, size);
@@ -173,8 +173,8 @@ java::lang::Object::notify (void)
     sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
   if (__builtin_expect (_Jv_CondNotify (&si->condition, &si->mutex), false))
-    JvThrow (new IllegalMonitorStateException(JvNewStringLatin1 
-                                              ("current thread not owner")));
+    throw new IllegalMonitorStateException(JvNewStringLatin1 
+					   ("current thread not owner"));
 }
 
 void
@@ -184,8 +184,8 @@ java::lang::Object::notifyAll (void)
     sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
   if (__builtin_expect (_Jv_CondNotifyAll (&si->condition, &si->mutex), false))
-    JvThrow (new IllegalMonitorStateException(JvNewStringLatin1 
-                                              ("current thread not owner")));
+    throw new IllegalMonitorStateException(JvNewStringLatin1 
+					   ("current thread not owner"));
 }
 
 void
@@ -194,16 +194,16 @@ java::lang::Object::wait (jlong timeout, jint nanos)
   if (__builtin_expect (INIT_NEEDED (this), false))
     sync_init ();
   if (__builtin_expect (timeout < 0 || nanos < 0 || nanos > 999999, false))
-    JvThrow (new IllegalArgumentException);
+    throw new IllegalArgumentException;
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
   switch (_Jv_CondWait (&si->condition, &si->mutex, timeout, nanos))
     {
       case _JV_NOT_OWNER:
-	JvThrow (new IllegalMonitorStateException (JvNewStringLatin1 
-                          ("current thread not owner")));        
+	throw new IllegalMonitorStateException (JvNewStringLatin1 
+						("current thread not owner"));
       case _JV_INTERRUPTED:
 	if (Thread::interrupted ())
-	  JvThrow (new InterruptedException);        
+	  throw new InterruptedException;
     }
 }
 
@@ -224,7 +224,7 @@ _Jv_MonitorEnter (jobject obj)
 {
 #ifndef HANDLE_SEGV
   if (__builtin_expect (! obj, false))
-    JvThrow (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
 #endif
   if (__builtin_expect (INIT_NEEDED (obj), false))
     obj->sync_init ();
@@ -239,7 +239,7 @@ _Jv_MonitorExit (jobject obj)
   JvAssert (! INIT_NEEDED (obj));
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) obj->sync_info;
   if (__builtin_expect (_Jv_MutexUnlock (&si->mutex), false))
-    JvThrow (new java::lang::IllegalMonitorStateException);
+    throw new java::lang::IllegalMonitorStateException;
   return 0;
 }
 

@@ -100,17 +100,16 @@ void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
 #endif
 
 
-extern "C" void _Jv_ThrowSignal (void *) __attribute ((noreturn));
+extern "C" void _Jv_ThrowSignal (jthrowable) __attribute ((noreturn));
 
 // Just like _Jv_Throw, but fill in the stack trace first.  Although
 // this is declared extern in order that its name not be mangled, it
 // is not intended to be used outside this file.
 void 
-_Jv_ThrowSignal (void *e)
+_Jv_ThrowSignal (jthrowable throwable)
 {
-  java::lang::Throwable *throwable = (java::lang::Throwable *)e;
   throwable->fillInStackTrace ();
-  _Jv_Throw (throwable);
+  throw throwable;
 }
  
 #ifdef HANDLE_SEGV
@@ -251,7 +250,7 @@ _Jv_makeUtf8Const (char* s, int len)
     len = strlen (s);
   Utf8Const* m = (Utf8Const*) _Jv_AllocBytes (sizeof(Utf8Const) + len + 1);
   if (! m)
-    JvThrow (no_memory);
+    throw no_memory;
   memcpy (m->data, s, len);
   m->data[len] = 0;
   m->length = len;
@@ -316,14 +315,14 @@ _Jv_GCWatch (jobject obj)
 void
 _Jv_ThrowBadArrayIndex(jint bad_index)
 {
-  JvThrow (new java::lang::ArrayIndexOutOfBoundsException
-	   (java::lang::String::valueOf(bad_index)));
+  throw new java::lang::ArrayIndexOutOfBoundsException
+    (java::lang::String::valueOf (bad_index));
 }
 
 void
 _Jv_ThrowNullPointerException ()
 {
-  throw new java::lang::NullPointerException ();
+  throw new java::lang::NullPointerException;
 }
 
 // Allocate some unscanned memory and throw an exception if no memory.
@@ -332,7 +331,7 @@ _Jv_AllocBytesChecked (jsize size)
 {
   void *r = _Jv_AllocBytes (size);
   if (! r)
-    _Jv_Throw (no_memory);
+    throw no_memory;
   return r;
 }
 
@@ -346,7 +345,7 @@ _Jv_AllocObject (jclass klass, jint size)
 
   jobject obj = (jobject) _Jv_AllocObj (size, klass);
   if (__builtin_expect (! obj, false))
-    JvThrow (no_memory);
+    throw no_memory;
 
   // If this class has inherited finalize from Object, then don't
   // bother registering a finalizer.  We know that finalize() is the
@@ -390,7 +389,7 @@ jobjectArray
 _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
 {
   if (__builtin_expect (count < 0, false))
-    JvThrow (new java::lang::NegativeArraySizeException);
+    throw new java::lang::NegativeArraySizeException;
 
   JvAssert (! elementClass->isPrimitive ());
 
@@ -404,7 +403,7 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
 
   obj = (jobjectArray) _Jv_AllocArray (size, klass);
   if (__builtin_expect (! obj, false))
-    JvThrow (no_memory);
+    throw no_memory;
   // Cast away const.
   jsize *lp = const_cast<jsize *> (&obj->length);
   *lp = count;
@@ -426,7 +425,7 @@ _Jv_NewPrimArray (jclass eltype, jint count)
 {
   int elsize = eltype->size();
   if (__builtin_expect (count < 0, false))
-    JvThrow (new java::lang::NegativeArraySizeException ());
+    throw new java::lang::NegativeArraySizeException;
 
   JvAssert (eltype->isPrimitive ());
   jobject dummy = NULL;
@@ -435,13 +434,13 @@ _Jv_NewPrimArray (jclass eltype, jint count)
   // Check for overflow.
   if (__builtin_expect ((size_t) count > 
 			(SIZE_T_MAX - size) / elsize, false))
-    JvThrow (no_memory);
+    throw no_memory;
 
   jclass klass = _Jv_GetArrayClass (eltype, 0);
 
   __JArray *arr = (__JArray*) _Jv_AllocObj (size + elsize * count, klass);
   if (__builtin_expect (! arr, false))
-    JvThrow (no_memory);
+    throw no_memory;
   // Cast away const.
   jsize *lp = const_cast<jsize *> (&arr->length);
   *lp = count;
@@ -953,7 +952,7 @@ _Jv_Malloc (jsize size)
     size = 1;
   void *ptr = malloc ((size_t) size);
   if (__builtin_expect (ptr == NULL, false))
-    JvThrow (no_memory);
+    throw no_memory;
   return ptr;
 }
 
@@ -964,7 +963,7 @@ _Jv_Realloc (void *ptr, jsize size)
     size = 1;
   ptr = realloc (ptr, (size_t) size);
   if (__builtin_expect (ptr == NULL, false))
-    JvThrow (no_memory);
+    throw no_memory;
   return ptr;
 }
 

@@ -65,7 +65,7 @@ java::io::FileDescriptor::valid (void) {
 void
 java::io::FileDescriptor::sync (void) {
   if (! FlushFileBuffers ((HANDLE)fd))
-    JvThrow (new SyncFailedException (JvNewStringLatin1 (winerr ())));
+    throw new SyncFailedException (JvNewStringLatin1 (winerr ()));
 }
 
 jint
@@ -109,7 +109,7 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
     {
       char msg[MAX_PATH + 1000];
       sprintf (msg, "%s: %s", buf, winerr ());
-      JvThrow (new FileNotFoundException (JvNewStringLatin1 (msg)));
+      throw new FileNotFoundException (JvNewStringLatin1 (msg));
     }
 
   return (jint)handle;
@@ -127,13 +127,13 @@ java::io::FileDescriptor::write (jint b)
         {
           InterruptedIOException *iioe = new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
           iioe->bytesTransferred = bytesWritten;
-          JvThrow (iioe);
+	  throw iioe;
         }
       if (bytesWritten != 1)
-        JvThrow (new IOException (JvNewStringLatin1 (winerr ())));
+	throw new IOException (JvNewStringLatin1 (winerr ()));
     }
   else
-    JvThrow (new IOException (JvNewStringLatin1 (winerr ())));
+    throw new IOException (JvNewStringLatin1 (winerr ()));
   // FIXME: loop until bytesWritten == 1
 }
 
@@ -141,9 +141,9 @@ void
 java::io::FileDescriptor::write(jbyteArray b, jint offset, jint len)
 {
   if (! b)
-    JvThrow (new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
   if(offset < 0 || len < 0 || offset + len > JvGetArrayLength (b))
-    JvThrow (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
 
   jbyte *buf = elements (b) + offset;
   DWORD bytesWritten;
@@ -153,11 +153,11 @@ java::io::FileDescriptor::write(jbyteArray b, jint offset, jint len)
         {
           InterruptedIOException *iioe = new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
           iioe->bytesTransferred = bytesWritten;
-          JvThrow (iioe);
+	  throw iioe;
         }
     }
   else
-    JvThrow(new IOException (JvNewStringLatin1 (winerr ())));
+    throw new IOException (JvNewStringLatin1 (winerr ()));
   // FIXME: loop until bytesWritten == len
 }
 
@@ -167,7 +167,7 @@ java::io::FileDescriptor::close (void)
   HANDLE save = (HANDLE)fd;
   fd = (jint)INVALID_HANDLE_VALUE;
   if (! CloseHandle (save))
-    JvThrow (new IOException (JvNewStringLatin1 (winerr ())));
+    throw new IOException (JvNewStringLatin1 (winerr ()));
 }
 
 jint
@@ -179,12 +179,12 @@ java::io::FileDescriptor::seek (jlong pos, jint whence)
   jlong here = getFilePointer();
 
   if ((whence == SET && pos > len) || (whence == CUR && here + pos > len))
-    JvThrow (new EOFException);
+    throw new EOFException;
 
   LONG high = pos >> 32;
   DWORD low = SetFilePointer ((HANDLE)fd, (DWORD)(0xffffffff & pos), &high, whence == SET ? FILE_BEGIN : FILE_CURRENT);
   if ((low == 0xffffffff) && (GetLastError () != NO_ERROR))
-    JvThrow (new IOException (JvNewStringLatin1 (winerr ())));
+    throw new IOException (JvNewStringLatin1 (winerr ()));
   return low;
 }
 
@@ -194,7 +194,7 @@ java::io::FileDescriptor::getFilePointer(void)
   LONG high = 0;
   DWORD low = SetFilePointer ((HANDLE)fd, 0, &high, FILE_CURRENT);
   if ((low == 0xffffffff) && (GetLastError() != NO_ERROR))
-    JvThrow(new IOException (JvNewStringLatin1 (winerr ())));
+    throw new IOException (JvNewStringLatin1 (winerr ()));
   return (((jlong)high) << 32L) | (jlong)low;
 }
 
@@ -216,7 +216,7 @@ java::io::FileDescriptor::read(void)
   DWORD read;
 
   if (! ReadFile ((HANDLE)fd, &buf, 1, &read, NULL))
-    JvThrow (new IOException (JvNewStringLatin1 (winerr ())));
+    throw new IOException (JvNewStringLatin1 (winerr ()));
   if (! read)
     return -1;
   else
@@ -227,17 +227,17 @@ jint
 java::io::FileDescriptor::read(jbyteArray buffer, jint offset, jint count)
 {
   if (! buffer)
-    JvThrow(new java::lang::NullPointerException);
+    throw new java::lang::NullPointerException;
 
   jsize bsize = JvGetArrayLength (buffer);
   if (offset < 0 || count < 0 || offset + count > bsize)
-    JvThrow (new java::lang::ArrayIndexOutOfBoundsException);
+    throw new java::lang::ArrayIndexOutOfBoundsException;
 
   jbyte *bytes = elements (buffer) + offset;
 
   DWORD read;
   if (! ReadFile((HANDLE)fd, bytes, count, &read, NULL))
-    JvThrow (new IOException (JvNewStringLatin1 (winerr ())));
+    throw new IOException (JvNewStringLatin1 (winerr ()));
 
   return (jint)read;
 }

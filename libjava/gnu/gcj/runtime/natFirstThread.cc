@@ -69,7 +69,7 @@ gnu::gcj::runtime::FirstThread::run (void)
       if (vers != JNI_VERSION_1_1 && vers != JNI_VERSION_1_2)
 	{
 	  // FIXME: unload the library.
-	  _Jv_Throw (new java::lang::UnsatisfiedLinkError (JvNewStringLatin1 ("unrecognized version from preloaded JNI_OnLoad")));
+	  throw new java::lang::UnsatisfiedLinkError (JvNewStringLatin1 ("unrecognized version from preloaded JNI_OnLoad"));
 	}
     }
 
