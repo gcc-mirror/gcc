@@ -41,7 +41,7 @@
     if (__m & digit || __m & xdigit)
       return __isctype(__c, __m);
     else
-      return __istype(__c);
+      return __istype(__c, __m);
   }
 
   const char*
