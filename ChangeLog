@@ -1,5 +1,11 @@
 2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* Makefile.in (TARGET_CONFIGDIRS): Wrong place. Removed note about
+	libjava.
+	* configure.in (target_libs): Removed `target-libjava'.
+
+2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* Makefile.in (TARGET_CONFIGDIRS): Added note about libjava.
 	(ALL_MODULES): Added fastjar.
 	(NATIVE_CHECK_MODULES, INSTALL_MODULES, CLEAN_MODULES): Likewise.

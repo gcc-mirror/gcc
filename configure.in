@@ -75,7 +75,6 @@ target_libs="target-libiberty \
 		target-libf2c \
 		target-libchill \
 		target-libffi \
-		target-libjava \
 		target-zlib \
 		target-boehm-gc \
 		target-qthreads \
