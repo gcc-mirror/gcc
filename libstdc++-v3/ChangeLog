@@ -7,6 +7,17 @@
 
 	* scripts/check_performance: Support PCH.
 
+	* scripts/check_performance (CXX): Add -DNOTHREAD.
+	* testsuite/performance/20_util/allocator/insert.cc: Integrate
+	threaded tests from insert_insert.cc.  Tweak iterations,
+	remove special cases.
+	* testsuite/performance/20_util/allocator/insert_insert.cc:
+	Make all tests single-threaded. Tweak iterations.
+	* testsuite/performance/20_util/allocator/map_thread.cc:
+	Tweak iterations.
+	* testsuite/performance/20_util/allocator/producer_consumer.cc:
+	Likewise.
+
 2004-02-05  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 12179
