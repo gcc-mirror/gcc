@@ -1,3 +1,11 @@
+Fri Jan 12 12:08:12 MET 2001  Andreas Jaeger  <aj@suse.de>
+			      Jan Hubicka  <jh@suse.cz>
+
+ 	* combine.c (reversed_comparison): Fix typo in last patch.
+	Check X for NULL.
+ 	(combine_reversed_comparison_code): Make static to follow
+ 	prototype declaration.
+
 2001-01-12  Phil Edwards  <pme@sources.redhat.com>
 
 	* install.texi:  Remove misplaced duplicate entry.
