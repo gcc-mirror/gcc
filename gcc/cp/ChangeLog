@@ -1,6 +1,26 @@
+Thu Apr 28 16:29:11 1994  Doug Evans  (dje@canuck.cygnus.com)
+
+	* Make-lang.in (cc1plus): Depend on stamp-objlist.
+	* Makefile.in (BC_OBJS): Delete.
+	(OBJS): Cat ../stamp-objlist to get everything, except ../c-common.o.
+	(../cc1plus): Delete reference to BC_OBJS.
+
 Thu Apr 28 15:19:46 1994  Mike Stump  (mrs@cygnus.com)
 
 	* cp-tree.h: disable use of backend EH.
+
+Wed Apr 27 21:01:24 1994  Doug Evans  (dje@canuck.cygnus.com)
+
+	* Make-lang.in (c++.distdir): mkdir tmp/cp first.
+	* Makefile.in (INCLUDES): Move definition to same place as
+	parent makefile.
+	(ALLOCA): Define.
+	(OLDAR_FLAGS): Delete.
+	(OLDCC): Define.
+	(DIR): Delete.
+	(CLIB): Define.
+	(####site): Delete.
+	(SUBDIR_USE_ALLOCA): Don't use ALLOCA if compiling with gcc.
 
 Wed Apr 27 19:10:04 1994  Kung Hsu  (kung@mexican.cygnus.com)
 
@@ -132,6 +152,17 @@ Mon Apr 25 02:36:28 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* call.c (convert_harshness_ansi): Use type_promotes_to.  Also fix
 	promotion semantics for reals.
 
+Sun Apr 24 16:52:51 1994  Doug Evans  (dje@canuck.cygnus.com)
+
+	* Make-lang.in (c++.install-common): Check for g++-cross.
+	* Makefile.in: Remove Cygnus cruft.
+	(config.status): Delete.
+	(RTL_H): Define.
+	(TREE_H): Use complete pathname, some native makes have minimal
+	VPATH support.
+	(*.o): Use complete pathname to headers in parent dir.
+	(doc, info, dvi): Delete.
+
 Sun Apr 24 00:47:49 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* decl.c (pushdecl): Avoid redundant warning on redeclaring function
@@ -246,6 +277,11 @@ Fri Apr 22 12:48:10 1994  Kung Hsu  (kung@mexican.cygnus.com)
 	types not to be dumped in stabs, like types in #pragma interface.
 	* decl.c (init_decl_processing): use TYPE_DECL_SUPPRESS_DEBUG to
 	mark unknown type.
+
+Fri Apr 22 03:27:26 1994  Doug Evans  (dje@cygnus.com)
+
+	* Language directory reorganization.
+	See parent makefile.
 
 Thu Apr 21 18:27:57 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
