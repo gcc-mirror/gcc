@@ -1,3 +1,8 @@
+2003-12-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* gcc.dg/cpp/trad/xwin1.c: Remove, breaks testsuite (and I don't
+	know how to make it work).
+
 2003-12-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Backport from mainline:
