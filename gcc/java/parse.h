@@ -177,6 +177,9 @@ extern tree stabilize_reference PROTO ((tree));
 				  && (JNUMERIC_TYPE_P ((TYPE))		  \
 				  || TREE_CODE ((TYPE)) == BOOLEAN_TYPE))
 
+#define JPRIMITIVE_TYPE_OR_VOID_P(TYPE) \
+  (JPRIMITIVE_TYPE_P (TYPE) || ((TYPE) == void_type_node))
+
 #define JBSC_TYPE_P(TYPE) ((TYPE) && (((TYPE) == byte_type_node)	\
 				      || ((TYPE) == short_type_node)	\
 				      || ((TYPE) == char_type_node)))

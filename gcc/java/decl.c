@@ -257,6 +257,8 @@ tree string_type_node;
 tree throwable_type_node;
 tree runtime_exception_type_node;
 tree error_exception_type_node;
+tree *predef_filenames;
+int  predef_filenames_size;
 
 tree boolean_type_node;
 
@@ -540,6 +542,9 @@ init_decl_processing ()
   float_zero_node = build_real (float_type_node, dconst0);
   double_zero_node = build_real (double_type_node, dconst0);
 
+  /* As your adding items here, please update the code right after
+     this section, so that the filename containing the source code of
+     the pre-defined class gets registered correctly. */
   unqualified_object_id_node = get_identifier ("Object");
   object_type_node = lookup_class (get_identifier ("java.lang.Object"));
   object_ptr_type_node = promote_type (object_type_node);
@@ -550,6 +555,17 @@ init_decl_processing ()
     lookup_class (get_identifier ("java.lang.RuntimeException"));
   error_exception_type_node = 
     lookup_class (get_identifier ("java.lang.Error"));
+
+  /* This section has to be updated as items are added to the previous
+     section. */
+  predef_filenames_size = 6;
+  predef_filenames = (tree *)xmalloc (predef_filenames_size * sizeof (tree));
+  predef_filenames [0] = get_identifier ("java/lang/Class.java");
+  predef_filenames [1] = get_identifier ("java/lang/Error.java");
+  predef_filenames [2] = get_identifier ("java/lang/Object.java");
+  predef_filenames [3] = get_identifier ("java/lang/RuntimeException.java");
+  predef_filenames [4] = get_identifier ("java/lang/String.java");
+  predef_filenames [5] = get_identifier ("java/lang/Throwable.java");
 
   methodtable_type = make_node (RECORD_TYPE);
   layout_type (methodtable_type);

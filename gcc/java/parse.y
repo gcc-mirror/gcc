@@ -5486,6 +5486,12 @@ source_end_java_method ()
   /* Set EH language codes */
   java_set_exception_lang_code ();
 
+  /* Turn function bodies with only a NOP expr null, so they don't get
+     generated at all and we won't get warnings when using the -W
+     -Wall flags. */
+  if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)) == empty_stmt_node)
+    BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)) = NULL_TREE;
+
   /* Generate function's code */
   if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl))
       && ! flag_emit_class_files
@@ -5902,7 +5908,7 @@ java_expand_finals ()
 void
 java_expand_classes ()
 {
-  int save_error_count = java_error_count;
+  int save_error_count = 0;
   java_parse_abort_on_error ();
   if (!(ctxp = ctxp_for_generation))
     return;
@@ -7924,9 +7930,17 @@ java_complete_lhs (node)
       if (!EXPR_WFL_NODE (node) /* Or a PRIMARY flag ? */
 	  || TREE_CODE (EXPR_WFL_NODE (node)) == IDENTIFIER_NODE)
 	{
+	  tree wfl = node;
 	  node = resolve_expression_name (node, NULL);
 	  if (node == error_mark_node)
 	    return node;
+	  /* Keep line number information somewhere were it doesn't
+	     disrupt the completion process. */
+	  if (flag_emit_xref)
+	    {
+	      EXPR_WFL_NODE (wfl) = TREE_OPERAND (node, 1);
+	      TREE_OPERAND (node, 1) = wfl;
+	    }
 	  CAN_COMPLETE_NORMALLY (node) = 1;
 	}
       else
