@@ -1,3 +1,11 @@
+2003-12-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* mangle.c (conv_type_names): Holds IDENTIFIER_NODEs only.
+	(hash_type): Use TYPE_UID of the identifier's type.
+	(compare_type): Adjust.
+	(mangle_conv_op_name_for_type): Store identifier nodes only, use
+	TYPE_UID has hash value.
+
 2003-12-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_CONV_FN_P): Check that DECL_NAME is non-NULL.
