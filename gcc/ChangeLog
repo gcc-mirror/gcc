@@ -1,3 +1,16 @@
+2000-07-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-decl.c (define_label): Warn about identifier conflicts with
+	labels in traditional C.
+
+	* c-parse.in (unop +): Warn about the unary plus operator for
+	traditional C.
+
+	* c-typeck.c (store_init_value): Warn about automatic aggregate
+	initialization for traditional C.
+
+	* invoke.texi (-Wtraditional): Document new warnings.
+
 2000-07-12  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* Makefile.in (c-errors.o): Fix thinko in dependency.

@@ -2706,6 +2706,10 @@ define_label (filename, line, name)
       decl = lookup_label (name);
     }
 
+  if (warn_traditional && lookup_name (name))
+    warning ("traditional C lacks a separate namespace for labels, identifier `%s' conflicts",
+	     IDENTIFIER_POINTER (name));
+  
   if (DECL_INITIAL (decl) != 0)
     {
       error ("duplicate label `%s'", IDENTIFIER_POINTER (name));

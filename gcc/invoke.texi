@@ -1824,6 +1824,16 @@ Usage of ANSI string concatenation is detected.
 
 @item
 A function macro appears without arguments.
+
+@item
+The unary plus operator.
+
+@item
+Initialization of automatic aggregates.
+
+@item
+Identifier conflicts with labels.  Traditional C lacks a separate
+namespace for labels.
 @end itemize
 
 @item -Wundef
