@@ -2259,9 +2259,14 @@ eligible_for_epilogue_delay (trial, slot)
 
   src = SET_SRC (pat);
 
-  /* This matches "*return_[qhs]i".  */
+  /* This matches "*return_[qhs]i" or even "*return_di" on TARGET_ARCH64.  */
   if (arith_operand (src, GET_MODE (src)))
-    return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (SImode);
+    {
+      if (TARGET_ARCH64)
+        return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
+      else
+        return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (SImode);
+    }
     
   /* This matches "*return_di".  */
   else if (arith_double_operand (src, GET_MODE (src)))
@@ -4232,6 +4237,12 @@ function_value (type, mode, incoming_p)
 	  mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
 	}
     }
+    
+  if (TARGET_ARCH64
+      && GET_MODE_CLASS (mode) == MODE_INT 
+      && GET_MODE_SIZE (mode) < UNITS_PER_WORD
+      && type && TREE_CODE (type) != UNION_TYPE)
+    mode = DImode;
 
   if (incoming_p)
     regno = BASE_RETURN_VALUE_REG (mode);
