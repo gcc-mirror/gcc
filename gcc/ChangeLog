@@ -1,3 +1,32 @@
+2003-06-25  H.J. Lu <hongjiu.lu@intel.com>
+
+	* doc/extend.texi: Document new builtin functions for Intel
+	Prescott New Intrunctions.
+
+	* doc/invoke.texi: Document new command-line options, -mpni and
+	-mno-pni, for Intel Prescott New Intrunctions.
+
+	* config.gcc (extra_headers): Add pmmintrin.h for i[34567]86-*-*.
+
+	* config/i386/i386.c (override_options): Turn on MASK_SSE2
+	for -mpni. Turn on MASK_SSE for -msse2.
+	(bdesc_2arg): Add PNI builtins with 2 args.
+	(bdesc_1arg): Add PNI builtins with 1 arg.
+	(ix86_init_mmx_sse_builtins): Handle PNI builtins.
+	(ix86_expand_builtin): Likewise.
+
+	* config/i386/i386.h (MASK_3DNOW, MASK_3DNOW_A,
+	MASK_128BIT_LONG_DOUBLE, MASK_64BIT, MASK_MS_BITFIELD_LAYOUT,
+	MASK_TLS_DIRECT_SEG_REFS): Renumbered.
+	(TARGET_PNI): New.
+	(TARGET_SWITCHES): Don't enable MASK_SSE for -msse2 here. Add
+	-mpni and -mno-pni.
+	(TARGET_CPU_CPP_BUILTINS): Defined __PNI__ for PNI.
+	(ix86_builtins): Add PNI builtins.
+	(config/i386/i386.md): Add PNI patterns.
+
+	* config/i386/pmmintrin.h: New file.
+
 2003-06-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (call): Fix the insn lengths.
