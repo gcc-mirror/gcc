@@ -107,11 +107,13 @@ public class GregorianCalendar extends Calendar {
   public GregorianCalendar (TimeZone zone, Locale locale)
   {
     super (zone, locale);
+    setDefaultTime ();
   }
 
   public GregorianCalendar (int year, int month, int date)
   {
     this((TimeZone) null);
+    setDefaultTime ();
     set (year, month, date);
   }
 
@@ -119,6 +121,7 @@ public class GregorianCalendar extends Calendar {
 			    int hour, int minute)
   {
     this((TimeZone) null);
+    setDefaultTime ();
     set (year, month, date, hour, minute);
   }
 
@@ -126,7 +129,13 @@ public class GregorianCalendar extends Calendar {
 			    int hour, int minute, int second)
   {
     this((TimeZone) null);
+    setDefaultTime ();
     set (year, month, date, hour, minute, second);
+  }
+
+  private final void setDefaultTime ()
+  {
+    setTimeInMillis (System.currentTimeMillis());
   }
 
   public int getMinimum(int calfield) { return mins[calfield]; }

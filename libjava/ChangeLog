@@ -1,5 +1,16 @@
 1999-04-26  Tom Tromey  <tromey@cygnus.com>
 
+	* java/util/GregorianCalendar.java (setDefaultTime): New method.
+	(GregorianCalendar): Use it in all constructors.
+	* java/util/Calendar.java (Calendar): Changed argument name to
+	`zone' to match code.
+
+	* gnu/gcj/text/LocaleData_en.java: Added collatorRule element.
+	* java/text/CollationKey.java: New file.
+	* java/text/CollationElementIterator.java: New file.
+	* java/text/Collator.java: New file.
+	* java/text/RuleBasedCollator.java: New file.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (jv_convert_LDFLAGS): Added -nodefaultlibs.
 	(jv_convert_LDADD): Explicltly add -lm -lc.
