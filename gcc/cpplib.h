@@ -386,9 +386,14 @@ struct cpp_options {
 
   char pedantic_errors;
 
-  /* Nonzero means don't print warning messages.  -w.  */
+  /* Nonzero means don't print warning messages.  */
 
   char inhibit_warnings;
+
+  /* Nonzero means don't print error messages.  Has no option to select it,
+     but can be set by a user of cpplib (e.g. fix-header).  */
+
+  char inhibit_errors;
 
   /* Nonzero means warn if slash-star appears in a comment.  */
 
@@ -710,24 +715,34 @@ extern void cpp_assert PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_undef  PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_unassert PARAMS ((cpp_reader *, unsigned char *));
 
-extern void cpp_error PARAMS ((cpp_reader *, const char *, ...))
+/* N.B. The error-message-printer prototypes have not been nicely
+   formatted because exgettext needs to see 'msgid' on the same line
+   as the name of the function in order to work properly.  Only the
+   string argument gets a name in an effort to keep the lines from
+   getting ridiculously oversized.  */
+
+extern void cpp_ice PARAMS ((cpp_reader *, const char *msgid, ...))
   ATTRIBUTE_PRINTF_2;
-extern void cpp_warning PARAMS ((cpp_reader *, const char *, ...))
+extern void cpp_fatal PARAMS ((cpp_reader *, const char *msgid, ...))
   ATTRIBUTE_PRINTF_2;
-extern void cpp_pedwarn PARAMS ((cpp_reader *, const char *, ...))
+extern void cpp_error PARAMS ((cpp_reader *, const char *msgid, ...))
   ATTRIBUTE_PRINTF_2;
-extern void cpp_error_with_line PARAMS ((cpp_reader *, int, int, const char *, ...))
+extern void cpp_warning PARAMS ((cpp_reader *, const char *msgid, ...))
+  ATTRIBUTE_PRINTF_2;
+extern void cpp_pedwarn PARAMS ((cpp_reader *, const char *msgid, ...))
+  ATTRIBUTE_PRINTF_2;
+extern void cpp_notice PARAMS ((cpp_reader *, const char *msgid, ...))
+  ATTRIBUTE_PRINTF_2;
+extern void cpp_error_with_line PARAMS ((cpp_reader *, int, int, const char *msgid, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_warning_with_line PARAMS ((cpp_reader *, int, int, const char *, ...))
+extern void cpp_warning_with_line PARAMS ((cpp_reader *, int, int, const char *msgid, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_pedwarn_with_line PARAMS ((cpp_reader *, int, int, const char *, ...))
+extern void cpp_pedwarn_with_line PARAMS ((cpp_reader *, int, int, const char *msgid, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_pedwarn_with_file_and_line PARAMS ((cpp_reader *, const char *, int, const char *, ...))
-  ATTRIBUTE_PRINTF_4;
-extern void cpp_message_from_errno PARAMS ((cpp_reader *, int, const char *));
+extern void cpp_pedwarn_with_file_and_line PARAMS ((cpp_reader *, const char *, int, int, const char *msgid, ...))
+  ATTRIBUTE_PRINTF_5;
 extern void cpp_error_from_errno PARAMS ((cpp_reader *, const char *));
-extern void cpp_perror_with_name PARAMS ((cpp_reader *, const char *));
-extern void v_cpp_message PARAMS ((cpp_reader *, int, const char *, va_list));
+extern void cpp_notice_from_errno PARAMS ((cpp_reader *, const char *));
 
 extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
@@ -754,18 +769,6 @@ extern int check_macro_name		PARAMS ((cpp_reader *, const U_CHAR *));
 enum file_change_code {same_file, enter_file, leave_file};
 extern void output_line_command		PARAMS ((cpp_reader *,
 						 enum file_change_code));
-
-/* From cpperror.c */
-extern void cpp_fatal PARAMS ((cpp_reader *, const char *, ...))
-  ATTRIBUTE_PRINTF_2;
-extern void cpp_message PARAMS ((cpp_reader *, int, const char *, ...))
-  ATTRIBUTE_PRINTF_3;
-extern void cpp_pfatal_with_name PARAMS ((cpp_reader *, const char *))
-  ATTRIBUTE_NORETURN;
-extern void cpp_file_line_for_message PARAMS ((cpp_reader *, const char *,
-					      int, int));
-extern void cpp_print_containing_files PARAMS ((cpp_reader *));
-extern void cpp_notice PARAMS ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
 
 /* In cppfiles.c */
 extern void simplify_pathname		PARAMS ((char *));

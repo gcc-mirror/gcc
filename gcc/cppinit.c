@@ -343,15 +343,15 @@ append_include_chain (pfile, pend, dir, path)
     {
       /* Dirs that don't exist are silently ignored. */
       if (errno != ENOENT)
-	cpp_perror_with_name (pfile, dir);
+	cpp_notice_from_errno (pfile, dir);
       else if (CPP_OPTIONS (pfile)->verbose)
-	cpp_notice ("ignoring nonexistent directory `%s'\n", dir);
+	fprintf (stderr, _("ignoring nonexistent directory `%s'\n"), dir);
       return;
     }
 
   if (!S_ISDIR (st.st_mode))
     {
-      cpp_message (pfile, 1, "%s: %s: Not a directory", progname, dir);
+      cpp_notice (pfile, "%s: Not a directory", dir);
       return;
     }
 
@@ -855,14 +855,14 @@ cpp_start_read (pfile, fname)
   if (opts->verbose)
     {
       struct file_name_list *p;
-      cpp_message (pfile, -1, "#include \"...\" search starts here:\n");
+      fprintf (stderr, _("#include \"...\" search starts here:\n"));
       for (p = opts->quote_include; p; p = p->next)
 	{
 	  if (p == opts->bracket_include)
-	    cpp_message (pfile, -1, "#include <...> search starts here:\n");
+	    fprintf (stderr, _("#include <...> search starts here:\n"));
 	  fprintf (stderr, " %s\n", p->name);
 	}
-      cpp_message (pfile, -1, "End of search list.\n");
+      fprintf (stderr, _("End of search list.\n"));
     }
 
   /* Don't bother trying to do macro expansion if we've already done
@@ -880,7 +880,10 @@ cpp_start_read (pfile, fname)
       f = 0;
     }
   else if ((f = open (fname, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666)) < 0)
-    cpp_pfatal_with_name (pfile, fname);
+    {
+      cpp_notice_from_errno (pfile, fname);
+      return 0;
+    }
 
   initialize_dependency_output (pfile);
 
@@ -918,7 +921,7 @@ cpp_start_read (pfile, fname)
       int fd = open (p->arg, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
       if (fd < 0)
 	{
-	  cpp_perror_with_name (pfile, p->arg);
+	  cpp_notice_from_errno (pfile, p->arg);
 	  return 0;
 	}
       if (!cpp_push_buffer (pfile, NULL, 0))
@@ -957,7 +960,7 @@ cpp_start_read (pfile, fname)
       int fd = open (p->arg, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
       if (fd < 0)
 	{
-	  cpp_perror_with_name (pfile, p->arg);
+	  cpp_notice_from_errno (pfile, p->arg);
 	  return 0;
 	}
       if (!cpp_push_buffer (pfile, NULL, 0))
@@ -1004,14 +1007,13 @@ cpp_finish (pfile)
   struct cpp_options *opts = CPP_OPTIONS (pfile);
 
   if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) != CPP_NULL_BUFFER (pfile))
-    cpp_fatal (pfile,
-	       "cpplib internal error: buffers still stacked in cpp_finish");
+    cpp_ice (pfile, "buffers still stacked in cpp_finish");
   cpp_pop_buffer (pfile);
-  
+
   if (opts->print_deps)
     {
       /* Stream on which to print the dependency information.  */
-      FILE *deps_stream;
+      FILE *deps_stream = 0;
 
       /* Don't actually write the deps file if compilation has failed.  */
       if (pfile->errors == 0)
@@ -1020,13 +1022,17 @@ cpp_finish (pfile)
 	  if (opts->deps_file == 0)
 	    deps_stream = stdout;
 	  else if ((deps_stream = fopen (opts->deps_file, deps_mode)) == 0)
-	    cpp_pfatal_with_name (pfile, opts->deps_file);
-	  fputs (pfile->deps_buffer, deps_stream);
-	  putc ('\n', deps_stream);
-	  if (opts->deps_file)
+	    cpp_notice_from_errno (pfile, opts->deps_file);
+
+	  if (deps_stream)
 	    {
-	      if (ferror (deps_stream) || fclose (deps_stream) != 0)
-		cpp_fatal (pfile, "I/O error on output");
+	      fputs (pfile->deps_buffer, deps_stream);
+	      putc ('\n', deps_stream);
+	      if (opts->deps_file)
+		{
+		  if (ferror (deps_stream) || fclose (deps_stream) != 0)
+		    cpp_fatal (pfile, "I/O error on output");
+		}
 	    }
 	}
     }
@@ -1487,12 +1493,12 @@ cpp_handle_option (pfile, argc, argv)
 	if (!strcmp (argv[i], "--help"))
 	  print_help ();
 	else if (!strcmp (argv[i], "--version"))
-	  cpp_notice ("GNU CPP version %s (cpplib)\n", version_string);
+	  fprintf (stderr, _("GNU CPP version %s (cpplib)\n"), version_string);
 	exit (0);  /* XXX */
 	break;
 	
       case 'v':
-	cpp_notice ("GNU CPP version %s (cpplib)", version_string);
+	fprintf (stderr, _("GNU CPP version %s (cpplib)\n"), version_string);
 #ifdef TARGET_VERSION
 	TARGET_VERSION;
 #endif
@@ -1673,7 +1679,7 @@ cpp_handle_options (pfile, argc, argv)
 static void
 print_help ()
 {
-  cpp_notice ("Usage: %s [switches] input output\n", progname);
+  fprintf (stderr, _("Usage: %s [switches] input output\n"), progname);
   fputs (_("\
 Switches:\n\
   -include <file>           Include the contents of <file> before other files\n\

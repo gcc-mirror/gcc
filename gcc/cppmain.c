@@ -73,7 +73,10 @@ main (argc, argv)
   if (!opts->out_fname || !strcmp (opts->out_fname, ""))
     opts->out_fname = "stdout";
   else if (! freopen (opts->out_fname, "w", stdout))
-    cpp_pfatal_with_name (&parse_in, opts->out_fname);
+    {
+      cpp_notice_from_errno (&parse_in, opts->out_fname);
+      return (FATAL_EXIT_CODE);
+    }
 
   if (! opts->no_output)
     {
@@ -87,7 +90,7 @@ main (argc, argv)
 	      rem = fwrite (parse_in.token_buffer, 1, count, stdout);
 	      if (rem < count)
 		/* Write error. */
-		cpp_pfatal_with_name (&parse_in, opts->out_fname);
+		cpp_notice_from_errno (&parse_in, opts->out_fname);
 
 	      CPP_SET_WRITTEN (&parse_in, 0);
 	    }
@@ -108,7 +111,7 @@ main (argc, argv)
   cpp_finish (&parse_in);
   if (fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (&parse_in), stdout)
       < CPP_WRITTEN (&parse_in))
-    cpp_pfatal_with_name (&parse_in, opts->out_fname);
+    cpp_notice_from_errno (&parse_in, opts->out_fname);
 
   cpp_cleanup (&parse_in);
 

@@ -1,5 +1,42 @@
 2000-02-06  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cpplib.c (my_strerror, cpp_error, cpp_error_with_line,
+	cpp_error_from_errno, cpp_warning, cpp_warning_with_line,
+	cpp_pedwarn, cpp_pedwarn_with_line,
+	cpp_pedwarn_with_file_and_line): Move to cpperror.c.
+	(cpp_print_file_and_line, v_cpp_error, v_cpp_warning,
+	v_cpp_error_with_line, v_cpp_warning_with_line,
+	cpp_message_from_errno, cpp_perror_with_name): Delete.
+
+	* cpperror.c (cpp_print_containing_files): Take starting
+	buffer as argument.
+	(cpp_file_line_for_message): Rename to cpp_print_file_and_line.
+	(v_cpp_message): Now called directly by all entry points.
+	Remove -1 case.
+	(cpp_pfatal_with_name, cpp_message): Delete.
+	(cpp_notice_from_errno, cpp_ice): New functions.
+	(cpp_notice): Is now for reporting error conditions, just
+	without an associated file.
+	(cpp_error, cpp_error_with_line): Don't do anything if
+	opts->inhibit_errors is on.
+	(cpp_pedwarn_with_file_and_line): Take column argument also.
+
+	* cpplib.h: Update prototypes of exported functions.
+	(struct cpp_options): Add inhibit_errors.
+
+	* cppalloc.c, cppfiles.c: Use fprintf not cpp_notice for
+	non-error messages.  Include intl.h.
+
+	* cppinit.c, cppmain.c: Likewise.  Also, use
+	cpp_notice_from_errno instead of cpp_perror_with_name or
+	cpp_pfatal_with_name, and cpp_notice instead of cpp_message.
+
+	* cppexp.c, cpphash.c, cppinit.c, cpplib.c: Use cpp_ice to
+	report internal errors.
+
+	* cpplib.c (do_define): Switch bcopy to memcpy.
+	Give cpp_pedwarn_with_file_and_line a dummy column argument.
+
 	* cpplib.c (copy_rest_of_line): Revert previous change: don't
 	bail out early if we hit a line comment.
 
