@@ -1,3 +1,9 @@
+2002-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/6395
+	* decl.c (make_rtl_for_nonlocal_decl): Don't mess with #pragma i/i
+	stuff for comdats.
+
 2002-04-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5504 - but re-breaks c++/411
