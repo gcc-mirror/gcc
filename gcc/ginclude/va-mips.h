@@ -7,7 +7,7 @@
 /* ---------------------------------------- */
 
 
-/* These macros implement varargs for GNU C--either traditional or ANSU.  */
+/* These macros implement varargs for GNU C--either traditional or ANSI.  */
 
 /* Define __gnuc_va_list.  */
 
@@ -43,14 +43,8 @@ typedef char * __gnuc_va_list;
 #endif
 
 #ifdef _STDARG_H
-#if defined(_MIPS_SIM) && (_MIPS_SIM == _MIPS_SIM_ABI64)
-#define va_start(__AP, __LASTARG)					\
-  (__AP = __builtin_next_arg (__LASTARG) - 64				\
-   + (__builtin_args_info (2) > 8 ? 64 : __builtin_args_info(2) * 8))
-#else
 #define va_start(__AP, __LASTARG) \
   (__AP = (__gnuc_va_list) __builtin_next_arg (__LASTARG))
-#endif
 
 #else
 #define va_alist  __builtin_va_alist
@@ -60,12 +54,11 @@ typedef char * __gnuc_va_list;
 #else
 #define va_dcl    int __builtin_va_alist; __va_ellipsis
 #endif
-/* Need alternate code for _MIPS_SIM_ABI64, but don't use that symbol
-   because it may not be defined.  */
+/* Need alternate code for _MIPS_SIM_ABI64.  */
 #if defined(_MIPS_SIM) && (_MIPS_SIM == _MIPS_SIM_ABI64)
 #define va_start(__AP)							\
-  (__AP = __builtin_next_arg () - 64					\
-   + (__builtin_args_info (2) > 8 ? 64 : __builtin_args_info(2) * 8))
+  (__AP = (__gnuc_va_list) __builtin_next_arg ()			\
+   + (__builtin_args_info (2) >= 8 ? -8 : 0))
 #else
 #define va_start(__AP)  __AP = (char *) &__builtin_va_alist
 #endif
