@@ -41,9 +41,11 @@ Supported PROGRAM values:
   autoconf     touch file \`configure'
   autoheader   touch file \`config.h.in'
   automake     touch all \`Makefile.in' files
-  bison        touch file \`y.tab.c'
+  bison        create \`y.tab.[ch]', if possible, from existing .[ch]
+  flex         create \`lex.yy.c', if possible, from existing .c
+  lex          create \`lex.yy.c', if possible, from existing .c
   makeinfo     touch the output file
-  yacc         touch file \`y.tab.c'"
+  yacc         create \`y.tab.[ch]', if possible, from existing .[ch]"
     ;;
 
   -v|--v|--ve|--ver|--vers|--versi|--versio|--version)
@@ -80,7 +82,15 @@ WARNING: \`$1' is missing on your system.  You should only need it if
          you modified \`acconfig.h' or \`configure.in'.  You might want
          to install the \`Autoconf' and \`GNU m4' packages.  Grab them
          from any GNU archive site."
-    touch config.h.in
+    files=`sed -n 's/^[ ]*A[CM]_CONFIG_HEADER([^):]*:\([^)]*\)).*/\1/p' configure.in`
+    if test -z "$files"; then
+      files=`sed -n 's/^[ ]*A[CM]_CONFIG_HEADER(\([^):]*\)).*/\1/p' configure.in`
+      test -z "$files" || files="$files.in"
+    else
+      files=`echo "$files" | sed -e 's/:/ /g'`
+    fi
+    test -z "$files" && files="config.h.in"
+    touch $files
     ;;
 
   automake)
@@ -100,7 +110,51 @@ WARNING: \`$1' is missing on your system.  You should only need it if
          you modified a \`.y' file.  You may need the \`Bison' package
          in order for those modifications to take effect.  You can get
          \`Bison' from any GNU archive site."
-    touch y.tab.c
+    rm -f y.tab.c y.tab.h
+    if [ $# -ne 1 ]; then
+        eval LASTARG="\${$#}"
+	case "$LASTARG" in
+	*.y)
+	    SRCFILE=`echo "$LASTARG" | sed 's/y$/c/'`
+	    if [ -f "$SRCFILE" ]; then
+	         cp "$SRCFILE" y.tab.c
+	    fi
+	    SRCFILE=`echo "$LASTARG" | sed 's/y$/h/'`
+	    if [ -f "$SRCFILE" ]; then
+	         cp "$SRCFILE" y.tab.h
+	    fi
+	  ;;
+	esac
+    fi
+    if [ ! -f y.tab.h ]; then
+	echo >y.tab.h
+    fi
+    if [ ! -f y.tab.c ]; then
+	echo 'main() { return 0; }' >y.tab.c
+    fi
+    ;;
+
+  lex|flex)
+    echo 1>&2 "\
+WARNING: \`$1' is missing on your system.  You should only need it if
+         you modified a \`.l' file.  You may need the \`Flex' package
+         in order for those modifications to take effect.  You can get
+         \`Flex' from any GNU archive site."
+    rm -f lex.yy.c
+    if [ $# -ne 1 ]; then
+        eval LASTARG="\${$#}"
+	case "$LASTARG" in
+	*.l)
+	    SRCFILE=`echo "$LASTARG" | sed 's/l$/c/'`
+	    if [ -f "$SRCFILE" ]; then
+	         cp "$SRCFILE" lex.yy.c
+	    fi
+	  ;;
+	esac
+    fi
+    if [ ! -f lex.yy.c ]; then
+	echo 'main() { return 0; }' >lex.yy.c
+    fi
     ;;
 
   makeinfo)
