@@ -23,8 +23,8 @@ elif [ "$WHICH"x = 1x ]; then
   echo "running mkcheck"
   echo "$0: testing the install directory"
 else
-  echo 'Usage: mkcheck 0'
-  echo '       mkcheck 1'
+  echo 'Usage: mkcheck 0    /* test the build directory    */'
+  echo '       mkcheck 1    /* test the install directory  */'
   exit 1;
 fi
 

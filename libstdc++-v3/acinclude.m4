@@ -1036,8 +1036,8 @@ dnl
 AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   AC_MSG_CHECKING([for clocale to use])
   AC_ARG_ENABLE(clocale,
-  [  --enable-clocale       enable model for target locale package. 
-     --enable-clocale=MODEL use MODEL target-speific locale package. [default=generic]
+  [  --enable-clocale        enable model for target locale package. 
+  --enable-clocale=MODEL  use MODEL target-speific locale package. [default=generic]
   ], 
   if test x$enable_clocale = xno; then
      enable_clocale=generic
@@ -1080,8 +1080,8 @@ dnl
 AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AC_MSG_CHECKING([for cstdio to use])
   AC_ARG_ENABLE(cstdio,
-  [  --enable-cstdio        enable stdio for target io package. 
-     --enable-cstdio=LIB    use LIB target-speific io package. [default=stdio]
+  [  --enable-cstdio         enable stdio for target io package. 
+  --enable-cstdio=LIB     use LIB target-speific io package. [default=stdio]
   ], 
   if test x$enable_cstdio = xno; then
      enable_cstdio=stdio
@@ -1428,8 +1428,7 @@ define([GLIBCPP_ENABLE_CHEADERS_DEFAULT], ifelse($1, c_std, c_std, c_std))dnl
 AC_MSG_CHECKING([for c header strategy to use])
 AC_ARG_ENABLE(cheaders,
 changequote(<<, >>)dnl
-<<  --enable-cheaders construct "C" header files for
-                           g++ [default=>>GLIBCPP_ENABLE_CHEADERS_DEFAULT],
+<<  --enable-cheaders       construct "C" header files for g++ [default=>>GLIBCPP_ENABLE_CHEADERS_DEFAULT],
 changequote([, ])
   [case "$enableval" in
    c) 
@@ -1567,6 +1566,9 @@ dnl  GLIBCPP_EXPORT_INSTALL_INFO
 dnl  calculates gxx_install_dir
 dnl  exports glibcpp_toolexecdir
 dnl  exports glibcpp_toolexeclibdir
+dnl  exports glibcpp_builddir
+dnl  exports glibcpp_srcdir
+dnl  exports glibcpp_prefixdir
 dnl
 dnl Assumes cross_compiling bits already done, and with_cross_host in
 dnl particular
@@ -1590,7 +1592,7 @@ AC_MSG_RESULT($libstdcxx_interface)
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 AC_MSG_CHECKING([for --with-gxx-include-dir])
 AC_ARG_WITH(gxx-include-dir,
-[ --with-gxx-include-dir  the installation directory for include files],
+[  --with-gxx-include-dir  the installation directory for include files],
 [case "${withval}" in
   yes)
     AC_MSG_ERROR(Missing directory for --with-gxx-include-dir)
