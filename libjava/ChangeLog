@@ -1,3 +1,39 @@
+2002-12-03  Andrew Haley  <aph@redhat.com>
+
+        * java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Call
+	_Jv_PushClass.
+        (_Jv_InitNewClassFields): Set protectionDomain and chain = NULL.
+        (_Jv_PopClass): New.
+        (_Jv_PushClass): New.
+        * java/lang/natClass.cc (forName (jstring)): Use a StackTrace to
+        discover the ClassLoader of our caller.
+        (_Jv_CheckArrayStore): Don't check that a class is assignment
+        compatible with Object.
+        * java/lang/natVMTHrowable.cc: Delete.
+        * gnu/gcj/runtime/StackTrace.java: New, partly copied from
+	java.lang.VMThrowable.
+        (StackTrace(), StackTrace(int)): New constructors.
+        (classAt, methodAt, update, methodAtAddress): New methods.
+        (map): New field.
+	* java/lang/VMThrowable.java: Use StackTrace instead of
+	natVMTHrowable.        
+	* java/lang/Class.h (getClassLoaderInternal): New.
+        (class Class): Be friendly with _Jv_PopClass and _Jv_PushClass.
+        Be friendly with gnu::gcj::runtime::StackTrace.
+        (Object.chain): New field.
+        * include/java-interp.h (class _Jv_InterpMethod): Be friendly with
+        gnu::gcj::runtime::StackTrace.
+	* gnu/gcj/runtime/natStackTrace.cc: New file.
+	* gnu/gcj/runtime/MethodRef.java: New file.
+        * prims.cc (_Jv_NewObjectArray): Use getClassLoaderInternal()
+        instead of getClassLoader().
+        * verify.cc (class _Jv_BytecodeVerifier): Likewise.
+        java::lang::VMThrowable.
+        * Makefile.am (core_java_source_files): Add MethodRef.java,
+	StackTrace.java.
+        (nat_source_files): Remove natVMThrowable.cc; add natStackTrace.cc.
+        * Makefile.in: Rebuild.
+
 2002-12-02  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc: Added `name' argument.
