@@ -3475,13 +3475,13 @@
 (define_insn_and_split "load_ra"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
 	(unspec:SI [(match_operand 1 "register_operand" "")] UNSPEC_RA))]
-  "TARGET_SHCOMPACT"
+  "TARGET_SH1"
   "#"
   "&& ! rtx_equal_function_value_matters"
   [(set (match_dup 0) (match_dup 1))]
   "
 {
-  if (current_function_has_nonlocal_label)
+  if (TARGET_SHCOMPACT && current_function_has_nonlocal_label)
     operands[1] = gen_rtx_MEM (SImode, return_address_pointer_rtx);
 }")
 

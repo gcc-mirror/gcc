@@ -1,3 +1,8 @@
+2003-08-13  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (sh_get_pr_initial_val): Always wrap in unspec for TARGET_SH1.
+	* sh.md (load_ra): Change insn predicate to TARGET_SH1.
+
 2003-08-13  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.md (ctrsi, ctrdi):  Reenable
