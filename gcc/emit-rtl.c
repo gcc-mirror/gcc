@@ -1,6 +1,6 @@
 /* Emit RTL for the GNU C-Compiler expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1996,7 +1996,8 @@ adjust_address_1 (memref, mode, offset, validate, adjust)
      lowest-order set bit in OFFSET, but don't change the alignment if OFFSET
      if zero.  */
   if (offset != 0)
-    memalign = MIN (memalign, (offset & -offset) * BITS_PER_UNIT);
+    memalign = MIN (memalign,
+		    (unsigned int) (offset & -offset) * BITS_PER_UNIT);
 
   /* We can compute the size in a number of ways.  */
   if (GET_MODE (new) != BLKmode)
@@ -2045,10 +2046,11 @@ offset_address (memref, offset, pow2)
 
   /* Update the alignment to reflect the offset.  Reset the offset, which
      we don't know.  */
-  MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref),
-				   0, 0, MIN (MEM_ALIGN (memref),
-					      pow2 * BITS_PER_UNIT),
-				   GET_MODE (new));
+  MEM_ATTRS (new)
+    = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref), 0, 0,
+		     MIN (MEM_ALIGN (memref),
+			  (unsigned int) pow2 * BITS_PER_UNIT),
+		     GET_MODE (new));
   return new;
 }
   

@@ -1,3 +1,12 @@
+Tue Jan  1 17:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* attribs.c (handle_vector_size_attribute): Use host_integerp
+	and tree_int_cst; remove warnings.
+	* caller-save.c (insert_restore): Add cast to get rid of warning.
+	(insert_save): Likewise.
+	* emit-rtl.c (adjust_address_1, offset_address): Likewise.
+	* regmove.c (find_matches): Add temporary var to kill a warning.
+
 2002-01-01  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms.h (DWARF2_UNWIND_INFO, EH_RETURN_HANDLER_RTX,

@@ -1,6 +1,6 @@
 /* Save and restore call-clobbered registers which are live across a call.
    Copyright (C) 1989, 1992, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -675,7 +675,7 @@ insert_restore (chain, before_p, regno, maxrestore, save_mode)
   mem = regno_save_mem [regno][numregs];
   if (save_mode [regno] != VOIDmode
       && save_mode [regno] != GET_MODE (mem)
-      && numregs == HARD_REGNO_NREGS (regno, save_mode [regno]))
+      && numregs == (unsigned int) HARD_REGNO_NREGS (regno, save_mode [regno]))
     mem = adjust_address (mem, save_mode[regno], 0);
   pat = gen_rtx_SET (VOIDmode,
 		     gen_rtx_REG (GET_MODE (mem), 
@@ -691,13 +691,12 @@ insert_restore (chain, before_p, regno, maxrestore, save_mode)
       n_regs_saved--;
     }
 
-
-
   /* Tell our callers how many extra registers we saved/restored */
   return numregs - 1;
 }
 
 /* Like insert_restore above, but save registers instead.  */
+
 static int
 insert_save (chain, before_p, regno, to_save, save_mode)
      struct insn_chain *chain;
@@ -752,7 +751,7 @@ insert_save (chain, before_p, regno, to_save, save_mode)
   mem = regno_save_mem [regno][numregs];
   if (save_mode [regno] != VOIDmode
       && save_mode [regno] != GET_MODE (mem)
-      && numregs == HARD_REGNO_NREGS (regno, save_mode [regno]))
+      && numregs == (unsigned int) HARD_REGNO_NREGS (regno, save_mode [regno]))
     mem = adjust_address (mem, save_mode[regno], 0);
   pat = gen_rtx_SET (VOIDmode, mem,
 		     gen_rtx_REG (GET_MODE (mem),
