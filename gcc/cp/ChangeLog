@@ -1,3 +1,15 @@
+Thu Jul  7 22:20:46 1994  Gerald Baumgartner  (gb@andros.cygnus.com)
+
+	* cp-tree.h (walk_sigtables): Created extern declaration.
+	* decl2.c (walk_sigtables): Created function, patterned after
+	walk_vtables, even though we only need it to write out sigtables.
+	(finish_sigtable_vardecl): Created function.
+	(finish_vtable_vardecl): Changed 0 to NULL_PTR.
+	(finish_file): Call walk_sigtables.
+
+	* sig.c (build_signature_table_constructor): Mark class member
+	function pointed to from signature table entry as addressable.
+
 Wed Jul  6 20:25:48 1994  Mike Stump  (mrs@cygnus.com)
 
 	* except.c (init_exception_processing): Setup interim_eh_hook to

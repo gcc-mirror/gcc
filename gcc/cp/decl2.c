@@ -2439,7 +2439,7 @@ finish_vtable_vardecl (prev, vars)
 	}
 #endif /* DWARF_DEBUGGING_INFO */
 
-      rest_of_decl_compilation (vars, 0, 1, 1);
+      rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
     }
   else if (TREE_USED (vars) && flag_vtable_thunks)
     assemble_external (vars);
@@ -2466,6 +2466,48 @@ walk_vtables (typedecl_fn, vardecl_fn)
 	  if (typedecl_fn) (*typedecl_fn) (prev, vars);
 	}
       else if (TREE_CODE (vars) == VAR_DECL && DECL_VIRTUAL_P (vars))
+	{
+	  if (vardecl_fn) (*vardecl_fn) (prev, vars);
+	}
+      else
+	prev = vars;
+    }
+}
+
+static void
+finish_sigtable_vardecl (prev, vars)
+     tree prev, vars;
+{
+  /* We don't need to mark sigtable entries as addressable here as is done
+     for vtables.  Since sigtables, unlike vtables, are always written out,
+     that was already done in build_signature_table_constructor.  */
+
+  rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
+
+  /* We know that PREV must be non-zero here.  */
+  TREE_CHAIN (prev) = TREE_CHAIN (vars);
+}
+
+void
+walk_sigtables (typedecl_fn, vardecl_fn)
+     register void (*typedecl_fn)();
+     register void (*vardecl_fn)();
+{
+  tree prev, vars;
+
+  for (prev = 0, vars = getdecls (); vars; vars = TREE_CHAIN (vars))
+    {
+      register tree type = TREE_TYPE (vars);
+
+      if (TREE_CODE (vars) == TYPE_DECL
+	  && type != error_mark_node
+	  && IS_SIGNATURE (type))
+	{
+	  if (typedecl_fn) (*typedecl_fn) (prev, vars);
+	}
+      else if (TREE_CODE (vars) == VAR_DECL
+	       && TREE_TYPE (vars) != error_mark_node
+	       && IS_SIGNATURE (TREE_TYPE (vars)))
 	{
 	  if (vardecl_fn) (*vardecl_fn) (prev, vars);
 	}
@@ -2756,6 +2798,7 @@ finish_file ()
 #endif
 
   walk_vtables ((void (*)())0, finish_vtable_vardecl);
+  walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
 
   for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
     {
