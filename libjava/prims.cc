@@ -1,6 +1,6 @@
 // prims.cc - Code for core of runtime environment.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1136,4 +1136,22 @@ _Jv_remJ (jlong dividend, jlong divisor)
     return 0;
 
   return dividend % divisor;
+}
+
+
+
+// Return true if SELF_KLASS can access a field or method in
+// OTHER_KLASS.  The field or method's access flags are specified in
+// FLAGS.
+jboolean
+_Jv_CheckAccess (jclass self_klass, jclass other_klass, jint flags)
+{
+  using namespace java::lang::reflect;
+  return ((self_klass == other_klass)
+	  || ((flags & Modifier::PUBLIC) != 0)
+	  || (((flags & Modifier::PROTECTED) != 0)
+	      && other_klass->isAssignableFrom (self_klass))
+	  || (((flags & Modifier::PRIVATE) == 0)
+	      && _Jv_ClassNameSamePackage (self_klass->name,
+					   other_klass->name)));
 }

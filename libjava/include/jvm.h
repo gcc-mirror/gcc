@@ -1,6 +1,6 @@
 // jvm.h - Header file for private implementation information. -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -325,6 +325,9 @@ extern void _Jv_GetTypesFromSignature (jmethodID method,
 				       jclass declaringClass,
 				       JArray<jclass> **arg_types_out,
 				       jclass *return_type_out);
+
+extern jboolean _Jv_CheckAccess (jclass self_klass, jclass other_klass,
+				 jint flags);
 
 extern jobject _Jv_CallAnyMethodA (jobject obj, jclass return_type,
 				   jmethodID meth, jboolean is_constructor,

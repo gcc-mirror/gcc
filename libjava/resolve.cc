@@ -166,15 +166,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	      if (! _Jv_equalUtf8Consts (field->name, field_name))
 		continue;
 
-	      // now, check field access. 
-
-	      if (   (cls == klass)
-		  || ((field->flags & Modifier::PUBLIC) != 0)
-		  || (((field->flags & Modifier::PROTECTED) != 0)
-		      && cls->isAssignableFrom (klass))
-		  || (((field->flags & Modifier::PRIVATE) == 0)
-		      && _Jv_ClassNameSamePackage (cls->name,
-						   klass->name)))
+	      if (_Jv_CheckAccess (klass, cls, field->flags))
 		{
 		  /* resove the field using the class' own loader
 		     if necessary */
@@ -347,20 +339,10 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
 				    method_signature)))
 	continue;
 
-      if (cls == klass 
-	  || ((method->accflags & Modifier::PUBLIC) != 0)
-	  || (((method->accflags & Modifier::PROTECTED) != 0)
-	      && cls->isAssignableFrom (klass))
-	  || (((method->accflags & Modifier::PRIVATE) == 0)
-	      && _Jv_ClassNameSamePackage (cls->name,
-					   klass->name)))
-	{
-	  return method;
-	}
+      if (_Jv_CheckAccess (klass, cls, method->accflags))
+	return method;
       else
-	{
-	  throw new java::lang::IllegalAccessError;
-	}
+	throw new java::lang::IllegalAccessError;
     }
   return 0;
 }

@@ -162,12 +162,10 @@ public abstract class ClassLoader
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       {
-	/* FIXME: security, getClassContext() not implemented.
 	Class c = VMSecurityManager.getClassContext()[1];
 	ClassLoader cl = c.getClassLoader();
-	if (cl != null && cl != this)
+	if (cl != null && ! cl.isAncestorOf(this))
 	  sm.checkPermission(new RuntimePermission("getClassLoader"));
-	*/
       }
     return parent;
   }
@@ -995,5 +993,21 @@ public abstract class ClassLoader
     defaultAssertionStatus = false;
     packageAssertionStatus = new HashMap();
     classAssertionStatus = new HashMap();
+  }
+
+  /**
+   * Return true if this loader is either the specified class loader
+   * or an ancestor thereof.
+   * @param loader the class loader to check
+   */
+  final boolean isAncestorOf(ClassLoader loader)
+  {
+    while (loader != null)
+      {
+	if (this == loader)
+	  return true;
+	loader = loader.parent;
+      }
+    return false;
   }
 }

@@ -243,7 +243,7 @@ public:
 
 private:   
 
-  void checkMemberAccess (jint flags);
+  void memberAccessCheck (jint flags);
 
   void initializeClass (void);
 
@@ -327,6 +327,9 @@ private:
   friend void _Jv_LayoutVTableMethods (jclass klass);
   friend void _Jv_SetVTableEntries (jclass, _Jv_VTable *, jboolean *);
   friend void _Jv_MakeVTable (jclass);
+
+  friend jboolean _Jv_CheckAccess (jclass self_klass, jclass other_klass,
+				   jint flags);
 
   // Return array class corresponding to element type KLASS, creating it if
   // necessary.

@@ -1,9 +1,62 @@
+2003-07-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Runtime.java: Comment fix.
+	* java/lang/ClassLoader.java (isAncestorOf): New method.
+	(getParent): Uncommented security check.  Use isAncestorOf.
+	* include/jvm.h (_Jv_CheckAccess): Declare.
+	* java/lang/reflect/natConstructor.cc (newInstance): Perform
+	access check.
+	Include IllegalAccessException.h, ArrayIndexOutOfBoundsException.h.
+	* java/lang/reflect/natArray.cc (newInstance): Pass caller's
+	class loader to _Jv_GetArrayClass.
+	Include ArrayIndexOutOfBoundsException.h.
+	* java/lang/reflect/Field.java: Update comment to reflect status.
+	(equals): Fixed indentation.
+	* java/lang/Class.h (Class): Declare memberAccessCheck, not
+	checkMemberAccess.  Make _Jv_CheckAccess a friend.
+	* java/lang/Class.java (memberAccessCheck): New method from
+	Classpath.
+	(checkMemberAccess): Removed.
+	(getDeclaredMethod): Use memberAccessCheck.
+	(getField): Likewise.
+	(getMethod): Likewise.
+	* resolve.cc (_Jv_ResolvePoolEntry): Use _Jv_CheckAccess.
+	(_Jv_SearchMethodInClass): Likewise.
+	* prims.cc (_Jv_CheckAccess): New function.
+	* jni.cc (_Jv_JNI_FindClass): Use getClassLoaderInternal.
+	(_Jv_JNI_GetAnyFieldID): Likewise.
+	* java/lang/natClass.cc (forName): Use getClassLoaderInternal.
+	(getClassLoader): Added security check.
+	(getConstructor): Call memberAccessCheck.
+	(getDeclaredClasses): Likewise.
+	(getDeclaredField): Likewise.
+	(getDeclaredFields): Likewise.
+	(_getConstructors): Likewise.
+	(getDeclaredConstructor): Likewise.
+	(getDeclaredMethods): Likewise.
+	(getFields): Likewise.
+	(getMethods): Likewise.
+	(newInstance): Likewise.
+	(_Jv_MakeVTable): Put method name in exception.
+	* java/lang/reflect/natMethod.cc (getType): Use
+	getClassLoaderInternal.
+	(_Jv_GetTypesFromSignature): Likewise.
+	(invoke): Perform access check.
+	(_Jv_CallAnyMethodA): Removed old FIXME comments.
+	Include ArrayIndexOutOfBoundsException.h.
+	* java/lang/reflect/natField.cc (getType): Use
+	getClassLoaderInternal.
+	(_Jv_CheckFieldAccessibility): Removed.
+	(getAddr): Use _Jv_CheckAccess; find caller.
+	Include ArrayIndexOutOfBoundsException.h.
+
 2003-07-20  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URL.java
 	(URL): Fixed documentation to name an argument correcty, Reformatted
 	one method declaration.
 	(getURLStreamHandler): Added documentation from classpath.
+
 2003-07-19  Tom Tromey  <tromey@redhat.com>
 
 	* mauve-libgcj: Don't run CollationElementIterator tests.

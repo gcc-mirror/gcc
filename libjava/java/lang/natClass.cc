@@ -101,7 +101,7 @@ java::lang::Class::forName (jstring className)
 	{
 	  klass = t->classAt (i);
 	}
-      loader = klass->getClassLoader();
+      loader = klass->getClassLoaderInternal();
     }
   catch (::java::lang::ArrayIndexOutOfBoundsException *e)
     {
@@ -113,13 +113,31 @@ java::lang::Class::forName (jstring className)
 java::lang::ClassLoader *
 java::lang::Class::getClassLoader (void)
 {
-#if 0
-  // FIXME: the checks we need to do are more complex.  See the spec.
-  // Currently we can't implement them.
   java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
   if (s != NULL)
-    s->checkPermission (new RuntimePermission (JvNewStringLatin1 ("getClassLoader")));
-#endif
+    {
+      gnu::gcj::runtime::StackTrace *t 
+	= new gnu::gcj::runtime::StackTrace(4);
+      Class *caller = NULL;
+      ClassLoader *caller_loader = NULL;
+      try
+	{
+	  for (int i = 1; !caller; i++)
+	    {
+	      caller = t->classAt (i);
+	    }
+	  caller_loader = caller->getClassLoaderInternal();
+	}
+      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+	{
+	}
+
+      // If the caller has a non-null class loader, and that loader
+      // is not this class' loader or an ancestor thereof, then do a
+      // security check.
+      if (caller_loader != NULL && ! caller_loader->isAncestorOf(loader))
+	s->checkPermission (new RuntimePermission (JvNewStringLatin1 ("getClassLoader")));
+    }
 
   // The spec requires us to return `null' for primitive classes.  In
   // other cases we have the option of returning `null' for classes
@@ -136,13 +154,14 @@ java::lang::Class::getClassLoader (void)
 java::lang::reflect::Constructor *
 java::lang::Class::getConstructor (JArray<jclass> *param_types)
 {
+  memberAccessCheck(java::lang::reflect::Member::PUBLIC);
+
   jstring partial_sig = getSignature (param_types, true);
   jint hash = partial_sig->hashCode ();
 
   int i = isPrimitive () ? 0 : method_count;
   while (--i >= 0)
     {
-      // FIXME: access checks.
       if (_Jv_equalUtf8Consts (methods[i].name, init_name)
 	  && _Jv_equal (methods[i].signature, partial_sig, hash))
 	{
@@ -163,7 +182,7 @@ java::lang::Class::getConstructor (JArray<jclass> *param_types)
 JArray<java::lang::reflect::Constructor *> *
 java::lang::Class::_getConstructors (jboolean declared)
 {
-  // FIXME: this method needs access checks.
+  memberAccessCheck(java::lang::reflect::Member::PUBLIC);
 
   int numConstructors = 0;
   int max = isPrimitive () ? 0 : method_count;
@@ -206,13 +225,14 @@ java::lang::Class::_getConstructors (jboolean declared)
 java::lang::reflect::Constructor *
 java::lang::Class::getDeclaredConstructor (JArray<jclass> *param_types)
 {
+  memberAccessCheck(java::lang::reflect::Member::DECLARED);
+
   jstring partial_sig = getSignature (param_types, true);
   jint hash = partial_sig->hashCode ();
 
   int i = isPrimitive () ? 0 : method_count;
   while (--i >= 0)
     {
-      // FIXME: access checks.
       if (_Jv_equalUtf8Consts (methods[i].name, init_name)
 	  && _Jv_equal (methods[i].signature, partial_sig, hash))
 	{
@@ -256,9 +276,7 @@ java::lang::Class::getField (jstring name, jint hash)
 java::lang::reflect::Field *
 java::lang::Class::getDeclaredField (jstring name)
 {
-  java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
-  if (s != NULL)
-    s->checkMemberAccess (this, java::lang::reflect::Member::DECLARED);
+  memberAccessCheck(java::lang::reflect::Member::DECLARED);
   int hash = name->hashCode();
   for (int i = 0;  i < field_count;  i++)
     {
@@ -277,9 +295,7 @@ java::lang::Class::getDeclaredField (jstring name)
 JArray<java::lang::reflect::Field *> *
 java::lang::Class::getDeclaredFields (void)
 {
-  java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
-  if (s != NULL)
-    s->checkMemberAccess (this, java::lang::reflect::Member::DECLARED);
+  memberAccessCheck(java::lang::reflect::Member::DECLARED);
   JArray<java::lang::reflect::Field *> *result
     = (JArray<java::lang::reflect::Field *> *)
     JvNewObjectArray (field_count, &java::lang::reflect::Field::class$, NULL);
@@ -361,6 +377,8 @@ java::lang::Class::_getDeclaredMethod (jstring name,
 JArray<java::lang::reflect::Method *> *
 java::lang::Class::getDeclaredMethods (void)
 {
+  memberAccessCheck(java::lang::reflect::Member::DECLARED);
+
   int numMethods = 0;
   int max = isPrimitive () ? 0 : method_count;
   int i;
@@ -424,7 +442,7 @@ java::lang::Class::getClasses (void)
 JArray<jclass> *
 java::lang::Class::getDeclaredClasses (void)
 {
-  checkMemberAccess (java::lang::reflect::Member::DECLARED);
+  memberAccessCheck (java::lang::reflect::Member::DECLARED);
   // Until we have inner classes, it always makes sense to return an
   // empty array.
   JArray<jclass> *result
@@ -482,9 +500,7 @@ java::lang::Class::_getFields (JArray<java::lang::reflect::Field *> *result,
 JArray<java::lang::reflect::Field *> *
 java::lang::Class::getFields (void)
 {
-  // FIXME: security checking.
-
-  using namespace java::lang::reflect;
+  memberAccessCheck(java::lang::reflect::Member::PUBLIC);
 
   int count = _getFields (NULL, 0);
 
@@ -518,7 +534,6 @@ java::lang::Class::_getMethod (jstring name, JArray<jclass> *param_types)
       int i = klass->isPrimitive () ? 0 : klass->method_count;
       while (--i >= 0)
 	{
-	  // FIXME: access checks.
 	  if (_Jv_equalUtf8Consts (klass->methods[i].name, utf_name)
 	      && _Jv_equaln (klass->methods[i].signature, partial_sig, p_len)
 	      && (klass->methods[i].accflags
@@ -642,7 +657,7 @@ java::lang::Class::getMethods (void)
 {
   using namespace java::lang::reflect;
 
-  // FIXME: security checks.
+  memberAccessCheck(Member::PUBLIC);
 
   // This will overestimate the size we need.
   jint count = _getMethods (NULL, 0);
@@ -696,12 +711,7 @@ java::lang::Class::isInstance (jobject obj)
 jobject
 java::lang::Class::newInstance (void)
 {
-  // FIXME: do accessibility checks here.  There currently doesn't
-  // seem to be any way to do these.
-  // FIXME: we special-case one check here just to pass a Plum Hall
-  // test.  Once access checking is implemented, remove this.
-  if (this == &java::lang::Class::class$)
-    throw new java::lang::IllegalAccessException;
+  memberAccessCheck(java::lang::reflect::Member::PUBLIC);
 
   if (isPrimitive ()
       || isInterface ()
@@ -1744,7 +1754,26 @@ _Jv_MakeVTable (jclass klass)
     {
       for (int i = 0; i < klass->vtable_method_count; ++i)
 	if (! flags[i])
-	  // FIXME: messsage.
-	  throw new java::lang::AbstractMethodError ();
+	  {
+	    using namespace java::lang;
+	    while (klass != NULL)
+	      {
+		for (int j = 0; j < klass->method_count; ++j)
+		  {
+		    if (klass->methods[i].index == i)
+		      {
+			StringBuffer *buf = new StringBuffer ();
+			buf->append (_Jv_NewStringUtf8Const (klass->methods[i].name));
+			buf->append ((jchar) ' ');
+			buf->append (_Jv_NewStringUtf8Const (klass->methods[i].signature));
+			throw new AbstractMethodError (buf->toString ());
+		      }
+		  }
+		klass = klass->getSuperclass ();
+	      }
+	    // Couldn't find the name, which is weird.
+	    // But we still must throw the error.
+	    throw new AbstractMethodError ();
+	  }
     }
 }
