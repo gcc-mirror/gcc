@@ -3261,6 +3261,10 @@ rs6000_makes_calls ()
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
 
+   The required alignment for AIX configurations is two words (i.e., 8
+   or 16 bytes).
+
+
    V.4 stack frames look like:
 
 	SP---->	+---------------------------------------+
@@ -3286,6 +3290,13 @@ rs6000_makes_calls ()
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
+
+   The required alignment for V.4 is 16 bytes, or 8 bytes if -meabi is
+   given.  (But note below and in sysv4.h that we require only 8 and
+   may round up the size of our stack frame anyways.  The historical
+   reason is early versions of powerpc-linux which didn't properly
+   align the stack at program startup.  A happy side-effect is that
+   -mno-eabi libraries can be used with -meabi programs.)
 
 
    A PowerPC Windows/NT frame looks like:
@@ -3330,7 +3341,17 @@ rs6000_makes_calls ()
    order to support __builtin_return_address, the save area for the
    link register needs to be in a known place, so we use -4 off of the
    old SP.  To support calls through pointers, we also allocate a
-   fixed slot to store the TOC, -8 off the old SP.  */
+   fixed slot to store the TOC, -8 off the old SP.
+
+   The required alignment for NT is 16 bytes.
+
+
+   The EABI configuration defaults to the V.4 layout, unless
+   -mcall-aix is used, in which case the AIX layout is used.  However,
+   the stack alignment requirements may differ.  If -mno-eabi is not
+   given, the required stack alignment is 8 bytes; if -mno-eabi is
+   given, the required alignment is 16 bytes.  (But see V.4 comment
+   above.)  */
 
 #ifndef ABI_STACK_BOUNDARY
 #define ABI_STACK_BOUNDARY STACK_BOUNDARY
