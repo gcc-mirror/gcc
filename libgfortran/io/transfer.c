@@ -162,7 +162,7 @@ read_sf (int *length)
 
       /* If we have a line without a terminating \n, drop through to
 	 EOR below.  */
-      if (readlen < 1 & n == 0)
+      if (readlen < 1 && n == 0)
 	{
 	  generate_error (ERROR_END, NULL);
 	  return NULL;

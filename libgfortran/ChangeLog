@@ -1,3 +1,7 @@
+2004-12-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* io/transfer.c (read_sf): Change bitwise "and" to logical "and".
+
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
 	* intrinsics/cshift0.c, intrinsics/eoshift0.c, intrinsics/eoshift2.c,
