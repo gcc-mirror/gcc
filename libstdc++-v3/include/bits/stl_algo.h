@@ -511,7 +511,7 @@ template <class _InputIter, class _OutputIter, class _UnaryOperation>
 _OutputIter transform(_InputIter __first, _InputIter __last,
                       _OutputIter __result, _UnaryOperation __unary_op) {
   __STL_REQUIRES(_InputIter, _InputIterator);
-  __STL_REQUIRES(_OutputIter, _OutputIterator);
+//  __STL_REQUIRES(_OutputIter, _OutputIterator);
 
   for ( ; __first != __last; ++__first, ++__result)
     *__result = __unary_op(*__first);
@@ -525,7 +525,7 @@ _OutputIter transform(_InputIter1 __first1, _InputIter1 __last1,
                       _BinaryOperation __binary_op) {
   __STL_REQUIRES(_InputIter1, _InputIterator);
   __STL_REQUIRES(_InputIter2, _InputIterator);
-  __STL_REQUIRES(_OutputIter, _OutputIterator);
+//  __STL_REQUIRES(_OutputIter, _OutputIterator);
   for ( ; __first1 != __last1; ++__first1, ++__first2, ++__result)
     *__result = __binary_op(*__first1, *__first2);
   return __result;
