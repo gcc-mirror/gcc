@@ -1080,7 +1080,8 @@ vmessage (prefix, s, ap)
     HOST_WIDE_INT v1 = va_arg(ap, HOST_WIDE_INT);
     HOST_WIDE_INT v2 = va_arg(ap, HOST_WIDE_INT);
     HOST_WIDE_INT v3 = va_arg(ap, HOST_WIDE_INT);
-    fprintf (stderr, s, v1, v2, v3);
+    HOST_WIDE_INT v4 = va_arg(ap, HOST_WIDE_INT);
+    fprintf (stderr, s, v1, v2, v3, v4);
   }
 #endif
 }
