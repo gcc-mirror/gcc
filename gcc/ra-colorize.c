@@ -47,54 +47,54 @@
    Additionally there is a custom step to locally improve the overall
    spill cost of the colored graph (recolor_spills).  */
 
-static void push_list PARAMS ((struct dlist *, struct dlist **));
-static void push_list_end PARAMS ((struct dlist *, struct dlist **));
-static void free_dlist PARAMS ((struct dlist **));
-static void put_web_at_end PARAMS ((struct web *, enum node_type));
-static void put_move PARAMS ((struct move *, enum move_type));
-static void build_worklists PARAMS ((struct df *));
-static void enable_move PARAMS ((struct web *));
-static void decrement_degree PARAMS ((struct web *, int));
-static void simplify PARAMS ((void));
-static void remove_move_1 PARAMS ((struct web *, struct move *));
-static void remove_move PARAMS ((struct web *, struct move *));
-static void add_worklist PARAMS ((struct web *));
-static int ok PARAMS ((struct web *, struct web *));
-static int conservative PARAMS ((struct web *, struct web *));
-static inline unsigned int simplify_p PARAMS ((enum node_type));
-static void combine PARAMS ((struct web *, struct web *));
-static void coalesce PARAMS ((void));
-static void freeze_moves PARAMS ((struct web *));
-static void freeze PARAMS ((void));
-static void select_spill PARAMS ((void));
-static int color_usable_p PARAMS ((int, HARD_REG_SET, HARD_REG_SET,
-				   enum machine_mode));
-int get_free_reg PARAMS ((HARD_REG_SET, HARD_REG_SET, enum machine_mode));
-static int get_biased_reg PARAMS ((HARD_REG_SET, HARD_REG_SET, HARD_REG_SET,
-				   HARD_REG_SET, enum machine_mode));
-static int count_long_blocks PARAMS ((HARD_REG_SET, int));
-static char * hardregset_to_string PARAMS ((HARD_REG_SET));
-static void calculate_dont_begin PARAMS ((struct web *, HARD_REG_SET *));
-static void colorize_one_web PARAMS ((struct web *, int));
-static void assign_colors PARAMS ((void));
-static void try_recolor_web PARAMS ((struct web *));
-static void insert_coalesced_conflicts PARAMS ((void));
-static int comp_webs_maxcost PARAMS ((const void *, const void *));
-static void recolor_spills PARAMS ((void));
-static void check_colors PARAMS ((void));
-static void restore_conflicts_from_coalesce PARAMS ((struct web *));
-static void break_coalesced_spills PARAMS ((void));
-static void unalias_web PARAMS ((struct web *));
-static void break_aliases_to_web PARAMS ((struct web *));
-static void break_precolored_alias PARAMS ((struct web *));
-static void init_web_pairs PARAMS ((void));
-static void add_web_pair_cost PARAMS ((struct web *, struct web *,
-			               unsigned HOST_WIDE_INT, unsigned int));
-static int comp_web_pairs PARAMS ((const void *, const void *));
-static void sort_and_combine_web_pairs PARAMS ((int));
-static void aggressive_coalesce PARAMS ((void));
-static void extended_coalesce_2 PARAMS ((void));
-static void check_uncoalesced_moves PARAMS ((void));
+static void push_list (struct dlist *, struct dlist **);
+static void push_list_end (struct dlist *, struct dlist **);
+static void free_dlist (struct dlist **);
+static void put_web_at_end (struct web *, enum node_type);
+static void put_move (struct move *, enum move_type);
+static void build_worklists (struct df *);
+static void enable_move (struct web *);
+static void decrement_degree (struct web *, int);
+static void simplify (void);
+static void remove_move_1 (struct web *, struct move *);
+static void remove_move (struct web *, struct move *);
+static void add_worklist (struct web *);
+static int ok (struct web *, struct web *);
+static int conservative (struct web *, struct web *);
+static inline unsigned int simplify_p (enum node_type);
+static void combine (struct web *, struct web *);
+static void coalesce (void);
+static void freeze_moves (struct web *);
+static void freeze (void);
+static void select_spill (void);
+static int color_usable_p (int, HARD_REG_SET, HARD_REG_SET,
+			   enum machine_mode);
+int get_free_reg (HARD_REG_SET, HARD_REG_SET, enum machine_mode);
+static int get_biased_reg (HARD_REG_SET, HARD_REG_SET, HARD_REG_SET,
+			   HARD_REG_SET, enum machine_mode);
+static int count_long_blocks (HARD_REG_SET, int);
+static char * hardregset_to_string (HARD_REG_SET);
+static void calculate_dont_begin (struct web *, HARD_REG_SET *);
+static void colorize_one_web (struct web *, int);
+static void assign_colors (void);
+static void try_recolor_web (struct web *);
+static void insert_coalesced_conflicts (void);
+static int comp_webs_maxcost (const void *, const void *);
+static void recolor_spills (void);
+static void check_colors (void);
+static void restore_conflicts_from_coalesce (struct web *);
+static void break_coalesced_spills (void);
+static void unalias_web (struct web *);
+static void break_aliases_to_web (struct web *);
+static void break_precolored_alias (struct web *);
+static void init_web_pairs (void);
+static void add_web_pair_cost (struct web *, struct web *,
+		               unsigned HOST_WIDE_INT, unsigned int);
+static int comp_web_pairs (const void *, const void *);
+static void sort_and_combine_web_pairs (int);
+static void aggressive_coalesce (void);
+static void extended_coalesce_2 (void);
+static void check_uncoalesced_moves (void);
 
 static struct dlist *mv_worklist, *mv_coalesced, *mv_constrained;
 static struct dlist *mv_frozen, *mv_active;
@@ -102,9 +102,7 @@ static struct dlist *mv_frozen, *mv_active;
 /* Push a node onto the front of the list.  */
 
 static void
-push_list (x, list)
-     struct dlist *x;
-     struct dlist **list;
+push_list (struct dlist *x, struct dlist **list)
 {
   if (x->next || x->prev)
     abort ();
@@ -115,9 +113,7 @@ push_list (x, list)
 }
 
 static void
-push_list_end (x, list)
-     struct dlist *x;
-     struct dlist **list;
+push_list_end (struct dlist *x, struct dlist **list)
 {
   if (x->prev || x->next)
     abort ();
@@ -135,9 +131,7 @@ push_list_end (x, list)
 /* Remove a node from the list.  */
 
 void
-remove_list (x, list)
-     struct dlist *x;
-     struct dlist **list;
+remove_list (struct dlist *x, struct dlist **list)
 {
   struct dlist *y = x->prev;
   if (y)
@@ -153,8 +147,7 @@ remove_list (x, list)
 /* Pop the front of the list.  */
 
 struct dlist *
-pop_list (list)
-     struct dlist **list;
+pop_list (struct dlist **list)
 {
   struct dlist *r = *list;
   if (r)
@@ -165,8 +158,7 @@ pop_list (list)
 /* Free the given double linked list.  */
 
 static void
-free_dlist (list)
-     struct dlist **list;
+free_dlist (struct dlist **list)
 {
   *list = NULL;
 }
@@ -176,9 +168,7 @@ free_dlist (list)
    Inline, because it's called with constant TYPE every time.  */
 
 inline void
-put_web (web, type)
-     struct web *web;
-     enum node_type type;
+put_web (struct web *web, enum node_type type)
 {
   switch (type)
     {
@@ -216,7 +206,7 @@ put_web (web, type)
    they are coalesced to.  */
 
 void
-reset_lists ()
+reset_lists (void)
 {
   struct dlist *d;
   unsigned int i;
@@ -270,9 +260,7 @@ reset_lists ()
    list.  Additionally TYPE may not be SIMPLIFY.  */
 
 static void
-put_web_at_end (web, type)
-     struct web *web;
-     enum node_type type;
+put_web_at_end (struct web *web, enum node_type type)
 {
   if (type == PRECOLORED)
     type = INITIAL;
@@ -286,8 +274,7 @@ put_web_at_end (web, type)
    its current type).  */
 
 void
-remove_web_from_list (web)
-     struct web *web;
+remove_web_from_list (struct web *web)
 {
   if (web->type == PRECOLORED)
     remove_list (web->dlink, &WEBS(INITIAL));
@@ -298,9 +285,7 @@ remove_web_from_list (web)
 /* Give MOVE the TYPE, and link it into the correct list.  */
 
 static inline void
-put_move (move, type)
-     struct move *move;
-     enum move_type type;
+put_move (struct move *move, enum move_type type)
 {
   switch (type)
     {
@@ -328,8 +313,7 @@ put_move (move, type)
 /* Build the worklists we are going to process.  */
 
 static void
-build_worklists (df)
-     struct df *df ATTRIBUTE_UNUSED;
+build_worklists (struct df *df ATTRIBUTE_UNUSED)
 {
   struct dlist *d, *d_next;
   struct move_list *ml;
@@ -407,8 +391,7 @@ build_worklists (df)
 /* Enable the active moves, in which WEB takes part, to be processed.  */
 
 static void
-enable_move (web)
-     struct web *web;
+enable_move (struct web *web)
 {
   struct move_list *ml;
   for (ml = web->moves; ml; ml = ml->next)
@@ -424,9 +407,7 @@ enable_move (web)
    now smaller than its freedom.  */
 
 static void
-decrement_degree (web, dec)
-     struct web *web;
-     int dec;
+decrement_degree (struct web *web, int dec)
 {
   int before = web->num_conflicts;
   web->num_conflicts -= dec;
@@ -454,7 +435,7 @@ decrement_degree (web, dec)
 /* Repeatedly simplify the nodes on the simplify worklists.  */
 
 static void
-simplify ()
+simplify (void)
 {
   struct dlist *d;
   struct web *web;
@@ -493,9 +474,7 @@ simplify ()
 /* Helper function to remove a move from the movelist of the web.  */
 
 static void
-remove_move_1 (web, move)
-     struct web *web;
-     struct move *move;
+remove_move_1 (struct web *web, struct move *move)
 {
   struct move_list *ml = web->moves;
   if (!ml)
@@ -516,9 +495,7 @@ remove_move_1 (web, move)
    not in the list anymore.  */
 
 static void
-remove_move (web, move)
-     struct web *web;
-     struct move *move;
+remove_move (struct web *web, struct move *move)
 {
   struct move_list *ml;
   remove_move_1 (web, move);
@@ -530,8 +507,7 @@ remove_move (web, move)
 /* Merge the moves for the two webs into the first web's movelist.  */
 
 void
-merge_moves (u, v)
-     struct web *u, *v;
+merge_moves (struct web *u, struct web *v)
 {
   regset seen;
   struct move_list *ml, *ml_next;
@@ -555,8 +531,7 @@ merge_moves (u, v)
 /* Add a web to the simplify worklist, from the freeze worklist.  */
 
 static void
-add_worklist (web)
-     struct web *web;
+add_worklist (struct web *web)
 {
   if (web->type != PRECOLORED && !web->moves
       && web->num_conflicts < NUM_REGS (web))
@@ -569,8 +544,7 @@ add_worklist (web)
 /* Precolored node coalescing heuristic.  */
 
 static int
-ok (target, source)
-     struct web *target, *source;
+ok (struct web *target, struct web *source)
 {
   struct conflict_link *wl;
   int i;
@@ -661,8 +635,7 @@ ok (target, source)
 /* Non-precolored node coalescing heuristic.  */
 
 static int
-conservative (target, source)
-     struct web *target, *source;
+conservative (struct web *target, struct web *source)
 {
   unsigned int k;
   unsigned int loop;
@@ -699,8 +672,7 @@ conservative (target, source)
    was passed in.  */
 
 struct web *
-alias (web)
-     struct web *web;
+alias (struct web *web)
 {
   while (web->type == COALESCED)
     web = web->alias;
@@ -711,8 +683,7 @@ alias (web)
    SIMPLIFY types.  */
 
 static inline unsigned int
-simplify_p (type)
-     enum node_type type;
+simplify_p (enum node_type type)
 {
   return type == SIMPLIFY || type == SIMPLIFY_SPILL || type == SIMPLIFY_FAT;
 }
@@ -720,8 +691,7 @@ simplify_p (type)
 /* Actually combine two webs, that can be coalesced.  */
 
 static void
-combine (u, v)
-     struct web *u, *v;
+combine (struct web *u, struct web *v)
 {
   int i;
   struct conflict_link *wl;
@@ -850,7 +820,7 @@ combine (u, v)
    This is used only for iterated coalescing.  */
 
 static void
-coalesce ()
+coalesce (void)
 {
   struct dlist *d = pop_list (&mv_worklist);
   struct move *m = DLIST_MOVE (d);
@@ -896,8 +866,7 @@ coalesce ()
 /* Freeze the moves associated with the web.  Used for iterated coalescing.  */
 
 static void
-freeze_moves (web)
-     struct web *web;
+freeze_moves (struct web *web)
 {
   struct move_list *ml, *ml_next;
   for (ml = web->moves; ml; ml = ml_next)
@@ -928,7 +897,7 @@ freeze_moves (web)
    coalescing).  */
 
 static void
-freeze ()
+freeze (void)
 {
   struct dlist *d = pop_list (&WEBS(FREEZE));
   put_web (DLIST_WEB (d), SIMPLIFY);
@@ -938,17 +907,16 @@ freeze ()
 /* The current spill heuristic.  Returns a number for a WEB.
    Webs with higher numbers are selected later.  */
 
-static unsigned HOST_WIDE_INT (*spill_heuristic) PARAMS ((struct web *));
+static unsigned HOST_WIDE_INT (*spill_heuristic) (struct web *);
 
-static unsigned HOST_WIDE_INT default_spill_heuristic PARAMS ((struct web *));
+static unsigned HOST_WIDE_INT default_spill_heuristic (struct web *);
 
 /* Our default heuristic is similar to spill_cost / num_conflicts.
    Just scaled for integer arithmetic, and it favors coalesced webs,
    and webs which span more insns with deaths.  */
 
 static unsigned HOST_WIDE_INT
-default_spill_heuristic (web)
-     struct web *web;
+default_spill_heuristic (struct web *web)
 {
   unsigned HOST_WIDE_INT ret;
   unsigned int divisor = 1;
@@ -970,7 +938,7 @@ default_spill_heuristic (web)
    *actually* spill until we need to).  */
 
 static void
-select_spill ()
+select_spill (void)
 {
   unsigned HOST_WIDE_INT best = (unsigned HOST_WIDE_INT) -1;
   struct dlist *bestd = NULL;
@@ -1016,10 +984,8 @@ select_spill ()
    free colors, and MODE, returns nonzero of color C is still usable.  */
 
 static int
-color_usable_p (c, dont_begin_colors, free_colors, mode)
-     int c;
-     HARD_REG_SET dont_begin_colors, free_colors;
-     enum machine_mode mode;
+color_usable_p (int c, HARD_REG_SET dont_begin_colors,
+		HARD_REG_SET free_colors, enum machine_mode  mode)
 {
   if (!TEST_HARD_REG_BIT (dont_begin_colors, c)
       && TEST_HARD_REG_BIT (free_colors, c)
@@ -1048,9 +1014,8 @@ color_usable_p (c, dont_begin_colors, free_colors, mode)
    block could be found.  */
 
 int
-get_free_reg (dont_begin_colors, free_colors, mode)
-     HARD_REG_SET dont_begin_colors, free_colors;
-     enum machine_mode mode;
+get_free_reg (HARD_REG_SET dont_begin_colors, HARD_REG_SET free_colors,
+	      enum machine_mode mode)
 {
   int c;
   int last_resort_reg = -1;
@@ -1099,9 +1064,9 @@ get_free_reg (dont_begin_colors, free_colors, mode)
    only do the last two steps.  */
 
 static int
-get_biased_reg (dont_begin_colors, bias, prefer_colors, free_colors, mode)
-     HARD_REG_SET dont_begin_colors, bias, prefer_colors, free_colors;
-     enum machine_mode mode;
+get_biased_reg (HARD_REG_SET dont_begin_colors, HARD_REG_SET bias,
+		HARD_REG_SET prefer_colors, HARD_REG_SET free_colors,
+		enum machine_mode mode)
 {
   int c = -1;
   HARD_REG_SET s;
@@ -1132,9 +1097,7 @@ get_biased_reg (dont_begin_colors, bias, prefer_colors, free_colors, mode)
    in FREE_COLORS.  */
 
 static int
-count_long_blocks (free_colors, len)
-     HARD_REG_SET free_colors;
-     int len;
+count_long_blocks (HARD_REG_SET free_colors, int len)
 {
   int i, j;
   int count = 0;
@@ -1158,8 +1121,7 @@ count_long_blocks (free_colors, len)
    of hardreg sets.  Note that this string is statically allocated.  */
 
 static char *
-hardregset_to_string (s)
-     HARD_REG_SET s;
+hardregset_to_string (HARD_REG_SET s)
 {
   static char string[/*FIRST_PSEUDO_REGISTER + 30*/1024];
 #if FIRST_PSEUDO_REGISTER <= HOST_BITS_PER_WIDE_INT
@@ -1190,9 +1152,7 @@ hardregset_to_string (s)
    3 can't be used as begin color.  */
 
 static void
-calculate_dont_begin (web, result)
-     struct web *web;
-     HARD_REG_SET *result;
+calculate_dont_begin (struct web *web, HARD_REG_SET *result)
 {
   struct conflict_link *wl;
   HARD_REG_SET dont_begin;
@@ -1279,9 +1239,7 @@ calculate_dont_begin (web, result)
    register starved machines, so we try to avoid this.  */
 
 static void
-colorize_one_web (web, hard)
-     struct web *web;
-     int hard;
+colorize_one_web (struct web *web, int hard)
 {
   struct conflict_link *wl;
   HARD_REG_SET colors, dont_begin;
@@ -1664,7 +1622,7 @@ colorize_one_web (web, hard)
    colors of coalesced webs.  */
 
 static void
-assign_colors ()
+assign_colors (void)
 {
   struct dlist *d;
 
@@ -1693,8 +1651,7 @@ assign_colors ()
    be aware, that currently this pass is quite slow.  */
 
 static void
-try_recolor_web (web)
-     struct web *web;
+try_recolor_web (struct web *web)
 {
   struct conflict_link *wl;
   unsigned HOST_WIDE_INT *cost_neighbors;
@@ -1895,7 +1852,7 @@ try_recolor_web (web)
    isn't used anymore, e.g. on a completely colored graph.  */
 
 static void
-insert_coalesced_conflicts ()
+insert_coalesced_conflicts (void)
 {
   struct dlist *d;
   for (d = WEBS(COALESCED); 0 && d; d = d->next)
@@ -1949,8 +1906,7 @@ insert_coalesced_conflicts ()
    largest cost first.  */
 
 static int
-comp_webs_maxcost (w1, w2)
-     const void *w1, *w2;
+comp_webs_maxcost (const void *w1, const void *w2)
 {
   struct web *web1 = *(struct web **)w1;
   struct web *web2 = *(struct web **)w2;
@@ -1966,7 +1922,7 @@ comp_webs_maxcost (w1, w2)
    how this is done.  This just calls it for each spilled web.  */
 
 static void
-recolor_spills ()
+recolor_spills (void)
 {
   unsigned int i, num;
   struct web **order2web;
@@ -2003,7 +1959,7 @@ recolor_spills ()
    not being in usable regs.  */
 
 static void
-check_colors ()
+check_colors (void)
 {
   unsigned int i;
   for (i = 0; i < num_webs - num_subwebs; i++)
@@ -2081,8 +2037,7 @@ check_colors ()
    back onto SELECT stack.  */
 
 static void
-unalias_web (web)
-     struct web *web;
+unalias_web (struct web *web)
 {
   web->alias = NULL;
   web->is_coalesced = 0;
@@ -2110,8 +2065,7 @@ unalias_web (web)
    Somewhen we'll change this to be more sane.  */
 
 static void
-break_aliases_to_web (web)
-     struct web *web;
+break_aliases_to_web (struct web *web)
 {
   struct dlist *d, *d_next;
   if (web->type != SPILLED)
@@ -2153,8 +2107,7 @@ break_aliases_to_web (web)
    from initially coalescing both.  */
 
 static void
-break_precolored_alias (web)
-     struct web *web;
+break_precolored_alias (struct web *web)
 {
   struct web *pre = web->alias;
   struct conflict_link *wl;
@@ -2222,8 +2175,7 @@ break_precolored_alias (web)
    and break up the coalescing.  */
 
 static void
-restore_conflicts_from_coalesce (web)
-     struct web *web;
+restore_conflicts_from_coalesce (struct web *web)
 {
   struct conflict_link **pcl;
   struct conflict_link *wl;
@@ -2329,7 +2281,7 @@ restore_conflicts_from_coalesce (web)
    there are any spilled coalesce targets.  */
 
 static void
-break_coalesced_spills ()
+break_coalesced_spills (void)
 {
   int changed = 0;
   while (1)
@@ -2397,7 +2349,7 @@ static unsigned int num_web_pairs;
 /* Clear the hash table of web pairs.  */
 
 static void
-init_web_pairs ()
+init_web_pairs (void)
 {
   memset (web_pair_hash, 0, sizeof web_pair_hash);
   num_web_pairs = 0;
@@ -2409,10 +2361,8 @@ init_web_pairs ()
    already in, cumulate the costs and conflict number.  */
 
 static void
-add_web_pair_cost (web1, web2, cost, conflicts)
-     struct web *web1, *web2;
-     unsigned HOST_WIDE_INT cost;
-     unsigned int conflicts;
+add_web_pair_cost (struct web *web1, struct web *web2,
+		   unsigned HOST_WIDE_INT cost, unsigned int conflicts)
 {
   unsigned int hash;
   struct web_pair *p;
@@ -2447,8 +2397,7 @@ add_web_pair_cost (web1, web2, cost, conflicts)
    when the moves are removed) come first.  */
 
 static int
-comp_web_pairs (w1, w2)
-     const void *w1, *w2;
+comp_web_pairs (const void *w1, const void *w2)
 {
   struct web_pair *p1 = *(struct web_pair **)w1;
   struct web_pair *p2 = *(struct web_pair **)w2;
@@ -2468,8 +2417,7 @@ comp_web_pairs (w1, w2)
    with the most savings.  */
 
 static void
-sort_and_combine_web_pairs (for_move)
-     int for_move;
+sort_and_combine_web_pairs (int for_move)
 {
   unsigned int i;
   struct web_pair **sorted;
@@ -2520,7 +2468,7 @@ sort_and_combine_web_pairs (for_move)
    giving the most saving if coalesced.  */
 
 static void
-aggressive_coalesce ()
+aggressive_coalesce (void)
 {
   struct dlist *d;
   struct move *m;
@@ -2579,7 +2527,7 @@ aggressive_coalesce ()
    all insns, and for each insn, through all defs and uses.  */
 
 static void
-extended_coalesce_2 ()
+extended_coalesce_2 (void)
 {
   rtx insn;
   struct ra_insn_info info;
@@ -2624,7 +2572,7 @@ extended_coalesce_2 ()
 /* Check if we forgot to coalesce some moves.  */
 
 static void
-check_uncoalesced_moves ()
+check_uncoalesced_moves (void)
 {
   struct move_list *ml;
   struct move *m;
@@ -2658,8 +2606,7 @@ check_uncoalesced_moves ()
    produces a list of spilled, colored and coalesced nodes.  */
 
 void
-ra_colorize_graph (df)
-     struct df *df;
+ra_colorize_graph (struct df *df)
 {
   if (rtl_dump_file)
     dump_igraph (df);
@@ -2704,7 +2651,7 @@ ra_colorize_graph (df)
 
 /* Initialize this module.  */
 
-void ra_colorize_init ()
+void ra_colorize_init (void)
 {
   /* FIXME: Choose spill heuristic for platform if we have one */
   spill_heuristic = default_spill_heuristic;
@@ -2714,7 +2661,7 @@ void ra_colorize_init ()
    memory).  */
 
 void
-ra_colorize_free_all ()
+ra_colorize_free_all (void)
 {
   struct dlist *d;
   while ((d = pop_list (&WEBS(FREE))) != NULL)

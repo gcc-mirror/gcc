@@ -1,5 +1,5 @@
 /* Graph coloring register allocator
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Matz <matz@suse.de>
    and Daniel Berlin <dan@cgsoftware.com>.
 
@@ -85,16 +85,16 @@
   */
 
 static struct obstack ra_obstack;
-static void create_insn_info PARAMS ((struct df *));
-static void free_insn_info PARAMS ((void));
-static void alloc_mem PARAMS ((struct df *));
-static void free_mem PARAMS ((struct df *));
-static void free_all_mem PARAMS ((struct df *df));
-static int one_pass PARAMS ((struct df *, int));
-static void check_df PARAMS ((struct df *));
-static void init_ra PARAMS ((void));
+static void create_insn_info (struct df *);
+static void free_insn_info (void);
+static void alloc_mem (struct df *);
+static void free_mem (struct df *);
+static void free_all_mem (struct df *df);
+static int one_pass (struct df *, int);
+static void check_df (struct df *);
+static void init_ra (void);
 
-void reg_alloc PARAMS ((void));
+void reg_alloc (void);
 
 /* These global variables are "internal" to the register allocator.
    They are all documented at their declarations in ra.h.  */
@@ -165,8 +165,7 @@ int flag_ra_dump_notes = 0;
    is done.  Allocate an object of SIZE bytes.  */
 
 void *
-ra_alloc (size)
-     size_t size;
+ra_alloc (size_t size)
 {
   return obstack_alloc (&ra_obstack, size);
 }
@@ -174,8 +173,7 @@ ra_alloc (size)
 /* Like ra_alloc(), but clear the returned memory.  */
 
 void *
-ra_calloc (size)
-     size_t size;
+ra_calloc (size_t size)
 {
   void *p = obstack_alloc (&ra_obstack, size);
   memset (p, 0, size);
@@ -185,8 +183,7 @@ ra_calloc (size)
 /* Returns the number of hardregs in HARD_REG_SET RS.  */
 
 int
-hard_regs_count (rs)
-     HARD_REG_SET rs;
+hard_regs_count (HARD_REG_SET rs)
 {
   int count = 0;
 #ifdef HARD_REG_SET
@@ -220,8 +217,7 @@ hard_regs_count (rs)
    be basically valid.  */
 
 rtx
-ra_emit_move_insn (x, y)
-     rtx x, y;
+ra_emit_move_insn (rtx x, rtx y)
 {
   enum machine_mode mode = GET_MODE (x);
   if (GET_MODE_CLASS (mode) == MODE_CC)
@@ -238,8 +234,7 @@ static struct ref **refs_for_insn_df;
    all valid defs and uses in an insn.  */
 
 static void
-create_insn_info (df)
-     struct df *df;
+create_insn_info (struct df *df)
 {
   rtx insn;
   struct ref **act_refs;
@@ -288,7 +283,7 @@ create_insn_info (df)
 /* Free the insn_df structures.  */
 
 static void
-free_insn_info ()
+free_insn_info (void)
 {
   free (refs_for_insn_df);
   refs_for_insn_df = NULL;
@@ -302,9 +297,7 @@ free_insn_info ()
    represented by WEB.  Returns the matching subweb or NULL.  */
 
 struct web *
-find_subweb (web, reg)
-     struct web *web;
-     rtx reg;
+find_subweb (struct web *web, rtx reg)
 {
   struct web *w;
   if (GET_CODE (reg) != SUBREG)
@@ -320,9 +313,7 @@ find_subweb (web, reg)
    a collection of the needed size and offset (in bytes).  */
 
 struct web *
-find_subweb_2 (web, size_word)
-     struct web *web;
-     unsigned int size_word;
+find_subweb_2 (struct web *web, unsigned int size_word)
 {
   struct web *w = web;
   if (size_word == GET_MODE_SIZE (GET_MODE (web->orig_x)))
@@ -340,8 +331,7 @@ find_subweb_2 (web, size_word)
 /* Returns the superweb for SUBWEB.  */
 
 struct web *
-find_web_for_subweb_1 (subweb)
-     struct web *subweb;
+find_web_for_subweb_1 (struct web *subweb)
 {
   while (subweb->parent_web)
     subweb = subweb->parent_web;
@@ -352,8 +342,7 @@ find_web_for_subweb_1 (subweb)
    Return 1 if they do.  */
 
 int
-hard_regs_intersect_p (a, b)
-     HARD_REG_SET *a, *b;
+hard_regs_intersect_p (HARD_REG_SET *a, HARD_REG_SET *b)
 {
   HARD_REG_SET c;
   COPY_HARD_REG_SET (c, *a);
@@ -368,8 +357,7 @@ lose:
    register allocator.  */
 
 static void
-alloc_mem (df)
-     struct df *df;
+alloc_mem (struct df *df)
 {
   int i;
   ra_build_realloc (df);
@@ -386,8 +374,7 @@ alloc_mem (df)
 /* Free the memory which isn't necessary for the next pass.  */
 
 static void
-free_mem (df)
-     struct df *df ATTRIBUTE_UNUSED;
+free_mem (struct df *df ATTRIBUTE_UNUSED)
 {
   free_insn_info ();
   ra_build_free ();
@@ -397,8 +384,7 @@ free_mem (df)
    it's done.  */
 
 static void
-free_all_mem (df)
-     struct df *df;
+free_all_mem (struct df *df)
 {
   unsigned int i;
   live_at_end -= 2;
@@ -418,9 +404,7 @@ static long ticks_rebuild;
    was added, i.e. if the allocator needs to rerun.  */
 
 static int
-one_pass (df, rebuild)
-     struct df *df;
-     int rebuild;
+one_pass (struct df *df, int rebuild)
 {
   long ticks = clock ();
   int something_spilled;
@@ -461,7 +445,7 @@ one_pass (df, rebuild)
 /* Initialize various arrays for the register allocator.  */
 
 static void
-init_ra ()
+init_ra (void)
 {
   int i;
   HARD_REG_SET rs;
@@ -592,8 +576,7 @@ init_ra ()
    invariances we expect.  */
 
 static void
-check_df (df)
-     struct df *df;
+check_df (struct df *df)
 {
   struct df_link *link;
   rtx insn;
@@ -663,7 +646,7 @@ check_df (df)
 /* Main register allocator entry point.  */
 
 void
-reg_alloc ()
+reg_alloc (void)
 {
   int changed;
   FILE *ra_dump_file = rtl_dump_file;

@@ -36,10 +36,10 @@
 /* This file contains various dumping and debug functions for
    the graph coloring register allocator.  */
 
-static void ra_print_rtx_1op PARAMS ((FILE *, rtx));
-static void ra_print_rtx_2op PARAMS ((FILE *, rtx));
-static void ra_print_rtx_3op PARAMS ((FILE *, rtx));
-static void ra_print_rtx_object PARAMS ((FILE *, rtx));
+static void ra_print_rtx_1op (FILE *, rtx);
+static void ra_print_rtx_2op (FILE *, rtx);
+static void ra_print_rtx_3op (FILE *, rtx);
+static void ra_print_rtx_object (FILE *, rtx);
 
 /* The hardregs as names, for debugging.  */
 static const char *const reg_class_names[] = REG_CLASS_NAMES;
@@ -70,9 +70,7 @@ ra_debug_msg (unsigned int level, const char *format, ...)
    "op(Y)" to FILE.  */
 
 static void
-ra_print_rtx_1op (file, x)
-     FILE *file;
-     rtx x;
+ra_print_rtx_1op (FILE *file, rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   rtx op0 = XEXP (x, 0);
@@ -106,9 +104,7 @@ ra_print_rtx_1op (file, x)
    to FILE.  */
 
 static void
-ra_print_rtx_2op (file, x)
-     FILE *file;
-     rtx x;
+ra_print_rtx_2op (FILE *file, rtx x)
 {
   int infix = 1;
   const char *opname = "shitop";
@@ -171,9 +167,7 @@ ra_print_rtx_2op (file, x)
    I.e. X is either an IF_THEN_ELSE, or a bitmap operation.  */
 
 static void
-ra_print_rtx_3op (file, x)
-     FILE *file;
-     rtx x;
+ra_print_rtx_3op (FILE *file, rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   rtx op0 = XEXP (x, 0);
@@ -208,9 +202,7 @@ ra_print_rtx_3op (file, x)
    is a hardreg, whose name is NULL, or empty.  */
 
 static void
-ra_print_rtx_object (file, x)
-     FILE *file;
-     rtx x;
+ra_print_rtx_object (FILE *file, rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
@@ -344,10 +336,7 @@ ra_print_rtx_object (file, x)
    the preceding and following insn.  */
 
 void
-ra_print_rtx (file, x, with_pn)
-     FILE *file;
-     rtx x;
-     int with_pn;
+ra_print_rtx (FILE *file, rtx x, int with_pn)
 {
   enum rtx_code code;
   char class;
@@ -517,10 +506,7 @@ ra_print_rtx (file, x, with_pn)
 /* This only calls ra_print_rtx(), but emits a final newline.  */
 
 void
-ra_print_rtx_top (file, x, with_pn)
-     FILE *file;
-     rtx x;
-     int with_pn;
+ra_print_rtx_top (FILE *file, rtx x, int with_pn)
 {
   ra_print_rtx (file, x, with_pn);
   fprintf (file, "\n");
@@ -529,8 +515,7 @@ ra_print_rtx_top (file, x, with_pn)
 /* Callable from gdb.  This prints rtx X onto stderr.  */
 
 void
-ra_debug_rtx (x)
-     rtx x;
+ra_debug_rtx (rtx x)
 {
   ra_print_rtx_top (stderr, x, 1);
 }
@@ -539,8 +524,7 @@ ra_debug_rtx (x)
    The first and last insn are emitted with UIDs of prev and next insns.  */
 
 void
-ra_debug_bbi (bbi)
-     int bbi;
+ra_debug_bbi (int bbi)
 {
   basic_block bb = BASIC_BLOCK (bbi);
   rtx insn;
@@ -557,9 +541,7 @@ ra_debug_bbi (bbi)
    or emit a window of NUM insns around INSN, to stderr.  */
 
 void
-ra_debug_insns (insn, num)
-     rtx insn;
-     int num;
+ra_debug_insns (rtx insn, int num)
 {
   int i, count = (num == 0 ? 1 : num < 0 ? -num : num);
   if (num < 0)
@@ -578,9 +560,7 @@ ra_debug_insns (insn, num)
    some notes, if flag_ra_dump_notes is zero.  */
 
 void
-ra_print_rtl_with_bb (file, insn)
-     FILE *file;
-     rtx insn;
+ra_print_rtl_with_bb (FILE *file, rtx insn)
 {
   basic_block last_bb, bb;
   unsigned int num = 0;
@@ -628,7 +608,7 @@ ra_print_rtl_with_bb (file, insn)
    graph, and prints the findings.  */
 
 void
-dump_number_seen ()
+dump_number_seen (void)
 {
 #define N 17
   int num[N];
@@ -654,8 +634,7 @@ dump_number_seen ()
 /* Dump the interference graph, the move list and the webs.  */
 
 void
-dump_igraph (df)
-     struct df *df ATTRIBUTE_UNUSED;
+dump_igraph (struct df *df ATTRIBUTE_UNUSED)
 {
   struct move_list *ml;
   unsigned int def1, def2;
@@ -741,7 +720,7 @@ dump_igraph (df)
    to my custom graph colorizer.  */
 
 void
-dump_igraph_machine ()
+dump_igraph_machine (void)
 {
   unsigned int i;
 
@@ -801,7 +780,7 @@ dump_igraph_machine ()
    and emits information, if the resulting insns are strictly valid.  */
 
 void
-dump_constraints ()
+dump_constraints (void)
 {
   rtx insn;
   int i;
@@ -854,9 +833,7 @@ dump_constraints ()
    preceded by a custom message MSG, with debug level LEVEL.  */
 
 void
-dump_graph_cost (level, msg)
-     unsigned int level;
-     const char *msg;
+dump_graph_cost (unsigned int level, const char *msg)
 {
   unsigned int i;
   unsigned HOST_WIDE_INT cost;
@@ -878,8 +855,7 @@ dump_graph_cost (level, msg)
 /* Dump the color assignment per web, the coalesced and spilled webs.  */
 
 void
-dump_ra (df)
-     struct df *df ATTRIBUTE_UNUSED;
+dump_ra (struct df *df ATTRIBUTE_UNUSED)
 {
   struct web *web;
   struct dlist *d;
@@ -913,10 +889,7 @@ dump_ra (df)
    (loads, stores and copies).  */
 
 void
-dump_static_insn_cost (file, message, prefix)
-     FILE *file;
-     const char *message;
-     const char *prefix;
+dump_static_insn_cost (FILE *file, const char *message, const char *prefix)
 {
   struct cost
     {
@@ -1001,9 +974,7 @@ dump_static_insn_cost (file, message, prefix)
    hardregs in common.  */
 
 int
-web_conflicts_p (web1, web2)
-     struct web *web1;
-     struct web *web2;
+web_conflicts_p (struct web *web1, struct web *web2)
 {
   if (web1->type == PRECOLORED && web2->type == PRECOLORED)
     return 0;
@@ -1020,8 +991,7 @@ web_conflicts_p (web1, web2)
 /* Dump all uids of insns in which WEB is mentioned.  */
 
 void
-dump_web_insns (web)
-     struct web *web;
+dump_web_insns (struct web *web)
 {
   unsigned int i;
 
@@ -1047,8 +1017,7 @@ dump_web_insns (web)
 /* Dump conflicts for web WEB.  */
 
 void
-dump_web_conflicts (web)
-     struct web *web;
+dump_web_conflicts (struct web *web)
 {
   int num = 0;
   unsigned int def2;
@@ -1099,8 +1068,7 @@ dump_web_conflicts (web)
 /* Output HARD_REG_SET to stderr.  */
 
 void
-debug_hard_reg_set (set)
-     HARD_REG_SET set;
+debug_hard_reg_set (HARD_REG_SET set)
 {
   int i;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
