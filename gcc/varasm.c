@@ -350,7 +350,7 @@ in_named_entry_hash (const void *p)
    set of flags for a section to have, so 0 does not mean that the section
    has not been seen.  */
 
-unsigned int
+static unsigned int
 get_named_section_flags (const char *section)
 {
   struct in_named_entry **slot;
@@ -4476,7 +4476,7 @@ init_varasm_once (void)
   const_alias_set = new_alias_set ();
 }
 
-enum tls_model
+static enum tls_model
 decl_tls_model (tree decl)
 {
   enum tls_model kind;
