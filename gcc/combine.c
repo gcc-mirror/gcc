@@ -4034,6 +4034,10 @@ simplify_if_then_else (x)
       SUBST (XEXP (x, 2), true);
 
       temp = true, true = false, false = temp, cond = XEXP (x, 0);
+
+      /* It is possible that the conditional has been simplified out. */
+      true_code = GET_CODE (cond);
+      comparison_p = GET_RTX_CLASS (true_code) == '<';
     }
 
   /* If the two arms are identical, we don't need the comparison.  */
