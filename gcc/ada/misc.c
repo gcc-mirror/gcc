@@ -186,7 +186,7 @@ const char **save_argv;
 /* gnat standard argc argv */
 
 extern int gnat_argc;
-extern char **gnat_argv;
+extern const char **gnat_argv;
 
 static void internal_error_function	PARAMS ((const char *, va_list *));
 static void gnat_adjust_rli		PARAMS ((record_layout_info));

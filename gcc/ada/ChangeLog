@@ -1,3 +1,7 @@
+2003-07-03  Neil Booth  <neil@daikokuya.co.uk>
+
+	* misc.c (save_argv): Make const.
+
 2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* misc.c (save_argc, save_argv): Keep non-static!
