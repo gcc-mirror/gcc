@@ -1,3 +1,8 @@
+2001-08-28  Will Cohen  <wcohen@redhat.com>
+
+	* config/rs6000/rs6000.md (store_multiple): Correct RTL
+	generation for first set.
+
 2001-08-27  Roman Zippel  <zippel@linux-m68k.org>
 
 	* flow.c (redirect_edge_succ_nodup): Return new edge.
