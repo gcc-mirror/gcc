@@ -1,3 +1,10 @@
+2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_output_mi_vcall_thunk): New function.
+	(TARGET_ASM_OUTPUT_MI_VCALL_THUNK): Define target hook.
+	(s390_output_mi_thunk): Remove.
+	(TARGET_ASM_OUTPUT_MI_THUNK): Remove.
+
 2002-10-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (N_REG_CLASSES): Parenthesize.
