@@ -7,6 +7,8 @@ Fri Oct  8 19:46:03 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 Tue Oct 12 07:38:41 1999  Bruce Korb  <autogen@linuxbox.com>
 
 	* fixincl/*: Merged "no_bogosity" branch
+	* fixincl/fixlib.h: protect against doubly defining t_bool
+	* fixincl/server.h: protect against doubly defining t_bool
 
 Mon Oct 11 20:18:41 1999  Jim Wilson  <wilson@cygnus.com>
 
