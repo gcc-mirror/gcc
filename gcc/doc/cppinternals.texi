@@ -112,7 +112,7 @@ other is for both internal and external use.
 
 The convention is that functions and types that are exposed to multiple
 files internally are prefixed with @samp{_cpp_}, and are to be found in
-the file @file{cpphash.h}.  Functions and types exposed to external
+the file @file{internal.h}.  Functions and types exposed to external
 clients are in @file{cpplib.h}, and prefixed with @samp{cpp_}.  For
 historical reasons this is no longer quite true, but we should strive to
 stick to it.
@@ -131,7 +131,7 @@ behavior.
 @cindex escaped newlines
 
 @section Overview
-The lexer is contained in the file @file{cpplex.c}.  It is a hand-coded
+The lexer is contained in the file @file{lex.c}.  It is a hand-coded
 lexer, and not implemented as a state machine.  It can understand C, C++
 and Objective-C source code, and has been extended to allow reasonably
 successful preprocessing of assembly language.  The lexer does not make
@@ -996,7 +996,7 @@ is turned off.
 @cindex files
 
 Fairly obviously, the file handling code of cpplib resides in the file
-@file{cppfiles.c}.  It takes care of the details of file searching,
+@file{files.c}.  It takes care of the details of file searching,
 opening, reading and caching, for both the main source file and all the
 headers it recursively includes.
 
