@@ -645,10 +645,8 @@ eh_outer_context (addr)
 {
   /* First mask out any unwanted bits.  */
 #ifdef MASK_RETURN_ADDR
-  emit_insn (gen_rtx (SET, Pmode,
-		      addr,
-		      gen_rtx (AND, Pmode,
-			       addr, MASK_RETURN_ADDR)));
+  expand_binop (Pmode, and_optab, addr, MASK_RETURN_ADDR, addr,
+		1, OPTAB_LIB_WIDEN);
 #endif
 
   /* Then subtract out enough to get into the appropriate region.  If
