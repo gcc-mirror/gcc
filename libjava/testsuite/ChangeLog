@@ -1,3 +1,9 @@
+2001-03-16  Tom Tromey  <tromey@redhat.com>
+
+	* lib/libjava.exp (libjava_arguments): Rewrote computation of
+	LD_LIBRARY_PATH.  Add gcc build directory if it contains
+	libgcc_s.so.
+
 2001-03-14  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.compile/assignment.xfail: Removed.

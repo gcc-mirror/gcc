@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000 Free Software Foundation
+# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation
 
 load_lib "libgloss.exp"
 
@@ -192,6 +192,7 @@ proc libjava_arguments {{mode compile}} {
     global tmpdir
     global runtests
     global env
+    global tool_root_dir
 
     if [info exists LIBJAVA] {
 	set libjava $LIBJAVA;
@@ -230,17 +231,25 @@ proc libjava_arguments {{mode compile}} {
     # Basically we want to build up a colon separated path list from
     # the value of $libjava.
 
-    # First strip away any -L arguments.
-    regsub -all -- "-L" $libjava "" ld_library_path
+    set lpath {}
+    foreach dir [list $libjava $libgc $libz] {
+	foreach item [split $dir " "] {
+	    switch -glob -- $item {
+		"-L*" {
+		    lappend lpath [string range $item 2 end]
+		}
+	    }
+	}
+    }
 
-    # Then remove any -lgcj argument.
-    regsub -all -- " -lgcj.*" $ld_library_path "" ld_library_path
+    # Finally, add the gcc build directory so that we can find the
+    # shared libgcc.  This, like much of dejagnu, is hideous.
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc_s.so]
+    if {$gccdir != ""} {
+	lappend lpath [file dirname $gccdir]
+    }
 
-    # First strip away any -L arguments.
-    regsub -all -- "-L" $libgc $ld_library_path ld_library_path
-
-    # Then remove any -lgcjgc argument.
-    regsub -all -- " -lgcjgc.*" $ld_library_path "" ld_library_path
+    set ld_library_path [join $lpath :]
 
     # That's enough to make things work for the normal case.
     # If we wanted to handle an arbitrary value of libjava,
@@ -250,6 +259,8 @@ proc libjava_arguments {{mode compile}} {
     global original_ld_library_path
     setenv LD_LIBRARY_PATH "$ld_library_path:$original_ld_library_path"
     setenv SHLIB_PATH "$ld_library_path:$original_ld_library_path"
+
+    verbose "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
 
     # Set the CLASSPATH environment variable
     verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$objdir/../libgcj.jar"
