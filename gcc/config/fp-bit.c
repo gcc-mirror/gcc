@@ -90,6 +90,11 @@ Boston, MA 02111-1307, USA.  */
 #define L_make_df
 #define L_sf_to_df
 #define L_df_to_sf
+#ifdef FLOAT
+#define L_thenan_sf
+#else
+#define L_thenan_df
+#endif
 #endif
 
 /* The following macros can be defined to change the behaviour of this file:
@@ -389,13 +394,26 @@ FLO_union_type;
 #define isinf(x) 0
 #else
 
+#if   defined L_thenan_sf
+const fp_number_type __thenan_sf = { CLASS_SNAN };
+#elif defined L_thenan_df
+const fp_number_type __thenan_df = { CLASS_SNAN };
+#elif defined FLOAT
+extern const fp_number_type __thenan_sf;
+#else
+extern const fp_number_type __thenan_df;
+#endif
+
 INLINE
 static fp_number_type *
 nan ()
 {
-  static fp_number_type thenan;
-
-  return &thenan;
+  /* Discard the const qualifier... */
+#ifdef FLOAT  
+  return (fp_number_type *) (& __thenan_sf);
+#else
+  return (fp_number_type *) (& __thenan_df);
+#endif
 }
 
 INLINE

@@ -1,3 +1,14 @@
+Mon Sep 13 10:01:33 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/fp-bit.c: Define L_thenan_sf or L_thenan_df (as
+	appropriate) if FINE_GRAINED_LIBRARIES is not defined.
+	(nan): Return _thenan_sf or _thenan_df as appropriate.
+	(L_thenan_sf): Define _thenan_sf.
+	(L_thenan_df): Define _thenan_df.
+
+	* Makefile.in (FPBIT_FUNCS): Add _thenan_sf.
+	(DPBIT_FUNCS): Add _thenan_df.
+
 Mon Sep 13 09:38:53 1999  Andreas Schwab  <schwab@suse.de>
 
 	* tree.c (fix_sizetype):  Exchange the types for TYPE_SIZE and
