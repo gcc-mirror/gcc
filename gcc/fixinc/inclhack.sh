@@ -3069,9 +3069,9 @@ struct utsname;
     #
     # Fix Undefine_Null
     #
-    if ( test -n "`egrep '^#[ 	]*define[ 	]*[ 	]NULL[ 	]' ${file}`"
+    if ( test -n "`egrep '^#[ 	]*define[ 	]*[ 	]NULL[ 	]' ${file}`"
        ) > /dev/null 2>&1 ; then
-    if ( test -z "`egrep '#[ 	]*(ifn|un)def[ 	]*[ 	]NULL($|[ 	])' ${file}`"
+    if ( test -z "`egrep '#[ 	]*(ifn|un)def[ 	]*[ 	]NULL($|[ 	])' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       undefine_null"
@@ -3079,7 +3079,7 @@ struct utsname;
     then infile=${file}
     else infile=${DESTFILE} ; fi 
 
-    sed -e '/^#[ 	]*define[ 	][ 	]*NULL[ 	]/i\
+    sed -e '/^#[ 	]*define[ 	][ 	]*NULL[ 	]/i\
 #undef NULL
 ' \
           < $infile > ${DESTDIR}/fixinc.tmp

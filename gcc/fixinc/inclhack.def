@@ -2387,9 +2387,9 @@ fix = {
  */
 fix = {
     hackname = undefine_null;
-    select = "^#[ \t]*define[ \t]*[ \t]NULL[ \t]";
-    bypass = "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t])";
-    sed    = "/^#[ \t]*define[ \t][ \t]*NULL[ \t]/i\\\n"
+    select = "^#[ \t]*define[ \t]*[ \t]NULL[ \t\r]";
+    bypass = "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t\r])";
+    sed    = "/^#[ \t]*define[ \t][ \t]*NULL[ \t\r]/i\\\n"
                 "#undef NULL\n";
 };
 
