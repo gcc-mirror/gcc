@@ -2,7 +2,7 @@
    Network Computing Devices, August, September, October, November 1990.
 
    Output Dwarf format symbol table information from the GNU C compiler.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3451,6 +3451,8 @@ output_compile_unit_die (arg)
 
   if (strcmp (language_string, "GNU C++") == 0)
     language_attribute (LANG_C_PLUS_PLUS);
+  else if (strcmp (language_string, "GNU Ada") == 0)
+    language_attribute (LANG_ADA83);
   else if (flag_traditional)
     language_attribute (LANG_C);
   else
