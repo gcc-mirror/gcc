@@ -1791,7 +1791,7 @@ try_optimize_cfg (int mode)
 		  && b->succ->dest != EXIT_BLOCK_PTR
 		  && onlyjump_p (BB_END (b))
 		  && try_redirect_by_replacing_jump (b->succ, b->succ->dest,
-						     (mode & CLEANUP_CFGLAYOUT)))
+						     (mode & CLEANUP_CFGLAYOUT) != 0))
 		{
 		  update_forwarder_flag (b);
 		  changed_here = true;
