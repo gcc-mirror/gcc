@@ -1,6 +1,6 @@
 // Class.java - Representation of a Java class.
 
-/* Copyright (C) 1998, 1999, 2000, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -346,7 +346,7 @@ public final class Class implements Serializable
   private native void initializeClass ();
 
   // finalization
-  protected native void finalize ();
+  protected native void finalize () throws Throwable;
 
   /**
    * Strip the last portion of the name (after the last dot).
