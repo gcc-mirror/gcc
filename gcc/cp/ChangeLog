@@ -1,3 +1,21 @@
+2004-06-07  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15766
+	* parser.c (cp_parser_iteration_statement): Fix typo in error
+	message.
+
+	PR c++/14777
+	* pt.c (tsubst_default_argument): Do not defer access checks
+	while substituting into the default argument.
+
+	PR c++/15554
+	* pt.c (tsubst_copy): Do not try to substitute for an enumeration
+	constant in a non-dependent context. 
+	
+	PR c++/15057
+	* except.c (build_throw): Ensure that temp_expr has been
+	initialized.
+
 2004-06-06  Roger Sayle  <roger@eyesopen.com>
 
 	* cp/cp-tree.h (lvalue_or_else): Add function prototype.
