@@ -7897,7 +7897,7 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
       }
 
   /* Set TARGET, and branch to the next-time-through label.  */
-  emit_move_insn (target, gen_lowpart (GET_MODE (target), static_chain_rtx));
+  emit_move_insn (target, const1_rtx);
   emit_jump_insn (gen_jump (next_label));
   emit_barrier ();
 
@@ -7916,35 +7916,17 @@ expand_builtin_longjmp (buf_addr, value)
 #endif
   buf_addr = force_reg (Pmode, buf_addr);
 
-  /* The value sent by longjmp is not allowed to be zero.  Force it
-     to one if so.  */
-  if (GET_CODE (value) == CONST_INT)
-    {
-      if (INTVAL (value) == 0)
-	value = const1_rtx;
-    }
-  else
-    {
-      lab = gen_label_rtx ();
-
-      emit_cmp_insn (value, const0_rtx, NE, NULL_RTX, GET_MODE (value), 0, 0);
-      emit_jump_insn (gen_bne (lab));
-      emit_move_insn (value, const1_rtx);
-      emit_label (lab);
-    }
-
-  /* Make sure the value is in the right mode to be copied to the chain.  */
-  if (GET_MODE (value) != VOIDmode)
-    value = gen_lowpart (GET_MODE (static_chain_rtx), value);
+  /* We used to store value in static_chain_rtx, but that fails if pointers
+     are smaller than integers.  We instead require that the user must pass
+     a second argument of 1, because that is what builtin_setjmp will
+     return.  This also makes EH slightly more efficient, since we are no
+     longer copying around a value that we don't care about.  */
+  if (value != const1_rtx)
+    abort ();
 
 #ifdef HAVE_builtin_longjmp
   if (HAVE_builtin_longjmp)
-    {
-      /* Copy the "return value" to the static chain reg.  */
-      emit_move_insn (static_chain_rtx, value);
-      emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
-      emit_insn (gen_builtin_longjmp (buf_addr));
-    }
+    emit_insn (gen_builtin_longjmp (buf_addr));
   else
 #endif
     {
@@ -7959,21 +7941,20 @@ expand_builtin_longjmp (buf_addr, value)
 	 from expand_goto in stmt.c; see there for detailed comments.  */
 #if HAVE_nonlocal_goto
       if (HAVE_nonlocal_goto)
+	/* We have to pass a value to the nonlocal_goto pattern that will
+	   get copied into the static_chain pointer, but it does not matter
+	   what that value is, because builtin_setjmp does not use it.  */
 	emit_insn (gen_nonlocal_goto (value, fp, stack, lab));
       else
 #endif
 	{
 	  lab = copy_to_reg (lab);
 
-	  /* Copy the "return value" to the static chain reg.  */
-	  emit_move_insn (static_chain_rtx, value);
-
 	  emit_move_insn (hard_frame_pointer_rtx, fp);
 	  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
 
 	  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
 	  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-	  emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
 	  emit_indirect_jump (lab);
 	}
     }
@@ -8928,7 +8909,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  rtx buf_addr = expand_expr (TREE_VALUE (arglist), subtarget,
 				      VOIDmode, 0);
 	  rtx value = expand_expr (TREE_VALUE (TREE_CHAIN (arglist)),
-				   const0_rtx, VOIDmode, 0);
+				   NULL_RTX, VOIDmode, 0);
 	  expand_builtin_longjmp (buf_addr, value);
 	  return const0_rtx;
 	}
