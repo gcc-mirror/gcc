@@ -39,11 +39,33 @@ package java.nio;
 
 public abstract class Buffer
 {
-  int cap = 0;
-  int limit = 0;
-  int pos = 0;
-  int mark = -1;
+  private int cap = 0;
+  private int limit = 0;
+  private int pos = 0;
+  private int mark = -1;
 
+  // Creates a new Buffer.
+  //
+  // Should be package private.
+  //
+  Buffer (int capacity, int limit, int position, int mark)
+  {
+    if (capacity < 0)
+      throw new IllegalArgumentException ();
+    
+    cap = capacity;
+    limit (limit);
+    position (position);
+    
+    if (mark > 0)
+    {
+      if (mark > pos)
+        throw new IllegalArgumentException ();
+      
+      this.mark = mark;
+    }
+  }
+  
   /**
    * Retrieves the capacity of the buffer.
    */

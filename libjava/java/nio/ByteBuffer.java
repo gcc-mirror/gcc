@@ -37,43 +37,178 @@ exception statement from your version. */
 
 package java.nio;
 
-public abstract class ByteBuffer extends Buffer
+/**
+ * @since 1.4
+ */
+public abstract class ByteBuffer extends Buffer implements Comparable
 {
+  int offset;
+  boolean readOnly;
+  byte[] backing_buffer;
+  
+  /**
+   * Allocates a new direct byte buffer.
+   */ 
+  public static ByteBuffer allocateDirect (int capacity)
+  {
+    throw new Error ("direct buffers are not implemented");
+  }
+
+  /**
+   * Allocates a new byte buffer.
+   */
   public static ByteBuffer allocate (int capacity)
   {
     return null;
   }
  
+  /**
+   * Wraps a byte array into a buffer.
+   * 
+   * @exception IndexOutOfBoundsException If the preconditions on the offset
+   * and length parameters do not hold
+   */
   final public static ByteBuffer wrap (byte[] array, int offset, int length)
   {
     return null;
   }
 
+  /**
+   * Wraps a byte array into a buffer.
+   */
   final public static ByteBuffer wrap (byte[] array)
   {
     return wrap (array, 0, array.length);
   }
-  
-  final public ByteBuffer put (ByteBuffer src)
+
+  ByteBuffer (int capacity, int limit, int position, int mark)
   {
+    super (capacity, limit, position, mark);
+  }
+
+  /**
+   * Writes the content of src into the buffer.
+   *
+   * @param src The source data.
+   *
+   * @exception BufferOverflowException If there is insufficient space in this
+   * buffer for the remaining bytes in the source buffer.
+   * @exception IllegalArgumentException If the source buffer is this buffer.
+   * @exception ReadOnlyBufferException If this buffer is read only.
+   */
+  public ByteBuffer put (ByteBuffer src)
+  {
+    if (src == this)
+      throw new IllegalArgumentException ();
+
     while (src.hasRemaining ())
       put (src.get ());
     
     return this;
   }
-  
-  final public ByteBuffer put (byte[] src, int offset, int length)
+
+  /**
+   * Writes the content of the the array src into the buffer.
+   *
+   * @param src The array to copy into the buffer.
+   * @param offset The offset within the array of the first byte to be read;
+   * must be non-negative and no larger than src.length.
+   * @param length The number of bytes to be read from the given array;
+   * must be non-negative and no larger than src.length - offset.
+   *
+   * @exception BufferOverflowException If there is insufficient space in this
+   * buffer for the remaining bytes in the source buffer.
+   * @exception IndexOutOfBoundsException If the preconditions on the offset
+   * and length parameters do not hold.
+   * @exception ReadOnlyBufferException If this buffer is read only.
+   */
+  public ByteBuffer put (byte[] src, int offset, int length)
   {
+    if ((offset < 0) ||
+        (offset > src.length) ||
+        (length < 0) ||
+        (length > src.length - offset))
+      throw new IndexOutOfBoundsException ();
+
     for (int i = offset; i < offset + length; i++)
       put (src [i]);
+    
     return this;
   }
+
+  /**
+   * Writes the content of the the array src into the buffer.
+   *
+   * @param src The array to copy into the buffer.
+   *
+   * @exception BufferOverflowException If there is insufficient space in this
+   * buffer for the remaining bytes in the source buffer.
+   * @exception ReadOnlyBufferException If this buffer is read only.
+   */
   public final ByteBuffer put (byte[] src)
   {
     return put (src, 0, src.length);
   }
 
+  /**
+   * Tells whether or not this buffer is backed by an accessible byte array.
+   */
+  public final boolean hasArray ()
+  {
+    return (backing_buffer != null
+             && !readOnly);
+  }
+
+  /**
+   * Returns the byte array that backs this buffer.
+   *
+   * @exception ReadOnlyBufferException If this buffer is backed by an array
+   * but is read-only.
+   * @exception UnsupportedOperationException If this buffer is not backed
+   * by an accessible array.
+   */
+  public final byte[] array ()
+  {
+    if (backing_buffer == null)
+      throw new UnsupportedOperationException ();
+
+    if (readOnly)
+      throw new ReadOnlyBufferException ();
+
+    return backing_buffer;
+  }
+
+  /**
+   * Returns the offset within this buffer's backing array of the first element
+   * of the buffer  
+   *
+   * @exception ReadOnlyBufferException If this buffer is backed by an array
+   * but is read-only.
+   * @exception UnsupportedOperationException If this buffer is not backed
+   * by an accessible array.
+   */
+  public final int arrayOffset ()
+  {
+    if (backing_buffer == null)
+      throw new UnsupportedOperationException ();
+
+    if (readOnly)
+      throw new ReadOnlyBufferException ();
+
+    return offset;
+  }
+  
+  /**
+   * Relative get method.
+   */
   public abstract byte get ();
   
+  /**
+   * Relative put method.
+   *
+   * @exception BufferOverflowException If this buffer's current position is
+   * not smaller than its limit.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
   public abstract ByteBuffer put (byte b);
 }

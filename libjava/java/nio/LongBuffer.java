@@ -46,7 +46,7 @@ public abstract class LongBuffer extends Buffer implements Comparable
 
   public static LongBuffer allocateDirect(int capacity)
   {
-    return new LongBufferImpl(capacity, 0, capacity);
+    throw new Error ("direct buffers not implemented");
   }
 
   public static LongBuffer allocate(int capacity)

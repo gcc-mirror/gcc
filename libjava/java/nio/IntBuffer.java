@@ -46,7 +46,7 @@ public abstract class IntBuffer extends Buffer implements Comparable
 
   public static IntBuffer allocateDirect(int capacity)
   {
-    return new IntBufferImpl (capacity, 0, capacity);
+    throw new Error ("direct buffers not implemented");
   }
 
   public static IntBuffer allocate(int capacity)
