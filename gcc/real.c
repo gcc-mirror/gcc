@@ -2311,6 +2311,47 @@ significand_size (mode)
 
   return fmt->p * fmt->log2_b;
 }
+
+/* Return a hash value for the given real value.  */
+/* ??? The "unsigned int" return value is intended to be hashval_t,
+   but I didn't want to pull hashtab.h into real.h.  */
+
+unsigned int
+real_hash (r)
+     const REAL_VALUE_TYPE *r;
+{
+  unsigned int h;
+  size_t i;
+
+  h = r->class | (r->sign << 2);
+  switch (r->class)
+    {
+    case rvc_zero:
+    case rvc_inf:
+      break;
+
+    case rvc_normal:
+      h |= r->exp << 3;
+      /* FALLTHRU */
+
+    case rvc_nan:
+      if (sizeof(unsigned long) > sizeof(unsigned int))
+	for (i = 0; i < SIGSZ; ++i)
+	  {
+	    unsigned long s = r->sig[i];
+	    h ^= s ^ (s >> (HOST_BITS_PER_LONG / 2));
+	  }
+      else
+	for (i = 0; i < SIGSZ; ++i)
+	  h ^= r->sig[i];
+      break;
+
+    default:
+      abort ();
+    }
+
+  return h;
+}
 
 /* IEEE single-precision format.  */
 
