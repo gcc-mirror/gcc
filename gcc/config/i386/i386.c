@@ -1618,9 +1618,8 @@ ix86_binary_operator_ok (code, mode, operands)
      enum machine_mode mode;
      rtx operands[3];
 {
-  return (GET_CODE (operands[1]) != MEM && GET_CODE (operands[2]) != MEM
-	  && GET_CODE (operands[1]) != CONST_INT)
-    || GET_RTX_CLASS (code) == 'c';
+  return (GET_CODE (operands[1]) != MEM || GET_CODE (operands[2]) != MEM)
+    && (GET_CODE (operands[1]) != CONST_INT || GET_RTX_CLASS (code) == 'c');
 }
 
 /* Attempt to expand a unary operator.  Make the expansion closer to the
