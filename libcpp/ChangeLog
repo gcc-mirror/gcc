@@ -1,3 +1,12 @@
+2004-06-26  Zack Weinberg  <zack@codesourcery.com>
+
+	Partially revert patch of 2004-06-05.
+	* files.c (search_cache): Remove pfile argument.  Don't check
+	for file that would be found by "" or <> search here...
+	(_cpp_find_file): ...do it here, before calling find_file_in_dir.
+	Do not apply directory-of-current-file correction to files
+	found by this check.  Rearrange code slightly.
+
 2004-06-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* files.c (should_stack_file): Correct swapped parameters to call
