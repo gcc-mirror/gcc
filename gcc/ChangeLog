@@ -1,3 +1,8 @@
+2003-04-26 Stephane Carrez <stcarrez@nerim.fr>
+
+	* doc/extend.texi (Function Attributes): Document "near" and "far"
+	for 68HC11 and 68HC12.
+
 2003-04-25  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/linux.h (TARGET_OS_CPP_BUILTINS): Back out previous
