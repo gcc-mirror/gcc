@@ -26,6 +26,14 @@ extern void output_asm_insn ();
    and fixed syntactic prefixes.  */
 extern void asm_fprintf ();
 
+/* Print an integer constant expression in assembler syntax.
+   Addition and subtraction are the only arithmetic
+   that may appear in these expressions.  */
+extern void output_addr_const ();
+
+/* Output a name (as found inside a symbol_ref) in assembler syntax.  */
+extern void assemble_name ();
+
 /* Replace a SUBREG with a REG or a MEM, based on the thing it is a
    subreg of.  */
 extern rtx alter_subreg ();
