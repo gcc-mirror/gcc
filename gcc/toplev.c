@@ -132,6 +132,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 #endif
 
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
 extern int rtx_equal_function_value_matters;
 
 #if ! (defined (VMS) || defined (OS2))
@@ -2221,6 +2225,28 @@ sorry VPROTO((const char *msgid, ...))
   va_end (ap);
 }
 
+/* Given a partial pathname as input, return another pathname that shares
+   no elements with the pathname of __FILE__.  This is used by abort() to
+   print `Internal compiler error in expr.c' instead of `Internal compiler
+   error in ../../egcs/gcc/expr.c'.  */
+const char *
+trim_filename (name)
+     const char *name;
+{
+  static const char *this_file = __FILE__;
+  const char *p = name, *q = this_file;
+
+  while (*p == *q && *p != 0 && *q != 0) p++, q++;
+  while (p > name && p[-1] != DIR_SEPARATOR
+#ifdef DIR_SEPARATOR_2
+	 && p[-1] != DIR_SEPARATOR_2
+#endif
+	 )
+    p--;
+
+  return p;
+}
+
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.
 

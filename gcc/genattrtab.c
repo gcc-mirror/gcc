@@ -119,7 +119,7 @@ struct obstack *temp_obstack = &obstack2;
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 char **insn_name_ptr = 0;
 
-static void fatal PVPROTO ((const char *, ...))
+void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
@@ -5904,7 +5904,7 @@ copy_rtx_unchanging (orig)
 #endif
 }
 
-static void
+void
 fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES

@@ -98,7 +98,7 @@ static struct code_ptr *peepholes;
 static void gen_insn PROTO ((rtx));
 static void walk_rtx PROTO ((rtx, const char *));
 static void print_path PROTO ((char *));
-static void fatal PVPROTO ((const char *, ...))
+void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
 
@@ -370,7 +370,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-static void
+void
 fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES

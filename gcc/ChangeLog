@@ -1,3 +1,21 @@
+1999-04-16 22:44 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* system.h: Always prototype abort.  Prototype fatal.  Define
+	abort to call fatal, not fprintf/exit.  Define a stub macro
+	for trim_filename.
+	* toplev.c: Define DIR_SEPARATOR.  (trim_filename): New
+	function.
+	* toplev.h: Prototype trim_filename, and #undef system.h's stub.
+
+	* gcc.c, genattr.c, genattrtab.c, gencodes.c, genconfig.c,
+	genemit.c, genextract.c, genflags.c, genopinit.c, genoutput.c,
+	genpeep.c, genrecog.c: Make fatal non-static.
+	* gcov.c, gengenrtl.c, protoize.c: #undef abort after
+	including system.h.
+
+	* config/i386/dgux.h, config/m68k/xm-amix.h: Remove stale code
+	relating to abort.
+
 Sat Apr 17 11:25:44 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (mulqf3_clrqf_clobber, mulqi3_clrqi_clobber): 
