@@ -161,7 +161,7 @@ package body Prj is
 
    function Empty_Project return Project_Data is
    begin
-      Initialize;
+      Prj.Initialize;
       return Project_Empty;
    end Empty_Project;
 
@@ -415,7 +415,7 @@ package body Prj is
 
    function Standard_Naming_Data return Naming_Data is
    begin
-      Initialize;
+      Prj.Initialize;
       return Std_Naming_Data;
    end Standard_Naming_Data;
 

@@ -7226,6 +7226,29 @@ package body Exp_Ch9 is
               Subtype_Indication => New_Reference_To (RTE (RO_ST_Task_Id),
                                     Loc))));
 
+      --  Declare static ATCB (that is, created by the expander) if we
+      --  are using the Restricted run time.
+
+      if Restricted_Profile then
+         Append_To (Cdecls,
+           Make_Component_Declaration (Loc,
+             Defining_Identifier  =>
+               Make_Defining_Identifier (Loc, Name_uATCB),
+
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present     => True,
+                 Subtype_Indication  => Make_Subtype_Indication (Loc,
+                   Subtype_Mark => New_Occurrence_Of
+                     (RTE (RE_Ada_Task_Control_Block), Loc),
+
+                   Constraint   =>
+                     Make_Index_Or_Discriminant_Constraint (Loc,
+                       Constraints =>
+                         New_List (Make_Integer_Literal (Loc, 0)))))));
+
+      end if;
+
       --  Add components for entry families
 
       Collect_Entry_Families (Loc, Cdecls, Size_Decl, Tasktyp);

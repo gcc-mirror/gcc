@@ -2493,8 +2493,16 @@ package body Sem_Ch10 is
 
    function Get_Parent_Entity (Unit : Node_Id) return Entity_Id is
    begin
-      if Nkind (Unit) = N_Package_Instantiation then
+      if Nkind (Unit) = N_Package_Body
+        and then Nkind (Original_Node (Unit)) = N_Package_Instantiation
+      then
+         return
+           Defining_Entity
+             (Specification (Instance_Spec (Original_Node (Unit))));
+
+      elsif Nkind (Unit) = N_Package_Instantiation then
          return Defining_Entity (Specification (Instance_Spec (Unit)));
+
       else
          return Defining_Entity (Unit);
       end if;
@@ -2510,7 +2518,9 @@ package body Sem_Ch10 is
    is
       Loc    : constant Source_Ptr := Sloc (N);
       P      : constant Node_Id    := Parent_Spec (Child_Unit);
-      P_Unit : constant Node_Id    := Unit (P);
+
+      P_Unit : Node_Id    := Unit (P);
+
       P_Name : constant Entity_Id  := Get_Parent_Entity (P_Unit);
       Withn  : Node_Id;
 
@@ -2562,6 +2572,16 @@ package body Sem_Ch10 is
    --  Start of processing for Implicit_With_On_Parent
 
    begin
+      --  The unit of the current compilation may be a package body
+      --  that replaces an instance node. In this case we need the
+      --  original instance node to construct the proper parent name.
+
+      if Nkind (P_Unit) = N_Package_Body
+        and then Nkind (Original_Node (P_Unit)) = N_Package_Instantiation
+      then
+         P_Unit := Original_Node (P_Unit);
+      end if;
+
       New_Nodes_OK := New_Nodes_OK + 1;
       Withn := Make_With_Clause (Loc, Name => Build_Unit_Name);
 
@@ -4318,16 +4338,26 @@ package body Sem_Ch10 is
    procedure Remove_Parents (Lib_Unit : Node_Id) is
       P      : Node_Id;
       P_Name : Entity_Id;
+      P_Spec : Node_Id := Empty;
       E      : Entity_Id;
       Vis    : constant Boolean :=
                  Scope_Stack.Table (Scope_Stack.Last).Previous_Visibility;
 
    begin
       if Is_Child_Spec (Lib_Unit) then
-         P := Unit (Parent_Spec (Lib_Unit));
-         P_Name := Get_Parent_Entity (P);
+         P_Spec := Parent_Spec (Lib_Unit);
 
-         Remove_Context_Clauses (Parent_Spec (Lib_Unit));
+      elsif Nkind (Lib_Unit) = N_Package_Body
+        and then Nkind (Original_Node (Lib_Unit)) = N_Package_Instantiation
+      then
+         P_Spec := Parent_Spec (Original_Node (Lib_Unit));
+      end if;
+
+      if Present (P_Spec) then
+
+         P := Unit (P_Spec);
+         P_Name := Get_Parent_Entity (P);
+         Remove_Context_Clauses (P_Spec);
          End_Package_Scope (P_Name);
          Set_Is_Immediately_Visible (P_Name, Vis);
 

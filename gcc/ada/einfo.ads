@@ -596,7 +596,7 @@ package Einfo is
 --       If the IF/ELSIF condition has the form "[NOT] OBJ RELOP VAL",
 --       where OBJ is a reference to an entity with a Current_Value field,
 --       RELOP is one of the six relational operators, and VAL is a compile-
---       time known valoue, then the Current_Value field if OBJ is set to
+--       time known value, then the Current_Value field if OBJ is set to
 --       point to the N_If_Statement or N_Elsif_Part node of the relevant
 --       construct. For more details on this usage, see the procedure
 --       Exp_Util.Get_Current_Value_Condition.

@@ -2990,12 +2990,8 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Slice
 
    begin
-      --  Analyze the prefix if not done already
 
-      if No (Etype (P)) then
-         Analyze (P);
-      end if;
-
+      Analyze (P);
       Analyze (D);
 
       if Is_Overloaded (P) then

@@ -469,7 +469,7 @@ package body System.Machine_State_Operations is
          return To_Address (MS.eip);
       else
          --  When doing a call the return address is pushed to the stack.
-         --  We want to return the call point address, so we substract
+         --  We want to return the call point address, so we subtract
          --  Asm_Call_Size from the return address. This value is set
          --  to 5 as an asm call takes 5 bytes on x86 architectures.
 

@@ -877,21 +877,27 @@ package body Exp_Ch4 is
    --     end if;
 
    --     declare
-   --        B1 : Index_T1 := B'first (1)
+   --        A1 : Index_T1 := A'first (1);
+   --        B1 : Index_T1 := B'first (1);
    --     begin
-   --        for A1 in A'range (1) loop
+   --        loop
    --           declare
-   --              B2 : Index_T2 := B'first (2)
+   --              A2 : Index_T2 := A'first (2);
+   --              B2 : Index_T2 := B'first (2);
    --           begin
-   --              for A2 in A'range (2) loop
+   --              loop
    --                 if A (A1, A2) /= B (B1, B2) then
    --                    return False;
    --                 end if;
 
+   --                 exit when A2 = A'last (2);
+   --                 A2 := Index_T2'succ (A2);
    --                 B2 := Index_T2'succ (B2);
    --              end loop;
    --           end;
 
+   --           exit when A1 = A'last (1);
+   --           A1 := Index_T1'succ (A1);
    --           B1 := Index_T1'succ (B1);
    --        end loop;
    --     end;
@@ -904,6 +910,10 @@ package body Exp_Ch4 is
    --  do an unchecked conversion of the actual. If either of the arrays
    --  has a bound depending on a discriminant, then we use the base type
    --  since otherwise we have an escaped discriminant in the function.
+
+   --  If both arrays are constrained and have the same bounds, we can
+   --  generate a loop with an explicit iteration scheme using a 'Range
+   --  attribute over the first array.
 
    function Expand_Array_Equality
      (Nod    : Node_Id;
@@ -949,26 +959,28 @@ package body Exp_Ch4 is
       --  This procedure returns the following code
       --
       --    declare
-      --       Bn : Index_T := B'First (n);
+      --       Bn : Index_T := B'First (N);
       --    begin
-      --       for An in A'range (n) loop
+      --       loop
       --          xxx
+      --          exit when An = A'Last (N);
+      --          An := Index_T'Succ (An)
       --          Bn := Index_T'Succ (Bn)
       --       end loop;
       --    end;
       --
-      --  Note: we don't need Bn or the declare block when the index types
-      --  of the two arrays are constrained and identical.
+      --  If both indices are constrained and identical, the procedure
+      --  returns a simpler loop:
       --
-      --  where N is the value of "n" in the above code. Index is the
+      --      for An in A'Range (N) loop
+      --         xxx
+      --      end loop
+      --
+      --  N is the dimension for which we are generating a loop. Index is the
       --  N'th index node, whose Etype is Index_Type_n in the above code.
       --  The xxx statement is either the loop or declare for the next
       --  dimension or if this is the last dimension the comparison
       --  of corresponding components of the arrays.
-      --
-      --  Note: if the index types are identical and constrained, we
-      --  need only one index, so we generate only An and we do not
-      --  need the declare block.
       --
       --  The actual way the code works is to return the comparison
       --  of corresponding components for the N+1 call. That's neater!
@@ -1119,6 +1131,24 @@ package body Exp_Ch4 is
            Handle_One_Dimension (N + 1, Next_Index (Index)));
 
          if Need_Separate_Indexes then
+            --  Generate guard for loop, followed by increments of indices.
+
+            Append_To (Stm_List,
+               Make_Exit_Statement (Loc,
+                 Condition =>
+                   Make_Op_Eq (Loc,
+                      Left_Opnd => New_Reference_To (An, Loc),
+                      Right_Opnd => Arr_Attr (A, Name_Last, N))));
+
+            Append_To (Stm_List,
+              Make_Assignment_Statement (Loc,
+                Name       => New_Reference_To (An, Loc),
+                Expression =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => New_Reference_To (Index_T, Loc),
+                    Attribute_Name => Name_Succ,
+                    Expressions    => New_List (New_Reference_To (An, Loc)))));
+
             Append_To (Stm_List,
               Make_Assignment_Statement (Loc,
                 Name       => New_Reference_To (Bn, Loc),
@@ -1129,34 +1159,44 @@ package body Exp_Ch4 is
                     Expressions    => New_List (New_Reference_To (Bn, Loc)))));
          end if;
 
-         Loop_Stm :=
-           Make_Implicit_Loop_Statement (Nod,
-             Statements       => Stm_List,
-             Iteration_Scheme =>
-               Make_Iteration_Scheme (Loc,
-                 Loop_Parameter_Specification =>
-                   Make_Loop_Parameter_Specification (Loc,
-                     Defining_Identifier         => An,
-                     Discrete_Subtype_Definition =>
-                       Arr_Attr (A, Name_Range, N))));
-
-         --  If separate indexes, need a declare block to declare Bn
+         --  If separate indexes, we need a declare block for An and Bn,
+         --  and a loop without an iteration scheme.
 
          if Need_Separate_Indexes then
+            Loop_Stm :=
+              Make_Implicit_Loop_Statement (Nod, Statements => Stm_List);
+
             return
               Make_Block_Statement (Loc,
                 Declarations => New_List (
                   Make_Object_Declaration (Loc,
+                    Defining_Identifier => An,
+                    Object_Definition   => New_Reference_To (Index_T, Loc),
+                    Expression          => Arr_Attr (A, Name_First, N)),
+
+                  Make_Object_Declaration (Loc,
                     Defining_Identifier => Bn,
                     Object_Definition   => New_Reference_To (Index_T, Loc),
                     Expression          => Arr_Attr (B, Name_First, N))),
+
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
                     Statements => New_List (Loop_Stm)));
 
-         --  If no separate indexes, return loop statement on its own
+         --  If no separate indexes, return loop statement with explicit
+         --  iteration scheme on its own
 
          else
+            Loop_Stm :=
+              Make_Implicit_Loop_Statement (Nod,
+                Statements       => Stm_List,
+                Iteration_Scheme =>
+                  Make_Iteration_Scheme (Loc,
+                    Loop_Parameter_Specification =>
+                      Make_Loop_Parameter_Specification (Loc,
+                        Defining_Identifier         => An,
+                        Discrete_Subtype_Definition =>
+                          Arr_Attr (A, Name_Range, N))));
             return Loop_Stm;
          end if;
       end Handle_One_Dimension;

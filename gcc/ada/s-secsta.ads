@@ -73,7 +73,7 @@ package System.Secondary_Stack is
    --  to System.Null_Address.
 
    type Mark_Id is private;
-   --  Type used to mark the stack.
+   --  Type used to mark the stack
 
    function SS_Mark return Mark_Id;
    --  Return the Mark corresponding to the current state of the stack

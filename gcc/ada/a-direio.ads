@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -45,6 +45,10 @@ generic
 
 package Ada.Direct_IO is
 
+   pragma Compile_Time_Warning
+     (Element_Type'Has_Access_Values,
+      "?Element_Type for Direct_'I'O instance has access values");
+
    type File_Type is limited private;
 
    type File_Mode is (In_File, Inout_File, Out_File);
@@ -54,9 +58,9 @@ package Ada.Direct_IO is
    --  used in this package and System.File_IO.
 
    for File_Mode use
-     (In_File     => 0,   -- System.File_IO.File_Mode'Pos (In_File)
-      Inout_File  => 1,   -- System.File_IO.File_Mode'Pos (Inout_File);
-      Out_File    => 2);  -- System.File_IO.File_Mode'Pos (Out_File)
+     (In_File    => 0,   -- System.File_IO.File_Mode'Pos (In_File)
+      Inout_File => 1,   -- System.File_IO.File_Mode'Pos (Inout_File);
+      Out_File   => 2);  -- System.File_IO.File_Mode'Pos (Out_File)
 
    type Count is range 0 .. System.Direct_IO.Count'Last;
 

@@ -177,12 +177,8 @@ package body Prj.Strt is
          --  Check if the identifier is one of the attribute identifiers in the
          --  context (package or project level attributes).
 
-         while Current_Attribute /= Empty_Attribute
-           and then
-             Attributes.Table (Current_Attribute).Name /= Token_Name
-         loop
-            Current_Attribute := Attributes.Table (Current_Attribute).Next;
-         end loop;
+         Current_Attribute :=
+           Attribute_Node_Id_Of (Token_Name, Starting_At => First_Attribute);
 
          --  If the identifier is not allowed, report an error
 
@@ -201,9 +197,9 @@ package body Prj.Strt is
             Set_Project_Node_Of (Reference, To => Current_Project);
             Set_Package_Node_Of (Reference, To => Current_Package);
             Set_Expression_Kind_Of
-              (Reference, To => Attributes.Table (Current_Attribute).Kind_1);
+              (Reference, To => Variable_Kind_Of (Current_Attribute));
             Set_Case_Insensitive
-              (Reference, To => Attributes.Table (Current_Attribute).Kind_2 =
+              (Reference, To => Attribute_Kind_Of (Current_Attribute) =
                                           Case_Insensitive_Associative_Array);
 
             --  Scan past the attribute name
@@ -212,7 +208,7 @@ package body Prj.Strt is
 
             --  If the attribute is an associative array, get the index
 
-            if Attributes.Table (Current_Attribute).Kind_2 /= Single then
+            if Attribute_Kind_Of (Current_Attribute) /= Single then
                Expect (Tok_Left_Paren, "`(`");
 
                if Token = Tok_Left_Paren then
@@ -651,15 +647,9 @@ package body Prj.Strt is
 
                   --  First, look if it can be a package name
 
-                  for Index in Package_First .. Package_Attributes.Last loop
-                     if Package_Attributes.Table (Index).Name =
-                                                      Names.Table (1).Name
-                     then
-                        First_Attribute :=
-                          Package_Attributes.Table (Index).First_Attribute;
-                        exit;
-                     end if;
-                  end loop;
+                  First_Attribute :=
+                    First_Attribute_Of
+                      (Package_Node_Id_Of (Names.Table (1).Name));
 
                   --  Now, look if it can be a project name
 
@@ -808,8 +798,8 @@ package body Prj.Strt is
                               --  package.
 
                               First_Attribute :=
-                                Package_Attributes.Table
-                                (Package_Id_Of (The_Package)).First_Attribute;
+                                First_Attribute_Of
+                                  (Package_Id_Of (The_Package));
                            end if;
                         end if;
                      end if;

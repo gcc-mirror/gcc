@@ -155,18 +155,15 @@ package body Prj.Proc is
       First   : Attribute_Node_Id)
    is
       The_Attribute  : Attribute_Node_Id := First;
-      Attribute_Data : Attribute_Record;
 
    begin
       while The_Attribute /= Empty_Attribute loop
-         Attribute_Data := Attributes.Table (The_Attribute);
-
-         if Attribute_Data.Kind_2 = Single then
+         if Attribute_Kind_Of (The_Attribute) = Single then
             declare
                New_Attribute : Variable_Value;
 
             begin
-               case Attribute_Data.Kind_1 is
+               case Variable_Kind_Of (The_Attribute) is
 
                   --  Undefined should not happen
 
@@ -201,13 +198,13 @@ package body Prj.Proc is
                Variable_Elements.Increment_Last;
                Variable_Elements.Table (Variable_Elements.Last) :=
                  (Next  => Decl.Attributes,
-                  Name  => Attribute_Data.Name,
+                  Name  => Attribute_Name_Of (The_Attribute),
                   Value => New_Attribute);
                Decl.Attributes := Variable_Elements.Last;
             end;
          end if;
 
-         The_Attribute := Attributes.Table (The_Attribute).Next;
+         The_Attribute := Next_Attribute (After => The_Attribute);
       end loop;
    end Add_Attributes;
 
@@ -1068,8 +1065,8 @@ package body Prj.Proc is
                         Add_Attributes
                           (Project,
                            Packages.Table (New_Pkg).Decl,
-                           Package_Attributes.Table
-                             (Package_Id_Of (Current_Item)).First_Attribute);
+                           First_Attribute_Of
+                             (Package_Id_Of (Current_Item)));
 
                         --  And process declarative items of the new package
 

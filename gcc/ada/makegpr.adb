@@ -1222,6 +1222,7 @@ package body Makegpr is
          Global_Archive_Exists := Last_Argument > First_Object;
 
          if Global_Archive_Exists then
+
             --  If the archive is built, then linking will need to occur
             --  unconditionally.
 
@@ -1230,9 +1231,7 @@ package body Makegpr is
             --  Spawn the archive builder (ar)
 
             Saved_Last_Argument := Last_Argument;
-
             Last_Argument := First_Object + Max_In_Archives;
-
             loop
                if Last_Argument > Saved_Last_Argument then
                   Last_Argument := Saved_Last_Argument;

@@ -443,9 +443,8 @@ package body System.Tasking.Restricted.Stages is
       Elaborated    : Access_Boolean;
       Chain         : in out Activation_Chain;
       Task_Image    : String;
-      Created_Task  : out Task_Id)
+      Created_Task  : Task_Id)
    is
-      T             : Task_Id;
       Self_ID       : constant Task_Id := STPO.Self;
       Base_Priority : System.Any_Priority;
       Success       : Boolean;
@@ -456,8 +455,6 @@ package body System.Tasking.Restricted.Stages is
       else
          Base_Priority := System.Any_Priority (Priority);
       end if;
-
-      T := New_ATCB (0);
 
       if Single_Lock then
          Lock_RTS;
@@ -470,7 +467,7 @@ package body System.Tasking.Restricted.Stages is
 
       Initialize_ATCB
         (Self_ID, State, Discriminants, Self_ID, Elaborated, Base_Priority,
-         Task_Info, Size, T, Success);
+         Task_Info, Size, Created_Task, Success);
 
       --  If we do our job right then there should never be any failures,
       --  which was probably said about the Titanic; so just to be safe,
@@ -486,11 +483,12 @@ package body System.Tasking.Restricted.Stages is
          raise Program_Error;
       end if;
 
-      T.Entry_Calls (1).Self := T;
+      Created_Task.Entry_Calls (1).Self := Created_Task;
 
-      T.Common.Task_Image_Len :=
-        Integer'Min (T.Common.Task_Image'Length, Task_Image'Length);
-      T.Common.Task_Image (1 .. T.Common.Task_Image_Len) := Task_Image;
+      Created_Task.Common.Task_Image_Len :=
+        Integer'Min (Created_Task.Common.Task_Image'Length, Task_Image'Length);
+      Created_Task.Common.Task_Image
+        (1 .. Created_Task.Common.Task_Image_Len) := Task_Image;
 
       Unlock (Self_ID);
 
@@ -501,10 +499,9 @@ package body System.Tasking.Restricted.Stages is
       --  Create TSD as early as possible in the creation of a task, since it
       --  may be used by the operation of Ada code within the task.
 
-      SSL.Create_TSD (T.Common.Compiler_Data);
-      T.Common.Activation_Link := Chain.T_ID;
-      Chain.T_ID   := T;
-      Created_Task := T;
+      SSL.Create_TSD (Created_Task.Common.Compiler_Data);
+      Created_Task.Common.Activation_Link := Chain.T_ID;
+      Chain.T_ID := Created_Task;
    end Create_Restricted_Task;
 
    ---------------------------

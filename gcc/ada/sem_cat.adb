@@ -798,42 +798,18 @@ package body Sem_Cat is
           K =  N_Subprogram_Renaming_Declaration)
         and then Present (Parent_Spec (N))
       then
-         declare
-            Parent_Lib_U  : constant Node_Id   := Parent_Spec (N);
-            Parent_Kind   : constant Node_Kind :=
-                              Nkind (Unit (Parent_Lib_U));
-            Parent_Entity : Entity_Id;
+         Check_Categorization_Dependencies (E, Scope (E), N, False);
 
-         begin
-            if        Parent_Kind =  N_Package_Instantiation
-              or else Parent_Kind =  N_Procedure_Instantiation
-              or else Parent_Kind =  N_Function_Instantiation
-              or else Parent_Kind =  N_Package_Renaming_Declaration
-              or else Parent_Kind in N_Generic_Renaming_Declaration
-            then
-               Parent_Entity := Defining_Entity (Unit (Parent_Lib_U));
+         --  Verify that public child of an RCI library unit
+         --  must also be an RCI library unit (RM E.2.3(15)).
 
-            else
-               Parent_Entity :=
-                 Defining_Entity (Specification (Unit (Parent_Lib_U)));
-            end if;
-
-            Check_Categorization_Dependencies (E, Parent_Entity, N, False);
-
-            --  Verify that public child of an RCI library unit
-            --  must also be an RCI library unit (RM E.2.3(15)).
-
-            if Is_Remote_Call_Interface (Parent_Entity)
-              and then not Private_Present (P)
-              and then not Is_Remote_Call_Interface (E)
-            then
-               Error_Msg_N
-                 ("public child of rci unit must also be rci unit", N);
-               return;
-            end if;
-         end;
+         if Is_Remote_Call_Interface (Scope (E))
+           and then not Private_Present (P)
+           and then not Is_Remote_Call_Interface (E)
+         then
+            Error_Msg_N ("public child of rci unit must also be rci unit", N);
+         end if;
       end if;
-
    end Validate_Categorization_Dependency;
 
    --------------------------------

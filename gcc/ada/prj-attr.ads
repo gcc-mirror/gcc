@@ -24,16 +24,191 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package defines allowed packages and attributes in GNAT project files
+--  This package defines packages and attributes in GNAT project files.
+--  There are predefined packages and attributes.
+--  It is also possible to define new packages with their attributes.
 
 with Types; use Types;
-with Table;
 
 package Prj.Attr is
 
-   --  Define the allowed attributes
+   procedure Initialize;
+   --  Initialize the predefined project level attributes and the predefined
+   --  packages and their attribute. This procedure should be called by
+   --  Prj.Initialize.
 
-   --  All these declarations are uncommented, they all need comments ???
+   type Attribute_Kind is
+     (Unknown,
+      Single,
+      Associative_Array,
+      Optional_Index_Associative_Array,
+      Case_Insensitive_Associative_Array,
+      Optional_Index_Case_Insensitive_Associative_Array);
+   --  Characteristics of an attribute. Optional_Index indicates that there
+   --  may be an optional index in the index of the associative array, as in
+   --     for Switches ("files.ada" at 2) use ...
+
+   subtype Defined_Attribute_Kind is Attribute_Kind
+     range Single .. Optional_Index_Case_Insensitive_Associative_Array;
+   --  Subset of Attribute_Kinds that may be used for the attributes that is
+   --  used when defining a new package.
+
+   Max_Attribute_Name_Length : constant := 64;
+   --  The maximum length of attribute names
+
+   subtype Attribute_Name_Length is
+     Positive range 1 .. Max_Attribute_Name_Length;
+
+   type Attribute_Data (Name_Length : Attribute_Name_Length := 1) is record
+      Name : String (1 .. Name_Length);
+      --  The name of the attribute
+
+      Attr_Kind  : Defined_Attribute_Kind;
+      --  The type of the attribute
+
+      Index_Is_File_Name : Boolean;
+      --  For associative arrays, indicate if the index is a file name, so
+      --  that the attribute kind may be modified depending on the case
+      --  sensitivity of file names. This is only taken into account when
+      --  Attr_Kind is Associative_Array or Optional_Index_Associative_Array.
+
+      Opt_Index : Boolean;
+      --  True if there may be an optional index in the value of the index,
+      --  as in:
+      --    "file.ada" at 2
+      --    ("main.adb", "file.ada" at 1)
+
+      Var_Kind : Defined_Variable_Kind;
+      --  The attribute value kind: single or list
+
+   end record;
+   --  Name and characteristics of an attribute in a package registered
+   --  explicitly with Register_New_Package (see below).
+
+   type Attribute_Data_Array is array (Positive range <>) of Attribute_Data;
+
+   procedure Register_New_Package
+     (Name       : String;
+      Attributes : Attribute_Data_Array);
+   --  Add a new package with its attributes.
+   --  This procedure can only be called after Initialize, but before any
+   --  other call to a service of the Project Managers.
+   --  The name of the package must be unique. The names of the attributes
+   --  must be different.
+
+   --  The following declarations are only for the Project Manager, that is
+   --  the packages of the Prj or MLib hierarchies.
+
+   ----------------
+   -- Attributes --
+   ----------------
+
+   type Attribute_Node_Id is private;
+   --  The type to refers to an attribute, self-initialized
+
+   Empty_Attribute : constant Attribute_Node_Id;
+   --  Indicates no attribute. Default value of Attribute_Node_Id objects.
+
+   Attribute_First : constant Attribute_Node_Id;
+   --  First attribute node id of project level attributes
+
+   function Attribute_Node_Id_Of
+     (Name        : Name_Id;
+      Starting_At : Attribute_Node_Id) return Attribute_Node_Id;
+   --  Returns the node id of an attribute at the project level or in
+   --  a package. Starting_At indicates the first known attribute node where
+   --  to start the search. Returns Empty_Attribute if the attribute cannot
+   --  be found.
+
+   function Attribute_Kind_Of
+     (Attribute : Attribute_Node_Id) return Attribute_Kind;
+   --  Returns the attribute kind of a known attribute. Returns Unknown if
+   --  Attribute is Empty_Attribute.
+
+   procedure Set_Attribute_Kind_Of
+     (Attribute : Attribute_Node_Id;
+      To        : Attribute_Kind);
+   --  Set the attribute kind of a known attribute. Does nothing if
+   --  Attribute is Empty_Attribute.
+
+   function Attribute_Name_Of (Attribute : Attribute_Node_Id) return Name_Id;
+   --  Returns the name of a known attribute. Returns No_Name if Attribute is
+   --  Empty_Attribute.
+
+   function Variable_Kind_Of
+     (Attribute : Attribute_Node_Id) return Variable_Kind;
+   --  Returns the variable kind of a known attribute. Returns Undefined if
+   --  Attribute is Empty_Attribute.
+
+   procedure Set_Variable_Kind_Of
+     (Attribute : Attribute_Node_Id;
+      To        : Variable_Kind);
+   --  Set the variable kind of a known attribute. Does nothing if Attribute is
+   --  Empty_Attribute.
+
+   function Optional_Index_Of (Attribute : Attribute_Node_Id) return Boolean;
+   --  Returns True if Attribute is a known attribute and may have an
+   --  optional index. Returns False otherwise.
+
+   function Next_Attribute
+     (After : Attribute_Node_Id) return Attribute_Node_Id;
+   --  Returns the attribute that follow After in the list of project level
+   --  attributes or the list of attributes in a package.
+   --  Returns Empty_Attribute if After is either Empty_Attribute or is the
+   --  last of the list.
+
+   --------------
+   -- Packages --
+   --------------
+
+   type Package_Node_Id is private;
+   --  Type to refer to a package, self initialized
+
+   Empty_Package : constant Package_Node_Id;
+   --  Default value of Package_Node_Id objects
+
+   procedure Register_New_Package (Name : String; Id : out Package_Node_Id);
+   --  Add a new package. Fails if the package has a duplicate name.
+   --  Initially, the new package has no attributes. Id may be used to add
+   --  attributes using procedure Register_New_Attribute below.
+
+   procedure Register_New_Attribute
+     (Name               : String;
+      In_Package         : Package_Node_Id;
+      Attr_Kind          : Defined_Attribute_Kind;
+      Var_Kind           : Defined_Variable_Kind;
+      Index_Is_File_Name : Boolean := False;
+      Opt_Index          : Boolean := False);
+   --  Add a new attribute to registered package In_Package. Fails if the
+   --  attribute has a duplicate name. See definition of type Attribute_Data
+   --  above for the meaning of parameters Attr_Kind, Var_Kind,
+   --  Index_Is_File_Name and Opt_Index.
+
+   function Package_Node_Id_Of (Name : Name_Id) return Package_Node_Id;
+   --  Returns the package node id of the package with name Name. Returns
+   --  Empty_Package if there is no package with this name.
+
+   procedure Add_Unknown_Package (Name : Name_Id; Id : out Package_Node_Id);
+   --  Add a new package. The Name cannot be the name of a predefined or
+   --  already registered package.
+
+   function First_Attribute_Of
+     (Pkg : Package_Node_Id) return Attribute_Node_Id;
+   --  Returns the first attribute in the list of attributes of package Pkg.
+   --  Returns Empty_Attribute if Pkg is Empty_Package.
+
+   procedure Add_Attribute
+     (To_Package     : Package_Node_Id;
+      Attribute_Name : Name_Id;
+      Attribute_Node : out Attribute_Node_Id);
+   --  Add an attribute to the list for package To_Package. Attribute_Name
+   --  cannot be the name of an existing attribute of the package.
+   --  Does nothing if To_Package is Empty_Package.
+
+private
+   ----------------
+   -- Attributes --
+   ----------------
 
    Attributes_Initial   : constant := 50;
    Attributes_Increment : constant := 50;
@@ -41,41 +216,29 @@ package Prj.Attr is
    Attribute_Node_Low_Bound  : constant := 0;
    Attribute_Node_High_Bound : constant := 099_999_999;
 
-   type Attribute_Node_Id is
+   type Attr_Node_Id is
      range Attribute_Node_Low_Bound .. Attribute_Node_High_Bound;
+   --  Index type for table Attrs in the body
+
+   type Attribute_Node_Id is record
+      Value : Attr_Node_Id := Attribute_Node_Low_Bound;
+   end record;
+   --  Full declaration of self-initialized private type
+
+   Empty_Attr : constant Attr_Node_Id := Attribute_Node_Low_Bound;
+
+   Empty_Attribute : constant Attribute_Node_Id := (Value => Empty_Attr);
+
+   First_Attribute : constant Attr_Node_Id := Attribute_Node_Low_Bound + 1;
 
    First_Attribute_Node_Id : constant Attribute_Node_Id :=
-                               Attribute_Node_Low_Bound + 1;
-
-   Empty_Attribute : constant Attribute_Node_Id :=
-                       Attribute_Node_Low_Bound;
-
-   type Attribute_Kind is
-     (Single,
-      Associative_Array,
-      Optional_Index_Associative_Array,
-      Case_Insensitive_Associative_Array,
-      Optional_Index_Case_Insensitive_Associative_Array);
-
-   type Attribute_Record is record
-      Name           : Name_Id;
-      Kind_1         : Variable_Kind;
-      Optional_Index : Boolean;
-      Kind_2         : Attribute_Kind;
-      Next           : Attribute_Node_Id;
-   end record;
-
-   package Attributes is
-      new Table.Table (Table_Component_Type => Attribute_Record,
-                       Table_Index_Type     => Attribute_Node_Id,
-                       Table_Low_Bound      => First_Attribute_Node_Id,
-                       Table_Initial        => Attributes_Initial,
-                       Table_Increment      => Attributes_Increment,
-                       Table_Name           => "Prj.Attr.Attributes");
+                               (Value => First_Attribute);
 
    Attribute_First : constant Attribute_Node_Id := First_Attribute_Node_Id;
 
-   --  Define the allowed packages
+   --------------
+   -- Packages --
+   --------------
 
    Packages_Initial   : constant := 10;
    Packages_Increment : constant := 50;
@@ -83,31 +246,24 @@ package Prj.Attr is
    Package_Node_Low_Bound  : constant := 0;
    Package_Node_High_Bound : constant := 099_999_999;
 
-   type Package_Node_Id is
+   type Pkg_Node_Id is
      range Package_Node_Low_Bound .. Package_Node_High_Bound;
+   --  Index type for table Package_Attributes in the body
 
-   First_Package_Node_Id : constant Package_Node_Id :=
-                             Package_Node_Low_Bound + 1;
-
-   Empty_Package : constant Package_Node_Id := Package_Node_Low_Bound;
-
-   type Package_Record is record
-      Name            : Name_Id;
-      First_Attribute : Attribute_Node_Id;
+   type Package_Node_Id is record
+      Value : Pkg_Node_Id := Package_Node_Low_Bound;
    end record;
+   --  Full declaration of self-initialized private type
 
-   package Package_Attributes is
-      new Table.Table (Table_Component_Type => Package_Record,
-                       Table_Index_Type     => Package_Node_Id,
-                       Table_Low_Bound      => First_Package_Node_Id,
-                       Table_Initial        => Packages_Initial,
-                       Table_Increment      => Packages_Increment,
-                       Table_Name           => "Prj.Attr.Packages");
+   Empty_Pkg : constant Pkg_Node_Id := Package_Node_Low_Bound;
+
+   Empty_Package : constant Package_Node_Id := (Value => Empty_Pkg);
+
+   First_Package : constant Pkg_Node_Id := Package_Node_Low_Bound + 1;
+
+   First_Package_Node_Id  : constant Package_Node_Id :=
+                              (Value => First_Package);
 
    Package_First : constant Package_Node_Id := First_Package_Node_Id;
-
-   procedure Initialize;
-   --  Initialize the two tables above (Attributes and Package_Attributes).
-   --  This procedure should be called by Prj.Initialize.
 
 end Prj.Attr;

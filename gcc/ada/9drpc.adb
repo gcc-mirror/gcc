@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1009,7 +1009,7 @@ package body System.RPC is
                Partition_ID'Image (Partition));
             Garbage_Collector.Allocate (Anonymous);
 
-            --  We substracted the size of the header from the size of the
+            --  We subtracted the size of the header from the size of the
             --  global message in order to provide immediatly Params size
 
             Anonymous.Element.Start

@@ -894,7 +894,7 @@ package body Sem_Case is
 
       function Number_Of_Choices (N : Node_Id) return Nat is
          Alt : Node_Id;
-         --  A case statement alternative or a record variant.
+         --  A case statement alternative or a record variant
 
          Choice : Node_Id;
          Count  : Nat := 0;

@@ -5093,7 +5093,8 @@ package body Sem_Util is
                              or else
                            (Nkind (Parent (N)) = N_Function_Call
                              or else
-                           Nkind (Parent (N)) = N_Parameter_Association))
+                            Nkind (Parent (N)) = N_Parameter_Association))
+                          and then Ekind (S) /= E_Function
                         then
                            Set_Etype (N, Etype (S));
                         else
@@ -5763,29 +5764,40 @@ package body Sem_Util is
       then
          return True;
 
-      --  Record type. OK if none of the component types requires a transient
-      --  scope. Note that we already know that this is a definite type (i.e.
-      --  has discriminant defaults if it is a discriminated record).
+      --  Record type
 
       elsif Is_Record_Type (Typ) then
-         if Has_Discriminants (Typ) then
+
+         --  In GCC 2, discriminated records always require a transient
+         --  scope because the back end otherwise tries to allocate a
+         --  variable length temporary for the particular variant.
+
+         if Opt.GCC_Version = 2
+           and then Has_Discriminants (Typ)
+         then
             return True;
+
+         --  For GCC 3, or for a non-discriminated record in GCC 2, we are
+         --  OK if none of the component types requires a transient scope.
+         --  Note that we already know that this is a definite type (i.e.
+         --  has discriminant defaults if it is a discriminated record).
+
+         else
+            declare
+               Comp : Entity_Id;
+            begin
+               Comp := First_Entity (Typ);
+               while Present (Comp) loop
+                  if Requires_Transient_Scope (Etype (Comp)) then
+                     return True;
+                  else
+                     Next_Entity (Comp);
+                  end if;
+               end loop;
+            end;
+
+            return False;
          end if;
-
-         declare
-            Comp : Entity_Id;
-         begin
-            Comp := First_Entity (Typ);
-            while Present (Comp) loop
-               if Requires_Transient_Scope (Etype (Comp)) then
-                  return True;
-               else
-                  Next_Entity (Comp);
-               end if;
-            end loop;
-         end;
-
-         return False;
 
       --  String literal types never require transient scope
 

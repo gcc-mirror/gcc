@@ -359,7 +359,10 @@ package Sem_Util is
 
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if type or subtype T is an access type, or has a
-   --  component (at any recursive level) that is an access type.
+   --  component (at any recursive level) that is an access type. This
+   --  is a conservative predicate, if it is not known whether or not
+   --  T contains access values (happens for generic formals in some
+   --  cases), then False is returned.
 
    function Has_Declarations (N : Node_Id) return Boolean;
    --  Determines if the node can have declarations

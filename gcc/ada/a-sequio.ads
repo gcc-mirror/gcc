@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -43,6 +43,10 @@ generic
    type Element_Type (<>) is private;
 
 package Ada.Sequential_IO is
+
+   pragma Compile_Time_Warning
+     (Element_Type'Has_Access_Values,
+      "?Element_Type for Sequential_'I'O instance has access values");
 
    type File_Type is limited private;
 

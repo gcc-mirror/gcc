@@ -24,25 +24,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Namet;     use Namet;
-with Osint;     use Osint;
-with Output;    use Output;
+with Namet; use Namet;
+with Osint; use Osint;
+with Table;
+
+with System.Case_Util; use System.Case_Util;
 
 package body Prj.Attr is
+
+   --  Data for predefined attributes and packages
 
    --  Names end with '#'
 
    --  Package names are preceded by 'P'
 
-   --  Attribute names are preceded by two letters
-
+   --  Attribute names are preceded by two letters:
    --  The first letter is one of
    --    'S' for Single
    --    's' for Single with optional index
    --    'L' for List
    --    'l' for List of strings with optional indexes
-
    --  The second letter is one of
    --    'V' for single variable
    --    'A' for associative array
@@ -182,27 +183,188 @@ package body Prj.Attr is
 
      "#";
 
+   Initialized : Boolean := False;
+   --  A flag to avoid multiple initialization
+
+   ----------------
+   -- Attributes --
+   ----------------
+
+   type Attribute_Record is record
+      Name           : Name_Id;
+      Var_Kind       : Variable_Kind;
+      Optional_Index : Boolean;
+      Attr_Kind      : Attribute_Kind;
+      Next           : Attr_Node_Id;
+   end record;
+   --  Data for an attribute
+
+   package Attrs is
+      new Table.Table (Table_Component_Type => Attribute_Record,
+                       Table_Index_Type     => Attr_Node_Id,
+                       Table_Low_Bound      => First_Attribute,
+                       Table_Initial        => Attributes_Initial,
+                       Table_Increment      => Attributes_Increment,
+                       Table_Name           => "Prj.Attr.Attrs");
+   --  The table of the attributes
+
+   --------------
+   -- Packages --
+   --------------
+
+   type Package_Record is record
+      Name            : Name_Id;
+      Known           : Boolean := True;
+      First_Attribute : Attr_Node_Id;
+   end record;
+   --  Data for a package
+
+   package Package_Attributes is
+      new Table.Table (Table_Component_Type => Package_Record,
+                       Table_Index_Type     => Pkg_Node_Id,
+                       Table_Low_Bound      => First_Package,
+                       Table_Initial        => Packages_Initial,
+                       Table_Increment      => Packages_Increment,
+                       Table_Name           => "Prj.Attr.Packages");
+   --  The table of the packages
+
+   function Name_Id_Of (Name : String) return Name_Id;
+   --  Returns the Name_Id for Name in lower case
+
+   -------------------
+   -- Add_Attribute --
+   -------------------
+
+   procedure Add_Attribute
+     (To_Package     : Package_Node_Id;
+      Attribute_Name : Name_Id;
+      Attribute_Node : out Attribute_Node_Id)
+   is
+   begin
+      --  Only add the attribute if the package is already defined
+
+      if To_Package /= Empty_Package then
+         Attrs.Increment_Last;
+         Attrs.Table (Attrs.Last) :=
+           (Name              => Attribute_Name,
+            Var_Kind          => Undefined,
+            Optional_Index    => False,
+            Attr_Kind         => Unknown,
+            Next              =>
+              Package_Attributes.Table (To_Package.Value).First_Attribute);
+         Package_Attributes.Table (To_Package.Value).First_Attribute :=
+           Attrs.Last;
+         Attribute_Node := (Value => Attrs.Last);
+      end if;
+   end Add_Attribute;
+
+   -------------------------
+   -- Add_Unknown_Package --
+   -------------------------
+
+   procedure Add_Unknown_Package (Name : Name_Id; Id : out Package_Node_Id) is
+   begin
+      Package_Attributes.Increment_Last;
+      Id := (Value => Package_Attributes.Last);
+      Package_Attributes.Table (Id.Value) :=
+        (Name => Name, Known => False, First_Attribute => Empty_Attr);
+   end Add_Unknown_Package;
+
+   -----------------------
+   -- Attribute_Kind_Of --
+   -----------------------
+
+   function Attribute_Kind_Of
+     (Attribute : Attribute_Node_Id) return Attribute_Kind
+   is
+   begin
+      if Attribute = Empty_Attribute then
+         return Unknown;
+      else
+         return Attrs.Table (Attribute.Value).Attr_Kind;
+      end if;
+   end Attribute_Kind_Of;
+
+   -----------------------
+   -- Attribute_Name_Of --
+   -----------------------
+
+   function Attribute_Name_Of (Attribute : Attribute_Node_Id) return Name_Id is
+   begin
+      if Attribute = Empty_Attribute then
+         return No_Name;
+      else
+         return Attrs.Table (Attribute.Value).Name;
+      end if;
+   end Attribute_Name_Of;
+
+   --------------------------
+   -- Attribute_Node_Id_Of --
+   --------------------------
+
+   function Attribute_Node_Id_Of
+     (Name        : Name_Id;
+      Starting_At : Attribute_Node_Id) return Attribute_Node_Id
+   is
+      Id : Attr_Node_Id := Starting_At.Value;
+   begin
+      while Id /= Empty_Attr
+        and then Attrs.Table (Id).Name /= Name
+      loop
+         Id := Attrs.Table (Id).Next;
+      end loop;
+
+      return (Value => Id);
+   end Attribute_Node_Id_Of;
+
    ----------------
    -- Initialize --
    ----------------
 
    procedure Initialize is
-      Start             : Positive           := Initialization_Data'First;
-      Finish            : Positive           := Start;
-      Current_Package   : Package_Node_Id    := Empty_Package;
-      Current_Attribute : Attribute_Node_Id  := Empty_Attribute;
-      Is_An_Attribute   : Boolean            := False;
-      Kind_1            : Variable_Kind      := Undefined;
-      Optional_Index    : Boolean            := False;
-      Kind_2            : Attribute_Kind     := Single;
-      Package_Name      : Name_Id            := No_Name;
-      Attribute_Name    : Name_Id            := No_Name;
-      First_Attribute   : Attribute_Node_Id  := Attribute_First;
+      Start             : Positive          := Initialization_Data'First;
+      Finish            : Positive          := Start;
+      Current_Package   : Pkg_Node_Id       := Empty_Pkg;
+      Current_Attribute : Attr_Node_Id      := Empty_Attr;
+      Is_An_Attribute   : Boolean           := False;
+      Var_Kind          : Variable_Kind     := Undefined;
+      Optional_Index    : Boolean           := False;
+      Attr_Kind            : Attribute_Kind := Single;
+      Package_Name      : Name_Id           := No_Name;
+      Attribute_Name    : Name_Id           := No_Name;
+      First_Attribute   : Attr_Node_Id      := Attr.First_Attribute;
+
+      function Attribute_Location return String;
+      --  Returns a string depending if we are in the project level attributes
+      --  or in the attributes of a package.
+
+      ------------------------
+      -- Attribute_Location --
+      ------------------------
+
+      function Attribute_Location return String is
+      begin
+         if Package_Name = No_Name then
+            return "project level attributes";
+
+         else
+            return "attribute of package """ &
+            Get_Name_String (Package_Name) & """";
+         end if;
+      end Attribute_Location;
+
+   --  Start of processing for Initialize
 
    begin
+      --  Don't allow Initialize action to be repeated
+
+      if Initialized then
+         return;
+      end if;
+
       --  Make sure the two tables are empty
 
-      Attributes.Init;
+      Attrs.Init;
       Package_Attributes.Init;
 
       while Initialization_Data (Start) /= '#' loop
@@ -219,42 +381,41 @@ package body Prj.Attr is
                   Finish := Finish + 1;
                end loop;
 
-               Name_Len := Finish - Start;
-               Name_Buffer (1 .. Name_Len) :=
-                 To_Lower (Initialization_Data (Start .. Finish - 1));
-               Package_Name := Name_Find;
+               Package_Name :=
+                 Name_Id_Of (Initialization_Data (Start .. Finish - 1));
 
-               for Index in Package_First .. Package_Attributes.Last loop
+               for Index in First_Package .. Package_Attributes.Last loop
                   if Package_Name = Package_Attributes.Table (Index).Name then
-                     Write_Line ("Duplicate package name """ &
-                                 Initialization_Data (Start .. Finish - 1) &
-                                 """ in Prj.Attr body.");
-                     raise Program_Error;
+                     Fail ("duplicate name """,
+                           Initialization_Data (Start .. Finish - 1),
+                           """ in predefined packages.");
                   end if;
                end loop;
 
                Is_An_Attribute := False;
-               Current_Attribute := Empty_Attribute;
+               Current_Attribute := Empty_Attr;
                Package_Attributes.Increment_Last;
                Current_Package := Package_Attributes.Last;
-               Package_Attributes.Table (Current_Package).Name :=
-                 Package_Name;
+               Package_Attributes.Table (Current_Package) :=
+                 (Name            => Package_Name,
+                  Known           => True,
+                  First_Attribute => Empty_Attr);
                Start := Finish + 1;
 
             when 'S' =>
-               Kind_1         := Single;
+               Var_Kind       := Single;
                Optional_Index := False;
 
             when 's' =>
-               Kind_1         := Single;
+               Var_Kind       := Single;
                Optional_Index := True;
 
             when 'L' =>
-               Kind_1         := List;
+               Var_Kind       := List;
                Optional_Index := False;
 
             when 'l' =>
-               Kind_1         := List;
+               Var_Kind         := List;
                Optional_Index := True;
 
             when others =>
@@ -268,26 +429,26 @@ package body Prj.Attr is
             Start := Start + 1;
             case Initialization_Data (Start) is
                when 'V' =>
-                  Kind_2 := Single;
+                  Attr_Kind := Single;
 
                when 'A' =>
-                  Kind_2 := Associative_Array;
+                  Attr_Kind := Associative_Array;
 
                when 'a' =>
-                  Kind_2 := Case_Insensitive_Associative_Array;
+                  Attr_Kind := Case_Insensitive_Associative_Array;
 
                when 'b' =>
                   if File_Names_Case_Sensitive then
-                     Kind_2 := Associative_Array;
+                     Attr_Kind := Associative_Array;
                   else
-                     Kind_2 := Case_Insensitive_Associative_Array;
+                     Attr_Kind := Case_Insensitive_Associative_Array;
                   end if;
 
                when 'c' =>
                   if File_Names_Case_Sensitive then
-                     Kind_2 := Optional_Index_Associative_Array;
+                     Attr_Kind := Optional_Index_Associative_Array;
                   else
-                     Kind_2 :=
+                     Attr_Kind :=
                        Optional_Index_Case_Insensitive_Associative_Array;
                   end if;
 
@@ -302,47 +463,331 @@ package body Prj.Attr is
                Finish := Finish + 1;
             end loop;
 
-            Name_Len := Finish - Start;
-            Name_Buffer (1 .. Name_Len) :=
-              To_Lower (Initialization_Data (Start .. Finish - 1));
-            Attribute_Name := Name_Find;
-            Attributes.Increment_Last;
+            Attribute_Name :=
+              Name_Id_Of (Initialization_Data (Start .. Finish - 1));
+            Attrs.Increment_Last;
 
-            if Current_Attribute = Empty_Attribute then
-               First_Attribute := Attributes.Last;
+            if Current_Attribute = Empty_Attr then
+               First_Attribute := Attrs.Last;
 
-               if Current_Package /= Empty_Package then
+               if Current_Package /= Empty_Pkg then
                   Package_Attributes.Table (Current_Package).First_Attribute
-                    := Attributes.Last;
+                    := Attrs.Last;
                end if;
 
             else
                --  Check that there are no duplicate attributes
 
-               for Index in First_Attribute .. Attributes.Last - 1 loop
-                  if Attribute_Name =
-                    Attributes.Table (Index).Name then
-                     Write_Line ("Duplicate attribute name """ &
-                                 Initialization_Data (Start .. Finish - 1) &
-                                 """ in Prj.Attr body.");
-                     raise Program_Error;
+               for Index in First_Attribute .. Attrs.Last - 1 loop
+                  if Attribute_Name = Attrs.Table (Index).Name then
+                     Fail ("duplicate attribute """,
+                           Initialization_Data (Start .. Finish - 1),
+                           """ in " & Attribute_Location);
                   end if;
                end loop;
 
-               Attributes.Table (Current_Attribute).Next :=
-                 Attributes.Last;
+               Attrs.Table (Current_Attribute).Next :=
+                 Attrs.Last;
             end if;
 
-            Current_Attribute := Attributes.Last;
-            Attributes.Table (Current_Attribute) :=
+            Current_Attribute := Attrs.Last;
+            Attrs.Table (Current_Attribute) :=
               (Name           => Attribute_Name,
-               Kind_1         => Kind_1,
+               Var_Kind       => Var_Kind,
                Optional_Index => Optional_Index,
-               Kind_2         => Kind_2,
-               Next           => Empty_Attribute);
+               Attr_Kind      => Attr_Kind,
+               Next           => Empty_Attr);
             Start := Finish + 1;
          end if;
       end loop;
+
+      Initialized := True;
    end Initialize;
+
+   ----------------
+   -- Name_Id_Of --
+   ----------------
+
+   function Name_Id_Of (Name : String) return Name_Id is
+   begin
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer (Name);
+      To_Lower (Name_Buffer (1 .. Name_Len));
+      return Name_Find;
+   end Name_Id_Of;
+
+   --------------------
+   -- Next_Attribute --
+   --------------------
+
+   function Next_Attribute
+     (After : Attribute_Node_Id) return Attribute_Node_Id
+   is
+   begin
+      if After = Empty_Attribute then
+         return Empty_Attribute;
+      else
+         return (Value => Attrs.Table (After.Value).Next);
+      end if;
+   end Next_Attribute;
+
+   -----------------------
+   -- Optional_Index_Of --
+   -----------------------
+
+   function Optional_Index_Of (Attribute : Attribute_Node_Id) return Boolean is
+   begin
+      if Attribute = Empty_Attribute then
+         return False;
+      else
+         return Attrs.Table (Attribute.Value).Optional_Index;
+      end if;
+   end Optional_Index_Of;
+
+   ------------------------
+   -- Package_Node_Id_Of --
+   ------------------------
+
+   function Package_Node_Id_Of (Name : Name_Id) return Package_Node_Id is
+   begin
+      for Index in Package_Attributes.First .. Package_Attributes.Last loop
+         if Package_Attributes.Table (Index).Name = Name then
+            return (Value => Index);
+         end if;
+      end loop;
+
+      --  If there is no package with this name, return Empty_Package
+
+      return Empty_Package;
+   end Package_Node_Id_Of;
+
+   ----------------------------
+   -- Register_New_Attribute --
+   ----------------------------
+
+   procedure Register_New_Attribute
+     (Name               : String;
+      In_Package         : Package_Node_Id;
+      Attr_Kind          : Defined_Attribute_Kind;
+      Var_Kind           : Defined_Variable_Kind;
+      Index_Is_File_Name : Boolean := False;
+      Opt_Index          : Boolean := False)
+   is
+      Attr_Name       : Name_Id;
+      First_Attr      : Attr_Node_Id := Empty_Attr;
+      Curr_Attr       : Attr_Node_Id;
+      Real_Attr_Kind  : Attribute_Kind;
+
+   begin
+      if Name'Length = 0 then
+         Fail ("cannot register an attribute with no name");
+      end if;
+
+      if In_Package = Empty_Package then
+         Fail ("attempt to add attribute """, Name,
+               """ to an undefined package");
+      end if;
+
+      Attr_Name := Name_Id_Of (Name);
+
+      First_Attr :=
+        Package_Attributes.Table (In_Package.Value).First_Attribute;
+
+      --  Check if attribute name is a duplicate
+
+      Curr_Attr := First_Attr;
+      while Curr_Attr /= Empty_Attr loop
+         if Attrs.Table (Curr_Attr).Name = Attr_Name then
+            Fail ("duplicate attribute name """, Name,
+                  """ in package """ &
+                  Get_Name_String
+                    (Package_Attributes.Table (In_Package.Value).Name) &
+                  """");
+            exit;
+         end if;
+
+         Curr_Attr := Attrs.Table (Curr_Attr).Next;
+      end loop;
+
+      Real_Attr_Kind := Attr_Kind;
+
+      --  If Index_Is_File_Name, change the attribute kind if necessary
+
+      if Index_Is_File_Name  and then not File_Names_Case_Sensitive then
+         case Attr_Kind is
+            when Associative_Array =>
+               Real_Attr_Kind := Case_Insensitive_Associative_Array;
+
+            when Optional_Index_Associative_Array =>
+               Real_Attr_Kind :=
+                 Optional_Index_Case_Insensitive_Associative_Array;
+
+            when others =>
+               null;
+         end case;
+      end if;
+
+      --  Add the new attribute
+
+      Attrs.Increment_Last;
+      Attrs.Table (Attrs.Last) :=
+        (Name           => Attr_Name,
+         Var_Kind       => Var_Kind,
+         Optional_Index => Opt_Index,
+         Attr_Kind      => Real_Attr_Kind,
+         Next           => First_Attr);
+      Package_Attributes.Table (In_Package.Value).First_Attribute :=
+        Attrs.Last;
+   end Register_New_Attribute;
+
+   --------------------------
+   -- Register_New_Package --
+   --------------------------
+
+   procedure Register_New_Package (Name : String; Id : out Package_Node_Id) is
+      Pkg_Name   : Name_Id;
+
+   begin
+      if Name'Length = 0 then
+         Fail ("cannot register a package with no name");
+      end if;
+
+      Pkg_Name := Name_Id_Of (Name);
+      Package_Attributes.Increment_Last;
+      Id := (Value => Package_Attributes.Last);
+      Package_Attributes.Table (Package_Attributes.Last) :=
+        (Name => Pkg_Name, Known => True, First_Attribute => Empty_Attr);
+   end Register_New_Package;
+
+   procedure Register_New_Package
+     (Name       : String;
+      Attributes : Attribute_Data_Array)
+   is
+      Pkg_Name   : Name_Id;
+      Attr_Name  : Name_Id;
+      First_Attr : Attr_Node_Id := Empty_Attr;
+      Curr_Attr  : Attr_Node_Id;
+      Attr_Kind  : Attribute_Kind;
+
+   begin
+      if Name'Length = 0 then
+         Fail ("cannot register a package with no name");
+      end if;
+
+      Pkg_Name := Name_Id_Of (Name);
+
+      for Index in Package_Attributes.First .. Package_Attributes.Last loop
+         if Package_Attributes.Table (Index).Name = Pkg_Name then
+            Fail ("cannot register a package with a non unique name""",
+                  Name, """");
+            exit;
+         end if;
+      end loop;
+
+      for Index in Attributes'Range loop
+         Attr_Name := Name_Id_Of (Attributes (Index).Name);
+
+         Curr_Attr := First_Attr;
+         while Curr_Attr /= Empty_Attr loop
+            if Attrs.Table (Curr_Attr).Name = Attr_Name then
+               Fail ("duplicate attribute name """, Attributes (Index).Name,
+                     """ in new package """ & Name & """");
+               exit;
+            end if;
+
+            Curr_Attr := Attrs.Table (Curr_Attr).Next;
+         end loop;
+
+         Attr_Kind := Attributes (Index).Attr_Kind;
+
+         if Attributes (Index).Index_Is_File_Name
+           and then not File_Names_Case_Sensitive
+         then
+            case Attr_Kind is
+               when Associative_Array =>
+                  Attr_Kind := Case_Insensitive_Associative_Array;
+
+               when Optional_Index_Associative_Array =>
+                  Attr_Kind :=
+                    Optional_Index_Case_Insensitive_Associative_Array;
+
+               when others =>
+                  null;
+            end case;
+         end if;
+
+         Attrs.Increment_Last;
+         Attrs.Table (Attrs.Last) :=
+           (Name           => Attr_Name,
+            Var_Kind       => Attributes (Index).Var_Kind,
+            Optional_Index => Attributes (Index).Opt_Index,
+            Attr_Kind      => Attr_Kind,
+            Next           => First_Attr);
+         First_Attr := Attrs.Last;
+      end loop;
+
+      Package_Attributes.Increment_Last;
+      Package_Attributes.Table (Package_Attributes.Last) :=
+        (Name => Pkg_Name, Known => True, First_Attribute => First_Attr);
+   end Register_New_Package;
+
+   ---------------------------
+   -- Set_Attribute_Kind_Of --
+   ---------------------------
+
+   procedure Set_Attribute_Kind_Of
+     (Attribute : Attribute_Node_Id;
+      To        : Attribute_Kind)
+   is
+   begin
+      if Attribute /= Empty_Attribute then
+         Attrs.Table (Attribute.Value).Attr_Kind := To;
+      end if;
+   end Set_Attribute_Kind_Of;
+
+   --------------------------
+   -- Set_Variable_Kind_Of --
+   --------------------------
+
+   procedure Set_Variable_Kind_Of
+     (Attribute : Attribute_Node_Id;
+      To        : Variable_Kind)
+   is
+   begin
+      if Attribute /= Empty_Attribute then
+         Attrs.Table (Attribute.Value).Var_Kind := To;
+      end if;
+   end Set_Variable_Kind_Of;
+
+   ----------------------
+   -- Variable_Kind_Of --
+   ----------------------
+
+   function Variable_Kind_Of
+     (Attribute : Attribute_Node_Id) return Variable_Kind
+   is
+   begin
+      if Attribute = Empty_Attribute then
+         return Undefined;
+      else
+         return Attrs.Table (Attribute.Value).Var_Kind;
+      end if;
+   end Variable_Kind_Of;
+
+   ------------------------
+   -- First_Attribute_Of --
+   ------------------------
+
+   function First_Attribute_Of
+     (Pkg : Package_Node_Id) return Attribute_Node_Id
+   is
+   begin
+      if Pkg = Empty_Package then
+         return Empty_Attribute;
+      else
+         return
+           (Value => Package_Attributes.Table (Pkg.Value).First_Attribute);
+      end if;
+   end First_Attribute_Of;
 
 end Prj.Attr;
