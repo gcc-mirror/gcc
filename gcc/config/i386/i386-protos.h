@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for IA-32.
-   Copyright (C) 1988, 92, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -86,8 +86,8 @@ extern void ix86_expand_binary_operator PROTO((enum rtx_code,
 					       enum machine_mode, rtx[]));
 extern int ix86_binary_operator_ok PROTO((enum rtx_code, enum machine_mode,
 					  rtx[]));
-extern int ix86_expand_unary_operator PROTO((enum rtx_code, enum machine_mode,
-					     rtx[]));
+extern void ix86_expand_unary_operator PROTO((enum rtx_code, enum machine_mode,
+					      rtx[]));
 extern int ix86_unary_operator_ok PROTO((enum rtx_code, enum machine_mode,
 					 rtx[]));
 extern void ix86_expand_branch PROTO((enum rtx_code, int, rtx));

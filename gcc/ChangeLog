@@ -1,5 +1,11 @@
 Mon Jan  3 02:54:40 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* config/i386/i386.c (ix86_expand_unary_operator): Function
+	definition made void.
+	(ix86_expand_binary_operator): Update outdated preceding comment.
+	* config/i386/i386-protos.h (ix86_expand_unary_operator): Update
+	prototype.
+
 	* config/i386/i386.c (override_options): Fix option-name typo.
 
 2000-01-02  Mark Mitchell  <mark@codesourcery.com>
