@@ -43,7 +43,8 @@ namespace __gnu_cxx
 			  "   cs    %0,%1,0(%3)\n"
 			  "   jl    0b"
 			  : "=&d" (__old_val), "=&d" (__new_val), "=m" (*__mem)
-			  : "a" (__mem), "d" (__val), "m" (*__mem) : "cc");
+			  : "a" (__mem), "d" (__val), "m" (*__mem)
+			  : "cc", "memory");
     return __old_val;
   }
   

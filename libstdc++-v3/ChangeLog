@@ -1,3 +1,8 @@
+2005-04-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/cpu/s390/atomicity.h (__exchange_and_add): Add "memory"
+	clobber to inline assembly statement.
+
 2005-04-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* acinclude.m4 (_GLIBCXX_USE_LONG_LONG,
