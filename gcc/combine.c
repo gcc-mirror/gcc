@@ -9979,12 +9979,17 @@ simplify_comparison (code, pop0, pop1)
 	     represents the low part, permute the SUBREG and the AND and
 	     try again.  */
 	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
-	      && ((mode_width
-		   >= GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
+	      && (0
 #ifdef WORD_REGISTER_OPERATIONS
-		  || subreg_lowpart_p (XEXP (op0, 0))
+		  || ((mode_width
+		       > (GET_MODE_BITSIZE
+			   (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
+		      && mode_width <= BITS_PER_WORD)
 #endif
-		  )
+		  || ((mode_width
+		       <= (GET_MODE_BITSIZE
+			   (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
+		      && subreg_lowpart_p (XEXP (op0, 0))))
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	      && mode_width <= HOST_BITS_PER_WIDE_INT
 	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
