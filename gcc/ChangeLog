@@ -15,7 +15,8 @@
 	* tree-ssa-dom.c: Remove redundant inclusion of flags.h.
 	(record_equivalences_from_phis): If all PHI arguments are known to be
 	nonzero, then the result must be nonzero as well.
-	(cprop_into_phis): Pass nonzero_vars bitmap to cprop_into_successor_phis        (record_equivalences_from_stmt): Check flag_delete_null_pointer_checks
+	(cprop_into_phis): Pass nonzero_vars bitmap to cprop_into_successor_phis.
+	(record_equivalences_from_stmt): Check flag_delete_null_pointer_checks
 	appropriately.  Walk the USE-DEF chains and propagate nonzero property
 	as appropriate.
 	* tree.h (PHI_ARG_NONZERO): Define.
