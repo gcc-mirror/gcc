@@ -273,10 +273,12 @@ cb_file_change (pfile, new_map)
 	main_input_filename = new_map->to_file;
       else
 	{
-	  lineno = SOURCE_LINE (new_map - 1, new_map->from_line - 1);
+          int included_at = SOURCE_LINE (new_map - 1, new_map->from_line - 1);
+
+	  lineno = included_at;
 	  push_srcloc (new_map->to_file, 1);
 	  input_file_stack->indent_level = indent_level;
-	  (*debug_hooks->start_source_file) (lineno, new_map->to_file);
+	  (*debug_hooks->start_source_file) (included_at, new_map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
