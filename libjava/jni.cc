@@ -811,13 +811,20 @@ _Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
 
 
 
-// FIXME: local reference
 template<typename T>
 static T
 _Jv_JNI_GetField (JNIEnv *, jobject obj, jfieldID field) 
 {
   T *ptr = (T *) ((char *) obj + field->getOffset ());
   return *ptr;
+}
+
+template<>
+static jobject
+_Jv_JNI_GetField<jobject> (JNIEnv *env, jobject obj, jfieldID field)
+{
+  jobject *ptr = (jobject *) ((char *) obj + field->getOffset ());
+  return _Jv_JNI_NewLocalRef (env, *ptr);
 }
 
 template<typename T>
@@ -886,6 +893,14 @@ _Jv_JNI_GetStaticField (JNIEnv *, jclass, jfieldID field)
 {
   T *ptr = (T *) field->u.addr;
   return *ptr;
+}
+
+template<>
+static jobject
+_Jv_JNI_GetStaticField<jobject> (JNIEnv *env, jclass, jfieldID field)
+{
+  jobject *ptr = (jobject *) field->u.addr;
+  return _Jv_JNI_NewLocalRef (env, *ptr);
 }
 
 template<typename T>
