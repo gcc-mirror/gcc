@@ -1,3 +1,7 @@
+2001-02-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* semantics.c (finish_asm_stmt): Robustify.
+
 2001-02-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (push_template_decl_real): Don't remangle the name of a
