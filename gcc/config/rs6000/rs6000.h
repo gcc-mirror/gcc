@@ -399,16 +399,19 @@ extern char *rs6000_cpu_string;
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On RS/6000, the cpu registers can hold any mode but the float registers
-   can hold only floating modes and CR register can only hold CC modes.  We
-   cannot put DImode or TImode anywhere except general register and they
-   must be able to fit within the register set.  */
+   For POWER and PowerPC, the GPRs can hold any mode, but the float
+   registers only can hold floating modes and DImode, and CR register only
+   can hold CC modes.  We cannot put TImode anywhere except general
+   register and it must be able to fit within the register set. */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  (FP_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+  (FP_REGNO_P (REGNO) ?						\
+   (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
+    || (GET_MODE_CLASS (MODE) == MODE_INT			\
+	&& GET_MODE_SIZE (MODE) == 2 * UNITS_PER_WORD))		\
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC	\
-   : ! INT_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_INT  \
-			      && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)  \
+   : ! INT_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_INT	\
+			      && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD) \
    : 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
@@ -465,8 +468,7 @@ extern char *rs6000_cpu_string;
 
 /* Define this macro to change register usage conditional on target flags.
    Set MQ register fixed (already call_used) if not POWER architecture
-   (RIOS1, RIOS2, and PPC601) so that it will not be allocated.
-   Provide alternate register names for ppcas assembler */
+   (RIOS1, RIOS2, RSC, and PPC601) so that it will not be allocated.  */
 
 #define CONDITIONAL_REGISTER_USAGE					\
     if (!TARGET_POWER)							\
@@ -1402,10 +1404,21 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
-    return (GET_CODE (XEXP (X, 1)) != CONST_INT		\
-	    ? COSTS_N_INSNS (5)				\
-	    : INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
-	    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));	\
+  switch (rs6000_cpu)					\
+    {							\
+    case PROCESSOR_RIOS1:				\
+      return (GET_CODE (XEXP (X, 1)) != CONST_INT	\
+	      ? COSTS_N_INSNS (5)			\
+	      : INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
+	      ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));	\
+    case PROCESSOR_RIOS2:				\
+      return COSTS_N_INSNS (2);				\
+    case PROCESSOR_PPC601:				\
+    case PROCESSOR_PPC603:				\
+    case PROCESSOR_PPC604:				\
+    case PROCESSOR_PPC620:				\
+      return COSTS_N_INSNS (5);				\
+    }							\
   case DIV:						\
   case MOD:						\
     if (GET_CODE (XEXP (X, 1)) == CONST_INT		\
@@ -1414,7 +1427,18 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
     /* otherwise fall through to normal divide.  */	\
   case UDIV:						\
   case UMOD:						\
-    return COSTS_N_INSNS (19);				\
+  switch (rs6000_cpu)					\
+    {							\
+    case PROCESSOR_RIOS1:				\
+      return COSTS_N_INSNS (19);			\
+    case PROCESSOR_RIOS2:				\
+      return COSTS_N_INSNS (13);			\
+    case PROCESSOR_PPC601:				\
+    case PROCESSOR_PPC603:				\
+    case PROCESSOR_PPC604:				\
+    case PROCESSOR_PPC620:				\
+      return COSTS_N_INSNS (36);			\
+    }							\
   case MEM:						\
     /* MEM should be slightly more expensive than (plus (reg) (const)) */ \
     return 5;
