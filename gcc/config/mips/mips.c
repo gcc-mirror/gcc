@@ -91,6 +91,11 @@ static void block_move_loop			PARAMS ((rtx, rtx,
 							 rtx, rtx));
 static void block_move_call			PARAMS ((rtx, rtx, rtx));
 static FILE *mips_make_temp_file		PARAMS ((void));
+static rtx mips_add_large_offset_to_sp		PARAMS ((HOST_WIDE_INT,
+							 FILE *));
+static void mips_annotate_frame_insn		PARAMS ((rtx, rtx));
+static void mips_emit_frame_related_store	PARAMS ((rtx, rtx,
+							 HOST_WIDE_INT));
 static void save_restore_insns			PARAMS ((int, rtx,
 							long, FILE *));
 static void mips16_output_gp_offset		PARAMS ((FILE *, rtx));
@@ -6447,6 +6452,73 @@ compute_frame_size (size)
 
 #define BITSET_P(VALUE,BIT) (((VALUE) & (1L << (BIT))) != 0)
 
+/* Emit instructions to load the value (SP + OFFSET) into MIPS_TEMP2_REGNUM
+   and return an rtl expression for the register.  Write the assembly
+   instructions directly to FILE if it is not null, otherwise emit them as
+   rtl.
+
+   This function is a subroutine of save_restore_insns.  It is used when
+   OFFSET is too large to add in a single instruction.  */
+
+static rtx
+mips_add_large_offset_to_sp (offset, file)
+     HOST_WIDE_INT offset;
+     FILE *file;
+{
+  rtx reg = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
+  if (file == 0)
+    {
+      rtx offset_rtx = GEN_INT (offset);
+
+      emit_move_insn (reg, offset_rtx);
+      if (Pmode == DImode)
+	emit_insn (gen_adddi3 (reg, reg, stack_pointer_rtx));
+      else
+	emit_insn (gen_addsi3 (reg, reg, stack_pointer_rtx));
+    }
+  else
+    {
+      fprintf (file, "\tli\t%s,0x%.08lx\t# ",
+	       reg_names[MIPS_TEMP2_REGNUM], (long) offset);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
+      fprintf (file, "\n\t%s\t%s,%s,%s\n",
+	       Pmode == DImode ? "daddu" : "addu",
+	       reg_names[MIPS_TEMP2_REGNUM],
+	       reg_names[MIPS_TEMP2_REGNUM],
+	       reg_names[STACK_POINTER_REGNUM]);
+    }
+  return reg;
+}
+
+/* Make INSN frame related and note that it performs the frame-related
+   operation DWARF_PATTERN.  */
+
+static void
+mips_annotate_frame_insn (insn, dwarf_pattern)
+     rtx insn, dwarf_pattern;
+{
+  RTX_FRAME_RELATED_P (insn) = 1;
+  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+				      dwarf_pattern,
+				      REG_NOTES (insn));
+}
+
+/* Emit a move instruction that stores REG in MEM.  Make the instruction
+   frame related and note that it stores REG at (SP + OFFSET).  */
+
+static void
+mips_emit_frame_related_store (mem, reg, offset)
+     rtx mem;
+     rtx reg;
+     HOST_WIDE_INT offset;
+{
+  rtx dwarf_address = plus_constant (stack_pointer_rtx, offset);
+  rtx dwarf_mem = gen_rtx_MEM (GET_MODE (reg), dwarf_address);
+
+  mips_annotate_frame_insn (emit_move_insn (mem, reg),
+			    gen_rtx_SET (GET_MODE (reg), dwarf_mem, reg));
+}
+
 static void
 save_restore_insns (store_p, large_reg, large_offset, file)
      int store_p;	/* true if this is prologue */
@@ -6517,8 +6589,6 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg,
 					      stack_pointer_rtx));
-	      if (store_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\t%s\t%s,%s,%s\n",
@@ -6527,61 +6597,10 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		     reg_names[REGNO (large_reg)],
 		     reg_names[STACK_POINTER_REGNUM]);
 	}
-
       else
 	{
-	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
 	  base_offset = gp_offset;
-	  if (file == 0)
-	    {
-	      rtx gp_offset_rtx = GEN_INT (gp_offset);
-
-	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
-		 bit, so make sure that we don't emit anything that can be
-		 split.  */
-	      /* ??? There is no DImode ori immediate pattern, so we can only
-		 do this for 32 bit code.  */
-	      if (large_int (gp_offset_rtx, GET_MODE (gp_offset_rtx))
-		  && GET_MODE (base_reg_rtx) == SImode)
-		{
-		  insn = emit_move_insn (base_reg_rtx,
-					 GEN_INT (gp_offset & BITMASK_UPPER16));
-		  if (store_p)
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		  insn
-		    = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
-					     GEN_INT (gp_offset
-						      & BITMASK_LOWER16)));
-		  if (store_p)
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		}
-	      else
-		{
-		  insn = emit_move_insn (base_reg_rtx, gp_offset_rtx);
-		  if (store_p)
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		}
-
-	      if (Pmode == DImode)
-		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx,
-				 	      stack_pointer_rtx));
-	      else
-		insn = emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx,
-					      stack_pointer_rtx));
-	      if (store_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-	  else
-	    {
-	      fprintf (file, "\tli\t%s,0x%.08lx\t# ",
-		       reg_names[MIPS_TEMP2_REGNUM], (long) base_offset);
-	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, base_offset);
-	      fprintf (file, "\n\t%s\t%s,%s,%s\n",
-		       Pmode == DImode ? "daddu" : "addu",
-		       reg_names[MIPS_TEMP2_REGNUM],
-		       reg_names[MIPS_TEMP2_REGNUM],
-		       reg_names[STACK_POINTER_REGNUM]);
-	    }
+	  base_reg_rtx = mips_add_large_offset_to_sp (base_offset, file);
 	}
 
       /* When we restore the registers in MIPS16 mode, then if we are
@@ -6635,10 +6654,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  reg_rtx = gen_rtx (REG, gpr_mode, regno);
 
 		if (store_p)
-		  {
-		    insn = emit_move_insn (mem_rtx, reg_rtx);
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		  }
+		  mips_emit_frame_related_store (mem_rtx, reg_rtx, gp_offset);
 		else if (!TARGET_ABICALLS
 			 || (mips_abi != ABI_32 && mips_abi != ABI_O64)
 			 || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
@@ -6738,8 +6754,6 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg,
 					      stack_pointer_rtx));
-	      if (store_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 
 	  else
@@ -6749,62 +6763,10 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		     reg_names[REGNO (large_reg)],
 		     reg_names[STACK_POINTER_REGNUM]);
 	}
-
       else
 	{
-	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
 	  base_offset = fp_offset;
-	  if (file == 0)
-	    {
-	      rtx fp_offset_rtx = GEN_INT (fp_offset);
-
-	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
-		 bit, so make sure that we don't emit anything that can be
-		 split.  */
-	      /* ??? There is no DImode ori immediate pattern, so we can only
-		 do this for 32 bit code.  */
-	      if (large_int (fp_offset_rtx, GET_MODE (fp_offset_rtx))
-		  && GET_MODE (base_reg_rtx) == SImode)
-		{
-		  insn = emit_move_insn (base_reg_rtx,
-					 GEN_INT (fp_offset & BITMASK_UPPER16));
-		  if (store_p)
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		  insn = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
-						GEN_INT (fp_offset
-							 & BITMASK_LOWER16)));
-		  if (store_p)
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		}
-	      else
-		{
-		  insn = emit_move_insn (base_reg_rtx, fp_offset_rtx);
-		  if (store_p)
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		}
-
-	      if (store_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
-	      if (Pmode == DImode)
-		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx,
-					      stack_pointer_rtx));
-	      else
-		insn = emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx,
-					      stack_pointer_rtx));
-	      if (store_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-	  else
-	    {
-	      fprintf (file, "\tli\t%s,0x%.08lx\t# ",
-		       reg_names[MIPS_TEMP2_REGNUM], (long) base_offset);
-	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, base_offset);
-	      fprintf (file, "\n\t%s\t%s,%s,%s\n",
-		       Pmode == DImode ? "daddu" : "addu",
-		       reg_names[MIPS_TEMP2_REGNUM],
-		       reg_names[MIPS_TEMP2_REGNUM],
-		       reg_names[STACK_POINTER_REGNUM]);
-	    }
+	  base_reg_rtx = mips_add_large_offset_to_sp (fp_offset, file);
 	}
 
       /* This loop must iterate over the same space as its companion in
@@ -6826,10 +6788,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		RTX_UNCHANGING_P (mem_rtx) = 1;
 
 		if (store_p)
-		  {
-		    insn = emit_move_insn (mem_rtx, reg_rtx);
-		    RTX_FRAME_RELATED_P (insn) = 1;
-		  }
+		  mips_emit_frame_related_store (mem_rtx, reg_rtx, gp_offset);
 		else
 		  emit_move_insn (reg_rtx, mem_rtx);
 	      }
@@ -7305,45 +7264,28 @@ mips_expand_prologue ()
       if ((!TARGET_ABICALLS || (mips_abi != ABI_32 && mips_abi != ABI_O64))
 	  && (!TARGET_MIPS16 || tsize <= 32767))
 	{
-	  rtx insn;
+	  rtx adjustment_rtx, insn, dwarf_pattern;
 
 	  if (tsize > 32767)
 	    {
-	      tmp_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
-
-	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
-		 bit, so make sure that we don't emit anything that can be
-		 split.  */
-	      /* ??? There is no DImode ori immediate pattern, so we can only
-		 do this for 32 bit code.  */
-	      if (large_int (tsize_rtx, GET_MODE (tsize_rtx))
-		  && GET_MODE (tmp_rtx) == SImode)
-		{
-		  insn = emit_move_insn (tmp_rtx,
-					 GEN_INT (tsize & BITMASK_UPPER16));
-		  RTX_FRAME_RELATED_P (insn) = 1;
-		  insn = emit_insn (gen_iorsi3 (tmp_rtx, tmp_rtx,
-						GEN_INT (tsize
-							 & BITMASK_LOWER16)));
-		  RTX_FRAME_RELATED_P (insn) = 1;
-		}
-	      else
-		{
-		  insn = emit_move_insn (tmp_rtx, tsize_rtx);
-		  RTX_FRAME_RELATED_P (insn) = 1;
-		}
-
-	      tsize_rtx = tmp_rtx;
+	      adjustment_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
+	      emit_move_insn (adjustment_rtx, tsize_rtx);
 	    }
+	  else
+	    adjustment_rtx = tsize_rtx;
 
 	  if (Pmode == DImode)
 	    insn = emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
-					  tsize_rtx));
+					  adjustment_rtx));
 	  else
 	    insn = emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
-					  tsize_rtx));
+					  adjustment_rtx));
 
-	  RTX_FRAME_RELATED_P (insn) = 1;
+	  dwarf_pattern = gen_rtx_SET (Pmode, stack_pointer_rtx,
+				       plus_constant (stack_pointer_rtx,
+						      -tsize));
+
+	  mips_annotate_frame_insn (insn, dwarf_pattern);
 	}
 
       if (! mips_entry)
