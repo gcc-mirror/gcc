@@ -1,3 +1,32 @@
+Tue Jan 11 16:26:47 MET 2000  Jan Hubicka <jh@suse.cz>
+
+	* i386.c (ix86_attr_length_default): Handle TYPE_STR and TYPE_CLD.
+	* i386.md (FIRST_PSEUDO_REGISTER): Set to 20.
+	(FIXED_REGISTERS): Set dirflag as fixed.
+	(CALL_USED_REGISTERS): Set dirflag as used.
+	(REG_ALLOC_ORDER): Set dirflag as last one.
+	(DIRFLAG_REG): New macro.
+	(MD_ASM_CLOBBERS): Asm clobber dirflag for backward compatibility.
+	(HI_REGISTER_NAMES): Add dirflag.
+	(DEBUF_PRINT_REG): Handle dirflag.
+	* i386.md (type attribute): New cld and str types.
+	(length_opcode attribute): Set cld and str to 1.
+	(memory attribute): Set str to unknown - it is not clear from the
+	patterns.
+	(pent_np function unit): Prefixed string operations takes 12 cycles
+	minimally; cld takes 2 cycles.
+	(ppro_uops attribute): Str is "many" and cld is "few".
+	(ppro_p0 unit): Handle cld here.
+	(k6_alux unit): Handle cld and str types.
+	(k6_load unit): It is ocupied by str opcodes.
+	(k6_store unit): It is ocupied by str opcodes.
+	(athlon_decode): Str is vector decoded.
+	(athlon_ieu): Handle str and cld.
+	(cld pattern): New.
+	(movstrsi, clrstr, cmpstr, strlen expander): Emit cld instruction
+	(movstrsi_1, clrstrsi_1, cmpstrsi_1, strlensi_1,
+	cmpstrsi_nz_1 insn): Do not output cld instruction
+
 Tue Jan 11 06:14:39 2000  David Starner <dstarner98@aasaa.ofe.org>
 
 	* gcc.texi (G++ and GCC): Add Java and Chill.

@@ -5452,6 +5452,9 @@ ix86_attr_length_default (insn)
     case TYPE_FCMOV:
     case TYPE_IBR:
       break;
+    case TYPE_STR:
+    case TYPE_CLD:
+      len = 0;
 
     case TYPE_ALU1:
     case TYPE_NEGNOT:
