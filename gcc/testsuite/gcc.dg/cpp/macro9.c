@@ -8,7 +8,7 @@
    immediately followed by a directive, then we process the directive
    properly.  */
 
-#define int()
-int
-#define main main () { return 0; }
-main
+#define main()
+int main
+#define mainbody () { return 0; }
+mainbody
