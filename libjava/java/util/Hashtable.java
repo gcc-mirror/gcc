@@ -64,8 +64,8 @@ import java.io.ObjectOutputStream;
  * @author      Jon Zeppieri
  * @author	Warren Levy
  * @author      Bryce McKinlay
- * @version     $Revision: 1.8 $
- * @modified    $Id: Hashtable.java,v 1.8 2000/12/11 04:54:55 bryce Exp $
+ * @version     $Revision: 1.9 $
+ * @modified    $Id: Hashtable.java,v 1.9 2000/12/17 09:15:51 bryce Exp $
  */
 public class Hashtable extends Dictionary 
   implements Map, Cloneable, Serializable
@@ -73,7 +73,7 @@ public class Hashtable extends Dictionary
   /** Default number of buckets. This is the value the JDK 1.3 uses. Some 
     * early documentation specified this value as 101. That is incorrect. */
   private static final int DEFAULT_CAPACITY = 11;  
-  /** The defaulty load factor; this is explicitly specified by Sun */
+  /** The defaulty load factor; this is explicitly specified by the spec. */
   private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
   private static final long serialVersionUID = 1421746759512286392L;
@@ -93,7 +93,7 @@ public class Hashtable extends Dictionary
   /** 
    * Array containing the actual key-value mappings
    */
-  transient HashMap.Entry[] buckets;
+  transient Entry[] buckets;
 
   /** 
    * counts the number of modifications this Hashtable has undergone, used 
@@ -109,14 +109,16 @@ public class Hashtable extends Dictionary
    * pair. A Hashtable Entry is identical to a HashMap Entry, except that
    * `null' is not allowed for keys and values. 
    */
-  static class Entry extends HashMap.Entry
+  static class Entry extends BasicMapEntry
   {
+    Entry next;
+      
     Entry(Object key, Object value)
     {
       super(key, value);
     }
 
-    public Object setValue(Object newVal)
+    public final Object setValue(Object newVal)
     {
       if (newVal == null)
         throw new NullPointerException();
@@ -195,7 +197,6 @@ public class Hashtable extends Dictionary
     return size == 0;
   }
 
-  /** */
   public synchronized Enumeration keys()
   {
     return new Enumerator(Enumerator.KEYS);
@@ -222,7 +223,7 @@ public class Hashtable extends Dictionary
   {
     for (int i = 0; i < buckets.length; i++)
       {
-	HashMap.Entry e = buckets[i];
+	Entry e = buckets[i];
 	while (e != null)
 	  {
 	    if (value.equals(e.value))
@@ -255,7 +256,7 @@ public class Hashtable extends Dictionary
   public synchronized boolean containsKey(Object key)
   {
     int idx = hash(key);
-    HashMap.Entry e = buckets[idx];
+    Entry e = buckets[idx];
     while (e != null)
       {
         if (key.equals(e.key))
@@ -274,7 +275,7 @@ public class Hashtable extends Dictionary
   public synchronized Object get(Object key)
   {
     int idx = hash(key);
-    HashMap.Entry e = buckets[idx];
+    Entry e = buckets[idx];
     while (e != null)
       {
         if (key.equals(e.key))
@@ -294,7 +295,7 @@ public class Hashtable extends Dictionary
   {
     modCount++;
     int idx = hash(key);
-    HashMap.Entry e = buckets[idx];
+    Entry e = buckets[idx];
     
     // Hashtable does not accept null values. This method doesn't dereference 
     // `value' anywhere, so check for it explicitly.
@@ -342,8 +343,8 @@ public class Hashtable extends Dictionary
   {
     modCount++;
     int idx = hash(key);
-    HashMap.Entry e = buckets[idx];
-    HashMap.Entry last = null;
+    Entry e = buckets[idx];
+    Entry last = null;
 
     while (e != null)
       {
@@ -371,9 +372,9 @@ public class Hashtable extends Dictionary
       {
         Map.Entry e = (Map.Entry) itr.next();
 	// Optimize in case the Entry is one of our own.
-	if (e instanceof Entry)
+	if (e instanceof BasicMapEntry)
 	  {
-	    Entry entry = (Entry) e;
+	    BasicMapEntry entry = (BasicMapEntry) e;
 	    put(entry.key, entry.value);
 	  }
 	else
@@ -411,8 +412,8 @@ public class Hashtable extends Dictionary
     
     for (int i=0; i < buckets.length; i++)
       {
-        HashMap.Entry e = buckets[i];
-	HashMap.Entry last = null;
+        Entry e = buckets[i];
+	Entry last = null;
 	
 	while (e != null)
 	  {
@@ -536,7 +537,7 @@ public class Hashtable extends Dictionary
         if (!(o instanceof Map.Entry))
 	  return false;
 	Map.Entry me = (Map.Entry) o;
-	HashMap.Entry e = getEntry(me);
+	Entry e = getEntry(me);
 	return (e != null);
       }
       
@@ -545,7 +546,7 @@ public class Hashtable extends Dictionary
         if (!(o instanceof Map.Entry))
 	  return false;
 	Map.Entry me = (Map.Entry) o;
-	HashMap.Entry e = getEntry(me);
+	Entry e = getEntry(me);
 	if (e != null)
 	  {
 	    Hashtable.this.remove(e.key);
@@ -609,10 +610,10 @@ public class Hashtable extends Dictionary
     return Math.abs(key.hashCode() % buckets.length);
   }
 
-  private HashMap.Entry getEntry(Map.Entry me)
+  private Entry getEntry(Map.Entry me)
   {
     int idx = hash(me.getKey());
-    HashMap.Entry e = buckets[idx];
+    Entry e = buckets[idx];
     while (e != null)
       {
         if (e.equals(me))
@@ -630,7 +631,7 @@ public class Hashtable extends Dictionary
    */
   protected void rehash()
   {
-    HashMap.Entry[] oldBuckets = buckets;
+    Entry[] oldBuckets = buckets;
     
     int newcapacity = (buckets.length * 2) + 1;
     threshold = (int) (newcapacity * loadFactor);
@@ -638,11 +639,11 @@ public class Hashtable extends Dictionary
     
     for (int i = 0; i < oldBuckets.length; i++)
       {
-	HashMap.Entry e = oldBuckets[i];
+	Entry e = oldBuckets[i];
         while (e != null)
 	  {
 	    int idx = hash(e.key);
-	    HashMap.Entry dest = buckets[idx];
+	    Entry dest = buckets[idx];
 
 	    if (dest != null)
 	      {
@@ -655,7 +656,7 @@ public class Hashtable extends Dictionary
         	buckets[idx] = e;
 	      }
 
-	    HashMap.Entry next = e.next;
+	    Entry next = e.next;
 	    e.next = null;
 	    e = next;
 	  }
@@ -720,8 +721,8 @@ public class Hashtable extends Dictionary
    * as per the Javasoft spec.
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.8 $
-   * @modified     $Id: Hashtable.java,v 1.8 2000/12/11 04:54:55 bryce Exp $
+   * @version      $Revision: 1.9 $
+   * @modified     $Id: Hashtable.java,v 1.9 2000/12/17 09:15:51 bryce Exp $
    */
   class HashIterator implements Iterator
   {
@@ -739,11 +740,11 @@ public class Hashtable extends Dictionary
     // Current index in the physical hash table.
     int idx;
     // The last Entry returned by a next() call.
-    HashMap.Entry last;
+    Entry last;
     // The next entry that should be returned by next(). It is set to something
     // if we're iterating through a bucket that contains multiple linked 
     // entries. It is null if next() needs to find a new bucket.
-    HashMap.Entry next;
+    Entry next;
 
     /* Construct a new HashIterator with the supplied type: 
        KEYS, VALUES, or ENTRIES */
@@ -771,7 +772,7 @@ public class Hashtable extends Dictionary
       if (count == size)
         throw new NoSuchElementException();
       count++;
-      HashMap.Entry e = null;
+      Entry e = null;
       if (next != null)
         e = next;
 
@@ -825,8 +826,8 @@ public class Hashtable extends Dictionary
    * hashtable during enumeration causes indeterminate results.  Don't do it!
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.8 $
-   * @modified $Id: Hashtable.java,v 1.8 2000/12/11 04:54:55 bryce Exp $ */
+   * @version      $Revision: 1.9 $
+   * @modified $Id: Hashtable.java,v 1.9 2000/12/17 09:15:51 bryce Exp $ */
   class Enumerator implements Enumeration
   {
     static final int KEYS = 0;
@@ -839,7 +840,7 @@ public class Hashtable extends Dictionary
     // current index in the physical hash table.
     int idx;
     // the last Entry returned.
-    HashMap.Entry last;
+    Entry last;
     
     Enumerator(int type)
     {
@@ -858,7 +859,7 @@ public class Hashtable extends Dictionary
       if (count >= size)
         throw new NoSuchElementException();
       count++;
-      HashMap.Entry e = null;
+      Entry e = null;
       if (last != null)
         e = last.next;
 
