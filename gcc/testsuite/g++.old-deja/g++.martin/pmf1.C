@@ -5,7 +5,7 @@
 
 struct B{};
 
-struct D:B{
+struct D: public B{
   virtual void foo();
 };
 

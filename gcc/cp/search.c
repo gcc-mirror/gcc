@@ -188,8 +188,6 @@ lookup_base_r (tree binfo, tree base, base_access access,
       found = bk_same_type;
       if (is_virtual)
 	found = bk_via_virtual;
-      if (is_non_public)
-	found = bk_inaccessible;
       
       if (!*binfo_ptr)
 	*binfo_ptr = binfo;
@@ -317,30 +315,62 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
   bk = lookup_base_r (t_binfo, base, access & ~ba_quiet,
 		      0, 0, 0, &binfo);
 
-  switch (bk)
-    {
-    case bk_inaccessible:
-      binfo = NULL_TREE;
-      if (!(access & ba_quiet))
-	{
-	  error ("`%T' is an inaccessible base of `%T'", base, t);
-	  binfo = error_mark_node;
-	}
-      break;
-    case bk_ambig:
-      if (access != ba_any)
-	{
-	  binfo = NULL_TREE;
-	  if (!(access & ba_quiet))
-	    {
-	      error ("`%T' is an ambiguous base of `%T'", base, t);
-	      binfo = error_mark_node;
-	    }
-	}
-      break;
-    default:;
-    }
-  
+  /* Check that the base is unambiguous and accessible.  */
+  if (access != ba_any)
+    switch (bk)
+      {
+      case bk_not_base:
+	break;
+
+      case bk_ambig:
+	binfo = NULL_TREE;
+	if (!(access & ba_quiet))
+	  {
+	    error ("`%T' is an ambiguous base of `%T'", base, t);
+	    binfo = error_mark_node;
+	  }
+	break;
+
+      default:
+	if (access != ba_ignore
+	    /* If BASE is incomplete, then BASE and TYPE are probably
+	       the same, in which case BASE is accessible.  If they
+	       are not the same, then TYPE is invalid.  In that case,
+	       there's no need to issue another error here, and
+	       there's no implicit typedef to use in the code that
+	       follows, so we skip the check.  */
+	    && COMPLETE_TYPE_P (base))
+	  {
+	    tree decl;
+
+	    /* [class.access.base]
+
+	       A base class is said to be accessible if an invented public
+	       member of the base class is accessible.  */
+	    /* Rather than inventing a public member, we use the implicit
+	       public typedef created in the scope of every class.  */
+	    decl = TYPE_FIELDS (base);
+	    while (TREE_CODE (decl) != TYPE_DECL
+		   || !DECL_ARTIFICIAL (decl)
+		   || DECL_NAME (decl) != constructor_name (base))
+	      decl = TREE_CHAIN (decl);
+	    while (ANON_AGGR_TYPE_P (t))
+	      t = TYPE_CONTEXT (t);
+	    if (!accessible_p (t, decl))
+	      {
+		if (!(access & ba_quiet))
+		  {
+		    error ("`%T' is an inaccessible base of `%T'", base, t);
+		    binfo = error_mark_node;
+		  }
+		else
+		  binfo = NULL_TREE;
+		bk = bk_inaccessible;
+	      }
+	  }
+	break;
+      }
+
   if (kind_ptr)
     *kind_ptr = bk;
   
@@ -788,7 +818,7 @@ dfs_accessible_p (tree binfo, void *data)
 }
 
 /* Returns nonzero if it is OK to access DECL through an object
-   indiated by BINFO in the context of DERIVED.  */
+   indicated by BINFO in the context of DERIVED.  */
 
 static int
 protected_accessible_p (tree decl, tree derived, tree binfo)

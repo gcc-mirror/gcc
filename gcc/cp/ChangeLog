@@ -1,5 +1,9 @@
 2003-06-25  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10990
+	* search.c (lookup_base_r): Rely on accessible_p, rather than
+	trying to emulate that logic here.
+
 	PR c++/10931
 	* call.c (convert_like): Pass issue_conversion_warnings.
 	(convert_like_with_context): Likewise.

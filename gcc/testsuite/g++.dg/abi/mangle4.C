@@ -2,7 +2,7 @@
 // { dg-do compile }
 
 class A {};
-class B : A {};
+class B : public A {};
 
 template<const A* a> class C {};
 template<const B* b> class D {};
