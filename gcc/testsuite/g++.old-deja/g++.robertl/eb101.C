@@ -126,7 +126,6 @@ typedef unsigned short _G_uid_t;
 
 
 
-typedef __wchar_t _G_wchar_t;
 typedef int   _G_ssize_t;
 typedef int   _G_wint_t;
 typedef char * _G_va_list;

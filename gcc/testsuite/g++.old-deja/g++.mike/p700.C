@@ -1066,7 +1066,6 @@ typedef int size_t;
 
 
 
-typedef short unsigned int wchar_t;
 
 
 
@@ -1169,8 +1168,6 @@ typedef	long		time_t;
 
 typedef	int		size_t;
 typedef int		ptrdiff_t;
-
-typedef	unsigned short	wchar_t;
 
 
 //# 16 "/usr/include/sys/types.h" 2

@@ -5,7 +5,7 @@
 //# 1 "GctSymbol.GctSymbol.CHMap.cc"
 // This may look like C code, but it is really -*- C++ -*-
 /*
-Copyright (C) 1988 Free Software Foundation
+Copyright (C) 1988, 2000 Free Software Foundation
     written by Doug Lea (dl@rocky.oswego.edu)
 
 This file is part of the GNU C++ Library.  This library is free
@@ -299,7 +299,6 @@ typedef unsigned int size_t;
 
 
 
-typedef int wchar_t;
 
 
 
