@@ -321,7 +321,7 @@ for cand in ${ac_tool_prefix}$user_adac	$user_adac	\
   # has not been installed.  This is fixed in 2.95.4, 3.0.2, and 3.1.
   # Therefore we must check for the error message as well as an
   # unsuccessful exit.
-  errors=`$cand -c conftest.adb 2>&1 || echo failure`
+  errors=`($cand -c conftest.adb) 2>&1 || echo failure`
   if test x"$errors" = x; then
     gcc_cv_prog_adac=$cand
     break

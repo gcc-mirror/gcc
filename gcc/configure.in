@@ -501,7 +501,7 @@ fi
 
 # Is pod2man recent enough to regenerate manpages?
 AC_MSG_CHECKING([for recent Pod::Man])
-if perl -e 'use 1.10 Pod::Man' >/dev/null 2>&1; then
+if (perl -e 'use 1.10 Pod::Man') >/dev/null 2>&1; then
   AC_MSG_RESULT(yes)
   GENERATED_MANPAGES=generated-manpages		AC_SUBST(GENERATED_MANPAGES)
 else

@@ -2997,7 +2997,7 @@ for cand in ${ac_tool_prefix}$user_adac	$user_adac	\
   # has not been installed.  This is fixed in 2.95.4, 3.0.2, and 3.1.
   # Therefore we must check for the error message as well as an
   # unsuccessful exit.
-  errors=`$cand -c conftest.adb 2>&1 || echo failure`
+  errors=`($cand -c conftest.adb) 2>&1 || echo failure`
   if test x"$errors" = x; then
     gcc_cv_prog_adac=$cand
     break
@@ -3124,7 +3124,7 @@ fi
 # Is pod2man recent enough to regenerate manpages?
 echo $ac_n "checking for recent Pod::Man""... $ac_c" 1>&6
 echo "configure:3127: checking for recent Pod::Man" >&5
-if perl -e 'use 1.10 Pod::Man' >/dev/null 2>&1; then
+if (perl -e 'use 1.10 Pod::Man') >/dev/null 2>&1; then
   echo "$ac_t""yes" 1>&6
   GENERATED_MANPAGES=generated-manpages		
 else
