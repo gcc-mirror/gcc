@@ -1,3 +1,7 @@
+2000-10-20  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* decl.c (revert_static_member_fn): Fixed typo.
+
 2000-10-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (subobject_offset_fn): New type.
@@ -1156,7 +1160,6 @@ Thu Sep 14 12:10:45 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(__pbase_type_info::__pointer_catch): Likewise.
 	(__pointer_type_info::__pointer_catch): Likewise.
 	(__pointer_to_member_type_info::__pointer_catch): Likewise.
-
 
 2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
 

@@ -14612,7 +14612,7 @@ revert_static_member_fn (decl)
   if (CP_TYPE_QUALS (TREE_TYPE (TREE_VALUE (args)))
       != TYPE_UNQUALIFIED)
     cp_error ("static member function `%#D' declared with type qualifiers",
-	      *decl);
+	      decl);
 
   args = TREE_CHAIN (args);
   tmp = build_function_type (TREE_TYPE (function), args);
