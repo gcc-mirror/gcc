@@ -1,3 +1,8 @@
+1998-02-10  Mark Mitchell  <mmitchell@usa.net>
+
+	* iostream.cc (ostream::operator<<(long double)): Don't use
+	labeled initializers.
+
 Fri Feb  6 01:35:56 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* config.shared (FLAGS_TO_PASS): Don't emit PICFLAG.
