@@ -30,29 +30,35 @@ __DTOR_LIST__:
 __EH_FRAME_BEGIN__:
 
 .section .sdata
-5:	data8	@segrel(6f)
 	.type dtor_ptr#,@object
 	.size dtor_ptr#,8
 dtor_ptr:
 	data8	__DTOR_LIST__# + 8
 
-/* A handle for __cxa_finalize to manage c++ local destructors.  */
+	.type segrel_ofs#,@object
+	.size segrel_ofs#,8
+segrel_ofs:
+	data8	@segrel(.Lsegrel_ref#)
+
+	/* A handle for __cxa_finalize to manage c++ local destructors.  */
 	.global __dso_handle#
 	.type __dso_handle#,@object
 	.size __dso_handle#,8
 #ifdef SHARED
-.section .data
+	.section .data
 __dso_handle:
 	data8	__dso_handle#
 #else
-.section .bss
+	.section .bss
 __dso_handle:
 	data8	0
 #endif
+#ifdef HAVE_GAS_HIDDEN
+	.hidden __dso_handle#
+#endif
 
-/* The frame object.  */
-/* ??? How can we rationally keep this size correct?  */
-
+	/* The frame object.  */
+	/* ??? How can we rationally keep this size correct?  */
 .section .bss
 	.type frame_object#,@object
 	.size frame_object#,56
@@ -63,20 +69,29 @@ frame_object:
 /*
  * Fragment of the ELF _fini routine that invokes our dtor cleanup.
  *
- * The code going into .fini is spread all over the place, thus we need
- * to save gp in order to make sure that other bits don't get into any
- * nasty surprises by expecting a gp that has suddenly changed.
+ * We make the call by indirection, because in large programs the 
+ * .fini and .init sections are not in range of the destination, and
+ * we cannot allow the linker to insert a stub at the end of this
+ * fragment of the _fini function.  Further, Itanium does not implement
+ * the long branch instructions, and we do not wish every program to
+ * trap to the kernel for emulation.
+ *
+ * Note that we require __do_global_dtors_aux to preserve the GP,
+ * so that the next fragment in .fini gets the right value.
  */
 .section .fini,"ax","progbits"
-	{ .mfb
-	  st8 [r12] = gp, -16
-	  br.call.sptk.many b0 = __do_global_dtors_aux#
+	{ .mlx
+	  movl r2 = @gprel(__do_global_dtors_aux#)
 	  ;;
 	}
-	{ .mmi
-	  adds r12 = 16, r12
+	{ .mii
+	  nop.m 0
+	  add r2 = r2, gp
 	  ;;
-	  ld8 gp = [r12]
+	  mov b6 = r2
+	}
+	{ .bbb
+	  br.call.sptk.many b0 = b6
 	  ;;
 	}
 
@@ -85,15 +100,18 @@ frame_object:
  */
 
 .section .init,"ax","progbits"
-	{ .mfb
-	  st8 [r12] = gp, -16
-	  br.call.sptk.many b0 = __do_frame_setup#
+	{ .mlx
+	  movl r2 = @gprel(__do_frame_setup#)
 	  ;;
 	}
-	{ .mmi
-	  adds r12 = 16, r12
+	{ .mii
+	  nop.m 0
+	  add r2 = r2, gp
 	  ;;
-	  ld8 gp = [r12]
+	  mov b6 = r2
+	}
+	{ .bbb
+	  br.call.sptk.many b0 = b6
 	  ;;
 	}
 
@@ -107,7 +125,11 @@ __do_global_dtors_aux:
 	  addl loc0 = @gprel(dtor_ptr#), gp
 	  mov loc1 = b0
 	}
-	mov loc2 = gp
+	{ .mib
+	  mov loc2 = gp
+	  br.sptk.few 1f
+	  ;;
+	}
 #else
 	/*
 		if (__cxa_finalize)
@@ -119,7 +141,6 @@ __do_global_dtors_aux:
 	  addl r16 = @ltoff(@fptr(__cxa_finalize#)), gp
 	  ;;
 	}
-	mov loc2 = gp
 	{ .mmi
 	  ld8 r16 = [r16]
 	  ;;
@@ -133,10 +154,17 @@ __do_global_dtors_aux:
 	  mov loc1 = b0
 	  ;;
 	}
-	{ .mib
-(p7)	  ld8 gp = [r16]
+	{ .mfi
+	  mov loc2 = gp
 (p7)	  mov b6 = r18
+	}
+	{
+	  .mfb
+(p7)	  ld8 gp = [r16]
 (p7)	  br.call.sptk.many b0 = b6
+	}
+	{ .mfb
+	  br.sptk.few 1f
 	}
 #endif
 	/*
@@ -145,10 +173,6 @@ __do_global_dtors_aux:
 		  (*(dtor_ptr-1)) ();
 		} while (dtor_ptr);
 	*/
-	{ .bbb
-	  br.sptk.few 1f
-	  ;;
-	}
 0:
 	{ .mmi
 	  st8 [loc0] = r15
@@ -171,13 +195,13 @@ __do_global_dtors_aux:
 	  cmp.ne p6, p0 = r0, r16
 (p6)	  br.cond.sptk.few 0b
 	}
-	mov gp = loc2
-	;;
 	/*
 		if (__deregister_frame_info)
 		  __deregister_frame_info(__EH_FRAME_BEGIN__)
 	*/
-	{ .mii
+	{ .mmi
+	  mov gp = loc2
+	  ;;
 	  addl r16 = @ltoff(@fptr(__deregister_frame_info#)), gp
 	  addl out0 = @ltoff(__EH_FRAME_BEGIN__#), gp
 	  ;;
@@ -199,6 +223,7 @@ __do_global_dtors_aux:
 (p7)	  br.call.sptk.many b0 = b6
 	}
 	{ .mii
+	  mov gp = loc2
 	  mov b0 = loc1
 	  mov ar.pfs = loc3
 	}
@@ -215,36 +240,40 @@ __do_frame_setup:
 		  __register_frame_info(__EH_FRAME_BEGIN__)
 	*/
 	{ .mii
-	  alloc loc3 = ar.pfs, 0, 4, 2, 0
+	  alloc loc2 = ar.pfs, 0, 3, 2, 0
 	  addl r16 = @ltoff(@fptr(__register_frame_info#)), gp
 	  addl out0 = @ltoff(__EH_FRAME_BEGIN__#), gp
+	}
+	/* frame_object.pc_base = segment_base_offset;
+	   pc_base is at offset 0 within frame_object.  */
+.Lsegrel_ref:
+	{ .mmi
+	  addl out1 = @ltoff(frame_object#), gp
+	  ;;
+	  addl r2 = @gprel(segrel_ofs#), gp
+	  mov r3 = ip
 	  ;;
 	}
-	addl out1 = @ltoff(frame_object#), gp
-	;;
-	/* frame_object.pc_base = segment_base_offset;
-	      pc_base is at offset 0 within frame_object.  */
-6:
-	mov loc0 = ip
-	addl loc1 = @gprel(5b), gp
-	;;
-	ld8 loc1 = [loc1]
-	ld8 out1 = [out1]
-	;;
-	sub loc2 = loc0, loc1
-	;;
-	st8 [out1] = loc2
 	{ .mmi
+	  ld8 r2 = [r2]
 	  ld8 r16 = [r16]
-	  ld8 out0 = [out0]  
 	  mov loc0 = b0
 	  ;;
 	}
-	{ .mmi
+	{ .mii
+	  ld8 out1 = [out1]
 	  cmp.ne p7, p0 = r0, r16
+	  sub r3 = r3, r2
 	  ;;
+	}
+	{ .mmi
+	  st8 [out1] = r3 
 (p7)	  ld8 r18 = [r16], 8
+	  mov loc1 = gp
 	  ;;
+	}
+	{ .mfb
+	  ld8 out0 = [out0]  
 	}
 	{ .mib
 (p7)	  ld8 gp = [r16]
@@ -252,8 +281,9 @@ __do_frame_setup:
 (p7)	  br.call.sptk.many b0 = b6
 	}
 	{ .mii
+	  mov gp = loc1
 	  mov b0 = loc0
-	  mov ar.pfs = loc3
+	  mov ar.pfs = loc2
 	}
 	{ .bbb
 	  br.ret.sptk.many b0

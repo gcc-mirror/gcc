@@ -28,25 +28,33 @@ __DTOR_END__:
 
 .section .IA_64.unwind
 __EH_FRAME_END__:
-	data8	-1
 
 /*
  * Fragment of the ELF _init routine that invokes our dtor cleanup.
  *
- * The code going into .init is spread all over the place, thus we need
- * to save gp in order to make sure that other bits don't get into any
- * nasty surprises by expecting a gp that has suddenly changed.
+ * We make the call by indirection, because in large programs the 
+ * .fini and .init sections are not in range of the destination, and
+ * we cannot allow the linker to insert a stub at the end of this
+ * fragment of the _fini function.  Further, Itanium does not implement
+ * the long branch instructions, and we do not wish every program to
+ * trap to the kernel for emulation.
+ *
+ * Note that we require __do_global_ctors_aux to preserve the GP,
+ * so that the next fragment in .fini gets the right value.
  */
 .section .init,"ax","progbits"
-	{ .mfb
-	  st8 [r12] = gp, -16
-	  br.call.sptk.many b0 = __do_global_ctors_aux
+	{ .mlx
+	  movl r2 = @gprel(__do_global_ctors_aux#)
 	  ;;
 	}
-	{ .mmi
-	  adds r12 = 16, r12
+	{ .mii
+	  nop.m 0
+	  add r2 = r2, gp
 	  ;;
-	  ld8 gp = [r12]
+	  mov b6 = r2
+	}
+	{ .bbb
+	  br.call.sptk.many b0 = b6
 	  ;;
 	}
 
@@ -59,34 +67,43 @@ __do_global_ctors_aux:
 		  (*p) ();
 	*/
 	{ .mii
-	  alloc loc2 = ar.pfs, 0, 4, 0, 0
+	  alloc loc4 = ar.pfs, 0, 5, 0, 0
 	  addl loc0 = @ltoff(__CTOR_END__# - 8), gp
-	  cmp.ne p6, p0 = r0, r0
+	  mov loc1 = b0
 	  ;;
 	}
-	{ .mfi
+	{ .mmi
 	  ld8 loc0 = [loc0]
-	  mov loc1 = b0
+	  ;;
+	  ld8 loc3 = [loc0], -8
+	  mov loc2 = gp
+	  ;;
+	}
+	{ .mfb
+	  cmp.eq p6, p0 = -1, loc3
+(p6)	  br.cond.spnt.few 2f
 	}
 0:
 	{ .mmi
-(p6)	  ld8 r15 = [loc3], 8
+	  ld8 r15 = [loc3], 8
 	  ;;
-(p6)	  ld8 gp = [loc3]
-(p6)	  mov b6 = r15
+	  ld8 gp = [loc3]
+	  mov b6 = r15
 	}
 	{ .mfb
 	  ld8 loc3 = [loc0], -8
-(p6)	  br.call.sptk.many b0 = b6
+	  br.call.sptk.many b0 = b6
 	  ;;
 	}
 	{ .mfb
 	  cmp.ne p6, p0 = -1, loc3
 (p6)	  br.cond.sptk.few 0b
 	}
+2:
 	{ .mii
-	  mov ar.pfs = loc2
+	  mov gp = loc2
 	  mov b0 = loc1
+	  mov ar.pfs = loc4
 	}
 	{ .bbb
 	  br.ret.sptk.many b0
