@@ -1,3 +1,31 @@
+2004-05-03  Paolo Carlini  <pcarlini@suse.de>
+
+	Optimize locale::_M_impl->_M_names for the most common cases:
+	!_M_names[0] means unnamed; !_M_names[1] means all the categories
+	the same name (_M_names[0] && _M_names[1] means that the full set
+	of _M_names must be processed, the general case).
+	* include/bits/locale_classes.h (locale::_Impl::_M_check_same_name):
+	Tweak, saving work when !_M_names[1].
+	(locale::locale(const locale&, _Facet*): Simplify: now just setting
+	_M_names[0] = 0 means unnamed.
+	* src/locale.cc (locale::operator==): Deal first with the common,
+	easy cases, otherwise fall back to locale::name().
+	(locale::name()): Tweak, if !_M_names[0] just return "*".
+	(locale::_Impl::_Impl(const _Impl&, size_t): Tweak, early stop
+	copying __imp._M_names if !__imp._M_names[0] or !__imp._M_names[1].
+	* src/locale_init.cc (locale::_Impl::_Impl(size_t)): Tweak.
+	* src/localename.cc (locale::_Impl::_Impl(const char*, size_t):
+	Simplify when !std::strchr, just updating _M_names[0]; clean up.
+	(locale::_Impl::_M_replace_categories): When !_M_names[1] prepare
+	for the general case (full set of names), then do the usual work;
+	clean up.
+
+	* src/locale.cc (locale::name()): Reserve space in __ret.
+	* src/locale_init.cc (locale::global(const locale&)): Save
+	the name in a temporary.
+	* src/localename.cc (locale::locale(const char*)): Reserve space
+	in __str.
+
 2004-04-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/locale.cc (locale::operator==): Always avoid constructing

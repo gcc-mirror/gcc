@@ -70,15 +70,21 @@ namespace std
   bool
   locale::operator==(const locale& __rhs) const throw()
   {
-    bool __ret = true;
+    // Deal first with the common cases, fast to process: refcopies,
+    // unnamed (i.e., !_M_names[0]), "simple" (!_M_names[1] => all the
+    // categories same name, i.e., _M_names[0]). Otherwise fall back
+    // to the general locale::name().
+    bool __ret;
     if (_M_impl == __rhs._M_impl)
-      ;
-    else if (!std::strcmp(_M_impl->_M_names[0], "*"))
+      __ret = true;
+    else if (!_M_impl->_M_names[0] || !__rhs._M_impl->_M_names[0]
+	     || std::strcmp(_M_impl->_M_names[0],
+			    __rhs._M_impl->_M_names[0]) != 0)
       __ret = false;
+    else if (!_M_impl->_M_names[1] && !__rhs._M_impl->_M_names[1])
+      __ret = true;
     else
-      for (size_t __i = 0; __ret && __i < _S_categories_size; ++__i)
-	__ret = !std::strcmp(_M_impl->_M_names[__i],
-			     __rhs._M_impl->_M_names[__i]);
+      __ret = this->name() == __rhs.name();
     return __ret;
   }
 
@@ -95,10 +101,13 @@ namespace std
   locale::name() const
   {
     string __ret;
-    if (_M_impl->_M_check_same_name())
+    if (!_M_impl->_M_names[0])
+      __ret = '*';
+    else if (_M_impl->_M_check_same_name())
       __ret = _M_impl->_M_names[0];
     else
       {
+	__ret.reserve(128);
 	__ret += _S_categories[0];
 	__ret += '=';
 	__ret += _M_impl->_M_names[0]; 
@@ -242,12 +251,13 @@ namespace std
 	for (size_t __i = 0; __i < _S_categories_size; ++__i)
 	  _M_names[__i] = 0;
 
-	// Name all the categories.
-	for (size_t __i = 0; __i < _S_categories_size; ++__i)
+	// Name the categories.
+	for (size_t __i = 0; (__i < _S_categories_size
+			      && __imp._M_names[__i]); ++__i)
 	  {
-	    char* __new = new char[std::strlen(__imp._M_names[__i]) + 1];
-	    std::strcpy(__new, __imp._M_names[__i]);
-	    _M_names[__i] = __new;
+	    const size_t __len = std::strlen(__imp._M_names[__i]) + 1;
+	    _M_names[__i] = new char[__len];
+	    std::memcpy(_M_names[__i], __imp._M_names[__i], __len);
 	  }
       }
     catch(...)
@@ -353,7 +363,6 @@ namespace std
 	  }
       }
   }
-
 
   // locale::id
   // Definitions for static const data members of locale::id
