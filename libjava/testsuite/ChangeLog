@@ -1,3 +1,8 @@
+2003-02-07  Mark Wielaard  <mark@klomp.org>
+
+	* libjava.mauve/xfails: Add new entries for
+	gnu.testlet.java.text.CollationElementIterator.jdk11
+
 2003-02-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* libjava.jacks/jacks.exp (gcj_jacks_write): Set LD_LIBRARY_PATH
