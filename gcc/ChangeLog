@@ -1,3 +1,8 @@
+2004-11-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree.c (recompute_tree_invarant_for_addr_expr): The address of a
+	thread-local variable is invariant.
+
 2004-11-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-pretty-print.c (dump_generic_node, case POINTER_TYPE):
