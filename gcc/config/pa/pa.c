@@ -1446,6 +1446,120 @@ output_block_move (operands, size_is_constant)
     }
   return "";
 }
+
+/* Count the number of insns necessary to handle this block move.
+
+   Basic structure is the same as emit_block_move, except that we
+   count insns rather than emit them.  */
+
+int
+compute_movstrsi_length (insn)
+     rtx insn;
+{
+  rtx pat = PATTERN (insn);
+  int size_is_constant;
+  int align = INTVAL (XEXP (XVECEXP (pat, 0, 6), 0));
+  unsigned long n_bytes;
+  int insn_count = 0;
+
+  if (GET_CODE (XEXP (XVECEXP (pat, 0, 5), 0)) == CONST_INT)
+    {
+      size_is_constant = 1;
+      n_bytes = INTVAL (XEXP (XVECEXP (pat, 0, 5), 0));
+    }
+  else
+    {
+      size_is_constant = 0;
+      n_bytes = 0;
+    }
+
+  /* We can't move more than four bytes at a time because the PA
+     has no longer integer move insns.  (Could use fp mem ops?)  */
+  if (align > 4)
+    align = 4;
+
+  if (size_is_constant)
+    {
+      unsigned long n_items;
+      unsigned long offset;
+      rtx temp;
+
+      if (n_bytes == 0)
+	return 0;
+
+      if (align >= 4)
+	{
+	  /* Don't unroll too large blocks.  */
+	  if (n_bytes > 64)
+	    goto copy_with_loop;
+
+	  /* first load */
+	  insn_count = 1;
+
+	  /* Count the unrolled insns.  */
+	  for (offset = 4; offset < n_bytes; offset += 4)
+	    insn_count += 2;
+
+	  /* Count last store or partial store.  */
+	  insn_count += 1;
+	  return insn_count;
+	}
+
+      if (align >= 2 && n_bytes >= 2)
+	{
+	  /* initial load.  */
+	  insn_count = 1;
+
+	  /* Unrolled loop.  */
+	  for (offset = 2; offset + 2 <= n_bytes; offset += 2)
+	    insn_count += 2;
+
+	  /* ??? odd load/store */
+	  if (n_bytes % 2 != 0)
+	    insn_count += 2;
+
+	  /* ??? final store from loop.  */
+	  insn_count += 1;
+
+	  return insn_count;
+	}
+
+      /* First load.  */
+      insn_count = 1;
+
+      /* The unrolled loop.  */
+      for (offset = 1; offset + 1 <= n_bytes; offset += 1)
+	insn_count += 2;
+
+      /* Final store.  */
+      insn_count += 1;
+
+      return insn_count;
+    }
+
+  if (align != 4)
+    abort();
+     
+ copy_with_loop:
+
+  /* setup for constant and non-constant case.  */
+  insn_count = 1;
+
+  /* The copying loop.  */
+  insn_count += 3;
+
+  /* The counter is negative, >= -4.  The remaining number of bytes are
+     determined by the two least significant bits.  */
+
+  if (size_is_constant)
+    {
+      if (n_bytes % 4 != 0)
+	insn_count += 2;
+    }
+  else
+    insn_count += 4;
+  return insn_count;
+}
 
 
 char *
@@ -2327,6 +2441,53 @@ pa_adjust_cost (insn, link, dep_insn, cost)
   return cost - 1;
 }
 
+/* Return any length adjustment needed by INSN which already has its length
+   computed as LENGTH.   Return zero if no adjustment is necessary. 
+
+   For the PA: function calls, millicode calls, and short conditional branches
+   with unfilled delay slots need an adjustment by +1 (to account for
+   the NOP which will be inserted into the instruction stream).
+
+   Also compute the length of an inline block move here as it is too
+   complicated to express as a length attribute in pa.md.
+
+   (For 2.5) Indirect calls do not need length adjustment as their
+   delay slot is filled internally in the output template.
+
+   (For 2.5) No adjustment is necessary for jump tables or casesi insns.  */
+int
+pa_adjust_insn_length (insn, length)
+    rtx insn;
+    int length;
+{
+  rtx pat = PATTERN (insn);
+
+  /* Call insn with an unfilled delay slot.  */ 
+  if (GET_CODE (insn) == CALL_INSN)
+    return 1;
+  /* Millicode insn with an unfilled delay slot.  */
+  else if (GET_CODE (insn) == INSN
+	   && GET_CODE (pat) != SEQUENCE
+	   && GET_CODE (pat) != USE
+	   && GET_CODE (pat) != CLOBBER
+	   && get_attr_type (insn) == TYPE_MILLI)
+    return 1;
+  /* Block move pattern.  */
+  else if (GET_CODE (insn) == INSN
+	   && GET_CODE (pat) == PARALLEL
+	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
+	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
+	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
+	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
+    return compute_movstrsi_length (insn) - 1;
+  /* Conditional branch with an unfilled delay slot.  */
+  else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn)
+	   && length != 2 && length != 4))
+    return 1;
+  else
+    return 0;
+}
+
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    For `%' followed by punctuation, CODE is the punctuation and X is null.  */
@@ -3064,10 +3225,10 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  strcat (buf, "%S3");
 	else
 	  strcat (buf, "%B3");
-	if (nullify)
-	  strcat (buf, " %2,%1,0\n\tbl,n %0,0");
-	else
-	  strcat (buf, " %2,%1,0\n\tbl %0,0%#");
+	/* Regardless of whether or not this branch got its slot
+	   filled we can nullify the following instruction and 
+	   avoid emitting a nop.  */
+	strcat (buf, " %2,%1,0\n\tbl%* %0,0");
 	break;
 
       /* Long backward conditional branch with nullification.  */
@@ -3147,14 +3308,13 @@ output_bb (operands, nullify, length, negated, insn, which)
 	  strcat (buf, "<");
 	else
 	  strcat (buf, ">=");
-	if (nullify && negated)
+	/* Regardless of whether or not this branch got its slot
+	   filled we can nullify the following instruction and 
+	   avoid emitting a nop.  */
+	if (negated)
 	  strcat (buf, " %0,%1,1,0\n\tbl,n %3,0");
-	else if (nullify && ! negated)
+	else 
 	  strcat (buf, " %0,%1,1,0\n\tbl,n %2,0");
-	else if (! nullify && negated)
-	  strcat (buf, " %0,%1,1,0\n\tbl %3,0%#");
-	else if (! nullify && ! negated)
-	  strcat (buf, " %0,%1,1,0\n\tbl %2,0%#");
 	break;
 
       /* Long backward conditional branch with nullification.  */
