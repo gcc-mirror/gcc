@@ -3426,6 +3426,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 		      adjust_address (operands[1], SImode, 4));
       return;
     }
+#if 0
     else if (mode == DImode && TARGET_POWERPC64
                && GET_CODE (operands[0]) == REG
                && GET_CODE (operands[1]) == MEM && optimize > 0
@@ -3435,16 +3436,15 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
                                          : MEM_ALIGN (operands[1]))
                && !no_new_pseudos)
       {
-        rtx mem;
         rtx reg = gen_reg_rtx (SImode);
-        mem = adjust_address (operands[1], SImode, 0);
-        emit_insn (gen_rtx_SET (SImode, reg, mem));
-        reg  = simplify_gen_subreg (DImode, reg, SImode, 0);
+	emit_insn (gen_rtx_SET (SImode, reg,
+				adjust_address (operands[1], SImode, 0)));
+        reg = simplify_gen_subreg (DImode, reg, SImode, 0);
         emit_insn (gen_insvdi (operands[0], GEN_INT (32), const0_rtx, reg));
         reg = gen_reg_rtx (SImode);
-        mem = adjust_address (operands[1], SImode, 4);
-        emit_insn (gen_rtx_SET (SImode, reg, mem));
-        reg  = simplify_gen_subreg (DImode, reg, SImode, 0);
+	emit_insn (gen_rtx_SET (SImode, reg,
+				adjust_address (operands[1], SImode, 4)));
+        reg = simplify_gen_subreg (DImode, reg, SImode, 0);
         emit_insn (gen_insvdi (operands[0], GEN_INT (32), GEN_INT (32), reg));
         return;
       }
@@ -3457,15 +3457,16 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
                                          : MEM_ALIGN (operands[0]))
                && !no_new_pseudos)
       {
-        rtx mem;
         rtx reg = gen_reg_rtx (DImode);
-        emit_move_insn (reg, gen_rtx_LSHIFTRT (DImode, operands[1], GEN_INT (32)));
-        mem = adjust_address (operands[0], SImode, 0);
-        emit_move_insn (mem, simplify_gen_subreg (SImode, reg, DImode, 0));
-        mem = adjust_address (operands[0], SImode, 4);
-        emit_move_insn (mem, simplify_gen_subreg (SImode, operands[1], DImode, 0));
+        emit_move_insn (reg,
+			gen_rtx_LSHIFTRT (DImode, operands[1], GEN_INT (32)));
+        emit_move_insn (adjust_address (operands[0], SImode, 0),
+			simplify_gen_subreg (SImode, reg, DImode, 0));
+        emit_move_insn (adjust_address (operands[0], SImode, 4),
+			simplify_gen_subreg (SImode, operands[1], DImode, 0));
         return;
       }
+#endif
   
   if (!no_new_pseudos)
     {
@@ -4500,7 +4501,7 @@ function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 }
 
 static void
-rs6000_move_block_from_reg(int regno, rtx x, int nregs)
+rs6000_move_block_from_reg (int regno, rtx x, int nregs)
 {
   int i;
   enum machine_mode reg_mode = TARGET_32BIT ? SImode : DImode;

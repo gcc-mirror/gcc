@@ -1,5 +1,10 @@
 2004-01-27  David Edelsohn  <edelsohn@gnu.org>
 
+	* config/rs6000/rs6000.c (rs6000_emit_move): #if 0 splitting
+	slow, unaligned loads and stores while debugging.  Fix formatting.
+
+2004-01-27  David Edelsohn  <edelsohn@gnu.org>
+
 	* config/rs6000/rs6000.md (save_stack_nonlocal): Use Pmode instead
 	of computing wmode.
 	(restore_stack_nonlocal): Same.
