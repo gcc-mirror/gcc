@@ -1,5 +1,21 @@
 2000-11-20  Tom Tromey  <tromey@cygnus.com>
 
+	* jv-scan.c (help): Document --complexity.
+	(options): Added --complexity.
+	(flag_complexity): New global.
+	(main): Call `report'.
+	* parse-scan.y (complexity): New global.
+	(if_then_statement, if_then_else_statement,
+	if_then_else_statement_nsi, switch_block_statement_group,
+	while_expression, do_statement, for_begin, continue_statement,
+	throw_statement, catch_clause, finally, method_invocation,
+	conditional_and_expression, conditional_or_expression,
+	conditional_expression): Update complexity.
+	(reset_report): Reset complexity.
+	(report): New function.
+
+2000-11-20  Tom Tromey  <tromey@cygnus.com>
+
 	* lex.c (yylex): Added STRICT_TK case.
 	* parse.y (STRICT_TK): Added.
 	* parse-scan.y (STRICT_TK): Added.

@@ -75,6 +75,9 @@ static int previous_output;
 /* Record modifier uses  */
 static int modifier_value;
 
+/* Record (almost) cyclomatic complexity.  */
+static int complexity; 
+
 /* Keeps track of number of bracket pairs after a variable declarator
    id.  */
 static int bracket_count; 
@@ -100,6 +103,8 @@ static void report_class_declaration PARAMS ((const char *));
 static void report_main_declaration PARAMS ((struct method_declarator *));
 static void push_class_context PARAMS ((const char *));
 static void pop_class_context PARAMS ((void));
+
+void report PARAMS ((void)); 
 
 #include "lex.h"
 #include "parse.h"
@@ -727,15 +732,17 @@ statement_expression:
 ;
 
 if_then_statement:
-	IF_TK OP_TK expression CP_TK statement
+	IF_TK OP_TK expression CP_TK statement { ++complexity; }
 ;
 
 if_then_else_statement:
 	IF_TK OP_TK expression CP_TK statement_nsi ELSE_TK statement
+	{ ++complexity; }
 ;
 
 if_then_else_statement_nsi:
 	IF_TK OP_TK expression CP_TK statement_nsi ELSE_TK statement_nsi
+	{ ++complexity; }
 ;
 
 switch_statement:
@@ -755,7 +762,7 @@ switch_block_statement_groups:
 ;
 
 switch_block_statement_group:
-	switch_labels block_statements
+	switch_labels block_statements { ++complexity; }
 ;
 
 
@@ -770,7 +777,7 @@ switch_label:
 ;
 
 while_expression:
-	WHILE_TK OP_TK expression CP_TK
+	WHILE_TK OP_TK expression CP_TK { ++complexity; }
 ;
 
 while_statement:
@@ -787,6 +794,7 @@ do_statement_begin:
 
 do_statement: 
 	do_statement_begin statement WHILE_TK OP_TK expression CP_TK SC_TK
+	{ ++complexity; }
 ;
 
 for_statement:
@@ -804,7 +812,7 @@ for_header:
 ;
 
 for_begin:
-	for_header for_init
+	for_header for_init { ++complexity; }
 ;
 for_init:			/* Can be empty */
 |	statement_expression_list
@@ -825,9 +833,11 @@ break_statement:
 |	BREAK_TK identifier SC_TK
 ;
 
+/* `continue' with a label is considered for complexity but ordinary
+   continue is not.  */
 continue_statement:
 	CONTINUE_TK SC_TK
-|       CONTINUE_TK identifier SC_TK
+	|       CONTINUE_TK identifier SC_TK { ++complexity; }
 ;
 
 return_statement:
@@ -836,7 +846,7 @@ return_statement:
 ;
 
 throw_statement:
-	THROW_TK expression SC_TK
+	THROW_TK expression SC_TK { ++complexity; }
 ;
 
 synchronized_statement:
@@ -861,11 +871,11 @@ catches:
 ;
 
 catch_clause:
-	CATCH_TK OP_TK formal_parameter CP_TK block
+	CATCH_TK OP_TK formal_parameter CP_TK block { ++complexity; }
 ;
 
 finally:
-	FINALLY_TK block
+	FINALLY_TK block { ++complexity; }
 ;
 
 /* 19.12 Production from 15: Expressions  */
@@ -958,15 +968,18 @@ field_access:
 |	SUPER_TK DOT_TK identifier
 ;
 
+/* We include method invocation in the complexity measure on the
+   theory that most method calls are virtual and therefore involve a
+   decision point.  */
 method_invocation:
 	name OP_TK CP_TK
-		{ USE_ABSORBER; }
+		{ USE_ABSORBER; ++complexity; }
 |	name OP_TK argument_list CP_TK
-		{ USE_ABSORBER; }
-|	primary DOT_TK identifier OP_TK CP_TK
-|	primary DOT_TK identifier OP_TK argument_list CP_TK
-|	SUPER_TK DOT_TK identifier OP_TK CP_TK
-|	SUPER_TK DOT_TK identifier OP_TK argument_list CP_TK
+		{ USE_ABSORBER; ++complexity; }
+|	primary DOT_TK identifier OP_TK CP_TK { ++complexity; }
+|	primary DOT_TK identifier OP_TK argument_list CP_TK { ++complexity; }
+|	SUPER_TK DOT_TK identifier OP_TK CP_TK { ++complexity; }
+|	SUPER_TK DOT_TK identifier OP_TK argument_list CP_TK { ++complexity; }
 ;
 
 array_access:
@@ -1074,16 +1087,19 @@ inclusive_or_expression:
 conditional_and_expression:
 	inclusive_or_expression
 |	conditional_and_expression BOOL_AND_TK inclusive_or_expression
+	{ ++complexity; }
 ;
 
 conditional_or_expression:
 	conditional_and_expression
 |	conditional_or_expression BOOL_OR_TK conditional_and_expression
+	{ ++complexity; }
 ;
 
 conditional_expression:		/* Error handling here is weak */
 	conditional_or_expression
 |	conditional_or_expression REL_QM_TK expression REL_CL_TK conditional_expression
+	{ ++complexity; }
 ;
 
 assignment_expression:
@@ -1238,6 +1254,14 @@ report_main_declaration (declarator)
     }
 }
 
+void
+report ()
+{
+  extern int flag_complexity;
+  if (flag_complexity)
+    fprintf (out, "%s %d\n", input_filename, complexity);
+}
+
 /* Reset global status used by the report functions.  */
 
 void reset_report ()
@@ -1245,6 +1269,7 @@ void reset_report ()
   previous_output = 0;
   package_name = NULL;
   current_class = NULL;
+  complexity = 0;
 }
 
 void
