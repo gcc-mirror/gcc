@@ -3861,7 +3861,7 @@ edit_fn_definition (def_dec_p, clean_text_p)
     const char *start_body_orig;
     const char *scan;
     const char *scan_orig;
-    int have_flotsum = 0;
+    int have_flotsam = 0;
     int have_newlines = 0;
 
     for (start_body = end_formals + 1; *start_body != '{';)
@@ -3881,9 +3881,9 @@ edit_fn_definition (def_dec_p, clean_text_p)
               *((NONCONST char *)scan_orig) = ' '; /* identical - so whiteout */
           }
         else
-          have_flotsum = 1;
+          have_flotsam = 1;
       }
-    if (have_flotsum)
+    if (have_flotsam)
       output_bytes (end_formals_orig + 1,
 		    (size_t) (start_body_orig - end_formals_orig) - 1);
     else
