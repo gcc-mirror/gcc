@@ -48,7 +48,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intl.h"
 #include "tm_p.h"
 #include "tree-iterator.h"
+#include "tree-pass.h"
+#include "tree-flow.h"
 #include "target.h"
+#include "timevar.h"
 
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
@@ -165,6 +168,7 @@ static void emit_single_push_insn (enum machine_mode, rtx, tree);
 #endif
 static void do_tablejump (rtx, enum machine_mode, rtx, rtx, rtx);
 static rtx const_vector_from_tree (tree);
+static void execute_expand (void);
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -10204,5 +10208,92 @@ const_vector_from_tree (tree exp)
 
   return gen_rtx_raw_CONST_VECTOR (mode, v);
 }
+
+/* Called to move the SAVE_EXPRs for parameter declarations in a
+   nested function into the nested function.  DATA is really the
+   nested FUNCTION_DECL.  */
+
+static tree
+set_save_expr_context (tree *tp,
+                       int *walk_subtrees,
+                       void *data)
+{
+  if (TREE_CODE (*tp) == SAVE_EXPR && !SAVE_EXPR_CONTEXT (*tp))
+    SAVE_EXPR_CONTEXT (*tp) = (tree) data;
+  /* Do not walk back into the SAVE_EXPR_CONTEXT; that will cause
+     circularity.  */
+  else if (DECL_P (*tp))
+    *walk_subtrees = 0;
+
+  return NULL;
+}
+
+
+static void
+execute_expand (void)
+{
+  /* If the function has a variably modified type, there may be
+     SAVE_EXPRs in the parameter types.  Their context must be set to
+     refer to this function; they cannot be expanded in the containing
+     function.  */
+  if (decl_function_context (current_function_decl) == current_function_decl
+      && variably_modified_type_p (TREE_TYPE (current_function_decl)))
+    walk_tree (&TREE_TYPE (current_function_decl), set_save_expr_context,
+	       current_function_decl, NULL);
+
+  /* Expand the variables recorded during gimple lowering.  This must
+     occur before the call to expand_function_start to ensure that
+     all used variables are expanded before we expand anything on the
+     PENDING_SIZES list.  */
+  expand_used_vars ();
+
+  /* Set up parameters and prepare for return, for the function.  */
+  expand_function_start (current_function_decl, 0);
+
+  /* If this function is `main', emit a call to `__main'
+     to run global initializers, etc.  */
+  if (DECL_NAME (current_function_decl)
+      && MAIN_NAME_P (DECL_NAME (current_function_decl))
+      && DECL_FILE_SCOPE_P (current_function_decl))
+    expand_main_function ();
+
+  /* Generate the RTL for this function.  */
+  expand_expr_stmt_value (DECL_SAVED_TREE (current_function_decl), 0, 0);
+
+  /* We hard-wired immediate_size_expand to zero above.
+     expand_function_end will decrement this variable.  So, we set the
+     variable to one here, so that after the decrement it will remain
+     zero.  */
+  immediate_size_expand = 1;
+
+  /* Make sure the locus is set to the end of the function, so that
+     epilogue line numbers and warnings are set properly.  */
+  if (cfun->function_end_locus.file)
+    input_location = cfun->function_end_locus;
+
+  /* The following insns belong to the top scope.  */
+  record_block_change (DECL_INITIAL (current_function_decl));
+
+  /* Generate rtl for function exit.  */
+  expand_function_end ();
+}
+
+struct tree_opt_pass pass_expand =
+{
+  "expand",		                /* name */
+  NULL,                                 /* gate */
+  execute_expand,	                /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_EXPAND,		                /* tv_id */
+  /* ??? If TER is enabled, we actually receive GENERIC.  */
+  PROP_gimple_leh,                      /* properties_required */
+  PROP_rtl,                             /* properties_provided */
+  PROP_cfg | PROP_gimple_leh,           /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0                                     /* todo_flags_finish */
+};
+
 
 #include "gt-expr.h"

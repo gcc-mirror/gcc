@@ -210,17 +210,31 @@ register_one_dump_file (struct tree_opt_pass *pass)
   pass->static_pass_number = dump_register (dot_name, flag_name);
 }
 
-static void 
-register_dump_files (struct tree_opt_pass *pass)
+static int 
+register_dump_files (struct tree_opt_pass *pass, int properties)
 {
   do
     {
-      register_one_dump_file (pass);
+      /* Verify that all required properties are present.  */
+      if (pass->properties_required & ~properties)
+        abort ();
+
+      if (pass->properties_destroyed & pass->properties_provided)
+        abort ();
+
+      pass->properties_required = properties;
+      pass->properties_provided = properties =
+        (properties | pass->properties_provided) & ~pass->properties_destroyed;
+
+      if (properties & PROP_trees)
+        register_one_dump_file (pass);
       if (pass->sub)
-	register_dump_files (pass->sub);
+	properties = register_dump_files (pass->sub, properties);
       pass = pass->next;
     }
   while (pass);
+
+  return properties;
 }
 
 /* Duplicate a pass that's to be run more than once.  */
@@ -272,6 +286,8 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_all_optimizations);
   NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_rebuild_bind);
+  NEXT_PASS (pass_expand);
+  NEXT_PASS (pass_rest_of_compilation);
   *p = NULL;
 
   p = &pass_all_optimizations.sub;
@@ -326,12 +342,11 @@ init_tree_optimization_passes (void)
 #undef DUP_PASS
 
   /* Register the passes with the tree dump code.  */
-  register_dump_files (all_passes);
+  register_dump_files (all_passes, 0);
 }
 
 static void execute_pass_list (struct tree_opt_pass *);
 
-static unsigned int current_properties;
 static unsigned int last_verified;
 
 static void
@@ -370,9 +385,9 @@ execute_one_pass (struct tree_opt_pass *pass)
   if (pass->gate && !pass->gate ())
     return false;
 
-  /* Verify that all required properties are present.  */
-  if (pass->properties_required & ~current_properties)
-    abort ();
+  /* Note that the folders should only create gimple expressions.
+     This is a hack until the new folder is ready.  */
+  in_gimple_form = (pass->properties_provided & PROP_trees) != 0;
 
   /* Run pre-pass verification.  */
   todo = pass->todo_flags_start & ~last_verified;
@@ -411,10 +426,6 @@ execute_one_pass (struct tree_opt_pass *pass)
   if (todo)
     execute_todo (todo);
 
-  /* Update properties.  */
-  current_properties &= ~pass->properties_destroyed;
-  current_properties |= pass->properties_provided;
-
   /* Close down timevar and dump file.  */
   if (pass->tv_id)
     timevar_pop (pass->tv_id);
@@ -440,25 +451,6 @@ execute_pass_list (struct tree_opt_pass *pass)
 }
 
 
-/* Called to move the SAVE_EXPRs for parameter declarations in a
-   nested function into the nested function.  DATA is really the
-   nested FUNCTION_DECL.  */
-
-static tree
-set_save_expr_context (tree *tp,
-		       int *walk_subtrees,
-		       void *data)
-{
-  if (TREE_CODE (*tp) == SAVE_EXPR && !SAVE_EXPR_CONTEXT (*tp))
-    SAVE_EXPR_CONTEXT (*tp) = (tree) data;
-  /* Do not walk back into the SAVE_EXPR_CONTEXT; that will cause
-     circularity.  */
-  else if (DECL_P (*tp))
-    *walk_subtrees = 0;
-
-  return NULL;
-}
-
 /* For functions-as-trees languages, this performs all optimization and
    compilation for FNDECL.  */
 
@@ -522,68 +514,13 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	}
     }
 
-  /* Note that the folders should only create gimple expressions.
-     This is a hack until the new folder is ready.  */
-  in_gimple_form = true;
-
-  /* Perform all tree transforms and optimizations.  */
-  execute_pass_list (all_passes);
-
-  /* Note that the folders can create non-gimple expressions again.  */
-  in_gimple_form = false;
-
-  /* If the function has a variably modified type, there may be
-     SAVE_EXPRs in the parameter types.  Their context must be set to
-     refer to this function; they cannot be expanded in the containing
-     function.  */
-  if (decl_function_context (fndecl) == current_function_decl
-      && variably_modified_type_p (TREE_TYPE (fndecl)))
-    walk_tree (&TREE_TYPE (fndecl), set_save_expr_context, fndecl,
-	       NULL);
-
-  /* Expand the variables recorded during gimple lowering.  This must
-     occur before the call to expand_function_start to ensure that
-     all used variables are expanded before we expand anything on the
-     PENDING_SIZES list.  */
-  expand_used_vars ();
-
-  /* Set up parameters and prepare for return, for the function.  */
-  expand_function_start (fndecl, 0);
-
-  /* If this function is `main', emit a call to `__main'
-     to run global initializers, etc.  */
-  if (DECL_NAME (fndecl)
-      && MAIN_NAME_P (DECL_NAME (fndecl))
-      && DECL_FILE_SCOPE_P (fndecl))
-    expand_main_function ();
-
-  /* Generate the RTL for this function.  */
-  expand_expr_stmt_value (DECL_SAVED_TREE (fndecl), 0, 0);
-
-  /* We hard-wired immediate_size_expand to zero above.
-     expand_function_end will decrement this variable.  So, we set the
-     variable to one here, so that after the decrement it will remain
-     zero.  */
-  immediate_size_expand = 1;
-
-  /* Make sure the locus is set to the end of the function, so that 
-     epilogue line numbers and warnings are set properly.  */
-  if (cfun->function_end_locus.file)
-    input_location = cfun->function_end_locus;
-
-  /* The following insns belong to the top scope.  */
-  record_block_change (DECL_INITIAL (current_function_decl));
-  
-  /* Generate rtl for function exit.  */
-  expand_function_end ();
-
   /* If this is a nested function, protect the local variables in the stack
      above us from being collected while we're compiling this function.  */
   if (nested_p)
     ggc_push_context ();
 
-  /* Run the optimizers and output the assembler code for this function.  */
-  rest_of_compilation (fndecl);
+  /* Perform all tree transforms and optimizations.  */
+  execute_pass_list (all_passes);
 
   /* Restore original body if still needed.  */
   if (cfun->saved_tree)

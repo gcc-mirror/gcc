@@ -80,6 +80,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coverage.h"
 #include "value-prof.h"
 #include "alloc-pool.h"
+#include "tree-pass.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -430,6 +431,9 @@ rest_of_type_compilation (tree type, int toplev)
 static void
 rest_of_handle_final (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_FINAL);
   {
     rtx x;
@@ -483,6 +487,9 @@ rest_of_handle_final (tree decl, rtx insns)
 static void
 rest_of_handle_delay_slots (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_DBR_SCHED);
   open_dump_file (DFI_dbr, decl);
 
@@ -501,6 +508,9 @@ rest_of_handle_delay_slots (tree decl, rtx insns)
 static void
 rest_of_handle_stack_regs (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
 #if defined (HAVE_ATTR_length)
   /* If flow2 creates new instructions which need splitting
      and scheduling after reload is not done, they might not be
@@ -543,6 +553,9 @@ rest_of_handle_stack_regs (tree decl, rtx insns)
 static void
 rest_of_handle_variable_tracking (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_VAR_TRACKING);
   open_dump_file (DFI_vartrack, decl);
 
@@ -556,6 +569,9 @@ rest_of_handle_variable_tracking (tree decl, rtx insns)
 static void
 rest_of_handle_machine_reorg (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_MACH_DEP);
   open_dump_file (DFI_mach, decl);
 
@@ -574,6 +590,9 @@ static bool
 rest_of_handle_new_regalloc (tree decl, rtx insns)
 {
   int failure;
+
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
 
   delete_trivially_dead_insns (insns, max_reg_num ());
   reg_alloc ();
@@ -621,6 +640,9 @@ rest_of_handle_old_regalloc (tree decl, rtx insns)
 {
   int failure;
   int rebuild_notes;
+
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
 
   /* Allocate the reg_renumber array.  */
   allocate_reg_info (max_regno, FALSE, TRUE);
@@ -695,6 +717,9 @@ rest_of_handle_old_regalloc (tree decl, rtx insns)
 static void
 rest_of_handle_regrename (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_RENAME_REGISTERS);
   open_dump_file (DFI_rnreg, decl);
 
@@ -713,6 +738,9 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
 {
   bool changed;
   open_dump_file (DFI_bbro, decl);
+
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
 
   /* Last attempt to optimize CFG, as scheduling, peepholing and insn
      splitting possibly introduced more crossjumping opportunities.  */
@@ -744,6 +772,9 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
 static void
 rest_of_handle_sched (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_SMS);
   if (optimize > 0 && flag_modulo_sched)
     {
@@ -791,6 +822,9 @@ rest_of_handle_sched (tree decl, rtx insns)
 static void
 rest_of_handle_sched2 (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_SCHED2);
   open_dump_file (DFI_sched2, decl);
 
@@ -820,6 +854,9 @@ rest_of_handle_sched2 (tree decl, rtx insns)
 static void
 rest_of_handle_gcse2 (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   open_dump_file (DFI_gcse2, decl);
 
   gcse_after_reload_main (insns, dump_file);
@@ -839,6 +876,9 @@ rest_of_handle_gcse2 (tree decl, rtx insns)
 static void
 rest_of_handle_regmove (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_REGMOVE);
   open_dump_file (DFI_regmove, decl);
 
@@ -855,6 +895,9 @@ rest_of_handle_regmove (tree decl, rtx insns)
 static void
 rest_of_handle_tracer (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   open_dump_file (DFI_tracer, decl);
   if (dump_file)
     dump_flow_info (dump_file);
@@ -868,6 +911,9 @@ rest_of_handle_tracer (tree decl, rtx insns)
 static void
 rest_of_handle_if_conversion (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   open_dump_file (DFI_ce1, decl);
   if (flag_if_conversion)
     {
@@ -891,6 +937,9 @@ rest_of_handle_if_conversion (tree decl, rtx insns)
 static void
 rest_of_handle_if_after_combine (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_IFCVT);
   open_dump_file (DFI_ce2, decl);
 
@@ -905,6 +954,9 @@ rest_of_handle_if_after_combine (tree decl, rtx insns)
 static void
 rest_of_handle_web (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   open_dump_file (DFI_web, decl);
   timevar_push (TV_WEB);
   web_main ();
@@ -921,6 +973,8 @@ static void
 rest_of_handle_branch_prob (tree decl, rtx insns)
 {
   struct loops loops;
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
 
   timevar_push (TV_BRANCH_PROB);
   open_dump_file (DFI_bp, decl);
@@ -949,6 +1003,9 @@ rest_of_handle_branch_prob (tree decl, rtx insns)
 static void
 rest_of_handle_value_profile_transformations (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   open_dump_file (DFI_vpt, decl);
   timevar_push (TV_VPT);
 
@@ -964,6 +1021,9 @@ rest_of_handle_value_profile_transformations (tree decl, rtx insns)
 static void
 rest_of_handle_cfg (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   open_dump_file (DFI_cfg, decl);
   if (dump_file)
     dump_flow_info (dump_file);
@@ -993,6 +1053,9 @@ rest_of_handle_cfg (tree decl, rtx insns)
 static void
 rest_of_handle_addressof (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   open_dump_file (DFI_addressof, decl);
 
   purge_addressof (insns);
@@ -1007,6 +1070,9 @@ rest_of_handle_addressof (tree decl, rtx insns)
 static void
 rest_of_handle_jump_bypass (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_BYPASS);
   open_dump_file (DFI_bypass, decl);
 
@@ -1036,6 +1102,9 @@ rest_of_handle_combine (tree decl, rtx insns)
 {
   int rebuild_jump_labels_after_combine = 0;
 
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_COMBINE);
   open_dump_file (DFI_combine, decl);
 
@@ -1064,6 +1133,9 @@ rest_of_handle_combine (tree decl, rtx insns)
 static void
 rest_of_handle_life (tree decl, rtx insns)
 {
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   open_dump_file (DFI_life, decl);
   regclass_init ();
 
@@ -1110,6 +1182,8 @@ static void
 rest_of_handle_cse (tree decl, rtx insns)
 {
   int tem;
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
 
   open_dump_file (DFI_cse, decl);
   if (dump_file)
@@ -1142,6 +1216,8 @@ static void
 rest_of_handle_cse2 (tree decl, rtx insns)
 {
   int tem;
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
 
   timevar_push (TV_CSE2);
   open_dump_file (DFI_cse2, decl);
@@ -1178,6 +1254,8 @@ rest_of_handle_gcse (tree decl, rtx insns)
 {
   int save_csb, save_cfj;
   int tem2 = 0, tem;
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
 
   timevar_push (TV_GCSE);
   open_dump_file (DFI_gcse, decl);
@@ -1241,6 +1319,9 @@ rest_of_handle_loop_optimize (tree decl, rtx insns)
 {
   int do_unroll, do_prefetch;
 
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
+
   timevar_push (TV_LOOP);
   delete_dead_jumptables ();
   cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
@@ -1293,6 +1374,9 @@ rest_of_handle_loop2 (tree decl, rtx insns)
 {
   struct loops *loops;
   basic_block bb;
+
+  if (decl != current_function_decl || insns != get_insns ())
+    abort ();
 
   if (!flag_unswitch_loops
       && !flag_peel_loops
@@ -1353,11 +1437,15 @@ rest_of_handle_loop2 (tree decl, rtx insns)
    After we return, the tree storage is freed.  */
 
 void
-rest_of_compilation (tree decl)
+rest_of_compilation (void)
 {
+  tree decl = current_function_decl;
   rtx insns;
 
-  timevar_push (TV_REST_OF_COMPILATION);
+
+  /* There's no need to defer outputting this function any more; we
+     know we want to output it.  */
+  DECL_DEFER_OUTPUT (current_function_decl) = 0;
 
   /* There's no need to defer outputting this function any more; we
      know we want to output it.  */
@@ -1935,10 +2023,6 @@ rest_of_compilation (tree decl)
 
   /* We're done with this function.  Free up memory if we can.  */
   free_after_parsing (cfun);
-
-  ggc_collect ();
-
-  timevar_pop (TV_REST_OF_COMPILATION);
 }
 
 void
@@ -2019,3 +2103,21 @@ enable_rtl_dump_file (int letter)
 
   return matched;
 }
+
+struct tree_opt_pass pass_rest_of_compilation =
+{
+  "rest of compilation",                /* name */
+  NULL,		                        /* gate */
+  rest_of_compilation,                  /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REST_OF_COMPILATION,               /* tv_id */
+  PROP_rtl,		                /* properties_required */
+  0,                                    /* properties_provided */
+  PROP_rtl,                             /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_ggc_collect			/* todo_flags_finish */
+};
+
+

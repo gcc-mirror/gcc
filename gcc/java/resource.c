@@ -153,7 +153,7 @@ write_resource_constructor (void)
   poplevel (1, 0, 1);
 
   /* rest_of_compilation forces generation even if -finline-functions.  */
-  rest_of_compilation (init_decl);
+  rest_of_compilation ();
 
   current_function_decl = NULL_TREE;
   if (targetm.have_ctors_dtors)

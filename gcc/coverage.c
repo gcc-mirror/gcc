@@ -955,7 +955,7 @@ create_coverage (void)
   DECL_INITIAL (ctor) = make_node (BLOCK);
   TREE_USED (DECL_INITIAL (ctor)) = 1;
 
-  rest_of_compilation (ctor);
+  rest_of_compilation ();
 
   if (! quiet_flag)
     fflush (asm_out_file);
