@@ -9219,7 +9219,15 @@ cp_parser_using_declaration (parser)
   else
     {
       decl = cp_parser_lookup_name_simple (parser, identifier);
-      if (scope)
+      if (decl == error_mark_node)
+	{
+	  if (parser->scope && parser->scope != global_namespace)
+	    error ("`%D::%D' has not been declared", 
+		   parser->scope, identifier);
+	  else
+	    error ("`::%D' has not been declared", identifier);
+	}
+      else if (scope)
 	do_local_using_decl (decl);
       else
 	do_toplevel_using_decl (decl);

@@ -1,5 +1,9 @@
 2003-01-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9384
+	* parser.c (cp_parser_using_declaration): Issue error messages
+	about name resolution failures here.
+
 	PR c++/9388
 	* class.c (currently_open_derived_class): Use dependent_type_p.
 	* cp-tree.h (dependent_type_p): New function.
