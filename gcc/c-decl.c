@@ -1312,9 +1312,7 @@ duplicate_decls (newdecl, olddecl)
 		}
 
 	      if (TYPE_MAIN_VARIANT (type) == float_type_node
-		  || (TREE_CODE (type) == INTEGER_TYPE
-		      && (TYPE_PRECISION (type)
-			  < TYPE_PRECISION (integer_type_node))))
+		  || C_PROMOTING_INTEGER_TYPE_P (type))
 		{
 		  error ("An argument type that has a default promotion");
 		  error ("can't match an empty parameter name list declaration.");
@@ -4049,11 +4047,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	/* Don't use TYPE_PREISION to decide whether to promote,
 	   because we should convert short if it's the same size as int,
 	   but we should not convert long if it's the same size as int.  */
-	else if (main_type == char_type_node
-		 || main_type == signed_char_type_node
-		 || main_type == unsigned_char_type_node
-		 || main_type == short_integer_type_node
-		 || main_type == short_unsigned_type_node)
+	else if (C_PROMOTING_INTEGER_TYPE_P (main_type))
 	  {
 	    if (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
 		&& TREE_UNSIGNED (type))
@@ -4843,9 +4837,7 @@ finish_struct (t, fieldlist)
   /* Promote each bit-field's type to int if it is narrower than that.  */
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     if (DECL_BIT_FIELD (x)
-	&& TREE_CODE (TREE_TYPE (x)) == INTEGER_TYPE
-	&& (TYPE_PRECISION (TREE_TYPE (x))
-	    < TYPE_PRECISION (integer_type_node)))
+	&& C_PROMOTING_INTEGER_TYPE_P (TREE_TYPE (x)))
       TREE_TYPE (x) = integer_type_node;
 
   /* If this structure or union completes the type of any previous
@@ -5214,8 +5206,7 @@ start_function (declspecs, declarator, nested)
 
   restype = TREE_TYPE (TREE_TYPE (current_function_decl));
   /* Promote the value to int before returning it.  */
-  if (TREE_CODE (restype) == INTEGER_TYPE
-      && TYPE_PRECISION (restype) < TYPE_PRECISION (integer_type_node))
+  if (C_PROMOTING_INTEGER_TYPE_P (restype))
     restype = integer_type_node;
   DECL_RESULT (current_function_decl)
     = build_decl (RESULT_DECL, NULL_TREE, restype);
