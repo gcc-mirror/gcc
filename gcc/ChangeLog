@@ -1,3 +1,11 @@
+2003-09-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* function.c (STACK_BYTES): Move definition to head of file.
+	(assign_parms): Don't pass current_function_pretend_args_size
+	directly to SETUP_INCOMING_VARARGS.  For partial register arguments,
+	round current_function_pretend_args_size up to STACK_BYTES.  Skip any
+	excess before laying out the argument.
+
 2003-09-14  Andreas Jaeger  <aj@suse.de>
 
 	* objc/objc-act.c: Convert to ISO C90 prototypes.

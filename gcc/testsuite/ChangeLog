@@ -1,3 +1,7 @@
+2003-09-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/20030914-[12].c: New tests.
+
 2003-09-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11788
