@@ -129,44 +129,6 @@ iterator_for_loop_end (idecl)
 }
 
 /*
-  		ITERATOR DECLS
-
-Iterators are  implemented  as integer decls  with a special  flag set
-(rms's   idea).  This  makes  eliminates  the need   for  special type
-checking.  The  flag  is accesed using   the  ITERATOR_P  macro.  Each
-iterator's limit is saved as a  decl with a special  name. The decl is
-initialized with the limit value -- this way we  get all the necessary
-semantical processing for free by calling finish  decl. We might still
-eliminate  that decl  later  -- it takes up  time and  space and, more
-importantly, produces strange error  messages when  something is wrong
-with the initializing expresison.  */
-
-tree
-build_iterator_decl (id, limit)
-    tree id, limit;
-{
-  tree type = integer_type_node, lim_decl;
-  tree t1, t2, t3;
-  tree start_node, limit_node, step_node;
-  tree decl;
-    
-  if (limit)
-    {
-      limit_node = save_expr (limit);
-      SAVE_EXPR_CONTEXT (limit_node) = current_function_decl;
-    }
-  else
-    abort ();
-  lim_decl = build_limit_decl (id, limit_node);
-  push_obstacks_nochange ();
-  decl = build_decl (VAR_DECL, id, type);
-  ITERATOR_P (decl) = 1;
-  ITERATOR_LIMIT (decl) = lim_decl;
-  finish_decl (pushdecl (decl), 0, 0);
-  return decl;
-}
-
-/*
   		ITERATOR RTL EXPANSIONS
 
    Expanding simple statements with iterators is straightforward:
@@ -247,7 +209,7 @@ collect_iterators (exp, list)
       return list;
 
     default:
-      switch (TREE_CODE_CLASS (code))
+      switch (TREE_CODE_CLASS (TREE_CODE (exp)))
 	{
 	case '1':
 	case '2':
@@ -255,13 +217,15 @@ collect_iterators (exp, list)
 	case 'e':
 	case 'r':
 	  {
-	    int num_args = tree_code_length[code];
+	    int num_args = tree_code_length[TREE_CODE (exp)];
 	    int i;
-	    the_list = (tree) 0;
+
 	    for (i = 0; i < num_args; i++)
 	      list = collect_iterators (TREE_OPERAND (exp, i), list);
 	    return list;
 	  }
+	default:
+	  return list;
 	}
     }
 }
@@ -289,7 +253,8 @@ iterator_loop_prologue (idecl, start_note, end_note)
   if (start_note)
     *start_note = emit_note (0, NOTE_INSN_DELETED);
   /* Initialize counter.  */
-  expand_expr (build_modify_expr (idecl, NOP_EXPR, integer_zero_node),
+  expand_expr (build (MODIFY_EXPR, TREE_TYPE (idecl),
+		      idecl, integer_zero_node),
 	       0, VOIDmode, 0);
 
   expand_start_loop_continue_elsewhere (1);
@@ -329,7 +294,8 @@ iterator_loop_epilogue (idecl, start_note, end_note)
     *start_note = emit_note (0, NOTE_INSN_DELETED);
   expand_loop_continue_here ();
   incr = build_binary_op (PLUS_EXPR, idecl, integer_one_node, 0);
-  expand_expr (build_modify_expr (idecl, NOP_EXPR, incr));
+  expand_expr (build (MODIFY_EXPR, TREE_TYPE (idecl), idecl, incr),
+	       0, VOIDmode, 0);
   test = build_binary_op (LT_EXPR, idecl, DECL_INITIAL (idecl), 0);
   expand_exit_loop_if_false (0, test);
   expand_end_loop ();
@@ -475,7 +441,7 @@ delete_ixpansion (idecl)
 
 	if (ix->ixprologue_start == 0)
 	  error_with_decl (idecl,
-			   "`for (%s)' appears within implicit iteration")
+			   "`for (%s)' appears within implicit iteration");
 	else
 	  {
 	    rtx insn;
