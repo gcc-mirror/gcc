@@ -4,6 +4,9 @@
 	CALL_EXPR.
 	(fold): Update a call to fold_ternary.
 
+	* fold-const.c (fold_build1, fold_build2, fold_build3): New.
+	* tree.h: Add corresponding prototypes.
+
 2005-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/20561

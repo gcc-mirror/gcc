@@ -10168,6 +10168,51 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 
 #endif
 
+/* Fold a unary tree expression with code CODE of type TYPE with an
+   operand OP0.  Return a folded expresion if successful.  Otherwise,
+   return a tree expression with code CODE of type TYPE with an
+   operand OP0.  */
+
+tree
+fold_build1 (enum tree_code code, tree type, tree op0)
+{
+  tree tem = fold_unary (code, type, op0);
+  if (tem)
+    return tem;
+
+  return build1 (code, type, op0);
+}
+
+/* Fold a binary tree expression with code CODE of type TYPE with
+   operands OP0 and OP1.  Return a folded expresion if successful.
+   Otherwise, return a tree expression with code CODE of type TYPE
+   with operands OP0 and OP1.  */
+
+tree
+fold_build2 (enum tree_code code, tree type, tree op0, tree op1)
+{
+  tree tem = fold_binary (code, type, op0, op1);
+  if (tem)
+    return tem;
+
+  return build2 (code, type, op0, op1);
+}
+
+/* Fold a ternary tree expression with code CODE of type TYPE with
+   operands OP0, OP1, and OP2.  Return a folded expresion if
+   successful.  Otherwise, return a tree expression with code CODE of
+   type TYPE with operands OP0, OP1, and OP2.  */
+
+tree
+fold_build3 (enum tree_code code, tree type, tree op0, tree op1, tree op2)
+{
+  tree tem = fold_ternary (code, type, op0, op1, op2);
+  if (tem)
+    return tem;
+
+  return build3 (code, type, op0, op1, op2);
+}
+
 /* Perform constant folding and related simplification of initializer
    expression EXPR.  This behaves identically to "fold" but ignores
    potential run-time traps and exceptions that fold must preserve.  */

@@ -3495,6 +3495,9 @@ extern void using_eh_for_cleanups (void);
    subexpressions are not changed.  */
 
 extern tree fold (tree);
+extern tree fold_build1 (enum tree_code, tree, tree);
+extern tree fold_build2 (enum tree_code, tree, tree, tree);
+extern tree fold_build3 (enum tree_code, tree, tree, tree, tree);
 extern tree fold_initializer (tree);
 extern tree fold_convert (tree, tree);
 extern tree fold_single_bit_test (enum tree_code, tree, tree, tree);
