@@ -353,11 +353,17 @@ extern char *reg_note_name[];
 #define NOTE_LINE_NUMBER(INSN) ((INSN)->fld[4].rtint)
 
 /* Codes that appear in the NOTE_LINE_NUMBER field
-   for kinds of notes that are not line numbers.  */
+   for kinds of notes that are not line numbers.
 
-/* This note indicates the end of the real body of the function,
-   after moving the parms into their homes, etc.  */
-#define NOTE_INSN_FUNCTION_BEG 0
+   Notice that we do not try to use zero here for any of
+   the special note codes because sometimes the source line
+   actually can be zero!  This happens (for example) when we
+   are generating code for the per-translation-unit constructor
+   and destructor routines for some C++ translation unit.
+
+   If you should change any of the following values, or if you
+   should add a new value here, don't forget to change the
+   note_insn_name array in rtl.c.  */
 
 /* This note is used to get rid of an insn
    when it isn't safe to patch the insn out of the chain.  */
@@ -384,7 +390,10 @@ extern char *reg_note_name[];
 #define NOTE_INSN_EPILOGUE_BEG -11
 /* Generated in place of user-declared labels when they are deleted.  */
 #define NOTE_INSN_DELETED_LABEL -12
-/* Don't forget to change note_insn_name in rtl.c.  */
+/* This note indicates the start of the real body of the function,
+   i.e. the point just after all of the parms have been moved into
+   their homes, etc.  */
+#define NOTE_INSN_FUNCTION_BEG -13
 
 
 #if 0 /* These are not used, and I don't know what they were for. --rms.  */
