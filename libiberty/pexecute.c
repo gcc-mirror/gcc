@@ -26,9 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#ifdef IN_GCC
-#include "system.h"
-#else
+
 #include <stdio.h>
 #include <errno.h>
 #ifdef HAVE_UNISTD_H
@@ -37,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #define ISSPACE (x) isspace(x)
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
-#endif
 #endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
@@ -609,9 +606,6 @@ pfinish ()
 
 extern int execv ();
 extern int execvp ();
-#ifdef IN_GCC
-extern char * my_strerror			PROTO ((int));
-#endif
 
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
@@ -703,11 +697,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       /* Note: Calling fprintf and exit here doesn't seem right for vfork.  */
       fprintf (stderr, "%s: ", this_pname);
       fprintf (stderr, install_error_msg, program);
-#ifdef IN_GCC
-      fprintf (stderr, ": %s\n", my_strerror (errno));
-#else
       fprintf (stderr, ": %s\n", xstrerror (errno));
-#endif
       exit (-1);
       /* NOTREACHED */
       return 0;

@@ -44,11 +44,11 @@ QUICKREF
 
 PTR
 memchr (src_void, c, length)
-     register CONST PTR src_void;
+     register const PTR src_void;
      int c;
      size_t length;
 {
-  CONST unsigned char *src = (CONST unsigned char *)src_void;
+  const unsigned char *src = (const unsigned char *)src_void;
   
   while (--length >= 0)
   {

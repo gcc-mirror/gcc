@@ -21,7 +21,7 @@ BUGS
 
 char *
 strrchr (s, c)
-  register CONST char *s;
+  register const char *s;
   int c;
 {
   char *rtnval = 0;

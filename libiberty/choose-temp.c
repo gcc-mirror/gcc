@@ -22,22 +22,16 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
-#if defined (IN_GCC) || defined (HAVE_CONFIG_H)
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#ifdef IN_GCC
-#include "system.h"
-#else
-
-/* If we are in gcc, system.h has handled everything.  When not in
-   gcc, if we have a config.h we assume that HAVE_SYS_FILE_H tells us
-   whether to include sys/file.h.  However, libiberty does not have a
-   config.h, and instead arranges to define NO_SYS_FILE_H on the
-   command line when there is no sys/file.h.  */
-
-#if defined (HAVE_CONFIG_H) ? defined (HAVE_SYS_FILE_H) : ! defined (NO_SYS_FILE_H)
+#include <stdio.h>	/* May get P_tmpdir.  */
 #include <sys/types.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_FILE_H
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
 
@@ -47,13 +41,10 @@ Boston, MA 02111-1307, USA.  */
 #define X_OK 1
 #endif
 
-#include <stdio.h>	/* May get P_tmpdir.  */
-#endif /* IN_GCC */
-
 #include "libiberty.h"
-#ifdef IN_GCC
 extern int mkstemps ();
-#else
+
+#ifndef IN_GCC
 #if defined (__MSDOS__) || defined (_WIN32)
 #define DIR_SEPARATOR '\\'
 #endif

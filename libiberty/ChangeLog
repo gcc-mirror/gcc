@@ -1,3 +1,21 @@
+Mon Dec 14 09:55:50 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* choose-temp.c: Don't check IN_GCC anymore.
+
+	* floatformat.c (floatformat_from_double): Use `const', not `CONST'.
+	* memchr.c (memchr): Likewise.
+	* memcpy.c (memcpy): Likewise.
+	* memmove.c (memmove): Likewise.
+	
+	* mkstemp.c: Don't check IN_GCC anymore.
+	* pexecute.c: Likewise.
+	* splay-tree.c: Likewise.
+	
+	* strchr.c (strchr): Use `const', not `CONST'.
+	* strrchr.c (strrchr): Likewise.
+	* strtol.c (strtol): Likewise.
+	* strtoul.c (strtoul): Likewise.
+
 Fri Dec  4 13:51:04 1998  David Taylor   <taylor@texas.cygnus.com>
 			  Elena Zannoni  <ezannoni@cygnus.com>
 			  Stan Shebs     <shebs@cygnus.com>
