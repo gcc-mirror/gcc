@@ -8041,7 +8041,8 @@ expand_builtin_return_addr (fndecl_code, count, tem)
      arbitrary frames.  For example, on the sparc, we must first flush
      all register windows to the stack.  */
 #ifdef SETUP_FRAME_ADDRESSES
-  SETUP_FRAME_ADDRESSES ();
+  if (count > 0)
+    SETUP_FRAME_ADDRESSES ();
 #endif
 
   /* On the sparc, the return address is not in the frame, it is in a

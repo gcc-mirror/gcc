@@ -5250,6 +5250,9 @@ function_prologue (file, size)
 		   sp_str, sp_str, tsize);
 	  fprintf (file, "\t.cprestore %d\n", current_frame_info.args_size);
 	}
+
+      if (dwarf2out_do_frame ())
+	dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, tsize);
     }
 }
 

@@ -955,9 +955,9 @@ final_start_function (first, file, optimize)
     last_linenum = high_block_linenum = high_function_linenum
       = NOTE_LINE_NUMBER (first);
 
-#ifdef DWARF2_DEBUGGING_INFO
+#if defined (DWARF2_UNWIND_INFO)
   /* Output DWARF definition of the function.  */
-  if (write_symbols == DWARF2_DEBUG)
+  if (dwarf2out_do_frame ())
     dwarf2out_begin_prologue ();
 #endif
 
@@ -991,6 +991,11 @@ final_start_function (first, file, optimize)
   if (profile_flag)
     profile_function (file);
 #endif /* PROFILE_BEFORE_PROLOGUE */
+
+#if defined (DWARF2_UNWIND_INFO) && defined (HAVE_prologue)
+  if (dwarf2out_do_frame ())
+    dwarf2out_frame_debug (NULL_RTX);
+#endif
 
 #ifdef FUNCTION_PROLOGUE
   /* First output the function prologue: code to set up the stack frame.  */
@@ -1142,8 +1147,8 @@ final_end_function (first, file, optimize)
     dwarfout_end_epilogue ();
 #endif
 
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
+#if defined (DWARF2_UNWIND_INFO)
+  if (dwarf2out_do_frame ())
     dwarf2out_end_epilogue ();
 #endif
 
@@ -1264,11 +1269,6 @@ final (first, file, optimize, prescan)
 
   last_ignored_compare = 0;
   new_block = 1;
-
-#if defined (DWARF2_DEBUGGING_INFO) && defined (HAVE_prologue)
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_frame_debug (NULL_RTX);
-#endif
 
   check_exception_handler_labels ();
 
@@ -2174,10 +2174,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	output_asm_insn (template, recog_operand);
 
-#if defined (DWARF2_DEBUGGING_INFO) && defined (HAVE_prologue)
+#if defined (DWARF2_UNWIND_INFO) && defined (HAVE_prologue)
 	/* If this insn is part of the prologue, emit DWARF v2
 	   call frame info.  */
-	if (write_symbols == DWARF2_DEBUG && RTX_FRAME_RELATED_P (insn))
+	if (RTX_FRAME_RELATED_P (insn) && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn);
 #endif
 

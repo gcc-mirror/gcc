@@ -461,15 +461,15 @@ variable_section (decl, reloc)
 void
 exception_section ()
 {
+#if defined (EXCEPTION_SECTION)
+  EXCEPTION_SECTION ();
+#else
 #ifdef ASM_OUTPUT_SECTION_NAME
   named_section (NULL_TREE, ".gcc_except_table", 0);
 #else
   if (flag_pic)
     data_section ();
   else
-#if defined (EXCEPTION_SECTION)
-    EXCEPTION_SECTION ();
-#else
     readonly_data_section ();
 #endif
 #endif
