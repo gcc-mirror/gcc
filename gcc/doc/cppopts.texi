@@ -456,8 +456,6 @@ Append @var{dir} to the prefix specified previously with
 path.  @option{-iwithprefixbefore} puts it in the same place @option{-I}
 would; @option{-iwithprefix} puts it where @option{-idirafter} would.
 
-Use of these options is discouraged.
-
 @item -isystem @var{dir}
 @opindex isystem
 Search @var{dir} for header files, after all directories specified by
