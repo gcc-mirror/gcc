@@ -1,3 +1,7 @@
+2001-10-16  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/darwin.h (ASM_COMMENT_START): Define.
+
 2001-10-16  Alan Modra  <amodra@bigpond.net.au>
 
 	* recog.c: Formatting and comment typo fixes.

@@ -128,6 +128,11 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.space %d\n", SIZE)
 
+/* Override the standard rs6000 definition.  */
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START ";"
+
 /* FP save and restore routines.  */
 #define	SAVE_FP_PREFIX "._savef"
 #define SAVE_FP_SUFFIX ""
