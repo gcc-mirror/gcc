@@ -3832,6 +3832,16 @@ fi
 AC_MSG_RESULT($gcc_cv_as_subsections)
 
 # Figure out what language subdirectories are present.
+# Look if the user specified --enable-languages="..."; if not, use
+# the environment variable $LANGUAGES if defined. $LANGUAGES might
+# go away some day.
+if test x"${enable_languages+set}" != xset; then
+	if test x"${LANGUAGES+set}" = xset; then
+		enable_languages="`echo ${LANGUAGES} | tr ' ' ','`"
+	else
+		enable_languages=all
+	fi
+fi
 subdirs=
 for lang in ${srcdir}/*/config-lang.in ..
 do
@@ -3840,13 +3850,39 @@ do
 	# The odd quoting in the next line works around
 	# an apparent bug in bash 1.12 on linux.
 changequote(,)dnl
-	${srcdir}/ada/config-lang.in)
-	  if test x$gnat = xyes ; then
-		subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
-	  fi
-	;;
 	${srcdir}/[*]/config-lang.in) ;;
-	*) subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`" ;;
+	*)
+	  lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
+	  if test "x$lang_alias" = x
+	  then
+		echo "$lang doesn't set \$language." 1>&2
+		exit 1
+	  fi
+	  if test x"${enable_languages}" = xall; then
+	  	add_this_lang=yes
+	  else
+		case "${enable_languages}" in
+		    ${lang_alias} | "${lang_alias},"* | *",${lang_alias},"* | *",${lang_alias}" )
+			add_this_lang=yes
+			;;
+		    * )
+			add_this_lang=no
+			;;
+		esac
+	  fi
+	  if test x"${add_this_lang}" = xyes; then
+		case $lang in
+		    ${srcdir}/ada/config-lang.in)
+			if test x$gnat = xyes ; then
+				subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
+			fi
+			;;
+		    *)
+			subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
+			;;
+		esac
+	  fi
+	  ;;
 changequote([,])dnl
 	esac
 done

@@ -677,7 +677,23 @@ fi
 
 ### do common part of configure.in
 
+# If the language specific compiler does not exist, but the "gcc" directory does,
+# we will skip this directory; in this case the sub-directory's common part
+# of configure.in will create a small shell script "skip-this-dir" containing
+# commands to completely clean up any temporary or created files.
+
 . ${tmpfile}.com
+
+if test -f skip-this-dir; then
+	# Perform the same cleanup as the trap handler, minus the "exit 1" of course,
+	# and reset the trap handler.
+	trap 0
+	rm -f Makefile* ${tmpfile}.com ${tmpfile}.tgt ${tmpfile}.hst ${tmpfile}.pos
+	# Execute the final clean-up actions
+	${config_shell} skip-this-dir
+	# and stop configuring this directory.
+	exit 0
+fi
 
 # some sanity checks on configure.in
 case "${srctrigger}" in

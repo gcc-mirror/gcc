@@ -1,3 +1,8 @@
+1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (compiler_name): Add check to detect if this
+	language's compiler has been built.
+
 1998-11-23  Ulrich Drepper  <drepper@cygnus.com>
 
 	* std/bastring.cc (operator>>): Cast new character to char before
