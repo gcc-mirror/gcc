@@ -262,6 +262,9 @@ struct gcc_target
 
   /* True if thread-local storage is supported.  */
   bool have_tls;
+
+  /* True if a small readonly data section is supported.  */
+  bool have_srodata_section;
 };
 
 extern struct gcc_target targetm;

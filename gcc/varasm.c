@@ -4898,6 +4898,7 @@ enum section_category
   SECCAT_RODATA_MERGE_STR,
   SECCAT_RODATA_MERGE_STR_INIT,
   SECCAT_RODATA_MERGE_CONST,
+  SECCAT_SRODATA,
 
   SECCAT_DATA,
 
@@ -4999,6 +5000,8 @@ categorize_decl_for_section (decl, reloc, shlib)
     {
       if (ret == SECCAT_BSS)
 	ret = SECCAT_SBSS;
+      else if (targetm.have_srodata_section && ret == SECCAT_RODATA)
+	ret = SECCAT_SRODATA;
       else
 	ret = SECCAT_SDATA;
     }
@@ -5026,6 +5029,7 @@ decl_readonly_section_1 (decl, reloc, shlib)
     case SECCAT_RODATA_MERGE_STR:
     case SECCAT_RODATA_MERGE_STR_INIT:
     case SECCAT_RODATA_MERGE_CONST:
+    case SECCAT_SRODATA:
       return true;
       break;
     default:
@@ -5068,6 +5072,9 @@ default_elf_select_section_1 (decl, reloc, align, shlib)
       break;
     case SECCAT_RODATA_MERGE_CONST:
       mergeable_constant_section (DECL_MODE (decl), align, 0);
+      break;
+    case SECCAT_SRODATA:
+      named_section (NULL_TREE, ".sdata2", reloc);
       break;
     case SECCAT_DATA:
       data_section ();
@@ -5140,6 +5147,9 @@ default_unique_section_1 (decl, reloc, shlib)
     case SECCAT_RODATA_MERGE_STR_INIT:
     case SECCAT_RODATA_MERGE_CONST:
       prefix = one_only ? ".gnu.linkonce.r." : ".rodata.";
+      break;
+    case SECCAT_SRODATA:
+      prefix = one_only ? ".gnu.linkonce.s2." : ".sdata2.";
       break;
     case SECCAT_DATA:
     case SECCAT_DATA_REL:
