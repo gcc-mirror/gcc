@@ -8,7 +8,7 @@ CRTSTUFF_T_CFLAGS = -G 0
 TARGET_LIBGCC2_CFLAGS = -G 0
 
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/mips/mips16.S \
-			 $(srcdir)/config/mips/vr4122-div.S
+			 $(srcdir)/config/mips/vr4120-div.S
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 
 # Assemble startup files.
@@ -34,7 +34,7 @@ $(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
 #	mabi=eabi/mgp32
 #	mabi=eabi/mgp32/mlong64
 #
-# Architecture: march=vr4120 with -mfix-vr4122-bugs
+# Architecture: march=vr4120 with -mfix-vr4120
 #		march=vr4130 (default)
 #		march=vr5000
 #		march=vr5400
@@ -64,7 +64,7 @@ $(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
 #	mabi=eabi/mlong32
 #	mabi=eabi/mgp32
 #
-# Architecture: march=vr4120 with -mfix-vr4122-bugs
+# Architecture: march=vr4120 with -mfix-vr4120
 #		march=vr4130 (default)
 #
 # Total: 2 * 3 * 2 = 12 multilibs.
@@ -74,7 +74,7 @@ MULTILIB_OPTIONS =			\
 	mgp32				\
 	mlong64				\
 	mips16				\
-	mfix-vr4122-bugs/march=vr4130/march=vr4300/march=vr5000/march=vr5400/march=vr5500
+	mfix-vr4120/march=vr4130/march=vr4300/march=vr5000/march=vr5400/march=vr5500
 
 MULTILIB_DIRNAMES =	\
 	el eb		\
@@ -84,7 +84,7 @@ MULTILIB_DIRNAMES =	\
 	mips16		\
 	vr4120 vr4130 vr4300 vr5000 vr5400 vr5500
 
-MULTILIB_MATCHES = EL=mel EB=meb mfix-vr4122-bugs=march?vr4120
+MULTILIB_MATCHES = EL=mel EB=meb mfix-vr4120=march?vr4120
 
 # Assume a 41xx-series is the default: we'd need a *mips16 entry if
 # the default processor didn't support mips16.  Also assume the

@@ -480,7 +480,7 @@ in the following sections.
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
--mfix-vr4122-bugs  -mno-fix-vr4122-bugs  -mfix-sb1  -mno-fix-sb1 @gol
+-mfix-vr4120  -mno-fix-vr4120  -mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-likely  -mno-branch-likely}
 
@@ -8125,10 +8125,10 @@ A double-word or a variable shift may give an incorrect result if executed
 immediately after starting an integer division.
 @end itemize
 
-@item -mfix-vr4122-bugs
-@itemx -mno-fix-vr4122-bugs
-@opindex mfix-vr4122-bugs
-Work around certain VR4122 errata:
+@item -mfix-vr4120
+@itemx -mno-fix-vr4120
+@opindex mfix-vr4120
+Work around certain VR4120 errata:
 @itemize @minus
 @item
 @code{dmultu} does not always produce the correct result.
@@ -8140,7 +8140,7 @@ The workarounds for the division errata rely on special functions in
 @file{libgcc.a}.  At present, these functions are only provided by
 the @code{mips64vr*-elf} configurations.
 
-Other VR4122 errata require a nop to be inserted between certain pairs of
+Other VR4120 errata require a nop to be inserted between certain pairs of
 instructions.  These errata are handled by the assembler, not by GCC itself.
 
 @item -mfix-sb1

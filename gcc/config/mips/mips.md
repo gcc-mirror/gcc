@@ -212,19 +212,19 @@
 	       (ne (symbol_ref "TARGET_MIPS16") (const_int 0)))
 	  (const_int 8)
 
-	  ;; Various VR4122 errata require a nop to be inserted after a macc
+	  ;; Various VR4120 errata require a nop to be inserted after a macc
 	  ;; instruction.  The assembler does this for us, so account for
 	  ;; the worst-case length here.
 	  (and (eq_attr "type" "imadd")
-	       (ne (symbol_ref "TARGET_FIX_VR4122") (const_int 0)))
+	       (ne (symbol_ref "TARGET_FIX_VR4120") (const_int 0)))
 	  (const_int 8)
 
-	  ;; VR4122 errata MD(4): if there are consecutive dmult instructions,
+	  ;; VR4120 errata MD(4): if there are consecutive dmult instructions,
 	  ;; the result of the second one is missed.  The assembler should work
 	  ;; around this by inserting a nop after the first dmult.
 	  (and (eq_attr "type" "imul")
 	       (and (eq_attr "mode" "DI")
-		    (ne (symbol_ref "TARGET_FIX_VR4122") (const_int 0))))
+		    (ne (symbol_ref "TARGET_FIX_VR4120") (const_int 0))))
 	  (const_int 8)
 
 	  (eq_attr "type" "idiv")
@@ -2315,8 +2315,8 @@
   [(set_attr "type"	"imul")
    (set_attr "mode"	"DI")])
 
-;; Disable this pattern for -mfix-vr4122-bugs.  This is for VR4122 errata
-;; MD(0), which says that dmultu does not always produce the correct result.
+;; Disable this pattern for -mfix-vr4120.  This is for VR4120 errata MD(0),
+;; which says that dmultu does not always produce the correct result.
 (define_insn "umuldi3_highpart"
   [(set (match_operand:DI 0 "register_operand" "=h")
 	(truncate:DI
@@ -2326,7 +2326,7 @@
 	   (zero_extend:TI (match_operand:DI 2 "register_operand" "d")))
 	  (const_int 64))))
    (clobber (match_scratch:DI 3 "=l"))]
-  "TARGET_64BIT && !TARGET_FIX_R4000 && !TARGET_FIX_VR4122"
+  "TARGET_64BIT && !TARGET_FIX_R4000 && !TARGET_FIX_VR4120"
   "dmultu\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"DI")])
@@ -2600,7 +2600,7 @@
                       (const_int 8)
                       (const_int 4)))])
 
-;; VR4122 errata MD(A1): signed division instructions do not work correctly
+;; VR4120 errata MD(A1): signed division instructions do not work correctly
 ;; with negative operands.  We use special libgcc functions instead.
 (define_insn "divmodsi4"
   [(set (match_operand:SI 0 "register_operand" "=l")
@@ -2609,7 +2609,7 @@
    (set (match_operand:SI 3 "register_operand" "=h")
 	(mod:SI (match_dup 1)
 		(match_dup 2)))]
-  "!TARGET_FIX_VR4122"
+  "!TARGET_FIX_VR4120"
   { return mips_output_division ("div\t$0,%1,%2", operands); }
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")])
@@ -2621,7 +2621,7 @@
    (set (match_operand:DI 3 "register_operand" "=h")
 	(mod:DI (match_dup 1)
 		(match_dup 2)))]
-  "TARGET_64BIT && !TARGET_FIX_VR4122"
+  "TARGET_64BIT && !TARGET_FIX_VR4120"
   { return mips_output_division ("ddiv\t$0,%1,%2", operands); }
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")])

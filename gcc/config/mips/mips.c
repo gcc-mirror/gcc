@@ -8721,10 +8721,10 @@ mips_avoid_hazards (void)
   cfun->machine->ignore_hazard_length_p = true;
   shorten_branches (get_insns ());
 
-  /* The profiler code uses assembler macros.  -mfix-vr4122-bugs
-     relies on assembler nop insertion.  */
+  /* The profiler code uses assembler macros.  -mfix-vr4120 relies on
+     assembler nop insertion.  */
   cfun->machine->all_noreorder_p = (!current_function_profile
-				    && !TARGET_FIX_VR4122);
+				    && !TARGET_FIX_VR4120);
 
   last_insn = 0;
   hilo_delay = 2;
@@ -8764,7 +8764,7 @@ mips_reorg (void)
 
 /* This function does three things:
 
-   - Register the special divsi3 and modsi3 functions if -mfix-vr4122-bugs.
+   - Register the special divsi3 and modsi3 functions if -mfix-vr4120.
    - Register the mips16 hardware floating point stubs.
    - Register the gofast functions if selected using --enable-gofast.  */
 
@@ -8773,10 +8773,10 @@ mips_reorg (void)
 static void
 mips_init_libfuncs (void)
 {
-  if (TARGET_FIX_VR4122)
+  if (TARGET_FIX_VR4120)
     {
-      set_optab_libfunc (sdiv_optab, SImode, "__vr4122_divsi3");
-      set_optab_libfunc (smod_optab, SImode, "__vr4122_modsi3");
+      set_optab_libfunc (sdiv_optab, SImode, "__vr4120_divsi3");
+      set_optab_libfunc (smod_optab, SImode, "__vr4120_modsi3");
     }
 
   if (TARGET_MIPS16 && mips16_hard_float)

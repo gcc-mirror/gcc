@@ -1,4 +1,4 @@
-/* Support file for -mfix-vr4122-bugs.
+/* Support file for -mfix-vr4120.
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -19,8 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* This file contains functions which implement divsi3 and modsi3 for
-   -mfix-vr4122-bugs.  div and ddiv do not give the correct result
-   when one of the operands is negative.  */
+   -mfix-vr4120.  div and ddiv do not give the correct result when one
+   of the operands is negative.  */
 
 	.set	nomips16
 
@@ -54,16 +54,16 @@ Boston, MA 02111-1307, USA.  */
 	.set	reorder;						\
 4:
 
-	.globl	__vr4122_divsi3
-	.ent	__vr4122_divsi3
-__vr4122_divsi3:
+	.globl	__vr4120_divsi3
+	.ent	__vr4120_divsi3
+__vr4120_divsi3:
 	DIV
 	j	$31
-	.end	__vr4122_divsi3
+	.end	__vr4120_divsi3
 
-	.globl	__vr4122_modsi3
-	.ent	__vr4122_modsi3
-__vr4122_modsi3:
+	.globl	__vr4120_modsi3
+	.ent	__vr4120_modsi3
+__vr4120_modsi3:
 	move	$6,$4		# x1 = x
 	move	$7,$5		# y1 = y
 	DIV
@@ -72,4 +72,4 @@ __vr4122_modsi3:
 	.set	noreorder
 	j	$31
 	subu	$2,$6,$2	# r = x1 - r  in delay slot
-	.end	__vr4122_modsi3
+	.end	__vr4120_modsi3

@@ -1,3 +1,14 @@
+2004-04-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/invoke.texi: Rename MIPS's -mfix-vr4122-bugs to -mfix-vr4120.
+	* config/mips/mips.h (MASK_FIX_VR4120): Renamed from MASK_FIX_VR4122.
+	(TARGET_FIX_VR4120): Likewise TARGET_FIX_VR4122.
+	(TARGET_SWITCHES): Replace -mfix-vr4122-bugs with -mfix-vr4120.
+	(ASM_SPEC): Update accordingly.
+	* config/mips/mips.c: Update after above renaming.
+	* config/mips/mips.md, config/mips/t-vr, config/mips/vr.h: Likewise.
+	* config/mips/vr4120-div.S: Renamed from vr4122-div.S.
+
 2004-04-13  James E Wilson  <wilson@specifixinc.com>
 
 	* c-opt.c (c_common_post_options): If this_input_filename is NULL,
