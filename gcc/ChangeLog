@@ -6,6 +6,8 @@
 	__ptrextent, __ptrextent__, __ptrvalue, __ptrvalue__,
 	__unbounded, __unbounded__): New keywords.
 	* c-parse.in (PTR_VALUE PTR_BASE PTR_EXTENT): New tokens.
+	* c-parse.y, c-parse.c, c-parse.h: Regenerate.
+	* objc/objc-parse.y, objc/objc-parse.c: Regenerate.
 
 2000-03-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
