@@ -10889,6 +10889,9 @@ xref_tag (code_type_node, name, binfo, globalize)
 	  if (BINDING_VALUE (binding) == NULL_TREE)
 	    BINDING_VALUE (binding) = TYPE_NAME (ref);
 	}
+
+      if (!globalize && processing_template_decl && IS_AGGR_TYPE (ref))
+	redeclare_class_template (ref);
     }
 
   if (binfo)

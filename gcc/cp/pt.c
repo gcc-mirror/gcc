@@ -1792,6 +1792,66 @@ push_template_decl (decl)
   return DECL_TEMPLATE_RESULT (tmpl);
 }
 
+/* Called when a class template TYPE is redeclared, e.g.:
+
+     template <class T> struct S;
+     template <class T> struct S {};  */
+
+void 
+redeclare_class_template (type)
+     tree type;
+{
+  tree tmpl = CLASSTYPE_TI_TEMPLATE (type);
+  tree tmpl_parms = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
+  tree parms = INNERMOST_TEMPLATE_PARMS (current_template_parms);
+  int i;
+
+  if (!PRIMARY_TEMPLATE_P (tmpl))
+    /* The type is nested in some template class.  Nothing to worry
+       about here; there are no new template parameters for the nested
+       type.  */
+    return;
+
+  if (TREE_VEC_LENGTH (parms) != TREE_VEC_LENGTH (tmpl_parms))
+    {
+      cp_error_at ("previous declaration `%D'", tmpl);
+      cp_error ("used %d template parameter%s instead of %d",
+		TREE_VEC_LENGTH (tmpl_parms), 
+		TREE_VEC_LENGTH (tmpl_parms) == 1 ? "" : "s",
+		TREE_VEC_LENGTH (parms));
+      return;
+    }
+
+  for (i = 0; i < TREE_VEC_LENGTH (tmpl_parms); ++i)
+    {
+      tree tmpl_parm = TREE_VALUE (TREE_VEC_ELT (tmpl_parms, i));
+      tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+      tree tmpl_default = TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i));
+      tree parm_default = TREE_PURPOSE (TREE_VEC_ELT (parms, i));
+
+      if (TREE_CODE (tmpl_parm) != TREE_CODE (parm))
+	{
+	  cp_error_at ("template parameter `%#D'", tmpl_parm);
+	  cp_error ("redeclared here as `%#D'", parm);
+	  return;
+	}
+
+      if (tmpl_default != NULL_TREE && parm_default != NULL_TREE)
+	{
+	  /* We have in [temp.param]:
+
+	     A template-parameter may not be given default arguments
+	     by two different declarations in the same scope.  */
+	  cp_error ("redefinition of default argument for `%#D'", parm);
+	  return;
+	}
+
+      if (parm_default != NULL_TREE)
+	/* Update the previous template parameters (which are the ones
+	   that will really count) with the new default value.  */
+	TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i)) = parm_default;
+    }
+}
 
 /* Attempt to convert the non-type template parameter EXPR to the
    indicated TYPE.  If the conversion is successful, return the
