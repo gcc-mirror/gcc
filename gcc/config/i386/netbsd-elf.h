@@ -27,27 +27,22 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-/* Provide a LINK_SPEC appropriate for a NetBSD/i386 ELF target.
-   This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
-   the i386 target.  */
 
-#undef LINK_SPEC
-#define LINK_SPEC							\
- "%{assert*} %{R*}							\
-  %{shared:-shared}							\
-  %{!shared:								\
-    -dc -dp								\
-    %{!nostdlib:							\
-      %{!r*:								\
-	%{!e*:-e __start}}}						\
-    %{!static:								\
-      %{rdynamic:-export-dynamic}					\
-      %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}	\
-    %{static:-static}}"
+/* Extra specs needed for NetBSD/i386 ELF.  */
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
-  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },
+  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },	\
+  { "netbsd_entry_point", NETBSD_ENTRY_POINT },
+
+
+/* Provide a LINK_SPEC appropriate for a NetBSD/i386 ELF target.  */
+
+#undef LINK_SPEC
+#define LINK_SPEC NETBSD_LINK_SPEC_ELF
+
+#define NETBSD_ENTRY_POINT "__start"
+
 
 /* Provide a CPP_SPEC appropriate for NetBSD.  */
 

@@ -29,29 +29,26 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-/* Provide a LINK_SPEC appropriate for a NetBSD/x86-64 ELF target.
-   This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
-   the x86-64 target.  */
 
-#undef LINK_SPEC
-#define LINK_SPEC							\
-  "%{!m32:-m elf_x86_64}						\
-   %{m32:-m elf_i386}							\
-   %{assert*} %{R*}							\
-   %{shared:-shared}							\
-   %{!shared:								\
-     -dc -dp								\
-     %{!nostdlib:							\
-       %{!r*:								\
-	  %{!e*:-e _start}}}						\
-     %{!static:								\
-       %{rdynamic:-export-dynamic}					\
-       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}	\
-     %{static:-static}}"
+/* Extra specs needed for NetBSD/x86-64 ELF.  */
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
-  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },
+  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },	\
+  { "netbsd_link_spec", NETBSD_LINK_SPEC_ELF },	\
+  { "netbsd_entry_point", NETBSD_ENTRY_POINT },
+
+
+/* Provide a LINK_SPEC appropriate for a NetBSD/x86-64 ELF target.  */
+
+#undef LINK_SPEC
+#define LINK_SPEC \
+  "%{m32:-m elf_i386} \
+   %{m64:-m elf_x86_64} \
+   %(netbsd_link_spec)"
+
+#define NETBSD_ENTRY_POINT "_start"
+
 
 /* Provide a CPP_SPEC appropriate for NetBSD.  */
 
