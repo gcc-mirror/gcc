@@ -1,3 +1,10 @@
+2004-06-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (time_get<>::do_get_time,
+	time_get<>::do_get_date): Use only once _M_extract_via_format,
+	instead of going through "%X"/"%x" and calling it two times
+	(+ using widen).
+
 2004-06-12  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/algorithm: Trivial formatting fixes.
