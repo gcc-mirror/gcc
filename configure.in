@@ -278,7 +278,9 @@ if [ x${shared} = xyes ]; then
       host_makefile_frag="${host_makefile_frag} config/mh-elfalphapic"
       ;;
     *)
-      host_makefile_frag="${host_makefile_frag} config/mh-${host_cpu}pic"
+      if test -f config/mh-${host_cpu}pic; then
+        host_makefile_frag="${host_makefile_frag} config/mh-${host_cpu}pic"
+      fi
       ;;
   esac
 fi
@@ -898,7 +900,9 @@ if [ x${shared} = xyes ]; then
       target_makefile_frag="${target_makefile_frag} config/mt-elfalphapic"
       ;;
     *)
-      target_makefile_frag="${target_makefile_frag} config/mt-${target_cpu}pic"
+      if test -f config/mt-${target_cpu}pic; then
+        target_makefile_frag="${target_makefile_frag} config/mt-${target_cpu}pic"
+      fi
       ;;
   esac
 fi

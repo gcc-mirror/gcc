@@ -1,3 +1,8 @@
+Fri Jan 16 00:41:37 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
+
+	* configure.in: check whether host and target makefile
+	fragments exist before adding them to *_makefile_frag
+
 1998-01-13  Lee Iverson   (leei@ai.sri.com)
 
 	* config-ml.in (multi-do): LDFLAGS must include multilib
