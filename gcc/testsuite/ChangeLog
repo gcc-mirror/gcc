@@ -1,5 +1,8 @@
 2004-12-03  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/18782
+	* g++.dg/parse/ptrmem2.C: New.
+
 	PR c++/18318
 	* g++.dg/template/new1.C: New.
 
