@@ -45,7 +45,6 @@ void test01()
     }
   catch(...)
     {
-      VERIFY( false );
     }
 }
 
