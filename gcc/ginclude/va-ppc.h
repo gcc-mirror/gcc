@@ -1,6 +1,6 @@
 /* GNU C varargs support for the PowerPC with either the V.4 or Windows NT calling sequences */
 
-#ifndef __WIN32__
+#ifndef _WIN32
 /* System V.4 support */
 /* Define __gnuc_va_list.  */
 
