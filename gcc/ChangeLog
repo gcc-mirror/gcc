@@ -1,3 +1,8 @@
+2001-01-07  Richard Henderson  <rth@redhat.com>
+
+	* configure.in (slibdir): Accept an --with-slibdir option.
+	Use "test" not "[" in configure.  Default to $(libdir).
+
 2001-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (constant_call_address_operand): Accept

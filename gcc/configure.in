@@ -1808,13 +1808,16 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 [  --enable-version-specific-runtime-libs    Specify that runtime libraries shou
 ld be installed in a compiler-specific directory ])
 
-if [ "${enable_version_specific_runtime_libs-no}" = "yes" ]; then
+AC_ARG_WITH(slibdir,
+[  --with-slibdir=DIR      shared libraries in DIR [LIBDIR]],
+slibdir="$with_slibdir",
+if test "${enable_version_specific_runtime_libs+set}" = set; then
   slibdir='$(libsubdir)'
-elif [ "$host" != "$target" ]; then
+elif test "$host" != "$target"; then
   slibdir='$(build_tooldir)/lib'
 else
-  slibdir='$(prefix)/lib'
-fi
+  slibdir='$(libdir)'
+fi)
 AC_SUBST(slibdir)
 
 # Nothing to do for FLOAT_H, float_format already handled.
