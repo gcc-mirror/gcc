@@ -1,3 +1,8 @@
+2002-03-01  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/compile/981223-1.x: New.
+	* gcc.c-torture/compile/920625-1.x: New.
+
 2002-02-28  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/opt/vtgc1.C: Adjust patterns for ia64.
