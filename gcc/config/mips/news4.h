@@ -37,4 +37,3 @@ Boston, MA 02111-1307, USA.  */
    program and data caches.  */
 #define CACHE_FLUSH_FUNC "cacheflush"
 
-#include "mips/mips.h"
