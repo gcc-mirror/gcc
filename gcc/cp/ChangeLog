@@ -1,3 +1,8 @@
+2004-06-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokdeclarator): Restore error messages about __thread.
+	* parser.c (cp_parser_decl_specifier_seq): Likewise.
+
 2004-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/16115
