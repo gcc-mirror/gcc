@@ -6459,6 +6459,18 @@ move\\t%0,%z4\\n\\
 {
   emit_insn (gen_blockage ());
 }")
+
+;; For n32/n64, we need to restore gp after a builtin setjmp.   We do this
+;; by making use of the fact that we've just called __dummy.
+
+(define_expand "builtin_setjmp_receiver"
+  [(const_int 0)]
+  "TARGET_ABICALLS && mips_abi != ABI_32"
+  "
+{
+  emit_insn (gen_loadgp (gen_rtx (SYMBOL_REF, Pmode, \"__dummy\")));
+  emit_insn (gen_blockage ());
+}")
 
 ;;
 ;;  ....................
