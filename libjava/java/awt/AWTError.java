@@ -8,16 +8,16 @@ details.  */
 
 package java.awt;
 
-/**
+/** An exception of this type is thrown by AWT in some situations,
+ * usually when major problems are encountered.
  * @author Tom Tromey <tromey@cygnus.com>
  * @date April 8, 2000
  */
-
-/* Status: Believed complete and correct to JDK 1.2.  */
-
-
-public class AWTError extends IllegalStateException
+public class AWTError extends Error
 {
+  /** Make a new instance of AWTError
+   * @param s Text associated with the exception
+   */
   public AWTError (String s)
   {
     super (s);
