@@ -2469,6 +2469,10 @@ unsave_expr_now_r (expr)
 {
   enum tree_code code;
 
+  /* There's nothing to do for NULL_TREE.  */
+  if (!expr)
+    return;
+
   unsave_expr_1 (expr);
 
   code = TREE_CODE (expr);
