@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1317,18 +1317,21 @@ expand_call (exp, target, ignore)
 	args[i].initial_value = args[i].value
 	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
 
-	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != args[i].mode)
-	  args[i].value
-	    = convert_modes (args[i].mode, 
-			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
-			     args[i].value, args[i].unsignedp);
-
 	preserve_temp_slots (args[i].value);
 	pop_temp_slots ();
 
 	/* ANSI doesn't require a sequence point here,
 	   but PCC has one, so this will avoid some problems.  */
 	emit_queue ();
+
+	args[i].initial_value = args[i].value
+	  = protect_from_queue (args[i].initial_value, 0);
+
+	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != args[i].mode)
+	  args[i].value
+	    = convert_modes (args[i].mode, 
+			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+			     args[i].value, args[i].unsignedp);
       }
 
   /* Now we are about to start emitting insns that can be deleted
