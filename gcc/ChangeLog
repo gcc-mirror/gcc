@@ -1,3 +1,7 @@
+2005-03-31 Mostafa Hagog <mustafa@il.ibm.com>
+
+        * testsuite/gcc.dg/20050330-1.c: New test.
+
 2005-03-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config.gcc: Obsolete i860-*-sysv4*, ip2k-*-elf,
