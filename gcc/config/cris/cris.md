@@ -3415,7 +3415,8 @@
   if (i >= 0)
     sprintf (rd, \"movem [$sp+],$%s\", reg_names [i]);
 
-  if (regs_ever_live[CRIS_SRP_REGNUM])
+  if (regs_ever_live[CRIS_SRP_REGNUM]
+      || cris_return_address_on_stack ())
     {
       if (*rd)
 	output_asm_insn (rd, operands);
@@ -3433,7 +3434,10 @@
 }"
   [(set (attr "slottable")
 	(if_then_else
-	 (ne (symbol_ref "regs_ever_live[CRIS_SRP_REGNUM]") (const_int 0))
+	 (ne (symbol_ref
+	      "(regs_ever_live[CRIS_SRP_REGNUM]
+	        || cris_return_address_on_stack ())")
+	     (const_int 0))
 	 (const_string "no")	     ; If jump then not slottable.
 	 (if_then_else
 	  (ne (symbol_ref

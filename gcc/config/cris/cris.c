@@ -1700,6 +1700,15 @@ cris_return_addr_rtx (int count, rtx frameaddr ATTRIBUTE_UNUSED)
     : NULL_RTX;
 }
 
+/* Accessor used in cris.md:return because cfun->machine isn't available
+   there.  */
+
+int
+cris_return_address_on_stack ()
+{
+  return cfun->machine->needs_return_address_on_stack;
+}
+
 /* This used to be the INITIAL_FRAME_POINTER_OFFSET worker; now only
    handles FP -> SP elimination offset.  */
 
