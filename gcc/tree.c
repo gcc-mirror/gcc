@@ -1337,8 +1337,8 @@ build_real (type, d)
 #if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
 
 REAL_VALUE_TYPE
-real_value_from_int_cst (i)
-     tree i;
+real_value_from_int_cst (type, i)
+     tree type, i;
 {
   REAL_VALUE_TYPE d;
   REAL_VALUE_TYPE e;
@@ -1347,9 +1347,11 @@ real_value_from_int_cst (i)
 
 #ifdef REAL_ARITHMETIC
   if (! TREE_UNSIGNED (TREE_TYPE (i)))
-    REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i));
+    REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i),
+			 TYPE_MODE (type));
   else
-    REAL_VALUE_FROM_UNSIGNED_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i));
+    REAL_VALUE_FROM_UNSIGNED_INT (d, TREE_INT_CST_LOW (i),
+				  TREE_INT_CST_HIGH (i), TYPE_MODE (type));
 #else /* not REAL_ARITHMETIC */
   if (TREE_INT_CST_HIGH (i) < 0 && ! TREE_UNSIGNED (TREE_TYPE (i)))
     {
@@ -1399,7 +1401,12 @@ build_real_from_int_cst (type, i)
 
   set_float_handler (float_error);
 
-  d = REAL_VALUE_TRUNCATE (TYPE_MODE (type), real_value_from_int_cst (i));
+#if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
+  d = real_value_from_int_cst (type, i);
+#else
+  d = REAL_VALUE_TRUNCATE (TYPE_MODE (type),
+			   real_value_from_int_cst (type, i));
+#endif
 
   /* Check for valid float value for this type on this target machine.  */
 
