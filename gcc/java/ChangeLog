@@ -1,3 +1,7 @@
+2000-04-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (yyerror): `msg' can be null, don't use it in that case.
+
 2000-04-19  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (cxx_keyword_subst): Avoid potential infinite loop.
