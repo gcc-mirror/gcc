@@ -40,7 +40,11 @@ package java.io;
 
 import gnu.java.lang.reflect.TypeSignature;
 
-// XXX doc
+/**
+ * This class intends to describe the field of a class for the serialization
+ * subsystem. Serializable fields in a serializable class can be explicitly
+ * exported using an array of ObjectStreamFields.
+ */
 public class ObjectStreamField implements Comparable
 {
   private String name;
@@ -48,14 +52,35 @@ public class ObjectStreamField implements Comparable
   private String typename;
   private int offset = -1; // XXX make sure this is correct
   private boolean unshared;
-  
+  private boolean persistent = false;
+  private boolean toset = true;
+
+  /**
+   * This constructor creates an ObjectStreamField instance 
+   * which represents a field named <code>name</code> and is
+   * of the type <code>type</code>.
+   *
+   * @param name Name of the field to export.
+   * @param type Type of the field in the concerned class.
+   */
   public ObjectStreamField (String name, Class type)
   {
     this (name, type, false);
   }
 
+  /**
+   * This constructor creates an ObjectStreamField instance 
+   * which represents a field named <code>name</code> and is
+   * of the type <code>type</code>.
+   *
+   * @param name Name of the field to export.
+   * @param type Type of the field in the concerned class.
+   */
   public ObjectStreamField (String name, Class type, boolean unshared)
   {
+    if (name == null)
+      throw new NullPointerException();
+
     this.name = name;
     this.type = type;
     this.typename = TypeSignature.getEncodingOfClass(type);
@@ -63,11 +88,15 @@ public class ObjectStreamField implements Comparable
   }
  
   /**
-   * There're many cases you can't get java.lang.Class from typename 
-   * if your context
-   * class loader can't load it, then use typename to construct the field
+   * There are many cases you can not get java.lang.Class from typename 
+   * if your context class loader cann not load it, then use typename to
+   * construct the field.
+   *
+   * @param name Name of the field to export.
+   * @param typename The coded name of the type for this field.
    */
-  ObjectStreamField (String name, String typename){
+  ObjectStreamField (String name, String typename)
+  {
     this.name = name;
     this.typename = typename;
     try
@@ -80,32 +109,97 @@ public class ObjectStreamField implements Comparable
       }
   }
   
+  /**
+   * There are many cases you can not get java.lang.Class from typename 
+   * if your context class loader cann not load it, then use typename to
+   * construct the field.
+   *
+   * @param name Name of the field to export.
+   * @param typename The coded name of the type for this field.
+   * @param loader The class loader to use to resolve class names.
+   */
+  ObjectStreamField (String name, String typename, ClassLoader loader)
+  {
+    this.name = name;
+    this.typename = typename;
+    try
+      {
+        type = TypeSignature.getClassForEncoding(typename, true, loader);
+      }
+    catch(ClassNotFoundException e)
+      {
+        type = Object.class; // ALSO FIXME 
+      }
+  }
+
+  /**
+   * This method returns the name of the field represented by the
+   * ObjectStreamField instance.
+   *
+   * @return A string containing the name of the field.
+   */
   public String getName ()
   {
     return name;
   }
 
+  /**
+   * This method returns the class representing the type of the
+   * field which is represented by this instance of ObjectStreamField.
+   *
+   * @return A class representing the type of the field.
+   */
   public Class getType ()
   {
     return type;
   }
 
+  /**
+   * This method returns the char encoded type of the field which
+   * is represented by this instance of ObjectStreamField.
+   *
+   * @return A char representing the type of the field.
+   */
   public char getTypeCode ()
   {
     return typename.charAt (0);
   }
 
+  /**
+   * This method returns a more explicit type name than
+   * {@link #getTypeCode()} in the case the type is a real
+   * class (and not a primitive).
+   *
+   * @return The name of the type (class name) if it is not a 
+   * primitive, in the other case null is returned.
+   */
   public String getTypeString ()
   {
     // use intern()
+    if (this.type.isPrimitive())
+      return null;
     return typename.intern();
   }
 
+  /**
+   * This method returns the current offset of the field in
+   * the serialization stream relatively to the other fields.
+   * The offset is expressed in bytes.
+   *
+   * @return The offset of the field in bytes.
+   * @see #setOffset(int)
+   */
   public int getOffset ()
   {
     return offset;
   }
 
+  /**
+   * This method sets the current offset of the field.
+   * 
+   * @param off The offset of the field in bytes.
+   * @see getOffset()
+   */
   protected void setOffset (int off)
   {
     offset = off;
@@ -116,6 +210,13 @@ public class ObjectStreamField implements Comparable
     return unshared;
   }
 
+  /**
+   * This method returns true if the type of the field
+   * represented by this instance is a primitive.
+   *
+   * @return true if the type is a primitive, false
+   * in the other case.
+   */
   public boolean isPrimitive ()
   {
     return type.isPrimitive ();
@@ -134,6 +235,58 @@ public class ObjectStreamField implements Comparable
       return 1;
 
     return getName ().compareTo (f.getName ());
+  }
+
+  /**
+   * This method is specific to classpath's implementation and so has the default
+   * access. It changes the state of this field to "persistent". It means that
+   * the field should not be changed when the stream is read (if it is not
+   * explicitly specified using serialPersistentFields).
+   *
+   * @param persistent True if the field is persistent, false in the 
+   * other cases.
+   * @see #isPersistent()
+   */
+  void setPersistent(boolean persistent)
+  {
+    this.persistent = persistent;
+  }
+
+  /**
+   * This method returns true if the field is marked as persistent.
+   *
+   * @return True if persistent, false in the other cases.
+   * @see #setPersistent(boolean)
+   */
+  boolean isPersistent()
+  {
+    return persistent;
+  }
+
+  /**
+   * This method is specific to classpath's implementation and so 
+   * has the default access. It changes the state of this field as
+   * to be set by ObjectInputStream.
+   *
+   * @param toset True if this field should be set, false in the other
+   * cases.
+   * @see #isToSet()
+   */
+  void setToSet(boolean toset)
+  {
+    this.toset = toset;
+  }
+
+  /**
+   * This methods returns true if the field is marked as to be
+   * set.
+   *
+   * @return True if it is to be set, false in the other cases.
+   * @see #setToSet(boolean)
+   */
+  boolean isToSet()
+  {
+    return toset;
   }
 
   public String toString ()
