@@ -97,3 +97,8 @@ _SDA2_BASE_ = .+32768
 	.globl	__SBSS2_START__
 	.type	__SBSS2_START__,@object
 __SBSS2_START__:
+
+	.section ".gcc_except_table","aw"
+	.globl	__EXCEPT_START__
+	.type	__EXCEPT_START__,@object
+__EXCEPT_START__:

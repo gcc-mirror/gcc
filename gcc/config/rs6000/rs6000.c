@@ -900,13 +900,18 @@ init_cumulative_args (cum, fntype, libname, incoming)
    of an argument with the specified mode and type.  If it is not defined, 
    PARM_BOUNDARY is used for all arguments.
    
-   Windows NT wants anything >= 8 bytes to be double word aligned.  */
+   Windows NT wants anything >= 8 bytes to be double word aligned.
+
+   V.4 wants long longs to be double word aligned.  */
 
 int
 function_arg_boundary (mode, type)
      enum machine_mode mode;
      tree type;
 {
+  if (DEFAULT_ABI == ABI_V4 && mode == DImode)
+    return 64;
+
   if (DEFAULT_ABI != ABI_NT || TARGET_64BIT)
     return PARM_BOUNDARY;
 

@@ -91,6 +91,9 @@ __extension__ ({							\
 #define __va_float_p(TYPE)	(__builtin_classify_type(*(TYPE *)0) == 8)
 #endif
 
+#define __va_longlong_p(TYPE) \
+  ((__builtin_classify_type(*(TYPE *)0) == 1) && (sizeof(TYPE) == 8))
+
 #define __va_aggregate_p(TYPE)	(__builtin_classify_type(*(TYPE *)0) >= 12)
 #define __va_size(TYPE)		((sizeof(TYPE) + sizeof (long) - 1) / sizeof (long))
 
@@ -111,8 +114,13 @@ __extension__ (*({							\
     }									\
 									\
   else if (!__va_float_p (TYPE) && !__va_aggregate_p (TYPE)		\
-	   && (AP)->gpr + __va_size(TYPE) <= 8)				\
+	   && (AP)->gpr + __va_size(TYPE) <= 8				\
+	   && (!__va_longlong_p(TYPE)					\
+	       || (AP)->gpr + __va_size(TYPE) <= 7))			\
     {									\
+      if (__va_longlong_p(TYPE) && ((AP)->gpr & 1) != 0)		\
+	(AP)->gpr++;							\
+									\
       __ptr = __VA_GP_REGSAVE (AP, TYPE);				\
       (AP)->gpr += __va_size (TYPE);					\
     }									\
@@ -132,6 +140,9 @@ __extension__ (*({							\
     }									\
   else									\
     {									\
+      if (__va_longlong_p(TYPE) && ((long)(AP)->overflow_arg_area & 4) != 0) \
+	(AP)->overflow_arg_area += 4;					\
+									\
       __ptr = (TYPE *) (void *) ((AP)->overflow_arg_area);		\
       (AP)->overflow_arg_area += __va_size (TYPE) * sizeof (long);	\
     }									\
