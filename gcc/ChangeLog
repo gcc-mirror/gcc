@@ -1,3 +1,14 @@
+2004-01-20  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_convert): Rename to fold_convert_const.
+	(fold_convert_const): Change arguments to take a tree_code,
+	a type and the operand/expression to be converted.  Return
+	NULL_TREE if no simplification is possible.  Add support for
+	FIX_CEIL_EXPR and FIX_FLOOR_EXPR in addition to FIX_TRUNC_EXPR.
+	(fold): Handle FIX_CEIL_EXPR and FIX_FLOOR_EXPR.
+	Adjust call to fold_convert to match new fold_convert_const.
+	Avoid modifying the tree passed to fold in-place.
+
 2004-01-21  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/sysv4.h (DWARF2_FRAME_REG_OUT): Define.
