@@ -165,6 +165,11 @@ read_8s (const void *p) { const union unaligned *up = p; return up->s8; }
 inline _Unwind_Word
 _Unwind_GetGR (struct _Unwind_Context *context, int index)
 {
+#ifdef DWARF_ZERO_REG
+  if (index == DWARF_ZERO_REG)
+    return 0;
+#endif
+
   /* This will segfault if the register hasn't been saved.  */
   return * (_Unwind_Word *) context->reg[index];
 }

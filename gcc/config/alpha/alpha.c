@@ -6766,11 +6766,6 @@ alpha_sa_mask (imaskP, fmaskP)
 	    break;
 	  imask |= 1L << regno;
 	}
-
-      /* Glibc likes to use $31 as an unwind stopper for crt0.  To
-	 avoid hackery in unwind-dw2.c, we need to actively store a
-	 zero in the prologue of _Unwind_RaiseException et al.  */
-      imask |= 1UL << 31;
     }
 
   /* If any register spilled, then spill the return address also.  */
@@ -7236,24 +7231,6 @@ alpha_expand_prologue ()
 	    reg_offset += 8;
 	  }
 
-      /* Store a zero if requested for unwinding.  */
-      if (imask & (1UL << 31))
- 	{
- 	  rtx insn, t;
- 
- 	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
- 	  set_mem_alias_set (mem, alpha_sr_alias_set);
- 	  insn = emit_move_insn (mem, const0_rtx);
- 
- 	  RTX_FRAME_RELATED_P (insn) = 1;
- 	  t = gen_rtx_REG (Pmode, 31);
- 	  t = gen_rtx_SET (VOIDmode, mem, t);
- 	  t = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, t, REG_NOTES (insn));
- 	  REG_NOTES (insn) = t;
- 
- 	  reg_offset += 8;
- 	}
- 
       for (i = 0; i < 31; i++)
 	if (fmask & (1L << i))
 	  {
@@ -7673,9 +7650,6 @@ alpha_expand_epilogue ()
 	      }
 	    reg_offset += 8;
 	  }
-
-      if (imask & (1UL << 31))
-	reg_offset += 8;
 
       for (i = 0; i < 31; ++i)
 	if (fmask & (1L << i))
