@@ -916,17 +916,23 @@ two_insn_adds_subs_operand (op, mode)
   return 0;
 }
 
-/* Split an add of a small constant into two adds/subs insns.  */
+/* Split an add of a small constant into two adds/subs insns.
+
+   If USE_INCDEC_P is nonzero, we generate the last insn using inc/dec
+   instead of adds/subs.  */
 
 void
-split_adds_subs (mode, operands)
+split_adds_subs (mode, operands, use_incdec_p)
      enum machine_mode mode;
      rtx *operands;
+     int use_incdec_p;
 {
   HOST_WIDE_INT val = INTVAL (operands[1]);
   rtx reg = operands[0];
   HOST_WIDE_INT sign = 1;
   HOST_WIDE_INT amount;
+  rtx (*gen_last) (rtx, rtx, rtx);
+  rtx (*gen_normal) (rtx, rtx, rtx);
 
   /* Force VAL to be positive so that we do not have to consider the
      sign.  */
@@ -936,6 +942,22 @@ split_adds_subs (mode, operands)
       sign = -1;
     }
 
+  switch (mode)
+    {
+    case HImode:
+      gen_normal = gen_addhi3;
+      gen_last   = gen_addhi3_incdec;
+      break;
+
+    case SImode:
+      gen_normal = gen_addsi3;
+      gen_last   = gen_addsi3_incdec;
+      break;
+
+    default:
+      abort ();
+    }
+
   /* Try different amounts in descending order.  */
   for (amount = (TARGET_H8300H || TARGET_H8300S) ? 4 : 2;
        amount > 0;
@@ -943,8 +965,11 @@ split_adds_subs (mode, operands)
     {
       for (; val >= amount; val -= amount)
 	{
-	  rtx tmp = gen_rtx_PLUS (mode, reg, GEN_INT (sign * amount));
-	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
+	  /* If requested, generate the last insn using inc/dec.  */
+	  if (use_incdec_p && amount <= 2 && val == amount)
+	    emit_insn (gen_last (reg, reg, GEN_INT (sign * amount)));
+	  else
+	    emit_insn (gen_normal (reg, reg, GEN_INT (sign * amount)));
 	}
     }
 
@@ -1804,6 +1829,30 @@ notice_update_cc (body, insn)
       CC_STATUS_INIT;
       break;
     }
+}
+
+/* Return nonzero if X is a constant whose absolute value is no
+   greater than 2.  */
+
+int
+const_le_2_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && abs (INTVAL (x)) <= 2);
+}
+
+/* Return nonzero if X is a constant whose absolute value is no
+   greater than 6.  */
+
+int
+const_le_6_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && abs (INTVAL (x)) <= 6);
 }
 
 /* Return nonzero if X is a constant suitable for inc/dec.  */
