@@ -2776,7 +2776,7 @@ output_prolog (file, size)
   fprintf (file, "\t.ent ");
   assemble_name (file, alpha_function_name);
   fprintf (file, "\n");
-  sprintf (entry_label, "$%s..en", alpha_function_name);
+  sprintf (entry_label, "%s..en", alpha_function_name);
   ASM_OUTPUT_LABEL (file, entry_label);
   inside_function = TRUE;
 
@@ -2910,10 +2910,20 @@ output_prolog (file, size)
 
   fprintf (file, "\t.prologue\n");
 
+  readonly_section ();
+  fprintf (file, "\t.align 3\n");
+  assemble_name (file, alpha_function_name); fputs ("..na:\n", file);
+  fputs ("\t.ascii \"", file);
+  assemble_name (file, alpha_function_name);
+  fputs ("\\0\"\n", file);
+      
   link_section ();
   fprintf (file, "\t.align 3\n");
+  fputs ("\t.name ", file);
+  assemble_name (file, alpha_function_name);
+  fputs ("..na\n", file);
   ASM_OUTPUT_LABEL (file, alpha_function_name);
-  fprintf (file, "\t.pdesc $");
+  fprintf (file, "\t.pdesc ");
   assemble_name (file, alpha_function_name);
   fprintf (file, "..en,%s\n", is_stack_procedure ? "stack" : "reg");
   alpha_need_linkage (alpha_function_name, 1);
@@ -4015,7 +4025,7 @@ alpha_write_linkage (stream)
       if (lptr->kind == KIND_LOCAL)   
 	{
 	  /*  Local and used, build linkage pair.  */
-	  fprintf (stream, "\t.quad $%s..en\n", lptr->name);
+	  fprintf (stream, "\t.quad %s..en\n", lptr->name);
 	  fprintf (stream, "\t.quad %s\n", lptr->name);
 	}
       else
