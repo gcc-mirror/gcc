@@ -1,3 +1,16 @@
+2002-07-18  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.am (TARGET_SRC_MIPS_LINUX): New.
+	(libffi_la_SOURCES): Support MIPS_LINUX.
+	(libffi_convenience_la_SOURCES): Likewise.
+	* Makefile.in: Regenerated.
+
+	* configure.in (mips64*-*): Skip.
+	(mips*-*-linux*): New.
+	* configure: Regenerated.
+
+	* src/mips/ffi.c: Include <sgidefs.h>.
+
 2002-06-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* src/s390/sysv.S: Save/restore %r6.  Add DWARF-2 unwind info.
