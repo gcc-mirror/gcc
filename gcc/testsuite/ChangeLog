@@ -1,3 +1,8 @@
+2002-09-25  David S. Miller  <davem@redhat.com>
+
+	PR target/7842
+	* gcc.c-torture/execute/shiftdi.c: New test.
+
 2002-09-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.c-torture/execute/ieee/mzero3.c: New test.
