@@ -2908,7 +2908,7 @@
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "comparison_operator"
-	   [(plus:SI (match_operand:SI 0 "register_operand" "+!r,!*fx,!*m")
+	   [(plus:SI (match_operand:SI 0 "register_operand" "+!r,!*f*x,!*m")
 		     (match_operand:SI 1 "int5_operand" "L,L,L"))
 	    (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
@@ -2965,7 +2965,7 @@
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "eq_neq_comparison_operator"
-	   [(match_operand:SI 0 "register_operand" "+!r,!*fx,!*m")
+	   [(match_operand:SI 0 "register_operand" "+!r,!*f*x,!*m")
 	    (match_operand:SI 5 "const_int_operand" "")])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
@@ -3021,7 +3021,7 @@
 	   [(match_operand:SI 1 "register_operand" "r,r,r") (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
-   (set (match_operand:SI 0 "register_operand" "=!r,!*fx,!*m")
+   (set (match_operand:SI 0 "register_operand" "=!r,!*f*x,!*m")
 	(match_dup 1))]
   ""
 "* return output_movb (operands, insn, which_alternative, 0); "
@@ -3067,7 +3067,7 @@
 	   [(match_operand:SI 1 "register_operand" "r,r,r") (const_int 0)])
 	  (pc)
 	  (label_ref (match_operand 3 "" ""))))
-   (set (match_operand:SI 0 "register_operand" "=!r,!*fx,!*m")
+   (set (match_operand:SI 0 "register_operand" "=!r,!*f*x,!*m")
 	(match_dup 1))]
   ""
 "* return output_movb (operands, insn, which_alternative, 1); "
