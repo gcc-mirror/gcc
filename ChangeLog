@@ -1,3 +1,7 @@
+2002-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.in: Disable libgcj on s390-linux targets.
+
 2002-04-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* MAINTAINERS: Add information about purpose of this file.
