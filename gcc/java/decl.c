@@ -47,17 +47,17 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree-inline.h"
 
 #if defined (DEBUG_JAVA_BINDING_LEVELS)
-extern void indent PARAMS ((void));
+extern void indent (void);
 #endif
 
-static tree push_jvm_slot PARAMS ((int, tree));
-static tree lookup_name_current_level PARAMS ((tree));
-static tree push_promoted_type PARAMS ((const char *, tree));
-static struct binding_level *make_binding_level PARAMS ((void));
-static tree create_primitive_vtable PARAMS ((const char *));
-static tree check_local_named_variable PARAMS ((tree, tree, int, int *));
-static tree check_local_unnamed_variable PARAMS ((tree, tree, tree));
-static void dump_function PARAMS ((enum tree_dump_index, tree));
+static tree push_jvm_slot (int, tree);
+static tree lookup_name_current_level (tree);
+static tree push_promoted_type (const char *, tree);
+static struct binding_level *make_binding_level (void);
+static tree create_primitive_vtable (const char *);
+static tree check_local_named_variable (tree, tree, int, int *);
+static tree check_local_unnamed_variable (tree, tree, tree);
+static void dump_function (enum tree_dump_index, tree);
 
 /* Name of the Cloneable class.  */
 tree java_lang_cloneable_identifier_node;

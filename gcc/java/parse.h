@@ -36,8 +36,8 @@ extern int quiet_flag;
 
 #ifndef JC1_LITE
 /* Function extern to java/ */
-extern int int_fits_type_p PARAMS ((tree, tree));
-extern tree stabilize_reference PARAMS ((tree));
+extern int int_fits_type_p (tree, tree);
+extern tree stabilize_reference (tree);
 #endif
 
 /* Macros for verbose debug info  */
@@ -920,32 +920,32 @@ struct parser_ctxt {
 #define JAVA_RADIX10_FLAG(NODE) TREE_LANG_FLAG_0(NODE)
 
 #ifndef JC1_LITE
-void java_complete_class PARAMS ((void));
-void java_check_circular_reference PARAMS ((void));
-void java_fix_constructors PARAMS ((void));
-void java_layout_classes PARAMS ((void));
-void java_reorder_fields PARAMS ((void));
-tree java_method_add_stmt PARAMS ((tree, tree));
-int java_report_errors PARAMS ((void));
-extern tree do_resolve_class PARAMS ((tree, tree, tree, tree));
+void java_complete_class (void);
+void java_check_circular_reference (void);
+void java_fix_constructors (void);
+void java_layout_classes (void);
+void java_reorder_fields (void);
+tree java_method_add_stmt (tree, tree);
+int java_report_errors (void);
+extern tree do_resolve_class (tree, tree, tree, tree);
 #endif
-char *java_get_line_col PARAMS ((const char *, int, int));
-extern void reset_report PARAMS ((void));
+char *java_get_line_col (const char *, int, int);
+extern void reset_report (void);
 
 /* Always in use, no matter what you compile */
-void java_push_parser_context PARAMS ((void));
-void java_pop_parser_context PARAMS ((int));
-void java_init_lex PARAMS ((FILE *, const char *));
-extern void java_parser_context_save_global PARAMS ((void));
-extern void java_parser_context_restore_global PARAMS ((void));
-int yyparse PARAMS ((void));
-extern int java_parse PARAMS ((void));
-extern void yyerror PARAMS ((const char *))
+void java_push_parser_context (void);
+void java_pop_parser_context (int);
+void java_init_lex (FILE *, const char *);
+extern void java_parser_context_save_global (void);
+extern void java_parser_context_restore_global (void);
+int yyparse (void);
+extern int java_parse (void);
+extern void yyerror (const char *)
 #ifdef JC1_LITE
 ATTRIBUTE_NORETURN
 #endif
 ;
-extern void java_expand_classes PARAMS ((void));
+extern void java_expand_classes (void);
 
 extern struct parser_ctxt *ctxp;
 extern struct parser_ctxt *ctxp_for_generation;

@@ -39,13 +39,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-except.h"
 #include "toplev.h"
 
-static void expand_start_java_handler PARAMS ((struct eh_range *));
-static void expand_end_java_handler PARAMS ((struct eh_range *));
-static struct eh_range *find_handler_in_range PARAMS ((int, struct eh_range *,
-						      struct eh_range *));
-static void link_handler PARAMS ((struct eh_range *, struct eh_range *));
-static void check_start_handlers PARAMS ((struct eh_range *, int));
-static void free_eh_ranges PARAMS ((struct eh_range *range));
+static void expand_start_java_handler (struct eh_range *);
+static void expand_end_java_handler (struct eh_range *);
+static struct eh_range *find_handler_in_range (int, struct eh_range *,
+					       struct eh_range *);
+static void link_handler (struct eh_range *, struct eh_range *);
+static void check_start_handlers (struct eh_range *, int);
+static void free_eh_ranges (struct eh_range *range);
 
 struct eh_range *current_method_handlers;
 

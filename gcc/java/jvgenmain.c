@@ -34,7 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 
-static char * do_mangle_classname PARAMS ((const char *string));
+static char * do_mangle_classname (const char *string);
 
 struct obstack  name_obstack;
 struct obstack *mangle_obstack = &name_obstack;
@@ -55,8 +55,8 @@ gcc_obstack_init (obstack)
 #define OBSTACK_CHUNK_FREE free
 #endif
   _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) PARAMS ((long))) OBSTACK_CHUNK_ALLOC,
-		  (void (*) PARAMS ((void *))) OBSTACK_CHUNK_FREE);
+		  (void *(*) (long)) OBSTACK_CHUNK_ALLOC,
+		  (void (*) (void *)) OBSTACK_CHUNK_FREE);
 }
 
 static void usage (const char *) ATTRIBUTE_NORETURN;

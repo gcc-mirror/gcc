@@ -102,15 +102,15 @@ static tree wfl;
 
 #define WORD_SIZE  ((unsigned int)(sizeof(word) * BITS_PER_UNIT))
 
-static void check_bool_init PARAMS ((tree, words, words, words));
-static void check_init PARAMS ((tree, words));
-static void check_cond_init PARAMS ((tree, tree, tree, words, words, words));
-static void check_bool2_init PARAMS ((enum tree_code, tree, tree, words, words, words));
+static void check_bool_init (tree, words, words, words);
+static void check_init (tree, words);
+static void check_cond_init (tree, tree, tree, words, words, words);
+static void check_bool2_init (enum tree_code, tree, tree, words, words, words);
 struct alternatives;
-static void done_alternative PARAMS ((words, struct alternatives *));
-static tree get_variable_decl PARAMS ((tree));
-static void final_assign_error PARAMS ((tree));
-static void check_final_reassigned PARAMS ((tree, words));
+static void done_alternative (words, struct alternatives *);
+static tree get_variable_decl (tree);
+static void final_assign_error (tree);
+static void check_final_reassigned (tree, words);
 
 #define ALLOC_WORDS(NUM) (xmalloc ((NUM) * sizeof (word)))
 #define FREE_WORDS(PTR) (free (PTR))

@@ -53,32 +53,24 @@ struct string_option
   const int on_value;
 };
 
-static const char *java_init PARAMS ((const char *));
-static void java_finish PARAMS ((void));
-static void java_init_options PARAMS ((void));
-static bool java_post_options PARAMS ((void));
+static const char *java_init (const char *);
+static void java_finish (void);
+static void java_init_options (void);
+static bool java_post_options (void);
 
-static int java_decode_option PARAMS ((int, char **));
-static void put_decl_string PARAMS ((const char *, int));
-static void put_decl_node PARAMS ((tree));
-static void java_print_error_function PARAMS ((diagnostic_context *,
-					       const char *));
-static int process_option_with_no PARAMS ((const char *,
-					   const struct string_option *,
-					   int));
-static tree java_tree_inlining_walk_subtrees PARAMS ((tree *,
-						      int *,
-						      walk_tree_fn,
-						      void *,
-						      void *));
-static int java_unsafe_for_reeval PARAMS ((tree));
-static int merge_init_test_initialization PARAMS ((void * *, 
-						   void *));
-static int inline_init_test_initialization PARAMS ((void * *, 
-						    void *));
-static bool java_can_use_bit_fields_p PARAMS ((void));
-static int java_dump_tree PARAMS ((void *, tree));
-static void dump_compound_expr PARAMS ((dump_info_p, tree));
+static int java_decode_option (int, char **);
+static void put_decl_string (const char *, int);
+static void put_decl_node (tree);
+static void java_print_error_function (diagnostic_context *, const char *);
+static int process_option_with_no (const char *, const struct string_option *, int);
+static tree java_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
+					      void *, void *);
+static int java_unsafe_for_reeval (tree);
+static int merge_init_test_initialization (void * *, void *);
+static int inline_init_test_initialization (void * *, void *);
+static bool java_can_use_bit_fields_p (void);
+static int java_dump_tree (void *, tree);
+static void dump_compound_expr (dump_info_p, tree);
 
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"

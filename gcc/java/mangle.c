@@ -38,28 +38,28 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "obstack.h"
 #include "ggc.h"
 
-static void mangle_field_decl PARAMS ((tree));
-static void mangle_method_decl PARAMS ((tree));
+static void mangle_field_decl (tree);
+static void mangle_method_decl (tree);
 
-static void mangle_type PARAMS ((tree));
-static void mangle_pointer_type PARAMS ((tree));
-static void mangle_array_type PARAMS ((tree));
-static int  mangle_record_type PARAMS ((tree, int));
+static void mangle_type (tree);
+static void mangle_pointer_type (tree);
+static void mangle_array_type (tree);
+static int  mangle_record_type (tree, int);
 
-static int find_compression_pointer_match PARAMS ((tree));
-static int find_compression_array_match PARAMS ((tree));
-static int find_compression_record_match PARAMS ((tree, tree *));
-static int find_compression_array_template_match PARAMS ((tree));
+static int find_compression_pointer_match (tree);
+static int find_compression_array_match (tree);
+static int find_compression_record_match (tree, tree *);
+static int find_compression_array_template_match (tree);
 
-static void set_type_package_list PARAMS ((tree));
-static int  entry_match_pointer_p PARAMS ((tree, int));
-static void emit_compression_string PARAMS ((int));
+static void set_type_package_list (tree);
+static int  entry_match_pointer_p (tree, int);
+static void emit_compression_string (int);
 
-static void init_mangling PARAMS ((struct obstack *));
-static tree finish_mangling PARAMS ((void));
-static void compression_table_add PARAMS ((tree));
+static void init_mangling (struct obstack *);
+static tree finish_mangling (void);
+static void compression_table_add (tree);
 
-static void mangle_member_name PARAMS ((tree));
+static void mangle_member_name (tree);
 
 /* We use an incoming obstack, always to be provided to the interface
    functions. */

@@ -62,10 +62,10 @@ struct entry
   struct entry *next;
 };
 
-static void free_entry PARAMS ((struct entry **));
-static void append_entry PARAMS ((struct entry **, struct entry *));
-static void add_entry PARAMS ((struct entry **, const char *, int));
-static void add_path PARAMS ((struct entry **, const char *, int));
+static void free_entry (struct entry **);
+static void append_entry (struct entry **, struct entry *);
+static void add_entry (struct entry **, const char *, int);
+static void add_path (struct entry **, const char *, int);
 
 /* We support several different ways to set the class path.
 

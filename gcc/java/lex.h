@@ -158,7 +158,7 @@ typedef struct java_lexer
 } java_lexer;
 
 /* Destroy a lexer object.  */
-extern void java_destroy_lexer PARAMS ((java_lexer *));
+extern void java_destroy_lexer (java_lexer *);
 
 #define JAVA_LINE_MAX 80
 

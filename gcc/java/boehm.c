@@ -34,16 +34,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h"
 #include "toplev.h"
 
-static void mark_reference_fields PARAMS ((tree,
-					   unsigned HOST_WIDE_INT *,
-					   unsigned HOST_WIDE_INT *,
-					   unsigned int,
-					   int *, int *,
-					   int *,
-					   HOST_WIDE_INT *));
-static void set_bit PARAMS ((unsigned HOST_WIDE_INT *,
-			     unsigned HOST_WIDE_INT *,
-			     unsigned int));
+static void mark_reference_fields (tree, unsigned HOST_WIDE_INT *,
+				   unsigned HOST_WIDE_INT *, unsigned int,
+				   int *, int *, int *, HOST_WIDE_INT *);
+static void set_bit (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
+		     unsigned int);
 
 /* Treat two HOST_WIDE_INT's as a contiguous bitmap, with bit 0 being
    the least significant.  This function sets bit N in the bitmap.  */

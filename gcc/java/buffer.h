@@ -43,4 +43,4 @@ struct buffer
 
 #define BUFFER_RESET(BUFP) ((BUFP)->ptr = (BUFP)->data)
 
-extern void buffer_grow PARAMS ((struct buffer*, int));
+extern void buffer_grow (struct buffer*, int);

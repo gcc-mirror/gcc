@@ -35,9 +35,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "obstack.h"
 #include "toplev.h"
 
-static void append_unicode_mangled_name PARAMS ((const char *, int));
+static void append_unicode_mangled_name (const char *, int);
 #ifndef HAVE_AS_UTF8
-static int  unicode_mangling_length PARAMS ((const char *, int));
+static int  unicode_mangling_length (const char *, int);
 #endif
 
 extern struct obstack *mangle_obstack;

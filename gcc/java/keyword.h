@@ -30,11 +30,11 @@ struct java_keyword { const char *const name; const int token; };
 #ifdef __GNUC__
 __inline
 #endif
-static unsigned int hash		PARAMS ((const char *, unsigned int));
+static unsigned int hash (const char *, unsigned int);
 #ifdef __GNUC__
 __inline
 #endif
-const struct java_keyword *java_keyword	PARAMS ((const char *, unsigned int));
+const struct java_keyword *java_keyword (const char *, unsigned int);
 
 #define TOTAL_KEYWORDS 52
 #define MIN_WORD_LENGTH 2
