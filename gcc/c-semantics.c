@@ -487,7 +487,7 @@ genrtl_return_stmt (stmt)
 {
   tree expr;
 
-  expr = RETURN_EXPR (stmt);
+  expr = RETURN_STMT_EXPR (stmt);
 
   emit_line_note (input_filename, lineno);
   if (!expr)

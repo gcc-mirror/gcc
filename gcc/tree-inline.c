@@ -442,10 +442,10 @@ copy_body_r (tp, walk_subtrees, data)
 	 assignment into the equivalent of the original
 	 RESULT_DECL.  */
 #ifndef INLINER_FOR_JAVA
-      if (RETURN_EXPR (return_stmt))
+      if (RETURN_STMT_EXPR (return_stmt))
 	{
 	  *tp = build_stmt (EXPR_STMT,
-			    RETURN_EXPR (return_stmt));
+			    RETURN_STMT_EXPR (return_stmt));
 	  STMT_IS_FULL_EXPR_P (*tp) = 1;
 	  /* And then jump to the end of the function.  */
 	  TREE_CHAIN (*tp) = goto_stmt;

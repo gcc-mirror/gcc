@@ -61,7 +61,7 @@ DEFTREECODE (WHILE_STMT, "while_stmt", 'e', 2)
 DEFTREECODE (DO_STMT, "do_stmt", 'e', 2)
 
 /* Used to represent a 'return' statement. The operand is
-   RETURN_EXPR. */
+   RETURN_STMT_EXPR. */
 DEFTREECODE (RETURN_STMT, "return_stmt", 'e', 1)
 
 /* Used to represent a 'break' statement. */

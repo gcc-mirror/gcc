@@ -153,7 +153,7 @@ c_dump_tree (dump_info, t)
 
     case RETURN_STMT:
       dump_stmt (di, t);
-      dump_child ("expr", RETURN_EXPR (t));
+      dump_child ("expr", RETURN_STMT_EXPR (t));
       dump_next_stmt (di, t);
       break;
 

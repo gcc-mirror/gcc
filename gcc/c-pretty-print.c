@@ -1384,7 +1384,7 @@ pp_c_statement (ppi, stmt)
     case GOTO_STMT:
       {
 	tree e = code == RETURN_STMT 
-	  ? RETURN_EXPR (stmt)
+	  ? RETURN_STMT_EXPR (stmt)
 	  : GOTO_DESTINATION (stmt);
 
 	pp_newline (ppi);

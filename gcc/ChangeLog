@@ -1,3 +1,12 @@
+2002-08-22  Jason Merrill  <jason@redhat.com>
+
+	* c-common.h (RETURN_STMT_EXPR): Rename from RETURN_EXPR.
+	* c-common.def: Adjust.
+	* c-dump.c (c_dump_tree): Adjust.
+	* c-semantics.c (genrtl_return_stmt): Adjust.
+	* c-pretty-print.c (pp_c_statement): Adjust.
+	* tree-inline.c (copy_body_r): Adjust.
+
 2002-08-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* ggc-page.c: Avoid division in ggc_set_mark.
