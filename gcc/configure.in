@@ -1133,9 +1133,10 @@ if test -f ../gas/Makefile; then
 	rm -f as; $symbolic_link ../gas/as-new$host_exeext as$host_exeext 2>/dev/null
 fi
 
-# If we have nm in the build tree, make a link to it.
+# If we have nm and objdump in the build tree, make a link to them.
 if test -f ../binutils/Makefile; then
 	rm -f nm; $symbolic_link ../binutils/nm-new$host_exeext nm$host_exeext 2>/dev/null
+	rm -f objdump; $symbolic_link ../binutils/objdump$host_exeext objdump$host_exeext 2>/dev/null
 fi
 
 # If we have ld in the build tree, make a link to it.
@@ -1241,6 +1242,16 @@ elif test x$host = x$target; then
 	gcc_cv_nm=nm$host_exeext
 fi
 AC_MSG_RESULT($gcc_cv_nm)
+
+# Figure out what objdump we will be using.
+AC_MSG_CHECKING(what objdump to use)
+if test -x objdump$host_exeext; then
+	gcc_cv_objdump=./objdump$host_exeext
+elif test x$host = x$target; then
+	# Native build.
+	gcc_cv_objdump=objdump$host_exeext
+fi
+AC_MSG_RESULT($gcc_cv_objdump)
 
 # Figure out what assembler alignment features are present.
 AC_MSG_CHECKING(assembler alignment features)
@@ -1460,7 +1471,7 @@ EOF
 		# If the assembler didn't choke, and we can objdump,
 		# and we got the correct data, then succeed.
 		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-		   && objdump -s -j .eh_frame conftest.o 2>/dev/null \
+		   && $gcc_cv_objdump -s -j .eh_frame conftest.o 2>/dev/null \
 		      | tail -3 > conftest.got \
 		   && { cmp conftest.lit conftest.got > /dev/null 2>&1 \
 		        || cmp conftest.big conftest.got > /dev/null 2>&1; }

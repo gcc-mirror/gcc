@@ -1,3 +1,9 @@
+2001-11-15  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in: Check for target objdump and use that in eh_frame
+	optimization test.
+	* configure: Regenerated.
+
 2001-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* jump.c (squeeze_notes): Return true if no real insns were found.
