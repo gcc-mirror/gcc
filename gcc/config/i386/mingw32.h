@@ -127,10 +127,6 @@ do {						         \
   putc ('\"', asm_file);			         \
 } while (0)
 
-/* Override Cygwin's definition. This is necessary now due to the way
-   Cygwin profiling code is written. Once "fixed", we can remove this.  */
-#undef SUBTARGET_PROLOGUE
-
 /* Define as short unsigned for compatability with MS runtime.  */
 #undef WINT_TYPE
 #define WINT_TYPE "short unsigned int"

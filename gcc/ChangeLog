@@ -1,3 +1,9 @@
+2002-12-05  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygwin.h (SUBTARGET_PROLOGUE): Replace with
+	PROFILE_HOOK.
+	* config/i386/mingw32.h (SUBTARGET_PROLOGUE): Don't undef.
+
 2002-12-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.h (__ev_mwlufi): Remove.
