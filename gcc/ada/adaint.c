@@ -213,6 +213,24 @@ const int __gnat_vmsp = 1;
 const int __gnat_vmsp = 0;
 #endif
 
+/* This variable is used to export the maximum length of a path name to
+   Ada code.  */
+
+#ifdef __EMX__
+int __gnat_max_path_len = _MAX_PATH;
+
+#elif defined (VMS)
+int __gnat_max_path_len = 4096; /* PATH_MAX */
+
+#elif defined (__vxworks) || defined (__OPENNT)
+int __gnat_max_path_len = PATH_MAX;
+
+#else
+#include <sys/param.h>
+int __gnat_max_path_len = MAXPATHLEN;
+
+#endif
+
 /* The following macro HAVE_READDIR_R should be defined if the
    system provides the routine readdir_r.  */
 #undef HAVE_READDIR_R

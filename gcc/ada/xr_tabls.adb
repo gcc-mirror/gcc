@@ -629,7 +629,7 @@ package body Xr_Tabls is
             else
                declare
                   Max_Path : Integer;
-                  pragma Import (C, Max_Path, "max_path_len");
+                  pragma Import (C, Max_Path, "__gnat_max_path_len");
 
                   Base2 : Dir_Name_Str (1 .. Max_Path);
                   Last  : Natural;

@@ -283,7 +283,7 @@ private
    pragma Import (C, set_binary_mode, "__gnat_set_binary_mode");
    pragma Import (C, set_text_mode, "__gnat_set_text_mode");
 
-   pragma Import (C, max_path_len, "max_path_len");
+   pragma Import (C, max_path_len, "__gnat_max_path_len");
    pragma Import (C, full_name, "__gnat_full_name");
 
    --  The following may be implemented as macros, and so are supported

@@ -33,6 +33,7 @@
 
 #include <dirent.h>
 
+extern int    __gnat_max_path_len;
 extern void   __gnat_to_gm_time			   PARAMS ((int *, int *,
 							    int *, int *,
 							    int *, int *,

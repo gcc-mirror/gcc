@@ -48,20 +48,11 @@
 
 #include "adaint.h"
 
-#ifdef __EMX__
-int max_path_len = _MAX_PATH;
-#elif defined (VMS)
+#ifdef VMS
 #include <unixlib.h>
-int max_path_len = 4096; /* PATH_MAX */
-
-#elif defined (__vxworks) || defined (__OPENNT)
-
-int max_path_len = PATH_MAX;
-
-#else
+#endif
 
 #ifdef linux
-
 /* Don't use macros on GNU/Linux since they cause incompatible changes between
    glibc 2.0 and 2.1 */
 
@@ -74,12 +65,6 @@ int max_path_len = PATH_MAX;
 #ifdef stdout
 #  undef stdout
 #endif
-
-#endif
-
-#include <sys/param.h>
-
-int max_path_len = MAXPATHLEN;
 #endif
 
 /* The _IONBF value in CYGNUS or MINGW32 stdio.h is wrong.  */
@@ -185,7 +170,7 @@ __gnat_full_name (nam, buffer)
     strcpy (buffer, nam);
   else
     {
-      _fullpath (buffer, nam, max_path_len);
+      _fullpath (buffer, nam, __gnat_max_path_len);
 
       for (p = buffer; *p; p++)
 	if (*p == '/')
@@ -210,10 +195,10 @@ __gnat_full_name (nam, buffer)
     strcpy (buffer, __gnat_to_host_file_spec (buffer));
   else
     {
-      char *nambuffer = alloca (max_path_len);
+      char *nambuffer = alloca (__gnat_max_path_len);
 
       strcpy (nambuffer, buffer);
-      strcpy (buffer, getcwd (buffer, max_path_len, 0));
+      strcpy (buffer, getcwd (buffer, __gnat_max_path_len, 0));
       strcat (buffer, "/");
       strcat (buffer, nambuffer);
       strcpy (buffer, __gnat_to_host_file_spec (buffer));
@@ -224,7 +209,7 @@ __gnat_full_name (nam, buffer)
 #else
   if (nam[0] != '/')
     {
-      p = getcwd (buffer, max_path_len);
+      p = getcwd (buffer, __gnat_max_path_len);
       if (p == 0)
 	{
 	  buffer[0] = '\0';

@@ -877,7 +877,7 @@ package body GNAT.OS_Lib is
       return      String
    is
       Max_Path : Integer;
-      pragma Import (C, Max_Path, "max_path_len");
+      pragma Import (C, Max_Path, "__gnat_max_path_len");
       --  Maximum length of a path name
 
       procedure Get_Current_Dir
