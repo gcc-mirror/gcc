@@ -1,3 +1,8 @@
+2000-03-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* objc/objc-act.c (encode_method_prototype): Pass types, not
+	PARM_DECLs, to int_size_in_bytes.
+
 Fri Mar 17 11:51:34 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.md (mix4right_3op): Swap %1 and %2 in template.

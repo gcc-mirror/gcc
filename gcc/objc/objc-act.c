@@ -2836,7 +2836,7 @@ encode_method_prototype (method_decl, func_decl)
        parms = TREE_CHAIN (parms))
     {
       HOST_WIDE_INT parm_end = (forwarding_offset (parms)
-				+ int_size_in_bytes (parms));
+				+ int_size_in_bytes (TREE_TYPE (parms)));
 
       if (!offset_is_register && max_parm_end < parm_end)
 	max_parm_end = parm_end;
