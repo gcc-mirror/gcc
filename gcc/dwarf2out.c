@@ -8815,6 +8815,9 @@ loc_descriptor_from_tree (loc, addressp)
       op = DW_OP_or;
       goto do_binop;
 
+    case FLOOR_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case ROUND_DIV_EXPR:
     case TRUNC_DIV_EXPR:
       op = DW_OP_div;
       goto do_binop;
@@ -8823,6 +8826,9 @@ loc_descriptor_from_tree (loc, addressp)
       op = DW_OP_minus;
       goto do_binop;
 
+    case FLOOR_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
       op = DW_OP_mod;
       goto do_binop;

@@ -1,3 +1,8 @@
+2003-04-18  Vincent Celier  <celier@gnat.com>
+
+        * dwarf2out.c (loc_descriptor_from_tree): Treat all *_MOD_EXPR
+        and *_DIV_EXPR as TRUNC_*_EXPR.
+
 2003-04-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Create a basic block
