@@ -1,3 +1,8 @@
+2004-01-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.md (tie_add32): Fix pasto.
+	(tie_add64): Likewise.
+
 2004-01-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* config/i386/i386.md (*addqi_1_slp): Do not access operands[2].
