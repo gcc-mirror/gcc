@@ -1,3 +1,8 @@
+Fri Oct 11 12:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (movv8qi_i+2): For V8QI destinations, generate V4HI
+	register for mperm_w operation.
+
 Fri Oct 11 10:56:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* emit-rtl.c (gen_lowpart_common): When asked to make a vector from
