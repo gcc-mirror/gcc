@@ -98,6 +98,7 @@ a register with any other reload.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 #include "real.h"
+#include "output.h"
 
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(x, y) 2
