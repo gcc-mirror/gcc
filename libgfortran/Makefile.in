@@ -119,11 +119,11 @@ am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo rewind.lo transfer.lo \
 	unit.lo unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo cpu_time.lo cshift0.lo \
-	eoshift0.lo eoshift2.lo ishftc.lo pack_generic.lo size.lo \
-	spread_generic.lo string_intrinsics.lo random.lo \
-	reshape_generic.lo reshape_packed.lo selected_kind.lo \
-	system_clock.lo transpose_generic.lo unpack_generic.lo \
-	in_pack_generic.lo in_unpack_generic.lo
+	date_and_time.lo eoshift0.lo eoshift2.lo ishftc.lo \
+	pack_generic.lo size.lo spread_generic.lo string_intrinsics.lo \
+	random.lo reshape_generic.lo reshape_packed.lo \
+	selected_kind.lo system_clock.lo transpose_generic.lo \
+	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
 	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
@@ -311,6 +311,7 @@ intrinsics/abort.c \
 intrinsics/args.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
+intrinsics/date_and_time.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/ishftc.c \
@@ -2000,6 +2001,15 @@ cshift0.obj: intrinsics/cshift0.c
 
 cshift0.lo: intrinsics/cshift0.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0.lo `test -f 'intrinsics/cshift0.c' || echo '$(srcdir)/'`intrinsics/cshift0.c
+
+date_and_time.o: intrinsics/date_and_time.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o date_and_time.o `test -f 'intrinsics/date_and_time.c' || echo '$(srcdir)/'`intrinsics/date_and_time.c
+
+date_and_time.obj: intrinsics/date_and_time.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o date_and_time.obj `if test -f 'intrinsics/date_and_time.c'; then $(CYGPATH_W) 'intrinsics/date_and_time.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/date_and_time.c'; fi`
+
+date_and_time.lo: intrinsics/date_and_time.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o date_and_time.lo `test -f 'intrinsics/date_and_time.c' || echo '$(srcdir)/'`intrinsics/date_and_time.c
 
 eoshift0.o: intrinsics/eoshift0.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift0.o `test -f 'intrinsics/eoshift0.c' || echo '$(srcdir)/'`intrinsics/eoshift0.c

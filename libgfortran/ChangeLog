@@ -1,3 +1,12 @@
+2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	    Steven Bosscher  <stevenb@suse.de>
+
+	PR fortran/14923
+	* intrinsics/date_and_time.c: New file.
+	* Makefile.am (gfor_helper_src): Add intrinsics/date_and_time.c.
+	* Makefile.in, aclocal.m4: Regenerate.
+	* libgfortran.h: Prototype date_and_time().
+
 2004-06-12  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/15665
