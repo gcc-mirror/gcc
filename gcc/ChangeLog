@@ -1,3 +1,14 @@
+Thu Mar 14 11:03:12 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Add CLEANUP_UPDATE_LIFE to cfg_cleanup
+	call after liveness analysis.
+
+	* recog.c (split_insn): Use delete_insn_and_edges.
+
+	* cfgrtl.c (verify_flow_info): Be permisive about non-any_condjump
+	instructions to have branch prediction notes.
+	* ia64reorg.c (ia64_reorg): Do not rebuild CFG.
+
 2002-03-14  Geoffrey Keating  <geoffk@redhat.com>
 
 	* configure.in: Don't pass -Wno-long-long to a ADA compiler

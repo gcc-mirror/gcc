@@ -1745,14 +1745,9 @@ verify_flow_info ()
       rtx note;
 
       if (INSN_P (bb->end)
-	  && (note = find_reg_note (bb->end, REG_BR_PROB, NULL_RTX)))
+	  && (note = find_reg_note (bb->end, REG_BR_PROB, NULL_RTX))
+	  && any_condjump_p (bb->end))
 	{
-	  if (!any_condjump_p (bb->end))
-	    {
-	      error ("verify_flow_info: REG_BR_PROB on non-condjump",
-		     bb->index);
-	      err = 1;
-	    }
 	  if (INTVAL (XEXP (note, 0)) != BRANCH_EDGE (bb)->probability)
 	    {
 	      error ("verify_flow_info: REG_BR_PROB does not match cfg %i %i",

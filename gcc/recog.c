@@ -2682,11 +2682,7 @@ split_insn (insn)
          allocation, and there are unlikely to be very many
          nops then anyways.  */
       if (reload_completed)
-	{
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (insn) = 0;
-	}
+	delete_insn_and_edges (insn);
     }
   else
     {
@@ -2761,7 +2757,7 @@ split_all_insns (upd_life)
 	      insn = last;
 	    }
 
-	  if (insn == bb->end)
+	  if (next == NEXT_INSN (bb->end))
 	    break;
 	}
 
