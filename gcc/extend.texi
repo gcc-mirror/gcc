@@ -3796,8 +3796,7 @@ The following ISO C89 functions are recognized as builtins unless
 @code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
 @code{strpbrk}, @code{strrchr}, @code{strspn}, and @code{strstr}.  All
 of these functions have corresponding versions prefixed with
-@code{__builtin_}, except that the version for @code{sqrt} is called
-@code{__builtin_fsqrt}.
+@code{__builtin_}.
 
 GNU CC provides builtin versions of the ISO C99 floating point
 comparison macros (that avoid raising exceptions for unordered

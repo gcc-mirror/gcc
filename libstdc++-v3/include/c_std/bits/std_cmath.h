@@ -522,7 +522,7 @@ namespace std
 
   inline double
   sqrt(double __x)
-  { return __builtin_fsqrt(__x); }
+  { return __builtin_sqrt(__x); }
 
   inline long double
   sqrt(long double __x)

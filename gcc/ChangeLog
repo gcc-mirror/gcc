@@ -1,3 +1,10 @@
+2001-05-28  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* c-common.c (c_common_nodes_and_builtins): Change __builtin_fsqrt
+	to __builtin_sqrt.
+	* extend.texi (Other Builtins): Update documentation about
+	__builtin_sqrt. 
+
 2001-05-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): http://reality.sgi.com/ariel/freeware/

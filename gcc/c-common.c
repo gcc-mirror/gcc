@@ -3357,7 +3357,7 @@ c_common_nodes_and_builtins ()
   builtin_function_2 ("__builtin_sqrtf", "sqrtf",
 		      float_ftype_float, float_ftype_float,
 		      BUILT_IN_FSQRT, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_fsqrt", "sqrt",
+  builtin_function_2 ("__builtin_sqrt", "sqrt",
 		      double_ftype_double, double_ftype_double,
 		      BUILT_IN_FSQRT, BUILT_IN_NORMAL, 1, 0, 0);
   builtin_function_2 ("__builtin_sqrtl", "sqrtl",
