@@ -29,6 +29,10 @@
    Richard Stallman, May 93:
    In F_check, check NO_LONG_DOUBLE_IO.
 
+   Changes by Stephen Moshier, installed Sep 93:
+   (FPROP): Recognize 80387 or 68881 XFmode format.
+
+
    COMPILING
    With luck and a following wind, just the following will work:
 	cc enquire.c -o enquire
@@ -2678,6 +2682,14 @@ int FPROP(bits_per_byte) int bits_per_byte; {
 	if (f_radix != 10) {
 		hidden=0;
 		mantbits=floor_log(2, (Long_double)f_radix)*f_mant_dig;
+		if (mantbits == 64
+		    && iexp == 15
+		    && f_max_exp+f_min_exp > 0 /* ??? f_min_exp may be wrong. */
+		    && mantbits+iexp+17 == (int)sizeof(Number)*bits_per_byte) {
+			Vprintf("%sArithmetic probably doesn't use a hidden bit%s\n", co, oc);
+			Vprintf("%sIt's probably 80387 or 68881 extended real%s\n", co, oc);
+			goto is_extended;
+		}
 		if (mantbits+iexp == (int)sizeof(Number)*bits_per_byte) {
 			hidden=1;
 			Vprintf("%sArithmetic uses a hidden bit%s\n", co, oc);
@@ -2698,6 +2710,7 @@ int FPROP(bits_per_byte) int bits_per_byte; {
 				    f_mant_dig==53 ? "double" :
 				    f_mant_dig >53 ? "extended" :
 						"some", oc);
+is_extended:
 			if (f_rounds != 1 || normal) {
 				Vprintf("%s   though ", co);
 				if (f_rounds != 1) {
