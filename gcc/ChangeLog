@@ -1,3 +1,9 @@
+2004-07-28  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/16705
+	* tree-ssa-alias.c (create_global_var): Set DECL_EXTERNAL on
+	.GLOBAL_VAR.
+
 2004-07-27  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr_real_1, case PARM_DECL): Remove obsolete error

@@ -2202,7 +2202,7 @@ create_global_var (void)
                            size_type_node);
   DECL_ARTIFICIAL (global_var) = 1;
   TREE_READONLY (global_var) = 0;
-  DECL_EXTERNAL (global_var) = 0;
+  DECL_EXTERNAL (global_var) = 1;
   TREE_STATIC (global_var) = 1;
   TREE_USED (global_var) = 1;
   DECL_CONTEXT (global_var) = NULL_TREE;
