@@ -140,6 +140,7 @@ static tree obtain_incomplete_type PARAMS ((tree));
 static tree java_complete_lhs PARAMS ((tree));
 static tree java_complete_tree PARAMS ((tree));
 static tree maybe_generate_pre_expand_clinit PARAMS ((tree));
+static int analyze_clinit_body PARAMS ((tree));
 static int maybe_yank_clinit PARAMS ((tree));
 static void java_complete_expand_method PARAMS ((tree));
 static int  unresolved_type_p PARAMS ((tree, tree *));
@@ -1131,6 +1132,7 @@ static_initializer:
 		{
 		  TREE_CHAIN ($2) = CPC_STATIC_INITIALIZER_STMT (ctxp);
 		  SET_CPC_STATIC_INITIALIZER_STMT (ctxp, $2);
+		  current_static_block = NULL_TREE;
 		}
 ;
 
@@ -2711,6 +2713,12 @@ java_parser_context_restore_global ()
   lineno = ctxp->lineno;
   current_class = ctxp->class_type;
   input_filename = ctxp->filename;
+  if (wfl_operator)
+    {
+      tree s;
+      BUILD_FILENAME_IDENTIFIER_NODE (s, input_filename);
+      EXPR_WFL_FILENAME_NODE (wfl_operator) = s;
+    }
   current_function_decl = ctxp->function_decl;
   ctxp->saved_data = 0;
   if (ctxp->saved_data_ctx)
@@ -6443,7 +6451,7 @@ lookup_cl (decl)
   EXPR_WFL_FILENAME_NODE (cl) = get_identifier (DECL_SOURCE_FILE (decl));
   EXPR_WFL_SET_LINECOL (cl, DECL_SOURCE_LINE_FIRST (decl), -1);
 
-  line = java_get_line_col (IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE (cl)),
+  line = java_get_line_col (EXPR_WFL_FILENAME (cl), 
 			    EXPR_WFL_LINENO (cl), EXPR_WFL_COLNO (cl));
 
   found = strstr ((const char *)line, 
@@ -7583,6 +7591,42 @@ maybe_generate_pre_expand_clinit (class_type)
   return mdecl;
 }
 
+/* Analyzes a method body and look for something that isn't a
+   MODIFY_EXPR. */
+
+static int
+analyze_clinit_body (bbody)
+     tree bbody;
+{
+  while (bbody)
+    switch (TREE_CODE (bbody))
+      {
+      case BLOCK:
+	bbody = BLOCK_EXPR_BODY (bbody);
+	break;
+	
+      case EXPR_WITH_FILE_LOCATION:
+	bbody = EXPR_WFL_NODE (bbody);
+	break;
+	
+      case COMPOUND_EXPR:
+	if (analyze_clinit_body (TREE_OPERAND (bbody, 0)))
+	  return 1;
+	bbody = TREE_OPERAND (bbody, 1);
+	break;
+	
+      case MODIFY_EXPR:
+	bbody = NULL_TREE;
+	break;
+
+      default:
+	bbody = NULL_TREE;
+	return 1;
+      }
+  return 0;
+}
+
+
 /* See whether we could get rid of <clinit>. Criteria are: all static
    final fields have constant initial values and the body of <clinit>
    is empty. Return 1 if <clinit> was discarded, 0 otherwise. */
@@ -7602,8 +7646,11 @@ maybe_yank_clinit (mdecl)
      we're emitting classfiles, this isn't enough not to rule it
      out. */
   fbody = DECL_FUNCTION_BODY (mdecl);
-  if ((bbody = BLOCK_EXPR_BODY (fbody)))
+  bbody = BLOCK_EXPR_BODY (fbody);
+  if (bbody && bbody != error_mark_node)
     bbody = BLOCK_EXPR_BODY (bbody);
+  else
+    return 0;
   if (bbody && ! flag_emit_class_files && bbody != empty_stmt_node)
     return 0;
   
@@ -7644,30 +7691,9 @@ maybe_yank_clinit (mdecl)
   /* Now we analyze the method body and look for something that
      isn't a MODIFY_EXPR */
   if (bbody == empty_stmt_node)
-    bbody = NULL_TREE;
-  while (bbody)
-    switch (TREE_CODE (bbody))
-      {
-      case BLOCK:
-	bbody = BLOCK_EXPR_BODY (bbody);
-	break;
-	
-      case EXPR_WITH_FILE_LOCATION:
-	bbody = EXPR_WFL_NODE (bbody);
-	break;
-	
-      case COMPOUND_EXPR:
-	bbody = TREE_OPERAND (bbody, 0);
-	break;
-	
-      case MODIFY_EXPR:
-	bbody = NULL_TREE;
-	break;
-
-      default:
-	bbody = NULL_TREE;
-	found = 1;
-      }
+    found = 0;
+  else
+    found = analyze_clinit_body (bbody);
 
   if (current || found)
     return 0;
@@ -7808,7 +7834,7 @@ build_outer_field_access (id, decl)
       /* Now we chain the required number of calls to the access$0 to
 	 get a hold to the enclosing instance we need, and then we
 	 build the field access. */
-      access = build_access_to_thisn (ctx, DECL_CONTEXT (decl), lc);
+      access = build_access_to_thisn (current_class, DECL_CONTEXT (decl), lc);
 
       /* If the field is private and we're generating bytecode, then
          we generate an access method */
@@ -8135,9 +8161,11 @@ build_outer_method_access_method (decl)
    kept in a generated field called this$<n>, with <n> being the
    inner class nesting level (starting from 0.)  */
     
-/* Build an access to a given this$<n>, possibly by chaining access
-   call to others. Access methods to this$<n> are build on the fly if
-   necessary */
+/* Build an access to a given this$<n>, always chaining access call to
+   others. Access methods to this$<n> are build on the fly if
+   necessary. This CAN'T be used to solely access this$<n-1> from
+   this$<n> (which alway yield to special cases and optimization, see
+   for example build_outer_field_access).  */
 
 static tree
 build_access_to_thisn (from, to, lc)
@@ -8148,21 +8176,23 @@ build_access_to_thisn (from, to, lc)
 
   while (from != to)
     {
-      tree access0_wfl, cn;
-
-      maybe_build_thisn_access_method (from);
-      access0_wfl = build_wfl_node (access0_identifier_node);
-      cn = build_wfl_node (DECL_NAME (TYPE_NAME (from)));
-      EXPR_WFL_LINECOL (access0_wfl) = lc;
-      
       if (!access)
+        {
+          access = build_current_thisn (from);
+          access = build_wfl_node (access);
+        }
+      else
 	{
-	  access = build_current_thisn (current_class);
-	  access = build_wfl_node (access);
+	  tree access0_wfl, cn;
+
+	  maybe_build_thisn_access_method (from);
+	  access0_wfl = build_wfl_node (access0_identifier_node);
+	  cn = build_wfl_node (DECL_NAME (TYPE_NAME (from)));
+	  EXPR_WFL_LINECOL (access0_wfl) = lc;
+	  access = build_tree_list (NULL_TREE, access);
+	  access = build_method_invocation (access0_wfl, access);
+	  access = make_qualified_primary (cn, access, lc);
 	}
-      access = build_tree_list (NULL_TREE, access);
-      access = build_method_invocation (access0_wfl, access);
-      access = make_qualified_primary (cn, access, lc);
       
       from = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (from)));
     }
@@ -9014,10 +9044,21 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	     saved and restored shortly after */
 	  saved_current = current_class;
 	  saved_this = current_this;
-	  if (decl && TREE_CODE (qual_wfl) == NEW_CLASS_EXPR)
+	  if (decl 
+	      && (TREE_CODE (qual_wfl) == NEW_CLASS_EXPR
+		  || from_qualified_this))
 	    {
+	      /* If we still have `from_qualified_this', we have the form
+		 <T>.this.f() and we need to build <T>.this */
+	      if (from_qualified_this)
+		{
+		  decl = build_access_to_thisn (current_class, type, 0);
+		  decl = java_complete_tree (decl);
+		  type = TREE_TYPE (TREE_TYPE (decl));
+		}
 	      current_class = type;
 	      current_this = decl;
+	      from_qualified_this = 0;
 	    }
 
 	  if (from_super && TREE_CODE (qual_wfl) == CALL_EXPR)
@@ -9174,8 +9215,17 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		  free (p);
 		  return 1;
 		}
-	      *where_found = decl = build_current_thisn (type);
 	      from_qualified_this = 1;
+	      /* If there's nothing else after that, we need to
+                 produce something now, otherwise, the section of the
+                 code that needs to produce <T>.this will generate
+                 what is necessary. */
+	      if (!TREE_CHAIN (q))
+		{
+		  decl = build_access_to_thisn (current_class, type, 0);
+		  *where_found = decl = java_complete_tree (decl);
+		  *type_found = type = TREE_TYPE (decl);
+		}
 	    }
 
 	  from_type = 0;
@@ -9925,7 +9975,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
     }
 
   is_static_flag = METHOD_STATIC (list);
-  if (! METHOD_STATIC (list) && this_arg != NULL_TREE)
+  if (! is_static_flag && this_arg != NULL_TREE)
     args = tree_cons (NULL_TREE, this_arg, args);
 
   /* In the context of an explicit constructor invocation, we can't
@@ -13748,7 +13798,7 @@ patch_newarray (node)
       tree dim = TREE_VALUE (cdim);
 
       /* Dim might have been saved during its evaluation */
-      dim = (TREE_CODE (dim) == SAVE_EXPR ? dim = TREE_OPERAND (dim, 0) : dim);
+      dim = (TREE_CODE (dim) == SAVE_EXPR ? TREE_OPERAND (dim, 0) : dim);
 
       /* The type of each specified dimension must be an integral type. */
       if (!JINTEGRAL_TYPE_P (TREE_TYPE (dim)))

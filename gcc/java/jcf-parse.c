@@ -558,8 +558,9 @@ jcf_parse_source ()
 
   java_parser_context_save_global ();
   java_push_parser_context ();
+  BUILD_FILENAME_IDENTIFIER_NODE (file, current_jcf->filename);
+  EXPR_WFL_FILENAME_NODE (wfl_operator) = file;
   input_filename = ggc_strdup (current_jcf->filename);
-  file = get_identifier (input_filename);
   current_class = NULL_TREE;
   current_function_decl = NULL_TREE;
   if (!HAS_BEEN_ALREADY_PARSED_P (file))
@@ -855,7 +856,7 @@ yyparse ()
 	    }
 	  else
 	    {
-	      node = get_identifier (value);
+	      BUILD_FILENAME_IDENTIFIER_NODE (node, value);
 	      IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
 	      current_file_list = tree_cons (NULL_TREE, node, 
 					     current_file_list);
@@ -1068,7 +1069,8 @@ DEFUN(jcf_figure_file_type, (jcf),
       && !open_in_zip (jcf, input_filename, NULL, 0))
     {
       localToFile = ALLOC (sizeof (struct ZipFileCache));
-      bcopy ((PTR) SeenZipFiles, (PTR) localToFile, sizeof (struct ZipFileCache));
+      bcopy ((PTR) SeenZipFiles, (PTR) localToFile, 
+	     sizeof (struct ZipFileCache));
       process_zip_dir ();	/* Register all the class defined there */
       return JCF_ZIP;
     }

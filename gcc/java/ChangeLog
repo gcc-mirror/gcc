@@ -1,6 +1,31 @@
+2000-10-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* gjavah.c (add_class_decl): Removed unused variables `tname',
+	`tlen' and `name_index'.
+	* java-tree.h (BUILD_FILENAME_IDENTIFIER_NODE): New macro.
+	* jcf-parse.c (jcf_parse_source): Use it and set EXPR_WFL_FILENAME
+	in `wfl_operator' with value.
+	(yyparse): Use BUILD_FILENAME_IDENTIFIER_NODE.
+	(jcf_figure_file_type): Fixed identation.
+	* lex.c (java_get_line_col): Use EOF. Tuned `^' placement.
+	* parse.y (analyze_clinit_body): New function.
+	(static_initializer:): Reset `current_static_block'.
+	(java_parser_context_restore_global): Set EXPR_WFL_FIILENAME_NODE in
+	`wfl_operator' with new value.
+	(lookup_cl): Use EXPR_WFL_FILENAME.
+	(maybe_yank_clinit): Handle bogus <clinit> bodies, call
+	analyze_clinit_body.
+	(build_outer_field_access): Access to this$<n> built from
+	current_class, not its outer context.
+	(build_access_to_thisn): Fixed leading comment. Tidied things up.
+	(resolve_qualified_expression_name): Handle `T.this' and `T.this.f()'. 
+	(patch_method_invocation): Use `is_static_flag' when already
+	initialized.
+	(patch_newarray): Removed assignment in ternary operator.
+
 2000-10-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* except.c (free_eh_ranges): Don't free `whole_range.'
+	* except.c (free_eh_ranges): Don't free `whole_range'.
 
 2000-10-15  Anthony Green  <green@redhat.com>
 
@@ -157,14 +182,14 @@ Tue Oct  3 13:44:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 Wed Sep 13 16:06:52 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (give_name_to_locals): New local `code_offset'. Call
- 	`maybe_adjust_start_pc.'
+ 	`maybe_adjust_start_pc'.
 	* expr.c (note_instructions): New function.
 	(expand_byte_code): Don't collect insn starts here.
 	(peek_opcode_at_pc): New function.
 	(maybe_adjust_start_pc): Likewise.
 	* java-tree.h (maybe_adjust_start_pc): Declare.
 	(note_instructions): Likewise.
-	* jcf-parse.c (parse_class_file): Call `note_instructions.'
+	* jcf-parse.c (parse_class_file): Call `note_instructions'.
 
 Wed Sep 13 11:50:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
@@ -483,10 +508,10 @@ Sun Aug 13 09:41:49 2000  Anthony Green  <green@redhat.com>
 	of a `invokeinterface' at the right time.
 	* parse.h (WFL_STRIP_BRACKET): New macro.
 	(SET_TYPE_FOR_RESOLUTION): Use it.
-	* parse.y (build_unresolved_array_type): Reuse `type_or_wfl.'
+	* parse.y (build_unresolved_array_type): Reuse `type_or_wfl'.
 	(check_class_interface_creation): Don't check for cross package
 	innerclass name clashes.
-	(method_header): Behave properly if MDECL is `error_mark_node.'
+	(method_header): Behave properly if MDECL is `error_mark_node'.
 	(method_declarator): Return `error_mark_node' if bogus current
 	class.
 	(resolve_class): Apply WFL_STRIP_BRACKET on `cl' if necessary.
@@ -520,7 +545,7 @@ Sun Aug 13 09:41:49 2000  Anthony Green  <green@redhat.com>
 2000-08-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (build_dot_class_method_invocation): Changed parameter
-	name to `type.' Build signature from `type' and convert it to a
+	name to `type'. Build signature from `type' and convert it to a
 	STRING_CST if it's an array.
 	(patch_incomplete_class_ref): `build_dot_class_method_invocation'
 	to use `ref_type' directly.
@@ -703,7 +728,7 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	classes.
 	* java-tree.h (TYPE_PROTECTED_INNER_CLASS): New macro.
 	(CLASS_PROTECTED): Likewise.
-	(struct lang_type): New bitfield `poic.'
+	(struct lang_type): New bitfield `poic'.
 	* parse.y (jdep_resolve_class): Call check_inner_class_access on
 	inner classes only.
 	(check_inner_class_access): Renamed arguments, added
@@ -713,7 +738,7 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 2000-07-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_qualified_expression_name): Verify qualified
-	access to `this.' Fixes gcj/239.
+	access to `this'. Fixes gcj/239.
 
 2000-07-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
@@ -745,7 +770,7 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 2000-07-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* java-tree.h (java_debug_context): Declared `extern.'
+	* java-tree.h (java_debug_context): Declared `extern'.
 	(safe_layout_class): Likewise.
 	* parse.y (resolve_field_access): Field must be `static' in order
 	to be replaced by its initial value. Added comments.
@@ -754,7 +779,7 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	take over methods founds in the enclosing contexts.
 	(java_complete_tree): Loosen restrictions on the type of DECLs
 	that can be replaced by their initialization values.
-	(valid_ref_assignconv_cast_p): Removed call to `enclosing_context_p.'
+	(valid_ref_assignconv_cast_p): Removed call to `enclosing_context_p'.
 
 2000-07-05  Tom Tromey  <tromey@cygnus.com>
 
@@ -848,7 +873,7 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	* class.c (set_super_info): Handle ACC_PRIVATE for (inner)
 	classes.
 	* java-tree.h (TYPE_PRIVATE_INNER_CLASS): New macro.
-	(struct lang_type): New field `pic.'
+	(struct lang_type): New field `pic'.
 	(CLASS_PRIVATE): New macro.
 	* parse.y (check_inner_class_access): New function.
 	(jdep_resolve_class): Call it.
@@ -1446,7 +1471,7 @@ Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 Mon Mar 20 08:58:51 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns): TRY_FINALLY_EXPR:
-	properly initialize `finished_label.' Don't emit gotos for empty
+	properly initialize `finished_label'. Don't emit gotos for empty
 	try statements.
 
 2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
@@ -1922,7 +1947,7 @@ Thu Feb 10 20:10:43 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 Thu Feb 10 16:04:26 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* parse.y (resolve_package): New local `acc.' Try to progressively
+	* parse.y (resolve_package): New local `acc'. Try to progressively
  	build and guess a package and type name.
 
 Thu Feb 10 12:52:09 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
@@ -1936,7 +1961,7 @@ Thu Feb 10 12:52:09 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
         * class.c (layout_class): Set and test CLASS_BEING_LAIDOUT.
         Generate error message if circularity is detected. New static
-        local `list.'
+        local `list'.
         * java-tree.h (CLASS_BEING_LAIDOUT): New flag usage, new macro.  *
         * jcf-write.c (generate_bytecode_insns): Very simply handle
         SAVE_EXPR.
