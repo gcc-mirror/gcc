@@ -1009,8 +1009,7 @@
 (define_insn "movsi_internal"
   [(set (match_operand:SI 0 "nonimmed_operand" "=D,D,D,D,R,R,a,q,a,a,a,U,*a,*A")
 	(match_operand:SI 1 "move_operand" "M,D,d,R,D,d,r,r,I,T,U,r,*A,*r"))]
-  "non_acc_reg_operand (operands[0], SImode)
-   || non_acc_reg_operand (operands[1], SImode)"
+  "xtensa_valid_move (SImode, operands)"
   "@
    movi.n\\t%0, %x1
    mov.n\\t%0, %1
@@ -1045,8 +1044,7 @@
 (define_insn "movhi_internal"
   [(set (match_operand:HI 0 "nonimmed_operand" "=D,D,a,a,a,U,*a,*A")
 	(match_operand:HI 1 "move_operand" "M,d,r,I,U,r,*A,*r"))]
-  "non_acc_reg_operand (operands[0], HImode)
-   || non_acc_reg_operand (operands[1], HImode)"
+  "xtensa_valid_move (HImode, operands)"
   "@
    movi.n\\t%0, %x1
    mov.n\\t%0, %1
@@ -1075,8 +1073,7 @@
 (define_insn "movqi_internal"
   [(set (match_operand:QI 0 "nonimmed_operand" "=D,D,a,a,a,U,*a,*A")
 	(match_operand:QI 1 "move_operand" "M,d,r,I,U,r,*A,*r"))]
-  "non_acc_reg_operand (operands[0], QImode)
-   || non_acc_reg_operand (operands[1], QImode)"
+  "xtensa_valid_move (QImode, operands)"
   "@
    movi.n\\t%0, %x1
    mov.n\\t%0, %1

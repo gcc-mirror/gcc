@@ -440,12 +440,32 @@ mem_operand (op, mode)
 
 
 int
-non_acc_reg_operand (op, mode)
-     rtx op;
+xtensa_valid_move (mode, operands)
      enum machine_mode mode;
+     rtx *operands;
 {
-  if (register_operand (op, mode))
-    return !ACC_REG_P (xt_true_regnum (op));
+  /* Either the destination or source must be a register, and the
+     MAC16 accumulator doesn't count.  */
+
+  if (register_operand (operands[0], mode))
+    {
+      int dst_regnum = xt_true_regnum (operands[0]);
+
+      /* The stack pointer can only be assigned with a MOVSP opcode. */
+      if (dst_regnum == STACK_POINTER_REGNUM)
+	return (mode == SImode
+		&& register_operand (operands[1], mode)
+		&& !ACC_REG_P (xt_true_regnum (operands[1])));
+
+      if (!ACC_REG_P (dst_regnum))
+	return true;
+    }
+  else if (register_operand (operands[1], mode))
+    {
+      int src_regnum = xt_true_regnum (operands[1]);
+      if (!ACC_REG_P (src_regnum))
+	return true;
+    }
   return FALSE;
 }
 
@@ -1239,8 +1259,7 @@ xtensa_emit_move_sequence (operands, mode)
 
   if (!(reload_in_progress | reload_completed))
     {
-      if (!non_acc_reg_operand (operands[0], mode)
-	  && !non_acc_reg_operand (operands[1], mode))
+      if (!xtensa_valid_move (mode, operands))
 	operands[1] = force_reg (mode, operands[1]);
 
       /* Check if this move is copying an incoming argument in a7.  If
@@ -2535,6 +2554,22 @@ xtensa_va_arg (valist, type)
   addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
   addr = copy_to_reg (addr);
   return addr;
+}
+
+
+enum reg_class
+xtensa_preferred_reload_class (x, class)
+     rtx x;
+     enum reg_class class;
+{
+  if (CONSTANT_P (x) && GET_CODE (x) == CONST_DOUBLE)
+    return NO_REGS;
+
+  /* Don't use sp for reloads! */
+  if (class == AR_REGS)
+    return GR_REGS;
+
+  return class;
 }
 
 

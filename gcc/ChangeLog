@@ -1,3 +1,17 @@
+2002-03-22  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa-protos.h (non_acc_reg_operand): Remove.
+	(xtensa_valid_move, xtensa_preferred_reload_class): Define.
+	* config/xtensa/xtensa.c (non_acc_reg_operand): Remove.
+	(xtensa_valid_move, xtensa_preferred_reload_class): Define to
+	prevent use of sp as a reload register.
+	(xtensa_emit_move_sequence): Use xtensa_valid_move instead of
+	non_acc_reg_operand.
+	* config/xtensa/xtensa.h (PREDICATE_CODES): Remove non_acc_reg_operand.
+	(PREFERRED_RELOAD_CLASS): Move code to xtensa_preferred_reload_class.
+	* config/xtensa/xtensa.md (movsi_internal, movhi_internal,
+	movqi_internal): Use xtensa_valid_move instead of non_acc_reg_operand.
+
 2002-03-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpphash.h (struct cpp_reader): Remove mls_line and mls_col.
