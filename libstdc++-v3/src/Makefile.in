@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -145,7 +145,7 @@ glibcpp_builddir = @glibcpp_builddir@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
-@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_arg = @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@-Wl,--version-script=libstdc++-symbol.ver
+@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_arg = -Wl,--version-script=libstdc++-symbol.ver
 @GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
 
 # Compile flags that should be constant throughout the build, both for
@@ -154,13 +154,11 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
-CONFIG_CXXFLAGS = \
-	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@
+CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@
 
 
 # Warning flags to use.
-WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
+WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
@@ -170,80 +168,33 @@ LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
-INCLUDES = \
-	-nostdinc++ \
-	$(GLIBCPP_INCLUDES) \
-	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
-	$(TOPLEVEL_INCLUDES)
+INCLUDES =  	-nostdinc++ 	$(GLIBCPP_INCLUDES) 	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) 	$(TOPLEVEL_INCLUDES)
 
 
 # Source files linked in via configuration/make substitution for a
 # particular target.
-target_sources = \
-	codecvt_members.cc \
-	collate_members.cc \
-	ctype_members.cc \
-	messages_members.cc \
-	monetary_members.cc \
-	numeric_members.cc \
-	time_members.cc
+target_sources =  	codecvt_members.cc 	collate_members.cc 	ctype_members.cc 	messages_members.cc 	monetary_members.cc 	numeric_members.cc 	time_members.cc
 
 
 # Source files linked in via configuration/make substitution for a
 # particular target, but with ad hoc naming rules.
-target_sources_extra = \
-	basic_file.cc \
-	c++locale.cc 
+target_sources_extra =  	basic_file.cc 	c++locale.cc 
 
 
 # Sources present in the src directory.
-sources = \
-	bitset.cc \
-	codecvt.cc \
-	complex_io.cc \
-	concept-inst.cc \
-	ctype.cc \
-	ext-inst.cc \
-	fstream.cc \
-	fstream-inst.cc \
-	functexcept.cc \
-	globals.cc \
-	io-inst.cc \
-	ios.cc \
-	istream-inst.cc \
-	limits.cc \
-	locale.cc \
-	locale-inst.cc \
-	localename.cc \
-	misc-inst.cc \
-	ostream-inst.cc \
-	sstream-inst.cc \
-	stdexcept.cc \
-	stl-inst.cc \
-	streambuf-inst.cc \
-	string-inst.cc \
-	strstream.cc \
-	valarray-inst.cc \
-	vterminate.cc \
-	wstring-inst.cc \
-	${target_sources} \
-	${target_sources_extra}
+sources =  	bitset.cc 	codecvt.cc 	complex_io.cc 	concept-inst.cc 	ctype.cc 	ext-inst.cc 	fstream.cc 	fstream-inst.cc 	functexcept.cc 	globals.cc 	io-inst.cc 	ios.cc 	istream-inst.cc 	limits.cc 	locale.cc 	locale-inst.cc 	localename.cc 	misc-inst.cc 	ostream-inst.cc 	sstream-inst.cc 	stdexcept.cc 	stl-inst.cc 	streambuf-inst.cc 	string-inst.cc 	strstream.cc 	valarray-inst.cc 	wstring-inst.cc 	${target_sources} 	${target_sources_extra}
 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 
 libstdc___la_SOURCES = $(sources)
 
-libstdc___la_LIBADD = \
-	$(top_builddir)/libmath/libmath.la @libio_la@ \
-	$(top_builddir)/libsupc++/libsupc++convenience.la
+libstdc___la_LIBADD =  	$(top_builddir)/libmath/libmath.la @libio_la@ 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 
 libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
 
-libstdc___la_LDFLAGS = \
-	-version-info @libtool_VERSION@ ${version_arg} \
-	-lm @LIBUNWIND_FLAG@ 
+libstdc___la_LDFLAGS =  	-version-info @libtool_VERSION@ ${version_arg} 	-lm @LIBUNWIND_FLAG@ 
 
 
 # Use special rules for the deprecated source files so that they find
@@ -254,13 +205,8 @@ GLIBCPP_INCLUDE_DIR = @glibcpp_builddir@/include
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
-# as the occasion call for it. (ie, --enable-debug)
-AM_CXXFLAGS = \
-	-fno-implicit-templates \
-	$(LIBSUPCXX_CXXFLAGS) \
-	$(WARN_CXXFLAGS) \
-	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS)  
+# as the occasion call for it. 
+AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS)  
 
 
 # libstdc++ libtool notes
@@ -281,8 +227,7 @@ AM_CXXFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
 # 3) We'd have a problem when building the shared libstdc++ object if
@@ -291,8 +236,7 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
-	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 debugdir = debug
@@ -310,8 +254,8 @@ concept-inst.lo ctype.lo ext-inst.lo fstream.lo fstream-inst.lo \
 functexcept.lo globals.lo io-inst.lo ios.lo istream-inst.lo limits.lo \
 locale.lo locale-inst.lo localename.lo misc-inst.lo ostream-inst.lo \
 sstream-inst.lo stdexcept.lo stl-inst.lo streambuf-inst.lo \
-string-inst.lo strstream.lo valarray-inst.lo vterminate.lo \
-wstring-inst.lo codecvt_members.lo collate_members.lo ctype_members.lo \
+string-inst.lo strstream.lo valarray-inst.lo wstring-inst.lo \
+codecvt_members.lo collate_members.lo ctype_members.lo \
 messages_members.lo monetary_members.lo numeric_members.lo \
 time_members.lo basic_file.lo c++locale.lo
 CXXFLAGS = @CXXFLAGS@
@@ -322,7 +266,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(libstdc___la_SOURCES)
 OBJECTS = $(libstdc___la_OBJECTS)
@@ -434,7 +378,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
 
 mostlyclean-tags:
 
