@@ -503,7 +503,7 @@ extern enum reg_class regno_reg_class[];
 
    On the Alliant, the offset starts at 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
  ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument

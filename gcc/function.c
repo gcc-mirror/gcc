@@ -3235,9 +3235,6 @@ assign_parms (fndecl, second_time)
   int nparmregs = list_length (fnargs) + LAST_VIRTUAL_REGISTER + 1;
   int varargs_setup = 0;
   rtx conversion_insns = 0;
-  /* FUNCTION_ARG may look at this variable.  Since this is not
-     expanding a call it will always be zero in this function.  */
-  int current_call_is_indirect = 0;
 
   /* Nonzero if the last arg is named `__builtin_va_alist',
      which is used on some machines for old-fashioned non-ANSI varargs.h;
@@ -3299,7 +3296,7 @@ assign_parms (fndecl, second_time)
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
   INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_RTX);
 #else
-  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX);
+  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, 0);
 #endif
 
   /* We haven't yet found an argument that we must push and pretend the

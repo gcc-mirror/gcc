@@ -472,7 +472,7 @@ struct cumulative_args { int ints, floats; };
    when the function gets a structure-value-address as an
    invisible first argument.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
  ((CUM).ints = ((FNTYPE) != 0 && aggregate_value_p (TREE_TYPE ((FNTYPE))) \
 		? 4 : 0),			\
   (CUM).floats = 0)

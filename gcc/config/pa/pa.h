@@ -863,7 +863,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    if any, which holds the structure-value-address).
    Thus 4 or more means all following args should go on the stack.  */
 
-struct hppa_args {int words, nargs_prototype; };
+struct hppa_args {int words, nargs_prototype, indirect; };
 
 #define CUMULATIVE_ARGS struct hppa_args
 
@@ -871,8 +871,9 @@ struct hppa_args {int words, nargs_prototype; };
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) \
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
   (CUM).words = 0, 							\
+  (CUM).indirect = INDIRECT,						\
   (CUM).nargs_prototype = (FNTYPE && TYPE_ARG_TYPES (FNTYPE)		\
 			   ? (list_length (TYPE_ARG_TYPES (FNTYPE)) - 1	\
 			      + (TYPE_MODE (TREE_TYPE (FNTYPE)) == BLKmode \
@@ -963,13 +964,13 @@ struct hppa_args {int words, nargs_prototype; };
       || (CUM).nargs_prototype > 0)					\
       ? gen_rtx (REG, (MODE),						\
 		 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-		  ? (((!current_call_is_indirect 			\
+		  ? (((!(CUM).indirect 					\
 		       || TARGET_PORTABLE_RUNTIME)			\
 		      && (MODE) == DFmode				\
 		      && ! TARGET_SOFT_FLOAT)				\
 		     ? ((CUM).words ? 38 : 34)				\
 		     : ((CUM).words ? 23 : 25))				\
-		  : (((!current_call_is_indirect			\
+		  : (((!(CUM).indirect					\
 		       || TARGET_PORTABLE_RUNTIME)			\
 		      && (MODE) == SFmode				\
 		      && ! TARGET_SOFT_FLOAT)				\

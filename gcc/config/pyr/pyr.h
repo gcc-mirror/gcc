@@ -629,7 +629,7 @@ extern int inner_param_safe_helper();
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.   */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
   ((CUM) = (FNTYPE && !flag_pcc_struct_return		\
 	    && aggregate_value_p (TREE_TYPE (FNTYPE))))
 

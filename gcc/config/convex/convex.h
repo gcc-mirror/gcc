@@ -791,7 +791,7 @@ enum reg_class {
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0. */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) \
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
   ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument

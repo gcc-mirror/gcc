@@ -517,7 +517,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
    For 1750A, the offset starts at 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)   ((CUM) = 0)
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)   ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.

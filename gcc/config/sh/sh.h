@@ -708,7 +708,7 @@ struct sh_args {
    On SH, the offset always starts at 0: the first parm reg is always
    the same reg.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME) \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) \
   do {								\
     (CUM).arg_count[(int) SH_ARG_INT] = 0;			\
     (CUM).arg_count[(int) SH_ARG_FLOAT] = 0;			\
