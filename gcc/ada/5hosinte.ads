@@ -164,6 +164,7 @@ package System.OS_Interface is
    type struct_sigaction_ptr is access all struct_sigaction;
 
    SA_RESTART  : constant  := 16#40#;
+   SA_SIGINFO  : constant  := 16#10#;
 
    SIG_BLOCK   : constant  := 0;
    SIG_UNBLOCK : constant  := 1;

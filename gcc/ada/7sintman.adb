@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,7 +175,16 @@ begin
 
       act.sa_handler := Notify_Exception'Address;
 
-      act.sa_flags := 0;
+      act.sa_flags := SA_SIGINFO;
+
+      --  Setting SA_SIGINFO asks the kernel to pass more than just the signal
+      --  number argument to the handler when it is called.  The set of extra
+      --  parameters typically includes a pointer to a structure describing
+      --  the interrupted context.  Although the Notify_Exception handler does
+      --  not use this information, it is actually required for the GCC/ZCX
+      --  exception propagation scheme because on some targets (at least
+      --  alpha-tru64), the structure contents are not even filled when this
+      --  flag is not set.
 
       --  On some targets, we set sa_flags to SA_NODEFER so that during the
       --  handler execution we do not change the Signal_Mask to be masked for

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,6 +162,7 @@ package System.OS_Interface is
    pragma Convention (C, struct_sigaction);
    type struct_sigaction_ptr is access all struct_sigaction;
 
+   SA_SIGINFO  : constant := 16#0100#;
 
    SIG_BLOCK   : constant := 0;
    SIG_UNBLOCK : constant := 1;

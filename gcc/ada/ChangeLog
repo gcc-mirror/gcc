@@ -1,3 +1,61 @@
+2003-12-05  Thomas Quinot  <quinot@act-europe.fr>
+
+	* 3ssoliop.ads: Fix comment (this is the Solaris, not the UnixWare,
+	version of this unit).
+
+2003-12-05  Olivier Hainque  <hainque@act-europe.fr>
+
+	* 53osinte.ads, 54osinte.ads, 55osinte.ads, 56osinte.ads, 5bosinte.ads,
+	5cosinte.ads, 5hosinte.ads, 5iosinte.ads, 5losinte.ads,
+	5tosinte.ads: Define the SA_SIGINFO constant, to allow references from
+	the body of System.Interrupt_Management common to several targets.
+	Update copyright notice when appropriate.
+
+	* 52osinte.ads, 5posinte.ads: Define a dummy value for the SA_SIGINFO
+	constant.
+
+	* 7sintman.adb (elaboration): Set SA_SIGINFO in the sigaction flags,
+	to ensure that the kernel fills in the interrupted context structure
+	before calling a signal handler, which is necessary to be able to
+	unwind past it. Update the copyright notice.
+
+2003-12-05  Jerome Guitton  <guitton@act-europe.fr>
+
+	* a-elchha.ads: New file.
+
+	* a-elchha.adb: New default last chance handler. Contents taken from
+	Ada.Exceptions.Exception_Traces.Unhandled_Exception_Terminate.
+
+	* a-exextr.adb (Unhandled_Exception_Terminate): Most of this routine
+	is moved to a-elchha.adb to provide a target-independent default last
+	chance handler.
+
+	* Makefile.rtl: Add a-elchha.o
+
+	* Make-lang.in (GNAT_ADA_OBJS, GNATBIND_OBJS): Add a-elchha.o.
+
+2003-12-05  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch6.adb (Expand_Call): If the subprogram is inlined and is
+	declared in an instance, do not inline the call if the instance is not
+	frozen yet, to prevent order of elaboration problems.
+
+	* sem_prag.adb: Add comments for previous fix.
+
+2003-12-05  Samuel Tardieu  <tardieu@act-europe.fr>
+
+	* g-table.adb: Use the right variable in Set_Item.
+	Update copyright notice.
+
+2003-12-05  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.in: Remove unused rules.
+
+2003-12-05  Vincent Celier  <celier@gnat.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Remove processing of
+	-nostdlib. Not needed here after all.
+
 2003-12-03  Thomas Quinot  <quinot@act-europe.fr>
 
 	PR ada/11724

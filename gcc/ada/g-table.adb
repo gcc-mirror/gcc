@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1998-2002 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1998-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -224,7 +224,7 @@ package body GNAT.Table is
       Item  : Table_Component_Type)
    is
    begin
-      if Integer (Index) > Max then
+      if Integer (Index) > Last_Val then
          Set_Last (Index);
       end if;
 

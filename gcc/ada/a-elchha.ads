@@ -1,12 +1,16 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---          G N A T . S O C K E T S . L I N K E R _ O P T I O N S           --
+--    A D A . E X C E P T I O N S . L A S T _ C H A N C E _ H A N D L E R   --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2001-2003 Ada Core Technologies, Inc.           --
+--             Copyright (C) 2003 Free Software Foundation, Inc.            --
+--                                                                          --
+-- This specification is derived from the Ada Reference Manual for use with --
+-- GNAT. The copyright notice above, and the license provisions that follow --
+-- apply solely to the  contents of the part following the private keyword. --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,13 +35,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package is used to provide target specific linker_options for the
---  support of scokets as required by the package GNAT.Sockets.
+--  Last chance handler. Unhandled exceptions are passed to this
+--  routine.
 
---  This is the Solaris version of this package
-
-package GNAT.Sockets.Linker_Options is
-private
-   pragma Linker_Options ("-lnsl");
-   pragma Linker_Options ("-lsocket");
-end GNAT.Sockets.Linker_Options;
+procedure Ada.Exceptions.Last_Chance_Handler
+  (Except :  Exception_Occurrence);
+pragma Export (C,
+               Last_Chance_Handler,
+               "__gnat_last_chance_handler");
+pragma No_Return (Last_Chance_Handler);
