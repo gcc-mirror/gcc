@@ -28,6 +28,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "cpplib.h"
 #include <stdio.h>
+#include "intl.h"
 #include <errno.h>
 
 /* Print the file names and line numbers of the #include
@@ -62,13 +63,13 @@ cpp_print_containing_files (pfile)
 	  if (first)
 	    {
 	      first = 0;
-	      fprintf (stderr, "In file included");
+	      cpp_notice ("In file included from ");
 	    }
 	  else
-	    fprintf (stderr, ",\n                ");
+	    cpp_notice (",\n                 from ");
 	}
 
-      fprintf (stderr, " from %s:%d", ip->nominal_fname, line);
+      fprintf (stderr, "%s:%d", ip->nominal_fname, line);
     }
   if (! first)
     fprintf (stderr, ":\n");
@@ -89,23 +90,37 @@ cpp_file_line_for_message (pfile, filename, line, column)
     fprintf (stderr, "%s:%d: ", filename, line);
 }
 
-/* IS_ERROR is 2 for "fatal" error, 1 for error, 0 for warning */
+/* IS_ERROR is 2 for "fatal" error, 1 for error, 0 for warning, -1 for notice */
 
 void
-cpp_message (pfile, is_error, msg, arg1, arg2, arg3)
+cpp_message (pfile, is_error, format, arg1, arg2, arg3)
      int is_error;
      cpp_reader *pfile;
-     char *msg;
+     char *format;
      char *arg1, *arg2, *arg3;
 {
-  if (!is_error)
-    fprintf (stderr, "warning: ");
-  else if (is_error == 2)
-    pfile->errors = CPP_FATAL_LIMIT;
-  else if (pfile->errors < CPP_FATAL_LIMIT)
-    pfile->errors++;
-  fprintf (stderr, msg, arg1, arg2, arg3);
-  fprintf (stderr, "\n");
+  switch (is_error)
+    {
+    case -1:
+      break;
+    case 0:
+      fprintf (stderr, _("warning: "));
+      break;
+    case 1:
+      if (pfile->errors < CPP_FATAL_LIMIT)
+	pfile->errors++;
+      break;
+    case 2:
+      pfile->errors = CPP_FATAL_LIMIT;
+      break;
+    default:
+      abort ();
+    }
+
+  fprintf (stderr, format, arg1, arg2, arg3);
+
+  if (0 <= is_error)
+    fprintf (stderr, "\n");
 }
 
 /* Same as cpp_error, except we consider the error to be "fatal",
@@ -115,12 +130,12 @@ cpp_message (pfile, is_error, msg, arg1, arg2, arg3)
    CPP_FATAL_ERRORS.  */
 
 void
-cpp_fatal (pfile, str, arg)
+cpp_fatal (pfile, msgid, arg)
      cpp_reader *pfile;
-     char *str, *arg;
+     char *msgid, *arg;
 {
   fprintf (stderr, "%s: ", progname);
-  cpp_message (pfile, 2, str, arg);
+  cpp_message (pfile, 2, _(msgid), arg);
 }
 
 void
