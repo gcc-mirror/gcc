@@ -1,3 +1,8 @@
+2003-05-06  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/20021014-1.c: XFAIL for xstormy16 also.
+	* gcc.dg/nest.c: Likewise.
+
 2003-05-05  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-14.c: New test case.

@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -p" } */
-/* { dg-error "profiler" "No profiler support" { target mmix-*-* } 0 } */
+/* { dg-error "profiler" "No profiler support" { target mmix-*-* xstormy16-*-* } 0 } */
 /* { dg-error "" "consider using `-pg' instead of `-p' with gprof(1)" { target *-*-freebsd* } 0 } */
 /* Support for -p on solaris2 relies on mcrt1.o which comes with the
    vendor compiler.  We cannot reiably predict the directory where the
