@@ -2520,10 +2520,13 @@ pointer_int_sum (resultcode, ptrop, intop)
   if (TYPE_PRECISION (TREE_TYPE (intop)) != POINTER_SIZE)
     intop = convert (type_for_size (POINTER_SIZE, 0), intop);
 
-  /* Replace the integer argument
-     with a suitable product by the object size.  */
+  /* Replace the integer argument with a suitable product by the object size.
+     Do this multiplication as signed, then convert to the appropriate
+     pointer type (actually unsigned integral).  */
 
-  intop = build_binary_op (MULT_EXPR, intop, size_exp, 1);
+  intop = convert (result_type,
+		   build_binary_op (MULT_EXPR, intop,
+				    convert (TREE_TYPE (intop), size_exp), 1));
 
   /* Create the sum or difference.  */
 
@@ -2563,12 +2566,13 @@ pointer_diff (op0, op1)
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
     error ("arithmetic on pointer to an incomplete type");
+
   /* This generates an error if op0 is pointer to incomplete type.  */
   op1 = c_size_in_bytes (target_type);
 
   /* Divide by the size, in easiest possible way.  */
 
-  result = build (EXACT_DIV_EXPR, restype, op0, op1);
+  result = build (EXACT_DIV_EXPR, restype, op0, convert (restype, op1));
 
   folded = fold (result);
   if (folded == result)
