@@ -1,3 +1,28 @@
+2000-07-19  Zack Weinberg  <zack@wolery.cumb.org>
+
+	Implement C++ named operators.
+
+	* cpplib.h (TTYPE_TABLE): Move CPP_MIN and CPP_MAX into block
+	of operators allowed in #if and having an _EQ variant.  Add
+	CPP_MIN_EQ, CPP_MAX_EQ, and CPP_DEFINED.
+	(cpp_token flags): Add NAMED_OP.
+	(enum node_type): Add T_OPERATOR.
+	(struct cpp_hashnode): Add code slot to value union.
+	* cpphash.h (spec_nodes): Remove n_defined.
+
+	* cpplex.c (lex_line): Convert T_OPERATOR nodes to their proper types.
+	(spell_token, can_paste, maybe_paste_with_next): Handle named operators.
+	(is_macro_disabled): Tweak error messages.
+
+	* cpplib.c (get_define_node): Disallow all named operators as
+	macro names.  Tweak error messages.
+	(_cpp_init_stacks): Don't set up spec_nodes->n_defined.
+
+	* cppinit.c (builtin_array): Add entries for the named operators.
+	* cppexp.c (lex): Check for CPP_DEFINED token.
+	(priority table): Add entries for CPP_MIN and CPP_MAX.
+	(_cpp_parse_expr): Handle CPP_MIN and CPP_MAX.
+
 2000-07-19  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* gcse.c (INSN_CUID): If ENABLE_CHECKING, abort if the uid is
@@ -24,7 +49,7 @@ Wed Jul 19 01:22:15 CEST 2000  Marc Espie  <espie@cvs.openbsd.org>
 2000-07-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (TTYPE_TABLE): Rearrange to use only two per-entry
-          macros, not five.
+	  macros, not five.
 
 	* cpphash.h (TOKEN_NAME): New macro.
 	(_cpp_spell_operator): Deleted.
@@ -38,7 +63,7 @@ Wed Jul 19 01:22:15 CEST 2000  Marc Espie  <espie@cvs.openbsd.org>
 	Use TOKEN_NAME and/or TOKEN_SPELL, do not reference
 	token_spellings directly.
 	* cpplib.c: Use TOKEN_SPELL.
-	
+
 	* cpplex.c (_cpp_push_token): If the token being pushed back
 	is the previous token in this context, just subtract one from
 	context->posn.
@@ -62,20 +87,20 @@ Wed Jul 19 01:22:15 CEST 2000  Marc Espie  <espie@cvs.openbsd.org>
 
 2000-07-17  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-        * diagnostic.h (report_diagnostic): Change prototype.
+	* diagnostic.h (report_diagnostic): Change prototype.
 
-        * diagnostic.c (output_do_verbatim, diagnostic_for_asm,
-        diagnostic_for_decl):  Change prototype.
-        (error_with_decl, warning_with_decl, pedwarn_with_decl, warning,
-        error, warning, error_with_file_and_line,
-        warning_with_file_and_line, pedwarn_with_file_and_line, fatal):
-        Adjust call to report_diagnostic, diagnostic_for_decl.
-        (error_for_asm, warning_for_asm): Adjust call to diagnostic_for_asm. 
-        (output_verbatim, verbatim): Adjust call to output_do_verbatim.
-        
-        * c-errors.c (pedwarn_c99): Adjust call to report_diagnostic. End
-        varaible argument list.
-	
+	* diagnostic.c (output_do_verbatim, diagnostic_for_asm,
+	diagnostic_for_decl):  Change prototype.
+	(error_with_decl, warning_with_decl, pedwarn_with_decl, warning,
+	error, warning, error_with_file_and_line,
+	warning_with_file_and_line, pedwarn_with_file_and_line, fatal):
+	Adjust call to report_diagnostic, diagnostic_for_decl.
+	(error_for_asm, warning_for_asm): Adjust call to diagnostic_for_asm.
+	(output_verbatim, verbatim): Adjust call to output_do_verbatim.
+
+	* c-errors.c (pedwarn_c99): Adjust call to report_diagnostic. End
+	varaible argument list.
+
 2000-07-17  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c: Don't include hashtab.h.  Most macro-handling code
@@ -87,7 +112,7 @@ Wed Jul 19 01:22:15 CEST 2000  Marc Espie  <espie@cvs.openbsd.org>
 	Vlad's expandable hash table.
 	(cpp_lookup): Use new functions.
 	(_cpp_init_macros, _cpp_cleanup_macros): Adjust for new
-	implementation. 
+	implementation.
 	* cppmacro.c: New file.
 	* cppinit.c (dump_macros_helper): New.
 	(cpp_finish): Iterate over the identifier table directly.
@@ -112,7 +137,7 @@ Wed Jul 19 01:22:15 CEST 2000  Marc Espie  <espie@cvs.openbsd.org>
 2000-07-17  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* configure: Regenerate.
-	
+
 	* extend.texi (Extended Asm): Mention that a memory clobber
 	does not count as a side-effect.
 
@@ -156,7 +181,7 @@ Mon Jul 17 23:43:26 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-07-17  Chandrakala Chavva   <cchavva@cygnus.com>
 
-	* loop.c (check_dbra_loop) : Return if more than one condition is 
+	* loop.c (check_dbra_loop) : Return if more than one condition is
 	present to control the loop.
 
 Mon Jul 17 08:26:35 2000  Clinton Popetz  <cpopetz@cygnus.com>
@@ -284,7 +309,7 @@ Mon Jul 17 02:37:06 2000  Marc Espie <espie@openbsd.org>
 2000-07-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (doing_line_wrapping, line_wrapper_printf, notice,
-	v_error_with_decl, v_warning_with_decl, v_pedwarn_with_decl): Remove. 
+	v_error_with_decl, v_warning_with_decl, v_pedwarn_with_decl): Remove.
 	(v_message_with_decl): Rename to ...
 	(format_with_decl): ... this. Tweak
 	(diagnostic_for_decl): New function.
@@ -292,14 +317,14 @@ Mon Jul 17 02:37:06 2000  Marc Espie <espie@openbsd.org>
 	(announce_function): Use verbatim.
 	(default_print_error_function): Likewise.
 	(error_with_decl, warning_with_decl, pedwarn_with_decl): Use new
-	infratructure. 
+	infratructure.
 
 2000-07-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.c (function_arg_pass_by_reference): Don't do automatic
 	aggregate initialization.
 	(machine_dependent_reorg): Initialize variable `mode'.
-	
+
 	* mips.md (absdi2): Change variable `regno1' to unsigned int.
 	(reload_indi): Rename loword/hiword to lo_word/hi_word to avoid
 	conflicts with sys/param.h macro of the same name.
@@ -337,7 +362,7 @@ Fri Jul 14 18:13:53 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-07-14  Jason Merrill  <jason@redhat.com>
 
-	* dwarf2out.c (dwarf2out_frame_debug_expr): If we store the CFA 
+	* dwarf2out.c (dwarf2out_frame_debug_expr): If we store the CFA
 	register in the stack and later in another register, use the new
 	register.
 
@@ -358,7 +383,7 @@ Fri Jul 14 10:25:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* .cvsignore: Add generated YACC files.
 	* objc/.cvsignore: New file.
-	
+
 2000-07-14  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (adjust_column): New funcion.
@@ -421,14 +446,14 @@ Fri Jul 14 10:25:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	error_with_file_and_line, warning_with_file_and_line, sorry,
 	error_for_asm, warning_for_asm, fatal): Reimplement.
 	(finish_diagnostic): Clear diagnostic info as well.
-	
+
 2000-07-13  Neil Booth  <NeilB@earthling.net>
 
 	* c-common.h (flag_digraphs): New.
 	* c-decl.c (c_decode_option): Set flag_digraphs as appropriate.
 	* c-lex.c (yylex): Use flag_digraphs to decide whether to
 	honour digraphs.
-	
+
 2000-07-13  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.c (do_spec_1): Add new %B operator.
@@ -446,7 +471,7 @@ Fri Jul 14 10:25:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	named specs.
 	(C and assembly specs): Use the new named specs, as appropriate.
 
-	* objc/lang-specs.h: Use the new named specs.  
+	* objc/lang-specs.h: Use the new named specs.
 	Remove unnecessary braces.
 
 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>

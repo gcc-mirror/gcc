@@ -1460,6 +1460,13 @@ lex_line (pfile, list)
 	    list->directive = _cpp_check_directive (pfile, cur_token,
 						    !(list->tokens[0].flags
 						      & PREV_WHITE));
+	  /* Convert named operators to their proper types.  */
+	  if (cur_token->val.node->type == T_OPERATOR)
+	    {
+	      cur_token->flags |= NAMED_OP;
+	      cur_token->type = cur_token->val.node->value.code;
+	    }
+
 	  cur_token++;
 	  break;
 
@@ -1860,8 +1867,8 @@ lex_line (pfile, list)
       && cur_token > first + 1 && !CPP_OPTION (pfile, lang_asm))
     {
       if (first[1].type == CPP_NAME)
-	cpp_error (pfile, "invalid preprocessing directive #%.*s",
-		   (int) first[1].val.node->length, first[1].val.node->name);
+	cpp_error (pfile, "invalid preprocessing directive #%s",
+		   first[1].val.node->name);
       else
 	cpp_error (pfile, "invalid preprocessing directive");
     }
@@ -1954,6 +1961,8 @@ spell_token (pfile, token, buffer)
 
 	if (token->flags & DIGRAPH)
 	  spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
+	else if (token->flags & NAMED_OP)
+	  goto spell_ident;
 	else
 	  spelling = TOKEN_NAME (token);
 	
@@ -1963,6 +1972,7 @@ spell_token (pfile, token, buffer)
       break;
 
     case SPELL_IDENT:
+      spell_ident:
       memcpy (buffer, token->val.node->name, token->val.node->length);
       buffer += token->val.node->length;
       break;
@@ -2245,8 +2255,8 @@ is_macro_disabled (pfile, expansion, token)
 	  _cpp_push_token (pfile, next);
 	  if (CPP_WTRADITIONAL (pfile))
 	    cpp_warning (pfile,
-	 "function macro %.*s must be used with arguments in traditional C",
-			 (int) token->val.node->length, token->val.node->name);
+	 "function macro %s must be used with arguments in traditional C",
+			 token->val.node->name);
 	  return 1;
 	}
     }
@@ -2379,8 +2389,7 @@ parse_args (pfile, hp, args)
 
   if (token->type == CPP_EOF)
     {
-      cpp_error (pfile, "unterminated invocation of macro \"%.*s\"",
-		 hp->length, hp->name);
+      cpp_error(pfile, "unterminated argument list for macro \"%s\"", hp->name);
       return 1;
     }
   else if (argc < macro->paramc)
@@ -2401,9 +2410,7 @@ parse_args (pfile, hp, args)
 	}
       else
 	{
-	  cpp_error (pfile,
-		     "insufficient arguments in invocation of macro \"%.*s\"",
-		     hp->length, hp->name);
+	  cpp_error (pfile, "not enough arguments for macro \"%s\"", hp->name);
 	  return 1;
 	}
     }
@@ -2411,9 +2418,7 @@ parse_args (pfile, hp, args)
   else if (argc > macro->paramc
 	   && !(macro->paramc == 0 && argc == 1 && empty_argument (args, 0)))
     {
-      cpp_error (pfile,
-		 "too many arguments in invocation of macro \"%.*s\"",
-		 hp->length, hp->name);
+      cpp_error (pfile, "too many arguments for macro \"%s\"", hp->name);
       return 1;
     }
 
@@ -2582,6 +2587,12 @@ can_paste (pfile, token1, token2, digraph)
 {
   enum cpp_ttype a = token1->type, b = token2->type;
   int cxx = CPP_OPTION (pfile, cplusplus);
+
+  /* Treat named operators as if they were ordinary NAMEs.  */
+  if (token1->flags & NAMED_OP)
+    a = CPP_NAME;
+  if (token2->flags & NAMED_OP)
+    b = CPP_NAME;
 
   if (a <= CPP_LAST_EQ && b == CPP_EQ)
     return a + (CPP_EQ_EQ - CPP_EQ);
@@ -2756,6 +2767,12 @@ maybe_paste_with_next (pfile, token)
 
 	  pasted->type = type;
 	  pasted->flags = digraph ? DIGRAPH : 0;
+
+	  if (type == CPP_NAME && pasted->val.node->type == T_OPERATOR)
+	    {
+	      pasted->type = pasted->val.node->value.code;
+	      pasted->flags |= NAMED_OP;
+	    }
 	}
 
       /* The pasted token gets the whitespace flags and position of the
@@ -3101,11 +3118,11 @@ _cpp_get_token (pfile)
 	token = maybe_paste_with_next (pfile, token);
 
       /* If it isn't a macro, return it now.  */
-      if (token->type != CPP_NAME
-	  || token->val.node->type == T_VOID)
+      if (token->type != CPP_NAME || token->val.node->type == T_VOID)
 	return token;
 
-      /* Is macro expansion disabled in general?  */
+      /* Is macro expansion disabled in general, or are we in the
+	 middle of a token paste?  */
       if (pfile->no_expand_level == pfile->cur_context || pfile->paste_level)
 	return token;
  
