@@ -903,11 +903,11 @@ cpp_start_read (pfile, fname)
 
   if (CPP_OPTION (pfile, print_deps))
     {
-      /* Set the default target (if there is none already).  */
+      /* Set the default target (if there is none already), and
+	 the dependency on the main file.  */
       deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
 
-      if (CPP_OPTION (pfile, in_fname))
-	deps_add_dep (pfile->deps, CPP_OPTION (pfile, in_fname));
+      deps_add_dep (pfile->deps, CPP_OPTION (pfile, in_fname));
     }
 
   /* Open the main input file.  This must be done early, so we have a
@@ -943,6 +943,7 @@ cpp_start_read (pfile, fname)
   return 1;
 }
 
+/* Use mkdeps.c to output dependency information.  */
 static void
 output_deps (pfile)
      cpp_reader *pfile;

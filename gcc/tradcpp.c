@@ -24,6 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "version.h"
 #include "cppdefault.h"
 #include "tradcpp.h"
+#include "mkdeps.h"
 
 typedef unsigned char U_CHAR;
 
@@ -40,11 +41,22 @@ size_t max_include_len;
 
 int put_out_comments = 0;
 
+/* mkdeps.h opaque structure that encapsulates dependency information.  */
+struct deps *deps;
+
 /* Nonzero means print the names of included files rather than
    the preprocessed output.  1 means just the #include "...",
    2 means #include <...> as well.  */
 
 int print_deps = 0;
+
+/* Nonzero means print dummy targets for each header file.  */
+
+int print_deps_phony_targets = 0;
+
+/* If true, fopen (deps_file, "a") else fopen (deps_file, "w").  */
+
+int deps_append = 0;
 
 /* File name which deps are being written to.  This is 0 if deps are
    being written to stdout.  */
@@ -54,7 +66,7 @@ const char *deps_file = 0;
 /* Nonzero if missing .h files in -M output are assumed to be
    generated files and not errors.  */
 
-int print_deps_missing_files = 0;
+int deps_missing_files = 0;
        
 /* Nonzero means don't output line number information.  */
 
@@ -69,6 +81,9 @@ int dump_macros;
 /* Nonzero means don't print warning messages.  -w.  */
 
 int inhibit_warnings = 0;
+
+/* Non-0 means don't output the preprocessed program.  */
+int inhibit_output = 0;
 
 /* Nonzero means warn if slash-star appears in a comment.  */
 
@@ -390,6 +405,7 @@ static void output_line_command PARAMS ((FILE_BUF *, FILE_BUF *,
 
 static int eval_if_expression	PARAMS ((const U_CHAR *, int));
 
+static void output_deps		PARAMS ((void));
 static void initialize_builtins	PARAMS ((void));
 static void run_directive	PARAMS ((const char *, size_t,
 					 enum node_type));
@@ -400,7 +416,7 @@ static void make_assertion	PARAMS ((const char *));
 static void grow_outbuf 	PARAMS ((FILE_BUF *, int));
 static int handle_directive 	PARAMS ((FILE_BUF *, FILE_BUF *));
 static void finclude		PARAMS ((int, const char *, FILE_BUF *));
-static void deps_output		PARAMS ((const char *, int));
+static void init_dependency_output PARAMS ((void));
 static void rescan		PARAMS ((FILE_BUF *, int));
 static void newline_fix		PARAMS ((U_CHAR *));
 static void name_newline_fix	PARAMS ((U_CHAR *));
@@ -462,19 +478,6 @@ struct if_stack {
 typedef struct if_stack IF_STACK_FRAME;
 IF_STACK_FRAME *if_stack = NULL;
 
-/* Buffer of -M output.  */
-
-char *deps_buffer;
-
-/* Number of bytes allocated in above.  */
-int deps_allocated_size;
-
-/* Number of bytes used.  */
-int deps_size;
-
-/* Number of bytes since the last newline.  */
-int deps_column;
-
 /* Nonzero means -I- has been seen,
    so don't look for #include "foo" the source-file directory.  */
 int ignore_srcdir;
@@ -502,14 +505,6 @@ main (argc, argv)
   pending_dir *pend = (pending_dir *) xcalloc (argc, sizeof (pending_dir));
   int no_standard_includes = 0;
 
-  /* Non-0 means don't output the preprocessed program.  */
-  int inhibit_output = 0;
-
-  /* Stream on which to print the dependency information.  */
-  FILE *deps_stream = 0;
-  /* Target-name to write with the dependency information.  */
-  char *deps_target = 0;
-
 #ifdef RLIMIT_STACK
   /* Get rid of any avoidable limit on stack size.  */
   {
@@ -534,6 +529,10 @@ main (argc, argv)
 
   max_include_len = cpp_GCC_INCLUDE_DIR_len + 7;  /* ??? */
 
+  /* It's simplest to just create this struct whether or not it will
+     be needed.  */
+  deps = deps_init ();
+
   /* Process switches and find input file name.  */
 
   for (i = 1; i < argc; i++) {
@@ -550,7 +549,6 @@ main (argc, argv)
       switch (c) {
       case 'E':
       case '$':
-      case 'g':
 	break;  /* Ignore for compatibility with ISO/extended cpp.  */
 
       case 'l':
@@ -621,6 +619,12 @@ main (argc, argv)
 	{
 	  char *p = NULL;
 
+	  /* -MD and -MMD for tradcpp are deprecated and undocumented
+	     (use -M or -MM with -MF instead), and probably should be
+	     removed with the next major GCC version.  For the moment
+	     we allow these for the benefit of Automake 1.4, which
+	     uses these when dependency tracking is enabled.  Automake
+	     1.5 will fix this.  */
 	  if (!strncmp (argv[i], "-MD", 3)) {
 	    p = argv[i] + 3;
 	    print_deps = 2;
@@ -629,12 +633,30 @@ main (argc, argv)
 	    print_deps = 1;
 	  } else if (!strcmp (argv[i], "-M")) {
 	    print_deps = 2;
-	    inhibit_output = 1;
 	  } else if (!strcmp (argv[i], "-MM")) {
 	    print_deps = 1;
-	    inhibit_output = 1;
-	  } else if (!strcmp (argv[i], "-MG"))
-	    print_deps_missing_files = 1;
+	  } else if (!strcmp (argv[i], "-MG")) {
+	    deps_missing_files = 1;
+	  } else if (!strcmp (argv[i], "-MF")) {
+	    p = argv[i] + 3;
+	  } else if (!strcmp (argv[i], "-MP")) {
+	    print_deps_phony_targets = 1;
+	  } else if (!strcmp (argv[i], "-MQ") || !strcmp (argv[i], "-MT")) {
+	    /* Add a target.  -MQ quotes for Make.  */
+	    const char *tgt = argv[i] + 3;
+	    int quoted = argv[i][2] == 'Q';
+
+	    if (*tgt == '\0' && i + 1 == argc)
+	      fatal ("Filename missing after %s option", argv[i]);
+	    else
+	      {
+		if (*tgt == '\0')
+		  tgt = argv[++i];
+	      
+		deps_add_target (deps, tgt, quoted);
+	      }
+	  }
+
 	  if (p) {
 	    if (*p)
 	      deps_file = p;
@@ -747,11 +769,25 @@ main (argc, argv)
     }
   }
 
-  if (print_deps_missing_files && (!print_deps || !inhibit_output))
-    fatal ("-MG must be specified with one of -M or -MM");
+  init_dependency_output ();
+
+  /* After checking the environment variables, check if -M or -MM has
+     not been specified, but other -M options have.  */
+  if (print_deps == 0
+      && (deps_missing_files || deps_file || print_deps_phony_targets))
+    fatal ("you must additionally specify either -M or -MM");
 
   if (user_label_prefix == 0)
     user_label_prefix = USER_LABEL_PREFIX;
+
+  if (print_deps)
+    {
+      /* Set the default target (if there is none already), and
+	 the dependency on the main file.  */
+      deps_add_default_target (deps, in_fname);
+
+      deps_add_dep (deps, in_fname);
+    }
 
   /* Install __LINE__, etc.  Must follow option processing.  */
   initialize_builtins ();
@@ -832,96 +868,6 @@ main (argc, argv)
   } else if ((f = open (in_fname, O_RDONLY, 0666)) < 0)
     goto sys_error;
 
-  /* Either of two environment variables can specify output of deps.
-     Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
-     where OUTPUT_FILE is the file to write deps info to
-     and DEPS_TARGET is the target to mention in the deps.  */
-
-  if (print_deps == 0
-      && (getenv ("SUNPRO_DEPENDENCIES") != 0
-	  || getenv ("DEPENDENCIES_OUTPUT") != 0))
-    {
-      char *spec = getenv ("DEPENDENCIES_OUTPUT");
-      char *s;
-
-      if (spec == 0)
-	{
-	  spec = getenv ("SUNPRO_DEPENDENCIES");
-	  print_deps = 2;
-	}
-      else
-	print_deps = 1;
-
-      /* Find the space before the DEPS_TARGET, if there is one.  */
-      s = strchr (spec, ' ');
-      if (s)
-	{
-	  char *out_file;
-
-	  deps_target = s + 1;
-	  out_file = (char *) xmalloc (s - spec + 1);
-	  memcpy (out_file, spec, s - spec);
-	  out_file[s - spec] = 0;
-	  deps_file = out_file;
-	}
-      else
-	{
-	  deps_target = 0;
-	  deps_file = spec;
-	}
-    }
-
-  /* For -M, print the expected object file name
-     as the target of this Make-rule.  */
-  if (print_deps) {
-
-    if (deps_file) {
-      deps_stream = fopen (deps_file, "a");
-      if (deps_stream == 0)
-	pfatal_with_name (deps_file);
-    } else
-      /* If the -M option was used, output the deps to standard output.  */
-      deps_stream = stdout;
-
-    deps_allocated_size = 200;
-    deps_buffer = (char *) xmalloc (deps_allocated_size);
-    deps_buffer[0] = 0;
-    deps_size = 0;
-    deps_column = 0;
-
-    if (deps_target) {
-      deps_output (deps_target, 0);
-      deps_output (":", 0);
-    } else if (*in_fname == 0)
-      deps_output ("-: ", 0);
-    else {
-      int len;
-      const char *p = in_fname;
-      const char *p1 = p;
-      /* Discard all directory prefixes from P.  */
-      while (*p1) {
-	if (*p1 == '/')
-	  p = p1 + 1;
-	p1++;
-      }
-      /* Output P, but remove known suffixes.  */
-      len = strlen (p);
-      if (p[len - 2] == '.'
-	  && (p[len - 1] == 'c' || p[len - 1] == 'C' || p[len - 1] == 'S'))
-	deps_output (p, len - 2);
-      else if (p[len - 3] == '.'
-	       && p[len - 2] == 'c'
-	       && p[len - 1] == 'c')
-	deps_output (p, len - 3);
-      else
-	deps_output (p, 0);
-      /* Supply our own suffix.  */
-      deps_output (".o : ", 0);
-      deps_output (in_fname, 0);
-      deps_output (" ", 0);
-    }
-  }
-
   if (file_size_and_mode (f, &st_mode, &st_size))
     goto sys_error;
   fp->fname = in_fname;
@@ -998,20 +944,16 @@ main (argc, argv)
 
   if (dump_macros)
     dump_all_macros ();
-  else if (! inhibit_output && deps_stream != stdout) {
+  else if (! inhibit_output)
     if (write (fileno (stdout), outbuf.buf, outbuf.bufp - outbuf.buf) < 0)
       fatal ("I/O error on output");
-  }
 
-  if (print_deps) {
-    fputs (deps_buffer, deps_stream);
-    putc ('\n', deps_stream);
-    if (deps_stream != stdout) {
-      fclose (deps_stream);
-      if (ferror (deps_stream))
-	fatal ("I/O error on output");
-    }
-  }
+  /* Don't write the deps file if preprocessing has failed.  */
+  if (print_deps && errors == 0)
+    output_deps ();
+
+  /* Destruct the deps object.  */
+  deps_free (deps);
 
   if (ferror (stdout))
     fatal ("I/O error on output");
@@ -1022,6 +964,91 @@ main (argc, argv)
 
  sys_error:
   pfatal_with_name (in_fname);
+}
+
+/* Set up dependency-file output.  */
+static void
+init_dependency_output ()
+{
+  char *spec, *s, *output_file;
+
+  /* Either of two environment variables can specify output of deps.
+     Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
+     where OUTPUT_FILE is the file to write deps info to
+     and DEPS_TARGET is the target to mention in the deps.  */
+
+  if (print_deps == 0)
+    {
+      spec = getenv ("DEPENDENCIES_OUTPUT");
+      if (spec)
+	print_deps = 1;
+      else
+	{
+	  spec = getenv ("SUNPRO_DEPENDENCIES");
+	  if (spec)
+	    print_deps = 2;
+	  else
+	    return;
+	}
+
+      /* Find the space before the DEPS_TARGET, if there is one.  */
+      s = strchr (spec, ' ');
+      if (s)
+	{
+	  /* Let the caller perform MAKE quoting.  */
+	  deps_add_target (deps, s + 1, 0);
+	  output_file = (char *) xmalloc (s - spec + 1);
+	  memcpy (output_file, spec, s - spec);
+	  output_file[s - spec] = 0;
+	}
+      else
+	output_file = spec;
+
+      /* Command line overrides environment variables.  */
+      if (deps_file == 0)
+	deps_file = output_file;
+      deps_append = 1;
+    }
+
+  /* If dependencies go to standard output, or -MG is used, we should
+     suppress output.  The user may be requesting other stuff to
+     stdout, with -dM, -v etc.  We let them shoot themselves in the
+     foot.  */
+  if (deps_file == 0 || deps_missing_files)
+    inhibit_output = 1;
+}
+
+/* Use mkdeps.c to output dependency information.  */
+static void
+output_deps ()
+{
+  /* Stream on which to print the dependency information.  */
+  FILE *deps_stream = 0;
+  const char *deps_mode = deps_append ? "a" : "w";
+
+  if (deps_file == 0)
+    deps_stream = stdout;
+  else
+    {
+      deps_stream = fopen (deps_file, deps_mode);
+      if (deps_stream == 0)
+	{
+	  error_from_errno (deps_file);
+	  return;
+	}
+    }
+
+  deps_write (deps, deps_stream, 72);
+
+  if (print_deps_phony_targets)
+    deps_phony_targets (deps, deps_stream);
+
+  /* Don't close stdout.  */
+  if (deps_file)
+    {
+      if (ferror (deps_stream) || fclose (deps_stream) != 0)
+	fatal ("I/O error on output");
+    }
 }
 
 /* Move all backslash-newline pairs out of embarrassing places.
@@ -2372,7 +2399,7 @@ get_filename:
   if (f < 0) {
     strncpy (fname, (const char *)fbeg, flen);
     fname[flen] = 0;
-    if (print_deps_missing_files
+    if (deps_missing_files
 	&& print_deps > (system_header_p || (system_include_depth > 0))) {
 
       /* If requested as a system header, assume it belongs in
@@ -2383,7 +2410,7 @@ get_filename:
 	stackp = include;
 
       if (!system_header_p || *fbeg == '/' || !stackp->fname)
-	deps_output ((const char *)fbeg, flen);
+	deps_add_dep (deps, fname);
       else {
 	char *p;
 	int len = strlen(stackp->fname);
@@ -2393,10 +2420,9 @@ get_filename:
 	p[len++] = '/';
 	memcpy (p + len, fbeg, flen);
 	len += flen;
-	deps_output (p, len);
+	p[len] = '\0';
+	deps_add_dep (deps, p);
       }
-      deps_output (" ", 0);
-
     } else if (print_deps
 	       && print_deps <= (system_header_p
 				 || (system_include_depth > 0)))
@@ -2433,10 +2459,8 @@ get_filename:
       ptr->fname = xstrdup (fname);
 
       /* For -M, add this file to the dependencies.  */
-      if (print_deps > (system_header_p || (system_include_depth > 0))) {
-	deps_output (fname, strlen (fname));
-	deps_output (" ", 0);
-      }
+      if (print_deps > (system_header_p || (system_include_depth > 0)))
+	deps_add_dep (deps, fname);
     }   
 
     if (system_header_p)
@@ -5106,38 +5130,6 @@ make_assertion (str)
   run_directive (str, count, type);
 }
 
-/* Add output to `deps_buffer' for the -M switch.
-   STRING points to the text to be output.
-   SIZE is the number of bytes, or 0 meaning output until a null.
-   If SIZE is nonzero, we break the line first, if it is long enough.  */
-static void
-deps_output (string, size)
-     const char *string;
-     int size;
-{
-#ifndef MAX_OUTPUT_COLUMNS
-#define MAX_OUTPUT_COLUMNS 75
-#endif
-  if (size != 0 && deps_column != 0
-      && size + deps_column > MAX_OUTPUT_COLUMNS) {
-    deps_output ("\\\n  ", 0);
-    deps_column = 0;
-  }
-
-  if (size == 0)
-    size = strlen (string);
-
-  if (deps_size + size + 1 > deps_allocated_size) {
-    deps_allocated_size = deps_size + size + 50;
-    deps_allocated_size *= 2;
-    deps_buffer = (char *) xrealloc (deps_buffer, deps_allocated_size);
-  }
-  memcpy (&deps_buffer[deps_size], string, size);
-  deps_size += size;
-  deps_column += size;
-  deps_buffer[deps_size] = 0;
-}
-
 /* Get the file-mode and data size of the file open on FD
    and store them in *MODE_POINTER and *SIZE_POINTER.  */
 

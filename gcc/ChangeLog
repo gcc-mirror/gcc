@@ -1,3 +1,22 @@
+2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * Makefile.in (tradcpp0): Depend on mkdeps.h.  Link mkdeps.o
+        * cppinit.c (cpp_start_read): Update comment, remove unneeded
+        if statement.
+        * tradcpp.c: Include mkdeps.h.
+        (deps, print_deps_phony_targets, deps_append, output_deps,
+        init_dependency_output, output_deps): New.
+        (deps_buffer, deps_allocated_size, deps_size, deps_column,
+        deps_output): Delete.
+        (print_deps_missing_files): Rename deps_missing_files.
+        (inhibit_output): Make global.
+        (main): Delete inhibit_output, deps_stream, deps_target.
+        Use mkdeps functionality in the same way as cpplib.  Remove
+        -g3 handling.  Handle -MF, -MP, -MQ, -MT.  Update handling of
+        -M and -MM.  Remove old handling of deps via deps_out, and
+        old reading of environment variables.
+        (get_filename): Update to use deps_add_dep.
+
 2001-01-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* output.h (make_function_rtl): Remove prototype.
