@@ -8783,7 +8783,7 @@
      
     /* For the StrongARM at least it is faster to
        use STR to store only a single register.  */
-    if (num_saves == 2)
+    if (num_saves == 1)
       output_asm_insn (\"str\\t%1, [%m0, #-4]!\", operands);
     else
       {
@@ -8792,9 +8792,7 @@
 
 	strcpy (pattern, \"stmfd\\t%m0!, {%1\");
 
-	/* We skip the first register, since we can extract that directly from
-	   the pattern.  */
-	for (i = 2; i < num_saves; i++)
+	for (i = 1; i < num_saves; i++)
 	  {
 	    strcat (pattern, \", %|\");
 	    strcat (pattern,
