@@ -46,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.1.11.5 19 May 1992 08:15:15";
+static char out_sccs_id[] = "@(#)m88k.c	2.1.11.11 29 May 1992 11:12:23";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -840,25 +840,45 @@ mostly_false_jump (jump_insn, condition)
   for (insnt = NEXT_INSN (target_label);
        insnt;
        insnt = NEXT_INSN (insnt))
-    if (GET_CODE (insnt) == JUMP_INSN
-	|| (GET_CODE (insnt) == SEQUENCE
-	    && GET_CODE (XVECEXP (insnt, 0, 0)) == JUMP_INSN))
-      break;
-  if (insnt && GET_CODE (PATTERN (insnt)) == RETURN)
+    {
+      if (GET_CODE (insnt) == JUMP_INSN)
+	break;
+      else if (GET_CODE (insnt) == SEQUENCE
+	       && GET_CODE (XVECEXP (insnt, 0, 0)) == JUMP_INSN)
+	{
+	  insnt = XVECEXP (insnt, 0, 0);
+	  break;
+	}
+    }
+  if (insnt
+      && (GET_CODE (PATTERN (insnt)) == RETURN
+	  || (GET_CODE (PATTERN (insnt)) == SET
+	      && GET_CODE (SET_SRC (PATTERN (insnt))) == REG
+	      && REGNO (SET_SRC (PATTERN (insnt))) == 1)))
     insnt = 0;
 
   for (insnj = NEXT_INSN (jump_insn);
        insnj;
        insnj = NEXT_INSN (insnj))
-    if (GET_CODE (insnj) == JUMP_INSN
-	|| (GET_CODE (insnj) == SEQUENCE
-	    && GET_CODE (XVECEXP (insnj, 0, 0)) == JUMP_INSN))
-      break;
-  if (insnj && GET_CODE (PATTERN (insnj)) == RETURN)
-    insnj = 0;
+    {
+      if (GET_CODE (insnj) == JUMP_INSN)
+	break;
+      else if (GET_CODE (insnj) == SEQUENCE
+	       && GET_CODE (XVECEXP (insnj, 0, 0)) == JUMP_INSN)
+	{
+	  insnj = XVECEXP (insnj, 0, 0);
+	  break;
+	}
+    }
+  if (insnj
+      && (GET_CODE (PATTERN (insnj)) == RETURN
+	  || (GET_CODE (PATTERN (insnj)) == SET
+	      && GET_CODE (SET_SRC (PATTERN (insnj))) == REG
+	      && REGNO (SET_SRC (PATTERN (insnj))) == 1)))
+    insnt = 0;
 
   /* Predict to not return.  */
-  if (insnt != insnj)
+  if ((insnt == 0) != (insnj == 0))
     return (insnt == 0);
 
   /* Predict loops to loop.  */
@@ -883,7 +903,8 @@ mostly_false_jump (jump_insn, condition)
 
   /* EQ tests are usually false and NE tests are usually true.  Also,
      most quantities are positive, so we can make the appropriate guesses
-     about signed comparisons against zero.  */
+     about signed comparisons against zero.  Consider unsigned comparsions
+     to be a range check and assume quantities to be in range.  */
   switch (GET_CODE (condition))
     {
     case CONST_INT:
@@ -895,62 +916,21 @@ mostly_false_jump (jump_insn, condition)
       return 0;
     case LE:
     case LT:
+    case GEU:
+    case GTU: /* Must get casesi right at least.  */
       if (XEXP (condition, 1) == const0_rtx)
         return 1;
       break;
     case GE:
     case GT:
+    case LEU:
+    case LTU:
       if (XEXP (condition, 1) == const0_rtx)
 	return 0;
       break;
     }
 
   return 0;
-}
-
-/* Report errors on floating point, if we are given NaN's, or such.  Leave
-   the number as is, though, since we output the number in hex, and the
-   assembler won't choke on it.  */
-
-void
-check_float_value (mode, value)
-     enum machine_mode mode;
-     REAL_VALUE_TYPE value;
-{
-  union {
-    REAL_VALUE_TYPE d;
-    struct {
-      unsigned sign	    :  1;
-      unsigned exponent  : 11;
-      unsigned mantissa1 : 20;
-      unsigned mantissa2;
-    } s;
-  } u;
-
-  if (mode == DFmode)
-    {
-      u.d = value;
-      if (u.s.mantissa1 != 0 || u.s.mantissa2 != 0)
-	{
-	  if (u.s.exponent == 0x7ff)	/* Not a Number */
-	    warning ("floating point number is not valid for IEEE double precision");
-	  else if (u.s.exponent == 0)
-	    warning ("denormalized double precision floating point number");
-	}
-    }
-  else if (mode == SFmode)
-    {
-      u.d = REAL_VALUE_TRUNCATE (mode, value);
-      if (u.s.mantissa1 != 0 || u.s.mantissa2 != 0)
-	{
-	  if (u.s.exponent == 0x7ff)	/* Not a Number */
-	    warning ("floating point number is not valid for IEEE double precision");
-	  else if (u.s.exponent == 0)
-	    warning ("denormalized single precision floating point number");
-	}
-      else if (u.s.exponent == 0x7ff)	/* Infinity */
-	warning ("floating point number exceeds range of `float'");
-    }
 }
 
 /* Return true if the operand is a power of two and is a floating
@@ -1709,9 +1689,12 @@ m88k_layout_frame ()
 
   /* If a frame is requested, save the previous FP, and the return
      address (r1), so that a traceback can be done without using tdesc
-     information.  */
+     information.  Otherwise, simply save the FP if it is used as
+     a preserve register.  */
   if (frame_pointer_needed)
     save_regs[FRAME_POINTER_REGNUM] = save_regs[1] = 1;
+  else if (regs_ever_live[FRAME_POINTER_REGNUM])
+    save_regs[FRAME_POINTER_REGNUM] = 1;
 
   /* Figure out which extended register(s) needs to be saved.  */
   for (regno = FIRST_EXTENDED_REGISTER + 1; regno < FIRST_PSEUDO_REGISTER;
@@ -1872,7 +1855,6 @@ eligible_for_epilogue_delay (insn)
     case TYPE_LOADA:
     case TYPE_ARITH:
     case TYPE_MARITH:
-    case TYPE_MSTORE:
       return ok_for_epilogue_p (PATTERN (insn));
     default:
       return 0;
@@ -2625,8 +2607,7 @@ m88k_builtin_saveregs (arglist)
 						 2 * UNITS_PER_WORD)),
 		  copy_to_reg (XEXP (addr, 0)));
 
-  /* Now store the incoming registers and return the address of the
-     va_list constructor.  */
+  /* Now store the incoming registers.  */
   if (fixed < 8)
       move_block_from_reg
 	(2 + fixed,
@@ -2635,7 +2616,10 @@ m88k_builtin_saveregs (arglist)
 					fixed * UNITS_PER_WORD)),
 	 8 - fixed);
 
-  return copy_to_reg (XEXP (block, 0));
+  /* Return the address of the va_list constructor, but don't put it in a
+     register.  This fails when not optimizing and produces worse code when
+     optimizing.  */
+  return XEXP (block, 0);
 }
 
 /* If cmpsi has not been generated, emit code to do the test.  Return the
