@@ -1284,6 +1284,18 @@ fix = {
 
 
 /*
+ *  Non-traditional "const" declaration in Irix's limits.h.
+ */
+fix = {
+    hackname	= irix_limits_const;
+    files	= limits.h;
+    select	= "^extern const ";
+    c_fix	= format;
+    c_fix_arg	= "extern __const ";
+};
+
+
+/*
  * Fixing ISC fmod declaration
  */
 fix = {
