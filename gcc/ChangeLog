@@ -1,3 +1,17 @@
+2003-06-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	Don't warn on dollars in builtin macro definitions,
+	e.g. __REGISTER_PREFIX__.
+	* cpphash.h (struct cpp_reader): Move member warn_dollars...
+	* cpplib.h (struct cpp_options): ...to here.  Change type to
+	unsigned char.
+	* cppinit.c (cpp_create_reader): Set it to 1 here.
+	(post_options): Don't set it here.
+	* c-opts.c (c_common_init_options): Reset it to 0 here.
+	(finish_options): Set it here.
+	* cpplex.c (forms_identifier_p): Tweak for new location of
+	warn_dollars.
+
 2003-06-11  Uwe Stieber  <uwe@kaos-group.de>
 
 	* config.gcc (arm*-*-kaos*, i[34567]86-*-kaos*, powerpc-*-kaos*,
