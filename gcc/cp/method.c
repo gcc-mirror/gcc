@@ -597,11 +597,9 @@ build_overload_int (value, flags)
      should always be represented by constants.  */
   my_friendly_assert (TREE_CODE (value) == INTEGER_CST, 243);
 
-  /* If the high-order word is not merely a sign-extension of the
-     low-order word, we must use a special output routine that can
-     deal with this.  */
-  if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (value)
-      != (TREE_INT_CST_LOW (value) >> (HOST_BITS_PER_WIDE_INT - 1)))
+  /* If value doesn't fit in a single HOST_WIDE_INT, we must use a
+     special output routine that can deal with this.  */
+  if (! host_integerp (value, 0))
     {
       multiple_words_p = 1;
       /* And there is certainly going to be more than one digit.  */

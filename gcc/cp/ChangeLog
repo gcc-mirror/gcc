@@ -1,3 +1,8 @@
+2000-03-20  Jed Wing <jedwin@zloty.ugcs.caltech.edu>
+	    Jason Merrill  <jason@casey.cygnus.com>
+
+	* method.c (build_overload_int): Use host_integerp.
+
 2000-03-20 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* init.c (build_offset_ref): Handle the case of a templated member
