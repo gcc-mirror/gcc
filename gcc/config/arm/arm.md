@@ -7983,6 +7983,44 @@
   [(set_attr "conds" "clob")
    (set_attr "length" "20")])
 
+(define_split
+  [(set (reg:CC_NOOV CC_REGNUM)
+	(compare:CC_NOOV (ior:SI
+			  (and:SI (match_operand:SI 0 "s_register_operand" "")
+				  (const_int 1))
+			  (match_operator:SI 1 "comparison_operator"
+			   [(match_operand:SI 2 "s_register_operand" "")
+			    (match_operand:SI 3 "arm_add_operand" "")]))
+			 (const_int 0)))
+   (clobber (match_operand:SI 4 "s_register_operand" ""))]
+  "TARGET_ARM"
+  [(set (match_dup 4)
+	(ior:SI (match_op_dup 1 [(match_dup 2) (match_dup 3)])
+		(match_dup 0)))
+   (set (reg:CC_NOOV CC_REGNUM)
+	(compare:CC_NOOV (and:SI (match_dup 4) (const_int 1))
+			 (const_int 0)))]
+  "")
+
+(define_split
+  [(set (reg:CC_NOOV CC_REGNUM)
+	(compare:CC_NOOV (ior:SI
+			  (match_operator:SI 1 "comparison_operator"
+			   [(match_operand:SI 2 "s_register_operand" "")
+			    (match_operand:SI 3 "arm_add_operand" "")])
+			  (and:SI (match_operand:SI 0 "s_register_operand" "")
+				  (const_int 1)))
+			 (const_int 0)))
+   (clobber (match_operand:SI 4 "s_register_operand" ""))]
+  "TARGET_ARM"
+  [(set (match_dup 4)
+	(ior:SI (match_op_dup 1 [(match_dup 2) (match_dup 3)])
+		(match_dup 0)))
+   (set (reg:CC_NOOV CC_REGNUM)
+	(compare:CC_NOOV (and:SI (match_dup 4) (const_int 1))
+			 (const_int 0)))]
+  "")
+
 (define_insn "*negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(neg:SI (match_operator 3 "arm_comparison_operator"
