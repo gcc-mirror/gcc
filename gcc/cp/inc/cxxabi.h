@@ -64,15 +64,22 @@ public:
 public:
   enum quals_masks {
     const_mask = 0x1,
-    volatile_mask = 0x2
+    volatile_mask = 0x2,
+    restrict_mask = 0x4,
+    incomplete_mask = 0x8
   };
 
 /* implementation defined member functions */
 protected:
   virtual bool __is_pointer_p () const;
 protected:
-  virtual bool __do_catch (const std::type_info *__thr_type, void **__thr_obj,
+  virtual bool __do_catch (const std::type_info *__thr_type,
+                           void **__thr_obj,
                            unsigned __outer) const;
+protected:
+  virtual bool __pointer_catch (const __pointer_type_info *__thr_type,
+                                void **__thr_obj,
+                                unsigned __outer) const;
 };
 
 /* type information for array objects */
@@ -120,36 +127,30 @@ public:
 
 /* type information for a pointer to member variable (not function) */
 class __pointer_to_member_type_info
-  : public std::type_info
+  : public __pointer_type_info
 {
 /* abi defined member variables */
 public:
   const __class_type_info *klass;   /* class of the member */
-  const std::type_info *type;       /* type of the pointed to member */
-  int quals;                        /* qualifications of the pointed to type */
 
 /* abi defined member functions */
 public:
   virtual ~__pointer_to_member_type_info ();
 public:
   explicit __pointer_to_member_type_info (const char *__n,
-                                          const __class_type_info *__klass,
+                                          int __quals,
                                           const std::type_info *__type,
-                                          int __quals)
-    : std::type_info (__n), klass (__klass), type (__type), quals (__quals)
+                                          const __class_type_info *__klass)
+    : __pointer_type_info (__n, __quals, __type), klass (__klass)
     { }
-
-/* implementation defined types */
-public:
-  enum quals_masks {
-    const_mask = 0x1,
-    volatile_mask = 0x2
-  };
 
 /* implementation defined member functions */
 protected:
-  virtual bool __do_catch (const std::type_info *__thr_type, void **__thr_obj,
-                         unsigned __outer) const;
+  virtual bool __is_pointer_p () const;
+protected:
+  virtual bool __pointer_catch (const __pointer_type_info *__thr_type,
+                                void **__thr_obj,
+                                unsigned __outer) const;
 };
 
 class __class_type_info;
