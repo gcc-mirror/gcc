@@ -1,6 +1,7 @@
 2002-11-04  Anthony Green  <green@redhat.com>
 
-	* libjava.loader/TestEarlyGC.java: New file (from
+	* libjava.loader/TestEarlyGC.java,
+	libjava.loader/TestEarlyGC.out: New files (from
 	Jeff Sturm).
 
 2002-11-04  Anthony Green  <green@redhat.com>
