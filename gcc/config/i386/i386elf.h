@@ -30,10 +30,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (i386 bare ELF target)");
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
-   and returns float values in the 387, ie,
-   (TARGET_80387 | TARGET_IEEE_FP | TARGET_FLOAT_RETURNS_IN_80387) */
+   and returns float values in the 387.  */
 
-#define TARGET_DEFAULT 0301
+#define TARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
 
 /* The svr4 ABI for the i386 says that records and unions are returned
    in memory.  */
