@@ -239,10 +239,6 @@ struct assertion_hashnode {
     while ((C) == '\\' && PEEKC() == '\n') { FORWARD(1); (C) = GETC(); }\
   } while(0)
 
-/* Name under which this program was invoked.  */
-
-char *progname;
-
 struct cpp_pending {
   struct cpp_pending *next;
   char *cmd;
