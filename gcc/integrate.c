@@ -1353,7 +1353,9 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
      register number fits in const_equiv_map.  Then we store all non-register
      parameters into their memory location.  */
 
-  push_temp_slots ();
+  /* Don't try to free temp stack slots here, because we may put one of the
+     parameters into a temp stack slot.  */
+
   for (i = 0; i < nargs; i++)
     {
       rtx copy = arg_vals[i];
@@ -1422,9 +1424,6 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	}
       else
 	abort ();
-
-      /* Free any temporaries we made setting up this parameter.  */
-      free_temp_slots ();
     }
 
   /* Now do the parameters that will be placed in memory.  */
@@ -1454,13 +1453,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  if (! memory_address_p (GET_MODE (temp), XEXP (temp, 0)))
 	    temp = change_address (temp, VOIDmode, XEXP (temp, 0));
 	  store_expr (arg_trees[i], temp, 0);
-
-	  /* Free any temporaries we made setting up this parameter.  */
-	  free_temp_slots ();
 	}
     }
-
-  pop_temp_slots ();
 
   /* Deal with the places that the function puts its result.
      We are driven by what is placed into DECL_RESULT.
