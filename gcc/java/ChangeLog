@@ -1,3 +1,7 @@
+Sun Dec  6 13:21:18 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-dump.c (INVOKE):  If invokeinterface, print number of args.
+
 Thu Dec  3 17:11:12 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (java_layout_seen_class_methods): New function
