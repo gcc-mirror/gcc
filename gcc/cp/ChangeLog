@@ -1,3 +1,15 @@
+1998-09-03  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (finish_globally_qualified_member_call_expr):
+	Rename to ...
+	(finish_qualified_call_expr).
+	* semantics.c: Likewise.
+	* parse.y (primary): Use it.
+	* method.c (hack_identifier): Remove redundant code.
+	
+	* init.c (resolve_offset_ref): Call convert_from_reference to
+ 	handle members of reference type.  Improve error recovery.
+
 1998-09-03  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* cp-tree.h: Declare warn_nontemplate_friend.

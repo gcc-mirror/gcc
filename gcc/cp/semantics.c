@@ -995,7 +995,7 @@ finish_pseudo_destructor_call_expr (object, scope, destructor)
    ARGS.  Returns an expression for the call.  */
 
 tree 
-finish_globally_qualified_member_call_expr (fn, args)
+finish_qualified_call_expr (fn, args)
      tree fn;
      tree args;
 {

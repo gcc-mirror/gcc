@@ -1491,9 +1491,9 @@ primary:
 	| overqualified_id  %prec HYPERUNARY
 		{ $$ = build_offset_ref (OP0 ($$), OP1 ($$)); }
 	| overqualified_id '(' nonnull_exprlist ')'
-                { $$ = finish_globally_qualified_member_call_expr ($1, $3); }
+                { $$ = finish_qualified_call_expr ($1, $3); }
 	| overqualified_id LEFT_RIGHT
-		{ $$ = finish_globally_qualified_member_call_expr ($1, NULL_TREE); }
+		{ $$ = finish_qualified_call_expr ($1, NULL_TREE); }
         | object object_template_id %prec UNARY
                 { 
 		  $$ = build_x_component_ref ($$, $2, NULL_TREE, 1); 
