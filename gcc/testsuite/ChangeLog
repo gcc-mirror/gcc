@@ -1,5 +1,9 @@
 2003-06-26  Eric Botcazou <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/20030626-1.c: Use signed char.
+
+2003-06-26  Eric Botcazou <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/20030626-1.c: New test.
 
 2003-06-26  Neil Booth  <neil@daikokuya.co.uk>
