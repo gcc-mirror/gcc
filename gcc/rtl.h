@@ -995,3 +995,6 @@ extern char *regno_pointer_align;
    know what `enum tree_code' means.  */
 
 extern int rtx_to_tree_code	PROTO((enum rtx_code));
+
+extern int computed_jump_p	PROTO((rtx));
+
