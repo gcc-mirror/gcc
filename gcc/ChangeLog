@@ -1,3 +1,12 @@
+Tue Jul 21 00:31:01 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c (do_spec): Issue a warning for '%[]' usage.
+
+	* Undo this change.
+	* gcc.c: Delete %[spec] support.
+	(do_spec_1, case '('): Likewise.
+	(do_spec_1, case '['): Call error.
+
 Mon Jul 20 22:34:17 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (CPP_SPEC): Tidy.  Hook to cpp_cpu and cpp_subtarget.
