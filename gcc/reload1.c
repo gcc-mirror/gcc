@@ -440,7 +440,6 @@ static void delete_output_reload	PARAMS ((rtx, int, int));
 static void delete_address_reloads	PARAMS ((rtx, rtx));
 static void delete_address_reloads_1	PARAMS ((rtx, rtx, rtx));
 static rtx inc_for_reload		PARAMS ((rtx, rtx, rtx, int));
-static int constraint_accepts_reg_p	PARAMS ((const char *, rtx));
 static void reload_cse_regs_1		PARAMS ((rtx));
 static int reload_cse_noop_set_p	PARAMS ((rtx));
 static int reload_cse_simplify_set	PARAMS ((rtx, rtx));
@@ -6384,38 +6383,43 @@ emit_input_reload_insns (chain, rl, old, j)
 	  && SET_DEST (PATTERN (temp)) == old
 	  /* Make sure we can access insn_operand_constraint.  */
 	  && asm_noperands (PATTERN (temp)) < 0
-	  /* This is unsafe if prev insn rejects our reload reg.  */
-	  && constraint_accepts_reg_p (insn_data[recog_memoized (temp)].operand[0].constraint,
-				       reloadreg)
 	  /* This is unsafe if operand occurs more than once in current
 	     insn.  Perhaps some occurrences aren't reloaded.  */
-	  && count_occurrences (PATTERN (insn), old, 0) == 1
-	  /* Don't risk splitting a matching pair of operands.  */
-	  && ! reg_mentioned_p (old, SET_SRC (PATTERN (temp))))
+	  && count_occurrences (PATTERN (insn), old, 0) == 1)
 	{
+	  rtx old = SET_DEST (PATTERN (temp));
 	  /* Store into the reload register instead of the pseudo.  */
 	  SET_DEST (PATTERN (temp)) = reloadreg;
 
-	  /* If the previous insn is an output reload, the source is
-	     a reload register, and its spill_reg_store entry will
-	     contain the previous destination.  This is now
-	     invalid.  */
-	  if (GET_CODE (SET_SRC (PATTERN (temp))) == REG
-	      && REGNO (SET_SRC (PATTERN (temp))) < FIRST_PSEUDO_REGISTER)
+	  /* Verify that resulting insn is valid.  */
+	  extract_insn (temp);
+	  if (constrain_operands (1))
 	    {
-	      spill_reg_store[REGNO (SET_SRC (PATTERN (temp)))] = 0;
-	      spill_reg_stored_to[REGNO (SET_SRC (PATTERN (temp)))] = 0;
-	    }
+	      /* If the previous insn is an output reload, the source is
+		 a reload register, and its spill_reg_store entry will
+		 contain the previous destination.  This is now
+		 invalid.  */
+	      if (GET_CODE (SET_SRC (PATTERN (temp))) == REG
+		  && REGNO (SET_SRC (PATTERN (temp))) < FIRST_PSEUDO_REGISTER)
+		{
+		  spill_reg_store[REGNO (SET_SRC (PATTERN (temp)))] = 0;
+		  spill_reg_stored_to[REGNO (SET_SRC (PATTERN (temp)))] = 0;
+		}
 
-	  /* If these are the only uses of the pseudo reg,
-	     pretend for GDB it lives in the reload reg we used.  */
-	  if (REG_N_DEATHS (REGNO (old)) == 1
-	      && REG_N_SETS (REGNO (old)) == 1)
-	    {
-	      reg_renumber[REGNO (old)] = REGNO (rl->reg_rtx);
-	      alter_reg (REGNO (old), -1);
+	      /* If these are the only uses of the pseudo reg,
+		 pretend for GDB it lives in the reload reg we used.  */
+	      if (REG_N_DEATHS (REGNO (old)) == 1
+		  && REG_N_SETS (REGNO (old)) == 1)
+		{
+		  reg_renumber[REGNO (old)] = REGNO (rl->reg_rtx);
+		  alter_reg (REGNO (old), -1);
+		}
+	      special = 1;
 	    }
-	  special = 1;
+	  else
+	    {
+	      SET_DEST (PATTERN (temp)) = old;
+	    }
 	}
     }
 
@@ -7989,51 +7993,6 @@ inc_for_reload (reloadreg, in, value, inc_amount)
     }
 
   return store;
-}
-
-/* Return 1 if we are certain that the constraint-string STRING allows
-   the hard register REG.  Return 0 if we can't be sure of this.  */
-
-static int
-constraint_accepts_reg_p (string, reg)
-     const char *string;
-     rtx reg;
-{
-  int value = 0;
-  int regno = true_regnum (reg);
-  int c;
-
-  /* Initialize for first alternative.  */
-  value = 0;
-  /* Check that each alternative contains `g' or `r'.  */
-  while (1)
-    switch (c = *string++)
-      {
-      case 0:
-	/* If an alternative lacks `g' or `r', we lose.  */
-	return value;
-      case ',':
-	/* If an alternative lacks `g' or `r', we lose.  */
-	if (value == 0)
-	  return 0;
-	/* Initialize for next alternative.  */
-	value = 0;
-	break;
-      case 'g':
-      case 'r':
-	/* Any general reg wins for this alternative.  */
-	if (TEST_HARD_REG_BIT (reg_class_contents[(int) GENERAL_REGS], regno))
-	  value = 1;
-	break;
-      default:
-	/* Any reg in specified class wins for this alternative.  */
-	{
-	  enum reg_class class = REG_CLASS_FROM_LETTER (c);
-
-	  if (TEST_HARD_REG_BIT (reg_class_contents[(int) class], regno))
-	    value = 1;
-	}
-      }
 }
 
 /* INSN is a no-op; delete it.

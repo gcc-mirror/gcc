@@ -1,3 +1,10 @@
+Thu Oct 10 17:38:29 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	PR ice/7951
+	* reload1.c (emit_input_reload_insns): Use constrain_operands
+	instead of constraint_accepts_reg_p to verify optimization.
+	(constraint_accepts_reg_p): Kill
+
 Thu Oct 10 17:05:22 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR target/7723
