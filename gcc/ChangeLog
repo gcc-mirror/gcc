@@ -1,5 +1,9 @@
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (*sgt_di_mips16): Fix destination constraint.
+
+2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (*seq_[sd]i): Renamed from seq_[sd]i_zero.
 	(*sne_[sd]i): Likewise sne_[sd]i_zero.
 	(*sgt_[sd]i): ...and sgt_[sd]i.

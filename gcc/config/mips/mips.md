@@ -6131,7 +6131,7 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode" "DI")])
 
 (define_insn "*sgt_di_mips16"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=t")
 	(gt:DI (match_operand:DI 1 "register_operand" "d")
 	       (match_operand:DI 2 "register_operand" "d")))]
   "TARGET_64BIT && TARGET_MIPS16"
