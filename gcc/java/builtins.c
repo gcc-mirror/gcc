@@ -181,7 +181,7 @@ sqrt_builtin (method_return_type, method_arguments)
      tree method_return_type, method_arguments;
 {
   /* FIXME: this assumes that jdouble and double are the same.  */
-  tree fn = built_in_decls[BUILT_IN_SQRTF];
+  tree fn = built_in_decls[BUILT_IN_SQRT];
   if (fn == NULL_TREE)
     return NULL_TREE;
   return build_function_call_expr (fn, method_arguments);

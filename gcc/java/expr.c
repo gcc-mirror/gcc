@@ -2168,8 +2168,13 @@ build_jni_stub (method)
   TREE_PUBLIC (meth_var) = 0;
   DECL_EXTERNAL (meth_var) = 0;
   DECL_CONTEXT (meth_var) = method;
+  DECL_ARTIFICIAL (meth_var) = 1;
+  DECL_INITIAL (meth_var) = null_pointer_node;
+  TREE_USED (meth_var) = 1;
+  chainon (env_var, meth_var);
+  layout_decl (meth_var, 0);
   make_decl_rtl (meth_var, NULL);
-  meth_var = pushdecl_top_level (meth_var);
+  rest_of_decl_compilation (meth_var, NULL, 0, 0);
 
   /* One strange way that the front ends are different is that they
      store arguments differently.  */
