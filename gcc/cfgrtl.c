@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -379,10 +379,13 @@ rtl_delete_block (basic_block b)
   if (tablejump_p (end, NULL, &tmp))
     end = tmp;
 
-  /* Include any barrier that may follow the basic block.  */
+  /* Include any barriers that may follow the basic block.  */
   tmp = next_nonnote_insn (end);
-  if (tmp && BARRIER_P (tmp))
-    end = tmp;
+  while (tmp && BARRIER_P (tmp))
+    {
+      end = tmp;
+      tmp = next_nonnote_insn (end);
+    }
 
   /* Selectively delete the entire chain.  */
   BB_HEAD (b) = NULL;
