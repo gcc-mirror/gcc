@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-AUTOMAKE_OPTIONS = foreign dejagnu no-installinfo
+AUTOMAKE_OPTIONS = foreign dejagnu
 
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then \
