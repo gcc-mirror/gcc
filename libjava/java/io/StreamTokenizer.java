@@ -179,7 +179,10 @@ public class StreamTokenizer
 
 	  // Throw away \n if in combination with \r.
 	  if (ch == '\r' && (ch = in.read()) != '\n')
-	    in.unread(ch);
+	    {
+	      if (ch != TT_EOF)
+		in.unread(ch);
+	    }
 	  if (eolSignificant)
 	    return (ttype = TT_EOL);
 	}
@@ -192,7 +195,8 @@ public class StreamTokenizer
 	  {
 	    // Read ahead to see if this is an ordinary '-' rather than numeric.
 	    ch = in.read();
-	    in.unread(ch);
+	    if (ch != TT_EOF)
+	      in.unread(ch);
 	    if (isNumeric(ch) && ch != '-')
 	      ch = '-';
 	    else
@@ -209,7 +213,8 @@ public class StreamTokenizer
 	  else
 	    tokbuf.append((char) ch);
 
-	in.unread(ch);
+	if (ch != TT_EOF)
+	  in.unread(ch);
 	ttype = TT_NUMBER;
 	nval = Double.valueOf(tokbuf.toString()).doubleValue();
       }
@@ -219,7 +224,8 @@ public class StreamTokenizer
 	tokbuf.append((char) ch);
 	while (isAlphabetic(ch = in.read()) || isNumeric(ch))
 	  tokbuf.append((char) ch);
-	in.unread(ch);
+	if (ch != TT_EOF)
+	  in.unread(ch);
 	ttype = TT_WORD;
 	sval = tokbuf.toString();
 	if (lowerCase)
@@ -229,7 +235,8 @@ public class StreamTokenizer
       {
 	while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
 	  ;
-	in.unread(ch);
+	if (ch != TT_EOF)
+	  in.unread(ch);
 	return nextToken();	// Recursive, but not too deep in normal cases.
       }
     else if (isQuote(ch))
@@ -277,14 +284,15 @@ public class StreamTokenizer
 			  }
 		      }
 
-		    in.unread(nextch);
+		    if (nextch != TT_EOF)
+		      in.unread(nextch);
 		}
 
 	    tokbuf.append((char) ch);
 	  }
 
 	// Throw away matching quote char.
-	if (ch != ttype)
+	if (ch != ttype && ch != TT_EOF)
 	  in.unread(ch);
 
 	sval = tokbuf.toString();
@@ -296,7 +304,8 @@ public class StreamTokenizer
 	    {
 	      while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
 		;
-	      in.unread(ch);
+	      if (ch != TT_EOF)
+		in.unread(ch);
 	      return nextToken(); // Recursive, but not too deep in normal cases
 	    }
 	  else if (ch == '*' && slashStar) 
@@ -305,19 +314,23 @@ public class StreamTokenizer
 		{
 	          ch = in.read();
 		  if (ch == '*')
-		    if ((ch = in.read()) == '/')
-		      break;
-		    else
-		      in.unread(ch);
+		    {
+		      if ((ch = in.read()) == '/')
+			break;
+		      else if (ch != TT_EOF)
+			in.unread(ch);
+		    }
 		  else if (ch == '\n' || ch == '\r')
 		    {
 		      lineNumber++;
 		      if (ch == '\r' && (ch = in.read()) != '\n')
-			in.unread(ch);
+			{
+		          if (ch != TT_EOF)
+			    in.unread(ch);
+			}
 		    }
 		  else if (ch == TT_EOF)
 		    {
-		      in.unread(ch);
 		      break;
 		    }
 		}
@@ -325,7 +338,8 @@ public class StreamTokenizer
 	    }
 	  else
 	    {
-	      in.unread(ch);
+	      if (ch != TT_EOF)
+		in.unread(ch);
 	      ch = '/';
 	    }
 
