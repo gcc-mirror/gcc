@@ -138,6 +138,17 @@ do {									\
 	__DTOR_LIST__[i] ();			\
   } while (0)					
 
+#undef INITIALIZE_TRAMPOLINE 
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+{									\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 40)), FNADDR); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 36)), CXT); \
+  emit_call_insn (gen_call (gen_rtx (MEM, SImode,			\
+				     gen_rtx (SYMBOL_REF, Pmode,	\
+					     "__enable_execute_stack")), \
+			   const0_rtx));				\
+}
+
 #ifdef sysV88
 /* Re-define INITIALIZE_TRAMPOLINE to additionally call
    __enable_execute_stack.  */
