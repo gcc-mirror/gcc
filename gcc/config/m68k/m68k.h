@@ -142,14 +142,14 @@ extern int target_flags;
   if (TARGET_FPA) target_flags &= ~2;	\
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
-  SUBTARGET_OVERRIDE_OPTIONS		\
+  SUBTARGET_OVERRIDE_OPTIONS;		\
 }
 #else
 #define OVERRIDE_OPTIONS		\
 {					\
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
-  SUBTARGET_OVERRIDE_OPTIONS		\
+  SUBTARGET_OVERRIDE_OPTIONS;		\
 }
 #endif /* defined SUPPORT_SUN_FPA */
 

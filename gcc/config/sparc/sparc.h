@@ -130,11 +130,11 @@ void sparc_override_options ();
 	  }								\
 	flag_omit_frame_pointer = 0;					\
       }									\
-    SUBTARGET_OVERRIDE_OPTIONS						\
+    SUBTARGET_OVERRIDE_OPTIONS;						\
     sparc_override_options ();						\
   } while (0)
 
-/* This is meant to be redefined in the host dependent files */
+/* This is meant to be redefined in the host dependent files.  */
 #define SUBTARGET_OVERRIDE_OPTIONS
 
 /* These compiler options take an argument.  We ignore -target for now.  */
