@@ -2895,7 +2895,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	case ZERO_EXTEND:
 	  if (op_mode == VOIDmode)
 	    op_mode = mode;
-	  if (GET_MODE_BITSIZE (op_mode) == HOST_BITS_PER_INT)
+	  if (GET_MODE_BITSIZE (op_mode) == HOST_BITS_PER_WIDE_INT)
 	    {
 	      /* If we were really extending the mode,
 		 we would have to distinguish between zero-extension
@@ -2904,8 +2904,8 @@ simplify_unary_operation (code, mode, op, op_mode)
 		abort ();
 	      val = arg0;
 	    }
-	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_INT)
-	    val = arg0 & ~((-1) << GET_MODE_BITSIZE (op_mode));
+	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT)
+	    val = arg0 & ~((HOST_WIDE_INT) (-1) << GET_MODE_BITSIZE (op_mode));
 	  else
 	    return 0;
 	  break;
@@ -2913,7 +2913,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	case SIGN_EXTEND:
 	  if (op_mode == VOIDmode)
 	    op_mode = mode;
-	  if (GET_MODE_BITSIZE (op_mode) == HOST_BITS_PER_INT)
+	  if (GET_MODE_BITSIZE (op_mode) == HOST_BITS_PER_WIDE_INT)
 	    {
 	      /* If we were really extending the mode,
 		 we would have to distinguish between zero-extension
@@ -2924,9 +2924,11 @@ simplify_unary_operation (code, mode, op, op_mode)
 	    }
 	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_INT)
 	    {
-	      val = arg0 & ~((-1) << GET_MODE_BITSIZE (op_mode));
-	      if (val & (1 << (GET_MODE_BITSIZE (op_mode) - 1)))
-		val -= 1 << GET_MODE_BITSIZE (op_mode);
+	      val
+		= arg0 & ~((HOST_WIDE_INT) (-1) << GET_MODE_BITSIZE (op_mode));
+	      if (val
+		  & ((HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (op_mode) - 1)))
+		val -= (HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (op_mode);
 	    }
 	  else
 	    return 0;
