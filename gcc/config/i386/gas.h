@@ -1,5 +1,5 @@
-/* Definitions for Intel 386 running system V with gnu tools
-   Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
+/* Definitions for Intel 386 using GAS.
+   Copyright (C) 1988, 1993, 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -71,13 +71,18 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_MEM_FUNCTIONS
 
-#if 0  /* People say gas uses the log as the arg to .align.  */
-/* When using gas, .align N aligns to an N-byte boundary.  */
+/* In the past there was confusion as to what the argument to .align was
+   in GAS.  For the last several years the rule has been this: for a.out
+   file formats that argument is LOG, and for all other file formats the
+   argument is 1<<LOG.
+
+   However, GAS now has .p2align and .balign pseudo-ops so to remove any
+   doubt or guess work, and since this file is used for both a.out and other
+   file formats, we use one of them.  */
 
 #undef ASM_OUTPUT_ALIGN
-#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-     if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
-#endif
+#define ASM_OUTPUT_ALIGN(FILE,LOG) \
+  if ((LOG)!=0) fprintf ((FILE), "\t.balign %d\n", 1<<(LOG))
 
 /* Align labels, etc. at 4-byte boundaries.
    For the 486, align to 16-byte boundary for sake of cache.  */
