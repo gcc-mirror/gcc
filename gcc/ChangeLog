@@ -1,5 +1,12 @@
 2003-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR optimization/13394
+	* toplev.c (rest_of_compilation): Move call to
+	check_function_return_warnings right after the sibcall
+	optimization pass.
+
+2003-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR c/13382
 	* c-typeck.c (convert_for_assignment): When converting from
 	integral type to pointer type, always call convert.
