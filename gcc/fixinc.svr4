@@ -1127,28 +1127,28 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  sed -e '/^stat(/{
+  sed -e '/^stat([ 	]*[^c]/{
 N
 N
 s/(.*)\n/( /
 s/;\n/, /
 s/;$/)/
 }' \
-  -e '/^lstat(/{
+  -e '/^lstat([ 	]*[^c]/{
 N
 N
 s/(.*)\n/( /
 s/;\n/, /
 s/;$/)/
 }' \
-  -e '/^fstat(/{
+  -e '/^fstat([ 	]*[^i]/{
 N
 N
 s/(.*)\n/( /
 s/;\n/, /
 s/;$/)/
 }' \
-  -e '/^mknod(/{
+  -e '/^mknod([ 	]*[^c]/{
 N
 N
 N
