@@ -143,8 +143,8 @@ static int absorber;
 #define USE_ABSORBER absorber = 0
 
 /* Keep track of the current class name and package name.  */
-static char *current_class;
-static char *package_name;
+static const char *current_class;
+static const char *package_name;
 
 /* Keep track of whether things have be listed before.  */
 static int previous_output;
@@ -158,8 +158,8 @@ static int bracket_count;
 
 /* Record a method declaration  */
 struct method_declarator {
-  char *method_name;
-  char *args;
+  const char *method_name;
+  const char *args;
 };
 #define NEW_METHOD_DECLARATOR(D,N,A)					     \
 {									     \
@@ -170,7 +170,7 @@ struct method_declarator {
 }
 
 /* Two actions for this grammar */
-static void report_class_declaration PROTO ((char *));
+static void report_class_declaration PROTO ((const char *));
 static void report_main_declaration PROTO ((struct method_declarator *));
 
 #include "lex.h"
@@ -1375,7 +1375,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/x1/java/posix/share/bison.simple"
+#line 3 "/usr/local/gnu/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1568,7 +1568,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/x1/java/posix/share/bison.simple"
+#line 196 "/usr/local/gnu/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2156,7 +2156,7 @@ case 337:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/x1/java/posix/share/bison.simple"
+#line 498 "/usr/local/gnu/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2374,7 +2374,7 @@ java_push_parser_context ()
 
 static void
 report_class_declaration (name)
-     char * name;
+     const char * name;
 {
   extern int flag_dump_class, flag_list_filename;
 
@@ -2432,7 +2432,7 @@ void reset_report ()
 
 void
 yyerror (msg)
-     char *msg ATTRIBUTE_UNUSED;
+     const char *msg ATTRIBUTE_UNUSED;
 {
 }
 

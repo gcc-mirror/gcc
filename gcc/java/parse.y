@@ -72,9 +72,9 @@ definitions and other extensions.  */
 
 /* Local function prototypes */
 static char *java_accstring_lookup PROTO ((int));
-static void  classitf_redefinition_error PROTO ((char *,tree, tree, tree));
+static void  classitf_redefinition_error PROTO ((const char *,tree, tree, tree));
 static void  variable_redefinition_error PROTO ((tree, tree, tree, int));
-static void  check_modifiers PROTO ((char *, int, int));
+static void  check_modifiers PROTO ((const char *, int, int));
 static tree  create_class PROTO ((int, tree, tree, tree));
 static tree  create_interface PROTO ((int, tree, tree));
 static tree  find_field PROTO ((tree, tree));
@@ -93,7 +93,7 @@ static tree method_declarator PROTO ((tree, tree));
 static void parse_warning_context PVPROTO ((tree cl, const char *msg, ...))
   ATTRIBUTE_PRINTF_2;
 static void issue_warning_error_from_context PROTO ((tree, const char *msg, va_list));
-static tree parse_jdk1_1_error PROTO ((char *));
+static tree parse_jdk1_1_error PROTO ((const char *));
 static void complete_class_report_errors PROTO ((jdep *));
 static int process_imports PROTO ((void));
 static void read_import_dir PROTO ((tree));
@@ -101,8 +101,8 @@ static int find_in_imports_on_demand PROTO ((tree));
 static int find_in_imports PROTO ((tree));
 static int check_pkg_class_access PROTO ((tree, tree));
 static tree resolve_package PROTO ((tree, tree *));
-static tree lookup_package_type PROTO ((char *, int));
-static tree lookup_package_type_and_set_next PROTO ((char *, int, tree *));
+static tree lookup_package_type PROTO ((const char *, int));
+static tree lookup_package_type_and_set_next PROTO ((const char *, int, tree *));
 static tree resolve_class PROTO ((tree, tree, tree));
 static void declare_local_variables PROTO ((int, tree, tree));
 static void source_start_java_method PROTO ((tree));
@@ -215,16 +215,16 @@ static int check_thrown_exceptions_do PROTO ((tree));
 static void purge_unchecked_exceptions PROTO ((tree));
 static void check_throws_clauses PROTO ((tree, tree, tree));
 static void finish_method_declaration PROTO ((tree));
-static tree build_super_invocation PROTO (());
+static tree build_super_invocation PROTO ((void));
 static int verify_constructor_circularity PROTO ((tree, tree));
 static char *constructor_circularity_msg PROTO ((tree, tree));
 static tree build_this_super_qualified_invocation PROTO ((int, tree, tree,
 							  int, int));
-static char *get_printable_method_name PROTO ((tree));
+static const char *get_printable_method_name PROTO ((tree));
 static tree patch_conditional_expr PROTO ((tree, tree, tree));
-static void maybe_generate_finit PROTO (());
+static void maybe_generate_finit PROTO ((void));
 static void fix_constructors PROTO ((tree));
-static int verify_constructor_super PROTO (());
+static int verify_constructor_super PROTO ((void));
 static tree create_artificial_method PROTO ((tree, int, tree, tree, tree));
 static void start_artificial_method_body PROTO ((tree));
 static void end_artificial_method_body PROTO ((tree));
@@ -240,11 +240,23 @@ static tree build_new_array_init PROTO ((int, tree));
 static tree patch_new_array_init PROTO ((tree, tree));
 static tree maybe_build_array_element_wfl PROTO ((tree));
 static int array_constructor_check_entry PROTO ((tree, tree));
-static char *purify_type_name PROTO ((char *));
+static const char *purify_type_name PROTO ((const char *));
 static tree fold_constant_for_init PROTO ((tree, tree));
 static tree strip_out_static_field_access_decl PROTO ((tree));
 static jdeplist *reverse_jdep_list PROTO ((struct parser_ctxt *));
 static void static_ref_err PROTO ((tree, tree, tree));
+static void parser_add_interface PROTO ((tree, tree, tree));
+static void add_superinterfaces PROTO ((tree, tree));
+static tree jdep_resolve_class PROTO ((jdep *));
+static int note_possible_classname PROTO ((const char *, int));
+static void java_complete_expand_methods PROTO ((void));
+static void java_expand_finals PROTO ((void));
+static tree cut_identifier_in_qualified PROTO ((tree));
+static tree java_stabilize_reference PROTO ((tree));
+static tree do_unary_numeric_promotion PROTO ((tree));
+static char * operator_string PROTO ((tree));
+static tree do_merge_string_cste PROTO ((tree, const char *, int, int));
+static tree merge_string_cste PROTO ((tree, tree, int));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -583,7 +595,7 @@ single_type_import_declaration:
 		{
 		  tree name = EXPR_WFL_NODE ($2), node, last_name;
 		  int   i = IDENTIFIER_LENGTH (name)-1;
-		  char *last = &IDENTIFIER_POINTER (name)[i];
+		  const char *last = &IDENTIFIER_POINTER (name)[i];
 		  while (last != IDENTIFIER_POINTER (name))
 		    {
 		      if (last [0] == '.')
@@ -2050,7 +2062,7 @@ cast_expression:		/* Error handling here is potentially weak */
 		{ $$ = build_cast ($1.location, $2, $4); }
 |	OP_TK name dims CP_TK unary_expression_not_plus_minus
 		{ 
-		  char *ptr;
+		  const char *ptr;
 		  while (CURRENT_OSB (ctxp)--)
 		    obstack_1grow (&temporary_obstack, '[');
 		  ctxp->osb_depth--;
@@ -2415,7 +2427,7 @@ java_pop_parser_context (generate)
 
 static tree
 parse_jdk1_1_error (msg)
-    char *msg;
+    const char *msg;
 {
   sorry (": `%s' JDK1.1(TM) feature", msg);
   java_error_count++;
@@ -2426,11 +2438,11 @@ static int do_warning = 0;
 
 void
 yyerror (msg)
-     char *msg;
+     const char *msg;
 {
   static java_lc elc;
   static int  prev_lineno;
-  static char *prev_msg;
+  static const char *prev_msg;
 
   int save_lineno;
   char *remainder, *code_from_source;
@@ -2680,7 +2692,7 @@ java_accstring_lookup (flags)
 
 static void
 classitf_redefinition_error (context, id, decl, cl)
-     char *context;
+     const char *context;
      tree id, decl, cl;
 {
   parse_error_context (cl, "%s `%s' already defined in %s:%d", 
@@ -2694,7 +2706,7 @@ variable_redefinition_error (context, name, type, line)
      tree context, name, type;
      int line;
 {
-  char *type_name;
+  const char *type_name;
 
   /* Figure a proper name for type. We might haven't resolved it */
   if (TREE_CODE (type) == POINTER_TYPE && !TREE_TYPE (type))
@@ -2714,7 +2726,7 @@ build_array_from_name (type, type_wfl, name, ret_name)
      tree type, type_wfl, name, *ret_name;
 {
   int more_dims = 0;
-  char *string;
+  const char *string;
 
   /* Eventually get more dims */
   string = IDENTIFIER_POINTER (name);
@@ -2765,7 +2777,7 @@ static tree
 build_unresolved_array_type (type_or_wfl)
      tree type_or_wfl;
 {
-  char *ptr;
+  const char *ptr;
 
   /* TYPE_OR_WFL might be an array on a resolved type. In this case,
      just create a array type */
@@ -2792,7 +2804,7 @@ build_unresolved_array_type (type_or_wfl)
 
 static void
 check_modifiers (message, value, mask)
-     char *message;
+     const char *message;
      int value;
      int mask;
 {
@@ -2853,7 +2865,7 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
   /* If public, file name should match class/interface name */
   if (flags & ACC_PUBLIC)
     {
-      char *f;
+      const char *f;
 
       /* Contains OS dependent assumption on path separator. FIXME */
       for (f = &input_filename [strlen (input_filename)]; 
@@ -4149,8 +4161,8 @@ static tree
 resolve_class (class_type, decl, cl)
      tree class_type, decl, cl;
 {
-  char *name = IDENTIFIER_POINTER (TYPE_NAME (class_type));
-  char *base = name;
+  const char *name = IDENTIFIER_POINTER (TYPE_NAME (class_type));
+  const char *base = name;
   tree resolved_type = TREE_TYPE (class_type);
   tree resolved_type_decl;
   
@@ -4366,9 +4378,9 @@ resolve_no_layout (name, cl)
 /* Called when reporting errors. Skip leader '[' in a complex array
    type description that failed to be resolved.  */
 
-static char *
+static const char *
 purify_type_name (name)
-     char *name;
+     const char *name;
 {
   while (*name && *name == '[')
     name++;
@@ -4381,7 +4393,7 @@ static void
 complete_class_report_errors (dep)
      jdep *dep;
 {
-  char *name;
+  const char *name;
 
   if (!JDEP_WFL (dep))
     return;
@@ -4454,11 +4466,11 @@ java_check_final ()
    DECL is a constructor, use the class name instead of the form
    <init> */
 
-static char *
+static const char *
 get_printable_method_name (decl)
      tree decl;
 {
-  char *to_return;
+  const char *to_return;
   tree name = NULL_TREE;
 
   if (DECL_CONSTRUCTOR_P (decl))
@@ -5035,7 +5047,7 @@ find_in_imports (class_type)
 
 static int
 note_possible_classname (name, len)
-     char *name;
+     const char *name;
      int len;
 {
   tree node;
@@ -5060,7 +5072,7 @@ read_import_dir (wfl)
      tree wfl;
 {
   tree package_id = EXPR_WFL_NODE (wfl);
-  char *package_name = IDENTIFIER_POINTER (package_id);
+  const char *package_name = IDENTIFIER_POINTER (package_id);
   int package_length = IDENTIFIER_LENGTH (package_id);
   DIR *dirp = NULL;
   JCF *saved_jcf = current_jcf;
@@ -5080,7 +5092,7 @@ read_import_dir (wfl)
 
   for (entry = jcf_path_start (); entry != NULL; entry = jcf_path_next (entry))
     {
-      char *entry_name = jcf_path_name (entry);
+      const char *entry_name = jcf_path_name (entry);
       int entry_length = strlen (entry_name);
       if (jcf_path_is_zipfile (entry))
 	{
@@ -5104,7 +5116,7 @@ read_import_dir (wfl)
 
 	      for (k = 0; k < zipf->count;  k++, zipd = ZIPDIR_NEXT (zipd))
 		{
-		  char *current_entry = ZIPDIR_FILENAME (zipd);
+		  const char *current_entry = ZIPDIR_FILENAME (zipd);
 		  int current_entry_len = zipd->filename_length;
 
 		  if (current_entry_len >= BUFFER_LENGTH (filename)
@@ -5136,7 +5148,7 @@ read_import_dir (wfl)
 	  for (;;)
 	    {
 	      int len; 
-	      char *d_name;
+	      const char *d_name;
 	      struct dirent *direntp = readdir (dirp);
 	      if (!direntp)
 		break;
@@ -5192,7 +5204,7 @@ find_in_imports_on_demand (class_type)
 
   for (import = ctxp->import_demand_list; import; import = TREE_CHAIN (import))
     {
-      char *id_name;
+      const char *id_name;
       obstack_grow (&temporary_obstack, 
 		    IDENTIFIER_POINTER (EXPR_WFL_NODE (TREE_PURPOSE (import))),
 		    IDENTIFIER_LENGTH (EXPR_WFL_NODE (TREE_PURPOSE (import))));
@@ -5250,7 +5262,7 @@ resolve_package (pkg, next)
 {
   tree current;
   tree type_name = NULL_TREE;
-  char *name = IDENTIFIER_POINTER (EXPR_WFL_NODE (pkg));
+  const char *name = IDENTIFIER_POINTER (EXPR_WFL_NODE (pkg));
 
   /* The trick is to determine when the package name stops and were
      the name of something contained in the package starts. Then we
@@ -5309,11 +5321,11 @@ resolve_package (pkg, next)
 
 static tree
 lookup_package_type_and_set_next (name, len, next)
-     char *name;
+     const char *name;
      int len;
      tree *next;
 {
-  char *ptr;
+  const char *ptr;
   tree type_name = lookup_package_type (name, len);
 
   if (!type_name)
@@ -5330,11 +5342,11 @@ lookup_package_type_and_set_next (name, len, next)
 
 static tree
 lookup_package_type (name, from)
-     char *name;
+     const char *name;
      int from;
 {
   char subname [128];
-  char *sub = &name[from+1];
+  const char *sub = &name[from+1];
   while (*sub != '.' && *sub)
     sub++;
   strncpy (subname, name, sub-name);
@@ -5800,7 +5812,7 @@ java_layout_classes ()
 
 /* Expand all methods in all registered classes.  */
 
-void
+static void
 java_complete_expand_methods ()
 {
   tree current;
@@ -5998,7 +6010,7 @@ fix_constructors (mdecl)
       if (verify_constructor_super ())
 	{
 	  tree sclass_decl = TYPE_NAME (CLASSTYPE_SUPER (current_class));
-	  char *n = IDENTIFIER_POINTER (DECL_NAME (sclass_decl));
+	  const char *n = IDENTIFIER_POINTER (DECL_NAME (sclass_decl));
 	  parse_error_context (lookup_cl (TYPE_NAME (current_class)), 
 			       "No constructor matching `%s()' found in "
 			       "class `%s'", n, n);
@@ -6079,7 +6091,7 @@ verify_constructor_super ()
 
 /* Expand finals.  */
 
-void
+static void
 java_expand_finals ()
 {
 }
@@ -6820,7 +6832,7 @@ static void
 check_deprecation (wfl, decl)
      tree wfl, decl;
 {
-  char *file = DECL_SOURCE_FILE (decl);
+  const char *file = DECL_SOURCE_FILE (decl);
   /* Complain if the field is deprecated and the file it was defined
      in isn't compiled at the same time the file which contains its
      use is */
@@ -7352,7 +7364,7 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
 {
   tree atl = end_params_node;		/* Arg Type List */
   tree method, signature, list, node;
-  char *candidates;		/* Used for error report */
+  const char *candidates;		/* Used for error report */
 
   /* Fix the arguments */
   for (node = arg_list; node; node = TREE_CHAIN (node))
@@ -8828,7 +8840,7 @@ maybe_build_primttype_type_ref (rhs, wfl)
 	  && DECL_NAME (n) == TYPE_identifier_node
 	  && rhs_type == class_ptr_type)
 	{
-	  char *self_name = IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl));
+	  const char *self_name = IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl));
 	  if (!strncmp (self_name, "java.lang.", 10))
 	    to_return = build_primtype_type_ref (self_name);
 	}
@@ -9722,11 +9734,11 @@ patch_binop (node, wfl_op1, wfl_op2)
 static tree
 do_merge_string_cste (cste, string, string_len, after)
      tree cste;
-     char *string;
+     const char *string;
      int string_len, after;
 {
   int len = TREE_STRING_LENGTH (cste) + string_len;
-  char *old = TREE_STRING_POINTER (cste);
+  const char *old = TREE_STRING_POINTER (cste);
   TREE_STRING_LENGTH (cste) = len;
   TREE_STRING_POINTER (cste) = obstack_alloc (expression_obstack, len+1);
   if (after)
@@ -9758,11 +9770,11 @@ merge_string_cste (op1, op2, after)
   /* Reasonable integer constant can be treated right away */
   if (TREE_CODE (op2) == INTEGER_CST && !TREE_CONSTANT_OVERFLOW (op2))
     {
-      static char *boolean_true = "true";
-      static char *boolean_false = "false";
-      static char *null_pointer = "null";
+      static const char *boolean_true = "true";
+      static const char *boolean_false = "false";
+      static const char *null_pointer = "null";
       char ch[3];
-      char *string;
+      const char *string;
       
       if (op2 == boolean_true_node)
 	string = boolean_true;
@@ -10209,7 +10221,6 @@ patch_cast (node, wfl_operator)
   /* Check on cast that are proven correct at compile time */
   if (JNUMERIC_TYPE_P (cast_type) && JNUMERIC_TYPE_P (op_type))
     {
-      static tree convert_narrow ();
       /* Same type */
       if (cast_type == op_type)
 	return node;
@@ -10602,7 +10613,7 @@ array_constructor_check_entry (type, entry)
   /* Check and report errors */
   if (!new_value)
     {
-      char *msg = (!valid_cast_to_p (type_value, type) ?
+      const char *msg = (!valid_cast_to_p (type_value, type) ?
 		   "Can't" : "Explicit cast needed to");
       if (!array_type_string)
 	array_type_string = strdup (lang_printable_name (type, 1));

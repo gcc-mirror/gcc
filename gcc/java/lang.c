@@ -28,6 +28,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "tree.h"
 #include "input.h"
+#include "rtl.h"
+#include "expr.h"
 #include "java-tree.h"
 #include "jcf.h"
 #include "toplev.h"
@@ -485,7 +487,6 @@ lang_print_error (file)
 void
 lang_init ()
 {
-  extern struct rtx_def * java_lang_expand_expr ();
   extern struct rtx_def * (*lang_expand_expr) ();
   extern void (*print_error_function) PROTO((char *));
 #if 0

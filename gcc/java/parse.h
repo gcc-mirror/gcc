@@ -659,7 +659,7 @@ void java_check_final PROTO ((void));
 void java_layout_classes PROTO ((void));
 tree java_method_add_stmt PROTO ((tree, tree));
 void java_expand_switch PROTO ((tree));
-int java_report_errors PROTO (());
+int java_report_errors PROTO ((void));
 extern tree do_resolve_class PROTO ((tree, tree, tree));
 #endif
 char *java_get_line_col PROTO ((char *, int, int));
@@ -674,6 +674,6 @@ extern void java_parser_context_restore_global PROTO ((void));
 int yyparse PROTO ((void));
 extern int java_parse PROTO ((void));
 int yylex ();
-void yyerror PROTO ((char *));
+void yyerror PROTO ((const char *));
 extern void java_expand_classes PROTO ((void));
 #endif

@@ -74,6 +74,11 @@ static tree pop_arguments PROTO ((tree));
 static void expand_invoke PROTO ((int, int, int)); 
 static void expand_java_field_op PROTO ((int, int, int)); 
 static void java_push_constant_from_pool PROTO ((struct JCF *, int)); 
+static void java_stack_pop PROTO ((int)); 
+static tree build_java_throw_out_of_bounds_exception PROTO ((tree)); 
+static tree build_java_check_indexed_type PROTO ((tree, tree)); 
+static tree java_array_data_offset PROTO ((tree)); 
+static tree case_identity PROTO ((tree, tree)); 
  
 static tree operand_type[59];
 extern struct obstack permanent_obstack;
@@ -125,7 +130,7 @@ tree tree_list_free_list = NULL_TREE;
 
 int stack_pointer;
 
-unsigned char *linenumber_table;
+const unsigned char *linenumber_table;
 int linenumber_count;
 
 tree
@@ -1630,7 +1635,7 @@ expand_invoke (opcode, method_ref_index, nargs)
   tree method_name = COMPONENT_REF_NAME (&current_jcf->cpool, method_ref_index);
   tree self_type = get_class_constant
     (current_jcf, COMPONENT_REF_CLASS_INDEX(&current_jcf->cpool, method_ref_index));
-  char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
+  const char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree call, func, method, arg_list, method_type;
 
   if (! CLASS_LOADED_P (self_type))
@@ -1738,7 +1743,7 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
       get_class_constant (current_jcf, 
 			  COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool, 
 						     field_ref_index));
-  char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
+  const char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree field_name = COMPONENT_REF_NAME (&current_jcf->cpool, field_ref_index);
   tree field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, 
 						  field_ref_index);
@@ -1820,9 +1825,9 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
 
 tree
 build_primtype_type_ref (self_name)
-    char *self_name;
+    const char *self_name;
 {
-  char *class_name = self_name+10;
+  const char *class_name = self_name+10;
   tree typ;
   if (strncmp(class_name, "Byte", 4) == 0)
     typ = byte_type_node;
@@ -2043,7 +2048,7 @@ expand_byte_code (jcf, method)
   int PC;
   int i;
   int saw_index;
-  unsigned char *linenumber_pointer;
+  const unsigned char *linenumber_pointer;
   int dead_code_index = -1;
 
 #undef RET /* Defined by config/i386/i386.h */

@@ -310,7 +310,7 @@ jcf-write.o : jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(RTL_H) \
 jv-scan.o : jv-scan.c $(CONFIG_H) $(srcdir)/../system.h
 jvgenmain.o : jvgenmain.c $(CONFIG_H) $(srcdir)/../system.h
 lang.o : lang.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../input.h \
-  $(srcdir)/../toplev.h $(srcdir)/../system.h
+  $(srcdir)/../toplev.h $(srcdir)/../system.h $(RTL_H) $(EXPR_H)
 mangle.o : mangle.c $(CONFIG_H) jcf.h $(JAVA_TREE_H) $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
 parse-scan.o : $(CONFIG_H) $(srcdir)/../system.h $(srcdir)/../toplev.h

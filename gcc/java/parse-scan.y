@@ -63,8 +63,8 @@ static int absorber;
 #define USE_ABSORBER absorber = 0
 
 /* Keep track of the current class name and package name.  */
-static char *current_class;
-static char *package_name;
+static const char *current_class;
+static const char *package_name;
 
 /* Keep track of whether things have be listed before.  */
 static int previous_output;
@@ -78,8 +78,8 @@ static int bracket_count;
 
 /* Record a method declaration  */
 struct method_declarator {
-  char *method_name;
-  char *args;
+  const char *method_name;
+  const char *args;
 };
 #define NEW_METHOD_DECLARATOR(D,N,A)					     \
 {									     \
@@ -90,7 +90,7 @@ struct method_declarator {
 }
 
 /* Two actions for this grammar */
-static void report_class_declaration PROTO ((char *));
+static void report_class_declaration PROTO ((const char *));
 static void report_main_declaration PROTO ((struct method_declarator *));
 
 #include "lex.h"
@@ -1123,7 +1123,7 @@ java_push_parser_context ()
 
 static void
 report_class_declaration (name)
-     char * name;
+     const char * name;
 {
   extern int flag_dump_class, flag_list_filename;
 
@@ -1181,7 +1181,7 @@ void reset_report ()
 
 void
 yyerror (msg)
-     char *msg ATTRIBUTE_UNUSED;
+     const char *msg ATTRIBUTE_UNUSED;
 {
 }
 
