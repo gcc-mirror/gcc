@@ -1,3 +1,7 @@
+2002-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/ext/vla1.C, gcc.dg/vla-2.c: New tests.
+
 2002-10-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/empty9.C: New test.
