@@ -305,4 +305,5 @@ typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h javaop.h java-opcodes.h \
   java-except.h $(srcdir)/../toplev.h $(srcdir)/../system.h
+zextract.o: zextract.c zipfile.h
 
