@@ -1,3 +1,15 @@
+Sat Nov 15 00:30:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_new_op): Fix copy error.
+	(build_op_new_call): New fn.
+	(build_op_delete_call): New fn.
+	* cp-tree.h: Declare them.
+	* init.c (build_new): Use them.  Support placement delete.
+	(build_x_delete): Use build_op_delete_call.
+	(build_delete): Likewise.
+	* decl2.c (delete_sanity): Likewise.
+	(coerce_delete_type): Don't complain about placement delete.
+
 Thu Nov 13 01:52:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_new_function_call): Remove unused 'obj' parm.

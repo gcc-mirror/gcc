@@ -1310,8 +1310,8 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 	{
 	  /* Only do access checking here; we'll be calling op delete
 	     from the destructor.  */
-	  tree tmp = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, t,
-				     size_zero_node, NULL_TREE);
+	  tree tmp = build_op_delete_call (DELETE_EXPR, t,
+					   size_zero_node, LOOKUP_NORMAL);
 	  if (tmp == error_mark_node)
 	    return error_mark_node;
 	}
@@ -2403,6 +2403,7 @@ coerce_delete_type (type)
       || TREE_VALUE (arg_types) != ptr_type_node)
     e2 = 1, error ("`operator delete' takes type `void *' as first parameter");
 
+#if 0
   if (arg_types
       && TREE_CHAIN (arg_types)
       && TREE_CHAIN (arg_types) != void_list_node)
@@ -2434,8 +2435,12 @@ coerce_delete_type (type)
 	arg_types = tree_cons (NULL_TREE, ptr_type_node, TREE_CHAIN (arg_types));
     }
   else e3 |= e1;
+#endif
 
-  if (e3)
+  if (e2)
+    arg_types = tree_cons (NULL_TREE, ptr_type_node,
+			   arg_types ? TREE_CHAIN (arg_types): NULL_TREE);
+  if (e2 || e1)
     type = build_function_type (void_type_node, arg_types);
 
   return type;
