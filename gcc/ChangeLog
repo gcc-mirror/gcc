@@ -1,3 +1,10 @@
+2004-01-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.md (fetchadd_acq_si, fetchadd_acq_di)
+	(cmpxchg_acq_si, cmpxchg_acq_di): Exchange match_dup and
+	match_operand expressions so that all match_dups appear
+	lexically after their corresponding match_operands.
+
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (WORD_REG_USED): Use
