@@ -259,6 +259,9 @@ print_node (file, prefix, node, indent)
       print_node (file, "type", TREE_TYPE (node), indent + 4);
       if (TREE_TYPE (node))
 	indent_to (file, indent + 3);
+
+      print_obstack_name ((char *) node, file, "");
+      indent_to (file, indent + 3);
     }
 
   /* If a permanent object is in the wrong obstack, or the reverse, warn.  */
