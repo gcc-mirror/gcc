@@ -12,8 +12,14 @@ endif
 ## What gets installed, and where.
 ##
 
+## Install a library built with a cross compiler in tooldir, not
+## libdir.
+if USE_LIBDIR
+toolexeclibdir = $(libdir)
+else
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
+endif
 
 toolexeclib_LTLIBRARIES = libgcj.la
 toolexeclib_DATA = libgcj.spec

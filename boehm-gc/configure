@@ -2827,6 +2827,16 @@ EOF
 
 fi
 
+
+
+if test -z "$with_cross_host"; then
+  USE_LIBDIR_TRUE=
+  USE_LIBDIR_FALSE='#'
+else
+  USE_LIBDIR_TRUE='#'
+  USE_LIBDIR_FALSE=
+fi
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else
@@ -3026,6 +3036,8 @@ s%@INCLUDES@%$INCLUDES%g
 s%@CXXINCLUDES@%$CXXINCLUDES%g
 s%@addobjs@%$addobjs%g
 s%@MY_CFLAGS@%$MY_CFLAGS%g
+s%@USE_LIBDIR_TRUE@%$USE_LIBDIR_TRUE%g
+s%@USE_LIBDIR_FALSE@%$USE_LIBDIR_FALSE%g
 
 CEOF
 EOF

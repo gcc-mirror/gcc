@@ -79,6 +79,8 @@ AC_SUBST(target_all)
 
 AC_CHECK_HEADERS(unistd.h)
 
+AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else

@@ -2701,6 +2701,16 @@ fi
 done
 
 
+
+
+if test -z "$with_cross_host"; then
+  USE_LIBDIR_TRUE=
+  USE_LIBDIR_FALSE='#'
+else
+  USE_LIBDIR_TRUE='#'
+  USE_LIBDIR_FALSE=
+fi
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else
@@ -2895,6 +2905,8 @@ s%@LIBTOOL@%$LIBTOOL%g
 s%@COMPPATH@%$COMPPATH%g
 s%@CPP@%$CPP%g
 s%@target_all@%$target_all%g
+s%@USE_LIBDIR_TRUE@%$USE_LIBDIR_TRUE%g
+s%@USE_LIBDIR_FALSE@%$USE_LIBDIR_FALSE%g
 
 CEOF
 EOF
