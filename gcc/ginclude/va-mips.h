@@ -7,8 +7,18 @@
 /* ---------------------------------------- */
 
 
-/* These macros implement traditional (non-ANSI) varargs
-   for GNU C.  */
+/* These macros implement varargs for GNU C--either traditional or ANSU.  */
+
+/* Define __gnuc_va_list.  */
+
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
+typedef char * __gnuc_va_list;
+#endif /* not __GNUC_VA_LIST */
+
+/* If this is for internal libc use, don't define anything but
+   __gnuc_va_list.  */
+#if defined (_STDARG_H) || defined (_VARARGS_H)
 
 /* In GCC version 2, we want an ellipsis at the end of the declaration
    of the argument list.  GCC version 1 can't parse it.  */
@@ -17,13 +27,6 @@
 #define __va_ellipsis ...
 #else
 #define __va_ellipsis
-#endif
-
-#ifndef _VA_LIST_
-#define _VA_LIST_
-/* Make this a macro rather than a typedef, so we can undef any other defn.  */
-#define va_list __va___list
-typedef char * __va___list;
 #endif
 
 #define __va_rounded_size(TYPE)  \
@@ -38,6 +41,7 @@ typedef char * __va___list;
 #define va_start(AP)  AP = (char *) &__builtin_va_alist
 #endif
 
+void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define va_end(AP)
 
 #ifdef lint	/* complains about constant in conditional context */
@@ -50,3 +54,4 @@ typedef char * __va___list;
 				: ((int)AP + 2*4 - 1) & -4)))[-1]
 #endif		/* lint */
 
+#endif /* defined (_STDARG_H) || defined (_VARARGS_H) */

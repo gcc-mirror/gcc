@@ -44,6 +44,11 @@
  *  # of calls to va_arg (debugging) at __va_buf[15]
  */
 
+/* Define __gnuc_va_list.  */
+
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
+
 typedef void *__voidptr;
 #if 1
 
@@ -63,6 +68,14 @@ typedef __voidptr(*__va_buf);
 
 #endif
 
+typedef __va_buf __gnuc_va_list;
+
+#endif /* not __GNUC_VA_LIST */
+
+/* If this is for internal libc use, don't define anything but
+   __gnuc_va_list.  */
+#if defined (_STDARG_H) || defined (_VARARGS_H)
+
 /* In GCC version 2, we want an ellipsis at the end of the declaration
    of the argument list.  GCC version 1 can't parse it.  */
 
@@ -78,8 +91,6 @@ typedef __voidptr(*__va_buf);
 
 /* The ... causes current_function_varargs to be set in cc1.  */
 #define va_dcl __voidptr va_alist; __va_ellipsis
-
-typedef __va_buf va_list;
 
 
 /* __asm ("rcsp %0" : "=r" ( _AP [0]));*/
@@ -111,4 +122,7 @@ __extension__								\
   *(( _MODE *)__param_addr);						\
 })
 
+void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define va_end(_X)
+
+#endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
