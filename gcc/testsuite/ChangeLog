@@ -1,5 +1,7 @@
 2005-03-31  Janis Johnson  <janis187@us.ibm.com>
 
+	* g++.dg/other/static11.C: Use cleanup-rtl-dump.
+
 	* g++.dg/parse/repo1.C: Use cleanup-repo-files.
 	* g++.dg/template/repo1.C: Ditto.
 	* g++.dg/template/repo2.C: Ditto.
