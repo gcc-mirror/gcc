@@ -4175,6 +4175,8 @@ extern tree get_binfo				PARAMS ((tree, tree, int));
 extern int get_base_distance			PARAMS ((tree, tree, int, tree *));
 extern tree get_dynamic_cast_base_type          PARAMS ((tree, tree));
 extern void type_access_control			PARAMS ((tree, tree));
+extern void skip_type_access_control            PARAMS ((void));
+extern void reset_type_access_control           PARAMS ((void));
 extern int accessible_p                         PARAMS ((tree, tree));
 extern tree lookup_field			PARAMS ((tree, tree, int, int));
 extern int lookup_fnfields_1                    PARAMS ((tree, tree));

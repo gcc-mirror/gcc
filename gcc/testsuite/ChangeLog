@@ -1,3 +1,9 @@
+2001-03-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/friend12.C: New test.
+	* g++.old-deja/g++.other/friend9.C: Expect no errors.
+	* g++.old-deja/g++.robertl/eb56.C: Make typedef public.
+
 2001-03-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/execute/20010325-1.c: New test.

@@ -1,3 +1,20 @@
+2001-03-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Implement DR 209
+	* cp-tree.h (skip_type_access_control,
+	reset_type_access_control): Prototype.
+	* decl.c (grokdeclarator): Access of friends is not checked.
+	* parse.y (component_decl_list): Reset type access control.
+	* semantics.c (decl_type_access_control): Clear
+	current_type_lookups.
+	(save_type_access_control): Don't save if not deferring.
+	(skip_type_access_control, reset_type_access_control): New
+	functions.
+	(begin_class_definition): Do type access control for basetypes.
+	Start deferred access control.
+	(finish_class_definition): Resume immediate access control if
+	this is a local class.
+
 2001-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (add_method): Use memcpy/memmove, not bcopy.

@@ -2,6 +2,7 @@
 // Build don't link:
 
 class foo {
+  public:
         typedef int sometype;
 };
 
