@@ -1,5 +1,5 @@
 /* Definitions for specs for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,6 +32,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
   {"@java",
    "%{fjni:%{femit-class-files:%e-fjni and -femit-class-files are incompatible}}\
     %{fjni:%{femit-class-file:%e-fjni and -femit-class-file are incompatible}}\
+    %{femit-class-file:%{!fsyntax-only:%e-femit-class-file should used along with -fsyntax-only}}\
+    %{femit-class-files:%{!fsyntax-only:%e-femit-class-file should used along with -fsyntax-only}}\
     %{!E:jc1 %i %(jc1) %(cc1_options) %{+e*} %{I*}\
              %{MD} %{MMD} %{M} %{MM} %{MA} %{MT*} %{MF*}\
              %{!fsyntax-only:%(invoke_as)}}", 0},

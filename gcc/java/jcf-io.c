@@ -405,16 +405,8 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
      up no matter what. FIXME. */
   if (! java && ! class && java_buf.st_mtime > class_buf.st_mtime)
     {
-      char *stripped_class_name = xstrdup (classname);
-      int i = strlen (stripped_class_name);
-      
-      while (stripped_class_name [i] != '.')
-	i--;
-      
-      stripped_class_name [i] = '\0';
       if (flag_newer)
-	warning ("Source file for class `%s' is newer than its matching class file. Source file used instead", stripped_class_name);
-      free (stripped_class_name);
+	warning ("Source file for class `%s' is newer than its matching class file. Source file `%s' used instead", classname, java_buffer);
       class = -1;
     }
 
