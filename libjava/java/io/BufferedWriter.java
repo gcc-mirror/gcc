@@ -103,7 +103,7 @@ public class BufferedWriter extends Writer
    */
   public BufferedWriter (Writer out, int size)
   {
-    super(out);
+    super(out.lock);
     this.out = out;
     this.buffer = new char[size];
     this.count = 0;
