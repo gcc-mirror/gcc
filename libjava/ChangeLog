@@ -1,3 +1,8 @@
+2004-05-04  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/text/CharacterBreakIterator.java
+	(previous): Removed unused variable.
+
 2004-05-04  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* gnu/java/text/FormatBuffer.java,

@@ -160,7 +160,6 @@ public class CharacterBreakIterator extends BaseBreakIterator
     if (iter.getIndex() == iter.getBeginIndex())
       return DONE;
 
-    int start = iter.getBeginIndex();
     while (iter.getIndex() >= iter.getBeginIndex())
       {
 	char c = iter.previous();
