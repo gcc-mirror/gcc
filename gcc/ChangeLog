@@ -1,5 +1,27 @@
 2003-06-04  Daniel Jacobowitz  <drow@mvista.com>
 
+	* config.gcc: Reorganize --with-cpu logic.  Set
+	configure_default_options according to the default CPU, --with-cpu,
+	--with-arch, --with-tune, --with-schedule, --with-abi, and
+	--with-float.  Check for legal values of various options.
+	* configure.in: Define configure_default_options in configargs.h.
+	* configure: Regenerated.
+	* config/mips/mips.h (TARGET_DEFAULT_ARCH_P)
+	(TARGET_DEFAULT_FLOAT_P): New macros.
+	* gcc.c (do_option_spec): New function.
+	(struct default_spec, option_default_specs): New.
+	(main): Call do_option_spec.
+	* config/alpha/alpha.h, config/arm/arm.h, config/i386/i386.h,
+	config/mips/mips.h, config/pa/pa.h, config/rs6000/rs6000.h,
+	config/sparc/sparc.h (OPTION_DEFAULT_SPECS): Define.
+
+	* doc/install.texi: Update --with-cpu documentation.  Mention
+	--with-arch, --with-schedule, --with-tune, --with-abi, and
+	--with-float.
+	* doc/tm.texi (Driver): Document OPTION_DEFAULT_SPECS.
+
+2003-06-04  Daniel Jacobowitz  <drow@mvista.com>
+
 	* config.gcc: Only process --with-cpu logic in the third pass.
 
 2003-06-04  Daniel Jacobowitz  <drow@mvista.com>

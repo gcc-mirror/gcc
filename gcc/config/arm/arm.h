@@ -525,6 +525,20 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    N_("Specify the register to be used for PIC addressing"), 0}	\
 }
 
+/* Support for a compile-time default CPU, et cetera.  The rules are:
+   --with-arch is ignored if -march or -mcpu are specified.
+   --with-cpu is ignored if -march or -mcpu are specified, and is overridden
+    by --with-arch.
+   --with-tune is ignored if -mtune or -mcpu are specified (but not affected
+     by -march).
+   --with-float is ignored if -mhard-float or -msoft-float are
+    specified.  */
+#define OPTION_DEFAULT_SPECS \
+  {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" }, \
+  {"cpu", "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
+  {"tune", "%{!mcpu=*:%{!mtune=*:-mtune=%(VALUE)}}" }, \
+  {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }
+
 struct arm_cpu_select
 {
   const char *              string;

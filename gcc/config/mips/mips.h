@@ -785,6 +785,20 @@ extern void		sbss_section PARAMS ((void));
 /* This is meant to be redefined in the host dependent files.  */
 #define SUBTARGET_TARGET_OPTIONS
 
+/* Support for a compile-time default CPU, et cetera.  The rules are:
+   --with-arch is ignored if -march is specified or a -mips is specified
+     (other than -mips16).
+   --with-tune is ignored if -mtune is specified.
+   --with-abi is ignored if -mabi is specified.
+   --with-float is ignored if -mhard-float or -msoft-float are
+     specified.  */
+#define OPTION_DEFAULT_SPECS \
+  {"arch", "%{!march=*:%{mips16:-march=%(VALUE)}%{!mips*:-march=%(VALUE)}}" }, \
+  {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
+  {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
+  {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }
+
+
 #define GENERATE_BRANCHLIKELY   (TARGET_BRANCHLIKELY                    \
 				 && !TARGET_SR71K                       \
 				 && !TARGET_MIPS16)

@@ -721,12 +721,21 @@ Microsoft Win32 API thread support.
 @end table
 
 @item --with-cpu=@var{cpu}
-Specify which cpu variant the
-compiler should generate code for by default.  This is currently
-only supported on some ports, specifically arm, powerpc, and
-SPARC@.  If configure does not recognize the model name (e.g.@: arm700,
-603e, or ultrasparc) you provide, please check the
-@file{gcc/config.gcc} script for a complete list of supported models.
+Specify which cpu variant the compiler should generate code for by default.
+@var{cpu} will be used as the default value of the @option{-mcpu=} switch.
+This option is only supported on some targets, including ARM, i386, PowerPC,
+and SPARC@.
+
+@item --with-schedule=@var{cpu}
+@itemx --with-arch=@var{cpu}
+@itemx --with-tune=@var{cpu}
+@itemx --with-abi=@var{abi}
+@itemx --with-float=@var{type}
+These configure options provide default values for the @option{-mschedule=},
+@option{-march=}, @option{-mtune=}, and @option{-mabi=} options and for
+@option{-mhard-float} or @option{-msoft-float}.  As with @option{--with-cpu},
+which switches will be accepted and acceptable values of the arguments depend
+on the target.
 
 @item --enable-altivec
 Specify that the target supports AltiVec vector enhancements.  This

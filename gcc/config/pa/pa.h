@@ -312,6 +312,13 @@ extern int target_flags;
     N_("Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later."), 0}\
 }
 
+/* Support for a compile-time default CPU, et cetera.  The rules are:
+   --with-schedule is ignored if -mschedule is specified.
+   --with-arch is ignored if -march is specified.  */
+#define OPTION_DEFAULT_SPECS \
+  {"arch", "%{!march=*:-march=%(VALUE)}" }, \
+  {"schedule", "%{!mschedule=*:-mschedule=%(VALUE)}" }
+
 /* Specify the dialect of assembler to use.  New mnemonics is dialect one
    and the old mnemonics are dialect zero.  */
 #define ASSEMBLER_DIALECT (TARGET_PA_20 ? 1 : 0)

@@ -165,6 +165,10 @@
 #			determines the underlying integral type for
 #			HOST_WIDE_INT cannot see the definition of
 #			MAX_LONG_TYPE_SIZE.)
+#
+#  configure_default_options
+#			Set to an initializer for configure_default_options
+#			in configargs.h, based on --with-cpu et cetera.
 
 # The following variables are used in each case-construct to build up the
 # outgoing variables:
@@ -2236,41 +2240,99 @@ then
 		esac
 	fi
 
-	# Optionally, validate the argument to --with-cpu.
-	# This block sets nothing.
-	case $machine in
+	# Validate and mark as valid any --with options supported
+	# by this target.  In order to use a particular --with option
+	# you must list it in supported_defaults; validating the value
+	# is optional.  This case statement should set nothing besides
+	# supported_defaults.
+
+	supported_defaults=
+	case "$machine" in
 	alpha*-*-*)
-		case "x$with_cpu" in
-		x \
-		| xev5 | xev56 | xpca56 | xev6 | xev67)
-			# OK
-			;;
-		*)
-			echo "Unknown CPU used in --with-cpu=$with_cpu" 1>&2
-			exit 1
-			;;
-		esac
+		supported_defaults="cpu tune"
+		for which in cpu tune; do
+			eval "val=\$with_$which"
+			case "x$val" in
+			x \
+			| xev4 | xev45 | x21064 | xev5 | x21164 | xev56 | x21164a \
+			| xpca56 | x21164PC | x21164pc | xev6 | x21264 | xev67 \
+			| x21264a)
+				;;
+			*)
+				echo "Unknown CPU used in --with-$which=$val" 1>&2
+				exit 1
+				;;
+			esac
+		done
 		;;
 
 	arm*-*-*)
-		case "x$with_cpu" in
+		supported_defaults="arch cpu float tune"
+		for which in cpu tune; do
+			eval "val=\$with_$which"
+			case "x$val" in
+			x \
+			| xarm[236789] | xarm250 | xarm[67][01]0 \
+			| xarm60 | xarm620 | xarm7d | xarm7di \
+			| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
+			| xarm70 | xarm700i | xarm710t | xarm720 \
+			| xarm720t | xarm740t | xarm710c | xarm920 \
+			| xarm920t | xarm940t | xarm9e | xarm10tdmi \
+			| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
+			| xarm1020t \
+			| xxscale \
+			| xep9312 \
+			| xstrongarm | xstrongarm110 | xstrongarm11[01]0)
+				# OK
+				;;
+			*)
+				echo "Unknown CPU used in --with-$which=$val" 1>&2
+				exit 1
+				;;
+			esac
+		done
+
+		case "x$with_arch" in
 		x \
-		| xarm[236789] | xarm250 | xarm[67][01]0 \
-		| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
-		| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
-		| xxscale \
-		| xep9312 \
-		| xstrongarm | xstrongarm110 | xstrongarm1100)
+		| xarmv[2345] | xarmv2a | xarmv3m | xarmv4t | xarmv5t \
+		| xarmv5te | ep9312)
 			# OK
 			;;
 		*)
-			echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
+			echo "Unknown arch used in --with-arch=$with_arch" 1>&2
 			exit 1
 			;;
 		esac
+
+		case "x$with_float" in
+		x \
+		| xsoft | xhard)
+			# OK
+			;;
+		*)
+			echo "Unknown floating point type used in --with-float=$with_float" 1>&2
+			exit 1
+			;;
+		esac
+
+		if test "x$with_arch" != x && test "x$with_cpu" != x; then
+			echo "Warning: --with-arch overrides --with-cpu" 1>&2
+		fi
 		;;
 
 	hppa*-*-* | parisc*-*-*)
+		supported_defaults="arch schedule"
+
+		case "x$with_arch" in
+		x | x1.0 | x1.1 | x2.0)
+			# OK
+			;;
+		*)
+			echo "Unknown architecture used in --with-arch=$with_arch" 1>&2
+			exit 1
+			;;
+		esac
+
 		case "x$with_schedule" in
 		x | x700 | x7100 | x7100LC | x7200 | x7300 | x8000)
 			# OK
@@ -2283,61 +2345,112 @@ then
 		;;
 
 	i[34567]86-*-* | x86_64-*-*)
-		case x$with_cpu in
+		supported_defaults="arch cpu tune"
+		for which in arch cpu tune; do
+			eval "val=\$with_$which"
+			case "x$val" in
+			x \
+			| xi386 | xi486 \
+			| xi586 | xpentium | xpentium-mmx | xwinchip-c6 | xwinchip2 \
+			| xc3 | xc3-2 | xi686 | xpentiumpro | xpentium2 | xpentium3 \
+			| xpentium4 | xk6 | xk6-2 | xk6-3 | xathlon | xathlon-tbird \
+			| xathlon-4 | xathlon-xp | xathlon-mp | xk8)
+				# OK
+				;;
+			*)
+				echo "Unknown CPU given in --with-$which=$val." 1>&2
+				exit 1
+				;;
+			esac
+		done
+		;;
+
+	mips*-*-*)
+		supported_defaults="abi arch float tune"
+
+		case "x$with_float" in
 		x \
-		| xi486 \
-		| xi586 | xk6 | xk6-2 | xk6-3 | xpentium-mmx | xpentium \
-		| xpentiumpro | xpentium2 | xpentium3 | xpentium4 \
-		| xathlon | xathlon-4 | xk8)
+		| xsoft | xhard)
 			# OK
 			;;
 		*)
-			echo "Unknown CPU given in --with-cpu=$with_cpu." 1>&2
+			echo "Unknown floating point type used in --with-float=$with_float" 1>&2
+			exit 1
+			;;
+		esac
+
+		case "x$with_abi" in
+		x \
+		| x32 | xo64 | xn32 | x64 | xeabi)
+			# OK
+			;;
+		*)
+			echo "Unknown ABI used in --with-abi=$with_abi" 1>&2
 			exit 1
 			;;
 		esac
 		;;
 
 	powerpc*-*-* | rs6000-*-*)
-		case "x$with_cpu" in
-		x \
-		| xdefault32 | xdefault64 \
-		| xcommon \
-		| xpower | xpower2 | xpower3 | xpower4 \
-		| xpowerpc | xpowerpc64 \
-		| xrios | xrios1 | xrios2 | xrsc | xrsc1 | xrs64a \
-		| x401 | x403 | x405 | x405fp | x440 | x440fp | x505 \
-		| x601 | x602 | x603 | x603e | xec603e | x604 \
-		| x604e | x620 | x630 | x740 | x750 | x7400 | x7450 \
-		| x8540 | x801 | x821 | x823 | x860)
-			# OK
-			;;
-		*)
-			echo "Unknown cpu used in --with-cpu=$with_cpu." 1>&2
-			exit 1
-			;;
-		esac
+		supported_defaults="cpu float tune"
+
+		for which in cpu tune; do
+			eval "val=\$with_$which"
+			case "x$val" in
+			x \
+			| xdefault32 | xdefault64 \
+			| xcommon \
+			| xpower | xpower2 | xpower3 | xpower4 \
+			| xpowerpc | xpowerpc64 \
+			| xrios | xrios1 | xrios2 | xrsc | xrsc1 | xrs64a \
+			| x401 | x403 | x405 | x405fp | x440 | x440fp | x505 \
+			| x601 | x602 | x603 | x603e | xec603e | x604 \
+			| x604e | x620 | x630 | x740 | x750 | x7400 | x7450 \
+			| x8540 | x801 | x821 | x823 | x860)
+				# OK
+				;;
+			*)
+				echo "Unknown cpu used in --with-$which=$val." 1>&2
+				exit 1
+				;;
+			esac
+		done
 		;;
 
 	sparc*-*-*)
-		case x$with_cpu in
-		x)
-			echo "Should never happen - no default CPU for sparc target."
-			exit 1
-			;;
+		supported_defaults="cpu float tune"
 
-		xsparc | xsparc86x | xsparcv9 | xsparc64 \
-		| xsupersparc | xhypersparc | xultrasparc | xv7 | xv8 | xv9)
+		for which in cpu tune; do
+			eval "val=\$with_$which"
+			case x$val in
+			x \
+			| xsparc | xsparcv9 | xsparc86x \
+			| xv7 | xcypress | xv8 | xsupersparc | xsparclite | xf930 \
+			| xf934 | xhypersparc | xsparclite86x | xsparclet | tsc701 \
+			| xv9 | xultrasparc | xultrasparc3)
+				# OK
+				;;
+			*)
+				echo "Unknown cpu used in --with-$which=$val" 1>&2
+				exit 1
+				;;
+			esac
+		done
+
+		case "x$with_float" in
+		x \
+		| xsoft | xhard)
 			# OK
 			;;
 		*)
-			echo "Unknown cpu used in --with-$which=$val" 1>&2
+			echo "Unknown floating point type used in --with-float=$with_float" 1>&2
 			exit 1
 			;;
 		esac
 		;;
 
 	v850*-*-*)
+		supported_defaults=cpu
 		case "x$with_cpu" in
 		x | xv850e)
 			# OK
@@ -2350,38 +2463,13 @@ then
 		;;
 	esac
 
-	# Now, for targets which support this, convert --with-cpu to
-	# a setting of target_cpu_default2.  This block also sets assorted
-	# other configuration variables.
+	# Set some miscellaneous flags for particular targets.
 	target_cpu_default2=
 	case $machine in
 	alpha*-*-*)
-		case $with_cpu in
-			ev67)
-				target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX"
-				;;
-			ev6)
-				target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX"
-				;;
-			pca56)
-				target_cpu_default2="MASK_CPU_EV5|MASK_BWX|MASK_MAX"
-				;;
-			ev56)
-				target_cpu_default2="MASK_CPU_EV5|MASK_BWX"
-				;;
-			ev5)
-				target_cpu_default2="MASK_CPU_EV5"
-				;;
-		esac
-
 		if test x$gas = xyes
 		then
-			if test "$target_cpu_default2" = ""
-			then
-				target_cpu_default2="MASK_GAS"
-			else
-				target_cpu_default2="${target_cpu_default2}|MASK_GAS"
-			fi
+			target_cpu_default2="MASK_GAS"
 		fi
 		;;
 
@@ -2403,22 +2491,6 @@ then
 		then
 			target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
 		fi
-		if test "x$with_schedule" != x
-		then
-			tm_defines="TARGET_SCHED_DEFAULT=\\\"$with_schedule\\\""
-			;;
-		fi
-		;;
-
-	i[34567]86-*-* | x86_64-*-*)
-		case x$with_cpu in
-		xathlon-4)
-			target_cpu_default2=TARGET_CPU_DEFAULT_athlon_sse
-			;;
-		*)
-			target_cpu_default2=TARGET_CPU_DEFAULT_"`echo $with_cpu | sed s/-/_/`"
-			;;
-		esac
 		;;
 
 	mips*-*-*)
@@ -2462,10 +2534,12 @@ then
 		;;
 
 	powerpc*-*-* | rs6000-*-*)
-	        if test x$enable_altivec = xyes
-	        then
-	                tm_file="$tm_file rs6000/altivec-defs.h"
-	        fi
+		if test x$enable_altivec = xyes
+		then
+			tm_file="$tm_file rs6000/altivec-defs.h"
+		fi
+		# FIXME: The PowerPC port uses the value set at compile time,
+		# although it's only cosmetic.
 		if test "x$with_cpu" != x
 		then
 			target_cpu_default2="\\\"$with_cpu\\\""
@@ -2477,10 +2551,25 @@ then
 		;;
 
 	sparc*-*-*)
+		# Some standard aliases.
+		case x$with_cpu in
+		xsparc)
+			with_cpu=v7
+			;;
+		xsparc86x)
+			with_cpu=sparclite86x
+			;;
+		xsparcv9 | xsparc64)
+			with_cpu=v9
+			;;
+		esac
+
+		# The Sparc port checks this value at compile-time.
 		target_cpu_default2="TARGET_CPU_$with_cpu"
 		;;
-
 	v850*-*-*)
+		# FIXME: The v850 is "special" in that it does not support
+		# runtime CPU selection, only --with-cpu.
 		case "x$with_cpu" in
 		x)
 			;;
@@ -2490,6 +2579,36 @@ then
 		esac
 		;;
 	esac
+
+	t=
+	all_defaults="abi cpu arch tune schedule float"
+	for option in $all_defaults
+	do
+		eval "val=\$with_$option"
+		if test -n "$val"; then
+			case " $supported_defaults " in
+			*" $option "*)
+				;;
+			*)
+				echo "This target does not support --with-$option." 2>&1
+				exit 1
+				;;
+			esac
+
+			if test "x$t" = x
+			then
+				t="{ \"$option\", \"$val\" }"
+			else
+				t="${t}, { \"$option\", \"$val\" }"
+			fi
+		fi
+	done
+	if test "x$t" = x
+	then
+		configure_default_options="{ { NULL, NULL} }"
+	else
+		configure_default_options="{ ${t} }"
+	fi
 
 	if test "$target_cpu_default2" != ""
 	then

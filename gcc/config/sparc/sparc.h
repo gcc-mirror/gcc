@@ -656,6 +656,16 @@ extern enum processor_type sparc_cpu;
 /* This is meant to be redefined in target specific files.  */
 #define SUBTARGET_OPTIONS
 
+/* Support for a compile-time default CPU, et cetera.  The rules are:
+   --with-cpu is ignored if -mcpu is specified.
+   --with-tune is ignored if -mtune is specified.
+   --with-float is ignored if -mhard-float, -msoft-float, -mfpu, or -mno-fpu
+     are specified.  */
+#define OPTION_DEFAULT_SPECS \
+  {"cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }, \
+  {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
+  {"float", "%{!msoft-float:%{!mhard-float:%{!fpu:%{!no-fpu:-m%(VALUE)-float}}}}" }
+
 /* sparc_select[0] is reserved for the default cpu.  */
 struct sparc_cpu_select
 {

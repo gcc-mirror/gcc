@@ -365,6 +365,13 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
    N_("Specify bit size of immediate TLS offsets"), 0},	\
 }
 
+/* Support for a compile-time default CPU, et cetera.  The rules are:
+   --with-cpu is ignored if -mcpu is specified.
+   --with-tune is ignored if -mtune is specified.  */
+#define OPTION_DEFAULT_SPECS \
+  {"cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }, \
+  {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }
+
 /* This macro defines names of additional specifications to put in the
    specs that can be used in various specifications like CC1_SPEC.  Its
    definition is an initializer with a subgrouping for each command option.
