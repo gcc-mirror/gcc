@@ -1,5 +1,13 @@
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
+	* tree.h (STRIP_NOPS): Remove extraneous semicolon.
+	(STRIP_SIGN_NOPS): Likewise.
+	(STRIP_TYPE_NOPS): Likewise.
+	(COMPLETE_OR_UNBOUND_ARRAY_TYPE_P): Add Parenthesis around
+	macro paramater.
+
+2001-12-31  Graham Stott  <grahams@redhat.com>
+
 	* final.c (struct bb_list): Delete.
 	(struct bb_str): Likewise.
 
