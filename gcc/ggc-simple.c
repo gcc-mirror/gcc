@@ -251,7 +251,7 @@ size_t
 ggc_get_size (p)
      const void *p;
 {
-  struct ggc_mem *x 
+  struct ggc_mem *x
     = (struct ggc_mem *) ((const char *)p - offsetof (struct ggc_mem, u));
   return x->size;
 }
@@ -360,7 +360,7 @@ ggc_collect ()
 
 /* Called once to initialize the garbage collector.  */
 
-void 
+void
 init_ggc ()
 {
   G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
@@ -383,7 +383,7 @@ ggc_push_context ()
 /* Finish a GC context.  Any uncollected memory in the new context
    will be merged with the old context.  */
 
-void 
+void
 ggc_pop_context ()
 {
   G.context--;
@@ -425,7 +425,7 @@ debug_ggc_tree (p, indent)
   for (i = 0; i < indent; ++i)
     putc (' ', stderr);
   fprintf (stderr, "%lx %p\n", (unsigned long)PTR_KEY (p), p);
- 
+
   if (p->sub[1])
     debug_ggc_tree (p->sub[1], indent + 1);
 }
@@ -490,7 +490,7 @@ ggc_print_statistics ()
 
   /* Clear the statistics.  */
   memset (&stats, 0, sizeof (stats));
-  
+
   /* Make sure collection will really occur.  */
   G.allocated_last_gc = 0;
 

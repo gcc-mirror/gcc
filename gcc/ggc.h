@@ -33,7 +33,7 @@ extern const char digit_vector[];	/* "0" .. "9" */
 extern void ggc_add_root		PARAMS ((void *base, int nelt,
 						 int size, void (*)(void *)));
 
-/* Structures for the easy way to mark roots.  
+/* Structures for the easy way to mark roots.
    In an array, terminated by having base == NULL.*/
 struct ggc_root_tab {
   void *base;
@@ -142,7 +142,7 @@ extern void ggc_collect			PARAMS ((void));
    pointers in this data structure should not be traversed.  */
 extern int ggc_set_mark			PARAMS ((const void *));
 
-/* Return 1 if P has been marked, zero otherwise. 
+/* Return 1 if P has been marked, zero otherwise.
    P must have been allocated by the GC allocator; it mustn't point to
    static objects, stack variables, or memory allocated with malloc.  */
 extern int ggc_marked_p			PARAMS ((const void *));
@@ -151,16 +151,16 @@ extern int ggc_marked_p			PARAMS ((const void *));
 
 /* This structure contains the statistics common to all collectors.
    Particular collectors can extend this structure.  */
-typedef struct ggc_statistics 
+typedef struct ggc_statistics
 {
   /* The Ith element is the number of nodes allocated with code I.  */
   unsigned num_trees[256];
-  /* The Ith element is the number of bytes allocated by nodes with 
+  /* The Ith element is the number of bytes allocated by nodes with
      code I.  */
   size_t size_trees[256];
   /* The Ith element is the number of nodes allocated with code I.  */
   unsigned num_rtxs[256];
-  /* The Ith element is the number of bytes allocated by nodes with 
+  /* The Ith element is the number of bytes allocated by nodes with
      code I.  */
   size_t size_rtxs[256];
   /* The total size of the tree nodes allocated.  */

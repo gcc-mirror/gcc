@@ -1,3 +1,24 @@
+2002-06-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gbl-ctors.h: Fix formatting.
+	* gcc.c: Likewise.
+	* gccspec.c: Likewise.
+	* gcov.c: Likewise.
+	* gcov-io.h: Likewise.
+	* gcse.c: Likewise.
+	* ggc-common.c: Likewise.
+	* ggc.h: Likewise.
+	* ggc-page.c: Likewise.
+	* ggc-simple.c: Likewise.
+	* global.c: Likewise.
+	* graph.h: Likewise.
+	* gthr-dce.h: Likewise.
+	* gthr.h: Likewise.
+	* gthr-posix.h: Likewise.
+	* gthr-rtems.h: Likewise.
+	* gthr-solaris.h: Likewise.
+	* gthr-win32.h: Likewise.
+
 2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	Merge from pch-branch:
@@ -1206,7 +1227,7 @@ Mon Jun  3 11:53:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-06-02  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* emit-rtl.c: Likewise.
+	* emit-rtl.c: Fix formatting.
 	* errors.h: Likewise.
 	* except.c: Likewise.
 	* explow.c: Likewise.

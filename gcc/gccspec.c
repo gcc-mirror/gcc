@@ -57,7 +57,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	}
       else
 	{
-	  int len; 
+	  int len;
 
 	  /* If the filename ends in .m or .mi, we are compiling ObjC
 	     and want to pass -shared-libgcc.  */

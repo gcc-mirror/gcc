@@ -141,14 +141,14 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
 
   if (!__gthread_active_p ())
     return NULL;
- 
+
   if (thr_create(NULL, 0, (void *)func, arg,
-  		 THR_DETACHED | THR_NEW_LWP,
+		 THR_DETACHED | THR_NEW_LWP,
 		 &new_thread_id) == 0)
     thread_id = *(objc_thread_t *)&new_thread_id;
   else
     thread_id = NULL;
-  
+
   return thread_id;
 }
 
@@ -190,7 +190,7 @@ __gthread_objc_thread_get_priority(void)
 
   if (!__gthread_active_p ())
     return OBJC_THREAD_INTERACTIVE_PRIORITY;
-                                                   
+
   if (thr_getprio(thr_self(), &sys_priority) == 0)
     {
       if (sys_priority >= 250)
@@ -333,7 +333,7 @@ __gthread_objc_condition_allocate(objc_condition_t condition)
 {
   if (__gthread_active_p ())
     return cond_init((cond_t *)(&(condition->backend)), USYNC_THREAD,
-    		     NULL);
+		     NULL);
   else
     return 0;
 }
@@ -354,7 +354,7 @@ __gthread_objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
 {
   if (__gthread_active_p ())
     return cond_wait((cond_t *)(&(condition->backend)),
-    		     (mutex_t *)(&(mutex->backend)));
+		     (mutex_t *)(&(mutex->backend)));
   else
     return 0;
 }

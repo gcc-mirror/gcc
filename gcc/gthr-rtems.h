@@ -45,7 +45,7 @@ typedef int   __gthread_once_t;
 typedef void *__gthread_mutex_t;
 
 /*
- * External functions provided by RTEMS. They are very similar to their POSIX 
+ * External functions provided by RTEMS. They are very similar to their POSIX
  * counterparts. A "Wrapper API" is being use to avoid dependency on any RTEMS
  * header files.
  */
