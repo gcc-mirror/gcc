@@ -1,6 +1,6 @@
-/* Definitions of target machine for GNU compiler.  Iris version 5.
+/* Definitions of target machine for GNU compiler.  IRIX version 5.
    Copyright (C) 1993, 1995, 1996, 1998, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,23 +21,16 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_IRIX5 1
 
-#ifndef TARGET_DEFAULT
-#define	TARGET_DEFAULT	MASK_ABICALLS
-#endif
 #define ABICALLS_ASM_OP "\t.option pic2"
 
-#include "mips/iris3.h"
-#include "mips/mips.h"
-#include "mips/iris4.h"
-
-/* Irix 5 doesn't use COFF, so disable special COFF handling in collect2.c.  */
+/* IRIX 5 doesn't use COFF, so disable special COFF handling in collect2.c.  */
 #undef OBJECT_FORMAT_COFF
 
 /* ??? This is correct, but not very useful, because there is no file that
    uses this macro.  */
 /* ??? The best way to handle global constructors under ELF is to use .init
    and .fini sections.  Unfortunately, there is apparently no way to get
-   the Irix 5.x (x <= 2) assembler to create these sections.  So we instead
+   the IRIX 5.x (x <= 2) assembler to create these sections.  So we instead
    use collect.  The linker can create these sections via -init and -fini
    options, but using this would require modifying how crtstuff works, and
    I will leave that for another time (or someone else).  */
@@ -57,6 +50,10 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE     "int"
 #define WCHAR_TYPE_SIZE        INT_TYPE_SIZE
 #define MAX_WCHAR_TYPE_SIZE    64
+
+/* Plain char is unsigned in the SGI compiler.  */
+#undef DEFAULT_SIGNED_CHAR
+#define DEFAULT_SIGNED_CHAR 0
 
 #define WORD_SWITCH_TAKES_ARG(STR)			\
  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)			\
@@ -153,7 +150,19 @@ Boston, MA 02111-1307, USA.  */
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 5.x"
 
- /* Dollar signs are OK in Irix5 but not in Irix3.  */
+/* Always use 1 for .file number.  I [meissner@osf.org] wonder why
+   IRIX needs this.  */
+
+#undef SET_FILE_NUMBER
+#define SET_FILE_NUMBER() num_source_filenames = 1
+
+/* Put out a label after a .loc.  I [meissner@osf.org] wonder why
+   IRIX needs this.  */
+
+#undef LABEL_AFTER_LOC
+#define LABEL_AFTER_LOC(STREAM) fprintf (STREAM, "LM%d:\n", ++sym_lineno)
+
+ /* Dollar signs are OK in IRIX 5 but not in IRIX 3.  */
 #undef DOLLARS_IN_IDENTIFIERS
 #undef NO_DOLLAR_IN_LABEL
 
@@ -162,7 +171,24 @@ Boston, MA 02111-1307, USA.  */
 #undef MIPS_DEFAULT_GVALUE
 #define MIPS_DEFAULT_GVALUE 0
 
-/* In Irix 5, we must output a `.global name .text' directive for every used
+/* Some assemblers have a bug that causes backslash escaped chars in .ascii
+   to be misassembled, so we just completely avoid it.  */
+#undef ASM_OUTPUT_ASCII
+#define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
+do {								\
+  const unsigned char *s_ = (const unsigned char *)(PTR);	\
+  unsigned len_ = (LEN);					\
+  unsigned i_;							\
+  for (i_ = 0; i_ < len_; s_++, i_++)				\
+    {								\
+      if ((i_ % 8) == 0)					\
+	fputs ("\n\t.byte\t", (FILE));				\
+      fprintf ((FILE), "%s0x%x", (i_%8?",":""), *s_);		\
+    }								\
+  fputs ("\n", (FILE));						\
+} while (0)
+
+/* In IRIX 5, we must output a `.global name .text' directive for every used
    but undefined function.  If we don't, the linker may perform an optimization
    (skipping over the insns that set $gp) when it is unsafe.  This is used
    indirectly by ASM_OUTPUT_EXTERNAL.  */

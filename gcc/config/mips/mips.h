@@ -2532,16 +2532,6 @@ extern enum reg_class mips_char_to_class[256];
   ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
    ? 64 : 128)
 
-/* Make sure 4 words are always allocated on the stack.  */
-
-#ifndef STACK_ARGS_ADJUST
-#define STACK_ARGS_ADJUST(SIZE)						\
-{									\
-  if (SIZE.constant < 4 * UNITS_PER_WORD)				\
-    SIZE.constant = 4 * UNITS_PER_WORD;					\
-}
-#endif
-
 
 /* A C expression that should indicate the number of bytes of its
    own arguments that a function pops on returning, or 0

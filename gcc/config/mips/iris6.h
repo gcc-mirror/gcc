@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  Iris version 6.
+/* Definitions of target machine for GNU compiler.  IRIX version 6.
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
@@ -19,25 +19,18 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Let mips.c know we need the Irix6 functions.  */
+/* Let mips.c know we need the IRIX 6 functions.  */
 #define TARGET_IRIX6 1
 
 /* Default to -mabi=n32 and -mips3.  */
-#define MIPS_ISA_DEFAULT 3
-#define MIPS_ABI_DEFAULT ABI_N32
+#undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "mabi=n32" }
 
-#ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT)
-#endif
-
-#include "mips/iris5.h"
-
-/* Irix6 assembler does handle DWARF2 directives.  Override setting in
-   irix5.h file.  */
+/* IRIX 6 assembler does handle DWARF2 directives.  Override setting in
+   iris5.h file.  */
 #undef DWARF2_UNWIND_INFO
 
-/* The Irix6 assembler will sometimes assign labels to the wrong
+/* The IRIX 6 assembler will sometimes assign labels to the wrong
    section unless the labels are within .ent/.end blocks.  Therefore,
    we avoid creating such labels.  */
 #define DWARF2_GENERATE_TEXT_SECTION_LABEL 0
@@ -58,19 +51,19 @@ Boston, MA 02111-1307, USA.  */
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE 32
 
-/* For Irix 6, -mabi=64 implies TARGET_LONG64.  */
+/* For IRIX 6, -mabi=64 implies TARGET_LONG64.  */
 /* This is handled in override_options.  */
 
 #undef SUBTARGET_CC1_SPEC
 #define SUBTARGET_CC1_SPEC ""
 
-/* We must pass -D_LONGLONG always, even when -ansi is used, because irix6
+/* We must pass -D_LONGLONG always, even when -ansi is used, because IRIX 6
    system header files require it.  This is OK, because gcc never warns
    when long long is used in system header files.  Alternatively, we can
    add support for the SGI builtin type __long_long.  */
 
 /* The GNU C++ standard library requires that __EXTENSIONS__ and
-   _SGI_SOURCE be defined on at least irix6.2 and probably all IRIX 6
+   _SGI_SOURCE be defined on at least IRIX 6.2 and probably all IRIX 6
    prior to 6.5.  They normally get defined if !ansi, for g++ we want
    them regardless.  We don't need this on IRIX 6.5 itself, but it
    shouldn't hurt other than the namespace pollution.  */
@@ -145,7 +138,7 @@ Boston, MA 02111-1307, USA.  */
        }						\
 } while (0)
 
-/* Irix 6 uses DWARF-2.  */
+/* IRIX 6 uses DWARF-2.  */
 #define DWARF2_DEBUGGING_INFO 1
 #define MIPS_DEBUGGING_INFO 1
 #undef PREFERRED_DEBUGGING_TYPE
@@ -167,7 +160,7 @@ Boston, MA 02111-1307, USA.  */
    as DWARF_OFFSET_SIZE.  */
 #define DWARF_INITIAL_LENGTH_SIZE DWARF_OFFSET_SIZE
 
-/* There is no GNU as port for Irix6 yet, so we set MD_EXEC_PREFIX so that
+/* There is no GNU as port for IRIX 6 yet, so we set MD_EXEC_PREFIX so that
    gcc will automatically find SGI as instead of searching the user's path.
    The latter can fail when building a cross compiler if the user has . in
    the path before /usr/bin, since then gcc will find and try to use the link
@@ -182,13 +175,13 @@ Boston, MA 02111-1307, USA.  */
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 6.x"
 
-/* Irix 5 stuff that we don't need for Irix 6.  */
+/* IRIX 5 stuff that we don't need for IRIX 6.  */
 /* ??? We do need this for the -mabi=32 switch though.  */
 #undef ASM_OUTPUT_UNDEF_FUNCTION
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #undef ASM_DECLARE_FUNCTION_SIZE
 
-/* Stuff we need for Irix 6 that isn't in Irix 5.  */
+/* Stuff we need for IRIX 6 that isn't in IRIX 5.  */
 
 /* The SGI assembler doesn't like labels before the .ent, so we must output
    the .ent and function name here, which is the normal place for it.  */
@@ -237,7 +230,7 @@ Boston, MA 02111-1307, USA.  */
 #define TYPE_ASM_OP	"\t.type\t"
 #define SIZE_ASM_OP	"\t.size\t"
 
-/* Irix assembler does not support the init_priority C++ attribute.  */
+/* IRIX assembler does not support the init_priority C++ attribute.  */
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
 
@@ -416,7 +409,7 @@ do									\
  }									\
 while (0)
 
-/* Define the `__builtin_va_list' type for the ABI.  On Irix6, this
+/* Define the `__builtin_va_list' type for the ABI.  On IRIX 6, this
    type is `char *'.  */
 #undef BUILD_VA_LIST_TYPE
 #define BUILD_VA_LIST_TYPE(VALIST) \
@@ -448,7 +441,7 @@ do {									 \
 #define LOCAL_LABEL_PREFIX ((mips_abi == ABI_32 || mips_abi == ABI_O64) \
 			    ? "$" : ".")
 
-/* Profiling is supported via libprof1.a not -lc_p as in Irix 3.  */
+/* Profiling is supported via libprof1.a not -lc_p as in IRIX 3.  */
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
 #undef STARTFILE_SPEC
