@@ -1,3 +1,9 @@
+2002-06-27  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.md: Give "*xxx" names to all unnamed insn's.
+	(*lsiu, *ssiu, movstrsi_internal, zero_cost_loop_start,
+	zero_cost_loop_end): Remove unnecessary "parallel" from insns.
+
 2002-06-27  Roger Sayle  <roger@eyesopen.com>
 
 	* config/d30v/d30v.h: Remove commented out STACK_REGS #defines.
