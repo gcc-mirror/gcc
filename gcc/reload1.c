@@ -2163,9 +2163,16 @@ set_label_offsets (x, insn, initial_p)
       else if (x == insn
 	       && (tem = prev_nonnote_insn (insn)) != 0
 	       && GET_CODE (tem) == BARRIER)
-	for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
-	  reg_eliminate[i].offset = reg_eliminate[i].previous_offset
-	    = offsets_at[CODE_LABEL_NUMBER (x)][i];
+	{
+	  num_not_at_initial_offset = 0;
+	  for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
+	    {
+	      reg_eliminate[i].offset = reg_eliminate[i].previous_offset
+		= offsets_at[CODE_LABEL_NUMBER (x)][i];
+	      if (reg_eliminate[i].offset != reg_eliminate[i].initial_offset)
+		num_not_at_initial_offset++;
+	    }
+	}
 
       else
 	/* If neither of the above cases is true, compare each offset
@@ -3215,9 +3222,16 @@ reload_as_needed (first, live_known)
       /* If we pass a label, copy the offsets from the label information
 	 into the current offsets of each elimination.  */
       if (GET_CODE (insn) == CODE_LABEL)
-	for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
-	  reg_eliminate[i].offset = reg_eliminate[i].previous_offset
-	    = offsets_at[CODE_LABEL_NUMBER (insn)][i];
+	{
+	  num_not_at_initial_offset = 0;
+	  for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
+	    {
+	      reg_eliminate[i].offset = reg_eliminate[i].previous_offset
+		= offsets_at[CODE_LABEL_NUMBER (insn)][i];
+	      if (reg_eliminate[i].offset != reg_eliminate[i].initial_offset)
+		num_not_at_initial_offset++;
+	    }
+	}
 
       else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
