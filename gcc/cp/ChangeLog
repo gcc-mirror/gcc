@@ -1,3 +1,7 @@
+1999-11-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (synthesize_tinfo_fn): Set DECL_DEFER_OUTPUT.
+
 Fri Nov 12 12:56:32 MST 1999	Diego Novillo <dnovillo@cygnus.com>
 
 	* init.c (init_init_processing): Re-instated Nov 11 patch after
