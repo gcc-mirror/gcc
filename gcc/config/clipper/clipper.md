@@ -385,14 +385,19 @@
     operands[1] = force_reg (SImode, operands[1]);
 }")
 
-;; provide 2 patterns with different predicates as 'general_operand' in both
-;; positions results in a 'mem -> mem' move from combine that must be reloaded 
+;; Reject both args with `general_operand' if not reloading because a
+;; mem -> mem move that was split by 'movsi' can be recombined to
+;; mem -> mem by the combiner.
 ;;
-
+;; As a pseudo register can end up in a stack slot during reloading we must
+;; allow a r->m move for the next pattern. 
+;; The first predicate must be `general_operand' because a predicate must
+;; be true for each constraint.
+;;  
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(match_operand:SI 1 "general_operand"   "r,m,n,i"))]
-  ""
+  [(set (match_operand:SI 0 "general_operand" "=r,r,r,r,m")
+	(match_operand:SI 1 "general_operand"  "r,m,n,i,r"))]
+  "reload_in_progress || register_operand (operands[0], SImode)"
   "*
 {
   int val;
@@ -418,9 +423,11 @@
 
   if (which_alternative == 3)		/* unknown const */
     return \"loada  %a1,%0\";
+
+  return \"storw  %1,%0\";
 }"
-[(set_attr "type" "arith,load,arith,load")
- (set_attr "cc" "set2,change0,set1,change0")])
+[(set_attr "type" "arith,load,arith,load,store")
+ (set_attr "cc" "set2,change0,set1,change0,unchanged")])
 
 
 (define_insn ""
