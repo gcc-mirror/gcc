@@ -1,13 +1,14 @@
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec -mabi=altivec" } */
-/* { dg-final { scan-assembler "vcmpgtub" } } */
+/* { dg-final { scan-assembler "vcmpgtub" { target *-*-linux* } } } */
+/* { dg-final { scan-assembler "vcmpgtsb" { target *-*-darwin* } } } */
 /* { dg-final { scan-assembler "vcmpgtsh" } } */
 /* { dg-final { scan-assembler "vcmpgtsw" } } */
 
 /* Verify a statement in the GCC Manual that vector type specifiers can
-   omit "signed" or "unsigned", with the default being "signed" for int
-   and short, and "unsigned" for char.  */
+   omit "signed" or "unsigned".  The default is the default signedness
+   of the base type, which differs depending on the ABI.  */
 
 #include <altivec.h>
 

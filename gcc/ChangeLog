@@ -1,3 +1,7 @@
+2004-12-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/extend.texi (AltiVec Builtins): Fix info about signedness.
+
 2004-12-03  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Protect
