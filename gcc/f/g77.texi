@@ -647,7 +647,7 @@ Jonathan Corbet
 @item
 Dr.@: Mark Fernyhough
 @item
-Takafumi Hayashi (The University of AIzu)---@email{takafumi@@u-aizu.ac.jp}
+Takafumi Hayashi (The University of Aizu)---@email{takafumi@@u-aizu.ac.jp}
 @item
 Kate Hedstrom
 @item
@@ -1539,7 +1539,7 @@ line being effectively commented out---unfortunate if that
 line is a non-comment line of important code!
 
 @emph{Note:} The @samp{-traditional} and @samp{-undef} flags are supplied
-to @code{cpp} by default, to avoid unpleasant surprises.
+to @code{cpp} by default, to help avoid unpleasant surprises.
 @xref{Preprocessor Options,,Options Controlling the Preprocessor,
 gcc,Using and Porting GNU CC}.
 This means that ANSI C preprocessor features (such as the @samp{#}
@@ -1549,6 +1549,15 @@ substitution by C predefines.
 Thus, if you want to do system-specific
 tests, use, for example, @samp{#ifdef __linux__} rather than @samp{#ifdef linux}.
 Use the @samp{-v} option to see exactly how the preprocessor is invoked.
+
+@cindex /*
+Unfortunately, the @samp{-traditional} flag will not avoid an error from
+anything that @code{cpp} sees as an unterminated C comment, such as:
+@smallexample
+C Some Fortran compilers accept /* as starting
+C an inline comment.
+@end smallexample
+@xref{Trailing Comment}.
 
 The following options that affect overall processing are recognized
 by the @code{g77} and @code{gcc} commands in a GNU Fortran installation:
@@ -2638,8 +2647,28 @@ is @samp{-mno-align-double}, not @samp{-benign-double}.
 @item -ffloat-store
 @cindex IEEE conformance
 @cindex conformance, IEEE
-Might help a Fortran program that depends on exact IEEE conformance
-on some machines, but might slow down a program that doesn't.
+@cindex floating point precision
+Might help a Fortran program that depends on exact IEEE conformance on
+some machines, but might slow down a program that doesn't.
+
+This option is effective when the floating point unit is set to work in
+IEEE 854 `extended precision'---as it typically is on x86 and m68k GNU
+systems---rather than IEEE 754 double precision.  @code{-ffloat-store}
+tries to remove the extra precision by spilling data from floating point
+registers into memory and this typically involves a big performance
+hit.  However, it doesn't affect intermediate results, so that it is
+only partially effective.  `Excess precision' is avoided in code like:
+@smallexample
+a = b + c
+d = a * e
+@end smallexample
+but not in code like:
+@smallexample
+      d = (b + c) * e
+@end smallexample
+
+@xref{Floating point precision} for another, potentially better way of
+controlling the precision.
 
 @cindex -fforce-mem option
 @cindex options, -fforce-mem
@@ -2704,13 +2733,42 @@ Might improve performance on some code.
 @item -funroll-loops
 @cindex loops, unrolling
 @cindex unrolling loops
-Definitely improves performance on some code.
+@cindex loop optimization
+@c DL: fixme: Craig doesn't like `indexed' but f95 doesn't seem to
+@c provide a suitable term
+Typically improves performance on code using indexed @code{DO} loops by
+unrolling them and is probably generally appropriate for Fortran, though
+it is not turned on at any optimization level.  
+Note that outer loop unrolling isn't done specifically; decisions about
+whether to unroll a loop are made on the basis of its instruction count.  
+
+@c DL: Fixme: This should obviously go somewhere else...
+Also, no `loop discovery'@footnote{@dfn{loop discovery} refers to the
+process by which a compiler, or indeed any reader of a program,
+determines which portions of the program are more likely to be executed
+repeatedly as it is being run.  Such discovery typically is done early
+when compiling using optimization techniques, so the ``discovered''
+loops get more attention---and more run-time resources, such as
+registers---from the compiler.  It is easy to ``discover'' loops that are
+constructed out of looping constructs in the language
+(such as Fortran's @code{DO}).  For some programs, ``discovering'' loops
+constructed out of lower-level constructs (such as @code{IF} and
+@code{GOTO}) can lead to generation of more optimal code
+than otherwise.} is done, so only loops written with @code{DO}
+benefit from loop optimizations, including---but not limited
+to---unrolling.  Loops written with @code{IF} and @code{GOTO} will not
+be recognized as such.  This option only unrolls indexed @code{DO}
+loops, not @code{DO WHILE} loops.
 
 @cindex -funroll-all-loops option
 @cindex options, -funroll-all-loops
+@cindex @code{DO WHILE}
 @item -funroll-all-loops
-@c DL: Is this really true?  What _are_ the semantics of this option?
-Improves performance on some code.
+@c DL: Check my understanding of -funroll-all-loops v. -funroll-loops is correct.
+Probably improves performance on code using @code{DO WHILE} loops by
+unrolling them in addition to indexed @code{DO} loops.  In the absence
+of @code{DO WHILE}, this option is equivalent to @code{-funroll-loops}
+but possibly slower.
 
 @item -fno-move-all-movables
 @cindex -fno-move-all-movables option
@@ -4137,6 +4195,8 @@ Extensions to the ANSI FORTRAN 77 standard:
 * Control Statements::
 * Functions and Subroutines::
 * Scope and Classes of Names::
+* I/O::
+* Fortran 90 Features::
 @end menu
 
 @node Direction of Language Development
@@ -4593,7 +4653,7 @@ Otherwise, it is treated as an indicator of a continuation
 line.
 
 @item
-The exclamation point appears outside a character or hollerith
+The exclamation point appears outside a character or Hollerith
 constant.
 Otherwise, the exclamation point is considered part of the
 constant.
@@ -4612,7 +4672,7 @@ is permitted under the following conditions:
 
 @itemize @bullet
 @item
-The semicolon appears outside a character or hollerith
+The semicolon appears outside a character or Hollerith
 constant.
 Otherwise, the semicolon is considered part of the
 constant.
@@ -4671,6 +4731,7 @@ for the relevant aspects of GNU Fortran.)
 * Statement Labels::
 * Order::
 * INCLUDE::
+* Cpp-style directives::
 @end menu
 
 @node Character Set
@@ -4683,7 +4744,7 @@ Letters include uppercase letters (the twenty-six characters
 of the English alphabet) and lowercase letters (their lowercase
 equivalent).
 Generally, lowercase letters may be used in place of uppercase
-letters, though in character and hollerith constants, they
+letters, though in character and Hollerith constants, they
 are distinct.
 
 Special characters include:
@@ -5009,6 +5070,18 @@ on executable statements.
 An @code{INCLUDE} directive may be continued across multiple
 lines as if it were a statement.
 This permits long names to be used for @var{filename}.
+
+@node Cpp-style directives
+@subsection Cpp-style directives
+@cindex #
+@cindex preprocessor
+
+@code{cpp} output-style @code{#} directives @xref{C Preprocessor
+Output,,, cpp, The C Preprocessor}, are recognized by the compiler even
+when the preprocessor isn't run on the input (as it is when compiling
+@samp{.F} files).  (Note the distinction between these @code{cpp}
+@code{#} @emph{output} directives and @code{#line} @emph{input}
+directives.)
 
 @node Data Types and Constants
 @section Data Types and Constants
@@ -5561,6 +5634,7 @@ is 11, and so on.)
 
 (Corresponds to Section 4.8 of ANSI X3.9-1978 FORTRAN 77.)
 
+@cindex double quoted character constants
 A character constant may be delimited by a pair of double quotes
 (@samp{"}) instead of apostrophes.
 In this case, an apostrophe within the constant represents
@@ -5684,6 +5758,27 @@ The @code{NAMELIST} statement, and related I/O constructs, are
 supported by the GNU Fortran language in essentially the same
 way as they are by @code{f2c}.
 
+This follows Fortran 90 with the restriction that on @code{NAMELIST}
+input, subscripts must have the form
+@smallexample
+@var{subscript} [ @code{:} @var{subscript} [ @code{:} @var{stride}]]
+@end smallexample
+i.e.@:
+@smallexample
+&xx x(1:3,8:10:2)=1,2,3,4,5,6/
+@end smallexample
+is allowed, but not, say,
+@smallexample
+&xx x(:3,8::2)=1,2,3,4,5,6/
+@end smallexample
+
+As an extension of the Fortran 90 form, @code{$} and @code{$END} may be
+used in place of @code{&} and @code{/} in @code{NAMELIST} input, so that
+@smallexample
+$&xx x(1:3,8:10:2)=1,2,3,4,5,6 $end
+@end smallexample
+could be used instead of the example above.
+
 @node DOUBLE COMPLEX
 @subsection @code{DOUBLE COMPLEX} Statement
 @cindex DOUBLE COMPLEX
@@ -5710,10 +5805,13 @@ for the relevant aspects of GNU Fortran.)
 @node DO WHILE
 @subsection DO WHILE
 @cindex DO WHILE
+@cindex DO
 @cindex MIL-STD 1753
 
 The @code{DO WHILE} statement, a feature of both the MIL-STD 1753 and
 Fortran 90 standards, is provided by the GNU Fortran language.
+The Fortran 90 ``do forever'' statement comprising just @code{DO} is
+also supported.
 
 @node END DO
 @subsection END DO
@@ -6501,6 +6599,115 @@ for the relevant aspects of GNU Fortran.)
 Underscores (@samp{_}) are accepted in symbol names after the first
 character (which must be a letter).
 
+@node I/O
+@section I/O
+
+@cindex dollar sign
+A dollar sign at the end of an output format specification suppresses
+the newline at the end of the output.
+
+@cindex <> edit descriptor
+@cindex edit descriptor, <>
+Edit descriptors in @code{FORMAT} statements may contain compile-time
+@code{INTEGER} constant expressions in angle brackets, such as
+@smallexample
+10    FORMAT (I<WIDTH>)
+@end smallexample
+
+The @code{OPEN} specifier @code{NAME=} is equivalent to @code{FILE=}.
+
+These Fortran 90 features are supported: 
+@itemize @bullet
+@item
+@cindex Z edit descriptor
+@cindex edit descriptor, Z
+The @code{Z} edit descriptor is supported.
+@item
+The @code{FILE=} specifier may be omitted in an @code{OPEN} statement if
+@code{STATUS='SCRATCH'} is supplied.  The @code{STATUS='REPLACE'}
+specifier is supported.
+@end itemize
+
+@node Fortran 90 Features
+@section Fortran 90 Features
+@cindex Fortran 90
+
+For convenience this section collects a list (probably incomplete) of
+the Fortran 90 features supported by the GNU Fortran language, even if
+they are documented elsewhere.
+@c makeinfo 1.68 objects to the nested parens
+@ifnotinfo
+@xref{Characters Lines Sequence,,{Characters, Lines, and Execution Sequence}},
+@end ifnotinfo
+@ifinfo
+@xref{Characters Lines Sequence},
+@end ifinfo
+for information on additional fixed source form lexical issues.  In
+addition, the free source form is supported through the
+@cindex @samp{-ffree-form}
+@samp{-ffree-form} option.  @xref{Fortran 90} for other Fortran 90
+features be turned on by the
+@cindex @samp{-ff90}
+@samp{-ff90} option.  @xref{Table of Intrinsic Functions} for
+information on the Fortran 90 intrinsics available.
+
+@table @asis
+@item Automatic arrays in procedures
+@item Character assignments
+@cindex character assignments
+In character assignments, the variable being assigned may occur on the
+right hand side of the assignment.
+@item Character strings
+@cindex double quoted character constants
+Strings may have zero length and substrings of character constants are
+permitted.  Character constants may be enclosed in double quotes
+(@code{"}) as well as single quotes.  @xref{Character Type}.
+@item Construct names
+(Symbolic tags on blocks.)  @xref{Construct Names }.
+@item @code{CYCLE} and @code{EXIT}
+@xref{CYCLE and EXIT,,The @code{CYCLE} and @code{EXIT} Statements}.
+@item @code{DOUBLE COMPLEX}
+@xref{DOUBLE COMPLEX,,@code{DOUBLE COMPLEX} Statement
+}.
+@item @code{DO WHILE}
+@xref{DO WHILE}.
+@item @code{END} decoration
+@xref{Statements}.
+@item @code{END DO}
+@xref{END DO}.
+@item @code{KIND}
+@item @code{IMPLICIT NONE}
+@item @code{INCLUDE} statements
+@xref{INCLUDE}.
+@item List directed and namelist i/o on internal files
+@item Binary, octal and hexadecimal constants
+These are supported more generally than required by Fortran 90.
+@xref{Integer Type}.
+@item @code{NAMELIST}
+@xref{NAMELIST}.
+@item @code{OPEN} specifiers
+@code{STATUS='REPLACE'} is supported.
+@item Relational operators
+The operators @code{<}, @code{<=}, @code{==}, @code{/=}, @code{>} and
+@code{>=} may be used instead of @code{.LT.}, @code{.LE.}, @code{.EQ.},
+@code{.NE.}, @code{.GT.} and @code{.GE.} respectively.
+@item @code{SELECT CASE}
+Not fully implemented.  @xref{SELECT CASE on CHARACTER Type,,
+@code{SELECT CASE} on @code{CHARACTER} Type}.
+@item Specification statements
+A limited subset of the Fortran 90 syntax and semantics for variable
+declarations is supported, including @code{KIND}.  @xref{Kind Notation}.
+(@code{KIND} is of limited usefulness in the absence of the
+@code{KIND}-related intrinsics, since these intrinsics permit writing
+more widely portable code.)  An example of supported @code{KIND} usage
+is:
+@smallexample
+INTEGER (KIND=1) :: FOO=1, BAR=2
+CHARACTER (LEN=3) FOO
+@end smallexample
+@code{PARAMETER} and @code{DIMENSION} attributes aren't supported.
+@end table
+
 @node Other Dialects
 @chapter Other Dialects
 
@@ -6670,6 +6877,9 @@ continuation line, imitating the behavior of @code{f2c}.
 @node Trailing Comment
 @section Trailing Comment
 
+@cindex trailing comment
+@cindex comment, trailing
+@cindex /*
 @code{g77} supports use of @samp{/*} to start a trailing
 comment.
 In the GNU Fortran language, @samp{!} is used for this purpose.
@@ -6689,6 +6899,7 @@ error (though it would likely behave incorrectly).
 @node Debug Line
 @section Debug Line
 @cindex debug line
+@cindex comment line, debug
 
 Use of @samp{D} or @samp{d} as the first character (column 1) of
 a source line denotes a debug line.
@@ -8341,7 +8552,7 @@ prototype information.
 @code{#include} this in the C which has to call
 the Fortran routines to make sure you get it right.
 
-@xref{Arrays,,Arrays (DIMENSION}, for information on the differences
+@xref{Arrays,,Arrays (DIMENSION)}, for information on the differences
 between the way Fortran (including compilers like @code{g77}) and
 C handle arrays.
 
@@ -9813,7 +10024,7 @@ The meaning of a @code{DO} loop in Fortran is precisely specified
 in the Fortran standard@dots{}and is quite different from what
 many programmers might expect.
 
-In particular, Fortran @code{DO} loops are implemented as if
+In particular, Fortran indexed @code{DO} loops are implemented as if
 the number of trips through the loop is calculated @emph{before}
 the loop is entered.
 
@@ -9997,6 +10208,8 @@ tracking down bugs in such programs.
 * Aliasing Assumed To Work::
 * Output Assumed To Flush::
 * Large File Unit Numbers::
+* Floating point precision::
+* Inconsistent Calling Sequences::
 @end menu
 
 @node Not My Type
@@ -10413,6 +10626,62 @@ For example, some systems limit the number of files simultaneously
 open by a running program.
 Information on how to increase these limits should be found
 in your system's documentation.
+
+@node Floating point precision
+@subsection Floating point precision
+
+@cindex IEEE 754
+@cindex IEEE conformance
+@cindex conformance, IEEE
+@cindex floating point precision
+If your program depends on exact IEEE 754 floating point handling it may
+help on some systems---specifically x86 or m68k hardware---to use
+the @code{-ffloat-store} option or to reset the precision flag on the
+floating point unit @xref{Optimize Options}.
+
+However, it might be better simply to put the FPU into double precision
+mode and not take the performance hit of @code{-ffloat-store}.  On x86
+and m68k GNU systems you can do this with a technique similar to that
+for turning on floating point exceptions @xref{Floating-point Exception
+Handling}.  The control word could be set to double precision by
+replacing the @code{__setfpucw} call with one like this:
+@smallexample
+  __setfpucw ((_FPU_DEFAULT & ~_FPU_EXTENDED) | _FPU_DOUBLE);
+@end smallexample
+(It is not clear whether this has any effect on the operation of the GNU
+maths library, but we have no evidence of it causing trouble.)
+
+Some targets (such as the Alpha) may need special options for full IEEE
+conformance @xref{Submodel Options,,Hardware Models and
+Configurations,gcc,Using and Porting GNU CC}.
+
+@node Inconsistent Calling Sequences
+@subsection Inconsistent Calling Sequences
+
+@pindex ftnchek
+@cindex floating point errors
+@cindex x86 FPU stack
+Code containing inconsistent calling sequences in the same file is
+normally rejected @xref{GLOBALS}.  (Use, say, @code{ftnchek} to ensure
+consistency across source files 
+@c makeinfo 1.68 objects to the nested parens
+@ifinfo
+@xref{f2c Skeletons and Prototypes}.)
+@end ifinfo
+@ifnotinfo
+@xref{f2c Skeletons and Prototypes,,
+{Generating Skeletons and Prototypes with @code{f2c}}}.)
+@end ifnotinfo
+
+Mysterious errors, which may appear to be code generation problems, can
+appear specifically on the x86 architecture with some such
+inconsistencies.  On x86 hardware, floating point return values of
+functions are placed on the floating point unit's register stack, not
+the normal stack.  Thus calling a @code{REAL} or @code{DOUBLE PRECISION}
+@code{FUNCTION} as some other sort of procedure, or vice versa,
+scrambles the floating point stack.  This may break unrelated code
+executed later.  Similarly if, say, external C routines are written
+incorrectly.
 
 @node Overly Convenient Options
 @section Overly Convenient Command-line Options
@@ -11251,6 +11520,25 @@ instead of converting them to double precision first.
 This would tend to result in output that is more consistent
 with that produced by some other Fortran implementations.
 
+A useful source of information on floating point computation is David
+Goldberg, `What Every Computer Scientist Should Know About
+Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
+5--48.  At the time of writing this is available online under
+@uref{http://docs.sun.com} and there is a supplemented version at
+@uref{http://www.validgh.com/}.  Information related to the IEEE 754
+floating point standard by a leading light can be found at
+@uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status }; see also
+slides from the short course referenced from
+@uref{http://http.cs.berkeley.edu/%7Efateman/}.
+@uref{http://www.suburbia.net/%7Ebillm/floating-point/} has a brief
+guide to IEEE 754, a somewhat x86 GNU/Linux-specific FAQ and library
+code for GNU/Linux x86 systems.
+@c xref would be different between editions:
+The GNU C library provides routines for controlling the FPU, and other
+documentation about this.
+
+@xref{Floating point precision}, regarding IEEE 754 conformance.
+
 @include bugs.texi
 
 @node Missing Features
@@ -11312,6 +11600,7 @@ Better diagnostics:
 Run-time facilities:
 * Uninitialized Variables at Run Time::
 * Bounds Checking at Run Time::
+* Portable Unformatted Files::
 
 Debugging:
 * Labels Visible to Debugger::
@@ -11653,6 +11942,7 @@ code to specify explicit assembler code.
 @subsection Q Edit Descriptor
 @cindex FORMAT statement
 @cindex Q edit descriptor
+@cindex edit descriptor, Q
 
 The @code{Q} edit descriptor in @code{FORMAT}s isn't supported.
 (This is meant to get the number of characters remaining in an input record.)
@@ -11729,6 +12019,25 @@ replacing @code{libg2c}.
 the @code{OPEN}, @code{CLOSE}, and @code{INQUIRE} statements.
 These extensions are easy to add to @code{g77} itself, but
 require much more work on @code{libg2c}.
+
+@cindex FORM='PRINT'
+@cindex ANS carriage control
+@cindex carraige control
+@pindex asa
+@pindex fpr
+@code{g77} doesn't support @code{FORM='PRINT'} or an equivalent to
+translate the traditional `carraige control' characters in column 1 of
+output to use backspaces, carriage returns and the like.  However
+programs exist to translate them in output files (or standard output).
+These are typically called either @code{fpr} or @code{asa}.  You can get
+a version of @code{asa} from
+@uref{ftp://sunsite.unc.edu/pub/Linux/devel/lang/fortran} for GNU
+systems which will probably build easily on other systems.
+Alternatively, @code{fpr} is in BSD distributions in various archive
+sites.
+
+I think both programs can either be used in a pipeline.
+
 
 @node ENCODE and DECODE
 @subsection @code{ENCODE} and @code{DECODE}
@@ -11865,11 +12174,13 @@ END
 @cindex NaN values
 
 The @code{gcc} backend and, consequently, @code{g77}, currently provides no
-control over whether or not floating-point exceptions are trapped or
+general control over whether or not floating-point exceptions are trapped or
 ignored.
 (Ignoring them typically results in NaN values being
 propagated in systems that conform to IEEE 754.)
-The behaviour is inherited from the system-dependent startup code.
+The behaviour is normally inherited from the system-dependent startup
+code, though some targets, such as the Alpha, have code generation
+options which change the behaviour.
 
 Most systems provide some C-callable mechanism to change this; this can
 be invoked at startup using @code{gcc}'s @code{constructor} attribute.
@@ -11879,12 +12190,20 @@ on an x86-based GNU system:
 
 @smallexample
 #include <fpu_control.h>
-void __attribute__ ((constructor))
-trapfpe () @{
-  (void) __setfpucw (_FPU_DEFAULT &
-                     ~(_FPU_MASK_IM | _FPU_MASK_ZM | _FPU_MASK_OM));
+static void __attribute__ ((constructor))
+trapfpe ()
+@{
+  __setfpucw (_FPU_DEFAULT &
+              ~(_FPU_MASK_IM | _FPU_MASK_ZM | _FPU_MASK_OM));
 @}
 @end smallexample
+
+A convenient trick is to compile this something like:
+@smallexample
+gcc -o libtrapfpe.a trapfpe.c
+@end smallexample
+and then use it by adding @code{-trapfpe} to the @code{g77} command line
+when linking.
 
 @node Nonportable Conversions
 @subsection Nonportable Conversions
@@ -12098,6 +12417,76 @@ in a fashion similar to @code{f2c}.
 
 Note that @code{g77} already warns about references to out-of-bounds
 elements of arrays when it detects these at compile time.
+
+@node Portable Unformatted Files
+@subsection Portable Unformatted Files
+
+@cindex unformatted files
+@cindex file formats
+@cindex binary data
+@cindex byte ordering
+@code{g77} has no facility for exchanging unformatted files with systems
+using different number formats---even differing only in endianness (byte
+order)---or written by other compilers.  Some compilers provide
+facilities at least for doing byte-swapping during unformatted I/O.
+
+It is unrealistic to expect to cope with exchanging unformatted files
+with arbitrary other compiler runtimes, but the @code{g77} runtime
+should at least be able to read files written by @code{g77} on systems
+with different number formats, particularly if they differ only in byte
+order.
+
+In case you do need to write a program to translate to or from
+@code{g77} (@code{libf2c}) unformatted files, they are written as
+follows:
+@table @asis
+@item Sequential
+Unformatted sequential records consist of
+@enumerate
+@item
+A number giving the length of the record contents;
+@item
+the length of record contents again (for backspace).
+@end enumerate
+The record length is of C type
+@code{long}; this means that it is 8 bytes on 64-bit systems such as
+Alpha GNU/Linux and 4 bytes on other systems, such as x86 GNU/Linux.
+Consequently such files cannot be exchanged between 64-bit and 32-bit
+systems, even with the same basic number format.
+@item Direct access
+Unformatted direct access files form a byte stream of length
+@var{records}*@var{recl} bytes, where @var{records} is the maximum
+record number (@code{REC=@var{records}}) written and @var{recl} is the
+record length in bytes specified in the @code{OPEN} statement
+(@code{RECL=@var{recl}}).  Data appear in the records as determined by
+the relevant @code{WRITE} statement.  Dummy records with arbitrary
+contents appear in the file in place of records which haven't been
+written.
+@end table
+
+Thus for exchanging a sequential or direct access unformatted file
+between big- and little-endian 32-bit systems using IEEE 754 floating
+point it would be sufficient to reverse the bytes in consecutive words
+in the file @emph{iff} only @code{REAL*4}, @code{COMPLEX},
+@code{INTEGER*4} and/or @code{LOGICAL*4} data have been written to it by
+@code{g77}.
+
+If necessary, it is possible to do byte-oriented i/o with @code{g77}'s
+@code{FGETC} and @code{FPUTC} intrinsics.  Byte-swapping can be done in
+Fortran by equivalencing larger sized variables to an @code{INTEGER*1}
+array or a set of scalars.
+
+@cindex HDF
+@cindex PDB
+If you need to exchange binary data between arbitrary system and
+compiler variations, we recommend using a portable binary format with
+Fortran bindings, such as NCSA's HDF (@uref{http://hdf.ncsa.uiuc.edu/})
+or PACT's PDB@footnote{No, not @emph{that} one.}
+(@uref{http://www.llnl.gov/def_sci/pact/pact_homepage.html}).  (Unlike,
+say, CDF or XDR, HDF-like systems write in the native number formats and
+only incur overhead when they are read on a system with a different
+format.)  A future @code{g77} runtime library should use such
+techniques.
 
 @node Labels Visible to Debugger
 @subsection Labels Visible to Debugger
@@ -13499,6 +13888,8 @@ are passed via this mechanism.
 If you want to contribute to @code{g77} by doing research,
 design, specification, documentation, coding, or testing,
 the following information should give you some ideas.
+More relevant information might be available from
+@uref{ftp://alpha.gnu.org/gnu/g77/projects/}.
 
 @menu
 * Efficiency::               Make @code{g77} itself compile code faster.
@@ -14377,7 +14768,7 @@ Consecutive keywords must be separated by spaces, so
 @samp{REALX,Y} is not valid, while @samp{REAL X,Y} is.
 There are no comment lines per se, but @samp{!} starts a
 comment anywhere in a line (other than within a character or
-hollerith constant).
+Hollerith constant).
 
 @xref{Source Form}, for more information.
 
@@ -14453,7 +14844,7 @@ someone examining the source file itself.
 Examples of errors resulting from preprocessor macro expansion
 include exceeding the line-length limit, improperly starting,
 terminating, or incorporating the apostrophe or double-quote in
-a character constant, improperly forming a hollerith constant,
+a character constant, improperly forming a Hollerith constant,
 and so on.
 
 @xref{Overall Options,,Options Controlling the Kind of Output},
@@ -14526,8 +14917,11 @@ based on @code{gcc}.
 (It does not occur in @code{egcs}.)
 
 On AIX 4.1, @code{g77} might not build with the native (non-GNU) tools
-due to a linker bug in coping with the @samp{-bbigtoc} option
-which leads to a @samp{Relocation overflow} error.
+due to a linker bug in coping with the @samp{-bbigtoc} option which
+leads to a @samp{Relocation overflow} error.  The GNU linker is not
+recommended on current AIX versions, though; it was developed under a
+now-unsupported version.  This bug is said to be fixed by `update PTF
+U455193 for APAR IX75823'.
 
 Compiling with @samp{-mminimal-toc}
 might solve this problem, e.g.@: by adding

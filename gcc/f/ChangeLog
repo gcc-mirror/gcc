@@ -1,3 +1,7 @@
+1998-10-09  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.texi:  Various updates.
+
 1998-10-02  Dave Love  <d.love@dl.ac.uk>
 
 	* com.c (ffecom_expr_intrinsic_): Fix return type for RAND.
