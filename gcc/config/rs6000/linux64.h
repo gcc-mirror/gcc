@@ -388,3 +388,12 @@ while (0)
 #undef	ASM_PREFERRED_EH_DATA_FORMAT
 #define	ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
   (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_udata8)
+
+#define ASM_FILE_END(FILE) \
+  do {									\
+    if (! TARGET_64BIT)							\
+      named_section_flags (".note.GNU-stack",				\
+			   SECTION_DEBUG				\
+			   | (trampolines_created ? SECTION_CODE : 0));	\
+  } while (0)
+

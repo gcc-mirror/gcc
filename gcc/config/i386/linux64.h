@@ -84,6 +84,13 @@ Boston, MA 02111-1307, USA.  */
 
 #define MULTILIB_DEFAULTS { "m64" }
 
+#define SUBTARGET_FILE_END(FILE) \
+  do {									\
+    named_section_flags (".note.GNU-stack",				\
+			 SECTION_DEBUG					\
+			 | (trampolines_created ? SECTION_CODE : 0));	\
+  } while (0)
+
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  
    Don't use this at all if inhibit_libc is used.  */

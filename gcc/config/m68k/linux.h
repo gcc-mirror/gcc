@@ -359,3 +359,10 @@ do {									\
      : "d" (_beg), "d" (_len)						\
      : "%d0", "%d2", "%d3");						\
 }
+
+#define ASM_FILE_END(FILE) \
+  do {									\
+    named_section_flags (".note.GNU-stack",				\
+			 SECTION_DEBUG					\
+			 | (trampolines_created ? SECTION_CODE : 0));	\
+  } while (0)
