@@ -34,34 +34,29 @@
 #include <ext/rope>
 #include <ext/stdio_filebuf.h>
 
-namespace std
+namespace __gnu_cxx
 {
-  using __gnu_cxx::stdio_filebuf;
-
   template
     const unsigned long 
-    __gnu_cxx::rope<char, std::allocator<char> >::_S_min_len;
+    rope<char, std::allocator<char> >::_S_min_len;
 
   template
     char
-    __gnu_cxx::rope<char, std::allocator<char> >::
-    _S_fetch(__gnu_cxx::_Rope_RopeRep<char, std::allocator<char> >*,
-	     unsigned long);
+    rope<char, std::allocator<char> >::
+    _S_fetch(_Rope_RopeRep<char, std::allocator<char> >*, size_type);
 
   template class stdio_filebuf<char>;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template
     const unsigned long
-    __gnu_cxx::rope<wchar_t, std::allocator<wchar_t> >::_S_min_len;
+    rope<wchar_t, std::allocator<wchar_t> >::_S_min_len;
 
   template
     wchar_t
-    __gnu_cxx::rope<wchar_t, std::allocator<wchar_t> >::
-    _S_fetch(__gnu_cxx::_Rope_RopeRep<wchar_t, std::allocator<wchar_t> >*,
-	     unsigned long);
+    rope<wchar_t, std::allocator<wchar_t> >::
+    _S_fetch(_Rope_RopeRep<wchar_t, std::allocator<wchar_t> >*, size_type);
 
   template class stdio_filebuf<wchar_t>;
 #endif
-
-} // namespace std
+} // namespace __gnu_cxx
