@@ -8,3 +8,7 @@
 
 /* Suffix for executable file names.  */
 #define EXECUTABLE_SUFFIX ".exe"
+
+#define MKTEMP_EACH_FILE 1
+
+#define NO_PRECOMPILES 1
