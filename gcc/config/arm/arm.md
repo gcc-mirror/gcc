@@ -1,5 +1,5 @@
 ;;- Machine description for ARM for GNU compiler
-;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000
+;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000, 2001
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
@@ -5187,12 +5187,12 @@
 
 (define_insn "*ldmsi_postinc"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "+r")
-	  (plus:SI (match_dup 1)
-		   (match_operand:SI 2 "const_int_operand" "n")))
-     (set (match_operand:SI 3 "s_register_operand" "=r")
-	  (mem:SI (match_dup 1)))])]
-  "TARGET_ARM && (INTVAL (operands[2])  == 4 * (XVECLEN (operands[0], 0) - 1))"
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
+	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
+		   (match_operand:SI 3 "const_int_operand" "n")))
+     (set (match_operand:SI 4 "arm_hard_register_operand" "")
+	  (mem:SI (match_dup 2)))])]
+  "TARGET_ARM && (INTVAL (operands[3])  == 4 * (XVECLEN (operands[0], 0) - 1))"
   "*
   {
     rtx ops[3];
@@ -5214,7 +5214,7 @@
 
 (define_insn "*ldmsi"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
+    [(set (match_operand:SI 1 "arm_hard_register_operand" "")
 	  (mem:SI (match_operand:SI 2 "s_register_operand" "r")))])]
   "TARGET_ARM"
   "*
@@ -5263,12 +5263,12 @@
 
 (define_insn "*stmsi_postinc"
   [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "+r")
-	  (plus:SI (match_dup 1)
-		   (match_operand:SI 2 "const_int_operand" "n")))
-     (set (mem:SI (match_dup 1))
-	  (match_operand:SI 3 "s_register_operand" "r"))])]
-  "TARGET_ARM && (INTVAL (operands[2]) == 4 * (XVECLEN (operands[0], 0) - 1))"
+    [(set (match_operand:SI 1 "s_register_operand" "=r")
+	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
+		   (match_operand:SI 3 "const_int_operand" "n")))
+     (set (mem:SI (match_dup 2))
+	  (match_operand:SI 4 "arm_hard_register_operand" ""))])]
+  "TARGET_ARM && (INTVAL (operands[3]) == 4 * (XVECLEN (operands[0], 0) - 1))"
   "*
   {
     rtx ops[3];
@@ -5295,8 +5295,8 @@
 
 (define_insn "*stmsi"
   [(match_parallel 0 "store_multiple_operation"
-    [(set (mem:SI (match_operand:SI 2 "s_register_operand" "r"))
-	  (match_operand:SI 1 "s_register_operand" "r"))])]
+    [(set (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
+	  (match_operand:SI 2 "arm_hard_register_operand" ""))])]
   "TARGET_ARM"
   "*
   {

@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -60,6 +60,7 @@ extern int    neg_const_double_rtx_ok_for_fpu	PARAMS ((rtx));
 
 /* Predicates.  */
 extern int    s_register_operand	PARAMS ((rtx, enum machine_mode));
+extern int    arm_hard_register_operand	PARAMS ((rtx, enum machine_mode));
 extern int    f_register_operand	PARAMS ((rtx, enum machine_mode));
 extern int    reg_or_int_operand	PARAMS ((rtx, enum machine_mode));
 extern int    arm_reload_memory_operand	PARAMS ((rtx, enum machine_mode));
@@ -129,6 +130,7 @@ extern const char * output_return_instruction PARAMS ((rtx, int, int));
 extern void   arm_poke_function_name	PARAMS ((FILE *, char *));
 extern void   output_arm_prologue	PARAMS ((FILE *, int));
 extern void   arm_print_operand		PARAMS ((FILE *, rtx, int));
+extern void   arm_print_operand_address	PARAMS ((FILE *, rtx));
 extern void   arm_final_prescan_insn	PARAMS ((rtx));
 extern int    arm_go_if_legitimate_address PARAMS ((enum machine_mode, rtx));
 extern int    arm_debugger_arg_offset	PARAMS ((int, rtx));
