@@ -7397,7 +7397,7 @@ fold (tree expr)
 	  tree dandnotc = fold (build (BIT_ANDTC_EXPR, TREE_TYPE (arg0),
 				       arg1, TREE_OPERAND (arg0, 1)));
 	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
-	  if (!integer_zerop (dandnotc))
+	  if (integer_nonzerop (dandnotc))
 	    return omit_one_operand (type, rslt, arg0);
 	}
 
@@ -7411,7 +7411,7 @@ fold (tree expr)
 	  tree candnotd = fold (build (BIT_ANDTC_EXPR, TREE_TYPE (arg0),
 				       TREE_OPERAND (arg0, 1), arg1));
 	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
-	  if (!integer_zerop (candnotd))
+	  if (integer_nonzerop (candnotd))
 	    return omit_one_operand (type, rslt, arg0);
 	}
 
