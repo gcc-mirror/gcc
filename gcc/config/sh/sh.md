@@ -3516,7 +3516,7 @@ else
 			 (unspec [(match_operand:SI 1 "" "")] 9))
 		(const (plus:SI (label_ref (match_operand:SI 2 "" ""))
 				(const_int 2))))))
-   (use (match_dup 2))]
+   (use (match_dup 3))]
   ;; Even though the PIC register is not really used by the call
   ;; sequence in which this is expanded, the PLT code assumes the PIC
   ;; register is set, so we must not skip its initialization.  Since
@@ -3530,7 +3530,7 @@ else
   ;; shared libraries.
   "" "
 {
-  operands[2] = pic_offset_table_rtx;
+  operands[3] = pic_offset_table_rtx;
   current_function_uses_pic_offset_table = 1;
 }")
 
