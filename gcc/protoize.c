@@ -57,6 +57,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define _POSIX_SOURCE
 #endif
 
+#include "gvarargs.h"
+/* On some systems stdio.h includes stdarg.h;
+   we must bring in gvarargs.h first.  */
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
@@ -68,7 +71,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <sys/dir.h>
 #endif
 #include <setjmp.h>
-#include "gvarargs.h"
 
 /* Include getopt.h for the sake of getopt_long.
    We don't need the declaration of getopt, and it could conflict
