@@ -3521,19 +3521,19 @@ extern int rtx_equal_function_value_matters;
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, EH_RETURN_STACKADJ_REGNO)
 
 /* We have to distinguish between code and data, so that we apply
-   datalabel where and only where appropriate.  Use textrel for code.  */
+   datalabel where and only where appropriate.  Use sdataN for data.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
  ((flag_pic && (GLOBAL) ? DW_EH_PE_indirect : 0) \
-  | ((CODE) ? DW_EH_PE_textrel : flag_pic ? DW_EH_PE_pcrel : DW_EH_PE_absptr))
+  | (flag_pic ? DW_EH_PE_pcrel : DW_EH_PE_absptr) \
+  | ((CODE) ? 0 : (TARGET_SHMEDIA64 ? DW_EH_PE_sdata8 : DW_EH_PE_sdata4)))
 
 /* Handle special EH pointer encodings.  Absolute, pc-relative, and
    indirect are handled automatically.  */
 #define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE) \
   do { \
-    if (((ENCODING) & 0x70) == DW_EH_PE_textrel) \
+    if (((ENCODING) & 0xf) != DW_EH_PE_sdata4 \
+	&& ((ENCODING) & 0xf) != DW_EH_PE_sdata8) \
       { \
-	encoding &= ~DW_EH_PE_textrel; \
-	encoding |= flag_pic ? DW_EH_PE_pcrel : DW_EH_PE_absptr; \
 	if (GET_CODE (ADDR) != SYMBOL_REF) \
 	  abort (); \
 	SYMBOL_REF_FLAGS (ADDR) |= SYMBOL_FLAG_FUNCTION; \

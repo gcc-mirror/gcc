@@ -41,13 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 1
 
-/* ??? Current SH linux linker has a problem for DW_EH_PE_textrel.  */
-#undef ASM_PREFERRED_EH_DATA_FORMAT
-#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)                      \
-  (flag_pic                                                             \
-    ? ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4 \
-   : DW_EH_PE_absptr)
-
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\
    %{posix:-D_POSIX_SOURCE} \
