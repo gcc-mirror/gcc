@@ -1022,6 +1022,13 @@ extern void remove_node_from_expr_list	PROTO((rtx, rtx *));
 /* flow.c */
 
 extern rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
+void init_EXPR_INSN_LIST_cache		PROTO((void));
+void free_EXPR_LIST_list 		PROTO((rtx *));
+void free_INSN_LIST_list 		PROTO((rtx *));
+void free_EXPR_LIST_node 		PROTO((rtx));
+void free_INSN_LIST_node 		PROTO((rtx));
+rtx alloc_INSN_LIST			PROTO((rtx, rtx));
+rtx alloc_EXPR_LIST			PROTO((int, rtx, rtx));
 
 /* regclass.c */
 
