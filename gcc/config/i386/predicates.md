@@ -759,9 +759,7 @@
 ;; predicate.
 
 (define_special_predicate "sse_comparison_operator"
-  (ior (match_code "eq,lt,le,unordered,ne,unge,ungt,ordered")
-       (and (match_code "uneq,unlt,unle,ltgt,ge,gt")
-	    (match_test "!TARGET_IEEE_FP"))))
+  (match_code "eq,lt,le,unordered,ne,unge,ungt,ordered"))
 
 ;; Return 1 if OP is a valid comparison operator in valid mode.
 (define_predicate "ix86_comparison_operator"

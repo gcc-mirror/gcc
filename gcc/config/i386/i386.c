@@ -9764,12 +9764,11 @@ ix86_expand_fp_movcc (rtx operands[])
       if (cmode != mode)
 	return 0;
 
-      /* Massage condition to satisfy sse_comparison_operator.  In case we
-	 are in non-ieee mode, try to canonicalize the destination operand
-	 to be first in the comparison - this helps reload to avoid extra
-	 moves.  */
+      /* Massage condition to satisfy sse_comparison_operator.  Try
+	 to canonicalize the destination operand to be first in the
+	 comparison - this helps reload to avoid extra moves.  */
       if (!sse_comparison_operator (operands[1], VOIDmode)
-	  || ((COMMUTATIVE_P (operands[1]) || !TARGET_IEEE_FP)
+	  || (COMMUTATIVE_P (operands[1])
 	      && rtx_equal_p (operands[0], cmp_op1)))
 	{
 	  tmp = cmp_op0;
