@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime selector related functions
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -31,14 +31,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define SELECTOR_HASH_SIZE 128
 
 /* Tables mapping selector names to uid and opposite */
-static struct sarray* __objc_selector_array = 0; /* uid -> sel */
-static struct sarray* __objc_selector_names = 0; /* uid -> name */
-static cache_ptr      __objc_selector_hash  = 0; /* name -> uid */
+static struct sarray* __objc_selector_array = 0; /* uid -> sel  !T:MUTEX */
+static struct sarray* __objc_selector_names = 0; /* uid -> name !T:MUTEX */
+static cache_ptr      __objc_selector_hash  = 0; /* name -> uid !T:MUTEX */
 
 static void register_selectors_from_list(MethodList_t);
 
 /* Number of selectors stored in each of the above tables */
-int __objc_selector_max_index = 0;
+int __objc_selector_max_index = 0;              /* !T:MUTEX */
 
 void __objc_init_selector_tables()
 {
@@ -122,9 +122,14 @@ sel_get_typed_uid (const char *name, const char *types)
   struct objc_list *l;
   sidx i;
 
+  objc_mutex_lock(__objc_runtime_mutex);
+
   i = (sidx) hash_value_for_key (__objc_selector_hash, name);
   if (i == 0)
-    return 0;
+    {
+      objc_mutex_unlock(__objc_runtime_mutex);
+      return 0;
+    }
 
   for (l = (struct objc_list*)sarray_get (__objc_selector_array, i);
        l; l = l->tail)
@@ -134,15 +139,18 @@ sel_get_typed_uid (const char *name, const char *types)
 	{
 	  if (s->sel_types == types)
 	    {
+	      objc_mutex_unlock(__objc_runtime_mutex);
 	      return s;
 	    }
 	}
       else if (sel_types_match (s->sel_types, types))
 	{
+	  objc_mutex_unlock(__objc_runtime_mutex);
 	  return s;
 	}
     }
 
+  objc_mutex_unlock(__objc_runtime_mutex);
   return 0;
 }
 
@@ -154,18 +162,27 @@ sel_get_any_typed_uid (const char *name)
   sidx i;
   SEL s;
 
+  objc_mutex_lock(__objc_runtime_mutex);
+
   i = (sidx) hash_value_for_key (__objc_selector_hash, name);
   if (i == 0)
-    return 0;
+    {
+      objc_mutex_unlock(__objc_runtime_mutex);
+      return 0;
+    }
 
   for (l = (struct objc_list*)sarray_get (__objc_selector_array, i);
        l; l = l->tail)
     {
       s = (SEL) l->head;
       if (s->sel_types)
-	return s;
+	{
+	    objc_mutex_unlock(__objc_runtime_mutex);
+	    return s;
+	}
     }
 
+  objc_mutex_unlock(__objc_runtime_mutex);
   return s;
 }
 
@@ -176,11 +193,18 @@ sel_get_any_uid (const char *name)
   struct objc_list *l;
   sidx i;
 
+  objc_mutex_lock(__objc_runtime_mutex);
+
   i = (sidx) hash_value_for_key (__objc_selector_hash, name);
   if (soffset_decode (i) == 0)
-    return 0;
+    {
+      objc_mutex_unlock(__objc_runtime_mutex);
+      return 0;
+    }
 
   l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+  objc_mutex_unlock(__objc_runtime_mutex);
+
   if (l == 0)
     return 0;
 
@@ -199,11 +223,16 @@ sel_get_uid (const char *name)
 const char*
 sel_get_name (SEL selector)
 {
+  const char *ret;
+
+  objc_mutex_lock(__objc_runtime_mutex);
   if ((soffset_decode((sidx)selector->sel_id) > 0)
       && (soffset_decode((sidx)selector->sel_id) <= __objc_selector_max_index))
-    return sarray_get (__objc_selector_names, (sidx) selector->sel_id);
+    ret = sarray_get (__objc_selector_names, (sidx) selector->sel_id);
   else
-    return 0;
+    ret = 0;
+  objc_mutex_unlock(__objc_runtime_mutex);
+  return ret;
 }
 
 BOOL
@@ -227,7 +256,8 @@ sel_get_type (SEL selector)
 extern struct sarray* __objc_uninstalled_dtable;
 
 /* Store the passed selector name in the selector record and return its
-   selector value (value returned by sel_get_uid). */
+   selector value (value returned by sel_get_uid).
+   Assumes that the calling function has locked down __objc_runtime_mutex. */
 SEL
 __sel_register_typed_name (const char *name, const char *types, 
 			   struct objc_selector *orig)
@@ -310,12 +340,24 @@ __sel_register_typed_name (const char *name, const char *types,
 SEL
 sel_register_name (const char *name)
 {
-  return __sel_register_typed_name (name, 0, 0);
+  SEL ret;
+    
+  objc_mutex_lock(__objc_runtime_mutex);
+  ret = __sel_register_typed_name (name, 0, 0);
+  objc_mutex_unlock(__objc_runtime_mutex);
+  
+  return ret;
 }
 
 SEL
 sel_register_typed_name (const char *name, const char *type)
 {
-  return __sel_register_typed_name (name, type, 0);
+  SEL ret;
+    
+  objc_mutex_lock(__objc_runtime_mutex);
+  ret = __sel_register_typed_name (name, type, 0);
+  objc_mutex_unlock(__objc_runtime_mutex);
+  
+  return ret;
 }
 
