@@ -1,5 +1,26 @@
 Tue Aug 15 17:33:05 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* calls.c (ECF_SP_DEPRESSED): New macro.
+	(calls_function_1): Treat calling sp-depressed function as alloca.
+	(emit_call_1): Don't adjust SP if calling sp-depressed function.
+	(expand_call): Set ECF_SP_DEPRESSED if TYPE_RETURNS_STACK_DEPRESSED.
+	If sp-depressed, ensure block saves and restores SP.
+	* fold-const.c (extract_muldiv): Only check TYPE_IS_SIZETYPE
+	for INTEGER_TYPE.
+	* function.c (keep_stack_depressed): New function.
+	(thread_prologue_and_epilogue_insns): Call it.
+	* print-tree.c (print_node): Use HOST_WIDE_INT_PRINT_UNSIGNED
+	to print DECL_OFFSET_ALIGN.
+	Print no-force-blk and transparent-union flags properly.
+	* stmt.c (expand_goto_internal): Don't restore stack if last block
+	and function returns with sp depressed.
+	(fixup_gotos): Likewise.
+	(save_stack_pointer): New function, from code in expand_decl.
+	(expand_decl): Call new function.
+	* tree.h (TYPE_IS_SIZETYPE): Call INTEGER_TYPE_CHECK.
+	(TYPE_RETURNS_STACK_DEPRESSED): New macro.
+	(save_stack_pointer): New declaration.
+
 	* diagnostic.c (fatal_function): New variable.
 	(set_fatal_function): New function.
 	(fatal): Call it.
