@@ -61,11 +61,9 @@ typedef struct {
 
 #endif /* _STDARG_H */
 
-void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
-#define va_end(__va)
-
 /* Values returned by __builtin_classify_type.  */
 
+#ifndef va_end
 enum {
   __no_type_class = -1,
   __void_type_class,
@@ -88,6 +86,10 @@ enum {
   __file_type_class,
   __lang_type_class
 };
+
+void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
+#endif
+#define va_end(__va)
 
 #define __NUM_PARM_FREGS	8
 #define __NUM_PARM_IREGS	12
