@@ -1,3 +1,8 @@
+Tue Aug 24 13:48:39 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* expr.c (expand_expr): Cope with COND_EXPRs with one
+	non-returning branch.
+	
 Mon Aug 23 22:28:16 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (store_expr): Always pass down the target, even when not

@@ -7700,7 +7700,11 @@ expand_expr (exp, target, tmode, modifier)
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
 	    start_cleanup_deferral ();
-	    if (temp != 0)
+	    
+	    /* One branch of the cond can be void, if it never returns. For
+               example A ? throw : E  */
+	    if (temp != 0
+	        && TREE_TYPE (TREE_OPERAND (exp, 1)) != void_type_node)
 	      store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    else
 	      expand_expr (TREE_OPERAND (exp, 1),
@@ -7711,7 +7715,8 @@ expand_expr (exp, target, tmode, modifier)
 	    emit_barrier ();
 	    emit_label (op0);
 	    start_cleanup_deferral ();
-	    if (temp != 0)
+	    if (temp != 0
+	        && TREE_TYPE (TREE_OPERAND (exp, 2)) != void_type_node)
 	      store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    else
 	      expand_expr (TREE_OPERAND (exp, 2),
