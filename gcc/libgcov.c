@@ -79,6 +79,7 @@ void __gcov_merge_delta (gcov_type *counters  __attribute__ ((unused)),
 #if GCOV_LOCKED
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/stat.h>
 #endif
 
 #ifdef L_gcov

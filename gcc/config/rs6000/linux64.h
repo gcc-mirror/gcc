@@ -542,6 +542,8 @@ while (0)
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
+#define TARGET_HAS_F_SETLKW
+
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
 

@@ -91,6 +91,8 @@
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
+#define TARGET_HAS_F_SETLKW
+
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 

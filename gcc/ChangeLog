@@ -1,3 +1,13 @@
+2004-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcov-io.c (gcov_open) [GCOV_LOCKED]: Use open + fdopen instead of
+	fopen.
+	* libgcov.c: Include sys/stat.h.
+	* config/rs6000/linux.h (TARGET_HAS_F_SETLKW): Define.
+	* config/rs6000/linux64.h (TARGET_HAS_F_SETLKW): Define.
+	* config/sparc/linux.h (TARGET_HAS_F_SETLKW): Define.
+	* config/sparc/linux64.h (TARGET_HAS_F_SETLKW): Define.
+
 2004-02-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_legitimate_index_p): For QImode the range of an offset
