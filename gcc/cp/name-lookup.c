@@ -50,7 +50,7 @@ tree global_namespace;
 
 /* The name of the anonymous namespace, throughout this translation
    unit.  */
-GTY(()) tree anonymous_namespace_name;
+static GTY(()) tree anonymous_namespace_name;
 
 
 /* Compute the chain index of a binding_entry given the HASH value of its
