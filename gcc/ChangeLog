@@ -1,3 +1,13 @@
+2000-10-19  Jim Wilson  <wilson@cygnus.com>
+
+	* haifa-sched.c (compute_trg_info): Add explanatory comments.
+	New local update_blocks.  Use update_blocks to remove duplicates
+	when computing update blocks.  Check for bblst_table overflow.
+	(schedule_block): Add explanatory comment.  Reduce bblst_size by
+	factor of 2.
+	* config/ia64/ia64.md (movdi_symbolic): Document loss of REG_LABEL
+	notes.
+	
 2000-10-19  Chandrakala Chavva   <cchavva@redhat.com>
 
 	* libgcc2.c (_mulvsi3): Change variables u and v to a and b.
