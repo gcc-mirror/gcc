@@ -249,8 +249,8 @@ information needed by gcov.  These additional files are placed in the
 directory where the object file is located.
 
 Running the program will cause profile output to be generated.  For each
-source file compiled with @option{-fprofile-arcs}, an accompanying @file{.da}
-file will be placed in the object file directory.
+source file compiled with @option{-fprofile-arcs}, an accompanying
+@file{.gcda} file will be placed in the object file directory.
 
 Running @command{gcov} with your program's source file names as arguments
 will now produce a listing of the code along with frequency of execution
@@ -410,7 +410,7 @@ of times the call was executed will be printed.  This will usually be
 and thus may not return every time they are called.
 
 The execution counts are cumulative.  If the example program were
-executed again without removing the @file{.da} file, the count for the
+executed again without removing the @file{.gcda} file, the count for the
 number of times each line in the source was executed would be added to
 the results of the previous run(s).  This is potentially useful in
 several ways.  For example, it could be used to accumulate data over a
@@ -418,9 +418,9 @@ number of program runs as part of a test verification suite, or to
 provide more accurate long-term information over a large number of
 program runs.
 
-The data in the @file{.da} files is saved immediately before the program
+The data in the @file{.gcda} files is saved immediately before the program
 exits.  For each source file compiled with @option{-fprofile-arcs}, the
-profiling code first attempts to read in an existing @file{.da} file; if
+profiling code first attempts to read in an existing @file{.gcda} file; if
 the file doesn't match the executable (differing number of basic block
 counts) it will ignore the contents of the file.  It then adds in the
 new execution counts and finally writes the data to the file.
@@ -463,6 +463,28 @@ executed 100 times.  In one sense this result is correct, because there
 was only one instruction representing all four of these lines.  However,
 the output does not indicate how many times the result was 0 and how
 many times the result was 1.
+
+Inlineable functions can create unexpected line counts.  Line counts are
+shown for the source code of the inlineable function, but what is shown
+depends on where the function is inlined, or if it is not inlined at all.
+
+If the function is not inlined, the compiler must emit an out of line
+copy of the function, in any object file that needs it.  If
+@file{fileA.o} and @file{fileB.o} both contain out of line bodies of a
+particular inlineable function, they will also both contain coverage
+counts for that function.  When @file{fileA.o} and @file{fileB.o} are
+linked together, the linker will, on many systems, select one of those
+out of line bodies for all calls to that function, and remove or ignore
+the other.  Unfortunately, it will not remove the coverage counters for
+the unused function body.  Hence when instrumented, all but one use of
+that function will show zero counts.
+
+If the function is inlined in several places, the block structure in
+each location might not be the same.  For instance, a condition might
+now be calculable at compile time in some instances.  Because the
+coverage of all the uses of the inline function will be shown for the
+same source lines, the line counts themselves might seem inconsistent.
+
 @c man end
 
 @node Gcov Data Files
