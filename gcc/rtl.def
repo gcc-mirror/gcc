@@ -310,6 +310,19 @@ DEF_RTL_EXPR(DEFINE_FUNCTION_UNIT, "define_function_unit", "siieiiV", 'x')
 /* Define attribute computation for `asm' instructions.  */
 DEF_RTL_EXPR(DEFINE_ASM_ATTRIBUTES, "define_asm_attributes", "V", 'x' )
 
+/* Definition of a conditional execution meta operation.  Automatically
+   generates new instances of DEFINE_INSN, selected by having attribute
+   "predicable" true.  The new pattern will contain a COND_EXEC and the
+   predicate at top-level.
+
+   Operand:
+   0: The predicate pattern.  The top-level form should match a
+      relational operator.  Operands should have only one alternative.
+   1: A C expression giving an additional condition for recognizing
+      the generated pattern.
+   2: A template or C code to produce assembler output.  */
+DEF_RTL_EXPR(DEFINE_COND_EXEC, "define_cond_exec", "Ess", 'x')
+
 /* SEQUENCE appears in the result of a `gen_...' function
    for a DEFINE_EXPAND that wants to make several insns.
    Its elements are the bodies of the insns that should be made.
