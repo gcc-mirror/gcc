@@ -1,5 +1,8 @@
 //Build don't link: 
-#include <vector.h>
+#include <vector>
+
+using namespace std;
+
 enum s { S };
 class a
 {
