@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for Motorola 68000 family.
    SysV68 Motorola 3300 Delta Series
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,6 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* do not use alloca from -lPW with cc, because function epilogues use %sp */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
+extern char *alloca ();
 #endif
 
 /* Override part of the obstack macros.  */
