@@ -1,5 +1,9 @@
 2003-10-30  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (adddi3): Fix typo in mips16 stack pointer code.
+
+2003-10-30  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (mov_lwl): Use memory_operand where appropriate.
 	(mov_lwr, mov_swl, mov_swr): Likewise.
 	(mov_ldl, mov_ldr, mov_sdl, mov_sdr): Likewise.

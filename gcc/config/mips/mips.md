@@ -883,7 +883,7 @@
       rtx tmp = gen_reg_rtx (DImode);
 
       emit_move_insn (tmp, operands[1]);
-      emit_insn (gen_addsi3 (tmp, tmp, operands[2]));
+      emit_insn (gen_adddi3 (tmp, tmp, operands[2]));
       emit_move_insn (operands[0], tmp);
       DONE;
     }
