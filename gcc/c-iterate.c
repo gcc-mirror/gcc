@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 96, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -536,10 +536,10 @@ prdecl (d)
 	  fprintf (stderr, dname);
 	}
       else
-	fprintf (stderr, "<<Not a Decl!!!>>");
+	fprintf (stderr, "<<?>>");
     }
   else
-    fprintf (stderr, "<<NULL!!>>");
+    fprintf (stderr, "<<0>>");
 }
 
 /* Print Iterator List -- names only */
