@@ -1,5 +1,10 @@
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-inline.c (remap_save_expr): Make it static.
+	* tree-inline.h: Remove the corresponding prototype.
+
+2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-ssa-loop-niter.c (upper_bound_in_type,
 	lower_bound_in_type): Make them static.
 	* tree.h: Remove the corresponding prototypes.
