@@ -1711,7 +1711,7 @@ struct lang_decl GTY(())
    not something is comdat until end-of-file.  */
 #define DECL_NEEDED_P(DECL)					\
   ((at_eof && TREE_PUBLIC (DECL) && !DECL_COMDAT (DECL))	\
-   || (DECL_P							\
+   || (DECL_P (DECL)						\
        && (TREE_CODE (DECL) == FUNCTION_DECL			\
 	   ? cgraph_node (DECL)->needed 			\
 	   : cgraph_varpool_node (DECL)->needed))		\
