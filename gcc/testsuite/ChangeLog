@@ -1,3 +1,7 @@
+2003-10-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.dg/old-style-asm-1.c: Use scan-assembler-times.
+
 2003-10-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/12495
