@@ -1,3 +1,7 @@
+Sat Apr 11 22:42:54 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Apr 11 01:24:28 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (count_reg_usage): Correctly handle REG_NONNEG notes.
