@@ -1,5 +1,8 @@
 Thu Sep 10 01:38:05 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* reg-stack.c (straighten_stack): Do nothing if the virtual stack is
+	empty or has a single entry.
+
 	* toplev.c (rest_of_compilation): Open up the dump file for reg-stack
 	before calling reg_to_stack.
 
