@@ -1,3 +1,8 @@
+2001-05-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* g++.old-deja/g++.abi/cxa_vec.C: Get malloc() from
+	<stdlib.h>, not <malloc.h>.
+
 2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.ns/template17.C: New test.
