@@ -1450,6 +1450,13 @@ typedef struct
 #define FUNCTION_ARG_REGNO_P(REGNO)  \
   ((REGNO) >= 0 && (REGNO) <= 3)
 
+
+/* Tail calling.  */
+
+/* A C expression that evaluates to true if it is ok to perform a sibling
+   call to DECL.  */
+#define FUNCTION_OK_FOR_SIBCALL(DECL) arm_function_ok_for_sibcall ((DECL))
+
 /* Perform any actions needed for a function that is receiving a variable
    number of arguments.  CUM is as above.  MODE and TYPE are the mode and type
    of the current parameter.  PRETEND_SIZE is a variable that should be set to

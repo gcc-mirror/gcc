@@ -1,5 +1,12 @@
 2000-08-15  Richard Earnshaw <rearnsha@arm.com>
 
+	* arm.c (arm_function_ok_for_sibcall): New function.
+	* arm.h (FUNCTION_OK_FOR_SIBCALL): Define.
+	* arm.md (call expanders): Don't check here for calls that can't
+	be sibling calls.
+
+2000-08-15  Richard Earnshaw <rearnsha@arm.com>
+
 	* arm.md (splits generating cond_exec): Disable.
 
 2000-08-15  Richard Earnshaw <rearnsha@arm.com>

@@ -1830,6 +1830,41 @@ arm_is_longcall_p (sym_ref, call_cookie, call_symbol)
     || ENCODED_LONG_CALL_ATTR_P (XSTR (sym_ref, 0))
     || TARGET_LONG_CALLS;
 }
+
+/* Return non-zero if it is ok to make a tail-call to DECL.  */
+int
+arm_function_ok_for_sibcall (decl)
+     tree decl;
+{
+  int call_type = TARGET_LONG_CALLS ? CALL_LONG : CALL_NORMAL;
+
+  /* Never tailcall something for which we have no decl, or if we
+     are in Thumb mode.  */
+  if (decl == NULL || TARGET_THUMB)
+    return 0;
+
+  /* Get the calling method.  */
+  if (lookup_attribute ("short_call", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+    call_type = CALL_SHORT;
+  else if (lookup_attribute ("long_call", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+    call_type = CALL_LONG;
+
+  /* Cannot tail-call to long calls, since these are out of range of
+     a branch instruction.  However, if not compiling PIC, we know
+     we can reach the symbol if it is in this compilation unit.  */
+  if (call_type == CALL_LONG && (flag_pic || ! TREE_ASM_WRITTEN (decl)))
+    return 0;
+
+  /* If we are interworking and the function is not declared static
+     then we can't tail-call it unless we know that it exists in this 
+     compilation unit (since it might be a Thumb routine).  */
+  if (TARGET_INTERWORK && TREE_PUBLIC (decl) && ! TREE_ASM_WRITTEN (decl))
+    return 0;
+
+  /* Everything else is ok.  */
+  return 1;
+}
+
 
 int
 legitimate_pic_operand_p (x)
