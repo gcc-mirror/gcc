@@ -1,3 +1,7 @@
+2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.h (MODES_TIEABLE_P): Add SPE vectors.
+
 2003-06-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/168
