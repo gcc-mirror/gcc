@@ -21,7 +21,7 @@
 
 	* aclocal.m4: Add in gettext's m4 includes.
 	(AC_ICONV, AC_LCMESSAGES, GCC_PATH_PROG): Remove.
-	* configure.ac: Add in check for iconv.m4
+	* configure.ac: Add in check for iconv.h
 	* configure: Regenerate.
 	
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
