@@ -769,7 +769,7 @@ u_short_cint_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
-	  && CONST_OK_FOR_LETTER_P (INTVAL (op), 'K'));
+	  && CONST_OK_FOR_LETTER_P (INTVAL (op) & GET_MODE_MASK (mode), 'K'));
 }
 
 /* Return 1 if OP is a CONST_INT that cannot fit in a signed D field.  */
@@ -1711,8 +1711,8 @@ constant_pool_expr_1 (op, have_sym, have_toc)
 	return 0;
     case PLUS:
     case MINUS:
-      return constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc) &&
-	constant_pool_expr_1 (XEXP (op, 1), have_sym, have_toc);
+      return (constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc)
+	      && constant_pool_expr_1 (XEXP (op, 1), have_sym, have_toc));
     case CONST:
       return constant_pool_expr_1 (XEXP (op, 0), have_sym, have_toc);
     case CONST_INT:
@@ -1960,8 +1960,8 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
     }
 #endif
   if (TARGET_TOC
-	   && CONSTANT_POOL_EXPR_P (x)
-	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))
+      && CONSTANT_POOL_EXPR_P (x)
+      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))
     {
       (x) = create_TOC_reference (x);
       *win = 1;

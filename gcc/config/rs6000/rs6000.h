@@ -970,8 +970,11 @@ extern int rs6000_altivec_abi;
       = call_used_regs[PIC_OFFSET_TABLE_REGNUM]				\
       = call_really_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
   if (! TARGET_ALTIVEC)							\
-    for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)		\
-      fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;	\
+    {									\
+      for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)	\
+	fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1; \
+      call_really_used_regs[VRSAVE_REGNO] = 1;				\
+    }									\
   if (TARGET_ALTIVEC_ABI)						\
     for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)	\
       call_used_regs[i] = call_really_used_regs[i] = 1;			\
