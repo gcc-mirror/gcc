@@ -1,3 +1,8 @@
+2000-03-17  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (dwarf2out_decl): Don't emit anything for types
+	with TYPE_DECL_SUPPRESS_DEBUG set.
+
 2000-03-18  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (make_edges): Use INTVAL to access REG_EH_REGION value.
@@ -9,7 +14,7 @@
 	(expander_call_insn_operand): Remove.
 	(ix86_expand_epilogue): New arg `emit_return' to control return insn.
 	* i386.h (PREDICATE_CODES): Update.
-	* i386.md (all call expanders): Remove predicates, remove special       
+	* i386.md (all call expanders): Remove predicates, remove special
 	handling for half-pic.
 	(*call_1, *call_value_1): Handle SIBLING_CALL_P insns.
 	(*call_pop_pic2, *call_pic2, *call_value_pop_2, *call_value_2): Remove.
