@@ -1,4 +1,12 @@
-Tue Oct 27 10:15:02 EST 1998  Nick Clifton  <nickc@cygnus.com>
+Tue Oct 27 16:11:43 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* collect2.c (aix64_flag): New variable.
+	(main, case 'b'): Parse it.
+	(GCC_CHECK_HDR): object magic number must match mode.
+	(scan_prog_file): Only check for shared object if valid header.
+	Print debugging if header/mode mismatch.
+
+Tue Oct 27 10:15:02 1998  Nick Clifton  <nickc@cygnus.com>
 
 	Added support for arm-elf-linux configuration, submitted by Philip
 	Blundell <pb@nexus.co.uk>, and integrated this with the arm-elf
@@ -52,7 +60,7 @@ Tue Oct 27 10:15:02 EST 1998  Nick Clifton  <nickc@cygnus.com>
 	command line option.
 
 	
-Tue Oct 27 08:56:46 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Tue Oct 27 08:56:46 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* dwarfout.c (ASM_OUTPUT_DWARF_STRING_NEWLINE): ASM_OUTPUT_DWARF_STRING
 	has been changed to not include a newline. Use this macro instead.
