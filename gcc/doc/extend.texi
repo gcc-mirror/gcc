@@ -44,7 +44,7 @@ phase 3 (5.1.1.2).}
 @node Environment implementation
 @section Environment
 
-The behavior of these points are dependant on the implementation
+The behavior of these points are dependent on the implementation
 of the C library, and are not defined by GCC itself.
 
 @node Identifiers implementation
@@ -333,7 +333,7 @@ respectively, the date and time of translation are not available (6.10.8).}
 @node Library functions implementation
 @section Library functions
 
-The behavior of these points are dependant on the implementation
+The behavior of these points are dependent on the implementation
 of the C library, and are not defined by GCC itself.
 
 @node Architecture implementation
@@ -357,7 +357,7 @@ headers @code{<float.h>}, @code{<limits.h>}, and @code{<stdint.h>}
 @node Locale-specific behavior implementation
 @section Locale-specific behavior
 
-The behavior of these points are dependant on the implementation
+The behavior of these points are dependent on the implementation
 of the C library, and are not defined by GCC itself.
 
 @node C Extensions
