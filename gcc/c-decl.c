@@ -115,16 +115,6 @@ static GTY(()) struct stmt_tree_s c_stmt_tree;
 
 static GTY(()) tree c_scope_stmt_stack;
 
-/* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
-   that have names.  Here so we can clear out their names' definitions
-   at the end of the function.  */
-
-static GTY(()) tree named_labels;
-
-/* A list of LABEL_DECLs from outer contexts that are currently shadowed.  */
-
-static GTY(()) tree shadowed_labels;
-
 /* A list of external DECLs that appeared at block scope when there was
    some other global meaning for that identifier.  */
 static GTY(()) tree truly_local_externals;
@@ -206,23 +196,26 @@ struct binding_level GTY(())
        that were entered and exited one level down.  */
     tree blocks;
 
-    /* The binding level which this one is contained in (inherits from).  */
-    struct binding_level *level_chain;
+    /* The scope containing this one.  */
+    struct binding_level *outer;
 
-    /* Nonzero if we are currently filling this level with parameter
+    /* The next outermost function scope.  */
+    struct binding_level *outer_function;
+
+    /* True if we are currently filling this level with parameter
        declarations.  */
-    char parm_flag;
+    bool parm_flag : 1;
 
-    /* Nonzero if this is the outermost block scope of a function body.
+    /* True if this is the outermost block scope of a function body.
        This scope contains both the parameters and the local variables
        declared in the outermost block.  */
-    char function_body;
+    bool function_body : 1;
 
-    /* Nonzero means make a BLOCK for this level regardless of all else.  */
-    char keep;
+    /* True means make a BLOCK for this level regardless of all else.  */
+    bool keep : 1;
 
-    /* Nonzero means make a BLOCK if this level has any subblocks.  */
-    char keep_if_subblocks;
+    /* True means make a BLOCK if this level has any subblocks.  */
+    bool keep_if_subblocks : 1;
 
     /* List of decls in `names' that have incomplete structure or
        union types.  */
@@ -244,28 +237,24 @@ static GTY(()) struct binding_level *current_binding_level;
 
 static GTY((deletable (""))) struct binding_level *free_binding_level;
 
+/* The innermost function scope.  Ordinary (not explicitly declared)
+   labels, bindings to error_mark_node, and the lazily-created
+   bindings of __func__ and its friends get this scope.  */
+static GTY(()) struct binding_level *current_function_level;
+
 /* The outermost binding level, for names of file scope.
    This is created when the compiler is started and exists
    through the entire run.  */
 
 static GTY(()) struct binding_level *global_binding_level;
 
-/* Nonzero means unconditionally make a BLOCK for the next level pushed.  */
+/* True means unconditionally make a BLOCK for the next level pushed.  */
 
-static int keep_next_level_flag;
+static bool keep_next_level_flag;
 
-/* Nonzero means make a BLOCK for the next level pushed
-   if it has subblocks.  */
+/* True means make a BLOCK for the next level pushed if it has subblocks.  */
 
-static int keep_next_if_subblocks;
-
-/* The chain of outer levels of label scopes.
-   This uses the same data structure used for binding levels,
-   but it works differently: each link in the chain records
-   saved values of named_labels and shadowed_labels for
-   a label binding level outside the current one.  */
-
-static GTY(()) struct binding_level *label_level_chain;
+static bool keep_next_if_subblocks;
 
 /* Functions called automatically at the beginning and end of execution.  */
 
@@ -274,9 +263,11 @@ tree static_ctors, static_dtors;
 /* Forward declarations.  */
 
 static struct binding_level *make_binding_level (void);
-static void pop_binding_level (struct binding_level **);
+static void pop_binding_level (void);
 static int duplicate_decls (tree, tree, int, int);
 static int redeclaration_error_message (tree, tree);
+static tree make_label (tree, location_t);
+static void bind_label (tree, tree, struct binding_level *);
 static void implicit_decl_warning (tree);
 static void storedecls (tree);
 static void storetags (tree);
@@ -356,8 +347,7 @@ make_binding_level (void)
   if (free_binding_level)
     {
       result = free_binding_level;
-      free_binding_level = result->level_chain;
-      memset (result, 0, sizeof(struct binding_level));
+      free_binding_level = result->outer;
     }
   else
     result = ggc_alloc_cleared (sizeof (struct binding_level));
@@ -365,17 +355,21 @@ make_binding_level (void)
   return result;
 }
 
-/* Remove a binding level from a list and add it to the level chain.  */
+/* Remove the topmost binding level from the stack and add it to the
+   free list, updating current_function_level if necessary.  */
 
 static void
-pop_binding_level (struct binding_level **lp)
+pop_binding_level (void)
 {
-  struct binding_level *l = *lp;
-  *lp = l->level_chain;
+  struct binding_level *scope = current_binding_level;
 
-  memset (l, 0, sizeof (struct binding_level));
-  l->level_chain = free_binding_level;
-  free_binding_level = l;
+  current_binding_level = scope->outer;
+  if (scope->function_body)
+    current_function_level = scope->outer_function;
+
+  memset (scope, 0, sizeof (struct binding_level));
+  scope->outer = free_binding_level;
+  free_binding_level = scope;
 }
 
 /* Nonzero if we are currently in the global binding level.  */
@@ -389,7 +383,7 @@ global_bindings_p (void)
 void
 keep_next_level (void)
 {
-  keep_next_level_flag = 1;
+  keep_next_level_flag = true;
 }
 
 /* Identify this binding level as a level of parameters.  */
@@ -397,7 +391,7 @@ keep_next_level (void)
 void
 declare_parm_level (void)
 {
-  current_binding_level->parm_flag = 1;
+  current_binding_level->parm_flag = true;
 }
 
 /* Nonzero if currently making parm declarations.  */
@@ -413,12 +407,6 @@ in_parm_level_p (void)
 void
 pushlevel (int dummy ATTRIBUTE_UNUSED)
 {
-  /* If this is the top level of a function, make sure that
-     NAMED_LABELS is 0.  */
-
-  if (current_binding_level == global_binding_level)
-    named_labels = 0;
-
   if (keep_next_if_subblocks)
     {
       /* This is the transition from the parameters to the top level
@@ -429,22 +417,24 @@ pushlevel (int dummy ATTRIBUTE_UNUSED)
 	 store_parm_decls, which in turn is called when and only
 	 when we are about to encounter the opening curly brace for
 	 the function body.  */
-      current_binding_level->parm_flag = 0;
-      current_binding_level->function_body = 1;
-      current_binding_level->keep |= keep_next_level_flag;
-      current_binding_level->keep_if_subblocks = 1;
+      current_binding_level->parm_flag         = false;
+      current_binding_level->function_body     = true;
+      current_binding_level->keep             |= keep_next_level_flag;
+      current_binding_level->keep_if_subblocks = true;
+      current_binding_level->outer_function    = current_function_level;
+      current_function_level                   = current_binding_level;
 
-      keep_next_level_flag = 0;
-      keep_next_if_subblocks = 0;
+      keep_next_level_flag = false;
+      keep_next_if_subblocks = false;
     }
   else
     {
       struct binding_level *newlevel = make_binding_level ();
 
-      newlevel->keep              = keep_next_level_flag;
-      newlevel->level_chain       = current_binding_level;
+      newlevel->keep        = keep_next_level_flag;
+      newlevel->outer       = current_binding_level;
       current_binding_level = newlevel;
-      keep_next_level_flag = 0;
+      keep_next_level_flag  = false;
     }
 }
 
@@ -496,7 +486,27 @@ poplevel (int keep, int reverse, int functionbody)
      containing functions.  */
   for (link = decls; link; link = TREE_CHAIN (link))
     {
-      if (DECL_NAME (link) != 0)
+      if (TREE_CODE (link) == LABEL_DECL)
+	{
+	  if (TREE_USED (link) && DECL_INITIAL (link) == 0)
+	    {
+	      error ("%Hlabel `%D' used but not defined",
+		     &DECL_SOURCE_LOCATION (link), link);
+	      /* Avoid crashing later.  */
+	      DECL_INITIAL (link) = error_mark_node;
+	    }
+	  else if (!TREE_USED (link) && warn_unused_label)
+	    {
+	      if (DECL_INITIAL (link) != 0)
+		warning ("%Hlabel `%D' defined but not used",
+			 &DECL_SOURCE_LOCATION (link), link);
+	      else
+		warning ("%Hlabel `%D' declared but not defined",
+			 &DECL_SOURCE_LOCATION (link), link);
+	    }
+	  IDENTIFIER_LABEL_VALUE (DECL_NAME (link)) = 0;
+	}
+      else if (DECL_NAME (link) != 0)
 	{
 	  if (DECL_EXTERNAL (link) 
 	      && current_binding_level != global_binding_level)
@@ -521,11 +531,14 @@ poplevel (int keep, int reverse, int functionbody)
     if (TREE_PURPOSE (link))
       IDENTIFIER_TAG_VALUE (TREE_PURPOSE (link)) = 0;
 
-  /* Restore all name-meanings of the outer levels
+  /* Restore all name- and label-meanings of the outer levels
      that were shadowed by this level.  */
 
   for (link = current_binding_level->shadowed; link; link = TREE_CHAIN (link))
-    IDENTIFIER_SYMBOL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+    if (TREE_VALUE (link) && TREE_CODE (TREE_VALUE (link)) == LABEL_DECL)
+      IDENTIFIER_LABEL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+    else
+      IDENTIFIER_SYMBOL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
 
   /* Restore all tag-meanings of the outer levels
      that were shadowed by this level.  */
@@ -599,38 +612,8 @@ poplevel (int keep, int reverse, int functionbody)
     for (link = tags; link; link = TREE_CHAIN (link))
       TYPE_CONTEXT (TREE_VALUE (link)) = decl;
 
-  /* If the level being exited is the top level of a function, check
-     over all the labels, and clear out the current (function local)
-     meanings of their names. Then add them to BLOCK_VARS.  */
-
-  if (functionbody)
-    {
-      for (link = named_labels; link; link = TREE_CHAIN (link))
-	{
-	  tree label = TREE_VALUE (link);
-
-	  if (DECL_INITIAL (label) == 0)
-	    {
-	      error ("%Hlabel '%D' used but not defined",
-                     &DECL_SOURCE_LOCATION (label), label);
-	      /* Avoid crashing later.  */
-	      define_label (input_location, DECL_NAME (label));
-	    }
-	  else if (warn_unused_label && !TREE_USED (label))
-	    warning ("%Hlabel '%D' defined but not used",
-                     &DECL_SOURCE_LOCATION (label), label);
-	  IDENTIFIER_LABEL_VALUE (DECL_NAME (label)) = 0;
-
-	  /* Put the labels into the "variables" of the
-	     top-level block, so debugger can see them.  */
-	  TREE_CHAIN (label) = BLOCK_VARS (block);
-	  BLOCK_VARS (block) = label;
-	}
-    }
-
   /* Pop the current level, and free the structure for reuse.  */
-
-  pop_binding_level (&current_binding_level);
+  pop_binding_level ();
 
   /* Dispose of the block that we just made inside some higher level.  */
   if (functionbody)
@@ -669,77 +652,6 @@ insert_block (tree block)
 void
 set_block (tree block ATTRIBUTE_UNUSED)
 {
-}
-
-void
-push_label_level (void)
-{
-  struct binding_level *newlevel;
-
-  newlevel = make_binding_level ();
-
-  /* Add this level to the front of the chain (stack) of label levels.  */
-
-  newlevel->level_chain = label_level_chain;
-  label_level_chain = newlevel;
-
-  newlevel->names = named_labels;
-  newlevel->shadowed = shadowed_labels;
-  named_labels = 0;
-  shadowed_labels = 0;
-}
-
-void
-pop_label_level (void)
-{
-  struct binding_level *level = label_level_chain;
-  tree link, prev;
-
-  /* Clear out the definitions of the declared labels in this level.
-     Leave in the list any ordinary, non-declared labels.  */
-  for (link = named_labels, prev = 0; link;)
-    {
-      if (C_DECLARED_LABEL_FLAG (TREE_VALUE (link)))
-	{
-	  if (DECL_SOURCE_LINE (TREE_VALUE (link)) == 0)
-	    {
-	      error ("%Hlabel '%D' used but not defined",
-                     &DECL_SOURCE_LOCATION (TREE_VALUE (link)),
-                     TREE_VALUE (link));
-	      /* Avoid crashing later.  */
-	      define_label (input_location, DECL_NAME (TREE_VALUE (link)));
-	    }
-	  else if (warn_unused_label && !TREE_USED (TREE_VALUE (link)))
-	    warning ("%Hlabel '%D' defined but not used",
-                     &DECL_SOURCE_LOCATION (TREE_VALUE (link)),
-                     TREE_VALUE (link));
-	  IDENTIFIER_LABEL_VALUE (DECL_NAME (TREE_VALUE (link))) = 0;
-
-	  /* Delete this element from the list.  */
-	  link = TREE_CHAIN (link);
-	  if (prev)
-	    TREE_CHAIN (prev) = link;
-	  else
-	    named_labels = link;
-	}
-      else
-	{
-	  prev = link;
-	  link = TREE_CHAIN (link);
-	}
-    }
-
-  /* Bring back all the labels that were shadowed.  */
-  for (link = shadowed_labels; link; link = TREE_CHAIN (link))
-    if (DECL_NAME (TREE_VALUE (link)) != 0)
-      IDENTIFIER_LABEL_VALUE (DECL_NAME (TREE_VALUE (link)))
-	= TREE_VALUE (link);
-
-  named_labels = chainon (named_labels, level->names);
-  shadowed_labels = level->shadowed;
-
-  /* Pop the current level, and free the structure for reuse.  */
-  pop_binding_level (&label_level_chain);
 }
 
 /* Push a definition or a declaration of struct, union or enum tag "name".
@@ -1631,7 +1543,7 @@ warn_if_shadowing (tree x, tree old)
 	 declarator in a declaration, as opposed to a definition,
 	 but there is no way to tell it's not a definition.  */
       || (TREE_CODE (x) == PARM_DECL
-	  && current_binding_level->level_chain->parm_flag))
+	  && current_binding_level->outer->parm_flag))
     return;
 
   name = IDENTIFIER_POINTER (DECL_NAME (x));
@@ -1864,13 +1776,7 @@ pushdecl_top_level (tree x)
 static void
 pushdecl_function_level (tree x, tree name)
 {
-  struct binding_level *scope;
-
-  scope = current_binding_level;
-  while (scope->function_body == 0)
-    scope = scope->level_chain;
-  if (!scope)
-    abort ();
+  struct binding_level *scope = current_function_level;
 
   if (x == error_mark_node)
     scope->shadowed = tree_cons (name, IDENTIFIER_SYMBOL_VALUE (name),
@@ -2051,84 +1957,110 @@ undeclared_variable (tree id)
     }
 }
 
-/* Get the LABEL_DECL corresponding to identifier ID as a label.
+/* Subroutine of lookup_label, declare_label, define_label: construct a
+   LABEL_DECL with all the proper frills.  */
+
+static tree
+make_label (tree name, location_t location)
+{
+  tree label = build_decl (LABEL_DECL, name, void_type_node);
+
+  DECL_CONTEXT (label) = current_function_decl;
+  DECL_MODE (label) = VOIDmode;
+  DECL_SOURCE_LOCATION (label) = location;
+
+  return label;
+}
+
+/* Another subroutine of lookup_label, declare_label, define_label:
+   set up the binding of name to LABEL_DECL in the given SCOPE.  */
+
+static void
+bind_label (tree name, tree label, struct binding_level *scope)
+{
+  if (IDENTIFIER_LABEL_VALUE (name))
+    scope->shadowed = tree_cons (name, IDENTIFIER_LABEL_VALUE (name),
+				 scope->shadowed);
+  IDENTIFIER_LABEL_VALUE (name) = label;
+
+  TREE_CHAIN (label) = scope->names;
+  scope->names = label;
+}
+
+/* Get the LABEL_DECL corresponding to identifier NAME as a label.
    Create one if none exists so far for the current function.
-   This function is called for both label definitions and label references.  */
+   This is called when a label is used in a goto expression or
+   has its address taken.  */
 
 tree
-lookup_label (tree id)
+lookup_label (tree name)
 {
-  tree decl = IDENTIFIER_LABEL_VALUE (id);
+  tree label;
 
   if (current_function_decl == 0)
     {
       error ("label %s referenced outside of any function",
-	     IDENTIFIER_POINTER (id));
+	     IDENTIFIER_POINTER (name));
       return 0;
     }
 
-  /* Use a label already defined or ref'd with this name.  */
-  if (decl != 0)
+  /* Use a label already defined or ref'd with this name, but not if
+     it is inherited from a containing function and wasn't declared
+     using __label__.  */
+  label = IDENTIFIER_LABEL_VALUE (name);
+  if (label && (DECL_CONTEXT (label) == current_function_decl
+		|| C_DECLARED_LABEL_FLAG (label)))
     {
-      /* But not if it is inherited and wasn't declared to be inheritable.  */
-      if (DECL_CONTEXT (decl) != current_function_decl
-	  && ! C_DECLARED_LABEL_FLAG (decl))
-	return shadow_label (id);
-      return decl;
+      /* If the label has only been declared, update its apparent
+	 location to point here, for better diagnostics if it
+	 turns out not to have been defined.  */
+      if (!TREE_USED (label))
+	DECL_SOURCE_LOCATION (label) = input_location;
+      return label;
     }
 
-  decl = build_decl (LABEL_DECL, id, void_type_node);
+  /* No label binding for that identifier; make one.  */
+  label = make_label (name, input_location);
 
-  /* A label not explicitly declared must be local to where it's ref'd.  */
-  DECL_CONTEXT (decl) = current_function_decl;
-
-  DECL_MODE (decl) = VOIDmode;
-
-  /* Say where one reference is to the label,
-     for the sake of the error if it is not defined.  */
-  DECL_SOURCE_LOCATION (decl) = input_location;
-
-  IDENTIFIER_LABEL_VALUE (id) = decl;
-
-  named_labels = tree_cons (NULL_TREE, decl, named_labels);
-
-  return decl;
+  /* Ordinary labels go in the current function scope, which is
+     not necessarily the current label scope.  */
+  bind_label (name, label, current_function_level);
+  return label;
 }
 
-/* Make a label named NAME in the current function,
-   shadowing silently any that may be inherited from containing functions
-   or containing scopes.
+/* Make a label named NAME in the current function, shadowing silently
+   any that may be inherited from containing functions or containing
+   scopes.  This is called for __label__ declarations.  */
 
-   Note that valid use, if the label being shadowed
-   comes from another scope in the same function,
-   requires calling declare_nonlocal_label right away.  */
+/* Note that valid use, if the label being shadowed comes from another
+   scope in the same function, requires calling declare_nonlocal_label
+   right away.  (Is this still true?  -zw 2003-07-17)  */
 
 tree
-shadow_label (tree name)
+declare_label (tree name)
 {
-  tree decl = IDENTIFIER_LABEL_VALUE (name);
+  tree label = IDENTIFIER_LABEL_VALUE (name);
+  tree dup;
 
-  if (decl != 0)
-    {
-      tree dup;
+  /* Check to make sure that the label hasn't already been declared
+     at this scope */
+  for (dup = current_binding_level->names; dup; dup = TREE_CHAIN (dup))
+    if (dup == label)
+      {
+	error ("duplicate label declaration `%s'", IDENTIFIER_POINTER (name));
+	error ("%Hthis is a previous declaration",
+	       &DECL_SOURCE_LOCATION (dup));
 
-      /* Check to make sure that the label hasn't already been declared
-	 at this label scope */
-      for (dup = named_labels; dup; dup = TREE_CHAIN (dup))
-	if (TREE_VALUE (dup) == decl)
-	  {
-	    error ("duplicate label declaration '%E'", name);
-	    error ("%Hthis is a previous declaration",
-                   &DECL_SOURCE_LOCATION (TREE_VALUE (dup)));
-	    /* Just use the previous declaration.  */
-	    return lookup_label (name);
-	  }
+	/* Just use the previous declaration.  */
+	return dup;
+      }
 
-      shadowed_labels = tree_cons (NULL_TREE, decl, shadowed_labels);
-      IDENTIFIER_LABEL_VALUE (name) = decl = 0;
-    }
+  label = make_label (name, input_location);
+  C_DECLARED_LABEL_FLAG (label) = 1;
 
-  return lookup_label (name);
+  /* Declared labels go in the current scope.  */
+  bind_label (name, label, current_binding_level);
+  return label;
 }
 
 /* Define a label, specifying the location in the source file.
@@ -2138,33 +2070,54 @@ shadow_label (tree name)
 tree
 define_label (location_t location, tree name)
 {
-  tree decl = lookup_label (name);
+  tree label;
 
-  /* If label with this name is known from an outer context, shadow it.  */
-  if (decl != 0 && DECL_CONTEXT (decl) != current_function_decl)
+  /* Find any preexisting label with this name.  It is an error
+     if that label has already been defined in this function, or
+     if there is a containing function with a declared label with
+     the same name.  */
+  label = IDENTIFIER_LABEL_VALUE (name);
+
+  if (label
+      && ((DECL_CONTEXT (label) == current_function_decl
+	   && DECL_INITIAL (label) != 0)
+	  || (DECL_CONTEXT (label) != current_function_decl
+	      && C_DECLARED_LABEL_FLAG (label))))
     {
-      shadowed_labels = tree_cons (NULL_TREE, decl, shadowed_labels);
-      IDENTIFIER_LABEL_VALUE (name) = 0;
-      decl = lookup_label (name);
+      error ("%Hduplicate label `%D'", &location, label);
+      if (DECL_INITIAL (label))
+	error ("%H`%D' previously defined here",
+	       &DECL_SOURCE_LOCATION (label), label);
+      else
+	error ("%H`%D' previously declared here",
+	       &DECL_SOURCE_LOCATION (label), label);
+      return 0;
+    }
+  else if (label && DECL_CONTEXT (label) == current_function_decl)
+    {
+      /* The label has been used or declared already in this function,
+	 but not defined.  Update its location to point to this
+	 definition.  */
+      DECL_SOURCE_LOCATION (label) = location;
+    }
+  else
+    {
+      /* No label binding for that identifier; make one.  */
+      label = make_label (name, location);
+
+      /* Ordinary labels go in the current function scope, which is
+	 not necessarily the current label scope.  */
+      bind_label (name, label, current_function_level);
     }
 
   if (warn_traditional && !in_system_header && lookup_name (name))
     warning ("%Htraditional C lacks a separate namespace for labels, "
-             "identifier `%s' conflicts", &location, IDENTIFIER_POINTER (name));
+             "identifier `%s' conflicts", &location,
+	     IDENTIFIER_POINTER (name));
 
-  if (DECL_INITIAL (decl) != 0)
-    {
-      error ("%Hduplicate label `%s'", &location, IDENTIFIER_POINTER (name));
-      return 0;
-    }
-  else
-    {
-      /* Mark label as having been defined.  */
-      DECL_INITIAL (decl) = error_mark_node;
-      /* Say where in the source.  */
-      DECL_SOURCE_LOCATION (decl) = location;
-      return decl;
-    }
+  /* Mark label as having been defined.  */
+  DECL_INITIAL (label) = error_mark_node;
+  return label;
 }
 
 /* Return the list of declarations of the current level.
@@ -2316,7 +2269,6 @@ c_init_decl_processing (void)
   c_parse_init ();
 
   current_function_decl = NULL;
-  named_labels = NULL;
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
 
@@ -5571,8 +5523,6 @@ start_function (tree declspecs, tree declarator, tree attributes)
   current_function_returns_abnormally = 0;
   warn_about_return_type = 0;
   current_extern_inline = 0;
-  named_labels = 0;
-  shadowed_labels = 0;
 
   /* Don't expand any sizes in the return type of the function.  */
   immediate_size_expand = 0;
@@ -6611,8 +6561,6 @@ check_for_loop_decls (void)
 struct language_function GTY(())
 {
   struct c_language_function base;
-  tree named_labels;
-  tree shadowed_labels;
   int returns_value;
   int returns_null;
   int returns_abnormally;
@@ -6633,8 +6581,6 @@ c_push_function_context (struct function *f)
 
   p->base.x_stmt_tree = c_stmt_tree;
   p->base.x_scope_stmt_stack = c_scope_stmt_stack;
-  p->named_labels = named_labels;
-  p->shadowed_labels = shadowed_labels;
   p->returns_value = current_function_returns_value;
   p->returns_null = current_function_returns_null;
   p->returns_abnormally = current_function_returns_abnormally;
@@ -6649,13 +6595,6 @@ void
 c_pop_function_context (struct function *f)
 {
   struct language_function *p = f->language;
-  tree link;
-
-  /* Bring back all the labels that were shadowed.  */
-  for (link = shadowed_labels; link; link = TREE_CHAIN (link))
-    if (DECL_NAME (TREE_VALUE (link)) != 0)
-      IDENTIFIER_LABEL_VALUE (DECL_NAME (TREE_VALUE (link)))
-	= TREE_VALUE (link);
 
   if (DECL_SAVED_INSNS (current_function_decl) == 0
       && DECL_SAVED_TREE (current_function_decl) == NULL_TREE)
@@ -6669,8 +6608,6 @@ c_pop_function_context (struct function *f)
 
   c_stmt_tree = p->base.x_stmt_tree;
   c_scope_stmt_stack = p->base.x_scope_stmt_stack;
-  named_labels = p->named_labels;
-  shadowed_labels = p->shadowed_labels;
   current_function_returns_value = p->returns_value;
   current_function_returns_null = p->returns_null;
   current_function_returns_abnormally = p->returns_abnormally;

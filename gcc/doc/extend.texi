@@ -424,7 +424,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 
 @menu
 * Statement Exprs::     Putting statements and declarations inside expressions.
-* Local Labels::        Labels local to a statement-expression.
+* Local Labels::        Labels local to a block.
 * Labels as Values::    Getting pointers to labels, and computed gotos.
 * Nested Functions::    As in Algol and Pascal, lexical scoping of functions.
 * Constructing Calls::	Dispatching a call to another function.
@@ -577,10 +577,10 @@ bug.)
 @cindex local labels
 @cindex macros, local labels
 
-Each statement expression is a scope in which @dfn{local labels} can be
-declared.  A local label is simply an identifier; you can jump to it
-with an ordinary @code{goto} statement, but only from within the
-statement expression it belongs to.
+GCC allows you to declare @dfn{local labels} in any nested block
+scope. A local label is just like an ordinary label, but you can
+only reference it (with a @code{goto} statement, or by taking its
+address) within the block in which it was declared.  
 
 A local label declaration looks like this:
 
@@ -595,21 +595,38 @@ or
 __label__ @var{label1}, @var{label2}, /* @r{@dots{}} */;
 @end example
 
-Local label declarations must come at the beginning of the statement
-expression, right after the @samp{(@{}, before any ordinary
-declarations.
+Local label declarations must come at the beginning of the block,
+before any ordinary declarations or statements.
 
 The label declaration defines the label @emph{name}, but does not define
 the label itself.  You must do this in the usual way, with
 @code{@var{label}:}, within the statements of the statement expression.
 
-The local label feature is useful because statement expressions are
-often used in macros.  If the macro contains nested loops, a @code{goto}
-can be useful for breaking out of them.  However, an ordinary label
-whose scope is the whole function cannot be used: if the macro can be
-expanded several times in one function, the label will be multiply
-defined in that function.  A local label avoids this problem.  For
-example:
+The local label feature is useful for complex macros.  If a macro
+contains nested loops, a @code{goto} can be useful for breaking out of
+them.  However, an ordinary label whose scope is the whole function
+cannot be used: if the macro can be expanded several times in one
+function, the label will be multiply defined in that function.  A
+local label avoids this problem.  For example:
+
+@example
+#define SEARCH(value, array, target)              \
+do @{                                              \
+  __label__ found;                                \
+  typeof (target) _SEARCH_target = (target);      \
+  typeof (*(array)) *_SEARCH_array = (array);     \
+  int i, j;                                       \
+  int value;                                      \
+  for (i = 0; i < max; i++)                       \
+    for (j = 0; j < max; j++)                     \
+      if (_SEARCH_array[i][j] == _SEARCH_target)  \
+        @{ (value) = i; goto found; @}              \
+  (value) = -1;                                   \
+ found:;                                          \
+@} while (0)
+@end example
+
+This could also be written using a statement-expression:
 
 @example
 #define SEARCH(array, target)                     \
@@ -628,6 +645,9 @@ example:
   value;                                          \
 @})
 @end example
+
+Local label declarations also make the labels they declare visible to
+nested functions, if there are any.  @xref{Nested Functions}, for details.
 
 @node Labels as Values
 @section Labels as Values
