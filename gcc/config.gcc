@@ -299,7 +299,7 @@ i[34567]86-*-*)
 	;;
 x86_64-*-*)
 	cpu_type=i386
-	extra_headers="mmintrin.h xmmintrin.h emmintrin.h"
+	extra_headers="mmintrin.h xmmintrin.h emmintrin.h pmmintrin.h"
 	need_64bit_hwint=yes
 	;;
 ia64-*-*)

@@ -1,3 +1,7 @@
+2003-07-13  Andreas Jaeger  <aj@suse.de>
+
+	* config.gcc: Add pmmintrin.h for x86_64-*-*.
+
 2003-07-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (LIBCPP_DEPS): Remove coretypes.h and $(TM_H).
