@@ -1997,6 +1997,9 @@ output_block_move (insn, operands, num_regs)
     {
       if (CONSTANT_P (src_reg))
 	{
+	  if (TARGET_STATS)
+	    mips_count_memory_refs (operands[1], 1);
+
 	  xoperands[1] = operands[1];
 	  xoperands[0] = src_reg = operands[ 3 + num_regs-- ];
 	  output_asm_insn ("la\t%0,%1", xoperands);
@@ -2004,7 +2007,10 @@ output_block_move (insn, operands, num_regs)
 
       if (CONSTANT_P (dest_reg))
 	{
-	  xoperands[1] = operands[1];
+	  if (TARGET_STATS)
+	    mips_count_memory_refs (operands[0], 1);
+
+	  xoperands[1] = operands[0];
 	  xoperands[0] = dest_reg = operands[ 3 + num_regs-- ];
 	  output_asm_insn ("la\t%0,%1", xoperands);
 	}
@@ -2023,6 +2029,8 @@ output_block_move (insn, operands, num_regs)
     {
       load_store[num].offset = offset;
 
+      dslots_load_total++;
+      dslots_load_filled++;
       if (bytes >= UNITS_PER_WORD && align >= UNITS_PER_WORD)
 	{
 	  load_store[num].load     = "lw\t%0,%1";
@@ -2064,14 +2072,26 @@ output_block_move (insn, operands, num_regs)
 	  bytes--;
 	}
 
+      if (TARGET_STATS)
+	{
+	  if (CONSTANT_P (src_reg))
+	    mips_count_memory_refs (src_reg, 1);
+
+	  if (CONSTANT_P (dest_reg))
+	    mips_count_memory_refs (dest_reg, 1);
+	}
+
       /* Emit load/stores now if we have run out of registers or are
 	 at the end of the move.  */
 
-      if (++num == 4 || bytes == 0)
+      if (++num == num_regs || bytes == 0)
 	{
 	  /* If only load/store, we need a NOP after the load.  */
 	  if (num == 1)
-	    load_store[0].load = load_store[0].load_nop;
+	    {
+	      load_store[0].load = load_store[0].load_nop;
+	      dslots_load_filled--;
+	    }
 
 	  for (i = 0; i < num; i++)
 	    {
