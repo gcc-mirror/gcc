@@ -2,4 +2,4 @@
    includes self.  */
 /* { dg-do compile } */
 #include "20000628-1.h"
-int main(void) { return 0; }
+int main(void) { return a + b + c; }
