@@ -4061,7 +4061,6 @@ do_include (buf, limit, op, keyword)
 
   int retried = 0;		/* Have already tried macro
 				   expanding the include line*/
-  FILE_BUF trybuf;		/* It got expanded into here */
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
   int pcf = -1;
   char *pcfbuf;
@@ -4198,10 +4197,32 @@ get_filename:
       error ("`#%s' expects \"FILENAME\" or <FILENAME>", keyword->name);
       return 0;
     } else {
-      trybuf = expand_to_temp_buffer (buf, limit, 0, 0);
+      /* Expand buffer and then remove any newline markers.
+	 We can't just tell expand_to_temp_buffer to omit the markers,
+	 since it would put extra spaces in include file names.  */
+      FILE_BUF trybuf = expand_to_temp_buffer (buf, limit, 1, 0);
+      U_CHAR *src = trybuf.buf;
       buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
-      bcopy ((char *) trybuf.buf, (char *) buf, trybuf.bufp - trybuf.buf);
-      limit = buf + (trybuf.bufp - trybuf.buf);
+      limit = buf;
+      while (src != trybuf.bufp) {
+	switch ((*limit++ = *src++)) {
+	  case '\n':
+	    limit--;
+	    src++;
+	    break;
+
+	  case '\'':
+	  case '\"':
+	    {
+	      U_CHAR *src1 = skip_quoted_string (src - 1, trybuf.bufp, 0,
+						 NULL_PTR, NULL_PTR, NULL_PTR);
+	      while (src != src1)
+		*limit++ = *src++;
+	    }
+	    break;
+	}
+      }
+      *limit = 0;
       free (trybuf.buf);
       retried++;
       goto get_filename;
