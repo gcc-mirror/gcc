@@ -1,7 +1,7 @@
 #! /bin/sh
 # Wrapper for compilers which do not understand `-c -o'.
 
-scriptversion=2004-09-10.20
+scriptversion=2004-10-12.08
 
 # Copyright (C) 1999, 2000, 2003, 2004 Free Software Foundation, Inc.
 # Written by Tom Tromey <tromey@cygnus.com>.
@@ -125,6 +125,8 @@ ret=$?
 
 if test -f "$cofile"; then
   mv "$cofile" "$ofile"
+elif test -f "${cofile}bj"; then
+  mv "${cofile}bj" "$ofile"
 fi
 
 rmdir "$lockdir"
