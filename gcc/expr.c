@@ -7889,8 +7889,8 @@ c_strlen (src)
 rtx
 expand_builtin_return_addr (fndecl_code, count, tem)
      enum built_in_function fndecl_code;
-     rtx tem;
      int count;
+     rtx tem;
 {
   int i;
 
