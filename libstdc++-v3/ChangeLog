@@ -1,3 +1,8 @@
+2001-03-13  Steve Ellcey  <sje@cup.hp.com>
+
+	* libstdc++-v3/config/os/hpux/bits/ctype_base.h: Make ctype masks
+	match HP-UX ctype.h header file.
+
 2001-03-13  Andris Pavenis <pavenis@latnet.lv>
 
         * config/djgpp/bits/ctype_noninline.h: Fix typo and remove
