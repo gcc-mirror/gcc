@@ -627,6 +627,11 @@ expand_computed_goto (exp)
 #endif
 
       emit_queue ();
+      /* Be sure the function is executable.  */
+      if (flag_check_memory_usage)
+	emit_library_call (chkr_check_exec_libfunc, 1,
+			   VOIDmode, 1, x, ptr_mode);
+
       do_pending_stack_adjust ();
       emit_indirect_jump (x);
     }
@@ -1352,6 +1357,12 @@ expand_asm (body)
       return;
     }
 
+  if (flag_check_memory_usage)
+    {
+      error ("`asm' cannot be used with `-fcheck-memory-usage'");
+      return;
+    }
+
   if (TREE_CODE (body) == ADDR_EXPR)
     body = TREE_OPERAND (body, 0);
 
@@ -1401,6 +1412,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   if (output_bytecode)
     {
       error ("`asm' is invalid when generating bytecode");
+      return;
+    }
+
+  if (flag_check_memory_usage)
+    {
+      error ("`asm' cannot be used with `-fcheck-memory-usage'");
       return;
     }
 
@@ -1502,7 +1519,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    mark_addressable (TREE_VALUE (tail));
 
 	  output_rtx[i]
-	    = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
+	    = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode,
+			   EXPAND_MEMORY_USE_WO);
 
 	  if (! allows_reg && GET_CODE (output_rtx[i]) != MEM)
 	    error ("output number %d not directly addressable", i);
