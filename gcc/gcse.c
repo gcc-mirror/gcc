@@ -3023,8 +3023,8 @@ compute_rd ()
       for (bb = 0; bb < n_basic_blocks; bb++)
 	{
 	  sbitmap_union_of_preds (reaching_defs[bb], rd_out, bb);
-	  changed |= sbitmap_union_of_diff (rd_out[bb], rd_gen[bb],
-					    reaching_defs[bb], rd_kill[bb]);
+	  changed |= sbitmap_union_of_diff_cg (rd_out[bb], rd_gen[bb],
+					       reaching_defs[bb], rd_kill[bb]);
 	}
       passes++;
     }
@@ -5559,8 +5559,8 @@ compute_code_hoist_vbeinout ()
 	 the convergence.  */
       for (bb = n_basic_blocks - 1; bb >= 0; bb--)
 	{
-	  changed |= sbitmap_a_or_b_and_c (hoist_vbein[bb], antloc[bb],
-					   hoist_vbeout[bb], transp[bb]);
+	  changed |= sbitmap_a_or_b_and_c_cg (hoist_vbein[bb], antloc[bb],
+					      hoist_vbeout[bb], transp[bb]);
 	  if (bb != n_basic_blocks - 1)
 	    sbitmap_intersection_of_succs (hoist_vbeout[bb], hoist_vbein, bb);
 	}
