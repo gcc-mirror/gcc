@@ -1,5 +1,9 @@
 2003-07-29  Phil Edwards  <pme@gcc.gnu.org>
 
+	* Makefile.in:  Make stamp-objdir safe for parallel builds.
+
+2003-07-29  Phil Edwards  <pme@gcc.gnu.org>
+
 	* Makefile.in (stmp-docobjdir):  New target; ensure $docobjdir exists.
 	(info):  Depend on stmp-docobjdir.
 
