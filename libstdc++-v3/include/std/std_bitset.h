@@ -64,7 +64,6 @@
 #include <cstddef>     // for size_t
 #include <cstring>     // for memset
 #include <string>
-#include <stdexcept>
 #include <bits/functexcept.h>   // for invalid_argument, out_of_range, 
 			         // overflow_error
 #include <ostream>     // for ostream (operator<<)

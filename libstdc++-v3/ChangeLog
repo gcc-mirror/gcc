@@ -1,4 +1,14 @@
-2002-02-11   Benjamin Kosnik  <bkoz@redhat.com>
+2002-02-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/localename.cc: Remove stdexcept include.
+	* src/locale-inst.cc: Same.
+	* src/locale.cc: Same.
+	* src/functexcept.cc: Remove string includes.
+	* include/std/std_bitset.h: Remove stdexcept include.
+	* testsuite/23_containers/bitset_members.cc: Add stdexcept.
+	* testsuite/23_containers/bitset_ctor.cc: Same.
+
+2002-02-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_algo (__stl_threshold): Declare external.	
 	(__stl_chunk_size): Same.

@@ -37,7 +37,6 @@
 #include <cassert>
 #include <limits>
 #include <exception>
-#include <stdexcept>
 #include <locale>
 #include <istream>
 #include <ostream>
