@@ -1330,6 +1330,11 @@ cant_combine_insn_p (insn)
   if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
     return 1;
 
+  /* For the 2.95.3 release, restrict this code to only handle the machines
+     where it's strictly needed.  */
+  if (! SMALL_REGISTER_CLASSES)
+    return 0;
+
   /* Never combine loads and stores involving hard regs.  The register
      allocator can usually handle such reg-reg moves by tying.  If we allow
      the combiner to make substitutions of hard regs, we risk aborting in

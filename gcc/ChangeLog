@@ -1,3 +1,8 @@
+2000-12-29  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* combine.c (cant_combine_insn_p): Only restrict hard register
+	combinations for SMALL_REGISTER_CLASSES machines.
+
 2000-12-22  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* calls.c (emit_call_1): Fall back to call_pop/call_value_pop if no
