@@ -1,3 +1,7 @@
+2001-09-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (CPLUSPLUS_CPP_SPEC): Define.
+
 2001-09-27  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dwarf2out_frame_finish): Never elide .debug_frame
