@@ -481,12 +481,8 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	}
       else 
 	{
-	  java::lang::ClassLoader *sys = java::lang::ClassLoader::system;
-	  if (sys == NULL)
-	    {
-	      _Jv_InitClass (&ClassLoaderClass);
-	      sys = java::lang::ClassLoader::getSystemClassLoader ();
-	    }
+	  java::lang::ClassLoader *sys
+	    = java::lang::ClassLoader::getSystemClassLoader ();
 
 	  // Load using the bootstrap loader jvmspec 5.3.1.
 	  klass = sys->loadClass (sname, false); 
