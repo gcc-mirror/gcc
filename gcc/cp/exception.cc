@@ -1,5 +1,5 @@
 // Functions for Exception Support for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999 Free Software Foundation
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -319,6 +319,14 @@ __check_eh_spec (int n, const void **spec)
 
       terminate ();
     }
+}
+
+/* Special case of the above for throw() specs.  */
+
+extern "C" void
+__check_null_eh_spec (void)
+{
+  __check_eh_spec (0, 0);
 }
 
 // Helpers for rtti. Although these don't return, we give them return types so
