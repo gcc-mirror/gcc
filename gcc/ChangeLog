@@ -1,3 +1,7 @@
+2001-07-10  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (override_options): Fix typo.
+
 2001-07-09  Stan Shebs  <shebs@apple.com>
 
 	* target.h (struct gcc_target): New fields init_builtins and
@@ -51,7 +55,7 @@
 	(BLOCK_HEAD_TREE): Define.
 	(BLOCK_END_TREE): Define.
 	(struct loops): Rename field 'tree' to 'tree_root'.
-	* flow.c (entry_exit_blocks): Add initializers for 'head_tree' and 
+	* flow.c (entry_exit_blocks): Add initializers for 'head_tree' and
 	'end_tree'.
 	(flow_loops_tree_build): Rename reference to field 'tree' to
 	'tree_root'.
