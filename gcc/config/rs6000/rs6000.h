@@ -2069,7 +2069,7 @@ do {									     \
 
 /* Define this macro if the register defined by
    `PIC_OFFSET_TABLE_REGNUM' is clobbered by calls.  Do not define
-   this macro if `PPIC_OFFSET_TABLE_REGNUM' is not defined.  */
+   this macro if `PIC_OFFSET_TABLE_REGNUM' is not defined. */
 
 /* #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED */
 
@@ -2243,9 +2243,9 @@ do {									     \
         return COSTS_N_INSNS (2);					\
       case PROCESSOR_PPC601:						\
         return COSTS_N_INSNS (5);					\
-      case PROCESSOR_PPC7400:                                         \
-      case PROCESSOR_PPC7450:                                         \
       case PROCESSOR_PPC603:						\
+      case PROCESSOR_PPC7400:						\
+      case PROCESSOR_PPC7450:						\
       case PROCESSOR_PPC750:						\
         return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
 		? COSTS_N_INSNS (5)					\
