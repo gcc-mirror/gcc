@@ -188,61 +188,60 @@ tanhf(float x)
 #ifndef HAVE_NEXTAFTERF
 /* This is a portable implementation of nextafterf that is intended to be
    independent of the floating point format or its in memory representation.
-   This implementation skips denormalized values, for example returning
-   FLT_MIN as the next value after zero, as many target's frexpf, scalbnf
-   and ldexpf functions don't work as expected with denormalized values.  */
+   This implementation works correctly with denormalized values.  */
 float
 nextafterf(float x, float y)
 {
-  int origexp, newexp;
+  /* This variable is marked volatile to avoid excess precision problems
+     on some platforms, including IA-32.  */
+  volatile float delta;
+  float absx, denorm_min;
 
   if (isnan(x) || isnan(y))
-    return x+y;
+    return x + y;
   if (x == y)
     return x;
 
-  if (x == 0.0f)
-    return y > 0.0f ? FLT_MIN : -FLT_MIN;
+  /* absx = fabsf (x);  */
+  absx = (x < 0.0) ? -x : x;
 
-  frexpf(x, &origexp);
-  if (x >= 0.0)
-    {
-      if (y > x)
-	{
-	  if (x < FLT_MIN)
-	    return FLT_MIN;
-	  return x + scalbnf(FLT_EPSILON, origexp-1);
-	}
-      else if (x > FLT_MIN)
-	{
-	  float temp = x - scalbnf(FLT_EPSILON, origexp-1);
-	  frexpf(temp, &newexp);
-	  if (newexp == origexp)
-	    return temp;
-	  return x - scalbnf(FLT_EPSILON, origexp-2);
-	}
-      else
-	return 0.0f;
-    }
+  /* __FLT_DENORM_MIN__ is non-zero iff the target supports denormals.  */
+  if (__FLT_DENORM_MIN__ == 0.0f)
+    denorm_min = __FLT_MIN__;
+  else
+    denorm_min = __FLT_DENORM_MIN__;
+
+  if (absx < __FLT_MIN__)
+    delta = denorm_min;
   else
     {
-      if (y < x)
-	{
-	  if (x > -FLT_MIN)
-	    return -FLT_MIN;
-	  return x - scalbnf(FLT_EPSILON, origexp-1);
-	}
-      else if (x < -FLT_MIN)
-	{
-	  float temp = x + scalbnf(FLT_EPSILON, origexp-1);
-	  frexpf(temp, &newexp);
-	  if (newexp == origexp)
-	    return temp;
-	  return x + scalbnf(FLT_EPSILON, origexp-2);
-	}
-      else
-	return 0.0f;
+      float frac;
+      int exp;
+
+      /* Discard the fraction from x.  */
+      frac = frexpf (absx, &exp);
+      delta = scalbnf (0.5f, exp);
+
+      /* Scale x by the epsilon of the representation.  By rights we should
+	 have been able to combine this with scalbnf, but some targets don't
+	 get that correct with denormals.  */
+      delta *= __FLT_EPSILON__;
+
+      /* If we're going to be reducing the absolute value of X, and doing so
+	 would reduce the exponent of X, then the delta to be applied is
+	 one exponent smaller.  */
+      if (frac == 0.5f && (y < x) == (x > 0))
+	delta *= 0.5f;
+
+      /* If that underflows to zero, then we're back to the minimum.  */
+      if (delta == 0.0f)
+	delta = denorm_min;
     }
+
+  if (y < x)
+    delta = -delta;
+
+  return x + delta;
 }
 #endif
 
