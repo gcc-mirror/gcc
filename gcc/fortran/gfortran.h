@@ -789,6 +789,8 @@ typedef struct gfc_namespace
   gfc_access default_access, operator_access[GFC_INTRINSIC_OPS];
 
   gfc_st_label *st_labels;
+  /* This list holds information about all the data initializers in
+     this namespace.  */
   struct gfc_data *data;
 
   gfc_charlen *cl_list;
@@ -1688,6 +1690,8 @@ try gfc_check_pointer_assign (gfc_expr *, gfc_expr *);
 try gfc_check_assign_symbol (gfc_symbol *, gfc_expr *);
 
 gfc_expr *gfc_default_initializer (gfc_typespec *);
+gfc_expr *gfc_get_variable_expr (gfc_symtree *);
+
 
 /* st.c */
 extern gfc_code new_st;
