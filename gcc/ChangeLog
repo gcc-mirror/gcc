@@ -4,6 +4,9 @@ Wed Jul 10 18:48:55 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-07-10  Jeffrey A Law  <law@redhat.com>
 
+	* mn10200.c (expand_prologue): Create REG_MAYBE_DEAD notes
+	as appropriate.
+
         * mn10200.c (expand_epilogue): Fix test to determine which scratch
         register to use.
 

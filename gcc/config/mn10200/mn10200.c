@@ -690,13 +690,23 @@ expand_prologue ()
     }
 
   /* Now put the static chain back where the rest of the function
-     expects to find it.  */
+     expects to find it. 
+
+     Note that we may eliminate all references to this later, so we
+     mark the static chain as maybe dead.  */
   if (current_function_needs_context)
     {
-      emit_move_insn (gen_rtx_REG (PSImode, STATIC_CHAIN_REGNUM),
-		      gen_rtx (MEM, PSImode,
-			       gen_rtx_PLUS (PSImode, stack_pointer_rtx,
-					     GEN_INT (size))));
+      rtx insn;
+
+      insn = emit_move_insn (gen_rtx_REG (PSImode, STATIC_CHAIN_REGNUM),
+			     gen_rtx (MEM, PSImode,
+				      gen_rtx_PLUS (PSImode,
+						    stack_pointer_rtx,
+						    GEN_INT (size))));
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD,
+                                            const0_rtx,
+                                            REG_NOTES (insn));
+  
     }
 }
 
