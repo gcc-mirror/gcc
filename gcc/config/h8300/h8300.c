@@ -4489,6 +4489,23 @@ same_cmp_preceding_p (rtx i3)
   return (INSN_P (i1) && rtx_equal_p (PATTERN (i1), PATTERN (i3))
 	  && any_condjump_p (i2) && onlyjump_p (i2));
 }
+
+/* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
+
+int
+h8300_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
+			    unsigned int new_reg)
+{
+  /* Interrupt functions can only use registers that have already been
+     saved by the prologue, even if they would normally be
+     call-clobbered.  */
+
+  if (h8300_current_function_interrupt_function_p ()
+      && !regs_ever_live[new_reg])
+    return 0;
+
+   return 1;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
