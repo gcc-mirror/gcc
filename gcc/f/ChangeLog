@@ -1,3 +1,8 @@
+Mon Jun  7 08:42:40 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in: Any target using libsubdir must depend
+	on installdirs.
+
 Sat Jun  5 23:50:36 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi: Describe a few more missing features people
