@@ -1329,7 +1329,7 @@ static void
 vfy_push_type (type_val tval)
 {
   type t = make_type (tval);
-  return vfy_push_type_t (t);
+  vfy_push_type_t (t);
 }
 
 #define push_type vfy_push_type
@@ -2267,7 +2267,7 @@ initialize_stack (void)
   /* We have to handle wide arguments specially here.  */
   arg_count = vfy_count_arguments (vfy_get_signature (vfr->current_method));
   {
-    type arg_types[arg_count];
+    type *arg_types = (type *) vfy_alloc (arg_count * sizeof (type));
     compute_argument_types (vfy_get_signature (vfr->current_method), arg_types);
     for (i = 0; i < arg_count; ++i)
       {
@@ -2276,6 +2276,7 @@ initialize_stack (void)
 	if (type_iswide (&arg_types[i]))
 	  ++var;
       }
+    vfy_free (arg_types);
   }
 
   return is_init;
@@ -3037,7 +3038,7 @@ verify_instructions_0 (void)
 	    arg_count = vfy_count_arguments (method_signature);
             {
 	      /* Pop arguments and check types.  */
-	      type arg_types[arg_count];
+	      type *arg_types = (type *) vfy_alloc (arg_count * sizeof (type));
 
 	      compute_argument_types (method_signature, arg_types);
 	      for (i = arg_count - 1; i >= 0; --i)
@@ -3047,6 +3048,8 @@ verify_instructions_0 (void)
 		  nargs -= type_depth (&arg_types[i]);
 		  pop_init_ref_t (arg_types[i]);
 		}
+
+	      vfy_free (arg_types);
 	    }
 
 	    if (opcode == op_invokeinterface
