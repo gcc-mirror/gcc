@@ -7750,10 +7750,8 @@ fold_builtin_abs (tree arglist, tree type)
    EXP is the CALL_EXPR for the call.  */
 
 static tree
-fold_builtin_classify (tree exp, int builtin_index)
+fold_builtin_classify (tree fndecl, tree arglist, int builtin_index)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   tree arg;
   REAL_VALUE_TYPE r;
@@ -8264,17 +8262,17 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_FINITE:
     case BUILT_IN_FINITEF:
     case BUILT_IN_FINITEL:
-      return fold_builtin_classify (exp, BUILT_IN_FINITE);
+      return fold_builtin_classify (fndecl, arglist, BUILT_IN_FINITE);
 
     case BUILT_IN_ISINF:
     case BUILT_IN_ISINFF:
     case BUILT_IN_ISINFL:
-      return fold_builtin_classify (exp, BUILT_IN_ISINF);
+      return fold_builtin_classify (fndecl, arglist, BUILT_IN_ISINF);
 
     case BUILT_IN_ISNAN:
     case BUILT_IN_ISNANF:
     case BUILT_IN_ISNANL:
-      return fold_builtin_classify (exp, BUILT_IN_ISNAN);
+      return fold_builtin_classify (fndecl, arglist, BUILT_IN_ISNAN);
 
     case BUILT_IN_ISGREATER:
       return fold_builtin_unordered_cmp (fndecl, arglist, UNLE_EXPR, LE_EXPR);
