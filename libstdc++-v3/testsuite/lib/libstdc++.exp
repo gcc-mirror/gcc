@@ -71,6 +71,9 @@ proc v3-copy-files {srcfiles} {
 		remote_download target $dirname/$symlink
             }
         }
+        set dirname [file dirname $f]
+        set basename [file tail $f]
+        file attributes $dirname/$basename -permissions a+w
     }
 }
 
