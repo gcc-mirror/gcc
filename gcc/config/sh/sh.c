@@ -2255,17 +2255,6 @@ arith_reg_or_0_operand (op, mode)
 }
 
 
-/* Returns 1 if OP is a valid count operand for a shift operation.  */
-int
-shiftby_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (immediate_operand (op, mode))
-    return 1;
-  return 0;
-}
-
 /* Returns 1 if OP is a valid source operand for a logical operation.  */
 
 int
