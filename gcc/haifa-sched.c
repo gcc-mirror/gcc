@@ -6918,6 +6918,9 @@ schedule_insns (dump_file)
 	  if (sched_verbose >= 3)
 	    debug_regions ();
 
+	  /* We are done with flow's edge list.  */
+	  free_edge_list (edge_list);
+
 	  /* For now.  This will move as more and more of haifa is converted
 	     to using the cfg code in flow.c.  */
 	  free (dom);
