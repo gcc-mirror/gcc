@@ -1,3 +1,16 @@
+2003-01-23  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9322
+	* include/std/std_streambuf.h
+	(basic_streambuf::basic_streambuf,
+	basic_streambuf::~basic_streambuf,
+	basic_streambuf::getloc, basic_streambuf::imbue):
+	Remove _M_buf_locale_init
+	* include/bits/fstream.tcc (basic_filebuf::imbue):  Likewise
+	* testsuite/27_io/filebuf_virtuals.cc (test08):  Add.
+	* testsuite/27_io/streambuf_members.cc (test08):  Add.
+	* testsuite/27_io/stringbuf_virtuals.cc (test08):  Add.
+
 2003-01-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Revert include ordering.

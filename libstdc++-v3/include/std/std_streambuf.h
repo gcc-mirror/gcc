@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -224,13 +224,6 @@ namespace std
       */
       locale 			_M_buf_locale;	
 
-      /**
-       *  @if maint
-       *  True iff locale is initialized.
-       *  @endif
-      */
-      bool 			_M_buf_locale_init;
-
       //@{
       /**
        *  @if maint
@@ -364,7 +357,6 @@ namespace std
 	_M_buf_size = 0;
 	_M_buf_size_opt = 0;
 	_M_mode = ios_base::openmode(0);
-	_M_buf_locale_init = false;
       }
 
       // [27.5.2.2.1] locales
@@ -393,12 +385,7 @@ namespace std
       */
       locale   
       getloc() const
-      {
-	if (_M_buf_locale_init)
-	  return _M_buf_locale; 
-	else 
-	  return locale();
-      } 
+      { return _M_buf_locale; } 
 
       // [27.5.2.2.2] buffer management and positioning
       //@{
@@ -584,7 +571,7 @@ namespace std
       _M_buf_unified(false), _M_in_beg(0), _M_in_cur(0), _M_in_end(0), 
       _M_out_beg(0), _M_out_cur(0), _M_out_end(0), 
       _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
-      _M_buf_locale_init(false), _M_pback_cur_save(0), _M_pback_end_save(0), 
+      _M_pback_cur_save(0), _M_pback_end_save(0), 
       _M_pback_init(false)
       { }
 
@@ -700,7 +687,6 @@ namespace std
       virtual void 
       imbue(const locale& __loc) 
       { 
-	_M_buf_locale_init = true;
 	if (_M_buf_locale != __loc)
 	  _M_buf_locale = __loc;
       }
