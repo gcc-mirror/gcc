@@ -69,6 +69,9 @@
    emitting at the beginning of your section */
 #undef HAVE_GAS_SUBSECTION_ORDERING
 
+/* Define if your assembler supports .weak.  */
+#undef HAVE_GAS_WEAK
+
 /* Define if your assembler uses the old HImode fild and fist notation.  */
 #undef HAVE_GAS_FILDS_FISTS
 
