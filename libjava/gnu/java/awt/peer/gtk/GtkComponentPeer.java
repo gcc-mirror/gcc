@@ -84,8 +84,9 @@ public class GtkComponentPeer extends GtkGenericPeer
   native int[] gtkWidgetGetForeground ();
   native int[] gtkWidgetGetBackground ();
   native void gtkWidgetSetVisible (boolean b);
-  native void gtkWidgetGetDimensions(int[] dim);
-  native void gtkWidgetGetLocationOnScreen(int[] point);
+  native void gtkWidgetGetDimensions (int[] dim);
+  native void gtkWidgetGetPreferredDimensions (int[] dim);
+  native void gtkWidgetGetLocationOnScreen (int[] point);
   native void gtkWidgetSetCursor (int type);
   native void gtkWidgetSetBackground (int red, int green, int blue);
   native void gtkWidgetSetForeground (int red, int green, int blue);
@@ -196,18 +197,12 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public Dimension getMinimumSize () 
   {
-    int dim[]=new int[2];
-    gtkWidgetGetDimensions (dim);
-    Dimension d = new Dimension (dim[0],dim[1]);
-    return (d);
+    return minimumSize ();
   }
 
   public Dimension getPreferredSize ()
   {
-    int dim[]=new int[2];
-    gtkWidgetGetDimensions (dim);
-    Dimension d = new Dimension (dim[0],dim[1]);
-    return (d);
+    return preferredSize ();
   }
 
   public Toolkit getToolkit ()
@@ -226,7 +221,11 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public Dimension minimumSize () 
   {
-    return getMinimumSize();
+    int dim[] = new int[2];
+
+    gtkWidgetGetPreferredDimensions (dim);
+
+    return new Dimension (dim[0], dim[1]);
   }
 
   public void paint (Graphics g)
@@ -234,9 +233,13 @@ public class GtkComponentPeer extends GtkGenericPeer
     awtComponent.paint (g);
   }
 
-  public Dimension preferredSize()
+  public Dimension preferredSize ()
   {
-    return getPreferredSize();
+    int dim[] = new int[2];
+
+    gtkWidgetGetPreferredDimensions (dim);
+
+    return new Dimension (dim[0], dim[1]);
   }
 
   public boolean prepareImage (Image image, int width, int height,
