@@ -1,3 +1,10 @@
+2003-10-26  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (attr cannot_copy): New.
+	(call_osf_2_er, call_value_osf_2_er, ldgp_er_1, ldgp_er_2,
+	prologue_ldgp_er_2, prologue_ldgp_1): Set it.
+	* config/alpha/alpha.c (alpha_cannot_copy_insn_p): Test it.
+
 2003-10-26  Daniel Berlin  <dberlin@dberlin.org>
 
 	* ggc-zone.c:  New file, zone allocating collector.
