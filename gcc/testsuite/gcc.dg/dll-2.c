@@ -9,7 +9,8 @@
    and functions.  In C++, it only works for functions.  */
 
 /* { dg-do compile { target arm*-*-pe* } } */
-/* { dg-do compile { target thumb*-*-pe* } } */
+/* { dg-do compile { target i?86-pc-cygwin } } */
+/* { dg-do compile { target i?86-pc-mingw* } } */
 
 __declspec (dllimport) int foo1 ();
 __declspec (dllexport) int foo1 ();

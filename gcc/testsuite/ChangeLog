@@ -1,3 +1,15 @@
+2003-03-13  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gcc.dg/dll-1.c: Remove thumb target. Change exp to _exp. 
+	* gcc.dg/dll-2.c: Enable for cygwin and mingw. Remove
+	thumb target, 
+	* gcc.dg/dll-3.c: Likewise. Adjust scan-assembler
+	to accept newer _imp__	prefix and additional
+	newline in .drectve section.
+	* gcc.dg/dll-4.c: Likewise.
+	* gcc.dg/dll-5.c: New file to test -mnop-fun-dllimport
+	switch.
+
 2003-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/parse/namespace9.C: New test.
