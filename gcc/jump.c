@@ -1834,18 +1834,6 @@ delete_related_insns (insn)
 
   return next;
 }
-
-/* Advance from INSN till reaching something not deleted
-   then return that.  May return INSN itself.  */
-
-rtx
-next_nondeleted_insn (insn)
-     rtx insn;
-{
-  while (INSN_DELETED_P (insn))
-    insn = NEXT_INSN (insn);
-  return insn;
-}
 
 /* Delete a range of insns from FROM to TO, inclusive.
    This is for the sake of peephole optimization, so assume
