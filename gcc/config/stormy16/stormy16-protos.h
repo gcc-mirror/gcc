@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in xstormy16.c
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GNU CC.
@@ -29,6 +29,7 @@ extern int	xstormy16_initial_elimination_offset PARAMS ((int, int));
 extern int	direct_return PARAMS ((void));
 extern int	xstormy16_interrupt_function_p PARAMS ((void));
 extern int	xstormy16_epilogue_uses PARAMS ((int));
+extern void	xstormy16_function_profiler PARAMS ((void));
 
 #if defined (TREE_CODE)
 #  if defined (HAVE_MACHINE_MODES)
