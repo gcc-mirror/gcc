@@ -335,41 +335,6 @@ rtx_alloc (code)
   return rt;
 }
 
-/* Like the above, but allocate based only on the length.  This is called
-   by the routines built into genrtl.c.  */
-
-rtx
-obstack_alloc_rtx (length)
-     int length;
-{
-  rtx rt;
-  register struct obstack *ob = rtl_obstack;
-
-  /* This function is called more than any other in GCC,
-     so we manipulate the obstack directly.
-
-     Even though rtx objects are word aligned, we may be sharing an obstack
-     with tree nodes, which may have to be double-word aligned.  So align
-     our length to the alignment mask in the obstack.  */
-
-  length = (length + ob->alignment_mask) & ~ ob->alignment_mask;
-
-  if (ob->chunk_limit - ob->next_free < length)
-    _obstack_newchunk (ob, length);
-
-  rt = (rtx) ob->object_base;
-  ob->next_free += length;
-  ob->object_base = ob->next_free;
-
-  /* We want to clear everything up to the FLD array.  Normally,
-     this is one int, but we don't want to assume that and it
-     isn't very portable anyway; this is.  */
-
-  memset (rt, 0, sizeof (struct rtx_def) - sizeof (rtunion));
-
-  return rt;
-}
-
 /* Free the rtx X and all RTL allocated since X.  */
 
 void

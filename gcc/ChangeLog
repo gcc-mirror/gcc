@@ -1,3 +1,7 @@
+1999-09-13  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* rtl.c (obstack_alloc_rtx): Removed.
+
 1999-09-13 17:03 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* config/gmicro/gmicro.md: Disable move DF->DI anonymous pattern.
