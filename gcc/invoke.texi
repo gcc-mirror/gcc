@@ -6632,10 +6632,11 @@ Generate code for the H8/S.
 Make @code{int} data 32 bits by default.
 
 @item -malign-300
-On the h8/300h, use the same alignment rules as for the h8/300.
-The default for the h8/300h is to align longs and floats on 4 byte boundaries.
+On the H8/300H and H8/S, use the same alignment rules as for the H8/300.
+The default for the H8/300H and H8/S is to align longs and floats on 4
+byte boundaries.
 @samp{-malign-300} causes them to be aligned on 2 byte boundaries.
-This option has no effect on the h8/300.
+This option has no effect on the H8/300.
 @end table
 
 @node SH Options

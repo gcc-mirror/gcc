@@ -2825,7 +2825,7 @@ emit_a_rotate (code, operands)
 	insn_buf = rotate_two[rotate_type][rotate_mode];
       else
 	insn_buf = rotate_one[cpu_type][rotate_type][rotate_mode];
-      
+
       for (; amount >= bits; amount -= bits)
 	output_asm_insn (insn_buf, operands);
     }
@@ -2834,7 +2834,7 @@ emit_a_rotate (code, operands)
 }
 
 /* Fix the operands of a gen_xxx so that it could become a bit
-  operating insn.  */
+   operating insn.  */
 
 int
 fix_bit_operand (operands, what, type)

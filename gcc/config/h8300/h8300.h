@@ -22,7 +22,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Which cpu to compile for.
+/* Which CPU to compile for.
    We use int for CPU_TYPE to avoid lots of casts.  */
 #if 0 /* defined in insn-attr.h, here for documentation */
 enum attr_cpu { CPU_H8300, CPU_H8300H };
@@ -135,10 +135,12 @@ extern int target_flags;
 
 /* Do things that must be done once at start up.  */
 
-#define OVERRIDE_OPTIONS \
-do {				\
-  h8300_init_once ();		\
-} while (0)
+#define OVERRIDE_OPTIONS			\
+  do						\
+    {						\
+      h8300_init_once ();			\
+    }						\
+  while (0)
 
 /* Default target_flags if no switches specified.  */
 
@@ -267,7 +269,7 @@ do {				\
    Aside from that, you can include as many other registers as you
    like.  
 
-   h8 destroys r0,r1,r2,r3.  */
+   H8 destroys r0,r1,r2,r3.  */
 
 #define CALL_USED_REGISTERS \
   { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 }

@@ -1,5 +1,10 @@
 2000-08-13  Kazu Hirata  <kazu@hxi.com>
 
+	* invoke.texi (H8/300 Options): Fix typos.
+	* config/h8300.c: Fix formatting.
+	* config/h8300.h: Fix comment typos.
+	(OVERRIDE_OPTIONS): Fix formatting.
+
 	* function.c: Fix formatting.
 
 	* cse.c: Fix formatting.
