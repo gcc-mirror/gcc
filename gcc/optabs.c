@@ -4084,6 +4084,7 @@ init_optabs ()
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
       movstr_optab[i] = CODE_FOR_nothing;
+      clrstr_optab[i] = CODE_FOR_nothing;
 
 #ifdef HAVE_SECONDARY_RELOADS
       reload_in_optab[i] = reload_out_optab[i] = CODE_FOR_nothing;
