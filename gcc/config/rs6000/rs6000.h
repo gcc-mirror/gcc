@@ -1294,8 +1294,8 @@ typedef struct rs6000_stack {
 /* 1 if N is a possible register number for function argument passing.
    On RS/6000, these are r3-r10 and fp1-fp13.  */
 #define FUNCTION_ARG_REGNO_P(N)						\
-  ((((N) - GP_ARG_MIN_REG) < (GP_ARG_NUM_REG))	\
-   || (((N) - FP_ARG_MIN_REG) < (FP_ARG_NUM_REG)))
+  ((unsigned)(((N) - GP_ARG_MIN_REG) < (unsigned)(GP_ARG_NUM_REG))	\
+   || ((unsigned)((N) - FP_ARG_MIN_REG) < (unsigned)(FP_ARG_NUM_REG)))
 
 
 /* A C structure for machine-specific, per-function data.
