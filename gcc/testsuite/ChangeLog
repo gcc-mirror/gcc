@@ -1,3 +1,8 @@
+2003-05-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/compile/simd-5.x: XFAIL on SPARC64.
+
 2003-05-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10682
