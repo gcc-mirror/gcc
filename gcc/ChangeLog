@@ -1,3 +1,424 @@
+2004-07-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	Introduce H8SX support.
+	* expr.c (expand_strcpy): Renamed and moved to...
+	* builtins.c (expand_movstr): ... here.  Tweak.
+	(expand_builtin_strcpy): Adjust.  Use movstr if len can't be
+	computed or has side effects.
+	(expand_builtin_stpcpy): Likewise.  Use strcpy if return value is
+	unused, or if mempcpy fails.  Adjust the return value in the
+	latter case.  Use movstr if everything else fails.
+	* doc/md.texi (movstr): Document.
+	(movmemM, clrmemM): Fix explanation of memory block operands.
+	* config/h8300/h8300.md (stpcpy): Renamed to...
+	(movstr): ... this.  Adjust.
+	2004-07-07  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.md: Rename movstr*, except for movstrict*, to
+	movmem* and clrstr* to clrmem*.
+	2004-06-27  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.c (h8300_reg_class_from_letter): Map 'D' to
+	GENERAL_REGS, always.
+	(h8300_swap_into_er6, h8300_swap_into_er6): Handle the case of
+	getting the stack pointer as addr.
+	* config/h8300/h8300.h (PREDICATE_CODES): Remove constant rtxes
+	from general_operand_dst.
+	* config/h8300/h8300.md (movmd_internal_normal): New, normal-mode
+	variant of...
+	(movmd_internal): ... this.  Add modes to operands.  Disparage `D'
+	instead of requiring it to match only before reload.
+	(stpcpy_internal_normal): New, normal-mode variant of...
+	(stpcpy_internal): ... this.  Add modes to operands.  Disparage
+	`D' instead of requiring it to match only before reload.
+	* config/h8300/h8300-protos.h (h8300_legitimate_address_p): Add
+	mode argument.
+	* config/h8300/h8300.h (GO_IF_LEGITIMATE_ADDRESS): Pass it to...
+	* config/h8300/h8300.c (h8300_legitimate_address_p): Pass it to
+	h8300_get_index.
+	* config/h8300/h8300.md (attr type): Add call.
+	(attr can_delay): If type is call, set it no.
+	(call, call_value): Set type to call.
+	2004-06-21  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.md (logicalhi3_sn, logicalsi3_sn): New.
+	2004-06-16  Alexandre Oliva  <aoliva@redhat.com>
+	* tree.c (get_narrower): Don't narrow integral types into
+	non-integral types.
+	* config/h8300/h8300.c (h8300_expand_epilogue): Initialize
+	frame_size *before* the first use.
+	* config/h8300/h8300.md (movstrictqi): Reintroduce post-increment
+	on input.
+	(peephole2): Don't widen instructions that push SP.  Move
+	decrement of SP to the end of all stm-generating peepholes.
+	2003-07-24  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.md (insv): Prefer to use AND to clear a bitfield
+	and OR to set it to all ones.
+	2003-07-24  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.md (can_delay): Default to "no" for bit branches.
+	(call, call_value): Set can_delay to "no".
+	2003-07-22  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.md (extzv): Make subreg check more robust.
+	2003-07-21  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.md (*brabit): Remove.
+	* config/h8300/h8300.md (*brabc, *brabs): Remove mode from
+	zero_extract.  Use bit_memory_operand as the predicate for
+	operand 1 and 'WU' as the constraint.  Check the difference
+	between the base length and the final one when deciding which
+	type of branch to use.
+	2003-07-21  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.md (extzv): Remove mode from operands 0 and 1.
+	Use convert_move to extend the result for TARGET_H8300SX.  Check
+	for QImode memory references.  Optimize the case where the
+	destination is a paradoxical subreg.
+	2003-07-21  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.md (*movsf_h8sx): Add an r <- G alternative.
+	* config/h8300/h8300.md (andqi): Remove bclr from h8sx version.
+	2003-07-21  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.md: Include mova.md
+	(length_table): Add mova and mova_zero.
+	* config/h8300/h8300.c (print_operand): Handle '%o'.  Print a length
+	after all constant addresses for '%R', '%X', '%T' and '%S'.
+	(h8300_mova_length): New function.
+	(h8300_insn_length_from_table): Use it to handle mova and mova_zero.
+	* config/h8300/t-h8300 (mova.md): Generate from genmova.sh.  Add to
+	dependencies for s-config, etc.
+	* config/h8300/gemova.sh: New file.
+	* config/h8300/mova.md: Generated.
+	2003-07-20  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.c (h8300_bitfield_length): New.
+	(nibble_operand): Adjust.
+	(h8300_binary_length): Handle conditional binary op.
+	(h8300_insn_length_from_table): Handle bitfield and bitbranch.
+	* config/h8300/h8300.h: Change constraints W# and Y# to P#>X and
+	P#<X, respectively.  The original P is now IP4>X.  Introduced P#>0
+	and P#<0, unused so far.  W and Y are now prefixes to multi-letter
+	constraints.  WU is introduced as a variant of U that requires a
+	mem, and is therefore considered an EXTRA_MEMORY_CONSTRAINT.
+	* config/h8300/h8300.md (attr type): Added bitbranch.
+	(attr length_table): Added bitfield and bitbranch.
+	(attr length): Compute bitbranch length.
+	(andqi): Separate pattern for H8300SX.  Use bfld for loading the
+	least-significant bit of a byte.
+	(brabit, brabc, brabs): New.
+	(insv, extzv): Emit bfst and bfld on H8300SX.
+	(bfld, bfst, seq, sne): New.
+	(bstzhireg, cmpstz, bstz, bistz): New.
+	(cmpcondbset, condbset, cmpcondbclr, condbclr): New.
+	(cmpcondbsetreg, condbsetreg, cmpcondbclrreg, condbclrreg): New.
+	2003-07-11  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.c (h8sx_binary_memory_operator): New function.
+	(h8sx_unary_memory_operator): New function.
+	* config/h8300/h8300.h (EXTRA_MEMORY_CONSTRAINT): Disable.
+	(PREDICATE_CODES): Add h8sx_{unary,binary}_memory_operator.
+	* config/h8300/h8300.md: Add peepholes to combine reloads and
+	arithmetic insns.
+	2003-07-10  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h830.md (cmpqi): Use 'i' rather than 'n' in constraints.
+	(*cmphi_h8300hs, *addqi3, *addhi3_h8sx, subhi3): Likewise.
+	(and?i, ior?i, xor?i): Likewise.
+	2003-07-10  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.c: Move enums and prototypes to head of file.
+	Various whitespace fixes.
+	(h8300_constant_length): New function, split out from...
+	(h8300_displacement_size): ...here.  Rename h8300_displacement_length.
+	(h8300_classify_operand): Use IN_RANGE.
+	(h8300_classify_operand): Use h8300_constant_length.
+	(h8300_short_move_mem_p): Tighten size check.
+	(h8sx_mergeable_memrefs_p): Tighten equality check.
+	2003-06-30  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.h (TARGET_CPU_CPP_BUILTINS): Define __H8300SX__
+	for -msx.
+	* config/h8300/crti.asm: Use .h8300sx or .h8300sxn for -msx code.
+	* config/h8300/crtn.asm: Likewise.
+	* config/h8300/lib1funcs.asm: Likewise.  Use 32-bit pointers
+	if __H8300SX__ is defined.
+	2003-06-27  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300-protos.h (h8300_get_index): Add mode parameter.
+	* config/h8300/h8300.h (GO_IF_LEGITIMATE_ADDRESS): Update accordingly.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): Treat POST_DEC, PRE_INC and indexed
+	addresses as mode-dependent.
+	* config/h8300/h8300.c (print_operand_address): Update call to
+	h8300_get_index.
+	(h8300_get_index): Take a mode argument.  Rework to fix an
+	earlier misunderstanding.
+	2003-06-26  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.c (zero_extendqisi2): Force the source operand
+	into a register if TARGET_H8300SX.
+	(*zero_extendqisi2_h8300hs, *extendqisi2_h8300): Disable for
+	TARGET_H8300SX.  Also disable related define_splits.
+	(*zero_extendqisi2_h8sx, *extendqisi2_h8sx): New patterns.
+	2003-06-23  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.c (h8300_rtx_costs): Add h8sx handling.
+	2003-06-20  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.h (OK_FOR_Z): New macro.
+	(EXTRA_CONSTRAINT_STR): Check it.
+	* config/h8300/h8300.c (h8300_classify_operand): Accept null
+	class arguments.
+	(h8300_insn_length_from_table): Handle LENGTH_TABLE_MOV_IMM4.
+	* config/h8300/h8300.md (length_table): Add mov_imm4.
+	(movqi, movhi): Add Z <- W4 alternatives to h8sx patterns.
+	2003-06-20  Richard Sandiford  <rsandifo@redhat.com>
+	* genattrtab.c (write_eligible_delay): Allow candidate_insn to
+	be a label.
+	* config/h8300/h8300.h (DELAY_SLOT_LENGTH): New macro.
+	* config/h8300/h8300.c (h8300_reorg): New function.
+	(TARGET_MACHINE_DEPENDENT_REORG): Define.
+	* config/h8300/h8300.md (length): Subtract the length of the
+	delay slot from (pc) when checking the range of forward branches.
+	(delay_slot, can_delay): New attributes.
+	(define_delay): Add bra/s handling.
+	(movmd_internal, return_h8sx, *return_1): Set can_delay to no.
+	(jump): Add delayed-branch handling.
+	2003-06-17  Richard Sandiford  <rsandifo@redhat.com>
+	* expr.c (expand_strcpy): New function.
+	* builtins.c (expand_builtin_strcpy): Fall back on expand_strcpy.
+	(expand_builtin_stpcpy): Likewise.
+	* config/h8300/h8300-protos.h (h8sx_split_movmd): Remove.
+	(h8300_swap_into_er6, h8300_swap_out_of_er6): Declare.
+	* config/h8300/h8300.c (h8300_reg_class_from_letter): Tweak 'd'
+	handling to improve register allocation for -fno-omit-frame-pointer.
+	(h8sx_split_movmd): Delete, moving er6 handling into...
+	(h8300_swap_into_er6, h8300_swap_out_of_er6): ...these new functions.
+	* config/h8300/h8300.md (UNSPEC_STPCPY): New unspec constant.
+	(movmd): Add calls to copy_rtx.
+	(movmd_internal): In the second alternative, allow the initial and
+	final destination registers to be different .  Update the splitter
+	accordingly.  Call h8300_swap_into_er6 and h8300_swap_out_of_er6
+	instead of h8sx_split_movmd.
+	(stpcpy, movsd): New expanders.
+	(movsd_internal): New define_insn.
+	2003-06-13  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300-protos.h (h8300_reg_class_from_letter): Declare.
+	(h8sx_emit_movmd, h8sx_split_movmd): Declare.
+	* config/h8300/h8300.h (reg_class): Add COUNTER_REGS, SOURCE_REGS
+	and DESTINATION_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Update accordingly.
+	(REGNO_REG_CLASS): Map er4, er5 and er6 to the new classes.
+	(REG_CLASS_FROM_LETTER): Use h8300_reg_class_from_letter.
+	(h8300_move_ratio): Declare.
+	(MOVE_RATIO): Use it.
+	* config/h8300/h8300.c (h8300_move_ratio): New variable.
+	(h8300_init_once): Initialize it.
+	(h8300_reg_class_from_letter): New function.
+	(print_operand): Add an 'm' prefix for printing ".b", ".w" or ".l".
+	(h8sx_emit_movmd, h8sx_split_movmd): New functions.
+	* config/h8300/h8300.md (UNSPEC_MOVMD): New unspec constant.
+	(COUNTER_REG, SOURCE_REG, DESTINATION_REG): New register constants.
+	(movstrsi, movmd): New expanders.
+	(movmd_internal): New insn.
+	2003-06-06  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.h (EXTRA_MEMORY_CONSTRAINT): Define.
+	2003-06-04  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/elf.h (LINK_SPEC): Use -m h8300sxnelf for -msx -mn.
+	* config/h8300/h8300.c (asm_file_start): Use .h8300sxn likewise.
+	2003-06-03  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.c (nibble_operand): Fix warning.
+	* config/h8300/h8300.md (movstricthi): Set adjust_length to no.
+	(movsi_h8sx): Likewise here and the normal h8sx movhi pattern.
+	(movsf_h8300h): Disable for TARGET_H8300SX.
+	2003-06-03  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.h (PREDICATE_CODES): Add h8300_ldm_parallel,
+	h8300_stm_parallel and h8300_return_parallel.
+	* config/h8300/h8300.c (h8300_push_pop, h8300_stack_offset_p,
+	h8300_ldm_stm_regno, h8300_ldm_stm_parallel, h8300_ldm_parallel,
+	h8300_stm_parallel, h8300_return_parallel): New functions.
+	(h8300_expand_prologue): Don't enforce ldm/stm register alignment
+	if TARGET_H8300SX.  Use h8300_push_pop.
+	(h8300_expand_epilogue): Likewise.  Try to merge the return insn
+	and final pop when generating h8sx code.  Always emit some form
+	of return insn.
+	* config/h8300/h8300.md: Don't enforce register alignment in
+	stm peepholes if TARGET_H8300SX.
+	(ldm_h8300s, stm_h8300s, return_h8sx): New patterns.
+	(ldm_h8300s_[234], stm_h8300_[234]): Disable.
+	(epilogue): Expect h8300_expand_epilogue to emit a return insn.
+	2003-06-03  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/t-h8300 (MULTILIB_OPTIONS): Add a -msx multilib.
+	(MULTILIB_DIRNAMES): Add a directory for it.
+	(MULTILIB_MATCHES): Delete.
+	2003-05-28  Richard Sandiford  <rsandifo@redhat.com>
+	* final.c (walk_alter_subreg): Handle addresses with subregs
+	inside a ZERO_EXTEND or AND.
+	* config/h8300/h8300-protos.h (h8300_get_index): Declare.
+	* config/h8300/h8300.h (INDEX_REG_CLASS): Set to GENERAL_REGS
+	if TARGET_H8300SX.
+	(GO_IF_LEGITIMATE_ADDRESS): Use h8300_get_index.
+	* config/h8300/h8300.c (print_operand_address): Handle @(dd,RnL.b),
+	@(dd,Rn.w) and @(dd,ERn.L).
+	(h8300_displacement_size): Take the whole address as argument.
+	(h8300_classify_operand, h8300_short_move_mem_p): Adjust accordingly.
+	2003-05-28  Richard Sandiford  <rsandifo@redhat.com>
+	* config/mips/mips-protos.h (h8300_operands_match_p): Declare.
+	(h8sx_mergeable_memrefs_p): Declare.
+	* config/h8300/h8300.h (HAVE_POST_DECREMENT): Define to TARGET_H8300SX.
+	(HAVE_PRE_INCREMENT): Likewise.
+	(GO_IF_LEGITIMATE_ADDRESS): Accept pre/post increment/decrement
+	addresses for TARGET_H8300SX,
+	* config/h8300/h8300.c (print_operand_address): Deal with PRE_INC
+	and POST_DEC.
+	(movb_length_table, movl_length_table): New tables.
+	(movw_length_table): Define to movb_length_table.
+	(h8300_displacement_size): New, split out from...
+	(h8300_classify_address): ...here.  Handle pre/post inc/dec.
+	(h8300_short_immediate_length): Allow H8OP_MEM_COMPLEX operands.
+	(h8300_insn_length_from_table): Add cases for movb, movw and movl.
+	(h8sx_mergeable_memrefs_p, h8300_operands_match_p): New functions.
+	(output_plussi): Use add.l #xx:3,Rn and sub.l #xx:3,Rn for h8sx.
+	(compute_plussi_length, compute_plussi_cc): Update accordingly.
+	(h8sx_unary_shift_operator): Get the mode from the operator.
+	(binary_shift_operator): Likewise.
+	* config/h8300/h8300.md: If a peephole2 applies gen_lowpart to
+	a memory reference, check whether the reference is offsettable.
+	(length_table): Add movb, movw and movl.
+	(movqi): Add new h8sx pattern.  Don't force one operand to be a
+	register when generating h8sx code.
+	(movhi, movsi, movsf): Likewise.
+	(movstrictqi): Use the length_table attribute.
+	(movstricthi): Likewise.  Add h8sx alternative for mov.w #xx:3,Rn.
+	(addqi3): Split into a define_expand and define_insn.  Don't accept
+	memory operands in the expander.  Use h8300_operands_match_p to
+	check for matching operands in the define_insn.
+	(subqi3, negqi2, one_cmplqi2): Likewise.
+	(add[hs]i3): Don't accept memory operands in the expander.  Likewise
+	in any patterns that are unused in h8sx code.  In the h8sx patterns,
+	use h8300_operands_match_p to check whether operands match.
+	(sub[hs]i3, and[hi]3, ior[hs]i3, xor[hs]i3, neg[hsi]3,
+	one_cmpl[hs]i3): Likewise.
+	(andqi3, iorqi3, xorqi3): Likewise.  Don't call fix_bit_operand
+	in the expander.
+	2003-05-23  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300-protos.h (expand_a_shift): Return a bool.
+	(h8300_insn_length_from_table): Add a second parameter.
+	(output_h8sx_shift): Declare.
+	* config/h8300/h8300.h (OK_FOR_W, OK_FOR_Y): New macros.
+	(EXTRA_CONSTRAINT): Replace with...
+	(EXTRA_CONSTRAINT_STR): ...this.  Use OK_FOR_W and OK_FOR_Y.
+	(CONSTRAINT_LEN): Define, returning 2 for 'W' and 'Y'.
+	(PREDICATE_CODES): Add entries for h8sx_unary_shift_operator
+	and h8sx_binary_shift_operator.
+	* config/h8300/h8300.c (two_insn_adds_subs_operand): Return false
+	for TARGET_H8300SX.
+	(bit_operand): Replace use of EXTRA_CONSTRAINT with OK_FOR_U.
+	(bit_memory_operand, fix_bit_operand): Likewise.
+	(h8300_length_table_for_insn): Remove.
+	(h8300_classify_operand): Fix check for 16-bit operands in 32-bit
+	instructions.
+	(h8300_short_immediate_length, h8300_binary_length): New functions.
+	(h8300_insn_length_from_table): Add an opcodes parameter.  Rework.
+	(output_plussi): Use sub to add negative constants.
+	(compute_plussi_length): Adjust accordingly.
+	(h8sx_single_shift_type): New enum.
+	(h8sx_single_shift, h8sx_unary_shift_operator,
+	h8sx_binary_shift_operator, output_h8sx_shift): New functions.
+	(expand_a_shift, expand_a_rotate): Emit nothing if the shift is a
+	single h8sx instruction.  Return false in this case.
+	* config/h8300/h8300.md (length_table): Add short_immediate.
+	(length): Pass the operand array to h8300_insn_length_from_table.
+	(adjust_length): Assume "no" for insns with a length_table attribute.
+	(*cmphi_h8300hs, cmpsi): Add alternatives for #xx:3.
+	(*addhi3_h8300hs): Don't use for h8sx.
+	(*addhi3_h8sx): New pattern, with alternatives for add.w #xx:3
+	and sub.w #xx:3.
+	(ashl[qhs]i3, lshr[qhs]i3, ashr[qhs]i3, rotl[qhs]i3): Change operand
+	1's predicate to nonimmediate_operand.  Only skip default expansion
+	if expand_a_shift or expand_a_rotate returns true.  Add new patterns
+	for single h8sx shift instructions.
+	2003-05-22  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.c (nibble_operand): Split out of...
+	(reg_or_nibble_operand): ... this.
+	* config/h8300/h8300.h (PREDICATE_CODES): Added nibble_operand.
+	* config/h8300/h8300.md: (mulqihi3, mulhisi3, umulqihi3,
+	umulhisi3): Introduce expand, and introduce separate insns for
+	sign- or zero-extended REG and already-extended CONST_INT.
+	2003-05-20  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.c (h8300_unary_length): Fix miscounting.
+	* config/h8300/h8300.md (subqi3): Generalize for h8sx.
+	(subhi3): Likewise.  Don't accept immediates for operand 1.
+	Remove the early clobber from second alternative of the h8300s pattern.
+	(subsi3): Generalize for h8sx.  Force operand 2 into a register
+	on plain h8300 targets.
+	(subsi3_h8300): Use h8300_dst_operand for consistency with expander.
+	(subsi3_h8300h): Generalize for h8sx.
+	(one_cmplqi2, one_cmplhi2, one_cmplsi2): Likewise.
+	2003-05-19  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.c (reg_or_nibble_operand): New.
+	* config/h8300/h8300.h (PREDICATE_CODES): Adjust.
+	(TARGET_H8300SXMUL): New.
+	(CONST_OK_FOR_P): New.
+	(CONST_OK_FOR_LETTER_P): Adjust.
+	* config/h8300/h8300.md (mulqihi3, mulhisi3, umulqihi3,
+	umulhisi3): Accept 4-bit immediate on H8SX.
+	(mulhi3, mulsi3, smulsi3_highpart, umulsi3_highpart): New.
+	(udivsi3, divhi3, udivsi3, divsi3): New.
+	2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300-protos.h (h8300_insn_length_from_table): Declare.
+	* config/h8300/h8300.h (OK_FOR_Q): New macro.
+	(EXTRA_CONSTRAINT): Use it to check the 'Q' constraint.
+	(PREDICATE_CODES): Add h8300_src_operand and h8300_dst_operand.
+	Add ADDRESSOF to the bit_operand entry.
+	* config/h8300/h8300.c (h8300_dst_operand): New predicate.
+	(h8300_src_operand): Likewise.
+	(bit_operand): Check nonimmediate_operand rather than general_operand.
+	Accept any nonimmediate_operand in h8sx code.
+	(h8300_and_costs): Initialize operands[1].
+	(h8300_rtx_costs) <AND>: Return false if the operands aren't valid.
+	(h8300_operand_class): New enum.
+	(h8300_length_table): New typedef.
+	(addb_length_table, addw_length_table, addl_length_table,
+	logicl_length_table): New tables.
+	(logicb_length_table, logicw_length_table): New macros.
+	(h8300_classify_operand, h8300_length_from_table,
+	h8300_length_table_for_insn, h8300_unary_length,
+	h8300_insn_length_from_table): New functions.
+	(output_plussi): Only use adds and subs for register destinations.
+	Disable redundant clause.
+	(compute_plussi_cc): Likewise.
+	(compute_plussi_length): Likewise.  Use h8300_length_from_table
+	to work out the length of an insn.
+	(output_logical_op): Only use narrower immediate instructions
+	if the destination is a register.
+	(compute_logical_op_cc): Likewise.
+	(compute_logical_op_length): Likewise.  Use h8300_length_from_table.
+	(h8300_adjust_insn_length): Tighten check for reg<->mem moves.
+	* config/h8300/h8300.md (length_table): New attribute.
+	(length): When an instruction has a length_table attribute, use
+	h8300_insn_length_from_table to calculate its default length.
+	(cmpqi): Use h8300_dst_operand for the first operand and
+	h8300_src_operand for the second.
+	(cmphi, *cmphi_h8300hs, cmpsi, negqi2, neghi2, neghi2_h8300h, negsi2,
+	negsi2_h8300h, addqi3, addhi3, *addhi3_h8300, *addhi3_h8300hs, addsi3,
+	addsi_h8300, addsi_h8300h, andhi3, andsi3, iorhi3,
+	iorsi3, xorhi3, xorsi3): Likewise.
+	(andqi3): Use h8300_src_operand for operand 2.  Adjust the condition
+	so that it allows any combination of operands for TARGET_H8300SX.
+	(iorqi3, xorqi3): Likewise.
+	(cmpqi): Use the length_table attribute.
+	(*cmphi_h8300hs, cmpsi, addqi, *addhi3_h8300hs, andqi3, iorqi3,
+	xorqi3, negqi2, neghi2_h8300h, negsi2_h8300h): Likewise.
+	(cmpqi): Add 'Q' constraint.
+	(*cmphi_h8300hs, cmpsi, addqi, *addhi3_h8300hs, addsi_h8300h, andqi3,
+	iorqi3, xorqi3, negqi2, neghi2_h8300h, negsi2_h8300h): Likewise.
+	2003-05-14  Richard Sandiford  <rsandifo@redhat.com>
+	* config/h8300/h8300.h (MASK_H8300SX): New macro.
+	(TARGET_H8300S): True for both -ms and -msx.
+	(TARGET_H8300SX): New macro.
+	(TARGET_SWITCHES): Add entries for -msx and -mno-sx.
+	* config/h8300/h8300.c (asm_file_start): Write .h8300sx for -msx.
+	* config/h8300/elf.h (LINK_SPEC): Use -m h8300sxelf for -msx.
+	* config/h8300/t-h8300 (MULTILIB_MATCHES): Use -ms multilibs for -msx.
+	[Temporary change.]
+	2003-02-28  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.h (SIZE_TYPE, PTRDIFF_TYPE): Use short with
+	16-bit pointers and 32-bit ints.
+	* config/h8300/h8300.h (LEGITIMATE_CONSTANT_P): Accept
+	CONST_DOUBLE with mode no wider than SImode.
+	* config/h8300/h8300.md (extendqisi2_h8300): Add constraints for
+	output operand.
+	2003-02-27  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.c (general_operand_src): Match CONSTANT_P_RTX
+	or SUBREG thereof.
+	* config/h8300/h8300.h (PREDICATE_CODES): Adjust.
+	2003-02-22  Alexandre Oliva  <aoliva@redhat.com>
+	* config/h8300/h8300.c (dosize): Truncate sign * size to Pmode.
+
 2004-05-28  Aaron W. LaFramboise <aaronraolete36@aaronwl.com>
 
 	* config.gcc (i[34567]86-*-mingw32*): Enable threads by default.

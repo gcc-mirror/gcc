@@ -46,6 +46,57 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
+/* Classifies a h8300_src_operand or h8300_dst_operand.
+
+   H8OP_IMMEDIATE
+	A constant operand of some sort.
+
+   H8OP_REGISTER
+	An ordinary register.
+
+   H8OP_MEM_ABSOLUTE
+	A memory reference with a constant address.
+
+   H8OP_MEM_BASE
+	A memory reference with a register as its address.
+
+   H8OP_MEM_COMPLEX
+	Some other kind of memory reference.  */
+enum h8300_operand_class
+{
+  H8OP_IMMEDIATE,
+  H8OP_REGISTER,
+  H8OP_MEM_ABSOLUTE,
+  H8OP_MEM_BASE,
+  H8OP_MEM_COMPLEX,
+  NUM_H8OPS
+};
+
+/* Classifies an h8sx shift operation.
+
+   H8SX_SHIFT_NONE
+	The shift cannot be done in a single instruction.
+
+   H8SX_SHIFT_UNARY
+	The shift is effectively a unary operation.  The instruction will
+	allow any sort of destination operand and have a format similar
+	to neg and not.  This is true of certain power-of-2 shifts.
+
+   H8SX_SHIFT_BINARY
+	The shift is a binary operation.  The destination must be a
+	register and the source can be a register or a constant.  */
+enum h8sx_shift_type
+{
+  H8SX_SHIFT_NONE,
+  H8SX_SHIFT_UNARY,
+  H8SX_SHIFT_BINARY
+};
+
+/* For a general two-operand instruction, element [X][Y] gives
+   the length of the opcode fields when the first operand has class
+   (X + 1) and the second has class Y.  */
+typedef unsigned char h8300_length_table[NUM_H8OPS - 1][NUM_H8OPS];
+
 /* Forward declarations.  */
 static const char *byte_reg (rtx, int);
 static int h8300_interrupt_function_p (tree);
@@ -67,6 +118,22 @@ static void h8300_asm_named_section (const char *, unsigned int);
 #endif
 static int h8300_and_costs (rtx);
 static int h8300_shift_costs (rtx);
+static void          h8300_push_pop               (int, int, int, int);
+static int           h8300_stack_offset_p         (rtx, int);
+static int           h8300_ldm_stm_regno          (rtx, int, int, int);
+static int           h8300_ldm_stm_parallel       (rtvec, int, int);
+static void          h8300_reorg                  (void);
+static unsigned int  h8300_constant_length        (rtx);
+static unsigned int  h8300_displacement_length    (rtx, int);
+static unsigned int  h8300_classify_operand       (rtx, int, enum h8300_operand_class *);
+static unsigned int  h8300_length_from_table      (rtx, rtx, const h8300_length_table *);
+static unsigned int  h8300_unary_length           (rtx);
+static unsigned int  h8300_short_immediate_length (rtx);
+static unsigned int  h8300_bitfield_length        (rtx, rtx);
+static unsigned int  h8300_binary_length          (rtx, const h8300_length_table *);
+static bool          h8300_short_move_mem_p       (rtx, enum rtx_code);
+static unsigned int  h8300_move_length            (rtx *, const h8300_length_table *);
+enum h8sx_shift_type h8sx_classify_shift          (enum machine_mode, enum rtx_code, rtx);
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -93,6 +160,9 @@ const char * const *h8_reg_names;
 /* Various operations needed by the following, indexed by CPU_TYPE.  */
 
 const char *h8_push_op, *h8_pop_op, *h8_mov_op;
+
+/* Value of MOVE_RATIO.  */
+int h8300_move_ratio;
 
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION	(SYMBOL_FLAG_MACH_DEP << 0)
@@ -328,6 +398,102 @@ h8300_init_once (void)
       /* H8S */
       shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
     }
+
+  /* Work out a value for MOVE_RATIO.  */
+  if (!TARGET_H8300SX)
+    {
+      /* Memory-memory moves are quite expensive without the
+	 h8sx instructions.  */
+      h8300_move_ratio = 3;
+    }
+  else if (flag_omit_frame_pointer)
+    {
+      /* movmd sequences are fairly cheap when er6 isn't fixed.  They can
+	 sometimes be as short as two individual memory-to-memory moves,
+	 but since they use all the call-saved registers, it seems better
+	 to allow up to three moves here.  */
+      h8300_move_ratio = 4;
+    }
+  else if (optimize_size)
+    {
+      /* In this case we don't use movmd sequences since they tend
+	 to be longer than calls to memcpy().  Memory-to-memory
+	 moves are cheaper than for !TARGET_H8300SX, so it makes
+	 sense to have a slightly higher threshold.  */
+      h8300_move_ratio = 4;
+    }
+  else
+    {
+      /* We use movmd sequences for some moves since it can be quicker
+	 than calling memcpy().  The sequences will need to save and
+	 restore er6 though, so bump up the cost.  */
+      h8300_move_ratio = 6;
+    }
+}
+
+/* Implement REG_CLASS_FROM_LETTER.
+
+   Some patterns need to use er6 as a scratch register.  This is
+   difficult to arrange since er6 is the frame pointer and usually
+   can't be spilled.
+
+   Such patterns should define two alternatives, one which allows only
+   er6 and one which allows any general register.  The former alternative
+   should have a 'd' constraint while the latter should be disparaged and
+   use 'D'.
+
+   Normally, 'd' maps to DESTINATION_REGS and 'D' maps to GENERAL_REGS.
+   However, there are cases where they should be NO_REGS:
+
+     - 'd' should be NO_REGS when reloading a function that uses the
+       frame pointer.  In this case, DESTINATION_REGS won't contain any
+       spillable registers, so the first alternative can't be used.
+
+     - -fno-omit-frame-pointer means that the frame pointer will
+       always be in use.  It's therefore better to map 'd' to NO_REGS
+       before reload so that register allocator will pick the second
+       alternative.
+
+     - we would like 'D' to be be NO_REGS when the frame pointer isn't
+       live, but we the frame pointer may turn out to be needed after
+       we start reload, and then we may have already decided we don't
+       have a choice, so we can't do that.  Forcing the register
+       allocator to use er6 if possible might produce better code for
+       small functions: it's more efficient to save and restore er6 in
+       the prologue & epilogue than to do it in a define_split.
+       Hopefully disparaging 'D' will have a similar effect, without
+       forcing a reload failure if the frame pointer is found to be
+       needed too late.  */
+
+enum reg_class
+h8300_reg_class_from_letter (int c)
+{
+  switch (c)
+    {
+    case 'a':
+      return MAC_REGS;
+
+    case 'c':
+      return COUNTER_REGS;
+
+    case 'd':
+      if (!flag_omit_frame_pointer && !reload_completed)
+	return NO_REGS;
+      if (frame_pointer_needed && reload_in_progress)
+	return NO_REGS;
+      return DESTINATION_REGS;
+
+    case 'D':
+      /* The meaning of a constraint shouldn't change dynamically, so
+	 we can't make this NO_REGS.  */
+      return GENERAL_REGS;
+
+    case 'f':
+      return SOURCE_REGS;
+
+    default:
+      return NO_REGS;
+    }
 }
 
 /* Return the byte register name for a register rtx X.  B should be 0
@@ -474,6 +640,196 @@ pop (int rn)
   REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, 0);
 }
 
+/* Emit an instruction to push or pop NREGS consecutive registers
+   starting at register REGNO.  POP_P selects a pop rather than a
+   push and RETURN_P is true if the instruction should return.
+
+   It must be possible to do the requested operation in a single
+   instruction.  If NREGS == 1 && !RETURN_P, use a normal push
+   or pop insn.  Otherwise emit a parallel of the form:
+
+     (parallel
+       [(return)  ;; if RETURN_P
+	(save or restore REGNO)
+	(save or restore REGNO + 1)
+	...
+	(save or restore REGNO + NREGS - 1)
+	(set sp (plus sp (const_int adjust)))]  */
+
+static void
+h8300_push_pop (int regno, int nregs, int pop_p, int return_p)
+{
+  int i, j;
+  rtvec vec;
+  rtx sp, offset;
+
+  /* See whether we can use a simple push or pop.  */
+  if (!return_p && nregs == 1)
+    {
+      if (pop_p)
+	pop (regno);
+      else
+	push (regno);
+      return;
+    }
+
+  /* We need one element for the return insn, if present, one for each
+     register, and one for stack adjustment.  */
+  vec = rtvec_alloc ((return_p != 0) + nregs + 1);
+  sp = stack_pointer_rtx;
+  i = 0;
+
+  /* Add the return instruction.  */
+  if (return_p)
+    {
+      RTVEC_ELT (vec, i) = gen_rtx_RETURN (VOIDmode);
+      i++;
+    }
+
+  /* Add the register moves.  */
+  for (j = 0; j < nregs; j++)
+    {
+      rtx lhs, rhs;
+
+      if (pop_p)
+	{
+	  /* Register REGNO + NREGS - 1 is popped first.  Before the
+	     stack adjustment, its slot is at address @sp.  */
+	  lhs = gen_rtx_REG (SImode, regno + j);
+	  rhs = gen_rtx_MEM (SImode, plus_constant (sp, (nregs - j - 1) * 4));
+	}
+      else
+	{
+	  /* Register REGNO is pushed first and will be stored at @(-4,sp).  */
+	  lhs = gen_rtx_MEM (SImode, plus_constant (sp, (j + 1) * -4));
+	  rhs = gen_rtx_REG (SImode, regno + j);
+	}
+      RTVEC_ELT (vec, i + j) = gen_rtx_SET (VOIDmode, lhs, rhs);
+    }
+
+  /* Add the stack adjustment.  */
+  offset = GEN_INT ((pop_p ? nregs : -nregs) * 4);
+  RTVEC_ELT (vec, i + j) = gen_rtx_SET (VOIDmode, sp,
+					gen_rtx_PLUS (Pmode, sp, offset));
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, vec));
+}
+
+/* Return true if X has the value sp + OFFSET.  */
+
+static int
+h8300_stack_offset_p (rtx x, int offset)
+{
+  if (offset == 0)
+    return x == stack_pointer_rtx;
+
+  return (GET_CODE (x) == PLUS
+	  && XEXP (x, 0) == stack_pointer_rtx
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) == offset);
+}
+
+/* A subroutine of h8300_ldm_stm_parallel.  X is one pattern in
+   something that may be an ldm or stm instruction.  If it fits
+   the required template, return the register it loads or stores,
+   otherwise return -1.
+
+   LOAD_P is true if X should be a load, false if it should be a store.
+   NREGS is the number of registers that the whole instruction is expected
+   to load or store.  INDEX is the index of the register that X should
+   load or store, relative to the lowest-numbered register.  */
+
+static int
+h8300_ldm_stm_regno (rtx x, int load_p, int index, int nregs)
+{
+  int regindex, memindex, offset;
+
+  if (load_p)
+    regindex = 0, memindex = 1, offset = (nregs - index - 1) * 4;
+  else
+    memindex = 0, regindex = 1, offset = (index + 1) * -4;
+
+  if (GET_CODE (x) == SET
+      && GET_CODE (XEXP (x, regindex)) == REG
+      && GET_CODE (XEXP (x, memindex)) == MEM
+      && h8300_stack_offset_p (XEXP (XEXP (x, memindex), 0), offset))
+    return REGNO (XEXP (x, regindex));
+
+  return -1;
+}
+
+/* Return true if the elements of VEC starting at FIRST describe an
+   ldm or stm instruction (LOAD_P says which).  */
+
+static int
+h8300_ldm_stm_parallel (rtvec vec, int load_p, int first)
+{
+  rtx last;
+  int nregs, i, regno, adjust;
+
+  /* There must be a stack adjustment, a register move, and at least one
+     other operation (a return or another register move).  */
+  if (GET_NUM_ELEM (vec) < 3)
+    return false;
+
+  /* Get the range of registers to be pushed or popped.  */
+  nregs = GET_NUM_ELEM (vec) - first - 1;
+  regno = h8300_ldm_stm_regno (RTVEC_ELT (vec, first), load_p, 0, nregs);
+
+  /* Check that the call to h8300_ldm_stm_regno succeeded and
+     that we're only dealing with GPRs.  */
+  if (regno < 0 || regno + nregs > 8)
+    return false;
+
+  /* 2-register h8s instructions must start with an even-numbered register.
+     3- and 4-register instructions must start with er0 or er4.  */
+  if (!TARGET_H8300SX)
+    {
+      if ((regno & 1) != 0)
+	return false;
+      if (nregs > 2 && (regno & 3) != 0)
+	return false;
+    }
+
+  /* Check the other loads or stores.  */
+  for (i = 1; i < nregs; i++)
+    if (h8300_ldm_stm_regno (RTVEC_ELT (vec, first + i), load_p, i, nregs)
+	!= regno + i)
+      return false;
+
+  /* Check the stack adjustment.  */
+  last = RTVEC_ELT (vec, first + nregs);
+  adjust = (load_p ? nregs : -nregs) * 4;
+  return (GET_CODE (last) == SET
+	  && SET_DEST (last) == stack_pointer_rtx
+	  && h8300_stack_offset_p (SET_SRC (last), adjust));
+}
+
+/* Return true if X is an ldm.l pattern.  X is known to be parallel.  */
+
+int
+h8300_ldm_parallel (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return h8300_ldm_stm_parallel (XVEC (x, 0), 1, 0);
+}
+
+/* Likewise stm.l.  */
+
+int
+h8300_stm_parallel (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return h8300_ldm_stm_parallel (XVEC (x, 0), 0, 0);
+}
+
+/* Likewise rts/l and rte/l.  Note that the .md pattern will check
+   for the return so there's no need to do that here.  */
+
+int
+h8300_return_parallel (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return h8300_ldm_stm_parallel (XVEC (x, 0), 1, 1);
+}
+
 /* This is what the stack looks like after the prolog of
    a function with a frame has been set up:
 
@@ -529,42 +885,20 @@ h8300_expand_prologue (void)
 	  if (TARGET_H8300S)
 	    {
 	      /* See how many registers we can push at the same time.  */
-	      if ((regno == 0 || regno == 4)
+	      if ((!TARGET_H8300SX || (regno & 3) == 0)
 		  && ((saved_regs >> regno) & 0x0f) == 0x0f)
 		n_regs = 4;
 
-	      else if ((regno == 0 || regno == 4)
+	      else if ((!TARGET_H8300SX || (regno & 3) == 0)
 		       && ((saved_regs >> regno) & 0x07) == 0x07)
 		n_regs = 3;
 
-	      else if ((regno == 0 || regno == 2 || regno == 4 || regno == 6)
+	      else if ((!TARGET_H8300SX || (regno & 1) == 0)
 		       && ((saved_regs >> regno) & 0x03) == 0x03)
 		n_regs = 2;
 	    }
 
-	  switch (n_regs)
-	    {
-	    case 1:
-	      push (regno);
-	      break;
-	    case 2:
-	      emit_insn (gen_stm_h8300s_2 (gen_rtx_REG (SImode, regno),
-					   gen_rtx_REG (SImode, regno + 1)));
-	      break;
-	    case 3:
-	      emit_insn (gen_stm_h8300s_3 (gen_rtx_REG (SImode, regno),
-					   gen_rtx_REG (SImode, regno + 1),
-					   gen_rtx_REG (SImode, regno + 2)));
-	      break;
-	    case 4:
-	      emit_insn (gen_stm_h8300s_4 (gen_rtx_REG (SImode, regno),
-					   gen_rtx_REG (SImode, regno + 1),
-					   gen_rtx_REG (SImode, regno + 2),
-					   gen_rtx_REG (SImode, regno + 3)));
-	      break;
-	    default:
-	      abort ();
-	    }
+	  h8300_push_pop (regno, n_regs, 0, 0);
 	}
     }
 
@@ -592,14 +926,19 @@ h8300_expand_epilogue (void)
   int regno;
   int saved_regs;
   int n_regs;
+  HOST_WIDE_INT frame_size;
+  bool returned_p;
 
   if (h8300_os_task_function_p (current_function_decl))
     /* OS_Task epilogues are nearly naked -- they just have an
        rts instruction.  */
     return;
 
+  frame_size = round_frame_size (get_frame_size ());
+  returned_p = false;
+
   /* Deallocate locals.  */
-  h8300_emit_stack_adjustment (1, round_frame_size (get_frame_size ()));
+  h8300_emit_stack_adjustment (1, frame_size);
 
   /* Pop the saved registers in descending order.  */
   saved_regs = compute_saved_regs ();
@@ -611,48 +950,41 @@ h8300_expand_epilogue (void)
 	  if (TARGET_H8300S)
 	    {
 	      /* See how many registers we can pop at the same time.  */
-	      if ((regno == 7 || regno == 3)
-		  && ((saved_regs >> (regno - 3)) & 0x0f) == 0x0f)
+	      if ((TARGET_H8300SX || (regno & 3) == 3)
+		  && ((saved_regs << 3 >> regno) & 0x0f) == 0x0f)
 		n_regs = 4;
 
-	      else if ((regno == 6 || regno == 2)
-		       && ((saved_regs >> (regno - 2)) & 0x07) == 0x07)
+	      else if ((TARGET_H8300SX || (regno & 3) == 2)
+		       && ((saved_regs << 2 >> regno) & 0x07) == 0x07)
 		n_regs = 3;
 
-	      else if ((regno == 7 || regno == 5 || regno == 3 || regno == 1)
-		       && ((saved_regs >> (regno - 1)) & 0x03) == 0x03)
+	      else if ((TARGET_H8300SX || (regno & 1) == 1)
+		       && ((saved_regs << 1 >> regno) & 0x03) == 0x03)
 		n_regs = 2;
 	    }
 
-	  switch (n_regs)
-	    {
-	    case 1:
-	      pop (regno);
-	      break;
-	    case 2:
-	      emit_insn (gen_ldm_h8300s_2 (gen_rtx_REG (SImode, regno - 1),
-					   gen_rtx_REG (SImode, regno)));
-	      break;
-	    case 3:
-	      emit_insn (gen_ldm_h8300s_3 (gen_rtx_REG (SImode, regno - 2),
-					   gen_rtx_REG (SImode, regno - 1),
-					   gen_rtx_REG (SImode, regno)));
-	      break;
-	    case 4:
-	      emit_insn (gen_ldm_h8300s_4 (gen_rtx_REG (SImode, regno - 3),
-					   gen_rtx_REG (SImode, regno - 2),
-					   gen_rtx_REG (SImode, regno - 1),
-					   gen_rtx_REG (SImode, regno)));
-	      break;
-	    default:
-	      abort ();
-	    }
+	  /* See if this pop would be the last insn before the return.
+	     If so, use rte/l or rts/l instead of pop or ldm.l.  */
+	  if (TARGET_H8300SX
+	      && !frame_pointer_needed
+	      && frame_size == 0
+	      && (saved_regs & ((1 << (regno - n_regs + 1)) - 1)) == 0)
+	    returned_p = true;
+
+	  h8300_push_pop (regno - n_regs + 1, n_regs, 1, returned_p);
 	}
     }
 
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
-    pop (HARD_FRAME_POINTER_REGNUM);
+    {
+      if (TARGET_H8300SX)
+	returned_p = true;
+      h8300_push_pop (HARD_FRAME_POINTER_REGNUM, 1, 1, returned_p);
+    }
+
+  if (!returned_p)
+    emit_insn (gen_rtx_RETURN (VOIDmode));
 }
 
 /* Return nonzero if the current function is an interrupt
@@ -674,6 +1006,8 @@ h8300_file_start (void)
 
   if (TARGET_H8300H)
     fputs (TARGET_NORMAL_MODE ? "\t.h8300hn\n" : "\t.h8300h\n", asm_out_file);
+  else if (TARGET_H8300SX)
+    fputs (TARGET_NORMAL_MODE ? "\t.h8300sxn\n" : "\t.h8300sx\n", asm_out_file);
   else if (TARGET_H8300S)
     fputs (TARGET_NORMAL_MODE ? "\t.h8300sn\n" : "\t.h8300s\n", asm_out_file);
 }
@@ -710,6 +1044,46 @@ general_operand_dst (rtx op, enum machine_mode mode)
       && GET_CODE (XEXP (op, 0)) == PRE_DEC)
     return 1;
   return general_operand (op, mode);
+}
+
+/* Return true if OP is a suitable first operand for a general arithmetic
+   insn such as "add".  */
+
+int
+h8300_dst_operand (rtx op, enum machine_mode mode)
+{
+  if (TARGET_H8300SX)
+    return nonimmediate_operand (op, mode);
+  return register_operand (op, mode);
+}
+
+/* Likewise the second operand.  */
+
+int
+h8300_src_operand (rtx op, enum machine_mode mode)
+{
+  if (TARGET_H8300SX)
+    return general_operand (op, mode);
+  return nonmemory_operand (op, mode);
+}
+
+/* Check that an operand is either a register or an unsigned 4-bit
+   constant.  */
+
+int
+nibble_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (GET_CODE (op) == CONST_INT && TARGET_H8300SX
+	  && INTVAL (op) >= 0 && INTVAL (op) <= 15);
+}
+
+/* Check that an operand is either a register or an unsigned 4-bit
+   constant.  */
+
+int
+reg_or_nibble_operand (rtx op, enum machine_mode mode)
+{
+  return (nibble_operand (op, mode) || register_operand (op, mode));
 }
 
 /* Return true if OP is a constant that contains only one 1 in its
@@ -769,6 +1143,9 @@ call_insn_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 two_insn_adds_subs_operand (rtx op, enum machine_mode mode)
 {
+  if (TARGET_H8300SX)
+    return 0;
+
   if (GET_CODE (op) == CONST_INT)
     {
       HOST_WIDE_INT value = INTVAL (op);
@@ -901,10 +1278,14 @@ jump_address_operand (rtx op, enum machine_mode mode)
 int
 bit_operand (rtx op, enum machine_mode mode)
 {
-  /* We can accept any general operand, except that MEM operands must
+  /* We can accept any nonimmediate operand, except that MEM operands must
      be limited to those that use addresses valid for the 'U' constraint.  */
-  if (!general_operand (op, mode))
+  if (!nonimmediate_operand (op, mode))
     return 0;
+
+  /* H8SX accepts pretty much anything here.  */
+  if (TARGET_H8300SX)
+    return 1;
 
   /* Accept any mem during RTL generation.  Otherwise, the code that does
      insv and extzv will think that we can not handle memory.  However,
@@ -917,7 +1298,7 @@ bit_operand (rtx op, enum machine_mode mode)
   if (GET_CODE (op) == SUBREG)
     return 1;
   return (GET_CODE (op) == MEM
-	  && EXTRA_CONSTRAINT (op, 'U'));
+	  && OK_FOR_U (op));
 }
 
 /* Return nonzero if OP is a MEM suitable for bit manipulation insns.  */
@@ -926,7 +1307,7 @@ int
 bit_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == MEM
-	  && EXTRA_CONSTRAINT (op, 'U'));
+	  && OK_FOR_U (op));
 }
 
 /* Handle machine specific pragmas for compatibility with existing
@@ -1038,7 +1419,7 @@ h8300_and_costs (rtx x)
     return 100;
 
   operands[0] = NULL;
-  operands[1] = NULL;
+  operands[1] = XEXP (x, 0);
   operands[2] = XEXP (x, 1);
   operands[3] = x;
   return compute_logical_op_length (GET_MODE (x), operands) / 2;
@@ -1068,12 +1449,35 @@ h8300_shift_costs (rtx x)
 static bool
 h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
+  if (TARGET_H8300SX && outer_code == MEM)
+    {
+      /* Estimate the number of execution states needed to calculate
+	 the address.  */
+      if (register_operand (x, VOIDmode)
+	  || GET_CODE (x) == POST_INC
+	  || GET_CODE (x) == POST_DEC
+	  || CONSTANT_P (x))
+	*total = 0;
+      else
+	*total = COSTS_N_INSNS (1);
+      return true;
+    }
+
   switch (code)
     {
     case CONST_INT:
       {
 	HOST_WIDE_INT n = INTVAL (x);
 
+	if (TARGET_H8300SX)
+	  {
+	    /* Constant operands need the same number of processor
+	       states as register operands.  Although we could try to
+	       use a size-based cost for optimize_size, the lack of
+	       of a mode makes the results very unpredictable.  */
+	    *total = 0;
+	    return true;
+	  }
 	if (-4 <= n || n <= 4)
 	  {
 	    switch ((int) n)
@@ -1103,6 +1507,12 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
+      if (TARGET_H8300SX)
+	{
+	  /* See comment for CONST_INT.  */
+	  *total = 0;
+	  return true;
+	}
       *total = 3;
       return true;
 
@@ -1111,6 +1521,9 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
       return true;
 
     case AND:
+      if (!h8300_dst_operand (XEXP (x, 0), VOIDmode)
+	  || !h8300_src_operand (XEXP (x, 1), VOIDmode))
+	return false;
       *total = COSTS_N_INSNS (h8300_and_costs (x));
       return true;
 
@@ -1118,16 +1531,58 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
        generate some really horrible code for division of a power of two.  */
     case MOD:
     case DIV:
-      *total = 60;
+    case UMOD:
+    case UDIV:
+      if (TARGET_H8300SX)
+	switch (GET_MODE (x))
+	  {
+	  case QImode:
+	  case HImode:
+	    *total = COSTS_N_INSNS (optimize_size ? 4 : 10);
+	    return false;
+
+	  case SImode:
+	    *total = COSTS_N_INSNS (optimize_size ? 4 : 18);
+	    return false;
+
+	  default:
+	    break;
+	  }
+      *total = COSTS_N_INSNS (12);
       return true;
 
     case MULT:
-      *total = 20;
+      if (TARGET_H8300SX)
+	switch (GET_MODE (x))
+	  {
+	  case QImode:
+	  case HImode:
+	    *total = COSTS_N_INSNS (2);
+	    return false;
+
+	  case SImode:
+	    *total = COSTS_N_INSNS (5);
+	    return false;
+
+	  default:
+	    break;
+	  }
+      *total = COSTS_N_INSNS (4);
       return true;
 
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
+      if (h8sx_binary_shift_operator (x, VOIDmode))
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return false;
+	}
+      else if (h8sx_unary_shift_operator (x, VOIDmode))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return false;
+	}
       *total = COSTS_N_INSNS (h8300_shift_costs (x));
       return true;
 
@@ -1140,8 +1595,8 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
       return true;
 
     default:
-      *total = 4;
-      return true;
+      *total = COSTS_N_INSNS (1);
+      return false;
     }
 }
 
@@ -1167,6 +1622,8 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
        then +2. if const then least sig word
    'j' print operand as condition code.
    'k' print operand as reverse condition code.
+   'm' convert an integer operand to a size suffix (.b, .w or .l)
+   'o' print an integer without a leading '#'
    's' print as low byte of 16 bit value
    't' print as high byte of 16 bit value
    'w' print as low byte of 32 bit value
@@ -1373,6 +1830,21 @@ print_operand (FILE *file, rtx x, int code)
     case 'k':
       fputs (cond_string (reverse_condition (GET_CODE (x))), file);
       break;
+    case 'm':
+      if (GET_CODE (x) != CONST_INT)
+	abort ();
+      if (INTVAL (x) == 1)
+	fputs (".b", file);
+      else if (INTVAL (x) == 2)
+	fputs (".w", file);
+      else if (INTVAL (x) == 4)
+	fputs (".l", file);
+      else
+	abort ();
+      break;
+    case 'o':
+      print_operand_address (file, x);
+      break;
     case 's':
       if (GET_CODE (x) == CONST_INT)
 	fprintf (file, "#%ld", (INTVAL (x)) & 0xff);
@@ -1445,32 +1917,41 @@ print_operand (FILE *file, rtx x, int code)
 	    fprintf (file, "@");
 	    output_address (addr);
 
-	    /* We fall back from smaller addressing to larger
-	       addressing in various ways depending on CODE.  */
-	    switch (code)
-	      {
-	      case 'R':
-		/* Used for mov.b and bit operations.  */
-		if (h8300_eightbit_constant_address_p (addr))
-		  {
-		    fprintf (file, ":8");
-		    break;
-		  }
+	    /* Add a length suffix to constant addresses.  Although this
+	       is often unnecessary, it helps to avoid ambiguity in the
+	       syntax of mova.  If we wrote an insn like:
 
-		/* Fall through.  We should not get here if we are
-		   processing bit operations on H8/300 or H8/300H
-		   because 'U' constraint does not allow bit
-		   operations on the tiny area on these machines.  */
+		    mova/w.l @(1,@foo.b),er0
 
-	      case 'T':
-	      case 'S':
-		/* Used for mov.w and mov.l.  */
-		if (h8300_tiny_constant_address_p (addr))
-		  fprintf (file, ":16");
-		break;
-	      default:
-		break;
-	      }
+	       then .b would be considered part of the symbol name.
+	       Adding a length after foo will avoid this.  */
+	    if (CONSTANT_P (addr))
+	      switch (code)
+		{
+		case 'R':
+		  /* Used for mov.b and bit operations.  */
+		  if (h8300_eightbit_constant_address_p (addr))
+		    {
+		      fprintf (file, ":8");
+		      break;
+		    }
+
+		  /* Fall through.  We should not get here if we are
+		     processing bit operations on H8/300 or H8/300H
+		     because 'U' constraint does not allow bit
+		     operations on the tiny area on these machines.  */
+
+		case 'X':
+		case 'T':
+		case 'S':
+		  if (h8300_constant_length (addr) == 2)
+		    fprintf (file, ":16");
+		  else
+		    fprintf (file, ":32");
+		  break;
+		default:
+		  break;
+		}
 	  }
 	  break;
 
@@ -1501,6 +1982,9 @@ print_operand (FILE *file, rtx x, int code)
 void
 print_operand_address (FILE *file, rtx addr)
 {
+  rtx index;
+  int size;
+
   switch (GET_CODE (addr))
     {
     case REG:
@@ -1515,14 +1999,45 @@ print_operand_address (FILE *file, rtx addr)
       fprintf (file, "%s+", h8_reg_names[REGNO (XEXP (addr, 0))]);
       break;
 
+    case PRE_INC:
+      fprintf (file, "+%s", h8_reg_names[REGNO (XEXP (addr, 0))]);
+      break;
+
+    case POST_DEC:
+      fprintf (file, "%s-", h8_reg_names[REGNO (XEXP (addr, 0))]);
+      break;
+
     case PLUS:
       fprintf (file, "(");
-      if (GET_CODE (XEXP (addr, 0)) == REG)
+
+      index = h8300_get_index (XEXP (addr, 0), VOIDmode, &size);
+      if (GET_CODE (index) == REG)
 	{
 	  /* reg,foo */
 	  print_operand_address (file, XEXP (addr, 1));
 	  fprintf (file, ",");
-	  print_operand_address (file, XEXP (addr, 0));
+	  switch (size)
+	    {
+	    case 0:
+	      print_operand_address (file, index);
+	      break;
+
+	    case 1:
+	      print_operand (file, index, 'X');
+	      fputs (".b", file);
+	      break;
+
+	    case 2:
+	      print_operand (file, index, 'T');
+	      fputs (".w", file);
+	      break;
+
+	    case 4:
+	      print_operand (file, index, 'S');
+	      fputs (".l", file);
+	      break;
+	    }
+	  /* print_operand_address (file, XEXP (addr, 0)); */
 	}
       else
 	{
@@ -1852,6 +2367,707 @@ bit_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 	  || code == IOR);
 }
 
+/* Given that X occurs in an address of the form (plus X constant),
+   return the part of X that is expected to be a register.  There are
+   four kinds of addressing mode to recognize:
+
+	@(dd,Rn)
+	@(dd,RnL.b)
+	@(dd,Rn.w)
+	@(dd,ERn.l)
+
+   If SIZE is nonnull, and the address is one of the last three forms,
+   set *SIZE to the index multiplication factor.  Set it to 0 for
+   plain @(dd,Rn) addresses.
+
+   MODE is the mode of the value being accessed.  It can be VOIDmode
+   if the address is known to be valid, but its mode is unknown.  */
+
+rtx
+h8300_get_index (rtx x, enum machine_mode mode, int *size)
+{
+  int dummy, factor;
+
+  if (size == 0)
+    size = &dummy;
+
+  factor = (mode == VOIDmode ? 0 : GET_MODE_SIZE (mode));
+  if (TARGET_H8300SX
+      && factor <= 4
+      && (mode == VOIDmode
+	  || GET_MODE_CLASS (mode) == MODE_INT
+	  || GET_MODE_CLASS (mode) == MODE_FLOAT))
+    {
+      if (factor <= 1 && GET_CODE (x) == ZERO_EXTEND)
+	{
+	  /* When accessing byte-sized values, the index can be
+	     a zero-extended QImode or HImode register.  */
+	  *size = GET_MODE_SIZE (GET_MODE (XEXP (x, 0)));
+	  return XEXP (x, 0);
+	}
+      else
+	{
+	  /* We're looking for addresses of the form:
+
+		 (mult X I)
+	      or (mult (zero_extend X) I)
+
+	     where I is the size of the operand being accessed.
+	     The canonical form of the second expression is:
+
+		 (and (mult (subreg X) I) J)
+
+	     where J == GET_MODE_MASK (GET_MODE (X)) * I.  */
+	  rtx index;
+
+	  if (GET_CODE (x) == AND
+	      && GET_CODE (XEXP (x, 1)) == CONST_INT
+	      && (factor == 0
+		  || INTVAL (XEXP (x, 1)) == 0xff * factor
+		  || INTVAL (XEXP (x, 1)) == 0xffff * factor))
+	    {
+	      index = XEXP (x, 0);
+	      *size = (INTVAL (XEXP (x, 1)) >= 0xffff ? 2 : 1);
+	    }
+	  else
+	    {
+	      index = x;
+	      *size = 4;
+	    }
+
+	  if (GET_CODE (index) == MULT
+	      && GET_CODE (XEXP (index, 1)) == CONST_INT
+	      && (factor == 0 || factor == INTVAL (XEXP (index, 1))))
+	    return XEXP (index, 0);
+	}
+    }
+  *size = 0;
+  return x;
+}
+
+static const h8300_length_table addb_length_table =
+{
+  /* #xx  Rs   @aa  @Rs  @xx  */
+  {  2,   2,   4,   4,   4  }, /* add.b xx,Rd  */
+  {  4,   4,   4,   4,   6  }, /* add.b xx,@aa */
+  {  4,   4,   4,   4,   6  }, /* add.b xx,@Rd */
+  {  6,   4,   4,   4,   6  }  /* add.b xx,@xx */
+};
+
+static const h8300_length_table addw_length_table =
+{
+  /* #xx  Rs   @aa  @Rs  @xx  */
+  {  2,   2,   4,   4,   4  }, /* add.w xx,Rd  */
+  {  4,   4,   4,   4,   6  }, /* add.w xx,@aa */
+  {  4,   4,   4,   4,   6  }, /* add.w xx,@Rd */
+  {  4,   4,   4,   4,   6  }  /* add.w xx,@xx */
+};
+
+static const h8300_length_table addl_length_table =
+{
+  /* #xx  Rs   @aa  @Rs  @xx  */
+  {  2,   2,   4,   4,   4  }, /* add.l xx,Rd  */
+  {  4,   4,   6,   6,   6  }, /* add.l xx,@aa */
+  {  4,   4,   6,   6,   6  }, /* add.l xx,@Rd */
+  {  4,   4,   6,   6,   6  }  /* add.l xx,@xx */
+};
+
+#define logicb_length_table addb_length_table
+#define logicw_length_table addw_length_table
+
+static const h8300_length_table logicl_length_table =
+{
+  /* #xx  Rs   @aa  @Rs  @xx  */
+  {  2,   4,   4,   4,   4  }, /* and.l xx,Rd  */
+  {  4,   4,   6,   6,   6  }, /* and.l xx,@aa */
+  {  4,   4,   6,   6,   6  }, /* and.l xx,@Rd */
+  {  4,   4,   6,   6,   6  }  /* and.l xx,@xx */
+};
+
+static const h8300_length_table movb_length_table =
+{
+  /* #xx  Rs   @aa  @Rs  @xx  */
+  {  2,   2,   2,   2,   4  }, /* mov.b xx,Rd  */
+  {  4,   2,   4,   4,   4  }, /* mov.b xx,@aa */
+  {  4,   2,   4,   4,   4  }, /* mov.b xx,@Rd */
+  {  4,   4,   4,   4,   4  }  /* mov.b xx,@xx */
+};
+
+#define movw_length_table movb_length_table
+
+static const h8300_length_table movl_length_table =
+{
+  /* #xx  Rs   @aa  @Rs  @xx  */
+  {  2,   2,   4,   4,   4  }, /* mov.l xx,Rd  */
+  {  4,   4,   4,   4,   4  }, /* mov.l xx,@aa */
+  {  4,   4,   4,   4,   4  }, /* mov.l xx,@Rd */
+  {  4,   4,   4,   4,   4  }  /* mov.l xx,@xx */
+};
+
+/* Return the size of the given address or displacement constant.  */
+
+static unsigned int
+h8300_constant_length (rtx constant)
+{
+  /* Check for (@d:16,Reg).  */
+  if (GET_CODE (constant) == CONST_INT
+      && IN_RANGE (INTVAL (constant), -0x8000, 0x7fff))
+    return 2;
+
+  /* Check for (@d:16,Reg) in cases where the displacement is
+     an absolute address.  */
+  if (Pmode == HImode || h8300_tiny_constant_address_p (constant))
+    return 2;
+
+  return 4;
+}
+
+/* Return the size of a displacement field in address ADDR, which should
+   have the form (plus X constant).  SIZE is the number of bytes being
+   accessed.  */
+
+static unsigned int
+h8300_displacement_length (rtx addr, int size)
+{
+  rtx offset;
+
+  offset = XEXP (addr, 1);
+
+  /* Check for @(d:2,Reg).  */
+  if (register_operand (XEXP (addr, 0), VOIDmode)
+      && GET_CODE (offset) == CONST_INT
+      && (INTVAL (offset) == size
+	  || INTVAL (offset) == size * 2
+	  || INTVAL (offset) == size * 3))
+    return 0;
+
+  return h8300_constant_length (offset);
+}
+
+/* Store the class of operand OP in *CLASS and return the length of any
+   extra operand fields.  SIZE is the number of bytes in OP.  CLASS
+   can be null if only the length is needed.  */
+
+static unsigned int
+h8300_classify_operand (rtx op, int size, enum h8300_operand_class *class)
+{
+  enum h8300_operand_class dummy;
+
+  if (class == 0)
+    class = &dummy;
+
+  if (CONSTANT_P (op))
+    {
+      *class = H8OP_IMMEDIATE;
+
+      /* Byte-sized immediates are stored in the opcode fields.  */
+      if (size == 1)
+	return 0;
+
+      /* If this is a 32-bit instruction, see whether the constant
+	 will fit into a 16-bit immediate field.  */
+      if (TARGET_H8300SX
+	  && size == 4
+	  && GET_CODE (op) == CONST_INT
+	  && IN_RANGE (INTVAL (op), 0, 0xffff))
+	return 2;
+
+      return size;
+    }
+  else if (GET_CODE (op) == MEM)
+    {
+      op = XEXP (op, 0);
+      if (CONSTANT_P (op))
+	{
+	  *class = H8OP_MEM_ABSOLUTE;
+	  return h8300_constant_length (op);
+	}
+      else if (GET_CODE (op) == PLUS && CONSTANT_P (XEXP (op, 1)))
+	{
+	  *class = H8OP_MEM_COMPLEX;
+	  return h8300_displacement_length (op, size);
+	}
+      else if (GET_RTX_CLASS (GET_CODE (op)) == RTX_AUTOINC)
+	{
+	  *class = H8OP_MEM_COMPLEX;
+	  return 0;
+	}
+      else if (register_operand (op, VOIDmode))
+	{
+	  *class = H8OP_MEM_BASE;
+	  return 0;
+	}
+    }
+  else if (register_operand (op, VOIDmode))
+    {
+      *class = H8OP_REGISTER;
+      return 0;
+    }
+  abort ();
+}
+
+/* Return the length of the instruction described by TABLE given that
+   its operands are OP1 and OP2.  OP1 must be an h8300_dst_operand
+   and OP2 must be an h8300_src_operand.  */
+
+static unsigned int
+h8300_length_from_table (rtx op1, rtx op2, const h8300_length_table *table)
+{
+  enum h8300_operand_class op1_class, op2_class;
+  unsigned int size, immediate_length;
+
+  size = GET_MODE_SIZE (GET_MODE (op1));
+  immediate_length = (h8300_classify_operand (op1, size, &op1_class)
+		      + h8300_classify_operand (op2, size, &op2_class));
+  return immediate_length + (*table)[op1_class - 1][op2_class];
+}
+
+/* Return the length of a unary instruction such as neg or not given that
+   its operand is OP.  */
+
+unsigned int
+h8300_unary_length (rtx op)
+{
+  enum h8300_operand_class class;
+  unsigned int size, operand_length;
+
+  size = GET_MODE_SIZE (GET_MODE (op));
+  operand_length = h8300_classify_operand (op, size, &class);
+  switch (class)
+    {
+    case H8OP_REGISTER:
+      return 2;
+
+    case H8OP_MEM_BASE:
+      return (size == 4 ? 6 : 4);
+
+    case H8OP_MEM_ABSOLUTE:
+      return operand_length + (size == 4 ? 6 : 4);
+
+    case H8OP_MEM_COMPLEX:
+      return operand_length + 6;
+
+    default:
+      abort ();
+    }
+}
+
+/* Likewise short immediate instructions such as add.w #xx:3,OP.  */
+
+static unsigned int
+h8300_short_immediate_length (rtx op)
+{
+  enum h8300_operand_class class;
+  unsigned int size, operand_length;
+
+  size = GET_MODE_SIZE (GET_MODE (op));
+  operand_length = h8300_classify_operand (op, size, &class);
+
+  switch (class)
+    {
+    case H8OP_REGISTER:
+      return 2;
+
+    case H8OP_MEM_BASE:
+    case H8OP_MEM_ABSOLUTE:
+    case H8OP_MEM_COMPLEX:
+      return 4 + operand_length;
+
+    default:
+      abort ();
+    }
+}
+
+/* Likewise bitfield load and store instructions.  */
+
+static unsigned int
+h8300_bitfield_length (rtx op, rtx op2)
+{
+  enum h8300_operand_class class;
+  unsigned int size, operand_length;
+
+  if (GET_CODE (op) == REG)
+    op = op2;
+  if (GET_CODE (op) == REG)
+    abort ();
+  
+  size = GET_MODE_SIZE (GET_MODE (op));
+  operand_length = h8300_classify_operand (op, size, &class);
+
+  switch (class)
+    {
+    case H8OP_MEM_BASE:
+    case H8OP_MEM_ABSOLUTE:
+    case H8OP_MEM_COMPLEX:
+      return 4 + operand_length;
+
+    default:
+      abort ();
+    }
+}
+
+/* Calculate the length of general binary instruction INSN using TABLE.  */
+
+static unsigned int
+h8300_binary_length (rtx insn, const h8300_length_table *table)
+{
+  rtx set;
+
+  set = single_set (insn);
+  if (set == 0)
+    abort ();
+
+  if (BINARY_P (SET_SRC (set)))
+    return h8300_length_from_table (XEXP (SET_SRC (set), 0),
+				    XEXP (SET_SRC (set), 1), table);
+  else if (GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == RTX_TERNARY)
+    return h8300_length_from_table (XEXP (XEXP (SET_SRC (set), 1), 0),
+				    XEXP (XEXP (SET_SRC (set), 1), 1),
+				    table);
+  else
+    abort ();
+}
+
+/* Subroutine of h8300_move_length.  Return true if OP is 1- or 2-byte
+   memory reference and either (1) it has the form @(d:16,Rn) or
+   (2) its address has the code given by INC_CODE.  */
+
+static bool
+h8300_short_move_mem_p (rtx op, enum rtx_code inc_code)
+{
+  rtx addr;
+  unsigned int size;
+
+  if (GET_CODE (op) != MEM)
+    return false;
+
+  addr = XEXP (op, 0);
+  size = GET_MODE_SIZE (GET_MODE (op));
+  if (size != 1 && size != 2)
+    return false;
+
+  return (GET_CODE (addr) == inc_code
+	  || (GET_CODE (addr) == PLUS
+	      && GET_CODE (XEXP (addr, 0)) == REG
+	      && h8300_displacement_length (addr, size) == 2));
+}
+
+/* Calculate the length of move instruction INSN using the given length
+   table.  Although the tables are correct for most cases, there is some
+   irregularity in the length of mov.b and mov.w.  The following forms:
+
+	mov @ERs+, Rd
+	mov @(d:16,ERs), Rd
+	mov Rs, @-ERd
+	mov Rs, @(d:16,ERd)
+
+   are two bytes shorter than most other "mov Rs, @complex" or
+   "mov @complex,Rd" combinations.  */
+
+static unsigned int
+h8300_move_length (rtx *operands, const h8300_length_table *table)
+{
+  unsigned int size;
+
+  size = h8300_length_from_table (operands[0], operands[1], table);
+  if (REG_P (operands[0]) && h8300_short_move_mem_p (operands[1], POST_INC))
+    size -= 2;
+  if (REG_P (operands[1]) && h8300_short_move_mem_p (operands[0], PRE_DEC))
+    size -= 2;
+  return size;
+}
+
+/* Return the length of a mova instruction with the given operands.
+   DEST is the register destination, SRC is the source address and
+   OFFSET is the 16-bit or 32-bit displacement.  */
+
+static unsigned int
+h8300_mova_length (rtx dest, rtx src, rtx offset)
+{
+  unsigned int size;
+
+  size = (2
+	  + h8300_constant_length (offset)
+	  + h8300_classify_operand (src, GET_MODE_SIZE (GET_MODE (src)), 0));
+  if (!REG_P (dest) || !REG_P (src) || REGNO (src) != REGNO (dest))
+    size += 2;
+  return size;
+}
+
+/* Compute the length of INSN based on its length_table attribute.
+   OPERANDS is the array of its operands.  */
+
+unsigned int
+h8300_insn_length_from_table (rtx insn, rtx * operands)
+{
+  switch (get_attr_length_table (insn))
+    {
+    case LENGTH_TABLE_NONE:
+      abort ();
+
+    case LENGTH_TABLE_ADDB:
+      return h8300_binary_length (insn, &addb_length_table);
+
+    case LENGTH_TABLE_ADDW:
+      return h8300_binary_length (insn, &addw_length_table);
+
+    case LENGTH_TABLE_ADDL:
+      return h8300_binary_length (insn, &addl_length_table);
+
+    case LENGTH_TABLE_LOGICB:
+      return h8300_binary_length (insn, &logicb_length_table);
+
+    case LENGTH_TABLE_MOVB:
+      return h8300_move_length (operands, &movb_length_table);
+
+    case LENGTH_TABLE_MOVW:
+      return h8300_move_length (operands, &movw_length_table);
+
+    case LENGTH_TABLE_MOVL:
+      return h8300_move_length (operands, &movl_length_table);
+
+    case LENGTH_TABLE_MOVA:
+      return h8300_mova_length (operands[0], operands[1], operands[2]);
+
+    case LENGTH_TABLE_MOVA_ZERO:
+      return h8300_mova_length (operands[0], operands[1], const0_rtx);
+
+    case LENGTH_TABLE_UNARY:
+      return h8300_unary_length (operands[0]);
+
+    case LENGTH_TABLE_MOV_IMM4:
+      return 2 + h8300_classify_operand (operands[0], 0, 0);
+
+    case LENGTH_TABLE_SHORT_IMMEDIATE:
+      return h8300_short_immediate_length (operands[0]);
+
+    case LENGTH_TABLE_BITFIELD:
+      return h8300_bitfield_length (operands[0], operands[1]);
+      
+    case LENGTH_TABLE_BITBRANCH:
+      return h8300_bitfield_length (operands[1], operands[2]) - 2;
+      
+    }
+  abort ();
+}
+
+/* Return true if LHS and RHS are memory references that can be mapped
+   to the same h8sx assembly operand.  LHS appears as the destination of
+   an instruction and RHS appears as a source.
+
+   Three cases are allowed:
+
+	- RHS is @+Rn or @-Rn, LHS is @Rn
+	- RHS is @Rn, LHS is @Rn+ or @Rn-
+	- RHS and LHS have the same address and neither has side effects.  */
+
+bool
+h8sx_mergeable_memrefs_p (rtx lhs, rtx rhs)
+{
+  if (GET_CODE (rhs) == MEM && GET_CODE (lhs) == MEM)
+    {
+      rhs = XEXP (rhs, 0);
+      lhs = XEXP (lhs, 0);
+
+      if (GET_CODE (rhs) == PRE_INC || GET_CODE (rhs) == PRE_DEC)
+	return rtx_equal_p (XEXP (rhs, 0), lhs);
+
+      if (GET_CODE (lhs) == POST_INC || GET_CODE (lhs) == POST_DEC)
+	return rtx_equal_p (rhs, XEXP (lhs, 0));
+
+      if (rtx_equal_p (rhs, lhs))
+	return true;
+    }
+  return false;
+}
+
+/* Return true if OPERANDS[1] can be mapped to the same assembly
+   operand as OPERANDS[0].  */
+
+bool
+h8300_operands_match_p (rtx *operands)
+{
+  if (register_operand (operands[0], VOIDmode)
+      && register_operand (operands[1], VOIDmode))
+    return true;
+
+  if (h8sx_mergeable_memrefs_p (operands[0], operands[1]))
+    return true;
+
+  return false;
+}
+
+/* Return true if OP is a binary operator in which it would be safe to
+   replace register operands with memory operands.  */
+
+int
+h8sx_binary_memory_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  if (!TARGET_H8300SX)
+    return false;
+
+  if (GET_MODE (op) != QImode
+      && GET_MODE (op) != HImode
+      && GET_MODE (op) != SImode)
+    return false;
+
+  switch (GET_CODE (op))
+    {
+    case PLUS:
+    case MINUS:
+    case AND:
+    case IOR:
+    case XOR:
+      return true;
+
+    default:
+      return h8sx_unary_shift_operator (op, mode);
+    }
+}
+
+/* Like h8sx_binary_memory_operator, but applies to unary operators.  */
+
+int
+h8sx_unary_memory_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  if (!TARGET_H8300SX)
+    return false;
+
+  if (GET_MODE (op) != QImode
+      && GET_MODE (op) != HImode
+      && GET_MODE (op) != SImode)
+    return false;
+
+  switch (GET_CODE (op))
+    {
+    case NEG:
+    case NOT:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Try using movmd to move LENGTH bytes from memory region SRC to memory
+   region DEST.  The two regions do not overlap and have the common
+   alignment given by ALIGNMENT.  Return true on success.
+
+   Using movmd for variable-length moves seems to involve some
+   complex trade-offs.  For instance:
+
+      - Preparing for a movmd instruction is similar to preparing
+	for a memcpy.  The main difference is that the arguments
+	are moved into er4, er5 and er6 rather than er0, er1 and er2.
+
+      - Since movmd clobbers the frame pointer, we need to save
+	and restore it somehow when frame_pointer_needed.  This can
+	sometimes make movmd sequences longer than calls to memcpy().
+
+      - The counter register is 16 bits, so the instruction is only
+	suitable for variable-length moves when sizeof (size_t) == 2.
+	That's only true in normal mode.
+
+      - We will often lack static alignment information.  Falling back
+	on movmd.b would likely be slower than calling memcpy(), at least
+	for big moves.
+
+   This function therefore only uses movmd when the length is a
+   known constant, and only then if -fomit-frame-pointer is in
+   effect or if we're not optimizing for size.
+
+   At the moment the function uses movmd for all in-range constants,
+   but it might be better to fall back on memcpy() for large moves
+   if ALIGNMENT == 1.  */
+
+bool
+h8sx_emit_movmd (rtx dest, rtx src, rtx length,
+		 HOST_WIDE_INT alignment)
+{
+  if (!flag_omit_frame_pointer && optimize_size)
+    return false;
+
+  if (GET_CODE (length) == CONST_INT)
+    {
+      rtx dest_reg, src_reg, first_dest, first_src;
+      HOST_WIDE_INT n;
+      int factor;
+
+      /* Use movmd.l if the alignment allows it, otherwise fall back
+	 on movmd.b.  */
+      factor = (alignment >= 2 ? 4 : 1);
+
+      /* Make sure the length is within range.  We can handle counter
+	 values up to 65536, although HImode truncation will make
+	 the count appear negative in rtl dumps.  */
+      n = INTVAL (length);
+      if (n <= 0 || n / factor > 65536)
+	return false;
+
+      /* Create temporary registers for the source and destination
+	 pointers.  Initialize them to the start of each region.  */
+      dest_reg = copy_addr_to_reg (XEXP (dest, 0));
+      src_reg = copy_addr_to_reg (XEXP (src, 0));
+
+      /* Create references to the movmd source and destination blocks.  */
+      first_dest = replace_equiv_address (dest, dest_reg);
+      first_src = replace_equiv_address (src, src_reg);
+
+      set_mem_size (first_dest, GEN_INT (n & -factor));
+      set_mem_size (first_src, GEN_INT (n & -factor));
+
+      length = copy_to_mode_reg (HImode, gen_int_mode (n / factor, HImode));
+      emit_insn (gen_movmd (first_dest, first_src, length, GEN_INT (factor)));
+
+      if ((n & -factor) != n)
+	{
+	  /* Move SRC and DEST past the region we just copied.
+	     This is done to update the memory attributes.  */
+	  dest = adjust_address (dest, BLKmode, n & -factor);
+	  src = adjust_address (src, BLKmode, n & -factor);
+
+	  /* Replace the addresses with the source and destination
+	     registers, which movmd has left with the right values.  */
+	  dest = replace_equiv_address (dest, dest_reg);
+	  src = replace_equiv_address (src, src_reg);
+
+	  /* Mop up the left-over bytes.  */
+	  if (n & 2)
+	    emit_move_insn (adjust_address (dest, HImode, 0),
+			    adjust_address (src, HImode, 0));
+	  if (n & 1)
+	    emit_move_insn (adjust_address (dest, QImode, n & 2),
+			    adjust_address (src, QImode, n & 2));
+	}
+      return true;
+    }
+  return false;
+}
+
+/* Move ADDR into er6 after pushing its old value onto the stack.  */
+
+void
+h8300_swap_into_er6 (rtx addr)
+{
+  push (HARD_FRAME_POINTER_REGNUM);
+  emit_move_insn (hard_frame_pointer_rtx, addr);
+  if (REGNO (addr) == SP_REG)
+    emit_move_insn (hard_frame_pointer_rtx,
+		    plus_constant (hard_frame_pointer_rtx,
+				   GET_MODE_SIZE (word_mode)));
+}
+
+/* Move the current value of er6 into ADDR and pop its old value
+   from the stack.  */
+
+void
+h8300_swap_out_of_er6 (rtx addr)
+{
+  if (REGNO (addr) != SP_REG)
+    emit_move_insn (addr, hard_frame_pointer_rtx);
+  pop (HARD_FRAME_POINTER_REGNUM);
+}
+
 /* Return the length of mov instruction.  */
 
 unsigned int
@@ -2137,12 +3353,15 @@ output_plussi (rtx *operands)
     }
   else
     {
-      if (GET_CODE (operands[2]) == REG)
-	return "add.l\t%S2,%S0";
-
-      if (GET_CODE (operands[2]) == CONST_INT)
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && register_operand (operands[1], VOIDmode))
 	{
 	  HOST_WIDE_INT intval = INTVAL (operands[2]);
+
+	  if (TARGET_H8300SX && (intval >= 1 && intval <= 7))
+	    return "add.l\t%S2,%S0";
+	  if (TARGET_H8300SX && (intval >= -7 && intval <= -1))
+	    return "sub.l\t%G2,%S0";
 
 	  /* See if we can finish with 2 bytes.  */
 
@@ -2177,10 +3396,17 @@ output_plussi (rtx *operands)
 	    }
 	}
 
+      if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
+	{
+	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  return "sub.l\t%S2,%S0";
+	}
       return "add.l\t%S2,%S0";
     }
 }
 
+/* ??? It would be much easier to add the h8sx stuff if a single function
+   classified the addition as either inc/dec, adds/subs, add.w or add.l.  */
 /* Compute the length of an addition insn.  */
 
 unsigned int
@@ -2212,12 +3438,15 @@ compute_plussi_length (rtx *operands)
     }
   else
     {
-      if (GET_CODE (operands[2]) == REG)
-	return 2;
-
-      if (GET_CODE (operands[2]) == CONST_INT)
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && register_operand (operands[1], VOIDmode))
 	{
 	  HOST_WIDE_INT intval = INTVAL (operands[2]);
+
+	  if (TARGET_H8300SX && (intval >= 1 && intval <= 7))
+	    return 2;
+	  if (TARGET_H8300SX && (intval >= -7 && intval <= -1))
+	    return 2;
 
 	  /* See if we can finish with 2 bytes.  */
 
@@ -2247,6 +3476,13 @@ compute_plussi_length (rtx *operands)
 	    return 4;
 	}
 
+      if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
+	return h8300_length_from_table (operands[0],
+					GEN_INT (-INTVAL (operands[2])),
+					&addl_length_table);
+      else
+	return h8300_length_from_table (operands[0], operands[2],
+					&addl_length_table);
       return 6;
     }
 }
@@ -2267,12 +3503,15 @@ compute_plussi_cc (rtx *operands)
     }
   else
     {
-      if (GET_CODE (operands[2]) == REG)
-	return CC_SET_ZN;
-
-      if (GET_CODE (operands[2]) == CONST_INT)
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && register_operand (operands[1], VOIDmode))
 	{
 	  HOST_WIDE_INT intval = INTVAL (operands[2]);
+
+	  if (TARGET_H8300SX && (intval >= 1 && intval <= 7))
+	    return CC_SET_ZN;
+	  if (TARGET_H8300SX && (intval >= -7 && intval <= -1))
+	    return CC_SET_ZN;
 
 	  /* See if we can finish with 2 bytes.  */
 
@@ -2316,6 +3555,11 @@ output_logical_op (enum machine_mode mode, rtx *operands)
   /* Pretend that every byte is affected if both operands are registers.  */
   const unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
+			      /* Always use the full instruction if the
+				 first operand is in memory.  It is better
+				 to use define_splits to generate the shorter
+				 sequence where valid.  */
+			      && register_operand (operands[1], VOIDmode)
 			      ? INTVAL (operands[2]) : 0x55555555);
   /* The determinant of the algorithm.  If we perform an AND, 0
      affects a bit.  Otherwise, 1 affects a bit.  */
@@ -2492,6 +3736,11 @@ compute_logical_op_length (enum machine_mode mode, rtx *operands)
   /* Pretend that every byte is affected if both operands are registers.  */
   const unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
+			      /* Always use the full instruction if the
+				 first operand is in memory.  It is better
+				 to use define_splits to generate the shorter
+				 sequence where valid.  */
+			      && register_operand (operands[1], VOIDmode)
 			      ? INTVAL (operands[2]) : 0x55555555);
   /* The determinant of the algorithm.  If we perform an AND, 0
      affects a bit.  Otherwise, 1 affects a bit.  */
@@ -2516,10 +3765,8 @@ compute_logical_op_length (enum machine_mode mode, rtx *operands)
 	  && b0 != 0
 	  && b1 != 0)
 	{
-	  if (REG_P (operands[2]))
-	    length += 2;
-	  else
-	    length += 4;
+	  length = h8300_length_from_table (operands[1], operands[2],
+					    &logicw_length_table);
 	}
       else
 	{
@@ -2555,10 +3802,8 @@ compute_logical_op_length (enum machine_mode mode, rtx *operands)
 	  && !(code == IOR && w1 == 0xffff
 	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
 	{
-	  if (REG_P (operands[2]))
-	    length += 4;
-	  else
-	    length += 6;
+	  length = h8300_length_from_table (operands[1], operands[2],
+					    &logicl_length_table);
 	}
       else
 	{
@@ -2637,6 +3882,11 @@ compute_logical_op_cc (enum machine_mode mode, rtx *operands)
   /* Pretend that every byte is affected if both operands are registers.  */
   const unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
+			      /* Always use the full instruction if the
+				 first operand is in memory.  It is better
+				 to use define_splits to generate the shorter
+				 sequence where valid.  */
+			      && register_operand (operands[1], VOIDmode)
 			      ? INTVAL (operands[2]) : 0x55555555);
   /* The determinant of the algorithm.  If we perform an AND, 0
      affects a bit.  Otherwise, 1 affects a bit.  */
@@ -2754,6 +4004,117 @@ h8300_expand_branch (enum rtx_code code, rtx label)
    For the details of the shift algorithms for various shift counts,
    refer to shift_alg_[qhs]i.  */
 
+/* Classify a shift with the given mode and code.  OP is the shift amount.  */
+
+enum h8sx_shift_type
+h8sx_classify_shift (enum machine_mode mode, enum rtx_code code, rtx op)
+{
+  if (!TARGET_H8300SX)
+    return H8SX_SHIFT_NONE;
+
+  switch (code)
+    {
+    case ASHIFT:
+    case LSHIFTRT:
+      /* Check for variable shifts (shll Rs,Rd and shlr Rs,Rd).  */
+      if (GET_CODE (op) != CONST_INT)
+	return H8SX_SHIFT_BINARY;
+
+      /* Reject out-of-range shift amounts.  */
+      if (INTVAL (op) <= 0 || INTVAL (op) >= GET_MODE_BITSIZE (mode))
+	return H8SX_SHIFT_NONE;
+
+      /* Power-of-2 shifts are effectively unary operations.  */
+      if (exact_log2 (INTVAL (op)) >= 0)
+	return H8SX_SHIFT_UNARY;
+
+      return H8SX_SHIFT_BINARY;
+
+    case ASHIFTRT:
+      if (op == const1_rtx || op == const2_rtx)
+	return H8SX_SHIFT_UNARY;
+      return H8SX_SHIFT_NONE;
+
+    case ROTATE:
+      if (GET_CODE (op) == CONST_INT
+	  && (INTVAL (op) == 1
+	      || INTVAL (op) == 2
+	      || INTVAL (op) == GET_MODE_BITSIZE (mode) - 2
+	      || INTVAL (op) == GET_MODE_BITSIZE (mode) - 1))
+	return H8SX_SHIFT_UNARY;
+      return H8SX_SHIFT_NONE;
+
+    default:
+      return H8SX_SHIFT_NONE;
+    }
+}
+
+/* Return true if X is a shift operation of type H8SX_SHIFT_UNARY.  */
+
+int
+h8sx_unary_shift_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (BINARY_P (x) && NON_COMMUTATIVE_P (x)
+	  && (h8sx_classify_shift (GET_MODE (x), GET_CODE (x), XEXP (x, 1))
+	      == H8SX_SHIFT_UNARY));
+}
+
+/* Likewise H8SX_SHIFT_BINARY.  */
+
+int
+h8sx_binary_shift_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (BINARY_P (x) && NON_COMMUTATIVE_P (x)
+	  && (h8sx_classify_shift (GET_MODE (x), GET_CODE (x), XEXP (x, 1))
+	      == H8SX_SHIFT_BINARY));
+}
+
+/* Return the asm template for a single h8sx shift instruction.
+   OPERANDS[0] and OPERANDS[1] are the destination, OPERANDS[2]
+   is the source and OPERANDS[3] is the shift.  SUFFIX is the
+   size suffix ('b', 'w' or 'l') and OPTYPE is the print_operand
+   prefix for the destination operand.  */
+
+const char *
+output_h8sx_shift (rtx *operands, int suffix, int optype)
+{
+  static char buffer[16];
+  const char *stem;
+
+  switch (GET_CODE (operands[3]))
+    {
+    case ASHIFT:
+      stem = "shll";
+      break;
+
+    case ASHIFTRT:
+      stem = "shar";
+      break;
+
+    case LSHIFTRT:
+      stem = "shlr";
+      break;
+
+    case ROTATE:
+      stem = "rotl";
+      if (INTVAL (operands[2]) > 2)
+	{
+	  /* This is really a right rotate.  */
+	  operands[2] = GEN_INT (GET_MODE_BITSIZE (GET_MODE (operands[0]))
+				 - INTVAL (operands[2]));
+	  stem = "rotr";
+	}
+      break;
+
+    default:
+      abort ();
+    }
+  if (operands[2] == const1_rtx)
+    sprintf (buffer, "%s.%c\t%%%c0", stem, suffix, optype);
+  else
+    sprintf (buffer, "%s.%c\t%%X2,%%%c0", stem, suffix, optype);
+  return buffer;
+}
 int
 nshift_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
@@ -2771,9 +4132,22 @@ nshift_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 
 /* Emit code to do shifts.  */
 
-void
+bool
 expand_a_shift (enum machine_mode mode, int code, rtx operands[])
 {
+  switch (h8sx_classify_shift (mode, code, operands[2]))
+    {
+    case H8SX_SHIFT_BINARY:
+      operands[1] = force_reg (mode, operands[1]);
+      return false;
+
+    case H8SX_SHIFT_UNARY:
+      return false;
+
+    case H8SX_SHIFT_NONE:
+      break;
+    }
+
   emit_move_insn (operands[0], operands[1]);
 
   /* Need a loop to get all the bits we want  - we generate the
@@ -2787,6 +4161,7 @@ expand_a_shift (enum machine_mode mode, int code, rtx operands[])
 						      operands[0], operands[2])),
 			 gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_SCRATCH (QImode)))));
+  return true;
 }
 
 /* Symbols of the various modes which can be used as indices.  */
@@ -3911,6 +5286,9 @@ expand_a_rotate (rtx operands[])
   rtx rotate_amount = operands[2];
   enum machine_mode mode = GET_MODE (dst);
 
+  if (h8sx_classify_shift (mode, ROTATE, rotate_amount) == H8SX_SHIFT_UNARY)
+    return false;
+
   /* We rotate in place.  */
   emit_move_insn (dst, src);
 
@@ -4155,7 +5533,7 @@ fix_bit_operand (rtx *operands, enum rtx_code code)
     {
       /* OK to have a memory dest.  */
       if (GET_CODE (operands[0]) == MEM
-	  && !EXTRA_CONSTRAINT (operands[0], 'U'))
+	  && !OK_FOR_U (operands[0]))
 	{
 	  rtx mem = gen_rtx_MEM (GET_MODE (operands[0]),
 				 copy_to_mode_reg (Pmode,
@@ -4165,7 +5543,7 @@ fix_bit_operand (rtx *operands, enum rtx_code code)
 	}
 
       if (GET_CODE (operands[1]) == MEM
-	  && !EXTRA_CONSTRAINT (operands[1], 'U'))
+	  && !OK_FOR_U (operands[1]))
 	{
 	  rtx mem = gen_rtx_MEM (GET_MODE (operands[1]),
 				 copy_to_mode_reg (Pmode,
@@ -4498,6 +5876,17 @@ output_simode_bld (int bild, rtx operands[])
   return "";
 }
 
+/* Delayed-branch scheduling is more effective if we have some idea
+   how long each instruction will be.  Use a shorten_branches pass
+   to get an initial estimate.  */
+
+static void
+h8300_reorg (void)
+{
+  if (flag_delayed_branch)
+    shorten_branches (get_insns ());
+}
+
 #ifndef OBJECT_FORMAT_ELF
 static void
 h8300_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
@@ -4746,7 +6135,7 @@ h8300_rtx_ok_for_base_p (rtx x, int strict)
    CONSTANT_ADDRESS.  */
 
 int
-h8300_legitimate_address_p (rtx x, int strict)
+h8300_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
 {
   /* The register indirect addresses like @er0 is always valid.  */
   if (h8300_rtx_ok_for_base_p (x, strict))
@@ -4755,9 +6144,18 @@ h8300_legitimate_address_p (rtx x, int strict)
   if (CONSTANT_ADDRESS_P (x))
     return 1;
 
+  if (TARGET_H8300SX
+      && (   GET_CODE (x) == PRE_INC
+	  || GET_CODE (x) == PRE_DEC
+	  || GET_CODE (x) == POST_INC
+	  || GET_CODE (x) == POST_DEC)
+      && h8300_rtx_ok_for_base_p (XEXP (x, 0), strict))
+    return 1;
+
   if (GET_CODE (x) == PLUS
       && CONSTANT_ADDRESS_P (XEXP (x, 1))
-      && h8300_rtx_ok_for_base_p (XEXP (x, 0), strict))
+      && h8300_rtx_ok_for_base_p (h8300_get_index (XEXP (x, 0),
+						   mode, 0), strict))
     return 1;
 
   return 0;
@@ -4838,5 +6236,8 @@ h8300_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY h8300_return_in_memory
+
+#undef  TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG h8300_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;

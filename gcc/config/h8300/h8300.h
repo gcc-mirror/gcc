@@ -51,6 +51,14 @@ extern const char * const *h8_reg_names;
 	      builtin_define ("__NORMAL_MODE__");	\
 	    }						\
 	}						\
+      else if (TARGET_H8300SX)				\
+	{						\
+	  builtin_define ("__H8300SX__");		\
+	  if (TARGET_NORMAL_MODE)			\
+	    {						\
+	      builtin_define ("__NORMAL_MODE__");	\
+	    }						\
+	}						\
       else if (TARGET_H8300S)				\
 	{						\
 	  builtin_define ("__H8300S__");		\
@@ -103,6 +111,7 @@ extern int target_flags;
 #define MASK_RELAX		0x00000400
 #define MASK_H8300H		0x00001000
 #define MASK_ALIGN_300		0x00002000
+#define MASK_H8300SX		0x00004000
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -122,7 +131,12 @@ extern int target_flags;
 /* Select between the H8/300 and H8/300H CPUs.  */
 #define TARGET_H8300	(! TARGET_H8300H && ! TARGET_H8300S)
 #define TARGET_H8300H	(target_flags & MASK_H8300H)
-#define TARGET_H8300S	(target_flags & MASK_H8300S)
+#define TARGET_H8300S	(target_flags & (MASK_H8300S | MASK_H8300SX))
+#define TARGET_H8300SX	(target_flags & MASK_H8300SX)
+/* Some multiply instructions are not available in all H8SX variants.
+   Use this macro instead of TARGET_H8300SX to indicate this, even
+   though we don't actually generate different code for now.  */
+#define TARGET_H8300SXMUL TARGET_H8300SX
 #define TARGET_NORMAL_MODE (target_flags & MASK_NORMAL_MODE)
 
 /* mac register and relevant instructions are available.  */
@@ -144,6 +158,8 @@ extern int target_flags;
 #define TARGET_SWITCHES							    \
 { {"s",			 MASK_H8300S, N_("Generate H8S code")},		    \
   {"no-s",		-MASK_H8300S, N_("Do not generate H8S code")},	    \
+  {"sx",		 MASK_H8300SX, N_("Generate H8SX code")},	    \
+  {"no-sx",		-MASK_H8300SX, N_("Do not generate H8SX code")},    \
   {"s2600",		 MASK_MAC, N_("Generate H8S/2600 code")},	    \
   {"no-s2600",		-MASK_MAC, N_("Do not generate H8S/2600 code")},    \
   {"int32",		 MASK_INT32, N_("Make integers 32 bits wide")},	    \
@@ -398,7 +414,8 @@ extern int target_flags;
    class that represents their union.  */
 
 enum reg_class {
-  NO_REGS, GENERAL_REGS, MAC_REGS, ALL_REGS, LIM_REG_CLASSES
+  NO_REGS, COUNTER_REGS, SOURCE_REGS, DESTINATION_REGS,
+  GENERAL_REGS, MAC_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES ((int) LIM_REG_CLASSES)
@@ -406,7 +423,8 @@ enum reg_class {
 /* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
-{ "NO_REGS", "GENERAL_REGS", "MAC_REGS", "ALL_REGS", "LIM_REGS" }
+{ "NO_REGS", "COUNTER_REGS", "SOURCE_REGS", "DESTINATION_REGS", \
+  "GENERAL_REGS", "MAC_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -414,8 +432,11 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS			\
 {      {0},		/* No regs      */	\
+   {0x010},		/* COUNTER_REGS */	\
+   {0x020},		/* SOURCE_REGS */	\
+   {0x040},		/* DESTINATION_REGS */	\
    {0xeff},		/* GENERAL_REGS */	\
-   {0x100},		/* MAC_REGS */	\
+   {0x100},		/* MAC_REGS */		\
    {0xfff},		/* ALL_REGS	*/	\
 }
 
@@ -424,18 +445,23 @@ enum reg_class {
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) (REGNO != MAC_REG ? GENERAL_REGS : MAC_REGS)
+#define REGNO_REG_CLASS(REGNO)				\
+  ((REGNO) == MAC_REG ? MAC_REGS			\
+   : (REGNO) == COUNTER_REG ? COUNTER_REGS		\
+   : (REGNO) == SOURCE_REG ? SOURCE_REGS		\
+   : (REGNO) == DESTINATION_REG ? DESTINATION_REGS	\
+   : GENERAL_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 
-#define INDEX_REG_CLASS NO_REGS
+#define INDEX_REG_CLASS (TARGET_H8300SX ? GENERAL_REGS : NO_REGS)
 #define BASE_REG_CLASS  GENERAL_REGS
 
 /* Get reg_class from a letter such as appears in the machine description.
 
    'a' is the MAC register.  */
 
-#define REG_CLASS_FROM_LETTER(C) ((C) == 'a' ? MAC_REGS : NO_REGS)
+#define REG_CLASS_FROM_LETTER(C) (h8300_reg_class_from_letter (C))
 
 /* The letters I, J, K, L, M, N, O, P in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -458,6 +484,31 @@ enum reg_class {
 #define CONST_OK_FOR_O(VALUE)				\
   ((VALUE) == -1 || (VALUE) == -2)
 
+/* Multi-letter constraints for constant are always started with P
+   (just because it was the only letter in the range left.  New
+   constraints for constants should be added here.  */
+#define CONST_OK_FOR_Ppositive(VALUE, NBITS)		\
+  ((VALUE) > 0 && (VALUE) < (1 << (NBITS)))
+#define CONST_OK_FOR_Pnegative(VALUE, NBITS)		\
+  ((VALUE) < 0 && (VALUE) > -(1 << (NBITS)))
+#define CONST_OK_FOR_P(VALUE, STR) \
+  ((STR)[1] >= '1' && (STR)[1] <= '9' && (STR)[2] == '<' 	\
+   ? (((STR)[3] == '0' || ((STR)[3] == 'X' && TARGET_H8300SX))	\
+      && CONST_OK_FOR_Pnegative ((VALUE), (STR)[1] - '0'))	\
+   : ((STR)[1] >= '1' && (STR)[1] <= '9' && (STR)[2] == '>')	\
+   ? (((STR)[3] == '0' || ((STR)[3] == 'X' && TARGET_H8300SX))	\
+      && CONST_OK_FOR_Ppositive ((VALUE), (STR)[1] - '0'))	\
+   : 0)
+#define CONSTRAINT_LEN_FOR_P(STR) \
+  ((((STR)[1] >= '1' && (STR)[1] <= '9')			\
+    && ((STR)[2] == '<' || (STR)[2] == '>')			\
+    && ((STR)[3] == 'X' || (STR)[3] == '0')) ? 4		\
+   : 0)
+
+#define CONST_OK_FOR_CONSTRAINT_P(VALUE, C, STR)	\
+  ((C) == 'P' ? CONST_OK_FOR_P ((VALUE), (STR))		\
+   : CONST_OK_FOR_LETTER_P ((VALUE), (C)))
+  
 #define CONST_OK_FOR_LETTER_P(VALUE, C)		\
   ((C) == 'I' ? CONST_OK_FOR_I (VALUE) :	\
    (C) == 'J' ? CONST_OK_FOR_J (VALUE) :	\
@@ -753,6 +804,8 @@ struct cum_arg
 
 #define HAVE_POST_INCREMENT 1
 #define HAVE_PRE_DECREMENT 1
+#define HAVE_POST_DECREMENT TARGET_H8300SX
+#define HAVE_PRE_INCREMENT TARGET_H8300SX
 
 /* Macros to check register numbers against specific register classes.  */
 
@@ -824,6 +877,9 @@ struct cum_arg
 
 /* Extra constraints.  */
 
+#define OK_FOR_Q(OP)					\
+  (TARGET_H8300SX && memory_operand ((OP), VOIDmode))
+
 #define OK_FOR_R(OP)					\
   (GET_CODE (OP) == CONST_INT				\
    ? !h8300_shift_needs_scratch_p (INTVAL (OP), QImode)	\
@@ -861,18 +917,79 @@ struct cum_arg
    || (GET_CODE (OP) == MEM && TARGET_H8300S				\
        && GET_CODE (XEXP (OP, 0)) == CONST_INT))
 
-#define EXTRA_CONSTRAINT(OP, C)			\
-  ((C) == 'R' ? OK_FOR_R (OP) :			\
+/* Multi-letter constraints starting with W are to be used for
+   operands that require a memory operand, i.e,. that are never used
+   along with register constraints (see EXTRA_MEMORY_CONSTRAINTS).
+   For operands that require a memory operand (or not) but that always
+   accept a register, a multi-letter constraint starting with Y should
+   be used instead.  */
+
+#define OK_FOR_WU(OP)					\
+  (GET_CODE (OP) == MEM && OK_FOR_U (OP))
+
+#define OK_FOR_W(OP, STR)				\
+  ((STR)[1] == 'U' ? OK_FOR_WU (OP)			\
+   : 0)
+
+#define CONSTRAINT_LEN_FOR_W(STR)			\
+  ((STR)[1] == 'U' ? 2					\
+   : 0)
+
+/* We don't have any constraint starting with Y yet, but before
+   someone uses it for a one-letter constraint and we're left without
+   any upper-case constraints left, we reserve it for extensions
+   here.  */
+#define OK_FOR_Y(OP, STR)				\
+  (0)
+
+#define CONSTRAINT_LEN_FOR_Y(STR)			\
+  (0)
+
+#define OK_FOR_Z(OP)					\
+  (TARGET_H8300SX					\
+   && GET_CODE (OP) == MEM				\
+   && CONSTANT_P (XEXP ((OP), 0)))
+
+#define EXTRA_CONSTRAINT_STR(OP, C, STR)	\
+  ((C) == 'Q' ? OK_FOR_Q (OP) :			\
+   (C) == 'R' ? OK_FOR_R (OP) :			\
    (C) == 'S' ? OK_FOR_S (OP) :			\
    (C) == 'T' ? OK_FOR_T (OP) :			\
    (C) == 'U' ? OK_FOR_U (OP) :			\
+   (C) == 'W' ? OK_FOR_W ((OP), (STR)) :	\
+   (C) == 'Y' ? OK_FOR_Y ((OP), (STR)) :	\
+   (C) == 'Z' ? OK_FOR_Z (OP) :			\
    0)
+
+#define CONSTRAINT_LEN(C, STR) \
+  ((C) == 'P' ? CONSTRAINT_LEN_FOR_P (STR)	\
+   : (C) == 'W' ? CONSTRAINT_LEN_FOR_W (STR)	\
+   : (C) == 'Y' ? CONSTRAINT_LEN_FOR_Y (STR)	\
+   : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
+
+/* Experiments suggest that it's better not add 'Q' or 'U' here.  No
+   patterns need it for correctness (no patterns use 'Q' and 'U'
+   without also providing a register alternative).  And defining it
+   will mean that a spilled pseudo could be replaced by its frame
+   location in several consecutive insns.
+
+   Instead, it seems to be better to force pseudos to be reloaded
+   into registers and then use peepholes to recombine insns when
+   beneficial.
+
+   Unfortunately, for WU (unlike plain U, that matches regs as well),
+   we must require a memory address.  In fact, all multi-letter
+   constraints started with W are supposed to have this property, so
+   we just test for W here.  */
+#define EXTRA_MEMORY_CONSTRAINT(C, STR) \
+  ((C) == 'W')
+
 
 #ifndef REG_OK_STRICT
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
   do						\
     {						\
-      if (h8300_legitimate_address_p ((X), 0))	\
+      if (h8300_legitimate_address_p ((MODE), (X), 0))	\
 	goto ADDR;				\
     }						\
   while (0)
@@ -880,7 +997,7 @@ struct cum_arg
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
   do						\
     {						\
-      if (h8300_legitimate_address_p ((X), 1))	\
+      if (h8300_legitimate_address_p ((MODE), (X), 1))	\
 	goto ADDR;				\
     }						\
   while (0)
@@ -893,7 +1010,14 @@ struct cum_arg
    (the amount of decrement or increment being the length of the operand).  */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL) \
-  if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC) goto LABEL;
+  if (GET_CODE (ADDR) == POST_INC \
+      || GET_CODE (ADDR) == POST_DEC \
+      || GET_CODE (ADDR) == PRE_INC \
+      || GET_CODE (ADDR) == PRE_DEC) \
+    goto LABEL; \
+  if (GET_CODE (ADDR) == PLUS \
+      && h8300_get_index (XEXP (ADDR, 0), VOIDmode, 0) != XEXP (ADDR, 0)) \
+    goto LABEL;
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
@@ -936,9 +1060,9 @@ struct cum_arg
    We use longs for the H8/300H and the H8S because ints can be 16 or 32.
    GCC requires SIZE_TYPE to be the same size as pointers.  */
 #define SIZE_TYPE								\
-  (TARGET_H8300 || TARGET_NORMAL_MODE ? "unsigned int" : "long unsigned int")
+  (TARGET_H8300 || TARGET_NORMAL_MODE ? TARGET_INT32 ? "short unsigned int" : "unsigned int" : "long unsigned int")
 #define PTRDIFF_TYPE						\
-  (TARGET_H8300 || TARGET_NORMAL_MODE ? "int" : "long int")
+  (TARGET_H8300 || TARGET_NORMAL_MODE ? TARGET_INT32 ? "short int" : "int" : "long int")
 
 #define POINTER_SIZE							\
   ((TARGET_H8300H || TARGET_H8300S) && !TARGET_NORMAL_MODE ? 32 : 16)
@@ -950,6 +1074,12 @@ struct cum_arg
    is a byte address (for indexing purposes)
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
+
+/* Return the length of JUMP's delay slot insn (0 if it has none).
+   If JUMP is a delayed branch, NEXT_INSN (PREV_INSN (JUMP)) will
+   be the containing SEQUENCE, not JUMP itself.  */
+#define DELAY_SLOT_LENGTH(JUMP) \
+  (NEXT_INSN (PREV_INSN (JUMP)) == JUMP ? 0 : 2)
 
 #define BRANCH_COST 0
 
@@ -1139,14 +1269,29 @@ struct cum_arg
   final_prescan_insn (insn, operand, nop)
 
 #define MOVE_RATIO 3
+extern int h8300_move_ratio;
+#undef  MOVE_RATIO
+#define MOVE_RATIO h8300_move_ratio
 
 /* Define the codes that are matched by predicates in h8300.c.  */
 
 #define PREDICATE_CODES							\
   {"general_operand_src", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
 			   LABEL_REF, SUBREG, REG, MEM}},		\
-  {"general_operand_dst", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
-			   LABEL_REF, SUBREG, REG, MEM}},		\
+  {"general_operand_dst", {SUBREG, REG, MEM}},				\
+  {"h8300_src_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
+			 LABEL_REF, SUBREG, REG, MEM}},			\
+  {"h8300_dst_operand", {SUBREG, REG, MEM}},				\
+  {"nibble_operand", {CONST_INT}},					\
+  {"reg_or_nibble_operand", {CONST_INT, SUBREG, REG}},			\
+  {"h8sx_unary_shift_operator", {ASHIFTRT, LSHIFTRT, ASHIFT, ROTATE}},	\
+  {"h8sx_binary_shift_operator", {ASHIFTRT, LSHIFTRT, ASHIFT}},		\
+  {"h8sx_binary_memory_operator", {PLUS, MINUS, AND, IOR, XOR, ASHIFT,	\
+				   ASHIFTRT, LSHIFTRT, ROTATE}},	\
+  {"h8sx_unary_memory_operator", {NEG, NOT}},				\
+  {"h8300_ldm_parallel", {PARALLEL}},					\
+  {"h8300_stm_parallel", {PARALLEL}},					\
+  {"h8300_return_parallel", {PARALLEL}},				\
   {"single_one_operand", {CONST_INT}},					\
   {"single_zero_operand", {CONST_INT}},					\
   {"call_insn_operand", {MEM}},						\

@@ -44,6 +44,13 @@ Boston, MA 02111-1307, USA.  */
 	.h8300s
 #endif
 #endif
+#ifdef __H8300SX__
+#ifdef __NORMAL_MODE__
+	.h8300sxn
+#else
+	.h8300sx
+#endif
+#endif
 	.section .init
 	rts
 

@@ -5525,6 +5525,11 @@ write_eligible_delay (const char *kind)
   printf ("  if (slot >= %d)\n", max_slots);
   printf ("    abort ();\n");
   printf ("\n");
+  /* Allow dbr_schedule to pass labels, etc.  This can happen if try_split
+     converts a compound instruction into a loop.  */
+  printf ("  if (!INSN_P (candidate_insn))\n");
+  printf ("    return 0;\n");
+  printf ("\n");
 
   /* If more than one delay type, find out which type the delay insn is.  */
 
