@@ -119,6 +119,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* We do not want a dot in internal labels.  */
 
+#undef LPREFIX
+#define LPREFIX "L"
+
 #undef	ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
     sprintf ((BUF), "*%s%d", (PREFIX), (NUMBER))
