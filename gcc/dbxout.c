@@ -156,7 +156,7 @@ char *getpwd ();
 #define FORCE_TEXT
 #endif
 
-#if defined (USG) || defined (NO_STAB_H)
+#if defined (USG) || defined (NO_STAB_H) || defined (CROSS_COMPILE)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
 #else
 #include <stab.h>  /* On BSD, use the system's stab.h.  */
