@@ -2274,14 +2274,33 @@ compile_file (name)
 	if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
 	    && ! TREE_ASM_WRITTEN (decl))
 	  {
-	    /* Don't write out static consts, unless we used them.
-	       (This used to write them out only if the address was
-	       taken, but that was wrong; if the variable was simply
-	       referred to, it still needs to exist or else it will
-	       be undefined in the linker.)  */
+	    /* Don't write out static consts, unless we still need them.
+
+	       We also keep static consts if not optimizing (for debugging).
+	       ??? They might be better written into the debug information.
+	       This is possible when using DWARF.
+
+	       A language processor that wants static constants to be always
+	       written out (even if it is not used) is responsible for
+	       calling rest_of_decl_compilation itself.  E.g. the C front-end
+	       calls rest_of_decl_compilation from finish_decl.
+	       One motivation for this is that is conventional in some
+	       environments to write things like:
+	           static const char rcsid[] = "... version string ...";
+	       intending to force the string to be in the executable.
+
+	       A language processor that would prefer to have unneeded
+	       static constants "optimized away" would just defer writing
+	       them out until here.  E.g. C++ does this, because static
+	       constants are often defined in header files.
+
+	       ??? A tempting alternative (for both C and C++) would be
+	       to force a constant to be written if and only if it is
+	       defined in a main file, as opposed to an include file. */
+
 	    if (! TREE_READONLY (decl)
 		|| TREE_PUBLIC (decl)
-		|| TREE_USED (decl)
+		|| !optimize
 		|| TREE_ADDRESSABLE (decl)
 		|| TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl)))
 	      rest_of_decl_compilation (decl, NULL_PTR, 1, 1);
