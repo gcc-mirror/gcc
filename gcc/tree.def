@@ -721,7 +721,7 @@ DEFTREECODE (POPDCC_EXPR, "popdcc_expr", 's', 0)
    The type should be void and the value should be ignored.  */
 DEFTREECODE (LABEL_EXPR, "label_expr", 's', 1)
 
-/* GOTO.  Operand 0 is a LABEL_DECL node.
+/* GOTO.  Operand 0 is a LABEL_DECL node or an expression.
    The type should be void and the value should be ignored.  */
 DEFTREECODE (GOTO_EXPR, "goto_expr", 's', 1)
 
