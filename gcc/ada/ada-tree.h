@@ -262,9 +262,8 @@ struct lang_type GTY(()) {union lang_tree_node t; };
    Start by defining which tree codes are used for statements.  */
 #define IS_STMT(NODE)		(TREE_CODE_CLASS (TREE_CODE (NODE)) == 's')
 #define IS_ADA_STMT(NODE)	(IS_STMT (NODE)				\
-				 && TREE_CODE (NODE) >= DECL_STMT)
+				 && TREE_CODE (NODE) >= STMT_STMT)
 
-#define DECL_STMT_VAR(NODE)	TREE_OPERAND_CHECK_CODE (NODE, DECL_STMT, 0)
 #define STMT_STMT_STMT(NODE)	TREE_OPERAND_CHECK_CODE (NODE, STMT_STMT, 0)
 #define LOOP_STMT_TOP_COND(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 0)
 #define LOOP_STMT_BOT_COND(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 1)

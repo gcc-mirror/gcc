@@ -91,7 +91,7 @@ extern void set_block_for_group (tree);
 
 /* Add a declaration statement for GNU_DECL to the current BLOCK_STMT node.
    Get SLOC from Entity_Id.  */
-extern void add_decl_stmt (tree, Entity_Id);
+extern void add_decl_expr (tree, Entity_Id);
 
 /* Given GNAT_ENTITY, elaborate all expressions that are required to
    be elaborated at the point of its definition, but do nothing else.  */

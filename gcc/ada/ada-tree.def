@@ -49,9 +49,6 @@ DEFTREECODE (ATTR_ADDR_EXPR, "attr_addr_expr", 'r', 1)
 /* Here are the tree codes for the statement types known to Ada.  These
    must be at the end of this file to allow IS_ADA_STMT to work.  */
 
-/* This defines the variable in DECL_STMT_VAR.  */
-DEFTREECODE (DECL_STMT, "decl_stmt", 's', 1)
-
 /* This is how record_code_position and insert_code_for work.  The former
    makes this tree node, whose operand is a statement.  The latter inserts
    the actual statements into this node.  Gimplification consists of
