@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -140,7 +140,15 @@ namespace std
       //   4. All fields==0 is an empty string, given the extra storage
       //      beyond-the-end for a null terminator; thus, the shared
       //      empty string representation needs no constructor.
-      struct _Rep
+
+      struct _Rep_base
+      {
+	size_type 		_M_length;
+	size_type 		_M_capacity;
+	_Atomic_word		_M_references;
+      };
+
+      struct _Rep : _Rep_base
       {
 	// Types:
 	typedef typename _Alloc::template rebind<char>::other _Raw_bytes_alloc;
@@ -157,29 +165,33 @@ namespace std
 	// npos = sizeof(_Rep) + (m * sizeof(_CharT)) + sizeof(_CharT)
 	// Solving for m:
 	// m = ((npos - sizeof(_Rep))/sizeof(CharT)) - 1
-	// In addition, this implementation quarters this ammount.
+	// In addition, this implementation quarters this amount.
 	static const size_type 	_S_max_size;
 	static const _CharT 	_S_terminal;
 
-	size_type 		_M_length;
-	size_type 		_M_capacity;
-	_Atomic_word		_M_references;
+	// The following storage is init'd to 0 by the linker, resulting
+        // (carefully) in an empty string with one reference.
+        static size_type _S_empty_rep_storage[];
 
+        static _Rep& 
+        _S_empty_rep()
+        { return *reinterpret_cast<_Rep*>(&_S_empty_rep_storage); }
+ 
         bool
 	_M_is_leaked() const
-        { return _M_references < 0; }
+        { return this->_M_references < 0; }
 
         bool
 	_M_is_shared() const
-        { return _M_references > 0; }
+        { return this->_M_references > 0; }
 
         void
 	_M_set_leaked()
-        { _M_references = -1; }
+        { this->_M_references = -1; }
 
         void
 	_M_set_sharable()
-        { _M_references = 0; }
+        { this->_M_references = 0; }
 
 	_CharT*
 	_M_refdata() throw()
@@ -203,8 +215,9 @@ namespace std
 	void
 	_M_dispose(const _Alloc& __a)
 	{
-	  if (__exchange_and_add(&_M_references, -1) <= 0)
-	    _M_destroy(__a);
+	  if (__builtin_expect(this != &_S_empty_rep(), false))
+	    if (__exchange_and_add(&this->_M_references, -1) <= 0)
+	      _M_destroy(__a);
 	}  // XXX MT
 
 	void
@@ -213,7 +226,8 @@ namespace std
 	_CharT*
 	_M_refcopy() throw()
 	{
-	  __atomic_add(&_M_references, 1);
+	  if (__builtin_expect(this != &_S_empty_rep(), false))
+            __atomic_add(&this->_M_references, 1);
 	  return _M_refdata();
 	}  // XXX MT
 
@@ -239,10 +253,6 @@ namespace std
     private:
       // Data Members (private):
       mutable _Alloc_hider 	_M_dataplus;
-
-      // The following storage is init'd to 0 by the linker, resulting
-      // (carefully) in an empty string with one reference.
-      static size_type _S_empty_rep_storage[(sizeof(_Rep) + sizeof(_CharT) + sizeof(size_type) - 1)/sizeof(size_type)];
 
       _CharT*
       _M_data() const
@@ -322,7 +332,7 @@ namespace std
 
       static _Rep&
       _S_empty_rep()
-      { return *reinterpret_cast<_Rep*>(&_S_empty_rep_storage); }
+      { return _Rep::_S_empty_rep(); }
 
     public:
       // Construct/copy/destroy:
@@ -859,7 +869,7 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     inline basic_string<_CharT, _Traits, _Alloc>::
     basic_string()
-    : _M_dataplus(_S_empty_rep()._M_refcopy(), _Alloc()) { }
+    : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 
   // operator+
   template<typename _CharT, typename _Traits, typename _Alloc>
