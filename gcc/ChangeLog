@@ -1,3 +1,7 @@
+2000-05-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movsfcc,movdfcc): Remove NE case.
+
 2000-05-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimate_address): Allow any stack
