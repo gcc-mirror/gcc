@@ -1837,6 +1837,7 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
   unsigned int width, max_chars, c;
   unsigned HOST_WIDE_INT mask;
   HOST_WIDE_INT result = 0;
+  bool unsigned_p;
 
 #ifdef MULTIBYTE_CHARS
   (void) local_mbtowc (NULL, NULL, 0);
@@ -1844,9 +1845,15 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
 
   /* Width in bits.  */
   if (token->type == CPP_CHAR)
-    width = MAX_CHAR_TYPE_SIZE;
+    {
+      width = MAX_CHAR_TYPE_SIZE;
+      unsigned_p = CPP_OPTION (pfile, signed_char) == 0;
+    }
   else
-    width = MAX_WCHAR_TYPE_SIZE;
+    {
+      width = MAX_WCHAR_TYPE_SIZE;
+      unsigned_p = WCHAR_UNSIGNED;
+    }
 
   if (width < HOST_BITS_PER_WIDE_INT)
     mask = ((unsigned HOST_WIDE_INT) 1 << width) - 1;
@@ -1903,14 +1910,13 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
   else if (chars_seen > 1 && !traditional && warn_multi)
     cpp_warning (pfile, "multi-character character constant");
 
-  /* If char type is signed, sign-extend the constant.  */
-  if (token->type == CPP_CHAR && chars_seen)
+  /* If relevant type is signed, sign-extend the constant.  */
+  if (chars_seen)
     {
       unsigned int nbits = chars_seen * width;
 
       mask = (unsigned HOST_WIDE_INT) ~0 >> (HOST_BITS_PER_WIDE_INT - nbits);
-      if (CPP_OPTION (pfile, signed_char) == 0
-	  || ((result >> (nbits - 1)) & 1) == 0)
+      if (unsigned_p || ((result >> (nbits - 1)) & 1) == 0)
 	result &= mask;
       else
 	result |= ~mask;

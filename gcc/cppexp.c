@@ -293,8 +293,10 @@ lex (pfile, skip_evaluation)
       {
 	unsigned int chars_seen;
 
-	/* This is always a signed type.  */
-	op.unsignedp = 0;
+	if (token->type == CPP_CHAR)
+	  op.unsignedp = 0;
+	else
+	  op.unsignedp = WCHAR_UNSIGNED;
 	op.op = CPP_NUMBER;
 	op.value = cpp_interpret_charconst (pfile, token, 1, 0, &chars_seen);
 	return op;
