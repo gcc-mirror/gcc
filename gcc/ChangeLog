@@ -1,3 +1,9 @@
+Thu Mar 25 11:47:49 1999  Art Haas <ahaas@neosoft.com>
+
+	* tlink.c (symbol_hash_newfunc): Remove redundant call to
+	hash_newfunc.
+	(file_hash_newfunc, demangled_hash_newfunc): Likewise.
+
 Thu Mar 25 10:05:56 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.h (PREFERRED_STACK_BOUNDARY): Set to 128.
