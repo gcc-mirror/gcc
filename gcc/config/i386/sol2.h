@@ -83,6 +83,14 @@ Boston, MA 02111-1307, USA.  */
    %{!pthreads:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}} \
    %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
 
+/* For C++ we need to add some additional macro definitions required
+   by the C++ standard library.  */
+#define CPLUSPLUS_CPP_SPEC "\
+-D_XOPEN_SOURCE=500 -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 \
+-D__EXTENSIONS__ \
+%(cpp) \
+"
+
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
