@@ -1,3 +1,7 @@
+Thu Feb 11 01:12:12 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/990211-1.c: New test from Nathan SIdwell.
+
 Wed Feb 10 13:08:12 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* gcc.dg/special/ecos.exp: New test driver for new tests with
