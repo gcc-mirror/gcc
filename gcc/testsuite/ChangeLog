@@ -1,6 +1,7 @@
 2004-05-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13826
+	PR fortran/13940
 	* gfortran.fortran-torture/compile/data_1.f90: New test.
 
 2004-05-15  Ulrich Weigand  <uweigand@de.ibm.com>

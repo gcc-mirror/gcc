@@ -255,9 +255,12 @@ match_boz_constant (gfc_expr ** result)
       rname = "octal";
       break;
     case 'x':
-      if (pedantic)
-       gfc_warning_now ("Hexadecimal constant at %C uses non-standard "
-                        "syntax. Use \"Z\" instead.");
+      if (pedantic
+         && (gfc_notify_std (GFC_STD_GNU, "Extension: Hexadecimal "
+                            "constant at %C uses non-standard syntax.")
+             == FAILURE))
+       goto backup;
+
       /* Fall through.  */
     case 'z':
       radix = 16;
