@@ -472,7 +472,7 @@ EOF
 	  test ! -d /usr/lib/ldscripts/. \
 	    && echo "${UNAME_MACHINE}-pc-linux-gnuoldld" && exit 0
 	  case "${UNAME_MACHINE}" in
-	  i.86)
+	  i?86)
 	    VENDOR=pc;
 	    ;;
 	  *)
