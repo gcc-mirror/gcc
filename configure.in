@@ -80,10 +80,17 @@ AC_SUBST(TOPLEVEL_CONFIGURE_ARGUMENTS)
 
 moveifchange=${srcdir}/move-if-change
 
+srcpwd=`cd ${srcdir} ; ${PWDCMD-pwd}`
+
+# We pass INSTALL explicitly to sub-makes.  Make sure that it is not
+# a relative path.
+if test "$INSTALL" = "${srcdir}/install-sh -c"; then
+  INSTALL="${srcpwd}/install-sh -c"
+fi
+
 # Set srcdir to "." if that's what it is.
 # This is important for multilib support.
 pwd=`${PWDCMD-pwd}`
-srcpwd=`cd ${srcdir} ; ${PWDCMD-pwd}`
 if test "${pwd}" = "${srcpwd}" ; then
   srcdir=.
 fi
