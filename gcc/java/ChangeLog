@@ -1,3 +1,43 @@
+1999-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (get_field_name, print_method_info, print_include,
+	add_namelet): Use xmalloc, not malloc.
+
+	* jcf-depend.c (add_entry): Likewise.  Use xstrdup, not strdup.
+	(munge): Use xrealloc, not realloc, trust xrealloc to handle a
+	NULL pointer.
+
+	* jcf-io.c (open_in_zip, find_class): Use xstrdup, not strdup.
+
+	* jcf-parse.c (jcf_out_of_synch, yyparse): Likewise.
+	
+	* jcf-path.c (add_entry): Likewise.
+
+	* jcf.h (ALLOC, REALLOC): Use xmalloc/xrealloc, not malloc/realloc.
+
+	* jv-scan.c (xmalloc): Remove definition.
+
+	* jvgenmain.c (xmalloc): Likewise.
+
+	* jvspec.c (lang_specific_driver): Use xcalloc, not xmalloc/bzero.
+
+	* lex.c (java_store_unicode): Use xrealloc, not realloc.
+
+	* parse-scan.y: Use concat, not of xmalloc/assign/strcpy.  Use
+	concat, not xmalloc/sprintf.
+	(java_push_parser_context): Use xcalloc, not xmalloc/bzero.
+	(xstrdup): Remove definition.
+
+	* parse.y (duplicate_declaration_error_p,
+	constructor_circularity_msg, verify_constructor_circularity,
+	check_abstract_method_definitions, java_check_regular_methods,
+	java_check_abstract_methods, patch_method_invocation,
+	check_for_static_method_reference, patch_assignment, patch_binop,
+	patch_cast, array_constructor_check_entry, patch_return,
+	patch_conditional_expr): Use xstrdup, not strdup.
+
+	* zextract.c (ALLOC): Use xmalloc, not malloc.
+
 Sun Sep 12 23:30:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (jvspec.o): Depend on system.h and gcc.h.

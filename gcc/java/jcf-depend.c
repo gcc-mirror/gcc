@@ -90,8 +90,8 @@ add_entry (entp, name)
     if (! strcmp (ent->file, name))
       return;
 
-  ent = (struct entry *) malloc (sizeof (struct entry));
-  ent->file = strdup (name);
+  ent = (struct entry *) xmalloc (sizeof (struct entry));
+  ent->file = xstrdup (name);
   ent->next = *entp;
   *entp = ent;
 }
@@ -177,10 +177,7 @@ munge (filename)
   if (buflen < len)
     {
       buflen = len;
-      if (buffer == NULL)
-	buffer = malloc (buflen);
-      else
-	buffer = realloc (buffer, buflen);
+      buffer = xrealloc (buffer, buflen);
     }
 
   dst = buffer;

@@ -192,8 +192,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   argv = *in_argv;
   added_libraries = *in_added_libraries;
 
-  args = (int *) xmalloc (argc * sizeof (int));
-  bzero ((char *) args, argc * sizeof (int));
+  args = (int *) xcalloc (argc, sizeof (int));
 
   for (i = 1; i < argc; i++)
     {

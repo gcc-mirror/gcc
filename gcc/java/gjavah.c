@@ -385,7 +385,7 @@ get_field_name (jcf, name_index, flags)
 	  return NULL;
 	}
 
-      override = (char *) malloc (length + 3);
+      override = xmalloc (length + 3);
       memcpy (override, name, length);
       strcpy (override + length, "__");
     }
@@ -568,8 +568,8 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
     {
       struct method_name *nn;
 
-      nn = (struct method_name *) malloc (sizeof (struct method_name));
-      nn->name = (char *) malloc (length);
+      nn = (struct method_name *) xmalloc (sizeof (struct method_name));
+      nn->name = (char *) xmalloc (length);
       memcpy (nn->name, str, length);
       nn->length = length;
       nn->next = method_name_list;
@@ -1072,8 +1072,8 @@ print_include (out, utf8, len)
 	return;
     }
 
-  incl = (struct include *) malloc (sizeof (struct include));
-  incl->name = malloc (len + 1);
+  incl = (struct include *) xmalloc (sizeof (struct include));
+  incl->name = xmalloc (len + 1);
   strncpy (incl->name, utf8, len);
   incl->name[len] = '\0';
   incl->next = all_includes;
@@ -1157,8 +1157,8 @@ add_namelet (name, name_limit, parent)
 
   if (n == NULL)
     {
-      n = (struct namelet *) malloc (sizeof (struct namelet));
-      n->name = malloc (p - name + 1);
+      n = (struct namelet *) xmalloc (sizeof (struct namelet));
+      n->name = xmalloc (p - name + 1);
       strncpy (n->name, name, p - name);
       n->name[p - name] = '\0';
       n->is_class = (p == name_limit || *p == '$');

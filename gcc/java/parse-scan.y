@@ -231,17 +231,11 @@ array_type:
 	primitive_type OSB_TK CSB_TK
 |	name OSB_TK CSB_TK
 		{
-		  char *n = xmalloc (strlen ($1)+2);
-		  n [0] = '[';
-		  strcpy (n+1, $1);
-		  $$ = n;
+		  $$ = concat ("[", $1, NULL);
 		}
 |	array_type OSB_TK CSB_TK
 		{	
-		  char *n = xmalloc (strlen ($1)+2);
-		  n [0] = '[';
-		  strcpy (n+1, $1);
-		  $$ = n;
+		  $$ = concat ("[", $1, NULL);
 		}
 ;
 
@@ -258,9 +252,7 @@ simple_name:
 qualified_name:
 	name DOT_TK identifier
 		{ 
-		  char *n = xmalloc (strlen ($1)+strlen ($3)+2);
-		  sprintf (n, "%s.%s", $1, $3);
-		  $$ = n;
+		  $$ = concat ($1, ".", $3, NULL);
 		}
 ;
 
@@ -456,9 +448,7 @@ formal_parameter_list:
 	formal_parameter
 |	formal_parameter_list C_TK formal_parameter
 		{
-		  char *n = xmalloc (strlen ($1)+strlen($3)+2);
-		  sprintf (n, "%s,%s", $1, $3);
-		  $$ = n;
+		  $$ = concat ($1, ",", $3, NULL);
 		}
 ;
 
@@ -1114,9 +1104,8 @@ void
 java_push_parser_context ()
 {
   struct parser_ctxt *new = 
-    (struct parser_ctxt *)xmalloc(sizeof (struct parser_ctxt));
+    (struct parser_ctxt *) xcalloc (1, sizeof (struct parser_ctxt));
 
-  bzero ((PTR) new, sizeof (struct parser_ctxt));
   new->next = ctxp;
   ctxp = new;
 }  
@@ -1185,15 +1174,4 @@ void
 yyerror (msg)
      const char *msg ATTRIBUTE_UNUSED;
 {
-}
-
-char *
-xstrdup (s)
-     const char *s;
-{
-  char *ret;
-
-  ret = xmalloc (strlen (s) + 1);
-  strcpy (ret, s);
-  return ret;
 }

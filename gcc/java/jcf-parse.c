@@ -449,7 +449,7 @@ void
 DEFUN(jcf_out_of_synch, (jcf),
       JCF *jcf)
 {
-  char *source = strdup (jcf->filename);
+  char *source = xstrdup (jcf->filename);
   int i = strlen (source);
 
   while (source[i] != '.')
@@ -778,7 +778,7 @@ int
 yyparse ()
 {
   int several_files = 0;
-  char *list = strdup (input_filename), *next;
+  char *list = xstrdup (input_filename), *next;
   tree node, current_file_list = NULL_TREE;
 
   do 

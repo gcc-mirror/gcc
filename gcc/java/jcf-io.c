@@ -169,8 +169,8 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
 	  jcf->read_ptr = jcf->buffer;
 	  jcf->read_end = jcf->buffer_end;
 	  jcf->filbuf = jcf_unexpected_eof;
-	  jcf->filename = strdup (zipfile);
-	  jcf->classname = strdup (zipmember);
+	  jcf->filename = xstrdup (zipfile);
+	  jcf->classname = xstrdup (zipmember);
 	  jcf->zipd = (void *)zipd;
 	  if (lseek (zipf->fd, zipd->filestart, 0) < 0
 	      || read (zipf->fd, jcf->buffer, zipd->size) != zipd->size)
@@ -414,14 +414,14 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
     {
       JCF_ZERO (jcf);		/* JCF_FINISH relies on this */
       jcf->java_source = 1;
-      jcf->filename = (char *) strdup (buffer);
+      jcf->filename = xstrdup (buffer);
       close (fd);		/* We use STDIO for source file */
     }
   else
     buffer = open_class (buffer, jcf, fd, dep_file);
   jcf->classname = (char *) ALLOC (classname_length + 1);
   strncpy (jcf->classname, classname, classname_length + 1);
-  jcf->classname = (char *) strdup (classname);
+  jcf->classname = xstrdup (classname);
   return buffer;
 #endif
 }

@@ -252,9 +252,9 @@ java_store_unicode (l, c, unicode_escape_p)
   if (l->size == l->max)
     {
       l->max += JAVA_LINE_MAX;
-      l->line = (unicode_t *)realloc (l->line, sizeof (unicode_t)*l->max);
-      l->unicode_escape_p = (char *)realloc (l->unicode_escape_p, 
-					     sizeof (char)*l->max);
+      l->line = (unicode_t *) xrealloc (l->line, sizeof (unicode_t)*l->max);
+      l->unicode_escape_p = (char *) xrealloc (l->unicode_escape_p, 
+					       sizeof (char)*l->max);
     }
   l->line [l->size] = c;
   l->unicode_escape_p [l->size++] = unicode_escape_p;
