@@ -1,3 +1,10 @@
+2000-07-05  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (CXX_FOR_TARGET): Add libstdc++ to the library
+	search path for a g++ extracted from the build tree.  This
+	will allow link tests run by configure scripts in
+	subdirectories to succeed.
+
 2000-06-29  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* MAINTAINERS: Add myself as loop discovery maintainer.
