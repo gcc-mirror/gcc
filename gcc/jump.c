@@ -1878,24 +1878,31 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			   and moved the break sequence outside the loop.
 			   We must move the LOOP_END note to where the
 			   loop really ends now, or we will confuse loop
-			   optimization.  */
+			   optimization.  Stop if we find a LOOP_BEG note
+			   first, since we don't want to move the LOOP_END
+			   note in that case.  */
 			for (;range2after != label2; range2after = rangenext)
 			  {
 			    rangenext = NEXT_INSN (range2after);
-			    if (GET_CODE (range2after) == NOTE
-				&& (NOTE_LINE_NUMBER (range2after)
-				    == NOTE_INSN_LOOP_END))
+			    if (GET_CODE (range2after) == NOTE)
 			      {
-				NEXT_INSN (PREV_INSN (range2after))
-				  = rangenext;
-				PREV_INSN (rangenext)
-				  = PREV_INSN (range2after);
-				PREV_INSN (range2after) 
-				  = PREV_INSN (range1beg);
-				NEXT_INSN (range2after) = range1beg;
-				NEXT_INSN (PREV_INSN (range1beg))
-				  = range2after;
-				PREV_INSN (range1beg) = range2after;
+				if (NOTE_LINE_NUMBER (range2after)
+				    == NOTE_INSN_LOOP_END)
+				  {
+				    NEXT_INSN (PREV_INSN (range2after))
+				      = rangenext;
+				    PREV_INSN (rangenext)
+				      = PREV_INSN (range2after);
+				    PREV_INSN (range2after) 
+				      = PREV_INSN (range1beg);
+				    NEXT_INSN (range2after) = range1beg;
+				    NEXT_INSN (PREV_INSN (range1beg))
+				      = range2after;
+				    PREV_INSN (range1beg) = range2after;
+				  }
+				else if (NOTE_LINE_NUMBER (range2after)
+					 == NOTE_INSN_LOOP_BEG)
+				  break;
 			      }
 			  }
 			changed = 1;
