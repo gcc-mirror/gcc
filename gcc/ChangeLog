@@ -1,5 +1,8 @@
 2001-04-06  Bernd Schmidt  <bernds@redhat.com>
 
+	2000-10-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+	* function.c (locate_and_pad_parm): Don't align stack unconditionally.
+
 	Thu Oct 28 10:20:02 1999  Geoffrey Keating  <geoffk@cygnus.com>
 	* config/rs6000/rs6000.md (movsf): Don't convert a SUBREG
 	of the function return register into a plain REG until
