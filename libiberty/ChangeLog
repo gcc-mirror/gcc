@@ -1,3 +1,7 @@
+2003-06-26  H.J. Lu <hongjiu.lu@intel.com>
+
+	* testsuite/demangle-expected: Add more GNU V3 testcases.
+
 2003-06-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* safe-ctype.c: Use HOST_CHARSET_ASCII and HOST_CHARSET_EBCDIC,
