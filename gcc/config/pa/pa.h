@@ -110,7 +110,7 @@ extern int target_flags;
    compatable.  */
 #define DBX_BLOCKS_FUNCTION_RELATIVE 1
 
-/* Likewise for linenos. 
+/* Likewise for linenos.
 
    We make the first line stab special to avoid adding several
    gross hacks to GAS.  */
@@ -280,8 +280,8 @@ extern int target_flags;
    has different fp units: define separate register sets for the 1.0
    and 1.1 fp units. */
 
-#define FIRST_PSEUDO_REGISTER 101  /* 32 + 12 1.0 regs + 56 1.1 regs + */
-				   /* 1 shift reg */
+#define FIRST_PSEUDO_REGISTER 89  /* 32 general regs + 56 fp regs +
+				     + 1 shift reg */
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -325,10 +325,7 @@ extern int target_flags;
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 1, 0, 0, 1, 0, \
-  /* 1.0 fp registers */ \
-  0, 0, 0, 0, \
-  0, 0, 0, 0, 0, 0, 0, 0, \
-  /* 1.1 fp registers */ \
+  /* fp registers */	  \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
@@ -349,10 +346,7 @@ extern int target_flags;
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
-  /* 1.0 fp registers */ \
-  1, 1, 1, 1, \
-  1, 1, 1, 1, 0, 0, 0, 0, \
-  /* 1.1 fp registers */ \
+  /* fp registers */	  \
   1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
   0, 0, 0, 0, 0, 0, 0, 0, \
@@ -362,47 +356,13 @@ extern int target_flags;
   1, 1, 1, 1, 1, 1, 1, 1, \
   1}
 
-/* Make sure everything's fine if we *don't* have a given processor.
-   This assumes that putting a register in fixed_regs will keep the
-   compiler's mitts completely off it.  We don't bother to zero it out
-   of register classes.   */
-
 #define CONDITIONAL_REGISTER_USAGE \
 {						\
-  int i;					\
-  HARD_REG_SET x;				\
-  if (!TARGET_SNAKE)				\
-    {						\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)SNAKE_FP_REGS]);\
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
-       if (TEST_HARD_REG_BIT (x, i)) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    }						\
-  else if (TARGET_DISABLE_FPREGS)		\
-    {						\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);\
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
-       if (TEST_HARD_REG_BIT (x, i)) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)SNAKE_FP_REGS]);\
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
-       if (TEST_HARD_REG_BIT (x, i)) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    }						\
-  else						\
-    { 						\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]); \
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
-       if (TEST_HARD_REG_BIT (x, i)) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    } 						\
-  /* This makes cse think PIC_OFFSET_TABLE_REGNUM is not clobbered
-     in calls.					\
   if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1; */	\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
 }
 
-/* Allocated the call used registers first.  This should minimize
+/* Allocate the call used registers first.  This should minimize
    the number of registers that need to be saved (as call used
    registers will generally not be allocated across a call).
 
@@ -410,28 +370,25 @@ extern int target_flags;
    FP registers first.  */
 
 #define REG_ALLOC_ORDER \
-  /* 1.0 caller-saved fp regs.  */	\
- {36, 37, 38, 39, 32, 33, 34, 35,	\
-  /* 1.1 caller-saved fp regs.  */	\
-  52, 53, 54, 55, 56, 57, 58, 59, 	\
-  80, 81, 82, 83, 84, 85, 86, 87,	\
-  88, 89, 90, 91, 92, 93, 94, 95,	\
-  96, 97, 98, 99,			\
-  44, 45, 46, 47, 48, 49, 50, 51, 	\
+ {					\
+  /* caller-saved fp regs.  */		\
+  40, 41, 42, 43, 44, 45, 46, 47,	\
+  68, 69, 70, 71, 72, 73, 74, 75,	\
+  76, 77, 78, 79, 80, 81, 82, 83,	\
+  84, 85, 86, 87,			\
+  32, 33, 34, 35, 36, 37, 38, 39,	\
   /* caller-saved general regs.  */	\
   19, 20, 21, 22, 23, 24, 25, 26,	\
   27, 28, 29, 31,  2,			\
-  /* 1.0 callee-saved fp regs.  */	\
-  40, 41, 42, 43,			\
-  /* 1.1 callee-saved fp regs.  */	\
-  60, 61, 62, 63, 64, 65, 66, 67, 	\
-  68, 69, 70, 71, 72, 73, 74, 75, 	\
-  76, 77, 78, 79, 			\
+  /* callee-saved fp regs.  */		\
+  48, 49, 50, 51, 52, 53, 54, 55,	\
+  56, 57, 58, 59, 60, 61, 62, 63,	\
+  64, 65, 66, 67,			\
   /* callee-saved general regs.  */	\
    3,  4,  5,  6,  7,  8,  9, 10, 	\
   11, 12, 13, 14, 15, 16, 17, 18,	\
   /* special registers.  */		\
-   1, 30,  0, 100}
+   1, 30,  0, 88}
 
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -443,20 +400,21 @@ extern int target_flags;
    The floating point registers are 64 bits wide. Snake fp regs are 32
    bits wide */
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
-  (((REGNO) < 32 || (REGNO) >= 44)	\
-   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD) : 1)
+   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
    force this to be an even register is it cannot hold the full mode.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
-   : (REGNO) < 32 ? ((GET_MODE_SIZE (MODE) <= 4) ? 1 : ((REGNO) & 1) == 0)\
-   : (REGNO) < 44 ? (GET_MODE_SIZE (MODE) <= 4				\
-		     || (GET_MODE_SIZE (MODE) > 4			\
-			 && GET_MODE_CLASS (MODE) == MODE_FLOAT)) 	\
-   : (GET_MODE_SIZE (MODE) > 4 ? ((REGNO) & 1) == 0			\
-      : 1))
+   : !TARGET_SNAKE && (REGNO) >= 32					\
+     /* On 1.0 machines, all fp registers are 64 bits. */		\
+     ? (((REGNO) & 1) == 0						\
+     /* On 1.0 machines, don't allow large non-fp values in fp regs. */	\
+	&& (GET_MODE_SIZE (MODE) <= 4					\
+	    || GET_MODE_CLASS (MODE) == MODE_FLOAT))			\
+   /* Make large values be in aligned registers. */			\
+   : GET_MODE_SIZE (MODE) <= 4 || ((REGNO) & 1) == 0)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -534,23 +492,20 @@ extern int target_flags;
 
   /* The HP-PA has four kinds of registers: general regs, 1.0 fp regs,
      1.1 fp regs, and the high 1.1 fp regs, to which the operands of
-     fmpyadd and fmpysub are restricted.
-
-     FP_OR_SNAKE_FP_REGS is for reload_{in,out}di only and isn't used
-     anywhere else.  */
+     fmpyadd and fmpysub are restricted.  */
 
 enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
-  HI_SNAKE_FP_REGS, SNAKE_FP_REGS, GENERAL_OR_SNAKE_FP_REGS,
-  FP_OR_SNAKE_FP_REGS, NON_SHIFT_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES};
+  SNAKE_FP_REGS, GENERAL_OR_SNAKE_FP_REGS,
+  NON_SHIFT_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES};
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
-  { "NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS", "GENERAL_OR_FP_REGS",\
-    "HI_SNAKE_FP_REGS", "SNAKE_FP_REGS", "GENERAL_OR_SNAKE_FP_REGS",\
-    "FP_OR_SNAKE_FP_REGS", "NON_SHIFT_REGS", "SHIFT_REGS", "ALL_REGS"}
+  {"NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS",			\
+   "GENERAL_OR_FP_REGS", "SNAKE_FP_REGS", "GENERAL_OR_SNAKE_FP_REGS",	\
+   "NON_SHIFT_REGS", "SHIFT_REGS", "ALL_REGS"}
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -558,31 +513,28 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    is in no class. */
 
 #define REG_CLASS_CONTENTS	\
-{ {0, 0, 0, 0},			/* NO_REGS */		\
-  {0x2, 0, 0, 0},		/* R1_REGS */		\
-  {-2, 0, 0, 0},		/* GENERAL_REGS */	\
-  {0, 0xfff, 0, 0},		/* FP_REGS */		\
-  {-2, 0xfff, 0, 0},		/* GENERAL_OR_FP_REGS */\
-  {0, 0, 0xfffffff0, 0xf},	/* HI_SNAKE_FP_REGS */	\
-  {0, 0xfffff000, ~0, 0xf},	/* SNAKE_FP_REGS */	\
-  {-2, 0xfffff000, ~0, 0xf},	/* GENERAL_OR_SNAKE_FP_REGS */\
-  {0, ~0, ~0, 0xf},		/* FP_OR_SNAKE_FP_REGS */\
-  {-2, ~0, ~0, ~0x10},		/* NON_SHIFT_REGS */	\
-  {0, 0, 0, 0x10},		/* SHIFT_REGS */	\
-  {-2, ~0, ~0, 0x1f}}		/* ALL_REGS */
+ {{0x00000000, 0x00000000, 0x00000000},	/* NO_REGS */			\
+  {0x00000002, 0x00000000, 0x00000000},	/* R1_REGS */			\
+  {0xfffffffe, 0x00000000, 0x00000000},	/* GENERAL_REGS */		\
+  {0x00000000, 0x00ffffff, 0x00000000},	/* FP_REGS */			\
+  {0xfffffffe, 0x00ffffff, 0x00000000},	/* GENERAL_OR_FP_REGS */	\
+  {0x00000000, 0xffffffff, 0x00ffffff},	/* SNAKE_FP_REGS */		\
+  {0xfffffffe, 0xffffffff, 0x00ffffff},	/* GENERAL_OR_SNAKE_FP_REGS */	\
+  {0xfffffffe, 0xffffffff, 0x00ffffff},	/* NON_SHIFT_REGS */		\
+  {0x00000000, 0x00000000, 0x01000000},	/* SHIFT_REGS */		\
+  {0xfffffffe, 0xffffffff, 0x01ffffff}}	/* ALL_REGS */
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO)		\
-  ((REGNO) == 0 ? NO_REGS 		\
-   : (REGNO) == 1 ? R1_REGS		\
-   : (REGNO) < 32 ? GENERAL_REGS	\
-   : (REGNO) < 44 ? FP_REGS		\
-   : (REGNO) < 68 ? SNAKE_FP_REGS	\
-   : (REGNO) < 100 ? HI_SNAKE_FP_REGS	\
+#define REGNO_REG_CLASS(REGNO)						\
+  ((REGNO) == 0 ? NO_REGS 						\
+   : (REGNO) == 1 ? R1_REGS						\
+   : (REGNO) < 32 ? GENERAL_REGS					\
+   : (REGNO) < 44 && !TARGET_SNAKE ? FP_REGS				\
+   : (REGNO) < 88 && TARGET_SNAKE ? SNAKE_FP_REGS			\
    : SHIFT_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -590,20 +542,20 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define BASE_REG_CLASS GENERAL_REGS
 
 #define FP_REG_CLASS_P(CLASS) \
-  (CLASS == FP_REGS || CLASS == SNAKE_FP_REGS || CLASS == HI_SNAKE_FP_REGS)
+  (CLASS == FP_REGS || CLASS == SNAKE_FP_REGS)
 
 /* Get reg_class from a letter such as appears in the machine description.
    Note 'Z' is not the same as 'r' since SHIFT_REGS is not part of
    GENERAL_REGS.  */
 
+/* OOPS Merge f and x? */
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'f' ? (!TARGET_SNAKE ? FP_REGS : NO_REGS) :		\
-   ((C) == 'x' ? (TARGET_SNAKE ? SNAKE_FP_REGS : NO_REGS) :	\
-    ((C) == 'y' ? (TARGET_SNAKE ? HI_SNAKE_FP_REGS : NO_REGS) :	\
-     ((C) == 'q' ? SHIFT_REGS :					\
-      ((C) == 'a' ? R1_REGS :					\
-       ((C) == 'z' ? FP_OR_SNAKE_FP_REGS :			\
-        ((C) == 'Z' ? ALL_REGS : NO_REGS)))))))
+   (C) == 'x' ? (TARGET_SNAKE ? SNAKE_FP_REGS : NO_REGS) :	\
+   (C) == 'q' ? SHIFT_REGS :					\
+   (C) == 'a' ? R1_REGS :					\
+   (C) == 'z' ? SNAKE_FP_REGS :					\
+   (C) == 'Z' ? ALL_REGS : NO_REGS)
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -657,8 +609,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 /* On the PA it is not possible to directly move data between
    GENERAL_REGS and FP_REGS.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)  \
-  ((FP_REG_CLASS_P (CLASS1) && ! FP_REG_CLASS_P (CLASS2))	\
-   || (! FP_REG_CLASS_P (CLASS1) && FP_REG_CLASS_P (CLASS2)))
+  (FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2))
 
 /* Return the stack location to use for secondary memory needed reloads.  */
 #define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
@@ -667,7 +618,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
-  ((CLASS) == FP_REGS ? 1 : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -754,26 +705,24 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   gen_rtx (REG, TYPE_MODE (VALTYPE), ((TYPE_MODE (VALTYPE) == SFmode ||	\
 				       TYPE_MODE (VALTYPE) == DFmode) ? \
-				      (TARGET_SNAKE ? 44 : 32) : 28))
+				      32 : 28))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE) \
-  gen_rtx (REG, MODE, (MODE == SFmode || MODE == DFmode ?\
-		       (TARGET_SNAKE ? 44 : 32) : 28))
+  gen_rtx (REG, MODE, ((MODE) == SFmode || (MODE) == DFmode ? 32 : 28))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 28 || (N) == (TARGET_SNAKE ? 44 : 32))
+#define FUNCTION_VALUE_REGNO_P(N) \
+  ((N) == 28 || (N) == 29 || (N) == 32 || (N) == 33)
 
 /* 1 if N is a possible register number for function argument passing.  */
 
-#define FUNCTION_ARG_REGNO_P(N)				\
-  (((N) >= 23 && (N) <= 26) 				\
-   || ((N) >= 32 && (N) <= 35 && ! TARGET_SNAKE)	\
-   || ((N) >= 44 && (N) <= 51 && TARGET_SNAKE))
+#define FUNCTION_ARG_REGNO_P(N) \
+  (((N) >= 23 && (N) <= 26) || ((N) >= 32 && (N) <= 39))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -873,7 +822,7 @@ struct hppa_args {int words, nargs_prototype; };
   FYI: The portable parameter passing conventions are almost exactly like
   the standard parameter passing conventions on the RS6000.  That's why
   you'll see lots of similar code in rs6000.h.  */
-  
+
 #define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding ((MODE), (TYPE))
 
 /* Do not expect to understand this without reading it several times.  I'm
@@ -887,15 +836,11 @@ struct hppa_args {int words, nargs_prototype; };
 		 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
 		  ? (((!current_call_is_indirect || TARGET_PORTABLE_RUNTIME) \
 		      && (MODE) == DFmode)				\
-		     ? ((CUM).words					\
-			? (TARGET_SNAKE ? 50 : 35) 			\
-			: (TARGET_SNAKE ? 46 : 33))			\
+		     ? ((CUM).words ? 38 : 34)				\
 		     : ((CUM).words ? 23 : 25))				\
 		  : (((!current_call_is_indirect || TARGET_PORTABLE_RUNTIME) \
 		      && (MODE) == SFmode)				\
-		     ? (TARGET_SNAKE					\
-			? 44 + 2 * (CUM).words				\
-			: 32  + (CUM).words)				\
+		     ? (32 + 2 * (CUM).words)				\
 		     : (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),	\
 							      (TYPE))))))\
    /* We are calling a non-prototyped function with floating point	\
@@ -903,12 +848,8 @@ struct hppa_args {int words, nargs_prototype; };
    : gen_rtx (EXPR_LIST, VOIDmode,					\
 	      gen_rtx (REG, (MODE),					\
 		       (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-			? ((CUM).words					\
-			   ? (TARGET_SNAKE ? 50 : 35)			\
-			   : (TARGET_SNAKE ? 46 : 33))			\
-			: (TARGET_SNAKE					\
-			   ? 44 + 2 * (CUM).words			\
-			   : 32 + (CUM).words))),			\
+			? ((CUM).words ? 38 : 34)			\
+			: (32 + 2 * (CUM).words))),			\
 	      gen_rtx (REG, (MODE),					\
 		       (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
 			? ((CUM).words ? 23 : 25)			\
@@ -1181,8 +1122,8 @@ extern union tree_node *current_function_decl;
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
   ((REGNO) && ((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32))
 #define REGNO_OK_FOR_FP_P(REGNO) \
-  (((REGNO) >= 32 && (REGNO) <= 99)\
-   || (reg_renumber[REGNO] >= 32 && reg_renumber[REGNO] <= 99))
+  (((REGNO) >= 32 && (REGNO) <= 87)\
+   || (reg_renumber[REGNO] >= 32 && reg_renumber[REGNO] <= 87))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -1732,35 +1673,40 @@ readonly_data ()							\
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{"0", "%r1", "%r2", "%r3", "%r4", "%r5", "%r6", "%r7",			\
- "%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",		\
- "%r16", "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",	\
- "%r24", "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",	\
- "%fr4", "%fr5", "%fr6", "%fr7",	\
- "%fr8", "%fr9", "%fr10", "%fr11", "%fr12", "%fr13", "%fr14", "%fr15",	\
- "%fr4", "%fr4R", "%fr5", "%fr5R", "%fr6", "%fr6R", "%fr7", "%fr7R",	\
- "%fr8", "%fr8R", "%fr9", "%fr9R", "%fr10", "%fr10R", "%fr11", "%fr11R",\
- "%fr12", "%fr12R", "%fr13", "%fr13R", "%fr14", "%fr14R", "%fr15", "%fr15R",\
- "%fr16", "%fr16R", "%fr17", "%fr17R", "%fr18", "%fr18R", "%fr19", "%fr19R",\
- "%fr20", "%fr20R", "%fr21", "%fr21R", "%fr22", "%fr22R", "%fr23", "%fr23R",\
- "%fr24", "%fr24R", "%fr25", "%fr25R", "%fr26", "%fr26R", "%fr27", "%fr27R",\
- "%fr28", "%fr28R", "%fr29", "%fr29R", "%fr30", "%fr30R", "%fr31", "%fr31R",\
+{"%r0",   "%r1",    "%r2",   "%r3",    "%r4",   "%r5",    "%r6",   "%r7",    \
+ "%r8",   "%r9",    "%r10",  "%r11",   "%r12",  "%r13",   "%r14",  "%r15",   \
+ "%r16",  "%r17",   "%r18",  "%r19",   "%r20",  "%r21",   "%r22",  "%r23",   \
+ "%r24",  "%r25",   "%r26",  "%r27",   "%r28",  "%r29",   "%r30",  "%r31",   \
+ "%fr4",  "%fr4R",  "%fr5",  "%fr5R",  "%fr6",  "%fr6R",  "%fr7",  "%fr7R",  \
+ "%fr8",  "%fr8R",  "%fr9",  "%fr9R",  "%fr10", "%fr10R", "%fr11", "%fr11R", \
+ "%fr12", "%fr12R", "%fr13", "%fr13R", "%fr14", "%fr14R", "%fr15", "%fr15R", \
+ "%fr16", "%fr16R", "%fr17", "%fr17R", "%fr18", "%fr18R", "%fr19", "%fr19R", \
+ "%fr20", "%fr20R", "%fr21", "%fr21R", "%fr22", "%fr22R", "%fr23", "%fr23R", \
+ "%fr24", "%fr24R", "%fr25", "%fr25R", "%fr26", "%fr26R", "%fr27", "%fr27R", \
+ "%fr28", "%fr28R", "%fr29", "%fr29R", "%fr30", "%fr30R", "%fr31", "%fr31R", \
  "SAR"}
+
+#define ADDITIONAL_REGISTER_NAMES \
+{{"%fr4L",32}, {"%fr5L",34}, {"%fr6L",36}, {"%fr7L",38},		\
+ {"%fr8L",40}, {"%fr9L",42}, {"%fr10L",44}, {"%fr11L",46},		\
+ {"%fr12L",48}, {"%fr13L",50}, {"%fr14L",52}, {"%fr15L",54},		\
+ {"%fr16L",56}, {"%fr17L",58}, {"%fr18L",60}, {"%fr19L",62},		\
+ {"%fr20L",64}, {"%fr21L",66}, {"%fr22L",68}, {"%fr23L",70},		\
+ {"%fr24L",72}, {"%fr25L",74}, {"%fr26L",76}, {"%fr27L",78},		\
+ {"%fr28L",80}, {"%fr29L",82}, {"%fr30L",84}, {"%fr31R",86},		\
+ {"%cr11",88}}
 
 /* How to renumber registers for dbx and gdb.
 
    Registers 0  - 31 remain unchanged.
 
-   Registers 32 - 43 are mapped to 72 - 94 (even numbers only)
+   Registers 32 - 87 are mapped to 72 - 127
 
-   Registers 44 - 100 are mapped to 72 - 128 
-
-   Register 101 is mapped to 32.  */
+   Register 88 is mapped to 32.  */
 
 #define DBX_REGISTER_NUMBER(REGNO) \
-  ((REGNO) <= 31 ? (REGNO) : 					\
-   ((REGNO) > 31 && (REGNO) <= 43 ? ((REGNO) - 32) * 2 + 72 : 	\
-    ((REGNO) > 43 && (REGNO) <= 100 ? (REGNO) + 28 : 32)))
+  ((REGNO) <= 31 ? (REGNO) :						\
+   ((REGNO) > 31 && (REGNO) <= 87 ? (REGNO) + 40 : 32))
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
