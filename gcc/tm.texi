@@ -6387,6 +6387,13 @@ If defined, @code{main} will call @code{__main} despite the presence of
 where the init section is not actually run automatically, but is still
 useful for collecting the lists of constructors and destructors.
 
+@item SUPPORTS_INIT_PRIORITY
+@findex SUPPORTS_INIT_PRIORITY
+If nonzero, the C++ @code{init_priority} attribute is supported and the
+compiler should emit instructions to control the order of initialization
+of objects.  If zero, the compiler will issue an error message upon
+encountering an @code{init_priority} attribute.
+
 @item ASM_OUTPUT_CONSTRUCTOR (@var{stream}, @var{name})
 @findex ASM_OUTPUT_CONSTRUCTOR
 Define this macro as a C statement to output on the stream @var{stream}

@@ -1,7 +1,7 @@
 /* Definitions of various defaults for how to do assembler output
    (most of which are designed to be appropriate for GAS or for
    some BSD assembler).
-   Copyright (C) 1992, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1992, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
@@ -166,6 +166,12 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #  define TARGET_ATTRIBUTE_WEAK
 # endif
 #endif
+
+/* If the target supports init_priority C++ attribute, give
+   SUPPORTS_INIT_PRIORITY a nonzero value.  */
+#ifndef SUPPORTS_INIT_PRIORITY
+#define SUPPORTS_INIT_PRIORITY 1
+#endif /* SUPPORTS_INIT_PRIORITY */
 
 /* If we have a definition of INCOMING_RETURN_ADDR_RTX, assume that
    the rest of the DWARF 2 frame unwind support is also provided.  */

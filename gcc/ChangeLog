@@ -1,3 +1,11 @@
+2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* defaults.h (SUPPORTS_INIT_PRIORITY): New macro to indicate the
+	linker supports the init_priority C++ attribute.
+	* tm.texi (SUPPORTS_INIT_PRIORITY): Documentation for new macro.
+	* config/mips/iris6.h (SUPPORTS_INIT_PRIORITY): Indicate Irix
+	linker does not support init_priority C++ attribute.
+
 Sun Jan 14 22:31:30 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* Makefile.in (libgcc1-test.o): Depends on stmp-int-hdrs.
