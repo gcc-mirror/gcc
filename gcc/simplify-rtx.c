@@ -1,6 +1,6 @@
 /* RTL simplification functions for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1676,6 +1676,7 @@ struct cfc_args
 {
   rtx op0, op1;			/* Input */
   int equal, op0lt, op1lt;	/* Output */
+  int unordered;
 };
 
 static void
@@ -1685,11 +1686,19 @@ check_fold_consts (data)
   struct cfc_args *args = (struct cfc_args *) data;
   REAL_VALUE_TYPE d0, d1;
 
+  /* We may possibly raise an exception while reading the value.  */
+  args->unordered = 1;
   REAL_VALUE_FROM_CONST_DOUBLE (d0, args->op0);
   REAL_VALUE_FROM_CONST_DOUBLE (d1, args->op1);
+
+  /* Comparisons of Inf versus Inf are ordered.  */
+  if (REAL_VALUE_ISNAN (d0)
+      || REAL_VALUE_ISNAN (d1))
+    return;
   args->equal = REAL_VALUES_EQUAL (d0, d1);
   args->op0lt = REAL_VALUES_LESS (d0, d1);
   args->op1lt = REAL_VALUES_LESS (d1, d0);
+  args->unordered = 0;
 }
 
 /* Like simplify_binary_operation except used for relational operators.
@@ -1772,9 +1781,32 @@ simplify_relational_operation (code, mode, op0, op1)
       args.op0 = op0;
       args.op1 = op1;
       
-      if (do_float_handler(check_fold_consts, (PTR) &args) == 0)
-	/* We got an exception from check_fold_consts() */
-	return 0;
+      
+      if (!do_float_handler(check_fold_consts, (PTR) &args))
+	args.unordered = 1;
+
+      if (args.unordered)
+	switch (code)
+	  {
+	  case UNEQ:
+	  case UNLT:
+	  case UNGT:
+	  case UNLE:
+	  case UNGE:
+	  case NE:
+	  case UNORDERED:
+	    return const_true_rtx;
+	  case EQ:
+	  case LT:
+	  case GT:
+	  case LE:
+	  case GE:
+	  case LTGT:
+	  case ORDERED:
+	    return const0_rtx;
+	  default:
+	    return 0;
+	  }
 
       /* Receive output from check_fold_consts() */
       equal = args.equal;
@@ -1905,12 +1937,16 @@ simplify_relational_operation (code, mode, op0, op1)
   switch (code)
     {
     case EQ:
+    case UNEQ:
       return equal ? const_true_rtx : const0_rtx;
     case NE:
+    case LTGT:
       return ! equal ? const_true_rtx : const0_rtx;
     case LT:
+    case UNLT:
       return op0lt ? const_true_rtx : const0_rtx;
     case GT:
+    case UNGT:
       return op1lt ? const_true_rtx : const0_rtx;
     case LTU:
       return op0ltu ? const_true_rtx : const0_rtx;
@@ -1924,6 +1960,10 @@ simplify_relational_operation (code, mode, op0, op1)
       return equal || op0ltu ? const_true_rtx : const0_rtx;
     case GEU:
       return equal || op1ltu ? const_true_rtx : const0_rtx;
+    case ORDERED:
+      return const_true_rtx;
+    case UNORDERED:
+      return const0_rtx;
     default:
       abort ();
     }

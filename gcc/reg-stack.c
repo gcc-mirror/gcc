@@ -1,6 +1,6 @@
 /* Register to Stack convert for GNU compiler.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -1261,7 +1261,17 @@ swap_rtx_condition (insn)
       pat = PATTERN (insn);
     }
 
-  return swap_rtx_condition_1 (pat);
+  if (swap_rtx_condition_1 (pat))
+    {
+      INSN_CODE (insn) = -1;
+      if (recog_memoized (insn) == -1)
+	{
+	  swap_rtx_condition_1 (pat);
+	  return 0;
+	}
+      return 1;
+    }
+  return 0;
 }
 
 /* Handle a comparison.  Special care needs to be taken to avoid

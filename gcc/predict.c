@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -183,10 +183,18 @@ estimate_probability (loops_info)
 	  goto emitnote;
 
 	case EQ:
+	case UNEQ:
 	  prob = PROB_UNLIKELY;
 	  goto emitnote;
 	case NE:
+	case LTGT:
 	  prob = PROB_LIKELY;
+	  goto emitnote;
+	case ORDERED:
+	  prob = PROB_LIKELY;
+	  goto emitnote;
+	case UNORDERED:
+	  prob = PROB_UNLIKELY;
 	  goto emitnote;
 	case LE:
 	case LT:

@@ -1,6 +1,6 @@
 /* Emit RTL for the GNU C-Compiler expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2433,19 +2433,11 @@ try_split (pat, trial, last)
 		&& rtx_equal_p (PATTERN (XVECEXP (seq, 0, i)), pat))
   	      return trial;
 
-	  /* If we are splitting a JUMP_INSN, look for the JUMP_INSN in
-	     SEQ and copy our JUMP_LABEL to it.  If JUMP_LABEL is non-zero,
-	     increment the usage count so we don't delete the label.  */
-
-	  if (GET_CODE (trial) == JUMP_INSN)
-	    for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
-	      if (GET_CODE (XVECEXP (seq, 0, i)) == JUMP_INSN)
-		{
-		  JUMP_LABEL (XVECEXP (seq, 0, i)) = JUMP_LABEL (trial);
-
-		  if (JUMP_LABEL (trial))
-		    LABEL_NUSES (JUMP_LABEL (trial))++;
-		}
+	  /* Mark labels.  */
+	  for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
+	    if (GET_CODE (XVECEXP (seq, 0, i)) == JUMP_INSN)
+	      mark_jump_label (PATTERN (XVECEXP (seq, 0, i)),
+			       XVECEXP (seq, 0, i), 0, 0);
 
 	  /* If we are splitting a CALL_INSN, look for the CALL_INSN
 	     in SEQ and copy our CALL_INSN_FUNCTION_USAGE to it.  */

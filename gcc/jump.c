@@ -1,6 +1,6 @@
 /* Optimize jump instructions, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997
-   1998, 1999, 2000 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -113,7 +113,6 @@ static void find_cross_jump		PARAMS ((rtx, rtx, int, rtx *, rtx *));
 static void do_cross_jump		PARAMS ((rtx, rtx, rtx));
 static int jump_back_p			PARAMS ((rtx, rtx));
 static int tension_vector_labels	PARAMS ((rtx, int));
-static void mark_jump_label		PARAMS ((rtx, rtx, int, int));
 static void delete_computation		PARAMS ((rtx));
 static void redirect_exp_1		PARAMS ((rtx *, rtx, rtx, rtx));
 static int redirect_exp			PARAMS ((rtx, rtx, rtx));
@@ -2377,7 +2376,7 @@ tension_vector_labels (x, idx)
    Once reload has completed (CROSS_JUMP non-zero), we need not consider
    two labels distinct if they are separated by only USE or CLOBBER insns.  */
 
-static void
+void
 mark_jump_label (x, insn, cross_jump, in_mem)
      register rtx x;
      rtx insn;
