@@ -10,6 +10,22 @@
 	(bdesc_2srg): Likewise.
 	(bdesc_1arg): Likewise.
 
+	* config/i386/i386.c (ix86_init_builtins): Correct return type 
+	building v4hi_ftype_v4hi_int_int tree node.
+	(ix86_expand_sse_comi): Fix typo swapping operands.
+	Don't swap comparision condition, it is already swapped.
+	(ix86_expand_sse_compare): Before swapping operands
+	move operand 1 into new rtx and not the target rtx.
+	Don't swap comparison condition, it is already swapped.
+	Always check whether we need to create a new TARGET.
+
+	* config/i386/i386.md: (sse_comi) Fix typos.
+	(sse_ucomi): Likewise.
+	(cvtss2si): Fix operand 0 contraint.
+	(cvttss2si): Likewise.
+	(sse_unpckhps): Fix mode for operand 2.
+	(sse_unpcklps): Likewise.
+
 2001-09-25  Graham Stott  <grahams@redhat.com>
 
 	* sibcall.c (skip_copy_to_return_value): Tighten return value

@@ -10416,7 +10416,7 @@ ix86_init_mmx_sse_builtins ()
 			   tree_cons (NULL_TREE, integer_type_node,
 				      endlink));
   tree v4sf_ftype_v4sf_int
-    = build_function_type (integer_type_node,
+    = build_function_type (V4SF_type_node,
 			   tree_cons (NULL_TREE, V4SF_type_node,
 				      tree_cons (NULL_TREE, integer_type_node,
 						 endlink)));
@@ -10915,15 +10915,15 @@ ix86_expand_sse_compare (d, arglist, target)
      hardware.  */
   if (d->flag)
     {
-      target = gen_reg_rtx (tmode);
-      emit_move_insn (target, op1);
+      rtx tmp = gen_reg_rtx (mode1);
+      emit_move_insn (tmp, op1);
       op1 = op0;
-      op0 = target;
-      comparison = swap_condition (comparison);
+      op0 = tmp;
     }
-  else if (! target
-	   || GET_MODE (target) != tmode
-	   || ! (*insn_data[d->icode].operand[0].predicate) (target, tmode))
+
+  if (! target
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[d->icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
 
   if (! (*insn_data[d->icode].operand[1].predicate) (op0, mode0))
@@ -10969,7 +10969,6 @@ ix86_expand_sse_comi (d, arglist, target)
       rtx tmp = op1;
       op1 = op0;
       op0 = tmp;
-      comparison = swap_condition (comparison);
     }
 
   target = gen_reg_rtx (SImode);
