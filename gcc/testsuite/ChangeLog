@@ -4,7 +4,7 @@
 	* friend.c (add_friend): Check access for member functions
 	and templates.
 
-2003-06-17  Andrew Pinski  <pinskia@physics.uc.edu>
+2003-07-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/11384
 	* g++.dg/init/init-ref4.C: New test.
