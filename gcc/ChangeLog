@@ -1,3 +1,8 @@
+Sat Jun  6 17:25:14 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* mips.md (reload_{in,out}di): Allow other operand to be invalid
+	MEM and get any reload replacement before using address.
+
 Tue May 26 18:52:23 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload1.c (reload): Get MEM_IN_STRUCT_P and RTX_UNCHANGING_P
