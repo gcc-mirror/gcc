@@ -98,7 +98,7 @@
 
 ;; whether or not generating calls to position independent functions
 (define_attr "abicalls" "no,yes"
-  (const (symbol_ref "mips_abicalls")))
+  (const (symbol_ref "mips_abicalls_attr")))
 
 
 
