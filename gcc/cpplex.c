@@ -412,22 +412,30 @@ void
 cpp_scan_buffer_nooutput (pfile)
      cpp_reader *pfile;
 {
-  unsigned int old_written = CPP_WRITTEN (pfile);
   cpp_buffer *stop = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
+  const cpp_token *token;
 
+  /* In no-output mode, we can ignore everything but directives.  */
   for (;;)
     {
-      /* In no-output mode, we can ignore everything but directives.  */
-      const cpp_token *token = cpp_get_token (pfile);
+      token = _cpp_get_token (pfile);
+
       if (token->type == CPP_EOF)
 	{
 	  cpp_pop_buffer (pfile);
 	  if (CPP_BUFFER (pfile) == stop)
 	    break;
 	}
+
+      if (token->type == CPP_HASH && token->flags & BOL
+	  && pfile->token_list.directive)
+	{
+	  process_directive (pfile, token);
+	  continue;
+	}
+
       _cpp_skip_rest_of_line (pfile);
     }
-  CPP_SET_WRITTEN (pfile, old_written);
 }
 
 /* Scan until CPP_BUFFER (pfile) is exhausted, writing output to PRINT.  */
@@ -441,12 +449,13 @@ cpp_scan_buffer (pfile, print)
 
   for (;;)
     {
-      token = cpp_get_token (pfile);
+      token = _cpp_get_token (pfile);
       if (token->type == CPP_EOF)
 	{
 	  cpp_pop_buffer (pfile);
 	  if (CPP_BUFFER (pfile) == stop)
 	    return;
+
 	  cpp_output_tokens (pfile, print, CPP_BUF_LINE (CPP_BUFFER (pfile)));
 	  prev = 0;
 	  continue;
@@ -454,21 +463,32 @@ cpp_scan_buffer (pfile, print)
 
       if (token->flags & BOL)
 	{
+	  if (token->type == CPP_HASH && pfile->token_list.directive)
+	    {
+	      process_directive (pfile, token);
+	      continue;
+	    }
+
 	  cpp_output_tokens (pfile, print, pfile->token_list.line);
 	  prev = 0;
 	}
 
-      output_token (pfile, token, prev);
+      if (token->type != CPP_PLACEMARKER)
+	output_token (pfile, token, prev);
+
       prev = token;
     }
 }
 
 /* Scan a single line of the input into the token_buffer.  */
-void
+int
 cpp_scan_line (pfile)
      cpp_reader *pfile;
 {
   const cpp_token *token, *prev = 0;
+
+  if (pfile->buffer == NULL)
+    return 0;
 
   do
     {
@@ -479,11 +499,18 @@ cpp_scan_line (pfile)
 	  break;
 	}
 
+      /* If the last token on a line results from a macro expansion,
+	 the check below will fail to stop us from proceeding to the
+	 next line - so make sure we stick in a newline, at least.  */
+      if (token->flags & BOL)
+	CPP_PUTC (pfile, '\n');
+
       output_token (pfile, token, prev);
       prev = token;
     }
   while (pfile->cur_context > 0
 	 || pfile->contexts[0].posn < pfile->contexts[0].count);
+  return 1;
 }
 
 /* Helper routine used by parse_include, which can't see spell_token.

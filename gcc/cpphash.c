@@ -576,6 +576,11 @@ save_expansion (pfile, info)
 	    dest->flags = token[-1].flags | STRINGIFY_ARG;
 	  else
 	    dest->flags = token->flags;  /* Particularly PREV_WHITE.  */
+	  /* Turn off PREV_WHITE if we immediately follow a paste.
+	     That way, even if the paste turns out to be illegal, there
+	     will be no space between the two tokens in the output.  */
+	  if (token[-1].type == CPP_PASTE)
+	    dest->flags &= ~PREV_WHITE;
 	  dest++;
 	  continue;
 
@@ -602,6 +607,8 @@ save_expansion (pfile, info)
 	  dest->val.str.text = buf;
 	  buf += dest->val.str.len;
 	}
+      if (token[-1].type == CPP_PASTE)
+	dest->flags &= ~PREV_WHITE;
       dest++;
     }
 

@@ -636,6 +636,7 @@ struct cpp_hashnode
 };
 
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
+extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern cpp_printer *cpp_printer_init PARAMS ((cpp_reader *, cpp_printer *));
 extern int cpp_start_read PARAMS ((cpp_reader *, cpp_printer *, const char *));
@@ -688,7 +689,7 @@ extern cpp_buffer *cpp_push_buffer	PARAMS ((cpp_reader *,
 extern cpp_buffer *cpp_pop_buffer	PARAMS ((cpp_reader *));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *, cpp_printer *));
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *));
-extern void cpp_scan_line		PARAMS ((cpp_reader *));
+extern int cpp_scan_line		PARAMS ((cpp_reader *));
 extern int cpp_ideq			PARAMS ((const cpp_token *,
 						 const char *));
 

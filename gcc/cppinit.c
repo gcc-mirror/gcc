@@ -106,14 +106,14 @@ static void merge_include_chains	PARAMS ((cpp_reader *));
 
 static void initialize_dependency_output PARAMS ((cpp_reader *));
 static void initialize_standard_includes PARAMS ((cpp_reader *));
-static void new_pending_directive		PARAMS ((struct cpp_pending *,
+static void new_pending_directive	PARAMS ((struct cpp_pending *,
 						 const char *,
 						 cl_directive_handler));
 #ifdef HOST_EBCDIC
 static int opt_comp			PARAMS ((const void *, const void *));
+static void sort_options		PARAMS ((void));
 #endif
 static int parse_option			PARAMS ((const char *));
-static int handle_option		PARAMS ((cpp_reader *, int, char **));
 
 /* Fourth argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
@@ -408,6 +408,10 @@ void
 cpp_reader_init (pfile)
      cpp_reader *pfile;
 {
+#ifdef HOST_EBCDIC
+  sort_options ();
+#endif
+
   memset ((char *) pfile, 0, sizeof (cpp_reader));
 
   pfile->token_buffer_size = 200;
@@ -1063,6 +1067,22 @@ static const struct cl_option cl_options[] =
 #undef DEF_OPT
 #undef COMMAND_LINE_OPTIONS
 
+#ifdef HOST_EBCDIC
+static void
+sort_options (void)
+{
+  static int opts_sorted = 0;
+
+  if (!opts_sorted)
+    {
+      opts_sorted = 1;
+      /* For non-ASCII hosts, the array needs to be sorted at runtime */
+      qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
+    }
+}
+#endif
+
+
 /* Perform a binary search to find which, if any, option the given
    command-line matches.  Returns its index in the option array,
    negative on failure.  Complications arise since some options can be
@@ -1131,8 +1151,8 @@ parse_option (input)
    Can be called multiple times, to handle multiple sets of options.
    Returns number of strings consumed.  */
 
-static int
-handle_option (pfile, argc, argv)
+int
+cpp_handle_option (pfile, argc, argv)
      cpp_reader *pfile;
      int argc;
      char **argv;
@@ -1637,20 +1657,9 @@ cpp_handle_options (pfile, argc, argv)
   int i;
   int strings_processed;
 
-#ifdef HOST_EBCDIC
-  static int opts_sorted = 0;
-
-  if (!opts_sorted)
-    {
-      opts_sorted = 1;
-      /* For non-ASCII hosts, the array needs to be sorted at runtime */
-      qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
-    }
-#endif
-
   for (i = 0; i < argc; i += strings_processed)
     {
-      strings_processed = handle_option (pfile, argc - i, argv + i);
+      strings_processed = cpp_handle_option (pfile, argc - i, argv + i);
       if (strings_processed == 0)
 	break;
     }

@@ -1,3 +1,18 @@
+2000-07-15  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (save_expansion): Clear PREV_WHITE on tokens
+	immediately following a paste operator.
+	* cppinit.c (sort_options): New function (only for HOST_EBCDIC).
+	(cpp_reader_init): Call it, if HOST_EBCDIC.
+	(cpp_handle_options): Do not sort option list here.
+	(handle_option): Rename to cpp_handle_option and export.
+	* cpplex.c (cpp_scan_buffer_nooutput, cpp_scan_buffer): Use
+	_cpp_get_token directly.
+	(cpp_scan_line): Return 0 at EOF, 1 otherwise.
+	* cpplib.c (cpp_push_buffer): Don't set new->lineno to 1.
+	* cpplib.h: Prototype cpp_handle_option.  Update prototype of
+	cpp_scan_line.
+
 2000-07-15  Richard Henderson  <rth@cygnus.com>
 
 	* fold-const.c (extract_muldiv): Don't optimize past an unsigned
