@@ -1,7 +1,43 @@
+2000-06-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* ggc-none.c, ggc-simple.c, ggc-page.c (ggc_alloc_obj): Rename
+	it ggc_alloc, drop second argument, never clear returned memory.
+	* ggc-common.c (ggc_alloc_string): Use ggc_alloc.
+	(ggc_alloc_cleared): New.
+	* ggc.h: Prototype ggc_alloc and ggc_alloc_cleared, not
+	ggc_alloc_obj.  Remove ggc_alloc macro.
+	(ggc_alloc_rtx, ggc_alloc_rtvec, ggc_alloc_tree): Use ggc_alloc.
+
+	* rtl.c (rtvec_alloc): Clear the vector always.
+	(rtx_alloc): Clear the first word always.  Remove dirty
+	obstack tricks (this routine is no longer a bottleneck).
+	* tree.c (make_node): Clear the new node always.
+	(make_tree_vec): Likewise.
+	(tree_cons): Clear the common structure always.  
+	(build1): Likewise; also, clear TREE_COMPLEXITY.
+	* gengenrtl.c: Use puts wherever possible.  Remove extra
+	newlines.
+	(gendef): Clear the first word of an RTX in the generator
+	function, irrespective of ggc_p.  Initialize '0' slots to
+	NULL.
+	(genlegend): Don't generate obstack_alloc_rtx routine, just a
+	thin wrapper macro around obstack_alloc.
+
+	* stmt.c (expand_fixup): Use ggc_alloc.
+	* c-typeck.c (add_pending_init): Use ggc_alloc.
+	* emit-rtl.c (init_emit_once): Clear CONST_DOUBLE_CHAIN(tem).
+	* varasm.c (immed_double_const): Set CONST_DOUBLE_MEM(r) to
+	const0_rtx when it is created.
+	(immed_real_const_1): Set CONST_DOUBLE_CHAIN(r) to NULL_RTX if
+	we are not in a function.
+
+	* tree.c (tree_class_check_failed): Make second arg an int.
+	* tree.h: Update prototype.
+
 2000-06-09  Geoff Keating  <geoffk@cygnus.com>
 
 	* tree.h (VOID_TYPE_P): Don't look at the TYPE_MAIN_VARIANT
-	of an error_type_node.
+	of an error_mark_node.
 
 Fri Jun  9 20:35:13 2000  Denis Chertykov  <denisc@overta.ru>
 

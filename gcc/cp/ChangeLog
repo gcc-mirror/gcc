@@ -1,3 +1,9 @@
+2000-06-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* call.c (add_candidate): Use ggc_alloc_cleared.
+	* decl.c (lookup_label): Likewise.
+	* lex.c (retrofit_lang_decl): Likewise.
+
 2000-06-09  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* semantics.c (expand_body): Push to TV_EXPAND.

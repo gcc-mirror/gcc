@@ -611,9 +611,8 @@ static unsigned char const size_lookup[257] =
    memory is zeroed; otherwise, its contents are undefined.  */
 
 void *
-ggc_alloc_obj (size, zero)
+ggc_alloc (size)
      size_t size;
-     int zero;
 {
   unsigned order, word, bit, object_offset;
   struct page_entry *entry;
@@ -703,13 +702,10 @@ ggc_alloc_obj (size, zero)
   result = entry->page + object_offset;
 
 #ifdef GGC_POISON
-  /* `Poison' the entire allocated object before zeroing the requested area,
-     so that bytes beyond the end, if any, will not necessarily be zero.  */
+  /* `Poison' the entire allocated object, including any padding at
+     the end.  */
   memset (result, 0xaf, 1 << order);
 #endif
-
-  if (zero)
-    memset (result, 0, size);
 
   /* Keep track of how many bytes are being allocated.  This
      information is used in deciding when to collect.  */

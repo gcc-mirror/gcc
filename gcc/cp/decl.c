@@ -4832,7 +4832,7 @@ lookup_label (id)
      We do this before calling make_label_decl so that we get the
      IDENTIFIER_LABEL_VALUE before the new label is declared.  */
   ent = ((struct named_label_list *)
-	 ggc_alloc_obj (sizeof (struct named_label_list), 1));
+	 ggc_alloc_cleared (sizeof (struct named_label_list)));
   ent->old_value = IDENTIFIER_LABEL_VALUE (id);
   ent->next = named_labels;
   named_labels = ent;

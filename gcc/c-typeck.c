@@ -5595,7 +5595,7 @@ add_pending_init (purpose, value)
 	}
     }
 
-  r = (struct init_node *) ggc_alloc_obj (sizeof (struct init_node), 0);
+  r = (struct init_node *) ggc_alloc (sizeof (struct init_node));
   r->purpose = purpose;
   r->value = value;
 

@@ -309,10 +309,10 @@ struct tree_common
     __t; })
 
 extern void tree_check_failed PARAMS ((const tree, enum tree_code,
-				     const char *, int, const char *))
+				       const char *, int, const char *))
     ATTRIBUTE_NORETURN;
-extern void tree_class_check_failed PARAMS ((const tree, char,
-					   const char *, int, const char *))
+extern void tree_class_check_failed PARAMS ((const tree, int,
+					     const char *, int, const char *))
     ATTRIBUTE_NORETURN;
 
 #else /* not ENABLE_TREE_CHECKING, or not gcc */

@@ -1011,7 +1011,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
     {
       /* Ok, a fixup is needed.  Add a fixup to the list of such.  */
       struct goto_fixup *fixup
-	= (struct goto_fixup *) ggc_alloc_obj (sizeof (struct goto_fixup), 0);
+	= (struct goto_fixup *) ggc_alloc (sizeof (struct goto_fixup));
       /* In case an old stack level is restored, make sure that comes
 	 after any pending stack adjust.  */
       /* ?? If the fixup isn't to come at the present position,

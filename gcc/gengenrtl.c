@@ -272,7 +272,7 @@ genmacro (idx)
     if (*p != '0')
       printf (", (ARG%d)", i++);
 
-  printf (")\n");
+  puts (")");
 }
 
 /* Generate the code for the function to generate RTL whose
@@ -293,30 +293,31 @@ gendef (format)
     if (*p != '0')
       printf (", arg%d", i++);
 
-  printf (")\n     RTX_CODE code;\n     enum machine_mode mode;\n");
+  puts (")\n     RTX_CODE code;\n     enum machine_mode mode;");
   for (p = format, i = 0; *p != 0; p++)
     if (*p != '0')
       printf ("     %sarg%d;\n", type_from_format (*p), i++);
 
   /* Now write out the body of the function itself, which allocates
      the memory and initializes it.  */
-  printf ("{\n");
-  printf ("  rtx rt;\n");
-  printf ("  if (ggc_p)\n");
-  printf ("    rt = ggc_alloc_rtx (%d);\n", 
-	   (int) strlen (format));
-  printf ("  else\n");
-  printf ("    rt = obstack_alloc_rtx (sizeof (struct rtx_def) + %d * sizeof (rtunion));\n",
-	   (int) strlen (format) - 1);
+  puts ("{");
+  puts ("  rtx rt;");
+  puts ("  if (ggc_p)");
+  printf ("    rt = ggc_alloc_rtx (%d);\n", (int) strlen (format));
+  puts ("  else");
+  printf ("    rt = obstack_alloc_rtx (%d);\n", (int) strlen (format));
 
-  printf ("  PUT_CODE (rt, code);\n");
-  printf ("  PUT_MODE (rt, mode);\n");
+  puts ("  memset (rt, 0, sizeof (struct rtx_def) - sizeof (rtunion));\n");
+  puts ("  PUT_CODE (rt, code);");
+  puts ("  PUT_MODE (rt, mode);");
 
   for (p = format, i = j = 0; *p ; ++p, ++i)
     if (*p != '0')
       printf ("  %s (rt, %d) = arg%d;\n", accessor_from_format (*p), i, j++);
+    else
+      printf ("  X0EXP (rt, %d) = NULL_RTX;\n", i);
 
-  printf ("\n  return rt;\n}\n\n");
+  puts ("\n  return rt;\n}\n");
 }
 
 /* Generate the documentation header for files we write.  */
@@ -324,8 +325,7 @@ gendef (format)
 static void
 genlegend ()
 {
-  printf ("/* Generated automatically by the program `gengenrtl'\n");
-  printf ("   from the RTL description file `rtl.def' */\n\n");
+  puts ("/* Generated automatically by gengenrtl from rtl.def.  */\n");
 }
 
 /* Generate the text of the header file we make, genrtl.h.  */
@@ -339,7 +339,7 @@ genheader ()
   for (fmt = formats; *fmt; ++fmt)
     gendecl (*fmt);
 
-  printf ("\n");
+  putchar ('\n');
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     if (! special_format (defs[i].format))
@@ -353,19 +353,16 @@ gencode ()
 {
   const char **fmt;
 
-  puts ("#include \"config.h\"\n");
-  puts ("#include \"system.h\"\n");
-  puts ("#include \"obstack.h\"\n");
-  puts ("#include \"rtl.h\"\n");
-  puts ("#include \"ggc.h\"\n\n");
-  puts ("extern struct obstack *rtl_obstack;\n\n");
-  puts ("static rtx obstack_alloc_rtx PARAMS ((int length));\n");
-  puts ("static rtx\n");
-  puts ("obstack_alloc_rtx (length)\n");
-  puts ("     register int length;\n{\n");
-  puts ("  rtx rt = (rtx) obstack_alloc (rtl_obstack, length);\n\n");
-  puts ("  memset(rt, 0, sizeof(struct rtx_def) - sizeof(rtunion));\n\n");
-  puts ("  return rt;\n}\n\n");
+  puts ("#include \"config.h\"");
+  puts ("#include \"system.h\"");
+  puts ("#include \"obstack.h\"");
+  puts ("#include \"rtl.h\"");
+  puts ("#include \"ggc.h\"\n");
+  puts ("extern struct obstack *rtl_obstack;\n");
+  puts ("#define obstack_alloc_rtx(n)					\\");
+  puts ("    ((rtx) obstack_alloc (rtl_obstack,				\\");
+  puts ("			  sizeof (struct rtx_def)		\\");
+  puts ("			  + ((n) - 2) * sizeof (rtunion)))\n");
 
   for (fmt = formats; *fmt != 0; fmt++)
     gendef (*fmt);
