@@ -1,5 +1,12 @@
 Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* rtl.h (mem_for_const_double): New declaration.
+	* varasm.c (mem_for_const_double): New function.
+	* config/convex/convex.md (movdf): Use it.
+	* config/m68k/hp320.h (LEGITIMATE_PIC_OPERAND_P): Likewise.
+	* config/m68k/linux.h, config/m68k/m68k.h: Likewise.
+	* config/m68k/m68kv4.h: Likewise.
+
 	* config/alpha/alpha.h (SECONDARY_MEMORY_NEEDED): Adjust for addition
 	of new GP reg classes.
 
