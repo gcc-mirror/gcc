@@ -158,25 +158,26 @@ init_expr_once ()
       /* See if there is some register that can be used in this mode and
 	 directly loaded or stored from memory.  */
 
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER
-	   && (direct_load[(int) mode] == 0 || direct_store[(int) mode] == 0);
-	   regno++)
-	{
-	  if (! HARD_REGNO_MODE_OK (regno, mode))
-	    continue;
+      if (mode != VOIDmode && mode != BLKmode)
+	for (regno = 0; regno < FIRST_PSEUDO_REGISTER
+	     && (direct_load[(int) mode] == 0 || direct_store[(int) mode] == 0);
+	     regno++)
+	  {
+	    if (! HARD_REGNO_MODE_OK (regno, mode))
+	      continue;
 
-	  reg = gen_rtx (REG, mode, regno);
+	    reg = gen_rtx (REG, mode, regno);
 
-	  SET_SRC (pat) = mem;
-	  SET_DEST (pat) = reg;
-	  if (recog (pat, insn, &num_clobbers) >= 0)
-	    direct_load[(int) mode] = 1;
+	    SET_SRC (pat) = mem;
+	    SET_DEST (pat) = reg;
+	    if (recog (pat, insn, &num_clobbers) >= 0)
+	      direct_load[(int) mode] = 1;
 
-	  SET_SRC (pat) = reg;
-	  SET_DEST (pat) = mem;
-	  if (recog (pat, insn, &num_clobbers) >= 0)
-	    direct_store[(int) mode] = 1;
-	}
+	    SET_SRC (pat) = reg;
+	    SET_DEST (pat) = mem;
+	    if (recog (pat, insn, &num_clobbers) >= 0)
+	      direct_store[(int) mode] = 1;
+	  }
 
       movstr_optab[(int) mode] = CODE_FOR_nothing;
     }
@@ -1320,6 +1321,31 @@ use_regs (regno, nregs)
   for (i = 0; i < nregs; i++)
     emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, word_mode, regno + i)));
 }
+
+/* Mark the instructions since PREV as a libcall block.
+   Add REG_LIBCALL to PREV and add a REG_RETVAL to the most recent insn.  */
+
+static rtx
+group_insns (prev)
+     rtx prev;
+{
+  rtx insn_first;
+  rtx insn_last;
+
+  /* Find the instructions to mark */
+  if (prev)
+    insn_first = NEXT_INSN (prev);
+  else
+    insn_first = get_insns ();
+
+  insn_last = get_last_insn ();
+
+  REG_NOTES (insn_last) = gen_rtx (INSN_LIST, REG_RETVAL, insn_first,
+				   REG_NOTES (insn_last));
+
+  REG_NOTES (insn_first) = gen_rtx (INSN_LIST, REG_LIBCALL, insn_last,
+				    REG_NOTES (insn_first));
+}
 
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes.  */
@@ -1359,6 +1385,8 @@ emit_move_insn (x, y)
      rtx x, y;
 {
   enum machine_mode mode = GET_MODE (x);
+  enum machine_mode submode;
+  enum mode_class class = GET_MODE_CLASS (mode);
   int i;
 
   x = protect_from_queue (x, 1);
@@ -1388,9 +1416,46 @@ emit_move_insn (x, y)
   if (mode == BLKmode)
     abort ();
 
+  if (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
+    submode = mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
+			     (class == MODE_COMPLEX_INT
+			      ? MODE_INT : MODE_FLOAT),
+			     0);
+
   if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     return
       emit_insn (GEN_FCN (mov_optab->handlers[(int) mode].insn_code) (x, y));
+
+  /* Expand complex moves by moving real part and imag part, if posible.  */
+  else if ((class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
+	   && submode != BLKmode
+	   && (mov_optab->handlers[(int) submode].insn_code
+	       != CODE_FOR_nothing))
+    {
+      /* Don't split destination if it is a stack push.  */
+      int stack = push_operand (x, GET_MODE (x));
+      rtx prev = get_last_insn ();
+
+      /* Tell flow that the whole of the destination is being set.  */
+      if (GET_CODE (x) == REG)
+	emit_insn (gen_rtx (CLOBBER, VOIDmode, x));
+
+      /* If this is a stack, push the highpart first, so it
+	 will be in the argument order.
+
+	 In that case, change_address is used only to convert
+	 the mode, not to change the address.  */
+      emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
+		 ((stack ? change_address (x, submode, (rtx) 0)
+		   : gen_highpart (submode, x)),
+		  gen_highpart (submode, y)));
+      emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
+		 ((stack ? change_address (x, submode, (rtx) 0)
+		   : gen_lowpart (submode, x)),
+		  gen_lowpart (submode, y)));
+
+      group_insns (prev);
+    }
 
   /* This will handle any multi-word mode that lacks a move_insn pattern.
      However, you will get better code if you define such patterns,
@@ -1398,6 +1463,7 @@ emit_move_insn (x, y)
   else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
       rtx last_insn = 0;
+      rtx prev_insn = get_last_insn ();
 
       for (i = 0;
 	   i < (GET_MODE_SIZE (mode)  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
@@ -1422,6 +1488,9 @@ emit_move_insn (x, y)
 
 	  last_insn = emit_move_insn (xpart, ypart);
 	}
+      /* Mark these insns as a libcall block.  */
+      group_insns (prev_insn);
+
       return last_insn;
     }
   else
@@ -3763,6 +3832,118 @@ expand_expr (exp, target, tmode, modifier)
     case BUFFER_REF:
       abort ();
 
+    /* IN_EXPR: Inlined pascal set IN expression.
+
+       Algorithm:
+         rlo       = set_low - (set_low%bits_per_word);
+	 the_word  = set [ (index - rlo)/bits_per_word ];
+	 bit_index = index % bits_per_word;
+	 bitmask   = 1 << bit_index;
+	 return !!(the_word & bitmask);  */
+    case IN_EXPR:
+      preexpand_calls (exp);
+      {
+	tree set = TREE_OPERAND (exp, 0);
+	tree index = TREE_OPERAND (exp, 1);
+	tree set_type = TREE_TYPE (set);
+
+	tree set_low_bound = TYPE_MIN_VALUE (TYPE_DOMAIN (set_type));
+	tree set_high_bound = TYPE_MAX_VALUE (TYPE_DOMAIN (set_type));
+
+	rtx index_val;
+	rtx lo_r;
+	rtx hi_r;
+	rtx rlow;
+	rtx diff, quo, rem, addr, bit, result;
+	rtx setval, setaddr;
+	enum machine_mode index_mode = TYPE_MODE (TREE_TYPE (index));
+
+	if (target == 0)
+	  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+
+	/* If domain is empty, answer is no.  */
+	if (tree_int_cst_lt (set_high_bound, set_low_bound))
+	  return const0_rtx;
+
+	index_val = expand_expr (index, 0, VOIDmode, 0);
+	lo_r = expand_expr (set_low_bound, 0, VOIDmode, 0);
+	hi_r = expand_expr (set_high_bound, 0, VOIDmode, 0);
+	setval = expand_expr (set, 0, VOIDmode, 0);
+	setaddr = XEXP (setval, 0); 
+
+	/* Compare index against bounds, if they are constant.  */
+	if (GET_CODE (index_val) == CONST_INT
+	    && GET_CODE (lo_r) == CONST_INT)
+	  {
+	    if (INTVAL (index_val) < INTVAL (lo_r))
+	      return const0_rtx;
+	  }
+
+	if (GET_CODE (index_val) == CONST_INT
+	    && GET_CODE (hi_r) == CONST_INT)
+	  {
+	    if (INTVAL (hi_r) < INTVAL (index_val))
+	      return const0_rtx;
+	  }
+
+	/* If we get here, we have to generate the code for both cases
+	   (in range and out of range).  */
+
+	op0 = gen_label_rtx ();
+	op1 = gen_label_rtx ();
+
+	if (! (GET_CODE (index_val) == CONST_INT
+	       && GET_CODE (lo_r) == CONST_INT))
+	  {
+	    emit_cmp_insn (index_val, lo_r, LT, 0, GET_MODE (index_val), 0, 0);
+	    emit_jump_insn (gen_blt (op1));
+	  }
+
+	if (! (GET_CODE (index_val) == CONST_INT
+	       && GET_CODE (hi_r) == CONST_INT))
+	  {
+	    emit_cmp_insn (index_val, hi_r, GT, 0, GET_MODE (index_val), 0, 0);
+	    emit_jump_insn (gen_bgt (op1));
+	  }
+
+	/* Calculate the element number of bit zero in the first word
+	   of the set.  */
+	if (GET_CODE (lo_r) == CONST_INT)
+	  rlow = gen_rtx (CONST_INT, VOIDmode,
+			  INTVAL (lo_r) & ~ (1 << BITS_PER_UNIT));
+	else
+	  rlow = expand_binop (index_mode, and_optab,
+			       lo_r, gen_rtx (CONST_INT, VOIDmode,
+					      ~ (1 << BITS_PER_UNIT)),
+			       0, 0, OPTAB_LIB_WIDEN);
+
+	diff = expand_binop (index_mode, sub_optab,
+			     index_val, rlow, 0, 0, OPTAB_LIB_WIDEN);
+
+	quo = expand_divmod (0, TRUNC_DIV_EXPR, index_mode, diff,
+			     gen_rtx (CONST_INT, VOIDmode, BITS_PER_UNIT),
+			     0, 0);
+	rem = expand_divmod (1, TRUNC_MOD_EXPR, index_mode, index_val,
+			     gen_rtx (CONST_INT, VOIDmode, BITS_PER_UNIT),
+			     0, 0);
+	addr = memory_address (byte_mode,
+			       expand_binop (index_mode, add_optab,
+					     diff, setaddr));
+	/* Extract the bit we want to examine */
+	bit = expand_shift (RSHIFT_EXPR, byte_mode,
+			    gen_rtx (MEM, byte_mode, addr), rem, 0, 1);
+	result = expand_binop (SImode, and_optab, bit, const1_rtx, target,
+			       1, OPTAB_LIB_WIDEN);
+	emit_move_insn (target, result);
+
+	/* Output the code to handle the out-of-range case.  */
+	emit_jump (op0);
+	emit_label (op1);
+	emit_move_insn (target, const0_rtx);
+	emit_label (op0);
+	return target;
+      }
+
     case WITH_CLEANUP_EXPR:
       if (RTL_EXPR_RTL (exp) == 0)
 	{
@@ -4840,6 +5021,88 @@ expand_expr (exp, target, tmode, modifier)
 
     case ENTRY_VALUE_EXPR:
       abort ();
+
+    /* COMPLEX type for Extended Pascal & Fortran  */
+    case COMPLEX_EXPR:
+      {
+	enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
+
+	rtx prev;
+
+	/* Get the rtx code of the operands.  */
+	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
+	op1 = expand_expr (TREE_OPERAND (exp, 1), 0, VOIDmode, 0);
+
+	if (! target)
+	  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+
+	prev = get_last_insn ();
+
+	/* Tell flow that the whole of the destination is being set.  */
+	if (GET_CODE (target) == REG)
+	  emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
+
+	/* Move the real (op0) and imaginary (op1) parts to their location.  */
+	emit_move_insn (gen_lowpart  (mode, target), op0);
+	emit_move_insn (gen_highpart (mode, target), op1);
+
+	/* Complex construction should appear as a single unit.  */
+	group_insns (prev);
+
+	return target;
+      }
+
+    case REALPART_EXPR:
+      {
+	enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
+	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
+	if (! target)
+	  target = gen_reg_rtx (mode);
+	emit_move_insn (target, gen_lowpart (mode, op0));
+	return target;
+      }		
+      
+    case IMAGPART_EXPR:
+      {
+	enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
+	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
+	if (! target)
+	  target = gen_reg_rtx (mode);
+	emit_move_insn (target, gen_highpart (mode, op0));
+	return target;
+      }		
+
+    case CONJ_EXPR:
+      {
+	enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
+	rtx imag_t;
+	rtx prev;
+	
+	op0  = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
+
+	if (! target)
+	  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+								    
+	prev = get_last_insn ();
+
+	/* Tell flow that the whole of the destination is being set.  */
+	if (GET_CODE (target) == REG)
+	  emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
+
+	/* Store the realpart and the negated imagpart to target.  */
+	emit_move_insn (gen_lowpart (mode, target), gen_lowpart (mode, op0));
+
+	imag_t = gen_highpart (mode, target);
+	temp   = expand_unop (mode, neg_optab,
+			      gen_highpart (mode, op0), imag_t, 0);
+	if (temp != imag_t)
+	  emit_move_insn (imag_t, temp);
+
+	/* Conjugate should appear as a single unit */
+	group_insns (prev);
+
+	return target;
+      }
 
     case ERROR_MARK:
       return const0_rtx;
