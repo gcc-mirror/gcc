@@ -12,6 +12,9 @@
 
 2003-11-05  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (compute_vrsave_mask): Correct off-by-one
+	error.
+
 	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Darwin
 	needs VRSAVE.
 
