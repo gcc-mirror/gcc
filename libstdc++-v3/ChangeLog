@@ -1,3 +1,14 @@
+2002-08-01  Rick Danos  <rdanos@hotmail.com>
+
+	PR libstdc++/7461
+	* config/os/newlib/ctype_noninline.h (classic_table): Add offset.
+	* config/os/newlib/ctype_inline.h (is): Use static_cast.
+
+2002-08-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* libsupc++/Makefile.am (LT_COMPILE): Remove C++ flags.
+	* libsupc++/Makefile.in: Regenerate.
+	
 2002-08-01  Benjamin Kosnik  <bkoz@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 	
