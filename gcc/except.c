@@ -2100,51 +2100,7 @@ sjlj_mark_call_sites (lp_info)
       /* Don't separate a call from it's argument loads.  */
       before = insn;
       if (GET_CODE (insn) == CALL_INSN)
-	{
-	  HARD_REG_SET parm_regs;
-	  int nparm_regs;
-	  
-	  /* Since different machines initialize their parameter registers
-	     in different orders, assume nothing.  Collect the set of all
-	     parameter registers.  */
-	  CLEAR_HARD_REG_SET (parm_regs);
-	  nparm_regs = 0;
-	  for (p = CALL_INSN_FUNCTION_USAGE (insn); p ; p = XEXP (p, 1))
-	    if (GET_CODE (XEXP (p, 0)) == USE
-		&& GET_CODE (XEXP (XEXP (p, 0), 0)) == REG)
-	      {
-		if (REGNO (XEXP (XEXP (p, 0), 0)) >= FIRST_PSEUDO_REGISTER)
-		  abort ();
-
-		/* We only care about registers which can hold function
-		   arguments.  */
-		if (! FUNCTION_ARG_REGNO_P (REGNO (XEXP (XEXP (p, 0), 0))))
-		  continue;
-
-		SET_HARD_REG_BIT (parm_regs, REGNO (XEXP (XEXP (p, 0), 0)));
-		nparm_regs++;
-	      }
-
-	  /* Search backward for the first set of a register in this set.  */
-	  while (nparm_regs)
-	    {
-	      before = PREV_INSN (before);
-
-	      /* Given that we've done no other optimizations yet,
-		 the arguments should be immediately available.  */
-	      if (GET_CODE (before) == CODE_LABEL)
-		abort ();
-
-	      p = single_set (before);
-	      if (p && GET_CODE (SET_DEST (p)) == REG
-		  && REGNO (SET_DEST (p)) < FIRST_PSEUDO_REGISTER
-		  && TEST_HARD_REG_BIT (parm_regs, REGNO (SET_DEST (p))))
-		{
-		  CLEAR_HARD_REG_BIT (parm_regs, REGNO (SET_DEST (p)));
-		  nparm_regs--;
-		}
-	    }
-	}
+         before = find_first_parameter_load (insn, NULL_RTX);
 
       start_sequence ();
       mem = change_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),

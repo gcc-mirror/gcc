@@ -1,3 +1,12 @@
+2002-02-08  Philip Blundell  <pb@nexus.co.uk>
+
+	Fix PR 5209:
+	* rtlanal.c (parms_set, find_first_parameter_load): Break out
+	from ...
+	* except.c (sjlj_mark_call_sites): ... here.  Handle multiple 
+	sets.
+	* rtl.h (find_first_parameter_load): Add prototype.
+
 2002-02-05  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_cmove):  Fix mode of

@@ -2507,3 +2507,82 @@ loc_mentioned_in_p (loc, in)
     }
   return 0;
 }
+
+struct parms_set_data
+{
+  int nregs;
+  HARD_REG_SET regs;
+};
+
+/* Helper function for noticing stores to parameter registers.  */
+static void
+parms_set (x, pat, data)
+	rtx x, pat ATTRIBUTE_UNUSED;
+	void *data;
+{
+  struct parms_set_data *d = data;
+  if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER
+      && TEST_HARD_REG_BIT (d->regs, REGNO (x)))
+    {
+      CLEAR_HARD_REG_BIT (d->regs, REGNO (x));
+      d->nregs--;
+    }
+}
+
+/* Look backward for first parameter to be loaded.  
+   Do not skip BOUNDARY.  */
+rtx
+find_first_parameter_load (call_insn, boundary)
+     rtx call_insn, boundary;
+{
+  struct parms_set_data parm;
+  rtx p, before;
+
+  /* Since different machines initialize their parameter registers
+     in different orders, assume nothing.  Collect the set of all
+     parameter registers.  */
+  CLEAR_HARD_REG_SET (parm.regs);
+  parm.nregs = 0;
+  for (p = CALL_INSN_FUNCTION_USAGE (call_insn); p; p = XEXP (p, 1))
+    if (GET_CODE (XEXP (p, 0)) == USE
+	&& GET_CODE (XEXP (XEXP (p, 0), 0)) == REG)
+      {
+	if (REGNO (XEXP (XEXP (p, 0), 0)) >= FIRST_PSEUDO_REGISTER)
+	  abort ();
+
+	/* We only care about registers which can hold function
+	   arguments.  */
+	if (!FUNCTION_ARG_REGNO_P (REGNO (XEXP (XEXP (p, 0), 0))))
+	  continue;
+
+	SET_HARD_REG_BIT (parm.regs, REGNO (XEXP (XEXP (p, 0), 0)));
+	parm.nregs++;
+      }
+  before = call_insn;
+
+  /* Search backward for the first set of a register in this set.  */
+  while (parm.nregs && before != boundary)
+    {
+      before = PREV_INSN (before);
+
+      /* It is possible that some loads got CSEed from one call to
+         another.  Stop in that case.  */
+      if (GET_CODE (before) == CALL_INSN)
+	break;
+
+      /* Our caller needs either ensure that we will find all sets
+         (in case code has not been optimized yet), or take care
+         for possible labels in a way by setting boundary to preceeding
+         CODE_LABEL.  */
+      if (GET_CODE (before) == CODE_LABEL)
+	{
+	  if (before != boundary)
+	    abort ();
+	  break;
+	}
+
+      if (INSN_P (before))
+        note_stores (PATTERN (before), parms_set, &parm);
+    }
+  return before;
+}
