@@ -195,11 +195,11 @@ do {				\
 /* No data type wants to be aligned rounder than this.
    32 bit values are aligned as such on the 300h for speed.  */
 #define BIGGEST_ALIGNMENT \
-((TARGET_H8300H && ! TARGET_ALIGN_STRUCT_300) ? 32 : 16)
+((TARGET_H8300H && ! TARGET_ALIGN_300) ? 32 : 16)
 
 /* No structure field wants to be aligned rounder than this.  */
 #define BIGGEST_FIELD_ALIGNMENT \
-((TARGET_H8300H && ! TARGET_ALIGN_STRUCT_300) ? 32 : 16)
+((TARGET_H8300H && ! TARGET_ALIGN_300) ? 32 : 16)
 
 /* The stack goes in 16/32 bit lumps.  */
 #define STACK_BOUNDARY (TARGET_H8300 ? 16 : 32)
