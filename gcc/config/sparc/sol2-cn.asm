@@ -51,4 +51,4 @@
 	ret
 	restore
 
-! Th-th-th-that's all folks!
+! Th-th-th-that is all folks!

@@ -2867,6 +2867,29 @@ changequote([,])dnl
 		tmake_file="sparc/t-sparcbare t-rtems"
 		tm_file=sparc/rtems.h
 		;;
+	sparcv9-*-solaris2*)
+		tm_file=sparc/sol2-sld-64.h
+		xm_file="sparc/xm-sysv4-64.h sparc/xm-sol2.h"
+		xm_defines="USG POSIX"
+		tmake_file=sparc/t-sol2
+		xmake_file=sparc/x-sysv4
+		extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
+		fixincludes=fixinc.wrap
+		float_format=i128
+		if [ x${enable_threads} = x ]; then
+		    enable_threads=$have_pthread_h
+		    if [ x${enable_threads} = x ]; then
+			enable_threads=$have_thread_h
+		    fi
+		fi
+		if [ x${enable_threads} = xyes ]; then
+		    if [ x${have_pthread_h} = xyes ]; then
+			thread_file='posix'
+		    else
+			thread_file='solaris'
+		    fi
+		fi
+		;;
 	sparc-*-solaris2*)
 		if test x$gnu_ld = xyes
 		then
