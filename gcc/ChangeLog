@@ -1,3 +1,7 @@
+2000-05-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-decl.c (pushdecl): Invert sense of test for non-global types.
+
 Tue May 23 18:11:42 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_cse_move2add): Honor TRULY_NOOP_TRUNCATION.

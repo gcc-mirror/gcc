@@ -2202,7 +2202,7 @@ pushdecl (x)
 	    {
 	      if (type == error_mark_node)
 		break;
-	      if (! TYPE_CONTEXT (type))
+	      if (TYPE_CONTEXT (type))
 		{
 		  warning_with_decl (x, "type of external `%s' is not global");
 		  /* By exiting the loop early, we leave TYPE nonzero,
