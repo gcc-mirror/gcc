@@ -3290,7 +3290,15 @@ override_options ()
   else
     {
       char *p = mips_cpu_string;
+      int seen_v = FALSE;
 
+      /* We need to cope with the various "vr" prefixes for the NEC 4300
+	 and 4100 processors.  */
+      if (*p == 'v' || *p == 'V')
+	{
+	  seen_v = TRUE;
+	  p++;
+        }
       if (*p == 'r' || *p == 'R')
 	p++;
 
@@ -3313,6 +3321,16 @@ override_options ()
 	case '4':
 	  if (!strcmp (p, "4000") || !strcmp (p, "4k") || !strcmp (p, "4K"))
 	    mips_cpu = PROCESSOR_R4000;
+          /* The vr4100 is a non-FP ISA III processor with some extra
+             instructions.  */
+	  else if (!strcmp (p, "4100")) {
+            mips_cpu = PROCESSOR_R4100;
+            target_flags |= MASK_SOFT_FLOAT ;
+          }
+	  /* The vr4300 is a standard ISA III processor, but with a different
+	     pipeline.  */
+	  else if (!strcmp (p, "4300"))
+            mips_cpu = PROCESSOR_R4300;
 	  /* The r4400 is exactly the same as the r4000 from the compiler's
 	     viewpoint.  */
 	  else if (!strcmp (p, "4400"))
@@ -3339,6 +3357,9 @@ override_options ()
 	  break;
 	}
 
+      if (seen_v && mips_cpu != PROCESSOR_R4300 && mips_cpu != PROCESSOR_R4100)
+	mips_cpu = PROCESSOR_DEFAULT;
+
       if (mips_cpu == PROCESSOR_DEFAULT)
 	{
 	  error ("bad value (%s) for -mcpu= switch", mips_cpu_string);
@@ -3349,6 +3370,8 @@ override_options ()
   if ((mips_cpu == PROCESSOR_R3000 && mips_isa > 1)
       || (mips_cpu == PROCESSOR_R6000 && mips_isa > 2)
       || ((mips_cpu == PROCESSOR_R4000
+           || mips_cpu == PROCESSOR_R4100
+           || mips_cpu == PROCESSOR_R4300
 	   || mips_cpu == PROCESSOR_R4600
 	   || mips_cpu == PROCESSOR_R4650)
 	  && mips_isa > 3))
