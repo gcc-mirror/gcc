@@ -1,3 +1,14 @@
+1999-05-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (make_ptrmem_cst): New function.
+	* expr.c (cplus_expand_constant): Split out from ...
+	(cplus_expand_expr): Here.  Use cplus_expand_constant.
+	(init_cplus_expand): Set lang_expand_constant.
+	* pt.c (convert_nontype_argument): Use make_ptrmem_cst.
+	* tree.c (make_ptrmem_cst): Define.
+	* typeck.c (unary_complex_lvalue): Use make_ptrmem_cst.
+	* typeck2.c (initializer_constant_valid_p): Use make_ptrmem_cst.
+
 1999-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (start_static_storage_duration_function): Fix comment.

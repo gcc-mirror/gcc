@@ -3388,6 +3388,7 @@ extern tree maybe_dummy_object			PROTO((tree, tree *));
 extern int is_dummy_object			PROTO((tree));
 extern tree search_tree                         PROTO((tree, tree (*)(tree)));
 extern int cp_valid_lang_attribute		PROTO((tree, tree, tree, tree));
+extern tree make_ptrmem_cst                     PROTO((tree, tree));
 
 #define scratchalloc expralloc
 #define scratch_tree_cons expr_tree_cons

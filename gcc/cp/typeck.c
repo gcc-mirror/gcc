@@ -4912,9 +4912,7 @@ unary_complex_lvalue (code, arg)
 	  type = build_offset_type (DECL_FIELD_CONTEXT (t), TREE_TYPE (t));
 	  type = build_pointer_type (type);
 
-	  t = make_node (PTRMEM_CST);
-	  TREE_TYPE (t) = type;
-	  PTRMEM_CST_MEMBER (t) = TREE_OPERAND (arg, 1);
+	  t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
 	  return t;
 	}
     }
@@ -6575,10 +6573,7 @@ build_ptrmemfunc (type, pfn, force)
 
   fn = TREE_OPERAND (pfn, 0);
   my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 0);
-  npfn = make_node (PTRMEM_CST);
-  TREE_TYPE (npfn) = build_ptrmemfunc_type (type);
-  PTRMEM_CST_MEMBER (npfn) = fn;
-  return npfn;
+  return make_ptrmem_cst (build_ptrmemfunc_type (type), fn);
 }
 
 /* Return the DELTA, IDX, PFN, and DELTA2 values for the PTRMEM_CST
