@@ -68,6 +68,7 @@ _ex_range1:
 # Tail of __init used for static constructors in Solaris
 	.section ".init","ax"
 	lwz	%r0,16(%r1)
+	lwz	%r31,12(%r1)
 	mtlr	%r0
 	addi	%r1,%r1,16
 	blr
@@ -75,6 +76,7 @@ _ex_range1:
 # Tail of __fini used for static destructors in Solaris
 	.section ".fini","ax"
 	lwz	%r0,16(%r1)
+	lwz	%r31,12(%r1)
 	mtlr	%r0
 	addi	%r1,%r1,16
 	blr
