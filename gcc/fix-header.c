@@ -627,7 +627,7 @@ read_scan_file (in_fname, argc, argv)
 
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */
-  options = cpp_get_options (pfile);
+  options = cpp_get_options (scan_in);
   options->inhibit_warnings = 1;
   options->inhibit_errors = 1;
 
