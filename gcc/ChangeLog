@@ -1,3 +1,17 @@
+2003-03-17  Zack Weinberg <zack@codesourcery.com>
+
+	* c-tree.h (struct lang_identifier): Remove error_locus field.
+	(IDENTIFIER_ERROR_LOCUS): Kill.
+	(record_function_scope_shadow): New prototype.
+	* c-typeck.c (build_external_ref): Don't complain if
+	decl is error_mark_node.  When not at file scope, bind the
+	decl's local value to error_mark_node to suppress further
+	warnings, instead of setting IDENTIFIER_ERROR_LOCUS.
+
+	* c-decl.c (get_function_binding_level): New static function.
+	(record_function_scope_shadow): New exported function.
+	(c_make_fname_decl): Use get_function_binding_level.
+
 2003-03-17  Steve Ellcey  <sje@cup.hp.com>
 
 	* stmt.c (tail_recursion_args): Call promote_mode to set
@@ -19,7 +33,7 @@ Mon Mar 17 18:57:01 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* function.c (assign_parms): For a struct value address passed as
 	first argument, delay the function's result RTL setup code until
 	after the emission of parameter conversions.
-	
+
 2003-03-17  Dave Love  <fx@gnu.org>
 	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
@@ -63,13 +77,13 @@ Mon Mar 17 18:57:01 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-16  Richard Henderson  <rth@redhat.com>
 
-        * simplify-rtx (simplify_binary_operation): Don't abort for
-        SS_PLUS, US_PLUS, SS_MINUS, US_MINUS.
+	* simplify-rtx (simplify_binary_operation): Don't abort for
+	SS_PLUS, US_PLUS, SS_MINUS, US_MINUS.
 
 2003-03-16  Richard Henderson  <rth@redhat.com>
 
-        * config/i386/i386.md (movstrictqi, movstrictqi_1): Check
-        optimize_size as well.
+	* config/i386/i386.md (movstrictqi, movstrictqi_1): Check
+	optimize_size as well.
 
 2003-03-16  Stephane Carrez  <stcarrez@nerim.fr>
 

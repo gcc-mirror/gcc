@@ -1412,6 +1412,11 @@ build_external_ref (id, fun)
 	}
       else
 	{
+	  /* Don't complain about something that's already been
+	     complained about.  */
+	  if (decl == error_mark_node)
+	    return error_mark_node;
+
 	  /* Reference to undeclared variable, including reference to
 	     builtin outside of function-call context.  */
 	  if (current_function_decl == 0)
@@ -1419,21 +1424,22 @@ build_external_ref (id, fun)
 		   IDENTIFIER_POINTER (id));
 	  else
 	    {
-	      if (IDENTIFIER_GLOBAL_VALUE (id) != error_mark_node
-		  || IDENTIFIER_ERROR_LOCUS (id) != current_function_decl)
-		{
-		  error ("`%s' undeclared (first use in this function)",
-			 IDENTIFIER_POINTER (id));
+	      error ("`%s' undeclared (first use in this function)",
+		     IDENTIFIER_POINTER (id));
 
-		  if (! undeclared_variable_notice)
-		    {
-		      error ("(Each undeclared identifier is reported only once");
-		      error ("for each function it appears in.)");
-		      undeclared_variable_notice = 1;
-		    }
+	      if (! undeclared_variable_notice)
+		{
+		  error ("(Each undeclared identifier is reported only once");
+		  error ("for each function it appears in.)");
+		  undeclared_variable_notice = 1;
 		}
-	      IDENTIFIER_GLOBAL_VALUE (id) = error_mark_node;
-	      IDENTIFIER_ERROR_LOCUS (id) = current_function_decl;
+
+	      /* Set IDENTIFIER_LOCAL_VALUE (id) to error_mark_node and
+		 add a function-scope shadow entry which will undo that.
+		 This suppresses further warnings about this undeclared
+		 identifier in this function.  */
+	      record_function_scope_shadow (id);
+	      IDENTIFIER_LOCAL_VALUE (id) = error_mark_node;
 	    }
 	  return error_mark_node;
 	}
