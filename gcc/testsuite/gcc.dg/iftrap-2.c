@@ -7,32 +7,14 @@ void f1(int p)
 {
   if (p)
     __builtin_trap();
+  else
+    abort();
 }
 
 void f2(int p)
 {
   if (p)
-    __builtin_trap();
-  else
-    bar();
-}
-
-void f3(int p)
-{
-  if (p)
-    bar();
-  else
-    __builtin_trap();
-}
-
-void f4(int p, int q)
-{
-  if (p)
-    {
-      bar();
-      if (q)
-	bar();
-    }
+    abort();
   else
     __builtin_trap();
 }
