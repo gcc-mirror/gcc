@@ -1,3 +1,10 @@
+2000-10-24  Jim Wilson  <wilson@cygnus.com>
+
+	* expmed.c (store_bit_field): Move integer pun code down after
+	code that calls emit_move_insn for entire register move.
+	* stor-layout.c (compute_record_mode): Revert Mar 25, Aug 18, and
+	Oct 20 changes.  Only store mode in TYPE_MODE if RECORD_TYPE.
+	
 2000-10-24  Richard Henderson  <rth@cygnus.com>
 
 	* rtlanal.c (rtx_unstable_p, rtx_varies_p): Don't consider pic
