@@ -189,6 +189,7 @@ public class SimpleDateFormat extends DateFormat
     numberFormat = NumberFormat.getInstance(locale);
     numberFormat.setGroupingUsed (false);
     numberFormat.setParseIntegerOnly (true);
+    numberFormat.setMaximumFractionDigits (0);
   }
   
   /**
@@ -216,6 +217,7 @@ public class SimpleDateFormat extends DateFormat
     numberFormat = NumberFormat.getInstance(locale);
     numberFormat.setGroupingUsed (false);
     numberFormat.setParseIntegerOnly (true);
+    numberFormat.setMaximumFractionDigits (0);
   }
 
   /**
@@ -234,6 +236,7 @@ public class SimpleDateFormat extends DateFormat
     numberFormat = NumberFormat.getInstance();
     numberFormat.setGroupingUsed (false);
     numberFormat.setParseIntegerOnly (true);
+    numberFormat.setMaximumFractionDigits (0);
   }
 
   // What is the difference between localized and unlocalized?  The

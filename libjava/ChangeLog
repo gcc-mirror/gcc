@@ -1,5 +1,14 @@
 2004-05-30  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/DecimalFormat.java
+	(parse): Fixed parsing of decimal strings. Number of maximum
+	digits to be read should now work.
+	* java/text/SimpleDateFormat.java
+	(SimpleDateFormat): Set maximumFractionDigit to 0 for the number
+	formatter. This fixes DateFormatTest.
+
+2004-05-30  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/Buffer.java
 	(limit): Fixed off by one error.
 	* java/nio/CharBuffer.java
