@@ -236,8 +236,6 @@ struct tree_common GTY(())
 
        TREE_UNSIGNED in
            INTEGER_TYPE, ENUMERAL_TYPE, FIELD_DECL
-       DECL_BUILT_IN_NONANSI in
-           FUNCTION_DECL
        SAVE_EXPR_NOPLACEHOLDER in
 	   SAVE_EXPR
 
@@ -635,8 +633,7 @@ extern void tree_operand_check_failed PARAMS ((int, enum tree_code,
 #define TREE_CONSTANT(NODE) ((NODE)->common.constant_flag)
 
 /* In INTEGER_TYPE or ENUMERAL_TYPE nodes, means an unsigned type.
-   In FIELD_DECL nodes, means an unsigned bit field.
-   The same bit is used in functions as DECL_BUILT_IN_NONANSI.  */
+   In FIELD_DECL nodes, means an unsigned bit field.  */
 #define TREE_UNSIGNED(NODE) ((NODE)->common.unsigned_flag)
 
 #define TYPE_TRAP_SIGNED(NODE) \
@@ -1686,12 +1683,6 @@ struct tree_type GTY(())
 
 /* List of FUNCTION_DECLs inlined into this function's body.  */
 #define DECL_INLINED_FNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inlined_fns)
-
-/* Nonzero in a FUNCTION_DECL means this is a built-in function
-   that is not specified by ansi C and that users are supposed to be allowed
-   to redefine for any purpose whatever.  */
-#define DECL_BUILT_IN_NONANSI(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->common.unsigned_flag)
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated
    as if it were a malloc, meaning it returns a pointer that is

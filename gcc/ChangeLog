@@ -1,5 +1,13 @@
 2003-04-13  Roger Sayle  <roger@eyesopen.com>
 
+	* tree.h (DECL_BUILT_IN_NONANSI): Remove.
+	* c-common.c (builtin_function_2): Don't set DECL_BUILT_IN_NONANSI.
+	* c-decl.c (duplicate_decls): Use invariant DECL_BUILT_IN_NONANSI
+	implies DECL_BUILT_IN to simplify logic.
+	* print-tree.c (print_node): Don't dump DECL_BUILT_IN_NONANSI.
+
+2003-04-13  Roger Sayle  <roger@eyesopen.com>
+
 	* builtin-types.def (BT_FN_STRING_CONST_STRING): New builtin type.
 	(BT_FN_PTR_SIZE_SIZE): Likewise.
 	* builtins.def (BUILT_IN_MALLOC, BUILT_IN_CALLOC, BUILT_IN_STRDUP):

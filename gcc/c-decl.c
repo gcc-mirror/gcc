@@ -860,30 +860,16 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
   if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
       if (TREE_CODE (olddecl) == FUNCTION_DECL
-	  && (DECL_BUILT_IN (olddecl)
-	      || DECL_BUILT_IN_NONANSI (olddecl)))
+	  && DECL_BUILT_IN (olddecl))
 	{
 	  /* If you declare a built-in or predefined function name as static,
 	     the old definition is overridden,
 	     but optionally warn this was a bad choice of name.  */
 	  if (!TREE_PUBLIC (newdecl))
 	    {
-	      if (!warn_shadow)
-		;
-	      else if (DECL_BUILT_IN (olddecl))
+	      if (warn_shadow)
 		warning_with_decl (newdecl, "shadowing built-in function `%s'");
-	      else
-		warning_with_decl (newdecl, "shadowing library function `%s'");
 	    }
-	  /* Likewise, if the built-in is not ansi, then programs can
-	     override it even globally without an error.  */
-	  else if (! DECL_BUILT_IN (olddecl))
-	    warning_with_decl (newdecl,
-			       "library function `%s' declared as non-function");
-
-	  else if (DECL_BUILT_IN_NONANSI (olddecl))
-	    warning_with_decl (newdecl,
-			       "built-in function `%s' declared as non-function");
 	  else
 	    warning_with_decl (newdecl,
 			       "built-in function `%s' declared as non-function");
