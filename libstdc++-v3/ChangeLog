@@ -1,3 +1,12 @@
+2000-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/os/irix/bits/atomicity.h: New file.
+	* config/os/irix/bits/os_defines.h (_POSIX_SOURCE): Undefine.
+	(__off_t): Define.
+	(__off64_t): Likewise.
+	(__ssize_t): Likewise.
+	(_G_USING_THUNKS): Define to zero.
+	
 2000-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* src/string-inst.cc (basic_string<C>::npos): Explicitly
