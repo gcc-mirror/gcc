@@ -1,3 +1,9 @@
+2004-09-03  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	PR fortran/16579
+	* gfortran.fortran-torture/execute/intrinsic_i_char.f90:
+	Delete.  Duplicate of gfortran.dg/g77/20010610.f
+	
 2004-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/arm_rtti1.C: New test.
