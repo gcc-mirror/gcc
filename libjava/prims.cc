@@ -994,6 +994,10 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
 
   try
     {
+      // Set this very early so that it is seen when java.lang.System
+      // is initialized.
+      if (is_jar)
+	_Jv_Jar_Class_Path = strdup (name);
       _Jv_CreateJavaVM (NULL);
 
       // Get the Runtime here.  We want to initialize it before searching
@@ -1002,20 +1006,12 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
 
       arg_vec = JvConvertArgv (argc - 1, argv + 1);
 
+      using namespace gnu::gcj::runtime;
       if (klass)
-	main_thread = new gnu::gcj::runtime::FirstThread (klass, arg_vec);
+	main_thread = new FirstThread (klass, arg_vec);
       else
-	main_thread = new gnu::gcj::runtime::FirstThread 
-			(JvNewStringLatin1 (name), arg_vec, is_jar);
-
-      if (is_jar)
-	{
-	  // We need a new ClassLoader because the classpath must be the
-	  // jar file only.  The easiest way to do this is to lose our
-	  // reference to the previous classloader.
-	  _Jv_Jar_Class_Path = strdup (name);
-	  gnu::gcj::runtime::VMClassLoader::instance = NULL;
-	}
+	main_thread = new FirstThread (JvNewStringLatin1 (name),
+				       arg_vec, is_jar);
     }
   catch (java::lang::Throwable *t)
     {
