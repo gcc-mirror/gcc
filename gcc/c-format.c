@@ -80,7 +80,7 @@ static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
    struct attribute_spec.handler.  */
 tree
 handle_format_arg_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
-			     tree args, int flags, _Bool *no_add_attrs)
+			     tree args, int flags, bool *no_add_attrs)
 {
   tree type = *node;
   tree format_num_expr = TREE_VALUE (args);
@@ -2395,7 +2395,7 @@ init_dynamic_asm_fprintf_info (void)
    struct attribute_spec.handler.  */
 tree
 handle_format_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
-			 int flags, _Bool *no_add_attrs)
+			 int flags, bool *no_add_attrs)
 {
   tree type = *node;
   function_format_info info;
