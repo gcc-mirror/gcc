@@ -4878,7 +4878,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	     branch.  We would end up emitting the instruction on "both"
 	     edges.  */
 	    
-	  if (dest && setcc && !CC0_P (SET_DEST (pat)))
+	  if (dest && setcc && !CC0_P (SET_DEST (PATTERN (setcc))))
 	    {
 	      edge e2;
 	      for (e2 = e->src->succ; e2; e2 = e2->succ_next)
