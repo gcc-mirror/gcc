@@ -1,3 +1,10 @@
+1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* tree.c (walk_tree): Walk operand subtrees in forward order.
+	* optimize.c (expand_call_inline): Likewise.
+	(optimize_function): Initialize id->scope_stmt to something useful.
+	(remap_block): Assume id->scope_stmt has a useful value.
+
 1999-12-15  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (build_c_cast): Expand warning message. Move pointer
@@ -67,7 +74,6 @@
 	(reinit_parse_for_expr): Use.
 	(check_newline): Use.
 
->>>>>>> 1.1463
 1999-12-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* optimize.c (initialize_inlined_parameters): Take FN to which the

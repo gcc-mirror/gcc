@@ -1,3 +1,10 @@
+1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* function.c (retrofit_block): Abort if we don't find a suitable insn.
+	(insert_block_after_note): Abort if we don't have a previous block.
+	Remove FN parameter.
+	* function.h: Adjust.
+
 1999-12-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* builtins.c (expand_builtin_mathfn): Make sure not to expand the

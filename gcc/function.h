@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-97, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -545,9 +545,8 @@ extern struct function *outer_function_chain;
 extern void identify_blocks PROTO((tree, rtx));
 /* Insert the BLOCK in the block-tree, knowing that the previous
    block-note is for OLD_BLOCK.  BEGIN_P is non-zero if the previous
-   block-note was the for the beginning of a BLOCK.  FN is the
-   FUNCTION_DECL into which the BLOCK is being inserted.  */
-extern void insert_block_after_note PROTO((tree, tree, int, tree));
+   block-note was the for the beginning of a BLOCK.  */
+extern void insert_block_after_note PROTO((tree, tree, int));
 /* Insert a new BLOCK at an appropriate place in the block tree.  */
 extern void retrofit_block PROTO((tree, rtx));
 
