@@ -82,12 +82,13 @@ Boston, MA 02111-1307, USA. */
 #define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lmsvcrt}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt2%O%s}} \
-  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:-L/usr/local/lib/mingw -L/usr/lib/mingw crt2%O%s} \
-  %{pg:gcrt0%O%s}}}"
 
 #undef CPP_SPEC
 #ifdef CROSS_COMPILE
+#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt2%O%s}} \
+  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} \
+    %{mno-cygwin:-L../../../../i686-pc-cygwin/lib/mingw mingw/crt2%O%s} \
+  %{pg:gcrt0%O%s}}}"
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
@@ -111,6 +112,9 @@ Boston, MA 02111-1307, USA. */
    %{!mno-win32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT \
      -idirafter /usr/include/w32api}"
 #else
+#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt2%O%s}} \
+  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:-L/usr/local/lib/mingw -L/usr/lib/mingw mingw/crt2%O%s} \
+  %{pg:gcrt0%O%s}}}"
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \

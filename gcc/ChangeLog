@@ -1,3 +1,7 @@
+Mon Jan 29 23:53:14 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h: Fix -mno-cygwin search path for link.
+
 2001-01-29  DJ Delorie  <dj@redhat.com>
 
 	* combine.c (if_then_else_cond): Pass the correct mode to
