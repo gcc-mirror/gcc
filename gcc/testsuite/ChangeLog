@@ -1,3 +1,8 @@
+2002-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* PR6352
+	* g++.dg/opt/inline2.C: New test.
+
 2002-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020418-1.c: New test.
