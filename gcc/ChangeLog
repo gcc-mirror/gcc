@@ -1,3 +1,30 @@
+2000-01-03  Graham Stott  <grahams@redhat.com>
+
+	* tree.h: Update copyright date.
+	(IS_EXPR_CODE_CLASS): Add parenthesis.
+	(TREE_SET_CODE): Add whitespace.
+	(TREE_CHECK): Add parenthesis.
+	(TREE_CLASS_CODE): Add parenthesis and wrap long line.
+	(CST_OR_CONSTRUCTOR_CHECK):
+	(EXPR_CHECK): Add parenthis, whitespace and wrap line.
+	(TREE_SYMBOL_REFERENCED): Whitespace.
+	(INT_CST_LT): Likewise.
+	(INT_CST_LT_UNSIGNED): Likewise.
+	(tree_real_cst): Unwrap comment.
+	(tree_string): Likewise.
+	(tree_complex): Likewise.
+	(IDENTIFIER_POINTER): correct cast.
+	(SAVE_EXPR_CONTEXT): Whitespace.
+	(EXPR_WFL_FILENAME_NODE): Likewise.
+	(EXPR_WFL_FILENAME): Remove parenthesis.
+	(DECL_ORIGIN): Add parenthesis.
+	(DECL_FROM_INLINE): Use NULL_TREE.
+	(build_int_2): Whitespace.
+	(build_type_variant): Add parenthesis.
+
+	* gcc/jcf-parse.c: Update copyright date.
+	(yyparse): Constify resource_filename.
+
 2002-01-03  Graham Stott  <grahams@redhat.com>
 
 	* rtl.h: Update copyright date.
