@@ -449,6 +449,9 @@ package body Lib.Xref is
          Tref : Entity_Id;
          --  Type reference
 
+         Rref : Node_Id;
+         --  Renaming reference
+
          Trunit : Unit_Number_Type;
          --  Unit number for type reference
 
@@ -730,7 +733,51 @@ package body Lib.Xref is
                         end loop;
                      end if;
 
-                     --  Output type reference if any
+                     --  See if we have a renaming reference
+
+                     if Is_Object (XE.Ent)
+                       and then Present (Renamed_Object (XE.Ent))
+                     then
+                        Rref := Renamed_Object (XE.Ent);
+
+                     elsif Is_Overloadable (XE.Ent)
+                       and then Nkind (Parent (Declaration_Node (XE.Ent))) =
+                                            N_Subprogram_Renaming_Declaration
+                     then
+                        Rref := Name (Parent (Declaration_Node (XE.Ent)));
+
+                     elsif Ekind (XE.Ent) = E_Package
+                       and then Nkind (Declaration_Node (XE.Ent)) =
+                                         N_Package_Renaming_Declaration
+                     then
+                        Rref := Name (Declaration_Node (XE.Ent));
+
+                     else
+                        Rref := Empty;
+                     end if;
+
+                     if Present (Rref) then
+                        if Nkind (Rref) = N_Expanded_Name then
+                           Rref := Selector_Name (Rref);
+                        end if;
+
+                        if Nkind (Rref) /= N_Identifier then
+                           Rref := Empty;
+                        end if;
+                     end if;
+
+                     --  Write out renaming reference if we have one
+
+                     if Debug_Flag_MM and then Present (Rref) then
+                        Write_Info_Char ('=');
+                        Write_Info_Nat
+                          (Int (Get_Logical_Line_Number (Sloc (Rref))));
+                        Write_Info_Char (':');
+                        Write_Info_Nat
+                          (Int (Get_Column_Number (Sloc (Rref))));
+                     end if;
+
+                     --  See if we have a type reference
 
                      Tref := XE.Ent;
                      Left := '{';
@@ -807,6 +854,8 @@ package body Lib.Xref is
 
                         exit when No (Tref) or else Tref = Sav;
 
+                        --  Here we have a type reference to output
+
                         --  Case of standard entity, output name
 
                         if Sloc (Tref) = Standard_Location then
@@ -862,6 +911,8 @@ package body Lib.Xref is
                            null;
                         end if;
                      end loop;
+
+                     --  End of processing for entity output
 
                      Curru := Curxu;
                      Crloc := No_Location;

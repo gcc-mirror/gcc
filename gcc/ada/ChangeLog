@@ -1,5 +1,33 @@
 2001-12-17  Robert Dewar <dewar@gnat.com>
 
+	* ali.adb: Type reference does not reset current file.
+	
+	* ali.adb: Recognize and scan renaming reference
+	
+	* ali.ads: Add spec for storing renaming references.
+	
+	* lib-xref.ads: Add documentation for handling of renaming references
+	
+	* lib-xref.adb: Implement output of renaming reference.
+	
+	* checks.adb:
+	(Determine_Range): Document local variables
+	(Determine_Range): Make sure Hbound is initialized. It looks as though
+	 there could be a real problem here with an uninitialized reference
+	 to Hbound, but no actual example of failure has been found.
+	
+2001-12-17  Laurent Pautet <pautet@gnat.com>
+
+	* g-socket.ads:
+	Fix comment of Shutdown_Socket and Close_Socket. These functions
+	should not fail silently because if they are called twice, this
+	probably means that there is a race condition in the user program.
+	Anyway, this behaviour is consistent with the rest of this unit.
+	When an error occurs, an exception is raised with the error message
+	as exception message.
+
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
 	* frontend.adb: Move call to Check_Unused_Withs from Frontend, so 
 	that it happens before modification of Sloc values for -gnatD.
 	
