@@ -1002,9 +1002,6 @@ struct cum_arg
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
 
-#define ADJUST_INSN_LENGTH(INSN, LENGTH) \
-  LENGTH += h8300_adjust_insn_length (INSN, LENGTH);
-
 #define BRANCH_COST 0
 
 /* Tell final.c how to eliminate redundant test instructions.  */

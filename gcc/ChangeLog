@@ -1,3 +1,17 @@
+2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Change emit_a_rotate to
+	output_a_rotate.  Add a prototype for compute_a_rotate_length.
+	* config/h8300/h8300.c (emit_a_rotate): Change to
+	output_a_rotate.
+	(compute_a_rotate_length): New.
+	(h8300_adjust_insn_length): Remove.
+	* config/h8300/h8300.h (ADJUST_INSN_LENGTH): Remove.
+	* config/h8300/h8300.md (adjust_length): Remove.
+	(*rotlqi3_1): Use output_a_rotate and compute_a_rotate_length.
+	(*rotlhi3_1): Likewise.
+	(*rotlsi3_1): Likewise.
+
 2003-06-26  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 
