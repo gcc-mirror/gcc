@@ -1661,8 +1661,6 @@ sfmode_constant_to_ulong (x)
 #define STACK_ALIGNMENT	16
 #endif
 
-extern char call_used_regs[];
-
 const char *current_function_original_name;
 
 static int must_preserve_r1;

@@ -69,7 +69,6 @@ vax_output_function_prologue (file, size)
 {
   register int regno;
   register int mask = 0;
-  extern char call_used_regs[];
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (regs_ever_live[regno] && !call_used_regs[regno])

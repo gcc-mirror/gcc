@@ -145,7 +145,6 @@ ns32k_output_function_prologue (file, size)
   register int regno, g_regs_used = 0;
   int used_regs_buf[8], *bufp = used_regs_buf;
   int used_fregs_buf[17], *fbufp = used_fregs_buf;
-  extern char call_used_regs[];
 
   for (regno = R0_REGNUM; regno < F0_REGNUM; regno++)
     if (regs_ever_live[regno]
@@ -233,7 +232,6 @@ ns32k_output_function_prologue (file, size)
   register int regno, g_regs_used = 0;
   int used_regs_buf[8], *bufp = used_regs_buf;
   int used_fregs_buf[8], *fbufp = used_fregs_buf;
-  extern char call_used_regs[];
 
   for (regno = 0; regno < 8; regno++)
     if (regs_ever_live[regno]
@@ -327,7 +325,6 @@ ns32k_output_function_epilogue (file, size)
   register int regno, g_regs_used = 0, f_regs_used = 0;
   int used_regs_buf[8], *bufp = used_regs_buf;
   int used_fregs_buf[17], *fbufp = used_fregs_buf;
-  extern char call_used_regs[];
 
   if (flag_pic && current_function_uses_pic_offset_table)
     fprintf (file, "\tlprd sb,tos\n");
@@ -404,7 +401,6 @@ ns32k_output_function_epilogue (file, size)
   register int regno, g_regs_used = 0, f_regs_used = 0;
   int used_regs_buf[8], *bufp = used_regs_buf;
   int used_fregs_buf[8], *fbufp = used_fregs_buf;
-  extern char call_used_regs[];
 
   *fbufp++ = -2;
   for (regno = 8; regno < 16; regno++)

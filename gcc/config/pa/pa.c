@@ -3043,7 +3043,6 @@ pa_output_function_prologue (file, size)
 void
 hppa_expand_prologue ()
 {
-  extern char call_used_regs[];
   int size = get_frame_size ();
   int merge_sp_adjust_with_store = 0;
   int i, offset;

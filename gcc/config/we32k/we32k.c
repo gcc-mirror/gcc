@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "tree.h"
 #include "expr.h"
+#include "hard-reg-set.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -68,7 +69,6 @@ we32k_output_function_prologue (file, size)
 {
   register int nregs_to_save;
   register int regno;
-  extern char call_used_regs[];
 
   nregs_to_save = 0;
   for (regno = 8; regno > 2; regno--)
@@ -95,7 +95,6 @@ we32k_output_function_epilogue (file, size)
 {
   register int nregs_to_restore;
   register int regno;
-  extern char call_used_regs[];
 
   nregs_to_restore = 0;
   for (regno = 8; regno > 2; regno--)
