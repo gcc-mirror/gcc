@@ -1,3 +1,8 @@
+1998-12-02  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl2.c (validate_nonmember_using_decl): Complain about using
+	declarations for class members.
+
 1998-11-29  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck2.c (process_init_constructor): Use same_type_p.

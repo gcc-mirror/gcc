@@ -4690,6 +4690,16 @@ validate_nonmember_using_decl (decl, scope, name)
     {
       *scope = TREE_OPERAND (decl, 0);
       *name = TREE_OPERAND (decl, 1);
+
+      /* [namespace.udecl]
+
+	 A using-declaration for a class member shall be a
+	 member-declaration.  */
+      if (TREE_CODE (*scope) != NAMESPACE_DECL)
+	{
+	  cp_error ("`%D' is not a namespace", *scope);
+	  return NULL_TREE;
+	}
     }
   else if (TREE_CODE (decl) == IDENTIFIER_NODE
            || TREE_CODE (decl) == TYPE_DECL
