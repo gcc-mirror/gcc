@@ -71,14 +71,6 @@ static PTR *find_empty_slot_for_expand  PARAMS ((htab_t, hashval_t));
 htab_hash htab_hash_pointer = hash_pointer;
 htab_eq htab_eq_pointer = eq_pointer;
 
-/* This avoids a warning that 4294967291 is signed for pre-ISO C systems and
-   unsigned for ISO C systems on 32-bit hosts.  */
-#ifdef __STDC__
-#define UL(num) num ## UL
-#else
-#define UL(num) ((unsigned long)(num/**/L))
-#endif
-
 /* The following function returns a nearest prime number which is
    greater than N, and near a power of two. */
 
@@ -89,37 +81,38 @@ higher_prime_number (n)
   /* These are primes that are near, but slightly smaller than, a
      power of two.  */
   static unsigned long primes[] = {
-    UL(2),
-    UL(7),
-    UL(13),
-    UL(31),
-    UL(61),
-    UL(127),
-    UL(251),
-    UL(509),
-    UL(1021),
-    UL(2039),
-    UL(4093),
-    UL(8191),
-    UL(16381),
-    UL(32749),
-    UL(65521),
-    UL(131071),
-    UL(262139),
-    UL(524287),
-    UL(1048573),
-    UL(2097143),
-    UL(4194301),
-    UL(8388593),
-    UL(16777213),
-    UL(33554393),
-    UL(67108859),
-    UL(134217689),
-    UL(268435399),
-    UL(536870909),
-    UL(1073741789),
-    UL(2147483647),
-    UL(4294967291),
+    (unsigned long) 2,
+    (unsigned long) 7,
+    (unsigned long) 13,
+    (unsigned long) 31,
+    (unsigned long) 61,
+    (unsigned long) 127,
+    (unsigned long) 251,
+    (unsigned long) 509,
+    (unsigned long) 1021,
+    (unsigned long) 2039,
+    (unsigned long) 4093,
+    (unsigned long) 8191,
+    (unsigned long) 16381,
+    (unsigned long) 32749,
+    (unsigned long) 65521,
+    (unsigned long) 131071,
+    (unsigned long) 262139,
+    (unsigned long) 524287,
+    (unsigned long) 1048573,
+    (unsigned long) 2097143,
+    (unsigned long) 4194301,
+    (unsigned long) 8388593,
+    (unsigned long) 16777213,
+    (unsigned long) 33554393,
+    (unsigned long) 67108859,
+    (unsigned long) 134217689,
+    (unsigned long) 268435399,
+    (unsigned long) 536870909,
+    (unsigned long) 1073741789,
+    (unsigned long) 2147483647,
+					/* 4294967291L */
+    ((unsigned long) 2147483647) + ((unsigned long) 2147483642),
   };
 
   unsigned long* low = &primes[0];
