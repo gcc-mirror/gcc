@@ -2708,7 +2708,7 @@ compare_constant_1 (exp, p)
 		  && TREE_CODE (TREE_PURPOSE (link)) == FIELD_DECL)
 		{
 		  if (bcmp ((char *) &TREE_PURPOSE (link), p,
-			    sizeof TREE_PURCHASE (link)))
+			    sizeof TREE_PURPOSE (link)))
 		    return 0;
 
 		  p += sizeof TREE_PURPOSE (link);
