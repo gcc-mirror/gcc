@@ -63,22 +63,16 @@ for (i = 0; i < n_opts; i++) {
 	if (name == "")
 		continue;
 
-	if (flags[i] ~ "VarExists")
+	if (flag_set_p("VarExists", flags[i]))
 		continue;
 
-	if (flags[i] ~ "Init\\(")
-	    {
-		    init = flags[i];
-		    sub(".*Init\\(","",init);
-		    sub("\\).*","",init);
-		    init = " = " init;
-	    }
-	 else
-		    init = "";
+	init = opt_args("Init", flags[i])
+	if (init != "")
+		init = " = " init;
 
-	 printf ("/* Set by -%s.\n   %s  */\nint %s%s;\n\n",
+	printf ("/* Set by -%s.\n   %s  */\nint %s%s;\n\n",
 	    opts[i], help[i], name,init)
-    }
+}
 
 
 print "const char * const lang_names[] =\n{"
@@ -117,7 +111,7 @@ for (i = 0; i < n_opts; i++)
 		# a later switch S is a longer prefix of a switch T, T
 		# will be back-chained to S in a later iteration of this
 		# for() loop, which is what we want.
-		if (flags[i] ~ "Joined") {
+		if (flag_set_p("Joined.*", flags[i])) {
 			for (j = i + 1; j < n_opts; j++) {
 				if (substr (opts[j], 1, len) != opts[i])
 					break;

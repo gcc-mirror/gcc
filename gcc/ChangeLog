@@ -1,3 +1,10 @@
+2005-03-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* opt-functions.awk (flag_set_p, test_flag): New functions.
+	(switch_flags): Use them.
+	* opth-gen.awk: Use flag_set_p to check for flags.
+	* optc-gen.awk: Likewise.  Use opt_args to check for Init(...) flags.
+
 2005-03-30  Ian Lance Taylor  <ian@airs.com>
 
 	* config.host (i[34567]86-*-mingw32*): Don't set

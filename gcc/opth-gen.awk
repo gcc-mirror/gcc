@@ -127,7 +127,7 @@ for (i = 0; i < n_opts; i++)
 	# a later switch S is a longer prefix of a switch T, T
 	# will be back-chained to S in a later iteration of this
 	# for() loop, which is what we want.
-	if (flags[i] ~ "Joined") {
+	if (flag_set_p("Joined.*", flags[i])) {
 		for (j = i + 1; j < n_opts; j++) {
 			if (substr (opts[j], 1, len) != opts[i])
 				break;
