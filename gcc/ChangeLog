@@ -1,3 +1,7 @@
+2001-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.c (rtl_check_failed_code2): Fix typo in last change.
+
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* diagnostic.c (trim_filename): No longer static.
