@@ -1,1 +1,1 @@
-                                                                                        const char *ffe_version_string = "0.5.26 20020726 (prerelease)";
+                                                                                        const char *ffe_version_string = "0.5.26 20020727 (prerelease)";
