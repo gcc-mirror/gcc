@@ -1,3 +1,8 @@
+2003-10-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in: Define $(docdir) before the Make-lang.in fragments are
+	included.
+
 2003-10-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-common.c (expand_tree_builtin): Ensure creal and cimag
