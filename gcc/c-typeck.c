@@ -785,16 +785,6 @@ c_alignof (type)
 
   return size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
 }
-
-/* Print a warning if a constant expression had overflow in folding.  */
-
-void
-constant_expression_warning (value)
-     tree value;
-{
-  if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
-    pedwarn ("overflow in constant expression");
-}
 
 /* Implement the __alignof keyword: Return the minimum required
    alignment of EXPR, measured in bytes.  For VAR_DECL's and

@@ -281,6 +281,16 @@ decl_attributes (decl, attributes)
       }
 }
 
+/* Print a warning if a constant expression had overflow in folding.  */
+
+void
+constant_expression_warning (value)
+     tree value;
+{
+  if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
+    pedwarn ("overflow in constant expression");
+}
+
 void
 c_expand_expr_stmt (expr)
      tree expr;
