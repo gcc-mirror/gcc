@@ -35,7 +35,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.179 $
+\deftexinfoversion$Revision: 2.181 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -2943,33 +2943,35 @@ width0pt\relax} \fi
 \global\let\unnumbchapmacro=\unnchfplain
 \global\let\centerchapmacro=\centerchfplain}
 
-% #1 is the text, #2 the chapter number.
-\def\chfplain #1#2{%
+% Plain chapter opening.
+% #1 is the text, #2 the chapter number or empty if unnumbered.
+\def\chfplain#1#2{%
   \pchapsepmacro
   {%
     \chapfonts \rm
-    \setbox0 = \hbox{#2\enspace}%
+    \def\chapnum{#2}%
+    \setbox0 = \hbox{#2\ifx\chapnum\empty\else\enspace\fi}%
     \vbox{\hyphenpenalty=10000 \tolerance=5000 \parindent=0pt \raggedright
-          \hangindent = \wd0
-          \unhbox0 #1}%
+          \hangindent = \wd0 \centerparametersmaybe
+          \unhbox0 #1\par}%
   }%
   \nobreak\bigskip % no page break after a chapter title
   \nobreak
 }
 
-\def\unnchfplain #1{%
-\pchapsepmacro %
-{\chapfonts \vbox{\hyphenpenalty=10000\tolerance=5000
-                  \parindent=0pt\raggedright
-                  \rm #1\hfill}}\bigskip \par\penalty 10000 %
-}
+% Plain opening for unnumbered.
+\def\unnchfplain#1{\chfplain{#1}{}}
 
-\def\centerchfplain #1{%
-\pchapsepmacro %
-{\chapfonts \vbox{\hyphenpenalty=10000\tolerance=5000
-                  \parindent=0pt
-                  {\rm #1}\hfill}}\bigskip \par\penalty 10000 %
-}
+% @centerchap -- centered and unnumbered.
+\let\centerparametersmaybe = \relax
+\def\centerchfplain#1{{%
+  \def\centerparametersmaybe{%
+    \advance\rightskip by 3\rightskip
+    \leftskip = \rightskip
+    \parfillskip = 0pt
+  }%
+  \chfplain{#1}{}%
+}}
 
 \CHAPFplain % The default
 
@@ -3025,10 +3027,13 @@ width0pt\relax} \fi
     \csname #1headingbreak\endcsname
   }%
   {%
+    % Switch to the right set of fonts.
     \csname #1fonts\endcsname \rm
-    \def\secnum{#2}%
+    %
     % Only insert the separating space if we have a section number.
-    \setbox0 = \hbox{#2\ifx\secnum\empty\else \enspace \fi}%
+    \def\secnum{#2}%
+    \setbox0 = \hbox{#2\ifx\secnum\empty\else\enspace\fi}%
+    %
     \vbox{\hyphenpenalty=10000 \tolerance=5000 \parindent=0pt \raggedright
           \hangindent = \wd0 % zero if no section number
           \unhbox0 #3}%
