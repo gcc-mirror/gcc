@@ -11971,8 +11971,12 @@ patch_binop (node, wfl_op1, wfl_op2)
   TREE_TYPE (node) = prom_type;
   TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
   
-  /* fold does not respect side-effect order as required for Java but not C. */
-  if (! TREE_SIDE_EFFECTS (node))
+  /* fold does not respect side-effect order as required for Java but not C.
+   * Also, it sometimes create SAVE_EXPRs which are bad when emitting
+   * bytecode.
+   */
+  if (flag_emit_class_files ? (TREE_CONSTANT (op1) && TREE_CONSTANT (op2))
+      : ! TREE_SIDE_EFFECTS (node))
     node = fold (node);
   return node;
 }
