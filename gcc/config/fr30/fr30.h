@@ -1746,7 +1746,7 @@ extern struct rtx_def * fr30_compare_op1;
   { "stack_add_operand",	{ CONST_INT }},		\
   { "high_register_operand",	{ REG }},		\
   { "low_register_operand",	{ REG }},		\
-  { "call_operand",		{ REG, MEM }},		\
+  { "call_operand",		{ MEM }},		\
   { "fp_displacement_operand",	{ CONST_INT }},		\
   { "sp_displacement_operand",	{ CONST_INT }},		\
   { "add_immediate_operand",	{ REG, CONST_INT }},
