@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -467,12 +467,6 @@
 
 /* Define if host mkdir takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
-
-/* Define to the name of the distribution. */
-#undef PACKAGE
-
-/* Define to the version of the distribution. */
-#undef VERSION
 
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV

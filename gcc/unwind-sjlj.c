@@ -23,7 +23,7 @@
 #include "unwind.h"
 #include "gthr.h"
 
-#if USING_SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
 
 #ifdef DONT_USE_BUILTIN_SETJMP
 #ifndef inhibit_libc

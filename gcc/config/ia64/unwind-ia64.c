@@ -35,7 +35,7 @@
 #include "unwind.h"
 #include "unwind-ia64.h"
 
-#if !USING_SJLJ_EXCEPTIONS
+#ifndef __USING_SJLJ_EXCEPTIONS__
 #define UNW_VER(x)		((x) >> 48)
 #define UNW_FLAG_MASK		0x0000ffff00000000
 #define UNW_FLAG_OSMASK		0x0000f00000000000
