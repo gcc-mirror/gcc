@@ -1,5 +1,14 @@
 2003-04-29  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/PropertyPermission.java:
+	New version from classpath
+	* java/util/ResourceBundle.java:
+	Partly merged from classpath
+	(getObject): Reformated.
+	(tryBundle): Set foundBundle = null if no bundle found.
+
+2003-04-29  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/AbstractListModel.java,
 	javax/swing/DefaultBoundedRangeModel.java,
 	javax/swing/DefaultSingleSelectionModel.java:
