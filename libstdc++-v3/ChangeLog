@@ -1,3 +1,10 @@
+2002-01-16  David Edelsohn  <dje@watson.ibm.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES): Do not clear
+	SECTION_LDFLAGS and OPT_LDFLAGS.  Fix ac_sectionLDflags type.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
 2002-01-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (c_base_headers_rename): New.

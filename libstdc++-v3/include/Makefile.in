@@ -681,7 +681,8 @@ install-data-local:
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled
 # developer tries to create them via make in the include build
-# directory.
+# directory. (This is more of an example of how this kind of rule can
+# be made.)
 .PRECIOUS: $(std_headers_rename) $(c_base_headers_rename)
 $(std_headers_rename): ; @:
 $(c_base_headers_rename): ; @:
