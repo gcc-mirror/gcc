@@ -1,3 +1,8 @@
+Wed Jun 23 21:26:00 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* rtlanal.c (reg_referenced_p): Use reg_overlap_mentioned_p
+	for the parts of an UNSPEC / UNSPEC_VOLATILE.
+
 1999-06-23  Bruce Korb  <ddsinc09@ix.netcom.com>
 
 	*fixinc/inclhack.def:  Add fix development commentary

@@ -410,6 +410,11 @@ reg_referenced_p (x, body)
 
     case UNSPEC:
     case UNSPEC_VOLATILE:
+      for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
+	if (reg_overlap_mentioned_p (x, XVECEXP (body, 0, i)))
+	  return 1;
+      return 0;
+
     case PARALLEL:
       for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
 	if (reg_referenced_p (x, XVECEXP (body, 0, i)))
