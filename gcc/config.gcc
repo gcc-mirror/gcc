@@ -717,6 +717,10 @@ fr30-*-elf)
 	tmake_file=fr30/t-fr30
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
+frv-*-elf)
+	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} frv/frv-abi.h"
+	tmake_file=frv/t-frv
+	;;
 h8300-*-rtems*)
 	xm_defines=POSIX
 	tmake_file="h8300/t-h8300 t-rtems"
