@@ -128,6 +128,20 @@ typedef struct java_lexer
   /* Index of last valid character in buffer, plus one.  -1 if no
      valid characters in buffer.  */
   int last;
+
+  /* This is a buffer of characters already converted by iconv.  We
+     use `char' here because we're assuming that iconv() converts to
+     big-endian UCS-2, and then we convert it ourselves.  */
+  char out_buffer[1024];
+
+  /* Index of first valid output character.  -1 if no valid
+     characters.  */
+  int out_first;
+
+  /* Index of last valid output character, plus one.  -1 if no valid
+     characters.  */
+  int out_last;
+
 #endif /* HAVE_ICONV */
 } java_lexer;
 
