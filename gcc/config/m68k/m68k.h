@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 /* Note that some other tm.h files include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
-/* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\
@@ -59,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 	{					\
 	  builtin_define_std ("mc68040");	\
 	  builtin_define_std ("mc68030");	\
- 	  builtin_define_std ("mc68020");	\
+	  builtin_define_std ("mc68020");	\
 	}					\
       else if (TARGET_68030)			\
 	builtin_define_std ("mc68030");		\
@@ -111,7 +110,7 @@ Boston, MA 02111-1307, USA.  */
 #define INT_OP_NO_DOT   2	/* byte, short, long */
 #define INT_OP_DC	3	/* dc.b, dc.w, dc.l */
 
-/* Set the default */
+/* Set the default.  */
 #define INT_OP_GROUP INT_OP_DOT_WORD
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
@@ -135,7 +134,7 @@ extern int target_flags;
    of them must be emulated in software by the OS.  When TARGET_68040 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2.  */
-#define MASK_68040	(1<<2)	
+#define MASK_68040	(1<<2)
 #define TARGET_68040 (target_flags & MASK_68040)
 
 /* Use the 68040-only fp instructions (-m68040 or -m68060).  */
@@ -236,12 +235,6 @@ extern int target_flags;
 /* Which bits can be set by specifying a ColdFire */
 #define MASK_ALL_CF_BITS	(MASK_COLDFIRE|MASK_CF_HWDIV)
 
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
 #define TARGET_SWITCHES							\
   { { "68020", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
       N_("Generate code for a 68020") },				\
@@ -319,9 +312,9 @@ extern int target_flags;
 		  |MASK_BITFIELD|MASK_68881),				\
       N_("Generate code for a cpu32") },				\
     { "cpu32", MASK_68020, "" },					\
-    { "align-int", MASK_ALIGN_INT, 					\
+    { "align-int", MASK_ALIGN_INT,					\
       N_("Align variables on a 32-bit boundary") },			\
-    { "no-align-int", -MASK_ALIGN_INT, 					\
+    { "no-align-int", -MASK_ALIGN_INT,					\
       N_("Align variables on a 16-bit boundary") },			\
     { "sep-data", MASK_SEP_DATA,					\
       N_("Enable separate data segment") },				\
@@ -345,30 +338,12 @@ extern int target_flags;
     { "", TARGET_DEFAULT, "" }}
 /* TARGET_DEFAULT is defined in m68k-none.h, netbsd.h, etc.  */
 
-/* This macro is similar to `TARGET_SWITCHES' but defines names of
-   command options that have values.  Its definition is an
-   initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   fixed part of the option name, and the address of a variable.  The
-   variable, type `char *', is set to the variable part of the given
-   option if the fixed part matches.  The actual option name is made
-   by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
 {									\
   { "shared-library-id=",	&m68k_library_id_string,		\
     N_("ID of shared library to build"), 0},				\
   SUBTARGET_OPTIONS							\
 }
-
-/* Sometimes certain combinations of command options do not make
-   sense on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   Don't use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
 #define OVERRIDE_OPTIONS   override_options()
 
@@ -379,93 +354,55 @@ extern int target_flags;
 
 /* target machine storage layout */
 
-/* Define for XFmode extended real floating point support.  */
 #define LONG_DOUBLE_TYPE_SIZE 96
-
-/* Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
-   instructions, we get proper intermediate rounding, otherwise we 
-   get extended precision results.  */
 #define TARGET_FLT_EVAL_METHOD (TARGET_68040_ONLY ? 0 : 2)
 
-/* Define this if most significant bit is lowest numbered
-   in instructions that operate on numbered bit-fields.
-   This is true for 68020 insns such as bfins and bfexts.
-   We make it true always by avoiding using the single-bit insns
-   except in special cases with constant bit numbers.  */
 #define BITS_BIG_ENDIAN 1
-
-/* Define this if most significant byte of a word is the lowest numbered.  */
-/* That is true on the 68000.  */
 #define BYTES_BIG_ENDIAN 1
-
-/* Define this if most significant word of a multiword number is the lowest
-   numbered.  */
-/* For 68000 we can decide arbitrarily
-   since there are no machine instructions for them.
-   So let's be consistent.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 4
 
-/* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY (TARGET_SHORT ? 16 : 32)
-
-/* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY 16
-
-/* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 16
-
-/* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 16
 
-/* No data type wants to be aligned rounder than this. 
+/* No data type wants to be aligned rounder than this.
    Most published ABIs say that ints should be aligned on 16 bit
-   boundaries, but cpus with 32-bit busses get better performance
+   boundaries, but CPUs with 32-bit busses get better performance
    aligned on 32-bit boundaries.  ColdFires without a misalignment
    module require 32-bit alignment.  */
 #define BIGGEST_ALIGNMENT (TARGET_ALIGN_INT ? 32 : 16)
 
-/* Set this nonzero if move instructions will actually fail to work
-   when given unaligned data.  */
 #define STRICT_ALIGNMENT (TARGET_STRICT_ALIGNMENT)
-
-/* Maximum power of 2 that code can be aligned to.  */
-#define MAX_CODE_ALIGN	2			/* 4 byte alignment */
-
-/* Maximum number of library ids we permit */
-#define MAX_LIBRARY_ID 255
-
-/* Define number of bits in most basic integer type.
-   (If undefined, default is BITS_PER_WORD).  */
 
 #define INT_TYPE_SIZE (TARGET_SHORT ? 16 : 32)
 
 /* Define these to avoid dependence on meaning of `int'.  */
-
 #define WCHAR_TYPE "long int"
 #define WCHAR_TYPE_SIZE 32
+
+/* Maximum number of library IDs we permit with -mid-shared-library.  */
+#define MAX_LIBRARY_ID 255
+
 
 /* Standard register usage.  */
 
-/* Number of actual hardware registers.
-   The hardware registers are assigned numbers for the compiler
-   from 0 to just below FIRST_PSEUDO_REGISTER.
-   All registers that the compiler knows about must be given numbers,
-   even those that are not normally considered general registers.
-   For the 68000, we give the data registers numbers 0-7,
-   the address registers numbers 010-017,
-   and the 68881 floating point registers numbers 020-027.  */
+/* For the m68k, we give the data registers numbers 0-7,
+   the address registers numbers 010-017 (8-15),
+   and the 68881 floating point registers numbers 020-027 (16-24).
+   We also have a fake `arg-pointer' register 030 (25) used for
+   register elimination.  */
 #define FIRST_PSEUDO_REGISTER 25
 
-/* This defines the register which is used to hold the offset table for PIC.  */
+/* All m68k targets (except AmigaOS) use %a5 as the PIC register  */
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 13 : INVALID_REGNUM)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
-   On the 68000, only the stack pointer is such.  */
-
+   On the m68k, only the stack pointer is such.
+   Our fake arg-pointer is obviously fixed as well.  */
 #define FIXED_REGISTERS        \
  {/* Data registers.  */       \
   0, 0, 0, 0, 0, 0, 0, 0,      \
@@ -486,10 +423,19 @@ extern int target_flags;
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
-#define CALL_USED_REGISTERS \
- {1, 1, 0, 0, 0, 0, 0, 0,   \
-  1, 1, 0, 0, 0, 0, 0, 1,   \
-  1, 1, 0, 0, 0, 0, 0, 0, 1 }
+#define CALL_USED_REGISTERS     \
+ {/* Data registers.  */        \
+  1, 1, 0, 0, 0, 0, 0, 0,       \
+                                \
+  /* Address registers.  */     \
+  1, 1, 0, 0, 0, 0, 0, 1,       \
+                                \
+  /* Floating point registers   \
+     (if available).  */        \
+  1, 1, 0, 0, 0, 0, 0, 0,       \
+                                \
+  /* Arg pointer.  */           \
+  1 }
 
 #define REG_ALLOC_ORDER		\
 { /* d0/d1/a0/a1 */		\
@@ -507,39 +453,31 @@ extern int target_flags;
    This assumes that putting a register in fixed_regs will keep the
    compiler's mitts completely off it.  We don't bother to zero it out
    of register classes.  */
-
 #define CONDITIONAL_REGISTER_USAGE				\
-{ 								\
-  int i; 							\
-  HARD_REG_SET x; 						\
+{								\
+  int i;							\
+  HARD_REG_SET x;						\
   if (! TARGET_68881)						\
-    { 								\
+    {								\
       COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);	\
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )		\
-       if (TEST_HARD_REG_BIT (x, i)) 				\
-	fixed_regs[i] = call_used_regs[i] = 1; 			\
-    } 								\
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)		\
+        if (TEST_HARD_REG_BIT (x, i))				\
+	  fixed_regs[i] = call_used_regs[i] = 1;		\
+    }								\
   if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)		\
     fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
       = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
 }
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the 68000, ordinary registers hold 32 bits worth;
+/* On the m68k, ordinary registers hold 32 bits worth;
    for the 68881 registers, a single register is always enough for
    anything that can be stored in them at all.  */
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
   ((REGNO) >= 16 ? GET_MODE_NUNITS (MODE)	\
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the 68000, the cpu registers can hold any mode but the 68881 registers
+/* On the m68k, the cpu registers can hold any mode but the 68881 registers
    can hold only SFmode or DFmode.  */
-
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   (((REGNO) < 16					\
     && !((REGNO) < 8 && (REGNO) + GET_MODE_SIZE (MODE) / 4 > 8))	\
@@ -548,11 +486,6 @@ extern int target_flags;
 	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
        && GET_MODE_UNIT_SIZE (MODE) <= 12))
 
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)			\
   (! TARGET_68881					\
    || ((GET_MODE_CLASS (MODE1) == MODE_FLOAT		\
@@ -563,19 +496,13 @@ extern int target_flags;
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
-/* m68000 pc isn't overloaded on a register.  */
-/* #define PC_REGNUM  */
-
-/* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM 15
 
-/* Base register for access to local variables of the function.  */
+/* Most m68k targets use %a6 as a frame pointer.  The AmigaOS
+   ABI uses %a6 for shared library calls, therefore the frame
+   pointer is shifted to %a5 on this target.  */
 #define FRAME_POINTER_REGNUM 14
 
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms
-   may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c.  */
 #define FRAME_POINTER_REQUIRED 0
 
 /* Base register for access to arguments of the function.
@@ -584,36 +511,16 @@ extern int target_flags;
  */
 #define ARG_POINTER_REGNUM 24
 
-/* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 8
 
 /* Register in which address to store a structure value
    is passed to a function.  */
 #define M68K_STRUCT_VALUE_REGNUM 9
+
 
-/* Define the classes of registers for register constraints in the
-   machine description.  Also define ranges of constants.
 
-   One of the classes must always be named ALL_REGS and include all hard regs.
-   If there is more than one class, another class must be named NO_REGS
-   and contain no registers.
-
-   The name GENERAL_REGS must be the name of a class (or an alias for
-   another name such as ALL_REGS).  This is the class of registers
-   that is allowed by "g" or "r" in a register constraint.
-   Also, registers outside this class are allocated only when
-   instructions express preferences for them.
-
-   The classes must be numbered in nondecreasing order; that is,
-   a larger-numbered class must never be contained completely
-   in a smaller-numbered class.
-
-   For any two classes, it is very desirable that there be another
-   class that represents their union.  */
-
-/* The 68000 has three kinds of registers, so eight classes would be
+/* The m68k has three kinds of registers, so eight classes would be
    a complete set.  One of them is not needed.  */
-
 enum reg_class {
   NO_REGS, DATA_REGS,
   ADDR_REGS, FP_REGS,
@@ -623,17 +530,11 @@ enum reg_class {
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.  */
-
 #define REG_CLASS_NAMES \
  { "NO_REGS", "DATA_REGS",              \
    "ADDR_REGS", "FP_REGS",              \
    "GENERAL_REGS", "DATA_OR_FP_REGS",   \
    "ADDR_OR_FP_REGS", "ALL_REGS" }
-
-/* Define which registers fit in which classes.
-   This is an initializer for a vector of HARD_REG_SET
-   of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS \
 {					\
@@ -647,26 +548,16 @@ enum reg_class {
   {0x01ffffff},  /* ALL_REGS */		\
 }
 
-/* The same information, inverted:
-   Return the class number of the smallest class containing
-   reg number REGNO.  This could be a conditional expression
-   or could index an array.  */
-
 extern enum reg_class regno_reg_class[];
 #define REGNO_REG_CLASS(REGNO) (regno_reg_class[(REGNO)])
-
-/* The class value for index registers, and the one for base regs.  */
-
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS ADDR_REGS
 
-/* Get reg_class from a letter such as appears in the machine description.
-   We do a trick here to modify the effective constraints on the
+/* We do a trick here to modify the effective constraints on the
    machine description; we zorch the constraint letters that aren't
    appropriate for a specific target.  This allows us to guarantee
    that a specific kind of register will not be used for a given target
    without fiddling with the register classes above.  */
-
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'a' ? ADDR_REGS :			\
    ((C) == 'd' ? DATA_REGS :			\
@@ -674,13 +565,7 @@ extern enum reg_class regno_reg_class[];
 		   NO_REGS) :			\
      NO_REGS)))
 
-/* The letters I, J, K, L and M in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.
-
-   For the 68000, `I' is used for the range 1 to 8
+/* For the m68k, `I' is used for the range 1 to 8
    allowed as immediate shift counts and in addq.
    `J' is used for the range of signed numbers that fit in 16 bits.
    `K' is for numbers that moveq can't handle.
@@ -689,7 +574,6 @@ extern enum reg_class regno_reg_class[];
    'N' is for range 24 to 31, rotatert:SI 8 to 1 expressed as rotate.
    'O' is for 16 (for rotate using swap).
    'P' is for range 8 to 15, rotatert:HI 8 to 1 expressed as rotate.  */
-
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
   ((C) == 'I' ? (VALUE) > 0 && (VALUE) <= 8 : \
    (C) == 'J' ? (VALUE) >= -0x8000 && (VALUE) <= 0x7FFF : \
@@ -700,33 +584,16 @@ extern enum reg_class regno_reg_class[];
    (C) == 'O' ? (VALUE) == 16 : \
    (C) == 'P' ? (VALUE) >= 8 && (VALUE) <= 15 : 0)
 
-/*
- * A small bit of explanation:
- * "G" defines all of the floating constants that are *NOT* 68881
- * constants.  this is so 68881 constants get reloaded and the
- * fpmovecr is used.
- */
+/* "G" defines all of the floating constants that are *NOT* 68881
+   constants.  This is so 68881 constants get reloaded and the
+   fpmovecr is used.  */
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'G' ? ! (TARGET_68881 && standard_68881_constant_p (VALUE)) : 0 )
 
-/* A C expression that defines the optional machine-dependent constraint
-   letters that can be used to segregate specific types of operands,  
-   usually memory references, for the target machine.  It should return 1 if
-   VALUE corresponds to the operand type represented by the constraint letter
-   C.  If C is not defined as an extra constraint, the value returned should 
-   be 0 regardless of VALUE.  */
-
-/* Letters in the range `Q' through `U' may be defined in a
-   machine-dependent fashion to stand for arbitrary operand types. 
-   The machine description macro `EXTRA_CONSTRAINT' is passed the
-   operand as its first argument and the constraint letter as its
-   second operand.
-
-   `Q' means address register indirect addressing mode.
+/* `Q' means address register indirect addressing mode.
    `S' is for operands that satisfy 'm' when -mpcrel is in effect.
    `T' is for operands that satisfy 's' when -mpcrel is not in effect.
    `U' is for register offset addressing.  */
-
 #define EXTRA_CONSTRAINT(OP,CODE)			\
   (((CODE) == 'S')					\
    ? (TARGET_PCREL					\
@@ -753,14 +620,9 @@ extern enum reg_class regno_reg_class[];
    :							\
    0))))
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.
-   On the 68000 series, use a data reg if possible when the
+/* On the m68k, use a data reg if possible when the
    value is a constant in the range where moveq could be used
    and we ensure that QImodes are reloaded into data regs.  */
-
 #define PREFERRED_RELOAD_CLASS(X,CLASS)  \
   ((GET_CODE (X) == CONST_INT			\
     && (unsigned) (INTVAL (X) + 0x80) < 0x100	\
@@ -782,15 +644,12 @@ extern enum reg_class regno_reg_class[];
    since QImode stores from address regs are not supported.  We make the
    assumption that if the class is not ADDR_REGS, then it must be a superset
    of DATA_REGS.  */
-
 #define LIMIT_RELOAD_CLASS(MODE, CLASS) \
   (((MODE) == QImode && (CLASS) != ADDR_REGS)	\
    ? DATA_REGS					\
    : (CLASS))
 
-/* Return the maximum number of consecutive registers
-   needed to represent mode MODE in a register of class CLASS.  */
-/* On the 68000, this is the size of MODE in words,
+/* On the m68k, this is the size of MODE in words,
    except in the FP regs, where a single reg is always enough.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
  ((CLASS) == FP_REGS ? 1 \
@@ -804,26 +663,12 @@ extern enum reg_class regno_reg_class[];
 
 /* Stack layout; function entry, exit and calling.  */
 
-/* Define this if pushing a word on the stack
-   makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD
-
-/* Define this if the nominal address of the stack frame
-   is at the high-address end of the local variables;
-   that is, each additional local variable allocated
-   goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
 #define STARTING_FRAME_OFFSET 0
 
-/* If we generate an insn to push BYTES bytes,
-   this says how many the stack pointer really advances by.
-   On the 68000, sp@- in a byte insn really pushes a word.
-   On the 5200 (ColdFire), sp@- in a byte insn pushes just a byte.  */
+/* On the 680x0, sp@- in a byte insn really pushes a word.
+   On the ColdFire, sp@- in a byte insn pushes just a byte.  */
 #define PUSH_ROUNDING(BYTES) (TARGET_COLDFIRE ? BYTES : ((BYTES) + 1) & ~1)
 
 /* We want to avoid trying to push bytes.  */
@@ -831,17 +676,9 @@ extern enum reg_class regno_reg_class[];
   (move_by_pieces_ninsns (SIZE, ALIGN) < MOVE_RATIO \
     && (((SIZE) >=16 && (ALIGN) >= 16) || (TARGET_COLDFIRE)))
 
-/* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL) 8
 
-/* Value is the number of byte of arguments automatically
-   popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.
-
-   On the 68000, the RTS insn cannot pop anything.
+/* On the 68000, the RTS insn cannot pop anything.
    On the 68010, the RTD insn may be used to pop them if the number
      of args is fixed, but if the number is variable then the caller
      must pop them all.  RTD can't be used for library calls now
@@ -849,7 +686,6 @@ extern enum reg_class regno_reg_class[];
    Use of RTD is a selectable option, since it is incompatible with
    standard Unix calling sequences.  If the option is not selected,
    the caller must always pop the args.  */
-
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
   ((TARGET_RTD && (!(FUNDECL) || TREE_CODE (FUNDECL) != IDENTIFIER_NODE)	\
     && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
@@ -857,119 +693,58 @@ extern enum reg_class regno_reg_class[];
 	    == void_type_node)))				\
    ? (SIZE) : 0)
 
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
-
-/* On the 68000 the return value is in D0 regardless.  */
-
+/* On the m68k the return value is always in D0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
 
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-
-/* On the 68000 the return value is in D0 regardless.  */
-
+/* On the m68k the return value is always in D0.  */
 #define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, 0)
 
-/* 1 if N is a possible register number for a function value.
-   On the 68000, d0 is the only register thus used.  */
-
+/* On the m68k, D0 is the only register used.  */
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
 
 /* Define this to be true when FUNCTION_VALUE_REGNO_P is true for
-   more than one register.  */
-
+   more than one register.
+   XXX This macro is m68k specific and used only for m68kemb.h.  */
 #define NEEDS_UNTYPED_CALL 0
-
-/* Define this if PCC uses the nonreentrant convention for returning
-   structure and union values.  */
 
 #define PCC_STATIC_STRUCT_RETURN
 
-/* 1 if N is a possible register number for function argument passing.
-   On the 68000, no registers are used in this way.  */
-
+/* On the m68k, all arguments are usually pushed on the stack.  */
 #define FUNCTION_ARG_REGNO_P(N) 0
 
-/* Define a data type for recording info about an argument list
-   during the scan of that argument list.  This data type should
-   hold all necessary information about the function itself
-   and about the args processed so far, enough to enable macros
-   such as FUNCTION_ARG to determine where the next arg should go.
-
-   On the m68k, this is a single integer, which is a number of bytes
+/* On the m68k, this is a single integer, which is a number of bytes
    of arguments scanned so far.  */
-
 #define CUMULATIVE_ARGS int
 
-/* Initialize a variable CUM of type CUMULATIVE_ARGS
-   for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.
-
-   On the m68k, the offset starts at 0.  */
-
+/* On the m68k, the offset starts at 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
  ((CUM) = 0)
-
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
  ((CUM) += ((MODE) != BLKmode			\
 	    ? (GET_MODE_SIZE (MODE) + 3) & ~3	\
 	    : (int_size_in_bytes (TYPE) + 3) & ~3))
 
-/* Define where to put the arguments to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
-
-   On the m68k all args are always pushed.  */
-
+/* On the m68k all args are always pushed.  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) 0
-
-/* For an arg passed partly in registers and partly in memory,
-   this is the number of registers used.
-   For args passed entirely in registers or entirely in memory, zero.  */
-
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
-
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
   asm_fprintf (FILE, "\tlea %LLP%d,%Ra0\n\tjsr mcount\n", (LABELNO))
 
-/* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
-   the stack pointer does not matter.  The value is tested only in
-   functions that have frame pointers.
-   No definition is equivalent to always zero.  */
-
 #define EXIT_IGNORE_STACK 1
 
-/* This is a hook for other tm files to change.  */
-/* #define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE) */
-
 /* Determine if the epilogue should be output as RTL.
-   You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
+   You should override this if you define FUNCTION_EXTRA_EPILOGUE.
+
+   XXX This macro is m68k-specific and only used in m68k.md.  */
 #define USE_RETURN_INSN use_return_insn ()
 
 /* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  */
+   of a trampoline, leaving space for the variable parts.
 
-/* On the 68k, the trampoline looks like this:
+   On the m68k, the trampoline looks like this:
      movl #STATIC,a0
      jmp  FUNCTION
 
@@ -979,36 +754,25 @@ extern enum reg_class regno_reg_class[];
    using an out-of-line transfer function or pc-relative data, but
    the fact remains that the code to jump to the transfer function
    or the code to load the pc-relative data needs to be flushed
-   just as much as the "variable" portion of the trampoline.  
+   just as much as the "variable" portion of the trampoline.
    Recognizing that a cache flush is going to be required anyway,
-   dispense with such notions and build a smaller trampoline.  */
+   dispense with such notions and build a smaller trampoline.
 
-/* Since more instructions are required to move a template into
+   Since more instructions are required to move a template into
    place than to create it on the spot, don't use a template.  */
 
-/* Length in units of the trampoline for entering a nested function.  */
-
 #define TRAMPOLINE_SIZE 12
-
-/* Alignment required for a trampoline in bits.  */
-
 #define TRAMPOLINE_ALIGNMENT 16
 
 /* Targets redefine this to invoke code to either flush the cache,
    or enable stack execution (or both).  */
-
 #ifndef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP)
 #endif
 
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.
-
-   We generate a two-instructions program at address TRAMP :
+/* We generate a two-instructions program at address TRAMP :
 	movea.l &CXT,%a0
-	jmp FNADDR					*/
-
+	jmp FNADDR  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
   emit_move_insn (gen_rtx_MEM (HImode, TRAMP), GEN_INT(0x207C));	\
@@ -1019,16 +783,15 @@ extern enum reg_class regno_reg_class[];
   FINALIZE_TRAMPOLINE(TRAMP);						\
 }
 
-/* This is the library routine that is used
-   to transfer control from the trampoline
-   to the actual nested function.
-   It is defined for backward compatibility,
-   for linking with object code that used the old
-   trampoline definition.  */
+/* This is the library routine that is used to transfer control from the
+   trampoline to the actual nested function.  It is defined for backward
+   compatibility, for linking with object code that used the old trampoline
+   definition.
 
-/* A colon is used with no explicit operands
-   to cause the template string to be scanned for %-constructs.  */
-/* The function name __transfer_from_trampoline is not actually used.
+   A colon is used with no explicit operands to cause the template string
+   to be scanned for %-constructs.
+
+   The function name __transfer_from_trampoline is not actually used.
    The function definition just permits use of "asm with operands"
    (though the operand list is empty).  */
 #define TRANSFER_FROM_TRAMPOLINE				\
@@ -1043,34 +806,18 @@ __transfer_from_trampoline ()					\
   asm ("rts":);							\
 }
 
-/* Definitions for register eliminations.
-
-   This is an array of structures.  Each structure initializes one pair
-   of eliminable registers.  The "from" register number is given first,
-   followed by "to".  Eliminations of the same "from" register are listed
-   in order of preference.
-
-   There are two registers that can always be eliminated on the m68k.
+/* There are two registers that can always be eliminated on the m68k.
    The frame pointer and the arg pointer can be replaced by either the
    hard frame pointer or to the stack pointer, depending upon the
    circumstances.  The hard frame pointer is not used before reload and
    so it is not eligible for elimination.  */
-
 #define ELIMINABLE_REGS					\
 {{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },	\
+ { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },		\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM }}
-
-/* Given FROM and TO register numbers, say whether this elimination is
-   allowed.  Frame pointer elimination is automatically handled.
-
-   All other eliminations are valid.  */
 
 #define CAN_ELIMINATE(FROM, TO) \
   ((TO) == STACK_POINTER_REGNUM ? ! frame_pointer_needed : 1)
-
-/* Define the offset between two registers, one to be eliminated, and the other
-   its replacement, at the start of a routine.  */
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   (OFFSET) = m68k_initial_elimination_offset(FROM, TO)
@@ -1078,16 +825,9 @@ __transfer_from_trampoline ()					\
 /* Addressing modes, and classification of registers for them.  */
 
 #define HAVE_POST_INCREMENT 1
-
 #define HAVE_PRE_DECREMENT 1
 
 /* Macros to check register numbers against specific register classes.  */
-
-/* These assume that REGNO is a hard or pseudo reg number.
-   They give nonzero only if REGNO is a hard reg of the suitable class
-   or a pseudo reg currently allocated to a suitable hard reg.
-   Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
 ((REGNO) < 16 || (unsigned) reg_renumber[REGNO] < 16)
@@ -1101,27 +841,21 @@ __transfer_from_trampoline ()					\
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
 
-   These macros are specific to the 68000, and may be used only
+   These macros are specific to the m68k, and may be used only
    in code for printing assembler insns and in conditions for
    define_optimization.  */
 
 /* 1 if X is a data register.  */
-
 #define DATA_REG_P(X) (REG_P (X) && REGNO_OK_FOR_DATA_P (REGNO (X)))
 
 /* 1 if X is an fp register.  */
-
 #define FP_REG_P(X) (REG_P (X) && REGNO_OK_FOR_FP_P (REGNO (X)))
 
 /* 1 if X is an address register  */
-
 #define ADDRESS_REG_P(X) (REG_P (X) && REGNO_OK_FOR_BASE_P (REGNO (X)))
 
-/* Maximum number of registers that can appear in a valid memory address.  */
 
 #define MAX_REGS_PER_ADDRESS 2
-
-/* Recognize any constant value that is a valid address.  */
 
 #define CONSTANT_ADDRESS_P(X)   \
   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
@@ -1130,16 +864,7 @@ __transfer_from_trampoline ()					\
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-
 #define LEGITIMATE_CONSTANT_P(X) (GET_MODE (X) != XFmode)
-
-/* Nonzero if the constant value X is a legitimate general operand
-   when generating PIC code.  It is given that flag_pic is on and 
-   that X satisfies CONSTANT_P or is a CONST_DOUBLE.
-
-   PCREL_GENERAL_OPERAND_OK makes reload accept addresses that are
-   accepted by insn predicates, but which would otherwise fail the
-   `general_operand' test.  */
 
 #ifndef REG_OK_STRICT
 #define PCREL_GENERAL_OPERAND_OK 0
@@ -1151,19 +876,6 @@ __transfer_from_trampoline ()					\
   (! symbolic_operand (X, VOIDmode)				\
    || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))	\
    || PCREL_GENERAL_OPERAND_OK)
-
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
-   and check its validity for a certain class.
-   We have two alternate definitions for each of them.
-   The usual definition accepts all pseudo regs; the other rejects
-   them unless they have been allocated suitable hard regs.
-   The symbol REG_OK_STRICT causes the latter definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that
-   they will get allocated to the class that the insn wants them to be in.
-   Source files for reload pass need to be strict.
-   After reload, it makes no difference, since pseudo regs have
-   been eliminated by then.  */
 
 #ifndef REG_OK_STRICT
 
@@ -1287,24 +999,10 @@ __transfer_from_trampoline ()					\
    but memory_address_noforce would alter it.  */
 #define PIC_CASE_VECTOR_ADDRESS(index) index
 
-/* Try machine-dependent ways of modifying an illegitimate address
-   to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
-
-   OLDX is the address as it was before break_out_memory_refs was called.
-   In some cases it is useful to look at this to decide what needs to be done.
-
-   MODE and WIN are passed so that this macro can use
-   GO_IF_LEGITIMATE_ADDRESS.
-
-   It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.
-
-   For the 68000, we handle X+REG by loading X into a register R and
+/* For the 68000, we handle X+REG by loading X into a register R and
    using R+REG.  R will go in an address reg and indexing will be used.
    However, if REG is a broken-out memory address or multiplication,
    nothing needs to be done because REG can certainly go in an address reg.  */
-
 #define COPY_ONCE(Y) if (!copied) { Y = copy_rtx (Y); copied = ch = 1; }
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)   \
 { register int ch = (X) != (OLDX);					\
@@ -1339,51 +1037,23 @@ __transfer_from_trampoline ()					\
 	  XEXP (X, 0) = temp;						\
 	  goto WIN; }}}
 
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-   On the 68000, only predecrement and postincrement address depend thus
+/* On the 68000, only predecrement and postincrement address depend thus
    (the amount of decrement or increment being the length of the operand).  */
-
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)	\
  if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC) goto LABEL
 
-/* Specify the machine mode that this machine uses
-   for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE HImode
-
-/* Define as C expression which evaluates to nonzero if the tablejump
-   instruction expects the table to contain offsets from the address of the
-   table.
-   Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
 
-/* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
-
-/* Max number of bytes we can move from memory to memory
-   in one reasonably fast instruction.  */
 #define MOVE_MAX 4
-
-/* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
-/* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
 
 #define STORE_FLAG_VALUE (-1)
 
-/* Specify the machine mode that pointers have.
-   After generation of rtl, the compiler makes no further distinction
-   between pointers and any other objects of this machine mode.  */
 #define Pmode SImode
-
-/* A function address in a call instruction
-   is a byte address (for indexing purposes)
-   so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
 
 
@@ -1396,15 +1066,10 @@ __transfer_from_trampoline ()					\
    conditional branch must be output.  */
 #define CC_IN_68881 04000
 
-/* Store in cc_status the expressions that the condition codes will
-   describe after execution of an instruction whose pattern is EXP.
-   Do not alter them if the instruction would not alter the cc's.  */
-
 /* On the 68000, all the insns to store in an address register fail to
    set the cc's.  However, in some cases these instructions can make it
    possibly invalid to use the saved cc's.  In those cases we clear out
    some or all of the saved cc's so they won't be used.  */
-
 #define NOTICE_UPDATE_CC(EXP,INSN) notice_update_cc (EXP, INSN)
 
 #define OUTPUT_JUMP(NORMAL, FLOAT, NO_OV)  \
@@ -1416,54 +1081,15 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 
 /* Control the assembler format that we output.  */
 
-/* Output to assembler file text saying following lines
-   may contain character constants, extra white space, comments, etc.  */
-
 #define ASM_APP_ON "#APP\n"
-
-/* Output to assembler file text saying following lines
-   no longer contain unusual constructs.  */
-
 #define ASM_APP_OFF "#NO_APP\n"
-
-/* Output before read-only data.  */
-
 #define TEXT_SECTION_ASM_OP "\t.text"
-
-/* Output before writable data.  */
-
 #define DATA_SECTION_ASM_OP "\t.data"
-
 #define GLOBAL_ASM_OP "\t.globl\t"
-
-/* Here are four prefixes that are used by asm_fprintf to
-   facilitate customization for alternate assembler syntaxes.
-   Machines with no likelihood of an alternate syntax need not
-   define these and need not use asm_fprintf.  */
-
-/* The prefix for register names.  Note that REGISTER_NAMES
-   is supposed to include this prefix.  */
-
 #define REGISTER_PREFIX ""
-
-/* The prefix for local labels.  You should be able to define this as
-   an empty string, or any arbitrary string (such as ".", ".L%", etc)
-   without having to make any other changes to account for the specific
-   definition.  Note it is a string literal, not interpreted by printf
-   and friends.  */
-
 #define LOCAL_LABEL_PREFIX ""
-
-/* The prefix to add to user-visible assembler symbols.  */
-
 #define USER_LABEL_PREFIX "_"
-
-/* The prefix for immediate operands.  */
-
 #define IMMEDIATE_PREFIX "#"
-
-/* How to refer to registers in assembler output.
-   This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
 {REGISTER_PREFIX"d0", REGISTER_PREFIX"d1", REGISTER_PREFIX"d2",	\
@@ -1487,10 +1113,8 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
     && frame_pointer_needed) ? \
     M68K_FP_REG_NAME : reg_names[(r)])
 
-/* How to renumber registers for dbx and gdb.
-   On the Sun-3, the floating point registers have numbers
+/* On the Sun-3, the floating point registers have numbers
    18 to 25, not 16 to 23 as they do in the compiler.  */
-
 #define DBX_REGISTER_NUMBER(REGNO) ((REGNO) < 16 ? (REGNO) : (REGNO) + 2)
 
 /* Before the prologue, RA is at 0(%sp).  */
@@ -1518,52 +1142,29 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
    true if the symbol may be affected by dynamic relocations.  */
-#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)       		   \
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)			   \
   (flag_pic								   \
    ? ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4 \
    : DW_EH_PE_absptr)
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
   asm_fprintf (FILE, "%U%s", NAME)
-
-/* This is how to store into the string LABEL
-   the symbol_ref name of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM))
 
-/* This is how to output an insn to push a register on the stack.
-   It need not be very fast code.  */
-
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
   asm_fprintf (FILE, "\tmovel %s,%Rsp@-\n", reg_names[REGNO])
-
-/* This is how to output an insn to pop a register from the stack.
-   It need not be very fast code.  */
-
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   asm_fprintf (FILE, "\tmovel %Rsp@+,%s\n", reg_names[REGNO])
 
-/* This is how to output an element of a case-vector that is absolute.
-   (The 68000 does not use such vectors,
-   but we must define this macro anyway.)  */
-
+/* The m68k does not use absolute case-vectors, but we must define this macro
+   anyway.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   asm_fprintf (FILE, "\t.long %LL%d\n", VALUE)
 
-/* This is how to output an element of a case-vector that is relative.  */
-
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   asm_fprintf (FILE, "\t.word %LL%d-%LL%d\n", VALUE, REL)
-
-/* This is how to output an assembler line
-   that says to advance the location counter
-   to a multiple of 2**LOG bytes.  */
 
 /* We don't have a way to align to more than a two-byte boundary, so do the
    best we can and don't complain.  */
@@ -1574,16 +1175,10 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (int)(SIZE))
 
-/* This says how to output an assembler line
-   to define a global common symbol.  */
-
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
-
-/* This says how to output an assembler line
-   to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".lcomm ", (FILE)),			\
@@ -1591,14 +1186,13 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
   fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
 /* Output a float value (represented as a C double) as an immediate operand.
-   This macro is a 68k-specific macro.  */
-
+   This macro is m68k-specific.  */
 #define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)		\
  do {								\
       if (CODE == 'f')						\
         {							\
           char dstr[30];					\
-      	  real_to_decimal (dstr, &(VALUE), sizeof (dstr), 9, 0); \
+	  real_to_decimal (dstr, &(VALUE), sizeof (dstr), 9, 0); \
           asm_fprintf ((FILE), "%I0r%s", dstr);			\
         }							\
       else							\
@@ -1610,7 +1204,7 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
      } while (0)
 
 /* Output a double value (represented as a C double) as an immediate operand.
-   This macro is a 68k-specific macro.  */
+   This macro is m68k-specific.  */
 #define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)				\
  do { char dstr[30];							\
       real_to_decimal (dstr, &(VALUE), sizeof (dstr), 0, 1);		\
@@ -1625,11 +1219,7 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
       asm_fprintf (FILE, "%I0r%s", dstr);				\
     } while (0)
 
-/* Print operand X (an rtx) in assembler syntax to file FILE.
-   CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and X is null.
-
-   On the 68000, we use several CODE characters:
+/* On the 68000, we use several CODE characters:
    '.' for dot needed in Motorola-style opcode names.
    '-' for an operand pushing on the stack:
        sp@-, -(sp) or -(%sp) depending on the style of syntax.
@@ -1657,33 +1247,9 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
    || (CODE) == '+' || (CODE) == '@' || (CODE) == '!'			\
    || (CODE) == '$' || (CODE) == '&' || (CODE) == '/')
 
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand X.  X is an RTL
-   expression.
 
-   CODE is a value that can be used to specify one of several ways
-   of printing the operand.  It is used when identical operands
-   must be printed differently depending on the context.  CODE
-   comes from the `%' specification that was used to request
-   printing of the operand.  If the specification was just `%DIGIT'
-   then CODE is 0; if the specification was `%LTR DIGIT' then CODE
-   is the ASCII code for LTR.
-
-   If X is a register, this macro should print the register's name.
-   The names can be found in an array `reg_names' whose type is
-   `char *[]'.  `reg_names' is initialized from `REGISTER_NAMES'.
-
-   When the machine description has a specification `%PUNCT' (a `%'
-   followed by a punctuation character), this macro is called with
-   a null pointer for X and the punctuation character for CODE.
-
-   See m68k.c for the m68k specific codes.  */
-
+/* See m68k.c for the m68k specific codes.  */
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
-
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
@@ -1706,9 +1272,3 @@ extern int m68k_last_compare_had_fp_operands;
   {"valid_dbcc_comparison_p", {EQ, NE, GTU, LTU, GEU, LEU,		\
 			       GT, LT, GE, LE}},			\
   {"extend_operator", {SIGN_EXTEND, ZERO_EXTEND}},
-
-/*
-Local variables:
-version-control: t
-End:
-*/

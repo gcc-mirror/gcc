@@ -1,3 +1,11 @@
+2004-06-04  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.h: Remove comments copied over from tm.texi.
+	Rename 68000 and 68k to m68k for consistency in comments.  Remove
+	trailing whitespace before EOLs and before TABs.
+	(MAX_CODE_ALIGN): Remove unused macro.
+	(CALL_USED_REGISTERS): Reformat and add comments.
+
 2004-06-04  Frank Ch. Eigler  <fche@redhat.com>
 
 	* gcc.c (MFLIB_SPEC): Remove library references, to require users
