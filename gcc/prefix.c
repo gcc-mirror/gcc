@@ -139,7 +139,7 @@ concat VPARAMS ((const char *first, ...))
       arg = va_arg (args, const char *);
     }
 
-  newstr = (char *) malloc (length + 1);
+  newstr = (char *) xmalloc (length + 1);
   va_end (args);
 
   /* Now copy the individual pieces to the result string.  */
@@ -211,12 +211,12 @@ lookup_key (key)
     }
 
   size = 32;
-  dst = (char *) malloc (size);
+  dst = (char *) xmalloc (size);
 
   res = RegQueryValueExA (reg_key, key, 0, &type, dst, &size);
   if (res == ERROR_MORE_DATA && type == REG_SZ)
     {
-      dst = (char *) realloc (dst, size);
+      dst = (char *) xrealloc (dst, size);
       res = RegQueryValueExA (reg_key, key, 0, &type, dst, &size);
     }
 
