@@ -1,3 +1,9 @@
+2003-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR optimization/10171
+	* unroll.c (unroll_loop): Don't delete the jump at the end unless
+	we also delete a jump at the beginning.
+
 2003-03-25  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* doc/contrib.texi (Contributors): Mention self as 68HC11/68HC12
