@@ -392,7 +392,7 @@ announce_snapshot() {
   inform "Updating links and READMEs on the FTP server"
   
   TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
-  changedir ~ftp/pub/gcc/snapshots
+  changedir "${SNAPSHOTS_DIR}"
   sed -e "s%@DATE@%$DATE%g" \
     -e "s%@TEXT_DATE@%$TEXT_DATE%g" \
     -e "s%@LAST_DATE@%$LAST_DATE%g" \
@@ -416,7 +416,7 @@ announce_snapshot() {
   inform "Sending mail"
 
   export QMAILHOST=gcc.gnu.org
-  mail -s "gcc-ss-${RELEASE} is now available" gcc@gcc.gnu.org < ~ftp/pub/gcc/snapshots/${RELEASE}/README
+  mail -s "gcc-ss-${RELEASE} is now available" gcc@gcc.gnu.org < ${SNAPSHOTS_DIR}/${RELEASE}/README
 }
 
 ########################################################################
@@ -440,8 +440,11 @@ CVS_USERNAME="${USER}"
 GCC_HOSTNAME="gcc.gnu.org"
 # The name of the account on the machine to which files are uploaded.
 GCC_USERNAME="gccadmin"
-# The directory in which the files will be placed.
-FTP_PATH="~ftp/pub/gcc"
+# The directory in which the files will be placed (must not use quotes
+# or ~ftp syntax will break).
+FTP_PATH=~ftp/pub/gcc
+# The directory in which snapshots will be placed.
+SNAPSHOTS_DIR=${FTP_PATH}/snapshots
 
 # The major number for the release.  For release `3.0.2' this would be 
 # `3'
@@ -618,8 +621,7 @@ else
   # was.
   if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ]; then
     LAST_DATE=`cat ~/.snapshot_date-${BRANCH}`
-    LAST_DIR=~ftp/pub/gcc/snapshots/${BRANCH}-${LAST_DATE}
-    OLD_TARS=${LAST_DIR}/gcc-${BRANCH}-${LAST_DATE}.tar.bz2
+    OLD_TARS=${SNAPSHOTS_DIR}/${BRANCH}-${LAST_DATE}/gcc-${BRANCH}-${LAST_DATE}.tar.bz2
   fi
 fi
 
