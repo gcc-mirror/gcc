@@ -128,7 +128,7 @@ do {									    \
     {									    \
       fprintf (FILE, "\tjmp *");					    \
       assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	    \
-      fprintf (FILE, "@GOTPCREL(%RIP)\n");				    \
+      fprintf (FILE, "@GOTPCREL(%%RIP)\n");				    \
     }									    \
   else									    \
     {									    \

@@ -3452,7 +3452,6 @@ try_crossjump_to_edge (mode, e1, e2)
   rtx newpos1, newpos2;
   rtx first, last;
   edge s;
-  rtx note;
   rtx label;
   rtx barrier;
 
