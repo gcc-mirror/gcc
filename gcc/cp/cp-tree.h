@@ -257,6 +257,10 @@ extern int warn_sign_promo;
 
 extern int warn_extern_inline;
 
+/* Non-zero means warn when an old-style cast is used.  */
+
+extern int warn_old_style_cast;
+
 /* Nonzero means to treat bitfields as unsigned unless they say `signed'.  */
 
 extern int flag_signed_bitfields;
@@ -307,6 +311,14 @@ extern int flag_handle_signatures;
    inline by default.  */
 
 extern int flag_default_inline;
+
+/* The name-mangling scheme to use.  Versions of gcc before 2.8 use
+   version 0.  */
+extern int name_mangling_version;
+
+/* Nonzero means that guiding declarations are allowed.  */
+extern int flag_guiding_decls;
+
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
@@ -928,11 +940,10 @@ struct lang_decl_flags
   unsigned saved_inline : 1;
   unsigned use_template : 2;
 
-  unsigned c_static : 1;
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
-  unsigned dummy : 4;
+  unsigned dummy : 5;
 
   tree access;
   tree context;
@@ -1394,11 +1405,6 @@ extern int flag_new_for_scope;
 /* We know what we're doing with this decl now.  */
 #define DECL_INTERFACE_KNOWN(NODE) DECL_LANG_FLAG_5 (NODE)
 
-/* This decl was declared or deduced to have internal linkage.  This is
-   only meaningful if TREE_PUBLIC is set.  */
-#define DECL_C_STATIC(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.c_static)
-
 /* This function was declared inline.  This flag controls the linkage
    semantics of 'inline'; whether or not the function is inlined is
    controlled by DECL_INLINE.  */
@@ -1413,10 +1419,6 @@ extern int flag_new_for_scope;
 
 #define DECL_REALLY_EXTERN(NODE) \
   (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
-
-#define DECL_PUBLIC(NODE) \
-  (TREE_CODE (NODE) == FUNCTION_DECL \
-   ? ! DECL_C_STATIC (NODE) : TREE_PUBLIC (NODE))
 
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 
@@ -1827,6 +1829,11 @@ extern int flag_implicit_templates;
 
 extern int flag_weak;
 
+/* Nonzero if we want to adhere to the language rules of the Embedded C++
+   specification.  */
+
+extern int flag_embedded_cxx;
+
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 extern int at_eof;
@@ -2202,7 +2209,6 @@ extern void expand_throw			PROTO((tree));
 extern tree build_throw				PROTO((tree));
 
 /* in expr.c */
-/* skip cplus_expand_expr */
 extern void init_cplus_expand			PROTO((void));
 extern void fixup_result_decl			PROTO((tree, struct rtx_def *));
 extern int extract_init				PROTO((tree, tree));
@@ -2287,6 +2293,7 @@ extern tree snarf_defarg			PROTO((void));
 extern void add_defarg_fn			PROTO((tree));
 extern void do_pending_defargs			PROTO((void));
 extern int identifier_type			PROTO((tree));
+extern void yyhook				PROTO((int));
 
 /* in method.c */
 extern void init_method				PROTO((void));
@@ -2295,6 +2302,7 @@ extern void  report_type_mismatch		PROTO((struct candidate *, tree, char *));
 extern char *build_overload_name		PROTO((tree, int, int));
 extern tree build_static_name			PROTO((tree, tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));
+extern tree build_template_decl_overload        PROTO((tree, tree, tree, tree, tree, int));
 extern tree build_typename_overload		PROTO((tree));
 extern tree build_overload_with_type		PROTO((tree, tree));
 extern tree build_opfncall			PROTO((enum tree_code, int, tree, tree, tree));
@@ -2312,18 +2320,24 @@ extern tree tsubst_chain			PROTO((tree, tree));
 extern void begin_member_template_processing    PROTO((tree));
 extern void end_member_template_processing      PROTO((void));
 extern void begin_template_parm_list		PROTO((void));
+extern void begin_specialization                PROTO((void));
+extern void reset_specialization                PROTO((void));
+extern void end_specialization                  PROTO((void));
+extern tree determine_explicit_specialization   PROTO((tree, tree, tree *, int, int));
+extern int check_explicit_specialization       PROTO((tree, tree, int, int));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
 extern void end_template_decl			PROTO((void));
 extern tree current_template_args		PROTO((void));
 extern void push_template_decl			PROTO((tree));
 extern tree lookup_template_class		PROTO((tree, tree, tree));
+extern tree lookup_template_function            PROTO((tree, tree));
 extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
 extern tree instantiate_template		PROTO((tree, tree));
 extern void overload_template_name		PROTO((tree));
-extern int fn_type_unification                  PROTO((tree, tree, tree, tree, int));
-extern int type_unification			PROTO((tree, tree *, tree, tree, int *, int, int));
+extern int fn_type_unification                  PROTO((tree, tree, tree, tree, tree, int));
+extern int type_unification			PROTO((tree, tree *, tree, tree, tree, int *, int, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
 extern int more_specialized			PROTO((tree, tree));
@@ -2343,6 +2357,7 @@ extern tree most_specialized_class		PROTO((tree, tree));
 extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
+extern int processing_specialization;
 
 /* in repo.c */
 extern void repo_template_used			PROTO((tree));
@@ -2462,6 +2477,10 @@ extern int cp_tree_equal			PROTO((tree, tree));
 extern int can_free				PROTO((struct obstack *, tree));
 extern tree mapcar				PROTO((tree, tree (*) (tree)));
 extern void debug_binfo				PROTO((tree));
+#define scratchalloc expralloc
+#define scratch_tree_cons expr_tree_cons
+#define build_scratch_list build_expr_list
+#define make_scratch_vec make_temp_vec
 
 /* in typeck.c */
 extern tree condition_conversion		PROTO((tree));

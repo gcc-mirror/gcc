@@ -380,9 +380,11 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
       if (funcdef_flag)
 	DECL_CLASS_CONTEXT (decl) = current_class_type;
 
-      /* We can call pushdecl here, because the TREE_CHAIN of this
-	 FUNCTION_DECL is not needed for other purposes.  */
-      decl = pushdecl (decl);
+      if (! DECL_USE_TEMPLATE (decl))
+	/* We can call pushdecl here, because the TREE_CHAIN of this
+	   FUNCTION_DECL is not needed for other purposes.  Don't do this
+	   for a template instantiation. */
+	decl = pushdecl (decl);
 
       make_decl_rtl (decl, NULL_PTR, 1);
       add_friend (current_class_type, decl);

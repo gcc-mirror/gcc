@@ -37,8 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "output.h"
 #include "except.h"
-
-extern tree get_file_function_name ();
+#include "expr.h"
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -268,8 +267,17 @@ int warn_ecpp;
 
 int warn_sign_promo;
 
-/* Nonzero means `$' can be in an identifier.
-   See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
+/* Nonzero means warn when an old-style cast is used.  */
+
+int warn_old_style_cast;
+
+/* start-sanitize-depragmaize */  /* CYGNUS LOCAL depragmaize/nickc */
+/* Warn about #pragma directives that are not recognised.  */
+
+int warn_unknown_pragmas = 0; /* Tri state variable.  */
+/* end-sanitize-depragmaize */  /* END CYGNUS LOCAL depragmaize/nickc */
+
+/* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 1
@@ -401,10 +409,23 @@ int flag_new_for_scope = 1;
 
 int flag_weak = 1;
 
+/* Nonzero if we want to adhere to the language rules of the Embedded C++
+   specification.  */
+
+int flag_embedded_cxx = 0;
+
 /* Maximum template instantiation depth. Must be at least 17 for ANSI
    compliance. */
 
 int max_tinst_depth = 17;
+
+/* The name-mangling scheme to use.  Must be 1 or greater to support
+   template functions with identical types, but different template
+   arguments.  */
+int name_mangling_version = 1;
+
+/* Nonzero means that guiding declarations are allowed.  */
+int flag_guiding_decls;
 
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
@@ -453,7 +474,8 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"check-new", &flag_check_new, 1},
   {"repo", &flag_use_repository, 1},
   {"for-scope", &flag_new_for_scope, 2},
-  {"weak", &flag_weak, 1}
+  {"weak", &flag_weak, 1},
+  {"embedded-cxx", &flag_embedded_cxx, 1}
 };
 
 /* Decode the string P as a language-specific option.
@@ -465,7 +487,7 @@ lang_decode_option (p)
      char *p;
 {
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
-    dollars_in_ident = 1, flag_writable_strings = 1,
+    flag_writable_strings = 1,
     flag_this_is_variable = 1, flag_new_for_scope = 0;
   /* The +e options are for cfront compatibility.  They come in as
      `-+eN', to kludge around gcc.c's argument handling.  */
@@ -526,6 +548,28 @@ lang_decode_option (p)
 	  flag_implicit_templates = 0;
 	  found = 1;
 	}
+      else if (!strcmp (p, "guiding-decls"))
+	{
+	  flag_guiding_decls = 1;
+	  name_mangling_version = 0;
+	  found = 1;
+	}
+      else if (!strcmp (p, "no-guiding-decls"))
+	{
+	  flag_guiding_decls = 0;
+	  found = 1;
+	}
+      else if (!strcmp (p, "embedded-cxx"))
+	{
+	  flag_embedded_cxx = 1;
+	  flag_rtti = flag_exceptions = 0;
+	  found = 1;
+	}
+      else if (!strcmp (p, "no-embedded-cxx"))
+	{
+	  flag_embedded_cxx = 0;
+	  found = 1;
+	}
       else if (!strncmp (p, "template-depth-", 15))
 	{
 	  char *endp = p + 15;
@@ -541,6 +585,22 @@ lang_decode_option (p)
 	    }
 	  max_tinst_depth = atoi (p + 15);
 	template_depth_lose: ;
+	}
+      else if (!strncmp (p, "name-mangling-version-", 22))
+	{
+	  char *endp = p + 22;
+	  while (*endp)
+	    {
+	      if (*endp >= '0' && *endp <= '9')
+		endp++;
+	      else
+		{
+		  error ("Invalid option `%s'", p - 2);
+		  goto mangling_version_lose;
+		}
+	    }
+	  name_mangling_version = atoi (p + 22);
+	mangling_version_lose: ;
 	}
       else for (j = 0;
 		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
@@ -614,6 +674,14 @@ lang_decode_option (p)
 	warn_ecpp = setting;
       else if (!strcmp (p, "sign-promo"))
 	warn_sign_promo = setting;
+      else if (!strcmp (p, "old-style-cast"))
+	warn_old_style_cast = setting;
+/* start-sanitize-depragmaize */  /* CYGNUS LOCAL depragmaize/nickc */
+      else if (!strcmp (p, "unknown-pragmas"))
+	/* Set to greater than 1, so that even unknown pragmas in
+	   system headers will be warned about.  */
+	warn_unknown_pragmas = setting * 2; 
+/* end-sanitize-depragmaize */  /* END CYGNUS LOCAL depragmaize/nickc */
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -643,6 +711,11 @@ lang_decode_option (p)
 	  warn_template_debugging = setting;
 	  warn_reorder = setting;
 	  warn_sign_promo = setting;
+/* start-sanitize-depragmaize */  /* CYGNUS LOCAL depragmaize/nickc */
+	  /* Only warn about unknown pragmas that are not in system
+	     headers.  */
+	  warn_unknown_pragmas = 1;
+/* end-sanitize-depragmaize */  /* END CYGNUS LOCAL depragmaize/nickc */
 	}
 
       else if (!strcmp (p, "overloaded-virtual"))
@@ -650,7 +723,7 @@ lang_decode_option (p)
       else return 0;
     }
   else if (!strcmp (p, "-ansi"))
-    dollars_in_ident = 0, flag_no_nonansi_builtin = 1, flag_ansi = 1,
+    flag_no_nonansi_builtin = 1, flag_ansi = 1,
     flag_no_gnu_keywords = 1, flag_operator_names = 1;
 #ifdef SPEW_DEBUG
   /* Undocumented, only ever used when you're invoking cc1plus by hand, since
@@ -1395,14 +1468,19 @@ check_classfn (ctype, function)
 
 		      if (comptypes (TREE_TYPE (TREE_TYPE (function)),
 				     TREE_TYPE (TREE_TYPE (fndecl)), 1)
-			  && compparms (p1, p2, 3))
+			  && compparms (p1, p2, 3)
+			  && (DECL_TEMPLATE_SPECIALIZATION (function)
+			      == DECL_TEMPLATE_SPECIALIZATION (fndecl))
+			  && (!DECL_TEMPLATE_SPECIALIZATION (function)
+			      || (DECL_TI_TEMPLATE (function) 
+				  == DECL_TI_TEMPLATE (fndecl))))
 			return fndecl;
 
-		      if (is_member_template (fndecl)) 
+		      if (is_member_template (fndecl))
 			/* This function might be an instantiation
 			   or specialization of fndecl.  */
 			templates = 
-			  tree_cons (NULL_TREE, fndecl, templates);
+			  scratch_tree_cons (NULL_TREE, fndecl, templates);
 		    }
 #endif
 		  fndecl = DECL_CHAIN (fndecl);
@@ -1418,7 +1496,7 @@ check_classfn (ctype, function)
 	       the names don't match, there is some specialization
 	       occurring.  */
 	    templates = 
-	      tree_cons (NULL_TREE, fndecl, templates);
+	      scratch_tree_cons (NULL_TREE, fndecl, templates);
 	}
     }
 
@@ -2173,7 +2251,7 @@ finish_anon_union (anon_union_decl)
       DECL_INITIAL (decl) = NULL_TREE;
       /* If there's a cleanup to do, it belongs in the
 	 TREE_PURPOSE of the following TREE_LIST.  */
-      elems = tree_cons (NULL_TREE, decl, elems);
+      elems = scratch_tree_cons (NULL_TREE, decl, elems);
       TREE_TYPE (elems) = type;
     }
   if (static_p)
@@ -2545,8 +2623,9 @@ finish_prevtable_vardecl (prev, vars)
 	      && !DECL_ABSTRACT_VIRTUAL_P (method))
 	    {
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
-	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
-	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
+	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype)
+		= ! DECL_REALLY_EXTERN (method);
+	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_REALLY_EXTERN (method);
 	      break;
 	    }
 	}
@@ -2766,8 +2845,6 @@ import_export_decl (decl)
       else
 	comdat_linkage (decl);
     } 
-  else if (DECL_C_STATIC (decl))
-    TREE_PUBLIC (decl) = 0;
   else
     comdat_linkage (decl);
 
@@ -2838,9 +2915,6 @@ finish_file ()
   int needs_cleaning = 0, needs_messing_up = 0;
 
   at_eof = 1;
-
-  if (flag_detailed_statistics)
-    dump_tree_statistics ();
 
   /* Bad parse errors.  Just forget about it.  */
   if (! global_bindings_p () || current_class_type)
@@ -3086,7 +3160,7 @@ finish_file ()
 		  expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
 						TREE_VEC_ELT (init, 1),
 						TREE_VEC_ELT (init, 2), 0),
-			       const0_rtx, VOIDmode, 0);
+			       const0_rtx, VOIDmode, EXPAND_NORMAL);
 		}
 	      else
 		expand_assignment (decl, init, 0, 0);
@@ -3244,14 +3318,6 @@ finish_file ()
   walk_vtables ((void (*) PROTO((tree, tree))) 0,
 		prune_vtable_vardecl);
 
-  for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
-    {
-      if (TREE_CODE (vars) == FUNCTION_DECL
-	  && ! DECL_INTERFACE_KNOWN (vars)
-	  && DECL_C_STATIC (vars))
-	TREE_PUBLIC (vars) = 0;
-    }
-
   if (write_virtuals == 2)
     {
       /* Now complain about an virtual function tables promised
@@ -3272,7 +3338,10 @@ finish_file ()
   varconst_time += this_time - start_time;
 
   if (flag_detailed_statistics)
-    dump_time_statistics ();
+    {
+      dump_tree_statistics ();
+      dump_time_statistics ();
+    }
 }
 
 /* This is something of the form 'A()()()()()+1' that has turned out to be an
@@ -3345,6 +3414,9 @@ reparse_absdcl_as_casts (decl, expr)
       expr = build_c_cast (type, expr);
     }
 
+  if (warn_old_style_cast)
+    warning ("use of old-style cast");
+
   return expr;
 }
 
@@ -3367,6 +3439,12 @@ build_expr_from_tree (t)
 	return do_scoped_id (TREE_OPERAND (t, 0), 0);
       else
 	return do_identifier (TREE_OPERAND (t, 0), 0);
+
+    case TEMPLATE_ID_EXPR:
+      return lookup_template_function (build_expr_from_tree
+				       (TREE_OPERAND (t, 0)),
+				       build_expr_from_tree
+				       (TREE_OPERAND (t, 1)));
 
     case INDIRECT_REF:
       return build_x_indirect_ref
@@ -3554,7 +3632,7 @@ build_expr_from_tree (t)
 	chain = TREE_CHAIN (t);
 	if (chain && chain != void_type_node)
 	  chain = build_expr_from_tree (chain);
-	return tree_cons (purpose, value, chain);
+	return expr_tree_cons (purpose, value, chain);
       }
 
     case COMPONENT_REF:
@@ -3601,7 +3679,7 @@ reparse_decl_as_expr (type, decl)
 {
   decl = build_expr_from_tree (decl);
   if (type)
-    return build_functional_cast (type, build_tree_list (NULL_TREE, decl));
+    return build_functional_cast (type, build_expr_list (NULL_TREE, decl));
   else
     return decl;
 }

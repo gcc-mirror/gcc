@@ -1206,12 +1206,15 @@ lookup_field (xbasetype, name, protect, want_type)
     }
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
     {
-      type = complete_type (xbasetype);
+      type = xbasetype;
       basetype_path = TYPE_BINFO (type);
       BINFO_VIA_PUBLIC (basetype_path) = 1;
       BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
     }
-  else my_friendly_abort (97);
+  else
+    my_friendly_abort (97);
+
+  complete_type (type);
 
   if (CLASSTYPE_MTABLE_ENTRY (type))
     {
@@ -1314,7 +1317,7 @@ lookup_field (xbasetype, name, protect, want_type)
       return rval;
     }
 
-  basetype_chain = build_tree_list (NULL_TREE, basetype_path);
+  basetype_chain = build_expr_list (NULL_TREE, basetype_path);
   TREE_VIA_PUBLIC (basetype_chain) = TREE_VIA_PUBLIC (basetype_path);
   TREE_VIA_PROTECTED (basetype_chain) = TREE_VIA_PROTECTED (basetype_path);
   TREE_VIA_VIRTUAL (basetype_chain) = TREE_VIA_VIRTUAL (basetype_path);
@@ -1345,11 +1348,11 @@ lookup_field (xbasetype, name, protect, want_type)
 	      TREE_VIA_PROTECTED (btypes) = TREE_VIA_PROTECTED (base_binfo);
 	      TREE_VIA_VIRTUAL (btypes) = TREE_VIA_VIRTUAL (base_binfo);
 	      if (TREE_VIA_VIRTUAL (base_binfo))
-		btypes = tree_cons (NULL_TREE,
+		btypes = my_tree_cons (NULL_TREE,
 				    TYPE_BINFO (BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i))),
 				    btypes);
 	      else
-		btypes = tree_cons (NULL_TREE,
+		btypes = my_tree_cons (NULL_TREE,
 				    TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i),
 				    btypes);
 	      obstack_ptr_grow (&search_obstack, btypes);
@@ -1835,7 +1838,7 @@ lookup_fnfields (basetype_path, name, complain)
     }
   else
     {
-      basetype_chain = build_tree_list (NULL_TREE, basetype_path);
+      basetype_chain = build_expr_list (NULL_TREE, basetype_path);
       TREE_VIA_PUBLIC (basetype_chain) = TREE_VIA_PUBLIC (basetype_path);
       TREE_VIA_PROTECTED (basetype_chain) = TREE_VIA_PROTECTED (basetype_path);
       TREE_VIA_VIRTUAL (basetype_chain) = TREE_VIA_VIRTUAL (basetype_path);
@@ -1867,11 +1870,11 @@ lookup_fnfields (basetype_path, name, complain)
 	      TREE_VIA_PROTECTED (btypes) = TREE_VIA_PROTECTED (base_binfo);
 	      TREE_VIA_VIRTUAL (btypes) = TREE_VIA_VIRTUAL (base_binfo);
 	      if (TREE_VIA_VIRTUAL (base_binfo))
-		btypes = tree_cons (NULL_TREE,
+		btypes = my_tree_cons (NULL_TREE,
 				    TYPE_BINFO (BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i))),
 				    btypes);
 	      else
-		btypes = tree_cons (NULL_TREE,
+		btypes = my_tree_cons (NULL_TREE,
 				    TREE_VEC_ELT (BINFO_BASETYPES (binfo_h), i),
 				    btypes);
 	      obstack_ptr_grow (&search_obstack, btypes);
@@ -2194,7 +2197,8 @@ get_matching_virtual (binfo, fndecl, dtorp)
 			{
 			  tree binfo = get_binfo (b, d, 1);
 			  if (binfo != error_mark_node
-			      && ! BINFO_OFFSET_ZEROP (binfo))
+			      && (! BINFO_OFFSET_ZEROP (binfo)
+				  || TREE_VIA_VIRTUAL (binfo)))
 			    sorry ("adjusting pointers for covariant returns");
 			}
 		      if (TYPE_READONLY (d) > TYPE_READONLY (b))
@@ -3668,6 +3672,8 @@ reinit_search_statistics ()
 #endif /* GATHER_STATISTICS */
 }
 
+#define scratch_tree_cons expr_tree_cons
+
 static tree conversions;
 static void
 add_conversions (binfo)
@@ -3681,7 +3687,7 @@ add_conversions (binfo)
       tree tmp = TREE_VEC_ELT (method_vec, i);
       if (! IDENTIFIER_TYPENAME_P (DECL_NAME (tmp)))
 	break;
-      conversions = tree_cons (binfo, tmp, conversions);
+      conversions = scratch_tree_cons (binfo, tmp, conversions);
     }
   SET_BINFO_MARKED (binfo);
 }

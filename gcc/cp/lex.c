@@ -105,6 +105,18 @@ char *inline_text_firstobj;
 
 int end_of_file;
 
+/* If non-zero, we gave an error about namespaces not being allowed by
+   Embedded C++.  */
+static int embedded_namespace_error = 0;
+
+/* If non-zero, we gave an error about templates not being allowed by
+   Embedded C++.  */
+static int embedded_template_error = 0;
+
+/* If non-zero, we gave an error about exception handling not being allowed by
+   Embedded C++.  */
+static int embedded_eh_error = 0;
+
 /* Pending language change.
    Positive is push count, negative is pop count.  */
 int pending_lang_change = 0;
@@ -826,6 +838,7 @@ init_lex ()
       UNSET_RESERVED_WORD ("classof");
       UNSET_RESERVED_WORD ("headof");
     }
+
   if (! flag_handle_signatures || flag_no_gnu_keywords)
     {
       /* Easiest way to not recognize signature
@@ -1988,10 +2001,16 @@ cons_up_default_function (type, full_name, kind)
 
   {
     tree declarator = make_call_declarator (name, args, NULL_TREE, NULL_TREE);
+    int saved_processing_specialization;
     if (retref)
       declarator = build_parse_node (ADDR_EXPR, declarator);
-    
+
+    /* The following is in case we're generating the default
+       implementation in the midst of handling a specialization. */
+    saved_processing_specialization = processing_specialization;
+    processing_specialization = 0;
     fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
+    processing_specialization = saved_processing_specialization;
   }
   
   if (fn == void_type_node)
@@ -2729,6 +2748,15 @@ identifier_type (decl)
     {
       if (TREE_CODE (DECL_RESULT (decl)) == TYPE_DECL)
 	return PTYPENAME;
+      else if (looking_for_template) 
+	return PFUNCNAME;
+    }
+  if (looking_for_template && really_overloaded_fn (decl))
+    {
+      tree t;
+      for (t = TREE_VALUE (decl); t != NULL_TREE; t = DECL_CHAIN (t))
+	if (DECL_FUNCTION_TEMPLATE_P (t)) 
+	  return PFUNCNAME;
     }
   if (TREE_CODE (decl) == NAMESPACE_DECL)
     return NSNAME;
@@ -3028,6 +3056,16 @@ identifier_typedecl_value (node)
   return NULL_TREE;
 }
 
+#ifdef __GNUC__
+__inline
+#endif
+int
+embedded_pedwarn (s)
+     char *s;
+{
+  pedwarn ("Embedded C++ prohibits use of %s", s);
+}
+
 int
 real_yylex ()
 {
@@ -3086,13 +3124,12 @@ real_yylex ()
       break;
 
     case '$':
-      if (dollars_in_ident)
-	{
-	  dollar_seen = 1;
-	  goto letter;
-	}
-      value = '$';
-      goto done;
+      if (! dollars_in_ident)
+	error ("`$' in identifier");
+      else if (pedantic)
+	pedwarn ("`$' in identifier");
+      dollar_seen = 1;
+      goto letter;
 
     case 'L':
       /* Capital L may start a wide-string or wide-character constant.  */
@@ -3143,8 +3180,14 @@ real_yylex ()
 	       input sources.  */
 	    while (isalnum (c) || (c == '_') || c == '$')
 	      {
-		if (c == '$' && ! dollars_in_ident)
-		  break;
+		if (c == '$')
+		  {
+		    if (! dollars_in_ident)
+		      error ("`$' in identifier");
+		    else if (pedantic)
+		      pedwarn ("`$' in identifier");
+		  }
+
 		if (p >= token_buffer + maxtoken)
 		  p = extend_token_buffer (p);
 
@@ -3167,8 +3210,14 @@ real_yylex ()
 
 	    while (isalnum (c) || (c == '_') || c == '$')
 	      {
-		if (c == '$' && ! dollars_in_ident)
-		  break;
+		if (c == '$')
+		  {
+		    if (! dollars_in_ident)
+		      error ("`$' in identifier");
+		    else if (pedantic)
+		      pedwarn ("`$' in identifier");
+		  }
+
 		if (p >= token_buffer + maxtoken)
 		  p = extend_token_buffer (p);
 
@@ -3327,6 +3376,51 @@ real_yylex ()
 	    goto done;
 	  }
       }
+
+      if (flag_embedded_cxx)
+	{ 
+	  if (value == USING || value == NAMESPACE)
+	    {
+	      if (! embedded_namespace_error)
+		{
+		  embedded_namespace_error = 1;
+		  embedded_pedwarn ("namespaces");
+		}
+	      else
+		pedwarn ("further uses of namespaces with Embedded C++ enabled");
+	    }
+	  else if (value == TEMPLATE || value == TYPENAME)
+	    {
+	      if (! embedded_namespace_error)
+		{
+		  embedded_namespace_error = 1;
+		  embedded_pedwarn ("templates");
+		}
+	      else
+		pedwarn ("further uses of templates with Embedded C++ enabled");
+	    }
+	  else if (value == CATCH || value == THROW || value == TRY)
+	    {
+	      if (! embedded_eh_error)
+		{
+		  embedded_eh_error = 1;
+		  embedded_pedwarn ("exception handling");
+		}
+	      else
+		pedwarn ("further uses of exception handling with Embedded C++ enabled");
+	    }
+	  else if (value == DYNAMIC_CAST)
+	    embedded_pedwarn ("dynamic_cast");
+	  else if (value == STATIC_CAST)
+	    embedded_pedwarn ("static_cast");
+	  else if (value == REINTERPRET_CAST)
+	    embedded_pedwarn ("reinterpret_cast");
+	  else if (value == CONST_CAST)
+	    embedded_pedwarn ("const_cast");
+	  else if (value == TYPEID)
+	    embedded_pedwarn ("typeid");
+	}
+
       break;
 
     case '.':
@@ -3785,17 +3879,14 @@ real_yylex ()
 	    yylval.ttype = build_int_2 (low, high);
 	    TREE_TYPE (yylval.ttype) = long_long_unsigned_type_node;
 
+	    /* Calculate the ANSI type.  */
 	    if (!spec_long && !spec_unsigned
 		&& int_fits_type_p (yylval.ttype, integer_type_node))
-	      {
-		type = integer_type_node;
-	      }
+	      type = integer_type_node;
 	    else if (!spec_long && (base != 10 || spec_unsigned)
 		     && int_fits_type_p (yylval.ttype, unsigned_type_node))
-	      {
-		/* Nondecimal constants try unsigned even in traditional C.  */
-		type = unsigned_type_node;
-	      }
+	      /* Nondecimal constants try unsigned even in traditional C.  */
+	      type = unsigned_type_node;
 	    else if (!spec_unsigned && !spec_long_long
 		     && int_fits_type_p (yylval.ttype, long_integer_type_node))
 	      type = long_integer_type_node;
@@ -3807,31 +3898,28 @@ real_yylex ()
 		     && int_fits_type_p (yylval.ttype,
 					 long_long_integer_type_node))
 	      type = long_long_integer_type_node;
-	    else if (int_fits_type_p (yylval.ttype,
-				      long_long_unsigned_type_node))
+	    else
 	      type = long_long_unsigned_type_node;
 
-	    else
+	    if (!int_fits_type_p (yylval.ttype, type) && !warn)
+	      pedwarn ("integer constant out of range");
+
+	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
+	      warning ("decimal integer constant is so large that it is unsigned");
+
+	    if (spec_imag)
 	      {
-		type = long_long_integer_type_node;
-		warning ("integer constant out of range");
-
-		if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
-		  warning ("decimal integer constant is so large that it is unsigned");
-		if (spec_imag)
-		  {
-		    if (TYPE_PRECISION (type)
-			<= TYPE_PRECISION (integer_type_node))
-		      yylval.ttype
-			= build_complex (NULL_TREE, integer_zero_node,
-					 cp_convert (integer_type_node,
-						     yylval.ttype));
-		    else
-		      error ("complex integer constant is too wide for `__complex int'");
-		  }
+		if (TYPE_PRECISION (type)
+		    <= TYPE_PRECISION (integer_type_node))
+		  yylval.ttype
+		    = build_complex (NULL_TREE, integer_zero_node,
+				     cp_convert (integer_type_node,
+						 yylval.ttype));
+		else
+		  error ("complex integer constant is too wide for `__complex int'");
 	      }
-
-	    TREE_TYPE (yylval.ttype) = type;
+	    else
+	      TREE_TYPE (yylval.ttype) = type;
 	  }
 
 	put_back (c);
@@ -4447,7 +4535,7 @@ make_lang_type (code)
     pi[--i] = 0;
 
   TYPE_LANG_SPECIFIC (t) = (struct lang_type *) pi;
-  CLASSTYPE_AS_LIST (t) = build_tree_list (NULL_TREE, t);
+  CLASSTYPE_AS_LIST (t) = build_expr_list (NULL_TREE, t);
   SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
   CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
   CLASSTYPE_VBASE_SIZE (t) = integer_zero_node;

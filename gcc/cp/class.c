@@ -96,7 +96,6 @@ static tree get_derived_offset PROTO((tree, tree));
 static tree get_basefndecls PROTO((tree, tree));
 static void set_rtti_entry PROTO((tree, tree, tree));
 static tree build_vtable PROTO((tree, tree));
-static tree build_type_pathname PROTO((char *, tree, tree));
 static void prepare_fresh_vtable PROTO((tree, tree));
 static void fixup_vtable_deltas1 PROTO((tree, tree));
 static void fixup_vtable_deltas PROTO((tree, int, tree));
@@ -270,6 +269,7 @@ build_vbase_path (code, type, expr, path, alias_this)
     {
       tree reverse_path = NULL_TREE;
 
+      push_expression_obstack ();
       while (path)
 	{
 	  tree r = copy_node (path);
@@ -278,6 +278,7 @@ build_vbase_path (code, type, expr, path, alias_this)
 	  path = BINFO_INHERITANCE_CHAIN (path);
 	}
       path = reverse_path;
+      pop_obstacks ();
     }
 
   basetype = BINFO_TYPE (path);
@@ -447,9 +448,9 @@ build_vtable_entry (delta, pfn)
   else
     {
       extern int flag_huge_objects;
-      tree elems = tree_cons (NULL_TREE, delta,
-			      tree_cons (NULL_TREE, integer_zero_node,
-					 build_tree_list (NULL_TREE, pfn)));
+      tree elems = expr_tree_cons (NULL_TREE, delta,
+			      expr_tree_cons (NULL_TREE, integer_zero_node,
+					 build_expr_list (NULL_TREE, pfn)));
       tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
 
       /* DELTA is constructed by `size_int', which means it may be an
@@ -586,8 +587,8 @@ get_vtable_name (type)
      tree type;
 {
   tree type_id = build_typename_overload (type);
-  char *buf = (char *)alloca (strlen (VTABLE_NAME_FORMAT)
-			      + IDENTIFIER_LENGTH (type_id) + 2);
+  char *buf = (char *) alloca (strlen (VTABLE_NAME_FORMAT)
+			       + IDENTIFIER_LENGTH (type_id) + 2);
   char *ptr = IDENTIFIER_POINTER (type_id);
   int i;
   for (i = 0; ptr[i] == OPERATOR_TYPENAME_FORMAT[i]; i++) ;
@@ -735,69 +736,6 @@ build_vtable (binfo, type)
   return decl;
 }
 
-/* Given a base type PARENT, and a derived type TYPE, build
-   a name which distinguishes exactly the PARENT member of TYPE's type.
-
-   FORMAT is a string which controls how sprintf formats the name
-   we have generated.
-
-   For example, given
-
-	class A; class B; class C : A, B;
-
-   it is possible to distinguish "A" from "C's A".  And given
-
-	class L;
-	class A : L; class B : L; class C : A, B;
-
-   it is possible to distinguish "L" from "A's L", and also from
-   "C's L from A".
-
-   Make sure to use the DECL_ASSEMBLER_NAME of the TYPE_NAME of the
-   type, as template have DECL_NAMEs like: X<int>, whereas the
-   DECL_ASSEMBLER_NAME is set to be something the assembler can handle.  */
-
-static tree
-build_type_pathname (format, parent, type)
-     char *format;
-     tree parent, type;
-{
-  extern struct obstack temporary_obstack;
-  char *first, *base, *name;
-  int i;
-  tree id;
-
-  parent = TYPE_MAIN_VARIANT (parent);
-
-  /* Remember where to cut the obstack to.  */
-  first = obstack_base (&temporary_obstack);
-
-  /* Put on TYPE+PARENT.  */
-  obstack_grow (&temporary_obstack,
-		TYPE_ASSEMBLER_NAME_STRING (type),
-		TYPE_ASSEMBLER_NAME_LENGTH (type));
-#ifdef JOINER
-  obstack_1grow (&temporary_obstack, JOINER);
-#else
-  obstack_1grow (&temporary_obstack, '_');
-#endif
-  obstack_grow0 (&temporary_obstack,
-		 TYPE_ASSEMBLER_NAME_STRING (parent),
-		 TYPE_ASSEMBLER_NAME_LENGTH (parent));
-  i = obstack_object_size (&temporary_obstack);
-  base = obstack_base (&temporary_obstack);
-  obstack_finish (&temporary_obstack);
-
-  /* Put on FORMAT+TYPE+PARENT.  */
-  obstack_blank (&temporary_obstack, strlen (format) + i + 1);
-  name = obstack_base (&temporary_obstack);
-  sprintf (name, format, base);
-  id = get_identifier (name);
-  obstack_free (&temporary_obstack, first);
-
-  return id;
-}
-
 extern tree signed_size_zero_node;
 
 /* Give TYPE a new virtual function table which is initialized
@@ -808,20 +746,83 @@ extern tree signed_size_zero_node;
    FOR_TYPE is the derived type which caused this table to
    be needed.
 
-   BINFO is the type association which provided TYPE for FOR_TYPE.  */
+   BINFO is the type association which provided TYPE for FOR_TYPE.
+
+   The order in which vtables are built (by calling this function) for
+   an object must remain the same, otherwise a binary incompatibility
+   can result.  */
 
 static void
 prepare_fresh_vtable (binfo, for_type)
      tree binfo, for_type;
 {
-  tree basetype = BINFO_TYPE (binfo);
+  tree basetype;
   tree orig_decl = BINFO_VTABLE (binfo);
-  /* This name is too simplistic.  We can have multiple basetypes for
-     for_type, and we really want different names.  (mrs) */
-  tree name = build_type_pathname (VTABLE_NAME_FORMAT, basetype, for_type);
-  tree new_decl = build_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
+  tree name;
+  tree new_decl;
   tree offset;
+  tree path = binfo;
+  char *buf, *buf2;
+  char joiner = '_';
+  int i;
 
+#ifdef JOINER
+  joiner = JOINER;
+#endif
+
+  basetype = TYPE_MAIN_VARIANT (BINFO_TYPE (binfo));
+
+  buf2 = TYPE_ASSEMBLER_NAME_STRING (basetype);
+  i = TYPE_ASSEMBLER_NAME_LENGTH (basetype) + 1;
+
+  /* We know that the vtable that we are going to create doesn't exist
+     yet in the global namespace, and when we finish, it will be
+     pushed into the global namespace.  In complex MI hierarchies, we
+     have to loop while the name we are thinking of adding is globally
+     defined, adding more name components to the vtable name as we
+     loop, until the name is unique.  This is because in complex MI
+     cases, we might have the same base more than once.  This means
+     that the order in which this function is called for vtables must
+     remain the same, otherwise binary compatibility can be
+     compromised.  */
+
+  while (1)
+    {
+      char *buf1 = (char *) alloca (TYPE_ASSEMBLER_NAME_LENGTH (for_type) + 1 + i);
+      char *new_buf2;
+
+      sprintf (buf1, "%s%c%s", TYPE_ASSEMBLER_NAME_STRING (for_type), joiner,
+	       buf2);
+      buf = (char *) alloca (strlen (VTABLE_NAME_FORMAT) + strlen (buf1) + 1);
+      sprintf (buf, VTABLE_NAME_FORMAT, buf1);
+      name = get_identifier (buf);
+
+      /* If this name doesn't clash, then we can use it, otherwise
+	 we add more to the name until it is unique.  */
+
+      if (! IDENTIFIER_GLOBAL_VALUE (name))
+	break;
+
+      /* Set values for next loop through, if the name isn't unique.  */
+
+      path = BINFO_INHERITANCE_CHAIN (path);
+
+      /* We better not run out of stuff to make it unique.  */
+      my_friendly_assert (path != NULL_TREE, 368);
+
+      basetype = TYPE_MAIN_VARIANT (BINFO_TYPE (path));
+
+      /* We better not run out of stuff to make it unique.  */
+      my_friendly_assert (for_type != basetype, 369);
+
+      i = TYPE_ASSEMBLER_NAME_LENGTH (basetype) + 1 + i;
+      new_buf2 = (char *) alloca (i);
+      sprintf (new_buf2, "%s%c%s",
+	       TYPE_ASSEMBLER_NAME_STRING (basetype), joiner, buf2);
+      buf2 = new_buf2;
+    }
+
+  new_decl = build_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
   /* Remember which class this vtable is really for.  */
   DECL_CONTEXT (new_decl) = for_type;
 
@@ -2079,6 +2080,53 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	obstack_free (current_obstack, baselink_vec);
     }
 
+  /* Now, figure out what any member template specializations were
+     specializing.  */
+  for (i = 0; i < TREE_VEC_LENGTH (method_vec); ++i)
+    {
+      tree fn;
+      for (fn = TREE_VEC_ELT (method_vec, i);
+	   fn != NULL_TREE;
+	   fn = DECL_CHAIN (fn))
+	if (DECL_TEMPLATE_SPECIALIZATION (fn))
+	  {
+	    tree f;
+	    tree spec_args;
+
+	    /* If there is a template, and t uses template parms, we
+	       are dealing with a specialization of a member
+	       template in a template class, and we must grab the
+	       template, rather than the function.  */
+	    if (DECL_TI_TEMPLATE (fn) && uses_template_parms (t))
+	      f = DECL_TI_TEMPLATE (fn);
+	    else
+	      f = fn;
+
+	    /* We want the specialization arguments, which will be the
+	       innermost ones.  */
+	    if (DECL_TI_ARGS (f) 
+		&& TREE_CODE (DECL_TI_ARGS (f)) == TREE_VEC)
+	      spec_args 
+		= TREE_VEC_ELT (DECL_TI_ARGS (f), 0);
+	    else
+	      spec_args = DECL_TI_ARGS (f);
+		
+	    check_explicit_specialization 
+	      (lookup_template_function (DECL_NAME (f), spec_args),
+	       f, 0, 1);
+
+	    /* Now, the assembler name will be correct for fn, so we
+	       make its RTL.  */
+	    DECL_RTL (f) = 0;
+	    make_decl_rtl (f, NULL_PTR, 1);
+	    if (f != fn)
+	      {
+		DECL_RTL (fn) = 0;
+		make_decl_rtl (fn, NULL_PTR, 1);
+	      }
+	  }
+    }
+
   return method_vec;
 }
 
@@ -3277,7 +3325,7 @@ finish_struct_1 (t, warn_anon)
 	    fdecl = lookup_fnfields (binfo, sname, 0);
 
 	  if (fdecl)
-	    access_decls = tree_cons (access, fdecl, access_decls);
+	    access_decls = scratch_tree_cons (access, fdecl, access_decls);
 	  else
 	    cp_error_at ("no members matching `%D' in `%#T'", x, ctype);
 	  continue;
@@ -4877,6 +4925,8 @@ instantiate_type (lhstype, rhs, complain)
      tree lhstype, rhs;
      int complain;
 {
+  tree explicit_targs = NULL_TREE;
+
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
       if (complain)
@@ -4991,6 +5041,13 @@ instantiate_type (lhstype, rhs, complain)
 	return rhs;
       }
 
+    case TEMPLATE_ID_EXPR:
+      {
+	explicit_targs = TREE_OPERAND (rhs, 1);
+	rhs = TREE_OPERAND (rhs, 0);
+      }
+    /* fall through */
+
     case TREE_LIST:
       {
 	tree elem, baselink, name;
@@ -5025,14 +5082,17 @@ instantiate_type (lhstype, rhs, complain)
 	if (globals > 0)
 	  {
 	    elem = get_first_fn (rhs);
-	    while (elem)
-	      if (! comptypes (lhstype, TREE_TYPE (elem), 1))
-		elem = DECL_CHAIN (elem);
-	      else
-		{
-		  mark_used (elem);
-		  return elem;
-		}
+	    /* If there are explicit_targs, only a template function
+	       can match.  */
+	    if (explicit_targs == NULL_TREE)
+	      while (elem)
+		if (! comptypes (lhstype, TREE_TYPE (elem), 1))
+		  elem = DECL_CHAIN (elem);
+		else
+		  {
+		    mark_used (elem);
+		    return elem;
+		  }
 
 	    /* No exact match found, look for a compatible template.  */
 	    {
@@ -5041,12 +5101,13 @@ instantiate_type (lhstype, rhs, complain)
 		if (TREE_CODE (elem) == TEMPLATE_DECL)
 		  {
 		    int n = DECL_NTPARMS (elem);
-		    tree t = make_tree_vec (n);
+		    tree t = make_scratch_vec (n);
 		    int i, d = 0;
 		    i = type_unification
 		      (DECL_INNERMOST_TEMPLATE_PARMS (elem), 
 		       &TREE_VEC_ELT (t, 0), TYPE_ARG_TYPES (TREE_TYPE (elem)),
-		       TYPE_ARG_TYPES (lhstype), &d, 0, 1);
+		       TYPE_ARG_TYPES (lhstype), explicit_targs, &d,
+		       1, 1);
 		    if (i == 0)
 		      {
 			if (save_elem)
@@ -5068,38 +5129,47 @@ instantiate_type (lhstype, rhs, complain)
 		}
 	    }
 
-	    /* No match found, look for a compatible function.  */
-	    elem = get_first_fn (rhs);
-	    while (elem && comp_target_types (lhstype,
-					      TREE_TYPE (elem), 1) <= 0)
-	      elem = DECL_CHAIN (elem);
-	    if (elem)
+	    /* If there are explicit_targs, only a template function
+	       can match.  */
+	    if (explicit_targs == NULL_TREE) 
 	      {
-		tree save_elem = elem;
-		elem = DECL_CHAIN (elem);
+		/* No match found, look for a compatible function.  */
+		elem = get_first_fn (rhs);
 		while (elem && comp_target_types (lhstype,
-						  TREE_TYPE (elem), 0) <= 0)
+						  TREE_TYPE (elem), 1) <= 0)
 		  elem = DECL_CHAIN (elem);
 		if (elem)
 		  {
-		    if (complain)
+		    tree save_elem = elem;
+		    elem = DECL_CHAIN (elem);
+		    while (elem 
+			   && comp_target_types (lhstype,
+						 TREE_TYPE (elem), 0) <= 0)
+		      elem = DECL_CHAIN (elem);
+		    if (elem)
 		      {
-			cp_error ("cannot resolve overload to target type `%#T'",
-				  lhstype);
-			cp_error_at ("  ambiguity between `%#D'", save_elem);
-			cp_error_at ("  and `%#D', at least", elem);
+			if (complain)
+			  {
+			    cp_error 
+			      ("cannot resolve overload to target type `%#T'",
+			       lhstype);
+			    cp_error_at ("  ambiguity between `%#D'",
+					 save_elem); 
+			    cp_error_at ("  and `%#D', at least", elem);
+			  }
+			return error_mark_node;
 		      }
-		    return error_mark_node;
+		    mark_used (save_elem);
+		    return save_elem;
 		  }
-		mark_used (save_elem);
-		return save_elem;
 	      }
 	    if (complain)
 	      {
 		cp_error ("cannot resolve overload to target type `%#T'",
 			  lhstype);
-		cp_error ("  because no suitable overload of function `%D' exists",
-			  TREE_PURPOSE (rhs));
+		cp_error 
+		  ("  because no suitable overload of function `%D' exists",
+		   TREE_PURPOSE (rhs));
 	      }
 	    return error_mark_node;
 	  }
@@ -5336,8 +5406,8 @@ get_vfield_name (type)
     binfo = BINFO_BASETYPE (binfo, 0);
 
   type = BINFO_TYPE (binfo);
-  buf = (char *)alloca (sizeof (VFIELD_NAME_FORMAT)
-			+ TYPE_NAME_LENGTH (type) + 2);
+  buf = (char *) alloca (sizeof (VFIELD_NAME_FORMAT)
+			 + TYPE_NAME_LENGTH (type) + 2);
   sprintf (buf, VFIELD_NAME_FORMAT, TYPE_NAME_STRING (type));
   return get_identifier (buf);
 }
