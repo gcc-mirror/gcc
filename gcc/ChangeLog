@@ -1,3 +1,7 @@
+2004-11-25  Ralf Corsepius <ralf.corsepius@rtems.org>
+
+	* config.gcc (avr-*-rtems*): Fix typo.
+
 2004-11-25  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (sh_output_mi_thunk): Do not call regset_release_memory.
