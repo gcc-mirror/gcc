@@ -437,6 +437,7 @@ emit_throw ()
 #ifdef JUMP_TO_THROW
   emit_indirect_jump (throw_libfunc);
 #else
+  SYMBOL_REF_USED (throw_libfunc) = 1;
   emit_library_call (throw_libfunc, 0, VOIDmode, 0);
 #endif
   throw_used = 1;
