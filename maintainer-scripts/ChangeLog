@@ -1,3 +1,8 @@
+2001-05-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* update_web_docs: Don't generate HTML from gxxint.texi.  Don't
+	run texi2html on manuals that aren't present.
+
 2001-03-18  Phil Edwards  <pme@sources.redhat.com>
 
 	* update_web_docs_libstdcxx:  New script.
