@@ -499,8 +499,8 @@ extern int x86_prefetch_sse;
 /* Support for configure-time defaults of some command line options.  */
 #define OPTION_DEFAULT_SPECS \
   {"arch", "%{!march=*:-march=%(VALUE)}"}, \
-  {"tune", "%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}" }, \
-  {"cpu", "%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}" }
+  {"tune", "%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}" }, \
+  {"cpu", "%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}" }
 
 /* Specs for the compiler proper */
 
