@@ -1,3 +1,12 @@
+Fri Sep 28 14:59:34 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (replace_store_insn): Use delete_insn.
+	* loop.c (move_movables): Likewise; avoid delete_insn
+	from clobbering notes moved elsewhere.
+	(check_dbra_loop): Use delete_insn.
+	* ssa.c (convert_from_ssa): Likewise.
+	* cse.c (cse_insn): Use delete_insn.
+
 2001-09-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (struct cpp_buff): Make unsigned.

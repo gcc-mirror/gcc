@@ -5763,11 +5763,7 @@ cse_insn (insn, libcall_insn)
       else if (n_sets == 1 && dest == pc_rtx && src == pc_rtx)
 	{
 	  /* One less use of the label this insn used to jump to.  */
-	  if (JUMP_LABEL (insn) != 0)
-	    --LABEL_NUSES (JUMP_LABEL (insn));
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (insn) = 0;
+	  delete_insn (insn);
 	  cse_jumps_altered = 1;
 	  /* No more processing for this set.  */
 	  sets[i].rtl = 0;
@@ -6310,11 +6306,7 @@ cse_insn (insn, libcall_insn)
       && (tem = single_set (prev_insn)) != 0
       && SET_DEST (tem) == cc0_rtx
       && ! reg_mentioned_p (cc0_rtx, x))
-    {
-      PUT_CODE (prev_insn, NOTE);
-      NOTE_LINE_NUMBER (prev_insn) = NOTE_INSN_DELETED;
-      NOTE_SOURCE_FILE (prev_insn) = 0;
-    }
+    delete-insn (prev_insn);
 
   prev_insn_cc0 = this_insn_cc0;
   prev_insn_cc0_mode = this_insn_cc0_mode;

@@ -6834,7 +6834,7 @@ replace_store_insn (reg, del, bb)
       fprintf(gcse_file, "\n");
     }
   
-  delete_related_insns (del);
+  delete_insn (del);
 }
 
 
