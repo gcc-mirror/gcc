@@ -1,3 +1,8 @@
+2003-05-27  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/System.java:
+	Explicitely import needed classes.
+
 2003-05-26  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/NetPermission.java,
