@@ -7641,10 +7641,12 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	code = ROTATE, count = GET_MODE_BITSIZE (result_mode) - count;
 
       /* We need to determine what mode we will do the shift in.  If the
-	 shift is a ASHIFTRT or ROTATE, we must always do it in the mode it
-	 was originally done in.  Otherwise, we can do it in MODE, the widest
-	 mode encountered. */
-      shift_mode = (code == ASHIFTRT || code == ROTATE ? result_mode : mode);
+	 shift is a right shift or a ROTATE, we must always do it in the mode
+	 it was originally done in.  Otherwise, we can do it in MODE, the
+	 widest mode encountered. */
+      shift_mode
+	= (code == ASHIFTRT || code == LSHIFTRT || code == ROTATE
+	   ? result_mode : mode);
 
       /* Handle cases where the count is greater than the size of the mode
 	 minus 1.  For ASHIFT, use the size minus one as the count (this can
@@ -8185,11 +8187,13 @@ simplify_shift_const (x, code, result_mode, varop, count)
     }
 
   /* We need to determine what mode to do the shift in.  If the shift is
-     a ASHIFTRT or ROTATE, we must always do it in the mode it was originally
-     done in.  Otherwise, we can do it in MODE, the widest mode encountered.
-     The code we care about is that of the shift that will actually be done,
-     not the shift that was originally requested.  */
-  shift_mode = (code == ASHIFTRT || code == ROTATE ? result_mode : mode);
+     a right shift or ROTATE, we must always do it in the mode it was
+     originally done in.  Otherwise, we can do it in MODE, the widest mode
+     encountered.  The code we care about is that of the shift that will
+     actually be done, not the shift that was originally requested.  */
+  shift_mode
+    = (code == ASHIFTRT || code == LSHIFTRT || code == ROTATE
+       ? result_mode : mode);
 
   /* We have now finished analyzing the shift.  The result should be
      a shift of type CODE with SHIFT_MODE shifting VAROP COUNT places.  If
