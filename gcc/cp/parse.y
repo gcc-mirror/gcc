@@ -2483,7 +2483,7 @@ component_decl_1:
 		     Therefore, the rules for components take care of
 		     this processing.  To avoid registering the
 		     components more than once, we send NULL_TREE up
-		     here; that lets finish_member_declaration now
+		     here; that lets finish_member_declaration know
 		     that there is nothing to do.  */
 		  if (!$2)
 		    grok_x_components ($1.t);

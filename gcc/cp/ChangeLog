@@ -1,3 +1,18 @@
+1999-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (add_friend): Declare.
+	(add_friends): Likewise.
+	* friend.c (add_friend): Make it global.  Don't add to
+	DECL_BEFRIENDING_CLASSES if the befriending class is a template.
+	(add_friends): Make it global.
+	(make_friend_class): Don't add to DECL_BEFRIENDING_CLASSES if the
+	befriending class is a template.
+	* parse.y (component_decl_1): Fix typo in comment.
+	* parse.c: Regenerated.
+	* pt.c (instantiate_class_template): Use add_friend and
+	add_friends rather that duplicating some of their functionality
+	here.
+	
 1999-03-27  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_field_call): Unify 'this' and non-'this' cases.
