@@ -1705,24 +1705,10 @@ with traditional constructs like @code{dividend//*comment*/divisor}.
 @cindex dollar signs in identifier names
 @cindex identifier names, dollar signs in
 
-In GNU C, you may use dollar signs in identifier names.  This is because
-many traditional C implementations allow such identifiers.
-
-On some machines, dollar signs are allowed in identifiers if you specify
-@w{@samp{-traditional}}.  On a few systems they are allowed by default,
-even if you do not use @w{@samp{-traditional}}.  But they are never
-allowed if you specify @w{@samp{-ansi}}.
-
-There are certain ANSI C programs (obscure, to be sure) that would
-compile incorrectly if dollar signs were permitted in identifiers.  For
-example:
-
-@example
-#define foo(a) #a
-#define lose(b) foo (b)
-#define test$
-lose (test)
-@end example
+In GNU C, you may normally use dollar signs in identifier names.
+This is because many traditional C implementations allow such identifiers.
+However, dollar signs in identifiers are not supported on a few target
+machines, typically because the target assembler does not allow them.
 
 @node Character Escapes
 @section The Character @key{ESC} in Constants
