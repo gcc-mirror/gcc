@@ -1090,7 +1090,7 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 #define IDENT_ASM_OP "\t.ident\n"
 
 /* The assembler op to get a word, 2 bytes for the H8/300, 4 for H8/300H.  */
-#define ASM_WORD_OP	(TARGET_H8300 ? ".word" : ".long")
+#define ASM_WORD_OP	(TARGET_H8300 ? "\t.word\t" : "\t.long\t")
 
 /* We define a readonly data section solely to remove readonly data
    from the instruction stream.  This can improve relaxing in two significant

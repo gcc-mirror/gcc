@@ -1225,15 +1225,15 @@ enum reg_class {
 
 /* Output before read-only data.  */
 
-#define TEXT_SECTION_ASM_OP (current_section_is_text = 1, ".text")
+#define TEXT_SECTION_ASM_OP (current_section_is_text = 1, "\t.text")
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP (current_section_is_text = 0, ".data") 
+#define DATA_SECTION_ASM_OP (current_section_is_text = 0, "\t.data") 
 
 /* Output before uninitialized data.  */
 
-#define BSS_SECTION_ASM_OP (current_section_is_text = 0, ".bss") 
+#define BSS_SECTION_ASM_OP (current_section_is_text = 0, "\t.bss") 
 
 /* This is how to output an assembler line
    that says to advance the location counter

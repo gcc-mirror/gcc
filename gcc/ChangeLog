@@ -67,6 +67,22 @@
 	* config/avr/avr.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP,
 	ASM_BYTE_OP, TYPE_ASM_OP, SIZE_ASM_OP, WEAK_ASM_OP,
 	STRING_ASM_OP): Here.  Update documentation copy in comments.
+	* config/c4x/c4x.h (ASM_STABS_OP, BSS_SECTION_ASM_OP): Here.
+	* config/clipper/clipper.h (TEXT_SECTION_ASM_OP,
+	DATA_SECTION_ASM_OP): Here.
+	* config/clipper/clix.h (BSS_SECTION_ASM_OP, INIT_SECTION_ASM_OP):
+	Here.
+	* config/convex/convex.h (TEXT_SECTION_ASM_OP,
+	DATA_SECTION_ASM_OP, BSS_SECTION_ASM_OP): Here.
+	* config/d30v/d30v.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP,
+	BSS_SECTION_ASM_OP): Here.
+	* config/fr30/fr30.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP,
+	BSS_SECTION_ASM_OP): Here.
+	* config/fx80/fx80.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP):
+	Here.
+	* config/gmicro/gmicro.h (TEXT_SECTION_ASM_OP,
+	DATA_SECTION_ASM_OP, BSS_SECTION_ASM_OP): Here.
+	* config/h8300/h8300.h (ASM_WORD_OP): Here.
 
 2000-09-25  Richard Henderson  <rth@cygnus.com>
 
