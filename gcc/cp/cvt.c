@@ -136,11 +136,10 @@ cp_convert_to_pointer (type, expr)
 {
   register tree intype = TREE_TYPE (expr);
   register enum tree_code form;
+  tree rval;
 
   if (IS_AGGR_TYPE (intype))
     {
-      tree rval;
-
       intype = complete_type (intype);
       if (TYPE_SIZE (intype) == NULL_TREE)
 	{
@@ -282,7 +281,9 @@ cp_convert_to_pointer (type, expr)
 	  return error_mark_node;
 	}
 
-      return build1 (NOP_EXPR, type, expr);
+      rval = build1 (NOP_EXPR, type, expr);
+      TREE_CONSTANT (rval) = TREE_CONSTANT (expr);
+      return rval;
     }
 
   my_friendly_assert (form != OFFSET_TYPE, 186);
