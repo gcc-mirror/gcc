@@ -1,3 +1,8 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcc.texi: Document consistent style of "32-bit",
+	"Objective-C", and "@code{NULL}".
+
 2001-10-05  Richard Henderson  <rth@redhat.com>
 
 	* i386.md (movsi_xor): Export.

@@ -42,6 +42,7 @@
 @c anything else?                       --mew 10feb93
 
 @c For consistency, use the following:
+@c - "32-bit" rather than "32 bit" as an adjective.
 @c - "back end" as a noun, "back-end" as an adjective.
 @c - "bit-field" not "bitfield" or "bit field" (following the C and C++
 @c   standards).
@@ -54,6 +55,8 @@
 @c   marked up with @command, for the commands for compilation when the
 @c   emphasis is on those; "GNU C" and "GNU C++" for language dialects;
 @c   and try to avoid the older term "GNU CC".
+@c - "@code{NULL}" rather than "NULL".
+@c - "Objective-C" rather than "Objective C".
 
 @macro gcctabopt{body}
 @code{\body\}
