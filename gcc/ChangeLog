@@ -1,3 +1,9 @@
+2002-03-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_print_operand): Avoid
+	traditional-warning for 0xffffffff.
+	(cris_expand_builtin_va_arg): Do all computations on trees.
+
 2002-03-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* expr.c (expand_expr, case NE_EXPR): Do not call copy_to_reg with
