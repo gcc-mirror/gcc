@@ -1470,211 +1470,50 @@ expand_builtin_constant_p (tree arglist, enum machine_mode target_mode)
   return tmp;
 }
 
-/* Return mathematic function equivalent to FN but operating directly on TYPE,
-   if available.  */
+/* This helper macro, meant to be used in mathfn_built_in below,
+   determines which among a set of three builtin math functions is
+   appropriate for a given type mode.  The `F' and `L' cases are
+   automatically generated from the `double' case.  */
+#define CASE_MATHFN(BUILT_IN_MATHFN) \
+  case BUILT_IN_MATHFN: case BUILT_IN_MATHFN##F: case BUILT_IN_MATHFN##L: \
+  fcode = BUILT_IN_MATHFN; fcodef = BUILT_IN_MATHFN##F ; \
+  fcodel = BUILT_IN_MATHFN##L ; break;
+
+/* Return mathematic function equivalent to FN but operating directly
+   on TYPE, if available.  If we can't do the conversion, return zero.  */
 tree
 mathfn_built_in (tree type, enum built_in_function fn)
 {
-  enum built_in_function fcode = NOT_BUILT_IN;
-  if (TYPE_MODE (type) == TYPE_MODE (double_type_node))
-    switch (fn)
-      {
-      case BUILT_IN_SQRT:
-      case BUILT_IN_SQRTF:
-      case BUILT_IN_SQRTL:
-	fcode = BUILT_IN_SQRT;
-	break;
-      case BUILT_IN_SIN:
-      case BUILT_IN_SINF:
-      case BUILT_IN_SINL:
-	fcode = BUILT_IN_SIN;
-	break;
-      case BUILT_IN_COS:
-      case BUILT_IN_COSF:
-      case BUILT_IN_COSL:
-	fcode = BUILT_IN_COS;
-	break;
-      case BUILT_IN_EXP:
-      case BUILT_IN_EXPF:
-      case BUILT_IN_EXPL:
-	fcode = BUILT_IN_EXP;
-	break;
-      case BUILT_IN_LOG:
-      case BUILT_IN_LOGF:
-      case BUILT_IN_LOGL:
-	fcode = BUILT_IN_LOG;
-	break;
-      case BUILT_IN_TAN:
-      case BUILT_IN_TANF:
-      case BUILT_IN_TANL:
-	fcode = BUILT_IN_TAN;
-	break;
-      case BUILT_IN_ATAN:
-      case BUILT_IN_ATANF:
-      case BUILT_IN_ATANL:
-	fcode = BUILT_IN_ATAN;
-	break;
-      case BUILT_IN_FLOOR:
-      case BUILT_IN_FLOORF:
-      case BUILT_IN_FLOORL:
-	fcode = BUILT_IN_FLOOR;
-	break;
-      case BUILT_IN_CEIL:
-      case BUILT_IN_CEILF:
-      case BUILT_IN_CEILL:
-	fcode = BUILT_IN_CEIL;
-	break;
-      case BUILT_IN_TRUNC:
-      case BUILT_IN_TRUNCF:
-      case BUILT_IN_TRUNCL:
-	fcode = BUILT_IN_TRUNC;
-	break;
-      case BUILT_IN_ROUND:
-      case BUILT_IN_ROUNDF:
-      case BUILT_IN_ROUNDL:
-	fcode = BUILT_IN_ROUND;
-	break;
-      case BUILT_IN_NEARBYINT:
-      case BUILT_IN_NEARBYINTF:
-      case BUILT_IN_NEARBYINTL:
-	fcode = BUILT_IN_NEARBYINT;
-	break;
+  const enum machine_mode type_mode = TYPE_MODE (type);
+  enum built_in_function fcode, fcodef, fcodel;
+
+  switch (fn)
+    {
+      CASE_MATHFN (BUILT_IN_ATAN)
+      CASE_MATHFN (BUILT_IN_CEIL)
+      CASE_MATHFN (BUILT_IN_COS)
+      CASE_MATHFN (BUILT_IN_EXP)
+      CASE_MATHFN (BUILT_IN_FLOOR)
+      CASE_MATHFN (BUILT_IN_LOG)
+      CASE_MATHFN (BUILT_IN_NEARBYINT)
+      CASE_MATHFN (BUILT_IN_ROUND)
+      CASE_MATHFN (BUILT_IN_SIN)
+      CASE_MATHFN (BUILT_IN_SQRT)
+      CASE_MATHFN (BUILT_IN_TAN)
+      CASE_MATHFN (BUILT_IN_TRUNC)
+
       default:
-	abort ();
+	return 0;
       }
-  else if (TYPE_MODE (type) == TYPE_MODE (float_type_node))
-    switch (fn)
-      {
-      case BUILT_IN_SQRT:
-      case BUILT_IN_SQRTF:
-      case BUILT_IN_SQRTL:
-	fcode = BUILT_IN_SQRTF;
-	break;
-      case BUILT_IN_SIN:
-      case BUILT_IN_SINF:
-      case BUILT_IN_SINL:
-	fcode = BUILT_IN_SINF;
-	break;
-      case BUILT_IN_COS:
-      case BUILT_IN_COSF:
-      case BUILT_IN_COSL:
-	fcode = BUILT_IN_COSF;
-	break;
-      case BUILT_IN_EXP:
-      case BUILT_IN_EXPF:
-      case BUILT_IN_EXPL:
-	fcode = BUILT_IN_EXPF;
-	break;
-      case BUILT_IN_LOG:
-      case BUILT_IN_LOGF:
-      case BUILT_IN_LOGL:
-	fcode = BUILT_IN_LOGF;
-	break;
-      case BUILT_IN_TAN:
-      case BUILT_IN_TANF:
-      case BUILT_IN_TANL:
-	fcode = BUILT_IN_TANF;
-	break;
-      case BUILT_IN_ATAN:
-      case BUILT_IN_ATANF:
-      case BUILT_IN_ATANL:
-	fcode = BUILT_IN_ATANF;
-	break;
-      case BUILT_IN_FLOOR:
-      case BUILT_IN_FLOORF:
-      case BUILT_IN_FLOORL:
-	fcode = BUILT_IN_FLOORF;
-	break;
-      case BUILT_IN_CEIL:
-      case BUILT_IN_CEILF:
-      case BUILT_IN_CEILL:
-	fcode = BUILT_IN_CEILF;
-	break;
-      case BUILT_IN_TRUNC:
-      case BUILT_IN_TRUNCF:
-      case BUILT_IN_TRUNCL:
-	fcode = BUILT_IN_TRUNCF;
-	break;
-      case BUILT_IN_ROUND:
-      case BUILT_IN_ROUNDF:
-      case BUILT_IN_ROUNDL:
-	fcode = BUILT_IN_ROUNDF;
-	break;
-      case BUILT_IN_NEARBYINT:
-      case BUILT_IN_NEARBYINTF:
-      case BUILT_IN_NEARBYINTL:
-	fcode = BUILT_IN_NEARBYINTF;
-	break;
-      default:
-	abort ();
-      }
-  else if (TYPE_MODE (type) == TYPE_MODE (long_double_type_node))
-    switch (fn)
-      {
-      case BUILT_IN_SQRT:
-      case BUILT_IN_SQRTF:
-      case BUILT_IN_SQRTL:
-	fcode = BUILT_IN_SQRTL;
-	break;
-      case BUILT_IN_SIN:
-      case BUILT_IN_SINF:
-      case BUILT_IN_SINL:
-	fcode = BUILT_IN_SINL;
-	break;
-      case BUILT_IN_COS:
-      case BUILT_IN_COSF:
-      case BUILT_IN_COSL:
-	fcode = BUILT_IN_COSL;
-	break;
-      case BUILT_IN_EXP:
-      case BUILT_IN_EXPF:
-      case BUILT_IN_EXPL:
-	fcode = BUILT_IN_EXPL;
-	break;
-      case BUILT_IN_LOG:
-      case BUILT_IN_LOGF:
-      case BUILT_IN_LOGL:
-	fcode = BUILT_IN_LOGL;
-	break;
-      case BUILT_IN_TAN:
-      case BUILT_IN_TANF:
-      case BUILT_IN_TANL:
-	fcode = BUILT_IN_TANL;
-	break;
-      case BUILT_IN_ATAN:
-      case BUILT_IN_ATANF:
-      case BUILT_IN_ATANL:
-	fcode = BUILT_IN_ATANL;
-	break;
-      case BUILT_IN_FLOOR:
-      case BUILT_IN_FLOORF:
-      case BUILT_IN_FLOORL:
-	fcode = BUILT_IN_FLOORL;
-	break;
-      case BUILT_IN_CEIL:
-      case BUILT_IN_CEILF:
-      case BUILT_IN_CEILL:
-	fcode = BUILT_IN_CEILL;
-	break;
-      case BUILT_IN_TRUNC:
-      case BUILT_IN_TRUNCF:
-      case BUILT_IN_TRUNCL:
-	fcode = BUILT_IN_TRUNCL;
-	break;
-      case BUILT_IN_ROUND:
-      case BUILT_IN_ROUNDF:
-      case BUILT_IN_ROUNDL:
-	fcode = BUILT_IN_ROUNDL;
-	break;
-      case BUILT_IN_NEARBYINT:
-      case BUILT_IN_NEARBYINTF:
-      case BUILT_IN_NEARBYINTL:
-	fcode = BUILT_IN_NEARBYINTL;
-	break;
-      default:
-	abort ();
-      }
-  return implicit_built_in_decls[fcode];
+
+  if (type_mode == TYPE_MODE (double_type_node))
+    return implicit_built_in_decls[fcode];
+  else if (type_mode == TYPE_MODE (float_type_node))
+    return implicit_built_in_decls[fcodef];
+  else if (type_mode == TYPE_MODE (long_double_type_node))
+    return implicit_built_in_decls[fcodel];
+  else
+    return 0;
 }
 
 /* If errno must be maintained, expand the RTL to check if the result,

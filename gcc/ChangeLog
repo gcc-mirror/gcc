@@ -1,5 +1,8 @@
 2003-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (CASE_MATHFN): New helper macro.
+	(mathfn_built_in): Simplify and sort.
+
 	* protoize.c (substr): Delete, callers changed to `strstr'.
 
 2003-08-13  Zack Weinberg  <zack@codesourcery.com>
