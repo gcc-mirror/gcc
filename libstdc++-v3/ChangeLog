@@ -1,5 +1,10 @@
 2004-03-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (money_get<>::_M_extract,
+	money_get<>::do_get(string_type&)): ... and two more.
+
+2004-03-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (money_get<>::_M_extract):
 	Fix thinkos in the switch from string_type& to string& as last
 	argument.
