@@ -1,3 +1,7 @@
+Mon Jun 15 15:33:45 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* regmove.c: Undo June 11th change for now.
+
 Mon Jun 15 07:16:29 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
