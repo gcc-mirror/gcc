@@ -2976,6 +2976,15 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
       op0 = x;
       op1 = y;
     }
+
+#ifdef HAVE_cc0
+  /* If OP0 is still a constant, then both X and Y must be constants.  Force
+     X into a register to avoid aborting in emit_cmp_insn due to non-canonical
+     RTL.  */
+  if (CONSTANT_P (op0))
+    op0 = force_reg (mode, op0);
+#endif
+
   emit_cmp_insn (op0, op1, comparison, size, mode, unsignedp, align);
 
   if (unsignedp)
