@@ -1,3 +1,12 @@
+2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
+            Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18425
+	* tree-vectorize.c (vect_build_loop_niters): Do not insert
+	NULL into the instruction stream. Initialize new_bb to NULL.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	(vect_gen_niters_for_prolog_loop): Likewise.
+
 2004-11-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/18431

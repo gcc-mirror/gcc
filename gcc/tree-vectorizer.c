@@ -2684,7 +2684,7 @@ vect_build_loop_niters (loop_vec_info loop_vinfo)
 {
   tree ni_name, stmt, var;
   edge pe;
-  basic_block new_bb;
+  basic_block new_bb = NULL;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree ni = unshare_expr (LOOP_VINFO_NITERS(loop_vinfo));
 
@@ -2702,7 +2702,8 @@ vect_build_loop_niters (loop_vec_info loop_vinfo)
     ni_name = force_gimple_operand (ni, &stmt, false, var);
 
   pe = loop_preheader_edge (loop);
-  new_bb = bsi_insert_on_edge_immediate (pe, stmt);
+  if (stmt)
+    new_bb = bsi_insert_on_edge_immediate (pe, stmt);
   if (new_bb)
     add_bb_to_loop (new_bb, EDGE_PRED (new_bb, 0)->src->loop_father);
       
@@ -3115,7 +3116,8 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree niters)
 
   /* Insert stmt on loop preheader edge.  */
   pe = loop_preheader_edge (loop);
-  new_bb = bsi_insert_on_edge_immediate (pe, stmt);
+  if (stmt)
+    new_bb = bsi_insert_on_edge_immediate (pe, stmt);
   if (new_bb)
     add_bb_to_loop (new_bb, EDGE_PRED (new_bb, 0)->src->loop_father);
 
