@@ -1,3 +1,11 @@
+2002-01-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (FUNC_BEGIN_PROLOG_LABEL, current_function_number): Define.
+	(pa_output_function_prologue): Output local label at the beginning of
+	the prologue when profiling.
+	(hppa_profile_hook): Use the local label rather than the function label.
+	* pa.h (PROFILE_BEFORE_PROLOGUE): Define.
+
 2002-01-07  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (print_operand): Remove extra space.
