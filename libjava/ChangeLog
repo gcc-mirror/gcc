@@ -1,3 +1,9 @@
+2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* java/lang/natThread.cc (finalize_native): Destroy
+	join conditional variable and mutex if these destroy
+	operations are supported.
+
 2004-09-10  Dalibor Topic <robilad@kaffe.org>
 
 	* gnu/java/net/protocol/file/Connection.java (permission): New field.
