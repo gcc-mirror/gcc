@@ -141,6 +141,10 @@ do { text_section ();							\
 #define TARGET_ASM_CONSTRUCTOR  machopic_asm_out_constructor
 #define TARGET_ASM_DESTRUCTOR   machopic_asm_out_destructor
 
+/* Always prefix with an underscore.  */
+
+#define USER_LABEL_PREFIX "_"
+
 /* Don't output a .file directive.  That is only used by the assembler for
    error reporting.  */
 

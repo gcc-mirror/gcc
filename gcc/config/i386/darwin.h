@@ -72,11 +72,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define LPREFIX "L"
 
-/* This definition is unlikely to be used, but provide it just in
-   case.  */
-
-#define USER_LABEL_PREFIX "_"
-
 /* Assembler pseudos to introduce constants of various size.  */
 
 #define ASM_BYTE_OP "\t.byte\t"

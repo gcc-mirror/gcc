@@ -1,5 +1,8 @@
 2002-09-12  Stan Shebs  <shebs@apple.com>
 
+	* config/darwin.h (USER_LABEL_PREFIX): Define here...
+	* config/i386/darwin.h: ... instead of here.
+
 	* target.h (struct gcc_target): New field
 	terminate_dw2_eh_frame_info.
 	* target-def.h (TARGET_TERMINATE_DW2_EH_FRAME_INFO): Define.
