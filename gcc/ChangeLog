@@ -1,3 +1,8 @@
+Mon Apr 24 17:34:18 2000  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* gcc.c (lookup_compiler): Make multiple passes for case
+	insensitive filesystems.
+
 2000-04-24  Neil Booth  <NeilB@earthling.net>
 
 	* cpphash.c: replace HSPACE_BEFORE with PREV_WHITESPACE.

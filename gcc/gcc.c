@@ -5638,38 +5638,53 @@ lookup_compiler (name, length, language)
 	  (!strcmp (cp->suffix, "-") && !strcmp (name, "-"))
 	  || (strlen (cp->suffix) < length
 	      /* See if the suffix matches the end of NAME.  */
-#ifdef OS2
-	      && ((!strcmp (cp->suffix,
-			   name + length - strlen (cp->suffix))
-		   || !strpbrk (cp->suffix, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
-		  && !strcasecmp (cp->suffix,
-				  name + length - strlen (cp->suffix)))
-#else
 	      && !strcmp (cp->suffix,
 			  name + length - strlen (cp->suffix))
-#endif
 	 ))
+        break;
+    }
+
+#if defined (OS2) ||defined (HAVE_DOS_BASED_FILE_SYSTEM)
+  /* look again, but case-insensitively this time.  */
+  if (cp < compilers)
+    for (cp = compilers + n_compilers - 1; cp >= compilers; cp--)
+      {
+	if (/* The suffix `-' matches only the file name `-'.  */
+	    (!strcmp (cp->suffix, "-") && !strcmp (name, "-"))
+	    || (strlen (cp->suffix) < length
+		/* See if the suffix matches the end of NAME.  */
+		&& ((!strcmp (cp->suffix,
+			     name + length - strlen (cp->suffix))
+		     || !strpbrk (cp->suffix, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+		    && !strcasecmp (cp->suffix,
+				    name + length - strlen (cp->suffix)))
+	   ))
+	  break;
+      }
+#endif
+
+
+  if (cp >= compilers)
+    {
+      if (cp->spec[0][0] == '@')
 	{
-	  if (cp->spec[0][0] == '@')
-	    {
-	      struct compiler *new;
+	  struct compiler *new;
 
-	      /* An alias entry maps a suffix to a language.
-		 Search for the language; pass 0 for NAME and LENGTH
-		 to avoid infinite recursion if language not found.
-		 Construct the new compiler spec.  */
-	      language = cp->spec[0] + 1;
-	      new = (struct compiler *) xmalloc (sizeof (struct compiler));
-	      new->suffix = cp->suffix;
-	      memcpy (new->spec,
-		      lookup_compiler (NULL_PTR, 0, language)->spec,
-		      sizeof new->spec);
-	      return new;
-	    }
-
-	  /* A non-alias entry: return it.  */
-	  return cp;
+	  /* An alias entry maps a suffix to a language.
+	     Search for the language; pass 0 for NAME and LENGTH
+	     to avoid infinite recursion if language not found.
+	     Construct the new compiler spec.  */
+	  language = cp->spec[0] + 1;
+	  new = (struct compiler *) xmalloc (sizeof (struct compiler));
+	  new->suffix = cp->suffix;
+	  memcpy (new->spec,
+		  lookup_compiler (NULL_PTR, 0, language)->spec,
+		  sizeof new->spec);
+	  return new;
 	}
+
+      /* A non-alias entry: return it.  */
+      return cp;
     }
 
   return 0;
