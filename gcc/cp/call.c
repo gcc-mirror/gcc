@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "rtl.h"
 #include "toplev.h"
+#include "expr.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -3827,12 +3828,11 @@ convert_default_arg (type, arg, fn)
 
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
 					"default argument", 0, 0);
-#ifdef PROMOTE_PROTOTYPES
-      if ((TREE_CODE (type) == INTEGER_TYPE
-	   || TREE_CODE (type) == ENUMERAL_TYPE)
+      if (PROMOTE_PROTOTYPES
+	  && (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == ENUMERAL_TYPE)
 	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 	arg = default_conversion (arg);
-#endif
     }
 
   return arg;
@@ -3943,12 +3943,11 @@ build_over_call (cand, args, flags)
 	  val = convert_like (conv, TREE_VALUE (arg));
 	}
 
-#ifdef PROMOTE_PROTOTYPES
-      if ((TREE_CODE (type) == INTEGER_TYPE
-	   || TREE_CODE (type) == ENUMERAL_TYPE)
+      if (PROMOTE_PROTOTYPES
+	  && (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == ENUMERAL_TYPE)
 	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 	val = default_conversion (val);
-#endif
       converted_args = expr_tree_cons (NULL_TREE, val, converted_args);
     }
 

@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "../hash.h"
+#include "expr.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -11652,12 +11653,11 @@ grokparms (first_parm, funcdef_flag)
 
 	      /* Since there is a prototype, args are passed in their own types.  */
 	      DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
-#ifdef PROMOTE_PROTOTYPES
-	      if ((TREE_CODE (type) == INTEGER_TYPE
-		   || TREE_CODE (type) == ENUMERAL_TYPE)
+	      if (PROMOTE_PROTOTYPES
+		  && (TREE_CODE (type) == INTEGER_TYPE
+		      || TREE_CODE (type) == ENUMERAL_TYPE)
 		  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 		DECL_ARG_TYPE (decl) = integer_type_node;
-#endif
 	      if (!any_error && init)
 		{
 		  any_init++;

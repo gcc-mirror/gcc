@@ -1,3 +1,12 @@
+1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* call.c (convert_default_arg, build_over_call): Change all uses of
+	PROMOTE_PROTOTYPES, so that it tests it as a C expression.
+	Ensure expr.h is included.
+	* decl.c (grokparams): Ditto.
+	* pt.c (tsubst_decl): Ditto.
+	* typeck.c (convert_arguments): Ditto.
+
 1999-08-02  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (mark_overriders): Fix order of args to overrides.
