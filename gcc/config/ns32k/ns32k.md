@@ -477,11 +477,24 @@
   return \"movb %1,%0\";
 }")
 
+;; This is here to accept 4 arguments and pass the first 3 along
+;; to the movstrsi1 pattern that really does the work.
+(define_expand "movstrsi"
+  [(set (match_operand:BLK 0 "general_operand" "=g")
+	(match_operand:BLK 1 "general_operand" "g"))
+   (use (match_operand:SI 2 "general_operand" "rmn"))
+   (match_operand 3 "" "")]
+  ""
+  "
+  emit_insn (gen_movstrsi1 (operands[0], operands[1], operands[2]));
+  DONE;
+")
+
 ;; The definition of this insn does not really explain what it does,
 ;; but it should suffice
 ;; that anything generated as this insn will be recognized as one
 ;; and that it won't successfully combine with anything.
-(define_insn "movstrsi"
+(define_insn "movstrsi1"
   [(set (match_operand:BLK 0 "general_operand" "=g")
 	(match_operand:BLK 1 "general_operand" "g"))
    (use (match_operand:SI 2 "general_operand" "rmn"))
