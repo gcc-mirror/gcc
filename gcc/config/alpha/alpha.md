@@ -1,6 +1,6 @@
 ;; Machine description for DEC Alpha for GNU C compiler
 ;; Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-;; 2000, 2001, 2002 Free Software Foundation, Inc.
+;; 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
 ;; This file is part of GNU CC.
@@ -5330,10 +5330,12 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   [(match_dup 0)]
   "operands[0] = split_small_symbolic_operand (operands[0]);")
 
+;; Accepts any symbolic, not just global, since function calls that
+;; don't go via bsr still use !literal in hopes of linker relaxation.
 (define_insn "movdi_er_high_g"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
-		    (match_operand:DI 2 "global_symbolic_operand" "")
+		    (match_operand:DI 2 "symbolic_operand" "")
 		    (match_operand 3 "const_int_operand" "")]
 		   UNSPEC_LITERAL))]
   "TARGET_EXPLICIT_RELOCS"
