@@ -1,5 +1,41 @@
 *** Changes in GCC 3.1:
 
+* The C++ ABI has been changed to correctly handle this code:
+	
+    struct A {
+      void operator delete[] (void *, size_t);
+    };
+
+    struct B : public A { 
+    };
+
+    new B[10];
+
+  The amount of storage allocated for the array will be greater than
+  it was in 3.0, in order to store the number of elements in the
+  array, so that the correct size can be passed to `operator delete[]'
+  when the array is deleted.  Previously, the value passed to 
+  `operator delete[]' was unpredictable.
+
+  This change will only affect code that declares a two-argument
+  `operator delete[]' with a second parameter of type `size_t'
+  in a base class, and does not override that definition in a 
+  derived class.
+
+* The C++ ABI has been changed so that:
+
+    struct A { 
+      void operator delete[] (void *, size_t);
+      void operator delete[] (void *);
+    };
+
+  does not cause unncessary storage to be allocated when an array of
+  `A' objects is allocated.
+
+  This change will only affect code that declares both of these
+  forms of `operator delete[]', and declared the two-argument form
+  before the one-argument form.
+
 *** Changes in GCC 3.0:
 
 * Support for guiding declarations has been removed.

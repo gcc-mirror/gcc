@@ -82,6 +82,9 @@ struct Z2 { ~Z2 () {}; long double d; };
 struct W1 { void operator delete[] (void *, size_t) {}; };
 struct W2 { void operator delete[] (void *) {}; 
             void operator delete[] (void *, size_t) {}; };
+struct W3 { void operator delete[] (void *, size_t) {}; 
+            void operator delete[] (void *) {}; };
+struct W4 : public W1 {};
 
 struct V { void *operator new[] (size_t s, void *p) 
              { return p; }
@@ -108,11 +111,13 @@ int main ()
   // There should be a cookie when using the two-argument array delete
   // operator.
   check_cookie<W1> (9);
+  check_cookie<W4> (10);
   // But not when the one-argument version is also available.
-  check_no_cookie<W2> (10);
+  check_no_cookie<W2> (11);
+  check_no_cookie<W3> (12);
 
   // There should be a cookie when using a non-global placement new.
-  check_placement_cookie<V> (11);
+  check_placement_cookie<V> (13);
 }
 
 #else /* !(defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100) */

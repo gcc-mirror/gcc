@@ -218,6 +218,7 @@ static int layout_conflict_p PARAMS ((tree, tree, splay_tree, int));
 static int splay_tree_compare_integer_csts PARAMS ((splay_tree_key k1,
 						    splay_tree_key k2));
 static void warn_about_ambiguous_direct_bases PARAMS ((tree));
+static bool type_requires_array_cookie PARAMS ((tree));
 
 /* Macros for dfs walking during vtt construction. See
    dfs_ctor_vtable_bases_queue_p, dfs_build_secondary_vptr_vtt_inits
@@ -4210,7 +4211,6 @@ check_methods (t)
      tree t;
 {
   tree x;
-  int seen_one_arg_array_delete_p = 0;
 
   for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
@@ -4233,32 +4233,6 @@ check_methods (t)
 	  if (DECL_PURE_VIRTUAL_P (x))
 	    CLASSTYPE_PURE_VIRTUALS (t)
 	      = tree_cons (NULL_TREE, x, CLASSTYPE_PURE_VIRTUALS (t));
-	}
-
-      if (DECL_ARRAY_DELETE_OPERATOR_P (x))
-	{
-	  tree second_parm;
-
-	  /* When dynamically allocating an array of this type, we
-	     need a "cookie" to record how many elements we allocated,
-	     even if the array elements have no non-trivial
-	     destructor, if the usual array deallocation function
-	     takes a second argument of type size_t.  The standard (in
-	     [class.free]) requires that the second argument be set
-	     correctly.  */
-	  second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (x)));
-	  /* Under the new ABI, we choose only those function that are
-	     explicitly declared as `operator delete[] (void *,
-	     size_t)'.  */
-	  if (!seen_one_arg_array_delete_p
-	      && second_parm
-	      && TREE_CHAIN (second_parm) == void_list_node
-	      && same_type_p (TREE_VALUE (second_parm), sizetype))
-	    TYPE_VEC_DELETE_TAKES_SIZE (t) = 1;
-	  /* If there's no second parameter, then this is the usual
-	     deallocation function.  */
-	  else if (second_parm == void_list_node)
-	    seen_one_arg_array_delete_p = 1;
 	}
     }
 }
@@ -4556,6 +4530,59 @@ remove_zero_width_bit_fields (t)
     }
 }
 
+/* Returns TRUE iff we need a cookie when dynamically allocating an
+   array whose elements have the indicated class TYPE.  */
+
+static bool
+type_requires_array_cookie (type)
+     tree type;
+{
+  tree fns;
+  bool has_two_argument_delete_p;
+
+  my_friendly_assert (CLASS_TYPE_P (type), 20010712);
+
+  /* If there's a non-trivial destructor, we need a cookie.  In order
+     to iterate through the array calling the destructor for each
+     element, we'll have to know how many elements there are.  */
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+    return true;
+
+  /* If the usual deallocation function is a two-argument whose second
+     argument is of type `size_t', then we have to pass the size of
+     the array to the deallocation function, so we will need to store
+     a cookie.  */
+  fns = lookup_fnfields (TYPE_BINFO (type), 
+			 ansi_opname (VEC_DELETE_EXPR),
+			 /*protect=*/0);
+  /* If there are no `operator []' members, or the lookup is
+     ambiguous, then we don't need a cookie.  */
+  if (!fns || fns == error_mark_node)
+    return false;
+  /* Loop through all of the functions.  */
+  for (fns = TREE_VALUE (fns); fns; fns = OVL_NEXT (fns))
+    {
+      tree fn;
+      tree second_parm;
+
+      /* Select the current function.  */
+      fn = OVL_CURRENT (fns);
+      /* See if this function is a one-argument delete function.  If
+	 it is, then it will be the usual deallocation function.  */
+      second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
+      if (second_parm == void_list_node)
+	return false;
+      /* Otherwise, if we have a two-argument function and the second
+	 argument is `size_t', it will be the usual deallocation
+	 function -- unless there is one-argument function, too.  */
+      if (TREE_CHAIN (second_parm) == void_list_node
+	  && same_type_p (TREE_VALUE (second_parm), sizetype))
+	has_two_argument_delete_p = true;
+    }
+
+  return has_two_argument_delete_p;
+}
+
 /* Check the validity of the bases and members declared in T.  Add any
    implicitly-generated functions (like copy-constructors and
    assignment operators).  Compute various flag bits (like
@@ -4641,6 +4668,11 @@ check_bases_and_members (t, empty_p)
 
   /* Build and sort the CLASSTYPE_METHOD_VEC.  */
   finish_struct_methods (t);
+
+  /* Figure out whether or not we will need a cookie when dynamically
+     allocating an array of this type.  */
+  TYPE_LANG_SPECIFIC (t)->vec_new_uses_cookie
+    = type_requires_array_cookie (t);
 }
 
 /* If T needs a pointer to its virtual function table, set TYPE_VFIELD
