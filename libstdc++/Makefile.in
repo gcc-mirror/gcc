@@ -269,7 +269,7 @@ install:
 	  elif [ $$FILE = mshlink ]; then \
 	    for FILE in $(MSHLINK) ; do \
 	      rm -f $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
-	      ln -s -f $$FILE $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
+	      ln -s -f $(SHLIB) $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
 	    done; \
 	  elif [ $$FILE = $(SHLIB) ]; then \
 	    $(INSTALL_PROGRAM) $$FILE $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
