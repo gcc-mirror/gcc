@@ -11,6 +11,9 @@ Mon Nov 23 09:53:44 1998  Richard Henderson  <rth@cygnus.com>
 
 Mon Nov 23 16:46:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* caller-save.c (insert_one_insn): Initialize the live_before and
+	live_after register sets.
+
 	Add SH4 support:
 
 	* config/sh/lib1funcs.asm (___movstr_i4_even, ___movstr_i4_odd): Define.
