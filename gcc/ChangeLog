@@ -379,6 +379,7 @@ Mon Sep 29 19:05:46 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-09-26  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR middle-end/9200
 	* combine.c (if_then_else_cond): Tighten mode check.
 
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
