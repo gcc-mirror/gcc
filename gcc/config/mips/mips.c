@@ -3508,7 +3508,9 @@ mips_output_filename (stream, name)
       first_time = FALSE;
       SET_FILE_NUMBER ();
       current_function_file = name;
-      fprintf (stream, "\t.file\t%d \"%s\"\n", num_source_filenames, name);
+      fprintf (stream, "\t.file\t%d ", num_source_filenames);
+      output_quoted_string (stream, name);
+      fprintf (stream, "\n");
       if (!TARGET_GAS && write_symbols == DBX_DEBUG)
 	fprintf (stream, "\t#@stabs\n");
     }
@@ -3516,8 +3518,9 @@ mips_output_filename (stream, name)
   else if (!TARGET_GAS && write_symbols == DBX_DEBUG)
     {
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
-      fprintf (stream, "%s \"%s\",%d,0,0,%s\n", ASM_STABS_OP,
-	       name, N_SOL, &ltext_label_name[1]);
+      fprintf (stream, "%s ", ASM_STABS_OP);
+      output_quoted_string (stream, name);
+      fprintf (stream, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
     }
 
   else if (name != current_function_file
@@ -3532,15 +3535,17 @@ mips_output_filename (stream, name)
 	      warning ("MIPS ECOFF format does not allow changing filenames within functions with #line");
 	    }
 
-	  fprintf (stream, "\t#.file\t%d \"%s\"\n", num_source_filenames, name);
+	  fprintf (stream, "\t#.file\t%d ", num_source_filenames);
 	}
 
       else
 	{
 	  SET_FILE_NUMBER ();
 	  current_function_file = name;
-	  fprintf (stream, "\t.file\t%d \"%s\"\n", num_source_filenames, name);
+	  fprintf (stream, "\t.file\t%d ", num_source_filenames);
 	}
+      output_quoted_string (stream, name);
+      fprintf (stream, "\n");
     }
 }
 
