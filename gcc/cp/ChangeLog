@@ -1,3 +1,7 @@
+2001-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (do_using_directive): Revert previous patch.
+
 2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.def (USING_STMT): New statement node.
