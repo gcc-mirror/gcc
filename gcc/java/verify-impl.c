@@ -743,8 +743,9 @@ types_compatible (type *t, type *k)
 static bool
 types_equal (type *t1, type *t2)
 {
-  if (t1->key != reference_type || t1->key != uninitialized_reference_type
-      || t2->key != reference_type || t2->key != uninitialized_reference_type)
+  if ((t1->key != reference_type && t1->key != uninitialized_reference_type)
+      || (t2->key != reference_type
+	  && t2->key != uninitialized_reference_type))
     return false;
   /* Only single-ref types are allowed.  */
   if (t1->klass->ref_next || t2->klass->ref_next)
