@@ -1,3 +1,23 @@
+Tue Jan 18 16:19:55 MET 2000  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (memstr): Do not use rep stosb for counts divisible by 4
+	when optimize_size.
+	(clrstrsi): Rewrite.
+	(strsethi, strsetqi): New expanders.
+	(strsethi_1, strsetqi_1, rep_stossi, rep_stosqi): New insn patterns.
+	(cmpstrsi): Emit compare insn before cmpstrsi_1
+	(cmpstrsi_nz): use flags, set type to str, prefix_length to 1.
+	(strlensi_1): Likewise.
+	(cmpstrsi_1): Likewise; do not output compare.
+	(strlen expander): Do not unroll when optimizing for size.
+	(*subsi3_carry): Rename to subsi3_carry
+	(addqi3_cc): New pattern.
+	* i386.h (processor_costs): Add move_ratio field.
+	(MOVE_RATIO): Use move_ratio field, set to 3 for OPTIMIZE_SIZE
+	* i386.c (*_cost): Set move_ratio.
+	(x86_unroll_strlen): Enable for Athlon, PPro and K6 too.
+	(x86_expand_strlensi_1): Rewrite the main loop.
+
 2000-01-17  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (combine_simplify_rtx): Give FLOAT_STORE_FLAG_VALUE a mode.
