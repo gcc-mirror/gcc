@@ -5177,6 +5177,31 @@ override_options ()
   if (mips_abi != ABI_32 && mips_abi != ABI_O64)
     flag_pcc_struct_return = 0;
 
+  if ((target_flags_explicit & MASK_BRANCHLIKELY) == 0)
+    {
+      /* If neither -mbranch-likely nor -mno-branch-likely was given
+	 on the command line, set MASK_BRANCHLIKELY based on the target
+	 architecture.
+
+	 By default, we enable use of Branch Likely instructions on
+	 all architectures which support them except for MIPS32 and MIPS64
+	 (i.e., the generic MIPS32 and MIPS64 ISAs, and processors which
+	 implement them).
+
+	 The MIPS32 and MIPS64 architecture specifications say "Software
+	 is strongly encouraged to avoid use of Branch Likely
+	 instructions, as they will be removed from a future revision
+	 of the [MIPS32 and MIPS64] architecture."  Therefore, we do not
+	 issue those instructions unless instructed to do so by
+	 -mbranch-likely.  */
+      if (ISA_HAS_BRANCHLIKELY && !(ISA_MIPS32 || ISA_MIPS64))
+	target_flags |= MASK_BRANCHLIKELY;
+      else
+	target_flags &= ~MASK_BRANCHLIKELY;
+    }
+  if (TARGET_BRANCHLIKELY && !ISA_HAS_BRANCHLIKELY)
+    warning ("generation of Branch Likely instructions enabled, but not supported by architecture");
+
   /* -fpic (-KPIC) is the default when TARGET_ABICALLS is defined.  We need
      to set flag_pic so that the LEGITIMATE_PIC_OPERAND_P macro will work.  */
   /* ??? -non_shared turns off pic code generation, but this is not

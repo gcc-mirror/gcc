@@ -232,6 +232,8 @@ extern void		sbss_section PARAMS ((void));
 					   consts in rodata */
 #define MASK_NO_FUSED_MADD 0x01000000   /* Don't generate floating point
 					   multiply-add operations.  */
+#define MASK_BRANCHLIKELY  0x02000000   /* Generate Branch Likely
+					   instructions.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -321,6 +323,8 @@ extern void		sbss_section PARAMS ((void));
 
 #define TARGET_NO_CHECK_ZERO_DIV (target_flags & MASK_NO_CHECK_ZERO_DIV)
 #define TARGET_CHECK_RANGE_DIV  (target_flags & MASK_CHECK_RANGE_DIV)
+
+#define TARGET_BRANCHLIKELY	(target_flags & MASK_BRANCHLIKELY)
 
 /* This is true if we must enable the assembly language file switching
    code.  */
@@ -608,6 +612,10 @@ extern void		sbss_section PARAMS ((void));
      N_("Trap on integer divide overflow")},				\
   {"no-check-range-division",-MASK_CHECK_RANGE_DIV,			\
      N_("Don't trap on integer divide overflow")},			\
+  { "branch-likely",      MASK_BRANCHLIKELY,				\
+      N_("Use Branch Likely instructions, overriding default for arch")}, \
+  { "no-branch-likely",  -MASK_BRANCHLIKELY,				\
+      N_("Don't use Branch Likely instructions, overriding default for arch")}, \
   {"debug",		  MASK_DEBUG,					\
      NULL},								\
   {"debuga",		  MASK_DEBUG_A,					\
@@ -741,7 +749,7 @@ extern void		sbss_section PARAMS ((void));
 /* This is meant to be redefined in the host dependent files.  */
 #define SUBTARGET_TARGET_OPTIONS
 
-#define GENERATE_BRANCHLIKELY   (!TARGET_MIPS16 && ISA_HAS_BRANCHLIKELY)
+#define GENERATE_BRANCHLIKELY   (TARGET_BRANCHLIKELY && !TARGET_MIPS16)
 
 /* Generate three-operand multiply instructions for SImode.  */
 #define GENERATE_MULT3_SI       ((TARGET_MIPS3900                       \
@@ -776,8 +784,7 @@ extern void		sbss_section PARAMS ((void));
 /* ISA has branch likely instructions (eg. mips2).  */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
    been generated up to this point.  */
-#define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1				\
-				 && !TARGET_MIPS16)
+#define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1)
 
 /* ISA has the conditional move instructions introduced in mips4.  */
 #define ISA_HAS_CONDMOVE        ((ISA_MIPS4				\
