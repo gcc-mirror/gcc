@@ -3953,7 +3953,7 @@ rest_of_compilation (decl)
      (if we got the -noreg switch and not -opt)
      and smart register allocation.  */
 
-  if (optimize > 0)			/* Stupid allocation probably won't work */
+  if (optimize > 0)		/* Stupid allocation probably won't work */
     obey_regdecls = 0;		/* if optimizations being done.  */
 
   regclass_init ();
