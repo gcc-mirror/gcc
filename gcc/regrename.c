@@ -1104,14 +1104,15 @@ kill_value_regno (unsigned int regno, unsigned int nregs,
 static void
 kill_value (rtx x, struct value_data *vd)
 {
-  /* SUBREGS are supposed to have been eliminated by now.  But some
-     ports, e.g. i386 sse, use them to smuggle vector type information
-     through to instruction selection.  Each such SUBREG should simplify,
-     so if we get a NULL  we've done something wrong elsewhere.  */
+  rtx orig_rtx = x;
 
   if (GET_CODE (x) == SUBREG)
-    x = simplify_subreg (GET_MODE (x), SUBREG_REG (x),
-			 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
+    {
+      x = simplify_subreg (GET_MODE (x), SUBREG_REG (x),
+			   GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
+      if (x == NULL_RTX)
+	x = SUBREG_REG (orig_rtx);
+    }
   if (REG_P (x))
     {
       unsigned int regno = REGNO (x);
