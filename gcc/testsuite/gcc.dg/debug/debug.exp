@@ -66,7 +66,18 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] {
 		&& [string match "*1" [lindex "$flags" 0] ] } { 
 	    set doit 0
 	}
-	
+
+# High optimization can remove the variable whose existence is tested.
+# Dwarf debugging with commentary (-dA) preserves the symbol name in the
+# assembler output, but stabs debugging does not.
+# http://gcc.gnu.org/ml/gcc-regression/2003-04/msg00095.html
+	if { [string match {*/debug-[12].c} "$nshort"] \
+		&& [string match "*O3*" "$flags"] \
+		&& ( [string match "*coff*" "$flags"] \
+		     || [string match "*stabs*" "$flags"] ) } {
+	    set doit 0
+	}
+
 	if { $doit } {
 	    verbose -log "Testing $nshort, $flags" 1
 	    dg-test $test $flags ""
