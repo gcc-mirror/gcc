@@ -1,3 +1,7 @@
+2004-06-15  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* combine.c (distribute_notes): Comment typo fix.
+
 2004-06-15  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (synth_mult): Mask bits of the multiplier to the
