@@ -1,3 +1,25 @@
+2001-05-16  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* c-common.h (RID_FIRST_PQ): New.
+	* c-parse.in (objc_pq_context): New.
+	(objc parser): Set objc_pq_context rather than calling
+	remember_protocol_qualifiers and forget_protocol_qualifiers.
+	Don't call save_and_forget_protocol_qualifiers.
+	(yylexname): Handle objc protocol qualifiers here.
+	* stringpool.c (struct str_header): Replace with sp_hashnode.
+	(SP_EMPTY, SP_LEN, SP_TREE, SP_STR, SP_VALID): New.
+	(alloc_string): Rename alloc_ident.  Use the SP_ accessors.
+	Allocate an IDENTIFIER_NODE for each identifier.
+	(FORALL_STRINGS, set_identifier): Delete.
+	(FORALL_IDS, expand_string_table, stringpool_statistics): Update.
+	(ggc_alloc_string): Use an obstack.
+	(get_identifier, maybe_get_identifier, mark_string_hash): Update.
+	* tree.h: Update comments.
+	(set_identifier): Delete.
+	* objc/objc-act.c (N_PQ, saved_pq, saved_not_pq,
+	save_and_forget_protocol_qualifiers, forget_protocol_qualifiers,
+	remember_protocol_qualifiers): Delete.
+
 Tue May 15 22:14:09 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (life_analysis): After life analysis is complete, do

@@ -271,6 +271,7 @@ tree objc_ivar_context;
 enum tree_code objc_inherit_code;
 int objc_receiver_context;
 int objc_public_flag;
+int objc_pq_context;
 
 end ifobjc
 
@@ -2837,13 +2838,13 @@ classdef:
 protocoldef:
 	  PROTOCOL identifier protocolrefs
 		{
-		  remember_protocol_qualifiers ();
+		  objc_pq_context = 1;
 		  objc_interface_context
 		    = start_protocol(PROTOCOL_INTERFACE_TYPE, $2, $3);
 		}
 	  methodprotolist END
 		{
-		  forget_protocol_qualifiers();
+		  objc_pq_context = 0;
 		  finish_protocol(objc_interface_context);
 		  objc_interface_context = NULL_TREE;
 		}
@@ -2949,7 +2950,7 @@ ivar_declarator:
 methoddef:
 	  '+'
 		{
-		  remember_protocol_qualifiers ();
+		  objc_pq_context = 1;
 		  if (objc_implementation_context)
 		    objc_inherit_code = CLASS_METHOD_DECL;
                   else
@@ -2957,7 +2958,7 @@ methoddef:
 		}
 	  methoddecl
 		{
-		  forget_protocol_qualifiers ();
+		  objc_pq_context = 0;
 		  add_class_method (objc_implementation_context, $3);
 		  start_method_def ($3);
 		  objc_method_context = $3;
@@ -2974,7 +2975,7 @@ methoddef:
 
 	| '-'
 		{
-		  remember_protocol_qualifiers ();
+		  objc_pq_context = 1;
 		  if (objc_implementation_context)
 		    objc_inherit_code = INSTANCE_METHOD_DECL;
                   else
@@ -2982,7 +2983,7 @@ methoddef:
 		}
 	  methoddecl
 		{
-		  forget_protocol_qualifiers ();
+		  objc_pq_context = 0;
 		  add_instance_method (objc_implementation_context, $3);
 		  start_method_def ($3);
 		  objc_method_context = $3;
@@ -3023,13 +3024,13 @@ methodproto:
 	  '+'
 		{
 		  /* Remember protocol qualifiers in prototypes.  */
-		  remember_protocol_qualifiers ();
+		  objc_pq_context = 1;
 		  objc_inherit_code = CLASS_METHOD_DECL;
 		}
 	  methoddecl
 		{
 		  /* Forget protocol qualifiers here.  */
-		  forget_protocol_qualifiers ();
+		  objc_pq_context = 0;
 		  add_class_method (objc_interface_context, $3);
 		}
 	  semi_or_error
@@ -3037,13 +3038,13 @@ methodproto:
 	| '-'
 		{
 		  /* Remember protocol qualifiers in prototypes.  */
-		  remember_protocol_qualifiers ();
+		  objc_pq_context = 1;
 		  objc_inherit_code = INSTANCE_METHOD_DECL;
 		}
 	  methoddecl
 		{
 		  /* Forget protocol qualifiers here.  */
-		  forget_protocol_qualifiers ();
+		  objc_pq_context = 0;
 		  add_instance_method (objc_interface_context, $3);
 		}
 	  semi_or_error
@@ -3615,9 +3616,6 @@ ifobjc
 	  = get_identifier (reswords[i].word + 1);
 end ifobjc
     }
-ifobjc
-  save_and_forget_protocol_qualifiers ();
-end ifobjc
 }
 
 const char *
@@ -3683,22 +3681,28 @@ yylexname ()
   if (C_IS_RESERVED_WORD (yylval.ttype))
     {
       enum rid rid_code = C_RID_CODE (yylval.ttype);
-      int yycode = rid_to_yy[(int) rid_code];
 
-      if (yycode == STRING_FUNC_NAME)
-	{
-	   /* __FUNCTION__ and __PRETTY_FUNCTION__ get converted
-	      to string constants.  */
-	  const char *name = fname_string (rid_code);
+ifobjc
+      if (!((unsigned int) rid_code - (unsigned int) RID_FIRST_PQ < 6)
+	  || objc_pq_context)
+end ifobjc
+      {
+	int yycode = rid_to_yy[(int) rid_code];
+	if (yycode == STRING_FUNC_NAME)
+	  {
+	    /* __FUNCTION__ and __PRETTY_FUNCTION__ get converted
+	       to string constants.  */
+	    const char *name = fname_string (rid_code);
 	  
-	  yylval.ttype = build_string (strlen (name) + 1, name);
-	  last_token = CPP_STRING;  /* so yyerror won't choke */
-	  return STRING;
-	}
+	    yylval.ttype = build_string (strlen (name) + 1, name);
+	    last_token = CPP_STRING;  /* so yyerror won't choke */
+	    return STRING;
+	  }
       
-      /* Return the canonical spelling for this keyword.  */
-      yylval.ttype = ridpointers[(int) rid_code];
-      return yycode;
+	/* Return the canonical spelling for this keyword.  */
+	yylval.ttype = ridpointers[(int) rid_code];
+	return yycode;
+      }
     }
 
   decl = lookup_name (yylval.ttype);
