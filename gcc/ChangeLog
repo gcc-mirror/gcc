@@ -1,3 +1,7 @@
+Tue May 30 09:57:32 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* except.c (free_exception_table): Do not free NULL.
+
 2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (do_if): Don't save and restore only_seen_white here.
