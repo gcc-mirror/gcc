@@ -87,9 +87,6 @@ void ggc_mark PROTO ((void *));
    the lang_specific hooks in the tree.  */
 void lang_mark_tree PROTO ((union tree_node *));
 
-/* And similarly to free that data when the tree node is released.  */
-void lang_cleanup_tree PROTO ((union tree_node *));
-
 /* The FALSE_LABEL_STACK, declared in except.h, has
    language-dependent semantics.  Each front-end should define this
    function appropriately.  */

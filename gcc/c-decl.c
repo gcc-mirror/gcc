@@ -5725,7 +5725,9 @@ finish_struct (t, fieldlist, attributes)
 	/* Use the same allocation policy here that make_node uses, to
 	   ensure that this lives as long as the rest of the struct decl.
 	   All decls in an inline function need to be saved.  */
-	if (allocation_temporary_p ())
+	if (ggc_p)
+	  space = ggc_alloc (sizeof (struct lang_type) + len * sizeof (tree));
+	else if (allocation_temporary_p ())
 	  space = savealloc (sizeof (struct lang_type) + len * sizeof (tree));
 	else
 	  space = oballoc (sizeof (struct lang_type) + len * sizeof (tree));
@@ -7142,19 +7144,6 @@ lang_mark_tree (t)
       ggc_mark_tree (i->error_locus);
       ggc_mark_tree (i->limbo_value);
     }
-}
-
-/* Free the language specific bits in T for GC.  */
-void
-lang_cleanup_tree (t)
-     tree t;
-{
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
-      && TYPE_LANG_SPECIFIC (t) != NULL)
-    {
-#if 0
-      /* This is currently allocated with an obstack.  This will change.  */
-      free (TYPE_LANG_SPECIFIC (t));
-#endif
-    }
+  else if (TYPE_P (t) && TYPE_LANG_SPECIFIC (t))
+    ggc_mark (TYPE_LANG_SPECIFIC (t));
 }
