@@ -3029,7 +3029,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 
   /* We can do some operations on integer CONST_DOUBLEs.  Also allow
      for a DImode operation on a CONST_INT. */
-  else if (GET_MODE (op) == VOIDmode
+  else if (GET_MODE (op) == VOIDmode && width == HOST_BITS_PER_INT * 2
 	   && (GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT))
     {
       HOST_WIDE_INT l1, h1, lv, hv;
