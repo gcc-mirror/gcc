@@ -1,3 +1,13 @@
+2004-06-03  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* Protocol.m ([-isEqual:]): Small optimizations returning
+	immediately if the argument is equal to self, and accessing
+	the argument's name directly if it's a protocol.
+
+2004-06-03  David Ayers  <d.ayers@inode.at>
+
+	* Protocol.m ([-isEqual:]): Test the class of the argument.
+
 2004-05-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* configure.ac (includedir): Rename to ...

@@ -150,11 +150,33 @@ struct objc_method_description_list {
   return hash;
 }
 
+/*
+ * Equality between formal protocols is only formal (nothing to do
+ * with actually checking the list of methods they have!).  Two formal
+ * Protocols are equal if and only if they have the same name.
+ *
+ * Please note (for comparisons with other implementations) that
+ * checking the names is equivalent to checking that Protocol A
+ * conforms to Protocol B and Protocol B conforms to Protocol A,
+ * because this happens iff they have the same name.  If they have
+ * different names, A conforms to B if and only if A includes B, but
+ * the situation where A includes B and B includes A is a circular
+ * dependency between Protocols which is forbidden by the compiler, so
+ * A conforms to B and B conforms to A with A and B having different
+ * names is an impossible case.
+ */
 - (BOOL) isEqual: (id)obj
 {
-  if (strcmp (protocol_name, [obj name]) == 0)
+  if (obj == self)
     return YES;
+
+  if ([obj isKindOf: [Protocol class]])
+    {
+      if (strcmp (protocol_name, ((Protocol *)obj)->protocol_name) == 0)
+	return YES;
+    }
 
   return NO;
 }
 @end
+
