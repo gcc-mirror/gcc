@@ -1,3 +1,11 @@
+2002-03-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/20020103-1.c: Add rs6000 target and macro.
+
+2002-03-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/20020103-1.c: Add other -D ppc variants.
+
 2002-03-12  Kazu Hirata  <kazu@hxi.com>
 
 	* gcc.c-torture/execute/20020307-1.c: Use long.
