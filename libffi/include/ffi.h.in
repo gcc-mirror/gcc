@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------*-C-*-
    libffi @VERSION@ - Copyright (c) 1996-1999  Cygnus Solutions
 
-   $Id: ffi.h.in,v 1.2 1999/08/09 02:52:58 green Exp $
+   $Id: ffi.h.in,v 1.3 1999/09/01 23:16:34 tromey Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -23,6 +23,32 @@
    OTHER DEALINGS IN THE SOFTWARE.
 
    ----------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------
+   The basic API is described in the README file.
+
+   The raw API is designed to bypass some of the argument packing
+   and unpacking on architectures for which it can be avoided.
+
+   The closure API allows interpreted functions to be packaged up
+   inside a C function pointer, so that they can be called as C functions,
+   with no understanding on the client side that they are interpreted.
+   It can also be used in other cases in which it is necessary to package
+   up a user specified parameter and a function pointer as a single
+   function pointer.
+
+   The closure API must be implemented in order to get its functionality,
+   e.g. for use by gij.  Routines are provided to emulate the raw API
+   if the underlying platform doesn't allow faster implementation.
+
+   More details on the raw and cloure API can be found in:
+
+   http://sourceware.cygnus.com/ml/java-discuss/1999-q3/msg00138.html
+
+   and
+
+   http://sourceware.cygnus.com/ml/java-discuss/1999-q3/msg00174.html
+   -------------------------------------------------------------------- */
 
 #ifndef LIBFFI_H
 #define LIBFFI_H
@@ -138,7 +164,9 @@ extern "C" {
 
 /* ---- Generic type definitions ----------------------------------------- */
 
-#define ALIGN(v, a)  (((((unsigned) (v))-1) | ((a)-1))+1)
+#define ALIGN(v, a)  (((((size_t) (v))-1) | ((a)-1))+1)
+/* The closure code assumes that this works on pointers, i.e. a size_t	*/
+/* can hold a pointer.							*/
 
 typedef enum ffi_abi {
 
@@ -157,6 +185,12 @@ typedef enum ffi_abi {
 #ifdef X86
   FFI_SYSV,
   FFI_DEFAULT_ABI = FFI_SYSV,
+#endif
+
+  /* ---- Intel ia64 ---------------- */
+#ifdef IA64
+  FFI_UNIX,   	/* Linux and all Unix variants use the same conventions	*/
+  FFI_DEFAULT_ABI = FFI_UNIX,
 #endif
 
   /* ---- Mips --------------------- */
@@ -268,6 +302,7 @@ typedef struct {
 typedef union {
   SINT_ARG sint;
   UINT_ARG uint;
+  float	   flt;
   char     data[SIZEOF_ARG];
   void*    ptr;
 } ffi_raw;
@@ -281,8 +316,22 @@ void ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
 void ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
 size_t ffi_raw_size (ffi_cif *cif);
 
+#if !NO_JAVA_RAW_API
 
+/* This is analogous to the raw API, except it uses Java parameter	*/
+/* packing, even on 64-bit machines.  I.e. on 64-bit machines		*/
+/* longs and doubles are followed by an empty 64-bit word.		*/
 
+void ffi_java_raw_call (/*@dependent@*/ ffi_cif *cif, 
+		        void (*fn)(), 
+		        /*@out@*/ void *rvalue, 
+		        /*@dependent@*/ ffi_raw *avalue);
+
+void ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
+void ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
+size_t ffi_java_raw_size (ffi_cif *cif);
+
+#endif /* !NO_JAVA_RAW_API */
 
 #endif /* !FFI_NO_RAW_API */
 
@@ -293,6 +342,21 @@ size_t ffi_raw_size (ffi_cif *cif);
 #define FFI_CLOSURES 1		/* x86 supports closures */
 #define FFI_TRAMPOLINE_SIZE 10
 #define FFI_NATIVE_RAW_API 1	/* and has native raw api support */
+
+#elif defined(IA64)
+
+#define FFI_CLOSURES 1
+#define FFI_TRAMPOLINE_SIZE 24  /* Really the following struct, which 	*/
+				/* can be interpreted as a C function	*/
+				/* decriptor:				*/
+
+struct ffi_ia64_trampoline_struct {
+    void * code_pointer;	/* Pointer to ffi_closure_UNIX	*/
+    void * fake_gp;		/* Pointer to closure, installed as gp	*/
+    void * real_gp;		/* Real gp value, reinstalled by 	*/
+				/* ffi_closure_UNIX.			*/
+};
+#define FFI_NATIVE_RAW_API 0
 
 #else 
 
@@ -346,6 +410,14 @@ ffi_prep_raw_closure (ffi_raw_closure*,
 		      ffi_cif *cif,
 		      void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
 		      void *user_data);
+
+#ifndef NO_JAVA_RAW_API
+ffi_status
+ffi_prep_java_raw_closure (ffi_raw_closure*,
+		           ffi_cif *cif,
+		           void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
+		           void *user_data);
+#endif
 
 #endif /* !FFI_NO_RAW_API */
 #endif /* FFI_CLOSURES */

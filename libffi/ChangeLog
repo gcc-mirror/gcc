@@ -1,3 +1,24 @@
+2000-02-25  Hans Boehm <boehm@acm.org>
+
+	* src/ia64/ffi.c, src/ia64/ia64_flags.h, src/ia64/unix.S: New
+	files.
+	* src/raw_api.c (ffi_translate_args): Fixed typo in argument
+	list.
+	(ffi_prep_raw_closure): Use ffi_translate_args, not
+	ffi_closure_translate.
+	* src/java_raw_api.c: New file.
+	* src/ffitest.c (closure_test_fn): New function.
+	(main): Define `rint' as long long on IA64.  Added new test when
+	FFI_CLOSURES is defined.
+	* include/ffi.h.in (ALIGN): Use size_t, not unsigned.
+	(ffi_abi): Recognize IA64.
+	(ffi_raw): Added `flt' field.
+	Added "Java raw API" code.
+	* configure.in: Recognize ia64.
+	* Makefile.am (TARGET_SRC_IA64): New macro.
+	(libffi_la_common_SOURCES): Added java_raw_api.c.
+	(libffi_la_SOURCES): Define in IA64 case.
+
 2000-01-04  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt with newer automake.

@@ -1,7 +1,10 @@
 /* -----------------------------------------------------------------------
-   raw_api.c - Copyright (c) 1999  Cygnus Solutions
+   java_raw_api.c - Copyright (c) 1999  Cygnus Solutions
 
-   Author: Kresten Krab Thorup <krab@gnu.org>
+   Cloned from raw_api.c
+
+   Raw_api.c author: Kresten Krab Thorup <krab@gnu.org>
+   Java_raw_api.c author: Hans-J. Boehm <hboehm@hpl.hp.com>
 
    $Id $
 
@@ -25,15 +28,19 @@
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
-/* This file defines generic functions for use with the raw api. */
+/* This defines a Java- and 64-bit specific variant of the raw API.	*/
+/* It assumes that "raw" argument blocks look like Java stacks on a 	*/
+/* 64-bit machine.  Arguments that can be stored in a single stack	*/
+/* stack slots (longs, doubles) occupy 128 bits, but only the first	*/
+/* 64 bits are actually used.  						*/
 
 #include <ffi.h>
 #include <ffi_common.h>
 
-#if !FFI_NO_RAW_API
+#if !defined(NO_JAVA_RAW_API) && !defined(FFI_NO_RAW_API)
 
 size_t
-ffi_raw_size (ffi_cif *cif)
+ffi_java_raw_size (ffi_cif *cif)
 {
   size_t result = 0;
   int i;
@@ -42,12 +49,17 @@ ffi_raw_size (ffi_cif *cif)
 
   for (i = cif->nargs-1; i >= 0; i--, at++)
     {
-#if !FFI_NO_STRUCTS
-      if ((*at)->type == FFI_TYPE_STRUCT)
-	result += ALIGN (sizeof (void*), SIZEOF_ARG);
-      else
-#endif
-	result += ALIGN ((*at)->size, SIZEOF_ARG);
+      switch((*at) -> type) {
+	case FFI_TYPE_UINT64:
+	case FFI_TYPE_SINT64:
+	  result += 2 * SIZEOF_ARG;
+	  break;
+	case FFI_TYPE_STRUCT:
+	  /* No structure parameters in Java.	*/
+	  abort();
+	default:
+	  result += SIZEOF_ARG;
+      }
     }
 
   return result;
@@ -55,7 +67,7 @@ ffi_raw_size (ffi_cif *cif)
 
 
 void
-ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
+ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 {
   unsigned i;
   ffi_type **tp = cif->arg_types;
@@ -83,9 +95,12 @@ ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 	  break;
 #endif
 	
-#if !FFI_NO_STRUCTS  
-	case FFI_TYPE_STRUCT:
-	  *args = (raw++)->ptr;
+#if SIZEOF_ARG == 8	  
+	case FFI_TYPE_UINT64:
+	case FFI_TYPE_SINT64:
+	case FFI_TYPE_DOUBLE:
+	  *args = (void *)raw;
+	  raw += 2;
 	  break;
 #endif
 
@@ -105,18 +120,22 @@ ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 
   /* then assume little endian */
   for (i = 0; i < cif->nargs; i++, tp++, args++)
-    {	  
-#if !FFI_NO_STRUCTS
-      if ((*tp)->type == FFI_TYPE_STRUCT)
-	{
-	  *args = (raw++)->ptr;
-	}
-      else
-#endif
-	{
+    {
+#if SIZEOF_ARG == 8
+      switch((*tp)->type) {
+	case FFI_TYPE_UINT64:
+	case FFI_TYPE_SINT64:
+	case FFI_TYPE_DOUBLE:
 	  *args = (void*) raw;
-	  raw += ALIGN ((*tp)->size, sizeof (void*)) / sizeof (void*);
-	}
+	  raw += 2;
+	  break;
+	default:
+	  *args = (void*) raw++;
+      }
+#else /* SIZEOF_ARG != 8 */
+	*args = (void*) raw;
+	raw += ALIGN ((*tp)->size, sizeof (void*)) / sizeof (void*);
+#endif /* SIZEOF_ARG == 8 */
     }
 
 #else
@@ -127,7 +146,7 @@ ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 }
 
 void
-ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
+ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
 {
   unsigned i;
   ffi_type **tp = cif->arg_types;
@@ -161,10 +180,16 @@ ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
 	  (raw++)->sint = *(SINT32*) (*args);
 	  break;
 #endif
+        case FFI_TYPE_FLOAT:
+	  (raw++)->flt = *(FLOAT32*) (*args);
+	  break;
 
-#if !FFI_NO_STRUCTS
-	case FFI_TYPE_STRUCT:
-	  (raw++)->ptr = *args;
+#if SIZEOF_ARG == 8
+	case FFI_TYPE_UINT64:
+	case FFI_TYPE_SINT64:
+	case FFI_TYPE_DOUBLE:
+	  raw->uint = *(UINT64*) (*args);
+	  raw += 2;
 	  break;
 #endif
 
@@ -173,8 +198,12 @@ ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
 	  break;
 
 	default:
+#if SIZEOF_ARG == 8
+	  FFI_ASSERT(FALSE);	/* Should have covered all cases */
+#else	
 	  memcpy ((void*) raw->data, (void*)*args, (*tp)->size);
 	  raw += ALIGN ((*tp)->size, SIZEOF_ARG) / SIZEOF_ARG;
+#endif
 	}
     }
 }
@@ -189,26 +218,26 @@ ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
  * these following couple of functions will handle the translation forth
  * and back automatically. */
 
-void ffi_raw_call (/*@dependent@*/ ffi_cif *cif, 
+void ffi_java_raw_call (/*@dependent@*/ ffi_cif *cif, 
 		   void (*fn)(), 
 		   /*@out@*/ void *rvalue, 
 		   /*@dependent@*/ ffi_raw *raw)
 {
   void **avalue = (void**) alloca (cif->nargs * sizeof (void*));
-  ffi_raw_to_ptrarray (cif, raw, avalue);
+  ffi_java_raw_to_ptrarray (cif, raw, avalue);
   ffi_call (cif, fn, rvalue, avalue);
 }
 
 #if FFI_CLOSURES		/* base system provides closures */
 
 static void 
-ffi_translate_args (ffi_cif *cif, void *rvalue,
+ffi_java_translate_args (ffi_cif *cif, void *rvalue,
 		    void **avalue, void *user_data)
 {
-  ffi_raw *raw = (ffi_raw*)alloca (ffi_raw_size (cif));
+  ffi_raw *raw = (ffi_raw*)alloca (ffi_java_raw_size (cif));
   ffi_raw_closure *cl = (ffi_raw_closure*)user_data;
 
-  ffi_ptrarray_to_raw (cif, avalue, raw);
+  ffi_java_ptrarray_to_raw (cif, avalue, raw);
   (*cl->fun) (cif, rvalue, raw, cl->user_data);
 }
 
@@ -217,7 +246,7 @@ ffi_translate_args (ffi_cif *cif, void *rvalue,
  * the pointer-array format, to the raw format */
 
 ffi_status
-ffi_prep_raw_closure (ffi_raw_closure* cl,
+ffi_prep_java_raw_closure (ffi_raw_closure* cl,
 		      ffi_cif *cif,
 		      void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
 		      void *user_data)
@@ -226,7 +255,7 @@ ffi_prep_raw_closure (ffi_raw_closure* cl,
 
   status = ffi_prep_closure ((ffi_closure*) cl, 
 			     cif,
-			     &ffi_translate_args,
+			     &ffi_java_translate_args,
 			     (void*)cl);
   if (status == FFI_OK)
     {
