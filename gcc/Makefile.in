@@ -1832,28 +1832,28 @@ stage4: force
 # that is pretty sure to work, and you are short of disk space.
 risky-stage1: force
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
-	-mv cc1 cpp cccp gcc stage1
+	-mv $(GCC_PARTS) stage1
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1 && $(RANLIB) stage1/libgcc.a
 	-make clean
 
 risky-stage2: force
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
-	-mv cc1 cpp cccp gcc stage2
+	-mv $(GCC_PARTS) stage2
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2 && $(RANLIB) stage2/libgcc.a
 	-make clean
 
 risky-stage3: force
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
-	-mv cc1 cpp cccp gcc stage3
+	-mv $(GCC_PARTS) stage3
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3 && $(RANLIB) stage3/libgcc.a
 	-make clean
 
 risky-stage4: force
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
-	-mv cc1 cpp cccp gcc stage4
+	-mv $(GCC_PARTS) stage4
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4 && $(RANLIB) stage4/libgcc.a
 	-make clean
