@@ -1,3 +1,8 @@
+2003-01-30  Roger Sayle  <roger@eyesopen.com>
+
+	* config.guess: Updated to 2003-01-30's version.
+	* config.sub: Updated to 2003-01-28's version.
+
 2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Also pass DESTDIR.
@@ -5,14 +10,6 @@
 	(install-info, dir.info): Prepend $(DESTDIR) to $(infodir).
 
 2002-11-19  Release Manager
-
-	* GCC 3.2.1 Released.
-
-2002-11-19  Release Manager
-
-	* GCC 3.2.1 Released.
-
-2002-11-18  Release Manager
 
 	* GCC 3.2.1 Released.
 
