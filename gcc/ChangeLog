@@ -1,3 +1,9 @@
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/sh/sh.c: Replace "gen_rtx (FOO, " with "gen_rtx_FOO (".
+	* config/sh/sh.h: Likewise.
+	* config/sh/sh.md: Likewise.
+
 2004-01-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (SPARC options): Restructure and update.

@@ -913,62 +913,62 @@
 	{
 	case EQ:
 	  emit_insn (gen_seq (tmp));
-	  operands[1] = gen_rtx (NE, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case NE:
 	  emit_insn (gen_seq (tmp));
-	  operands[1] = gen_rtx (EQ, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case GT:
 	  emit_insn (gen_sgt (tmp));
-	  operands[1] = gen_rtx (NE, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case LT:
 	  emit_insn (gen_slt (tmp));
-	  operands[1] = gen_rtx (NE, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case GE:
 	  emit_insn (gen_slt (tmp));
-	  operands[1] = gen_rtx (EQ, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case LE:
 	  emit_insn (gen_sgt (tmp));
-	  operands[1] = gen_rtx (EQ, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case GTU:
 	  emit_insn (gen_sgtu (tmp));
-	  operands[1] = gen_rtx (NE, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case LTU:
 	  emit_insn (gen_sltu (tmp));
-	  operands[1] = gen_rtx (NE, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case GEU:
 	  emit_insn (gen_sltu (tmp));
-	  operands[1] = gen_rtx (EQ, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case LEU:
 	  emit_insn (gen_sgtu (tmp));
-	  operands[1] = gen_rtx (EQ, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case UNORDERED:
 	  emit_insn (gen_sunordered (tmp));
-	  operands[1] = gen_rtx (NE, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case ORDERED:
 	  emit_insn (gen_sunordered (tmp));
-	  operands[1] = gen_rtx (EQ, VOIDmode, tmp, const0_rtx);
+	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
 	  break;
 
 	case UNEQ:
@@ -3360,11 +3360,11 @@
   "TARGET_SH2E"
   "
 {
-  rtx insn = emit_insn (gen_fpu_switch (gen_rtx (MEM, PSImode,
-						 gen_rtx (PRE_DEC, Pmode,
+  rtx insn = emit_insn (gen_fpu_switch (gen_rtx_MEM (PSImode,
+						 gen_rtx_PRE_DEC (Pmode,
 							  stack_pointer_rtx)),
 					get_fpscr_rtx ()));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, stack_pointer_rtx, NULL_RTX);
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, NULL_RTX);
   DONE;
 }")
 
@@ -3374,10 +3374,10 @@
   "
 {
   rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
-					gen_rtx (MEM, PSImode,
-						 gen_rtx (POST_INC, Pmode,
+					gen_rtx_MEM (PSImode,
+						 gen_rtx_POST_INC (Pmode,
 							  stack_pointer_rtx))));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, stack_pointer_rtx, NULL_RTX);
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, NULL_RTX);
   DONE;
 }")
 
@@ -4276,19 +4276,19 @@
       tos = gen_rtx_MEM (DFmode, stack_pointer_rtx);
     }
   else
-    tos = gen_rtx (MEM, DFmode, gen_rtx (PRE_DEC, Pmode, stack_pointer_rtx));
+    tos = gen_rtx_MEM (DFmode, gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
   insn = emit_insn (gen_movdf_i4 (tos, operands[1], operands[2]));
   if (! (TARGET_SH5 && true_regnum (operands[1]) < 16))
-    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, stack_pointer_rtx, NULL_RTX);
+    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, NULL_RTX);
   if (TARGET_SH5 && true_regnum (operands[0]) < 16)
     tos = gen_rtx_MEM (DFmode, stack_pointer_rtx);
   else
-    tos = gen_rtx (MEM, DFmode, gen_rtx (POST_INC, Pmode, stack_pointer_rtx));
+    tos = gen_rtx_MEM (DFmode, gen_rtx_POST_INC (Pmode, stack_pointer_rtx));
   insn = emit_insn (gen_movdf_i4 (operands[0], tos, operands[2]));
   if (TARGET_SH5 && true_regnum (operands[0]) < 16)
     emit_move_insn (stack_pointer_rtx, plus_constant (stack_pointer_rtx, 8));
   else
-    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, stack_pointer_rtx, NULL_RTX);
+    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, NULL_RTX);
   DONE;
 }")
 
@@ -4327,7 +4327,7 @@
 	  && GET_CODE (XEXP (addr, 1)) == REG)
 	{
 	  int offset;
-	  rtx reg0 = gen_rtx (REG, Pmode, 0);
+	  rtx reg0 = gen_rtx_REG (Pmode, 0);
 	  rtx regop = operands[store_p], word0 ,word1;
 
 	  if (GET_CODE (regop) == SUBREG)
@@ -4338,9 +4338,9 @@
 	    offset = 4;
 	  mem = copy_rtx (mem);
 	  PUT_MODE (mem, SImode);
-	  word0 = gen_rtx (SUBREG, SImode, regop, 0);
+	  word0 = gen_rtx_SUBREG (SImode, regop, 0);
 	  alter_subreg (&word0);
-	  word1 = gen_rtx (SUBREG, SImode, regop, 4);
+	  word1 = gen_rtx_SUBREG (SImode, regop, 4);
 	  alter_subreg (&word1);
 	  if (store_p || ! refers_to_regno_p (REGNO (word0),
 					      REGNO (word0) + 1, addr, 0))
@@ -4419,10 +4419,10 @@
   "
 {
   int dst = true_regnum (operands[0]), src = true_regnum (operands[1]);
-  emit_insn (gen_movsf_ie (gen_rtx (REG, SFmode, dst),
-			   gen_rtx (REG, SFmode, src), operands[2]));
-  emit_insn (gen_movsf_ie (gen_rtx (REG, SFmode, dst + 1),
-			   gen_rtx (REG, SFmode, src + 1), operands[2]));
+  emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode, dst),
+			   gen_rtx_REG (SFmode, src), operands[2]));
+  emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode, dst + 1),
+			   gen_rtx_REG (SFmode, src + 1), operands[2]));
   DONE;
 }")
 
@@ -4439,15 +4439,15 @@
 {
   int regno = true_regnum (operands[0]);
   rtx insn;
-  rtx mem2 = gen_rtx (MEM, SFmode, gen_rtx (POST_INC, Pmode, operands[1]));
+  rtx mem2 = gen_rtx_MEM (SFmode, gen_rtx_POST_INC (Pmode, operands[1]));
 
-  insn = emit_insn (gen_movsf_ie (gen_rtx (REG, SFmode,
+  insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
 					   regno + !! TARGET_LITTLE_ENDIAN),
 				  mem2, operands[2]));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, operands[1], NULL_RTX);
-  insn = emit_insn (gen_movsf_ie (gen_rtx (REG, SFmode,
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, operands[1], NULL_RTX);
+  insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
 					   regno + ! TARGET_LITTLE_ENDIAN),
-				  gen_rtx (MEM, SFmode, operands[1]),
+				  gen_rtx_MEM (SFmode, operands[1]),
 				  operands[2]));
   DONE;
 }")
@@ -4509,7 +4509,7 @@
   operands[0] = copy_rtx (operands[0]);
   PUT_MODE (operands[0], SFmode);
   insn = emit_insn (gen_movsf_ie (operands[0],
-				  gen_rtx (REG, SFmode,
+				  gen_rtx_REG (SFmode,
 					   regno + ! TARGET_LITTLE_ENDIAN),
 				  operands[2]));
   operands[0] = copy_rtx (operands[0]);
@@ -4518,16 +4518,16 @@
     {
       adjust = gen_addsi3 (addr, addr, GEN_INT (4));
       emit_insn_before (adjust, insn);
-      XEXP (operands[0], 0) = addr = gen_rtx (PRE_DEC, SImode, addr);
+      XEXP (operands[0], 0) = addr = gen_rtx_PRE_DEC (SImode, addr);
     }
   addr = XEXP (addr, 0);
   if (! adjust)
-    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, addr, NULL_RTX);
+    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, addr, NULL_RTX);
   insn = emit_insn (gen_movsf_ie (operands[0],
-				  gen_rtx (REG, SFmode,
+				  gen_rtx_REG (SFmode,
 					   regno + !! TARGET_LITTLE_ENDIAN),
 				  operands[2]));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, addr, NULL_RTX);
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, addr, NULL_RTX);
   DONE;
 }")
 
@@ -8180,10 +8180,10 @@ mov.l\\t1f,r0\\n\\
   "
 {
   rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
-					gen_rtx (MEM, PSImode,
-						 gen_rtx (POST_INC, Pmode,
+					gen_rtx_MEM (PSImode,
+						 gen_rtx_POST_INC (Pmode,
 							  operands[0]))));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, operands[0], NULL_RTX);
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, operands[0], NULL_RTX);
 }")
 
 (define_split
@@ -8194,10 +8194,10 @@ mov.l\\t1f,r0\\n\\
   "
 {
   rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
-					gen_rtx (MEM, PSImode,
-						 gen_rtx (POST_INC, Pmode,
+					gen_rtx_MEM (PSImode,
+						 gen_rtx_POST_INC (Pmode,
 							  operands[0]))));
-  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, operands[0], NULL_RTX);
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, operands[0], NULL_RTX);
 }")
 
 ;; ??? This uses the fp unit, but has no type indicating that.
