@@ -79,9 +79,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* For very tiny loops it is not worthwhile to prefetch even before the loop,
    since it is likely that the data are already in the cache.  */
 #define PREFETCH_BLOCKS_BEFORE_LOOP_MIN  2
-/* The minimal number of prefetch blocks that a loop must consume to make
-   the emitting of prefetch instruction in the body of loop worthwhile.  */
-#define PREFETCH_BLOCKS_IN_LOOP_MIN  6
 
 /* Parameterize some prefetch heuristics so they can be turned on and off
    easily for performance testing on new architecures.  These can be
@@ -144,12 +141,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Prefetch even if the GIV is in conditional code.  */
 #ifndef PREFETCH_CONDITIONAL
 #define PREFETCH_CONDITIONAL 1
-#endif
-
-/* If the loop requires more prefetches than the target can process in
-   parallel then don't prefetch anything in that loop.  */
-#ifndef PREFETCH_LIMIT_TO_SIMULTANEOUS
-#define PREFETCH_LIMIT_TO_SIMULTANEOUS 1
 #endif
 
 #define LOOP_REG_LIFETIME(LOOP, REGNO) \

@@ -1,3 +1,15 @@
+2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
+
+	* genautomata.c (VLA_HWINT_SHORTEN, VLA_HWINT_LAST): Remove.
+	* df.c (HANDLE_SUBREG, FOR_EACH_BB_IN_BITMAP_REV,
+	FOR_EACH_BB_IN_SBITMAP): Remove.
+	* gcse.c (NEVER_SET, FOLLOW_BACK_EDGES): Remove.
+	* haifa-sched.c (DONE_PRIORITY, MAX_PRIORITY, TAIL_PRIORITY,
+	LAUNCH_PRIORITY, DONE_PRIORITY_P, LOW_PRIORITY_P): Remove.
+	* loop.c (PREFETCH_BLOACK_IN_LOOP_MIN,
+	PREFETCH_LIMIT_TO_SIMULTANEOUS): Remove.
+	* regrename.c (REGNO_MODE_OK_FOR_BASE_P): Remove.
+
 2002-07-23  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* pretty-print.h: New file.

@@ -181,7 +181,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    be done by loop.c, which has more heuristics for when to move invariants
    out of loops.  At some point we might need to move some of those
    heuristics into gcse.c.  */
-#define FOLLOW_BACK_EDGES 1
 
 /* We support GCSE via Partial Redundancy Elimination.  PRE optimizations
    are a superset of those done by GCSE.
@@ -1292,10 +1291,6 @@ compute_sets (f)
 }
 
 /* Hash table support.  */
-
-/* For each register, the cuid of the first/last insn in the block
-   that set it, or -1 if not set.  */
-#define NEVER_SET -1
 
 struct reg_avail_info
 {
