@@ -1,36 +1,76 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* SequenceInputStream.java -- Reads multiple input streams in sequence
+   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
  
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
+
 package java.io;
 
 import java.util.Enumeration;
 
-/**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date November 3, 1998.  
- */
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
  */
  
+/**
+  * This class merges a sequence of multiple <code>InputStream</code>'s in
+  * order to form a single logical stream that can be read by applications
+  * that expect only one stream.
+  * <p>
+  * The streams passed to the constructor method are read in order until
+  * they return -1 to indicate they are at end of stream.  When a stream
+  * reports end of stream, it is closed, then the next stream is read.
+  * When the last stream is closed, the next attempt to read from this
+  * stream will return a -1 to indicate it is at end of stream.
+  * <p>
+  * If this stream is closed prior to all subordinate streams being read
+  * to completion, all subordinate streams are closed.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Warren Levy <warrenl@cygnus.com>
+  */
 public class SequenceInputStream extends InputStream
 {
-  /* The handle for the current input stream. */
+  /** The handle for the current input stream. */
   private InputStream in;
 
-  /* Secondary input stream; not used if constructed w/ enumeration. */
+  /** Secondary input stream; not used if constructed w/ enumeration. */
   private InputStream in2;
 
-  /* The enum handle; not used if constructed w/ 2 explicit input streams. */
+  /** The enum handle; not used if constructed w/ 2 explicit input streams. */
   private Enumeration enum;
 
+ /**
+  * This method creates a new <code>SequenceInputStream</code> that obtains
+  * its list of subordinate <code>InputStream</code>s from the specified
+  * <code>Enumeration</code>
+  *
+  * @param e An <code>Enumeration</code> that will return a list of
+  * <code>InputStream</code>s to read in sequence
+  */
   public SequenceInputStream(Enumeration e)
   {
     enum = e;
@@ -38,12 +78,30 @@ public class SequenceInputStream extends InputStream
     in2 = null;
   }
 
+ /**
+  * This method creates a new <code>SequenceInputStream</code> that will read
+  * the two specified subordinate <code>InputStream</code>s in sequence.
+  *
+  * @param s1 The first <code>InputStream</code> to read
+  * @param s2 The second <code>InputStream</code> to read
+  */
   public SequenceInputStream(InputStream s1, InputStream s2)
   {
     in = s1;
     in2 = s2;
   }
 
+ /**
+  * This method returns the number of bytes than can be read from the
+  * currently being read subordinate stream before that stream could
+  * block.  Note that it is possible more bytes than this can actually
+  * be read without the stream blocking.  If a 0 is returned, then the
+  * stream could block on the very next read.
+  *
+  * @return The number of bytes that can be read before blocking could occur
+  *
+  * @exception IOException If an error occurs
+  */
   public int available() throws IOException
   {
     if (in == null)
@@ -52,6 +110,13 @@ public class SequenceInputStream extends InputStream
     return in.available();
   }
 
+ /**
+  * Closes this stream.  This will cause any remaining unclosed subordinate
+  * <code>InputStream</code>'s to be closed as well.  Subsequent attempts to 
+  * read from this stream may cause an exception.
+  *
+  * @exception IOException If an error occurs
+  */
   public void close() throws IOException
   {
     while (in != null)
@@ -61,6 +126,18 @@ public class SequenceInputStream extends InputStream
       }
   }
 
+ /**
+  * This method reads an unsigned byte from the input stream and returns it
+  * as an int in the range of 0-255.  This method also will return -1 if
+  * the end of the stream has been reached.  This will only happen when
+  * all of the subordinate streams have been read.
+  * <p>
+  * This method will block until the byte can be read.
+  *
+  * @return The byte read, or -1 if end of stream
+  *
+  * @exception IOException If an error occurs
+  */
   public int read() throws IOException
   {
     int ch = -1;
@@ -74,6 +151,25 @@ public class SequenceInputStream extends InputStream
     return ch;
   }
 
+ /**
+  * This method reads bytes from a stream and stores them into a caller
+  * supplied buffer.  It starts storing the data at index <code>offset</code>
+  * into the buffer and attempts to read <code>len</code> bytes. This method
+  * can return before reading the number of bytes requested. The actual number
+  * of bytes read is returned as an int. A -1 is returend to indicate the
+  * end of the stream. This will only happen when all of the subordinate
+  * streams have been read.
+  * <p>
+  * This method will block until at least one byte can be read.
+  *
+  * @param b The array into which bytes read should be stored
+  * @param off The offset into the array to start storing bytes
+  * @param len The requested number of bytes to read
+  *
+  * @return The actual number of bytes read, or -1 if end of stream
+  *
+  * @exception IOException If an error occurs
+  */
   public int read(byte[] b, int off, int len) throws IOException
   {
     int ch = -1;
@@ -89,6 +185,10 @@ public class SequenceInputStream extends InputStream
     return ch;
   }
 
+ /**
+  * This private method is used to get the next <code>InputStream</code> to
+  * read from. Returns null when no more streams are available.
+  */
   private InputStream getNextStream()
   {
     InputStream nextIn = null;
