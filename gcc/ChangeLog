@@ -1,3 +1,9 @@
+Wed Dec 19 11:01:21 2001  Jeffrey A Law  (law@redhat.com)
+
+	* config/pa/t-hpux-shlib: New file.
+	* config.gcc (hpux10, hpux11): Include t-hpux-shlib in tmake_file
+	for 32bit hpux10 & hpux11 configurations.
+
 2001-12-19  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/xscale-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Pass

@@ -1,0 +1,19 @@
+# Build a shared libgcc library.
+SHLIB_EXT = .sl
+SHLIB_NAME = @shlib_base_name@.sl
+SHLIB_SONAME = @shlib_base_name@.1
+SHLIB_OBJS = @shlib_objs@
+
+SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared  -nodefaultlibs \
+	-o $(SHLIB_NAME) @multilib_flags@ $(SHLIB_OBJS) -lc && \
+        rm -f $(SHLIB_SONAME) && \
+        $(LN_S) $(SHLIB_NAME) $(SHLIB_SONAME)
+
+
+# $(slibdir) double quoted to protect it from expansion while building
+# libgcc.mk.  We want this delayed until actual install time.
+SHLIB_INSTALL = $(INSTALL_DATA) -m 555 $(SHLIB_NAME) \
+	$$(slibdir)/$(SHLIB_SONAME); \
+        rm -f $$(slibdir)/$(SHLIB_NAME); \
+        $(LN_S) $(SHLIB_SONAME) $$(slibdir)/$(SHLIB_NAME)
+
