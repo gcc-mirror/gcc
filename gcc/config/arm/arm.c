@@ -794,17 +794,26 @@ arm_reload_out_hi (operands)
 {
   rtx base = find_replacement (&XEXP (operands[0], 0));
 
-  emit_insn (gen_rtx (SET, VOIDmode,
-                      gen_rtx (MEM, QImode, base),
-                      gen_rtx (SUBREG, QImode, operands[1], 0)));
-  emit_insn (gen_rtx (SET, VOIDmode, operands[2],
-                      gen_rtx (LSHIFTRT, SImode, 
-                               gen_rtx (SUBREG, SImode, operands[1], 0),
-                               GEN_INT (8))));
-  emit_insn (gen_rtx (SET, VOIDmode,
-                      gen_rtx (MEM, QImode,
-                               plus_constant (base, 1)),
-                      gen_rtx (SUBREG, QImode, operands[2], 0)));
+  if (BYTES_BIG_ENDIAN)
+    {
+      emit_insn (gen_movqi (gen_rtx (MEM, QImode, plus_constant (base, 1)),
+			    gen_rtx (SUBREG, QImode, operands[1], 0)));
+      emit_insn (gen_lshrsi3 (operands[2],
+			      gen_rtx (SUBREG, SImode, operands[1], 0),
+			      GEN_INT (8)));
+      emit_insn (gen_movqi (gen_rtx (MEM, QImode, base),
+			    gen_rtx (SUBREG, QImode, operands[2], 0)));
+    }
+  else
+    {
+      emit_insn (gen_movqi (gen_rtx (MEM, QImode, base),
+			    gen_rtx (SUBREG, QImode, operands[1], 0)));
+      emit_insn (gen_lshrsi3 (operands[2],
+			      gen_rtx (SUBREG, SImode, operands[1], 0),
+			      GEN_INT (8)));
+      emit_insn (gen_movqi (gen_rtx (MEM, QImode, plus_constant (base, 1)),
+			    gen_rtx (SUBREG, QImode, operands[2], 0)));
+    }
 }
 
 /* Check to see if a branch is forwards or backwards.  Return TRUE if it
@@ -845,7 +854,7 @@ arm_insn_not_targeted (insn)
    when cross compiling. */
 char *
 fp_immediate_constant (x)
-     rtx (x);
+     rtx x;
 {
   REAL_VALUE_TYPE r;
   int i;
