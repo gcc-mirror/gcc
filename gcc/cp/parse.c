@@ -1,6 +1,7 @@
 
 /*  A Bison parser, made from parse.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.27
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -4027,8 +4028,8 @@ static const short yycheck[] = {     4,
     78,    79,    80,    81,    82,    83,    84,    85
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/lib/bison.simple"
-/* This file comes from bison-1.28.  */
+#line 3 "/usr/share/bison.simple"
+/* This file comes from bison-1.27.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -4241,7 +4242,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/lib/bison.simple"
+#line 216 "/usr/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -5266,7 +5267,7 @@ case 191:
     break;}
 case 193:
 #line 1057 "parse.y"
-{ error ("ANSI C++ forbids an empty condition for `%s'",
+{ error ("ISO C++ forbids an empty condition for `%s'",
 			 cond_stmt_keyword);
 		  yyval.ttype = integer_zero_node; ;
     break;}
@@ -5276,7 +5277,7 @@ case 194:
     break;}
 case 195:
 #line 1066 "parse.y"
-{ error ("ANSI C++ forbids an empty condition for `%s'",
+{ error ("ISO C++ forbids an empty condition for `%s'",
 			 cond_stmt_keyword);
 		  yyval.ttype = integer_zero_node; ;
     break;}
@@ -5376,7 +5377,7 @@ case 221:
 case 222:
 #line 1159 "parse.y"
 { if (pedantic)
-		    pedwarn ("ANSI C++ forbids `&&'");
+		    pedwarn ("ISO C++ forbids `&&'");
   		  yyval.ttype = finish_label_address_expr (yyvsp[0].ttype); ;
     break;}
 case 223:
@@ -5495,7 +5496,7 @@ case 246:
 #line 1243 "parse.y"
 {
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
+		    pedwarn ("ISO C++ forbids initialization of new expression with `='");
 		  if (TREE_CODE (yyvsp[0].ttype) != TREE_LIST
 		      && TREE_CODE (yyvsp[0].ttype) != CONSTRUCTOR)
 		    yyval.ttype = build_tree_list (NULL_TREE, yyvsp[0].ttype);
@@ -5525,7 +5526,7 @@ case 251:
 		  tree init = build_nt (CONSTRUCTOR, NULL_TREE,
 					nreverse (yyvsp[-2].ttype)); 
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids constructor-expressions");
+		    pedwarn ("ISO C++ forbids constructor-expressions");
 		  /* Indicate that this was a GNU C constructor expression.  */
 		  TREE_HAS_CONSTRUCTOR (init) = 1;
 
@@ -5746,7 +5747,7 @@ case 312:
 		      YYERROR;
 		    }
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids braced-groups within expressions");  
+		    pedwarn ("ISO C++ forbids braced-groups within expressions");  
 		  yyval.ttype = begin_stmt_expr (); 
 		;
     break;}
@@ -6536,7 +6537,7 @@ case 480:
 		  else
 		    {
 		      yyval.ftype.t = yyvsp[0].ftype.t;
-		      /* struct B: public A; is not accepted by the WP grammar.  */
+		      /* struct B: public A; is not accepted by the standard grammar.  */
 		      if (CLASS_TYPE_P (yyval.ftype.t)
 			  && TYPE_BINFO_BASETYPES (yyval.ftype.t) 
 			  && !TYPE_SIZE (yyval.ftype.t)
@@ -7007,7 +7008,7 @@ case 575:
 #line 2667 "parse.y"
 {
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
+		    pedwarn ("ISO C++ forbids array dimensions with parenthesized type in new");
 		  yyval.ftype.t = build_parse_node (ARRAY_REF, TREE_VALUE (yyvsp[-4].ftype.t), yyvsp[-1].ttype);
 		  yyval.ftype.t = build_decl_list (TREE_PURPOSE (yyvsp[-4].ftype.t), yyval.ftype.t);
 		  yyval.ftype.new_type_flag = yyvsp[-4].ftype.new_type_flag;
@@ -7543,7 +7544,7 @@ case 697:
 case 704:
 #line 3167 "parse.y"
 { if (pedantic)
-		    pedwarn ("ANSI C++ forbids label declarations"); ;
+		    pedwarn ("ISO C++ forbids label declarations"); ;
     break;}
 case 707:
 #line 3178 "parse.y"
@@ -7745,7 +7746,7 @@ case 756:
 #line 3319 "parse.y"
 { 
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids computed gotos");
+		    pedwarn ("ISO C++ forbids computed gotos");
 		  finish_goto_stmt (yyvsp[-1].ttype);
 		;
     break;}
@@ -7840,7 +7841,7 @@ case 784:
 case 786:
 #line 3420 "parse.y"
 { if (pedantic)
-		    pedwarn ("ANSI C++ forbids compound statements inside for initializations");
+		    pedwarn ("ISO C++ forbids compound statements inside for initializations");
 		;
     break;}
 case 787:
@@ -8231,7 +8232,7 @@ case 878:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/lib/bison.simple"
+#line 542 "/usr/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;

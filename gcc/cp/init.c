@@ -2931,7 +2931,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
    things like padding and magic size cookies.  It has virtual in it,
    because if you have a base pointer and you delete through a virtual
    destructor, it should be the size of the dynamic object, not the
-   static object, see Free Store 12.5 ANSI C++ WP.
+   static object, see Free Store 12.5 ISO C++.
 
    This does not call any destructors.  */
 

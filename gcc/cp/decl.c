@@ -453,7 +453,7 @@ struct binding_level
     tree incomplete;
 
     /* List of VAR_DECLS saved from a previous for statement.
-       These would be dead in ANSI-conforming code, but might
+       These would be dead in ISO-conforming code, but might
        be referenced in ARM-era code.  These are stored in a
        TREE_LIST; the TREE_VALUE is the actual declaration.  */
     tree dead_vars_from_for;
@@ -484,7 +484,7 @@ struct binding_level
     unsigned namespace_p : 1;
 
     /* True if this level is that of a for-statement where we need to
-       worry about ambiguous (ARM or ANSI) scope rules.  */
+       worry about ambiguous (ARM or ISO) scope rules.  */
     unsigned is_for_scope : 1;
 
     /* True if this level corresponds to an EH region, as for a try block.  */
@@ -4509,7 +4509,7 @@ implicitly_declare (functionid)
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
 
-  /* ANSI standard says implicit declarations are in the innermost block.
+  /* ISO standard says implicit declarations are in the innermost block.
      So we record the decl in the standard fashion.  */
   pushdecl (decl);
   rest_of_decl_compilation (decl, NULL_PTR, 0, 0);
@@ -6511,8 +6511,7 @@ fixup_anonymous_aggr (t)
 	q = &TREE_CHAIN (*q);
     }
 
-  /* ANSI C++ June 5 1992 WP 9.5.3.  Anonymous unions may not have
-     function members.  */
+  /* ISO C++ 9.5.3.  Anonymous unions may not have function members.  */
   if (TYPE_METHODS (t))
     error ("an anonymous union cannot have function members");
 }
@@ -10185,9 +10184,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		if (flags == DTOR_FLAG)
 		  {
-		    /* ANSI C++ June 5 1992 WP 12.4.1.  A destructor may
-		       not be declared const or volatile.  A destructor
-		       may not be static.  */
+		    /* ISO C++ 12.4/2.  A destructor may not be
+		       declared const or volatile.  A destructor may
+		       not be static.  */
 		    if (staticp == 2)
 		      error ("destructor cannot be static member function");
 		    if (quals)
@@ -10208,9 +10207,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  {
 		    if (explicitp == 1)
 		      explicitp = 2;
-		    /* ANSI C++ June 5 1992 WP 12.1.2.  A constructor may
-		       not be declared const or volatile.  A constructor may
-		       not be virtual.  A constructor may not be static.  */
+		    /* ISO C++ 12.1.  A constructor may not be
+		       declared const or volatile.  A constructor may
+		       not be virtual.  A constructor may not be
+		       static.  */
 		    if (staticp == 2)
 		      error ("constructor cannot be static member function");
 		    if (virtualp)
@@ -11110,7 +11110,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		       the rest of the compiler does not correctly
 		       handle the initialization unless the member is
 		       static so we make it static below.  */
-		    cp_pedwarn ("ANSI C++ forbids initialization of member `%D'",
+		    cp_pedwarn ("ISO C++ forbids initialization of member `%D'",
 				declarator);
 		    cp_pedwarn ("making `%D' static", declarator);
 		    staticp = 1;
@@ -12963,9 +12963,8 @@ start_function (declspecs, declarator, attrs, flags)
       if (TREE_CODE (fntype) == METHOD_TYPE)
 	ctype = TYPE_METHOD_BASETYPE (fntype);
 
-      /* ANSI C++ June 5 1992 WP 11.4.5.  A friend function defined in a
-	 class is in the (lexical) scope of the class in which it is
-	 defined.  */
+      /* ISO C++ 11.4/5.  A friend function defined in a class is in
+	 the (lexical) scope of the class in which it is defined.  */
       if (!ctype && DECL_FRIEND_P (decl1))
 	{
 	  ctype = DECL_FRIEND_CONTEXT (decl1);

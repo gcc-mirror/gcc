@@ -171,8 +171,9 @@ int flag_traditional;
 
 int flag_signed_bitfields = 1;
 
-/* Nonzero means enable obscure ANSI features and disable GNU extensions
-   that might cause ANSI-compliant code to be miscompiled.  */
+/* Nonzero means enable obscure standard features and disable GNU
+   extensions that might cause standard-compliant code to be
+   miscompiled.  */
 
 int flag_ansi;
 
@@ -422,11 +423,11 @@ int flag_operator_names;
 
 int flag_check_new;
 
-/* Nonzero if we want the new ANSI rules for pushing a new scope for `for'
+/* Nonzero if we want the new ISO rules for pushing a new scope for `for'
    initialization variables.
    0: Old rules, set by -fno-for-scope.
-   2: New ANSI rules, set by -ffor-scope.
-   1: Try to implement new ANSI rules, but with backup compatibility
+   2: New ISO rules, set by -ffor-scope.
+   1: Try to implement new ISO rules, but with backup compatibility
    (and warnings).  This is the default, for now.  */
 
 int flag_new_for_scope = 1;
@@ -455,7 +456,7 @@ int flag_honor_std;
 
 int flag_inline_trees = 0;
 
-/* Maximum template instantiation depth. Must be at least 17 for ANSI
+/* Maximum template instantiation depth. Must be at least 17 for ISO
    compliance. */
 
 int max_tinst_depth = 17;

@@ -484,7 +484,7 @@ struct tree_srcloc
               OPERATOR_TYPENAME_FORMAT,			\
 	      strlen (OPERATOR_TYPENAME_FORMAT)))
 
-/* Nonzero means reject anything that ANSI standard C forbids.  */
+/* Nonzero means reject anything that ISO standard C++ forbids.  */
 extern int pedantic;
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
@@ -1114,8 +1114,9 @@ extern int interface_only, interface_unknown;
 
 extern int flag_elide_constructors;
 
-/* Nonzero means enable obscure ANSI features and disable GNU extensions
-   that might cause ANSI-compliant code to be miscompiled.  */
+/* Nonzero means enable obscure standard features and disable GNU
+   extensions that might cause standard-compliant code to be
+   miscompiled.  */
 
 extern int flag_ansi;
 

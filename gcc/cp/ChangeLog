@@ -1,3 +1,16 @@
+2000-02-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (grokdeclarator): Change ANSI to ISO.
+	* lex.c (consume_string, readescape, do_identifier): Likewise.
+	(parse_float, real_yylex): Likewise.
+	* parse.y (paren_expr_or_null, paren_cond_or_null): Likewise.
+	(unary_expr, new_initializer, cast_expr, primary, primary_no_id,
+	new_type_id, maybe_label_decls, simple_stmt, 
+	for.init.statement): Likewise.
+	* pt.c (do_decl_instantiation, do_type_instantiation): Likewise.
+	* semantics.c (finish_named_return_value): Likewise.
+	* parse.c: Regenerate.
+
 2000-02-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CPTI_VTABLE_INDEX_TYPE): New macro.

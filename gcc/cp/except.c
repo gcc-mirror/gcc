@@ -763,7 +763,7 @@ expand_throw (exp)
 	{
 	  tree object, ptr;
 
-	  /* OK, this is kind of wacky.  The WP says that we call
+	  /* OK, this is kind of wacky.  The standard says that we call
 	     terminate when the exception handling mechanism, after
 	     completing evaluation of the expression to be thrown but
 	     before the exception is caught (_except.throw_), calls a
