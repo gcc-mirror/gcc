@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package java.nio;
 
-import gnu.java.nio.FileChannelImpl;
 import java.io.IOException;
+import java.nio.channels.FileChannelImpl;
 import gnu.gcj.RawData;
 
 public class MappedByteBufferImpl extends MappedByteBuffer
