@@ -1892,6 +1892,10 @@ it may not be apparent why this is so.  Therefore, the compiler will
 not attempt to delete previous instructions whose only effect is to
 store a value in @var{x}.  @var{x} must be a @code{reg} expression.
 
+During the reload phase, an insn that has a @code{use} as pattern
+can carry a reg_equal note.  These @code{use} insns will be deleted
+before the reload phase exits.
+
 During the delayed branch scheduling phase, @var{x} may be an insn.
 This indicates that @var{x} previously was located at this place in the
 code and its data dependencies need to be taken into account.  These
