@@ -1,3 +1,8 @@
+2001-04-17  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* vax.h (PROMOTE_PROTOTYPES): Define for compatibility with system
+	libraries and native K&R compilers.
+
 2001-04-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-typeck.c (convert_arguments): Don't check for width changes
