@@ -23,18 +23,13 @@
 #include <testsuite_hooks.h>
 
 std::wstring str_01(L"mykonos. . . or what?");
-std::wstring str_02(L"paris, or sainte-maxime?");
-std::wstring str_03;
 std::wstringbuf strb_01(str_01);
-std::wstringbuf strb_02(str_02, std::ios_base::in);
-std::wstringbuf strb_03(str_03, std::ios_base::out);
 
 // test overloaded virtual functions
 void test04() 
 {
   bool test __attribute__((unused)) = true;
   std::wstring 		str_tmp;
-  std::wstringbuf 		strb_tmp;
   std::streamsize 		strmsz_1, strmsz_2;
   typedef std::wstringbuf::int_type int_type;
   typedef std::wstringbuf::traits_type traits_type;
@@ -42,11 +37,7 @@ void test04()
   typedef std::wstringbuf::off_type off_type;
 
   int_type c1 = strb_01.sbumpc();
-  int_type c2 = strb_02.sbumpc();
-  int_type c3 = strb_01.sbumpc();
-
-  // PUT
-  strb_03.str(str_01); //reset
+  int_type c2, c3;
   
   // BUFFER MANAGEMENT & POSITIONING
 
@@ -58,8 +49,7 @@ void test04()
   off_type off_1 = 0;
   off_type off_2 = 0;
   strb_01.str(str_01); //in|out ("mykonos. . . or what?");
-  strb_02.str(str_02); //in ("paris, or sainte-maxime?");
-  strb_03.str(str_03); //out ("")
+
   //IN|OUT
   //beg
   pt_1 = strb_01.pubseekoff(2, std::ios_base::beg);
