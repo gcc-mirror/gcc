@@ -1,3 +1,16 @@
+2003-03-20  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/DataOutputStream.java,
+	java/io/File.java,
+	java/io/FileInputStream.java,
+	java/io/FileOutputStream.java,
+	java/io/InputStreamReader.java,
+	java/io/LineNumberReader.java,
+	java/io/OutputStreamWriter.java,
+	java/io/PrintStream.java,
+	java/io/RandomAccessFile.java:
+	Merged copyright statements with classpath for easier merging.
+
 2003-03-19  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/Process.java:
