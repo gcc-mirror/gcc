@@ -1,4 +1,4 @@
-// natTimeZone.cc -- Native side of TimeZone class.
+// natVMTimeZone.cc -- Native side of VMTimeZone class.
 
 /* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation
@@ -15,7 +15,7 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
-#include <java/util/TimeZone.h>
+#include <java/util/VMTimeZone.h>
 #include <java/lang/Character.h>
 #include <java/lang/Integer.h>
 
@@ -51,7 +51,7 @@ details.  */
  * TimeZone object.
  */
 jstring
-java::util::TimeZone::getDefaultTimeZoneId ()
+java::util::VMTimeZone::getSystemTimeZoneId()
 {
   struct tm tim;
 #ifndef HAVE_LOCALTIME_R

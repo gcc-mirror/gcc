@@ -410,7 +410,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/lang/reflect/natProxy.cc java/net/natNetworkInterface.cc \
 	java/net/natInetAddress.cc java/nio/channels/natChannels.cc \
 	java/nio/natDirectByteBufferImpl.cc java/text/natCollator.cc \
-	java/util/natResourceBundle.cc java/util/natTimeZone.cc \
+	java/util/natResourceBundle.cc java/util/natVMTimeZone.cc \
 	java/util/zip/natDeflater.cc java/util/zip/natInflater.cc \
 	java/lang/dtoa.c java/lang/k_rem_pio2.c java/lang/s_tan.c \
 	java/lang/e_acos.c java/lang/k_sin.c java/lang/strtod.c \
@@ -562,7 +562,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/util/TimerTask.java java/util/TreeMap.java \
 	java/util/TreeSet.java \
 	java/util/TooManyListenersException.java java/util/Vector.java \
-	java/util/WeakHashMap.java \
+	java/util/VMTimeZone.java java/util/WeakHashMap.java \
 	java/util/logging/ConsoleHandler.java \
 	java/util/logging/ErrorManager.java \
 	java/util/logging/FileHandler.java \
@@ -2299,7 +2299,7 @@ am__objects_6 = gnu/gcj/natCore.lo \
 	java/lang/reflect/natProxy.lo java/net/natNetworkInterface.lo \
 	java/net/natInetAddress.lo java/nio/channels/natChannels.lo \
 	java/nio/natDirectByteBufferImpl.lo java/text/natCollator.lo \
-	java/util/natResourceBundle.lo java/util/natTimeZone.lo \
+	java/util/natResourceBundle.lo java/util/natVMTimeZone.lo \
 	java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
 am__objects_7 = java/lang/dtoa.lo java/lang/k_rem_pio2.lo \
 	java/lang/s_tan.lo java/lang/e_acos.lo java/lang/k_sin.lo \
@@ -2440,8 +2440,8 @@ am__objects_9 = java/lang/AbstractMethodError.lo \
 	java/util/TimeZone.lo java/util/Timer.lo \
 	java/util/TimerTask.lo java/util/TreeMap.lo \
 	java/util/TreeSet.lo java/util/TooManyListenersException.lo \
-	java/util/Vector.lo java/util/WeakHashMap.lo \
-	java/util/logging/ConsoleHandler.lo \
+	java/util/Vector.lo java/util/VMTimeZone.lo \
+	java/util/WeakHashMap.lo java/util/logging/ConsoleHandler.lo \
 	java/util/logging/ErrorManager.lo \
 	java/util/logging/FileHandler.lo java/util/logging/Filter.lo \
 	java/util/logging/Formatter.lo java/util/logging/Handler.lo \
@@ -6235,6 +6235,7 @@ java/util/TreeMap.java \
 java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
+java/util/VMTimeZone.java	\
 java/util/WeakHashMap.java \
 java/util/logging/ConsoleHandler.java \
 java/util/logging/ErrorManager.java \
@@ -6991,7 +6992,7 @@ java/nio/channels/natChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
-java/util/natTimeZone.cc \
+java/util/natVMTimeZone.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
@@ -8012,7 +8013,7 @@ java/util/$(DEPDIR)/$(am__dirstamp):
 	@: > java/util/$(DEPDIR)/$(am__dirstamp)
 java/util/natResourceBundle.lo: java/util/$(am__dirstamp) \
 	java/util/$(DEPDIR)/$(am__dirstamp)
-java/util/natTimeZone.lo: java/util/$(am__dirstamp) \
+java/util/natVMTimeZone.lo: java/util/$(am__dirstamp) \
 	java/util/$(DEPDIR)/$(am__dirstamp)
 java/util/zip/$(am__dirstamp):
 	@$(mkdir_p) java/util/zip
@@ -8535,6 +8536,8 @@ java/util/TreeSet.lo: java/util/$(am__dirstamp) \
 java/util/TooManyListenersException.lo: java/util/$(am__dirstamp) \
 	java/util/$(DEPDIR)/$(am__dirstamp)
 java/util/Vector.lo: java/util/$(am__dirstamp) \
+	java/util/$(DEPDIR)/$(am__dirstamp)
+java/util/VMTimeZone.lo: java/util/$(am__dirstamp) \
 	java/util/$(DEPDIR)/$(am__dirstamp)
 java/util/WeakHashMap.lo: java/util/$(am__dirstamp) \
 	java/util/$(DEPDIR)/$(am__dirstamp)
@@ -17139,6 +17142,8 @@ mostlyclean-compile:
 	-rm -f java/util/TreeMap.lo
 	-rm -f java/util/TreeSet.$(OBJEXT)
 	-rm -f java/util/TreeSet.lo
+	-rm -f java/util/VMTimeZone.$(OBJEXT)
+	-rm -f java/util/VMTimeZone.lo
 	-rm -f java/util/Vector.$(OBJEXT)
 	-rm -f java/util/Vector.lo
 	-rm -f java/util/WeakHashMap.$(OBJEXT)
@@ -17191,8 +17196,8 @@ mostlyclean-compile:
 	-rm -f java/util/logging/XMLFormatter.lo
 	-rm -f java/util/natResourceBundle.$(OBJEXT)
 	-rm -f java/util/natResourceBundle.lo
-	-rm -f java/util/natTimeZone.$(OBJEXT)
-	-rm -f java/util/natTimeZone.lo
+	-rm -f java/util/natVMTimeZone.$(OBJEXT)
+	-rm -f java/util/natVMTimeZone.lo
 	-rm -f java/util/prefs/AbstractPreferences.$(OBJEXT)
 	-rm -f java/util/prefs/AbstractPreferences.lo
 	-rm -f java/util/prefs/BackingStoreException.$(OBJEXT)
@@ -20538,10 +20543,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/TooManyListenersException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/TreeMap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/TreeSet.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/VMTimeZone.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/Vector.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/WeakHashMap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/natResourceBundle.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/natTimeZone.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/natVMTimeZone.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/jar/$(DEPDIR)/Attributes.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/jar/$(DEPDIR)/JarEntry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/jar/$(DEPDIR)/JarException.Plo@am__quote@

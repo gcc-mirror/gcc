@@ -1,3 +1,27 @@
+2004-09-25  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (core_java_source_files): Add VMTimeZone.java.
+	(nat_source_files): Rename natTimeZone.cc to natVMTimeZone.cc.
+	* Makefile.in: Regenerated.
+
+	* gcj/javaprims.h: Regenerated.
+
+	* java/util/TimeZone.java (defaultZone): Use VMTimeZone.
+	(getDefaultTimeZone): Make package private. Check that GMToffset
+	contains at least one digit.
+	(getDefaultTimeZoneId, readTimeZoneFile, readtzFile): (Re)Moved to
+	VMTimeZone.
+	* util/VMTimeZone.java: New file with above methods.
+
+	* java/util/natTimeZone.cc: Removed (renamed).
+	* java/util/natVMTimeZone.cc: Added (renamed).
+
+2004-09-25  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/util/TimeZone.java
+	(getDefaultTimeZone): Fixed test to distinguish between hours and
+	minutes in specified timezone.
+
 2004-09-25  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/lang/reflect/Proxy.java (getPackage, ClassFactory): Fixed
