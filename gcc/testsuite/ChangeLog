@@ -1,5 +1,6 @@
 2005-01-08  Diego Novillo  <dnovillo@redhat.com>
 
+	PR tree-optimization/18241
 	* gcc.dg/pr18241-1.c: New test.
 	* gcc.dg/pr18241-2.c: New test.
 	* gcc.dg/pr18241-3.c: New test.

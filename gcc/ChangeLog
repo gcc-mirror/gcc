@@ -1,6 +1,7 @@
 2005-01-08  Jeff Law  <law@redhat.com>
 	    Diego Novillo  <dnovillo@redhat.com>
 
+	PR tree-optimization/18241
 	* tree-nrv.c (tree_nrv): Ignore volatile return values.
 	* tree-ssa-dse.c (dse_optimize_stmt): Do not optimize
 	statements with volatile operands.
