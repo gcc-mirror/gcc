@@ -1649,7 +1649,7 @@ finish_base_struct (t, b)
 	      ("COM interface type `%T' must be the leftmost base class",
 	       basetype);
 	}
-      else if (CLASSTYPE_COM_INTERFACE (t))
+      else if (CLASSTYPE_COM_INTERFACE (t) && i == 0)
 	{
 	  cp_error ("COM interface type `%T' with non-COM base class `%T'",
 		    t, basetype);
@@ -2356,7 +2356,7 @@ modify_one_vtable (binfo, t, fndecl, pfn)
   if (fndecl == NULL_TREE)
     return;
 
-  n = skip_rtti_stuff (&virtuals, t);
+  n = skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
 
   while (virtuals)
     {
@@ -2450,7 +2450,7 @@ fixup_vtable_deltas1 (binfo, t)
   tree virtuals = BINFO_VIRTUALS (binfo);
   unsigned HOST_WIDE_INT n;
   
-  n = skip_rtti_stuff (&virtuals, t);
+  n = skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
 
   while (virtuals)
     {
@@ -2623,8 +2623,8 @@ override_one_vtable (binfo, old, t)
   if (BINFO_NEW_VTABLE_MARKED (binfo))
     choose = NEITHER;
 
-  skip_rtti_stuff (&virtuals, t);
-  skip_rtti_stuff (&old_virtuals, t);
+  skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
+  skip_rtti_stuff (&old_virtuals, BINFO_TYPE (binfo));
 
   while (virtuals)
     {
@@ -3523,7 +3523,7 @@ finish_struct_1 (t, warn_anon)
 	  while (TREE_CODE (type) == ARRAY_TYPE)
 	    type = TREE_TYPE (type);
 
-	  if (CLASS_TYPE_P (type))
+	  if (CLASS_TYPE_P (type) && ! ANON_AGGR_TYPE_P (type))
 	    {
 	      /* Never let anything with uninheritable virtuals
 		 make it through without complaint.  */
