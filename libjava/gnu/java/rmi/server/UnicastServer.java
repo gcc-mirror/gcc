@@ -46,6 +46,7 @@ import java.net.InetAddress;
 import java.util.Hashtable;
 import java.net.UnknownHostException;
 import java.rmi.Remote;
+import java.rmi.ServerError;
 import java.rmi.server.ObjID;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.server.UID;
@@ -136,6 +137,10 @@ private static void incomingMessageCall(UnicastConnection conn) throws IOExcepti
 			returnval = e;
 			returncode = RETURN_NACK;
 		}
+                catch (Error e) {
+			returnval = new ServerError ("An Error is thrown while processing the invocation on the server", e);
+			returncode = RETURN_NACK;
+                }
 	}
 	else {
 		returnval = new NoSuchObjectException("");

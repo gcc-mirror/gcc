@@ -284,7 +284,16 @@ public Object incomingMessageCall(UnicastConnection conn, int method, long hash)
 		try{
 		    ret = meth.invoke(myself, args);
 		}catch(InvocationTargetException e){
-		    throw (Exception)(e.getTargetException());
+                    Throwable cause = e.getTargetException();
+                    if (cause instanceof Exception) {
+                        throw (Exception)cause;
+                    }
+                    else if (cause instanceof Error) {
+                        throw (Error)cause;
+                    }
+                    else {
+                        throw new Error("The remote method threw a java.lang.Throwable that is neither java.lang.Exception nor java.lang.Error.", e);
+                    }
 		}
 		return ret;
 	}

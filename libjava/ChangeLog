@@ -1,3 +1,11 @@
+2004-09-24  Ilya Perminov  <iperminov@logicalsoft.com>
+
+	* gnu/java/rmi/server/UnicastServer.java
+	(incomingMessageCall): Added code to handle Errors.
+	* gnu/java/rmi/server/UnicastServerRef.java
+	(incomingMessageCall): Added code to handle Errors.
+
+
 2004-09-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (loadedClasses): Declare as HashMap.
