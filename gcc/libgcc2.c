@@ -1,7 +1,7 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1457,8 +1457,8 @@ asm ("___builtin_saveregs:");
   asm ("	.end __builtin_saveregs");
 #else /* not __mips__, etc.  */
 
-void * __attribute__ ((__noreturn__))
-__builtin_saveregs (void)
+void * ATTRIBUTE_NORETURN
+__builtin_saveregs ()
 {
   abort ();
 }
@@ -1517,7 +1517,7 @@ BLOCK_PROFILER_CODE
 
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
-char *ctime ();
+char *ctime PARAMS ((const time_t *));
 
 #include "gbl-ctors.h"
 #include "gcov-io.h"
