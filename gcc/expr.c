@@ -3166,7 +3166,7 @@ emit_move_insn (x, y)
 {
   enum machine_mode mode = GET_MODE (x);
   rtx y_cst = NULL_RTX;
-  rtx last_insn;
+  rtx last_insn, set;
 
   x = protect_from_queue (x, 1);
   y = protect_from_queue (y, 0);
@@ -3184,9 +3184,10 @@ emit_move_insn (x, y)
 	  && (last_insn = compress_float_constant (x, y)))
 	return last_insn;
 
+      y_cst = y;
+
       if (!LEGITIMATE_CONSTANT_P (y))
 	{
-	  y_cst = y;
 	  y = force_const_mem (mode, y);
 
 	  /* If the target's cannot_force_const_mem prevented the spill,
@@ -3217,7 +3218,10 @@ emit_move_insn (x, y)
 
   last_insn = emit_move_insn_1 (x, y);
 
-  if (y_cst && GET_CODE (x) == REG)
+  if (y_cst && GET_CODE (x) == REG
+      && (set = single_set (last_insn)) != NULL_RTX
+      && SET_DEST (set) == x
+      && ! rtx_equal_p (y_cst, SET_SRC (set)))
     set_unique_reg_note (last_insn, REG_EQUAL, y_cst);
 
   return last_insn;
@@ -3621,8 +3625,7 @@ compress_float_constant (x, y)
       last_insn = get_last_insn ();
 
       if (GET_CODE (x) == REG)
-	REG_NOTES (last_insn)
-	  = gen_rtx_EXPR_LIST (REG_EQUAL, y, REG_NOTES (last_insn));
+	set_unique_reg_note (last_insn, REG_EQUAL, y);
 
       return last_insn;
     }
