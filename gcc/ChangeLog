@@ -1,3 +1,10 @@
+Mon Apr 20 14:48:29 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.md (mov{sf,df} define_splits): When splitting a move of
+	a constant to an integer register, don't split the insns that do
+	the simple AND and OR operations, rather just split each word, and
+	let the normal movsi define split handle it further.
+
 Sun Apr 19 20:21:19 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
 	* real.h (C4X_FLOAT_FORMAT): New macro.
