@@ -308,7 +308,7 @@ static struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
 
-static struct binding_level clear_binding_level
+static const struct binding_level clear_binding_level
   = {NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
        NULL_BINDING_LEVEL, LARGEST_PC, 0};
 
