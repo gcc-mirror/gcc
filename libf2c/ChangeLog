@@ -1,3 +1,9 @@
+2001-02-27  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/configure.in: Test for ftruncate.
+	* libI77/configure: Rebuilt.
+	* libI77/endfile.c: Use fflush/ftruncate when available.
+
 2001-02-08  Geoffrey Keating  <geoffk@redhat.com>
 
 	* configure.in: Don't run AC_PROG_CC_WORKS, because
