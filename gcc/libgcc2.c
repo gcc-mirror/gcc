@@ -707,7 +707,7 @@ UDItype
 __umoddi3 (u, v)
      UDItype u, v;
 {
-  DItype w;
+  UDItype w;
 
   (void) __udivmoddi4 (u, v, &w);
 
