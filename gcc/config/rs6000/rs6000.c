@@ -10967,7 +10967,7 @@ rs6000_output_function_epilogue (file, size)
   if (DEFAULT_ABI == ABI_AIX && ! flag_inhibit_size_directive
       && rs6000_traceback != traceback_none)
     {
-      const char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+      const char *fname = NULL;
       const char *language_string = lang_hooks.name;
       int fixed_parms = 0, float_parms = 0, parm_info = 0;
       int i;
@@ -10980,15 +10980,17 @@ rs6000_output_function_epilogue (file, size)
       else
 	optional_tbtab = !optimize_size && !TARGET_ELF;
 
-      while (*fname == '.')	/* V.4 encodes . in the name */
-	fname++;
+      if (optional_tbtab)
+	{
+	  fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+	  while (*fname == '.')	/* V.4 encodes . in the name */
+	    fname++;
 
-      /* Need label immediately before tbtab, so we can compute its offset
-	 from the function start.  */
-      if (*fname == '*')
-	++fname;
-      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LT");
-      ASM_OUTPUT_LABEL (file, fname);
+	  /* Need label immediately before tbtab, so we can compute
+	     its offset from the function start.  */
+	  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LT");
+	  ASM_OUTPUT_LABEL (file, fname);
+	}
 
       /* The .tbtab pseudo-op can only be used for the first eight
 	 expressions, since it can't handle the possibly variable
@@ -11160,6 +11162,8 @@ rs6000_output_function_epilogue (file, size)
       /* Omit this list of longs, because there are no CTL anchors.  */
 
       /* Length of function name.  */
+      if (*fname == '*')
+	++fname;
       fprintf (file, "\t.short %d\n", (int) strlen (fname));
 
       /* Function name.  */
@@ -11285,7 +11289,6 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 			      TYPE_ATTRIBUTES (TREE_TYPE (function)))
 	  || lookup_attribute ("shortcall",
 			       TYPE_ATTRIBUTES (TREE_TYPE (function)))))
-
     {
       fprintf (file, "\tb %s", prefix);
       assemble_name (file, fname);
@@ -11320,7 +11323,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  if (TARGET_ELF)
 	    function_section (current_function_decl);
 	  else
-	    text_section();
+	    text_section ();
 	  if (TARGET_MINIMAL_TOC)
 	    asm_fprintf (file, (TARGET_32BIT)
 			 ? "\t{l|lwz} %s,%s(%s)\n" : "\tld %s,%s(%s)\n", r12,
