@@ -1,3 +1,7 @@
+Sun Jul  6 20:01:29 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* top.c (ffe_handle_option): Don't handle filenames.
+
 2003-07-05  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR Fortran/11301

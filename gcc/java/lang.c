@@ -267,10 +267,6 @@ java_handle_option (size_t scode, const char *arg, int value)
 {
   enum opt_code code = (enum opt_code) scode;
 
-  /* Ignore file names.  */
-  if (code == N_OPTS)
-      return 1;
-
   switch (code)
     {
     default:

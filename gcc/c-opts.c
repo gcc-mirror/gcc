@@ -97,7 +97,6 @@ static size_t include_cursor;
 /* Permit Fotran front-end options.  */
 static bool permit_fortran_options;
 
-void missing_arg (enum opt_code);
 static void set_Wimplicit (int);
 static void print_help (void);
 static void handle_OPT_d (const char *);
@@ -125,51 +124,37 @@ static struct deferred_opt
   const char *arg;
 } *deferred_opts;
 
-/* Complain that switch OPT_INDEX expects an argument but none was
-   provided.  */
-void
-missing_arg (enum opt_code code)
+/* Complain that switch CODE expects an argument but none was
+   provided.  OPT was the command-line option.  Return FALSE to get
+   the default message in opts.c, TRUE if we provide a specialized
+   one.  */
+bool
+c_common_missing_argument (const char *opt, size_t code)
 {
-  const char *opt_text = cl_options[code].opt_text;
-
   switch (code)
     {
-    case OPT__output_pch_:
-    case OPT_Wformat_:
-    case OPT_d:
-    case OPT_fabi_version_:
-    case OPT_fbuiltin_:
-    case OPT_fdump_:
-    case OPT_fname_mangling_version_:
-    case OPT_ftabstop_:
-    case OPT_fexec_charset_:
-    case OPT_fwide_exec_charset_:
-    case OPT_ftemplate_depth_:
-    case OPT_iprefix:
-    case OPT_iwithprefix:
-    case OPT_iwithprefixbefore:
     default:
-      error ("missing argument to \"-%s\"", opt_text);
-      break;
+      /* Pick up the default message.  */
+      return false;
 
     case OPT_fconstant_string_class_:
-      error ("no class name specified with \"-%s\"", opt_text);
+      error ("no class name specified with \"%s\"", opt);
       break;
 
     case OPT_A:
-      error ("assertion missing after \"-%s\"", opt_text);
+      error ("assertion missing after \"%s\"", opt);
       break;
 
     case OPT_D:
     case OPT_U:
-      error ("macro name missing after \"-%s\"", opt_text);
+      error ("macro name missing after \"%s\"", opt);
       break;
 
     case OPT_I:
     case OPT_idirafter:
     case OPT_isysroot:
     case OPT_isystem:
-      error ("missing path after \"-%s\"", opt_text);
+      error ("missing path after \"%s\"", opt);
       break;
 
     case OPT_MF:
@@ -178,14 +163,16 @@ missing_arg (enum opt_code code)
     case OPT_include:
     case OPT_imacros:
     case OPT_o:
-      error ("missing filename after \"-%s\"", opt_text);
+      error ("missing filename after \"%s\"", opt);
       break;
 
     case OPT_MQ:
     case OPT_MT:
-      error ("missing target after \"-%s\"", opt_text);
+      error ("missing makefile target after \"%s\"", opt);
       break;
     }
+
+  return true;
 }
 
 /* Defer option CODE with argument ARG.  */
@@ -260,18 +247,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
   const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
   int result = 1;
-
-  if (code == N_OPTS)
-    {
-      if (!in_fname)
-	in_fname = arg;
-      else if (!out_fname)
-	out_fname = arg;
-      else
-	  error ("too many filenames given.  Type %s --help for usage",
-		 progname);
-      return 1;
-    }
 
   switch (code)
     {
@@ -700,7 +675,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fthis_is_variable:
     case OPT_fvtable_thunks:
     case OPT_fxref:
-      warning ("switch \"%s\" is no longer supported", option->opt_text);
+      warning ("switch \"-%s\" is no longer supported", option->opt_text);
       break;
 
     case OPT_fabi_version_:
@@ -716,7 +691,8 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       if (value)
 	flag_external_templates = true;
     cp_deprecated:
-      warning ("switch \"%s\" is deprecated, please see documentation for details", option->opt_text);
+      warning ("switch \"-%s\" is deprecated, please see documentation "
+	       "for details", option->opt_text);
       break;
 
     case OPT_fasm:
@@ -1057,6 +1033,18 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     }
 
   return result;
+}
+
+/* Handle FILENAME from the command line.  */
+void
+c_common_handle_filename (const char *filename)
+{
+  if (!in_fname)
+    in_fname = filename;
+  else if (!out_fname)
+    out_fname = filename;
+  else
+    error ("output filename specified twice");
 }
 
 /* Post-switch processing.  */
