@@ -50,11 +50,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Code model selection.
    -mcmodel is used to select the v9 code model.
-   Different code models aren't supported for v8 code.
+   Different code models aren't supported for v7/8 code.
 
    TARGET_CM_32:     32 bit address space, top 32 bits = 0,
 		     pointers are 32 bits.  Note that this isn't intended
-                     to imply a v8 abi.
+                     to imply a v7/8 abi.
 
    TARGET_CM_MEDLOW: 32 bit address space, top 32 bits = 0,
                      avoid generating %uhi and %ulo terms,
@@ -542,9 +542,8 @@ extern int target_flags;
 #define TARGET_VIS (target_flags & MASK_VIS)
 
 /* Compile for Solaris V8+.  32 bit Solaris preserves the high bits of
-   the current out and global registers.  Linux saves the high bits on
-   context switches but not signals.  */
-#define MASK_V8PLUS 0x2000000                 
+   the current out and global registers and Linux 2.2+ as well.  */
+#define MASK_V8PLUS 0x2000000
 #define TARGET_V8PLUS (target_flags & MASK_V8PLUS)                            
 
 /* TARGET_HARD_MUL: Use hardware multiply instructions but not %y.
@@ -555,7 +554,7 @@ extern int target_flags;
 #define TARGET_HARD_MUL32				\
   ((TARGET_V8 || TARGET_SPARCLITE			\
     || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS)	\
-   && ! TARGET_V8PLUS)
+   && ! TARGET_V8PLUS && TARGET_ARCH32)
 
 #define TARGET_HARD_MUL					\
   (TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET	\

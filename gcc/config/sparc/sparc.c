@@ -213,8 +213,11 @@ sparc_override_options ()
     /* TEMIC sparclet */
     { "tsc701",     PROCESSOR_TSC701, MASK_ISA, MASK_SPARCLET },
     { "v9",         PROCESSOR_V9, MASK_ISA, MASK_V9 },
-    /* TI ultrasparc */
-    { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9 },
+    /* TI ultrasparc I, II, IIi */
+    { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9
+    /* Although insns using %y are deprecated, it is a clear win on current
+       ultrasparcs. */
+    						    |MASK_DEPRECATED_V8_INSNS },
     { 0, 0, 0, 0 }
   };
   struct cpu_table *cpu;

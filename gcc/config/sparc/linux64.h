@@ -225,7 +225,8 @@ Boston, MA 02111-1307, USA.  */
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
-%{m64:-mptr64 -mcpu=ultrasparc -mstack-bias} \
+%{m64:-mptr64 -mstack-bias \
+  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=ultrasparc}}}}}}}} \
 "
 #else
 #define CC1_SPEC "\
@@ -233,7 +234,8 @@ Boston, MA 02111-1307, USA.  */
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
-%{m32:-mptr32 -mcpu=cypress -mno-stack-bias} \
+%{m32:-mptr32 -mno-stack-bias \
+  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=cypress}}}}}}}} \
 "
 #endif
 
