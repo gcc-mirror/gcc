@@ -145,7 +145,8 @@ init_expmed (void)
   memset (&all, 0, sizeof all);
 
   PUT_CODE (&all.reg, REG);
-  REGNO (&all.reg) = 10000;
+  /* Avoid using hard regs in ways which may be unsupported.  */
+  REGNO (&all.reg) = LAST_VIRTUAL_REGISTER + 1;
 
   PUT_CODE (&all.plus, PLUS);
   XEXP (&all.plus, 0) = &all.reg;
