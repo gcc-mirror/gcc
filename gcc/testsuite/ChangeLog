@@ -1,3 +1,13 @@
+2001-08-06  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/compile/20010408-1.c: New test.
+	* gcc.c-torture/execute/ieee/ieee.exp: Only use -ffloat-store on
+	i[34567]86-*-*.
+	Delete handling of ieee_multilib_flags.
+	Pass -mieee for alpha*-*-* and sh-*-*.
+	* gcc.c-torture/execute/20010114-2.c: Move into ieee subdir.
+	* gcc.c-torture/execute/20010114-2.x: Remove.
+
 2001-08-03  Zack Weinberg  <zackw@stanford.edu>
 
 	* gcc.dg/bconstp-1.c: New test.
