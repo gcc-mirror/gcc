@@ -1,3 +1,7 @@
+2004-11-29  Richard Henderson  <rth@redhat.com>
+
+	* tree-cfg.c (tree_node_can_be_shared): Fix typo'd error_mark_node.
+
 2004-11-29  Steven Bosscher  <stevenb@suse.de>
 
 	* cfgcleanup.c (outgoing_edges_match, try_crossjump_to_edge):
