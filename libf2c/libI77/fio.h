@@ -1,3 +1,4 @@
+#include <sys/types.h>
 #include <stdio.h>
 #include <errno.h>
 #ifndef NULL
