@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -941,9 +941,8 @@ the last line will call an overloaded @code{::foo(int)} if one was
 provided, even if after the declaration of @code{struct A}.
 
 This distinction between lookup of dependent and non-dependent names is
-called two-stage (or dependent) name lookup. G++ implements some
-features of it since version 3.4 and is moving towards full compliance
-with the standard.
+called two-stage (or dependent) name lookup.  G++ implements it
+since version 3.4.
 
 Two-stage name lookup sometimes leads to situations with behavior
 different from non-template codes. The most common is probably this:
@@ -974,10 +973,47 @@ type @code{Derived<T>*}, so is obviously dependent), or using
 @code{Base<T>::i}. Alternatively, @code{Base<T>::i} might be brought
 into scope by a @code{using}-declaration.
 
-Note that some compilers get this wrong and accept above code without an
-error.  However, this is spurious, since they just don't implement
-two-stage name lookup correctly.  This includes G++ versions prior to
-3.4.
+Another, similar example involves calling member functions of a base
+class: 
+
+@example
+  template <typename T> struct Base @{
+      int f();
+  @};
+
+  template <typename T> struct Derived : Base<T> @{
+      int g() @{ return f(); @};
+  @};
+@end example
+
+Again, the call to @code{f()} is not dependent on template arguments
+(there are no arguments that depend on the type @code{T}, and it is also
+not otherwise specified that the call should be in a dependent context).
+Thus a global declaration of such a function must be available, since
+the one in the base class is not visible until instantiation time.  The
+compiler will consequently produce the following error message:
+
+@example
+  x.cc: In member function `int Derived<T>::g()':
+  x.cc:6: error: there are no arguments to `f' that depend on a template
+     parameter, so a declaration of `f' must be available
+  x.cc:6: error: (if you use `-fpermissive', G++ will accept your code, but
+     allowing the use of an undeclared name is deprecated)
+@end example
+
+To make the code valid either use @code{this->f()}, or
+@code{Base<T>::f()}.  Using the @code{-fpermissive} flag will also let
+the compiler accept the code, by marking all function calls for which no
+declaration is visible at the time of definition of the template for
+later lookup at instantiation time, as if it were a dependent call.
+We do not recommend using @code{-fpermissive} to work around invalid
+code, and it will also only catch cases where functions in base classes
+are called, not where variables in base classes are used (as in the
+example above).
+
+Note that some compilers (including G++ versions prior to 3.4) get these
+examples wrong and accept above code without an error.  Those compilers
+do not implement two-stage name lookup correctly.
 
 
 @node Temporaries
