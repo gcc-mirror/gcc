@@ -2655,17 +2655,11 @@ expand_value_return (val)
   if (return_reg != val)
     {
 #ifdef PROMOTE_FUNCTION_RETURN
-      enum machine_mode mode = DECL_MODE (DECL_RESULT (current_function_decl));
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
       int unsignedp = TREE_UNSIGNED (type);
-
-      if (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == ENUMERAL_TYPE
-	  || TREE_CODE (type) == BOOLEAN_TYPE || TREE_CODE (type) == CHAR_TYPE
-	  || TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == POINTER_TYPE
-	  || TREE_CODE (type) == OFFSET_TYPE)
-	{
-	  PROMOTE_MODE (mode, unsignedp, type);
-	}
+      enum machine_mode mode
+	= promote_mode (type, DECL_MODE (DECL_RESULT (current_function_decl)),
+			&unsignedp, 1);
 
       if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
 	convert_move (return_reg, val, unsignedp);
@@ -3406,16 +3400,9 @@ expand_decl (decl)
 	   && (DECL_REGISTER (decl) || ! obey_regdecls))
     {
       /* Automatic variable that can go in a register.  */
-      enum machine_mode reg_mode = DECL_MODE (decl);
       int unsignedp = TREE_UNSIGNED (type);
-
-      if (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == ENUMERAL_TYPE
-	  || TREE_CODE (type) == BOOLEAN_TYPE || TREE_CODE (type) == CHAR_TYPE
-	  || TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == POINTER_TYPE
-	  || TREE_CODE (type) == OFFSET_TYPE)
-	{
-	  PROMOTE_MODE (reg_mode, unsignedp, type);
-	}
+      enum machine_mode reg_mode
+	= promote_mode (type, DECL_MODE (decl), &unsignedp, 0);
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
 	{
