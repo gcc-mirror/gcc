@@ -3632,7 +3632,7 @@ complete_array_type (type, initial_value, do_default)
 	{
 	  register int nelts
 	    = list_length (CONSTRUCTOR_ELTS (initial_value));
-	  maxindex = build_int_2 (nelts - 1, 0);
+	  maxindex = build_int_2 (nelts - 1, - (nelts == 0));
 	}
       else
 	{
@@ -3654,9 +3654,13 @@ complete_array_type (type, initial_value, do_default)
 
   if (maxindex)
     {
+      tree main;
       TYPE_DOMAIN (type) = build_index_type (maxindex);
       if (!TREE_TYPE (maxindex))
 	TREE_TYPE (maxindex) = TYPE_DOMAIN (type);
+      change_main_variant (type,
+			   build_array_type (TREE_TYPE (type),
+					     TYPE_DOMAIN (type)));
     }
 
   /* Lay out the type now that we can get the real answer.  */
