@@ -1,8 +1,8 @@
 2001-11-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	libstdc++/3655
-	* include/bits/locale_facets.tcc (__pad): correctly output hex
-	numbers internally aligned.
+	* include/bits/locale_facets.tcc (__pad): Correctly pad
+	internal-adjusted hex numbers.
 	* testsuite/27_io/ostream_inserter_arith.cc: Add testcase.
 
 2001-11-28  Paolo Carlini <pcarlini@unitus.it>
