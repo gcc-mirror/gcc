@@ -1,3 +1,7 @@
+2001-11-18  Roger Sayle <roger@eyesopen.com>
+
+	* parse.h (java_expand_switch): Remove old prototype.
+
 2001-11-18  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/1401:
