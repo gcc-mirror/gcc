@@ -1,3 +1,8 @@
+2004-07-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* g++.dg/lookup/new2.C: Use first operand of type __SIZE_TYPE__
+	for operator new.
+
 2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	* gfortran.dg/g77/README: New file
