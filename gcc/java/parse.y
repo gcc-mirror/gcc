@@ -7297,19 +7297,9 @@ java_complete_expand_methods (class_decl)
   /* First, do the ordinary methods. */
   for (decl = first_decl; decl; decl = TREE_CHAIN (decl))
     {
-      /* Skip abstract or native methods -- but do handle native
-	 methods when generating JNI stubs.  */
-      if (METHOD_ABSTRACT (decl)
-	  || (! flag_jni && METHOD_NATIVE (decl))
-	  || DECL_CONSTRUCTOR_P (decl) || DECL_CLINIT_P (decl))
+      /* Skip abstract or native methods */
+      if (METHOD_ABSTRACT (decl) || METHOD_NATIVE (decl))
 	continue;
-
-      if (METHOD_NATIVE (decl))
-	{
-	  tree body = build_jni_stub (decl);
-	  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (decl)) = body;
-	}
-
       java_complete_expand_method (decl);
     }
 
@@ -7439,7 +7429,7 @@ java_complete_expand_method (mdecl)
 	{
 	  block_body = java_complete_tree (block_body);
 
-	  if (! flag_emit_xref && ! METHOD_NATIVE (mdecl))
+	  if (!flag_emit_xref)
 	    check_for_initialization (block_body);
 	  ctxp->explicit_constructor_p = 0;
 	}
