@@ -25,6 +25,8 @@
 
 using namespace std;
 
+#ifdef _GLIBCPP_USE_WCHAR_T
+
 /*
 > how do I check that these conversions are correct? 
 Very easy.  Since all the characters are from ASCII you simply
@@ -224,10 +226,14 @@ void test02()
   delete [] i_arr;
 }
 
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+
 int main ()
 {
+#if _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
   return 0;
 }
