@@ -5790,7 +5790,7 @@ mips_make_temp_file ()
   FILE *stream;
 
   temp_filename = make_temp_file (0);
-  stream = fopen (filename, "w+");
+  stream = fopen (temp_filename, "w+");
   if (!stream)
     fatal_io_error ("can't open %s", temp_filename);
   return stream;

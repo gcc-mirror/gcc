@@ -1,3 +1,7 @@
+2001-02-26  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* mips.c (mips_make_temp_file): Fix thinko in last change.
+
 2001-02-26  Jason Eckhardt  <jle@redhat.com>
 
 	* combine.c (known_cond): Do not reverse the condition when
