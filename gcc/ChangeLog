@@ -1,3 +1,8 @@
+2004-10-08  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-pre.c (init_pre): Use size of ARRAY_REF to allocate
+	reference_node_pool.
+
 2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c: Fix a comment typo.
