@@ -1,5 +1,11 @@
 Sun Oct 26 09:21:40 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* toplev.c (flag_rerun_loop_opt): New variable.
+	(f_options): Handle -frerun-loop-opt.
+	(rest_of_compilation): If -frerun-loop-opt, then run the loop
+	optimizer twice.
+	(main): Enable -frerun-loop-opt by default for -O2 or greater.
+
 	* loop.c (simplify_giv_expr): Adding two invariants results
 	in an invariant.
 

@@ -149,7 +149,7 @@ in the following sections.
 -fkeep-inline-functions  -fno-default-inline
 -fno-defer-pop  -fno-function-cse
 -fno-inline  -fno-peephole  -fomit-frame-pointer -fregmove
--frerun-cse-after-loop  -fschedule-insns
+-frerun-cse-after-loop  -frerun-loop-opt -fschedule-insns
 -fschedule-insns2  -fstrength-reduce  -fthread-jumps
 -funroll-all-loops  -funroll-loops
 -fmove-all-movables  -freduce-all-givs
@@ -244,6 +244,10 @@ in the following sections.
 -mshort-load-bytes  -mno-short-load-bytes
 -msoft-float  -mhard-float
 -mbsd  -mxopen  -mno-symrename
+
+@emph{MN10300 Options}
+-mmult-bug
+-mno-mult-bug
 
 @emph{M32R/D Options}
 -mcode-model=@var{model type}  -msdata=@var{sdata type}
@@ -2165,6 +2169,9 @@ body of the @code{if}.
 Re-run common subexpression elimination after loop optimizations has been
 performed.
 
+@item -frerun-loop-opt
+Run the loop optimizer twice.
+
 @item -fexpensive-optimizations
 Perform a number of minor optimizations that are relatively expensive.
 
@@ -2798,6 +2805,7 @@ that macro, which enables you to change the defaults.
 * Convex Options::
 * AMD29K Options::
 * ARM Options::
+* MN10300 Options::
 * M32R/D Options::
 * M88K Options::
 * RS/6000 and PowerPC Options::
@@ -3435,6 +3443,21 @@ Normally it is necessary to modify some of the standard symbols in
 preparation for linking with the RISC iX C library; this option
 suppresses this pass.  The post-processor is never run when the
 compiler is built for cross-compilation.
+@end table
+
+@node MN10300 Options
+@subsection MN10300 Options
+@cindex MN10300 options
+These @samp{-m} options are defined for Matsushita MN10300 architectures:
+
+@table @code
+@item -mmult-bug
+Generate code to avoid bugs in the multiply instructions for the MN10300
+processors.  This is the default.
+
+@item -mno-mult-bug
+Do not generate code to avoid bugs in the multiply instructions for the
+MN10300 processors.
 @end table
 
 @node M32R/D Options
