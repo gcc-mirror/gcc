@@ -1,3 +1,7 @@
+Fri Jul  9 03:51:52 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Drop "gcc-" prefix from version #.
+
 Thu Jul  8 19:15:51 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* unroll.c (unroll_loops): Don't delete named CODE_LABEL or
