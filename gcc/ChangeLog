@@ -1,3 +1,11 @@
+Mon Jan 15 09:50:31 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* From Mark Mitchell:
+        Remove support for using UWIN as a host machine.
+        * configure.in: Issue an error message.  Remove xm_* UWIN configury.
+        * configure: Regenerated.
+        * config/i386/xm-uwin.h: Remove.
+
 Wed Dec 6 22:03:04 PST 2000 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2.1 Released.
