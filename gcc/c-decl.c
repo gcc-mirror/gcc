@@ -2011,8 +2011,10 @@ pushdecl (x)
 
 	  while (TREE_CODE (element) == ARRAY_TYPE)
 	    element = TREE_TYPE (element);
-	  if (TREE_CODE (element) == RECORD_TYPE
-	      || TREE_CODE (element) == UNION_TYPE)
+	  if ((TREE_CODE (element) == RECORD_TYPE
+	       || TREE_CODE (element) == UNION_TYPE)
+	      && (TREE_CODE (x) != TYPE_DECL
+		  || TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE))
 	    b->incomplete_list = tree_cons (NULL_TREE, x, b->incomplete_list);
 	}
     }
@@ -5391,7 +5393,8 @@ finish_struct (t, fieldlist, attributes)
 	      && TREE_CODE (decl) != TYPE_DECL)
 	    {
 	      layout_decl (decl, 0);
-	      /* This is a no-op in c-lang.c or something real in objc-act.c.  */
+	      /* This is a no-op in c-lang.c or something real in
+		 objc-act.c.  */
 	      if (flag_objc)
 		objc_check_decl (decl);
 	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
@@ -5427,7 +5430,11 @@ finish_struct (t, fieldlist, attributes)
 		  else
 		    current_binding_level->incomplete_list = TREE_CHAIN (x);
 		}
+	      else
+		prev = x;
 	    }
+	  else
+	    prev = x;
 	}
     }
 
