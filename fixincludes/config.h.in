@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Defined to the executable file extension on the host system */
+#undef EXE_EXT
+
 /* Define to 1 if you have the declaration of `abort', and to 0 if you don't.
    */
 #undef HAVE_DECL_ABORT

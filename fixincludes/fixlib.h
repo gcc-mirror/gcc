@@ -224,4 +224,6 @@ char*  make_raw_shell_str ( char* pz_d, tCC* pz_s, size_t smax );
 #endif
 
 t_bool mn_get_regexps ( regex_t** label_re, regex_t** name_re, tCC *who );
+
+void   initialize_opts ( void );
 #endif /* ! GCC_FIXLIB_H */
