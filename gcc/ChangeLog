@@ -1,5 +1,10 @@
 2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* doc/invoke.texi (SPARC options): Document that
+	-mlittle-endian is not supported on Linux either.
+
+2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR target/20446
 	* config/sparc/sparc.h (NEED_INDICATE_EXEC_STACK): Define to 0.
 	* config/sparc/linux.h (TARGET_ASM_FILE_END): Delete.
