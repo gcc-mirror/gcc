@@ -1663,9 +1663,7 @@ general_movsrc_operand (op, mode)
 	return 1;
 
       /* Only post inc allowed.  */
-      if (GET_CODE (inside) == POST_DEC
-	  || GET_CODE (inside) == PRE_INC
-	  || GET_CODE (inside) == PRE_DEC)
+      if (GET_CODE (inside) == PRE_DEC)
 	return 0;
     }
 
@@ -1687,10 +1685,7 @@ general_movdst_operand (op, mode)
      enum machine_mode mode;
 {
   /* Only pre dec allowed.  */
-  if (GET_CODE (op) == MEM
-      && (GET_CODE (XEXP (op, 0)) == PRE_INC
-	  || GET_CODE (XEXP (op, 0)) == POST_INC
-	  || GET_CODE (XEXP (op, 0)) == POST_DEC))
+  if (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == POST_INC)
     return 0;
 
   return general_operand (op, mode);
