@@ -2185,12 +2185,12 @@ verify_abort (FILE *f, ssa_imm_use_t *var)
     {
       if (stmt_modified_p(stmt))
 	{
-	  fprintf (f, " STMT MODIFIED. - <0x%x> ", (unsigned int)stmt);
+	  fprintf (f, " STMT MODIFIED. - <%p> ", (void *)stmt);
 	  print_generic_stmt (f, stmt, TDF_SLIM);
 	}
     }
-  fprintf (f, " IMM ERROR : (use_p : tree: 0x%X:0x%x)", (unsigned int)var, 
-	   (unsigned int)var->use);
+  fprintf (f, " IMM ERROR : (use_p : tree - %p:%p)", (void *)var, 
+	   (void *)var->use);
   print_generic_expr (f, USE_FROM_PTR (var), TDF_SLIM);
   fprintf(f, "\n");
 }

@@ -1,5 +1,9 @@
 2005-04-05  Andrew MacLeod  <amacleod@redhat.com>
 
+	* tree-ssa-operands.c (verify_abort): Use %p for pointers.
+
+2005-04-05  Andrew MacLeod  <amacleod@redhat.com>
+
 	* tree-pretty-print.c (dump_generic_node): Use %p for pointer.
 
 2005-04-05  Jakub Jelinek  <jakub@redhat.com>
