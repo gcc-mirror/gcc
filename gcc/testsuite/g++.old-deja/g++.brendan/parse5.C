@@ -21,5 +21,5 @@ public:
 int main()
    {
    unsigned  char b[3];
-   buf<3> b2(ptr8(&b[0],3)); // ERROR - 
+   buf<3> b2(ptr8(&b[0],3)); // gets bogus error - XFAIL *-*-*
    }
