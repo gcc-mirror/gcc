@@ -1,3 +1,10 @@
+2000-07-27  RodneyBrown  <RodneyBrown@pmsc.com>
+	    Jeff Law <law@cygnus.com>
+
+	* Makefile.in (rename.o, waitpid.o): Depend on config.h
+	* rename.c: include config.h, unistd.h
+	* waitpid.c: include config.h, sys/wait.h
+
 2000-07-21  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_ctor_dtor_name): Remove not-in-charge
