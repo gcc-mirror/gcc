@@ -1566,7 +1566,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
   rtx op0, insns;
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode mode;
   bool errno_set = false;
@@ -1695,7 +1695,7 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
   rtx op0, op1, insns;
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg0, arg1, temp, narg;
   enum machine_mode mode;
@@ -4756,7 +4756,7 @@ rtx
 expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 		int ignore)
 {
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
@@ -5301,8 +5301,8 @@ builtin_mathfn_code (tree t)
       || TREE_CODE (TREE_OPERAND (t, 0)) != ADDR_EXPR)
     return END_BUILTINS;
 
-  fndecl = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-  if (TREE_CODE (fndecl) != FUNCTION_DECL
+  fndecl = get_callee_fndecl (t);
+  if (fndecl == NULL_TREE
       || ! DECL_BUILT_IN (fndecl)
       || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return END_BUILTINS;
@@ -5513,7 +5513,7 @@ integer_valued_real_p (tree t)
 static tree
 fold_trunc_transparent_mathfn (tree exp)
 {
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg;
@@ -5732,7 +5732,7 @@ fold_builtin_ceil (tree exp)
 tree
 fold_builtin (tree exp)
 {
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
 

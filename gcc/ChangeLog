@@ -1,5 +1,12 @@
 2003-08-20  Jason Merrill  <jason@redhat.com>
 
+	* builtins.c (expand_builtin_mathfn): Use get_callee_fndecl.
+	(expand_builtin_mathfn2, expand_builtin, builtin_mathfn_code, 
+	fold_trunc_transparent_mathfn, fold_builtin): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* fold-const.c (operand_equal_p, fold): Likewise.
+	(tree_expr_nonnegative_p): Likewise.
+
 	* stor-layout.c (do_type_align): Only copy DECL_USER_ALIGN from
 	TYPE_USER_ALIGN for FIELD_DECLs.
 	
