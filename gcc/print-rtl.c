@@ -153,9 +153,6 @@ print_rtx (rtx in_rtx)
 	  if (RTX_FLAG (in_rtx, unchanging))
 	    fputs ("/u", outfile);
 
-	  if (RTX_FLAG (in_rtx, integrated))
-	    fputs ("/i", outfile);
-
 	  if (RTX_FLAG (in_rtx, frame_related))
 	    fputs ("/f", outfile);
 
@@ -164,6 +161,9 @@ print_rtx (rtx in_rtx)
 
 	  if (RTX_FLAG (in_rtx, call))
 	    fputs ("/c", outfile);
+
+	  if (RTX_FLAG (in_rtx, return_val))
+	    fputs ("/i", outfile);
 
 	  if (GET_MODE (in_rtx) != VOIDmode)
 	    {

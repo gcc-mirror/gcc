@@ -11,7 +11,7 @@ void
 add_bignums (int *out, int *x, int *y)
 {
     int p, sum;
-    int carry; /* { dg-bogus "carry" "uninitialized variable warning" { xfail *-*-* } } */
+    int carry; /* { dg-bogus "carry" "uninitialized variable warning" } */
 
     p = 0;
     for (; *x; x++, y++, out++, p++)

@@ -170,4 +170,5 @@ extern void sbitmap_union_of_succs (sbitmap, sbitmap *, int);
 extern void sbitmap_union_of_preds (sbitmap, sbitmap *, int);
 
 extern void debug_sbitmap (sbitmap);
+extern sbitmap sbitmap_realloc (sbitmap, unsigned int);
 #endif /* ! GCC_SBITMAP_H */

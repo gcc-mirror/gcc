@@ -102,7 +102,7 @@ REALLY_SET_LIB_PATH = \
   $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # This is the list of directories to be built for the build system.
-BUILD_CONFIGDIRS = libiberty
+BUILD_CONFIGDIRS = libiberty libbanshee
 # Build programs are put under this directory.
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
@@ -123,6 +123,10 @@ TARGET_SUBDIR = @target_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the target.
 TARGET_CONFIGARGS = @target_configargs@
+
+# Where to find GMP
+HOST_GMPLIBS = @gmplibs@
+HOST_GMPINC = @gmpinc@
 
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
@@ -241,7 +245,7 @@ PICFLAG =
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that prorgams built for the target machine work.
-TARGET_LIB_PATH = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
+TARGET_LIB_PATH = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:$$r/$(TARGET_SUBDIR)/libmudflap/.libs
 
 FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
 
@@ -308,6 +312,7 @@ USUAL_DLLTOOL_FOR_TARGET = ` \
   fi`
 
 GCJ_FOR_TARGET = @GCJ_FOR_TARGET@
+GFORTRAN_FOR_TARGET = @GFORTRAN_FOR_TARGET@
 
 LD_FOR_TARGET=@LD_FOR_TARGET@
 CONFIGURED_LD_FOR_TARGET=@CONFIGURED_LD_FOR_TARGET@
@@ -446,6 +451,7 @@ BASE_FLAGS_TO_PASS = \
 	"CXXFLAGS_FOR_TARGET=$(CXXFLAGS_FOR_TARGET)" \
 	"DLLTOOL_FOR_TARGET=$(DLLTOOL_FOR_TARGET)" \
 	"GCJ_FOR_TARGET=$(GCJ_FOR_TARGET)" \
+	"GFORTRAN_FOR_TARGET=$(GFORTRAN_FOR_TARGET)" \
 	"LD_FOR_TARGET=$(LD_FOR_TARGET)" \
 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
 	"LIBCXXFLAGS_FOR_TARGET=$(LIBCXXFLAGS_FOR_TARGET)" \
@@ -568,6 +574,7 @@ configure-host: maybe-configure-gcc  \
     maybe-configure-itcl \
     maybe-configure-ld \
     maybe-configure-libgui \
+    maybe-configure-libbanshee \
     maybe-configure-libiberty \
     maybe-configure-libtool \
     maybe-configure-m4 \
@@ -603,8 +610,10 @@ configure-host: maybe-configure-gcc  \
 .PHONY: configure-target
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
+    maybe-configure-target-libmudflap \
     maybe-configure-target-newlib \
     maybe-configure-target-libf2c \
+    maybe-configure-target-libgfortran \
     maybe-configure-target-libobjc \
     maybe-configure-target-libtermcap \
     maybe-configure-target-winsup \
@@ -658,6 +667,7 @@ all-host: maybe-all-gcc  \
     maybe-all-itcl \
     maybe-all-ld \
     maybe-all-libgui \
+    maybe-all-libbanshee \
     maybe-all-libiberty \
     maybe-all-libtool \
     maybe-all-m4 \
@@ -693,8 +703,10 @@ all-host: maybe-all-gcc  \
 .PHONY: all-target
 all-target:  \
     maybe-all-target-libstdc++-v3 \
+    maybe-all-target-libmudflap \
     maybe-all-target-newlib \
     maybe-all-target-libf2c \
+    maybe-all-target-libgfortran \
     maybe-all-target-libobjc \
     maybe-all-target-libtermcap \
     maybe-all-target-winsup \
@@ -752,6 +764,7 @@ info-host: maybe-info-gcc  \
     maybe-info-itcl \
     maybe-info-ld \
     maybe-info-libgui \
+    maybe-info-libbanshee \
     maybe-info-libiberty \
     maybe-info-libtool \
     maybe-info-m4 \
@@ -788,8 +801,10 @@ info-host: maybe-info-gcc  \
 .PHONY: info-target
 info-target:  \
     maybe-info-target-libstdc++-v3 \
+    maybe-info-target-libmudflap \
     maybe-info-target-newlib \
     maybe-info-target-libf2c \
+    maybe-info-target-libgfortran \
     maybe-info-target-libobjc \
     maybe-info-target-libtermcap \
     maybe-info-target-winsup \
@@ -842,6 +857,7 @@ dvi-host: maybe-dvi-gcc  \
     maybe-dvi-itcl \
     maybe-dvi-ld \
     maybe-dvi-libgui \
+    maybe-dvi-libbanshee \
     maybe-dvi-libiberty \
     maybe-dvi-libtool \
     maybe-dvi-m4 \
@@ -878,8 +894,10 @@ dvi-host: maybe-dvi-gcc  \
 .PHONY: dvi-target
 dvi-target:  \
     maybe-dvi-target-libstdc++-v3 \
+    maybe-dvi-target-libmudflap \
     maybe-dvi-target-newlib \
     maybe-dvi-target-libf2c \
+    maybe-dvi-target-libgfortran \
     maybe-dvi-target-libobjc \
     maybe-dvi-target-libtermcap \
     maybe-dvi-target-winsup \
@@ -932,6 +950,7 @@ TAGS-host: maybe-TAGS-gcc  \
     maybe-TAGS-itcl \
     maybe-TAGS-ld \
     maybe-TAGS-libgui \
+    maybe-TAGS-libbanshee \
     maybe-TAGS-libiberty \
     maybe-TAGS-libtool \
     maybe-TAGS-m4 \
@@ -968,8 +987,10 @@ TAGS-host: maybe-TAGS-gcc  \
 .PHONY: TAGS-target
 TAGS-target:  \
     maybe-TAGS-target-libstdc++-v3 \
+    maybe-TAGS-target-libmudflap \
     maybe-TAGS-target-newlib \
     maybe-TAGS-target-libf2c \
+    maybe-TAGS-target-libgfortran \
     maybe-TAGS-target-libobjc \
     maybe-TAGS-target-libtermcap \
     maybe-TAGS-target-winsup \
@@ -1022,6 +1043,7 @@ install-info-host: maybe-install-info-gcc  \
     maybe-install-info-itcl \
     maybe-install-info-ld \
     maybe-install-info-libgui \
+    maybe-install-info-libbanshee \
     maybe-install-info-libiberty \
     maybe-install-info-libtool \
     maybe-install-info-m4 \
@@ -1058,8 +1080,10 @@ install-info-host: maybe-install-info-gcc  \
 .PHONY: install-info-target
 install-info-target:  \
     maybe-install-info-target-libstdc++-v3 \
+    maybe-install-info-target-libmudflap \
     maybe-install-info-target-newlib \
     maybe-install-info-target-libf2c \
+    maybe-install-info-target-libgfortran \
     maybe-install-info-target-libobjc \
     maybe-install-info-target-libtermcap \
     maybe-install-info-target-winsup \
@@ -1112,6 +1136,7 @@ installcheck-host: maybe-installcheck-gcc  \
     maybe-installcheck-itcl \
     maybe-installcheck-ld \
     maybe-installcheck-libgui \
+    maybe-installcheck-libbanshee \
     maybe-installcheck-libiberty \
     maybe-installcheck-libtool \
     maybe-installcheck-m4 \
@@ -1148,8 +1173,10 @@ installcheck-host: maybe-installcheck-gcc  \
 .PHONY: installcheck-target
 installcheck-target:  \
     maybe-installcheck-target-libstdc++-v3 \
+    maybe-installcheck-target-libmudflap \
     maybe-installcheck-target-newlib \
     maybe-installcheck-target-libf2c \
+    maybe-installcheck-target-libgfortran \
     maybe-installcheck-target-libobjc \
     maybe-installcheck-target-libtermcap \
     maybe-installcheck-target-winsup \
@@ -1202,6 +1229,7 @@ mostlyclean-host: maybe-mostlyclean-gcc  \
     maybe-mostlyclean-itcl \
     maybe-mostlyclean-ld \
     maybe-mostlyclean-libgui \
+    maybe-mostlyclean-libbanshee \
     maybe-mostlyclean-libiberty \
     maybe-mostlyclean-libtool \
     maybe-mostlyclean-m4 \
@@ -1238,8 +1266,10 @@ mostlyclean-host: maybe-mostlyclean-gcc  \
 .PHONY: mostlyclean-target
 mostlyclean-target:  \
     maybe-mostlyclean-target-libstdc++-v3 \
+    maybe-mostlyclean-target-libmudflap \
     maybe-mostlyclean-target-newlib \
     maybe-mostlyclean-target-libf2c \
+    maybe-mostlyclean-target-libgfortran \
     maybe-mostlyclean-target-libobjc \
     maybe-mostlyclean-target-libtermcap \
     maybe-mostlyclean-target-winsup \
@@ -1292,6 +1322,7 @@ clean-host: maybe-clean-gcc  \
     maybe-clean-itcl \
     maybe-clean-ld \
     maybe-clean-libgui \
+    maybe-clean-libbanshee \
     maybe-clean-libiberty \
     maybe-clean-libtool \
     maybe-clean-m4 \
@@ -1328,8 +1359,10 @@ clean-host: maybe-clean-gcc  \
 .PHONY: clean-target
 clean-target:  \
     maybe-clean-target-libstdc++-v3 \
+    maybe-clean-target-libmudflap \
     maybe-clean-target-newlib \
     maybe-clean-target-libf2c \
+    maybe-clean-target-libgfortran \
     maybe-clean-target-libobjc \
     maybe-clean-target-libtermcap \
     maybe-clean-target-winsup \
@@ -1382,6 +1415,7 @@ distclean-host: maybe-distclean-gcc  \
     maybe-distclean-itcl \
     maybe-distclean-ld \
     maybe-distclean-libgui \
+    maybe-distclean-libbanshee \
     maybe-distclean-libiberty \
     maybe-distclean-libtool \
     maybe-distclean-m4 \
@@ -1418,8 +1452,10 @@ distclean-host: maybe-distclean-gcc  \
 .PHONY: distclean-target
 distclean-target:  \
     maybe-distclean-target-libstdc++-v3 \
+    maybe-distclean-target-libmudflap \
     maybe-distclean-target-newlib \
     maybe-distclean-target-libf2c \
+    maybe-distclean-target-libgfortran \
     maybe-distclean-target-libobjc \
     maybe-distclean-target-libtermcap \
     maybe-distclean-target-winsup \
@@ -1472,6 +1508,7 @@ maintainer-clean-host: maybe-maintainer-clean-gcc  \
     maybe-maintainer-clean-itcl \
     maybe-maintainer-clean-ld \
     maybe-maintainer-clean-libgui \
+    maybe-maintainer-clean-libbanshee \
     maybe-maintainer-clean-libiberty \
     maybe-maintainer-clean-libtool \
     maybe-maintainer-clean-m4 \
@@ -1508,8 +1545,10 @@ maintainer-clean-host: maybe-maintainer-clean-gcc  \
 .PHONY: maintainer-clean-target
 maintainer-clean-target:  \
     maybe-maintainer-clean-target-libstdc++-v3 \
+    maybe-maintainer-clean-target-libmudflap \
     maybe-maintainer-clean-target-newlib \
     maybe-maintainer-clean-target-libf2c \
+    maybe-maintainer-clean-target-libgfortran \
     maybe-maintainer-clean-target-libobjc \
     maybe-maintainer-clean-target-libtermcap \
     maybe-maintainer-clean-target-winsup \
@@ -1619,6 +1658,7 @@ do-check: maybe-check-gcc  \
     maybe-check-itcl \
     maybe-check-ld \
     maybe-check-libgui \
+    maybe-check-libbanshee \
     maybe-check-libiberty \
     maybe-check-libtool \
     maybe-check-m4 \
@@ -1652,8 +1692,10 @@ do-check: maybe-check-gcc  \
     maybe-check-libtermcap \
     maybe-check-utils \
     maybe-check-target-libstdc++-v3 \
+    maybe-check-target-libmudflap \
     maybe-check-target-newlib \
     maybe-check-target-libf2c \
+    maybe-check-target-libgfortran \
     maybe-check-target-libobjc \
     maybe-check-target-libtermcap \
     maybe-check-target-winsup \
@@ -1729,6 +1771,7 @@ install-host-nogcc:  \
     maybe-install-itcl \
     maybe-install-ld \
     maybe-install-libgui \
+    maybe-install-libbanshee \
     maybe-install-libiberty \
     maybe-install-libtool \
     maybe-install-m4 \
@@ -1796,6 +1839,7 @@ install-host: maybe-install-gcc  \
     maybe-install-itcl \
     maybe-install-ld \
     maybe-install-libgui \
+    maybe-install-libbanshee \
     maybe-install-libiberty \
     maybe-install-libtool \
     maybe-install-m4 \
@@ -1832,8 +1876,10 @@ install-host: maybe-install-gcc  \
 .PHONY: install-target
 install-target:  \
     maybe-install-target-libstdc++-v3 \
+    maybe-install-target-libmudflap \
     maybe-install-target-newlib \
     maybe-install-target-libf2c \
+    maybe-install-target-libgfortran \
     maybe-install-target-libobjc \
     maybe-install-target-libtermcap \
     maybe-install-target-winsup \
@@ -1918,6 +1964,7 @@ configure-build-libiberty:
 	CXX="$(CXX_FOR_BUILD)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
 	LD="$(LD_FOR_BUILD)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
@@ -1971,6 +2018,76 @@ all-build-libiberty: configure-build-libiberty
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	(cd $(BUILD_SUBDIR)/libiberty && $(MAKE) all)
+
+.PHONY: configure-build-libbanshee maybe-configure-build-libbanshee
+maybe-configure-build-libbanshee:
+configure-build-libbanshee:
+	@test ! -f $(BUILD_SUBDIR)/libbanshee/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/libbanshee ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	AR="$(AR_FOR_BUILD)"; export AR; \
+	AS="$(AS_FOR_BUILD)"; export AS; \
+	CC="$(CC_FOR_BUILD)"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_BUILD)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	CXX="$(CXX_FOR_BUILD)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
+	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
+	LD="$(LD_FOR_BUILD)"; export LD; \
+	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
+	NM="$(NM_FOR_BUILD)"; export NM; \
+	RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
+	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES; \
+	echo Configuring in $(BUILD_SUBDIR)/libbanshee; \
+	cd "$(BUILD_SUBDIR)/libbanshee" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(BUILD_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	if [ "$(srcdir)" = "." ] ; then \
+	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+	    if $(SHELL) $$s/symlink-tree $${topdir}/libbanshee "no-such-file" ; then \
+	      if [ -f Makefile ]; then \
+	        if $(MAKE) distclean; then \
+	          true; \
+	        else \
+	          exit 1; \
+	        fi; \
+	      else \
+	        true; \
+	      fi; \
+	    else \
+	      exit 1; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	  srcdiroption="--srcdir=."; \
+	  libsrcdir="."; \
+	else \
+	  srcdiroption="--srcdir=$${topdir}/libbanshee"; \
+	  libsrcdir="$$s/libbanshee"; \
+	fi; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) $${srcdiroption} \
+	  --with-build-subdir="$(BUILD_SUBDIR)" \
+	  || exit 1
+
+.PHONY: all-build-libbanshee maybe-all-build-libbanshee
+maybe-all-build-libbanshee:
+all-build-libbanshee: configure-build-libbanshee
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	(cd $(BUILD_SUBDIR)/libbanshee && $(MAKE) all)
 
 
 # --------------------------------------
@@ -10483,6 +10600,268 @@ maintainer-clean-libgui:
 
 
 
+.PHONY: configure-libbanshee maybe-configure-libbanshee
+maybe-configure-libbanshee:
+configure-libbanshee:
+	@test ! -f libbanshee/Makefile || exit 0; \
+	[ -d libbanshee ] || mkdir libbanshee; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	CC="$(CC)"; export CC; \
+	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	CXX="$(CXX)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	echo Configuring in libbanshee; \
+	cd libbanshee || exit 1; \
+	case $(srcdir) in \
+	  \.) \
+	    srcdiroption="--srcdir=."; \
+	    libsrcdir=".";; \
+	  /* | [A-Za-z]:[\\/]*) \
+	    srcdiroption="--srcdir=$(srcdir)/libbanshee"; \
+	    libsrcdir="$$s/libbanshee";; \
+	  *) \
+	    srcdiroption="--srcdir=../$(srcdir)/libbanshee"; \
+	    libsrcdir="$$s/libbanshee";; \
+	esac; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  || exit 1
+
+.PHONY: all-libbanshee maybe-all-libbanshee
+maybe-all-libbanshee:
+all-libbanshee: configure-libbanshee
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd libbanshee && $(MAKE) $(FLAGS_TO_PASS) all)
+
+.PHONY: check-libbanshee maybe-check-libbanshee
+maybe-check-libbanshee:
+
+check-libbanshee:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd libbanshee && $(MAKE) $(FLAGS_TO_PASS) check)
+
+
+.PHONY: install-libbanshee maybe-install-libbanshee
+maybe-install-libbanshee:
+
+install-libbanshee:
+
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-libbanshee info-libbanshee
+maybe-info-libbanshee:
+
+info-libbanshee: \
+    configure-libbanshee 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+
+.PHONY: maybe-dvi-libbanshee dvi-libbanshee
+maybe-dvi-libbanshee:
+
+dvi-libbanshee: \
+    configure-libbanshee 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+
+.PHONY: maybe-TAGS-libbanshee TAGS-libbanshee
+maybe-TAGS-libbanshee:
+
+TAGS-libbanshee: \
+    configure-libbanshee 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+
+.PHONY: maybe-install-info-libbanshee install-info-libbanshee
+maybe-install-info-libbanshee:
+
+install-info-libbanshee: \
+    configure-libbanshee \
+    info-libbanshee 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+
+.PHONY: maybe-installcheck-libbanshee installcheck-libbanshee
+maybe-installcheck-libbanshee:
+
+installcheck-libbanshee: \
+    configure-libbanshee 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+
+.PHONY: maybe-mostlyclean-libbanshee mostlyclean-libbanshee
+maybe-mostlyclean-libbanshee:
+
+mostlyclean-libbanshee: 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+
+.PHONY: maybe-clean-libbanshee clean-libbanshee
+maybe-clean-libbanshee:
+
+clean-libbanshee: 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+
+.PHONY: maybe-distclean-libbanshee distclean-libbanshee
+maybe-distclean-libbanshee:
+
+distclean-libbanshee: 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+
+.PHONY: maybe-maintainer-clean-libbanshee maintainer-clean-libbanshee
+maybe-maintainer-clean-libbanshee:
+
+maintainer-clean-libbanshee: 
+	@[ -f ./libbanshee/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libbanshee" ; \
+	(cd libbanshee && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+
+
 .PHONY: configure-libiberty maybe-configure-libiberty
 maybe-configure-libiberty:
 configure-libiberty:
@@ -18940,6 +19319,7 @@ configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 	CXX="$(RAW_CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -19194,6 +19574,285 @@ maintainer-clean-target-libstdc++-v3:
 
 
 
+.PHONY: configure-target-libmudflap maybe-configure-target-libmudflap
+maybe-configure-target-libmudflap:
+
+# There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+$(TARGET_SUBDIR)/libmudflap/multilib.out: multilib.out
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmudflap ; \
+	rm -f $(TARGET_SUBDIR)/libmudflap/Makefile || : ; \
+	cp multilib.out $(TARGET_SUBDIR)/libmudflap/multilib.out
+
+configure-target-libmudflap: $(TARGET_SUBDIR)/libmudflap/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libmudflap/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmudflap ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	AR="$(AR_FOR_TARGET)"; export AR; \
+	AS="$(AS_FOR_TARGET)"; export AS; \
+	CC="$(CC_FOR_TARGET)"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
+	CXX="$(CXX_FOR_TARGET)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
+	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
+	LD="$(LD_FOR_TARGET)"; export LD; \
+	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
+	NM="$(NM_FOR_TARGET)"; export NM; \
+	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
+	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
+	echo Configuring in $(TARGET_SUBDIR)/libmudflap; \
+	cd "$(TARGET_SUBDIR)/libmudflap" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(TARGET_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	  srcdiroption="--srcdir=$${topdir}/libmudflap"; \
+	  libsrcdir="$$s/libmudflap"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  --with-target-subdir="$(TARGET_SUBDIR)" \
+	  || exit 1
+
+.PHONY: all-target-libmudflap maybe-all-target-libmudflap
+maybe-all-target-libmudflap:
+all-target-libmudflap: configure-target-libmudflap
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  all)
+
+.PHONY: check-target-libmudflap maybe-check-target-libmudflap
+maybe-check-target-libmudflap:
+
+check-target-libmudflap:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  check)
+
+
+.PHONY: install-target-libmudflap maybe-install-target-libmudflap
+maybe-install-target-libmudflap:
+
+install-target-libmudflap: installdirs
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
+
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-target-libmudflap info-target-libmudflap
+maybe-info-target-libmudflap:
+
+info-target-libmudflap: \
+    configure-target-libmudflap 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing info in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+
+.PHONY: maybe-dvi-target-libmudflap dvi-target-libmudflap
+maybe-dvi-target-libmudflap:
+
+dvi-target-libmudflap: \
+    configure-target-libmudflap 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+
+.PHONY: maybe-TAGS-target-libmudflap TAGS-target-libmudflap
+maybe-TAGS-target-libmudflap:
+
+TAGS-target-libmudflap: \
+    configure-target-libmudflap 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+
+.PHONY: maybe-install-info-target-libmudflap install-info-target-libmudflap
+maybe-install-info-target-libmudflap:
+
+install-info-target-libmudflap: \
+    configure-target-libmudflap \
+    info-target-libmudflap 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+
+.PHONY: maybe-installcheck-target-libmudflap installcheck-target-libmudflap
+maybe-installcheck-target-libmudflap:
+
+installcheck-target-libmudflap: \
+    configure-target-libmudflap 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+
+.PHONY: maybe-mostlyclean-target-libmudflap mostlyclean-target-libmudflap
+maybe-mostlyclean-target-libmudflap:
+
+mostlyclean-target-libmudflap: 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+
+.PHONY: maybe-clean-target-libmudflap clean-target-libmudflap
+maybe-clean-target-libmudflap:
+
+clean-target-libmudflap: 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+
+.PHONY: maybe-distclean-target-libmudflap distclean-target-libmudflap
+maybe-distclean-target-libmudflap:
+
+distclean-target-libmudflap: 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+
+.PHONY: maybe-maintainer-clean-target-libmudflap maintainer-clean-target-libmudflap
+maybe-maintainer-clean-target-libmudflap:
+
+maintainer-clean-target-libmudflap: 
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+
+
 .PHONY: configure-target-newlib maybe-configure-target-newlib
 maybe-configure-target-newlib:
 
@@ -19218,6 +19877,7 @@ configure-target-newlib: $(TARGET_SUBDIR)/newlib/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -19496,6 +20156,7 @@ configure-target-libf2c: $(TARGET_SUBDIR)/libf2c/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -19750,6 +20411,285 @@ maintainer-clean-target-libf2c:
 
 
 
+.PHONY: configure-target-libgfortran maybe-configure-target-libgfortran
+maybe-configure-target-libgfortran:
+
+# There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+$(TARGET_SUBDIR)/libgfortran/multilib.out: multilib.out
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgfortran ; \
+	rm -f $(TARGET_SUBDIR)/libgfortran/Makefile || : ; \
+	cp multilib.out $(TARGET_SUBDIR)/libgfortran/multilib.out
+
+configure-target-libgfortran: $(TARGET_SUBDIR)/libgfortran/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libgfortran/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgfortran ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	AR="$(AR_FOR_TARGET)"; export AR; \
+	AS="$(AS_FOR_TARGET)"; export AS; \
+	CC="$(CC_FOR_TARGET)"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
+	CXX="$(CXX_FOR_TARGET)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
+	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
+	LD="$(LD_FOR_TARGET)"; export LD; \
+	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
+	NM="$(NM_FOR_TARGET)"; export NM; \
+	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
+	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
+	echo Configuring in $(TARGET_SUBDIR)/libgfortran; \
+	cd "$(TARGET_SUBDIR)/libgfortran" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) \
+	    topdir=$(srcdir) ;; \
+	  *) \
+	    case "$(TARGET_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	    esac ;; \
+	esac; \
+	  srcdiroption="--srcdir=$${topdir}/libgfortran"; \
+	  libsrcdir="$$s/libgfortran"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  --with-target-subdir="$(TARGET_SUBDIR)" \
+	  || exit 1
+
+.PHONY: all-target-libgfortran maybe-all-target-libgfortran
+maybe-all-target-libgfortran:
+all-target-libgfortran: configure-target-libgfortran
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  all)
+
+.PHONY: check-target-libgfortran maybe-check-target-libgfortran
+maybe-check-target-libgfortran:
+
+check-target-libgfortran:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  check)
+
+
+.PHONY: install-target-libgfortran maybe-install-target-libgfortran
+maybe-install-target-libgfortran:
+
+install-target-libgfortran: installdirs
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
+
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-target-libgfortran info-target-libgfortran
+maybe-info-target-libgfortran:
+
+info-target-libgfortran: \
+    configure-target-libgfortran 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing info in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+
+.PHONY: maybe-dvi-target-libgfortran dvi-target-libgfortran
+maybe-dvi-target-libgfortran:
+
+dvi-target-libgfortran: \
+    configure-target-libgfortran 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+
+.PHONY: maybe-TAGS-target-libgfortran TAGS-target-libgfortran
+maybe-TAGS-target-libgfortran:
+
+TAGS-target-libgfortran: \
+    configure-target-libgfortran 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+
+.PHONY: maybe-install-info-target-libgfortran install-info-target-libgfortran
+maybe-install-info-target-libgfortran:
+
+install-info-target-libgfortran: \
+    configure-target-libgfortran \
+    info-target-libgfortran 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+
+.PHONY: maybe-installcheck-target-libgfortran installcheck-target-libgfortran
+maybe-installcheck-target-libgfortran:
+
+installcheck-target-libgfortran: \
+    configure-target-libgfortran 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+
+.PHONY: maybe-mostlyclean-target-libgfortran mostlyclean-target-libgfortran
+maybe-mostlyclean-target-libgfortran:
+
+mostlyclean-target-libgfortran: 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+
+.PHONY: maybe-clean-target-libgfortran clean-target-libgfortran
+maybe-clean-target-libgfortran:
+
+clean-target-libgfortran: 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+
+.PHONY: maybe-distclean-target-libgfortran distclean-target-libgfortran
+maybe-distclean-target-libgfortran:
+
+distclean-target-libgfortran: 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+
+.PHONY: maybe-maintainer-clean-target-libgfortran maintainer-clean-target-libgfortran
+maybe-maintainer-clean-target-libgfortran:
+
+maintainer-clean-target-libgfortran: 
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+
+
 .PHONY: configure-target-libobjc maybe-configure-target-libobjc
 maybe-configure-target-libobjc:
 
@@ -19774,6 +20714,7 @@ configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -20052,6 +20993,7 @@ configure-target-libtermcap: $(TARGET_SUBDIR)/libtermcap/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -20292,6 +21234,7 @@ configure-target-winsup: $(TARGET_SUBDIR)/winsup/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -20570,6 +21513,7 @@ configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -20844,6 +21788,7 @@ configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -21122,6 +22067,7 @@ configure-target-gperf: $(TARGET_SUBDIR)/gperf/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -21400,6 +22346,7 @@ configure-target-examples: $(TARGET_SUBDIR)/examples/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -21670,6 +22617,7 @@ configure-target-libffi: $(TARGET_SUBDIR)/libffi/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -21949,6 +22897,7 @@ configure-target-libjava: $(TARGET_SUBDIR)/libjava/multilib.out
 	CXX="$(RAW_CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -22227,6 +23176,7 @@ configure-target-zlib: $(TARGET_SUBDIR)/zlib/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -22527,6 +23477,7 @@ configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -22805,6 +23756,7 @@ configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -23083,6 +24035,7 @@ configure-target-rda: $(TARGET_SUBDIR)/rda/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -23361,6 +24314,7 @@ configure-target-libada: $(TARGET_SUBDIR)/libada/multilib.out
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -23655,6 +24609,8 @@ configure-gcc:
 	WINDRES="$(WINDRES)"; export WINDRES; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
+	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	echo Configuring in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
@@ -24335,11 +25291,11 @@ new-restage3: all-stage2-gcc
 # GCC needs to identify certain tools.
 # GCC also needs the information exported by the intl configure script.
 configure-gcc: maybe-configure-intl maybe-configure-binutils maybe-configure-gas maybe-configure-ld maybe-configure-bison maybe-configure-flex
-all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib
+all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee
 # This is a slightly kludgy method of getting dependencies on 
 # all-build-libiberty correct; it would be better to build it every time.
-all-gcc: maybe-all-build-libiberty
-all-bootstrap: maybe-all-binutils maybe-all-bison maybe-all-byacc maybe-all-gas maybe-all-intl maybe-all-ld maybe-all-libiberty maybe-all-texinfo maybe-all-zlib 
+all-gcc: maybe-all-build-libiberty maybe-all-libbanshee
+all-bootstrap: maybe-all-binutils maybe-all-bison maybe-all-byacc maybe-all-gas maybe-all-intl maybe-all-ld maybe-all-libbanshee maybe-all-libiberty maybe-all-texinfo maybe-all-zlib 
 
 # Host modules specific to gdb.
 # GDB needs to know that the simulator is being built.
@@ -24414,6 +25370,7 @@ all-target-fastjar: maybe-all-target-zlib maybe-all-target-libiberty
 configure-target-libada: $(ALL_GCC_C)
 configure-target-libf2c: $(ALL_GCC_C)
 all-target-libf2c: maybe-all-target-libiberty
+configure-target-libgfortran: $(ALL_GCC_C)
 configure-target-libffi: $(ALL_GCC_C) 
 configure-target-libjava: $(ALL_GCC_C) maybe-configure-target-zlib maybe-configure-target-boehm-gc maybe-configure-target-qthreads maybe-configure-target-libffi
 all-target-libjava: maybe-all-fastjar maybe-all-target-zlib maybe-all-target-boehm-gc maybe-all-target-qthreads maybe-all-target-libffi

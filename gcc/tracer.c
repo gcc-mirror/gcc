@@ -271,7 +271,7 @@ tail_duplicate (void)
 	    }
 	  traced_insns += bb2->frequency * counts [bb2->index];
 	  if (bb2->pred && bb2->pred->pred_next
-	      && cfg_layout_can_duplicate_bb_p (bb2))
+	      && can_duplicate_block_p (bb2))
 	    {
 	      edge e = bb2->pred;
 	      basic_block old = bb2;
@@ -279,7 +279,7 @@ tail_duplicate (void)
 	      while (e->src != bb)
 		e = e->pred_next;
 	      nduplicated += counts [bb2->index];
-	      bb2 = cfg_layout_duplicate_bb (bb2, e);
+	      bb2 = duplicate_block (bb2, e);
 
 	      /* Reconsider the original copy of block we've duplicated.
 	         Removing the most common predecessor may make it to be

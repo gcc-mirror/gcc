@@ -438,7 +438,7 @@ suppose that there were a 24-bit integer type, but that alignment
 requirements for the ABI required 32-bit alignment.  Then,
 @code{TYPE_SIZE} would be an @code{INTEGER_CST} for 32, while
 @code{TYPE_PRECISION} would be 24.)  The integer type is unsigned if
-@code{TREE_UNSIGNED} holds; otherwise, it is signed.
+@code{TYPE_UNSIGNED} holds; otherwise, it is signed.
 
 The @code{TYPE_MIN_VALUE} is an @code{INTEGER_CST} for the smallest
 integer that may be represented by this type.  Similarly, the
@@ -457,7 +457,7 @@ Used to represent GCC built-in @code{__complex__} data types.  The
 @item ENUMERAL_TYPE
 Used to represent an enumeration type.  The @code{TYPE_PRECISION} gives
 (as an @code{int}), the number of bits used to represent the type.  If
-there are no negative enumeration constants, @code{TREE_UNSIGNED} will
+there are no negative enumeration constants, @code{TYPE_UNSIGNED} will
 hold.  The minimum and maximum enumeration constants may be obtained
 with @code{TYPE_MIN_VALUE} and @code{TYPE_MAX_VALUE}, respectively; each
 of these macros returns an @code{INTEGER_CST}.
@@ -856,13 +856,13 @@ entity.
 @item TREE_TYPE
 This macro returns the type of the entity declared.
 
-@item DECL_SOURCE_FILE
+@item TREE_FILENAME
 This macro returns the name of the file in which the entity was
 declared, as a @code{char*}.  For an entity declared implicitly by the
 compiler (like @code{__builtin_memcpy}), this will be the string
 @code{"<internal>"}.
 
-@item DECL_SOURCE_LINE
+@item TREE_LINENO
 This macro returns the line number at which the entity was declared, as
 an @code{int}.
 
@@ -1298,8 +1298,6 @@ This predicate holds if the function an overloaded
 @findex FOR_COND
 @findex FOR_EXPR
 @findex FOR_BODY
-@tindex FILE_STMT
-@findex FILE_STMT_FILENAME
 @tindex GOTO_STMT
 @findex GOTO_DESTINATION
 @findex GOTO_FAKE_P
@@ -1343,24 +1341,13 @@ the outermost block of the function, but it may also be a
 
 @subsubsection Statements
 
-There are tree nodes corresponding to all of the source-level statement
-constructs.  These are enumerated here, together with a list of the
-various macros that can be used to obtain information about them.  There
-are a few macros that can be used with all statements:
+There are tree nodes corresponding to all of the source-level
+statement constructs, used within the C and C++ frontends.  These are
+enumerated here, together with a list of the various macros that can
+be used to obtain information about them.  There are a few macros that
+can be used with all statements:
 
 @ftable @code
-@item STMT_LINENO
-This macro returns the line number for the statement.  If the statement
-spans multiple lines, this value will be the number of the first line on
-which the statement occurs.  Although we mention @code{CASE_LABEL} below
-as if it were a statement, they do not allow the use of
-@code{STMT_LINENO}.  There is no way to obtain the line number for a
-@code{CASE_LABEL}.
-
-Statements do not contain information about
-the file from which they came; that information is implicit in the
-@code{FUNCTION_DECL} from which the statements originate.
-
 @item STMT_IS_FULL_EXPR_P
 In C++, statements normally constitute ``full expressions''; temporaries
 created during a statement are destroyed when the statement is complete.
@@ -1522,11 +1509,6 @@ address is never taken.  (All such objects are interchangeable.)  The
 
 Used to represent an expression statement.  Use @code{EXPR_STMT_EXPR} to
 obtain the expression.
-
-@item FILE_STMT
-
-Used to record a change in filename within the body of a function.
-Use @code{FILE_STMT_FILENAME} to obtain the new filename.
 
 @item FOR_STMT
 
@@ -2213,9 +2195,9 @@ the @code{STMT_EXPR} does not yield a value, it's type will be
 
 @item BIND_EXPR
 These nodes represent local blocks.  The first operand is a list of
-temporary variables, connected via their @code{TREE_CHAIN} field.  These
-will never require cleanups.  The scope of these variables is just the
-body of the @code{BIND_EXPR}.  The body of the @code{BIND_EXPR} is the
+variables, connected via their @code{TREE_CHAIN} field.  These will
+never require cleanups.  The scope of these variables is just the body
+of the @code{BIND_EXPR}.  The body of the @code{BIND_EXPR} is the
 second operand.
 
 @item LOOP_EXPR

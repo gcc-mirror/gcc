@@ -1381,6 +1381,7 @@ build_objc_string_object (tree string)
 {
   tree initlist, constructor, constant_string_class;
   int length;
+  tree fields;
 
   string = fix_string_type (string);
 
@@ -1410,6 +1411,7 @@ build_objc_string_object (tree string)
 	}
       add_class_reference (constant_string_id);
     }
+  fields = TYPE_FIELDS (constant_string_type);
 
   /* & ((NXConstantString) { NULL, string, length })  */
 
@@ -1425,18 +1427,23 @@ build_objc_string_object (tree string)
 	  return error_mark_node;
 	}
       initlist = build_tree_list
-	(NULL_TREE,
+	(fields,
 	 copy_node (build_unary_op (ADDR_EXPR, string_class_decl, 0)));
     }
   else
     {
-      initlist = build_tree_list (NULL_TREE, build_int_2 (0, 0));
+      initlist = build_tree_list (fields, build_int_2 (0, 0));
     }
 
+  fields = TREE_CHAIN (fields);
+  
   initlist
-    = tree_cons (NULL_TREE, copy_node (build_unary_op (ADDR_EXPR, string, 1)),
+    = tree_cons (fields, copy_node (build_unary_op (ADDR_EXPR, string, 1)),
 		 initlist);
-  initlist = tree_cons (NULL_TREE, build_int_2 (length, 0), initlist);
+                 
+  fields = TREE_CHAIN (fields);
+  
+  initlist = tree_cons (fields, build_int_2 (length, 0), initlist);
   constructor = objc_build_constructor (constant_string_type,
 					nreverse (initlist));
 
@@ -5965,7 +5972,9 @@ build_protocol_expr (tree protoname)
 
   expr = build_unary_op (ADDR_EXPR, PROTOCOL_FORWARD_DECL (p), 0);
 
-  TREE_TYPE (expr) = protocol_type;
+  /* ??? Ideally we'd build the reference with protocol_type directly,
+     if we have it, rather than converting it here.  */
+  expr = convert (protocol_type, expr);
 
   /* The @protocol() expression is being compiled into a pointer to a
      statically allocated instance of the Protocol class.  To become

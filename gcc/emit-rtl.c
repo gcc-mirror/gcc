@@ -929,6 +929,17 @@ get_first_label_num (void)
 {
   return first_label_num;
 }
+
+/* If the rtx for label was created during the expansion of a nested
+   function, then first_label_num won't include this label number.
+   Fix this now so that array indicies work later.  */
+
+void
+maybe_set_first_label_num (rtx x)
+{
+  if (CODE_LABEL_NUMBER (x) < first_label_num)
+    first_label_num = CODE_LABEL_NUMBER (x);
+}
 
 /* Return the final regno of X, which is a SUBREG of a hard
    register.  */
@@ -2387,8 +2398,8 @@ copy_most_rtx (rtx orig, rtx may_share)
   RTX_FLAG (copy, in_struct) = RTX_FLAG (orig, in_struct);
   RTX_FLAG (copy, volatil) = RTX_FLAG (orig, volatil);
   RTX_FLAG (copy, unchanging) = RTX_FLAG (orig, unchanging);
-  RTX_FLAG (copy, integrated) = RTX_FLAG (orig, integrated);
   RTX_FLAG (copy, frame_related) = RTX_FLAG (orig, frame_related);
+  RTX_FLAG (copy, return_val) = RTX_FLAG (orig, return_val);
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 

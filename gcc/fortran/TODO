@@ -1,0 +1,56 @@
+TODO
+
+Parser fixes:
+------------
+
+In a constant format string given to a data transfer statement, the
+locus of any problems in the string isn't guaranteed to come out
+right, because there is not a 1:1 correspondence between source
+characters and characters in the string.  This scheme totally doesn't
+work for format strings that are longer than a physical line.
+
+Fix IMPLICIT to allow forward references of derived types.
+
+Array issues in expressions and intrinsics.
+
+Resolve scoping issues.  Create symbols in correct namespaces.
+
+Finish resolution phase.
+
+Finish compiler side of intrinsic functions.
+
+Allow init exprs to be numbers raised to integer powers (negative too).
+
+See about making emacs-parsable error messages.
+
+
+Biggies:
+--------
+
+Interface to code generator.
+
+Complete runtime library.
+
+
+Known bugs:
+-----------
+
+Failure to set the expr_locus field in g95_expr structures.
+
+
+And for the really pedantic
+---------------------------
+
+Fix INCLUDE such that it only appears on a single line.  The current
+code allows things like:
+
+      0I
+      1NCLUDE "filename"
+
+or its free form equivalent:
+
+I&
+NCLUDE "filename"
+
+This is explicitly forbidden by the F95 standard (ref. section 3.4).
+

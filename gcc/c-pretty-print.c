@@ -26,6 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "c-pretty-print.h"
 #include "c-tree.h"
+#include "diagnostic.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -280,7 +281,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
       break;
 
     case IDENTIFIER_NODE:
-      pp_c_tree_identifier (pp, t);
+      pp_c_tree_decl_identifier (pp, t);
       break;
 
     case VOID_TYPE:
@@ -561,11 +562,10 @@ pp_c_direct_declarator (c_pretty_printer *pp, tree t)
     case TYPE_DECL:
     case FIELD_DECL:
     case LABEL_DECL:
-      if (DECL_NAME (t))
-        {
-          pp_c_space_for_pointer_operator (pp, TREE_TYPE (t));
-          pp_c_tree_identifier (pp, DECL_NAME (t));
-        }
+      pp_c_space_for_pointer_operator (pp, TREE_TYPE (t));
+      pp_c_tree_decl_identifier (pp, t);
+      break;
+
     case ARRAY_TYPE:
     case POINTER_TYPE:
       pp_abstract_declarator (pp, TREE_TYPE (t));
@@ -578,7 +578,7 @@ pp_c_direct_declarator (c_pretty_printer *pp, tree t)
 
     case FUNCTION_DECL:
       pp_c_space_for_pointer_operator (pp, TREE_TYPE (TREE_TYPE (t)));
-      pp_c_tree_identifier (pp, DECL_NAME (t));
+      pp_c_tree_decl_identifier (pp, t);
       if (pp_c_base (pp)->flags & pp_c_flag_abstract)
         pp_abstract_declarator (pp, TREE_TYPE (t));
       else
@@ -960,8 +960,9 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
     case CONST_DECL:
     case FUNCTION_DECL:
     case LABEL_DECL:
-      e = DECL_NAME (e);
-      /* Fall through.  */
+      pp_c_tree_decl_identifier (pp, e);
+      break;
+
     case IDENTIFIER_NODE:
       pp_c_tree_identifier (pp, e);
       break;
@@ -978,6 +979,22 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
     case REAL_CST:
     case STRING_CST:
       pp_c_constant (pp, e);
+      break;
+
+    case TARGET_EXPR:
+      pp_c_identifier (pp, "__builtin_memcpy");
+      pp_c_left_paren (pp);
+      pp_ampersand (pp);
+      pp_primary_expression (pp, TREE_OPERAND (e, 0));
+      pp_separate_with (pp, ',');
+      pp_ampersand (pp);
+      pp_initializer (pp, TREE_OPERAND (e, 1));
+      if (TREE_OPERAND (e, 2))
+	{
+	  pp_separate_with (pp, ',');
+	  pp_c_expression (pp, TREE_OPERAND (e, 2));
+	}
+      pp_c_right_paren (pp);
       break;
 
     case STMT_EXPR:
@@ -1005,13 +1022,7 @@ static void
 pp_c_initializer (c_pretty_printer *pp, tree e)
 {
   if (TREE_CODE (e) == CONSTRUCTOR)
-    {
-      enum tree_code code = TREE_CODE (TREE_TYPE (e));
-      if (code == RECORD_TYPE || code == UNION_TYPE || code == ARRAY_TYPE)
-        pp_c_brace_enclosed_initializer_list (pp, e);
-      else
-	pp_unsupported_tree (pp, TREE_OPERAND (e, 1));
-    }
+    pp_c_brace_enclosed_initializer_list (pp, e);
   else
     pp_expression (pp, e);
 }
@@ -1099,25 +1110,36 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
               pp_separate_with (pp, ',');
           }
       }
-      break;
+      return;
 
     case VECTOR_TYPE:
-      pp_c_expression_list (pp, TREE_VECTOR_CST_ELTS (e));
-      break;
+      if (TREE_CODE (e) == VECTOR_CST)
+        pp_c_expression_list (pp, TREE_VECTOR_CST_ELTS (e));
+      else if (TREE_CODE (e) == CONSTRUCTOR)
+        pp_c_expression_list (pp, CONSTRUCTOR_ELTS (e));
+      else
+        break;
+      return;
 
     case COMPLEX_TYPE:
-      {
-        const bool cst = TREE_CODE (e) == COMPLEX_CST;
-        pp_expression (pp, cst ? TREE_REALPART (e) : TREE_OPERAND (e, 0));
-        pp_separate_with (pp, ',');
-        pp_expression (pp, cst ? TREE_IMAGPART (e) : TREE_OPERAND (e, 1));
-      }
-      break;
+      if (TREE_CODE (e) == CONSTRUCTOR)
+	pp_c_expression_list (pp, CONSTRUCTOR_ELTS (e));
+      else if (TREE_CODE (e) == COMPLEX_CST || TREE_CODE (e) == COMPLEX_EXPR)
+	{
+	  const bool cst = TREE_CODE (e) == COMPLEX_CST;
+	  pp_expression (pp, cst ? TREE_REALPART (e) : TREE_OPERAND (e, 0));
+	  pp_separate_with (pp, ',');
+	  pp_expression (pp, cst ? TREE_IMAGPART (e) : TREE_OPERAND (e, 1));
+	}
+      else
+	break;
+      return;
 
     default:
-      pp_unsupported_tree (pp, type);
       break;
     }
+
+  pp_unsupported_tree (pp, type);
 }
 
 /* Pretty-print a brace-enclosed initializer-list.  */
@@ -1149,7 +1171,9 @@ pp_c_id_expression (c_pretty_printer *pp, tree t)
     case FUNCTION_DECL:
     case FIELD_DECL:
     case LABEL_DECL:
-      t = DECL_NAME (t);
+      pp_c_tree_decl_identifier (pp, t);
+      break;
+
     case IDENTIFIER_NODE:
       pp_c_tree_identifier (pp, t);
       break;
@@ -1862,7 +1886,7 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
       else
         pp_indentation (pp) -= 3;
       if (code == LABEL_STMT)
-	pp_tree_identifier (pp, DECL_NAME (LABEL_STMT_LABEL (stmt)));
+	pp_c_tree_decl_identifier (pp, LABEL_STMT_LABEL (stmt));
       else if (code == CASE_LABEL)
 	{
 	  if (CASE_LOW (stmt) == NULL_TREE)
@@ -2121,16 +2145,6 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
       }
       break;
 
-    case FILE_STMT:
-      pp_c_identifier (pp, "__FILE__");
-      pp_space (pp);
-      pp_equal (pp);
-      pp_c_whitespace (pp);
-      pp_c_identifier (pp, FILE_STMT_FILENAME (stmt));
-      pp_c_semicolon (pp);
-      pp_needs_newline (pp) = true;
-      break;
-
     default:
       pp_unsupported_tree (pp, stmt);
     }
@@ -2169,4 +2183,61 @@ pp_c_pretty_printer_init (c_pretty_printer *pp)
   pp->conditional_expression    = pp_c_conditional_expression;
   pp->assignment_expression     = pp_c_assignment_expression;
   pp->expression                = pp_c_expression;
+}
+
+
+/* Print the tree T in full, on file FILE.  */
+
+void
+print_c_tree (FILE *file, tree t)
+{
+  static c_pretty_printer pp_rec;
+  static bool initialized = 0;
+  c_pretty_printer *pp = &pp_rec;
+
+  if (!initialized)
+    {
+      initialized = 1;
+      pp_construct (pp_base (pp), NULL, 0);
+      pp_c_pretty_printer_init (pp);
+      pp_needs_newline (pp) = true;
+    }
+  pp_base (pp)->buffer->stream = file;
+
+  pp_statement (pp, t);
+
+  pp_newline (pp);
+  pp_flush (pp);
+}
+
+/* Print the tree T in full, on stderr.  */
+
+void
+debug_c_tree (tree t)
+{
+  print_c_tree (stderr, t);
+  fputc ('\n', stderr);
+}
+
+/* Output the DECL_NAME of T.  If T has no DECL_NAME, output a string made
+   up of T's memory address.  */
+
+void
+pp_c_tree_decl_identifier (c_pretty_printer *pp, tree t)
+{
+  const char *name;
+
+  if (!DECL_P (t))
+    abort ();
+
+  if (DECL_NAME (t))
+    name = IDENTIFIER_POINTER (DECL_NAME (t));
+  else
+    {
+      static char xname[8];
+      sprintf (xname, "<U%4x>", ((unsigned)((unsigned long)(t) & 0xffff)));
+      name = xname;
+    }
+
+  pp_c_identifier (pp, name);
 }

@@ -2940,9 +2940,6 @@ const_operand (register rtx op, register enum machine_mode mode)
     case Pmode:
 #endif
     case QImode:
-      if (GET_CODE (op) == CONSTANT_P_RTX)
-	return 1;
-
       if (GET_CODE (op) != CONST_INT
 	  || (GET_MODE (op) != VOIDmode && GET_MODE (op) != mode)
 	  || GET_MODE_CLASS (mode) != MODE_INT)

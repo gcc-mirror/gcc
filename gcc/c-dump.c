@@ -32,7 +32,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 void
 dump_stmt (dump_info_p di, tree t)
 {
-  dump_int (di, "line", STMT_LINENO (t));
+  location_t *locus = EXPR_LOCUS (t);
+  if (locus)
+    dump_int (di, "line", locus->line);
 }
 
 /* Dump the next statement after STMT.  */

@@ -74,12 +74,12 @@ static basic_block rtl_split_edge (edge);
 static bool rtl_move_block_after (basic_block, basic_block);
 static int rtl_verify_flow_info (void);
 static basic_block cfg_layout_split_block (basic_block, void *);
-static bool cfg_layout_redirect_edge_and_branch (edge, basic_block);
+static edge cfg_layout_redirect_edge_and_branch (edge, basic_block);
 static basic_block cfg_layout_redirect_edge_and_branch_force (edge, basic_block);
 static void cfg_layout_delete_block (basic_block);
 static void rtl_delete_block (basic_block);
 static basic_block rtl_redirect_edge_and_branch_force (edge, basic_block);
-static bool rtl_redirect_edge_and_branch (edge, basic_block);
+static edge rtl_redirect_edge_and_branch (edge, basic_block);
 static basic_block rtl_split_block (basic_block, void *);
 static void rtl_dump_bb (basic_block, FILE *, int);
 static int rtl_verify_flow_info_1 (void);
@@ -259,7 +259,6 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
   basic_block bb;
 
   if (bb_note
-      && ! RTX_INTEGRATED_P (bb_note)
       && (bb = NOTE_BASIC_BLOCK (bb_note)) != NULL
       && bb->aux == NULL)
     {
@@ -354,7 +353,7 @@ cfg_layout_create_basic_block (void *head, void *end, basic_block after)
 {
   basic_block newbb = rtl_create_basic_block (head, end, after);
 
-  cfg_layout_initialize_rbi (newbb);
+  initialize_bb_rbi (newbb);
   return newbb;
 }
 
@@ -391,8 +390,6 @@ rtl_delete_block (basic_block b)
     }
 
   insn = BB_HEAD (b);
-
-  never_reached_warning (insn, BB_END (b));
 
   if (GET_CODE (insn) == CODE_LABEL)
     maybe_remove_eh_handler (insn);
@@ -666,7 +663,7 @@ block_label (basic_block block)
    apply only if all edges now point to the same block.  The parameters and
    return values are equivalent to redirect_edge_and_branch.  */
 
-bool
+edge
 try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 {
   basic_block src = e->src;
@@ -690,14 +687,14 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
       break;
 
   if (tmp || !onlyjump_p (insn))
-    return false;
+    return NULL;
   if ((!optimize || reload_completed) && tablejump_p (insn, NULL, NULL))
-    return false;
+    return NULL;
 
   /* Avoid removing branch with side effects.  */
   set = single_set (insn);
   if (!set || side_effects_p (set))
-    return false;
+    return NULL;
 
   /* In case we zap a conditional jump, we'll need to kill
      the cc0 setter too.  */
@@ -746,21 +743,21 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   else if (simplejump_p (insn))
     {
       if (e->dest == target)
-	return false;
+	return NULL;
       if (dump_file)
 	fprintf (dump_file, "Redirecting jump %i from %i to %i.\n",
 		 INSN_UID (insn), e->dest->index, target->index);
       if (!redirect_jump (insn, block_label (target), 0))
 	{
 	  if (target == EXIT_BLOCK_PTR)
-	    return false;
+	    return NULL;
 	  abort ();
 	}
     }
 
   /* Cannot do anything for target exit block.  */
   else if (target == EXIT_BLOCK_PTR)
-    return false;
+    return NULL;
 
   /* Or replace possibly complicated jump insn by simple jump insn.  */
   else
@@ -834,7 +831,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   if (e->dest != target)
     redirect_edge_succ (e, target);
 
-  return true;
+  return e;
 }
 
 /* Return last loop_beg note appearing after INSN, before start of next
@@ -859,8 +856,9 @@ last_loop_beg_note (rtx insn)
   return last;
 }
 
-/* Redirect edge representing branch of (un)conditional jump or tablejump.  */
-static bool
+/* Redirect edge representing branch of (un)conditional jump or tablejump,
+   NULL on failure  */
+static edge
 redirect_branch_edge (edge e, basic_block target)
 {
   rtx tmp;
@@ -870,9 +868,9 @@ redirect_branch_edge (edge e, basic_block target)
 
   /* We can only redirect non-fallthru edges of jump insn.  */
   if (e->flags & EDGE_FALLTHRU)
-    return false;
+    return NULL;
   else if (GET_CODE (insn) != JUMP_INSN)
-    return false;
+    return NULL;
 
   /* Recognize a tablejump and adjust all matching cases.  */
   if (tablejump_p (insn, NULL, &tmp))
@@ -882,7 +880,7 @@ redirect_branch_edge (edge e, basic_block target)
       rtx new_label = block_label (target);
 
       if (target == EXIT_BLOCK_PTR)
-	return false;
+	return NULL;
       if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
 	vec = XVEC (PATTERN (tmp), 0);
       else
@@ -917,7 +915,7 @@ redirect_branch_edge (edge e, basic_block target)
       if (computed_jump_p (insn)
 	  /* A return instruction can't be redirected.  */
 	  || returnjump_p (insn))
-	return false;
+	return NULL;
 
       /* If the insn doesn't go where we think, we're confused.  */
       if (JUMP_LABEL (insn) != old_label)
@@ -929,7 +927,7 @@ redirect_branch_edge (edge e, basic_block target)
       if (!redirect_jump (insn, block_label (target), 0))
 	{
 	  if (target == EXIT_BLOCK_PTR)
-	    return false;
+	    return NULL;
 	  abort ();
 	}
     }
@@ -939,8 +937,8 @@ redirect_branch_edge (edge e, basic_block target)
 	     e->src->index, e->dest->index, target->index);
 
   if (e->dest != target)
-    redirect_edge_succ_nodup (e, target);
-  return true;
+    e = redirect_edge_succ_nodup (e, target);
+  return e;
 }
 
 /* Attempt to change code to redirect edge E to TARGET.  Don't do that on
@@ -949,32 +947,35 @@ redirect_branch_edge (edge e, basic_block target)
    Function can be also called with edge destination equivalent to the TARGET.
    Then it should try the simplifications and do nothing if none is possible.
 
-   Return true if transformation succeeded.  We still return false in case E
-   already destinated TARGET and we didn't managed to simplify instruction
-   stream.  */
+   Return edge representing the branch if transformation succeeded.  Return NULL
+   on failure.
+   We still return NULL in case E already destinated TARGET and we didn't
+   managed to simplify instruction stream.  */
 
-static bool
+static edge
 rtl_redirect_edge_and_branch (edge e, basic_block target)
 {
+  edge ret;
   basic_block src = e->src;
 
   if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
-    return false;
+    return NULL;
 
   if (e->dest == target)
-    return true;
+    return e;
 
-  if (try_redirect_by_replacing_jump (e, target, false))
+  if ((ret = try_redirect_by_replacing_jump (e, target, false)) != NULL)
     {
       src->flags |= BB_DIRTY;
-      return true;
+      return ret;
     }
 
-  if (!redirect_branch_edge (e, target))
-    return false;
+  ret = redirect_branch_edge (e, target);
+  if (!ret)
+    return NULL;
 
   src->flags |= BB_DIRTY;
-  return true;
+  return ret;
 }
 
 /* Like force_nonfallthru below, but additionally performs redirection
@@ -1376,14 +1377,14 @@ insert_insn_on_edge (rtx pattern, edge e)
   if ((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e))
     abort ();
 
-  if (e->insns == NULL_RTX)
+  if (e->insns.r == NULL_RTX)
     start_sequence ();
   else
-    push_to_sequence (e->insns);
+    push_to_sequence (e->insns.r);
 
   emit_insn (pattern);
 
-  e->insns = get_insns ();
+  e->insns.r = get_insns ();
   end_sequence ();
 }
 
@@ -1491,8 +1492,8 @@ commit_one_edge_insertion (edge e, int watch_calls)
   basic_block bb = NULL;
 
   /* Pull the insns off the edge now since the edge might go away.  */
-  insns = e->insns;
-  e->insns = NULL_RTX;
+  insns = e->insns.r;
+  e->insns.r = NULL_RTX;
 
   /* Special case -- avoid inserting code between call and storing
      its return value.  */
@@ -1663,10 +1664,10 @@ commit_edge_insertions (void)
       for (e = bb->succ; e; e = next)
 	{
 	  next = e->succ_next;
-	  if (e->insns)
+	  if (e->insns.r)
 	    {
-	       changed = true;
-	       commit_one_edge_insertion (e, false);
+	      changed = true;
+	      commit_one_edge_insertion (e, false);
 	    }
 	}
     }
@@ -1711,7 +1712,7 @@ commit_edge_insertions_watch_calls (void)
       for (e = bb->succ; e; e = next)
 	{
 	  next = e->succ_next;
-	  if (e->insns)
+	  if (e->insns.r)
 	    {
 	      changed = true;
 	      commit_one_edge_insertion (e, true);
@@ -2467,23 +2468,23 @@ cfg_layout_split_block (basic_block bb, void *insnp)
 
 
 /* Redirect Edge to DEST.  */
-static bool
+static edge
 cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 {
   basic_block src = e->src;
-  bool ret;
+  edge ret;
 
   if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
-    return false;
+    return NULL;
 
   if (e->dest == dest)
-    return true;
+    return e;
 
   if (e->src != ENTRY_BLOCK_PTR
-      && try_redirect_by_replacing_jump (e, dest, true))
+      && (ret = try_redirect_by_replacing_jump (e, dest, true)))
     {
       src->flags |= BB_DIRTY;
-      return true;
+      return ret;
     }
 
   if (e->src == ENTRY_BLOCK_PTR
@@ -2495,7 +2496,7 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 
       e->src->flags |= BB_DIRTY;
       redirect_edge_succ (e, dest);
-      return true;
+      return e;
     }
 
   /* Redirect_edge_and_branch may decide to turn branch into fallthru edge
@@ -2518,7 +2519,7 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	    abort ();
 	  e->flags |= EDGE_FALLTHRU;
           e->src->flags |= BB_DIRTY;
-	  return true;
+	  return e;
 	}
       /* In case we are redirecting fallthru edge to the branch edge
          of conditional jump, remove it.  */
@@ -2531,13 +2532,10 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	      && onlyjump_p (BB_END (src)))
 	    delete_insn (BB_END (src));
 	}
-
+      ret = redirect_edge_succ_nodup (e, dest);
       if (dump_file)
 	fprintf (dump_file, "Fallthru edge %i->%i redirected to %i\n",
 		 e->src->index, e->dest->index, dest->index);
-      redirect_edge_succ_nodup (e, dest);
-
-      ret = true;
     }
   else
     ret = redirect_branch_edge (e, dest);
@@ -2781,6 +2779,179 @@ rtl_make_forwarder_block (edge fallthru ATTRIBUTE_UNUSED)
 {
 }
 
+/* Return 1 if BB ends with a call, possibly followed by some
+   instructions that must stay with the call, 0 otherwise.  */
+
+static bool
+rtl_block_ends_with_call_p (basic_block bb)
+{
+  rtx insn = BB_END (bb);
+
+  while (GET_CODE (insn) != CALL_INSN
+	 && insn != BB_HEAD (bb)
+	 && keep_with_call_p (insn))
+    insn = PREV_INSN (insn);
+  return (GET_CODE (insn) == CALL_INSN);
+}
+
+/* Return 1 if BB ends with a conditional branch, 0 otherwise.  */
+
+static bool
+rtl_block_ends_with_condjump_p (basic_block bb)
+{
+  return any_condjump_p (BB_END (bb));
+}
+
+/* Return true if we need to add fake edge to exit.
+   Helper function for rtl_flow_call_edges_add.  */
+
+static bool
+need_fake_edge_p (rtx insn)
+{
+  if (!INSN_P (insn))
+    return false;
+
+  if ((GET_CODE (insn) == CALL_INSN
+       && !SIBLING_CALL_P (insn)
+       && !find_reg_note (insn, REG_NORETURN, NULL)
+       && !find_reg_note (insn, REG_ALWAYS_RETURN, NULL)
+       && !CONST_OR_PURE_CALL_P (insn)))
+    return true;
+
+  return ((GET_CODE (PATTERN (insn)) == ASM_OPERANDS
+	   && MEM_VOLATILE_P (PATTERN (insn)))
+	  || (GET_CODE (PATTERN (insn)) == PARALLEL
+	      && asm_noperands (insn) != -1
+	      && MEM_VOLATILE_P (XVECEXP (PATTERN (insn), 0, 0)))
+	  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
+}
+
+/* Add fake edges to the function exit for any non constant and non noreturn
+   calls, volatile inline assembly in the bitmap of blocks specified by
+   BLOCKS or to the whole CFG if BLOCKS is zero.  Return the number of blocks
+   that were split.
+
+   The goal is to expose cases in which entering a basic block does not imply
+   that all subsequent instructions must be executed.  */
+
+static int
+rtl_flow_call_edges_add (sbitmap blocks)
+{
+  int i;
+  int blocks_split = 0;
+  int last_bb = last_basic_block;
+  bool check_last_block = false;
+
+  if (n_basic_blocks == 0)
+    return 0;
+
+  if (! blocks)
+    check_last_block = true;
+  else
+    check_last_block = TEST_BIT (blocks, EXIT_BLOCK_PTR->prev_bb->index);
+
+  /* In the last basic block, before epilogue generation, there will be
+     a fallthru edge to EXIT.  Special care is required if the last insn
+     of the last basic block is a call because make_edge folds duplicate
+     edges, which would result in the fallthru edge also being marked
+     fake, which would result in the fallthru edge being removed by
+     remove_fake_edges, which would result in an invalid CFG.
+
+     Moreover, we can't elide the outgoing fake edge, since the block
+     profiler needs to take this into account in order to solve the minimal
+     spanning tree in the case that the call doesn't return.
+
+     Handle this by adding a dummy instruction in a new last basic block.  */
+  if (check_last_block)
+    {
+      basic_block bb = EXIT_BLOCK_PTR->prev_bb;
+      rtx insn = BB_END (bb);
+
+      /* Back up past insns that must be kept in the same block as a call.  */
+      while (insn != BB_HEAD (bb)
+	     && keep_with_call_p (insn))
+	insn = PREV_INSN (insn);
+
+      if (need_fake_edge_p (insn))
+	{
+	  edge e;
+
+	  for (e = bb->succ; e; e = e->succ_next)
+	    if (e->dest == EXIT_BLOCK_PTR)
+	      {
+		insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
+		commit_edge_insertions ();
+		break;
+	      }
+	}
+    }
+
+  /* Now add fake edges to the function exit for any non constant
+     calls since there is no way that we can determine if they will
+     return or not...  */
+
+  for (i = 0; i < last_bb; i++)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      rtx insn;
+      rtx prev_insn;
+
+      if (!bb)
+	continue;
+
+      if (blocks && !TEST_BIT (blocks, i))
+	continue;
+
+      for (insn = BB_END (bb); ; insn = prev_insn)
+	{
+	  prev_insn = PREV_INSN (insn);
+	  if (need_fake_edge_p (insn))
+	    {
+	      edge e;
+	      rtx split_at_insn = insn;
+
+	      /* Don't split the block between a call and an insn that should
+	         remain in the same block as the call.  */
+	      if (GET_CODE (insn) == CALL_INSN)
+		while (split_at_insn != BB_END (bb)
+		       && keep_with_call_p (NEXT_INSN (split_at_insn)))
+		  split_at_insn = NEXT_INSN (split_at_insn);
+
+	      /* The handling above of the final block before the epilogue
+	         should be enough to verify that there is no edge to the exit
+		 block in CFG already.  Calling make_edge in such case would
+		 cause us to mark that edge as fake and remove it later.  */
+
+#ifdef ENABLE_CHECKING
+	      if (split_at_insn == BB_END (bb))
+		for (e = bb->succ; e; e = e->succ_next)
+		  if (e->dest == EXIT_BLOCK_PTR)
+		    abort ();
+#endif
+
+	      /* Note that the following may create a new basic block
+		 and renumber the existing basic blocks.  */
+	      if (split_at_insn != BB_END (bb))
+		{
+		  e = split_block (bb, split_at_insn);
+		  if (e)
+		    blocks_split++;
+		}
+
+	      make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
+	    }
+
+	  if (insn == BB_HEAD (bb))
+	    break;
+	}
+    }
+
+  if (blocks_split)
+    verify_flow_info ();
+
+  return blocks_split;
+}
+
 /* Implementation of CFG manipulation for linearized RTL.  */
 struct cfg_hooks rtl_cfg_hooks = {
   "rtl",
@@ -2794,15 +2965,30 @@ struct cfg_hooks rtl_cfg_hooks = {
   rtl_move_block_after,
   rtl_can_merge_blocks,  /* can_merge_blocks_p */
   rtl_merge_blocks,
+  rtl_predict_edge,
+  rtl_predicted_by_p,
+  NULL, /* can_duplicate_block_p */
+  NULL, /* duplicate_block */
   rtl_split_edge,
   rtl_make_forwarder_block,
-  rtl_tidy_fallthru_edge
+  rtl_tidy_fallthru_edge,
+  rtl_block_ends_with_call_p,
+  rtl_block_ends_with_condjump_p,
+  rtl_flow_call_edges_add
 };
 
 /* Implementation of CFG manipulation for cfg layout RTL, where
    basic block connected via fallthru edges does not have to be adjacent.
    This representation will hopefully become the default one in future
    version of the compiler.  */
+
+/* We do not want to declare these functions in a header file, since they
+   should only be used through the cfghooks interface, and we do not want to
+   move them here since it would require also moving quite a lot of related
+   code.  */
+extern bool cfg_layout_can_duplicate_bb_p (basic_block);
+extern basic_block cfg_layout_duplicate_bb (basic_block);
+
 struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   "cfglayout mode",
   rtl_verify_flow_info_1,
@@ -2815,7 +3001,15 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   rtl_move_block_after,
   cfg_layout_can_merge_blocks_p,
   cfg_layout_merge_blocks,
+  rtl_predict_edge,
+  rtl_predicted_by_p,
+  cfg_layout_can_duplicate_bb_p,
+  cfg_layout_duplicate_bb,
   cfg_layout_split_edge,
   rtl_make_forwarder_block,
-  NULL
+  NULL,
+  rtl_block_ends_with_call_p,
+  rtl_block_ends_with_condjump_p,
+  rtl_flow_call_edges_add
 };
+

@@ -3784,11 +3784,6 @@ simplify_rtx (rtx x)
 	return simplify_gen_subreg (mode, SUBREG_REG (x),
 				    GET_MODE (SUBREG_REG (x)),
 				    SUBREG_BYTE (x));
-      if (code == CONSTANT_P_RTX)
-	{
-	  if (CONSTANT_P (XEXP (x, 0)))
-	    return const1_rtx;
-	}
       break;
 
     case RTX_OBJ:

@@ -27,7 +27,7 @@
 # stagestuff	- files to add to $(STAGESTUFF)
 
 language="ada"
-boot_language=yes
+boot_language=no
 boot_language_boot_flags='ADAFLAGS="$(BOOT_ADAFLAGS)"'
 
 compilers="gnat1\$(exeext)"
@@ -39,3 +39,6 @@ gtfiles="\$(srcdir)/ada/ada-tree.h \$(srcdir)/ada/gigi.h \$(srcdir)/ada/decl.c \
 outputs=ada/Makefile
 
 target_libs="target-libada"
+
+# Ada will not work until the front end starts emitting GIMPLE trees.
+build_by_default=no

@@ -61,6 +61,8 @@ enum c_language_kind c_language = clk_objc;
 #define LANG_HOOKS_CLEAR_BINDING_STACK lhd_do_nothing
 #undef LANG_HOOKS_EXPAND_EXPR
 #define LANG_HOOKS_EXPAND_EXPR c_expand_expr
+#undef LANG_HOOKS_EXPAND_DECL
+#define LANG_HOOKS_EXPAND_DECL c_expand_decl
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #define LANG_HOOKS_MARK_ADDRESSABLE c_mark_addressable
 #undef LANG_HOOKS_TRUTHVALUE_CONVERSION
@@ -83,16 +85,13 @@ enum c_language_kind c_language = clk_objc;
 #define LANG_HOOKS_DECL_PRINTABLE_NAME objc_printable_name
 #undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL c_warn_unused_global_decl
-#undef LANG_HOOKS_DECL_UNINIT
-#define LANG_HOOKS_DECL_UNINIT c_decl_uninit
 
 #undef LANG_HOOKS_FUNCTION_ENTER_NESTED
 #define LANG_HOOKS_FUNCTION_ENTER_NESTED c_push_function_context
 #undef LANG_HOOKS_FUNCTION_LEAVE_NESTED
 #define LANG_HOOKS_FUNCTION_LEAVE_NESTED c_pop_function_context
-
-#undef LANG_HOOKS_RTL_EXPAND_STMT
-#define LANG_HOOKS_RTL_EXPAND_STMT expand_stmt
+#undef LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P
+#define LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P c_missing_noreturn_ok_p
 
 /* Attribute hooks.  */
 #undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
@@ -113,8 +112,9 @@ enum c_language_kind c_language = clk_objc;
 #undef LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING
 #define LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
   c_convert_parm_for_inlining
-#undef LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS
-#define LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS c_estimate_num_insns
+#undef LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P
+#define LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P \
+  c_tree_chain_matters_p
 
 #undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION c_expand_body
@@ -133,6 +133,8 @@ enum c_language_kind c_language = clk_objc;
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR c_incomplete_type_error
 #undef LANG_HOOKS_TYPE_PROMOTES_TO
 #define LANG_HOOKS_TYPE_PROMOTES_TO c_type_promotes_to
+#undef  LANG_HOOKS_GIMPLIFY_EXPR
+#define LANG_HOOKS_GIMPLIFY_EXPR c_gimplify_expr
 
 /* The C front end's scoping structure is very different from
    that expected by the language-independent code; it is best

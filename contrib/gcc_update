@@ -80,6 +80,8 @@ libf2c/libI77/stamp-h.in: libf2c/libI77/configure.in
 libf2c/libI77/config.h.in: libf2c/libI77/configure.in libf2c/libI77/stamp-h.in
 libf2c/libU77/configure: libf2c/libU77/configure.in
 libf2c/libU77/stamp-h.in: libf2c/libU77/configure.in libf2c/libU77/acconfig.h
+libbanshee/configure: libbanshee/configure.in
+libmudflap/configure: libmudflap/configure.in
 libobjc/configure: libobjc/configure.ac
 zlib/aclocal.m4: zlib/configure.ac zlib/acinclude.m4
 zlib/Makefile.in: zlib/Makefile.am zlib/configure.ac zlib/aclocal.m4

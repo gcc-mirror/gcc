@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tree.h"
 #include "tree-inline.h"
+#include "tree-simple.h"
 #include "rtl.h"
 #include "insn-config.h"
 #include "integrate.h"
@@ -272,12 +273,35 @@ lhd_expand_expr (tree t ATTRIBUTE_UNUSED, rtx r ATTRIBUTE_UNUSED,
   abort ();
 }
 
+/* This is the default expand_decl function.  */
+/* The default language-specific function for expanding a DECL_STMT.  After
+   the language-independent cases are handled, this function will be
+   called.  If this function is not defined, it is assumed that
+   declarations other than those for variables and labels do not require
+   any RTL generation.  */
+
+int
+lhd_expand_decl (tree t ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 /* This is the default decl_printable_name function.  */
 
 const char *
 lhd_decl_printable_name (tree decl, int verbosity ATTRIBUTE_UNUSED)
 {
   return IDENTIFIER_POINTER (DECL_NAME (decl));
+}
+
+/* This compares two types for equivalence ("compatible" in C-based languages).
+   This routine should only return 1 if it is sure.  It should not be used
+   in contexts where erroneously returning 0 causes problems.  */
+
+int
+lhd_types_compatible_p (tree x, tree y)
+{
+  return TYPE_MAIN_VARIANT (x) == TYPE_MAIN_VARIANT (y);
 }
 
 /* lang_hooks.tree_inlining.walk_subtrees is called by walk_tree()
@@ -458,13 +482,14 @@ lhd_expr_size (tree exp)
   else
     return size_in_bytes (TREE_TYPE (exp));
 }
-/* lang_hooks.decl_uninit: Find out if a variable is uninitialized based
-   on DECL_INITIAL.  */
 
-bool
-lhd_decl_uninit (tree t ATTRIBUTE_UNUSED)
+/* lang_hooks.gimplify_expr re-writes *EXPR_P into GIMPLE form.  */
+
+int
+lhd_gimplify_expr (tree *expr_p ATTRIBUTE_UNUSED, tree *pre_p ATTRIBUTE_UNUSED,
+		   tree *post_p ATTRIBUTE_UNUSED)
 {
-  return false;
+  return GS_UNHANDLED;
 }
 
 /* lang_hooks.tree_size: Determine the size of a tree with code C,

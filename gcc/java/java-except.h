@@ -50,6 +50,9 @@ struct eh_range
 
     /* True if this range has already been expanded. */
     int expanded;
+
+    /* The TRY_CATCH_EXPR for this EH range.  */
+    tree stmt;
   };
 
 /* A dummy range that represents the entire method. */

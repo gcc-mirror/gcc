@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_TREE_DUMP_H
 #define GCC_TREE_DUMP_H
 
+#include "splay-tree.h"
+
 /* Flags used with queue functions.  */
 #define DUMP_NONE     0
 #define DUMP_BINFO    1
@@ -84,5 +86,9 @@ extern void dump_stmt (dump_info_p, tree);
 extern void dump_next_stmt (dump_info_p, tree);
 extern void queue_and_dump_index (dump_info_p, const char *, tree, int);
 extern void queue_and_dump_type (dump_info_p, tree);
+extern void dump_function (enum tree_dump_index, tree);
+extern void dump_function_to_file (tree, FILE *, int);
+
+extern unsigned int dump_register (const char *, const char *);
 
 #endif /* ! GCC_TREE_DUMP_H */

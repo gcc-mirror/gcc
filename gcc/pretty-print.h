@@ -258,6 +258,7 @@ extern void pp_base_indent (pretty_printer *);
 extern void pp_base_newline (pretty_printer *);
 extern void pp_base_character (pretty_printer *, int);
 extern void pp_base_string (pretty_printer *, const char *);
+extern void pp_write_text_to_stream (pretty_printer *pp);
 extern void pp_base_maybe_space (pretty_printer *);
 
 #endif /* GCC_PRETTY_PRINT_H */

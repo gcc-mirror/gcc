@@ -1,0 +1,29 @@
+2004-05-05  Richard Henderson  <rth@redhat.com>
+
+	* utils.c (unchecked_convert): Use OEP_ONLY_CONST.
+
+2004-03-25  Diego Novillo  <dnovillo@redhat.com>
+
+	* config-lang.in: Disable Ada by default.
+
+2004-02-16  Richard Henderson  <rth@redhat.com>
+
+	* utils.c (max_size): Add static chain op for call_expr.
+
+2003-09-25  Jason Merrill  <jason@redhat.com>
+
+	* trans.c, utils.c: Revert 2003-01-15 change.
+
+2003-01-15  Jeff Law <law@redhat.com>
+
+	* trans.c (tree_transform): Use annotate_with_file_line to add
+	file/line information to nodes.
+	(build_unit_elab): Use TREE_FILENAME and TREE_LINENO to 
+	retrieve file/line information from a node.
+	* utils.c (create_label_decl): Use annotate_with_file_line to
+	add file/line information to nodes.
+
+Local Variables:
+mode: change-log
+change-log-default-name: "ChangeLog.tree-ssa"
+End:

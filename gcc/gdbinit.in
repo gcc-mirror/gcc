@@ -40,6 +40,24 @@ Print the tree that is $ in C syntax.
 Works only when an inferior is executing.
 end
 
+define pgs
+set debug_generic_stmt ($)
+end
+
+document pgs
+Print the statement that is $ in C syntax.
+Works only when an inferior is executing.
+end
+
+define pge
+set debug_generic_expr ($)
+end
+
+document pge
+Print the expression that is $ in C syntax.
+Works only when an inferior is executing.
+end
+
 define ptc
 output (enum tree_code) $.common.code
 echo \n

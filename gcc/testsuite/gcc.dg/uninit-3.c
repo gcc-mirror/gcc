@@ -8,7 +8,7 @@ extern void error (char *);
 int
 parse_charconst (const char *start, const char *end)
 {
-  int c; /* { dg-bogus "c" "uninitialized variable warning" { xfail *-*-* } } */
+  int c; /* { dg-bogus "c" "uninitialized variable warning" } */
   int nchars, retval;
 
   nchars = 0;

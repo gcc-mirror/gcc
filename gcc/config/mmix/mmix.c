@@ -1008,7 +1008,6 @@ mmix_constant_address_p (rtx x)
     case SYMBOL_REF:
       return 1;
 
-    case CONSTANT_P_RTX:
     case HIGH:
       /* FIXME: Don't know how to dissect these.  Avoid them for now,
 	 except we know they're constants.  */

@@ -8781,16 +8781,6 @@ being called, in @code{call} RTL expressions.  On most machines this
 should be @code{QImode}.
 @end defmac
 
-@defmac INTEGRATE_THRESHOLD (@var{decl})
-A C expression for the maximum number of instructions above which the
-function @var{decl} should not be inlined.  @var{decl} is a
-@code{FUNCTION_DECL} node.
-
-The default definition of this macro is 64 plus 8 times the number of
-arguments that the function accepts.  Some people think a larger
-threshold should be used on RISC machines.
-@end defmac
-
 @defmac STDC_0_IN_SYSTEM_HEADERS
 In normal operation, the preprocessor expands @code{__STDC__} to the
 constant 1, to signify that GCC conforms to ISO Standard C@.  On some

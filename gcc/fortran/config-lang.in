@@ -1,0 +1,22 @@
+# Configure looks for the existence of this file to auto-config each language.
+# We define several parameters used by configure:
+#
+# language	- name of language as it would appear in $(LANGUAGES)
+# compilers	- value to add to $(COMPILERS)
+# stagestuff	- files to add to $(STAGESTUFF)
+# diff_excludes	- files to ignore when building diffs between two versions.
+
+language="f95"
+
+compilers="f951\$(exeext)"
+
+stagestuff="gfortran\$(exeext) f951\$(exeext)"
+
+target_libs=target-libgfortran
+
+gtfiles="\$(srcdir)/fortran/f95-lang.c \$(srcdir)/fortran/trans-decl.c \$(srcdir)/fortran/trans-intrinsic.c \$(srcdir)/fortran/trans-io.c \$(srcdir)/fortran/trans-types.c \$(srcdir)/fortran/trans-types.h \$(srcdir)/fortran/trans.h \$(srcdir)/fortran/trans-const.h"
+
+need_gmp="yes"
+
+#outputs=g95/Makefile
+

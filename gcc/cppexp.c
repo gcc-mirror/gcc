@@ -408,6 +408,7 @@ append_digit (cpp_num num, int digit, int base, size_t precision)
   result.high = num.high << shift;
   result.low = num.low << shift;
   result.high |= num.low >> (PART_PRECISION - shift);
+  result.unsignedp = num.unsignedp;
 
   if (base == 10)
     {
@@ -428,6 +429,7 @@ append_digit (cpp_num num, int digit, int base, size_t precision)
 
   result.low += add_low;
   result.high += add_high;
+  result.overflow = overflow;
 
   /* The above code catches overflow of a cpp_num type.  This catches
      overflow of the (possibly shorter) target precision.  */
@@ -435,10 +437,8 @@ append_digit (cpp_num num, int digit, int base, size_t precision)
   num.high = result.high;
   result = num_trim (result, precision);
   if (!num_eq (result, num))
-    overflow = true;
+    result.overflow = true;
 
-  result.unsignedp = num.unsignedp;
-  result.overflow = overflow;
   return result;
 }
 
@@ -520,6 +520,9 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
   unsigned int temp;
   int unsignedp = 0;
 
+  result.unsignedp = false;
+  result.overflow = false;
+
   switch (token->type)
     {
     case CPP_NUMBER:
@@ -591,7 +594,6 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
     }
 
   result.unsignedp = !!unsignedp;
-  result.overflow = false;
   return result;
 }
 
@@ -1166,8 +1168,9 @@ static cpp_num
 num_rshift (cpp_num num, size_t precision, size_t n)
 {
   cpp_num_part sign_mask;
+  bool x = num_positive (num, precision);
 
-  if (num.unsignedp || num_positive (num, precision))
+  if (num.unsignedp || x)
     sign_mask = 0;
   else
     sign_mask = ~(cpp_num_part) 0;
@@ -1332,12 +1335,11 @@ num_binary_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
       result.high = lhs.high + rhs.high;
       if (result.low < lhs.low)
 	result.high++;
+      result.unsignedp = lhs.unsignedp || rhs.unsignedp;
+      result.overflow = false;
 
       result = num_trim (result, precision);
-      result.unsignedp = lhs.unsignedp || rhs.unsignedp;
-      if (result.unsignedp)
-	result.overflow = false;
-      else
+      if (!result.unsignedp)
 	{
 	  bool lhsp = num_positive (lhs, precision);
 	  result.overflow = (lhsp == num_positive (rhs, precision)
@@ -1384,7 +1386,8 @@ num_part_mul (cpp_num_part lhs, cpp_num_part rhs)
 
   result.high += HIGH_PART (middle[0]);
   result.high += HIGH_PART (middle[1]);
-  result.unsignedp = 1;
+  result.unsignedp = true;
+  result.overflow = false;
 
   return result;
 }
@@ -1516,9 +1519,8 @@ num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
   if (op == CPP_DIV)
     {
       result.unsignedp = unsignedp;
-      if (unsignedp)
-	result.overflow = false;
-      else
+      result.overflow = false;
+      if (!unsignedp)
 	{
 	  if (negate)
 	    result = num_negate (result, precision);

@@ -1130,6 +1130,8 @@ rewrite_program2 (bitmap new_deaths)
 	  struct ra_insn_info info;
 	  unsigned int n;
 
+	  memset (&info, 0, sizeof info);
+
 	  if (INSN_P (insn) && BLOCK_FOR_INSN (insn) != last_bb)
 	    {
 	      int index = BLOCK_FOR_INSN (insn)->index + 2;

@@ -998,11 +998,6 @@ emit_stack_save (enum save_level save_level, rtx *psave, rtx after)
 	    *psave = sa = gen_reg_rtx (mode);
 	}
     }
-  else
-    {
-      if (mode == VOIDmode || GET_MODE (sa) != mode)
-	abort ();
-    }
 
   if (after)
     {
@@ -1088,6 +1083,27 @@ emit_stack_restore (enum save_level save_level, rtx sa, rtx after)
     }
   else
     emit_insn (fcn (stack_pointer_rtx, sa));
+}
+
+/* Invoke emit_stack_save on the nonlocal_goto_save_area for the current
+   function.  This function should be called whenever we allocate or
+   deallocate dynamic stack space.  */
+
+void
+update_nonlocal_goto_save_area (void)
+{
+  tree t_save;
+  rtx r_save;
+
+  /* The nonlocal_goto_save_area object is an array of N pointers.  The
+     first one is used for the frame pointer save; the rest are sized by
+     STACK_SAVEAREA_MODE.  Create a reference to array index 1, the first
+     of the stack save area slots.  */
+  t_save = build (ARRAY_REF, ptr_type_node, cfun->nonlocal_goto_save_area,
+		  integer_one_node);
+  r_save = expand_expr (t_save, NULL_RTX, VOIDmode, EXPAND_WRITE);
+
+  emit_stack_save (SAVE_NONLOCAL, &r_save, NULL_RTX);
 }
 
 #ifdef SETJMP_VIA_SAVE_AREA
@@ -1413,8 +1429,8 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
     }
 
   /* Record the new stack level for nonlocal gotos.  */
-  if (nonlocal_goto_handler_slots != 0)
-    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
+  if (cfun->nonlocal_goto_save_area != 0)
+    update_nonlocal_goto_save_area ();
 
   return target;
 }
@@ -1545,13 +1561,10 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 	  || REGNO (test_addr) < FIRST_PSEUDO_REGISTER)
 	test_addr = force_reg (Pmode, test_addr);
 
-      emit_note (NOTE_INSN_LOOP_BEG);
       emit_jump (test_lab);
 
       emit_label (loop_lab);
       emit_stack_probe (test_addr);
-
-      emit_note (NOTE_INSN_LOOP_CONT);
 
 #ifdef STACK_GROWS_DOWNWARD
 #define CMP_OPCODE GTU
@@ -1570,7 +1583,6 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
       emit_cmp_and_jump_insns (test_addr, last_addr, CMP_OPCODE,
 			       NULL_RTX, Pmode, 1, loop_lab);
       emit_jump (end_lab);
-      emit_note (NOTE_INSN_LOOP_END);
       emit_label (end_lab);
 
       emit_stack_probe (last_addr);

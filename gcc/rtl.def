@@ -1153,11 +1153,6 @@ DEF_RTL_EXPR(RANGE_VAR, "range_var", "eti", RTX_EXTRA)
    0 is the live bitmap.  Operand 1 is the original block number.  */
 DEF_RTL_EXPR(RANGE_LIVE, "range_live", "bi", RTX_EXTRA)
 
-/* A unary `__builtin_constant_p' expression.  These are only emitted
-   during RTL generation, and then only if optimize > 0.  They are
-   eliminated by the first CSE pass.  */
-DEF_RTL_EXPR(CONSTANT_P_RTX, "constant_p_rtx", "e", RTX_EXTRA)
-
 /* A placeholder for a CALL_INSN which may be turned into a normal call,
    a sibling (tail) call or tail recursion.
 

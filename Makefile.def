@@ -25,6 +25,7 @@ AutoGen definitions Makefile.tpl;
 // that recursive target in its Makefile.
 
 build_modules= { module= libiberty; };
+build_modules= { module= libbanshee; };
 
 host_modules= { module= ash; };
 host_modules= { module= autoconf; };
@@ -59,6 +60,7 @@ host_modules= { module= tcl;
 host_modules= { module= itcl; };
 host_modules= { module= ld; bootstrap=true; };
 host_modules= { module= libgui; };
+host_modules= { module= libbanshee; bootstrap=true; no_install=true; };
 host_modules= { module= libiberty; bootstrap=true; };
 host_modules= { module= libtool; };
 host_modules= { module= m4; };
@@ -97,8 +99,10 @@ host_modules= { module= libtermcap; no_check=true;
 host_modules= { module= utils; no_check=true; };
 
 target_modules = { module= libstdc++-v3; raw_cxx=true; };
+target_modules = { module= libmudflap; };
 target_modules = { module= newlib; };
 target_modules = { module= libf2c; };
+target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
 target_modules = { module= libtermcap; no_check=true; stage=true;
                    missing=mostlyclean;
@@ -202,6 +206,7 @@ flags_to_pass = { flag= CXX_FOR_TARGET ; };
 flags_to_pass = { flag= CXXFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= DLLTOOL_FOR_TARGET ; };
 flags_to_pass = { flag= GCJ_FOR_TARGET ; };
+flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };
 flags_to_pass = { flag= LIBCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LIBCXXFLAGS_FOR_TARGET ; };

@@ -89,11 +89,15 @@ DEF_PREDICTOR (PRED_LOOP_HEADER, "loop header", HITRATE (64), 0)
 
 /* Pointers are usually not NULL.  */
 DEF_PREDICTOR (PRED_POINTER, "pointer", HITRATE (81), 0)
+DEF_PREDICTOR (PRED_TREE_POINTER, "pointer (on trees)", HITRATE (81), 0)
 
 /* NE is probable, EQ not etc...  */
 DEF_PREDICTOR (PRED_OPCODE_POSITIVE, "opcode values positive", HITRATE (79), 0)
 DEF_PREDICTOR (PRED_OPCODE_NONEQUAL, "opcode values nonequal", HITRATE (71), 0)
 DEF_PREDICTOR (PRED_FPOPCODE, "fp_opcode", HITRATE (90), 0)
+DEF_PREDICTOR (PRED_TREE_OPCODE_POSITIVE, "opcode values positive (on trees)", HITRATE (79), 0)
+DEF_PREDICTOR (PRED_TREE_OPCODE_NONEQUAL, "opcode values nonequal (on trees)", HITRATE (71), 0)
+DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 
 /* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (70), 0)

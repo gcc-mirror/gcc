@@ -55,7 +55,7 @@ DEFTREECODE (TRY_EXPR, "try-catch", 'e', 2)
 /* Catch clause.
    Operand 0 is the catch clause block, which contains the declaration of
    the catch clause parameter.  */
-DEFTREECODE (CATCH_EXPR, "catch", '1', 1)
+DEFTREECODE (JAVA_CATCH_EXPR, "catch", '1', 1)
 
 /* Synchronized statement.
    Operand 0 is the expression on which we wish to synchronize,
@@ -90,6 +90,13 @@ DEFTREECODE (CLASS_LITERAL, "class_literal", '1', 1)
 
 /* The Java object within the exception object from the runtime.  */
 DEFTREECODE (JAVA_EXC_OBJ_EXPR, "java_exc_obj_expr", 'e', 0)
+
+/* Annotates a tree node (usually an expression) with source location
+   information: a file name (EXPR_WFL_FILENAME);  a line number
+   (EXPR_WFL_LINENO); and column number (EXPR_WFL_COLNO).  It is
+   expanded as the contained node (EXPR_WFL_NODE);  a line note should
+   be emitted first if EXPR_WFL_EMIT_LINE_NOTE.  */
+DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", 'e', 3)
 
 /*
 Local variables:

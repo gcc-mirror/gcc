@@ -2639,8 +2639,7 @@ fixup_section (void)							\
   (   GET_CODE (X) == CONST_INT						\
    || GET_CODE (X) == CONST_DOUBLE					\
    || (GET_CODE (X) == HIGH && GET_CODE (XEXP (X, 0)) == CONST_INT)	\
-   || got12_operand (X, VOIDmode)					\
-   || GET_CODE (X) == CONSTANT_P_RTX)
+   || got12_operand (X, VOIDmode))					\
 
 
 /* The Overall Framework of an Assembler File.  */

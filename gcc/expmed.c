@@ -1718,9 +1718,7 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	  tree amount = build_int_2 (bitpos, 0);
 	  /* Maybe propagate the target for the shift.  */
 	  /* But not if we will return it--could confuse integrate.c.  */
-	  rtx subtarget = (target != 0 && GET_CODE (target) == REG
-			   && !REG_FUNCTION_VALUE_P (target)
-			   ? target : 0);
+	  rtx subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
 	  if (tmode != mode) subtarget = 0;
 	  op0 = expand_shift (RSHIFT_EXPR, mode, op0, amount, subtarget, 1);
 	}
@@ -1759,10 +1757,7 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
       tree amount
 	= build_int_2 (GET_MODE_BITSIZE (mode) - (bitsize + bitpos), 0);
       /* Maybe propagate the target for the shift.  */
-      /* But not if we will return the result--could confuse integrate.c.  */
-      rtx subtarget = (target != 0 && GET_CODE (target) == REG
-		       && ! REG_FUNCTION_VALUE_P (target)
-		       ? target : 0);
+      rtx subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
       op0 = expand_shift (LSHIFT_EXPR, mode, op0, amount, subtarget, 1);
     }
 

@@ -568,6 +568,15 @@
 /* Define to `int' if <sys/types.h> does not define. */
 #undef ssize_t
 
+/* Define if your linker supports -pie option. */
+#undef HAVE_LD_PIE
+
+/* Define if BANSHEE is available */
+#undef HAVE_BANSHEE
+
+/* Define to PREFIX/include if cpp should also search that directory. */
+#undef PREFIX_INCLUDE_DIR
+
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
 

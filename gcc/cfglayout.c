@@ -41,8 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    in this obstack, and all are freed at the end of the function.  */
 extern struct obstack flow_obstack;
 
-alloc_pool cfg_layout_pool;
-
 /* Holds the interesting trailing notes for the function.  */
 rtx cfg_layout_function_footer, cfg_layout_function_header;
 
@@ -311,10 +309,14 @@ insn_locators_initialize (void)
 	  switch (NOTE_LINE_NUMBER (insn))
 	    {
 	    case NOTE_INSN_BLOCK_BEG:
+	      if (cfun->dont_emit_block_notes)
+		abort ();
 	      block = NOTE_BLOCK (insn);
 	      delete_insn (insn);
 	      break;
 	    case NOTE_INSN_BLOCK_END:
+	      if (cfun->dont_emit_block_notes)
+		abort ();
 	      block = BLOCK_SUPERCONTEXT (block);
 	      if (block && TREE_CODE (block) == FUNCTION_DECL)
 		block = 0;
@@ -329,11 +331,17 @@ insn_locators_initialize (void)
 	      break;
 	    }
 	}
+
+      if (cfun->dont_emit_block_notes)
+	check_block_change (insn, &block);
     }
 
   /* Tag the blocks with a depth number so that change_scope can find
      the common parent easily.  */
   set_block_levels (DECL_INITIAL (cfun->decl), 0);
+
+  if (cfun->dont_emit_block_notes)
+    free_block_changes ();
 }
 
 /* For each lexical block, set BLOCK_NUMBER to the depth at which it is
@@ -771,7 +779,7 @@ fixup_reorder_chain (void)
       nb = force_nonfallthru (e_fall);
       if (nb)
 	{
-	  cfg_layout_initialize_rbi (nb);
+	  initialize_bb_rbi (nb);
 	  nb->rbi->visited = 1;
 	  nb->rbi->next = bb->rbi->next;
 	  bb->rbi->next = nb;
@@ -933,20 +941,15 @@ fixup_fallthru_exit_predecessor (void)
 
 /* Return true in case it is possible to duplicate the basic block BB.  */
 
+/* We do not want to declare the function in a header file, since it should
+   only be used through the cfghooks interface, and we do not want to move
+   it to cfgrtl.c since it would require also moving quite a lot of related
+   code.  */
+extern bool cfg_layout_can_duplicate_bb_p (basic_block);
+
 bool
 cfg_layout_can_duplicate_bb_p (basic_block bb)
 {
-  edge s;
-
-  if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR)
-    return false;
-
-  /* Duplicating fallthru block to exit would require adding a jump
-     and splitting the real last BB.  */
-  for (s = bb->succ; s; s = s->succ_next)
-    if (s->dest == EXIT_BLOCK_PTR && s->flags & EDGE_FALLTHRU)
-       return false;
-
   /* Do not attempt to duplicate tablejumps, as we need to unshare
      the dispatch table.  This is difficult to do, as the instructions
      computing jump destination may be hoisted outside the basic block.  */
@@ -1062,26 +1065,19 @@ duplicate_insn_chain (rtx from, rtx to)
   delete_insn (last);
   return insn;
 }
-/* Create a duplicate of the basic block BB and redirect edge E into it.
-   If E is not specified, BB is just copied, but updating the frequencies
-   etc. is left to the caller.  */
+/* Create a duplicate of the basic block BB.  */
+
+/* We do not want to declare the function in a header file, since it should
+   only be used through the cfghooks interface, and we do not want to move
+   it to cfgrtl.c since it would require also moving quite a lot of related
+   code.  */
+extern basic_block cfg_layout_duplicate_bb (basic_block);
 
 basic_block
-cfg_layout_duplicate_bb (basic_block bb, edge e)
+cfg_layout_duplicate_bb (basic_block bb)
 {
   rtx insn;
-  edge s, n;
   basic_block new_bb;
-  gcov_type new_count = e ? e->count : 0;
-
-  if (bb->count < new_count)
-    new_count = bb->count;
-  if (!bb->pred)
-    abort ();
-#ifdef ENABLE_CHECKING
-  if (!cfg_layout_can_duplicate_bb_p (bb))
-    abort ();
-#endif
 
   insn = duplicate_insn_chain (BB_HEAD (bb), BB_END (bb));
   new_bb = create_basic_block (insn,
@@ -1116,60 +1112,7 @@ cfg_layout_duplicate_bb (basic_block bb, edge e)
       COPY_REG_SET (new_bb->global_live_at_end, bb->global_live_at_end);
     }
 
-  new_bb->loop_depth = bb->loop_depth;
-  new_bb->flags = bb->flags;
-  for (s = bb->succ; s; s = s->succ_next)
-    {
-      /* Since we are creating edges from a new block to successors
-	 of another block (which therefore are known to be disjoint), there
-	 is no need to actually check for duplicated edges.  */
-      n = unchecked_make_edge (new_bb, s->dest, s->flags);
-      n->probability = s->probability;
-      if (e && bb->count)
-	{
-	  /* Take care for overflows!  */
-	  n->count = s->count * (new_count * 10000 / bb->count) / 10000;
-	  s->count -= n->count;
-	}
-      else
-	n->count = s->count;
-      n->aux = s->aux;
-    }
-
-  if (e)
-    {
-      new_bb->count = new_count;
-      bb->count -= new_count;
-
-      new_bb->frequency = EDGE_FREQUENCY (e);
-      bb->frequency -= EDGE_FREQUENCY (e);
-
-      redirect_edge_and_branch_force (e, new_bb);
-
-      if (bb->count < 0)
-	bb->count = 0;
-      if (bb->frequency < 0)
-	bb->frequency = 0;
-    }
-  else
-    {
-      new_bb->count = bb->count;
-      new_bb->frequency = bb->frequency;
-    }
-
-  new_bb->rbi->original = bb;
-  bb->rbi->copy = new_bb;
-
   return new_bb;
-}
-
-void
-cfg_layout_initialize_rbi (basic_block bb)
-{
-  if (bb->rbi)
-    abort ();
-  bb->rbi = pool_alloc (cfg_layout_pool);
-  memset (bb->rbi, 0, sizeof (struct reorder_block_def));
 }
 
 /* Main entry point to this module - initialize the data structures for
@@ -1180,13 +1123,12 @@ cfg_layout_initialize (void)
 {
   basic_block bb;
 
-  /* Our algorithm depends on fact that there are now dead jumptables
+  /* Our algorithm depends on fact that there are no dead jumptables
      around the code.  */
-  cfg_layout_pool =
-    create_alloc_pool ("cfg layout pool", sizeof (struct reorder_block_def),
-		       n_basic_blocks + 2);
+  alloc_rbi_pool ();
+
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    cfg_layout_initialize_rbi (bb);
+    initialize_bb_rbi (bb);
 
   cfg_layout_rtl_register_cfg_hooks ();
 
@@ -1242,7 +1184,7 @@ cfg_layout_finalize (void)
   verify_insn_chain ();
 #endif
 
-  free_alloc_pool (cfg_layout_pool);
+  free_rbi_pool ();
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     bb->rbi = NULL;
 
@@ -1275,7 +1217,7 @@ can_copy_bbs_p (basic_block *bbs, unsigned n)
 	    goto end;
 	  }
 
-      if (!cfg_layout_can_duplicate_bb_p (bbs[i]))
+      if (!can_duplicate_block_p (bbs[i]))
 	{
 	  ret = false;
 	  break;
@@ -1318,7 +1260,7 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
     {
       /* Duplicate.  */
       bb = bbs[i];
-      new_bb = new_bbs[i] = cfg_layout_duplicate_bb (bb, NULL);
+      new_bb = new_bbs[i] = duplicate_block (bb, NULL);
       bb->rbi->duplicated = 1;
       /* Add to loop.  */
       add_bb_to_loop (new_bb, bb->loop_father->copy);

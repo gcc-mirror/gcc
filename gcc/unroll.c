@@ -724,10 +724,6 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 
   map->insn_map = xmalloc (max_insnno * sizeof (rtx));
 
-  /* Set this to zero, to indicate that we are doing loop unrolling,
-     not function inlining.  */
-  map->inline_target = 0;
-
   /* The register and constant maps depend on the number of registers
      present, so the final maps can't be created until after
      find_splittable_regs is called.  However, they are needed for

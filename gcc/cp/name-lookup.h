@@ -317,7 +317,6 @@ static inline bool
 get_global_value_if_present (tree id, tree *decl)
 {
   tree global_value = namespace_binding (id, global_namespace);
-
   if (global_value)
     *decl = global_value;
   return global_value != NULL;

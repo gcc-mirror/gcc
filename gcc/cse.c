@@ -593,7 +593,7 @@ struct cse_basic_block_data
       /* Whether it should be taken or not.  AROUND is the same as taken
 	 except that it is used when the destination label is not preceded
        by a BARRIER.  */
-      enum taken {TAKEN, NOT_TAKEN, AROUND} status;
+      enum taken {PATH_TAKEN, PATH_NOT_TAKEN, PATH_AROUND} status;
     } *path;
 };
 
@@ -4153,17 +4153,6 @@ fold_rtx (rtx x, rtx insn)
 					const_arg2 ? const_arg2 : XEXP (x, 2));
       break;
 
-    case RTX_EXTRA:
-      /* Eliminate CONSTANT_P_RTX if its constant.  */
-      if (code == CONSTANT_P_RTX)
-	{
-	  if (const_arg0)
-	    return const1_rtx;
-	  if (optimize == 0 || !flag_gcse)
-	    return const0_rtx;
-	}
-      break;
-
     default:
       break;
     }
@@ -4256,7 +4245,7 @@ gen_lowpart_if_possible (enum machine_mode mode, rtx x)
     return 0;
 }
 
-/* Given INSN, a jump insn, TAKEN indicates if we are following the "taken"
+/* Given INSN, a jump insn, PATH_TAKEN indicates if we are following the "taken"
    branch.  It will be zero if not.
 
    In certain cases, this can cause us to add an equivalence.  For example,
@@ -5644,8 +5633,6 @@ cse_insn (rtx insn, rtx libcall_insn)
 	  else
 	    INSN_CODE (insn) = -1;
 
-	  never_reached_warning (insn, NULL);
-
 	  /* Do not bother deleting any unreachable code,
 	     let jump/flow do that.  */
 
@@ -6673,14 +6660,15 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
   int i;
 
   /* Update the previous branch path, if any.  If the last branch was
-     previously TAKEN, mark it NOT_TAKEN.  If it was previously NOT_TAKEN,
+     previously PATH_TAKEN, mark it PATH_NOT_TAKEN.
+     If it was previously PATH_NOT_TAKEN,
      shorten the path by one and look at the previous branch.  We know that
      at least one branch must have been taken if PATH_SIZE is nonzero.  */
   while (path_size > 0)
     {
-      if (data->path[path_size - 1].status != NOT_TAKEN)
+      if (data->path[path_size - 1].status != PATH_NOT_TAKEN)
 	{
-	  data->path[path_size - 1].status = NOT_TAKEN;
+	  data->path[path_size - 1].status = PATH_NOT_TAKEN;
 	  break;
 	}
       else
@@ -6742,7 +6730,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	 take it, do so.  */
       if (path_entry < path_size && data->path[path_entry].branch == p)
 	{
-	  if (data->path[path_entry].status != NOT_TAKEN)
+	  if (data->path[path_entry].status != PATH_NOT_TAKEN)
 	    p = JUMP_LABEL (p);
 
 	  /* Point to next entry in path, if any.  */
@@ -6796,7 +6784,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 		break;
 
 	      data->path[path_entry].branch = p;
-	      data->path[path_entry++].status = TAKEN;
+	      data->path[path_entry++].status = PATH_TAKEN;
 
 	      /* This branch now ends our path.  It was possible that we
 		 didn't see this branch the last time around (when the
@@ -6835,7 +6823,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 	      if (tmp == q)
 		{
 		  data->path[path_entry].branch = p;
-		  data->path[path_entry++].status = AROUND;
+		  data->path[path_entry++].status = PATH_AROUND;
 
 		  path_size = path_entry;
 
@@ -6856,7 +6844,7 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
   /* If all jumps in the path are not taken, set our path length to zero
      so a rescan won't be done.  */
   for (i = path_size - 1; i >= 0; i--)
-    if (data->path[i].status != NOT_TAKEN)
+    if (data->path[i].status != PATH_NOT_TAKEN)
       break;
 
   if (i == -1)
@@ -7072,9 +7060,9 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
       if (next_branch->branch == insn)
 	{
 	  enum taken status = next_branch++->status;
-	  if (status != NOT_TAKEN)
+	  if (status != PATH_NOT_TAKEN)
 	    {
-	      if (status == TAKEN)
+	      if (status == PATH_TAKEN)
 		record_jump_equiv (insn, 1);
 	      else
 		invalidate_skipped_block (NEXT_INSN (insn));

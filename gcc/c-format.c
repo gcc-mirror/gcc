@@ -86,7 +86,7 @@ handle_format_arg_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
 {
   tree type = *node;
   tree format_num_expr = TREE_VALUE (args);
-  unsigned HOST_WIDE_INT format_num;
+  unsigned HOST_WIDE_INT format_num = 0;
   tree argument;
 
   if (!get_constant (format_num_expr, &format_num, 0))

@@ -765,9 +765,6 @@ extern int avr_case_values_threshold;
 
 #define FUNCTION_MODE HImode
 
-     /*                            1        3 */
-#define INTEGRATE_THRESHOLD(DECL) (1 + (3 * list_length (DECL_ARGUMENTS (DECL)) / 2))
-
 #define DOLLARS_IN_IDENTIFIERS 0
 
 #define NO_DOLLAR_IN_LABEL 1

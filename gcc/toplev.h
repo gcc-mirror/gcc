@@ -68,6 +68,7 @@ extern void rest_of_decl_compilation (tree, const char *, int, int);
 extern void rest_of_type_compilation (tree, int);
 extern void rest_of_compilation (tree);
 extern void tree_rest_of_compilation (tree, bool);
+extern void init_tree_optimization_passes (void);
 extern void init_optimization_passes (void);
 extern void finish_optimization_passes (void);
 extern bool enable_rtl_dump_file (int);
@@ -124,6 +125,7 @@ extern int flag_unswitch_loops;
 extern int flag_cprop_registers;
 extern int time_report;
 extern int flag_new_regalloc;
+extern int flag_tree_based_profiling;
 
 /* Things to do with target switches.  */
 extern void display_target_options (void);

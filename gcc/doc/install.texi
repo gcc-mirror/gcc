@@ -429,11 +429,11 @@ components.
 Please refer to our @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
-The full distribution includes the C, C++, Objective-C, Fortran, Java,
-and Ada (in case of GCC 3.1 and later) compilers.  The full distribution
-also includes runtime libraries for C++, Objective-C, Fortran, and Java.
-In GCC 3.0 and later versions, GNU compiler testsuites are also included
-in the full distribution.
+The full distribution includes the C, C++, Objective-C, Fortran 77, Fortran
+(in case of GCC 3.5 and later), Java, and Ada (in case of GCC 3.1 and later)
+compilers.  The full distribution also includes runtime libraries for C++,
+Objective-C, Fortran 77, Fortran, and Java.  In GCC 3.0 and later versions,
+GNU compiler testsuites are also included in the full distribution.
 
 If you choose to download specific components, you must download the core
 GCC distribution plus any language specific distributions you wish to
@@ -1029,7 +1029,8 @@ their runtime libraries should be built.  For a list of valid values for
 grep language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
-@code{ada}, @code{c}, @code{c++}, @code{f77}, @code{java}, @code{objc}.
+@code{ada}, @code{c}, @code{c++}, @code{f77}, @code{f95}, @code{java},
+@code{objc}.
 Building the Ada compiler has special requirements, see below.@*
 If you do not pass this flag, all languages available in the @file{gcc}
 sub-tree will be configured.  Re-defining @code{LANGUAGES} when calling

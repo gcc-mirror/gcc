@@ -32,6 +32,7 @@
 #include "tree.h"
 #include "cp-tree.h"
 #include "tree-inline.h"
+#include "tree-mudflap.h"
 #include "except.h"
 #include "lex.h"
 #include "toplev.h"
@@ -41,6 +42,7 @@
 #include "output.h"
 #include "timevar.h"
 #include "debug.h"
+#include "diagnostic.h"
 #include "cgraph.h"
 
 /* There routines provide a modular interface to perform many parsing
@@ -55,10 +57,7 @@
 static tree maybe_convert_cond (tree);
 static tree simplify_aggr_init_exprs_r (tree *, int *, void *);
 static void emit_associated_thunks (tree);
-static void genrtl_try_block (tree);
-static void genrtl_eh_spec_block (tree);
-static void genrtl_handler (tree);
-static void cp_expand_stmt (tree);
+static tree finalize_nrv_r (tree *, int *, void *);
 
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
@@ -788,56 +787,6 @@ finish_switch_stmt (tree switch_stmt)
   do_poplevel ();
 }
 
-/* Generate the RTL for T, which is a TRY_BLOCK.  */
-
-static void 
-genrtl_try_block (tree t)
-{
-  if (CLEANUP_P (t))
-    {
-      expand_eh_region_start ();
-      expand_stmt (TRY_STMTS (t));
-      expand_eh_region_end_cleanup (TRY_HANDLERS (t));
-    }
-  else
-    {
-      if (!FN_TRY_BLOCK_P (t)) 
-	emit_line_note (input_location);
-
-      expand_eh_region_start ();
-      expand_stmt (TRY_STMTS (t));
-
-      if (FN_TRY_BLOCK_P (t))
-	{
-	  expand_start_all_catch ();
-	  in_function_try_handler = 1;
-	  expand_stmt (TRY_HANDLERS (t));
-	  in_function_try_handler = 0;
-	  expand_end_all_catch ();
-	}
-      else 
-	{
-	  expand_start_all_catch ();  
-	  expand_stmt (TRY_HANDLERS (t));
-	  expand_end_all_catch ();
-	}
-    }
-}
-
-/* Generate the RTL for T, which is an EH_SPEC_BLOCK.  */
-
-static void 
-genrtl_eh_spec_block (tree t)
-{
-  expand_eh_region_start ();
-  expand_stmt (EH_SPEC_STMTS (t));
-  expand_eh_region_end_allowed (EH_SPEC_RAISES (t),
-				build_call (call_unexpected_node,
-					    tree_cons (NULL_TREE,
-						       build_exc_ptr (),
-						       NULL_TREE)));
-}
-
 /* Begin a try-block.  Returns a newly-created TRY_BLOCK if
    appropriate.  */
 
@@ -923,19 +872,6 @@ finish_function_handler_sequence (tree try_block)
   in_function_try_handler = 0;
   RECHAIN_STMTS (try_block, TRY_HANDLERS (try_block));
   check_handlers (TRY_HANDLERS (try_block));
-}
-
-/* Generate the RTL for T, which is a HANDLER.  */
-
-static void
-genrtl_handler (tree t)
-{
-  genrtl_do_pushlevel ();
-  if (!processing_template_decl)
-    expand_start_catch (HANDLER_TYPE (t));
-  expand_stmt (HANDLER_BODY (t));
-  if (!processing_template_decl)
-    expand_end_catch ();
 }
 
 /* Begin a handler.  Returns a HANDLER if appropriate.  */
@@ -1050,27 +986,16 @@ finish_compound_stmt (tree compound_stmt)
   return r;
 }
 
-/* Finish an asm-statement, whose components are a CV_QUALIFIER, a
-   STRING, some OUTPUT_OPERANDS, some INPUT_OPERANDS, and some
-   CLOBBERS.  */
+/* Finish an asm-statement, whose components are a STRING, some
+   OUTPUT_OPERANDS, some INPUT_OPERANDS, and some CLOBBERS.  Also note
+   whether the asm-statement should be considered volatile.  */
 
 tree
-finish_asm_stmt (tree cv_qualifier, 
-                 tree string, 
-                 tree output_operands,
-		 tree input_operands, 
-                 tree clobbers)
+finish_asm_stmt (int volatile_p, tree string, tree output_operands,
+		 tree input_operands, tree clobbers)
 {
   tree r;
   tree t;
-
-  if (cv_qualifier != NULL_TREE
-      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
-    {
-      warning ("%s qualifier ignored on asm",
-		  IDENTIFIER_POINTER (cv_qualifier));
-      cv_qualifier = NULL_TREE;
-    }
 
   if (!processing_template_decl)
     {
@@ -1133,9 +1058,10 @@ finish_asm_stmt (tree cv_qualifier,
 	}
     }
 
-  r = build_stmt (ASM_STMT, cv_qualifier, string,
+  r = build_stmt (ASM_STMT, string,
 		  output_operands, input_operands,
 		  clobbers);
+  ASM_VOLATILE_P (r) = volatile_p;
   return add_stmt (r);
 }
 
@@ -1629,7 +1555,7 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (args))
 	{
-	  result = build_nt (CALL_EXPR, fn, args);
+	  result = build_nt (CALL_EXPR, fn, args, NULL_TREE);
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  return result;
 	}
@@ -1704,7 +1630,7 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
       if (processing_template_decl)
 	{
 	  if (type_dependent_expression_p (object))
-	    return build_nt (CALL_EXPR, orig_fn, orig_args);
+	    return build_nt (CALL_EXPR, orig_fn, orig_args, NULL_TREE);
 	  object = build_non_dependent_expr (object);
 	}
 
@@ -1737,7 +1663,8 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
 
   if (processing_template_decl)
     {
-      result = build (CALL_EXPR, TREE_TYPE (result), orig_fn, orig_args);
+      result = build (CALL_EXPR, TREE_TYPE (result), orig_fn,
+		      orig_args, NULL_TREE);
       KOENIG_LOOKUP_P (result) = koenig_p;
     }
   return result;
@@ -2686,7 +2613,7 @@ finish_id_expression (tree id_expression,
       /* Resolve references to variables of anonymous unions
 	 into COMPONENT_REFs.  */
       if (TREE_CODE (decl) == ALIAS_DECL)
-	decl = DECL_INITIAL (decl);
+	decl = unshare_expr (DECL_INITIAL (decl));
     }
 
   if (TREE_DEPRECATED (decl))
@@ -2722,37 +2649,8 @@ finish_typeof (tree expr)
   return type;
 }
 
-/* Generate RTL for the statement T, and its substatements, and any
-   other statements at its nesting level.  */
-
-static void
-cp_expand_stmt (tree t)
-{
-  switch (TREE_CODE (t))
-    {
-    case TRY_BLOCK:
-      genrtl_try_block (t);
-      break;
-
-    case EH_SPEC_BLOCK:
-      genrtl_eh_spec_block (t);
-      break;
-
-    case HANDLER:
-      genrtl_handler (t);
-      break;
-
-    case USING_STMT:
-      break;
-    
-    default:
-      abort ();
-      break;
-    }
-}
-
 /* Called from expand_body via walk_tree.  Replace all AGGR_INIT_EXPRs
-   will equivalent CALL_EXPRs.  */
+   with equivalent CALL_EXPRs.  */
 
 static tree
 simplify_aggr_init_exprs_r (tree* tp, 
@@ -2905,7 +2803,7 @@ void
 expand_body (tree fn)
 {
   tree saved_function;
-  
+
   /* Compute the appropriate object-file linkage for inline
      functions.  */
   if (DECL_DECLARED_INLINE_P (fn))
@@ -3013,37 +2911,94 @@ expand_or_defer_fn (tree fn)
   function_depth--;
 }
 
-/* Helper function for walk_tree, used by finish_function to override all
-   the RETURN_STMTs and pertinent CLEANUP_STMTs for the named return
-   value optimization.  */
-
-tree
-nullify_returns_r (tree* tp, int* walk_subtrees, void* data)
+struct nrv_data
 {
-  tree nrv = (tree) data;
+  tree var;
+  tree result;
+  htab_t visited;
+};
+
+/* Helper function for walk_tree, used by finalize_nrv below.  */
+
+static tree
+finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
+{
+  struct nrv_data *dp = (struct nrv_data *)data;
+  void **slot;
 
   /* No need to walk into types.  There wouldn't be any need to walk into
      non-statements, except that we have to consider STMT_EXPRs.  */
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
+  /* Change all returns to just refer to the RESULT_DECL; this is a nop,
+     but differs from using NULL_TREE in that it indicates that we care
+     about the value of the RESULT_DECL.  */
   else if (TREE_CODE (*tp) == RETURN_STMT)
-    RETURN_STMT_EXPR (*tp) = NULL_TREE;
+    RETURN_STMT_EXPR (*tp) = dp->result;
+  /* Change all cleanups for the NRV to only run when an exception is
+     thrown.  */
   else if (TREE_CODE (*tp) == CLEANUP_STMT
-	   && CLEANUP_DECL (*tp) == nrv)
+	   && CLEANUP_DECL (*tp) == dp->var)
     CLEANUP_EH_ONLY (*tp) = 1;
+  /* Replace the DECL_STMT for the NRV with an initialization of the
+     RESULT_DECL, if needed.  */
+  else if (TREE_CODE (*tp) == DECL_STMT
+	   && DECL_STMT_DECL (*tp) == dp->var)
+    {
+      tree init;
+      if (DECL_INITIAL (dp->var)
+	  && DECL_INITIAL (dp->var) != error_mark_node)
+	{
+	  init = build (INIT_EXPR, void_type_node, dp->result,
+			DECL_INITIAL (dp->var));
+	  DECL_INITIAL (dp->var) = error_mark_node;
+	}
+      else
+	init = NULL_TREE;
+      init = build_stmt (EXPR_STMT, init);
+      SET_EXPR_LOCUS (init, EXPR_LOCUS (*tp));
+      TREE_CHAIN (init) = TREE_CHAIN (*tp);
+      *tp = init;
+    }
+  /* And replace all uses of the NRV with the RESULT_DECL.  */
+  else if (*tp == dp->var)
+    *tp = dp->result;
+
+  /* Avoid walking into the same tree more than once.  Unfortunately, we
+     can't just use walk_tree_without duplicates because it would only call
+     us for the first occurrence of dp->var in the function body.  */
+  slot = htab_find_slot (dp->visited, *tp, INSERT);
+  if (*slot)
+    *walk_subtrees = 0;
+  else
+    *slot = *tp;
 
   /* Keep iterating.  */
   return NULL_TREE;
 }
 
-/* Start generating the RTL for FN.  */
+/* Called from finish_function to implement the named return value
+   optimization by overriding all the RETURN_STMTs and pertinent
+   CLEANUP_STMTs and replacing all occurrences of VAR with RESULT, the
+   RESULT_DECL for the function.  */
 
 void
-cxx_expand_function_start (void)
+finalize_nrv (tree *tp, tree var, tree result)
 {
-  /* Give our named return value the same RTL as our RESULT_DECL.  */
-  if (current_function_return_value)
-    COPY_DECL_RTL (DECL_RESULT (cfun->decl), current_function_return_value);
+  struct nrv_data data;
+
+  /* Copy debugging information from VAR to RESULT.  */
+  DECL_NAME (result) = DECL_NAME (var);
+  DECL_SOURCE_LOCATION (result) = DECL_SOURCE_LOCATION (var);
+  DECL_ABSTRACT_ORIGIN (result) = DECL_ABSTRACT_ORIGIN (var);
+  /* Don't forget that we take its address.  */
+  TREE_ADDRESSABLE (result) = TREE_ADDRESSABLE (var);
+
+  data.var = var;
+  data.result = result;
+  data.visited = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+  walk_tree (tp, finalize_nrv_r, &data, 0);
+  htab_delete (data.visited);
 }
 
 /* Perform initialization related to this module.  */
@@ -3051,7 +3006,6 @@ cxx_expand_function_start (void)
 void
 init_cp_semantics (void)
 {
-  lang_expand_stmt = cp_expand_stmt;
 }
 
 #include "gt-cp-semantics.h"

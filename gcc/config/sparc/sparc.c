@@ -1280,10 +1280,6 @@ input_operand (rtx op, enum machine_mode mode)
   if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
     return 0;
 
-  /* Accept CONSTANT_P_RTX, since it will be gone by CSE1 and result in 0/1.  */
-  if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
-
   /* Allow any one instruction integer constant, and all CONST_INT
      variants when we are working in DImode and !arch64.  */
   if (GET_MODE_CLASS (mode) == MODE_INT

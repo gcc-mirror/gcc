@@ -13,7 +13,7 @@ extern void free (void *);
 
 void remove_dupes (struct list *el)
 {
-  struct list *p, *q, *r;  /* { dg-bogus "r" "uninitialized variable warning" { xfail *-*-* } } */
+  struct list *p, *q, *r;  /* { dg-bogus "r" "uninitialized variable warning" } */
 
   for (p = el; p; p = p->next)
   {

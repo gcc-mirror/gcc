@@ -295,13 +295,14 @@ build_tarfiles() {
   build_tarfile gcc-ada-${RELEASE} ${ADA_DIRS}
   build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
   build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
+  build_tarfile gcc-fortran-${RELEASE} ${FORTRAN95_DIRS}
   build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
   build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
   build_tarfile gcc-testsuite-${RELEASE} ${TESTSUITE_DIRS}
    
   # The core is everything else.
   EXCLUDES=""
-  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} \
+  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} ${FORTRAN95_DIRS}\
 	   ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
     EXCLUDES="${EXCLUDES} --exclude $x"
   done
@@ -324,7 +325,7 @@ build_diffs() {
   old_vers=${old_file%.tar.bz2}
   old_vers=${old_vers#gcc-}
   inform "Building diffs against version $old_vers"
-  for f in gcc gcc-ada gcc-g++ gcc-g77 gcc-java gcc-objc gcc-testsuite gcc-core; do
+  for f in gcc gcc-ada gcc-g++ gcc-g77 gcc-fortran gcc-java gcc-objc gcc-testsuite gcc-core; do
     old_tar=${old_dir}/${f}-${old_vers}.tar.bz2
     new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.bz2
     if [ ! -e $old_tar ]; then
@@ -489,6 +490,7 @@ SOURCE_DIRECTORY=""
 ADA_DIRS="gcc/ada libada"
 CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
 FORTRAN_DIRS="gcc/f libf2c"
+FORTRAN95_DIRS="gcc/fortran libgfortran"
 JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
 OBJECTIVEC_DIRS="gcc/objc libobjc"
 TESTSUITE_DIRS="gcc/testsuite"
@@ -638,6 +640,7 @@ SOURCE_DIRECTORY="${WORKING_DIRECTORY}/gcc-${RELEASE}"
 ADA_DIRS=`adjust_dirs ${ADA_DIRS}`
 CPLUSPLUS_DIRS=`adjust_dirs ${CPLUSPLUS_DIRS}`
 FORTRAN_DIRS=`adjust_dirs ${FORTRAN_DIRS}`
+FORTRAN95_DIRS=`adjust_dirs ${FORTRAN95_DIRS}`
 JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
 OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
 TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`

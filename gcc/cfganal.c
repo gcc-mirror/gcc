@@ -52,7 +52,6 @@ static void flow_dfs_compute_reverse_add_bb (depth_first_search_ds,
 static basic_block flow_dfs_compute_reverse_execute (depth_first_search_ds);
 static void flow_dfs_compute_reverse_finish (depth_first_search_ds);
 static void remove_fake_successors (basic_block);
-static bool need_fake_edge_p (rtx);
 static bool flow_active_insn_p (rtx);
 
 /* Like active_insn_p, except keep the return value clobber around
@@ -240,169 +239,6 @@ set_edge_can_fallthru_flag (void)
       bb->succ->flags |= EDGE_CAN_FALLTHRU;
       bb->succ->succ_next->flags |= EDGE_CAN_FALLTHRU;
     }
-}
-
-/* Return true if we need to add fake edge to exit.
-   Helper function for the flow_call_edges_add.  */
-
-static bool
-need_fake_edge_p (rtx insn)
-{
-  if (!INSN_P (insn))
-    return false;
-
-  if ((GET_CODE (insn) == CALL_INSN
-       && !SIBLING_CALL_P (insn)
-       && !find_reg_note (insn, REG_NORETURN, NULL)
-       && !find_reg_note (insn, REG_ALWAYS_RETURN, NULL)
-       && !CONST_OR_PURE_CALL_P (insn)))
-    return true;
-
-  return ((GET_CODE (PATTERN (insn)) == ASM_OPERANDS
-	   && MEM_VOLATILE_P (PATTERN (insn)))
-	  || (GET_CODE (PATTERN (insn)) == PARALLEL
-	      && asm_noperands (insn) != -1
-	      && MEM_VOLATILE_P (XVECEXP (PATTERN (insn), 0, 0)))
-	  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
-}
-
-/* Add fake edges to the function exit for any non constant and non noreturn
-   calls, volatile inline assembly in the bitmap of blocks specified by
-   BLOCKS or to the whole CFG if BLOCKS is zero.  Return the number of blocks
-   that were split.
-
-   The goal is to expose cases in which entering a basic block does not imply
-   that all subsequent instructions must be executed.  */
-
-int
-flow_call_edges_add (sbitmap blocks)
-{
-  int i;
-  int blocks_split = 0;
-  int last_bb = last_basic_block;
-  bool check_last_block = false;
-
-  if (n_basic_blocks == 0)
-    return 0;
-
-  if (! blocks)
-    check_last_block = true;
-  else
-    check_last_block = TEST_BIT (blocks, EXIT_BLOCK_PTR->prev_bb->index);
-
-  /* In the last basic block, before epilogue generation, there will be
-     a fallthru edge to EXIT.  Special care is required if the last insn
-     of the last basic block is a call because make_edge folds duplicate
-     edges, which would result in the fallthru edge also being marked
-     fake, which would result in the fallthru edge being removed by
-     remove_fake_edges, which would result in an invalid CFG.
-
-     Moreover, we can't elide the outgoing fake edge, since the block
-     profiler needs to take this into account in order to solve the minimal
-     spanning tree in the case that the call doesn't return.
-
-     Handle this by adding a dummy instruction in a new last basic block.  */
-  if (check_last_block)
-    {
-      basic_block bb = EXIT_BLOCK_PTR->prev_bb;
-      rtx insn = BB_END (bb);
-
-      /* Back up past insns that must be kept in the same block as a call.  */
-      while (insn != BB_HEAD (bb)
-	     && keep_with_call_p (insn))
-	insn = PREV_INSN (insn);
-
-      if (need_fake_edge_p (insn))
-	{
-	  edge e;
-
-	  for (e = bb->succ; e; e = e->succ_next)
-	    if (e->dest == EXIT_BLOCK_PTR)
-	      {
-		insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
-		commit_edge_insertions ();
-		break;
-	      }
-	}
-    }
-
-  /* Now add fake edges to the function exit for any non constant
-     calls since there is no way that we can determine if they will
-     return or not...  */
-
-  for (i = 0; i < last_bb; i++)
-    {
-      basic_block bb = BASIC_BLOCK (i);
-      rtx libcall_end = NULL_RTX;
-      rtx insn;
-      rtx prev_insn;
-
-      if (!bb)
-	continue;
-
-      if (blocks && !TEST_BIT (blocks, i))
-	continue;
-
-      for (insn = BB_END (bb); ; insn = prev_insn)
-	{
-	  prev_insn = PREV_INSN (insn);
-	  if (need_fake_edge_p (insn))
-	    {
-	      edge e;
-	      rtx split_at_insn = insn;
-
-	      /* Don't split libcalls.  */
-	      if (libcall_end)
-		split_at_insn = libcall_end;
-
-	      /* Don't split the block between a call and an insn that should
-	         remain in the same block as the call.  */
-	      else if (GET_CODE (insn) == CALL_INSN)
-		while (split_at_insn != BB_END (bb)
-		       && keep_with_call_p (NEXT_INSN (split_at_insn)))
-		  split_at_insn = NEXT_INSN (split_at_insn);
-
-	      /* The handling above of the final block before the epilogue
-	         should be enough to verify that there is no edge to the exit
-		 block in CFG already.  Calling make_edge in such case would
-		 cause us to mark that edge as fake and remove it later.  */
-
-#ifdef ENABLE_CHECKING
-	      if (split_at_insn == BB_END (bb))
-		for (e = bb->succ; e; e = e->succ_next)
-		  if (e->dest == EXIT_BLOCK_PTR)
-		    abort ();
-#endif
-
-	      /* Note that the following may create a new basic block
-		 and renumber the existing basic blocks.  */
-	      if (split_at_insn != BB_END (bb))
-		{
-		  e = split_block (bb, split_at_insn);
-		  if (e)
-		    blocks_split++;
-		}
-
-	      make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
-	    }
-
-	  /* Watch out for REG_LIBCALL/REG_RETVAL notes so that we know
-	     whether we are currently in a libcall or not.  Remember that
-	     we are scanning backwards!  */
-	  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	    libcall_end = insn;
-	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	    libcall_end = NULL_RTX;
-
-	  if (insn == BB_HEAD (bb))
-	    break;
-	}
-    }
-
-  if (blocks_split)
-    verify_flow_info ();
-
-  return blocks_split;
 }
 
 /* Find unreachable blocks.  An unreachable block will have 0 in
@@ -601,6 +437,21 @@ verify_edge_list (FILE *f, struct edge_list *elist)
 	  fprintf (f, "*** Edge (%d, %d) has index %d, but there is no edge\n",
 		   p->index, s->index, EDGE_INDEX (elist, p, s));
       }
+}
+
+/* Given PRED and SUCC blocks, return the edge which connects the blocks.
+   If no such edge exists, return NULL.  */
+
+edge
+find_edge (basic_block pred, basic_block succ)
+{
+  edge e;
+
+  for (e = pred->succ; e; e = e->succ_next)
+    if (e->dest == succ)
+      return e;
+
+  return NULL;
 }
 
 /* This routine will determine what, if any, edge there is between

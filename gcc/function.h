@@ -243,25 +243,9 @@ struct function GTY(())
   /* Number of function calls seen so far in current function.  */
   int x_function_call_count;
 
-  /* List (chain of TREE_LIST) of LABEL_DECLs for all nonlocal labels
-     (labels to which there can be nonlocal gotos from nested functions)
-     in this function.  */
-  tree x_nonlocal_labels;
-
-  /* List (chain of EXPR_LIST) of stack slots that hold the current handlers
-     for nonlocal gotos.  There is one for every nonlocal label in the
-     function; this list matches the one in nonlocal_labels.
-     Zero when function does not have nonlocal labels.  */
-  rtx x_nonlocal_goto_handler_slots;
-
   /* List (chain of EXPR_LIST) of labels heading the current handlers for
      nonlocal gotos.  */
   rtx x_nonlocal_goto_handler_labels;
-
-  /* RTX for stack slot that holds the stack pointer value to restore
-     for a nonlocal goto.
-     Zero when function does not have nonlocal labels.  */
-  rtx x_nonlocal_goto_stack_level;
 
   /* Label that will go on parm cleanup code, if any.
      Jumping to this label runs cleanup code for parameters, if
@@ -307,29 +291,19 @@ struct function GTY(())
      needed by inner routines.  */
   rtx x_arg_pointer_save_area;
 
-  /* If the function returns non-void, we will emit a clobber of the
-     return registers just in case the user fell off the end without
-     returning a proper value.  This is that insn.  */
-  rtx x_clobber_return_insn;
-
   /* Offset to end of allocated area of stack frame.
      If stack grows down, this is the address of the last stack slot allocated.
      If stack grows up, this is the address for the next slot.  */
   HOST_WIDE_INT x_frame_offset;
 
-  /* List (chain of TREE_LISTs) of static chains for containing functions.
-     Each link has a FUNCTION_DECL in the TREE_PURPOSE and a reg rtx
-     in an RTL_EXPR in the TREE_VALUE.  */
-  tree x_context_display;
+  /* A VAR_DECL that should contain the static chain for this function.
+     It will be initialized at the beginning of the function.  */
+  tree static_chain_decl;
 
-  /* List (chain of TREE_LISTs) of trampolines for nested functions.
-     The trampoline sets up the static chain and jumps to the function.
-     We supply the trampoline's address when the function's address is
-     requested.
-
-     Each link has a FUNCTION_DECL in the TREE_PURPOSE and a reg rtx
-     in an RTL_EXPR in the TREE_VALUE.  */
-  tree x_trampoline_list;
+  /* An expression that contains the non-local goto save area.  The first
+     word is the saved frame pointer and the second is the saved stack 
+     pointer.  */
+  tree nonlocal_goto_save_area;
 
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
   rtx x_parm_birth_insn;
@@ -391,6 +365,8 @@ struct function GTY(())
   int preferred_stack_boundary;
   /* Set when the call to function itself has been emit.  */
   bool recursive_call_emit;
+  /* Set when the tail call has been produced.  */
+  bool tail_call_emit;
 
   /* Language-specific code can use this to store whatever it likes.  */
   struct language_function * language;
@@ -400,6 +376,10 @@ struct function GTY(())
   /* If some insns can be deferred to the delay slots of the epilogue, the
      delay list for them is recorded here.  */
   rtx epilogue_delay_list;
+
+  /* Nonzero if NOTE_INSN_BLOCK_BEG / NOTE_INSN_BLOCK_END notes should not
+     be emitted.  */
+  unsigned int dont_emit_block_notes : 1;
 
   /* How commonly executed the function is.  Initialized during branch
      probabilities pass.  */
@@ -418,6 +398,18 @@ struct function GTY(())
      final flowgraph size.  */
   int max_jumptable_ents;
 
+  /* UIDs for LABEL_DECLs.  */
+  int last_label_uid;
+
+  /* Line number of the end of the function.  */
+  location_t function_end_locus;
+
+  /* Array mapping insn uids to blocks.  */
+  struct varray_head_tag *ib_boundaries_block;
+
+  /* The variables unexpanded so far.  */
+  tree unexpanded_var_list;
+
   /* Collected bit flags.  */
 
   /* Nonzero if function being compiled needs to be given an address
@@ -431,9 +423,6 @@ struct function GTY(())
   /* Nonzero if the current function returns a pointer type.  */
   unsigned int returns_pointer : 1;
 
-  /* Nonzero if function being compiled needs to be passed a static chain.  */
-  unsigned int needs_context : 1;
-
   /* Nonzero if function being compiled can call setjmp.  */
   unsigned int calls_setjmp : 1;
 
@@ -446,9 +435,6 @@ struct function GTY(())
 
   /* Nonzero if the function calls __builtin_eh_return.  */
   unsigned int calls_eh_return : 1;
-
-  /* Nonzero if the function calls __builtin_constant_p.  */
-  unsigned int calls_constant_p : 1;
 
   /* Nonzero if function being compiled receives nonlocal gotos
      from nested functions.  */
@@ -517,13 +503,6 @@ struct function GTY(())
 
   /* Nonzero if code to initialize arg_pointer_save_area has been emitted.  */
   unsigned int arg_pointer_save_area_init : 1;
-
-  /* Flag for use by ther rtl inliner, to tell if the function has been
-     processed at least once.  */
-  unsigned int rtl_inline_init : 1;
-
-  /* Nonzero if the rtl inliner has saved the function for inlining.  */
-  unsigned int saved_for_inline : 1;
 };
 
 /* The function currently being compiled.  */
@@ -543,12 +522,10 @@ extern int trampolines_created;
 #define current_function_returns_struct (cfun->returns_struct)
 #define current_function_returns_pcc_struct (cfun->returns_pcc_struct)
 #define current_function_returns_pointer (cfun->returns_pointer)
-#define current_function_needs_context (cfun->needs_context)
 #define current_function_calls_setjmp (cfun->calls_setjmp)
 #define current_function_calls_alloca (cfun->calls_alloca)
 #define current_function_calls_longjmp (cfun->calls_longjmp)
 #define current_function_calls_eh_return (cfun->calls_eh_return)
-#define current_function_calls_constant_p (cfun->calls_constant_p)
 #define current_function_has_computed_jump (cfun->has_computed_jump)
 #define current_function_contains_functions (cfun->contains_functions)
 #define current_function_is_thunk (cfun->is_thunk)
@@ -585,20 +562,13 @@ extern int trampolines_created;
 #define arg_pointer_save_area (cfun->x_arg_pointer_save_area)
 #define rtl_expr_chain (cfun->x_rtl_expr_chain)
 #define last_parm_insn (cfun->x_last_parm_insn)
-#define context_display (cfun->x_context_display)
-#define trampoline_list (cfun->x_trampoline_list)
 #define function_call_count (cfun->x_function_call_count)
 #define temp_slots (cfun->x_temp_slots)
 #define temp_slot_level (cfun->x_temp_slot_level)
 #define target_temp_slot_level (cfun->x_target_temp_slot_level)
 #define var_temp_slot_level (cfun->x_var_temp_slot_level)
 #define nonlocal_labels (cfun->x_nonlocal_labels)
-#define nonlocal_goto_handler_slots (cfun->x_nonlocal_goto_handler_slots)
 #define nonlocal_goto_handler_labels (cfun->x_nonlocal_goto_handler_labels)
-#define nonlocal_goto_stack_level (cfun->x_nonlocal_goto_stack_level)
-
-/* The FUNCTION_DECL for an inline function currently being expanded.  */
-extern tree inline_function_decl;
 
 /* Given a function decl for a containing function,
    return the `struct function' for it.  */
@@ -613,6 +583,14 @@ extern void reorder_blocks (void);
 
 /* Set BLOCK_NUMBER for all the blocks in FN.  */
 extern void number_blocks (tree);
+
+extern void clear_block_marks (tree);
+extern tree blocks_nreverse (tree);
+extern void reset_block_changes (void);
+extern void record_block_change (tree);
+extern void finalize_block_changes (void);
+extern void check_block_change (rtx, tree *);
+extern void free_block_changes (void);
 
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;

@@ -47,7 +47,6 @@ static tree do_end_catch (tree);
 static bool decl_is_java_type (tree decl, int err);
 static void initialize_handler_parm (tree, tree);
 static tree do_allocate_exception (tree);
-static tree stabilize_throw_expr (tree, tree *);
 static tree wrap_cleanups_r (tree *, int *, void *);
 static int complete_ptr_ref_or_void_ptr_p (tree, tree);
 static bool is_admissible_throw_operand (tree);
@@ -145,7 +144,7 @@ build_eh_type_type (tree type)
 
   mark_used (exp);
 
-  return build1 (ADDR_EXPR, ptr_type_node, exp);
+  return convert (ptr_type_node, build_address (exp));
 }
 
 tree
@@ -507,7 +506,6 @@ do_allocate_exception (tree type)
 					     NULL_TREE));
 }
 
-#if 0
 /* Call __cxa_free_exception from a cleanup.  This is never invoked
    directly, but see the comment for stabilize_throw_expr.  */
 
@@ -526,7 +524,6 @@ do_free_exception (tree ptr)
 
   return build_function_call (fn, tree_cons (NULL_TREE, ptr, NULL_TREE));
 }
-#endif
 
 /* Wrap all cleanups for TARGET_EXPRs in MUST_NOT_THROW_EXPR.
    Called from build_throw via walk_tree_without_duplicates.  */
@@ -556,58 +553,6 @@ wrap_cleanups_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   /* Keep iterating.  */
   return NULL_TREE;
-}
-
-/* Like stabilize_expr, but specifically for a thrown expression.  When
-   throwing a temporary class object, we want to construct it directly into
-   the thrown exception, so we look past the TARGET_EXPR and stabilize the
-   arguments of the call instead.
-
-   The case where EXP is a call to a function returning a class is a bit of
-   a grey area in the standard; it's unclear whether or not it should be
-   allowed to throw.  I'm going to say no, as that allows us to optimize
-   this case without worrying about deallocating the exception object if it
-   does.  The alternatives would be either not optimizing this case, or
-   wrapping the initialization in a TRY_CATCH_EXPR to call do_free_exception
-   rather than in a MUST_NOT_THROW_EXPR, for this case only.  */
-
-static tree
-stabilize_throw_expr (tree exp, tree *initp)
-{
-  tree init_expr;
-
-  if (TREE_CODE (exp) == TARGET_EXPR
-      && TREE_CODE (TARGET_EXPR_INITIAL (exp)) == AGGR_INIT_EXPR
-      && flag_elide_constructors)
-    {
-      tree aggr_init = AGGR_INIT_EXPR_CHECK (TARGET_EXPR_INITIAL (exp));
-      tree args = TREE_OPERAND (aggr_init, 1);
-      tree newargs = NULL_TREE;
-      tree *p = &newargs;
-
-      init_expr = void_zero_node;
-      for (; args; args = TREE_CHAIN (args))
-	{
-	  tree arg = TREE_VALUE (args);
-	  tree arg_init_expr;
-
-	  arg = stabilize_expr (arg, &arg_init_expr);
-
-	  if (TREE_SIDE_EFFECTS (arg_init_expr))
-	    init_expr = build (COMPOUND_EXPR, void_type_node, init_expr,
-			       arg_init_expr);
-	  *p = tree_cons (NULL_TREE, arg, NULL_TREE);
-	  p = &TREE_CHAIN (*p);
-	}
-      TREE_OPERAND (aggr_init, 1) = newargs;
-    }
-  else
-    {
-      exp = stabilize_expr (exp, &init_expr);
-    }
-
-  *initp = init_expr;
-  return exp;
 }
 
 /* Build a throw expression.  */
@@ -663,6 +608,7 @@ build_throw (tree exp)
       tree object, ptr;
       tree tmp;
       tree temp_expr, allocate_expr;
+      bool elided;
 
       fn = get_identifier ("__cxa_throw");
       if (!get_global_value_if_present (fn, &fn))
@@ -703,17 +649,14 @@ build_throw (tree exp)
 	 the call to __cxa_allocate_exception first (which doesn't
 	 matter, since it can't throw).  */
 
-      /* Pre-evaluate the thrown expression first, since if we allocated
-	 the space first we would have to deal with cleaning it up if
-	 evaluating this expression throws.  */
-      exp = stabilize_throw_expr (exp, &temp_expr);
-
       /* Allocate the space for the exception.  */
       allocate_expr = do_allocate_exception (TREE_TYPE (exp));
       allocate_expr = get_target_expr (allocate_expr);
       ptr = TARGET_EXPR_SLOT (allocate_expr);
       object = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (exp)), ptr);
       object = build_indirect_ref (object, NULL);
+
+      elided = (TREE_CODE (exp) == TARGET_EXPR);
 
       /* And initialize the exception object.  */
       exp = build_init (object, exp, LOOKUP_ONLYCONVERTING);
@@ -723,10 +666,35 @@ build_throw (tree exp)
 	  return error_mark_node;
 	}
 
-      exp = build1 (MUST_NOT_THROW_EXPR, void_type_node, exp);
+      /* Pre-evaluate the thrown expression first, since if we allocated
+	 the space first we would have to deal with cleaning it up if
+	 evaluating this expression throws.
+
+	 The case where EXP the initializer is a call to a constructor or a
+	 function returning a class is a bit of a grey area in the
+	 standard; it's unclear whether or not it should be allowed to
+	 throw.  We used to say no, as that allowed us to optimize this
+	 case without worrying about deallocating the exception object if
+	 it does.  But that conflicted with expectations (PR 13944) and the
+	 EDG compiler; now we wrap the initialization in a TRY_CATCH_EXPR
+	 to call do_free_exception rather than in a MUST_NOT_THROW_EXPR,
+	 for this case only.
+
+         Note that we don't check the return value from stabilize_init
+         because it will only return false in cases where elided is true,
+         and therefore we don't need to work around the failure to
+         preevaluate.  */
+      stabilize_init (exp, &temp_expr);
+
+      if (elided)
+	exp = build (TRY_CATCH_EXPR, void_type_node, exp,
+		     do_free_exception (ptr));
+      else
+	exp = build1 (MUST_NOT_THROW_EXPR, void_type_node, exp);
+
       /* Prepend the allocation.  */
       exp = build (COMPOUND_EXPR, TREE_TYPE (exp), allocate_expr, exp);
-      if (temp_expr != void_zero_node)
+      if (temp_expr)
 	{
 	  /* Prepend the calculation of the throw expression.  Also, force
 	     any cleanups from the expression to be evaluated here so that
@@ -921,11 +889,10 @@ check_handlers_1 (tree master, tree handlers)
     if (TREE_TYPE (handler)
 	&& can_convert_eh (type, TREE_TYPE (handler)))
       {
-	input_line = STMT_LINENO (handler);
-	warning ("exception of type `%T' will be caught",
-		    TREE_TYPE (handler));
-	input_line = STMT_LINENO (master);
-	warning ("   by earlier handler for `%T'", type);
+	warning ("%Hexception of type `%T' will be caught",
+		 EXPR_LOCUS (handler), TREE_TYPE (handler));
+	warning ("%H   by earlier handler for `%T'",
+		 EXPR_LOCUS (master), type);
 	break;
       }
 }
@@ -943,11 +910,8 @@ check_handlers (tree handlers)
       if (TREE_CHAIN (handler) == NULL_TREE)
 	/* No more handlers; nothing to shadow.  */;
       else if (TREE_TYPE (handler) == NULL_TREE)
-	{
-	  input_line = STMT_LINENO (handler);
-	  pedwarn
-	    ("`...' handler must be the last handler for its try block");
-	}
+	pedwarn ("%H`...' handler must be the last handler for"
+		 " its try block", EXPR_LOCUS (handler));
       else
 	check_handlers_1 (handler, TREE_CHAIN (handler));
     }

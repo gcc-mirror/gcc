@@ -105,7 +105,7 @@ REALLY_SET_LIB_PATH = \
   $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # This is the list of directories to be built for the build system.
-BUILD_CONFIGDIRS = libiberty
+BUILD_CONFIGDIRS = libiberty libbanshee
 # Build programs are put under this directory.
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
@@ -126,6 +126,10 @@ TARGET_SUBDIR = @target_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the target.
 TARGET_CONFIGARGS = @target_configargs@
+
+# Where to find GMP
+HOST_GMPLIBS = @gmplibs@
+HOST_GMPINC = @gmpinc@
 
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
@@ -244,7 +248,7 @@ PICFLAG =
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that prorgams built for the target machine work.
-TARGET_LIB_PATH = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
+TARGET_LIB_PATH = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:$$r/$(TARGET_SUBDIR)/libmudflap/.libs
 
 FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
 
@@ -311,6 +315,7 @@ USUAL_DLLTOOL_FOR_TARGET = ` \
   fi`
 
 GCJ_FOR_TARGET = @GCJ_FOR_TARGET@
+GFORTRAN_FOR_TARGET = @GFORTRAN_FOR_TARGET@
 
 LD_FOR_TARGET=@LD_FOR_TARGET@
 CONFIGURED_LD_FOR_TARGET=@CONFIGURED_LD_FOR_TARGET@
@@ -705,6 +710,7 @@ configure-build-[+module+]:
 	CXX="$(CXX_FOR_BUILD)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
 	LD="$(LD_FOR_BUILD)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
@@ -921,6 +927,7 @@ ELSE normal_cxx +]
 ENDIF raw_cxx +]
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -1083,6 +1090,8 @@ configure-gcc:
 	WINDRES="$(WINDRES)"; export WINDRES; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
+	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	echo Configuring in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
@@ -1600,10 +1609,10 @@ new-restage3: all-stage2-gcc
 # GCC needs to identify certain tools.
 # GCC also needs the information exported by the intl configure script.
 configure-gcc: maybe-configure-intl maybe-configure-binutils maybe-configure-gas maybe-configure-ld maybe-configure-bison maybe-configure-flex
-all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib
+all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee
 # This is a slightly kludgy method of getting dependencies on 
 # all-build-libiberty correct; it would be better to build it every time.
-all-gcc: maybe-all-build-libiberty
+all-gcc: maybe-all-build-libiberty maybe-all-libbanshee
 all-bootstrap: [+ FOR host_modules +][+ IF bootstrap +]maybe-all-[+module+] [+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 
 # Host modules specific to gdb.
@@ -1679,6 +1688,7 @@ all-target-fastjar: maybe-all-target-zlib maybe-all-target-libiberty
 configure-target-libada: $(ALL_GCC_C)
 configure-target-libf2c: $(ALL_GCC_C)
 all-target-libf2c: maybe-all-target-libiberty
+configure-target-libgfortran: $(ALL_GCC_C)
 configure-target-libffi: $(ALL_GCC_C) 
 configure-target-libjava: $(ALL_GCC_C) maybe-configure-target-zlib maybe-configure-target-boehm-gc maybe-configure-target-qthreads maybe-configure-target-libffi
 all-target-libjava: maybe-all-fastjar maybe-all-target-zlib maybe-all-target-boehm-gc maybe-all-target-qthreads maybe-all-target-libffi

@@ -126,7 +126,7 @@ fi
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl tix libgui zlib"
+host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl tix libgui zlib libbanshee"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -149,7 +149,9 @@ target_libraries="target-libiberty \
 		target-libgloss \
 		target-newlib \
 		target-libstdc++-v3 \
+		target-libmudflap \
 		target-libf2c \
+		target-libgfortran \
 		${libgcj} \
 		target-libobjc \
 		target-libada"
@@ -307,6 +309,18 @@ case "${host}" in
     ;;
 esac
 
+AC_ARG_WITH(libbanshee,
+[  --without-libbanshee   Don't build with libbanshee])
+case ${with_libbanshee} in
+  no)
+    noconfigdirs="$noconfigdirs libbanshee" ;;
+  yes|"")
+    with_libbanshee=yes
+    ;;
+  *)
+    AC_MSG_ERROR([--with-libbanshee can only be empty, "yes" or "no" (empty defaults to "yes".])
+esac
+
 AC_ARG_ENABLE(libada,
 [  --enable-libada        Builds libada directory],
 ENABLE_LIBADA=$enableval,
@@ -331,6 +345,18 @@ no)
   ;;
 esac
 
+
+# Allow --disable-libmudflap to exclude target-libmudflap
+case $enable_libmudflap in
+yes | "")
+    # By default it's enabled
+    ;;
+no)
+    noconfigdirs="$noconfigdirs target-libmudflap"
+    ;;
+esac
+
+
 case "${target}" in
   *-*-chorusos)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
@@ -345,6 +371,22 @@ case "${target}" in
     ;;
   *-*-freebsd[[12]] | *-*-freebsd[[12]].* | *-*-freebsd*aout*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
+    ;;
+  *-*-freebsd* | *-*-kfreebsd*-gnu)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    if test "x$with_gmp" = x && test "x$with_gmp_dir" = x \
+	&& test -f /usr/local/include/gmp.h; then
+      with_gmp=/usr/local
+    fi
+
+    # Skip some stuff that's unsupported on some FreeBSD configurations.
+    case "${target}" in
+      i*86-*-*) ;;
+      alpha*-*-*) ;;
+      *)
+	noconfigdirs="$noconfigdirs ${libgcj}"
+	;;
+    esac
     ;;
   *-*-kaos*)
     # Remove unsupported stuff on all kaOS configurations.
@@ -395,9 +437,6 @@ case "${target}" in
     ;;
   alpha*-*-linux*)
     # newlib is not 64 bit ready
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    ;;
-  alpha*-*-freebsd* | alpha*-*-kfreebsd*-gnu)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   alpha*-*-*)
@@ -517,9 +556,6 @@ case "${target}" in
     ;;
   i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  i[[3456789]]86-*-freebsd* | i[[3456789]]86-*-kfreebsd*-gnu)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   i[[3456789]]86-*-linux*)
     # The GCC port for glibc1 has no MD_FALLBACK_FRAME_STATE_FOR, so let's
@@ -1070,6 +1106,60 @@ fi
 ACX_PROG_GNAT
 ACX_PROG_CMP_IGNORE_INITIAL
 
+# Check for GMP
+gmplibs=
+gmpinc=
+have_gmp=yes
+# Specify a location for gmp
+AC_ARG_WITH(gmp-dir, [  --with-gmp-dir=PATH     Specify source directory for GMP library])
+
+if test "x$with_gmp_dir" != x && test -f "$with_gmp_dir/gmp.h"; then
+  gmpinc="-I$with_gmp_dir"
+  if test -f "$with_gmp_dir/.libs/libgmp.a"; then
+    gmplibs="$with_gmp_dir/.libs/libgmp.a"
+  elif test -f "$with_gmp_dir/_libs/libgmp.a"; then
+    gmplibs="$with_gmp_dir/_libs/libgmp.a"
+  fi
+  # One of the later tests will catch the error if neither library is present.
+fi
+
+AC_ARG_WITH(gmp, [  --with-gmp=PATH         Specify directory for installed GMP library])
+
+if test "x$with_gmp" != x && test -d "$with_gmp"; then
+  gmplibs="-L$with_gmp/lib -lgmp"
+  gmpinc="-I$with_gmp/include"
+fi
+
+# Use system gmp if nothing else specified
+if test "x$gmplibs" = x; then
+  gmplibs="-lgmp"
+fi
+
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $gmpinc"
+# Check GMP actually works
+AC_MSG_CHECKING([for correct version of gmp.h])
+AC_TRY_COMPILE([#include "gmp.h"],[
+#if __GNU_MP_VERSION < 3
+choke me
+#endif
+], [AC_MSG_RESULT([yes])],
+  [AC_MSG_RESULT([no]); have_gmp=no])
+
+if test x"$have_gmp" = xyes; then
+  AC_MSG_CHECKING([for mpf_init in -lgmp])
+
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS $gmplibs"
+  AC_TRY_LINK([#include <gmp.h>], [mpf_t n; mpf_init(n);],
+    [AC_MSG_RESULT([yes])],  [AC_MSG_RESULT([no]); have_gmp=no])
+  LIBS="$saved_LIBS"
+  CFLAGS="$saved_CFLAGS"
+fi
+
+AC_SUBST(gmplibs)
+AC_SUBST(gmpinc)
+
 # By default, C is the only stage 1 language.
 stage1_languages=c
 AC_SUBST(stage1_languages)
@@ -1142,6 +1232,7 @@ if test -d ${srcdir}/gcc; then
         lang_dirs=
         boot_language=
         build_by_default=
+	need_gmp=
         . ${lang_frag}
         # This is quite sensitive to the ordering of the case statement arms.
         case ,${enable_languages},:${language}:${have_gnat}:${build_by_default} in
@@ -1170,7 +1261,13 @@ if test -d ${srcdir}/gcc; then
             add_this_lang=no
             ;;
         esac
-        case $add_this_lang in
+
+	# Disable language that need GMP if it isn't available.
+	if test  x"$need_gmp" = xyes && test x"$have_gmp" = xno; then
+	  add_this_lang=no
+	fi
+        
+	case $add_this_lang in
 	  no)
             # Remove language-dependent dirs.
             eval noconfigdirs='"$noconfigdirs "'\"$target_libs $lang_dirs\"
@@ -1471,6 +1568,9 @@ if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " target-
   extra_host_args="$extra_host_args --with-newlib"
 fi
 
+if test x${with_libbanshee} = xyes && echo " ${configdirs} " | grep " libbanshee " >/dev/null 2>&1; then
+  extra_host_args="$extra_host_args --with-libbanshee"
+fi
 
 # Default to using --with-stabs for certain targets.
 if test x${with_stabs} = x ; then
@@ -1935,6 +2035,20 @@ else
 fi
 GCJ_FOR_TARGET=$GCJ_FOR_TARGET' $(FLAGS_FOR_TARGET)'
 
+if test "x${GFORTRAN_FOR_TARGET+set}" = xset; then
+  :
+elif test -d ${srcdir}/gcc; then
+  GFORTRAN_FOR_TARGET='$$r/gcc/gfortran -B$$r/gcc/'
+elif test "$host" = "$target"; then
+  GFORTRAN_FOR_TARGET='gfortran'
+else
+  GFORTRAN_FOR_TARGET=`echo gfortran | sed -e 's/x/x/' ${program_transform_name}`
+fi
+case $GFORTRAN_FOR_TARGET in
+*' $(FLAGS_FOR_TARGET)') ;;
+*) GFORTRAN_FOR_TARGET=$GFORTRAN_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
+esac
+
 # Don't use libstdc++-v3's flags to configure/build itself.
 libstdcxx_flags='`test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags --build-includes` -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
 raw_libstdcxx_flags='-L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
@@ -1976,6 +2090,7 @@ qqRAW_CXX_FOR_TARGET=`echo "$qRAW_CXX_FOR_TARGET" | sed -e 's,[[$]][[$]],$$$$,g'
 # Wrap CC_FOR_TARGET and friends, for certain types of builds.
 CC_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${CC_FOR_TARGET}"
 GCJ_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${GCJ_FOR_TARGET}"
+GFORTRAN_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${GFORTRAN_FOR_TARGET}"
 CXX_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${qCXX_FOR_TARGET}"
 RAW_CXX_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${qRAW_CXX_FOR_TARGET}"
 CXX_FOR_TARGET_FOR_RECURSIVE_MAKE="\$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}"
@@ -2057,6 +2172,7 @@ AC_SUBST(GCC_FOR_TARGET)
 AC_SUBST(FLAGS_FOR_TARGET)
 AC_SUBST(CC_FOR_TARGET)
 AC_SUBST(GCJ_FOR_TARGET)
+AC_SUBST(GFORTRAN_FOR_TARGET)
 AC_SUBST(CXX_FOR_TARGET)
 AC_SUBST(RAW_CXX_FOR_TARGET)
 AC_SUBST(CXX_FOR_TARGET_FOR_RECURSIVE_MAKE)

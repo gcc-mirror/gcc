@@ -390,6 +390,12 @@ DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", 'r', 2)
    Operand 2: index into vtable (must be an integer_cst).  */
 DEFTREECODE (VTABLE_REF, "vtable_ref", 'r', 3)
 
+/* The exception object from the runtime.  */
+DEFTREECODE (EXC_PTR_EXPR, "exc_ptr_expr", 'e', 0)
+
+/* The filter object from the runtime.  */
+DEFTREECODE (FILTER_EXPR, "filter_expr", 'e', 0)
+
 /* Constructor: return an aggregate value made from specified components.
    In C, this is used only for structure and array initializers.
    Also used for SET_TYPE in Chill (and potentially Pascal).
@@ -447,10 +453,10 @@ DEFTREECODE (TARGET_EXPR, "target_expr", 'e', 4)
 DEFTREECODE (COND_EXPR, "cond_expr", 'e', 3)
 
 /* Declare local variables, including making RTL and allocating space.
-   Operand 0 is a chain of VAR_DECL nodes for the variables.
-   Operand 1 is the body, the expression to be computed using 
+   BIND_EXPR_VARS is a chain of VAR_DECL nodes for the variables.
+   BIND_EXPR_BODY is the body, the expression to be computed using 
    the variables.  The value of operand 1 becomes that of the BIND_EXPR.
-   Operand 2 is the BLOCK that corresponds to these bindings
+   BIND_EXPR_BLOCK is the BLOCK that corresponds to these bindings
    for debugging purposes.  If this BIND_EXPR is actually expanded,
    that sets the TREE_USED flag in the BLOCK.
 
@@ -469,10 +475,16 @@ DEFTREECODE (COND_EXPR, "cond_expr", 'e', 3)
    nodes for the function.  */
 DEFTREECODE (BIND_EXPR, "bind_expr", 'e', 3)
 
+/* A labeled block. Operand 0 is the label that will be generated to
+   mark the end of the block.
+   Operand 1 is the labeled block body.  */
+DEFTREECODE (LABELED_BLOCK_EXPR, "labeled_block_expr", 'e', 2)
+
 /* Function call.  Operand 0 is the function.
    Operand 1 is the argument list, a list of expressions
-   made out of a chain of TREE_LIST nodes.  */
-DEFTREECODE (CALL_EXPR, "call_expr", 'e', 2)
+   made out of a chain of TREE_LIST nodes.
+   Operand 2 is the static chain argument, or NULL.  */
+DEFTREECODE (CALL_EXPR, "call_expr", 'e', 3)
 
 /* Specify a value to compute along with its corresponding cleanup.
    Operand 0 argument is an expression whose value needs a cleanup.
@@ -768,21 +780,14 @@ DEFTREECODE (VA_ARG_EXPR, "va_arg_expr", 'e', 1)
 /* Evaluate operand 1.  If and only if an exception is thrown during
    the evaluation of operand 1, evaluate operand 2.
 
-   This differs from WITH_CLEANUP_EXPR, in that operand 2 is never
-   evaluated unless an exception is throw.  */
+   This differs from TRY_FINALLY_EXPR in that operand 2 is not evaluated
+   on a normal or jump exit, only on an exception.  */
 DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", 'e', 2)
 
 /* Evaluate the first operand.
    The second operand is a cleanup expression which is evaluated
    on any exit (normal, exception, or jump out) from this expression.  */
 DEFTREECODE (TRY_FINALLY_EXPR, "try_finally", 'e', 2)
-
-/* Used internally for cleanups in the implementation of TRY_FINALLY_EXPR.
-   (Specifically, it is created by expand_expr, not front-ends.)
-   Operand 0 is the rtx for the start of the subroutine we need to call.
-   Operand 1 is the rtx for a variable in which to store the address
-   of where the subroutine should return to.  */
-DEFTREECODE (GOTO_SUBROUTINE_EXPR, "goto_subroutine", 'e', 2)
 
 /* These types of expressions have no useful value,
    and always have side effects.  */
@@ -795,6 +800,13 @@ DEFTREECODE (LABEL_EXPR, "label_expr", 's', 1)
 /* GOTO.  Operand 0 is a LABEL_DECL node or an expression.
    The type should be void and the value should be ignored.  */
 DEFTREECODE (GOTO_EXPR, "goto_expr", 's', 1)
+
+/* Used internally for cleanups in the implementation of TRY_FINALLY_EXPR.
+   (Specifically, it is created by expand_expr, not front-ends.)
+   Operand 0 is the rtx for the start of the subroutine we need to call.
+   Operand 1 is the rtx for a variable in which to store the address
+   of where the subroutine should return to.  */
+DEFTREECODE (GOTO_SUBROUTINE_EXPR, "goto_subroutine", 's', 2)
 
 /* RETURN.  Evaluates operand 0, then returns from the current function.
    Presumably that operand is an assignment that stores into the
@@ -812,33 +824,80 @@ DEFTREECODE (EXIT_EXPR, "exit_expr", 's', 1)
    The type should be void and the value should be ignored.  */
 DEFTREECODE (LOOP_EXPR, "loop_expr", 's', 1)
 
-/* A labeled block. Operand 0 is the label that will be generated to
-   mark the end of the block.
-   Operand 1 is the labeled block body.  */
-DEFTREECODE (LABELED_BLOCK_EXPR, "labeled_block_expr", 'e', 2)
-
 /* Exit a labeled block, possibly returning a value.  Operand 0 is a
    LABELED_BLOCK_EXPR to exit.  Operand 1 is the value to return. It
    may be left null.  */
-DEFTREECODE (EXIT_BLOCK_EXPR, "exit_block_expr", 'e', 2)
-
-/* Annotates a tree node (usually an expression) with source location
-   information: a file name (EXPR_WFL_FILENAME);  a line number
-   (EXPR_WFL_LINENO); and column number (EXPR_WFL_COLNO).  It is
-   expanded as the contained node (EXPR_WFL_NODE);  a line note should
-   be emitted first if EXPR_WFL_EMIT_LINE_NOTE.  
-   The third operand is only used in the Java front-end, and will
-   eventually be removed.  */
-DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", 'e', 3)
+DEFTREECODE (EXIT_BLOCK_EXPR, "exit_block_expr", 's', 2)
 
 /* Switch expression.
-   Operand 0 is the expression used to perform the branch,
-   Operand 1 contains the case values. The way they're organized is
-   front-end implementation defined.  */
-DEFTREECODE (SWITCH_EXPR, "switch_expr", 'e', 2)
 
-/* The exception object from the runtime.  */
-DEFTREECODE (EXC_PTR_EXPR, "exc_ptr_expr", 'e', 0)
+   TREE_TYPE is the original type of the condition, before any
+   language required type conversions.  It may be NULL, in which case
+   the original type and final types are assumed to be the same.
+
+   Operand 0 is the expression used to perform the branch,
+   Operand 1 is the body of the switch, which probably contains
+     CASE_LABEL_EXPRs.  It may also be NULL, in which case operand 2
+     must not be NULL.
+   Operand 2 is either NULL_TREE or a TREE_VEC of the CASE_LABEL_EXPRs
+     of all the cases.  */
+DEFTREECODE (SWITCH_EXPR, "switch_expr", 's', 3)
+
+/* Used to represent a case label. The operands are CASE_LOW and
+   CASE_HIGH, respectively. If CASE_LOW is NULL_TREE, the label is a
+   'default' label. If CASE_HIGH is NULL_TREE, the label is a normal case
+   label.  CASE_LABEL is the corresponding LABEL_DECL.  */
+DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", 's', 3)
+
+/* RESX.  Resume execution after an exception.  Operand 0 is a 
+   number indicating the exception region that is being left.  */
+DEFTREECODE (RESX_EXPR, "resx_expr", 's', 1)
+
+/* Used to represent an inline assembly statement.  ASM_STRING returns a
+   STRING_CST for the instruction (e.g., "mov x, y"). ASM_OUTPUTS,
+   ASM_INPUTS, and ASM_CLOBBERS represent the outputs, inputs, and clobbers
+   for the statement.  */
+DEFTREECODE (ASM_EXPR, "asm_expr", 's', 4)
+
+/* Variable references for SSA analysis.  New SSA names are created every
+   time a variable is assigned a new value.  The SSA builder uses SSA_NAME
+   nodes to implement SSA versioning.  */
+DEFTREECODE (SSA_NAME, "ssa_name", 'x', 0)
+
+/* Expression SSA real and phi operand occurrence node.  */
+DEFTREECODE (EUSE_NODE, "euse_node", 'x', 0)
+
+/* Expression SSA kill occurrence node.  */
+DEFTREECODE (EKILL_NODE, "ekill_node", 'x', 0)
+
+/* Expression SSA expression PHI.  Like a regular SSA PHI operator,
+   but for expressions*/
+DEFTREECODE (EPHI_NODE, "ephi_node", 'x', 0)
+
+/* Expression SSA exit occurrence node.  */
+DEFTREECODE (EEXIT_NODE, "eexit_node", 'x', 0)
+
+/* SSA PHI operator.  PHI_RESULT is the new SSA_NAME node created by
+   the PHI node.  PHI_ARG_LENGTH is the number of arguments.
+   PHI_ARG_ELT returns the Ith tuple <ssa_name, edge> from the
+   argument list.  Each tuple contains the incoming reaching
+   definition (SSA_NAME node) and the edge via which that definition
+   is coming through.   */
+DEFTREECODE (PHI_NODE, "phi_node", 'x', 0)
+
+/* Used to represent a typed exception handler.  CATCH_TYPES is the type (or
+   list of types) handled, and CATCH_BODY is the code for the handler.  */
+DEFTREECODE (CATCH_EXPR, "catch_expr", 's', 2)
+
+/* Used to represent an exception specification.  EH_FILTER_TYPES is a list
+   of allowed types, and EH_FILTER_FAILURE is an expression to evaluate on
+   failure.  EH_FILTER_MUST_NOT_THROW controls which range type to use when
+   expanding.  */
+DEFTREECODE (EH_FILTER_EXPR, "eh_filter_expr", 's', 2)
+
+/* Used to chain children of container statements together.
+   Use the interface in tree-iterator.h to access this node.  */
+DEFTREECODE (STATEMENT_LIST, "statement_list", 'x', 0)
 
 /*
 Local variables:

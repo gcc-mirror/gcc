@@ -45,6 +45,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "target.h"
 #include "langhooks.h"
+#include "tree-iterator.h"
+#include "basic-block.h"
+#include "tree-flow.h"
 
 /* obstack.[ch] explicitly declined to prototype this.  */
 extern int _obstack_allocated_p (struct obstack *h, void *obj);
@@ -68,6 +71,8 @@ static const char * const tree_node_kind_names[] = {
   "perm_tree_lists",
   "temp_tree_lists",
   "vecs",
+  "phi_nodes",
+  "ssa names",
   "random kinds",
   "lang_decl kinds",
   "lang_type kinds"
@@ -186,6 +191,22 @@ tree_size (tree node)
 	case ERROR_MARK:
 	case PLACEHOLDER_EXPR:	return sizeof (struct tree_common);
 
+	case PHI_NODE:		return (sizeof (struct tree_phi_node)
+					+ (PHI_ARG_CAPACITY (node) - 1) *
+					sizeof (struct phi_arg_d));
+
+	case EPHI_NODE:		return (sizeof (struct tree_ephi_node)
+					+ (EPHI_ARG_CAPACITY (node) - 1) *
+					sizeof (struct ephi_arg_d));
+
+	case SSA_NAME:		return sizeof (struct tree_ssa_name);
+	case EUSE_NODE:		return sizeof (struct tree_euse_node);
+
+	case EKILL_NODE:
+	case EEXIT_NODE: 	return sizeof (struct tree_eref_common);
+
+	case STATEMENT_LIST:	return sizeof (struct tree_statement_list);
+
 	default:
 	  return lang_hooks.tree_size (code);
 	}
@@ -212,9 +233,9 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 #endif
   struct tree_common ttmp;
 
-  /* We can't allocate a TREE_VEC without knowing how many elements
-     it will have.  */
-  if (code == TREE_VEC)
+  /* We can't allocate a TREE_VEC, PHI_NODE, EPHI_NODE or STRING_CST
+     without knowing how many elements it will have.  */
+  if (code == TREE_VEC || code == PHI_NODE || code == EPHI_NODE)
     abort ();
 
   TREE_SET_CODE ((tree)&ttmp, code);
@@ -259,6 +280,10 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	kind = id_kind;
       else if (code == TREE_VEC)
 	kind = vec_kind;
+      else if (code == PHI_NODE)
+	kind = phi_kind;
+      else if (code == SSA_NAME)
+	kind = ssa_name_kind;
       else
 	kind = x_kind;
       break;
@@ -311,6 +336,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 
     case 'c':
       TREE_CONSTANT (t) = 1;
+      TREE_INVARIANT (t) = 1;
       break;
 
     case 'e':
@@ -348,12 +374,19 @@ copy_node_stat (tree node MEM_STAT_DECL)
   enum tree_code code = TREE_CODE (node);
   size_t length;
 
+#ifdef ENABLE_CHECKING
+  if (code == STATEMENT_LIST)
+    abort ();
+#endif
+
   length = tree_size (node);
   t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
   memcpy (t, node, length);
 
   TREE_CHAIN (t) = 0;
   TREE_ASM_WRITTEN (t) = 0;
+  TREE_VISITED (t) = 0;
+  t->common.ann = 0;
 
   if (TREE_CODE_CLASS (code) == 'd')
     DECL_UID (t) = next_decl_uid++;
@@ -456,9 +489,8 @@ build_constructor (tree type, tree vals)
       TREE_SIDE_EFFECTS (c) = TREE_SIDE_EFFECTS (vals);
       TREE_READONLY (c) = TREE_READONLY (vals);
       TREE_CONSTANT (c) = TREE_CONSTANT (vals);
+      TREE_INVARIANT (c) = TREE_INVARIANT (vals);
     }
-  else
-    TREE_CONSTANT (c) = 0;  /* safe side */
 
   return c;
 }
@@ -1073,44 +1105,6 @@ tree_cons_stat (tree purpose, tree value, tree chain MEM_STAT_DECL)
   return node;
 }
 
-/* Return the first expression in a sequence of COMPOUND_EXPRs.  */
-
-tree
-expr_first (tree expr)
-{
-  if (expr == NULL_TREE)
-    return expr;
-  while (TREE_CODE (expr) == COMPOUND_EXPR)
-    expr = TREE_OPERAND (expr, 0);
-  return expr;
-}
-
-/* Return the last expression in a sequence of COMPOUND_EXPRs.  */
-
-tree
-expr_last (tree expr)
-{
-  if (expr == NULL_TREE)
-    return expr;
-  while (TREE_CODE (expr) == COMPOUND_EXPR)
-    expr = TREE_OPERAND (expr, 1);
-  return expr;
-}
-
-/* Return the number of subexpressions in a sequence of COMPOUND_EXPRs.  */
-
-int
-expr_length (tree expr)
-{
-  int len = 0;
-
-  if (expr == NULL_TREE)
-    return 0;
-  for (; TREE_CODE (expr) == COMPOUND_EXPR; expr = TREE_OPERAND (expr, 1))
-    len += expr_length (TREE_OPERAND (expr, 0));
-  ++len;
-  return len;
-}
 
 /* Return the size nominally occupied by an object of type TYPE
    when it resides in memory.  The value is measured in units of bytes,
@@ -1299,11 +1293,18 @@ staticp (tree arg)
     case STRING_CST:
       return 1;
 
+    case COMPONENT_REF:
+      /* If the thing being referenced is not a field, then it is 
+	 something language specific.  */
+      if (TREE_CODE (TREE_OPERAND (arg, 1)) != FIELD_DECL)
+	return (*lang_hooks.staticp) (arg);
+
       /* If we are referencing a bitfield, we can't evaluate an
 	 ADDR_EXPR at compile time and so it isn't a constant.  */
-    case COMPONENT_REF:
-      return (! DECL_BIT_FIELD (TREE_OPERAND (arg, 1))
-	      && staticp (TREE_OPERAND (arg, 0)));
+      if (DECL_BIT_FIELD (TREE_OPERAND (arg, 1)))
+	return 0;
+
+      return staticp (TREE_OPERAND (arg, 0));
 
     case BIT_FIELD_REF:
       return 0;
@@ -1321,6 +1322,8 @@ staticp (tree arg)
       if (TREE_CODE (TYPE_SIZE (TREE_TYPE (arg))) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg, 1)) == INTEGER_CST)
 	return staticp (TREE_OPERAND (arg, 0));
+      else
+	return 0;
 
     default:
       if ((unsigned int) TREE_CODE (arg)
@@ -1365,7 +1368,8 @@ save_expr (tree expr)
      Since it is no problem to reevaluate literals, we just return the
      literal node.  */
   inner = skip_simple_arithmetic (t);
-  if (TREE_CONSTANT (inner)
+
+  if (TREE_INVARIANT (inner)
       || (TREE_READONLY (inner) && ! TREE_SIDE_EFFECTS (inner))
       || TREE_CODE (inner) == SAVE_EXPR
       || TREE_CODE (inner) == ERROR_MARK)
@@ -1390,6 +1394,7 @@ save_expr (tree expr)
      eliminated as dead.  */
   TREE_SIDE_EFFECTS (t) = 1;
   TREE_READONLY (t) = 1;
+  TREE_INVARIANT (t) = 1;
   return t;
 }
 
@@ -1417,9 +1422,9 @@ skip_simple_arithmetic (tree expr)
 	inner = TREE_OPERAND (inner, 0);
       else if (TREE_CODE_CLASS (TREE_CODE (inner)) == '2')
 	{
-	  if (TREE_CONSTANT (TREE_OPERAND (inner, 1)))
+	  if (TREE_INVARIANT (TREE_OPERAND (inner, 1)))
 	    inner = TREE_OPERAND (inner, 0);
-	  else if (TREE_CONSTANT (TREE_OPERAND (inner, 0)))
+	  else if (TREE_INVARIANT (TREE_OPERAND (inner, 0)))
 	    inner = TREE_OPERAND (inner, 1);
 	  else
 	    break;
@@ -1508,7 +1513,14 @@ tree_node_structure (tree t)
     case IDENTIFIER_NODE:	return TS_IDENTIFIER;
     case TREE_LIST:		return TS_LIST;
     case TREE_VEC:		return TS_VEC;
+    case PHI_NODE:		return TS_PHI_NODE;
+    case EPHI_NODE:		return TS_EPHI_NODE;
+    case EUSE_NODE:             return TS_EUSE_NODE;
+    case EKILL_NODE:            return TS_EREF_NODE;
+    case EEXIT_NODE:            return TS_EREF_NODE;
+    case SSA_NAME:		return TS_SSA_NAME;
     case PLACEHOLDER_EXPR:	return TS_COMMON;
+    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
 
     default:
       abort ();
@@ -1551,57 +1563,6 @@ unsave_expr_1 (tree expr)
     }
 }
 
-/* Default lang hook for "unsave_expr_now".  */
-
-tree
-lhd_unsave_expr_now (tree expr)
-{
-  enum tree_code code;
-
-  /* There's nothing to do for NULL_TREE.  */
-  if (expr == 0)
-    return expr;
-
-  unsave_expr_1 (expr);
-
-  code = TREE_CODE (expr);
-  switch (TREE_CODE_CLASS (code))
-    {
-    case 'c':  /* a constant */
-    case 't':  /* a type node */
-    case 'd':  /* A decl node */
-    case 'b':  /* A block node */
-      break;
-
-    case 'x':  /* miscellaneous: e.g., identifier, TREE_LIST or ERROR_MARK.  */
-      if (code == TREE_LIST)
-	{
-	  lhd_unsave_expr_now (TREE_VALUE (expr));
-	  lhd_unsave_expr_now (TREE_CHAIN (expr));
-	}
-      break;
-
-    case 'e':  /* an expression */
-    case 'r':  /* a reference */
-    case 's':  /* an expression with side effects */
-    case '<':  /* a comparison expression */
-    case '2':  /* a binary arithmetic expression */
-    case '1':  /* a unary arithmetic expression */
-      {
-	int i;
-
-	for (i = first_rtl_op (code) - 1; i >= 0; i--)
-	  lhd_unsave_expr_now (TREE_OPERAND (expr, i));
-      }
-      break;
-
-    default:
-      abort ();
-    }
-
-  return expr;
-}
-
 /* Return 0 if it is safe to evaluate EXPR multiple times,
    return 1 if it is safe if EXPR is unsaved afterward, or
    return 2 if it is completely unsafe.
@@ -1638,6 +1599,14 @@ unsafe_for_reeval (tree expr)
     case SAVE_EXPR:
     case RTL_EXPR:
       return 2;
+
+      /* A label can only be emitted once.  */
+    case LABEL_EXPR:
+      return 1;
+
+    case BIND_EXPR:
+      unsafeness = 1;
+      break;
 
     case TREE_LIST:
       for (exp = expr; exp != 0; exp = TREE_CHAIN (exp))
@@ -2290,7 +2259,7 @@ stabilize_reference_1 (tree e)
      ignore things that are actual constant or that already have been
      handled by this function.  */
 
-  if (TREE_CONSTANT (e) || code == SAVE_EXPR)
+  if (TREE_INVARIANT (e))
     return e;
 
   switch (TREE_CODE_CLASS (code))
@@ -2343,11 +2312,49 @@ stabilize_reference_1 (tree e)
   TREE_READONLY (result) = TREE_READONLY (e);
   TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (e);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
+  TREE_INVARIANT (result) = 1;
 
   return result;
 }
 
 /* Low-level constructors for expressions.  */
+
+/* A helper function for build1 and constant folders.
+   Set TREE_CONSTANT and TREE_INVARIANT for an ADDR_EXPR.  */
+
+void
+recompute_tree_invarant_for_addr_expr (tree t)
+{
+  tree node = TREE_OPERAND (t, 0);
+  bool tc = false, ti = false;
+
+  /* Addresses of constants and static variables are constant;
+     all other decl addresses are invariant.  */
+  if (staticp (node))
+    tc = ti = true;
+  else
+    {
+      /* Step past constant offsets.  */
+      while (1)
+	{
+	  if (TREE_CODE (node) == COMPONENT_REF
+	      && TREE_CODE (TREE_OPERAND (node, 1)) == FIELD_DECL
+	      && ! DECL_BIT_FIELD (TREE_OPERAND (node, 1)))
+	    ;
+	  else if (TREE_CODE (node) == ARRAY_REF
+	           && TREE_CONSTANT (TREE_OPERAND (node, 1)))
+	    ;
+	  else
+	    break;
+	  node = TREE_OPERAND (node, 0);
+	}
+      if (DECL_P (node))
+        ti = true;
+    }
+
+  TREE_CONSTANT (t) = tc;
+  TREE_INVARIANT (t) = ti;
+}
 
 /* Build an expression of code CODE, data type TYPE, and operands as
    specified.  Expressions and reference nodes can be created this way.
@@ -2413,8 +2420,10 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
   TREE_SET_CODE (t, code);
 
   TREE_TYPE (t) = type;
+  SET_EXPR_LOCUS (t, NULL);
   TREE_COMPLEXITY (t) = 0;
   TREE_OPERAND (t, 0) = node;
+  TREE_BLOCK (t) = NULL_TREE;
   if (node && !TYPE_P (node) && first_rtl_op (code) != 0)
     {
       TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (node);
@@ -2448,6 +2457,8 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
     case ADDR_EXPR:
       if (node)
 	{
+	  recompute_tree_invarant_for_addr_expr (t);
+
 	  /* The address of a volatile decl or reference does not have
 	     side-effects.  But be careful not to ignore side-effects from
 	     other sources deeper in the expression--if node is a _REF and
@@ -2472,6 +2483,8 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       if (TREE_CODE_CLASS (code) == '1' && node && !TYPE_P (node)
 	  && TREE_CONSTANT (node))
 	TREE_CONSTANT (t) = 1;
+      if (TREE_CODE_CLASS (code) == '1' && node && TREE_INVARIANT (node))
+	TREE_INVARIANT (t) = 1;
       break;
     }
 
@@ -2489,13 +2502,15 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 	  read_only = 0;		\
         if (!TREE_CONSTANT (arg##N))	\
 	  constant = 0;			\
+	if (!TREE_INVARIANT (arg##N))	\
+	  invariant = 0;		\
       }					\
   } while (0)
 
 tree
 build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 {
-  bool constant, read_only, side_effects;
+  bool constant, read_only, side_effects, invariant;
   tree t;
   int fro;
 
@@ -2519,32 +2534,14 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 	      || TREE_CODE_CLASS (code) == '2');
   read_only = 1;
   side_effects = TREE_SIDE_EFFECTS (t);
+  invariant = constant;
 
   PROCESS_ARG(0);
   PROCESS_ARG(1);
 
-  if (code == CALL_EXPR && !side_effects)
-    {
-      tree node;
-      int i;
-
-      /* Calls have side-effects, except those to const or
-	 pure functions.  */
-      i = call_expr_flags (t);
-      if (!(i & (ECF_CONST | ECF_PURE)))
-	side_effects = 1;
-
-      /* And even those have side-effects if their arguments do.  */
-      else for (node = TREE_OPERAND (t, 1); node; node = TREE_CHAIN (node))
-	if (TREE_SIDE_EFFECTS (TREE_VALUE (node)))
-	  {
-	    side_effects = 1;
-	    break;
-	  }
-    }
-
   TREE_READONLY (t) = read_only;
   TREE_CONSTANT (t) = constant;
+  TREE_INVARIANT (t) = invariant;
   TREE_SIDE_EFFECTS (t) = side_effects;  
 
   return t;
@@ -2554,19 +2551,9 @@ tree
 build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 	     tree arg2 MEM_STAT_DECL)
 {
-  bool constant, read_only, side_effects;
+  bool constant, read_only, side_effects, invariant;
   tree t;
   int fro;
-
-  /* ??? Quite a lot of existing code passes one too many arguments to
-     CALL_EXPR.  Not going to fix them, because CALL_EXPR is about to
-     grow a new argument, so it would just mean changing them back.  */
-  if (code == CALL_EXPR)
-    {
-      if (arg2 != NULL_TREE)
-	abort ();
-      return build2 (code, tt, arg0, arg1);
-    }
 
 #ifdef ENABLE_CHECKING
   if (TREE_CODE_LENGTH (code) != 3)
@@ -2584,6 +2571,26 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   PROCESS_ARG(1);
   PROCESS_ARG(2);
 
+  if (code == CALL_EXPR && !side_effects)
+    {
+      tree node;
+      int i;
+
+      /* Calls have side-effects, except those to const or
+	 pure functions.  */
+      i = call_expr_flags (t);
+      if (!(i & (ECF_CONST | ECF_PURE)))
+	side_effects = 1;
+
+      /* And even those have side-effects if their arguments do.  */
+      else for (node = arg1; node; node = TREE_CHAIN (node))
+	if (TREE_SIDE_EFFECTS (TREE_VALUE (node)))
+	  {
+	    side_effects = 1;
+	    break;
+	  }
+    }
+
   TREE_SIDE_EFFECTS (t) = side_effects;  
 
   return t;
@@ -2593,7 +2600,7 @@ tree
 build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 	     tree arg2, tree arg3 MEM_STAT_DECL)
 {
-  bool constant, read_only, side_effects;
+  bool constant, read_only, side_effects, invariant;
   tree t;
   int fro;
 
@@ -2735,35 +2742,49 @@ build_block (tree vars, tree tags ATTRIBUTE_UNUSED, tree subblocks,
   return block;
 }
 
-/* EXPR_WITH_FILE_LOCATION are used to keep track of the exact
-   location where an expression or an identifier were encountered. It
-   is necessary for languages where the frontend parser will handle
-   recursively more than one file (Java is one of them).  */
+static GTY(()) tree last_annotated_node;
 
-tree
-build_expr_wfl (tree node, const char *file, int line, int col)
+/* Record the exact location where an expression or an identifier were
+   encountered.  */
+
+void
+annotate_with_file_line (tree node, const char *file, int line)
 {
-  static const char *last_file = 0;
-  static tree last_filenode = NULL_TREE;
-  tree wfl = make_node (EXPR_WITH_FILE_LOCATION);
-
-  EXPR_WFL_NODE (wfl) = node;
-  EXPR_WFL_SET_LINECOL (wfl, line, col);
-  if (file != last_file)
+  /* Roughly one percent of the calls to this function are to annotate
+     a node with the same information already attached to that node!
+     Just return instead of wasting memory.  */
+  if (EXPR_LOCUS (node)
+      && (EXPR_FILENAME (node) == file
+	  || ! strcmp (EXPR_FILENAME (node), file))
+      && EXPR_LINENO (node) == line)
     {
-      last_file = file;
-      last_filenode = file ? get_identifier (file) : NULL_TREE;
+      last_annotated_node = node;
+      return;
     }
 
-  EXPR_WFL_FILENAME_NODE (wfl) = last_filenode;
-
-  if (node && !TYPE_P (node))
+  /* In heavily macroized code (such as GCC itself) this single
+     entry cache can reduce the number of allocations by more
+     than half.  */
+  if (last_annotated_node
+      && EXPR_LOCUS (last_annotated_node)
+      && (EXPR_FILENAME (last_annotated_node) == file
+	  || ! strcmp (EXPR_FILENAME (last_annotated_node), file))
+      && EXPR_LINENO (last_annotated_node) == line)
     {
-      TREE_SIDE_EFFECTS (wfl) = TREE_SIDE_EFFECTS (node);
-      TREE_TYPE (wfl) = TREE_TYPE (node);
+      SET_EXPR_LOCUS (node, EXPR_LOCUS (last_annotated_node));
+      return;
     }
 
-  return wfl;
+  SET_EXPR_LOCUS (node, ggc_alloc (sizeof (location_t)));
+  EXPR_LINENO (node) = line;
+  EXPR_FILENAME (node) = file;
+  last_annotated_node = node;
+}
+
+void
+annotate_with_locus (tree node, location_t locus)
+{
+  annotate_with_file_line (node, locus.file, locus.line);
 }
 
 /* Return a declaration like DDECL except that its DECL_ATTRIBUTES
@@ -3655,10 +3676,8 @@ simple_cst_equal (tree t1, tree t2)
 			 TREE_STRING_LENGTH (t1)));
 
     case CONSTRUCTOR:
-      if (CONSTRUCTOR_ELTS (t1) == CONSTRUCTOR_ELTS (t2))
-	return 1;
-      else
-	abort ();
+      return simple_cst_list_equal (CONSTRUCTOR_ELTS (t1), 
+	                            CONSTRUCTOR_ELTS (t2));
 
     case SAVE_EXPR:
       return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
@@ -3773,10 +3792,7 @@ associative_tree_code (enum tree_code code)
     case BIT_AND_EXPR:
     case BIT_XOR_EXPR:
     case PLUS_EXPR:
-    case MINUS_EXPR:
     case MULT_EXPR:
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
     case MIN_EXPR:
     case MAX_EXPR:
       return true;
@@ -3864,9 +3880,17 @@ iterative_hash_expr (tree t, hashval_t val)
     {
       val = iterative_hash_object (code, val);
 
-      if (code == NOP_EXPR || code == CONVERT_EXPR
+      /* Don't hash the type, that can lead to having nodes which
+	 compare equal according to operand_equal_p, but which
+	 have different hash codes.  */
+      if (code == NOP_EXPR
+	  || code == CONVERT_EXPR
 	  || code == NON_LVALUE_EXPR)
-	val = iterative_hash_object (TREE_TYPE (t), val);
+	{
+	  /* Make sure to include signness in the hash computation.  */
+	  val += TYPE_UNSIGNED (TREE_TYPE (t));
+	  val = iterative_hash_expr (TREE_OPERAND (t, 0), val);
+	}
 
       if (commutative_tree_code (code))
 	{
@@ -3894,6 +3918,11 @@ iterative_hash_expr (tree t, hashval_t val)
 	 VECTOR_CST.  */
       for (; t; t = TREE_CHAIN (t))
 	val = iterative_hash_expr (TREE_VALUE (t), val);
+    }
+  else if (code == SSA_NAME)
+    {
+      val = iterative_hash_object (SSA_NAME_VERSION (t), val);
+      val = iterative_hash_expr (SSA_NAME_VAR (t), val);
     }
   else
     abort ();
@@ -4855,6 +4884,8 @@ dump_tree_statistics (void)
   fprintf (stderr, "---------------------------------------\n");
   fprintf (stderr, "%-20s %7d %10d\n", "Total", total_nodes, total_bytes);
   fprintf (stderr, "---------------------------------------\n");
+  ssanames_print_statistics ();
+  phinodes_print_statistics ();
 #else
   fprintf (stderr, "(No per-node statistics)\n");
 #endif
@@ -5155,6 +5186,30 @@ tree_vec_elt_check_failed (int idx, int len, const char *file, int line,
      idx + 1, len, function, trim_filename (file), line);
 }
 
+/* Similar to above, except that the check is for the bounds of a EPHI_NODE's
+   (dynamically sized) vector.  */
+
+void
+ephi_node_elt_check_failed (int idx, int len, const char *file, int line,
+			    const char *function)
+{
+  internal_error
+    ("tree check: accessed elt %d of ephi_node with %d elts in %s, at %s:%d",
+     idx + 1, len, function, trim_filename (file), line);
+}
+
+/* Similar to above, except that the check is for the bounds of a PHI_NODE's
+   (dynamically sized) vector.  */
+
+void
+phi_node_elt_check_failed (int idx, int len, const char *file, int line,
+			    const char *function)
+{
+  internal_error
+    ("tree check: accessed elt %d of phi_node with %d elts in %s, at %s:%d",
+     idx + 1, len, function, trim_filename (file), line);
+}
+
 /* Similar to above, except that the check is for the bounds of the operand
    vector of an expression node.  */
 
@@ -5447,44 +5502,94 @@ build_vector_type (tree innertype, int nunits)
 bool
 initializer_zerop (tree init)
 {
+  tree elt;
+
   STRIP_NOPS (init);
 
   switch (TREE_CODE (init))
     {
     case INTEGER_CST:
       return integer_zerop (init);
+
     case REAL_CST:
+      /* ??? Note that this is not correct for C4X float formats.  There,
+	 a bit pattern of all zeros is 1.0; 0.0 is encoded with the most
+	 negative exponent.  */
       return real_zerop (init)
 	&& ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (init));
+
     case COMPLEX_CST:
       return integer_zerop (init)
 	|| (real_zerop (init)
 	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_REALPART (init)))
 	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init))));
-    case CONSTRUCTOR:
-      {
-	/* Set is empty if it has no elements.  */
-        if ((TREE_CODE (TREE_TYPE (init)) == SET_TYPE)
-             && CONSTRUCTOR_ELTS (init))
+
+    case VECTOR_CST:
+      for (elt = TREE_VECTOR_CST_ELTS (init); elt; elt = TREE_CHAIN (elt))
+	if (!initializer_zerop (TREE_VALUE (elt)))
 	  return false;
+      return true;
 
-	if (AGGREGATE_TYPE_P (TREE_TYPE (init)))
-	  {
-	    tree aggr_init = CONSTRUCTOR_ELTS (init);
+    case CONSTRUCTOR:
+      elt = CONSTRUCTOR_ELTS (init);
+      if (elt == NULL_TREE)
+	return true;
 
-	    while (aggr_init)
-	      {
-		if (! initializer_zerop (TREE_VALUE (aggr_init)))
-		  return false;
-		aggr_init = TREE_CHAIN (aggr_init);
-	      }
-	    return true;
-	  }
+      /* A set is empty only if it has no elements.  */
+      if (TREE_CODE (TREE_TYPE (init)) == SET_TYPE)
 	return false;
-      }
+
+      for (; elt ; elt = TREE_CHAIN (elt))
+	if (! initializer_zerop (TREE_VALUE (elt)))
+	  return false;
+      return true;
+
     default:
       return false;
     }
+}
+
+void
+add_var_to_bind_expr (tree bind_expr, tree var)
+{
+  BIND_EXPR_VARS (bind_expr)
+    = chainon (BIND_EXPR_VARS (bind_expr), var);
+  if (BIND_EXPR_BLOCK (bind_expr))
+    BLOCK_VARS (BIND_EXPR_BLOCK (bind_expr))
+      = BIND_EXPR_VARS (bind_expr);
+}
+
+/* Build an empty statement.  */
+
+tree
+build_empty_stmt (void)
+{
+  return build1 (NOP_EXPR, void_type_node, size_zero_node);
+}
+
+bool
+is_essa_node (tree t)
+{
+  if (TREE_CODE (t) == EPHI_NODE || TREE_CODE (t) == EUSE_NODE 
+      || TREE_CODE (t) == EEXIT_NODE || TREE_CODE (t) == EKILL_NODE)
+    return true;
+  return false;
+}
+
+
+/* Return true if T (assumed to be a DECL) must be assigned a memory
+   location.  */
+
+bool
+needs_to_live_in_memory (tree t)
+{
+  return (DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL (t)
+	  || TREE_STATIC (t)
+          || DECL_EXTERNAL (t)
+	  || DECL_NONLOCAL (t)
+	  || (TREE_CODE (t) == RESULT_DECL
+	      && aggregate_value_p (t, current_function_decl))
+	  || decl_function_context (t) != current_function_decl);
 }
 
 #include "gt-tree.h"

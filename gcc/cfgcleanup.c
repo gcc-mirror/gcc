@@ -1368,7 +1368,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	  /* The labels should never be the same rtx.  If they really are same
 	     the jump tables are same too. So disable crossjumping of blocks BB1
 	     and BB2 because when deleting the common insns in the end of BB1
-	     by delete_block () the jump table would be deleted too.  */
+	     by delete_basic_block () the jump table would be deleted too.  */
 	  /* If LABEL2 is referenced in BB1->END do not do anything
 	     because we would loose information when replacing
 	     LABEL1 by LABEL2 and then LABEL2 by LABEL1 in BB1->END.  */
@@ -1500,6 +1500,8 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   basic_block redirect_to, redirect_from, to_remove;
   rtx newpos1, newpos2;
   edge s;
+
+  newpos1 = newpos2 = NULL_RTX;
 
   /* If we have partitioned hot/cold basic blocks, it is a bad idea
      to try this optimization.  */
@@ -2031,6 +2033,32 @@ delete_unreachable_blocks (void)
 
   if (changed)
     tidy_fallthru_edges ();
+  return changed;
+}
+
+/* Merges sequential blocks if possible.  */
+
+bool
+merge_seq_blocks (void)
+{
+  basic_block bb;
+  bool changed = false;
+
+  for (bb = ENTRY_BLOCK_PTR->next_bb; bb != EXIT_BLOCK_PTR; )
+    {
+      if (bb->succ
+	  && !bb->succ->succ_next
+	  && can_merge_blocks_p (bb, bb->succ->dest))
+	{
+	  /* Merge the blocks and retry.  */
+	  merge_blocks (bb, bb->succ->dest);
+	  changed = true;
+	  continue;
+	}
+
+      bb = bb->next_bb;
+    }
+
   return changed;
 }
 

@@ -544,6 +544,14 @@ if test x$enable_gather_detailed_mem_stats = xyes ; then
         [Define to enable detailed memory allocation stats gathering.])
 fi
 
+AC_ARG_ENABLE(tree-browser,
+[  --enable-tree-browser   enable the tree browsing routines for debugging], [],
+[enable_tree_browser=no])
+if test x$enable_tree_browser = xyes ; then
+  TREEBROWSER=tree-browser.o
+fi
+AC_SUBST(TREEBROWSER)
+
 # -------------------------------
 # Miscenalleous configure options
 # -------------------------------
@@ -2847,6 +2855,28 @@ else
 fi
 AC_SUBST(MAINT)dnl
 
+AC_MSG_CHECKING([whether to use libbanshee for points-to alias analysis])
+AC_ARG_WITH(libbanshee,
+[  --with-libbanshee	  enable libbanshee],
+libbanshee="$with_libbanshee",
+libbanshee=no)
+
+if test x"$libbanshee" = xyes; then
+	BANSHEELIB="../libbanshee/points-to/libandersen.a ../libbanshee/engine/libbansheeengine.a ../libbanshee/libcompat/libbansheecompat.a "
+	BANSHEEINC="-I\$(srcdir)/../libbanshee/libcompat -I\$(srcdir)/../libbanshee -I\$(srcdir)/../libbanshee/points-to"
+	ANDER="tree-alias-ander.o"
+	AC_DEFINE(HAVE_BANSHEE, 1, [Define if BANSHEE is available])
+else
+	BANSHEELIB=""
+	BANSHEEINC=""
+	ANDER=""
+fi
+AC_MSG_RESULT($with_libbanshee)
+
+AC_SUBST(ANDER)
+AC_SUBST(BANSHEEINC)
+AC_SUBST(BANSHEELIB)
+
 # --------------
 # Language hooks
 # --------------
@@ -3142,6 +3172,9 @@ else
     echo " from ${host} to ${target}." 1>&2
   fi
 fi
+
+AC_ARG_VAR(GMPLIBS,[How to link GMP])
+AC_ARG_VAR(GMPINC,[How to find GMP include files])
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

@@ -270,16 +270,13 @@ uw_init_context (struct _Unwind_Context *context)
   context->fc = _Unwind_SjLj_GetContext ();
 }
 
-/* ??? There appear to be bugs in integrate.c wrt __builtin_longjmp and
-   virtual-stack-vars.  An inline version of this segfaults on SPARC.  */
-#define uw_install_context(CURRENT, TARGET)		\
-  do							\
-    {							\
-      _Unwind_SjLj_SetContext ((TARGET)->fc);		\
-      longjmp ((TARGET)->fc->jbuf, 1);			\
-    }							\
-  while (0)
-
+static void __attribute__((noreturn))
+uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
+                    struct _Unwind_Context *target)
+{
+  _Unwind_SjLj_SetContext (target->fc);
+  longjmp (target->fc->jbuf, 1);
+}
 
 static inline _Unwind_Ptr
 uw_identify_context (struct _Unwind_Context *context)

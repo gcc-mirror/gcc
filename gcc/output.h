@@ -150,12 +150,7 @@ extern int add_weak (tree, const char *, const char *);
 
 /* Functions in flow.c */
 extern void allocate_for_life_analysis (void);
-extern int regno_uninitialized (unsigned int);
 extern int regno_clobbered_at_setjmp (int);
-extern void find_basic_blocks (rtx, int, FILE *);
-extern bool cleanup_cfg (int);
-extern bool delete_unreachable_blocks (void);
-extern void check_function_return_warnings (void);
 
 /* Functions in varasm.c.  */
 

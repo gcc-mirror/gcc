@@ -2220,7 +2220,7 @@ max_size (tree exp, int max_p)
 				max_size (TREE_OPERAND (exp, 2), max_p)));
 	  else if (code == CALL_EXPR && TREE_OPERAND (exp, 1) != 0)
 	    return build (CALL_EXPR, type, TREE_OPERAND (exp, 0),
-			  max_size (TREE_OPERAND (exp, 1), max_p));
+			  max_size (TREE_OPERAND (exp, 1), max_p), NULL);
 	}
     }
 
@@ -3432,7 +3432,8 @@ unchecked_convert (tree type, tree expr, int notrunc_p)
   /* If the sizes of the types differ and this is an VIEW_CONVERT_EXPR,
      show no longer constant.  */
   if (TREE_CODE (expr) == VIEW_CONVERT_EXPR
-      && ! operand_equal_p (TYPE_SIZE_UNIT (type), TYPE_SIZE_UNIT (etype), 1))
+      && ! operand_equal_p (TYPE_SIZE_UNIT (type), TYPE_SIZE_UNIT (etype),
+			    OEP_ONLY_CONST))
     TREE_CONSTANT (expr) = 0;
 
   return expr;

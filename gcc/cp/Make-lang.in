@@ -73,14 +73,16 @@ g++-cross$(exeext): g++$(exeext)
 # Shared with C front end:
 CXX_C_OBJS = attribs.o c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o \
 	c-dump.o $(CXX_TARGET_OBJS) c-pretty-print.o c-opts.o c-pch.o \
-	c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o prefix.o
+	c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o prefix.o \
+	c-simplify.o tree-inline.o
 
 # Language-specific object files.
 CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parser.o cp/ptree.o cp/rtti.o \
  cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o cp/optimize.o \
- cp/mangle.o cp/cp-lang.o cp/name-lookup.o cp/cxx-pretty-print.o
+ cp/mangle.o cp/cp-lang.o cp/name-lookup.o cp/cxx-pretty-print.o \
+ cp/cp-simplify.o tree-mudflap.o cp/cp-mudflap.o
 
 # Use strict warnings for this front end.
 cp-warn = $(STRICT_WARN) $(WERROR)
@@ -221,7 +223,7 @@ cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h langhooks.h \
 cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) flags.h cp/lex.h cp/decl.h stack.h \
   output.h $(EXPR_H) except.h toplev.h $(HASHTAB_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) tree-inline.h diagnostic.h c-pragma.h \
-  debug.h gt-cp-decl.h gtype-cp.h timevar.h
+  debug.h gt-cp-decl.h gtype-cp.h timevar.h $(TREE_FLOW_H)
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h $(RTL_H) c-common.h gt-cp-decl2.h cgraph.h
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h output.h $(TM_P_H) \
@@ -257,12 +259,16 @@ cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) cp/lex.h except.h toplev.h 
   tree-inline.h cgraph.h
 cp/dump.o: cp/dump.c $(CXX_TREE_H) $(TM_H) tree-dump.h
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) rtl.h integrate.h insn-config.h \
-  input.h $(PARAMS_H) debug.h tree-inline.h
+  input.h $(PARAMS_H) debug.h tree-inline.h tree-simple.h
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h real.h gt-cp-mangle.h \
   $(TARGET_H) $(TM_P_H)
 
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) diagnostic.h gt-cp-parser.h \
   output.h
+cp/cp-simplify.o: cp/cp-simplify.c $(CXX_TREE_H) toplev.h c-common.h \
+	$(TM_H) coretypes.h
+cp/cp-mudflap.o: cp/cp-mudflap.c $(CXX_TREE_H) toplev.h c-common.h \
+	$(TM_H) coretypes.h
 
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(CXX_TREE_H) timevar.h gt-cp-name-lookup.h toplev.h \

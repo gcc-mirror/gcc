@@ -27,9 +27,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "varray.h"
 #include "partition.h"
 #include "hard-reg-set.h"
+#include "predict.h"
 
 /* Head of register set linked list.  */
 typedef bitmap_head regset_head;
+
 /* A pointer to a regset_head.  */
 typedef bitmap regset;
 
@@ -121,18 +123,24 @@ do {									\
 typedef HOST_WIDEST_INT gcov_type;
 
 /* Control flow edge information.  */
-typedef struct edge_def {
+struct edge_def GTY((chain_next ("%h.pred_next")))
+{
   /* Links through the predecessor and successor lists.  */
-  struct edge_def *pred_next, *succ_next;
+  struct edge_def *pred_next;
+  struct edge_def *succ_next;
 
   /* The two blocks at the ends of the edge.  */
-  struct basic_block_def *src, *dest;
+  struct basic_block_def *src;
+  struct basic_block_def *dest;
 
   /* Instructions queued on the edge.  */
-  rtx insns;
+  union edge_def_insns {
+    rtx GTY ((tag ("0"))) r;
+    tree GTY ((tag ("1"))) t;
+  } GTY ((desc ("ir_type ()"))) insns;
 
   /* Auxiliary info specific to a pass.  */
-  void *aux;
+  PTR GTY ((skip (""))) aux;
 
   int flags;			/* see EDGE_* below  */
   int probability;		/* biased by REG_BR_PROB_BASE */
@@ -140,7 +148,9 @@ typedef struct edge_def {
 				   in profile.c  */
   bool crossing_edge;           /* Crosses between hot and cold sections, when
 				   we do partitioning.  */
-} *edge;
+};
+
+typedef struct edge_def *edge;
 
 #define EDGE_FALLTHRU		1	/* 'Straight line' flow */
 #define EDGE_ABNORMAL		2	/* Strange flow, like computed
@@ -155,7 +165,13 @@ typedef struct edge_def {
 #define EDGE_IRREDUCIBLE_LOOP	128	/* Part of irreducible loop.  */
 #define EDGE_SIBCALL		256	/* Edge from sibcall to exit.  */
 #define EDGE_LOOP_EXIT		512	/* Exit of a loop.  */
-#define EDGE_ALL_FLAGS		1023
+#define EDGE_TRUE_VALUE		1024	/* Edge taken when controlling
+					   predicate is non zero.  */
+#define EDGE_FALSE_VALUE	2048	/* Edge taken when controlling
+					   predicate is zero.  */
+#define EDGE_EXECUTABLE		4096	/* Edge is executable.  Only
+					   valid during SSA-CCP.  */
+#define EDGE_ALL_FLAGS		8191
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
@@ -166,6 +182,9 @@ extern const struct gcov_ctr_summary *profile_info;
 /* Declared in cfgloop.h.  */
 struct loop;
 struct loops;
+
+/* Declared in tree-flow.h.  */
+struct bb_ann_d;
 
 /* A basic block is a sequence of instructions with only entry and
    only one exit.  If any one of the instructions are executed, they
@@ -193,51 +212,54 @@ struct loops;
    basic blocks.  */
 
 /* Basic block information indexed by block number.  */
-typedef struct basic_block_def {
+struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")))
+{
   /* The first and last insns of the block.  */
-  rtx head_, end_;
+  rtx head_;
+  rtx end_;
 
-  /* The first and last trees of the block.  */
-  tree head_tree;
-  tree end_tree;
+  /* Pointers to the first and last trees of the block.  */
+  tree stmt_list;
 
   /* The edges into and out of the block.  */
-  edge pred, succ;
+  edge pred;
+  edge succ;
 
   /* Liveness info.  */
 
   /* The registers that are modified within this in block.  */
-  regset local_set;
+  bitmap GTY ((skip (""))) local_set;
   /* The registers that are conditionally modified within this block.
      In other words, registers that are set only as part of a
      COND_EXEC.  */
-  regset cond_local_set;
+  bitmap GTY ((skip (""))) cond_local_set;
   /* The registers that are live on entry to this block.
 
      Note that in SSA form, global_live_at_start does not reflect the
      use of regs in phi functions, since the liveness of these regs
      may depend on which edge was taken into the block.  */
-  regset global_live_at_start;
+  bitmap GTY ((skip (""))) global_live_at_start;
   /* The registers that are live on exit from this block.  */
-  regset global_live_at_end;
+  bitmap GTY ((skip (""))) global_live_at_end;
 
   /* Auxiliary info specific to a pass.  */
-  void *aux;
+  PTR GTY ((skip (""))) aux;
 
   /* The index of this block.  */
   int index;
 
   /* Previous and next blocks in the chain.  */
-  struct basic_block_def *prev_bb, *next_bb;
+  struct basic_block_def *prev_bb;
+  struct basic_block_def *next_bb;
 
   /* The loop depth of this block.  */
   int loop_depth;
 
-  /* Outermost loop containing the block.  */
-  struct loop *loop_father;
+  /* Innermost loop containing the block.  */
+  struct loop * GTY ((skip (""))) loop_father;
 
   /* The dominance and postdominance information node.  */
-  struct et_node *dom[2];
+  struct et_node * GTY ((skip (""))) dom[2];
 
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
@@ -251,9 +273,31 @@ typedef struct basic_block_def {
   /* Which section block belongs in, when partitioning basic blocks.  */
   int partition;
 
-  /* Additional data maintained by cfg_layout routines.  */
-  struct reorder_block_def *rbi;
-} *basic_block;
+  /* The data used by basic block copying and reordering functions.  */
+  struct reorder_block_def * GTY ((skip (""))) rbi;
+
+  /* Annotations used at the tree level.  */
+  struct bb_ann_d *tree_annotations;
+};
+
+typedef struct basic_block_def *basic_block;
+
+/* Structure to hold information about the blocks during reordering and
+   copying.  */
+
+typedef struct reorder_block_def
+{
+  rtx header;
+  rtx footer;
+  basic_block next;
+  basic_block original;
+  /* Used by loop copying.  */
+  basic_block copy;
+  int duplicated;
+
+  /* These fields are used by bb-reorder pass.  */
+  int visited;
+} *reorder_block_def;
 
 #define BB_FREQ_MAX 10000
 
@@ -285,7 +329,7 @@ extern int n_edges;
 
 /* Index by basic block number, get basic block struct info.  */
 
-extern varray_type basic_block_info;
+extern GTY(()) varray_type basic_block_info;
 
 #define BASIC_BLOCK(N)  (VARRAY_BB (basic_block_info, (N)))
 
@@ -352,9 +396,8 @@ extern struct obstack flow_obstack;
 #define INVALID_BLOCK (-3)
 
 /* Similarly, block pointers for the edge list.  */
-extern struct basic_block_def entry_exit_blocks[2];
-#define ENTRY_BLOCK_PTR	(&entry_exit_blocks[0])
-#define EXIT_BLOCK_PTR	(&entry_exit_blocks[1])
+extern GTY(()) basic_block ENTRY_BLOCK_PTR;
+extern GTY(()) basic_block EXIT_BLOCK_PTR;
 
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 #define set_block_for_insn(INSN, BB)  (BLOCK_FOR_INSN (INSN) = BB)
@@ -374,7 +417,6 @@ extern void commit_edge_insertions_watch_calls (void);
 extern void remove_fake_edges (void);
 extern void add_noreturn_fake_exit_edges (void);
 extern void connect_infinite_loops_to_exit (void);
-extern int flow_call_edges_add (sbitmap);
 extern edge unchecked_make_edge (basic_block, basic_block, int);
 extern edge cached_make_edge (sbitmap *, basic_block, basic_block, int);
 extern edge make_edge (basic_block, basic_block, int);
@@ -392,6 +434,7 @@ extern int dfs_enumerate_from (basic_block, int,
 			       bool (*)(basic_block, void *),
 			       basic_block *, int, void *);
 extern void dump_edge_info (FILE *, edge, int);
+extern void brief_dump_cfg (FILE *);
 extern void clear_edges (void);
 extern void mark_critical_edges (void);
 extern rtx first_insn_after_basic_block_note (basic_block);
@@ -472,6 +515,7 @@ void free_edge_list (struct edge_list *);
 void print_edge_list (FILE *, struct edge_list *);
 void verify_edge_list (FILE *, struct edge_list *);
 int find_edge_index (struct edge_list *, basic_block, basic_block);
+edge find_edge (basic_block, basic_block);
 
 
 enum update_life_extent
@@ -554,6 +598,11 @@ extern void expected_value_to_br_prob (void);
 extern bool maybe_hot_bb_p (basic_block);
 extern bool probably_cold_bb_p (basic_block);
 extern bool probably_never_executed_bb_p (basic_block);
+extern bool tree_predicted_by_p (basic_block, enum br_predictor);
+extern bool rtl_predicted_by_p (basic_block, enum br_predictor);
+extern void tree_predict_edge (edge, enum br_predictor, int);
+extern void rtl_predict_edge (edge, enum br_predictor, int);
+extern void predict_edge_def (edge, enum br_predictor, enum prediction);
 
 /* In flow.c */
 extern void init_flow (void);
@@ -577,7 +626,7 @@ extern bool purge_all_dead_edges (int);
 extern bool purge_dead_edges (basic_block);
 extern void find_sub_basic_blocks (basic_block);
 extern void find_many_sub_basic_blocks (sbitmap);
-extern void make_eh_edge (sbitmap *, basic_block, rtx);
+extern void rtl_make_eh_edge (sbitmap *, basic_block, rtx);
 extern bool can_fallthru (basic_block, basic_block);
 extern void flow_nodes_print (const char *, const sbitmap, FILE *);
 extern void flow_edge_list_print (const char *, const edge *, int, FILE *);
@@ -589,6 +638,10 @@ extern void alloc_aux_for_edge (edge, int);
 extern void alloc_aux_for_edges (int);
 extern void clear_aux_for_edges (void);
 extern void free_aux_for_edges (void);
+extern void find_basic_blocks (rtx, int, FILE *);
+extern bool cleanup_cfg (int);
+extern bool delete_unreachable_blocks (void);
+extern bool merge_seq_blocks (void);
 
 typedef struct conflict_graph_def *conflict_graph;
 
@@ -623,6 +676,11 @@ extern bool control_flow_insn_p (rtx);
 /* In bb-reorder.c */
 extern void reorder_basic_blocks (void);
 extern void partition_hot_cold_basic_blocks (void);
+
+/* In cfg.c */
+extern void alloc_rbi_pool (void);
+extern void initialize_bb_rbi (basic_block bb);
+extern void free_rbi_pool (void);
 
 /* In dominance.c */
 
@@ -661,7 +719,7 @@ extern void iterate_fix_dominators (enum cdi_direction, basic_block *, int);
 extern void verify_dominators (enum cdi_direction);
 extern basic_block first_dom_son (enum cdi_direction, basic_block);
 extern basic_block next_dom_son (enum cdi_direction, basic_block);
-extern bool try_redirect_by_replacing_jump (edge, basic_block, bool);
+extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void break_superblocks (void);
 
 #include "cfghooks.h"

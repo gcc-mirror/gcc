@@ -1,0 +1,18 @@
+The goal of the gcc-g95 project is to create a Free (as
+in speech) Fortran 95 compiler. The code has been donated
+to the Free Software Foundation for inclusion in GCC, thE
+GNU Compiler Collection.
+
+WARNING:
+
+G95 is still under development.  Perusing the g77 source, we estimate
+that about 200,000 lines of code will be necessary to fully implement
+g95.  Currently, G95 is about 70,000 lines long, making it about
+version 0.3.
+
+The current g95 can generate code for most legal Fortran 77 programs,
+and we're getting close to being able to compile most Fortran 95
+programs as well.  The generated code may still be quite poor, however.
+Part of this is a back-end issue, since we're using the Work-In-Progress
+tree-ssa infrastructure.
+

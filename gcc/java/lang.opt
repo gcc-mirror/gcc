@@ -116,9 +116,6 @@ Java JoinedOrMissing RejectNegative
 fcompile-resource=
 Java Joined RejectNegative
 
-fdump-
-Java Joined RejectNegative
-
 femit-class-file
 Java
 

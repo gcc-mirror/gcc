@@ -1,0 +1,120 @@
+2004-03-26  Andreas Jaeger  <aj@suse.de>
+
+        * configure.in: Remove GCC_NO_EXECUTABLES.
+        * configure: Regenerated.
+
+2004-03-07  Daniel Berlin  <dberlin@dberlin.org>
+
+	* engine/Makefile.am (AM_CFLAGS): Add -I$(top_srcddir)/../include, so we
+	can get ansidecl.h and friends.
+	* engine/array.c (array_extend): Fix unsigned/signed comparison.
+	* engine/banshee.h (struct gen_e): Just make void * when empty, instead
+	of empty struct.
+	* engine/compiler.h: Don't ever define HAVE_VARIADIC_MACROS, -pedantic
+	whines about them even when we know we can use them.
+	* engine/dot.c: constify our char *'s everywhere.
+	(declare_node): Cast &result to char * before casting to hash_data *.
+	* engine/dot.h: constify our char *'s everywhere.
+	* engine/flow-var.c: Ditto.
+	* engine/flow-var.h: Ditto.
+	* engine/flowrow-sort.c: Include ansidecl.h.
+	(get_contour): Mark unused parameter.
+	(update_upper_bound): Make comment /* instead of //.
+	(field_eq): Staticify.
+	* engine/hash.c (string_hash): Staticify.
+	(string_eq): Ditto.
+	(entry_cmp): Ditto.
+	* engine/hash.h: Move comments around.
+	(hash_table_apply): Add prototype.
+	* engine/hashset.c (INIT_TABLE_SIZE): Remove extra semicolon.
+	(EMPTY_KEY): Ditto.
+	* engine/jcollection.c (jcoll_create_chain): // -> /* comment.
+	(jcoll_accum): Staticify.
+	* engine/list.c (sort_linked_list): Staticify.
+	(compare): Use comparator_fn as last argument, not void *.
+	* engine/list.h: Declare the functions even for opaque lists.
+	(list_clear macro): don't return value.
+	* engine/setif-sort.c: Replaced with new version from banshee cvs.
+	* engine/setif-var.c: constify our char *'s.
+	* engine/setif-var.h: Ditto.
+	* engine/setst-var.c: Ditto.
+	* engine/setst-var.h: Ditto.
+	* engine/stamp.c (stamp_string): Use long, not int.
+	Cast through char *.
+	* engine/stamp.h (stamp): Long, not int.
+	* engine/term-sort.c (term_print_stats): Mark argument unused.
+	include ansidecl.h.
+	* engine/term-var.c: constify the char *'s.
+	* engine/term-var.h: Ditto.
+	* engine/ufind.h (union find update macro): Don't return uf_update's value
+	(which is void anyway).
+	* engine/util.c (ptr_hash): Return long, not int.
+	* engine/util.h (ptr_hash): Ditto.
+
+2004-02-29  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Set ac_libbanshee_warn_cflags for GCC.
+	* configure: Regenerated.
+
+	* libcompat/Makefile.am (AM_CFLAGS): Add
+	ac_libbanshee_warn_cflags.
+	* engine/Makefile.am (AM_CFLAGS): Likewise.
+	* points-to/Makefile.am (AM_CFLAGS): Likewise.
+
+	* libcompat/Makefile.in: Regenerated.
+	* engine/Makefile.in: Regenerated.
+	* points-to/Makefile.in: Regenerated.
+	* Makefile.in: Regenerated.
+
+	* libcompat/radix-tree.c: Include <stdlib.h> for calloc.
+
+2004-02-03  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR other/12220
+	* engine/Makefile.am: Remove -fno-strict-aliasing.
+	* libcompat/Makefile.am: Ditto.
+	* points-to/Makefile.am: Ditto.
+	* configure: Regenerated.
+	* config.h.in: Ditto.
+	* Makefile.in: Ditto.
+	* engine/Makefile.am: Ditto.
+	* libcompat/Makefile.am: Ditto.
+	* points-to/Makefile.am: Ditto.
+
+2003-07-01  Daniel Berlin  <dberlin@dberlin.org>
+
+	* acinclude.m4: New, copy the bool tests from gcc.
+
+	* configure.in: Use the new bool tests.
+
+	* Regenerate configure.
+
+	* engine/bool.h: Rewrite to use the part of gcc's system.h that does
+	bool type handling.
+
+2002-12-26  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.am: Use the same flag passing hack all other subdirs use.
+
+	* */Makefile.am: Use -fno-strict-aliasing till i get rid of the
+	type-punning.
+
+	* Regenerate configure and Makefiles.
+
+	* engine/setst-*.c: Remove nested functions.
+
+2002-11-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* aclocal.m4: Don't call aclocal and automake with a
+	version number suffix.
+	* Makefile.in, config.h.in, configure,
+	engine/Makefile.in, libcompat/Makefile.in,
+	points-to/Makefile.in: Regenerate.
+
+2002-11-24  Daniel Berlin  <dberlin@dberlin.org>
+
+	* points-to/andersen_terms.c: Fix multi-line string literals
+
+2002-10-31  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Autoconf'ed, automak'ed, de-nested functified, etc.

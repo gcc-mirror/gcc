@@ -62,19 +62,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "obstack.h"
 #include "alloc-pool.h"
+#include "timevar.h"
+#include "ggc.h"
 
 /* The obstack on which the flow graph components are allocated.  */
 
 struct obstack flow_obstack;
 static char *flow_firstobj;
-
-/* Basic block object pool.  */
-
-static alloc_pool bb_pool;
-
-/* Edge object pool.  */
-
-static alloc_pool edge_pool;
 
 /* Number of basic blocks in the current function.  */
 
@@ -93,56 +87,10 @@ int n_edges;
 varray_type basic_block_info;
 
 /* The special entry and exit blocks.  */
+basic_block ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR;
 
-struct basic_block_def entry_exit_blocks[2]
-= {{NULL,			/* head */
-    NULL,			/* end */
-    NULL,			/* head_tree */
-    NULL,			/* end_tree */
-    NULL,			/* pred */
-    NULL,			/* succ */
-    NULL,			/* local_set */
-    NULL,			/* cond_local_set */
-    NULL,			/* global_live_at_start */
-    NULL,			/* global_live_at_end */
-    NULL,			/* aux */
-    ENTRY_BLOCK,		/* index */
-    NULL,			/* prev_bb */
-    EXIT_BLOCK_PTR,		/* next_bb */
-    0,				/* loop_depth */
-    NULL,                       /* loop_father */
-    { NULL, NULL },		/* dom */
-    0,				/* count */
-    0,				/* frequency */
-    0,				/* flags */
-    0,                          /* partition */
-    NULL			/* rbi */
-  },
-  {
-    NULL,			/* head */
-    NULL,			/* end */
-    NULL,			/* head_tree */
-    NULL,			/* end_tree */
-    NULL,			/* pred */
-    NULL,			/* succ */
-    NULL,			/* local_set */
-    NULL,			/* cond_local_set */
-    NULL,			/* global_live_at_start */
-    NULL,			/* global_live_at_end */
-    NULL,			/* aux */
-    EXIT_BLOCK,			/* index */
-    ENTRY_BLOCK_PTR,		/* prev_bb */
-    NULL,			/* next_bb */
-    0,				/* loop_depth */
-    NULL,                       /* loop_father */
-    { NULL, NULL },		/* dom */
-    0,				/* count */
-    0,				/* frequency */
-    0,				/* flags */
-    0,                          /* partition */
-    NULL			/* rbi */
-  }
-};
+/* Memory alloc pool for bb member rbi.  */
+alloc_pool rbi_pool;
 
 void debug_flow_info (void);
 static void free_edge (edge);
@@ -164,25 +112,26 @@ init_flow (void)
     }
   else
     {
-      free_alloc_pool (bb_pool);
-      free_alloc_pool (edge_pool);
       obstack_free (&flow_obstack, flow_firstobj);
       flow_firstobj = obstack_alloc (&flow_obstack, 0);
     }
-  bb_pool = create_alloc_pool ("Basic block pool",
-			       sizeof (struct basic_block_def), 100);
-  edge_pool = create_alloc_pool ("Edge pool",
-			       sizeof (struct edge_def), 100);
+
+  ENTRY_BLOCK_PTR = ggc_alloc_cleared (sizeof (*ENTRY_BLOCK_PTR));
+  ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
+  EXIT_BLOCK_PTR = ggc_alloc_cleared (sizeof (*EXIT_BLOCK_PTR));
+  EXIT_BLOCK_PTR->index = EXIT_BLOCK;
+  ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
+  EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
 }
 
 /* Helper function for remove_edge and clear_edges.  Frees edge structure
    without actually unlinking it from the pred/succ lists.  */
 
 static void
-free_edge (edge e)
+free_edge (edge e ATTRIBUTE_UNUSED)
 {
   n_edges--;
-  pool_free (edge_pool, e);
+  /* ggc_free (e);  */
 }
 
 /* Free the memory associated with the edge structures.  */
@@ -231,9 +180,38 @@ basic_block
 alloc_block (void)
 {
   basic_block bb;
-  bb = pool_alloc (bb_pool);
-  memset (bb, 0, sizeof (*bb));
+  bb = ggc_alloc_cleared (sizeof (*bb));
   return bb;
+}
+
+/* Create memory pool for rbi_pool.  */
+
+void
+alloc_rbi_pool (void)
+{
+  rbi_pool = create_alloc_pool ("rbi pool", 
+				sizeof (struct reorder_block_def),
+				n_basic_blocks + 2);
+}
+
+/* Free rbi_pool.  */
+
+void
+free_rbi_pool (void)
+{
+  free_alloc_pool (rbi_pool);
+}
+
+/* Initialize rbi (the structure containing data used by basic block
+   duplication and reordering) for the given basic block.  */
+
+void
+initialize_bb_rbi (basic_block bb)
+{
+  if (bb->rbi)
+    abort ();
+  bb->rbi = pool_alloc (rbi_pool);
+  memset (bb->rbi, 0, sizeof (struct reorder_block_def));
 }
 
 /* Link block B to chain after AFTER.  */
@@ -252,6 +230,8 @@ unlink_block (basic_block b)
 {
   b->next_bb->prev_bb = b->prev_bb;
   b->prev_bb->next_bb = b->next_bb;
+  b->prev_bb = NULL;
+  b->next_bb = NULL;
 }
 
 /* Sequentially order blocks and compact the arrays.  */
@@ -272,6 +252,9 @@ compact_blocks (void)
   if (i != n_basic_blocks)
     abort ();
 
+  for (; i < last_basic_block; i++)
+    BASIC_BLOCK (i) = NULL;
+
   last_basic_block = n_basic_blocks;
 }
 
@@ -283,7 +266,7 @@ expunge_block (basic_block b)
   unlink_block (b);
   BASIC_BLOCK (b->index) = NULL;
   n_basic_blocks--;
-  pool_free (bb_pool, b);
+  /* ggc_free (b); */
 }
 
 /* Create an edge connecting SRC and DEST with flags FLAGS.  Return newly
@@ -294,8 +277,7 @@ edge
 unchecked_make_edge (basic_block src, basic_block dst, int flags)
 {
   edge e;
-  e = pool_alloc (edge_pool);
-  memset (e, 0, sizeof (*e));
+  e = ggc_alloc_cleared (sizeof (*e));
   n_edges++;
 
   e->succ_next = src->succ;
@@ -490,54 +472,56 @@ void
 dump_flow_info (FILE *file)
 {
   int i;
-  int max_regno = max_reg_num ();
   basic_block bb;
   static const char * const reg_class_names[] = REG_CLASS_NAMES;
 
-  fprintf (file, "%d registers.\n", max_regno);
   if (reg_n_info)
-    for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-      if (REG_N_REFS (i))
-	{
-	  enum reg_class class, altclass;
+    {
+      int max_regno = max_reg_num ();
+      fprintf (file, "%d registers.\n", max_regno);
+      for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+	if (REG_N_REFS (i))
+	  {
+	    enum reg_class class, altclass;
 
-	  fprintf (file, "\nRegister %d used %d times across %d insns",
-		   i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
-	  if (REG_BASIC_BLOCK (i) >= 0)
-	    fprintf (file, " in block %d", REG_BASIC_BLOCK (i));
-	  if (REG_N_SETS (i))
-	    fprintf (file, "; set %d time%s", REG_N_SETS (i),
-		     (REG_N_SETS (i) == 1) ? "" : "s");
-	  if (regno_reg_rtx[i] != NULL && REG_USERVAR_P (regno_reg_rtx[i]))
-	    fprintf (file, "; user var");
-	  if (REG_N_DEATHS (i) != 1)
-	    fprintf (file, "; dies in %d places", REG_N_DEATHS (i));
-	  if (REG_N_CALLS_CROSSED (i) == 1)
-	    fprintf (file, "; crosses 1 call");
-	  else if (REG_N_CALLS_CROSSED (i))
-	    fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
-	  if (regno_reg_rtx[i] != NULL
-	      && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
-	    fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
+	    fprintf (file, "\nRegister %d used %d times across %d insns",
+		     i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
+	    if (REG_BASIC_BLOCK (i) >= 0)
+	      fprintf (file, " in block %d", REG_BASIC_BLOCK (i));
+	    if (REG_N_SETS (i))
+	      fprintf (file, "; set %d time%s", REG_N_SETS (i),
+		       (REG_N_SETS (i) == 1) ? "" : "s");
+	    if (regno_reg_rtx[i] != NULL && REG_USERVAR_P (regno_reg_rtx[i]))
+	      fprintf (file, "; user var");
+	    if (REG_N_DEATHS (i) != 1)
+	      fprintf (file, "; dies in %d places", REG_N_DEATHS (i));
+	    if (REG_N_CALLS_CROSSED (i) == 1)
+	      fprintf (file, "; crosses 1 call");
+	    else if (REG_N_CALLS_CROSSED (i))
+	      fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
+	    if (regno_reg_rtx[i] != NULL
+		&& PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
+	      fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
 
-	  class = reg_preferred_class (i);
-	  altclass = reg_alternate_class (i);
-	  if (class != GENERAL_REGS || altclass != ALL_REGS)
-	    {
-	      if (altclass == ALL_REGS || class == ALL_REGS)
-		fprintf (file, "; pref %s", reg_class_names[(int) class]);
-	      else if (altclass == NO_REGS)
-		fprintf (file, "; %s or none", reg_class_names[(int) class]);
-	      else
-		fprintf (file, "; pref %s, else %s",
-			 reg_class_names[(int) class],
-			 reg_class_names[(int) altclass]);
-	    }
+	    class = reg_preferred_class (i);
+	    altclass = reg_alternate_class (i);
+	    if (class != GENERAL_REGS || altclass != ALL_REGS)
+	      {
+		if (altclass == ALL_REGS || class == ALL_REGS)
+		  fprintf (file, "; pref %s", reg_class_names[(int) class]);
+		else if (altclass == NO_REGS)
+		  fprintf (file, "; %s or none", reg_class_names[(int) class]);
+		else
+		  fprintf (file, "; pref %s, else %s",
+			   reg_class_names[(int) class],
+			   reg_class_names[(int) altclass]);
+	      }
 
-	  if (regno_reg_rtx[i] != NULL && REG_POINTER (regno_reg_rtx[i]))
-	    fprintf (file, "; pointer");
-	  fprintf (file, ".\n");
-	}
+	    if (regno_reg_rtx[i] != NULL && REG_POINTER (regno_reg_rtx[i]))
+	      fprintf (file, "; pointer");
+	    fprintf (file, ".\n");
+	  }
+    }
 
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
   FOR_EACH_BB (bb)
@@ -546,8 +530,7 @@ dump_flow_info (FILE *file)
       int sum;
       gcov_type lsum;
 
-      fprintf (file, "\nBasic block %d: first insn %d, last %d, ",
-	       bb->index, INSN_UID (BB_HEAD (bb)), INSN_UID (BB_END (bb)));
+      fprintf (file, "\nBasic block %d ", bb->index);
       fprintf (file, "prev %d, next %d, ",
 	       bb->prev_bb->index, bb->next_bb->index);
       fprintf (file, "loop_depth %d, count ", bb->loop_depth);
@@ -641,7 +624,8 @@ dump_edge_info (FILE *file, edge e, int do_succ)
     {
       static const char * const bitnames[] = {
 	"fallthru", "ab", "abcall", "eh", "fake", "dfs_back",
-	"can_fallthru", "irreducible", "sibcall", "loop_exit"
+	"can_fallthru", "irreducible", "sibcall", "loop_exit",
+	"true", "false", "exec"
       };
       int comma = 0;
       int i, flags = e->flags;
@@ -824,4 +808,56 @@ debug_bb_n (int n)
   basic_block bb = BASIC_BLOCK (n);
   dump_bb (bb, stderr, 0);
   return bb;
+}
+
+/* Dumps cfg related information about basic block BB to FILE.  */
+
+static void
+dump_cfg_bb_info (FILE *file, basic_block bb)
+{
+  unsigned i;
+  bool first = true;
+  static const char * const bb_bitnames[] =
+    {
+      "dirty", "new", "reachable", "visited", "irreducible_loop", "superblock"
+    };
+  const unsigned n_bitnames = sizeof (bb_bitnames) / sizeof (char *);
+  edge e;
+
+  fprintf (file, "Basic block %d", bb->index);
+  for (i = 0; i < n_bitnames; i++)
+    if (bb->flags & (1 << i))
+      {
+	if (first)
+	  fprintf (file, " (");
+	else
+	  fprintf (file, ", ");
+	first = false;
+	fprintf (file, bb_bitnames[i]);
+      }
+  if (!first)
+    fprintf (file, ")");
+  fprintf (file, "\n");
+
+  fprintf (file, "Predecessors: ");
+  for (e = bb->pred; e; e = e->pred_next)
+    dump_edge_info (file, e, 0);
+
+  fprintf (file, "\nSuccessors: ");
+  for (e = bb->succ; e; e = e->succ_next)
+    dump_edge_info (file, e, 1);
+  fprintf (file, "\n\n");
+}
+
+/* Dumps a brief description of cfg to FILE.  */
+
+void
+brief_dump_cfg (FILE *file)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      dump_cfg_bb_info (file, bb);
+    }
 }

@@ -124,7 +124,7 @@ java_build_function_call_expr (tree fn, tree arglist)
 
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
   call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-		     call_expr, arglist);
+		     call_expr, arglist, NULL_TREE);
   TREE_SIDE_EFFECTS (call_expr) = 1;
   return fold (call_expr);
 }

@@ -95,7 +95,7 @@ struct c_pretty_print_info
 #undef pp_base
 #define pp_base(PP)  (&pp_c_base (PP)->base)
 
-     
+
 #define pp_c_tree_identifier(PPI, ID)              \
    pp_c_identifier (PPI, IDENTIFIER_POINTER (ID))
 
@@ -166,6 +166,7 @@ void pp_c_semicolon (c_pretty_printer *);
 void pp_c_space_for_pointer_operator (c_pretty_printer *, tree);
 
 /* Declarations.  */
+void pp_c_tree_decl_identifier (c_pretty_printer *, tree);
 void pp_c_function_definition (c_pretty_printer *, tree);
 void pp_c_attributes (c_pretty_printer *, tree);
 void pp_c_type_qualifier_list (c_pretty_printer *, tree);
@@ -196,5 +197,7 @@ void pp_c_constant (c_pretty_printer *, tree);
 void pp_c_id_expression (c_pretty_printer *, tree);
 void pp_c_identifier (c_pretty_printer *, const char *);
 void pp_c_string_literal (c_pretty_printer *, tree);
+
+void print_c_tree (FILE *file, tree t);
 
 #endif /* GCC_C_PRETTY_PRINTER */

@@ -1,0 +1,300 @@
+# -*- makefile -*-
+# Top level makefile fragment for GNU gfortran, the GNU Fortran 95 compiler.
+# Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+# Contributed by Paul Brook <paul@nowt.org
+# and Steven Bosscher <s.bosscher@student.tudelft.nl>
+
+#This file is part of G95.
+
+#G95 is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2, or (at your option)
+#any later version.
+
+#G95 is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with G95; see the file COPYING.  If not, write to
+#the Free Software Foundation, 59 Temple Place - Suite 330,
+#Boston, MA 02111-1307, USA.
+
+# This file provides the language dependent support in the main Makefile.
+# Each language makefile fragment must provide the following targets:
+#
+# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.info, foo.dvi,
+# foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
+# foo.uninstall, foo.distdir,
+# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
+#
+# where `foo' is the name of the language.
+#
+# It should also provide rules for:
+#
+# - making any compiler driver (eg: gfortran)
+# - the compiler proper (eg: f951)
+# - define the names for selecting the language in LANGUAGES.
+# $(srcdir) must be set to the gcc/ source directory (*not* gcc/fortran/).
+
+# Actual name to use when installing a native compiler.
+GFORTRAN_INSTALL_NAME = `echo gfortran|sed '$(program_transform_name)'`
+
+# Actual name to use when installing a cross-compiler.
+GFORTRAN_CROSS_NAME = `echo gfortran|sed '$(program_transform_cross_name)'`
+
+#^L
+
+# This is in addition to the warning flags defined by default.
+# You can use it to enable/disable warnings globally or for specific
+# files, e.g.
+# fortran-warn = -Wno-strict-prototypes
+# fortran/arith.o-warn = -Wno-error
+#
+# We don't need these cheats, everything builds fine with all warnings
+# enabled and -Werror.
+
+# These are the groups of object files we have.  The F95_PARSER_OBJS are
+# all the front end files, the F95_OBJS are the files for the translation
+# from the parse tree to GENERIC, and F95_ADDITIONAL_OBJS are the files
+# from the middle end we depend on.
+
+F95_PARSER_OBJS = fortran/arith.o fortran/array.o fortran/bbt.o fortran/check.o\
+    fortran/decl.o fortran/error.o fortran/expr.o fortran/interface.o \
+    fortran/intrinsic.o fortran/io.o fortran/iresolve.o fortran/match.o \
+    fortran/matchexp.o fortran/misc.o fortran/module.o fortran/parse.o \
+    fortran/primary.o fortran/options.o fortran/resolve.o \
+    fortran/scanner.o fortran/simplify.o fortran/st.o fortran/symbol.o \
+    fortran/dump-parse-tree.o
+
+F95_OBJS = $(F95_PARSER_OBJS) \
+    fortran/f95-lang.o fortran/convert.o fortran/trans.o fortran/trans-decl.o \
+    fortran/trans-types.o fortran/trans-const.o fortran/trans-expr.o \
+    fortran/trans-stmt.o fortran/trans-io.o fortran/trans-array.o \
+    fortran/trans-intrinsic.o fortran/dependency.o fortran/trans-common.o \
+    fortran/data.o
+
+# FIXME:
+# We rely on c-semantics to expand from GIMPLE to RTL.
+# This should go away once a real GIMPLE expander is available. 
+F95_ADDITIONAL_OBJS = \
+	tree-cfg.o tree-dfa.o tree-optimize.o tree-simple.o \
+	tree-ssa.o tree-ssa-ccp.o tree-ssa-dce.o \
+	tree-alias-common.o tree-alias-type.o gimplify.o stor-layout.o
+
+# GFORTRAN uses GMP for its internal arithmetics.
+F95_LIBS = $(GMPLIBS) $(LIBS)
+
+#
+# Define the names for selecting gfortran in LANGUAGES.
+F95 f95: f951$(exeext)
+
+# Tell GNU make to ignore files by these names if they exist.
+.PHONY: F95 f95
+
+gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) $(CONFIG_H)
+	(SHLIB_LINK='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
+		$(INCLUDES) $(srcdir)/fortran/gfortranspec.c)
+
+# Create the compiler driver gfortran.
+GFORTRAN_D_OBJS = gcc.o gfortranspec.o version.o prefix.o intl.o
+gfortran$(exeext): $(GFORTRAN_D_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	  $(GFORTRAN_D_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
+
+# Create a version of the gfortran driver which calls the cross-compiler.
+gfortran-cross$(exeext): gfortran$(exeext)
+	-rm -f gfortran-cross$(exeext)
+	cp gfortran$(exeext) gfortran-cross$(exeext)
+
+# The compiler itself is called f951.
+f951$(exeext): $(F95_OBJS) $(F95_ADDITIONAL_OBJS) \
+		$(BACKEND) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+		$(F95_OBJS) $(F95_ADDITIONAL_OBJS) $(BACKEND) $(F95_LIBS)
+
+gt-fortran-f95-lang.h gtype-fortran.h	      : s-gtype; @true
+gt-fortran-trans-decl.h gt-fortran-trans.h    : s-gtype; @true
+gt-fortran-trans-io.h gt-fortran-trans-types.h: s-gtype; @true
+gt-fortran-trans-intrinsic.h		      : s-gtype; @true
+
+#
+# Build hooks:
+
+f95.all.build: gfortran$(exeext)
+f95.all.cross: gfortran-cross$(exeext)
+
+f95.start.encap: gfortran$(exeext)
+f95.rest.encap:
+
+f95.srcinfo: fortran/gfortran.info
+	-cp -p $^ $(srcdir)/fortran
+
+f95.tags: force
+	cd $(srcdir)/fortran; etags -o TAGS.sub *.c *.h; \
+	etags --include TAGS.sub --include ../TAGS.sub
+
+f95.info: fortran/gfortran.info
+f95.dvi: fortran/gfortran.dvi
+f95.generated-manpages:
+
+f95.man:
+f95.srcman:
+
+check-f95 : check-gfortran
+lang_checks += check-gfortran
+
+# GFORTRAN documentation.
+GFORTRAN_TEXI = \
+  $(srcdir)/fortran/gfortran.texi \
+  $(srcdir)/fortran/invoke.texi \
+  $(srcdir)/doc/include/fdl.texi \
+  $(srcdir)/doc/include/gpl.texi \
+  $(srcdir)/doc/include/funding.texi \
+  $(srcdir)/doc/include/gcc-common.texi
+
+fortran/gfortran.info: $(GFORTRAN_TEXI)
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+	  rm -f fortran/gfortran.info-*; \
+	  $(MAKEINFO) -I$(srcdir)/doc/include -I$(srcdir)/fortran \
+	    -o fortran/gfortran.info $(srcdir)/fortran/gfortran.texi; \
+	else true; fi
+
+fortran/gfortran.dvi: $(GFORTRAN_TEXI)
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	cd fortran && $(TEXI2DVI) -I $$s/doc/include -I $$s/fortran \
+	  $$s/fortran/gfortran.texi
+
+#
+# Install hooks:
+# f951 is installed elsewhere as part of $(COMPILERS).
+
+# Nothing to do here.
+f95.install-normal:
+
+# Install the driver program as $(target)-gfortran
+# and also as either gfortran (if native) or $(tooldir)/bin/gfortran.
+f95.install-common: installdirs
+	-if [ -f f951$(exeext) ] ; then \
+	  if [ -f gfortran-cross$(exeext) ] ; then \
+	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) gfortran-cross$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
+	    if [ -d $(DESTDIR)$(gcc_tooldir)/bin/. ] ; then \
+	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/gfortran$(exeext); \
+	      $(INSTALL_PROGRAM) gfortran-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/gfortran$(exeext); \
+	    else true; fi; \
+	  else \
+	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) gfortran$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
+	    $(LN) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
+	  fi ; \
+	fi
+
+# Install the info documentation in $(infodir).
+# Taken from G77 (but then, what is not...)
+f95.install-info: f95.info installdirs
+	if [ -f fortran/gfortran.info ] ; then \
+	  rm -f $(DESTDIR)$(infodir)/gfortran.info*; \
+	  for f in fortran/gfortran.info*; do \
+	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
+	  done; \
+	  chmod a-x $(DESTDIR)$(infodir)/gfortran.info*; \
+	else true; fi
+	@if [ -f fortran/gfortran.info ] ; then \
+	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
+	  echo " install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info"; \
+	    install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info || : ; \
+	  else : ; fi; \
+	else : ; fi
+
+f95.install-man: installdirs
+#TODO: write the gfortran man pages
+
+f95.uninstall:
+	if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
+	  echo " install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info"; \
+	  install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info || : ; \
+	else : ; fi; \
+	rm -rf $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	rm -rf $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
+	rm -rf $(DESTDIR)$(infodir)/gfortran.info*
+
+#
+# Clean hooks:
+# A lot of the ancillary files are deleted by the main makefile.
+# We just have to delete files specific to us.
+
+f95.mostlyclean:
+	-rm -f f951$(exeext)
+	-rm -f fortran/*.o
+
+f95.clean:
+f95.distclean:
+	-rm -f fortran/config.status fortran/Makefile
+
+f95.extraclean:
+f95.maintainer-clean:
+	-rm -f fortran/gfortran.info* fortran/gfortran.*aux
+
+#
+# Stage hooks:
+# The toplevel makefile has already created stage?/fortran at this point.
+
+f95.stage1: stage1-start
+	-mv fortran/*$(objext) stage1/fortran
+f95.stage2: stage2-start
+	-mv fortran/*$(objext) stage2/fortran
+f95.stage3: stage3-start
+	-mv fortran/*$(objext) stage3/fortran
+f95.stage4: stage4-start
+	-mv fortran/*$(objext) stage4/fortran
+f95.stageprofile: stageprofile-start
+	-mv fortran/*$(objext) stageprofile/fortran
+f95.stagefeedback: stageprofile-start
+	-mv fortran/*$(objext) stagefeedback/fortran
+
+#
+# .o: .h dependencies.
+
+# Everything depends on gfortran.h, but only a few files depend on
+# the other headers.  So at some point we'll have to split out
+# which objects depend on what.  FIXME
+# TODO: Add dependencies on the backend/tree header files
+
+$(F95_PARSER_OBJS): fortran/gfortran.h fortran/intrinsic.h fortran/match.h \
+		fortran/parse.h \
+		$(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TM_P_H) coretypes.h \
+		$(RTL_H) $(TREE_H) $(TREE_DUMP_H) $(GGC_H) $(EXPR_H) \
+		flags.h output.h diagnostic.h errors.h function.h 
+
+GFORTRAN_TRANS_DEPS = fortran/gfortran.h fortran/intrinsic.h fortran/trans-array.h \
+    fortran/trans-const.h fortran/trans-const.h fortran/trans.h \
+    fortran/trans-stmt.h fortran/trans-types.h \
+    $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) coretypes.h
+
+fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
+  gt-fortran-f95-lang.h gtype-fortran.h cgraph.h
+fortran/convert.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h cgraph.h
+fortran/trans-types.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-types.h
+fortran/trans-const.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-expr.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-stmt.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-io.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-io.h
+fortran/trans-array.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-intrinsic.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
+  gt-fortran-trans-intrinsic.h
+fortran/dependency.o: fortran/gfortran.h fortran/dependency.h
+fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS) fortran/gfortran.h
+fortran/data.c: $(GFORTRAN_TRANS_DEPS)
+

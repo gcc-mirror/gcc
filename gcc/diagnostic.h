@@ -182,4 +182,16 @@ extern char *diagnostic_build_prefix (diagnostic_info *);
 extern void verbatim (const char *, ...);
 extern char *file_name_as_prefix (const char *);
 
+extern void debug_output_buffer (pretty_printer *);
+
+/* In tree-pretty-print.c  */
+extern int dump_generic_node (pretty_printer *, tree, int, int, bool);
+extern void print_generic_stmt (FILE *, tree, int);
+extern void print_generic_stmt_indented (FILE *, tree, int, int);
+extern void print_generic_expr (FILE *, tree, int);
+extern void print_generic_decl (FILE *, tree, int);
+
+extern void debug_generic_expr (tree);
+extern void debug_generic_stmt (tree);
+extern void debug_c_tree (tree);
 #endif /* ! GCC_DIAGNOSTIC_H */

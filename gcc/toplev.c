@@ -73,6 +73,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "cfglayout.h"
+#include "tree-alias-common.h" 
 #include "cfgloop.h"
 #include "hosthooks.h"
 #include "cgraph.h"
@@ -218,6 +219,11 @@ tree current_function_decl;
 /* Set to the FUNC_BEGIN label of the current function, or NULL_TREE
    if none.  */
 tree current_function_func_begin_label;
+
+/* A DECL for the current file-scope context.  When using IMA, this heads a
+   chain of FILE_DECLs; currently only C uses it.  */
+
+tree current_file_decl;
 
 /* Nonzero if doing dwarf2 duplicate elimination.  */
 
@@ -789,6 +795,11 @@ int flag_guess_branch_prob = 0;
    For Fortran: defaults to off.  */
 int flag_bounds_check = 0;
 
+/* Mudflap bounds-checking transform.  */
+int flag_mudflap = 0;
+int flag_mudflap_threads = 0;
+int flag_mudflap_ignore_reads = 0;
+
 /* This will attempt to merge constant section constants, if 1 only
    string constants and constants from constant pool, if 2 also constant
    variables.  */
@@ -802,8 +813,49 @@ int flag_renumber_insns = 1;
 /* If nonzero, use the graph coloring register allocator.  */
 int flag_new_regalloc = 0;
 
-/* Nonzero if we perform superblock formation.  */
+/* If nonzero, use tree-based instead of rtl-based profiling.  */
+int flag_tree_based_profiling = 0;
 
+/* Enable SSA-GVN on trees.  */
+int flag_tree_gvn = 0;
+
+/* Enable the SSA-PRE tree optimization.  */
+int flag_tree_pre = 0;
+
+/* Enable points-to analysis on trees. */
+enum pta_type flag_tree_points_to = PTA_NONE;
+
+/* Enable SSA-CCP on trees.  */
+int flag_tree_ccp = 0;
+
+/* Enable SSA-DCE on trees.  */
+int flag_tree_dce = 0;
+
+/* Enable loop header copying on tree-ssa.  */
+int flag_tree_ch = 0;
+
+/* Enable scalar replacement of aggregates.  */
+int flag_tree_sra = 0;
+
+/* Enable SSA->normal pass memory location coalescing.  */
+int flag_tree_combine_temps = 0;
+
+/* Enable SSA->normal pass expression replacement.  */
+int flag_tree_ter = 0;
+
+/* Enable SSA->normal live range splitting.  */
+int flag_tree_live_range_split = 0;
+
+/* Enable dominator optimizations.  */
+int flag_tree_dom = 0;
+
+/* Enable copy rename optimization.  */
+int flag_tree_copyrename = 0;
+
+/* Enable dead store elimination.  */
+int flag_tree_dse = 0;
+
+/* Nonzero if we perform superblock formation.  */
 int flag_tracer = 0;
 
 /* Nonzero if we perform whole unit at a time compilation.  */
@@ -970,6 +1022,7 @@ static const lang_independent_options f_options[] =
   {"test-coverage", &flag_test_coverage, 1 },
   {"branch-probabilities", &flag_branch_probabilities, 1 },
   {"profile", &profile_flag, 1 },
+  {"tree-based-profiling", &flag_tree_based_profiling, 1 },
   {"reorder-blocks", &flag_reorder_blocks, 1 },
   {"reorder-blocks-and-partition", &flag_reorder_blocks_and_partition, 1},
   {"reorder-functions", &flag_reorder_functions, 1 },
@@ -1014,7 +1067,18 @@ static const lang_independent_options f_options[] =
   { "trapv", &flag_trapv, 1 },
   { "wrapv", &flag_wrapv, 1 },
   { "new-ra", &flag_new_regalloc, 1 },
-  { "var-tracking", &flag_var_tracking, 1}
+  { "var-tracking", &flag_var_tracking, 1},
+  { "tree-gvn", &flag_tree_gvn, 1 },
+  { "tree-pre", &flag_tree_pre, 1 },
+  { "tree-ccp", &flag_tree_ccp, 1 },
+  { "tree-dce", &flag_tree_dce, 1 },
+  { "tree-dominator-opts", &flag_tree_dom, 1 },
+  { "tree-copyrename", &flag_tree_copyrename, 1 },
+  { "tree-dse", &flag_tree_dse, 1 },
+  { "tree-combine-temps", &flag_tree_combine_temps, 1 },
+  { "tree-ter", &flag_tree_ter, 1 },
+  { "tree-lrs", &flag_tree_live_range_split, 1 },
+  { "tree-ch", &flag_tree_ch, 1 }
 };
 
 /* Here is a table, controlled by the tm.h file, listing each -m switch
@@ -1410,18 +1474,6 @@ wrapup_global_declarations (tree *vec, int len)
 		  reconsider = 1;
 		  rest_of_decl_compilation (decl, NULL, 1, 1);
 		}
-	    }
-
-	  if (TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_INITIAL (decl) != 0
-	      && DECL_STRUCT_FUNCTION (decl) != 0
-	      && DECL_STRUCT_FUNCTION (decl)->saved_for_inline
-	      && (flag_keep_inline_functions
-		  || (TREE_PUBLIC (decl) && !DECL_COMDAT (decl))
-		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
-	    {
-	      reconsider = 1;
-	      output_inline_function (decl);
 	    }
 	}
 
@@ -2215,6 +2267,7 @@ general_init (const char *argv0)
 
   /* This must be done after add_params but before argument processing.  */
   init_ggc_heuristics();
+  init_tree_optimization_passes ();
 }
 
 /* Process the options that have been parsed.  */
@@ -2314,6 +2367,11 @@ process_options (void)
   if (flag_delayed_branch)
     warning ("this target machine does not have delayed branches");
 #endif
+
+  if (flag_tree_based_profiling && flag_test_coverage)
+    sorry ("test-coverage not yet implemented in trees.");
+  if (flag_tree_based_profiling && flag_profile_values)
+    sorry ("value-based profiling not yet implemented in trees.");
 
   user_label_prefix = USER_LABEL_PREFIX;
   if (flag_leading_underscore != -1)
@@ -2488,9 +2546,9 @@ process_options (void)
     warning ("-ffunction-sections may affect debugging on some targets");
 #endif
 
-    /* The presence of IEEE signaling NaNs, implies all math can trap.  */
-    if (flag_signaling_nans)
-      flag_trapping_math = 1;
+  /* The presence of IEEE signaling NaNs, implies all math can trap.  */
+  if (flag_signaling_nans)
+    flag_trapping_math = 1;
 }
 
 /* Initialize the compiler back end.  */

@@ -1281,7 +1281,6 @@ want_to_gcse_p (rtx x)
     case CONST_DOUBLE:
     case CONST_VECTOR:
     case CALL:
-    case CONSTANT_P_RTX:
       return 0;
 
     default:
@@ -2140,9 +2139,6 @@ gcse_constant_p (rtx x)
       && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0)))
       && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 1))))
     return true;
-
-  if (GET_CODE (x) == CONSTANT_P_RTX)
-    return false;
 
   return CONSTANT_P (x);
 }
@@ -4773,7 +4769,7 @@ reg_killed_on_edge (rtx reg, edge e)
 {
   rtx insn;
 
-  for (insn = e->insns; insn; insn = NEXT_INSN (insn))
+  for (insn = e->insns.r; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn) && reg_set_p (reg, insn))
       return true;
 
@@ -4850,7 +4846,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	    continue;
 
 	  /* Check the data flow is valid after edge insertions.  */
-	  if (e->insns && reg_killed_on_edge (reg_used->reg_rtx, e))
+	  if (e->insns.r && reg_killed_on_edge (reg_used->reg_rtx, e))
 	    continue;
 
 	  src = SET_SRC (pc_set (jump));
@@ -4871,14 +4867,14 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	  if (new == pc_rtx)
 	    {
 	      edest = FALLTHRU_EDGE (bb);
-	      dest = edest->insns ? NULL : edest->dest;
+	      dest = edest->insns.r ? NULL : edest->dest;
 	    }
 	  else if (GET_CODE (new) == LABEL_REF)
 	    {
 	      dest = BLOCK_FOR_INSN (XEXP (new, 0));
 	      /* Don't bypass edges containing instructions.  */
 	      for (edest = bb->succ; edest; edest = edest->succ_next)
-		if (edest->dest == dest && edest->insns)
+		if (edest->dest == dest && edest->insns.r)
 		  {
 		    dest = NULL;
 		    break;
@@ -8150,7 +8146,7 @@ reg_used_on_edge (rtx reg, edge e)
 {
   rtx insn;
 
-  for (insn = e->insns; insn; insn = NEXT_INSN (insn))
+  for (insn = e->insns.r; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn) && reg_overlap_mentioned_p (reg, PATTERN (insn)))
       return true;
 

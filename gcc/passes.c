@@ -394,7 +394,8 @@ rest_of_decl_compilation (tree decl,
 	}
       else
 	{
-	  error ("invalid register name `%s' for register variable", asmspec);
+	  error ("%Hinvalid register name `%s' for register variable",
+		 &DECL_SOURCE_LOCATION (decl), asmspec);
 	  DECL_REGISTER (decl) = 0;
 	  if (!top_level)
 	    expand_decl (decl);
@@ -976,34 +977,6 @@ rest_of_handle_addressof (tree decl, rtx insns)
   close_dump_file (DFI_addressof, print_rtl, insns);
 }
 
-/* We may have potential sibling or tail recursion sites.  Select one
-   (of possibly multiple) methods of performing the call.  */
-static void
-rest_of_handle_sibling_calls (rtx insns)
-{
-  rtx insn;
-  optimize_sibling_and_tail_recursive_calls ();
-
-  /* Recompute the CFG as sibling optimization clobbers it randomly.  */
-  free_bb_for_insn ();
-  find_exception_handler_labels ();
-  rebuild_jump_labels (insns);
-  find_basic_blocks (insns, max_reg_num (), dump_file);
-
-  /* There is pass ordering problem - we must lower NOTE_INSN_PREDICTION
-     notes before simplifying cfg and we must do lowering after sibcall
-     that unhides parts of RTL chain and cleans up the CFG.
-
-     Until sibcall is replaced by tree-level optimizer, lets just
-     sweep away the NOTE_INSN_PREDICTION notes that leaked out.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE
-	&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_PREDICTION)
-      delete_insn (insn);
-
-  close_dump_file (DFI_sibling, print_rtl, get_insns ());
-}
-
 /* Perform jump bypassing and control flow optimizations.  */
 static void
 rest_of_handle_jump_bypass (tree decl, rtx insns)
@@ -1029,155 +1002,6 @@ rest_of_handle_jump_bypass (tree decl, rtx insns)
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
-}
-
-/* Handle inlining of functions in rest_of_compilation.  Return TRUE
-   if we must exit rest_of_compilation upon return.  */
-static bool
-rest_of_handle_inlining (tree decl)
-{
-  rtx insns;
-  int inlinable = 0;
-  tree parent;
-  const char *lose;
-
-  /* If we are reconsidering an inline function at the end of
-     compilation, skip the stuff for making it inline.  */
-  if (cfun->rtl_inline_init)
-    return 0;
-  cfun->rtl_inline_init = 1;
-
-  /* If this is nested inside an inlined external function, pretend
-     it was only declared.  Since we cannot inline such functions,
-     generating code for this one is not only not necessary but will
-     confuse some debugging output writers.  */
-  for (parent = DECL_CONTEXT (current_function_decl);
-       parent != NULL_TREE;
-       parent = get_containing_scope (parent))
-    if (TREE_CODE (parent) == FUNCTION_DECL
-	&& DECL_INLINE (parent) && DECL_EXTERNAL (parent))
-      {
-	DECL_INITIAL (decl) = 0;
-	return true;
-      }
-    else if (TYPE_P (parent))
-      /* A function in a local class should be treated normally.  */
-      break;
-
-  /* If requested, consider whether to make this function inline.  */
-  if ((DECL_INLINE (decl) && !flag_no_inline)
-      || flag_inline_functions)
-    {
-      timevar_push (TV_INTEGRATION);
-      lose = function_cannot_inline_p (decl);
-      timevar_pop (TV_INTEGRATION);
-      if (lose || ! optimize)
-	{
-	  if (warn_inline && lose && DECL_INLINE (decl))
-            {
-              char *msg = concat ("%J", lose, NULL);
-              warning (msg, decl);
-              free (msg);
-            }
-	  DECL_ABSTRACT_ORIGIN (decl) = 0;
-	  /* Don't really compile an extern inline function.
-	     If we can't make it inline, pretend
-	     it was only declared.  */
-	  if (DECL_EXTERNAL (decl))
-	    {
-	      DECL_INITIAL (decl) = 0;
-	      return true;
-	    }
-	}
-      else
-	inlinable = DECL_INLINE (decl) = 1;
-    }
-
-  insns = get_insns ();
-
-  /* Dump the rtl code if we are dumping rtl.  */
-
-  if (open_dump_file (DFI_rtl, decl))
-    {
-      if (DECL_STRUCT_FUNCTION (decl)
-	  && DECL_STRUCT_FUNCTION (decl)->saved_for_inline)
-	fprintf (dump_file, ";; (integrable)\n\n");
-      close_dump_file (DFI_rtl, print_rtl, insns);
-    }
-
-  /* Convert from NOTE_INSN_EH_REGION style notes, and do other
-     sorts of eh initialization.  Delay this until after the
-     initial rtl dump so that we can see the original nesting.  */
-  convert_from_eh_region_ranges ();
-
-  /* If function is inline, and we don't yet know whether to
-     compile it by itself, defer decision till end of compilation.
-     wrapup_global_declarations will (indirectly) call
-     rest_of_compilation again for those functions that need to
-     be output.  Also defer those functions that we are supposed
-     to defer.  */
-
-  if (inlinable
-      || (DECL_INLINE (decl)
-	  /* Egad.  This RTL deferral test conflicts with Fortran assumptions
-	     for unreferenced symbols.  See g77.f-torture/execute/980520-1.f.
-	     But removing this line from the check breaks all languages that
-	     use the call graph to output symbols.  This hard-coded check is
-	     the least invasive work-around.  */
-	  && (flag_inline_functions
-	      || strcmp (lang_hooks.name, "GNU F77") == 0)
-	  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
-	       && ! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-	       && ! flag_keep_inline_functions)
-	      || DECL_EXTERNAL (decl))))
-    DECL_DEFER_OUTPUT (decl) = 1;
-
-  if (DECL_INLINE (decl))
-    /* DWARF wants separate debugging info for abstract and
-       concrete instances of all inline functions, including those
-       declared inline but not inlined, and those inlined even
-       though they weren't declared inline.  Conveniently, that's
-       what DECL_INLINE means at this point.  */
-    (*debug_hooks->deferred_inline_function) (decl);
-
-  if (DECL_DEFER_OUTPUT (decl))
-    {
-      /* If -Wreturn-type, we have to do a bit of compilation.  We just
-	 want to call cleanup the cfg to figure out whether or not we can
-	 fall off the end of the function; we do the minimum amount of
-	 work necessary to make that safe.  */
-      if (warn_return_type)
-	{
-	  int saved_optimize = optimize;
-
-	  optimize = 0;
-	  rebuild_jump_labels (insns);
-	  find_exception_handler_labels ();
-	  find_basic_blocks (insns, max_reg_num (), dump_file);
-	  cleanup_cfg (CLEANUP_PRE_SIBCALL | CLEANUP_PRE_LOOP);
-	  optimize = saved_optimize;
-
-	  /* CFG is no longer maintained up-to-date.  */
-	  free_bb_for_insn ();
-	}
-
-      set_nothrow_function_flags ();
-      if (current_function_nothrow)
-	/* Now we know that this can't throw; set the flag for the benefit
-	   of other functions later in this translation unit.  */
-	TREE_NOTHROW (current_function_decl) = 1;
-
-      timevar_push (TV_INTEGRATION);
-      save_for_inline (decl);
-      timevar_pop (TV_INTEGRATION);
-      DECL_STRUCT_FUNCTION (decl)->inlinable = inlinable;
-      return true;
-    }
-
-  /* If specified extern inline but we aren't inlining it, we are
-     done.  This goes for anything that gets here with DECL_EXTERNAL
-     set, not just things with DECL_INLINE.  */
-  return (bool) DECL_EXTERNAL (decl);
 }
 
 /* Try to identify useless null pointer tests and delete them.  */
@@ -1241,11 +1065,10 @@ rest_of_handle_life (tree decl, rtx insns)
 		 | (flag_thread_jumps ? CLEANUP_THREADING : 0));
   timevar_pop (TV_FLOW);
 
-  if (warn_uninitialized)
+  if (extra_warnings)
     {
-      uninitialized_vars_warning (DECL_INITIAL (decl));
-      if (extra_warnings)
-	setjmp_args_warning ();
+      setjmp_vars_warning (DECL_INITIAL (decl));
+      setjmp_args_warning ();
     }
 
   if (optimize)
@@ -1367,10 +1190,6 @@ rest_of_handle_gcse (tree decl, rtx insns)
   save_csb = flag_cse_skip_blocks;
   save_cfj = flag_cse_follow_jumps;
   flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
-
-  /* Instantiate any remaining CONSTANT_P_RTX nodes.  */
-  if (current_function_calls_constant_p)
-    purge_builtin_constant_p ();
 
   /* If -fexpensive-optimizations, re-run CSE to clean up things done
      by gcse.  */
@@ -1552,20 +1371,31 @@ rest_of_compilation (tree decl)
      have been run to re-initialize it.  */
   cse_not_expected = ! optimize;
 
-  /* First, make sure that NOTE_BLOCK is set correctly for each
-     NOTE_INSN_BLOCK_BEG/NOTE_INSN_BLOCK_END note.  */
-  if (!cfun->x_whole_function_mode_p)
-    identify_blocks ();
+  if (!cfun->dont_emit_block_notes)
+    {
+      /* First, make sure that NOTE_BLOCK is set correctly for each
+	 NOTE_INSN_BLOCK_BEG/NOTE_INSN_BLOCK_END note.  */
+      if (!cfun->x_whole_function_mode_p)
+	identify_blocks ();
 
-  /* In function-at-a-time mode, we do not attempt to keep the BLOCK
-     tree in sensible shape.  So, we just recalculate it here.  */
-  if (cfun->x_whole_function_mode_p)
-    reorder_blocks ();
+      /* In function-at-a-time mode, we do not attempt to keep the BLOCK
+	 tree in sensible shape.  So, we just recalculate it here.  */
+      if (cfun->x_whole_function_mode_p)
+	reorder_blocks ();
+    }
+  else
+    finalize_block_changes ();
 
   init_flow ();
 
-  if (rest_of_handle_inlining (decl))
-    goto exit_rest_of_compilation;
+  /* Dump the rtl code if we are dumping rtl.  */
+  if (open_dump_file (DFI_rtl, decl))
+    close_dump_file (DFI_rtl, print_rtl, get_insns ());
+
+  /* Convert from NOTE_INSN_EH_REGION style notes, and do other
+     sorts of eh initialization.  Delay this until after the
+     initial rtl dump so that we can see the original nesting.  */
+  convert_from_eh_region_ranges ();
 
   /* If we're emitting a nested function, make sure its parent gets
      emitted as well.  Doing otherwise confuses debug info.  */
@@ -1588,7 +1418,8 @@ rest_of_compilation (tree decl)
      over the instruction sequence faster, and allow the garbage
      collector to reclaim the memory used by the notes.  */
   remove_unnecessary_notes ();
-  reorder_blocks ();
+  if (!cfun->dont_emit_block_notes)
+    reorder_blocks ();
 
   ggc_collect ();
 
@@ -1631,18 +1462,10 @@ rest_of_compilation (tree decl)
       timevar_pop (TV_BRANCH_PROB);
     }
 
-  if (flag_optimize_sibling_calls)
-    rest_of_handle_sibling_calls (insns);
-
-  /* We have to issue these warnings now already, because CFG cleanups
-     further down may destroy the required information.  However, this
-     must be done after the sibcall optimization pass because the barrier
-     emitted for noreturn calls that are candidate for the optimization
-     is folded into the CALL_PLACEHOLDER until after this pass, so the
-     CFG is inaccurate.  */
-  check_function_return_warnings ();
-
   timevar_pop (TV_JUMP);
+
+  if (cfun->tail_call_emit)
+    fixup_tail_calls ();
 
   insn_locators_initialize ();
   /* Complete generation of exception handling code.  */
@@ -1708,12 +1531,8 @@ rest_of_compilation (tree decl)
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP
 	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
-  if (optimize)
-    {
-      free_bb_for_insn ();
-      copy_loop_headers (insns);
-      find_basic_blocks (insns, max_reg_num (), dump_file);
-    }
+  create_loop_notes ();
+
   purge_line_number_notes (insns);
 
   timevar_pop (TV_JUMP);
@@ -1766,9 +1585,12 @@ rest_of_compilation (tree decl)
 
   rest_of_handle_cfg (decl, insns);
 
-  if (optimize > 0
-      || profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
+  if (!flag_tree_based_profiling
+      && (optimize > 0 || profile_arc_flag
+	  || flag_test_coverage || flag_branch_probabilities))
     {
+      rtl_register_profile_hooks ();
+      rtl_register_value_prof_hooks ();
       rest_of_handle_branch_prob (decl, insns);
 
       if (flag_branch_probabilities

@@ -36,14 +36,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "varray.h"
 #include "ggc.h"
 #include "langhooks.h"
+#include "tree-mudflap.h"
 #include "target.h"
 #include "cgraph.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *);
-static tree start_cdtor (int);
-static void finish_cdtor (tree);
 
-int
+bool
 c_missing_noreturn_ok_p (tree decl)
 {
   /* A missing noreturn is not ok for freestanding implementations and
@@ -166,13 +165,10 @@ c_objc_common_init (void)
   if (c_common_init () == false)
     return false;
 
-  lang_expand_decl_stmt = c_expand_decl_stmt;
-
   /* These were not defined in the Objective-C front end, but I'm
      putting them here anyway.  The diagnostic format decoder might
      want an enhanced ObjC implementation.  */
   diagnostic_format_decoder (global_dc) = &c_tree_printer;
-  lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;
 
   /* If still unspecified, make it match -std=c99
      (allowing for -pedantic-errors).  */
@@ -187,40 +183,33 @@ c_objc_common_init (void)
   return true;
 }
 
-static tree
-start_cdtor (int method_type)
+/* Synthesize a function which calls all the global ctors or global dtors
+   in this file.  */
+static void
+build_cdtor (int method_type, tree cdtors)
 {
   tree fnname = get_file_function_name (method_type);
-  tree void_list_node_1 = build_tree_list (NULL_TREE, void_type_node);
   tree body;
+  tree scope;
+  tree block;
 
-  start_function (void_list_node_1,
+  start_function (void_list_node,
 		  build_nt (CALL_EXPR, fnname,
-			    tree_cons (NULL_TREE, NULL_TREE, void_list_node_1),
+			    tree_cons (NULL_TREE, NULL_TREE, void_list_node),
 			    NULL_TREE),
 		  NULL_TREE);
   store_parm_decls ();
 
-  current_function_cannot_inline
-    = "static constructors and destructors cannot be inlined";
-
   body = c_begin_compound_stmt ();
-
-  push_scope ();
-  clear_last_expr ();
   add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
 
-  return body;
-}
-
-static void
-finish_cdtor (tree body)
-{
-  tree scope;
-  tree block;
+  for (; cdtors; cdtors = TREE_CHAIN (cdtors))
+    add_stmt (build_stmt (EXPR_STMT,
+			  build_function_call (TREE_VALUE (cdtors), 0)));
 
   scope = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-  block = pop_scope ();
+
+  block = make_node (BLOCK);
   SCOPE_STMT_BLOCK (TREE_PURPOSE (scope)) = block;
   SCOPE_STMT_BLOCK (TREE_VALUE (scope)) = block;
 
@@ -237,30 +226,22 @@ c_objc_common_finish_file (void)
   if (pch_file)
     c_common_write_pch ();
 
+  if (static_ctors)
+    {
+      build_cdtor ('I', static_ctors);
+      static_ctors = 0;
+    }
+  if (static_dtors)
+    {
+      build_cdtor ('D', static_dtors);
+      static_dtors = 0;
+    }
+
   cgraph_finalize_compilation_unit ();
   cgraph_optimize ();
 
-  if (static_ctors)
-    {
-      tree body = start_cdtor ('I');
-
-      for (; static_ctors; static_ctors = TREE_CHAIN (static_ctors))
-	c_expand_expr_stmt (build_function_call (TREE_VALUE (static_ctors),
-						 NULL_TREE));
-
-      finish_cdtor (body);
-    }
-
-  if (static_dtors)
-    {
-      tree body = start_cdtor ('D');
-
-      for (; static_dtors; static_dtors = TREE_CHAIN (static_dtors))
-	c_expand_expr_stmt (build_function_call (TREE_VALUE (static_dtors),
-						 NULL_TREE));
-
-      finish_cdtor (body);
-    }
+  if (flag_mudflap)
+    mudflap_finish_file ();
 }
 
 /* Called during diagnostic message formatting process to print a

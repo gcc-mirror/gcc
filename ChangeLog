@@ -1,3 +1,28 @@
+2004-05-13  Diego Novillo  <dnovillo@redhat.com>
+
+	Merge from tree-ssa-20020619-branch.
+
+	* Makefile.def: Add libbanshee, libmudflap and libgfortran.
+	* Makefile.tpl (BUILD_CONFIGDIRS): Add libbanshee.
+	(HOST_GMPLIBS): Define.
+	(HOST_GMPINC): Define.
+	(TARGET_LIB_PATH): Add libmudflap.
+	(GFORTRAN_FOR_TARGET): Define.
+	(configure-build*): Export GFORTRAN.
+	(configure-gcc): Export GMPLIBS and GMPINC.
+	(all-gcc): Add maybe-all-libbanshee.
+	(configure-target-libgfortran): Define.
+	* Makefile.in: Regenerate.
+	* configure.in (host_libs): Add libbanshee.
+	(target_libraries): Add target-libmudflap and target-libgfortran.
+	Add --with-libbanshee.
+	Handle --disable-libmudflap.
+	(*-*-freebsd*): Use with_gmp.
+	Add $(libgcj) to noconfigdirs.
+	* configure: Regenerate.
+	* depcomp: New file.
+	* MAINTAINERS: Add tree-ssa maintainers.
+
 2004-05-04  Vladimir Makarov  <vmakarov@redhat.com>
 
         * MAINTAINERS (Various Maintainers): Add myself.

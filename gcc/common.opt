@@ -310,6 +310,10 @@ fdiagnostics-show-location=
 Common Joined RejectNegative
 -fdiagnostics-show-location=[once|every-line]	How often to emit source location at the beginning of line-wrapped diagnostics
 
+fdump-
+Common Joined RejectNegative
+-fdump-<type>	Dump various compiler internals to a file
+
 fdump-unnumbered
 Common
 Suppress output of instruction numbers and line number notes in debugging dumps
@@ -465,6 +469,18 @@ Common RejectNegative Joined UInteger
 fmove-all-movables
 Common
 Force all loop invariant computations out of loops
+
+fmudflap
+Common RejectNegative
+Add mudflap bounds-checking instrumentation for single-threaded program.
+
+fmudflapth
+Common RejectNegative
+Add mudflap bounds-checking instrumentation for multi-threaded program.
+
+fmudflapir
+Common RejectNegative
+Ignore read operations when inserting mudflap instrumentation.
 
 fnew-ra
 Common
@@ -711,6 +727,61 @@ Assume floating-point operations can trap
 ftrapv
 Common
 Trap for signed overflow in addition, subtraction and multiplication
+
+ftree-based-profiling
+Common
+Use tree-ssa based implementation of profiling
+
+ftree-ccp
+Common
+Enable SSA-CCP optimization on trees
+
+ftree-ch
+Common
+Enable loop header copying on trees
+
+ftree-combine-temps
+Common
+Coalesce memory temporaries in the SSA->normal pass
+
+ftree-copyrename
+Common
+Replace SSA temporaries with better names in copies.
+
+ftree-dce
+Common
+Enable SSA dead code elimination optimization on trees
+
+ftree-dominator-opts
+Common
+Enable dominator optimizations
+
+ftree-dse
+Common
+Enable dead store elimination
+
+ftree-loop-optimize
+Common
+Enable loop optimizations on trees
+
+ftree-points-to=
+Common Joined RejectNegative
+
+ftree-pre
+Common
+Enable SSA-PRE optimization on trees
+
+ftree-sra
+Common
+Perform scalar replacement of aggregates
+
+ftree-ter
+Common
+Replace temporary expressions in the SSA->normal pass
+
+ftree-lrs
+Common
+Perform live range splitting during the SSA->normal pass.
 
 funit-at-a-time
 Common
