@@ -4456,7 +4456,7 @@ get_filename:
       if (errno == EACCES)
 	break;
 #else
-      if (errno != ENOENT)
+      if (errno != ENOENT && errno != ENOTDIR)
 	break;
 #endif
     }
