@@ -14,6 +14,15 @@
 
 Sat Apr 10 03:50:12 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* rtl.h (rebuild_jump_labels): Declare.
+	* jump.c (jump_optimize_1): Renamed from jump_optimize.  Make static.
+	Add new argument MARK_LABELS_ONLY.  Quit after mark_all_labels if
+	requested.
+	(jump_optimize, rebuild_jump_labels): New wrapper functions for
+	jump_optimize_1.
+	* toplev.c (rest_of_compilation): Use rebuild_jump_labels instead of
+	running the entire jump optimizer.
+
 	* rtl.h (local_alloc): Returns an integer now.
 	* local-alloc.c (recorded_label_ref): New file scoped variable.
 	(local_alloc): Initialize recorded_label_ref to zero.  Return its

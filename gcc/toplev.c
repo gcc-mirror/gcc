@@ -3526,7 +3526,7 @@ rest_of_compilation (decl)
   /* Likewise, for DECL_ARGUMENTS.  */
   tree saved_arguments = 0;
   int failure = 0;
-  int run_jump_after_reload;
+  int rebuild_label_notes_after_reload;
 
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
@@ -4074,10 +4074,10 @@ rest_of_compilation (decl)
 	     {
 	       recompute_reg_usage (insns, ! optimize_size);
 	       regclass (insns, max_reg_num ());
-	       run_jump_after_reload = local_alloc ();
+	       rebuild_label_notes_after_reload = local_alloc ();
 	     });
   else
-    run_jump_after_reload = 0;
+    rebuild_label_notes_after_reload = 0;
 
   /* Dump rtl code after allocating regs within basic blocks.  */
 
@@ -4112,19 +4112,15 @@ rest_of_compilation (decl)
   if (failure)
     goto exit_rest_of_compilation;
 
-  /* Register allocation and reloading may have turned an indirect jump into
-     a direct jump.  If so, we must rerun the jump optimizer to ensure that
-     the JUMP_LABEL of any jump changed by that transformation is valid.
-
-     We do this before reload_cse_regs since it may allow reload_cse to do
-     a better job.  */
-  if (run_jump_after_reload)
-    TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
-				       !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN));
-
   /* Do a very simple CSE pass over just the hard registers.  */
   if (optimize > 0)
     reload_cse_regs (insns);
+
+  /* Register allocation and reloading may have turned an indirect jump into
+     a direct jump.  If so, we must rebuild the JUMP_LABEL fields of
+     jumping instructions.  */
+  if (rebuild_label_notes_after_reload)
+    TIMEVAR (jump_time, rebuild_jump_labels (insns));
 
   /* If optimizing and we are performing instruction scheduling after
      reload, then go ahead and split insns now since we are about to
