@@ -1,5 +1,12 @@
 2002-08-01  Neil Booth  <neil@daikokuya.co.uk>
 
+	* cppinit.c (COMMAND_LINE_OPTIONS): Remove OPT_dollar.
+	(cpp_handle_option): Don't handle it.
+	(print_help): Update.
+	* doc/cppopts.texi: Update.
+
+2002-08-01  Neil Booth  <neil@daikokuya.co.uk>
+
 	* c-common.c (cb_register_builtins): If C++, define
 	__EXCEPTIONS, __DEPRECATED and __GXX_ABI_VERSION as appropriate.
 	* gcc.c (cpp_unique_options): Remove __GXX_ABI_VERSION.

@@ -1135,7 +1135,6 @@ new_pending_directive (pend, text, handler)
 /* This is the list of all command line options, with the leading
    "-" removed.  It must be sorted in ASCII collating order.  */
 #define COMMAND_LINE_OPTIONS                                                  \
-  DEF_OPT("$",                        0,      OPT_dollar)                     \
   DEF_OPT("-help",                    0,      OPT__help)                      \
   DEF_OPT("-target-help",             0,      OPT_target__help)               \
   DEF_OPT("-version",                 0,      OPT__version)                   \
@@ -1414,9 +1413,6 @@ cpp_handle_option (pfile, argc, argv)
 	  break;
 	case OPT_P:
 	  CPP_OPTION (pfile, no_line_commands) = 1;
-	  break;
-	case OPT_dollar:	/* Don't include $ in identifiers.  */
-	  CPP_OPTION (pfile, dollars_in_ident) = 0;
 	  break;
 	case OPT_H:
 	  CPP_OPTION (pfile, print_include_names) = 1;
@@ -1980,7 +1976,6 @@ Switches:\n\
   -fpreprocessed            Treat the input file as already preprocessed\n\
   -ftabstop=<number>        Distance between tab stops for column reporting\n\
   -P                        Do not generate #line directives\n\
-  -$                        Do not allow '$' in identifiers\n\
   -remap                    Remap file names when including files\n\
   --version                 Display version information\n\
   -h or --help              Display this information\n\
