@@ -1,5 +1,5 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -88,9 +88,8 @@ enum pragma_state
   ps_right,
 #endif
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-  ps_push,
-  ps_pop,
-  ps_comma,
+  ps_push, ps_pushcomma, ps_pushid, ps_pushcomma2,
+  ps_pop, ps_popcomma,
 #endif
   ps_bad
 };

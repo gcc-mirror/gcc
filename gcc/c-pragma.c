@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,18 +45,20 @@ typedef struct align_stack
 {
   int                  alignment;
   unsigned int         num_pushes;
+  tree                 id;
   struct align_stack * prev;
 } align_stack;
 
 static struct align_stack * alignment_stack = NULL;
 
-static int  push_alignment PROTO((int));
-static int  pop_alignment  PROTO((void));
+static int  push_alignment PROTO((int, tree));
+static int  pop_alignment  PROTO((tree));
 
 /* Push an alignment value onto the stack.  */
 static int
-push_alignment (alignment)
+push_alignment (alignment, id)
      int alignment;
+     tree id;
 {
   switch (alignment)
     {
@@ -75,7 +77,8 @@ Alignment must be a small power of two, not %d, in #pragma pack",
     }
   
   if (alignment_stack == NULL
-      || alignment_stack->alignment != alignment)
+      || alignment_stack->alignment != alignment
+      || id != NULL_TREE)
     {
       align_stack * entry;
 
@@ -89,15 +92,12 @@ Alignment must be a small power of two, not %d, in #pragma pack",
 
       entry->alignment  = alignment;
       entry->num_pushes = 1;
+      entry->id         = id;
       entry->prev       = alignment_stack;
       
       alignment_stack = entry;
 
-      if (alignment < 8)
-	maximum_field_alignment = alignment * 8;
-      else
-	/* MSVC ignores alignments > 4.  */
-	maximum_field_alignment = 0;
+      maximum_field_alignment = alignment * 8;
     }
   else
     alignment_stack->num_pushes ++;
@@ -107,19 +107,38 @@ Alignment must be a small power of two, not %d, in #pragma pack",
 
 /* Undo a push of an alignment onto the stack.  */
 static int
-pop_alignment ()
+pop_alignment (id)
+     tree id;
 {
+  align_stack * entry;
+      
   if (alignment_stack == NULL)
     {
       warning ("\
-#pragma pack(pop) encountered without corresponding #pragma pack(push,<n>)");
+#pragma pack (pop) encountered without matching #pragma pack (push, <n>)"
+	       );
       return 0;
+    }
+
+  /* If we got an identifier, strip away everything above the target
+     entry so that the next step will restore the state just below it.  */
+  if (id)
+    {
+      for (entry = alignment_stack; entry; entry = entry->prev)
+	if (entry->id == id)
+	  {
+	    entry->num_pushes = 1;
+	    alignment_stack = entry;
+	    break;
+	  }
+      if (entry == NULL)
+	warning ("\
+#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s, <n>)"
+		 , IDENTIFIER_POINTER (id), IDENTIFIER_POINTER (id));
     }
 
   if (-- alignment_stack->num_pushes == 0)
     {
-      align_stack * entry;
-      
       entry = alignment_stack->prev;
 
       if (entry == NULL || entry->alignment > 4)
@@ -215,6 +234,7 @@ handle_pragma_token (string, token)
   static char * name;
   static char * value;
   static int align;
+  static tree id;
 
   /* If we have reached the end of the #pragma directive then
      determine what value we should return.  */
@@ -248,16 +268,16 @@ handle_pragma_token (string, token)
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP
 	case ps_push:
 	  if (state == ps_right)
-	    ret_val = push_alignment (align);
+	    ret_val = push_alignment (align, id);
 	  else
-	    warning ("incomplete '#pragma pack(push,<n>)'");
+	    warning ("malformed '#pragma pack(push[,id],<n>)'");
 	  break;
 	  
 	case ps_pop:
 	  if (state == ps_right)
-	    ret_val = pop_alignment ();
+	    ret_val = pop_alignment (id);
 	  else
-	    warning ("missing closing parenthesis in '#pragma pack(pop)'");
+	    warning ("malformed '#pragma pack(pop[,id])'");
 	  break;
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 	  
@@ -279,6 +299,7 @@ handle_pragma_token (string, token)
 	}
 
       type = state = ps_start;
+      id = NULL_TREE;
       
       return ret_val;
     }
@@ -361,29 +382,37 @@ handle_pragma_token (string, token)
 
     case ps_left:
 
-      if (token && TREE_CODE(token) == INTEGER_CST) 
-	align = TREE_INT_CST_LOW(token);
+      if (token == NULL_TREE)
+	state = (strcmp (string, ")") ? ps_bad : ps_right);
+
+      else if (TREE_CODE (token) == INTEGER_CST)
+	goto handle_align;
+
+#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
+      else if (TREE_CODE (token) == IDENTIFIER_NODE)
+	{
+	  if (strcmp (string, "push") == 0)
+	    type = state = ps_push;
+	  else if (strcmp (string, "pop") == 0)
+	    type = state = ps_pop;
+	  else
+	    state = ps_bad;
+	}
+#endif
       else
-	align = atoi (string);
+	state = ps_bad;
+      break;
+
+    handle_align:
+      align = TREE_INT_CST_LOW (token);
       switch (align)
 	{
 	case 1:
 	case 2:
 	case 4:
+	case 8:
+	case 16:
 	  state = ps_align;
-	  break;
-
-	case 0:
-	  state = (strcmp (string, ")") ? ps_bad : ps_right);
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-	  if (state == ps_bad)
-	    {
-	      if (strcmp (string, "push") == 0)
-		type = state = ps_push;
-	      else if (strcmp (string, "pop") == 0)
-		type = state = ps_pop;
-	    }
-#endif
 	  break;
 
 	default:
@@ -392,9 +421,6 @@ handle_pragma_token (string, token)
 	}
       break;
 
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-    case ps_pop:
-#endif
     case ps_align:
       state = (strcmp (string, ")") ? ps_bad : ps_right);
       break;
@@ -406,12 +432,44 @@ handle_pragma_token (string, token)
 
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP
     case ps_push:
-      state = (strcmp (string, ",") ? ps_bad : ps_comma);
+      state = (strcmp (string, ",") ? ps_bad : ps_pushcomma);
       break;
 
-    case ps_comma:
-      align = atoi (string);
-      state = ps_align;
+    case ps_pushid:
+      state = (strcmp (string, ",") ? ps_bad : ps_pushcomma2);
+      break;
+
+    case ps_pushcomma:
+      if (token && TREE_CODE (token) == IDENTIFIER_NODE)
+	{
+	  id = token;
+	  state = ps_pushid;
+	  break;
+	}
+
+      /* else fall through */
+    case ps_pushcomma2:
+      if (token && TREE_CODE (token) == INTEGER_CST)
+	goto handle_align;
+      else
+	state = ps_bad;
+      break;
+
+    case ps_pop:
+      if (strcmp (string, ",") == 0)
+	state = ps_popcomma;
+      else
+	state = (strcmp (string, ")") ? ps_bad : ps_right);
+      break;
+
+    case ps_popcomma:
+      if (token && TREE_CODE (token) == IDENTIFIER_NODE)
+	{
+	  id = token;
+	  state = ps_align;
+	}
+      else
+	state = ps_bad;
       break;
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
       
