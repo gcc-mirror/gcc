@@ -1,3 +1,7 @@
+2004-01-21  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* parser.c (cp_parser_class_specifier): Prevent garbage collection.
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Replace $(docdir) with doc.
