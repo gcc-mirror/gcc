@@ -1621,7 +1621,7 @@ typedef struct d30v_stack {
    on the stack, there is no need to store anything in `CUMULATIVE_ARGS';
    however, the data structure must exist and should not be empty, so use
    `int'.  */
-typedef int CUMULATIVE_ARGS;
+#define CUMULATIVE_ARGS int
 
 /* A C statement (sans semicolon) for initializing the variable CUM for the
    state at the beginning of the argument list.  The variable has type
@@ -2677,7 +2677,7 @@ extern const char *d30v_branch_cost_string;
    uninitialized global data will be output in the data section if
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
-#define BSS_SECTION_ASM_OP "\t.bss"
+#define BSS_SECTION_ASM_OP "\t.section .bss"
 
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as

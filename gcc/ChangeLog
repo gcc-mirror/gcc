@@ -1,3 +1,8 @@
+2002-06-19  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/d30v/d30v.h (CUMULATIVE_ARGS): Replace typedef with
+	#define.
+
 2002-06-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpphash.h (struct cpp_reader): Make date and time strings.
