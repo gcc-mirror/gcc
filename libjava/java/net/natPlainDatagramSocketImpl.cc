@@ -280,18 +280,17 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
 }
 
 void
-java::net::PlainDatagramSocketImpl::connect (java::net::InetAddress *addr,
-		                             jint  port)
+java::net::PlainDatagramSocketImpl::connect (java::net::InetAddress *, jint)
 { 
-  throw new ::java::lang::InternalError (
-    JvNewStringLatin1 ("PlainDatagramSocketImpl::connect: not implemented yet"));
+  throw new ::java::lang::InternalError (JvNewStringLatin1 (
+	    "PlainDatagramSocketImpl::connect: not implemented yet"));
 }
 
 void
 java::net::PlainDatagramSocketImpl::disconnect ()
 {
-  throw new ::java::lang::InternalError (
-    JvNewStringLatin1 ("PlainDatagramSocketImpl::disconnect: not implemented yet"));
+  throw new ::java::lang::InternalError (JvNewStringLatin1 (
+	    "PlainDatagramSocketImpl::disconnect: not implemented yet"));
 }
 
 jint

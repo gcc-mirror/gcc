@@ -234,8 +234,30 @@ public abstract class URLStreamHandler
    */
   protected boolean equals (URL url1, URL url2)
   {
-    // FIXME: implement this
-    return false;
+    // This comparison is very conservative.  It assumes that any
+    // field can be null.
+    return (url1.getPort () == url2.getPort ()
+	    && ((url1.getProtocol () == null && url2.getProtocol () == null)
+		|| (url1.getProtocol () != null
+			&& url1.getProtocol ().equals (url2.getProtocol ())))
+	    && ((url1.getUserInfo () == null && url2.getUserInfo () == null)
+                || (url1.getUserInfo () != null
+			&& url1.getUserInfo ().equals(url2.getUserInfo ())))
+	    && ((url1.getAuthority () == null && url2.getAuthority () == null)
+                || (url1.getAuthority () != null
+			&& url1.getAuthority ().equals(url2.getAuthority ())))
+	    && ((url1.getHost () == null && url2.getHost () == null)
+		|| (url1.getHost () != null
+			&& url1.getHost ().equals(url2.getHost ())))
+	    && ((url1.getPath () == null && url2.getPath () == null)
+		|| (url1.getPath () != null
+			&& url1.getPath ().equals (url2.getPath ())))
+	    && ((url1.getQuery () == null && url2.getQuery () == null)
+                || (url1.getQuery () != null
+			&& url1.getQuery ().equals(url2.getQuery ())))
+	    && ((url1.getRef () == null && url2.getRef () == null)
+		|| (url1.getRef () != null
+			&& url1.getRef ().equals(url2.getRef ()))));
   }
 
   /**
@@ -244,9 +266,12 @@ public abstract class URLStreamHandler
    * @exception UnknownHostException If an unknown host is found
    */
   protected boolean hostsEqual (URL url1, URL url2)
+    throws UnknownHostException
   {
-    // FIXME: implement this
-    return false;
+    InetAddress addr1 = InetAddress.getByName (url1.getHost ());
+    InetAddress addr2 = InetAddress.getByName (url2.getHost ());
+
+    return addr1.equals (addr2);
   }
 
   /**
@@ -285,8 +310,10 @@ public abstract class URLStreamHandler
    */
   protected int hashCode (URL url)
   {
-    // FIXME: implement this
-    return 0;
+    return url.getProtocol ().hashCode () +
+           ((url.getHost () == null) ? 0 : url.getHost ().hashCode ()) +
+	   url.getFile ().hashCode() +
+	   url.getPort ();
   }
 
   /**
