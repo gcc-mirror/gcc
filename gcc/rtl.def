@@ -397,6 +397,20 @@ DEF_RTL_EXPR(ASM_INPUT, "asm_input", "s", 'x')
    7th is the source line number.  */
 DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEsi", 'x')
 
+/* A machine-specific operation.
+   1st operand is a vector of operands being used by the operation so that
+     any needed reloads can be done.
+   2nd operand is a unique value saying which of a number of machine-specific
+     operations is to be performed.
+   (Note that the vector must be the first operand because of the way that
+   genrecog.c record positions within an insn.)
+   This can occur all by itself in a PATTERN, as a component of a PARALLEL,
+   or inside an expression.  */
+DEF_RTL_EXPR(UNSPEC, "unspec", "Ei", 'x')
+
+/* Similiar, but a volatile operation and one which may trap.  */
+DEF_RTL_EXPR(UNSPEC_VOLATILE, "unspec_volatile", "Ei", 'x')
+
 /* Vector of addresses, stored as full words.  */
 /* Each element is a LABEL_REF to a CODE_LABEL whose address we want.  */
 DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", 'x')
