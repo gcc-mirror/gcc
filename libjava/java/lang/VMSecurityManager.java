@@ -1,6 +1,6 @@
 /*
  * java.lang.SecurityManager: part of the Java Class Libraries project.
- * Copyright (C) 1998, 2001 Free Software Foundation
+ * Copyright (C) 1998, 2001, 2002 Free Software Foundation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -43,11 +43,7 @@ class VMSecurityManager
    ** @return an array containing all the methods on classes
    **         on the Java execution stack.
    **/
-  static Class[] getClassContext()
-  {
-    // FIXME: can't yet implement this for libgcj.
-    return new Class[0];
-  }
+  static native Class[] getClassContext();
 
   /** Get the current ClassLoader--the one nearest to the
    ** top of the stack.
