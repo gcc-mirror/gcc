@@ -1,3 +1,7 @@
+2000-01-23  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (ASM_OUTPUT_BSS): Redefine.
+
 2000-01-22  Zack Weinberg  <zack@wolery.cumb.org>
 
  	* fixinc/fixincl.c: Move declarations of 'pz_fname' and
