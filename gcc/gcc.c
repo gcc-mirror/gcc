@@ -33,10 +33,17 @@ compilation is specified by a string called a "spec".  */
 
 #include "config.h"
 
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+
 #include <ctype.h>
 #include <signal.h>
+
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+
 #include <errno.h>
 
 #ifdef HAVE_SYS_FILE_H
