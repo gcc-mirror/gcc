@@ -70,26 +70,6 @@ public final class DoubleBufferImpl extends DoubleBuffer
     readOnly = copy.isReadOnly ();
   }
   
-  DoubleBufferImpl (byte[] copy)
-  {
-    super (copy.length, copy.length, 0, 0);
-    this.backing_buffer = copy != null ? nio_cast (copy) : null;
-    readOnly = false;
-  }
-
-  private static native byte nio_get_Byte (DoubleBufferImpl b, int index, int limit);
-
-  private static native void nio_put_Byte (DoubleBufferImpl b, int index, int limit, byte value);
-
-  public ByteBuffer asByteBuffer ()
-  {
-    ByteBufferImpl res = new ByteBufferImpl (backing_buffer);
-    res.limit ((limit () * 1) / 8);
-    return res;
-  }
-
-  private static native double[] nio_cast (byte[] copy);
-
   public boolean isReadOnly ()
   {
     return readOnly;

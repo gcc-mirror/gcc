@@ -70,26 +70,6 @@ public final class LongBufferImpl extends LongBuffer
     readOnly = copy.isReadOnly ();
   }
 
-  private static native long[] nio_cast (byte[] copy);
-
-  LongBufferImpl (byte[] copy)
-  {
-    super (copy.length, copy.length, 0, 0);
-    this.backing_buffer = copy != null ? nio_cast (copy) : null;
-    readOnly = false;
-  }
-
-  private static native byte nio_get_Byte (LongBufferImpl b, int index, int limit);
-
-  private static native void nio_put_Byte (LongBufferImpl b, int index, int limit, byte value);
-
-  public ByteBuffer asByteBuffer ()
-  {
-    ByteBufferImpl res = new ByteBufferImpl (backing_buffer);
-    res.limit ((limit () * 1) / 8);
-    return res;
-  }
-
   public boolean isReadOnly()
   {
     return readOnly;

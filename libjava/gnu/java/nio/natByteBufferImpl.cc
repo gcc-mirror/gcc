@@ -15,53 +15,6 @@ details.  */
 
 #include <gnu/java/nio/ByteBufferImpl.h>
 
-JArray<jbyte>*
-gnu::java::nio::ByteBufferImpl::nio_cast(JArray<jbyte>*)
-{
-  return NULL;
-}
-
-JArray<jbyte>*
-gnu::java::nio::ByteBufferImpl::nio_cast(JArray<jshort>*)
-{
-  return NULL;
-}
-
-JArray<jbyte>*
-gnu::java::nio::ByteBufferImpl::nio_cast(JArray<jint>*)
-{
-  return NULL;
-}
-
-JArray<jbyte>*
-gnu::java::nio::ByteBufferImpl::nio_cast(JArray<jlong>*)
-{
-  return NULL;
-}
-
-JArray<jbyte>*
-gnu::java::nio::ByteBufferImpl::nio_cast(JArray<jchar>*)
-{
-  return NULL;
-}
-
-JArray<jbyte>*
-gnu::java::nio::ByteBufferImpl::nio_cast(JArray<jfloat>*)
-{
-  return NULL;
-}
-
-JArray<jbyte>*
-gnu::java::nio::ByteBufferImpl::nio_cast(JArray<jdouble>*)
-{
-  return NULL;
-}
-
-void
-gnu::java::nio::ByteBufferImpl::nio_put_Byte(gnu::java::nio::ByteBufferImpl*, jint, jint, jbyte)
-{
-}
-
 void
 gnu::java::nio::ByteBufferImpl::nio_put_Char(gnu::java::nio::ByteBufferImpl*, jint, jint, jchar)
 {
@@ -90,12 +43,6 @@ gnu::java::nio::ByteBufferImpl::nio_put_Float(gnu::java::nio::ByteBufferImpl*, j
 void
 gnu::java::nio::ByteBufferImpl::nio_put_Double(gnu::java::nio::ByteBufferImpl*, jint, jint, jdouble)
 {
-}
-
-jbyte
-gnu::java::nio::ByteBufferImpl::nio_get_Byte(gnu::java::nio::ByteBufferImpl*, jint, jint)
-{
-  return 0;
 }
 
 jchar
