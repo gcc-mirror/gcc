@@ -1,3 +1,10 @@
+Tue Jun 30 06:31:40 1998  Richard Henderson <rth@dot.cygnus.com>
+
+	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Add '`'.
+	* alpha.c (print_operand): Handle it.
+	* alpha.md (fix_truncdfsi2, fix_truncsfsi2): New patterns and
+	related define_splits.
+
 Tue Jun 30 06:02:07 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (count_cond): New function.
