@@ -164,6 +164,11 @@ extern enum mode_class mode_class[];
   (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)
 
+/* Nonzero if MODE is a complex mode.  */
+#define COMPLEX_MODE_P(MODE)			\
+  (GET_MODE_CLASS (MODE) == MODE_COMPLEX_INT	\
+   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)
+
 /* Get the size in bytes of an object of mode MODE.  */
 
 extern int mode_size[];
