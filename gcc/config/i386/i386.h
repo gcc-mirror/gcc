@@ -1696,7 +1696,8 @@ do {						\
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-#define LEGITIMATE_CONSTANT_P(X) 1
+#define LEGITIMATE_CONSTANT_P(X) \
+  (GET_CODE (X) == CONST_DOUBLE ? standard_80387_constant_p (X) : 1)
 
 #ifdef REG_OK_STRICT
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
