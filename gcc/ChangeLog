@@ -1,3 +1,8 @@
+Tue Oct 19 02:03:00 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* reg-stack.c (stack_result): Aggregates are not returned in
+	stack registers.
+
 Tue Oct 19 01:26:48 1999  Alasdair Baird <alasdair@wildcat.demon.co.uk>
 
 	* fold-const.c (fold): Fix thinko in x+(-0) -> x transformation.
