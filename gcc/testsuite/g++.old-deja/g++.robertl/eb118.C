@@ -13,12 +13,12 @@ A<T>::test(){
   cerr << "test for " << typeid(*this).name() << endl;
 }
 // Specialization declaration
-void
-A<double>::test();
+void                           
+A<double>::test();		// ERROR - not a specialization
 
 // Specialization definition
 void
-A<double>::test(){  // ============= LINE 21 ==================
+A<double>::test(){		// ERROR - not a specialization
   cerr << "specialization for " << typeid(*this).name() << endl;
 }
 
