@@ -1,3 +1,12 @@
+2002-05-10  Richard Henderson  <rth@redhat.com>
+
+	* final.c (end_final): Tidy whitespace.  Don't honor flag_pack_struct.
+	Convert integers constants as needed.  Replace "nwords" field with
+	"sizeof_bb".
+	(final): Save profile data if cfun->arc_profile, not profile_arc_flag.
+	* function.h: Fix typo in comment.
+	* libgcc2.c (struct bb): Replace "nwords" with "sizeof_bb".
+
 2002-05-10  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (build_range_check): Optimize (c>=1) && (c<=127)
