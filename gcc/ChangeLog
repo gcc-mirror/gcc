@@ -1,3 +1,11 @@
+Tue Mar  3 21:48:35 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* final.c (max_labelno): New static variable.
+	(final_scan_insn): Check max_labelno before outputting an
+	alignment for a label.
+
+	(shorten_branches): Remove unused variable length_align.
+
 Tue Mar  3 14:27:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.c (ultrasparc_adjust_cost): Add default case in

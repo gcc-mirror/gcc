@@ -795,7 +795,7 @@ short *label_align; /* sh.c needs this to calculate constant tables.  */
 
 #define INSN_SHUID(INSN) (uid_shuid[INSN_UID (INSN)])
 
-static int min_labelno;
+static int min_labelno, max_labelno;
 
 #define LABEL_TO_ALIGNMENT(LABEL) \
   (label_align[CODE_LABEL_NUMBER (LABEL) - min_labelno])
@@ -932,7 +932,6 @@ shorten_branches (first)
   rtx insn;
   int max_uid;
   int i;
-  int max_labelno;
   int max_log;
 #ifdef HAVE_ATTR_length
 #define MAX_CODE_ALIGN 16
@@ -1079,7 +1078,6 @@ shorten_branches (first)
     {
       int uid = INSN_UID (seq);
       int log;
-      int length_align;
       log = (GET_CODE (seq) == CODE_LABEL ? LABEL_TO_ALIGNMENT (seq) : 0);
       uid_align[uid] = align_tab[0];
       insn_addresses[uid] = --insn_current_address;
@@ -2011,12 +2009,16 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       break;
 
     case CODE_LABEL:
-      {
-	int align = LABEL_TO_ALIGNMENT (insn);
+      if (CODE_LABEL_NUMBER (insn) <= max_labelno)
+	{
+	  int align = LABEL_TO_ALIGNMENT (insn);
 
-	if (align && NEXT_INSN (insn))
-	  ASM_OUTPUT_ALIGN (file, align);
-      }
+	  /* The target port might emit labels in the output function for
+	     some insn, e.g. sh.c output_branchy_insn.  */
+	  if (align && NEXT_INSN (insn)
+	      && CODE_LABEL_NUMBER (insn) <= max_labelno)
+	    ASM_OUTPUT_ALIGN (file, align);
+	}
       CC_STATUS_INIT;
       if (prescan > 0)
 	break;
