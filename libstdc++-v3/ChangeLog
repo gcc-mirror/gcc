@@ -1,3 +1,12 @@
+2002-11-08  Paolo Carlini  <pcarlini@unitus.it>
+
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale,
+	const char*),
+	moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale,
+	const char*)): Tweak parameters for glibc2.3 systems, thus
+	avoiding unused parameter warnings.
+
 2002-11-05  Jonathan Wakely  <cow@compsoc.man.ac.uk>
 
 	* include/std/std_sstream.h
