@@ -1,10 +1,16 @@
-2004-05-08  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+        PR fortran/14066
+	* match.c (gfc_match_do): Allow infinite loops with
+	label-do-stmt. Do not enforce space after comma.
+
+2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
         PR fortran/15051
 	* parse.c (parse_interface): Allow empty INTERFACE, remove
         seen_body.
 
-2004-05-08  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* Make-lang.in, arith.c, arith.h, array.c, bbt.c, check.c,
 	decl.c, dependency.c, dependency.h, dump-parse-tree.c, error.c,
@@ -20,7 +26,7 @@
 	* data.c: Likewise, also removed two whitespace-only lines.
 	* gfortranspec.c, lang.opt: Update copyright years.
 
-2004-04-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14568
 	* trans-decl.c (generate_local_decl): Don't warn for unused
