@@ -119,7 +119,7 @@ public class Container extends Component
     if (peer != null)
       {
 	comp.addNotify ();
-    
+
 	if (comp.isLightweight())
 	  enableEvents(comp.eventMask);
       }
@@ -127,7 +127,7 @@ public class Container extends Component
     invalidate ();
 
     if (component == null)
-	component = new Component[4]; // FIXME, better initial size?
+      component = new Component[4]; // FIXME, better initial size?
 
     // This isn't the most efficient implementation.  We could do less
     // copying when growing the array.  It probably doesn't matter.
@@ -209,13 +209,13 @@ public class Container extends Component
   {
     return layoutMgr;
   }
-  
+
   public void setLayout(LayoutManager mgr)
   {
     layoutMgr = mgr;
-    // FIXME
+    invalidate ();
   }
-  
+
   public void doLayout()
   {
     if (layoutMgr != null)
@@ -496,7 +496,7 @@ public class Container extends Component
 	// Ignore invisible children...
 	if (!component[i].isVisible())
 	  continue;
-	
+
 	int x2 = x - component[i].x;
 	int y2 = y - component[i].y;
 	if (component[i].contains (x2, y2))
@@ -516,10 +516,33 @@ public class Container extends Component
     return getComponentAt(p.x, p.y);
   }
 
-  public Component findComponentAt(int x, int y)
+  public Component findComponentAt (int x, int y)
   {
-    // FIXME
-    return null;
+    if (! contains (x, y))
+      return null;
+
+    for (int i = 0; i < ncomponents; ++i)
+      {
+	// Ignore invisible children...
+	if (!component[i].isVisible())
+	  continue;
+
+	int x2 = x - component[i].x;
+	int y2 = y - component[i].y;
+	// We don't do the contains() check right away because
+	// findComponentAt would redundantly do it first thing.
+	if (component[i] instanceof Container)
+	  {
+	    Container k = (Container) component[i];
+	    Component r = k.findComponentAt (x2, y2);
+	    if (r != null)
+	      return r;
+	  }
+	else if (component[i].contains (x2, y2))
+	  return component[i];
+      }
+
+    return this;
   }
 
   public Component findComponentAt(Point p)
@@ -572,18 +595,14 @@ public class Container extends Component
   
   public void list (PrintStream out, int indent)
   {
-    for (int i = 0; i < indent; ++i)
-      out.print (' ');
-    out.println (toString ());
+    super.list (out, indent);
     for (int i = 0; i < ncomponents; ++i)
       component[i].list (out, indent + 2);
   }
 
   public void list(PrintWriter out, int indent)
   {
-    for (int i = 0; i < indent; ++i)
-      out.print (' ');
-    out.println (toString ());
+    super.list (out, indent);
     for (int i = 0; i < ncomponents; ++i)
       component[i].list (out, indent + 2);
   }
@@ -622,4 +641,52 @@ public class Container extends Component
     public static final GfxVisitor INSTANCE = new GfxPrintAllVisitor();
   }
 
+  // This is used to implement Component.transferFocus.
+  Component findNextFocusComponent (Component child)
+  {
+    int start, end;
+    if (child != null)
+      {
+	for (start = 0; start < ncomponents; ++start)
+	  {
+	    if (component[start] == child)
+	      break;
+	  }
+	end = start;
+	// This special case lets us be sure to terminate.
+	if (end == 0)
+	  end = ncomponents;
+	++start;
+      }
+    else
+      {
+	start = 0;
+	end = ncomponents;
+      }
+
+    for (int j = start; j != end; ++j)
+      {
+	if (j >= ncomponents)
+	  {
+	    // The JCL says that we should wrap here.  However, that
+	    // seems wrong.  To me it seems that focus order should be
+	    // global within in given window.  So instead if we reach
+	    // the end we try to look in our parent, if we have one.
+	    if (parent != null)
+	      return parent.findNextFocusComponent (this);
+	    j -= ncomponents;
+	  }
+	if (component[j] instanceof Container)
+	  {
+	    Component c = component[j];
+	    c = c.findNextFocusComponent (null);
+	    if (c != null)
+	      return c;
+	  }
+	else if (component[j].isFocusTraversable ())
+	  return component[j];
+      }
+
+    return null;
+  }
 }

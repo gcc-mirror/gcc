@@ -17,5 +17,6 @@ public interface ScrollPanePeer extends ContainerPeer
   int getVScrollbarWidth();
   void setScrollPosition(int x, int y);
   void setUnitIncrement(Adjustable adj, int increment);
+  void setBlockIncrement(Adjustable adj, int increment);
   void setValue(Adjustable adj, int value);
 }

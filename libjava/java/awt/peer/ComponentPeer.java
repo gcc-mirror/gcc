@@ -30,6 +30,8 @@ public interface ComponentPeer
   Dimension getMinimumSize();
   Dimension getPreferredSize();
   Toolkit getToolkit();
+  // The JCL says that handleEvent returns boolean.  However, we've
+  // experimentally determined that it in fact actually returns void.
   void handleEvent(AWTEvent e);
   boolean isFocusTraversable();
   void paint(Graphics graphics);

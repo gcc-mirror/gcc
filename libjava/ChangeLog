@@ -1,3 +1,30 @@
+2001-01-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/ScrollPane.java: Wrote.
+	* java/awt/peer/ScrollPanePeer.java (setBlockIncrement): New
+	method.
+
+	* java/awt/Panel.java (Panel()): Fixed.
+
+	* java/awt/Component.java (isShowing): Return false if no peer
+	exists, and true if component is visible and no parent exists.
+	(getLocationOnScreen): Wrote.
+	(getPreferredSize): Removed FIXME comment.
+	(getMinimumSize): Likewise.
+	(getAlignmentX, getAlignmentY): Wrote.
+	(list): Wrote.
+	(requestFocus): Wrote.
+	(transferFocus): Wrote.
+	(findNextFocusComponent): New method.
+	(hasFocus()): Wrote.
+	(checkImage): Wrote.
+	(enableEvents): Call setEventMask on the peer.
+
+	* java/awt/Container.java (list): Use super.list() to print self.
+	(findNextFocusComponent): New method.
+	(setLayout): Call invalidate.
+	(findComponentAt): Wrote.
+
 2000-12-30  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am (libgcj_la_LIBADD): Add $(THREADLIBS). This ensures that

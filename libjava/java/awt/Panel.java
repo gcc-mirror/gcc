@@ -10,16 +10,13 @@ package java.awt;
 
 import java.awt.peer.ComponentPeer;
 
-/* An incomplete placeholder. */
+/* This class is complete to 1.2.  */
 
 public class Panel extends Container
 {
   public Panel()
   { 
-    this(
-	 // should be: new FlowLayout()
-	 null // FIXME
-	 );
+    this (new FlowLayout ());
   }
 
   public Panel(LayoutManager layout)
