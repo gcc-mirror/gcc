@@ -1614,6 +1614,12 @@ alpha_expand_block_move (operands)
   if (bytes > MAX_MOVE_WORDS*8)
     return 0;
 
+  /* Ideally we would do nice things when noticing the addressof.  */
+  if (GET_CODE (XEXP (orig_src, 0)) == ADDRESSOF)
+    orig_src = copy_addr_to_reg (XEXP (orig_src, 0));
+  if (GET_CODE (XEXP (orig_dst, 0)) == ADDRESSOF)
+    orig_dst = copy_addr_to_reg (XEXP (orig_dst, 0));
+
   /* Handle a block of contiguous words first.  */
 
   if (align >= 8 && bytes >= 8)
