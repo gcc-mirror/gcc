@@ -554,6 +554,15 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 #define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) ((CLASS1) != (CLASS2))
 
+/* Specify the mode to be used for memory when a secondary memory
+   location is needed.  If MODE is floating-point, use it.  Otherwise,
+   widen to a word like the default.  This is needed because we always
+   store integers in FP registers in quadword format.  This whole
+   area is very tricky! */
+#define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
+  (GET_MODE_CLASS (MODE) == MODE_FLOAT ? (MODE)		\
+   : mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0))
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
