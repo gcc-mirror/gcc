@@ -411,7 +411,12 @@ unop:     '&'
 	| '-'
 		{ $$ = NEGATE_EXPR; }
 	| '+'
-		{ $$ = CONVERT_EXPR; }
+		{ $$ = CONVERT_EXPR;
+ifc
+  if (warn_traditional)
+    warning ("traditional C rejects the unary plus operator");
+end ifc
+		}
 	| PLUSPLUS
 		{ $$ = PREINCREMENT_EXPR; }
 	| MINUSMINUS
