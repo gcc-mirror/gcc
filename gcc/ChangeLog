@@ -1,3 +1,7 @@
+2001-12-04  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.in:  Add INSTALL_SCRIPT using INSTALL definition.
+
 2001-12-04  DJ Delorie  <dj@redhat.com>
 
 	* fixinc/fixincl.c (initialize): Avoid problemsome macro
