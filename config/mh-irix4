@@ -1,7 +1,0 @@
-# Makefile changes for SGI's running IRIX-4.x.
-# Tell compiler to use K&R C.  We can't compile under the SGI Ansi
-# environment.  Also bump switch table size so that cp-parse will
-# compile.  Bump string length limit so linker builds.
-
-CC = cc -cckr -Wf,-XNg1500 -Wf,-XNk1000 -Wf,-XNh2000 -Wf,-XNl8192
-SYSV = -DSYSV

@@ -1,9 +1,0 @@
-# Some versions of SVR4 have an alloca in /usr/ucblib/libucb.a, and if we are
-# careful to link that in after libc we can use it, but since newer versions of
-# SVR4 are dropping libucb, it is better to just use the portable C version for
-# bootstrapping.  Do this by defining ALLOCA.
-
-ALLOCA = alloca.o
-
-# See all the declarations.
-FIXPROTO_DEFINES = -D_XOPEN_SOURCE

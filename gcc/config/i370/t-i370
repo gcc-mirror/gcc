@@ -1,4 +1,0 @@
-# There is no libgcc for mvs
-LIBGCC =
-INSTALL_LIBGCC =
-LIBGCC1_TEST =

@@ -1,2 +1,0 @@
-# Needed for missing functions in Sym1.
-CLIB=-liberty -lld

@@ -1,8 +1,0 @@
-t1: count=5
-sscanf ("12345", "%ld", &x) => 1, x = 12345
-sscanf ("12345", "%llllld", &x) => 0, x = -1
-sscanf ("12345", "%LLLLLd", &x) => 0, x = -1
-sscanf ("test ", "%*s%n", &x) => 0, x = 4
-sscanf ("test ", "%2*s%n", &x) => 0, x = -1
-sscanf ("12 ", "%l2d", &x) => 0, x = -1
-sscanf ("12 ", "%2ld", &x) => 1, x = 12

@@ -1,9 +1,0 @@
-\input texinfo  @c -*-texinfo-*-
-@c %**start of header 
-@setfilename INSTALL
-@c %**end of header
-
-@c This tells g77install.texi that it's generating just the INSTALL file.
-@set DOC-INSTALL
-@include g77install.texi
-@bye
