@@ -1,5 +1,5 @@
 /* GtkImage.java
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -168,13 +168,15 @@ public class GtkImage extends Image implements ImageConsumer
     for (int i = 0; i < widthObservers.size (); i++)
       {
 	ImageObserver io = (ImageObserver) widthObservers.elementAt (i);
-	io.imageUpdate (this, ImageObserver.WIDTH, -1, -1, width, height);
+	if (io != null)
+	  io.imageUpdate (this, ImageObserver.WIDTH, -1, -1, width, height);
       }
 
     for (int i = 0; i < heightObservers.size (); i++)
       {
 	ImageObserver io = (ImageObserver) heightObservers.elementAt (i);
-	io.imageUpdate (this, ImageObserver.HEIGHT, -1, -1, width, height);
+	if (io != null)
+	  io.imageUpdate (this, ImageObserver.HEIGHT, -1, -1, width, height);
       }
 
     if (observer != null)
@@ -192,7 +194,8 @@ public class GtkImage extends Image implements ImageConsumer
     for (int i = 0; i < propertyObservers.size (); i++)
       {
 	ImageObserver io = (ImageObserver) propertyObservers.elementAt (i);
-	io.imageUpdate (this, ImageObserver.PROPERTIES, -1, -1, width, height);
+	if (io != null)
+	  io.imageUpdate (this, ImageObserver.PROPERTIES, -1, -1, width, height);
       }
   }
 

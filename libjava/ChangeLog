@@ -1,3 +1,13 @@
+2003-12-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkImage.java (setDimensions,
+	setProperties): Check that io is not null before calling
+	io.imageUpdate.
+	* java/awt/image/ImageConsumer.java (setPixels, imageComplete):
+	Update javadocs.
+	* java/awt/image/PixelGrabber.java: Fix implementation and
+	update javadocs.
+
 2003-12-01  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/natPlainSocketImplPosix.cc
@@ -572,7 +582,7 @@
 	attributes for character.
 	(quoteChar): Likewise.
 
-2003-11-14  Tom Fitzsimmons  <fitzsim@redhat.com>
+2003-11-14  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/GridBagLayout.java (getLayoutDimensions): Return array of two
 	zero-length int arrays when layoutInfo is null.
@@ -606,7 +616,7 @@
 	(helper_put_filedescriptors): Change to static linkage.
 	(helper_get_filedescriptors): Likewise.
 
-2003-11-12  Tom Fitzsimmons  <fitzsim@redhat.com>
+2003-11-12  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (prepareImage): Remove
 	null check.
