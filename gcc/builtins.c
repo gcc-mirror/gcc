@@ -4952,9 +4952,12 @@ purge_builtin_constant_p ()
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn)
 	&& (set = single_set (insn)) != NULL_RTX
-	&& GET_CODE (SET_SRC (set)) == CONSTANT_P_RTX)
+	&& (GET_CODE (arg = SET_SRC (set)) == CONSTANT_P_RTX
+	    || (GET_CODE (arg) == SUBREG
+		&& (GET_CODE (arg = SUBREG_REG (arg))
+		    == CONSTANT_P_RTX))))
       {
-	arg = XEXP (SET_SRC (set), 0);
+	arg = XEXP (arg, 0);
 	new = CONSTANT_P (arg) ? const1_rtx : const0_rtx;
 	validate_change (insn, &SET_SRC (set), new, 0);
 

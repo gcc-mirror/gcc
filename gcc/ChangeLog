@@ -1,5 +1,8 @@
 2003-02-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* builtins.c (purge_builtin_constant_p): Handle subreg of
+	constant_p_rtx too.
+
 	* function.c (assign_stack_local_1): Truncate constant added to
 	frame_pointer_rtx or virtual_stack_vars_rtx for Pmode.
 
