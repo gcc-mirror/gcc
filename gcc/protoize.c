@@ -130,8 +130,13 @@ typedef char * const_pointer_type;
 #define X_OK    1       /* Test for eXecute permission */
 #define F_OK    0       /* Test for existence of File */
 
+#ifndef O_RDONLY
 #define O_RDONLY        0
+#endif
+
+#ifndef O_WRONLY
 #define O_WRONLY        1
+#endif
 
 #ifndef WIFSIGNALED
 #define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
