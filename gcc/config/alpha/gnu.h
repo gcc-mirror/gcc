@@ -3,6 +3,7 @@
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (Alpha GNU)");
 
+#undef TARGET_OS_CPP_BUILTINS /* config.gcc includes alpha/linux.h.  */
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
 	builtin_define ("__GNU__");		\
