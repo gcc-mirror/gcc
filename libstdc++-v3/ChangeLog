@@ -1,3 +1,13 @@
+2001-09-27  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/std/*:  Add Doxygen hooks.
+	* docs/doxygen/Intro.3:  New file, general intro to the man pages.
+	* docs/doxygen/mainpage.doxy:  Formatting tweaks.  List our own links
+	rather than using a generated index.
+	* docs/doxygen/user.cfg.in:  Disable the index, enable man pages.
+	* docs/doxygen/run_doxygen:  Massage the generated man pages, using...
+	* docs/doxygen/stdheader.cc:  ...this new file.
+
 2001-09-26  Stan Shebs  <shebs@apple.com>
 
 	* include/Makefile.am: Remove RCS Id strings.

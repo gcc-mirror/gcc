@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Runs doxygen.  Possibly will massage the output files.
+# Runs doxygen and massages the output files.
 #
 # Synopsis:  run_doxygen --mode=[user|maint]  v3srcdir  v3builddir
 #
@@ -69,14 +69,6 @@ parse_options() {
         mode=$arg ;;
       --mode | --help | -h)
         print_usage ;;
-      --version | -v)
-        # Aw, that's so cuuuute... don't ask, I needed it.
-        blank=
-        Id=is
-        echo You expect this dinky script to track a version?  Okay, here
-        echo it $Id: run_doxygen,v 1.6 2001/07/11 19:35:47 pme Exp $blank
-        exit 0
-        ;;
       *)
         # this turned out to be a mess, maybe change to --srcdir=, etc
         if test $srcdir = unset; then
@@ -129,11 +121,55 @@ chmod u+w $outdir
   echo :: Finished, exit code was $?
 )
 
-# mess with output files here?
+# Mess with the man pages.  We don't need documentation of the internal
+# headers, since the man pages for those contain nothing useful anyhow.  The
+# man pages for doxygen modules need to be renamed (or deleted).  And the
+# generated #include lines need to be changed from the internal names to the
+# standard ones (e.g., "#include <stl_tempbuf.h>" -> "#include <memory>").
+#
+# File names with embedded spaces (EVIL!) need to be....?  renamed or removed?
+cd $outdir/man/man3 && {
+echo :: Fixing up the man pages...
 
+# requires GNU tools
+find . -name "* *" -print0 | xargs -0 rm
+rm *.h.3
+
+# can leave SGIextensions.3 alone, it's an okay name
+mv s20_3_1_base.3           Intro_functors.3
+mv s20_3_2_arithmetic.3     Arithmetic_functors.3
+mv s20_3_3_comparisons.3    Comparison_functors.3
+mv s20_3_4_logical.3        Logical_functors.3
+mv s20_3_5_negators.3       Negation_functors.3
+mv s20_3_6_binder.3         Binder_functors.3
+mv s20_3_7_adaptors.3       Func_ptr_functors.3
+mv s20_3_8_memadaptors.3    Member_ptr_functors.3
+
+# Standardize the displayed header names.  If anyone who knows perl cares
+# enough to rewrite all this, feel free.  This only gets run once a century,
+# and I'm off getting coffee then anyhow, so I didn't care enough to make
+# this super-fast.
+g++ ${srcdir}/docs/doxygen/stdheader.cc -o ./stdheader
+problematic=`egrep -l '#include <.*_.*>' [a-z]*.3`
+for f in $problematic; do
+    # this is also slow, but safe and easy to debug
+    oldh=`sed -n '/#include </s/.*<\(.*\)>.*/\1/p' $f`
+    newh=`echo $oldh | ./stdheader`
+    sed "s=${oldh}=${newh}=" $f > TEMP
+    mv TEMP $f
+done
+rm stdheader
+
+cp ${srcdir}/docs/doxygen/Intro.3 .
+
+}
+
+# all done
 echo ::
 echo :: Doxygen output begins with
 echo :: ${outdir}/html_${mode}/index.html
+echo ::
+echo :: Man pages in ${outdir}/man
 echo ::
 
 exit 0
