@@ -1,3 +1,21 @@
+Thu Apr 27 16:55:28 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (CSE_ADDRESS_COST): Remove.
+	(find_best_addr): Add new parameter "MODE", use address_cost instead
+	of CSE_ADDRESS_COST
+	(address_cost): New.
+	(fold_rtx): Update call of find_best_addr.
+	* rtl.h (address_cost): Declare.
+	* loop.c (general_induction_var): Add new parameter "MODE", use
+	address_cost instead of ADDRESS_COST
+	(init_loop): Use address_cost instead of ADDRESS_COST.
+	(check_insn_for_givs): Update call of general_induction_var.
+	(find_mem_givs): Likewise.
+	(consec_sets_giv): Likewise.
+	* config/i386/i386.h (ADDRESS_COST): Call ix86_address_cost.
+	* i386.c (ix86_address_cost): New.
+	* i386-protos.h (ix86_address_cost): Declare.
+
 Thu Apr 27 11:45:16 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.md (movqi): Simplify.  Prefer data

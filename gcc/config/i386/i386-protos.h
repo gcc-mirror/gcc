@@ -108,6 +108,7 @@ extern void ix86_split_ashldi PARAMS ((rtx *, rtx));
 extern void ix86_split_ashrdi PARAMS ((rtx *, rtx));
 extern void ix86_split_lshrdi PARAMS ((rtx *, rtx));
 extern void ix86_expand_strlensi_unroll_1 PARAMS ((rtx, rtx, rtx));
+extern int ix86_address_cost PARAMS ((rtx));
 
 extern rtx assign_386_stack_local PARAMS ((enum machine_mode, int));
 extern int ix86_attr_length_default PARAMS ((rtx));

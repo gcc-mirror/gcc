@@ -2040,11 +2040,7 @@ while (0)
    lifetimes.  */
 
 #define ADDRESS_COST(RTX) \
-  ((CONSTANT_P (RTX)						\
-    || (GET_CODE (RTX) == PLUS && CONSTANT_P (XEXP (RTX, 1))	\
-	&& REG_P (XEXP (RTX, 0)))) ? 0				\
-   : REG_P (RTX) ? 1						\
-   : 2)
+  ix86_address_cost (x)
 
 /* A C expression for the cost of moving data from a register in class FROM to
    one in class TO.  The classes are expressed using the enumeration values
