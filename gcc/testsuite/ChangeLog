@@ -1,3 +1,7 @@
+Tue Jul 23 21:02:43 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c-torture/compile/simd-4.c: New test.
+
 2002-07-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/7347, c++/7348
