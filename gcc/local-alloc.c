@@ -648,6 +648,9 @@ memref_referenced_p (memref, x)
 	return 1;
 
       return memref_referenced_p (memref, SET_SRC (x));
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
