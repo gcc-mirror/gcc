@@ -1,3 +1,10 @@
+2004-03-04  Jan Hubicka  <jh@suse.cz>
+
+	* reload.c (find_reloads): Reorganize if seqeunce to switch.
+
+	* cfgrtl.c (rtl_redirect_edge_and_branch):  Set the source BB as dirty.
+	(cfglayout_redirect_edge_and_branch):  Set the source BB as dirty.
+
 2004-03-04  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.md (divdf3_internal_thr): Fix algorithm.
