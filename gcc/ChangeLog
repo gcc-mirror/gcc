@@ -1,3 +1,7 @@
+Wed Aug 26 12:57:09 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.h (RTX_COSTS): Handle UDIV and UMOD too.
+
 Wed Aug 26 16:35:37 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (check_dbra_loop): Add some code that would allow reversal
