@@ -1,3 +1,10 @@
+Sun May 19 00:24:23 CEST 2002  Jan HUbicka  <jh@suse.cz>
+
+	* i386.md (movsi/movdi): Fix template.
+	(sse2 patterns): Set attributes consistently.
+
+	* i386.md (pushqi2, ashrqi_*): Fix constraint.
+
 2002-05-18  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* optabs.c (complex_part_zero_p): New.
