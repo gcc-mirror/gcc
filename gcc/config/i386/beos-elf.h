@@ -188,7 +188,7 @@ Boston, MA 02111-1307, USA.  */
     { "/boot/develop/headers/posix", 0, 0, 0 },\
     { "/boot/develop/headers", 0, 0, 0 }, \
     { 0, 0, 0, 0 } \
-    };
+    }
 #else /* CROSS_COMPILE */
 #undef	INCLUDE_DEFAULTS
 #define INCLUDE_DEFAULTS				\
@@ -230,7 +230,7 @@ Boston, MA 02111-1307, USA.  */
     { CROSS_INCLUDE_DIR "/posix", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR , 0, 0, 0 }, \
     { 0, 0, 0, 0 } \
-    };
+    }
 #endif
 
 /* Whee.  LIBRARY_PATH is Be's LD_LIBRARY_PATH, which of course will

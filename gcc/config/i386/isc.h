@@ -74,8 +74,8 @@
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)				\
   do {							\
-    int len = strlen (main_input_filename);		\
-    char *na = main_input_filename + len;		\
+    const int len = strlen (main_input_filename);	\
+    const char *na = main_input_filename + len;		\
     char shorter[15];					\
     /* NA gets MAIN_INPUT_FILENAME sans directory names.  */\
     while (na > main_input_filename)			\

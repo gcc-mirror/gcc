@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #define NO_DOT_IN_LABEL
 #endif
 
-#define ADDITIONAL_REGISTER_NAMES  { "%fp", 14, "%a7", 15 }
+#define ADDITIONAL_REGISTER_NAMES  { {"%fp", 14}, {"%a7", 15} }
 
 #define ASM_MOV_INSN	"movel"
 
