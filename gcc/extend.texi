@@ -2593,7 +2593,7 @@ very often.
 Local register variables in specific registers do not reserve the
 registers.  The compiler's data flow analysis is capable of determining
 where the specified registers contain live values, and where they are
-available for other uses.  Stores into local register variables may deleted
+available for other uses.  Stores into local register variables may be deleted
 when they appear to be dead according to dataflow analysis.  References
 to local register variables may be deleted or moved or simplified.
 
@@ -2746,7 +2746,7 @@ this variable in the register you specify at all times.  You may not
 code an explicit reference to this register in an @code{asm} statement
 and assume it will always refer to this variable.
 
-Stores into local register variables may deleted when they appear to be dead
+Stores into local register variables may be deleted when they appear to be dead
 according to dataflow analysis.  References to local register variables may
 be deleted or moved or simplified.
 
