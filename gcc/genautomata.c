@@ -1134,7 +1134,7 @@ struct ainsn
   /* The following member has nonzero value if there is arc from state of
      the automaton marked by the ainsn.  */
   char arc_exists_p;
-  /* Cyclic list of insns of a equivalence class is formed with the
+  /* Cyclic list of insns of an equivalence class is formed with the
      aid of the following field.  */
   ainsn_t next_equiv_class_insn;
   /* The following field value is nonzero if the insn declaration is
@@ -1268,7 +1268,7 @@ check_name (name, pos)
    following.  */
 static vla_ptr_t decls;
 
-/* Given a pointer to a (char *) and a separator, return a alloc'ed
+/* Given a pointer to a (char *) and a separator, return an alloc'ed
    string containing the next separated element, taking parentheses
    into account if PAR_FLAG has nonzero value.  Advance the pointer to
    after the string scanned, or the end-of-string.  Return NULL if at
@@ -1471,7 +1471,7 @@ gen_bypass (def)
       }
 }
 
-/* Process a EXCLUSION_SET.  
+/* Process an EXCLUSION_SET.  
 
    This gives information about a cpu unit conflicts.  We fill a
    struct unit_rel_decl (excl) with information used later by
@@ -1550,7 +1550,7 @@ gen_presence_set (def)
   num_dfa_decls++;
 }
 
-/* Process a ABSENCE_SET.  
+/* Process an ABSENCE_SET.  
 
    This gives information about a cpu unit reservation requirements.
    We fill a struct unit_rel_decl (absence) with information used
@@ -1618,7 +1618,7 @@ gen_automaton (def)
     }
 }
 
-/* Process a AUTOMATA_OPTION.  
+/* Process an AUTOMATA_OPTION.  
 
    This gives information how to generate finite state automaton used
    for recognizing pipeline hazards.  */
@@ -1859,7 +1859,7 @@ string_hash (string)
    Key of the table elements is name of given automaton.  Rememeber
    that automaton names have own space.  */
 
-/* The function evaluates hash value of a automaton declaration.  The
+/* The function evaluates hash value of an automaton declaration.  The
    function is used by abstract data `hashtab'.  The function returns
    hash value (0..UINT_MAX) of given automaton declaration.  */
 static unsigned
@@ -1961,7 +1961,7 @@ finish_automaton_decl_table ()
    define_insn_reservation).  Rememeber that insn names have own
    space.  */
 
-/* The function evaluates hash value of a insn declaration.  The
+/* The function evaluates hash value of an insn declaration.  The
    function is used by abstract data `hashtab'.  The function returns
    hash value (0..UINT_MAX) of given insn declaration.  */
 static unsigned

@@ -204,7 +204,7 @@ struct nesting
 	  struct label_chain *label_chain;
 	  /* Number of function calls seen, as of start of this block.  */
 	  int n_function_calls;
-	  /* Nonzero if this is associated with a EH region.  */
+	  /* Nonzero if this is associated with an EH region.  */
 	  int exception_region;
 	  /* The saved target_temp_slot_level from our outer block.
 	     We may reset target_temp_slot_level to be the level of
@@ -5170,7 +5170,7 @@ check_for_full_enumeration_handling (type)
 
       /* The time complexity of this code is normally O(N), where
 	 N being the number of members in the enumerated type.
-	 However, if type is a ENUMERAL_TYPE whose values do not
+	 However, if type is an ENUMERAL_TYPE whose values do not
 	 increase monotonically, O(N*log(N)) time may be needed.  */
 
       mark_seen_cases (type, cases_seen, size, sparseness);
