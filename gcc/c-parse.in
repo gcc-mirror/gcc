@@ -490,7 +490,7 @@ unary_expr:
 	| sizeof unary_expr  %prec UNARY
 		{ skip_evaluation--;
 		  if (TREE_CODE ($2) == COMPONENT_REF
-		      && DECL_BIT_FIELD (TREE_OPERAND ($2, 1)))
+		      && DECL_C_BIT_FIELD (TREE_OPERAND ($2, 1)))
 		    error ("`sizeof' applied to a bit-field");
 		  $$ = c_sizeof (TREE_TYPE ($2)); }
 	| sizeof '(' typename ')'  %prec HYPERUNARY
