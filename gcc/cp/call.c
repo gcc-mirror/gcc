@@ -4306,6 +4306,21 @@ build_over_call (struct z_candidate *cand, int flags)
   int i = 0;
   int is_method = 0;
 
+  /* In a template, there is no need to perform all of the work that
+     is normally done.  We are only interested in the type of the call
+     expression, i.e., the return type of the function.  Any semantic
+     errors will be deferred until the template is instantiated.  */
+  if (processing_template_decl)
+    {
+      tree expr;
+      tree return_type;
+      return_type = TREE_TYPE (TREE_TYPE (fn));
+      expr = build (CALL_EXPR, return_type, fn, args);
+      if (!VOID_TYPE_P (return_type))
+	require_complete_type (return_type);
+      return convert_from_reference (expr);
+    }
+
   /* Give any warnings we noticed during overload resolution.  */
   if (cand->warnings)
     for (val = cand->warnings; val; val = TREE_CHAIN (val))

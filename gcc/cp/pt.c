@@ -11993,6 +11993,10 @@ build_non_dependent_expr (tree expr)
      cannot be used to initialize a "char *".  */
   if (TREE_CODE (expr) == STRING_CST)
     return expr;
+  /* Preserve arithmetic constants, as an optimization -- there is no
+     reason to create a new node.  */
+  if (TREE_CODE (expr) == INTEGER_CST || TREE_CODE (expr) == REAL_CST)
+    return expr;
 
   if (TREE_CODE (expr) == COND_EXPR)
     return build (COND_EXPR,
