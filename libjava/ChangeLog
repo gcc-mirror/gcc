@@ -1,3 +1,8 @@
+2005-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one): Add
+	libsocket to the libraries to link for Solaris.
+
 2005-03-28  Per Bothner  <per@bothner.com>
 
 	* boehm.cc (_Jv_MarkObj): Don't follow null pointer to static field,
@@ -21125,3 +21130,4 @@
 
 	* java/util/Date.java (parse):  Fix a number of problems.
 	(skipParens):  Remove no-longer-needed method.
+
