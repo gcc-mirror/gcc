@@ -1475,6 +1475,7 @@ The @code{WHILE_BODY} is the body of the loop.
 @tindex BIND_EXPR
 @tindex LOOP_EXPR
 @tindex EXIT_EXPR
+@tindex CLEANUP_POINT_EXPR
 @tindex ARRAY_REF
 
 The internal representation for expressions is for the most part quite
@@ -1824,7 +1825,19 @@ expression would normally appear.  The @code{STMT_EXPR} node represents
 such an expression.  The @code{STMT_EXPR_STMT} gives the statement
 contained in the expression; this is always a @code{COMPOUND_STMT}.  The
 value of the expression is the value of the last sub-statement in the
-@code{COMPOUND_STMT}.
+@code{COMPOUND_STMT}.  More precisely, the value is the value computed
+by the last @code{EXPR_STMT} in the outermost scope of the
+@code{COMPOUND_STMT}.  For example, in:
+@example
+(@{ 3; @})
+@end example
+the value is @code{3} while in:
+@example
+(@{ if (x) { 3; } @})
+@end example
+(represented by a nested @code{COMPOUND_STMT}), there is no value.  If
+the @code{STMT_EXPR} does not yield a value, it's type will be
+@code{void}.
 
 @item BIND_EXPR
 These nodes represent local blocks.  The first operand is a list of
@@ -1843,6 +1856,12 @@ These nodes represent conditional exits from the nearest enclosing
 @code{LOOP_EXPR}.  The single operand is the condition; if it is
 non-zero, then the loop should be exited.  An @code{EXIT_EXPR} will only
 appear within a @code{LOOP_EXPR}.
+
+@item CLEANUP_POINT_EXPR
+These nodes represent full-expressions.  The single oeprand is an
+expression to evaluate.  Any destructor calls engendered by the creation
+of temporaries during the evaluation of that expression should be
+performed immediately after the expression is evaluated.
 
 @item CONSTRUCTOR
 These nodes represent the brace-enclosed initializers for a structure or

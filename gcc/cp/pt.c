@@ -7424,6 +7424,10 @@ tsubst_expr (t, args, complain, in_decl)
 	  {
 	    decl = DECL_STMT_DECL (HANDLER_PARMS (t));
 	    decl = tsubst (decl, args, complain, in_decl);
+	    /* Prevent instantiate_decl from trying to instantiate
+	       this variable.  We've already done all that needs to be
+	       done.  */
+	    DECL_TEMPLATE_INSTANTIATED (decl) = 1;
 	  }
 	else
 	  decl = NULL_TREE;
