@@ -4583,7 +4583,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 #ifdef SHIFT_COUNT_TRUNCATED
       else if (SHIFT_COUNT_TRUNCATED && GET_CODE (XEXP (x, 1)) != REG)
 	SUBST (XEXP (x, 1),
-	       force_to_mode (XEXP (x, 1), GET_MODE (x),
+	       force_to_mode (XEXP (x, 1), GET_MODE (XEXP (x, 1)),
 			      ((HOST_WIDE_INT) 1
 			       << exact_log2 (GET_MODE_BITSIZE (GET_MODE (x))))
 			      - 1,
