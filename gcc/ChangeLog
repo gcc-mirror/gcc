@@ -1,3 +1,16 @@
+2003-12-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/12322
+	* gcse.c (struct ls_expr): Change type of hash_index from int to
+	unsigned int.
+	(hash_expr): Document hash_table_size parameter and wrap long line.
+	(ldst_entry): Calculate expression's hash_index and record in ptr.
+	(trim_ld_motion_mems): Use hash_index to search a single bucket
+	instead of scanning the entire hash_table.  Remove the "del" local
+	variable and use the equivalent "expr == 0" instead.  Change last
+	to be a pointer to the pointer to the current element, to simplify
+	and speed-up deleting from a linked list.
+
 2003-12-01  James E Wilson  <wilson@specifixinc.com>
 
 	* doc/c-tree.texi (CONSTRUCTOR): Clarify element order and handling
