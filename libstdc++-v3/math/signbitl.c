@@ -27,14 +27,22 @@
    invalidate any other reasons why the executable file might be covered by
    the GNU General Public License.  */
 
+#include <float.h>
 #include <math.h>
 #include "mathconf.h"
 
 int
 __signbitl (long double x)
 {
+#if LDBL_MANT_DIG == 113
+  Int64_t msw;
+
+  GET_LDOUBLE_MSW64 (msw, x);
+  return msw < 0;
+#else
   Int32_t e;
 
   GET_LDOUBLE_EXP (e, x);
   return e & 0x8000;
+#endif
 }
