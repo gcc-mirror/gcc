@@ -60,10 +60,17 @@
    We also force _GLIBCPP_USE_LONG_LONG here so that we don't have
    to bastardize configure to deal with this sillyness.  */
 namespace std {
+#ifndef __LP64__
   __extension__ extern "C" long long strtoll (const char *, char **, int)
     __asm  ("__strtoll");
   __extension__ extern "C" unsigned long long strtoull (const char *, char **, int)
     __asm  ("__strtoull");
+#else
+  __extension__ extern "C" long long strtoll (const char *, char **, int)
+    __asm  ("strtol");
+  __extension__ extern "C" unsigned long long strtoull (const char *, char **, int)
+    __asm  ("strtoul");
+#endif
 }
 #define _GLIBCPP_USE_LONG_LONG 1
 #endif

@@ -1,3 +1,11 @@
+2002-04-12  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc/libstdc++-v3/config/os/hpux/bits/os_defines.h
+	(strtoll, strtoull): In 64 bit mode HP-UX (IA64 and HPPA)
+	does not define strtoll or strtoull, but does define strtol
+	and strtoul which are the same since in 64 bit mode
+	sizeof(long) == sizeof(long long).
+
 2002-04-12  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/std/std_bitset.h:  Doxygenate std::bitset<>.  Clean up
