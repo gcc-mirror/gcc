@@ -57,7 +57,7 @@ java::util::GregorianCalendar::computeTime ()
   t += zone->getRawOffset();
 
   // Adjust for milliseconds.
-  time = t * 1000 + elements(fields)[MILLISECOND];
+  time = t * (jlong) 1000 + elements(fields)[MILLISECOND];
 
   isTimeSet = true;
 }

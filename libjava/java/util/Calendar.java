@@ -187,6 +187,7 @@ public abstract class Calendar implements java.io.Serializable, Cloneable
 
   public final void set (int fld, int value)
   {
+    if (! areFieldsSet) computeFields();
     fields[fld] = value;
     isTimeSet = false;
   }
