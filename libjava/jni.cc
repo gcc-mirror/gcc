@@ -1258,6 +1258,63 @@ _Jv_JNI_FromReflectedMethod (JNIEnv *, jobject method)
     _Jv_FromReflectedConstructor (reinterpret_cast<Constructor *> (method));
 }
 
+static jint
+_Jv_JNI_RegisterNatives (JNIEnv *env, jclass k,
+			 const JNINativeMethod *methods,
+			 jint nMethods)
+{
+  // For now, this only matters for interpreted methods.  FIXME.
+  if (! _Jv_IsInterpretedClass (k))
+    {
+      // FIXME: throw exception.
+      return JNI_ERR;
+    }
+  _Jv_InterpClass *klass = reinterpret_cast<_Jv_InterpClass *> (k);
+
+  // Look at each descriptor given us, and find the corresponding
+  // method in the class.
+  for (int j = 0; j < nMethods; ++j)
+    {
+      bool found = false;
+
+      _Jv_MethodBase **imeths = _Jv_GetFirstMethod (klass);
+      for (int i = 0; i < JvNumMethods (klass); ++i)
+	{
+	  _Jv_MethodBase *meth = imeths[i];
+	  _Jv_Method *self = meth->get_method ();
+
+	  if (! strcmp (self->name->data, methods[j].name)
+	      && ! strcmp (self->signature->data, methods[j].signature))
+	    {
+	      if (! (self->accflags
+		     & java::lang::reflect::Modifier::NATIVE))
+		break;
+
+	      // Found a match that is native.
+	      _Jv_JNIMethod *jmeth = reinterpret_cast<_Jv_JNIMethod *> (meth);
+	      jmeth->set_function (methods[i].fnPtr);
+	      found = true;
+	      break;
+	    }
+	}
+
+      if (! found)
+	{
+	  jstring m = JvNewStringUTF (methods[j].name);
+	  _Jv_JNI_Throw (env, new java::lang::NoSuchMethodError (m));
+	  return JNI_ERR;
+	}
+    }
+
+  return JNI_OK;
+}
+
+static jint
+_Jv_JNI_UnregisterNatives (JNIEnv *, jclass)
+{
+  return JNI_ERR;
+}
+
 
 
 #ifdef INTERPRETER
@@ -1460,7 +1517,7 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv, void *args)
     }
 
   // Attaching an already-attached thread is a no-op.
-  if (_Jv_ThreadCurrent () != NULL)
+  if (_Jv_GetCurrentJNIEnv () != NULL)
     return 0;
 
   JNIEnv *env = (JNIEnv *) _Jv_MallocUnchecked (sizeof (JNIEnv));
@@ -1480,8 +1537,13 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv, void *args)
     }
   *penv = reinterpret_cast<void *> (env);
 
-  java::lang::Thread *t = new gnu::gcj::jni::NativeThread (group, name);
-  t = t;			// Avoid compiler warning.  Eww.
+  // This thread might already be a Java thread -- this function might
+  // have been called simply to set the new JNIEnv.
+  if (_Jv_ThreadCurrent () == NULL)
+    {
+      java::lang::Thread *t = new gnu::gcj::jni::NativeThread (group, name);
+      t = t;			// Avoid compiler warning.  Eww.
+    }
   _Jv_SetCurrentJNIEnv (env);
 
   return 0;
@@ -1655,21 +1717,34 @@ JNI_GetCreatedJavaVMs (JavaVM **vm_buffer, jsize buf_len, jsize *n_vms)
   return 0;
 }
 
-jint
-_Jv_JNI_GetJavaVM (JNIEnv *, JavaVM **vm)
+JavaVM *
+_Jv_GetJavaVM ()
 {
   // FIXME: synchronize
   if (! the_vm)
     {
       JavaVM *nvm = (JavaVM *) _Jv_MallocUnchecked (sizeof (JavaVM));
-      if (nvm == NULL)
-	return JNI_ERR;
-      nvm->functions = &_Jv_JNI_InvokeFunctions;
+      if (nvm != NULL)
+	nvm->functions = &_Jv_JNI_InvokeFunctions;
       the_vm = nvm;
     }
 
-  *vm = the_vm;
-  return 0;
+  // If this is a Java thread, we want to make sure it has an
+  // associated JNIEnv.
+  if (_Jv_ThreadCurrent () != NULL)
+    {
+      void *ignore;
+      _Jv_JNI_AttachCurrentThread (the_vm, &ignore, NULL);
+    }
+
+  return the_vm;
+}
+
+static jint
+_Jv_JNI_GetJavaVM (JNIEnv *, JavaVM **vm)
+{
+  *vm = _Jv_GetJavaVM ();
+  return *vm == NULL ? JNI_ERR : JNI_OK;
 }
 
 
@@ -1904,8 +1979,8 @@ struct JNINativeInterface _Jv_JNIFunctions =
   _Jv_JNI_SetPrimitiveArrayRegion,
   _Jv_JNI_SetPrimitiveArrayRegion,
   _Jv_JNI_SetPrimitiveArrayRegion,
-  NOT_IMPL /* RegisterNatives */,
-  NOT_IMPL /* UnregisterNatives */,
+  _Jv_JNI_RegisterNatives,
+  _Jv_JNI_UnregisterNatives,
   _Jv_JNI_MonitorEnter,
   _Jv_JNI_MonitorExit,
   _Jv_JNI_GetJavaVM,

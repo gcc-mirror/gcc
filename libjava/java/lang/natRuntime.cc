@@ -135,8 +135,13 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
   void *onload = lt_dlsym (h, "JNI_OnLoad");
   if (onload != NULL)
     {
-      // FIXME: need invocation API to get JavaVM.
-      jint vers = ((jint (*) (...)) onload) (NULL, NULL);
+      JavaVM *vm = _Jv_GetJavaVM ();
+      if (vm == NULL)
+	{
+	  // FIXME: what?
+	  return;
+	}
+      jint vers = ((jint (*) (JavaVM *, void *)) onload) (vm, NULL);
       if (vers != JNI_VERSION_1_1 && vers != JNI_VERSION_1_2)
 	{
 	  // FIXME: unload the library.
