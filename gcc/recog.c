@@ -3276,7 +3276,8 @@ peephole2_optimize (dump_file)
 						     XEXP (note, 0),
 						     REG_NOTES (x));
 
-			    if (x != bb->end && eh_edge)
+			    if (x != bb->end && eh_edge
+			        && can_throw_internal (x))
 			      {
 				edge nfte, nehe;
 				int flags;
