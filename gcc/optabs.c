@@ -3909,7 +3909,9 @@ init_optabs ()
 #ifdef FIX_TRUNCTFSI2_LIBCALL
   fixtfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, FIX_TRUNCTFSI2_LIBCALL);
 #endif
-
+#ifdef FIXUNS_TRUNCTFSI2_LIBCALL
+  fixunstfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);
+#endif
 }
 
 #ifdef BROKEN_LDEXP
