@@ -1785,34 +1785,31 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
   type = TREE_TYPE (arg);
   utype = gfc_unsigned_type (type);
 
-  /* We convert to an unsigned type because we want a logical shift.
-     The standard doesn't define the case of shifting negative
-     numbers, and we try to be compatible with other compilers, most
-     notably g77, here.  */
-  arg = convert (utype, arg);
   width = fold (build1 (ABS_EXPR, TREE_TYPE (arg2), arg2));
 
   /* Left shift if positive.  */
   lshift = fold (build2 (LSHIFT_EXPR, type, arg, width));
 
-  /* Right shift if negative.  */
-  rshift = convert (type, fold (build2 (RSHIFT_EXPR, utype, arg, width)));
+  /* Right shift if negative.
+     We convert to an unsigned type because we want a logical shift.
+     The standard doesn't define the case of shifting negative
+     numbers, and we try to be compatible with other compilers, most
+     notably g77, here.  */
+  rshift = fold_convert (type, build2 (RSHIFT_EXPR, utype, 
+				       convert (type, arg), width));
 
   tmp = fold (build2 (GE_EXPR, boolean_type_node, arg2,
-		      convert (TREE_TYPE (arg2), integer_zero_node)));
+		      build_int_cst (TREE_TYPE (arg2), 0)));
   tmp = fold (build3 (COND_EXPR, type, tmp, lshift, rshift));
 
   /* The Fortran standard allows shift widths <= BIT_SIZE(I), whereas
      gcc requires a shift width < BIT_SIZE(I), so we have to catch this
      special case.  */
-  num_bits = convert (TREE_TYPE (arg2),
-		      build_int_cst (NULL, TYPE_PRECISION (type)));
-  cond = fold (build2 (GE_EXPR, boolean_type_node, width,
-		       convert (TREE_TYPE (arg2), num_bits)));
+  num_bits = build_int_cst (TREE_TYPE (arg2), TYPE_PRECISION (type));
+  cond = fold (build2 (GE_EXPR, boolean_type_node, width, num_bits));
 
   se->expr = fold (build3 (COND_EXPR, type, cond,
-			   convert (type, integer_zero_node),
-			   tmp));
+			   build_int_cst (type, 0), tmp));
 }
 
 /* Circular shift.  AKA rotate or barrel shift.  */
