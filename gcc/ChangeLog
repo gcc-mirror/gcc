@@ -1,3 +1,9 @@
+Fri Jan 29 18:26:07 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* emit-rtl.c (remove_insn): New function.
+	* rtl.h (remove_insn): Add prototype.
+	* function.c (reposition_prologue_and_epilogue_notes): Call remove_insn.
+
 Fri Jan 29 22:34:41 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (recombine_givs): Don't try to derive givs that have combined.

@@ -6439,7 +6439,6 @@ reposition_prologue_and_epilogue_notes (f)
   /* Reposition the prologue and epilogue notes.  */
   if (n_basic_blocks)
     {
-      rtx next, prev;
       int len;
 
       if (prologue)
@@ -6460,6 +6459,7 @@ reposition_prologue_and_epilogue_notes (f)
 		}
 	      else if ((len -= contains (insn, prologue)) == 0)
 		{
+		  rtx next;
 		  /* Find the prologue-end note if we haven't already, and
 		     move it to just after the last prologue insn.  */
 		  if (note == 0)
@@ -6471,17 +6471,13 @@ reposition_prologue_and_epilogue_notes (f)
 		    }
 
 		  next = NEXT_INSN (note);
-		  prev = PREV_INSN (note);
-		  if (prev)
-		    NEXT_INSN (prev) = next;
-		  if (next)
-		    PREV_INSN (next) = prev;
 
 		  /* Whether or not we can depend on BLOCK_HEAD, 
 		     attempt to keep it up-to-date.  */
 		  if (BLOCK_HEAD (0) == note)
 		    BLOCK_HEAD (0) = next;
 
+		  remove_insn (note);
 		  add_insn_after (note, insn);
 		}
 	    }
@@ -6514,12 +6510,6 @@ reposition_prologue_and_epilogue_notes (f)
 			    && NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
 			  break;
 		    }
-		  next = NEXT_INSN (note);
-		  prev = PREV_INSN (note);
-		  if (prev)
-		    NEXT_INSN (prev) = next;
-		  if (next)
-		    PREV_INSN (next) = prev;
 
 		  /* Whether or not we can depend on BLOCK_HEAD, 
 		     attempt to keep it up-to-date.  */
@@ -6527,6 +6517,7 @@ reposition_prologue_and_epilogue_notes (f)
 		      && BLOCK_HEAD (n_basic_blocks-1) == insn)
 		    BLOCK_HEAD (n_basic_blocks-1) = note;
 
+		  remove_insn (note);
 		  add_insn_before (note, insn);
 		}
 	    }
