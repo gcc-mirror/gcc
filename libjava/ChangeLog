@@ -1,3 +1,40 @@
+2002-11-01  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java:
+	(isAnyLocalAddress): Implemented.
+	(isLoopbackAddress): Implemented, comment added.
+	(isLinkLocalAddress): Implemented, documentation added.
+	(isSiteLocalAddress): Implemented, documentation added.
+	(isMCGlobal): Implemented, documentation added.
+	(isMCNodeLocal): Implemented, documentation added.
+	(isMCLinkLocal): Implemented, documentation added.
+	(isMCSiteLocal): Implemented, documentation added.
+	(isMCOrgLocal): Implemented, documentation added.
+	(getHostName): Documentation added.
+	(getCanonicalHostName): Implemented, documentation added.
+	(getAddress): Documentation added.
+	(hashCode): Documentation added.
+	(equals): Documentation added.
+	(toString): Fixed implementation.
+	(getByAddress): Use Inet4Address and Inet6Address.
+	(lookup): New linewrap.
+	(getByName): SecurityManager check added, support Inet4Address and
+	Inet6address, comments added.
+	(getAllByName): SecurityManager check added, comments added.
+	* java/net/Inet6Address.java:
+	(Inet6Address): Initialize parent class with addr instead of null.
+	* java/net/URL.java
+	(equals): Documentation added.
+	(getFile): Documentation added.
+	(hashCode): Documentation added.
+	* java/net/natInetAddress.cc:
+	(aton): Fix IPv6 support.
+	* java/net/natPlainDatagramSocketImpl.cc:
+	(peek): Throw PortUnreachableException when suitable.
+	(peekData): Throw PortUnreachableException when suitable.
+	(send): Throw PortUnreachableException when suitable.
+	(receive): Throw PortUnreachableException when suitable.
+
 2002-10-27  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/zip/ZipFile.java (readLeShort): Take and use DataInput as

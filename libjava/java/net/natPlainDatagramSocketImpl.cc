@@ -65,6 +65,7 @@ _Jv_bind (int fd, struct sockaddr *addr, int addrlen)
 #include <java/net/InetAddress.h>
 #include <java/net/NetworkInterface.h>
 #include <java/net/DatagramPacket.h>
+#include <java/net/PortUnreachableException.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/Object.h>
 #include <java/lang/Boolean.h>
@@ -328,6 +329,8 @@ java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
   return rport;
  error:
   char* strerr = strerror (errno);
+  if (errno == ECONNREFUSED)
+    throw new PortUnreachableException (JvNewStringUTF (strerr));
   throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
@@ -390,6 +393,8 @@ java::net::PlainDatagramSocketImpl::peekData(java::net::DatagramPacket *p)
   return rport;
  error:
   char* strerr = strerror (errno);
+  if (errno == ECONNREFUSED)
+    throw new PortUnreachableException (JvNewStringUTF (strerr));
   throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
@@ -441,6 +446,8 @@ java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
     return;
 
   char* strerr = strerror (errno);
+  if (errno == ECONNREFUSED)
+    throw new PortUnreachableException (JvNewStringUTF (strerr));
   throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
@@ -503,6 +510,8 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
   return;
  error:
   char* strerr = strerror (errno);
+  if (errno == ECONNREFUSED)
+    throw new PortUnreachableException (JvNewStringUTF (strerr));
   throw new java::io::IOException (JvNewStringUTF (strerr));
 }
 
