@@ -6297,8 +6297,8 @@ dump_class_hierarchy (binfo, indent)
 {
   int i;
 
-  fprintf (stderr, "%*s0x%x (%s) %d %s\n", indent, "",
-	   (unsigned int) binfo,
+  fprintf (stderr, "%*s0x%lx (%s) %d %s\n", indent, "",
+	   (unsigned long) binfo,
 	   type_as_string (binfo, TS_PLAIN),
 	   TREE_INT_CST_LOW (BINFO_OFFSET (binfo)),
 	   BINFO_PRIMARY_MARKED_P (binfo) ? "primary" : "");
