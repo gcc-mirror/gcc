@@ -33,6 +33,28 @@ details.  */
 #include <bstring.h>
 #endif
 
+// Avoid macro definitions of bind, connect from system headers, e.g. on
+// Solaris 7 with _XOPEN_SOURCE.  FIXME
+static inline int
+_Jv_bind (int fd, struct sockaddr *addr, int addrlen)
+{
+  return ::bind (fd, addr, addrlen);
+}
+
+#ifdef bind
+#undef bind
+#endif
+
+static inline int
+_Jv_connect (int fd, struct sockaddr *addr, int addrlen)
+{
+  return ::connect (fd, addr, addrlen);
+}
+
+#ifdef connect
+#undef connect
+#endif
+
 #include <gcj/cni.h>
 #include <gcj/javaprims.h>
 #include <java/io/IOException.h>
@@ -164,7 +186,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
   // Enable SO_REUSEADDR, so that servers can reuse ports left in TIME_WAIT.
   ::setsockopt(fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &i, sizeof(i));
   
-  if (::bind (fnum, ptr, len) == 0)
+  if (_Jv_bind (fnum, ptr, len) == 0)
     {
       address = host;
       socklen_t addrlen = sizeof(u);
@@ -209,7 +231,7 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
   else
     throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (::connect (fnum, ptr, len) != 0)
+  if (_Jv_connect (fnum, ptr, len) != 0)
     goto error;
   address = host;
   port = rport;
