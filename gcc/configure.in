@@ -673,17 +673,37 @@ changequote([,])dnl
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		;;
-	arm-*-linux-gnuaout*)		# ARM GNU/Linux
+	arm*-*-linux-gnuaout*)		# ARM GNU/Linux with a.out
 		cpu_type=arm
 		xmake_file=x-linux
-		tm_file=arm/linux-gas.h
+		tm_file=arm/linux-aout.h
 		tmake_file=arm/t-linux
 		fixincludes=Makefile.in
 		gnu_ld=yes
 		;;
-	arm-*-aout)
+	arm*-*-linux-gnu*)		# ARM GNU/Linux with ELF
+		xm_file=arm/xm-linux.h
+		xmake_file=x-linux
+		case $machine in
+		armv2*-*-*)
+			tm_file=arm/linux-elf26.h
+			;;
+		*)
+			tm_file=arm/linux-elf.h
+			;;
+		esac
+		tmake_file="t-linux arm/t-linux"
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+		fixincludes=Makefile.in		# Nothing to fix
+		gnu_ld=yes
+		;;
+	arm*-*-aout)
 		tm_file=arm/aout.h
 		tmake_file=arm/t-bare
+		;;
+	arm*-*-elf)
+		tm_file=arm/unknown-elf.h
+		tmake_file=arm/t-arm-elf
 		;;
 	c1-convex-*)			# Convex C1
 		target_cpu_default=1
