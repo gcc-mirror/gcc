@@ -1,3 +1,15 @@
+1999-12-14  Jason Merrill  <jason@casey.cygnus.com>
+
+	* error.c (dump_decl): operator==, not operator ==.
+	(op_to_string): Likewise.
+
+	* decl.c (compute_array_index_type): Handle null name.
+
+	* decl2.c (ambiguous_decl): Fix to match comment.
+	(lookup_using_namespace): Adjust.
+
+	* decl2.c (import_export_class): Don't ignore dllimport.
+
 1999-12-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (check_field_decls): Split out from ...
