@@ -29,6 +29,10 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_EBCDIC 1
 #define TARGET_HLASM 1
 
+/* Options for the preprocessor for this target machine.  */
+
+#define CPP_SPEC "-trigraphs"
+
 /* Options for this target machine.  */
 
 #define LIB_SPEC ""

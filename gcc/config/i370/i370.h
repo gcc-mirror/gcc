@@ -1160,23 +1160,29 @@ enum reg_class
   fprintf (FILE, "%s%d\tEQU\t*\n", PREFIX, NUM);			\
 }
 
-/* Generate case label.  */
-/* hack alert -- I don't get it ... what if its a really big case label?
- * wouldn't we have to say label_emitted also ?? */
+/* Generate case label.  For HLASM we can change to the data CSECT
+   and put the vectors out of the code body. The assembler just
+   concatenates CSECTs with the same name. */
 
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, TABLE)			\
-   fprintf (FILE, "%s%d\tEQU\t*\n", PREFIX, NUM)
+  fprintf (FILE, "\tDS\t0F\n");                                         \
+  fprintf (FILE,"\tCSECT\n");                                           \
+  fprintf (FILE, "%s%d\tEQU\t*\n", PREFIX, NUM)
+
+/* Put the CSECT back to the code body */
+
+#define ASM_OUTPUT_CASE_END(FILE, NUM, TABLE)                           \
+  assemble_name (FILE, mvs_function_name);                              \
+  fputs ("\tCSECT\n", FILE);
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  				\
-  mvs_check_page (FILE, 4, 0);						\
   fprintf (FILE, "\tDC\tA(L%d)\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
-  mvs_check_page (FILE, 4, 0);						\
   fprintf (FILE, "\tDC\tA(L%d-L%d)\n", VALUE, REL)
 
 /* This is how to output an insn to push a register on the stack.
@@ -1188,7 +1194,7 @@ enum reg_class
 
 #define ASM_OUTPUT_REG_PUSH(FILE, REGNO)				\
   mvs_check_page (FILE, 8, 4);						\
-  fprintf (FILE, "\tSXXX\t13,=F'4'\n\tST\t%s,%d(13)\n",			\
+  fprintf (FILE, "\tS\t13,=F'4'\n\tST\t%s,%d(13)\n",			\
      reg_names[REGNO], STACK_POINTER_OFFSET)
 
 /* This is how to output an insn to pop a register from the stack.
@@ -1196,13 +1202,9 @@ enum reg_class
 
 #define ASM_OUTPUT_REG_POP(FILE, REGNO)					\
   mvs_check_page (FILE, 8, 0);						\
-  fprintf (FILE, "\tL\t%s,%d(13)\n\tLAXXX\t13,4(13)\n",			\
+  fprintf (FILE, "\tL\t%s,%d(13)\n\tLA\t13,4(13)\n",			\
      reg_names[REGNO], STACK_POINTER_OFFSET)
 
-/* TBD: hack alert XXX  these two float point macros print horribly
-   incorrect things when run in cross-compiler mode. Thats's because
-   in cross-compiler mode, the VALUE is not really a double.  See below,
-   in the ELF section, for the correct implementation.  */
 /* This is how to output an assembler line defining a `double' constant.  */
 #define ASM_OUTPUT_DOUBLE(FILE, VALUE)					\
   fprintf (FILE, "\tDC\tD'%.18G'\n", (VALUE))

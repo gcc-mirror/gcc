@@ -645,7 +645,7 @@ mvs_add_label (id)
 
   fwd_distance = lp->label_last_ref - lp->label_addr;
 
-  if (mvs_page_code + 2*fwd_distance + mvs_page_lit < 4060) return;
+  if (mvs_page_code + 2 * fwd_distance + mvs_page_lit < 4060) return;
 
   mvs_need_base_reload ++;
 }
