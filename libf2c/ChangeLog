@@ -1,3 +1,56 @@
+Sat Jun 13 03:46:40 1998  Craig Burley  <burley@gnu.org>
+
+	* Makefile.in (install): Don't install if $(libsubdir)
+	is empty; issue a diagnostic saying top-level Makefile
+	must pass it in instead, and exit.
+
+	* Makefile.in (g2c.h): Rename from f2c.h.
+
+	* Makefile.in, libF77/Makefile.in, libI77/Makefile.in,
+	libU77/Makefile.in: Rewrite config and var assignment
+	sections to be even more minimal than before, and to
+	more clearly documented what macros are expected to be
+	set and to what sorts of values.  Eliminate CROSS and
+	related stuff, since there's no such things as CROSS
+	in egcs.  Rename GCC_FOR_TARGET to CC throughout.
+	* Makefile.in (stamp-libi77, stamp-libf77, stamp-libu77):
+	Eliminate CROSS.
+	* configure.in: Eliminate CROSS.
+
+	Rename libf2c.a and f2c.h to libg2c.a and g2c.h,
+	normalize and simplify g77/libg2c build process:
+	* Makefile.in: Remove all stuff pertaining to
+	installation, cleaning, and so on.  Parent Makefile
+	does all that now.  Pass F2C_H_DIR,
+	G2C_H_DIR, and GCC_H_DIR, the pathnames for the
+	directories containing f2c.h, g2c.h, and other
+	#include files, to subdirectory Makefiles.
+	(stamp-libf77, stamp-libi77, stamp-libu77):
+	Don't specify `-f Makefile' anymore, it's not needed
+	now that subdirectory makefile's from netlib are
+	renamed to makefile.netlib in g77 source (and to
+	makefile.ori by configuration process, in case they're
+	still around somehow).
+	(stamp-libe77): Don't make libE77 dir unless it doesn't
+	exist, if it does just delete all objects in it.
+	Compile using $(GCC_FOR_TARGET), not $(CC).
+	(rebuilt): Remove this and all subordinate targets,
+	as parent Makefile now handles all that.
+	(*clean): Remove.
+	* configure.in (Pad_UDread, ALWAYS_FLUSH, WANT_LEAD_0):
+	Remove these and commentary to new f2c.h file.
+	AC_OUTPUT g2c.h instead of f2c.h.  Remove old commentary
+	regarding concatenation.
+	* g2c.h.in: Rename from f2c.h.in, add appropriate
+	commentary.
+	* f2c.h: New file, a wrapper for g2c.h that does
+	libg2c-specific stuff.
+	* libF77/Makefile.in, libI77/Makefile.in, libU77/Makefile.in:
+	Change $(ALL_CFLAGS) to use F2C_H_DIR, G2C_H_DIR, and GCC_H_DIR
+	macros.  Remove F2C_H macro, replace use with explicit
+	dependencies on f2c.h and g2c.h.
+	(*clean): Remove.
+
 1998-05-20  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in ($(lib)): Use shell loop instead of unportable

@@ -1,8 +1,10 @@
-970811
+1998-04-20
 
 This directory contains the f2c library packaged for use with g77 to configure
 and build automatically (in principle!) as part of the top-level configure and
 make steps.  This depends on the makefile and configure fragments in ../f.
+g77 names this library `libg2c' to avoid conflict with existing copies
+of `libf2c' on a system.
 
 Some small changes have been made to the f2c distributions of lib[FI]77 which
 come from <ftp:bell-labs.com/netlib/f2c/> and are maintained (excellently) by
@@ -26,7 +28,7 @@ interesting, but should not be taken as guidelines for how to
 configure and build libf2c in g77's distribution.
 
 The packaging for auto-configuration was done by Dave Love <d.love@dl.ac.uk>.
-Minor changes have been made by James Craig Burley <burley@gnu.ai.mit.edu>,
+Minor changes have been made by James Craig Burley <burley@gnu.org>,
 who probably broke things Dave had working.  :-)
 
 Among the user-visible changes (choices) g77 makes in its
