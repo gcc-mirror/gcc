@@ -1,3 +1,7 @@
+2000-03-12  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/bastring.h (basic_string<>::push_back): Define.
+
 Tue Mar  7 21:37:56 2000  Jeffrey A Law  (law@cygnus.com)
 
 	1999-11-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
