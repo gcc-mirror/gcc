@@ -351,6 +351,9 @@ procedure GNATCmd is
    S_Chop_Over   : aliased constant S := "/OVERWRITE "                     &
                                             "-w";
 
+   S_Chop_Pres   : aliased constant S := "/PRESERVE "                      &
+                                            "-p";
+
    S_Chop_Quiet  : aliased constant S := "/QUIET "                         &
                                             "-q";
 
@@ -365,6 +368,7 @@ procedure GNATCmd is
      S_Chop_File   'Access,
      S_Chop_Help   'Access,
      S_Chop_Over   'Access,
+     S_Chop_Pres   'Access,
      S_Chop_Quiet  'Access,
      S_Chop_Ref    'Access,
      S_Chop_Verb   'Access);

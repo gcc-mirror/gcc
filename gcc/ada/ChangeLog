@@ -1,3 +1,21 @@
+2001-12-04  Douglas B. <rupp@gnat.com>
+
+	* gnatchop.adb:
+	(File_Time_Stamp): New procedure.
+	(Preserve_Mode): New boolean.
+	(Write_Unit): Pass time stamp.
+	Implement -p switch (preserve time stamps).
+	
+	* gnatcmd.adb (CHOP): Add translation for -p (/PRESERVE).
+	
+	* gnatchop.adb: Do usage info for -p switch
+	
+	* adaint.h (__gnat_set_file_time_name): New function
+	
+	* adaint.c (__gnat_set_file_time_name): Implement
+	
+	* adaint.h: Fix typo
+
 2001-12-03  Robert Dewar <dewar@gnat.com>
 
 	* sinfo.ads: Minor reformatting. N_Freeze_Entity node does not

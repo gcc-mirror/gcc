@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -90,6 +90,7 @@ procedure Gnatchop is
 
    Compilation_Mode  : Boolean := False;
    Overwrite_Files   : Boolean := False;
+   Preserve_Mode     : Boolean := False;
    Quiet_Mode        : Boolean := False;
    Source_References : Boolean := False;
    Verbose_Mode      : Boolean := False;
@@ -204,6 +205,10 @@ procedure Gnatchop is
    procedure Error_Msg (Message : String);
    --  Produce an error message on standard error output
 
+   procedure File_Time_Stamp (Name : C_File_Name; Time : OS_Time);
+   --  Given the name of a file or directory, Name, set the
+   --  time stamp. This function must be used for an unopened file.
+
    function Files_Exist return Boolean;
    --  Check Unit.Table for possible file names that already exist
    --  in the file system. Returns true if files exist, False otherwise
@@ -316,6 +321,7 @@ procedure Gnatchop is
    procedure Write_Unit
      (Source  : access String;
       Num     : Unit_Num;
+      TS_Time : OS_Time;
       Success : out Boolean);
    --  Write one compilation unit of the source to file
 
@@ -332,6 +338,18 @@ procedure Gnatchop is
          raise Terminate_Program;
       end if;
    end Error_Msg;
+
+   ---------------------
+   -- File_Time_Stamp --
+   ---------------------
+
+   procedure File_Time_Stamp (Name : C_File_Name; Time : OS_Time) is
+      procedure Set_File_Time (Name : C_File_Name; Time : OS_Time);
+      pragma Import (C, Set_File_Time, "__gnat_set_file_time_name");
+
+   begin
+      Set_File_Time (Name, Time);
+   end File_Time_Stamp;
 
    -----------------
    -- Files_Exist --
@@ -1040,7 +1058,7 @@ procedure Gnatchop is
       --  Scan options first
 
       loop
-         case Getopt ("c gnat? h k? q r v w x") is
+         case Getopt ("c gnat? h k? p q r v w x") is
             when ASCII.NUL =>
                exit;
 
@@ -1087,6 +1105,9 @@ procedure Gnatchop is
                                          new String'("-gnatk" & Param.all));
                   Kset := True;
                end;
+
+            when 'p' =>
+               Preserve_Mode     := True;
 
             when 'q' =>
                Quiet_Mode        := True;
@@ -1279,7 +1300,7 @@ procedure Gnatchop is
    begin
       Put_Line
         ("Usage: gnatchop [-c] [-h] [-k#] " &
-         "[-r] [-q] [-v] [-w] [-x] file [file ...] [dir]");
+         "[-r] [-p] [-q] [-v] [-w] [-x] file [file ...] [dir]");
 
       New_Line;
       Put_Line
@@ -1299,6 +1320,10 @@ procedure Gnatchop is
       Put_Line
         ("  -k       krunch file names of generated files to " &
          "no more than 8 characters");
+
+      Put_Line
+        ("  -p       preserve time stamp, output files will " &
+         "have same stamp as input");
 
       Put_Line
         ("  -q       quiet mode, no output of generated file " &
@@ -1347,9 +1372,11 @@ procedure Gnatchop is
       FD      : File_Descriptor;
       Buffer  : String_Access;
       Success : Boolean;
+      TS_Time : OS_Time;
 
    begin
       FD := Open_Read (Name'Address, Binary);
+      TS_Time := File_Time_Stamp (FD);
 
       if FD = Invalid_FD then
          Error_Msg ("cannot open " & File.Table (Input).Name.all);
@@ -1372,7 +1399,7 @@ procedure Gnatchop is
 
       for Num in 1 .. Unit.Last loop
          if Unit.Table (Num).Chop_File = Input then
-            Write_Unit (Buffer, Num, Success);
+            Write_Unit (Buffer, Num, TS_Time, Success);
             exit when not Success;
          end if;
       end loop;
@@ -1533,6 +1560,7 @@ procedure Gnatchop is
    procedure Write_Unit
      (Source  : access String;
       Num     : Unit_Num;
+      TS_Time : OS_Time;
       Success : out Boolean)
    is
       Info   : Unit_Info renames Unit.Table (Num);
@@ -1600,6 +1628,11 @@ procedure Gnatchop is
       end if;
 
       Close (FD);
+
+      if Preserve_Mode then
+         File_Time_Stamp (Name'Address, TS_Time);
+      end if;
+
    end Write_Unit;
 
 --  Start of processing for gnatchop
