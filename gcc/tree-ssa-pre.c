@@ -3352,6 +3352,7 @@ execute_pre (void)
   memset (&pre_stats, 0, sizeof (struct pre_stats_d));
   free_alloc_pool (euse_node_pool);
   free_alloc_pool (eref_node_pool);
+  free_alloc_pool (ephi_use_pool);
   VARRAY_CLEAR (bexprs);
   for (i = 0; i < currbbs; i++)
     BITMAP_XFREE (pre_dfs[i]);
@@ -3362,6 +3363,7 @@ execute_pre (void)
       BITMAP_XFREE (idfs_cache[i]);
   
   free (dfn);
+  free (idfs_cache);
 }
 
 static bool
