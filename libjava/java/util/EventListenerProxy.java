@@ -1,5 +1,5 @@
-/* EventObject.java -- represents an event on an object
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+/* EventListenerProxy.java -- abstract wrapper for event listeners
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,64 +38,38 @@ exception statement from your version. */
 
 package java.util;
 
-import java.io.Serializable;
-
 /**
- * Represents Events fired by Objects.
+ * An abstract wrapper for event listeners.  This allows subclasses to
+ * attach additional parameters to an existing event listener to create
+ * a new one.  Subclasses are expected to add methods to set and retrieve
+ * any attached properties.
  *
  * @author Eric Blake <ebb9@email.byu.edu>
- * @see EventListener
- * @since 1.1
+ * @since 1.4
  * @status updated to 1.4
  */
-public class EventObject implements Serializable
+public abstract class EventListenerProxy implements EventListener
 {
-  /**
-   * Compatible with JDK 1.1+.
-   */
-  private static final long serialVersionUID = 5516075349620653480L;
+  /** The listener that this proxy wraps. */
+  private final EventListener listener;
 
   /**
-   * The source object; in other words, the object which this event takes
-   * place on.
-   */
-  protected transient Object source;
-
-  /**
-   * Constructs an EventObject with the specified source.
+   * Construct a proxy event listener, given an existing one to augment.
    *
-   * @param source the source of the event
-   * @throws IllegalArgumentException if source is null (This is not
-   *         specified, but matches the behavior of the JDK)
+   * @param listener the listener to wrap
    */
-  public EventObject(Object source)
+  public EventListenerProxy(EventListener listener)
   {
-    // This check for null is stupid, if you ask me, since source is
-    // protected and non-final, so a subclass can set it to null later on.
-    if (source == null)
-      throw new IllegalArgumentException();
-    this.source = source;
+    this.listener = listener;
   }
 
   /**
-   * Returns the source of the event.
+   * Return the wrapped event listener.
    *
-   * @return the event source
+   * @return the listener associated with this proxy
    */
-  public Object getSource()
+  public EventListener getListener()
   {
-    return source;
+    return listener;
   }
-
-  /**
-   * Converts the event to a String. The format is not specified, but by
-   * observation, the JDK uses:
-   * <code>getClass().getName() + "[source=" + source + "]";</code>.
-   *
-   * @return String representation of the Event
-   */
-  public String toString()
-  {
-    return getClass().getName() + "[source=" + source + "]";
-  }
-} // class EventObject
+} // class EventListenerProxy

@@ -1,3 +1,12 @@
+2002-06-17  Tom Tromey  <tromey@redhat.com>
+
+	* gcj/javaprims.h: Updated class declaration list.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added new file.
+	* java/util/EventListenerProxy.java: New file.
+	* java/util/EventListener.java: Re-merge with Classpath.
+	* java/util/EventObject.java: Re-merge with Classpath.
+
 2002-06-17  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* java/lang/ClassNotFoundException.java: New Classpath version.

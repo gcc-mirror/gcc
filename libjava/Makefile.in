@@ -965,6 +965,7 @@ java/util/Dictionary.java \
 java/util/EmptyStackException.java \
 java/util/Enumeration.java \
 java/util/EventListener.java \
+java/util/EventListenerProxy.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/HashMap.java \
@@ -2237,10 +2238,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/ArithmeticException.P \
 .deps/java/lang/ArrayIndexOutOfBoundsException.P \
 .deps/java/lang/ArrayStoreException.P .deps/java/lang/AssertionError.P \
-.deps/java/lang/Boolean.P \
-.deps/java/lang/Byte.P .deps/java/lang/CharSequence.P \
-.deps/java/lang/Character.P .deps/java/lang/Class.P \
-.deps/java/lang/ClassCastException.P \
+.deps/java/lang/Boolean.P .deps/java/lang/Byte.P \
+.deps/java/lang/CharSequence.P .deps/java/lang/Character.P \
+.deps/java/lang/Class.P .deps/java/lang/ClassCastException.P \
 .deps/java/lang/ClassCircularityError.P \
 .deps/java/lang/ClassFormatError.P .deps/java/lang/ClassLoader.P \
 .deps/java/lang/ClassNotFoundException.P \
@@ -2538,15 +2538,15 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/ConcurrentModificationException.P \
 .deps/java/util/Date.P .deps/java/util/Dictionary.P \
 .deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
-.deps/java/util/EventListener.P .deps/java/util/EventObject.P \
-.deps/java/util/GregorianCalendar.P .deps/java/util/HashMap.P \
-.deps/java/util/HashSet.P .deps/java/util/Hashtable.P \
-.deps/java/util/IdentityHashMap.P .deps/java/util/Iterator.P \
-.deps/java/util/LinkedHashMap.P .deps/java/util/LinkedHashSet.P \
-.deps/java/util/LinkedList.P .deps/java/util/List.P \
-.deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
-.deps/java/util/Locale.P .deps/java/util/Map.P \
-.deps/java/util/MissingResourceException.P \
+.deps/java/util/EventListener.P .deps/java/util/EventListenerProxy.P \
+.deps/java/util/EventObject.P .deps/java/util/GregorianCalendar.P \
+.deps/java/util/HashMap.P .deps/java/util/HashSet.P \
+.deps/java/util/Hashtable.P .deps/java/util/IdentityHashMap.P \
+.deps/java/util/Iterator.P .deps/java/util/LinkedHashMap.P \
+.deps/java/util/LinkedHashSet.P .deps/java/util/LinkedList.P \
+.deps/java/util/List.P .deps/java/util/ListIterator.P \
+.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
+.deps/java/util/Map.P .deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyPermission.P \
