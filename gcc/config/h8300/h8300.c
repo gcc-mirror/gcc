@@ -3914,7 +3914,7 @@ int
 h8300_eightbit_constant_address_p (x)
      rtx x;
 {
-  /* The ranges the 8-bit area. */
+  /* The ranges of the 8-bit area. */
   const unsigned HOST_WIDE_INT n1 = trunc_int_for_mode (0xff00, HImode);
   const unsigned HOST_WIDE_INT n2 = trunc_int_for_mode (0xffff, HImode);
   const unsigned HOST_WIDE_INT h1 = trunc_int_for_mode (0x00ffff00, SImode);
@@ -3946,7 +3946,7 @@ int
 h8300_tiny_constant_address_p (x)
      rtx x;
 {
-  /* The ranges for the 16-bit area.  */
+  /* The ranges of the 16-bit area.  */
   const unsigned HOST_WIDE_INT h1 = trunc_int_for_mode (0x00000000, SImode);
   const unsigned HOST_WIDE_INT h2 = trunc_int_for_mode (0x00007fff, SImode);
   const unsigned HOST_WIDE_INT h3 = trunc_int_for_mode (0x00ff8000, SImode);
