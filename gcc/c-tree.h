@@ -403,9 +403,9 @@ extern int warn_main;
 
 extern int flag_traditional;
 
-/* Nonzero means use the ISO C9x dialect of C.  */
+/* Nonzero means use the ISO C99 dialect of C.  */
 
-extern int flag_isoc9x;
+extern int flag_isoc99;
 
 /* Nonzero means to allow single precision math even if we're generally
    being traditional. */

@@ -271,7 +271,7 @@ declare_function_name ()
   declare_hidden_char_array ("__FUNCTION__", name);
   declare_hidden_char_array ("__PRETTY_FUNCTION__", printable_name);
   /* The ISO C people "of course" couldn't use __FUNCTION__ in the
-     ISO C 9x standard; instead a new variable is invented.  */
+     ISO C 99 standard; instead a new variable is invented.  */
   declare_hidden_char_array ("__func__", name);
 }
 
@@ -1775,7 +1775,7 @@ check_format_info (info, params)
 	  else if (*format_chars == 'Z' || *format_chars == 'z')
 	    {
 	      length_char = *format_chars++;
-	      if (pedantic && (length_char == 'Z' || !flag_isoc9x))
+	      if (pedantic && (length_char == 'Z' || !flag_isoc99))
 		warning ("ANSI C does not support the `%c' length modifier",
 			 length_char);
 	    }
@@ -1784,13 +1784,13 @@ check_format_info (info, params)
 	  if (length_char == 'l' && *format_chars == 'l')
 	    {
 	      length_char = 'q', format_chars++;
-	      if (pedantic && !flag_isoc9x)
+	      if (pedantic && !flag_isoc99)
 		warning ("ANSI C does not support the `ll' length modifier");
 	    }
 	  else if (length_char == 'h' && *format_chars == 'h')
 	    {
 	      length_char = 'H', format_chars++;
-	      if (pedantic && !flag_isoc9x)
+	      if (pedantic && !flag_isoc99)
 		warning ("ANSI C does not support the `hh' length modifier");
 	    }
 	  if (*format_chars == 'a' && info->format_type == scanf_format_type)
@@ -1820,7 +1820,7 @@ check_format_info (info, params)
       /* The a and A formats are C99 extensions.  */
       if (pedantic && info->format_type != strftime_format_type
 	  && (format_char == 'a' || format_char == 'A')
-	  && !flag_isoc9x)
+	  && !flag_isoc99)
 	warning ("ANSI C does not support the `%c' format", format_char);
       format_chars++;
       switch (info->format_type)

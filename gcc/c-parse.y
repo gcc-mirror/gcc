@@ -474,7 +474,7 @@ cast_expr:
 		  tree type = $2;
 		  finish_init ();
 
-		  if (pedantic && ! flag_isoc9x)
+		  if (pedantic && ! flag_isoc99)
 		    pedwarn ("ANSI C forbids constructor expressions");
 		  if (TYPE_NAME (type) != 0)
 		    {
@@ -1229,8 +1229,8 @@ parm_declarator:
 		  poplevel (0, 0, 0); }  */
 	| parm_declarator '[' '*' ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE);
-		  if (! flag_isoc9x)
-		    error ("`[*]' in parameter declaration only allowed in ISO C 9x");
+		  if (! flag_isoc99)
+		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
 		}
 	| parm_declarator '[' expr ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, $3); }
@@ -1263,8 +1263,8 @@ notype_declarator:
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| notype_declarator '[' '*' ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE);
-		  if (! flag_isoc9x)
-		    error ("`[*]' in parameter declaration only allowed in ISO C 9x");
+		  if (! flag_isoc99)
+		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
 		}
 	| notype_declarator '[' expr ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, $3); }
@@ -1346,7 +1346,7 @@ maybecomma:
 maybecomma_warn:
 	  /* empty */
 	| ','
-		{ if (pedantic && ! flag_isoc9x)
+		{ if (pedantic && ! flag_isoc99)
 		    pedwarn ("comma at end of enumerator list"); }
 	;
 
