@@ -2054,11 +2054,12 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 	       value, depth, sc_str);
 
       if (str_start && str_end_p1 - str_start > 0)
-	fprintf (stderr, " st= %-11s name= %.*s\n", st_str, str_end_p1 - str_start, str_start);
+	fprintf (stderr, " st= %-11s name= %.*s\n",
+		 st_str, (int) (str_end_p1 - str_start), str_start);
       else
 	{
 	  Size_t len = strlen (st_str);
-	  fprintf (stderr, " st= %.*s\n", len-1, st_str);
+	  fprintf (stderr, " st= %.*s\n", (int) (len-1), st_str);
 	}
     }
 
@@ -2092,7 +2093,8 @@ add_ext_symbol (str_start, str_end_p1, type, storage, value, indx, ifd)
 	       value, ifd, sc_str);
 
       if (str_start && str_end_p1 - str_start > 0)
-	fprintf (stderr, " st= %-11s name= %.*s\n", st_str, str_end_p1 - str_start, str_start);
+	fprintf (stderr, " st= %-11s name= %.*s\n",
+		 st_str, (int) (str_end_p1 - str_start), str_start);
       else
 	fprintf (stderr, " st= %s\n", st_str);
     }
@@ -2401,8 +2403,8 @@ add_unknown_tag (ptag)
 	default:				break;
 	}
 
-      fprintf (stderr, "unknown %s %.*s found\n", agg_type,
-	       hash_ptr->len, name_start);
+      fprintf (stderr, "unknown %s %.*s found\n",
+	       agg_type, (int) hash_ptr->len, name_start);
     }
 
   sym_index = add_local_symbol (name_start,
@@ -2515,7 +2517,7 @@ add_file (file_start, file_end_p1)
   register efdr_t *file_ptr;
 
   if (debug)
-    fprintf (stderr, "\tfile\t%.*s\n", len, file_start);
+    fprintf (stderr, "\tfile\t%.*s\n", (int) len, file_start);
 
   /* See if the file has already been created.  */
   for (file_ptr = first_file;
@@ -3224,7 +3226,7 @@ parse_def (name_start)
 		      && eptr == (EXTR *) 0)
 		    {
 		      fprintf (stderr, "warning, %.*s not found in original or external symbol tables, value defaults to 0\n",
-			       arg_end_p1 - arg_start,
+			       (int) (arg_end_p1 - arg_start),
 			       arg_start);
 		      value = 0;
 		    }
@@ -4117,9 +4119,13 @@ write_varray (vp, offset, str)
     return;
 
   if (debug)
-    fprintf (stderr, "\twarray\tvp = 0x%.8x, offset = %7u, size = %7u, %s\n",
-	     vp, offset, vp->num_allocated * vp->object_size, str);
-
+    {
+      fputs ("\twarray\tvp = ", stderr);
+      fprintf (stderr, HOST_PTR_PRINTF, vp);
+      fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
+	       (unsigned long) offset, vp->num_allocated * vp->object_size, str);
+    }
+  
   if (file_offset != offset
       && fseek (object_stream, (long)offset, SEEK_SET) < 0)
     pfatal_with_name (object_name);
@@ -4155,9 +4161,12 @@ write_object __proto((void))
   off_t offset;
 
   if (debug)
-    fprintf (stderr, "\n\twrite\tvp = 0x%.8x, offset = %7u, size = %7u, %s\n",
-	     (PTR_T *) &symbolic_header, 0, sizeof (symbolic_header),
-	     "symbolic header");
+    {
+      fputs ("\n\twrite\tvp = ", stderr);
+      fprintf (stderr, HOST_PTR_PRINTF, (PTR_T *) &symbolic_header);
+      fprintf (stderr, ", offset = %7u, size = %7lu, %s\n",
+	       0, (unsigned long) sizeof (symbolic_header), "symbolic header");
+    }
 
   sys_write = fwrite ((PTR_T) &symbolic_header,
 		      1,
@@ -4185,9 +4194,13 @@ write_object __proto((void))
 	pfatal_with_name (object_name);
 
       if (debug)
-	fprintf (stderr, "\twrite\tvp = 0x%.8x, offset = %7u, size = %7u, %s\n",
-		 (PTR_T *) &orig_linenum, symbolic_header.cbLineOffset,
-		 symbolic_header.cbLine, "Line numbers");
+	{
+	  fputs ("\twrite\tvp = ", stderr);
+	  fprintf (stderr, HOST_PTR_PRINTF, (PTR_T *) &orig_linenum);
+	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
+		   (long) symbolic_header.cbLineOffset,
+		   (long) symbolic_header.cbLine, "Line numbers");
+	}
 
       sys_write = fwrite ((PTR_T) orig_linenum,
 			  1,
@@ -4216,9 +4229,13 @@ write_object __proto((void))
 	pfatal_with_name (object_name);
 
       if (debug)
-	fprintf (stderr, "\twrite\tvp = 0x%.8x, offset = %7u, size = %7u, %s\n",
-		 (PTR_T *) &orig_opt_syms, symbolic_header.cbOptOffset,
-		 num_write, "Optimizer symbols");
+	{
+	  fputs ("\twrite\tvp = ", stderr);
+	  fprintf (stderr, HOST_PTR_PRINTF, (PTR_T *) &orig_opt_syms);
+	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
+		   (long) symbolic_header.cbOptOffset,
+		   num_write, "Optimizer symbols");
+	}
 
       sys_write = fwrite ((PTR_T) orig_opt_syms,
 			  1,
@@ -4304,8 +4321,13 @@ write_object __proto((void))
 	   file_ptr = file_ptr->next_file)
 	{
 	  if (debug)
-	    fprintf (stderr, "\twrite\tvp = 0x%.8x, offset = %7u, size = %7u, %s\n",
-		     (PTR_T *) &file_ptr->fdr, file_offset, sizeof (FDR), "File header");
+	    {
+	      fputs ("\twrite\tvp = ", stderr);
+	      fprintf (stderr, HOST_PTR_PRINTF, (PTR_T *) &file_ptr->fdr);
+	      fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
+		       file_offset, (unsigned long) sizeof (FDR),
+		       "File header");
+	    }
 
 	  sys_write = fwrite (&file_ptr->fdr,
 			      1,
@@ -4335,9 +4357,13 @@ write_object __proto((void))
 	pfatal_with_name (object_name);
 
       if (debug)
-	fprintf (stderr, "\twrite\tvp = 0x%.8x, offset = %7u, size = %7u, %s\n",
-		 (PTR_T *) &orig_rfds, symbolic_header.cbRfdOffset,
-		 num_write, "Relative file descriptors");
+	{
+	  fputs ("\twrite\tvp = ", stderr);
+	  fprintf (stderr, HOST_PTR_PRINTF, (PTR_T *) &orig_rfds);
+	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
+		   (long) symbolic_header.cbRfdOffset,
+		   num_write, "Relative file descriptors");
+	}
 
       sys_write = fwrite (orig_rfds,
 			  1,
@@ -4379,8 +4405,9 @@ read_seek (size, offset, str)
     return (page_t *) 0;
 
   if (debug)
-    fprintf (stderr, "\trseek\tsize = %7u, offset = %7u, currently at %7u, %s\n",
-	     size, offset, file_offset, str);
+    fprintf (stderr,
+	     "\trseek\tsize = %7lu, offset = %7lu, currently at %7lu, %s\n",
+	     (unsigned long) size, (unsigned long) offset, file_offset, str);
 
 #ifndef MALLOC_CHECK
   ptr = allocate_multiple_pages ((size + PAGE_USIZE - 1) / PAGE_USIZE);
@@ -5077,7 +5104,7 @@ out_of_bounds (indx, max, str, prog_line)
   if (indx < max)		/* just in case */
     return 0;
 
-  fprintf (stderr, "%s, %s:%ld index %u is out of bounds for %s, max is %u, mips-tfile.c line# %d\n",
+  fprintf (stderr, "%s, %s:%ld index %lu is out of bounds for %s, max is %lu, mips-tfile.c line# %d\n",
 	   progname, input_name, line_number, indx, str, max, prog_line);
 
   exit (1);
@@ -5128,7 +5155,12 @@ allocate_cluster (npages)
     pfatal_with_name ("allocate_cluster");
 
   if (debug > 3)
-    fprintf (stderr, "\talloc\tnpages = %d, value = 0x%.8x\n", npages, ptr);
+    {
+      fprintf (stderr, "\talloc\tnpages = %lu, value = ",
+	       (unsigned long) npages);
+      fprintf (stderr, HOST_PTR_PRINTF, ptr);
+      fputs ("\n", stderr);
+    }
 
   return ptr;
 }
@@ -5652,7 +5684,11 @@ xmalloc (size)
     fatal ("Virtual memory exhausted.");
 
   if (debug > 3)
-    fprintf (stderr, "\tmalloc\tptr = 0x%.8x, size = %10u\n", value, size);
+    {
+      fputs ("\tmalloc\tptr = ", stderr);
+      fprintf (stderr, HOST_PTR_PRINTF, value);
+      fprintf (stderr, ", size = %10lu\n", (unsigned long) size);
+    }
 
   return value;
 }
@@ -5668,8 +5704,13 @@ xcalloc (size1, size2)
     fatal ("Virtual memory exhausted.");
 
   if (debug > 3)
-    fprintf (stderr, "\tcalloc\tptr = 0x%.8x, size1 = %10u, size2 = %10u [%u]\n",
-	     value, size1, size2, size1+size2);
+    {
+      fputs ("\tcalloc\tptr = ", stderr);
+      fprintf (stderr, HOST_PTR_PRINTF, value);
+      fprintf (stderr, ", size1 = %10lu, size2 = %10lu [%lu]\n",
+	       (unsigned long) size1, (unsigned long) size2,
+	       (unsigned long) size1*size2);
+    }
 
   return value;
 }
@@ -5686,8 +5727,13 @@ xrealloc (ptr, size)
     fatal ("Virtual memory exhausted.");
 
   if (debug > 3)
-    fprintf (stderr, "\trealloc\tptr = 0x%.8x, size = %10u, orig = 0x%.8x\n",
-	     result, size, ptr);
+    {
+      fputs ("\trealloc\tptr = ", stderr);
+      fprintf (stderr, HOST_PTR_PRINTF, result);
+      fprintf (stderr, ", size = %10lu, orig = ", size);
+      fprintf (stderr, HOST_PTR_PRINTF, ptr);
+      fputs ("\n", stderr);
+    }
 
   return result;
 }
@@ -5697,7 +5743,11 @@ xfree (ptr)
      PTR_T ptr;
 {
   if (debug > 3)
-    fprintf (stderr, "\tfree\tptr = 0x%.8x\n", ptr);
+    {
+      fputs ("\tfree\tptr = ", stderr);
+      fprintf (stderr, HOST_PTR_PRINTF, ptr);
+      fputs ("\n", stderr);
+    }
 
   free (ptr);
 }
