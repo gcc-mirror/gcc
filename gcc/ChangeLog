@@ -1,3 +1,9 @@
+Sun Mar 21 18:49:02 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (contains_muldiv): New function.
+	(try_combine): Call it when dividing a PARALLEL.
+	(simplify_rtx, case TRUNCATE): Don't remove for umulsi3_highpart.
+
 Sat Mar 20 16:26:18 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (simplify_comparison): When making comparison in wider
