@@ -632,6 +632,11 @@ do { union { float f; long l;} tem;			\
     fprintf (FILE, "\tswbeg &%d\n%s%%%d:\n",				\
 	     XVECLEN (PATTERN (TABLE), 1), (PREFIX), (NUM))
 	     
+/* At end of a switch table, define LD%n iff the symbol LI%n was defined.  */
+#define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)		\
+  if (switch_table_difference_label_flag)		\
+    fprintf (FILE, "\tset LD%%%d,L%%%d-LI%%%d\n", (NUM), (NUM), (NUM))
+
 /* Translate some opcodes to fit the sysV68 assembler syntax.  */
 /* The opcodes fdmov and fsmov are guesses.  */
 
