@@ -827,19 +827,24 @@ output_op_from_reg (src, template)
    otherwise a `fst' float store is done. */
 
 void
-output_to_reg (dest, dies)
+output_to_reg (dest, dies, scratch_mem)
      rtx dest;
      int dies;
+     rtx scratch_mem;
 {
   rtx xops[4];
   int size = GET_MODE_SIZE (GET_MODE (dest));
 
-  xops[0] = AT_SP (Pmode);
+  if (! scratch_mem)
+    xops[0] = AT_SP (Pmode);
+  else
+    xops[0] = scratch_mem;
   xops[1] = stack_pointer_rtx;
   xops[2] = GEN_INT (size);
   xops[3] = dest;
 
-  output_asm_insn (AS2 (sub%L1,%2,%1), xops);
+  if (! scratch_mem)
+    output_asm_insn (AS2 (sub%L1,%2,%1), xops);
 
   if (GET_MODE_CLASS (GET_MODE (dest)) == MODE_INT)
     {
@@ -866,16 +871,33 @@ output_to_reg (dest, dies)
   else
     abort ();
 
-  output_asm_insn (AS1 (pop%L0,%0), &dest);
+  if (! scratch_mem)
+    output_asm_insn (AS1 (pop%L0,%0), &dest);
+  else
+    output_asm_insn (AS2 (mov%L0,%0,%3), xops);
+
 
   if (size > UNITS_PER_WORD)
     {
       dest = gen_rtx (REG, SImode, REGNO (dest) + 1);
-      output_asm_insn (AS1 (pop%L0,%0), &dest);
+      if (! scratch_mem)
+	output_asm_insn (AS1 (pop%L0,%0), &dest);
+      else
+	{
+	  xops[0] = adj_offsettable_operand (xops[0], 4);	      
+	  xops[3] = dest;
+	  output_asm_insn (AS2 (mov%L0,%0,%3), xops);
+	}
       if (size > 2 * UNITS_PER_WORD)
 	{
 	  dest = gen_rtx (REG, SImode, REGNO (dest) + 1);
-	  output_asm_insn (AS1 (pop%L0,%0), &dest);
+	  if (! scratch_mem)
+	    output_asm_insn (AS1 (pop%L0,%0), &dest);
+	  else
+	    {
+	      xops[0] = adj_offsettable_operand (xops[0], 4);	      
+	      output_asm_insn (AS2 (mov%L0,%0,%3), xops);
+	    }
 	}
     }
 }
@@ -2846,11 +2868,18 @@ output_pic_addr_const (file, x, code)
 /* Append the correct conditional move suffix which corresponds to CODE */
 
 static void
-put_condition_code (code, mode, file)
+put_condition_code (code, reverse_cc, mode, file)
      enum rtx_code code;
+     int  reverse_cc;
      enum mode_class mode;
      FILE * file;
 {
+  int ieee;
+  ieee = (TARGET_IEEE_FP && (cc_prev_status.flags & CC_IN_80387)
+	  && ! (cc_prev_status.flags & CC_FCOMI));
+  if (reverse_cc && ! ieee)
+    code = reverse_condition (code);
+
   if (mode == MODE_INT)
   switch (code)
     {
@@ -2888,25 +2917,25 @@ put_condition_code (code, mode, file)
   switch (code)
     {
       case NE: 
-          fputs ("ne", file); return;
+          fputs (ieee ? (reverse_cc ? "ne" : "e") : "ne", file); return;
       case EQ: 
-	  fputs ("e", file); return;
+	  fputs (ieee ? (reverse_cc ? "ne" : "e") : "e", file); return;
       case GE: 
-	  fputs ("nb", file); return;
+	  fputs (ieee ? (reverse_cc ? "ne" : "e") : "nb", file); return;
       case GT: 
-	  fputs ("nbe", file); return;
+	  fputs (ieee ? (reverse_cc ? "ne" : "e") : "nbe", file); return;
       case LE: 
-	  fputs ("be", file); return;
+	  fputs (ieee ? (reverse_cc ? "nb" : "b") : "be", file); return;
       case LT: 
-	  fputs ("b", file); return;
+	  fputs (ieee ? (reverse_cc ? "ne" : "e") : "b", file); return;
       case GEU: 
-	  fputs ("nb", file); return;
+	  fputs (ieee ? (reverse_cc ? "ne" : "e") : "nb", file); return;
       case GTU: 
-	  fputs ("nbe", file); return;
+	  fputs (ieee ? (reverse_cc ? "ne" : "e") : "nbe", file); return;
       case LEU: 
-	  fputs ("be", file); return;
+	  fputs (ieee ? (reverse_cc ? "nb" : "b") : "be", file); return;
       case LTU: 
-	  fputs ("b", file); return;
+	  fputs (ieee ? (reverse_cc ? "ne" : "e") : "b", file); return;
       default: output_operand_lossage ("Invalid %%C operand");
     }
 }
@@ -3058,22 +3087,20 @@ print_operand (file, x, code)
 
 	  /* This is used by the conditional move instructions.  */
 	case 'C':
-	  put_condition_code (GET_CODE (x), MODE_INT, file);
+	  put_condition_code (GET_CODE (x), 0, MODE_INT, file);
 	  return;
 
 	  /* like above, but reverse condition */
 	case 'c':
-	  put_condition_code (reverse_condition (GET_CODE (x)), MODE_INT, file);
-	  return;
+	  put_condition_code (GET_CODE (x), 1, MODE_INT, file); return;
 
 	case 'F':
-	  put_condition_code (GET_CODE (x), MODE_FLOAT, file);
+	  put_condition_code (GET_CODE (x), 0, MODE_FLOAT, file);
 	  return;
 
 	  /* like above, but reverse condition */
 	case 'f':
-	  put_condition_code (reverse_condition (GET_CODE (x)),
-			      MODE_FLOAT, file);
+	  put_condition_code (GET_CODE (x), 1, MODE_FLOAT, file);
 	  return;
 
 	default:
@@ -3684,7 +3711,7 @@ output_fix_trunc (insn, operands)
   output_asm_insn (AS1 (fldc%W3,%3), operands);
 
   if (NON_STACK_REG_P (operands[0]))
-    output_to_reg (operands[0], stack_top_dies);
+    output_to_reg (operands[0], stack_top_dies, operands[3]);
   else if (GET_CODE (operands[0]) == MEM)
     {
       if (stack_top_dies)
