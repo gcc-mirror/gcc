@@ -1,3 +1,8 @@
+Tue Aug 18 10:33:30 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* regmove.c (optimize_reg_copy_1): Update REG_N_CALLS_CROSSED
+	and REG_LIVE_LENGTH as successful substitutions are made.
+
 Tue Aug 18 07:15:27 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/sparc/sparc.c (ultra_find_type): Add empty semicolon
