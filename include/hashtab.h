@@ -92,10 +92,6 @@ struct htab GTY(())
   /* Pointer to cleanup function.  */
   htab_del del_f;
 
-  /* Pointers to allocate/free functions.  */
-  htab_alloc alloc_f;
-  htab_free free_f;
-  
   /* Table itself.  */
   PTR * GTY ((use_param (""), length ("%h.size"))) entries;
 
@@ -115,6 +111,10 @@ struct htab GTY(())
   /* The following member is used for debugging.  Its value is number
      of collisions fixed for time of work with the hash table. */
   unsigned int collisions;
+
+  /* Pointers to allocate/free functions.  */
+  htab_alloc alloc_f;
+  htab_free free_f;
 };
 
 typedef struct htab *htab_t;
@@ -131,10 +131,6 @@ extern htab_t	htab_create_alloc	PARAMS ((size_t, htab_hash,
 /* Backward-compatibility functions.  */
 extern htab_t htab_create PARAMS ((size_t, htab_hash, htab_eq, htab_del));
 extern htab_t htab_try_create PARAMS ((size_t, htab_hash, htab_eq, htab_del));
-
-/* Provided for convenience.  */
-#define htab_create(SIZE, HASH, EQ, DEL) \
-  htab_create_alloc (SIZE, HASH, EQ, DEL, xcalloc, free)
 
 extern void	htab_delete	PARAMS ((htab_t));
 extern void	htab_empty	PARAMS ((htab_t));
