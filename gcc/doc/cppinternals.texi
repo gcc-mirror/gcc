@@ -66,7 +66,8 @@ into another language, under the above conditions for modified versions.
 @contents
 @page
 
-@node Top, Conventions,, (DIR)
+@node Top
+@top
 @chapter Cpplib---the core of the GNU C Preprocessor
 
 The GNU C preprocessor in GCC 3.x has been completely rewritten.  It is
@@ -87,16 +88,18 @@ tricky issues encountered.  It also describes certain behaviour we would
 like to preserve, such as the format and spacing of its output.
 
 @menu
-* Conventions::	    Conventions used in the code.
-* Lexer::	    The combined C, C++ and Objective-C Lexer.
-* Whitespace::      Input and output newlines and whitespace.
-* Hash Nodes::      All identifiers are hashed.
-* Macro Expansion:: Macro expansion algorithm.
-* Files::	    File handling.
-* Index::           Index.
+* Conventions::         Conventions used in the code.
+* Lexer::               The combined C, C++ and Objective-C Lexer.
+* Hash Nodes::          All identifiers are entered into a hash table.
+* Macro Expansion::     Macro expansion algorithm.
+* Token Spacing::       Spacing and paste avoidance issues.
+* Line Numbering::      Tracking location within files.
+* Guard Macros::        Optimizing header files with guard macros.
+* Files::               File handling.
+* Index::               Index.
 @end menu
 
-@node Conventions, Lexer, Top, Top
+@node Conventions
 @unnumbered Conventions
 @cindex interface
 @cindex header files
@@ -118,9 +121,11 @@ change internals in the future without worrying whether library clients
 are perhaps relying on some kind of undocumented implementation-specific
 behaviour.
 
-@node Lexer, Whitespace, Conventions, Top
+@node Lexer
 @unnumbered The Lexer
 @cindex lexer
+@cindex newlines
+@cindex escaped newlines
 
 @section Overview
 The lexer is contained in the file @file{cpplex.c}.  It is a hand-coded
@@ -143,7 +148,7 @@ output.
 @section Lexing a token
 Lexing of an individual token is handled by @code{_cpp_lex_direct} and
 its subroutines.  In its current form the code is quite complicated,
-with read ahead characters and suchlike, since it strives to not step
+with read ahead characters and such-like, since it strives to not step
 back in the character stream in preparation for handling non-ASCII file
 encodings.  The current plan is to convert any such files to UTF-8
 before processing them.  This complexity is therefore unnecessary and
@@ -175,7 +180,7 @@ using the line map code.
 The first token on a logical, i.e.@: unescaped, line has the flag
 @code{BOL} set for beginning-of-line.  This flag is intended for
 internal use, both to distinguish a @samp{#} that begins a directive
-from one that doesn't, and to generate a callback to clients that want
+from one that doesn't, and to generate a call-back to clients that want
 to be notified about the start of every non-directive line with tokens
 on it.  Clients cannot reliably determine this for themselves: the first
 token might be a macro, and the tokens of a macro expansion do not have
@@ -219,8 +224,27 @@ foo
 @end smallexample
 
 This is a good example of the subtlety of getting token spacing correct
-in the preprocessor; there are plenty of tests in the testsuite for
+in the preprocessor; there are plenty of tests in the test-suite for
 corner cases like this.
+
+The lexer is written to treat each of @samp{\r}, @samp{\n}, @samp{\r\n}
+and @samp{\n\r} as a single new line indicator.  This allows it to
+transparently preprocess MS-DOS, Macintosh and Unix files without their
+needing to pass through a special filter beforehand.
+
+We also decided to treat a backslash, either @samp{\} or the trigraph
+@samp{??/}, separated from one of the above newline indicators by
+non-comment whitespace only, as intending to escape the newline.  It
+tends to be a typing mistake, and cannot reasonably be mistaken for
+anything else in any of the C-family grammars.  Since handling it this
+way is not strictly conforming to the ISO standard, the library issues a
+warning wherever it encounters it.
+
+Handling newlines like this is made simpler by doing it in one place
+only.  The function @code{handle_newline} takes care of all newline
+characters, and @code{skip_escaped_newlines} takes care of arbitrarily
+long sequences of escaped newlines, deferring to @code{handle_newline}
+to handle the newlines themselves.
 
 The most painful aspect of lexing ISO-standard C and C++ is handling
 trigraphs and backlash-escaped newlines.  Trigraphs are processed before
@@ -255,6 +279,7 @@ should be done even within C-style comments; they can appear in the
 middle of a line, and we want to report diagnostics in the correct
 position for text appearing after the end of the comment.
 
+@anchor{Invalid identifiers}
 Some identifiers, such as @code{__VA_ARGS__} and poisoned identifiers,
 may be invalid and require a diagnostic.  However, if they appear in a
 macro expansion we don't want to complain with each use of the macro.
@@ -282,71 +307,298 @@ two separate @samp{:} tokens and almost certainly a syntax error.  Such
 cases are handled by @code{_cpp_lex_direct} based upon command-line
 flags stored in the @code{cpp_options} structure.
 
+Once a token has been lexed, it leads an independent existence.  The
+spelling of numbers, identifiers and strings is copied to permanent
+storage from the original input buffer, so a token remains valid and
+correct even if its source buffer is freed with @code{_cpp_pop_buffer}.
+The storage holding the spellings of such tokens remains until the
+client program calls cpp_destroy, probably at the end of the translation
+unit.
+
 @anchor{Lexing a line}
 @section Lexing a line
+@cindex token run
 
-@node Whitespace, Hash Nodes, Lexer, Top
-@unnumbered Whitespace
-@cindex whitespace
-@cindex newlines
-@cindex escaped newlines
+When the preprocessor was changed to return pointers to tokens, one
+feature I wanted was some sort of guarantee regarding how long a
+returned pointer remains valid.  This is important to the stand-alone
+preprocessor, the future direction of the C family front ends, and even
+to cpplib itself internally.
+
+Occasionally the preprocessor wants to be able to peek ahead in the
+token stream.  For example, after the name of a function-like macro, it
+wants to check the next token to see if it is an opening parenthesis.
+Another example is that, after reading the first few tokens of a
+@code{#pragma} directive and not recognising it as a registered pragma,
+it wants to backtrack and allow the user-defined handler for unknown
+pragmas to access the full @code{#pragma} token stream.  The stand-alone
+preprocessor wants to be able to test the current token with the
+previous one to see if a space needs to be inserted to preserve their
+separate tokenization upon re-lexing (paste avoidance), so it needs to
+be sure the pointer to the previous token is still valid.  The
+recursive-descent C++ parser wants to be able to perform tentative
+parsing arbitrarily far ahead in the token stream, and then to be able
+to jump back to a prior position in that stream if necessary.
+
+The rule I chose, which is fairly natural, is to arrange that the
+preprocessor lex all tokens on a line consecutively into a token buffer,
+which I call a @dfn{token run}, and when meeting an unescaped new line
+(newlines within comments do not count either), to start lexing back at
+the beginning of the run.  Note that we do @emph{not} lex a line of
+tokens at once; if we did that @code{parse_identifier} would not have
+state flags available to warn about invalid identifiers (@pxref{Invalid
+identifiers}).
+
+In other words, accessing tokens that appeared earlier in the current
+line is valid, but since each logical line overwrites the tokens of the
+previous line, tokens from prior lines are unavailable.  In particular,
+since a directive only occupies a single logical line, this means that
+the directive handlers like the @code{#pragma} handler can jump around
+in the directive's tokens if necessary.
+
+Two issues remain: what about tokens that arise from macro expansions,
+and what happens when we have a long line that overflows the token run?
+
+Since we promise clients that we preserve the validity of pointers that
+we have already returned for tokens that appeared earlier in the line,
+we cannot reallocate the run.  Instead, on overflow it is expanded by
+chaining a new token run on to the end of the existing one.
+
+The tokens forming a macro's replacement list are collected by the
+@code{#define} handler, and placed in storage that is only freed by
+@code{cpp_destroy}.  So if a macro is expanded in our line of tokens,
+the pointers to the tokens of its expansion that we return will always
+remain valid.  However, macros are a little trickier than that, since
+they give rise to three sources of fresh tokens.  They are the built-in
+macros like @code{__LINE__}, and the @samp{#} and @samp{##} operators
+for stringifcation and token pasting.  I handled this by allocating
+space for these tokens from the lexer's token run chain.  This means
+they automatically receive the same lifetime guarantees as lexed tokens,
+and we don't need to concern ourselves with freeing them.
+
+Lexing into a line of tokens solves some of the token memory management
+issues, but not all.  The opening parenthesis after a function-like
+macro name might lie on a different line, and the front ends definitely
+want the ability to look ahead past the end of the current line.  So
+cpplib only moves back to the start of the token run at the end of a
+line if the variable @code{keep_tokens} is zero.  Line-buffering is
+quite natural for the preprocessor, and as a result the only time cpplib
+needs to increment this variable is whilst looking for the opening
+parenthesis to, and reading the arguments of, a function-like macro.  In
+the near future cpplib will export an interface to increment and
+decrement this variable, so that clients can share full control over the
+lifetime of token pointers too.
+
+The routine @code{_cpp_lex_token} handles moving to new token runs,
+calling @code{_cpp_lex_direct} to lex new tokens, or returning
+previously-lexed tokens if we stepped back in the token stream.  It also
+checks each token for the @code{BOL} flag, which might indicate a
+directive that needs to be handled, or require a start-of-line call-back
+to be made.  @code{_cpp_lex_token} also handles skipping over tokens in
+failed conditional blocks, and invalidates the control macro of the
+multiple-include optimization if a token was successfully lexed outside
+a directive.  In other words, its callers do not need to concern
+themselves with such issues.
+
+@node Hash Nodes
+@unnumbered Hash Nodes
+@cindex hash table
+@cindex identifiers
+@cindex macros
+@cindex assertions
+@cindex named operators
+
+When cpplib encounters an ``identifier'', it generates a hash code for
+it and stores it in the hash table.  By ``identifier'' we mean tokens
+with type @code{CPP_NAME}; this includes identifiers in the usual C
+sense, as well as keywords, directive names, macro names and so on.  For
+example, all of @code{pragma}, @code{int}, @code{foo} and
+@code{__GNUC__} are identifiers and hashed when lexed.
+
+Each node in the hash table contain various information about the
+identifier it represents.  For example, its length and type.  At any one
+time, each identifier falls into exactly one of three categories:
+
+@itemize @bullet
+@item Macros
+
+These have been declared to be macros, either on the command line or
+with @code{#define}.  A few, such as @code{__TIME__} are built-ins
+entered in the hash table during initialisation.  The hash node for a
+normal macro points to a structure with more information about the
+macro, such as whether it is function-like, how many arguments it takes,
+and its expansion.  Built-in macros are flagged as special, and instead
+contain an enum indicating which of the various built-in macros it is.
+
+@item Assertions
+
+Assertions are in a separate namespace to macros.  To enforce this, cpp
+actually prepends a @code{#} character before hashing and entering it in
+the hash table.  An assertion's node points to a chain of answers to
+that assertion.
+
+@item Void
+
+Everything else falls into this category---an identifier that is not
+currently a macro, or a macro that has since been undefined with
+@code{#undef}.
+
+When preprocessing C++, this category also includes the named operators,
+such as @code{xor}.  In expressions these behave like the operators they
+represent, but in contexts where the spelling of a token matters they
+are spelt differently.  This spelling distinction is relevant when they
+are operands of the stringizing and pasting macro operators @code{#} and
+@code{##}.  Named operator hash nodes are flagged, both to catch the
+spelling distinction and to prevent them from being defined as macros.
+@end itemize
+
+The same identifiers share the same hash node.  Since each identifier
+token, after lexing, contains a pointer to its hash node, this is used
+to provide rapid lookup of various information.  For example, when
+parsing a @code{#define} statement, CPP flags each argument's identifier
+hash node with the index of that argument.  This makes duplicated
+argument checking an O(1) operation for each argument.  Similarly, for
+each identifier in the macro's expansion, lookup to see if it is an
+argument, and which argument it is, is also an O(1) operation.  Further,
+each directive name, such as @code{endif}, has an associated directive
+enum stored in its hash node, so that directive lookup is also O(1).
+
+@node Macro Expansion
+@unnumbered Macro Expansion Algorithm
+
+@c TODO
+
+@node Token Spacing
+@unnumbered Token Spacing
 @cindex paste avoidance
+@cindex spacing
+@cindex token spacing
+
+First, let's look at an issue that only concerns the stand-alone
+preprocessor: we want to guarantee that re-reading its preprocessed
+output results in an identical token stream.  Without taking special
+measures, this might not be the case because of macro substitution.  For
+example:
+
+@smallexample
+#define PLUS +
+#define EMPTY
+#define f(x) =x=
++PLUS -EMPTY- PLUS+ f(=)
+        @expansion{} + + - - + + = = =
+@emph{not}
+        @expansion{} ++ -- ++ ===
+@end smallexample
+
+One solution would be to simply insert a space between all adjacent
+tokens.  However, we would like to keep space insertion to a minimum,
+both for aesthetic reasons and because it causes problems for people who
+still try to abuse the preprocessor for things like Fortran source and
+Makefiles.
+
+For now, just notice that the only places we need to be careful about
+@dfn{paste avoidance} are when tokens are added (or removed) from the
+original token stream.  This only occurs because of macro expansion, but
+care is needed in many places: before @strong{and} after each macro
+replacement, each argument replacement, and additionally each token
+created by the @samp{#} and @samp{##} operators.
+
+Let's look at how the preprocessor gets whitespace output correct
+normally.  The @code{cpp_token} structure contains a flags byte, and one
+of those flags is @code{PREV_WHITE}.  This is flagged by the lexer, and
+indicates that the token was preceded by whitespace of some form other
+than a new line.  The stand-alone preprocessor can use this flag to
+decide whether to insert a space between tokens in the output.
+
+Now consider the following:
+
+@smallexample
+#define add(x, y, z) x + y +z;
+sum = add (1,2, 3);
+        @expansion{} sum = 1 + 2 +3;
+@end smallexample
+
+The interesting thing here is that the tokens @samp{1} and @samp{2} are
+output with a preceding space, and @samp{3} is output without a
+preceding space, but when lexed none of these tokens had that property.
+Careful consideration reveals that @samp{1} gets its preceding
+whitespace from the space preceding @samp{add} in the macro
+@emph{invocation}, @samp{2} gets its whitespace from the space preceding
+the parameter @samp{y} in the macro @emph{replacement list}, and
+@samp{3} has no preceding space because parameter @samp{z} has none in
+the replacement list.
+
+Once lexed, tokens are effectively fixed and cannot be altered, since
+pointers to them might be held in many places, in particular by
+in-progress macro expansions.  So instead of modifying the two tokens
+above, the preprocessor inserts a special token, which I call a
+@dfn{padding token}, into the token stream in front of every macro
+expansion and expanded macro argument, to indicate that the subsequent
+token should assume its @code{PREV_WHITE} flag from a different
+@dfn{source token}.  In the above example, the source tokens are
+@samp{add} in the macro invocation, and @samp{y} and @samp{z} in the
+macro replacement list, respectively.
+
+It is quite easy to get multiple padding tokens in a row, for example if
+a macro's first replacement token expands straight into another macro.
+
+@smallexample
+#define foo bar
+#define bar baz
+[foo]
+        @expansion{} [baz]
+@end smallexample
+
+Here, two padding tokens with sources @samp{foo} between the brackets,
+and @samp{bar} from foo's replacement list, are generated.  Clearly the
+first padding token is the one that matters.  But what if we happen to
+leave a macro expansion?  Adjusting the above example slightly:
+
+@smallexample
+#define foo bar
+#define bar EMPTY baz
+#define EMPTY
+[foo] EMPTY;
+        @expansion{} [ baz] ;
+@end smallexample
+
+As shown, now there should be a space before baz and the semicolon.  Our
+initial algorithm fails for the former, because we would see three
+padding tokens, one per macro invocation, followed by @samp{baz}, which
+would have inherit its spacing from the original source, @samp{foo},
+which has no leading space.  Note that it is vital that cpplib get
+spacing correct in these examples, since any of these macro expansions
+could be stringified, where spacing matters.
+
+So, I have demonstrated that not just entering macro and argument
+expansions, but leaving them requires special handling too.  So cpplib
+inserts a padding token with a @code{NULL} source token when leaving
+macro expansions and after each replaced argument in a macro's
+replacement list.  It also inserts appropriate padding tokens on either
+side of tokens created by the @samp{#} and @samp{##} operators.
+
+Now we can see the relationship with paste avoidance: we have to be
+careful about paste avoidance in exactly the same locations we take care
+to get white space correct.  This makes implementation of paste
+avoidance easy: wherever the stand-alone preprocessor is fixing up
+spacing because of padding tokens, and it turns out that no space is
+needed, it has to take the extra step to check that a space is not
+needed after all to avoid an accidental paste.  The function
+@code{cpp_avoid_paste} advises whether a space is required between two
+consecutive tokens.  To avoid excessive spacing, it tries hard to only
+require a space if one is likely to be necessary, but for reasons of
+efficiency it is slightly conservative and might recommend a space where
+one is not strictly needed.
+
+@node Line Numbering
+@unnumbered Line numbering
 @cindex line numbers
 
-The lexer has been written to treat each of @samp{\r}, @samp{\n},
-@samp{\r\n} and @samp{\n\r} as a single new line indicator.  This allows
-it to transparently preprocess MS-DOS, Macintosh and Unix files without
-their needing to pass through a special filter beforehand.
-
-We also decided to treat a backslash, either @samp{\} or the trigraph
-@samp{??/}, separated from one of the above newline indicators by
-non-comment whitespace only, as intending to escape the newline.  It
-tends to be a typing mistake, and cannot reasonably be mistaken for
-anything else in any of the C-family grammars.  Since handling it this
-way is not strictly conforming to the ISO standard, the library issues a
-warning wherever it encounters it.
-
-Handling newlines like this is made simpler by doing it in one place
-only.  The function @samp{handle_newline} takes care of all newline
-characters, and @samp{skip_escaped_newlines} takes care of arbitrarily
-long sequences of escaped newlines, deferring to @samp{handle_newline}
-to handle the newlines themselves.
-
-Another whitespace issue only concerns the stand-alone preprocessor: we
-want to guarantee that re-reading the preprocessed output results in an
-identical token stream.  Without taking special measures, this might not
-be the case because of macro substitution.  We could simply insert a
-space between adjacent tokens, but ideally we would like to keep this to
-a minimum, both for aesthetic reasons and because it causes problems for
-people who still try to abuse the preprocessor for things like Fortran
-source and Makefiles.
-
-The token structure contains a flags byte, and two flags are of interest
-here: @samp{PREV_WHITE} and @samp{AVOID_LPASTE}.  @samp{PREV_WHITE}
-indicates that the token was preceded by whitespace; if this is the case
-we need not worry about it incorrectly pasting with its predecessor.
-The @samp{AVOID_LPASTE} flag is set by the macro expansion routines, and
-indicates that paste avoidance by insertion of a space to the left of
-the token may be necessary.  Recursively, the first token of a macro
-substitution, the first token after a macro substitution, the first
-token of a substituted argument, and the first token after a substituted
-argument are all flagged @samp{AVOID_LPASTE} by the macro expander.
-
-If a token flagged in this way does not have a @samp{PREV_WHITE} flag,
-and the routine @code{cpp_avoid_paste} determines that it might be
-misinterpreted by the lexer if a space is not inserted between it and
-the immediately preceding token, then stand-alone CPP's output routines
-will insert a space between them.  To avoid excessive spacing,
-@code{cpp_avoid_paste} tries hard to only request a space if one is
-likely to be necessary, but for reasons of efficiency it is slightly
-conservative and might recommend a space where one is not strictly
-needed.
-
-Finally, the preprocessor takes great care to ensure it keeps track of
-both the position of a token in the source file, for diagnostic
-purposes, and where it should appear in the output file, because using
-CPP for other languages like assembler requires this.  The two positions
-may differ for the following reasons:
+The preprocessor takes great care to ensure it keeps track of both the
+position of a token in the source file, for diagnostic purposes, and
+where it should appear in the output file, because using CPP for other
+languages like assembler requires this.  The two positions may differ
+for the following reasons:
 
 @itemize @bullet
 @item
@@ -367,75 +619,14 @@ The source file location is maintained in the @code{lineno} member of the
 current position in the buffer relative to the @code{line_base} buffer
 variable, which is updated with every newline whether escaped or not.
 
-TODO: Finish this.
+@c FINISH THIS
 
-@node Hash Nodes, Macro Expansion, Whitespace, Top
-@unnumbered Hash Nodes
-@cindex hash table
-@cindex identifiers
-@cindex macros
-@cindex assertions
-@cindex named operators
+@node Guard Macros
+@unnumbered The Multiple-Include Optimization
 
-When cpplib encounters an ``identifier'', it generates a hash code for it
-and stores it in the hash table.  By ``identifier'' we mean tokens with
-type @samp{CPP_NAME}; this includes identifiers in the usual C sense, as
-well as keywords, directive names, macro names and so on.  For example,
-all of @samp{pragma}, @samp{int}, @samp{foo} and @samp{__GNUC__} are identifiers and hashed
-when lexed.
+@c TODO
 
-Each node in the hash table contain various information about the
-identifier it represents.  For example, its length and type.  At any one
-time, each identifier falls into exactly one of three categories:
-
-@itemize @bullet
-@item Macros
-
-These have been declared to be macros, either on the command line or
-with @code{#define}.  A few, such as @samp{__TIME__} are builtins
-entered in the hash table during initialisation.  The hash node for a
-normal macro points to a structure with more information about the
-macro, such as whether it is function-like, how many arguments it takes,
-and its expansion.  Builtin macros are flagged as special, and instead
-contain an enum indicating which of the various builtin macros it is.
-
-@item Assertions
-
-Assertions are in a separate namespace to macros.  To enforce this, cpp
-actually prepends a @code{#} character before hashing and entering it in
-the hash table.  An assertion's node points to a chain of answers to
-that assertion.
-
-@item Void
-
-Everything else falls into this category---an identifier that is not
-currently a macro, or a macro that has since been undefined with
-@code{#undef}.
-
-When preprocessing C++, this category also includes the named operators,
-such as @samp{xor}.  In expressions these behave like the operators they
-represent, but in contexts where the spelling of a token matters they
-are spelt differently.  This spelling distinction is relevant when they
-are operands of the stringizing and pasting macro operators @code{#} and
-@code{##}.  Named operator hash nodes are flagged, both to catch the
-spelling distinction and to prevent them from being defined as macros.
-@end itemize
-
-The same identifiers share the same hash node.  Since each identifier
-token, after lexing, contains a pointer to its hash node, this is used
-to provide rapid lookup of various information.  For example, when
-parsing a @code{#define} statement, CPP flags each argument's identifier
-hash node with the index of that argument.  This makes duplicated
-argument checking an O(1) operation for each argument.  Similarly, for
-each identifier in the macro's expansion, lookup to see if it is an
-argument, and which argument it is, is also an O(1) operation.  Further,
-each directive name, such as @samp{endif}, has an associated directive
-enum stored in its hash node, so that directive lookup is also O(1).
-
-@node Macro Expansion, Files, Hash Nodes, Top
-@unnumbered Macro Expansion Algorithm
-
-@node Files, Index, Macro Expansion, Top
+@node Files
 @unnumbered File Handling
 @cindex files
 
@@ -459,10 +650,10 @@ filesystem queries whilst searching for the correct file.
 For each file we try to open, we store the constructed path in a splay
 tree.  This path first undergoes simplification by the function
 @code{_cpp_simplify_pathname}.  For example,
-@samp{/usr/include/bits/../foo.h} is simplified to
-@samp{/usr/include/foo.h} before we enter it in the splay tree and try
+@file{/usr/include/bits/../foo.h} is simplified to
+@file{/usr/include/foo.h} before we enter it in the splay tree and try
 to @code{open ()} the file.  CPP will then find subsequent uses of
-@samp{foo.h}, even as @samp{/usr/include/foo.h}, in the splay tree and
+@file{foo.h}, even as @file{/usr/include/foo.h}, in the splay tree and
 save system calls.
 
 Further, it is likely the file contents have also been cached, saving a
@@ -486,7 +677,7 @@ directory on a per-file basis is handled by the function
 
 Note that a header included with a directory component, such as
 @code{#include "mydir/foo.h"} and opened as
-@samp{/usr/local/include/mydir/foo.h}, will have the complete path minus
+@file{/usr/local/include/mydir/foo.h}, will have the complete path minus
 the basename @samp{foo.h} as the current directory.
 
 Enough information is stored in the splay tree that CPP can immediately
@@ -503,7 +694,7 @@ command line (or system) include directories to which the mapping
 applies.  This may be higher up the directory tree than the full path to
 the file minus the base name.
 
-@node Index,, Files, Top
+@node Index
 @unnumbered Index
 @printindex cp
 
