@@ -420,7 +420,7 @@ case ${target} in
 *-*-linux*libc1* | *-*-linux*aout*)
   # Avoid the generic linux case.
   ;;
-*-*-linux*)
+*-*-linux* | frv-*-*linux*)
   # Must come before *-*-gnu* (because of *-*-linux-gnu* systems).
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
   gas=yes
@@ -717,6 +717,11 @@ frv-*-elf)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} frv/frv-abi.h"
 	tmake_file=frv/t-frv
 	use_fixproto=yes
+	;;
+frv-*-*linux*)
+	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} \
+	         linux.h frv/linux.h frv/frv-abi.h"
+	tmake_file="t-slibgcc-elf-ver t-linux frv/t-frv frv/t-linux"
 	;;
 h8300-*-rtems*)
 	tmake_file="h8300/t-h8300 t-rtems"
@@ -2159,6 +2164,9 @@ if test x$with_cpu = x ; then
     alphaev5*-*-*)
       with_cpu=ev5
       ;;
+    frv-*-*linux*)
+      with_cpu=fr400
+      ;;
     sparc*-*-*)
       with_cpu="`echo ${target} | sed 's/-.*$//'`"
       if [ x$with_cpu = xsparc64 ]; then
@@ -2267,6 +2275,17 @@ fi
 		if test "x$with_arch" != x && test "x$with_cpu" != x; then
 			echo "Warning: --with-arch overrides --with-cpu" 1>&2
 		fi
+		;;
+
+	fr*-*-*linux*)
+		supported_defaults=cpu
+		case "$with_cpu" in
+		fr400) ;;
+		*)
+			echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
+			exit 1
+			;;
+		esac
 		;;
 
 	hppa*-*-* | parisc*-*-*)

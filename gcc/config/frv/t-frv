@@ -82,9 +82,9 @@ $(T)frvend$(objext): $(srcdir)/config/frv/frvend.c $(GCC_PASSES) \
 #MULTILIB_EXCEPTIONS	= *mcpu=simple/*msoft-float* *mcpu=frv/*msoft-float*
 #MULTILIB_EXTRA_OPTS	= mlibrary-pic
 
-MULTILIB_OPTIONS	= mcpu=frv/mcpu=fr400/mcpu=simple mno-pack mlibrary-pic
-MULTILIB_DIRNAMES	= frv fr400 simple unpacked pic
-MULTILIB_MATCHES	= mcpu?simple=mcpu?fr300 mlibrary-pic=fpic mlibrary-pic=fPIC
+MULTILIB_OPTIONS	= mcpu=frv/mcpu=fr400/mcpu=simple mno-pack mlibrary-pic/mfdpic
+MULTILIB_DIRNAMES	= frv fr400 simple unpacked pic fdpic
+MULTILIB_MATCHES	= mcpu?simple=mcpu?fr300 mlibrary-pic=multilib-library-pic
 MULTILIB_EXCEPTIONS	= mcpu=frv/mno-pack* mcpu=simple/mno-pack*
 
 LIBGCC = stmp-multilib

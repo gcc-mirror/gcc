@@ -1,5 +1,5 @@
 /* Frv map GCC names to FR-V ABI.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -43,7 +43,8 @@ __asm__ (".text\n"							\
 	 "\t.type\t" #NEW ",@function\n"				\
 	 #NEW ":\n"							\
 	 "\tor\tgr11, gr0, gr10\n"					\
-	 "\tbra\t" #OLD "\n");
+	 ".L" #OLD " = " #OLD "\n"					\
+	 "\tbra\t.L" #OLD "\n");
 
 #ifdef L_sf_to_df
 #define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY(__extendsfdf2,__ftod)

@@ -1,5 +1,5 @@
 ;; Frv Machine Description
-;; Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
+;; Copyright (C) 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
 ;; This file is part of GCC.
@@ -28,6 +28,8 @@
 ;; ::
 ;; ::::::::::::::::::::
 
+;; GOT constants must go 12/HI/LO for the splitter to work
+
 (define_constants
   [(UNSPEC_BLOCKAGE		0)
    (UNSPEC_CC_TO_GPR		1)
@@ -35,7 +37,30 @@
    (UNSPEC_PIC_PROLOGUE		3)
    (UNSPEC_CR_LOGIC		4)
    (UNSPEC_STACK_ADJUST		5)
-   (UNSPEC_EH_RETURN_EPILOGUE	6)])
+   (UNSPEC_EH_RETURN_EPILOGUE	6)
+   (UNSPEC_GOT			7)
+   (UNSPEC_LDD			8)
+
+   (R_FRV_GOT12			11)
+   (R_FRV_GOTHI			12)
+   (R_FRV_GOTLO			13)
+   (R_FRV_FUNCDESC		14)
+   (R_FRV_FUNCDESC_GOT12	15)
+   (R_FRV_FUNCDESC_GOTHI	16)
+   (R_FRV_FUNCDESC_GOTLO	17)
+   (R_FRV_FUNCDESC_VALUE	18)
+   (R_FRV_FUNCDESC_GOTOFF12	19)
+   (R_FRV_FUNCDESC_GOTOFFHI	20)
+   (R_FRV_FUNCDESC_GOTOFFLO	21)
+   (R_FRV_GOTOFF12		22)
+   (R_FRV_GOTOFFHI		23)
+   (R_FRV_GOTOFFLO		24)
+   (R_FRV_GPREL12		25)
+   (R_FRV_GPRELHI		26)
+   (R_FRV_GPRELLO		27)
+
+   (FDPIC_REG			15)
+   ])
 
 
 
@@ -1317,7 +1342,7 @@
 
 (define_insn "*movhi_internal"
   [(set (match_operand:HI 0 "move_destination_operand" "=d,d,d,m,m,?f,?f,?d,?m,f")
-	(match_operand:HI 1 "move_source_operand"       "L,i,d,d,O, d, f, f, f,GO"))]
+	(match_operand:HI 1 "move_source_operand"       "L,n,d,d,O, d, f, f, f,GO"))]
   "register_operand(operands[0], HImode) || reg_or_0_operand (operands[1], HImode)"
   "* return output_move_single (operands, insn);"
   [(set_attr "length" "4,8,4,4,4,4,4,4,4,4")
@@ -1385,34 +1410,54 @@
   [(set_attr "length" "4")
    (set_attr "type" "gload,fload")])
 
+(define_insn "*movsi_got"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+	(match_operand:SI 1 "got12_operand" ""))]
+  ""
+  "addi gr0, %1, %0"
+  [(set_attr "type" "int")
+   (set_attr "length" "4")])
+
+(define_insn "*movsi_high_got"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+	(high:SI (match_operand:SI 1 "const_unspec_operand" "")))]
+  ""
+  "sethi %1, %0"
+  [(set_attr "type" "sethi")
+   (set_attr "length" "4")])
+
+(define_insn "*movsi_lo_sum_got"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+	(lo_sum:SI (match_operand:SI 1 "integer_register_operand" "0")
+		   (match_operand:SI 2 "const_unspec_operand" "")))]
+  ""
+  "setlo %2, %0"
+  [(set_attr "type" "setlo")
+   (set_attr "length" "4")])
+
 (define_insn "*movsi_internal"
   [(set (match_operand:SI 0 "move_destination_operand" "=d,d,d,m,m,z,d,d,f,f,m,?f,?z")
-	(match_operand:SI 1 "move_source_operand"      "LQ,i,d,d,O,d,z,f,d,f,f,GO,GO"))]
+	(match_operand:SI 1 "move_source_operand"      "L,n,d,d,O,d,z,f,d,f,f,GO,GO"))]
   "register_operand (operands[0], SImode) || reg_or_0_operand (operands[1], SImode)"
   "* return output_move_single (operands, insn);"
   [(set_attr "length" "4,8,4,4,4,4,4,4,4,4,4,4,4")
    (set_attr "type" "int,multi,int,gstore,gstore,spr,spr,movfg,movgf,fsconv,fstore,movgf,spr")])
 
-(define_insn "*movsi_lda_sdata"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d")
-	(plus:SI (match_operand:SI 1 "small_data_register_operand" "d")
-		 (match_operand:SI 2 "small_data_symbolic_operand" "Q")))]
-  ""
-  "addi %1, #gprel12(%2), %0"
-  [(set_attr "type" "int")
-   (set_attr "length" "4")])
-
 ;; Split 2 word load of constants into sethi/setlo instructions
-(define_split
-  [(set (match_operand:SI 0 "integer_register_operand" "")
-	(match_operand:SI 1 "int_2word_operand" ""))]
+(define_insn_and_split "*movsi_2word"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+	(match_operand:SI 1 "int_2word_operand" "i"))]
+  ""
+  "#"
   "reload_completed"
   [(set (match_dup 0)
 	(high:SI (match_dup 1)))
    (set (match_dup 0)
 	(lo_sum:SI (match_dup 0)
 		(match_dup 1)))]
-  "")
+  ""
+  [(set_attr "length" "8")
+   (set_attr "type" "multi")])
 
 (define_insn "movsi_high"
   [(set (match_operand:SI 0 "integer_register_operand" "=d")
@@ -1428,43 +1473,6 @@
 		   (match_operand:SI 1 "int_2word_operand" "i")))]
   ""
   "setlo #lo(%1), %0"
-  [(set_attr "type" "setlo")
-   (set_attr "length" "4")])
-
-;; Split loads of addresses with PIC specified into 3 separate instructions
-(define_insn_and_split "*movsi_pic"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d")
-	(plus:SI (match_operand:SI 1 "pic_register_operand" "d")
-		 (match_operand:SI 2 "pic_symbolic_operand" "")))]
-  ""
-  "#"
-  "reload_completed"
-  [(set (match_dup 0)
-	(high:SI (match_dup 2)))
-   (set (match_dup 0)
-	(lo_sum:SI (match_dup 0)
-		   (match_dup 2)))
-   (set (match_dup 0)
-	(plus:SI (match_dup 0) (match_dup 1)))]
-
-  ""
-  [(set_attr "type" "multi")
-   (set_attr "length" "12")])
-
-(define_insn "movsi_high_pic"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d")
-	(high:SI (match_operand:SI 1 "pic_symbolic_operand" "")))]
-  ""
-  "sethi #gprelhi(%1), %0"
-  [(set_attr "type" "sethi")
-   (set_attr "length" "4")])
-
-(define_insn "movsi_lo_sum_pic"
-  [(set (match_operand:SI 0 "integer_register_operand" "+d")
-	(lo_sum:SI (match_dup 0)
-		   (match_operand:SI 1 "pic_symbolic_operand" "")))]
-  ""
-  "setlo #gprello(%1), %0"
   [(set_attr "type" "setlo")
    (set_attr "length" "4")])
 
@@ -1692,14 +1700,14 @@
 }")
 
 (define_insn "*movdf_double"
-  [(set (match_operand:DF 0 "move_destination_operand" "=h,?e,??f,??d,R,?R,??m,??m,h,?e,??f,??d,?h,??f,?e,??d,R,m,h,??f,e,??d")
-	(match_operand:DF 1 "move_source_operand"      " h,e,f,d,h,e,f,d,R,R,m,m,e,d,h,f,GO,GO,GO,GO,GO,GO"))]
+  [(set (match_operand:DF 0 "move_destination_operand" "=h,?e,??f,??d,R,?R,??m,??m,h,?e,??f,??d,?h,??f,?e,??d,R,m,h,??f,e,??d,e,??d")
+	(match_operand:DF 1 "move_source_operand"      " h,e,f,d,h,e,f,d,R,R,m,m,e,d,h,f,GO,GO,GO,GO,GO,GO,F,F"))]
   "TARGET_DOUBLE
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   "* return output_move_double (operands, insn);"
-  [(set_attr "length" "4,8,8,8,4,4,8,8,4,4,8,8,4,8,4,8,4,8,8,8,8,8")
-   (set_attr "type" "fdconv,multi,multi,multi,fstore,gstore,fstore,gstore,fload,gload,fload,gload,movgf,movgf,movfg,movfg,gstore,gstore,movgf,movgf,multi,multi")])
+  [(set_attr "length" "4,8,8,8,4,4,8,8,4,4,8,8,4,8,4,8,4,8,8,8,8,8,16,16")
+   (set_attr "type" "fdconv,multi,multi,multi,fstore,gstore,fstore,gstore,fload,gload,fload,gload,movgf,movgf,movfg,movfg,gstore,gstore,movgf,movgf,multi,multi,multi,multi")])
 
 ;; If we don't support the double instructions, prefer gprs over fprs, since it
 ;; will all be emulated
@@ -2565,7 +2573,7 @@
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "integer_register_operand" "=d")
 	(plus:SI (match_operand:SI 1 "integer_register_operand" "%d")
-		 (match_operand:SI 2 "gpr_or_int12_operand" "dNOP")))]
+		 (match_operand:SI 2 "gpr_or_int12_operand" "dNOPQ")))]
   ""
   "add%I2 %1,%2,%0"
   [(set_attr "length" "4")
@@ -5251,7 +5259,11 @@
   if (! operands[2])
     operands[2] = const0_rtx;
 
-  emit_call_insn (gen_call_internal (addr, operands[1], operands[2], lr));
+  if (TARGET_FDPIC)
+    frv_expand_fdpic_call (operands, 0);
+  else
+    emit_call_insn (gen_call_internal (addr, operands[1], operands[2], lr));
+
   DONE;
 }")
 
@@ -5260,7 +5272,53 @@
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (match_operand:SI 3 "lr_operand" "=l,l"))]
+  "! TARGET_FDPIC"
+  "@
+   call %0
+   call%i0l %M0"
+  [(set_attr "length" "4")
+   (set_attr "type" "call,jumpl")])
+
+;; The odd use of GR0 within the UNSPEC below prevents cseing or
+;; hoisting function descriptor loads out of loops.  This is almost
+;; never desirable, since if we preserve the function descriptor in a
+;; pair of registers, it takes two insns to move it to gr14/gr15, and
+;; if it's in the stack, we just waste space with the store, since
+;; we'll have to load back from memory anyway.  And, in the worst
+;; case, we may end up reusing a function descriptor still pointing at
+;; a PLT entry, instead of to the resolved function, which means going
+;; through the resolver for every call that uses the outdated value.
+;; Bad!
+
+;; The explicit MEM inside the SPEC prevents the compiler from moving
+;; the load before a branch after a NULL test, or before a store that
+;; initializes a function descriptor.
+
+(define_insn "movdi_ldd"
+  [(set (match_operand:DI 0 "fdpic_fptr_operand" "=e")
+	(unspec:DI [(mem:DI (match_operand:SI 1 "ldd_address_operand" "p"))
+		    (reg:SI 0)] UNSPEC_LDD))]
   ""
+  "ldd%I1 %M1, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "gload")])
+
+(define_insn "call_fdpicdi"
+  [(call (mem:QI (match_operand:DI 0 "fdpic_fptr_operand" "W"))
+	 (match_operand 1 "" ""))
+   (clobber (match_operand:SI 2 "lr_operand" "=l"))]
+  "TARGET_FDPIC"
+  "calll %M0"
+  [(set_attr "length" "4")
+   (set_attr "type" "jumpl")])
+
+(define_insn "call_fdpicsi"
+  [(call (mem:QI (match_operand:SI 0 "call_operand" "S,dNOP"))
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (use (match_operand:SI 3 "fdpic_operand" "Z,Z"))
+   (clobber (match_operand:SI 4 "lr_operand" "=l,l"))]
+  "TARGET_FDPIC"
   "@
    call %0
    call%i0l %M0"
@@ -5296,8 +5354,12 @@
   if (! operands[3])
     operands[3] = const0_rtx;
 
-  emit_call_insn (gen_call_value_internal (operands[0], addr, operands[2],
-					   operands[3], lr));
+  if (TARGET_FDPIC)
+    frv_expand_fdpic_call (operands, 1);
+  else
+    emit_call_insn (gen_call_value_internal (operands[0], addr, operands[2],
+					     operands[3], lr));
+
   DONE;
 }")
 
@@ -5307,7 +5369,31 @@
 		      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (match_operand:SI 4 "lr_operand" "=l,l"))]
-  ""
+  "! TARGET_FDPIC"
+  "@
+   call %1
+   call%i1l %M1"
+  [(set_attr "length" "4")
+   (set_attr "type" "call,jumpl")])
+
+(define_insn "call_value_fdpicdi"
+  [(set (match_operand 0 "register_operand" "=d")
+	(call (mem:QI (match_operand:DI 1 "fdpic_fptr_operand" "W"))
+	      (match_operand 2 "" "")))
+   (clobber (match_operand:SI 3 "lr_operand" "=l"))]
+  "TARGET_FDPIC"
+  "calll %M1"
+  [(set_attr "length" "4")
+   (set_attr "type" "jumpl")])
+
+(define_insn "call_value_fdpicsi"
+  [(set (match_operand 0 "register_operand" "=d,d")
+	(call (mem:QI (match_operand:SI 1 "call_operand" "S,dNOP"))
+		      (match_operand 2 "" "")))
+   (use (match_operand 3 "" ""))
+   (use (match_operand:SI 4 "fdpic_operand" "Z,Z"))
+   (clobber (match_operand:SI 5 "lr_operand" "=l,l"))]
+  "TARGET_FDPIC"
   "@
    call %1
    call%i1l %M1"
@@ -7453,3 +7539,174 @@
   "mhdseth %2, %0"
   [(set_attr "length" "4")
    (set_attr "type" "mset")])
+
+;;-----------------------------------------------------------------------------
+
+(define_expand "symGOT2reg"
+  [(match_operand:SI 0 "" "")
+   (match_operand:SI 1 "" "")
+   (match_operand:SI 2 "" "")
+   (match_operand:SI 3 "" "")]
+  ""
+  "
+{
+  rtx insn;
+
+  insn = emit_insn (gen_symGOT2reg_i (operands[0], operands[1], operands[2], operands[3]));
+
+  RTX_UNCHANGING_P (SET_SRC (PATTERN (insn))) = 1;
+
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
+					REG_NOTES (insn));
+
+  DONE;
+}")
+
+(define_expand "symGOT2reg_i"
+  [(set (match_operand:SI 0 "" "")
+	(mem:SI (plus:SI (match_operand:SI 2 "" "")
+			 (const:SI (unspec:SI [(match_operand:SI 1 "" "")
+					       (match_operand:SI 3 "" "")]
+					      UNSPEC_GOT)))))]
+  ""
+  "")
+
+(define_expand "symGOT2reg_hilo"
+  [(set (match_dup 6)
+	(high:SI (const:SI (unspec:SI [(match_operand:SI 1 "" "")
+				       (match_dup 4)] UNSPEC_GOT))))
+   (set (match_dup 5)
+	(lo_sum:SI (match_dup 6)
+		   (const:SI (unspec:SI [(match_dup 1)
+					 (match_operand:SI 3 "" "")]
+					UNSPEC_GOT))))
+   (set (match_operand:SI 0 "" "")
+	(mem:SI (plus:SI (match_dup 5)
+			 (match_operand:SI 2 "" ""))))
+   ]
+  ""
+  "
+{
+  if (no_new_pseudos)
+    operands[6] = operands[5] = operands[0];
+  else
+    {
+      operands[6] = gen_reg_rtx (SImode);
+      operands[5] = gen_reg_rtx (SImode);
+    }
+
+  operands[4] = GEN_INT (INTVAL (operands[3]) + 1);
+  operands[3] = GEN_INT (INTVAL (operands[3]) + 2);
+}")
+
+(define_expand "symGOTOFF2reg_hilo"
+  [(set (match_dup 6)
+	(high:SI (const:SI (unspec:SI [(match_operand:SI 1 "" "")
+				       (match_dup 4)] UNSPEC_GOT))))
+   (set (match_dup 5)
+	(lo_sum:SI (match_dup 6)
+		   (const:SI (unspec:SI [(match_dup 1)
+					 (match_operand:SI 3 "" "")]
+					UNSPEC_GOT))))
+   (set (match_operand:SI 0 "" "")
+	(plus:SI (match_dup 5)
+		 (match_operand:SI 2 "" "")))
+   ]
+  ""
+  "
+{
+  if (no_new_pseudos)
+    operands[6] = operands[5] = operands[0];
+  else
+    {
+      operands[6] = gen_reg_rtx (SImode);
+      operands[5] = gen_reg_rtx (SImode);
+    }
+
+  operands[4] = GEN_INT (INTVAL (operands[3]) + 1);
+  operands[3] = GEN_INT (INTVAL (operands[3]) + 2);
+}")
+
+(define_expand "symGOTOFF2reg"
+  [(match_operand:SI 0 "" "")
+   (match_operand:SI 1 "" "")
+   (match_operand:SI 2 "" "")
+   (match_operand:SI 3 "" "")]
+  ""
+  "
+{
+  rtx insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1], operands[2], operands[3]));
+
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
+					REG_NOTES (insn));
+
+  DONE;
+}")
+
+(define_expand "symGOTOFF2reg_i"
+  [(set (match_operand:SI 0 "" "")
+	(plus:SI (match_operand:SI 2 "" "")
+		 (const:SI
+		  (unspec:SI [(match_operand:SI 1 "" "")
+			     (match_operand:SI 3 "" "")]
+			     UNSPEC_GOT))))]
+  ""
+  "")
+
+(define_expand "symGPREL2reg"
+  [(match_operand:SI 0 "" "")
+   (match_operand:SI 1 "" "")
+   (match_operand:SI 2 "" "")
+   (match_operand:SI 3 "" "")
+   (match_dup 4)]
+  ""
+  "
+{
+  rtx insn;
+
+  if (no_new_pseudos)
+    operands[4] = operands[0];
+  else
+    operands[4] = gen_reg_rtx (SImode);
+
+  emit_insn (frv_gen_GPsym2reg (operands[4], operands[2]));
+
+  insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1],
+					 operands[4], operands[3]));
+
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
+					REG_NOTES (insn));
+
+  DONE;
+}")
+
+(define_expand "symGPREL2reg_hilo"
+  [(match_operand:SI 0 "" "")
+   (match_operand:SI 1 "" "")
+   (match_operand:SI 2 "" "")
+   (match_operand:SI 3 "" "")
+   (match_dup 4)]
+  ""
+  "
+{
+  rtx insn;
+
+  if (no_new_pseudos)
+    {
+      emit_insn (gen_symGOT2reg (operands[0], operands[1], operands[2],
+				 GEN_INT (R_FRV_GOT12)));
+      DONE;
+    }
+
+  operands[4] = gen_reg_rtx (SImode);
+
+  emit_insn (frv_gen_GPsym2reg (operands[4], operands[2]));
+
+  insn = emit_insn (gen_symGOTOFF2reg_hilo (operands[0], operands[1],
+					    operands[4], operands[3]));
+
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
+					REG_NOTES (insn));
+
+  DONE;
+}")

@@ -52,6 +52,10 @@
     && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2) \
 	|| (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && defined(DT_CONFIG)))
 
+#ifndef __RELOC_POINTER
+# define __RELOC_POINTER(ptr, base) ((ptr) + (base))
+#endif
+
 static const fde * _Unwind_Find_registered_FDE (void *pc, struct dwarf_eh_bases *bases);
 
 #define _Unwind_Find_FDE _Unwind_Find_registered_FDE
@@ -109,7 +113,11 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
   struct unw_eh_callback_data *data = (struct unw_eh_callback_data *) ptr;
   const ElfW(Phdr) *phdr, *p_eh_frame_hdr, *p_dynamic;
   long n, match;
+#ifdef __FRV_FDPIC__
+  struct elf32_fdpic_loadaddr load_base;
+#else
   _Unwind_Ptr load_base;
+#endif
   const unsigned char *p;
   const struct unw_eh_frame_hdr *hdr;
   _Unwind_Ptr eh_frame;
@@ -132,7 +140,8 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
     {
       if (phdr->p_type == PT_LOAD)
 	{
-	  _Unwind_Ptr vaddr = phdr->p_vaddr + load_base;
+	  _Unwind_Ptr vaddr = (_Unwind_Ptr)
+	    __RELOC_POINTER (phdr->p_vaddr, load_base);
 	  if (data->pc >= vaddr && data->pc < vaddr + phdr->p_memsz)
 	    match = 1;
 	}
@@ -146,7 +155,7 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 
   /* Read .eh_frame_hdr header.  */
   hdr = (const struct unw_eh_frame_hdr *)
-	(p_eh_frame_hdr->p_vaddr + load_base);
+    __RELOC_POINTER (p_eh_frame_hdr->p_vaddr, load_base);
   if (hdr->version != 1)
     return 1;
 
@@ -157,7 +166,8 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
     {
       /* For dynamically linked executables and shared libraries,
 	 DT_PLTGOT is the gp value for that object.  */
-      ElfW(Dyn) *dyn = (ElfW(Dyn) *) (p_dynamic->p_vaddr + load_base);
+      ElfW(Dyn) *dyn = (ElfW(Dyn) *)
+	__RELOC_POINTER (p_dynamic->p_vaddr, load_base);
       for (; dyn->d_tag != DT_NULL ; dyn++)
 	if (dyn->d_tag == DT_PLTGOT)
 	  {
@@ -166,6 +176,8 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 	    break;
 	  }
     }
+# elif defined __FRV_FDPIC__ && defined __linux__
+  data->dbase = load_base.got_value;
 # else
 #  error What is DW_EH_PE_datarel base on this platform?
 # endif
