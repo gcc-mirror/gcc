@@ -193,17 +193,11 @@ struct temp_slot
   int align;
   /* The size, in units, of the slot.  */
   HOST_WIDE_INT size;
-  /* The alias set for the slot.  If the alias set is zero, we don't
-     know anything about the alias set of the slot.  We must only
-     reuse a slot if it is assigned an object of the same alias set.
-     Otherwise, the rest of the compiler may assume that the new use
-     of the slot cannot alias the old use of the slot, which is
-     false.  If the slot has alias set zero, then we can't reuse the
-     slot at all, since we have no idea what alias set may have been
-     imposed on the memory.  For example, if the stack slot is the
-     call frame for an inline functioned, we have no idea what alias
-     sets will be assigned to various pieces of the call frame.  */
-  HOST_WIDE_INT alias_set;
+  /* The type of the object in the slot, or zero if it doesn't correspond
+     to a type.  We use this to determine whether a slot can be reused.
+     It can be reused if objects of the type of the new slot will always
+     conflict with objects of the type of the old slot.  */
+  tree type;
   /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
   tree rtl_expr;
   /* Non-zero if this temporary is currently in use.  */
@@ -658,21 +652,12 @@ assign_stack_temp_for_type (mode, size, keep, type)
      tree type;
 {
   int align;
-  HOST_WIDE_INT alias_set;
   struct temp_slot *p, *best_p = 0;
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
      of a variable size.  */
   if (size == -1)
     abort ();
-
-  /* If we know the alias set for the memory that will be used, use
-     it.  If there's no TYPE, then we don't know anything about the
-     alias set for the memory.  */
-  if (type)
-    alias_set = get_alias_set (type);
-  else
-    alias_set = 0;
 
   if (mode == BLKmode)
     align = BIGGEST_ALIGNMENT;
@@ -691,8 +676,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
   for (p = temp_slots; p; p = p->next)
     if (p->align >= align && p->size >= size && GET_MODE (p->slot) == mode
 	&& ! p->in_use
-	&& (! flag_strict_aliasing
-	    || (alias_set && p->alias_set == alias_set))
+	&& objects_must_conflict_p (p->type, type)
 	&& (best_p == 0 || best_p->size > p->size
 	    || (best_p->size == p->size && best_p->align > p->align)))
       {
@@ -728,7 +712,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 	      p->align = best_p->align;
 	      p->address = 0;
 	      p->rtl_expr = 0;
-	      p->alias_set = best_p->alias_set;
+	      p->type = best_p->type;
 	      p->next = temp_slots;
 	      temp_slots = p;
 
@@ -766,7 +750,6 @@ assign_stack_temp_for_type (mode, size, keep, type)
 				    align);
 
       p->align = align;
-      p->alias_set = alias_set;
 
       /* The following slot size computation is necessary because we don't
 	 know the actual size of the temporary slot until assign_stack_local
@@ -797,6 +780,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
   p->in_use = 1;
   p->addr_taken = 0;
   p->rtl_expr = seq_rtl_expr;
+  p->type = type;
 
   if (keep == 2)
     {
@@ -819,10 +803,23 @@ assign_stack_temp_for_type (mode, size, keep, type)
   RTX_UNCHANGING_P (p->slot) = 0;
   MEM_IN_STRUCT_P (p->slot) = 0;
   MEM_SCALAR_P (p->slot) = 0;
-  MEM_ALIAS_SET (p->slot) = alias_set;
+  MEM_VOLATILE_P (p->slot) = 0;
 
+  /* If we know the alias set for the memory that will be used, use
+     it.  If there's no TYPE, then we don't know anything about the
+     alias set for the memory.  */
+  if (type)
+    MEM_ALIAS_SET (p->slot) = get_alias_set (type);
+  else
+    MEM_ALIAS_SET (p->slot) = 0;
+
+  /* If a type is specified, set the relevant flags. */
   if (type != 0)
-    MEM_SET_IN_STRUCT_P (p->slot, AGGREGATE_TYPE_P (type));
+    {
+      RTX_UNCHANGING_P (p->slot) = TYPE_READONLY (type);
+      MEM_VOLATILE_P (p->slot) = TYPE_VOLATILE (type);
+      MEM_SET_IN_STRUCT_P (p->slot, AGGREGATE_TYPE_P (type));
+    }
 
   return p->slot;
 }
@@ -1509,6 +1506,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
 /* Make sure that all refs to the variable, previously made
    when it was a register, are fixed up to be valid again.
    See function above for meaning of arguments.  */
+
 static void
 schedule_fixup_var_refs (function, reg, type, promoted_mode, ht)
      struct function *function;
@@ -7453,6 +7451,7 @@ mark_temp_slot (t)
       ggc_mark_rtx (t->slot);
       ggc_mark_rtx (t->address);
       ggc_mark_tree (t->rtl_expr);
+      ggc_mark_tree (t->type);
 
       t = t->next;
     }

@@ -1,8 +1,34 @@
+2000-12-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (alias_sets_conflict_p): New function.
+	(mems_in_disjoint_alias_sets_p): Use it.
+	(readonly_fields_p): Moved from expr.c; check for record type.
+	(objects_must_conflict_p): New function.
+	* calls.c (expand_call): Use assign_temp as much as possible, use
+	readonly variant if assigned once, and don't set memory attributes.
+	(emit_library_call_value_1, store_one_arg): Likewise.
+	* integrate.c (expand_inline_function): Likewise.
+	* stmt.c (expand_asm_operands, expand_return): Likewise.
+	* expr.c (copy_blkmode_from_reg, store_constructor): Likewise.
+	(store_field, save_noncopied_parts, expand_expr): Likewise.
+	(expand_expr_unaligned): Likewise.
+	(readonly_fields_p): Moved to alias.c.
+	(safe_from_p): Rework handling of SAVE_EXPR.
+	MEMs ony conflict if alias sets conflict; likewise for INDIRECT_REF.
+	* function.c (struct temp_slot): Delete field ALIAS_SET; add TYPE.
+	(assign_stack_for_temp): Use objects_must_confict_p.
+	Set all memory attributes from type, if specified.
+	(mark_temp_slot): Mark TYPE field.
+	* tree.h (alias_sets_conflict_p, readonly_fields_p): New decls.
+	(objects_must_conflict_p): Likewise.
+
+	* stmt.c (expand_decl): Don't use assign_stack_temp in error case.
+	(add_case_node): No need to copy nodes anymore.
+	
 2000-12-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.c (split_branches): Don't dereference re-computed
 	`beyond' before checking it's non-NULL.
-
 
 2000-12-29  Robert Lipe <robertl@sco.com>
 

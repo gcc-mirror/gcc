@@ -211,8 +211,6 @@ mems_in_disjoint_alias_sets_p (mem1, mem2)
      rtx mem1;
      rtx mem2;
 {
-  alias_set_entry ase;
-
 #ifdef ENABLE_CHECKING	
 /* Perform a basic sanity check.  Namely, that there are no alias sets
    if we're not using strict aliasing.  This helps to catch bugs
@@ -226,34 +224,7 @@ mems_in_disjoint_alias_sets_p (mem1, mem2)
     abort ();
 #endif
 
-  /* If have no alias set information for one of the MEMs, we have to assume
-     it can alias anything.  */
-  if (MEM_ALIAS_SET (mem1) == 0 || MEM_ALIAS_SET (mem2) == 0)
-    return 0;
-
-  /* If the two alias sets are the same, they may alias.  */
-  if (MEM_ALIAS_SET (mem1) == MEM_ALIAS_SET (mem2))
-    return 0;
-
-  /* See if the first alias set is a subset of the second.  */
-  ase = get_alias_set_entry (MEM_ALIAS_SET (mem1));
-  if (ase != 0
-      && (ase->has_zero_child
-	  || splay_tree_lookup (ase->children,
-				(splay_tree_key) MEM_ALIAS_SET (mem2))))
-    return  0;
-
-  /* Now do the same, but with the alias sets reversed.  */
-  ase = get_alias_set_entry (MEM_ALIAS_SET (mem2));
-  if (ase != 0
-      && (ase->has_zero_child
-	  || splay_tree_lookup (ase->children,
-				(splay_tree_key) MEM_ALIAS_SET (mem1))))
-    return  0;
-
-  /* The two MEMs are in distinct alias sets, and neither one is the
-     child of the other.  Therefore, they cannot alias.  */
-  return 1;
+  return ! alias_sets_conflict_p (MEM_ALIAS_SET (mem1), MEM_ALIAS_SET (mem2));
 }
 
 /* Insert the NODE into the splay tree given by DATA.  Used by
@@ -267,6 +238,96 @@ insert_subset_children (node, data)
   splay_tree_insert ((splay_tree) data, node->key, node->value);
 
   return 0;
+}
+
+/* Return 1 if the two specified alias sets may conflict.  */
+
+int
+alias_sets_conflict_p (set1, set2)
+     HOST_WIDE_INT set1, set2;
+{
+  alias_set_entry ase;
+
+  /* If have no alias set information for one of the operands, we have
+     to assume it can alias anything.  */
+  if (set1 == 0 || set2 == 0
+      /* If the two alias sets are the same, they may alias.  */
+      || set1 == set2)
+    return 1;
+
+  /* See if the first alias set is a subset of the second.  */
+  ase = get_alias_set_entry (set1);
+  if (ase != 0
+      && (ase->has_zero_child
+	  || splay_tree_lookup (ase->children,
+				(splay_tree_key) set2)))
+    return 1;
+
+  /* Now do the same, but with the alias sets reversed.  */
+  ase = get_alias_set_entry (set2);
+  if (ase != 0
+      && (ase->has_zero_child
+	  || splay_tree_lookup (ase->children,
+				(splay_tree_key) set1)))
+    return 1;
+
+  /* The two alias sets are distinct and neither one is the
+     child of the other.  Therefore, they cannot alias.  */
+  return 0;
+}
+
+/* Return 1 if TYPE is a RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE and has
+   has any readonly fields.  If any of the fields have types that
+   contain readonly fields, return true as well.  */
+
+int
+readonly_fields_p (type)
+     tree type;
+{
+  tree field;
+
+  if (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE
+      && TREE_CODE (type) != QUAL_UNION_TYPE)
+    return 0;
+
+  for (field = TYPE_FIELDS (type); field != 0; field = TREE_CHAIN (field))
+    if (TREE_CODE (field) == FIELD_DECL
+	&& (TREE_READONLY (field)
+	    || readonly_fields_p (TREE_TYPE (field))))
+      return 1;
+
+  return 0;
+}
+
+/* Return 1 if any MEM object of type T1 will always conflict (using the
+   dependency routines in this file) with any MEM object of type T2.
+   This is used when allocating temporary storage.  If T1 and/or T2 are
+   NULL_TREE, it means we know nothing about the storage.  */
+
+int
+objects_must_conflict_p (t1, t2)
+     tree t1, t2;
+{
+  /* If they are the same type, they must conflict.  */
+  if (t1 == t2
+      /* Likewise if both are volatile.  */
+      || (t1 != 0 && TYPE_VOLATILE (t1) && t2 != 0 && TYPE_VOLATILE (t2)))
+    return 1;
+
+  /* We now know they are different types.  If one or both has readonly fields
+     or if one is readonly and the other not, they may not conflict.
+     Likewise if one is aggregate and the other is scalar.  */
+  if ((t1 != 0 && readonly_fields_p (t1))
+      || (t2 != 0 && readonly_fields_p (t2))
+      || ((t1 != 0 && TYPE_READONLY (t1))
+	  != (t2 != 0 && TYPE_READONLY (t2)))
+      || ((t1 != 0 && AGGREGATE_TYPE_P (t1))
+	  != (t2 != 0 && AGGREGATE_TYPE_P (t2))))
+    return 0;
+
+  /* Otherwise they conflict only if the alias sets conflict. */
+  return alias_sets_conflict_p (t1 ? get_alias_set (t1) : 0,
+				t2 ? get_alias_set (t2) : 0);
 }
 
 /* T is an expression with pointer type.  Find the DECL on which this

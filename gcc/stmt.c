@@ -1757,7 +1757,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		   || GET_CODE (op) == CONCAT)
 	    {
 	      tree type = TREE_TYPE (TREE_VALUE (tail));
-	      rtx memloc = assign_temp (type, 1, 1, 1);
+	      tree qual_type = build_qualified_type (type,
+						     (TYPE_QUALS (type)
+						      | TYPE_QUAL_CONST));
+	      rtx memloc = assign_temp (qual_type, 1, 1, 1);
 
 	      emit_move_insn (memloc, op);
 	      op = memloc;
@@ -3100,8 +3103,10 @@ expand_return (retval)
     {
       /* Calculate the return value into a temporary (usually a pseudo
          reg).  */
-      val = assign_temp (TREE_TYPE (DECL_RESULT (current_function_decl)),
-			 0, 0, 1);
+      tree ot = TREE_TYPE (DECL_RESULT (current_function_decl));
+      tree nt = build_qualified_type (ot, TYPE_QUALS (ot) | TYPE_QUAL_CONST);
+
+      val = assign_temp (nt, 0, 0, 1);
       val = expand_expr (retval_rhs, val, GET_MODE (val), 0);
       val = force_not_mem (val);
       emit_queue ();
@@ -3822,12 +3827,13 @@ expand_decl (decl)
 
   if (type == error_mark_node)
     DECL_RTL (decl) = gen_rtx_MEM (BLKmode, const0_rtx);
+
   else if (DECL_SIZE (decl) == 0)
     /* Variable with incomplete type.  */
     {
       if (DECL_INITIAL (decl) == 0)
 	/* Error message was already done; now avoid a crash.  */
-	DECL_RTL (decl) = assign_stack_temp (DECL_MODE (decl), 0, 1);
+	DECL_RTL (decl) = gen_rtx_MEM (BLKmode, const0_rtx);
       else
 	/* An initializer is going to decide the size of this array.
 	   Until we know the size, represent its address with a reg.  */
@@ -4735,18 +4741,16 @@ add_case_node (low, high, label, duplicate)
 	}
     }
 
-  /* Add this label to the chain, and succeed.
-     Copy LOW, HIGH so they are on temporary rather than momentary
-     obstack and will thus survive till the end of the case statement.  */
+  /* Add this label to the chain, and succeed.  */
 
   r = (struct case_node *) xmalloc (sizeof (struct case_node));
-  r->low = copy_node (low);
+  r->low = low;
 
   /* If the bounds are equal, turn this into the one-value case.  */
   if (tree_int_cst_equal (low, high))
     r->high = r->low;
   else
-    r->high = copy_node (high);
+    r->high = high;
 
   r->code_label = label;
   expand_label (label);

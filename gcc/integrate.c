@@ -716,14 +716,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       if (GET_CODE (loc) == MEM && GET_CODE (XEXP (loc, 0)) == REG
 	  && REGNO (XEXP (loc, 0)) > LAST_VIRTUAL_REGISTER)
 	{
-	  rtx stack_slot
-	    = assign_stack_temp (TYPE_MODE (TREE_TYPE (arg)),
-				 int_size_in_bytes (TREE_TYPE (arg)), 1);
-	  MEM_SET_IN_STRUCT_P (stack_slot,
-			       AGGREGATE_TYPE_P (TREE_TYPE (arg)));
+	  rtx stack_slot = assign_temp (TREE_TYPE (arg), 1, 1, 1);
 
 	  store_expr (arg, stack_slot, 0);
-
 	  arg_vals[i] = XEXP (stack_slot, 0);
 	  invisiref = 1;
 	}
