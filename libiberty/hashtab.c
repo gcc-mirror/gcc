@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 static unsigned long higher_prime_number PARAMS ((unsigned long));
 
 /* The following function returns the nearest prime number which is
-   greater than a given source number. */
+   greater than a given source number, N. */
 
 static unsigned long
 higher_prime_number (n)
@@ -66,20 +66,24 @@ higher_prime_number (n)
 {
   unsigned long i;
 
-  n |= 0x01;  /* Force N to be odd.  */
+  /* Ensure we have a larger number and then force to odd.  */
+  n++;  
+  n |= 0x01; 
+
+  /* All odd numbers < 9 are prime.  */
   if (n < 9)
-    return n; /* All odd numbers < 9 are prime.  */
+    return n;
+
+  /* Otherwise find the next prime using a sieve.  */
 
  next:
-  n += 2;
-  i = 3;
-  do
-    {
-      if (n % i == 0)
-	goto next;
-      i += 2;
-    }
-  while ((i * i) <= n);
+
+  for (i = 3; i * i <= n; i += 2)
+    if (n % i == 0)
+      {
+	 n += 2;
+	 goto next;
+       }
 
   return n;
 }
@@ -116,13 +120,12 @@ htab_delete (htab)
      htab_t htab;
 {
   int i;
+
   if (htab->del_f)
     for (i = htab->size - 1; i >= 0; i--)
-      {
-	if (htab->entries[i] != EMPTY_ENTRY
-	    && htab->entries[i] != DELETED_ENTRY)
-	  (*htab->del_f) (htab->entries[i]);
-      }
+      if (htab->entries[i] != EMPTY_ENTRY
+	  && htab->entries[i] != DELETED_ENTRY)
+	(*htab->del_f) (htab->entries[i]);
 
   free (htab->entries);
   free (htab);
@@ -135,13 +138,12 @@ htab_empty (htab)
      htab_t htab;
 {
   int i;
+
   if (htab->del_f)
     for (i = htab->size - 1; i >= 0; i--)
-      {
-	if (htab->entries[i] != EMPTY_ENTRY
-	    && htab->entries[i] != DELETED_ENTRY)
-	  (*htab->del_f) (htab->entries[i]);
-      }
+      if (htab->entries[i] != EMPTY_ENTRY
+	  && htab->entries[i] != DELETED_ENTRY)
+	(*htab->del_f) (htab->entries[i]);
 
   memset (htab->entries, 0, htab->size * sizeof (void *));
 }
@@ -152,6 +154,7 @@ htab_empty (htab)
       hash table.
    This function also assumes there are no deleted entries in the table.
    HASH is the hash value for the element to be inserted.  */
+
 static void **
 find_empty_slot_for_expand (htab, hash)
      htab_t htab;
@@ -164,10 +167,10 @@ find_empty_slot_for_expand (htab, hash)
   for (;;)
     {
       void **slot = htab->entries + index;
+
       if (*slot == EMPTY_ENTRY)
 	return slot;
-
-      if (*slot == DELETED_ENTRY)
+      else if (*slot == DELETED_ENTRY)
 	abort ();
 
       index += hash2;
@@ -203,14 +206,18 @@ htab_expand (htab)
   do
     {
       void *x = *p;
+
       if (x != EMPTY_ENTRY && x != DELETED_ENTRY)
 	{
 	  void **q = find_empty_slot_for_expand (htab, (*htab->hash_f) (x));
+
 	  *q = x;
 	}
+
       p++;
     }
   while (p < olimit);
+
   free (oentries);
 }
 
@@ -255,6 +262,7 @@ htab_find_with_hash (htab, element, hash)
 
 /* Like htab_find_slot_with_hash, but compute the hash value from the
    element.  */
+
 void *
 htab_find (htab, element)
      htab_t htab;
@@ -274,14 +282,14 @@ htab_find_slot_with_hash (htab, element, hash, insert)
      htab_t htab;
      const void *element;
      hashval_t hash;
-     int insert;
+     enum insert_option insert;
 {
   void **first_deleted_slot;
   unsigned int index;
   hashval_t hash2;
   size_t size;
 
-  if (insert && htab->size * 3 <= htab->n_elements * 4)
+  if (insert == INSERT && htab->size * 3 <= htab->n_elements * 4)
     htab_expand (htab);
 
   size = htab->size;
@@ -296,7 +304,7 @@ htab_find_slot_with_hash (htab, element, hash, insert)
       void *entry = htab->entries[index];
       if (entry == EMPTY_ENTRY)
 	{
-	  if (!insert)
+	  if (insert == NO_INSERT)
 	    return NULL;
 
 	  htab->n_elements++;
@@ -315,11 +323,8 @@ htab_find_slot_with_hash (htab, element, hash, insert)
 	  if (!first_deleted_slot)
 	    first_deleted_slot = &htab->entries[index];
 	}
-      else
-	{
-	  if ((*htab->eq_f) (entry, element))
-	    return &htab->entries[index];
-	}
+      else  if ((*htab->eq_f) (entry, element))
+	return &htab->entries[index];
       
       htab->collisions++;
       index += hash2;
@@ -330,11 +335,12 @@ htab_find_slot_with_hash (htab, element, hash, insert)
 
 /* Like htab_find_slot_with_hash, but compute the hash value from the
    element.  */
+
 void **
 htab_find_slot (htab, element, insert)
      htab_t htab;
      const void *element;
-     int insert;
+     enum insert_option insert;
 {
   return htab_find_slot_with_hash (htab, element, (*htab->hash_f) (element),
 				   insert);
@@ -351,7 +357,7 @@ htab_remove_elt (htab, element)
 {
   void **slot;
 
-  slot = htab_find_slot (htab, element, 0);
+  slot = htab_find_slot (htab, element, NO_INSERT);
   if (*slot == EMPTY_ENTRY)
     return;
 
@@ -374,8 +380,10 @@ htab_clear_slot (htab, slot)
   if (slot < htab->entries || slot >= htab->entries + htab->size
       || *slot == EMPTY_ENTRY || *slot == DELETED_ENTRY)
     abort ();
+
   if (htab->del_f)
     (*htab->del_f) (*slot);
+
   *slot = DELETED_ENTRY;
   htab->n_deleted++;
 }
@@ -391,12 +399,13 @@ htab_traverse (htab, callback, info)
      htab_trav callback;
      void *info;
 {
-  void **slot, **limit;
-  slot = htab->entries;
-  limit = slot + htab->size;
+  void **slot = htab->entries;
+  void **limit = slot + htab->size;
+
   do
     {
       void *x = *slot;
+
       if (x != EMPTY_ENTRY && x != DELETED_ENTRY)
 	if (!(*callback) (slot, info))
 	  break;
@@ -404,7 +413,7 @@ htab_traverse (htab, callback, info)
   while (++slot < limit);
 }
 
-/* The following function returns current size of given hash table. */
+/* Return the current size of given hash table. */
 
 size_t
 htab_size (htab)
@@ -413,8 +422,7 @@ htab_size (htab)
   return htab->size;
 }
 
-/* The following function returns current number of elements in given
-   hash table. */
+/* Return the current number of elements in given hash table. */
 
 size_t
 htab_elements (htab)
@@ -423,17 +431,15 @@ htab_elements (htab)
   return htab->n_elements - htab->n_deleted;
 }
 
-/* The following function returns number of percents of fixed
-   collisions during all work with given hash table. */
+/* Return the fraction of fixed collisions during all work with given
+   hash table. */
 
 double
 htab_collisions (htab)
      htab_t htab;
 {
-  int searches;
-
-  searches = htab->searches;
-  if (searches == 0)
+  if (htab->searches == 0)
     return 0.0;
-  return (double)htab->collisions / (double)searches;
+
+  return (double) htab->collisions / (double) htab->searches;
 }

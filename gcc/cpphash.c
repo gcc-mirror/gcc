@@ -26,8 +26,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-#include "cpphash.h"
 #include "hashtab.h"
+#include "cpphash.h"
+
 #undef abort
 
 static unsigned int hash_HASHNODE PARAMS ((const void *));
@@ -200,12 +201,13 @@ _cpp_lookup (pfile, name, len)
 }
 
 /* Find the hashtable slot for name "name".  Used to insert or delete.  */
+
 HASHNODE **
 _cpp_lookup_slot (pfile, name, len, insert, hash)
      cpp_reader *pfile;
      const U_CHAR *name;
      int len;
-     int insert;
+     enum insert_option insert;
      unsigned long *hash;
 {
   const U_CHAR *bp;
@@ -214,7 +216,9 @@ _cpp_lookup_slot (pfile, name, len, insert, hash)
 
   if (len < 0)
     {
-      for (bp = name; is_idchar (*bp); bp++);
+      for (bp = name; is_idchar (*bp); bp++)
+	;
+
       len = bp - name;
     }
 
@@ -223,7 +227,7 @@ _cpp_lookup_slot (pfile, name, len, insert, hash)
   dummy.hash = _cpp_calc_hash (name, len);
 
   slot = (HASHNODE **) htab_find_slot_with_hash (pfile->hashtab,
-						 (void *)&dummy,
+						 (void *) &dummy,
 						 dummy.hash, insert);
   if (insert)
     *hash = dummy.hash;

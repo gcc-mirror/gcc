@@ -1,5 +1,6 @@
 /* Parse C expressions for cpplib.
    Copyright (C) 1987, 92, 94, 95, 97, 98, 1999, 2000 Free Software Foundation.
+   Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -14,19 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-
- In other words, you are welcome to use, share and improve this program.
- You are forbidden to forbid anyone else to use, share and improve
- what you give them.   Help stamp out software-hoarding!
-
-Written by Per Bothner 1994.  */
+Boston, MA 02111-1307, USA.  */
 
 /* Parse a C expression from text in a string  */
    
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
+#include "hashtab.h"
 #include "cpphash.h"
 
 #ifndef CHAR_TYPE_SIZE

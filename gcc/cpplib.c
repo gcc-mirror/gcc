@@ -22,6 +22,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 
+#include "hashtab.h"
 #include "cpplib.h"
 #include "cpphash.h"
 #include "hashtab.h"
@@ -392,7 +393,7 @@ do_define (pfile)
 	goto out;
     }
 
-  slot = _cpp_lookup_slot (pfile, sym, len, 1, &hash);
+  slot = _cpp_lookup_slot (pfile, sym, len, INSERT, &hash);
   if (*slot)
     {
       int ok;
@@ -770,7 +771,7 @@ do_undef (pfile)
   name = pfile->token_buffer + here;
   CPP_SET_WRITTEN (pfile, here);
 
-  slot = _cpp_lookup_slot (pfile, name, len, 0, 0);
+  slot = _cpp_lookup_slot (pfile, name, len, NO_INSERT, 0);
   if (slot)
     {
       HASHNODE *hp = *slot;
@@ -1028,7 +1029,7 @@ do_pragma_poison (pfile)
 
       p = pfile->token_buffer + written;
       len = strlen (p);
-      slot = _cpp_lookup_slot (pfile, p, len, 1, &hash);
+      slot = _cpp_lookup_slot (pfile, p, len, INSERT, &hash);
       if (*slot)
 	{
 	  HASHNODE *hp = *slot;
@@ -1586,14 +1587,14 @@ do_assert (pfile)
 
   sym = pfile->token_buffer + old_written;
   blen = (U_CHAR *) strchr (sym, '(') - sym;
-  tslot = _cpp_lookup_slot (pfile, sym, tlen, 1, &thash);
+  tslot = _cpp_lookup_slot (pfile, sym, tlen, INSERT, &thash);
   if (*tslot)
     {
       cpp_warning (pfile, "%s re-asserted", sym);
       goto error;
     }
 
-  bslot = _cpp_lookup_slot (pfile, sym, blen, 1, &bhash);
+  bslot = _cpp_lookup_slot (pfile, sym, blen, INSERT, &bhash);
   if (! *bslot)
     {
       *bslot = base = _cpp_make_hashnode (sym, blen, T_ASSERT, bhash);

@@ -1,3 +1,9 @@
+Tue Apr 18 16:23:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* hashtab.c: Various minor cleanups.
+	(htab_find_slot_with_hash): INSERT is now enum insert_option.
+	(htab_find_slot): Likewise.
+
 2000-04-16  Dave Pitts  <dpitts@cozx.com>
 
 	* cplus-dem.c (cplus_demangle_opname): Changed to use islower.

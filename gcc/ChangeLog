@@ -1,3 +1,41 @@
+Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* conflict.c (conflict_graph_add): Pass enum type to htab_find_slot.
+	* cpperror.c (hashtab.h): Now include.
+	* cppexp.c (hashtab.h): Likewise.
+	* cpplex.c (hashtab.h): Likewise.
+	* cppfiles.c (hashtab.h): Likewise.
+	(find_include_file, _cpp_calc_hash, cpp_read_file): Pass enum type
+	to htab_find_slot_with_hash.
+	* cpphash.c (hashtab.h): Now include.
+	(_cpp_lookup_slot): INSERT is now enum insert_option.
+	* cpphash.h (_cpp_lookup_slot): Likewise.
+	* cppinit.c (hashtab.h): Include earlier.
+	(initialize_builtins): Pass enum to htab_find_slot.
+	* cpplib.c (hashtab.h): Now include.
+	(do_define, do_undef): Pass enum type to _cpp_lookup_slot.
+	(do_pragma_poison, do_assert): Likewise.
+	* emit-rtl.c (gen_rtx_CONST_INT): Pass enum to
+	htab_find_slot_with_hash.
+	* simplify-rtx.c (cselib_lookup_mem, cselib_lookup): Likewise.
+	* tree.c (type_hash_add): Likewise.
+	(build1): Minor cleanup.
+
+	* ggc-common.c: Add missing blanks.
+	* print-tree.c (print_node): Print DECL_OFFSET_ALIGN.
+	* tree.h (DECL_OFFSET_ALIGN): Fix typo in comment.
+
+	* stmt.c (mark_case_node): New function.
+	(mark_case_nesting): Call it.
+
+	* expmed.c (emit_store_flag): If comparing two-word integer
+	with zero, can optimize NE, EQ, GE, and LT.
+
+	* c-decl.c (mark_binding_level): Use 'for' instead of `while'.
+	* conflict.c: Minor cleanups.
+	* optabs.c: Add blank line
+	* simplify-rtx.c: Minor cleanups.
+
 2000-04-18  Stan Cox  <scox@cygnus.com>
 
 	* gengenrtl.c (genlegend): Fix misspelling.
@@ -19,23 +57,6 @@
 	* config/m68k/x-apollo68 (CC): Deleted SHORT_ENUM_BUG.
 	(OLD_CC): Likewise.
 	* config/m68k/x-ccur (X_CFLAGS): Likewise.
-
-Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-
-	* ggc-common.c: Add missing blanks.
-	* print-tree.c (print_node): Print DECL_OFFSET_ALIGN.
-	* tree.h (DECL_OFFSET_ALIGN): Fix typo in comment.
-
-	* stmt.c (mark_case_node): New function.
-	(mark_case_nesting): Call it.
-
-	* expmed.c (emit_store_flag): If comparing two-word integer
-	with zero, can optimize NE, EQ, GE, and LT.
-
-	* c-decl.c (mark_binding_level): Use 'for' instead of `while'.
-	* conflict.c: Minor cleanups.
-	* optabs.c: Add blank line
-	* simplify-rtx.c: Minor cleanups.
 
 2000-04-18  Mark Mitchell  <mark@codesourcery.com>
 
