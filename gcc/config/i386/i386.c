@@ -1282,6 +1282,39 @@ sse_comparison_operator (op, mode)
   enum rtx_code code = GET_CODE (op);
   return code == EQ || code == LT || code == LE || code == UNORDERED;
 }
+/* Return 1 if OP is a valid comparison operator in valid mode.  */
+int
+ix86_comparison_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  enum machine_mode inmode;
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return 0;
+  switch (GET_CODE (op))
+    {
+    case EQ: case NE:
+      return 1;
+    case LT: case GE:
+      inmode = GET_MODE (XEXP (op, 0));
+      if (inmode == CCmode || inmode == CCGCmode
+	  || inmode == CCGOCmode || inmode == CCNOmode)
+	return 1;
+      return 0;
+    case LTU: case GTU: case LEU: case ORDERED: case UNORDERED: case GEU:
+      inmode = GET_MODE (XEXP (op, 0));
+      if (inmode == CCmode)
+	return 1;
+      return 0;
+    case GT: case LE:
+      inmode = GET_MODE (XEXP (op, 0));
+      if (inmode == CCmode || inmode == CCGCmode || inmode == CCNOmode)
+	return 1;
+      return 0;
+    default:
+      return 0;
+    }
+}
 
 /* Return 1 if OP is a comparison operator that can be issued by fcmov.  */
 
@@ -1290,39 +1323,17 @@ fcmov_comparison_operator (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
+  enum machine_mode inmode = GET_MODE (XEXP (op, 0));
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
-
   switch (GET_CODE (op))
     {
     case EQ: case NE:
-    case LEU: case LTU: case GEU: case GTU:
-    case UNORDERED: case ORDERED:
       return 1;
-
-    default:
+    case LTU: case GTU: case LEU: case ORDERED: case UNORDERED: case GEU:
+      if (inmode == CCmode)
+	return 1;
       return 0;
-    }
-}
-
-/* Return 1 if OP is any normal comparison operator plus {UN}ORDERED.  */
-
-int 
-uno_comparison_operator (op, mode)
-    register rtx op;
-    enum machine_mode mode;
-{
-  if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
-
-  switch (GET_CODE (op))
-    {
-    case EQ: case NE:
-    case LE: case LT: case GE: case GT:
-    case LEU: case LTU: case GEU: case GTU:
-    case UNORDERED: case ORDERED:
-      return 1;
-
     default:
       return 0;
     }
@@ -3091,40 +3102,52 @@ put_condition_code (code, mode, reverse, fp, file)
       suffix = "ne";
       break;
     case GT:
-      if (mode == CCNOmode)
+      if (mode != CCmode && mode != CCNOmode && mode != CCGCmode)
 	abort ();
       suffix = "g";
       break;
     case GTU:
       /* ??? Use "nbe" instead of "a" for fcmov losage on some assemblers.
 	 Those same assemblers have the same but opposite losage on cmov.  */
+      if (mode != CCmode)
+	abort();
       suffix = fp ? "nbe" : "a";
       break;
     case LT:
-      if (mode == CCNOmode)
+      if (mode == CCNOmode || mode == CCGOCmode)
 	suffix = "s";
-      else
+      else if (mode == CCmode || mode == CCGCmode)
 	suffix = "l";
+      else
+	abort();
       break;
     case LTU:
+      if (mode != CCmode)
+	abort();
       suffix = "b";
       break;
     case GE:
-      if (mode == CCNOmode)
+      if (mode == CCNOmode || mode == CCGOCmode)
 	suffix = "ns";
-      else
+      else if (mode == CCmode || mode == CCGCmode)
 	suffix = "ge";
+      else
+	abort();
       break;
     case GEU:
       /* ??? As above.  */
+      if (mode != CCmode)
+	abort();
       suffix = fp ? "nb" : "ae";
       break;
     case LE:
-      if (mode == CCNOmode)
+      if (mode != CCmode && mode != CCGCmode && mode != CCNOmode)
 	abort ();
       suffix = "le";
       break;
     case LEU:
+      if (mode != CCmode)
+	abort ();
       suffix = "be";
       break;
     case UNORDERED:
@@ -4510,15 +4533,27 @@ ix86_match_ccmode (insn, req_mode)
     set = XVECEXP (set, 0, 0);
   if (GET_CODE (set) != SET)
     abort ();
+  if (GET_CODE (SET_SRC (set)) != COMPARE)
+    abort ();
 
   set_mode = GET_MODE (SET_DEST (set));
   switch (set_mode)
     {
+    case CCNOmode:
+      if (req_mode != CCNOmode
+	  && (req_mode != CCmode
+	      || XEXP (SET_SRC (set), 1) != const0_rtx))
+	return 0;
+      break;
     case CCmode:
-      if (req_mode == CCNOmode)
+      if (req_mode == CCGCmode)
 	return 0;
       /* FALLTHRU */
-    case CCNOmode:
+    case CCGCmode:
+      if (req_mode == CCGOCmode || req_mode == CCNOmode)
+	return 0;
+      /* FALLTHRU */
+    case CCGOCmode:
       if (req_mode == CCZmode)
 	return 0;
       /* FALLTHRU */
@@ -4626,6 +4661,49 @@ ix86_fp_compare_mode (code)
     unordered = 1;
 
   return unordered ? CCFPUmode : CCFPmode;
+}
+
+enum machine_mode
+ix86_cc_mode (code, op0, op1)
+     enum rtx_code code;
+     rtx op0, op1;
+{
+  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
+    return ix86_fp_compare_mode (code);
+  switch (code)
+    {
+      /* Only zero flag is needed.  */
+    case EQ:			/* ZF=0 */
+    case NE:			/* ZF!=0 */
+      return CCZmode;
+      /* Codes needing carry flag.  */
+    case GEU:			/* CF=0 */
+    case GTU:			/* CF=0 & ZF=0 */
+    case LTU:			/* CF=1 */
+    case LEU:			/* CF=1 | ZF=1 */
+      return CCmode;
+      /* Codes possibly doable only with sign flag when
+         comparing against zero.  */
+    case GE:			/* SF=OF   or   SF=0 */
+    case LT:			/* SF<>OF  or   SF=0 */
+      if (op1 == const0_rtx)
+	return CCGOCmode;
+      else
+	/* For other cases Carry flag is not required.  */
+	return CCGCmode;
+      /* Codes doable only with sign flag when comparing
+         against zero, but we miss jump instruction for it
+         so we need to use relational tests agains overflow
+         that thus needs to be zero.  */
+    case GT:			/* ZF=0 & SF=OF */
+    case LE:			/* ZF=1 | SF<>OF */
+      if (op1 == const0_rtx)
+	return CCNOmode;
+      else
+	return CCGCmode;
+    default:
+      abort();
+    }
 }
 
 /* Return true if we should use an FCOMI instruction for this fp comparison.  */
@@ -4872,6 +4950,7 @@ ix86_expand_fp_compare (code, op0, op1, scratch)
 	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
 	      emit_insn (gen_addqi_ext_1 (scratch, scratch, constm1_rtx));
 	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x44)));
+	      intcmp_mode = CCmode;
 	      code = GEU;
 	      break;
 	    case UNLE:
@@ -5921,8 +6000,6 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
   rtx align_4_label = gen_label_rtx ();
   rtx end_0_label = gen_label_rtx ();
   rtx mem;
-  rtx no_flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
-  rtx z_flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
   rtx tmpreg = gen_reg_rtx (SImode);
 
   align = 0;
@@ -5944,30 +6021,12 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 	  align_rtx = expand_binop (SImode, and_optab, scratch, GEN_INT (3),
 				    NULL_RTX, 0, OPTAB_WIDEN);
 
-	  emit_insn (gen_cmpsi_ccz_1 (align_rtx, const0_rtx));
-
-	  tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
-	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-				      gen_rtx_LABEL_REF (VOIDmode,
-							 align_4_label),
-				      pc_rtx);
-	  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
-
-	  emit_insn (gen_cmpsi_ccno_1 (align_rtx, GEN_INT (2)));
-
-	  tmp = gen_rtx_EQ (VOIDmode, no_flags, const0_rtx);
-	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-				      gen_rtx_LABEL_REF (VOIDmode,
-							 align_2_label),
-				      pc_rtx);
-	  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
-
-	  tmp = gen_rtx_GTU (VOIDmode, no_flags, const0_rtx);
-	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-				      gen_rtx_LABEL_REF (VOIDmode,
-							 align_3_label),
-				      pc_rtx);
-	  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+	  emit_cmp_and_jump_insns (align_rtx, const0_rtx, EQ, NULL,
+			  	   SImode, 1, 0, align_4_label);
+	  emit_cmp_and_jump_insns (align_rtx, GEN_INT (2), EQ, NULL,
+				   SImode, 1, 0, align_2_label);
+	  emit_cmp_and_jump_insns (align_rtx, GEN_INT (2), GTU, NULL,
+				   SImode, 1, 0, align_3_label);
 	}
       else
         {
@@ -5977,14 +6036,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 	  align_rtx = expand_binop (SImode, and_optab, scratch, GEN_INT (2),
 				    NULL_RTX, 0, OPTAB_WIDEN);
 
-	  emit_insn (gen_cmpsi_ccz_1 (align_rtx, const0_rtx));
-
-	  tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
-	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-				      gen_rtx_LABEL_REF (VOIDmode,
-							 align_4_label),
-				      pc_rtx);
-	  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+	  emit_cmp_and_jump_insns (align_rtx, const0_rtx, EQ, NULL,
+				   SImode, 1, 0, align_4_label);
         }
 
       mem = gen_rtx_MEM (QImode, out);
@@ -5992,13 +6045,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
       /* Now compare the bytes.  */
 
       /* Compare the first n unaligned byte on a byte per byte basis. */
-      emit_insn (gen_cmpqi_ccz_1 (mem, const0_rtx));
-
-      tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
-      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-				  gen_rtx_LABEL_REF (VOIDmode, end_0_label),
-				  pc_rtx);
-      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+      emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL,
+			       QImode, 1, 0, end_0_label);
 
       /* Increment the address. */
       emit_insn (gen_addsi3 (out, out, const1_rtx));
@@ -6008,27 +6056,16 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 	{
 	  emit_label (align_2_label);
 
-	  emit_insn (gen_cmpqi_ccz_1 (mem, const0_rtx));
-
-	  tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
-	  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-				      gen_rtx_LABEL_REF (VOIDmode,
-							 end_0_label),
-				      pc_rtx);
-	  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+	  emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL,
+				   QImode, 1, 0, end_0_label);
 
 	  emit_insn (gen_addsi3 (out, out, const1_rtx));
 
 	  emit_label (align_3_label);
 	}
 
-      emit_insn (gen_cmpqi_ccz_1 (mem, const0_rtx));
-
-      tmp = gen_rtx_EQ (VOIDmode, z_flags, const0_rtx);
-      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-				  gen_rtx_LABEL_REF (VOIDmode, end_0_label),
-				  pc_rtx);
-      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+      emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL,
+			       QImode, 1, 0, end_0_label);
 
       emit_insn (gen_addsi3 (out, out, const1_rtx));
     }
@@ -6049,7 +6086,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
   emit_insn (gen_one_cmplsi2 (scratch, scratch));
   emit_insn (gen_andsi3 (tmpreg, tmpreg, scratch));
   emit_insn (gen_andsi3 (tmpreg, tmpreg, GEN_INT (0x80808080)));
-  emit_cmp_and_jump_insns (tmpreg, const0_rtx, EQ, 0, SImode, 1, 0, align_4_label);
+  emit_cmp_and_jump_insns (tmpreg, const0_rtx, EQ, 0,
+			   SImode, 1, 0, align_4_label);
 
   if (TARGET_CMOVE)
     {

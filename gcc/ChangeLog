@@ -1,3 +1,38 @@
+Fri Sep 15 19:45:55 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (no_comparison_operator, uno_comparison_operator):
+	Remove.
+	(ix86_comparison_operator, ix86_cc_mode): Declare
+	* i386.h (CCGC, CCGCO): New modes.
+	(SELECT_CC_MODE): Move offline to ....
+	* i386.c (ix86_cc_mode): .... here; use new modes.
+	(ix86_comparison_operator): New.
+	(fcmov_comparison_operator): Ensure proper mode.
+	(put_condition_mode): More sanity checking.
+	(ix86_match_ccmode): Handle new modes.
+	(ix86_expand_fp_compare): GEU requires CCmode.
+	(ix86_expand_strlensi_unroll_1): Use emit_cmp_and_jump_insn instead of
+	doing it by hand.
+	* i386.md (cmp?i_ccz_1): Remove
+	(cmp?i_ccno_1): Use ix86_match_ccmode.
+	(cmp?i_minus_1): New.
+	(cmpsi_1): New expander.
+	(cmpqi_ext_1): Use match_ccmode
+	(cmpqi_ext_3): New expander.
+	(cmpqi_ext_3_insn): Rename from cmpqi_ext_3.
+	(cmpqi_ext_4): Use match_ccmode.
+	(add?i_?): Use match_ccmode.
+	(add?i_6): New.
+	(test?i_ccz_1): Remove
+	(test?i_1): New.
+	(testsi_ccno_1, testqi_ccz_1, testqi_ext_ccno_0): New expander.
+	(testqi_ext_0): Use ix86_match_ccmode.
+	(*xorqi_cc_ext_1): Use ix86_match_ccmode.
+	(xorqi_cc_ext_1): New expander.
+	(shift patterns): Use CCGOCmode for all shifts except for sar.
+	(setcc_?, jcc_?, miv?icc_nic): Use ix86_comparison_operator.
+	(setcc_3, jcc_3, miv?icc_c): Remove.
+
 2000-09-15  Will Cohen  <wcohen@redhat.com>
 
 	* dwarf2out.c (add_const_value_attribute): Changed array into a

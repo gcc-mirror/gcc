@@ -2257,14 +2257,25 @@ while (0)
 
    For the i386, we need separate modes when floating-point
    equality comparisons are being done. 
+   
+   Add CCNO to indicate comparisons against zero that requires
+   No Overflow.  Sign bit test is used instead and thus
+   can be used to form "a&b>0" type of tests.
 
-   Add CCNO to indicate No Overflow, which is often also includes
-   No Carry.  This is typically used on the output of logicals,
-   and is only valid in comparisons against zero.
+   Add CCGC to indicate comparisons agains zero that allows
+   unspecified garbage in the Carry flag.  This mode is used
+   by inc/dec instructions.
+
+   Add CCGCO to indicate comparisons agains zero that allows
+   unspecified garbage in the Carry and Overflow flag. This
+   mode is used to simulate comparisons of (a-b) and (a+b)
+   against zero using sub/cmp/add operations.
 
    Add CCZ to indicate that only the Zero flag is valid.  */
 
 #define EXTRA_CC_MODES \
+	CC(CCGCmode, "CCGC") \
+	CC(CCGOCmode, "CCGOC") \
 	CC(CCNOmode, "CCNO") \
 	CC(CCZmode, "CCZ") \
 	CC(CCFPmode, "CCFP") \
@@ -2279,12 +2290,7 @@ while (0)
    For integer comparisons against zero, reduce to CCNOmode or CCZmode if
    possible, to allow for more combinations.  */
 
-#define SELECT_CC_MODE(OP,X,Y)				\
-  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
-   ? (OP) == EQ || (OP) == NE ? CCFPUmode : CCFPmode	\
-   : (OP) == LE || (OP) == GT ? CCmode			\
-   : (Y) != const0_rtx ? CCmode				\
-   : (OP) == EQ || (OP) == NE ? CCZmode : CCNOmode)
+#define SELECT_CC_MODE(OP,X,Y) ix86_cc_mode (OP, X, Y)
 
 /* Control the assembler format that we output, to the extent
    this does not vary between assemblers.  */
@@ -2591,10 +2597,9 @@ do { long l;						\
   {"nonmemory_no_elim_operand", {CONST_INT, REG, SUBREG}},		\
   {"q_regs_operand", {SUBREG, REG}},					\
   {"non_q_regs_operand", {SUBREG, REG}},				\
-  {"no_comparison_operator", {EQ, NE, LT, GE, LTU, GTU, LEU, GEU}},	\
   {"fcmov_comparison_operator", {EQ, NE, LTU, GTU, LEU, GEU}},		\
   {"sse_comparison_operator", {EQ, LT, LE, UNORDERED }},		\
-  {"uno_comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU,	\
+  {"ix86_comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU,	\
 			       GTU, UNORDERED, ORDERED}},		\
   {"cmp_fp_expander_operand", {CONST_DOUBLE, SUBREG, REG, MEM}},	\
   {"ext_register_operand", {SUBREG, REG}},				\
