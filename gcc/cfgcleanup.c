@@ -46,8 +46,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "target.h"
 
-#include "obstack.h"
-
 /* cleanup_cfg maintains following flags for each basic block.  */
 
 enum bb_flags

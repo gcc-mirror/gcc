@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "cp-tree.h"
 #include "real.h"
-#include "obstack.h"
 #include "toplev.h"
 #include "flags.h"
 #include "diagnostic.h"
@@ -316,8 +315,8 @@ dump_template_bindings (parms, args)
     }
 }
 
-/* Dump into the obstack a human-readable equivalent of TYPE.  FLAGS
-   controls the format.  */
+/* Dump a human-readable equivalent of TYPE.  FLAGS controls the
+   format.  */
 
 static void
 dump_type (t, flags)

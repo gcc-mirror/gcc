@@ -32,7 +32,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "obstack.h"
 #include "toplev.h"
-#include "obstack.h"
 
 static void append_unicode_mangled_name PARAMS ((const char *, int));
 #ifndef HAVE_AS_UTF8

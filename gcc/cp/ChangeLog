@@ -1,3 +1,14 @@
+2002-08-05  Geoffrey Keating  <geoffk@redhat.com>
+
+	* class.c: Don't include obstack.h.
+	(popclass): 
+	* decl2.c: Delete bogus comment.
+	* error.c: Don't include obstack.h.
+	* except.c: Likewise.
+	(dump_type): Correct comment.
+	* method.c: Don't include obstack.h.
+	* tree.c: Likewise.
+
 2002-08-04  Gabriel Dos Reis  <gdr@nerim.net>
 
 	Fix PR/2213

@@ -4330,8 +4330,7 @@ pop_scope (t)
 }
 
 /* [basic.lookup.koenig] */
-/* A non-zero return value in the functions below indicates an error.
-   All nodes allocated in the procedure are on the scratch obstack. */
+/* A non-zero return value in the functions below indicates an error.  */
 
 struct arg_lookup
 {

@@ -35,8 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "target.h"
 
-#include "obstack.h"
-
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
 
@@ -5547,8 +5545,6 @@ void
 popclass ()
 {
   poplevel_class ();
-  /* Since poplevel_class does the popping of class decls nowadays,
-     this really only frees the obstack used for these decls.  */
   pop_class_decls ();
 
   current_class_depth--;
