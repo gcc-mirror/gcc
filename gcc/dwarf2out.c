@@ -12663,6 +12663,16 @@ dwarf2out_finish (input_filename)
   add_name_attribute (comp_unit_die, input_filename);
   if (input_filename[0] != DIR_SEPARATOR)
     add_comp_dir_attribute (comp_unit_die);
+  else if (get_AT (comp_unit_die, DW_AT_comp_dir) == NULL)
+    {
+      size_t i;
+      for (i = 1; i < VARRAY_ACTIVE_SIZE (file_table); i++)
+	if (VARRAY_CHAR_PTR (file_table, i)[0] != DIR_SEPARATOR)
+	  {
+	    add_comp_dir_attribute (comp_unit_die);
+	    break;
+	  }
+    }
 
   /* Traverse the limbo die list, and add parent/child links.  The only
      dies without parents that should be here are concrete instances of
