@@ -1,5 +1,9 @@
 2003-04-12  Zack Weinberg  <zack@codesourcery.com>
 
+	* c-typeck.c (digest_init, push_init_level): Use CONSTRUCTOR_ELTS.
+
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
 	* tree.c (build_constructor): New function.
 	* tree.h: Prototype it.
 
