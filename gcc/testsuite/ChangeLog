@@ -1,5 +1,8 @@
 1998-10-11  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.ns/main1.C: New test.  main() should only be
+ 	reserved in the global namespace
+
 	* g++.old-deja/g++.pt/instantiate4.C: New test: -frepo does not
 	generate needed virtual table
 
