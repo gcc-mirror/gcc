@@ -276,11 +276,15 @@ namespace std {
     // Turn off sync with C FILE* for cin, cout, cerr, clog.
     if (!__sync && __retval)
       {
+	// Need to dispose of the buffers created at initialization.
+	__ioinit._M_cout->~filebuf();
+	__ioinit._M_cin->~filebuf();
+	__ioinit._M_cerr->~filebuf();
 	__ioinit._M_cout = new filebuf();
-	__ioinit._M_cout->open("stdout", ios_base::out);
 	__ioinit._M_cin = new filebuf();
-	__ioinit._M_cin->open("stdin", ios_base::in);
 	__ioinit._M_cerr = new filebuf();
+	__ioinit._M_cout->open("stdout", ios_base::out);
+	__ioinit._M_cin->open("stdin", ios_base::in);
 	__ioinit._M_cerr->open("stderr", ios_base::out);
 	cout.rdbuf(__ioinit._M_cout);
 	cin.rdbuf(__ioinit._M_cin);
@@ -288,12 +292,15 @@ namespace std {
 	cerr.flags(ios_base::unitbuf);
 	clog.rdbuf(__ioinit._M_cerr);
 #ifdef _GLIBCPP_USE_WCHAR_T
+	__ioinit._M_wcout->~wfilebuf();
+	__ioinit._M_wcin->~wfilebuf();
+	__ioinit._M_wcerr->~wfilebuf();
 	__ioinit._M_wcout = new wfilebuf();
-	__ioinit._M_wcout->open("stdout", ios_base::out);
 	__ioinit._M_wcin = new wfilebuf();
-	__ioinit._M_wcin->open("stdin", ios_base::in);
 	__ioinit._M_wcerr = new wfilebuf();
-	__ioinit._M_wcerr->open("stderr", ios_base::out);
+	__ioinit._M_wcout->open("wstdout", ios_base::out);
+	__ioinit._M_wcin->open("wstdin", ios_base::in);
+	__ioinit._M_wcerr->open("wstderr", ios_base::out);
 	wcout.rdbuf(__ioinit._M_wcout);
 	wcin.rdbuf(__ioinit._M_wcin);
 	wcerr.rdbuf(__ioinit._M_wcerr);
