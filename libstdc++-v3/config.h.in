@@ -261,9 +261,6 @@
 /* Define if you have the asinl function.  */
 #undef HAVE_ASINL
 
-/* Define if you have the atan2f function.  */
-#undef HAVE_ATAN2F
-
 /* Define if you have the atan2l function.  */
 #undef HAVE_ATAN2L
 
@@ -305,9 +302,6 @@
 
 /* Define if you have the drand48 function.  */
 #undef HAVE_DRAND48
-
-/* Define if you have the expf function.  */
-#undef HAVE_EXPF
 
 /* Define if you have the expl function.  */
 #undef HAVE_EXPL

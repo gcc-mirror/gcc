@@ -28,7 +28,7 @@
    the GNU General Public License.  */
 
 #include <math.h>
-#include <bits/c++config.h>
+#include <config.h>
 
 #ifndef _GLIBCPP_HAVE_ATAN2F
 float

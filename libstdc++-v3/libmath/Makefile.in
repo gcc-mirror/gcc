@@ -65,20 +65,30 @@ target_alias = @target_alias@
 target_triplet = @target@
 AR = @AR@
 AS = @AS@
+ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
+BASIC_FILE_H = @BASIC_FILE_H@
 CC = @CC@
+CCODECVT_C = @CCODECVT_C@
+CLOCALE_H = @CLOCALE_H@
 CPP = @CPP@
 CSHADOW_FLAGS = @CSHADOW_FLAGS@
-CSTD_INCLUDES = @CSTD_INCLUDES@
+CSTDIO_H = @CSTDIO_H@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
+GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
+LIBIO_INCLUDES = @LIBIO_INCLUDES@
 LIBMATHOBJS = @LIBMATHOBJS@
+LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSTRINGOBJS = @LIBSTRINGOBJS@
+LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
@@ -88,6 +98,7 @@ OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 OPT_LDFLAGS = @OPT_LDFLAGS@
+OS_INC_SRCDIR = @OS_INC_SRCDIR@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
@@ -104,6 +115,7 @@ glibcpp_basedir = @glibcpp_basedir@
 glibcpp_builddir = @glibcpp_builddir@
 glibcpp_prefixdir = @glibcpp_prefixdir@
 glibcpp_srcdir = @glibcpp_srcdir@
+glibcpp_thread_h = @glibcpp_thread_h@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
@@ -117,13 +129,18 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 noinst_LTLIBRARIES = libmath.la
 
-EXTRA_LONG_DOUBLE_yes =  	hypotl.c signbitl.c
+EXTRA_LONG_DOUBLE_yes = \
+	hypotl.c signbitl.c
 
 
-EXTRA_DIST =  	hypot.c hypotf.c $(EXTRA_LONG_DOUBLE_yes) 
+EXTRA_DIST = \
+	hypot.c hypotf.c \
+	$(EXTRA_LONG_DOUBLE_yes) 
 
 
-libmath_la_LIBADD =  	@LIBMATHOBJS@ 	$(EXTRA_LONG_DOUBLE_$(USE_COMPLEX_LONG_DOUBLE)) 
+libmath_la_LIBADD = \
+	@LIBMATHOBJS@ \
+	$(EXTRA_LONG_DOUBLE_$(USE_COMPLEX_LONG_DOUBLE)) 
 
 
 libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
@@ -133,15 +150,10 @@ libmath_la_SOURCES = signbit.c signbitf.c stubs.c
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
-GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@
-C_INCLUDE_DIR = @C_INCLUDE_DIR@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
-LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
-LIBIO_INCLUDES = @LIBIO_INCLUDES@
-CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
-INCLUDES =  	-I$(GLIBCPP_INCLUDE_DIR) -I$(top_builddir)/include  	$(TOPLEVEL_INCLUDES) 
+INCLUDES = \
+	$(TOPLEVEL_INCLUDES) 
 
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

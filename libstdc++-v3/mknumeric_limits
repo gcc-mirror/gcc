@@ -54,7 +54,7 @@ CC=${CC="$BUILD_DIR/../../gcc/xgcc -B$BUILD_DIR/../../gcc/"}
 cat <<EOF > $OUT_H-t
 // The template and inlines for the -*- C++ -*- numeric_limits classes.
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999-2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -257,10 +257,10 @@ EOF
 
 # Must turn off exceptions, because the C++ exception handling support
 # routines have not been built yet.
-echo "$CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H -fno-exceptions \
+echo "$CC -I$BUILD_DIR -fno-exceptions \
     -o $BUILD_DIR/src/gen-num-limits $SRC_DIR/src/gen-num-limits.cc"
 
-{ $CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H -fno-exceptions \
+{ $CC -I$BUILD_DIR -fno-exceptions \
     -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc"
 } || {
   echo "gen-num-limits failed to build, exiting."
