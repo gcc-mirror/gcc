@@ -714,7 +714,7 @@ get_frame_alias_set ()
 
 static rtx
 find_base_value (src)
-     register rtx src;
+     rtx src;
 {
   unsigned int regno;
   switch (GET_CODE (src))
@@ -846,7 +846,7 @@ record_set (dest, set, data)
      rtx dest, set;
      void *data ATTRIBUTE_UNUSED;
 {
-  register unsigned regno;
+  unsigned regno;
   rtx src;
 
   if (GET_CODE (dest) != REG)
@@ -1020,10 +1020,10 @@ static int
 rtx_equal_for_memref_p (x, y)
      rtx x, y;
 {
-  register int i;
-  register int j;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  int j;
+  enum rtx_code code;
+  const char *fmt;
 
   if (x == 0 && y == 0)
     return 1;
@@ -1149,9 +1149,9 @@ static rtx
 find_symbolic_term (x)
      rtx x;
 {
-  register int i;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  enum rtx_code code;
+  const char *fmt;
 
   code = GET_CODE (x);
   if (code == SYMBOL_REF || code == LABEL_REF)
@@ -1178,7 +1178,7 @@ find_symbolic_term (x)
 
 static rtx
 find_base_term (x)
-     register rtx x;
+     rtx x;
 {
   cselib_val *val;
   struct elt_loc_list *l;
@@ -1452,7 +1452,7 @@ addr_side_effect_eval (addr, size, n_refs)
 
 static int
 memrefs_conflict_p (xsize, x, ysize, y, c)
-     register rtx x, y;
+     rtx x, y;
      int xsize, ysize;
      HOST_WIDE_INT c;
 {
@@ -1737,7 +1737,7 @@ true_dependence (mem, mem_mode, x, varies)
      rtx x;
      int (*varies) PARAMS ((rtx, int));
 {
-  register rtx x_addr, mem_addr;
+  rtx x_addr, mem_addr;
   rtx base;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
@@ -1810,7 +1810,7 @@ canon_true_dependence (mem, mem_mode, mem_addr, x, varies)
      enum machine_mode mem_mode;
      int (*varies) PARAMS ((rtx, int));
 {
-  register rtx x_addr;
+  rtx x_addr;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
@@ -1929,8 +1929,8 @@ anti_dependence (mem, x)
 
 int
 output_dependence (mem, x)
-     register rtx mem;
-     register rtx x;
+     rtx mem;
+     rtx x;
 {
   return write_dependence_p (mem, x, /*writep=*/1);
 }
@@ -1943,7 +1943,7 @@ nonlocal_mentioned_p (x)
      rtx x;
 {
   rtx base;
-  register RTX_CODE code;
+  RTX_CODE code;
   int regno;
 
   code = GET_CODE (x);
@@ -2047,8 +2047,8 @@ nonlocal_mentioned_p (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register const char *fmt = GET_RTX_FORMAT (code);
-    register int i;
+    const char *fmt = GET_RTX_FORMAT (code);
+    int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
       {
@@ -2059,7 +2059,7 @@ nonlocal_mentioned_p (x)
 	  }
 	else if (fmt[i] == 'E')
 	  {
-	    register int j;
+	    int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      if (nonlocal_mentioned_p (XVECEXP (x, i, j)))
 		return 1;
@@ -2116,7 +2116,7 @@ static HARD_REG_SET argument_registers;
 void
 init_alias_once ()
 {
-  register int i;
+  int i;
 
 #ifndef OUTGOING_REGNO
 #define OUTGOING_REGNO(N) N
@@ -2140,9 +2140,9 @@ init_alias_analysis ()
 {
   int maxreg = max_reg_num ();
   int changed, pass;
-  register int i;
-  register unsigned int ui;
-  register rtx insn;
+  int i;
+  unsigned int ui;
+  rtx insn;
 
   reg_known_value_size = maxreg;
 

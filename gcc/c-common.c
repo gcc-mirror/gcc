@@ -510,8 +510,8 @@ tree
 combine_strings (strings)
      tree strings;
 {
-  register tree value, t;
-  register int length = 1;
+  tree value, t;
+  int length = 1;
   int wide_length = 0;
   int wide_flag = 0;
   int wchar_bytes = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
@@ -521,7 +521,7 @@ combine_strings (strings)
   if (TREE_CHAIN (strings))
     {
       /* More than one in the chain, so concatenate.  */
-      register char *p, *q;
+      char *p, *q;
 
       /* Don't include the \0 at the end of each substring,
 	 except for the last one.
@@ -1502,7 +1502,7 @@ void
 binary_op_error (code)
      enum tree_code code;
 {
-  register const char *opname;
+  const char *opname;
 
   switch (code)
     {
@@ -1581,7 +1581,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
      tree *restype_ptr;
      enum tree_code *rescode_ptr;
 {
-  register tree type;
+  tree type;
   tree op0 = *op0_ptr;
   tree op1 = *op1_ptr;
   int unsignedp0, unsignedp1;
@@ -1614,8 +1614,8 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
   if (TREE_CONSTANT (primop0)
       && ! integer_zerop (primop1) && ! real_zerop (primop1))
     {
-      register tree tem = primop0;
-      register int temi = unsignedp0;
+      tree tem = primop0;
+      int temi = unsignedp0;
       primop0 = primop1;
       primop1 = tem;
       tem = op0;
@@ -2836,10 +2836,10 @@ int
 self_promoting_args_p (parms)
      tree parms;
 {
-  register tree t;
+  tree t;
   for (t = parms; t; t = TREE_CHAIN (t))
     {
-      register tree type = TREE_VALUE (t);
+      tree type = TREE_VALUE (t);
 
       if (TREE_CHAIN (t) == 0 && type != void_type_node)
 	return 0;

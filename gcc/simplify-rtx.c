@@ -488,8 +488,8 @@ simplify_unary_operation (code, mode, op, op_mode)
   if (GET_CODE (trueop) == CONST_INT
       && width <= HOST_BITS_PER_WIDE_INT && width > 0)
     {
-      register HOST_WIDE_INT arg0 = INTVAL (trueop);
-      register HOST_WIDE_INT val;
+      HOST_WIDE_INT arg0 = INTVAL (trueop);
+      HOST_WIDE_INT val;
 
       switch (code)
 	{
@@ -859,7 +859,7 @@ simplify_binary_operation (code, mode, op0, op1)
      enum machine_mode mode;
      rtx op0, op1;
 {
-  register HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
+  HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
   HOST_WIDE_INT val;
   unsigned int width = GET_MODE_BITSIZE (mode);
   rtx tem;

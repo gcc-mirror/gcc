@@ -45,7 +45,7 @@ static void
 free_list (listp, unused_listp)
      rtx *listp, *unused_listp;
 {
-  register rtx link, prev_link;
+  rtx link, prev_link;
 
   prev_link = *listp;
   link = XEXP (prev_link, 1);

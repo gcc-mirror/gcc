@@ -91,7 +91,7 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 									      \
       for (i = 0; i < thissize; i++)					      \
 	{								      \
-	  register int c = p[i];					      \
+	  int c = p[i];			   				      \
 	  if (c == '\"' || c == '\\')					      \
 	    putc ('\\', asm_out_file);					      \
 	  if (ISPRINT(c))						      \

@@ -61,8 +61,8 @@ tree
 convert (type, expr)
      tree type, expr;
 {
-  register tree e = expr;
-  register enum tree_code code = TREE_CODE (type);
+  tree e = expr;
+  enum tree_code code = TREE_CODE (type);
 
   if (type == TREE_TYPE (expr)
       || TREE_CODE (expr) == ERROR_MARK

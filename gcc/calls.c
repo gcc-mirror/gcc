@@ -256,7 +256,7 @@ calls_function_1 (exp, which)
      tree exp;
      int which;
 {
-  register int i;
+  int i;
   enum tree_code code = TREE_CODE (exp);
   int class = TREE_CODE_CLASS (code);
   int length = first_rtl_op (code);
@@ -308,8 +308,8 @@ calls_function_1 (exp, which)
 
     case BLOCK:
       {
-	register tree local;
-	register tree subblock;
+	tree local;
+	tree subblock;
 
 	for (local = BLOCK_VARS (exp); local; local = TREE_CHAIN (local))
 	  if (DECL_INITIAL (local) != 0
@@ -2156,8 +2156,8 @@ expand_call (exp, target, ignore)
   int old_inhibit_defer_pop = inhibit_defer_pop;
   int old_stack_allocated;
   rtx call_fusage;
-  register tree p = TREE_OPERAND (exp, 0);
-  register int i;
+  tree p = TREE_OPERAND (exp, 0);
+  int i;
   /* The alignment of the stack, in bits.  */
   HOST_WIDE_INT preferred_stack_boundary;
   /* The alignment of the stack, in bytes.  */
@@ -3461,7 +3461,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   struct args_size args_size;
   /* Size of arguments before any adjustments (such as rounding).  */
   struct args_size original_args_size;
-  register int argnum;
+  int argnum;
   rtx fun;
   int inc;
   int count;
@@ -3912,8 +3912,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum += inc)
     {
-      register enum machine_mode mode = argvec[argnum].mode;
-      register rtx val = argvec[argnum].value;
+      enum machine_mode mode = argvec[argnum].mode;
+      rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
       int lower_bound = 0, upper_bound = 0, i;
@@ -3995,7 +3995,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum += inc)
     {
-      register rtx val = argvec[argnum].value;
+      rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
 
@@ -4200,9 +4200,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
    and machine_modes to convert them to.
    The rtx values should have been passed through protect_from_queue already.
 
-   FN_TYPE will is zero for `normal' calls, one for `const' calls, wich
-   which will be enclosed in REG_LIBCALL/REG_RETVAL notes and two for `pure'
-   calls, that are handled like `const' calls with extra
+   FN_TYPE will be zero for `normal' calls, one for `const' calls,
+   which will be enclosed in REG_LIBCALL/REG_RETVAL notes, and two for
+   `pure' calls, that are handled like `const' calls with extra
    (use (memory (scratch)).  */
 
 void
@@ -4315,7 +4315,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
      int variable_size ATTRIBUTE_UNUSED;
      int reg_parm_stack_space;
 {
-  register tree pval = arg->tree_value;
+  tree pval = arg->tree_value;
   rtx reg = 0;
   int partial = 0;
   int used = 0;
@@ -4475,7 +4475,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
     }
   else if (arg->mode != BLKmode)
     {
-      register int size;
+      int size;
 
       /* Argument is a scalar, not entirely passed in registers.
 	 (If part is passed in registers, arg->partial says how much
@@ -4514,7 +4514,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
     {
       /* BLKmode, at least partly to be pushed.  */
 
-      register int excess;
+      int excess;
       rtx size_rtx;
 
       /* Pushing a nonscalar.

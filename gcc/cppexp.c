@@ -572,7 +572,7 @@ _cpp_parse_expr (pfile)
   struct op init_stack[INIT_STACK_SIZE];
   struct op *stack = init_stack;
   struct op *limit = stack + INIT_STACK_SIZE;
-  register struct op *top = stack + 1;
+  struct op *top = stack + 1;
   int skip_evaluation = 0;
   int result;
   unsigned int lex_count, saw_leading_not;

@@ -196,14 +196,14 @@ next_insn_no_annul (insn)
 
 void
 mark_referenced_resources (x, res, include_delayed_effects)
-     register rtx x;
-     register struct resources *res;
-     register int include_delayed_effects;
+     rtx x;
+     struct resources *res;
+     int include_delayed_effects;
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
   unsigned int r;
-  register const char *format_ptr;
+  const char *format_ptr;
 
   /* Handle leaf items for which we set resource flags.  Also, special-case
      CALL, SET and CLOBBER operators.  */
@@ -623,8 +623,8 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 
 void
 mark_set_resources (x, res, in_dest, mark_type)
-     register rtx x;
-     register struct resources *res;
+     rtx x;
+     struct resources *res;
      int in_dest;
      enum mark_resource_type mark_type;
 {

@@ -416,7 +416,7 @@ life_analysis (f, file, flags)
      int flags;
 {
 #ifdef ELIMINABLE_REGS
-  register int i;
+  int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
 
@@ -1273,7 +1273,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 void
 allocate_bb_life_data ()
 {
-  register int i;
+  int i;
 
   for (i = 0; i < n_basic_blocks; i++)
     {
@@ -1452,7 +1452,7 @@ propagate_one_insn (pbi, insn)
      a following memory address.  */
 #ifdef AUTO_INC_DEC
   {
-    register rtx x = single_set (insn);
+    rtx x = single_set (insn);
 
     /* Does this instruction increment or decrement a register?  */
     if ((flags & PROP_AUTOINC)
@@ -1510,7 +1510,7 @@ propagate_one_insn (pbi, insn)
 
       if (GET_CODE (insn) == CALL_INSN)
 	{
-	  register int i;
+	  int i;
 	  rtx note, cond;
 
 	  cond = NULL_RTX;
@@ -1560,7 +1560,7 @@ propagate_one_insn (pbi, insn)
 
       if (! insn_is_dead && GET_CODE (insn) == CALL_INSN)
 	{
-	  register int i;
+	  int i;
 	  rtx note, cond;
 
 	  cond = NULL_RTX;
@@ -1815,7 +1815,7 @@ propagate_block (bb, live, local_set, cond_local_set, flags)
 
   if (flags & PROP_REG_INFO)
     {
-      register int i;
+      int i;
 
       /* Process the regs live at the end of the block.
 	 Mark them as not local to any one basic block.  */
@@ -2062,13 +2062,13 @@ libcall_dead_p (pbi, note, insn)
 
   if (x)
     {
-      register rtx r = SET_SRC (x);
+      rtx r = SET_SRC (x);
 
       if (GET_CODE (r) == REG)
 	{
 	  rtx call = XEXP (note, 0);
 	  rtx call_pat;
-	  register int i;
+	  int i;
 
 	  /* Find the call insn.  */
 	  while (call != insn && GET_CODE (call) != CALL_INSN)
@@ -2271,7 +2271,8 @@ mark_set_regs (pbi, x, insn)
 
     case PARALLEL:
       {
-	register int i;
+	int i;
+
 	for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	  {
 	    rtx sub = XVECEXP (x, 0, i);
@@ -2486,8 +2487,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
       if (flags & (PROP_LOG_LINKS | PROP_REG_INFO
 		   | PROP_DEATH_NOTES | PROP_AUTOINC))
 	{
-	  register rtx y;
-	  register int blocknum = pbi->bb->index;
+	  rtx y;
+	  int blocknum = pbi->bb->index;
 
 	  y = NULL_RTX;
 	  if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
@@ -3331,7 +3332,7 @@ mark_used_reg (pbi, reg, cond, insn)
 	{
 	  /* Keep track of which basic block each reg appears in.  */
 
-	  register int blocknum = pbi->bb->index;
+	  int blocknum = pbi->bb->index;
 	  if (REG_BASIC_BLOCK (regno_first) == REG_BLOCK_UNKNOWN)
 	    REG_BASIC_BLOCK (regno_first) = blocknum;
 	  else if (REG_BASIC_BLOCK (regno_first) != blocknum)
@@ -3463,8 +3464,8 @@ mark_used_regs (pbi, x, cond, insn)
      struct propagate_block_info *pbi;
      rtx x, cond, insn;
 {
-  register RTX_CODE code;
-  register int regno;
+  RTX_CODE code;
+  int regno;
   int flags = pbi->flags;
 
  retry:
@@ -3565,7 +3566,7 @@ mark_used_regs (pbi, x, cond, insn)
 
     case SET:
       {
-	register rtx testreg = SET_DEST (x);
+	rtx testreg = SET_DEST (x);
 	int mark_dest = 0;
 
 	/* If storing into MEM, don't show it as being used.  But do
@@ -3704,8 +3705,8 @@ mark_used_regs (pbi, x, cond, insn)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register const char * const fmt = GET_RTX_FORMAT (code);
-    register int i;
+    const char * const fmt = GET_RTX_FORMAT (code);
+    int i;
 
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
       {
@@ -3721,7 +3722,7 @@ mark_used_regs (pbi, x, cond, insn)
 	  }
 	else if (fmt[i] == 'E')
 	  {
-	    register int j;
+	    int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      mark_used_regs (pbi, XVECEXP (x, i, j), cond, insn);
 	  }
@@ -3784,7 +3785,7 @@ try_pre_increment (insn, reg, amount)
      rtx insn, reg;
      HOST_WIDE_INT amount;
 {
-  register rtx use;
+  rtx use;
 
   /* Nonzero if we can try to make a pre-increment or pre-decrement.
      For example, addl $4,r1; movl (r1),... can become movl +(r1),...  */
@@ -3861,15 +3862,15 @@ try_pre_increment (insn, reg, amount)
 
 rtx
 find_use_as_address (x, reg, plusconst)
-     register rtx x;
+     rtx x;
      rtx reg;
      HOST_WIDE_INT plusconst;
 {
   enum rtx_code code = GET_CODE (x);
   const char * const fmt = GET_RTX_FORMAT (code);
-  register int i;
-  register rtx value = 0;
-  register rtx tem;
+  int i;
+  rtx value = 0;
+  rtx tem;
 
   if (code == MEM && XEXP (x, 0) == reg && plusconst == 0)
     return x;
@@ -3903,7 +3904,7 @@ find_use_as_address (x, reg, plusconst)
 	}
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    {
 	      tem = find_use_as_address (XVECEXP (x, i, j), reg, plusconst);

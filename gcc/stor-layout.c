@@ -198,7 +198,7 @@ mode_for_size (size, class, limit)
      enum mode_class class;
      int limit;
 {
-  register enum machine_mode mode;
+  enum machine_mode mode;
 
   if (limit && size > MAX_FIXED_MODE_SIZE)
     return BLKmode;
@@ -238,7 +238,7 @@ smallest_mode_for_size (size, class)
      unsigned int size;
      enum mode_class class;
 {
-  register enum machine_mode mode;
+  enum machine_mode mode;
 
   /* Get the first mode which has at least this size, in the
      specified class.  */
@@ -327,8 +327,8 @@ layout_decl (decl, known_align)
      tree decl;
      unsigned int known_align;
 {
-  register tree type = TREE_TYPE (decl);
-  register enum tree_code code = TREE_CODE (decl);
+  tree type = TREE_TYPE (decl);
+  enum tree_code code = TREE_CODE (decl);
 
   if (code == CONST_DECL)
     return;
@@ -396,7 +396,7 @@ layout_decl (decl, known_align)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
       && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
     {
-      register enum machine_mode xmode
+      enum machine_mode xmode
 	= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
 
       if (xmode != BLKmode && known_align >= GET_MODE_ALIGNMENT (xmode))
@@ -1390,8 +1390,8 @@ layout_type (type)
 
     case ARRAY_TYPE:
       {
-	register tree index = TYPE_DOMAIN (type);
-	register tree element = TREE_TYPE (type);
+	tree index = TYPE_DOMAIN (type);
+	tree element = TREE_TYPE (type);
 
 	build_pointer_type (element);
 
@@ -1596,7 +1596,7 @@ tree
 make_signed_type (precision)
      int precision;
 {
-  register tree type = make_node (INTEGER_TYPE);
+  tree type = make_node (INTEGER_TYPE);
 
   TYPE_PRECISION (type) = precision;
 
@@ -1610,7 +1610,7 @@ tree
 make_unsigned_type (precision)
      int precision;
 {
-  register tree type = make_node (INTEGER_TYPE);
+  tree type = make_node (INTEGER_TYPE);
 
   TYPE_PRECISION (type) = precision;
 
@@ -1741,7 +1741,7 @@ void
 fixup_signed_type (type)
      tree type;
 {
-  register int precision = TYPE_PRECISION (type);
+  int precision = TYPE_PRECISION (type);
 
   TYPE_MIN_VALUE (type)
     = build_int_2 ((precision - HOST_BITS_PER_WIDE_INT > 0
@@ -1773,7 +1773,7 @@ void
 fixup_unsigned_type (type)
      tree type;
 {
-  register int precision = TYPE_PRECISION (type);
+  int precision = TYPE_PRECISION (type);
 
   TYPE_MIN_VALUE (type) = build_int_2 (0, 0);
   TYPE_MAX_VALUE (type)

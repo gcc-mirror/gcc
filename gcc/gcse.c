@@ -1798,9 +1798,9 @@ static int
 expr_equiv_p (x, y)
      rtx x, y;
 {
-  register int i, j;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
 
   if (x == y)
     return 1;

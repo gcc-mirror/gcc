@@ -1410,7 +1410,7 @@ print_rtl_with_bb (outf, rtx_first)
      FILE *outf;
      rtx rtx_first;
 {
-  register rtx tmp_rtx;
+  rtx tmp_rtx;
 
   if (rtx_first == 0)
     fprintf (outf, "(nil)\n");

@@ -1040,7 +1040,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
 	 as a placeholder.  */
 
       {
-        register rtx original_before_jump
+        rtx original_before_jump
           = last_insn ? last_insn : get_last_insn ();
 	rtx start;
 	rtx end;
@@ -1118,7 +1118,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
      rtx first_insn;
      int dont_jump_in;
 {
-  register struct goto_fixup *f, *prev;
+  struct goto_fixup *f, *prev;
 
   /* F is the fixup we are considering; PREV is the previous one.  */
   /* We run this loop in two passes so that cleanups of exited blocks
@@ -1138,7 +1138,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	 If so, we can finalize it.  */
       else if (PREV_INSN (f->target_rtl) != 0)
 	{
-	  register rtx cleanup_insns;
+	  rtx cleanup_insns;
 
 	  /* If this fixup jumped into this contour from before the beginning
 	     of this contour, report an error.   This code used to use
@@ -1485,7 +1485,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   int ninout = 0;
   int nclobbers;
   tree tail;
-  register int i;
+  int i;
   /* Vector of RTX's of evaluated output operands.  */
   rtx *output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
   int *inout_opnum = (int *) alloca (noutputs * sizeof (int));
@@ -2333,7 +2333,7 @@ struct nesting *
 expand_start_loop (exit_flag)
      int exit_flag;
 {
-  register struct nesting *thisloop = ALLOC_NESTING ();
+  struct nesting *thisloop = ALLOC_NESTING ();
 
   /* Make an entry on loop_stack for the loop we are entering.  */
 
@@ -2374,7 +2374,7 @@ expand_start_loop_continue_elsewhere (exit_flag)
 struct nesting *
 expand_start_null_loop ()
 {
-  register struct nesting *thisloop = ALLOC_NESTING ();
+  struct nesting *thisloop = ALLOC_NESTING ();
 
   /* Make an entry on loop_stack for the loop we are entering.  */
 
@@ -2655,8 +2655,8 @@ expand_end_loop ()
 	  /* We found one.  Move everything from there up
 	     to the end of the loop, and add a jump into the loop
 	     to jump to there.  */
-	  register rtx newstart_label = gen_label_rtx ();
-	  register rtx start_move = start_label;
+	  rtx newstart_label = gen_label_rtx ();
+	  rtx start_move = start_label;
 	  rtx next_insn;
 
 	  /* If the start label is preceded by a NOTE_INSN_LOOP_CONT note,
@@ -2945,7 +2945,7 @@ expand_return (retval)
      computation of the return value.  */
   rtx last_insn = 0;
   rtx result_rtl;
-  register rtx val = 0;
+  rtx val = 0;
   tree retval_rhs;
 
   /* If function wants no value, give it none.  */
@@ -3197,9 +3197,9 @@ static int
 tail_recursion_args (actuals, formals)
      tree actuals, formals;
 {
-  register tree a = actuals, f = formals;
-  register int i;
-  register rtx *argvec;
+  tree a = actuals, f = formals;
+  int i;
+  rtx *argvec;
 
   /* Check that number and types of actuals are compatible
      with the formals.  This is not always true in valid C code.
@@ -3232,7 +3232,7 @@ tail_recursion_args (actuals, formals)
   for (a = actuals, i = 0; a; a = TREE_CHAIN (a), i++)
     {
       int copy = 0;
-      register int j;
+      int j;
       for (f = formals, j = 0; j < i; f = TREE_CHAIN (f), j++)
 	if (reg_mentioned_p (DECL_RTL (f), argvec[i]))
 	  {
@@ -3387,7 +3387,7 @@ expand_end_target_temps ()
 
 int
 is_body_block (stmt)
-     register tree stmt;
+     tree stmt;
 {
   if (TREE_CODE (stmt) == BLOCK)
     {
@@ -3619,7 +3619,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      int mark_ends;
      int dont_jump_in;
 {
-  register struct nesting *thisblock = block_stack;
+  struct nesting *thisblock = block_stack;
 
   /* If any of the variables in this scope were not used, warn the
      user.  */
@@ -3764,7 +3764,7 @@ save_stack_pointer ()
 
 void
 expand_decl (decl)
-     register tree decl;
+     tree decl;
 {
   struct nesting *thisblock;
   tree type;
@@ -4311,7 +4311,7 @@ expand_start_case (exit_flag, expr, type, printname)
      tree type;
      const char *printname;
 {
-  register struct nesting *thiscase = ALLOC_NESTING ();
+  struct nesting *thiscase = ALLOC_NESTING ();
 
   /* Make an entry on case_stack for the case we are entering.  */
 
@@ -4348,7 +4348,7 @@ expand_start_case (exit_flag, expr, type, printname)
 void
 expand_start_case_dummy ()
 {
-  register struct nesting *thiscase = ALLOC_NESTING ();
+  struct nesting *thiscase = ALLOC_NESTING ();
 
   /* Make an entry on case_stack for the dummy.  */
 
@@ -4439,9 +4439,9 @@ check_seenlabel ()
 
 int
 pushcase (value, converter, label, duplicate)
-     register tree value;
+     tree value;
      tree (*converter) PARAMS ((tree, tree));
-     register tree label;
+     tree label;
      tree *duplicate;
 {
   tree index_type;
@@ -4489,9 +4489,9 @@ pushcase (value, converter, label, duplicate)
 
 int
 pushcase_range (value1, value2, converter, label, duplicate)
-     register tree value1, value2;
+     tree value1, value2;
      tree (*converter) PARAMS ((tree, tree));
-     register tree label;
+     tree label;
      tree *duplicate;
 {
   tree index_type;
@@ -4882,7 +4882,7 @@ mark_seen_cases (type, cases_seen, count, sparseness)
   tree next_node_to_try = NULL_TREE;
   HOST_WIDE_INT next_node_offset = 0;
 
-  register struct case_node *n, *root = case_stack->data.case_stmt.case_list;
+  struct case_node *n, *root = case_stack->data.case_stmt.case_list;
   tree val = make_node (INTEGER_CST);
 
   TREE_TYPE (val) = type;
@@ -5011,8 +5011,8 @@ void
 check_for_full_enumeration_handling (type)
      tree type;
 {
-  register struct case_node *n;
-  register tree chain;
+  struct case_node *n;
+  tree chain;
 
   /* True iff the selector type is a numbered set mode.  */
   int sparseness = 0;
@@ -5138,15 +5138,15 @@ expand_end_case (orig_index)
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE, orig_minval;
   rtx default_label = 0;
-  register struct case_node *n;
+  struct case_node *n;
   unsigned int count;
   rtx index;
   rtx table_label;
   int ncases;
   rtx *labelvec;
-  register int i;
+  int i;
   rtx before_case, end;
-  register struct nesting *thiscase = case_stack;
+  struct nesting *thiscase = case_stack;
   tree index_expr, index_type;
   int unsignedp;
 
@@ -5366,7 +5366,7 @@ expand_end_case (orig_index)
 
 	  for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 	    {
-	      register HOST_WIDE_INT i
+	      HOST_WIDE_INT i
 		= TREE_INT_CST_LOW (n->low) - TREE_INT_CST_LOW (orig_minval);
 
 	      while (1)
@@ -5614,7 +5614,7 @@ balance_case_nodes (head, parent)
      case_node_ptr *head;
      case_node_ptr parent;
 {
-  register case_node_ptr np;
+  case_node_ptr np;
 
   np = *head;
   if (np)
@@ -5622,7 +5622,7 @@ balance_case_nodes (head, parent)
       int cost = 0;
       int i = 0;
       int ranges = 0;
-      register case_node_ptr *npp;
+      case_node_ptr *npp;
       case_node_ptr left;
 
       /* Count the number of entries on branch.  Also count the ranges.  */

@@ -170,9 +170,9 @@ finish_stmt_tree (t)
 tree
 build_stmt VPARAMS ((enum tree_code code, ...))
 {
-  register tree t;
-  register int length;
-  register int i;
+  tree t;
+  int length;
+  int i;
 
   VA_OPEN (p, code);
   VA_FIXEDARG (p, enum tree_code, code);

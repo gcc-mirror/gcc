@@ -273,8 +273,8 @@ static int
 stack_regs_mentioned_p (pat)
      rtx pat;
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (STACK_REG_P (pat))
     return 1;
@@ -284,7 +284,7 @@ stack_regs_mentioned_p (pat)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (pat, i) - 1; j >= 0; j--)
 	    if (stack_regs_mentioned_p (XVECEXP (pat, i, j)))
@@ -508,14 +508,14 @@ static void
 record_label_references (insn, pat)
      rtx insn, pat;
 {
-  register enum rtx_code code = GET_CODE (pat);
-  register int i;
-  register const char *fmt;
+  enum rtx_code code = GET_CODE (pat);
+  int i;
+  const char *fmt;
 
   if (code == LABEL_REF)
     {
-      register rtx label = XEXP (pat, 0);
-      register rtx ref;
+      rtx label = XEXP (pat, 0);
+      rtx ref;
 
       if (GET_CODE (label) != CODE_LABEL)
 	abort ();
@@ -547,7 +547,7 @@ record_label_references (insn, pat)
 	record_label_references (insn, XEXP (pat, i));
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (pat, i); j++)
 	    record_label_references (insn, XVECEXP (pat, i, j));
 	}
@@ -867,7 +867,7 @@ remove_regno_note (insn, note, regno)
      enum reg_note note;
      unsigned int regno;
 {
-  register rtx *note_link, this;
+  rtx *note_link, this;
 
   note_link = &REG_NOTES(insn);
   for (this = *note_link; this; this = XEXP (this, 1))
@@ -1206,8 +1206,8 @@ static int
 swap_rtx_condition_1 (pat)
      rtx pat;
 {
-  register const char *fmt;
-  register int i, r = 0;
+  const char *fmt;
+  int i, r = 0;
 
   if (GET_RTX_CLASS (GET_CODE (pat)) == '<')
     {
@@ -1221,7 +1221,7 @@ swap_rtx_condition_1 (pat)
 	{
 	  if (fmt[i] == 'E')
 	    {
-	      register int j;
+	      int j;
 
 	      for (j = XVECLEN (pat, i) - 1; j >= 0; j--)
 		r |= swap_rtx_condition_1 (XVECEXP (pat, i, j));
@@ -2155,8 +2155,8 @@ subst_stack_regs (insn, regstack)
      rtx insn;
      stack regstack;
 {
-  register rtx *note_link, note;
-  register int i;
+  rtx *note_link, note;
+  int i;
 
   if (GET_CODE (insn) == CALL_INSN)
     {

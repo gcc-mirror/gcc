@@ -71,13 +71,13 @@ trunc_int_for_mode (c, mode)
 
 rtx
 plus_constant_wide (x, c)
-     register rtx x;
-     register HOST_WIDE_INT c;
+     rtx x;
+     HOST_WIDE_INT c;
 {
-  register RTX_CODE code;
+  RTX_CODE code;
   rtx y;
-  register enum machine_mode mode;
-  register rtx tem;
+  enum machine_mode mode;
+  rtx tem;
   int all_constant = 0;
 
   if (c == 0)
@@ -202,7 +202,7 @@ eliminate_constant_term (x, constptr)
      rtx x;
      rtx *constptr;
 {
-  register rtx x0, x1;
+  rtx x0, x1;
   rtx tem;
 
   if (GET_CODE (x) != PLUS)
@@ -318,7 +318,7 @@ expr_size (exp)
 
 static rtx
 break_out_memory_refs (x)
-     register rtx x;
+     rtx x;
 {
   if (GET_CODE (x) == MEM
       || (CONSTANT_P (x) && CONSTANT_ADDRESS_P (x)
@@ -327,8 +327,8 @@ break_out_memory_refs (x)
   else if (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
 	   || GET_CODE (x) == MULT)
     {
-      register rtx op0 = break_out_memory_refs (XEXP (x, 0));
-      register rtx op1 = break_out_memory_refs (XEXP (x, 1));
+      rtx op0 = break_out_memory_refs (XEXP (x, 0));
+      rtx op1 = break_out_memory_refs (XEXP (x, 1));
 
       if (op0 != XEXP (x, 0) || op1 != XEXP (x, 1))
 	x = gen_rtx_fmt_ee (GET_CODE (x), Pmode, op0, op1);
@@ -433,7 +433,7 @@ convert_memory_address (to_mode, x)
 
 rtx
 copy_all_regs (x)
-     register rtx x;
+     rtx x;
 {
   if (GET_CODE (x) == REG)
     {
@@ -449,8 +449,8 @@ copy_all_regs (x)
   else if (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
 	   || GET_CODE (x) == MULT)
     {
-      register rtx op0 = copy_all_regs (XEXP (x, 0));
-      register rtx op1 = copy_all_regs (XEXP (x, 1));
+      rtx op0 = copy_all_regs (XEXP (x, 0));
+      rtx op1 = copy_all_regs (XEXP (x, 1));
       if (op0 != XEXP (x, 0) || op1 != XEXP (x, 1))
 	x = gen_rtx_fmt_ee (GET_CODE (x), Pmode, op0, op1);
     }
@@ -464,9 +464,9 @@ copy_all_regs (x)
 rtx
 memory_address (mode, x)
      enum machine_mode mode;
-     register rtx x;
+     rtx x;
 {
-  register rtx oldx = x;
+  rtx oldx = x;
 
   if (GET_CODE (x) == ADDRESSOF)
     return x;
@@ -667,7 +667,7 @@ rtx
 copy_to_reg (x)
      rtx x;
 {
-  register rtx temp = gen_reg_rtx (GET_MODE (x));
+  rtx temp = gen_reg_rtx (GET_MODE (x));
  
   /* If not an operand, must be an address with PLUS and MULT so
      do the computation.  */ 
@@ -698,7 +698,7 @@ copy_to_mode_reg (mode, x)
      enum machine_mode mode;
      rtx x;
 {
-  register rtx temp = gen_reg_rtx (mode);
+  rtx temp = gen_reg_rtx (mode);
   
   /* If not an operand, must be an address with PLUS and MULT so
      do the computation.  */ 
@@ -725,7 +725,7 @@ force_reg (mode, x)
      enum machine_mode mode;
      rtx x;
 {
-  register rtx temp, insn, set;
+  rtx temp, insn, set;
 
   if (GET_CODE (x) == REG)
     return x;
@@ -761,7 +761,7 @@ rtx
 force_not_mem (x)
      rtx x;
 {
-  register rtx temp;
+  rtx temp;
 
   if (GET_CODE (x) != MEM || GET_MODE (x) == BLKmode)
     return x;
@@ -780,7 +780,7 @@ copy_to_suggested_reg (x, target, mode)
      rtx x, target;
      enum machine_mode mode;
 {
-  register rtx temp;
+  rtx temp;
 
   if (target && GET_CODE (target) == REG)
     temp = target;

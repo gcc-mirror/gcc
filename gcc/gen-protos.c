@@ -69,7 +69,7 @@ parse_fn_proto (start, end, fn)
      char *start, *end;
      struct fn_decl *fn;
 {
-  register char *ptr;
+  char *ptr;
   int param_nesting = 1;
   char *param_start, *param_end, *decl_start, *name_start, *name_end;
 

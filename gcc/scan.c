@@ -45,8 +45,9 @@ sstring_append (dst, src)
      sstring *dst;
      sstring *src;
 {
-  register char *d, *s;
-  register int count = SSTRING_LENGTH(src);
+  char *d, *s;
+  int count = SSTRING_LENGTH(src);
+
   MAKE_SSTRING_SPACE(dst, count + 1);
   d = dst->ptr;
   s = src->base;
@@ -57,8 +58,8 @@ sstring_append (dst, src)
 
 int
 scan_ident (fp, s, c)
-     register FILE *fp;
-     register sstring *s;
+     FILE *fp;
+     sstring *s;
      int c;
 {
   s->ptr = s->base;
@@ -79,11 +80,12 @@ scan_ident (fp, s, c)
 
 int
 scan_string (fp, s, init)
-     register FILE *fp;
-     register sstring *s;
+     FILE *fp;
+     sstring *s;
      int init;
 {
   int c;
+
   for (;;)
     {
       c = getc (fp);
@@ -113,7 +115,7 @@ scan_string (fp, s, init)
 
 int
 skip_spaces (fp, c)
-     register FILE *fp;
+     FILE *fp;
      int c;
 {
   for (;;)
@@ -156,6 +158,7 @@ read_upto (fp, str, delim)
      int delim;
 {
   int ch;
+
   for (;;)
     {
       ch = getc (fp);
@@ -170,10 +173,11 @@ read_upto (fp, str, delim)
 
 int
 get_token (fp, s)
-     register FILE *fp;
-     register sstring *s;
+     FILE *fp;
+     sstring *s;
 {
   int c;
+
   s->ptr = s->base;
  retry:
   c = ' ';

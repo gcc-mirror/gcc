@@ -1186,7 +1186,7 @@ df_uses_record (df, loc, ref_type, bb, insn)
 
   /* Recursively scan the operands of this expression.  */
   {
-    register const char *fmt = GET_RTX_FORMAT (code);
+    const char *fmt = GET_RTX_FORMAT (code);
     int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)

@@ -72,10 +72,10 @@ static void
 max_operand_1 (x)
      rtx x;
 {
-  register RTX_CODE code;
-  register int i;
-  register int len;
-  register const char *fmt;
+  RTX_CODE code;
+  int i;
+  int len;
+  const char *fmt;
 
   if (x == 0)
     return;
@@ -114,8 +114,8 @@ max_operand_vec (insn, arg)
      rtx insn;
      int arg;
 {
-  register int len = XVECLEN (insn, arg);
-  register int i;
+  int len = XVECLEN (insn, arg);
+  int i;
 
   max_opno = -1;
   max_dup_opno = -1;
@@ -131,7 +131,7 @@ static void
 print_code (code)
      RTX_CODE code;
 {
-  register const char *p1;
+  const char *p1;
   for (p1 = GET_RTX_NAME (code); *p1; p1++)
     putchar (TOUPPER(*p1));
 }
@@ -159,10 +159,10 @@ gen_exp (x, subroutine_type)
      rtx x;
      enum rtx_code subroutine_type;
 {
-  register RTX_CODE code;
-  register int i;
-  register int len;
-  register const char *fmt;
+  RTX_CODE code;
+  int i;
+  int len;
+  const char *fmt;
 
   if (x == 0)
     {
@@ -291,7 +291,7 @@ gen_insn (insn)
      rtx insn;
 {
   int operands;
-  register int i;
+  int i;
 
   /* See if the pattern for this insn ends with a group of CLOBBERs of (hard)
      registers or MATCH_SCRATCHes.  If so, store away the information for
@@ -314,10 +314,10 @@ gen_insn (insn)
 
       if (i != XVECLEN (insn, 1) - 1)
 	{
-	  register struct clobber_pat *p;
-	  register struct clobber_ent *link
+	  struct clobber_pat *p;
+	  struct clobber_ent *link
 	    = (struct clobber_ent *) xmalloc (sizeof (struct clobber_ent));
-	  register int j;
+	  int j;
 
 	  link->code_number = insn_code_number;
 
@@ -421,7 +421,7 @@ gen_expand (expand)
      rtx expand;
 {
   int operands;
-  register int i;
+  int i;
 
   if (strlen (XSTR (expand, 0)) == 0)
     fatal ("define_expand lacks a name");
@@ -556,7 +556,7 @@ static void
 gen_split (split)
      rtx split;
 {
-  register int i;
+  int i;
   int operands;
   const char *const name =
     ((GET_CODE (split) == DEFINE_PEEPHOLE2) ? "peephole2" : "split");

@@ -328,7 +328,7 @@ static int do_block = 0;
 
 static void
 xcoffout_block (block, depth, args)
-     register tree block;
+     tree block;
      int depth;
      tree args;
 {

@@ -859,7 +859,7 @@ read_name_map (pfile, dirname)
      cpp_reader *pfile;
      const char *dirname;
 {
-  register struct file_name_map_list *map_list_ptr;
+  struct file_name_map_list *map_list_ptr;
   char *name;
   FILE *f;
 

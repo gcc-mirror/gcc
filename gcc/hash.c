@@ -91,7 +91,7 @@ hash_lookup (table, key, create, copy)
      hash_table_key (*copy) PARAMS ((struct obstack* memory, 
 				     hash_table_key key));
 {
-  register unsigned long hash;
+  unsigned long hash;
   struct hash_entry *hashp;
   unsigned int index;
   

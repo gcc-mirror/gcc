@@ -467,13 +467,13 @@ extern void dump_needs			PARAMS ((struct insn_chain *));
 void
 init_reload ()
 {
-  register int i;
+  int i;
 
   /* Often (MEM (REG n)) is still valid even if (REG n) is put on the stack.
      Set spill_indirect_levels to the number of levels such addressing is
      permitted, zero if it is not permitted at all.  */
 
-  register rtx tem
+  rtx tem
     = gen_rtx_MEM (Pmode,
 		   gen_rtx_PLUS (Pmode,
 				 gen_rtx_REG (Pmode,
@@ -672,9 +672,9 @@ reload (first, global)
      rtx first;
      int global;
 {
-  register int i;
-  register rtx insn;
-  register struct elim_table *ep;
+  int i;
+  rtx insn;
+  struct elim_table *ep;
 
   /* The two pointers used to track the true location of the memory used
      for label offsets.  */
@@ -1519,8 +1519,8 @@ reload_reg_class_lower (r1p, r2p)
      const PTR r1p;
      const PTR r2p;
 {
-  register int r1 = *(const short *) r1p, r2 = *(const short *) r2p;
-  register int t;
+  int r1 = *(const short *) r1p, r2 = *(const short *) r2p;
+  int t;
 
   /* Consider required reloads before optional ones.  */
   t = rld[r1].optional - rld[r2].optional;
@@ -1921,7 +1921,7 @@ delete_dead_insn (insn)
 
 static void
 alter_reg (i, from_reg)
-     register int i;
+     int i;
      int from_reg;
 {
   /* When outputting an inline function, this can happen
@@ -1947,7 +1947,7 @@ alter_reg (i, from_reg)
       && reg_equiv_constant[i] == 0
       && reg_equiv_memory_loc[i] == 0)
     {
-      register rtx x;
+      rtx x;
       unsigned int inherent_size = PSEUDO_REGNO_BYTES (i);
       unsigned int total_size = MAX (inherent_size, reg_max_ref_width[i]);
       int adjust = 0;
@@ -2053,7 +2053,7 @@ void
 mark_home_live (regno)
      int regno;
 {
-  register int i, lim;
+  int i, lim;
 
   i = reg_renumber[regno];
   if (i < 0)
@@ -3262,7 +3262,7 @@ mark_not_eliminable (dest, x, data)
      rtx x;
      void *data ATTRIBUTE_UNUSED;
 {
-  register unsigned int i;
+  unsigned int i;
 
   /* A SUBREG of a hard register here is just changing its mode.  We should
      not see a SUBREG of an eliminable hard register, but check just in
@@ -3404,7 +3404,7 @@ update_eliminables (pset)
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       struct elim_table *op;
-      register int new_to = -1;
+      int new_to = -1;
 
       if (! ep->can_eliminate && ep->can_eliminate_previous)
 	{
@@ -3530,7 +3530,7 @@ spill_hard_reg (regno, cant_eliminate)
      unsigned int regno;
      int cant_eliminate;
 {
-  register int i;
+  int i;
 
   if (cant_eliminate)
     {
@@ -3718,11 +3718,11 @@ finish_spills (global)
 
 static void
 scan_paradoxical_subregs (x)
-     register rtx x;
+     rtx x;
 {
-  register int i;
-  register const char *fmt;
-  register enum rtx_code code = GET_CODE (x);
+  int i;
+  const char *fmt;
+  enum rtx_code code = GET_CODE (x);
 
   switch (code)
     {
@@ -3763,7 +3763,7 @@ scan_paradoxical_subregs (x)
 	scan_paradoxical_subregs (XEXP (x, i));
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    scan_paradoxical_subregs (XVECEXP (x, i, j));
 	}
@@ -3785,7 +3785,7 @@ reload_as_needed (live_known)
 {
   struct insn_chain *chain;
 #if defined (AUTO_INC_DEC)
-  register int i;
+  int i;
 #endif
   rtx x;
 
@@ -5276,7 +5276,7 @@ choose_reload_regs (chain)
      struct insn_chain *chain;
 {
   rtx insn = chain->insn;
-  register int i, j;
+  int i, j;
   unsigned int max_group_size = 1;
   enum reg_class group_class = NO_REGS;
   int pass, win, inheritance;
@@ -5340,7 +5340,7 @@ choose_reload_regs (chain)
 
       for (j = 0; j < n_reloads; j++)
 	{
-	  register int r = reload_order[j];
+	  int r = reload_order[j];
 	  rtx search_equiv = NULL_RTX;
 
 	  /* Ignore reloads that got marked inoperative.  */
@@ -5393,7 +5393,7 @@ choose_reload_regs (chain)
 	  if (inheritance)
 	    {
 	      int byte = 0;
-	      register int regno = -1;
+	      int regno = -1;
 	      enum machine_mode mode = VOIDmode;
 
 	      if (rld[r].in == 0)
@@ -5612,7 +5612,7 @@ choose_reload_regs (chain)
 
 	  if (search_equiv)
 	    {
-	      register rtx equiv
+	      rtx equiv
 		= find_equiv_reg (search_equiv, insn, rld[r].class,
 				  -1, NULL, 0, rld[r].mode);
 	      int regno = 0;
@@ -5787,7 +5787,7 @@ choose_reload_regs (chain)
 	 didn't get one yet.  */
       for (j = 0; j < n_reloads; j++)
 	{
-	  register int r = reload_order[j];
+	  int r = reload_order[j];
 
 	  /* Ignore reloads that got marked inoperative.  */
 	  if (rld[r].out == 0 && rld[r].in == 0 && ! rld[r].secondary_p)
@@ -5848,7 +5848,7 @@ choose_reload_regs (chain)
     {
       for (j = 0; j < n_reloads; j++)
 	{
-	  register int r = reload_order[j];
+	  int r = reload_order[j];
 	  rtx check_reg;
 	  if (reload_inherited[r] && rld[r].reg_rtx)
 	    check_reg = rld[r].reg_rtx;
@@ -5915,7 +5915,7 @@ choose_reload_regs (chain)
   /* Record which pseudos and which spill regs have output reloads.  */
   for (j = 0; j < n_reloads; j++)
     {
-      register int r = reload_order[j];
+      int r = reload_order[j];
 
       i = reload_spill_index[r];
 
@@ -5925,7 +5925,7 @@ choose_reload_regs (chain)
       if (rld[r].out_reg != 0 && GET_CODE (rld[r].out_reg) == REG
 	  && rld[r].reg_rtx != 0)
 	{
-	  register int nregno = REGNO (rld[r].out_reg);
+	  int nregno = REGNO (rld[r].out_reg);
 	  int nr = 1;
 
 	  if (nregno < FIRST_PSEUDO_REGISTER)
@@ -6106,7 +6106,7 @@ emit_input_reload_insns (chain, rl, old, j)
      int j;
 {
   rtx insn = chain->insn;
-  register rtx reloadreg = rl->reg_rtx;
+  rtx reloadreg = rl->reg_rtx;
   rtx oldequiv_reg = 0;
   rtx oldequiv = 0;
   int special = 0;
@@ -6937,7 +6937,7 @@ emit_reload_insns (chain)
 {
   rtx insn = chain->insn;
 
-  register int j;
+  int j;
 
   CLEAR_HARD_REG_SET (reg_reloaded_died);
 
@@ -7028,8 +7028,8 @@ emit_reload_insns (chain)
 
   for (j = 0; j < n_reloads; j++)
     {
-      register int r = reload_order[j];
-      register int i = reload_spill_index[r];
+      int r = reload_order[j];
+      int i = reload_spill_index[r];
 
       /* If this is a non-inherited input reload from a pseudo, we must
 	 clear any memory of a previous store to the same pseudo.  Only do
@@ -7104,7 +7104,7 @@ emit_reload_insns (chain)
 			     : rld[r].out_reg
 			     ? rld[r].out_reg
 /* AUTO_INC */		     : XEXP (rld[r].in_reg, 0));
-		  register int nregno = REGNO (out);
+		  int nregno = REGNO (out);
 		  int nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
 			     : HARD_REGNO_NREGS (nregno,
 						 GET_MODE (rld[r].reg_rtx)));
@@ -7152,7 +7152,7 @@ emit_reload_insns (chain)
 			       && ! reg_has_output_reload[REGNO (rld[r].in_reg)]))
 		       && ! reg_set_p (rld[r].reg_rtx, PATTERN (insn)))
 		{
-		  register int nregno;
+		  int nregno;
 		  int nnr;
 
 		  if (GET_CODE (rld[r].in) == REG
@@ -7225,7 +7225,7 @@ emit_reload_insns (chain)
 	{
 	  rtx out = (GET_CODE (rld[r].out) == REG
 		     ? rld[r].out : rld[r].out_reg);
-	  register int nregno = REGNO (out);
+	  int nregno = REGNO (out);
 	  if (nregno >= FIRST_PSEUDO_REGISTER)
 	    {
 	      rtx src_reg, store_insn = NULL_RTX;
@@ -7541,7 +7541,7 @@ delete_output_reload (insn, j, last_reload_reg)
   int k;
   int n_occurrences;
   int n_inherited = 0;
-  register rtx i1;
+  rtx i1;
   rtx substed;
 
   /* Get the raw pseudo-register referred to.  */
