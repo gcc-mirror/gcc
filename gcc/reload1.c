@@ -8135,10 +8135,9 @@ delete_address_reloads_1 (dead_insn, x, current_insn)
 	    }
 	  if (GET_CODE (i2) == JUMP_INSN)
 	    break;
-	  if (reg_set_p (dst, PATTERN (i2)))
-	    break;
 	  /* If DST is still live at CURRENT_INSN, check if it is used for
-	     any reload.  */
+	     any reload.  Note that even if CURRENT_INSN sets DST, we still
+	     have to check the reloads.  */
 	  if (i2 == current_insn)
 	    {
 	      for (j = n_reloads - 1; j >= 0; j--)
@@ -8151,6 +8150,8 @@ delete_address_reloads_1 (dead_insn, x, current_insn)
 		 spill_hard_reg.  There is no easy way to tell this, so we
 		 have to scan till the end of the basic block.  */
 	    }
+	  if (reg_set_p (dst, PATTERN (i2)))
+	    break;
 	}
     }
   delete_address_reloads_1 (prev, SET_SRC (set), current_insn);
