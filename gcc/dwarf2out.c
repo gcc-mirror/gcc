@@ -7577,6 +7577,24 @@ scope_die_for (t, context_die)
 	    i = decl_scope_table[i].previous))
 	;
 
+      /* ??? Integrate_decl_tree does not handle BLOCK_TYPE_TAGS, nor
+	 does it try to handle types defined by TYPE_DECLs.  Such types
+	 thus have an incorrect TYPE_CONTEXT, which points to the block
+	 they were originally defined in, instead of the current block
+	 created by function inlining.  We try to detect that here and
+	 work around it.  */
+
+      if (i < 0 && scope_die == comp_unit_die
+	  && TREE_CODE (containing_scope) == BLOCK
+	  && is_tagged_type (t)
+	  && (block_ultimate_origin (decl_scope_table[decl_scope_depth - 1].scope)
+	      == containing_scope))
+	{
+	  scope_die = context_die;
+	  /* Since the checks below are no longer applicable.  */
+	  i = 0;
+	}
+
       if (i < 0)
 	{
 	  if (scope_die != comp_unit_die
