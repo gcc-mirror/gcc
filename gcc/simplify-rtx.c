@@ -3041,7 +3041,8 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		*vp++ = CONST_DOUBLE_LOW (el) >> i;
 	      while (i < HOST_BITS_PER_WIDE_INT * 2 && i < elem_bitsize)
 		{
-		  *vp++ = CONST_DOUBLE_HIGH (el) >> i;
+		  *vp++
+		    = CONST_DOUBLE_HIGH (el) >> (i - HOST_BITS_PER_WIDE_INT);
 		  i += value_bit;
 		}
 	      /* It shouldn't matter what's done here, so fill it with
