@@ -3881,7 +3881,7 @@ resolve_symbol (gfc_symbol * sym)
   int formal_ns_save, check_constant, mp_flag;
   int i;
   const char *whynot;
-
+  gfc_namelist *nl;
 
   if (sym->attr.flavor == FL_UNKNOWN)
     {
@@ -4043,8 +4043,9 @@ resolve_symbol (gfc_symbol * sym)
 	}
     }
 
-  if (sym->attr.flavor == FL_VARIABLE)
+  switch (sym->attr.flavor)
     {
+    case FL_VARIABLE:
       /* Can the sybol have an initializer?  */
       whynot = NULL;
       if (sym->attr.allocatable)
@@ -4084,6 +4085,25 @@ resolve_symbol (gfc_symbol * sym)
       /* Assign default initializer.  */
       if (sym->ts.type == BT_DERIVED && !(sym->value || whynot))
 	sym->value = gfc_default_initializer (&sym->ts);
+      break;
+
+    case FL_NAMELIST:
+      /* Reject PRIVATE objects in a PUBLIC namelist.  */
+      if (gfc_check_access(sym->attr.access, sym->ns->default_access))
+	{
+	  for (nl = sym->namelist; nl; nl = nl->next)
+	    {
+	      if (!gfc_check_access(nl->sym->attr.access,
+				    nl->sym->ns->default_access))
+		gfc_error ("PRIVATE symbol '%s' cannot be member of "
+			   "PUBLIC namelist at %L", nl->sym->name,
+			   &sym->declared_at);
+	    }
+	}
+      break;
+
+    default:
+      break;
     }
 
 

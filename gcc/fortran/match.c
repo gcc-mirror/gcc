@@ -2418,9 +2418,6 @@ gfc_match_namelist (void)
 	      && gfc_add_in_namelist (&sym->attr, NULL) == FAILURE)
 	    goto error;
 
-	  /* TODO: worry about PRIVATE members of a PUBLIC namelist
-             group.  */
-
 	  nl = gfc_get_namelist ();
 	  nl->sym = sym;
 
