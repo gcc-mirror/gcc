@@ -6035,7 +6035,13 @@ initialize_reference (tree type, tree expr, tree decl)
   conv = reference_binding (type, TREE_TYPE (expr), expr, LOOKUP_NORMAL);
   if (!conv || ICS_BAD_FLAG (conv))
     {
-      error ("could not convert `%E' to `%T'", expr, type);
+      if (!(TYPE_QUALS (TREE_TYPE (type)) & TYPE_QUAL_CONST)
+          && !real_lvalue_p (expr))
+        error ("invalid initialization of non-const reference of "
+               "type '%T' from a temporary of type '%T'",
+               type, TREE_TYPE (expr));
+      else
+        error ("could not convert `%E' to `%T'", expr, type);
       return error_mark_node;
     }
 
