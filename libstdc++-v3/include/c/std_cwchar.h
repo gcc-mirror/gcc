@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,15 +28,14 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: ???
+// ISO C++ 14882: 21.4
 //
 
-// Note: This is not a conforming implementation.
-
-#ifndef _CPP_CWCHAR
-#define _CPP_CWCHAR 1
+#ifndef _CWCHAR
+#define _CWCHAR 1
 
 #pragma GCC system_header
-#include <wchar.h>
+
+#include_next <wchar.h>
 
 #endif 

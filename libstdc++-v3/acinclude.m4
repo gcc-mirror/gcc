@@ -757,6 +757,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(float round,
                                           float_round,
                                           ceilf floorf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(expf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinff)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(atan2f)
@@ -843,17 +844,19 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   AC_CHECK_LIB(m, main)
   AC_REPLACE_MATHFUNCS(nan copysignf)
 
+  dnl For __signbit to signbit conversions.
+  AC_CHECK_FUNCS([__signbit], , [LIBMATHOBJS="$LIBMATHOBJS signbit.lo"])
+  AC_CHECK_FUNCS([__signbitf], , [LIBMATHOBJS="$LIBMATHOBJS signbitf.lo"])
+
   dnl Compile the long double complex functions only if the function 
   dnl provides the non-complex long double functions that are needed.
   dnl Currently this includes copysignl, which should be
   dnl cached from the GLIBCPP_CHECK_MATH_SUPPORT macro, above.
-  USE_COMPLEX_LONG_DOUBLE=no
   if test x$ac_cv_func_copysignl = x"yes"; then
-    USE_COMPLEX_LONG_DOUBLE=yes
-    AC_REPLACE_MATHFUNCS(signbitl)
+    AC_CHECK_FUNCS([__signbitl], , [LIBMATHOBJS="$LIBMATHOBJS signbitl.lo"])
   fi
 
-  AC_SUBST(USE_COMPLEX_LONG_DOUBLE)
+  AC_SUBST(LIBMATHOBJS)
 ])
 
 
@@ -1686,7 +1689,6 @@ changequote([, ])
     c_shadow) 
         CSHADOW_FLAGS="-fno-builtin"
         C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_shadow'
-        AC_DEFINE(_GLIBCPP_USE_SHADOW_HEADERS)
         ;;
     c_std)   
         CSHADOW_FLAGS=""
@@ -1700,7 +1702,8 @@ changequote([, ])
 
   AC_SUBST(CSHADOW_FLAGS)
   AC_SUBST(C_INCLUDE_DIR)
-  AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cheaders" = c_shadow)
+  AM_CONDITIONAL(GLIBCPP_C_HEADERS_C, test "$enable_cheaders" = c)
+  AM_CONDITIONAL(GLIBCPP_C_HEADERS_C_STD, test "$enable_cheaders" = c_std)
 ])
 
 
@@ -1888,10 +1891,7 @@ AC_SUBST(glibcpp_toolexeclibdir)
 
 dnl AC_REPLACE_MATHFUNCS(FUNCTION...)
 AC_DEFUN(AC_REPLACE_MATHFUNCS,
-[AC_CHECK_FUNCS([$1], , [LIBMATHOBJS="$LIBMATHOBJS ${ac_func}.lo"])
-AC_SUBST(LIBMATHOBJS)dnl
-])
-
+[AC_CHECK_FUNCS([$1], , [LIBMATHOBJS="$LIBMATHOBJS ${ac_func}.lo"])])
 
 
 dnl This macro searches for a GNU version of make.  If a match is found, the

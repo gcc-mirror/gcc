@@ -179,9 +179,6 @@ c_base_headers = \
 	${c_base_srcdir}/std_ctime.h \
 	${c_base_srcdir}/std_cwchar.h \
 	${c_base_srcdir}/std_cwctype.h 
-# Some of the "C" headers need extra files.
-c_base_headers_extra = \
-	${c_base_srcdir}/cmath.tcc 
 c_base_headers_rename = \
 	cassert \
 	cctype \
@@ -201,6 +198,15 @@ c_base_headers_rename = \
 	ctime \
 	cwchar \
 	cwctype 
+
+# Some of the different "C" header models need extra files.
+# For --enable-cheaders=c_std
+if GLIBCPP_C_HEADERS_C_STD
+c_base_headers_extra = \
+	${c_base_srcdir}/cmath.tcc 
+else
+c_base_headers_extra = 
+endif
 
 std_srcdir = ${glibcpp_srcdir}/include/std
 std_builddir = .
@@ -326,7 +332,7 @@ stamp-c_base: ${c_base_headers} ${c_base_headers_extra}
 	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
 	  @LN_S@ $$h ./$${official_name} || true ;\
 	done) ;\
-	(cd ${c_base_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
+	(cd ${bits_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
 	echo `date` > stamp-c_base
 
 stamp-backward: ${backward_headers}
@@ -429,7 +435,7 @@ install-data-local:
 	  $(INSTALL_DATA) ${c_base_builddir}/$${file} \
 	    ${gxx_include_dir}/${c_base_builddir}; done
 	for file in ${c_base_headers_extra}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${bits_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
 	for file in ${std_headers_rename}; do \
 	  $(INSTALL_DATA) ${std_builddir}/$${file} \

@@ -126,7 +126,6 @@ SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
-USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
@@ -310,10 +309,6 @@ c_base_headers = \
 	${c_base_srcdir}/std_cwchar.h \
 	${c_base_srcdir}/std_cwctype.h 
 
-# Some of the "C" headers need extra files.
-c_base_headers_extra = \
-	${c_base_srcdir}/cmath.tcc 
-
 c_base_headers_rename = \
 	cassert \
 	cctype \
@@ -334,6 +329,9 @@ c_base_headers_rename = \
 	cwchar \
 	cwctype 
 
+@GLIBCPP_C_HEADERS_C_STD_TRUE@c_base_headers_extra = @GLIBCPP_C_HEADERS_C_STD_TRUE@\
+@GLIBCPP_C_HEADERS_C_STD_TRUE@	${c_base_srcdir}/cmath.tcc 
+@GLIBCPP_C_HEADERS_C_STD_FALSE@c_base_headers_extra = 
 
 std_srcdir = ${glibcpp_srcdir}/include/std
 std_builddir = .
@@ -579,7 +577,7 @@ stamp-c_base: ${c_base_headers} ${c_base_headers_extra}
 	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
 	  @LN_S@ $$h ./$${official_name} || true ;\
 	done) ;\
-	(cd ${c_base_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
+	(cd ${bits_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
 	echo `date` > stamp-c_base
 
 stamp-backward: ${backward_headers}
@@ -668,7 +666,7 @@ install-data-local:
 	  $(INSTALL_DATA) ${c_base_builddir}/$${file} \
 	    ${gxx_include_dir}/${c_base_builddir}; done
 	for file in ${c_base_headers_extra}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${bits_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
 	for file in ${std_headers_rename}; do \
 	  $(INSTALL_DATA) ${std_builddir}/$${file} \

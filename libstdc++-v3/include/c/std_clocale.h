@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,12 +31,11 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-// Note: This is not a conforming implementation.
-
-#ifndef _CPP_CLOCALE
-#define _CPP_CLOCALE 1
+#ifndef _CLOCALE
+#define _CLOCALE 1
 
 #pragma GCC system_header
-#include <locale.h>
+
+#include_next <locale.h>
 
 #endif

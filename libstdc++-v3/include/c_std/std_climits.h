@@ -1,6 +1,7 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,10 +41,11 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+#ifndef _CLIMITS
+#define _CLIMITS	1
 
 #pragma GCC system_header
+
 #include <limits.h>
 
 #endif
