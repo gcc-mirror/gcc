@@ -1,5 +1,9 @@
 2003-12-07  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Replace gcc_AC_CHECK_TYPE with AC_CHECK_TYPE.
+	* aclocal.m4 (gcc_AC_CHECK_TYPE): Remove.
+	* configure: Regenerate.
+
 	* configure: Regenerate with (preferred) autoconf 2.57.
 	* doc/install.texi: Note that 'gcc' is now a 2.57 directory.
 

@@ -16,27 +16,6 @@ if test $ac_cv_header_stdbool_h = yes; then
 fi
 ])
 
-dnl Fixed AC_CHECK_TYPE that doesn't need anything in acconfig.h.
-dnl Remove after migrating to 2.5x.
-AC_DEFUN([gcc_AC_CHECK_TYPE],
-[AC_REQUIRE([AC_HEADER_STDC])dnl
-AC_MSG_CHECKING(for $1)
-AC_CACHE_VAL(ac_cv_type_$1,
-[AC_EGREP_CPP(dnl
-changequote(<<,>>)dnl
-<<(^|[^a-zA-Z_0-9])$1[^a-zA-Z_0-9]>>dnl
-changequote([,]), [#include <sys/types.h>
-#if STDC_HEADERS
-#include <stdlib.h>
-#include <stddef.h>
-#endif], ac_cv_type_$1=yes, ac_cv_type_$1=no)])dnl
-AC_MSG_RESULT($ac_cv_type_$1)
-if test $ac_cv_type_$1 = no; then
-  AC_DEFINE($1, $2, [Define as \`$2' if <sys/types.h> doesn't define.])
-fi
-])
-
-
 dnl See whether we can include both string.h and strings.h.
 AC_DEFUN([gcc_AC_HEADER_STRING],
 [AC_CACHE_CHECK([whether string.h and strings.h may both be included],
