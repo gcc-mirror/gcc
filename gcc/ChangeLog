@@ -1,5 +1,9 @@
 2003-10-31  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	PR bootstrap/9863
+	* configure.in: Bail out if awk is missing.
+	* configure: Regenerate.
+
 	PR ada/12761
 	* Makefile.in: Move default definitions of X_ADA_CFLAGS,
 	T_ADA_CFLAGS, X_ADAFLAGS, T_ADAFLAGS from ada/Make-lang.in to here.
