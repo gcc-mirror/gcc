@@ -1,3 +1,10 @@
+2004-05-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* reload1.c (inherit_piecemeal_p): New function.
+	(emit_reload_insns): When reloading a group of hard registers, use
+	inherit_piecemeal_p to decide whether the values of individual hard
+	registers can be inherited.
+
 2004-05-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/ia64/t-ia64 (LIB2ADDEH): Remove gthr-gnat.c.
