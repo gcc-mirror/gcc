@@ -40,3 +40,4 @@ specs: specs.install
 # options that actually work.
 MULTILIB_EXTRA_OPTS = mabi-fake-default
 CRTSTUFF_T_CFLAGS = -mabi-fake-default
+CRTSTUFF_T_CFLAGS_S = -mabi-fake-default

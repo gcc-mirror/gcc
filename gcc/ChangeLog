@@ -1,3 +1,7 @@
+2003-06-03  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/t-linux64 (CRTSTUFF_T_CFLAGS_S): Define.
+
 2003-06-04  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/uwin.h: Remove SUBTARGET_PROLOGUE.
