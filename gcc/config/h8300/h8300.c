@@ -579,7 +579,12 @@ handle_pragma (file)
   /* ??? This is deprecated.  Delete for gcc 2.8.  */
   if (strcmp (pbuf, "section") == 0)
     {
-      warning ("#pragma section is deprecated, use section attributes");
+      static int printed_p = 0;
+      if (!printed_p)
+	{
+	  warning ("#pragma section is deprecated, use section attributes");
+	  printed_p = 1;
+	}
       while (c && !isalpha (c))
 	c = getc (file);
       psize = 0;
