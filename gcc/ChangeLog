@@ -1,3 +1,11 @@
+2003-05-30  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (extern_list): Add GTY marker.
+	(extern_head): Separate out definition. Add marker.
+	(mips_output_external): Use ggc_alloc for extern_list
+	allocation.
+	(mips_output_external_libcall): Ditto.
+
 2003-05-30  Florian Weimer  <fw@deneb.enyo.de>
 
 	* doc/install.texi: Ada-enabled bootstrap requires GNAT 3.14 or
@@ -151,7 +159,7 @@
 	(type_contains_placeholder_p): New function.
 	* fold-const.c (fold, case COMPONENT_REF): Don't fold if
 	type_contains_placeholder_p.
-	(fold_range_test, fold_mathfn_compare, fold_inf_compare, fold): 
+	(fold_range_test, fold_mathfn_compare, fold_inf_compare, fold):
 	Use CONTAINS_PLACEHOLDER_P macro.
 	* builtins.c (fold_builtin): Likewise.
 	* calls.c (initialize_argument_information): Likewise.
@@ -164,7 +172,7 @@
 2003-05-25  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* diagnostic.h (output_verbatim, verbatim):  Remove  printf
-	attribute.  
+	attribute.
 
 2003-05-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
