@@ -1,3 +1,8 @@
+2004-08-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_prologue): If the function uses a
+	frame pointer, restore eax with an ebp-relative address.
+
 2004-08-04  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 14516
