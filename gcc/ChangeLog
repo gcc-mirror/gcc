@@ -1,3 +1,9 @@
+Fri Nov 16 09:06:25 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case ADDR_EXPR): Refine test for when to
+	copy misaligned data.
+	* varasm.c (assemble_variable): Set alignment into MEM when changed.
+
 2001-11-16  Graham Stott  <grahams@redhat.com>
 
 	* optabs.c (prepare_cmp_insn): Correct lossage in last change fix
