@@ -1,5 +1,5 @@
 /* Allocate registers for pseudo-registers that span basic blocks.
-   Copyright (C) 1987-1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -394,9 +394,17 @@ global_alloc (file)
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (reg_allocno[i] < 0 && reg_renumber[i] >= 0)
       {
-	local_reg_n_refs[reg_renumber[i]] += reg_n_refs[i];
-	local_reg_live_length[reg_renumber[i]] += reg_live_length[i];
+	int regno = reg_renumber[i];
+	int endregno = regno + HARD_REGNO_NREGS (regno, PSEUDO_REGNO_MODE (i));
+	int j;
+
+	for (j = regno; j < endregno; j++)
+	  {
+	    local_reg_n_refs[j] += reg_n_refs[i];
+	    local_reg_live_length[j] += reg_live_length[i];
+	  }
       }
+
   /* We can't override local-alloc for a reg used not just by local-alloc.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (regs_ever_live[i])
@@ -1016,8 +1024,16 @@ find_reg (allocno, losers, all_regs_p, accept_call_clobbered, retrying)
 	       than it would be used by this one allocno!  */
 	    int k;
 	    for (k = 0; k < max_regno; k++)
-	      if (reg_renumber[k] == i)
-		reg_renumber[k] = -1;
+	      if (reg_renumber[k] >= 0)
+		{
+		  int regno = reg_renumber[k];
+		  int endregno
+		    = regno + HARD_REGNO_NREGS (regno, PSEUDO_REGNO_MODE (k));
+
+		  if (i >= regno && i < endregno)
+		    reg_renumber[k] = -1;
+		}
+
 	    best_reg = i;
 	    break;
 	  }
