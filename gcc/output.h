@@ -46,7 +46,6 @@ extern int dbr_sequence_length	PARAMS ((void));
 /* Indicate that branch shortening hasn't yet been done.  */
 extern void init_insn_lengths	PARAMS ((void));
 
-#ifdef RTX_CODE
 /* Obtain the current length of an insn.  If branch shortening has been done,
    get its actual length.  Otherwise, get its maximum length.  */
 extern int get_attr_length	PARAMS ((rtx));
@@ -147,7 +146,6 @@ extern void find_basic_blocks		PARAMS ((rtx, int, FILE *));
 extern bool cleanup_cfg			PARAMS ((int));
 extern bool delete_unreachable_blocks	PARAMS ((void));
 extern void check_function_return_warnings PARAMS ((void));
-#endif
 
 /* Functions in varasm.c.  */
 
@@ -211,7 +209,6 @@ extern void sdata_section PARAMS ((void));
 extern void rdata_section PARAMS ((void));
 #endif
 
-#ifdef TREE_CODE
 /* Tell assembler to change to section NAME for DECL.
    If DECL is NULL, just switch to section NAME.
    If NAME is NULL, get the name from DECL.
@@ -234,7 +231,6 @@ extern void mergeable_constant_section	PARAMS ((enum machine_mode,
 extern void declare_weak		PARAMS ((tree));
 /* Merge weak status.  */
 extern void merge_weak			PARAMS ((tree, tree));
-#endif /* TREE_CODE */
 
 /* Emit any pending weak declarations.  */
 extern void weak_finish			PARAMS ((void));
@@ -248,7 +244,6 @@ extern void weak_finish			PARAMS ((void));
    Prefixes such as % are optional.  */
 extern int decode_reg_name		PARAMS ((const char *));
 
-#ifdef TREE_CODE
 /* Make the rtl for variable VAR be volatile.
    Use this only for static variables.  */
 extern void make_var_volatile		PARAMS ((tree));
@@ -289,7 +284,6 @@ extern void assemble_variable		PARAMS ((tree, int, int, int));
    (Most assemblers don't need this, so we normally output nothing.)
    Do nothing if DECL is not external.  */
 extern void assemble_external		PARAMS ((tree));
-#endif /* TREE_CODE */
 
 /* Assemble code to leave SIZE bytes of zeros.  */
 extern void assemble_zeros		PARAMS ((int));
@@ -301,10 +295,8 @@ extern void assemble_eh_align		PARAMS ((int));
 /* Assemble a string constant with the specified C string as contents.  */
 extern void assemble_string		PARAMS ((const char *, int));
 
-#ifdef RTX_CODE
 /* Similar, for calling a library function FUN.  */
 extern void assemble_external_libcall	PARAMS ((rtx));
-#endif
 
 /* Assemble a label named NAME.  */
 extern void assemble_label		PARAMS ((const char *));
@@ -326,7 +318,6 @@ extern void assemble_name		PARAMS ((FILE *, const char *));
    be followed immediately by the object's initial value.  */
 extern const char *integer_asm_op	PARAMS ((int, int));
 
-#ifdef RTX_CODE
 /* Use directive OP to assemble an integer object X.  Print OP at the
    start of the line, followed immediately by the value of X.  */
 extern void assemble_integer_with_op	PARAMS ((const char *, rtx));
@@ -352,7 +343,6 @@ extern void assemble_real		PARAMS ((REAL_VALUE_TYPE,
 					         enum machine_mode,
 						 unsigned));
 #endif
-#endif
 
 /* Start deferring output of subconstants.  */
 extern void defer_addressed_constants	PARAMS ((void));
@@ -368,7 +358,6 @@ extern int get_pool_size		PARAMS ((void));
 extern rtx peephole			PARAMS ((rtx));
 #endif
 
-#ifdef TREE_CODE
 /* Write all the constants in the constant pool.  */
 extern void output_constant_pool	PARAMS ((const char *, tree));
 
@@ -393,9 +382,7 @@ extern tree initializer_constant_valid_p	PARAMS ((tree, tree));
    ALIGN is the alignment in bits that may be assumed for the data.  */
 extern void output_constant		PARAMS ((tree, HOST_WIDE_INT,
 						 unsigned int));
-#endif
 
-#ifdef RTX_CODE
 /* When outputting delayed branch sequences, this rtx holds the
    sequence being output.  It is null when no delayed branch
    sequence is being output, so it can be used as a test in the
@@ -403,7 +390,6 @@ extern void output_constant		PARAMS ((tree, HOST_WIDE_INT,
 
    This variable is defined  in final.c.  */
 extern rtx final_sequence;
-#endif
 
 /* The line number of the beginning of the current function.  Various
    md code needs this so that it can output relative linenumbers.  */
