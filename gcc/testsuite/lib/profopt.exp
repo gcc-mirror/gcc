@@ -66,7 +66,7 @@ if ![info exists PROFOPT_OPTIONS] {
 	{ -Os } ]
 }
 
-set option_list $PROFOPT_OPTIONS
+set prof_option_list $PROFOPT_OPTIONS
 
 #
 # profopt-cleanup -- remove profiling or performance results files.
@@ -126,7 +126,7 @@ proc profopt-perf-value { testcase perf_ext optstr } {
 #
 proc profopt-execute { src } {
     global srcdir tmpdir
-    global option_list
+    global prof_option_list
     global tool profile_option feedback_option prof_ext perf_ext perf_delta
     global verbose
 
@@ -142,7 +142,7 @@ proc profopt-execute { src } {
     set executable $tmpdir/[file tail [file rootname $src].x]
 
     set count 0
-    foreach option $option_list {
+    foreach option $prof_option_list {
 	set execname1 "${executable}${count}1"
 	set execname2 "${executable}${count}2"
 	set execname3 "${executable}${count}3"
