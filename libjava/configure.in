@@ -193,21 +193,27 @@ AC_ARG_WITH(ecos,
 TARGET_ECOS="$with_ecos"
 )
 
+PLATFORM_SPECIFIC_SOURCES=
 case "$TARGET_ECOS" in
    no) case "$host" in
       mingw)
             PLATFORM=Win32
+            PLATFORM_SPECIFIC_SOURCES=win32.cc
       ;;
       *)
             PLATFORM=Posix
+            PLATFORM_SPECIFIC_SOURCES=posix.cc
       ;;
       esac
       ;;
    *)
       PLATFORM=Ecos
       AC_DEFINE(ECOS)
+      PLATFORM_SPECIFIC_SOURCES=posix.cc
       ;;
 esac
+AC_SUBST(PLATFORM_SPECIFIC_SOURCES)
+
 
 AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED))
 AC_EGREP_HEADER(uint32_t, inttypes.h, AC_DEFINE(HAVE_INT32_DEFINED))
