@@ -1268,7 +1268,11 @@ extern union tree_node *current_function_decl;
    REG+REG, REG+(REG*SCALE) or REG+SMALLINT.
    But we can treat a SYMBOL_REF as legitimate if it is part of this
    function's constant-pool, because such addresses can actually
-   be output as REG+SMALLINT.  */
+   be output as REG+SMALLINT. 
+
+   Note we only allow 5 bit immediates for access to a constant address;
+   doing so avoids losing for loading/storing a FP register at an address
+   which will not fit in 5 bits.  */
 
 #define VAL_5_BITS_P(X) ((unsigned)(X) + 0x10 < 0x20)
 #define INT_5_BITS(X) VAL_5_BITS_P (INTVAL (X))
@@ -1333,7 +1337,7 @@ extern union tree_node *current_function_decl;
     goto ADDR;						\
   else if (GET_CODE (X) == LABEL_REF			\
 	   || (GET_CODE (X) == CONST_INT		\
-	       && INT_14_BITS (X)))			\
+	       && INT_5_BITS (X)))			\
     goto ADDR;						\
 }
 
