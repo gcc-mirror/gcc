@@ -1,3 +1,8 @@
+Tue Sep 21 18:27:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* haifa-sched.c (sched_analyze): Rename local variable `region' to
+	avoid conflicts with typedef struct `region' at the top level scope.
+
 Tue Sep 21 14:14:50 1999  Richard Henderson  <rth@cygnus.com>
 
 	* basic-block.h (basic_block): Add eh_beg, eh_end.
