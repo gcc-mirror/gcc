@@ -111,7 +111,7 @@
 
 /* Since parsers are distinct for each language, put the language string
    definition here.  (fnf) */
-char *language_string = "GNU C++";
+const char * const language_string = "GNU C++";
 
 extern struct obstack permanent_obstack;
 

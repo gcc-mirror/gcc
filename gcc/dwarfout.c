@@ -106,7 +106,6 @@ extern time_t time PROTO ((time_t *)); /* FIXME: use NEED_DECLARATION_TIME */
 
 extern int flag_traditional;
 extern char *version_string;
-extern char *language_string;
 
 /* Maximum size (in bytes) of an artificially generated label.	*/
 

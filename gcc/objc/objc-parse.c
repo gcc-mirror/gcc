@@ -89,7 +89,7 @@
 
 /* Since parsers are distinct for each language, put the language string
    definition here.  */
-char *language_string = "GNU Obj-C";
+const char * const language_string = "GNU Obj-C";
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }

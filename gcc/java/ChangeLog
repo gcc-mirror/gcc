@@ -1,5 +1,9 @@
 1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* lang.c (language_string): Constify.
+
+1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (LIBS): Fix definition so we link with $(CLIB).
 	Remove hacks for stuff which comes from libiberty.
 

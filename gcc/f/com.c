@@ -234,7 +234,7 @@ tree va_list_type_node;
 /* ~~gcc/tree.h *should* declare this, because toplev.c and dwarfout.c
    reference it.  */
 
-char *language_string = "GNU F77";
+const char * const language_string = "GNU F77";
 
 /* Stream for reading from the input file.  */
 FILE *finput;

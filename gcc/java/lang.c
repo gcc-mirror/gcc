@@ -81,7 +81,7 @@ const char *java_tree_code_name[] = {
 
 int compiling_from_source;
 
-char *language_string = "GNU Java";
+const char * const language_string = "GNU Java";
 
 /* Nonzero if we want to automatically do array bounds checking;
    on by default.  Use -fno-bounds-check to disable.  */

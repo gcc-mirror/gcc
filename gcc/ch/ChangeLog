@@ -1,5 +1,9 @@
 1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* parse.c (language_string): Constify.
+
+1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (LIBS, LIBDEPS): Link with & depend on libiberty.a.
 	Remove hacks for stuff which now comes from libiberty.
 

@@ -1934,6 +1934,11 @@ extern const char *(*decl_printable_name)	PROTO((tree, int));
    end of compilation.  */
 
 extern void (*incomplete_decl_finalize_hook)	PROTO((tree));
+
+extern char *init_parse				PROTO((char *));
+extern void finish_parse			PROTO((void));
+
+extern const char * const language_string;  
 
 /* In tree.c */
 extern char *perm_calloc			PROTO((int, long));
