@@ -452,11 +452,17 @@ lang_init_options ()
 
   /* Default exceptions on.  */
   flag_exceptions = 1;
+  /* Mark as "unspecified".  */
+  flag_bounds_check = -1;
 }
 
 void
 lang_init ()
 {
+  /* If still "unspecified", make it match -fbounded-pointers.  */
+  if (flag_bounds_check < 0)
+    flag_bounds_check = flag_bounded_pointers;
+
   /* the beginning of the file is a new line; check for # */
   /* With luck, we discover the real source file's name from that
      and put it in input_filename.  */
