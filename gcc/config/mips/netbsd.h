@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MIPS NetBSD systems.
-   Copyright (C) 1993, 1995, 1996, 1997, 1999, 2000, 2001, 2002
+   Copyright (C) 1993, 1995, 1996, 1997, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -93,9 +93,20 @@ Boston, MA 02111-1307, USA.  */
       else if (ISA_MIPS4)					\
 	builtin_define ("__mips=4");				\
       else if (ISA_MIPS32)					\
-	builtin_define ("__mips=32");				\
+	{							\
+	  builtin_define ("__mips=32");				\
+	  builtin_define ("__mips_isa_rev=1");			\
+	}							\
+      else if (ISA_MIPS32R2)					\
+	{							\
+	  builtin_define ("__mips=32");				\
+	  builtin_define ("__mips_isa_rev=2");			\
+	}							\
       else if (ISA_MIPS64)					\
-	builtin_define ("__mips=64");				\
+	{							\
+	  builtin_define ("__mips=64");				\
+	  builtin_define ("__mips_isa_rev=1");			\
+	}							\
 								\
       if (TARGET_HARD_FLOAT)					\
 	builtin_define ("__mips_hard_float");			\
@@ -153,7 +164,7 @@ Boston, MA 02111-1307, USA.  */
   "%{EL:-m elf32lmip} \
    %{EB:-m elf32bmip} \
    %(endian_spec) \
-   %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} \
+   %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips32r2} %{mips64} \
    %{bestGnum} %{call_shared} %{no_archive} %{exact_version} \
    %(netbsd_link_spec)"
 

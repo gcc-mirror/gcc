@@ -1,3 +1,53 @@
+2003-01-08  Chris Demetriou  <cgd@broadcom.com>
+
+	* config.gcc (mipsisa32r2-*-elf*, mipsisa32r2el-*-elf*): New
+	targets, to support MIPS32 Release 2 (MIPS32R2) configurations.
+	* config/mips/mips.h (enum processor_type): Rename
+	PROCESSOR_R4KC to PROCESSOR_4KC, PROCESSOR_R5KC to
+	PROCESSOR_5KC, and PROCESSOR_R20KC to PROCESSOR_20KC.
+	Add PROCESSOR_M4K.
+	(TARGET_MIPS4KC, TARGET_MIPS5KC): Update for the renaming.
+	(ISA_MIPS32R2): New define.
+	(GENERATE_MULT3_SI, ISA_HAS_CONDMOVE, ISA_HAS_8CC)
+	(ISA_HAS_MADD_MSUB, ISA_HAS_CLZ_CLO)
+	(ISA_HAS_PREFETCH): Add support for MIPS32R2.
+	(MIPS_ISA_DEFAULT): Likewise.  Also, fix indentation.
+	(TARGET_CPU_CPP_BUILTINS): Add support for MIPS32R2.  Add new
+	predefine __mips_isa_rev for MIPS32, MIPS32R2, and MIPS64.
+	(ISA_HAS_ROTR_SI): Add support for MIPS32R2, and avoid if
+	compiling MIPS16 code.
+	(ISA_HAS_ROTR_DI): Do not use if compiling MIPS16 code, and fix
+	comment.
+	(ISA_HAS_SEB_SEH): New define.
+	(ASM_SPEC, LINK_SPEC): Pass -mips32r2 to assembler and linker.
+	* config/mips/mips.c (mips_cpu_info_table): Adjust for enum
+	processor_type value renaming.  Add support for MIPS32R2.
+	Clean up comments, and move "sb1" entry with other MIPS64 CPU
+	entries.
+	(override_options): Reimplement -mipsN option handling so that
+	it will work correctly for -mips32r2.  Avoid branch-likely
+	instructions on MIPS32R2.
+	* config/mips/mips.md (mulsi3_mult3): Add support for MIPS32R2.
+	(extendhisi2): Use extendhisi2_hw if ISA_HAS_SEB_SEH.
+	(extendqisi2): Use extendqisi2_hw if ISA_HAS_SEB_SEH.
+	(extendhisi2_hw, extendqisi2_hw): New.
+	* config/mips/netbsd.h (TARGET_CPU_CPP_BUILTINS): Add support
+	for MIPS32R2.  Add new predefine __mips_isa_rev for MIPS32,
+	MIPS32R2, and MIPS64.
+	(LINK_SPEC): Pass -mips32r2 to linker.
+	* config/mips/t-isa3264: Built -mips32r2 multilibs.
+	* doc/invoke.texi (MIPS Options): Add -mips32r2, add support
+	for mips32r2 in the -march description.  Alphabetically sort
+	CPU names in the -march description.  Add long-missed -mips32
+	and -mips64 to MIPS option summary.
+
+	* config.gcc: Update copyright years to include 2003.
+	* config/mips/mips.c: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/mips/netbsd.h: Likewise.
+	* doc/invoke.texi: Likewise.
+
 2003-01-08  Andreas Schwab  <schwab@suse.de>
 
 	* aclocal.m4 (gcc_AC_INITFINI_ARRAY): Fix spelling of cache

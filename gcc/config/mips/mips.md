@@ -1,6 +1,6 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
 ;;  Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+;;  1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -1808,6 +1808,7 @@
       || TARGET_MIPS5400
       || TARGET_MIPS5500
       || ISA_MIPS32
+      || ISA_MIPS32R2
       || ISA_MIPS64)
     return \"mul\\t%0,%1,%2\";
   return \"mult\\t%0,%1,%2\";
@@ -4379,6 +4380,13 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
+  if (ISA_HAS_SEB_SEH)
+    {
+      emit_insn (gen_extendhisi2_hw (operands[0],
+                                     force_reg (HImode, operands[1]))); 
+      DONE;
+    }
+
   if (optimize && GET_CODE (operands[1]) == MEM)
     operands[1] = force_not_mem (operands[1]);
 
@@ -4393,6 +4401,14 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 }")
+
+(define_insn "extendhisi2_hw" 
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  "ISA_HAS_SEB_SEH"     
+  "seh\\t%0,%1"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
 
 (define_insn "extendhisi2_internal"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
@@ -4441,6 +4457,12 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
+  if (ISA_HAS_SEB_SEH)
+    {
+      emit_insn (gen_extendqisi2_hw (operands[0],
+                                     force_reg (QImode, operands[1]))); 
+      DONE;
+    }
   if (optimize && GET_CODE (operands[1]) == MEM)
     operands[1] = force_not_mem (operands[1]);
 
@@ -4455,6 +4477,14 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 }")
+
+(define_insn "extendqisi2_hw" 
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  "ISA_HAS_SEB_SEH"     
+  "seb\\t%0,%1"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
 
 (define_insn "extendqisi2_insn"
   [(set (match_operand:SI 0 "register_operand" "=d,d")

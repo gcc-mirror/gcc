@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for MIPS
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -583,8 +583,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "mips2", PROCESSOR_R6000, 2 },
   { "mips3", PROCESSOR_R4000, 3 },
   { "mips4", PROCESSOR_R8000, 4 },
-  { "mips32", PROCESSOR_R4KC, 32 },
-  { "mips64", PROCESSOR_R5KC, 64 },
+  { "mips32", PROCESSOR_4KC, 32 },
+  { "mips32r2", PROCESSOR_M4K, 33 },
+  { "mips64", PROCESSOR_5KC, 64 },
 
   /* MIPS I */
   { "r3000", PROCESSOR_R3000, 1 },
@@ -611,18 +612,18 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "vr5400", PROCESSOR_R5400, 4 },
   { "vr5500", PROCESSOR_R5500, 4 },
 
+  /* MIPS32 */
+  { "4kc", PROCESSOR_4KC, 32 },
+  { "4kp", PROCESSOR_4KC, 32 }, /* = 4kc */
 
-  /* MIPS 32 */
-  { "4kc", PROCESSOR_R4KC, 32 },
-  { "4kp", PROCESSOR_R4KC, 32 }, /* = 4kc */
+  /* MIPS32 Release 2 */
+  { "m4k", PROCESSOR_M4K, 33 },
 
-  /* MIPS 64 */
-  { "5kc", PROCESSOR_R5KC, 64 },
-  { "20kc", PROCESSOR_R20KC, 64 },
-  { "sr71000", PROCESSOR_SR71000, 64 },
-
-  /* Broadcom SB-1 CPU core */
+  /* MIPS64 */
+  { "5kc", PROCESSOR_5KC, 64 },
+  { "20kc", PROCESSOR_20KC, 64 },
   { "sb1", PROCESSOR_SB1, 64 },
+  { "sr71000", PROCESSOR_SR71000, 64 },
 
   /* End marker */
   { 0, 0, 0 }
@@ -5127,28 +5128,31 @@ override_options ()
   if (mips_isa_string != 0)
     {
       /* Handle -mipsN.  */
-      int level = atoi (mips_isa_string);
-      if (level == 16)
+
+      if (strcmp (mips_isa_string, "16") == 0)
 	{
 	  /* -mips16 specifies an ASE rather than a processor, so don't
 	     change mips_arch here.  -mno-mips16 overrides -mips16.  */
 	  if (mips_no_mips16_string == NULL)
 	    target_flags |= MASK_MIPS16;
 	}
-      else if (mips_arch_info != 0)
+      else
 	{
+	  char *whole_isa_str = concat ("mips", mips_isa_string, NULL);
+	  const struct mips_cpu_info *isa_info;
+
+	  isa_info = mips_parse_cpu ("-mips option", whole_isa_str);
+	  free (whole_isa_str);
+
 	  /* -march takes precedence over -mipsN, since it is more descriptive.
 	     There's no harm in specifying both as long as the ISA levels
 	     are the same.  */
-	  if (mips_isa != level)
-	    error ("-mips%d conflicts with the other architecture options, which specify a MIPS%d processor",
-		   level, mips_isa);
-	}
-      else
-	{
-	  mips_set_architecture (mips_cpu_info_from_isa (level));
-	  if (mips_arch_info == 0)
-	    error ("bad value (%s) for -mips switch", mips_isa_string);
+	  if (mips_arch_info != 0 && mips_isa != isa_info->isa)
+	    error ("-mips%s conflicts with the other architecture options, which specify a MIPS%d processor",
+		   mips_isa_string, mips_isa);
+
+	  /* Set architecture based on the given option.  */
+	  mips_set_architecture (isa_info);
 	}
     }
 
@@ -5265,7 +5269,7 @@ override_options ()
 	 of the [MIPS32 and MIPS64] architecture."  Therefore, we do not
 	 issue those instructions unless instructed to do so by
 	 -mbranch-likely.  */
-      if (ISA_HAS_BRANCHLIKELY && !(ISA_MIPS32 || ISA_MIPS64))
+      if (ISA_HAS_BRANCHLIKELY && !(ISA_MIPS32 || ISA_MIPS32R2 || ISA_MIPS64))
 	target_flags |= MASK_BRANCHLIKELY;
       else
 	target_flags &= ~MASK_BRANCHLIKELY;
