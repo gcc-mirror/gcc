@@ -3143,7 +3143,7 @@ output_operand_lossage (str)
   if (this_is_asm_operands)
     error_for_asm (this_is_asm_operands, "invalid `asm': %s", str);
   else
-    abort ();
+    fatal ("Internal compiler error, output_operand_lossage `%s'", str);
 }
 
 /* Output of assembler code from a template, and its subroutines.  */
