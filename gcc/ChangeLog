@@ -1,3 +1,7 @@
+2002-05-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* doc/contrib.texi: Update my entry.
+
 2002-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips/iris6.h (CPLUSPLUS_CPP_SPEC): Define.

@@ -38,7 +38,8 @@ Alasdair Baird for various bugfixes.
 Gerald Baumgartner added the signature extension to the C++ front end.
 
 @item
-Neil Booth for various work on cpplib.
+Neil Booth for work on cpplib, lang hooks, debug hooks and other
+miscellaneous clean-ups.
 
 @item
 Per Bothner for his direction via the steering committee and various
