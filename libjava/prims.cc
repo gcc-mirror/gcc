@@ -690,12 +690,19 @@ win32_exception_handler (LPEXCEPTION_POINTERS e)
 
 #endif
 
-/* This will be non-NULL if the user has preloaded a JNI library, or
-   linked one into the executable.  */
+/* This will be different from _JNI_OnLoad if the user has preloaded a JNI
+   library, or linked one into the executable.  */
 extern "C" 
 {
-#pragma weak JNI_OnLoad
+  /* Some systems, like Tru64 UNIX, don't support weak definitions, so use
+     an empty dummy function to check if the user provided his own.  */
+#pragma weak JNI_OnLoad = _JNI_OnLoad
   extern jint JNI_OnLoad (JavaVM *, void *) __attribute__((weak));
+
+  jint _JNI_OnLoad (JavaVM *vm, void *)
+  {
+    return 0;
+  }
 }
 
 
@@ -895,7 +902,7 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
      environment variable.  We take advatage of this here to allow for
      dynamically loading a JNI library into a fully linked executable.  */
 
-  if (JNI_OnLoad != NULL)
+  if (JNI_OnLoad != _JNI_OnLoad)
     {
       JavaVM *vm = _Jv_GetJavaVM ();
       if (vm == NULL)
