@@ -1,3 +1,16 @@
+2005-01-29  Josef Zlomek  <zlomekj@suse.cz>
+
+	* dwarf2out.c (struct die_struct): Added field decl_id.
+	(decl_die_table): Changed to hash table.
+	(decl_die_table_allocated): Deleted.
+	(decl_die_table_in_use): Deleted.
+	(DECL_DIE_TABLE_INCREMENT): Deleted.
+	(decl_die_table_hash): New function.
+	(decl_die_table_eq): New function.
+	(lookup_decl_die): Lookup in a hash table.
+	(equate_decl_number_to_die): Insert into a hash table.
+	(dwarf2out_init): Init hash table decl_die_table.
+
 2004-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/13424

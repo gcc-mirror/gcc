@@ -3354,6 +3354,7 @@ typedef struct die_struct GTY(())
   dw_offset die_offset;
   unsigned long die_abbrev;
   int die_mark;
+  unsigned int decl_id;
 }
 die_node;
 
@@ -3471,20 +3472,9 @@ static GTY(()) varray_type file_table;
 static GTY(()) varray_type file_table_emitted;
 static GTY(()) size_t file_table_last_lookup_index;
 
-/* A pointer to the base of a table of references to DIE's that describe
-   declarations.  The table is indexed by DECL_UID() which is a unique
-   number identifying each decl.  */
-static GTY((length ("decl_die_table_allocated"))) dw_die_ref *decl_die_table;
-
-/* Number of elements currently allocated for the decl_die_table.  */
-static GTY(()) unsigned decl_die_table_allocated;
-
-/* Number of elements in decl_die_table currently in use.  */
-static GTY(()) unsigned decl_die_table_in_use;
-
-/* Size (in elements) of increments by which we may expand the
-   decl_die_table.  */
-#define DECL_DIE_TABLE_INCREMENT 256
+/* A hash table of references to DIE's that describe declarations.
+   The key is a DECL_UID() which is a unique number identifying each decl.  */
+static GTY ((param_is (struct die_struct))) htab_t decl_die_table;
 
 /* A pointer to the base of a list of references to DIE's that
    are uniquely identified by their tag, presence/absence of
@@ -3657,6 +3647,8 @@ static void add_child_die (dw_die_ref, dw_die_ref);
 static dw_die_ref new_die (enum dwarf_tag, dw_die_ref, tree);
 static dw_die_ref lookup_type_die (tree);
 static void equate_type_number_to_die (tree, dw_die_ref);
+static hashval_t decl_die_table_hash (const void *);
+static int decl_die_table_eq (const void *, const void *);
 static dw_die_ref lookup_decl_die (tree);
 static void equate_decl_number_to_die (tree, dw_die_ref);
 static void print_spaces (FILE *);
@@ -5212,14 +5204,28 @@ equate_type_number_to_die (tree type, dw_die_ref type_die)
   TYPE_SYMTAB_DIE (type) = type_die;
 }
 
+/* Returns a hash value for X (which really is a die_struct).  */
+
+static hashval_t
+decl_die_table_hash (const void *x)
+{
+  return (hashval_t) ((const dw_die_ref) x)->decl_id;
+}
+
+/* Return nonzero if decl_id of die_struct X is the same as UID of decl *Y.  */
+
+static int
+decl_die_table_eq (const void *x, const void *y)
+{
+  return (((const dw_die_ref) x)->decl_id == DECL_UID ((const tree) y));
+}
+
 /* Return the DIE associated with a given declaration.  */
 
 static inline dw_die_ref
 lookup_decl_die (tree decl)
 {
-  unsigned decl_id = DECL_UID (decl);
-
-  return (decl_id < decl_die_table_in_use ? decl_die_table[decl_id] : NULL);
+  return htab_find_with_hash (decl_die_table, decl, DECL_UID (decl));
 }
 
 /* Equate a DIE to a particular declaration.  */
@@ -5228,27 +5234,11 @@ static void
 equate_decl_number_to_die (tree decl, dw_die_ref decl_die)
 {
   unsigned int decl_id = DECL_UID (decl);
-  unsigned int num_allocated;
+  void **slot;
 
-  if (decl_id >= decl_die_table_allocated)
-    {
-      num_allocated
-	= ((decl_id + 1 + DECL_DIE_TABLE_INCREMENT - 1)
-	   / DECL_DIE_TABLE_INCREMENT)
-	  * DECL_DIE_TABLE_INCREMENT;
-
-      decl_die_table = ggc_realloc (decl_die_table,
-				    sizeof (dw_die_ref) * num_allocated);
-
-      memset (&decl_die_table[decl_die_table_allocated], 0,
-	     (num_allocated - decl_die_table_allocated) * sizeof (dw_die_ref));
-      decl_die_table_allocated = num_allocated;
-    }
-
-  if (decl_id >= decl_die_table_in_use)
-    decl_die_table_in_use = (decl_id + 1);
-
-  decl_die_table[decl_id] = decl_die;
+  slot = htab_find_slot_with_hash (decl_die_table, decl, decl_id, INSERT);
+  *slot = decl_die;
+  decl_die->decl_id = decl_id;
 }
 
 /* Keep track of the number of spaces used to indent the
@@ -12716,10 +12706,8 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   init_file_table ();
 
   /* Allocate the initial hunk of the decl_die_table.  */
-  decl_die_table = ggc_alloc_cleared (DECL_DIE_TABLE_INCREMENT
-				      * sizeof (dw_die_ref));
-  decl_die_table_allocated = DECL_DIE_TABLE_INCREMENT;
-  decl_die_table_in_use = 0;
+  decl_die_table = htab_create_ggc (10, decl_die_table_hash,
+				    decl_die_table_eq, NULL);
 
   /* Allocate the initial hunk of the decl_scope_table.  */
   VARRAY_TREE_INIT (decl_scope_table, 256, "decl_scope_table");
