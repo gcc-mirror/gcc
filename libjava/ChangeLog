@@ -1,5 +1,13 @@
 2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
 
+	* java/text/FormatCharacterIterator.java: Documented the class and
+
+2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/FormatCharacterIterator.java: Fixed some typos.
+
+2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
+
 	* java/text/NumberFormat.java:
 	(getIntegerInstance) Added the java version in the comments.
 
