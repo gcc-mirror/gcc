@@ -275,3 +275,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
           asm_fprintf (FILE, "%I0r%s", dstr);				\
         }								\
     } while (0)
+
+#undef BLOCK_PROFILER_CODE
+#define BLOCK_PROFILER_CODE						\
+extern int ___tcov_init;						\
+									\
+__bb_init_func (blocks)							\
+	struct bb *blocks;						\
+{									\
+  if (! ___tcov_init)							\
+    ___tcov_init_func ();						\
+									\
+  ___bb_link (blocks->filename, blocks->counts, blocks->ncounts);	\
+}

@@ -971,7 +971,7 @@ reorg.o : reorg.c $(CONFIG_H) $(RTL_H) conditions.h hard-reg-set.h \
    flags.h output.h
 sched.o : sched.c $(CONFIG_H) $(RTL_H) basic-block.h regs.h hard-reg-set.h \
    flags.h insn-config.h insn-attr.h
-final.o : final.c $(CONFIG_H) $(RTL_H) gvarargs.h flags.h regs.h \
+final.o : final.c $(CONFIG_H) $(RTL_H) $(TREE_H) gvarargs.h flags.h regs.h \
    recog.h conditions.h insn-config.h insn-attr.h real.h output.h \
    hard-reg-set.h insn-flags.h insn-codes.h gstab.h xcoffout.h defaults.h
 recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
