@@ -1,3 +1,9 @@
+2003-10-09  Jason Merrill  <jason@redhat.com>
+
+	* parse.y (patch_assignment): Use make_node to create a BLOCK.
+	* parse.h (BUILD_PTR_FROM_NAME): Use make_node to create a
+	POINTER_TYPE.
+
 2003-10-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (java.info): Replace with ...

@@ -391,8 +391,6 @@ struct stmt_status GTY(())
 static int using_eh_for_cleanups_p = 0;
 
 static int n_occurrences (int, const char *);
-static bool parse_input_constraint (const char **, int, int, int, int,
-				    const char * const *, bool *, bool *);
 static bool decl_conflicts_with_clobbers_p (tree, const HARD_REG_SET);
 static void expand_goto_internal (tree, rtx, rtx);
 static int expand_fixup (tree, rtx, rtx);
@@ -1253,7 +1251,7 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 
 /* Similar, but for input constraints.  */
 
-static bool
+bool
 parse_input_constraint (const char **constraint_p, int input_num,
 			int ninputs, int noutputs, int ninout,
 			const char * const * constraints,
@@ -1463,9 +1461,6 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
     vol = 1;
 
   if (! check_operand_nalternatives (outputs, inputs))
-    return;
-
-  if (! check_unique_operand_names (outputs, inputs))
     return;
 
   string = resolve_asm_operand_names (string, outputs, inputs);
@@ -1974,6 +1969,8 @@ resolve_asm_operand_names (tree string, tree outputs, tree inputs)
   char *p;
   const char *c;
   tree t;
+
+  check_unique_operand_names (outputs, inputs);
 
   /* Substitute [<name>] in input constraint strings.  There should be no
      named operands in output constraints.  */

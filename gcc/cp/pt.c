@@ -5182,7 +5182,18 @@ instantiate_class_template (tree type)
     SET_ANON_AGGR_TYPE_P (type);
 
   pbinfo = TYPE_BINFO (pattern);
-  
+
+#ifdef ENABLE_CHECKING
+  if (DECL_CLASS_SCOPE_P (TYPE_MAIN_DECL (pattern))
+      && ! COMPLETE_TYPE_P (TYPE_CONTEXT (type))
+      && ! TYPE_BEING_DEFINED (TYPE_CONTEXT (type)))
+    /* We should never instantiate a nested class before its enclosing
+       class; we need to look up the nested class by name before we can
+       instantiate it, and that lookup should instantiate the enclosing
+       class.  */
+    abort ();
+#endif
+
   if (BINFO_BASETYPES (pbinfo))
     {
       tree base_list = NULL_TREE;
