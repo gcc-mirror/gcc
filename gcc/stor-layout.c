@@ -125,11 +125,19 @@ variable_size (tree size)
      just return SIZE unchanged.  Likewise for self-referential sizes and
      constant sizes.  */
   if (TREE_CONSTANT (size)
+      || TREE_CODE (size) == SAVE_EXPR
       || lang_hooks.decls.global_bindings_p () < 0
       || CONTAINS_PLACEHOLDER_P (size))
     return size;
 
-  size = save_expr (size);
+  /* Force creation of a SAVE_EXPR.  This solves (1) code duplication 
+     problems between parent and nested functions that occasionally can't
+     be cleaned up because of portions of the expression escaping the
+     parent function via the FRAME object, and (2) tree sharing problems
+     between the type system and the gimple code, which can leak SSA_NAME
+     objects into e.g. TYPE_SIZE, which cause heartburn when emitting
+     debug information.  */
+  size = build1 (SAVE_EXPR, TREE_TYPE (size), size);
 
   /* If an array with a variable number of elements is declared, and
      the elements require destruction, we will emit a cleanup for the
