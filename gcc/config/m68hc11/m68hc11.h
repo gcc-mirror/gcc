@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 68HC11 and 68HC12.
    Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
-   Contributed by Stephane Carrez (stcarrez@worldnet.fr)
+   Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GNU CC.
 
@@ -213,6 +213,10 @@ extern const char *m68hc11_soft_reg_count;
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
 #define OVERRIDE_OPTIONS	m68hc11_override_options ();
+
+/* Define this to change the optimizations performed by default.  */
+#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) \
+m68hc11_optimization_options(LEVEL, SIZE)
 
 
 /* Define cost parameters for a given processor variant.  */
