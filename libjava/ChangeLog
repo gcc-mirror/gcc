@@ -1,3 +1,15 @@
+2005-04-05  Andrew Haley  <aph@redhat.com>
+
+	* gnu/gcj/tools/gcj_dbtool/Main.java (Fileset): New class.
+	(Tokenizer): New class.
+	(getFiles): New method.
+	(main): Add "-" argument.
+	Add "-0" argument.
+	Read list of files from stdin when merging map databases.
+	(usage):  Add "-" argument.
+	Add "-0" argument.
+	Minor corrections.
+
 2005-04-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/20750
