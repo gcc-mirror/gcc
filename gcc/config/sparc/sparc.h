@@ -1048,6 +1048,33 @@ extern union tree_node *current_function_decl;
    ARGLIST is the argument list; see expr.c.  */
 extern struct rtx_def *sparc_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS(ARGLIST) sparc_builtin_saveregs (ARGLIST)
+
+/* Generate RTL to flush the register windows so as to make arbitrary frames
+   available.  */
+#define SETUP_FRAME_ADDRESSES()		\
+  emit_insn (gen_flush_register_windows ())
+
+/* Given an rtx for the address of a frame,
+   return an rtx for the address of the word in the frame
+   that holds the dynamic chain--the previous frame's address.  */
+#define DYNAMIC_CHAIN_ADDRESS(frame) \
+  gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 56))
+
+/* The return address isn't on the stack, it is in a register, so we can't
+   access it from the current frame pointer.  We can access it from the
+   previous frame pointer though by reading a value from the register window
+   save area.  */
+#define RETURN_ADDR_IN_PREVIOUS_FRAME
+
+/* The current return address is in %i7.  The return address of anything
+   farther back is in the register window save area at [%fp+60].  */
+/* ??? This ignores the fact that the actual return address is +8 for normal
+   returns, and +12 for structure returns.  */
+#define RETURN_ADDR_RTX(count, frame)		\
+  ((count == -1)				\
+   ? gen_rtx (REG, Pmode, 31)			\
+   : copy_to_reg (gen_rtx (MEM, Pmode,		\
+			   memory_address (Pmode, plus_constant (frame, 60)))))
 
 /* Addressing modes, and classification of registers for them.  */
 
