@@ -1,3 +1,7 @@
+2000-10-07  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/Properties.java: Merged with Classpath version.
+
 2000-10-05  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/natField.cc (BooleanClass): Don't define.
