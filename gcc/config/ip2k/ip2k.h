@@ -808,8 +808,6 @@ extern int ip2k_reorg_merge_qimode;
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
   fprintf ((FILE), "/* profiler %d */", (LABELNO))
 
-#define TARGET_MEM_FUNCTIONS
-
 #undef ENDFILE_SPEC
 #undef LINK_SPEC
 #undef STARTFILE_SPEC

@@ -2944,17 +2944,10 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  tree builtin = built_in_decls [DECL_FUNCTION_CODE (decl)];
 	  SET_DECL_RTL (builtin, NULL_RTX);
 	  change_decl_assembler_name (builtin, get_identifier (starred));
-#ifdef TARGET_MEM_FUNCTIONS
 	  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMCPY)
 	    init_block_move_fn (starred);
 	  else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMSET)
 	    init_block_clear_fn (starred);
-#else
-	  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_BCOPY)
-	    init_block_move_fn (starred);
-	  else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_BZERO)
-	    init_block_clear_fn (starred);
-#endif
 	}
       SET_DECL_RTL (decl, NULL_RTX);
       change_decl_assembler_name (decl, get_identifier (starred));

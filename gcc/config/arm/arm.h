@@ -536,9 +536,6 @@ extern int arm_is_6_or_7;
    that is controlled by the APCS-FRAME option.  */
 #define CAN_DEBUG_WITHOUT_FP
 
-#undef  TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS 1
-
 #define OVERRIDE_OPTIONS  arm_override_options ()
 
 /* Nonzero if PIC code requires explicit qualifiers to generate

@@ -21,11 +21,6 @@ Boston, MA 02111-1307, USA.  */
 /* The system headers under RTEMS are C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
 
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif
-
 /*
  * Dummy start/end specification to let linker work as
  * needed by autoconf scripts using this compiler.

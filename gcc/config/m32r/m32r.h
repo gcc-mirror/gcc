@@ -1260,11 +1260,6 @@ L2:     .word STATIC
     }										\
   while (0)
 
-/* Library calls.  */
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#define TARGET_MEM_FUNCTIONS
-
 #define RETURN_ADDR_RTX(COUNT, FRAME) m32r_return_addr (COUNT)
 
 #define INCOMING_RETURN_ADDR_RTX   gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)

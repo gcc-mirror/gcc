@@ -3232,10 +3232,6 @@ enum mdep_reorg_phase_e
 
 extern enum mdep_reorg_phase_e mdep_reorg_phase;
 
-/* Generate calls to memcpy, memcmp and memset.  */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* Handle Renesas compiler's pragmas.  */
 #define REGISTER_TARGET_PRAGMAS() do {					\
   c_register_pragma (0, "interrupt", sh_pr_interrupt);			\

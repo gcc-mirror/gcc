@@ -1556,15 +1556,6 @@ do {									\
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
   ia64_initialize_trampoline((ADDR), (FNADDR), (STATIC_CHAIN))
 
-/* Implicit Calls to Library Routines */
-
-/* Define this macro if GCC should generate calls to the System V (and ANSI
-   C) library functions `memcpy' and `memset' rather than the BSD functions
-   `bcopy' and `bzero'.  */
-
-#define TARGET_MEM_FUNCTIONS
-
-
 /* Addressing Modes */
 
 /* Define this macro if the machine supports post-increment addressing.  */

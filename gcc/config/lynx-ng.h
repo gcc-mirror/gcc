@@ -64,10 +64,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SDB_DEBUGGING_INFO 1
 
-/* Generate calls to memcpy, memcmp and memset.  */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* Handle #pragma pack and sometimes #pragma weak.  */
 
 #define HANDLE_SYSV_PRAGMA 1

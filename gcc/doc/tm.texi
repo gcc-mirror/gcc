@@ -4811,17 +4811,6 @@ refers to the global ``variable'' @code{errno}.  (On certain systems,
 macro, a reasonable default is used.
 @end defmac
 
-@cindex @code{bcopy}, implicit usage
-@cindex @code{memcpy}, implicit usage
-@cindex @code{memmove}, implicit usage
-@cindex @code{bzero}, implicit usage
-@cindex @code{memset}, implicit usage
-@defmac TARGET_MEM_FUNCTIONS
-Define this macro if GCC should generate calls to the ISO C
-(and System V) library functions @code{memcpy}, @code{memmove} and
-@code{memset} rather than the BSD functions @code{bcopy} and @code{bzero}.
-@end defmac
-
 @cindex C99 math functions, implicit usage
 @defmac TARGET_C99_FUNCTIONS
 When this macro is nonzero, GCC will implicitly optimize @code{sin} calls into

@@ -806,11 +806,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
  mmix_initialize_trampoline (ADDR, FNADDR, STATIC_CHAIN)
 
 
-/* Node: Library Calls */
-
-#define TARGET_MEM_FUNCTIONS
-
-
 /* Node: Addressing Modes */
 
 #define CONSTANT_ADDRESS_P(X) \

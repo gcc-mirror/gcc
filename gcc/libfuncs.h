@@ -27,11 +27,8 @@ enum libfunc_index
   LTI_abort,
   LTI_memcpy,
   LTI_memmove,
-  LTI_bcopy,
   LTI_memcmp,
-  LTI_bcmp,
   LTI_memset,
-  LTI_bzero,
   LTI_setbits,
 
   LTI_unwind_resume,
@@ -58,11 +55,8 @@ extern GTY(()) rtx libfunc_table[LTI_MAX];
 #define abort_libfunc	(libfunc_table[LTI_abort])
 #define memcpy_libfunc	(libfunc_table[LTI_memcpy])
 #define memmove_libfunc	(libfunc_table[LTI_memmove])
-#define bcopy_libfunc	(libfunc_table[LTI_bcopy])
 #define memcmp_libfunc	(libfunc_table[LTI_memcmp])
-#define bcmp_libfunc	(libfunc_table[LTI_bcmp])
 #define memset_libfunc	(libfunc_table[LTI_memset])
-#define bzero_libfunc	(libfunc_table[LTI_bzero])
 #define setbits_libfunc	(libfunc_table[LTI_setbits])
 
 #define unwind_resume_libfunc	(libfunc_table[LTI_unwind_resume])

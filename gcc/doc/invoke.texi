@@ -5437,9 +5437,9 @@ or @option{-nodefaultlibs} is used.
 Do not use the standard system libraries when linking.
 Only the libraries you specify will be passed to the linker.
 The standard startup files are used normally, unless @option{-nostartfiles}
-is used.  The compiler may generate calls to memcmp, memset, and memcpy
-for System V (and ISO C) environments or to bcopy and bzero for
-BSD environments.  These entries are usually resolved by entries in
+is used.  The compiler may generate calls to @code{memcmp},
+@code{memset}, @code{memcpy} and @code{memmove}.
+These entries are usually resolved by entries in
 libc.  These entry points should be supplied through some other
 mechanism when this option is specified.
 
@@ -5447,9 +5447,9 @@ mechanism when this option is specified.
 @opindex nostdlib
 Do not use the standard system startup files or libraries when linking.
 No startup files and only the libraries you specify will be passed to
-the linker.  The compiler may generate calls to memcmp, memset, and memcpy
-for System V (and ISO C) environments or to bcopy and bzero for
-BSD environments.  These entries are usually resolved by entries in
+the linker.  The compiler may generate calls to @code{memcmp}, @code{memset},
+@code{memcpy} and @code{memmove}.
+These entries are usually resolved by entries in
 libc.  These entry points should be supplied through some other
 mechanism when this option is specified.
 

@@ -58,10 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 #endif
 
-/* Implicit library calls should use memcpy, not bcopy, etc.  */
-
-#define TARGET_MEM_FUNCTIONS
-
 /* Handle #pragma weak and #pragma pack.  */
 
 #define HANDLE_SYSV_PRAGMA 1
