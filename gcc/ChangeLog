@@ -1,5 +1,9 @@
 Thu Oct  8 04:26:20 1998  Michael Hayes <m.hayes@elec.canterbury.ac.nz>
 
+	* flags.h (flag_branch_on_count_reg): Always declare 
+	* toplev.c (flag_branch_on_count_reg): Likewise.
+	* toplev.c: Fix typos.
+
 	* real.c (c4xtoe): Remove unused variables.  Add some missing parens.
 	(toc4x): Similarly.
 
