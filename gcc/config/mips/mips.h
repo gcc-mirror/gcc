@@ -132,6 +132,7 @@ extern struct rtx_def *mips_load_reg;	/* register to check for load delay */
 extern struct rtx_def *mips_load_reg2;	/* 2nd reg to check for load delay */
 extern struct rtx_def *mips_load_reg3;	/* 3rd reg to check for load delay */
 extern struct rtx_def *mips_load_reg4;	/* 4th reg to check for load delay */
+extern struct rtx_def *embedded_pic_fnaddr_rtx;	/* function address */
 
 /* Functions within mips.c that we reference.  */
 
@@ -183,6 +184,8 @@ extern int		simple_memory_operand ();
 extern int		small_int ();
 extern void		trace();
 extern int		uns_arith_operand ();
+extern struct rtx_def *	embedded_pic_offset ();
+extern void		mips_finalize_pic ();
 
 /* Recognition functions that return if a condition is true.  */
 extern int		address_operand ();
@@ -1292,6 +1295,7 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 #define PIC_FUNCTION_ADDR_REGNUM (GP_REG_FIRST + 25)
 
+#define FINALIZE_PIC mips_finalize_pic ()
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -2246,8 +2250,14 @@ typedef struct mips_args {
 	     appropriate relocation.  */				\
 									\
 	  /* Also accept CONST_INT addresses here, so no else.  */	\
+	  /* Reject combining an embedded PIC text segment reference	\
+	     with a register.  That requires an additional		\
+	     instruction.  */						\
 	  if (!TARGET_DEBUG_A_MODE					\
-	      && CONSTANT_ADDRESS_P (xplus1))				\
+	      && CONSTANT_ADDRESS_P (xplus1)				\
+	      && (!TARGET_EMBEDDED_PIC					\
+		  || code1 != CONST					\
+		  || GET_CODE (XEXP (xplus1, 0)) != MINUS))		\
 	    goto ADDR;							\
 	}								\
     }									\
@@ -2430,7 +2440,20 @@ typedef struct mips_args {
 #define ENCODE_SECTION_INFO(DECL)					\
 do									\
   {									\
-    if (TARGET_GP_OPT && TREE_CODE (DECL) == VAR_DECL)			\
+    if (TARGET_EMBEDDED_PIC)						\
+      {									\
+        if (TREE_CODE (DECL) == VAR_DECL)				\
+	  SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
+        else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+	  SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 0;		\
+	else if (TREE_CODE (DECL) == STRING_CST				\
+		 && ! flag_writable_strings)				\
+	  SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 0;		\
+        else								\
+	  SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 1;		\
+      }									\
+									\
+    else if (TARGET_GP_OPT && TREE_CODE (DECL) == VAR_DECL)		\
       {									\
 	int size = int_size_in_bytes (TREE_TYPE (DECL));		\
 									\
