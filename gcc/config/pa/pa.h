@@ -581,13 +581,6 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 
-HP-PA immediate field sizes:
-  5 bits: scalar/floating short loads + stores; deposit; conditional branch
-  11 bits: arithmetic immediate, compare immediate
-  14 bits: loads and stores; load offset
-  21 bits: load and add immediate long (but this isn't really used)
-  (there are also 13-bit and 26-bit immediates but only in system instructions)
-
    `I' is used for the 11 bit constants.
    `J' is used for the 14 bit constants.
    `K' is used for values that can be moved with a zdepi insn.
