@@ -848,17 +848,6 @@ reg_not_elim_operand (op, mode)
 
   return register_operand (op, mode);
 }
-
-/* Return 1 if this function can directly return via $26.  */
-
-int
-direct_return ()
-{
-  return (! TARGET_OPEN_VMS && reload_completed && alpha_sa_size () == 0
-	  && get_frame_size () == 0
-	  && current_function_outgoing_args_size == 0
-	  && current_function_pretend_args_size == 0);
-}
 
 /* Return 1 is OP is a memory location that is not an reference (using
    an AND) to an unaligned location.  Take into account what reload
@@ -881,6 +870,17 @@ normal_memory_operand (op, mode)
     }
 
   return GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) != AND;
+}
+
+/* Return 1 if this function can directly return via $26.  */
+
+int
+direct_return ()
+{
+  return (! TARGET_OPEN_VMS && reload_completed && alpha_sa_size () == 0
+	  && get_frame_size () == 0
+	  && current_function_outgoing_args_size == 0
+	  && current_function_pretend_args_size == 0);
 }
 
 /* REF is an alignable memory location.  Place an aligned SImode
