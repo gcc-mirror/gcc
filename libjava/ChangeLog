@@ -1,5 +1,25 @@
 2003-03-29  Tom Tromey  <tromey@redhat.com>
 
+	* java/text/MessageFormat.java: Removed some whitespace.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new files.
+	* gnu/javax/rmi/PortableServer.java,
+	gnu/javax/rmi/CORBA/DelegateFactory.java,
+	gnu/javax/rmi/CORBA/GetDelegateInstanceException.java,
+	gnu/javax/rmi/CORBA/PortableRemoteObjectDelegateImpl.java,
+	gnu/javax/rmi/CORBA/StubDelegateImpl.java,
+	gnu/javax/rmi/CORBA/UtilDelegateImpl.java,
+	gnu/javax/rmi/CORBA/ValueHandlerImpl.java,
+	javax/rmi/BAD_OPERATION.java, javax/rmi/ORB.java,
+	javax/rmi/PortableRemoteObject.java,
+	javax/rmi/CORBA/ClassDesc.java, javax/rmi/CORBA/ObjectImpl.java,
+	javax/rmi/CORBA/PortableRemoteObjectDelegate.java,
+	javax/rmi/CORBA/Stub.java, javax/rmi/CORBA/StubDelegate.java,
+	javax/rmi/CORBA/SystemException.java, javax/rmi/CORBA/Tie.java,
+	javax/rmi/CORBA/Util.java, javax/rmi/CORBA/UtilDelegate.java,
+	javax/rmi/CORBA/ValueHandler.java: New files from Classpath.
+
 	* java/lang/natClass.cc (newInstance): Put method name in
 	exception.
 	(getConstructor): Likewise.
