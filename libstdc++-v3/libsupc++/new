@@ -31,7 +31,6 @@
 #ifndef __NEW__
 #define __NEW__
 
-#pragma interface "new"
 #include <cstddef>
 #include <exception>
 
@@ -42,7 +41,8 @@ namespace std
   class bad_alloc : public exception 
   {
   public:
-    virtual const char* what() const throw() { return "bad_alloc"; }
+    bad_alloc() throw() { }
+    virtual ~bad_alloc() throw();
   };
 
   struct nothrow_t { };

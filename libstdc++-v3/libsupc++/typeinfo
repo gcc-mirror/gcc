@@ -30,8 +30,6 @@
 #ifndef __TYPEINFO__
 #define __TYPEINFO__
 
-#pragma interface "typeinfo"
-
 #include <exception>
 
 extern "C++" {
@@ -118,14 +116,14 @@ namespace std
   {
   public:
     bad_cast() throw() { }
-    virtual ~bad_cast() throw() { }
+    virtual ~bad_cast() throw();
   };
   
   class bad_typeid : public exception 
   {
   public:
     bad_typeid () throw() { }
-    virtual ~bad_typeid () throw() { }
+    virtual ~bad_typeid () throw();
   };
 } // namespace std
 
