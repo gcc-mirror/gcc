@@ -2878,11 +2878,6 @@ do {                                                                    \
   (*targetm.asm_out.internal_label) (STREAM, PREFIX, NUM);                      \
 } while (0)
 
-/* Define this to determine whether case statement labels are relative to
-   the start of the case statement or not.  */
-
-#define CASE_VECTOR_PC_RELATIVE (flag_pic)
-
 
 /* Assembler Commands for Exception Regions.  */
 
