@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script
 
-AC_PREREQ(2.5)
+AC_PREREQ(2.12.1)
 AC_INIT(pexecute.c)
 
 dnl We use these options to decide which functions to include.

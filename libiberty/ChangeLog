@@ -1,3 +1,7 @@
+Mon Nov 23 16:59:49 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	*  configure.in: Use AC_PREREQ(2.12.1).
+
 1998-11-16  Benjamin Kosnik  <bkoz@haight.constant.com>
 
         * cplus-dem.c (demangle_fund_type): Add demangling for C9x types.
