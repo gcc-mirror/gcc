@@ -1,3 +1,24 @@
+2003-09-19  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* win32-threads.cc: (ensure_interrupt_event_initialized) New
+	function for lazy initialization of an auto-reset event.
+	(_Jv_CondWait) Added thread interrupt support.
+	(_Jv_ThreadInitData) Added initialization of interrupt support
+	members.
+	(_Jv_ThreadDestroyData) Added cleanup of interrupt support members.
+	(_Jv_ThreadStart) Removed unused code.
+	(_Jv_Win32GetInterruptEvent) New method for returning interrupt event
+	to an external caller.
+	(_Jv_ThreadInterrupt) Implemented.
+	* include/win32-threads.h: (_Jv_Thread_t) Added a Win32 auto-reset
+	event for interrupt support as well as a mutex which regulates
+	access to this.
+	(_Jv_Win32GetInterruptEvent) Declared new method for returning interrupt
+	event to an external caller.
+	* java/lang/natWin32Process.cc: (cleanup) Close handle to spawned
+	process.
+	(waitFor) Added interrupt support.
+
 2003-09-19  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java (getLocalAddress):

@@ -50,6 +50,14 @@ typedef struct
 {
   int flags;            // Flags are defined in implementation.
   HANDLE handle;        // Actual handle to the thread
+
+  // Protects access to the thread's interrupt_flag and
+  // interrupt_event variables within this module.
+  CRITICAL_SECTION interrupt_mutex;
+  
+  // A Win32 auto-reset event for thread interruption
+  HANDLE interrupt_event;
+
   java::lang::Thread *thread_obj;
 } _Jv_Thread_t;
 
@@ -149,6 +157,24 @@ void _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
 		      _Jv_ThreadStartFunc *meth);
 void _Jv_ThreadWait (void);
 void _Jv_ThreadInterrupt (_Jv_Thread_t *data);
+
+//
+// Thread interruption support
+//
+
+// Gets the auto-reset event for the current thread which is
+// signalled by _Jv_ThreadInterrupt. The caller can wait on this
+// event in addition to other waitable objects.
+//
+// NOTE: After waiting on this event with WaitForMultipleObjects,
+// you should ALWAYS use the return value of WaitForMultipleObjects
+// to test whether this event was signalled and whether thread
+// interruption has occurred. You should do this instead of checking
+// the thread's interrupted_flag, because someone could have reset
+// this flag in the interval of time between the return of
+// WaitForMultipleObjects and the time you query interrupted_flag.
+// See java/lang/natWin32Process.cc (waitFor) for an example.
+HANDLE _Jv_Win32GetInterruptEvent (void);
 
 // Remove defines from <windows.h> that conflict with various things in libgcj code
 
