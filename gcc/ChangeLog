@@ -1,3 +1,7 @@
+Thu Oct 31 16:09:44 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (negdf2_ifs_rex64): Don't allow GPR operand.
+
 Thu Oct 31 12:45:55 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (binary_logical_operator): Declare.
