@@ -1,3 +1,15 @@
+2004-07-15  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/16574
+	* java/sql/Timestamp.java (dateFormat): Renamed from sdf.
+	(decimalFormat): New static variable.
+	(sbuf): Likewise.
+	(getTime): New. Override Date.getTime().
+	(toString): Synchronize. Use decimalFormat to format nanos value
+	correctly. Truncate extra zeros.
+	(before): Compare getNanos() only if getTime() is equal.
+	(after): Likewise.
+	
 2004-07-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* acinclude.m4: "Inline" LIBGCJ_CONFIGURE macro into...
