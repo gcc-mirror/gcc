@@ -1,3 +1,8 @@
+2004-07-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* interpret.cc (run): Correctly access libffi return values of
+	integral smaller-than-int type; these are implicitly promoted.
+
 2004-07-13  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/7587
