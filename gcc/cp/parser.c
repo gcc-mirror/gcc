@@ -2783,11 +2783,16 @@ cp_parser_primary_expression (cp_parser *parser,
 		     && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl)))
 		/* Const variables or static data members of integral
 		   or enumeration types initialized with constant
-		   expressions.  */
+     expressions (or dependent expressions - in this case
+     the check will be done at instantiation time). */
 		&& !(TREE_CODE (decl) == VAR_DECL
 		     && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
 		     && DECL_INITIAL (decl)
-		     && TREE_CONSTANT (DECL_INITIAL (decl))))
+       && (TREE_CONSTANT (DECL_INITIAL (decl))
+    || type_dependent_expression_p 
+       (DECL_INITIAL (decl))
+    || value_dependent_expression_p 
+       (DECL_INITIAL (decl)))))
 	      {
 		if (!parser->allow_non_constant_expression_p)
 		  return cp_parser_non_constant_id_expression (decl);
