@@ -3752,18 +3752,18 @@ do_line (pfile, keyword, unused1, unused2)
       }
       if (*p == '1')
 	file_change = enter_file;
-      else if (*p == 2)
+      else if (*p == '2')
 	file_change = leave_file;
-      else if (*p == 3)
+      else if (*p == '3')
 	ip->system_header_p = 1;
-      else /* if (*p == 4) */
+      else /* if (*p == '4') */
 	ip->system_header_p = 2;
 
       CPP_SET_WRITTEN (pfile, num_start);
       token = get_directive_token (pfile);
       p = pfile->token_buffer + num_start;
       if (token == CPP_NUMBER && p[1] == '\0' && (*p == '3' || *p== '4')) {
-	ip->system_header_p = *p == 3 ? 1 : 2;
+	ip->system_header_p = *p == '3' ? 1 : 2;
 	token = get_directive_token (pfile);
       }
       if (token != CPP_VSPACE) {
@@ -7649,6 +7649,15 @@ cpp_error_from_errno (pfile, name)
      cpp_reader *pfile;
      const char *name;
 {
+  cpp_message_from_errno (pfile, 1, name);
+}
+
+void
+cpp_message_from_errno (pfile, is_error, name)
+     cpp_reader *pfile;
+     int is_error;
+     const char *name;
+{
   int e = errno;
   cpp_buffer *ip = cpp_file_buffer (pfile);
 
@@ -7657,7 +7666,7 @@ cpp_error_from_errno (pfile, name)
   if (ip != NULL)
     cpp_file_line_for_message (pfile, ip->nominal_fname, ip->lineno, -1);
 
-  cpp_message (pfile, 1, "%s: %s", name, my_strerror (e));
+  cpp_message (pfile, is_error, "%s: %s", name, my_strerror (e), "");
 }
 
 void
