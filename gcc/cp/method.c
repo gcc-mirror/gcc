@@ -435,15 +435,7 @@ build_overload_int (value, in_template)
      tree value;
      int in_template;
 {
-  if (TREE_CODE (value) == TEMPLATE_CONST_PARM)
-    {
-      OB_PUTC ('Y');
-      build_underscore_int (TEMPLATE_CONST_IDX (value));
-      build_underscore_int (TEMPLATE_CONST_LEVEL (value));
-      return;
-    }
-  else if (in_template
-	   && TREE_CODE (value) != INTEGER_CST)
+  if (in_template && TREE_CODE (value) != INTEGER_CST)
     /* We don't ever want this output, but it's inconvenient not to
        be able to build the string.  This should cause assembler
        errors we'll notice.  */
@@ -485,6 +477,14 @@ build_overload_value (type, value, in_template)
     {
       OB_PUTC ('_');
       numeric_output_need_bar = 0;
+    }
+
+  if (TREE_CODE (value) == TEMPLATE_CONST_PARM)
+    {
+      OB_PUTC ('Y');
+      build_underscore_int (TEMPLATE_CONST_IDX (value));
+      build_underscore_int (TEMPLATE_CONST_LEVEL (value));
+      return;
     }
 
   if (TREE_CODE (type) == POINTER_TYPE
