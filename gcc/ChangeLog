@@ -1,3 +1,8 @@
+Sat Jan  9 20:04:24 1999  Richard Henderson  <rth@cygnus.com>
+
+	* tree.c (copy_node): Oops.  That would be copy not zero
+	in that last change.
+
 Sun Jan 10 15:35:41 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c: Include system.h.
