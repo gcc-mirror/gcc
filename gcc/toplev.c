@@ -35,8 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include <ctype.h>
 #include <sys/stat.h>
-
-#ifndef _WIN32
+#if !defined (_WIN32) || defined (__CYGWIN32__)
 #ifdef USG
 #undef FLOAT
 #include <sys/param.h>
@@ -989,7 +988,7 @@ int dump_time;
 int
 get_run_time ()
 {
-#ifndef _WIN32
+#if !defined (_WIN32) || defined (__CYGWIN32__)
 #ifdef USG
   struct tms tms;
 #else
@@ -1009,7 +1008,7 @@ get_run_time ()
 
   if (quiet_flag)
     return 0;
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (__CYGWIN32__)
   if (clock() < 0)
     return 0;
   else
