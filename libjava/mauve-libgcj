@@ -16,14 +16,11 @@ java.lang.String.hash
 !java.security
 !java.sql
 java.text.StringCharacterIterator.iter
-# FIXME: can't enable these until we eliminate compiler bug.
-# java.text.FieldPosition.Test
-# java.text.ParsePosition.Test
-# java.text.SimpleDateFormat.getAndSet2DigitYearStart
+java.text.FieldPosition.Test
+java.text.ParsePosition.Test
+java.text.SimpleDateFormat.getAndSet2DigitYearStart
 !java.text.ACIAttribute
 !java.text.AttributedCharacterIterator
-java.text.Collator
-java.text.RuleBasedCollator
 !java.text.resources
 !java.text.DateFormat
 !java.util.zip
