@@ -2137,6 +2137,10 @@ named_class_head_sans_basetype:
 named_class_head_sans_basetype_defn:
 	  aggr identifier_defn  %prec EMPTY
 		{ current_aggr = $$; $$ = $2; }
+	| named_class_head_sans_basetype '{'
+		{ yyungetc ('{', 1); }
+	| named_class_head_sans_basetype ':'
+		{ yyungetc (':', 1); }
 	;
 
 named_complex_class_head_sans_basetype:
