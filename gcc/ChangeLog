@@ -1,3 +1,15 @@
+Sun Apr  8 22:50:49 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/xm-cygwin.h (GET_ENV_PATH_LIST): Eliminate obsolete
+	function.  Remove include of sys/cygwin.h.
+
+Sun Apr  8 22:20:27 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h (STARTFILE_SPEC): search */lib/w32api by default.
+	(CPP_SPEC): Always search */include/w32api for header files.
+	(ASM_OUTPUT_SECTION_NAME): Avoid testing NULL DECL.
+	(LINK_SPEC): Add "cyg" to the library search prefixes.
+
 2001-04-08  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.h (ASM_OUTPUT_LABELREF): Use asm_fprintf.

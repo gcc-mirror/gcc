@@ -60,6 +60,29 @@ Boston, MA 02111-1307, USA. */
 { "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" }, \
 { "threads",		  0, N_("Use Mingw-specific thread support") },
 
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-D_X86_=1 -Asystem=winnt"
+
+#ifdef CROSS_COMPILE
+#define CYGWIN_INCLUDES "-idirafter " CYGWIN_CROSS_DIR "/include"
+#define W32API_INC "-idirafter " CYGWIN_CROSS_DIR "/include/w32api"
+#define W32API_LIB "-L" CYGWIN_CROSS_DIR "/lib/w32api/"
+#define CYGWIN_LIB CYGWIN_CROSS_DIR "/lib"
+#define MINGW_LIBS "-L" CYGWIN_CROSS_DIR "/lib/mingw"
+#define MINGW_INCLUDES "-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++-3 "\
+		       "-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++ "\
+		       "-idirafter " CYGWIN_CROSS_DIR "/include/mingw"
+#else
+#define CYGWIN_INCLUDES "-isystem /usr/local/include -idirafter /usr/include"
+#define W32API_INC "-idirafter /usr/include/w32api"
+#define W32API_LIB "-L/usr/lib/w32api/"
+#define CYGWIN_LIB "/usr/lib"
+#define MINGW_LIBS "-L/usr/local/lib/mingw -L/usr/lib/mingw"
+#define MINGW_INCLUDES "-isystem /usr/include/mingw/g++-3 "\
+		       "-isystem /usr/include/mingw/g++ "\
+		       "-isystem /usr/local/include/mingw" \
+		       "-idirafter /usr/include/mingw"
+#endif
 
 /* Support the __declspec keyword by turning them into attributes.
    We currently only support: dllimport and dllexport.
@@ -69,41 +92,6 @@ Boston, MA 02111-1307, USA. */
    is that args are not accumulated: each new appearance would clobber any
    existing args.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_X86_=1 -Asystem=winnt"
-
-/* Normally, -lgcc is not needed since everything in it is in the DLL, but we
-   want to allow things to be added to it when installing new versions of
-   GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
-   by calling the init function from the prologue. */
-
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lmsvcrt}"
-
-#ifdef CROSS_COMPILE
-#define CYGWIN_INCLUDES "-idirafter " CYGWIN_CROSS_DIR "/include"
-#define CYGWIN_W32API "-idirafter " CYGWIN_CROSS_DIR "/include/w32api"
-#define CYGWIN_LIB CYGWIN_CROSS_DIR "/lib"
-#define MINGW_LIBS "-L" CYGWIN_CROSS_DIR "/lib/mingw"
-#define MINGW_INCLUDES "-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++-3 "\
-		       "-isystem " CYGWIN_CROSS_DIR "/include/mingw/g++ "\
-		       "-idirafter " CYGWIN_CROSS_DIR "/include/mingw"
-#else
-#define CYGWIN_INCLUDES "-isystem /usr/local/include -idirafter /usr/include"
-#define CYGWIN_W32API "-idirafter /usr/include/w32api"
-#define CYGWIN_LIB "/usr/lib"
-#define MINGW_LIBS "-L/usr/local/lib/mingw -L/usr/lib/mingw"
-#define MINGW_INCLUDES "-isystem /usr/include/mingw/g++-3 "\
-		       "-isystem /usr/include/mingw/g++ "\
-		       "-isystem /usr/local/include/mingw" \
-		       "-idirafter /usr/include/mingw"
-#endif
-
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt2%O%s}} \
-  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " mingw/crt2%O%s} \
-  %{pg:gcrt0%O%s}}}"
-
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   -D__stdcall=__attribute__((__stdcall__)) \
@@ -112,13 +100,29 @@ Boston, MA 02111-1307, USA. */
     -D_cdecl=__attribute__((__cdecl__))} \
   -D__declspec(x)=__attribute__((x)) \
   -D__i386__ -D__i386 \
-  %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
-  %{mno-cygwin:-D__MSVCRT__ -D__MINGW32__ %{mthreads:-D_MT} " MINGW_INCLUDES \
-    " -mwin32} \
-  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix \
-    " CYGWIN_INCLUDES "} \
-  %{mwin32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT " CYGWIN_W32API "} \
+  %{mno-win32:%{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
+  %{mno-cygwin:-D__MSVCRT__ -D__MINGW32__ %{mthreads:-D_MT} "\
+    MINGW_INCLUDES "} \
+  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix "\
+    CYGWIN_INCLUDES "}\
+  %{mwin32|no-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT}\
+  %{!mno-win32:" W32API_INC "}\
 "
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC W32API_LIB "\
+  %{shared|mdll: %{mno-cygwin:" MINGW_LIBS " mingw/dllcrt2%O%s}}\
+  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " mingw/crt2%O%s}\
+  %{pg:gcrt0%O%s}}}\
+"
+
+/* Normally, -lgcc is not needed since everything in it is in the DLL, but we
+   want to allow things to be added to it when installing new versions of
+   GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
+   by calling the init function from the prologue. */
+
+#undef LIBGCC_SPEC
+#define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lmsvcrt}"
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -154,7 +158,8 @@ Boston, MA 02111-1307, USA. */
   %{static:-Bstatic} %{!static:-Bdynamic} \
   %{shared|mdll: -e \
     %{mno-cygwin:_DllMainCRTStartup@12} \
-    %{!mno-cygwin:__cygwin_dll_entry@12}}"
+    %{!mno-cygwin:__cygwin_dll_entry@12}}\
+  --dll-search-prefix=cyg"
 
 #undef MATH_LIBRARY
 #define MATH_LIBRARY ""
@@ -451,7 +456,7 @@ do {									\
   else									\
     {									\
       type = SECT_RW;							\
-      if (TREE_CODE (DECL) == VAR_DECL					\
+      if (DECL && TREE_CODE (DECL) == VAR_DECL				\
 	  && lookup_attribute ("shared", DECL_MACHINE_ATTRIBUTES (DECL))) \
 	mode = "ws";							\
       else								\
@@ -522,9 +527,6 @@ do {									\
 
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
-
-/* DWARF2 Unwinding doesn't work with exception handling yet. */
-#define DWARF2_UNWIND_INFO 0
 
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
