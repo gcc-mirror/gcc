@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This file is part of the libiberty library.
@@ -81,37 +81,38 @@ higher_prime_number (n)
   /* These are primes that are near, but slightly smaller than, a
      power of two.  */
   static unsigned long primes[] = {
-    2,
-    7,
-    13,
-    31,
-    61,
-    127,
-    251,
-    509,
-    1021,
-    2039,
-    4093,
-    8191,
-    16381,
-    32749,
-    65521,
-    131071,
-    262139,
-    524287,
-    1048573,
-    2097143,
-    4194301,
-    8388593,
-    16777213,
-    33554393,
-    67108859,
-    134217689,
-    268435399,
-    536870909,
-    1073741789,
-    2147483647,
-    4294967291
+    (unsigned long) 2,
+    (unsigned long) 7,
+    (unsigned long) 13,
+    (unsigned long) 31,
+    (unsigned long) 61,
+    (unsigned long) 127,
+    (unsigned long) 251,
+    (unsigned long) 509,
+    (unsigned long) 1021,
+    (unsigned long) 2039,
+    (unsigned long) 4093,
+    (unsigned long) 8191,
+    (unsigned long) 16381,
+    (unsigned long) 32749,
+    (unsigned long) 65521,
+    (unsigned long) 131071,
+    (unsigned long) 262139,
+    (unsigned long) 524287,
+    (unsigned long) 1048573,
+    (unsigned long) 2097143,
+    (unsigned long) 4194301,
+    (unsigned long) 8388593,
+    (unsigned long) 16777213,
+    (unsigned long) 33554393,
+    (unsigned long) 67108859,
+    (unsigned long) 134217689,
+    (unsigned long) 268435399,
+    (unsigned long) 536870909,
+    (unsigned long) 1073741789,
+    (unsigned long) 2147483647,
+					/* 4294967291L */
+    ((unsigned long) 2147483647) + ((unsigned long) 2147483644),
   };
 
   unsigned long* low = &primes[0];
