@@ -1314,6 +1314,7 @@ extern int tree_int_cst_equal		PROTO((tree, tree));
 extern int tree_int_cst_lt		PROTO((tree, tree));
 extern int tree_int_cst_sgn		PROTO((tree));
 extern int index_type_equal		PROTO((tree, tree));
+extern tree get_inner_array_type	PROTO((tree));
 
 /* From expmed.c.  Since rtl.h is included after tree.h, we can't
    put the prototype here.  Rtl.h does declare the prototype if
