@@ -1,5 +1,7 @@
 2001-06-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	* doc/texinfo.texi: Copied from mainline.
+
 	* doc/install.texi (ix86-*-solaris*): Removed, outdated.
 	(*-*-solaris*): Document problem in /bin/sh that affects
 	configuring libraries.
