@@ -1,3 +1,7 @@
+2004-12-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/altivec-18.c: Fix for darwin
+
 2004-12-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18782

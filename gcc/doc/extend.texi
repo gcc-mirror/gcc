@@ -6620,9 +6620,10 @@ A vector initializer requires no cast if the vector constant is of the
 same type as the variable it is initializing.
 
 @item
-If @code{signed} or @code{unsigned} is omitted, the vector type defaults
-to @code{signed} for @code{vector int} or @code{vector short} and to
-@code{unsigned} for @code{vector char}.
+If @code{signed} or @code{unsigned} is omitted, the signedness of the
+vector type is the default signedness of the base type.  The default
+varies depending on the operating system, so a portable program should
+always specify the signedness.
 
 @item
 Compiling with @option{-maltivec} adds keywords @code{__vector},
