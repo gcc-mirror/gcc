@@ -63,6 +63,16 @@ static rtx find_addr_reg ();
 
 unsigned int total_code_bytes;
 
+/* Variables to handle plabels that we discover are necessary at assembly
+   output time.  They are output after the currrent function.  */
+
+struct defer_plab
+{
+  rtx internal_label;
+  rtx symbol;
+} *deferred_plabels = 0;
+int n_deferred_plabels = 0;
+
 void
 override_options ()
 {
@@ -2330,8 +2340,8 @@ output_function_epilogue (file, size)
      FILE *file;
      int size;
 {
-
   rtx insn = get_last_insn ();
+  int i;
 
   /* hppa_expand_epilogue does the dirty work now.  We just need
      to output the assembler directives which denote the end
@@ -2356,6 +2366,23 @@ output_function_epilogue (file, size)
     fprintf (file, "\tnop\n");
 
   fprintf (file, "\t.EXIT\n\t.PROCEND\n");
+
+  /* If we have deferred plabels, then we need to switch into the data
+     section and align it to a 4 byte boundary before we output the
+     deferred plabels.  */
+  if (n_deferred_plabels)
+    {
+      data_section ();
+      ASM_OUTPUT_ALIGN (file, 2);
+    }
+
+  /* Now output the deferred plabels.  */
+  for (i = 0; i < n_deferred_plabels; i++)
+    {
+      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
+      ASM_OUTPUT_INT (file, deferred_plabels[i].symbol);
+    }
+  n_deferred_plabels = 0;
 }
 
 void
@@ -4109,10 +4136,36 @@ output_call (insn, call_dest, return_pointer)
 	    }
 	}
 
-      /* Now emit the inline long-call.  */
-      xoperands[0] = call_dest;
-      output_asm_insn ("ldil LP%%%0,%%r22\n\tldo RP%%%0(%%r22),%%r22",
-			xoperands);
+      if (flag_pic)
+	{
+	  /* We have to load the address of the function using a procedure
+	     label (plabel).  The LP and RP relocs don't work reliably for PIC,
+	     so we make a plain 32 bit plabel in the data segment instead.  We
+	     have to defer outputting it of course...  Not pretty.  */
+
+	  xoperands[0] = gen_label_rtx ();
+	  output_asm_insn ("addil LT%%%0,%%r19\n\tldw RT%%%0(%%r1),%%r22",
+			   xoperands);
+	  output_asm_insn ("ldw 0(0,%%r22),%%r22", xoperands);
+
+	  if (deferred_plabels == 0)
+	    deferred_plabels = (struct defer_plab *)
+	      xmalloc (1 * sizeof (struct defer_plab));
+	  else
+	    deferred_plabels = (struct defer_plab *)
+	      xrealloc (deferred_plabels,
+			(n_deferred_plabels + 1) * sizeof (struct defer_plab));
+	  deferred_plabels[n_deferred_plabels].internal_label = xoperands[0];
+	  deferred_plabels[n_deferred_plabels].symbol = call_dest;
+	  n_deferred_plabels++;
+	}
+      else
+	{
+	  /* Now emit the inline long-call.  */
+	  xoperands[0] = call_dest;
+	  output_asm_insn ("ldil LP%%%0,%%r22\n\tldo RP%%%0(%%r22),%%r22",
+			   xoperands);
+	}
 
       /* If TARGET_MILLICODE_LONG_CALLS, then we must use a long-call sequence
 	 to call dyncall!  */
