@@ -5144,7 +5144,7 @@ rs6000_va_arg (tree valist, tree type)
   sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
 
   size = int_size_in_bytes (type);
-  rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  rsize = (size + 3) / 4;
   align = 1;
 
   if (AGGREGATE_TYPE_P (type)
@@ -5158,7 +5158,7 @@ rs6000_va_arg (tree valist, tree type)
       n_reg = 1;
       sav_ofs = 0;
       sav_scale = 4;
-      size = UNITS_PER_WORD;
+      size = 4;
       rsize = 1;
     }
   else if (TARGET_HARD_FLOAT && TARGET_FPRS
@@ -5240,6 +5240,14 @@ rs6000_va_arg (tree valist, tree type)
       emit_barrier ();
 
       emit_label (lab_false);
+      if (n_reg > 2)
+	{
+	  /* Ensure that we don't find any more args in regs.
+	     Alignment has taken care of the n_reg == 2 case.  */
+	  t = build (MODIFY_EXPR, TREE_TYPE (reg), reg, build_int_2 (8, 0));
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	}
     }
 
   /* ... otherwise out of the overflow area.  */
