@@ -1,5 +1,10 @@
 2003-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcse.c (gmalloc): Argument is a size_t.  Add ATTRIBUTE_MALLOC.
+	(grealloc): Size argument is a size_t.
+	(gcalloc): New function.  Use throughout in lieu of
+	gmalloc/memset.
+
 	* config/avr/avr.c (avr_init_once): Use xcalloc in lieu of
 	xmalloc/memset.
 	* config/ia64/ia64.c (ia64_reorg): Likewise.
