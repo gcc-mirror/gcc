@@ -4715,7 +4715,7 @@ a lot of functions that would otherwise not be considered for inlining
 by the compiler will be investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
-The default value is 150.
+The default value is 120.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions greater than this
@@ -4723,7 +4723,7 @@ limit inlining is constrained by @option{--param large-function-growth}.
 This parameter is useful primarily to avoid extreme compilation time caused by non-linear
 algorithms used by the backend.
 This parameter is ignored when @option{-funit-at-a-time} is not used.
-The default value is 30000.
+The default value is 3000.
 
 @item large-function-growth
 Specifies maximal growth of large functtion caused by inlining in percents.
