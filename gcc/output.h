@@ -137,7 +137,6 @@ extern void cleanup_cfg			PARAMS ((rtx));
 extern void calculate_loop_depth      PARAMS ((FILE *));
 extern void free_basic_block_vars     PARAMS ((int));
 extern void set_block_num             PARAMS ((rtx, int));
-extern void life_analysis             PARAMS ((rtx, int, FILE *, int));
 #endif
 
 /* Functions in varasm.c.  */

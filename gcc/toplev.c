@@ -3247,7 +3247,7 @@ rest_of_compilation (decl)
        cleanup_cfg (insns);
        if (optimize)
 	 calculate_loop_depth (rtl_dump_file);
-       life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
+       life_analysis (insns, rtl_dump_file, PROP_FINAL);
        mark_constant_function ();
      });
 
@@ -3434,7 +3434,7 @@ rest_of_compilation (decl)
       TIMEVAR (flow2_time,
 	       {
 		 cleanup_cfg (insns);
-		 life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
+		 life_analysis (insns, rtl_dump_file, PROP_FINAL);
 	       });
 
       /* This is kind of heruistics.  We need to run combine_stack_adjustments

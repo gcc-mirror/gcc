@@ -855,7 +855,7 @@ convert_to_ssa()
   if (in_ssa_form)
     abort ();
 
-  life_analysis (get_insns (), max_reg_num (), NULL, 1);
+  life_analysis (get_insns (), NULL, PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE);
 
   /* Compute dominators.  */
   dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
@@ -1812,7 +1812,7 @@ convert_from_ssa()
     
   /* We need up-to-date life information.  */
   compute_bb_for_insn (get_max_uid ());
-  life_analysis (insns, max_reg_num (), NULL, 0);
+  life_analysis (insns, NULL, PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
      therefore can be coalesced.  */
