@@ -1166,7 +1166,7 @@ small_symbolic_operand (op, mode)
   /* ??? There's no encode_section_info equivalent for the rtl
      constant pool, so SYMBOL_FLAG_SMALL never gets set.  */
   if (CONSTANT_POOL_ADDRESS_P (op))
-    return GET_MODE_SIZE (get_pool_mode (op)) <= (unsigned) g_switch_value;
+    return GET_MODE_SIZE (get_pool_mode (op)) <= g_switch_value;
 
   return (SYMBOL_REF_LOCAL_P (op)
 	  && SYMBOL_REF_SMALL_P (op)
@@ -1891,7 +1891,7 @@ alpha_in_small_data_p (exp)
 
       /* If this is an incomplete type with size 0, then we can't put it
 	 in sdata because it might be too big when completed.  */
-      if (size > 0 && size <= g_switch_value)
+      if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
 	return true;
     }
 

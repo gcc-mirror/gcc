@@ -1,3 +1,37 @@
+2003-05-18  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* flags.h (g_switch_value): Change to an unsigned
+	HOST_WIDE_INT.
+	* toplev.c (g_switch_value): Likewise.
+
+	* config/alpha/alpha.c (small_symbolic_operand): Remove
+	g_switch_value cast. 
+	(alpha_in_small_data_p): Cast size to an unsigned
+	HOST_WIDE_INT.
+
+	* config/frv/frv.c (frv_in_small_data_p): Cast size to an
+	unsigned HOST_WIDE_INT.
+	* config/frv/frv.h (g_switch_value, g_switch_set): Remove.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Declare g_switch_set.
+
+	* config/m32r/m32r.c (m32r_in_small_data_p): Cast size to an
+	unsigned HOST_WIDE_INT.
+	(m32r_asm_file_start): Use HOST_WIDE_INT_PRINT_UNSIGNED.
+	* config/m32r/m32r.h (g_switch_value, g_switch_set): Remove.
+	(ASM_OUTPUT_ALIGNED_COMMON): Declare g_switch_value.
+
+	* config/rs6000/rs6000.c (rs6000_file_start): Use
+	HOST_WIDE_INT_PRINT_UNSIGNED.
+	(small_data_operand): Cast summand to unsigned HOST_WIDE_INT.
+	(rs6000_elf_in_small_data_p): Cast size to unsigned
+	HOST_WIDE_INT.
+	* config/rs6000/sysv4.h (g_switch_value, g_switch_set):
+	Remove.
+	(SUBTARGET_OVERRIDE_OPTIONS): Declare g_switch_value and
+	g_switch_set.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Declare g_switch_value and remove
+	g_switch_value cast.
+
 2003-05-18  Roger Sayle  <roger@eyesopen.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 

@@ -433,7 +433,7 @@ m32r_in_small_data_p (decl)
 	{
 	  int size = int_size_in_bytes (TREE_TYPE (decl));
 
-	  if (size > 0 && size <= g_switch_value)
+	  if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
 	    return true;
 	}
     }
@@ -2208,7 +2208,8 @@ m32r_asm_file_start (file)
      FILE * file;
 {
   if (flag_verbose_asm)
-    fprintf (file, "%s M32R/D special options: -G %d\n",
+    fprintf (file,
+	     "%s M32R/D special options: -G " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 	     ASM_COMMENT_START, g_switch_value);
 }
 

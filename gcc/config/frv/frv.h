@@ -554,9 +554,6 @@ extern int target_flags;
 #define SDATA_DEFAULT_SIZE 8
 #endif
 
-extern int g_switch_value;        /* value of the -G xx switch */
-extern int g_switch_set;          /* whether -G xx was passed.  */
-
 
 /* Storage Layout */
 
@@ -2783,6 +2780,8 @@ extern int size_directive_output;
 #undef ASM_OUTPUT_ALIGNED_DECL_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                   	\
+  extern unsigned HOST_WIDE_INT g_switch_value;				\
+									\
   if ((SIZE) > 0 && (SIZE) <= g_switch_value)				\
     sbss_section ();                                                 	\
   else                                                                 	\

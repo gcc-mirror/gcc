@@ -89,11 +89,6 @@ extern const char *rs6000_tls_size_string; /* For -mtls-size= */
   { "tls-size=", &rs6000_tls_size_string,					\
    N_("Specify bit size of immediate TLS offsets"), 0 }
 
-/* Max # of bytes for variables to automatically be put into the .sdata
-   or .sdata2 sections.  */
-extern int g_switch_value;		/* Value of the -G xx switch.  */
-extern int g_switch_set;		/* Whether -G xx was passed.  */
-
 #define SDATA_DEFAULT_SIZE 8
 
 /* Note, V.4 no longer uses a normal TOC, so make -mfull-toc, be just
@@ -171,6 +166,9 @@ extern int g_switch_set;		/* Whether -G xx was passed.  */
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
+  extern unsigned HOST_WIDE_INT g_switch_value;				\
+  extern int g_switch_set;						\
+									\
   if (!g_switch_set)							\
     g_switch_value = SDATA_DEFAULT_SIZE;				\
 									\
@@ -665,8 +663,10 @@ extern int rs6000_pic_labelno;
 #undef	ASM_OUTPUT_ALIGNED_LOCAL
 #define	ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
+  extern unsigned HOST_WIDE_INT g_switch_value;				\
+									\
   if (rs6000_sdata != SDATA_NONE && (SIZE) > 0				\
-      && (SIZE) <= (unsigned HOST_WIDE_INT)g_switch_value)		\
+      && (SIZE) <= g_switch_value)					\
     {									\
       sbss_section ();							\
       ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\

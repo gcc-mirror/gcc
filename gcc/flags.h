@@ -586,7 +586,7 @@ extern int frame_pointer_needed;
 extern int flag_trapv;
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
-extern int g_switch_value;
+extern unsigned HOST_WIDE_INT g_switch_value;
 extern int g_switch_set;
 
 /* Values of the -falign-* flags: how much to align labels in code. 
