@@ -1,3 +1,8 @@
+2000-11-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-common.c (status_warning) [! ANSI_PROTOTYPES]: Load status
+	from va_list before using it.
+
 2000-11-30  Michael Matz  <matzmich@cs.tu-berlin.de>
 
 	* flow.c (make_edge): Early out, if no flags to set.
