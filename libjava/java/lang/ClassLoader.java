@@ -450,7 +450,7 @@ public abstract class ClassLoader
 				  + "are meaningless");
 
     // as per 5.3.5.1
-    if (name != null  &&  findLoadedClass (name) != null)
+    if (name != null && findLoadedClass (name) != null)
       throw new java.lang.LinkageError ("class " 
 					+ name 
 					+ " already loaded");
@@ -731,7 +731,7 @@ public abstract class ClassLoader
    * @param     name  class to find.
    * @return    the class loaded, or null.
    */ 
-  protected final Class findLoadedClass(String name)
+  protected final synchronized Class findLoadedClass(String name)
   {
     return (Class) loadedClasses.get(name);
   }

@@ -1,5 +1,7 @@
 2002-12-11  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/ClassLoader.java (findLoadedClass): Now synchronized.
+
 	* java/lang/ClassLoader.java (loadedClasses): New field.
 	(defineClass): Fixed indentation.  Put new class in
 	loadedClasses.
