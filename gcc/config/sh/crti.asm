@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    This file was adapted from glibc sources.
 
 This file is part of GNU CC.
@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
    such object files.  */
 
 	.section .init
-/* The alignment below can't be smaller, otherwide the mova below
+/* The alignment below can't be smaller, otherwise the mova below
    breaks.  Yes, we might align just the label, but then we'd be
    exchanging an alignment here for one there, since the code fragment
    below ensures 4-byte alignment on __ELF__.  */
@@ -70,7 +70,7 @@ _init:
 #endif
 
 	.section .fini
-/* The alignment below can't be smaller, otherwide the mova below
+/* The alignment below can't be smaller, otherwise the mova below
    breaks.  Yes, we might align just the label, but then we'd be
    exchanging an alignment here for one there, since the code fragment
    below ensures 4-byte alignment on __ELF__.  */
