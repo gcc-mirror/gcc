@@ -1,3 +1,10 @@
+2002-11-25  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (type::compatible): Check initialization status
+	first.
+	* interpret.cc (run) [insn_invokespecial, invokespecial_resolved]:
+	Don't use NULLCHECK.
+
 2002-11-23  Mark Wielaard  <mark@klomp.org>
 
 	* javax/naming/AuthenticationException.java: Update copyright header.
