@@ -4554,6 +4554,7 @@ v4si f (v4si a, v4si b, v4si c)
 @findex atan2l
 @findex bcmp
 @findex bzero
+@findex calloc
 @findex ceil
 @findex ceilf
 @findex ceill
@@ -4596,6 +4597,7 @@ v4si f (v4si a, v4si b, v4si c)
 @findex log
 @findex logf
 @findex logl
+@findex malloc
 @findex memcmp
 @findex memcpy
 @findex mempcpy
@@ -4630,6 +4632,7 @@ v4si f (v4si a, v4si b, v4si c)
 @findex strcmp
 @findex strcpy
 @findex strcspn
+@findex strdup
 @findex strlen
 @findex strncat
 @findex strncmp
@@ -4670,7 +4673,8 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
 @option{-std=c99}), the functions @code{alloca}, @code{bcmp},
 @code{bzero}, @code{_exit}, @code{ffs}, @code{fprintf_unlocked},
 @code{fputs_unlocked}, @code{index}, @code{mempcpy}, @code{printf_unlocked},
-@code{rindex}, and @code{stpcpy} may be handled as built-in functions.
+@code{rindex}, @code{stpcpy} and @code{strdup} 
+may be handled as built-in functions.
 All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C89
 mode.
@@ -4695,10 +4699,10 @@ that are recognized in any mode since ISO C90 reserves these names for
 the purpose to which ISO C99 puts them.  All these functions have
 corresponding versions prefixed with @code{__builtin_}.
 
-The ISO C90 functions @code{abort}, @code{abs}, @code{atan2}, @code{ceil},
-@code{cos}, @code{exit},
+The ISO C90 functions @code{abort}, @code{abs}, @code{atan2},
+@code{calloc}, @code{ceil}, @code{cos}, @code{exit},
 @code{exp}, @code{fabs}, @code{floor}, @code{fmod},
-@code{fprintf}, @code{fputs}, @code{labs}, @code{log},
+@code{fprintf}, @code{fputs}, @code{labs}, @code{log}, @code{malloc},
 @code{memcmp}, @code{memcpy}, @code{memset}, @code{pow}, @code{printf},
 @code{putchar}, @code{puts}, @code{scanf}, @code{sin}, @code{snprintf},
 @code{sprintf}, @code{sqrt}, @code{sscanf},

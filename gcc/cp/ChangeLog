@@ -1,3 +1,7 @@
+2003-04-13  Roger Sayle  <roger@eyesopen.com>
+
+	* decl.c (duplicate_decls): Preserve pure and malloc attributes.
+
 2003-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10300
