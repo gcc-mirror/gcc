@@ -1911,6 +1911,7 @@ extern rtx gen_lowpart_SUBREG (enum machine_mode, rtx);
 #define INVALID_REGNUM			(~(unsigned int) 0)
 
 extern rtx output_constant_def (tree, int);
+extern rtx lookup_constant_def (tree);
 
 /* Called from integrate.c when a deferred constant is inlined.  */
 extern void notice_rtl_inlining_of_deferred_constant (void);
