@@ -142,10 +142,10 @@ array_base_name_differ_p (struct data_reference *a,
   /* Determine if different bases.  */
 
   /* At this point we know that base_a != base_b.  However, pointer
-     accesses of the form x=(*p) and y=(*q), which bases are p and q,
-     may still pointing to the same base. In SSAed GIMPLE p and q will
-     be SSA_NAMES in this case.  Therefore, here we check if it's
-     really two diferent declarations.  */
+     accesses of the form x=(*p) and y=(*q), whose bases are p and q,
+     may still be pointing to the same base. In SSAed GIMPLE p and q will
+     be SSA_NAMES in this case.  Therefore, here we check if they are
+     really two different declarations.  */
   if (TREE_CODE (base_a) == VAR_DECL && TREE_CODE (base_b) == VAR_DECL)
     {
       *differ_p = true;
