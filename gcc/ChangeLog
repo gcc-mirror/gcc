@@ -1,3 +1,8 @@
+Sat Dec  5 18:48:25 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_emit_set_const_1): Fix parenthesis error
+	in -c << n case.
+
 Sat Dec  5 15:14:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* i960.h (BOOL_TYPE_SIZE): Define.

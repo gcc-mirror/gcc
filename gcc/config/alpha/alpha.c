@@ -1178,7 +1178,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
 	for (; bits > 0; bits--)
 	  if ((temp = (alpha_emit_set_const
 		       (subtarget, mode,
-			(unsigned HOST_WIDE_INT) c >> bits, i))) != 0
+			(unsigned HOST_WIDE_INT) (c >> bits), i))) != 0
 	      || ((temp = (alpha_emit_set_const
 			  (subtarget, mode,
 			   ((unsigned HOST_WIDE_INT) c) >> bits, i)))
