@@ -47,6 +47,12 @@ Java_calls_docall (JNIEnv *env, jobject _this)
   if (l != 2033)
     ++fails;
 
+  method = (*env)->GetStaticMethodID (env, klass, "longpb_f", "(BJBJBJ)J");
+  l = (*env)->CallStaticLongMethod (env, klass, method, (jbyte) 13, (jlong) 3,
+		  		   (jbyte) 13, (jlong) 3, (jbyte) 13, (jlong) 4);
+  if (l != 3033)
+    ++fails;
+
   method = (*env)->GetMethodID (env, klass, "void_f", "()V");
   (*env)->CallVoidMethod (env, _this, method);
 

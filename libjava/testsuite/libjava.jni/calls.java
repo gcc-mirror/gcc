@@ -37,6 +37,12 @@ public class calls extends base
     return q + 2023;
   }
 
+  public static long longpb_f (byte b1, long q1, byte b2, long q2,
+			       byte b3, long q3)
+  {
+    return q1 + q2 + q3 + 3023;
+  }
+
   public void void_f ()
   {
     System.out.println ("void");
