@@ -10,7 +10,7 @@ long fff[10];
 void f(long a)
 {
   int i;
-  a =  *((long*)(a+5)) >? *((long*)(a+1)); 
+  a =  *((long*)(a+1+sizeof(long))) >? *((long*)(a+1)); 
 
   for(i=0;i<10;i++)
    fff[i] = a;

@@ -1,3 +1,8 @@
+2004-12-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR other/19093
+	* g++.dg/opt/max1.C: Fix for 64bit targets.
+
 2004-12-20  Matt Austern  <austern@apple.com>
 
 	PR c++/19044
