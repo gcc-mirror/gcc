@@ -1,3 +1,8 @@
+2003-02-19  Daniel Jacobowitz  <drow@mvista.com>
+
+	* expr.c (expand_expr): Use gen_int_mode for the argument
+	to gen_rtx_MULT.
+
 Wed Feb 19 14:22:14 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (cosxf2):  Fix conditional.

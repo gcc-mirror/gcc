@@ -8087,6 +8087,8 @@ expand_expr (exp, target, tmode, modifier)
       if (modifier == EXPAND_SUM && mode == ptr_mode
 	  && host_integerp (TREE_OPERAND (exp, 1), 0))
 	{
+	  tree exp1 = TREE_OPERAND (exp, 1);
+
 	  op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode,
 			     EXPAND_SUM);
 
@@ -8105,9 +8107,9 @@ expand_expr (exp, target, tmode, modifier)
 	  if (GET_CODE (op0) != REG)
 	    op0 = copy_to_mode_reg (mode, op0);
 
-	  return
-	    gen_rtx_MULT (mode, op0,
-			  GEN_INT (tree_low_cst (TREE_OPERAND (exp, 1), 0)));
+	  return gen_rtx_MULT (mode, op0,
+			       gen_int_mode (tree_low_cst (exp1, 0),
+					     TYPE_MODE (TREE_TYPE (exp1))));
 	}
 
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
