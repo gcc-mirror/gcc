@@ -142,8 +142,6 @@ extern int	target_flags;
 
 #define LIBGCC2_WORDS_BIG_ENDIAN 1
 
-#define BITS_PER_UNIT 8
-
 #define BITS_PER_WORD 32
 
 #define MAX_BITS_PER_WORD 64

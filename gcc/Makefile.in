@@ -362,6 +362,7 @@ target_cpu_default=@target_cpu_default@
 GCC_THREAD_FILE=@thread_file@
 OBJC_BOEHM_GC=@objc_boehm_gc@
 GTHREAD_FLAGS=@gthread_flags@
+extra_modes_file=@extra_modes_file@
 host_hook_obj=@out_host_hook_obj@
 # Be prepared for gcc2 merges.
 gcc_version=@gcc_version@
@@ -632,7 +633,7 @@ TARGET_H = target.h
 HOOKS_H = hooks.h
 LANGHOOKS_DEF_H = langhooks-def.h $(HOOKS_H)
 TARGET_DEF_H = target-def.h $(HOOKS_H)
-MACHMODE_H = machmode.h machmode.def @extra_modes_file@
+MACHMODE_H = machmode.h mode-classes.def insn-modes.h
 RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H)
 RTL_H = $(RTL_BASE_H) genrtl.h input.h
 PARAMS_H = params.h params.def
@@ -714,7 +715,7 @@ LDEXP_LIB = @LDEXP_LIB@
 BUILD_LIBS = $(BUILD_LIBIBERTY)
 
 BUILD_RTL = $(BUILD_PREFIX)rtl.o read-rtl.o $(BUILD_PREFIX)bitmap.o \
-		$(BUILD_PREFIX)ggc-none.o
+		$(BUILD_PREFIX)ggc-none.o $(BUILD_PREFIX)insn-modes.o
 BUILD_SUPPORT = gensupport.o insn-conditions.o
 BUILD_EARLY_SUPPORT = gensupport.o dummy-conditions.o
 
@@ -834,7 +835,7 @@ OBJS-common = \
  dwarf2asm.o dwarf2out.o dwarfout.o emit-rtl.o except.o explow.o	   \
  expmed.o expr.o final.o flow.o fold-const.o function.o gcse.o		   \
  genrtl.o ggc-common.o global.o graph.o gtype-desc.o			   \
- haifa-sched.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o		   \
+ haifa-sched.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o insn-modes.o	   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o optabs.o options.o opts.o params.o postreload.o predict.o	   \
@@ -862,8 +863,8 @@ BACKEND = main.o libbackend.a
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c insn-constants.h tm-preds.h \
- tree-check.h insn-conditions.c \
- s-flags s-config s-codes s-mlib s-genrtl s-gtype gtyp-gen.h \
+ tree-check.h insn-conditions.c insn-modes.c insn-modes.h \
+ s-flags s-config s-codes s-mlib s-genrtl s-modes s-gtype gtyp-gen.h \
  s-output s-recog s-emit s-extract s-peep s-check s-conditions \
  s-attr s-attrtab s-opinit s-preds s-constants s-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
@@ -871,7 +872,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
  gencheck$(build_exeext) genpreds$(build_exeext) genconstants$(build_exeext) \
- gengtype$(build_exeext) genconditions$(build_exeext) \
+ gengtype$(build_exeext) genconditions$(build_exeext) genmodes$(build_exeext) \
  genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
@@ -2000,12 +2001,23 @@ genrtl.o : genrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
 genrtl.c genrtl.h : s-genrtl
 	@true	# force gnu make to recheck modification times.
 
-s-genrtl: gengenrtl$(build_exeext) $(srcdir)/move-if-change $(RTL_BASE_H)
+s-genrtl: gengenrtl$(build_exeext) $(srcdir)/move-if-change
 	$(RUN_GEN) ./gengenrtl$(build_exeext) -h > tmp-genrtl.h
 	$(SHELL) $(srcdir)/move-if-change tmp-genrtl.h genrtl.h
 	$(RUN_GEN) ./gengenrtl$(build_exeext) > tmp-genrtl.c
 	$(SHELL) $(srcdir)/move-if-change tmp-genrtl.c genrtl.c
 	$(STAMP) s-genrtl
+
+insn-modes.o : insn-modes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
+	       $(MACHMODE_H)
+insn-modes.c insn-modes.h : s-modes ; @true
+
+s-modes: genmodes$(build_exeext) $(srcdir)/move-if-change
+	$(RUN_GEN) ./genmodes$(build_exeext) -h > tmp-modes.h
+	$(SHELL) $(srcdir)/move-if-change tmp-modes.h insn-modes.h
+	$(RUN_GEN) ./genmodes$(build_exeext) > tmp-modes.c
+	$(SHELL) $(srcdir)/move-if-change tmp-modes.c insn-modes.c
+	$(STAMP) s-modes
 
 tm-preds.h: s-preds; @true
 
@@ -2176,8 +2188,14 @@ gengenrtl$(build_exeext) : gengenrtl.o $(BUILD_LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	 gengenrtl.o $(BUILD_LIBS)
 
-gengenrtl.o : gengenrtl.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(GTM_H) real.h
+gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
+
+genmodes$(build_exeext) : genmodes.o $(BUILD_ERRORS) $(BUILD_LIBDEPS)
+	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	 genmodes.o $(BUILD_ERRORS) $(BUILD_LIBS)
+
+genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h machmode.def \
+	     $(extra_modes_file)
 
 genpreds$(build_exeext) : genpreds.o $(BUILD_LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
@@ -2269,6 +2287,12 @@ $(BUILD_PREFIX_1)ggc-none.o: ggc-none.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYST
 	rm -f $(BUILD_PREFIX)ggc-none.c
 	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/ggc-none.c > $(BUILD_PREFIX)ggc-none.c
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)ggc-none.c $(OUTPUT_OPTION)
+
+$(BUILD_PREFIX_1)insn-modes.o: insn-modes.c $(BCONFIG_H) $(SYSTEM_H) \
+			       coretypes.h $(GTM_H) $(MACHMODE_H)
+	rm -f $(BUILD_PREFIX)insn-modes.c
+	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/insn-modes.c > $(BUILD_PREFIX)insn-modes.c
+	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)insn-modes.c $(OUTPUT_OPTION)
 
 #
 # Remake internationalization support.

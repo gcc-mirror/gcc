@@ -1,6 +1,7 @@
 /* This file contains the definitions and documentation for the
    machine modes used in the GNU compiler.
-   Copyright (C) 1987, 1992, 1994, 1997, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1994, 1997, 1998, 2000, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,145 +32,165 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    has a machine mode which describes data of that type or the
    data of the variable declared.  */
 
-/* The first argument is the internal name of the machine mode
-   used in the C source.
-   By convention these are in UPPER_CASE, except for the word  "mode".
+/* This file is included by the genmodes program.  Its text is the
+   body of a function.  Do not rely on this, it will change in the
+   future.
 
-   The second argument  is the name of the machine mode in the
-   external ASCII format used for reading and printing RTL and trees.
-   By convention these names in UPPER_CASE.
+   The following statements can be used in this file -- all have
+   the form of a C macro call.  In their arguments:
 
-   Third argument states the kind of representation:
-   MODE_INT - integer
-   MODE_FLOAT - floating
-   MODE_PARTIAL_INT - PQImode, PHImode, PSImode and PDImode
-   MODE_CC - modes used for representing the condition code in a register
-   MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT - complex number
-   MODE_VECTOR_INT, MODE_VECTOR_FLOAT - vector
-   MODE_RANDOM - anything else
+   A CLASS argument must be one of the constants defined in
+   mode-classes.def, less the leading MODE_ prefix; some statements
+   that take CLASS arguments have restructions on which classes are
+   acceptable.  For instance, INT.
 
-   Fourth argument is the relative size of the object, in bits,
-   so we can have modes smaller than 1 byte.
+   A MODE argument must be the printable name of a machine mode,
+   without quotation marks or trailing "mode".  For instance, SI.
 
-   Fifth argument is the relative size of the object, in bytes.
-   It is zero when the size is meaningless or not determined.
-   A byte's size is determined by BITS_PER_UNIT in tm.h. 
+   A BITSIZE, BYTESIZE, or COUNT argument must be a positive integer
+   constant.
 
-   Sixth arg is the relative size of subunits of the object.
-   It is same as the fifth argument except for complexes and vectors,
-   since they are really made of many equal size subunits.
+   Order matters in this file in so far as statements which refer to
+   other modes must appear after the modes they refer to.  However,
+   statements which do not refer to other modes may appear in any
+   order.
 
-   Seventh arg is next wider natural mode of the same class.  0 if
-   there is none.  Vector modes use this field to point to the next
-   vector size, so we can iterate through the different vectors modes.
-   The ordering is by increasing byte size, with QI coming before HI,
-   HI before SI, etc.
+     RANDOM_MODE (MODE);
+        declares MODE to be of class RANDOM.
 
-   Eigth arg is the mode of the internal elements in a vector or
-   complex, and VOIDmode if not applicable.
-*/
+     CC_MODE (MODE);
+        declares MODE to be of class CC.
+
+     INT_MODE (MODE, BYTESIZE);
+        declares MODE to be of class INT and BYTESIZE bytes wide.
+	All of the bits of its representation are significant.
+
+     FRACTIONAL_INT_MODE (MODE, BITSIZE, BYTESIZE);
+        declares MODE to be of class INT, BYTESIZE bytes wide in
+	storage, but with only BITSIZE significant bits.
+
+     FLOAT_MODE (MODE, BYTESIZE);
+        declares MODE to be of class FLOAT and BYTESIZE bytes wide.
+	All of the bits of its representation are significant.
+
+     FRACTIONAL_FLOAT_MODE (MODE, BITSIZE, BYTESIZE);
+        declares MODE to be of class FLOAT, BYTESIZE bytes wide in
+	storage, but with only BITSIZE significant bits.
+
+     PARTIAL_INT_MODE (MODE);
+        declares a mode of class PARTIAL_INT with the same size as
+	MODE (which must be an INT mode).  The name of the new mode
+	is made by prefixing a P to the name MODE.  This statement
+	may grow a BITSIZE argument in the future.
+
+     VECTOR_MODE (CLASS, MODE, COUNT);
+        Declare a vector mode whose component mode is MODE (of class
+	CLASS) with COUNT components.  CLASS must be INT or FLOAT.
+	The name of the vector mode takes the form VnX where n is
+	COUNT in decimal and X is MODE.
+
+     VECTOR_MODES (CLASS, WIDTH);
+        For all modes presently declared in class CLASS, construct
+	corresponding vector modes having width WIDTH.  Modes whose
+	byte sizes do not evenly divide WIDTH are ignored, as are
+	modes that would produce vector modes with only one component,
+	and modes smaller than one byte (if CLASS is INT) or smaller
+	than two bytes (if CLASS is FLOAT).  CLASS must be INT or
+	FLOAT.  The names follow the same rule as VECTOR_MODE uses.
+
+     COMPLEX_MODES (CLASS);
+        For all modes presently declared in class CLASS, construct
+	corresponding complex modes.  Modes smaller than one byte
+	are ignored.  For FLOAT modes, the names are derived by
+	replacing the 'F' in the mode name with a 'C'.  (It is an
+	error if there is no 'F'.  For INT modes, the names are
+	derived by prefixing a C to the name.
+
+     BITS_PER_UNIT (COUNT);
+        Sets the number of bits in a machine byte (least addressable
+	unit).  If this statement does not appear, the default is 8.
+
+   Note: If a mode is ever made which is more than 255 bytes wide,
+   machmode.h and genmodes.c will have to be changed to allocate
+   more space for the mode_size and mode_alignment arrays.  */
 
 /* VOIDmode is used when no mode needs to be specified,
    as for example on CONST_INT RTL expressions.  */
-DEF_MACHMODE (VOIDmode, "VOID", MODE_RANDOM, 0, 0, 0, VOIDmode, VOIDmode)
+RANDOM_MODE (VOID);
 
-DEF_MACHMODE (BImode, "BI", MODE_INT, 1, 1, 1, QImode, VOIDmode)
-DEF_MACHMODE (QImode, "QI", MODE_INT, BITS_PER_UNIT, 1, 1, HImode, VOIDmode)
-DEF_MACHMODE (HImode, "HI", MODE_INT, BITS_PER_UNIT*2, 2, 2, SImode, VOIDmode)
-DEF_MACHMODE (SImode, "SI", MODE_INT, BITS_PER_UNIT*4, 4, 4, DImode, VOIDmode)
-DEF_MACHMODE (DImode, "DI", MODE_INT, BITS_PER_UNIT*8, 8, 8, TImode, VOIDmode)
-DEF_MACHMODE (TImode, "TI", MODE_INT, BITS_PER_UNIT*16, 16, 16, OImode, VOIDmode)
-DEF_MACHMODE (OImode, "OI", MODE_INT, BITS_PER_UNIT*32, 32, 32, VOIDmode, VOIDmode)
+/* BLKmode is used for structures, arrays, etc.
+   that fit no more specific mode.  */
+RANDOM_MODE (BLK);
+
+/* Single bit mode used for booleans.  */
+FRACTIONAL_INT_MODE (BI, 1, 1);
+
+/* Basic integer modes.  */
+INT_MODE (QI, 1);
+INT_MODE (HI, 2);
+INT_MODE (SI, 4);
+INT_MODE (DI, 8);
+INT_MODE (TI, 16);
+INT_MODE (OI, 32);
 
 /* Pointers on some machines use these types to distinguish them from
    ints.  Useful if a pointer is 4 bytes but has some bits that are
    not significant, so it is really not quite as wide as an integer.  */
-DEF_MACHMODE (PQImode, "PQI", MODE_PARTIAL_INT, BITS_PER_UNIT, 1, 1, PHImode, VOIDmode)
-DEF_MACHMODE (PHImode, "PHI", MODE_PARTIAL_INT, BITS_PER_UNIT*2, 2, 2, PSImode, VOIDmode)
-DEF_MACHMODE (PSImode, "PSI", MODE_PARTIAL_INT, BITS_PER_UNIT*4, 4, 4, PDImode, VOIDmode)
-DEF_MACHMODE (PDImode, "PDI", MODE_PARTIAL_INT, BITS_PER_UNIT*8, 8, 8, VOIDmode, VOIDmode)
+PARTIAL_INT_MODE (QI);
+PARTIAL_INT_MODE (HI);
+PARTIAL_INT_MODE (SI);
+PARTIAL_INT_MODE (DI);
 
-DEF_MACHMODE (QFmode, "QF", MODE_FLOAT, BITS_PER_UNIT, 1, 1, HFmode, VOIDmode)
-DEF_MACHMODE (HFmode, "HF", MODE_FLOAT, BITS_PER_UNIT*2, 2, 2, TQFmode, VOIDmode)
-DEF_MACHMODE (TQFmode, "TQF", MODE_FLOAT, BITS_PER_UNIT*3, 3, 3, SFmode, VOIDmode) /* MIL-STD-1750A */
-DEF_MACHMODE (SFmode, "SF", MODE_FLOAT, BITS_PER_UNIT*4, 4, 4, DFmode, VOIDmode)
-DEF_MACHMODE (DFmode, "DF", MODE_FLOAT, BITS_PER_UNIT*8, 8, 8, XFmode, VOIDmode)
-DEF_MACHMODE (XFmode, "XF", MODE_FLOAT, BITS_PER_UNIT*12, 12, 12, TFmode, VOIDmode) /* IEEE extended */
-DEF_MACHMODE (TFmode, "TF", MODE_FLOAT, BITS_PER_UNIT*16, 16, 16, VOIDmode, VOIDmode)
+/* Basic floating point modes.  */
+FLOAT_MODE (QF, 1);	/* C4x single precision */
+FLOAT_MODE (HF, 2);	/* C4x double precision */
+FLOAT_MODE (TQF, 3);	/* MIL-STD-1750a */
+FLOAT_MODE (SF, 4);
+FLOAT_MODE (DF, 8);
+FLOAT_MODE (XF, 12);	/* IEEE extended (80-bit) */
+FLOAT_MODE (TF, 16);
 
-/* Complex modes.  */
-DEF_MACHMODE (QCmode, "QC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*2, 2, 1, HCmode, QFmode)
-DEF_MACHMODE (HCmode, "HC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*4, 4, 2, SCmode, HFmode)
-DEF_MACHMODE (SCmode, "SC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*8, 8, 4, DCmode, SFmode)
-DEF_MACHMODE (DCmode, "DC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*16, 16, 8, XCmode, DFmode)
-DEF_MACHMODE (XCmode, "XC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*24, 24, 12, TCmode, XFmode)
-DEF_MACHMODE (TCmode, "TC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*32, 32, 16, VOIDmode, TFmode)
+/* Basic CC modes.  */
+CC_MODE (CC);
 
-DEF_MACHMODE (CQImode, "CQI", MODE_COMPLEX_INT, BITS_PER_UNIT*2, 2, 1, CHImode, QImode)
-DEF_MACHMODE (CHImode, "CHI", MODE_COMPLEX_INT, BITS_PER_UNIT*4, 4, 2, CSImode, HImode)
-DEF_MACHMODE (CSImode, "CSI", MODE_COMPLEX_INT, BITS_PER_UNIT*8, 8, 4, CDImode, SImode)
-DEF_MACHMODE (CDImode, "CDI", MODE_COMPLEX_INT, BITS_PER_UNIT*16, 16, 8, CTImode, DImode)
-DEF_MACHMODE (CTImode, "CTI", MODE_COMPLEX_INT, BITS_PER_UNIT*32, 32, 16, COImode, TImode)
-DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, BITS_PER_UNIT*64, 64, 32, VOIDmode, OImode)
-
-/* Vector modes.  */
-/* The wider mode field for vectors follows in order of increasing bit
-   size with QI coming before HI, HI before SI, and SI before DI
-   within same bit sizes.  */
-DEF_MACHMODE (V1DImode, "V1DI", MODE_VECTOR_INT, BITS_PER_UNIT*8, 8, 8, V2QImode, DImode)
-DEF_MACHMODE (V2QImode, "V2QI", MODE_VECTOR_INT, BITS_PER_UNIT*2, 2, 1, V4QImode, QImode)
-DEF_MACHMODE (V2HImode, "V2HI", MODE_VECTOR_INT, BITS_PER_UNIT*4, 4, 2, V8QImode, HImode)
-DEF_MACHMODE (V2SImode, "V2SI", MODE_VECTOR_INT, BITS_PER_UNIT*8, 8, 4, V16QImode, SImode)
-DEF_MACHMODE (V2DImode, "V2DI", MODE_VECTOR_INT, BITS_PER_UNIT*16, 16, 8, V8SImode, DImode)
-
-DEF_MACHMODE (V4QImode, "V4QI", MODE_VECTOR_INT, BITS_PER_UNIT*4, 4, 1, V2HImode, QImode)
-DEF_MACHMODE (V4HImode, "V4HI", MODE_VECTOR_INT, BITS_PER_UNIT*8, 8, 2, V2SImode, HImode)
-DEF_MACHMODE (V4SImode, "V4SI", MODE_VECTOR_INT, BITS_PER_UNIT*16, 16, 4, V2DImode, SImode)
-DEF_MACHMODE (V4DImode, "V4DI", MODE_VECTOR_INT, BITS_PER_UNIT*32, 32, 8, V8DImode, DImode)
-
-DEF_MACHMODE (V8QImode, "V8QI", MODE_VECTOR_INT, BITS_PER_UNIT*8, 8, 1, V4HImode, QImode)
-DEF_MACHMODE (V8HImode, "V8HI", MODE_VECTOR_INT, BITS_PER_UNIT*16, 16, 2, V4SImode, HImode)
-DEF_MACHMODE (V8SImode, "V8SI", MODE_VECTOR_INT, BITS_PER_UNIT*32, 32, 4, V4DImode, SImode)
-DEF_MACHMODE (V8DImode, "V8DI", MODE_VECTOR_INT, BITS_PER_UNIT*64, 64, 8, VOIDmode, DImode)
-
-DEF_MACHMODE (V16QImode, "V16QI", MODE_VECTOR_INT, BITS_PER_UNIT*16, 16, 1, V8HImode, QImode)
-
-DEF_MACHMODE (V2HFmode, "V2HF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*4, 4, 2, V4HFmode, HFmode)
-DEF_MACHMODE (V2SFmode, "V2SF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*8, 8, 4, V4SFmode, SFmode)
-DEF_MACHMODE (V2DFmode, "V2DF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*16, 16, 8, V8SFmode, DFmode)
-
-DEF_MACHMODE (V4HFmode, "V4HF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*8,  8,  2, V2SFmode, HFmode)
-DEF_MACHMODE (V4SFmode, "V4SF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*16, 16, 4, V2DFmode, SFmode)
-DEF_MACHMODE (V4DFmode, "V4DF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*32, 32, 8, V8DFmode, DFmode)
-
-DEF_MACHMODE (V8HFmode, "V8HF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*16, 16, 2, V4SFmode, HFmode)
-DEF_MACHMODE (V8SFmode, "V8SF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*32, 32, 4, V4DFmode, SFmode)
-DEF_MACHMODE (V8DFmode, "V8DF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*64, 64, 8, VOIDmode, DFmode)
-DEF_MACHMODE (V16SFmode, "V16SF", MODE_VECTOR_FLOAT, 512, 64, 4, VOIDmode, SFmode)
-
-/* BLKmode is used for structures, arrays, etc.
-   that fit no more specific mode.  */
-DEF_MACHMODE (BLKmode, "BLK", MODE_RANDOM, 0, 0, 0, VOIDmode, VOIDmode)
-
-/* The modes for representing the condition codes come last.  CCmode
-   is always defined.  Additional modes for the condition code can be
-   specified in the EXTRA_CC_MODES header.  All MODE_CC modes are the
-   same width as SImode and have VOIDmode as their next wider mode.  */
-
-/* We do not use CC() for CCmode to avoid a warning about use of
-   function-like macros with no arguments.  */
-DEF_MACHMODE (CCmode, "CC", MODE_CC, BITS_PER_UNIT*4, 4, 4, VOIDmode, VOIDmode)
-
-#ifdef EXTRA_MODES_FILE
-#define CC(N)  \
-  DEF_MACHMODE (N##mode, #N, \
-                MODE_CC, BITS_PER_UNIT*4, 4, 4, VOIDmode, VOIDmode)
-#include EXTRA_MODES_FILE
-#undef CC
+/* Allow the target to specify additional modes of various kinds.  */
+#if HAVE_EXTRA_MODES
+# define CC(X) CC_MODE(X);  /* backward compatibility, temporary */
+# include EXTRA_MODES_FILE
+# undef CC
 #endif
 
+/* Complex modes.  */
+COMPLEX_MODES (INT);
+COMPLEX_MODES (FLOAT);
+
+/* Vector modes.  */
+VECTOR_MODES (INT, 2);        /*                 V2QI */
+VECTOR_MODES (INT, 4);        /*            V4QI V2HI */
+VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI */
+VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
+/* VECTOR_MODES (INT, 32);             V8SI V4DI      */
+/* VECTOR_MODES (INT, 64);             V8DI           */
+
+VECTOR_MODE (INT, SI, 8)
+VECTOR_MODE (INT, DI, 4);
+VECTOR_MODE (INT, DI, 8);
+
+VECTOR_MODE (INT, DI, 1);  /* PPC uses this.  Why not plain DI? */
+
+VECTOR_MODES (FLOAT, 4);      /*                 V2HF */
+VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
+VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
+/* VECTOR_MODES (FLOAT, 32);           V8SF V4DF      */
+/* VECTOR_MODES (FLOAT, 64);     V16SF V8DF           */
+
+VECTOR_MODE (FLOAT, SF, 8);
+VECTOR_MODE (FLOAT, SF, 16);
+VECTOR_MODE (FLOAT, DF, 4);
+VECTOR_MODE (FLOAT, DF, 8);
+
 /* The symbol Pmode stands for one of the above machine modes (usually SImode).
-   The tm file specifies which one.  It is not a distinct mode.  */
+   The tm.h file specifies which one.  It is not a distinct mode.  */
 
 /*
 Local variables:
