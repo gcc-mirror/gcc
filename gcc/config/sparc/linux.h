@@ -234,3 +234,9 @@ do {									\
 #endif
 
 #define MD_UNWIND_SUPPORT "config/sparc/linux-unwind.h"
+
+/* Linux currently uses RMO in uniprocessor mode, which is equivalent to
+   TMO, and TMO in multiprocessor mode.  But they reserve the right to
+   change their minds.  */
+#undef SPARC_RELAXED_ORDERING
+#define SPARC_RELAXED_ORDERING true

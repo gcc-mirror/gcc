@@ -204,6 +204,16 @@ extern enum cmodel sparc_cmodel;
 
 #define SPARC_DEFAULT_CMODEL CM_32
 
+/* The SPARC-V9 architecture defines a relaxed memory ordering model (RMO)
+   which requires the following macro to be true if enabled.  Prior to V9,
+   there are no instructions to even talk about memory synchronization.
+   Note that the UltraSPARC III processors don't implement RMO, unlike the
+   UltraSPARC II processors.
+
+   Default to false; for example, Solaris never enables RMO, only ever uses
+   total memory ordering (TMO).  */
+#define SPARC_RELAXED_ORDERING false
+
 /* This is call-clobbered in the normal ABI, but is reserved in the
    home grown (aka upward compatible) embedded ABI.  */
 #define EMBMEDANY_BASE_REG "%g4"

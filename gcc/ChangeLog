@@ -1,3 +1,11 @@
+2005-01-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.h (SPARC_RELAXED_ORDERING): Define to false.
+	* config/sparc/linux.h (SPARC_RELAXED_ORDERING): Define to true.
+	* config/sparc/linux64.h (SPARC_RELAXED_ORDERING): Likewise.
+	* config/sparc/sparc.c (TARGET_RELAXED_ORDERING): Define to
+	SPARC_RELAXED_ORDERING.
+
 2005-01-03  Richard Henderson  <rth@redhat.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 
