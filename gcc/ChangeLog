@@ -1,3 +1,8 @@
+Tue Jun 13 10:05:30 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* final.c (final_scan_insn): Delete notes between cc0 setter and
+	user when restarting from setter.
+
 2000-06-13  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* vax.h (INDEX_TERM_P): Define evaluation order of &&'s in || and
