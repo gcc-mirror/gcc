@@ -78,9 +78,6 @@ void t_1_local_init ()
   t_1_st_1 t_1_st_1_obj1 = t_1_st_1 (t_1_st_0_obj0);
 }
 
-// These are not ambiguous because the binding of the this parm for the conv
-// is better than the arg binding for the ctor.
-
 struct t_2_st_0;
 
 struct t_2_st_1 {
@@ -104,12 +101,12 @@ void t_2_assignment ()
   t_2_st_1 t_2_st_1_obj1;
   t_2_st_1 t_2_st_1_obj2;
 
-  t_2_st_1_obj0 = t_2_st_0_obj0;
+  t_2_st_1_obj0 = t_2_st_0_obj0;			// ERROR - caught
   t_2_st_1_obj1 = t_2_st_1 (t_2_st_0_obj0);
 }
 
 void t_2_local_init ()
 {
-  t_2_st_1 t_2_st_1_obj0 = t_2_st_0_obj0; 
+  t_2_st_1 t_2_st_1_obj0 = t_2_st_0_obj0;		// ERROR - 
   t_2_st_1 t_2_st_1_obj1 = t_2_st_1 (t_2_st_0_obj0);
 }
