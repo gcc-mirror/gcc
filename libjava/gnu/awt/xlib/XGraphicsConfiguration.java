@@ -16,6 +16,7 @@ import java.awt.GraphicsDevice;
 import java.awt.Point;
 import java.awt.Color;
 import java.awt.color.ColorSpace;
+import java.awt.Font;
 import java.awt.image.*;
 import java.awt.geom.AffineTransform;
 import gnu.gcj.xlib.GC;
@@ -27,7 +28,9 @@ import gnu.gcj.xlib.Colormap;
 import gnu.gcj.xlib.XColor;
 import gnu.gcj.xlib.Screen;
 import gnu.gcj.xlib.Display;
+import gnu.gcj.xlib.XException;
 import gnu.java.awt.Buffers;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 public class XGraphicsConfiguration extends GraphicsConfiguration
@@ -39,6 +42,104 @@ public class XGraphicsConfiguration extends GraphicsConfiguration
   Colormap colormap;
   ColorModel imageCM;
   ColorModel pixelCM;
+  private static final int CACHE_SIZE_PER_DISPLAY = 10;
+  static FontMetricsCache fontMetricsCache = new FontMetricsCache ();
+  
+  /** Font metrics cache class.  Caches at most CACHE_SIZE_PER_DISPLAY
+   * XFontMetrics objects for each display device.  When a display's cache
+   * gets full, the least-recently used entry is overwritten.
+   * XXX: lruOrder rolls over after a few billion operations, so it might
+   * on very rare occasions misinterpret which is the oldest entry
+   */
+  class FontMetricsCache
+  {
+    private java.util.Hashtable displays = new java.util.Hashtable ();
+    
+    /** Font metrics cache for a display device
+     */
+    class PerDisplayCache
+    {
+      private int lruCount = 0;
+      private java.util.Hashtable entries = new java.util.Hashtable ();
+      
+      class CacheEntry
+      {
+        int lruOrder;
+        XFontMetrics fm;
+        Font font;
+      }
+      
+      /** Get an entry (null if not there) and update LRU ordering
+       */
+      XFontMetrics get (Font font)
+      {
+        CacheEntry entry = (CacheEntry)entries.get (font);
+        if (entry != null)
+        {
+          entry.lruOrder = lruCount++;
+        }
+        return (entry==null) ? null : entry.fm;
+      }
+      
+      /** Put an entry in the cache, eliminating the oldest entry if
+       * the cache is at capacity.
+       */
+      void put (Font font, XFontMetrics fontMetrics)
+      {
+        if (entries.size () >= CACHE_SIZE_PER_DISPLAY)
+        {
+          // cache is full -- eliminate the oldest entry
+          // slow operation, but shouldn't happen very often
+          int maxAge = 0;
+          CacheEntry oldestEntry = null;
+          int referenceCount = lruCount;
+          for (Enumeration e = entries.elements (); e.hasMoreElements ();)
+          {
+            CacheEntry entry = (CacheEntry)e.nextElement ();
+            if ((referenceCount-entry.lruOrder) > maxAge)
+            {
+              maxAge = referenceCount-entry.lruOrder;
+              oldestEntry = entry;
+            }
+          }
+          if (oldestEntry != null)
+            entries.remove (oldestEntry.font);
+        }
+        CacheEntry newEntry = new CacheEntry ();
+        newEntry.lruOrder = lruCount++;
+        newEntry.fm = fontMetrics;
+        newEntry.font = font;
+        entries.put (font,newEntry);
+      }
+    }
+    
+    /** Get the font metrics for a font, if it is present in the cache.
+     * @param font The AWT font for which to find the font metrics
+     * @param display The display, to select the cached entries for that display
+     * @return The font metrics, or null if not cached
+     */
+    XFontMetrics get (Font font, Display display)
+    {
+      PerDisplayCache cache = (PerDisplayCache)displays.get (display);
+      return (cache==null) ? null : cache.get (font);
+    }
+    
+    /** Put a font in the cache
+     * @param font The font
+     * @param display The display
+     * @param fontMetrics The font metrics
+     */
+    void put (Font font, Display display, XFontMetrics fontMetrics)
+    {
+      PerDisplayCache cache = (PerDisplayCache)displays.get (display);
+      if (cache == null)
+      {
+        cache = new PerDisplayCache ();
+        displays.put (display,cache);
+      }
+      cache.put (font,fontMetrics);
+    }
+  }
   
   public XGraphicsConfiguration(Visual visual)
   {
@@ -358,33 +459,50 @@ public class XGraphicsConfiguration extends GraphicsConfiguration
   }
     
   /* FIXME: This should be moved to XGraphicsDevice... */
-  XFontMetrics getXFontMetrics(java.awt.Font awtFont)
+  XFontMetrics getXFontMetrics (java.awt.Font awtFont)
   {
-    // FIXME: do caching...
-    
-    String family       = "*";
-    String name         = awtFont.getName();
-    String weight       = awtFont.isBold() ? "bold" : "medium";
-    String slant        = awtFont.isItalic() ? "i" : "r";
-    String addStyle     = "*";
-    String pixelSize    = "*";
-    String pointSize    = awtFont.getSize() + "0";
-    String xres         = "*";
-    String yres         = "*";
-    String spacing      = "*";
-    String averageWidth = "*";
-    String charset      = "*";
-    
-    String logicalFontDescription =
-      family    + "-" + name         + "-" + weight    + "-" +
-      slant     + "-" + addStyle     + "-" + pixelSize + "-" +
-      pointSize + "-" + xres         + "-" + yres      + "-" +
-      spacing   + "-" + averageWidth + "-" + charset;
-    
-    Display display = visual.getScreen().getDisplay();
-    gnu.gcj.xlib.Font xfont =
-      new gnu.gcj.xlib.Font(display, logicalFontDescription);
-    return new XFontMetrics(xfont, awtFont);
+    // If the metrics object for this font is already cached, use it.
+    // Otherwise create and cache it.
+    Display display = visual.getScreen ().getDisplay ();
+    XFontMetrics fm = fontMetricsCache.get (awtFont,display);
+    if (fm == null)
+    {
+      String foundry      = "*";
+      String family       = awtFont.getName ();
+      String weight       = awtFont.isBold () ? "bold" : "medium";
+      String slant        = awtFont.isItalic () ? "i" : "r";
+      String sWidth       = "*";
+      String addStyle     = "";
+      String pixelSize    = "*";
+      String pointSize    = awtFont.getSize () + "0";
+      String xres         = "*";
+      String yres         = "*";
+      String spacing      = "*";
+      String averageWidth = "*";
+      String charset      = "iso10646-1"; // because we use functions like XDrawString16
+      
+      String logicalFontDescription =
+        "-" + // FontNameRegistry prefix
+        foundry   + "-" + family    + "-" + weight       + "-" +
+        slant     + "-" + sWidth    + "-" + addStyle     + "-" +
+        pixelSize + "-" + pointSize + "-" + xres         + "-" +
+        yres      + "-" + spacing   + "-" + averageWidth + "-";
+      
+      // Try to load a Unicode font.  If that doesn't work, try again, without
+      // specifying the character set.
+      try
+      {
+        gnu.gcj.xlib.Font xfont = new gnu.gcj.xlib.Font (display, logicalFontDescription + charset);
+        fm = new XFontMetrics (xfont, awtFont);
+      }
+      catch (XException e)
+      {
+        gnu.gcj.xlib.Font xfont = new gnu.gcj.xlib.Font (display, logicalFontDescription + "*-*");
+        fm = new XFontMetrics (xfont, awtFont);
+      }
+      fontMetricsCache.put (awtFont,display,fm);
+    }
+    return fm;
   }
 
   int getPixel(Color color)

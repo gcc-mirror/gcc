@@ -1,5 +1,14 @@
 2003-04-19  Scott Gilbertson  <scottg@mantatest.com>
 
+	* gnu/awt/xlib/XGraphicsConfiguration.java (FontMetricsCache): New
+	inner class.
+	(CACHE_SIZE_PER_DISPLAY): New field
+	(fontMetricsCache): New field
+	(getXFontMetrics): Use fontMetricsCache to cache fonts. Prefer
+	loading ISO10646-1 fonts.
+
+2003-04-19  Scott Gilbertson  <scottg@mantatest.com>
+
 	* libjava/gnu/gcj/xlib/natFont.cc (getStringWidth): Support 16-bit
 	characters.
 	* libjava/gnu/gcj/xlib/natGC.cc (drawString): Support 16-bit
