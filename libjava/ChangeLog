@@ -1,6 +1,12 @@
 2003-12-27  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/http/Connection.java
+	(getRequestProperty): Removed.
+	(setRequestProperty): Removed.
+
+2003-12-27  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/http/Connection.java
 	(connect): Call receiveReply().
 	(receiveReply): Renamed from getHttpHeaders().
 	(getOutputStream): Moved check on doOutput before check for connection
