@@ -109,8 +109,13 @@ remap_decl (decl, id)
       walk_tree (&DECL_SIZE_UNIT (t), copy_body_r, id);
       if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
 	  && TYPE_DOMAIN (TREE_TYPE (t)))
-	walk_tree (&TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t))),
-		   copy_body_r, id);
+	{
+	  TREE_TYPE (t) = copy_node (TREE_TYPE (t));
+	  TYPE_DOMAIN (TREE_TYPE (t)) 
+	    = copy_node (TYPE_DOMAIN (TREE_TYPE (t)));
+	  walk_tree (&TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t))),
+		     copy_body_r, id);
+	}
 
       /* Remember it, so that if we encounter this local entity
 	 again we can reuse this copy.  */

@@ -1,5 +1,9 @@
 2000-04-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* optimize.c (remap_decl): Avoid sharing structure for arrays
+	whose size is only known at run-time.
+	* tree.c (copy_tree_r): Don't copy PARM_DECLs.
+
 	* cp-tree.h (lang_decl_flags): Rename constructor_for_vbase_attr
 	to has_in_charge_parm_p.
 	(DECL_CONSTRUCTOR_FOR_VBASE_P): Rename to ...
