@@ -1,3 +1,8 @@
+2002-01-27  David Billinghurst  <David.Billinghurst@riotinto.com>
+ 
+	* g77.dg/f77-edit-i-in.f: New test
+	* g77.dg/f77-edit-i-out.f: New test
+
 2002-01-25  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.dg/debug/debug.exp: New file.
