@@ -242,14 +242,15 @@ interface_type:
 ;
 
 array_type:
-	primitive_type OSB_TK CSB_TK
-|	name OSB_TK CSB_TK
+	primitive_type dims
 		{
-		  $$ = concat ("[", $1, NULL);
+	          while (bracket_count-- > 0) 
+		    $$ = concat ("[", $1, NULL);
 		}
-|	array_type OSB_TK CSB_TK
-		{	
-		  $$ = concat ("[", $1, NULL);
+|	name dims
+		{
+	          while (bracket_count-- > 0) 
+		    $$ = concat ("[", $1, NULL);
 		}
 ;
 
@@ -316,7 +317,7 @@ type_import_on_demand_declaration:
 type_declaration:
 	class_declaration
 |	interface_declaration
-|	SC_TK
+|	empty_statement
 ;
 
 /* 19.7 Shortened from the original:
@@ -393,6 +394,7 @@ class_member_declaration:
 |	method_declaration
 |	class_declaration	/* Added, JDK1.1 inner classes */
 |	interface_declaration	/* Added, JDK1.1 inner classes */
+|	empty_statement
 ;
 
 /* 19.8.2 Productions from 8.3: Field Declarations  */
@@ -513,14 +515,12 @@ class_type_list:
 
 method_body:
 	block
-|	block SC_TK
 |	SC_TK
 ;
 
 /* 19.8.4 Productions from 8.5: Static Initializers  */
 static_initializer:
 	static block
-|	static block SC_TK	/* Shouldn't be here. FIXME */
 ;
 
 static:				/* Test lval.sub_token here */
@@ -892,18 +892,22 @@ primary_no_new_array:
 |	field_access
 |	method_invocation
 |	array_access
-	/* type DOT_TK CLASS_TK doens't work. So we split the rule
-	   'type' into its components. Missing is something for array,
-	   which will complete the reference_type part. FIXME */
-|	name DOT_TK CLASS_TK	       /* Added, JDK1.1 class literals */
-		{ USE_ABSORBER; }
-|	primitive_type DOT_TK CLASS_TK /* Added, JDK1.1 class literals */
-		{ USE_ABSORBER; }
-|	VOID_TK DOT_TK CLASS_TK	       /* Added, JDK1.1 class literals */
+|	type_literals
         /* Added, JDK1.1 inner classes. Documentation is wrong
            refering to a 'ClassName' (class_name) rule that doesn't
            exist. Used name instead.  */
 |	name DOT_TK THIS_TK
+		{ USE_ABSORBER; }
+;
+
+type_literals:
+	name DOT_TK CLASS_TK
+		{ USE_ABSORBER; }
+|	array_type DOT_TK CLASS_TK
+		{ USE_ABSORBER; }
+|	primitive_type DOT_TK CLASS_TK
+		{ USE_ABSORBER; }
+|	VOID_TK DOT_TK CLASS_TK
 		{ USE_ABSORBER; }
 ;
 
@@ -960,7 +964,9 @@ dim_expr:
 
 dims:				
 	OSB_TK CSB_TK
+		{ bracket_count = 1; }
 |	dims OSB_TK CSB_TK
+		{ bracket_count++; }
 ;
 
 field_access:

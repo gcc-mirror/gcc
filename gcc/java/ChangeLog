@@ -1,3 +1,15 @@
+2001-03-30  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse-scan.y (array_type:): Rewritten.
+	(type_declaration:): `empty_statement' replaces `SC_TK.'
+	(class_member_declaration:): `empty statement' added.
+	(method_body:): Simplified.
+	(static_initializer:): Likewise.
+	(primary_no_new_array:): Use `type_literals.'
+	(type_literals:): New rule.
+	(dims:): Set and update `bracket_count.'
+	Fixes PR java/1074. Fixes PR java/2412.
+
 2001-03-28  Hans Boehm  <boehm@acm.org>
 
 	* boehm.c (PROCEDURE_OBJECT_DESCRIPTOR): Set to use `build_int_2.'
