@@ -9357,7 +9357,10 @@ struct reg_use { rtx insn, *usep; };
    register (which is first among these we have seen since we scan backwards),
    OFFSET contains the constant offset that is added to the register in
    all encountered uses, and USE_RUID indicates the first encountered, i.e.
-   last, of these uses.  */
+   last, of these uses.
+   STORE_RUID is always meaningful if we only want to use a value in a
+   register in a different place: it denotes the next insn in the insn
+   stream (i.e. the last ecountered) that sets or clobbers the register.  */
 static struct
   {
     struct reg_use reg_use[RELOAD_COMBINE_MAX_USES];
@@ -9405,13 +9408,11 @@ reload_combine ()
   last_label_ruid = reload_combine_ruid = 0;
   for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
     {
+      reg_state[i].store_ruid = reload_combine_ruid;
       if (fixed_regs[i])
 	reg_state[i].use_index = -1;
       else
-	{
-	  reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
-	  reg_state[i].store_ruid = reload_combine_ruid;
-	}
+	reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
     }
 
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
@@ -9493,10 +9494,14 @@ reload_combine ()
 		    }
 		}
 	    }
+	  /* Check that PREV_SET is indeed (set (REGX) (CONST_INT)) and that
+	     (REGY), i.e. BASE, is not clobbered before the last use we'll
+	     create.  */
 	  if (prev_set
 	      && GET_CODE (SET_SRC (prev_set)) == CONST_INT
 	      && rtx_equal_p (SET_DEST (prev_set), reg)
 	      && reg_state[regno].use_index >= 0
+	      && reg_state[REGNO (base)].store_ruid <= reg_state[regno].use_ruid
 	      && reg_sum)
 	    {
 	      int i;
@@ -9588,7 +9593,12 @@ reload_combine ()
 	{
 	  if (REG_NOTE_KIND (note) == REG_INC
 	      && GET_CODE (XEXP (note, 0)) == REG)
-	    reg_state[REGNO (XEXP (note, 0))].use_index = -1;
+	    {
+	      int regno = REGNO (XEXP (note, 0));
+
+	      reg_state[regno].store_ruid = reload_combine_ruid;
+	      reg_state[regno].use_index = -1;
+	    }
 	}
     }
 }
@@ -9616,7 +9626,10 @@ reload_combine_note_store (dst, set)
   /* note_stores might have stripped a STRICT_LOW_PART, so we have to be
      careful with registers / register parts that are not full words.  */
   if (size < (unsigned) UNITS_PER_WORD)
-    reg_state[regno].use_index = -1;
+    {
+      reg_state[regno].use_index = -1;
+      reg_state[regno].store_ruid = reload_combine_ruid;
+    }
   else
     {
       for (i = size / UNITS_PER_WORD - 1 + regno; i >= regno; i--)
