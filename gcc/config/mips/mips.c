@@ -352,11 +352,6 @@ int mips_split_addresses;
 /* Generating calls to position independent functions?  */
 enum mips_abicalls_type mips_abicalls;
 
-/* High and low marks for floating point values which we will accept
-   as legitimate constants for LEGITIMATE_CONSTANT_P.  These are
-   initialized in override_options.  */
-REAL_VALUE_TYPE dfhigh, dflow, sfhigh, sflow;
-
 /* Mode used for saving/restoring general purpose registers.  */
 static enum machine_mode gpr_mode;
 
@@ -821,36 +816,15 @@ mips_const_double_ok (op, mode)
   if (mode == VOIDmode)
     return 1;
 
+  /* We've no zero register in mips16 mode.  */
+  if (TARGET_MIPS16)
+    return 0;
+
   if (mode != SFmode && mode != DFmode)
     return 0;
 
   if (op == CONST0_RTX (mode))
     return 1;
-
-  /* ??? li.s does not work right with SGI's Irix 6 assembler.  */
-  if (mips_abi != ABI_32 && mips_abi != ABI_O64 && mips_abi != ABI_EABI)
-    return 0;
-
-  REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-
-  if (REAL_VALUE_ISNAN (d))
-    return FALSE;
-
-  if (REAL_VALUE_NEGATIVE (d))
-    d = REAL_VALUE_NEGATE (d);
-
-  if (mode == DFmode)
-    {
-      if (REAL_VALUES_LESS (d, dfhigh)
-	  && REAL_VALUES_LESS (dflow, d))
-	return 1;
-    }
-  else
-    {
-      if (REAL_VALUES_LESS (d, sfhigh)
-	  && REAL_VALUES_LESS (sflow, d))
-	return 1;
-    }
 
   return 0;
 }
@@ -863,9 +837,6 @@ const_float_1_operand (op, mode)
      enum machine_mode mode;
 {
   REAL_VALUE_TYPE d;
-  static REAL_VALUE_TYPE onedf;
-  static REAL_VALUE_TYPE onesf;
-  static int one_initialized;
 
   if (GET_CODE (op) != CONST_DOUBLE
       || mode != GET_MODE (op)
@@ -874,19 +845,7 @@ const_float_1_operand (op, mode)
 
   REAL_VALUE_FROM_CONST_DOUBLE (d, op);
 
-  /* We only initialize these values if we need them, since we will
-     never get called unless mips_isa >= 4.  */
-  if (! one_initialized)
-    {
-      onedf = REAL_VALUE_ATOF ("1.0", DFmode);
-      onesf = REAL_VALUE_ATOF ("1.0", SFmode);
-      one_initialized = 1;
-    }
-
-  if (mode == DFmode)
-    return REAL_VALUES_EQUAL (d, onedf);
-  else
-    return REAL_VALUES_EQUAL (d, onesf);
+  return REAL_VALUES_EQUAL (d, dconst1);
 }
 
 /* Return true if a memory load or store of REG plus OFFSET in MODE
@@ -5309,14 +5268,6 @@ override_options ()
     mips16 = 1;
   else
     mips16 = 0;
-
-  /* Initialize the high and low values for legitimate floating point
-     constants.  Rather than trying to get the accuracy down to the
-     last bit, just use approximate ranges.  */
-  dfhigh = REAL_VALUE_ATOF ("1.0e300", DFmode);
-  dflow = REAL_VALUE_ATOF ("1.0e-300", DFmode);
-  sfhigh = REAL_VALUE_ATOF ("1.0e38", SFmode);
-  sflow = REAL_VALUE_ATOF ("1.0e-38", SFmode);
 
   mips_print_operand_punct['?'] = 1;
   mips_print_operand_punct['#'] = 1;

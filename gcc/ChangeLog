@@ -1,3 +1,14 @@
+2002-09-20  Richard Henderson  <rth@redhat.com>
+
+	* config/mips/mips.c (dfhigh, dflow, sfhigh, sflow): Remove.
+	(override_options): Do not initialize them.
+	(mips_const_double_ok): Allow no fp constants except zero,
+	and not even that for mips16.
+	(const_float_1_operand): Use dconst1.
+	* config/mips/mips.md (movsf, movsf_internal1, movsf_internal2,
+	movdf, movdf_internal1, movdf_internal1a, movdf_internal2):
+ 	Don't allow arbitrary constants; fix predicates and C constraint.
+
 2002-09-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppmacro.c: Don't warn about function-like macros without
