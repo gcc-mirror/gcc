@@ -7,7 +7,7 @@
 
 void* p;
 
-void* operator new[](size_t s) throw (bad_alloc)
+void* operator new[](size_t s) throw (std::bad_alloc)
 {
   // Record the base of the last array allocated.
   p = malloc (s);
