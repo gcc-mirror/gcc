@@ -65,11 +65,14 @@ case $os in
 	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
 	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
 	-unicom* | -ibm* | -next* | -hp | -isi* | -apollo | -altos* | \
-	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi | \
+	-convergent* | -ncr* | -news | -32* | -3600* | -3100* \
 	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
 	-harris | -dolphin | -highlevel | -gould | -cbm | -ns | -masscomp )
 		os=
 		basic_machine=$1
+		;;
+	-hiux*)
+		os==-hiuxwe2
 		;;
 	-sco4)
 		os=-sco3.2v4
@@ -317,6 +320,14 @@ case $basic_machine in
 	hp9k8[0-9][0-9] | hp8[0-9][0-9])
 		basic_machine=hppa1.0-hp
 		;;
+	h3050r* | hiux*)
+		basic_machine=hppa1.1-hitachi
+		os=-hiuxwe2
+		;;
+	pa-hitachi)
+		basic_machine=hppa1.1-hitachi
+		os=-hiuxwe2
+		;;
 	isi68 | isi)
 		basic_machine=m68k-isi
 		os=-sysv
@@ -523,7 +534,7 @@ case $os in
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
-	      | -386bsd* | -netbsd* | -riscix* | -lynxos*)
+	      | -hiux* | -386bsd* | -netbsd* | -riscix* | -lynxos*)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
@@ -619,6 +630,9 @@ case $basic_machine in
 	*-hp)
 		os=-hpux
 		;;
+	*-hitachi)
+		os=-hiux
+		;;
 	i860-* | *-att | *-ncr | *-altos | *-motorola | *-convergent)
 		os=-sysv
 		;;
@@ -693,6 +707,9 @@ case $basic_machine in
 				;;
 			-hpux*)
 				vendor=hp
+				;;
+			-hiux*)
+				vendor=hitachi
 				;;
 			-unos*)
 				vendor=crds
