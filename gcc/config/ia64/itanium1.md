@@ -963,7 +963,7 @@
 ;; We don't use here fcmp because scall may be predicated.
 (define_bypass  0 "1_fcvtfx,1_fld,1_fmac,1_fmisc,1_frar_i,1_frar_m,\
                    1_frbr,1_frfr,1_frpr,1_ialu,1_ialu_addr,1_ilog,1_ishf,\
-	           1_ld,1_long_i,2_mmalua,1_mmmul,1_mmshf,1_mmshfi,1_toar_m,\
+	           1_ld,1_long_i,1_mmalua,1_mmmul,1_mmshf,1_mmshfi,1_toar_m,\
 		   1_tofr,1_xmpy,1_xtd" "1_scall")
 
 (define_bypass  0 "1_unknown,1_ignore,1_stop_bit,1_br,1_fcmp,1_fcvtfx,\
