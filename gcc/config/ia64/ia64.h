@@ -1114,10 +1114,16 @@ enum reg_class
 /* 1..4 for shladd arguments.  */
 #define CONSTRAINT_OK_FOR_R(VALUE) \
   (GET_CODE (VALUE) == CONST_INT && INTVAL (VALUE) >= 1 && INTVAL (VALUE) <= 4)
+/* Non-post-inc memory for asms and other unsavory creatures.  */
+#define CONSTRAINT_OK_FOR_S(VALUE)				\
+  (GET_CODE (VALUE) == MEM					\
+   && GET_RTX_CLASS (GET_CODE (XEXP ((VALUE), 0))) != 'a'	\
+   && (reload_in_progress || memory_operand ((VALUE), VOIDmode)))
 
 #define EXTRA_CONSTRAINT(VALUE, C) \
   ((C) == 'Q' ? CONSTRAINT_OK_FOR_Q (VALUE)	\
    : (C) == 'R' ? CONSTRAINT_OK_FOR_R (VALUE)	\
+   : (C) == 'S' ? CONSTRAINT_OK_FOR_S (VALUE)	\
    : 0)
 
 /* Basic Stack Layout */
@@ -2642,24 +2648,31 @@ do {									\
 { "function_operand", {SYMBOL_REF}},					\
 { "setjmp_operand", {SYMBOL_REF}},					\
 { "destination_operand", {SUBREG, REG, MEM}},				\
+{ "not_postinc_memory_operand", {MEM}},					\
 { "move_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
 		     CONSTANT_P_RTX, SYMBOL_REF, CONST, LABEL_REF}},	\
-{ "reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
-{ "reg_or_5bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
-{ "reg_or_6bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
-{ "reg_or_8bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
-{ "reg_or_8bit_adjusted_operand", {SUBREG, REG, CONST_INT,		\
+{ "gr_register_operand", {SUBREG, REG}},				\
+{ "fr_register_operand", {SUBREG, REG}},				\
+{ "grfr_register_operand", {SUBREG, REG}},				\
+{ "gr_nonimmediate_operand", {SUBREG, REG, MEM}},			\
+{ "grfr_nonimmediate_operand", {SUBREG, REG, MEM}},			\
+{ "gr_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+{ "gr_reg_or_5bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+{ "gr_reg_or_6bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+{ "gr_reg_or_8bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+{ "grfr_reg_or_8bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
+{ "gr_reg_or_8bit_adjusted_operand", {SUBREG, REG, CONST_INT,		\
 				     CONSTANT_P_RTX}},			\
-{ "reg_or_8bit_and_adjusted_operand", {SUBREG, REG, CONST_INT,		\
+{ "gr_reg_or_8bit_and_adjusted_operand", {SUBREG, REG, CONST_INT,	\
 					 CONSTANT_P_RTX}},		\
-{ "reg_or_14bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
-{ "reg_or_22bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+{ "gr_reg_or_14bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
+{ "gr_reg_or_22bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
 { "shift_count_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
 { "shift_32bit_count_operand", {SUBREG, REG, CONST_INT,			\
 				  CONSTANT_P_RTX}},			\
 { "shladd_operand", {CONST_INT}},					\
 { "fetchadd_operand", {CONST_INT}},					\
-{ "reg_or_fp01_operand", {SUBREG, REG, CONST_DOUBLE}},			\
+{ "fr_reg_or_fp01_operand", {SUBREG, REG, CONST_DOUBLE}},		\
 { "normal_comparison_operator", {EQ, NE, GT, LE, GTU, LEU}},		\
 { "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
 { "call_multiple_values_operation", {PARALLEL}},			\

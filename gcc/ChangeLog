@@ -1,3 +1,53 @@
+2000-08-24  Richard Henderson  <rth@cygnus.com>
+
+	* stmt.c (expand_asm_operands): Treat EXTRA_CONSTRAINT like g or X.
+
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.c (gr_register_operand): New.
+	(fr_register_operand, grfr_register_operand): New.
+	(gr_nonimmediate_operand, grfr_nonimmediate_operand): New.
+	(grfr_reg_or_8bit_operand): New.
+	(gr_reg_or_0_operand): Rename from reg_or_0_operand and 
+	use gr_register_operand.
+	(gr_reg_or_5bit_operand, gr_reg_or_6bit_operand): Likewise.
+	(gr_reg_or_8bit_operand, gr_reg_or_8bit_adjusted_operand): Likewise.
+	(gr_reg_or_8bit_and_adjusted_operand): Likewise.
+	(gr_reg_or_14bit_operand, gr_reg_or_22bit_operand): Likewise.
+	(fr_reg_or_fp01_operand): Likewise.
+	(not_postinc_memory_operand): New.
+	(ia64_split_timode): Remove unused variables.
+	(rtx_needs_barrier): Check arguments to cmpxchg.
+	(builtin_description): Remove.
+	(bdesc_2argsi, bdesc_2argdi): Remove.
+	(ia64_init_builtins): Declare all builtins directly.
+	(ia64_expand_fetch_and_op): Rewrite to be called from
+	ia64_expand_builtin directly.  Use expand_binop and co.
+	(ia64_expand_op_and_fetch): Likewise.
+	(ia64_expand_compare_and_swap): Likewise.
+	(ia64_expand_binop_builtin): Remove.
+	(ia64_expand_lock_test_and_set): New.
+	(ia64_expand_lock_release): New.
+	(ia64_expand_builtin): Use them.
+	* config/ia64/ia64.h (CONSTRAINT_OK_FOR_S): New.
+	(EXTRA_CONSTRAINT): Use it.
+	(PREDICATE_CODES): Update.
+	* config/ia64/ia64.md (*): Use gr_register_operand and co.
+	(mf): Indicate that we set memory as well as use it.
+	(fetchadd_acq_si): Show memory being modified as well.
+	(fetchadd_acq_di, cmpxchg_acq_si, cmpxchg_acq_di): Likewise. 
+	(val_compare_and_swap_si, val_compare_and_swap_di): Remove.
+	(lock_test_and_set_si, lock_test_and_set_di): Remove.
+	(fetch_and_add_si, fetch_and_sub_si, fetch_and_or_si): Remove.
+	(fetch_and_and_si, fetch_and_xor_si, fetch_and_nand_si): Remove.
+	(fetch_and_add_di, fetch_and_sub_di, fetch_and_or_di): Remove.
+	(fetch_and_and_di, fetch_and_xor_di, fetch_and_nand_di): Remove.
+	(add_and_fetch_di, sub_and_fetch_di, or_and_fetch_di): Remove.
+	(and_and_fetch_di, xor_and_fetch_di, nand_and_fetch_di): Remove.
+	(add_and_fetch_si, sub_and_fetch_si, or_and_fetch_si): Remove.
+	(and_and_fetch_si, xor_and_fetch_si, nand_and_fetch_si): Remove.
+	* config/ia64/ia64intrin.h (*): Cast result to the appropriate
+	return type.  Pretty print definitions.
+
 2000-08-24  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.md (movdi): Don't call gen_movdi_symbolic if

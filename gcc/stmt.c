@@ -1489,9 +1489,6 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  case 's':  case 'i':  case 'n':
 	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
 	  case 'N':  case 'O':  case 'P':  case ',':
-#ifdef EXTRA_CONSTRAINT
-	  case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
-#endif
 	    break;
 
 	  case '0':  case '1':  case '2':  case '3':  case '4':
@@ -1511,6 +1508,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    break;
 
 	  case 'g':  case 'X':
+#ifdef EXTRA_CONSTRAINT
+	  case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
+#endif
 	    allows_reg = 1;
 	    allows_mem = 1;
 	    break;
@@ -1643,13 +1643,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
 	  case '<':  case '>':
 	  case '?':  case '!':  case '*':
-	  case 'E':  case 'F':  case 'G':  case 'H':  case 'X':
+	  case 'E':  case 'F':  case 'G':  case 'H':
 	  case 's':  case 'i':  case 'n':
 	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
 	  case 'N':  case 'O':  case 'P':  case ',':
-#ifdef EXTRA_CONSTRAINT
-	  case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
-#endif
 	    break;
 
 	    /* Whether or not a numeric constraint allows a register is
@@ -1688,7 +1685,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    allows_reg = 1;
 	    break;
 
-	  case 'g':
+	  case 'g':  case 'X':
+#ifdef EXTRA_CONSTRAINT
+	  case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
+#endif
+
 	    allows_reg = 1;
 	    allows_mem = 1;
 	    break;

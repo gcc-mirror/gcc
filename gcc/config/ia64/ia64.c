@@ -105,6 +105,9 @@ static void finish_spill_pointers PARAMS ((void));
 static rtx spill_restore_mem PARAMS ((rtx, HOST_WIDE_INT));
 static void do_spill PARAMS ((rtx (*)(rtx, rtx, rtx), rtx, HOST_WIDE_INT, rtx));
 static void do_restore PARAMS ((rtx (*)(rtx, rtx, rtx), rtx, HOST_WIDE_INT));
+static rtx gen_movdi_x PARAMS ((rtx, rtx, rtx));
+static rtx gen_fr_spill_x PARAMS ((rtx, rtx, rtx));
+static rtx gen_fr_restore_x PARAMS ((rtx, rtx, rtx));
 
 static enum machine_mode hfa_element_mode PARAMS ((tree, int));
 static void fix_range PARAMS ((const char *));
@@ -114,9 +117,17 @@ static void ia64_mark_machine_status PARAMS ((struct function *));
 static void emit_insn_group_barriers PARAMS ((rtx));
 static void emit_predicate_relation_info PARAMS ((rtx));
 static int process_set PARAMS ((FILE *, rtx));
-static rtx ia64_expand_compare_and_swap PARAMS ((enum insn_code, tree,
-						 rtx, int));
-static rtx ia64_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
+
+static rtx ia64_expand_fetch_and_op PARAMS ((optab, enum machine_mode,
+					     tree, rtx));
+static rtx ia64_expand_op_and_fetch PARAMS ((optab, enum machine_mode,
+					     tree, rtx));
+static rtx ia64_expand_compare_and_swap PARAMS ((enum machine_mode, int,
+						 tree, rtx));
+static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
+						  tree, rtx));
+static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
+
 
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
 
@@ -306,64 +317,175 @@ move_operand (op, mode)
   return general_operand (op, mode);
 }
 
-/* Return 1 if OP is a register operand, or zero.  */
+/* Return 1 if OP is a register operand that is (or could be) a GR reg.  */
 
 int
-reg_or_0_operand (op, mode)
+gr_register_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (op == const0_rtx || register_operand (op, mode));
+  if (! register_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  if (GET_CODE (op) == REG)
+    {
+      unsigned int regno = REGNO (op);
+      if (regno < FIRST_PSEUDO_REGISTER)
+	return GENERAL_REGNO_P (regno);
+    }
+  return 1;
 }
 
-/* Return 1 if OP is a register operand, or a 5 bit immediate operand.  */
+/* Return 1 if OP is a register operand that is (or could be) an FR reg.  */
 
 int
-reg_or_5bit_operand (op, mode)
+fr_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! register_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  if (GET_CODE (op) == REG)
+    {
+      unsigned int regno = REGNO (op);
+      if (regno < FIRST_PSEUDO_REGISTER)
+	return FR_REGNO_P (regno);
+    }
+  return 1;
+}
+
+/* Return 1 if OP is a register operand that is (or could be) a GR/FR reg.  */
+
+int
+grfr_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! register_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  if (GET_CODE (op) == REG)
+    {
+      unsigned int regno = REGNO (op);
+      if (regno < FIRST_PSEUDO_REGISTER)
+	return GENERAL_REGNO_P (regno) || FR_REGNO_P (regno);
+    }
+  return 1;
+}
+
+/* Return 1 if OP is a nonimmediate operand that is (or could be) a GR reg.  */
+
+int
+gr_nonimmediate_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! nonimmediate_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  if (GET_CODE (op) == REG)
+    {
+      unsigned int regno = REGNO (op);
+      if (regno < FIRST_PSEUDO_REGISTER)
+	return GENERAL_REGNO_P (regno);
+    }
+  return 1;
+}
+
+/* Return 1 if OP is a nonimmediate operand that is a GR/FR reg.  */
+
+int
+grfr_nonimmediate_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! nonimmediate_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  if (GET_CODE (op) == REG)
+    {
+      unsigned int regno = REGNO (op);
+      if (regno < FIRST_PSEUDO_REGISTER)
+	return GENERAL_REGNO_P (regno) || FR_REGNO_P (regno);
+    }
+  return 1;
+}
+
+/* Return 1 if OP is a GR register operand, or zero.  */
+
+int
+gr_reg_or_0_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (op == const0_rtx || gr_register_operand (op, mode));
+}
+
+/* Return 1 if OP is a GR register operand, or a 5 bit immediate operand.  */
+
+int
+gr_reg_or_5bit_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 32)
 	  || GET_CODE (op) == CONSTANT_P_RTX
-	  || register_operand (op, mode));
+	  || gr_register_operand (op, mode));
 }
 
-/* Return 1 if OP is a register operand, or a 6 bit immediate operand.  */
+/* Return 1 if OP is a GR register operand, or a 6 bit immediate operand.  */
 
 int
-reg_or_6bit_operand (op, mode)
+gr_reg_or_6bit_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_M (INTVAL (op)))
 	  || GET_CODE (op) == CONSTANT_P_RTX
-	  || register_operand (op, mode));
+	  || gr_register_operand (op, mode));
 }
 
-/* Return 1 if OP is a register operand, or an 8 bit immediate operand.  */
+/* Return 1 if OP is a GR register operand, or an 8 bit immediate operand.  */
 
 int
-reg_or_8bit_operand (op, mode)
+gr_reg_or_8bit_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_K (INTVAL (op)))
 	  || GET_CODE (op) == CONSTANT_P_RTX
-	  || register_operand (op, mode));
+	  || gr_register_operand (op, mode));
 }
 
+/* Return 1 if OP is a GR/FR register operand, or an 8 bit immediate.  */
+
+int
+grfr_reg_or_8bit_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_K (INTVAL (op)))
+	  || GET_CODE (op) == CONSTANT_P_RTX
+	  || grfr_register_operand (op, mode));
+}
 
 /* Return 1 if OP is a register operand, or an 8 bit adjusted immediate
    operand.  */
 
 int
-reg_or_8bit_adjusted_operand (op, mode)
+gr_reg_or_8bit_adjusted_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_L (INTVAL (op)))
 	  || GET_CODE (op) == CONSTANT_P_RTX
-	  || register_operand (op, mode));
+	  || gr_register_operand (op, mode));
 }
 
 /* Return 1 if OP is a register operand, or is valid for both an 8 bit
@@ -372,38 +494,38 @@ reg_or_8bit_adjusted_operand (op, mode)
    so we need the union of the immediates accepted by GT and LT.  */
 
 int
-reg_or_8bit_and_adjusted_operand (op, mode)
+gr_reg_or_8bit_and_adjusted_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_K (INTVAL (op))
 	   && CONST_OK_FOR_L (INTVAL (op)))
 	  || GET_CODE (op) == CONSTANT_P_RTX
-	  || register_operand (op, mode));
+	  || gr_register_operand (op, mode));
 }
 
 /* Return 1 if OP is a register operand, or a 14 bit immediate operand.  */
 
 int
-reg_or_14bit_operand (op, mode)
+gr_reg_or_14bit_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_I (INTVAL (op)))
 	  || GET_CODE (op) == CONSTANT_P_RTX
-	  || register_operand (op, mode));
+	  || gr_register_operand (op, mode));
 }
 
 /* Return 1 if OP is a register operand, or a 22 bit immediate operand.  */
 
 int
-reg_or_22bit_operand (op, mode)
+gr_reg_or_22bit_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_J (INTVAL (op)))
 	  || GET_CODE (op) == CONSTANT_P_RTX
-	  || register_operand (op, mode));
+	  || gr_register_operand (op, mode));
 }
 
 /* Return 1 if OP is a 6 bit immediate operand.  */
@@ -458,13 +580,12 @@ fetchadd_operand (op, mode)
 /* Return 1 if OP is a floating-point constant zero, one, or a register.  */
 
 int
-reg_or_fp01_operand (op, mode)
+fr_reg_or_fp01_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (op))
-	  || GET_CODE (op) == CONSTANT_P_RTX
-	  || register_operand (op, mode));
+	  || fr_register_operand (op, mode));
 }
 
 /* Like nonimmediate_operand, but don't allow MEMs that try to use a
@@ -482,6 +603,17 @@ destination_operand (op, mode)
       && GET_CODE (XEXP (XEXP (XEXP (op, 0), 1), 1)) == REG)
     return 0;
   return 1;
+}
+
+/* Like memory_operand, but don't allow post-increments.  */
+
+int
+not_postinc_memory_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (memory_operand (op, mode)
+	  && GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != 'a');
 }
 
 /* Return 1 if this is a comparison operator, which accepts an normal 8-bit
@@ -620,7 +752,7 @@ tfreg_or_fp01_operand (op, mode)
 {
   if (GET_CODE (op) == SUBREG)
     return 0;
-  return reg_or_fp01_operand (op, mode);
+  return fr_reg_or_fp01_operand (op, mode);
 }
 
 /* Return 1 if the operands of a move are ok.  */
@@ -767,9 +899,7 @@ ia64_split_timode (out, in, scratch)
 
     case MEM:
       {
-	HOST_WIDE_INT offset;
 	rtx base = XEXP (in, 0);
-	rtx offset_rtx;
 
 	switch (GET_CODE (base))
 	  {
@@ -3832,11 +3962,15 @@ rtx_needs_barrier (x, flags, pred)
 	  break;
 
         case 12: /* mf */
-        case 13: /* cmpxchg_acq */
         case 19: /* fetchadd_acq */
 	case 20: /* mov = ar.bsp */
 	case 21: /* flushrs */
           break;
+
+        case 13: /* cmpxchg_acq */
+	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 1), flags, pred);
+	  need_barrier |= rtx_needs_barrier (XVECEXP (x, 0, 2), flags, pred);
+	  break;
 
 	default:
 	  abort ();
@@ -4569,81 +4703,10 @@ process_for_unwind_directive (asm_out_file, insn)
     }
 }
 
-#define def_builtin(name, type, code) \
-  builtin_function ((name), (type), (code), BUILT_IN_MD, NULL_PTR)
-
-struct builtin_description
-{
-  enum insn_code icode;
-  const char *name;
-  enum ia64_builtins code;
-  enum rtx_code comparison;
-  unsigned int flag;
-};
-
-/* All 32 bit intrinsics that take 2 arguments. */
-static struct builtin_description bdesc_2argsi[] =
-{
-  { CODE_FOR_fetch_and_add_si, "__sync_fetch_and_add_si",
-    IA64_BUILTIN_FETCH_AND_ADD_SI, 0, 0 },
-  { CODE_FOR_fetch_and_sub_si, "__sync_fetch_and_sub_si",
-    IA64_BUILTIN_FETCH_AND_SUB_SI, 0, 0 },
-  { CODE_FOR_fetch_and_or_si, "__sync_fetch_and_or_si",
-    IA64_BUILTIN_FETCH_AND_OR_SI, 0, 0 },
-  { CODE_FOR_fetch_and_and_si, "__sync_fetch_and_and_si",
-    IA64_BUILTIN_FETCH_AND_AND_SI, 0, 0 },
-  { CODE_FOR_fetch_and_xor_si, "__sync_fetch_and_xor_si",
-    IA64_BUILTIN_FETCH_AND_XOR_SI, 0, 0 },
-  { CODE_FOR_fetch_and_nand_si, "__sync_fetch_and_nand_si",
-    IA64_BUILTIN_FETCH_AND_NAND_SI, 0, 0 },
-  { CODE_FOR_add_and_fetch_si, "__sync_add_and_fetch_si",
-    IA64_BUILTIN_ADD_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_sub_and_fetch_si, "__sync_sub_and_fetch_si",
-    IA64_BUILTIN_SUB_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_or_and_fetch_si, "__sync_or_and_fetch_si",
-    IA64_BUILTIN_OR_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_and_and_fetch_si, "__sync_and_and_fetch_si",
-    IA64_BUILTIN_AND_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_xor_and_fetch_si, "__sync_xor_and_fetch_si",
-    IA64_BUILTIN_XOR_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_nand_and_fetch_si, "__sync_nand_and_fetch_si",
-    IA64_BUILTIN_NAND_AND_FETCH_SI, 0, 0 }
-};
-
-/* All 64 bit intrinsics that take 2 arguments. */
-static struct builtin_description bdesc_2argdi[] =
-{
-  { CODE_FOR_fetch_and_add_di, "__sync_fetch_and_add_di",
-    IA64_BUILTIN_FETCH_AND_ADD_DI, 0, 0 },
-  { CODE_FOR_fetch_and_sub_di, "__sync_fetch_and_sub_di",
-    IA64_BUILTIN_FETCH_AND_SUB_DI, 0, 0 },
-  { CODE_FOR_fetch_and_or_di, "__sync_fetch_and_or_di",
-    IA64_BUILTIN_FETCH_AND_OR_DI, 0, 0 },
-  { CODE_FOR_fetch_and_and_di, "__sync_fetch_and_and_di",
-    IA64_BUILTIN_FETCH_AND_AND_DI, 0, 0 },
-  { CODE_FOR_fetch_and_xor_di, "__sync_fetch_and_xor_di",
-    IA64_BUILTIN_FETCH_AND_XOR_DI, 0, 0 },
-  { CODE_FOR_fetch_and_nand_di, "__sync_fetch_and_nand_di",
-    IA64_BUILTIN_FETCH_AND_NAND_DI, 0, 0 },
-  { CODE_FOR_add_and_fetch_di, "__sync_add_and_fetch_di",
-    IA64_BUILTIN_ADD_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_sub_and_fetch_di, "__sync_sub_and_fetch_di",
-    IA64_BUILTIN_SUB_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_or_and_fetch_di, "__sync_or_and_fetch_di",
-    IA64_BUILTIN_OR_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_and_and_fetch_di, "__sync_and_and_fetch_di",
-    IA64_BUILTIN_AND_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_xor_and_fetch_di, "__sync_xor_and_fetch_di",
-    IA64_BUILTIN_XOR_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_nand_and_fetch_di, "__sync_nand_and_fetch_di",
-    IA64_BUILTIN_NAND_AND_FETCH_DI, 0, 0 }
-};
-
+
 void
 ia64_init_builtins ()
 {
-  size_t i;
-
   tree psi_type_node = build_pointer_type (integer_type_node);
   tree pdi_type_node = build_pointer_type (long_integer_type_node);
   tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
@@ -4664,8 +4727,8 @@ ia64_init_builtins ()
                                       tree_cons (NULL_TREE,
 						 long_integer_type_node,
                                                  tree_cons (NULL_TREE,
-							    long_integer_type_node,
-                                                            endlink))));
+							long_integer_type_node,
+							endlink))));
   /* __sync_synchronize */
   tree void_ftype_void
     = build_function_type (void_type_node, endlink);
@@ -4693,15 +4756,15 @@ ia64_init_builtins ()
     = build_function_type (void_type_node, tree_cons (NULL_TREE, pdi_type_node,
 						      endlink));
 
+#define def_builtin(name, type, code) \
+  builtin_function ((name), (type), (code), BUILT_IN_MD, NULL_PTR)
+
   def_builtin ("__sync_val_compare_and_swap_si", si_ftype_psi_si_si,
 	       IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI);
-
   def_builtin ("__sync_val_compare_and_swap_di", di_ftype_pdi_di_di,
 	       IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI);
-
   def_builtin ("__sync_bool_compare_and_swap_si", si_ftype_psi_si_si,
 	       IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI);
-
   def_builtin ("__sync_bool_compare_and_swap_di", di_ftype_pdi_di_di,
 	       IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI);
 
@@ -4710,13 +4773,10 @@ ia64_init_builtins ()
 
   def_builtin ("__sync_lock_test_and_set_si", si_ftype_psi_si,
 	       IA64_BUILTIN_LOCK_TEST_AND_SET_SI);
-
   def_builtin ("__sync_lock_test_and_set_di", di_ftype_pdi_di,
 	       IA64_BUILTIN_LOCK_TEST_AND_SET_DI);
-
   def_builtin ("__sync_lock_release_si", void_ftype_psi,
 	       IA64_BUILTIN_LOCK_RELEASE_SI);
-
   def_builtin ("__sync_lock_release_di", void_ftype_pdi,
 	       IA64_BUILTIN_LOCK_RELEASE_DI);
 
@@ -4728,191 +4788,201 @@ ia64_init_builtins ()
 	       build_function_type (void_type_node, endlink), 
 	       IA64_BUILTIN_FLUSHRS);
 
-  /* Add all builtins that are operations on two args. */
-  for (i = 0; i < sizeof(bdesc_2argsi) / sizeof *bdesc_2argsi; i++)
-    def_builtin (bdesc_2argsi[i].name, si_ftype_psi_si, bdesc_2argsi[i].code);
-  for (i = 0; i < sizeof(bdesc_2argdi) / sizeof *bdesc_2argdi; i++)
-    def_builtin (bdesc_2argdi[i].name, si_ftype_psi_si, bdesc_2argdi[i].code);
+  def_builtin ("__sync_fetch_and_add_si", si_ftype_psi_si,
+	       IA64_BUILTIN_FETCH_AND_ADD_SI);
+  def_builtin ("__sync_fetch_and_sub_si", si_ftype_psi_si,
+	       IA64_BUILTIN_FETCH_AND_SUB_SI);
+  def_builtin ("__sync_fetch_and_or_si", si_ftype_psi_si,
+	       IA64_BUILTIN_FETCH_AND_OR_SI);
+  def_builtin ("__sync_fetch_and_and_si", si_ftype_psi_si,
+	       IA64_BUILTIN_FETCH_AND_AND_SI);
+  def_builtin ("__sync_fetch_and_xor_si", si_ftype_psi_si,
+	       IA64_BUILTIN_FETCH_AND_XOR_SI);
+  def_builtin ("__sync_fetch_and_nand_si", si_ftype_psi_si,
+	       IA64_BUILTIN_FETCH_AND_NAND_SI);
+
+  def_builtin ("__sync_add_and_fetch_si", si_ftype_psi_si,
+	       IA64_BUILTIN_ADD_AND_FETCH_SI);
+  def_builtin ("__sync_sub_and_fetch_si", si_ftype_psi_si,
+	       IA64_BUILTIN_SUB_AND_FETCH_SI);
+  def_builtin ("__sync_or_and_fetch_si", si_ftype_psi_si,
+	       IA64_BUILTIN_OR_AND_FETCH_SI);
+  def_builtin ("__sync_and_and_fetch_si", si_ftype_psi_si,
+	       IA64_BUILTIN_AND_AND_FETCH_SI);
+  def_builtin ("__sync_xor_and_fetch_si", si_ftype_psi_si,
+	       IA64_BUILTIN_XOR_AND_FETCH_SI);
+  def_builtin ("__sync_nand_and_fetch_si", si_ftype_psi_si,
+	       IA64_BUILTIN_NAND_AND_FETCH_SI);
+
+  def_builtin ("__sync_fetch_and_add_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_FETCH_AND_ADD_DI);
+  def_builtin ("__sync_fetch_and_sub_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_FETCH_AND_SUB_DI);
+  def_builtin ("__sync_fetch_and_or_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_FETCH_AND_OR_DI);
+  def_builtin ("__sync_fetch_and_and_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_FETCH_AND_AND_DI);
+  def_builtin ("__sync_fetch_and_xor_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_FETCH_AND_XOR_DI);
+  def_builtin ("__sync_fetch_and_nand_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_FETCH_AND_NAND_DI);
+
+  def_builtin ("__sync_add_and_fetch_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_ADD_AND_FETCH_DI);
+  def_builtin ("__sync_sub_and_fetch_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_SUB_AND_FETCH_DI);
+  def_builtin ("__sync_or_and_fetch_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_OR_AND_FETCH_DI);
+  def_builtin ("__sync_and_and_fetch_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_AND_AND_FETCH_DI);
+  def_builtin ("__sync_xor_and_fetch_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_XOR_AND_FETCH_DI);
+  def_builtin ("__sync_nand_and_fetch_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_NAND_AND_FETCH_DI);
+
+#undef def_builtin
 }
 
 /* Expand fetch_and_op intrinsics.  The basic code sequence is:
 
      mf
-     ldsz return = [ptr];
-     tmp = return;
+     tmp = [ptr];
      do {
-       oldval = tmp;
+       ret = tmp;
        ar.ccv = tmp;
        tmp <op>= value;
        cmpxchgsz.acq tmp = [ptr], tmp
-       cmpxchgsz.acq tmp = [ptr], tmp
-     } while (tmp != oldval)
+     } while (tmp != ret)
 */
-void
-ia64_expand_fetch_and_op (code, mode, operands)
-     enum fetchop_code code;
+
+static rtx
+ia64_expand_fetch_and_op (binoptab, mode, arglist, target)
+     optab binoptab;
      enum machine_mode mode;
-     rtx operands[];
+     tree arglist;
+     rtx target;
 {
-  rtx mfreg = gen_rtx_MEM (BLKmode, gen_rtx_REG (mode, GR_REG (1)));
-  rtx oldval, newlabel, tmp_reg, ccv;
+  rtx ret, label, tmp, ccv, insn, mem, value;
+  tree arg0, arg1;
 
-  emit_insn (gen_mf (mfreg));
-  tmp_reg = gen_reg_rtx (mode);
-  oldval = gen_reg_rtx (mode);
-  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+  value = expand_expr (arg1, NULL_RTX, mode, 0);
 
-  emit_move_insn (operands[0], operands[1]);
-  emit_move_insn (tmp_reg, operands[0]);
+  mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
+  MEM_VOLATILE_P (mem) = 1;
 
-  newlabel = gen_label_rtx ();
-  emit_label (newlabel);
-  emit_move_insn (oldval, tmp_reg);
-  emit_move_insn (ccv, tmp_reg);
+  if (target && register_operand (target, mode))
+    ret = target;
+  else
+    ret = gen_reg_rtx (mode);
 
-  /* Perform the specific operation. */
-  switch (code)
-  {
-  case IA64_ADD_OP:
+  emit_insn (gen_mf ());
+
+  /* Special case for fetchadd instructions.  */
+  if (binoptab == add_optab && fetchadd_operand (value, VOIDmode))
     {
-      rtx reg;
-      if (GET_CODE (operands[2]) == CONST_INT)
-	reg = gen_reg_rtx (mode);
-      else
-        reg = operands[2];
       if (mode == SImode)
-	{
-	  if (reg != operands[2])
-	    emit_insn (gen_movsi (reg, operands[2]));
-	  emit_insn (gen_addsi3 (tmp_reg, tmp_reg, reg));
-	}
+        insn = gen_fetchadd_acq_si (ret, mem, value);
       else
-        {
-	  if (reg != operands[2])
-	    emit_insn (gen_movdi (reg, operands[2]));
-	  emit_insn (gen_adddi3 (tmp_reg, tmp_reg, reg));
-	}
-      break;
+        insn = gen_fetchadd_acq_di (ret, mem, value);
+      emit_insn (insn);
+      return ret;
     }
 
-  case IA64_SUB_OP:
-    if (mode == SImode)
-      emit_insn (gen_subsi3 (tmp_reg, tmp_reg, operands[2]));
-    else
-      emit_insn (gen_subdi3 (tmp_reg, tmp_reg, operands[2]));
-    break;
+  tmp = gen_reg_rtx (mode);
+  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
+  emit_move_insn (tmp, mem);
 
-  case IA64_OR_OP:
-    emit_insn (gen_iordi3 (tmp_reg, tmp_reg, operands[2]));
-    break;
+  label = gen_label_rtx ();
+  emit_label (label);
+  emit_move_insn (ret, tmp);
+  emit_move_insn (ccv, tmp);
 
-  case IA64_AND_OP:
-    emit_insn (gen_anddi3 (tmp_reg, tmp_reg, operands[2]));
-    break;
-
-  case IA64_XOR_OP:
-    emit_insn (gen_xordi3 (tmp_reg, tmp_reg, operands[2]));
-    break;
-
-  case IA64_NAND_OP:
-    emit_insn (gen_anddi3 (tmp_reg, tmp_reg, operands[2]));
-    if (mode == SImode)
-      emit_insn (gen_one_cmplsi2 (tmp_reg, operands[0]));
-    else
-      emit_insn (gen_one_cmpldi2 (tmp_reg, operands[0]));
-    break;
-
-  default:
-    break;
-  }
+  /* Perform the specific operation.  Special case NAND by noticing
+     one_cmpl_optab instead.  */
+  if (binoptab == one_cmpl_optab)
+    {
+      tmp = expand_unop (mode, binoptab, tmp, NULL, OPTAB_WIDEN);
+      binoptab = and_optab;
+    }
+  tmp = expand_binop (mode, binoptab, tmp, value, tmp, 1, OPTAB_WIDEN);
 
   if (mode == SImode)
-    emit_insn (gen_cmpxchg_acq_si (tmp_reg, operands[1], tmp_reg, ccv));
+    insn = gen_cmpxchg_acq_si (tmp, mem, tmp, ccv);
   else
-    emit_insn (gen_cmpxchg_acq_di (tmp_reg, operands[1], tmp_reg, ccv));
+    insn = gen_cmpxchg_acq_di (tmp, mem, tmp, ccv);
+  emit_insn (insn);
 
-  emit_cmp_and_jump_insns (tmp_reg, oldval, NE, 0, mode, 1, 0, newlabel);
+  emit_cmp_and_jump_insns (tmp, ret, NE, 0, mode, 1, 0, label);
+
+  return ret;
 }
 
 /* Expand op_and_fetch intrinsics.  The basic code sequence is:
 
      mf
-     ldsz return = [ptr];
+     tmp = [ptr];
      do {
-       oldval = tmp;
+       old = tmp;
        ar.ccv = tmp;
-       return = tmp + value;
-       cmpxchgsz.acq tmp = [ptr], return
-     } while (tmp != oldval)
+       ret = tmp + value;
+       cmpxchgsz.acq tmp = [ptr], ret
+     } while (tmp != old)
 */
-void
-ia64_expand_op_and_fetch (code, mode, operands)
-     enum fetchop_code code;
-     enum machine_mode mode;
-     rtx operands[];
-{
-  rtx mfreg = gen_rtx_MEM (BLKmode, gen_rtx_REG (mode, GR_REG (1)));
-  rtx oldval, newlabel, tmp_reg, ccv;
 
-  emit_insn (gen_mf (mfreg));
-  tmp_reg = gen_reg_rtx (mode);
+static rtx
+ia64_expand_op_and_fetch (binoptab, mode, arglist, target)
+     optab binoptab;
+     enum machine_mode mode;
+     tree arglist;
+     rtx target;
+{
+  rtx old, label, tmp, ret, ccv, insn, mem, value;
+  tree arg0, arg1;
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+  value = expand_expr (arg1, NULL_RTX, mode, 0);
+
+  mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
+  MEM_VOLATILE_P (mem) = 1;
+
+  if (target && ! register_operand (target, mode))
+    target = NULL_RTX;
+
+  emit_insn (gen_mf ());
+  tmp = gen_reg_rtx (mode);
+  old = gen_reg_rtx (mode);
   ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
 
-  emit_move_insn (tmp_reg, operands[1]);  
+  emit_move_insn (tmp, mem);
 
-  newlabel = gen_label_rtx ();
-  emit_label (newlabel);
-  oldval = gen_reg_rtx (mode);
-  emit_move_insn (oldval, tmp_reg);
-  emit_move_insn (ccv, tmp_reg);
+  label = gen_label_rtx ();
+  emit_label (label);
+  emit_move_insn (old, tmp);
+  emit_move_insn (ccv, tmp);
 
-  /* Perform the specific operation. */
-  switch (code)
-  {
-  case IA64_ADD_OP:
-    if (mode == SImode)
-      emit_insn (gen_addsi3 (operands[0], tmp_reg, operands[2]));
-    else
-      emit_insn (gen_adddi3 (operands[0], tmp_reg, operands[2]));
-    break;
-
-  case IA64_SUB_OP:
-    if (mode == SImode)
-      emit_insn (gen_subsi3 (operands[0], tmp_reg, operands[2]));
-    else
-      emit_insn (gen_subdi3 (operands[0], tmp_reg, operands[2]));
-    break;
-
-  case IA64_OR_OP:
-    emit_insn (gen_iordi3 (operands[0], tmp_reg, operands[2]));
-    break;
-
-  case IA64_AND_OP:
-    emit_insn (gen_anddi3 (operands[0], tmp_reg, operands[2]));
-    break;
-
-  case IA64_XOR_OP:
-    emit_insn (gen_xordi3 (operands[0], tmp_reg, operands[2]));
-    break;
-
-  case IA64_NAND_OP:
-    emit_insn (gen_anddi3 (operands[0], tmp_reg, operands[2]));
-    if (mode == SImode)
-      emit_insn (gen_one_cmplsi2 (operands[0], operands[0]));
-    else
-      emit_insn (gen_one_cmpldi2 (operands[0], operands[0]));
-    break;
-
-  default:
-    break;
-  }
+  /* Perform the specific operation.  Special case NAND by noticing
+     one_cmpl_optab instead.  */
+  if (binoptab == one_cmpl_optab)
+    {
+      tmp = expand_unop (mode, binoptab, tmp, NULL, OPTAB_WIDEN);
+      binoptab = and_optab;
+    }
+  ret = expand_binop (mode, binoptab, tmp, value, target, 1, OPTAB_WIDEN);
 
   if (mode == SImode)
-    emit_insn (gen_cmpxchg_acq_si (tmp_reg, operands[1], operands[0], ccv));
+    insn = gen_cmpxchg_acq_si (tmp, mem, ret, ccv);
   else
-    emit_insn (gen_cmpxchg_acq_di (tmp_reg, operands[1], operands[0], ccv));
+    insn = gen_cmpxchg_acq_di (tmp, mem, ret, ccv);
+  emit_insn (insn);
 
-  emit_cmp_and_jump_insns (tmp_reg, oldval, NE, 0, mode, 1, 0, newlabel);
+  emit_cmp_and_jump_insns (tmp, old, NE, 0, mode, 1, 0, label);
+
+  return ret;
 }
 
 /* Expand val_ and bool_compare_and_swap.  For val_ we want:
@@ -4924,88 +4994,111 @@ ia64_expand_op_and_fetch (code, mode, operands)
 
    For bool_ it's the same except return ret == oldval.
 */
+
 static rtx
-ia64_expand_compare_and_swap (icode, arglist, target, boolcode)
-     enum insn_code icode;
+ia64_expand_compare_and_swap (mode, boolp, arglist, target)
+     enum machine_mode mode;
+     int boolp;
      tree arglist;
      rtx target;
-     int boolcode;
 {
   tree arg0, arg1, arg2;
-  rtx op0, op1, op2, pat;
-  enum machine_mode tmode, mode0, mode1, mode2;
+  rtx mem, old, new, ccv, tmp, insn;
 
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
   arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
-  tmode = insn_data[icode].operand[0].mode;
-  mode0 = insn_data[icode].operand[1].mode;
-  mode1 = insn_data[icode].operand[2].mode;
-  mode2 = insn_data[icode].operand[3].mode;
+  mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+  old = expand_expr (arg1, NULL_RTX, mode, 0);
+  new = expand_expr (arg2, NULL_RTX, mode, 0);
 
-  op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-  if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
-    op2 = copy_to_mode_reg (mode2, op2);
-  if (target == 0
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
+  mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
+  MEM_VOLATILE_P (mem) = 1;
 
-  pat = GEN_FCN (icode) (target, op0, op1, op2);
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-  if (boolcode)
+  if (! register_operand (old, mode))
+    old = copy_to_mode_reg (mode, old);
+  if (! register_operand (new, mode))
+    new = copy_to_mode_reg (mode, new);
+
+  if (! boolp && target && register_operand (target, mode))
+    tmp = target;
+  else
+    tmp = gen_reg_rtx (mode);
+
+  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
+  emit_move_insn (ccv, old);
+  emit_insn (gen_mf ());
+  if (mode == SImode)
+    insn = gen_cmpxchg_acq_si (tmp, mem, new, ccv);
+  else
+    insn = gen_cmpxchg_acq_di (tmp, mem, new, ccv);
+  emit_insn (insn);
+
+  if (boolp)
     {
-      if (tmode == SImode)
-        {
-          emit_insn (gen_cmpsi (target, op1));
-          emit_insn (gen_seq (gen_lowpart (DImode, target)));
-        }
-      else
-        {
-          emit_insn (gen_cmpdi (target, op1));
-          emit_insn (gen_seq (target));
-        }
+      if (! target)
+	target = gen_reg_rtx (mode);
+      return emit_store_flag_force (target, EQ, tmp, old, mode, 1, 1);
     }
-  return target;
+  else
+    return tmp;
 }
 
-/* Expand all intrinsics that take 2 arguments. */
+/* Expand lock_test_and_set.  I.e. `xchgsz ret = [ptr], new'.  */
+
 static rtx
-ia64_expand_binop_builtin (icode, arglist, target)
-     enum insn_code icode;
+ia64_expand_lock_test_and_set (mode, arglist, target)
+     enum machine_mode mode;
      tree arglist;
      rtx target;
 {
-  rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
-  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+  tree arg0, arg1;
+  rtx mem, new, ret, insn;
 
-  if (! target
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+  new = expand_expr (arg1, NULL_RTX, mode, 0);
 
-  op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
+  mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
+  MEM_VOLATILE_P (mem) = 1;
+  if (! register_operand (new, mode))
+    new = copy_to_mode_reg (mode, new);
 
-  pat = GEN_FCN (icode) (target, op0, op1);
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-  return target;
+  if (target && register_operand (target, mode))
+    ret = target;
+  else
+    ret = gen_reg_rtx (mode);
+
+  if (mode == SImode)
+    insn = gen_xchgsi (ret, mem, new);
+  else
+    insn = gen_xchgdi (ret, mem, new);
+  emit_insn (insn);
+
+  return ret;
+}
+
+/* Expand lock_release.  I.e. `stsz.rel [ptr] = r0'.  */
+
+static rtx
+ia64_expand_lock_release (mode, arglist, target)
+     enum machine_mode mode;
+     tree arglist;
+     rtx target ATTRIBUTE_UNUSED;
+{
+  tree arg0;
+  rtx mem;
+
+  arg0 = TREE_VALUE (arglist);
+  mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+
+  mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
+  MEM_VOLATILE_P (mem) = 1;
+
+  emit_move_insn (mem, const0_rtx);
+
+  return const0_rtx;
 }
 
 rtx
@@ -5016,126 +5109,137 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
      enum machine_mode mode ATTRIBUTE_UNUSED;
      int ignore ATTRIBUTE_UNUSED;
 {
-  rtx op0, op1, pat;
-  rtx tmp_reg;
-  tree arg0, arg1;
-  tree arglist = TREE_OPERAND (exp, 1);
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
-  enum machine_mode tmode, mode0, mode1;
-  enum insn_code icode;
-  size_t i;
-  struct builtin_description *d;
+  tree arglist = TREE_OPERAND (exp, 1);
 
   switch (fcode)
     {
     case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI:
-      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_si,
-					   arglist, target, 1);
-
     case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI:
-      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_si,
-					   arglist, target, 0);
+    case IA64_BUILTIN_LOCK_TEST_AND_SET_SI:
+    case IA64_BUILTIN_LOCK_RELEASE_SI:
+    case IA64_BUILTIN_FETCH_AND_ADD_SI:
+    case IA64_BUILTIN_FETCH_AND_SUB_SI:
+    case IA64_BUILTIN_FETCH_AND_OR_SI:
+    case IA64_BUILTIN_FETCH_AND_AND_SI:
+    case IA64_BUILTIN_FETCH_AND_XOR_SI:
+    case IA64_BUILTIN_FETCH_AND_NAND_SI:
+    case IA64_BUILTIN_ADD_AND_FETCH_SI:
+    case IA64_BUILTIN_SUB_AND_FETCH_SI:
+    case IA64_BUILTIN_OR_AND_FETCH_SI:
+    case IA64_BUILTIN_AND_AND_FETCH_SI:
+    case IA64_BUILTIN_XOR_AND_FETCH_SI:
+    case IA64_BUILTIN_NAND_AND_FETCH_SI:
+      mode = SImode;
+      break;
 
     case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI:
-      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_di,
-					   arglist, target, 1);
-
     case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI:
-      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_di,
-					   arglist, target, 0);
-
-    case IA64_BUILTIN_SYNCHRONIZE:
-      /* Pass a volatile memory operand. */
-      tmp_reg = gen_rtx_REG (DImode, GR_REG(0));
-      target = gen_rtx_MEM (BLKmode, tmp_reg);
-      emit_insn (gen_mf (target));
-      return const0_rtx;
-
-    case IA64_BUILTIN_LOCK_TEST_AND_SET_SI:
-      icode = CODE_FOR_lock_test_and_set_si;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
-      op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-        op1 = copy_to_mode_reg (mode1, op1);
-      if (target == 0
-          || GET_MODE (target) != tmode
-          || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-        target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1);
-      if (! pat)
-        return 0;
-      emit_insn (pat);
-      return target;
-
     case IA64_BUILTIN_LOCK_TEST_AND_SET_DI:
-      icode = CODE_FOR_lock_test_and_set_di;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
-      op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-        op1 = copy_to_mode_reg (mode1, op1);
-      if (target == 0
-          || GET_MODE (target) != tmode
-          || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-        target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1);
-      if (! pat)
-        return 0;
-      emit_insn (pat);
-      return target;
-
-    case IA64_BUILTIN_LOCK_RELEASE_SI:
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op0 = gen_rtx_MEM (SImode, copy_to_mode_reg (Pmode, op0));
-      MEM_VOLATILE_P (op0) = 1;
-      emit_insn (gen_movsi (op0, GEN_INT(0)));
-      return const0_rtx;
-
     case IA64_BUILTIN_LOCK_RELEASE_DI:
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op0 = gen_rtx_MEM (DImode, copy_to_mode_reg (Pmode, op0));
-      MEM_VOLATILE_P (op0) = 1;
-      emit_insn (gen_movdi (op0, GEN_INT(0)));
-      return const0_rtx;
-
-    case IA64_BUILTIN_BSP:
-      {
-	rtx reg = gen_reg_rtx (DImode);
-	emit_insn (gen_bsp_value (reg));
-	return reg;
-      }
-
-    case IA64_BUILTIN_FLUSHRS:
-      emit_insn (gen_flushrs ());
-      return const0_rtx;
+    case IA64_BUILTIN_FETCH_AND_ADD_DI:
+    case IA64_BUILTIN_FETCH_AND_SUB_DI:
+    case IA64_BUILTIN_FETCH_AND_OR_DI:
+    case IA64_BUILTIN_FETCH_AND_AND_DI:
+    case IA64_BUILTIN_FETCH_AND_XOR_DI:
+    case IA64_BUILTIN_FETCH_AND_NAND_DI:
+    case IA64_BUILTIN_ADD_AND_FETCH_DI:
+    case IA64_BUILTIN_SUB_AND_FETCH_DI:
+    case IA64_BUILTIN_OR_AND_FETCH_DI:
+    case IA64_BUILTIN_AND_AND_FETCH_DI:
+    case IA64_BUILTIN_XOR_AND_FETCH_DI:
+    case IA64_BUILTIN_NAND_AND_FETCH_DI:
+      mode = DImode;
+      break;
 
     default:
       break;
     }
 
-  /* Expand all 32 bit intrinsics that take 2 arguments. */
-  for (i=0, d = bdesc_2argsi; i < sizeof (bdesc_2argsi) / sizeof *d; i++, d++)
-    if (d->code == fcode)
-      return ia64_expand_binop_builtin (d->icode, arglist, target);
+  switch (fcode)
+    {
+    case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI:
+    case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI:
+      return ia64_expand_compare_and_swap (mode, 1, arglist, target);
 
-  /* Expand all 64 bit intrinsics that take 2 arguments. */
-  for (i=0, d = bdesc_2argdi; i < sizeof (bdesc_2argdi) / sizeof *d; i++, d++)
-    if (d->code == fcode)
-      return ia64_expand_binop_builtin (d->icode, arglist, target);
+    case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI:
+    case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI:
+      return ia64_expand_compare_and_swap (mode, 0, arglist, target);
 
-  return 0;
+    case IA64_BUILTIN_SYNCHRONIZE:
+      emit_insn (gen_mf ());
+      return const0_rtx;
+
+    case IA64_BUILTIN_LOCK_TEST_AND_SET_SI:
+    case IA64_BUILTIN_LOCK_TEST_AND_SET_DI:
+      return ia64_expand_lock_test_and_set (mode, arglist, target);
+
+    case IA64_BUILTIN_LOCK_RELEASE_SI:
+    case IA64_BUILTIN_LOCK_RELEASE_DI:
+      return ia64_expand_lock_release (mode, arglist, target);
+
+    case IA64_BUILTIN_BSP:
+      if (! target || ! register_operand (target, DImode))
+	target = gen_reg_rtx (DImode);
+      emit_insn (gen_bsp_value (target));
+      return target;
+
+    case IA64_BUILTIN_FLUSHRS:
+      emit_insn (gen_flushrs ());
+      return const0_rtx;
+
+    case IA64_BUILTIN_FETCH_AND_ADD_SI:
+    case IA64_BUILTIN_FETCH_AND_ADD_DI:
+      return ia64_expand_fetch_and_op (add_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_FETCH_AND_SUB_SI:
+    case IA64_BUILTIN_FETCH_AND_SUB_DI:
+      return ia64_expand_fetch_and_op (sub_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_FETCH_AND_OR_SI:
+    case IA64_BUILTIN_FETCH_AND_OR_DI:
+      return ia64_expand_fetch_and_op (ior_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_FETCH_AND_AND_SI:
+    case IA64_BUILTIN_FETCH_AND_AND_DI:
+      return ia64_expand_fetch_and_op (and_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_FETCH_AND_XOR_SI:
+    case IA64_BUILTIN_FETCH_AND_XOR_DI:
+      return ia64_expand_fetch_and_op (xor_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_FETCH_AND_NAND_SI:
+    case IA64_BUILTIN_FETCH_AND_NAND_DI:
+      return ia64_expand_fetch_and_op (one_cmpl_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_ADD_AND_FETCH_SI:
+    case IA64_BUILTIN_ADD_AND_FETCH_DI:
+      return ia64_expand_op_and_fetch (add_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_SUB_AND_FETCH_SI:
+    case IA64_BUILTIN_SUB_AND_FETCH_DI:
+      return ia64_expand_op_and_fetch (sub_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_OR_AND_FETCH_SI:
+    case IA64_BUILTIN_OR_AND_FETCH_DI:
+      return ia64_expand_op_and_fetch (ior_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_AND_AND_FETCH_SI:
+    case IA64_BUILTIN_AND_AND_FETCH_DI:
+      return ia64_expand_op_and_fetch (and_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_XOR_AND_FETCH_SI:
+    case IA64_BUILTIN_XOR_AND_FETCH_DI:
+      return ia64_expand_op_and_fetch (xor_optab, mode, arglist, target);
+
+    case IA64_BUILTIN_NAND_AND_FETCH_SI:
+    case IA64_BUILTIN_NAND_AND_FETCH_DI:
+      return ia64_expand_op_and_fetch (one_cmpl_optab, mode, arglist, target);
+
+    default:
+      break;
+    }
+
+  return NULL_RTX;
 }
