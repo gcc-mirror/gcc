@@ -7986,10 +7986,10 @@ rs6000_adjust_priority (insn, priority)
      rtx insn ATTRIBUTE_UNUSED;
      int priority;
 {
-  /* On machines (like the 750) which have asymetric integer units, where one
+  /* On machines (like the 750) which have asymmetric integer units, where one
      integer unit can do multiply and divides and the other can't, reduce the
      priority of multiply/divide so it is scheduled before other integer
-     operationss.  */
+     operations.  */
 
 #if 0
   if (! INSN_P (insn))

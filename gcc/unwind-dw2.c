@@ -892,7 +892,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     {
       /* Couldn't find frame unwind info for this function.  Try a
 	 target-specific fallback mechanism.  This will necessarily
-	 not profide a personality routine or LSDA.  */
+	 not provide a personality routine or LSDA.  */
 #ifdef MD_FALLBACK_FRAME_STATE_FOR
       MD_FALLBACK_FRAME_STATE_FOR (context, fs, success);
       return _URC_END_OF_STACK;

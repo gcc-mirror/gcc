@@ -47,7 +47,7 @@ _Unwind_RaiseException_Phase2(struct _Unwind_Exception *exc,
 		       ? _UA_HANDLER_FRAME : 0);
 
       if (code != _URC_NO_REASON)
-	/* Some error encountered.  Ususally the unwinder doesn't
+	/* Some error encountered.  Usually the unwinder doesn't
 	   diagnose these and merely crashes.  */
 	return _URC_FATAL_PHASE2_ERROR;
 

@@ -1,3 +1,12 @@
+2001-09-19  Stan Shebs  <shebs@apple.com>
+
+	* alias.c: Fix typos in comments.
+	* sched-rgn.c (init_ready_list): Ditto.
+	* unwind-dw2.c (uw_frame_state_for): Ditto.
+	* unwind-dw2-fde.c (_Unwind_Find_FDE): Ditto.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Ditto.
+	* config/rs6000/rs6000.c (rs6000_adjust_priority): Ditto.
+
 2001-09-19  Richard Henderson  <rth@redhat.com>
 
 	* cfg.c (force_nonfallthru_and_redirect): Handle redirecting
