@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on AMD Am29000.
-   Copyright (C) 1987, 88, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 90-94, 1995 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
