@@ -464,41 +464,63 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 /* We don't have unaligned support, let's hope the normal output works for
    .debug_frame.  */
 
+#ifndef ASM_OUTPUT_DWARF_ADDR
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL) \
   assemble_integer (gen_rtx_SYMBOL_REF (Pmode, LABEL), DWARF2_ADDR_SIZE, 1)
+#endif
 
+#ifndef ASM_OUTPUT_DWARF_ADDR_CONST
+#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX) ASM_OUTPUT_DWARF_ADDR (FILE,RTX)
+#endif
+
+#ifndef ASM_OUTPUT_DWARF_OFFSET4
 #define ASM_OUTPUT_DWARF_OFFSET4(FILE,LABEL) \
   assemble_integer (gen_rtx_SYMBOL_REF (SImode, LABEL), 4, 1)
+#endif
 
+#ifndef ASM_OUTPUT_DWARF_OFFSET
 #define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL) \
   assemble_integer (gen_rtx_SYMBOL_REF (SImode, LABEL), 4, 1)
+#endif
 
+#ifndef ASM_OUTPUT_DWARF_DELTA2
 #define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
   assemble_integer (gen_rtx_MINUS (HImode,			      	\
 				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),  \
 				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    2, 1)
+#endif
   
+#ifndef ASM_OUTPUT_DWARF_DELTA4
 #define ASM_OUTPUT_DWARF_DELTA4(FILE,LABEL1,LABEL2)			\
   assemble_integer (gen_rtx_MINUS (SImode,			      	\
 				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),  \
 				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    4, 1)
+#endif
 
+#ifndef ASM_OUTPUT_DWARF_ADDR_DELTA
 #define ASM_OUTPUT_DWARF_ADDR_DELTA(FILE,LABEL1,LABEL2)			\
   assemble_integer (gen_rtx_MINUS (Pmode,				\
 				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),	\
 				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    DWARF2_ADDR_SIZE, 1)
+#endif
 
+#ifndef ASM_OUTPUT_DWARF_DELTA
 #define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2) \
   ASM_OUTPUT_DWARF_DELTA4 (FILE,LABEL1,LABEL2)
+#endif
 
+#ifndef ASM_OUTPUT_DWARF_DATA2
 #define ASM_OUTPUT_DWARF_DATA2(FILE,VALUE) \
   assemble_integer (GEN_INT (VALUE), 2, 1)
+#endif
 
+#ifndef ASM_OUTPUT_DWARF_DATA4
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
   assemble_integer (GEN_INT (VALUE), 4, 1)
+#endif
 
 #endif /* UNALIGNED_INT_ASM_OP */
 
@@ -2599,13 +2621,13 @@ output_loc_operands (loc)
 
   switch (loc->dw_loc_opc)
     {
+#ifdef DWARF2_DEBUGGING_INFO
+      /* We currently don't make any attempt to make sure these are
+         aligned properly like we do for the main unwind info, so
+         don't support emitting things larger than a byte if we're
+         only doing unwinding.  */
     case DW_OP_addr:
       ASM_OUTPUT_DWARF_ADDR_CONST (asm_out_file, val1->v.val_addr);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_const1u:
-    case DW_OP_const1s:
-      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, val1->v.val_flag);
       fputc ('\n', asm_out_file);
       break;
     case DW_OP_const2u:
@@ -2623,6 +2645,17 @@ output_loc_operands (loc)
       abort ();
       fputc ('\n', asm_out_file);
       break;
+    case DW_OP_skip:
+    case DW_OP_bra:
+      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, val1->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+#endif
+    case DW_OP_const1u:
+    case DW_OP_const1s:
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, val1->v.val_flag);
+      fputc ('\n', asm_out_file);
+      break;
     case DW_OP_constu:
       output_uleb128 (val1->v.val_unsigned);
       fputc ('\n', asm_out_file);
@@ -2637,11 +2670,6 @@ output_loc_operands (loc)
       break;
     case DW_OP_plus_uconst:
       output_uleb128 (val1->v.val_unsigned);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_skip:
-    case DW_OP_bra:
-      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, val1->v.val_int);
       fputc ('\n', asm_out_file);
       break;
     case DW_OP_breg0:
@@ -2703,7 +2731,7 @@ output_loc_operands (loc)
       fputc ('\n', asm_out_file);
       break;
     default:
-      break;
+      abort ();
     }
 }
 
