@@ -1,3 +1,9 @@
+2000-03-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (collect_formal_parameters): strncmp returns 0 for
+	match.  (cpp_compare_defs): Count the nul separator when
+	advancing over argument names.
+
 2000-03-09  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* recog.c (preprocess_constraints): Matching constraints affect
