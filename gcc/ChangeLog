@@ -1,3 +1,8 @@
+Fri Aug 28 14:54:07 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (check_dbra_loop): Fix calculation of FINAL_VALUE when
+	COMPARISON_VAL was normalized.
+
 Thu Aug 27 20:10:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (check_dbra_loop): The loop ending comparison value
