@@ -5738,9 +5738,9 @@ arm_print_operand (stream, x, code)
 	      {
 		fputc ('#', stream);
 		if (val < -1000 || val > 1000)
-		  fprintf (stream, HOST_WIDE_INT_PRINT_HEX (val));
+		  fprintf (stream, HOST_WIDE_INT_PRINT_HEX, val);
 		else
-		  fprintf (stream, HOST_WIDE_INT_PRINT_DEC (val));
+		  fprintf (stream, HOST_WIDE_INT_PRINT_DEC, val);
 	      }
 	  }
       }
