@@ -3,6 +3,7 @@
 #include "fio.h"
 #include "fmt.h"
 
+int
 y_rsk (void)
 {
   if (f__curunit->uend || f__curunit->url <= f__recpos
@@ -16,6 +17,7 @@ y_rsk (void)
   return 0;
 }
 
+int
 y_getc (void)
 {
   int ch;
@@ -66,6 +68,7 @@ y_newrec (void)
   return (1);
 }
 
+int
 c_dfe (cilist * a)
 {
   f__sequential = 0;

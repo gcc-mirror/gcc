@@ -2,6 +2,7 @@
 #include "f2c.h"
 #include "fio.h"
 
+int
 c_due (cilist * a)
 {
   if (f__init != 1)

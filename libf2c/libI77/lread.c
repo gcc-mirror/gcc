@@ -65,6 +65,7 @@ un_getc (int x, FILE * f__cf)
 extern int ungetc (int, FILE *);	/* for systems with a buggy stdio.h */
 #endif
 
+int
 t_getc (void)
 {
   int ch;
@@ -662,6 +663,7 @@ have_lcount:
     }
 }
 
+int
 c_le (cilist * a)
 {
   if (f__init != 1)
@@ -682,6 +684,7 @@ c_le (cilist * a)
   return (0);
 }
 
+int
 l_read (ftnint * number, char *ptr, ftnlen len, ftnint type)
 {
 #define Ptr ((flex *)ptr)

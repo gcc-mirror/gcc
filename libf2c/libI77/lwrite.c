@@ -207,6 +207,8 @@ lwrt_C (double a, double b)
   l_put (bb);
   PUT (')');
 }
+
+int
 l_write (ftnint * number, char *ptr, ftnlen len, ftnint type)
 {
 #define Ptr ((flex *)ptr)

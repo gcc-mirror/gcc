@@ -43,7 +43,7 @@ ap_end (char *s)
    /*NOTREACHED*/ return 0;
 }
 
-static
+static int
 op_gen (int a, int b, int c, int d)
 {
   struct syl *p = &f__syl[f__pc];
@@ -105,7 +105,7 @@ f_s (char *s, int curloc)
   return (s);
 }
 
-static
+static int
 ne_d (char *s, char **p)
 {
   int n, x, sign = 0;
@@ -228,7 +228,7 @@ ne_d (char *s, char **p)
   return (1);
 }
 
-static
+static int
 e_d (char *s, char **p)
 {
   int i, im, n, w, d, e, found = 0, x = 0;
@@ -405,6 +405,7 @@ f_list (char *s)
   return (NULL);
 }
 
+int
 pars_f (char *s)
 {
   char *e;
@@ -445,7 +446,7 @@ pars_f (char *s)
 int f__cnt[STKSZ], f__ret[STKSZ], f__cp, f__rp;
 flag f__workdone, f__nonl;
 
-static
+static int
 type_f (int n)
 {
   switch (n)
@@ -586,6 +587,7 @@ do_fio (ftnint * number, char *ptr, ftnlen len)
   return (0);
 }
 
+int
 en_fio (void)
 {
   ftnint one = 1;

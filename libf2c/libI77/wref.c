@@ -13,6 +13,7 @@
 #include "fmt.h"
 #include "fp.h"
 
+int
 wrt_E (ufloat * p, int w, int d, int e, ftnlen len)
 {
   char buf[FMAX + EXPMAXDIGS + 4], *s, *se;
@@ -203,6 +204,7 @@ wrt_E (ufloat * p, int w, int d, int e, ftnlen len)
   return 0;
 }
 
+int
 wrt_F (ufloat * p, int w, int d, ftnlen len)
 {
   int d1, sign, n;

@@ -510,6 +510,7 @@ rd_POS (char *s)
   return (1);
 }
 
+int
 rd_ed (struct syl * p, char *ptr, ftnlen len)
 {
   int ch;
@@ -584,6 +585,7 @@ rd_ed (struct syl * p, char *ptr, ftnlen len)
   return (errno);
 }
 
+int
 rd_ned (struct syl * p)
 {
   switch (p->op)

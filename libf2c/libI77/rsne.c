@@ -40,7 +40,7 @@ extern ftnlen f__typesize[];
 
 extern flag f__lquit;
 extern int f__lcount, nml_read;
-extern t_getc (void);
+extern int t_getc (void);
 
 #undef abs
 #undef min
@@ -262,6 +262,7 @@ print_ne (cilist * a)
 
 static char where0[] = "namelist read start ";
 
+int
 x_rsne (cilist * a)
 {
   int ch, got1, k, n, nd, quote, readall;

@@ -15,6 +15,7 @@ e_rsfe (void)
   return (n);
 }
 
+int
 c_sfe (cilist * a)		/* check */
 {
   unit *p;
