@@ -8571,7 +8571,9 @@ load_mems (scan_start, end, loop_top, start)
 	       p != NULL_RTX;
 	       p = next_insn_in_loop (p, scan_start, end, loop_top))
 	    {
-	      rtx_and_int ri = { p, i };
+	      rtx_and_int ri;
+	      ri.r = p;
+	      ri.i = i;
 	      for_each_rtx (&p, replace_loop_mem, &ri);
 	    }
 
@@ -8620,7 +8622,9 @@ load_mems (scan_start, end, loop_top, start)
     {
       /* Now, we need to replace all references to the previous exit
 	 label with the new one.  */
-      rtx_pair rr = { end_label, label };
+      rtx_pair rr; 
+      rr.r1 = end_label;
+      rr.r2 = label;
 
       for (p = start; p != end; p = NEXT_INSN (p))
 	for_each_rtx (&p, replace_label, &rr);
