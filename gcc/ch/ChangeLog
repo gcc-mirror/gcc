@@ -1,3 +1,11 @@
+Sun Oct 31 22:33:33 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (convert.o, typeck.o): Depend on output.h
+	* convert.c: Include output.h.
+	* typeck.c: Include output.h.
+	(initializer_constant_valid_p): Delete fucntion.
+	* ch-tree.h (initializer_constant_valid_p): Delete prototype.
+
 1999-10-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* ch-tree.h (remember_end_note): Remove prototype.

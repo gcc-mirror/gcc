@@ -265,7 +265,8 @@ actions.o : actions.c $(CONFIG_H) $(CHILL_TREE_H) actions.h $(RTL_H)	\
 	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../system.h	\
 	$(srcdir)/../toplev.h
 convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
-	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
+	$(srcdir)/../convert.h
 decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
 except.o : except.c $(CONFIG_H) $(srcdir)/../tree.h $(RTL_H) $(CHILL_TREE_H) \
@@ -299,7 +300,7 @@ tree.o : tree.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../system.h \
 	$(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(CHILL_TREE_H) ../insn-codes.h \
 	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../flags.h lex.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(srcdir)/../system.h $(srcdir)/../toplev.h $(srcdir)/../output.h
 ch-version.o : ch-version.c
 ch-version.c : Makefile
 	echo 'const char * const gnuchill_version = "$(GNUCHILL_VERSION)";' > $@

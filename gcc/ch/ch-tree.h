@@ -1101,7 +1101,6 @@ extern ch_class chill_resulting_class           PROTO((ch_class, ch_class));
 extern tree chill_resulting_mode                PROTO((tree, tree));
 extern int  chill_similar	                PROTO((tree, tree, struct mode_chain*));
 extern int  discrete_type_p			PROTO((tree));
-extern tree initializer_constant_valid_p        PROTO((tree, tree));
 extern tree convert_to_discrete                 PROTO((tree));
 extern tree smash_dummy_type                    PROTO((tree));
 extern tree string_assignment_condition         PROTO((tree, tree));
