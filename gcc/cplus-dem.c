@@ -2535,22 +2535,13 @@ do_type (work, mangled, result)
 	  /* An array */
 	case 'A':
 	  {
-	    const char *p = ++(*mangled);
-
+	    ++(*mangled);
 	    string_prepend (&decl, "(");
 	    string_append (&decl, ")[");
-	    /* Copy anything up until the next underscore (the size of the
-	       array).  */
-	    while (**mangled && **mangled != '_')
-	      ++(*mangled);
+	    success = demangle_template_value_parm (work, mangled, &decl);
 	    if (**mangled == '_')
-	      {
-		string_appendn (&decl, p, *mangled - p);
-		string_append (&decl, "]");             
-		*mangled += 1;
-	      }
-	    else
-	      success = 0;
+	      ++(*mangled);
+	    string_append (&decl, "]");
 	    break;
 	  }
 

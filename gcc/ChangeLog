@@ -1,3 +1,13 @@
+Tue Jul 21 13:28:19 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cplus-dem.c (do_type): Use demangle_template_value_parm for arrays.
+
+Sun Jul 12 01:27:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* fold-const.c (non_lvalue): Don't deal with null pointer 
+	constants here.
+	(fold, case COMPOUND_EXPR): Wrap a constant 0 in a NOP_EXPR.
+
 Tue Jul 21 15:49:31 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (PREDICATE_CODES): Add CONSTANT_P_RTX.
