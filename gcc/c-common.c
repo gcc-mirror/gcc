@@ -328,7 +328,7 @@ decl_attributes (node, attributes, prefix_attributes)
       switch (id)
 	{
 	case A_PACKED:
-	  if (decl == 0)
+	  if (is_type)
 	    TYPE_PACKED (type) = 1;
 	  else if (TREE_CODE (decl) == FIELD_DECL)
 	    DECL_PACKED (decl) = 1;
@@ -380,14 +380,15 @@ decl_attributes (node, attributes, prefix_attributes)
 	  break;
 
 	case A_T_UNION:
-	  if (decl != 0 && TREE_CODE (decl) == PARM_DECL
+	  if (is_type
 	      && TREE_CODE (type) == UNION_TYPE
-	      && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))
-	    DECL_TRANSPARENT_UNION (decl) = 1;
-	  else if (is_type
+	      && (decl == 0
+		  || TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type))))
+	    TYPE_TRANSPARENT_UNION (type) = 1;
+	  else if (decl != 0 && TREE_CODE (decl) == PARM_DECL
 		   && TREE_CODE (type) == UNION_TYPE
 		   && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))
-	    TYPE_TRANSPARENT_UNION (type) = 1;
+	    DECL_TRANSPARENT_UNION (decl) = 1;
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
 	  break;
