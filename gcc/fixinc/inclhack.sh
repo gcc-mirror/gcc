@@ -748,7 +748,7 @@ struct rusage;
     # Fix  17:  No_Double_Slash
     #
     if ( test -n "`egrep '(^|[^:])//[^\"*]' ${file}`" -a \
-              '(' -z `echo ${file} | egrep '(CC|cxx|\+\+)/' ` ')'
+              '('  -z "`echo ${file} | egrep '(CC|cxx|++)/' `" ')'
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       no_double_slash"

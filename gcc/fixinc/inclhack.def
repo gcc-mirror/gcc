@@ -350,7 +350,7 @@ fix = {
      *  Also, only accept double slashes that are not part of URL's
      *  and are not the end of a quoted string.
      */
-    test   = '-z `echo ${file} | egrep \'(CC|cxx|\+\+)/\' `';
+    test   = " -z \"`echo ${file} | egrep \'(CC|cxx|\+\+)/\' `\"";
     select = '(^|[^:])//[^"*]';
     sed    = 's,^//.*$,,';
     sed    = 's,[^:]//[^"].*$,,';
