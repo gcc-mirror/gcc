@@ -1,3 +1,9 @@
+2005-03-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/20636
+	* config/rs6000/rs6000.md (extendsfdf2_fpr): Check to make
+	sure that we have a REG before getting its REGNO.
+
 2005-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-types.def (BT_FN_STRING_CONST_STRING_SIZE): New.
