@@ -33,8 +33,6 @@
  *  executable file might be covered by the GNU General Public License.
  */ 
 
-/* APPLE LOCAL mainline throughout this file */
-
 #include "darwin-asm.h"
 
 /* Set up trampolines.  */
