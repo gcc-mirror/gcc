@@ -88,6 +88,8 @@ global opt framework	Jeff Law		law@redhat.com
 jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 C front end/ISO C99	Gavin Romig-Koch	gavin@redhat.com
+C front end/ISO C99	Joseph Myers		jsm28@cam.ac.uk
+C front end/ISO C99	Richard Henderson	rth@redhat.com
 config.sub/config.guess	Ben Elliston		bje@redhat.com
 avr port		Denis Chertykov		denisc@overta.ru
 			Marek Michalkiewicz	marekm@linux.org.pl
@@ -145,7 +147,6 @@ Greg McGary					gkm@gnu.org
 Bryce McKinlay					bryce@gcc.gnu.org
 Toon Moene					toon@moene.indiv.nluug.nl
 Catherine Moore					clm@redhat.com
-Joseph Myers					jsm28@cam.ac.uk
 Hans-Peter Nilsson				hp@bitrange.com
 Diego Novillo					dnovillo@redhat.com
 David O'Brien					obrien@FreeBSD.org
