@@ -5214,6 +5214,12 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
       if (! HONOR_NANS (mode))
 	return fold (build2 (neg ? GE_EXPR : LE_EXPR, type,
 			     arg0, build_real (TREE_TYPE (arg0), max)));
+
+      /* The transformation below creates non-gimple code and thus is
+	 not appropriate if we are in gimple form.  */
+      if (in_gimple_form)
+	return NULL_TREE;
+	
       temp = fold (build2 (neg ? LT_EXPR : GT_EXPR, type,
 			   arg0, build_real (TREE_TYPE (arg0), max)));
       return fold (build1 (TRUTH_NOT_EXPR, type, temp));

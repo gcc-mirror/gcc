@@ -1,3 +1,7 @@
+2004-06-10  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/20040610-1.c: New test.
+
 2004-06-11  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.old-deja/g++.robertl/eb4.C: Adjust error markers.
