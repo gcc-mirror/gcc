@@ -417,6 +417,28 @@
   ""
   "mulq %r1,%r2,%0"
   [(set_attr "type" "imulq")])
+
+(define_insn "umuldi3_highpart"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(truncate:DI
+	 (lshiftrt:TI
+	  (mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand" "r"))
+		   (zero_extend:TI (match_operand:DI 2 "register_operand" "r")))
+	  (const_int 64))))]
+  ""
+  "umulh %1,%2,%0"
+  [(set_attr "type" "imulq")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(truncate:DI
+	 (lshiftrt:TI
+	  (mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand" "r"))
+		   (match_operand:TI 2 "cint8_operand" "I"))
+	  (const_int 64))))]
+  ""
+  "umulh %1,%2,%0"
+  [(set_attr "type" "imulq")])
 
 ;; The divide and remainder operations always take their inputs from
 ;; r24 and r25, put their output in r27, and clobber r23 and r28.
