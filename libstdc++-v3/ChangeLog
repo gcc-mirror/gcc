@@ -1,5 +1,13 @@
 2001-03-24  Phil Edwards  <pme@sources.redhat.com>
 
+	* Makefile.am:  New targets, doxygen and doxygen-maint.
+	* Makefile.in:  Regenerated.
+	* docs/doxygen/run_doxygen:  Finally implemented.
+	* docs/doxygen/maint.cfg.in:  New file.
+	* docs/doxygen/user.cfg.in:  New file.
+
+2001-03-24  Phil Edwards  <pme@sources.redhat.com>
+
 	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_FEATURES):  Update comment.
 	* src/Makefile.am:  Replace leading spaces with tabs on continuation
 	lines.
