@@ -1,3 +1,7 @@
+Wed Sep  8 02:23:08 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* cpplib.c (cpp_push_buffer): Fix order of arguments.
+
 Wed Sep  8 04:44:09 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* rtl.h (obstack_alloc_rtx): Removed, it's now static in
