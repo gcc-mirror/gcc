@@ -17,14 +17,14 @@ crti.o: $(srcdir)/config/sparc/sol2-ci.asm
 crtn.o: $(srcdir)/config/sparc/sol2-cn.asm
 	$(AS) -o crtn.o $(srcdir)/config/sparc/sol2-cn.asm
 
-# We need to use -fpic when we are using gcc to compile the routines in
+# We need to use -fPIC when we are using gcc to compile the routines in
 # crtstuff.c.  This is only really needed when we are going to use gcc/g++
 # to produce a shared library, but since we don't know ahead of time when
-# we will be doing that, we just always use -fpic when compiling the
+# we will be doing that, we just always use -fPIC when compiling the
 # routines in crtstuff.c.
 
 # Since the GNU assembler doesn't support PIC yet, we need to force gcc to
 # use the native assembler when building crtstuff.  If we're a
 # cross-compiler, just give up on using PIC.
 
-CRTSTUFF_T_CFLAGS = `if [ -z "$(CROSS)" ]; then echo -fpic -B/usr/ccs/bin/; fi`
+CRTSTUFF_T_CFLAGS = `if [ -z "$(CROSS)" ]; then echo -fPIC -B/usr/ccs/bin/; fi`
