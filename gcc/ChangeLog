@@ -1,3 +1,9 @@
+2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/16176
+	* config/mips/mips.c (mips_expand_unaligned_load): Use a temporary
+	register for the destination of the lwl or ldl.
+
 2004-06-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-cfg.c (verify_expr): Add macro CHECK_OK.
