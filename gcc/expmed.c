@@ -781,10 +781,19 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 	  else
 	    /* The args are chosen so that the last part includes the
 	       lsb.  Give extract_bit_field the value it needs (with
-	       endianness compensation) to fetch the piece we want.  */
-	    part = extract_fixed_bit_field (word_mode, value, 0, thissize,
-					    total_bits - bitsize + bitsdone,
-					    NULL_RTX, 1, align);
+	       endianness compensation) to fetch the piece we want.
+
+	       ??? We have no idea what the alignment of VALUE is, so
+	       we have to use a guess.  */
+	    part
+	      = extract_fixed_bit_field
+		(word_mode, value, 0, thissize,
+		 total_bits - bitsize + bitsdone, NULL_RTX, 1,
+		 GET_MODE (value) == VOIDmode
+		 ? UNITS_PER_WORD
+		 : (GET_MODE (value) == BLKmode
+		    ? 1
+		    : GET_MODE_ALIGNMENT (GET_MODE (value)) / BITS_PER_UNIT));
 	}
       else
 	{
@@ -794,8 +803,14 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 			     >> bitsdone)
 			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
 	  else
-	    part = extract_fixed_bit_field (word_mode, value, 0, thissize,
-					    bitsdone, NULL_RTX, 1, align);
+	    part
+	      = extract_fixed_bit_field
+		(word_mode, value, 0, thissize, bitsdone, NULL_RTX, 1,
+		 GET_MODE (value) == VOIDmode
+		 ? UNITS_PER_WORD
+		 : (GET_MODE (value) == BLKmode
+		    ? 1
+		    : GET_MODE_ALIGNMENT (GET_MODE (value)) / BITS_PER_UNIT));
 	}
 
       /* If OP0 is a register, then handle OFFSET here.
