@@ -144,6 +144,9 @@ typedef struct basic_block_def {
   int index;
   /* The loop depth of this block plus one.  */
   int loop_depth;
+
+  /* The active eh region before head and after end.  */
+  int eh_beg, eh_end;
 } *basic_block;
 
 /* Number of basic blocks in the current function.  */
