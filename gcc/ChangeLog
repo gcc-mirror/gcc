@@ -1,3 +1,9 @@
+2002-07-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/linux.h (CRIS_LINK_SUBTARGET_SPEC): Don't
+	--gc-sections if -r.
+	* config/cris/cris.h: Ditto.
+
 2002-07-16  Rodney Brown  <rbrown64@csc.com.au>
 
 	* config/i386/i386.c (ix86_expand_int_movcc): In the case where
