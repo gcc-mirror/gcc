@@ -1,3 +1,9 @@
+2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/9738
+	* config/i386/winnt.c (i386_pe_encode_section_info): Enable
+	even if not first.
+
 2003-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genautomata.c (output_description, output_automaton_units,
