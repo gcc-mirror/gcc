@@ -7801,7 +7801,7 @@ check_dbra_loop (loop, insn_count)
        tests with more than one condition.  */
 
     rtx jump1;
-    if ((jump1 = prev_nonnote_insn (jump)) != loop_continue)
+    if ((jump1 = prev_nonnote_insn (jump)) != loop->cont)
       if (GET_CODE (jump1) == JUMP_INSN))
         return 0;
   }
