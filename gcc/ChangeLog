@@ -1,3 +1,20 @@
+2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/extend.texi: Warn about unsupported usage of altivec
+        builtins.
+
+        * config/rs6000/rs6000.md (altivec_vcmp*_p): Remove.
+        (altivec_predicate_*): New.
+
+        * config/rs6000/altivec.h: Rewrite predicates to use new builtins.
+        Add C++ version of vec_*() functions.
+
+        * config/rs6000/rs6000.c (bdesc_altivec_preds): New.
+        (bdesc_2arg): Remove altivec predicates.
+        (altivec_expand_builtin): Handle predicates.
+        (altivec_init_builtins): Handle predicates.
+        (altivec_expand_predicate_builtin): New.
+
 2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (DO_FRAME_NOTES): Move forward.
