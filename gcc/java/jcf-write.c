@@ -1,5 +1,5 @@
 /* Write out a Java(TM) class file.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -3383,9 +3383,11 @@ make_class_file_name (tree clas)
       if (s == NULL)
 	break;
       *s = '\0';
+      /* Try to make directory if it doesn't already exist.  */
       if (stat (r, &sb) == -1
-	  /* Try to make it.  */
-	  && mkdir (r, 0755) == -1)
+	  && mkdir (r, 0755) == -1
+	  /* The directory might have been made by another process.  */
+	  && errno != EEXIST)
 	fatal_error ("can't create directory %s: %m", r);
 
       *s = sep;
