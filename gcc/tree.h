@@ -1165,8 +1165,11 @@ struct tree_type
 
 /* Nonzero for any sort of ..._DECL node means this decl node represents
    an inline instance of some original (abstract) decl from an inline function;
-   suppress any warnings about shadowing some other variable.  */
-#define DECL_FROM_INLINE(NODE) (DECL_ABSTRACT_ORIGIN (NODE) != (tree) 0)
+   suppress any warnings about shadowing some other variable.
+   FUNCTION_DECL nodes can also have their abstract origin set to themselves
+   (see save_for_inline_copying).  */
+#define DECL_FROM_INLINE(NODE) (DECL_ABSTRACT_ORIGIN (NODE) != (tree) 0 \
+				&& DECL_ABSTRACT_ORIGIN (NODE) != (NODE))
 
 /* Nonzero if a _DECL means that the name of this decl should be ignored
    for symbolic debug purposes.  */
