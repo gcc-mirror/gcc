@@ -1,3 +1,16 @@
+1999-09-01  Tom Tromey  <tromey@cygnus.com>
+
+	* posix-threads.cc (_Jv_CondWait): Use _Jv_PthreadGetMutex.
+	* include/posix-threads.h (_Jv_Mutex_t): Define as structure,
+	except on Linux.
+	(_Jv_PthreadGetMutex): New function.
+	(_Jv_PthreadCheckMonitor): Use it.
+	(_Jv_MutexInit): Likewise.  ALso, initialize `count'.
+	(_Jv_MutexLock): Update `count'.
+	(_Jv_MutexUnlock): Likewise.
+	(_Jv_PthreadCheckMonitor): Use Linux-specific knowledge when
+	appropriate.
+
 1999-09-01  Kresten Krab Thorup  <krab@gnu.org>
 
 	* Makefile.am (.java.lo): Add rule.
