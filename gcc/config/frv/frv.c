@@ -7418,10 +7418,28 @@ frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
       else if (frv_ifcvt.scratch_insns_bitmap
 	       && bitmap_bit_p (frv_ifcvt.scratch_insns_bitmap,
 				INSN_UID (insn))
-	       /* We must not unconditionally set a reg set used as
-		  scratch in the THEN branch if the same reg is live
-		  in the ELSE branch.  */
 	       && REG_P (SET_DEST (set))
+	       /* We must not unconditionally set a scratch reg chosen
+		  for a nested if-converted block if its incoming
+		  value from the TEST block (or the result of the THEN
+		  branch) could/should propagate to the JOIN block.
+		  It suffices to test whether the register is live at
+		  the JOIN point: if it's live there, we can infer
+		  that we set it in the former JOIN block of the
+		  nested if-converted block (otherwise it wouldn't
+		  have been available as a scratch register), and it
+		  is either propagated through or set in the other
+		  conditional block.  It's probably not worth trying
+		  to catch the latter case, and it could actually
+		  limit scheduling of the combined block quite
+		  severely.  */
+	       && ce_info->join_bb
+	       && ! (REGNO_REG_SET_P
+		     (ce_info->join_bb->global_live_at_start,
+		      REGNO (SET_DEST (set))))
+	       /* Similarly, we must not unconditionally set a reg
+		  used as scratch in the THEN branch if the same reg
+		  is live in the ELSE branch.  */
 	       && (! ce_info->else_bb
 		   || BLOCK_FOR_INSN (insn) == ce_info->else_bb
 		   || ! (REGNO_REG_SET_P
