@@ -1,3 +1,7 @@
+Tue May 21 14:25:32 2002  Brian R. Gaeke  <brg@dgate.ORG>
+
+	* g++.dg/other/copy2.C: New test.
+
 Mon May 20 10:51:35 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/memcpy-2.c (SEQUENCE_LENGTH): Define.
