@@ -1,3 +1,32 @@
+2002-07-01  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.h:  Modify builtin_function interface to take an extra
+	argument ATTRS, which is a tree representing an attribute list.
+
+	* c-decl.c (builtin_function): Accept additional parameter.
+	* objc/objc-act.c (builtin_function): Likewise.
+	* f/com.c (builtin_function): Likewise.
+	* java/decl.c (builtin_function): Likewise.
+	* ada/utils.c (builtin_function): Likewise.
+	* cp/decl.c (builtin_function): Likewise.
+	(builtin_function_1): Likewise.
+
+	* c-common.c (c_common_nodes_and_builtins): Pass an additional
+	NULL_TREE argument to builtin_function.  (builtin_function_2):
+	Likewise.
+	* cp/call.c (build_java_interface_fn_ref): Likewise.
+	* objc/objc-act.c (synth_module_prologue): Likewise.
+	* java/decl.c (java_init_decl_processing): Likewise.
+	* f/com.c (ffe_com_init_0): Likewise.
+
+	* config/alpha/alpha.c (alpha_init_builtins): Pass an additional
+	NULL_TREE argument to builtin_function.
+	* config/arm/arm.c (def_builtin): Likewise.
+	* config/c4x/c4x.c (c4x_init_builtins): Likewise.
+	* config/i386/i386.c (def_builtin): Likewise.
+	* config/ia64/ia64.c (def_builtin): Likewise.
+	* config/rs6000/rs6000.c (def_builtin): Likewise.
+
 2002-07-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ip2k/t-ip2k: Remove LIBGCC1, CROSS_LIBGCC1, and LIBGCC1_TEST.

@@ -2724,9 +2724,9 @@ extern int all_types_permanent;
 
 /* Declare a predefined function.  Return the declaration.  This function is
    provided by each language frontend.  */
-extern tree builtin_function			PARAMS ((const char *, tree, int,
-						       enum built_in_class,
-						       const char *));
+extern tree builtin_function		PARAMS ((const char *, tree, int,
+					       enum built_in_class,
+					       const char *, tree));
 
 /* In tree.c */
 extern char *perm_calloc			PARAMS ((int, long));

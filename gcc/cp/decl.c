@@ -83,7 +83,8 @@ static void set_identifier_type_value_with_scope
 	PARAMS ((tree, tree, struct cp_binding_level *));
 static void record_unknown_type PARAMS ((tree, const char *));
 static tree builtin_function_1 PARAMS ((const char *, tree, tree, int,
-                                      enum built_in_class, const char *));
+                                      enum built_in_class, const char *,
+				      tree));
 static tree build_library_fn_1 PARAMS ((tree, enum tree_code, tree));
 static int member_function_or_else PARAMS ((tree, tree, enum overload_flags));
 static void bad_specifiers PARAMS ((tree, const char *, int, int, int, int,
@@ -6705,16 +6706,19 @@ cp_make_fname_decl (id, type_dep)
    See tree.h for possible values.
 
    If LIBNAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-   the name to be called if we can't opencode the function.  */
+   the name to be called if we can't opencode the function.
+   If ATTRS is nonzero, use that for the function's attribute
+   list.  */
 
 static tree
-builtin_function_1 (name, type, context, code, class, libname)
+builtin_function_1 (name, type, context, code, class, libname, attrs)
      const char *name;
      tree type;
      tree context;
      int code;
      enum built_in_class class;
      const char *libname;
+     tree attrs;
 {
   tree decl = build_library_fn_1 (get_identifier (name), ERROR_MARK, type);
   DECL_BUILT_IN_CLASS (decl) = class;
@@ -6740,7 +6744,10 @@ builtin_function_1 (name, type, context, code, class, libname)
     DECL_ANTICIPATED (decl) = 1;
 
   /* Possibly apply some default attributes to this built-in function.  */
-  decl_attributes (&decl, NULL_TREE, 0);
+  if (attrs)
+    decl_attributes (&decl, attrs, ATTR_FLAG_BUILT_IN);
+  else
+    decl_attributes (&decl, NULL_TREE, 0);
 
   return decl;
 }
@@ -6756,26 +6763,31 @@ builtin_function_1 (name, type, context, code, class, libname)
    See tree.h for possible values.
 
    If LIBNAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-   the name to be called if we can't opencode the function.  */
+   the name to be called if we can't opencode the function.
+
+   If ATTRS is nonzero, use that for the function's attribute
+   list.  */
 
 tree
-builtin_function (name, type, code, class, libname)
+builtin_function (name, type, code, class, libname, attrs)
      const char *name;
      tree type;
      int code;
      enum built_in_class class;
      const char *libname;
+     tree attrs;
 {
   /* All builtins that don't begin with an '_' should additionally
      go in the 'std' namespace.  */
   if (name[0] != '_')
     {
       push_namespace (std_identifier);
-      builtin_function_1 (name, type, std_node, code, class, libname);
+      builtin_function_1 (name, type, std_node, code, class, libname, attrs);
       pop_namespace ();
     }
 
-  return builtin_function_1 (name, type, NULL_TREE, code, class, libname);
+  return builtin_function_1 (name, type, NULL_TREE, code,
+			     class, libname, attrs);
 }
 
 /* Generate a FUNCTION_DECL with the typical flags for a runtime library

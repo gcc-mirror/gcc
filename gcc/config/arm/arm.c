@@ -9303,7 +9303,7 @@ arm_debugger_arg_offset (value, addr)
 }
 
 #define def_builtin(NAME, TYPE, CODE) \
-  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL)
+  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, NULL_TREE)
 
 void
 arm_init_builtins ()
