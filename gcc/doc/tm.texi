@@ -4160,7 +4160,7 @@ You need not define this macro if you did not define
 @end table
 
 @findex TARGET_ASM_OUTPUT_MI_THUNK
-@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, tree @var{function})
+@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, HOST_WIDE_INT @var{vcall_offset}, tree @var{function})
 A function that outputs the assembler code for a thunk
 function, used to implement C++ virtual function calls with multiple
 inheritance.  The thunk acts as a wrapper around a virtual function,
@@ -4174,7 +4174,15 @@ in C++.  This is the incoming argument @emph{before} the function prologue,
 e.g.@: @samp{%o0} on a sparc.  The addition must preserve the values of
 all other incoming arguments.
 
-After the addition, emit code to jump to @var{function}, which is a
+Then, if @var{vcall_offset} is nonzero, an additional adjustment should be
+made after adding @code{delta}.  In particular, if @var{p} is the
+adjusted pointer, the following adjustment should be made:
+
+@smallexample
+p += (*((ptrdiff_t **)p))[vcall_offset/sizeof(ptrdiff_t)]
+@end smallexample
+
+After the additions, emit code to jump to @var{function}, which is a
 @code{FUNCTION_DECL}.  This is a direct pure jump, not a call, and does
 not touch the return address.  Hence returning from @var{FUNCTION} will
 return to whoever called the current @samp{thunk}.
@@ -4194,21 +4202,13 @@ front end will generate a less efficient heavyweight thunk that calls
 not support varargs.
 @end deftypefn
 
-@findex TARGET_ASM_OUTPUT_MI_VCALL_THUNK
-@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_VCALL_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, int @var{vcall_offset}, tree @var{function})
-A function like @code{TARGET_ASM_OUTPUT_MI_THUNK}, except that if
-@var{vcall_offset} is nonzero, an additional adjustment should be made
-after adding @code{delta}.  In particular, if @var{p} is the
-adjusted pointer, the following adjustment should be made:
-
-@example
-p += (*((ptrdiff_t **)p))[vcall_offset/sizeof(ptrdiff_t)]
-@end example
-
-@noindent
-If this function is defined, it will always be used in place of
-@code{TARGET_ASM_OUTPUT_MI_THUNK}.
-
+@findex TARGET_ASM_CAN_OUTPUT_MI_THUNK
+@deftypefn {Target Hook} bool TARGET_ASM_CAN_OUTPUT_MI_THUNK (tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, HOST_WIDE_INT @var{vcall_offset}, tree @var{function})
+A function that returns true if TARGET_ASM_OUTPUT_MI_THUNK would be able
+to output the assembler code for the thunk function specified by the
+arguments it is passed, and false otherwise.  In the latter case, the
+generic approach will be used by the C++ front end, with the limitations
+previously exposed.
 @end deftypefn
 
 @node Profiling
