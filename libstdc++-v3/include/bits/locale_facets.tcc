@@ -299,12 +299,12 @@ namespace std
       // Figure out the maximum number of digits that can be extracted
       // for the given type, using the determined base.
       int __max_digits;
-      if (__base == 10)
-	__max_digits = __max;
-      else if (__base == 16)
+      if (__base == 16)
 	__max_digits = static_cast<int>(ceil(__max * _S_scale_hex));
-      else /* if (__base == 8) */
+      else if (__base == 8)
 	__max_digits = static_cast<int>(ceil(__max * _S_scale_oct));
+      else
+	__max_digits = __max;
 
       // Add in what's already been extracted.
       __max_digits += __pos;

@@ -1,3 +1,13 @@
+2001-12-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/os/generic/bits/ctype_inline.h: Remove spaces.
+	* config/os/gnu-linux/bits/ctype_noninline.h: Same.
+	* include/bits/locale_facets.h (__num_base): Move double data
+	members to first in class.
+	* include/bits/locale_facets.tcc: Re-arrange, tweak.
+	* src/locale.cc: Clean.
+	*include/bits/stl_vector.h: Space typedefs.
+
 2001-12-11  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/ext/allocators.cc:  New file.
