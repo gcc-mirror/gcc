@@ -1,3 +1,12 @@
+Sat Jan  9 11:25:00 1999  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (build_new_array_init):  Don't set EXPR_WFL_LINECOL
+	on CONSTRUCTOR (since that trashes TREE_CST_RTL).
+	(patch_new_array_init):  Clear TREE_CONSTANT also if INDIRECT_REF.
+	(register_fields):  Set TREE_STATIC on NEW_ARRAY_INIT, not on
+	CONSTRUCTOR (which causes expand_expr to call output_constant_def).
+	* expr.c (java_lang_expand_expr):  Check TREE_STATIC of NEW_ARRAY_INIT.
+
 Fri Jan  8 15:48:03 1999  Per Bothner  <bothner@cygnus.com>
 
 	* check-init.c (check_init):  If compiling to native, we don't
