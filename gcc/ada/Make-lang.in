@@ -1014,7 +1014,7 @@ ada/misc.o : ada/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    diagnostic.h output.h except.h $(TM_P_H) langhooks.h debug.h $(LANGHOOKS_DEF_H) \
    libfuncs.h $(OPTABS_H) ada/ada.h ada/types.h ada/atree.h ada/nlists.h \
    ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h ada/stringt.h ada/uintp.h \
-   ada/fe.h $(ADA_TREE_H) ada/gigi.h ada/adadecode.h opts.h options.h
+   ada/fe.h $(ADA_TREE_H) ada/gigi.h ada/adadecode.h opts.h options.h target.h
 
 ada/targtyps.o : ada/targtyps.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    ada/ada.h ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/uintp.h \

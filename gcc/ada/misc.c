@@ -59,6 +59,7 @@
 #include "tm_p.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "target.h"
 
 #include "ada.h"
 #include "types.h"
