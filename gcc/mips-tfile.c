@@ -3,7 +3,7 @@
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
    Copyright (C) 1991, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
    
 This file is part of GNU CC.
@@ -4656,8 +4656,7 @@ copy_object __proto((void))
 			     (st_t) eptr->asym.st,
 			     (sc_t) eptr->asym.sc,
 			     eptr->asym.value,
-			     (eptr->asym.index == indexNil
-			      ? (symint_t) indexNil : 0),
+			     (symint_t) indexNil,
 			     ((long) ifd < orig_sym_hdr.ifdMax
 			      ? remap_file_number[ifd] : (int) ifd));
     }
