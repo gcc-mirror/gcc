@@ -1,3 +1,9 @@
+2000-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (simplify_if_then_else): Don't convert a == b ? b : a
+	to a if the comparison is floating mode and not -ffast-math.
+	* simplify-rtx.c (simplify_ternary_operation): Likewise.
+
 Mon Sep 11 20:07:48 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 	* sh.h (INITIALIZE_TRAMPOLINE): Remove stray call to

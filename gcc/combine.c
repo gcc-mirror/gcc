@@ -4703,10 +4703,12 @@ simplify_if_then_else (x)
 
   /* Convert a == b ? b : a to "a".  */
   if (true_code == EQ && ! side_effects_p (cond)
+      && (! FLOAT_MODE_P (mode) || flag_fast_math)
       && rtx_equal_p (XEXP (cond, 0), false)
       && rtx_equal_p (XEXP (cond, 1), true))
     return false;
   else if (true_code == NE && ! side_effects_p (cond)
+	   && (! FLOAT_MODE_P (mode) || flag_fast_math)
 	   && rtx_equal_p (XEXP (cond, 0), true)
 	   && rtx_equal_p (XEXP (cond, 1), false))
     return true;
