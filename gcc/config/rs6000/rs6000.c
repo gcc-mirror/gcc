@@ -125,7 +125,7 @@ static void rs6000_emit_allocate_stack PARAMS ((HOST_WIDE_INT, int));
 static unsigned rs6000_hash_constant PARAMS ((rtx));
 static unsigned toc_hash_function PARAMS ((const void *));
 static int toc_hash_eq PARAMS ((const void *, const void *));
-static int toc_hash_mark_entry PARAMS ((void *, void *));
+static int toc_hash_mark_entry PARAMS ((void **, void *));
 static void toc_hash_mark_table PARAMS ((void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 
@@ -2419,9 +2419,9 @@ expand_block_move (operands)
 	      tmp_reg = gen_reg_rtx (DImode);
 	      emit_move_insn (tmp_reg,
 			      expand_block_move_mem (DImode,
-						     src_addr, orig_src));
+						     src_reg, orig_src));
 	      emit_move_insn (expand_block_move_mem (DImode,
-						     dest_addr, orig_dest),
+						     dest_reg, orig_dest),
 			      tmp_reg);
 	    }
 	  else if (bytes > 4)
@@ -3655,7 +3655,6 @@ print_operand (file, x, code)
 	 expression.  The expression may have one or both operands
 	 negated (if one, only the first one).  */
       {
-	int neg, op;
 	const char *const *t;
 	const char *s;
 	enum rtx_code code = GET_CODE (x);
@@ -6144,7 +6143,7 @@ toc_hash_eq (h1, h2)
 
 static int
 toc_hash_mark_entry (hash_slot, unused)
-     void * hash_slot;
+     void ** hash_slot;
      void * unused ATTRIBUTE_UNUSED;
 {
   const struct toc_hash_struct * hash_entry = 
