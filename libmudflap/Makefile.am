@@ -29,6 +29,7 @@ libmudflap_la_SOURCES = \
 mf-runtime.lo: mf-runtime.c splay-tree.c splay-tree.h
 libmudflap_la_LIBADD = 
 libmudflap_la_DEPENDENCIES = $(libmudflap_la_LIBADD)
+libmudflap_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 clean-local:
 	rm -f pth/*.o pth/*.lo
@@ -53,7 +54,7 @@ libmudflapth_la_LIBADD = \
 	pth/mf-hooks2.lo \
 	pth/mf-hooks3.lo
 libmudflapth_la_DEPENDENCIES = $(libmudflapth_la_LIBADD)
-
+libmudflapth_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 
 # XXX hack alert

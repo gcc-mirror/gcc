@@ -1,3 +1,12 @@
+2004-07-05  Matthias Klose  <doko@debian.org>
+
+	* libtool-version: New.
+	* Makefile.am (libmudflap_la_LDFLAGS, libmudflapth_la_LDFLAGS):
+	Use -version-info for soname.
+	* Makefile.in: Regenerate.
+	* configure.ac: Remove libtool_VERSION macro
+	* configure: Regenerate
+
 2004-07-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* mf-runtime.h.in: Wrap declarations of struct __mf_cache,
