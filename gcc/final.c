@@ -3578,7 +3578,7 @@ output_asm_label (x)
 static void
 output_operand (x, code)
      rtx x;
-     int code;
+     int code ATTRIBUTE_UNUSED;
 {
   if (x && GET_CODE (x) == SUBREG)
     x = alter_subreg (x);

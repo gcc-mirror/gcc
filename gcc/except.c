@@ -2900,7 +2900,7 @@ expand_builtin_frob_return_addr (addr_tree)
 static void
 eh_regs (pcontext, psp, pra, outgoing)
      rtx *pcontext, *psp, *pra;
-     int outgoing;
+     int outgoing ATTRIBUTE_UNUSED;
 {
   rtx rcontext, rsp, rra;
   int i;

@@ -1,3 +1,13 @@
+2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c (emit_call_1): Mark parameter with ATTRIBUTE_UNUSED.
+
+	* except.c (eh_regs): Likewise.
+
+	* final.c (output_operand): Likewise.
+
+	* fold-const.c (target_isinf, target_isnan): Likewise.
+
 Tue Jan 18 16:19:55 MET 2000  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.h (BIGGEST_ALIGNMENT): Set to 128.
