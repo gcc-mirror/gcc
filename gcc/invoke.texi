@@ -109,7 +109,7 @@ in the following sections.
 -fhonor-std -fhuge-objects  -fno-implicit-templates  -finit-priority
 -fno-implement-inlines -fname-mangling-version-@var{n}  -fno-default-inline  
 -foperator-names  -fno-optional-diags  -fpermissive -frepo  -fstrict-prototype
--fsquangle  -ftemplate-depth-@var{n}  -fthis-is-variable  -fvtable-thunks
+-fsquangle  -ftemplate-depth-@var{n} -fvtable-thunks
 -nostdinc++  -Wctor-dtor-privacy -Wno-deprecated -Weffc++  
 -Wno-non-template-friend 
 -Wnon-virtual-dtor  -Wold-style-cast  -Woverloaded-virtual  
@@ -1159,15 +1159,6 @@ Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
 endless recursions during template class instantiation. ANSI/ISO C++
 conforming programs must not rely on a maximum depth greater than 17.
-
-@item -fthis-is-variable
-Permit assignment to @code{this}.  The incorporation of user-defined
-free store management into C++ has made assignment to @samp{this} an
-anachronism.  Therefore, by default it is invalid to assign to
-@code{this} within a class member function; that is, GNU C++ treats
-@samp{this} in a member function of class @code{X} as a non-lvalue of
-type @samp{X *}.  However, for backwards compatibility, you can make it
-valid with @samp{-fthis-is-variable}.
 
 @item -fvtable-thunks
 Use @samp{thunks} to implement the virtual function dispatch table

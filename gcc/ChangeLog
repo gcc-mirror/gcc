@@ -1,3 +1,7 @@
+Mon Sep 20 13:29:41 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* invoke.texi (-fthis-is-variable): Remove documentation.
+
 Mon Sep 20 12:59:16 1999  Richard Henderson  <rth@cygnus.com>
 
 	* basic-block.h (compute_bb_for_insn): Declare.
