@@ -16,8 +16,9 @@ static template struct A<int>;
 
 void test_int() { A<int>::t = 42; } // gets bogus error
 
-void test_char() { A<char>::t = 42; } // ERROR - not instantiated XFAIL *-*-irix*
+void test_char() { A<char>::t = 42; } // ERROR - not instantiated XFAIL *-*-irix* *-*-hpux*
 // Irix's default linker does not produce line numbers so XFAIL it.
+// Similarly for HP's linker
 
 int main ()
 {
