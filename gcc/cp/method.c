@@ -418,7 +418,8 @@ build_overload_nested_name (decl)
 }
 
 static void
-build_underscore_int (int i)
+build_underscore_int (i)
+     int i;
 {
   if (i > 9)
     OB_PUTC ('_');
