@@ -19,9 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* ??? bi-architecture support will require changes to the linker
-   related specs, among perhaps other things (multilibs).  */
-/* #define SPARC_BI_ARCH */
+#define SPARC_BI_ARCH
 
 #define LINUX_DEFAULT_ELF
 
@@ -35,6 +33,16 @@ Boston, MA 02111-1307, USA.  */
 
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
+
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v9 || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
+/* A 64 bit v9 compiler with stack-bias,
+   in a Medium/Low code model environment.  */
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT \
+  (MASK_V9 + MASK_PTR64 + MASK_64BIT /* + MASK_HARD_QUAD */ \
+   + MASK_STACK_BIAS + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+#endif
 
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */
@@ -54,10 +62,36 @@ Boston, MA 02111-1307, USA.  */
    object constructed before entering `main'. */
    
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC \
+
+#define STARTFILE_SPEC32 \
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+
+#define STARTFILE_SPEC64 \
+  "%{!shared: \
+     %{pg:/usr/lib64/gcrt1.o%s} %{!pg:%{p:/usr/lib64/gcrt1.o%s} %{!p:/usr/lib64/crt1.o%s}}}\
+   /usr/lib64/crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+   
+#ifdef SPARC_BI_ARCH
+
+#if DEFAULT_ARCH32_P
+#define STARTFILE_SPEC "\
+%{m32:" STARTFILE_SPEC32 "} \
+%{m64:" STARTFILE_SPEC64 "} \
+%{!m32:%{!m64:" STARTFILE_SPEC32 "}}"
+#else
+#define STARTFILE_SPEC "\
+%{m32:" STARTFILE_SPEC32 "} \
+%{m64:" STARTFILE_SPEC64 "} \
+%{!m32:%{!m64:" STARTFILE_SPEC64 "}}"
+#endif
+
+#else
+
+#define STARTFILE_SPEC STARTFILE_SPEC64
+
+#endif
 
 /* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
    the GNU/Linux magical crtend.o file (see crtstuff.c) which
@@ -66,19 +100,35 @@ Boston, MA 02111-1307, USA.  */
    GNU/Linux "finalizer" file, `crtn.o'.  */
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC \
+
+#define ENDFILE_SPEC32 \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+
+#define ENDFILE_SPEC64 \
+  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} /usr/lib64/crtn.o%s"
+  
+#ifdef SPARC_BI_ARCH
+
+#if DEFAULT_ARCH32_P
+#define ENDFILE_SPEC "\
+%{m32:" ENDFILE_SPEC32 "} \
+%{m64:" ENDFILE_SPEC64 "} \
+%{!m32:%{!m64:" ENDFILE_SPEC32 "}}"
+#else
+#define ENDFILE_SPEC "\
+%{m32:" ENDFILE_SPEC32 "} \
+%{m64:" ENDFILE_SPEC64 "} \
+%{!m32:%{!m64:" ENDFILE_SPEC64 "}}"
+#endif
+
+#else
+
+#define ENDFILE_SPEC ENDFILE_SPEC64
+
+#endif
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64 GNU/Linux with ELF)");
-
-/* A 64 bit v9 compiler with stack-bias,
-   in a Medium/Anywhere code model environment.  */
-
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT \
-  (MASK_V9 + MASK_PTR64 + MASK_64BIT /* + MASK_HARD_QUAD */ \
-   + MASK_STACK_BIAS + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
 
 /* The default code model.  */
 #undef SPARC_DEFAULT_CMODEL
@@ -92,7 +142,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 128
-    
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ELF__ -Dunix -Dsparc -Dlinux -Asystem(unix) -Asystem(posix)"
 
@@ -126,16 +176,87 @@ Boston, MA 02111-1307, USA.  */
 
 /* If ELF is the default format, we should not use /lib/elf. */
 
-#undef  LINK_SPEC
-#define LINK_SPEC "-m elf64_sparc -Y P,/usr/lib %{shared:-shared} \
+#ifdef SPARC_BI_ARCH
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "link_arch32",       LINK_ARCH32_SPEC },              \
+  { "link_arch64",       LINK_ARCH64_SPEC },              \
+  { "link_arch_default", LINK_ARCH_DEFAULT_SPEC },	  \
+  { "link_arch",	 LINK_ARCH_SPEC },
+    
+#define LINK_ARCH32_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib/ld-linux64.so.2}} \
+        %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
+        %{static:-static}}} \
+"
+
+#define LINK_ARCH64_SPEC "-m elf64_sparc -Y P,/usr/lib64 %{shared:-shared} \
+  %{!shared: \
+    %{!ibcs: \
+      %{!static: \
+        %{rdynamic:-export-dynamic} \
+        %{!dynamic-linker:-dynamic-linker /lib64/ld-linux.so.2}} \
+        %{static:-static}}} \
+"
+
+#define LINK_ARCH_SPEC "\
+%{m32:%(link_arch32)} \
+%{m64:%(link_arch64)} \
+%{!m32:%{!m64:%(link_arch_default)}} \
+"
+
+#define LINK_ARCH_DEFAULT_SPEC \
+(DEFAULT_ARCH32_P ? LINK_ARCH32_SPEC : LINK_ARCH64_SPEC)
+
+#undef  LINK_SPEC
+#define LINK_SPEC "\
+%(link_arch) \
+%{mlittle-endian:-EL} \
+"
+
+#undef	CC1_SPEC
+#if DEFAULT_ARCH32_P
+#define CC1_SPEC "\
+%{sun4:} %{target:} \
+%{mcypress:-mcpu=cypress} \
+%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
+%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
+%{m64:-mptr64 -mcpu=ultrasparc -mstack-bias} \
+"
+#else
+#define CC1_SPEC "\
+%{sun4:} %{target:} \
+%{mcypress:-mcpu=cypress} \
+%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
+%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
+%{m32:-mptr32 -mcpu=cypress -mno-stack-bias} \
+"
+#endif
+
+#if DEFAULT_ARCH32_P
+#define MULTILIB_DEFAULTS { "m32" }
+#else
+#define MULTILIB_DEFAULTS { "m64" }
+#endif
+
+#else /* !SPARC_BI_ARCH */
+
+#undef LINK_SPEC
+#define LINK_ARCH_SPEC "-m elf64_sparc -Y P,/usr/lib64 %{shared:-shared} \
+  %{!shared: \
+    %{!ibcs: \
+      %{!static: \
+        %{rdynamic:-export-dynamic} \
+        %{!dynamic-linker:-dynamic-linker /lib64/ld-linux.so.2}} \
         %{static:-static}}} \
 %{mlittle-endian:-EL} \
 "
+
+#endif /* !SPARC_BI_ARCH */
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used. */
