@@ -1,5 +1,7 @@
 2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
 
+	* lib/g77.exp: Don't specify --rpath-link.
+
 	* gcc.dg/cpp/cpp.exp: For testing on a remote host, copy
 	across all the headers.
 	* gcc.dg/format/format.exp: For testing on a remote host,

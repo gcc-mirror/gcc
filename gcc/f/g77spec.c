@@ -523,6 +523,23 @@ or type the command `info -f g77 Copying'.\n\
 	}
     }
 
+#ifdef ENABLE_SHARED_LIBGCC
+  if (library)
+    {
+      int i;
+
+      for (i = 1; i < g77_newargc; i++)
+	if (g77_newargv[i][0] == '-')
+	  if (strcmp (g77_newargv[i], "-static-libgcc") == 0
+	      || strcmp (g77_newargv[i], "-static") == 0)
+	    break;
+    
+      if (i == g77_newargc)
+	append_arg ("-shared-libgcc");
+    }
+  
+#endif
+
   if (verbose
       && g77_newargv != g77_xargv)
     {
