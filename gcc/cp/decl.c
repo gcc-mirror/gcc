@@ -8813,9 +8813,9 @@ bad_specifiers (tree object,
                 const char* type,
                 int virtualp,
                 int quals,
+                int inlinep,
                 int friendp,
-                int raises,
-                int inlinep)
+                int raises)
 {
   if (virtualp)
     error ("`%D' declared as a `virtual' %s", object, type);
