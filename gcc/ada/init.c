@@ -1344,7 +1344,10 @@ extern char *__gnat_error_prehandler_stack;   /* Alternate signal stack */
 extern struct Exception_Data Non_Ada_Error;
 
 #define Coded_Exception system__vms_exception_table__coded_exception
-extern struct Exception_Data *Coded_Exception (int);
+extern struct Exception_Data *Coded_Exception (Exception_Code);
+
+#define Base_Code_In system__vms_exception_table__base_code_in
+extern Exception_Code Base_Code_In (Exception_Code);
 #endif
 
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
@@ -1374,6 +1377,8 @@ long
 __gnat_error_handler (int *sigargs, void *mechargs)
 {
   struct Exception_Data *exception = 0;
+  Exception_Code base_code;
+
   char *msg = "";
   char message[256];
   long prvhnd;
@@ -1410,8 +1415,11 @@ __gnat_error_handler (int *sigargs, void *mechargs)
   }
 
 #ifdef IN_RTS
-  /* See if it's an imported exception. Mask off severity bits. */
-  exception = Coded_Exception (sigargs[1] & 0xfffffff8);
+  /* See if it's an imported exception. Beware that registered exceptions
+     are bound to their base code, with the severity bits masked off.  */
+  base_code = Base_Code_In ((Exception_Code) sigargs [1]);
+  exception = Coded_Exception (base_code);
+
   if (exception)
     {
       msgdesc.len = 256;
@@ -1424,7 +1432,7 @@ __gnat_error_handler (int *sigargs, void *mechargs)
       exception->Name_Length = 19;
       /* The full name really should be get sys$getmsg returns. ??? */
       exception->Full_Name = "IMPORTED_EXCEPTION";
-      exception->Import_Code = sigargs[1] & 0xfffffff8;
+      exception->Import_Code = base_code;
     }
 #endif
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1997 Free Software Foundation, Inc.             --
+--           Copyright (C) 1997-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,9 +35,14 @@
 --  where there is at least one Import/Export exception present.
 
 with System.Standard_Library;
+
 package System.VMS_Exception_Table is
 
-   procedure Register_VMS_Exception (Code : Integer);
+   package SSL renames System.Standard_Library;
+
+   procedure Register_VMS_Exception
+     (Code : SSL.Exception_Code;
+      E    : SSL.Exception_Data_Ptr);
    --  Register an exception in the hash table mapping with a VMS
    --  condition code.
 
@@ -45,9 +50,12 @@ package System.VMS_Exception_Table is
 
 private
 
-   function Coded_Exception (X : Natural)
-     return System.Standard_Library.Exception_Data_Ptr;
+   function Base_Code_In (Code : SSL.Exception_Code) return SSL.Exception_Code;
+   --  Value of Code with the severity bits masked off.
+
+   function Coded_Exception (X : SSL.Exception_Code)
+     return SSL.Exception_Data_Ptr;
    --  Given a VMS condition, find and return it's allocated Ada exception
-   --  (called only from a-init.c).
+   --  (called only from init.c).
 
 end System.VMS_Exception_Table;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2003, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2004, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -482,12 +482,6 @@ typedef struct
      This is compared against the ttype entries associated with actions in the
      examined context to see if one of these actions matches.  */
 
-  bool handled_by_others;
-  /* Indicates wether a "when others" may catch this exception, also filled by
-     Propagate_Exception.
-
-     This is used to decide if a GNAT_OTHERS ttype entry matches.  */
-
   int  n_cleanups_to_trigger;
   /* Number of cleanups on the propagation way for the occurrence. This is
      initialized to 0 by Propagate_Exception and computed by the personality
@@ -846,6 +840,59 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 
 #endif
 
+/* With CHOICE an exception choice representing an "exception - when"
+   argument, and PROPAGATED_EXCEPTION a pointer to the currently propagated
+   occurrence, return true iif the latter matches the former, that is, if
+   PROPAGATED_EXCEPTION is caught by the handling code controlled by CHOICE.
+   This takes care of the special Non_Ada_Error case on VMS.  */
+
+#define Is_Handled_By_Others __gnat_is_handled_by_others
+#define Language_For __gnat_language_for
+#define Import_Code_For __gnat_import_code_for
+
+extern bool Is_Handled_By_Others (_Unwind_Ptr e);
+extern char Language_For (_Unwind_Ptr e);
+
+extern Exception_Code Import_Code_For (_Unwind_Ptr e);
+
+static int
+is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
+{
+  /* Pointer to the GNAT exception data corresponding to the propagated
+     occurrence.  */
+  _Unwind_Ptr E = propagated_exception->id;
+
+  /* Base matching rules: An exception data (id) matches itself, "when
+     all_others" matches anything and "when others" matches anything unless
+     explicitely stated otherwise in the propagated occurrence.  */
+
+  bool is_handled =
+    choice == E
+    || choice == GNAT_ALL_OTHERS
+    || (choice == GNAT_OTHERS && Is_Handled_By_Others (E));
+
+  /* In addition, on OpenVMS, Non_Ada_Error matches VMS exceptions, and we
+     may have different exception data pointers that should match for the
+     same condition code, if both an export and an import have been
+     registered.  The import code for both the choice and the propagated
+     occurrence are expected to have been masked off regarding severity
+     bits already (at registration time for the former and from within the
+     low level exception vector for the latter).  */
+#ifdef VMS
+  #define Non_Ada_Error system__aux_dec__non_ada_error
+  extern struct Exception_Data Non_Ada_Error;
+
+  is_handled |=
+    (Language_For (E) == 'V'
+     && choice != GNAT_OTHERS && choice != GNAT_ALL_OTHERS
+     && ((Language_For (choice) == 'V' && Import_Code_For (choice) != 0
+	  && Import_Code_For (choice) == Import_Code_For (E))
+	 || choice == (_Unwind_Ptr)&Non_Ada_Error));
+#endif
+
+  return is_handled;
+}
+
 /* Fill out the ACTION to be taken from propagating UW_EXCEPTION up to
    UW_CONTEXT in REGION.  */
 
@@ -907,14 +954,12 @@ get_action_description_for (_Unwind_Context *uw_context,
 	    {
 	      /* See if the filter we have is for an exception which matches
 		 the one we are propagating.  */
-	      _Unwind_Ptr eid = get_ttype_entry_for (region, ar_filter);
+	      _Unwind_Ptr choice = get_ttype_entry_for (region, ar_filter);
 
-	      if (eid == gnat_exception->id
-		  || eid == GNAT_ALL_OTHERS
-		  || (eid == GNAT_OTHERS && gnat_exception->handled_by_others))
+	      if (is_handled_by (choice, gnat_exception))
 		{
 		  action->ttype_filter = ar_filter;
-		  action->ttype_entry = eid;
+		  action->ttype_entry = choice;
 		  action->kind = handler;
 		  return;
 		}

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2000-2003 Free Software Foundation, Inc.         --
+--           Copyright (C) 2000-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,8 +84,7 @@ package body System.Task_Primitives.Operations.DEC is
 
    procedure Interrupt_AST_Handler (ID : Address) is
       Result      : Interfaces.C.int;
-      AST_Self_ID : Task_ID := To_Task_Id (ID);
-
+      AST_Self_ID : Task_ID := To_Task_ID (ID);
    begin
       Result := pthread_cond_signal_int_np (AST_Self_ID.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -122,8 +121,7 @@ package body System.Task_Primitives.Operations.DEC is
 
    procedure Starlet_AST_Handler (ID : Address) is
       Result      : Interfaces.C.int;
-      AST_Self_ID : Task_ID := To_Task_Id (ID);
-
+      AST_Self_ID : Task_ID := To_Task_ID (ID);
    begin
       AST_Self_ID.Common.LL.AST_Pending := False;
       Result := pthread_cond_signal_int_np (AST_Self_ID.Common.LL.CV'Access);
@@ -136,6 +134,7 @@ package body System.Task_Primitives.Operations.DEC is
 
    procedure Task_Synch is
       Synch_Self_ID : constant Task_ID := Self;
+
    begin
       if Single_Lock then
          Lock_RTS;

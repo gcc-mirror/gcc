@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -401,6 +401,7 @@ package body Sem_Ch6 is
          Check_References (Gen_Id);
       end;
 
+      Process_End_Label (Handled_Statement_Sequence (N), 't', Current_Scope);
       End_Scope;
       Check_Subprogram_Order (N);
 

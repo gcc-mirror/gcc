@@ -275,10 +275,12 @@ package body Lib.Xref is
             Set_Referenced (E);
          end if;
 
-         --  Check for pragma Unreferenced given
+         --  Check for pragma Unreferenced given and reference is within
+         --  this source unit (occasion for possible warning to be issued)
 
-         if Has_Pragma_Unreferenced (E) then
-
+         if Has_Pragma_Unreferenced (E)
+           and then In_Same_Extended_Unit (Sloc (E), Sloc (N))
+         then
             --  A reference as a named parameter in a call does not count
             --  as a violation of pragma Unreferenced for this purpose.
 

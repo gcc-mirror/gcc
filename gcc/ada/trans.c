@@ -1695,9 +1695,7 @@ tree_transform (Node_Id gnat_node)
 	{
 	  unsigned int align = known_alignment (gnu_result);
 	  tree gnu_obj_type = TREE_TYPE (gnu_result_type);
-	  unsigned int oalign
-	    = TREE_CODE (gnu_obj_type) == FUNCTION_TYPE
-	      ? FUNCTION_BOUNDARY : TYPE_ALIGN (gnu_obj_type);
+	  unsigned int oalign = TYPE_ALIGN (gnu_obj_type);
 
 	  if (align != 0 && align < oalign && ! TYPE_ALIGN_OK (gnu_obj_type))
 	    post_error_ne_tree_2

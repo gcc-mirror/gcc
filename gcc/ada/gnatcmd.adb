@@ -1338,7 +1338,7 @@ begin
                --  Check if there is at least one argument that is not a switch
 
                for Index in 1 .. Last_Switches.Last loop
-                  if Last_Switches.Table (Index)(1) = '-' then
+                  if Last_Switches.Table (Index)(1) /= '-' then
                      Add_Sources := False;
                      exit;
                   end if;

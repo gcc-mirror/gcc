@@ -57,9 +57,13 @@ package System.Tasking.Task_Attributes is
 
    type Dummy_Wrapper;
    type Access_Dummy_Wrapper is access all Dummy_Wrapper;
+   pragma No_Strict_Aliasing (Access_Dummy_Wrapper);
+   --  Needed to avoid possible incorrect aliasing situations from
+   --  instantiation of Unchecked_Conversion in body of Ada.Task_Attributes.
+
    for Access_Dummy_Wrapper'Storage_Size use 0;
-   --  This is a stand-in for the generic type Wrapper defined in
-   --  Ada.Task_Attributes. The real objects allocated are always
+   --  Access_Dummy_Wrapper is a stand-in for the generic type Wrapper defined
+   --  in Ada.Task_Attributes. The real objects allocated are always
    --  of type Wrapper, no Dummy_Wrapper objects are ever created.
 
    type Deallocator is access procedure (P : in out Access_Node);

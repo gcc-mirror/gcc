@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -63,6 +63,7 @@ extern int    __gnat_stat			   (char *,
 extern int    __gnat_open_read                     (char *, int);
 extern int    __gnat_open_rw                       (char *, int);
 extern int    __gnat_open_create                   (char *, int);
+extern int    __gnat_create_output_file            (char *);
 extern int    __gnat_open_append                   (char *, int);
 extern long   __gnat_file_length                   (int);
 extern void   __gnat_tmp_name			   (char *);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -566,14 +566,18 @@ package body Ada.Numerics.Generic_Complex_Types is
          --  we can use an explicit comparison to determine whether to use
          --  the scaling expression.
 
+         --  The scaling expression is computed in double format throughout
+         --  in order to prevent inaccuracies on machines where not all
+         --  immediate expressions are rounded, such as PowerPC.
+
          if Re2 > R'Last then
             raise Constraint_Error;
          end if;
 
       exception
          when Constraint_Error =>
-            return abs (X.Re)
-              * R (Sqrt (Double (R (1.0) + (X.Im / X.Re) ** 2)));
+            return R (Double (abs (X.Re))
+              * Sqrt (1.0 + (Double (X.Im) / Double (X.Re)) ** 2));
       end;
 
       begin
@@ -585,8 +589,8 @@ package body Ada.Numerics.Generic_Complex_Types is
 
       exception
          when Constraint_Error =>
-            return abs (X.Im)
-              * R (Sqrt (Double (R (1.0) + (X.Re / X.Im) ** 2)));
+            return R (Double (abs (X.Im))
+              * Sqrt (1.0 + (Double (X.Re) / Double (X.Im)) ** 2));
       end;
 
       --  Now deal with cases of underflow. If only one of the squares
@@ -606,12 +610,12 @@ package body Ada.Numerics.Generic_Complex_Types is
             else
                if abs (X.Re) > abs (X.Im) then
                   return
-                    abs (X.Re)
-                      * R (Sqrt (Double (R (1.0) + (X.Im / X.Re) ** 2)));
+                    R (Double (abs (X.Re))
+                      * Sqrt (1.0 + (Double (X.Im) / Double (X.Re)) ** 2));
                else
                   return
-                    abs (X.Im)
-                      * R (Sqrt (Double (R (1.0) + (X.Re / X.Im) ** 2)));
+                    R (Double (abs (X.Im))
+                      * Sqrt (1.0 + (Double (X.Re) / Double (X.Im)) ** 2));
                end if;
             end if;
 

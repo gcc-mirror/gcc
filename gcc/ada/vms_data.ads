@@ -517,8 +517,8 @@ package VMS_Data is
    --   for a directory.
 
    S_Bind_Shared  : aliased constant S := "/SHARED "                       &
-                                            "-shared";
-   --        /SHARED (D)
+                                            "-shared,!-static";
+   --        /SHARED
    --        /NOSHARED
    --
    --    Link against a shared GNAT run time when available.
@@ -536,6 +536,13 @@ package VMS_Data is
    --        /SOURCE_SEARCH=(directory[,...])
    --
    --    When looking for source files also look in directories specified.
+
+   S_Bind_Static  : aliased constant S := "/STATIC "                       &
+                                            "-static,!-shared";
+   --        /STATIC
+   --        /NOSTATIC
+   --
+   --    Link against a static GNAT run time.
 
    S_Bind_Store   : aliased constant S := "/STORE_TRACEBACKS "             &
                                             "-E";
@@ -636,6 +643,7 @@ package VMS_Data is
       S_Bind_Shared  'Access,
       S_Bind_Slice   'Access,
       S_Bind_Source  'Access,
+      S_Bind_Static  'Access,
       S_Bind_Store   'Access,
       S_Bind_Time    'Access,
       S_Bind_Verbose 'Access,

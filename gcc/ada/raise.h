@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,13 +30,17 @@
  *                                                                          *
  ****************************************************************************/
 
+
+typedef unsigned Exception_Code;
+/* C counterpart of what System.Standard_Library defines.  */
+
 struct Exception_Data
 {
   char  Handled_By_Others;
   char Lang;
   int Name_Length;
   char *Full_Name, Htable_Ptr;
-  int Import_Code;
+  Exception_Code Import_Code;
 };
 
 typedef struct Exception_Data *Exception_Id;

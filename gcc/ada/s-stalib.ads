@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,6 +97,20 @@ package System.Standard_Library is
    type Exception_Data_Ptr is access all Exception_Data;
    --  An equivalent of Exception_Id that is public
 
+   type Exception_Code is mod 2 ** 32;
+   --  A scalar value bound to some exception data. Typically used for
+   --  imported or exported exceptions on VMS. Having a separate type for this
+   --  is useful to enforce consistency throughout the various run-time units
+   --  handling such codes, and having it unsigned is the most appropriate
+   --  choice for it's currently single use on VMS.
+
+   --  ??? The construction in Cstand has no way to access the proper type
+   --  node for Exception_Code, and currently uses Standard_Unsigned as a
+   --  fallback. The representations shall match, and the size clause below
+   --  is aimed at ensuring that.
+
+   for Exception_Code'Size use Integer'Size;
+
    --  The following record defines the underlying representation of exceptions
 
    --  WARNING! Any changes to this may need to be reflectd in the following
@@ -131,7 +145,7 @@ package System.Standard_Library is
       --  built (by Register_Exception in s-exctab.adb) for converting between
       --  identities and names.
 
-      Import_Code : Integer;
+      Import_Code : Exception_Code;
       --  Value for imported exceptions. Needed only for the handling of
       --  Import/Export_Exception for the VMS case, but present in all
       --  implementations (we might well extend this mechanism for other

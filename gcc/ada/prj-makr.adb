@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,17 +34,25 @@ with Prj.Com;
 with Prj.Part;
 with Prj.PP;
 with Prj.Tree; use Prj.Tree;
+with Prj.Util; use Prj.Util;
 with Snames;   use Snames;
 with Table;    use Table;
 
 with Ada.Characters.Handling;   use Ada.Characters.Handling;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.Expect;               use GNAT.Expect;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Regexp;               use GNAT.Regexp;
-with GNAT.Regpat;               use GNAT.Regpat;
 
 package body Prj.Makr is
+
+   function Dup (Fd : File_Descriptor) return File_Descriptor;
+   pragma Import (C, Dup);
+
+   procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
+   pragma Import (C, Dup2);
+
+   Gcc : constant String := "gcc";
+   Gcc_Path : String_Access := null;
 
    Non_Empty_Node : constant Project_Node_Id := 1;
    --  Used for the With_Clause of the naming project
@@ -123,16 +131,7 @@ package body Prj.Makr is
 
       Source_List_FD : File_Descriptor;
 
-      Matcher : constant Pattern_Matcher :=
-                  Compile (Expression => "expected|Unit.*\)|No such");
-
       Args : Argument_List  (1 .. Preproc_Switches'Length + 6);
---                 (1 => new String'("-c"),
---                  2 => new String'("-gnats"),
---                  3 => new String'("-gnatu"),
---                  4 => new String'("-x"),
---                  5 => new String'("ada"),
---                  6 => null);
 
       type SFN_Pragma is record
          Unit : String_Access;
@@ -164,13 +163,9 @@ package body Prj.Makr is
          Dir      : Dir_Type;
          Process  : Boolean := True;
 
-      begin
-         if Opt.Verbose_Mode then
-            Output.Write_Str ("Processing directory """);
-            Output.Write_Str (Dir_Name);
-            Output.Write_Line ("""");
-         end if;
+         Temp_File_Name : String_Access := null;
 
+      begin
          --  Avoid processing several times the same directory.
 
          for Index in 1 .. Processed_Directories.Last loop
@@ -181,9 +176,16 @@ package body Prj.Makr is
          end loop;
 
          if Process then
+            if Opt.Verbose_Mode then
+               Output.Write_Str ("Processing directory """);
+               Output.Write_Str (Dir_Name);
+               Output.Write_Line ("""");
+            end if;
+
             Processed_Directories. Increment_Last;
             Processed_Directories.Table (Processed_Directories.Last) :=
               new String'(Dir_Name);
+
             --  Get the source file names from the directory.
             --  Fails if the directory does not exist.
 
@@ -248,158 +250,262 @@ package body Prj.Makr is
 
                   if Matched = True then
                      declare
-                        PD     : Process_Descriptor;
-                        Result : Expect_Match;
+                        FD : File_Descriptor;
+                        Success : Boolean;
+                        Saved_Output : File_Descriptor;
+                        Saved_Error  : File_Descriptor;
 
                      begin
-                        Args (Args'Last) := new String'
-                                                  (Dir_Name &
-                                                   Directory_Separator &
-                                                   Str (1 .. Last));
+                        --  If we don't have yet the path of the compiler,
+                        --  get it now.
 
-                        begin
-                           Non_Blocking_Spawn
-                             (PD, "gcc", Args, Err_To_Out => True);
-                           Expect (PD, Result, Matcher);
+                        if Gcc_Path = null then
+                           Gcc_Path := Locate_Exec_On_Path (Gcc);
 
-                        exception
-                           when Process_Died =>
-                              if Opt.Verbose_Mode then
-                                 Output.Write_Str ("(process died) ");
-                              end if;
-
-                              Result := Expect_Timeout;
-                        end;
-
-                        if Result /= Expect_Timeout then
-
-                           --  If we got a unit name, this is a valid source
-                           --  file.
-
-                           declare
-                              S : constant String := Expect_Out_Match (PD);
-
-                           begin
-                              if S'Length >= 13
-                                and then S (S'First .. S'First + 3) = "Unit"
-                              then
-                                 if Opt.Verbose_Mode then
-                                    Output.Write_Str
-                                      (S (S'Last - 4 .. S'Last - 1));
-                                    Output.Write_Str (" of ");
-                                    Output.Write_Line
-                                      (S (S'First + 5 .. S'Last - 7));
-                                 end if;
-
-                                 if Project_File then
-
-                                    --  Add the corresponding attribute in the
-                                    --  Naming package of the naming project.
-
-                                    declare
-                                       Decl_Item : constant Project_Node_Id :=
-                                         Default_Project_Node
-                                         (Of_Kind =>
-                                            N_Declarative_Item);
-
-                                       Attribute : constant Project_Node_Id :=
-                                         Default_Project_Node
-                                         (Of_Kind =>
-                                            N_Attribute_Declaration);
-
-                                       Expression : constant Project_Node_Id :=
-                                         Default_Project_Node
-                                         (Of_Kind => N_Expression,
-                                          And_Expr_Kind => Single);
-
-                                       Term : constant Project_Node_Id :=
-                                         Default_Project_Node
-                                         (Of_Kind => N_Term,
-                                          And_Expr_Kind => Single);
-
-                                       Value : constant Project_Node_Id :=
-                                         Default_Project_Node
-                                         (Of_Kind => N_Literal_String,
-                                          And_Expr_Kind => Single);
-
-                                    begin
-                                       Set_Next_Declarative_Item
-                                         (Decl_Item,
-                                          To => First_Declarative_Item_Of
-                                            (Naming_Package));
-                                       Set_First_Declarative_Item_Of
-                                         (Naming_Package, To => Decl_Item);
-                                       Set_Current_Item_Node
-                                         (Decl_Item, To => Attribute);
-
-                                       if
-                                         S (S'Last - 5 .. S'Last) = "(spec)"
-                                       then
-                                          Set_Name_Of
-                                            (Attribute, To => Name_Spec);
-                                       else
-                                          Set_Name_Of
-                                            (Attribute,
-                                             To => Name_Body);
-                                       end if;
-
-                                       Name_Len := S'Last - S'First - 11;
-                                       Name_Buffer (1 .. Name_Len) :=
-                                         (To_Lower
-                                            (S (S'First + 5 .. S'Last - 7)));
-                                       Set_Associative_Array_Index_Of
-                                         (Attribute, To => Name_Find);
-
-                                       Set_Expression_Of
-                                         (Attribute, To => Expression);
-                                       Set_First_Term (Expression, To => Term);
-                                       Set_Current_Term (Term, To => Value);
-
-                                       Name_Len := Last;
-                                       Name_Buffer (1 .. Name_Len) :=
-                                         Str (1 .. Last);
-                                       Set_String_Value_Of
-                                         (Value, To => Name_Find);
-                                    end;
-
-                                    --  Add source file name to source list
-                                    --  file.
-
-                                    Last := Last + 1;
-                                    Str (Last) := ASCII.LF;
-
-                                    if Write (Source_List_FD,
-                                              Str (1)'Address,
-                                              Last) /= Last
-                                    then
-                                       Prj.Com.Fail ("disk full");
-                                    end if;
-                                 else
-                                    --  Add an entry in the SFN_Pragmas table
-
-                                    SFN_Pragmas.Increment_Last;
-                                    SFN_Pragmas.Table (SFN_Pragmas.Last) :=
-                                      (Unit => new String'
-                                         (S (S'First + 5 .. S'Last - 7)),
-                                       File => new String'(Str (1 .. Last)),
-                                       Spec => S (S'Last - 5 .. S'Last)
-                                       = "(spec)");
-                                 end if;
-
-                              else
-                                 if Opt.Verbose_Mode then
-                                    Output.Write_Line ("not a unit");
-                                 end if;
-                              end if;
-                           end;
-
-                        else
-                           if Opt.Verbose_Mode then
-                              Output.Write_Line ("not a unit");
+                           if Gcc_Path = null then
+                              Prj.Com.Fail ("could not locate " & Gcc);
                            end if;
                         end if;
 
-                        Close (PD);
+                        --  If we don't have yet the file name of the
+                        --  temporary file, get it now.
+
+                        if Temp_File_Name = null then
+                           Create_Temp_File (FD, Temp_File_Name);
+
+                           if FD = Invalid_FD then
+                              Prj.Com.Fail
+                                ("could not create temporary file");
+                           end if;
+
+                           Close (FD);
+                           Delete_File (Temp_File_Name.all, Success);
+                        end if;
+
+                        Args (Args'Last) := new String'
+                          (Dir_Name &
+                           Directory_Separator &
+                           Str (1 .. Last));
+
+                        --  Create the temporary file
+
+                        FD := Create_Output_Text_File
+                          (Name => Temp_File_Name.all);
+
+                        if FD = Invalid_FD then
+                           Prj.Com.Fail
+                             ("could not create temporary file");
+                        end if;
+
+                        --  Save the standard output and error
+
+                        Saved_Output := Dup (Standout);
+                        Saved_Error  := Dup (Standerr);
+
+                        --  Set the standard output and error to the temporary
+                        --  file.
+
+                        Dup2 (FD, Standout);
+                        Dup2 (FD, Standerr);
+
+                        --  And spawn the compiler
+
+                        Spawn (Gcc_Path.all, Args, Success);
+
+                        --  Restore the standard output and error
+                        Dup2 (Saved_Output, Standout);
+                        Dup2 (Saved_Error, Standerr);
+
+                        --  Close the temporary file
+
+                        Close (FD);
+
+                        --  And close the saved standard output and error to
+                        --  avoid too many file descriptors.
+
+                        Close (Saved_Output);
+                        Close (Saved_Error);
+
+                        --  Now that standard output is restored, check if
+                        --  the compiler ran correctly.
+
+                        --  Read the first line of the temporary file:
+                        --  it should contain the kind and name of the unit.
+
+                        declare
+                           File : Text_File;
+                           Text_Line : String (1 .. 1_000);
+                           Text_Last : Natural;
+
+                        begin
+                           Open (File, Temp_File_Name.all);
+
+                           if not Is_Valid (File) then
+                              Prj.Com.Fail
+                                ("could not read temporary file");
+                           end if;
+
+                           if End_Of_File (File) then
+                              if Opt.Verbose_Mode then
+                                 if not Success then
+                                    Output.Write_Str ("(process died) ");
+                                 end if;
+
+                                 Output.Write_Line ("not a unit");
+                              end if;
+
+                           else
+                              Get_Line (File, Text_Line, Text_Last);
+                              Close (File);
+
+                              --  Now that we have read the line, delete the
+                              --  temporary file, it is not needed anymore.
+                              --  On VMS, this avoids several version of the
+                              --  file, if it were only delete after all
+                              --  sources were parsed.
+
+                              Delete_File (Temp_File_Name.all, Success);
+
+                              --  Find the first closing parenthesis
+
+                              for J in 1 .. Text_Last loop
+                                 if Text_Line (J) = ')' then
+                                    Text_Last := J;
+                                    exit;
+                                 end if;
+                              end loop;
+
+                              declare
+                                 S : constant String :=
+                                       Text_Line (1 .. Text_Last);
+
+                              begin
+                                 if S'Length >= 13
+                                   and then S (S'First .. S'First + 3) = "Unit"
+                                 then
+                                    if Opt.Verbose_Mode then
+                                       Output.Write_Str
+                                         (S (S'Last - 4 .. S'Last - 1));
+                                       Output.Write_Str (" of ");
+                                       Output.Write_Line
+                                         (S (S'First + 5 .. S'Last - 7));
+                                    end if;
+
+                                    if Project_File then
+
+                                       --  Add the corresponding attribute in
+                                       --  the Naming package of the naming
+                                       --  project.
+
+                                       declare
+                                          Decl_Item : constant Project_Node_Id
+                                            := Default_Project_Node
+                                              (Of_Kind =>
+                                                   N_Declarative_Item);
+
+                                          Attribute : constant Project_Node_Id
+                                            := Default_Project_Node
+                                              (Of_Kind =>
+                                                   N_Attribute_Declaration);
+
+                                          Expression : constant Project_Node_Id
+                                            := Default_Project_Node
+                                              (Of_Kind => N_Expression,
+                                               And_Expr_Kind => Single);
+
+                                          Term : constant Project_Node_Id :=
+                                                   Default_Project_Node
+                                                     (Of_Kind => N_Term,
+                                                      And_Expr_Kind => Single);
+
+                                          Value : constant Project_Node_Id :=
+                                                    Default_Project_Node
+                                                      (Of_Kind =>
+                                                         N_Literal_String,
+                                                       And_Expr_Kind =>
+                                                         Single);
+
+                                       begin
+                                          Set_Next_Declarative_Item
+                                            (Decl_Item,
+                                             To => First_Declarative_Item_Of
+                                               (Naming_Package));
+                                          Set_First_Declarative_Item_Of
+                                            (Naming_Package, To => Decl_Item);
+                                          Set_Current_Item_Node
+                                            (Decl_Item, To => Attribute);
+
+                                          --  Is it a spec or a body?
+
+                                          if S (S'Last - 5 .. S'Last) =
+                                            "(spec)"
+                                          then
+                                             Set_Name_Of
+                                               (Attribute, To => Name_Spec);
+                                          else
+                                             Set_Name_Of
+                                               (Attribute,
+                                                To => Name_Body);
+                                          end if;
+
+                                          --  Get the name of the unit
+
+                                          Name_Len := S'Last - S'First - 11;
+                                          Name_Buffer (1 .. Name_Len) :=
+                                            (To_Lower
+                                               (S (S'First + 5 ..
+                                                     S'Last - 7)));
+                                          Set_Associative_Array_Index_Of
+                                            (Attribute, To => Name_Find);
+
+                                          Set_Expression_Of
+                                            (Attribute, To => Expression);
+                                          Set_First_Term
+                                            (Expression, To => Term);
+                                          Set_Current_Term (Term, To => Value);
+
+                                          --  And set the name of the file
+
+                                          Name_Len := Last;
+                                          Name_Buffer (1 .. Name_Len) :=
+                                            Str (1 .. Last);
+                                          Set_String_Value_Of
+                                            (Value, To => Name_Find);
+                                       end;
+
+                                       --  Add source file name to source list
+                                       --  file.
+
+                                       Last := Last + 1;
+                                       Str (Last) := ASCII.LF;
+
+                                       if Write (Source_List_FD,
+                                                 Str (1)'Address,
+                                                 Last) /= Last
+                                       then
+                                          Prj.Com.Fail ("disk full");
+                                       end if;
+                                    else
+                                       --  Add an entry in the SFN_Pragmas
+                                       --  table.
+
+                                       SFN_Pragmas.Increment_Last;
+                                       SFN_Pragmas.Table (SFN_Pragmas.Last) :=
+                                         (Unit => new String'
+                                            (S (S'First + 5 .. S'Last - 7)),
+                                          File => new String'(Str (1 .. Last)),
+                                          Spec => S (S'Last - 5 .. S'Last)
+                                          = "(spec)");
+                                    end if;
+
+                                 else
+                                    if Opt.Verbose_Mode then
+                                       Output.Write_Line ("not a unit");
+                                    end if;
+                                 end if;
+                              end;
+                           end if;
+                        end;
                      end;
 
                   else
