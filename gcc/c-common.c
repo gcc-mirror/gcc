@@ -300,11 +300,11 @@ decl_attributes (decl, attributes, prefix_attributes)
 	  }
 	DECL_STATIC_DESTRUCTOR (decl) = 1;
       }
-    else if ( args = TREE_CHAIN (name),
-	      (!strcmp (IDENTIFIER_POINTER (name = TREE_PURPOSE (name)), "mode")
-	       || !strcmp (IDENTIFIER_POINTER (name), "__mode__"))
-	      && list_length (args) == 1
-	      && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
+    else if ((args = TREE_CHAIN (name)) != 0
+	     && (name == get_identifier ("mode")
+		 || name == get_identifier ("__mode__"))
+	     && list_length (args) == 1
+	     && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
       {
 	int i;
 	char *specified_name = IDENTIFIER_POINTER (TREE_VALUE (args));
