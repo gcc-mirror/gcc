@@ -1,3 +1,7 @@
+2003-04-22  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/27_io/filebuf_members.cc (test_07):  Adjust timing.
+
 2003-04-22  Jerry Quinn  <jlquinn@optonline.net>
 	    Benjamin Kosnik <bkoz at redhat dot com>
 
