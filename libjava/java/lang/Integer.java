@@ -183,11 +183,13 @@ public final class Integer extends Number implements Comparable
    */
   public static Integer getInteger(String nm, Integer def)
   {
-    String val = System.getProperty(nm);
-    if (val == null) return def;
+    if (nm == null || "".equals(nm))
+      return def;
+    nm = System.getProperty(nm);
+    if (nm == null) return def;
     try
       {
-      return decode(val);
+	return decode(nm);
       }
     catch (NumberFormatException e)
       {
