@@ -5231,6 +5231,21 @@ simplify_logical (x, last)
 	  && reversible_comparison_p (op0))
 	return gen_rtx_combine (reverse_condition (GET_CODE (op0)),
 				mode, XEXP (op0, 0), XEXP (op0, 1));
+
+      /* Convert (xor (ashift A CX) (lshiftrt A CY)) where CX+CY equals the
+	 mode size to (rotate A CX).  */
+
+      if (((GET_CODE (op0) == ASHIFT && GET_CODE (op1) == LSHIFTRT)
+	   || (GET_CODE (op1) == ASHIFT && GET_CODE (op0) == LSHIFTRT))
+	  && rtx_equal_p (XEXP (op0, 0), XEXP (op1, 0))
+	  && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	  && GET_CODE (XEXP (op1, 1)) == CONST_INT
+	  && (INTVAL (XEXP (op0, 1)) + INTVAL (XEXP (op1, 1))
+	      == GET_MODE_BITSIZE (mode)))
+	return gen_rtx_ROTATE (mode, XEXP (op0, 0),
+			       (GET_CODE (op0) == ASHIFT
+				? XEXP (op0, 1) : XEXP (op1, 1)));
+
       break;
 
     default:
