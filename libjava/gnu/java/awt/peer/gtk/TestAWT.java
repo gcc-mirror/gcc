@@ -266,6 +266,15 @@ class DialogWindow extends Dialog implements SubWindow
     super (f, true);
 
     this.parent = f;
+
+    addWindowListener (new WindowAdapter ()
+      {
+        public void windowClosing (WindowEvent e)
+        {
+          System.out.println ("Window Closing");
+          hide ();
+        }
+      });
   }
 
   public void setVisible (boolean visible)
