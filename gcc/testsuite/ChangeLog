@@ -1,3 +1,8 @@
+2002-01-08  H.J. Lu <hjl@gnu.org>
+
+	* objc.dg/special/special.exp: Add -I${srcdir}/../../libobjc
+	for header files.
+
 2002-01-08  Geoff Keating  <geoffk@redhat.com>
 
 	* gcc.dg/altivec-4.c: Make the 'char' entries signed also for
