@@ -4517,6 +4517,30 @@ fold (expr)
 	return build (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
 		      arg0, integer_zero_node);
 
+      /* If X is unsigned, convert X < (1 << Y) into X >> Y == 0
+	 and similarly for <= into !=.  */
+      if ((code == LT_EXPR || code == GE_EXPR)
+	  && TREE_UNSIGNED (TREE_TYPE (arg0))
+	  && TREE_CODE (arg1) == LSHIFT_EXPR
+	  && integer_onep (TREE_OPERAND (arg1, 0)))
+	return build (code == LT_EXPR ? EQ_EXPR : NE_EXPR, type, 
+		      build (RSHIFT_EXPR, TREE_TYPE (arg0), arg0,
+			     TREE_OPERAND (arg1, 1)),
+		      convert (TREE_TYPE (arg0), integer_zero_node));
+
+      else if ((code == LT_EXPR || code == GE_EXPR)
+	       && TREE_UNSIGNED (TREE_TYPE (arg0))
+	       && (TREE_CODE (arg1) == NOP_EXPR
+		   || TREE_CODE (arg1) == CONVERT_EXPR)
+	       && TREE_CODE (TREE_OPERAND (arg1, 0)) == LSHIFT_EXPR
+	       && integer_onep (TREE_OPERAND (TREE_OPERAND (arg1, 0), 0)))
+	return
+	  build (code == LT_EXPR ? EQ_EXPR : NE_EXPR, type,
+		 convert (TREE_TYPE (arg0),
+			  build (RSHIFT_EXPR, TREE_TYPE (arg0), arg0,
+				 TREE_OPERAND (TREE_OPERAND (arg1, 0), 1))),
+		 convert (TREE_TYPE (arg0), integer_zero_node));
+
       /* Simplify comparison of something with itself.  (For IEEE
 	 floating-point, we can only do some of these simplifications.)  */
       if (operand_equal_p (arg0, arg1, 0))
