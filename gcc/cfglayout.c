@@ -795,7 +795,8 @@ fixup_reorder_chain (void)
 	  /* Make sure new bb is tagged for correct section (same as
 	     fall-thru source).  */
 	  e_fall->src->partition = bb->pred->src->partition;
-	  if (flag_reorder_blocks_and_partition)
+	  if (flag_reorder_blocks_and_partition
+	      && targetm.have_named_sections)
 	    {
 	      if (bb->pred->src->partition == COLD_PARTITION)
 		{
@@ -1107,6 +1108,7 @@ cfg_layout_duplicate_bb (basic_block bb)
 			       insn ? get_last_insn () : NULL,
 			       EXIT_BLOCK_PTR->prev_bb);
 
+  new_bb->partition = bb->partition;
   if (bb->rbi->header)
     {
       insn = bb->rbi->header;

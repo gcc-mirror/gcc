@@ -392,6 +392,10 @@ extern const char *first_global_object_name;
 /* The first weak object in the file.  */
 extern const char *weak_global_object_name;
 
+/* Label at start of unlikely section, when partitioning hot/cold basic
+   blocks.  */
+extern char *unlikely_section_label;
+
 /* Nonzero if function being compiled doesn't contain any calls
    (ignoring the prologue and epilogue).  This is set prior to
    local register allocation and is valid for the remaining
@@ -437,6 +441,12 @@ extern tree last_assemble_variable_decl;
    RELOC is the same as for SELECT_SECTION.  */
 extern bool decl_readonly_section (tree, int);
 extern bool decl_readonly_section_1 (tree, int, int);
+
+/* The following global variable indicates the section name to be used
+   for the current cold section, when partitioning hot and cold basic
+   blocks into separate sections.  */
+
+extern char *unlikely_text_section_name;
 
 /* This can be used to compute RELOC for the function above, when
    given a constant expression.  */

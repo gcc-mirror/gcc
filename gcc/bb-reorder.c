@@ -197,8 +197,10 @@ push_to_next_round_p (basic_block bb, int round, int number_of_rounds,
   bool there_exists_another_round;
   bool cold_block;
   bool block_not_hot_enough;
+  bool next_round_is_last;
 
   there_exists_another_round = round < number_of_rounds - 1;
+  next_round_is_last = round + 1 == number_of_rounds - 1;
 
   cold_block = (flag_reorder_blocks_and_partition 
 		&& bb->partition == COLD_PARTITION);
@@ -207,7 +209,11 @@ push_to_next_round_p (basic_block bb, int round, int number_of_rounds,
 			  || bb->count < count_th
 			  || probably_never_executed_bb_p (bb));
 
-  if (there_exists_another_round
+  if (flag_reorder_blocks_and_partition
+      && next_round_is_last
+      && bb->partition != COLD_PARTITION)
+    return false;
+  else if (there_exists_another_round
       && (cold_block || block_not_hot_enough))
     return true;
   else 
@@ -383,7 +389,9 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 
 	      /* Duplicate HEADER if it is a small block containing cond jump
 		 in the end.  */
-	      if (any_condjump_p (BB_END (header)) && copy_bb_p (header, 0))
+	      if (any_condjump_p (BB_END (header)) && copy_bb_p (header, 0)
+		  && !find_reg_note (BB_END (header), REG_CROSSING_JUMP, 
+				     NULL_RTX))
 		{
 		  copy_bb (header, prev_bb->succ, prev_bb, trace_n);
 		}
@@ -750,6 +758,8 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
   basic_block new_bb;
 
   new_bb = duplicate_block (old_bb, e);
+  new_bb->partition = old_bb->partition;
+
   if (e->dest != new_bb)
     abort ();
   if (e->dest->rbi->visited)
@@ -1236,6 +1246,8 @@ add_unlikely_executed_notes (void)
 {
   basic_block bb;
 
+  /* Add the UNLIKELY_EXECUTED_NOTES to each cold basic block.  */
+
   FOR_EACH_BB (bb)
     if (bb->partition == COLD_PARTITION)
       mark_bb_for_unlikely_executed_section (bb);
@@ -1251,6 +1263,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
 						      int *max_idx)
 {
   basic_block bb;
+  bool has_hot_blocks = false;
   edge e;
   int i;
 
@@ -1261,32 +1274,49 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
       if (probably_never_executed_bb_p (bb))
 	bb->partition = COLD_PARTITION;
       else
-	bb->partition = HOT_PARTITION;
+	{
+	  bb->partition = HOT_PARTITION;
+	  has_hot_blocks = true;
+	}
     }
+
+  /* Since all "hot" basic blocks will eventually be scheduled before all
+     cold basic blocks, make *sure* the real function entry block is in
+     the hot partition (if there is one).  */
+  
+  if (has_hot_blocks)
+    for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+      if (e->dest->index >= 0)
+	{
+	  e->dest->partition = HOT_PARTITION;
+	  break;
+	}
 
   /* Mark every edge that crosses between sections.  */
 
   i = 0;
-  FOR_EACH_BB (bb)
-    for (e = bb->succ; e; e = e->succ_next)
-      {
-	if (e->src != ENTRY_BLOCK_PTR
-	    && e->dest != EXIT_BLOCK_PTR
-	    && e->src->partition != e->dest->partition)
+  if (targetm.have_named_sections)
+    {
+      FOR_EACH_BB (bb)
+	for (e = bb->succ; e; e = e->succ_next)
 	  {
-	    e->crossing_edge = true;
-	    if (i == *max_idx)
+	    if (e->src != ENTRY_BLOCK_PTR
+		&& e->dest != EXIT_BLOCK_PTR
+		&& e->src->partition != e->dest->partition)
 	      {
-		*max_idx *= 2;
-		crossing_edges = xrealloc (crossing_edges,
-					   (*max_idx) * sizeof (edge));
+		e->crossing_edge = true;
+		if (i == *max_idx)
+		  {
+		    *max_idx *= 2;
+		    crossing_edges = xrealloc (crossing_edges,
+					       (*max_idx) * sizeof (edge));
+		  }
+		crossing_edges[i++] = e;
 	      }
-	    crossing_edges[i++] = e;
+	    else
+	      e->crossing_edge = false;
 	  }
-	else
-	  e->crossing_edge = false;
-      }
-
+    }
   *n_crossing_edges = i;
 }
 
@@ -1301,32 +1331,28 @@ mark_bb_for_unlikely_executed_section (basic_block bb)
   rtx insert_insn = NULL;
   rtx new_note;
   
-  /* Find first non-note instruction and insert new NOTE before it (as
-     long as new NOTE is not first instruction in basic block).  */
-  
-  for (cur_insn = BB_HEAD (bb); cur_insn != NEXT_INSN (BB_END (bb)); 
+  /* Insert new NOTE immediately after  BASIC_BLOCK note.  */
+
+  for (cur_insn = BB_HEAD (bb); cur_insn != NEXT_INSN (BB_END (bb));
        cur_insn = NEXT_INSN (cur_insn))
-    if (!NOTE_P (cur_insn)
-	&& !LABEL_P (cur_insn))
+    if (GET_CODE (cur_insn) == NOTE
+	&& NOTE_LINE_NUMBER (cur_insn) == NOTE_INSN_BASIC_BLOCK)
       {
 	insert_insn = cur_insn;
 	break;
       }
-  
+    
+  /* If basic block does not contain a NOTE_INSN_BASIC_BLOCK, there is
+     a major problem.  */
+
+  if (!insert_insn)
+    abort ();
+
   /* Insert note and assign basic block number to it.  */
   
-  if (insert_insn) 
-    {
-      new_note = emit_note_before (NOTE_INSN_UNLIKELY_EXECUTED_CODE, 
- 				   insert_insn);
-      NOTE_BASIC_BLOCK (new_note) = bb;
-    }
-  else
-    {
-      new_note = emit_note_after (NOTE_INSN_UNLIKELY_EXECUTED_CODE,
-				  BB_END (bb));
-      NOTE_BASIC_BLOCK (new_note) = bb;
-    }
+  new_note = emit_note_after (NOTE_INSN_UNLIKELY_EXECUTED_CODE, 
+			      insert_insn);
+  NOTE_BASIC_BLOCK (new_note) = bb;
 }
 
 /* If any destination of a crossing edge does not have a label, add label;
@@ -1754,7 +1780,7 @@ fix_crossing_unconditional_branches (void)
   rtx new_reg;
   rtx cur_insn;
   edge succ;
-  
+
   FOR_EACH_BB (cur_bb)
     {
       last_insn = BB_END (cur_bb);
@@ -1886,26 +1912,36 @@ fix_edges_for_rarely_executed_code (edge *crossing_edges,
   
   fix_up_fall_thru_edges ();
   
-  /* If the architecture does not have conditional branches that can
-     span all of memory, convert crossing conditional branches into
-     crossing unconditional branches.  */
-  
-  if (!HAS_LONG_COND_BRANCH)
-    fix_crossing_conditional_branches ();
-  
-  /* If the architecture does not have unconditional branches that
-     can span all of memory, convert crossing unconditional branches
-     into indirect jumps.  Since adding an indirect jump also adds
-     a new register usage, update the register usage information as
-     well.  */
-  
-  if (!HAS_LONG_UNCOND_BRANCH)
-    {
-      fix_crossing_unconditional_branches ();
-      reg_scan (get_insns(), max_reg_num (), 1);
-    }
+  /* Only do the parts necessary for writing separate sections if
+     the target architecture has the ability to write separate sections
+     (i.e. it has named sections).  Otherwise, the hot/cold partitioning
+     information will be used when reordering blocks to try to put all
+     the hot blocks together, then all the cold blocks, but no actual
+     section partitioning will be done.  */
 
-  add_reg_crossing_jump_notes ();
+  if (targetm.have_named_sections)
+    {
+      /* If the architecture does not have conditional branches that can
+	 span all of memory, convert crossing conditional branches into
+	 crossing unconditional branches.  */
+  
+      if (!HAS_LONG_COND_BRANCH)
+	fix_crossing_conditional_branches ();
+  
+      /* If the architecture does not have unconditional branches that
+	 can span all of memory, convert crossing unconditional branches
+	 into indirect jumps.  Since adding an indirect jump also adds
+	 a new register usage, update the register usage information as
+	 well.  */
+      
+      if (!HAS_LONG_UNCOND_BRANCH)
+	{
+	  fix_crossing_unconditional_branches ();
+	  reg_scan (get_insns(), max_reg_num (), 1);
+	}
+
+      add_reg_crossing_jump_notes ();
+    }
 }
 
 /* Reorder basic blocks.  The main entry point to this file.  FLAGS is
@@ -1957,7 +1993,8 @@ reorder_basic_blocks (unsigned int flags)
   if (dump_file)
     dump_flow_info (dump_file);
 
-  if (flag_reorder_blocks_and_partition)
+  if (flag_reorder_blocks_and_partition
+      && targetm.have_named_sections)
     add_unlikely_executed_notes ();
 
   cfg_layout_finalize ();

@@ -2909,6 +2909,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
     {
       new_bb->index = then_bb_index;
       BASIC_BLOCK (then_bb_index) = new_bb;
+      new_bb->partition = test_bb->partition;
     }
   /* We've possibly created jump to next insn, cleanup_cfg will solve that
      later.  */
@@ -3288,7 +3289,8 @@ if_convert (int x_life_data_ok)
   life_data_ok = (x_life_data_ok != 0);
 
   if ((! targetm.cannot_modify_jumps_p ())
-      && (!flag_reorder_blocks_and_partition || !no_new_pseudos))
+      && (!flag_reorder_blocks_and_partition || !no_new_pseudos
+	  || !targetm.have_named_sections))
     mark_loop_exit_edges ();
 
   /* Compute postdominators if we think we'll use them.  */

@@ -1077,10 +1077,7 @@ darwin_globalize_label (FILE *stream, const char *name)
 void
 darwin_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
 {
-  if (flag_reorder_blocks_and_partition)
-    fprintf (asm_out_file, SECTION_FORMAT_STRING, name);
-  else
-    fprintf (asm_out_file, ".section %s\n", name);
+  fprintf (asm_out_file, ".section %s\n", name);
 }
 
 unsigned int

@@ -989,6 +989,8 @@ emit_swap_insn (rtx insn, stack regstack, rtx reg)
 	  if (LABEL_P (tmp)
 	      || CALL_P (tmp)
 	      || NOTE_INSN_BASIC_BLOCK_P (tmp)
+	      || (NOTE_P (tmp)
+		  && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_UNLIKELY_EXECUTED_CODE)
 	      || (NONJUMP_INSN_P (tmp)
 		  && stack_regs_mentioned (tmp)))
 	    {

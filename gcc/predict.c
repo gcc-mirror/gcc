@@ -1441,6 +1441,13 @@ choose_function_section (void)
 	 of all instances.  For now just never set frequency for these.  */
       || DECL_ONE_ONLY (current_function_decl))
     return;
+
+  /* If we are doing the partitioning optimization, let the optimization
+     choose the correct section into which to put things.  */
+
+  if (flag_reorder_blocks_and_partition)
+    return;
+
   if (cfun->function_frequency == FUNCTION_FREQUENCY_HOT)
     DECL_SECTION_NAME (current_function_decl) =
       build_string (strlen (HOT_TEXT_SECTION_NAME), HOT_TEXT_SECTION_NAME);

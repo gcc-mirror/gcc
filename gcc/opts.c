@@ -641,6 +641,21 @@ decode_options (unsigned int argc, const char **argv)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+
+  /* The optimization to partition hot and cold basic blocks into
+     separate sections of the .o and executable files does not currently
+     work correctly with DWARF debugging turned on.  Until this is fixed
+     we will disable the optimization when DWARF debugging is set.  */
+  
+  if (flag_reorder_blocks_and_partition
+      && (write_symbols == DWARF_DEBUG
+	  || write_symbols == DWARF2_DEBUG))
+    {
+      warning
+	("-freorder-blocks-and-partition does not work with -g (currently)");
+      flag_reorder_blocks_and_partition = 0;
+      flag_reorder_blocks = 1;
+    }
 }
 
 /* Handle target- and language-independent options.  Return zero to
