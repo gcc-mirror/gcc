@@ -1430,6 +1430,7 @@ struct walk_type_data
   int used_length;
   type_p orig_s;
   const char *reorder_fn;
+  int needs_cast_p;
 };
 
 /* Print a mangled name representing T to OF.  */
@@ -1534,9 +1535,9 @@ walk_type (t, d)
   int maybe_undef_p = 0;
   int use_param_num = -1;
   int use_params_p = 0;
-  int needs_cast_p = 0;
   options_p oo;
   
+  d->needs_cast_p = 0;
   for (oo = d->opt; oo; oo = oo->next)
     if (strcmp (oo->name, "length") == 0)
       length = (const char *)oo->info;
@@ -1603,8 +1604,9 @@ walk_type (t, d)
 	    nt = create_array (nt, t->u.a.len);
 	  else if (length != NULL && t->kind == TYPE_POINTER)
 	    nt = create_pointer (nt);
-	  needs_cast_p = (t->kind != TYPE_POINTER
-			  && nt->kind == TYPE_POINTER);
+	  d->needs_cast_p = (t->kind != TYPE_POINTER
+			     && (nt->kind == TYPE_POINTER
+				 || nt->kind == TYPE_STRING));
 	  t = nt;
 	}
       else
@@ -1890,13 +1892,14 @@ write_types_process_field (f, d)
      const struct walk_type_data *d;
 {
   const struct write_types_data *wtd;
+  const char *cast = d->needs_cast_p ? "(void *)" : "";
   wtd = (const struct write_types_data *) d->cookie;
   
   switch (f->kind)
     {
     case TYPE_POINTER:
-      oprintf (d->of, "%*s%s (%s", d->indent, "", 
-	       wtd->subfield_marker_routine, d->val);
+      oprintf (d->of, "%*s%s (%s%s", d->indent, "", 
+	       wtd->subfield_marker_routine, cast, d->val);
       if (wtd->param_prefix)
 	{
 	  oprintf (d->of, ", %s", d->prev_val[3]);
@@ -1910,8 +1913,8 @@ write_types_process_field (f, d)
 	}
       oprintf (d->of, ");\n");
       if (d->reorder_fn && wtd->reorder_note_routine)
-	oprintf (d->of, "%*s%s (%s, %s, %s);\n", d->indent, "", 
-		 wtd->reorder_note_routine, d->val,
+	oprintf (d->of, "%*s%s (%s%s, %s, %s);\n", d->indent, "", 
+		 wtd->reorder_note_routine, cast, d->val,
 		 d->prev_val[3], d->reorder_fn);
       break;
 
@@ -1925,10 +1928,10 @@ write_types_process_field (f, d)
     case TYPE_PARAM_STRUCT:
       oprintf (d->of, "%*sgt_%s_", d->indent, "", wtd->prefix);
       output_mangled_typename (d->of, f);
-      oprintf (d->of, " (%s);\n", d->val);
+      oprintf (d->of, " (%s%s);\n", cast, d->val);
       if (d->reorder_fn && wtd->reorder_note_routine)
-	oprintf (d->of, "%*s%s (%s, %s, %s);\n", d->indent, "", 
-		 wtd->reorder_note_routine, d->val, d->val,
+	oprintf (d->of, "%*s%s (%s%s, %s%s, %s);\n", d->indent, "", 
+		 wtd->reorder_note_routine, cast, d->val, cast, d->val,
 		 d->reorder_fn);
       break;
 
@@ -2654,7 +2657,7 @@ write_root (f, v, type, name, has_length, line, if_marked)
 	oprintf (f, "    1, \n");
 	oprintf (f, "    sizeof (%s),\n", v->name);
 	oprintf (f, "    &gt_ggc_m_S,\n");
-	oprintf (f, "    &gt_pch_n_S\n");
+	oprintf (f, "    (gt_pointer_walker) &gt_pch_n_S\n");
 	oprintf (f, "  },\n");
       }
       break;

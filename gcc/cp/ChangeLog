@@ -1,3 +1,7 @@
+2003-01-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* cp/Make-lang.in: Remove -Wno-error from cp/decl.o.
+
 2003-01-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (check_field_decls): Only check C_TYPE_FIELDS_READONLY
