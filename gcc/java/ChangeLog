@@ -1,3 +1,11 @@
+Thu May 13 18:30:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_check_regular_methods): Warning check on not
+ 	overriding methods with default access in other packages does not
+ 	apply to `<clinit>'.
+	(java_complete_lhs): If block body is an empty_stmt_node, replace
+ 	it by NULL_TREE. This avoid gcc generating an irrelevant warning.
+
 Thu May 13 13:23:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* check-init.c (check_init): Removed code accepting to see things
