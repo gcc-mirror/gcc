@@ -4128,14 +4128,14 @@ record_builtin_type (rid_index, name, type)
 	  builtin_type_tdescs_arr[builtin_type_tdescs_len++]
 	    = build_pointer_type (type);
 	  builtin_type_tdescs_arr[builtin_type_tdescs_len++]
-	    = build_type_variant (TYPE_POINTER_TO (type), 1, 0);
+	    = build_pointer_type (build_type_variant (type, 1, 0));
 	}
       if (TREE_CODE (type) != VOID_TYPE)
 	{
 	  builtin_type_tdescs_arr[builtin_type_tdescs_len++]
 	    = build_reference_type (type);
 	  builtin_type_tdescs_arr[builtin_type_tdescs_len++]
-	    = build_type_variant (TYPE_REFERENCE_TO (type), 1, 0);
+	    = build_reference_type (build_type_variant (type, 1, 0));
 	}
     }
 }
@@ -4757,7 +4757,7 @@ init_decl_processing ()
   vtbl_type_node
     = build_array_type (vtable_entry_type, NULL_TREE);
   layout_type (vtbl_type_node);
-  vtbl_type_node = build_type_variant (vtbl_type_node, 1, 0);
+  vtbl_type_node = c_build_type_variant (vtbl_type_node, 1, 0);
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_type_node);
 
   /* Simplify life by making a "sigtable_entry_type".  Give its
@@ -8010,12 +8010,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    if (pedantic && (constp || volatilep))
 	      pedwarn ("function declared to return const or volatile result");
 #else
-	    /* Merge any constancy or volatility into the target type
-	       for the pointer.  */
+	    /* Merge any constancy or volatility into the function return
+               type.  */
 
 	    if (constp || volatilep)
 	      {
-		type = build_type_variant (type, constp, volatilep);
+		type = c_build_type_variant (type, constp, volatilep);
 		if (IS_AGGR_TYPE (type))
 		  build_pointer_type (type);
 		constp = 0;
@@ -8226,7 +8226,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		 signature pointer/reference itself.  */
 	      if (! IS_SIGNATURE (type))
 		{
-		  type = build_type_variant (type, constp, volatilep);
+		  type = c_build_type_variant (type, constp, volatilep);
 		  if (IS_AGGR_TYPE (type))
 		    build_pointer_type (type);
 		  constp = 0;
@@ -8519,7 +8519,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
       /* Note that the grammar rejects storage classes
 	 in typenames, fields or parameters.  */
       if (constp || volatilep)
-	type = build_type_variant (type, constp, volatilep);
+	type = c_build_type_variant (type, constp, volatilep);
 
       /* If the user declares "struct {...} foo" then `foo' will have
 	 an anonymous name.  Fill that name in now.  Nothing can
@@ -8608,7 +8608,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	if (IS_SIGNATURE (type))
 	  error ("`const' or `volatile' specified with signature type");
 	else  
-	  type = build_type_variant (type, constp, volatilep);
+	  type = c_build_type_variant (type, constp, volatilep);
 
       /* Special case: "friend class foo" looks like a TYPENAME context.  */
       if (friendp)
@@ -8690,7 +8690,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  {
 	    /* Transfer const-ness of array into that of type pointed to. */
 	    type = build_pointer_type
-	      (build_type_variant (TREE_TYPE (type), constp, volatilep));
+	      (c_build_type_variant (TREE_TYPE (type), constp, volatilep));
 	    volatilep = constp = 0;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)

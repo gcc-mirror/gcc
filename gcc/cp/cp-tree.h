@@ -332,6 +332,11 @@ enum languages { lang_c, lang_cplusplus };
 
 /* Macros which might want to be replaced by function calls.  */
 
+#define DELTA_FROM_VTABLE_ENTRY(ENTRY) \
+  (!flag_vtable_thunks ? \
+     TREE_VALUE (CONSTRUCTOR_ELTS (ENTRY)) \
+   : TREE_CODE (TREE_OPERAND ((ENTRY), 0)) != THUNK_DECL ? integer_zero_node \
+   : build_int_2 (THUNK_DELTA (TREE_OPERAND ((ENTRY), 0)), 0))
 #if 1
 /* Virtual function addresses can be gotten from a virtual function
    table entry using this macro.  */

@@ -317,9 +317,9 @@ grok_template_type (tvec, type)
         {
 	  /* we are here for cases like const T* etc. */
 	  grok_template_type (tvec, &TYPE_MAIN_VARIANT (*type));
-	  *type = build_type_variant (TYPE_MAIN_VARIANT (*type),
-				      TYPE_READONLY (*type),
-				      TYPE_VOLATILE (*type));
+	  *type = c_build_type_variant (TYPE_MAIN_VARIANT (*type),
+					TYPE_READONLY (*type),
+					TYPE_VOLATILE (*type));
 	}
       else
 	  *type = TREE_VEC_ELT (tvec, TEMPLATE_TYPE_IDX (*type));
@@ -1125,9 +1125,9 @@ tsubst (t, args, nargs, in_decl)
       && type != integer_type_node
       && type != void_type_node
       && type != char_type_node)
-    type = build_type_variant (tsubst (type, args, nargs, in_decl),
-			       TYPE_READONLY (type),
-			       TYPE_VOLATILE (type));
+    type = c_build_type_variant (tsubst (type, args, nargs, in_decl),
+				 TYPE_READONLY (type),
+				 TYPE_VOLATILE (type));
   switch (TREE_CODE (t))
     {
     case RECORD_TYPE:
@@ -1162,9 +1162,9 @@ tsubst (t, args, nargs, in_decl)
 	 tsubst (TYPE_MAX_VALUE (t), args, nargs, in_decl));
 
     case TEMPLATE_TYPE_PARM:
-      return build_type_variant (args[TEMPLATE_TYPE_IDX (t)],
-				 TYPE_READONLY (t),
-				 TYPE_VOLATILE (t));
+      return c_build_type_variant (args[TEMPLATE_TYPE_IDX (t)],
+				   TYPE_READONLY (t),
+				   TYPE_VOLATILE (t));
 
     case TEMPLATE_CONST_PARM:
       return args[TEMPLATE_CONST_IDX (t)];
@@ -1472,7 +1472,7 @@ tsubst (t, args, nargs, in_decl)
 	  r = build_pointer_type (type);
 	else
 	  r = build_reference_type (type);
-	r = build_type_variant (r, TYPE_READONLY (t), TYPE_VOLATILE (t));
+	r = c_build_type_variant (r, TYPE_READONLY (t), TYPE_VOLATILE (t));
 	/* Will this ever be needed for TYPE_..._TO values?  */
 	layout_type (r);
 	return r;

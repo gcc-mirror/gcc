@@ -762,8 +762,8 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 #endif
 
 	  h = convert_harshness (TREE_VALUE (ttf),
-				      TREE_TYPE (TREE_VALUE (tta)),
-				      TREE_VALUE (tta));
+				 TREE_TYPE (TREE_VALUE (tta)),
+				 TREE_VALUE (tta));
 
 #ifdef DEBUG_MATCHING
 	  cp_error ("     evaluated %s", print_harshness (&h));
@@ -2062,9 +2062,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		{
 		  tree new_type;
 		  parm = build_indirect_ref (parm, "friendifying parms (compiler error)");
-		  new_type = build_reference_type (TREE_TYPE (parm));
-		  /* It is possible that this should go down a layer. */
-		  new_type = build_type_variant (new_type, constp, volatilep);
+		  new_type = c_build_type_variant (TREE_TYPE (parm), constp,
+						   volatilep);
+		  new_type = build_reference_type (new_type);
 		  parm = convert (new_type, parm);
 		  friend_parms = tree_cons (NULL_TREE, parm, TREE_CHAIN (parms));
 		}

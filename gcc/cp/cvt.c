@@ -304,8 +304,8 @@ build_up_reference (type, arg, flags, checkconst)
 
   /* Pass along const and volatile down into the type. */
   if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
-    target_type = build_type_variant (target_type, TYPE_READONLY (type),
-				      TYPE_VOLATILE (type));
+    target_type = c_build_type_variant (target_type, TYPE_READONLY (type),
+					TYPE_VOLATILE (type));
   targ = arg;
   if (TREE_CODE (targ) == SAVE_EXPR)
     targ = TREE_OPERAND (targ, 0);
@@ -337,20 +337,7 @@ build_up_reference (type, arg, flags, checkconst)
 	  TREE_READONLY (arg) = 0;
 	}
 
-#if 0
-      if (TREE_CODE (TREE_TYPE (arg)) == REFERENCE_TYPE)
-	{
-	  rval = copy_node (arg);
-	  TREE_TYPE (rval) = build_pointer_type (TREE_TYPE (TREE_TYPE (arg)));
-	}
-      else
-	rval = arg;
-
-      rval = convert (build_pointer_type (TREE_TYPE (type)), rval);
-      TREE_TYPE (rval) = type;
-#else
       rval = build1 (CONVERT_EXPR, type, arg);
-#endif
       TREE_REFERENCE_EXPR (rval) = 1;
 
       /* propagate the const flag on something like:
@@ -591,7 +578,8 @@ build_up_reference (type, arg, flags, checkconst)
     rval = build1 (ADDR_EXPR, type, arg);
 
  done:
-  if (TYPE_USES_COMPLEX_INHERITANCE (argtype))
+  if (TYPE_USES_COMPLEX_INHERITANCE (argtype)
+      || TYPE_USES_COMPLEX_INHERITANCE (target_type))
     {
       TREE_TYPE (rval) = build_pointer_type (argtype);
       if (flags & LOOKUP_PROTECT)
@@ -628,16 +616,6 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
   if (form == REFERENCE_TYPE)
     intype = TREE_TYPE (intype);
   intype = TYPE_MAIN_VARIANT (intype);
-
-  if (IS_AGGR_TYPE (intype)
-      && ! (flags & LOOKUP_NO_CONVERSION)
-      && (rval = build_type_conversion (CONVERT_EXPR, reftype, expr, 1)))
-    {
-      if (rval == error_mark_node)
-	cp_error ("conversion from `%T' to `%T' is ambiguous",
-		  intype, reftype);
-      return rval;
-    }
 
   if (((convtype & CONV_STATIC) && comptypes (type, intype, -1))
       || ((convtype & CONV_IMPLICIT) && comptypes (type, intype, 0)))
@@ -692,7 +670,17 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 				 ! (convtype & CONV_CONST));
     }
 
-  if ((convtype & CONV_REINTERPRET) && lvalue_p (expr))
+  if ((convtype & CONV_IMPLICIT)
+      && IS_AGGR_TYPE (intype)
+      && ! (flags & LOOKUP_NO_CONVERSION)
+      && (rval = build_type_conversion (CONVERT_EXPR, reftype, expr, 1)))
+    {
+      if (rval == error_mark_node)
+	cp_error ("conversion from `%T' to `%T' is ambiguous",
+		  intype, reftype);
+      return rval;
+    }
+  else if ((convtype & CONV_REINTERPRET) && lvalue_p (expr))
     {
       /* When casting an lvalue to a reference type, just convert into
 	 a pointer to the new type and deference it.  This is allowed
@@ -1486,31 +1474,20 @@ build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
      tree typename;
      int for_sure;
 {
-  tree first_arg = expr;
   tree rval;
   int flags;
 
   if (for_sure == 0)
-    {
-      if (! lvalue_p (expr))
-	first_arg = build1 (NOP_EXPR, TYPE_POINTER_TO (basetype), integer_zero_node);
-      flags = LOOKUP_PROTECT;
-    }
+    flags = LOOKUP_PROTECT;
   else
     flags = LOOKUP_NORMAL;
 
-  rval = build_method_call (first_arg, typename, NULL_TREE, NULL_TREE, flags);
+  rval = build_method_call (expr, typename, NULL_TREE, NULL_TREE, flags);
   if (rval == error_mark_node)
     {
       if (for_sure == 0)
 	return NULL_TREE;
       return error_mark_node;
-    }
-  if (first_arg != expr)
-    {
-      expr = build_up_reference (build_reference_type (TREE_TYPE (expr)), expr,
-				 LOOKUP_COMPLAIN, 1);
-      TREE_VALUE (TREE_OPERAND (rval, 1)) = build_unary_op (ADDR_EXPR, expr, 0);
     }
   if (TREE_CODE (TREE_TYPE (rval)) == REFERENCE_TYPE
       && TREE_CODE (xtype) != REFERENCE_TYPE)
@@ -1616,8 +1593,13 @@ build_type_conversion (code, xtype, expr, for_sure)
 
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
-      tree first_arg = expr;
+#if 0
+      /* Only reference variable initializations can use a temporary; this
+         must be handled elsewhere (like convert_to_reference and
+         compute_conversion_costs).  */
+
       type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+      typename = build_typename_overload (type);
       basetype = save_basetype;
 
       /* May need to build a temporary for this.  */
@@ -1628,14 +1610,11 @@ build_type_conversion (code, xtype, expr, for_sure)
 	      int flags;
 
 	      if (for_sure == 0)
-		{
-		  if (! lvalue_p (expr))
-		    first_arg = build1 (NOP_EXPR, TYPE_POINTER_TO (basetype), integer_zero_node);
-		  flags = LOOKUP_PROTECT;
-		}
+		flags = LOOKUP_PROTECT;
 	      else
 		flags = LOOKUP_NORMAL;
-	      rval = build_method_call (first_arg, constructor_name_full (typename),
+	      rval = build_method_call (expr,
+					constructor_name_full (typename),
 					NULL_TREE, NULL_TREE, flags);
 	      if (rval == error_mark_node)
 		{
@@ -1643,17 +1622,7 @@ build_type_conversion (code, xtype, expr, for_sure)
 		    return NULL_TREE;
 		  return error_mark_node;
 		}
-	      TREE_VALUE (TREE_OPERAND (rval, 1)) = expr;
 
-	      if (IS_AGGR_TYPE (type))
-		{
-		  tree init = build_method_call (NULL_TREE,
-						 constructor_name_full (type),
-						 build_tree_list (NULL_TREE, rval), NULL_TREE, LOOKUP_NORMAL);
-		  tree temp = build_cplus_new (type, init, 1);
-		  return build_up_reference (TYPE_REFERENCE_TO (type), temp,
-					     LOOKUP_COMPLAIN, 1);
-		}
 	      return convert (xtype, rval);
 	    }
 	  if (TYPE_BINFO_BASETYPES (basetype))
@@ -1661,6 +1630,7 @@ build_type_conversion (code, xtype, expr, for_sure)
 	  else
 	    break;
 	}
+#endif
       /* No free conversions for reference types, right?.  */
       return NULL_TREE;
     }
@@ -2068,5 +2038,5 @@ type_promotes_to (type)
   else if (type == float_type_node)
     type = double_type_node;
 
-  return build_type_variant (type, constp, volatilep);
+  return c_build_type_variant (type, constp, volatilep);
 }

@@ -161,7 +161,7 @@ qualify_type (type, like)
   int constflag = TYPE_READONLY (type) || TYPE_READONLY (like);
   int volflag = TYPE_VOLATILE (type) || TYPE_VOLATILE (like);
   /* @@ Must do member pointers here.  */
-  return build_type_variant (type, constflag, volflag);
+  return c_build_type_variant (type, constflag, volflag);
 }
 
 /* Return the common type of two parameter lists.
@@ -372,7 +372,7 @@ common_type (t1, t2)
 	  = TYPE_READONLY (TREE_TYPE (t1)) || TYPE_READONLY (TREE_TYPE (t2));
 	int volatilep
 	  = TYPE_VOLATILE (TREE_TYPE (t1)) || TYPE_VOLATILE (TREE_TYPE (t2));
-	target = build_type_variant (target, constp, volatilep);
+	target = c_build_type_variant (target, constp, volatilep);
 	if (code1 == POINTER_TYPE)
 	  t1 = build_pointer_type (target);
 	else
@@ -1380,9 +1380,9 @@ default_conversion (exp)
       restype = TREE_TYPE (type);
       if (TYPE_READONLY (type) || TYPE_VOLATILE (type)
 	  || constp || volatilep)
-	restype = build_type_variant (restype,
-				      TYPE_READONLY (type) || constp,
-				      TYPE_VOLATILE (type) || volatilep);
+	restype = c_build_type_variant (restype,
+					TYPE_READONLY (type) || constp,
+					TYPE_VOLATILE (type) || volatilep);
       ptrtype = build_pointer_type (restype);
 
       if (TREE_CODE (exp) == VAR_DECL)
@@ -2753,7 +2753,7 @@ build_binary_op (code, arg1, arg2, convert_p)
 	  if (try == 0)
 	    {
 	      cp_error ("no match for `%O(%#T, %#T)'", code,
-			types[convert_index], types[convert_index ^ 1]);
+			TREE_TYPE (arg1), TREE_TYPE (arg2));
 	      return error_mark_node;
 	    }
 	  if (try == error_mark_node)
@@ -4177,9 +4177,9 @@ build_unary_op (code, xarg, noconvert)
 	  || TREE_CODE_CLASS (TREE_CODE (arg)) == 'r')
 	{
 	  if (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg))
-	    argtype = build_type_variant (argtype,
-					  TREE_READONLY (arg),
-					  TREE_THIS_VOLATILE (arg));
+	    argtype = c_build_type_variant (argtype,
+					    TREE_READONLY (arg),
+					    TREE_THIS_VOLATILE (arg));
 	}
 
       argtype = build_pointer_type (argtype);
@@ -4585,7 +4585,7 @@ build_conditional_expr (ifexp, op1, op2)
       else if (TREE_READONLY_DECL_P (op2))
 	op2 = decl_constant_value (op2);
       if (type1 != type2)
-	type1 = build_type_variant
+	type1 = c_build_type_variant
 			(type1,
 			 TREE_READONLY (op1) || TREE_READONLY (op2),
 			 TREE_THIS_VOLATILE (op1) || TREE_THIS_VOLATILE (op2));
@@ -4634,7 +4634,7 @@ build_conditional_expr (ifexp, op1, op2)
       if (type1 == type2)
 	result_type = type1;
       else
-	result_type = build_type_variant
+	result_type = c_build_type_variant
 			(type1,
 			 TREE_READONLY (op1) || TREE_READONLY (op2),
 			 TREE_THIS_VOLATILE (op1) || TREE_THIS_VOLATILE (op2));
@@ -7139,10 +7139,14 @@ c_expand_return (retval)
     }
 
   current_function_returns_value = returns_value;
+#if 0
+  /* These wind up after the BARRIER, which causes problems for
+     expand_end_binding.  What purpose were they supposed to serve?  */
   if (original_result_rtx)
     use_variable (original_result_rtx);
   if (use_temp)
     use_variable (DECL_RTL (DECL_RESULT (current_function_decl)));
+#endif
 
   /* One way to clear out cleanups that EXPR might
      generate.  Note that this code will really be
