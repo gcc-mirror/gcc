@@ -147,7 +147,7 @@ _mm_store_sd (double *__P, __m128d __A)
   __builtin_ia32_storesd (__P, (__v2df)__A);
 }
 
-/* Store the lower DPFP value acrosd two words.  */
+/* Store the lower DPFP value across two words.  */
 static __inline void
 _mm_store1_pd (double *__P, __m128d __A)
 {

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
  * Here's the reason why. If we dont define them, and we dont define them
  * to always emit to the same section, the default is to emit to "named"
  * ctors and dtors sections. This would be great if we could use GNU ld,
- * but we can't. The native linker could possibly be trained to coallesce
+ * but we can't. The native linker could possibly be trained to coalesce
  * named ctors sections, but that hasn't been done either. So if we don't
  * define these, many C++ ctors and dtors dont get run, because they never
  * wind up in the ctors/dtors arrays.

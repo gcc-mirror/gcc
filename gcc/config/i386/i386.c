@@ -2608,7 +2608,7 @@ contains_128bit_aligned_vector_p (type)
 
   if (AGGREGATE_TYPE_P (type))
     {
-      /* Walk the agregates recursivly.  */
+      /* Walk the agregates recursively.  */
       if (TREE_CODE (type) == RECORD_TYPE
 	  || TREE_CODE (type) == UNION_TYPE
 	  || TREE_CODE (type) == QUAL_UNION_TYPE)
@@ -9597,9 +9597,9 @@ ix86_expand_carry_flag_compare (code, op0, op1, pop)
 	  code = swap_condition (code);
 	}
 
-      /* Try to expand the comparsion and verify that we end up with carry flag
-	 based comparsion.  This is fails to be true only when we decide to expand
-	 comparsion using arithmetic that is not too common scenario.  */
+      /* Try to expand the comparison and verify that we end up with carry flag
+	 based comparison.  This is fails to be true only when we decide to expand
+	 comparison using arithmetic that is not too common scenario.  */
       start_sequence ();
       compare_op = ix86_expand_fp_compare (code, op0, op1, NULL_RTX,
 					   &second_test, &bypass_test);
@@ -12217,7 +12217,7 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
 	     floating unit pipeline preparation stages, the memory operands
 	     for floating point are cheaper. 
 
-	     ??? For Athlon it the difference is most propbably 2.  */
+	     ??? For Athlon it the difference is most probably 2.  */
 	  if (unit == UNIT_INTEGER || unit == UNIT_UNKNOWN)
 	    loadcost = 3;
 	  else
@@ -15690,7 +15690,7 @@ x86_function_profiler (file, labelno)
 
 /* We don't have exact information about the insn sizes, but we may assume
    quite safely that we are informed about all 1 byte insns and memory
-   address sizes.  This is enought to elliminate unnecesary padding in
+   address sizes.  This is enough to eliminate unnecessary padding in
    99% of cases.  */
 
 static int
@@ -15735,7 +15735,7 @@ min_insn_size (insn)
     return 2;
 }
 
-/* AMD K8 core misspredicts jumps when there are more than 3 jumps in 16 byte
+/* AMD K8 core mispredicts jumps when there are more than 3 jumps in 16 byte
    window.  */
 
 static void
@@ -15839,7 +15839,7 @@ ix86_reorg ()
 	    && ((GET_CODE (prev) == JUMP_INSN && any_condjump_p (prev))
 		|| GET_CODE (prev) == CALL_INSN))
 	  replace = true;
-	/* Empty functions get branch misspredict even when the jump destination
+	/* Empty functions get branch mispredict even when the jump destination
 	   is not visible to us.  */
 	if (!prev && cfun->function_frequency > FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
 	  replace = true;

@@ -1248,7 +1248,7 @@ do {									\
 #define RETURN_IN_MEMORY(TYPE) \
   ix86_return_in_memory (TYPE)
 
-/* This is overriden by <cygwin.h>.  */
+/* This is overridden by <cygwin.h>.  */
 #define MS_AGGREGATE_RETURN 0
 
 
