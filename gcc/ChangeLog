@@ -1,3 +1,8 @@
+2001-06-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (DECL_SOURCE_FILE): Improve documentation.
+	(DECL_SOURCE_LINE): Likewise.
+
 2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/alpha/elf.h (MAKE_DECL_ONE_ONLY): Copy definition
