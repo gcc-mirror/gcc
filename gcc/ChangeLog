@@ -1,3 +1,8 @@
+Wed Jan 27 19:31:36 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* function.c (purge_addressof_1): Handle case when a register
+	has been used in a wider mode.
+
 Wed Jan 27 11:58:18 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* cpplib.h (cpp_notice): Add prototype.
