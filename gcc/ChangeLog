@@ -1,3 +1,9 @@
+2004-09-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/16566
+	* c-typeck.c (build_component_ref): Don't special-case
+	COMPOUND_EXPR.
+
 2004-09-22  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
 
 	PR target/15583
