@@ -1,3 +1,10 @@
+2004-08-20  Daniel Jacobowitz  <dan@debian.org>
+
+	* regrename.c (kill_value_one_regno): Renamed from kill_value_regno.
+	(kill_value_regno): New function, derived from kill_value.
+	(kill_value): Update.
+	(copyprop_hardreg_forward_1): Update call to kill_value_regno.
+
 2004-08-20  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/17111
