@@ -1,3 +1,8 @@
+2003-12-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10771
+	* g++.dg/template/error5.C: New test.
+
 2003-12-02  David Ung  <davidu@mips.com>
 
 	* gcc.dg/compat/vector-check.h: Corrected type for var 

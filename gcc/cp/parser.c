@@ -1702,6 +1702,8 @@ static void cp_parser_check_type_definition
   (cp_parser *);
 static void cp_parser_check_for_definition_in_return_type
   (tree, int);
+static void cp_parser_check_for_invalid_template_id
+  (cp_parser *, tree);
 static tree cp_parser_non_constant_expression
   (const char *);
 static bool cp_parser_diagnose_invalid_type_name
@@ -1811,6 +1813,54 @@ cp_parser_check_for_definition_in_return_type (tree declarator,
       && TREE_CODE (declarator) == CALL_EXPR 
       && declares_class_or_enum & 2)
     error ("new types may not be defined in a return type");
+}
+
+/* A type-specifier (TYPE) has been parsed which cannot be followed by
+   "<" in any valid C++ program.  If the next token is indeed "<",
+   issue a message warning the user about what appears to be an
+   invalid attempt to form a template-id.  */
+
+static void
+cp_parser_check_for_invalid_template_id (cp_parser* parser, 
+					 tree type)
+{
+  ptrdiff_t start;
+  cp_token *token;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+    {
+      if (TYPE_P (type))
+	error ("`%T' is not a template", type);
+      else if (TREE_CODE (type) == IDENTIFIER_NODE)
+	error ("`%s' is not a template", IDENTIFIER_POINTER (type));
+      else
+	error ("invalid template-id");
+      /* Remember the location of the invalid "<".  */
+      if (cp_parser_parsing_tentatively (parser)
+	  && !cp_parser_committed_to_tentative_parse (parser))
+	{
+	  token = cp_lexer_peek_token (parser->lexer);
+	  token = cp_lexer_prev_token (parser->lexer, token);
+	  start = cp_lexer_token_difference (parser->lexer,
+					     parser->lexer->first_token,
+					     token);
+	}
+      else
+	start = -1;
+      /* Consume the "<".  */
+      cp_lexer_consume_token (parser->lexer);
+      /* Parse the template arguments.  */
+      cp_parser_enclosed_template_argument_list (parser);
+      /* Permanently remove the invalid template arugments so that
+	 this error message is not issued again.  */
+      if (start >= 0)
+	{
+	  token = cp_lexer_advance_token (parser->lexer,
+					  parser->lexer->first_token,
+					  start);
+	  cp_lexer_purge_tokens_after (parser->lexer, token);
+	}
+    }
 }
 
 /* Issue an error message about the fact that THING appeared in a
@@ -8520,17 +8570,8 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
   /* There is no valid C++ program where a non-template type is
      followed by a "<".  That usually indicates that the user thought
      that the type was a template.  */
-  if (type && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
-    {
-      error ("`%T' is not a template", TREE_TYPE (type));
-      /* Consume the "<".  */
-      cp_lexer_consume_token (parser->lexer);
-      /* Parse the template arguments.  */
-      cp_parser_enclosed_template_argument_list (parser);
-      /* Attempt to recover by using the basic type, ignoring the
-	 template arguments.  */
-      return type;
-    }
+  if (type)
+    cp_parser_check_for_invalid_template_id (parser, TREE_TYPE (type));
 
   return type;
 }
@@ -8827,6 +8868,11 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
     }
   if (tag_type != enum_type)
     cp_parser_check_class_key (tag_type, type);
+
+  /* A "<" cannot follow an elaborated type specifier.  If that
+     happens, the user was probably trying to form a template-id.  */
+  cp_parser_check_for_invalid_template_id (parser, type);
+
   return type;
 }
 
@@ -11663,6 +11709,8 @@ cp_parser_class_head (cp_parser* parser,
     }
 
   pop_deferring_access_checks ();
+
+  cp_parser_check_for_invalid_template_id (parser, id);
 
   /* If it's not a `:' or a `{' then we can't really be looking at a
      class-head, since a class-head only appears as part of a
