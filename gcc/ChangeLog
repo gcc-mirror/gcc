@@ -1,3 +1,19 @@
+2001-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-parse.in (all_prefix_attributes): New variable.
+	(PUSH_DECLSPEC_STACK, POP_DECLSPEC_STACK): New macros.
+	(maybe_resetattrs): New production.
+	(c_parse_init, datadef, fndef, datadecl, setspecs, setattrs, decl,
+	maybe_type_quals_setattrs, initdecls, notype_initdecls, initdcl,
+	notype_initdcl, nested_function, notype_nested_function,
+	component_decl, components, components_notype,
+	component_declarator, component_notype_declarator,
+	absdcl_maybe_attribute, parm, firstparm, setspecs_fp, ivar_decl,
+	ivars, mydecl, myparm): Update.  Avoid prefix attributes just
+	after a comma being applied to more than one declarator.
+	* doc/extend.texi (Attribute Syntax): Update.  Remove
+	documentation of bugs that are no longer present.
+
 2001-07-13  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.h: Change TUNE_MIPS* options to use

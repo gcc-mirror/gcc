@@ -2188,15 +2188,12 @@ other specifiers or qualifiers.
 An attribute specifier list may appear immediately before a declarator
 (other than the first) in a comma-separated list of declarators in a
 declaration of more than one identifier using a single list of
-specifiers and qualifiers.  At present, such attribute specifiers apply
-not only to the identifier before whose declarator they appear, but to
-all subsequent identifiers declared in that declaration, but in future
-they may apply only to that single identifier.  For example, in
+specifiers and qualifiers.  Such attribute specifiers apply
+only to the identifier before whose declarator they appear.  For example, in
 @code{__attribute__((noreturn)) void d0 (void),
 __attribute__((format(printf, 1, 2))) d1 (const char *, ...), d2
 (void)}, the @code{noreturn} attribute applies to all the functions
-declared; the @code{format} attribute should only apply to @code{d1},
-but at present applies to @code{d2} as well (and so causes an error).
+declared; the @code{format} attribute only applies to @code{d1}.
 
 An attribute specifier list may appear immediately before the comma,
 @code{=} or semicolon terminating the declaration of an identifier other
@@ -2227,12 +2224,10 @@ ignored.
 
 An attribute specifier list may appear at the start of a nested
 declarator.  At present, there are some limitations in this usage: the
-attributes apply to the identifier declared, and to all subsequent
-identifiers declared in that declaration (if it includes a
-comma-separated list of declarators), rather than to a specific
+attributes apply to the identifier declared, rather than to a specific
 declarator.  When attribute specifiers follow the @code{*} of a pointer
-declarator, they must presently follow any type qualifiers present, and
-cannot be mixed with them.  The following describes intended future
+declarator, they may be mixed with any type qualifiers present.
+The following describes intended future
 semantics which make this syntax more useful only.  It will make the
 most sense if you are familiar with the formal specification of
 declarators in the ISO C standard.
