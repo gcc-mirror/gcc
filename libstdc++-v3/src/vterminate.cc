@@ -55,11 +55,10 @@ namespace __gnu_cxx
 	  int status = -1;
 	  char *dem = 0;
 	  
-	  // Disabled until __cxa_demangle gets the runtime GPL exception.
 	  dem = __cxa_demangle(name, 0, 0, &status);
 
-	  printf("terminate called after throwing a `%s'\n", 
-		 status == 0 ? dem : name);
+	  fprintf(stderr, "terminate called after throwing a `%s'\n", 
+		  status == 0 ? dem : name);
 
 	  if (status == 0)
 	    free(dem);

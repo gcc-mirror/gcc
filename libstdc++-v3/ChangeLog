@@ -1,3 +1,8 @@
+2002-12-18  Jason Merrill  <jason@redhat.com>
+
+	* src/vterminate.cc (__verbose_terminate_handler): Send
+	diagnostics to stderr.
+
 2002-12-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.in: Define with_target_subdir and with_build_subdir
