@@ -1540,11 +1540,11 @@ create_param_decl (tree param_name, tree param_type, int readonly)
 {
   tree param_decl = build_decl (PARM_DECL, param_name, param_type);
 
-  /* Honor the PROMOTE_PROTOTYPES target macro, as not doing so can
+  /* Honor targetm.calls.promote_prototypes(), as not doing so can
      lead to various ABI violations.  */
-#ifdef PROMOTE_PROTOTYPES
-  if ((TREE_CODE (param_type) == INTEGER_TYPE
-       || TREE_CODE (param_type) == ENUMERAL_TYPE)
+  if (targetm.calls.promote_prototypes (param_type)
+      && (TREE_CODE (param_type) == INTEGER_TYPE
+	  || TREE_CODE (param_type) == ENUMERAL_TYPE)
       && TYPE_PRECISION (param_type) < TYPE_PRECISION (integer_type_node))
     {
       /* We have to be careful about biased types here.  Make a subtype
@@ -1562,7 +1562,6 @@ create_param_decl (tree param_name, tree param_type, int readonly)
       else
 	param_type = integer_type_node;
     }
-#endif
 
   DECL_ARG_TYPE (param_decl) = param_type;
   DECL_ARG_TYPE_AS_WRITTEN (param_decl) = param_type;

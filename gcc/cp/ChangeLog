@@ -1,3 +1,8 @@
+2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c (type_passed_as): Replace PROMOTE_PROTOTYPES with
+	targetm.calls.promote_prototypes.
+
 2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR middle-end/13750

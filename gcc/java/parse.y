@@ -72,6 +72,7 @@ definitions and other extensions.  */
 #include "debug.h"
 #include "tree-inline.h"
 #include "cgraph.h"
+#include "target.h"
 
 /* Local function prototypes */
 static char *java_accstring_lookup (int);
@@ -7990,7 +7991,7 @@ start_complete_expand_method (tree mdecl)
       /* TREE_CHAIN (tem) will change after pushdecl. */
       tree next = TREE_CHAIN (tem);
       tree type = TREE_TYPE (tem);
-      if (PROMOTE_PROTOTYPES
+      if (targetm.calls.promote_prototypes (type)
 	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
 	  && INTEGRAL_TYPE_P (type))
 	type = integer_type_node;
