@@ -2986,6 +2986,7 @@ do {									\
 {"fp_zero_operand", {CONST_DOUBLE}},					\
 {"intreg_operand", {SUBREG, REG}},					\
 {"fcc_reg_operand", {REG}},						\
+{"fcc0_reg_operand", {REG}},						\
 {"icc_or_fcc_reg_operand", {REG}},					\
 {"restore_operand", {REG}},						\
 {"call_operand", {MEM}},						\
@@ -3003,6 +3004,7 @@ do {									\
 {"eq_or_neq", {EQ, NE}},						\
 {"normal_comp_operator", {GE, GT, LE, LT, GTU, LEU}},			\
 {"noov_compare_op", {NE, EQ, GE, GT, LE, LT, GEU, GTU, LEU, LTU}},	\
+{"noov_compare64_op", {NE, EQ, GE, GT, LE, LT, GEU, GTU, LEU, LTU}},	\
 {"v9_regcmp_op", {EQ, NE, GE, LT, LE, GT}},				\
 {"extend_op", {SIGN_EXTEND, ZERO_EXTEND}},				\
 {"cc_arithop", {AND, IOR, XOR}},					\
