@@ -1,3 +1,8 @@
+Thu Feb 26 05:59:01 1998  Philippe De Muyter  <phdm@macqel.be>
+
+	* fixincludes (sys/limits.h): Fix a nested comment problem with
+	HUGE_VAL definition on sysV68 R3V7.1.
+
 Wed Feb 25 21:09:38 1998  Philippe De Muyter  <phdm@macqel.be>
 
 	* toplev.c (TICKS_PER_SECOND): Renamed from CLOCKS_PER_SECOND.
