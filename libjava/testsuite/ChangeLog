@@ -1,5 +1,7 @@
 2000-05-23  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.compile/PR238.java: New file.  For PR gcj/238.
+
 	* libjava.lang/stringconst.out: New file.
 	* libjava.lang/stringconst.java: New file.
 
