@@ -1088,6 +1088,9 @@ indirect_operand (op, mode)
 		 - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (inner))));
 #endif
 
+      if (mode != VOIDmode && GET_MODE (op) != mode)
+	return 0;
+
       /* The only way that we can have a general_operand as the resulting
 	 address is if OFFSET is zero and the address already is an operand
 	 or if the address is (plus Y (const_int -OFFSET)) and Y is an
