@@ -1,3 +1,28 @@
+Sun Nov 29 16:36:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* 1750a.c: Use gen_rtx_FOO and GEN_INT, not gen_rtx; include system.h.
+	* a29k.c, alpha.c, arc.c, arm.c, clipper.c, convex.c: Likewise.
+	* dsp16xx.c, fx80.c, gmicro.c, h8300.c, i386.c, i860.c: Likewise.
+	* i960.c, m32r.c, m68k.c, m88k.c, mips.c, mn10200.c: Likewise.
+	* mn10300.c, ns32k.c, pa.c, pdp11.c, pyr.c, romp.c: Likewise.
+	* rs6000.c, sh.c, sparc.c, spur.c, tahoe.c, v850.c: Likewise.
+	* vax.c, we32k.c: Likewise.
+	* elxsi.c, i370.c: Include system.h
+	* gofast.h: Use gen_rtx_FOO and GEN_INT instead of gen_rtx.
+	* 1750a.{md,h}, a29k{md,h}, alpha.{md,h}, alpha/vms.h: Likewise.
+	* arc.{md,h}, arm.{md,h}, clipper.{md,h}, convex.{md,h}: Likewise.
+	* dsp16xx.{md,h}, elxsi.h, fx80.{md,h}, gmicro.{md,h}: Likewise.
+	* h8300.h, i370.{md,h}, i386.{md,h}, i386/cygwin32.h: Likewise.
+	* i386/osfrose.h, i386/win-nt.h, i860.{md,h}, i960.{md,h}: Likewise.
+	* m32r.{md,h}, m68k.{md,h}, m68k/a-ux.h, m68k/crds.h: Likewise.
+	* m68k/isi.h, m68k/linux.h, m68k/lynx.h, m68k/m68kemb.h: Likewise.
+	* m68k/m68kv4.h, m68k/mot3300.h, m68k/news.h, m68k/sun3.h: Likewise.
+	* m88k.{md,h}, mips.{md,h}, mips/abi64.h, mn10200.{md,h}: Likewise.
+	* mn10300.{md,h}, ns32k.{md,h}, pa.{md,h}, pyr.{md,h}: Likewise.
+	* romp.{md,h}, rs6000.{md,h}, sh.{md,h}, sparc.{md.h}: Likewise.
+	* spur{md,h}, tahoe.{md,h}, v850.{md,h}, vax.{md,h}: Likewise.
+	* we32k.{md,h}: Likewise.
+
 Sat Nov 28 19:32:33 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rtl.def (INLINE_HEADER): Fix type error found by gen_rtx_FOO changes.
