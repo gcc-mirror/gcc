@@ -898,7 +898,7 @@ expand_member_init (exp, name, init)
 
   if (name && TREE_CODE (name) == TYPE_DECL)
     {
-      basetype = TREE_TYPE (name);
+      basetype = TYPE_MAIN_VARIANT (TREE_TYPE (name));
       name = DECL_NAME (name);
     }
 

@@ -4748,6 +4748,10 @@ instantiate_class_template (type)
 	  {
 	    pending_statics = perm_tree_cons (NULL_TREE, r, pending_statics);
 	    /* Perhaps we should do more of grokfield here.  */
+	    if (DECL_DEFINED_IN_CLASS_P (r))
+	      /* Set up DECL_INITIAL, since tsubst doesn't.  */
+	      DECL_INITIAL (r) = tsubst_expr (DECL_INITIAL (t), args,
+					      NULL_TREE);
 	    start_decl_1 (r);
 	    DECL_IN_AGGR_P (r) = 1;
 	    DECL_EXTERNAL (r) = 1;
