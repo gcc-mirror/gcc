@@ -901,7 +901,7 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 # Use the genmultilib shell script to generate the information the gcc
 # driver program needs to select the library directory based on the
 # switches.
-multilib.h: $(srcdir)/genmultilib config.status
+multilib.h: $(srcdir)/genmultilib Makefile
 	$(SHELL) $(srcdir)/genmultilib "$(MULTILIB_OPTIONS)" \
 	  "$(MULTILIB_DIRNAMES)" "$(MULTILIB_MATCHES)" > multilib.h
 
