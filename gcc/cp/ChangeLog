@@ -1,3 +1,7 @@
+2001-06-07  Phil Edwards  <pme@sources.redhat.com>
+
+	* lang-specs.h:  Move -D_GNU_SOURCE to config/linux.h.
+
 2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/2914
