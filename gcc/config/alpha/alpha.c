@@ -1214,6 +1214,7 @@ output_prolog (file, size)
   HOST_WIDE_INT reg_offset = vars_size + current_function_outgoing_args_size;
   HOST_WIDE_INT start_reg_offset = reg_offset;
   HOST_WIDE_INT actual_start_reg_offset = start_reg_offset;
+  int int_reg_save_area_size = 0;
   rtx insn;
   int reg_offset_base_reg = 30;
   unsigned reg_mask = 0;
@@ -1358,6 +1359,7 @@ output_prolog (file, size)
       reg_mask |= 1 << 26;
       fprintf (file, "\tstq $26,%d($%d)\n", reg_offset, reg_offset_base_reg);
       reg_offset += 8;
+      int_reg_save_area_size += 8;
     }
 
   /* Now save any other used integer registers required to be saved.  */
@@ -1368,6 +1370,7 @@ output_prolog (file, size)
 	fprintf (file, "\tstq $%d,%d($%d)\n",
 		 i, reg_offset, reg_offset_base_reg);
 	reg_offset += 8;
+	int_reg_save_area_size += 8;
       }
 
   /* Print the register mask and do floating-point saves.  */
@@ -1390,7 +1393,8 @@ output_prolog (file, size)
 
   /* Print the floating-point mask, if we've saved any fp register.  */
   if (reg_mask)
-    fprintf (file, "\t.fmask 0x%x,%d\n", reg_mask, actual_start_reg_offset);
+    fprintf (file, "\t.fmask 0x%x,%d\n", reg_mask,
+	     actual_start_reg_offset - frame_size + int_reg_save_area_size);
 
   /* If we need a frame pointer, set it from the stack pointer.  Note that
      this must always be the last instruction in the prologue.  */
