@@ -81,7 +81,7 @@ rs6000_override_options ()
   /* Simplify the entries below by making a mask for any POWER
      variant and any PowerPC variant.  */
 
-#define POWER_MASKS (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE)
+#define POWER_MASKS (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING)
 #define POWERPC_MASKS (MASK_POWERPC | MASK_PPC_GPOPT \
 		       | MASK_PPC_GFXOPT | MASK_POWERPC64)
 #define POWERPC_OPT_MASKS (MASK_PPC_GPOPT | MASK_PPC_GFXOPT)
@@ -95,25 +95,25 @@ rs6000_override_options ()
     } processor_target_table[]
       = {{"common", PROCESSOR_COMMON, 0, POWER_MASKS | POWERPC_MASKS},
 	 {"power", PROCESSOR_POWER,
-	    MASK_POWER | MASK_MULTIPLE,
+	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"powerpc", PROCESSOR_POWERPC,
 	    MASK_POWERPC | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"rios", PROCESSOR_RIOS1,
-	    MASK_POWER | MASK_MULTIPLE,
+	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"rios1", PROCESSOR_RIOS1,
-	    MASK_POWER | MASK_MULTIPLE,
+	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"rsc", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_MULTIPLE,
+	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"rsc1", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_MULTIPLE,
+	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"rios2", PROCESSOR_RIOS2,
-	    MASK_POWER | MASK_MULTIPLE | MASK_POWER2,
+	    MASK_POWER | MASK_MULTIPLE | MASK_STRING | MASK_POWER2,
 	    POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"403", PROCESSOR_PPC403,
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
@@ -125,13 +125,13 @@ rs6000_override_options ()
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"mpc601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"ppc601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"603", PROCESSOR_PPC603,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
@@ -155,6 +155,7 @@ rs6000_override_options ()
   int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
   int multiple = TARGET_MULTIPLE;	/* save current -mmultiple/-mno-multiple status */
+  int string   = TARGET_STRING;		/* save current -mstring/-mno-string status */
 
   profile_block_flag = 0;
 
@@ -185,6 +186,11 @@ rs6000_override_options ()
   if (TARGET_MULTIPLE_SET)
     target_flags = (target_flags & ~MASK_MULTIPLE) | multiple;
 
+  /* If -mstring or -mno-string was explicitly used, don't
+     override with the processor default */
+  if (TARGET_STRING_SET)
+    target_flags = (target_flags & ~MASK_STRING) | multiple;
+
   /* Don't allow -mmultiple or -mstring on little endian systems, because the
      hardware doesn't support the instructions used in little endian mode */
   if (!BYTES_BIG_ENDIAN)
@@ -199,7 +205,8 @@ rs6000_override_options ()
       if (TARGET_STRING)
 	{
 	  target_flags &= ~MASK_STRING;
-	  warning ("-mstring is not supported on little endian systems");
+	  if (TARGET_STRING_SET)
+	    warning ("-mstring is not supported on little endian systems");
 	}
     }
 
