@@ -338,15 +338,7 @@ init_expr_once (void)
 void
 init_expr (void)
 {
-  cfun->expr = ggc_alloc (sizeof (struct expr_status));
-
-  pending_chain = 0;
-  pending_stack_adjust = 0;
-  stack_pointer_delta = 0;
-  inhibit_defer_pop = 0;
-  saveregs_value = 0;
-  apply_args_value = 0;
-  forced_labels = 0;
+  cfun->expr = ggc_alloc_cleared (sizeof (struct expr_status));
 }
 
 /* Small sanity check that the queue is empty at the end of a function.  */

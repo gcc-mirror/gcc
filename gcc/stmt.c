@@ -433,25 +433,7 @@ using_eh_for_cleanups (void)
 void
 init_stmt_for_function (void)
 {
-  cfun->stmt =ggc_alloc (sizeof (struct stmt_status));
-
-  /* We are not currently within any block, conditional, loop or case.  */
-  block_stack = 0;
-  stack_block_stack = 0;
-  loop_stack = 0;
-  case_stack = 0;
-  cond_stack = 0;
-  nesting_stack = 0;
-  nesting_depth = 0;
-
-  current_block_start_count = 0;
-
-  /* No gotos have been expanded yet.  */
-  goto_fixup_chain = 0;
-
-  /* We are not processing a ({...}) grouping.  */
-  expr_stmts_for_value = 0;
-  clear_last_expr ();
+  cfun->stmt = ggc_alloc_cleared (sizeof (struct stmt_status));
 }
 
 /* Record the current file and line.  Called from emit_line_note.  */
