@@ -3706,6 +3706,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
     {
       x = apply_distributive_law (x);
       code = GET_CODE (x);
+      op0_mode = VOIDmode;
     }
 
   /* If CODE is an associative operation not otherwise handled, see if we
