@@ -1,3 +1,12 @@
+2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (update_vtable_entry_for_fn): Prototype.
+
+	* pt.c (tsubst_decl): Initialize variables `argvec', `gen_tmpl'
+	and `tmpl'.
+
+	* search.c (dfs_build_inheritance_graph_order): Prototype.
+
 2000-05-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (special_function_kind): Add various kinds of
