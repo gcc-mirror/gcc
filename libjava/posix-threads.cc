@@ -24,6 +24,9 @@ details.  */
 #include <signal.h>
 #include <errno.h>
 #include <limits.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>	// To test for _POSIX_THREAD_PRIORITY_SCHEDULING
+#endif
 
 #include <gcj/cni.h>
 #include <jvm.h>
@@ -318,6 +321,7 @@ _Jv_ThreadDestroyData (_Jv_Thread_t *data)
 void
 _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio)
 {
+#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
   if (data->flags & FLAG_START)
     {
       struct sched_param param;
@@ -325,6 +329,7 @@ _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio)
       param.sched_priority = prio;
       pthread_setschedparam (data->thread, SCHED_RR, &param);
     }
+#endif
 }
 
 void
