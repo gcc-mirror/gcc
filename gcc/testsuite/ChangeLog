@@ -1,3 +1,7 @@
+2004-01-27  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* gcc.dg/arm-mmx-1.c: New test.
+
 2004-01-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/20040127-1.c: New test.
