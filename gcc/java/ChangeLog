@@ -1,3 +1,9 @@
+2001-01-05  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	From patha@softlab.ericsson.se:
+	* parse.y (switch_label): Use build, not build1, to construct 
+	DEFAULT_EXPR.
+
 2001-01-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* lang.c (lang_decode_option): Change -MA to -MP.
