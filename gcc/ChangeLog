@@ -1,3 +1,8 @@
+2003-10-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR optimization/12180
+	* c-objc-common.c (inline_forbidden_p): 
+
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR/12292

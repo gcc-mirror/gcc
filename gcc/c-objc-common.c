@@ -94,6 +94,8 @@ inline_forbidden_p (nodep, walk_subtrees, fn)
 	     arguments.  */
 	case BUILT_IN_VA_START:
 	case BUILT_IN_STDARG_START:
+	case BUILT_IN_NEXT_ARG:
+	case BUILT_IN_VA_END:
 #if 0
 	  /* Functions that need information about the address of the
              caller can't (shouldn't?) be inlined.  */
