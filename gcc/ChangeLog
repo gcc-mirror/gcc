@@ -1,3 +1,8 @@
+Sat Mar 21 07:47:04 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* unroll.c (verify_addresses): Use validate_replace_rtx.
+	(find_splittable_givs): If invalid address, show nothing same_insn.
+
 Fri Mar 20 10:24:12 1998  Philippe De Muyter  <phdm@macqel.be>
 
 	* fold-const.c (fold, case CONVERT_EXPR): Replace sign-extension of
