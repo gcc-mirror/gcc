@@ -2033,6 +2033,7 @@ ix86_prologue (do_rtl)
       else
 	{
 	  output_asm_insn ("push%L1 %1", xops); 
+#ifdef INCOMING_RETURN_ADDR_RTX
  	  if (dwarf2out_do_frame ())
  	    {
  	      char *l = dwarf2out_cfi_label ();
@@ -2042,10 +2043,13 @@ ix86_prologue (do_rtl)
  	      dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
  	      dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, - cfa_store_offset);
  	    }
+#endif
 
 	  output_asm_insn (AS2 (mov%L0,%0,%1), xops); 
+#ifdef INCOMING_RETURN_ADDR_RTX
  	  if (dwarf2out_do_frame ())
  	    dwarf2out_def_cfa ("", FRAME_POINTER_REGNUM, cfa_offset);
+#endif
 	}
     }
 
@@ -2061,6 +2065,7 @@ ix86_prologue (do_rtl)
       else 
 	{
 	  output_asm_insn (AS2 (sub%L0,%2,%0), xops);
+#ifdef INCOMING_RETURN_ADDR_RTX
  	  if (dwarf2out_do_frame ())
  	    {
  	      cfa_store_offset += tsize;
@@ -2070,6 +2075,7 @@ ix86_prologue (do_rtl)
  		  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
  		}
  	    }
+#endif
 	}
     }
   else 
@@ -2118,6 +2124,7 @@ ix86_prologue (do_rtl)
 	else
 	  {
 	    output_asm_insn ("push%L0 %0", xops);
+#ifdef INCOMING_RETURN_ADDR_RTX
  	    if (dwarf2out_do_frame ())
  	      {
  		char *l = dwarf2out_cfi_label ();
@@ -2131,6 +2138,7 @@ ix86_prologue (do_rtl)
 
  		dwarf2out_reg_save (l, regno, - cfa_store_offset);
  	      }
+#endif
  	  }
       }
 
