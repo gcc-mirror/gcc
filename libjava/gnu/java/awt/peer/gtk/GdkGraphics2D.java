@@ -47,6 +47,7 @@ import java.awt.image.renderable.*;
 
 import java.text.AttributedCharacterIterator;
 import java.util.Map;
+import java.util.Stack;
 import java.lang.Integer;
 import gnu.java.awt.ClasspathToolkit;
 import gnu.java.awt.peer.ClasspathFontPeer;
@@ -78,6 +79,8 @@ public class GdkGraphics2D extends Graphics2D
   private AffineTransform transform;
   private GtkComponentPeer component;
   private Font font;  
+
+  private Stack stateStack;
   
   native private int[] initState (GtkComponentPeer component);
   native private void initState (int width, int height);
@@ -122,33 +125,50 @@ public class GdkGraphics2D extends Graphics2D
       clip = new Rectangle (g.getClipBounds ());
 
     if (g.transform == null)
-      transform = null;
+      transform = AffineTransform.getTranslateInstance (0.5, 0.5);
     else
       transform = new AffineTransform (g.transform);
 
+    font = g.font;
     component = g.component;
     copyState (g);
 
     setColor (fg);
+    setBackground (bg);
+    setPaint (paint);
+    setStroke (stroke);
     setClip (clip);
     setTransform (transform);
+    stateStack = new Stack();
   }
 
   GdkGraphics2D (int width, int height)
   {
     initState (width, height);
-    bg = Color.black;
-    fg = Color.black;
-    transform = new AffineTransform ();
+
+    setColor(Color.black);
+    setBackground (Color.black);
+    setPaint (getColor());
+    setFont (new Font("SansSerif", Font.PLAIN, 12));
+    setTransform (AffineTransform.getTranslateInstance (0.5, 0.5));
+    setStroke (new BasicStroke ());
+
+    stateStack = new Stack();
   }
 
   GdkGraphics2D (GtkComponentPeer component)
   {
     this.component = component;
     int rgb[] = initState (component);
-    fg = new Color (rgb[0], rgb[1], rgb[2]);
-    bg = new Color (rgb[3], rgb[4], rgb[5]);
-    transform = new AffineTransform ();
+
+    setColor (new Color (rgb[0], rgb[1], rgb[2]));
+    setBackground (new Color (rgb[3], rgb[4], rgb[5]));
+    setPaint (getColor());
+    setFont (new Font("SansSerif", Font.PLAIN, 12));
+    setTransform (AffineTransform.getTranslateInstance (0.5, 0.5));
+    setStroke (new BasicStroke ());
+
+    stateStack = new Stack ();
   }
 
 
@@ -160,7 +180,7 @@ public class GdkGraphics2D extends Graphics2D
   private native void gdkDrawDrawable (GdkGraphics2D other, int x, int y);
 
   // drawing utility methods
-  private native void drawPixels (int pixels[], int w, int h, int stride);
+  private native void drawPixels (int pixels[], int w, int h, int stride, double i2u[]);
   private native void setTexturePixels (int pixels[], int w, int h, int stride);
   private native void setGradient (double x1, double y1,
                                    double x2, double y2,
@@ -171,13 +191,10 @@ public class GdkGraphics2D extends Graphics2D
   // simple passthroughs to cairo
   private native void cairoSave ();
   private native void cairoRestore ();
-  private native void cairoSetMatrix (double m00, double m10, 
-                                      double m01, double m11,
-                                      double m02, double m12);
+  private native void cairoSetMatrix (double m[]);
   private native void cairoSetFont (GdkClasspathFontPeer peer);
   private native void cairoShowGlyphs (int codes[],
-                                       float positions[],
-                                       int nglyphs);
+                                       float positions[]);
   private native void cairoSetOperator (int cairoOperator);
   private native void cairoSetRGBColor (double red, double green, double blue);
   private native void cairoSetAlpha (double alpha);
@@ -187,20 +204,17 @@ public class GdkGraphics2D extends Graphics2D
   private native void cairoSetLineJoin (int cairoLineJoin);
   private native void cairoSetDash (double dashes[], int ndash, double offset);
   private native void cairoSetMiterLimit (double limit);
-  private native void cairoTranslate (double tx, double ty);
-  private native void cairoScale (double sx, double sy);
-  private native void cairoRotate (double angle);
   private native void cairoNewPath ();
   private native void cairoMoveTo (double x, double y);
   private native void cairoLineTo (double x, double y);
   private native void cairoCurveTo (double x1, double y1,
-                                 double x2, double y2,
-                                 double x3, double y3);  
+                                    double x2, double y2,
+                                    double x3, double y3);  
   private native void cairoRelMoveTo (double dx, double dy);
   private native void cairoRelLineTo (double dx, double dy);
   private native void cairoRelCurveTo (double dx1, double dy1,
-                                    double dx2, double dy2,
-                                    double dx3, double dy3);
+                                       double dx2, double dy2,
+                                       double dx3, double dy3);
   private native void cairoRectangle (double x, double y, 
                                    double width, double height);
   private native void cairoClosePath ();
@@ -212,6 +226,51 @@ public class GdkGraphics2D extends Graphics2D
   /////////////////////////////////////////////
   ////// General Drawing Support Methods //////
   /////////////////////////////////////////////
+
+    private class DrawState
+    {
+	private Paint paint;
+	private Stroke stroke;
+	private Color fg;
+	private Color bg;
+	private Shape clip;
+	private AffineTransform transform;
+	private Font font;  
+	DrawState (GdkGraphics2D g)
+	{
+	    this.paint = g.paint;
+	    this.stroke = g.stroke;
+	    this.fg = g.fg;
+	    this.bg = g.bg;
+	    this.clip = g.clip;
+	    if (g.transform != null)
+		this.transform = (AffineTransform) g.transform.clone();
+	    this.font = g.font;
+	}
+	public void restore(GdkGraphics2D g)
+	{
+	    g.paint = this.paint;
+	    g.stroke = this.stroke;
+	    g.fg = this.fg;
+	    g.bg = this.bg;
+	    g.clip = this.clip;
+	    g.transform = this.transform;
+	    g.font = this.font;
+	}
+    }
+    
+    private void stateSave ()
+    {
+	stateStack.push (new DrawState (this));
+	cairoSave ();
+    }
+
+    private void stateRestore ()
+    {
+	((DrawState)(stateStack.pop ())).restore (this);
+	cairoRestore ();
+    }
+
 
   double x;
   double y;
@@ -288,7 +347,7 @@ public class GdkGraphics2D extends Graphics2D
         return;
       }
 
-    cairoSave ();
+    stateSave ();
     cairoNewPath ();
     if (s instanceof Rectangle2D)
       {
@@ -298,12 +357,12 @@ public class GdkGraphics2D extends Graphics2D
     else      
       walkPath (s.getPathIterator (null));
     cairoStroke ();
-    cairoRestore ();
+    stateRestore ();
   }
 
-  public void fill(Shape s)
+  public void fill (Shape s)
   {
-    cairoSave();
+    stateSave();
     cairoNewPath ();
     if (s instanceof Rectangle2D)
       {
@@ -313,23 +372,40 @@ public class GdkGraphics2D extends Graphics2D
     else      
       walkPath (s.getPathIterator (null));
     cairoFill ();
-    cairoRestore ();
+    stateRestore ();
   }
 
   public void clip (Shape s)
   {
-    clip = s;
-    cairoNewPath ();
-    if (s instanceof Rectangle2D)
-      {
-        Rectangle2D r = (Rectangle2D)s;
-        cairoRectangle (r.getX (), r.getY (), 
-                        r.getWidth (), r.getHeight ());
-      }
-    else      
-      walkPath (s.getPathIterator (null));
-    cairoClosePath ();
-    cairoClip ();
+      // update it
+
+      if (clip == null || s == null)
+	  clip = s;
+      else if (s instanceof Rectangle2D
+	       && clip instanceof Rectangle2D)
+	  {
+	      Rectangle2D r = (Rectangle2D)s;
+	      Rectangle2D curr = (Rectangle2D)clip;
+	      clip = curr.createIntersection (r);
+	  }
+      else
+	  throw new UnsupportedOperationException ();
+
+      // draw it
+      if (clip != null)
+	  {
+	      cairoNewPath ();
+	      if (clip instanceof Rectangle2D)
+		  {
+		      Rectangle2D r = (Rectangle2D)clip;
+		      cairoRectangle (r.getX (), r.getY (), 
+				      r.getWidth (), r.getHeight ());
+		  }
+	      else
+		  walkPath (clip.getPathIterator (null));
+	      cairoClosePath ();
+	      cairoClip ();
+	  }
   }
 
   public Paint getPaint ()
@@ -339,11 +415,14 @@ public class GdkGraphics2D extends Graphics2D
 
   public AffineTransform getTransform ()
   {
-    return transform;
+      return (AffineTransform) transform.clone ();
   }
 
   public void setPaint (Paint p)
   {
+    if (paint == null)
+        return;
+      
     paint = p;
     if (paint instanceof Color)
       {
@@ -385,7 +464,7 @@ public class GdkGraphics2D extends Graphics2D
       {
         double m[] = new double[6];
         transform.getMatrix (m);
-        cairoSetMatrix (m[0], m[1], m[2], m[3], m[4], m[5]);
+        cairoSetMatrix (m);
       }
   }
 
@@ -400,37 +479,32 @@ public class GdkGraphics2D extends Graphics2D
 
   public void rotate(double theta)
   {
-    if (transform != null)
-      transform.rotate (theta);
-    cairoRotate (theta);
+    transform (AffineTransform.getRotateInstance (theta));
   }
 
   public void rotate(double theta, double x, double y)
   {
-    if (transform != null)
-      transform.rotate (theta, x, y);
-    cairoTranslate (x, y);
-    cairoRotate (theta);
-    cairoTranslate (-x, -y);
+    transform (AffineTransform.getRotateInstance (theta, x, y));
   }
 
   public void scale(double sx, double sy)
   {
-    if (transform != null)
-      transform.scale (sx, sy);
-    cairoScale (sx, sy);
+    transform (AffineTransform.getScaleInstance (sx, sy));
   }
 
   public void translate (double tx, double ty)
   {
-    if (transform != null)
-      transform.translate (tx, ty);
-    cairoTranslate (tx, ty);
+    transform (AffineTransform.getTranslateInstance (tx, ty));
   }
 
   public void translate (int x, int y)
   {
     translate ((double) x, (double) y);
+  }
+
+  public void shear(double shearX, double shearY)
+  {
+    transform (AffineTransform.getShearInstance (shearX, shearY));
   }
 
   public Stroke getStroke()
@@ -445,7 +519,7 @@ public class GdkGraphics2D extends Graphics2D
       {
         BasicStroke bs = (BasicStroke) stroke;
         cairoSetLineCap (bs.getEndCap());
-        cairoSetLineWidth (bs.getLineWidth());
+        cairoSetLineWidth (bs.getLineWidth() / 2.0);
         cairoSetLineJoin (bs.getLineJoin());
         cairoSetMiterLimit (bs.getMiterLimit());
         float dashes[] = bs.getDashArray();
@@ -467,7 +541,7 @@ public class GdkGraphics2D extends Graphics2D
 
   public void setPaintMode () 
   { 
-    setComposite (java.awt.AlphaComposite.Xor); 
+    setComposite (java.awt.AlphaComposite.SrcOver); 
   }
 
   public void setXORMode (Color c) 
@@ -478,6 +552,7 @@ public class GdkGraphics2D extends Graphics2D
   public void setColor (Color c)
   {
     fg = c;
+    paint = c;
     cairoSetRGBColor (fg.getRed() / 255.0, 
                       fg.getGreen() / 255.0, 
                       fg.getBlue() / 255.0);
@@ -491,29 +566,12 @@ public class GdkGraphics2D extends Graphics2D
 
   public void clipRect (int x, int y, int width, int height)
   {
-    // this is *slightly* different than all the other clip functions: it
-    // intersects the clip area with the new clip rectangle. obviously.  of
-    // course, since Shape doesn't *have* any way of intersecting with a
-    // rectangle, we will promote the current clipping region to its
-    // bounding rectangle and then intersect with that.
-    if (clip == null)
-      {
-        cairoNewPath ();
-        cairoRectangle (x, y, width, height);
-        cairoClosePath ();
-        cairoClip ();
-        clip = new Rectangle (x, y, width, height);
-      }
-    else
-      {
-        clip (clip.getBounds ().intersection 
-              (new Rectangle (x, y, width, height)));
-      }
+      clip (new Rectangle (x, y, width, height));
   }
 
   public Shape getClip ()
   {
-    return clip;
+    return getClipInDevSpace ();
   }
 
   public Rectangle getClipBounds ()
@@ -524,13 +582,32 @@ public class GdkGraphics2D extends Graphics2D
       return clip.getBounds ();
   }
 
+    protected Rectangle2D getClipInDevSpace ()
+    {
+	Rectangle2D uclip = clip.getBounds2D ();
+	if (transform == null)
+	    return uclip;
+	else
+	    {
+		Point2D pos = transform.transform (new Point2D.Double(uclip.getX (), 
+								      uclip.getY ()), 
+						   (Point2D)null);		
+		Point2D extent = transform.deltaTransform (new Point2D.Double(uclip.getWidth (), 
+									      uclip.getHeight ()), 
+							   (Point2D)null);
+		return new Rectangle2D.Double (pos.getX (), pos.getY (),
+					       extent.getX (), extent.getY ());	      
+	    }
+    }
+
   public void setClip (int x, int y, int width, int height)
   {
-    cairoNewPath ();
-    cairoRectangle (x, y, width, height);
-    cairoClosePath ();
-    cairoClip ();
-    clip = new Rectangle (x, y, width, height);
+      cairoNewPath ();
+      cairoRectangle (x, y, width, height);
+      cairoClosePath ();
+      cairoClip ();
+      clip = new Rectangle2D.Double ((double)x, (double)y, 
+				     (double)width, (double)height);
   }
 
   public void setClip (Shape s)
@@ -558,7 +635,7 @@ public class GdkGraphics2D extends Graphics2D
     double y1 = (double) y;
     double y2 = (double) y + height;
 
-    cairoSave ();
+    stateSave ();
     
     cairoNewPath ();
     setColor (light);
@@ -574,9 +651,7 @@ public class GdkGraphics2D extends Graphics2D
     cairoLineTo (x2, y2);
     cairoStroke ();
     
-    cairoRestore ();    
-    setColor (std);
-
+    stateRestore ();    
   }
 
   public void fill3DRect(int x, int y, int width, 
@@ -594,15 +669,15 @@ public class GdkGraphics2D extends Graphics2D
       
     draw3DRect (x, y, width, height, raised);
     
-    cairoSave ();
-    cairoTranslate (step/2.0, step/2.0);
+    stateSave ();
+    translate (step/2.0, step/2.0);
     cairoNewPath ();
     cairoRectangle ((double) x, (double) y, 
                     ((double) width) - step, 
                     ((double) height) - step );
     cairoClosePath ();
     cairoFill ();
-    cairoRestore ();
+    stateRestore ();
   }
 
 
@@ -618,7 +693,7 @@ public class GdkGraphics2D extends Graphics2D
 
   public void clearRect (int x, int y, int width, int height)
   {
-    cairoSave ();
+    stateSave ();
     cairoSetRGBColor (bg.getRed() / 255.0, 
                       bg.getGreen() / 255.0, 
                       bg.getBlue() / 255.0);
@@ -627,7 +702,7 @@ public class GdkGraphics2D extends Graphics2D
     cairoRectangle (x, y, width, height);
     cairoClosePath ();
     cairoFill ();
-    cairoRestore ();
+    stateRestore ();
   }
 
   public void setBackground(Color c)
@@ -635,12 +710,10 @@ public class GdkGraphics2D extends Graphics2D
     bg = c;
   }
 
-
   public Color getBackground()
   {
     return bg;
   }
-
 
   private void doPolygon(int[] xPoints, int[] yPoints, int nPoints, 
                          boolean close, boolean fill)
@@ -698,7 +771,8 @@ public class GdkGraphics2D extends Graphics2D
     doPolygon (xPoints, yPoints, nPoints, false, false);
   }
 
-  private boolean drawRaster (ColorModel cm, Raster r)
+  private boolean drawRaster (ColorModel cm, Raster r, 
+                              AffineTransform imageToUser)
   {
     if (r == null)
       return false;
@@ -711,6 +785,16 @@ public class GdkGraphics2D extends Graphics2D
 
     if (cm == null)
       cm = ColorModel.getRGBdefault ();
+
+    double[] i2u = new double[6];
+    if (imageToUser != null)
+      imageToUser.getMatrix(i2u);
+    else
+      {
+        i2u[0] = 1; i2u[1] = 0;
+        i2u[2] = 0; i2u[3] = 1;
+        i2u[2] = 0; i2u[3] = 0;
+      }
 
     int pixels[] = null;
 
@@ -735,23 +819,39 @@ public class GdkGraphics2D extends Graphics2D
         pixels = pixels2;
       }
     
-    cairoSave ();
-    cairoTranslate (x, y);
-    drawPixels (pixels, r.getWidth (), r.getHeight (), r.getWidth ());
-    cairoRestore ();    
+    stateSave ();
+    translate (x, y);
+    drawPixels (pixels, r.getWidth (), r.getHeight (), r.getWidth (), i2u);
+    stateRestore ();    
     return true;
   }
 
-  public boolean drawImage (Image img, int x, int y, 
-                            ImageObserver observer)
+  public void drawRenderedImage(RenderedImage image,
+                                AffineTransform xform)
+  {
+    drawRaster (image.getColorModel(), image.getData(), xform);
+  }
+  
+  public void drawRenderableImage(RenderableImage image,
+                                  AffineTransform xform)
+  {
+    drawRenderedImage (image.createRendering (new RenderContext (xform)), xform);
+  }
+  
+  public boolean drawImage(Image img, 
+                           AffineTransform xform,
+                           ImageObserver obs)
   {
     if (img instanceof GtkOffScreenImage &&
         img.getGraphics () instanceof GdkGraphics2D &&            
-        (transform == null || transform.isIdentity ())) 
+        (xform == null 
+         || xform.getType () == AffineTransform.TYPE_IDENTITY 
+         || xform.getType () == AffineTransform.TYPE_TRANSLATION)
+        ) 
       {
         // we are being asked to flush a double buffer from Gdk
         GdkGraphics2D g2 = (GdkGraphics2D) img.getGraphics ();
-        gdkDrawDrawable (g2, x, y);
+        gdkDrawDrawable (g2, (int)xform.getTranslateX(), (int)xform.getTranslateY());
         return true;
       }
     else
@@ -760,15 +860,30 @@ public class GdkGraphics2D extends Graphics2D
           {
             // draw an image which has actually been loaded into memory fully
             BufferedImage b = (BufferedImage) img;
-            return drawRaster (b.getColorModel (), b.getData ());
+            return drawRaster (b.getColorModel (), b.getData (), xform);
           }        
         else
           {
             // begin progressive loading in a separate thread
-            new PainterThread (this, img);
+            new PainterThread (this, img, xform);
             return false;
           }
       }
+  }
+
+  public void drawImage(BufferedImage image,
+                        BufferedImageOp op,
+                        int x,
+                        int y)
+  {
+    Image filtered = op.filter(image, null);
+    drawImage(filtered, new AffineTransform(1f,0f,0f,1f,x,y), null);
+  }
+
+  public boolean drawImage (Image img, int x, int y, 
+                            ImageObserver observer)
+  {
+    return drawImage(img, new AffineTransform(1f,0f,0f,1f,x,y), observer);    
   }
 
 
@@ -790,10 +905,12 @@ public class GdkGraphics2D extends Graphics2D
     GdkGraphics2D gr;
     Image image;
     ColorModel defaultModel;
+    AffineTransform xform;
 
-    public PainterThread (GdkGraphics2D g, Image im)
+    public PainterThread (GdkGraphics2D g, Image im, AffineTransform xf)
     {
       image = im;
+      xform = xf;
       this.gr = (GdkGraphics2D) g.create ();
       new Thread (this).start ();
     }
@@ -823,8 +940,8 @@ public class GdkGraphics2D extends Graphics2D
     public void setPixels (int x, int y, int w, int h, ColorModel model, 
                            int[] pixels, int off, int scansize)
       {
-        gr.cairoSave ();
-        gr.cairoTranslate (x, y);
+        gr.stateSave ();
+        gr.translate (x, y);
 
         if (model == null)
           model = defaultModel;
@@ -843,8 +960,10 @@ public class GdkGraphics2D extends Graphics2D
         else
           pixels2 = pixels;
 
-        gr.drawPixels (pixels2, w, h, scansize);
-        gr.cairoRestore ();
+        double[] xf = new double[6];
+        xform.getMatrix(xf);        
+        gr.drawPixels (pixels2, w, h, scansize, xf);
+        gr.stateRestore ();
       }
 
     public void setProperties (java.util.Hashtable props)
@@ -934,43 +1053,7 @@ public class GdkGraphics2D extends Graphics2D
   ////// Unimplemented Stubs and Overloads //////
   ///////////////////////////////////////////////
 
-  public boolean drawImage(Image image, 
-                           AffineTransform xform,
-                           ImageObserver obs)
-  {
-    throw new java.lang.UnsupportedOperationException ();
-  }
   
-  public void drawImage(BufferedImage image,
-                        BufferedImageOp op,
-                        int x,
-                        int y)
-  {
-    throw new java.lang.UnsupportedOperationException ();
-  }
-  
-  public void drawRenderedImage(RenderedImage image,
-                                AffineTransform xform)
-  {
-    throw new java.lang.UnsupportedOperationException ();
-  }
-  
-  public void drawRenderableImage(RenderableImage image,
-                                  AffineTransform xform)
-  {
-    throw new java.lang.UnsupportedOperationException ();
-  }
-
-  public void drawString(String text, float x, float y)
-  {
-    throw new java.lang.UnsupportedOperationException ();
-  }
-  
-  public void drawString(AttributedCharacterIterator iterator,
-                         float x, float y)
-  {
-    throw new java.lang.UnsupportedOperationException ();
-  }
     
   public boolean hit(Rectangle rect, Shape text,
                      boolean onStroke)
@@ -1014,11 +1097,6 @@ public class GdkGraphics2D extends Graphics2D
     throw new java.lang.UnsupportedOperationException ();
   }
 
-  public void shear(double shearX, double shearY)
-  {
-    throw new java.lang.UnsupportedOperationException ();
-  }
-
   public Composite getComposite()
   {
     throw new java.lang.UnsupportedOperationException ();
@@ -1026,18 +1104,20 @@ public class GdkGraphics2D extends Graphics2D
 
   public FontRenderContext getFontRenderContext ()
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return new FontRenderContext (transform, true, true);
   }
 
   public void drawGlyphVector (GlyphVector g, float x, float y)
   {    
-    cairoSave ();
-    cairoTranslate ((double)x, (double)y);
+    stateSave ();
+    setFont (g.getFont ());
+    translate ((double)x, (double)y);
+    cairoMoveTo (0, 0);
     int nglyphs = g.getNumGlyphs ();
     int codes[] = g.getGlyphCodes (0, nglyphs, (int []) null);
     float posns[] = g.getGlyphPositions (0, nglyphs, (float []) null);
-    cairoShowGlyphs (codes, posns, nglyphs);
-    cairoRestore ();
+    cairoShowGlyphs (codes, posns);
+    stateRestore ();
   }
 
   public void copyArea (int x, int y, int width, int height, int dx, int dy)
@@ -1048,7 +1128,10 @@ public class GdkGraphics2D extends Graphics2D
   public void drawArc (int x, int y, int width, int height,
                        int startAngle, int arcAngle)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    draw (new Arc2D.Double((double)x, (double)y, 
+                           (double)width, (double)height,
+                           (double)startAngle, (double)arcAngle,
+                           Arc2D.OPEN));
   }
 
   public boolean drawImage (Image img, int x, int y, Color bgcolor, 
@@ -1085,61 +1168,84 @@ public class GdkGraphics2D extends Graphics2D
 
   public void drawOval(int x, int y, int width, int height)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    drawArc (x, y, width, height, 0, 360);
   }
 
   public void drawRoundRect(int x, int y, int width, int height, 
                             int arcWidth, int arcHeight)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    int x1 = x + arcWidth, x2 = x + width - arcWidth;
+    int y1 = y + arcHeight, y2 = y + height - arcHeight;
+    fillRect (x1, y, x2 - x1, height);
+    fillRect (x, y1, width, y2 - y1);
+    fillArc (x, y, arcWidth, arcHeight, 90, 90);
+    fillArc (x1, y, arcWidth, arcHeight, 0, 90);
+    fillArc (x2, y2, arcWidth, arcHeight, 270, 90);
+    fillArc (x, y2, arcWidth, arcHeight, 180, 90);
   }
 
   public void drawString (String str, int x, int y)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    drawString (str, (float)x, (float)y);
+  }
+
+  public void drawString (String str, float x, float y)
+  {
+    GlyphVector gv = font.createGlyphVector (getFontRenderContext(), str);
+    drawGlyphVector (gv, x, y);
   }
 
   public void drawString (AttributedCharacterIterator ci, int x, int y)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    drawString (ci, (float)x, (float)y);
+  }
+
+  public void drawString (AttributedCharacterIterator ci, float x, float y)
+  {
+    GlyphVector gv = font.createGlyphVector (getFontRenderContext(), ci);
+    drawGlyphVector (gv, x, y);
   }
 
   public void fillArc (int x, int y, int width, int height, 
                        int startAngle, int arcAngle)
   {
-    cairoNewPath ();
-    walkPath (new Arc2D.Double((double)x, (double)y, 
-                               (double)width, (double)height,
-                               (double)startAngle, (double)arcAngle,
-                               Arc2D.PIE).getPathIterator (null));
-    cairoClosePath ();
-    cairoFill ();
+    fill (new Arc2D.Double((double)x, (double)y, 
+                           (double)width, (double)height,
+                           (double)startAngle, (double)arcAngle,
+                           Arc2D.OPEN));
   }
 
   public void fillOval(int x, int y, int width, int height)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    fillArc (x, y, width, height, 0, 360);
   }
 
   public void fillRoundRect (int x, int y, int width, int height, 
                              int arcWidth, int arcHeight)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    int x1 = x + arcWidth, x2 = x + width - arcWidth;
+    int y1 = y + arcHeight, y2 = y + height - arcHeight;
+    fillRect (x1, y, x2 - x1, height);
+    fillRect (x, y1, width, y2 - y1);
+    fillArc (x, y, arcWidth, arcHeight, 90, 90);
+    fillArc (x1, y, arcWidth, arcHeight, 0, 90);
+    fillArc (x2, y2, arcWidth, arcHeight, 270, 90);
+    fillArc (x, y2, arcWidth, arcHeight, 180, 90);
   }
 
   public Font getFont ()
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return font;
   }
 
   public FontMetrics getFontMetrics ()
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return Toolkit.getDefaultToolkit ().getFontMetrics (font);
   }
 
   public FontMetrics getFontMetrics (Font f)
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return Toolkit.getDefaultToolkit ().getFontMetrics (f);
   }
 
   public void setFont (Font f)

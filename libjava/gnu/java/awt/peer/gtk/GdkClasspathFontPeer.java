@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.text.CharacterIterator;
 import java.text.AttributedCharacterIterator;
+import java.text.StringCharacterIterator;
 import java.awt.font.TextAttribute;
 import gnu.classpath.Configuration;
 import gnu.java.awt.peer.ClasspathFontPeer;
@@ -180,10 +181,56 @@ public class GdkClasspathFontPeer extends ClasspathFontPeer
     throw new UnsupportedOperationException ();
   }
 
+  protected class GdkFontLineMetrics extends LineMetrics
+  {
+    FontMetrics fm;
+    int nchars; 
+
+    public GdkFontLineMetrics (FontMetrics m, int n)
+    {
+      fm = m;
+      nchars = n;
+    }
+
+    public float getAscent()
+    {
+      return (float) fm.getAscent ();
+    }
+  
+    public int getBaselineIndex()
+    {
+      return Font.ROMAN_BASELINE;
+    }
+    
+    public float[] getBaselineOffsets()
+    {
+      return new float[3];
+    }
+    
+    public float getDescent()
+    {
+      return (float) fm.getDescent ();
+    }
+    
+    public float getHeight()
+    {
+      return (float) fm.getHeight ();
+    }
+    
+    public float getLeading() { return 0.f; }    
+    public int getNumChars() { return nchars; }
+    public float getStrikethroughOffset() { return 0.f; }    
+    public float getStrikethroughThickness() { return 0.f; }  
+    public float getUnderlineOffset() { return 0.f; }
+    public float getUnderlineThickness() { return 0.f; }
+
+  }
+
+
   public LineMetrics getLineMetrics (Font font, CharacterIterator ci, 
                                      int begin, int limit, FontRenderContext rc)
   {
-    throw new UnsupportedOperationException ();
+    return new GdkFontLineMetrics (getFontMetrics (font), limit - begin);
   }
 
   public Rectangle2D getMaxCharBounds (Font font, FontRenderContext rc)
@@ -214,25 +261,32 @@ public class GdkClasspathFontPeer extends ClasspathFontPeer
 
   public boolean hasUniformLineMetrics (Font font)
   {
-    throw new UnsupportedOperationException ();
+    return true;
   }
 
   public GlyphVector layoutGlyphVector (Font font, FontRenderContext frc, 
                                         char[] chars, int start, int limit, 
                                         int flags)
   {
-    throw new UnsupportedOperationException ();  
+    int nchars = (limit - start) + 1;
+    char[] nc = new char[nchars];
+
+    for (int i = 0; i < nchars; ++i)
+      nc[i] = chars[start + i];
+
+    return createGlyphVector (font, frc, 
+                              new StringCharacterIterator (new String (nc)));
   }
 
   public LineMetrics getLineMetrics (Font font, String str, 
                                      FontRenderContext frc)
   {
-    throw new UnsupportedOperationException();
+    return new GdkFontLineMetrics (getFontMetrics (font), str.length ());
   }
 
   public FontMetrics getFontMetrics (Font font)
   {
-    throw new UnsupportedOperationException();
+    return new GdkClasspathFontPeerMetrics (font);
   }
 
 }

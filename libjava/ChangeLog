@@ -1,3 +1,43 @@
+2003-11-17  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkClasspathFontPeerMetrics.java: New file.
+	* gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java 
+	(GdkFontLineMetrics): New inner class.
+	(getLineMetrics): Return new GdkFontLineMetrics.
+	(getFontMetrics): Return new GdkClasspathFontPeerMetrics.
+	(layoutGlyphVector): Create GdkGlyphVector.
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java (stateStack): New member.
+	(GdkGraphics2D): Initialize state via mathod calls.
+	(cairoSetMatrix, cairoShowGlyphs): Simplify native calls.
+	(cairoTranslate, cairoScale, cairoRotate): Remove.
+	(various methods): use setTransform for special transform cases.
+	(DrawState): New inner class.
+	(stateSave): New method.
+	(stateRestore): New method.
+	(various methods): use stateSave, stateRestore.
+	(getClipInDevSpace): New method.
+	(clip, clipRect, setClip, getClip, getClipBounds): 
+	Follow spec more closely.
+	(getTransform): Return clone of transform.
+	(setStroke): Set linewidth to passed width / 2.0.
+	(setPaintMode): Set SrcOver rather than Xor.
+	(setColor): Set paint to passed color.
+	(drawRaster, drawImage, PainterThread, drawPixels): Take affine
+	transform from image to user space.
+	(drawRenderedImage, drawRenderableImage): Implement.
+	(getFontRenderContext, getFontMetrics, drawString, getFont): 
+	Implement
+	(drawArc, drawOval, drawRoundRect, fillArc, fillOval, fillRoundRect): 
+	Implement.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c: 
+	Match changes to java side.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeer.c: 
+	Release resources.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c: 
+	Don't use pango for metrics.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetrics.c: 
+	New file.
+
 2003-11-19  Guilhem Lavaux <guilhem@kaffe.org>
 	    Jim Pick  <jim@kaffe.org>
 
