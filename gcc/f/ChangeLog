@@ -1,3 +1,11 @@
+1999-02-19  Craig Burley  <craig@jcb-sc.com>
+
+	* global.c (ffeglobal_ref_progunit_): Warn about a function
+	definition that disagrees with the type of a previous reference.
+	Improve commentary.  Fix a couple of minor bugs.  Clean up
+	some code.
+	* news.texi: Spread the joy.
+
 1999-02-18  Craig Burley  <craig@jcb-sc.com>
 
 	* expr.c (ffeexpr_finished_): Disallow non-default INTEGER
