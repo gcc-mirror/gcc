@@ -1690,8 +1690,6 @@ emit_colors (struct df *df)
 	      place = assign_stack_local (PSEUDO_REGNO_MODE (web->regno),
 					  total_size,
 					  inherent_size == total_size ? 0 : -1);
-	      RTX_UNCHANGING_P (place) =
-		  RTX_UNCHANGING_P (regno_reg_rtx[web->regno]);
 	      set_mem_alias_set (place, new_alias_set ());
 	    }
 	  else

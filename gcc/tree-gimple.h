@@ -120,7 +120,6 @@ extern void pop_gimplify_context (tree);
 extern void gimplify_and_add (tree, tree *);
 
 /* Miscellaneous helpers.  */
-extern tree get_base_address (tree t);
 extern void gimple_add_tmp_var (tree);
 extern tree gimple_current_bind_expr (void);
 extern void gimple_push_bind_expr (tree);

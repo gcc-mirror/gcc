@@ -669,10 +669,7 @@ static rtx
 gen_thread_pointer (void)
 {
   if (!thread_pointer_rtx)
-    {
-      thread_pointer_rtx = gen_rtx_REG (Pmode, 13);
-      RTX_UNCHANGING_P (thread_pointer_rtx) = 1;
-    }
+    thread_pointer_rtx = gen_rtx_REG (Pmode, 13);
   return thread_pointer_rtx;
 }
 
@@ -690,12 +687,12 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1)
       tga_op1 = gen_reg_rtx (Pmode);
       emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
       tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
-      RTX_UNCHANGING_P (tga_op1) = 1;
+      MEM_READONLY_P (tga_op1) = 1;
 
       tga_op2 = gen_reg_rtx (Pmode);
       emit_insn (gen_load_ltoff_dtprel (tga_op2, op1));
       tga_op2 = gen_rtx_MEM (Pmode, tga_op2);
-      RTX_UNCHANGING_P (tga_op2) = 1;
+      MEM_READONLY_P (tga_op2) = 1;
 
       tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
 					 LCT_CONST, Pmode, 2, tga_op1,
@@ -719,7 +716,7 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1)
       tga_op1 = gen_reg_rtx (Pmode);
       emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
       tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
-      RTX_UNCHANGING_P (tga_op1) = 1;
+      MEM_READONLY_P (tga_op1) = 1;
 
       tga_op2 = const0_rtx;
 
@@ -750,7 +747,7 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1)
       tmp = gen_reg_rtx (Pmode);
       emit_insn (gen_load_ltoff_tprel (tmp, op1));
       tmp = gen_rtx_MEM (Pmode, tmp);
-      RTX_UNCHANGING_P (tmp) = 1;
+      MEM_READONLY_P (tmp) = 1;
       tmp = force_reg (Pmode, tmp);
 
       if (!register_operand (op0, Pmode))

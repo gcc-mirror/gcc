@@ -3458,7 +3458,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 		  tmp2 = gen_reg_rtx (Pmode);
 		  tmp3 = gen_reg_rtx (Pmode);
 		  mem = gen_rtx_MEM (Pmode, tmp1);
-		  RTX_UNCHANGING_P (mem) = 1;
+		  MEM_READONLY_P (mem) = 1;
 
 		  first = emit_insn (gen_load_toc_v4_PIC_1b (tempLR, lab,
 							     gsym));
@@ -4410,7 +4410,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 		= gen_rtx_MEM (mode,
 			       create_TOC_reference (XEXP (operands[1], 0)));
 	      set_mem_alias_set (operands[1], get_TOC_alias_set ());
-	      RTX_UNCHANGING_P (operands[1]) = 1;
+	      MEM_READONLY_P (operands[1]) = 1;
 	    }
 	}
       break;

@@ -191,9 +191,7 @@ varray_type global_const_equiv_varray;
    rtl is ever emitted.
 
    If FOR_LHS is nonzero, if means we are processing something that will
-   be the LHS of a SET.  In that case, we copy RTX_UNCHANGING_P even if
-   inlining since we need to be conservative in how it is set for
-   such cases.
+   be the LHS of a SET.
 
    Handle constants that need to be placed in the constant pool by
    calling `force_const_mem'.  */
@@ -317,7 +315,6 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
 	  map->reg_map[regno] = gen_reg_rtx (mode);
 	  REG_USERVAR_P (map->reg_map[regno]) = REG_USERVAR_P (orig);
 	  REG_LOOP_TEST_P (map->reg_map[regno]) = REG_LOOP_TEST_P (orig);
-	  RTX_UNCHANGING_P (map->reg_map[regno]) = RTX_UNCHANGING_P (orig);
 	  /* A reg with REG_FUNCTION_VALUE_P true will never reach here.  */
 
 	  if (REG_POINTER (map->x_regno_reg_rtx[regno]))

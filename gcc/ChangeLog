@@ -1,5 +1,90 @@
 2004-08-18  Richard Henderson  <rth@redhat.com>
 
+	* rtl.h (MEM_READONLY_P): Replace RTX_UNCHANGING_P.
+	* alias.c (true_dependence): Update to match new semantics.
+	(canon_true_dependence, write_dependence_p): Likewise.
+	(anti_dependence, output_dependence): Update write_dependence_p args.
+	(unchanging_anti_dependence): Remove.
+	* calls.c (purge_mem_unchanging_flag): Remove.
+	(fixup_tail_calls): Don't call it.
+	(expand_call): Don't add unchanging memory to function usage.
+	* expr.c (emit_block_move_via_libcall): Likewise.
+	(clear_storage_via_libcall): Don't clobber RTX_UNCHANGING_P mems.
+	(get_subtarget): Don't use RTX_UNCHANGING_P.
+	(expand_assignment, store_constructor, expand_expr_real_1): Likewise.
+	(do_tablejump): Set MEM_READONLY_P, not RTX_UNCHANGING_P.
+	* combine.c (get_last_value_validate): Use MEM_READONLY_P.
+	* cse.c (insert): Don't use RTX_UNCHANGING_P.
+	(cse_insn, canon_hash): Use MEM_READONLY_P.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Use MEM_READONLY_P
+	instead of RTX_UNCHANGING_P.
+	* explow.c (maybe_set_unchanging): Remove.
+	* expr.h (maybe_set_unchanging): Remove.
+	* flow.c (insn_dead_p, mark_used_regs): Use anti_dependence.
+	* function.c (assign_stack_temp_for_type): Don't use RTX_UNCHANGING_P.
+	(assign_parm_setup_reg, expand_function_start): Likewise.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+	* ra-rewrite.c (emit_colors): Likewise.
+	* regmove.c (copy_src_to_dest, regmove_optimize): Likewise.
+	(fixup_match_1): Likewise.
+	* reload1.c (reload, alter_reg): Likewise.
+	* local-alloc.c (validate_equiv_mem): Check MEM_READONLY_P,
+	not RTX_UNCHANGING_P.
+	(equiv_init_varies_p): Likewise.
+	* loop-invariant.c (check_maybe_invariant): Likewise.
+	* resource.c (mark_referenced_resources, mark_set_resources): Likewise.
+	* loop.c (note_addr_stored): Likewise.
+	(prescan_loop): Likewise. Don't check function usage for clobbered
+	unchanging memory.
+	* rtlanal.c (rtx_unstable_p): Check MEM_READONLY_P,
+        not RTX_UNCHANGING_P.
+	(rtx_varies_p, modified_between_p, modified_in_p): Likewise.
+	* varasm.c (force_const_mem): Likewise.
+	* stmt.c (expand_decl): Don't set RTX_UNCHANGING_P.
+	* web.c (entry_register): Likewise.
+	* tree-gimple.h (get_base_address): Move decl ...
+	* tree.h: ... here.
+	* doc/rtl.texi (MEM_READONLY_P): Replace RTX_UNCHANGING_P.
+
+	* config/alpha/alpha.c (alpha_set_memflags_1): Rewrite to be
+	called via for_each_rtx.  Copy MEM_SCALAR_P, MEM_NOTRAP_P too.
+	(alpha_set_memflags): Update to match.
+
+	* config/darwin.c (machopic_indirect_data_reference): Set
+	MEM_READONLY_P instead of RTX_UNCHANGING_P.
+	(machopic_indirect_call_target): Likewise.
+	(machopic_legitimize_pic_address): Likewise.
+	* config/arm/arm.c (legitimize_pic_address, arm_gen_load_multiple, 
+	arm_gen_store_multiple, arm_gen_movmemqi): Likewise.
+	* config/arm/arm.md (load_multiple, store_multiple): Likewise.
+	* config/frv/frv.md (symGOT2reg): Likewise.
+	* config/i386/i386.c (legitimize_pic_address,
+	legitimize_tls_address, ix86_split_to_parts): Likewise.
+	* config/ia64/ia64.c (ia64_expand_tls_address): Likewise.
+	* config/ia64/ia64.md (load_fptr): Likewise.
+	* config/m32r/m32r.c (m32r_legitimize_pic_address): Likewise.
+	* config/m68k/m68k.c (legitimize_pic_address): Likewise.
+	* config/mcore/mcore.c (block_move_sequence): Likewise.
+	* config/mn10300/mn10300.md (symGOT2reg): Likewise.
+	* config/pa/pa.c (legitimize_pic_address): Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Likewise.
+	(rs6000_emit_move): Likewise.
+	* config/s390/s390.c (legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	* config/s390/s390.md (casesi): Likewise.
+	* config/sh/sh.c (prepare_move_operands, sh_reorg): Likewise.
+	* config/sh/sh.md (symGOT2reg): Likewise.
+	* config/sparc/sparc.c (legitimize_pic_address): Likewise.
+	* config/v850/v850.md (casesi): Likewise.
+
+	* config/ia64/ia64.c (gen_thread_pointer): Don't set RTX_UNCHANGING_P.
+	* config/iq2000/iq2000.c (save_restore_insns): Likewise.
+	* config/mips/mips.c (mips_restore_gp): Likewise.
+	(mips_save_restore_reg, mips16_gp_pseudo_reg): Likewise.
+	* config/sh/sh.c (sh_reorg): Likewise.
+
+2004-08-18  Richard Henderson  <rth@redhat.com>
+
 	* tree.h (struct tree_decl): Add gimple_formal_temp.
 	(DECL_GIMPLE_FORMAL_TEMP_P): New.
 	* gimplify.c (pop_gimplify_context): Clear it.

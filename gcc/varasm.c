@@ -118,12 +118,8 @@ char *unlikely_section_label = NULL;
 
 char *unlikely_text_section_name = NULL;
 
-/* RTX_UNCHANGING_P in a MEM can mean it is stored into, for initialization.
-   So giving constant the alias set for the type will allow such
-   initializations to appear to conflict with the load of the constant.  We
-   avoid this by giving all constants an alias set for just constants.
-   Since there will be no stores to that alias set, nothing will ever
-   conflict with them.  */
+/* We give all constants their own alias set.  Perhaps redundant with
+   MEM_READONLY_P, but pre-dates it.  */
 
 static HOST_WIDE_INT const_alias_set;
 
@@ -2947,7 +2943,7 @@ force_const_mem (enum machine_mode mode, rtx x)
   /* Construct the MEM.  */
   desc->mem = def = gen_rtx_MEM (mode, symbol);
   set_mem_attributes (def, lang_hooks.types.type_for_mode (mode, 0), 1);
-  RTX_UNCHANGING_P (def) = 1;
+  MEM_READONLY_P (def) = 1;
 
   /* If we're dropping a label to the constant pool, make sure we
      don't delete it.  */

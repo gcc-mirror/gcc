@@ -1785,45 +1785,6 @@ purge_reg_equiv_notes (void)
     }
 }
 
-/* Clear RTX_UNCHANGING_P flag of incoming argument MEMs.  */
-
-static void
-purge_mem_unchanging_flag (rtx x)
-{
-  RTX_CODE code;
-  int i, j;
-  const char *fmt;
-
-  if (x == NULL_RTX)
-    return;
-
-  code = GET_CODE (x);
-
-  if (code == MEM)
-    {
-      if (RTX_UNCHANGING_P (x)
-	  && (XEXP (x, 0) == current_function_internal_arg_pointer
-	      || (GET_CODE (XEXP (x, 0)) == PLUS
-		  && XEXP (XEXP (x, 0), 0) ==
-		     current_function_internal_arg_pointer
-		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)))
-	RTX_UNCHANGING_P (x) = 0;
-      return;
-    }
-
-  /* Scan all subexpressions.  */
-  fmt = GET_RTX_FORMAT (code);
-  for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
-    {
-      if (*fmt == 'e')
-	purge_mem_unchanging_flag (XEXP (x, i));
-      else if (*fmt == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  purge_mem_unchanging_flag (XVECEXP (x, i, j));
-    }
-}
-
-
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -3004,22 +2965,6 @@ expand_call (tree exp, rtx target, int ignore)
 	if (args[i].aligned_regs)
 	  free (args[i].aligned_regs);
 
-      /* If this function is returning into a memory location marked as
-	 readonly, it means it is initializing that location. We normally treat
-	 functions as not clobbering such locations, so we need to specify that
-	 this one does. We do this by adding the appropriate CLOBBER to the
-	 CALL_INSN function usage list.  This cannot be done by emitting a
-	 standalone CLOBBER after the call because the latter would be ignored
-	 by at least the delay slot scheduling pass. We do this now instead of
-	 adding to call_fusage before the call to emit_call_1 because TARGET
-	 may be modified in the meantime.  */
-      if (structure_value_addr != 0 && target != 0
-	  && MEM_P (target) && RTX_UNCHANGING_P (target))
-	add_function_usage_to
-	  (last_call_insn (),
-	   gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_CLOBBER (VOIDmode, target),
-			      NULL_RTX));
-
       insns = get_insns ();
       end_sequence ();
 
@@ -3100,32 +3045,7 @@ expand_call (tree exp, rtx target, int ignore)
 void
 fixup_tail_calls (void)
 {
-  rtx insn;
-  tree arg;
-
   purge_reg_equiv_notes ();
-
-  /* A sibling call sequence also may invalidate RTX_UNCHANGING_P
-     flag of some incoming arguments MEM RTLs, because it can write into
-     those slots.  We clear all those bits now.
-
-     This is (slight) overkill, we could keep track of which arguments
-     we actually write into.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	purge_mem_unchanging_flag (PATTERN (insn));
-    }
-
-  /* Similarly, invalidate RTX_UNCHANGING_P for any incoming
-     arguments passed in registers.  */
-  for (arg = DECL_ARGUMENTS (current_function_decl);
-       arg;
-       arg = TREE_CHAIN (arg))
-    {
-      if (REG_P (DECL_RTL (arg)))
-	RTX_UNCHANGING_P (DECL_RTL (arg)) = false;
-    }
 }
 
 /* Traverse an argument list in VALUES and expand all complex

@@ -2577,30 +2577,6 @@ prescan_loop (struct loop *loop)
 	  loop_info->has_call = 1;
 	  if (can_throw_internal (insn))
 	    loop_info->has_multiple_exit_targets = 1;
-
-	  /* Calls initializing constant objects have CLOBBER of MEM /u in the
-	     attached FUNCTION_USAGE expression list, not accounted for by the
-	     code above. We should note these to avoid missing dependencies in
-	     later references.  */
-	  {
-	    rtx fusage_entry;
-
-	    for (fusage_entry = CALL_INSN_FUNCTION_USAGE (insn);
-		 fusage_entry; fusage_entry = XEXP (fusage_entry, 1))
-	      {
-		rtx fusage = XEXP (fusage_entry, 0);
-
-		if (GET_CODE (fusage) == CLOBBER
-		    && MEM_P (XEXP (fusage, 0))
-		    && RTX_UNCHANGING_P (XEXP (fusage, 0)))
-		  {
-		    note_stores (fusage, note_addr_stored, loop_info);
-		    if (! loop_info->first_loop_store_insn
-			&& loop_info->store_mems)
-		      loop_info->first_loop_store_insn = insn;
-		  }
-	      }
-	  }
 	  break;
 
 	case JUMP_INSN:
@@ -2707,8 +2683,7 @@ prescan_loop (struct loop *loop)
   if (loop_info->unknown_constant_address_altered)
     {
       rtx mem = gen_rtx_MEM (BLKmode, const0_rtx);
-
-      RTX_UNCHANGING_P (mem) = 1;
+      MEM_READONLY_P (mem) = 1;
       loop_info->store_mems
 	= gen_rtx_EXPR_LIST (VOIDmode, mem, loop_info->store_mems);
     }
@@ -3241,7 +3216,7 @@ note_addr_stored (rtx x, rtx y ATTRIBUTE_UNUSED,
   /* BLKmode MEM means all memory is clobbered.  */
   if (GET_MODE (x) == BLKmode)
     {
-      if (RTX_UNCHANGING_P (x))
+      if (MEM_READONLY_P (x))
 	loop_info->unknown_constant_address_altered = 1;
       else
 	loop_info->unknown_address_altered = 1;
@@ -3333,9 +3308,6 @@ loop_invariant_p (const struct loop *loop, rtx x)
       return 0;
 
     case REG:
-      /* We used to check RTX_UNCHANGING_P (x) here, but that is invalid
-	 since the reg might be set by initialization within the loop.  */
-
       if ((x == frame_pointer_rtx || x == hard_frame_pointer_rtx
 	   || x == arg_pointer_rtx || x == pic_offset_table_rtx)
 	  && ! current_function_has_nonlocal_goto)

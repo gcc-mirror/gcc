@@ -1129,8 +1129,7 @@ reload (rtx first, int global)
 		MEM_COPY_ATTRIBUTES (reg, reg_equiv_memory_loc[i]);
 	      else
 		{
-		  RTX_UNCHANGING_P (reg) = MEM_IN_STRUCT_P (reg)
-		    = MEM_SCALAR_P (reg) = 0;
+		  MEM_IN_STRUCT_P (reg) = MEM_SCALAR_P (reg) = 0;
 		  MEM_ATTRS (reg) = 0;
 		}
 	    }
@@ -1964,8 +1963,6 @@ alter_reg (int i, int from_reg)
 	       This is so we can do a big-endian correction unconditionally
 	       below.  */
 	    adjust = inherent_size - total_size;
-
-	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[i]);
 
 	  /* Nothing can alias this slot except this pseudo.  */
 	  set_mem_alias_set (x, new_alias_set ());

@@ -754,8 +754,6 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
   /* If a type is specified, set the relevant flags.  */
   if (type != 0)
     {
-      RTX_UNCHANGING_P (slot) = (lang_hooks.honor_readonly
-				 && TYPE_READONLY (type));
       MEM_VOLATILE_P (slot) = TYPE_VOLATILE (type);
       MEM_SET_IN_STRUCT_P (slot, AGGREGATE_TYPE_P (type));
     }
@@ -2667,10 +2665,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       SET_DECL_RTL (parm, x);
     }
   else
-    {
-      SET_DECL_RTL (parm, parmreg);
-      maybe_set_unchanging (DECL_RTL (parm), parm);
-    }
+    SET_DECL_RTL (parm, parmreg);
 
   /* Copy the value into the register.  */
   if (data->nominal_mode != data->passed_mode
@@ -4056,7 +4051,6 @@ expand_function_start (tree subr)
 
       set_decl_incoming_rtl (parm, static_chain_incoming_rtx);
       SET_DECL_RTL (parm, local);
-      maybe_set_unchanging (local, parm);
       mark_reg_pointer (local, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (parm))));
 
       emit_move_insn (local, static_chain_incoming_rtx);

@@ -1956,8 +1956,6 @@ expand_decl (tree decl)
 	    mark_reg_pointer (DECL_RTL (decl),
 			      TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
 	}
-
-      maybe_set_unchanging (DECL_RTL (decl), decl);
     }
 
   else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST

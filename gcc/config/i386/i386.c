@@ -5307,7 +5307,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
 	  new = gen_rtx_CONST (Pmode, new);
 	  new = gen_rtx_MEM (Pmode, new);
-	  RTX_UNCHANGING_P (new) = 1;
+	  MEM_READONLY_P (new) = 1;
 	  set_mem_alias_set (new, ix86_GOT_alias_set ());
 
 	  if (reg == 0)
@@ -5329,7 +5329,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	  new = gen_rtx_CONST (Pmode, new);
 	  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
 	  new = gen_rtx_MEM (Pmode, new);
-	  RTX_UNCHANGING_P (new) = 1;
+	  MEM_READONLY_P (new) = 1;
 	  set_mem_alias_set (new, ix86_GOT_alias_set ());
 
 	  if (reg == 0)
@@ -5509,7 +5509,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
       if (pic)
 	off = gen_rtx_PLUS (Pmode, pic, off);
       off = gen_rtx_MEM (Pmode, off);
-      RTX_UNCHANGING_P (off) = 1;
+      MEM_READONLY_P (off) = 1;
       set_mem_alias_set (off, ix86_GOT_alias_set ());
 
       if (TARGET_64BIT || TARGET_GNU_TLS)
@@ -9552,7 +9552,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 
   /* Optimize constant pool reference to immediates.  This is used by fp
      moves, that force all constants to memory to allow combining.  */
-  if (GET_CODE (operand) == MEM && RTX_UNCHANGING_P (operand))
+  if (GET_CODE (operand) == MEM && MEM_READONLY_P (operand))
     {
       rtx tmp = maybe_get_pool_constant (operand);
       if (tmp)

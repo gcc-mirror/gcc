@@ -676,8 +676,6 @@ do {				\
    They are always in the same basic block as this insn.  */
 #define LOG_LINKS(INSN)	XEXP(INSN, 7)
 
-#define RTX_UNCHANGING_P(RTX)						\
-  (RTL_FLAG_CHECK3("RTX_UNCHANGING_P", (RTX), REG, MEM, CONCAT)->unchanging)
 #define RTX_FRAME_RELATED_P(RTX)					\
   (RTL_FLAG_CHECK5("RTX_FRAME_RELATED_P", (RTX), INSN, CALL_INSN,	\
 		   JUMP_INSN, BARRIER, SET)->frame_related)
@@ -1249,6 +1247,10 @@ do {									\
 #define ASM_OPERANDS_SOURCE_LINE(RTX) XCINT (RTX, 6, ASM_OPERANDS)
 #endif
 
+/* 1 if RTX is a mem that is statically allocated in read-only memory.  */
+#define MEM_READONLY_P(RTX) \
+  (RTL_FLAG_CHECK1("MEM_READONLY_P", (RTX), MEM)->unchanging)
+
 /* 1 if RTX is a mem and we should keep the alias set for this mem
    unchanged when we access a component.  Set to 1, or example, when we
    are already in a non-addressable component of an aggregate.  */
@@ -1345,7 +1347,7 @@ do {						\
    MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),		\
    MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),			\
    MEM_NOTRAP_P (LHS) = MEM_NOTRAP_P (RHS),			\
-   RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS),		\
+   MEM_READONLY_P (LHS) = MEM_READONLY_P (RHS),			\
    MEM_KEEP_ALIAS_SET_P (LHS) = MEM_KEEP_ALIAS_SET_P (RHS),	\
    MEM_ATTRS (LHS) = MEM_ATTRS (RHS))
 
@@ -2367,7 +2369,6 @@ extern int canon_true_dependence (rtx, enum machine_mode, rtx, rtx,
 extern int read_dependence (rtx, rtx);
 extern int anti_dependence (rtx, rtx);
 extern int output_dependence (rtx, rtx);
-extern int unchanging_anti_dependence (rtx, rtx);
 extern void mark_constant_function (void);
 extern void init_alias_once (void);
 extern void init_alias_analysis (void);

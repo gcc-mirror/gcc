@@ -11053,7 +11053,7 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
   /* If this is a memory reference, make sure that there were
      no stores after it that might have clobbered the value.  We don't
      have alias info, so we assume any store invalidates it.  */
-  else if (MEM_P (x) && ! RTX_UNCHANGING_P (x)
+  else if (MEM_P (x) && !MEM_READONLY_P (x)
 	   && INSN_CUID (insn) <= mem_last_set)
     {
       if (replace)
