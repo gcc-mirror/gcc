@@ -6677,12 +6677,10 @@ s390_trampoline_template (FILE *file)
 void
 s390_initialize_trampoline (rtx addr, rtx fnaddr, rtx cxt)
 {
-  emit_move_insn (gen_rtx
-		  (MEM, Pmode,
+  emit_move_insn (gen_rtx_MEM (Pmode,
 		   memory_address (Pmode,
 		   plus_constant (addr, (TARGET_64BIT ? 20 : 12) ))), cxt);
-  emit_move_insn (gen_rtx
-		  (MEM, Pmode,
+  emit_move_insn (gen_rtx_MEM (Pmode,
 		   memory_address (Pmode,
 		   plus_constant (addr, (TARGET_64BIT ? 28 : 16) ))), fnaddr);
 }
