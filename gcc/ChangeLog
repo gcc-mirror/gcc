@@ -1,3 +1,12 @@
+2004-06-12  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (shift_cost, shiftadd_cost, shiftsub_cost): Additionally
+	index by machine mode.
+	(init_expmed): Initialize shift_cost, shiftadd_cost and shiftsub_cost
+	tables inside the loop over machine modes.
+	(synth_mult, expand_mult_highpart_optab, expand_mult_highpart,
+	expand_divmod): Index shift*_cost by the appropriate machine mode.
+
 2004-06-12  Eric Christopher  <echristo@redhat.com>
 
 	* config/s390/s390.h: Rename TARGET_TPF to TARGET_TPF_PROFILING.
