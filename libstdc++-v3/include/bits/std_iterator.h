@@ -30,14 +30,16 @@
 #pragma GCC system_header
 #include <bits/c++config.h>
 #include <bits/std_cstddef.h>
-#include <bits/std_iosfwd.h>
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
+#include <bits/std_ostream.h>
+#include <bits/std_istream.h>
+#include <bits/stream_iterator.h>
+#include <bits/streambuf_iterator.h>
 
 #endif /* _CPP_ITERATOR */
 
 // Local Variables:
 // mode:C++
 // End:
-

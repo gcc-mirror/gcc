@@ -45,6 +45,9 @@ void test01()
   typedef test_iterator::istream_type istream_type;
 }
 
+// Instantiate
+template class std::istream_iterator<char>;
+
 int main() 
 { 
   test01();

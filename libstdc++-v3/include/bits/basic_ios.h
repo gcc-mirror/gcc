@@ -32,7 +32,7 @@
 
 #pragma GCC system_header
 
-#include <bits/sbuf_iter.h>
+#include <bits/streambuf_iterator.h>
 #include <bits/locale_facets.h>
 
 namespace std 

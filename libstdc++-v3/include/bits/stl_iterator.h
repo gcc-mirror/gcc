@@ -195,20 +195,20 @@ namespace std
       explicit 
       back_insert_iterator(_Container& __x) : container(&__x) {}
 
-      back_insert_iterator<_Container>&
+      back_insert_iterator&
       operator=(const typename _Container::value_type& __value) 
       { 
 	container->push_back(__value);
 	return *this;
       }
 
-      back_insert_iterator<_Container>& 
+      back_insert_iterator& 
       operator*() { return *this; }
 
-      back_insert_iterator<_Container>& 
+      back_insert_iterator& 
       operator++() { return *this; }
 
-      back_insert_iterator<_Container>& 
+      back_insert_iterator
       operator++(int) { return *this; }
     };
 
@@ -228,14 +228,22 @@ namespace std
       typedef _Container          container_type;
 
       explicit front_insert_iterator(_Container& __x) : container(&__x) {}
-      front_insert_iterator<_Container>&
-      operator=(const typename _Container::value_type& __value) { 
+
+      front_insert_iterator&
+      operator=(const typename _Container::value_type& __value) 
+      { 
 	container->push_front(__value);
 	return *this;
       }
-      front_insert_iterator<_Container>& operator*() { return *this; }
-      front_insert_iterator<_Container>& operator++() { return *this; }
-      front_insert_iterator<_Container>& operator++(int) { return *this; }
+
+      front_insert_iterator& 
+      operator*() { return *this; }
+
+      front_insert_iterator& 
+      operator++() { return *this; }
+
+      front_insert_iterator 
+      operator++(int) { return *this; }
     };
 
   template<typename _Container>
@@ -256,15 +264,22 @@ namespace std
       insert_iterator(_Container& __x, typename _Container::iterator __i) 
 	: container(&__x), iter(__i) {}
    
-      insert_iterator<_Container>&
-      operator=(const typename _Container::value_type& __value) { 
+      insert_iterator&
+      operator=(const typename _Container::const_reference __value) 
+      { 
 	iter = container->insert(iter, __value);
 	++iter;
 	return *this;
       }
-      insert_iterator<_Container>& operator*() { return *this; }
-      insert_iterator<_Container>& operator++() { return *this; }
-      insert_iterator<_Container>& operator++(int) { return *this; }
+
+      insert_iterator& 
+      operator*() { return *this; }
+
+      insert_iterator& 
+      operator++() { return *this; }
+
+      insert_iterator& 
+      operator++(int) { return *this; }
     };
   
   template<typename _Container, typename _Iterator>
@@ -274,111 +289,6 @@ namespace std
       typedef typename _Container::iterator __iter;
       return insert_iterator<_Container>(__x, __iter(__i));
     }
-  
-
-  template<typename _Tp, typename _CharT = char, 
-           typename _Traits = char_traits<_CharT>, typename _Dist = ptrdiff_t> 
-    class istream_iterator 
-      : public iterator<input_iterator_tag, _Tp, _Dist, const _Tp*, const _Tp&>
-    {
-    public:
-      typedef _CharT                         char_type;
-      typedef _Traits                        traits_type;
-      typedef basic_istream<_CharT, _Traits> istream_type;
-
-    private:
-      istream_type* 	_M_stream;
-      _Tp 		_M_value;
-      bool 		_M_ok;
-
-    public:      
-      istream_iterator() : _M_stream(0), _M_ok(false) {}
-      istream_iterator(istream_type& __s) : _M_stream(&__s) { _M_read(); }
-
-      const _Tp&
-      operator*() const { return _M_value; }
-
-      const _Tp*
-      operator->() const { return &(operator*()); }
-
-      istream_iterator& 
-      operator++() 
-      { _M_read(); return *this; }
-
-      istream_iterator 
-      operator++(int)  
-      {
-	istream_iterator __tmp = *this;
-	_M_read();
-	return __tmp;
-      }
-
-      bool 
-      _M_equal(const istream_iterator& __x) const
-      { return (_M_ok == __x._M_ok) && (!_M_ok || _M_stream == __x._M_stream);}
-
-    private:      
-      void _M_read() 
-      {
-	_M_ok = (_M_stream && *_M_stream) ? true : false;
-	if (_M_ok) 
-	  {
-	    *_M_stream >> _M_value;
-	    _M_ok = *_M_stream ? true : false;
-	  }
-      }
-    };
-  
-  template<typename _Tp, typename _CharT, typename _Traits, typename _Dist>
-    inline bool 
-    operator==(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
-	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y) 
-    { return __x._M_equal(__y); }
-
-  template <class _Tp, class _CharT, class _Traits, class _Dist>
-    inline bool 
-  operator!=(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
-	     const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y) 
-  { return !__x._M_equal(__y); }
-
-
-  template<typename _Tp, typename _CharT = char, 
-           typename _Traits = char_traits<_CharT> >
-    class ostream_iterator 
-      : public iterator<output_iterator_tag, void, void, void, void>
-    {
-    public:
-      typedef _CharT                         char_type;
-      typedef _Traits                        traits_type;
-      typedef basic_ostream<_CharT, _Traits> ostream_type;
-
-    private:
-      ostream_type* 	_M_stream;
-      const _CharT* 	_M_string;
-
-    public:
-      ostream_iterator(ostream_type& __s) : _M_stream(&__s), _M_string(0) {}
-      ostream_iterator(ostream_type& __s, const _CharT* __c) 
-	: _M_stream(&__s), _M_string(__c)  { }
-
-      ostream_iterator& 
-      operator=(const _Tp& __value) 
-      { 
-	*_M_stream << __value;
-	if (_M_string) *_M_stream << _M_string;
-	return *this;
-      }
-      
-      ostream_iterator& 
-      operator*() { return *this; }
-      
-      ostream_iterator& 
-      operator++() { return *this; } 
-      
-      ostream_iterator& 
-      operator++(int) { return *this; } 
-    };
-  
   
   // This iterator adapter is 'normal' in the sense that it does not
   // change the semantics of any of the operators of its itererator

@@ -21,10 +21,12 @@
 // 23.3.4 template class multiset
 
 #include <iostream>
+#include <iterator>
 #include <set>
 #include <algorithm>
 
-namespace std {
+namespace std 
+{
   std::ostream& 
   operator<<(std::ostream& os, std::pair<int, int> const& p) 
   { return os << p.first << ' ' << p.second; }
