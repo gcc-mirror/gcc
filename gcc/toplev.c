@@ -2202,7 +2202,7 @@ open_dump_file (suffix, function_name)
 /* Routine to close a dump file.  */
 static void
 close_dump_file (func, insns)
-     void (*func)(FILE *, rtx);
+     void (*func) PROTO ((FILE *, rtx));
      rtx    insns;
 {
   TIMEVAR
@@ -2225,7 +2225,7 @@ static void
 dump_rtl (suffix, decl, func, insns)
      char *suffix;
      tree   decl;
-     void (*func)(FILE *, rtx);
+     void (*func) PROTO ((FILE *, rtx));
      rtx    insns;
 {
   open_dump_file (suffix, decl_printable_name (decl, 2));

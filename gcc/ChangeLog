@@ -1,3 +1,9 @@
+Sat Jan 31 11:26:58 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (close_dump_file): Wrap function prototype for 
+	argument "func" in PROTO.
+	(dump_rtl): Likewise.
+
 Fri Jan 30 22:30:39 1998  John Carr  <jfc@mit.edu>
 
 	* sparc.c (sparc_override_options): Make v8plus and ultrasparc set
