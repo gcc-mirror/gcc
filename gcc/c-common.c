@@ -1457,9 +1457,11 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
   real2 = TREE_CODE (TREE_TYPE (primop1)) == REAL_TYPE;
 
   /* If first arg is constant, swap the args (changing operation
-     so value is preserved), for canonicalization.  */
+     so value is preserved), for canonicalization.  Don't do this if
+     the second arg is 0.  */
 
-  if (TREE_CONSTANT (primop0))
+  if (TREE_CONSTANT (primop0)
+      && ! integer_zerop (primop1) && ! real_zerop (primop1))
     {
       register tree tem = primop0;
       register int temi = unsignedp0;
@@ -1698,13 +1700,23 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	  switch (code)
 	    {
 	    case GE_EXPR:
-	      if (extra_warnings)
+	      /* All unsigned values are >= 0, so we warn if extra warnings
+		 are requested.  However, if OP0 is a constant that is
+		 >= 0, the signedness of the comparison isn't an issue,
+		 so suppress the warning.  */
+	      if (extra_warnings
+		  && ! (TREE_CODE (primop0) == INTEGER_CST
+			&& ! TREE_OVERFLOW (convert (signed_type (type),
+						     primop0))))
 		warning ("unsigned value >= 0 is always 1");
 	      value = integer_one_node;
 	      break;
 
 	    case LT_EXPR:
-	      if (extra_warnings)
+	      if (extra_warnings
+		  && ! (TREE_CODE (primop0) == INTEGER_CST
+			&& ! TREE_OVERFLOW (convert (signed_type (type),
+						     primop0))))
 		warning ("unsigned value < 0 is always 0");
 	      value = integer_zero_node;
 	    }
