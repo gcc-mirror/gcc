@@ -2127,8 +2127,6 @@ dtors_section ()							\
     fprintf (FILE, "\n");					\
 }
 
-#define ASM_FILE_END(FILE) fprintf (FILE, "\t.end\n")
-
 /* We need to have a data section we can identify so that we can set
    the DP register back to a data pointer in the small memory model.
    This is only required for ISRs if we are paranoid that someone
@@ -2211,25 +2209,21 @@ do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0);
     fprintf (FILE, "\t.global\t");	\
     assemble_name (FILE, NAME);		\
     fputs ("\n", FILE); 	        \
+    c4x_global_label (NAME);		\
   } while (0);
 
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
-  do {                                         	\
-    fprintf (FILE, "\t.ref\t");			\
-    assemble_name (FILE, NAME);	             	\
-    fputc ('\n', FILE);  	               	\
-  } while (0);
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
+c4x_external_ref (NAME)
 
 /* A C statement to output on FILE an assembler pseudo-op to
    declare a library function named external.
    (Only needed to keep asm30 happy for ___divqf3 etc.)  */
 
-#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)  \
-  do {						\
-    fprintf (FILE, "\t.ref\t");			\
-    assemble_name (FILE, XSTR (FUN, 0));	\
-    fprintf (FILE, "\n");			\
-  } while (0);
+#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
+c4x_external_ref (XSTR (FUN, 0))
+
+#define	ASM_FILE_END(FILE) \
+c4x_file_end (FILE)
 
 /* The prefix to add to user-visible assembler symbols.  */
 
