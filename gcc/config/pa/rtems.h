@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for PRO.
-   Copyright (C) 1997, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -24,3 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dhppa -DPWB -Acpu=hppa -Amachine=hppa \
    -D__rtems__ -Asystem=rtems"
+
+#undef LIB_SPEC
+#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p: -lc}%{pg: -lc} -N"
