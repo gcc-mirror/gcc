@@ -1832,6 +1832,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   else
     cum->nregs = ix86_regparm;
   cum->sse_nregs = SSE_REGPARM_MAX;
+  cum->mmx_nregs = MMX_REGPARM_MAX;
   cum->maybe_vaarg = false;
 
   /* Use ecx and edx registers if function has fastcall attribute */
@@ -2430,8 +2431,8 @@ function_arg_advance (CUMULATIVE_ARGS *cum,	/* current arg information */
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
-	     "function_adv (sz=%d, wds=%2d, nregs=%d, mode=%s, named=%d)\n\n",
-	     words, cum->words, cum->nregs, GET_MODE_NAME (mode), named);
+	     "function_adv (sz=%d, wds=%2d, nregs=%d, ssenregs=%d, mode=%s, named=%d)\n\n",
+	     words, cum->words, cum->nregs, cum->sse_nregs, GET_MODE_NAME (mode), named);
   if (TARGET_64BIT)
     {
       int int_nregs, sse_nregs;
@@ -2449,7 +2450,8 @@ function_arg_advance (CUMULATIVE_ARGS *cum,	/* current arg information */
     }
   else
     {
-      if (TARGET_SSE && mode == TImode)
+      if (TARGET_SSE && SSE_REG_MODE_P (mode)
+	  && (!type || !AGGREGATE_TYPE_P (type)))
 	{
 	  cum->sse_words += words;
 	  cum->sse_nregs -= 1;
@@ -2458,6 +2460,18 @@ function_arg_advance (CUMULATIVE_ARGS *cum,	/* current arg information */
 	    {
 	      cum->sse_nregs = 0;
 	      cum->sse_regno = 0;
+	    }
+	}
+      else if (TARGET_MMX && MMX_REG_MODE_P (mode)
+	       && (!type || !AGGREGATE_TYPE_P (type)))
+	{
+	  cum->mmx_words += words;
+	  cum->mmx_nregs -= 1;
+	  cum->mmx_regno += 1;
+	  if (cum->mmx_nregs <= 0)
+	    {
+	      cum->mmx_nregs = 0;
+	      cum->mmx_regno = 0;
 	    }
 	}
       else
@@ -2499,6 +2513,7 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
   int bytes =
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  static bool warnedsse, warnedmmx;
 
   /* Handle a hidden AL argument containing number of registers for varargs
      x86-64 functions.  For i386 ABI just return constm1_rtx to avoid
@@ -2552,8 +2567,39 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
 	  }
 	break;
       case TImode:
-	if (cum->sse_nregs)
-	  ret = gen_rtx_REG (mode, cum->sse_regno);
+      case V16QImode:
+      case V8HImode:
+      case V4SImode:
+      case V2DImode:
+      case V4SFmode:
+      case V2DFmode:
+	if (!type || !AGGREGATE_TYPE_P (type))
+	  {
+	    if (!TARGET_SSE && !warnedmmx)
+	      {
+		warnedsse = true;
+		warning ("SSE vector argument without SSE enabled "
+			 "changes the ABI");
+	      }
+	    if (cum->sse_nregs)
+	      ret = gen_rtx_REG (mode, cum->sse_regno + FIRST_SSE_REG);
+	  }
+	break;
+      case V8QImode:
+      case V4HImode:
+      case V2SImode:
+      case V2SFmode:
+	if (!type || !AGGREGATE_TYPE_P (type))
+	  {
+	    if (!TARGET_MMX && !warnedmmx)
+	      {
+		warnedmmx = true;
+		warning ("MMX vector argument without MMX enabled "
+			 "changes the ABI");
+	      }
+	    if (cum->mmx_nregs)
+	      ret = gen_rtx_REG (mode, cum->mmx_regno + FIRST_MMX_REG);
+	  }
 	break;
       }
 
