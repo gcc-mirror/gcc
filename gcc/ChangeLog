@@ -1,3 +1,10 @@
+Mon Jul 19 09:36:27 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* final.c (output_asm_insn): When searching for the matching string
+	for a given dialect, don't run past the end of the list of
+	alternatives if there are fewer alternatives in the template than
+	dialects.
+
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
         
 	* gcc.texi: Update e-mail addresses and URLs to gcc.gnu.org.
