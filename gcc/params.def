@@ -248,6 +248,15 @@ DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
 	 "The maximum memory locations recorded by cselib",
 	 500)
 
+DEFPARAM(PARAM_MAX_LAST_VALUE_RTL,
+	 "max-last-value-rtl",
+	 "The maximum number of RTL nodes that can be recorded as \
+combiner's last value",
+	 10000)
+
+  /* INTEGER_CST nodes are shared for values [{-1,0} .. N) for
+     {signed,unsigned} integral types.  This determines N.
+     Experimentation shows 256 to be a good value.  */
 #ifdef ENABLE_GC_ALWAYS_COLLECT
 # define GGC_MIN_EXPAND_DEFAULT 0
 # define GGC_MIN_HEAPSIZE_DEFAULT 0

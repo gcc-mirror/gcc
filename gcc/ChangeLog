@@ -1,5 +1,16 @@
 2005-01-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/15139
+	* combine.c: Include params.h.
+	(count_rtxs): New function.
+	(record_value_for_reg): If replace_rtx would replace at least
+	2 occurrences of REG in VALUE and TEM is really large, replace REG with
+	(clobber (const_int 0)) instead of TEM.
+	* params.def (PARAM_MAX_LAST_VALUE_RTL): New.
+	* params.h (MAX_LAST_VALUE_RTL): New.
+	* Makefile.in (combine.o): Depend on $(PARAMS_H).
+	* doc/invoke.texi (--param max-last-value-rtl=N): Document.
+
 	PR c/17297
 	* c-typeck.c (digest_init): Only call build_vector if all constructor
 	elements are *_CST nodes.

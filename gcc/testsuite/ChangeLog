@@ -1,5 +1,8 @@
 2005-01-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/15139
+	* gcc.dg/20050111-2.c: New test.
+
 	PR c/17297
 	* gcc.c-torture/compile/20050113-1.c: New testcase.
 

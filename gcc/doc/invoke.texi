@@ -4832,6 +4832,12 @@ order to make tracer effective.
 
 Maximum number of basic blocks on path that cse considers.
 
+@item max-last-value-rtl
+
+The maximum size measured as number of RTLs that can be recorded in an
+expression in combiner for a pseudo register as last known value of that
+register.  The default is 10000.
+
 @item ggc-min-expand
 
 GCC uses a garbage collector to manage its own memory allocation.  This

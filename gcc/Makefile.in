@@ -1744,7 +1744,8 @@ dominance.o : dominance.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
 et-forest.o : et-forest.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) et-forest.h alloc-pool.h
 combine.o : combine.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
    function.h insn-config.h $(INSN_ATTR_H) $(REGS_H) $(EXPR_H) \
-   $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h $(TM_P_H) $(TREE_H) $(TARGET_H)
+   $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h $(TM_P_H) \
+   $(TREE_H) $(TARGET_H) $(PARAMS_H)
 regclass.o : regclass.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    hard-reg-set.h flags.h $(BASIC_BLOCK_H) $(REGS_H) insn-config.h $(RECOG_H) reload.h \
    real.h toplev.h function.h output.h $(GGC_H) $(TM_P_H) $(EXPR_H) $(TIMEVAR_H)

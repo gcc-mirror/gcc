@@ -90,6 +90,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "toplev.h"
 #include "target.h"
+#include "params.h"
 
 #ifndef SHIFT_COUNT_TRUNCATED
 #define SHIFT_COUNT_TRUNCATED 0
@@ -11380,6 +11381,47 @@ reversed_comparison (rtx exp, enum machine_mode mode, rtx op0, rtx op1)
     return gen_binary (reversed_code, mode, op0, op1);
 }
 
+/* Utility function for record_value_for_reg.  Count number of
+   rtxs in X.  */
+static int
+count_rtxs (rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  const char *fmt;
+  int i, ret = 1;
+
+  if (GET_RTX_CLASS (code) == '2'
+      || GET_RTX_CLASS (code) == 'c')
+    {
+      rtx x0 = XEXP (x, 0);
+      rtx x1 = XEXP (x, 1);
+
+      if (x0 == x1)
+	return 1 + 2 * count_rtxs (x0);
+
+      if ((GET_RTX_CLASS (GET_CODE (x1)) == '2'
+	   || GET_RTX_CLASS (GET_CODE (x1)) == 'c')
+	  && (x0 == XEXP (x1, 0) || x0 == XEXP (x1, 1)))
+	return 2 + 2 * count_rtxs (x0)
+	       + count_rtxs (x == XEXP (x1, 0)
+			     ? XEXP (x1, 1) : XEXP (x1, 0));
+
+      if ((GET_RTX_CLASS (GET_CODE (x0)) == '2'
+	   || GET_RTX_CLASS (GET_CODE (x0)) == 'c')
+	  && (x1 == XEXP (x0, 0) || x1 == XEXP (x0, 1)))
+	return 2 + 2 * count_rtxs (x1)
+	       + count_rtxs (x == XEXP (x0, 0)
+			     ? XEXP (x0, 1) : XEXP (x0, 0));
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    if (fmt[i] == 'e')
+      ret += count_rtxs (XEXP (x, i));
+
+  return ret;
+}
+
 /* Utility function for following routine.  Called when X is part of a value
    being stored into reg_last_set_value.  Sets reg_last_set_table_tick
    for each register mentioned.  Similar to mention_regs in cse.c  */
@@ -11486,6 +11528,13 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
 	      && GET_CODE (XEXP (tem, 0)) == CLOBBER
 	      && GET_CODE (XEXP (tem, 1)) == CLOBBER)
 	    tem = XEXP (tem, 0);
+	  else if (count_occurrences (value, reg, 1) >= 2)
+	    {
+	      /* If there are two or more occurrences of REG in VALUE,
+		 prevent the value from growing too much.  */
+	      if (count_rtxs (tem) > MAX_LAST_VALUE_RTL)
+		tem = gen_rtx_CLOBBER (GET_MODE (tem), const0_rtx);
+	    }
 
 	  value = replace_rtx (copy_rtx (value), reg, tem);
 	}
