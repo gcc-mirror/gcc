@@ -4531,9 +4531,10 @@ package body Exp_Ch3 is
    --  for initialization) are chained in the Acions field list of the freeze
    --  node using Append_Freeze_Actions.
 
-   procedure Freeze_Type (N : Node_Id) is
+   function Freeze_Type (N : Node_Id) return Boolean is
       Def_Id    : constant Entity_Id := Entity (N);
       RACW_Seen : Boolean := False;
+      Result    : Boolean := False;
 
    begin
       --  Process associated access types needing special processing
@@ -4596,6 +4597,18 @@ package body Exp_Ch3 is
                end if;
             end;
 
+            if Is_Itype (Def_Id)
+              and then Is_Record_Type (Underlying_Type (Scope (Def_Id)))
+            then
+               --  The freeze node is only used to introduce the controller,
+               --  the back-end has no use for it for a discriminated
+               --   component.
+
+               Set_Freeze_Node (Def_Id, Empty);
+               Set_Has_Delayed_Freeze (Def_Id, False);
+               Result := True;
+            end if;
+
          --  Similar process if the controller of the subtype is not
          --  present but the parent has it. This can happen with constrained
          --  record components where the subtype is an itype.
@@ -4620,7 +4633,7 @@ package body Exp_Ch3 is
 
                Set_Freeze_Node (Def_Id, Empty);
                Set_Has_Delayed_Freeze (Def_Id, False);
-               Remove (N);
+               Result := True;
             end;
          end if;
 
@@ -4864,7 +4877,7 @@ package body Exp_Ch3 is
         and then Freeze_Node (Full_View (Def_Id)) = N
       then
          Set_Entity (N, Full_View (Def_Id));
-         Freeze_Type (N);
+         Result := Freeze_Type (N);
          Set_Entity (N, Def_Id);
 
       --  All other types require no expander action. There are such
@@ -4874,10 +4887,11 @@ package body Exp_Ch3 is
       end if;
 
       Freeze_Stream_Operations (N, Def_Id);
+      return Result;
 
    exception
       when RE_Not_Available =>
-         return;
+         return False;
    end Freeze_Type;
 
    -------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -163,6 +163,11 @@ package body Freeze is
    --  of the object is needed, and for a type, the subsidiary types are
    --  needed -- see body for details). Never has any effect on T if the
    --  Debug_Info_Off flag is set.
+
+   procedure Undelay_Type (T : Entity_Id);
+   --  T is a type of a component that we know to be an Itype.
+   --  We don't want this to have a Freeze_Node, so ensure it doesn't.
+   --  Do the same for any Full_View or Corresponding_Record_Type.
 
    procedure Warn_Overlay
      (Expr : Node_Id;
@@ -506,9 +511,9 @@ package body Freeze is
 
    procedure Check_Compile_Time_Size (T : Entity_Id) is
 
-      procedure Set_Small_Size (S : Uint);
+      procedure Set_Small_Size (T : Entity_Id; S : Uint);
       --  Sets the compile time known size (32 bits or less) in the Esize
-      --  field, checking for a size clause that was given which attempts
+      --  field, of T checking for a size clause that was given which attempts
       --  to give a smaller size.
 
       function Size_Known (T : Entity_Id) return Boolean;
@@ -525,7 +530,7 @@ package body Freeze is
       -- Set_Small_Size --
       --------------------
 
-      procedure Set_Small_Size (S : Uint) is
+      procedure Set_Small_Size (T : Entity_Id; S : Uint) is
       begin
          if S > 32 then
             return;
@@ -576,7 +581,8 @@ package body Freeze is
 
          elsif Is_Array_Type (T) then
             if Ekind (T) = E_String_Literal_Subtype then
-               Set_Small_Size (Component_Size (T) * String_Literal_Length (T));
+               Set_Small_Size (T, Component_Size (T)
+                               * String_Literal_Length (T));
                return True;
 
             elsif not Is_Constrained (T) then
@@ -632,7 +638,7 @@ package body Freeze is
                   Next_Index (Index);
                end loop;
 
-               Set_Small_Size (Esiz);
+               Set_Small_Size (T, Esiz);
                return True;
             end;
 
@@ -864,7 +870,7 @@ package body Freeze is
                end loop;
 
                if Packed_Size_Known then
-                  Set_Small_Size (Packed_Size);
+                  Set_Small_Size (T, Packed_Size);
                end if;
 
                return True;
@@ -1365,6 +1371,7 @@ package body Freeze is
    -------------------
 
    function Freeze_Entity (E : Entity_Id; Loc : Source_Ptr) return List_Id is
+      Test_E : Entity_Id := E;
       Comp   : Entity_Id;
       F_Node : Node_Id;
       Result : List_Id;
@@ -1460,6 +1467,7 @@ package body Freeze is
          IR   : Node_Id;
          Junk : Boolean;
          ADC  : Node_Id;
+         Prev : Entity_Id;
 
          Unplaced_Component : Boolean := False;
          --  Set True if we find at least one component with no component
@@ -1537,80 +1545,14 @@ package body Freeze is
             end if;
          end if;
 
-         --  Freeze components and embedded subtypes
+         --  Freeze components and embedded subtypes.
 
          Comp := First_Entity (Rec);
+         Prev := Empty;
+
          while Present (Comp) loop
-            if not Is_Type (Comp) then
-               Freeze_And_Append (Etype (Comp), Loc, Result);
-            end if;
 
-            --  If the component is an access type with an allocator
-            --  as default value, the designated type will be frozen
-            --  by the corresponding expression in init_proc. In  order
-            --  to place the freeze node for the designated type before
-            --  that for the current record type, freeze it now.
-
-            --  Same process if the component is an array of access types,
-            --  initialized with an aggregate. If the designated type is
-            --  private, it cannot contain allocators, and it is premature
-            --  to freeze the type, so we check for this as well.
-
-            if Is_Access_Type (Etype (Comp))
-              and then Present (Parent (Comp))
-              and then Present (Expression (Parent (Comp)))
-              and then Nkind (Expression (Parent (Comp))) = N_Allocator
-            then
-               declare
-                  Alloc : constant Node_Id := Expression (Parent (Comp));
-
-               begin
-                  --  If component is pointer to a classwide type, freeze
-                  --  the specific type in the expression being allocated.
-                  --  The expression may be a subtype indication, in which
-                  --  case freeze the subtype mark.
-
-                  if Is_Class_Wide_Type (Designated_Type (Etype (Comp))) then
-                     if Is_Entity_Name (Expression (Alloc)) then
-                        Freeze_And_Append
-                          (Entity (Expression (Alloc)), Loc, Result);
-                     elsif
-                       Nkind (Expression (Alloc)) = N_Subtype_Indication
-                     then
-                        Freeze_And_Append
-                         (Entity (Subtype_Mark (Expression (Alloc))),
-                           Loc, Result);
-                     end if;
-
-                  elsif Is_Itype (Designated_Type (Etype (Comp))) then
-                     Check_Itype (Designated_Type (Etype (Comp)));
-
-                  else
-                     Freeze_And_Append
-                       (Designated_Type (Etype (Comp)), Loc, Result);
-                  end if;
-               end;
-
-            elsif Is_Access_Type (Etype (Comp))
-              and then Is_Itype (Designated_Type (Etype (Comp)))
-            then
-               Check_Itype (Designated_Type (Etype (Comp)));
-
-            elsif Is_Array_Type (Etype (Comp))
-              and then Is_Access_Type (Component_Type (Etype (Comp)))
-              and then Present (Parent (Comp))
-              and then Nkind (Parent (Comp)) = N_Component_Declaration
-              and then Present (Expression (Parent (Comp)))
-              and then Nkind (Expression (Parent (Comp))) = N_Aggregate
-              and then Is_Fully_Defined
-                 (Designated_Type (Component_Type (Etype (Comp))))
-            then
-               Freeze_And_Append
-                 (Designated_Type
-                   (Component_Type (Etype (Comp))), Loc, Result);
-            end if;
-
-            --  Processing for real components (exclude anonymous subtypes)
+            --  First handle the (real) component case.
 
             if Ekind (Comp) = E_Component
               or else Ekind (Comp) = E_Discriminant
@@ -1619,6 +1561,22 @@ package body Freeze is
                   CC : constant Node_Id := Component_Clause (Comp);
 
                begin
+                  --  Freezing a record type freezes the type of each of its
+                  --  components.  However, if the type of the component is
+                  --  part of this record, we do not want or need a separate
+                  --  Freeze_Node.  Note that Is_Itype is wrong because that's
+                  --  also set in private type cases.  We also can't check
+                  --  for the Scope being exactly Rec because of private types
+                  --  and record extensions.
+                  if Is_Itype (Etype (Comp))
+                    and then Is_Record_Type (Underlying_Type
+                                             (Scope (Etype (Comp))))
+                  then
+                     Undelay_Type (Etype (Comp));
+                  end if;
+
+                  Freeze_And_Append (Etype (Comp), Loc, Result);
+
                   --  Check for error of component clause given for variable
                   --  sized type. We have to delay this test till this point,
                   --  since the component type has to be frozen for us to know
@@ -1779,6 +1737,133 @@ package body Freeze is
                end;
             end if;
 
+            --  If the component is an Itype with Delayed_Freeze and is
+            --  either a record or array subtype and its base type has not
+            --  yet been frozen, we must remove this from the entity list
+            --  of this record and put it on the entity list of the scope of
+            --  its base type.  Note that we know that this is not the type
+            --  of a component since we cleared Has_Delayed_Freeze for it
+            --  in the previous loop.  Thus this must be the Designated_Type
+            --  of an access type, which is the type of a component.
+            if Is_Itype (Comp)
+              and then Is_Type (Scope (Comp))
+              and then Is_Composite_Type (Comp)
+              and then Base_Type (Comp) /= Comp
+              and then Has_Delayed_Freeze (Comp)
+              and then not Is_Frozen (Base_Type (Comp))
+            then
+               declare
+                  Will_Be_Frozen : Boolean := False;
+                  S : Entity_Id := Scope (Rec);
+
+               begin
+                  --  We have a pretty bad kludge here.  Suppose Rec is a
+                  --  subtype being defined in a subprogram that's created
+                  --  as part of the freezing of Rec'Base.  In that case,
+                  --  we know that Comp'Base must have already been frozen by
+                  --  the time we get to elaborate this because Gigi doesn't
+                  --  elaborate any bodies until it has elaborated all of the
+                  --  declarative part.  But Is_Frozen will not be  set at this
+                  --  point because we are processing code in lexical order.
+
+                  --  We detect this case by going up the Scope chain of
+                  --  Rec and seeing if we have a subprogram scope before
+                  --  reaching the top of the scope chain or that of Comp'Base.
+                  --  If we do, then mark that Comp'Base will actually be
+                  --  frozen.  If so, we merely undelay it.
+                  while Present (S) loop
+                     if Is_Subprogram (S) then
+                        Will_Be_Frozen := True;
+                        exit;
+                     elsif S = Scope (Base_Type (Comp)) then
+                        exit;
+                     end if;
+
+                     S := Scope (S);
+                  end loop;
+
+                  if Will_Be_Frozen then
+                     Undelay_Type (Comp);
+                  else
+                     if Present (Prev) then
+                        Set_Next_Entity (Prev, Next_Entity (Comp));
+                     else
+                        Set_First_Entity (Rec, Next_Entity (Comp));
+                     end if;
+
+                     --  Insert in entity list of scope of base type (which
+                     --  must be an enclosing scope, because still unfrozen).
+
+                     Append_Entity (Comp, Scope (Base_Type (Comp)));
+                  end if;
+               end;
+
+            --  If the component is an access type with an allocator
+            --  as default value, the designated type will be frozen
+            --  by the corresponding expression in init_proc. In  order
+            --  to place the freeze node for the designated type before
+            --  that for the current record type, freeze it now.
+
+            --  Same process if the component is an array of access types,
+            --  initialized with an aggregate. If the designated type is
+            --  private, it cannot contain allocators, and it is premature
+            --  to freeze the type, so we check for this as well.
+
+            elsif Is_Access_Type (Etype (Comp))
+              and then Present (Parent (Comp))
+              and then Present (Expression (Parent (Comp)))
+              and then Nkind (Expression (Parent (Comp))) = N_Allocator
+            then
+               declare
+                  Alloc : constant Node_Id := Expression (Parent (Comp));
+
+               begin
+                  --  If component is pointer to a classwide type, freeze
+                  --  the specific type in the expression being allocated.
+                  --  The expression may be a subtype indication, in which
+                  --  case freeze the subtype mark.
+
+                  if Is_Class_Wide_Type (Designated_Type (Etype (Comp))) then
+                     if Is_Entity_Name (Expression (Alloc)) then
+                        Freeze_And_Append
+                          (Entity (Expression (Alloc)), Loc, Result);
+                     elsif
+                       Nkind (Expression (Alloc)) = N_Subtype_Indication
+                     then
+                        Freeze_And_Append
+                         (Entity (Subtype_Mark (Expression (Alloc))),
+                           Loc, Result);
+                     end if;
+
+                  elsif Is_Itype (Designated_Type (Etype (Comp))) then
+                     Check_Itype (Designated_Type (Etype (Comp)));
+
+                  else
+                     Freeze_And_Append
+                       (Designated_Type (Etype (Comp)), Loc, Result);
+                  end if;
+               end;
+
+            elsif Is_Access_Type (Etype (Comp))
+              and then Is_Itype (Designated_Type (Etype (Comp)))
+            then
+               Check_Itype (Designated_Type (Etype (Comp)));
+
+            elsif Is_Array_Type (Etype (Comp))
+              and then Is_Access_Type (Component_Type (Etype (Comp)))
+              and then Present (Parent (Comp))
+              and then Nkind (Parent (Comp)) = N_Component_Declaration
+              and then Present (Expression (Parent (Comp)))
+              and then Nkind (Expression (Parent (Comp))) = N_Aggregate
+              and then Is_Fully_Defined
+                 (Designated_Type (Component_Type (Etype (Comp))))
+            then
+               Freeze_And_Append
+                 (Designated_Type
+                   (Component_Type (Etype (Comp))), Loc, Result);
+            end if;
+
+            Prev := Comp;
             Next_Entity (Comp);
          end loop;
 
@@ -1882,6 +1967,17 @@ package body Freeze is
    --  Start of processing for Freeze_Entity
 
    begin
+      --  We are going to test for various reasons why this entity need
+      --  not be frozen here, but in the case of an Itype that's defined
+      --  within a record, that test actually applies to the record.
+      if Is_Itype (E) and then Is_Record_Type (Scope (E)) then
+         Test_E := Scope (E);
+      elsif Is_Itype (E) and then Present (Underlying_Type (Scope (E)))
+        and then Is_Record_Type (Underlying_Type (Scope (E)))
+      then
+         Test_E := Underlying_Type (Scope (E));
+      end if;
+
       --  Do not freeze if already frozen since we only need one freeze node
 
       if Is_Frozen (E) then
@@ -1892,7 +1988,7 @@ package body Freeze is
       --  The entity will be frozen in the proper scope after the current
       --  generic is analyzed.
 
-      elsif Inside_A_Generic and then External_Ref_In_Generic (E) then
+      elsif Inside_A_Generic and then External_Ref_In_Generic (Test_E) then
          return No_List;
 
       --  Do not freeze a global entity within an inner scope created during
@@ -1906,9 +2002,9 @@ package body Freeze is
       --  comes from source, or is a generic instance, then the freeze point
       --  is the one mandated by the language. and we freze the entity.
 
-      elsif In_Open_Scopes (Scope (E))
-        and then Scope (E) /= Current_Scope
-        and then Ekind (E) /= E_Constant
+      elsif In_Open_Scopes (Scope (Test_E))
+        and then Scope (Test_E) /= Current_Scope
+        and then Ekind (Test_E) /= E_Constant
       then
          declare
             S : Entity_Id := Current_Scope;
@@ -1940,10 +2036,10 @@ package body Freeze is
 
       elsif Front_End_Inlining
         and then  In_Instance_Body
-        and then Present (Scope (E))
+        and then Present (Scope (Test_E))
       then
          declare
-            S : Entity_Id := Scope (E);
+            S : Entity_Id := Scope (Test_E);
          begin
             while Present (S) loop
                if Is_Generic_Instance (S) then
@@ -2694,6 +2790,12 @@ package body Freeze is
                   Freeze_And_Append (Comp, Loc, Result);
 
                elsif (Ekind (Comp)) /= E_Function then
+                  if Is_Itype (Etype (Comp))
+                    and then Underlying_Type (Scope (Etype (Comp))) = E
+                  then
+                     Undelay_Type (Etype (Comp));
+                  end if;
+
                   Freeze_And_Append (Etype (Comp), Loc, Result);
                end if;
 
@@ -2904,65 +3006,7 @@ package body Freeze is
             Check_Restriction (No_Standard_Storage_Pools, E);
          end if;
 
-         --  If the current entity is an array or record subtype and has
-         --  discriminants used to constrain it, it must not freeze, because
-         --  Freeze_Entity nodes force Gigi to process the frozen type.
-
          if Is_Composite_Type (E) then
-
-            if Is_Array_Type (E) then
-               declare
-                  Index : Node_Id := First_Index (E);
-                  Expr1 : Node_Id;
-                  Expr2 : Node_Id;
-
-               begin
-                  while Present (Index) loop
-                     if Etype (Index) /= Any_Type then
-                        Get_Index_Bounds (Index, Expr1, Expr2);
-
-                        for J in 1 .. 2 loop
-                           if Nkind (Expr1) = N_Identifier
-                             and then Ekind (Entity (Expr1)) = E_Discriminant
-                           then
-                              Set_Has_Delayed_Freeze (E, False);
-                              Set_Freeze_Node (E, Empty);
-                              Check_Debug_Info_Needed (E);
-                              return Result;
-                           end if;
-
-                           Expr1 := Expr2;
-                        end loop;
-                     end if;
-
-                     Next_Index (Index);
-                  end loop;
-               end;
-
-            elsif Has_Discriminants (E)
-              and Is_Constrained (E)
-            then
-               declare
-                  Constraint : Elmt_Id;
-                  Expr       : Node_Id;
-
-               begin
-                  Constraint := First_Elmt (Discriminant_Constraint (E));
-                  while Present (Constraint) loop
-                     Expr := Node (Constraint);
-                     if Nkind (Expr) = N_Identifier
-                       and then Ekind (Entity (Expr)) = E_Discriminant
-                     then
-                        Set_Has_Delayed_Freeze (E, False);
-                        Set_Freeze_Node (E, Empty);
-                        Check_Debug_Info_Needed (E);
-                        return Result;
-                     end if;
-
-                     Next_Elmt (Constraint);
-                  end loop;
-               end;
-            end if;
 
             --  AI-117 requires that all new primitives of a tagged type
             --  must inherit the convention of the full view of the type.
@@ -3065,7 +3109,7 @@ package body Freeze is
          --  in particular the size and alignment values. This processing is
          --  not required for generic types, since generic types do not play
          --  any part in code generation, and so the size and alignment values
-         --  for suhc types are irrelevant.
+         --  for such types are irrelevant.
 
          if Is_Generic_Type (E) then
             return Result;
@@ -4726,6 +4770,44 @@ package body Freeze is
          end if;
       end if;
    end Set_Debug_Info_Needed;
+
+   ------------------
+   -- Undelay_Type --
+   ------------------
+
+   procedure Undelay_Type (T : Entity_Id) is
+   begin
+      Set_Has_Delayed_Freeze (T, False);
+      Set_Freeze_Node (T, Empty);
+
+      --  Since we don't want T to have a Freeze_Node, we don't want its
+      --  Full_View or Corresponding_Record_Type to have one either.
+
+      --  ??? Fundamentally, this whole handling is a kludge. What we really
+      --  want is to be sure that for an Itype that's part of record R and
+      --  is a subtype of type T, that it's frozen after the later of the
+      --  freeze points of R and T.  We have no way of doing that directly,
+      --  so what we do is force most such Itypes to be frozen as part of
+      --  freezing R via this procedure and only delay the ones that need
+      --  to be delayed (mostly the designated types of access types that are
+      --  defined as part of the record).
+
+      if Is_Private_Type (T)
+        and then Present (Full_View (T))
+        and then Is_Itype (Full_View (T))
+        and then Is_Record_Type (Scope (Full_View (T)))
+      then
+         Undelay_Type (Full_View (T));
+      end if;
+
+      if Is_Concurrent_Type (T)
+        and then Present (Corresponding_Record_Type (T))
+        and then Is_Itype (Corresponding_Record_Type (T))
+        and then Is_Record_Type (Scope (Corresponding_Record_Type (T)))
+      then
+         Undelay_Type (Corresponding_Record_Type (T));
+      end if;
+   end Undelay_Type;
 
    ------------------
    -- Warn_Overlay --

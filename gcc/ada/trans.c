@@ -2956,7 +2956,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				       NULL_TREE, gnu_prefix);
 	else
 	  {
-	    gnu_field = gnat_to_gnu_entity (gnat_field, NULL_TREE, 0);
+	    gnu_field = gnat_to_gnu_field_decl (gnat_field);
 
 	    /* If there are discriminants, the prefix might be
                evaluated more than once, which is a problem if it has
@@ -5456,7 +5456,7 @@ assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
        gnat_assoc = Next (gnat_assoc))
     {
       Node_Id gnat_field = First (Choices (gnat_assoc));
-      tree gnu_field = gnat_to_gnu_entity (Entity (gnat_field), NULL_TREE, 0);
+      tree gnu_field = gnat_to_gnu_field_decl (Entity (gnat_field));
       tree gnu_expr = gnat_to_gnu (Expression (gnat_assoc));
 
       /* The expander is supposed to put a single component selector name

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -74,6 +74,10 @@ extern void init_dummy_type (void);
    DEFINITION, but a value of 2 is used in special circumstances, defined in
    the code.  */
 extern tree gnat_to_gnu_entity (Entity_Id, tree, int);
+
+/* Similar, but if the returned value is a COMPONENT_REF, return the
+   FIELD_DECL.  */
+extern tree gnat_to_gnu_field_decl (Entity_Id);
 
 /* Given GNAT_ENTITY, an entity in the incoming GNAT tree, return a
    GCC type corresponding to that entity.  GNAT_ENTITY is assumed to

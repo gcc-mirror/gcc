@@ -7374,12 +7374,7 @@ package body Sem_Ch3 is
       Set_Depends_On_Private       (Def_Id, Has_Private_Component (Def_Id));
       Set_Is_Access_Constant       (Def_Id, Is_Access_Constant (T));
 
-      --  Itypes created for constrained record components do not receive
-      --  a freeze node, they are elaborated when first seen.
-
-      if not Is_Record_Type (Current_Scope) then
-         Conditional_Delay (Def_Id, T);
-      end if;
+      Conditional_Delay (Def_Id, T);
    end Constrain_Access;
 
    ---------------------
@@ -7474,17 +7469,12 @@ package body Sem_Ch3 is
       Set_Is_Private_Composite (Def_Id, Is_Private_Composite (T));
       Set_Is_Limited_Composite (Def_Id, Is_Limited_Composite (T));
 
-      --  If the subtype is not that of a record component, build a freeze
-      --  node if parent still needs one.
-
-      --  If the subtype is not that of a record component, make sure
+      --  Build a freeze node if parent still needs one.  Also, make sure
       --  that the Depends_On_Private status is set (explanation ???)
       --  and also that a conditional delay is set.
 
-      if not Is_Type (Scope (Def_Id)) then
-         Set_Depends_On_Private (Def_Id, Depends_On_Private (T));
-         Conditional_Delay (Def_Id, T);
-      end if;
+      Set_Depends_On_Private (Def_Id, Depends_On_Private (T));
+      Conditional_Delay (Def_Id, T);
 
    end Constrain_Array;
 
