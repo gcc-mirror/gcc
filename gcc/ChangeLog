@@ -1,5 +1,7 @@
 Tue Sep 29 09:57:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* regmove.c (regmove_profitable_p): For shift, use 1 as third arg.
+
 	* function.c (find_fixup_replacement): Consider equivalent if
 	rtx_equal_p, not just same rtx.
 
