@@ -482,6 +482,9 @@
 	 (eq_attr "length" "2") (const_string "yes")
 	 ] (const_string "no")))
 
+(define_attr "is_sfunc" ""
+  (if_then_else (eq_attr "type" "sfunc") (const_int 1) (const_int 0)))
+
 (define_delay
   (eq_attr "needs_delay_slot" "yes")
   [(eq_attr "in_delay_slot" "yes") (nil) (nil)])
