@@ -1,3 +1,29 @@
+2004-10-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* pretty-print.c: Include tree.h.
+	(pp_base_prepare_to_format): New function, logic from
+	text_specifies_location.
+	(pp_base_format_text): Use gcc_assert.
+	* pretty-print.h (pp_prepare_to_format): New macro.
+	(pp_base_prepare_to_format): Prototype.
+	* diagnostic.c (text_specifies_location): Delete.
+	(bug_report_request): Delete.
+	(diagnostic_set_info): Don't call text_specifies_location.
+	(diagnostic_action_after_output): Put text from
+	bug_report_request inline here.  Use gcc_unreachable.
+	(diagnostic_report_current_function): Fix comment.
+	(diagnostic_report_diagnostic): Clarify logic for error recursion.
+	Call pp_prepare_to_format before diagnostic_starter.
+	(trim_filename): Use IS_DIR_SEPARATOR.
+	(fatal_error, internal_error): Use gcc_unreachable.
+	(error_recursion): Call diagnostic_action_after_output to
+	issue the bug_report_request message and exit.
+	* Makefile.in (diagnostic.o, pretty-print.o): Update dependencies.
+
+	* c-parse.in: Add list of diagnostic messages to insulate
+	translation template from version of yacc/bison used to
+	compile the grammar.
+
 2004-10-06  Alan Modra  <amodra@bigpond.net.au>
 
 	PR 16406

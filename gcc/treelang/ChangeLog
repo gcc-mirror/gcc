@@ -1,3 +1,9 @@
+2004-10-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* parse.y: Add list of diagnostic messages to insulate
+	translation template from version of yacc/bison used to
+	compile the grammar.
+
 2004-10-02  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR other/17762
