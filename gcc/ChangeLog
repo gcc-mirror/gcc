@@ -1,3 +1,9 @@
+2003-01-10 Kelley Cook <kelleycook@comcast.net>
+
+	* configure.in (linker read-only and read-write section mixing):
+	Squelch some assembler warnings.
+	* configure: Likewise.
+
 2003-01-10  Hartmut Penner  <hpenner@de.ibm.com>
 
        	* doc/invoke.texi: Document -mtune, delete -mcpu 
