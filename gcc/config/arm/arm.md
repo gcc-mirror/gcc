@@ -6029,7 +6029,7 @@
   if (arm_ccfsm_state != 0)
     abort ();
 
-  return \"bvs\\t%l0;beq\\t%l0\";
+  return \"bvs\\t%l0\;beq\\t%l0\";
   "
   [(set_attr "conds" "jump_clob")
    (set_attr "length" "8")]
@@ -6046,7 +6046,7 @@
   if (arm_ccfsm_state != 0)
     abort ();
 
-  return \"bmi\\t%l0;bgt\\t%l0\";
+  return \"bmi\\t%l0\;bgt\\t%l0\";
   "
   [(set_attr "conds" "jump_clob")
    (set_attr "length" "8")]
@@ -6081,7 +6081,7 @@
   if (arm_ccfsm_state != 0)
     abort ();
 
-  return \"bmi\\t%l0;bgt\\t%l0\";
+  return \"bmi\\t%l0\;bgt\\t%l0\";
   "
   [(set_attr "conds" "jump_clob")
    (set_attr "length" "8")]
@@ -6098,7 +6098,7 @@
   if (arm_ccfsm_state != 0)
     abort ();
 
-  return \"bvs\\t%l0;beq\\t%l0\";
+  return \"bvs\\t%l0\;beq\\t%l0\";
   "
   [(set_attr "conds" "jump_clob")
    (set_attr "length" "8")]
@@ -6303,8 +6303,12 @@
   "
   {
     enum rtx_code code = GET_CODE (operands[1]);
-    rtx ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
+    rtx ccreg;
 
+    if (code == UNEQ || code == LTGT)
+      FAIL;
+
+    ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
     operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
   }"
 )
@@ -6319,6 +6323,9 @@
   {
     enum rtx_code code = GET_CODE (operands[1]);
     rtx ccreg;
+
+    if (code == UNEQ || code == LTGT)
+      FAIL;
 
     /* When compiling for SOFT_FLOAT, ensure both arms are in registers. 
        Otherwise, ensure it is a valid FP add operand */
@@ -6340,8 +6347,12 @@
   "
   {
     enum rtx_code code = GET_CODE (operands[1]);
-    rtx ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
+    rtx ccreg;
 
+    if (code == UNEQ || code == LTGT)
+      FAIL;
+
+    ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
     operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
   }"
 )
