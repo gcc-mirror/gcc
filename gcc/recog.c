@@ -3121,7 +3121,7 @@ peephole2_optimize (dump_file)
 						   XEXP (note, 0),
 						   REG_NOTES (new_insn));
 			  default:
-			    /* Discard all other reg notes. */
+			    /* Discard all other reg notes.  */
 			    break;
 			  }
 

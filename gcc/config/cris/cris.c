@@ -665,7 +665,7 @@ cris_target_asm_function_prologue (file, size)
   cfa_write_offset -= size;
 
   /* Get a contiguous sequence of registers, starting with r0, that need
-     to be saved. */
+     to be saved.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
       if ((((regs_ever_live[regno]
@@ -774,7 +774,7 @@ cris_target_asm_function_prologue (file, size)
       else
 	{
 	  /* Avoid printing multiple subsequent sub:s for sp.  FIXME:
-	     Clean up the conditional expression. */
+	     Clean up the conditional expression.  */
 	  fprintf (file, "\tsub%s %d,$sp\n",
 		   ADDITIVE_SIZE_MODIFIER ((last_movem_reg + 1) * 4 + size),
 		   (last_movem_reg + 1) * 4 + size);
@@ -849,7 +849,7 @@ saved_regs_mentioned (x)
   const char *fmt;
   RTX_CODE code;
 
-  /* Mainly stolen from refers_to_regno_p in rtlanal.c. */
+  /* Mainly stolen from refers_to_regno_p in rtlanal.c.  */
 
   code = GET_CODE (x);
 
@@ -1166,7 +1166,7 @@ cris_target_asm_function_epilogue (file, size)
      them.  */
   if (pretend)
     {
-      /* Since srp is stored on the way, we need to restore it first. */
+      /* Since srp is stored on the way, we need to restore it first.  */
       if (return_address_on_stack)
 	{
 	  if (*save_last && file)
@@ -1184,7 +1184,7 @@ cris_target_asm_function_epilogue (file, size)
 	       ADDITIVE_SIZE_MODIFIER (pretend), pretend);
     }
 
-  /* Here's where we have a delay-slot we need to fill. */
+  /* Here's where we have a delay-slot we need to fill.  */
   if (file && current_function_epilogue_delay_list)
     {
       /* If gcc has allocated an insn for the epilogue delay slot, but
@@ -1442,7 +1442,7 @@ cris_print_operand (file, x, code)
       return;
 
     case 0:
-      /* No code, print as usual. */
+      /* No code, print as usual.  */
       break;
 
     default:
@@ -1454,7 +1454,7 @@ cris_print_operand (file, x, code)
       }
     }
 
-  /* Print an operand as without a modifier letter. */
+  /* Print an operand as without a modifier letter.  */
   switch (GET_CODE (operand))
     {
     case REG:
@@ -1675,7 +1675,7 @@ cris_initial_elimination_offset (fromreg, toreg)
       && toreg == STACK_POINTER_REGNUM)
     return fp_sp_offset;
 
-  /* We need to balance out the frame pointer here. */
+  /* We need to balance out the frame pointer here.  */
   if (fromreg == ARG_POINTER_REGNUM
       && toreg == STACK_POINTER_REGNUM)
     return ap_fp_offset + fp_sp_offset - 4;
@@ -1779,13 +1779,13 @@ cris_notice_update_cc (exp, insn)
 	    return;
 
 	  /* Record CC0 changes, so we do not have to output multiple
-	     test insns. */
+	     test insns.  */
 	  if (SET_DEST (exp) == cc0_rtx)
 	    {
 	      cc_status.value1 = SET_SRC (exp);
 	      cc_status.value2 = 0;
 
-	      /* Handle flags for the special btstq on one bit. */
+	      /* Handle flags for the special btstq on one bit.  */
 	      if (GET_CODE (SET_SRC (exp)) == ZERO_EXTRACT
 		  && XEXP (SET_SRC (exp), 1) == const1_rtx)
 		{
@@ -1805,7 +1805,7 @@ cris_notice_update_cc (exp, insn)
 		      && XEXP (SET_SRC (exp), 1) != const0_rtx)
 		    /* For some reason gcc will not canonicalize compare
 		       operations, reversing the sign by itself if
-		       operands are in wrong order. */
+		       operands are in wrong order.  */
 		    /* (But NOT inverted; eq is still eq.) */
 		    cc_status.flags = CC_REVERSED;
 
@@ -1823,14 +1823,14 @@ cris_notice_update_cc (exp, insn)
 		       && REG_P (XEXP (SET_DEST (exp), 0))))
 	    {
 	      /* A register is set; normally CC is set to show that no
-		 test insn is needed.  Catch the exceptions. */
+		 test insn is needed.  Catch the exceptions.  */
 
 	      /* If not to cc0, then no "set"s in non-natural mode give
 		 ok cc0...  */
 	      if (GET_MODE_SIZE (GET_MODE (SET_DEST (exp))) > UNITS_PER_WORD
 		  || GET_MODE_CLASS (GET_MODE (SET_DEST (exp))) == MODE_FLOAT)
 		{
-		  /* ... except add:s and sub:s in DImode. */
+		  /* ... except add:s and sub:s in DImode.  */
 		  if (GET_MODE (SET_DEST (exp)) == DImode
 		      && (GET_CODE (SET_SRC (exp)) == PLUS
 			  || GET_CODE (SET_SRC (exp)) == MINUS))

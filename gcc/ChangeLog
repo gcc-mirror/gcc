@@ -1,5 +1,14 @@
 2001-10-30  Kazu Hirata  <kazu@hxi.com>
 
+	* alias.c: Fix comment formatting.
+	* recog.c: Likewise.
+	* config/cris/cris.c: Likewise.
+	* config/cris/cris.h: Likewise.
+	* config/i960/i960.c: Likewise.
+	* config/i960/i960.h: Likewise.
+
+2001-10-30  Kazu Hirata  <kazu@hxi.com>
+
 	* config/arm/arm.c: Fix a comment typo.
 	* config/arm/arm.h: Likewise.
 	* config/ia64/ia64.c: Likewise.
