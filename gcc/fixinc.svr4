@@ -500,6 +500,39 @@ EOF
   rm -f /tmp/$base
 fi
 
+# Disable apparent native compiler optimization cruft in SVR4.2 <string.h>
+# that is visible to any ANSI compiler using this include.  Simply
+# delete the lines the #define some string functions to internal forms.
+
+file=string.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  cp $file_to_fix /tmp/$base
+  chmod +w /tmp/$base
+  ex /tmp/$base <<EOF
+  g/#define.*__std_hdr_/d
+  wq
+EOF
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    echo No change needed in $file_to_fix
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
 # Add a #define of _SIGACTION_ into <sys/signal.h>.
 # Also fix types of SIG_DFL, SIG_ERR, SIG_IGN, and SIG_HOLD.
 
