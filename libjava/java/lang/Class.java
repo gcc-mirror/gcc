@@ -227,12 +227,12 @@ public final class Class implements Serializable
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
-      sm.checkPermission(ClassLoader.protectionDomainPermission);
+      sm.checkPermission(VMClassLoader.protectionDomainPermission);
     
     ProtectionDomain protectionDomain = getProtectionDomain0();
 
     if (protectionDomain == null)
-      return ClassLoader.unknownProtectionDomain;
+      return VMClassLoader.unknownProtectionDomain;
     else
       return protectionDomain;
   }

@@ -32,6 +32,7 @@ details.  */
 #include <java/lang/AbstractMethodError.h>
 #include <java/lang/NoClassDefFoundError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
 
 using namespace gcj;
@@ -435,7 +436,7 @@ _Jv_PrepareClass(jclass klass)
   // resolved.
 
   if (klass->superclass)
-    java::lang::ClassLoader::resolveClass0 (klass->superclass);
+    java::lang::VMClassLoader::resolveClass (klass->superclass);
 
   _Jv_InterpClass *clz = (_Jv_InterpClass*)klass;
 

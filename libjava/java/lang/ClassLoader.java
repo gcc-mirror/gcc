@@ -1,25 +1,56 @@
-// ClassLoader.java - Define policies for loading Java classes.
+/* ClassLoader.java -- responsible for loading classes into the VM
+   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
+This file is part of GNU Classpath.
 
-   This file is part of libgcj.
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
+
 
 package java.lang;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.security.AllPermission;
 import java.security.CodeSource;
-import java.security.Permission;
-import java.security.Permissions;
+import java.security.PermissionCollection;
 import java.security.Policy;
 import java.security.ProtectionDomain;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import gnu.java.util.DoubleEnumeration;
+import gnu.java.util.EmptyEnumeration;
 
 /**
  * The ClassLoader is a way of customizing the way Java gets its classes
@@ -30,11 +61,11 @@ import java.util.*;
  * modification!
  *
  * <p>Every classloader has a parent classloader that is consulted before
- * the 'child' classloader when classes or resources should be loaded.   
+ * the 'child' classloader when classes or resources should be loaded.
  * This is done to make sure that classes can be loaded from an hierarchy of
- * multiple classloaders and classloaders do not accidentially redefine   
+ * multiple classloaders and classloaders do not accidentially redefine
  * already loaded classes by classloaders higher in the hierarchy.
- *   
+ *
  * <p>The grandparent of all classloaders is the bootstrap classloader, which
  * loads all the standard system classes as implemented by GNU Classpath. The
  * other special classloader is the system classloader (also called
@@ -78,8 +109,7 @@ import java.util.*;
  *
  * @author John Keiser
  * @author Mark Wielaard
- * @author Eric Blake
- * @author Kresten Krab Thorup
+ * @author Eric Blake <ebb9@email.byu.edu>
  * @see Class
  * @since 1.0
  * @status still missing 1.4 functionality
@@ -93,6 +123,50 @@ public abstract class ClassLoader
    * access to this field.
    */
   final Map loadedClasses = new HashMap();
+
+  /**
+   * All packages defined by this classloader. It is not private in order to
+   * allow native code (and trusted subclasses) access to this field.
+   */
+  final Map definedPackages = new HashMap();
+
+  /**
+   * The classloader that is consulted before this classloader.
+   * If null then the parent is the bootstrap classloader.
+   */
+  private final ClassLoader parent;
+
+  /**
+   * This is true if this classloader was successfully initialized.
+   * This flag is needed to avoid a class loader attack: even if the
+   * security manager rejects an attempt to create a class loader, the
+   * malicious class could have a finalize method which proceeds to
+   * define classes.
+   */
+  private final boolean initialized;
+
+  /**
+   * System/Application classloader: defaults to an instance of
+   * gnu.java.lang.SystemClassLoader, unless the first invocation of
+   * getSystemClassLoader loads another class loader because of the
+   * java.system.class.loader property. The initialization of this field
+   * is somewhat circular - getSystemClassLoader() checks whether this
+   * field is null in order to bypass a security check.
+   */
+  static final ClassLoader systemClassLoader =
+    VMClassLoader.getSystemClassLoader();
+
+  /**
+   * The default protection domain, used when defining a class with a null
+   * paramter for the domain.
+   */
+  static final ProtectionDomain defaultProtectionDomain;
+  static
+  {
+    CodeSource cs = new CodeSource(null, null);
+    PermissionCollection perm = Policy.getPolicy().getPermissions(cs);
+    defaultProtectionDomain = new ProtectionDomain(cs, perm);
+  }
 
   /**
    * The desired assertion status of classes loaded by this loader, if not
@@ -136,157 +210,105 @@ public abstract class ClassLoader
   Map classAssertionStatus;
 
   /**
-   * The classloader that is consulted before this classloader.
-   * If null then the parent is the bootstrap classloader.
-   */
-  private final ClassLoader parent;
-
-  /**
-   * All packages defined by this classloader. It is not private in order to
-   * allow native code (and trusted subclasses) access to this field.
-   */
-  private HashMap definedPackages = new HashMap();
-
-  /**
-   * Returns the parent of this classloader. If the parent of this
-   * classloader is the bootstrap classloader then this method returns
-   * <code>null</code>. A security check may be performed on
-   * <code>RuntimePermission("getClassLoader")</code>.
+   * Create a new ClassLoader with as parent the system classloader. There
+   * may be a security check for <code>checkCreateClassLoader</code>.
    *
+   * @throws SecurityException if the security check fails
+   */
+  protected ClassLoader() throws SecurityException
+  {
+    this(systemClassLoader);
+  }
+
+  /**
+   * Create a new ClassLoader with the specified parent. The parent will
+   * be consulted when a class or resource is requested through
+   * <code>loadClass()</code> or <code>getResource()</code>. Only when the
+   * parent classloader cannot provide the requested class or resource the
+   * <code>findClass()</code> or <code>findResource()</code> method
+   * of this classloader will be called. There may be a security check for
+   * <code>checkCreateClassLoader</code>.
+   *
+   * @param parent the classloader's parent, or null for the bootstrap
+   *        classloader
    * @throws SecurityException if the security check fails
    * @since 1.2
    */
-  public final ClassLoader getParent ()
+  protected ClassLoader(ClassLoader parent)
   {
-    // Check if we may return the parent classloader
+    // May we create a new classloader?
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
-      {
-	Class c = VMSecurityManager.getClassContext()[1];
-	ClassLoader cl = c.getClassLoader();
-	if (cl != null && ! cl.isAncestorOf(this))
-	  sm.checkPermission(new RuntimePermission("getClassLoader"));
-      }
-    return parent;
-  }
-
-  /**
-   * Returns the system classloader. The system classloader (also called
-   * the application classloader) is the classloader that was used to
-   * load the application classes on the classpath (given by the system
-   * property <code>java.class.path</code>. This is set as the context
-   * class loader for a thread. The system property
-   * <code>java.system.class.loader</code>, if defined, is taken to be the
-   * name of the class to use as the system class loader, which must have
-   * a public constructor which takes a ClassLoader as a parent; otherwise this
-   * uses gnu.java.lang.SystemClassLoader.
-   *
-   * <p>Note that this is different from the bootstrap classloader that
-   * actually loads all the real "system" classes (the bootstrap classloader
-   * is the parent of the returned system classloader).
-   *
-   * <p>A security check will be performed for
-   * <code>RuntimePermission("getClassLoader")</code> if the calling class
-   * is not a parent of the system class loader.
-   *
-   * @return the system class loader
-   * @throws SecurityException if the security check fails
-   * @throws IllegalStateException if this is called recursively
-   * @throws Error if <code>java.system.class.loader</code> fails to load
-   * @since 1.2
-   */
-  public static ClassLoader getSystemClassLoader ()
-  {
-    return gnu.gcj.runtime.VMClassLoader.instance;
-  }
-
-  /**
-   * Creates a <code>ClassLoader</code> with no parent.
-   * @exception java.lang.SecurityException if not allowed
-   */
-  protected ClassLoader() 
-  {
-    this (null);
-  }
-
-  /**
-   * Creates a <code>ClassLoader</code> with the given parent.   
-   * The parent may be <code>null</code>.
-   * The only thing this 
-   * constructor does, is to call
-   * <code>checkCreateClassLoader</code> on the current 
-   * security manager. 
-   * @exception java.lang.SecurityException if not allowed
-   * @since 1.2
-   */
-  protected ClassLoader(ClassLoader parent) 
-  {
-    SecurityManager security = System.getSecurityManager ();
-    if (security != null)
-      security.checkCreateClassLoader ();
+      sm.checkCreateClassLoader();
     this.parent = parent;
+    this.initialized = true;
   }
 
-  /** 
-   * Loads and link the class by the given name.
-   * @param     name the name of the class.
-   * @return    the class loaded.
-   * @see       ClassLoader#loadClass(String,boolean)
-   * @exception java.lang.ClassNotFoundException 
-   */ 
-  public Class loadClass(String name)
-    throws java.lang.ClassNotFoundException
-  { 
-    return loadClass (name, false);
-  }
-  
-  /** 
-   * Loads the class by the given name.  The default implementation
-   * will search for the class in the following order (similar to jdk 1.2)
-   * <ul>
-   *  <li> First <code>findLoadedClass</code>.
-   *  <li> If parent is non-null, <code>parent.loadClass</code>;
-   *       otherwise <code>findSystemClass</code>.
-   *  <li> <code>findClass</code>.
-   * </ul>
-   * If <code>link</code> is true, <code>resolveClass</code> is then
-   * called.  <p> Normally, this need not be overridden; override
-   * <code>findClass</code> instead.
-   * @param     name the name of the class.
-   * @param     link if the class should be linked.
-   * @return    the class loaded.
-   * @exception java.lang.ClassNotFoundException 
-   */ 
-  protected Class loadClass(String name, boolean link)
-    throws java.lang.ClassNotFoundException
+  /**
+   * Load a class using this ClassLoader or its parent, without resolving
+   * it. Calls <code>loadClass(name, false)</code>.
+   *
+   * <p>Subclasses should not override this method but should override
+   * <code>findClass()</code> which is called by this method.
+   *
+   * @param name the name of the class relative to this ClassLoader
+   * @return the loaded class
+   * @throws ClassNotFoundException if the class cannot be found
+   */
+  public Class loadClass(String name) throws ClassNotFoundException
   {
-    Class c = findLoadedClass (name);
+    return loadClass(name, false);
+  }
 
-    if (c == null)
+  /**
+   * Load a class using this ClassLoader or its parent, possibly resolving
+   * it as well using <code>resolveClass()</code>. It first tries to find
+   * out if the class has already been loaded through this classloader by
+   * calling <code>findLoadedClass()</code>. Then it calls
+   * <code>loadClass()</code> on the parent classloader (or when there is
+   * no parent it uses the VM bootclassloader)</code>). If the class is still
+   * not loaded it tries to create a new class by calling
+   * <code>findClass()</code>. Finally when <code>resolve</code> is
+   * <code>true</code> it also calls <code>resolveClass()</code> on the
+   * newly loaded class.
+   *
+   * <p>Subclasses should not override this method but should override
+   * <code>findClass()</code> which is called by this method.
+   *
+   * @param name the fully qualified name of the class to load
+   * @param resolve whether or not to resolve the class
+   * @return the loaded class
+   * @throws ClassNotFoundException if the class cannot be found
+   */
+  protected synchronized Class loadClass(String name, boolean resolve)
+    throws ClassNotFoundException
+  {
+    // Have we already loaded this class?
+    Class c = findLoadedClass(name);
+    if (c != null)
+      return c;
+
+    // Can the class be loaded by a parent?
+    try
       {
-	try
+	if (parent == null)
 	  {
-	    ClassLoader cl = parent;
-	    if (parent == null)
-	      cl = gnu.gcj.runtime.VMClassLoader.instance;
-	    if (cl != this)
-	      c = cl.loadClass (name, link);
+	    c = VMClassLoader.loadClass(name, resolve);
+	    if (c != null)
+	      return c;
 	  }
-	catch (ClassNotFoundException ex)
+	else
 	  {
-	    /* ignore, we'll try findClass */;
+	    return parent.loadClass(name, resolve);
 	  }
       }
-
-    if (c == null)
-      c = findClass (name);
-
-    if (c == null)
-      throw new ClassNotFoundException (name);
-
-    if (link)
-      resolveClass (c);
-
+    catch (ClassNotFoundException e)
+      {
+      }
+    // Still not found, we have to do it ourself.
+    c = findClass(name);
+    if (resolve)
+      resolveClass(c);
     return c;
   }
 
@@ -331,59 +353,29 @@ public abstract class ClassLoader
    * @return the requested Class
    * @throws ClassNotFoundException when the class can not be found
    * @since 1.2
-   */   
-  protected Class findClass (String name)
-    throws ClassNotFoundException
+   */
+  protected Class findClass(String name) throws ClassNotFoundException
   {
-    throw new ClassNotFoundException (name);
+    throw new ClassNotFoundException(name);
   }
 
-  // Protection Domain definitions 
-  // FIXME: should there be a special protection domain used for native code?
-  
-  // The permission required to check what a classes protection domain is.
-  static final Permission protectionDomainPermission
-    = new RuntimePermission("getProtectionDomain");
-  // The protection domain returned if we cannot determine it. 
-  static ProtectionDomain unknownProtectionDomain;
-  // Protection domain to use when a class is defined without one specified.
-  static ProtectionDomain defaultProtectionDomain;
-
-  static
-  {
-    Permissions permissions = new Permissions();
-    permissions.add(new AllPermission());
-    unknownProtectionDomain = new ProtectionDomain(null, permissions);  
-
-    CodeSource cs = new CodeSource(null, null);
-    defaultProtectionDomain =
-      new ProtectionDomain(cs, Policy.getPolicy().getPermissions(cs));
-  }
-
-  /** 
-   * Defines a class, given the class-data.  According to the JVM, this
-   * method should not be used; instead use the variant of this method
-   * in which the name of the class being defined is specified
-   * explicitly.   
-   * <P>
-   * If the name of the class, as specified (implicitly) in the class
-   * data, denotes a class which has already been loaded by this class
-   * loader, an instance of
-   * <code>java.lang.ClassNotFoundException</code> will be thrown.
+  /**
+   * Helper to define a class using a string of bytes. This version is not
+   * secure.
    *
-   * @param     data    bytes in class file format.
-   * @param     off     offset to start interpreting data.
-   * @param     len     length of data in class file.
-   * @return    the class defined.
-   * @exception java.lang.ClassNotFoundException 
-   * @exception java.lang.LinkageError
-   * @see ClassLoader#defineClass(String,byte[],int,int)
+   * @param data the data representing the classfile, in classfile format
+   * @param offset the offset into the data where the classfile starts
+   * @param len the length of the classfile data in the array
+   * @return the class that was defined
+   * @throws ClassFormatError if data is not in proper classfile format
+   * @throws IndexOutOfBoundsException if offset or len is negative, or
+   *         offset + len exceeds data
    * @deprecated use {@link #defineClass(String, byte[], int, int)} instead
    */
-  protected final Class defineClass(byte[] data, int off, int len) 
+  protected final Class defineClass(byte[] data, int offset, int len)
     throws ClassFormatError
   {
-    return defineClass (null, data, off, len, defaultProtectionDomain);
+    return defineClass(null, data, offset, len);
   }
 
   /**
@@ -405,313 +397,99 @@ public abstract class ClassLoader
    * @throws SecurityException if name starts with "java."
    * @since 1.1
    */
-  protected final Class defineClass(String name, byte[] data, int off, int len)
+  protected final Class defineClass(String name, byte[] data, int offset,
+                                    int len) throws ClassFormatError
+  {
+    return defineClass(name, data, offset, len, null);
+  }
+
+  /**
+   * Helper to define a class using a string of bytes. Subclasses should call
+   * this method from their <code>findClass()</code> implementation. If the
+   * domain is null, the default of
+   * <code>Policy.getPolicy().getPermissions(new CodeSource(null, null))<code>
+   * is used. Once a class has been defined in a package, all further classes
+   * in that package must have the same set of certificates or a
+   * SecurityException is thrown.
+   *
+   * @param name the name to give the class.  null if unknown
+   * @param data the data representing the classfile, in classfile format
+   * @param offset the offset into the data where the classfile starts
+   * @param len the length of the classfile data in the array
+   * @param domain the ProtectionDomain to give to the class, null for the
+   *        default protection domain
+   * @return the class that was defined
+   * @throws ClassFormatError if data is not in proper classfile format
+   * @throws IndexOutOfBoundsException if offset or len is negative, or
+   *         offset + len exceeds data
+   * @throws SecurityException if name starts with "java.", or if certificates
+   *         do not match up
+   * @since 1.2
+   */
+  protected final synchronized Class defineClass(String name, byte[] data,
+						 int offset, int len,
+						 ProtectionDomain domain)
     throws ClassFormatError
   {
-    return defineClass (name, data, off, len, defaultProtectionDomain);
-  }
-  
-  /** 
-   * Defines a class, given the class-data.  This is preferable
-   * over <code>defineClass(byte[],off,len)</code> since it is more
-   * secure.  If the expected name does not match that of the class
-   * file, <code>ClassNotFoundException</code> is thrown.  If
-   * <code>name</code> denotes the name of an already loaded class, a
-   * <code>LinkageError</code> is thrown.
-   * <p>
-   * 
-   * FIXME: How do we assure that the class-file data is not being
-   * modified, simultaneously with the class loader running!?  If this
-   * was done in some very clever way, it might break security.  
-   * Right now I am thinking that defineclass should make sure never to
-   * read an element of this array more than once, and that that would
-   * assure the ``immutable'' appearance.  It is still to be determined
-   * if this is in fact how defineClass operates.
-   *
-   * @param     name    the expected name.
-   * @param     data    bytes in class file format.
-   * @param     off     offset to start interpreting data.
-   * @param     len     length of data in class file.
-   * @param     protectionDomain security protection domain for the class.
-   * @return    the class defined.
-   * @exception java.lang.ClassNotFoundException 
-   * @exception java.lang.LinkageError
-   */
-  protected final synchronized Class defineClass(String name,
-						 byte[] data,
-						 int off,
-						 int len,
-						 ProtectionDomain protectionDomain)
-    throws ClassFormatError
-  {
-    if (data==null || data.length < off+len || off<0 || len<0)
-      throw new ClassFormatError ("arguments to defineClass "
-				  + "are meaningless");
-
-    // as per 5.3.5.1
-    if (name != null && findLoadedClass (name) != null)
-      throw new java.lang.LinkageError ("class " 
-					+ name 
-					+ " already loaded");
-
-    if (protectionDomain == null)
-      protectionDomain = defaultProtectionDomain;
-
-    try
-      {
-	Class retval = defineClass0 (name, data, off, len, protectionDomain);
-	loadedClasses.put(retval.getName(), retval);
-	return retval;
-      }
-    catch (LinkageError x)
-      {
-	throw x;		// rethrow
-      }
-    catch (VirtualMachineError x)
-      {
-	throw x;		// rethrow
-      }
-    catch (Throwable x)
-      {
-	// This should never happen, or we are beyond spec.  
-      	InternalError r = new InternalError ("Unexpected exception "
-					     + "while defining class "
-					     + name);
-	r.initCause(x);
-	throw r;
-      }
-  }
-
-  /** This is the entry point of defineClass into the native code */
-  private native Class defineClass0 (String name,
-				     byte[] data,
-				     int off,
-				     int len,
-				     ProtectionDomain protectionDomain)
-    throws ClassFormatError;
-
-  /** 
-   * Link the given class.  This will bring the class to a state where
-   * the class initializer can be run.  Linking involves the following
-   * steps: 
-   * <UL>
-   * <LI>  Prepare (allocate and internalize) the constant strings that
-   *       are used in this class.
-   * <LI>  Allocate storage for static fields, and define the layout
-   *       of instance fields.
-   * <LI>  Perform static initialization of ``static final'' int,
-   *       long, float, double and String fields for which there is a
-   *       compile-time constant initializer.
-   * <LI>  Create the internal representation of the ``vtable''.
-   * </UL>
-   * For <code>gcj</code>-compiled classes, only the first step is
-   * performed.  The compiler will have done the rest already.
-   * <P>
-   * This is called by the system automatically,
-   * as part of class initialization; there is no reason to ever call
-   * this method directly.  
-   * <P> 
-   * For historical reasons, this method has a name which is easily
-   * misunderstood.  Java classes are never ``resolved''.  Classes are
-   * linked; whereas method and field references are resolved.
-   *
-   * @param     clazz the class to link.
-   * @exception java.lang.LinkageError
-   */
-  protected final void resolveClass(Class clazz)
-  {
-    resolveClass0(clazz);
-  }
-
-  static void resolveClass0(Class clazz)
-  {
-    synchronized (clazz)
-      {
-	try
-	  {
-	    linkClass0 (clazz);
-	  }
-	catch (Throwable x)
-	  {
-	    markClassErrorState0 (clazz);
-
-	    LinkageError e;
-	    if (x instanceof LinkageError)
-	      e = (LinkageError)x;
-	    else if (x instanceof ClassNotFoundException)
-	      {
-		e = new NoClassDefFoundError("while resolving class: "
-					     + clazz.getName());
-		e.initCause (x);
-	      }
-	    else
-	      {
-		e = new LinkageError ("unexpected exception during linking: "
-				      + clazz.getName());
-		e.initCause (x);
-	      }
-	    throw e;
-	  }
-      }
-  }
-
-  /** Internal method.  Calls _Jv_PrepareClass and
-   * _Jv_PrepareCompiledClass.  This is only called from resolveClass.  */ 
-  private static native void linkClass0(Class clazz);
-
-  /** Internal method.  Marks the given clazz to be in an erroneous
-   * state, and calls notifyAll() on the class object.  This should only
-   * be called when the caller has the lock on the class object.  */
-  private static native void markClassErrorState0(Class clazz);
-
-  /**
-   * Defines a new package and creates a Package object.
-   * The package should be defined before any class in the package is
-   * defined with <code>defineClass()</code>. The package should not yet
-   * be defined before in this classloader or in one of its parents (which
-   * means that <code>getPackage()</code> should return <code>null</code>).
-   * All parameters except the <code>name</code> of the package may be
-   * <code>null</code>.
-   * <p>
-   * Subclasses should call this method from their <code>findClass()</code>
-   * implementation before calling <code>defineClass()</code> on a Class
-   * in a not yet defined Package (which can be checked by calling
-   * <code>getPackage()</code>).
-   *
-   * @param name The name of the Package
-   * @param specTitle The name of the specification
-   * @param specVendor The name of the specification designer
-   * @param specVersion The version of this specification
-   * @param implTitle The name of the implementation
-   * @param implVendor The vendor that wrote this implementation
-   * @param implVersion The version of this implementation
-   * @param sealed If sealed the origin of the package classes
-   * @return the Package object for the specified package
-   *
-   * @exception IllegalArgumentException if the package name is null or if
-   * it was already defined by this classloader or one of its parents.
-   *
-   * @see Package
-   * @since 1.2
-   */
-  protected Package definePackage(String name,
-				  String specTitle, String specVendor,
-				  String specVersion, String implTitle,
-				  String implVendor, String implVersion,
-				  URL sealed)
-  {
-    if (getPackage(name) != null)
-      throw new IllegalArgumentException("Package " + name
-					 + " already defined");
-    Package p = new Package(name,
-			    specTitle, specVendor, specVersion,
-			    implTitle, implVendor, implVersion,
-			    sealed);
-    synchronized (definedPackages)
-    {
-      definedPackages.put(name, p);
-    }
-    return p;
+    if (domain == null)
+      domain = defaultProtectionDomain;
+    if (! initialized)
+      throw new SecurityException("attempt to define class from uninitialized class loader");
+    Class retval = VMClassLoader.defineClass(this, name, data,
+                                             offset, len, domain);
+    loadedClasses.put(retval.getName(), retval);
+    return retval;
   }
 
   /**
-   * Returns the Package object for the requested package name. It returns
-   * null when the package is not defined by this classloader or one of its
-   * parents.
+   * Links the class, if that has not already been done. Linking basically
+   * resolves all references to other classes made by this class.
    *
-   * @param name the package name to find
-   * @return the package, if defined
-   * @since 1.2
+   * @param c the class to resolve
+   * @throws NullPointerException if c is null
+   * @throws LinkageError if linking fails
    */
-  protected Package getPackage(String name)
+  protected final void resolveClass(Class c)
   {
-    Package p;
-    if (parent == null)
-      // XXX - Should we use the bootstrap classloader?
-      p = null;
-    else
-      p = parent.getPackage(name);
-
-    if (p == null)
-      {
-        synchronized (definedPackages)
-	{
-	  p = (Package) definedPackages.get(name);
-	}
-      }
-
-    return p;
+    VMClassLoader.resolveClass(c);
   }
 
   /**
-   * Returns all Package objects defined by this classloader and its parents.
+   * Helper to find a Class using the system classloader, possibly loading it.
+   * A subclass usually does not need to call this, if it correctly
+   * overrides <code>findClass(String)</code>.
    *
-   * @return an array of all defined packages
-   * @since 1.2
+   * @param name the name of the class to find
+   * @return the found class
+   * @throws ClassNotFoundException if the class cannot be found
    */
-  protected Package[] getPackages()
+  protected final Class findSystemClass(String name)
+    throws ClassNotFoundException
   {
-    Package[] allPackages;
-
-    // Get all our packages.
-    Package[] packages;
-    synchronized(definedPackages)
-    {
-      packages = new Package[definedPackages.size()];
-      definedPackages.values().toArray(packages);
-    }
-
-    // If we have a parent get all packages defined by our parents.
-    if (parent != null)
-      {
-	Package[] parentPackages = parent.getPackages();
-	allPackages = new Package[parentPackages.length + packages.length];
-	System.arraycopy(parentPackages, 0, allPackages, 0,
-			 parentPackages.length);
-	System.arraycopy(packages, 0, allPackages, parentPackages.length,
-			 packages.length);
-      }
-    else
-      // XXX - Should we use the bootstrap classloader?
-      allPackages = packages;
-
-    return allPackages;
+    return Class.forName(name, false, systemClassLoader);
   }
 
   /**
-   * Called by <code>Runtime.loadLibrary()</code> to get an absolute path
-   * to a (system specific) library that was requested by a class loaded
-   * by this classloader. The default implementation returns
-   * <code>null</code>. It should be implemented by subclasses when they
-   * have a way to find the absolute path to a library. If this method
-   * returns null the library is searched for in the default locations
-   * (the directories listed in the <code>java.library.path</code> system
-   * property).
+   * Returns the parent of this classloader. If the parent of this
+   * classloader is the bootstrap classloader then this method returns
+   * <code>null</code>. A security check may be performed on
+   * <code>RuntimePermission("getClassLoader")</code>.
    *
-   * @param name the (system specific) name of the requested library
-   * @return the full pathname to the requested library, or null
-   * @see Runtime#loadLibrary()
+   * @throws SecurityException if the security check fails
    * @since 1.2
    */
-  protected String findLibrary(String name)
+  public final ClassLoader getParent()
   {
-    return null;
-  }
-
-  /** 
-   * Returns a class found in a system-specific way, typically
-   * via the <code>java.class.path</code> system property.  Loads the 
-   * class if necessary.
-   *
-   * @param     name the class to resolve.
-   * @return    the class loaded.
-   * @exception java.lang.LinkageError 
-   * @exception java.lang.ClassNotFoundException 
-   */
-  protected final Class findSystemClass(String name) 
-    throws java.lang.ClassNotFoundException
-  {
-    return gnu.gcj.runtime.VMClassLoader.instance.loadClass (name);
+    // Check if we may return the parent classloader.
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      {
+        Class c = VMSecurityManager.getClassContext()[1];
+        ClassLoader cl = c.getClassLoader();
+	if (cl != null && ! cl.isAncestorOf(this))
+          sm.checkPermission(new RuntimePermission("getClassLoader"));
+      }
+    return parent;
   }
 
   /**
@@ -721,139 +499,52 @@ public abstract class ClassLoader
    * @param c the Class to set signers of
    * @param signers the signers to set
    * @since 1.1
-   */   
+   */
   protected final void setSigners(Class c, Object[] signers)
   {
-    /*
-     * Does currently nothing. FIXME.
-     */ 
+    //    c.setSigners(signers);
   }
 
   /**
-   * If a class named <code>name</code> was previously loaded using
-   * this <code>ClassLoader</code>, then it is returned.  Otherwise
-   * it returns <code>null</code>.
-   * @param     name  class to find.
-   * @return    the class loaded, or null.
-   */ 
+   * Helper to find an already-loaded class in this ClassLoader.
+   *
+   * @param name the name of the class to find
+   * @return the found Class, or null if it is not found
+   * @since 1.1
+   */
   protected final synchronized Class findLoadedClass(String name)
   {
+    // NOTE: If the VM is keeping its own cache, it may make sense to have
+    // this method be native.
     return (Class) loadedClasses.get(name);
   }
 
   /**
-   * Get a resource using the system classloader.
+   * Get the URL to a resource using this classloader or one of its parents.
+   * First tries to get the resource by calling <code>getResource()</code>
+   * on the parent classloader. If the parent classloader returns null then
+   * it tries finding the resource by calling <code>findResource()</code> on
+   * this classloader. The resource name should be separated by '/' for path
+   * elements.
    *
-   * @param name the name of the resource relative to the system classloader
-   * @return an input stream for the resource, or null
-   * @since 1.1
-   */
-  public static InputStream getSystemResourceAsStream(String name) {
-    return getSystemClassLoader().getResourceAsStream (name);
-  }
-
-  /**
-   * Get the URL to a resource using the system classloader.
+   * <p>Subclasses should not override this method but should override
+   * <code>findResource()</code> which is called by this method.
    *
-   * @param name the name of the resource relative to the system classloader
-   * @return the URL to the resource
-   * @since 1.1
+   * @param name the name of the resource relative to this classloader
+   * @return the URL to the resource or null when not found
    */
-  public static URL getSystemResource(String name) {
-    return getSystemClassLoader().getResource (name);
-  }
-
-  /**
-   * Get an Enumeration of URLs to resources with a given name using the
-   * the system classloader. The enumeration firsts lists the resources with
-   * the given name that can be found by the bootstrap classloader followed
-   * by the resources with the given name that can be found on the classpath.
-   *
-   * @param name the name of the resource relative to the system classloader
-   * @return an Enumeration of URLs to the resources
-   * @throws IOException if I/O errors occur in the process
-   * @since 1.2
-   */
-  public static Enumeration getSystemResources(String name) throws IOException
+  public URL getResource(String name)
   {
-    return getSystemClassLoader().getResources(name);
-  }
+    URL result;
 
-  /**
-   *   Return an InputStream representing the resource name.  
-   *   This is essentially like 
-   *   <code>getResource(name).openStream()</code>, except
-   *   it masks out any IOException and returns null on failure.
-   * @param   name  resource to load
-   * @return  an InputStream, or null
-   * @see     java.lang.ClassLoader#getResource(String)
-   * @see     java.io.InputStream
-   */
-  public InputStream getResourceAsStream(String name) 
-  {
-    try
-      {
-	URL res = getResource (name);
-	if (res == null)
-          return null;
-	return res.openStream ();
-      }
-    catch (java.io.IOException x)
-      {
-	return null;
-      }
-  }
- 
-  /**
-   * Return an java.io.URL representing the resouce <code>name</code>.  
-   * The default implementation just returns <code>null</code>.
-   * @param   name  resource to load
-   * @return  a URL, or null if there is no such resource.
-   * @see     java.lang.ClassLoader#getResourceAsBytes(String)
-   * @see     java.lang.ClassLoader#getResourceAsStream(String)
-   * @see     java.io.URL
-   */
-  public URL getResource (String name) 
-  {
-    // The rules say search the parent class if non-null,
-    // otherwise search the built-in class loader (assumed to be
-    // the system ClassLoader).  If not found, call
-    // findResource().
-    URL result = null;
-
-    ClassLoader delegate = parent;
-
-    if (delegate == null)
-      delegate = getSystemClassLoader ();
-	
-    // Protect ourselves from looping.
-    if (this != delegate)
-      result = delegate.getResource (name);
-
-    if (result != null)
-      return result;
+    if (parent == null)
+      result = VMClassLoader.getResource(name);
     else
-      return findResource (name);
-  }
+      result = parent.getResource(name);
 
-  /**
-   * Called whenever a resource is needed that could not be provided by
-   * one of the parents of this classloader. It is called by
-   * <code>getResource()</code> after <code>parent.getResource()</code>
-   * couldn't provide the requested resource.
-   *
-   * <p>The default implementation always returns null. Subclasses should
-   * override this method when they can provide a way to return a URL
-   * to a named resource.
-   *
-   * @param name the name of the resource to be found
-   * @return a URL to the named resource or null when not found
-   * @since 1.2
-   */
-  protected URL findResource (String name)
-  {
-    // Default to returning null.  Derived classes implement this.
-    return null;
+    if (result == null)
+      result = findResource(name);
+    return result;
   }
 
   /**
@@ -878,25 +569,12 @@ public abstract class ClassLoader
    */
   public final Enumeration getResources(String name) throws IOException
   {
-    // The rules say search the parent class if non-null,
-    // otherwise search the built-in class loader (assumed to be
-    // the system ClassLoader).  If not found, call
-    // findResource().
-    Enumeration result = null;
-
-    ClassLoader delegate = parent;
-
-    if (delegate == null)
-      delegate = getSystemClassLoader ();
-	
-    // Protect ourselves from looping.
-    if (this != delegate)
-      result = delegate.getResources (name);
-
-    if (result != null)
-      return result;
+    Enumeration parentResources;
+    if (parent == null)
+      parentResources = VMClassLoader.getResources(name);
     else
-      return findResources (name);
+      parentResources = parent.getResources(name);
+    return new DoubleEnumeration(parentResources, findResources(name));
   }
 
   /**
@@ -918,7 +596,268 @@ public abstract class ClassLoader
    */
   protected Enumeration findResources(String name) throws IOException
   {
-    return Collections.enumeration(Collections.EMPTY_LIST);
+    return EmptyEnumeration.getInstance();
+  }
+
+  /**
+   * Called whenever a resource is needed that could not be provided by
+   * one of the parents of this classloader. It is called by
+   * <code>getResource()</code> after <code>parent.getResource()</code>
+   * couldn't provide the requested resource.
+   *
+   * <p>The default implementation always returns null. Subclasses should
+   * override this method when they can provide a way to return a URL
+   * to a named resource.
+   *
+   * @param name the name of the resource to be found
+   * @return a URL to the named resource or null when not found
+   * @since 1.2
+   */
+  protected URL findResource(String name)
+  {
+    return null;
+  }
+
+  /**
+   * Get the URL to a resource using the system classloader.
+   *
+   * @param name the name of the resource relative to the system classloader
+   * @return the URL to the resource
+   * @since 1.1
+   */
+  public static final URL getSystemResource(String name)
+  {
+    return systemClassLoader.getResource(name);
+  }
+
+  /**
+   * Get an Enumeration of URLs to resources with a given name using the
+   * the system classloader. The enumeration firsts lists the resources with
+   * the given name that can be found by the bootstrap classloader followed
+   * by the resources with the given name that can be found on the classpath.
+   *
+   * @param name the name of the resource relative to the system classloader
+   * @return an Enumeration of URLs to the resources
+   * @throws IOException if I/O errors occur in the process
+   * @since 1.2
+   */
+  public static Enumeration getSystemResources(String name) throws IOException
+  {
+    return systemClassLoader.getResources(name);
+  }
+
+  /**
+   * Get a resource as stream using this classloader or one of its parents.
+   * First calls <code>getResource()</code> and if that returns a URL to
+   * the resource then it calls and returns the InputStream given by
+   * <code>URL.openStream()</code>.
+   *
+   * <p>Subclasses should not override this method but should override
+   * <code>findResource()</code> which is called by this method.
+   *
+   * @param name the name of the resource relative to this classloader
+   * @return an InputStream to the resource, or null
+   * @since 1.1
+   */
+  public InputStream getResourceAsStream(String name)
+  {
+    try
+      {
+        URL url = getResource(name);
+        if (url == null)
+          return null;
+        return url.openStream();
+      }
+    catch (IOException e)
+      {
+        return null;
+      }
+  }
+
+  /**
+   * Get a resource using the system classloader.
+   *
+   * @param name the name of the resource relative to the system classloader
+   * @return an input stream for the resource, or null
+   * @since 1.1
+   */
+  public static final InputStream getSystemResourceAsStream(String name)
+  {
+    try
+      {
+        URL url = getSystemResource(name);
+        if (url == null)
+          return null;
+        return url.openStream();
+      }
+    catch (IOException e)
+      {
+        return null;
+      }
+  }
+
+  /**
+   * Returns the system classloader. The system classloader (also called
+   * the application classloader) is the classloader that was used to
+   * load the application classes on the classpath (given by the system
+   * property <code>java.class.path</code>. This is set as the context
+   * class loader for a thread. The system property
+   * <code>java.system.class.loader</code>, if defined, is taken to be the
+   * name of the class to use as the system class loader, which must have
+   * a public constructor which takes a ClassLoader as a parent; otherwise this
+   * uses gnu.java.lang.SystemClassLoader.
+   *
+   * <p>Note that this is different from the bootstrap classloader that
+   * actually loads all the real "system" classes (the bootstrap classloader
+   * is the parent of the returned system classloader).
+   *
+   * <p>A security check will be performed for
+   * <code>RuntimePermission("getClassLoader")</code> if the calling class
+   * is not a parent of the system class loader.
+   *
+   * @return the system class loader
+   * @throws SecurityException if the security check fails
+   * @throws IllegalStateException if this is called recursively
+   * @throws Error if <code>java.system.class.loader</code> fails to load
+   * @since 1.2
+   */
+  public static ClassLoader getSystemClassLoader()
+  {
+    // Check if we may return the system classloader
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      {
+	Class c = VMSecurityManager.getClassContext()[1];
+	ClassLoader cl = c.getClassLoader();
+	if (cl != null && cl != systemClassLoader)
+	  sm.checkPermission(new RuntimePermission("getClassLoader"));
+      }
+
+    return systemClassLoader;
+  }
+
+  /**
+   * Defines a new package and creates a Package object. The package should
+   * be defined before any class in the package is defined with
+   * <code>defineClass()</code>. The package should not yet be defined
+   * before in this classloader or in one of its parents (which means that
+   * <code>getPackage()</code> should return <code>null</code>). All
+   * parameters except the <code>name</code> of the package may be
+   * <code>null</code>.
+   *
+   * <p>Subclasses should call this method from their <code>findClass()</code>
+   * implementation before calling <code>defineClass()</code> on a Class
+   * in a not yet defined Package (which can be checked by calling
+   * <code>getPackage()</code>).
+   *
+   * @param name the name of the Package
+   * @param specTitle the name of the specification
+   * @param specVendor the name of the specification designer
+   * @param specVersion the version of this specification
+   * @param implTitle the name of the implementation
+   * @param implVendor the vendor that wrote this implementation
+   * @param implVersion the version of this implementation
+   * @param sealed if sealed the origin of the package classes
+   * @return the Package object for the specified package
+   * @throws IllegalArgumentException if the package name is null or it
+   *         was already defined by this classloader or one of its parents
+   * @see Package
+   * @since 1.2
+   */
+  protected Package definePackage(String name, String specTitle,
+                                  String specVendor, String specVersion,
+                                  String implTitle, String implVendor,
+                                  String implVersion, URL sealed)
+  {
+    if (getPackage(name) != null)
+      throw new IllegalArgumentException("Package " + name
+                                         + " already defined");
+    Package p = new Package(name, specTitle, specVendor, specVersion,
+                            implTitle, implVendor, implVersion, sealed);
+    synchronized (definedPackages)
+      {
+        definedPackages.put(name, p);
+      }
+    return p;
+  }
+
+  /**
+   * Returns the Package object for the requested package name. It returns
+   * null when the package is not defined by this classloader or one of its
+   * parents.
+   *
+   * @param name the package name to find
+   * @return the package, if defined
+   * @since 1.2
+   */
+  protected Package getPackage(String name)
+  {
+    Package p;
+    if (parent == null)
+      p = VMClassLoader.getPackage(name);
+    else
+      p = parent.getPackage(name);
+
+    if (p == null)
+      {
+	synchronized (definedPackages)
+	  {
+	    p = (Package) definedPackages.get(name);
+	  }
+      }
+    return p;
+  }
+
+  /**
+   * Returns all Package objects defined by this classloader and its parents.
+   *
+   * @return an array of all defined packages
+   * @since 1.2
+   */
+  protected Package[] getPackages()
+  {
+    // Get all our packages.
+    Package[] packages;
+    synchronized(definedPackages)
+      {
+        packages = new Package[definedPackages.size()];
+        definedPackages.values().toArray(packages);
+      }
+
+    // If we have a parent get all packages defined by our parents.
+    Package[] parentPackages;
+    if (parent == null)
+      parentPackages = VMClassLoader.getPackages();
+    else
+      parentPackages = parent.getPackages();
+
+    Package[] allPackages = new Package[parentPackages.length
+					+ packages.length];
+    System.arraycopy(parentPackages, 0, allPackages, 0,
+                     parentPackages.length);
+    System.arraycopy(packages, 0, allPackages, parentPackages.length,
+                     packages.length);
+    return allPackages;
+  }
+
+  /**
+   * Called by <code>Runtime.loadLibrary()</code> to get an absolute path
+   * to a (system specific) library that was requested by a class loaded
+   * by this classloader. The default implementation returns
+   * <code>null</code>. It should be implemented by subclasses when they
+   * have a way to find the absolute path to a library. If this method
+   * returns null the library is searched for in the default locations
+   * (the directories listed in the <code>java.library.path</code> system
+   * property).
+   *
+   * @param name the (system specific) name of the requested library
+   * @return the full pathname to the requested library, or null
+   * @see Runtime#loadLibrary()
+   * @since 1.2
+   */
+  protected String findLibrary(String name)
+  {
+    return null;
   }
 
   /**
@@ -935,7 +874,7 @@ public abstract class ClassLoader
   {
     defaultAssertionStatus = enabled;
   }
-
+  
   /**
    * Set the default assertion status for packages, used unless overridden
    * by a class request. This default also covers subpackages, unless they
