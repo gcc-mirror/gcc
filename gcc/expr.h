@@ -319,6 +319,7 @@ extern optab neg_optab;		/* Negation */
 extern optab abs_optab;		/* Abs value */
 extern optab one_cmpl_optab;	/* Bitwise not */
 extern optab ffs_optab;		/* Find first bit set */
+extern optab sqrt_optab;	/* Square root */
 
 /* Passed to expand_binop and expand_unop to say which options to try to use
    if the requested operation can't be open-coded on the requisite mode.
