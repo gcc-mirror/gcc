@@ -4999,6 +4999,14 @@ mem_loc_descriptor (rtl)
 	}
       break;
 
+    case MULT:
+      /* If a pseudo-reg is optimized away, it is possible for it to
+	 be replaced with a MEM containing a multiply.  */
+      add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 0)));
+      add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 1)));
+      add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_mul, 0, 0));
+      break;
+
     case CONST_INT:
       mem_loc_result = new_loc_descr (DW_OP_constu, INTVAL (rtl), 0);
       break;
