@@ -1,3 +1,12 @@
+2000-05-04  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000-protos.h: Add output_cbranch.
+	* config/rs6000/rs6000.c (ccr_bit_negated_p): Delete.
+	(print_operand): Delete %t and %T codes.
+	(output_cbranch): New function.  Support branch prediction.
+	* config/rs6000/rs6000.md: Use output_cbranch for
+	conditional branches and returns.
+
 2000-05-04  Jason Merrill  <jason@casey.cygnus.com>
 
 	* simplify-rtx.c (simplify_ternary_operation): Cast to unsigned.
