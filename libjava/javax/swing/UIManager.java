@@ -278,7 +278,7 @@ public class UIManager implements Serializable
   }
 
   /**
-   * Returns the L&amp;F object that renders the target component.
+   * Returns the Look and Feel object that renders the target component.
    */
   public static ComponentUI getUI(JComponent target)
   {

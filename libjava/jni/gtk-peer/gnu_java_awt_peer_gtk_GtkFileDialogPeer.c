@@ -151,6 +151,7 @@ gboolean filenameFilterCallback (const GtkFileFilterInfo *filter_info,
   jclass cx;
   jmethodID id;
   jstring *filename;
+  gboolean accepted;
 
   cx = (*gdk_env)->GetObjectClass (gdk_env, (jobject) obj);
   id = (*gdk_env)->GetMethodID (gdk_env, cx, "filenameFilterCallback",
@@ -159,7 +160,7 @@ gboolean filenameFilterCallback (const GtkFileFilterInfo *filter_info,
   filename = (*gdk_env)->NewStringUTF(gdk_env, filter_info->filename);
   
   gdk_threads_leave();
-  gboolean accepted = (*gdk_env)->CallBooleanMethod(gdk_env, obj, id, filename);
+  accepted = (*gdk_env)->CallBooleanMethod(gdk_env, obj, id, filename);
   gdk_threads_enter();
 
   return accepted;

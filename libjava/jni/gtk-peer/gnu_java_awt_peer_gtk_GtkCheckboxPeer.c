@@ -43,12 +43,11 @@ exception statement from your version. */
 static void item_toggled (GtkToggleButton *item, jobject peer);
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeCreate
-  (JNIEnv *env, jobject obj, jobject group, jboolean state)
+Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_create
+  (JNIEnv *env, jobject obj, jobject group)
 {
   GtkWidget *button;
 
-  /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
 
   gdk_threads_enter ();
@@ -66,7 +65,6 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeCreate
 	  NSA_SET_PTR (env, group, button);
 	}
     }
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), state);
 
   gdk_threads_leave ();
 
@@ -131,6 +129,21 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeSetCheckboxGroup
 }
 
 JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkToggleButtonSetActive
+  (JNIEnv *env, jobject obj, jboolean is_active)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ptr), is_active);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetFont
   (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
 {
@@ -171,26 +184,25 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetFont
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetLabel
+Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkButtonSetLabel
   (JNIEnv *env, jobject obj, jstring label)
 {
-  const char *str;
-  void *ptr;
+  const char *c_label;
   GtkWidget *label_widget;
+  void *ptr;
 
   ptr = NSA_GET_PTR (env, obj);
 
-  label_widget = gtk_bin_get_child (GTK_BIN(ptr));
-
-  str = (*env)->GetStringUTFChars (env, label, 0);
+  c_label = (*env)->GetStringUTFChars (env, label, NULL);
 
   gdk_threads_enter ();
 
-  gtk_label_set_label (GTK_LABEL (label_widget), str);
+  label_widget = gtk_bin_get_child (GTK_BIN (ptr));
+  gtk_label_set_text (GTK_LABEL (label_widget), c_label);
 
   gdk_threads_leave ();
 
-  (*env)->ReleaseStringUTFChars (env, label, str);
+  (*env)->ReleaseStringUTFChars (env, label, c_label);
 }
 
 static void

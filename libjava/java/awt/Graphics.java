@@ -732,14 +732,14 @@ finalize()
 /*************************************************************************/
 
 /**
-  * Returns a string representation of this object.
-  *
-  * @param A string representation of this object. 
-  */
+ * Returns a string representation of this object.
+ *
+ * @param A string representation of this object. 
+ */
 public String
 toString()
 {
-  return(super.toString());
+  return getClass ().getName () + "[font=" + getFont () + ",color=" + getColor () + "]";
 }
 
 public boolean

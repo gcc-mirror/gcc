@@ -144,6 +144,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   /* Location of the popup */
   private Point popupLocation;
 
+  /* Field indicating if popup menu is visible or not */
+  private boolean visible = false;
+  
   /* Bound Property indicating visibility of the popup menu*/
   public static final String VISIBLE_CHANGED_PROPERTY = "visible";
 
@@ -564,7 +567,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   public boolean isVisible()
   {
-    return super.isVisible();
+    return visible;
   }
 
   /**
@@ -577,7 +580,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   public void setVisible(boolean visible)
   {
     boolean old = isVisible();
-    super.setVisible(visible);
+    this.visible = visible;
     if (old != isVisible())
       {
 	firePropertyChange(VISIBLE_CHANGED_PROPERTY, old, (boolean) isVisible());
@@ -615,7 +618,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
 		                            .getLayeredPane();
 		Point p = new Point(popupLocation.x, popupLocation.y);
 		SwingUtilities.convertPointFromScreen(p, layeredPane);
-		popup.show(p.x, p.y, size.width, size.height);
+		popup.show(p.x, p.y, size.width, size.height);  
 	      }
 	    else
 	      {

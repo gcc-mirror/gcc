@@ -163,6 +163,7 @@ public class BasicPopupMenuUI extends PopupMenuUI
     popupMenu.setBorder(defaults.getBorder("PopupMenu.border"));
     popupMenu.setFont(defaults.getFont("PopupMenu.font"));
     popupMenu.setForeground(defaults.getColor("PopupMenu.foreground"));
+    popupMenu.setOpaque(true);
   }
 
   /**
@@ -228,11 +229,11 @@ public class BasicPopupMenuUI extends PopupMenuUI
   }
 
   /**
-  * This method returns the minimum size of the JPopupMenu.
+   * This method returns the minimum size of the JPopupMenu.
    *
-  * @param c The JComponent to find a size for.
+   * @param c The JComponent to find a size for.
    *
-  * @return The minimum size.
+   * @return The minimum size.
    */
   public Dimension getMinimumSize(JComponent c)
   {
@@ -264,13 +265,13 @@ public class BasicPopupMenuUI extends PopupMenuUI
   }
 
   /**
-   * Return true if given mouse event is a platform popup trigger,
-   * and false otherwise
+   * Return true if given mouse event is a platform popup trigger, and false
+   * otherwise
    *
    * @param e MouseEvent that is to be checked for popup trigger event
    *
-   * @return true if given mouse event is a platform popup trigger,
-   * and false otherwise
+   * @return true if given mouse event is a platform popup trigger, and false
+   *         otherwise
    */
   public boolean isPopupTrigger(MouseEvent e)
   {
@@ -334,25 +335,25 @@ public class BasicPopupMenuUI extends PopupMenuUI
 	  path[0] = popupMenu;
 	  Component[] comps = popupMenu.getComponents();
 	  if (comps.length != 0 && comps[0] instanceof MenuElement)
-	    path[1] = (MenuElement) comps[0];
-	  manager.setSelectedPath(path);
+	    {
+	      path[1] = (MenuElement) comps[0];
+	      manager.setSelectedPath(path);
+	    }
         }
     }
   }
 
   /**
-   * ComponentListener that listens to Component Events fired by the
-   * top - level window to which popup menu belongs. If top-level
-   * window was resized, moved or hidded then popup menu will
-   * be hidded and selected path of current menu hierarchy will be set
-   * to null.
-   *
+   * ComponentListener that listens to Component Events fired by the top -
+   * level window to which popup menu belongs. If top-level window was
+   * resized, moved or hidded then popup menu will be hidded and selected
+   * path of current menu hierarchy will be set to null.
    */
   private class TopWindowListener implements ComponentListener
   {
     /**
-     * This method is invoked when top-level window is resized.
-     * This method closes current menu hierarchy.
+     * This method is invoked when top-level window is resized. This method
+     * closes current menu hierarchy.
      *
      * @param e The ComponentEvent
      */
@@ -363,8 +364,8 @@ public class BasicPopupMenuUI extends PopupMenuUI
     }
 
     /**
-     * This method is invoked when top-level window is moved.
-     * This method closes current menu hierarchy.
+     * This method is invoked when top-level window is moved. This method
+     * closes current menu hierarchy.
      *
      * @param e The ComponentEvent
      */
@@ -375,8 +376,8 @@ public class BasicPopupMenuUI extends PopupMenuUI
     }
 
     /**
-     * This method is invoked when top-level window is shown
-     * This method does nothing by default.
+     * This method is invoked when top-level window is shown This method does
+     * nothing by default.
      *
      * @param e The ComponentEvent
      */
@@ -387,8 +388,8 @@ public class BasicPopupMenuUI extends PopupMenuUI
     }
 
     /**
-     * This method is invoked when top-level window is hidden
-     * This method closes current menu hierarchy.
+     * This method is invoked when top-level window is hidden This method
+     * closes current menu hierarchy.
      *
      * @param e The ComponentEvent
      */

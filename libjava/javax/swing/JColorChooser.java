@@ -35,11 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
+import java.awt.AWTError;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -47,314 +52,521 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
+import javax.swing.colorchooser.ColorChooserComponentFactory;
 import javax.swing.colorchooser.ColorSelectionModel;
+import javax.swing.colorchooser.DefaultColorSelectionModel;
 import javax.swing.plaf.ColorChooserUI;
 
+
 /**
- * JColorChooser
- * @author	Andrew Selkirk
- * @version	1.0
+ * The JColorChooser is a Swing widget that offers users different ways to
+ * select a color. By default, three different panels are presented to the
+ * user that are capable of changing the selected color. There are three ways
+ * to utilize JColorChooser. The first is to build a JColorChooser and add it
+ * to the content pane. The second is to use the createDialog method to
+ * create a JDialog that holds a JColorChooser. The third is to show a
+ * JColorChooser in a JDialog directly using the showDialog method.
  */
-public class JColorChooser extends JComponent implements Accessible {
-
+public class JColorChooser extends JComponent implements Accessible
+{
+  /** DOCUMENT ME! */
   private static final long serialVersionUID = 9168066781620640889L;
-  
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
 
-	/**
-	 * AccessibleJColorChooser
-	 */
-	protected class AccessibleJColorChooser extends JComponent.AccessibleJComponent {
+  /**
+   * AccessibleJColorChooser
+   */
+  protected class AccessibleJColorChooser
+    extends JComponent.AccessibleJComponent
+  {
+    /** DOCUMENT ME! */
+    private static final long serialVersionUID = -2038297864782299082L;
 
-	  private static final long serialVersionUID = -2038297864782299082L;
-  
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
+    /**
+     * Constructor AccessibleJColorChooser
+     */
+    protected AccessibleJColorChooser()
+    {
+    }
 
+    /**
+     * getAccessibleRole
+     *
+     * @return AccessibleRole
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.COLOR_CHOOSER;
+    } // getAccessibleRole()
+  } // AccessibleJColorChooser
 
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
+  /** The model used with the JColorChooser. */
+  private ColorSelectionModel selectionModel;
 
-		/**
-		 * Constructor AccessibleJColorChooser
-		 * @param component TODO
-		 */
-	  protected AccessibleJColorChooser()
+  /** The preview panel associated with the JColorChooser. */
+  private JComponent previewPanel;
+
+  /**
+   * The set of AbstractColorChooserPanels associated with the JColorChooser.
+   */
+  private AbstractColorChooserPanel[] chooserPanels;
+
+  /** A Drag and Drop property. */
+  private boolean dragEnabled;
+
+  /**
+   * The property fired by the JColorChooser when the selectionModel property
+   * changes.
+   */
+  public static final String SELECTION_MODEL_PROPERTY = "selectionModel";
+
+  /**
+   * The property fired by the JColorChooser when the previewPanel property
+   * changes.
+   */
+  public static final String PREVIEW_PANEL_PROPERTY = "previewPanel";
+
+  /**
+   * The property fired by the JColorChooser when the chooserPanels property
+   * changes.
+   */
+  public static final String CHOOSER_PANELS_PROPERTY = "chooserPanels";
+
+  /** accessibleContext */
+  protected AccessibleContext accessibleContext;
+
+  /**
+   * This method creates a new JColorChooser with the default initial color.
+   */
+  public JColorChooser()
+  {
+    this(new DefaultColorSelectionModel());
+  } // JColorChooser()
+
+  /**
+   * This method creates a new JColorChooser with the given initial color.
+   *
+   * @param initial The initial color.
+   */
+  public JColorChooser(Color initial)
+  {
+    this(new DefaultColorSelectionModel(initial));
+  } // JColorChooser()
+
+  /**
+   * This method creates a new JColorChooser with the given model. The model
+   * will dictate what the initial color for the JColorChooser is.
+   *
+   * @param model The Model to use with the JColorChooser.
+   */
+  public JColorChooser(ColorSelectionModel model)
+  {
+    if (model == null)
+      model = new DefaultColorSelectionModel();
+    selectionModel = model;
+    updateUI();
+  } // JColorChooser()
+
+  /**
+   * This method sets the current color for the JColorChooser.
+   *
+   * @param color The new color for the JColorChooser.
+   */
+  public void setColor(Color color)
+  {
+    if (color != null)
+      selectionModel.setSelectedColor(color);
+  } // setColor()
+
+  /**
+   * This method sets the current color for the JColorChooser using RGB
+   * values.
+   *
+   * @param r The red value.
+   * @param g The green value.
+   * @param b The blue value.
+   */
+  public void setColor(int r, int g, int b)
+  {
+    selectionModel.setSelectedColor(new Color(r, g, b));
+  } // setColor()
+
+  /**
+   * This method sets the current color for the JColorChooser using the
+   * integer value. Bits 0-7 represent the blue value. Bits 8-15 represent
+   * the green value. Bits 16-23 represent the red value.
+   *
+   * @param color The new current color of the JColorChooser.
+   */
+  public void setColor(int color)
+  {
+    setColor(new Color(color, false));
+  } // setColor()
+
+  /**
+   * This method shows a JColorChooser inside a JDialog. The JDialog will
+   * block until it is hidden. The JDialog comes with three buttons: OK,
+   * Cancel, and Reset. Pressing OK or Cancel hide the JDialog. Pressing
+   * Reset will reset the JColorChooser to its initial value.
+   *
+   * @param component The Component that parents the JDialog.
+   * @param title The title displayed in the JDialog.
+   * @param initial The initial color.
+   *
+   * @return The selected color.
+   */
+  public static Color showDialog(Component component, String title,
+                                 Color initial)
+  {
+    JColorChooser choose = new JColorChooser(initial);
+
+    JDialog dialog = createDialog(component, title, true, choose, null, null);
+
+    dialog.getContentPane().add(choose);
+    dialog.pack();
+    dialog.show();
+
+    return choose.getColor();
+  } // showDialog()
+
+  /**
+   * This is a helper method to make the given JDialog block until it is
+   * hidden.
+   *
+   * @param dialog The JDialog to block.
+   */
+  private static void makeModal(JDialog dialog)
+  {
+    try
+      {
+	synchronized (dialog)
 	  {
+	    while (dialog.isVisible())
+	      dialog.wait();
 	  }
+      }
+    catch (InterruptedException e)
+      {
+      }
+  }
 
-		/**
-		 * getAccessibleRole
-		 * @returns AccessibleRole
-		 */
-		public AccessibleRole getAccessibleRole() {
-			return AccessibleRole.COLOR_CHOOSER;
-		} // getAccessibleRole()
+  /**
+   * This is a helper method to find the first Frame or Dialog ancestor of the
+   * given Component.
+   *
+   * @param c The Component to find ancestors for.
+   *
+   * @return A Frame or Dialog ancestor. Null if none are found.
+   */
+  private static Component findParent(Component c)
+  {
+    Component parent = SwingUtilities.getAncestorOfClass(Frame.class, c);
+    if (parent != null)
+      return parent;
+    parent = SwingUtilities.getAncestorOfClass(Dialog.class, c);
+    return parent;
+  }
 
+  /**
+   * This method will take the given JColorChooser and place it in a JDialog
+   * with the given modal property. Three buttons are displayed in the
+   * JDialog: OK, Cancel and Reset. If OK or Cancel are pressed, the JDialog
+   * is hidden. If Reset is pressed, then the JColorChooser will take on its
+   * default color value. The given okListener will be registered to the OK
+   * button and the cancelListener will be registered to the Cancel button.
+   * If the modal property is set, then the JDialog will block until it is
+   * hidden.
+   *
+   * @param component The Component that will parent the JDialog.
+   * @param title The title displayed in the JDialog.
+   * @param modal The modal property.
+   * @param chooserPane The JColorChooser to place in the JDialog.
+   * @param okListener The ActionListener to register to the OK button.
+   * @param cancelListener The ActionListener to register to the Cancel
+   *        button.
+   *
+   * @return A JDialog with the JColorChooser inside of it.
+   *
+   * @throws AWTError If the component is not a suitable parent.
+   */
+  public static JDialog createDialog(Component component, String title,
+                                     boolean modal, JColorChooser chooserPane,
+                                     ActionListener okListener,
+                                     ActionListener cancelListener)
+  {
+    Component parent = findParent(component);
+    if (parent == null)
+      throw new AWTError("No suitable parent found for Component.");
+    JDialog dialog;
+    if (parent instanceof Frame)
+      dialog = new ModalDialog((Frame) parent, title);
+    else
+      dialog = new ModalDialog((Dialog) parent, title);
+    dialog.setModal(modal);
 
-	} // AccessibleJColorChooser
+    dialog.getContentPane().setLayout(new BorderLayout());
 
+    JPanel panel = new JPanel();
+    panel.setLayout(new FlowLayout());
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+    ActionListener al = new DefaultOKCancelListener(dialog);
 
-	/**
-	 * uiClassID
-	 */
-	private static final String uiClassID = "ColorChooserUI";
+    JButton ok = new JButton("OK");
+    ok.addActionListener(okListener);
+    ok.addActionListener(al);
 
-	/**
-	 * selectionModel
-	 */
-	private ColorSelectionModel selectionModel;
+    JButton cancel = new JButton("Cancel");
+    cancel.addActionListener(cancelListener);
+    cancel.addActionListener(al);
 
-	/**
-	 * previewPanel
-	 */
-	private JComponent previewPanel;
+    JButton reset = new JButton("Reset");
+    reset.addActionListener(new DefaultResetListener(chooserPane));
 
-	/**
-	 * chooserPanels
-	 */
-	private AbstractColorChooserPanel[] chooserPanels;
+    dialog.getContentPane().add(chooserPane, BorderLayout.NORTH);
 
-	/**
-	 * SELECTION_MODEL_PROPERTY
-	 */
-	public static final String SELECTION_MODEL_PROPERTY = "selectionModel";
+    panel.add(ok);
+    panel.add(cancel);
+    panel.add(reset);
 
-	/**
-	 * PREVIEW_PANEL_PROPERTY
-	 */
-	public static final String PREVIEW_PANEL_PROPERTY = "previewPanel";
+    dialog.getContentPane().add(panel, BorderLayout.SOUTH);
 
-	/**
-	 * CHOOSER_PANELS_PROPERTY
-	 */
-	public static final String CHOOSER_PANELS_PROPERTY = "chooserPanels";
+    return dialog;
+  } // createDialog()
 
-	/**
-	 * accessibleContext
-	 */
-	protected AccessibleContext accessibleContext;
+  /**
+   * This method returns the UI Component used for this JColorChooser.
+   *
+   * @return The UI Component for this JColorChooser.
+   */
+  public ColorChooserUI getUI()
+  {
+    return (ColorChooserUI) ui;
+  } // getUI()
 
+  /**
+   * This method sets the UI Component used for this JColorChooser.
+   *
+   * @param ui The UI Component to use with this JColorChooser.
+   */
+  public void setUI(ColorChooserUI ui)
+  {
+    super.setUI(ui);
+  } // setUI()
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * This method resets the UI Component property to the Look and Feel
+   * default.
+   */
+  public void updateUI()
+  {
+    setUI((ColorChooserUI) UIManager.getUI(this));
+    revalidate();
+  } // updateUI()
 
-	/**
-	 * Constructor JColorChooser
-	 */
-	public JColorChooser() {
-		// TODO
-	} // JColorChooser()
+  /**
+   * This method returns a String identifier for the UI Class to be used with
+   * the JColorChooser.
+   *
+   * @return The String identifier for the UI Class.
+   */
+  public String getUIClassID()
+  {
+    return "ColorChooserUI";
+  } // getUIClassID()
 
-	/**
-	 * Constructor JColorChooser
-	 * @param initial TODO
-	 */
-	public JColorChooser(Color initial) {
-		// TODO
-	} // JColorChooser()
+  /**
+   * This method returns the current color for the JColorChooser.
+   *
+   * @return The current color for the JColorChooser.
+   */
+  public Color getColor()
+  {
+    return selectionModel.getSelectedColor(); // TODO
+  } // getColor()
 
-	/**
-	 * Constructor JColorChooser
-	 * @param model TODO
-	 */
-	public JColorChooser(ColorSelectionModel model) {
-		// TODO
-	} // JColorChooser()
+  /**
+   * This method changes the previewPanel property for the JTabbedPane. The
+   * previewPanel is responsible for indicating the current color of the
+   * JColorChooser.
+   *
+   * @param component The Component that will act as the previewPanel.
+   */
+  public void setPreviewPanel(JComponent component)
+  {
+    if (component != previewPanel)
+      {
+	JComponent old = previewPanel;
+	previewPanel = component;
+	firePropertyChange(PREVIEW_PANEL_PROPERTY, old, previewPanel);
+      }
+  } // setPreviewPanel()
 
+  /**
+   * This method returns the current previewPanel used with this
+   * JColorChooser.
+   *
+   * @return The current previewPanel.
+   */
+  public JComponent getPreviewPanel()
+  {
+    return previewPanel; // TODO
+  } // getPreviewPanel()
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * This method adds the given AbstractColorChooserPanel to the list of the
+   * JColorChooser's chooserPanels.
+   *
+   * @param panel The AbstractColorChooserPanel to add.
+   */
+  public void addChooserPanel(AbstractColorChooserPanel panel)
+  {
+    if (panel == null)
+      return;
+    AbstractColorChooserPanel[] old = chooserPanels;
+    AbstractColorChooserPanel[] newPanels = new AbstractColorChooserPanel[(old == null)
+                                                                          ? 1
+                                                                          : old.length
+                                                                          + 1];
+    if (old != null)
+      System.arraycopy(old, 0, newPanels, 0, old.length);
+    newPanels[newPanels.length - 1] = panel;
+    chooserPanels = newPanels;
+    panel.installChooserPanel(this);
+    firePropertyChange(CHOOSER_PANELS_PROPERTY, old, newPanels);
+  } // addChooserPanel()
 
-	/**
-	 * writeObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// TODO
-	} // writeObject()
+  /**
+   * This method removes the given AbstractColorChooserPanel from the
+   * JColorChooser's list of chooserPanels.
+   *
+   * @param panel The AbstractColorChooserPanel to remove.
+   *
+   * @return The AbstractColorChooserPanel that was removed.
+   */
+  public AbstractColorChooserPanel removeChooserPanel(AbstractColorChooserPanel panel)
+  {
+    int index = -1;
+    for (int i = 0; i < chooserPanels.length; i++)
+      if (panel == chooserPanels[i])
+        {
+	  index = i;
+	  break;
+        }
 
-	/**
-	 * setColor
-	 * @param color TODO
-	 */
-	public void setColor(Color color) {
-		// TODO
-	} // setColor()
+    if (index == -1)
+      return null;
 
-	/**
-	 * setColor
-	 * @param r TODO
-	 * @param g TODO
-	 * @param b TODO
-	 */
-	public void setColor(int r, int g, int b) {
-		// TODO
-	} // setColor()
+    AbstractColorChooserPanel[] old = chooserPanels;
+    if (chooserPanels.length == 1)
+      chooserPanels = null;
+    else
+      {
+	AbstractColorChooserPanel[] newPanels = new AbstractColorChooserPanel[chooserPanels.length
+	                                        - 1];
+	System.arraycopy(chooserPanels, 0, newPanels, 0, index);
+	System.arraycopy(chooserPanels, index, newPanels, index - 1,
+	                 chooserPanels.length - index);
+	chooserPanels = newPanels;
+      }
+    panel.uninstallChooserPanel(this);
+    firePropertyChange(CHOOSER_PANELS_PROPERTY, old, chooserPanels);
+    return panel;
+  }
 
-	/**
-	 * setColor
-	 * @param color TODO
-	 */
-	public void setColor(int color) {
-		// TODO
-	} // setColor()
+  /**
+   * This method sets the chooserPanels property for this JColorChooser.
+   *
+   * @param panels The new set of AbstractColorChooserPanels to use.
+   */
+  public void setChooserPanels(AbstractColorChooserPanel[] panels)
+  {
+    if (panels != chooserPanels)
+      {
+	if (chooserPanels != null)
+	  for (int i = 0; i < chooserPanels.length; i++)
+	    if (chooserPanels[i] != null)
+	      chooserPanels[i].uninstallChooserPanel(this);
 
-	/**
-	 * showDialog
-	 * @param component TODO
-	 * @param title TODO
-	 * @param initial TODO
-	 * @returns Color
-	 */
-	public static Color showDialog(Component component, String title,
-			Color initial) {
-		return null; // TODO
-	} // showDialog()
+	AbstractColorChooserPanel[] old = chooserPanels;
+	chooserPanels = panels;
 
-	/**
-	 * createDialog
-	 * @param component TODO
-	 * @param title TODO
-	 * @param modal TODO
-	 * @param chooserPane TODO
-	 * @param okListener TODO
-	 * @param cancelListener TODO
-	 * @returns JDialog
-	 */
-	public static JDialog createDialog(Component component, String title,
-			boolean modal, JColorChooser chooserPane,
-			ActionListener okListener, ActionListener cancelListener) {
-		return null; // TODO
-	} // createDialog()
+	if (panels != null)
+	  for (int i = 0; i < panels.length; i++)
+	    if (panels[i] != null)
+	      panels[i].installChooserPanel(this);
 
-	/**
-	 * getUI
-	 * @returns ColorChooserUI
-	 */
-	public ColorChooserUI getUI() {
-		return (ColorChooserUI) ui;
-	} // getUI()
+	firePropertyChange(CHOOSER_PANELS_PROPERTY, old, chooserPanels);
+      }
+  } // setChooserPanels()
 
-	/**
-	 * setUI
-	 * @param ui TODO
-	 */
-	public void setUI(ColorChooserUI ui) {
-		super.setUI(ui);
-	} // setUI()
+  /**
+   * This method returns the AbstractColorChooserPanels used with this
+   * JColorChooser.
+   *
+   * @return The AbstractColorChooserPanels used with this JColorChooser.
+   */
+  public AbstractColorChooserPanel[] getChooserPanels()
+  {
+    return chooserPanels;
+  } // getChooserPanels()
 
-	/**
-	 * updateUI
-	 */
-	public void updateUI() {
-		setUI((ColorChooserUI) UIManager.get(this));
-		invalidate();
-	} // updateUI()
+  /**
+   * This method returns the ColorSelectionModel used with this JColorChooser.
+   *
+   * @return The ColorSelectionModel.
+   */
+  public ColorSelectionModel getSelectionModel()
+  {
+    return selectionModel;
+  } // getSelectionModel()
 
-	/**
-	 * getUIClassID
-	 * @returns String
-	 */
-	public String getUIClassID() {
-		return uiClassID;
-	} // getUIClassID()
+  /**
+   * This method sets the ColorSelectionModel to be used with this
+   * JColorChooser.
+   *
+   * @param model The ColorSelectionModel to be used with this JColorChooser.
+   *
+   * @throws AWTError If the given model is null.
+   */
+  public void setSelectionModel(ColorSelectionModel model)
+  {
+    if (model == null)
+      throw new AWTError("ColorSelectionModel is not allowed to be null.");
+    selectionModel = model;
+  } // setSelectionModel()
 
-	/**
-	 * getColor
-	 * @returns Color
-	 */
-	public Color getColor() {
-		return null; // TODO
-	} // getColor()
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public boolean getDragEnabled()
+  {
+    return dragEnabled;
+  }
 
-	/**
-	 * setPreviewPanel
-	 * @param component TODO
-	 */
-	public void setPreviewPanel(JComponent component) {
-		// TODO
-	} // setPreviewPanel()
+  /**
+   * DOCUMENT ME!
+   *
+   * @param b DOCUMENT ME!
+   */
+  public void setDragEnabled(boolean b)
+  {
+    dragEnabled = b;
+  }
 
-	/**
-	 * getPreviewPanel
-	 * @returns JComponent
-	 */
-	public JComponent getPreviewPanel() {
-		return null; // TODO
-	} // getPreviewPanel()
-
-	/**
-	 * addChooserPanel
-	 * @param panel TODO
-	 */
-	public void addChooserPanel(AbstractColorChooserPanel panel) {
-		// TODO
-	} // addChooserPanel()
-
-	/**
-	 * removeChooserPanel
-	 * @param panel TODO
-	 * @returns AbstractColorChooserPanel
-	 */
-	public AbstractColorChooserPanel removeChooserPanel(
-			AbstractColorChooserPanel panel) {
-		return null; // TODO
-	} // removeChooserPanel()
-
-	/**
-	 * setChooserPanels
-	 * @param panels TODO
-	 */
-	public void setChooserPanels(AbstractColorChooserPanel[] panels) {
-		// TODO
-	} // setChooserPanels()
-
-	/**
-	 * getChooserPanels
-	 * @returns AbstractColorChooserPanel[]
-	 */
-	public AbstractColorChooserPanel[] getChooserPanels() {
-		return null; // TODO
-	} // getChooserPanels()
-
-	/**
-	 * getSelectionModel
-	 * @returns ColorSelectionModel
-	 */
-	public ColorSelectionModel getSelectionModel() {
-		return null; // TODO
-	} // getSelectionModel()
-
-	/**
-	 * setSelectionModel
-	 * @param model TODO
-	 */
-	public void setSelectionModel(ColorSelectionModel model) {
-		// TODO
-	} // setSelectionModel()
-
-	/**
-	 * paramString
-	 * @returns String
-	 */
-	protected String paramString() {
-		return null; // TODO
-	} // paramString()
+  /**
+   * This method returns a String describing the JColorChooser.
+   *
+   * @return A String describing the JColorChooser.
+   */
+  protected String paramString()
+  {
+    return "JColorChooser";
+  } // paramString()
 
   /**
    * getAccessibleContext
+   *
    * @return AccessibleContext
    */
   public AccessibleContext getAccessibleContext()
@@ -363,5 +575,131 @@ public class JColorChooser extends JComponent implements Accessible {
       accessibleContext = new AccessibleJColorChooser();
 
     return accessibleContext;
+  }
+
+  /**
+   * A helper class that hides a JDialog when the action is performed.
+   */
+  static class DefaultOKCancelListener implements ActionListener
+  {
+    /** The JDialog to hide. */
+    private JDialog dialog;
+
+    /**
+     * Creates a new DefaultOKCancelListener with the given JDialog to hide.
+     *
+     * @param dialog The JDialog to hide.
+     */
+    public DefaultOKCancelListener(JDialog dialog)
+    {
+      super();
+      this.dialog = dialog;
+    }
+
+    /**
+     * This method hides the JDialog when called.
+     *
+     * @param e The ActionEvent.
+     */
+    public void actionPerformed(ActionEvent e)
+    {
+      dialog.hide();
+    }
+  }
+
+  /**
+   * This method resets the JColorChooser color to the initial color when the
+   * action is performed.
+   */
+  static class DefaultResetListener implements ActionListener
+  {
+    /** The JColorChooser to reset. */
+    private JColorChooser chooser;
+
+    /** The initial color. */
+    private Color init;
+
+    /**
+     * Creates a new DefaultResetListener with the given JColorChooser.
+     *
+     * @param chooser The JColorChooser to reset.
+     */
+    public DefaultResetListener(JColorChooser chooser)
+    {
+      super();
+      this.chooser = chooser;
+      init = chooser.getColor();
+    }
+
+    /**
+     * This method resets the JColorChooser to its initial color.
+     *
+     * @param e The ActionEvent.
+     */
+    public void actionPerformed(ActionEvent e)
+    {
+      chooser.setColor(init);
+    }
+  }
+
+  /**
+   * This is a custom JDialog that will notify when it is hidden and the modal
+   * property is set.
+   */
+  static class ModalDialog extends JDialog
+  {
+    /** The modal property. */
+    private boolean modal;
+
+    /**
+     * Creates a new ModalDialog object with the given parent and title.
+     *
+     * @param parent The parent of the JDialog.
+     * @param title The title of the JDialog.
+     */
+    public ModalDialog(Frame parent, String title)
+    {
+      super(parent, title);
+    }
+
+    /**
+     * Creates a new ModalDialog object with the given parent and title.
+     *
+     * @param parent The parent of the JDialog.
+     * @param title The title of the JDialog.
+     */
+    public ModalDialog(Dialog parent, String title)
+    {
+      super(parent, title);
+    }
+
+    /**
+     * This method sets the modal property.
+     *
+     * @param modal The modal property.
+     */
+    public void setModal(boolean modal)
+    {
+      this.modal = modal;
+    }
+
+    /**
+     * This method shows the ModalDialog.
+     */
+    public void show()
+    {
+      super.show();
+      if (modal)
+	makeModal(this);
+    }
+
+    /**
+     * This method hides the ModalDialog.
+     */
+    public synchronized void hide()
+    {
+      super.hide();
+      notifyAll();
+    }
   }
 }

@@ -50,18 +50,24 @@ import java.awt.peer.ButtonPeer;
 public class GtkButtonPeer extends GtkComponentPeer
     implements ButtonPeer
 {
-  native void create ();
+  native void create (String label);
+
   public native void connectJObject ();
   public native void connectSignals ();
 
   native void gtkSetFont (String name, int style, int size);
-  native void gtkSetLabel(String label);
+  native void gtkSetLabel (String label);
   native void gtkWidgetSetForeground (int red, int green, int blue);
   native void gtkActivate ();
 
   public GtkButtonPeer (Button b)
   {
     super (b);
+  }
+
+  void create ()
+  {
+    create (((Button) awtComponent).getLabel ());
   }
 
   public void setLabel (String label) 
@@ -78,10 +84,10 @@ public class GtkButtonPeer extends GtkComponentPeer
 	p.translate(((Component) me.getSource()).getX(),
 	            ((Component) me.getSource()).getY());
 	if (!me.isConsumed ()
-	    && (me.getModifiers () & MouseEvent.BUTTON1_MASK) != 0
+	    && (me.getModifiersEx () & MouseEvent.BUTTON1_DOWN_MASK) != 0
 	    && awtComponent.getBounds().contains(p))
 	  postActionEvent (((Button)awtComponent).getActionCommand (), 
-			   me.getModifiers ());
+			   me.getModifiersEx ());
       }
 
     if (e.getID () == KeyEvent.KEY_PRESSED)
@@ -90,18 +96,11 @@ public class GtkButtonPeer extends GtkComponentPeer
 	if (!ke.isConsumed () && ke.getKeyCode () == KeyEvent.VK_SPACE)
           {
             postActionEvent (((Button) awtComponent).getActionCommand (),
-                             ke.getModifiers ());
+                             ke.getModifiersEx ());
             gtkActivate ();
           }
       }
 
     super.handleEvent (e);
-  }
-
-  public void getArgs (Component component, GtkArgList args)
-  {
-    super.getArgs (component, args);
-
-    args.add ("label", ((Button)component).getLabel ());
   }
 }

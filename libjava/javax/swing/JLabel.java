@@ -38,8 +38,9 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Component;
-import java.awt.Image;
 import java.awt.Font;
+import java.awt.Image;
+import java.awt.event.KeyEvent;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.swing.Icon;
@@ -48,7 +49,7 @@ import javax.swing.plaf.LabelUI;
 
 /**
  * <p>
- * A swing widget that displays a text message and/or an icon. 
+ * A swing widget that displays a text message and/or an icon.
  * </p>
  */
 public class JLabel extends JComponent implements Accessible, SwingConstants
@@ -63,10 +64,10 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   protected Component labelFor;
 
   /** The label's text. */
-  private transient String labelText;
+  private transient String text;
 
   /** Where the label will be positioned horizontally. */
-  private transient int horizontalAlignment = CENTER;
+  private transient int horizontalAlignment = LEADING;
 
   /** Where the label text will be placed horizontally relative to the icon. */
   private transient int horizontalTextPosition = TRAILING;
@@ -78,16 +79,16 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   private transient int verticalTextPosition = CENTER;
 
   /** The icon painted when the label is enabled. */
-  private transient Icon activeIcon;
+  private transient Icon icon;
 
   /** The icon painted when the label is disabled. */
   private transient Icon disabledIcon;
 
   /** The label's mnemnonic key. */
-  private transient char mnemonicKey;
+  private transient int displayedMnemonic = KeyEvent.VK_UNDEFINED;
 
   /** The index of the menemonic character in the text. */
-  private transient int underlinedChar = -1;
+  private transient int displayedMnemonicIndex = -1;
 
   /** The gap between the icon and the text. */
   private transient int iconTextGap = 4;
@@ -102,10 +103,11 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * changes.
    */
   public static final String DISPLAYED_MNEMONIC_CHANGED_PROPERTY = "displayedMnemonic";
-  
+
   /**
-   * Fired in a PropertyChangeEvent when the "displayedMnemonicIndex"
-   * property changes. */
+   * Fired in a PropertyChangeEvent when the "displayedMnemonicIndex" property
+   * changes.
+   */
   public static final String DISPLAYED_MNEMONIC_INDEX_CHANGED_PROPERTY = "displayedMnemonicIndex";
 
   /**
@@ -145,8 +147,8 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   public static final String VERTICAL_TEXT_POSITION_CHANGED_PROPERTY = "verticalTextPosition";
 
   /**
-   * Creates a new horizontally and vertically centered JLabel object with no text and no
-   * icon.
+   * Creates a new horizontally and vertically centered JLabel object with no
+   * text and no icon.
    */
   public JLabel()
   {
@@ -154,8 +156,8 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   }
 
   /**
-   * Creates a new horizontally and vertically centered JLabel object with no text and the
-   * given icon.
+   * Creates a new horizontally and vertically centered JLabel object with no
+   * text and the given icon.
    *
    * @param image The icon to use with the label.
    */
@@ -165,8 +167,9 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   }
 
   /**
-   * Creates a new vertically centered JLabel object with no text and the given icon and
-   * horizontal alignment. By default, the text is TRAILING the image.
+   * Creates a new vertically centered JLabel object with no text and the
+   * given icon and horizontal alignment. By default, the text is TRAILING
+   * the image.
    *
    * @param image The icon to use with the label.
    * @param horizontalAlignment The horizontal alignment of the label.
@@ -177,8 +180,8 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   }
 
   /**
-   * Creates a new horizontally and vertically centered JLabel object with no icon and the
-   * given text.
+   * Creates a new horizontally and vertically centered JLabel object with no
+   * icon and the given text.
    *
    * @param text The text to use with the label.
    */
@@ -188,8 +191,8 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   }
 
   /**
-   * Creates a new vertically centered JLabel object with no icon and the given text and
-   * horizontal alignment.
+   * Creates a new vertically centered JLabel object with no icon and the
+   * given text and horizontal alignment.
    *
    * @param text The text to use with the label.
    * @param horizontalAlignment The horizontal alignment of the label.
@@ -200,8 +203,8 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   }
 
   /**
-   * Creates a new vertically centered JLabel object with the given text, icon, and horizontal
-   * alignment.
+   * Creates a new vertically centered JLabel object with the given text,
+   * icon, and horizontal alignment.
    *
    * @param text The text to use with the label.
    * @param icon The icon to use with the label.
@@ -209,8 +212,8 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    */
   public JLabel(String text, Icon icon, int horizontalAlignment)
   {
-    labelText = text;
-    activeIcon = icon;
+    this.text = text;
+    this.icon = icon;
     this.horizontalAlignment = horizontalAlignment;
     updateUI();
   }
@@ -273,24 +276,25 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    */
   public String getText()
   {
-    return labelText;
+    return text;
   }
 
   /**
    * This method changes the "text" property. The given text will be painted
    * in the label.
    *
-   * @param text The label's text.
+   * @param newText The label's text.
    */
-  public void setText(String text)
+  public void setText(String newText)
   {
-    if (text != labelText)
+    if (text != newText)
       {
-	String oldText = labelText;
-	labelText = text;
-	firePropertyChange(TEXT_CHANGED_PROPERTY, oldText, labelText);
-	if (labelText != null && labelText.length() <= underlinedChar)
-	  setDisplayedMnemonicIndex(labelText.length() - 1);
+	String oldText = text;
+	text = newText;
+	firePropertyChange(TEXT_CHANGED_PROPERTY, oldText, newText);
+
+	if (text != null && text.length() <= displayedMnemonicIndex)
+	  setDisplayedMnemonicIndex(text.length() - 1);
       }
   }
 
@@ -302,37 +306,39 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    */
   public Icon getIcon()
   {
-    return activeIcon;
+    return icon;
   }
 
   /**
    * This method changes the "icon" property. This icon (the active icon) will
    * be the one displayed when the label is enabled.
    *
-   * @param icon The active icon.
+   * @param newIcon The active icon.
    */
-  public void setIcon(Icon icon)
+  public void setIcon(Icon newIcon)
   {
-    if (icon != activeIcon)
+    if (icon != newIcon)
       {
-	Icon oldIcon = activeIcon;
-	activeIcon = icon;
-	firePropertyChange(ICON_CHANGED_PROPERTY, oldIcon, activeIcon);
+	Icon oldIcon = icon;
+	icon = newIcon;
+	firePropertyChange(ICON_CHANGED_PROPERTY, oldIcon, newIcon);
       }
   }
 
   /**
    * This method returns the disabled icon. The disabled icon is painted when
-   * the label is disabled. If the disabled icon is null and the active icon is
-   * an ImageIcon, this method returns a grayed version of the icon. The grayed 
-   * version of the icon becomes the disabledIcon.
+   * the label is disabled. If the disabled icon is null and the active icon
+   * is an ImageIcon, this method returns a grayed version of the icon. The
+   * grayed  version of the icon becomes the disabledIcon.
    *
    * @return The disabled icon.
    */
   public Icon getDisabledIcon()
   {
-    if (disabledIcon == null && activeIcon instanceof ImageIcon)
-      disabledIcon = new ImageIcon(GrayFilter.createDisabledImage(((ImageIcon) activeIcon).getImage()));
+    if (disabledIcon == null && icon instanceof ImageIcon)
+      disabledIcon = new ImageIcon(GrayFilter.createDisabledImage(((ImageIcon) icon)
+                                                                  .getImage()));
+
     return disabledIcon;
   }
 
@@ -340,16 +346,15 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * This method changes the "disabledIcon" property. This icon (the disabled
    * icon) will be the one displayed when the label is disabled.
    *
-   * @param disabledIcon The disabled icon.
+   * @param newIcon The disabled icon.
    */
-  public void setDisabledIcon(Icon disabledIcon)
+  public void setDisabledIcon(Icon newIcon)
   {
-    if (disabledIcon != this.disabledIcon)
+    if (disabledIcon != newIcon)
       {
-	Icon oldDisabledIcon = this.disabledIcon;
-	this.disabledIcon = disabledIcon;
-	firePropertyChange(DISABLED_ICON_CHANGED_PROPERTY, oldDisabledIcon,
-	                   this.disabledIcon);
+	Icon oldIcon = disabledIcon;
+	disabledIcon = newIcon;
+	firePropertyChange(DISABLED_ICON_CHANGED_PROPERTY, oldIcon, newIcon);
       }
   }
 
@@ -358,11 +363,19 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * label is used as a label for another component, the label will give
    * focus to that component when the mnemonic is activated.
    *
-   * @param key The keycode to use for the mnemonic.
+   * @param mnemonic The keycode to use for the mnemonic.
    */
-  public void setDisplayedMnemonic(int key)
+  public void setDisplayedMnemonic(int mnemonic)
   {
-    setDisplayedMnemonic((char) key);
+    if (displayedMnemonic != mnemonic)
+      {
+	firePropertyChange(DISPLAYED_MNEMONIC_CHANGED_PROPERTY,
+	                   displayedMnemonic, mnemonic);
+	displayedMnemonic = mnemonic;
+
+	if (text != null)
+	  setDisplayedMnemonicIndex(text.indexOf(mnemonic));
+      }
   }
 
   /**
@@ -370,19 +383,11 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * label is used as a label for another component, the label will give
    * focus to that component when the mnemonic is activated.
    *
-   * @param aChar The character to use for the mnemonic.
+   * @param mnemonic The character to use for the mnemonic.
    */
-  public void setDisplayedMnemonic(char aChar)
+  public void setDisplayedMnemonic(char mnemonic)
   {
-    if (aChar != mnemonicKey)
-      {
-	char oldKey = mnemonicKey;
-	mnemonicKey = aChar;
-	firePropertyChange(DISPLAYED_MNEMONIC_CHANGED_PROPERTY, oldKey,
-	                   mnemonicKey);
-	if (labelText != null)
-	  setDisplayedMnemonicIndex(labelText.indexOf(mnemonicKey));
-      }
+    setDisplayedMnemonic((int) mnemonic);
   }
 
   /**
@@ -392,7 +397,7 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    */
   public int getDisplayedMnemonic()
   {
-    return (int) mnemonicKey;
+    return (int) displayedMnemonic;
   }
 
   /**
@@ -401,27 +406,26 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * no mnemonic. If the index is less than -1 or if the index is equal to
    * the length, this method will throw an IllegalArgumentException.
    *
-   * @param index The index of the character to underline.
+   * @param newIndex The index of the character to underline.
    *
    * @throws IllegalArgumentException If index less than -1 or index equals
    *         length.
    */
-  public void setDisplayedMnemonicIndex(int index)
+  public void setDisplayedMnemonicIndex(int newIndex)
                                  throws IllegalArgumentException
   {
-    if (index < -1 || labelText != null && index >= labelText.length())
+    if (newIndex < -1 || (text != null && newIndex >= text.length()))
       throw new IllegalArgumentException();
-      
-    if (labelText == null || labelText.charAt(index) != mnemonicKey)
-      index = -1;
-      
-    if (index != underlinedChar)
-    {
-      int oldIndex = underlinedChar;  
-      underlinedChar = index;
-      firePropertyChange(DISPLAYED_MNEMONIC_INDEX_CHANGED_PROPERTY,
-                         oldIndex, underlinedChar);
-    }
+
+    if (text == null || text.charAt(newIndex) != displayedMnemonic)
+      newIndex = -1;
+
+    if (newIndex != displayedMnemonicIndex)
+      {
+	firePropertyChange(DISPLAYED_MNEMONIC_INDEX_CHANGED_PROPERTY,
+	                   displayedMnemonicIndex, newIndex);
+	displayedMnemonicIndex = newIndex;
+      }
   }
 
   /**
@@ -432,7 +436,7 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    */
   public int getDisplayedMnemonicIndex()
   {
-    return underlinedChar;
+    return displayedMnemonicIndex;
   }
 
   /**
@@ -490,16 +494,14 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * This method changes the "iconTextGap" property. The iconTextGap
    * determines how much space there is between the icon and the text.
    *
-   * @param iconTextGap The gap between the icon and the text.
+   * @param newGap The gap between the icon and the text.
    */
-  public void setIconTextGap(int iconTextGap)
+  public void setIconTextGap(int newGap)
   {
-    if (iconTextGap != this.iconTextGap)
+    if (iconTextGap != newGap)
       {
-	int oldIconTextGap = this.iconTextGap;
-	this.iconTextGap = iconTextGap;
-	firePropertyChange(ICON_TEXT_GAP_CHANGED_PROPERTY, oldIconTextGap,
-	                   iconTextGap);
+	firePropertyChange(ICON_TEXT_GAP_CHANGED_PROPERTY, iconTextGap, newGap);
+	iconTextGap = newGap;
       }
   }
 
@@ -632,11 +634,12 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   public boolean imageUpdate(Image img, int infoflags, int x, int y, int w,
                              int h)
   {
-    Icon currIcon = (isEnabled()) ? activeIcon : disabledIcon;
+    Icon currIcon = isEnabled() ? icon : disabledIcon;
 
-    //Is this the correct way to check for image equality?
+    // XXX: Is this the correct way to check for image equality?
     if (currIcon != null && currIcon instanceof ImageIcon)
       return (((ImageIcon) currIcon).getImage() == img);
+
     return false;
   }
 
@@ -664,15 +667,14 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   {
     if (c != labelFor)
       {
-	Component oldLabelFor = labelFor;
+	firePropertyChange(LABEL_FOR_CHANGED_PROPERTY, labelFor, c);
 	labelFor = c;
-	firePropertyChange(LABEL_FOR_CHANGED_PROPERTY, oldLabelFor, labelFor);
       }
   }
-  
+
   /**
-   * This method overrides setFont so that we can call for a repaint
-   * after the font is changed.
+   * This method overrides setFont so that we can call for a repaint after the
+   * font is changed.
    *
    * @param f The font for this label.
    */

@@ -43,12 +43,10 @@ import javax.swing.plaf.ComponentUI;
 
 public class BasicToggleButtonUI extends BasicButtonUI
 {
-  
-    public static ComponentUI createUI(final JComponent c)  {
-	return new BasicToggleButtonUI();
-    }    
+  public static ComponentUI createUI(final JComponent component)
+  {
+    return new BasicToggleButtonUI();
+  }    
+
 }
-
-
-
 

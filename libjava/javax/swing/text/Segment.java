@@ -39,10 +39,12 @@ package javax.swing.text;
 
 import java.text.CharacterIterator;
 
-
 public class Segment
   implements Cloneable, CharacterIterator
 {
+  private boolean partialReturn;
+  private int current;
+  
   public char[] array;
   public int count;
   public int offset;
@@ -67,61 +69,108 @@ public class Segment
     catch (CloneNotSupportedException e)
       {
 	return null;
-    }
+      }
   }
+
+  public char current()
+  {
+    if (count == 0
+	|| current >= getEndIndex())
+      return DONE;
     
-    public char current()
-    {
-	return array[getIndex()];
-    }
+    return array[current];
+  }
 
-    public char first()
-    {
-	offset = getBeginIndex();
-	return array[offset];
-    }
+  public char first()
+  {
+    if (count == 0)
+      return DONE;
+
+    current = getBeginIndex();
+    return array[current];
+  }
+
+  public int getBeginIndex()
+  {
+    return offset;
+  }
+
+  public int getEndIndex()
+  {
+    return offset + count;
+  }
+
+  public int getIndex()
+  {
+    return current;
+  }
+
+  public char last()
+  {
+    if (count == 0)
+      return DONE;
     
-    public int getBeginIndex()
-    {
-	return offset;
-    }
+    current = getEndIndex() - 1;
+    return array[current];
+  }
+
+  public char next()
+  {
+    if (count == 0)
+      return DONE;
+
+    if ((current + 1) >= getEndIndex())
+      {
+	current = getEndIndex();
+	return DONE;
+      }
     
-    public int getEndIndex()
-    {
-	return offset + count;
-    }
+    current++;
+    return array[current];
+  }
 
-    public int getIndex()
-    {
-	return offset;
-    }
+  public char previous()
+  {
+    if (count == 0
+	|| current == getBeginIndex())
+      return DONE;
+    
+    current--;
+    return array[current];
+  }
 
-    public char last()
-    {
-	offset = getEndIndex() - 1;
-	return array[offset];
-    }
+  public char setIndex(int position)
+  {
+    if (position < getBeginIndex()
+	|| position > getEndIndex())
+      throw new IllegalArgumentException();
 
-    public char next()
-    {
-	offset++;
-	return array[offset];
-    }
+    current = position;
 
-    public char previous()
-    {
-	offset--;
-	return array[offset];
-    }
+    if (position == getEndIndex())
+      return DONE;
+    
+    return array[current];
+  }
 
-    public char setIndex(int position)
-    {
-	offset = position;
-	return array[offset];
-    }
+  public String toString()
+  {
+    return new String(array, offset, count);
+  }
 
-    public String toString()
-    {
-	return new String(array, offset, count);
-    }
+  /**
+   * @since 1.4
+   */
+  public void setPartialReturn(boolean p)
+  {
+    partialReturn = p;
+  }
+  
+  /**
+   * @since 1.4
+   */
+  public boolean isPartialReturn()
+  {
+    return partialReturn;
+  }
 }

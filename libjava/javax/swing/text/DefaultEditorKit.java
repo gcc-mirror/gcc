@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,7 +50,121 @@ import javax.swing.JEditorPane;
 
 public class DefaultEditorKit extends EditorKit
 {
+  public static class BeepAction
+    extends TextAction
+  {
+    public BeepAction()
+    {
+      super(beepAction);
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      Toolkit.getDefaultToolkit().beep();
+    }
+  }
+
+  public static class CopyAction 
+    extends TextAction
+  {
+    public CopyAction()
+    {
+      super(copyAction);
+    }
+    public void actionPerformed(ActionEvent event)
+    {
+    }
+  }
+
+  public static class CutAction 
+    extends TextAction
+  {
+    public CutAction()
+    {
+      super(cutAction);
+    }
+    public void actionPerformed(ActionEvent event)
+    {
+    }
+  }
+
+  public static class DefaultKeyTypedAction 
+    extends TextAction
+  {
+    public DefaultKeyTypedAction()
+    {
+      super(defaultKeyTypedAction);
+    }
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      if (t != null)
+        {
+          try
+            {
+              t.getDocument().insertString(t.getCaret().getDot(), event.getActionCommand(), null);
+              t.getCaret().setDot(Math.min(t.getCaret().getDot() + 1,
+                                           t.getDocument().getEndPosition().getOffset()));
+              t.repaint();
+            }
+          catch (BadLocationException be)
+            {
+              // FIXME: we're not authorized to throw this.. swallow it?
+            }
+        }
+    }
+  }
+
+  public static class InsertBreakAction 
+    extends TextAction
+  {
+    public InsertBreakAction()
+    {
+      super(insertBreakAction);
+    }
+    public void actionPerformed(ActionEvent event)
+    {
+    }
+  }
+
+  public static class InsertContentAction 
+    extends TextAction
+  {
+    public InsertContentAction()
+    {
+      super(insertContentAction);
+    }
+    public void actionPerformed(ActionEvent event)
+    {
+    }
+  }
+
+  public static class InsertTabAction 
+    extends TextAction
+  {
+    public InsertTabAction()
+    {
+      super(insertTabAction);
+    }
+    public void actionPerformed(ActionEvent event)
+    {
+    }
+  }
+
+  public static class PasteAction 
+    extends TextAction
+  {
+    public PasteAction()
+    {
+      super(pasteAction);
+    }
+    public void actionPerformed(ActionEvent event)
+    {
+    }
+  }
+
   private static final long serialVersionUID = 9017245433028523428L;
+  
   public static final String backwardAction = "caret-backward";
   public static final String beepAction = "beep";
   public static final String beginAction = "caret-begin";
@@ -104,6 +220,113 @@ public class DefaultEditorKit extends EditorKit
   {
   }
 
+  private static Action[] defaultActions = 
+  new Action[] {
+    new BeepAction(),
+    new CopyAction(),
+    new CutAction(),
+    new DefaultKeyTypedAction(),
+    new InsertBreakAction(),
+    new InsertContentAction(),
+    new InsertTabAction(),
+    new PasteAction(),
+    new TextAction(deleteNextCharAction) 
+    { 
+      public void actionPerformed(ActionEvent event)
+      {
+        JTextComponent t = getTextComponent(event);
+        if (t != null)
+          {
+            try
+              {
+                int pos = t.getCaret().getDot();
+                if (pos < t.getDocument().getEndPosition().getOffset())
+                  {
+                    t.getDocument().remove(t.getCaret().getDot(), 1);
+                    t.repaint();
+                  }
+              }
+            catch (BadLocationException e)
+              {
+                // FIXME: we're not authorized to throw this.. swallow it?
+              }
+          }
+      }
+    },
+    new TextAction(deletePrevCharAction) 
+    { 
+      public void actionPerformed(ActionEvent event)
+      {
+        JTextComponent t = getTextComponent(event);
+        if (t != null)
+          {
+            try
+              {
+                int pos = t.getCaret().getDot();
+                if (pos > t.getDocument().getStartPosition().getOffset())
+                  {
+                    t.getDocument().remove(pos - 1, 1);
+                    t.getCaret().setDot(pos - 1);
+                    t.repaint();
+                  }
+              }
+            catch (BadLocationException e)
+              {
+                // FIXME: we're not authorized to throw this.. swallow it?
+              }
+          }
+      }
+    },
+    new TextAction(backwardAction) 
+    { 
+      public void actionPerformed(ActionEvent event)
+      {
+        JTextComponent t = getTextComponent(event);
+        if (t != null)
+          {
+            t.getCaret().setDot(Math.max(t.getCaret().getDot() - 1,
+                                         t.getDocument().getStartPosition().getOffset()));
+          }
+      }
+    },
+    new TextAction(forwardAction) 
+    { 
+      public void actionPerformed(ActionEvent event)
+      {
+        JTextComponent t = getTextComponent(event);
+        if (t != null)
+          {
+            t.getCaret().setDot(Math.min(t.getCaret().getDot() + 1,
+                                         t.getDocument().getEndPosition().getOffset()));
+          }
+      }
+    },
+    new TextAction(selectionBackwardAction)
+    {
+      public void actionPerformed(ActionEvent event)
+      {
+	JTextComponent t = getTextComponent(event);
+	if (t != null)
+	  {
+	    t.getCaret().moveDot(Math.max(t.getCaret().getDot() - 1,
+					  t.getDocument().getStartPosition().getOffset()));
+	  }
+      }
+    },
+    new TextAction(selectionForwardAction)
+    {
+      public void actionPerformed(ActionEvent event)
+      {
+        JTextComponent t = getTextComponent(event);
+        if (t != null)
+          {
+            t.getCaret().moveDot(Math.min(t.getCaret().getDot() + 1,
+                                          t.getDocument().getEndPosition().getOffset()));
+          }
+      }
+    },
+  };
+
   /**
    * Called when the kit is being removed from the JEditorPane.
    */
@@ -116,19 +339,19 @@ public class DefaultEditorKit extends EditorKit
     }
 
   public Caret createCaret()
-    {
-	return null;
-    }
+  {
+    return new DefaultCaret();
+  }
 
   public Document createDefaultDocument()
-    {
-        return new PlainDocument();
-    }
-
+  {
+    return new PlainDocument();
+  }
+    
   public Action[] getActions()
-    {
-	return null;
-    }
+  {
+    return defaultActions;
+  }
 
   public String getContentType()
     {

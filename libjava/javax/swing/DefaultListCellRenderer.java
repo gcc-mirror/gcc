@@ -41,16 +41,18 @@ import java.awt.Component;
 import java.awt.Rectangle;
 import java.io.Serializable;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 
 
 /**
- * DefaultListCellRenderer
+ * DefaultListCellRenderer. This class is responsible for rendering  list
+ * cells.
  *
  * @author Andrew Selkirk
  * @version 1.0
  */
-public class DefaultListCellRenderer 
-  extends JLabel implements ListCellRenderer, Serializable
+public class DefaultListCellRenderer extends JLabel implements ListCellRenderer,
+                                                               Serializable
 {
   static final long serialVersionUID = 7708947179685189462L;
 
@@ -62,19 +64,22 @@ public class DefaultListCellRenderer
     }
   }
 
-  /** noFocusBorder */
-  protected static Border noFocusBorder = null; // TODO
+  /**
+   * This border is used whenever renderer doesn't have a focus.
+   */
+  protected static Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 
   /**
    * getListCellRendererComponent
    *
-   * @param list TODO
-   * @param value TODO
-   * @param index TODO
-   * @param isSelected TODO
-   * @param cellHasFocus TODO
+   * @param list JList list for the 'value'
+   * @param value object that should be rendered in the cell
+   * @param index index of the cell
+   * @param isSelected draw cell highlighted if isSelected is true
+   * @param cellHasFocus draw focus rectangle around cell if the cell has
+   *        focus
    *
-   * @return Component
+   * @return Component that will be painted to the desired cell.
    */
   public Component getListCellRendererComponent(JList list, Object value,
                                                 int index, boolean isSelected,
@@ -86,31 +91,87 @@ public class DefaultListCellRenderer
 
     if (isSelected)
       {
-        setBackground(list.getSelectionBackground());
-        setForeground(list.getSelectionForeground());
+	setBackground(list.getSelectionBackground());
+	setForeground(list.getSelectionForeground());
       }
     else
       {
-        setBackground(list.getBackground());
-        setForeground(list.getForeground());
+	setBackground(list.getBackground());
+	setForeground(list.getForeground());
       }
 
     setEnabled(list.isEnabled());
     setFont(list.getFont());
+
+    // Use focusCellHighlightBorder when renderer has focus and 
+    // noFocusBorder otherwise
+    
+    if (cellHasFocus)
+      setBorder(UIManager.getBorder("List.focusCellHighlightBorder"));
+    else
+      setBorder(noFocusBorder);
+
     return this;
   }
 
-  public void validate() {}
-  public void revalidate() {}
-  public void repaint(long tm, int x, int y, int w, int h) {}
-  public void repaint(Rectangle rect) {}
-  protected void firePropertyChange(String propertyName, Object oldValue, Object newValue){}
-  public void firePropertyChange(String propertyName, byte oldValue, byte newValue) {}
-  public void firePropertyChange(String propertyName, char oldValue, char newValue) {} 
-  public void firePropertyChange(String propertyName, short oldValue, short newValue) {}
-  public void firePropertyChange(String propertyName, int oldValue, int newValue) {}
-  public void firePropertyChange(String propertyName, long oldValue, long newValue) {}
-  public void firePropertyChange(String propertyName, float oldValue, float newValue) {}
-  public void firePropertyChange(String propertyName, double oldValue, double newValue) {}
-  public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {}
+  public void validate()
+  {
+  }
+
+  public void revalidate()
+  {
+  }
+
+  public void repaint(long tm, int x, int y, int w, int h)
+  {
+  }
+
+  public void repaint(Rectangle rect)
+  {
+  }
+
+  protected void firePropertyChange(String propertyName, Object oldValue,
+                                    Object newValue)
+  {
+  }
+
+  public void firePropertyChange(String propertyName, byte oldValue,
+                                 byte newValue)
+  {
+  }
+
+  public void firePropertyChange(String propertyName, char oldValue,
+                                 char newValue)
+  {
+  }
+
+  public void firePropertyChange(String propertyName, short oldValue,
+                                 short newValue)
+  {
+  }
+
+  public void firePropertyChange(String propertyName, int oldValue,
+                                 int newValue)
+  {
+  }
+
+  public void firePropertyChange(String propertyName, long oldValue,
+                                 long newValue)
+  {
+  }
+
+  public void firePropertyChange(String propertyName, float oldValue,
+                                 float newValue)
+  {
+  }
+
+  public void firePropertyChange(String propertyName, double oldValue,
+                                 double newValue)
+  {
+  }
+
+  public void firePropertyChange(String propertyName, boolean oldValue,
+                                 boolean newValue)
+  {
+  }
 }

@@ -114,7 +114,7 @@ public class JCheckBox extends JToggleButton
     }
   
   /**
-   * Returns a string that specifies the name of the L&amp;F class
+   * Returns a string that specifies the name of the Look and Feel class
    * that renders this component.
    */
     public String getUIClassID()

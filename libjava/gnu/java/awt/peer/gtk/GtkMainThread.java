@@ -43,7 +43,18 @@ public class GtkMainThread extends GtkGenericPeer implements Runnable
   private static Thread mainThread = null;
   private static Object mainThreadLock = new Object();
 
-  static native void gtkInit();
+  // Whether the gtk+ subsystem has been initialized.
+  private boolean gtkInitCalled = false;
+
+  /**
+   * Call gtk_init.  It is very important that this happen before any other
+   * gtk calls.
+   *
+   * @param portableNativeSync 1 if the Java property
+   * gnu.classpath.awt.gtk.portable.native.sync is set to "true".  0 if it is
+   * set to "false".  -1 if unset.
+   */
+  static native void gtkInit(int portableNativeSync);
   native void gtkMain();
   
   public GtkMainThread() 
@@ -59,18 +70,38 @@ public class GtkMainThread extends GtkGenericPeer implements Runnable
     synchronized (this) 
       {
 	mainThread.start();
-	try {
-	  wait();
-	} catch (InterruptedException e) { }
+	
+	while (!gtkInitCalled)
+	  {
+	    try
+	      {
+		wait();
+	      }
+	    catch (InterruptedException e) { }
+	  }
       }
   }
   
   public void run() 
   {
+    /* Pass the value of the gnu.classpath.awt.gtk.portable.native.sync system
+     * property to C. */ 
+    int portableNativeSync;     
+    String portNatSyncProp = 
+      System.getProperty("gnu.classpath.awt.gtk.portable.native.sync");
+
+    if (portNatSyncProp == null)
+      portableNativeSync = -1;  // unset
+    else if (Boolean.valueOf(portNatSyncProp).booleanValue())
+      portableNativeSync = 1;   // true
+    else
+      portableNativeSync = 0;   // false
+    
     synchronized (this) 
       {
-	gtkInit();
-	notify();
+	gtkInit(portableNativeSync);
+	gtkInitCalled = true;
+	notifyAll();
       }
     gtkMain();
   }

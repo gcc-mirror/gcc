@@ -35,761 +35,958 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.ItemSelectable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Vector;
-
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleSelection;
+import javax.swing.JComponent;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.ComboBoxUI;
 
+
 /**
- * JComboBox
- * @author	Andrew Selkirk
- * @version	1.0
+ * JComboBox. JComboBox is a container, that keeps track of elements added to
+ * it by the user. JComboBox allows user to select any item in its list and
+ * displays the selected item to the user. JComboBox also can show/hide popup
+ * menu containing its list of item whenever the mouse is pressed over it.
+ *
+ * @author Andrew Selkirk
+ * @author Olga Rodimina
  */
-public class JComboBox extends JComponent
-  implements ItemSelectable, ListDataListener, ActionListener, Accessible
+public class JComboBox extends JComponent implements ItemSelectable,
+                                                     ListDataListener,
+                                                     ActionListener,
+                                                     Accessible
 {
   private static final long serialVersionUID = 5654585963292734470L;
 
   /**
-   * AccessibleJComboBox
+   * KeySelectionManager interface. Class implementing this interface are
+   * responsible for matching key characters typed by the user with combo
+   * box's items.
    */
-  protected class AccessibleJComboBox extends AccessibleJComponent 
-    implements AccessibleAction, AccessibleSelection
+  public static interface KeySelectionManager
   {
-    private static final long serialVersionUID = 8217828307256675666L;
-
-    /**
-     * Constructor AccessibleJComboBox
-     * @param component TODO
-     */
-    protected AccessibleJComboBox()
-    {
-    }
-
-		/**
-		 * getAccessibleChildrenCount
-		 * @returns int
-		 */
-		public int getAccessibleChildrenCount() {
-			return 0; // TODO
-		} // getAccessibleChildrenCount()
-
-		/**
-		 * getAccessibleChild
-		 * @param value0 TODO
-		 * @returns Accessible
-		 */
-		public Accessible getAccessibleChild(int value0) {
-			return null; // TODO
-		} // getAccessibleChild()
-
-		/**
-		 * getAccessibleSelection
-		 * @returns AccessibleSelection
-		 */
-		public AccessibleSelection getAccessibleSelection() {
-			return null; // TODO
-		} // getAccessibleSelection()
-
-		/**
-		 * getAccessibleSelection
-		 * @param value0 TODO
-		 * @returns Accessible
-		 */
-		public Accessible getAccessibleSelection(int value0) {
-			return null; // TODO
-		} // getAccessibleSelection()
-
-		/**
-		 * isAccessibleChildSelected
-		 * @param value0 TODO
-		 * @returns boolean
-		 */
-		public boolean isAccessibleChildSelected(int value0) {
-			return false; // TODO
-		} // isAccessibleChildSelected()
-
-		/**
-		 * getAccessibleRole
-		 * @returns AccessibleRole
-		 */
-		public AccessibleRole getAccessibleRole() {
-			return AccessibleRole.COMBO_BOX;
-		} // getAccessibleRole()
-
-		/**
-		 * getAccessibleAction
-		 * @returns AccessibleAction
-		 */
-		public AccessibleAction getAccessibleAction() {
-			return null; // TODO
-		} // getAccessibleAction()
-
-		/**
-		 * getAccessibleActionDescription
-		 * @param value0 TODO
-		 * @returns String
-		 */
-		public String getAccessibleActionDescription(int value0) {
-			return null; // TODO
-		} // getAccessibleActionDescription()
-
-		/**
-		 * getAccessibleActionCount
-		 * @returns int
-		 */
-		public int getAccessibleActionCount() {
-			return 0; // TODO
-		} // getAccessibleActionCount()
-
-		/**
-		 * doAccessibleAction
-		 * @param value0 TODO
-		 * @returns boolean
-		 */
-		public boolean doAccessibleAction(int value0) {
-			return false; // TODO
-		} // doAccessibleAction()
-
-		/**
-		 * getAccessibleSelectionCount
-		 * @returns int
-		 */
-		public int getAccessibleSelectionCount() {
-			return 0; // TODO
-		} // getAccessibleSelectionCount()
-
-		/**
-		 * addAccessibleSelection
-		 * @param value0 TODO
-		 */
-		public void addAccessibleSelection(int value0) {
-			// TODO
-		} // addAccessibleSelection()
-
-		/**
-		 * removeAccessibleSelection
-		 * @param value0 TODO
-		 */
-		public void removeAccessibleSelection(int value0) {
-			// TODO
-		} // removeAccessibleSelection()
-
-		/**
-		 * clearAccessibleSelection
-		 */
-		public void clearAccessibleSelection() {
-			// TODO
-		} // clearAccessibleSelection()
-
-		/**
-		 * selectAllAccessibleSelection
-		 */
-		public void selectAllAccessibleSelection() {
-			// TODO
-		} // selectAllAccessibleSelection()
-
-
-	} // AccessibleJComboBox
-
-	/**
-	 * KeySelectionManager
-	 */
-	public static interface KeySelectionManager {
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * selectionForKey
-		 * @param value0 TODO
-		 * @param value1 TODO
-		 * @returns int
-		 */
-		int selectionForKey(char value0, ComboBoxModel value1);
-
-
-	} // KeySelectionManager
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * uiClassID
-	 */
-	private static final String uiClassID = "ComboBoxUI";
-
-	/**
-	 * dataModel
-	 */
-	protected ComboBoxModel dataModel;
-
-	/**
-	 * renderer
-	 */
-	protected ListCellRenderer renderer;
-
-	/**
-	 * editor
-	 */
-	protected ComboBoxEditor editor;
-
-	/**
-	 * maximumRowCount
-	 */
-	protected int maximumRowCount;
-
-	/**
-	 * isEditable
-	 */
-	protected boolean isEditable;
-
-	/**
-	 * selectedItemReminder
-	 */
-	protected Object selectedItemReminder;
-
-	/**
-	 * keySelectionManager
-	 */
-	protected JComboBox.KeySelectionManager keySelectionManager;
-
-	/**
-	 * actionCommand
-	 */
-	protected String actionCommand;
-
-	/**
-	 * lightWeightPopupEnabled
-	 */
-	protected boolean lightWeightPopupEnabled;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor JComboBox
-	 * @param value0 TODO
-	 */
-	public JComboBox(ComboBoxModel value0) {
-		// TODO
-	} // JComboBox()
-
-	/**
-	 * Constructor JComboBox
-	 * @param value0 TODO
-	 */
-	public JComboBox(Object[] value0) {
-		// TODO
-	} // JComboBox()
-
-	/**
-	 * Constructor JComboBox
-	 * @param value0 TODO
-	 */
-	public JComboBox(Vector value0) {
-		// TODO
-	} // JComboBox()
-
-	/**
-	 * Constructor JComboBox
-	 */
-	public JComboBox() {
-		// TODO
-	} // JComboBox()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * writeObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// TODO
-	} // writeObject()
-
-	/**
-	 * isEditable
-	 * @returns boolean
-	 */
-	public boolean isEditable() {
-		return false; // TODO
-	} // isEditable()
-
-	/**
-	 * installAncestorListener
-	 */
-	protected void installAncestorListener() {
-		// TODO
-	} // installAncestorListener()
-
-	/**
-	 * setUI
-	 * @param ui TODO
-	 */
-	public void setUI(ComboBoxUI ui) {
-		super.setUI(ui);
-	} // setUI()
-
-	/**
-	 * updateUI
-	 */
-	public void updateUI() {
-		setUI((ComboBoxUI) UIManager.get(this));
-		invalidate();
-	} // updateUI()
-
-	/**
-	 * getUIClassID
-	 * @returns String
-	 */
-	public String getUIClassID() {
-		return uiClassID;
-	} // getUIClassID()
-
-	/**
-	 * getUI
-	 * @returns ComboBoxUI
-	 */
-	public ComboBoxUI getUI() {
-		return (ComboBoxUI) ui;
-	} // getUI()
-
-	/**
-	 * setModel
-	 * @param value0 TODO
-	 */
-	public void setModel(ComboBoxModel value0) {
-		// TODO
-	} // setModel()
-
-	/**
-	 * getModel
-	 * @returns ComboBoxModel
-	 */
-	public ComboBoxModel getModel() {
-		return null; // TODO
-	} // getModel()
-
-	/**
-	 * setLightWeightPopupEnabled
-	 * @param value0 TODO
-	 */
-	public void setLightWeightPopupEnabled(boolean value0) {
-		// TODO
-	} // setLightWeightPopupEnabled()
-
-	/**
-	 * isLightWeightPopupEnabled
-	 * @returns boolean
-	 */
-	public boolean isLightWeightPopupEnabled() {
-		return false; // TODO
-	} // isLightWeightPopupEnabled()
-
-	/**
-	 * setEditable
-	 * @param value0 TODO
-	 */
-	public void setEditable(boolean value0) {
-		// TODO
-	} // setEditable()
-
-	/**
-	 * setMaximumRowCount
-	 * @param value0 TODO
-	 */
-	public void setMaximumRowCount(int value0) {
-		// TODO
-	} // setMaximumRowCount()
-
-	/**
-	 * getMaximumRowCount
-	 * @returns int
-	 */
-	public int getMaximumRowCount() {
-		return 0; // TODO
-	} // getMaximumRowCount()
-
-	/**
-	 * setRenderer
-	 * @param value0 TODO
-	 */
-	public void setRenderer(ListCellRenderer value0) {
-		// TODO
-	} // setRenderer()
-
-	/**
-	 * getRenderer
-	 * @returns ListCellRenderer
-	 */
-	public ListCellRenderer getRenderer() {
-		return null; // TODO
-	} // getRenderer()
-
-	/**
-	 * setEditor
-	 * @param value0 TODO
-	 */
-	public void setEditor(ComboBoxEditor value0) {
-		// TODO
-	} // setEditor()
-
-	/**
-	 * getEditor
-	 * @returns ComboBoxEditor
-	 */
-	public ComboBoxEditor getEditor() {
-		return null; // TODO
-	} // getEditor()
-
-	/**
-	 * setSelectedItem
-	 * @param value0 TODO
-	 */
-	public void setSelectedItem(Object value0) {
-		// TODO
-	} // setSelectedItem()
-
-	/**
-	 * getSelectedItem
-	 * @returns Object
-	 */
-	public Object getSelectedItem() {
-		return null; // TODO
-	} // getSelectedItem()
-
-	/**
-	 * setSelectedIndex
-	 * @param value0 TODO
-	 */
-	public void setSelectedIndex(int value0) {
-		// TODO
-	} // setSelectedIndex()
-
-	/**
-	 * getSelectedIndex
-	 * @returns int
-	 */
-	public int getSelectedIndex() {
-		return 0; // TODO
-	} // getSelectedIndex()
-
-	/**
-	 * addItem
-	 * @param value0 TODO
-	 */
-	public void addItem(Object value0) {
-		// TODO
-	} // addItem()
-
-	/**
-	 * insertItemAt
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	public void insertItemAt(Object value0, int value1) {
-		// TODO
-	} // insertItemAt()
-
-	/**
-	 * removeItem
-	 * @param value0 TODO
-	 */
-	public void removeItem(Object value0) {
-		// TODO
-	} // removeItem()
-
-	/**
-	 * removeItemAt
-	 * @param value0 TODO
-	 */
-	public void removeItemAt(int value0) {
-		// TODO
-	} // removeItemAt()
-
-	/**
-	 * removeAllItems
-	 */
-	public void removeAllItems() {
-		// TODO
-	} // removeAllItems()
-	
-	/**
-	 * showPopup
-	 */
-	public void showPopup() {
-		// TODO
-	} // showPopup()
-
-	/**
-	 * hidePopup
-	 */
-	public void hidePopup() {
-		// TODO
-	} // hidePopup()
-
-	/**
-	 * setPopupVisible
-	 * @param value0 TODO
-	 */
-	public void setPopupVisible(boolean value0) {
-		// TODO
-	} // setPopupVisible()
-
-	/**
-	 * isPopupVisible
-	 * @returns boolean
-	 */
-	public boolean isPopupVisible() {
-		return false; // TODO
-	} // isPopupVisible()
-
-	/**
-	 * setActionCommand
-	 * @param value0 TODO
-	 */
-	public void setActionCommand(String value0) {
-		// TODO
-	} // setActionCommand()
-
-	/**
-	 * getActionCommand
-	 * @returns String
-	 */
-	public String getActionCommand() {
-		return null; // TODO
-	} // getActionCommand()
-
-	/**
-	 * setAction
-	 * @param value0 TODO
-	 */
-	public void setAction(Action value0) {
-		// TODO
-	} // setAction()
-
-	/**
-	 * isListener
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @returns boolean
-	 */
-	private boolean isListener(Class value0, ActionListener value1) {
-		return false; // TODO
-	} // isListener()
-
-	/**
-	 * getAction
-	 * @returns Action
-	 */
-	public Action getAction() {
-		return null; // TODO
-	} // getAction()
-
-	/**
-	 * configurePropertiesFromAction
-	 * @param value0 TODO
-	 */
-	protected void configurePropertiesFromAction(Action value0) {
-		// TODO
-	} // configurePropertiesFromAction()
-
-	/**
-	 * createActionPropertyChangeListener
-	 * @param value0 TODO
-	 * @returns PropertyChangeListener
-	 */
-	protected PropertyChangeListener createActionPropertyChangeListener(Action value0) {
-		return null; // TODO
-	} // createActionPropertyChangeListener()
-
-	/**
-	 * fireItemStateChanged
-	 * @param value0 TODO
-	 */
-	protected void fireItemStateChanged(ItemEvent value0) {
-		// TODO
-	} // fireItemStateChanged()
-
-	/**
-	 * fireActionEvent
-	 */
-	protected void fireActionEvent() {
-		// TODO
-	} // fireActionEvent()
-
-	/**
-	 * selectedItemChanged
-	 */
-	protected void selectedItemChanged() {
-		// TODO
-	} // selectedItemChanged()
-
-	/**
-	 * getSelectedObjects
-	 * @returns Object[]
-	 */
-	public Object[] getSelectedObjects() {
-		return null; // TODO
-	} // getSelectedObjects()
-
-	/**
-	 * actionPerformed
-	 * @param value0 TODO
-	 */
-	public void actionPerformed(ActionEvent value0) {
-		// TODO
-	} // actionPerformed()
-
-	/**
-	 * contentsChanged
-	 * @param value0 TODO
-	 */
-	public void contentsChanged(ListDataEvent value0) {
-		// TODO
-	} // contentsChanged()
-
-	/**
-	 * selectWithKeyChar
-	 * @param value0 TODO
-	 * @returns boolean
-	 */
-	public boolean selectWithKeyChar(char value0) {
-		return false; // TODO
-	} // selectWithKeyChar()
-
-	/**
-	 * intervalAdded
-	 * @param value0 TODO
-	 */
-	public void intervalAdded(ListDataEvent value0) {
-		// TODO
-	} // intervalAdded()
-
-	/**
-	 * intervalRemoved
-	 * @param value0 TODO
-	 */
-	public void intervalRemoved(ListDataEvent value0) {
-		// TODO
-	} // intervalRemoved()
-
-	/**
-	 * setEnabled
-	 * @param value0 TODO
-	 */
-	public void setEnabled(boolean value0) {
-		// TODO
-	} // setEnabled()
-
-	/**
-	 * configureEditor
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	public void configureEditor(ComboBoxEditor value0, Object value1) {
-		// TODO
-	} // configureEditor()
-
-	/**
-	 * processKeyEvent
-	 * @param value0 TODO
-	 */
-	public void processKeyEvent(KeyEvent value0) {
-		// TODO
-	} // processKeyEvent()
-
-	/**
-	 * isFocusTraversable
-	 * @returns boolean
-         * @deprecated
-	 */
-	public boolean isFocusTraversable() {
-		return false; // TODO
-	} // isFocusTraversable()
-
-	/**
-	 * setKeySelectionManager
-	 * @param value0 TODO
-	 */
-	public void setKeySelectionManager(KeySelectionManager value0) {
-		// TODO
-	} // setKeySelectionManager()
-
-	/**
-	 * getKeySelectionManager
-	 * @returns JComboBox.KeySelectionManager
-	 */
-	public JComboBox.KeySelectionManager getKeySelectionManager() {
-		return null; // TODO
-	} // getKeySelectionManager()
-
-	/**
-	 * getItemCount
-	 * @returns int
-	 */
-	public int getItemCount() {
-		return 0; // TODO
-	} // getItemCount()
-
-	/**
-	 * getItemAt
-	 * @param value0 TODO
-	 * @returns Object
-	 */
-	public Object getItemAt(int value0) {
-		return null; // TODO
-	} // getItemAt()
-
-	/**
-	 * createDefaultKeySelectionManager
-	 * @returns KeySelectionManager
-	 */
-	protected KeySelectionManager createDefaultKeySelectionManager() {
-		return null; // TODO
-	} // createDefaultKeySelectionManager()
-
-	/**
-	 * paramString
-	 * @returns String
-	 */
-	protected String paramString() {
-		return null; // TODO
-	} // paramString()
+    int selectionForKey(char aKey, ComboBoxModel aModel);
+  }
 
   /**
-   * getAccessibleContext
-   * @returns AccessibleContext
+   * Maximum number of rows that should be visible by default  in the
+   * JComboBox's popup
    */
+  public static final int DEFAULT_MAXIMUM_ROW_COUNT = 8;
+
+  /**
+   * Fired in a PropertyChangeEvent when the 'editable' property changes.
+   */
+  public static final String EDITABLE_CHANGED_PROPERTY = "editable";
+
+  /**
+   * Fired in a PropertyChangeEvent when the 'maximumRowCount' property
+   * changes.
+   */
+  public static final String MAXIMUM_ROW_COUNT_CHANGED_PROPERTY = "maximumRowCount";
+
+  /**
+   * Fired in a PropertyChangeEvent when the 'enabled' property changes.
+   */
+  public static final String ENABLED_CHANGED_PROPERTY = "enabled";
+
+  /**
+   * Fired in a PropertyChangeEvent when the 'renderer' property changes.
+   */
+  public static final String RENDERER_CHANGED_PROPERTY = "renderer";
+
+  /**
+   * Fired in a PropertyChangeEvent when the 'editor' property changes.
+   */
+  public static final String EDITOR_CHANGED_PROPERTY = "editor";
+
+  /**
+   * Fired in a PropertyChangeEvent when the 'dataModel' property changes.
+   */
+  public static final String MODEL_CHANGED_PROPERTY = "dataModel";
+
+  /**
+   * name for the UI delegate for this combo box.
+   */
+  private static final String uiClassID = "ComboBoxUI";
+
+  /**
+   * dataModel used by JComboBox to keep track of its list data and currently
+   * selected element in the list.
+   */
+  protected ComboBoxModel dataModel;
+
+  /**
+   * Renderer renders(paints) every object in the combo box list in its
+   * associated list cell. This ListCellRenderer is used only when  this
+   * JComboBox is uneditable.
+   */
+  protected ListCellRenderer renderer;
+
+  /**
+   * editor that is responsible for editting an object in a combo box list
+   */
+  protected ComboBoxEditor editor;
+
+  /**
+   * Number of rows that will be visible in the JComboBox's popup.
+   */
+  protected int maximumRowCount;
+
+  /**
+   * This field indicates if textfield of this JComboBox is editable or not.
+   */
+  protected boolean isEditable;
+
+  /**
+   * This field is reference to the current selection of the combo box.
+   */
+  protected Object selectedItemReminder;
+
+  /**
+   * keySelectionManager
+   */
+  protected KeySelectionManager keySelectionManager;
+
+  /**
+   * This actionCommand is used in ActionEvent that is fired to JComboBox's
+   * ActionListeneres.
+   */
+  protected String actionCommand;
+
+  /**
+   * This property indicates if heavyweight popup or lightweight popup will be
+   * used to diplay JComboBox's elements.
+   */
+  protected boolean lightWeightPopupEnabled;
+
+  /**
+   * The action taken when new item is selected in the JComboBox
+   */
+  private Action action;
+
+  /**
+   * since 1.4  If this field is set then comboBox's display area for the
+   * selected item  will be set by default to this value.
+   */
+  private Object prototypeDisplayValue;
+
+  /**
+   * Constructs JComboBox object with specified data model for it. The first
+   * item in the specified data model is selected by default.
+   *
+   * @param model Data model that will be used by this JComboBox to keep track
+   *        of its list of items.
+   */
+  public JComboBox(ComboBoxModel model)
+  {
+    setEditable(false);
+    setEnabled(true);
+    setMaximumRowCount(DEFAULT_MAXIMUM_ROW_COUNT);
+    setModel(model);
+    setActionCommand("comboBoxChanged");
+
+    // by default set selected item to the first element in the combo box    
+    if (getItemCount() != 0)
+      setSelectedItem(getItemAt(0));
+
+    lightWeightPopupEnabled = true;
+    isEditable = false;
+
+    updateUI();
+  }
+
+  /**
+   * Constructs JComboBox with specified list of items.
+   *
+   * @param itemArray array containing list of items for this JComboBox
+   */
+  public JComboBox(Object[] itemArray)
+  {
+    this(new DefaultComboBoxModel(itemArray));
+  }
+
+  /**
+   * Constructs JComboBox object with specified list of items.
+   *
+   * @param itemVector vector containing list of items for this JComboBox.
+   */
+  public JComboBox(Vector itemVector)
+  {
+    this(new DefaultComboBoxModel(itemVector));
+  }
+
+  /**
+   * Constructor. Creates new empty JComboBox. ComboBox's data model is set to
+   * DefaultComboBoxModel.
+   */
+  public JComboBox()
+  {
+    this(new DefaultComboBoxModel());
+  }
+
+  private void writeObject(ObjectOutputStream stream) throws IOException
+  {
+  }
+
+  /**
+   * This method returns true JComboBox is editable and false otherwise
+   *
+   * @return boolean true if JComboBox is editable and false otherwise
+   */
+  public boolean isEditable()
+  {
+    return isEditable;
+  }
+
+  /*
+   * This method adds ancestor listener to this JComboBox.
+   */
+  protected void installAncestorListener()
+  {
+    /* FIXME: Need to implement.
+     *
+     * Need to add ancestor listener to this JComboBox. This listener
+     * should close combo box's popup list of items whenever it
+     * receives an AncestorEvent.
+     */
+  }
+
+  /**
+   * Set the "UI" property of the combo box, which is a look and feel class
+   * responsible for handling comboBox's input events and painting it.
+   *
+   * @param ui The new "UI" property
+   */
+  public void setUI(ComboBoxUI ui)
+  {
+    super.setUI(ui);
+  }
+
+  /**
+   * This method sets this comboBox's UI to the UIManager's default for the
+   * current look and feel.
+   */
+  public void updateUI()
+  {
+    setUI((ComboBoxUI) UIManager.getUI(this));
+    invalidate();
+  }
+
+  /**
+   * This method returns the String identifier for the UI class to the used
+   * with the JComboBox.
+   *
+   * @return The String identifier for the UI class.
+   */
+  public String getUIClassID()
+  {
+    return uiClassID;
+  }
+
+  /**
+   * This method returns the UI used to display the JComboBox.
+   *
+   * @return The UI used to display the JComboBox.
+   */
+  public ComboBoxUI getUI()
+  {
+    return (ComboBoxUI) ui;
+  }
+
+  /**
+   * Set the data model for this JComboBox. This un-registers all  listeners
+   * associated with the current model, and re-registers them with the new
+   * model.
+   *
+   * @param newDataModel The new data model for this JComboBox
+   */
+  public void setModel(ComboBoxModel newDataModel)
+  {
+    if (this.dataModel == newDataModel)
+      return;
+
+    if (this.dataModel != null)
+      // remove all listeners currently registered with the model.
+      dataModel.removeListDataListener(this);
+
+    ComboBoxModel oldDataModel = this.dataModel;
+    this.dataModel = newDataModel;
+
+    if (this.dataModel != null)
+      // register all listeners with the new data model
+      dataModel.addListDataListener(this);
+
+    firePropertyChange(MODEL_CHANGED_PROPERTY, oldDataModel, this.dataModel);
+  }
+
+  /**
+   * This method returns data model for this comboBox.
+   *
+   * @return ComboBoxModel containing items for this combo box.
+   */
+  public ComboBoxModel getModel()
+  {
+    return dataModel;
+  }
+
+  /**
+   * This method sets JComboBox's popup to be either lightweight or
+   * heavyweight. If 'enabled' is true then lightweight popup is  used and
+   * heavyweight otherwise. By default lightweight popup is  used to display
+   * this JComboBox's elements.
+   *
+   * @param enabled indicates if lightweight popup or heavyweight popup should
+   *        be used to display JComboBox's elements.
+   */
+  public void setLightWeightPopupEnabled(boolean enabled)
+  {
+    this.lightWeightPopupEnabled = enabled;
+  }
+
+  /**
+   * This method returns whether popup menu that is used to display list of
+   * combo box's item is lightWeight or not.
+   *
+   * @return boolean true if popup menu is lightweight and false otherwise.
+   */
+  public boolean isLightWeightPopupEnabled()
+  {
+    return lightWeightPopupEnabled;
+  }
+
+  /**
+   * This method sets editability of the combo box. If combo box  is editable
+   * the user can choose component from the combo box list by typing
+   * component's name in the editor(JTextfield by default).  Otherwise if not
+   * editable, the user should use the list to choose   the component. This
+   * method fires PropertyChangeEvents to JComboBox's registered
+   * PropertyChangeListeners to indicate that 'editable' property of the
+   * JComboBox has changed.
+   *
+   * @param editable indicates if the JComboBox's textfield should be editable
+   *        or not.
+   */
+  public void setEditable(boolean editable)
+  {
+    if (this.isEditable != editable)
+      {
+	this.isEditable = editable;
+	firePropertyChange(EDITABLE_CHANGED_PROPERTY, ! isEditable, isEditable);
+      }
+  }
+
+  /**
+   * Sets number of rows that should be visible in this JComboBox's popup. If
+   * this JComboBox's popup has more elements that maximum number or rows
+   * then popup will have a scroll pane to allow users to view other
+   * elements.
+   *
+   * @param rowCount number of rows that will be visible in JComboBox's popup.
+   */
+  public void setMaximumRowCount(int rowCount)
+  {
+    if (maximumRowCount != rowCount)
+      {
+	int oldMaximumRowCount = this.maximumRowCount;
+	this.maximumRowCount = rowCount;
+	firePropertyChange(MAXIMUM_ROW_COUNT_CHANGED_PROPERTY,
+	                   oldMaximumRowCount, this.maximumRowCount);
+      }
+  }
+
+  /**
+   * This method returns number of rows visible in the JComboBox's list of
+   * items.
+   *
+   * @return int maximun number of visible rows in the JComboBox's list.
+   */
+  public int getMaximumRowCount()
+  {
+    return maximumRowCount;
+  }
+
+  /**
+   * This method sets cell renderer for this JComboBox that will be used to
+   * paint combo box's items. The Renderer should only be used only when
+   * JComboBox is not editable.  In the case when JComboBox is editable  the
+   * editor must be used.  This method also fires PropertyChangeEvent when
+   * cellRendered for this JComboBox has changed.
+   *
+   * @param aRenderer cell renderer that will be used by this JComboBox to
+   *        paint its elements.
+   */
+  public void setRenderer(ListCellRenderer aRenderer)
+  {
+    if (this.renderer != aRenderer)
+      {
+	ListCellRenderer oldRenderer = this.renderer;
+	this.renderer = aRenderer;
+	firePropertyChange(RENDERER_CHANGED_PROPERTY, oldRenderer,
+	                   this.renderer);
+      }
+  }
+
+  /**
+   * This method returns renderer responsible for rendering selected item in
+   * the combo box
+   *
+   * @return ListCellRenderer
+   */
+  public ListCellRenderer getRenderer()
+  {
+    return renderer;
+  }
+
+  /**
+   * Sets editor for this JComboBox
+   *
+   * @param newEditor ComboBoxEditor for this JComboBox. This method fires
+   *        PropertyChangeEvent when 'editor' property is changed.
+   */
+  public void setEditor(ComboBoxEditor newEditor)
+  {
+    if (editor == newEditor)
+      return;
+
+    if (editor != null)
+      editor.removeActionListener(this);
+
+    ComboBoxEditor oldEditor = editor;
+    editor = newEditor;
+
+    if (editor != null)
+      editor.addActionListener(this);
+
+    firePropertyChange(EDITOR_CHANGED_PROPERTY, oldEditor, editor);
+  }
+
+  /**
+   * Returns editor component that is responsible for displaying/editting
+   * selected item in the combo box.
+   *
+   * @return ComboBoxEditor
+   */
+  public ComboBoxEditor getEditor()
+  {
+    return editor;
+  }
+
+  /**
+   * Forces combo box to select given item
+   *
+   * @param item element in the combo box to select.
+   */
+  public void setSelectedItem(Object item)
+  {
+    dataModel.setSelectedItem(item);
+  }
+
+  /**
+   * Returns currently selected item in the combo box.
+   *
+   * @return element that is currently selected in this combo box.
+   */
+  public Object getSelectedItem()
+  {
+    Object item = dataModel.getSelectedItem();
+
+    if (item == null && getItemCount() != 0)
+      item = getItemAt(0);
+
+    return item;
+  }
+
+  /**
+   * Forces JComboBox to select component located in the  given index in the
+   * combo box.
+   *
+   * @param index index specifying location of the component that  should be
+   *        selected.
+   */
+  public void setSelectedIndex(int index)
+  {
+    // FIXME: if index == -1 then nothing should be selected
+    setSelectedItem(dataModel.getElementAt(index));
+  }
+
+  /**
+   * Returns index of the item that is currently selected  in the combo box.
+   * If no item is currently selected, then -1 is returned.
+   *
+   * @return int index specifying location of the currently  selected item in
+   *         the combo box or -1 if nothing is selected in the combo box.
+   */
+  public int getSelectedIndex()
+  {
+    Object selectedItem = getSelectedItem();
+    if (selectedItem != null && (dataModel instanceof DefaultComboBoxModel))
+      return ((DefaultComboBoxModel) dataModel).getIndexOf(selectedItem);
+
+    return -1;
+  }
+
+  public Object getPrototypeDisplayValue()
+  {
+    return prototypeDisplayValue;
+  }
+
+  public void setPrototypeDisplayValue(Object prototypeDisplayValue)
+  {
+    this.prototypeDisplayValue = prototypeDisplayValue;
+  }
+
+  /**
+   * This method adds given element to this JComboBox.
+   *
+   * @param element element to add
+   */
+  public void addItem(Object element)
+  {
+    ((MutableComboBoxModel) dataModel).addElement(element);
+  }
+
+  /**
+   * Inserts given element at the specified index to this JComboBox
+   *
+   * @param element element to insert
+   * @param index position where to insert the element
+   */
+  public void insertItemAt(Object element, int index)
+  {
+    ((MutableComboBoxModel) dataModel).insertElementAt(element, index);
+  }
+
+  /**
+   * This method removes given element from this JComboBox.
+   *
+   * @param element element to remove
+   */
+  public void removeItem(Object element)
+  {
+    ((MutableComboBoxModel) dataModel).removeElement(element);
+  }
+
+  /**
+   * This method remove element location in the specified index in the
+   * JComboBox.
+   *
+   * @param index index specifying position of the element to remove
+   */
+  public void removeItemAt(int index)
+  {
+    ((MutableComboBoxModel) dataModel).removeElementAt(index);
+  }
+
+  /**
+   * This method removes all elements from this JComboBox.
+   */
+  public void removeAllItems()
+  {
+    if (dataModel instanceof DefaultComboBoxModel)
+      ((DefaultComboBoxModel) dataModel).removeAllElements();
+  }
+
+  /**
+   * This method displays popup with list of combo box's items on the screen
+   */
+  public void showPopup()
+  {
+    setPopupVisible(true);
+  }
+
+  /**
+   * This method hides popup containing list of combo box's items
+   */
+  public void hidePopup()
+  {
+    setPopupVisible(false);
+  }
+
+  /**
+   * This method either displayes or hides the popup containing  list of combo
+   * box's items.
+   *
+   * @param visible show popup if 'visible' is true and hide it otherwise
+   */
+  public void setPopupVisible(boolean visible)
+  {
+    getUI().setPopupVisible(this, visible);
+  }
+
+  /**
+   * Checks if popup is currently visible on the screen.
+   *
+   * @return boolean true if popup is visible and false otherwise
+   */
+  public boolean isPopupVisible()
+  {
+    return getUI().isPopupVisible(this);
+  }
+
+  /**
+   * This method sets actionCommand to the specified string. ActionEvent fired
+   * to this JComboBox  registered ActionListeners will contain this
+   * actionCommand.
+   *
+   * @param aCommand new action command for the JComboBox's ActionEvent
+   */
+  public void setActionCommand(String aCommand)
+  {
+    actionCommand = aCommand;
+  }
+
+  /**
+   * Returns actionCommand associated with the ActionEvent fired by the
+   * JComboBox to its registered ActionListeners.
+   *
+   * @return String actionCommand for the ActionEvent
+   */
+  public String getActionCommand()
+  {
+    return actionCommand;
+  }
+
+  /**
+   * setAction
+   *
+   * @param a action to set
+   */
+  public void setAction(Action a)
+  {
+    Action old = action;
+    action = a;
+    configurePropertiesFromAction(action);
+    if (action != null)
+      // FIXME: remove from old action and add to new action 
+      // PropertyChangeListener to listen to changes in the action
+      addActionListener(action);
+  }
+
+  /**
+   * This method returns Action that is invoked when selected item is changed
+   * in the JComboBox.
+   *
+   * @return Action
+   */
+  public Action getAction()
+  {
+    return action;
+  }
+
+  /**
+   * Configure properties of the JComboBox by reading properties of specified
+   * action. This method always sets the comboBox's "enabled" property to the
+   * value of the Action's "enabled" property.
+   *
+   * @param a An Action to configure the combo box from
+   */
+  protected void configurePropertiesFromAction(Action a)
+  {
+    if (a == null)
+      {
+	setEnabled(true);
+	setToolTipText(null);
+      }
+    else
+      {
+	setEnabled(a.isEnabled());
+	setToolTipText((String) (a.getValue(Action.SHORT_DESCRIPTION)));
+      }
+  }
+
+  /**
+   * Creates PropertyChangeListener to listen for the changes in comboBox's
+   * action properties.
+   *
+   * @param action action to listen to for property changes
+   *
+   * @return $PropertyChangeListener$ Listener that listens to changes in
+   *         action properties.
+   */
+  protected PropertyChangeListener createActionPropertyChangeListener(Action action)
+  {
+    return new PropertyChangeListener()
+      {
+	public void propertyChange(PropertyChangeEvent e)
+	{
+	  Action act = (Action) (e.getSource());
+	  configurePropertiesFromAction(act);
+	}
+      };
+  }
+
+  /**
+   * This method fires ItemEvent to this JComboBox's registered ItemListeners.
+   * This method is invoked when currently selected item in this combo box
+   * has changed.
+   *
+   * @param e the ItemEvent describing the change in the combo box's
+   *        selection.
+   */
+  protected void fireItemStateChanged(ItemEvent e)
+  {
+    ItemListener[] ll = getItemListeners();
+
+    for (int i = 0; i < ll.length; i++)
+      ll[i].itemStateChanged(e);
+  }
+
+  /**
+   * This method fires ActionEvent to this JComboBox's registered
+   * ActionListeners. This method is invoked when user explicitly changes
+   * currently selected item.
+   */
+  protected void fireActionEvent()
+  {
+    ActionListener[] ll = getActionListeners();
+
+    for (int i = 0; i < ll.length; i++)
+      ll[i].actionPerformed(new ActionEvent(this,
+                                            ActionEvent.ACTION_PERFORMED,
+                                            actionCommand));
+  }
+
+  /**
+   * This method is invoked whenever selected item changes in the combo box's
+   * data model. It fires ItemEvent and ActionEvent to all registered
+   * ComboBox's ItemListeners and ActionListeners respectively, indicating
+   * the change.
+   */
+  protected void selectedItemChanged()
+  {
+    // Fire ItemEvent to indicated that previously selected item is now
+    // deselected        
+    if (selectedItemReminder != null)
+      fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED,
+                                         selectedItemReminder,
+                                         ItemEvent.DESELECTED));
+
+    // Fire ItemEvent to indicate that new item is selected    
+    Object newSelection = getSelectedItem();
+    fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED,
+                                       newSelection, ItemEvent.SELECTED));
+
+    // Fire Action Event to JComboBox's registered listeners					 				 
+    fireActionEvent();
+
+    selectedItemReminder = newSelection;
+  }
+
+  /**
+   * Returns Object array of size 1 containing currently selected element in
+   * the JComboBox.
+   *
+   * @return Object[] Object array of size 1 containing currently selected
+   *         element in the JComboBox.
+   */
+  public Object[] getSelectedObjects()
+  {
+    Object selectedObject = getSelectedItem();
+    return new Object[] { selectedObject };
+  }
+
+  /**
+   * This method handles actionEvents fired by the ComboBoxEditor. It changes
+   * this JComboBox's selection to the new value currently in the editor and
+   * hides list of combo box items.
+   *
+   * @param e the ActionEvent
+   */
+  public void actionPerformed(ActionEvent e)
+  {
+    setSelectedItem(((ComboBoxEditor) e.getSource()).getItem());
+    setPopupVisible(false);
+  }
+
+  /**
+   * This method selects item in this combo box that matches specified
+   * specified keyChar and returns true if such item is found. Otherwise
+   * false is returned.
+   *
+   * @param keyChar character indicating which item in the combo box should be
+   *        selected.
+   *
+   * @return boolean true if item corresponding to the specified keyChar
+   *         exists in the combo box. Otherwise false is returned.
+   */
+  public boolean selectWithKeyChar(char keyChar)
+  {
+    // FIXME: Need to implement
+    return false;
+  }
+
+  /**
+   * The part of implementation of ListDataListener interface. This method is
+   * invoked when some items where added to the JComboBox's data model.
+   *
+   * @param event ListDataEvent describing the change
+   */
+  public void intervalAdded(ListDataEvent event)
+  {
+    // FIXME: Need to implement
+    repaint();
+  }
+
+  /**
+   * The part of implementation of ListDataListener interface. This method is
+   * invoked when some items where removed from the JComboBox's data model.
+   *
+   * @param event ListDataEvent describing the change.
+   */
+  public void intervalRemoved(ListDataEvent event)
+  {
+    // FIXME: Need to implement
+    repaint();
+  }
+
+  /**
+   * The part of implementation of ListDataListener interface. This method is
+   * invoked when contents of the JComboBox's  data model changed.
+   *
+   * @param event ListDataEvent describing the change
+   */
+  public void contentsChanged(ListDataEvent event)
+  {
+    // if first and last index of the given ListDataEvent are both -1,
+    // then it indicates that selected item in the combo box data model
+    // have changed. 
+    if (event.getIndex0() == -1 && event.getIndex1() == -1)
+      selectedItemChanged();
+  }
+
+  /**
+   * This method disables or enables JComboBox. If the JComboBox is enabled,
+   * then user is able to make item choice, otherwise if JComboBox is
+   * disabled then user is not able to make a selection.
+   *
+   * @param enabled if 'enabled' is true then enable JComboBox and disable it
+   */
+  public void setEnabled(boolean enabled)
+  {
+    boolean oldEnabled = super.isEnabled();
+    if (enabled != oldEnabled)
+      {
+	super.setEnabled(enabled);
+	firePropertyChange(ENABLED_CHANGED_PROPERTY, oldEnabled,
+	                   (boolean) enabled);
+      }
+  }
+
+  /**
+   * This method initializes specified ComboBoxEditor to display given item.
+   *
+   * @param anEditor ComboBoxEditor to initialize
+   * @param anItem Item that should displayed in the specified editor
+   */
+  public void configureEditor(ComboBoxEditor anEditor, Object anItem)
+  {
+    anEditor.setItem(anItem);
+  }
+
+  /**
+   * This method hides  combo box's popup whenever TAB key is pressed.
+   *
+   * @param e The KeyEvent indicating which key was pressed.
+   */
+  public void processKeyEvent(KeyEvent e)
+  {
+  }
+
+  /**
+   * This method always returns false to indicate that JComboBox  itself is
+   * not focus traversable.
+   *
+   * @return false to indicate that JComboBox itself is not focus traversable.
+   *
+   * @deprecated
+   */
+  public boolean isFocusTraversable()
+  {
+    return false;
+  }
+
+  /**
+   * setKeySelectionManager
+   *
+   * @param aManager
+   */
+  public void setKeySelectionManager(KeySelectionManager aManager)
+  {
+  }
+
+  /**
+   * getKeySelectionManager
+   *
+   * @return JComboBox.KeySelectionManager
+   */
+  public KeySelectionManager getKeySelectionManager()
+  {
+    return null;
+  }
+
+  /**
+   * This method returns number of elements in this JComboBox
+   *
+   * @return int number of elements in this JComboBox
+   */
+  public int getItemCount()
+  {
+    return ((DefaultComboBoxModel) dataModel).getSize();
+  }
+
+  /**
+   * Returns elements located in the combo box at the given index.
+   *
+   * @param index index specifying location of the component to  return.
+   *
+   * @return component in the combo box that is located in  the given index.
+   */
+  public Object getItemAt(int index)
+  {
+    return ((MutableComboBoxModel) dataModel).getElementAt(index);
+  }
+
+  /**
+   * createDefaultKeySelectionManager
+   *
+   * @return KeySelectionManager
+   */
+  protected KeySelectionManager createDefaultKeySelectionManager()
+  {
+    return null;
+  }
+
+  /**
+   * A string that describes this JComboBox. Normally only used for debugging.
+   *
+   * @return A string describing this JComboBox
+   */
+  protected String paramString()
+  {
+    return "JComboBox";
+  }
+
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
@@ -797,74 +994,180 @@ public class JComboBox extends JComponent
 
     return accessibleContext;
   }
-  
+
   /**
-   * addActionListener
-   * @param listener TODO
+   * This methods adds specified ActionListener to this JComboBox.
+   *
+   * @param listener to add
    */
-  public void addActionListener (ActionListener listener)
+  public void addActionListener(ActionListener listener)
   {
-    listenerList.add (ActionListener.class, listener);
+    listenerList.add(ActionListener.class, listener);
   }
 
   /**
-   * removeActionListener
-   * @param listener TODO
+   * This method removes specified ActionListener from this JComboBox.
+   *
+   * @param listener ActionListener
    */
-  public void removeActionListener (ActionListener listener)
+  public void removeActionListener(ActionListener listener)
   {
-    listenerList.remove (ActionListener.class, listener);
+    listenerList.remove(ActionListener.class, listener);
   }
 
   /**
+   * This method returns array of ActionListeners that are registered with
+   * this JComboBox.
+   *
    * @since 1.4
    */
   public ActionListener[] getActionListeners()
   {
-    return (ActionListener[]) getListeners (ActionListener.class);
+    return (ActionListener[]) getListeners(ActionListener.class);
   }
 
   /**
-   * addItemListener
-   * @param listener TODO
+   * This method registers given ItemListener with this JComboBox
+   *
+   * @param listener to remove
    */
   public void addItemListener(ItemListener listener)
   {
-    listenerList.add (ItemListener.class, listener);
+    listenerList.add(ItemListener.class, listener);
   }
 
   /**
-   * removeItemListener
-   * @param listener TODO
+   * This method unregisters given ItemListener from this JComboBox
+   *
+   * @param listener to remove
    */
   public void removeItemListener(ItemListener listener)
   {
-    listenerList.remove (ItemListener.class, listener);
+    listenerList.remove(ItemListener.class, listener);
   }
 
   /**
+   * This method returns array of ItemListeners that are registered with this
+   * JComboBox.
+   *
    * @since 1.4
    */
   public ItemListener[] getItemListeners()
   {
-    return (ItemListener[]) getListeners (ItemListener.class);
-  }
-
-  public void addPopupMenuListener (PopupMenuListener listener)
-  {
-    listenerList.add (PopupMenuListener.class, listener);
-  }
-
-  public void removePopupMenuListener (PopupMenuListener listener)
-  {
-    listenerList.remove (PopupMenuListener.class, listener);
+    return (ItemListener[]) getListeners(ItemListener.class);
   }
 
   /**
-   * @since 1.4
+   * Adds PopupMenuListener to combo box to listen to the events fired by the
+   * combo box's popup menu containing its list of items
+   *
+   * @param listener to add
+   */
+  public void addPopupMenuListener(PopupMenuListener listener)
+  {
+    listenerList.add(PopupMenuListener.class, listener);
+  }
+
+  /**
+   * Removes PopupMenuListener to combo box to listen to the events fired by
+   * the combo box's popup menu containing its list of items
+   *
+   * @param listener to add
+   */
+  public void removePopupMenuListener(PopupMenuListener listener)
+  {
+    listenerList.remove(PopupMenuListener.class, listener);
+  }
+
+  /**
+   * Returns array of PopupMenuListeners that are registered with  combo box.
    */
   public PopupMenuListener[] getPopupMenuListeners()
   {
-    return (PopupMenuListener[]) getListeners (PopupMenuListener.class);
+    return (PopupMenuListener[]) getListeners(PopupMenuListener.class);
+  }
+
+  /**
+   * AccessibleJComboBox
+   */
+  protected class AccessibleJComboBox extends AccessibleJComponent
+    implements AccessibleAction, AccessibleSelection
+  {
+    private static final long serialVersionUID = 8217828307256675666L;
+
+    protected AccessibleJComboBox()
+    {
+    }
+
+    public int getAccessibleChildrenCount()
+    {
+      return 0;
+    }
+
+    public Accessible getAccessibleChild(int value0)
+    {
+      return null;
+    }
+
+    public AccessibleSelection getAccessibleSelection()
+    {
+      return null;
+    }
+
+    public Accessible getAccessibleSelection(int value0)
+    {
+      return null;
+    }
+
+    public boolean isAccessibleChildSelected(int value0)
+    {
+      return false;
+    }
+
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.COMBO_BOX;
+    }
+
+    public AccessibleAction getAccessibleAction()
+    {
+      return null;
+    }
+
+    public String getAccessibleActionDescription(int value0)
+    {
+      return null;
+    }
+
+    public int getAccessibleActionCount()
+    {
+      return 0;
+    }
+
+    public boolean doAccessibleAction(int value0)
+    {
+      return false;
+    }
+
+    public int getAccessibleSelectionCount()
+    {
+      return 0;
+    }
+
+    public void addAccessibleSelection(int value0)
+    {
+    }
+
+    public void removeAccessibleSelection(int value0)
+    {
+    }
+
+    public void clearAccessibleSelection()
+    {
+    }
+
+    public void selectAllAccessibleSelection()
+    {
+    }
   }
 }

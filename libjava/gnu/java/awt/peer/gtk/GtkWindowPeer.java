@@ -60,6 +60,10 @@ public class GtkWindowPeer extends GtkContainerPeer
   private boolean hasBeenShown = false;
   private int oldState = Frame.NORMAL;
 
+  native void gtkWindowSetTitle (String title);
+  native void gtkWindowSetResizable (boolean resizable);
+  native void gtkWindowSetModal (boolean modal);
+
   native void create (int type, boolean decorated,
 		      int width, int height,
 		      GtkWindowPeer parent,
@@ -92,18 +96,22 @@ public class GtkWindowPeer extends GtkContainerPeer
     create (GDK_WINDOW_TYPE_HINT_NORMAL, false);
   }
 
+  void setParent ()
+  {
+    setVisible (awtComponent.isVisible ());
+    setEnabled (awtComponent.isEnabled ());
+  }
+
+  void setVisibleAndEnabled ()
+  {
+  }
+
   native void connectJObject ();
   native void connectSignals ();
 
   public GtkWindowPeer (Window window)
   {
     super (window);
-  }
-
-  public void getArgs (Component component, GtkArgList args)
-  {
-    args.add ("visible", component.isVisible ());
-    args.add ("sensitive", component.isEnabled ());
   }
 
   native public void toBack ();
@@ -120,7 +128,7 @@ public class GtkWindowPeer extends GtkContainerPeer
 
   public void setTitle (String title)
   {
-    set ("title", title);
+    gtkWindowSetTitle (title);
   }
 
   native void setSize (int width, int height);
@@ -132,8 +140,7 @@ public class GtkWindowPeer extends GtkContainerPeer
     // was resizable.
     setSize (awtComponent.getWidth() - insets.left - insets.right,
 	     awtComponent.getHeight() - insets.top - insets.bottom);
-    set ("allow_shrink", resizable);
-    set ("allow_grow", resizable);
+    gtkWindowSetResizable (resizable);
   }
 
   native void setBoundsCallback (Window window,

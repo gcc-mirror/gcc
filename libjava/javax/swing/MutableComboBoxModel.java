@@ -38,40 +38,46 @@ exception statement from your version. */
 package javax.swing;
 
 /**
- * MutableComboBoxModel
- * @author	Andrew Selkirk
- * @version	1.0
+ * MutableComboBoxModel is interface for data model that keeps track of the
+ * components data and provides methods to insert and remove elements from
+ * it. The Classes implementing this interface should  fire appropriate
+ * events indicating the undergoing change in the data model.
+ *
+ * @author Andrew Selkirk
+ * @author Olga Rodimina
+ * @version 1.0
  */
-public interface MutableComboBoxModel extends ComboBoxModel {
+public interface MutableComboBoxModel extends ComboBoxModel
+{
+  /**
+   * This method adds given object to its data model.
+   *
+   * @param object element to add to the data model.
+   */
+  void addElement(Object object);
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * This method removes elements located at the given index in the data
+   * model.
+   *
+   * @param index index specifying location of the element to remove.
+   */
+  void removeElementAt(int index);
 
-	/**
-	 * addElement
-	 * @param object TODO
-	 */
-	void addElement(Object object);
+  /**
+   * This method inserts givent element to the data model, at the specified
+   * index.
+   *
+   * @param object element to insert
+   * @param index index specifying the position in the data model where the
+   *        given element should be inserted.
+   */
+  void insertElementAt(Object object, int index);
 
-	/**
-	 * removeElementAt
-	 * @param index TODO
-	 */
-	void removeElementAt(int index);
-
-	/**
-	 * insertElementAt
-	 * @param object TODO
-	 * @param index TODO
-	 */
-	void insertElementAt(Object object, int index);
-
-	/**
-	 * removeElement
-	 * @param object TODO
-	 */
-	void removeElement(Object object);
-
-
+  /**
+   * This method removes given element from the data model
+   *
+   * @param element to remove.
+   */
+  void removeElement(Object object);
 } // MutableComboBoxModel

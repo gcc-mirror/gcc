@@ -39,6 +39,8 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -48,11 +50,69 @@ import java.awt.Shape;
 public class PlainView extends View
   implements TabExpander
 {
+  private Color selectedColor;
+  private Color unselectedColor;
+  private Font font;
+  
   protected FontMetrics metrics;
 
   public PlainView(Element elem)
   {
     super(elem);
+  }
+
+  /**
+   * @since 1.4
+   */
+  protected void updateMetrics()
+  {
+    Component component = getContainer();
+    Font font = component.getFont();
+
+    if (this.font != font)
+      {
+	this.font = font;
+	metrics = component.getFontMetrics(font);
+      }
+  }
+  
+  /**
+   * @since 1.4
+   */
+  protected Rectangle lineToRect(Shape a, int line)
+  {
+    // Ensure metrics are up-to-date.
+    updateMetrics();
+    
+    Rectangle rect = a.getBounds();
+    int fontHeight = metrics.getHeight();
+    return new Rectangle(rect.x, rect.y + (line * fontHeight),
+			 rect.width, fontHeight);
+  }
+
+  public Shape modelToView(int position, Shape a, Position.Bias b)
+    throws BadLocationException
+  {
+    Document document = getDocument();
+
+    // Get rectangle of the line containing position.
+    int lineIndex = getElement().getElementIndex(position);
+    Rectangle rect = lineToRect(a, lineIndex);
+
+    // Get the rectangle for position.
+    Element line = getElement().getElement(lineIndex);
+    int lineStart = line.getStartOffset();
+    Segment segment = new Segment();
+    document.getText(lineStart, position - lineStart, segment);
+    int xoffset = Utilities.getTabbedTextWidth(segment, metrics, rect.x,
+					       this, lineStart);
+
+    // Calc the real rectangle.
+    rect.x += xoffset;
+    rect.width = 1;
+    rect.height = metrics.getHeight();
+
+    return rect;
   }
   
   public void drawLine(int lineIndex, Graphics g, int x, int y)
@@ -73,30 +133,31 @@ public class PlainView extends View
   public int drawSelectedText(Graphics g, int x, int y, int p0, int p1)
     throws BadLocationException
   {
-    String text = getDocument().getText(p0, p1);
-    g.setColor(Color.WHITE);
-    g.drawString(text, x, y);
-    return metrics.stringWidth(text);
+    g.setColor(selectedColor);
+    Segment segment = new Segment();
+    getDocument().getText(p0, p1 - p0, segment);
+    return Utilities.drawTabbedText(segment, x, y, g, this, 0);
   }
 
   public int drawUnselectedText(Graphics g, int x, int y, int p0, int p1)
     throws BadLocationException
   {
-    String text = getDocument().getText(p0, p1);
-    g.setColor(Color.BLACK);
-    g.drawString(text, x, y);
-    return metrics.stringWidth(text);
+    g.setColor(unselectedColor);
+    Segment segment = new Segment();
+    getDocument().getText(p0, p1 - p0, segment);
+    return Utilities.drawTabbedText(segment, x, y, g, this, 0);
   }
 
   public void paint(Graphics g, Shape s)
   {
-    System.out.println("Michael: PlainView.paint");
+    JTextComponent textComponent = (JTextComponent) getContainer();
+
+    g.setFont(textComponent.getFont());
+    selectedColor = textComponent.getSelectedTextColor();
+    unselectedColor = textComponent.getForeground();
     
     Rectangle rect = s.getBounds();
 
-    g.setColor(Color.WHITE);
-    g.fillRect(rect.x, rect.y, rect.width, rect.height);
-    
     // FIXME: Text may be scrolled.
     drawLine(0, g, rect.x, rect.y);
   }
@@ -106,10 +167,18 @@ public class PlainView extends View
     return 8;
   }
 
+  /**
+   * Returns the next tab stop position after a given reference position.
+   *
+   * This implementation ignores the <code>tabStop</code> argument.
+   * 
+   * @param x the current x position in pixels
+   * @param tabStop the position within the text stream that the tab occured at
+   */
   public float nextTabStop(float x, int tabStop)
   {
-    System.out.println("Michael: PlainView.nextTabpStop: missing implementation");
-    return x;
+    float tabSizePixels = getTabSize() + metrics.charWidth('m');
+    return (float) (Math.floor(x / tabSizePixels) + 1) * tabSizePixels;
   }
 
   public float getPreferredSpan(int axis)
@@ -120,3 +189,4 @@ public class PlainView extends View
     return 10;
   }
 }
+

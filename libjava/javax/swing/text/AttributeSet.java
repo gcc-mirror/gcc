@@ -56,14 +56,17 @@ public interface AttributeSet
   static interface ParagraphAttribute
   {
   }
-  
-    boolean containsAttribute(Object name, Object value);
-    boolean containsAttributes(AttributeSet attributes);
-    AttributeSet copyAttributes();
-    Object getAttribute(Object key);
-    int getAttributeCount();
-    Enumeration getAttributeNames();
-    AttributeSet getResolveParent();
-    boolean isDefined(Object attrName);
-    boolean isEqual(AttributeSet attr);     
+
+  static Object NameAttribute = StyleConstants.NameAttribute;
+  static Object ResolveAttribute = StyleConstants.ResolveAttribute;
+
+  boolean containsAttribute(Object name, Object value);
+  boolean containsAttributes(AttributeSet attributes);
+  AttributeSet copyAttributes();
+  Object getAttribute(Object key);
+  int getAttributeCount();
+  Enumeration getAttributeNames();
+  AttributeSet getResolveParent();
+  boolean isDefined(Object attrName);
+  boolean isEqual(AttributeSet attr);     
 }

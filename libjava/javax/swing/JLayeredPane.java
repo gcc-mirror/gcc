@@ -153,7 +153,7 @@ public class JLayeredPane extends JComponent implements Accessible
         Map.Entry pair = (Map.Entry) i.next();
         Integer layerNum = (Integer) pair.getKey ();
         Integer layerSz = (Integer) pair.getValue ();
-        if (layerNum == layer)
+        if (layerNum.intValue() == layer.intValue())
           {
             ret[0] = ret[1] - layerSz.intValue ();
             return ret;
@@ -314,7 +314,7 @@ public class JLayeredPane extends JComponent implements Accessible
     int bot = range[1];
     if (position == -1)
 	    position = (bot - top) - 1;
-    int targ = top + position;
+    int targ = Math.min(top + position, bot-1);
     int curr = -1;
 
     Component[] comps = getComponents();
@@ -539,7 +539,8 @@ public class JLayeredPane extends JComponent implements Accessible
                        int layer,
                        int position)
   {
-    componentToLayer.put (c, getObjectForLayer (layer));
+    remove(c);
+    add(c, getObjectForLayer (layer));
     setPosition(c, position);
     revalidate();
     repaint();

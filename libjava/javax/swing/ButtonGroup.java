@@ -42,19 +42,18 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 
-public class ButtonGroup
-  implements Serializable
+/**
+ * DOCUMENT ME!
+ */
+public class ButtonGroup implements Serializable
 {
+  /** DOCUMENT ME! */
   private static final long serialVersionUID = 4259076101881721375L;
 
-  /**
-   * The buttons added to this button group.
-   */
+  /** The buttons added to this button group. */
   protected Vector buttons = new Vector();
 
-  /**
-   * The currently selected button model.
-   */
+  /** The currently selected button model. */
   ButtonModel sel;
 
   /**
@@ -99,17 +98,24 @@ public class ButtonGroup
   /**
    * Returns the currently selected button model.
    *
-   * @return the currently selected button model,
-   * null if none was selected yet
+   * @return the currently selected button model, null if none was selected
+   *         yet
    */
   public ButtonModel getSelection()
   {
     return sel;
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param m DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
   AbstractButton FindButton(ButtonModel m)
   {
-    for (int i = 0;i < buttons.size(); i++)
+    for (int i = 0; i < buttons.size(); i++)
       {
 	AbstractButton a = (AbstractButton) buttons.get(i);
 	if (a.getModel() == m)
@@ -119,46 +125,40 @@ public class ButtonGroup
   }
 
   /**
-   * Sets the currently selected button model. Only one button of a group
-   * can be selected at a time.
+   * Sets the currently selected button model. Only one button of a group can
+   * be selected at a time.
    *
    * @param m the model to select
    * @param b true if this button is to be selected, false otherwise
    */
   public void setSelected(ButtonModel m, boolean b)
   {
-    if ((m == sel) && (b == true))
+    if ((sel != m || b) && (! b || sel == m))
+      return;
+
+    if (b && sel != m)
       {
-	// clicked on same item twice.
-	System.out.println("PRESSED TWICE:" + m + ", sel=" + sel);
-	return;
+	ButtonModel old = sel;
+	sel = m;
+
+	if (old != null)
+	  old.setSelected(false);
+	AbstractButton button = FindButton(old);
+	if (button != null)
+	  button.repaint();
       }
-
-    if (sel != null)
-      {
-	System.out.println("DESELECTING: " + sel);
-	sel.setSelected(! b);
-
-	AbstractButton but = FindButton(sel);
-	if (but != null)
-	  {
-	    System.out.println("REPAINT-REQUEST: " + but.text);
-	    //but.revalidate();
-	    but.repaint();
-	  }
-      }
-    else
-      System.out.println("NO SELECTION YET");
-
-    sel = m;
+    else if (! b && sel == m)
+      m.setSelected(true);
   }
 
   /**
-   * Checks if the given <code>ButtonModel</code> is selected
-   * in this button group.
+   * Checks if the given <code>ButtonModel</code> is selected in this button
+   * group.
    *
-   * @return true of given <code>ButtonModel</code> is selected,
-   * false otherwise
+   * @param m DOCUMENT ME!
+   *
+   * @return true of given <code>ButtonModel</code> is selected, false
+   *         otherwise
    */
   public boolean isSelected(ButtonModel m)
   {

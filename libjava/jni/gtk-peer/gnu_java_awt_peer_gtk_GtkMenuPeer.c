@@ -39,20 +39,6 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkMenuPeer.h"
 
-static void
-accel_attach (GtkMenuItem *menu_item,
-	      gpointer *user_data __attribute__((unused)))
-{
-  GtkAccelGroup *accel;
-
-  accel = gtk_menu_get_accel_group (GTK_MENU (menu_item->submenu));
-  /* FIXME: update this to use GTK-2.4 GtkActions. */
-#if 0
-  _gtk_accel_group_attach (accel, 
-    G_OBJECT (gtk_widget_get_toplevel (GTK_WIDGET(menu_item))));
-#endif
-}
-
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_setupAccelGroup
   (JNIEnv *env, jobject obj, jobject parent)
 {
@@ -65,14 +51,6 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_setupAccelGroup
     {
       gtk_menu_set_accel_group (GTK_MENU (GTK_MENU_ITEM (ptr1)->submenu), 
 				gtk_accel_group_new ());
-
-      if (GTK_WIDGET_REALIZED (GTK_WIDGET (ptr1)))
-	accel_attach (GTK_MENU_ITEM (ptr1), NULL);
-      else
-	g_signal_connect (G_OBJECT (ptr1),
-			    "realize",
-			    GTK_SIGNAL_FUNC (accel_attach), 
-			    NULL);
     }
   else
     {
@@ -126,6 +104,24 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
   gdk_threads_leave ();
 
   (*env)->ReleaseStringUTFChars (env, label, str);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_addTearOff
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr1;
+  GtkWidget *menu, *item;
+
+  ptr1 = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  menu = gtk_menu_item_get_submenu (GTK_MENU_ITEM (ptr1));
+  item = gtk_tearoff_menu_item_new ();
+  gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+  gtk_widget_show (item);
+
+  gdk_threads_leave ();
 }
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_addItem

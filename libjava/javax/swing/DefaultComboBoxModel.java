@@ -38,146 +38,191 @@ exception statement from your version. */
 package javax.swing;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Vector;
 
+
 /**
- * DefaultComboBoxModel
- * @author	Andrew Selkirk
- * @version	1.0
+ * DefaultComboBoxModel is a data model for JComboBox. This model keeps track
+ * of elements contained in the JComboBox as well as the current combo box
+ * selection. Whenever selection in the JComboBox changes, the ComboBoxModel
+ * will fire ListDataEvents to ComboBox's ListDataListeners.
+ *
+ * @author Andrew Selkirk
+ * @author Olga Rodimina
+ * @version 1.0
  */
-public class DefaultComboBoxModel extends AbstractListModel 
-		implements MutableComboBoxModel, Serializable
+public class DefaultComboBoxModel extends AbstractListModel
+  implements MutableComboBoxModel, Serializable
 {
   static final long serialVersionUID = 6698657703676921904L;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * List containing items in the combo box
+   */
+  private Vector list;
 
-	/**
-	 * list
-	 */
-	private Vector list;
+  /**
+   * Currently selected item in the combo box list
+   */
+  private Object selectedItem = null;
 
-	/**
-	 * selectedItem
-	 */
-	private Object selectedItem;
+  /**
+   * Constructor DefaultComboBoxModel. Create empty JComboBox.
+   */
+  public DefaultComboBoxModel()
+  {
+    list = new Vector();
+  }
 
+  /**
+   * Constructs new DefaultComboBoxModel object and initializes its item list
+   * to values in the given array.
+   *
+   * @param items array containing items of the combo box.
+   */
+  public DefaultComboBoxModel(Object[] items)
+  {
+    list = new Vector(Arrays.asList(items));
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Consturcts new DefaultComboBoxModel object and initializes its item list
+   * to values in the given vector.
+   *
+   * @param vector Vector containing items for this combo box.
+   */
+  public DefaultComboBoxModel(Vector vector)
+  {
+    this.list = vector;
+  }
 
-	/**
-	 * Constructor DefaultComboBoxModel
-	 */
-	public DefaultComboBoxModel() {
-		// TODO
-	} // DefaultComboBoxModel()
+  /**
+   * This method adds element to the combo box list. It fires ListDataEvent
+   * indicating that component was added to the combo box  to all of the
+   * JComboBox's registered ListDataListeners.
+   *
+   * @param object item to add to the combo box list
+   */
+  public void addElement(Object object)
+  {
+    list.add(object);
+    fireIntervalAdded(this, list.size(), list.size());
+  }
 
-	/**
-	 * Constructor DefaultComboBoxModel
-	 * @param items TODO
-	 */
-	public DefaultComboBoxModel(Object[] items) {
-		// TODO
-	} // DefaultComboBoxModel()
+  /**
+   * This method removes element at the specified index from the combo box
+   * list. It fires ListDataEvent indicating that component was removed from
+   * the combo box list to all of the JComboBox's registered
+   * ListDataListeners.
+   *
+   * @param index index specifying location of the element to remove in the
+   *        combo box list.
+   */
+  public void removeElementAt(int index)
+  {
+    list.remove(index);
+    fireIntervalRemoved(this, index, index);
+  }
 
-	/**
-	 * Constructor DefaultComboBoxModel
-	 * @param vector TODO
-	 */
-	public DefaultComboBoxModel(Vector vector) {
-		// TODO
-	} // DefaultComboBoxModel()
+  /**
+   * This method inserts given object to the combo box list at the specified
+   * index. It fires ListDataEvent indicating that component was inserted to
+   * the combo box list to all of the JComboBox's registered
+   * ListDataListeners.
+   *
+   * @param object element to insert
+   * @param index index specifing position in the list where given element
+   *        should be inserted.
+   */
+  public void insertElementAt(Object object, int index)
+  {
+    list.insertElementAt(object, index);
+    fireIntervalAdded(this, index, index);
+  }
 
+  /**
+   * Removes given object from the combo box list. It fires ListDataEvent
+   * indicating that component was removed from the combo box list to all of
+   * the JComboBox's registered ListDataListeners.
+   *
+   * @param object Element that will be removed from the combo box list
+   */
+  public void removeElement(Object object)
+  {
+    int index = getIndexOf(object);
+    if (index != -1)
+      removeElementAt(index);
+  }
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Removes all the items from the JComboBox's item list. It fires
+   * ListDataEvent indicating that all the elements were removed from the
+   * combo box list to all of the JComboBox's registered ListDataListeners.
+   */
+  public void removeAllElements()
+  {
+    int listSize = getSize();
+    list.clear();
+    fireIntervalAdded(this, 0, listSize - 1);
+  }
 
-	/**
-	 * addElement
-	 * @param object TODO
-	 */
-	public void addElement(Object object) {
-		// TODO
-	} // addElement()
+  /**
+   * Returns number of items in the combo box list
+   *
+   * @return number of items in the combo box list
+   */
+  public int getSize()
+  {
+    return list.size();
+  }
 
-	/**
-	 * removeElementAt
-	 * @param index TODO
-	 */
-	public void removeElementAt(int index) {
-		// TODO
-	} // removeElementAt()
+  /**
+   * Selects given object in the combo box list. This method fires
+   * ListDataEvent to all registered ListDataListeners of the JComboBox. The
+   * start and end index of the event is set to -1 to indicate combo box's
+   * selection has changed, and not its contents.
+   *
+   * @param object item to select in the JComboBox
+   */
+  public void setSelectedItem(Object object)
+  {
+    selectedItem = object;
+    fireContentsChanged(this, -1, -1);
+  }
 
-	/**
-	 * insertElementAt
-	 * @param object TODO
-	 * @param index TODO
-	 */
-	public void insertElementAt(Object object, int index) {
-		// TODO
-	} // insertElementAt()
+  /**
+   * Returns currently selected item in the combo box list
+   *
+   * @return currently selected item in the combo box list
+   */
+  public Object getSelectedItem()
+  {
+    return selectedItem;
+  }
 
-	/**
-	 * removeElement
-	 * @param object TODO
-	 */
-	public void removeElement(Object object) {
-		// TODO
-	} // removeElement()
+  /**
+   * Returns element in the combo box list located at the given index
+   *
+   * @param index specifying location of the element in the list
+   *
+   * @return return element in the combo box list located at the given index
+   */
+  public Object getElementAt(int index)
+  {
+    return list.elementAt(index);
+  }
 
-	/**
-	 * removeAllElements
-	 */
-	public void removeAllElements() {
-		// TODO
-	} // removeAllElements()
-
-	/**
-	 * getSize
-	 * @returns int
-	 */
-	public int getSize() {
-		return 0; // TODO
-	} // getSize()
-
-	/**
-	 * setSelectedItem
-	 * @param object TODO
-	 */
-	public void setSelectedItem(Object object) {
-		// TODO
-	} // setSelectedItem()
-
-	/**
-	 * getSelectedItem
-	 * @returns Object
-	 */
-	public Object getSelectedItem() {
-		return null; // TODO
-	} // getSelectedItem()
-
-	/**
-	 * getElementAt
-	 * @param index TODO
-	 * @returns Object
-	 */
-	public Object getElementAt(int index) {
-		return null; // TODO
-	} // getElementAt()
-
-	/**
-	 * getIndexOf
-	 * @param object TODO
-	 * @returns int
-	 */
-	public int getIndexOf(Object object) {
-		return 0; // TODO
-	} // getIndexOf()
-
-
-} // DefaultComboBoxModel
+  /**
+   * Returns index of the specified object in the combo box list.
+   *
+   * @param object element to look for in the combo box list .
+   *
+   * @return Index specifying position of the specified element in combo box
+   *         list.
+   */
+  public int getIndexOf(Object object)
+  {
+    return list.indexOf(object);
+  }
+}

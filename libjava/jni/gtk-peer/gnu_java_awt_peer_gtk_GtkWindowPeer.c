@@ -104,7 +104,6 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   insets = (*env)->GetIntArrayElements (env, jinsets, 0);
   insets[0] = insets[1] = insets[2] = insets[3] = 0;
 
-  /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
 
   gdk_threads_enter ();
@@ -160,6 +159,56 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   (*env)->ReleaseIntArrayElements (env, jinsets, insets, 0);
 
   NSA_SET_PTR (env, obj, window_widget);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetTitle
+  (JNIEnv *env, jobject obj, jstring title)
+{
+  const char *c_title;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  c_title = (*env)->GetStringUTFChars (env, title, NULL);
+
+  gdk_threads_enter ();
+
+  gtk_window_set_title (GTK_WINDOW (ptr), c_title);
+
+  gdk_threads_leave ();
+
+  (*env)->ReleaseStringUTFChars (env, title, c_title);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetResizable
+  (JNIEnv *env, jobject obj, jboolean resizable)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  gtk_window_set_policy (GTK_WINDOW (ptr), resizable, resizable, FALSE);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetModal
+  (JNIEnv *env, jobject obj, jboolean modal)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  gtk_window_set_modal (GTK_WINDOW (ptr), modal);
+
+  gdk_threads_leave ();
 }
 
 JNIEXPORT void JNICALL
@@ -484,6 +533,72 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_gtkLayoutSetVisible
     gtk_widget_hide (GTK_WIDGET (layout));
 
   gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImageFromDecoder
+  (JNIEnv *env, jobject obj, jobject decoder)
+{
+  void *ptr;
+  GdkPixbufLoader *loader = NULL;
+  GdkPixbuf *pixbuf = NULL;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  loader = NSA_GET_PB_PTR (env, decoder);
+  g_assert (loader != NULL);
+
+  gdk_threads_enter ();
+
+  pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
+  g_assert (pixbuf != NULL);
+
+  gtk_window_set_icon (GTK_WINDOW (ptr), pixbuf);
+
+  gdk_threads_leave ();
+}
+
+void free_pixbuf_data (guchar *pixels, gpointer data __attribute__((unused)))
+{
+  free(pixels);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImageFromData
+  (JNIEnv *env, jobject obj, jintArray pixelArray, jint width, jint height)
+{
+  void *ptr;
+  GdkPixbuf *pixbuf;
+  jint *pixels;
+  int pixels_length, i;
+  guchar *data;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  pixels = (*env)->GetIntArrayElements (env, pixelArray, 0);
+  pixels_length = (*env)->GetArrayLength (env, pixelArray);
+
+  data = malloc (sizeof (guchar) * pixels_length);
+  for (i = 0; i < pixels_length; i++)
+    data[i] = (guchar) pixels[i];
+
+  gdk_threads_enter ();
+
+  pixbuf = gdk_pixbuf_new_from_data (data,
+                                     GDK_COLORSPACE_RGB,
+                                     TRUE,
+                                     8,
+                                     width,
+                                     height,
+                                     width*4,
+                                     free_pixbuf_data,
+                                     NULL);
+
+  gtk_window_set_icon (GTK_WINDOW (ptr), pixbuf);
+
+  gdk_threads_leave ();
+
+  (*env)->ReleaseIntArrayElements(env, pixelArray, pixels, 0);
 }
 
 static void

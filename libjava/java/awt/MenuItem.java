@@ -77,7 +77,7 @@ private String actionCommand;
 /**
   * @serial Indicates whether or not this menu item is enabled.
   */
-private boolean enabled;
+private boolean enabled = true;
 
 /**
   * @serial The mask of events that are enabled for this menu item.

@@ -101,7 +101,7 @@ private transient ActionListener action_listeners;
 public
 Button()
 {
-  this(null);
+  this("");
 }
 
 /*************************************************************************/

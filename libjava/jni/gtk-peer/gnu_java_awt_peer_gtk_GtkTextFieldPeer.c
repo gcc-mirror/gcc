@@ -62,6 +62,47 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_create
   NSA_SET_PTR (env, obj, entry);
 }
 
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkWidgetSetBackground
+  (JNIEnv *env, jobject obj, jint red, jint green, jint blue)
+{
+  GdkColor color;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  color.red = (red / 255.0) * 65535;
+  color.green = (green / 255.0) * 65535;
+  color.blue = (blue / 255.0) * 65535;
+
+  gdk_threads_enter ();
+
+  gtk_widget_modify_base (GTK_WIDGET (ptr), GTK_STATE_NORMAL, &color);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkWidgetSetForeground
+  (JNIEnv *env, jobject obj, jint red, jint green, jint blue)
+{
+  GdkColor color;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  color.red = (red / 255.0) * 65535;
+  color.green = (green / 255.0) * 65535;
+  color.blue = (blue / 255.0) * 65535;
+
+  gdk_threads_enter ();
+
+  gtk_widget_modify_text (GTK_WIDGET (ptr), GTK_STATE_NORMAL, &color);
+  gtk_widget_modify_base (GTK_WIDGET (ptr), GTK_STATE_SELECTED, &color);
+
+  gdk_threads_leave ();
+}
+
 JNIEXPORT jint JNICALL
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkEntryGetBorderWidth
   (JNIEnv *env, jobject obj)

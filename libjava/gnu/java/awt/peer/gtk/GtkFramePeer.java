@@ -47,6 +47,7 @@ import java.awt.MenuBar;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.PaintEvent;
+import java.awt.image.ColorModel;
 import java.awt.peer.FramePeer;
 import java.awt.peer.MenuBarPeer;
 
@@ -115,10 +116,9 @@ public class GtkFramePeer extends GtkWindowPeer
     setSize (awtComponent.getWidth() - insets.left - insets.right,
              awtComponent.getHeight() - insets.top - insets.bottom
              + menuBarHeight);
-    set ("allow_shrink", resizable);
-    set ("allow_grow", resizable);
-  }  
-  
+    gtkWindowSetResizable (resizable);
+  }
+
   protected void postInsetsChangedEvent (int top, int left,
 					 int bottom, int right)
   {
@@ -137,24 +137,46 @@ public class GtkFramePeer extends GtkWindowPeer
   {
     // Create a normal decorated window.
     create (GDK_WINDOW_TYPE_HINT_NORMAL, true);
-    setMenuBar(((Frame) awtComponent).getMenuBar());
-    awtComponent.setForeground(java.awt.SystemColor.windowText);
+
+    Frame frame = (Frame) awtComponent;
+
+    setMenuBar (frame.getMenuBar ());
+
+    setTitle (frame.getTitle ());
+    setResizable (frame.isResizable ());
+    setIconImage(frame.getIconImage());
   }
 
-  public void getArgs (Component component, GtkArgList args)
-  {
-    super.getArgs (component, args);
-
-    Frame frame = (Frame) component;
-
-    args.add ("title", frame.getTitle ());
-    args.add ("allow_shrink", frame.isResizable ());
-    args.add ("allow_grow", frame.isResizable ());
-  }
-
+  native void nativeSetIconImageFromDecoder (GdkPixbufDecoder decoder);
+  native void nativeSetIconImageFromData (int[] pixels, int width, int height);
   public void setIconImage (Image image) 
   {
-      /* TODO: Waiting on Toolkit Image routines */
+      if (image != null)
+        {
+          GtkImage img = (GtkImage) image;
+          // FIXME: Image should be loaded, but if not, do image loading here.
+          if (img.isLoaded())
+            {
+              if (img.getSource() instanceof GdkPixbufDecoder)
+                {
+                  nativeSetIconImageFromDecoder((GdkPixbufDecoder) img.getSource());
+                }
+              else
+                {
+                  int[] pixels = img.getPixelCache();
+                  ColorModel model = img.getColorModel();
+                  int[] data = new int[pixels.length * 4];
+                  for (int i = 0; i < pixels.length; i++)
+                    {
+                      data[i * 4] = model.getRed(pixels[i]);
+                      data[i * 4 + 1] = model.getGreen(pixels[i]);
+                      data[i * 4 + 2] = model.getBlue(pixels[i]);
+                      data[i * 4 + 3] = model.getAlpha(pixels[i]);
+                    }
+                  nativeSetIconImageFromData(data, img.getWidth(null), img.getHeight(null));
+                }
+            }
+        }
   }
 
   public Graphics getGraphics ()

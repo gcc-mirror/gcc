@@ -58,11 +58,11 @@ button_to_awt_mods (int button)
   switch (button)
     {
     case 1:
-      return AWT_BUTTON1_MASK;
+      return AWT_BUTTON1_DOWN_MASK;
     case 2:
-      return AWT_BUTTON2_MASK;
+      return AWT_BUTTON2_DOWN_MASK;
     case 3:
-      return AWT_BUTTON3_MASK;
+      return AWT_BUTTON3_DOWN_MASK;
     }
 
   return 0;
@@ -74,11 +74,11 @@ state_to_awt_mods (guint state)
   jint result = 0;
 
   if (state & GDK_SHIFT_MASK)
-    result |= AWT_SHIFT_MASK;
+    result |= AWT_SHIFT_DOWN_MASK;
   if (state & GDK_CONTROL_MASK)
-    result |= AWT_CTRL_MASK;
+    result |= AWT_CTRL_DOWN_MASK;
   if (state & GDK_MOD1_MASK)
-    result |= AWT_ALT_MASK;
+    result |= AWT_ALT_DOWN_MASK;
 
   return result;
 }
@@ -89,17 +89,17 @@ state_to_awt_mods_with_button_states (guint state)
   jint result = 0;
 
   if (state & GDK_SHIFT_MASK)
-    result |= AWT_SHIFT_MASK;
+    result |= AWT_SHIFT_DOWN_MASK;
   if (state & GDK_CONTROL_MASK)
-    result |= AWT_CTRL_MASK;
+    result |= AWT_CTRL_DOWN_MASK;
   if (state & GDK_MOD1_MASK)
-    result |= AWT_ALT_MASK;
+    result |= AWT_ALT_DOWN_MASK;
   if (state & GDK_BUTTON1_MASK)
-    result |= AWT_BUTTON1_MASK;
+    result |= AWT_BUTTON1_DOWN_MASK;
   if (state & GDK_BUTTON2_MASK)
-    result |= AWT_BUTTON2_MASK;
+    result |= AWT_BUTTON2_DOWN_MASK;
   if (state & GDK_BUTTON3_MASK)
-    result |= AWT_BUTTON3_MASK;
+    result |= AWT_BUTTON3_DOWN_MASK;
 
   return result;
 }
@@ -124,29 +124,29 @@ keyevent_state_to_awt_mods (GdkEvent *event)
 
       if (event->key.keyval == GDK_Shift_L
           || event->key.keyval == GDK_Shift_R)
-        result |= AWT_SHIFT_MASK;
+        result |= AWT_SHIFT_DOWN_MASK;
       else
         {
           if (state & GDK_SHIFT_MASK)
-            result |= AWT_SHIFT_MASK;
+            result |= AWT_SHIFT_DOWN_MASK;
         }
 
       if (event->key.keyval == GDK_Control_L
           || event->key.keyval == GDK_Control_R)
-        result |= AWT_CTRL_MASK;
+        result |= AWT_CTRL_DOWN_MASK;
       else
         {
           if (state & GDK_CONTROL_MASK)
-            result |= AWT_CTRL_MASK;
+            result |= AWT_CTRL_DOWN_MASK;
         }
 
       if (event->key.keyval == GDK_Alt_L
           || event->key.keyval == GDK_Alt_R)
-        result |= AWT_ALT_MASK;
+        result |= AWT_ALT_DOWN_MASK;
       else
         {
           if (state & GDK_MOD1_MASK)
-            result |= AWT_ALT_MASK;
+            result |= AWT_ALT_DOWN_MASK;
         }
     }
   else if (event->type == GDK_KEY_RELEASE)
@@ -157,20 +157,20 @@ keyevent_state_to_awt_mods (GdkEvent *event)
           && event->key.keyval != GDK_Shift_R)
         {
           if (state & GDK_SHIFT_MASK)
-            result |= AWT_SHIFT_MASK;
+            result |= AWT_SHIFT_DOWN_MASK;
         }
       if (event->key.keyval != GDK_Control_L
           && event->key.keyval != GDK_Control_R)
         {
           if (state & GDK_CONTROL_MASK)
-            result |= AWT_CTRL_MASK;
+            result |= AWT_CTRL_DOWN_MASK;
         }
 
       if (event->key.keyval != GDK_Alt_L
           && event->key.keyval != GDK_Alt_R)
         {
           if (state & GDK_MOD1_MASK)
-            result |= AWT_ALT_MASK;
+            result |= AWT_ALT_DOWN_MASK;
         }
     }
 
@@ -885,8 +885,8 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
                                   postMouseEventID,
 				  AWT_MOUSE_PRESSED, 
 				  (jlong)event->button.time,
-				  state_to_awt_mods (event->button.state) |
-				  button_to_awt_mods (event->button.button), 
+                                  state_to_awt_mods (event->button.state)
+                                  | button_to_awt_mods (event->button.button),
 				  (jint)event->button.x,
 				  (jint)event->button.y, 
 				  click_count, 
@@ -902,8 +902,8 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
 				    postMouseEventID,
 				    AWT_MOUSE_RELEASED, 
 				    (jlong)event->button.time,
-				    state_to_awt_mods (event->button.state) |
-				    button_to_awt_mods (event->button.button), 
+                                    state_to_awt_mods (event->button.state)
+                                    | button_to_awt_mods (event->button.button),
 				    (jint)event->button.x,
 				    (jint)event->button.y, 
 				    click_count,
@@ -923,8 +923,8 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
 				        postMouseEventID,
 				        AWT_MOUSE_CLICKED, 
 				        (jlong)event->button.time,
-				        state_to_awt_mods (event->button.state) |
-				        button_to_awt_mods (event->button.button), 
+				        state_to_awt_mods (event->button.state)
+                                        | button_to_awt_mods (event->button.button),
 				        (jint)event->button.x,
 				        (jint)event->button.y, 
 				        click_count,

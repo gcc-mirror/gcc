@@ -155,7 +155,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
                  && e.id != WindowEvent.WINDOW_DEACTIVATED)
           return false;
 
-        target.dispatchEvent (e);
+        redispatchEvent(target, e);
         return true;
       }
     else if (e instanceof FocusEvent)
@@ -197,7 +197,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
               setGlobalPermanentFocusOwner (null);
           }
 
-          target.dispatchEvent (e);
+        redispatchEvent(target, e);
 
         return true;
       }
@@ -258,7 +258,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
     Component focusOwner = getGlobalPermanentFocusOwner ();
 
     if (focusOwner != null)
-    focusOwner.dispatchEvent (e);
+      redispatchEvent(focusOwner, e);
 
     // Loop through all registered KeyEventPostProcessors, giving
     // each a chance to process this event.
@@ -284,10 +284,10 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
   {
     // Check if this event represents a menu shortcut.
 
-    // MenuShortcuts are activated by Ctrl- KeyEvents.
-    int modifiers = e.getModifiers ();
-    if ((modifiers & KeyEvent.CTRL_MASK) != 0
-        || (modifiers & KeyEvent.CTRL_DOWN_MASK) != 0)
+    // MenuShortcuts are activated by Ctrl- KeyEvents, only on KEY_PRESSED.
+    int modifiers = e.getModifiersEx ();
+    if (e.getID() == KeyEvent.KEY_PRESSED
+        && (modifiers & KeyEvent.CTRL_DOWN_MASK) != 0)
       {
         Window focusedWindow = getGlobalFocusedWindow ();
         if (focusedWindow instanceof Frame)
@@ -311,17 +311,21 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
                         MenuItem item = menu.getItem (j);
                         MenuShortcut shortcut = item.getShortcut ();
 
-                        if (shortcut != null)
+                        if (item.isEnabled() && shortcut != null)
                           {
-                            // Dispatch a new ActionEvent if this is a
-                            // Shift- KeyEvent and the shortcut requires
-                            // the Shift modifier, or if the shortcut
-                            // doesn't require the Shift modifier.
-                            if ((shortcut.usesShiftModifier ()
-                                 && ((modifiers & KeyEvent.SHIFT_MASK) != 0
-                                     || (modifiers & KeyEvent.SHIFT_DOWN_MASK) != 0)
-                                 || !shortcut.usesShiftModifier ())
-                                && shortcut.getKey () == e.getKeyCode ())
+                            // Dispatch a new ActionEvent if:
+                            //
+                            //     a) this is a Shift- KeyEvent, and the
+                            //        shortcut requires the Shift modifier
+                            //
+                            // or, b) this is not a Shift- KeyEvent, and the
+                            //        shortcut does not require the Shift
+                            //        modifier.
+                            if (shortcut.getKey () == e.getKeyCode ()
+                                && ((shortcut.usesShiftModifier ()
+                                     && (modifiers & KeyEvent.SHIFT_DOWN_MASK) != 0)
+                                    || (! shortcut.usesShiftModifier ()
+                                        && (modifiers & KeyEvent.SHIFT_DOWN_MASK) == 0)))
                               {
                                 item.dispatchEvent (new ActionEvent (item,
                                                                      ActionEvent.ACTION_PERFORMED,
@@ -347,7 +351,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
     // KEY_PRESSED TAB is a focus traversal keystroke, we also need to
     // consume KEY_RELEASED and KEY_TYPED TAB key events).
     AWTKeyStroke oppositeKeystroke = AWTKeyStroke.getAWTKeyStroke (e.getKeyCode (),
-                                                                   e.getModifiers (),
+                                                                   e.getModifiersEx (),
                                                                    !(e.id == KeyEvent.KEY_RELEASED));
 
     Set forwardKeystrokes = comp.getFocusTraversalKeys (KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
@@ -439,7 +443,8 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
     FocusTraversalPolicy policy = focusCycleRoot.getFocusTraversalPolicy ();
 
     Component previous = policy.getComponentBefore (focusCycleRoot, focusComp);
-    previous.requestFocusInWindow ();
+    if (previous != null)
+      previous.requestFocusInWindow ();
   }
 
   public void focusNextComponent (Component comp)
@@ -449,7 +454,8 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
     FocusTraversalPolicy policy = focusCycleRoot.getFocusTraversalPolicy ();
 
     Component next = policy.getComponentAfter (focusCycleRoot, focusComp);
-    next.requestFocusInWindow ();
+    if (next != null)
+      next.requestFocusInWindow ();
   }
 
   public void upFocusCycle (Component comp)
@@ -461,7 +467,8 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
       {
         FocusTraversalPolicy policy = focusCycleRoot.getFocusTraversalPolicy ();
         Component defaultComponent = policy.getDefaultComponent (focusCycleRoot);
-        defaultComponent.requestFocusInWindow ();
+        if (defaultComponent != null)
+          defaultComponent.requestFocusInWindow ();
       }
     else
       {
@@ -481,7 +488,8 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
       {
         FocusTraversalPolicy policy = cont.getFocusTraversalPolicy ();
         Component defaultComponent = policy.getDefaultComponent (cont);
-        defaultComponent.requestFocusInWindow ();
+        if (defaultComponent != null)
+          defaultComponent.requestFocusInWindow ();        
         setGlobalCurrentFocusCycleRoot (cont);
       }
   }

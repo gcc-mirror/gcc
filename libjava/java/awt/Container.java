@@ -1505,10 +1505,11 @@ public class Container extends Component
   void dispatchEventImpl(AWTEvent e)
   {
     // Give lightweight dispatcher a chance to handle it.
-    if (dispatcher != null 
+    if (eventTypeEnabled (e.id)
+        && dispatcher != null 
         && dispatcher.handleEvent (e))
       return;
-
+    
     if ((e.id <= ContainerEvent.CONTAINER_LAST
              && e.id >= ContainerEvent.CONTAINER_FIRST)
         && (containerListener != null
@@ -1586,7 +1587,6 @@ public class Container extends Component
                   {
                     if (dispatcher == null)
                       dispatcher = new LightweightDispatcher (this);
-                    dispatcher.enableEvents (component[i].eventMask);
                   }	
 	  
 
@@ -1831,7 +1831,6 @@ class LightweightDispatcher implements Serializable
 {
   private static final long serialVersionUID = 5184291520170872969L;
   private Container nativeContainer;
-  private Component focus;
   private Cursor nativeCursor;
   private long eventMask;
   
@@ -1843,11 +1842,6 @@ class LightweightDispatcher implements Serializable
   LightweightDispatcher(Container c)
   {
     nativeContainer = c;
-  }
-
-  void enableEvents(long l)
-  {
-    eventMask |= l;
   }
 
   void acquireComponentForMouseEvent(MouseEvent me)
@@ -1863,8 +1857,9 @@ class LightweightDispatcher implements Serializable
       {
         candidate =
           SwingUtilities.getDeepestComponentAt(parent, p.x, p.y);
-        if (candidate == null)
+        if (candidate == null || (candidate.eventMask & me.getID()) == 0)
         {
+          candidate = null;
           p = SwingUtilities.convertPoint(parent, p.x, p.y, parent.parent);
           parent = parent.parent;
         }
@@ -1881,21 +1876,25 @@ class LightweightDispatcher implements Serializable
         && lastComponentEntered.isShowing()
         && lastComponentEntered != candidate)
       {
-        Point tp = 
-          SwingUtilities.convertPoint(nativeContainer, 
-                                      x, y, lastComponentEntered);
-        MouseEvent exited = new MouseEvent (lastComponentEntered, 
-                                            MouseEvent.MOUSE_EXITED,
-                                            me.getWhen (), 
-                                            me.getModifiers (), 
-                                            tp.x, tp.y,
-                                            me.getClickCount (),
-                                            me.isPopupTrigger (),
-                                            me.getButton ());
-        lastComponentEntered.dispatchEvent (exited); 
+        // Old candidate could have been removed from 
+        // the nativeContainer so we check first.
+        if (SwingUtilities.isDescendingFrom(lastComponentEntered, nativeContainer))
+        {
+          Point tp = 
+            SwingUtilities.convertPoint(nativeContainer, 
+                                        x, y, lastComponentEntered);
+          MouseEvent exited = new MouseEvent (lastComponentEntered, 
+                                              MouseEvent.MOUSE_EXITED,
+                                              me.getWhen (), 
+                                              me.getModifiersEx (), 
+                                              tp.x, tp.y,
+                                              me.getClickCount (),
+                                              me.isPopupTrigger (),
+                                              me.getButton ());
+          lastComponentEntered.dispatchEvent (exited); 
+        }
         lastComponentEntered = null;
       }
-
     // If we have a candidate, maybe enter it.
     if (candidate != null)
       {
@@ -1911,7 +1910,7 @@ class LightweightDispatcher implements Serializable
             MouseEvent entered = new MouseEvent (lastComponentEntered, 
                                                  MouseEvent.MOUSE_ENTERED,
                                                  me.getWhen (), 
-                                                 me.getModifiers (), 
+                                                 me.getModifiersEx (), 
                                                  cp.x, cp.y,
                                                  me.getClickCount (),
                                                  me.isPopupTrigger (),
@@ -1929,7 +1928,8 @@ class LightweightDispatcher implements Serializable
       //   - MOUSE_RELEASED
       //   - MOUSE_PRESSED: another button pressed while the first is held down
       //   - MOUSE_DRAGGED
-      mouseEventTarget = pressedComponent;
+      if (SwingUtilities.isDescendingFrom(pressedComponent, nativeContainer))
+        mouseEventTarget = pressedComponent;
     else if (me.getID() == MouseEvent.MOUSE_CLICKED)
       {
         // Don't dispatch CLICKED events whose target is not the same as the
@@ -1943,9 +1943,6 @@ class LightweightDispatcher implements Serializable
 
   boolean handleEvent(AWTEvent e)
   {
-    if ((eventMask & e.getID()) == 0)
-      return false;
-
     if (e instanceof MouseEvent)
       {
         MouseEvent me = (MouseEvent) e;
@@ -1979,11 +1976,9 @@ class LightweightDispatcher implements Serializable
                     pressedComponent = null;
                   break;
               }
+              if (newEvt.isConsumed())
+                e.consume();
           }
-      }
-    else if (e instanceof KeyEvent && focus != null)
-      {
-        focus.processKeyEvent((KeyEvent) e);
       }
     
     return e.isConsumed();

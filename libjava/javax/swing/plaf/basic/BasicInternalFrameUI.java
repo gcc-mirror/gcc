@@ -765,7 +765,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 	                                         lastComponentEntered);
 	  MouseEvent exited = new MouseEvent(lastComponentEntered,
 	                                     MouseEvent.MOUSE_EXITED,
-	                                     me.getWhen(), me.getModifiers(),
+	                                     me.getWhen(), me.getModifiersEx(),
 	                                     tp.x, tp.y, me.getClickCount(),
 	                                     me.isPopupTrigger(),
 	                                     me.getButton());
@@ -787,7 +787,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
 	      MouseEvent entered = new MouseEvent(lastComponentEntered,
 	                                          MouseEvent.MOUSE_ENTERED,
 	                                          me.getWhen(),
-	                                          me.getModifiers(), cp.x,
+	                                          me.getModifiersEx(), cp.x,
 	                                          cp.y, me.getClickCount(),
 	                                          me.isPopupTrigger(),
 	                                          me.getButton());

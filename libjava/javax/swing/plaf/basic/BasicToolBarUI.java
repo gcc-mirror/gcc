@@ -157,13 +157,11 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
   /**
    * This method creates a new BasicToolBarUI object for the given JToolBar.
-   *
-   * @param b The JToolBar to represent with this UI.
    */
-  public BasicToolBarUI(JToolBar b)
-    {
-	super();
-    }
+  public BasicToolBarUI()
+  {
+    super();
+  }
 
   /**
    * This method returns whether the JToolBar can dock at the given position.
@@ -351,10 +349,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @return A new UI delegate.
    */
-    public static ComponentUI createUI(JComponent c)
-    {
-	return new BasicToolBarUI((JToolBar) c);
-    }
+  public static ComponentUI createUI(JComponent c)
+  {
+    return new BasicToolBarUI();
+  }
 
   /**
    * This method is called to drag the DragWindow around when the JToolBar is

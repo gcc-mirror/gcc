@@ -85,17 +85,11 @@ public class GtkDialogPeer extends GtkWindowPeer
   {
     // Create a decorated dialog window.
     create (GDK_WINDOW_TYPE_HINT_DIALOG, true);
-  }
 
-  public void getArgs (Component component, GtkArgList args)
-  {
-    super.getArgs (component, args);
+    Dialog dialog = (Dialog) awtComponent;
 
-    Dialog dialog = (Dialog) component;
-
-    args.add ("title", dialog.getTitle ());
-    args.add ("modal", dialog.isModal ());
-    args.add ("allow_shrink", dialog.isResizable ());
-    args.add ("allow_grow", dialog.isResizable ());
+    gtkWindowSetModal (dialog.isModal ());
+    setTitle (dialog.getTitle ());
+    setResizable (dialog.isResizable ());
   }
 }

@@ -42,15 +42,11 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.LayoutManager2;
 import java.io.Serializable;
 
-
 /**
  * A layout for swing components.
- * This implementation delegates its methods to
- * java.awt.GridLayout to do its work.
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
@@ -87,11 +83,6 @@ public class BoxLayout implements LayoutManager2, Serializable
   private Container container;
   
   /*
-   * Internal layout.
-   */
-  private GridLayout grid;
-
-  /*
    * Current type of component layouting. Defaults to X_AXIS.
    */
   private int way = X_AXIS;
@@ -108,74 +99,40 @@ public class BoxLayout implements LayoutManager2, Serializable
   {
     int width = 0;
     int height = 0;
-    ComponentOrientation orientation = container.getComponentOrientation();
-
     this.container = container;
     this.way = way;
-
-    switch (way)
-      {
-      case X_AXIS:
-	width = 1;
-	break;
-      case Y_AXIS:
-	height = 1;
-	break;
-      case LINE_AXIS:
-	if (orientation.isHorizontal())
-          height = 1;
-	else
-	  width = 1;
-	break;
-      case PAGE_AXIS:
-	if (!orientation.isHorizontal())
-          height = 1;
-	else
-	  width = 1;
-	break;
-      default:
-	throw new AWTError("Invalid value for way");
-      }
-
-    grid = new GridLayout(width, height);
   }
 
   /**
-   * Adds a component to the layout.
+   * Adds a component to the layout. Not used in BoxLayout.
    *
    * @param name The name of the component to add.
    * @param component the component to add to the layout.
    */
   public void addLayoutComponent(String name, Component component)
   {
-    if (way == X_AXIS
-        || (way == LINE_AXIS
-            && component.getComponentOrientation().isHorizontal())
-        || (way == PAGE_AXIS
-            && !component.getComponentOrientation().isHorizontal()))
-      grid.setColumns(grid.getColumns() + 1);
-    else
-      grid.setRows(grid.getRows() + 1);
   }
 
   /**
-   * Removes a component from the layout.
+   * Removes a component from the layout. Not used in BoxLayout.
    *
    * @param component The component to remove from the layout.
    */
   public void removeLayoutComponent(Component component)
   {
-    grid.removeLayoutComponent(component);
-
-    if (way == X_AXIS
-        || (way == LINE_AXIS
-            && component.getComponentOrientation().isHorizontal())
-        || (way == PAGE_AXIS
-            && !component.getComponentOrientation().isHorizontal()))
-      grid.setColumns(grid.getColumns() - 1);
-    else
-      grid.setRows(grid.getRows() - 1);
   }
+
+  private boolean isHorizontalIn(Container parent)
+  {
+    ComponentOrientation orientation = parent.getComponentOrientation();
+    return this.way == X_AXIS 
+      || (this.way == LINE_AXIS 
+          && orientation.isHorizontal())
+      || (this.way == PAGE_AXIS
+          && (!orientation.isHorizontal()));
+  }
+
+  
 
   /**
    * Returns the preferred size of the layout.
@@ -188,8 +145,38 @@ public class BoxLayout implements LayoutManager2, Serializable
   {
     if (parent != container)
       throw new AWTError("invalid parent");
+
+    int x = 0;
+    int y = 0;
+
+    Component[] children = parent.getComponents();
+
+    if (isHorizontalIn(parent))
+      {        
+        // sum up preferred widths of components, find maximum of preferred
+        // heights
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            Dimension sz = comp.getPreferredSize();
+            x += sz.width;
+            y = Math.max(y, sz.height);
+          }
+      } 
+    else 
+      {        
+        // sum up preferred heights of components, find maximum of
+        //  preferred widths
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            Dimension sz = comp.getPreferredSize();
+            y += sz.height;
+            x = Math.max(x, sz.width);
+          }
+      }
     
-    return grid.preferredLayoutSize(parent);
+    return new Dimension(x, y);
   }
 
   /**
@@ -203,8 +190,38 @@ public class BoxLayout implements LayoutManager2, Serializable
   {
     if (parent != container)
       throw new AWTError("invalid parent");
+
+    int x = 0;
+    int y = 0;
+
+    Component[] children = parent.getComponents();
+
+    if (isHorizontalIn(parent))
+      {
+        // sum up preferred widths of components, find maximum of preferred
+        // heights
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            Dimension sz = comp.getMinimumSize();
+            x += sz.width;
+            y = Math.max(y, sz.height);
+          }
+      }
+    else
+      {
+        // sum up preferred heights of components, find maximum of
+        //  preferred widths
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            Dimension sz = comp.getMinimumSize();
+            y += sz.height;
+            x = Math.max(x, sz.width);
+          }
+      }
     
-    return grid.minimumLayoutSize(parent);
+    return new Dimension(x, y);
   }
 
   /**
@@ -216,19 +233,69 @@ public class BoxLayout implements LayoutManager2, Serializable
   {
     if (parent != container)
       throw new AWTError("invalid parent");
-    
-    grid.layoutContainer(parent);
-  }
 
+    Dimension size = parent.getSize();
+
+    Component[] children = parent.getComponents();
+
+    if (isHorizontalIn(parent))
+      {
+        int x = 0;
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            Dimension sz = comp.getPreferredSize();
+            int width = sz.width;
+            int height = sz.height;
+            int cy = 0;
+            if (height > size.height)
+              {
+                height = size.height;
+              }
+            else
+              {
+                cy = (int) ((size.height - height) * comp.getAlignmentY());
+              }
+            
+            comp.setSize(width, height);
+            comp.setLocation(x, cy);
+            x = x + width;            
+          }
+      }
+    else
+      {
+        int y = 0;        
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            Dimension sz = comp.getPreferredSize();
+            int width = sz.width;
+            int height = sz.height;
+            int cx = 0;
+            if (width > size.width)
+              {
+                width = size.width;
+              }
+            else
+              {
+                cx = (int) ((size.width - width) * comp.getAlignmentX());
+              }
+            
+            comp.setSize(width, height);
+            comp.setLocation(cx, y);
+            y = y + height;            
+          }
+      }    
+  }
+  
   /**
-   * Adds a component to the layout.
+   * Adds a component to the layout. Not used in BoxLayout
    *
    * @param child The component to add to the layout.
    * @param constraints The constraints for the component in the layout.
    */
   public void addLayoutComponent(Component child, Object constraints)
   {
-    addLayoutComponent("", child);
   }
 
   /**
@@ -284,7 +351,37 @@ public class BoxLayout implements LayoutManager2, Serializable
   {
     if (parent != container)
       throw new AWTError("invalid parent");
-    
-    return preferredLayoutSize(parent);
+
+    int x = 0;
+    int y = 0;
+
+    Component[] children = parent.getComponents();
+
+    if (isHorizontalIn(parent))
+      {
+        
+        // sum up preferred widths of components, find maximum of preferred
+        // heights
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            Dimension sz = comp.getMaximumSize();
+            x += sz.width;
+            y = Math.max(y, sz.height);
+          }
+      }
+    else
+      {
+        // sum up preferred heights of components, find maximum of
+        //  preferred widths
+        for (int index = 0; index < children.length; index++)
+          {
+            Component comp = children[index];
+            Dimension sz = comp.getMaximumSize();
+            y += sz.height;
+            x = Math.max(x, sz.width);
+          }
+      } 
+    return new Dimension(x, y);
   }
 }

@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing.colorchooser;
 
 import java.awt.Color;
@@ -44,43 +43,55 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
+
 /**
- * DefaultColorSelectionModel
- * @author	Andrew Selkirk
- * @version	1.0
+ * This is the default implementation of the ColorSelectionModel interface
+ * that JColorChoosers use.
+ *
+ * @author Andrew Selkirk
+ * @version 1.0
  */
-public class DefaultColorSelectionModel 
-  implements ColorSelectionModel, Serializable
+public class DefaultColorSelectionModel implements ColorSelectionModel,
+                                                   Serializable
 {
+  /** DOCUMENT ME! */
   private static final long serialVersionUID = -8117143602864778804L;
 
+  /** The currently selected color. */
   private Color selectedColor;
 
-  protected transient ChangeEvent changeEvent = new ChangeEvent (this);
-  protected EventListenerList listenerList = new EventListenerList ();
+  /** The ChangeEvent fired to all ChangeListeners. */
+  protected transient ChangeEvent changeEvent = new ChangeEvent(this);
+
+  /** The list of listeners. */
+  protected EventListenerList listenerList = new EventListenerList();
 
   /**
-   * Creates a new color selection model.
+   * Creates a new color selection model with the default white color.
    */
   public DefaultColorSelectionModel()
   {
-    this (Color.white);
+    this(Color.white);
   }
 
   /**
    * Creates a new color selection model with a given selected color.
-   * 
-   * @param color The selected color.
+   *
+   * @param color The initial color.
+   *
+   * @throws Error If the color is null.
    */
-  public DefaultColorSelectionModel (Color color)
+  public DefaultColorSelectionModel(Color color)
   {
     super();
+    if (color == null)
+      throw new Error("ColorSelectionModel cannot be set to have null color.");
     this.selectedColor = color;
   }
 
   /**
    * Returns the selected color.
-   * 
+   *
    * @return The selected color.
    */
   public Color getSelectedColor()
@@ -89,31 +100,41 @@ public class DefaultColorSelectionModel
   }
 
   /**
+   * This method sets the color.
+   *
    * @param color The color to set.
+   *
+   * @throws Error If the color is set.
    */
-  public void setSelectedColor (Color color)
+  public void setSelectedColor(Color color)
   {
-    this.selectedColor = color;
+    if (color == null)
+      throw new Error("ColorSelectionModel cannot be set to have null color.");
+    if (color != selectedColor)
+      {
+	this.selectedColor = color;
+	fireStateChanged();
+      }
   }
 
   /**
    * Adds a listener to this model.
-   * 
+   *
    * @param listener The listener to add.
    */
-  public void addChangeListener (ChangeListener listener)
+  public void addChangeListener(ChangeListener listener)
   {
-    listenerList.add (ChangeListener.class, listener);
+    listenerList.add(ChangeListener.class, listener);
   }
 
   /**
    * Removes a listener from this model.
-   * 
+   *
    * @param listener The listener to remove.
    */
-  public void removeChangeListener (ChangeListener listener)
+  public void removeChangeListener(ChangeListener listener)
   {
-    listenerList.remove (ChangeListener.class, listener);
+    listenerList.remove(ChangeListener.class, listener);
   }
 
   /**
@@ -123,19 +144,19 @@ public class DefaultColorSelectionModel
    */
   public ChangeListener[] getChangeListeners()
   {
-    return (ChangeListener[]) listenerList.getListeners (ChangeListener.class);
+    return (ChangeListener[]) listenerList.getListeners(ChangeListener.class);
   }
 
   /**
    * Calls all the <code>stateChanged()</code> method of all added
-   * <code>ChangeListener</code> objects with <code>changeEvent</code>
-   * as argument.
+   * <code>ChangeListener</code> objects with <code>changeEvent</code> as
+   * argument.
    */
   protected void fireStateChanged()
   {
     ChangeListener[] listeners = getChangeListeners();
 
     for (int i = 0; i < listeners.length; i++)
-      listeners [i].stateChanged (changeEvent);
+      listeners[i].stateChanged(changeEvent);
   }
 }

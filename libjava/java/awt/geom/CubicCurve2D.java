@@ -1,5 +1,5 @@
 /* CubicCurve2D.java -- represents a parameterized cubic curve in 2-D space
-   Copyright (C) 2002, 2003 Free Software Foundation
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.awt.geom;
 
 import java.awt.Rectangle;
@@ -53,12 +52,14 @@ import java.util.NoSuchElementException;
  * @author Eric Blake (ebb9@email.byu.edu)
  * @author Graydon Hoare (graydon@redhat.com)
  * @author Sascha Brawer (brawer@dandelis.ch)
+ * @author Sven de Marothy (sven@physto.se)
  *
  * @since 1.2
  */
-public abstract class CubicCurve2D
-  implements Shape, Cloneable
+public abstract class CubicCurve2D implements Shape, Cloneable
 {
+  private static final double BIG_VALUE = java.lang.Double.MAX_VALUE / 10.0;
+
   /**
    * Constructs a new CubicCurve2D. Typical users will want to
    * construct instances of a subclass, such as {@link
@@ -68,13 +69,11 @@ public abstract class CubicCurve2D
   {
   }
 
-
   /**
    * Returns the <i>x</i> coordinate of the curve&#x2019;s start
    * point.
    */
   public abstract double getX1();
-
 
   /**
    * Returns the <i>y</i> coordinate of the curve&#x2019;s start
@@ -82,12 +81,10 @@ public abstract class CubicCurve2D
    */
   public abstract double getY1();
 
-
   /**
    * Returns the curve&#x2019;s start point.
    */
   public abstract Point2D getP1();
-
 
   /**
    * Returns the <i>x</i> coordinate of the curve&#x2019;s first
@@ -95,19 +92,16 @@ public abstract class CubicCurve2D
    */
   public abstract double getCtrlX1();
 
-
   /**
    * Returns the <i>y</i> coordinate of the curve&#x2019;s first
    * control point.
    */
   public abstract double getCtrlY1();
 
-
   /**
    * Returns the curve&#x2019;s first control point.
    */
   public abstract Point2D getCtrlP1();
-
 
   /**
    * Returns the <i>x</i> coordinate of the curve&#x2019;s second
@@ -115,19 +109,16 @@ public abstract class CubicCurve2D
    */
   public abstract double getCtrlX2();
 
-
   /**
    * Returns the <i>y</i> coordinate of the curve&#x2019;s second
    * control point.
    */
   public abstract double getCtrlY2();
 
-
   /**
    * Returns the curve&#x2019;s second control point.
    */
   public abstract Point2D getCtrlP2();
-
 
   /**
    * Returns the <i>x</i> coordinate of the curve&#x2019;s end
@@ -135,19 +126,16 @@ public abstract class CubicCurve2D
    */
   public abstract double getX2();
 
-
   /**
    * Returns the <i>y</i> coordinate of the curve&#x2019;s end
    * point.
    */
   public abstract double getY2();
 
-
   /**
    * Returns the curve&#x2019;s end point.
    */
   public abstract Point2D getP2();
-
 
   /**
    * Changes the curve geometry, separately specifying each coordinate
@@ -183,7 +171,6 @@ public abstract class CubicCurve2D
   public abstract void setCurve(double x1, double y1, double cx1, double cy1,
                                 double cx2, double cy2, double x2, double y2);
 
-
   /**
    * Changes the curve geometry, specifying coordinate values in an
    * array.
@@ -206,12 +193,10 @@ public abstract class CubicCurve2D
    */
   public void setCurve(double[] coords, int offset)
   {
-    setCurve(coords[offset++], coords[offset++],
-             coords[offset++], coords[offset++],
-             coords[offset++], coords[offset++],
+    setCurve(coords[offset++], coords[offset++], coords[offset++],
+             coords[offset++], coords[offset++], coords[offset++],
              coords[offset++], coords[offset++]);
   }
-
 
   /**
    * Changes the curve geometry, specifying coordinate values in
@@ -232,10 +217,9 @@ public abstract class CubicCurve2D
    */
   public void setCurve(Point2D p1, Point2D c1, Point2D c2, Point2D p2)
   {
-    setCurve(p1.getX(), p1.getY(), c1.getX(), c1.getY(),
-             c2.getX(), c2.getY(), p2.getX(), p2.getY());
+    setCurve(p1.getX(), p1.getY(), c1.getX(), c1.getY(), c2.getX(), c2.getY(),
+             p2.getX(), p2.getY());
   }
-
 
   /**
    * Changes the curve geometry, specifying coordinate values in an
@@ -258,12 +242,10 @@ public abstract class CubicCurve2D
    */
   public void setCurve(Point2D[] pts, int offset)
   {
-    setCurve(pts[offset].getX(), pts[offset++].getY(),
-             pts[offset].getX(), pts[offset++].getY(),
-             pts[offset].getX(), pts[offset++].getY(),
+    setCurve(pts[offset].getX(), pts[offset++].getY(), pts[offset].getX(),
+             pts[offset++].getY(), pts[offset].getX(), pts[offset++].getY(),
              pts[offset].getX(), pts[offset++].getY());
   }
-  
 
   /**
    * Changes the curve geometry to that of another curve.
@@ -275,7 +257,6 @@ public abstract class CubicCurve2D
     setCurve(c.getX1(), c.getY1(), c.getCtrlX1(), c.getCtrlY1(),
              c.getCtrlX2(), c.getCtrlY2(), c.getX2(), c.getY2());
   }
-
 
   /**
    * Calculates the squared flatness of a cubic curve, directly
@@ -309,7 +290,6 @@ public abstract class CubicCurve2D
                     Line2D.ptSegDistSq(x1, y1, x2, y2, cx2, cy2));
   }
 
-
   /**
    * Calculates the flatness of a cubic curve, directly specifying
    * each coordinate value. The flatness is the maximal distance of a
@@ -339,7 +319,6 @@ public abstract class CubicCurve2D
   {
     return Math.sqrt(getFlatnessSq(x1, y1, cx1, cy1, cx2, cy2, x2, y2));
   }
-
 
   /**
    * Calculates the squared flatness of a cubic curve, specifying the
@@ -374,12 +353,10 @@ public abstract class CubicCurve2D
    */
   public static double getFlatnessSq(double[] coords, int offset)
   {
-    return getFlatnessSq(coords[offset++], coords[offset++],
-                         coords[offset++], coords[offset++],
-                         coords[offset++], coords[offset++],
+    return getFlatnessSq(coords[offset++], coords[offset++], coords[offset++],
+                         coords[offset++], coords[offset++], coords[offset++],
                          coords[offset++], coords[offset++]);
   }
-
 
   /**
    * Calculates the flatness of a cubic curve, specifying the
@@ -420,7 +397,6 @@ public abstract class CubicCurve2D
                                    coords[offset++], coords[offset++]));
   }
 
-
   /**
    * Calculates the squared flatness of this curve.  The flatness is
    * the maximal distance of a control point to the line between start
@@ -441,7 +417,6 @@ public abstract class CubicCurve2D
                          getCtrlX2(), getCtrlY2(), getX2(), getY2());
   }
 
-
   /**
    * Calculates the flatness of this curve.  The flatness is the
    * maximal distance of a control point to the line between start and
@@ -458,11 +433,9 @@ public abstract class CubicCurve2D
    */
   public double getFlatness()
   {
-    return Math.sqrt(getFlatnessSq(getX1(), getY1(), getCtrlX1(),
-                                   getCtrlY1(), getCtrlX2(), getCtrlY2(),
-                                   getX2(), getY2()));
+    return Math.sqrt(getFlatnessSq(getX1(), getY1(), getCtrlX1(), getCtrlY1(),
+                                   getCtrlX2(), getCtrlY2(), getX2(), getY2()));
   }
-
 
   /**
    * Subdivides this curve into two halves.
@@ -482,16 +455,17 @@ public abstract class CubicCurve2D
   public void subdivide(CubicCurve2D left, CubicCurve2D right)
   {
     // Use empty slots at end to share single array.
-    double[] d = new double[] { getX1(), getY1(), getCtrlX1(), getCtrlY1(),
-                                getCtrlX2(), getCtrlY2(), getX2(), getY2(),
-                                0, 0, 0, 0, 0, 0 };
+    double[] d = new double[]
+                 {
+                   getX1(), getY1(), getCtrlX1(), getCtrlY1(), getCtrlX2(),
+                   getCtrlY2(), getX2(), getY2(), 0, 0, 0, 0, 0, 0
+                 };
     subdivide(d, 0, d, 0, d, 6);
     if (left != null)
       left.setCurve(d, 0);
     if (right != null)
       right.setCurve(d, 6);
   }
-
 
   /**
    * Subdivides a cubic curve into two halves.
@@ -510,12 +484,11 @@ public abstract class CubicCurve2D
    * of <code>src</code>, or <code>null</code> if the caller is not
    * interested in the right half.
    */
-  public static void subdivide(CubicCurve2D src,
-                               CubicCurve2D left, CubicCurve2D right)
+  public static void subdivide(CubicCurve2D src, CubicCurve2D left,
+                               CubicCurve2D right)
   {
     src.subdivide(left, right);
   }
-
 
   /**
    * Subdivides a cubic curve into two halves, passing all coordinates
@@ -563,18 +536,29 @@ public abstract class CubicCurve2D
    * index where the start point&#x2019;s <i>x</i> coordinate will be
    * stored.
    */
-  public static void subdivide(double[] src, int srcOff,
-                               double[] left, int leftOff,
-                               double[] right, int rightOff)
+  public static void subdivide(double[] src, int srcOff, double[] left,
+                               int leftOff, double[] right, int rightOff)
   {
     // To understand this code, please have a look at the image
     // "CubicCurve2D-3.png" in the sub-directory "doc-files".
-    double src_C1_x, src_C1_y, src_C2_x, src_C2_y;
-    double left_P1_x, left_P1_y;
-    double left_C1_x, left_C1_y, left_C2_x, left_C2_y;
-    double right_C1_x, right_C1_y, right_C2_x, right_C2_y;
-    double right_P2_x, right_P2_y;
-    double Mid_x, Mid_y; // Mid = left.P2 = right.P1
+    double src_C1_x;
+    double src_C1_y;
+    double src_C2_x;
+    double src_C2_y;
+    double left_P1_x;
+    double left_P1_y;
+    double left_C1_x;
+    double left_C1_y;
+    double left_C2_x;
+    double left_C2_y;
+    double right_C1_x;
+    double right_C1_y;
+    double right_C2_x;
+    double right_C2_y;
+    double right_P2_x;
+    double right_P2_y;
+    double Mid_x; // Mid = left.P2 = right.P1
+    double Mid_y; // Mid = left.P2 = right.P1
 
     left_P1_x = src[srcOff];
     left_P1_y = src[srcOff + 1];
@@ -599,30 +583,29 @@ public abstract class CubicCurve2D
     Mid_y = (left_C2_y + right_C1_y) / 2;
 
     if (left != null)
-    {
-      left[leftOff] = left_P1_x;
-      left[leftOff + 1] = left_P1_y;
-      left[leftOff + 2] = left_C1_x;
-      left[leftOff + 3] = left_C1_y;
-      left[leftOff + 4] = left_C2_x;
-      left[leftOff + 5] = left_C2_y;
-      left[leftOff + 6] = Mid_x;
-      left[leftOff + 7] = Mid_y;
-    }
+      {
+	left[leftOff] = left_P1_x;
+	left[leftOff + 1] = left_P1_y;
+	left[leftOff + 2] = left_C1_x;
+	left[leftOff + 3] = left_C1_y;
+	left[leftOff + 4] = left_C2_x;
+	left[leftOff + 5] = left_C2_y;
+	left[leftOff + 6] = Mid_x;
+	left[leftOff + 7] = Mid_y;
+      }
 
     if (right != null)
-    {
-      right[rightOff] = Mid_x;
-      right[rightOff + 1] = Mid_y;
-      right[rightOff + 2] = right_C1_x;
-      right[rightOff + 3] = right_C1_y;
-      right[rightOff + 4] = right_C2_x;
-      right[rightOff + 5] = right_C2_y;
-      right[rightOff + 6] = right_P2_x;
-      right[rightOff + 7] = right_P2_y;
-    }
+      {
+	right[rightOff] = Mid_x;
+	right[rightOff + 1] = Mid_y;
+	right[rightOff + 2] = right_C1_x;
+	right[rightOff + 3] = right_C1_y;
+	right[rightOff + 4] = right_C2_x;
+	right[rightOff + 5] = right_C2_y;
+	right[rightOff + 6] = right_P2_x;
+	right[rightOff + 7] = right_P2_y;
+      }
   }
-
 
   /**
    * Finds the non-complex roots of a cubic equation, placing the
@@ -669,7 +652,6 @@ public abstract class CubicCurve2D
   {
     return solveCubic(eqn, eqn);
   }
-
 
   /**
    * Finds the non-complex roots of a cubic equation. The following
@@ -727,9 +709,19 @@ public abstract class CubicCurve2D
     // The Java implementation is very similar to the GSL code, but
     // not a strict one-to-one copy. For example, GSL would sort the
     // result.
-
-    double a, b, c, q, r, Q, R;
-    double c3, Q3, R2, CR2, CQ3;
+    
+    double a;
+    double b;
+    double c;
+    double q;
+    double r;
+    double Q;
+    double R;
+    double c3;
+    double Q3;
+    double R2;
+    double CR2;
+    double CQ3;
 
     // If the cubic coefficient is zero, we have a quadratic equation.
     c3 = eqn[3];
@@ -755,218 +747,266 @@ public abstract class CubicCurve2D
     CQ3 = 2916 * q * q * q;
 
     if (R == 0 && Q == 0)
-    {
-      // The GNU Scientific Library would return three identical
-      // solutions in this case.
-      res[0] = -a/3;
-      return 1;
-    }
-
-    if (CR2 == CQ3) 
-    {
-      /* this test is actually R2 == Q3, written in a form suitable
-         for exact computation with integers */
-
-      /* Due to finite precision some double roots may be missed, and
-         considered to be a pair of complex roots z = x +/- epsilon i
-         close to the real axis. */
-
-      double sqrtQ = Math.sqrt(Q);
-
-      if (R > 0)
       {
-        res[0] = -2 * sqrtQ - a/3;
-        res[1] = sqrtQ - a/3;
+	// The GNU Scientific Library would return three identical
+	// solutions in this case.
+	res[0] = -a / 3;
+	return 1;
       }
-      else
+
+    if (CR2 == CQ3)
       {
-        res[0] = -sqrtQ - a/3;
-        res[1] = 2 * sqrtQ - a/3;
+	/* this test is actually R2 == Q3, written in a form suitable
+	   for exact computation with integers */
+	/* Due to finite precision some double roots may be missed, and
+	   considered to be a pair of complex roots z = x +/- epsilon i
+	   close to the real axis. */
+	double sqrtQ = Math.sqrt(Q);
+
+	if (R > 0)
+	  {
+	    res[0] = -2 * sqrtQ - a / 3;
+	    res[1] = sqrtQ - a / 3;
+	  }
+	else
+	  {
+	    res[0] = -sqrtQ - a / 3;
+	    res[1] = 2 * sqrtQ - a / 3;
+	  }
+	return 2;
       }
-      return 2;
-    }
 
     if (CR2 < CQ3) /* equivalent to R2 < Q3 */
-    {
-      double sqrtQ = Math.sqrt(Q);
-      double sqrtQ3 = sqrtQ * sqrtQ * sqrtQ;
-      double theta = Math.acos(R / sqrtQ3);
-      double norm = -2 * sqrtQ;
-      res[0] = norm * Math.cos(theta / 3) - a / 3;
-      res[1] = norm * Math.cos((theta + 2.0 * Math.PI) / 3) - a/3;
-      res[2] = norm * Math.cos((theta - 2.0 * Math.PI) / 3) - a/3;
+      {
+	double sqrtQ = Math.sqrt(Q);
+	double sqrtQ3 = sqrtQ * sqrtQ * sqrtQ;
+	double theta = Math.acos(R / sqrtQ3);
+	double norm = -2 * sqrtQ;
+	res[0] = norm * Math.cos(theta / 3) - a / 3;
+	res[1] = norm * Math.cos((theta + 2.0 * Math.PI) / 3) - a / 3;
+	res[2] = norm * Math.cos((theta - 2.0 * Math.PI) / 3) - a / 3;
 
-      // The GNU Scientific Library sorts the results. We don't.
-      return 3;
-    }
+	// The GNU Scientific Library sorts the results. We don't.
+	return 3;
+      }
 
     double sgnR = (R >= 0 ? 1 : -1);
-    double A = -sgnR * Math.pow(Math.abs(R) + Math.sqrt(R2 - Q3), 1.0/3.0);
-    double B = Q / A ;
-    res[0] = A + B - a/3;
+    double A = -sgnR * Math.pow(Math.abs(R) + Math.sqrt(R2 - Q3), 1.0 / 3.0);
+    double B = Q / A;
+    res[0] = A + B - a / 3;
     return 1;
   }
 
-
   /**
-   * Determines whether a position lies inside the area that is bounded
+   * Determines whether a position lies inside the area bounded
    * by the curve and the straight line connecting its end points.
    *
    * <p><img src="doc-files/CubicCurve2D-5.png" width="350" height="180"
    * alt="A drawing of the area spanned by the curve" />
    *
    * <p>The above drawing illustrates in which area points are
-   * considered &#x201c;contained&#x201d; in a CubicCurve2D.
+   * considered &#x201c;inside&#x201d; a CubicCurve2D.
    */
   public boolean contains(double x, double y)
   {
-    // XXX Implement.
-    throw new Error("not implemented");
+    if (! getBounds2D().contains(x, y))
+      return false;
+
+    return ((getAxisIntersections(x, y, true, BIG_VALUE) & 1) != 0);
   }
 
-
   /**
-   * Determines whether a point lies inside the area that is bounded
+   * Determines whether a point lies inside the area bounded
    * by the curve and the straight line connecting its end points.
    *
    * <p><img src="doc-files/CubicCurve2D-5.png" width="350" height="180"
    * alt="A drawing of the area spanned by the curve" />
    *
    * <p>The above drawing illustrates in which area points are
-   * considered &#x201c;contained&#x201d; in a CubicCurve2D.
+   * considered &#x201c;inside&#x201d; a CubicCurve2D.
    */
   public boolean contains(Point2D p)
   {
     return contains(p.getX(), p.getY());
   }
 
-
+  /**
+   * Determines whether any part of a rectangle is inside the area bounded
+   * by the curve and the straight line connecting its end points.
+   *
+   * <p><img src="doc-files/CubicCurve2D-5.png" width="350" height="180"
+   * alt="A drawing of the area spanned by the curve" />
+   *
+   * <p>The above drawing illustrates in which area points are
+   * considered &#x201c;inside&#x201d; in a CubicCurve2D.
+   * @see #contains(double, double)
+   */
   public boolean intersects(double x, double y, double w, double h)
   {
-    // XXX Implement.
-    throw new Error("not implemented");
+    if (! getBounds2D().contains(x, y, w, h))
+      return false;
+
+    /* Does any edge intersect? */
+    if (getAxisIntersections(x, y, true, w) != 0 /* top */
+        || getAxisIntersections(x, y + h, true, w) != 0 /* bottom */
+        || getAxisIntersections(x + w, y, false, h) != 0 /* right */
+        || getAxisIntersections(x, y, false, h) != 0) /* left */
+      return true;
+
+    /* No intersections, is any point inside? */
+    if ((getAxisIntersections(x, y, true, BIG_VALUE) & 1) != 0)
+      return true;
+
+    return false;
   }
 
-
+  /**
+   * Determines whether any part of a Rectangle2D is inside the area bounded 
+   * by the curve and the straight line connecting its end points.
+   * @see #intersects(double, double, double, double)
+   */
   public boolean intersects(Rectangle2D r)
   {
     return intersects(r.getX(), r.getY(), r.getWidth(), r.getHeight());
   }
 
-
+  /**
+   * Determine whether a rectangle is entirely inside the area that is bounded
+   * by the curve and the straight line connecting its end points.
+   *
+   * <p><img src="doc-files/CubicCurve2D-5.png" width="350" height="180"
+   * alt="A drawing of the area spanned by the curve" />
+   *
+   * <p>The above drawing illustrates in which area points are
+   * considered &#x201c;inside&#x201d; a CubicCurve2D.
+   * @see #contains(double, double)
+   */
   public boolean contains(double x, double y, double w, double h)
   {
-    // XXX Implement.
-    throw new Error("not implemented");
+    if (! getBounds2D().intersects(x, y, w, h))
+      return false;
+
+    /* Does any edge intersect? */
+    if (getAxisIntersections(x, y, true, w) != 0 /* top */
+        || getAxisIntersections(x, y + h, true, w) != 0 /* bottom */
+        || getAxisIntersections(x + w, y, false, h) != 0 /* right */
+        || getAxisIntersections(x, y, false, h) != 0) /* left */
+      return false;
+
+    /* No intersections, is any point inside? */
+    if ((getAxisIntersections(x, y, true, BIG_VALUE) & 1) != 0)
+      return true;
+
+    return false;
   }
 
-
+  /**
+   * Determine whether a Rectangle2D is entirely inside the area that is 
+   * bounded by the curve and the straight line connecting its end points.
+   *
+   * <p><img src="doc-files/CubicCurve2D-5.png" width="350" height="180"
+   * alt="A drawing of the area spanned by the curve" />
+   *
+   * <p>The above drawing illustrates in which area points are
+   * considered &#x201c;inside&#x201d; a CubicCurve2D.
+   * @see #contains(double, double)
+   */
   public boolean contains(Rectangle2D r)
   {
     return contains(r.getX(), r.getY(), r.getWidth(), r.getHeight());
   }
 
-
   /**
    * Determines the smallest rectangle that encloses the
-   * curve&#x2019;s start, end and control points. As the illustration
-   * below shows, the invisible control points may cause the bounds to
-   * be much larger than the area that is actually covered by the
-   * curve.
-   *
-   * <p><img src="doc-files/CubicCurve2D-2.png" width="350" height="180"
-   * alt="An illustration of the bounds of a CubicCurve2D" />
+   * curve&#x2019;s start, end and control points.
    */
   public Rectangle getBounds()
   {
     return getBounds2D().getBounds();
   }
 
-
   public PathIterator getPathIterator(final AffineTransform at)
   {
     return new PathIterator()
-    {
-      /** Current coordinate. */
-      private int current = 0;
-
-      public int getWindingRule()
       {
-        return WIND_NON_ZERO;
-      }
+	/** Current coordinate. */
+	private int current = 0;
 
-      public boolean isDone()
-      {
-        return current >= 2;
-      }
+	public int getWindingRule()
+	{
+	  return WIND_NON_ZERO;
+	}
 
-      public void next()
-      {
-        current++;
-      }
+	public boolean isDone()
+	{
+	  return current >= 2;
+	}
 
-      public int currentSegment(float[] coords)
-      {
-        int result;
-        switch (current)
-          {
-          case 0:
-            coords[0] = (float) getX1();
-            coords[1] = (float) getY1();
-            result = SEG_MOVETO;
-            break;            
-          case 1:
-            coords[0] = (float) getCtrlX1();
-            coords[1] = (float) getCtrlY1();
-            coords[2] = (float) getCtrlX2();
-            coords[3] = (float) getCtrlY2();
-            coords[4] = (float) getX2();
-            coords[5] = (float) getY2();
-            result = SEG_CUBICTO;
-            break;
-          default:
-            throw new NoSuchElementException("cubic iterator out of bounds");            
-          }
-        if (at != null)
-          at.transform(coords, 0, coords, 0, 3);
-        return result;
-      }
+	public void next()
+	{
+	  current++;
+	}
 
-      public int currentSegment(double[] coords)
-      {
-        int result;
-        switch (current)
-          {
-          case 0:
-            coords[0] = getX1();
-            coords[1] = getY1();
-            result = SEG_MOVETO;
-            break;
-          case 1:
-            coords[0] = getCtrlX1();
-            coords[1] = getCtrlY1();
-            coords[2] = getCtrlX2();
-            coords[3] = getCtrlY2();
-            coords[4] = getX2();
-            coords[5] = getY2();
-            result = SEG_CUBICTO;
-            break;
-          default:
-            throw new NoSuchElementException("cubic iterator out of bounds");
-          }        
-        if (at != null)
-          at.transform(coords, 0, coords, 0, 3);
-        return result;
-      }
-    };
+	public int currentSegment(float[] coords)
+	{
+	  int result;
+	  switch (current)
+	    {
+	    case 0:
+	      coords[0] = (float) getX1();
+	      coords[1] = (float) getY1();
+	      result = SEG_MOVETO;
+	      break;
+	    case 1:
+	      coords[0] = (float) getCtrlX1();
+	      coords[1] = (float) getCtrlY1();
+	      coords[2] = (float) getCtrlX2();
+	      coords[3] = (float) getCtrlY2();
+	      coords[4] = (float) getX2();
+	      coords[5] = (float) getY2();
+	      result = SEG_CUBICTO;
+	      break;
+	    default:
+	      throw new NoSuchElementException("cubic iterator out of bounds");
+	    }
+	  if (at != null)
+	    at.transform(coords, 0, coords, 0, 3);
+	  return result;
+	}
+
+	public int currentSegment(double[] coords)
+	{
+	  int result;
+	  switch (current)
+	    {
+	    case 0:
+	      coords[0] = getX1();
+	      coords[1] = getY1();
+	      result = SEG_MOVETO;
+	      break;
+	    case 1:
+	      coords[0] = getCtrlX1();
+	      coords[1] = getCtrlY1();
+	      coords[2] = getCtrlX2();
+	      coords[3] = getCtrlY2();
+	      coords[4] = getX2();
+	      coords[5] = getY2();
+	      result = SEG_CUBICTO;
+	      break;
+	    default:
+	      throw new NoSuchElementException("cubic iterator out of bounds");
+	    }
+	  if (at != null)
+	    at.transform(coords, 0, coords, 0, 3);
+	  return result;
+	}
+      };
   }
-
 
   public PathIterator getPathIterator(AffineTransform at, double flatness)
   {
     return new FlatteningPathIterator(getPathIterator(at), flatness);
   }
-
 
   /**
    * Create a new curve with the same contents as this one.
@@ -976,15 +1016,118 @@ public abstract class CubicCurve2D
   public Object clone()
   {
     try
-    {
-      return super.clone();
-    }
+      {
+	return super.clone();
+      }
     catch (CloneNotSupportedException e)
-    {
-      throw (Error) new InternalError().initCause(e); // Impossible
-    }
+      {
+	throw (Error) new InternalError().initCause(e); // Impossible
+      }
   }
 
+  /**
+   * Helper method used by contains() and intersects() methods, that
+   * returns the number of curve/line intersections on a given axis
+   * extending from a certain point.
+   *
+   * @param x x coordinate of the origin point
+   * @param y y coordinate of the origin point
+   * @param useYaxis axis used, if true the positive Y axis is used,
+   * false uses the positive X axis.
+   *
+   * This is an implementation of the line-crossings algorithm,
+   * Detailed in an article on Eric Haines' page:
+   * http://www.acm.org/tog/editors/erich/ptinpoly/
+   *
+   * A special-case not adressed in this code is self-intersections
+   * of the curve, e.g. if the axis intersects the self-itersection,
+   * the degenerate roots of the polynomial will erroneously count as 
+   * a single intersection of the curve, and not two.
+   */
+  private int getAxisIntersections(double x, double y, boolean useYaxis,
+                                   double distance)
+  {
+    int nCrossings = 0;
+    double a0;
+    double a1;
+    double a2;
+    double a3;
+    double b0;
+    double b1;
+    double b2;
+    double b3;
+    double[] r = new double[4];
+    int nRoots;
+
+    a0 = a3 = 0.0;
+
+    if (useYaxis)
+      {
+	a0 = getY1() - y;
+	a1 = getCtrlY1() - y;
+	a2 = getCtrlY2() - y;
+	a3 = getY2() - y;
+	b0 = getX1() - x;
+	b1 = getCtrlX1() - x;
+	b2 = getCtrlX2() - x;
+	b3 = getX2() - x;
+      }
+    else
+      {
+	a0 = getX1() - x;
+	a1 = getCtrlX1() - x;
+	a2 = getCtrlX2() - x;
+	a3 = getX2() - x;
+	b0 = getY1() - y;
+	b1 = getCtrlY1() - y;
+	b2 = getCtrlY2() - y;
+	b3 = getY2() - y;
+      }
+
+    /* If the axis intersects a start/endpoint, shift it up by some small 
+       amount to guarantee the line is 'inside'
+       If this is not done, bad behaviour may result for points on that axis.*/
+    if (a0 == 0.0 || a3 == 0.0)
+      {
+	double small = getFlatness() * (1E-10);
+	if (a0 == 0.0)
+	  a0 += small;
+	if (a3 == 0.0)
+	  a3 += small;
+      }
+
+    if (useYaxis)
+      {
+	if (Line2D.linesIntersect(b0, a0, b3, a3, 0.0, 0.0, distance, 0.0))
+	  nCrossings++;
+      }
+    else
+      {
+	if (Line2D.linesIntersect(a0, b0, a3, b3, 0.0, 0.0, 0.0, distance))
+	  nCrossings++;
+      }
+
+    r[0] = a0;
+    r[1] = 3 * (a1 - a0);
+    r[2] = 3 * (a2 + a0 - 2 * a1);
+    r[3] = a3 - 3 * a2 + 3 * a1 - a0;
+
+    if ((nRoots = solveCubic(r)) != 0)
+      for (int i = 0; i < nRoots; i++)
+        {
+	  double t = r[i];
+	  if (t >= 0.0 && t <= 1.0)
+	    {
+	      double crossing = -(t * t * t) * (b0 - 3 * b1 + 3 * b2 - b3)
+	                        + 3 * t * t * (b0 - 2 * b1 + b2)
+	                        + 3 * t * (b1 - b0) + b0;
+	      if (crossing > 0.0 && crossing <= distance)
+		nCrossings++;
+	    }
+        }
+
+    return (nCrossings);
+  }
 
   /**
    * A two-dimensional curve that is parameterized with a cubic
@@ -996,56 +1139,47 @@ public abstract class CubicCurve2D
    * @author Eric Blake (ebb9@email.byu.edu)
    * @author Sascha Brawer (brawer@dandelis.ch)
    */
-  public static class Double
-    extends CubicCurve2D
+  public static class Double extends CubicCurve2D
   {
     /**
      * The <i>x</i> coordinate of the curve&#x2019;s start point.
      */
     public double x1;
 
-
     /**
      * The <i>y</i> coordinate of the curve&#x2019;s start point.
      */
     public double y1;
-
 
     /**
      * The <i>x</i> coordinate of the curve&#x2019;s first control point.
      */
     public double ctrlx1;
 
-
     /**
      * The <i>y</i> coordinate of the curve&#x2019;s first control point.
      */
     public double ctrly1;
-
 
     /**
      * The <i>x</i> coordinate of the curve&#x2019;s second control point.
      */
     public double ctrlx2;
 
-
     /**
      * The <i>y</i> coordinate of the curve&#x2019;s second control point.
      */
     public double ctrly2;
-
 
     /**
      * The <i>x</i> coordinate of the curve&#x2019;s end point.
      */
     public double x2;
 
-
     /**
      * The <i>y</i> coordinate of the curve&#x2019;s end point.
      */
     public double y2;
-
 
     /**
      * Constructs a new CubicCurve2D that stores its coordinate values
@@ -1055,7 +1189,6 @@ public abstract class CubicCurve2D
     public Double()
     {
     }
-
 
     /**
      * Constructs a new CubicCurve2D that stores its coordinate values
@@ -1089,8 +1222,8 @@ public abstract class CubicCurve2D
      * @param y2 the <i>y</i> coordinate of the curve&#x2019;s end
      * point.
      */
-    public Double(double x1, double y1, double cx1, double cy1,
-                  double cx2, double cy2, double x2, double y2)
+    public Double(double x1, double y1, double cx1, double cy1, double cx2,
+                  double cy2, double x2, double y2)
     {
       this.x1 = x1;
       this.y1 = y1;
@@ -1102,7 +1235,6 @@ public abstract class CubicCurve2D
       this.y2 = y2;
     }
 
-
     /**
      * Returns the <i>x</i> coordinate of the curve&#x2019;s start
      * point.
@@ -1111,7 +1243,6 @@ public abstract class CubicCurve2D
     {
       return x1;
     }
-
 
     /**
      * Returns the <i>y</i> coordinate of the curve&#x2019;s start
@@ -1122,7 +1253,6 @@ public abstract class CubicCurve2D
       return y1;
     }
 
-
     /**
      * Returns the curve&#x2019;s start point.
      */
@@ -1130,7 +1260,6 @@ public abstract class CubicCurve2D
     {
       return new Point2D.Double(x1, y1);
     }
-
 
     /**
      * Returns the <i>x</i> coordinate of the curve&#x2019;s first
@@ -1141,7 +1270,6 @@ public abstract class CubicCurve2D
       return ctrlx1;
     }
 
-
     /**
      * Returns the <i>y</i> coordinate of the curve&#x2019;s first
      * control point.
@@ -1151,7 +1279,6 @@ public abstract class CubicCurve2D
       return ctrly1;
     }
 
-
     /**
      * Returns the curve&#x2019;s first control point.
      */
@@ -1159,7 +1286,6 @@ public abstract class CubicCurve2D
     {
       return new Point2D.Double(ctrlx1, ctrly1);
     }
-
 
     /**
      * Returns the <i>x</i> coordinate of the curve&#x2019;s second
@@ -1170,7 +1296,6 @@ public abstract class CubicCurve2D
       return ctrlx2;
     }
 
-
     /**
      * Returns the <i>y</i> coordinate of the curve&#x2019;s second
      * control point.
@@ -1180,7 +1305,6 @@ public abstract class CubicCurve2D
       return ctrly2;
     }
 
-
     /**
      * Returns the curve&#x2019;s second control point.
      */
@@ -1188,7 +1312,6 @@ public abstract class CubicCurve2D
     {
       return new Point2D.Double(ctrlx2, ctrly2);
     }
-
 
     /**
      * Returns the <i>x</i> coordinate of the curve&#x2019;s end
@@ -1199,7 +1322,6 @@ public abstract class CubicCurve2D
       return x2;
     }
 
-
     /**
      * Returns the <i>y</i> coordinate of the curve&#x2019;s end
      * point.
@@ -1209,7 +1331,6 @@ public abstract class CubicCurve2D
       return y2;
     }
 
-
     /**
      * Returns the curve&#x2019;s end point.
      */
@@ -1217,7 +1338,6 @@ public abstract class CubicCurve2D
     {
       return new Point2D.Double(x2, y2);
     }
-
 
     /**
      * Changes the curve geometry, separately specifying each coordinate
@@ -1263,7 +1383,6 @@ public abstract class CubicCurve2D
       this.y2 = y2;
     }
 
-
     /**
      * Determines the smallest rectangle that encloses the
      * curve&#x2019;s start, end and control points. As the
@@ -1284,7 +1403,6 @@ public abstract class CubicCurve2D
     }
   }
 
-
   /**
    * A two-dimensional curve that is parameterized with a cubic
    * function and stores coordinate values in single-precision
@@ -1295,56 +1413,47 @@ public abstract class CubicCurve2D
    * @author Eric Blake (ebb9@email.byu.edu)
    * @author Sascha Brawer (brawer@dandelis.ch)
    */
-  public static class Float
-    extends CubicCurve2D
+  public static class Float extends CubicCurve2D
   {
     /**
      * The <i>x</i> coordinate of the curve&#x2019;s start point.
      */
     public float x1;
 
-
     /**
      * The <i>y</i> coordinate of the curve&#x2019;s start point.
      */
     public float y1;
-
 
     /**
      * The <i>x</i> coordinate of the curve&#x2019;s first control point.
      */
     public float ctrlx1;
 
-
     /**
      * The <i>y</i> coordinate of the curve&#x2019;s first control point.
      */
     public float ctrly1;
-
 
     /**
      * The <i>x</i> coordinate of the curve&#x2019;s second control point.
      */
     public float ctrlx2;
 
-
     /**
      * The <i>y</i> coordinate of the curve&#x2019;s second control point.
      */
     public float ctrly2;
-
 
     /**
      * The <i>x</i> coordinate of the curve&#x2019;s end point.
      */
     public float x2;
 
-
     /**
      * The <i>y</i> coordinate of the curve&#x2019;s end point.
      */
     public float y2;
-
 
     /**
      * Constructs a new CubicCurve2D that stores its coordinate values
@@ -1354,7 +1463,6 @@ public abstract class CubicCurve2D
     public Float()
     {
     }
-
 
     /**
      * Constructs a new CubicCurve2D that stores its coordinate values
@@ -1388,8 +1496,8 @@ public abstract class CubicCurve2D
      * @param y2 the <i>y</i> coordinate of the curve&#x2019;s end
      * point.
      */
-    public Float(float x1, float y1, float cx1, float cy1,
-                 float cx2, float cy2, float x2, float y2)
+    public Float(float x1, float y1, float cx1, float cy1, float cx2,
+                 float cy2, float x2, float y2)
     {
       this.x1 = x1;
       this.y1 = y1;
@@ -1401,7 +1509,6 @@ public abstract class CubicCurve2D
       this.y2 = y2;
     }
 
-
     /**
      * Returns the <i>x</i> coordinate of the curve&#x2019;s start
      * point.
@@ -1410,7 +1517,6 @@ public abstract class CubicCurve2D
     {
       return x1;
     }
-
 
     /**
      * Returns the <i>y</i> coordinate of the curve&#x2019;s start
@@ -1421,7 +1527,6 @@ public abstract class CubicCurve2D
       return y1;
     }
 
-
     /**
      * Returns the curve&#x2019;s start point.
      */
@@ -1429,7 +1534,6 @@ public abstract class CubicCurve2D
     {
       return new Point2D.Float(x1, y1);
     }
-
 
     /**
      * Returns the <i>x</i> coordinate of the curve&#x2019;s first
@@ -1440,7 +1544,6 @@ public abstract class CubicCurve2D
       return ctrlx1;
     }
 
-
     /**
      * Returns the <i>y</i> coordinate of the curve&#x2019;s first
      * control point.
@@ -1450,7 +1553,6 @@ public abstract class CubicCurve2D
       return ctrly1;
     }
 
-
     /**
      * Returns the curve&#x2019;s first control point.
      */
@@ -1458,7 +1560,6 @@ public abstract class CubicCurve2D
     {
       return new Point2D.Float(ctrlx1, ctrly1);
     }
-
 
     /**
      * Returns the <i>s</i> coordinate of the curve&#x2019;s second
@@ -1469,7 +1570,6 @@ public abstract class CubicCurve2D
       return ctrlx2;
     }
 
-
     /**
      * Returns the <i>y</i> coordinate of the curve&#x2019;s second
      * control point.
@@ -1479,7 +1579,6 @@ public abstract class CubicCurve2D
       return ctrly2;
     }
 
-
     /**
      * Returns the curve&#x2019;s second control point.
      */
@@ -1487,7 +1586,6 @@ public abstract class CubicCurve2D
     {
       return new Point2D.Float(ctrlx2, ctrly2);
     }
-
 
     /**
      * Returns the <i>x</i> coordinate of the curve&#x2019;s end
@@ -1498,7 +1596,6 @@ public abstract class CubicCurve2D
       return x2;
     }
 
-
     /**
      * Returns the <i>y</i> coordinate of the curve&#x2019;s end
      * point.
@@ -1508,7 +1605,6 @@ public abstract class CubicCurve2D
       return y2;
     }
 
-
     /**
      * Returns the curve&#x2019;s end point.
      */
@@ -1516,7 +1612,6 @@ public abstract class CubicCurve2D
     {
       return new Point2D.Float(x2, y2);
     }
-
 
     /**
      * Changes the curve geometry, separately specifying each coordinate
@@ -1562,7 +1657,6 @@ public abstract class CubicCurve2D
       this.y2 = (float) y2;
     }
 
-
     /**
      * Changes the curve geometry, separately specifying each coordinate
      * value as a single-precision floating-point number.
@@ -1594,8 +1688,8 @@ public abstract class CubicCurve2D
      * @param y2 the <i>y</i> coordinate of the curve&#x2019;s new end
      * point.
      */
-    public void setCurve(float x1, float y1, float cx1, float cy1,
-                         float cx2, float cy2, float x2, float y2)
+    public void setCurve(float x1, float y1, float cx1, float cy1, float cx2,
+                         float cy2, float x2, float y2)
     {
       this.x1 = x1;
       this.y1 = y1;
@@ -1606,7 +1700,6 @@ public abstract class CubicCurve2D
       this.x2 = x2;
       this.y2 = y2;
     }
-
 
     /**
      * Determines the smallest rectangle that encloses the
