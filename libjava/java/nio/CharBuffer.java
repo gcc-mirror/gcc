@@ -177,7 +177,7 @@ public abstract class CharBuffer extends Buffer
     if (offset < 0
         || offset >= src.length
         || length < 0
-        || length >= (src.length - offset))
+        || length > (src.length - offset))
       throw new IndexOutOfBoundsException ();
      
     // Put nothing into this buffer when not enough space left.
@@ -361,7 +361,12 @@ public abstract class CharBuffer extends Buffer
    */
   public String toString ()
   {
-    return new String (array (), position (), length ());
+    if (hasArray ())
+      return new String (array (), position (), length ());
+
+    char[] buf = new char [length ()];
+    get (buf);
+    return new String (buf);
   }
 
   /**
@@ -409,7 +414,7 @@ public abstract class CharBuffer extends Buffer
    */
   public final CharBuffer put (String str)
   {
-    return put (str, 0, str.length ());
+    return put (str.toCharArray (), 0, str.length ());
   }
   
   /**
