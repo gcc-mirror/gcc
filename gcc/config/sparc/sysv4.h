@@ -96,6 +96,10 @@ Boston, MA 02111-1307, USA.  */
 #define PUSHSECTION_ASM_OP	".pushsection"
 #define POPSECTION_ASM_OP	".popsection"
 
+/* This is defined in sparc.h but is not used by svr4.h.  */
+#undef ASM_LONG
+#define ASM_LONG ".long"
+
 /* This is the format used to print the second operand of a .type pseudo-op
    for the Sparc/svr4 assembler.  */
 
@@ -202,7 +206,7 @@ do {									\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
 do { long value;							\
      REAL_VALUE_TO_TARGET_SINGLE ((VALUE), value);			\
-     fprintf((FILE), "\t.long\t0x%x\n", value);				\
+     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value);			\
    } while (0)
 
 /* This is how to output assembly code to define a `double' constant.
@@ -214,8 +218,8 @@ do { long value;							\
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
 do { long value[2];							\
      REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), value);			\
-     fprintf((FILE), "\t.long\t0x%x\n", value[0]);			\
-     fprintf((FILE), "\t.long\t0x%x\n", value[1]);			\
+     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[0]);		\
+     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[1]);		\
    } while (0)
 
 /* This is how to output an assembler line defining a `long double'
@@ -225,10 +229,10 @@ do { long value[2];							\
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
 do { long value[4];							\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), value);			\
-     fprintf((FILE), "\t.long\t0x%x\n", value[0]);			\
-     fprintf((FILE), "\t.long\t0x%x\n", value[1]);			\
-     fprintf((FILE), "\t.long\t0x%x\n", value[2]);			\
-     fprintf((FILE), "\t.long\t0x%x\n", value[3]);			\
+     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[0]);		\
+     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[1]);		\
+     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[2]);		\
+     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[3]);		\
    } while (0)
 
 /* Output assembler code to FILE to initialize this source file's
