@@ -877,15 +877,7 @@
   [(set_attr "length" "6,4,6,7")
    (set_attr "cc" "clobber,set_czn,set_czn,clobber")])
 
-(define_expand "ashlhi3"
-  [(parallel [(set (match_operand:HI 0 "register_operand" "")
-		   (ashift:HI (match_operand:HI 1 "register_operand" "")
-			      (match_operand:QI 2 "general_operand" "")))
-	      (clobber (match_scratch:QI 3 ""))])]
-  ""
-  "")
-
-(define_insn "*ashlhi3_insn"
+(define_insn "ashlhi3"
   [(set (match_operand:HI 0 "register_operand"           "=r,r,r,r,r,r")
 	(ashift:HI (match_operand:HI 1 "register_operand" "0,0,r,0,0,0")
 		   (match_operand:QI 2 "general_operand"  "r,P,O,K,i,Qm")))
@@ -895,15 +887,7 @@
   [(set_attr "length" "7,2,4,2,5,8")
    (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
 
-(define_expand "ashlsi3"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (ashift:SI (match_operand:SI 1 "register_operand" "")
-			      (match_operand:QI 2 "general_operand" "")))
-	      (clobber (match_scratch:QI 3 ""))])]
-  ""
-  "")
-
-(define_insn "*ashlsi3_insn"
+(define_insn "ashlsi3"
   [(set (match_operand:SI 0 "register_operand"           "=r,r,r,r,r")
 	(ashift:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0")
 		   (match_operand:QI 2 "general_operand"  "r,P,O,i,Qm")))
@@ -916,15 +900,7 @@
 ;; >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>
 ;; arithmetic shift right
 
-(define_expand "ashrqi3"
-  [(parallel [(set (match_operand:QI 0 "register_operand" "")
-		   (ashiftrt:QI (match_operand:QI 1 "register_operand" "")
-				(match_operand:QI 2 "general_operand" "")))
-	      (clobber (match_scratch:QI 3 ""))])]
-  ""
-  "")
-
-(define_insn "*ashrqi3"
+(define_insn "ashrqi3"
   [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r")
 	(ashiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0")
 		     (match_operand:QI 2 "general_operand" "r,P,K,i,Qm")))
@@ -934,16 +910,7 @@
   [(set_attr "length" "6,1,2,4,7")
    (set_attr "cc" "clobber,clobber,clobber,clobber,clobber")])
 
-
-(define_expand "ashrhi3"
-  [(parallel [(set (match_operand:HI 0 "register_operand" "")
-		   (ashiftrt:HI (match_operand:HI 1 "register_operand" "")
-				(match_operand:QI 2 "general_operand" "")))
-	      (clobber (match_scratch:QI 3 ""))])]
-  ""
-  "")
-
-(define_insn "*ashrhi3_insn"
+(define_insn "ashrhi3"
   [(set (match_operand:HI 0 "register_operand"             "=r,r,r,r,r,r")
 	(ashiftrt:HI (match_operand:HI 1 "register_operand" "0,0,0,r,0,0")
 		     (match_operand:QI 2 "general_operand"  "r,P,K,O,i,Qm")))
@@ -953,15 +920,7 @@
   [(set_attr "length" "7,2,4,2,5,8")
    (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
 
-(define_expand "ashrsi3"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (ashiftrt:SI (match_operand:SI 1 "register_operand" "")
-				(match_operand:QI 2 "general_operand" "")))
-	      (clobber (match_scratch:QI 3 ""))])]
-  ""
-  "")
-
-(define_insn "*ashrsi3_insn"
+(define_insn "ashrsi3"
   [(set (match_operand:SI 0 "register_operand"             "=r,r,r,r,r")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0")
 		     (match_operand:QI 2 "general_operand"  "r,P,O,i,Qm")))
@@ -983,15 +942,7 @@
   [(set_attr "length" "6,4,6,7")
    (set_attr "cc" "clobber,set_czn,set_czn,clobber")])
 
-(define_expand "lshrhi3"
-  [(parallel [(set (match_operand:HI 0 "register_operand" "")
-		   (lshiftrt:HI (match_operand:HI 1 "register_operand" "")
-				(match_operand:QI 2 "general_operand" "")))
-	      (clobber (match_scratch:QI 3 ""))])]
-  ""
-  "")
-
-(define_insn "*lshrhi3_insn"
+(define_insn "lshrhi3"
   [(set (match_operand:HI 0 "register_operand"             "=r,r,r,r,r,r")
 	(lshiftrt:HI (match_operand:HI 1 "register_operand" "0,0,0,r,0,0")
 		     (match_operand:QI 2 "general_operand"  "r,P,K,O,i,Qm")))
@@ -1001,17 +952,7 @@
   [(set_attr "length" "7,2,4,2,5,8")
    (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
 
-
-
-(define_expand "lshrsi3"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (lshiftrt:SI (match_operand:SI 1 "register_operand" "")
-				(match_operand:QI 2 "general_operand" "")))
-	      (clobber (match_scratch:QI 3 ""))])]
-  ""
-  "")
-
-(define_insn "*lshrsi3_insn"
+(define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand"             "=r,r,r,r,r")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0")
 		     (match_operand:QI 2 "general_operand"  "r,P,O,i,Qm")))
@@ -1815,8 +1756,8 @@
 	(if_then_else (ne (cc0) (const_int 0))
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
-  "(true_regnum (operands[0]) >= LD_REGS
-    && true_regnum (operands[1]) >= LD_REGS)"
+  "(test_hard_reg_class (LD_REGS, operands[0])
+    && test_hard_reg_class (LD_REGS, operands[1]))"
   "*
 {
   if (TEST_HARD_REG_CLASS (ADDW_REGS, true_regnum (operands[0])))
@@ -1853,8 +1794,8 @@
 	(if_then_else (ne (cc0) (const_int 0))
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
-  "(true_regnum (operands[0]) >= LD_REGS
-    && true_regnum (operands[1]) >= LD_REGS)"
+  "(test_hard_reg_class (LD_REGS, operands[0])
+    && test_hard_reg_class (LD_REGS, operands[1]))"
   "*
 {
   if (TEST_HARD_REG_CLASS (ADDW_REGS, true_regnum (operands[0])))
@@ -1885,7 +1826,7 @@
 	(if_then_else (ne (cc0) (const_int 0))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
-  "(true_regnum (operands[0]) >= LD_REGS)"
+  "test_hard_reg_class (LD_REGS, operands[0])"
   "*
 {
   output_asm_insn (AS2 (subi,%A0,1), operands);
