@@ -106,6 +106,16 @@ java::util::zip::Inflater::inflate (jbyteArray buf, jint off, jint len)
 
   switch (::inflate (s, Z_SYNC_FLUSH))
     {
+    case Z_BUF_ERROR:
+      /* Using the no_header option, zlib requires an extra padding byte at the
+      end of the stream in order to successfully complete decompression (see
+      zlib/contrib/minizip/unzip.c). We don't do this, so can end up with a 
+      Z_BUF_ERROR at the end of a stream when zlib has completed inflation
+      and there's no more input. Thats not a problem. */
+      if (s->avail_in != 0)
+        throw new java::lang::InternalError;
+      // Fall through.
+      
     case Z_STREAM_END:
       is_finished = true;
       if (s->avail_out == (unsigned int) len)
@@ -123,11 +133,6 @@ java::util::zip::Inflater::inflate (jbyteArray buf, jint off, jint len)
 
     case Z_MEM_ERROR:
       _Jv_Throw (new java::lang::OutOfMemoryError);
-      break;
-
-    case Z_BUF_ERROR:
-      // FIXME?
-      _Jv_Throw (new java::lang::InternalError);
       break;
 
     case Z_OK:
