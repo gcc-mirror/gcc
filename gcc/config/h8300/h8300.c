@@ -4576,6 +4576,37 @@ same_cmp_following_p (rtx i1)
 	  && any_condjump_p (i2) && onlyjump_p (i2));
 }
 
+/* Return nonzero if OPERANDS are valid for stm (or ldm) that pushes
+   (or pops) N registers.  OPERANDS are asssumed to be an array of
+   registers.  */
+
+int
+h8300_regs_ok_for_stm (int n, rtx operands[])
+{
+  switch (n)
+    {
+    case 2:
+      return ((REGNO (operands[0]) == 0 && REGNO (operands[1]) == 1)
+	      || (REGNO (operands[0]) == 2 && REGNO (operands[1]) == 3)
+	      || (REGNO (operands[0]) == 4 && REGNO (operands[1]) == 5));
+    case 3:
+      return ((REGNO (operands[0]) == 0
+	       && REGNO (operands[1]) == 1
+	       && REGNO (operands[2]) == 2)
+	      || (REGNO (operands[0]) == 4
+		  && REGNO (operands[1]) == 5
+		  && REGNO (operands[2]) == 6));
+
+    case 4:
+      return (REGNO (operands[0]) == 0
+	      && REGNO (operands[1]) == 1
+	      && REGNO (operands[2]) == 2
+	      && REGNO (operands[3]) == 3);
+    }
+
+  abort ();
+}
+
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
 
 int
