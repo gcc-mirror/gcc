@@ -1762,6 +1762,7 @@ package body Bindgen is
    procedure Gen_Main_C is
    begin
       if Exit_Status_Supported_On_Target then
+         WBI ("#include <stdlib.h>");
          Set_String ("int ");
       else
          Set_String ("void ");
@@ -1904,7 +1905,7 @@ package body Bindgen is
             --  For all other systems, we use the standard exit routine.
 
             if OpenVMS_On_Target then
-               WBI ("   __posix_exit (result);");
+               WBI ("   decc$__posix_exit (result);");
             else
                WBI ("   exit (result);");
             end if;
@@ -1921,7 +1922,7 @@ package body Bindgen is
             --  For all other systems, we use the standard exit routine.
 
             if OpenVMS_On_Target then
-               WBI ("   __posix_exit (gnat_exit_status);");
+               WBI ("   decc$__posix_exit (gnat_exit_status);");
             else
                WBI ("   exit (gnat_exit_status);");
             end if;
@@ -2535,7 +2536,7 @@ package body Bindgen is
          end if;
 
          if OpenVMS_On_Target then
-            WBI ("extern void __posix_exit (int);");
+            WBI ("extern void decc$__posix_exit (int);");
          else
             WBI ("extern void exit (int);");
          end if;
