@@ -1,3 +1,9 @@
+2002-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/5740
+	* expr.c (emit_group_load): Use extract_bit_field if
+	needed for CONCAT arguments.
+
 2002-03-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/4863

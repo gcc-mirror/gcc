@@ -1,3 +1,7 @@
+2002-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/conj1.C: New test.
+
 2002-03-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.dg/weak-1.c: Fix scan tests.
