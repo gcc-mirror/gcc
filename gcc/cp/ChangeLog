@@ -1,3 +1,8 @@
+1999-05-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (start_decl): Move checks on initialization to ...
+	(cp_finish_decl): Here.  Tidy formatting slightly.
+
 1999-05-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (add_binding): Don't complain about a redeclaration of a
