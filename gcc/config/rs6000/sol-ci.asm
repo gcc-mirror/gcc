@@ -1,4 +1,4 @@
-# crti.s for solaris
+# crti.s for sysv4
 
 #   Copyright (C) 1996 Free Software Foundation, Inc.
 #   Written By Michael Meissner
@@ -61,12 +61,12 @@ __CTOR_LIST__:
 	.type	__DTOR_LIST__,@object
 __DTOR_LIST__:
 
-# Head of __init function used for static constructors in Solaris
+# Head of _init function used for static constructors
 	.section ".init","ax"
 	.align 2
-	.globl __init
-	.type __init,@function
-__init:	stwu	%r1,-16(%r1)
+	.globl _init
+	.type _init,@function
+_init:	stwu	%r1,-16(%r1)
 	mflr	%r0
 	stw	%r31,12(%r1)
 	stw	%r0,16(%r1)
@@ -82,12 +82,12 @@ __init:	stwu	%r1,-16(%r1)
 #	blrl
 #.Lno_reg:
 
-# Head of __fini function used for static destructors in Solaris
+# Head of _fini function used for static destructors
 	.section ".fini","ax"
 	.align 2
-	.globl __fini
-	.type __fini,@function
-__fini:	stwu	%r1,-16(%r1)
+	.globl _fini
+	.type _fini,@function
+_fini:	stwu	%r1,-16(%r1)
 	mflr	%r0
 	stw	%r31,12(%r1)
 	stw	%r0,16(%r1)

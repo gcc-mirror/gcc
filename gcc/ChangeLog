@@ -1,3 +1,19 @@
+2001-11-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc: Delete powerpcle-*-solaris2* stanza.
+	* config/rs6000/eabi.asm, config/rs6000/rs6000.c,
+	config/rs6000/rs6000.h, config/rs6000/rs6000.md,
+	config/rs6000/sol-ci.asm, config/rs6000/sol-cn.asm,
+	config/rs6000/sysv4.h, config/rs6000/t-ppccomm,
+	config/rs6000/t-ppcos: Expunge all references to Solaris.
+
+	* config/rs6000/sol-c0.c, config/rs6000/sol2.h: Delete.
+
+	* config/rs6000/rs6000.md: Replace '%$' with '$' in all
+	output templates.
+	* config/rs6000/rs6000.h: Define DEFAULT_PCC_STRUCT_RETURN to 0,
+	and change RETURN_IN_MEMORY to just check AGGREGATE_TYPE_P.
+
 2001-11-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sh.md: Avoid uninitialized warnings.
@@ -44,7 +60,7 @@
 	exit label as necessary.
 
 2001-11-20  Brad Kaiser  <bkaiser@acelink.net>
- 
+
 	* reload1.c (elimination_effects): Use function_invariant_p
 	instead of CONSTANT_P when considering register equivalences.
 
@@ -296,7 +312,7 @@ Mon Nov 19 07:21:35 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	PR c/4448
 	* gthr-win32.h: (__gthread_objc_thread_exit): Fix variable
-	name __objc_thread_exit_status so that it matches the 
+	name __objc_thread_exit_status so that it matches the
 	variable defined in objc/thr.h.
 
 2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
@@ -480,11 +496,11 @@ Fri Nov 16 15:22:35 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-16  Bernd Schmidt  <bernds@redhat.com>
 
-        * config/i386/i386.c (ix86_expand_sse_comi): Generate setcc by
+	* config/i386/i386.c (ix86_expand_sse_comi): Generate setcc by
 	hand; don't use gen_setcc_2.
 	(ix86_expand_builtin): Fix pshufw.
 	* config/i386/i386.md (maskncmpv4sf3, vmmmaskncmpv4sf3): Special
-        case UNORDERED to emit the right assembler instruction.
+	case UNORDERED to emit the right assembler instruction.
 	(mmx_pshufw): Lose operand 2.
 	(cvtsi2ss): Fix representation.
 	From Graham Stott:
@@ -526,25 +542,25 @@ Fri Nov 13 09:06:25 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-16  Olivier Hainque <hainque@act-europe.fr>
 
-        * except.c: Support for catching a list of types with a single handler
-        (struct eh_region): Change type and filter to lists for catch regions.
-        (mark_eh_region): Mark the filter list for GC also.
-        (expand_start_catch): Always build a list if argument not NULL and
-        register each type of the list through add_type_for_runtime.
-        (duplicate_eh_region_1): Change type into type_list for catch regions.
-        (assign_filter_values): Assign a filter to each type associated with a
-        catch region. Assign filter for NULL types in a unique entry in the
-        filter list.
-        (build_post_landing_pads): Emit compare and jump for each filter of
-        the list associated with a catch region.
-        (reachable_next_level): When the type thrown is known, stop the search
-        as soon as one type within a catch list matches. Also, a handler is
-        potentially reachable only if at least one of the types it catches
-        has not been previously caught.
-        (collect_one_action_chain): Retrieve the filter for a NULL type list
-        from the first filter list entry. For non NULL type lists, add an
-        action record for every filter assigned.
-        * except.h: Reflect changes in comment before expand_start_catch.
+	* except.c: Support for catching a list of types with a single handler
+	(struct eh_region): Change type and filter to lists for catch regions.
+	(mark_eh_region): Mark the filter list for GC also.
+	(expand_start_catch): Always build a list if argument not NULL and
+	register each type of the list through add_type_for_runtime.
+	(duplicate_eh_region_1): Change type into type_list for catch regions.
+	(assign_filter_values): Assign a filter to each type associated with a
+	catch region. Assign filter for NULL types in a unique entry in the
+	filter list.
+	(build_post_landing_pads): Emit compare and jump for each filter of
+	the list associated with a catch region.
+	(reachable_next_level): When the type thrown is known, stop the search
+	as soon as one type within a catch list matches. Also, a handler is
+	potentially reachable only if at least one of the types it catches
+	has not been previously caught.
+	(collect_one_action_chain): Retrieve the filter for a NULL type list
+	from the first filter list entry. For non NULL type lists, add an
+	action record for every filter assigned.
+	* except.h: Reflect changes in comment before expand_start_catch.
 
 Fri Nov 16 07:12:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -683,7 +699,7 @@ Thu Nov 15 08:36:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(m88k-dg-dguxbcs*): Add m88k/t-dgux to tmake_file.
 	(hppa*): Add pa/t-bsd to tmake_file where no special xmake_file is
 	used.
-        (hppa*-*-openbsd*): Don't use nonexitent pa/t-openbsd.
+	(hppa*-*-openbsd*): Don't use nonexitent pa/t-openbsd.
 	* config/m88k/t-dguxbcs: Remove definitions already in t-dgux.
 	* config/m88k/t-dgux (STMP_FIXPROTO): Define.
 	* config/i386/t-cygwin (STMP_FIXPROTO): Define.
@@ -1491,7 +1507,7 @@ Fri Nov  9 17:51:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-09  Aldy Hernandez  <aldyh@redhat.com>
 
-        * rs6000.h (REG_CLASS_CONTENTS): Add VRSAVE bit to ALL_REGS.
+	* rs6000.h (REG_CLASS_CONTENTS): Add VRSAVE bit to ALL_REGS.
 	(CONDITIONAL_REGISTER_USAGE): Disable AltiVec registers unless
 	generating altivec code.
 	(FIXED_REGISTERS): VRSAVE is fixed.
@@ -1529,7 +1545,7 @@ Fri Nov  9 11:27:42 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-11-09 Ben Elliston  <bje@redhat.com>
 	   Michael Meissner  <meissner@redhat.com>
-           Andrew MacLeod  <amacleod@redhat.com>
+	   Andrew MacLeod  <amacleod@redhat.com>
 	   Richard Henderson  <rth@redhat.com>
 	   Nick Clifton  <nickc@redhat.com>
 	   Catherine Moore  <clm@redhat.com>
@@ -1665,7 +1681,7 @@ Thu Nov  8 18:00:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (ASM_CPU_SPEC): Add -maltivec.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add -maltivec.
 
 2001-11-08  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1983,25 +1999,25 @@ Thu Nov  8 18:00:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-07  Daniel Berlin  <dan@cgsoftware.com>
 
-        * Makefile.in (df.o): Add fibheap.h to dependencies.
+	* Makefile.in (df.o): Add fibheap.h to dependencies.
 
-        * df.h: Add prototypes for transfer functions, iterative_dataflow
-        functions.
-        (enum df_flow_dir): New enum.
-        (enum df_confluence_op): New enum.
-        (struct df): Add inverse_rts_map.
+	* df.h: Add prototypes for transfer functions, iterative_dataflow
+	functions.
+	(enum df_flow_dir): New enum.
+	(enum df_confluence_op): New enum.
+	(struct df): Add inverse_rts_map.
 
-        * df.c: Add sbitmap.h to the list of includes.
-        (df_rd_global_compute): Removed.
-        (df_ru_global_compute): Removed.
-        (df_lr_global_compute): Removed.
-        (df_rd_transfer_function): New function.
-        (df_ru_transfer_function): New function.
-        (df_lr_transfer_function): New function.
-        (df_analyse_1): allocate/compute/free df->inverse_rts_map.
-        Use iterative_dataflow_bitmap instead of df_*_global_compute.
-        (iterative_dataflow_sbitmap): New function.
-        (iterative_dataflow_bitmap): New function.
+	* df.c: Add sbitmap.h to the list of includes.
+	(df_rd_global_compute): Removed.
+	(df_ru_global_compute): Removed.
+	(df_lr_global_compute): Removed.
+	(df_rd_transfer_function): New function.
+	(df_ru_transfer_function): New function.
+	(df_lr_transfer_function): New function.
+	(df_analyse_1): allocate/compute/free df->inverse_rts_map.
+	Use iterative_dataflow_bitmap instead of df_*_global_compute.
+	(iterative_dataflow_sbitmap): New function.
+	(iterative_dataflow_bitmap): New function.
 
 2001-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 

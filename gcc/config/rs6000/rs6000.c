@@ -1030,7 +1030,7 @@ easy_fp_constant (op, mode)
     return 1;
 
   /* If we are using V.4 style PIC, consider all constants to be hard.  */
-  if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
+  if (flag_pic && DEFAULT_ABI == ABI_V4)
     return 0;
 
 #ifdef TARGET_RELOCATABLE
@@ -1457,7 +1457,7 @@ input_operand (op, mode)
 
   /* V.4 allows SYMBOL_REFs and CONSTs that are in the small data region
      to be valid.  */
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+  if (DEFAULT_ABI == ABI_V4
       && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST)
       && small_data_operand (op, Pmode))
     return 1;
@@ -1478,7 +1478,7 @@ small_data_operand (op, mode)
   if (rs6000_sdata == SDATA_NONE || rs6000_sdata == SDATA_DATA)
     return 0;
 
-  if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+  if (DEFAULT_ABI != ABI_V4)
     return 0;
 
   if (GET_CODE (op) == SYMBOL_REF)
@@ -1968,7 +1968,7 @@ rs6000_emit_move (dest, source, mode)
       /* Use default pattern for address of ELF small data */
       if (TARGET_ELF
 	  && mode == Pmode
-	  && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+	  && DEFAULT_ABI == ABI_V4
 	  && (GET_CODE (operands[1]) == SYMBOL_REF 
 	      || GET_CODE (operands[1]) == CONST)
 	  && small_data_operand (operands[1], mode))
@@ -1977,7 +1977,7 @@ rs6000_emit_move (dest, source, mode)
 	  return;
 	}
 
-      if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+      if (DEFAULT_ABI == ABI_V4
 	  && mode == Pmode && mode == SImode
 	  && flag_pic == 1 && got_operand (operands[1], mode))
 	{
@@ -2241,8 +2241,7 @@ function_arg_boundary (mode, type)
      enum machine_mode mode;
      tree type ATTRIBUTE_UNUSED;
 {
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-      && (mode == DImode || mode == DFmode))
+  if (DEFAULT_ABI == ABI_V4 && (mode == DImode || mode == DFmode))
     return 64;
   else if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
     return 128;
@@ -2270,7 +2269,7 @@ function_arg_advance (cum, mode, type, named)
       else
 	cum->words += RS6000_ARG_SIZE (mode, type);
     }
-  else if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+  else if (DEFAULT_ABI == ABI_V4)
     {
       if (TARGET_HARD_FLOAT
 	  && (mode == SFmode || mode == DFmode))
@@ -2384,7 +2383,7 @@ function_arg (cum, mode, type, named)
      or compiler generated library calls.  */
   if (mode == VOIDmode)
     {
-      if ((abi == ABI_V4 || abi == ABI_SOLARIS)
+      if (abi == ABI_V4
 	  && TARGET_HARD_FLOAT
 	  && cum->nargs_prototype < 0
 	  && type && (cum->prototype || TARGET_NO_PROTOTYPE))
@@ -2405,7 +2404,7 @@ function_arg (cum, mode, type, named)
       else
 	return NULL;
     }
-  else if (abi == ABI_V4 || abi == ABI_SOLARIS)
+  else if (abi == ABI_V4)
     {
       if (TARGET_HARD_FLOAT
 	  && (mode == SFmode || mode == DFmode))
@@ -2497,7 +2496,7 @@ function_arg_partial_nregs (cum, mode, type, named)
      tree type;
      int named ATTRIBUTE_UNUSED;
 {
-  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+  if (DEFAULT_ABI == ABI_V4)
     return 0;
 
   if (USE_FP_FOR_ARG_P (*cum, mode, type)
@@ -2535,7 +2534,7 @@ function_arg_pass_by_reference (cum, mode, type, named)
      tree type;
      int named ATTRIBUTE_UNUSED;
 {
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+  if (DEFAULT_ABI == ABI_V4
       && ((type && AGGREGATE_TYPE_P (type))
 	  || mode == TFmode))
     {
@@ -2589,7 +2588,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
   if (stdarg_p)
     function_arg_advance (&next_cum, mode, type, 1);
 
-  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+  if (DEFAULT_ABI == ABI_V4)
     {
       /* Indicate to allocate space on the stack for varargs save area.  */
       /* ??? Does this really have to be located at a magic spot on the
@@ -2630,7 +2629,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
     }
 
   /* Save FP registers if needed.  */
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+  if (DEFAULT_ABI == ABI_V4
       && TARGET_HARD_FLOAT && ! no_rtl
       && next_cum.fregno <= FP_ARG_V4_MAX_REG)
     {
@@ -2669,7 +2668,7 @@ rs6000_build_va_list ()
 
   /* For AIX, prefer 'char *' because that's what the system
      header files like.  */
-  if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+  if (DEFAULT_ABI != ABI_V4)
     return build_pointer_type (char_type_node);
 
   record = make_lang_type (RECORD_TYPE);
@@ -2715,7 +2714,7 @@ rs6000_va_start (stdarg_p, valist, nextarg)
   tree gpr, fpr, ovf, sav, t;
 
   /* Only SVR4 needs something special.  */
-  if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+  if (DEFAULT_ABI != ABI_V4)
     {
       std_expand_builtin_va_start (stdarg_p, valist, nextarg);
       return;
@@ -2790,7 +2789,7 @@ rs6000_va_arg (valist, type)
      structures which are the same size as integer types are passed
      right-aligned, as if they were in fact integers.  This only
      matters for structures of size 1 or 2, or 4 when TARGET_64BIT.  */
-  if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+  if (DEFAULT_ABI != ABI_V4)
     {
       HOST_WIDE_INT align, rounded_size;
       enum machine_mode mode;
@@ -4714,12 +4713,6 @@ print_operand (file, x, code)
       asm_fprintf (file, RS6000_CALL_GLUE);
       return;
 
-    case '$':
-      /* Write out either a '.' or '$' for the current location, depending
-	 on whether this is Solaris or not.  */
-      putc ((DEFAULT_ABI == ABI_SOLARIS) ? '.' : '$', file);
-      return;
-
       /* %a is output_address.  */
 
     case 'A':
@@ -5169,13 +5162,7 @@ print_operand (file, x, code)
 	output_operand_lossage ("invalid %%v value");
       else
 	{
-	  int value = (INT_LOWPART (x) >> 16) & 0xffff;
-
-	  /* Solaris assembler doesn't like lis 0,0x8000 */
-	  if (DEFAULT_ABI == ABI_SOLARIS && (value & 0x8000) != 0)
-	    fprintf (file, "%d", value | (~0 << 16));
-	  else
-	    fprintf (file, "0x%x", value);
+	  fprintf (file, "0x%x", (INT_LOWPART (x) >> 16) & 0xffff);
 	  return;
 	}
 
@@ -5314,7 +5301,6 @@ print_operand (file, x, code)
 
 	    case ABI_V4:
 	    case ABI_AIX_NODESC:
-	    case ABI_SOLARIS:
 	    case ABI_DARWIN:
 	      break;
 	    }
@@ -5895,10 +5881,8 @@ first_reg_to_save ()
     if (regs_ever_live[first_reg] 
 	&& (! call_used_regs[first_reg]
 	    || (first_reg == PIC_OFFSET_TABLE_REGNUM
-		&& (((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-		     && flag_pic == 1)
-		    || (DEFAULT_ABI == ABI_DARWIN
-			&& flag_pic)))))
+		&& ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
+		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic)))))
       break;
 
   if (profile_flag)
@@ -6166,10 +6150,8 @@ rs6000_stack_info ()
   /* Assume that we will have to save PIC_OFFSET_TABLE_REGNUM, 
      even if it currently looks like we won't.  */
   if (((TARGET_TOC && TARGET_MINIMAL_TOC)
-       || (flag_pic == 1
-	   && (abi == ABI_V4 || abi == ABI_SOLARIS))
-       || (flag_pic &&
-	   abi == ABI_DARWIN))
+       || (flag_pic == 1 && abi == ABI_V4)
+       || (flag_pic && abi == ABI_DARWIN))
       && info_ptr->first_gp_reg_save > PIC_OFFSET_TABLE_REGNUM)
     info_ptr->gp_size = reg_size * (32 - PIC_OFFSET_TABLE_REGNUM);
   else
@@ -6196,7 +6178,6 @@ rs6000_stack_info ()
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
       || info_ptr->first_altivec_reg_save <= LAST_ALTIVEC_REGNO
       || (abi == ABI_V4 && current_function_calls_alloca)
-      || (abi == ABI_SOLARIS && current_function_calls_alloca)
       || (DEFAULT_ABI == ABI_DARWIN
 	  && flag_pic
 	  && current_function_uses_pic_offset_table)
@@ -6212,7 +6193,7 @@ rs6000_stack_info ()
       || regs_ever_live[CR4_REGNO])
     {
       info_ptr->cr_save_p = 1;
-      if (abi == ABI_V4 || abi == ABI_SOLARIS)
+      if (abi == ABI_V4)
 	info_ptr->cr_size = reg_size;
     }
 
@@ -6288,7 +6269,6 @@ rs6000_stack_info ()
       break;
 
     case ABI_V4:
-    case ABI_SOLARIS:
       info_ptr->fp_save_offset   = - info_ptr->fp_size;
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
       info_ptr->cr_save_offset   = info_ptr->gp_save_offset - info_ptr->cr_size;
@@ -6358,7 +6338,7 @@ rs6000_stack_info ()
   if (info_ptr->calls_p)
     info_ptr->push_p = 1;
 
-  else if (abi == ABI_V4 || abi == ABI_SOLARIS)
+  else if (abi == ABI_V4)
     info_ptr->push_p = (total_raw_size > info_ptr->fixed_size
 			|| info_ptr->calls_p);
 
@@ -6411,11 +6391,10 @@ debug_stack_info (info)
     {
     default:		 abi_string = "Unknown";	break;
     case ABI_NONE:	 abi_string = "NONE";		break;
-    case ABI_AIX:	 abi_string = "AIX";		break;
+    case ABI_AIX:
     case ABI_AIX_NODESC: abi_string = "AIX";		break;
     case ABI_DARWIN:	 abi_string = "Darwin";		break;
     case ABI_V4:	 abi_string = "V.4";		break;
-    case ABI_SOLARIS:	 abi_string = "Solaris";	break;
     }
 
   fprintf (stderr, "\tABI                 = %5s\n", abi_string);
@@ -6599,8 +6578,7 @@ rs6000_emit_load_toc_table (fromprolog)
 
   if (TARGET_ELF && DEFAULT_ABI != ABI_AIX)
     {
-      if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) 
-	  && flag_pic == 1)
+      if (DEFAULT_ABI == ABI_V4 && flag_pic == 1)
 	{
 	  rtx temp = (fromprolog 
 		      ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
@@ -6906,7 +6884,7 @@ rs6000_emit_allocate_stack (size, copy_r12)
 	}
       else if (GET_CODE (stack_limit_rtx) == SYMBOL_REF
 	       && TARGET_32BIT
-	       && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
+	       && DEFAULT_ABI == ABI_V4)
 	{
 	  rtx toload = gen_rtx_CONST (VOIDmode,
 				      gen_rtx_PLUS (Pmode, 
@@ -7095,7 +7073,7 @@ rs6000_emit_prologue ()
 			|| FP_SAVE_INLINE (info->first_fp_reg_save));
 
   /* For V.4, update stack before we do any saving and set back pointer.  */
-  if (info->push_p && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
+  if (info->push_p && DEFAULT_ABI == ABI_V4)
     {
       if (info->total_size < 32767)
 	sp_offset = info->total_size;
@@ -7213,10 +7191,8 @@ rs6000_emit_prologue ()
 	if ((regs_ever_live[info->first_gp_reg_save+i] 
 	     && ! call_used_regs[info->first_gp_reg_save+i])
 	    || (i+info->first_gp_reg_save == PIC_OFFSET_TABLE_REGNUM
-		&& (((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-		     && flag_pic == 1)
-		    || (DEFAULT_ABI == ABI_DARWIN
-			&& flag_pic))))
+		&& ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
+		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
 	  {
 	    rtx addr, reg, mem;
 	    reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
@@ -7305,7 +7281,7 @@ rs6000_emit_prologue ()
 
   /* Update stack and set back pointer unless this is V.4, 
      for which it was done previously.  */
-  if (info->push_p && DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+  if (info->push_p && DEFAULT_ABI != ABI_V4)
     rs6000_emit_allocate_stack (info->total_size, FALSE);
 
   /* Save AltiVec registers if needed.  */
@@ -7382,8 +7358,8 @@ rs6000_emit_prologue ()
 
   /* If we are using PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
   if ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
-      || ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) 
-	  && flag_pic == 1 && regs_ever_live[PIC_OFFSET_TABLE_REGNUM]))
+      || (DEFAULT_ABI == ABI_V4 && flag_pic == 1
+	  && regs_ever_live[PIC_OFFSET_TABLE_REGNUM]))
   {
     /* If emit_load_toc_table will use the link register, we need to save
        it.  We use R11 for this purpose because emit_load_toc_table
@@ -7513,7 +7489,7 @@ rs6000_emit_epilogue (sibcall)
     {
       /* Under V.4, don't reset the stack pointer until after we're done
 	 loading the saved registers.  */
-      if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+      if (DEFAULT_ABI == ABI_V4)
 	frame_reg_rtx = gen_rtx_REG (Pmode, 11);
 
       emit_move_insn (frame_reg_rtx,
@@ -7522,7 +7498,7 @@ rs6000_emit_epilogue (sibcall)
     }
   else if (info->push_p)
     {
-      if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+      if (DEFAULT_ABI == ABI_V4)
 	sp_offset = info->total_size;
       else
 	{
@@ -7614,10 +7590,8 @@ rs6000_emit_epilogue (sibcall)
       if ((regs_ever_live[info->first_gp_reg_save+i] 
 	   && ! call_used_regs[info->first_gp_reg_save+i])
 	  || (i+info->first_gp_reg_save == PIC_OFFSET_TABLE_REGNUM
-	      && (((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-		   && flag_pic == 1)
-		  || (DEFAULT_ABI == ABI_DARWIN
-		      && flag_pic))))
+	      && ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
+		  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
 	{
 	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, 
 				   GEN_INT (info->gp_save_offset 
@@ -7745,7 +7719,7 @@ rs6000_emit_epilogue (sibcall)
      (which may not have any obvious dependency on the stack).  This
      doesn't hurt performance, because there is no scheduling that can
      be done after this point.  */
-  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+  if (DEFAULT_ABI == ABI_V4)
     {
       if (frame_reg_rtx != sp_reg_rtx)
 	  rs6000_emit_stack_tie ();
@@ -8167,7 +8141,6 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 
     case ABI_V4:
     case ABI_AIX_NODESC:
-    case ABI_SOLARIS:
       prefix = "";
       break;
     }
@@ -8230,7 +8203,6 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  break;
 
 	case ABI_AIX_NODESC:
-	case ABI_SOLARIS:
 	case ABI_V4:
 	  fprintf (file, "\tb %s", prefix);
 	  assemble_name (file, fname);
@@ -8892,7 +8864,6 @@ output_function_profiler (file, labelno)
       abort ();
 
     case ABI_V4:
-    case ABI_SOLARIS:
     case ABI_AIX_NODESC:
       fprintf (file, "\tmflr %s\n", reg_names[0]);
       if (flag_pic == 1)
@@ -9087,7 +9058,6 @@ rs6000_trampoline_size ()
       break;
 
     case ABI_V4:
-    case ABI_SOLARIS:
     case ABI_AIX_NODESC:
       ret = (TARGET_32BIT) ? 40 : 48;
       break;
@@ -9135,7 +9105,6 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 
     /* Under V.4/eabi, call __trampoline_setup to do the real work.  */
     case ABI_V4:
-    case ABI_SOLARIS:
     case ABI_AIX_NODESC:
       emit_library_call (gen_rtx_SYMBOL_REF (SImode, "__trampoline_setup"),
 			 FALSE, VOIDmode, 4,
@@ -9380,7 +9349,7 @@ rs6000_encode_section_info (decl)
 	}
     }
   else if (rs6000_sdata != SDATA_NONE
-	   && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+	   && DEFAULT_ABI == ABI_V4
 	   && TREE_CODE (decl) == VAR_DECL)
     {
       int size = int_size_in_bytes (TREE_TYPE (decl));
@@ -9811,9 +9780,6 @@ rs6000_elf_section_type_flags (decl, name, reloc)
 
   if (TARGET_RELOCATABLE)
     flags |= SECTION_WRITE;
-
-  /* Solaris doesn't like @nobits, and gas can handle .sbss without it.  */
-  flags &= ~SECTION_BSS;
 
   return flags;
 }

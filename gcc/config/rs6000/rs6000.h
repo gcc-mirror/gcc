@@ -445,7 +445,7 @@ extern struct rs6000_cpu_select rs6000_select[];
 
 /* Debug support */
 extern const char *rs6000_debug_name;	/* Name for -mdebug-xxxx option */
-extern const char *rs6000_abi_string;	/* for -mabi={sysv,darwin,solaris,eabi,aix,altivec} */
+extern const char *rs6000_abi_string;	/* for -mabi={sysv,darwin,eabi,aix,altivec} */
 extern int rs6000_debug_stack;		/* debug stack applications */
 extern int rs6000_debug_arg;		/* debug argument handling */
 
@@ -932,8 +932,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
   if (TARGET_SOFT_FLOAT)						\
     for (i = 32; i < 64; i++)						\
       fixed_regs[i] = call_used_regs[i] = 1; 				\
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
-      && flag_pic == 1)							\
+  if (DEFAULT_ABI == ABI_V4 && flag_pic == 1)				\
     fixed_regs[PIC_OFFSET_TABLE_REGNUM]					\
       = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
   if (DEFAULT_ABI == ABI_DARWIN && flag_pic)				\
@@ -1181,7 +1180,7 @@ enum reg_class
    : (C) == 'R' ? LEGITIMATE_CONSTANT_POOL_ADDRESS_P (OP)		\
    : (C) == 'S' ? mask64_operand (OP, VOIDmode)				\
    : (C) == 'T' ? mask_operand (OP, VOIDmode)				\
-   : (C) == 'U' ? ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) \
+   : (C) == 'U' ? (DEFAULT_ABI == ABI_V4				\
 		   && small_data_operand (OP, GET_MODE (OP)))		\
    : 0)
 
@@ -1254,9 +1253,9 @@ enum reg_class
 enum rs6000_abi {
   ABI_NONE,
   ABI_AIX,			/* IBM's AIX */
-  ABI_AIX_NODESC,		/* AIX calling sequence minus function descriptors */
+  ABI_AIX_NODESC,		/* AIX calling sequence minus
+				   function descriptors */
   ABI_V4,			/* System V.4/eabi */
-  ABI_SOLARIS,			/* Solaris */
   ABI_DARWIN			/* Apple's Darwin (OS X kernel) */
 };
 
@@ -1437,12 +1436,14 @@ typedef struct rs6000_stack {
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
 
-   For the RS/6000, any structure or union type is returned in memory, except for
-   Solaris, which returns structures <= 8 bytes in registers.  */
+   For the RS/6000, any structure or union type is returned in memory.
+   (FIXME: Except for V.4, where those <= 8 bytes are returned in
+   registers.  Can't change this without breaking compatibility.)  */
 
-#define RETURN_IN_MEMORY(TYPE)						\
-  (TYPE_MODE (TYPE) == BLKmode						\
-   && (DEFAULT_ABI != ABI_SOLARIS || int_size_in_bytes (TYPE) > 8))
+#define RETURN_IN_MEMORY(TYPE) AGGREGATE_TYPE_P (TYPE)
+
+/* Let RETURN_IN_MEMORY control what happens.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* Mode of stack savearea.
    FUNCTION is VOIDmode because calling convention maintains SP.
@@ -1730,8 +1731,7 @@ typedef struct rs6000_args
  ((DEFAULT_ABI == ABI_AIX						\
    || DEFAULT_ABI == ABI_DARWIN						\
    || DEFAULT_ABI == ABI_AIX_NODESC)	? (TARGET_32BIT ? 8 : 16) :	\
-  (DEFAULT_ABI == ABI_V4						\
-   || DEFAULT_ABI == ABI_SOLARIS)	? (TARGET_32BIT ? 4 : 8) :	\
+  (DEFAULT_ABI == ABI_V4)		? (TARGET_32BIT ? 4 : 8) :	\
   (internal_error ("RETURN_ADDRESS_OFFSET not supported"), 0))
 
 /* The current return address is in link register (65).  The return address
@@ -1913,7 +1913,7 @@ typedef struct rs6000_args
   && CONSTANT_POOL_EXPR_P (XEXP (X, 1)))
 
 #define LEGITIMATE_SMALL_DATA_P(MODE, X)				\
-  ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
+  (DEFAULT_ABI == ABI_V4						\
    && !flag_pic && !TARGET_TOC						\
    && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST)		\
    && small_data_operand (X, MODE))

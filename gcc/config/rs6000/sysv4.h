@@ -152,7 +152,6 @@ extern int g_switch_set;		/* Whether -G xx was passed.  */
   { "emb",		 0,						\
     N_("Set the PPC_EMB bit in the ELF flags header") },		\
   { "vxworks",		 0, N_("no description yet") },			\
-  { "solaris-cclib",	 0, N_("no description yet") },			\
   { "shlib",		 0, N_("no description yet") },			\
   EXTRA_SUBTARGET_SWITCHES						\
   { "newlib",		 0, N_("no description yet") },
@@ -200,8 +199,6 @@ do {									\
     rs6000_current_abi = ABI_V4;					\
   else if (!strcmp (rs6000_abi_name, "netbsd"))				\
     rs6000_current_abi = ABI_V4;					\
-  else if (!strcmp (rs6000_abi_name, "solaris"))			\
-    rs6000_current_abi = ABI_SOLARIS;					\
   else if (!strcmp (rs6000_abi_name, "i960-old"))			\
     {									\
       rs6000_current_abi = ABI_V4;					\
@@ -230,7 +227,7 @@ do {									\
       else								\
 	error ("Bad value for -msdata=%s", rs6000_sdata_name);		\
     }									\
-  else if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
+  else if (DEFAULT_ABI == ABI_V4)					\
     {									\
       rs6000_sdata = SDATA_DATA;					\
       rs6000_sdata_name = "data";					\
@@ -258,8 +255,7 @@ do {									\
 	     rs6000_sdata_name);					\
     }									\
 									\
-  if (rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4		\
-      && DEFAULT_ABI != ABI_SOLARIS)					\
+  if (rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4)		\
     {									\
       rs6000_sdata = SDATA_NONE;					\
       error ("-msdata=%s and -mcall-%s are incompatible.",		\
@@ -430,9 +426,7 @@ do {									\
 
 #define	SDATA_SECTION_ASM_OP "\t.section\t\".sdata\",\"aw\""
 #define	SDATA2_SECTION_ASM_OP "\t.section\t\".sdata2\",\"a\""
-#define	SBSS_SECTION_ASM_OP \
-  ((DEFAULT_ABI == ABI_SOLARIS) ? "\t.section\t\".sbss\",\"aw\"" : "\t.section\t\".sbss\",\"aw\",@nobits")
-
+#define	SBSS_SECTION_ASM_OP "\t.section\t\".sbss\",\"aw\",@nobits"
 
 /* Besides the usual ELF sections, we need a toc section.  */
 /* Override elfos.h definition.  */
@@ -729,14 +723,6 @@ extern int rs6000_pic_labelno;
   do { fputs ("\t.globl ", FILE);	\
        assemble_name (FILE, NAME); putc ('\n', FILE);} while (0)
 
-/* This is how to allocate empty space in some section.  Use .space
-   instead of .zero because the Solaris PowerPC assembler doesn't
-   like it, and gas accepts either syntax.  */
-
-/* Override elfos.h definition.  */
-#undef	SKIP_ASM_OP
-#define SKIP_ASM_OP	"\t.space\t"
-
 /* This says how to output assembler code to declare an
    uninitialized internal linkage data object.  Under SVR4,
    the linker seems to want the alignment of data objects
@@ -938,7 +924,6 @@ do {						\
 %{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-solaris: -mlittle -msolaris} \
     %{mcall-freebsd: -mbig} \
     %{mcall-i960-old: -mlittle} \
     %{mcall-linux: -mbig} \
@@ -963,20 +948,17 @@ do {						\
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-aixdesc: -mbig %(cc1_endian_big) } \
     %{mcall-freebsd: -mbig %(cc1_endian_big) } \
-    %{mcall-solaris: -mlittle %(cc1_endian_little) } \
     %{mcall-i960-old: -mlittle %(cc1_endian_little) } \
     %{mcall-linux: -mbig %(cc1_endian_big) } \
     %{mcall-netbsd: -mbig %(cc1_endian_big) } \
-    %{!mcall-aixdesc: %{!mcall-freebsd: %{!mcall-solaris: %{!mcall-i960-old: %{!mcall-linux: %{!mcall-netbsd: \
+    %{!mcall-aixdesc: %{!mcall-freebsd: %{!mcall-i960-old: %{!mcall-linux: %{!mcall-netbsd: \
 	    %(cc1_endian_default) \
-    }}}}}} \
+    }}}}} \
 }}}} \
-%{mcall-solaris: -mregnames } \
 %{mno-sdata: -msdata=none } \
 %{meabi: %{!mcall-*: -mcall-sysv }} \
 %{!meabi: %{!mno-eabi: \
     %{mrelocatable: -meabi } \
-    %{mcall-solaris: -mno-eabi } \
     %{mcall-freebsd: -mno-eabi } \
     %{mcall-i960-old: -meabi } \
     %{mcall-linux: -mno-eabi } \
@@ -1011,8 +993,8 @@ do {						\
 %{mcall-freebsd: %(link_start_freebsd) } \
 %{mcall-linux: %(link_start_linux) } \
 %{mcall-netbsd: %(link_start_netbsd) } \
-%{mcall-solaris: %(link_start_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(link_start_default) }}}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: \
+	%{!mcall-netbsd: %{!mcall-freebsd: %(link_start_default) }}}}}}}"
 
 #define LINK_START_DEFAULT_SPEC ""
 
@@ -1056,7 +1038,6 @@ do {						\
 %{mlittle: --oformat elf32-powerpcle } %{mlittle-endian: --oformat elf32-powerpcle } \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-i960-old: --oformat elf32-powerpcle} \
-    %{mcall-solaris: --oformat elf32-powerpcle} \
   }}}}"
 
 /* Any specific OS flags.  */
@@ -1068,8 +1049,7 @@ do {						\
 %{mcall-freebsd: %(link_os_freebsd) } \
 %{mcall-linux: %(link_os_linux) } \
 %{mcall-netbsd: %(link_os_netbsd) } \
-%{mcall-solaris: %(link_os_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(link_os_default) }}}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %(link_os_default) }}}}}}}"
 
 #define LINK_OS_DEFAULT_SPEC ""
 
@@ -1105,22 +1085,18 @@ do {						\
 
 #define CPP_ENDIAN_LITTLE_SPEC "-D_LITTLE_ENDIAN -D__LITTLE_ENDIAN__ -Amachine=littleendian"
 
-#define CPP_ENDIAN_SOLARIS_SPEC "-D__LITTLE_ENDIAN__ -Amachine=littleendian"
-
-/* For solaris, don't define _LITTLE_ENDIAN, it conflicts with a header file.  */
 #define	CPP_ENDIAN_SPEC \
 "%{mlittle: %(cpp_endian_little) } \
 %{mlittle-endian: %(cpp_endian_little) } \
 %{mbig: %(cpp_endian_big) } \
 %{mbig-endian: %(cpp_endian_big) } \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-solaris: %(cpp_endian_solaris) } \
     %{mcall-freebsd: %(cpp_endian_big) } \
     %{mcall-linux: %(cpp_endian_big) } \
     %{mcall-netbsd: %(cpp_endian_big) } \
     %{mcall-i960-old: %(cpp_endian_little) } \
     %{mcall-aixdesc:  %(cpp_endian_big) } \
-    %{!mcall-solaris: %{!mcall-linux: %{!mcall-freebsd: %{!mcall-netbsd: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}}}"
+    %{!mcall-linux: %{!mcall-freebsd: %{!mcall-netbsd: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}}"
 
 #define	CPP_ENDIAN_DEFAULT_SPEC "%(cpp_endian_big)"
 
@@ -1134,8 +1110,7 @@ do {						\
 %{mcall-freebsd: %(cpp_os_freebsd) } \
 %{mcall-linux: %(cpp_os_linux) } \
 %{mcall-netbsd: %(cpp_os_netbsd) } \
-%{mcall-solaris: %(cpp_os_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(cpp_os_default) }}}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %(cpp_os_default) }}}}}}}"
 
 #define	CPP_OS_DEFAULT_SPEC ""
 
@@ -1149,8 +1124,7 @@ do {						\
 %{mcall-freebsd: %(startfile_freebsd) } \
 %{mcall-linux: %(startfile_linux) } \
 %{mcall-netbsd: %(startfile_netbsd) } \
-%{mcall-solaris: %(startfile_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(startfile_default) }}}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %(startfile_default) }}}}}}}"
 
 #define	STARTFILE_DEFAULT_SPEC ""
 
@@ -1164,8 +1138,7 @@ do {						\
 %{mcall-freebsd: %(lib_freebsd) } \
 %{mcall-linux: %(lib_linux) } \
 %{mcall-netbsd: %(lib_netbsd) } \
-%{mcall-solaris: %(lib_solaris) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %%{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %(lib_default) }}}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %%{!mcall-linux: %{!mcall-netbsd: %(lib_default) }}}}}}}"
 
 #define LIB_DEFAULT_SPEC ""
 
@@ -1179,9 +1152,8 @@ do {						\
 %{mcall-freebsd: %(endfile_freebsd) } \
 %{mcall-linux: %(endfile_linux) } \
 %{mcall-netbsd: %(endfile_netbsd) } \
-%{mcall-solaris: %(endfile_solaris)} \
 %{mvxworks: %(endfile_vxworks) } \
-%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mcall-solaris: %{!mvxworks: %(endfile_default) }}}}}}}}}"
+%{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-freebsd: %{!mcall-linux: %{!mcall-netbsd: %{!mvxworks: %(endfile_default) }}}}}}}}"
 
 #define	ENDFILE_DEFAULT_SPEC ""
 
@@ -1314,48 +1286,6 @@ ncrtn.o%s"
 #define CPP_OS_NETBSD_SPEC "\
 -D__powerpc__ -D__NetBSD__ -D__ELF__ -D__KPRINTF_ATTRIBUTE__"
 
-/* Solaris support.  */
-/* For Solaris, Gcc automatically adds in one of the files
-   /usr/ccs/lib/values-Xc.o, /usr/ccs/lib/values-Xa.o, or
-   /usr/ccs/lib/values-Xt.o for each final link step (depending upon the other
-   gcc options selected, such as -traditional and -ansi).  These files each
-   contain one (initialized) copy of a special variable called `_lib_version'.
-   Each one of these files has `_lib_version' initialized to a different (enum)
-   value.  The SVR4 library routines query the value of `_lib_version' at run
-   to decide how they should behave.  Specifically, they decide (based upon the
-   value of `_lib_version') if they will act in a strictly ANSI conforming
-   manner or not.  */
-
-#define LIB_SOLARIS_SPEC "\
-%{mnewlib: --start-group -lsolaris -lc --end-group } \
-%{!mnewlib: \
-    %{ansi:values-Xc.o%s} \
-    %{!ansi: \
-	%{traditional:values-Xt.o%s} \
-	%{!traditional:values-Xa.o%s}} \
-	%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
-    %{solaris-cclib: /opt/SUNWspro/SC4.0/lib/libabi.a} \
-    %{!shared: %{!symbolic: -lc }}}"
-
-#define	STARTFILE_SOLARIS_SPEC "\
-%{!msolaris-cclib: scrti.o%s scrt0.o%s} \
-%{msolaris-cclib: /opt/SUNWspro/SC4.0/lib/crti.o%s /opt/SUNWspro/SC4.0/lib/crt1.o%s} \
-%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
-
-#define	ENDFILE_SOLARIS_SPEC "\
-%{!shared:crtend.o%s} %{shared:crtendS.o%s} \
-%{!msolaris-cclib: scrtn.o%s} \
-%{msolaris-cclib: /opt/SUNWspro/SC4.0/lib/crtn.o%s}"
-
-#define LINK_START_SOLARIS_SPEC ""
-
-#define LINK_OS_SOLARIS_SPEC ""
-
-#define CPP_OS_SOLARIS_SPEC "-D__ppc -D__sun__=1 -D__unix__ -D__svr4__  -D__SVR4__ \
-%{!undef:%{!ansi:%{!std=*:-Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__} \
-               %{std=gnu*:-Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__}}} \
--Amachine=prep"
-
 /* VxWorks support.  */
 /* VxWorks does all the library stuff itself.  */
 #define LIB_VXWORKS_SPEC ""
@@ -1411,7 +1341,6 @@ ncrtn.o%s"
   { "lib_freebsd",		LIB_FREEBSD_SPEC },			\
   { "lib_linux",		LIB_LINUX_SPEC },			\
   { "lib_netbsd",		LIB_NETBSD_SPEC },			\
-  { "lib_solaris",		LIB_SOLARIS_SPEC },			\
   { "lib_vxworks",		LIB_VXWORKS_SPEC },			\
   { "lib_default",		LIB_DEFAULT_SPEC },			\
   { "startfile_ads",		STARTFILE_ADS_SPEC },			\
@@ -1421,7 +1350,6 @@ ncrtn.o%s"
   { "startfile_freebsd",	STARTFILE_FREEBSD_SPEC },		\
   { "startfile_linux",		STARTFILE_LINUX_SPEC },			\
   { "startfile_netbsd",		STARTFILE_NETBSD_SPEC },		\
-  { "startfile_solaris",	STARTFILE_SOLARIS_SPEC },		\
   { "startfile_vxworks",	STARTFILE_VXWORKS_SPEC },		\
   { "startfile_default",	STARTFILE_DEFAULT_SPEC },		\
   { "endfile_ads",		ENDFILE_ADS_SPEC },			\
@@ -1431,7 +1359,6 @@ ncrtn.o%s"
   { "endfile_freebsd",		ENDFILE_FREEBSD_SPEC },			\
   { "endfile_linux",		ENDFILE_LINUX_SPEC },			\
   { "endfile_netbsd",		ENDFILE_NETBSD_SPEC },			\
-  { "endfile_solaris",		ENDFILE_SOLARIS_SPEC },			\
   { "endfile_vxworks",		ENDFILE_VXWORKS_SPEC },			\
   { "endfile_default",		ENDFILE_DEFAULT_SPEC },			\
   { "link_path",		LINK_PATH_SPEC },			\
@@ -1445,7 +1372,6 @@ ncrtn.o%s"
   { "link_start_freebsd",	LINK_START_FREEBSD_SPEC },		\
   { "link_start_linux",		LINK_START_LINUX_SPEC },		\
   { "link_start_netbsd",	LINK_START_NETBSD_SPEC },		\
-  { "link_start_solaris",	LINK_START_SOLARIS_SPEC },		\
   { "link_start_vxworks",	LINK_START_VXWORKS_SPEC },		\
   { "link_start_default",	LINK_START_DEFAULT_SPEC },		\
   { "link_os",			LINK_OS_SPEC },				\
@@ -1456,7 +1382,6 @@ ncrtn.o%s"
   { "link_os_freebsd",		LINK_OS_FREEBSD_SPEC },			\
   { "link_os_linux",		LINK_OS_LINUX_SPEC },			\
   { "link_os_netbsd",		LINK_OS_NETBSD_SPEC },			\
-  { "link_os_solaris",		LINK_OS_SOLARIS_SPEC },			\
   { "link_os_vxworks",		LINK_OS_VXWORKS_SPEC },			\
   { "link_os_default",		LINK_OS_DEFAULT_SPEC },			\
   { "cc1_endian_big",		CC1_ENDIAN_BIG_SPEC },			\
@@ -1464,7 +1389,6 @@ ncrtn.o%s"
   { "cc1_endian_default",	CC1_ENDIAN_DEFAULT_SPEC },		\
   { "cpp_endian_big",		CPP_ENDIAN_BIG_SPEC },			\
   { "cpp_endian_little",	CPP_ENDIAN_LITTLE_SPEC },		\
-  { "cpp_endian_solaris",	CPP_ENDIAN_SOLARIS_SPEC },		\
   { "cpp_float_default",	CPP_FLOAT_DEFAULT_SPEC },		\
   { "cpp_longdouble_default",	CPP_LONGDOUBLE_DEFAULT_SPEC },		\
   { "cpp_os_ads",		CPP_OS_ADS_SPEC },			\
@@ -1474,7 +1398,6 @@ ncrtn.o%s"
   { "cpp_os_freebsd",		CPP_OS_FREEBSD_SPEC },			\
   { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\
   { "cpp_os_netbsd",		CPP_OS_NETBSD_SPEC },			\
-  { "cpp_os_solaris",		CPP_OS_SOLARIS_SPEC },			\
   { "cpp_os_vxworks",		CPP_OS_VXWORKS_SPEC },			\
   { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },
 

@@ -131,8 +131,7 @@
 FUNC_START(__eabi)
 
 /* Eliminate -mrelocatable code if not -mrelocatable, so that this file can
-   be assembled with other assemblers than GAS, such as the Solaris PowerPC
-   assembler.  */
+   be assembled with other assemblers than GAS.  */
 
 #ifndef _RELOCATABLE
 	addis	10,0,.Linit_p@ha		/* init flag */
