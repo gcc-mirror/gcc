@@ -1091,23 +1091,34 @@ output_signed_leb128 (value)
 /**************** utility functions for attribute functions ******************/
 
 /* Given a pointer to a BLOCK node return non-zero if (and only if) the
-   node in question represents the outermost block (i.e. the "body block")
-   of a function or method.
+   node in question represents the outermost pair of curly braces (i.e.
+   the "body block") of a function or method.
 
-   For any BLOCK node representing a "body block", the BLOCK_SUPERCONTEXT
-   of the node will point to another BLOCK node which represents the outer-
-   most (function) scope for the function or method.  The BLOCK_SUPERCONTEXT
-   of that node in turn will point to the relevant FUNCTION_DECL node.
+   For any BLOCK node representing a "body block" of a function or method,
+   the BLOCK_SUPERCONTEXT of the node will point to another BLOCK node
+   which represents the outermost (function) scope for the function or
+   method (i.e. the one which includes the formal parameters).  The
+   BLOCK_SUPERCONTEXT of *that* node in turn will point to the relevant
+   FUNCTION_DECL node.
 */
 
 inline int
 is_body_block (stmt)
      register tree stmt;
 {
-  register enum tree_code code
-    = TREE_CODE (BLOCK_SUPERCONTEXT (BLOCK_SUPERCONTEXT (stmt)));
+  if (TREE_CODE (stmt) == BLOCK)
+    {
+      register tree parent = BLOCK_SUPERCONTEXT (stmt);
 
-  return (code == FUNCTION_DECL);
+      if (TREE_CODE (parent) == BLOCK)
+	{
+	  register tree grandparent = BLOCK_SUPERCONTEXT (parent);
+
+	  if (TREE_CODE (grandparent) == FUNCTION_DECL)
+	    return 1;
+	}
+    }
+  return 0;
 }
 
 /* Given a pointer to a tree node for some type, return a Dwarf fundamental
@@ -4047,9 +4058,7 @@ output_block (stmt)
 	 not represent a "body block inlining" before trying to set the
 	 `must_output_die' flag.  */
 
-      if (origin != NULL
-	  && origin_code == BLOCK
-	  && ! is_body_block (origin))
+      if (origin == NULL || ! is_body_block (origin))
 	{
 	  /* Determine if this block directly contains any "significant"
 	     local declarations which we will need to output DIEs for.  */
