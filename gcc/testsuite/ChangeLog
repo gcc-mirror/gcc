@@ -1,3 +1,7 @@
+2002-09-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/crash32.C: Mark ICE.
+
 Tue Sep 17 13:59:45 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc.dg/comp-types-1.m: New test.
