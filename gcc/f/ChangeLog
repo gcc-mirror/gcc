@@ -1,3 +1,9 @@
+Sat Feb  5 23:27:25 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (mark_tracker_head, mark_binding_level): Protoize.
+
+	* where.c (mark_ffewhere_head): Likewise.
+
 Wed Jan 12 09:32:59 2000  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* lang-specs.h: Pass -lang-fortran to preprocessor.

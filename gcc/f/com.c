@@ -6439,8 +6439,7 @@ static struct tree_ggc_tracker
 } *tracker_head = NULL;
 
 static void 
-mark_tracker_head (arg)
-     void *arg;
+mark_tracker_head (void *arg)
 {
   struct tree_ggc_tracker *head;
   int i;
@@ -14775,8 +14774,7 @@ incomplete_type_error (value, type)
 
 /* Mark ARG for GC.  */
 static void 
-mark_binding_level (arg)
-     void *arg;
+mark_binding_level (void *arg)
 {
   struct binding_level *level = *(struct binding_level **) arg;
 
