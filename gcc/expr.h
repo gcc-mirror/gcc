@@ -447,76 +447,74 @@ extern rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 extern enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
 /* Expand a binary operation given optab and rtx operands.  */
-extern rtx expand_binop ();
+extern rtx expand_binop PROTO((enum machine_mode, optab, rtx, rtx, rtx, int, enum optab_methods));
 
 /* Expand a binary operation with both signed and unsigned forms.  */
-extern rtx sign_expand_binop ();
+extern rtx sign_expand_binop PROTO((enum machine_mode, optab, optab, rtx, rtx, rtx, int, enum optab_methods));
 
 /* Expand a unary arithmetic operation given optab rtx operand.  */
-extern rtx expand_unop ();
+extern rtx expand_unop PROTO((enum machine_mode, optab, rtx, rtx, int));
 
 /* Expand the complex absolute value operation.  */
-extern rtx expand_complex_abs ();
+extern rtx expand_complex_abs PROTO((enum machine_mode, rtx, rtx, int));
 
 /* Arguments MODE, RTX: return an rtx for the negation of that value.
    May emit insns.  */
-extern rtx negate_rtx ();
+extern rtx negate_rtx PROTO((enum machine_mode, rtx));
 
 /* Expand a logical AND operation.  */
-extern rtx expand_and ();
+extern rtx expand_and PROTO((rtx, rtx, rtx));
 
 /* Emit a store-flag operation.  */
-extern rtx emit_store_flag ();
+extern rtx emit_store_flag PROTO((rtx, enum rtx_code, rtx, rtx, enum machine_mode, int, int));
 
-/* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
-extern rtx label_rtx ();
 
 /* Given a JUMP_INSN, return a description of the test being made.  */
-extern rtx get_condition ();
+extern rtx get_condition PROTO((rtx, rtx *));
 
 /* Return the INSN_CODE to use for an extend operation.  */
-extern enum insn_code can_extend_p ();
+extern enum insn_code can_extend_p PROTO((enum machine_mode, enum machine_mode, int));
 
 /* Initialize the tables that control conversion between fixed and
    floating values.  */
-extern void init_fixtab ();
-extern void init_floattab ();
+extern void init_fixtab PROTO((void));
+extern void init_floattab PROTO((void));
 
 /* Generate code for a FIX_EXPR.  */
-extern void expand_fix ();
+extern void expand_fix PROTO((rtx, rtx, int));
 
 /* Generate code for a FLOAT_EXPR.  */
-extern void expand_float ();
+extern void expand_float PROTO((rtx, rtx, int));
 
 /* Create but don't emit one rtl instruction to add one rtx into another.
    Modes must match; operands must meet the operation's predicates.
    Likewise for subtraction and for just copying.
    These do not call protect_from_queue; caller must do so.  */
-extern rtx gen_add2_insn ();
-extern rtx gen_sub2_insn ();
-extern rtx gen_move_insn ();
+extern rtx gen_add2_insn PROTO((rtx, rtx));
+extern rtx gen_sub2_insn PROTO((rtx, rtx));
+extern rtx gen_move_insn PROTO((rtx, rtx));
 
 /* Emit one rtl instruction to store zero in specified rtx.  */
-extern void emit_clr_insn ();
+extern void emit_clr_insn PROTO((rtx));
 
 /* Emit one rtl insn to store 1 in specified rtx assuming it contains 0.  */
-extern void emit_0_to_1_insn ();
+extern void emit_0_to_1_insn PROTO((rtx));
 
 /* Emit one rtl insn to compare two rtx's.  */
-extern void emit_cmp_insn ();
-
-/* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
-extern rtx compare_from_rtx ();
+extern void emit_cmp_insn PROTO((rtx, rtx, enum rtx_code, rtx, enum machine_mode, int, int));
 
 /* Emit insns to set X from Y, with no frills.  */
-extern rtx emit_move_insn_1 ();
+extern rtx emit_move_insn_1 PROTO ((rtx, rtx));
+
+/* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
+extern rtx compare_from_rtx PROTO((rtx, rtx, enum rtx_code, int, enum machine_mode, rtx, int));
 
 /* Emit some rtl insns to move data between rtx's, converting machine modes.
    Both modes must be floating or both fixed.  */
-extern void convert_move ();
+extern void convert_move PROTO((rtx, rtx, int));
 
 /* Convert an rtx to specified machine mode and return the result.  */
-extern rtx convert_to_mode ();
+extern rtx convert_to_mode PROTO((enum machine_mode, rtx, int));
 
 /* Emit code to push some arguments and call a library routine,
    storing the value in a specified place.  Calling sequence is
@@ -526,38 +524,51 @@ extern void emit_library_call ();
 /* Given an rtx that may include add and multiply operations,
    generate them as insns and return a pseudo-reg containing the value.
    Useful after calling expand_expr with 1 as sum_ok.  */
-extern rtx force_operand ();
+extern rtx force_operand PROTO((rtx, rtx));
 
+#ifdef TREE_CODE
+/* rtl.h and tree.h were included.  */
+/* Return an rtx for the size in bytes of the value of an expr.  */
+extern rtx expr_size PROTO((tree));
+
+extern rtx lookup_static_chain PROTO((tree));
+
+/* Convert a stack slot address ADDR valid in function FNDECL
+   into an address valid in this function (using a static chain).  */
+extern rtx fix_lexical_addr PROTO((rtx, tree));
+
+/* Return the address of the trampoline for entering nested fn FUNCTION.  */
+extern rtx trampoline_address PROTO((tree));
+
+/* Return an rtx that refers to the value returned by a function
+   in its original home.  This becomes invalid if any more code is emitted.  */
+extern rtx hard_function_value PROTO((tree, tree));
+
+/* Generate code for computing expression EXP,
+   and storing the value into TARGET.
+   If SUGGEST_REG is nonzero, copy the value through a register
+   and return that register, if that is possible.  */
+extern rtx store_expr PROTO((tree, rtx, int));
+
+extern rtx prepare_call_address PROTO((rtx, tree, rtx*));
+
+extern rtx expand_call PROTO((tree, rtx, int));
+extern void emit_call_1 PROTO((rtx, tree, int, int, rtx, rtx, int, rtx, int));
+
+extern void emit_push_insn PROTO((rtx, enum machine_mode, tree, rtx, int, int, rtx, int, rtx, rtx));
+extern rtx expand_shift PROTO((enum tree_code, enum machine_mode, rtx, tree, rtx, int));
+extern rtx expand_divmod PROTO((int, enum tree_code, enum machine_mode, rtx, rtx, rtx, int));
+extern void jumpif PROTO((tree, rtx));
+extern void do_jump PROTO((tree, rtx, rtx));
+extern void locate_and_pad_parm PROTO((enum machine_mode, tree, int, tree, struct args_size *, struct args_size *, struct args_size *));
+extern rtx expand_inline_function PROTO((tree, tree, rtx, int, tree, rtx));
+/* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
+extern rtx label_rtx PROTO((tree));
+#else
 /* Return an rtx for the size in bytes of the value of an expr.  */
 extern rtx expr_size ();
 
 extern rtx lookup_static_chain ();
-
-/* Indicate how an input argument register was promoted.  */
-extern rtx promoted_input_arg ();
-
-/* Return an rtx like arg but sans any constant terms.
-   Returns the original rtx if it has no constant terms.
-   The constant terms are added and stored via a second arg.  */
-extern rtx eliminate_constant_term ();
-
-/* Convert arg to a valid memory address for specified machine mode,
-   by emitting insns to perform arithmetic if nec.  */
-extern rtx memory_address ();
-
-/* Like `memory_address' but pretent `flag_force_addr' is 0.  */
-extern rtx memory_address_noforce ();
-
-/* Return a memory reference like MEMREF, but with its mode changed
-   to MODE and its address changed to ADDR.
-   (VOIDmode means don't change the mode.
-   NULL for ADDR means don't change the address.)  */
-extern rtx change_address ();
-
-/* Return a memory reference like MEMREF, but which is known to have a
-   valid address.  */
-
-extern rtx validize_mem ();
 
 /* Convert a stack slot address ADDR valid in function FNDECL
    into an address valid in this function (using a static chain).  */
@@ -566,79 +577,9 @@ extern rtx fix_lexical_addr ();
 /* Return the address of the trampoline for entering nested fn FUNCTION.  */
 extern rtx trampoline_address ();
 
-/* Assemble the static constant template for function entry trampolines.  */
-extern rtx assemble_trampoline_template ();
-
-/* Return 1 if two rtx's are equivalent in structure and elements.  */
-extern int rtx_equal_p ();
-
-/* Given rtx, return new rtx whose address won't be affected by
-   any side effects.  It has been copied to a new temporary reg.  */
-extern rtx stabilize ();
-
-/* Given an rtx, copy all regs it refers to into new temps
-   and return a modified copy that refers to the new temps.  */
-extern rtx copy_all_regs ();
-
-/* Copy given rtx to a new temp reg and return that.  */
-extern rtx copy_to_reg ();
-
-/* Like copy_to_reg but always make the reg Pmode.  */
-extern rtx copy_addr_to_reg ();
-
-/* Like copy_to_reg but always make the reg the specified mode MODE.  */
-extern rtx copy_to_mode_reg ();
-
-/* Copy given rtx to given temp reg and return that.  */
-extern rtx copy_to_suggested_reg ();
-
-/* Copy a value to a register if it isn't already a register.
-   Args are mode (in case value is a constant) and the value.  */
-extern rtx force_reg ();
-
-/* Return given rtx, copied into a new temp reg if it was in memory.  */
-extern rtx force_not_mem ();
-
-/* Remove some bytes from the stack.  An rtx says how many.  */
-extern void adjust_stack ();
-
-/* Add some bytes to the stack.  An rtx says how many.  */
-extern void anti_adjust_stack ();
-
-/* This enum is used for the following two functions.  */
-enum save_level {SAVE_BLOCK, SAVE_FUNCTION, SAVE_NONLOCAL};
-
-/* Save the stack pointer at the specified level.  */
-extern void emit_stack_save ();
-
-/* Restore the stack pointer from a save area of the specified level.  */
-extern void emit_stack_restore ();
-
-/* Allocate some space on the stack dynamically and return its address.  An rtx
-   says how many bytes.  */
-extern rtx allocate_dynamic_stack_space ();
-
-/* Emit code to copy function value to a new temp reg and return that reg.  */
-extern rtx function_value ();
-
 /* Return an rtx that refers to the value returned by a function
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_function_value ();
-
-/* Return an rtx that refers to the value returned by a library call
-   in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_libcall_value ();
-
-/* Emit code to copy function value to a specified place.  */
-extern void copy_function_value ();
-
-/* Given an rtx, return an rtx for a value rounded up to a multiple
-   of STACK_BOUNDARY / BITS_PER_UNIT.  */
-extern rtx round_push ();
-
-/* Push a block of length SIZE (perhaps variable)
-   and return an rtx to address the beginning of the block.  */
-extern rtx push_block ();
 
 /* Generate code for computing expression EXP,
    and storing the value into TARGET.
@@ -649,31 +590,134 @@ extern rtx store_expr ();
 extern rtx prepare_call_address ();
 extern rtx expand_call ();
 extern void emit_call_1 ();
-
-extern void emit_block_move ();
 extern void emit_push_insn ();
-extern void use_regs ();
-extern void move_block_to_reg ();
-
-extern rtx store_bit_field ();
-extern rtx extract_bit_field ();
 extern rtx expand_shift ();
-extern rtx expand_mult ();
 extern rtx expand_divmod ();
-extern rtx expand_mult_add ();
-extern rtx expand_stmt_expr ();
-extern rtx emit_no_conflict_block ();
-extern void emit_libcall_block ();
-
-extern void jumpifnot ();
 extern void jumpif ();
 extern void do_jump ();
-
-extern rtx assemble_static_space ();
-
 extern void locate_and_pad_parm ();
-
 extern rtx expand_inline_function ();
+
+/* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
+extern rtx label_rtx ();
+#endif
+
+
+/* Indicate how an input argument register was promoted.  */
+extern rtx promoted_input_arg ();
+
+/* Return an rtx like arg but sans any constant terms.
+   Returns the original rtx if it has no constant terms.
+   The constant terms are added and stored via a second arg.  */
+extern rtx eliminate_constant_term PROTO((rtx, rtx *));
+
+/* Convert arg to a valid memory address for specified machine mode,
+   by emitting insns to perform arithmetic if nec.  */
+extern rtx memory_address PROTO((enum machine_mode, rtx));
+
+/* Like `memory_address' but pretent `flag_force_addr' is 0.  */
+extern rtx memory_address_noforce PROTO((enum machine_mode, rtx));
+
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address changed to ADDR.
+   (VOIDmode means don't change the mode.
+   NULL for ADDR means don't change the address.)  */
+extern rtx change_address PROTO((rtx, enum machine_mode, rtx));
+
+/* Return a memory reference like MEMREF, but which is known to have a
+   valid address.  */
+
+extern rtx validize_mem PROTO((rtx));
+
+/* Convert a stack slot address ADDR valid in function FNDECL
+   into an address valid in this function (using a static chain).  */
+extern rtx fix_lexical_addr ();
+
+/* Assemble the static constant template for function entry trampolines.  */
+extern rtx assemble_trampoline_template PROTO((void));
+
+/* Return 1 if two rtx's are equivalent in structure and elements.  */
+extern int rtx_equal_p PROTO((rtx, rtx));
+
+/* Given rtx, return new rtx whose address won't be affected by
+   any side effects.  It has been copied to a new temporary reg.  */
+extern rtx stabilize PROTO((rtx));
+
+/* Given an rtx, copy all regs it refers to into new temps
+   and return a modified copy that refers to the new temps.  */
+extern rtx copy_all_regs PROTO((rtx));
+
+/* Copy given rtx to a new temp reg and return that.  */
+extern rtx copy_to_reg PROTO((rtx));
+
+/* Like copy_to_reg but always make the reg Pmode.  */
+extern rtx copy_addr_to_reg PROTO((rtx));
+
+/* Like copy_to_reg but always make the reg the specified mode MODE.  */
+extern rtx copy_to_mode_reg PROTO((enum machine_mode, rtx));
+
+/* Copy given rtx to given temp reg and return that.  */
+extern rtx copy_to_suggested_reg PROTO((rtx, rtx, enum machine_mode));
+
+/* Copy a value to a register if it isn't already a register.
+   Args are mode (in case value is a constant) and the value.  */
+extern rtx force_reg PROTO((enum machine_mode, rtx));
+
+/* Return given rtx, copied into a new temp reg if it was in memory.  */
+extern rtx force_not_mem PROTO((rtx));
+
+/* Remove some bytes from the stack.  An rtx says how many.  */
+extern void adjust_stack PROTO((rtx));
+
+/* Add some bytes to the stack.  An rtx says how many.  */
+extern void anti_adjust_stack PROTO((rtx));
+
+/* This enum is used for the following two functions.  */
+enum save_level {SAVE_BLOCK, SAVE_FUNCTION, SAVE_NONLOCAL};
+
+/* Save the stack pointer at the specified level.  */
+extern void emit_stack_save PROTO((enum save_level, rtx *, rtx));
+
+/* Restore the stack pointer from a save area of the specified level.  */
+extern void emit_stack_restore PROTO((enum save_level, rtx, rtx));
+
+/* Allocate some space on the stack dynamically and return its address.  An rtx
+   says how many bytes.  */
+extern rtx allocate_dynamic_stack_space PROTO((rtx, rtx, int));
+
+/* Emit code to copy function value to a new temp reg and return that reg.  */
+extern rtx function_value ();
+
+/* Return an rtx that refers to the value returned by a library call
+   in its original home.  This becomes invalid if any more code is emitted.  */
+extern rtx hard_libcall_value PROTO((enum machine_mode));
+
+/* Emit code to copy function value to a specified place.  */
+extern void copy_function_value ();
+
+/* Given an rtx, return an rtx for a value rounded up to a multiple
+   of STACK_BOUNDARY / BITS_PER_UNIT.  */
+extern rtx round_push PROTO((rtx));
+
+/* Push a block of length SIZE (perhaps variable)
+   and return an rtx to address the beginning of the block.  */
+extern rtx push_block PROTO((rtx, int, int));
+
+extern void emit_block_move PROTO((rtx, rtx, rtx, int));
+extern void use_regs PROTO((int, int));
+extern void move_block_to_reg PROTO((int, rtx, int, enum machine_mode));
+
+extern rtx store_bit_field PROTO((rtx, int, int, enum machine_mode, rtx, int, int));
+extern rtx extract_bit_field PROTO((rtx, int, int, int, rtx, enum machine_mode, enum machine_mode, int, int));
+extern rtx expand_mult PROTO((enum machine_mode, rtx, rtx, rtx, int));
+extern rtx expand_mult_add PROTO((rtx, rtx, rtx, rtx,enum machine_mode, int));
+extern rtx expand_stmt_expr ();
+extern rtx emit_no_conflict_block PROTO((rtx, rtx, rtx, rtx, rtx));
+extern void emit_libcall_block PROTO((rtx, rtx, rtx, rtx));
+
+extern void jumpifnot ();
+
+extern rtx assemble_static_space PROTO((int));
 
 /* Hook called by expand_expr for language-specific tree codes.
    It is up to the language front end to install a hook
