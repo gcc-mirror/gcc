@@ -1,5 +1,10 @@
 2004-08-29  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.h (REVERSE_CONDITION): Define.
+	(REVERSIBLE_CC_MODE): All comparisons are now reversible.
+
+2004-08-29  Richard Earnshaw  <rearnsha@arm.com>
+
 	* flow.c (REVERSE_CONDEXEC_PREDICATES_P): Use the whole comparison, not
 	just the codes, call reversed_comparison_code ().
 	(ior_reg_cond): Update arguments to REVERSE_CONDEXEC_PREDICATES_P.

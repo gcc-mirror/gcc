@@ -2304,7 +2304,12 @@ extern int making_const_table;
 
 #define SELECT_CC_MODE(OP, X, Y)  arm_select_cc_mode (OP, X, Y)
 
-#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
+#define REVERSIBLE_CC_MODE(MODE) 1
+
+#define REVERSE_CONDITION(CODE,MODE) \
+  (((MODE) == CCFPmode || (MODE) == CCFPEmode) \
+   ? reverse_condition_maybe_unordered (code) \
+   : reverse_condition (code))
 
 #define CANONICALIZE_COMPARISON(CODE, OP0, OP1)				\
   do									\
