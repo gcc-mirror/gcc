@@ -1,3 +1,8 @@
+2001-11-05  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_select_section): Handle
+	CONSTRUCTORs _correctly_.
+
 2001-11-05  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* c-decl.c (delete_block): Remove.
