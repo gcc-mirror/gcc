@@ -8830,6 +8830,8 @@ type_unification_real (tree tparms,
 	      continue;
 	    }
 	  arg = TREE_TYPE (arg);
+	  if (arg == error_mark_node)
+	    return 1;
 	}
       
       {
