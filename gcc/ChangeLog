@@ -1,3 +1,8 @@
+2004-05-18  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (ctrsi_internal3): Delete.
+	(ctrsi_internal4, ctrdi_internal3, ctrdi_internal4): Delete.
+
 2004-05-17  Jeff Law  <law@redhat.com>
 
 	* toplev.h (flag_delete_null_pointer_checks): Move from here to...
