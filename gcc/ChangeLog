@@ -1,3 +1,8 @@
+Thu Sep 30 18:18:39 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (truncatexfdf splitters): Do not use subreg.
+	(fop XFmode patterns): Fix mode in operand testing.
+
 Thu Sep 30 18:04:13 1999  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): Amend last change to test only the
