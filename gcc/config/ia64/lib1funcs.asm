@@ -670,11 +670,11 @@ __ia64_restore_stack_nonlocal:
 //
 // The trampoline has the following form:
 //
-//		+-------------------+ \ 
+//		+-------------------+ >
 //	TRAMP:	| __ia64_trampoline | |
 //		+-------------------+  > fake function descriptor
 //		| TRAMP+16          | |
-//		+-------------------+ /
+//		+-------------------+ >
 //		| target descriptor |
 //		+-------------------+
 //		| static link	    |

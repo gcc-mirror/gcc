@@ -271,6 +271,8 @@ typedef struct unwind_info_ptr
 #define IA64_UNW_EHANDLER	0x1
 #define IA64_UNW_UHANDLER	0x2
 
+extern void * __ia64_personality_v1 (void *pc, old_exception_table *table);
+
 extern unwind_info_ptr *__build_ia64_frame_state (unsigned char *, 
 						  ia64_frame_state *,
 						  void *, void *,

@@ -2024,7 +2024,7 @@ do {									\
   long t[3];								\
   REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, t);				\
   fprintf (FILE, "\tdata4 0x%08lx, 0x%08lx, 0x%08lx, 0x%08lx\n",	\
-	   t[0] & 0xffffffff, t[1] & 0xffffffff, t[2] & 0xffffffff, 0);	\
+	   t[0] & 0xffffffff, t[1] & 0xffffffff, t[2] & 0xffffffff, 0L);\
 } while (0)
 
 /* ??? Must reverse the word order for big-endian code?  */
