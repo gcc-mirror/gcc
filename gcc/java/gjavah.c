@@ -457,7 +457,6 @@ get_field_name (jcf, name_index, flags)
   char *override;
   const char *tmpconstptr;
 
-
   if (name_is_method_p (name, length))
     {
       /* This field name matches a method.  So override the name with
@@ -758,7 +757,8 @@ decompile_method (out, jcf, code_len)
       name_and_type = JPOOL_USHORT2 (jcf, index);
       /* FIXME: ensure that tag is CONSTANT_NameAndType.  */
       name = JPOOL_USHORT1 (jcf, name_and_type);
-      print_name (out, jcf, name);
+      /* FIXME: flags.  */
+      print_field_name (out, jcf, name, 0);
       fputs ("; }", out);
       decompiled = 1;
     }
