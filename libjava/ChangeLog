@@ -1,3 +1,12 @@
+2004-11-27  Andrew Haley  <aph@redhat.com>
+
+	* link.cc (ensure_class_linked): Conditionally compile
+	_Jv_IsInterpretedClass on INTERPRETER.
+	(print_class_loaded): Likewise.
+	(wait_for_state): Likewise.
+	* include/jvm.h (ROUND): Move to here from include/java-interp.h.
+	* include/java-interp.h (ROUND): Remove.
+
 2004-11-25  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/util/natDebug.cc (getField): Don't qualify name.
