@@ -2452,7 +2452,7 @@ expand_return (retval)
       int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (retval_rhs)),BITS_PER_WORD);
       rtx *result_pseudos = (rtx *) alloca (sizeof (rtx) * n_regs);
-      rtx result_reg, src, dst;
+      rtx result_reg, src = NULL_RTX, dst = NULL_RTX;
       rtx result_val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
       enum machine_mode tmpmode, result_reg_mode;
 

@@ -2011,7 +2011,7 @@ record_last_set_info (dest, setter)
 
 static void
 compute_hash_table (f, set_p)
-     rtx f;
+     rtx f ATTRIBUTE_UNUSED;
      int set_p;
 {
   int bb;

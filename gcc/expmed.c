@@ -1614,7 +1614,7 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
 {
   int unit;
   int bitsdone = 0;
-  rtx result;
+  rtx result = NULL_RTX;
   int first = 1;
 
   /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that

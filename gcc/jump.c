@@ -598,7 +598,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	  rtx reallabelprev;
 	  rtx temp, temp1, temp2, temp3, temp4, temp5, temp6;
 	  rtx nlabel;
-	  int this_is_simplejump, this_is_condjump, reversep;
+	  int this_is_simplejump, this_is_condjump, reversep = 0;
 	  int this_is_condjump_in_parallel;
 #if 0
 	  /* If NOT the first iteration, if this is the last jump pass
