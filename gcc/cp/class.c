@@ -209,6 +209,7 @@ static bool type_requires_array_cookie PARAMS ((tree));
 static bool contains_empty_class_p (tree);
 static tree dfs_base_derived_from (tree, void *);
 static bool base_derived_from (tree, tree);
+static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
 
 /* Macros for dfs walking during vtt construction. See
    dfs_ctor_vtable_bases_queue_p, dfs_build_secondary_vptr_vtt_inits
@@ -3674,6 +3675,10 @@ layout_nonempty_base_or_field (record_layout_info rli,
 	 empty class, have nonzero size, any overlap can happen only
 	 with a direct or indirect base-class -- it can't happen with
 	 a data member.  */
+      /* G++ 3.2 did not check for overlaps when placing a non-empty
+	 virtual base.  */
+      if (!abi_version_at_least (2) && binfo && TREE_VIA_VIRTUAL (binfo))
+	break;
       if (layout_conflict_p (type, offset, offsets, field_p))
 	{
 	  /* Strip off the size allocated to this field.  That puts us
@@ -3706,6 +3711,16 @@ layout_nonempty_base_or_field (record_layout_info rli,
 					  convert (ssizetype, 
 						   BINFO_OFFSET (binfo))),
 			     t);
+}
+
+/* Returns true if TYPE is empty and OFFSET is non-zero.  */
+
+static int
+empty_base_at_nonzero_offset_p (tree type,
+				tree offset,
+				splay_tree offsets ATTRIBUTE_UNUSED)
+{
+  return is_empty_class (type) && !integer_zerop (offset);
 }
 
 /* Layout the empty base BINFO.  EOC indicates the byte currently just
@@ -3816,14 +3831,37 @@ build_base_field (record_layout_info rli, tree binfo,
   else
     {
       tree eoc;
+      bool atend;
 
       /* On some platforms (ARM), even empty classes will not be
 	 byte-aligned.  */
       eoc = round_up (rli_size_unit_so_far (rli),
 		      CLASSTYPE_ALIGN_UNIT (basetype));
-      if (layout_empty_base (binfo, eoc, offsets, t))
-	CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
-
+      atend = layout_empty_base (binfo, eoc, offsets, t);
+      /* A nearly-empty class "has no proper base class that is empty,
+	 not morally virtual, and at an offset other than zero."  */
+      if (!TREE_VIA_VIRTUAL (binfo) && CLASSTYPE_NEARLY_EMPTY_P (t))
+	{
+	  if (atend)
+	    CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
+	  /* The check above (used in G++ 3.2) is insufficient  because
+	     an empty class placed at offset zero might itself have an
+	     empty base at a non-zero offset.  */
+	  else if (walk_subobject_offsets (basetype, 
+					   empty_base_at_nonzero_offset_p,
+					   size_zero_node,
+					   /*offsets=*/NULL,
+					   /*max_offset=*/NULL_TREE,
+					   /*vbases_p=*/true))
+	    {
+	      if (abi_version_at_least (2))
+		CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
+	      else if (warn_abi)
+		warning ("class `%T' will be considered nearly empty in a "
+			 "future version of GCC", t);
+	    }
+	}
+	
       /* We do not create a FIELD_DECL for empty base classes because
 	 it might overlap some other field.  We want to be able to
 	 create CONSTRUCTORs for the class by iterating over the
