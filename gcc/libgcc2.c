@@ -1425,7 +1425,11 @@ BLOCK_PROFILER_CODE
 char *ctime ();
 
 #ifdef HAVE_ATEXIT
+#ifdef WINNT
+extern int atexit (void (*) (void));
+#else
 extern void atexit (void (*) (void));
+#endif
 #define ON_EXIT(FUNC,ARG) atexit ((FUNC))
 #else
 #ifdef sun
