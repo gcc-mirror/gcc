@@ -118,7 +118,7 @@ do
 	else
 		rm -f Makefile.xx
 		abssrcdir=`cd ${srcdir}; pwd`
-		sed "s|^INSTALL = .*|INSTALL = ${abssrcdir}/install.sh -c|" Makefile.tem > Makefile.xx
+		sed "s|^INSTALL = .*|${INSTALL}|" Makefile.tem > Makefile.xx
 		rm -f Makefile.tem
 		mv Makefile.xx Makefile.tem
 	fi

@@ -146,7 +146,6 @@ AC_SUBST(manext)
 AC_SUBST(objext)
 
 build_xm_file=
-build_broken_install=
 build_install_headers_dir=install-headers-tar
 build_exeext=
 host_xm_file=
@@ -174,8 +173,6 @@ for machine in $build $host $target; do
 	use_collect2=
 	# Set this to override the default target model.
 	target_cpu_default=
-	# Set this to force use of install.sh.
-	broken_install=
 	# Set this to control which fixincludes program to use.
 	fixincludes=fixincludes
 	# Set this to control how the header file directory is installed.
@@ -298,7 +295,6 @@ for machine in $build $host $target; do
 		then
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		broken_install=yes
 		use_collect2=yes
 		# Some versions of OSF4 (specifically X4.0-9 296.7) have
 		# a broken tar, so we use cpio instead.
@@ -318,7 +314,6 @@ for machine in $build $host $target; do
 		then
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		broken_install=yes
 		use_collect2=yes
 		;;
 	alpha*-dec-osf1.2)
@@ -331,7 +326,6 @@ for machine in $build $host $target; do
 		then
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		broken_install=yes
 		use_collect2=yes
 		;;
 	alpha*-*-osf*)
@@ -343,7 +337,6 @@ for machine in $build $host $target; do
 		then
 			extra_passes="mips-tfile mips-tdump"
 		fi
-		broken_install=yes
 		use_collect2=yes
 		;;
 	alpha*-*-winnt3*)
@@ -413,7 +406,6 @@ for machine in $build $host $target; do
 		tm_file=arm/linux-gas.h
 		tmake_file=arm/t-linux
 		fixincludes=Makefile.in
-		broken_install=yes
 		gnu_ld=yes
 		;;
 	arm-*-aout)
@@ -451,7 +443,6 @@ for machine in $build $host $target; do
 		extra_headers=va-clipper.h
 		extra_parts="crtbegin.o crtend.o"
 		install_headers_dir=install-headers-cpio
-		broken_install=yes
 		;;
 	dsp16xx-*)
 		;;
@@ -502,7 +493,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -516,7 +506,6 @@ for machine in $build $host $target; do
 		else
 			tm_file="pa/pa-oldas.h ${tm_file}"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -531,7 +520,6 @@ for machine in $build $host $target; do
 		else
 			tm_file="pa/pa-oldas.h ${tm_file}"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -544,7 +532,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -556,7 +543,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -569,7 +555,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -581,7 +566,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -594,7 +578,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -606,7 +589,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -619,7 +601,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -631,7 +612,6 @@ for machine in $build $host $target; do
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
@@ -654,7 +634,6 @@ for machine in $build $host $target; do
 		fi
 		xm_file=i386/xm-aix.h
 		xmake_file=i386/x-aix
-		broken_install=yes
 		;;
 	i486-ncr-sysv4*)		# NCR 3000 - i486 running system V.4
 		xm_file=i386/xm-sysv4.h
@@ -695,7 +674,6 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.ptx
 		extra_parts="crtbegin.o crtend.o"
 		install_headers_dir=install-headers-cpio
-		broken_install=yes
 		;;
 	i[[3456]]86-sequent-ptx2* | i[[3456]]86-sequent-sysv3*)
 		xm_file=i386/xm-sysv3.h
@@ -705,7 +683,6 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		fixincludes=fixinc.ptx
 		install_headers_dir=install-headers-cpio
-		broken_install=yes
 		;;
 	i[[3456]]86-sequent-ptx4* | i[[3456]]86-sequent-sysv4*)
 		xm_file=i386/xm-sysv4.h
@@ -715,7 +692,6 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		fixincludes=fixinc.ptx
 		install_headers_dir=install-headers-cpio
-		broken_install=yes
 		;;
 	i386-sun-sunos*)		# Sun i386 roadrunner
 		xm_file=i386/xm-sun.h
@@ -787,7 +763,6 @@ for machine in $build $host $target; do
 			extra_parts="crtbegin.o crtend.o"
 		fi
 		install_headers_dir=install-headers-cpio
-		broken_install=yes
 		;;
 	i[[3456]]86-*-linux-gnuoldld*)	# Intel 80386's running Linux
 		xm_file=i386/xm-linux.h # with a.out format using pre BFD linkers
@@ -795,7 +770,6 @@ for machine in $build $host $target; do
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-oldld.h
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
-		broken_install=yes
 		gnu_ld=yes
 		;;
 	i[[3456]]86-*-linux-gnuaout*)		# Intel 80386's running Linux
@@ -804,7 +778,6 @@ for machine in $build $host $target; do
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-aout.h
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
-		broken_install=yes
 		gnu_ld=yes
 		;;
 	i[[3456]]86-*-linux-gnulibc1)
@@ -814,7 +787,6 @@ for machine in $build $host $target; do
 		tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
-		broken_install=yes
 		gnu_ld=yes
  		if [[ x$enable_threads = xyes ]]; then
  			thread_file='single'
@@ -827,7 +799,6 @@ for machine in $build $host $target; do
 		tmake_file="t-linux i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
-		broken_install=yes
 		gnu_ld=yes
  		if [[ x$enable_threads = xyes ]]; then
  			thread_file='posix'
@@ -892,7 +863,6 @@ for machine in $build $host $target; do
 		xm_file=i386/xm-sco5.h
 		xmake_file=i386/x-sco5
 		fixincludes=fixinc.sco
-		broken_install=yes
 		tm_file=i386/sco5.h
 		tmake_file=i386/t-sco5
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
@@ -901,7 +871,6 @@ for machine in $build $host $target; do
 		xm_file=i386/xm-sco.h
 		xmake_file=i386/x-sco4
 		fixincludes=fixinc.sco
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
                 if [[ x$stabs = xyes ]]
 		then
@@ -918,7 +887,6 @@ for machine in $build $host $target; do
 	i[[3456]]86-*-sco*)	 	# 80386 running SCO system
 		xm_file=i386/xm-sco.h
 		xmake_file=i386/x-sco
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
                 if [[ x$stabs = xyes ]]
 		then
@@ -944,7 +912,6 @@ for machine in $build $host $target; do
 		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
 		fixincludes=fixinc.svr4
-		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
 		fi
@@ -1060,7 +1027,6 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} svr3.h i860/paragon.h"
 		xm_file="${xm_file} xm-svr3.h"
 		tmake_file=t-osf
-		broken_install=yes
 		;;
 	i860-*-sysv3*)
 		tm_file="${tm_file} svr3.h i860/sysv3.h"
@@ -1128,7 +1094,6 @@ for machine in $build $host $target; do
 			xmake_file=m68k/x-hp320
 			tm_file=m68k/hp310.h
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		extra_headers=math-68881.h
@@ -1157,7 +1122,6 @@ for machine in $build $host $target; do
 	m68k-apple-aux*)		# Apple Macintosh running A/UX
 		xm_file=m68k/xm-aux.h
 		tmake_file=m68k/t-aux
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		extra_headers=math-68881.h
 		extra_parts="crt1.o mcrt1.o maccrt1.o crt2.o crtn.o"
@@ -1266,7 +1230,6 @@ for machine in $build $host $target; do
 		xm_file=m68k/xm-crds.h
 		xmake_file=m68k/x-crds
 		tm_file=m68k/crds.h
-		broken_install=yes
 		use_collect2=yes
 		extra_headers=math-68881.h
 		;;
@@ -1283,7 +1246,6 @@ for machine in $build $host $target; do
 		xmake_file=m68k/x-ccur
 		extra_headers=math-68881.h
 		use_collect2=yes
-		broken_install=yes
 		;;
 	m68k-hp-bsd4.4*)		# HP 9000/3xx running 4.4bsd
 		tm_file=m68k/hp3bsd44.h
@@ -1316,7 +1278,6 @@ for machine in $build $host $target; do
 			xmake_file=m68k/x-hp320
 			tm_file=m68k/hpux7.h
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		extra_headers=math-68881.h
@@ -1331,7 +1292,6 @@ for machine in $build $host $target; do
 			xmake_file=m68k/x-hp320
 			tm_file=m68k/hp320.h
 		fi
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		extra_headers=math-68881.h
@@ -1504,7 +1464,6 @@ for machine in $build $host $target; do
 		    ;;
 		esac
 		extra_parts="crtbegin.o bcscrtbegin.o crtend.o m88kdgux.ld"
-		broken_install=yes
 		xmake_file=m88k/x-dgux
 		if [[ x$gas = xyes ]]
 		then
@@ -1568,7 +1527,6 @@ for machine in $build $host $target; do
 	mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 		tm_file=mips/iris6.h
 		xm_file=mips/xm-iris6.h
-		broken_install=yes
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris6
 		tmake_file=mips/t-iris6
@@ -1579,7 +1537,6 @@ for machine in $build $host $target; do
 	mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 		tm_file=mips/cross64.h
 		xm_file=mips/xm-iris5.h
-		broken_install=yes
 		fixincludes=Makefile.in
 		xmake_file=mips/x-iris
 		tmake_file=mips/t-cross64
@@ -1608,7 +1565,6 @@ for machine in $build $host $target; do
                 then
                         use_collect2=yes
                 fi
-                broken_install=yes
                 ;;
 	mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 		if [[ x$gas = xyes ]]
@@ -1622,7 +1578,6 @@ for machine in $build $host $target; do
 			tm_file=mips/iris5.h
 		fi
 		xm_file=mips/xm-iris5.h
-		broken_install=yes
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris
 		# mips-tfile doesn't work yet
@@ -1639,7 +1594,6 @@ for machine in $build $host $target; do
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_file=mips/xm-iris4.h
-		broken_install=yes
 		xmake_file=mips/x-iris
 		if [[ x$gas = xyes ]]
 		then
@@ -1661,7 +1615,6 @@ for machine in $build $host $target; do
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_file=mips/xm-iris4.h
-		broken_install=yes
 		xmake_file=mips/x-iris
 		if [[ x$gas = xyes ]]
 		then
@@ -1683,7 +1636,6 @@ for machine in $build $host $target; do
 			tm_file="${tm_file} dbx.h"
 		fi
 		xm_file=mips/xm-iris3.h
-		broken_install=yes
 		xmake_file=mips/x-iris3
 		if [[ x$gas = xyes ]]
 		then
@@ -1802,7 +1754,6 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		broken_install=yes
 		;;
 	mips-*-ultrix* | mips-dec-mach3)	# Decstation.
 		tm_file=mips/ultrix.h
@@ -1838,7 +1789,6 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		broken_install=yes
 	        ;;
 	mips-*-bsd* | mips-*-riscosbsd* | mips-*-riscos[[1234]]bsd*)
 		tm_file=mips/bsd-4.h	# MIPS BSD 4.3, RISC-OS 4.0
@@ -1856,7 +1806,6 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		broken_install=yes
 	        ;;
 	mips-*-riscos[[56789]]sysv4*)
 		tm_file=mips/svr4-5.h	# MIPS System V.4., RISC-OS 5.0
@@ -1876,7 +1825,6 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		broken_install=yes
 		;;
 	mips-*-sysv4* | mips-*-riscos[[1234]]sysv4* | mips-*-riscossysv4*)
 		tm_file=mips/svr4-4.h	# MIPS System V.4. RISC-OS 4.0
@@ -1896,7 +1844,6 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		broken_install=yes
 		;;
 	mips-*-riscos[[56789]]sysv*)
 		tm_file=mips/svr3-5.h	# MIPS System V.3, RISC-OS 5.0
@@ -1916,7 +1863,6 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		broken_install=yes
 		;;
 	mips-*-sysv* | mips-*-riscos*sysv*)
 		tm_file=mips/svr3-4.h	# MIPS System V.3, RISC-OS 4.0
@@ -1936,7 +1882,6 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		broken_install=yes
 		;;
 	mips-*-riscos[[56789]]*)		# Default MIPS RISC-OS 5.0.
 		tm_file=mips/mips-5.h
@@ -1953,7 +1898,6 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		broken_install=yes
 		;;
 	mips-*-gnu*)
 		;;
@@ -1970,7 +1914,6 @@ for machine in $build $host $target; do
 			tm_file="${tm_file} dbx.h"
 		fi
 		tmake_file=mips/t-ecoff
-		broken_install=yes
 		;;
 	mipsel-*-elf*)
 		tm_file="mips/elfl.h libgloss.h"
@@ -2043,12 +1986,10 @@ for machine in $build $host $target; do
 		;;
 	ns32k-tek6100-bsd*)
 		tm_file=ns32k/tek6100.h
-		broken_install=yes
 		use_collect2=yes
 		;;
 	ns32k-tek6200-bsd*)
 		tm_file=ns32k/tek6200.h
-		broken_install=yes
 		use_collect2=yes
 		;;
 # This has not been updated to GCC 2.
@@ -2056,7 +1997,6 @@ for machine in $build $host $target; do
 #		xm_file=ns32k/xm-genix.h
 #		xmake_file=ns32k/x-genix
 #		tm_file=ns32k/genix.h
-#		broken_install=yes
 #		use_collect2=yes
 #		;;
 	ns32k-merlin-*)
@@ -2312,7 +2252,6 @@ for machine in $build $host $target; do
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
-		broken_install=yes
 		gnu_ld=yes
 		;;
 	sparc-*-linux-gnulibc1*)		 # Sparc's running Linux
@@ -2322,7 +2261,6 @@ for machine in $build $host $target; do
 		tmake_file="t-linux t-linux-gnulibc1 sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
-		broken_install=yes
 		gnu_ld=yes
 		;;
 	sparc-*-linux-gnu*)			 # Sparc's running Linux
@@ -2332,7 +2270,6 @@ for machine in $build $host $target; do
 		tmake_file="t-linux sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
-		broken_install=yes
 		gnu_ld=yes
  		if [[ x$enable_threads = xyes ]]; then
  			thread_file='posix'
@@ -2360,7 +2297,6 @@ for machine in $build $host $target; do
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		fixincludes=fixinc.svr4
-		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
 		fi
@@ -2487,11 +2423,9 @@ for machine in $build $host $target; do
 	*-*-sysv4*)
 		fixincludes=fixinc.svr4
 		xmake_try_sysv=x-sysv
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		;;
 	*-*-sysv*)
-		broken_install=yes
 		install_headers_dir=install-headers-cpio
 		;;
 	esac
@@ -2611,7 +2545,6 @@ for machine in $build $host $target; do
 		then build_xm_file=$cpu_type/xm-$cpu_type.h
 		else build_xm_file=$xm_file
 		fi
-		build_broken_install=$broken_install
 		build_install_headers_dir=$install_headers_dir
 		build_exeext=$exeext
 		pass1done=yes
@@ -3160,7 +3093,6 @@ build_install_headers_dir='${build_install_headers_dir}'
 build_exeext='${build_exeext}'
 gdb_needs_out_file_path='${gdb_needs_out_file_path}'
 SET_MAKE='${SET_MAKE}'
-build_broken_install='${build_broken_install}'
 target_list='${target_list}'
 target_overrides='${target_overrides}'
 host_overrides='${host_overrides}'
