@@ -2217,8 +2217,9 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 		= build_binary_op
 		  (TRUTH_ORIF_EXPR, integer_type_node,
 		   build_binary_op (EQ_EXPR, integer_type_node, gnu_comp,
-				    build_int_cst (TREE_TYPE (gnu_comp),
-						   'V', 0)),
+				    convert (TREE_TYPE (gnu_comp),
+					     build_int_cst (NULL_TREE,
+							    'V', 0))),
 		   this_choice);
 	    }
 	}
@@ -2504,8 +2505,9 @@ gnat_to_gnu (Node_Id gnat_node)
       if (Present (Entity (gnat_node)))
 	gnu_result = DECL_INITIAL (get_gnu_tree (Entity (gnat_node)));
       else
-	gnu_result = build_int_cst (gnu_result_type,
-				    Char_Literal_Value (gnat_node), 0);
+	gnu_result = convert (gnu_result_type,
+			      build_int_cst (NULL_TREE,
+					     Char_Literal_Value (gnat_node), 0));
       break;
 
     case N_Real_Literal:
@@ -2617,10 +2619,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	  for (i = 0; i < length; i++)
 	    {
 	      gnu_list
-		= tree_cons (gnu_idx, build_int_cst
-			     (TREE_TYPE (gnu_result_type),
-			      Get_String_Char (gnat_string, i + 1), 0),
-			     gnu_list);
+		= tree_cons (gnu_idx,
+			     convert (TREE_TYPE (gnu_result_type),
+				      build_int_cst
+				      (NULL_TREE,
+				       Get_String_Char (gnat_string, i + 1),
+				       0)),
+			   gnu_list);
 
 	      gnu_idx = int_const_binop (PLUS_EXPR, gnu_idx, integer_one_node,
 					 0);

@@ -76,26 +76,29 @@ UI_To_gnu (Uint Input, tree type)
       tree comp_type
 	= (TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node)
 	   ? type : integer_type_node);
-      tree gnu_base = build_int_cst (comp_type, Base, 0);
+      tree gnu_base = convert (comp_type, build_int_cst (NULL_TREE, Base, 0));
 
       if (Length <= 0)
 	abort ();
 
-      gnu_ret = build_int_cst (comp_type, First, First < 0 ? -1 : 0);
+      gnu_ret = convert (comp_type, build_int_cst (NULL_TREE,
+						   First, First < 0 ? -1 : 0));
       if (First < 0)
 	for (Idx++, Length--; Length; Idx++, Length--)
 	  gnu_ret = fold (build (MINUS_EXPR, comp_type,
 				 fold (build (MULT_EXPR, comp_type,
 					      gnu_ret, gnu_base)),
-				 build_int_cst (comp_type,
-						Udigits_Ptr[Idx], 0)));
+				 convert (comp_type,
+					  build_int_cst (NULL_TREE,
+							 Udigits_Ptr[Idx], 0))));
       else
 	for (Idx++, Length--; Length; Idx++, Length--)
 	  gnu_ret = fold (build (PLUS_EXPR, comp_type,
 				 fold (build (MULT_EXPR, comp_type,
 					      gnu_ret, gnu_base)),
-				 build_int_cst (comp_type,
-						Udigits_Ptr[Idx], 0)));
+				 convert (comp_type,
+					  build_int_cst (NULL_TREE,
+							 Udigits_Ptr[Idx], 0))));
     }
 
   gnu_ret = convert (type, gnu_ret);
