@@ -1,3 +1,8 @@
+2003-09-16  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* class.c (add_miranda_methods): Ensure super-interfaces are laid 
+	out. Fix for PR java/12254.
+
 2003-09-11  Richard Henderson  <rth@redhat.com>
 
         * parse.y (source_end_java_method): Update for new
