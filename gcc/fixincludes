@@ -1073,6 +1073,29 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# In math.h, put #ifndefs around things that might be defined in a gcc
+# specific math-*.h file.
+file=math.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e '/define[ 	]HUGE_VAL[ 	]/i\
+#ifndef HUGE_VAL'\
+      -e '/define[ 	]HUGE_VAL[ 	]/a\
+#endif'\
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    echo Deleting ${LIB}/$file\; no fixes were needed.
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # These two files on SunOS 4 are included by other files
 # in the same directory, using "...".  So we must make sure they exist
 # in the same directory as the other fixed files.
