@@ -15,7 +15,7 @@ struct Foo
      void* dummy = &f;
  }
 
- struct Foo f;
+ struct Foo f;	// { dg-warning "defined" }
 
 // Dllimport sets DECL_NON_ADDR_CONST_P to 1, so following
 // assignment would require static_initialization_and_destruction
