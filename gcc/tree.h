@@ -3177,11 +3177,6 @@ extern tree save_expr (tree);
 
 extern tree skip_simple_arithmetic (tree);
 
-/* Return TRUE if EXPR is a SAVE_EXPR or wraps simple arithmetic around a
-   SAVE_EXPR.  Return FALSE otherwise.  */
-
-extern bool saved_expr_p (tree);
-
 /* Returns the index of the first non-tree operand for CODE, or the number
    of operands if all are trees.  */
 

@@ -1432,15 +1432,6 @@ skip_simple_arithmetic (tree expr)
   return inner;
 }
 
-/* Return TRUE if EXPR is a SAVE_EXPR or wraps simple arithmetic around a
-   SAVE_EXPR.  Return FALSE otherwise.  */
-
-bool
-saved_expr_p (tree expr)
-{
-  return TREE_CODE (skip_simple_arithmetic (expr)) == SAVE_EXPR;
-}
-
 /* Arrange for an expression to be expanded multiple independent
    times.  This is useful for cleanup actions, as the backend can
    expand them multiple times in different places.  */
