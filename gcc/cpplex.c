@@ -52,6 +52,7 @@ static const cpp_token eof_token = {0, 0, CPP_EOF, 0 UNION_INIT_ZERO};
 #define CONTEXT_PASTER	(1 << 1) /* An argument context on RHS of ##.  */
 #define CONTEXT_RAW	(1 << 2) /* If argument tokens already expanded.  */
 #define CONTEXT_ARG	(1 << 3) /* If an argument context.  */
+#define CONTEXT_VARARGS	(1 << 4) /* If a varargs argument context.  */
 
 typedef struct cpp_context cpp_context;
 struct cpp_context
@@ -1209,24 +1210,9 @@ lex_token (pfile, result)
 	     irrespective of conformance mode, because lots of
 	     broken systems do that and trying to clean it up in
 	     fixincludes is a nightmare.  */
-	  if (CPP_OPTION (pfile, cplusplus_comments)
-	      || CPP_IN_SYSTEM_HEADER (pfile))
+	  if (CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)
+	      && ! buffer->warned_cplusplus_comments)
 	    {
-	      if (CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)
-		  && ! buffer->warned_cplusplus_comments)
-		{
-		  cpp_pedwarn (pfile,
-		       "C++ style comments are not allowed in ISO C89");
-		  cpp_pedwarn (pfile,
-		       "(this will be reported only once per input file)");
-		  buffer->warned_cplusplus_comments = 1;
-		}
-	      comment_start = buffer->cur;
-
-	      /* Skip_line_comment updates buffer->read_ahead.  */
-	      if (skip_line_comment (pfile))
-		cpp_warning_with_line (pfile, result->line, result->col,
-				       "multi-line comment");
 	      cpp_pedwarn (pfile,
 			   "C++ style comments are not allowed in ISO C89");
 	      cpp_pedwarn (pfile,
@@ -1234,6 +1220,7 @@ lex_token (pfile, result)
 	      buffer->warned_cplusplus_comments = 1;
 	    }
 
+	  /* Skip_line_comment updates buffer->read_ahead.  */
 	  if (skip_line_comment (pfile))
 	    cpp_warning_with_line (pfile, result->line, result->col,
 				   "multi-line comment");
@@ -2004,9 +1991,7 @@ parse_args (pfile, hp, args)
 	{
 	  /* Duplicate the placemarker.  Then we can set its flags and
              position and safely be using more than one.  */
-	  cpp_token *pm = duplicate_token (pfile, &placemarker_token);
-	  pm->flags = VOID_REST;
-	  save_token (args, pm);
+	  save_token (args, duplicate_token (pfile, &placemarker_token));
 	  args->ends[argc] = total + 1;
 
 	  if (CPP_OPTION (pfile, c99) && CPP_PEDANTIC (pfile))
@@ -2316,6 +2301,7 @@ maybe_paste_with_next (pfile, token)
       pfile->paste_level = pfile->cur_context;
       second = _cpp_get_token (pfile);
       pfile->paste_level = 0;
+      context = CURRENT_CONTEXT (pfile);
 
       /* Ignore placemarker argument tokens (cannot be from an empty
 	 macro since macros are not expanded).  */
@@ -2327,7 +2313,7 @@ maybe_paste_with_next (pfile, token)
 	     a varargs parameter: the comma disappears if b was given
 	     no actual arguments (not merely if b is an empty
 	     argument).  */
-	  if (token->type == CPP_COMMA && second->flags & VOID_REST)
+	  if (token->type == CPP_COMMA && (context->flags & CONTEXT_VARARGS))
 	    pasted = duplicate_token (pfile, second);
 	  else
 	    pasted = duplicate_token (pfile, token);
@@ -2345,9 +2331,8 @@ maybe_paste_with_next (pfile, token)
 		     <whatever> came from a variable argument, because
 		     the author probably intended the ## to trigger
 		     the special extended semantics (see above).  */
-		  if (token->type == CPP_COMMA
-		      && IS_ARG_CONTEXT (CURRENT_CONTEXT (pfile))
-		      && ON_REST_ARG (CURRENT_CONTEXT (pfile) - 1))
+		  if (token->type == CPP_COMMA && IS_ARG_CONTEXT (context)
+		      && ON_REST_ARG (context - 1))
 		    /* no warning */;
 		  else
 		    cpp_warning (pfile,
@@ -2411,7 +2396,6 @@ maybe_paste_with_next (pfile, token)
       /* See if there is another token to be pasted onto the one we just
 	 constructed.  */
       token = pasted;
-      context = CURRENT_CONTEXT (pfile);
       /* and loop */
     }
   return token;
@@ -2592,6 +2576,9 @@ push_arg_context (pfile, token)
   context->posn = 0;
   context->level = args->level;
   context->flags = CONTEXT_ARG | CONTEXT_RAW;
+  if ((context[-1].u.list->flags & VAR_ARGS)
+      && token->val.aux + 1 == (unsigned) context[-1].u.list->paramc)
+    context->flags |= CONTEXT_VARARGS;
   context->pushed_token = 0;
 
   /* Set the flags of the first token.  There is one.  */
