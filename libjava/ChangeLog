@@ -1,5 +1,10 @@
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/ServerSocket.java
+	Merged coding style from GNU classpath.
+
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/BufferedWriter.java:
 	Reordered variables to be at top of the class.
 	(localFlush): Removed redundant final keyword.
