@@ -2968,6 +2968,10 @@ expand_builtin_frob_return_addr (addr_tree)
 {
   rtx addr = expand_expr (addr_tree, NULL_RTX, Pmode, 0);
 
+#ifdef POINTERS_EXTEND_UNSIGNED
+  addr = convert_memory_address (Pmode, addr);
+#endif
+
 #ifdef RETURN_ADDR_OFFSET
   addr = force_reg (Pmode, addr);
   addr = plus_constant (addr, -RETURN_ADDR_OFFSET);
@@ -2987,6 +2991,11 @@ expand_builtin_eh_return (stackadj_tree, handler_tree)
 
   stackadj = expand_expr (stackadj_tree, cfun->eh->ehr_stackadj, VOIDmode, 0);
   handler = expand_expr (handler_tree, cfun->eh->ehr_handler, VOIDmode, 0);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+  stackadj = convert_memory_address (Pmode, stackadj);
+  handler = convert_memory_address (Pmode, handler);
+#endif
 
   if (! cfun->eh->ehr_label)
     {
@@ -3035,8 +3044,6 @@ expand_eh_return ()
   else
 #endif
     {
-      rtx handler;
-
       ra = EH_RETURN_HANDLER_RTX;
       if (! ra)
 	{
@@ -3045,17 +3052,7 @@ expand_eh_return ()
 	}
 
       emit_move_insn (sa, cfun->eh->ehr_stackadj);
-
-      handler = cfun->eh->ehr_handler;
-      if (GET_MODE (ra) != Pmode)
-	{
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  handler = convert_memory_address (GET_MODE (ra), handler);
-#else
-	  handler = convert_to_mode (GET_MODE (ra), handler, 0);
-#endif
-	}
-      emit_move_insn (ra, handler);
+      emit_move_insn (ra, cfun->eh->ehr_handler);
     }
 
   emit_label (around_label);

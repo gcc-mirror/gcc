@@ -1,3 +1,10 @@
+Sat Jun  2 06:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* except.c (expand_builtin_frob_return_addr): Add missing call
+	to convert_memory_address #ifdef POINTERS_EXTEND_UNSIGNED.
+	(expand_builtin_eh_return): Likewise.
+	(expand_eh_return): Clean up ptr_mode != Pmode cases.
+
 2001-06-01  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* doc/invoke.texi: Remove references to papers about sequence points
