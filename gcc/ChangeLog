@@ -1,3 +1,7 @@
+2003-12-19  Stuart Hastings  <stuart@apple.com>
+	* gcc/config/i386/i386.c (ix86_expand_call, x86_output_mi_thunk):
+	Trivial fixes for i386.c on Darwin/x86.
+	
 2003-12-19  Fariborz Jahanian <fjahanian@apple.com>
         * config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Add code to
         recognize macho-style lo_sum adrress patterns.
