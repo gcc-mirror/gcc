@@ -2899,6 +2899,11 @@
          crashes in output_constant_pool.  */
       if (operands [1] == const0_rtx)
         operands[1] = CONST0_RTX (SFmode);
+      /* We are able to build any SF constant in integer registers
+	 with at most 2 instructions.  */
+      if (REGNO (operands[0]) < 32)
+	goto movsf_is_ok;
+
       operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
                                                    operands[1]));
     }
@@ -3093,6 +3098,9 @@
          crashes in output_constant_pool.  */
       if (operands [1] == const0_rtx)
         operands[1] = CONST0_RTX (DFmode);
+      if (REGNO (operands[0]) < 32)
+	goto movdf_is_ok;
+
       operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
                                                    operands[1]));
     }
@@ -3277,17 +3285,11 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "memory_operand" ""))]
-  "((! TARGET_V9
-     || (! TARGET_ARCH64
-         && ((GET_CODE (operands[0]) == REG
-              && REGNO (operands[0]) < 32)
-             || (GET_CODE (operands[0]) == SUBREG
-                 && GET_CODE (SUBREG_REG (operands[0])) == REG
-                 && REGNO (SUBREG_REG (operands[0])) < 32))))
-    && (reload_completed
-        && (((REGNO (operands[0])) % 2) != 0
-             || ! mem_min_alignment (operands[1], 8))
-        && offsettable_memref_p (operands[1])))"
+  "reload_completed
+   && ! TARGET_ARCH64
+   && (((REGNO (operands[0]) % 2) != 0)
+       || ! mem_min_alignment (operands[1], 8))
+   && offsettable_memref_p (operands[1])"
   [(clobber (const_int 0))]
   "
 {
@@ -3318,17 +3320,11 @@
 (define_split
   [(set (match_operand:DF 0 "memory_operand" "")
 	(match_operand:DF 1 "register_operand" ""))]
-  "((! TARGET_V9
-     || (! TARGET_ARCH64
-         && ((GET_CODE (operands[1]) == REG
-              && REGNO (operands[1]) < 32)
-             || (GET_CODE (operands[1]) == SUBREG
-                 && GET_CODE (SUBREG_REG (operands[1])) == REG
-                 && REGNO (SUBREG_REG (operands[1])) < 32))))
-    && (reload_completed
-        && (((REGNO (operands[1])) % 2) != 0
-             || ! mem_min_alignment (operands[0], 8))
-        && offsettable_memref_p (operands[0])))"
+  "reload_completed
+   && ! TARGET_ARCH64
+   && (((REGNO (operands[1]) % 2) != 0)
+       || ! mem_min_alignment (operands[0], 8))
+   && offsettable_memref_p (operands[0])"
   [(clobber (const_int 0))]
   "
 {
