@@ -1,3 +1,8 @@
+2000-03-24  Geoff Keating  <geoffk@cygnus.com>
+
+	* execute/va-arg-14.c: New test for va_start where the first
+	parameter is a function argument.
+
 2000-03-22  Geoff Keating  <geoffk@cygnus.com>
 
 	* execute/ieee/20000320-1.c: New test for denormals.
