@@ -1,3 +1,11 @@
+2002-04-23  Eric Botcazou  <ebotcazou@multimania.com>
+
+	PR c/5430
+	* fold-const.c (split_tree): Add MINUS_LITP parameter; separate
+	added literals from substracted literals.
+	(associate_trees): Don't convert MINUS_EXPR into PLUS_EXPR.
+	(fold) [associate]: Preserve MINUS_EXPR if needed.
+
 2002-04-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/install.texi: Clarify which versions of alpha*-dec-osf*
@@ -35,9 +43,9 @@ Tue Apr 23 14:24:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-04-23  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_step): Remove extraneous
-        parentheses.
-        (vec_ctu): Cast return.
+	* config/rs6000/altivec.h (vec_step): Remove extraneous
+	parentheses.
+	(vec_ctu): Cast return.
 
 2002-04-23  Alan Modra  <amodra@bigpond.net.au>
 
@@ -69,11 +77,11 @@ Tue Apr 23 14:24:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-04-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("*movv4si_internal"): Change 'm'
-        constraint to 'o' for m=r and r=m alternatives.
-        ("*movv8hi_internal1"): Same.
-        ("*movv16qi_internal1"): Same.
-        ("*movv4sf_internal1"): Same.
+	* config/rs6000/rs6000.md ("*movv4si_internal"): Change 'm'
+	constraint to 'o' for m=r and r=m alternatives.
+	("*movv8hi_internal1"): Same.
+	("*movv16qi_internal1"): Same.
+	("*movv4sf_internal1"): Same.
 
 2002-04-22  Janis Johnson  <janis187@us.ibm.com>
 

@@ -62,7 +62,7 @@ static void decode		PARAMS ((HOST_WIDE_INT *,
 					 HOST_WIDE_INT *));
 static tree negate_expr		PARAMS ((tree));
 static tree split_tree		PARAMS ((tree, enum tree_code, tree *, tree *,
-					 int));
+					 tree *, int));
 static tree associate_trees	PARAMS ((tree, tree, enum tree_code, tree));
 static tree int_const_binop	PARAMS ((enum tree_code, tree, tree, int));
 static tree const_binop		PARAMS ((enum tree_code, tree, tree, int));
@@ -876,13 +876,16 @@ negate_expr (t)
    combined with CODE to make IN.  "constant" means an expression with
    TREE_CONSTANT but that isn't an actual constant.  CODE must be a
    commutative arithmetic operation.  Store the constant part into *CONP,
-   the literal in &LITP and return the variable part.  If a part isn't
+   the literal in *LITP and return the variable part.  If a part isn't
    present, set it to null.  If the tree does not decompose in this way,
    return the entire tree as the variable part and the other parts as null.
 
    If CODE is PLUS_EXPR we also split trees that use MINUS_EXPR.  In that
-   case, we negate an operand that was subtracted.  If NEGATE_P is true, we
-   are negating all of IN.
+   case, we negate an operand that was subtracted.  Except if it is a
+   literal for which we use *MINUS_LITP instead.
+
+   If NEGATE_P is true, we are negating all of IN, again except a literal
+   for which we use *MINUS_LITP instead.
 
    If IN is itself a literal or constant, return it as appropriate.
 
@@ -890,16 +893,17 @@ negate_expr (t)
    same type as IN, but they will have the same signedness and mode.  */
 
 static tree
-split_tree (in, code, conp, litp, negate_p)
+split_tree (in, code, conp, litp, minus_litp, negate_p)
      tree in;
      enum tree_code code;
-     tree *conp, *litp;
+     tree *conp, *litp, *minus_litp;
      int negate_p;
 {
   tree var = 0;
 
   *conp = 0;
   *litp = 0;
+  *minus_litp = 0;
 
   /* Strip any conversions that don't change the machine mode or signedness.  */
   STRIP_SIGN_NOPS (in);
@@ -941,9 +945,12 @@ split_tree (in, code, conp, litp, negate_p)
 	var = op1, neg_var_p = neg1_p;
 
       /* Now do any needed negations.  */
-      if (neg_litp_p) *litp = negate_expr (*litp);
-      if (neg_conp_p) *conp = negate_expr (*conp);
-      if (neg_var_p) var = negate_expr (var);
+      if (neg_litp_p)
+	*minus_litp = *litp, *litp = 0;
+      if (neg_conp_p)
+	*conp = negate_expr (*conp);
+      if (neg_var_p)
+	var = negate_expr (var);
     }
   else if (TREE_CONSTANT (in))
     *conp = in;
@@ -952,9 +959,12 @@ split_tree (in, code, conp, litp, negate_p)
 
   if (negate_p)
     {
-      var = negate_expr (var);
+      if (*litp)
+	*minus_litp = *litp, *litp = 0;
+      else if (*minus_litp)
+	*litp = *minus_litp, *minus_litp = 0;
       *conp = negate_expr (*conp);
-      *litp = negate_expr (*litp);
+      var = negate_expr (var);
     }
 
   return var;
@@ -962,9 +972,7 @@ split_tree (in, code, conp, litp, negate_p)
 
 /* Re-associate trees split by the above function.  T1 and T2 are either
    expressions to associate or null.  Return the new expression, if any.  If
-   we build an operation, do it in TYPE and with CODE, except if CODE is a
-   MINUS_EXPR, in which case we use PLUS_EXPR since split_tree will already
-   have taken care of the negations.  */
+   we build an operation, do it in TYPE and with CODE.  */
 
 static tree
 associate_trees (t1, t2, code, type)
@@ -976,9 +984,6 @@ associate_trees (t1, t2, code, type)
     return t2;
   else if (t2 == 0)
     return t1;
-
-  if (code == MINUS_EXPR)
-    code = PLUS_EXPR;
 
   /* If either input is CODE, a PLUS_EXPR, or a MINUS_EXPR, don't
      try to fold this since we will have infinite recursion.  But do
@@ -3805,8 +3810,8 @@ optimize_minmax_comparison (t)
    other operations already in T.  WIDE_TYPE, if non-null, is a type that
    should be used for the computation if wider than our type.
 
-   For example, if we are dividing (X * 8) + (Y + 16) by 4, we can return
-   (X * 2) + (Y + 4).  We must, however, be assured that either the original
+   For example, if we are dividing (X * 8) + (Y * 16) by 4, we can return
+   (X * 2) + (Y * 4).  We must, however, be assured that either the original
    expression would not overflow or that overflow is undefined for the type
    in the language in question.
 
@@ -5078,24 +5083,68 @@ fold (expr)
 	  && (! FLOAT_TYPE_P (type)
 	      || (flag_unsafe_math_optimizations && code == MULT_EXPR)))
 	{
-	  tree var0, con0, lit0, var1, con1, lit1;
+	  tree var0, con0, lit0, minus_lit0;
+	  tree var1, con1, lit1, minus_lit1;
 
 	  /* Split both trees into variables, constants, and literals.  Then
 	     associate each group together, the constants with literals,
 	     then the result with variables.  This increases the chances of
 	     literals being recombined later and of generating relocatable
 	     expressions for the sum of a constant and literal.  */
-	  var0 = split_tree (arg0, code, &con0, &lit0, 0);
-	  var1 = split_tree (arg1, code, &con1, &lit1, code == MINUS_EXPR);
+	  var0 = split_tree (arg0, code, &con0, &lit0, &minus_lit0, 0);
+	  var1 = split_tree (arg1, code, &con1, &lit1, &minus_lit1,
+			     code == MINUS_EXPR);
 
 	  /* Only do something if we found more than two objects.  Otherwise,
 	     nothing has changed and we risk infinite recursion.  */
-	  if (2 < ((var0 != 0) + (var1 != 0) + (con0 != 0) + (con1 != 0)
-		   + (lit0 != 0) + (lit1 != 0)))
+	  if (2 < ((var0 != 0) + (var1 != 0)
+		   + (con0 != 0) + (con1 != 0)
+		   + (lit0 != 0) + (lit1 != 0)
+		   + (minus_lit0 != 0) + (minus_lit1 != 0)))
 	    {
+	      /* Recombine MINUS_EXPR operands by using PLUS_EXPR.  */
+	      if (code == MINUS_EXPR)
+		code = PLUS_EXPR;
+
 	      var0 = associate_trees (var0, var1, code, type);
 	      con0 = associate_trees (con0, con1, code, type);
 	      lit0 = associate_trees (lit0, lit1, code, type);
+	      minus_lit0 = associate_trees (minus_lit0, minus_lit1, code, type);
+
+	      /* Preserve the MINUS_EXPR if the negative part of the literal is
+		 greater than the positive part.  Otherwise, the multiplicative
+		 folding code (i.e extract_muldiv) may be fooled in case
+		 unsigned constants are substracted, like in the following
+		 example: ((X*2 + 4) - 8U)/2.  */
+	      if (minus_lit0 && lit0)
+		{
+		  if (tree_int_cst_lt (lit0, minus_lit0))
+		    {
+		      minus_lit0 = associate_trees (minus_lit0, lit0,
+						    MINUS_EXPR, type);
+		      lit0 = 0;
+		    }
+		  else
+		    {
+		      lit0 = associate_trees (lit0, minus_lit0,
+					      MINUS_EXPR, type);
+		      minus_lit0 = 0;
+		    }
+		}
+	      if (minus_lit0)
+		{
+		  if (con0 == 0)
+		    return convert (type, associate_trees (var0, minus_lit0,
+							   MINUS_EXPR, type));
+		  else
+		    {
+		      con0 = associate_trees (con0, minus_lit0,
+					      MINUS_EXPR, type);
+		      return convert (type, associate_trees (var0, con0,
+							     PLUS_EXPR, type));
+		    }
+		}
+
 	      con0 = associate_trees (con0, lit0, code, type);
 	      return convert (type, associate_trees (var0, con0, code, type));
 	    }
