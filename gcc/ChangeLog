@@ -1,3 +1,7 @@
+2003-06-22  Andreas Jaeger  <aj@suse.de>
+
+	* c-lang.c: Convert to ISO C90.
+
 2003-06-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* opts.c (find_opt): Fix to always guarantee a find of a

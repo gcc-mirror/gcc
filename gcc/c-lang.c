@@ -1,6 +1,6 @@
 /* Language-specific hook definitions for C front end.
    Copyright (C) 1991, 1995, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-static int c_init_options PARAMS ((void));
+static int c_init_options (void);
 
 /* ### When changing hooks, consider if ObjC needs changing too!! ### */
 
@@ -158,7 +158,7 @@ const char *const tree_code_name[] = {
 #undef DEFTREECODE
 
 static int
-c_init_options ()
+c_init_options (void)
 {
   return c_common_init_options (clk_c);
 }
@@ -166,43 +166,37 @@ c_init_options ()
 /* Used by c-lex.c, but only for objc.  */
 
 tree
-lookup_interface (arg)
-     tree arg ATTRIBUTE_UNUSED;
+lookup_interface (tree arg ATTRIBUTE_UNUSED)
 {
   return 0;
 }
 
 tree
-is_class_name (arg)
-    tree arg ATTRIBUTE_UNUSED;
+is_class_name (tree arg ATTRIBUTE_UNUSED)
 {
   return 0;
 }
 
 tree
-objc_is_id (arg)
-    tree arg ATTRIBUTE_UNUSED;
+objc_is_id (tree arg ATTRIBUTE_UNUSED)
 {
   return 0;
 }
 
 void
-objc_check_decl (decl)
-     tree decl ATTRIBUTE_UNUSED;
+objc_check_decl (tree decl ATTRIBUTE_UNUSED)
 {
 }
 
 int
-objc_comptypes (lhs, rhs, reflexive)
-     tree lhs ATTRIBUTE_UNUSED;
-     tree rhs ATTRIBUTE_UNUSED;
-     int reflexive ATTRIBUTE_UNUSED;
+objc_comptypes (tree lhs ATTRIBUTE_UNUSED, tree rhs ATTRIBUTE_UNUSED,
+		int reflexive ATTRIBUTE_UNUSED)
 {
   return -1;
 }
 
 tree
-objc_message_selector ()
+objc_message_selector (void)
 {
   return 0;
 }
@@ -210,14 +204,13 @@ objc_message_selector ()
 /* Used by c-typeck.c (build_external_ref), but only for objc.  */
 
 tree
-lookup_objc_ivar (id)
-     tree id ATTRIBUTE_UNUSED;
+lookup_objc_ivar (tree id ATTRIBUTE_UNUSED)
 {
   return 0;
 }
 
 void
-finish_file ()
+finish_file (void)
 {
   c_objc_common_finish_file ();
 }
