@@ -3420,7 +3420,7 @@
 
 	* tree-alias-common.c (find_func_aliases): Do not call
 	intra_function_call for languages assuring no aliasing between
-	arguments (by themselves) and and global memory.
+	arguments (by themselves) and global memory.
 
 2003-12-21  Jan Hubicka  <jh@suse.cz>
 
@@ -7693,7 +7693,7 @@
 	(finalize): Free allocations.
 	(cfg_blocks_empty): New. Is cfg_blocks queue list.
 	(cfg_blocks_add): New. Add a basic block to cfg_blocks list.
-	(cfg_blocks_pop): New. Get a a basic_block form the list.
+	(cfg_blocks_pop): New. Get a basic_block from the list.
 
 2003-09-18  Richard Henderson  <rth@redhat.com>
 
@@ -9565,7 +9565,7 @@
 	(optimize_stmt): Don't abort if a statement makes more than one
 	definition.
 	Check for MODIFY_EXPR statements directly, instead of relying on
-	the the presence of a single definition.
+	the presence of a single definition.
 	* tree-ssa-pre.c (tree_perform_ssapre): Call dump_function_to_file
 	instead of dump_function.
 	* tree-ssa.c (rewrite_into_ssa): Likewise.
@@ -15291,7 +15291,7 @@
 	* tree-ssa-dce (tree_ssa_eliminate_dead_code): Initialize prev to
 	NULL_TREE.
 	Don't close dump_file until end of function.
-	Dump the the tree after DCE for -fdump-tree-dce.
+	Dump the tree after DCE for -fdump-tree-dce.
 
 2002-10-08  Richard Henderson  <rth@redhat.com>
 	    Jason Merrill  <jason@redhat.com>

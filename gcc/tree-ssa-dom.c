@@ -181,7 +181,7 @@ static struct opt_stats_d opt_stats;
    of the form SSA_NAME COND CONST we create a new vrp_element to record
    how the condition affects the possible values SSA_NAME may have.
 
-   Each record contains the condition tested (COND), and the the range of
+   Each record contains the condition tested (COND), and the range of
    values the variable may legitimately have if COND is true.  Note the
    range of values may be a smaller range than COND specifies if we have
    recorded other ranges for this variable.  Each record also contains the
@@ -1398,7 +1398,7 @@ record_cond (tree cond, tree value)
 
 /* Build a new conditional using NEW_CODE, OP0 and OP1 and store
    the new conditional into *p, then store a boolean_true_node
-   into the the *(p + 1).  */
+   into *(p + 1).  */
    
 static void
 build_and_record_new_cond (enum tree_code new_code, tree op0, tree op1, tree *p)

@@ -755,7 +755,7 @@ lower_try_finally_fallthru_label (struct leh_tf_state *tf)
    alternative considered below.  For the nonce, we always choose the first
    option.
 
-   THIS_STATE may be null if if this is a try-cleanup, not a try-finally.  */
+   THIS_STATE may be null if this is a try-cleanup, not a try-finally.  */
 
 static void
 honor_protect_cleanup_actions (struct leh_state *outer_state,

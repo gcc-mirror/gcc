@@ -208,7 +208,7 @@ conflict_graph_add (conflict_graph graph, int reg1, int reg2)
   arc->smaller = smaller;
   arc->larger = larger;
 
-  /* Link the conflict into into two lists, one for each reg.  */
+  /* Link the conflict into two lists, one for each reg.  */
   arc->smaller_next = graph->neighbor_heads[smaller];
   graph->neighbor_heads[smaller] = arc;
   arc->larger_next = graph->neighbor_heads[larger];
