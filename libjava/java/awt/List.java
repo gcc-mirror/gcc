@@ -947,10 +947,10 @@ processEvent(AWTEvent event)
 {
   if (event instanceof ActionEvent)
     processActionEvent((ActionEvent)event);
-  if (event instanceof ItemEvent)
+  else if (event instanceof ItemEvent)
     processItemEvent((ItemEvent)event);
-
-  super.processEvent(event);
+  else
+    super.processEvent(event);
 }
 
 /*************************************************************************/

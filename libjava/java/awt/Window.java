@@ -158,14 +158,13 @@ public class Window extends Container
    */
   public void pack()
   {
-    if (parent != null
-        && !parent.isDisplayable())
+    if (parent != null && !parent.isDisplayable())
       parent.addNotify();
     if (peer == null)
       addNotify();
 
     setSize(getPreferredSize());
-    
+
     validate();
   }
 
@@ -174,9 +173,12 @@ public class Window extends Container
    */
   public void show()
   {
+    if (parent != null && !parent.isDisplayable())
+      parent.addNotify();
     if (peer == null)
       addNotify();
 
+    validate();
     super.show();
     toFront();
   }
@@ -185,6 +187,13 @@ public class Window extends Container
   {
     // FIXME: call hide() on amy "owned" children here.
     super.hide();
+  }
+
+  public boolean isDisplayable()
+  {
+    if (super.isDisplayable())
+      return true;
+    return peer != null;
   }
 
   /**
@@ -479,5 +488,4 @@ public class Window extends Container
     if (peer != null) return peer.getGraphicsConfiguration();
     return null;
   }
-
 }
