@@ -1,5 +1,11 @@
 2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
+	Revert:
+        * config/rs6000/rs6000.c (rs6000_override_options): Move
+        *SUBTARGET_OVERRIDE_OPTIONS before the -m options.
+
+2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
         * config/rs6000/rs6000.c (altivec_expand_builtin): Move
         lvx/stv/dst builtins...
         (altivec_expand_ld_builtin): ...to here.
