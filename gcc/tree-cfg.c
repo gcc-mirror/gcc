@@ -1217,12 +1217,12 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
   if (EDGE_SUCC (a, 0)->dest != b)
     return false;
 
-  if (b == EXIT_BLOCK_PTR)
-    return false;
-  
   if (EDGE_COUNT (b->preds) > 1)
     return false;
 
+  if (b == EXIT_BLOCK_PTR)
+    return false;
+  
   /* If A ends by a statement causing exceptions or something similar, we
      cannot merge the blocks.  */
   stmt = last_stmt (a);
