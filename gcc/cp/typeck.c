@@ -59,6 +59,8 @@ static tree build_component_addr PROTO((tree, tree));
 static tree qualify_type PROTO((tree, tree));
 static tree get_delta_difference PROTO((tree, tree, int));
 static int comp_cv_target_types PROTO((tree, tree, int));
+static void casts_away_constness_r PROTO((tree *, tree *));
+static int casts_away_constness PROTO ((tree, tree));
 
 /* Return the target type of TYPE, which meas return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -5546,6 +5548,17 @@ build_static_cast (type, expr)
 	   && can_convert (intype, type))
     ok = 1;
 
+  /* [expr.static.cast]
+
+     The static_cast operator shall not be used to cast away
+     constnes.  */
+  if (ok && casts_away_constness (intype, type))
+    {
+      cp_error ("static_cast from `%T' to `%T' casts away constness",
+		intype, type);
+      return error_mark_node;
+    }
+
   if (ok)
     return build_c_cast (type, expr);
 
@@ -7737,4 +7750,115 @@ cp_has_mutable_p (type)
     type = TREE_TYPE (type);
 
   return CLASS_TYPE_P (type) && CLASSTYPE_HAS_MUTABLE (type);
+}
+
+/* Subroutine of casts_away_constness.  Make T1 and T2 point at
+   exemplar types such that casting T1 to T2 is casting away castness
+   if and only if there is no implicit conversion from T1 to T2.  */
+
+static void
+casts_away_constness_r (t1, t2)
+     tree *t1;
+     tree *t2;
+{
+  int quals1;
+  int quals2;
+
+  /* [expr.const.cast]
+
+     For multi-level pointer to members and multi-level mixed pointers
+     and pointers to members (conv.qual), the "member" aspect of a
+     pointer to member level is ignored when determining if a const
+     cv-qualifier has been cast away.  */
+  if (TYPE_PTRMEM_P (*t1))
+    *t1 = build_pointer_type (TREE_TYPE (*t1));
+  if (TYPE_PTRMEM_P (*t2))
+    *t2 = build_pointer_type (TREE_TYPE (*t2));
+
+  /* [expr.const.cast]
+
+     For  two  pointer types:
+
+            X1 is T1cv1,1 * ... cv1,N *   where T1 is not a pointer type
+            X2 is T2cv2,1 * ... cv2,M *   where T2 is not a pointer type
+            K is min(N,M)
+
+     casting from X1 to X2 casts away constness if, for a non-pointer
+     type T there does not exist an implicit conversion (clause
+     _conv_) from:
+
+            Tcv1,(N-K+1) * cv1,(N-K+2) * ... cv1,N *
+      
+     to
+
+            Tcv2,(M-K+1) * cv2,(M-K+2) * ... cv2,M *.  */
+
+  if (TREE_CODE (*t1) != POINTER_TYPE
+      || TREE_CODE (*t2) != POINTER_TYPE)
+    {
+      *t1 = cp_build_qualified_type (void_type_node,
+				     CP_TYPE_QUALS (*t1));
+      *t2 = cp_build_qualified_type (void_type_node,
+				     CP_TYPE_QUALS (*t2));
+      return;
+    }
+  
+  quals1 = CP_TYPE_QUALS (*t1);
+  quals2 = CP_TYPE_QUALS (*t2);
+  *t1 = TREE_TYPE (*t1);
+  *t2 = TREE_TYPE (*t2);
+  casts_away_constness_r (t1, t2);
+  *t1 = build_pointer_type (*t1);
+  *t2 = build_pointer_type (*t2);
+  *t1 = cp_build_qualified_type (*t1, quals1);
+  *t2 = cp_build_qualified_type (*t2, quals2);
+}
+
+/* Returns non-zero if casting from TYPE1 to TYPE2 casts away
+   constness.  */
+
+static int
+casts_away_constness (t1, t2)
+     tree t1;
+     tree t2;
+{
+  if (TREE_CODE (t2) == REFERENCE_TYPE)
+    {
+      /* [expr.const.cast]
+	 
+	 Casting from an lvalue of type T1 to an lvalue of type T2
+	 using a reference cast casts away constness if a cast from an
+	 rvalue of type "pointer to T1" to the type "pointer to T2"
+	 casts away constness.  */
+      t1 = (TREE_CODE (t1) == REFERENCE_TYPE
+	    ? TREE_TYPE (t1) : t1);
+      return casts_away_constness (build_pointer_type (t1),
+				   build_pointer_type (TREE_TYPE (t2)));
+    }
+
+  if (TYPE_PTRMEM_P (t1) && TYPE_PTRMEM_P (t2))
+    /* [expr.const.cast]
+       
+       Casting from an rvalue of type "pointer to data member of X
+       of type T1" to the type "pointer to data member of Y of type
+       T2" casts away constness if a cast from an rvalue of type
+       "poitner to T1" to the type "pointer to T2" casts away
+       constness.  */
+    return casts_away_constness (build_pointer_type (TREE_TYPE (t1)),
+				 build_pointer_type (TREE_TYPE (t2)));
+
+  /* Casting away constness is only something that makes sense for
+     pointer or reference types.  */
+  if (TREE_CODE (t1) != POINTER_TYPE 
+      || TREE_CODE (t2) != POINTER_TYPE)
+    return 0;
+
+  /* Top-level qualifiers don't matter.  */
+  t1 = TYPE_MAIN_VARIANT (t1);
+  t2 = TYPE_MAIN_VARIANT (t2);
+  casts_away_constness_r (&t1, &t2);
+  if (!can_convert (t2, t1))
+    return 1;
+
+  return 0;
 }
