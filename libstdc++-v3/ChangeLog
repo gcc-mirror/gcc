@@ -1,3 +1,7 @@
+2004-06-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/std/std_complex.h (log): Tidy.
+
 2004-05-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu (GLIBCXX_3.4.1): Add.
