@@ -1,3 +1,7 @@
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* configure.in (vax-*-netbsd*): Re-enable gas.
+
 2002-05-31  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* Makefile.in: Replace HOST_PREFIX, HOST_PREFIX_1 with BUILD_PREFIX,
