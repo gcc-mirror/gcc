@@ -2407,7 +2407,9 @@ tidy_fallthru_edge (e, b, c)
      If block B consisted only of this single jump, turn it into a deleted
      note.  */
   q = b->end;
-  if (GET_CODE (q) == JUMP_INSN)
+  if (GET_CODE (q) == JUMP_INSN
+      && (simplejump_p (q)
+	  || (b->succ == e && e->succ_next == NULL)))
     {
 #ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
