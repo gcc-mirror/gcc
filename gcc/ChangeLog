@@ -1,3 +1,8 @@
+Mon Jul 13 23:57:21 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
+
+	* m68k/m68k.h (TARGET_SWITCHES): Clear MASK_68040_ONLY for
+	-m68020-40, -m68020-60 and -m5200.
+
 Mon Jul 13 23:52:05 1998  Weiwen Liu <weiwen.liu@yale.edu>
 
 	* gcc.c (do_spec_1): Fix %O handling for secure temporary file
