@@ -63,9 +63,10 @@ extern int pexecute PROTO ((const char *, char * const *, const char *,
 			    const char *, char **, char **, int));
 extern int pwait PROTO ((int, int *, int));
 /* Flag arguments to pexecute.  */
-#define PEXECUTE_FIRST  1
-#define PEXECUTE_LAST   2
-#define PEXECUTE_SEARCH 4
+#define PEXECUTE_FIRST   1
+#define PEXECUTE_LAST    2
+#define PEXECUTE_SEARCH  4
+#define PEXECUTE_VERBOSE 8
 
 #ifndef WIFSIGNALED
 #define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
@@ -1965,7 +1966,8 @@ execute ()
 				  ((i == 0 ? PEXECUTE_FIRST : 0)
 				   | (i + 1 == n_commands ? PEXECUTE_LAST : 0)
 				   | (string == commands[i].prog
-				      ? PEXECUTE_SEARCH : 0)));
+				      ? PEXECUTE_SEARCH : 0)
+				   | (verbose_flag ? PEXECUTE_VERBOSE : 0)));
 
       if (commands[i].pid == -1)
 	pfatal_pexecute (errmsg_fmt, errmsg_arg);
