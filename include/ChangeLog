@@ -1,3 +1,7 @@
+2004-02-24  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* dyn-string.h: Update copyright date.
+
 2004-02-23  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* dyn-string.h: Remove test of IN_LIBGCC2 and IN_GLIBCPP_V3 and
