@@ -1,3 +1,9 @@
+2003-01-04  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR Fortran/9038
+	* lang-specs.h: Remove -f options before preprocessing.
+	* news.texi: Document fixing of PR Fortran/9038.
+
 2003-01-03  Bud Davis <bdavis11@directvinternet.com>
 
 	* stc.c (ffestc_R810): Allow any kind integer in
