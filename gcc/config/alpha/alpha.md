@@ -2307,6 +2307,13 @@
     return \"addq %0,$29,%2\;jmp $31,(%2),0\";
 }"
   [(set_attr "type" "ibr")])
+
+;; Cache flush.  Used by INITIALIZE_TRAMPOLINE.  0x86 is PAL_imb, but we don't
+;; want to have to include pal.h in our .s file.
+(define_insn ""
+  [(unspec_volatile [(const_int 0)] 0)]
+  ""
+  "call_pal 0x86")
 
 ;; Finally, we have the basic data motion insns.  The byte and word insns
 ;; are done via define_expand.  Start with the floating-point insns, since
