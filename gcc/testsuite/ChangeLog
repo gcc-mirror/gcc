@@ -1,3 +1,15 @@
+2004-02-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/simd-4.x: Remove.
+	* gcc.c-torture/execute/va-arg-25.x: Likewise.
+	* gcc.dg/compat/vector-1_x.c: Do not XFAIL on SPARC.
+	Guard with #ifndef SKIP_ATTRIBUTE.
+	* gcc.dg/compat/vector-1_y.c: Likewise.
+	* gcc.dg/compat/vector-2_x.c: Likewise.
+	* gcc.dg/compat/vector-2_y.c: Likewise.
+	* g++.dg/eh/simd-1.C: Do not XFAIL on SPARC.
+	* g++.dg/eh/simd-2.C: Likewise.
+
 2004-02-19  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.c-torture/compile/complex-1.c: New.
