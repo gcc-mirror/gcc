@@ -70,6 +70,11 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 #pragma weak pthread_mutex_lock
 #pragma weak pthread_mutex_trylock
 #pragma weak pthread_mutex_unlock
+#pragma weak pthread_mutexattr_init
+#pragma weak pthread_mutexattr_settype
+#pragma weak pthread_mutexattr_destroy
+
+#pragma weak pthread_mutex_init
 
 #if defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)
 /* Objective-C.  */
@@ -79,7 +84,6 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 #pragma weak pthread_cond_signal
 #pragma weak pthread_cond_wait
 #pragma weak pthread_exit
-#pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_destroy
 #pragma weak pthread_self
 #ifdef _POSIX_PRIORITY_SCHEDULING
