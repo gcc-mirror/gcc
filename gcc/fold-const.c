@@ -480,7 +480,7 @@ div_and_round_double (code, uns,
   int overflow = 0;
 
   if ((hden == 0) && (lden == 0))
-    abort ();
+    overflow = 1, lden = 1;
 
   /* calculate quotient sign and convert operands to unsigned.  */
   if (!uns) 
