@@ -1,5 +1,15 @@
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
+	* pa.c (uint32_operand): Don't use long constant >= 2^32.
+	(emit_move_sequence): Use HOST_WIDE_INT constants.  Don't worry
+	about 32->64 bit sign extension if 32 bit HOST_WIDE_INTs.
+	(compute_movstrsi_length): Make `align' unsigned to avoid warning.
+	(output_64bit_and): Use plain `int's for shift counts.
+	(output_64bit_ior): Likewise.
+	(function_arg_partial_nregs): Use unsigned vars to avoid warnings.
+	* pa.h (CONST_OK_FOR_LETTER_P): Use HOST_WIDE_INT constants for case
+	`N', and simplify.
+
 	* pa-hpux10.h (NEW_HP_ASSEMBLER): Define to 1.
 	* pa-hpux11.h (NEW_HP_ASSEMBLER): Likewise.
 	* pa.h (LEGITIMATE_CONSTANT_P) Collapse two defines depending on

@@ -568,7 +568,7 @@ uint32_operand (op, mode)
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
   return (GET_CODE (op) == CONST_INT
-	  && (INTVAL (op) >= 0 && INTVAL (op) < 0x100000000L));
+	  && (INTVAL (op) >= 0 && INTVAL (op) < (HOST_WIDE_INT) 1 << 32));
 #else
   return (GET_CODE (op) == CONST_INT
 	  || (GET_CODE (op) == CONST_DOUBLE
@@ -1595,16 +1595,18 @@ emit_move_sequence (operands, mode, scratch_reg)
 	  int need_zero_extend = 0;
 
 	  if (TARGET_64BIT && GET_CODE (operand1) == CONST_INT
+	      && HOST_BITS_PER_WIDE_INT > 32
 	      && GET_MODE_BITSIZE (GET_MODE (operand0)) > 32)
 	    {
 	      HOST_WIDE_INT val = INTVAL (operand1);
-	      HOST_WIDE_INT nval = INTVAL (operand1);
+	      HOST_WIDE_INT nval;
 
 	      /* If the value is the same after a 32->64bit sign
 		 extension, then we can use it as-is.  Else we will
 		 need to sign extend the constant from 32->64bits
 		 then zero extend the result from 32->64bits.  */
-	      nval = ((val & 0xffffffff) ^ (~0x7fffffff)) + 0x80000000;
+	      nval = ((val & (((HOST_WIDE_INT) 2 << 31) - 1))
+		      ^ ((HOST_WIDE_INT) 1 << 31)) - ((HOST_WIDE_INT) 1 << 31);
 	      if (val != nval)
 		{
 		  need_zero_extend = 1;
@@ -2285,7 +2287,7 @@ compute_movstrsi_length (insn)
      rtx insn;
 {
   rtx pat = PATTERN (insn);
-  int align = INTVAL (XEXP (XVECEXP (pat, 0, 6), 0));
+  unsigned int align = INTVAL (XEXP (XVECEXP (pat, 0, 6), 0));
   unsigned long n_bytes = INTVAL (XEXP (XVECEXP (pat, 0, 5), 0));
   unsigned int n_insns = 0;
 
@@ -2372,22 +2374,22 @@ output_64bit_and (operands)
   if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) != 0)
     {
       unsigned HOST_WIDE_INT mask = INTVAL (operands[2]);
-      unsigned HOST_WIDE_INT ls0, ls1, ms0, p, len;
+      int ls0, ls1, ms0, p, len;
 
       for (ls0 = 0; ls0 < HOST_BITS_PER_WIDE_INT; ls0++)
-	if ((mask & ((unsigned HOST_WIDE_INT)1 << ls0)) == 0)
+	if ((mask & ((unsigned HOST_WIDE_INT) 1 << ls0)) == 0)
 	  break;
 
       for (ls1 = ls0; ls1 < HOST_BITS_PER_WIDE_INT; ls1++)
-	if ((mask & ((unsigned HOST_WIDE_INT)1 << ls1)) != 0)
+	if ((mask & ((unsigned HOST_WIDE_INT) 1 << ls1)) != 0)
 	  break;
 
       for (ms0 = ls1; ms0 < HOST_BITS_PER_WIDE_INT; ms0++)
-	if ((mask & ((unsigned HOST_WIDE_INT)1 << ms0)) == 0)
+	if ((mask & ((unsigned HOST_WIDE_INT) 1 << ms0)) == 0)
 	  break;
 
       if (ms0 != HOST_BITS_PER_WIDE_INT)
-	abort();
+	abort ();
 
       if (ls1 == HOST_BITS_PER_WIDE_INT)
 	{
@@ -2452,22 +2454,22 @@ output_64bit_ior (operands)
      rtx *operands;
 {
   unsigned HOST_WIDE_INT mask = INTVAL (operands[2]);
-  unsigned HOST_WIDE_INT bs0, bs1, p, len;
+  int bs0, bs1, p, len;
 
   if (INTVAL (operands[2]) == 0)
     return "copy %1,%0";
 
   for (bs0 = 0; bs0 < HOST_BITS_PER_WIDE_INT; bs0++)
-    if ((mask & ((unsigned HOST_WIDE_INT)1 << bs0)) != 0)
+    if ((mask & ((unsigned HOST_WIDE_INT) 1 << bs0)) != 0)
       break;
 
   for (bs1 = bs0; bs1 < HOST_BITS_PER_WIDE_INT; bs1++)
-    if ((mask & ((unsigned HOST_WIDE_INT)1 << bs1)) == 0)
+    if ((mask & ((unsigned HOST_WIDE_INT) 1 << bs1)) == 0)
       break;
 
   if (bs1 != HOST_BITS_PER_WIDE_INT
       && ((unsigned HOST_WIDE_INT) 1 << bs1) <= mask)
-    abort();
+    abort ();
 
   p = 63 - bs0;
   len = bs1 - bs0;
@@ -7113,13 +7115,13 @@ function_arg_partial_nregs (cum, mode, type, named)
      tree type;
      int named ATTRIBUTE_UNUSED;
 {
-  int max_arg_words = 8;
-  int offset = 0;
+  unsigned int max_arg_words = 8;
+  unsigned int offset = 0;
 
-  if (FUNCTION_ARG_SIZE(mode, type) > 1 && (cum->words & 1))
+  if (FUNCTION_ARG_SIZE (mode, type) > 1 && (cum->words & 1))
     offset = 1;
 
-  if (cum->words + offset + FUNCTION_ARG_SIZE(mode, type) <= max_arg_words)
+  if (cum->words + offset + FUNCTION_ARG_SIZE (mode, type) <= max_arg_words)
     /* Arg fits fully into registers. */
     return 0;
   else if (cum->words + offset >= max_arg_words) 
