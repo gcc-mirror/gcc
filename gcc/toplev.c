@@ -2675,6 +2675,207 @@ clean_dump_file (suffix)
   return;
 }
 
+/* Do any final processing required for the declarations in VEC, of
+   which there are LEN.  We write out inline functions and variables
+   that have been deferred until this point, but which are required.
+   Returns non-zero if anything was put out.  */ 
+int
+wrapup_global_declarations (vec, len)
+     tree *vec;
+     int len;
+{
+  tree decl;
+  int i;
+  int reconsider;
+  int output_something = 0;
+
+  for (i = 0; i < len; i++)
+    {
+      decl = vec[i];
+      
+      /* We're not deferring this any longer.  */
+      DECL_DEFER_OUTPUT (decl) = 0;
+      
+      if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0
+	  && incomplete_decl_finalize_hook != 0)
+	(*incomplete_decl_finalize_hook) (decl);
+    }
+
+  /* Now emit any global variables or functions that we have been
+     putting off.  We need to loop in case one of the things emitted
+     here references another one which comes earlier in the list.  */
+  do
+    {
+      reconsider = 0;
+      for (i = 0; i < len; i++)
+	{
+	  decl = vec[i];
+
+	  if (TREE_ASM_WRITTEN (decl) || DECL_EXTERNAL (decl))
+	    continue;
+
+	  /* Don't write out static consts, unless we still need them.
+
+	     We also keep static consts if not optimizing (for debugging),
+	     unless the user specified -fno-keep-static-consts.
+	     ??? They might be better written into the debug information.
+	     This is possible when using DWARF.
+
+	     A language processor that wants static constants to be always
+	     written out (even if it is not used) is responsible for
+	     calling rest_of_decl_compilation itself.  E.g. the C front-end
+	     calls rest_of_decl_compilation from finish_decl.
+	     One motivation for this is that is conventional in some
+	     environments to write things like:
+	     static const char rcsid[] = "... version string ...";
+	     intending to force the string to be in the executable.
+
+	     A language processor that would prefer to have unneeded
+	     static constants "optimized away" would just defer writing
+	     them out until here.  E.g. C++ does this, because static
+	     constants are often defined in header files.
+
+	     ??? A tempting alternative (for both C and C++) would be
+	     to force a constant to be written if and only if it is
+	     defined in a main file, as opposed to an include file.  */
+
+	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
+	      && (! TREE_READONLY (decl)
+		  || TREE_PUBLIC (decl)
+		  || (!optimize && flag_keep_static_consts)
+		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+	    {
+	      reconsider = 1;
+	      rest_of_decl_compilation (decl, NULL_PTR, 1, 1);
+	    }
+
+	  if (TREE_CODE (decl) == FUNCTION_DECL
+	      && DECL_INITIAL (decl) != 0
+	      && DECL_SAVED_INSNS (decl) != 0
+	      && (flag_keep_inline_functions
+		  || TREE_PUBLIC (decl)
+		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+	    {
+	      reconsider = 1;
+	      temporary_allocation ();
+	      output_inline_function (decl);
+	      permanent_allocation (1);
+	    }
+	}
+
+      if (reconsider)
+	output_something = 1;
+    }
+  while (reconsider);
+
+  return output_something;
+}
+
+/* Issue appropriate warnings for the global declarations in VEC (of
+   which there are LEN).  Output debugging information for them.  */
+void
+check_global_declarations (vec, len)
+     tree *vec;
+     int len;
+{
+  tree decl;
+  int i;
+
+  for (i = 0; i < len; i++)
+    {
+      decl = vec[i];
+
+      if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
+	  && ! TREE_ASM_WRITTEN (decl))
+	/* Cancel the RTL for this decl so that, if debugging info
+	   output for global variables is still to come,
+	   this one will be omitted.  */
+	DECL_RTL (decl) = NULL;
+
+      /* Warn about any function
+	 declared static but not defined.
+	 We don't warn about variables,
+	 because many programs have static variables
+	 that exist only to get some text into the object file.  */
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && (warn_unused
+	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	  && DECL_INITIAL (decl) == 0
+	  && DECL_EXTERNAL (decl)
+	  && ! DECL_ARTIFICIAL (decl)
+	  && ! TREE_PUBLIC (decl))
+	{
+	  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	    pedwarn_with_decl (decl,
+			       "`%s' used but never defined");
+	  else
+	    warning_with_decl (decl,
+			       "`%s' declared `static' but never defined");
+	  /* This symbol is effectively an "extern" declaration now.  */
+	  TREE_PUBLIC (decl) = 1;
+	  assemble_external (decl);
+	}
+
+      /* Warn about static fns or vars defined but not used,
+	 but not about inline functions or static consts
+	 since defining those in header files is normal practice.  */
+      if (warn_unused
+	  && ((TREE_CODE (decl) == FUNCTION_DECL && ! DECL_INLINE (decl))
+	      || (TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
+	  && ! DECL_IN_SYSTEM_HEADER (decl)
+	  && ! DECL_EXTERNAL (decl)
+	  && ! TREE_PUBLIC (decl)
+	  && ! TREE_USED (decl)
+	  && (TREE_CODE (decl) == FUNCTION_DECL || ! DECL_REGISTER (decl))
+	  /* The TREE_USED bit for file-scope decls
+	     is kept in the identifier, to handle multiple
+	     external decls in different scopes.  */
+	  && ! TREE_USED (DECL_NAME (decl)))
+	warning_with_decl (decl, "`%s' defined but not used");
+
+#ifdef SDB_DEBUGGING_INFO
+      /* The COFF linker can move initialized global vars to the end.
+	 And that can screw up the symbol ordering.
+	 By putting the symbols in that order to begin with,
+	 we avoid a problem.  mcsun!unido!fauern!tumuc!pes@uunet.uu.net.  */
+      if (write_symbols == SDB_DEBUG && TREE_CODE (decl) == VAR_DECL
+	  && TREE_PUBLIC (decl) && DECL_INITIAL (decl)
+	  && ! DECL_EXTERNAL (decl)
+	  && DECL_RTL (decl) != 0)
+	TIMEVAR (symout_time, sdbout_symbol (decl, 0));
+
+      /* Output COFF information for non-global
+	 file-scope initialized variables.  */
+      if (write_symbols == SDB_DEBUG
+	  && TREE_CODE (decl) == VAR_DECL
+	  && DECL_INITIAL (decl)
+	  && ! DECL_EXTERNAL (decl)
+	  && DECL_RTL (decl) != 0
+	  && GET_CODE (DECL_RTL (decl)) == MEM)
+	TIMEVAR (symout_time, sdbout_toplevel_data (decl));
+#endif /* SDB_DEBUGGING_INFO */
+#ifdef DWARF_DEBUGGING_INFO
+      /* Output DWARF information for file-scope tentative data object
+	 declarations, file-scope (extern) function declarations (which
+	 had no corresponding body) and file-scope tagged type declarations
+	 and definitions which have not yet been forced out.  */
+
+      if (write_symbols == DWARF_DEBUG
+	  && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
+	TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 1));
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+      /* Output DWARF2 information for file-scope tentative data object
+	 declarations, file-scope (extern) function declarations (which
+	 had no corresponding body) and file-scope tagged type declarations
+	 and definitions which have not yet been forced out.  */
+
+      if (write_symbols == DWARF2_DEBUG
+	  && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
+	TIMEVAR (symout_time, dwarf2out_decl (decl));
+#endif
+    }
+}
 
 /* Compile an entire file of output from cpp, named NAME.
    Write a file of assembly output and various debugging dumps.  */
@@ -3075,7 +3276,6 @@ compile_file (name)
     tree *vec = (tree *) alloca (sizeof (tree) * len);
     int i;
     tree decl;
-    int reconsider = 1;
 
     /* Process the decls in reverse order--earliest first.
        Put them into VEC from back to front, then take out from front.  */
@@ -3083,80 +3283,8 @@ compile_file (name)
     for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
       vec[len - i - 1] = decl;
 
-    for (i = 0; i < len; i++)
-      {
-	decl = vec[i];
-
-	/* We're not deferring this any longer.  */
-	DECL_DEFER_OUTPUT (decl) = 0;
-
-	if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0
-	    && incomplete_decl_finalize_hook != 0)
-	  (*incomplete_decl_finalize_hook) (decl);
-      }
-
-    /* Now emit any global variables or functions that we have been putting
-       off.  We need to loop in case one of the things emitted here
-       references another one which comes earlier in the list.  */
-    while (reconsider)
-      {
-	reconsider = 0;
-	for (i = 0; i < len; i++)
-	  {
-	    decl = vec[i];
-
-	    if (TREE_ASM_WRITTEN (decl) || DECL_EXTERNAL (decl))
-	      continue;
-
-	    /* Don't write out static consts, unless we still need them.
-
-	       We also keep static consts if not optimizing (for debugging),
-	       unless the user specified -fno-keep-static-consts.
-	       ??? They might be better written into the debug information.
-	       This is possible when using DWARF.
-
-	       A language processor that wants static constants to be always
-	       written out (even if it is not used) is responsible for
-	       calling rest_of_decl_compilation itself.  E.g. the C front-end
-	       calls rest_of_decl_compilation from finish_decl.
-	       One motivation for this is that is conventional in some
-	       environments to write things like:
-	           static const char rcsid[] = "... version string ...";
-	       intending to force the string to be in the executable.
-
-	       A language processor that would prefer to have unneeded
-	       static constants "optimized away" would just defer writing
-	       them out until here.  E.g. C++ does this, because static
-	       constants are often defined in header files.
-
-	       ??? A tempting alternative (for both C and C++) would be
-	       to force a constant to be written if and only if it is
-	       defined in a main file, as opposed to an include file.  */
-
-	    if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-		&& (! TREE_READONLY (decl)
-		    || TREE_PUBLIC (decl)
-		    || (!optimize && flag_keep_static_consts)
-		    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
-	      {
-		reconsider = 1;
-		rest_of_decl_compilation (decl, NULL_PTR, 1, 1);
-	      }
-
-	    if (TREE_CODE (decl) == FUNCTION_DECL
-		&& DECL_INITIAL (decl) != 0
-		&& DECL_SAVED_INSNS (decl) != 0
-		&& (flag_keep_inline_functions
-		    || TREE_PUBLIC (decl)
-		    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
-	      {
-		reconsider = 1;
-		temporary_allocation ();
-		output_inline_function (decl);
-		permanent_allocation (1);
-	      }
-	  }
-      }
+    wrapup_global_declarations (vec, len);
+    check_global_declarations (vec, len);
 
     /* This must occur after the loop to output deferred functions.  Else
        the profiler initializer would not be emitted if all the functions
@@ -3171,101 +3299,6 @@ compile_file (name)
        the exception table.  */
 
     output_exception_table ();
-
-    for (i = 0; i < len; i++)
-      {
-	decl = vec[i];
-
-	if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-	    && ! TREE_ASM_WRITTEN (decl))
-	  /* Cancel the RTL for this decl so that, if debugging info
-	     output for global variables is still to come,
-	     this one will be omitted.  */
-	  DECL_RTL (decl) = NULL;
-
-	/* Warn about any function
-	   declared static but not defined.
-	   We don't warn about variables,
-	   because many programs have static variables
-	   that exist only to get some text into the object file.  */
-	if (TREE_CODE (decl) == FUNCTION_DECL
-	    && (warn_unused
-		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	    && DECL_INITIAL (decl) == 0
-	    && DECL_EXTERNAL (decl)
-	    && ! DECL_ARTIFICIAL (decl)
-	    && ! TREE_PUBLIC (decl))
-	  {
-	    if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	      pedwarn_with_decl (decl,
-				 "`%s' used but never defined");
-	    else
-	      warning_with_decl (decl,
-				 "`%s' declared `static' but never defined");
-	    /* This symbol is effectively an "extern" declaration now.  */
-	    TREE_PUBLIC (decl) = 1;
-	    assemble_external (decl);
-	  }
-
-	/* Warn about static fns or vars defined but not used,
-	   but not about inline functions or static consts
-	   since defining those in header files is normal practice.  */
-	if (warn_unused
-	    && ((TREE_CODE (decl) == FUNCTION_DECL && ! DECL_INLINE (decl))
-		|| (TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
-	    && ! DECL_IN_SYSTEM_HEADER (decl)
-	    && ! DECL_EXTERNAL (decl)
-	    && ! TREE_PUBLIC (decl)
-	    && ! TREE_USED (decl)
-	    && (TREE_CODE (decl) == FUNCTION_DECL || ! DECL_REGISTER (decl))
-	    /* The TREE_USED bit for file-scope decls
-	       is kept in the identifier, to handle multiple
-	       external decls in different scopes.  */
-	    && ! TREE_USED (DECL_NAME (decl)))
-	  warning_with_decl (decl, "`%s' defined but not used");
-
-#ifdef SDB_DEBUGGING_INFO
-	/* The COFF linker can move initialized global vars to the end.
-	   And that can screw up the symbol ordering.
-	   By putting the symbols in that order to begin with,
-	   we avoid a problem.  mcsun!unido!fauern!tumuc!pes@uunet.uu.net.  */
-	if (write_symbols == SDB_DEBUG && TREE_CODE (decl) == VAR_DECL
-	    && TREE_PUBLIC (decl) && DECL_INITIAL (decl)
-	    && ! DECL_EXTERNAL (decl)
-	    && DECL_RTL (decl) != 0)
-	  TIMEVAR (symout_time, sdbout_symbol (decl, 0));
-
-	/* Output COFF information for non-global
-	   file-scope initialized variables.  */
-	if (write_symbols == SDB_DEBUG
-	    && TREE_CODE (decl) == VAR_DECL
-	    && DECL_INITIAL (decl)
-	    && ! DECL_EXTERNAL (decl)
-	    && DECL_RTL (decl) != 0
-	    && GET_CODE (DECL_RTL (decl)) == MEM)
-	  TIMEVAR (symout_time, sdbout_toplevel_data (decl));
-#endif /* SDB_DEBUGGING_INFO */
-#ifdef DWARF_DEBUGGING_INFO
-	/* Output DWARF information for file-scope tentative data object
-	   declarations, file-scope (extern) function declarations (which
-	   had no corresponding body) and file-scope tagged type declarations
-	   and definitions which have not yet been forced out.  */
-
-	if (write_symbols == DWARF_DEBUG
-	    && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
-	  TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 1));
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-	/* Output DWARF2 information for file-scope tentative data object
-	   declarations, file-scope (extern) function declarations (which
-	   had no corresponding body) and file-scope tagged type declarations
-	   and definitions which have not yet been forced out.  */
-
-	if (write_symbols == DWARF2_DEBUG
-	    && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
-	  TIMEVAR (symout_time, dwarf2out_decl (decl));
-#endif
-      }
   }
 
   /* Write out any pending weak symbol declarations.  */
