@@ -1,3 +1,8 @@
+2002-11-09  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/mips/netbsd.h (SUBTARGET_ASM_SPEC): Don't pass -KPIC
+	to the assembler if -mno-abicalls was specified.
+
 2002-11-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-linux.h (PREFERRED_DEBUGGING_TYPE, DWARF2_ASM_LINE_DEBUG_INFO,
