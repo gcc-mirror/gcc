@@ -8295,8 +8295,12 @@ initialize_builtins (inp, outp)
   install ("__BASE_FILE__", -1, T_BASE_FILE, 0, 0, -1);
   install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, 0, -1);
   install ("__VERSION__", -1, T_VERSION, 0, 0, -1);
+#ifndef NO_BUILTIN_SIZE_TYPE
   install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, 0, -1);
+#endif
+#ifndef NO_BUILTIN_PTRDIFF_TYPE
   install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, 0, -1);
+#endif
   install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, 0, -1);
   install ("__TIME__", -1, T_TIME, 0, 0, -1);
   if (!traditional)
