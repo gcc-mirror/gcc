@@ -205,7 +205,8 @@ call_operand_address (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return (CONSTANT_P (op) && ! TARGET_PORTABLE_RUNTIME);
+  return (GET_MODE (op) == word_mode
+	  && CONSTANT_P (op) && ! TARGET_PORTABLE_RUNTIME);
 }
 
 /* Return 1 if X contains a symbolic expression.  We know these

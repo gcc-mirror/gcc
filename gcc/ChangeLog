@@ -1,3 +1,9 @@
+Tue Nov 23 11:15:04 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (call_internal_symref, call_value_internal_symref): No mode
+	needed on the address operand.
+	* pa.c (call_operand_address): Check for the correct mode.
+
 1999-11-23  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c: Include "basic-block.h".
