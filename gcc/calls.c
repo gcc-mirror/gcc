@@ -2991,7 +2991,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   args_size.constant = MAX (args_size.constant,
 			    reg_parm_stack_space);
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
-  args_size.constant -= reg_parm_stack_space);
+  args_size.constant -= reg_parm_stack_space;
 #endif
 #endif
 
