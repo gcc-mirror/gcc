@@ -3096,7 +3096,7 @@ ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
 
     if (expr)
       {
-	tree loop;
+	struct nesting *loop;
 
 	result = ffecom_make_tempvar ("dowhile", integer_type_node,
 				      FFETARGET_charactersizeNONE, -1);

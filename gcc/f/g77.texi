@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-04-17
+@set last-update 1999-04-23
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -1471,6 +1471,7 @@ by type.  Explanations are in the following sections.
 -falias-check  -fargument-alias
 -fargument-noalias  -fno-argument-noalias-global
 -fno-globals
+-fsubscript-check  -ff2c-subscript-check
 @end smallexample
 @end table
 
@@ -3370,6 +3371,73 @@ and warns about similar disagreements
 that are currently believed to not
 likely to result in the compiler later crashing
 or producing incorrect code.
+
+@cindex -fsubscript-check option
+@cindex -ff2c-subscript-check option
+@item -fsubscript-check
+@itemx -ff2c-subscript-check
+@cindex bounds checking
+@cindex range checking
+@cindex array bounds checking
+@cindex subscript checking
+@cindex substring checking
+@cindex checking subscripts
+@cindex checking substrings
+Enable generation of run-time checks for array subscripts
+and substring start and end points
+against the (locally) declared minimum and maximum values.
+
+The current implementation uses the @code{libf2c}
+library routine @code{s_rnge} to print the diagnostic.
+
+However, whereas @code{f2c} generates a single check per
+reference for a multi-dimensional array, of the computed
+offset against the valid offset range (0 through the size of the array),
+@code{g77} generates a single check per @emph{subscript} expression.
+This catches some cases of potential bugs that @code{f2c} does not,
+such as references to below the beginning of an assumed-size array.
+
+@code{g77} also generates checks for @code{CHARACTER} substring references,
+something @code{f2c} currently does not do.
+
+Since a future version of @code{g77} might use a different implementation,
+use the new @samp{-ff2c-subscript-check} option
+if your application requires use of @code{s_rnge} or a compile-time diagnostic.
+
+@emph{Note:} To provide more detailed information on the offending subscript,
+@code{g77} provides @code{s_rnge}
+with somewhat differently-formatted information.
+Here's a sample diagnostic:
+
+@smallexample
+Subscript out of range on file line 4, procedure rnge.f/bf.
+Attempt to access the -6-th element of variable b[subscript-2-of-2].
+Aborted
+@end smallexample
+
+The above message indicates that the offending source line is
+line 4 of the file @file{rnge.f},
+within the program unit (or statement function) named @samp{bf}.
+The offended array is named @samp{b}.
+The offended array dimension is the second for a two-dimensional array,
+and the offending, computed subscript expression was @samp{-6}.
+
+For a @code{CHARACTER} substring reference, the second line has
+this appearance:
+
+@smallexample
+Attempt to access the 11-th element of variable a[start-substring].
+@end smallexample
+
+This indicates that the offended @code{CHARACTER} variable or array
+is named @samp{a},
+the offended substring position is the starting (leftmost) position,
+and the offending substring expression is @samp{11}.
+
+(Though the verbage of @code{s_rnge} is not ideal
+for the purpose of the @code{g77} compiler,
+the above information should provide adequate diagnostic abilities
+to it users.)
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,
@@ -11015,6 +11083,8 @@ themselves as @emph{visible} problems some time later.
 Overflowing the bounds of an array---usually by writing beyond
 the end of it---is one of two kinds of bug that often occurs
 in Fortran code.
+(Compile your code with the @samp{-fsubscript-check} option
+to catch many of these kinds of errors at program run time.)
 
 The other kind of bug is a mismatch between the actual arguments
 passed to a procedure and the dummy arguments as declared by that
@@ -11028,11 +11098,13 @@ That is, these bugs can be quite sensitive to data, including
 data representing the placement of other data in memory (that is,
 pointers, such as the placement of stack frames in memory).
 
-Plans call for improving @code{g77} so that it can offer the
+@code{g77} now offers the
 ability to catch and report some of these problems at compile, link, or
 run time, such as by generating code to detect references to
-beyond the bounds of an array, or checking for agreement between
-calling and called procedures.
+beyond the bounds of most arrays (except assumed-size arrays),
+and checking for agreement between calling and called procedures.
+Future improvements are likely to be made in the procedure-mismatch area,
+at least.
 
 In the meantime, finding and fixing the programming
 bugs that lead to these behaviors is, ultimately, the user's
@@ -11275,7 +11347,6 @@ Better diagnostics:
 
 Run-time facilities:
 * Uninitialized Variables at Run Time::
-* Bounds Checking at Run Time::
 * Portable Unformatted Files::
 
 Debugging:
@@ -12158,15 +12229,6 @@ some kinds of uninitialized variables at run time.
 
 Note that use of the options @samp{-O -Wuninitialized} can catch
 many such bugs at compile time.
-
-@node Bounds Checking at Run Time
-@subsection Bounds Checking at Run Time
-
-@code{g77} should offer run-time bounds-checking of array/subscript references
-in a fashion similar to @code{f2c}.
-
-Note that @code{g77} already warns about references to out-of-bounds
-elements of arrays when it detects these at compile time.
 
 @node Portable Unformatted Files
 @subsection Portable Unformatted Files

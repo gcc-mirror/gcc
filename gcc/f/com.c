@@ -745,6 +745,233 @@ static tree shadowed_labels;
 
 #endif /* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
+/* Return the subscript expression, modified to do range-checking.
+
+   `array' is the array to be checked against.
+   `element' is the subscript expression to check.
+   `dim' is the dimension number (starting at 0).
+   `total_dims' is the total number of dimensions (0 for CHARACTER substring).
+*/
+
+static tree
+ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
+			 char *array_name)
+{
+  tree low = TYPE_MIN_VALUE (TYPE_DOMAIN (array));
+  tree high = TYPE_MAX_VALUE (TYPE_DOMAIN (array));
+  tree cond;
+  tree die;
+  tree args;
+
+  if (element == error_mark_node)
+    return element;
+
+  element = ffecom_save_tree (element);
+  cond = ffecom_2 (LE_EXPR, integer_type_node,
+		   low,
+		   element);
+  if (high)
+    {
+      cond = ffecom_2 (TRUTH_ANDIF_EXPR, integer_type_node,
+		       cond,
+		       ffecom_2 (LE_EXPR, integer_type_node,
+				 element,
+				 high));
+    }
+
+  {
+    int len;
+    char *proc;
+    char *var;
+    tree arg3;
+    tree arg2;
+    tree arg1;
+    tree arg4;
+
+    switch (total_dims)
+      {
+      case 0:
+	var = xmalloc (strlen (array_name) + 20);
+	sprintf (&var[0], "%s[%s-substring]",
+		 array_name,
+		 dim ? "end" : "start");
+	len = strlen (var) + 1;
+	break;
+
+      case 1:
+	len = strlen (array_name) + 1;
+	var = array_name;
+	break;
+
+      default:
+	var = xmalloc (strlen (array_name) + 40);
+	sprintf (&var[0], "%s[subscript-%d-of-%d]",
+		 array_name,
+		 dim + 1, total_dims);
+	len = strlen (var) + 1;
+	break;
+      }
+
+    arg1 = build_string (len, var);
+
+    if (total_dims != 1)
+      free (var);
+
+    TREE_TYPE (arg1)
+      = build_type_variant (build_array_type (char_type_node,
+					      build_range_type
+					      (integer_type_node,
+					       integer_one_node,
+					       build_int_2 (len, 0))),
+			    1, 0);
+    TREE_CONSTANT (arg1) = 1;
+    TREE_STATIC (arg1) = 1;
+    arg1 = ffecom_1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (arg1)),
+		     arg1);
+
+    /* s_rnge adds one to the element to print it, so bias against
+       that -- want to print a faithful *subscript* value.  */
+    arg2 = convert (ffecom_f2c_ftnint_type_node,
+		    ffecom_2 (MINUS_EXPR,
+			      TREE_TYPE (element),
+			      element,
+			      convert (TREE_TYPE (element),
+				       integer_one_node)));
+
+    proc = xmalloc ((len = strlen (input_filename)
+		     + IDENTIFIER_LENGTH (DECL_NAME (current_function_decl))
+		     + 2));
+
+    sprintf (&proc[0], "%s/%s",
+	     input_filename,
+	     IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+    arg3 = build_string (len, proc);
+
+    free (proc);
+
+    TREE_TYPE (arg3)
+      = build_type_variant (build_array_type (char_type_node,
+					      build_range_type
+					      (integer_type_node,
+					       integer_one_node,
+					       build_int_2 (len, 0))),
+			    1, 0);
+    TREE_CONSTANT (arg3) = 1;
+    TREE_STATIC (arg3) = 1;
+    arg3 = ffecom_1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (arg3)),
+		     arg3);
+
+    arg4 = convert (ffecom_f2c_ftnint_type_node,
+		    build_int_2 (lineno, 0));
+
+    arg1 = build_tree_list (NULL_TREE, arg1);
+    arg2 = build_tree_list (NULL_TREE, arg2);
+    arg3 = build_tree_list (NULL_TREE, arg3);
+    arg4 = build_tree_list (NULL_TREE, arg4);
+    TREE_CHAIN (arg3) = arg4;
+    TREE_CHAIN (arg2) = arg3;
+    TREE_CHAIN (arg1) = arg2;
+
+    args = arg1;
+  }
+  die = ffecom_call_gfrt (FFECOM_gfrtRANGE,
+			  args, NULL_TREE);
+  TREE_SIDE_EFFECTS (die) = 1;
+
+  element = ffecom_3 (COND_EXPR,
+		      TREE_TYPE (element),
+		      cond,
+		      element,
+		      die);
+
+  return element;
+}
+
+/* Return the computed element of an array reference.
+
+   `item' is the array or a pointer to the array.  It must be a pointer
+     to the array if ffe_is_flat_arrays ().
+   `expr' is the original opARRAYREF expression.
+   `want_ptr' is non-zero if `item' is a pointer to the element, instead of
+     the element itself, is to be returned.  */
+
+static tree
+ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
+{
+  ffebld dims[FFECOM_dimensionsMAX];
+  int i;
+  int total_dims;
+  int flatten = 0 /* ~~~ ffe_is_flat_arrays () */;
+  int need_ptr = want_ptr || flatten;
+  tree array;
+  tree element;
+  char *array_name;
+
+  if (ffebld_op (ffebld_left (expr)) == FFEBLD_opSYMTER)
+    array_name = ffesymbol_text (ffebld_symter (ffebld_left (expr)));
+  else
+    array_name = "[expr?]";
+
+  /* Build up ARRAY_REFs in reverse order (since we're column major
+     here in Fortran land). */
+
+  for (i = 0, expr = ffebld_right (expr);
+       expr != NULL;
+       expr = ffebld_trail (expr))
+    dims[i++] = ffebld_head (expr);
+
+  total_dims = i;
+
+  if (need_ptr)
+    {
+      for (--i, array = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item)));
+	   i >= 0;
+	   --i, array = TYPE_MAIN_VARIANT (TREE_TYPE (array)))
+	{
+	  element = ffecom_expr (dims[i]);
+	  if (ffe_is_subscript_check ())
+	    element = ffecom_subscript_check_ (array, element, i, total_dims,
+					       array_name);
+	  item = ffecom_2 (PLUS_EXPR,
+			   build_pointer_type (TREE_TYPE (array)),
+			   item,
+			   size_binop (MULT_EXPR,
+				       size_in_bytes (TREE_TYPE (array)),
+				       convert (sizetype,
+						fold (build (MINUS_EXPR,
+							     TREE_TYPE (TYPE_MIN_VALUE (TYPE_DOMAIN (array))),
+							     element,
+							     TYPE_MIN_VALUE (TYPE_DOMAIN (array)))))));
+	}
+      if (! want_ptr)
+	{
+	  item = ffecom_1 (INDIRECT_REF,
+			   TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item))),
+			   item);
+	}
+    }
+  else
+    {
+      for (--i;
+	   i >= 0;
+	   --i)
+	{
+	  array = TYPE_MAIN_VARIANT (TREE_TYPE (item));
+
+	  element = ffecom_expr_ (dims[i], NULL, NULL, NULL, FALSE, TRUE);
+	  if (ffe_is_subscript_check ())
+	    element = ffecom_subscript_check_ (array, element, i, total_dims,
+					       array_name);
+	  item = ffecom_2 (ARRAY_REF,
+			   TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item))),
+			   item,
+			   element);
+	}
+    }
+
+  return item;
+}
+
 /* This is like gcc's stabilize_reference -- in fact, most of the code
    comes from that -- but it handles the situation where the reference
    is going to have its subparts picked at, and it shouldn't change
@@ -1746,10 +1973,6 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 
     case FFEBLD_opARRAYREF:
       {
-	ffebld dims[FFECOM_dimensionsMAX];
-	tree array;
-	int i;
-
 	ffecom_char_args_ (&item, length, ffebld_left (expr));
 
 	if (item == error_mark_node || *length == error_mark_node)
@@ -1758,26 +1981,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	    break;
 	  }
 
-	/* Build up ARRAY_REFs in reverse order (since we're column major
-	   here in Fortran land). */
-
-	for (i = 0, expr = ffebld_right (expr);
-	     expr != NULL;
-	     expr = ffebld_trail (expr))
-	  dims[i++] = ffebld_head (expr);
-
-	for (--i, array = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item)));
-	     i >= 0;
-	     --i, array = TYPE_MAIN_VARIANT (TREE_TYPE (array)))
-	  {
-	    item = ffecom_2 (PLUS_EXPR, build_pointer_type (TREE_TYPE (array)),
-			     item,
-			     size_binop (MULT_EXPR,
-					 size_in_bytes (TREE_TYPE (array)),
-					 size_binop (MINUS_EXPR,
-						     ffecom_expr (dims[i]),
-				    TYPE_MIN_VALUE (TYPE_DOMAIN (array)))));
-	  }
+	item = ffecom_arrayref_ (item, expr, 1);
       }
       break;
 
@@ -1788,12 +1992,25 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	ffebld thing = ffebld_right (expr);
 	tree start_tree;
 	tree end_tree;
+	char *char_name;
+	ffebld left_symter;
+	tree array;
 
 	assert (ffebld_op (thing) == FFEBLD_opITEM);
 	start = ffebld_head (thing);
 	thing = ffebld_trail (thing);
 	assert (ffebld_trail (thing) == NULL);
 	end = ffebld_head (thing);
+
+	/* Determine name for pretty-printing range-check errors.  */
+	for (left_symter = ffebld_left (expr);
+	     left_symter && ffebld_op (left_symter) == FFEBLD_opARRAYREF;
+	     left_symter = ffebld_left (left_symter))
+	  ;
+	if (ffebld_op (left_symter) == FFEBLD_opSYMTER)
+	  char_name = ffesymbol_text (ffebld_symter (left_symter));
+	else
+	  char_name = "[expr?]";
 
 	ffecom_char_args_ (&item, length, ffebld_left (expr));
 
@@ -1803,14 +2020,20 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	    break;
 	  }
 
+	array = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item)));
+
 	if (start == NULL)
 	  {
 	    if (end == NULL)
 	      ;
 	    else
 	      {
+		end_tree = ffecom_expr (end);
+		if (ffe_is_subscript_check ())
+		  end_tree = ffecom_subscript_check_ (array, end_tree, 1, 0,
+						      char_name);
 		end_tree = convert (ffecom_f2c_ftnlen_type_node,
-				    ffecom_expr (end));
+				    end_tree);
 
 		if (end_tree == error_mark_node)
 		  {
@@ -1823,8 +2046,12 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	  }
 	else
 	  {
+	    start_tree = ffecom_expr (start);
+	    if (ffe_is_subscript_check ())
+	      start_tree = ffecom_subscript_check_ (array, start_tree, 0, 0,
+						    char_name);
 	    start_tree = convert (ffecom_f2c_ftnlen_type_node,
-				  ffecom_expr (start));
+				  start_tree);
 
 	    if (start_tree == error_mark_node)
 	      {
@@ -1852,8 +2079,12 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	      }
 	    else
 	      {
+		end_tree = ffecom_expr (end);
+		if (ffe_is_subscript_check ())
+		  end_tree = ffecom_subscript_check_ (array, end_tree, 1, 0,
+						      char_name);
 		end_tree = convert (ffecom_f2c_ftnlen_type_node,
-				    ffecom_expr (end));
+				    end_tree);
 
 		if (end_tree == error_mark_node)
 		  {
@@ -2973,17 +3204,11 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 
     case FFEBLD_opARRAYREF:
       {
-	ffebld dims[FFECOM_dimensionsMAX];
-#if FFECOM_FASTER_ARRAY_REFS
-	tree array;
-#endif
-	int i;
+	if (0 /* ~~~~~ ffe_is_flat_arrays () */)
+	  t = ffecom_ptr_to_expr (ffebld_left (expr));
+	else
+	  t = ffecom_expr (ffebld_left (expr));
 
-#if FFECOM_FASTER_ARRAY_REFS
-	t = ffecom_ptr_to_expr (ffebld_left (expr));
-#else
-	t = ffecom_expr (ffebld_left (expr));
-#endif
 	if (t == error_mark_node)
 	  return t;
 
@@ -2992,36 +3217,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	  return error_mark_node;	/* Make sure non-const ref is to
 					   non-reg. */
 
-	/* Build up ARRAY_REFs in reverse order (since we're column major
-	   here in Fortran land). */
-
-	for (i = 0, expr = ffebld_right (expr);
-	     expr != NULL;
-	     expr = ffebld_trail (expr))
-	  dims[i++] = ffebld_head (expr);
-
-#if FFECOM_FASTER_ARRAY_REFS
-	for (--i, array = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (t)));
-	     i >= 0;
-	     --i, array = TYPE_MAIN_VARIANT (TREE_TYPE (array)))
-	  t = ffecom_2 (PLUS_EXPR,
-			build_pointer_type (TREE_TYPE (array)),
-			t,
-			size_binop (MULT_EXPR,
-				    size_in_bytes (TREE_TYPE (array)),
-				    size_binop (MINUS_EXPR,
-						ffecom_expr (dims[i]),
-						TYPE_MIN_VALUE (TYPE_DOMAIN (array)))));
-	t = ffecom_1 (INDIRECT_REF,
-		      TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (t))),
-		      t);
-#else
-	while (i > 0)
-	  t = ffecom_2 (ARRAY_REF,
-			TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (t))),
-			t,
-			ffecom_expr_ (dims[--i], NULL, NULL, NULL, FALSE, TRUE));
-#endif
+	t = ffecom_arrayref_ (t, expr, 0);
 
 	return t;
       }
@@ -12522,10 +12718,6 @@ ffecom_ptr_to_expr (ffebld expr)
 
     case FFEBLD_opARRAYREF:
       {
-	ffebld dims[FFECOM_dimensionsMAX];
-	tree array;
-	int i;
-
 	item = ffecom_ptr_to_expr (ffebld_left (expr));
 
 	if (item == error_mark_node)
@@ -12536,32 +12728,7 @@ ffecom_ptr_to_expr (ffebld expr)
 	  return error_mark_node;	/* Make sure non-const ref is to
 					   non-reg. */
 
-	/* Build up ARRAY_REFs in reverse order (since we're column major
-	   here in Fortran land). */
-
-	for (i = 0, expr = ffebld_right (expr);
-	     expr != NULL;
-	     expr = ffebld_trail (expr))
-	  dims[i++] = ffebld_head (expr);
-
-	for (--i, array = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item)));
-	     i >= 0;
-	     --i, array = TYPE_MAIN_VARIANT (TREE_TYPE (array)))
-	  {
-	    /* The initial subtraction should happen in the original type so
-	       that (possible) negative values are handled appropriately.  */
-	    item
-	      = ffecom_2 (PLUS_EXPR,
-			  build_pointer_type (TREE_TYPE (array)),
-			  item,
-			  size_binop (MULT_EXPR,
-				      size_in_bytes (TREE_TYPE (array)),
-				      convert (sizetype,
-					       fold (build (MINUS_EXPR,
-						     TREE_TYPE (TYPE_MIN_VALUE (TYPE_DOMAIN (array))),
-						     ffecom_expr (dims[i]),
-						     TYPE_MIN_VALUE (TYPE_DOMAIN (array)))))));
-	  }
+	item = ffecom_arrayref_ (item, expr, 1);
       }
       return item;
 
