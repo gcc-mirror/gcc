@@ -456,8 +456,8 @@ extern void rtvec_check_failed_bounds PROTO((rtvec, int,
    flags computed by get_jump_flags() after dbr scheduling is complete.
      REG_FRAME_RELATED_EXPR is attached to insns that are RTX_FRAME_RELATED_P,
    but are too complex for DWARF to interpret what they imply.  The attached
-   rtx is used instead of intuition.  */
-/*   REG_EH_REGION is used to indicate what exception region an INSN
+   rtx is used instead of intuition.
+     REG_EH_REGION is used to indicate what exception region an INSN
    belongs in.  This can be used to indicate what region a call may throw
    to. a REGION of 0 indicates that a call cannot throw at all.
    a REGION  of -1 indicates that it cannot throw, nor will it execute
@@ -465,8 +465,9 @@ extern void rtvec_check_failed_bounds PROTO((rtvec, int,
      REG_EH_RETHROW is used to indicate that a call is actually a
    call to rethrow, and specifies the rethrow symbol for the region 
    the rethrow is targetting.  This provides a way to generate the 
-   non standard flow edges required for a rethrow. */
-   
+   non standard flow edges required for a rethrow.
+     REG_SAVE_NOTE is used by haifa-sched to save NOTE_INSN notes 
+   across scheduling.  */
 
 #define REG_NOTES(INSN)	XEXP(INSN, 6)
 
@@ -481,7 +482,7 @@ enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
 		REG_EXEC_COUNT = 17, REG_NOALIAS = 18, REG_SAVE_AREA = 19,
 		REG_BR_PRED = 20, REG_EH_CONTEXT = 21,
 		REG_FRAME_RELATED_EXPR = 22, REG_EH_REGION = 23,
-		REG_EH_RETHROW = 24 };
+		REG_EH_RETHROW = 24, REG_SAVE_NOTE = 25 };
 /* The base value for branch probability notes.  */
 #define REG_BR_PROB_BASE  10000
 

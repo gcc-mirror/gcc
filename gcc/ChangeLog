@@ -1,3 +1,28 @@
+Sun Oct 10 16:37:01 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (sched_reg_n_calls_crossed): Delete.
+	(sched_reg_live_length, sched_reg_basic_block): Delete.
+	(current_block_num, bb_live_regs, old_live_regs): Delete.
+	(dead_notes, struct sometimes): Delete.
+	(sched_note_set, birthing_insn_p): Delete.
+	(adjust_priority): Gut useless reg lifetime code.
+	(create_reg_dead_note, attach_deaths): Delete.
+	(attach_deaths_insn, new_sometimes_live): Delete.
+	(finish_sometimes_live): Delete.
+	(find_pre_sched_live, find_post_sched_live): Delete.
+	(update_reg_usage): Delete.
+	(find_insn_reg_weight): New, from corpse of find_pre_sched_live.
+	(schedule_insns): Delete reg lifetime code.
+	(sched_analyze): Use REG_SAVE_NOTE to stuff NOTE_INSN notes away.
+	(unlink_other_notes): Adjust REG_NOTE commentary.
+	(reemit_notes): Use REG_SAVE_NOTE.
+	(schedule_block): Likewise.
+	(schedule_region): Allocate bitmap of blocks in region.  Use
+	count_or_remove_death_notes.  Use update_life_info.
+
+	* rtl.h (REG_SAVE_NOTE): New.
+	* rtl.c (reg_note_name): Update.
+	
 Sun Oct 10 16:14:16 1999  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (refresh_blocks, need_refresh): New.

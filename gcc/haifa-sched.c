@@ -232,22 +232,6 @@ fix_sched_param (param, val)
 }
 
 
-/* Arrays set up by scheduling for the same respective purposes as
-   similar-named arrays set up by flow analysis.  We work with these
-   arrays during the scheduling pass so we can compare values against
-   unscheduled code.
-
-   Values of these arrays are copied at the end of this pass into the
-   arrays set up by flow analysis.  */
-static int *sched_reg_n_calls_crossed;
-static int *sched_reg_live_length;
-static int *sched_reg_basic_block;
-
-/* We need to know the current block number during the post scheduling
-   update of live register information so that we can also update
-   REG_BASIC_BLOCK if a register changes blocks.  */
-static int current_block_num;
-
 /* Element N is the next insn that sets (hard or pseudo) register
    N within the current basic block; or zero, if there is no
    such insn.  Needed for new registers which may be introduced
@@ -338,23 +322,6 @@ static rtx *line_note_head;
    last element in the list.  */
 static rtx note_list;
 
-/* Regsets telling whether a given register is live or dead before the last
-   scheduled insn.  Must scan the instructions once before scheduling to
-   determine what registers are live or dead at the end of the block.  */
-static regset bb_live_regs;
-
-/* Regset telling whether a given register is live after the insn currently
-   being scheduled.  Before processing an insn, this is equal to bb_live_regs
-   above.  This is used so that we can find registers that are newly born/dead
-   after processing an insn.  */
-static regset old_live_regs;
-
-/* The chain of REG_DEAD notes.  REG_DEAD notes are removed from all insns
-   during the initial scan and reused later.  If there are not exactly as
-   many REG_DEAD notes in the post scheduled code as there were in the
-   prescheduled code then we trigger an abort because this indicates a bug.  */
-static rtx dead_notes;
-
 /* Queues, etc.  */
 
 /* An instruction is ready to be scheduled when all insns preceding it
@@ -414,16 +381,6 @@ static int q_size = 0;
 static int *insn_tick;
 #define INSN_TICK(INSN) (insn_tick[INSN_UID (INSN)])
 
-/* Data structure for keeping track of register information
-   during that register's life.  */
-
-struct sometimes
-  {
-    int regno;
-    int live_length;
-    int calls_crossed;
-  };
-
 /* Forward declarations.  */
 static void add_dependence PROTO ((rtx, rtx, enum reg_note));
 static void remove_dependence PROTO ((rtx, rtx));
@@ -444,20 +401,14 @@ static void sched_analyze_1 PROTO ((rtx, rtx));
 static void sched_analyze_2 PROTO ((rtx, rtx));
 static void sched_analyze_insn PROTO ((rtx, rtx, rtx));
 static void sched_analyze PROTO ((rtx, rtx));
-static void sched_note_set PROTO ((rtx, int));
 static int rank_for_schedule PROTO ((const PTR, const PTR));
 static void swap_sort PROTO ((rtx *, int));
 static void queue_insn PROTO ((rtx, int));
 static int schedule_insn PROTO ((rtx, rtx *, int, int));
-static void create_reg_dead_note PROTO ((rtx, rtx));
-static void attach_deaths PROTO ((rtx, rtx, int));
-static void attach_deaths_insn PROTO ((rtx));
-static int new_sometimes_live PROTO ((struct sometimes *, int, int));
-static void finish_sometimes_live PROTO ((struct sometimes *, int));
+static void find_insn_reg_weight PROTO ((int));
 static int schedule_block PROTO ((int, int));
 static char *safe_concat PROTO ((char *, char *, const char *));
 static int insn_issue_delay PROTO ((rtx));
-static int birthing_insn_p PROTO ((rtx));
 static void adjust_priority PROTO ((rtx));
 
 /* Mapping of insns to their original block prior to scheduling.  */
@@ -736,9 +687,6 @@ static rtx reemit_notes PROTO ((rtx, rtx));
 
 static void get_block_head_tail PROTO ((int, rtx *, rtx *));
 
-static void find_pre_sched_live PROTO ((int));
-static void find_post_sched_live PROTO ((int));
-static void update_reg_usage PROTO ((void));
 static int queue_to_ready PROTO ((rtx [], int));
 
 static void debug_ready_list PROTO ((rtx[], int));
@@ -3867,13 +3815,13 @@ sched_analyze (head, tail)
 		}
 	      reg_pending_sets_all = 1;
 
-	      /* Add a pair of fake REG_NOTEs which we will later
+	      /* Add a pair of REG_SAVE_NOTEs which we will later
 		 convert back into a NOTE_INSN_SETJMP note.  See
 		 reemit_notes for why we use a pair of NOTEs.  */
-	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_DEAD,
+	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_SAVE_NOTE,
 						  GEN_INT (0),
 						  REG_NOTES (insn));
-	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_DEAD,
+	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_SAVE_NOTE,
 						  GEN_INT (NOTE_INSN_SETJMP),
 						  REG_NOTES (insn));
 	    }
@@ -3926,9 +3874,9 @@ sched_analyze (head, tail)
 	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_START
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_END))
 	{
-	  loop_notes = alloc_EXPR_LIST (REG_DEAD, NOTE_RANGE_INFO (insn),
+	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE, NOTE_RANGE_INFO (insn),
 					loop_notes);
-	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
+	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE,
 					GEN_INT (NOTE_LINE_NUMBER (insn)),
 					loop_notes);
 	}
@@ -3948,10 +3896,10 @@ sched_analyze (head, tail)
 	  else
 	    rtx_region = GEN_INT (0);
 
-	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
+	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE,
 					rtx_region,
 					loop_notes);
-	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
+	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE,
 					GEN_INT (NOTE_LINE_NUMBER (insn)),
 					loop_notes);
 	  CONST_CALL_P (loop_notes) = CONST_CALL_P (insn);
@@ -3961,102 +3909,6 @@ sched_analyze (head, tail)
 	return;
     }
   abort ();
-}
-
-/* Called when we see a set of a register.  If death is true, then we are
-   scanning backwards.  Mark that register as unborn.  If nobody says
-   otherwise, that is how things will remain.  If death is false, then we
-   are scanning forwards.  Mark that register as being born.  */
-
-static void
-sched_note_set (x, death)
-     rtx x;
-     int death;
-{
-  register int regno;
-  register rtx reg = SET_DEST (x);
-  int subreg_p = 0;
-
-  if (reg == 0)
-    return;
-
-  if (GET_CODE (reg) == PARALLEL
-      && GET_MODE (reg) == BLKmode)
-    {
-      register int i;
-      for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	sched_note_set (XVECEXP (reg, 0, i), death);
-      return;
-    }
-
-  while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == STRICT_LOW_PART
-	 || GET_CODE (reg) == SIGN_EXTRACT || GET_CODE (reg) == ZERO_EXTRACT)
-    {
-      /* Must treat modification of just one hardware register of a multi-reg
-         value or just a byte field of a register exactly the same way that
-         mark_set_1 in flow.c does, i.e. anything except a paradoxical subreg
-         does not kill the entire register.  */
-      if (GET_CODE (reg) != SUBREG
-	  || REG_SIZE (SUBREG_REG (reg)) > REG_SIZE (reg))
-	subreg_p = 1;
-
-      reg = SUBREG_REG (reg);
-    }
-
-  if (GET_CODE (reg) != REG)
-    return;
-
-  /* Global registers are always live, so the code below does not apply
-     to them.  */
-
-  regno = REGNO (reg);
-  if (regno >= FIRST_PSEUDO_REGISTER || !global_regs[regno])
-    {
-      if (death)
-	{
-	  /* If we only set part of the register, then this set does not
-	     kill it.  */
-	  if (subreg_p)
-	    return;
-
-	  /* Try killing this register.  */
-	  if (regno < FIRST_PSEUDO_REGISTER)
-	    {
-	      int j = HARD_REGNO_NREGS (regno, GET_MODE (reg));
-	      while (--j >= 0)
-		{
-		  CLEAR_REGNO_REG_SET (bb_live_regs, regno + j);
-		}
-	    }
-	  else
-	    {
-	      /* Recompute REG_BASIC_BLOCK as we update all the other
-		 dataflow information.  */
-	      if (sched_reg_basic_block[regno] == REG_BLOCK_UNKNOWN)
-		sched_reg_basic_block[regno] = current_block_num;
-	      else if (sched_reg_basic_block[regno] != current_block_num)
-		sched_reg_basic_block[regno] = REG_BLOCK_GLOBAL;
-
-	      CLEAR_REGNO_REG_SET (bb_live_regs, regno);
-	    }
-	}
-      else
-	{
-	  /* Make the register live again.  */
-	  if (regno < FIRST_PSEUDO_REGISTER)
-	    {
-	      int j = HARD_REGNO_NREGS (regno, GET_MODE (reg));
-	      while (--j >= 0)
-		{
-		  SET_REGNO_REG_SET (bb_live_regs, regno + j);
-		}
-	    }
-	  else
-	    {
-	      SET_REGNO_REG_SET (bb_live_regs, regno);
-	    }
-	}
-    }
 }
 
 /* Macros and functions for keeping the priority queue sorted, and
@@ -4209,104 +4061,21 @@ queue_insn (insn, n_cycles)
 
 }
 
-/* Return nonzero if PAT is the pattern of an insn which makes a
-   register live.  */
-
-HAIFA_INLINE static int
-birthing_insn_p (pat)
-     rtx pat;
-{
-  int j;
-
-  if (reload_completed == 1)
-    return 0;
-
-  if (GET_CODE (pat) == SET
-      && (GET_CODE (SET_DEST (pat)) == REG
-	  || (GET_CODE (SET_DEST (pat)) == PARALLEL
-	      && GET_MODE (SET_DEST (pat)) == BLKmode)))
-    {
-      rtx dest = SET_DEST (pat);
-      int i;
-
-      /* It would be more accurate to use refers_to_regno_p or
-	 reg_mentioned_p to determine when the dest is not live before this
-	 insn.  */
-      if (GET_CODE (dest) == REG)
-	{
-	  i = REGNO (dest);
-	  if (REGNO_REG_SET_P (bb_live_regs, i))
-	    return (REG_N_SETS (i) == 1);
-	}
-      else
-	{
-	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-	    {
-	      int regno = REGNO (SET_DEST (XVECEXP (dest, 0, i)));
-	      if (REGNO_REG_SET_P (bb_live_regs, regno))
-		return (REG_N_SETS (regno) == 1);
-	    }
-	}
-      return 0;
-    }
-  if (GET_CODE (pat) == PARALLEL)
-    {
-      for (j = 0; j < XVECLEN (pat, 0); j++)
-	if (birthing_insn_p (XVECEXP (pat, 0, j)))
-	  return 1;
-    }
-  return 0;
-}
-
 /* PREV is an insn that is ready to execute.  Adjust its priority if that
-   will help shorten register lifetimes.  */
+   will help shorten or lengthen register lifetimes as appropriate.  Also
+   provide a hook for the target to tweek itself.  */
 
 HAIFA_INLINE static void
 adjust_priority (prev)
-     rtx prev;
+     rtx prev ATTRIBUTE_UNUSED;
 {
-  /* Trying to shorten register lives after reload has completed
-     is useless and wrong.  It gives inaccurate schedules.  */
-  if (reload_completed == 0)
-    {
-      rtx note;
-      int n_deaths = 0;
+  /* ??? There used to be code here to try and estimate how an insn
+     affected register lifetimes, but it did it by looking at REG_DEAD
+     notes, which we removed in schedule_region.  Nor did it try to 
+     take into account register pressure or anything useful like that.
 
-      /* ??? This code has no effect, because REG_DEAD notes are removed
-	 before we ever get here.  */
-      for (note = REG_NOTES (prev); note; note = XEXP (note, 1))
-	if (REG_NOTE_KIND (note) == REG_DEAD)
-	  n_deaths += 1;
+     Revisit when we have a machine model to work with and not before.  */
 
-      /* Defer scheduling insns which kill registers, since that
-	 shortens register lives.  Prefer scheduling insns which
-	 make registers live for the same reason.  */
-      switch (n_deaths)
-	{
-	default:
-	  INSN_PRIORITY (prev) >>= 3;
-	  break;
-	case 3:
-	  INSN_PRIORITY (prev) >>= 2;
-	  break;
-	case 2:
-	case 1:
-	  INSN_PRIORITY (prev) >>= 1;
-	  break;
-	case 0:
-	  if (birthing_insn_p (PATTERN (prev)))
-	    {
-	      int max = max_priority;
-
-	      if (max > INSN_PRIORITY (prev))
-		INSN_PRIORITY (prev) = max;
-	    }
-	  break;
-	}
-    }
-
-  /* That said, a target might have it's own reasons for adjusting
-     priority after reload.  */
 #ifdef ADJUST_PRIORITY
   ADJUST_PRIORITY (prev);
 #endif
@@ -4415,334 +4184,6 @@ schedule_insn (insn, ready, n_ready, clock)
   return n_ready;
 }
 
-
-/* Add a REG_DEAD note for REG to INSN, reusing a REG_DEAD note from the
-   dead_notes list.  */
-
-static void
-create_reg_dead_note (reg, insn)
-     rtx reg, insn;
-{
-  rtx link;
-
-  /* The number of registers killed after scheduling must be the same as the
-     number of registers killed before scheduling.  The number of REG_DEAD
-     notes may not be conserved, i.e. two SImode hard register REG_DEAD notes
-     might become one DImode hard register REG_DEAD note, but the number of
-     registers killed will be conserved.
-
-     We carefully remove REG_DEAD notes from the dead_notes list, so that
-     there will be none left at the end.  If we run out early, then there
-     is a bug somewhere in flow, combine and/or sched.  */
-
-  if (dead_notes == 0)
-    {
-      if (current_nr_blocks <= 1)
-	abort ();
-      else
-	link = alloc_EXPR_LIST (REG_DEAD, NULL_RTX, NULL_RTX);
-    }
-  else
-    {
-      /* Number of regs killed by REG.  */
-      int regs_killed = (REGNO (reg) >= FIRST_PSEUDO_REGISTER ? 1
-			 : HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)));
-      /* Number of regs killed by REG_DEAD notes taken off the list.  */
-      int reg_note_regs;
-
-      link = dead_notes;
-      reg_note_regs = (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
-		       : HARD_REGNO_NREGS (REGNO (XEXP (link, 0)),
-					   GET_MODE (XEXP (link, 0))));
-      while (reg_note_regs < regs_killed)
-	{
-	  link = XEXP (link, 1);
-
-	  /* LINK might be zero if we killed more registers after scheduling
-	     than before, and the last hard register we kill is actually
-	     multiple hard regs. 
-
-	     This is normal for interblock scheduling, so deal with it in
-	     that case, else abort.  */
-	  if (link == NULL_RTX && current_nr_blocks <= 1)
-	    abort ();
-	  else if (link == NULL_RTX)
-	    link = alloc_EXPR_LIST (REG_DEAD, gen_rtx_REG (word_mode, 0),
-				    NULL_RTX);
-	     
-	  reg_note_regs += (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
-			    : HARD_REGNO_NREGS (REGNO (XEXP (link, 0)),
-						GET_MODE (XEXP (link, 0))));
-	}
-      dead_notes = XEXP (link, 1);
-
-      /* If we took too many regs kills off, put the extra ones back.  */
-      while (reg_note_regs > regs_killed)
-	{
-	  rtx temp_reg, temp_link;
-
-	  temp_reg = gen_rtx_REG (word_mode, 0);
-	  temp_link = alloc_EXPR_LIST (REG_DEAD, temp_reg, dead_notes);
-	  dead_notes = temp_link;
-	  reg_note_regs--;
-	}
-    }
-
-  XEXP (link, 0) = reg;
-  XEXP (link, 1) = REG_NOTES (insn);
-  REG_NOTES (insn) = link;
-}
-
-/* Subroutine on attach_deaths_insn--handles the recursive search
-   through INSN.  If SET_P is true, then x is being modified by the insn.  */
-
-static void
-attach_deaths (x, insn, set_p)
-     rtx x;
-     rtx insn;
-     int set_p;
-{
-  register int i;
-  register int j;
-  register enum rtx_code code;
-  register const char *fmt;
-
-  if (x == 0)
-    return;
-
-  code = GET_CODE (x);
-
-  switch (code)
-    {
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case LABEL_REF:
-    case SYMBOL_REF:
-    case CONST:
-    case CODE_LABEL:
-    case PC:
-    case CC0:
-      /* Get rid of the easy cases first.  */
-      return;
-
-    case REG:
-      {
-	/* If the register dies in this insn, queue that note, and mark
-	   this register as needing to die.  */
-	/* This code is very similar to mark_used_1 (if set_p is false)
-	   and mark_set_1 (if set_p is true) in flow.c.  */
-
-	register int regno;
-	int some_needed;
-	int all_needed;
-
-	if (set_p)
-	  return;
-
-	regno = REGNO (x);
-	all_needed = some_needed = REGNO_REG_SET_P (old_live_regs, regno);
-	if (regno < FIRST_PSEUDO_REGISTER)
-	  {
-	    int n;
-
-	    n = HARD_REGNO_NREGS (regno, GET_MODE (x));
-	    while (--n > 0)
-	      {
-		int needed = (REGNO_REG_SET_P (old_live_regs, regno + n));
-		some_needed |= needed;
-		all_needed &= needed;
-	      }
-	  }
-
-	/* If it wasn't live before we started, then add a REG_DEAD note.
-	   We must check the previous lifetime info not the current info,
-	   because we may have to execute this code several times, e.g.
-	   once for a clobber (which doesn't add a note) and later
-	   for a use (which does add a note).
-
-	   Always make the register live.  We must do this even if it was
-	   live before, because this may be an insn which sets and uses
-	   the same register, in which case the register has already been
-	   killed, so we must make it live again.
-
-	   Global registers are always live, and should never have a REG_DEAD
-	   note added for them, so none of the code below applies to them.  */
-
-	if (regno >= FIRST_PSEUDO_REGISTER || ! global_regs[regno])
-	  {
-	    /* Never add REG_DEAD notes for STACK_POINTER_REGNUM
-	       since it's always considered to be live.  Similarly
-	       for FRAME_POINTER_REGNUM if a frame pointer is needed
-	       and for ARG_POINTER_REGNUM if it is fixed.  */
-	    if (! (regno == FRAME_POINTER_REGNUM
-		   && (! reload_completed || frame_pointer_needed))
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-		&& ! (regno == HARD_FRAME_POINTER_REGNUM
-		      && (! reload_completed || frame_pointer_needed))
-#endif
-#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
-		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
-#endif
-		&& regno != STACK_POINTER_REGNUM)
-	      {
-		if (! all_needed && ! dead_or_set_p (insn, x))
-		  {
-		    /* Check for the case where the register dying partially
-		       overlaps the register set by this insn.  */
-		    if (regno < FIRST_PSEUDO_REGISTER
-			&& HARD_REGNO_NREGS (regno, GET_MODE (x)) > 1)
-		      {
-			int n = HARD_REGNO_NREGS (regno, GET_MODE (x));
-			while (--n >= 0)
-			  some_needed |= dead_or_set_regno_p (insn, regno + n);
-		      }
-
-		    /* If none of the words in X is needed, make a REG_DEAD
-		       note.  Otherwise, we must make partial REG_DEAD
-		       notes.  */
-		    if (! some_needed)
-		      create_reg_dead_note (x, insn);
-		    else
-		      {
-			int i;
-
-			/* Don't make a REG_DEAD note for a part of a
-			   register that is set in the insn.  */
-			for (i = HARD_REGNO_NREGS (regno, GET_MODE (x)) - 1;
-			     i >= 0; i--)
-			  if (! REGNO_REG_SET_P (old_live_regs, regno+i)
-			      && ! dead_or_set_regno_p (insn, regno + i))
-			    create_reg_dead_note (gen_rtx_REG (reg_raw_mode[regno + i],
-							       regno + i),
-						  insn);
-		      }
-		  }
-	      }
-
-	    if (regno < FIRST_PSEUDO_REGISTER)
-	      {
-		int j = HARD_REGNO_NREGS (regno, GET_MODE (x));
-		while (--j >= 0)
-		  {
-		    SET_REGNO_REG_SET (bb_live_regs, regno + j);
-		  }
-	      }
-	    else
-	      {
-		/* Recompute REG_BASIC_BLOCK as we update all the other
-		   dataflow information.  */
-		if (sched_reg_basic_block[regno] == REG_BLOCK_UNKNOWN)
-		  sched_reg_basic_block[regno] = current_block_num;
-		else if (sched_reg_basic_block[regno] != current_block_num)
-		  sched_reg_basic_block[regno] = REG_BLOCK_GLOBAL;
-
-		SET_REGNO_REG_SET (bb_live_regs, regno);
-	      }
-	  }
-	return;
-      }
-
-    case MEM:
-      /* Handle tail-recursive case.  */
-      attach_deaths (XEXP (x, 0), insn, 0);
-      return;
-
-    case SUBREG:
-      attach_deaths (SUBREG_REG (x), insn,
-		     set_p && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
-				<= UNITS_PER_WORD)
-			       || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
-				   == GET_MODE_SIZE (GET_MODE ((x))))));
-      return;
-
-    case STRICT_LOW_PART:
-      attach_deaths (XEXP (x, 0), insn, 0);
-      return;
-
-    case ZERO_EXTRACT:
-    case SIGN_EXTRACT:
-      attach_deaths (XEXP (x, 0), insn, 0);
-      attach_deaths (XEXP (x, 1), insn, 0);
-      attach_deaths (XEXP (x, 2), insn, 0);
-      return;
-
-    case PARALLEL:
-      if (set_p
-	  && GET_MODE (x) == BLKmode)
-	{
-	  for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	    attach_deaths (SET_DEST (XVECEXP (x, 0, i)), insn, 1);
-	  return;
-	}
-
-      /* Fallthrough.  */
-    default:
-      /* Other cases: walk the insn.  */
-      fmt = GET_RTX_FORMAT (code);
-      for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	{
-	  if (fmt[i] == 'e')
-	    attach_deaths (XEXP (x, i), insn, 0);
-	  else if (fmt[i] == 'E')
-	    for (j = 0; j < XVECLEN (x, i); j++)
-	      attach_deaths (XVECEXP (x, i, j), insn, 0);
-	}
-    }
-}
-
-/* After INSN has executed, add register death notes for each register
-   that is dead after INSN.  */
-
-static void
-attach_deaths_insn (insn)
-     rtx insn;
-{
-  rtx x = PATTERN (insn);
-  register RTX_CODE code = GET_CODE (x);
-  rtx link;
-
-  if (code == SET)
-    {
-      attach_deaths (SET_SRC (x), insn, 0);
-
-      /* A register might die here even if it is the destination, e.g.
-         it is the target of a volatile read and is otherwise unused.
-         Hence we must always call attach_deaths for the SET_DEST.  */
-      attach_deaths (SET_DEST (x), insn, 1);
-    }
-  else if (code == PARALLEL)
-    {
-      register int i;
-      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	{
-	  code = GET_CODE (XVECEXP (x, 0, i));
-	  if (code == SET)
-	    {
-	      attach_deaths (SET_SRC (XVECEXP (x, 0, i)), insn, 0);
-
-	      attach_deaths (SET_DEST (XVECEXP (x, 0, i)), insn, 1);
-	    }
-	  /* Flow does not add REG_DEAD notes to registers that die in
-	     clobbers, so we can't either.  */
-	  else if (code != CLOBBER)
-	    attach_deaths (XVECEXP (x, 0, i), insn, 0);
-	}
-    }
-  /* If this is a CLOBBER, only add REG_DEAD notes to registers inside a
-     MEM being clobbered, just like flow.  */
-  else if (code == CLOBBER && GET_CODE (XEXP (x, 0)) == MEM)
-    attach_deaths (XEXP (XEXP (x, 0), 0), insn, 0);
-  /* Otherwise don't add a death note to things being clobbered.  */
-  else if (code != CLOBBER)
-    attach_deaths (x, insn, 0);
-
-  /* Make death notes for things used in the called function.  */
-  if (GET_CODE (insn) == CALL_INSN)
-    for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-      attach_deaths (XEXP (XEXP (link, 0), 0), insn,
-		     GET_CODE (XEXP (link, 0)) == CLOBBER);
-}
-
 /* Functions for handling of notes.  */
 
 /* Delete notes beginning with INSN and put them in the chain
@@ -4764,10 +4205,7 @@ unlink_other_notes (insn, tail)
       if (next)
 	PREV_INSN (next) = prev;
 
-      /* Don't save away NOTE_INSN_SETJMPs, because they must remain
-         immediately after the call they follow.  We use a fake
-         (REG_DEAD (const_int -1)) note to remember them.
-         Likewise with NOTE_INSN_{LOOP,EHREGION}_{BEG, END}.  */
+      /* See sched_analyze to see how these are handled.  */
       if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_SETJMP
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
@@ -5081,459 +4519,55 @@ rm_other_notes (head, tail)
     }
 }
 
-/* Constructor for `sometimes' data structure.  */
-
-static int
-new_sometimes_live (regs_sometimes_live, regno, sometimes_max)
-     struct sometimes *regs_sometimes_live;
-     int regno;
-     int sometimes_max;
-{
-  register struct sometimes *p;
-
-  /* There should never be a register greater than max_regno here.  If there
-     is, it means that a define_split has created a new pseudo reg.  This
-     is not allowed, since there will not be flow info available for any
-     new register, so catch the error here.  */
-  if (regno >= max_regno)
-    abort ();
-
-  p = &regs_sometimes_live[sometimes_max];
-  p->regno = regno;
-  p->live_length = 0;
-  p->calls_crossed = 0;
-  sometimes_max++;
-  return sometimes_max;
-}
-
-/* Count lengths of all regs we are currently tracking,
-   and find new registers no longer live.  */
-
-static void
-finish_sometimes_live (regs_sometimes_live, sometimes_max)
-     struct sometimes *regs_sometimes_live;
-     int sometimes_max;
-{
-  int i;
-
-  for (i = 0; i < sometimes_max; i++)
-    {
-      register struct sometimes *p = &regs_sometimes_live[i];
-      int regno = p->regno;
-
-      sched_reg_live_length[regno] += p->live_length;
-      sched_reg_n_calls_crossed[regno] += p->calls_crossed;
-    }
-}
-
 /* Functions for computation of registers live/usage info.  */
 
-/* It is assumed that prior to scheduling BASIC_BLOCK (b)->global_live_at_start
-   contains the registers that are alive at the entry to b.
-
-   Two passes follow: The first pass is performed before the scheduling
-   of a region. It scans each block of the region forward, computing
-   the set of registers alive at the end of the basic block and
-   discard REG_DEAD notes (done by find_pre_sched_live ()).
-
-   The second path is invoked after scheduling all region blocks.
-   It scans each block of the region backward, a block being traversed
-   only after its succesors in the region. When the set of registers
-   live at the end of a basic block may be changed by the scheduling
-   (this may happen for multiple blocks region), it is computed as
-   the union of the registers live at the start of its succesors.
-   The last-use information is updated by inserting REG_DEAD notes.
-   (done by find_post_sched_live ()) */
-
-/* Scan all the insns to be scheduled, removing register death notes.
-   Register death notes end up in DEAD_NOTES.
-   Recreate the register life information for the end of this basic
-   block.  */
+/* Calculate INSN_REG_WEIGHT for all insns of a block.  */
 
 static void
-find_pre_sched_live (bb)
-     int bb;
+find_insn_reg_weight (bb)
+    int bb;
 {
   rtx insn, next_tail, head, tail;
-  int b = BB_TO_BLOCK (bb);
 
   get_block_head_tail (bb, &head, &tail);
-  COPY_REG_SET (bb_live_regs, BASIC_BLOCK (b)->global_live_at_start);
   next_tail = NEXT_INSN (tail);
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
-      rtx prev, next, link;
       int reg_weight = 0;
+      rtx x;
 
       /* Handle register life information.  */
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	continue;
+
+      /* Increment weight for each register born here.  */
+      x = PATTERN (insn);
+      if ((GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
+	  && register_operand (SET_DEST (x), VOIDmode))
+	reg_weight++;
+      else if (GET_CODE (x) == PARALLEL)
 	{
-	  /* See if the register gets born here.  */
-	  /* We must check for registers being born before we check for
-	     registers dying.  It is possible for a register to be born and
-	     die in the same insn, e.g. reading from a volatile memory
-	     location into an otherwise unused register.  Such a register
-	     must be marked as dead after this insn.  */
-	  if (GET_CODE (PATTERN (insn)) == SET
-	      || GET_CODE (PATTERN (insn)) == CLOBBER)
+	  int j;
+	  for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
 	    {
-	      sched_note_set (PATTERN (insn), 0);
-	      reg_weight++;
+	      x = XVECEXP (PATTERN (insn), 0, j);
+	      if ((GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
+		  && register_operand (SET_DEST (x), VOIDmode))
+		reg_weight++;
 	    }
+	}
 
-	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
-	    {
-	      int j;
-	      for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
-		if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET
-		    || GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
-		  {
-		    sched_note_set (XVECEXP (PATTERN (insn), 0, j), 0);
-		    reg_weight++;
-		  }
-
-	      /* ??? This code is obsolete and should be deleted.  It
-	         is harmless though, so we will leave it in for now.  */
-	      for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
-		if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == USE)
-		  sched_note_set (XVECEXP (PATTERN (insn), 0, j), 0);
-	    }
-
-	  /* Each call cobbers (makes live) all call-clobbered regs
-	     that are not global or fixed.  Note that the function-value
-	     reg is a call_clobbered reg.  */
-	  if (GET_CODE (insn) == CALL_INSN)
-	    {
-	      int j;
-	      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-		if (call_used_regs[j] && !global_regs[j]
-		    && ! fixed_regs[j])
-		  {
-		    SET_REGNO_REG_SET (bb_live_regs, j);
-		  }
-	    }
-
-	  /* Need to know what registers this insn kills.  */
-	  for (prev = 0, link = REG_NOTES (insn); link; link = next)
-	    {
-	      next = XEXP (link, 1);
-	      if ((REG_NOTE_KIND (link) == REG_DEAD
-		   || REG_NOTE_KIND (link) == REG_UNUSED)
-	      /* Verify that the REG_NOTE has a valid value.  */
-		  && GET_CODE (XEXP (link, 0)) == REG)
-		{
-		  register int regno = REGNO (XEXP (link, 0));
-
-		  reg_weight--;
-
-		  /* Only unlink REG_DEAD notes; leave REG_UNUSED notes
-		     alone.  */
-		  if (REG_NOTE_KIND (link) == REG_DEAD)
-		    {
-		      if (prev)
-			XEXP (prev, 1) = next;
-		      else
-			REG_NOTES (insn) = next;
-		      XEXP (link, 1) = dead_notes;
-		      dead_notes = link;
-		    }
-		  else
-		    prev = link;
-
-		  if (regno < FIRST_PSEUDO_REGISTER)
-		    {
-		      int j = HARD_REGNO_NREGS (regno,
-						GET_MODE (XEXP (link, 0)));
-		      while (--j >= 0)
-			{
-			  CLEAR_REGNO_REG_SET (bb_live_regs, regno+j);
-			}
-		    }
-		  else
-		    {
-		      CLEAR_REGNO_REG_SET (bb_live_regs, regno);
-		    }
-		}
-	      else
-		prev = link;
-	    }
+      /* Decrement weight for each register that dies here.  */
+      for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
+	{
+	  if (REG_NOTE_KIND (x) == REG_DEAD
+	      || REG_NOTE_KIND (x) == REG_UNUSED)
+	    reg_weight--;
 	}
 
       INSN_REG_WEIGHT (insn) = reg_weight;
     }
-}
-
-/* Update register life and usage information for block bb
-   after scheduling.  Put register dead notes back in the code.  */
-
-static void
-find_post_sched_live (bb)
-     int bb;
-{
-  int sometimes_max;
-  int j, i;
-  int b;
-  rtx insn;
-  rtx head, tail, prev_head, next_tail;
-
-  register struct sometimes *regs_sometimes_live;
-
-  b = BB_TO_BLOCK (bb);
-
-  /* Compute live regs at the end of bb as a function of its successors.  */
-  if (current_nr_blocks > 1)
-    {
-      int e;
-      int first_edge;
-
-      first_edge = e = OUT_EDGES (b);
-      CLEAR_REG_SET (bb_live_regs);
-
-      if (e)
-	do
-	  {
-	    int b_succ;
-
-	    b_succ = TO_BLOCK (e);
-	    IOR_REG_SET (bb_live_regs,
-			 BASIC_BLOCK (b_succ)->global_live_at_start);
-	    e = NEXT_OUT (e);
-	  }
-	while (e != first_edge);
-    }
-
-  get_block_head_tail (bb, &head, &tail);
-  next_tail = NEXT_INSN (tail);
-  prev_head = PREV_INSN (head);
-
-  EXECUTE_IF_SET_IN_REG_SET (bb_live_regs, FIRST_PSEUDO_REGISTER, i,
-			     {
-			       sched_reg_basic_block[i] = REG_BLOCK_GLOBAL;
-			     });
-
-  /* If the block is empty, same regs are alive at its end and its start.
-     since this is not guaranteed after interblock scheduling, make sure they
-     are truly identical.  */
-  if (NEXT_INSN (prev_head) == tail
-      && (GET_RTX_CLASS (GET_CODE (tail)) != 'i'))
-    {
-      if (current_nr_blocks > 1)
-	COPY_REG_SET (BASIC_BLOCK (b)->global_live_at_start, bb_live_regs);
-
-      return;
-    }
-
-  b = BB_TO_BLOCK (bb);
-  current_block_num = b;
-
-  /* Keep track of register lives.  */
-  old_live_regs = ALLOCA_REG_SET ();
-  regs_sometimes_live
-    = (struct sometimes *) alloca (max_regno * sizeof (struct sometimes));
-  sometimes_max = 0;
-
-  /* Initiate "sometimes" data, starting with registers live at end.  */
-  sometimes_max = 0;
-  COPY_REG_SET (old_live_regs, bb_live_regs);
-  EXECUTE_IF_SET_IN_REG_SET (bb_live_regs, 0, j,
-			     {
-			       sometimes_max
-				 = new_sometimes_live (regs_sometimes_live,
-						       j, sometimes_max);
-			     });
-
-  /* Scan insns back, computing regs live info.  */
-  for (insn = tail; insn != prev_head; insn = PREV_INSN (insn))
-    {
-      /* First we kill registers set by this insn, and then we
-         make registers used by this insn live.  This is the opposite
-         order used above because we are traversing the instructions
-         backwards.  */
-
-      /* Strictly speaking, we should scan REG_UNUSED notes and make
-         every register mentioned there live, however, we will just
-         kill them again immediately below, so there doesn't seem to
-         be any reason why we bother to do this.  */
-
-      /* See if this is the last notice we must take of a register.  */
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	continue;
-
-      if (GET_CODE (PATTERN (insn)) == SET
-	  || GET_CODE (PATTERN (insn)) == CLOBBER)
-	sched_note_set (PATTERN (insn), 1);
-      else if (GET_CODE (PATTERN (insn)) == PARALLEL)
-	{
-	  for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
-	    if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET
-		|| GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
-	      sched_note_set (XVECEXP (PATTERN (insn), 0, j), 1);
-	}
-
-      /* This code keeps life analysis information up to date.  */
-      if (GET_CODE (insn) == CALL_INSN)
-	{
-	  register struct sometimes *p;
-
-	  /* A call kills all call used registers that are not
-	     global or fixed, except for those mentioned in the call
-	     pattern which will be made live again later.  */
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (call_used_regs[i] && ! global_regs[i]
-		&& ! fixed_regs[i])
-	      {
-		CLEAR_REGNO_REG_SET (bb_live_regs, i);
-	      }
-
-	  /* Regs live at the time of a call instruction must not
-	     go in a register clobbered by calls.  Record this for
-	     all regs now live.  Note that insns which are born or
-	     die in a call do not cross a call, so this must be done
-	     after the killings (above) and before the births
-	     (below).  */
-	  p = regs_sometimes_live;
-	  for (i = 0; i < sometimes_max; i++, p++)
-	    if (REGNO_REG_SET_P (bb_live_regs, p->regno))
-	      p->calls_crossed += 1;
-	}
-
-      /* Make every register used live, and add REG_DEAD notes for
-         registers which were not live before we started.  */
-      attach_deaths_insn (insn);
-
-      /* Find registers now made live by that instruction.  */
-      EXECUTE_IF_AND_COMPL_IN_REG_SET (bb_live_regs, old_live_regs, 0, j,
-				 {
-				   sometimes_max
-				     = new_sometimes_live (regs_sometimes_live,
-							   j, sometimes_max);
-				 });
-      IOR_REG_SET (old_live_regs, bb_live_regs);
-
-      /* Count lengths of all regs we are worrying about now,
-         and handle registers no longer live.  */
-
-      for (i = 0; i < sometimes_max; i++)
-	{
-	  register struct sometimes *p = &regs_sometimes_live[i];
-	  int regno = p->regno;
-
-	  p->live_length += 1;
-
-	  if (!REGNO_REG_SET_P (bb_live_regs, regno))
-	    {
-	      /* This is the end of one of this register's lifetime
-	         segments.  Save the lifetime info collected so far,
-	         and clear its bit in the old_live_regs entry.  */
-	      sched_reg_live_length[regno] += p->live_length;
-	      sched_reg_n_calls_crossed[regno] += p->calls_crossed;
-	      CLEAR_REGNO_REG_SET (old_live_regs, p->regno);
-
-	      /* Delete the reg_sometimes_live entry for this reg by
-	         copying the last entry over top of it.  */
-	      *p = regs_sometimes_live[--sometimes_max];
-	      /* ...and decrement i so that this newly copied entry
-	         will be processed.  */
-	      i--;
-	    }
-	}
-    }
-
-  finish_sometimes_live (regs_sometimes_live, sometimes_max);
-
-  /* In interblock scheduling, global_live_at_start may have changed.  */
-  if (current_nr_blocks > 1)
-    COPY_REG_SET (BASIC_BLOCK (b)->global_live_at_start, bb_live_regs);
-
-
-  FREE_REG_SET (old_live_regs);
-}				/* find_post_sched_live */
-
-/* After scheduling the subroutine, restore information about uses of
-   registers.  */
-
-static void
-update_reg_usage ()
-{
-  int regno;
-
-  if (n_basic_blocks > 0)
-    EXECUTE_IF_SET_IN_REG_SET (bb_live_regs, FIRST_PSEUDO_REGISTER, regno,
-			       {
-				 sched_reg_basic_block[regno]
-				   = REG_BLOCK_GLOBAL;
-			       });
-
-  for (regno = 0; regno < max_regno; regno++)
-    if (sched_reg_live_length[regno])
-      {
-	if (sched_verbose)
-	  {
-	    if (REG_LIVE_LENGTH (regno) > sched_reg_live_length[regno])
-	      fprintf (dump,
-		       ";; register %d life shortened from %d to %d\n",
-		       regno, REG_LIVE_LENGTH (regno),
-		       sched_reg_live_length[regno]);
-	    /* Negative values are special; don't overwrite the current
-	       reg_live_length value if it is negative.  */
-	    else if (REG_LIVE_LENGTH (regno) < sched_reg_live_length[regno]
-		     && REG_LIVE_LENGTH (regno) >= 0)
-	      fprintf (dump,
-		       ";; register %d life extended from %d to %d\n",
-		       regno, REG_LIVE_LENGTH (regno),
-		       sched_reg_live_length[regno]);
-
-	    if (!REG_N_CALLS_CROSSED (regno)
-		&& sched_reg_n_calls_crossed[regno])
-	      fprintf (dump,
-		       ";; register %d now crosses calls\n", regno);
-	    else if (REG_N_CALLS_CROSSED (regno)
-		     && !sched_reg_n_calls_crossed[regno]
-		     && REG_BASIC_BLOCK (regno) != REG_BLOCK_GLOBAL)
-	      fprintf (dump,
-		       ";; register %d no longer crosses calls\n", regno);
-
-	    if (REG_BASIC_BLOCK (regno) != sched_reg_basic_block[regno]
-		&& sched_reg_basic_block[regno] != REG_BLOCK_UNKNOWN
-		&& REG_BASIC_BLOCK(regno) != REG_BLOCK_UNKNOWN)
-	      fprintf (dump,
-		       ";; register %d changed basic block from %d to %d\n",
-			regno, REG_BASIC_BLOCK(regno),
-			sched_reg_basic_block[regno]);
-
-	  }
-	/* Negative values are special; don't overwrite the current
-	   reg_live_length value if it is negative.  */
-	if (REG_LIVE_LENGTH (regno) >= 0)
-	  REG_LIVE_LENGTH (regno) = sched_reg_live_length[regno];
-
-	if (sched_reg_basic_block[regno] != REG_BLOCK_UNKNOWN
-	    && REG_BASIC_BLOCK(regno) != REG_BLOCK_UNKNOWN)
-	  REG_BASIC_BLOCK(regno) = sched_reg_basic_block[regno];
-
-	/* We can't change the value of reg_n_calls_crossed to zero for
-	   pseudos which are live in more than one block.
-
-	   This is because combine might have made an optimization which
-	   invalidated global_live_at_start and reg_n_calls_crossed,
-	   but it does not update them.  If we update reg_n_calls_crossed
-	   here, the two variables are now inconsistent, and this might
-	   confuse the caller-save code into saving a register that doesn't
-	   need to be saved.  This is only a problem when we zero calls
-	   crossed for a pseudo live in multiple basic blocks.
-
-	   Alternatively, we could try to correctly update basic block live
-	   at start here in sched, but that seems complicated.
-
-	   Note: it is possible that a global register became local,
-	   as result of interblock motion, but will remain marked as a
-	   global register.  */
-	if (sched_reg_n_calls_crossed[regno]
-	    || REG_BASIC_BLOCK (regno) != REG_BLOCK_GLOBAL)
-	  REG_N_CALLS_CROSSED (regno) = sched_reg_n_calls_crossed[regno];
-
-      }
 }
 
 /* Scheduling clock, modified in schedule_block() and queue_to_ready ().  */
@@ -6500,10 +5534,10 @@ move_insn1 (insn, last)
   return insn;
 }
 
-/* Search INSN for fake REG_DEAD note pairs for NOTE_INSN_SETJMP,
+/* Search INSN for REG_SAVE_NOTE note pairs for NOTE_INSN_SETJMP,
    NOTE_INSN_{LOOP,EHREGION}_{BEG,END}; and convert them back into
-   NOTEs.  The REG_DEAD note following first one is contains the saved
-   value for NOTE_BLOCK_NUMBER which is useful for
+   NOTEs.  The REG_SAVE_NOTE note following first one is contains the
+   saved value for NOTE_BLOCK_NUMBER which is useful for
    NOTE_INSN_EH_REGION_{BEG,END} NOTEs.  LAST is the last instruction
    output by the instruction scheduler.  Return the new value of LAST.  */
 
@@ -6517,8 +5551,7 @@ reemit_notes (insn, last)
   retval = last;
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     {
-      if (REG_NOTE_KIND (note) == REG_DEAD
-	  && GET_CODE (XEXP (note, 0)) == CONST_INT)
+      if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
 	{
 	  int note_type = INTVAL (XEXP (note, 0));
 	  if (note_type == NOTE_INSN_SETJMP)
@@ -6671,8 +5704,7 @@ schedule_block (bb, rgn_n_insns)
       rtx note;
 
       for (note = REG_NOTES (head); note; note = XEXP (note, 1))
-	if (REG_NOTE_KIND (note) == REG_DEAD
-	    && GET_CODE (XEXP (note, 0)) == CONST_INT)
+	if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
 	  remove_note (head, note);
     }
 
@@ -7566,6 +6598,8 @@ schedule_region (rgn)
   int bb;
   int rgn_n_insns = 0;
   int sched_rgn_n_insns = 0;
+  int initial_deaths;
+  sbitmap blocks;
 
   /* Set variables for the current region.  */
   current_nr_blocks = RGN_NR_BLOCKS (rgn);
@@ -7574,6 +6608,13 @@ schedule_region (rgn)
   reg_pending_sets = ALLOCA_REG_SET ();
   reg_pending_clobbers = ALLOCA_REG_SET ();
   reg_pending_sets_all = 0;
+
+  /* Create a bitmap of the blocks in this region.  */
+  blocks = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (blocks);
+
+  for (bb = current_nr_blocks - 1; bb >= 0; --bb)
+    SET_BIT (blocks, BB_TO_BLOCK (bb));
 
   /* Initializations for region data dependence analyisis.  */
   if (current_nr_blocks > 1)
@@ -7624,13 +6665,16 @@ schedule_region (rgn)
   for (bb = current_nr_blocks - 1; bb >= 0; bb--)
     compute_block_forward_dependences (bb);
 
-  /* Delete line notes, compute live-regs at block end, and set priorities.  */
-  dead_notes = 0;
+  /* Compute INSN_REG_WEIGHT.  */
+  for (bb = current_nr_blocks - 1; bb >= 0; bb--)
+    find_insn_reg_weight (bb);
+
+  /* Remove death notes.  */
+  initial_deaths = count_or_remove_death_notes (blocks, 1);
+
+  /* Delete line notes and set priorities.  */
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
-      if (reload_completed == 0)
-	find_pre_sched_live (bb);
-
       if (write_symbols != NO_DEBUG)
 	{
 	  save_line_notes (bb);
@@ -7704,20 +6748,18 @@ schedule_region (rgn)
   if (sched_rgn_n_insns != rgn_n_insns)
     abort ();
 
-  /* Update register life and usage information.  */
-  if (reload_completed == 0)
+  /* Update register life and usage information.  Scheduling a multi-block
+     region requires a global update.  */
+  if (current_nr_blocks > 1)
+    update_life_info (blocks, UPDATE_LIFE_GLOBAL);
+  else
     {
-      for (bb = current_nr_blocks - 1; bb >= 0; bb--)
-	find_post_sched_live (bb);
+      update_life_info (blocks, UPDATE_LIFE_LOCAL);
 
-      if (current_nr_blocks <= 1)
-	/* Sanity check.  There should be no REG_DEAD notes leftover
-	   at the end.  In practice, this can occur as the result of
-	   bugs in flow, combine.c, and/or sched.c.  The values of the
-	   REG_DEAD notes remaining are meaningless, because
-	   dead_notes is just used as a free list.  */
-	if (dead_notes != 0)
-	  abort ();
+      /* In the single block case, the count of registers that died should
+	 not have changed during the schedule.  */
+      if (count_or_remove_death_notes (blocks, 0) != initial_deaths)
+        abort (); 
     }
 
   /* Restore line notes.  */
@@ -7732,6 +6774,7 @@ schedule_region (rgn)
 
   FREE_REG_SET (reg_pending_sets);
   FREE_REG_SET (reg_pending_clobbers);
+  sbitmap_free (blocks);
 }
 
 /* The one entry point in this file.  DUMP_FILE is the dump file for
@@ -7920,26 +6963,6 @@ schedule_insns (dump_file)
   insn_dep_count = (int *) xcalloc (max_uid, sizeof (int));
   insn_depend = (rtx *) xcalloc (max_uid, sizeof (rtx));
 
-  if (reload_completed == 0)
-    {
-      int i;
-
-      sched_reg_n_calls_crossed = (int *) alloca (max_regno * sizeof (int));
-      sched_reg_live_length = (int *) alloca (max_regno * sizeof (int));
-      sched_reg_basic_block = (int *) alloca (max_regno * sizeof (int));
-      bb_live_regs = ALLOCA_REG_SET ();
-      bzero ((char *) sched_reg_n_calls_crossed, max_regno * sizeof (int));
-      bzero ((char *) sched_reg_live_length, max_regno * sizeof (int));
-
-      for (i = 0; i < max_regno; i++)
-	sched_reg_basic_block[i] = REG_BLOCK_UNKNOWN;
-    }
-  else
-    {
-      sched_reg_n_calls_crossed = 0;
-      sched_reg_live_length = 0;
-      bb_live_regs = 0;
-    }
   init_alias_analysis ();
 
   if (write_symbols != NO_DEBUG)
@@ -8001,10 +7024,6 @@ schedule_insns (dump_file)
   if (write_symbols != NO_DEBUG)
     rm_redundant_line_notes ();
 
-  /* Update information about uses of registers in the subroutine.  */
-  if (reload_completed == 0)
-    update_reg_usage ();
-
   if (sched_verbose)
     {
       if (reload_completed == 0 && flag_schedule_interblock)
@@ -8039,9 +7058,6 @@ schedule_insns (dump_file)
 
   if (write_symbols != NO_DEBUG)
     free (line_note);
-
-  if (bb_live_regs)
-    FREE_REG_SET (bb_live_regs);
 
   if (edge_table)
     {
