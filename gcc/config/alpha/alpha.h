@@ -1760,8 +1760,8 @@ extern void alpha_output_lineno ();
 extern void alpha_output_filename ();
 
 
-/* Do not break .stabs pseudos into continuations.  */
-#define DBX_CONTIN_LENGTH 0
+/* mips-tfile.c limits us to strings of one page.  */
+#define DBX_CONTIN_LENGTH 4000
 
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1
