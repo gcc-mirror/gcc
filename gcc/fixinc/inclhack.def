@@ -1284,13 +1284,8 @@ fix = {
     mach     = "m88k-tektronix-sysv3*";
     files    = "time.h";
     bypass   = "#ifndef";
-    shell    =
-      "echo Fixing $file, to protect against multiple inclusion. >&2
-      cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`
-      echo \"#ifndef __GCC_GOT_${cpp_wrapper}_\"
-      echo \"#define __GCC_GOT_${cpp_wrapper}_\"
-      cat
-      echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"";
+    c_fix    = wrap;
+    test_text = "";
 };
 
 
@@ -1314,8 +1309,11 @@ fix = {
     hackname  = machine_name;
     c_test    = machine_name;
     c_fix     = machine_name;
-    test_text = "#ifdef i386 /* no uniform machine_name test, so\n"
-                "               this only works on i?86 machines */";
+    test_text =
+    "#if /* MACH_DIFF: */ \\\n"
+    "\t   defined( i386 ) \\\n"
+    "\t|| defined( sparc ) /*\n"
+    "no uniform test, so be careful  :-) */";
 };
 
 

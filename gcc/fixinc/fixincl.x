@@ -2291,13 +2291,8 @@ tTestDesc aM88k_Multi_InclTests[] = {
 /*
  *  Fix Command Arguments for M88k_Multi_Incl
  */
-const char* apzM88k_Multi_InclPatch[] = { "sh", "-c",
-    "echo Fixing $file, to protect against multiple inclusion. >&2\n\
-      cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`\n\
-      echo \"#ifndef __GCC_GOT_${cpp_wrapper}_\"\n\
-      echo \"#define __GCC_GOT_${cpp_wrapper}_\"\n\
-      cat\n\
-      echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"",
+const char* apzM88k_Multi_InclPatch[] = {
+    "wrap",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5070,7 +5065,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zM88k_Multi_InclName,    zM88k_Multi_InclList,
      apzM88k_Multi_InclMachs,
-     M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
+     M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aM88k_Multi_InclTests,   apzM88k_Multi_InclPatch },
 
   {  zMachine_Ansi_H_Va_ListName,    zMachine_Ansi_H_Va_ListList,

@@ -4,13 +4,13 @@
 *** 1,5 ****
   
   
-  #ifndef ARM_NORCROFT_HINT_CHECK
+  #if defined( ARM_NORCROFT_HINT_CHECK )
 ! ___type p_type mumble;
   #endif  /* ARM_NORCROFT_HINT_CHECK */
 --- 1,5 ----
   
   
-  #ifndef ARM_NORCROFT_HINT_CHECK
+  #if defined( ARM_NORCROFT_HINT_CHECK )
 ! p_type mumble;
   #endif  /* ARM_NORCROFT_HINT_CHECK */
 *** inc/X11/ShellP.h
@@ -19,7 +19,7 @@
 *** 2,8 ****
 --- 2,12 ----
   
-  #ifndef X11_CLASS_CHECK
+  #if defined( X11_CLASS_CHECK )
   struct {
 + #ifdef __cplusplus
 + 	char *c_class;
@@ -36,7 +36,7 @@
 --- 1,7 ----
   
   
-  #ifndef X11_SPRINTF_CHECK
+  #if defined( X11_SPRINTF_CHECK )
 + #ifndef __STDC__
   extern char *	sprintf();
 + #endif /* !defined __STDC__ */
@@ -47,14 +47,14 @@
 *** 1,6 ****
   
   
-  #ifndef X11_CLASS_USAGE_CHECK
+  #if defined( X11_CLASS_USAGE_CHECK )
 ! extern mumble (int  class);
   
   #endif  /* X11_CLASS_USAGE_CHECK */
 --- 1,6 ----
   
   
-  #ifndef X11_CLASS_USAGE_CHECK
+  #if defined( X11_CLASS_USAGE_CHECK )
 ! extern mumble (int  c_class);
   
   #endif  /* X11_CLASS_USAGE_CHECK */
@@ -63,7 +63,7 @@
 ***************
 *** 2,8 ****
   
-  #ifndef X11_NEW_CHECK
+  #if defined( X11_NEW_CHECK )
   struct wedge {
      Widget	old, new; /* fix the new */
   };
@@ -71,7 +71,7 @@
   #endif  /* X11_NEW_CHECK */
 --- 2,12 ----
   
-  #ifndef X11_NEW_CHECK
+  #if defined( X11_NEW_CHECK )
   struct wedge {
 + #ifdef __cplusplus
 + 	Widget	old, c_new;
@@ -98,11 +98,11 @@
 + #include <stdio.h>
   
   
-  #ifndef BROKEN_ASSERT_STDIO_CHECK
+  #if defined( BROKEN_ASSERT_STDIO_CHECK )
 ***************
 *** 8,10 ****
 --- 18,24 ----
-  #ifndef BROKEN_ASSERT_STDLIB_CHECK
+  #if defined( BROKEN_ASSERT_STDLIB_CHECK )
   extern void exit ( int );
   #endif  /* BROKEN_ASSERT_STDLIB_CHECK */
 + 
@@ -116,7 +116,7 @@
 --- 1,11 ----
   
   
-  #ifndef DEC_INTERN_ASM_CHECK
+  #if defined( DEC_INTERN_ASM_CHECK )
 + #ifdef __DECC
   float fasm {
       ... asm stuff ...
@@ -131,24 +131,24 @@
 *** 1,16 ****
   
   
-  #ifndef AVOID_BOOL_CHECK
+  #if defined( AVOID_BOOL_CHECK )
   # define bool	 char 
   typedef unsigned int	bool 	; /* bool type */
   #endif  /* AVOID_BOOL_CHECK */
   
   
-  #ifndef BAD_STRUCT_TERM_CHECK
+  #if defined( BAD_STRUCT_TERM_CHECK )
 ! typedef struct term;
   #endif  /* BAD_STRUCT_TERM_CHECK */
   
   
-  #ifndef LYNX_VOID_INT_CHECK
+  #if defined( LYNX_VOID_INT_CHECK )
 ! # define	void	int 	/* curses foiled again */
   #endif  /* LYNX_VOID_INT_CHECK */
 --- 1,20 ----
   
   
-  #ifndef AVOID_BOOL_CHECK
+  #if defined( AVOID_BOOL_CHECK )
 + #ifndef __cplusplus
   # define bool	 char 
 + #endif
@@ -158,12 +158,12 @@
   #endif  /* AVOID_BOOL_CHECK */
   
   
-  #ifndef BAD_STRUCT_TERM_CHECK
+  #if defined( BAD_STRUCT_TERM_CHECK )
 ! struct term;
   #endif  /* BAD_STRUCT_TERM_CHECK */
   
   
-  #ifndef LYNX_VOID_INT_CHECK
+  #if defined( LYNX_VOID_INT_CHECK )
 ! /* curses foiled again */
   #endif  /* LYNX_VOID_INT_CHECK */
 *** inc/fcntl.h
@@ -172,13 +172,13 @@
 *** 1,5 ****
   
   
-  #ifndef LYNXOS_FCNTL_PROTO_CHECK
+  #if defined( LYNXOS_FCNTL_PROTO_CHECK )
 ! extern int fcntl(int, int, int);
   #endif  /* LYNXOS_FCNTL_PROTO_CHECK */
 --- 1,5 ----
   
   
-  #ifndef LYNXOS_FCNTL_PROTO_CHECK
+  #if defined( LYNXOS_FCNTL_PROTO_CHECK )
 ! extern int fcntl(int, int, ...);
   #endif  /* LYNXOS_FCNTL_PROTO_CHECK */
 *** inc/inttypes.h
@@ -186,13 +186,13 @@
 ***************
 *** 2,6 ****
   
-  #ifndef HPUX11_UINT32_C_CHECK
+  #if defined( HPUX11_UINT32_C_CHECK )
   #define CONCAT_U__(__c)	__CONCAT__(__c,u)
 ! #define UINT32_C(__c)	__CONCAT__(__CONCAT_U__(__c),l)
   #endif  /* HPUX11_UINT32_C_CHECK */
 --- 2,6 ----
   
-  #ifndef HPUX11_UINT32_C_CHECK
+  #if defined( HPUX11_UINT32_C_CHECK )
   #define CONCAT_U__(__c)	__CONCAT__(__c,u)
 ! #define UINT32_C(__c) __CONCAT__(__c,ul)
   #endif  /* HPUX11_UINT32_C_CHECK */
@@ -201,14 +201,14 @@
 ***************
 *** 2,7 ****
   
-  #ifndef BAD_LVAL_CHECK
+  #if defined( BAD_LVAL_CHECK )
   #pragma extern_prefix "_FOO"
 ! #define something(x,y,z) _FOOsomething(x,y,z)
   #define mumble _FOOmumble
   #endif  /* BAD_LVAL_CHECK */
 --- 2,7 ----
   
-  #ifndef BAD_LVAL_CHECK
+  #if defined( BAD_LVAL_CHECK )
   #pragma extern_prefix "_FOO"
 ! #define something _FOOsomething
   #define mumble _FOOmumble
@@ -220,7 +220,7 @@
 --- 1,7 ----
   
   
-  #ifndef LIMITS_IFNDEFS_CHECK
+  #if defined( LIMITS_IFNDEFS_CHECK )
 + #ifndef DBL_DIG
    #	define	DBL_DIG 	 0  /* somthin' */
 + #endif
@@ -228,43 +228,52 @@
 *** inc/math.h
 --- res/math.h
 ***************
-*** 1,35 ****
+*** 1,44 ****
   
   
-  #ifndef BROKEN_CABS_CHECK
+  #if defined( BROKEN_CABS_CHECK )
   #ifdef __STDC__
-- extern double cabs(struct dbl_hypot);
+! extern double cabs(struct dbl_hypot);
   #else
-- extern double cabs();
+! extern double cabs();
   #endif
+! extern double cabs(); /* This is a comment
+                           and it ends here. */
   #endif  /* BROKEN_CABS_CHECK */
   
   
-  #ifndef FIX_HEADER_BREAKAGE_CHECK
+  #if defined( FIX_HEADER_BREAKAGE_CHECK )
 ! extern double floor(), ceil(), fmod(), fabs();
   #endif  /* FIX_HEADER_BREAKAGE_CHECK */
   
   
-  #ifndef HPUX8_BOGUS_INLINES_CHECK
+  #if defined( HPUX11_FABSF_CHECK )
+  #ifdef _PA_RISC
+  #  define fabsf(x) ((float)fabs((double)(float)(x)))
+  #endif
+  #endif  /* HPUX11_FABSF_CHECK */
+  
+  
+  #if defined( HPUX8_BOGUS_INLINES_CHECK )
 ! inline int abs(int v) { return (v>=0)?v:-v; }
 ! inline double sqr(double v) { return v**0.5; }
   #endif  /* HPUX8_BOGUS_INLINES_CHECK */
   
   
-  #ifndef ISC_FMOD_CHECK
+  #if defined( ISC_FMOD_CHECK )
 ! extern double	fmod(double);
   #endif  /* ISC_FMOD_CHECK */
   
   
-  #ifndef M88K_BAD_HYPOT_OPT_CHECK
+  #if defined( M88K_BAD_HYPOT_OPT_CHECK )
   extern double hypot();
   #endif  /* M88K_BAD_HYPOT_OPT_CHECK */
   
   
-  #ifndef MATH_EXCEPTION_CHECK
+  #if defined( MATH_EXCEPTION_CHECK )
   typedef struct exception t_math_exception;
   #endif  /* MATH_EXCEPTION_CHECK */
---- 1,56 ----
+--- 1,69 ----
 + #ifndef FIXINC_MATH_EXCEPTION_CHECK
 + #define FIXINC_MATH_EXCEPTION_CHECK 1
 + 
@@ -273,30 +282,43 @@
 + #endif
   
   
-  #ifndef BROKEN_CABS_CHECK
+  #if defined( BROKEN_CABS_CHECK )
   #ifdef __STDC__
+! 
   #else
+! 
   #endif
+!  /* This is a comment
+                           and it ends here. */
   #endif  /* BROKEN_CABS_CHECK */
   
   
-  #ifndef FIX_HEADER_BREAKAGE_CHECK
+  #if defined( FIX_HEADER_BREAKAGE_CHECK )
 ! extern double floor(), ceil(), fmod(), fabs _PARAMS((double));
   #endif  /* FIX_HEADER_BREAKAGE_CHECK */
   
   
-  #ifndef HPUX8_BOGUS_INLINES_CHECK
+  #if defined( HPUX11_FABSF_CHECK )
+  #ifdef _PA_RISC
++ #ifndef __cplusplus
+  #  define fabsf(x) ((float)fabs((double)(float)(x)))
+  #endif
++ #endif
+  #endif  /* HPUX11_FABSF_CHECK */
+  
+  
+  #if defined( HPUX8_BOGUS_INLINES_CHECK )
 ! extern "C" int abs(int);
 ! 
   #endif  /* HPUX8_BOGUS_INLINES_CHECK */
   
   
-  #ifndef ISC_FMOD_CHECK
+  #if defined( ISC_FMOD_CHECK )
 ! extern double	fmod(double, double);
   #endif  /* ISC_FMOD_CHECK */
   
   
-  #ifndef M88K_BAD_HYPOT_OPT_CHECK
+  #if defined( M88K_BAD_HYPOT_OPT_CHECK )
   extern double hypot();
 + /* Workaround a stupid Motorola optimization if one
 +    of x or y is 0.0 and the other is negative!  */
@@ -313,7 +335,7 @@
   #endif  /* M88K_BAD_HYPOT_OPT_CHECK */
   
   
-  #ifndef MATH_EXCEPTION_CHECK
+  #if defined( MATH_EXCEPTION_CHECK )
   typedef struct exception t_math_exception;
   #endif  /* MATH_EXCEPTION_CHECK */
 + #ifdef __cplusplus
@@ -347,7 +369,7 @@
 --- 1,6 ----
   
   
-  #ifndef STRUCT_SOCKADDR_CHECK
+  #if defined( STRUCT_SOCKADDR_CHECK )
 + struct sockaddr;
   extern AUTH* authdes_create( struct sockaddr* );
   #endif  /* STRUCT_SOCKADDR_CHECK */
@@ -357,13 +379,13 @@
 *** 1,5 ****
   
   
-  #ifndef NESTED_AUTH_DES_CHECK
+  #if defined( NESTED_AUTH_DES_CHECK )
 ! /*#include <rpc/auth_des.h> /* skip this */
   #endif  /* NESTED_AUTH_DES_CHECK */
 --- 1,5 ----
   
   
-  #ifndef NESTED_AUTH_DES_CHECK
+  #if defined( NESTED_AUTH_DES_CHECK )
 ! /*#include <rpc/auth_des.h> */ /* skip this */
   #endif  /* NESTED_AUTH_DES_CHECK */
 *** inc/rpc/xdr.h
@@ -373,7 +395,7 @@
 --- 1,6 ----
   
   
-  #ifndef STRUCT_FILE_CHECK
+  #if defined( STRUCT_FILE_CHECK )
 + struct __file_s;
   extern void xdrstdio_create( struct __file_s* );
   #endif  /* STRUCT_FILE_CHECK */
@@ -383,13 +405,13 @@
 *** 1,5 ****
   
   
-  #ifndef KANDR_CONCAT_CHECK
+  #if defined( KANDR_CONCAT_CHECK )
 ! #define __CONCAT__(a,b) a/**/b
   #endif  /* KANDR_CONCAT_CHECK */
 --- 1,5 ----
   
   
-  #ifndef KANDR_CONCAT_CHECK
+  #if defined( KANDR_CONCAT_CHECK )
 ! #define __CONCAT__(a,b) a##b
   #endif  /* KANDR_CONCAT_CHECK */
 *** inc/stdio.h
@@ -398,12 +420,12 @@
 *** 1,12 ****
   
   
-  #ifndef ALPHA_GETOPT_CHECK
+  #if defined( ALPHA_GETOPT_CHECK )
 ! extern int getopt(int, char *[], char *);
   #endif  /* ALPHA_GETOPT_CHECK */
   
   
-  #ifndef ISC_OMITS_WITH_STDC_CHECK
+  #if defined( ISC_OMITS_WITH_STDC_CHECK )
 ! #if !defined(__STDC__) && !defined(_POSIX_SOURCE) /* ? ! */
   int foo;
   #endif
@@ -416,12 +438,12 @@
 + #include <stdarg.h>
   
   
-  #ifndef ALPHA_GETOPT_CHECK
+  #if defined( ALPHA_GETOPT_CHECK )
 ! extern int getopt(int, char *const[], const char *);
   #endif  /* ALPHA_GETOPT_CHECK */
   
   
-  #ifndef ISC_OMITS_WITH_STDC_CHECK
+  #if defined( ISC_OMITS_WITH_STDC_CHECK )
 ! #if !defined(_POSIX_SOURCE) /* ? ! */
   int foo;
   #endif
@@ -429,7 +451,7 @@
 ***************
 *** 15,17 ****
 --- 20,24 ----
-  #ifndef STDIO_STDARG_H_CHECK
+  #if defined( STDIO_STDARG_H_CHECK )
   
   #endif  /* STDIO_STDARG_H_CHECK */
 + 
@@ -440,7 +462,7 @@
 *** 1,7 ****
   
   
-  #ifndef ARM_WCHAR_CHECK
+  #if defined( ARM_WCHAR_CHECK )
 ! # ifndef 	 __wchar_t /* we don't have wchar_t yet, ... */
 ! #  define  __wchar_t  short
   # endif /* __wchar_t */
@@ -448,7 +470,7 @@
 --- 1,7 ----
   
   
-  #ifndef ARM_WCHAR_CHECK
+  #if defined( ARM_WCHAR_CHECK )
 ! # ifndef 	 _GCC_WCHAR_T /* we don't have wchar_t yet, ... */
 ! #  define  _GCC_WCHAR_T  short
   # endif /* __wchar_t */
@@ -459,13 +481,13 @@
 *** 1,5 ****
   
   
-  #ifndef BADQUOTE_CHECK
+  #if defined( BADQUOTE_CHECK )
 ! /* doesn't have matched single quotes */
   #endif  /* BADQUOTE_CHECK */
 --- 1,5 ----
   
   
-  #ifndef BADQUOTE_CHECK
+  #if defined( BADQUOTE_CHECK )
 ! /* does not have matched single quotes */
   #endif  /* BADQUOTE_CHECK */
 *** inc/sunwindow/win_lock.h
@@ -474,7 +496,7 @@
 *** 1,7 ****
   
   
-  #ifndef ECD_CURSOR_CHECK
+  #if defined( ECD_CURSOR_CHECK )
 ! #ifdef ecd.cursor
   #error bogus
 ! #endif /* ecd+cursor */
@@ -482,7 +504,7 @@
 --- 1,7 ----
   
   
-  #ifndef ECD_CURSOR_CHECK
+  #if defined( ECD_CURSOR_CHECK )
 ! #ifdef ecd_cursor
   #error bogus
 ! #endif /* ecd_cursor */
@@ -493,7 +515,7 @@
 *** 1,7 ****
   
   
-  #ifndef ALPHA_PARENS_CHECK
+  #if defined( ALPHA_PARENS_CHECK )
 ! #ifndef(__mips64) /* bogus */
   extern int foo;
   #endif
@@ -501,7 +523,7 @@
 --- 1,7 ----
   
   
-  #ifndef ALPHA_PARENS_CHECK
+  #if defined( ALPHA_PARENS_CHECK )
 ! #ifndef __mips64 /* bogus */
   extern int foo;
   #endif
@@ -512,13 +534,13 @@
 *** 1,5 ****
   
   
-  #ifndef IRIX_ASM_APOSTROPHE_CHECK
+  #if defined( IRIX_ASM_APOSTROPHE_CHECK )
 ! # and we're on vacation
   #endif  /* IRIX_ASM_APOSTROPHE_CHECK */
 --- 1,5 ----
   
   
-  #ifndef IRIX_ASM_APOSTROPHE_CHECK
+  #if defined( IRIX_ASM_APOSTROPHE_CHECK )
 ! # and we are on vacation
   #endif  /* IRIX_ASM_APOSTROPHE_CHECK */
 *** inc/sys/file.h
@@ -527,13 +549,13 @@
 *** 1,5 ****
   
   
-  #ifndef HP_SYSFILE_CHECK
+  #if defined( HP_SYSFILE_CHECK )
 ! extern void foo(...); /* HPUX_SOURCE - bad varargs */
   #endif  /* HP_SYSFILE_CHECK */
 --- 1,5 ----
   
   
-  #ifndef HP_SYSFILE_CHECK
+  #if defined( HP_SYSFILE_CHECK )
 ! extern void foo(struct file *, ...); /* HPUX_SOURCE - bad varargs */
   #endif  /* HP_SYSFILE_CHECK */
 *** inc/sys/limits.h
@@ -541,7 +563,7 @@
 ***************
 *** 2,8 ****
   
-  #ifndef NESTED_SYS_LIMITS_CHECK
+  #if defined( NESTED_SYS_LIMITS_CHECK )
   /*
 ! #define CHILD_MAX 20 /* Max, Max, ... */ /*
 ! #define OPEN_MAX  20 /* Max, Max, ... */
@@ -549,7 +571,7 @@
   #endif  /* NESTED_SYS_LIMITS_CHECK */
 --- 2,8 ----
   
-  #ifndef NESTED_SYS_LIMITS_CHECK
+  #if defined( NESTED_SYS_LIMITS_CHECK )
   /*
 ! #define CHILD_MAX 20  Max, Max, ... */ /*
 ! #define OPEN_MAX  20  Max, Max, ... */
@@ -568,7 +590,7 @@
 + #endif
   
   
-  #ifndef CXX_UNREADY_CHECK
+  #if defined( CXX_UNREADY_CHECK )
   extern void* malloc( size_t );
   #endif  /* CXX_UNREADY_CHECK */
 + #ifdef __cplusplus
@@ -582,25 +604,25 @@
 *** 1,11 ****
   
   
-  #ifndef AUX_ASM_CHECK
+  #if defined( AUX_ASM_CHECK )
 ! #ifndef NOINLINE /* ain't got no inline, so we got it */
   #endif /* NOINLINE */
   #endif  /* AUX_ASM_CHECK */
   
   
-  #ifndef HPUX_MAXINT_CHECK
+  #if defined( HPUX_MAXINT_CHECK )
   #define MAXINT 0x7FFFFFFF
   #endif  /* HPUX_MAXINT_CHECK */
 --- 1,13 ----
   
   
-  #ifndef AUX_ASM_CHECK
+  #if defined( AUX_ASM_CHECK )
 ! #if !defined(NOINLINE) && !defined(__GNUC__) /* ain't got no inline, so we got it */
   #endif /* NOINLINE */
   #endif  /* AUX_ASM_CHECK */
   
   
-  #ifndef HPUX_MAXINT_CHECK
+  #if defined( HPUX_MAXINT_CHECK )
 + #ifndef MAXINT
   #define MAXINT 0x7FFFFFFF
 + #endif
@@ -611,13 +633,13 @@
 *** 1,5 ****
   
   
-  #ifndef AIX_VOLATILE_CHECK
+  #if defined( AIX_VOLATILE_CHECK )
 ! typedef volatile int sig_atomic_t;
   #endif  /* AIX_VOLATILE_CHECK */
 --- 1,5 ----
   
   
-  #ifndef AIX_VOLATILE_CHECK
+  #if defined( AIX_VOLATILE_CHECK )
 ! typedef int sig_atomic_t;
   #endif  /* AIX_VOLATILE_CHECK */
 *** inc/sys/spinlock.h
@@ -626,7 +648,7 @@
 *** 1,7 ****
   
   
-  #ifndef HP_INLINE_CHECK
+  #if defined( HP_INLINE_CHECK )
 ! # include "../machine/inline.h"
   # include "../machine/dontfix.h"
 ! # include "../machine/psl.h"
@@ -634,7 +656,7 @@
 --- 1,7 ----
   
   
-  #ifndef HP_INLINE_CHECK
+  #if defined( HP_INLINE_CHECK )
 ! # include <machine/inline.h>
   # include "../machine/dontfix.h"
 ! # include <machine/psl.h>
@@ -645,13 +667,13 @@
 *** 1,5 ****
   
   
-  #ifndef M88K_BAD_S_IF_CHECK
+  #if defined( M88K_BAD_S_IF_CHECK )
 ! #define S_ISREG(m) (m & S_IFREG) /* is regular? */
   #endif  /* M88K_BAD_S_IF_CHECK */
 --- 1,5 ----
   
   
-  #ifndef M88K_BAD_S_IF_CHECK
+  #if defined( M88K_BAD_S_IF_CHECK )
 ! #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG) /* is regular? */
   #endif  /* M88K_BAD_S_IF_CHECK */
 *** inc/sys/time.h
@@ -660,13 +682,13 @@
 *** 1,5 ****
   
   
-  #ifndef HPUX_SYSTIME_CHECK
+  #if defined( HPUX_SYSTIME_CHECK )
 ! extern struct sigevent;
   #endif  /* HPUX_SYSTIME_CHECK */
 --- 1,5 ----
   
   
-  #ifndef HPUX_SYSTIME_CHECK
+  #if defined( HPUX_SYSTIME_CHECK )
 ! struct sigevent;
   #endif  /* HPUX_SYSTIME_CHECK */
 *** inc/sys/types.h
@@ -675,14 +697,14 @@
 *** 1,6 ****
   
   
-  #ifndef IRIX_MULTILINE_CMNT_CHECK
+  #if defined( IRIX_MULTILINE_CMNT_CHECK )
 ! /* we check the type of the result
 ! // of the sizeof something.  This is a bad test :-( */
   #endif  /* IRIX_MULTILINE_CMNT_CHECK */
 --- 1,6 ----
   
   
-  #ifndef IRIX_MULTILINE_CMNT_CHECK
+  #if defined( IRIX_MULTILINE_CMNT_CHECK )
 ! /* we check the type of the result */
 ! // /* of the sizeof something.  This is a bad test :-( */
   #endif  /* IRIX_MULTILINE_CMNT_CHECK */
@@ -692,7 +714,7 @@
 *** 2,7 ****
 --- 2,8 ----
   
-  #ifndef AIX_SYSWAIT_CHECK
+  #if defined( AIX_SYSWAIT_CHECK )
   /* bos325, */
 + struct rusage;
   extern pid_t wait3();
@@ -704,33 +726,31 @@
 *** 1,33 ****
   
   
-  #ifndef CTRL_QUOTES_DEF_CHECK
+  #if defined( CTRL_QUOTES_DEF_CHECK )
 ! #define BSD43_CTRL(n, x) (('n'<<8)+x)
   #endif  /* CTRL_QUOTES_DEF_CHECK */
   
   
-  #ifndef CTRL_QUOTES_USE_CHECK
+  #if defined( CTRL_QUOTES_USE_CHECK )
 ! #define TIOCFOO BSD43_CTRL(T, 1)
   #endif  /* CTRL_QUOTES_USE_CHECK */
   
   
-  #ifndef IO_QUOTES_DEF_CHECK
+  #if defined( IO_QUOTES_DEF_CHECK )
 ! #define BSD43__IOWR(n, x) (('n'<<8)+x)
   #endif  /* IO_QUOTES_DEF_CHECK */
   
   
-  #ifndef IO_QUOTES_USE_CHECK
+  #if defined( IO_QUOTES_USE_CHECK )
 ! #define TIOCFOO BSD43__IOWR(T, 1)
   #endif  /* IO_QUOTES_USE_CHECK */
   
   
-  #ifndef MACHINE_NAME_CHECK
-! #ifdef i386 /* no uniform machine_name test, so
-                 this only works on i?86 machines */
+  #if defined( MACHINE_NAME_CHECK )
   #endif  /* MACHINE_NAME_CHECK */
   
   
-  #ifndef UNDEFINE_NULL_CHECK
+  #if defined( UNDEFINE_NULL_CHECK )
   #define NULL 0UL
   #define NULL	((void*)0)
   
@@ -738,33 +758,31 @@
 --- 1,37 ----
   
   
-  #ifndef CTRL_QUOTES_DEF_CHECK
+  #if defined( CTRL_QUOTES_DEF_CHECK )
 ! #define BSD43_CTRL(n, x) ((n<<8)+x)
   #endif  /* CTRL_QUOTES_DEF_CHECK */
   
   
-  #ifndef CTRL_QUOTES_USE_CHECK
+  #if defined( CTRL_QUOTES_USE_CHECK )
 ! #define TIOCFOO BSD43_CTRL('T', 1)
   #endif  /* CTRL_QUOTES_USE_CHECK */
   
   
-  #ifndef IO_QUOTES_DEF_CHECK
+  #if defined( IO_QUOTES_DEF_CHECK )
 ! #define BSD43__IOWR(n, x) ((n<<8)+x)
   #endif  /* IO_QUOTES_DEF_CHECK */
   
   
-  #ifndef IO_QUOTES_USE_CHECK
+  #if defined( IO_QUOTES_USE_CHECK )
 ! #define TIOCFOO BSD43__IOWR('T', 1)
   #endif  /* IO_QUOTES_USE_CHECK */
   
   
-  #ifndef MACHINE_NAME_CHECK
-! #ifdef __i386__ /* no uniform machine_name test, so
-                 this only works on i?86 machines */
+  #if defined( MACHINE_NAME_CHECK )
   #endif  /* MACHINE_NAME_CHECK */
   
   
-  #ifndef UNDEFINE_NULL_CHECK
+  #if defined( UNDEFINE_NULL_CHECK )
 + #ifndef NULL
   #define NULL 0UL
 + #endif
@@ -776,30 +794,41 @@
 *** inc/time.h
 --- res/time.h
 ***************
-*** 1,5 ****
+*** 1,3 ****
+--- 1,6 ----
++ #ifndef FIXINC_M88K_MULTI_INCL_CHECK
++ #define FIXINC_M88K_MULTI_INCL_CHECK 1
++ 
   
   
-  #ifndef VXWORKS_NEEDS_VXTYPES_CHECK
+  #if defined( M88K_MULTI_INCL_CHECK )
+***************
+*** 6,10 ****
+  
+  
+  #if defined( VXWORKS_NEEDS_VXTYPES_CHECK )
 ! uint_t	_clocks_per_sec;
   #endif  /* VXWORKS_NEEDS_VXTYPES_CHECK */
---- 1,5 ----
+--- 9,15 ----
   
   
-  #ifndef VXWORKS_NEEDS_VXTYPES_CHECK
+  #if defined( VXWORKS_NEEDS_VXTYPES_CHECK )
 ! unsigned int	_clocks_per_sec;
   #endif  /* VXWORKS_NEEDS_VXTYPES_CHECK */
++ 
++ #endif  /* FIXINC_M88K_MULTI_INCL_CHECK */
 *** inc/unistd.h
 --- res/unistd.h
 ***************
 *** 1,5 ****
   
   
-  #ifndef ALPHA_SBRK_CHECK
+  #if defined( ALPHA_SBRK_CHECK )
 ! extern char* sbrk(ptrdiff_t increment);
   #endif  /* ALPHA_SBRK_CHECK */
 --- 1,5 ----
   
   
-  #ifndef ALPHA_SBRK_CHECK
+  #if defined( ALPHA_SBRK_CHECK )
 ! extern void *sbrk(ptrdiff_t increment);
   #endif  /* ALPHA_SBRK_CHECK */
