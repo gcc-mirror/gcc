@@ -109,15 +109,15 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { { "68020", 5},				\
-    { "c68020", 5},				\
-    { "bitfield", 4},				\
-    { "68000", -7},				\
-    { "c68000", -7},				\
-    { "soft-float", -2},			\
-    { "nobitfield", -4},			\
-    { "short", 040},				\
-    { "noshort", -040},				\
+  { { "68020", 5, "Generate code for a mc68020"},		\
+    { "c68020", 5, "Generate code for a mc68020"},		\
+    { "bitfield", 4, "Use bitfield instructions"},		\
+    { "68000", -7, "Generate code for a mc68000"},		\
+    { "c68000", -7, "Generate code for a mc68000"},		\
+    { "soft-float", -2, "Generate software FP code"},		\
+    { "nobitfield", -4, "Do not generate bitfield insns"},	\
+    { "short", 040, "Use 16bit integers"},			\
+    { "noshort", -040, "Use 32bit integers"},			\
     { "", TARGET_DEFAULT}}
 
 /* target machine storage layout */
