@@ -1308,16 +1308,17 @@ debug procedures in the middle of declarations.
 Syntax:
 
 @smallexample @c ada
-pragma Elaboration_Checks (RM | Static);
+pragma Elaboration_Checks (Dynamic | Static);
 @end smallexample
 
 @noindent
 This is a configuration pragma that provides control over the
 elaboration model used by the compilation affected by the
-pragma.  If the parameter is RM, then the dynamic elaboration
+pragma.  If the parameter is @code{Dynamic},
+then the dynamic elaboration
 model described in the Ada Reference Manual is used, as though
 the @code{-gnatE} switch had been specified on the command
-line.  If the parameter is Static, then the default GNAT static
+line.  If the parameter is @code{Static}, then the default GNAT static
 model is used.  This configuration pragma overrides the setting
 of the command line.  For full details on the elaboration models
 used by the GNAT compiler, see section ``Elaboration Order

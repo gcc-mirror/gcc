@@ -384,8 +384,7 @@ package body Sem_Warn is
                then
                   null;
 
-               elsif Warn_On_No_Value_Assigned
-                 and then Present (UR)
+               elsif Present (UR)
                  and then Is_Access_Type (Etype (E1))
                then
 

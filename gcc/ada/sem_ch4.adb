@@ -30,7 +30,9 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
+with Fname;    use Fname;
 with Itypes;   use Itypes;
+with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -4344,22 +4346,32 @@ package body Sem_Ch4 is
    --------------------------------
 
    procedure Remove_Abstract_Operations (N : Node_Id) is
-      I               : Interp_Index;
-      It              : Interp;
-      Abstract_Op     : Entity_Id := Empty;
+      I           : Interp_Index;
+      It          : Interp;
+      Abstract_Op : Entity_Id := Empty;
 
       --  AI-310: If overloaded, remove abstract non-dispatching
-      --  operations.
+      --  operations. We activate this if either extensions are
+      --  enabled, or if the abstract operation in question comes
+      --  from a predefined file. This latter test allows us to
+      --  use abstract to make operations invisible to users. In
+      --  particular, if type Address is non-private and abstract
+      --  subprograms are used to hide its operators, they will be
+      --  truly hidden.
 
    begin
-      if Extensions_Allowed
-        and then Is_Overloaded (N)
-      then
+      if Is_Overloaded (N) then
          Get_First_Interp (N, I, It);
+
          while Present (It.Nam) loop
             if not Is_Type (It.Nam)
               and then Is_Abstract (It.Nam)
               and then not Is_Dispatching_Operation (It.Nam)
+              and then
+                (Extensions_Allowed
+                   or else Is_Predefined_File_Name
+                             (Unit_File_Name (Get_Source_Unit (It.Nam))))
+
             then
                Abstract_Op := It.Nam;
                Remove_Interp (I);

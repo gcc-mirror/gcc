@@ -344,6 +344,7 @@ package body Make is
    --  These flags are reset to True for each invokation of procedure Gnatmake.
 
    Shared_String : aliased String := "-shared";
+   Force_Elab_Flags_String : aliased String := "-F";
 
    No_Shared_Switch  : aliased Argument_List := (1 .. 0 => null);
    Shared_Switch     : aliased Argument_List := (1 => Shared_String'Access);
@@ -3323,6 +3324,8 @@ package body Make is
       --  The current working directory, used to modify some relative path
       --  switches on the command line when a project file is used.
 
+      There_Are_Stand_Alone_Libraries : Boolean := False;
+
    begin
       Gnatmake_Called := True;
 
@@ -4428,6 +4431,10 @@ package body Make is
 
                      for Proj1 in Projects.First .. Projects.Last loop
 
+                        if Projects.Table (Proj1).Standalone_Library then
+                           There_Are_Stand_Alone_Libraries := True;
+                        end if;
+
                         if Projects.Table (Proj1).Library
                           and then not Projects.Table (Proj1).Flag1
                         then
@@ -4643,7 +4650,7 @@ package body Make is
          if Do_Bind_Step then
             Bind_Step : declare
                Args : Argument_List
-                        (Binder_Switches.First .. Binder_Switches.Last + 1);
+                        (Binder_Switches.First .. Binder_Switches.Last + 2);
                --  The arguments for the invocation of gnatbind
 
                Last_Arg : Natural := Binder_Switches.Last;
@@ -4703,6 +4710,11 @@ package body Make is
                for J in Binder_Switches.First .. Last_Arg loop
                   Args (J) := Binder_Switches.Table (J);
                end loop;
+
+               if There_Are_Stand_Alone_Libraries then
+                  Last_Arg := Last_Arg + 1;
+                  Args (Last_Arg) := Force_Elab_Flags_String'Access;
+               end if;
 
                if Main_Project /= No_Project then
 

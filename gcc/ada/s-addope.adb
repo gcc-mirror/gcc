@@ -81,7 +81,7 @@ package body System.Address_Operations is
 
    function ModA (Left, Right : Address) return Address is
    begin
-      return A (I (Left) and I (Right));
+      return A (I (Left) mod I (Right));
    end ModA;
 
    ---------

@@ -1,3 +1,61 @@
+2004-04-29  Ed Schonberg  <schonberg@gnat.com>
+
+	* checks.adb (Enable_Range_Check): If the prefix of an index component
+	is an access to an unconstrained array, perform check unconditionally.
+
+2004-04-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (gnat_to_gnu_field): Also call make_packable_type if
+	Component_Clause.
+
+2004-04-29  Olivier Hainque  <hainque@act-europe.fr>
+
+	* init.c (__gnat_install_handler, __gnat_error_handler): Remove
+	alternate stack setting. There was no support for the tasking cases
+	and the changes eventually caused a number of side-effect failures in
+	the non-tasking case too.
+
+2004-04-29  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	lang-specs.h: Redirect output to /dev/null if -gnatc or -gnatz or
+	-gnats is passed.
+
+2004-04-29  Vincent Celier  <celier@gnat.com>
+
+	* make.adb (Gnatmake): Increase max size of argument array for
+	gnatbind for the potential addition of -F.
+	If there are Stand-Alone Library projects, invoke gnatbind with -F to
+	be sure that elaboration flags will be checked.
+
+	* switch-c.adb: Correct call to Scan_Pos for -gnateI
+
+2004-04-29  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_warn.adb (Check_References): Move '<access-variable> may be
+	null' warning out of under Warn_On_No_Value_Assigned.
+
+2004-04-29  Ed Falis  <falis@gnat.com>
+
+	* gnat_ugn.texi: Fixed texi error
+
+2004-04-29  Robert Dewar  <dewar@gnat.com>
+
+	* sem_ch4.adb (Remove_Abstract_Operations): Unconditionally remove
+	abstract operations if they come from predefined files.
+
+	* gnat_rm.texi: Fix bad doc for pragma Elaboration_Checks (should be
+	Dynamic, not RM).
+
+	* s-addope.adb: Correct obvious error in mod function
+
+2004-04-28  Andrew W. Reynolds  <awreynolds@mac.com>
+
+	* Makefile.in: Add target pairs for powerpc darwin*
+	tasking support.
+
+	* a-intnam-darwin.ads, s-osinte-darwin.adb,
+	s-osinte-darwin.ads, system-darwin-ppc.ads: New files.
+
 2004-04-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* Makefile.in: Add target macro definitions for s390*-linux*.
