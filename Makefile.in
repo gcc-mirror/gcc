@@ -1253,12 +1253,8 @@ $(CONFIGURE_BUILD_MODULES):
 
 # This rule is used to build the modules which use FLAGS_TO_PASS.  To
 # build a target all-X means to cd to X and make all.
-#
-# all-gui, and all-libproc are handled specially because
-# they are still experimental, and if they fail to build, that
-# shouldn't stop "make all".
-.PHONY: $(ALL_MODULES) all-gui all-libproc
-$(ALL_MODULES) all-gui all-libproc:
+.PHONY: $(ALL_MODULES)
+$(ALL_MODULES):
 	@dir=`echo $@ | sed -e 's/all-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
 	  r=`${PWD}`; export r; \
@@ -1672,7 +1668,6 @@ configure-target-gperf: $(ALL_GCC_CXX)
 all-target-gperf: all-target-libiberty all-target-libstdc++-v3
 all-gprof: all-libiberty all-bfd all-opcodes all-intl
 all-grep: all-libiberty
-all-gui: all-gdb all-libproc
 all-guile:
 all-gzip: all-libiberty
 all-hello: all-libiberty
