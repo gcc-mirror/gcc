@@ -24,7 +24,7 @@ int main ()
 	tres_floats tf (v1, v2, v3);
 
 	if ((tf.get_f1() != v1) || (tf.get_f2() != v2) || (tf.get_f3() != v3))
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 

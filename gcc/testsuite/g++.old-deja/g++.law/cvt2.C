@@ -27,7 +27,10 @@ A(const char* s)
         // s still ok here
         ifstream inf(s);
 	if (strncmp ("aaa", s, 3))
-	  printf ("FAIL\n");
+	  {
+	    printf ("FAIL\n");
+	    exit (1);
+	  }
 	else
 	  printf ("PASS\n");
 }

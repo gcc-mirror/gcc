@@ -90,7 +90,7 @@ int main()
     if (strcmp (output, " 1-a1-11-12-a2-12-1") == 0)
       printf ("PASS\n");
     else
-      printf ("FAIL\n");
+      { printf ("FAIL\n"); return 1; }
 
     return 0;
 }

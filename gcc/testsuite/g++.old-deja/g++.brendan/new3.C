@@ -32,5 +32,5 @@ int main()
   if (pass)
     printf ("PASS\n");
   else
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
 }

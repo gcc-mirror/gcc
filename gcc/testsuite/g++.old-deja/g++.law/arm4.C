@@ -21,7 +21,7 @@ int main(void)
 
   S x(int (a));
   if (count > 0)
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
   else
     printf ("PASS\n");
   return 0;

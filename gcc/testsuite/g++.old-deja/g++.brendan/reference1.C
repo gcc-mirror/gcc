@@ -35,7 +35,7 @@ int main ()
 	if (call_count == 1)
 	  printf ("PASS\n");
 	else
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 
 	return 0;
 }

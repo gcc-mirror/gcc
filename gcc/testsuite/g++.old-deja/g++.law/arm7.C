@@ -26,16 +26,15 @@ Derived::operator Base&() {
 	return *b;
 }
 
-void f(Base &b) {
+int f(Base &b) {
 	if (b.i == 99)
-	  printf ("PASS\n");
+	  { printf ("PASS\n"); return 0; }
 	else
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 }
 
 int main() {
 	Derived d(99);
-	f(d);
-	return 0;
+	return f(d);
 }
 

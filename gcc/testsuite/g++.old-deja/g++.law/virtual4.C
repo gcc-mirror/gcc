@@ -13,7 +13,7 @@ class A
 class B:public A
 {
   public:
-    void SetProp() { if (!aset) { printf ("FAIL\n"); exit (0);} aset--;}
+    void SetProp() { if (!aset) { printf ("FAIL\n"); exit (1);} aset--;}
 };
 
 int main()

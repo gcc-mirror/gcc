@@ -44,7 +44,7 @@ int main ()
 	delete dp;
 
 	if ((member_destructor_calls != 8) || (middle_destructor_calls != 2))
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 

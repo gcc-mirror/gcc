@@ -47,7 +47,7 @@ void printargs(char** argv) {
 int PTcl::one(int, char** argv) {
   cout << "FAIL\n";
 	printargs(argv);
-	return 0;
+	return 1;
 }
 
 int PTcl::two(int, char** argv) {
@@ -59,11 +59,10 @@ int PTcl::two(int, char** argv) {
 int PTcl::three(int, char** argv) {
   cout << "FAIL\n";
 	printargs(argv);
-	return 0;
+	return 1;
 }
 
 int main (int argc, char** argv) {
 	PTcl obj;
-	obj.dispatcher(1,argc,argv);
-	return 0;
+	return obj.dispatcher(1,argc,argv);
 }

@@ -7,7 +7,7 @@
   main()
   {
     if (sizeof (E) != 4)
-	printf ("FAIL\n");
+	{ printf ("FAIL\n"); return 1; }
     else
 	printf ("PASS\n");
     return 0;

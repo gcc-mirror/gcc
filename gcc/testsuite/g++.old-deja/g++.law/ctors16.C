@@ -43,7 +43,7 @@ int main() {
     D d;
     E e;
     if (strncmp ("ABCABDABE", stuff, 9))
-	printf ("FAIL\n");
+	{ printf ("FAIL\n"); return 1; }
     else
 	printf ("PASS\n");
 }

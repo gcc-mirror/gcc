@@ -14,7 +14,7 @@ int main()
   if (i == 2)
     printf ("PASS\n");
   else
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
 }
 
 

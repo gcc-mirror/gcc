@@ -37,5 +37,5 @@ int main()
 	if (x.first == 10 && x.second == 20 && y == 12.34)
 	  printf ("PASS\n");
 	else
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 }

@@ -20,5 +20,5 @@ int main()
       && arr[1].index == -1)
     printf ("PASS\n");
   else
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
 }

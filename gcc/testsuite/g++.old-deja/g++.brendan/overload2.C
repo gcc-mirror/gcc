@@ -37,7 +37,7 @@ int main ()
 	derived_object.method (message);
 
 	if (proper_method_called != 1)
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 }

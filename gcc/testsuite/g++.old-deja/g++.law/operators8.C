@@ -3,7 +3,7 @@
 
 class shape {
   public:
-    virtual void vDisplay(void) const = 0;
+    virtual int vDisplay(void) const = 0;
   protected:
     int X;
     int Y;
@@ -16,8 +16,9 @@ class square :public shape {
 	Y = y;
 	width = width_;
     }
-    void vDisplay(void) const {
+    int vDisplay(void) const {
 	printf ("PASS\n");
+	return 0;
     }
   protected:
     int width;
@@ -32,8 +33,9 @@ class triangle :public shape {
 	width = width_;
 	height = height_;
     }
-    void vDisplay(void) const {
+    int vDisplay(void) const {
 	printf ("FAIL\n");
+	return 1;
     }
   protected:
     int width;
@@ -44,6 +46,6 @@ int main() {
     shape* s1 = new square(4,4,5);
     shape* s2 = new triangle(6,6,2,3);
     *s1 = *s2;
-    s1->vDisplay();
+    return s1->vDisplay();
 }
 

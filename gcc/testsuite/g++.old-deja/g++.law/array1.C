@@ -25,7 +25,7 @@ foo* foo::array = new foo [5];
 int main()
 {
   if (i != 5)
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
   else
     printf ("PASS\n");
 }

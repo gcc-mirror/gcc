@@ -9,8 +9,8 @@
 
 // Given the following overloaded function definitions
 
-void ovf(unsigned long, short,         short) { printf ("PASS\n"); }
-void ovf(          int, short, unsigned long) { printf ("FAIL\n"); }
+int ovf(unsigned long, short,         short) { printf ("PASS\n"); return 0; }
+int ovf(          int, short, unsigned long) { printf ("FAIL\n"); return 1; }
 
 // and the call
 //
@@ -28,6 +28,5 @@ int main(int, char**)
     unsigned int x = 0;
     unsigned int y = 0;
 
-    ovf(pixmap, x, y);
-    return 0;
+    return ovf(pixmap, x, y);
 }

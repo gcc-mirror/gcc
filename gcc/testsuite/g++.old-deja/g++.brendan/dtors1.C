@@ -43,7 +43,7 @@ int main ()
 {
 	test2 ();
 	if ((base_destructed != 0x781f) || (derived_destructed != 0xf178))
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 }

@@ -25,5 +25,5 @@ int main()
    if (x == 5 && y == 5)
      printf ("PASS\n");
    else
-     printf ("FAIL\n");
+     { printf ("FAIL\n"); return 1; }
 }

@@ -14,7 +14,7 @@ int main ()
 {
   S * cls = the_s ();
   if (cls->a != 6)
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
   else
     printf ("PASS\n");
 }
