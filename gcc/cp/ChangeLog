@@ -1,3 +1,10 @@
+Mon Dec 15 12:22:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_function_call_real): Remove "inline called before
+	definition" pedwarn.
+
+	* pt.c (coerce_template_parms): Use maybe_fold_nontype_arg.
+
 Sun Dec 14 22:34:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cvt.c (cp_convert_to_pointer): Fix base conversion of pm's.
