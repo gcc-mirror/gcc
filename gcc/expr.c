@@ -7241,36 +7241,39 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	}
 
       op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
-      op0 = REDUCE_BIT_FIELD (op0);
       if (GET_MODE (op0) == mode)
-	return op0;
+	;
 
       /* If OP0 is a constant, just convert it into the proper mode.  */
-      if (CONSTANT_P (op0))
+      else if (CONSTANT_P (op0))
 	{
 	  tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 	  enum machine_mode inner_mode = TYPE_MODE (inner_type);
 
 	  if (modifier == EXPAND_INITIALIZER)
-	    return simplify_gen_subreg (mode, op0, inner_mode,
-					subreg_lowpart_offset (mode,
-							       inner_mode));
+	    op0 = simplify_gen_subreg (mode, op0, inner_mode,
+				       subreg_lowpart_offset (mode,
+							      inner_mode));
 	  else
-	    return convert_modes (mode, inner_mode, op0,
-				  TYPE_UNSIGNED (inner_type));
+	    op0=  convert_modes (mode, inner_mode, op0,
+				 TYPE_UNSIGNED (inner_type));
 	}
 
-      if (modifier == EXPAND_INITIALIZER)
-	return gen_rtx_fmt_e (unsignedp ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
+      else if (modifier == EXPAND_INITIALIZER)
+	op0 = gen_rtx_fmt_e (unsignedp ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
 
-      if (target == 0)
-	return
-	  convert_to_mode (mode, op0,
-			   TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
+      else if (target == 0)
+	op0 = convert_to_mode (mode, op0,
+			       TYPE_UNSIGNED (TREE_TYPE
+					      (TREE_OPERAND (exp, 0))));
       else
-	convert_move (target, op0,
-		      TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
-      return target;
+	{
+	  convert_move (target, op0,
+			TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))));
+	  op0 = target;
+	}
+
+      return REDUCE_BIT_FIELD (op0);
 
     case VIEW_CONVERT_EXPR:
       op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
