@@ -1657,10 +1657,17 @@ extern int leaf_function;
    : output_function_prologue (FILE, SIZE, leaf_function))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
+   for profiling a function entry.
+
+   32 bit sparc uses %g2 as the STATIC_CHAIN_REGNUM which gets clobbered
+   during profiling so we need to save/restore it around the call to mcount.
+   We're guaranteed that a save has just been done, and we use the space
+   allocated for intreg/fpreg value passing.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  			\
   do {								\
+    if (! TARGET_ARCH64)					\
+      fputs ("\tst %g2,[%fp-4]\n", FILE);			\
     fputs ("\tsethi %hi(", (FILE));				\
     ASM_OUTPUT_INTERNAL_LABELREF (FILE, "LP", LABELNO);		\
     fputs ("),%o0\n", (FILE));					\
@@ -1670,8 +1677,9 @@ extern int leaf_function;
     fputs ("\tcall mcount\n\tadd %lo(", (FILE));		\
     ASM_OUTPUT_INTERNAL_LABELREF (FILE, "LP", LABELNO);		\
     fputs ("),%o0,%o0\n", (FILE));				\
+    if (! TARGET_ARCH64)					\
+      fputs ("\tld [%fp-4],%g2\n", FILE);			\
   } while (0)
-
 
 /* There are three profiling modes for basic blocks available.
    The modes are selected at compile time by using the options
