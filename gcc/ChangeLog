@@ -1,3 +1,8 @@
+Wed Apr 24 21:20:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (RETURN_IN_MEMORY): Return variable size BLKmode
+	values in memory.
+
 2002-04-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* attribs.c (c_common_attribute_table): Move table and handlers
