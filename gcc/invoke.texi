@@ -1480,13 +1480,28 @@ new-style casts (@samp{static_cast}, @samp{reinterpret_cast}, and
 @item -Woverloaded-virtual (C++ only)
 @cindex overloaded virtual fn, warning
 @cindex warning for overloaded virtual fn
-Warn when a derived class function declaration may be an error in
-defining a virtual function.  In a derived class, the
-definitions of virtual functions must match the type signature of a
-virtual function declared in the base class.  With this option, the
-compiler warns when you define a function with the same name as a
-virtual function, but with a type signature that does not match any
-declarations from the base class.
+Warn when a function declaration hides virtual functions from a
+base class.  For example, in:
+
+@smallexample
+struct A @{
+  virtual void f();
+@};
+
+struct B: public A @{
+  void f(int);
+@};
+@end smallexample
+
+the @code{A} class version of @code{f} is hidden in @code{B}, and code
+like this:
+
+@smallexample
+B* b;
+b->f();
+@end smallexample
+
+will fail to compile.
 
 @item -Wno-pmf-conversions (C++ only)
 Disable the diagnostic for converting a bound pointer to member function
