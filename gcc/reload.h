@@ -216,9 +216,10 @@ extern void mark_home_live PROTO((int));
    replacement (such as sp), plus an offset.  */
 extern rtx eliminate_regs PROTO((rtx, enum machine_mode, rtx));
 
-/* Emit code to perform an input reload of IN to RELOADREG.  IN is from
-   operand OPNUM with reload type TYPE.   */
-extern rtx gen_input_reload PROTO((rtx, rtx, int, enum reload_type));
+/* Emit code to perform a reload from IN (which may be a reload register) to
+   OUT (which may also be a reload register).  IN or OUT is from operand
+   OPNUM with reload type TYPE.  */
+extern rtx gen_reload PROTO((rtx, rtx, int, enum reload_type));
 
 /* Functions in caller-save.c:  */
 
