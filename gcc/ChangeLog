@@ -1,3 +1,9 @@
+Sun Feb 15 21:33:55 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Fix return type of bcmp prototype from `void' to `int'.
+	Make bcopy, bcmp and bzero prototypes explicitly `extern'.
+	Add a prototype for getenv.
+
 Sun Feb 15 17:05:41 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/mips.h (INITIAL_ELIMINATION_OFFSET): Readd Jun 6 change.
