@@ -2485,17 +2485,11 @@ add_implicitly_declared_members (tree t,
       default_fn = implicitly_declare_fn (sfk_destructor, t, /*const_p=*/0);
       check_for_override (default_fn, t);
 
-      /* If we couldn't make it work, then pretend we didn't need it.  */
-      if (default_fn == void_type_node)
-	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = 0;
-      else
-	{
-	  TREE_CHAIN (default_fn) = implicit_fns;
-	  implicit_fns = default_fn;
-
-	  if (DECL_VINDEX (default_fn))
-	    virtual_dtor = default_fn;
-	}
+      TREE_CHAIN (default_fn) = implicit_fns;
+      implicit_fns = default_fn;
+      
+      if (DECL_VINDEX (default_fn))
+	virtual_dtor = default_fn;
     }
   else
     /* Any non-implicit destructor is non-trivial.  */

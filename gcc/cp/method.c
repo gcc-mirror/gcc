@@ -925,7 +925,8 @@ locate_copy (tree type, void *client_)
 /* Implicitly declare the special function indicated by KIND, as a
    member of TYPE.  For copy constructors and assignment operators,
    CONST_P indicates whether these functions should take a const
-   reference argument or a non-const reference.  */
+   reference argument or a non-const reference.  Returns the
+   FUNCTION_DECL for the implicitly declared function.  */
 
 tree
 implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)

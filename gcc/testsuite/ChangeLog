@@ -1,3 +1,8 @@
+2005-01-06  Mark Mitchell  <mark@codesourcery.com>
+
+        PR c++/19244
+	* g++.dg/parser/ctor2.C: New test.
+
 2004-01-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/17154
