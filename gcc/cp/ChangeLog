@@ -1,3 +1,7 @@
+Wed Mar  4 22:26:53 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* lex.c (do_scoped_id): Fix parenthesizing.
+
 Wed Mar  4 12:11:53 1998  Michael Tiemann  <tiemann@axon.cygnus.com>
 
 	* rtti.c (get_tinfo_fn_dynamic): If this function is called an
