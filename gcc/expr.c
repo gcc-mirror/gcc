@@ -1463,7 +1463,7 @@ convert_modes (mode, oldmode, x, unsignedp)
    If PUSH_ROUNDING is defined and TO is NULL, emit_single_push_insn is
    used to push FROM to the stack.
 
-   ALIGN is maximum alignment we can assume.  */
+   ALIGN is maximum stack alignment we can assume.  */
 
 void
 move_by_pieces (to, from, len, align)
@@ -1476,6 +1476,8 @@ move_by_pieces (to, from, len, align)
   unsigned int max_size = MOVE_MAX_PIECES + 1;
   enum machine_mode mode = VOIDmode, tmode;
   enum insn_code icode;
+
+  align = MIN (to ? MEM_ALIGN (to) : align, MEM_ALIGN (from));
 
   data.offset = 0;
   data.from_addr = from_addr;
@@ -3849,6 +3851,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  && PUSH_ARGS
 	  && GET_CODE (size) == CONST_INT
 	  && skip == 0
+	  && MEM_ALIGN (xinner) >= align
 	  && (MOVE_BY_PIECES_P ((unsigned) INTVAL (size) - used, align))
 	  /* Here we avoid the case of a structure whose weak alignment
 	     forces many pushes of a small amount of data,

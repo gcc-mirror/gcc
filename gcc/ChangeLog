@@ -1,3 +1,9 @@
+2003-05-12  DJ Delorie  <dj@redhat.com>
+
+	* expr.c (move_by_pieces): Honor the alignment of TO and FROM.
+	(emit_push_insn): Don't use push when the source alignment is less
+	than the stack's push rounding.
+
 2003-05-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* diagnostic.c (output_format): Add support for %m.
