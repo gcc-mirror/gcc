@@ -1,3 +1,10 @@
+2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/Makefile.in: Correct description.
+	* fixinc/Makefile.in, fixinc/fixfixes.c, fixinc/fixincl.c, 
+	fixinc/fixlib.c, fixinc/fixlib.h, fixinc/fixtests.c,
+	fixinc/genfixes: Replace "GNU CC" with "GCC".
+
 2003-05-23  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.def: Defome atan, atanf, atanl, tan, tanf and tanl
