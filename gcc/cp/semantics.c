@@ -368,7 +368,8 @@ void
 add_decl_expr (tree decl)
 {
   tree r = build_stmt (DECL_EXPR, decl);
-  if (DECL_INITIAL (decl))
+  if (DECL_INITIAL (decl)
+      || (DECL_SIZE (decl) && TREE_SIDE_EFFECTS (DECL_SIZE (decl))))
     r = maybe_cleanup_point_expr (r);
   add_stmt (r);
 }
