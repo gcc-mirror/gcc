@@ -1,6 +1,6 @@
 // CharArrayWriter.java - Character array output stream.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -35,18 +35,27 @@ public class CharArrayWriter extends Writer
 
   public void close ()
   {
-    // JCL says this does nothing.  This seems to violate the Writer
-    // contract, in that other methods should still throw and
-    // IOException after a close.  Still, we just follow JCL.
+    closed = true;
   }
 
-  public void flush ()
+  public void flush () throws IOException
   {
+    synchronized (lock)
+      {
+	if (closed)
+	  throw new IOException ("Stream closed");
+      }
   }
 
-  public synchronized void reset ()
+  public void reset ()
   {
-    count = 0;
+    synchronized (lock)
+      {
+	count = 0;
+	// Allow this to reopen the stream.
+	// FIXME - what does the JDK do?
+	closed = false;
+      }
   }
 
   public int size ()
@@ -56,29 +65,41 @@ public class CharArrayWriter extends Writer
 
   public char[] toCharArray ()
   {
-    char[] nc = new char[count];
-    System.arraycopy(buf, 0, nc, 0, count);
-    return nc;
+    synchronized (lock)
+      {      
+	char[] nc = new char[count];
+	System.arraycopy(buf, 0, nc, 0, count);
+	return nc;
+      }
   }
 
   public String toString ()
   {
-    return new String (buf, 0, count);
+    synchronized (lock)
+      {
+	return new String (buf, 0, count);
+      }
   }
 
-  public void write (int oneChar)
+  public void write (int oneChar) throws IOException
   {
     synchronized (lock)
       {
+	if (closed)
+	  throw new IOException ("Stream closed");
+
 	resize (1);
 	buf[count++] = (char) oneChar;
       }
   }
 
-  public void write (char[] buffer, int offset, int len)
+  public void write (char[] buffer, int offset, int len) throws IOException
   {
     synchronized (lock)
       {
+	if (closed)
+	  throw new IOException ("Stream closed");
+
 	if (len >= 0)
 	  resize (len);
 	System.arraycopy(buffer, offset, buf, count, len);
@@ -86,10 +107,13 @@ public class CharArrayWriter extends Writer
       }
   }
 
-  public void write (String str, int offset, int len)
+  public void write (String str, int offset, int len) throws IOException
   {
     synchronized (lock)
       {
+	if (closed)
+	  throw new IOException ("Stream closed");
+
 	if (len >= 0)
 	  resize (len);
 	str.getChars(offset, offset + len, buf, count);
@@ -99,7 +123,10 @@ public class CharArrayWriter extends Writer
 
   public void writeTo (Writer out) throws IOException
   {
-    out.write(buf, 0, count);
+    synchronized (lock)
+      {
+	out.write(buf, 0, count);
+      }
   }
 
   private final void resize (int len)
@@ -119,4 +146,6 @@ public class CharArrayWriter extends Writer
   protected char[] buf;
   // Number of valid characters in buffer.
   protected int count;
+  // True if stream is closed.
+  private boolean closed;
 }

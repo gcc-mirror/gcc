@@ -142,8 +142,10 @@ public class PipedWriter extends Writer
     *           had read all available data. Thats not the case - this method
     *           appears to be a no-op?
     */
-  public void flush()
+  public void flush() throws IOException
   {
+    if (closed)
+      throw new IOException ("Pipe closed");
   }
   
   /**

@@ -86,6 +86,9 @@ public class OutputStreamWriter extends Writer
   {
     synchronized (lock)
       {
+	if (out == null)
+	  throw new IOException("Stream closed");
+
 	if (wcount > 0)
 	  {
 	    writeChars(work, 0, wcount);
@@ -100,9 +103,6 @@ public class OutputStreamWriter extends Writer
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
-    if (out == null)
-      throw new IOException("Stream closed");
-  
     while (count > 0)
       {
 	// We must flush if out.count == out.buf.length.
@@ -127,6 +127,9 @@ public class OutputStreamWriter extends Writer
   {
     synchronized (lock)
       {
+	if (out == null)
+	  throw new IOException("Stream closed");
+
 	if (work == null)
 	  work = new char[100];
 	int wlength = work.length;
@@ -155,6 +158,9 @@ public class OutputStreamWriter extends Writer
   {
     synchronized (lock)
       {
+	if (out == null)
+	  throw new IOException("Stream closed");
+
 	if (work == null)
 	  work = new char[100];
 	if (wcount >= work.length)
