@@ -170,7 +170,7 @@ std_headers =  	algorithm bitset complex deque fstream functional 	iomanip ios i
 build_headers =  	bits/std_limits.h bits/c++config.h bits/c++io.h bits/c++threads.h 	bits/atomicity.h bits/os_defines.h 	bits/ctype_base.h bits/ctype_noninline.h bits/ctype_inline.h 
 
 
-sources =  	limitsMEMBERS.cc 	complex_io.cc 	stdexcept.cc bitset.cc 	c++io.cc ios.cc strstream.cc 	locale.cc localename.cc codecvt.cc 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
+sources =  	limitsMEMBERS.cc 	complex_io.cc 	stdexcept.cc bitset.cc         globals.cc 	c++io.cc ios.cc strstream.cc 	locale.cc localename.cc codecvt.cc 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 
 
 wstring_sources =  	wstring-inst.cc
@@ -259,9 +259,9 @@ libinst_wstring_la_LDFLAGS =
 libinst_wstring_la_LIBADD = 
 libinst_wstring_la_OBJECTS =  wstring-inst.lo
 libstdc___la_OBJECTS =  limitsMEMBERS.lo complex_io.lo stdexcept.lo \
-bitset.lo c++io.lo ios.lo strstream.lo locale.lo localename.lo \
-codecvt.lo locale-inst.lo stl-inst.lo misc-inst.lo valarray-inst.lo \
-string-inst.lo
+bitset.lo globals.lo c++io.lo ios.lo strstream.lo locale.lo \
+localename.lo codecvt.lo locale-inst.lo stl-inst.lo misc-inst.lo \
+valarray-inst.lo string-inst.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)

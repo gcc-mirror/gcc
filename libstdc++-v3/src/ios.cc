@@ -35,6 +35,7 @@
 #include <bits/std_ostream.h>
 #include <bits/std_istream.h>
 #include <bits/std_fstream.h>
+#include <stdio.h>
 
 namespace std 
 {
@@ -109,15 +110,15 @@ namespace std
   int ios_base::Init::_S_ios_base_init = 0;
   bool ios_base::Init::_S_synced_with_stdio = true;
 
-  istream cin(NULL);
-  ostream cout(NULL);
-  ostream cerr(NULL);
-  ostream clog(NULL);
+  extern istream cin;
+  extern ostream cout;
+  extern ostream cerr;
+  extern ostream clog;
 #ifdef _GLIBCPP_USE_WCHAR_T
-  wistream wcin(NULL);
-  wostream wcout(NULL);
-  wostream wcerr(NULL);
-  wostream wclog(NULL);
+  extern wistream wcin;
+  extern wostream wcout;
+  extern wostream wcerr;
+  extern wostream wclog;
 #endif
 
   ios_base::failure::failure(const string& __str) throw()
