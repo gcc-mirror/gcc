@@ -1,3 +1,8 @@
+2000-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (do_store_flag): Pass operand_mode instead of GET_MODE (op0)
+	to expand_shift.
+
 Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* sh-protos.h (reg_no_subreg_operand, emit_fpscr_use): Don't declare.
