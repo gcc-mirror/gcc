@@ -92,6 +92,8 @@ extern int target_flags;
     {"kernel-registers", 16},		\
     {"user-registers", -16},		\
     {"stack-check", 32},		\
+    {"no-stack-check", - 32},		\
+    {"storem-bug", -64},		\
     {"no-storem-bug", 64},		\
     {"reuse-arg-regs", -128},		\
     {"no-reuse-arg-regs", 128},		\
