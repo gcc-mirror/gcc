@@ -1,3 +1,8 @@
+2004-12-23  Roger Sayle  <roger@eyesopen.com>
+
+	* reload.c (regno_clobbered_p): Add a gcc_assert that regno
+	refers to a hard register.
+
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* gimplify.c (gimplify_modify_expr_rhs): Use types_compatible_p.
