@@ -929,9 +929,13 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       f0 = real_value_truncate (mode, f0);
       f1 = real_value_truncate (mode, f1);
 
+      if (HONOR_SNANS (mode)
+	  && (REAL_VALUE_ISNAN (f0) || REAL_VALUE_ISNAN (f1)))
+	return 0;
+
       if (code == DIV
-	  && !MODE_HAS_INFINITIES (mode)
-	  && REAL_VALUES_EQUAL (f1, dconst0))
+	  && REAL_VALUES_EQUAL (f1, dconst0)
+	  && (flag_trapping_math || ! MODE_HAS_INFINITIES (mode)))
 	return 0;
 
       REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);

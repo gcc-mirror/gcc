@@ -1,3 +1,20 @@
+2003-07-17  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (const_binop): Avoid performing the FP operation at
+	compile-time, if either operand is NaN and we honor signaling NaNs,
+	or if we're dividing by zero and either flag_trapping_math is set
+	or the desired mode doesn't support infinities.
+	(fold_initializer): New function to fold an expression ignoring any
+	potential run-time exceptions or traps.
+	* tree.h (fold_initializer): Prototype here.
+	* c-typeck.c (build_binary_op): Move to the end of the file so
+	that intializer_stack is in scope.  If constructing an initializer,
+	i.e. when initializer_stack is not NULL, use fold_initializer to
+	fold expressions.
+	* simplify-rtx.c (simplify_binary_operation): Likewise, avoid
+	performing FP operations at compile-time, if they would raise an
+	exception at run-time.
+
 2003-07-17  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 11498

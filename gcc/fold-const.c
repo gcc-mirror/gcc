@@ -1228,13 +1228,30 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
 
   if (TREE_CODE (arg1) == REAL_CST)
     {
+      enum machine_mode mode;
       REAL_VALUE_TYPE d1;
       REAL_VALUE_TYPE d2;
       REAL_VALUE_TYPE value;
-      tree t;
+      tree t, type;
 
       d1 = TREE_REAL_CST (arg1);
       d2 = TREE_REAL_CST (arg2);
+
+      type = TREE_TYPE (arg1);
+      mode = TYPE_MODE (type);
+
+      /* Don't perform operation if we honor signaling NaNs and
+	 either operand is a NaN.  */
+      if (HONOR_SNANS (mode)
+	  && (REAL_VALUE_ISNAN (d1) || REAL_VALUE_ISNAN (d2)))
+	return NULL_TREE;
+
+      /* Don't perform operation if it would raise a division
+	 by zero exception.  */
+      if (code == RDIV_EXPR
+	  && REAL_VALUES_EQUAL (d2, dconst0)
+	  && (flag_trapping_math || ! MODE_HAS_INFINITIES (mode)))
+	return NULL_TREE;
 
       /* If either operand is a NaN, just return it.  Otherwise, set up
 	 for floating-point trap; we return an overflow.  */
@@ -1245,9 +1262,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
 
       REAL_ARITHMETIC (value, code, d1, d2);
 
-      t = build_real (TREE_TYPE (arg1),
-		      real_value_truncate (TYPE_MODE (TREE_TYPE (arg1)),
-					   value));
+      t = build_real (type, real_value_truncate (mode, value));
 
       TREE_OVERFLOW (t)
 	= (force_fit_type (t, 0)
@@ -7884,6 +7899,31 @@ fold (tree expr)
     default:
       return t;
     } /* switch (code) */
+}
+
+/* Perform constant folding and related simplification of intializer
+   expression EXPR.  This behaves identically to "fold" but ignores
+   potential run-time traps and exceptions that fold must preserve.  */
+
+tree
+fold_initializer (tree expr)
+{
+  int saved_signaling_nans = flag_signaling_nans;
+  int saved_trapping_math = flag_trapping_math;
+  int saved_trapv = flag_trapv;
+  tree result;
+
+  flag_signaling_nans = 0;
+  flag_trapping_math = 0;
+  flag_trapv = 0;
+
+  result = fold (expr);
+
+  flag_signaling_nans = saved_signaling_nans;
+  flag_trapping_math = saved_trapping_math;
+  flag_trapv = saved_trapv;
+
+  return result;
 }
 
 /* Determine if first argument is a multiple of second argument.  Return 0 if
