@@ -206,9 +206,9 @@ $(srcdir)/hash.h:
 		$(srcdir)/gxx.gperf >$(srcdir)/hash.h
 
 spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) \
-  parse.h $(srcdir)/../flags.h lex.h
+  $(srcdir)/parse.h $(srcdir)/../flags.h lex.h
 lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
-  parse.h input.c $(srcdir)/../flags.h hash.h lex.h
+  $(srcdir)/parse.h input.c $(srcdir)/../flags.h hash.h lex.h
 decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h
 decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
@@ -229,7 +229,7 @@ expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
   $(srcdir)/../expr.h ../insn-codes.h
 edsel.o : edsel.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h
 xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../input.h
-pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h parse.h
+pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h $(srcdir)/parse.h
 error.o : error.c $(CONFIG_H) $(CXX_TREE_H)
 errfn.o : errfn.c $(CONFIG_H) $(CXX_TREE_H)
 sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
