@@ -1,3 +1,19 @@
+2004-10-17  Steven Bosscher  <stevenb@suse.de>
+
+	* class.c (ident_subst): Always alloca buffer.
+	* java-opcodes.h (LAST_AND_UNUSED_JAVA_OPCODE): Add this dummy
+	opcode after including javaop.def.
+	* jcf-dump.c (CHECK_PC_IN_RANGE): Return 0 from the arm of the
+	conditional expression that exits, to avoid warnings.
+	* verify.c (CHECK_PC_IN_RANGE): Mark the __GNUC__ definition as
+	a user of an extension.
+	* win32-host.c: Move check down to have non-empty file when
+	WIN32 is not defined.
+
+	* Make-lang.in (java-warn): Add STRICT_WARN.
+	(java/jcf-io.o-warn): Don't have Werror for this file.
+	* jcf-io.c (caching_stat): Add FIXME for non-POSIX scandir use.
+
 2004-10-16  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* expr.c (expr_add_location): Move declaration to before all

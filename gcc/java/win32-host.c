@@ -24,12 +24,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Mohan Embar <gnustuff@thisiscool.com>, March 2003. */
 
-#ifdef WIN32
 
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "jcf.h"
+
+#ifdef WIN32
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

@@ -268,11 +268,8 @@ ident_subst (const char* old_name,
   int prefix_len = strlen (prefix);
   int suffix_len = strlen (suffix);
   int i = prefix_len + old_length + suffix_len + 1;
-#ifdef __GNUC__
-  char buffer[i];
-#else
   char *buffer = alloca (i);
-#endif
+
   strcpy (buffer, prefix);
   for (i = 0; i < old_length; i++)
     {
