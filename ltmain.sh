@@ -4305,7 +4305,7 @@ fi\
       for tag in $taglist; do
         tagopts="$tagopts --tag $tag"
       done
-      relink_command="(cd `pwd`; $SHELL $0$tagopts --mode=relink $libtool_args"
+      relink_command="(cd `pwd`; $SHELL $0$tagopts --mode=relink $libtool_args)"
       relink_command=`$echo "X$relink_command" | $Xsed -e "$sed_quote_subst"`
 
       # Only create the output if not a dry run.
