@@ -372,7 +372,7 @@ if test -n "${with_cross_host}"; then
 else
    AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep)
    AC_CHECK_FUNCS(gmtime_r localtime_r readdir_r getpwuid_r getcwd)
-   AC_CHECK_FUNCS(access stat mkdir rename rmdir unlink realpath)
+   AC_CHECK_FUNCS(access stat mkdir rename rmdir unlink realpath iconv)
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
    AC_CHECK_FUNCS(inet_pton uname inet_ntoa)
    AC_CHECK_FUNCS(backtrace fork execvp pipe)

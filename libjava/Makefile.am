@@ -447,11 +447,13 @@ gnu/gcj/convert/Input_EUCJIS.java \
 gnu/gcj/convert/Input_JavaSrc.java \
 gnu/gcj/convert/Input_SJIS.java \
 gnu/gcj/convert/Input_UTF8.java	\
+gnu/gcj/convert/Input_iconv.java \
 gnu/gcj/convert/Output_8859_1.java \
 gnu/gcj/convert/Output_EUCJIS.java \
 gnu/gcj/convert/Output_JavaSrc.java \
 gnu/gcj/convert/Output_SJIS.java \
 gnu/gcj/convert/Output_UTF8.java \
+gnu/gcj/convert/Output_iconv.java \
 gnu/gcj/convert/UnicodeToBytes.java
 
 ## List of all .java files for which the .h file is maintained by
@@ -787,6 +789,7 @@ nat_source_files = \
 gnu/gcj/convert/JIS0208_to_Unicode.cc \
 gnu/gcj/convert/JIS0212_to_Unicode.cc \
 gnu/gcj/convert/Unicode_to_JIS.cc \
+gnu/gcj/convert/natIconv.cc \
 gnu/gcj/convert/natInput_EUCJIS.cc \
 gnu/gcj/convert/natInput_SJIS.cc \
 gnu/gcj/convert/natOutput_EUCJIS.cc \

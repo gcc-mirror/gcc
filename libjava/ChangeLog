@@ -1,3 +1,21 @@
+2000-01-30  Tom Tromey  <tromey@cygnus.com>
+
+	* include/config.h.in: Rebuilt.
+	* acconfig.h (HAVE_ICONV): Define.
+	* configure: Rebuilt.
+	* configure.in: Check for `iconv' function.
+	* gnu/gcj/convert/BytesToUnicode.java (getDecoder): Try iconv if
+	no specific encoder exists.
+	* gnu/gcj/convert/UnicodeToBytes.java (getEncoder): Try iconv if
+	no specific encoder exists.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (convert_source_files): Mention Input_iconv.java and
+	Output_iconv.java.
+	(nat_source_files): Added natIconv.cc.
+	* gnu/gcj/convert/natIconv.cc: New file.
+	* gnu/gcj/convert/Input_iconv.java: New file.
+	* gnu/gcj/convert/Output_iconv.java: New file.
+
 2000-01-28  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
