@@ -87,8 +87,7 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
     case ARRAY_REF:
     case PARM_DECL:
     case RESULT_DECL:
-      if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
-	  && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
+      if (TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
 	return 1;
       break;
 

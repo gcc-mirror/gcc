@@ -1438,6 +1438,11 @@ build_functional_cast (exp, parms)
       cp_error ("type `%T' is not yet defined", type);
       return error_mark_node;
     }
+  if (IS_AGGR_TYPE (type) && CLASSTYPE_ABSTRACT_VIRTUALS (type))
+    {
+      abstract_virtuals_error (NULL_TREE, type);
+      return error_mark_node;
+    }
 
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
     return build_c_cast (type, TREE_VALUE (parms));

@@ -6931,7 +6931,9 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
        && TREE_CODE (type) != ARRAY_TYPE
        && (TREE_CODE (type) != REFERENCE_TYPE
 	   || TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE))
-      || TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE
+      || (TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE
+	  && (TREE_CODE (type) != REFERENCE_TYPE
+	      || TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE))
       || TREE_CODE (TREE_TYPE (rhs)) == METHOD_TYPE)
     rhs = default_conversion (rhs);
 
