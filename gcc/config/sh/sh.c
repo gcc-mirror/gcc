@@ -1219,7 +1219,8 @@ output_branch (int logic, rtx insn, rtx *operands)
 	     place for it is after the label.  final will do that by default.  */
     
 	  if (final_sequence
-	      && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+	      && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
+	      && get_attr_length (XVECEXP (final_sequence, 0, 1)))
 	    {
 	      asm_fprintf (asm_out_file, "\tb%s%ss\t%LLF%d\n", logic ? "f" : "t",
 	                   ASSEMBLER_DIALECT ? "/" : ".", label);
