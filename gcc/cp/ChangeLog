@@ -1,3 +1,10 @@
+2003-12-02  Richard Henderson  <rth@redhat.com>
+
+	* name-lookup.h (struct cp_binding_level): Use ENUM_BITFIELD.
+        * parser.c (struct cp_token): Likewise.   
+        (struct cp_parser_token_tree_map_node): Likewise.
+	* lex.c (struct resword): Move const after ENUM_BITFIELD.
+
 2003-11-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9849
