@@ -27,7 +27,7 @@
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %*.txt
 
-const char name_01[] = "seekpos-2.tst"; // file with data in it
+const char name_01[] = "seekpos-1io.tst"; // file with data in it
 
 void test05() 
 {
@@ -58,35 +58,42 @@ void test05()
 
   // in | out
   {
-    constraint_filebuf fb_03;
-    fb_03.pubsetbuf(0, 0);
-    fb_03.open(name_01, ios_base::out | ios_base::in);
-    VERIFY( fb_03.unbuffered() );
-    pt_1 = fb_03.pubseekoff(78, ios_base::beg);
+    constraint_filebuf fb;
+    fb.open(name_01, ios_base::out | ios_base::in);
+    VERIFY( !fb.write_position() );
+    VERIFY( !fb.read_position() );
+
+    // beg
+    pt_1 = fb.pubseekoff(78, ios_base::beg);
     off_1 = pt_1;
     VERIFY( off_1 > 0 );
-    c1 = fb_03.snextc(); 		//current in pointer +1
+    c1 = fb.snextc(); //current in pointer +1
     VERIFY( c1 == 't' );
-    pt_3 = fb_03.pubseekoff(0, ios_base::cur);
-    fb_03.pubseekpos(pt_3);
-    c2 = fb_03.sputc('\n');  	//test current out pointer
-    pt_3 = fb_03.pubseekoff(0, ios_base::cur);
-    fb_03.pubseekpos(pt_3);
-    c3 = fb_03.sgetc();
-    fb_03.pubsync(); 		//resets pointers
-    pt_2 = fb_03.pubseekpos(pt_1);
+
+    // cur
+    pt_3 = fb.pubseekoff(0, ios_base::cur);
+    fb.pubseekpos(pt_3);
+    c2 = fb.sputc('\n'); //test current out pointer
+    pt_3 = fb.pubseekoff(0, ios_base::cur);
+    fb.pubseekpos(pt_3);
+    c3 = fb.sgetc();
+    fb.pubsync(); //resets pointers
+    pt_2 = fb.pubseekpos(pt_1);
     off_2 = pt_2;
     VERIFY( off_1 == off_2 );
-    c3 = fb_03.snextc(); 		//current in pointer +1
+    c3 = fb.snextc(); //current in pointer +1
     VERIFY( c2 == c3 );
-    pt_1 = fb_03.pubseekoff(0, ios_base::end);
+
+    // end
+    pt_1 = fb.pubseekoff(0, ios_base::end);
     off_1 = pt_1;
     VERIFY( off_1 > off_2 );
-    fb_03.sputn("\nof the wonderful things he does!!\nok", 37);
-    fb_03.pubsync();
-    VERIFY( fb_03.unbuffered() );
-    fb_03.close();
-    VERIFY( !fb_03.is_open() );
+    fb.sputn("\nof the wonderful things he does!!\nok", 37);
+    fb.pubsync();
+    VERIFY( !fb.write_position() );
+    VERIFY( !fb.read_position() );
+    fb.close();
+    VERIFY( !fb.is_open() );
   }
 }
 

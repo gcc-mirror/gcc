@@ -32,16 +32,15 @@ void test02(std::filebuf& in, bool pass)
   pos_type bad = pos_type(off_type(-1));
   pos_type p = 0;
 
-  // seekpos
-  p = in.pubseekpos(0, ios_base::in);
+  // seekoff
+  p = in.pubseekoff(0, ios_base::beg, ios_base::in);
+  VERIFY( p == bad );
+
+  p = in.pubseekoff(0, ios_base::beg, ios_base::out); 
   if (pass)
     VERIFY( p != bad );
 
-  p = in.pubseekpos(0, ios_base::out); 
-  if (pass)
-    VERIFY( p != bad );
-
-  p = in.pubseekpos(0); 
+  p = in.pubseekoff(0, ios_base::beg); 
   if (pass)
     VERIFY( p != bad );
 }
@@ -53,13 +52,13 @@ int main()
 {
   using namespace std;
 
-  filebuf in1;
-  in1.open(name_01, ios_base::in | ios_base::out);
-  filebuf in2;
-  filebuf in3;
-  in3.open(name_03, ios_base::in | ios_base::out);
-  test02(in1, true);
-  test02(in2, false);
-  test02(in3, true);
+  filebuf out1;
+  out1.open(name_01, ios_base::out);
+  filebuf out2;
+  filebuf out3;
+  out3.open(name_03, ios_base::out);
+  test02(out1, true);
+  test02(out2, false);
+  test02(out3, true);
   return 0;
 }

@@ -1,3 +1,42 @@
+2003-06-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* 27_io/basic_filebuf/seekoff/char/1-in.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/1-io.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/1-out.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/2-in.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/2-io.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/2-out.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/2.cc: Remove.
+	* 27_io/basic_filebuf/seekoff/char/3-in.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/3-io.cc: Change.
+	* 27_io/basic_filebuf/seekoff/char/3-out.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/4-io.cc: Remove.
+	* 27_io/basic_filebuf/seekpos/char/1-in.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/1-io.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/1-out.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/2-in.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/2-io.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/2-out.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/2.cc: Change.
+	* 27_io/basic_filebuf/seekpos/char/3-in.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/3-io.cc: Remove.
+	* 27_io/basic_filebuf/seekpos/char/3-out.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/4-io.cc: Remove.
+ 	* data/seekoff-1.tst: Remove.
+	* data/seekoff-1io.tst: New.
+	* data/seekoff-1out.tst: New.
+	* data/seekoff-2.tst: Remove.
+	* data/seekoff-2io.tst: New.
+	* data/seekoff-2out.tst: New.
+	* data/seekoff.txt
+	* data/seekpos-1.tst: Remove.
+	* data/seekpos-1io.tst: New.
+	* data/seekpos-1out.tst: New.
+	* data/seekpos-2.tst: Remove.
+	* data/seekpos-2io.tst: New.
+	* data/seekpos-2out.tst: New.
+	* data/seekpos.txt: New.
+
 2003-06-27  Jerry Quinn  <jlquinn@optonline.net>
 
 	* src/locale.cc (__use_cache<numpunct>): Move from here ...
