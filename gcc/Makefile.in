@@ -801,7 +801,8 @@ C_OBJS = c-parse.o c-lang.o c-pretty-print.o $(C_AND_OBJC_OBJS)
 
 # Language-independent object files.
 
-OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
+OBJS-common = \
+ alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	  	   \
  cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfglayout.o cfgloop.o		   \
  cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
  cfgrtl.o combine.o conflict.o convert.o coverage.o cse.o cselib.o 	   \
@@ -809,7 +810,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  dwarf2asm.o dwarf2out.o dwarfout.o emit-rtl.o except.o explow.o	   \
  expmed.o expr.o final.o flow.o fold-const.o function.o gcse.o		   \
  genrtl.o ggc-common.o global.o graph.o gtype-desc.o			   \
- haifa-sched.o hashtable.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o	   \
+ haifa-sched.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o		   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o optabs.o options.o opts.o params.o postreload.o predict.o	   \
@@ -820,9 +821,16 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	   \
  sibcall.o simplify-rtx.o sreal.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	   \
  stor-layout.o stringpool.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
- tree-inline.o unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o \
- alloc-pool.o et-forest.o cgraph.o cgraphunit.o cfghooks.o bt-load.o	   \
- $(GGC) $(out_object_file) $(EXTRA_OBJS) $(host_hook_obj)
+ unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o		   \
+ alloc-pool.o et-forest.o cfghooks.o bt-load.o $(GGC)
+
+OBJS-md = $(out_object_file)
+OBJS-archive = $(EXTRA_OBJS) $(host_hook_obj) hashtable.o tree-inline.o	   \
+  cgraph.o cgraphunit.o
+
+OBJS = $(OBJS-common) $(out_object_file) $(OBJS-archive)
+
+OBJS-onestep = libbackend.o $(OBJS-archive)
 
 BACKEND = main.o libbackend.a
 
@@ -1026,9 +1034,9 @@ rest.cross: $(LIBGCC) specs
 compilations: $(BACKEND)
 
 # Like libcpp.a, this archive is strictly for the host.
-libbackend.a: $(OBJS)
+libbackend.a: $(OBJS@onestep@)
 	-rm -rf libbackend.a
-	$(AR) $(AR_FLAGS) libbackend.a $(OBJS)
+	$(AR) $(AR_FLAGS) libbackend.a $(OBJS@onestep@)
 	-$(RANLIB) libbackend.a
 
 # We call this executable `xgcc' rather than `gcc'
@@ -1816,6 +1824,15 @@ mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tdump.o version.o $(LIBS)
 
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h $(TM_H) version.h
+
+# FIXME: writing proper dependencies for this is a *LOT* of work.
+libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
+  insn-config.h insn-flags.h insn-codes.h insn-constants.h \
+  insn-attr.h options_.h
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  -DTARGET_NAME=\"$(target_alias)\" \
+	  -DLOCALEDIR=\"$(localedir)\" \
+	  -c $(filter %.c,$^) -o $@
 
 #
 # Generate header and source files from the machine description,

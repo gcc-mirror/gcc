@@ -3521,7 +3521,7 @@ check_ivars (inter, imp)
 
       t1 = TREE_TYPE (intdecls); t2 = TREE_TYPE (impdecls);
 
-      if (!comptypes (t1, t2))
+      if (!comptypes (t1, t2, false))
 	{
 	  if (DECL_NAME (intdecls) == DECL_NAME (impdecls))
 	    {
@@ -4905,7 +4905,7 @@ finish_message_expr (receiver, sel_name, method_params)
 	;
       else if (! IS_ID (rtype)
 	       /* Allow any type that matches objc_class_type.  */
-	       && ! comptypes (rtype, objc_class_type))
+	       && ! comptypes (rtype, objc_class_type, false))
 	{
 	  warning ("invalid receiver type `%s'",
 		   gen_declaration (rtype, errbuf));
@@ -7064,7 +7064,8 @@ comp_method_with_proto (method, proto)
   /* install return type */
   TREE_TYPE (function1_template) = groktypename (TREE_TYPE (proto));
 
-  return comptypes (TREE_TYPE (METHOD_DEFINITION (method)), function1_template);
+  return comptypes (TREE_TYPE (METHOD_DEFINITION (method)), function1_template,
+		    false);
 }
 
 /* Return 1 if PROTO1 is consistent with PROTO2.  */
@@ -7087,7 +7088,7 @@ comp_proto_with_proto (proto0, proto1)
   TREE_TYPE (function1_template) = groktypename (TREE_TYPE (proto0));
   TREE_TYPE (function2_template) = groktypename (TREE_TYPE (proto1));
 
-  return comptypes (function1_template, function2_template);
+  return comptypes (function1_template, function2_template, false);
 }
 
 /* - Generate an identifier for the function. the format is "_n_cls",

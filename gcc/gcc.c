@@ -2891,6 +2891,11 @@ static struct infile *infiles;
 
 int n_infiles;
 
+/* True if multiple input files are being compiled to a single
+   assembly file.  */
+
+static bool combine_inputs;
+
 /* This counts the number of libraries added by lang_specific_driver, so that
    we can tell if there were any user supplied any files or libraries.  */
 
@@ -3715,8 +3720,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	}
     }
 
-  if (have_c && have_o && lang_n_infiles > 1)
-    fatal ("cannot specify -o with -c or -S and multiple compilations");
+  combine_inputs = (have_c && have_o && lang_n_infiles > 1);
 
   if ((save_temps_flag || report_times) && use_pipes)
     {
@@ -4760,8 +4764,16 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    break;
 
 	  case 'i':
-	    obstack_grow (&obstack, input_filename, input_filename_length);
-	    arg_going = 1;
+	    if (combine_inputs)
+	      {
+		for (i = 0; (int) i < n_infiles; i++)
+		  store_arg (infiles[i].name, 0, 0);
+	      }
+	    else
+	      {
+		obstack_grow (&obstack, input_filename, input_filename_length);
+		arg_going = 1;
+	      }
 	    break;
 
 	  case 'I':
@@ -6291,7 +6303,28 @@ main (int argc, const char *const *argv)
 
   explicit_link_files = xcalloc (1, n_infiles);
 
-  for (i = 0; (int) i < n_infiles; i++)
+  if (combine_inputs)
+    {
+       int lang_n_infiles = 0;
+       for (i = 0; (int) i < n_infiles; i++)
+	 {
+	   const char *name = infiles[i].name;
+	   struct compiler *compiler
+	     = lookup_compiler (name, strlen (name), infiles[i].language);
+	   if (compiler == NULL)
+	     error ("%s: linker input file unused because linking not done",
+		    name);
+	   else if (lang_n_infiles > 0 && compiler != input_file_compiler)
+	     fatal ("cannot specify -o with -c or -S and multiple languages");
+	   else
+	     {
+	       lang_n_infiles++;
+	       input_file_compiler = compiler;
+	     }
+	 }
+    }
+  
+  for (i = 0; (int) i < (combine_inputs ? 1 : n_infiles); i++)
     {
       int this_file_error = 0;
 
@@ -6306,9 +6339,10 @@ main (int argc, const char *const *argv)
 
       /* Figure out which compiler from the file's suffix.  */
 
-      input_file_compiler
-	= lookup_compiler (infiles[i].name, input_filename_length,
-			   infiles[i].language);
+      if (! combine_inputs)
+	input_file_compiler
+	  = lookup_compiler (infiles[i].name, input_filename_length,
+			     infiles[i].language);
 
       if (input_file_compiler)
 	{

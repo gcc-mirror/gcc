@@ -427,6 +427,15 @@ cpp_add_dependency_target (cpp_reader *pfile, const char *target, int quote)
   deps_add_target (pfile->deps, target, quote);
 }
 
+/* This sets up for processing input from the file FNAME.  
+   It returns false on error.  */
+bool
+cpp_read_next_file (cpp_reader *pfile, const char *fname)
+{
+  /* Open the main input file.  */
+  return _cpp_read_file (pfile, fname);
+}
+
 /* This is called after options have been parsed, and partially
    processed.  Setup for processing input from the file named FNAME,
    or stdin if it is the empty string.  Return the original filename
@@ -451,9 +460,8 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
       deps_add_default_target (pfile->deps, fname);
     }
 
-  /* Open the main input file.  */
   pfile->line = 1;
-  if (!_cpp_read_file (pfile, fname))
+  if (!cpp_read_next_file (pfile, fname))
     return NULL;
 
   /* Set this here so the client can change the option if it wishes,

@@ -600,8 +600,14 @@ special_function_p (tree fndecl, int flags)
       && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
       /* Exclude functions not at the file scope, or not `extern',
 	 since they are not the magic functions we would otherwise
-	 think they are.  */
-      && DECL_CONTEXT (fndecl) == NULL_TREE && TREE_PUBLIC (fndecl))
+	 think they are.
+         FIXME: this should be handled with attributes, not with this
+         hacky imitation of DECL_ASSEMBLER_NAME.  It's (also) wrong
+         because you can declare fork() inside a function if you
+         wish.  */
+      && (DECL_CONTEXT (fndecl) == NULL_TREE 
+	  || TREE_CODE (DECL_CONTEXT (fndecl)) == TRANSLATION_UNIT_DECL)
+      && TREE_PUBLIC (fndecl))
     {
       const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
       const char *tname = name;

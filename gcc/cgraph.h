@@ -62,7 +62,7 @@ struct cgraph_rtl_info GTY(())
 /* The cgraph data strutcture.
    Each function decl has assigned cgraph_node listing callees and callers.  */
 
-struct cgraph_node GTY(())
+struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
 {
   tree decl;
   struct cgraph_edge *callees;

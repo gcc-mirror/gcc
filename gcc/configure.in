@@ -569,6 +569,16 @@ AC_SUBST(TARGET_SYSTEM_ROOT)
 AC_SUBST(TARGET_SYSTEM_ROOT_DEFINE)
 AC_SUBST(CROSS_SYSTEM_HEADER_DIR)
 
+# Build with intermodule optimisations
+local_prefix=
+AC_ARG_ENABLE(intermodule,
+[  --enable-intermodule    build the compiler in one step],
+[case "${enable_intermodule}" in
+  yes) onestep=-onestep : ;;
+  *) onestep= : ;;
+esac])
+AC_SUBST(onestep)
+
 # -------------------------
 # Checks for other programs
 # -------------------------

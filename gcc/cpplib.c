@@ -109,6 +109,7 @@ static unsigned int read_flag (cpp_reader *, unsigned int);
 static int strtoul_for_line (const uchar *, unsigned int, unsigned long *);
 static void do_diagnostic (cpp_reader *, int, int);
 static cpp_hashnode *lex_macro_node (cpp_reader *);
+static int undefine_macros (cpp_reader *, cpp_hashnode *, void *);
 static void do_include_common (cpp_reader *, enum include_type);
 static struct pragma_entry *lookup_pragma_entry (struct pragma_entry *,
                                                  const cpp_hashnode *);
@@ -539,6 +540,45 @@ do_undef (cpp_reader *pfile)
     }
   check_eol (pfile);
 }
+
+/* Undefine a single macro/assertion/whatever.  */
+
+static int
+undefine_macros (cpp_reader *pfile, cpp_hashnode *h, 
+		 void *data_p ATTRIBUTE_UNUSED)
+{
+  switch (h->type)
+    {
+    case NT_VOID:
+      break;
+      
+    case NT_MACRO:
+      if (pfile->cb.undef)
+        (*pfile->cb.undef) (pfile, pfile->directive_line, h);
+
+      if (CPP_OPTION (pfile, warn_unused_macros))
+        _cpp_warn_if_unused_macro (pfile, h, NULL);
+
+      /* and fall through... */
+    case NT_ASSERTION:
+      _cpp_free_definition (h);
+      break;
+
+    default:
+      abort ();
+    }
+  h->flags &= ~NODE_POISONED;
+  return 1;
+}
+
+/* Undefine all macros and assertions.  */
+
+void
+cpp_undef_all (cpp_reader *pfile)
+{
+  cpp_forall_identifiers (pfile, undefine_macros, NULL);
+}
+
 
 /* Helper routine used by parse_include.  Reinterpret the current line
    as an h-char-sequence (< ... >); we are looking at the first token

@@ -1,3 +1,94 @@
+2003-07-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-decl.c (finish_decl): Handle 'used' here...
+	* cgraphunit.c (cgraph_finalize_function): ... and here ...
+	* c-common.c: (handle_used_attribute): ... not here.
+	
+	* configure.in (onstep): Support --enable-intermodule.
+	* Makefile.in (OBJS-common): New.
+	(OBJS-md): New.
+	(OBJS-archive): New.
+	(OBJS): Build from OBJS-common, OBJS-md, OBJS-archive.
+	(OBJS-onestep): New.
+	(libbackend.a): Support @onestep@.
+	(libbackend.o): New.
+	* configure: Regenerate.
+	
+	* c-common.h (c_reset_state): New prototype.
+	(c_parse_file): New prototype.
+	(finish_file): Move prototype from c-tree.h.
+	* c-decl.c: Include <hashtab.h>.
+	(builtin_decls): New.
+	(current_file_decl): New.
+	(duplicate_decls): Add extra parameter. Change all callers.  Don't
+	output duplicate common symbols.
+	(link_hash_hash): New.
+	(link_hash_eq): New.
+	(poplevel): Handle popping of the top level.
+	(warn_if_shadowing): Handle TRANSLATION_UNIT_DECL.
+	(pushdecl): Set DECL_CONTEXT to TRANSLATION_UNIT_DECL if appropriate.
+	(pushdecl_top_level): Likewise.
+	(redeclaration_error_message): Handle TRANSLATION_UNIT_DECL.
+	(c_init_decl_processing): Create TRANSLATION_UNIT_DECL.
+	(finish_decl): Handle TRANSLATION_UNIT_DECL.
+	(merge_translation_unit_decls): New.
+	(c_write_global_declarations): New.
+	(c_reset_state): New.
+	(implicitly_declare): Handle TRANSLATION_UNIT_DECL.
+	* c-lang.c (LANG_HOOKS_WRITE_GLOBALS): New.
+	* c-objc-common.c (c_cannot_inline_tree_fn): Handle
+	TRANSLATION_UNIT_DECL.
+	(c_objc_common_finish_file): Call merge_translation_unit_decls.
+	* c-opts.c (in_fnames): Rename from in_fname.
+	(c_common_decode_option): Handle multiple input filenames.
+	(c_common_post_options): Likewise.
+	(c_common_parse_file): Likewise; also, call c_parse_file rather than
+	yyparse.
+	* c-parse.in: Move cleanup code to c_parse_file.
+	(free_parser_stacks): Move contents to c_parse_file.
+	(c_parse_file): New.
+	* c-tree.h (union lang_tree_node): Chain along TYPE_NEXT_VARIANT
+	for integer types.
+	(C_DECL_FILE_SCOPE): New.
+	(finish_file): Move prototype to c-common.h.
+	(merge_translation_unit_decls): New prototype.
+	(comptypes): Add extra parameter to prototype.
+	(c_write_global_declarations): New prototype.
+	* c-typeck.c (tagged_types_tu_compatible_p): New.
+	(function_types_compatible_p): Add extra parameter, change all callers.
+	(type_lists_compatible_p): Likewise.
+	(comptypes): Likewise.
+	(struct tagged_tu_seen): New.
+	(tagged_tu_seen_base): New.
+	(build_unary_op): Handle TRANSLATION_UNIT_DECL.
+	(c_mark_addressable): Remove #if 0 code.
+	* calls.c (special_function_p): Handle TRANSLATION_UNIT_DECL, add
+	comment explaining why it shouldn't have to.
+	* cgraph.h (struct cgraph_node): Add chain_next and chain_prev GTY
+	options.
+	* cppinit.c (cpp_read_next_file): New.
+	(cpp_read_main_file): Use it.
+	* cpplib.c (undefine_macros): New.
+	(cpp_undef_all): New.
+	* cpplib.h (cpp_read_next_file): Prototype.
+	(cpp_undef_all): Prototype.
+	* langhooks-def.h (write_global_declarations): Remove prototype.
+	* toplev.h (write_global_declarations): Add prototype.
+	* tree.c (decl_type_context): Use switch statement, handle
+	TRANSLATION_UNIT_DECL.
+	* tree.def: Update documentation for TRANSLATION_UNIT_DECL.
+	(TRANSLATION_UNIT_DECL): New kind of tree.
+	* tree.h: Update documentation for TRANSLATION_UNIT_DECL.
+	* Makefile.in (c-decl.o): Add $(HASHTAB_H) to dependencies.
+	* doc/invoke.texi: Make attempt to document new functionality.
+
+	2003-05-19  Per Bothner <bothner@apple.com>
+
+	* gcc.c (combine_inputs): New.
+	(process_command): Set combine_inputs.
+	(do_spec_1): Handle combine_inputs.
+	(main): Likewise.
+
 2003-07-10  James E Wilson  <wilson@tuliptree.org>
 
 	PR optimization/9745

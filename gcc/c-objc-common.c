@@ -127,7 +127,7 @@ inline_forbidden_p (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
       /* We cannot inline a nested function that jumps to a nonlocal
          label.  */
       if (TREE_CODE (t) == LABEL_DECL
-	  && DECL_CONTEXT (t) && DECL_CONTEXT (t) != fn)
+	  && !C_DECL_FILE_SCOPE (t) && DECL_CONTEXT (t) != fn)
 	return node;
 
       break;
@@ -184,7 +184,7 @@ c_cannot_inline_tree_fn (tree *fnp)
 	goto cannot_inline;
     }
 
-  if (DECL_CONTEXT (fn))
+  if (! C_DECL_FILE_SCOPE (fn))
     {
       /* If a nested function has pending sizes, we may have already
          saved them.  */
@@ -356,6 +356,10 @@ c_objc_common_finish_file (void)
 {
   if (pch_file)
     c_common_write_pch ();
+
+  /* If multiple translation units were built, copy information between
+     them based on linkage rules.  */
+  merge_translation_unit_decls ();
 
   if (flag_unit_at_a_time)
     {

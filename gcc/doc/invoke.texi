@@ -710,10 +710,12 @@ in the following sections.
 @section Options Controlling the Kind of Output
 
 Compilation can involve up to four stages: preprocessing, compilation
-proper, assembly and linking, always in that order.  The first three
-stages apply to an individual source file, and end by producing an
-object file; linking combines all the object files (those newly
-compiled, and those specified as input) into an executable file.
+proper, assembly and linking, always in that order.  GCC is capable of
+preprocessing and compiling several files either into several
+assembler input files, or into one assembler input file; then each
+assembler input file produces an object file, and linking combines all
+the object files (those newly compiled, and those specified as input)
+into an executable file.
 
 @cindex file name suffix
 For any given input file, the file name suffix determines what kind of
@@ -885,9 +887,9 @@ Place output in file @var{file}.  This applies regardless to whatever
 sort of output is being produced, whether it be an executable file,
 an object file, an assembler file or preprocessed C code.
 
-Since only one output file can be specified, it does not make sense to
-use @option{-o} when compiling more than one input file, unless you are
-producing an executable file as output.
+If you specify @option{-o} when compiling more than one input file, or
+you are producing an executable file as output, all the source files
+on the command line will be compiled at once.
 
 If @option{-o} is not specified, the default is to put an executable file
 in @file{a.out}, the object file for @file{@var{source}.@var{suffix}} in
@@ -3471,6 +3473,14 @@ Turning on optimization flags makes the compiler attempt to improve
 the performance and/or code size at the expense of compilation time
 and possibly the ability to debug the program.
 
+The compiler performs optimisation based on the knowledge it has of
+the program.  Using the @option{-funit-at-a-time} flag will allow the
+compiler to consider information gained from later functions in the
+file when compiling a function.  Compiling multiple files at once to a
+single output file (and using @option{-funit-at-a-time}) will allow
+the compiler to use information gained from all of the files when
+compiling each of them.
+
 Not all optimizations are controlled directly by a flag.  Only
 optimizations that have a flag are listed.
 
@@ -4362,8 +4372,9 @@ better job.
 
 @item -funit-at-a-time
 @opindex funit-at-a-time
-Parse the whole compilation unit before starting to produce code.  This allows some
-extra optimizations to take place but consumes more memory.
+Parse the whole compilation unit before starting to produce code.
+This allows some extra optimizations to take place but consumes more
+memory.
 
 @item -funroll-loops
 @opindex funroll-loops

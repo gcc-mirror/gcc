@@ -4370,26 +4370,30 @@ decl_type_context (tree decl)
   tree context = DECL_CONTEXT (decl);
 
   while (context)
-    {
-      if (TREE_CODE (context) == NAMESPACE_DECL)
+    switch (TREE_CODE (context))
+      {
+      case NAMESPACE_DECL:
+      case TRANSLATION_UNIT_DECL:
 	return NULL_TREE;
 
-      if (TREE_CODE (context) == RECORD_TYPE
-	  || TREE_CODE (context) == UNION_TYPE
-	  || TREE_CODE (context) == QUAL_UNION_TYPE)
+      case RECORD_TYPE:
+      case UNION_TYPE:
+      case QUAL_UNION_TYPE:
 	return context;
-
-      if (TREE_CODE (context) == TYPE_DECL
-	  || TREE_CODE (context) == FUNCTION_DECL)
+	
+      case TYPE_DECL:
+      case FUNCTION_DECL:
 	context = DECL_CONTEXT (context);
-
-      else if (TREE_CODE (context) == BLOCK)
+	break;
+	
+      case BLOCK:
 	context = BLOCK_SUPERCONTEXT (context);
-
-      else
-	/* Unhandled CONTEXT!?  */
+	break;
+	
+      default:
 	abort ();
-    }
+      }
+
   return NULL_TREE;
 }
 
