@@ -426,6 +426,7 @@ public class ObjectInputStream extends InputStream
    */
   private void checkTypeConsistency(String name, ObjectStreamField[] fields1, ObjectStreamField[] fields2)
     throws InvalidClassException
+  {
     int nonPrimitive = 0;
     
     for (nonPrimitive = 0; 
