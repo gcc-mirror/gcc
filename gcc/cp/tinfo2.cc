@@ -108,10 +108,6 @@ __fundamental_type_info::
 ~__fundamental_type_info ()
 {}
 
-__pointer_type_info::
-~__pointer_type_info ()
-{}
-
 __array_type_info::
 ~__array_type_info ()
 {}
@@ -122,6 +118,14 @@ __function_type_info::
 
 __enum_type_info::
 ~__enum_type_info ()
+{}
+
+__pbase_type_info::
+~__pbase_type_info ()
+{}
+
+__pointer_type_info::
+~__pointer_type_info ()
 {}
 
 __pointer_to_member_type_info::
@@ -140,14 +144,7 @@ __is_function_p () const
   return true;
 }
 
-bool __pointer_to_member_type_info::
-__is_pointer_p () const
-{
-  return false;
-}
-
-
-bool __pointer_type_info::
+bool __pbase_type_info::
 __do_catch (const type_info *thr_type,
             void **thr_obj,
             unsigned outer) const
@@ -163,8 +160,8 @@ __do_catch (const type_info *thr_type,
     // But for that to be valid, our outer pointers must be const qualified.
     return false;
   
-  const __pointer_type_info *thrown_type =
-    static_cast <const __pointer_type_info *> (thr_type);
+  const __pbase_type_info *thrown_type =
+    static_cast <const __pbase_type_info *> (thr_type);
   
   if (thrown_type->quals & ~quals)
     // We're less qualified.
@@ -176,8 +173,16 @@ __do_catch (const type_info *thr_type,
   return __pointer_catch (thrown_type, thr_obj, outer);
 }
 
+inline bool __pbase_type_info::
+__pointer_catch (const __pbase_type_info *thrown_type,
+                 void **thr_obj,
+                 unsigned outer) const
+{
+  return type->__do_catch (thrown_type->type, thr_obj, outer + 2);
+}
+
 bool __pointer_type_info::
-__pointer_catch (const __pointer_type_info *thrown_type,
+__pointer_catch (const __pbase_type_info *thrown_type,
                  void **thr_obj,
                  unsigned outer) const
 {
@@ -187,11 +192,11 @@ __pointer_catch (const __pointer_type_info *thrown_type,
       return !thrown_type->type->__is_function_p ();
     }
   
-  return type->__do_catch (thrown_type->type, thr_obj, outer + 2);
+  return __pbase_type_info::__pointer_catch (thrown_type, thr_obj, outer);
 }
 
 bool __pointer_to_member_type_info::
-__pointer_catch (const __pointer_type_info *thr_type,
+__pointer_catch (const __pbase_type_info *thr_type,
                  void **thr_obj,
                  unsigned outer) const
 {
@@ -203,7 +208,7 @@ __pointer_catch (const __pointer_type_info *thr_type,
   if (*klass != *thrown_type->klass)
     return false;     // not pointers to member of same class
   
-  return type->__do_catch (thrown_type->type, thr_obj, outer + 2);
+  return __pbase_type_info::__pointer_catch (thrown_type, thr_obj, outer);
 }
 
 } // namespace std
