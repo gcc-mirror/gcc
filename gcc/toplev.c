@@ -3111,7 +3111,7 @@ rest_of_compilation (decl)
 	    }
 #endif
 	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
-	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
+	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
 	  goto exit_rest_of_compilation;
 	}
 
