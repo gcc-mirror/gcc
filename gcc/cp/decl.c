@@ -5925,7 +5925,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	    }
 	  else if (! IS_AGGR_TYPE (type)
 		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
-		   || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
+		   || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM
 		   || TREE_CODE (type) == TYPENAME_TYPE)
 	    /* Someone else will give an error about this if needed.  */
 	    val = NULL_TREE;
@@ -9873,7 +9873,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		       && TREE_CODE (TREE_OPERAND (decl, 1)) == INDIRECT_REF)
 		ctype = cname;
 	      else if (TREE_CODE (cname) == TEMPLATE_TYPE_PARM
-		       || TREE_CODE (cname) == TEMPLATE_TEMPLATE_PARM)
+		       || TREE_CODE (cname) == BOUND_TEMPLATE_TEMPLATE_PARM)
 		{
 		  cp_error ("`%T::%D' is not a valid declarator", cname,
 			    TREE_OPERAND (decl, 1));
@@ -12461,7 +12461,7 @@ grok_op_properties (decl, virtualp, friendp)
 		    if (IS_AGGR_TYPE (arg)
 			|| TREE_CODE (arg) == ENUMERAL_TYPE
 			|| TREE_CODE (arg) == TEMPLATE_TYPE_PARM
-			|| TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+			|| TREE_CODE (arg) == BOUND_TEMPLATE_TEMPLATE_PARM)
 		      goto foundaggr;
 		  }
 	      cp_error
@@ -12768,7 +12768,7 @@ xref_tag (code_type_node, name, globalize)
     t = IDENTIFIER_TYPE_VALUE (name);
 
   if (t && TREE_CODE (t) != code && TREE_CODE (t) != TEMPLATE_TYPE_PARM
-      && TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM)
+      && TREE_CODE (t) != BOUND_TEMPLATE_TEMPLATE_PARM)
     t = NULL_TREE;
 
   if (! globalize)
@@ -13014,7 +13014,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	  || (TREE_CODE (basetype) != RECORD_TYPE
 	      && TREE_CODE (basetype) != TYPENAME_TYPE
 	      && TREE_CODE (basetype) != TEMPLATE_TYPE_PARM
-	      && TREE_CODE (basetype) != TEMPLATE_TEMPLATE_PARM))
+	      && TREE_CODE (basetype) != BOUND_TEMPLATE_TEMPLATE_PARM))
 	{
 	  cp_error ("base type `%T' fails to be a struct or class type",
 		    TREE_VALUE (binfo));

@@ -3713,7 +3713,7 @@ bad_parm:
 		  error ("type specifier omitted for parameter");
 		  if (TREE_CODE ($$) == SCOPE_REF
 		      && (TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM
-			  || TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TEMPLATE_PARM))
+			  || TREE_CODE (TREE_OPERAND ($$, 0)) == BOUND_TEMPLATE_TEMPLATE_PARM))
 		    cp_error ("  perhaps you want `typename %E' to make it a type", $$);
 		  $$ = build_tree_list (integer_type_node, $$);
 		}

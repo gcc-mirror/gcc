@@ -75,6 +75,7 @@ print_lang_type (file, node, indent)
     {
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
       indent_to (file, indent + 3);
       fputs ("index ", file);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, TEMPLATE_TYPE_IDX (node));

@@ -1319,9 +1319,12 @@ write_type (type)
 
 	case TEMPLATE_TEMPLATE_PARM:
 	  write_template_template_param (type);
-	  if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type))
-	    write_template_args 
-	      (TI_ARGS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type)));
+	  break;
+
+	case BOUND_TEMPLATE_TEMPLATE_PARM:
+	  write_template_template_param (type);
+	  write_template_args 
+	    (TI_ARGS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type)));
 	  break;
 
 	case OFFSET_TYPE:
@@ -1624,7 +1627,8 @@ write_expression (expr)
   /* Handle template parameters. */
   if (code == TEMPLATE_TYPE_PARM 
       || code == TEMPLATE_TEMPLATE_PARM
-      ||  code == TEMPLATE_PARM_INDEX)
+      || code == BOUND_TEMPLATE_TEMPLATE_PARM
+      || code == TEMPLATE_PARM_INDEX)
     write_template_param (expr);
   /* Handle literals.  */
   else if (TREE_CODE_CLASS (code) == 'c')
@@ -1863,7 +1867,8 @@ write_pointer_to_member_type (type)
 }
 
 /* Non-terminal <template-param>.  PARM is a TEMPLATE_TYPE_PARM,
-   TEMPLATE_TEMPLATE_PARM, or a TEMPLATE_PARM_INDEX.
+   TEMPLATE_TEMPLATE_PARM, BOUND_TEMPLATE_TEMPLATE_PARM or a
+   TEMPLATE_PARM_INDEX.
 
      <template-param> ::= T </parameter/ number> _  */
 
@@ -1879,6 +1884,7 @@ write_template_param (parm)
     {
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
       parm_index = TEMPLATE_TYPE_IDX (parm);
       break;
 
@@ -1911,7 +1917,7 @@ write_template_template_param (parm)
   /* PARM, a TEMPLATE_TEMPLATE_PARM, is an instantiation of the
      template template parameter.  The substitution candidate here is
      only the template.  */
-  if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parm))
+  if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
     {
       template 
 	= TI_TEMPLATE (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parm));
