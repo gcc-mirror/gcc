@@ -1,3 +1,9 @@
+2000-10-21  Chandrakala Chavva   <cchavva@redhat.com>
+
+	* libgcc-std.ver (__addvsi3, __addvdi3,  __subvsi3, __subvdi3,
+        __mulvsi3, __negvsi2, __negvdi2, __absvsi2, __absvdi2, __mulvdi3):
+        New functions.
+
 2000-10-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* calls.c (combine_pending_stack_adjustment_and_call): Don't
