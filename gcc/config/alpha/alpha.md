@@ -5913,7 +5913,7 @@
   "lda %0,%1(%0)")
 
 (define_expand "builtin_longjmp"
-  [(unspec_volatile [(match_operand:DI 0 "register_operand" "r")] 3)]
+  [(use (match_operand:DI 0 "register_operand" "r"))]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
   "
 {
@@ -5933,9 +5933,19 @@
   /* Load the label we are jumping through into $27 so that we know
      where to look for it when we get back to setjmp's function for
      restoring the gp.  */
-  emit_indirect_jump (pv);
+  emit_jump_insn (gen_builtin_longjmp_internal (pv));
+  emit_barrier ();
   DONE;
 }")
+
+;; This is effectively a copy of indirect_jump, but constrained such
+;; that register renaming cannot foil our cunning plan with $27.
+(define_insn "builtin_longjmp_internal"
+  [(set (pc)
+	(unspec_volatile [(match_operand:DI 0 "register_operand" "c")] 3))]
+  ""
+  "jmp $31,(%0),0"
+  [(set_attr "type" "ibr")])
 
 (define_insn "*builtin_setjmp_receiver_sub_label"
   [(unspec_volatile [(label_ref (match_operand 0 "" ""))] 2)]
