@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks i960 version.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -31,9 +31,38 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""
 
+/* Predefine vxworks.  */
+
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -Dvxworks -Acpu(i960) -Amachine(i960)"
+
+/* The VxWorks header files expect the compiler to define CPU to a
+   magic number.  */
+
+#undef CPP_SPEC
+#define	CPP_SPEC "%{mic*:-D__i960\
+			%{mka:-D__i960KA}%{mkb:-D__i960KB}\
+			%{msa:-D__i960SA}%{msb:-D__i960SB}\
+			%{mmc:-D__i960MC}\
+			%{mca:-D__i960CA}%{mcc:-D__i960CC}\
+			%{mcf:-D__i960CF}}\
+	%{mka:-D__i960KA__ -D__i960_KA__ %{!ansi:-DCPU=I960KA}}\
+	%{mkb:-D__i960KB__ -D__i960_KB__ %{!ansi:-DCPU=I960KB}}\
+	%{msa:-D__i960SA__ -D__i960_SA__}\
+	%{msb:-D__i960SB__ -D__i960_SB__}\
+	%{mmc:-D__i960MC__ -D__i960_MC__}\
+	%{mca:-D__i960CA__ -D__i960_CA__ %{!ansi:-DCPU=I960CA}}\
+	%{mcc:-D__i960CC__ -D__i960_CC__}\
+	%{mcf:-D__i960CF__ -D__i960_CF__}\
+	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:\
+		%{!mcc:%{!mcf:-D__i960_CA -D__i960CA__ %{!ansi:-DCPU=I960CA}\
+			      %{mic*:-D__i960CA}}}}}}}}}"
+
+/* Default to -mca.  */
+
 #undef CC1_SPEC
 #define CC1_SPEC \
-	"%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-mkb}}}}}}}}\
+	"%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-mca}}}}}}}}\
 	 %{!gs*:%{!gc*:%{mbout:%{g*:-gstabs}}\
 		       %{mcoff:%{g*:-gcoff}}\
 		       %{!mbout:%{!mcoff:%{g*:-gcoff}}}}}"
