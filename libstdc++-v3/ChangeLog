@@ -1,3 +1,7 @@
+2004-02-09  Paul Brook  <paul@codesourcery.com>
+
+	* libstdc++-v3/configure.host: Explicitly check for atomicity.h file.
+
 2004-02-09  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14071
