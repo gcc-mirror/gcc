@@ -205,6 +205,7 @@ proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
 
     set tmp [lindex [grep $prog "Special.*Options:.*"] 0]
     set cflags ""
+    set to_download ""
 
     regsub -all "\n\[^\n\]+(\n|$)" $tmp "\n" tmp
     set tmp [string trim $tmp]
@@ -225,9 +226,25 @@ proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
     set tmp [string trim $tmp]
     if ![string match "" $tmp] then {
 	regsub "^.*Additional.*sources:" $tmp "" tmp
+	if [is_remote host] {
+	    lappend cflags "additional_flags=$tmp"
+	}
 	regsub -all " " $tmp " [file dirname $prog]/" tmp
-	lappend cflags "additional_flags=$tmp"
+	if ![is_remote host] {
+	    lappend cflags "additional_flags=$tmp"
+	}
+	set to_download [concat $to_download $tmp]
 	verbose "Adding sources $tmp"
+    }
+
+    set tmp [lindex [grep $prog "Additional files: .*"] 0]
+    regsub -all "\n\[^\n\]+(\n|$)" $tmp "\n" tmp
+    set tmp [string trim $tmp]
+    if ![string match "" $tmp] then {
+	regsub "^.*Additional.*files:" $tmp "" tmp
+	regsub -all " " $tmp " [file dirname $prog]/" tmp
+	set to_download [concat $to_download $tmp]
+	verbose "Downloading files $tmp"
     }
 
     lappend cflags "compiler=$compiler"
@@ -408,6 +425,12 @@ proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
 #
 #  run the compiler and analyze the results
 #
+    # Download any source or header files we might need.
+    if [is_remote host] {
+	foreach file $to_download {
+	    remote_download host $file
+	}
+    }
 
     # Since we don't check return status of the compiler, make sure
     # we can't run a.out when the compilation fails.

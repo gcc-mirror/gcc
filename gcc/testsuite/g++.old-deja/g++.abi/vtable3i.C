@@ -2,6 +2,7 @@
 // Contributed by Nathan Sidwell 4 February 2001 <nathan@codesourcery.com>
 
 // Check constructor vtables work.
+// Additional files: vtable3.h
 
 #define B1_EMPTY
 #define B2_EMPTY
