@@ -1,3 +1,8 @@
+Sun Apr 23 16:24:35 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* reload.c (find_equiv_reg): Checks all valueno regs
+	as a reload_reg_p regs.
+
 2000-04-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (collect_objlike_expansion): Add sanity check.
