@@ -30,7 +30,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    It's safe to pass -s always, even if -g is not used. */
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s"
+  "%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
+   %{fpic:-K PIC} %{fPIC:-K PIC}"
 
 /* However it appears that Solaris 2.0 uses the same reg numbering as
    the old BSD-style system did. */
@@ -76,6 +77,21 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CTORS_SECTION_ASM_OP	"\t.section\t\".ctors\",#alloc,#execinstr\n"
 #define DTORS_SECTION_ASM_OP	"\t.section\t\".dtors\",#alloc,#execinstr\n"
+
+/* The native assembler can't compute differences between symbols in different
+   sections when generating pic code, so we must put jump tables in the
+   text section.  */
+#define JUMP_TABLES_IN_TEXT_SECTION 1
+
+/* Must use data section for relocatable constants when pic.  */
+#undef SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE,RTX)		\
+{						\
+  if (flag_pic && symbolic_operand (RTX))	\
+    data_section ();				\
+  else						\
+    const_section ();				\
+}
 
 /* The Solaris 2 assembler uses .skip, not .zero, so put this back. */
 #undef ASM_OUTPUT_SKIP
