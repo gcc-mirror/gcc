@@ -1,3 +1,5 @@
+// PR optimization/6631
+
 // { dg-do run }
 // { dg-options "-O" }
 
