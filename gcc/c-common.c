@@ -2711,7 +2711,10 @@ c_common_get_alias_set (tree t)
 	    NULL);
   slot = htab_find_slot (type_hash_table, t, INSERT);
   if (*slot != NULL)
-    return TYPE_ALIAS_SET ((tree)*slot);
+    {
+      TYPE_ALIAS_SET (t) = TYPE_ALIAS_SET ((tree)*slot);
+      return TYPE_ALIAS_SET ((tree)*slot);
+    }
   else
     /* Our caller will assign and record (in t) a new alias set; all we need
        to do is remember t in the hash table.  */
