@@ -530,8 +530,7 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)			\
   (GET_CODE (X) == CONST_DOUBLE				\
-   ? (reg_class_subset_p ((CLASS), GENERAL_REGS) || (CLASS) == ALL_REGS \
-      ? (CLASS) : NO_REGS)				\
+   ? NO_REGS						\
    : GET_MODE (X) == QImode				\
    ? (! reg_class_subset_p ((CLASS), Q_REGS) ? Q_REGS : (CLASS))	\
    : (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT && (CLASS) == FLOAT_REGS ? \
