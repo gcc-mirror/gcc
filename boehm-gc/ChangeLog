@@ -1,3 +1,7 @@
+2004-02-14  Release Manager
+
+	* GCC 3.3.3 Released.
+
 2003-12-21  Roger Sayle  <roger@eyesopen.com>
 
 	* configure.host: Backport/synchronize from mainline.
