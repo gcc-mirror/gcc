@@ -3276,50 +3276,49 @@ do {									\
 
 /* Define the codes that are matched by predicates in sparc.c.  */
 
-#define PREDICATE_CODES								    \
-{"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},			    \
-{"fp_zero_operand", {CONST_DOUBLE}},						    \
-{"intreg_operand", {SUBREG, REG}},						    \
-{"fcc_reg_operand", {REG}},							    \
-{"icc_or_fcc_reg_operand", {REG}},						    \
-{"restore_operand", {REG}},							    \
-{"call_operand", {MEM}},							    \
-{"call_operand_address", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE, ADDRESSOF,    \
-                          SUBREG, REG, PLUS, LO_SUM, CONST_INT}},		    \
-{"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE}},		    \
-{"symbolic_memory_operand", {SUBREG, MEM}},					    \
-{"label_ref_operand", {LABEL_REF}},						    \
-{"sp64_medium_pic_operand", {CONST}},						    \
-{"data_segment_operand", {SYMBOL_REF, PLUS, CONST}},				    \
-{"text_segment_operand", {LABEL_REF, SYMBOL_REF, PLUS, CONST}},			    \
-{"reg_or_nonsymb_mem_operand", {SUBREG, REG, MEM}},				    \
-{"splittable_symbolic_memory_operand", {MEM}},					    \
-{"splittable_immediate_memory_operand", {MEM}},					    \
-{"eq_or_neq", {EQ, NE}},							    \
-{"normal_comp_operator", {GE, GT, LE, LT, GTU, LEU}},				    \
-{"noov_compare_op", {NE, EQ, GE, GT, LE, LT, GEU, GTU, LEU, LTU}},		    \
-{"v9_regcmp_op", {EQ, NE, GE, LT, LE, GT}},					    \
-{"extend_op", {SIGN_EXTEND, ZERO_EXTEND}},					    \
-{"cc_arithop", {AND, IOR, XOR}},						    \
-{"cc_arithopn", {AND, IOR}},							    \
-{"arith_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT}},			    \
-{"arith_add_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT}},		    \
-{"arith11_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT}},			    \
-{"arith10_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT}},			    \
-{"arith_double_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, CONST_DOUBLE}},   \
-{"arith_double_add_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, CONST_DOUBLE}},\
-{"arith11_double_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, CONST_DOUBLE}}, \
-{"arith10_double_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, CONST_DOUBLE}}, \
-{"small_int", {CONST_INT, CONSTANT_P_RTX}},					    \
-{"small_int_or_double", {CONST_INT, CONST_DOUBLE, CONSTANT_P_RTX}},		    \
-{"uns_small_int", {CONST_INT, CONSTANT_P_RTX}},					    \
-{"uns_arith_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},		    \
-{"clobbered_register", {REG}},							    \
-{"input_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, MEM}},		    \
-{"zero_operand", {CONST_INT, CONSTANT_P_RTX}},					    \
-{"const64_operand", {CONST_INT, CONST_DOUBLE, CONSTANT_P_RTX}},			    \
-{"const64_high_operand", {CONST_INT, CONST_DOUBLE, CONSTANT_P_RTX}},
-
+#define PREDICATE_CODES							\
+{"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
+{"fp_zero_operand", {CONST_DOUBLE}},					\
+{"intreg_operand", {SUBREG, REG}},					\
+{"fcc_reg_operand", {REG}},						\
+{"icc_or_fcc_reg_operand", {REG}},					\
+{"restore_operand", {REG}},						\
+{"call_operand", {MEM}},						\
+{"call_operand_address", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE,	\
+	ADDRESSOF, SUBREG, REG, PLUS, LO_SUM, CONST_INT}},		\
+{"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE}},	\
+{"symbolic_memory_operand", {SUBREG, MEM}},				\
+{"label_ref_operand", {LABEL_REF}},					\
+{"sp64_medium_pic_operand", {CONST}},					\
+{"data_segment_operand", {SYMBOL_REF, PLUS, CONST}},			\
+{"text_segment_operand", {LABEL_REF, SYMBOL_REF, PLUS, CONST}},		\
+{"reg_or_nonsymb_mem_operand", {SUBREG, REG, MEM}},			\
+{"splittable_symbolic_memory_operand", {MEM}},				\
+{"splittable_immediate_memory_operand", {MEM}},				\
+{"eq_or_neq", {EQ, NE}},						\
+{"normal_comp_operator", {GE, GT, LE, LT, GTU, LEU}},			\
+{"noov_compare_op", {NE, EQ, GE, GT, LE, LT, GEU, GTU, LEU, LTU}},	\
+{"v9_regcmp_op", {EQ, NE, GE, LT, LE, GT}},				\
+{"extend_op", {SIGN_EXTEND, ZERO_EXTEND}},				\
+{"cc_arithop", {AND, IOR, XOR}},					\
+{"cc_arithopn", {AND, IOR}},						\
+{"arith_operand", {SUBREG, REG, CONST_INT}},				\
+{"arith_add_operand", {SUBREG, REG, CONST_INT}},			\
+{"arith11_operand", {SUBREG, REG, CONST_INT}},				\
+{"arith10_operand", {SUBREG, REG, CONST_INT}},				\
+{"arith_double_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
+{"arith_double_add_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
+{"arith11_double_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
+{"arith10_double_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
+{"small_int", {CONST_INT}},						\
+{"small_int_or_double", {CONST_INT, CONST_DOUBLE}},			\
+{"uns_small_int", {CONST_INT}},						\
+{"uns_arith_operand", {SUBREG, REG, CONST_INT}},			\
+{"clobbered_register", {REG}},						\
+{"input_operand", {SUBREG, REG, CONST_INT, MEM, CONST}},		\
+{"zero_operand", {CONST_INT}},						\
+{"const64_operand", {CONST_INT, CONST_DOUBLE}},				\
+{"const64_high_operand", {CONST_INT, CONST_DOUBLE}},
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 12
