@@ -503,13 +503,15 @@ STAGESTUFF = *.o insn-flags.h insn-config.h insn-codes.h \
  stamp-flags stamp-config stamp-codes \
  stamp-output stamp-recog stamp-emit stamp-extract stamp-peep \
  stamp-attr stamp-attrtab stamp-opinit stamp-proto \
- genemit genoutput genrecog genextract genflags gencodes genconfig genpeep \
- genattrtab genattr genopinit \
+ genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
+ genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
+ genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) \
  bc-arity.h bc-opcode.h bc-opname.h \
  stamp-bcarity stamp-bcopcode stamp-bcopname \
- bi-arity bi-opcode bi-opname \
- $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross $(CCCP) \
- cc1obj enquire protoize unprotoize specs collect2 $(USE_COLLECT2) \
+ bi-arity$(exeext) bi-opcode$(exeext) bi-opname$(exeext) \
+ $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) $(CCCP) \
+ cc1obj$(exeext) enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
+ specs collect2$(exeext) $(USE_COLLECT2) \
  $(LANG_STAGESTUFF)
 
 # Members of libgcc1.a.
