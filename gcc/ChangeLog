@@ -1,5 +1,8 @@
 Tue Sep 29 09:57:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (find_fixup_replacement): Consider equivalent if
+	rtx_equal_p, not just same rtx.
+
 	* reload.h (last_output_reload_regno): New declaration.
 	* reload.c (find_reloads): No longer make it static and get last value.
 	* reload1.c (last_output_reload_regno): New definition.
