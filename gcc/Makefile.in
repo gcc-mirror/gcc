@@ -898,7 +898,7 @@ OBJS-common = \
  tree-ssa-phiopt.o tree-ssa-forwprop.o tree-nested.o tree-ssa-dse.o	   \
  tree-ssa-dom.o domwalk.o tree-tailcall.o gimple-low.o tree-iterator.o	   \
  tree-phinodes.o tree-ssanames.o tree-sra.o tree-complex.o tree-ssa-loop.o \
- tree-ssa-loop-niter.o \
+ tree-ssa-loop-niter.o tree-ssa-loop-manip.o				   \
  alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	  	   \
  cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfglayout.o cfgloop.o		   \
  cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
@@ -1689,6 +1689,10 @@ tree-ssa-loop-ch.o : tree-ssa-loop-ch.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) tree-inline.h \
    output.h diagnostic.h $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    tree-pass.h flags.h
+tree-ssa-loop-manip.o : tree-ssa-loop-manip.c $(TREE_FLOW_H) $(CONFIG_H) \
+   $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) \
+   output.h diagnostic.h $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
+   tree-pass.h cfglayout.h
 tree-ssa-loop-im.o : tree-ssa-loop-im.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) domwalk.h $(PARAMS_H)\
    output.h diagnostic.h $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \

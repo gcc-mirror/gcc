@@ -645,6 +645,8 @@ tree find_loop_niter_by_eval (struct loop *, edge *);
 void estimate_numbers_of_iterations (struct loops *);
 tree can_count_iv_in_wider_type (struct loop *, tree, tree, tree, tree);
 void free_numbers_of_iterations_estimates (struct loops *);
+void rewrite_into_loop_closed_ssa (void);
+void verify_loop_closed_ssa (void);
 void loop_commit_inserts (void);
 bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 
