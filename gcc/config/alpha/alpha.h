@@ -1052,6 +1052,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 		      plus_constant (virtual_incoming_args_rtx,		\
 				     (CUM) * UNITS_PER_WORD)),		\
 	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
+	   emit_insn (gen_blockage ());					\
 	 }								\
       PRETEND_SIZE = 12 * UNITS_PER_WORD;				\
     }									\

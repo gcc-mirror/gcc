@@ -1,5 +1,8 @@
 Mon Sep 29 00:18:16 1997  Richard Henderson  (rth@cygnus.com)
 
+	* alpha.h (SETUP_INCOMING_VARARGS): Emit a blockage insn
+	after flushing argument registers to the stack.
+
 	* Makefile.in (mostlyclean): Remove .regmove files.
 
 Sun Sep 28 18:59:58 1997  Jason Merrill  <jason@yorick.cygnus.com>
