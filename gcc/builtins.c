@@ -511,6 +511,10 @@ expand_builtin_setjmp_setup (buf_addr, receiver_label)
   /* Tell optimize_save_area_alloca that extra work is going to
      need to go on during alloca.  */
   current_function_calls_setjmp = 1;
+
+  /* Set this so all the registers get saved in our frame; we need to be
+     able to copy the saved values for any registers from frames we unwind. */
+  current_function_has_nonlocal_label = 1;
 }
 
 /* Construct the trailing part of a __builtin_setjmp call.
