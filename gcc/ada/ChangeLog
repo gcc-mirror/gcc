@@ -1,3 +1,7 @@
+2001-10-26  Florian Weimer  <fw@deneb.enyo.de>
+
+	* gnat_rm.texi: Use @./@: where appropriate.
+
 2001-10-26  Robert Dewar <dewar@gnat.com>
 
 	* sinfo.adb: Define Associated_Node to overlap Entity field. Cleanup.
