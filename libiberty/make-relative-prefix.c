@@ -23,16 +23,25 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 @deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, const char *@var{bin_prefix}, const char *@var{prefix})
 
-Given three strings @var{progname}, @var{bin_prefix}, @var{prefix}, return a string
-that gets to @var{prefix} starting with the directory portion of @var{progname} and
-a relative pathname of the difference between @var{bin_prefix} and @var{prefix}.
+Given three paths @var{progname}, @var{bin_prefix}, @var{prefix},
+return the path that is in the same position relative to
+@var{progname}'s directory as @var{prefix} is relative to
+@var{bin_prefix}.  That is, a string starting with the directory
+portion of @var{progname}, followed by a relative pathname of the
+difference between @var{bin_prefix} and @var{prefix}.
 
-For example, if @var{bin_prefix} is @code{/alpha/beta/gamma/gcc/delta}, @var{prefix}
-is @code{/alpha/beta/gamma/omega/}, and @var{progname} is @code{/red/green/blue/gcc},
-then this function will return @code{/red/green/blue/../../omega/}.
+If @var{progname} does not contain any directory separators,
+@code{make_relative_prefix} will search @env{PATH} to find a program
+named @var{progname}.  Also, if @var{progname} is a symbolic link,
+the symbolic link will be resolved.
 
-The return value is normally allocated via @code{malloc}.  If no relative prefix
-can be found, return @code{NULL}.
+For example, if @var{bin_prefix} is @code{/alpha/beta/gamma/gcc/delta},
+@var{prefix} is @code{/alpha/beta/gamma/omega/}, and @var{progname} is
+@code{/red/green/blue/gcc}, then this function will return
+@code{/red/green/blue/../../omega/}.
+
+The return value is normally allocated via @code{malloc}.  If no
+relative prefix can be found, return @code{NULL}.
 
 @end deftypefn
 
@@ -223,19 +232,14 @@ make_relative_prefix (progname, bin_prefix, prefix)
   int prog_num, bin_num, prefix_num;
   int i, n, common;
   int needed_len;
-  char *ret, *ptr;
+  char *ret, *ptr, *full_progname = NULL;
 
   if (progname == NULL || bin_prefix == NULL || prefix == NULL)
     return NULL;
 
-  prog_dirs = split_directories (progname, &prog_num);
-  bin_dirs = split_directories (bin_prefix, &bin_num);
-  if (bin_dirs == NULL || prog_dirs == NULL)
-    return NULL;
-
   /* If there is no full pathname, try to find the program by checking in each
      of the directories specified in the PATH environment variable.  */
-  if (prog_num == 1)
+  if (lbasename (progname) == progname)
     {
       char *temp;
 
@@ -278,14 +282,7 @@ make_relative_prefix (progname, bin_prefix, prefix)
 #endif
 		      )
 		    {
-		      free_split_directories (prog_dirs);
 		      progname = nstore;
-		      prog_dirs = split_directories (progname, &prog_num);
-		      if (prog_dirs == NULL)
-			{
-			  free_split_directories (bin_dirs);
-			  return NULL;
-			}
 		      break;
 		    }
 
@@ -298,6 +295,16 @@ make_relative_prefix (progname, bin_prefix, prefix)
 	    }
 	}
     }
+
+  full_progname = lrealpath (progname);
+  if (full_progname == NULL)
+    return NULL;
+
+  prog_dirs = split_directories (full_progname, &prog_num);
+  bin_dirs = split_directories (bin_prefix, &bin_num);
+  free (full_progname);
+  if (bin_dirs == NULL || prog_dirs == NULL)
+    return NULL;
 
   /* Remove the program name from comparison of directory names.  */
   prog_num--;

@@ -206,6 +206,7 @@ funcs="$funcs waitpid"
 vars="sys_errlist sys_nerr sys_siglist"
 
 checkfuncs="getrusage on_exit psignal strerror strsignal sysconf times sbrk gettimeofday"
+checkfuncs="$checkfuncs realpath canonicalize_file_name"
 checkfuncs="$checkfuncs pstat_getstatic pstat_getdynamic sysmp getsysinfo table sysctl"
 
 # These are neither executed nor required, but they help keep
@@ -218,6 +219,7 @@ if test "x" = "y"; then
   AC_CHECK_FUNCS(strtod strtol strtoul tmpnam vasprintf vfprintf vprintf)
   AC_CHECK_FUNCS(vsprintf waitpid getrusage on_exit psignal strerror strsignal)
   AC_CHECK_FUNCS(sysconf times sbrk gettimeofday ffs)
+  AC_CHECK_FUNCS(realpath canonicalize_file_name)
   AC_CHECK_FUNCS(pstat_getstatic pstat_getdynamic sysmp getsysinfo table sysctl)
   AC_DEFINE(HAVE_SYS_ERRLIST, 1, [Define if you have the sys_errlist variable.])
   AC_DEFINE(HAVE_SYS_NERR,    1, [Define if you have the sys_nerr variable.])
@@ -435,6 +437,7 @@ if test -z "${setobjs}"; then
               [Define if you have the _system_configuration variable.])],
     [AC_MSG_RESULT([no])])
 
+  libiberty_NEED_DECLARATION(canonicalize_file_name)
   AC_CHECK_FUNCS($checkfuncs)
 fi
 
