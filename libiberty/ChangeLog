@@ -1,5 +1,16 @@
 2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* mempcpy.c, stpcpy.c, stpncpy.c: New files.
+	* configure.in (funcs, AC_CHECK_FUNCS): Add mempcpy, stpcpy
+	and stpncpy.
+	* Makefile.in (CFILES): Add mempcpy.c, stpcpy.c and stpncpy.c.
+	(CONFIGURED_OFILES): Add mempcpy.o, stpcpy.o and stpncpy.o.
+	Regenerate dependencies.
+
+	* functions.texi, configure, config.in: Regenerated.
+
+2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* argv.c: Fix comments.
 	* calloc.c: Don't unnecessarily include "libiberty.h".
 	(bzero): Add prototype.

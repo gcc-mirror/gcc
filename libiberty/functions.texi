@@ -398,7 +398,7 @@ and a path ending in @code{/} returns the empty string after it.
 Given a pointer to a string containing a pathname, returns a canonical
 version of the filename.  Symlinks will be resolved, and ``.'' and ``..''
 components will be simplified.  The returned value will be allocated using
-@code{xmalloc} or @code{malloc}.
+@code{malloc}, or @code{NULL} will be returned on a memory allocation error.
 
 @end deftypefn
 
@@ -473,6 +473,14 @@ Copies @var{length} bytes from memory region @var{in} to region
 
 Copies @var{count} bytes from memory area @var{from} to memory area
 @var{to}, returning a pointer to @var{to}.
+
+@end deftypefn
+
+@c mempcpy.c:23
+@deftypefn Supplemental void* mempcpy (void *@var{out}, const void *@var{in}, size_t @var{length})
+
+Copies @var{length} bytes from memory region @var{in} to region
+@var{out}.  Returns a pointer to @var{out} + @var{length}.
 
 @end deftypefn
 
@@ -671,6 +679,24 @@ be the value @code{1}).
 Returns a pointer to a memory region filled with the specified
 number of spaces and null terminated.  The returned pointer is
 valid until at least the next call.
+
+@end deftypefn
+
+@c stpcpy.c:23
+@deftypefn Supplemental char* stpcpy (char *@var{dst}, const char *@var{src})
+
+Copies the string @var{src} into @var{dst}.  Returns a pointer to
+@var{dst} + strlen(@var{src}).
+
+@end deftypefn
+
+@c stpncpy.c:23
+@deftypefn Supplemental char* stpncpy (char *@var{dst}, const char *@var{src}, size_t @var{len})
+
+Copies the string @var{src} into @var{dst}, copying exactly @var{len}
+and padding with zeros if necessary.  If @var{len} < strlen(@var{src})
+then return @var{dst} + @var{len}, otherwise returns @var{dst} +
+strlen(@var{src}).
 
 @end deftypefn
 
