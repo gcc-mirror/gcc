@@ -557,12 +557,24 @@ compute_branch_probabilities (void)
 	      num_branches++;
 	    }
 	}
-      /* Otherwise distribute the probabilities evenly so we get sane
-	 sum.  Use simple heuristics that if there are normal edges,
+      /* Otherwise try to preserve the existing REG_BR_PROB probabilities
+         tree based profile guessing put into code.  */
+      else if (profile_status == PROFILE_ABSENT
+	       && !ir_type ()
+	       && bb->succ && bb->succ->succ_next
+	       && (note = find_reg_note (BB_END (bb), REG_BR_PROB, 0)))
+	{
+	  int prob = INTVAL (XEXP (note, 0));
+
+	  BRANCH_EDGE (bb)->probability = prob;
+	  FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - prob;
+	}
+      /* As a last resolt, distribute the probabilities evenly.
+	 Use simple heuristics that if there are normal edges,
 	 give all abnormals frequency of 0, otherwise distribute the
 	 frequency over abnormals (this is the case of noreturn
 	 calls).  */
-      else
+      else if (profile_status == PROFILE_ABSENT)
 	{
 	  int total = 0;
 
