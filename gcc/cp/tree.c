@@ -54,7 +54,7 @@ real_lvalue_p (ref)
   switch (TREE_CODE (ref))
     {
       /* preincrements and predecrements are valid lvals, provided
-	 what they refer to are valid lvals. */
+	 what they refer to are valid lvals.  */
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
     case COMPONENT_REF:
@@ -124,7 +124,7 @@ lvalue_p (ref)
   switch (TREE_CODE (ref))
     {
       /* preincrements and predecrements are valid lvals, provided
-	 what they refer to are valid lvals. */
+	 what they refer to are valid lvals.  */
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
     case COMPONENT_REF:
@@ -206,6 +206,7 @@ lvalue_or_else (ref, string)
    Build an encapsulation of the initialization to perform
    and return it so that it can be processed by language-independent
    and language-specific expression expanders.  */
+
 tree
 build_cplus_new (type, init)
      tree type;
@@ -279,7 +280,7 @@ break_out_calls (exp)
   if (code == CALL_EXPR)
     return copy_node (exp);
 
-  /* Don't try and defeat a save_expr, as it should only be done once. */
+  /* Don't try and defeat a save_expr, as it should only be done once.  */
     if (code == SAVE_EXPR)
        return exp;
 
@@ -360,6 +361,7 @@ extern struct obstack *saveable_obstack;
 /* Construct, lay out and return the type of methods belonging to class
    BASETYPE and whose arguments are described by ARGTYPES and whose values
    are described by RETTYPE.  If each type exists already, reuse it.  */
+
 tree
 build_cplus_method_type (basetype, rettype, argtypes)
      tree basetype, rettype, argtypes;
@@ -496,6 +498,7 @@ cp_build_type_variant (type, constp, volatilep)
 
    Note that we don't have to worry about having two paths to the
    same base type, since this type owns its association list.  */
+
 void
 propagate_binfo_offsets (binfo, offset)
      tree binfo;
@@ -577,6 +580,7 @@ propagate_binfo_offsets (binfo, offset)
 
    Returns the maximum number of virtual functions any of the virtual
    baseclasses provide.  */
+
 int
 layout_vbasetypes (rec, max)
      tree rec;
@@ -717,6 +721,7 @@ layout_vbasetypes (rec, max)
    creates a list of base_binfos in TYPE_BINFO (REC) from BINFOS.
 
    Returns list of virtual base classes in a FIELD_DECL chain.  */
+
 tree
 layout_basetypes (rec, binfos)
      tree rec, binfos;
@@ -734,7 +739,7 @@ layout_basetypes (rec, binfos)
   /* Record size so far is CONST_SIZE + VAR_SIZE bits, where CONST_SIZE is
      an integer and VAR_SIZE is a tree expression.  If VAR_SIZE is null,
      the size is just CONST_SIZE.  Naturally we try to avoid using
-     VAR_SIZE.  And so far, we've been successful. */
+     VAR_SIZE.  And so far, we've been successful.  */
 #if 0
   register tree var_size = 0;
 #endif
@@ -769,7 +774,7 @@ layout_basetypes (rec, binfos)
 	     class A;
 	     class B: private A { virtual void F(); };
 
-	     does not dump core when compiled. */
+	     does not dump core when compiled.  */
 	  my_friendly_abort (121);
 #endif
 	  continue;
@@ -805,7 +810,7 @@ layout_basetypes (rec, binfos)
 					build_pointer_type (basetype));
 	  /* If you change any of the below, take a look at all the
 	     other VFIELD_BASEs and VTABLE_BASEs in the code, and change
-	     them too. */
+	     them too.  */
 	  DECL_ASSEMBLER_NAME (decl) = get_identifier (VTABLE_BASE);
 	  DECL_VIRTUAL_P (decl) = 1;
 	  DECL_FIELD_CONTEXT (decl) = rec;
@@ -992,6 +997,7 @@ list_hash_add (hashcode, list)
    This function frees the list you pass in if it is a duplicate.  */
 
 /* Set to 1 to debug without canonicalization.  Never set by program.  */
+
 static int debug_no_list_hash = 0;
 
 tree
@@ -1038,6 +1044,7 @@ hash_tree_cons (via_public, via_virtual, via_protected, purpose, value, chain)
 }
 
 /* Constructor for hashed lists.  */
+
 tree
 hash_tree_chain (value, chain)
      tree value, chain;
@@ -1055,6 +1062,7 @@ hash_tree_chain (value, chain)
 }
 
 /* Similar, but used for concatenating two lists.  */
+
 tree
 hash_chainon (list1, list2)
      tree list1, list2;
@@ -1353,6 +1361,7 @@ is_aggr_type_2 (t1, t2)
 /* Give message using types TYPE1 and TYPE2 as arguments.
    PFN is the function which will print the message;
    S is the format string for PFN to use.  */
+
 void
 message_2_types (pfn, s, type1, type2)
      void (*pfn) ();
@@ -1421,6 +1430,7 @@ lang_printable_name (decl)
 
 /* Build the FUNCTION_TYPE or METHOD_TYPE which may throw exceptions
    listed in RAISES.  */
+
 tree
 build_exception_variant (type, raises)
      tree type;
@@ -1436,7 +1446,7 @@ build_exception_variant (type, raises)
 	  || TYPE_VOLATILE (v) != volatilep)
 	continue;
 
-      /* @@ This should do set equality, not exact match. */
+      /* @@ This should do set equality, not exact match.  */
       if (simple_cst_list_equal (TYPE_RAISES_EXCEPTIONS (v), raises))
 	/* List of exceptions raised matches previously found list.
 
@@ -1653,6 +1663,7 @@ perm_manip (t)
 
 /* Assuming T is a node built bottom-up, make it all exist on
    permanent obstack, if it is not permanent already.  */
+
 tree
 copy_to_permanent (t)
      tree t;
@@ -1701,6 +1712,7 @@ print_lang_statistics ()
    which `cc' doesn't know how to link.  Note that the C++ front-end
    no longer actually uses the `assert' macro (instead, it calls
    my_friendly_assert).  But all of the back-end files still need this.  */
+
 void
 __eprintf (string, expression, line, filename)
 #ifdef __STDC__
@@ -1720,8 +1732,9 @@ __eprintf (string, expression, line, filename)
   abort ();
 }
 
-/* Return, as an INTEGER_CST node, the number of elements for
-   TYPE (which is an ARRAY_TYPE).  This counts only elements of the top array. */
+/* Return, as an INTEGER_CST node, the number of elements for TYPE
+   (which is an ARRAY_TYPE).  This counts only elements of the top
+   array.  */
 
 tree
 array_type_nelts_top (type)
@@ -1732,9 +1745,9 @@ array_type_nelts_top (type)
 		      integer_one_node));
 }
 
-/* Return, as an INTEGER_CST node, the number of elements for
-   TYPE (which is an ARRAY_TYPE).  This one is a recursive count of all
-   ARRAY_TYPEs that are clumped together. */
+/* Return, as an INTEGER_CST node, the number of elements for TYPE
+   (which is an ARRAY_TYPE).  This one is a recursive count of all
+   ARRAY_TYPEs that are clumped together.  */
 
 tree
 array_type_nelts_total (type)
@@ -1765,6 +1778,7 @@ bot_manip (t)
 }
   
 /* Actually, we'll just clean out the target exprs for the moment.  */
+
 tree
 break_out_target_exprs (t)
      tree t;
@@ -1918,7 +1932,7 @@ vec_binfo_member (elem, vec)
 
   if (vec)
     for (i = 0; i < TREE_VEC_LENGTH (vec); ++i)
-      if (elem == BINFO_TYPE (TREE_VEC_ELT (vec, i)))
+      if (comptypes (elem, BINFO_TYPE (TREE_VEC_ELT (vec, i)), 1))
 	return TREE_VEC_ELT (vec, i);
 
   return NULL_TREE;

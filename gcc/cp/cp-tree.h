@@ -242,12 +242,12 @@ extern int warn_cast_qual;
 
 extern int warn_traditional;
 
-/* Warn about *printf or *scanf format/argument anomalies. */
+/* Warn about *printf or *scanf format/argument anomalies.  */
 
 extern int warn_format;
 
 /* Nonzero means warn about non virtual destructors in classes that have
-   virtual functions. */
+   virtual functions.  */
 
 extern int warn_nonvdtor;
 
@@ -276,7 +276,7 @@ extern int write_virtuals;
 
 /* True for more efficient but incompatible (not not fully tested)
    vtable implementation (using thunks).
-   0 is old behavior; 1 is new behavior. */
+   0 is old behavior; 1 is new behavior.  */
 extern int flag_vtable_thunks;
 
 /* INTERFACE_ONLY nonzero means that we are in an "interface"
@@ -313,7 +313,7 @@ extern int flag_default_inline;
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 enum cplus_tree_code {
   __DUMMY = LAST_AND_UNUSED_TREE_CODE,
-#include "tree.def"
+#include "cp-tree.def"
   LAST_CPLUS_TREE_CODE
 };
 #undef DEFTREECODE
@@ -697,7 +697,7 @@ struct lang_type
    which our VFIELD is based, -1 otherwise.  If this class has no base
    classes, this is not used.
    In D : B1, B2, PARENT would be 0, if D's vtable came from B1,
-   1, if D's vtable came from B2. */
+   1, if D's vtable came from B2.  */
 #define CLASSTYPE_VFIELD_PARENT(NODE)	(TYPE_LANG_SPECIFIC(NODE)->vfield_parent)
 
 /* Remove when done merging.  */
@@ -916,7 +916,7 @@ struct lang_type
    this type can raise.  */
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_NONCOPIED_PARTS (NODE)
 
-/* The binding level associated with the namespace. */
+/* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.level)
 
 struct lang_decl_flags
@@ -1070,7 +1070,7 @@ struct lang_decl
 #endif
 
 /* In a VAR_DECL for a variable declared in a for statement,
-   this is the shadowed (local) variable. */
+   this is the shadowed (local) variable.  */
 #define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT(NODE)
 
 /* Points back to the decl which caused this lang_decl to be allocated.  */
@@ -1081,7 +1081,7 @@ struct lang_decl
    squirreled away.  */
 #define DECL_PENDING_INLINE_INFO(NODE) (DECL_LANG_SPECIFIC(NODE)->pending_inline_info)
 
-/* True if on the saved_inlines (see decl2.c) list. */
+/* True if on the saved_inlines (see decl2.c) list.  */
 #define DECL_SAVED_INLINE(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->decl_flags.saved_inline)
 
@@ -1162,7 +1162,7 @@ struct lang_decl
 extern int flag_new_for_scope;
 
 /* This flag is true of a local VAR_DECL if it was declared in a for
-   statement, but we are no longer in the scope of the for. */
+   statement, but we are no longer in the scope of the for.  */
 #define DECL_DEAD_FOR_LOCAL(NODE) DECL_LANG_FLAG_7 (NODE)
 
 /* This flag is set on a VAR_DECL that is a DECL_DEAD_FOR_LOCAL
@@ -1266,18 +1266,18 @@ extern int flag_new_for_scope;
   (TYPE_HAS_ASSIGN_REF (NODE) && ! TYPE_HAS_COMPLEX_ASSIGN_REF (NODE))
 
 /* Nonzero for _TYPE node means that this type is a pointer to member
-   function type. */
+   function type.  */
 #define TYPE_PTRMEMFUNC_P(NODE) (TREE_CODE(NODE) == RECORD_TYPE && TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)
 #define TYPE_PTRMEMFUNC_FLAG(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)
 /* Get the POINTER_TYPE to the METHOD_TYPE associated with this
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
-   before using this macro. */
+   before using this macro.  */
 #define TYPE_PTRMEMFUNC_FN_TYPE(NODE) (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (NODE)))))))
 /* These are use to manipulate the the canonical RECORD_TYPE from the
-   hashed POINTER_TYPE, and can only be used on the POINTER_TYPE. */
+   hashed POINTER_TYPE, and can only be used on the POINTER_TYPE.  */
 #define TYPE_GET_PTRMEMFUNC_TYPE(NODE) ((tree)TYPE_LANG_SPECIFIC(NODE))
 #define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE) (TYPE_LANG_SPECIFIC(NODE) = ((struct lang_type *)(void*)(VALUE)))
-/* These are to get the delta2 and pfn fields from a TYPE_PTRMEMFUNC_P. */
+/* These are to get the delta2 and pfn fields from a TYPE_PTRMEMFUNC_P.  */
 #define DELTA2_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, NULL_TREE, 0), delta2_identifier, NULL_TREE, 0))
 #define PFN_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, NULL_TREE, 0), pfn_identifier, NULL_TREE, 0))
 
@@ -1352,8 +1352,7 @@ extern int flag_new_for_scope;
      0=normal declaration, e.g. int min (int, int);
      1=implicit template instantiation
      2=explicit template specialization, e.g. int min<int> (int, int);
-     3=explicit template instantiation, e.g. template int min<int> (int, int);
- */
+     3=explicit template instantiation, e.g. template int min<int> (int, int);  */
 #define DECL_USE_TEMPLATE(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.use_template)
 
 #define DECL_TEMPLATE_INSTANTIATION(NODE) (DECL_USE_TEMPLATE (NODE) & 1)
@@ -1465,7 +1464,7 @@ extern char *get_directive_line                 STDIO_PROTO((FILE *));
    and, if so, perhaps change them both back to their original type.  */
 extern tree shorten_compare                     PROTO((tree *, tree *, tree *, enum tree_code *));
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
-   or validate its data type for an `if' or `while' statement or ?..: exp. */
+   or validate its data type for an `if' or `while' statement or ?..: exp.  */
 extern tree truthvalue_conversion               PROTO((tree));
 extern tree type_for_mode                       PROTO((enum machine_mode, int));
 extern tree type_for_size                       PROTO((unsigned, int));
@@ -1506,7 +1505,7 @@ extern tree unknown_type_node;
 extern tree opaque_type_node, signature_type_node;
 
 /* Node for "pointer to (virtual) function".
-   This may be distinct from ptr_type_node so gdb can distinguish them. */
+   This may be distinct from ptr_type_node so gdb can distinguish them.  */
 #define vfunc_ptr_type_node \
   (flag_vtable_thunks ? vtable_entry_type : ptr_type_node)
 
@@ -1736,7 +1735,7 @@ extern int current_function_parms_stored;
    can have.  These are sensible combinations of {public,private,protected}
    cross {virtual,non-virtual}.  */
 
-/* in class.c. */
+/* in class.c.  */
 extern tree access_default_node; /* 0 */
 extern tree access_public_node; /* 1 */
 extern tree access_protected_node; /* 2 */

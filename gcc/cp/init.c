@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* High-level class interface. */
+/* High-level class interface.  */
 
 #include "config.h"
 #include "tree.h"
@@ -116,6 +116,7 @@ void init_init_processing ()
 
    Relies upon binfo being inside TYPE_BINFO (TREE_TYPE (TREE_TYPE
    (addr))).  */
+
 void
 expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
      tree real_binfo, binfo, addr;
@@ -150,6 +151,7 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
 
 /* 348 - 351 */
 /* Subroutine of emit_base_init.  */
+
 static void
 perform_member_init (member, name, init, explicit, protect_list)
      tree member, name, init;
@@ -252,6 +254,7 @@ perform_member_init (member, name, init, explicit, protect_list)
 extern int warn_reorder;
 
 /* Subroutine of emit_member_init.  */
+
 static tree
 sort_member_init (t)
      tree t;
@@ -482,6 +485,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 }
 
 /* Perform partial cleanups for a base for exception handling.  */
+
 static tree
 build_partial_cleanup_for (binfo)
      tree binfo;
@@ -629,7 +633,7 @@ emit_base_init (t, immediately)
     }
 
   /* Initialize all the virtual function table fields that
-     do come from virtual base classes. */
+     do come from virtual base classes.  */
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     expand_indirect_vtbls_init (t_binfo, current_class_ref, current_class_ptr);
 
@@ -735,6 +739,7 @@ emit_base_init (t, immediately)
 
 /* Check that all fields are properly initialized after
    an assignment to `this'.  */
+
 void
 check_base_init (t)
      tree t;
@@ -751,6 +756,7 @@ check_base_init (t)
 
    BINFO is the exact type that DECL is supposed to be.  In
    multiple inheritance, this might mean "C's A" if C : A, B.  */
+
 static void
 expand_virtual_init (binfo, decl)
      tree binfo, decl;
@@ -781,6 +787,7 @@ expand_virtual_init (binfo, decl)
 /* Subroutine of `expand_aggr_vbase_init'.
    BINFO is the binfo of the type that is being initialized.
    INIT_LIST is the list of initializers for the virtual baseclass.  */
+
 static void
 expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
      tree binfo, exp, addr, init_list;
@@ -817,6 +824,7 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
    done only at the top-level of the object being constructed.
 
    INIT_LIST is list of initialization for constructor to perform.  */
+
 static void
 expand_aggr_vbase_init (binfo, exp, addr, init_list)
      tree binfo;
@@ -849,6 +857,7 @@ expand_aggr_vbase_init (binfo, exp, addr, init_list)
    S_ID is the scoped identifier.
    NAME is the name of the member.
    INIT is the initializer, or `void_type_node' if none.  */
+
 void
 do_member_init (s_id, name, init)
      tree s_id, name, init;
@@ -873,6 +882,7 @@ do_member_init (s_id, name, init)
 }
 
 /* Find the context in which this FIELD can be initialized.  */
+
 static tree
 initializing_context (field)
      tree field;
@@ -932,6 +942,7 @@ member_init_ok_or_else (field, type, member_name)
    If INIT is non-NULL, then it the initialization should
    be placed in `current_base_init_list', where it will be processed
    by `emit_base_init'.  */
+
 void
 expand_member_init (exp, name, init)
      tree exp, name, init;
@@ -986,7 +997,7 @@ expand_member_init (exp, name, init)
 
 	  if (name == NULL_TREE)
 	    {
-/*
+#if 0
 	      if (basetype)
 		name = TYPE_IDENTIFIER (basetype);
 	      else
@@ -994,7 +1005,7 @@ expand_member_init (exp, name, init)
 		  error ("no base class to initialize");
 		  return;
 		}
-*/
+#endif
 	    }
 	  else
 	    {
@@ -1063,7 +1074,7 @@ expand_member_init (exp, name, init)
     return;
 
   /* now see if there is a constructor for this type
-     which will take these args. */
+     which will take these args.  */
 
   if (TYPE_HAS_CONSTRUCTOR (TREE_TYPE (field)))
     {
@@ -1166,7 +1177,7 @@ expand_member_init (exp, name, init)
    initialization.
 
    A constructor or a conversion operator may have to be used to
-   perform the initialization, but not both, as it would be ambiguous. */
+   perform the initialization, but not both, as it would be ambiguous.  */
 
 void
 expand_aggr_init (exp, init, alias_this, flags)
@@ -1518,6 +1529,8 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 
 	  return;
 	}
+
+#ifndef NEW_OVER
       /* See whether we can go through a type conversion operator.
 	 This wins over going through a non-existent constructor.  If
 	 there is a constructor, it is ambiguous.  */
@@ -1533,7 +1546,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	      if (rval)
 		{
 		  /* See if there is a constructor for``type'' that takes a
-		     ``ttype''-typed object. */
+		     ``ttype''-typed object.  */
 		  tree parms = build_tree_list (NULL_TREE, init);
 		  tree as_cons = NULL_TREE;
 		  if (TYPE_HAS_CONSTRUCTOR (type))
@@ -1550,6 +1563,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		}
 	    }
 	}
+#endif
     }
 
   /* We know that expand_default_init can handle everything we want
@@ -1559,6 +1573,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 
 /* Report an error if NAME is not the name of a user-defined,
    aggregate type.  If OR_ELSE is nonzero, give an error message.  */
+
 int
 is_aggr_typedef (name, or_else)
      tree name;
@@ -1590,6 +1605,7 @@ is_aggr_typedef (name, or_else)
 
 /* Report an error if TYPE is not a user-defined, aggregate type.  If
    OR_ELSE is nonzero, give an error message.  */
+
 int
 is_aggr_type (type, or_else)
      tree type;
@@ -1609,6 +1625,7 @@ is_aggr_type (type, or_else)
 }
 
 /* Like is_aggr_typedef, but returns typedef if successful.  */
+
 tree
 get_aggr_from_typedef (name, or_else)
      tree name;
@@ -1657,6 +1674,7 @@ get_type_value (name)
 
 /* For an expression of the form TYPE :: NAME (PARMLIST), build
    the appropriate function call.  */
+
 tree
 build_member_call (type, name, parmlist)
      tree type, name, parmlist;
@@ -1779,6 +1797,7 @@ build_member_call (type, name, parmlist)
    @@ fields.
 
    @@ This function should be rewritten and placed in search.c.  */
+
 tree
 build_offset_ref (type, name)
      tree type, name;
@@ -1873,7 +1892,7 @@ build_offset_ref (type, name)
     return error_mark_node;
 
   /* A lot of this logic is now handled in lookup_field and
-     lookup_fnfield. */
+     lookup_fnfield.  */
   if (fnfields)
     {
       extern int flag_save_memoized_contexts;
@@ -2198,7 +2217,7 @@ is_friend (type, supplicant)
 	}
     }
   else
-    /* It's a type. */
+    /* It's a type.  */
     {
       if (type == supplicant)
 	return 1;
@@ -2235,6 +2254,7 @@ is_friend (type, supplicant)
 
 /* Add a new friend to the friends of the aggregate type TYPE.
    DECL is the FUNCTION_DECL of the friend being added.  */
+
 static void
 add_friend (type, decl)
      tree type, decl;
@@ -2284,6 +2304,7 @@ add_friend (type, decl)
 
 /* Declare that every member function NAME in FRIEND_TYPE
    (which may be NULL_TREE) is a friend of type TYPE.  */
+
 static void
 add_friends (type, name, friend_type)
      tree type, name, friend_type;
@@ -2336,6 +2357,7 @@ add_friends (type, name, friend_type)
    then the DECL_WAITING_FRIENDS contains a list of types
    waiting to make it their friend.  Note that these two can both
    be in use at the same time!  */
+
 void
 make_friend_class (type, friend_type)
      tree type, friend_type;
@@ -2395,6 +2417,7 @@ make_friend_class (type, friend_type)
 
    QUALS say what special qualifies should apply to the object
    pointed to by `this'.  */
+
 tree
 do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
      tree ctype, declarator, decl, parmdecls;
@@ -2781,7 +2804,7 @@ build_new (placement, decl, init, use_global_new)
     }
 
   /* Get a little extra space to store a couple of things before the new'ed
-     array. */
+     array.  */
   if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
     {
       tree extra = BI_header_size;
@@ -2797,7 +2820,7 @@ build_new (placement, decl, init, use_global_new)
 	cp_pedwarn ("initialization in array new");
     }
 
-  /* Allocate the object. */
+  /* Allocate the object.  */
   if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
       && (TYPE_GETS_NEW (true_type) & (1 << has_array)))
     rval = build_opfncall (code, LOOKUP_NORMAL,
@@ -3045,7 +3068,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
      int use_global_delete;
 {
   tree virtual_size;
-  tree ptype = build_pointer_type (type);
+  tree ptype = build_pointer_type (type = complete_type (type));
   tree size_exp = size_in_bytes (type);
 
   /* Temporary variables used by the loop.  */
@@ -3155,7 +3178,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 					       convert (string_type_node, base),
 					       BI_header_size,
 					       1));
-	  /* True size with header. */
+	  /* True size with header.  */
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
 	}
       deallocate_expr = build_x_delete (ptype, base_tbd,
@@ -3196,6 +3219,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
    BASE is that starting address of the array.
    COUNT is the count of objects that have been built, that need destroying.
    TYPE is the type of elements in the array.  */
+
 static tree
 build_array_eh_cleanup (base, count, type)
      tree base, count, type;
@@ -3261,7 +3285,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 
   if (init != NULL_TREE
       && TREE_CODE (init) == CONSTRUCTOR
-      && TREE_TYPE (init) == TREE_TYPE (decl))
+      && (! decl || TREE_TYPE (init) == TREE_TYPE (decl)))
     {
       /* Initialization of array from {...}.  */
       tree elts = CONSTRUCTOR_ELTS (init);
@@ -3453,6 +3477,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
    static object, see Free Store 12.5 ANSI C++ WP.
 
    This does not call any destructors.  */
+
 tree
 build_x_delete (type, addr, which_delete, virtual_size)
      tree type, addr;
@@ -3484,6 +3509,7 @@ build_x_delete (type, addr, which_delete, virtual_size)
    flags.  See cp-tree.h for more info.
 
    This function does not delete an object's virtual base classes.  */
+
 tree
 build_delete (type, addr, auto_delete, flags, use_global_delete)
      tree type, addr;
@@ -3491,7 +3517,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
      int flags;
      int use_global_delete;
 {
-  tree function, parms;
+  tree function;
   tree member;
   tree expr;
   tree ref;
@@ -3587,15 +3613,14 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       return build_builtin_call (void_type_node, BID,
 				 build_tree_list (NULL_TREE, addr));
     }
-  parms = build_tree_list (NULL_TREE, addr);
 
   /* Below, we will reverse the order in which these calls are made.
      If we have a destructor, then that destructor will take care
      of the base classes; otherwise, we must do that here.  */
   if (TYPE_HAS_DESTRUCTOR (type))
     {
+      tree parms = build_tree_list (NULL_TREE, addr);
       tree dtor = DECL_MAIN_VARIANT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1));
-      tree basetypes = TYPE_BINFO (type);
       tree passed_auto_delete;
       tree do_delete = NULL_TREE;
 
@@ -3619,7 +3644,13 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       if (flags & LOOKUP_PROTECT)
 	{
-	  tree access = compute_access (basetypes, dtor);
+	  tree access;
+	  tree basetypes = NULL_TREE;
+	  if (current_class_type != NULL_TREE)
+	    basetypes = get_binfo (type, current_class_type, 0);
+	  if (basetypes == NULL_TREE)
+	    basetypes = TYPE_BINFO (type);
+	  access = compute_access (basetypes, dtor);
 
 	  if (access == access_private_node)
 	    {
@@ -3863,6 +3894,7 @@ build_vbase_delete (type, decl)
    values we'd have to extract.  (We could use MAXINDEX with pointers to
    confirm the size, and trap if the numbers differ; not clear that it'd
    be worth bothering.)  */
+
 tree
 build_vec_delete (base, maxindex, auto_delete_vec, auto_delete,
 		  use_global_delete)
@@ -3879,7 +3911,7 @@ build_vec_delete (base, maxindex, auto_delete_vec, auto_delete,
 
   base = stabilize_reference (base);
 
-  /* Since we can use base many times, save_expr it. */
+  /* Since we can use base many times, save_expr it.  */
   if (TREE_SIDE_EFFECTS (base))
     base = save_expr (base);
 

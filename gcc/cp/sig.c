@@ -153,8 +153,7 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
 	 const s * sptr;
        };
 
-     Similarly, for `volatile' and `const volatile'.
-   */
+     Similarly, for `volatile' and `const volatile'.  */
 
   t = make_lang_type (RECORD_TYPE);
   {
@@ -423,6 +422,7 @@ match_method_types (sig_mtype, class_mtype)
 }
 
 /* Undo casts of opaque type variables to the RHS types.  */
+
 static void
 undo_casts (sig_ty)
      tree sig_ty;
@@ -562,7 +562,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	}
       else
 	{
-	  tree tag, vb_off, delta, index, pfn, vt_off;
+	  tree tag, vb_off, delta, idx, pfn, vt_off;
 	  tree tag_decl, vb_off_decl, delta_decl, index_decl;
 	  tree pfn_decl, vt_off_decl;
 
@@ -572,7 +572,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      tag = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
 	      vb_off = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
 	      delta = integer_zero_node;
-	      index = integer_zero_node;
+	      idx = integer_zero_node;
 	      pfn = build_addr_func (rhs_method);
 	      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (rhs_method)) = 1;
 	      TREE_TYPE (pfn) = ptr_type_node;
@@ -590,7 +590,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      else
 		delta = BINFO_OFFSET
 		  (get_binfo (DECL_CLASS_CONTEXT (rhs_method), rhstype, 1));
-	      index = DECL_VINDEX (rhs_method);
+	      idx = DECL_VINDEX (rhs_method);
 	      vt_off = get_vfield_offset (get_binfo (DECL_CONTEXT (rhs_method),
 						     rhstype, 0));
 	    }
@@ -601,7 +601,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      vb_off = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
 	      delta = BINFO_OFFSET (get_binfo (DECL_CLASS_CONTEXT (rhs_method),
 					       rhstype, 1));
-	      index = integer_zero_node;
+	      idx = integer_zero_node;
 	      pfn = build_addr_func (rhs_method);
 	      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (rhs_method)) = 1;
 	      TREE_TYPE (pfn) = ptr_type_node;
@@ -621,7 +621,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	  tag = convert (TREE_TYPE (tag_decl), tag);
 	  vb_off = convert (TREE_TYPE (vb_off_decl), vb_off);
 	  delta = convert (TREE_TYPE (delta_decl), delta);
-	  index = convert (TREE_TYPE (index_decl), index);
+	  idx = convert (TREE_TYPE (index_decl), idx);
 
 	  if (DECL_VINDEX (rhs_method))
 	    {
@@ -636,7 +636,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      tbl_entry = build_tree_list (pfn_decl, pfn);
 	    }
 	  tbl_entry = tree_cons (delta_decl, delta,
-				 tree_cons (index_decl, index, tbl_entry));
+				 tree_cons (index_decl, idx, tbl_entry));
 	  tbl_entry = tree_cons (tag_decl, tag,
 				 tree_cons (vb_off_decl, vb_off, tbl_entry));
 	  tbl_entry = build (CONSTRUCTOR, sigtable_entry_type,
@@ -934,7 +934,7 @@ build_signature_method_call (basetype, instance, function, parms)
   tree tbl_entry = build_component_ref (build1 (INDIRECT_REF, basetype,
 						signature_tbl_ptr),
 					sig_field_name, basetype_path, 1);
-  tree tag, delta, pfn, vt_off, index, vfn;
+  tree tag, delta, pfn, vt_off, idx, vfn;
   tree deflt_call = NULL_TREE, direct_call, virtual_call, result;
 
   tbl_entry = save_expr (tbl_entry);
@@ -942,7 +942,7 @@ build_signature_method_call (basetype, instance, function, parms)
   delta = build_component_ref (tbl_entry, delta_identifier, NULL_TREE, 1);
   pfn = build_component_ref (tbl_entry, pfn_identifier, NULL_TREE, 1);
   vt_off = build_component_ref (tbl_entry, vt_off_identifier, NULL_TREE, 1);
-  index = build_component_ref (tbl_entry, index_identifier, NULL_TREE, 1);
+  idx = build_component_ref (tbl_entry, index_identifier, NULL_TREE, 1);
   TREE_TYPE (pfn) = build_pointer_type (TREE_TYPE (function)); 
 
   if (IS_DEFAULT_IMPLEMENTATION (function))
@@ -980,7 +980,7 @@ build_signature_method_call (basetype, instance, function, parms)
 		    convert (ptrdiff_type_node, vt_off));
       vtbl = build_indirect_ref (build_indirect_ref (vfld, NULL_PTR),
 				 NULL_PTR);
-      aref = build_array_ref (vtbl, index);
+      aref = build_array_ref (vtbl, idx);
 
       if (flag_vtable_thunks)
 	vfn = aref;

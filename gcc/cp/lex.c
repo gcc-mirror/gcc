@@ -301,13 +301,13 @@ my_get_run_time ()
 
 /* Table indexed by tree code giving a string containing a character
    classifying the tree code.  Possibilities are
-   t, d, s, c, r, <, 1 and 2.  See cp/tree.def for details.  */
+   t, d, s, c, r, <, 1 and 2.  See cp/cp-tree.def for details.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
 char *cplus_tree_code_type[] = {
   "x",
-#include "tree.def"
+#include "cp-tree.def"
 };
 #undef DEFTREECODE
 
@@ -319,7 +319,7 @@ char *cplus_tree_code_type[] = {
 
 int cplus_tree_code_length[] = {
   0,
-#include "tree.def"
+#include "cp-tree.def"
 };
 #undef DEFTREECODE
 
@@ -329,7 +329,7 @@ int cplus_tree_code_length[] = {
 
 char *cplus_tree_code_name[] = {
   "@@dummy",
-#include "tree.def"
+#include "cp-tree.def"
 };
 #undef DEFTREECODE
 
@@ -374,6 +374,7 @@ init_filename_times ()
 /* Change by Bryan Boreham, Kewill, Thu Jul 27 09:46:05 1989.
    Stuck this hack in to get the files open correctly; this is called
    in place of init_lex if we are an unexec'd binary.    */
+
 void
 reinit_lang_specific ()
 {
@@ -620,7 +621,7 @@ init_lex ()
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_REGISTER],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_REGISTER]));
 
-  /* C++ extensions. These are probably not correctly named. */
+  /* C++ extensions. These are probably not correctly named.  */
   ridpointers[(int) RID_WCHAR] = get_identifier ("__wchar_t");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_WCHAR],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_WCHAR]));
@@ -662,7 +663,7 @@ init_lex ()
   ridpointers[(int) RID_TEMPLATE] = get_identifier ("template");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_TEMPLATE],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_TEMPLATE]));
-  /* This is for ANSI C++. */
+  /* This is for ANSI C++.  */
   ridpointers[(int) RID_MUTABLE] = get_identifier ("mutable");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_MUTABLE],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_MUTABLE]));
@@ -937,13 +938,13 @@ print_parse_statistics ()
   qsort (sorted, TOKEN_LENGTH, sizeof (int), token_cmp);
   for (i = 0; i < TOKEN_LENGTH; i++)
     {
-      int index = sorted[i];
-      if (token_count[index] == 0)
+      int idx = sorted[i];
+      if (token_count[idx] == 0)
 	break;
-      if (token_count[index] < token_count[-1])
+      if (token_count[idx] < token_count[-1])
 	break;
       fprintf (stderr, "token %d, `%s', count = %d\n",
-	       index, yytname[YYTRANSLATE (index)], token_count[index]);
+	       idx, yytname[YYTRANSLATE (idx)], token_count[idx]);
     }
   fprintf (stderr, "\n");
   for (i = 0; i < REDUCE_LENGTH; i++)
@@ -951,13 +952,13 @@ print_parse_statistics ()
   qsort (sorted, REDUCE_LENGTH, sizeof (int), reduce_cmp);
   for (i = 0; i < REDUCE_LENGTH; i++)
     {
-      int index = sorted[i];
-      if (reduce_count[index] == 0)
+      int idx = sorted[i];
+      if (reduce_count[idx] == 0)
 	break;
-      if (reduce_count[index] < reduce_count[-1])
+      if (reduce_count[idx] < reduce_count[-1])
 	break;
       fprintf (stderr, "rule %d, line %d, count = %d\n",
-	       index, yyrline[index], reduce_count[index]);
+	       idx, yyrline[idx], reduce_count[idx]);
     }
   fprintf (stderr, "\n");
 #endif
@@ -968,6 +969,7 @@ print_parse_statistics ()
 /* Sets the value of the 'yydebug' variable to VALUE.
    This is a function so we don't have to have YYDEBUG defined
    in order to build the compiler.  */
+
 void
 set_yydebug (value)
      int value;
@@ -1010,6 +1012,7 @@ static struct impl_files *impl_file_chain;
 
 /* Helper function to load global variables with interface
    information.  */
+
 void
 extract_interface_info ()
 {
@@ -1031,6 +1034,7 @@ extract_interface_info ()
 
 /* Return nonzero if S is not considered part of an
    INTERFACE/IMPLEMENTATION pair.  Otherwise, return 0.  */
+
 static int
 interface_strcmp (s)
      char *s;
@@ -1104,6 +1108,7 @@ set_vardecl_interface_info (prev, vars)
    do, set up to process them now.  This function sets up the first function
    to be parsed; after it has been, the rule for fndef in parse.y will
    call process_next_inline to start working on the next one.  */
+
 void
 do_pending_inlines ()
 {
@@ -1168,6 +1173,7 @@ static int nextchar = -1;
 /* Called from the fndecl rule in the parser when the function just parsed
    was declared using a PRE_PARSED_FUNCTION_DECL (i.e. came from
    do_pending_inlines).  */
+
 void
 process_next_inline (t)
      tree t;
@@ -1183,12 +1189,11 @@ process_next_inline (t)
   if (yychar != END_OF_SAVED_INPUT)
     {
       error ("parse error at end of saved function text");
+
       /* restore_pending_input will abort unless yychar is either
-       * END_OF_SAVED_INPUT or YYEMPTY; since we already know we're
-       * hosed, feed back YYEMPTY.
-       *  We also need to discard nextchar, since that may have gotten
-       * set as well.
-       */
+         END_OF_SAVED_INPUT or YYEMPTY; since we already know we're
+         hosed, feed back YYEMPTY.  We also need to discard nextchar,
+         since that may have gotten set as well.  */
       nextchar = -1;
     }
   yychar = YYEMPTY;
@@ -1322,6 +1327,7 @@ restore_pending_input (p)
 
 /* Return next non-whitespace input character, which may come
    from `finput', or from `nextchar'.  */
+
 static int
 yynextch ()
 {
@@ -1339,6 +1345,7 @@ yynextch ()
 /* Unget character CH from the input stream.
    If RESCAN is non-zero, then we want to `see' this
    character as the next input token.  */
+
 void
 yyungetc (ch, rescan)
      int ch;
@@ -1733,6 +1740,7 @@ cons_up_default_function (type, full_name, kind)
 /* Heuristic to tell whether the user is missing a semicolon
    after a struct or enum declaration.  Emit an error message
    if we know the user has blown it.  */
+
 void
 check_for_missing_semicolon (type)
      tree type;
@@ -3147,7 +3155,7 @@ real_yylex ()
 	  }
 	put_back (c1);
       }
-      /* fall through... */
+      /* fall through...  */
 			  case '2':  case '3':  case '4':
     case '5':  case '6':  case '7':  case '8':  case '9':
     resume_numerical_scan:
@@ -3352,7 +3360,7 @@ real_yylex ()
 		set_float_handler (handler);
 		/*  The second argument, machine_mode, of REAL_VALUE_ATOF
 		    tells the desired precision of the binary result of
-		    decimal-to-binary conversion. */
+		    decimal-to-binary conversion.  */
 
 		/* Read the suffixes to choose a data type.  */
 		switch (c)
@@ -4466,7 +4474,7 @@ handle_cp_pragma (pname)
       interface_unknown = 1;
 #else
       /* We make this zero so that templates in the impl
-	 file will be emitted properly. */
+	 file will be emitted properly.  */
       interface_unknown = 0;
 #endif
       TREE_INT_CST_LOW (fileinfo) = interface_only;
@@ -4485,6 +4493,7 @@ handle_cp_pragma (pname)
 
 /* This function has to be in this file, in order to get at
    the token types.  */
+
 int
 handle_sysv_pragma (finput, token)
      FILE *finput;

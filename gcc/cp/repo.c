@@ -99,7 +99,7 @@ repo_get_id (t)
 }
 
 /* Note that a template has been used.  If we can see the definition, offer
-   to emit it. */
+   to emit it.  */
 
 void
 repo_template_used (t)

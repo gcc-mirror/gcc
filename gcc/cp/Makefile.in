@@ -187,7 +187,7 @@ RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
 	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
 TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
 	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
-CXX_TREE_H = $(TREE_H) cp-tree.h tree.def
+CXX_TREE_H = $(TREE_H) cp-tree.h cp-tree.def
 PARSE_H = $(srcdir)/parse.h
 PARSE_C = $(srcdir)/parse.c
 

@@ -121,7 +121,8 @@ dump_readonly_or_volatile (t, p)
    value.  */
 static char digit_buffer[128];
 
-/* Dump into the obstack a human-readable equivalent of TYPE. */
+/* Dump into the obstack a human-readable equivalent of TYPE.  */
+
 static void
 dump_type (t, v)
      tree t;
@@ -259,7 +260,8 @@ aggr_variety (t)
     return "struct";
 }
 
-/* Print out a class declaration, in the form `class foo'. */
+/* Print out a class declaration, in the form `class foo'.  */
+
 static void
 dump_aggr_type (t, v)
      tree t;
@@ -515,6 +517,7 @@ dump_type_suffix (t, v)
 
 /* Return a function declaration which corresponds to the IDENTIFIER_NODE
    argument.  */
+
 tree
 ident_fndecl (t)
      tree t;
@@ -650,7 +653,7 @@ dump_decl (t, v)
       break;
 
       /* These special cases are duplicated here so that other functions
-	 can feed identifiers to cp_error and get them demangled properly. */
+	 can feed identifiers to cp_error and get them demangled properly.  */
     case IDENTIFIER_NODE:
       { tree f;
 	if (DESTRUCTOR_NAME_P (t)
@@ -834,6 +837,7 @@ dump_function_decl (t, v)
 
 /* Handle the function name for a FUNCTION_DECL node, grokking operators
    and destructors properly.  */
+
 static void
 dump_function_name (t)
      tree t;
@@ -917,6 +921,7 @@ dump_char (c)
 }
 
 /* Print out a list of initializers (subr of dump_expr) */
+
 static void
 dump_expr_list (l)
      tree l;
@@ -931,6 +936,7 @@ dump_expr_list (l)
 }
 
 /* Print out an expression */
+
 static void
 dump_expr (t, nop)
      tree t;
@@ -1377,6 +1383,7 @@ fndecl_as_string (fndecl, print_ret_type_p)
 /* Same, but handtype a _TYPE.
    Called from convert_to_reference, mangle_class_name_for_template,
    build_unary_op, and GNU_xref_decl.  */
+
 char *
 type_as_string (typ, v)
      tree typ;
@@ -1407,6 +1414,7 @@ expr_as_string (decl, v)
 
 /* A cross between type_as_string and fndecl_as_string.
    Only called from substitute_nice_name.  */
+
 char *
 decl_as_string (decl, v)
      tree decl;
@@ -1482,6 +1490,7 @@ language_as_string (c, v)
 }
 
 /* Return the proper printed version of a parameter to a C++ function.  */
+
 char *
 parm_as_string (p, v)
      int p, v;

@@ -80,7 +80,7 @@ struct candidate
   int h_len;			/* The length of the harshness vector.  */
 
   tree function;		/* A FUNCTION_DECL */
-  tree basetypes;		/* The path to function. */
+  tree basetypes;		/* The path to function.  */
   tree arg;			/* first parm to function.  */
 
   /* Indexed by argument number, encodes evil, user, d_to_b, and easy

@@ -35,9 +35,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* This takes a token stream that hasn't decided much about types and
    tries to figure out as much as it can, with excessive lookahead and
-   backtracking. */
+   backtracking.  */
 
-/* fifo of tokens recognized and available to parser. */
+/* fifo of tokens recognized and available to parser.  */
 struct token  {
   /* The values for YYCHAR will fit in a short.  */
   short		yychar;
@@ -68,6 +68,7 @@ static int debug_yychar ();
 #endif
 
 /* Initialize token_obstack. Called once, from init_lex.  */
+
 void
 init_spew ()
 {
@@ -77,7 +78,8 @@ init_spew ()
 #ifdef SPEW_DEBUG
 /* Use functions for debugging...  */
 
-/* Return the number of tokens available on the fifo. */
+/* Return the number of tokens available on the fifo.  */
+
 static int
 num_tokens ()
 {
@@ -85,18 +87,20 @@ num_tokens ()
     - first_token;
 }
 
-/* Fetch the token N down the line from the head of the fifo. */
+/* Fetch the token N down the line from the head of the fifo.  */
+
 static struct token*
 nth_token (n)
      int n;
 {
   /* could just have this do slurp_ implicitly, but this way is easier
-   * to debug... */
+     to debug...  */
   my_friendly_assert (n < num_tokens (), 298);
   return ((struct token*)obstack_base (&token_obstack)) + n + first_token;
 }
 
-/* Add a token to the token fifo. */
+/* Add a token to the token fifo.  */
+
 static void
 add_token (t)
      struct token* t;
@@ -105,6 +109,7 @@ add_token (t)
 }
 
 /* Consume the next token out of the fifo.  */
+
 static void
 consume_token ()
 {
@@ -194,7 +199,7 @@ probe_obstack (h, obj, nlevels)
   lp = (h)->chunk;
   /* We use >= rather than > since the object cannot be exactly at
      the beginning of the chunk but might be an empty object exactly
-     at the end of an adjacent chunk. */
+     at the end of an adjacent chunk.  */
   for (; nlevels != 0 && lp != 0 && ((tree)lp >= obj || (tree)lp->limit < obj);
        nlevels -= 1)
     {
@@ -207,7 +212,7 @@ probe_obstack (h, obj, nlevels)
 /* from lex.c: */
 /* Value is 1 (or 2) if we should try to make the next identifier look like
    a typename (when it may be a local variable or a class variable).
-   Value is 0 if we treat this name in a default fashion. */
+   Value is 0 if we treat this name in a default fashion.  */
 extern int looking_for_typename;
 int looking_for_template;
 
@@ -262,8 +267,8 @@ yylex ()
     }
 
   /* many tokens just need to be returned. At first glance, all we
-   * have to do is send them back up, but some of them are needed to
-   * figure out local context. */
+     have to do is send them back up, but some of them are needed to
+     figure out local context.  */
   switch (tmp_token.yychar)
     {
     case EMPTY:
@@ -318,7 +323,7 @@ yylex ()
       else
 	lastiddecl = trrr;
       got_scope = NULL_TREE;
-      /* and fall through to... */
+      /* and fall through to...  */
     case IDENTIFIER_DEFN:
     case TYPENAME:
     case TYPENAME_DEFN:
@@ -344,11 +349,11 @@ yylex ()
     case AGGR:
       *nth_token (0) = tmp_token;
       do_aggr ();
-      /* fall through to output... */
+      /* fall through to output...  */
     case ENUM:
       /* Set this again, in case we are rescanning.  */
       looking_for_typename = 1;
-      /* fall through... */
+      /* fall through...  */
     default:
       consume_token ();
     }
@@ -365,11 +370,11 @@ yylex ()
 }
 
 /* token[0] == AGGR (struct/union/enum)
- * Thus, token[1] is either a TYPENAME or a TYPENAME_DEFN.
- * If token[2] == '{' or ':' then it's TYPENAME_DEFN.
- * It's also a definition if it's a forward declaration (as in 'struct Foo;')
- * which we can tell if token[2] == ';' *and* token[-1] != FRIEND or NEW.
- */
+   Thus, token[1] is either a TYPENAME or a TYPENAME_DEFN.
+   If token[2] == '{' or ':' then it's TYPENAME_DEFN.
+   It's also a definition if it's a forward declaration (as in 'struct Foo;')
+   which we can tell if token[2] == ';' *and* token[-1] != FRIEND or NEW.  */
+
 static int
 do_aggr ()
 {
@@ -383,7 +388,7 @@ do_aggr ()
   if (yc2 == ';')
     {
       /* It's a forward declaration iff we were not preceded by
-         'friend' or `new'. */
+         'friend' or `new'.  */
       if (first_token > 0)
 	{
 	  if (nth_token (-1)->yychar == SCSPEC
@@ -414,7 +419,8 @@ do_aggr ()
 }  
   
 #ifdef SPEW_DEBUG    
-/* debug_yychar takes a yychar (token number) value and prints its name. */
+/* debug_yychar takes a yychar (token number) value and prints its name.  */
+
 static int
 debug_yychar (yy)
      int yy;

@@ -21,12 +21,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Known bugs or deficiencies include:
-   * templates for class static data don't work (methods only)
-   * duplicated method templates can crash the compiler
-   * interface/impl data is taken from file defining the template
-   * all methods must be provided in header files; can't use a source
-     file that contains only the method templates and "just win"
- */
+
+     templates for class static data don't work (methods only),
+     duplicated method templates can crash the compiler,
+     interface/impl data is taken from file defining the template,
+     all methods must be provided in header files; can't use a source
+     file that contains only the method templates and "just win".  */
 
 #include "config.h"
 #include <stdio.h>
@@ -78,6 +78,7 @@ begin_template_parm_list ()
 
 /* Process information from new template parameter NEXT and append it to the
    LIST being built.  */
+
 tree
 process_template_parm (list, next)
      tree list, next;
@@ -274,6 +275,7 @@ tree tsubst		PROTO ((tree, tree*, int, tree));
 /* Convert all template arguments to their appropriate types, and return
    a vector containing the resulting values.  If any error occurs, return
    error_mark_node.  */
+
 static tree
 coerce_template_parms (parms, arglist, in_decl)
      tree parms, arglist;
@@ -477,6 +479,7 @@ comp_template_args (oldargs, newargs)
 
 /* Given class template name and parameter list, produce a user-friendly name
    for the instantiation.  */
+
 static char *
 mangle_class_name_for_template (name, parms, arglist)
      char *name;
@@ -583,13 +586,20 @@ static void
 add_pending_template (d)
      tree d;
 {
-  if (TREE_LANG_FLAG_0 (DECL_TEMPLATE_INFO (d)))
+  tree ti;
+
+  if (TREE_CODE_CLASS (TREE_CODE (d)) == 't')
+    ti = CLASSTYPE_TEMPLATE_INFO (d);
+  else
+    ti = DECL_TEMPLATE_INFO (d);
+
+  if (TREE_LANG_FLAG_0 (ti))
     return;
 
   *template_tail = perm_tree_cons
     (current_function_decl, d, NULL_TREE);
   template_tail = &TREE_CHAIN (*template_tail);
-  TREE_LANG_FLAG_0 (DECL_TEMPLATE_INFO (d)) = 1;
+  TREE_LANG_FLAG_0 (ti) = 1;
 }
 
 /* Given an IDENTIFIER_NODE (type TEMPLATE_DECL) and a chain of
@@ -601,6 +611,7 @@ add_pending_template (d)
 
    IN_DECL, if non-NULL, is the template declaration we are trying to
    instantiate.  */
+
 tree
 lookup_template_class (d1, arglist, in_decl)
      tree d1, arglist;
@@ -708,7 +719,7 @@ lookup_template_class (d1, arglist, in_decl)
 	}
     }
 
-  /* Seems to be wanted. */
+  /* Seems to be wanted.  */
   CLASSTYPE_GOT_SEMICOLON (t) = 1;
 
   if (! CLASSTYPE_TEMPLATE_INFO (t))
@@ -723,7 +734,7 @@ lookup_template_class (d1, arglist, in_decl)
 
       SET_CLASSTYPE_IMPLICIT_INSTANTIATION (t);
 
-      /* We need to set this again after CLASSTYPE_TEMPLATE_INFO is set up. */
+      /* We need to set this again after CLASSTYPE_TEMPLATE_INFO is set up.  */
       DECL_ASSEMBLER_NAME (TYPE_MAIN_DECL (t)) = id;
       if (! uses_template_parms (arglist))
 	DECL_ASSEMBLER_NAME (TYPE_MAIN_DECL (t)) 
@@ -732,14 +743,7 @@ lookup_template_class (d1, arglist, in_decl)
       if (flag_external_templates && ! uses_template_parms (arglist)
 	  && CLASSTYPE_INTERFACE_KNOWN (TREE_TYPE (template))
 	  && ! CLASSTYPE_INTERFACE_ONLY (TREE_TYPE (template)))
-	{
-	  tree d;
-
-	  instantiate_class_template (t);
-
-	  for (d = TYPE_METHODS (t); d; d = TREE_CHAIN (d))
-	    add_pending_template (d);
-	}
+	add_pending_template (t);
     }
 
   return t;
@@ -1116,7 +1120,7 @@ instantiate_class_template (type)
 	  {
 	    if (! uses_template_parms (r))
 	      pending_statics = perm_tree_cons (NULL_TREE, r, pending_statics);
-	    /* Perhaps I should do more of grokfield here. */
+	    /* Perhaps I should do more of grokfield here.  */
 	    start_decl_1 (r);
 	    DECL_IN_AGGR_P (r) = 1;
 	    DECL_EXTERNAL (r) = 1;
@@ -1188,6 +1192,8 @@ instantiate_class_template (type)
       /* XXX handle attributes */
       type = finish_struct_1 (type, NULL_TREE, 0);
       CLASSTYPE_GOT_SEMICOLON (type) = 1;
+
+      repo_template_used (type);
     }
   else
     {
@@ -1483,6 +1489,12 @@ tsubst (t, args, nargs, in_decl)
 	    DECL_TEMPLATE_INSTANTIATIONS (tmpl) =
 	      tree_cons (argvec, r, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
 	  }
+
+	/* Like grokfndecl.  If we don't do this, pushdecl will mess up our
+	   TREE_CHAIN because it doesn't find a previous decl.  Sigh.  */
+	if (member
+	    && IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r)) == NULL_TREE)
+	  IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r)) = r;
 
 	return r;
       }
@@ -1876,6 +1888,9 @@ tsubst_copy (t, args, nargs, in_decl)
       
     case CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case STATIC_CAST_EXPR:
+    case DYNAMIC_CAST_EXPR:
       return build1
 	(code, tsubst (TREE_TYPE (t), args, nargs, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl));
@@ -2037,6 +2052,13 @@ tsubst_copy (t, args, nargs, in_decl)
     case ARRAY_TYPE:
     case TYPENAME_TYPE:
       return tsubst (t, args, nargs, in_decl);
+
+    case IDENTIFIER_NODE:
+      if (IDENTIFIER_TYPENAME_P (t))
+	return build_typename_overload
+	  (tsubst (TREE_TYPE (t), args, nargs, in_decl));
+      else
+	return t;
 
     default:
       return t;
@@ -2381,7 +2403,7 @@ overload_template_name (type)
 
    If SUBR is 1, we're being called recursively (to unify the arguments of
    a function or method parameter of a function template), so don't zero
-   out targs and don't fail on an incomplete match. */
+   out targs and don't fail on an incomplete match.  */
 
 int
 type_unification (tparms, targs, parms, args, nsubsts, subr)
@@ -2497,6 +2519,7 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
 }
 
 /* Tail recursion is your friend.  */
+
 static int
 unify (tparms, targs, ntparms, parm, arg, nsubsts)
      tree tparms, *targs, parm, arg;
@@ -2726,6 +2749,7 @@ mark_decl_instantiated (result, extern_p)
 }
 
 /* called from the parser.  */
+
 void
 do_function_instantiation (declspecs, declarator, storage)
      tree declspecs, declarator, storage;
@@ -2948,7 +2972,7 @@ instantiate_decl (d)
 	    warn_if_unknown_interface (pattern);
 	}
 
-      if (at_eof && ! DECL_INLINE (d))
+      if (at_eof)
 	import_export_decl (d);
     }
 

@@ -63,7 +63,8 @@ enum rid
   RID_AUTO,
   RID_MUTABLE,
 
-  /* This is where grokdeclarator ends its search when setting the specbits. */
+  /* This is where grokdeclarator ends its search when setting the
+     specbits.  */
 
   RID_PUBLIC,
   RID_PRIVATE,
@@ -72,7 +73,7 @@ enum rid
   RID_TEMPLATE,
   RID_SIGNATURE,
   /* Before adding enough to get up to 64, the RIDBIT_* macros
-     will have to be changed a little. */
+     will have to be changed a little.  */
   RID_MAX
 };
 
@@ -82,11 +83,11 @@ enum rid
 #define RID_LAST_MODIFIER RID_MUTABLE
 
 /* The type that can represent all values of RIDBIT.  */
-/* We assume that we can stick in at least 32 bits into this. */
+/* We assume that we can stick in at least 32 bits into this.  */
 typedef struct { unsigned long idata[2]; }
      RID_BIT_TYPE;
 
-/* Be careful, all these modify N twice. */
+/* Be careful, all these modify N twice.  */
 #define RIDBIT_SETP(N, V) (((unsigned long)1 << (int) ((N)%32))		      \
 			    & (V).idata[(N)/32])
 #define RIDBIT_NOTSETP(NN, VV) (! RIDBIT_SETP (NN, VV))
