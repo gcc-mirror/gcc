@@ -5389,7 +5389,12 @@ expand_function_start (subr, parms_have_cleanups)
 
   /* Evaluate now the sizes of any types declared among the arguments.  */
   for (tem = nreverse (get_pending_sizes ()); tem; tem = TREE_CHAIN (tem))
-    expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode, 0);
+    {
+      expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode, 0);
+      /* Flush the queue in case this parameter declaration has
+	 side-effects.  */
+      emit_queue ();
+    }
 
   /* Make sure there is a line number after the function entry setup code.  */
   force_next_line_note ();
