@@ -294,20 +294,28 @@ machopic_non_lazy_ptr_name (const char *name)
 
   {
     char *buffer;
+    int namelen = strlen (name);
+    int bufferlen = 0;
     tree ptr_name;
 
-    buffer = alloca (strlen (name) + 20);
+    buffer = alloca (namelen + strlen("$non_lazy_ptr") + 5);
 
     strcpy (buffer, "&L");
+    bufferlen = 2;
     if (name[0] == '*')
-      strcat (buffer, name+1);
+      {
+        memcpy (buffer+bufferlen, name+1, namelen-1+1);
+        bufferlen += namelen-1;
+      }
     else
       {
-	strcat (buffer, "_");
-	strcat (buffer, name);
+	buffer[bufferlen] = '_';
+	memcpy (buffer+bufferlen+1, name, namelen+1);
+        bufferlen += namelen;
       }
 
-    strcat (buffer, "$non_lazy_ptr");
+    memcpy (buffer + bufferlen, "$non_lazy_ptr", strlen("$non_lazy_ptr")+1);
+    bufferlen += strlen("$non_lazy_ptr");
     ptr_name = get_identifier (buffer);
 
     machopic_non_lazy_pointers
@@ -351,29 +359,46 @@ machopic_stub_name (const char *name)
 
   {
     char *buffer;
+    int bufferlen = 0;
+    int namelen = strlen (name);
     tree ptr_name;
     int needs_quotes = name_needs_quotes (name);
 
-    buffer = alloca (strlen (name) + 20);
+    buffer = alloca (namelen + 20);
 
     if (needs_quotes)
-      strcpy (buffer, "&\"L");
+      {
+        strcpy (buffer, "&\"L");
+        bufferlen = strlen("&\"L");
+      }
     else
-      strcpy (buffer, "&L");
+      {
+        strcpy (buffer, "&L");
+        bufferlen = strlen("&L");
+      }
+    
     if (name[0] == '*')
       {
-	strcat (buffer, name+1);
+	memcpy (buffer + bufferlen, name+1, namelen - 1 +1);
+        bufferlen += namelen - 1;
       }
     else
       {
-	strcat (buffer, "_");
-	strcat (buffer, name);
+	buffer[bufferlen] = '_';
+	memcpy (buffer + bufferlen +1, name, namelen+1);
+        bufferlen += namelen;
       }
 
     if (needs_quotes)
-      strcat (buffer, "$stub\"");
+      {
+        memcpy (buffer + bufferlen, "$stub\"", strlen("$stub\""));
+        bufferlen += strlen("$stub\"");
+      }
     else
-      strcat (buffer, "$stub");
+      {
+        memcpy (buffer + bufferlen, "$stub", strlen("$stub"));
+        bufferlen += strlen("$stub");
+      }
     ptr_name = get_identifier (buffer);
 
     machopic_stubs = tree_cons (ptr_name, ident, machopic_stubs);
