@@ -1,5 +1,5 @@
 /* Alias analysis for GNU C
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GNU CC.
@@ -555,10 +555,31 @@ base_alias_check (x, y)
   rtx x_base = find_base_term (x);
   rtx y_base = find_base_term (y);
 
-  /* If either base address is unknown or the base addresses are equal,
-     nothing is known about aliasing.  */
+  /* If the address itself has no known base see if a known equivalent
+     value has one.  If either address still has no known base, nothing
+     is known about aliasing.  */
+  if (x_base == 0)
+    {
+      rtx x_c;
+      if (! flag_expensive_optimizations || (x_c = canon_rtx (x)) == x)
+	return 1;
+      x_base = find_base_term (x_c);
+      if (x_base == 0)
+	return 1;
+    }
 
-  if (x_base == 0 || y_base == 0 || rtx_equal_p (x_base, y_base))
+  if (y_base == 0)
+    {
+      rtx y_c;
+      if (! flag_expensive_optimizations || (y_c = canon_rtx (y)) == y)
+	return 1;
+      y_base = find_base_term (y_c);
+      if (y_base == 0)
+	return 1;
+    }
+
+  /* If the base addresses are equal nothing is known about aliasing.  */
+  if (rtx_equal_p (x_base, y_base))
     return 1;
 
   /* The base addresses of the read and write are different
@@ -721,7 +742,9 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
       }
 
   /* Treat an access through an AND (e.g. a subword access on an Alpha)
-     as an access with indeterminate size.  */
+     as an access with indeterminate size.
+     ??? Could instead convert an n byte reference at (and x y) to an
+     n-y byte reference at (plus x y). */
   if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT)
     return memrefs_conflict_p (-1, XEXP (x, 0), ysize, y, c);
   if (GET_CODE (y) == AND && GET_CODE (XEXP (y, 1)) == CONST_INT)
@@ -822,13 +845,11 @@ true_dependence (mem, mem_mode, x, varies)
   if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
     return 0;
 
+  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
+    return 0;
+
   x_addr = canon_rtx (XEXP (x, 0));
   mem_addr = canon_rtx (XEXP (mem, 0));
-
-  /* Calling base_alias_check after canon_rtx detects more nonconflicting
-     accesses at the cost of increased memory use. */
-  if (! base_alias_check (x_addr, mem_addr))
-    return 0;
 
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
@@ -878,16 +899,17 @@ anti_dependence (mem, x)
   /* If MEM is an unchanging read, then it can't possibly conflict with
      the store to X, because there is at most one store to MEM, and it must
      have occurred somewhere before MEM.  */
-  x = canon_rtx (x);
-  mem = canon_rtx (mem);
   if (RTX_UNCHANGING_P (mem))
     return 0;
 
+  if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
+    return 0;
+
+  x = canon_rtx (x);
+  mem = canon_rtx (mem);
+
   x_addr = XEXP (x, 0);
   mem_addr = XEXP (mem, 0);
-
-  if (! base_alias_check (x_addr, mem_addr))
-    return 0;
 
   return (memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
 			      SIZE_FOR_MODE (x), x_addr, 0)
@@ -911,11 +933,11 @@ output_dependence (mem, x)
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
 
-  x = canon_rtx (x);
-  mem = canon_rtx (mem);
-
   if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
     return 0;
+
+  x = canon_rtx (x);
+  mem = canon_rtx (mem);
 
   return (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 			      SIZE_FOR_MODE (x), XEXP (x, 0), 0)
