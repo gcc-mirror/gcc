@@ -2482,8 +2482,6 @@ tsubst (t, args, nargs, in_decl)
 	    else
 	      SET_DECL_IMPLICIT_INSTANTIATION (r);
 
-	    DECL_TEMPLATE_INSTANTIATIONS (tmpl)
-	      = tree_cons (argvec, r, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
 	  }
 
 	/* Like grokfndecl.  If we don't do this, pushdecl will mess up our
