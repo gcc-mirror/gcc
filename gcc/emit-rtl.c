@@ -240,7 +240,7 @@ const_double_htab_hash (x)
     h = CONST_DOUBLE_LOW (value) ^ CONST_DOUBLE_HIGH (value);
   else
     {
-      h = real_hash (CONST_DOUBLE_REAL_VALUE (value));	
+      h = real_hash (CONST_DOUBLE_REAL_VALUE (value));
       /* MODE is used in the comparison, so it should be in the hash.  */
       h ^= GET_MODE (value);
     }
@@ -756,7 +756,7 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 	  switch (*fmt++)
 	    {
 	    case '0':		/* Field with unknown use.  Zero it.  */
-	      X0EXP (rt, 1) = NULL_RTX;
+	      XEXP (rt_val, 1) = NULL_RTX;
 	      break;
 
 	    case 'i':		/* An integer?  */
@@ -2047,7 +2047,7 @@ set_mem_attributes_minus_bitpos (ref, t, objectp, bitpos)
 	}
     }
 
-  /* If we modified OFFSET based on T, then subtract the outstanding 
+  /* If we modified OFFSET based on T, then subtract the outstanding
      bit position offset.  Similarly, increase the size of the accessed
      object to contain the negative offset.  */
   if (apply_bitpos)
