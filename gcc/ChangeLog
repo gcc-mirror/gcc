@@ -1,3 +1,7 @@
+Mon Feb  8 11:43:07 1999  Donn Terry <donn@interix.com>
+
+	* real.c (PUT_REAL) [XFmode]: Zero the balance of the structure.
+
 Mon Feb  8 11:37:24 1999  Marc Espie (espie@cvs.openbsd.org)
 
 	* m88k/t-luna-gas: Remove bash dependency.
