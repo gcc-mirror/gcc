@@ -315,10 +315,6 @@ proc test_mauve_sim {} {
 
     set result [libjava_load [pwd]/DejaGNUTestHarness \
 		  "$env(MAUVEDIR) $class" ""]
-    if {[lindex $result 0] != "pass"} then {
-      fail "Execute for $class"
-      continue
-    }
 
     # Test for an exception thrown in the test harness itself.  This
     # isn't enough to test for all faults in the test harness, but

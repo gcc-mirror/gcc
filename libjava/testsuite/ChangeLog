@@ -1,3 +1,8 @@
+Thu Jul  1 15:36:13 1999  Anthony Green  <green@cygnus.com>
+
+	* libjava.mauve/mauve.exp: Don't stop counting test results just
+	because the harness returns non 0 value.
+
 1999-06-23  Tom Tromey  <tromey@cygnus.com>
 
 	* lib/libjava.exp (libjava_arguments): Handle -lzgcj.
