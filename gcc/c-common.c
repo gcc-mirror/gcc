@@ -3634,6 +3634,9 @@ verify_tree (x, pbefore_sp, pno_sp, writer)
 
   switch (code)
     {
+    case CONSTRUCTOR:
+      return;
+
     case COMPOUND_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
