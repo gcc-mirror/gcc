@@ -1,3 +1,13 @@
+Tue Mar 24 10:44:11 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* collect2.c (find_a_file): Add debugging.
+	(find_a_file): Test for win32 style absolute paths if
+	DIR_SERPARATOR is defined.
+	(prefix_from_string): Add debugging.
+	(main): Test for debug command line switch at start of program
+	execution. 
+	(main): Use GET_ENVIRONMENT rather than getenv().
+	
 1998-03-24  Mark Mitchell  <mmitchell@usa.net>
 
 	* cplus-dem.c (optable): Add sizeof.
