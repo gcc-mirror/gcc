@@ -63,6 +63,7 @@ start: /* empty */
        | typedef_struct start
        | externstatic start
        | yacc_union start
+       ;
 
 typedef_struct: ENT_TYPEDEF_STRUCT options '{' struct_fields '}' ID
 		   {
@@ -79,6 +80,7 @@ typedef_struct: ENT_TYPEDEF_STRUCT options '{' struct_fields '}' ID
 		     lexer_toplevel_done = 1;
 		   }
 		 ';'
+		;
 
 externstatic: ENT_EXTERNSTATIC options lasttype ID semiequal
 	         {
@@ -96,21 +98,25 @@ externstatic: ENT_EXTERNSTATIC options lasttype ID semiequal
 	      				      $5),
 	      		    $2, &lexer_line);
 	         }
+	      ;
 
 lasttype: type
 	    { 
 	      lexer_toplevel_done = 1;
 	      $$ = $1;
 	    }
+	    ;
 
 semiequal: ';'
 	   | '='
 	   ;
 
-yacc_union: ENT_YACCUNION options struct_fields '}' yacc_typematch PERCENTPERCENT
+yacc_union: ENT_YACCUNION options struct_fields '}' yacc_typematch
+	    PERCENTPERCENT
 	      {
 	        note_yacc_type ($2, $3, $5, &lexer_line);
 	      }
+	    ;
 
 yacc_typematch: /* empty */
 		   { $$ = NULL; }
@@ -170,6 +176,7 @@ yacc_ids: /* empty */
 	  sprintf (p->opt->info, "'%s'", $2);
 	  $$ = p;
 	}
+     ;
 
 struct_fields: { $$ = NULL; }
 	       | type optionsopt ID bitfieldopt ';' struct_fields
@@ -202,9 +209,11 @@ struct_fields: { $$ = NULL; }
 		    p->line = lexer_line;
 		    $$ = p;
 		  }
+	       ;
 
 bitfieldopt: /* empty */
 	     | ':' NUM
+	     ;
 
 type: SCALAR
          { $$ = $1; }
@@ -230,6 +239,7 @@ type: SCALAR
          { $$ = create_scalar_type ($2, strlen ($2)); }
       | ENUM ID '{' enum_items '}'
          { $$ = create_scalar_type ($2, strlen ($2)); }
+      ;
 
 enum_items: /* empty */
 	    | ID '=' NUM ',' enum_items
@@ -242,13 +252,17 @@ enum_items: /* empty */
 
 optionsopt: { $$ = NULL; }
 	    | options { $$ = $1; }
+	    ;
 
-options: GTY_TOKEN '(' '(' optionseqopt ')' ')' { $$ = $4; }
+options: GTY_TOKEN '(' '(' optionseqopt ')' ')'
+	   { $$ = $4; }
+	 ;
 
 type_option : ALIAS
 	        { $$ = "ptr_alias"; }
 	      | PARAM_IS
 	        { $$ = "param_is"; }
+	      ;
 
 option:	type_option '(' type ')'
 	   {
@@ -264,6 +278,7 @@ option:	type_option '(' type ')'
 	     o->info = (void *)$3;
 	     $$ = o;
 	   }
+	;
 
 optionseq: option
 	      {
@@ -275,8 +290,9 @@ optionseq: option
 	        $3->next = $1;
 		$$ = $3;
 	      }
+	    ;
 
 optionseqopt: { $$ = NULL }
 	      | optionseq { $$ = $1; }
-
+	      ;
 %%
