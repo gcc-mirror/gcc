@@ -1,3 +1,302 @@
+2004-11-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* adaint.h, adaint.c
+	(__gnat_portable_spawn): Fix cast of spawnvp third parameter
+	to avoid warnings.
+	Add also a cast to kill another warning.
+	(win32_no_block_spawn): Initialize CreateProcess's dwCreationFlags
+	parameter with the priority class of the parent process instead of
+	always using the NORMAL_PRIORITY_CLASS.
+	(__gnat_dup): New function.
+	(__gnat_dup2): New function.
+	(__gnat_is_symbolic_link): Enable the effective body of this
+	function when __APPLE__ is defined.
+
+	* g-os_lib.ads, g-os_lib.adb (Spawn): Two new procedures.
+	Update comments.
+
+2004-11-18  Olivier Hainque  <hainque@adacore.com>
+
+	* a-exexpr.adb (Others_Value, All_Others_Value): New variables, the
+	address of which may be used to represent "others" and "all others"
+	choices in exception tables, instead of the current harcoded
+	(void *)0 and (void *)1.
+	(Setup_Exception): Do nothing in the GNAT SJLJ case.
+
+	* gigi.h (others_decl, all_others_decl): New decls representing the
+	new Others_Value and All_Others_Value objects.
+	(struct attrib): Rename "arg" component as "args", since GCC expects a
+	list of arguments in there.
+
+	* raise.c (GNAT_OTHERS, GNAT_ALL_OTHERS): Are now the address of the
+	corresponding objects exported by a-exexpr, instead of hardcoded dummy
+	addresses.
+
+	* trans.c (Exception_Handler_to_gnu_zcx): Use the address of
+	others_decl and all_others_decl instead of hardcoded dummy addresses
+	to represent "others" and "all others" choices, which is cleaner and
+	more flexible with respect to the possible eh pointer encoding policies.
+
+	* utils.c (init_gigi_decls): Initialize others_decl and all_others_decl.
+	(process_attributes): Account for the naming change of the "args"
+	attribute list entry component.
+
+	* decl.c (build_attr_list): Rename into prepend_attributes to allow
+	cumulating attributes for different entities into a single list.
+	(gnat_to_gnu_entity): Use prepend_attributes to build the list of
+	attributes for the current entity and propagate first subtype
+	attributes to other subtypes.
+	<E_Procedure>: Attribute arguments are attr->args and not
+	attr->arg any more.
+	(build_attr_list): Ditto. Make attr->args a TREE_LIST when there is an
+	argument provided, as this is what GCC expects. Use NULL_TREE instead
+	of 0 for trees.
+
+2004-11-18  Robert Dewar  <dewar@adacore.com>
+
+	* a-stmaco.ads, exp_util.ads, exp_util.adb, i-cpp.ads, i-cpp.adb: 
+	Minor reformatting througout (including new function specs)
+	Add ??? comments asking for clarification.
+
+2004-11-18  Thomas Quinot  <quinot@adacore.com>
+
+	* butil.ads, butil.adb, bindgen.adb (Get_Unit_Name_String): Remove
+	incomplete duplicate implementation of this subprogram from butil.
+
+2004-11-18  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Build_RPC_Receiver_Body): New subprogram. This
+	procedures factors the common processing for building an RPC receiver
+	for an RCI package or an RACW type.
+	Stylistic cleanup: change '/= Empty' to 'Present ()'; move body of
+	Build_Remote_Subprogram_Proxy_Type into proper alphabetical order.
+	(Get_PCS_Name): New subprogram. Returns the name of the PCS currently
+	in use.
+	(Specific_Add_RACW_Features): New subprogram. PCS-specific part of
+	Add_RACW_Features.
+	(Specific_Add_RAST_Features): New subprogram. PCS-specific part of
+	Add_RAST_Features.
+	(Assign_Subprogram_Identifier): New subprogram. Provision for assigning
+	distribution subprogram identifiers that are either subprogram numbers
+	or strings.
+	(Get_Subprogram_Ids): New subprogram. Retrieve both the numeric and
+	string distribution identifiers assigned to a given subprogram.
+	(Get_Subprogram_Id): Reimplement in terms of Get_Subprogram_Ids.
+	(Add_RAS_Dereference_TSS): Add comments.
+	(Build_General_Calling_Stubs): Note that the RACW_Type formal parameter
+	is not referenced yet because it will be used by the PolyORB DSA
+	implementation.
+	(Insert_Partition_Check): Remove fossile code.
+	(First_RCI_Subprogram_Id): Document this constant.
+	(Add_RAS_Access_TSS): Correct the setting of the Etype of the
+	RAS_Access TSS.
+	(Get_Pkg_Name_String): Remove subprogram. Usage occurrences are
+	replaced with calls to Get_Library_Unit_Name_String. Previously there
+	were several instances of the same code in different locations in the
+	compiler; this checkin completes the replacement of all of these
+	instances with calls to a common subprogram.
+	Minor reformatting.
+
+	* sem_dist.adb: Remove comment noting that RPC receiver generation
+	should be disabled for RACWs that implement RASs.
+	(Process_Partition_Id): Use new subprogram Get_Library_Unit_Name_String.
+
+	* sem_util.ads, sem_util.adb (Has_Stream): New function
+	(Get_Library_Unit_Name_String): New subprogram to retrieve the fully
+	qualified name of a library unit into the name buffer.
+	(Note_Possible_Modification): Generate a reference only
+	if the context comes from source.
+
+	* snames.ads (PCS_Names): New subtype corresponding to names of
+	supported implementations of the Partition Communication Subsystem
+	(PCS) (i.e. the runtime library support modules for the distributed
+	systems annex).
+
+2004-11-18  Robert Dewar  <dewar@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: Remove Is_Psected flag, no longer used
+	(Has_Rep_Pragma): New function
+	(Has_Attribute_Definition_Clause): New function
+	(Record_Rep_Pragma): Moved here from sem_ch13.adb
+	(Get_Rep_Pragma): Remove junk kludge for Stream_Convert pragma
+
+	* sem_ch13.ads, sem_ch13.adb (Record_Rep_Pragma): Moved to einfo.adb
+
+	* exp_prag.adb: (Expand_Pragma_Common_Object): New procedure
+	(Expand_Pragma_Psect_Object): New procedure
+	These procedures contain the revised and cleaned up processing for
+	these two pragmas. This processing was formerly in Sem_Prag, but
+	is more appropriately moved here. The cleanup involves making sure
+	that the pragmas are properly attached to the tree, and that no
+	nodes are improperly shared.
+
+	* sem_prag.adb: Move expansion of Common_Object and Psect_Object
+	pragmas to Exp_Prag, which is more appropriate.
+	Attach these two pragmas to the Rep_Item chain Use Rep_Item chain to
+	check for duplicates Remove use of Is_Psected flag, no longer needed.
+	Use new Make_String_Literal function with string.
+
+	* exp_attr.adb (Expand_Fpt_Attribute): The floating-point attributes
+	that are functions return universal values, that have to be converted
+	to the context type.
+	Use new Make_String_Literal function with string.
+	(Get_Stream_Convert_Pragma): New function, replaces the use of
+	Get_Rep_Pragma, which had to be kludged to work in this case.
+
+	* freeze.adb: Use new Has_Rep_Pragma function
+
+	* exp_intr.adb, exp_ch3.adb, sem_attr.adb: Use new Make_String_Literal
+	function with string.
+	Use new Has_Rep_Pragma function.
+
+	* tbuild.ads, tbuild.adb (Make_String_Literal): New function, takes
+	string argument.
+
+2004-11-18  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads, errout.adb: (First_Sloc): New function
+
+	* par-ch5.adb (P_Condition): Check for redundant parens is now a style
+	check (-gnatyx) instead of being included as a redundant construct
+	warning.
+
+	* sem_ch6.adb: Change name Style_Check_Subprogram_Order to
+	Style_Check_Order_Subprograms.
+
+	* style.ads, styleg.ads, styleg.adb, styleg-c.adb, stylesw.ads,
+	stylesw.adb: Add Style_Check_Xtra_Parens
+
+	* usage.adb: Add line for -gnatyx (check extra parens)
+
+	* vms_data.ads: Add entry for STYLE_CHECKS=XTRA_PARENS => -gnatyx
+
+2004-11-18  Ed Schonberg  <schonberg@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Selected_Component): If the component is the
+	discriminant of a constrained subtype, analyze the copy of the
+	corresponding constraint, because in some cases it may be only
+	partially analyzed.
+	Removes long-lived ??? comments.
+
+	* exp_ch7.adb (Establish_Transient_Scope): Remove complex code that
+	handled controlled or secondary-stack expressions within the
+	iteration_scheme of a loop.
+
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Build a block to evaluate
+	bounds that may contain functions calls, to prevent memory leaks when
+	the bound contains a call to a function that uses the secondary stack.
+	(Check_Complex_Bounds): Subsidiary of Analyze_Iteration_Scheme, to
+	generate temporaries for loop bounds that might contain function calls
+	that require secondary stack and/or finalization actions.
+
+	* sem_ch4.adb (Analyze_Indexed_Component_Form): If the prefix is a
+	selected component and the selector is overloadable (not just a
+	function) treat as function call, Analyze_Call will disambiguate if
+	necessary.
+	(Analyze_Selected_Component): Do not generate an actual subtype for the
+	selected component if expansion is disabled. The actual subtype is only
+	needed for constraint checks.
+	(Analyze_Allocator): If restriction No_Streams is set, then do
+	not permit objects to be declared of a stream type, or of a
+	composite type containing a stream.
+
+	* restrict.ads: Remove the a-stream entry from Unit_Array, since
+	No_Streams no longer prohibits with'ing this package.
+
+	* sem_ch3.adb (Build_Derived_Record_Type): If the parent type has
+	discriminants, but the parent base has unknown discriminants, there is
+	no discriminant constraint to inherit. Such a discrepancy can arise
+	when the actual for a formal type with unknown discriminants is a
+	similar private type whose full view has discriminants.
+	(Analyze_Object_Declaration): If restriction No_Streams is set, then
+	do not permit objects to be declared of a stream type, or of a
+	composite type containing a stream.
+
+2004-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_dbug.ads: Update documentation to reflect simpler encoding for
+	protected operations.
+
+	* exp_ch9.adb (Build_Selected_Name): Do not include "PT" suffix in
+	generated name, it complicates decoding in gdb and hinders debugging
+	of protected operations.
+	(Build_Barrier_Function_Specification): Set the Needs_Debug_Info
+	flag for the protected entry barrier function.
+	(Build_Protected_Entry_Specification): Set the Needs_Debug_Info
+	flag for the protected entry function.
+
+2004-11-18  Nicolas Setton  <setton@adacore.com>
+
+	* expect.c: Define __unix__ when __APPLE__ is defined.
+
+	* Makefile.in: Inform the value of the variable GMEM_LIB in the
+	Darwin-specific section.
+
+	* lang-specs.h: Change the placement of the %1 marker.
+	Works around the fact that gcc adds -fPIC by default under Darwin.
+
+2004-11-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_pakd.adb (Convert_To_PAT_Type): After replacing the original
+	type of the object with the packed array type, set the Analyzed flag
+	on the object if it is an entity or simple indexed component, to avoid
+	spurious type errors.
+
+2004-11-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat1drv.adb, gnatbind.adb, gnatchop.adb, gnatfind.adb, gnatlink.adb,
+	gnatls.adb, gnatxref.adb, gprep.adb: Output the copyright message on a
+	separate line from the version message.
+
+2004-11-18  Ed Falis  <falis@adacore.com>
+
+	* init.c (__gnat_map_signal): map SIGSEGV to Storage_Error for AE653
+	vthreads.
+	(init_float): Eliminate initialization of floating point status for
+	AE653. The instructions have no effect for vThreads.
+
+2004-11-18  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): Invoke gnatlink with -shared-libgcc when
+	gnatbind is invoked with -shared.
+
+2004-11-18  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-tposen.adb (Lock_Entry): Remove the code for raising Program_Error
+	for Detect_Blocking which is redundant with the check done within the
+	procedure Protected_Single_Entry_Call.
+	(Lock_Read_Only_Entry): Remove the code for raising Program_Error for
+	Detect_Blocking which is redundant with the check done within the
+	procedure Protected_Single_Entry_Call.
+
+2004-11-18  Vincent Celier  <celier@adacore.com>
+
+	* makegpr.adb (Compile): Put the compiling switches (in package
+	Compiler and on the command line) immediately after "-c", instead of
+	at the end of the command line invocation of the compiler, when
+	compiling a non-Ada file.
+	(Build_Global_Archive): When there is no need to rebuild the archive,
+	set Global_Archive_Exists, so that the archive is passed to the linker
+	if one is needed.
+
+2004-11-18  Robert Dewar  <dewar@adacore.com>
+	    Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: 
+	Remove extra paren check from list of checks for redundant constructs
+	Add documentation of new -gnatyx style check (check extra parens)
+	Remove paragraph about gnatelim debug options.
+
+	* gnat_rm.texi: Document that Ada.Streams now forbids creating stream
+	objects rather than forbidding dependencies on the package Ada.Streams.
+
+	* sinfo.ads: Add ??? note that we should document pragmas passed to
+	back end.
+
+	* g-expect.ads: Fix a few typos in the comments.
+
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* misc.c (gnat_handle_option): Use %< and %> for quoting in
