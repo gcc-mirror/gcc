@@ -1557,6 +1557,10 @@ override_options (void)
 	error ("bad value (%s) for -mfpmath= switch", ix86_fpmath_string);
     }
 
+  /* If the i387 is disabled, then do not return values in it. */
+  if (!TARGET_80387)
+    target_flags &= ~MASK_FLOAT_RETURNS;
+
   if ((x86_accumulate_outgoing_args & TUNEMASK)
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
       && !optimize_size)
