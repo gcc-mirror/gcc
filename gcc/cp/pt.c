@@ -4777,6 +4777,8 @@ tsubst (t, args, in_decl)
 #endif
 	DECL_INITIAL (r) = tsubst_expr (DECL_INITIAL (t), args, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
+	if (TREE_CODE (type) == VOID_TYPE)
+	  cp_error_at ("instantiation of `%D' as type void", r);
 	return r;
       }
 
@@ -4836,6 +4838,8 @@ tsubst (t, args, in_decl)
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
 	  }
 	TREE_CHAIN (r) = NULL_TREE;
+	if (TREE_CODE (type) == VOID_TYPE)
+	  cp_error_at ("instantiation of `%D' as type void", r);
 	return r;
       }
 

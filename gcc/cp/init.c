@@ -2409,22 +2409,26 @@ build_new_1 (exp)
       if (flag_exceptions && alloc_expr)
 	{
 	  enum tree_code dcode = has_array ? VEC_DELETE_EXPR : DELETE_EXPR;
-	  tree cleanup;
+	  tree cleanup, fn = NULL_TREE;
 	  int flags = LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL);
 
 	  /* All cleanups must last longer than normal.  */
 	  int yes = suspend_momentary ();
 
 	  if (placement)
-	    flags |= LOOKUP_SPECULATIVELY;
+	    {
+	      flags |= LOOKUP_SPECULATIVELY;
+
+	      /* We expect alloc_expr to look like a TARGET_EXPR around
+		 a NOP_EXPR around the CALL_EXPR we want.  */
+	      fn = TREE_OPERAND (alloc_expr, 1);
+	      fn = TREE_OPERAND (fn, 0);
+	    }
 
 	  /* Copy size to the saveable obstack.  */
 	  size = copy_node (size);
 
-	  /* If we have a new-placement, we need to pass the alloc TARGET_EXPR
-	     to build_op_delete_call so it can extract the args.  */
-	  cleanup = build_op_delete_call
-	    (dcode, placement ? alloc_expr : alloc_node, size, flags);
+	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags, fn);
 
 	  resume_momentary (yes);
 
@@ -2924,7 +2928,7 @@ build_x_delete (type, addr, which_delete, virtual_size)
   enum tree_code code = use_vec_delete ? VEC_DELETE_EXPR : DELETE_EXPR;
   int flags = LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL);
 
-  return build_op_delete_call (code, addr, virtual_size, flags);
+  return build_op_delete_call (code, addr, virtual_size, flags, NULL_TREE);
 }
 
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.
@@ -3020,7 +3024,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       return build_op_delete_call
 	(DELETE_EXPR, addr, c_sizeof_nowarn (type),
-	 LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL));
+	 LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL),
+	 NULL_TREE);
     }
 
   /* Below, we will reverse the order in which these calls are made.

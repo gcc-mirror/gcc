@@ -12507,20 +12507,22 @@ finish_function (lineno, call_poplevel, nested)
 	  virtual_size = c_sizeof (current_class_type);
 
 	  /* At the end, call delete if that's what's requested.  */
-	  if (TYPE_GETS_REG_DELETE (current_class_type))
-	    /* This NOP_EXPR means we are in a static call context.  */
-	    exprstmt
-	      = build_method_call (build_indirect_ref (build1 (NOP_EXPR,
-							       build_pointer_type (current_class_type),
-							       error_mark_node),
-						       NULL_PTR),
-				   ansi_opname[(int) DELETE_EXPR],
-				   expr_tree_cons (NULL_TREE, current_class_ptr,
-					      build_expr_list (NULL_TREE, virtual_size)),
-				   NULL_TREE, LOOKUP_NORMAL);
-	  else if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	    exprstmt = build_x_delete (ptr_type_node, current_class_ptr, 0,
-				       virtual_size);
+
+	  /* FDIS sez: At the point of definition of a virtual destructor
+	       (including an implicit definition), non-placement operator
+	       delete shall be looked up in the scope of the destructor's
+	       class and if found shall be accessible and unambiguous.
+
+	     This is somewhat unclear, but I take it to mean that if the
+	     class only defines placement deletes we don't do anything here.
+	     So we pass LOOKUP_SPECULATIVELY; delete_sanity will complain
+	     for us if they ever try to delete one of these.  */
+
+	  if (TYPE_GETS_REG_DELETE (current_class_type)
+	      || TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+	    exprstmt = build_op_delete_call
+	      (DELETE_EXPR, current_class_ptr, virtual_size,
+	       LOOKUP_NORMAL | LOOKUP_SPECULATIVELY, NULL_TREE);
 	  else
 	    exprstmt = NULL_TREE;
 
