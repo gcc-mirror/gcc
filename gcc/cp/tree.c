@@ -1937,6 +1937,8 @@ pod_type_p (t)
 {
   t = strip_array_types (t);
 
+  if (t == error_mark_node)
+    return 1;
   if (INTEGRAL_TYPE_P (t))
     return 1;  /* integral, character or enumeral type */
   if (FLOAT_TYPE_P (t))
@@ -1963,6 +1965,9 @@ zero_init_p (t)
      tree t;
 {
   t = strip_array_types (t);
+
+  if (t == error_mark_node)
+    return 1;
 
   /* NULL pointers to data members are initialized with -1.  */
   if (TYPE_PTRMEM_P (t))

@@ -2536,7 +2536,8 @@ dfs_push_decls (binfo, data)
       for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
 	if (DECL_NAME (fields) 
 	    && TREE_CODE (fields) != TYPE_DECL
-	    && TREE_CODE (fields) != USING_DECL)
+	    && TREE_CODE (fields) != USING_DECL
+	    && !DECL_ARTIFICIAL (fields))
 	  setup_class_bindings (DECL_NAME (fields), /*type_binding_p=*/0);
 	else if (TREE_CODE (fields) == FIELD_DECL
 		 && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
@@ -2597,7 +2598,7 @@ dfs_unuse_fields (binfo, data)
 
   for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
     {
-      if (TREE_CODE (fields) != FIELD_DECL)
+      if (TREE_CODE (fields) != FIELD_DECL || DECL_ARTIFICIAL (fields))
 	continue;
 
       TREE_USED (fields) = 0;

@@ -1484,11 +1484,14 @@ finalize_type_size (type)
 
 /* Do all of the work required to layout the type indicated by RLI,
    once the fields have been laid out.  This function will call `free'
-   for RLI.  */
+   for RLI, unless FREE_P is false.  Passing a value other than false
+   for FREE_P is bad practice; this option only exists to support the
+   G++ 3.2 ABI.  */
 
 void
-finish_record_layout (rli)
+finish_record_layout (rli, free_p)
      record_layout_info rli;
+     int free_p;
 {
   /* Compute the final size.  */
   finalize_record_size (rli);
@@ -1508,7 +1511,8 @@ finish_record_layout (rli)
     }
 
   /* Clean up.  */
-  free (rli);
+  if (free_p)
+    free (rli);
 }
 
 /* Calculate the mode, size, and alignment for TYPE.
@@ -1763,7 +1767,7 @@ layout_type (type)
 	  (*lang_adjust_rli) (rli);
 
 	/* Finish laying out the record.  */
-	finish_record_layout (rli);
+	finish_record_layout (rli, /*free_p=*/true);
       }
       break;
 

@@ -668,7 +668,7 @@ do_build_assign_ref (fndecl)
 	  tree comp, init, t;
 	  tree field = fields;
 
-	  if (TREE_CODE (field) != FIELD_DECL)
+	  if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
 	    continue;
 
 	  if (CP_TYPE_CONST_P (TREE_TYPE (field)))
@@ -824,7 +824,7 @@ synthesize_exception_spec (type, extractor, client)
       tree type = TREE_TYPE (fields);
       tree fn;
       
-      if (TREE_CODE (fields) != FIELD_DECL)
+      if (TREE_CODE (fields) != FIELD_DECL || DECL_ARTIFICIAL (fields))
         continue;
       while (TREE_CODE (type) == ARRAY_TYPE)
   	type = TREE_TYPE (type);

@@ -156,70 +156,151 @@ initialize_vtbl_ptrs (addr)
 	    dfs_marked_real_bases_queue_p, type);
 }
 
-/* Types containing pointers to data members cannot be
-   zero-initialized with zeros, because the NULL value for such
-   pointers is -1.
-
-   TYPE is a type that requires such zero initialization.  The
-   returned value is the initializer.  */
+/* Return an expression for the zero-initialization of an object with
+   type T.  This expression will either be a constant (in the case
+   that T is a scalar), or a CONSTRUCTOR (in the case that T is an
+   aggregate).  In either case, the value can be used as DECL_INITIAL
+   for a decl of the indicated TYPE; it is a valid static initializer.
+   If STATIC_STORAGE_P is TRUE, initializers are only generated for
+   entities for which zero-initialization does not simply mean filling
+   the storage with zero bytes.  */
 
 tree
-build_forced_zero_init (type)
-     tree type;
+build_zero_init (tree type, bool static_storage_p)
 {
-  tree init = NULL;
+  tree init = NULL_TREE;
 
-  if (AGGREGATE_TYPE_P (type) && !TYPE_PTRMEMFUNC_P (type))
+  /* [dcl.init]
+
+     To zero-initialization storage for an object of type T means:
+
+     -- if T is a scalar type, the storage is set to the value of zero
+        converted to T.
+
+     -- if T is a non-union class type, the storage for each nonstatic
+        data member and each base-class subobject is zero-initialized.
+
+     -- if T is a union type, the storage for its first data member is
+        zero-initialized.
+
+     -- if T is an array type, the storage for each element is
+        zero-initialized.
+
+     -- if T is a reference type, no initialization is performed.  */
+
+  if (type == error_mark_node)
+    ;
+  else if (static_storage_p && zero_init_p (type))
+    /* In order to save space, we do not explicitly build initializers
+       for items that do not need them.  GCC's semantics are that
+       items with static storage duration that are not otherwise
+       initialized are initialized to zero.  */
+    ;
+  else if (SCALAR_TYPE_P (type))
+    init = convert (type, integer_zero_node);
+  else if (CLASS_TYPE_P (type))
     {
-      /* This is a default initialization of an aggregate, but not one of
-	 non-POD class type.  We cleverly notice that the initialization
-	 rules in such a case are the same as for initialization with an
-	 empty brace-initialization list.  */
-      init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, NULL_TREE);
+      tree field;
+      tree inits;
+
+      /* Build a constructor to contain the initializations.  */
+      init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      /* Iterate over the fields, building initializations.  */
+      inits = NULL_TREE;
+      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	{
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+
+	  /* Note that for class types there will be FIELD_DECLs
+	     corresponding to base classes as well.  Thus, iterating
+	     over TYPE_FIELDs will result in correct initialization of
+	     all of the subobjects.  */
+	  if (static_storage_p && !zero_init_p (TREE_TYPE (field)))
+	    inits = tree_cons (field, 
+			       build_zero_init (TREE_TYPE (field),
+						static_storage_p),
+			       inits);
+
+	  /* For unions, only the first field is initialized.  */
+	  if (TREE_CODE (type) == UNION_TYPE)
+	    break;
+	}
+      CONSTRUCTOR_ELTS (init) = nreverse (inits);
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree index;
+      tree max_index;
+      tree inits;
+
+      /* Build a constructor to contain the initializations.  */
+      init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      /* Iterate over the array elements, building initializations.  */
+      inits = NULL_TREE;
+      for (index = size_zero_node, max_index = array_type_nelts (type);
+	   !tree_int_cst_lt (max_index, index);
+	   index = size_binop (PLUS_EXPR, index, size_one_node))
+	inits = tree_cons (index,
+			   build_zero_init (TREE_TYPE (type), 
+					    static_storage_p),
+			   inits);
+      CONSTRUCTOR_ELTS (init) = nreverse (inits);
     }
   else if (TREE_CODE (type) == REFERENCE_TYPE)
-    /*   --if T is a reference type, no initialization is performed.  */
-    return NULL_TREE;
+    ;
   else
-    {
-      init = integer_zero_node;
-      
-      if (TREE_CODE (type) == ENUMERAL_TYPE)
-        /* We must make enumeral types the right type.  */
-        init = fold (build1 (NOP_EXPR, type, init));
-    }
+    abort ();
 
-  init = digest_init (type, init, 0);
+  /* In all cases, the initializer is a constant.  */
+  if (init)
+    TREE_CONSTANT (init) = 1;
 
   return init;
 }
 
-/* [dcl.init]:
-
-  To default-initialize an object of type T means:
-
-  --if T is a non-POD class type (clause _class_), the default construc-
-    tor  for  T is called (and the initialization is ill-formed if T has
-    no accessible default constructor);
-
-  --if T is an array type, each element is default-initialized;
-
-  --otherwise, the storage for the object is zero-initialized.
-
-  A program that calls for default-initialization of an entity of refer-
-  ence type is ill-formed.  */
+/* Build an expression for the default-initialization of an object
+   with type T.  If initialization T requires calling constructors,
+   this function returns NULL_TREE; the caller is responsible for
+   arranging for the constructors to be called.  */
 
 static tree
 build_default_init (type)
      tree type;
 {
-  if (TYPE_NEEDS_CONSTRUCTING (type))
-    /* Other code will handle running the default constructor.  We can't do
-       anything with a CONSTRUCTOR for arrays here, as that would imply
-       copy-initialization.  */
-    return NULL_TREE;
+  /* [dcl.init]:
 
-  return build_forced_zero_init (type);
+    To default-initialize an object of type T means:
+
+    --if T is a non-POD class type (clause _class_), the default construc-
+      tor  for  T is called (and the initialization is ill-formed if T has
+      no accessible default constructor);
+
+    --if T is an array type, each element is default-initialized;
+
+    --otherwise, the storage for the object is zero-initialized.
+
+    A program that calls for default-initialization of an entity of refer-
+    ence type is ill-formed.  */
+
+  /* If TYPE_NEEDS_CONSTRUCTING is true, the caller is responsible for
+     performing the initialization.  This is confusing in that some
+     non-PODs do not have TYPE_NEEDS_CONSTRUCTING set.  (For example,
+     a class with a pointer-to-data member as a non-static data member
+     does not have TYPE_NEEDS_CONSTRUCTING set.)  Therefore, we end up
+     passing non-PODs to build_zero_init below, which is contrary to
+     the semantics quoted above from [dcl.init].  
+
+     It happens, however, that the behavior of the constructor the
+     standard says we should have generated would be precisely the
+     same as that obtained by calling build_zero_init below, so things
+     work out OK.  */
+  if (TYPE_NEEDS_CONSTRUCTING (type))
+    return NULL_TREE;
+      
+  /* At this point, TYPE is either a POD class type, an array of POD
+     classes, or something even more inoccuous.  */
+  return build_zero_init (type, /*static_storage_p=*/false);
 }
 
 /* Subroutine of emit_base_init.  */
@@ -335,7 +416,7 @@ build_field_list (t, list, uses_unions_p)
   for (fields = TYPE_FIELDS (t); fields; fields = TREE_CHAIN (fields))
     {
       /* Skip CONST_DECLs for enumeration constants and so forth.  */
-      if (TREE_CODE (fields) != FIELD_DECL)
+      if (TREE_CODE (fields) != FIELD_DECL || DECL_ARTIFICIAL (fields))
 	continue;
       
       /* Keep track of whether or not any fields are unions.  */
@@ -3337,7 +3418,7 @@ push_base_cleanups ()
   for (member = TYPE_FIELDS (current_class_type); member;
        member = TREE_CHAIN (member))
     {
-      if (TREE_CODE (member) != FIELD_DECL)
+      if (TREE_CODE (member) != FIELD_DECL || DECL_ARTIFICIAL (member))
 	continue;
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (member)))
 	{

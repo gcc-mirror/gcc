@@ -1,3 +1,9 @@
+2002-09-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* store-layout.c (finish_record_layout): Add free_p parameter.
+	(layout_type): Pass it.
+	* tree.h (finish_record_layout): Update prototype.
+	
 Mon Sep 30 14:57:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (TARGET_CPP_CPU_BUILTINS): Define __SSE_MATH__.

@@ -1811,7 +1811,7 @@ lookup_anon_field (t, type)
     {
       if (TREE_STATIC (field))
 	continue;
-      if (TREE_CODE (field) != FIELD_DECL)
+      if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
 	continue;
 
       /* If we find it directly, return the field.  */
