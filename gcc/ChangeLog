@@ -1,3 +1,7 @@
+2003-08-07  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md: Replace all occurrences of \\t with \t.
+
 2003-08-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* local-alloc.c (combine_regs): Fix comment typo.
