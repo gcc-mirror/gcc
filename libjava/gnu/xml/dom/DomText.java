@@ -102,7 +102,7 @@ public class DomText
   {
     if (isReadonly())
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     try
       {
@@ -134,7 +134,7 @@ public class DomText
       }
     catch (IndexOutOfBoundsException x)
       {
-        throw new DomEx(DomEx.INDEX_SIZE_ERR);
+        throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
   }
     

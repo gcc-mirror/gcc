@@ -1,4 +1,4 @@
-/* DomCDATA.java -- 
+/* DomDocumentFragment.java -- 
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,54 +37,39 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
-import org.w3c.dom.CDATASection;
+import org.w3c.dom.DocumentFragment;
 
 /**
- * <p> "CDATASection" implementation.
- * This is a non-core DOM class, supporting the "XML" feature.
- * CDATA sections are just ways to represent text using different
- * delimeters. </p>
+ * <p> "DocumentFragment" implementation.  </p>
  *
- * <p> <em>You are strongly advised not to use CDATASection nodes.</em>
- * The advantage of having slightly prettier ways to print text that may
- * have lots of embedded XML delimiters, such as "&amp;" and "&lt;",
- * can be dwarfed by the cost of dealing with multiple kinds of text
- * nodes in all your algorithms. </p>
- *
- * @author David Brownell
+ * @author David Brownell 
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
-public class DomCDATA
-  extends DomText
-  implements CDATASection
+public class DomDocumentFragment
+  extends DomNode
+  implements DocumentFragment
 {
   
   /**
-   * Constructs a CDATA section node associated with the specified
-   * document and holding the specified data.
+   * Constructs a DocumentFragment node associated with the
+   * specified document.
    *
    * <p>This constructor should only be invoked by a Document as part of
-   * its createCDATASection functionality, or through a subclass which is
-   * similarly used in a "Sub-DOM" style layer.
-   *
+   * its createDocumentFragment functionality, or through a subclass which
+   * is similarly used in a "Sub-DOM" style layer.
    */
-  protected DomCDATA(DomDocument owner, String value)
+  protected DomDocumentFragment(DomDocument owner)
   {
-    super(CDATA_SECTION_NODE, owner, value);
-  }
-
-  protected DomCDATA(DomDocument owner, char buf [], int off, int len)
-  {
-    super(CDATA_SECTION_NODE, owner, buf, off, len);
+    super(DOCUMENT_FRAGMENT_NODE, owner);
   }
 
   /**
    * <b>DOM L1</b>
-   * Returns the string "#cdata-section".
+   * Returns the string "#document-fragment".
    */
   final public String getNodeName()
   {
-	return "#cdata-section";
+    return "#document-fragment";
   }
   
 }

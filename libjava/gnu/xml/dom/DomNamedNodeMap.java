@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -166,24 +167,24 @@ public class DomNamedNodeMap
   {
     if (readonly)
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
 
     DomNode node = (DomNode) arg;
     if (node.owner != owner.owner)
       {
-        throw new DomEx(DomEx.WRONG_DOCUMENT_ERR);
+        throw new DomDOMException(DOMException.WRONG_DOCUMENT_ERR);
       }
     if (node.nodeType != type)
       {
-        throw new DomEx(DomEx.HIERARCHY_REQUEST_ERR);
+        throw new DomDOMException(DOMException.HIERARCHY_REQUEST_ERR);
       }
     if (node.nodeType == Node.ATTRIBUTE_NODE)
       {
         DomNode element = node.parent;
         if (element != null && element != owner)
           {
-            throw new DomEx(DomEx.INUSE_ATTRIBUTE_ERR);
+            throw new DomDOMException(DOMException.INUSE_ATTRIBUTE_ERR);
           }
         node.parent = owner;
         node.depth = owner.depth + 1;
@@ -302,7 +303,7 @@ public class DomNamedNodeMap
   {
     if (readonly)
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
 
     // report attribute REMOVAL event?
@@ -369,7 +370,7 @@ public class DomNamedNodeMap
             return ctx;
           }
       }    
-    throw new DomEx(DomEx.NOT_FOUND_ERR);
+    throw new DomDOMException(DOMException.NOT_FOUND_ERR);
   }
   
   String getDefaultValue(String name)

@@ -1,4 +1,4 @@
-/* DomPI.java -- 
+/* DomProcessingInstruction.java -- 
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.xml.dom;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.ProcessingInstruction;
 
 /**
@@ -57,7 +58,7 @@ import org.w3c.dom.ProcessingInstruction;
  * @author David Brownell 
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
-public class DomPI
+public class DomProcessingInstruction
   extends DomNode
   implements ProcessingInstruction
 {
@@ -73,7 +74,8 @@ public class DomPI
    * part of its createProcessingInstruction functionality, or through
    * a subclass which is similarly used in a "Sub-DOM" style layer. 
    */
-  protected DomPI(DomDocument owner, String target, String data)
+  protected DomProcessingInstruction(DomDocument owner,
+                                     String target, String data)
   {
     super(PROCESSING_INSTRUCTION_NODE, owner);
     this.target = target;
@@ -136,7 +138,7 @@ public class DomPI
   {
     if (isReadonly())
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     this.data = data;
   }

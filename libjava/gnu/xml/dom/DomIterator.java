@@ -39,6 +39,7 @@ package gnu.xml.dom;
 
 import java.util.Vector;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
@@ -76,7 +77,7 @@ public final class DomIterator
   {
     if (!root.isSupported("MutationEvents", "2.0")) 
       {
-        throw new DomEx(DomEx.NOT_SUPPORTED_ERR,
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR,
                         "Iterator needs mutation events", root, 0);
       }
 	
@@ -154,7 +155,7 @@ public final class DomIterator
   {
     if (done)
       {
-        throw new DomEx(DomEx.INVALID_STATE_ERR);
+        throw new DomDOMException(DOMException.INVALID_STATE_ERR);
       }
     right = true;
     return walk(true);
@@ -171,7 +172,7 @@ public final class DomIterator
   {
     if (done)
       {
-        throw new DomEx(DomEx.INVALID_STATE_ERR);
+        throw new DomDOMException(DOMException.INVALID_STATE_ERR);
       }
     Node previous = reference;
     right = false;

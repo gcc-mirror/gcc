@@ -292,16 +292,16 @@ public class DomDocument
     if (newChild.getNodeType() == ELEMENT_NODE
         && getDocumentElement() != null)
       {
-        throw new DomEx (DomEx.HIERARCHY_REQUEST_ERR,
-                         "document element already present: " +
-                         getDocumentElement(), newChild, 0);
+        throw new DomDOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                                  "document element already present: " +
+                                  getDocumentElement(), newChild, 0);
       }
     if (newChild.getNodeType() == DOCUMENT_TYPE_NODE
         && getDoctype() != null)
       {
-        throw new DomEx (DomEx.HIERARCHY_REQUEST_ERR,
-                         "document type already present: " +
-                         getDoctype(), newChild, 0);
+        throw new DomDOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                                  "document type already present: " +
+                                  getDoctype(), newChild, 0);
       }
   }
 
@@ -376,12 +376,12 @@ public class DomDocument
   {
     if (name == null)
       {
-        throw new DomEx (DomEx.NAMESPACE_ERR, name, null, 0);
+        throw new DomDOMException(DOMException.NAMESPACE_ERR, name, null, 0);
       }
     int len = name.length();
     if (len == 0)
       {
-        throw new DomEx (DomEx.NAMESPACE_ERR, name, null, 0);
+        throw new DomDOMException(DOMException.NAMESPACE_ERR, name, null, 0);
       }
 
     // dog: rewritten to use the rules for XML 1.0 and 1.1
@@ -407,7 +407,8 @@ public class DomDocument
             (c < 0xfdf0 || c > 0xfffd) &&
             (c < 0x10000 || c > 0xeffff))
           {
-            throw new DomEx(DomEx.INVALID_CHARACTER_ERR, name, null, c);
+            throw new DomDOMException(DOMException.INVALID_CHARACTER_ERR,
+                                      name, null, c);
           }
       }
     else
@@ -425,14 +426,16 @@ public class DomDocument
                 (c >= 0x20dd && c <= 0x20e0))
               {
                 // Compatibility area and Unicode 2.0 exclusions
-                throw new DomEx(DomEx.INVALID_CHARACTER_ERR, name, null, c);
+                throw new DomDOMException(DOMException.INVALID_CHARACTER_ERR,
+                                          name, null, c);
               }
             break;
           default:
             if (c != ':' && c != '_' && (c < 0x02bb || c > 0x02c1) &&
                 c != 0x0559 && c != 0x06e5 && c != 0x06e6)
               {
-                throw new DomEx(DomEx.INVALID_CHARACTER_ERR, name, null, c);
+                throw new DomDOMException(DOMException.INVALID_CHARACTER_ERR,
+                                          name, null, c);
               }
           }
       }
@@ -464,7 +467,8 @@ public class DomDocument
                 (c < 0x0300 || c > 0x036f) &&
                 (c < 0x203f || c > 0x2040))
               {
-                throw new DomEx(DomEx.INVALID_CHARACTER_ERR, name, null, c);
+                throw new DomDOMException(DOMException.INVALID_CHARACTER_ERR, name,
+                                          null, c);
               }
           }
         else
@@ -487,7 +491,8 @@ public class DomDocument
                     (c >= 0x20dd && c <= 0x20e0))
                   {
                     // Compatibility area and Unicode 2.0 exclusions
-                    throw new DomEx(DomEx.INVALID_CHARACTER_ERR, name, null, c);
+                    throw new DomDOMException(DOMException.INVALID_CHARACTER_ERR,
+                                              name, null, c);
                   }
                 break;
               default:
@@ -495,7 +500,8 @@ public class DomDocument
                     c != 0x0387 && (c < 0x02bb || c > 0x02c1) &&
                     c != 0x0559 && c != 0x06e5 && c != 0x06e6 && c != 0x00b7)
                   {
-                    throw new DomEx(DomEx.INVALID_CHARACTER_ERR, name, null, c);
+                    throw new DomDOMException(DOMException.INVALID_CHARACTER_ERR,
+                                              name, null, c);
                   }
               }
           }
@@ -517,7 +523,8 @@ public class DomDocument
         if (index == 0 || index == (len - 1) ||
             name.lastIndexOf(':') != index)
           {
-            throw new DomEx(DomEx.NAMESPACE_ERR, name, null, 0);
+            throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                      name, null, 0);
           }
       }
   }
@@ -552,8 +559,8 @@ public class DomDocument
                 continue;
               }
           }
-        throw new DomEx(DomEx.INVALID_CHARACTER_ERR,
-                        new String(buf, off, len), null, c);
+        throw new DomDOMException(DOMException.INVALID_CHARACTER_ERR,
+                                  new String(buf, off, len), null, c);
       }
   }
 
@@ -602,22 +609,23 @@ public class DomDocument
         if (namespaceURI != null
             && !XMLConstants.XML_NS_URI.equals(namespaceURI))
           {
-            throw new DomEx(DomEx.NAMESPACE_ERR,
-                            "xml namespace is always " +
-                            XMLConstants.XML_NS_URI, this, 0);
+            throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                      "xml namespace is always " +
+                                      XMLConstants.XML_NS_URI, this, 0);
           }
         namespaceURI = XMLConstants.XML_NS_URI;
       }
     else if (XMLConstants.XMLNS_ATTRIBUTE.equals(name) ||
              name.startsWith("xmlns:"))
       {
-        throw new DomEx(DomEx.NAMESPACE_ERR,
-                        "xmlns is reserved", this, 0);
+        throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                  "xmlns is reserved", this, 0);
       }
     else if (namespaceURI == null && name.indexOf(':') != -1)
       {
-        throw new DomEx(DomEx.NAMESPACE_ERR,
-                        "prefixed name '" + name + "' needs a URI", this, 0);
+        throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                  "prefixed name '" + name +
+                                  "' needs a URI", this, 0);
       }
     
     Element  element = new DomElement(this, namespaceURI, name);
@@ -660,7 +668,7 @@ public class DomDocument
    */
   public DocumentFragment createDocumentFragment()
   {
-    return new DomFragment(this);
+    return new DomDocumentFragment(this);
   }
 
   /**
@@ -711,7 +719,7 @@ public class DomDocument
       {
         checkChar(value, "1.1".equals(version));
       }
-    return new DomCDATA(this, value);
+    return new DomCDATASection(this, value);
   }
 
   /**
@@ -723,7 +731,7 @@ public class DomDocument
       {
         checkChar(buf, off, len, "1.1".equals(version));
       }
-    return new DomCDATA(this, buf, off, len);
+    return new DomCDATASection(this, buf, off, len);
   }
 
   /**
@@ -739,12 +747,13 @@ public class DomDocument
         checkName(target, xml11);
         if ("xml".equalsIgnoreCase(target))
           {
-            throw new DomEx(DomEx.SYNTAX_ERR,
-                            "illegal PI target name", this, 0);
+            throw new DomDOMException(DOMException.SYNTAX_ERR,
+                                      "illegal PI target name",
+                                      this, 0);
           }
         checkChar(data, xml11);
       }
-    return new DomPI(this, target, data);
+    return new DomProcessingInstruction(this, target, data);
   }
 
   /**
@@ -796,9 +805,10 @@ public class DomDocument
           }
         else if (!XMLConstants.XML_NS_URI.equals(namespaceURI))
           {
-            throw new DomEx(DomEx.NAMESPACE_ERR,
-                            "xml namespace is always " +
-                            XMLConstants.XML_NS_URI, this, 0);
+            throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                      "xml namespace is always " +
+                                      XMLConstants.XML_NS_URI,
+                                      this, 0);
           }
       }
     else if (XMLConstants.XMLNS_ATTRIBUTE.equals(name) ||
@@ -810,14 +820,15 @@ public class DomDocument
           }
         else if (!XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(namespaceURI))
           {
-            throw new DomEx(DomEx.NAMESPACE_ERR,
-                            "xmlns namespace must be " +
-                            XMLConstants.XMLNS_ATTRIBUTE_NS_URI, this, 0);
+            throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                      "xmlns namespace must be " +
+                                      XMLConstants.XMLNS_ATTRIBUTE_NS_URI,
+                                      this, 0);
           }
       }
     else if (namespaceURI == null && name.indexOf(':') != -1)
       {
-        throw new DomEx(DomEx.NAMESPACE_ERR,
+        throw new DomDOMException(DOMException.NAMESPACE_ERR,
                         "prefixed name needs a URI: " + name, this, 0);
       }
     return new DomAttr(this, namespaceURI, name);
@@ -913,7 +924,7 @@ public class DomDocument
         dst = createEntityReference(src.getNodeName());
         break;
       case DOCUMENT_FRAGMENT_NODE:
-        dst = new DomFragment(this);
+        dst = new DomDocumentFragment(this);
         if (deep)
           {
             for (Node ctx = src.getFirstChild(); ctx != null;
@@ -988,7 +999,7 @@ public class DomDocument
         // FALLTHROUGH
         // can't import unrecognized or nonstandard nodes
       default:
-        throw new DomEx(DomEx.NOT_SUPPORTED_ERR, null, src, 0);
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR, null, src, 0);
       }
     
     // FIXME cleanup a bit -- for deep copies, copy those
@@ -1083,7 +1094,7 @@ public class DomDocument
       }
     else
       {
-        throw new DomEx(DomEx.NOT_SUPPORTED_ERR);
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR);
       }
   }
 
@@ -1149,10 +1160,10 @@ public class DomDocument
       {
       case DOCUMENT_NODE:
       case DOCUMENT_TYPE_NODE:
-        throw new DomEx(DomEx.NOT_SUPPORTED_ERR);
+        throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR);
       case ENTITY_NODE:
       case NOTATION_NODE:
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     if (source instanceof DomNode)
       {
@@ -1284,11 +1295,12 @@ public class DomDocument
         DomNsNode src = (DomNsNode) n;
         if (src == null)
           {
-            throw new DomEx(DomEx.NOT_FOUND_ERR);
+            throw new DomDOMException(DOMException.NOT_FOUND_ERR);
           }
         if (src.owner != this)
           {
-            throw new DomEx(DomEx.WRONG_DOCUMENT_ERR, null, src, 0);
+            throw new DomDOMException(DOMException.WRONG_DOCUMENT_ERR,
+                                      null, src, 0);
           }
         boolean xml11 = "1.1".equals(version);
         checkName(qualifiedName, xml11);
@@ -1305,7 +1317,7 @@ public class DomDocument
             if (XMLConstants.XML_NS_PREFIX.equals(prefix) &&
                 !XMLConstants.XML_NS_URI.equals(namespaceURI))
               {
-                throw new DomEx(DomEx.NAMESPACE_ERR,
+                throw new DomDOMException(DOMException.NAMESPACE_ERR,
                                 "xml namespace must be " +
                                 XMLConstants.XML_NS_URI, src, 0);
               }
@@ -1314,14 +1326,14 @@ public class DomDocument
                       XMLConstants.XMLNS_ATTRIBUTE.equals(qualifiedName)) &&
                      !XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(namespaceURI))
               {
-                throw new DomEx(DomEx.NAMESPACE_ERR,
+                throw new DomDOMException(DOMException.NAMESPACE_ERR,
                                 "xmlns namespace must be " +
                                 XMLConstants.XMLNS_ATTRIBUTE_NS_URI, src, 0);
               }
             if (XMLConstants.XML_NS_URI.equals(namespaceURI) &&
                 !XMLConstants.XML_NS_PREFIX.equals(prefix))
               {
-                throw new DomEx(DomEx.NAMESPACE_ERR,
+                throw new DomDOMException(DOMException.NAMESPACE_ERR,
                                 "xml namespace must be " +
                                 XMLConstants.XML_NS_URI, src, 0);
               }
@@ -1330,7 +1342,7 @@ public class DomDocument
                      !(XMLConstants.XMLNS_ATTRIBUTE.equals(prefix) ||
                        XMLConstants.XMLNS_ATTRIBUTE.equals(qualifiedName)))
               {
-                throw new DomEx(DomEx.NAMESPACE_ERR,
+                throw new DomDOMException(DOMException.NAMESPACE_ERR,
                                 "xmlns namespace must be " +
                                 XMLConstants.XMLNS_ATTRIBUTE_NS_URI, src, 0);
               }
@@ -1343,7 +1355,7 @@ public class DomDocument
         // DOMElementNameChanged or DOMAttributeNameChanged
         return src;
       }
-    throw new DomEx(DomEx.NOT_SUPPORTED_ERR, null, n, 0);
+    throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR, null, n, 0);
   }
 
   // -- XPathEvaluator --

@@ -1,4 +1,4 @@
-/* DomLSEx.java -- 
+/* DomLSException.java -- 
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package gnu.xml.dom.ls;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import org.w3c.dom.ls.LSException;
 
 /**
@@ -46,30 +44,14 @@ import org.w3c.dom.ls.LSException;
  *
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
-public class DomLSEx
+public class DomLSException
   extends LSException
 {
 
-  private final Exception cause2;
-
-  public DomLSEx(short type, Exception cause)
+  public DomLSException(short type, Exception cause)
   {
-    super(type, cause.getMessage());
-    cause2 = cause;
+    super(type, (cause == null) ? null : cause.getMessage());
+    initCause(cause);
   }
 
-  public void printStackTrace(PrintStream out)
-  {
-    super.printStackTrace(out);
-    out.print("caused by ");
-    cause2.printStackTrace(out);
-  }
-  
-  public void printStackTrace(PrintWriter out)
-  {
-    super.printStackTrace(out);
-    out.print("caused by ");
-    cause2.printStackTrace(out);
-  }
-  
 }

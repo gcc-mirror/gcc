@@ -38,6 +38,7 @@ exception statement from your version. */
 package gnu.xml.dom;
 
 import javax.xml.XMLConstants;
+import org.w3c.dom.DOMException;
 
 /**
  * <p> Abstract implemention of namespace support.  This facilitates
@@ -135,7 +136,7 @@ public abstract class DomNsNode
   {
     if (readonly)
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
 
     if (prefix == null)
@@ -145,40 +146,42 @@ public abstract class DomNsNode
       }
     else if (namespace == null)
       {
-        throw new DomEx(DomEx.NAMESPACE_ERR,
-                        "can't set prefix, node has no namespace URI",
-                        this, 0);
+        throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                  "can't set prefix, node has no namespace URI",
+                                  this, 0);
       }
 
     DomDocument.checkName(prefix, "1.1".equals(owner.getXmlVersion()));
     if (prefix.indexOf (':') != -1)
       {
-        throw new DomEx(DomEx.NAMESPACE_ERR,
-                        "illegal prefix " + prefix, this, 0);
+        throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                  "illegal prefix " + prefix, this, 0);
       }
 
     if (XMLConstants.XML_NS_PREFIX.equals(prefix)
         && !XMLConstants.XML_NS_URI.equals(namespace))
       {
-        throw new DomEx(DomEx.NAMESPACE_ERR,
-                        "xml namespace is always " +
-                        XMLConstants.XML_NS_URI, this, 0);
+        throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                  "xml namespace is always " +
+                                  XMLConstants.XML_NS_URI, this, 0);
       }
 
     if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix))
       {
         if (namespace != null || getNodeType() != ATTRIBUTE_NODE)
           {
-            throw new DomEx(DomEx.NAMESPACE_ERR,
-                            "xmlns attribute prefix is reserved", this, 0);
+            throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                      "xmlns attribute prefix is reserved",
+                                      this, 0);
           }
       }
     else if (getNodeType () == ATTRIBUTE_NODE
              && (XMLConstants.XMLNS_ATTRIBUTE.equals(name) ||
                  name.startsWith("xmlns:")))
       {
-        throw new DomEx(DomEx.NAMESPACE_ERR,
-                        "namespace declarations can't change names", this, 0);
+        throw new DomDOMException(DOMException.NAMESPACE_ERR,
+                                  "namespace declarations can't change names",
+                                  this, 0);
       }
 
     this.prefix = prefix.intern();

@@ -38,6 +38,7 @@ exception statement from your version. */
 package gnu.xml.dom;
 
 import org.w3c.dom.CharacterData;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.events.MutationEvent;
@@ -82,7 +83,7 @@ public abstract class DomCharacterData
   {
     if (isReadonly())
       {
-      throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     String value = text + arg;
     mutating(value);
@@ -98,12 +99,12 @@ public abstract class DomCharacterData
   {
     if (isReadonly())
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     char[] raw = text.toCharArray();
     if (offset < 0 || count < 0 || offset > raw.length)
       {
-        throw new DomEx(DomEx.INDEX_SIZE_ERR);
+        throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
     if ((offset + count) > raw.length)
       {
@@ -125,7 +126,7 @@ public abstract class DomCharacterData
       }
     catch (IndexOutOfBoundsException x)
       {
-        throw new DomEx(DomEx.INDEX_SIZE_ERR);
+        throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
   }
     
@@ -164,7 +165,7 @@ public abstract class DomCharacterData
   {
     if (isReadonly())
       {
-      throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+      throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     char[] raw = text.toCharArray();
     char[] tmp = arg.toCharArray ();
@@ -182,7 +183,7 @@ public abstract class DomCharacterData
       }
     catch (IndexOutOfBoundsException x)
       {
-        throw new DomEx(DomEx.INDEX_SIZE_ERR);
+        throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
   }
     
@@ -195,14 +196,14 @@ public abstract class DomCharacterData
   {
     if (readonly)
       {
-        throw new DomEx(DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     char[] raw = text.toCharArray();
     
     // deleteData
     if (offset < 0 || count < 0 || offset > raw.length)
       {
-        throw new DomEx(DomEx.INDEX_SIZE_ERR);
+        throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
     if ((offset + count) > raw.length)
       {
@@ -228,7 +229,7 @@ public abstract class DomCharacterData
       }
     catch (IndexOutOfBoundsException x)
       {
-        throw new DomEx(DomEx.INDEX_SIZE_ERR);
+        throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
   }
     
@@ -241,7 +242,7 @@ public abstract class DomCharacterData
   {
     if (isReadonly())
       {
-        throw new DomEx (DomEx.NO_MODIFICATION_ALLOWED_ERR);
+        throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     if (value == null)
       {
@@ -276,7 +277,7 @@ public abstract class DomCharacterData
           {
             return text.substring(offset);
           }
-        throw new DomEx(DomEx.INDEX_SIZE_ERR);
+        throw new DomDOMException(DOMException.INDEX_SIZE_ERR);
       }
   }
 

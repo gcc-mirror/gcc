@@ -2443,9 +2443,9 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/xml/util/Resolver.java gnu/xml/util/DoParse.java \
 	gnu/xml/util/XHTMLWriter.java \
 	gnu/xml/util/SAXNullTransformerFactory.java \
-	gnu/xml/dom/DomCDATA.java gnu/xml/dom/DomXPathNSResolver.java \
-	gnu/xml/dom/ls/DomLSEx.java \
+	gnu/xml/dom/DomXPathNSResolver.java \
 	gnu/xml/dom/ls/FilteredSAXEventSink.java \
+	gnu/xml/dom/ls/DomLSException.java \
 	gnu/xml/dom/ls/DomLSSerializer.java \
 	gnu/xml/dom/ls/DomLSInput.java gnu/xml/dom/ls/DomLSOutput.java \
 	gnu/xml/dom/ls/SAXEventSink.java \
@@ -2453,13 +2453,14 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/xml/dom/ls/ReaderInputStream.java \
 	gnu/xml/dom/ls/WriterOutputStream.java \
 	gnu/xml/dom/DomElement.java gnu/xml/dom/DomNsNode.java \
-	gnu/xml/dom/DomAttr.java gnu/xml/dom/DomPI.java \
-	gnu/xml/dom/DTDAttributeTypeInfo.java \
+	gnu/xml/dom/DomAttr.java gnu/xml/dom/DTDAttributeTypeInfo.java \
 	gnu/xml/dom/DomDocumentBuilder.java \
-	gnu/xml/dom/DTDElementTypeInfo.java gnu/xml/dom/DomEx.java \
+	gnu/xml/dom/DTDElementTypeInfo.java \
 	gnu/xml/dom/DomDocument.java \
 	gnu/xml/dom/DomXPathExpression.java \
 	gnu/xml/dom/DomDocumentConfiguration.java \
+	gnu/xml/dom/DomDocumentFragment.java \
+	gnu/xml/dom/DomProcessingInstruction.java \
 	gnu/xml/dom/Consumer.java gnu/xml/dom/DomComment.java \
 	gnu/xml/dom/DomCharacterData.java gnu/xml/dom/DomExtern.java \
 	gnu/xml/dom/DomEntityReference.java \
@@ -2472,8 +2473,9 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/xml/dom/DomText.java gnu/xml/dom/DomNSResolverContext.java \
 	gnu/xml/dom/DomNodeIterator.java gnu/xml/dom/DomNotation.java \
 	gnu/xml/dom/JAXPFactory.java gnu/xml/dom/DomIterator.java \
-	gnu/xml/dom/DomFragment.java gnu/xml/dom/DomEvent.java \
-	gnu/xml/dom/DomEntity.java \
+	gnu/xml/dom/DomEvent.java gnu/xml/dom/DomEntity.java \
+	gnu/xml/dom/DomCDATASection.java \
+	gnu/xml/dom/DomDOMException.java \
 	gnu/xml/transform/GenerateIdFunction.java \
 	gnu/xml/transform/FormatNumberFunction.java \
 	gnu/xml/transform/ValueOfNode.java \
@@ -4502,20 +4504,22 @@ am__objects_17 = gnu/xml/xpath/EqualityExpr.lo \
 	gnu/xml/util/Resolver.lo gnu/xml/util/DoParse.lo \
 	gnu/xml/util/XHTMLWriter.lo \
 	gnu/xml/util/SAXNullTransformerFactory.lo \
-	gnu/xml/dom/DomCDATA.lo gnu/xml/dom/DomXPathNSResolver.lo \
-	gnu/xml/dom/ls/DomLSEx.lo \
+	gnu/xml/dom/DomXPathNSResolver.lo \
 	gnu/xml/dom/ls/FilteredSAXEventSink.lo \
+	gnu/xml/dom/ls/DomLSException.lo \
 	gnu/xml/dom/ls/DomLSSerializer.lo gnu/xml/dom/ls/DomLSInput.lo \
 	gnu/xml/dom/ls/DomLSOutput.lo gnu/xml/dom/ls/SAXEventSink.lo \
 	gnu/xml/dom/ls/DomLSParser.lo \
 	gnu/xml/dom/ls/ReaderInputStream.lo \
 	gnu/xml/dom/ls/WriterOutputStream.lo gnu/xml/dom/DomElement.lo \
 	gnu/xml/dom/DomNsNode.lo gnu/xml/dom/DomAttr.lo \
-	gnu/xml/dom/DomPI.lo gnu/xml/dom/DTDAttributeTypeInfo.lo \
+	gnu/xml/dom/DTDAttributeTypeInfo.lo \
 	gnu/xml/dom/DomDocumentBuilder.lo \
-	gnu/xml/dom/DTDElementTypeInfo.lo gnu/xml/dom/DomEx.lo \
-	gnu/xml/dom/DomDocument.lo gnu/xml/dom/DomXPathExpression.lo \
+	gnu/xml/dom/DTDElementTypeInfo.lo gnu/xml/dom/DomDocument.lo \
+	gnu/xml/dom/DomXPathExpression.lo \
 	gnu/xml/dom/DomDocumentConfiguration.lo \
+	gnu/xml/dom/DomDocumentFragment.lo \
+	gnu/xml/dom/DomProcessingInstruction.lo \
 	gnu/xml/dom/Consumer.lo gnu/xml/dom/DomComment.lo \
 	gnu/xml/dom/DomCharacterData.lo gnu/xml/dom/DomExtern.lo \
 	gnu/xml/dom/DomEntityReference.lo \
@@ -4528,8 +4532,8 @@ am__objects_17 = gnu/xml/xpath/EqualityExpr.lo \
 	gnu/xml/dom/DomText.lo gnu/xml/dom/DomNSResolverContext.lo \
 	gnu/xml/dom/DomNodeIterator.lo gnu/xml/dom/DomNotation.lo \
 	gnu/xml/dom/JAXPFactory.lo gnu/xml/dom/DomIterator.lo \
-	gnu/xml/dom/DomFragment.lo gnu/xml/dom/DomEvent.lo \
-	gnu/xml/dom/DomEntity.lo \
+	gnu/xml/dom/DomEvent.lo gnu/xml/dom/DomEntity.lo \
+	gnu/xml/dom/DomCDATASection.lo gnu/xml/dom/DomDOMException.lo \
 	gnu/xml/transform/GenerateIdFunction.lo \
 	gnu/xml/transform/FormatNumberFunction.lo \
 	gnu/xml/transform/ValueOfNode.lo \
@@ -6740,10 +6744,9 @@ gnu/xml/util/Resolver.java \
 gnu/xml/util/DoParse.java \
 gnu/xml/util/XHTMLWriter.java \
 gnu/xml/util/SAXNullTransformerFactory.java \
-gnu/xml/dom/DomCDATA.java \
 gnu/xml/dom/DomXPathNSResolver.java \
-gnu/xml/dom/ls/DomLSEx.java \
 gnu/xml/dom/ls/FilteredSAXEventSink.java \
+gnu/xml/dom/ls/DomLSException.java \
 gnu/xml/dom/ls/DomLSSerializer.java \
 gnu/xml/dom/ls/DomLSInput.java \
 gnu/xml/dom/ls/DomLSOutput.java	\
@@ -6754,14 +6757,14 @@ gnu/xml/dom/ls/WriterOutputStream.java \
 gnu/xml/dom/DomElement.java \
 gnu/xml/dom/DomNsNode.java \
 gnu/xml/dom/DomAttr.java \
-gnu/xml/dom/DomPI.java \
 gnu/xml/dom/DTDAttributeTypeInfo.java \
 gnu/xml/dom/DomDocumentBuilder.java \
 gnu/xml/dom/DTDElementTypeInfo.java \
-gnu/xml/dom/DomEx.java \
 gnu/xml/dom/DomDocument.java \
 gnu/xml/dom/DomXPathExpression.java \
 gnu/xml/dom/DomDocumentConfiguration.java \
+gnu/xml/dom/DomDocumentFragment.java \
+gnu/xml/dom/DomProcessingInstruction.java \
 gnu/xml/dom/Consumer.java \
 gnu/xml/dom/DomComment.java \
 gnu/xml/dom/DomCharacterData.java \
@@ -6781,9 +6784,10 @@ gnu/xml/dom/DomNodeIterator.java \
 gnu/xml/dom/DomNotation.java \
 gnu/xml/dom/JAXPFactory.java \
 gnu/xml/dom/DomIterator.java \
-gnu/xml/dom/DomFragment.java \
 gnu/xml/dom/DomEvent.java \
 gnu/xml/dom/DomEntity.java \
+gnu/xml/dom/DomCDATASection.java \
+gnu/xml/dom/DomDOMException.java \
 gnu/xml/transform/GenerateIdFunction.java \
 gnu/xml/transform/FormatNumberFunction.java \
 gnu/xml/transform/ValueOfNode.java \
@@ -15436,8 +15440,6 @@ gnu/xml/dom/$(am__dirstamp):
 gnu/xml/dom/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) gnu/xml/dom/$(DEPDIR)
 	@: > gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
-gnu/xml/dom/DomCDATA.lo: gnu/xml/dom/$(am__dirstamp) \
-	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomXPathNSResolver.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/ls/$(am__dirstamp):
@@ -15446,10 +15448,10 @@ gnu/xml/dom/ls/$(am__dirstamp):
 gnu/xml/dom/ls/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) gnu/xml/dom/ls/$(DEPDIR)
 	@: > gnu/xml/dom/ls/$(DEPDIR)/$(am__dirstamp)
-gnu/xml/dom/ls/DomLSEx.lo: gnu/xml/dom/ls/$(am__dirstamp) \
-	gnu/xml/dom/ls/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/ls/FilteredSAXEventSink.lo:  \
 	gnu/xml/dom/ls/$(am__dirstamp) \
+	gnu/xml/dom/ls/$(DEPDIR)/$(am__dirstamp)
+gnu/xml/dom/ls/DomLSException.lo: gnu/xml/dom/ls/$(am__dirstamp) \
 	gnu/xml/dom/ls/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/ls/DomLSSerializer.lo: gnu/xml/dom/ls/$(am__dirstamp) \
 	gnu/xml/dom/ls/$(DEPDIR)/$(am__dirstamp)
@@ -15471,21 +15473,21 @@ gnu/xml/dom/DomNsNode.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomAttr.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
-gnu/xml/dom/DomPI.lo: gnu/xml/dom/$(am__dirstamp) \
-	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DTDAttributeTypeInfo.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomDocumentBuilder.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DTDElementTypeInfo.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
-gnu/xml/dom/DomEx.lo: gnu/xml/dom/$(am__dirstamp) \
-	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomDocument.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomXPathExpression.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomDocumentConfiguration.lo: gnu/xml/dom/$(am__dirstamp) \
+	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
+gnu/xml/dom/DomDocumentFragment.lo: gnu/xml/dom/$(am__dirstamp) \
+	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
+gnu/xml/dom/DomProcessingInstruction.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/Consumer.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
@@ -15525,11 +15527,13 @@ gnu/xml/dom/JAXPFactory.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomIterator.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
-gnu/xml/dom/DomFragment.lo: gnu/xml/dom/$(am__dirstamp) \
-	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomEvent.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/dom/DomEntity.lo: gnu/xml/dom/$(am__dirstamp) \
+	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
+gnu/xml/dom/DomCDATASection.lo: gnu/xml/dom/$(am__dirstamp) \
+	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
+gnu/xml/dom/DomDOMException.lo: gnu/xml/dom/$(am__dirstamp) \
 	gnu/xml/dom/$(DEPDIR)/$(am__dirstamp)
 gnu/xml/transform/$(am__dirstamp):
 	@$(mkdir_p) gnu/xml/transform
@@ -16923,12 +16927,14 @@ mostlyclean-compile:
 	-rm -f gnu/xml/dom/DTDElementTypeInfo.lo
 	-rm -f gnu/xml/dom/DomAttr.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomAttr.lo
-	-rm -f gnu/xml/dom/DomCDATA.$(OBJEXT)
-	-rm -f gnu/xml/dom/DomCDATA.lo
+	-rm -f gnu/xml/dom/DomCDATASection.$(OBJEXT)
+	-rm -f gnu/xml/dom/DomCDATASection.lo
 	-rm -f gnu/xml/dom/DomCharacterData.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomCharacterData.lo
 	-rm -f gnu/xml/dom/DomComment.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomComment.lo
+	-rm -f gnu/xml/dom/DomDOMException.$(OBJEXT)
+	-rm -f gnu/xml/dom/DomDOMException.lo
 	-rm -f gnu/xml/dom/DomDoctype.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomDoctype.lo
 	-rm -f gnu/xml/dom/DomDocument.$(OBJEXT)
@@ -16939,6 +16945,8 @@ mostlyclean-compile:
 	-rm -f gnu/xml/dom/DomDocumentBuilderFactory.lo
 	-rm -f gnu/xml/dom/DomDocumentConfiguration.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomDocumentConfiguration.lo
+	-rm -f gnu/xml/dom/DomDocumentFragment.$(OBJEXT)
+	-rm -f gnu/xml/dom/DomDocumentFragment.lo
 	-rm -f gnu/xml/dom/DomElement.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomElement.lo
 	-rm -f gnu/xml/dom/DomEntity.$(OBJEXT)
@@ -16947,12 +16955,8 @@ mostlyclean-compile:
 	-rm -f gnu/xml/dom/DomEntityReference.lo
 	-rm -f gnu/xml/dom/DomEvent.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomEvent.lo
-	-rm -f gnu/xml/dom/DomEx.$(OBJEXT)
-	-rm -f gnu/xml/dom/DomEx.lo
 	-rm -f gnu/xml/dom/DomExtern.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomExtern.lo
-	-rm -f gnu/xml/dom/DomFragment.$(OBJEXT)
-	-rm -f gnu/xml/dom/DomFragment.lo
 	-rm -f gnu/xml/dom/DomImpl.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomImpl.lo
 	-rm -f gnu/xml/dom/DomIterator.$(OBJEXT)
@@ -16969,8 +16973,8 @@ mostlyclean-compile:
 	-rm -f gnu/xml/dom/DomNotation.lo
 	-rm -f gnu/xml/dom/DomNsNode.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomNsNode.lo
-	-rm -f gnu/xml/dom/DomPI.$(OBJEXT)
-	-rm -f gnu/xml/dom/DomPI.lo
+	-rm -f gnu/xml/dom/DomProcessingInstruction.$(OBJEXT)
+	-rm -f gnu/xml/dom/DomProcessingInstruction.lo
 	-rm -f gnu/xml/dom/DomText.$(OBJEXT)
 	-rm -f gnu/xml/dom/DomText.lo
 	-rm -f gnu/xml/dom/DomXPathExpression.$(OBJEXT)
@@ -16985,8 +16989,8 @@ mostlyclean-compile:
 	-rm -f gnu/xml/dom/ImplementationSource.lo
 	-rm -f gnu/xml/dom/JAXPFactory.$(OBJEXT)
 	-rm -f gnu/xml/dom/JAXPFactory.lo
-	-rm -f gnu/xml/dom/ls/DomLSEx.$(OBJEXT)
-	-rm -f gnu/xml/dom/ls/DomLSEx.lo
+	-rm -f gnu/xml/dom/ls/DomLSException.$(OBJEXT)
+	-rm -f gnu/xml/dom/ls/DomLSException.lo
 	-rm -f gnu/xml/dom/ls/DomLSInput.$(OBJEXT)
 	-rm -f gnu/xml/dom/ls/DomLSInput.lo
 	-rm -f gnu/xml/dom/ls/DomLSOutput.$(OBJEXT)
@@ -21884,21 +21888,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DTDAttributeTypeInfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DTDElementTypeInfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomAttr.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomCDATA.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomCDATASection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomCharacterData.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomComment.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomDOMException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomDoctype.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomDocument.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomDocumentBuilder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomDocumentBuilderFactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomDocumentConfiguration.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomDocumentFragment.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomElement.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomEntity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomEntityReference.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomEx.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomExtern.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomFragment.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomIterator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomNSResolverContext.Plo@am__quote@
@@ -21907,7 +21911,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomNodeIterator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomNotation.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomNsNode.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomPI.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomProcessingInstruction.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomText.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomXPathExpression.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/DomXPathNSResolver.Plo@am__quote@
@@ -21915,7 +21919,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/ImplementationList.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/ImplementationSource.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/$(DEPDIR)/JAXPFactory.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/ls/$(DEPDIR)/DomLSEx.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/ls/$(DEPDIR)/DomLSException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/ls/$(DEPDIR)/DomLSInput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/ls/$(DEPDIR)/DomLSOutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/xml/dom/ls/$(DEPDIR)/DomLSParser.Plo@am__quote@
