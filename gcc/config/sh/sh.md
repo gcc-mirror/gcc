@@ -10689,6 +10689,19 @@ mov.l\\t1f,r0\\n\\
   "byterev	%1, %0"
   [(set_attr "type" "arith_media")])
 
+(define_insn "prefetch"
+  [(prefetch (match_operand:QI 0 "address_operand" "p")
+             (match_operand:SI 1 "const_int_operand" "n")
+             (match_operand:SI 2 "const_int_operand" "n"))]
+  "TARGET_SHMEDIA"
+  "*
+{
+  operands[0] = gen_rtx_MEM (QImode, operands[0]);
+  output_asm_insn (\"ld%M0.b    %m0,r63\", operands);
+  return \"\";
+}"
+  [(set_attr "type" "other")])
+
 ;; The following description  models the
 ;; SH4 pipeline using the DFA based scheduler.
 ;; The DFA based description is better way to model

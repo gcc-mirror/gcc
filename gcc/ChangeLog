@@ -1,3 +1,7 @@
+2003-11-12  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/sh.md (prefetch): New pattern.
+
 2003-11-11  Eric Christopher  <echristo@redhat.com>
 
 	* reload1.c (reload): Verify that addresses for
