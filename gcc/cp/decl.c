@@ -1392,7 +1392,7 @@ poplevel (int keep, int reverse, int functionbody)
 		 there only for backward compatibility.  */
 	      DECL_DEAD_FOR_LOCAL (link) = 1;
 
-	      /* Keep track of what should of have happenned when we
+	      /* Keep track of what should of have happened when we
 		 popped the binding.  */
 	      if (outer_binding && BINDING_VALUE (outer_binding))
 		DECL_SHADOWED_FOR_VAR (link)
@@ -2950,7 +2950,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
 	}
       /* Even if the types match, prefer the new declarations type
-	 for anitipated built-ins, for exception lists, etc...  */
+	 for anticipated built-ins, for exception lists, etc...  */
       else if (DECL_ANTICIPATED (olddecl))
 	TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
 
@@ -3242,7 +3242,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  && TYPE_LANG_SPECIFIC (newtype) && TYPE_LANG_SPECIFIC (oldtype))
 	CLASSTYPE_FRIEND_CLASSES (newtype)
 	  = CLASSTYPE_FRIEND_CLASSES (oldtype);
-\
+
       DECL_ORIGINAL_TYPE (newdecl) = DECL_ORIGINAL_TYPE (olddecl);
     }
 
