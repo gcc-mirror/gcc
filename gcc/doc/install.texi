@@ -1776,7 +1776,8 @@ Systems using processors that implement the DEC Alpha architecture and
 are running the DEC/Compaq Unix (DEC OSF/1, Digital UNIX, or Compaq
 Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
 
-Support for versions before Tru64 UNIX V4.0 is obsoleted in GCC 3.1.
+Support for versions before @code{alpha*-dec-osf4} is obsoleted in GCC
+3.1.  (These are the versions which identify themselves as DEC OSF/1.)
 
 In Tru64 UNIX V5.1, Compaq introduced a new assembler that does not
 currently (2001-06-13) work with @command{mips-tfile}.  As a workaround,

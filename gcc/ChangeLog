@@ -1,3 +1,8 @@
+2002-04-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/install.texi: Clarify which versions of alpha*-dec-osf*
+	are obsoleted.
+
 2002-04-23  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR c/5430
