@@ -1,3 +1,8 @@
+Tue Apr 21 09:43:55 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc/sendmsg.c: Define gen_rtx_MEM() to 1, as is already done
+	for gen_rtx(MEM, ...).
+
 Tue Apr 21 02:15:36 1998  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Rewrite
