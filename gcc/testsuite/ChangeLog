@@ -1,5 +1,8 @@
 2000-11-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.brendan/err-msg8.C: Avoid capricious line-number issues with
+	error messages.
+
 	* g++.mike/p700.C: Don't typedef wchar_t.
 	* g++.mike/p784.C: Likewise.
 	* g++.mike/eb101.C: Don't use __wchar_t.
