@@ -275,14 +275,17 @@ extern int target_flags;
    while the floating point registers may hold only floating point.
    Make it clear that the fp regs could not hold a 16-byte float.  */
 
+/* The casts to int placate a compiler on a microvax,
+   for cross-compiler testing.  */
+
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) < 2 ? 1						\
    : (REGNO) < 4 ? 1						\
    : FP_REGNO_P ((REGNO))					\
-   ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
-       || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
-      && GET_MODE_UNIT_SIZE (MODE) <= 8)			\
-   : (MODE) != QImode)
+   ? (((int) GET_MODE_CLASS (MODE) == (int) MODE_FLOAT		\
+       || (int) GET_MODE_CLASS (MODE) == (int) MODE_COMPLEX_FLOAT)	\
+      && GET_MODE_UNIT_SIZE (MODE) <= 12)			\
+   : (int) (MODE) != (int) QImode)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
