@@ -402,11 +402,9 @@ forms_identifier_p (pfile, first)
 	return false;
 
       buffer->cur++;
-      if (CPP_PEDANTIC (pfile)
-	  && !pfile->state.skipping
-	  && !pfile->warned_dollar)
+      if (pfile->warn_dollars && !pfile->state.skipping)
 	{
-	  pfile->warned_dollar = true;
+	  pfile->warn_dollars = false;
 	  cpp_error (pfile, DL_PEDWARN, "'$' in identifier or number");
 	}
 

@@ -468,6 +468,14 @@ is applied to the standard system directories.
 @xref{System Headers}.
 @end ifset
 
+@item -fdollars-in-identifiers
+@opindex fdollars-in-identifiers
+@anchor{fdollars-in-identifiers}
+Accept @samp{$} in identifiers.
+@ifset cppmanual
+  @xref{Identifier characters}.
+@end ifset
+
 @item -fpreprocessed
 @opindex fpreprocessed
 Indicate to the preprocessor that the input file has already been

@@ -41,9 +41,6 @@ Boston, MA 02111-1307, USA.  */
 	  builtin_define ("__IEEE_FLOAT");	\
     } while (0)
 
-/* By default, allow $ to be part of an identifier.  */
-#define DOLLARS_IN_IDENTIFIERS 2
-
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_FP|MASK_FPREGS|MASK_GAS)
 #undef TARGET_ABI_OPEN_VMS

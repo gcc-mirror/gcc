@@ -1,3 +1,18 @@
+2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.c, c-common.h (dollars_in_ident): Remove.
+	* c-opts.c (DOLLARS_IN_IDENTIFIERS): Default to true.
+	(c_common_init_options, c_common_decode_option): Set dollars_in_ident.
+	* cpphash.h (warned_dollar): Rename warn_dollars.
+	* cppinit.c (struct lang_flags, lang_defaults, cpp_set_lang)
+	Permit dollars regardless of -std=.
+	(post_options): Set warn_dollars.
+	* cpplex.c (forms_identifier_p): Use warn_dollars.
+	* config/darwin.h, config/alpha/vms.h, config/m68hc11/m68hc11.h:
+	Remove redundant definitions of DOLLARS_IN_IDENTIFIERS.
+	* doc/cpp.texi, doc/cppopts.texi, doc/invoke.texi, doc/tm.texi:
+	Update documentation.
+
 2003-05-17  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (m68k_output_function_prologue): Use

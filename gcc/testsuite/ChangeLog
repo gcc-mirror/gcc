@@ -1,3 +1,7 @@
+2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/dollar.c: New test.
+
 2003-05-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/compat/struct-by-value-4_main.c: Split into multiple tests.

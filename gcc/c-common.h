@@ -434,10 +434,6 @@ extern int flag_no_asm;
 
 extern int flag_const_strings;
 
-/* Nonzero means `$' can be in an identifier.  */
-
-extern int dollars_in_ident;
-
 /* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
 
 extern int flag_signed_bitfields;
