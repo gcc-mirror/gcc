@@ -274,6 +274,7 @@ static void find_reloads_address_part PARAMS ((rtx, rtx *, enum reg_class,
 static rtx find_reloads_subreg_address PARAMS ((rtx, int, int,
 						enum reload_type, int, rtx));
 static void copy_replacements_1 PARAMS ((rtx *, rtx *, int));
+static bool have_replacement_p	PARAMS ((rtx *));
 static int find_inc_amount	PARAMS ((rtx, rtx));
 
 #ifdef HAVE_SECONDARY_RELOADS
@@ -2689,6 +2690,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	  recog_data.operand[i] = *recog_data.operand_loc[i];
 	  substed_operand[i] = recog_data.operand[i];
+
+	  /* Address operands are reloaded in their existing mode,
+	     no matter what is specified in the machine description.  */
+	  operand_mode[i] = GET_MODE (recog_data.operand[i]);
 	}
       else if (code == MEM)
 	{
@@ -3302,10 +3307,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			   the address into a base register.  */
 			this_alternative[i] = (int) MODE_BASE_REG_CLASS (VOIDmode);
 			badop = 0;
-
-			/* Address constraints are reloaded in Pmode, no matter
-			   what mode is given in the machine description.  */
-			operand_mode[i] = Pmode;
 			break;
 		      }
 
@@ -3876,9 +3877,20 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    return 0;
 	  }
       }
+
+    /* Generate optional reloads only when optimizing, and only
+       on the last pass through reload.  Also, make sure we do not
+       make an optional reload where we already have a mandatory
+       one; this can happen in the case of address operands.
+
+       To check for mandatory reloads, we use have_replacement_p.
+       Note that this works only on the last pass through reload.  */
+    else if (!optimize || !replace 
+	     || have_replacement_p (recog_data.operand_loc[i]))
+      ; /* Do nothing.  */
+
     else if (goal_alternative_matched[i] < 0
-	     && goal_alternative_matches[i] < 0
-	     && optimize)
+	     && goal_alternative_matches[i] < 0)
       {
 	/* For each non-matching operand that's a MEM or a pseudo-register
 	   that didn't get a hard register, make an optional reload.
@@ -3928,11 +3940,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	   reload, check if this is actually a pseudo register reference;
 	   we then need to emit a USE and/or a CLOBBER so that reload
 	   inheritance will do the right thing.  */
-	else if (replace
-		 && (GET_CODE (operand) == MEM
-		     || (GET_CODE (operand) == REG
-			 && REGNO (operand) >= FIRST_PSEUDO_REGISTER
-			 && reg_renumber [REGNO (operand)] < 0)))
+	else if (GET_CODE (operand) == MEM
+		 || (GET_CODE (operand) == REG
+		     && REGNO (operand) >= FIRST_PSEUDO_REGISTER
+		     && reg_renumber [REGNO (operand)] < 0))
 	  {
 	    operand = *recog_data.operand_loc[i];
 
@@ -3955,8 +3966,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	     && goal_alternative_win[goal_alternative_matches[i]]
 	     && modified[i] == RELOAD_READ
 	     && modified[goal_alternative_matches[i]] == RELOAD_WRITE
-	     && ! no_input_reloads && ! no_output_reloads
-	     && optimize)
+	     && ! no_input_reloads && ! no_output_reloads)
       {
 	/* Similarly, make an optional reload for a pair of matching
 	   objects that are in MEM or a pseudo that didn't get a hard reg.  */
@@ -6129,6 +6139,21 @@ find_replacement (loc)
     }
 
   return *loc;
+}
+
+/* Return true if some replacement was scheduled at LOC.  */
+
+static bool
+have_replacement_p (loc)
+     rtx *loc;
+{
+  struct replacement *r;
+
+  for (r = &replacements[0]; r < &replacements[n_replacements]; r++)
+    if (r->where == loc)
+      return true;
+
+  return false;
 }
 
 /* Return nonzero if register in range [REGNO, ENDREGNO)
