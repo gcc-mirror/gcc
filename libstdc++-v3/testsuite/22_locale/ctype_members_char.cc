@@ -234,9 +234,19 @@ void test02()
   VERIFY( v_c != v_de );
 }
 
+// Dietmar Kühl via Peter Schmid 
+class comma_ctype: public std::ctype<char>
+{
+public:
+  comma_ctype(): std::ctype<char>() { }
+  static void get_table()
+  { classic_table(); }
+};
+
 int main() 
 {
   test01();
   test02();
+
   return 0;
 }

@@ -53,6 +53,15 @@ void test02()
   iterator_type it = std::front_inserter(li);
 }
 
+// Check data member 'container' accessible.
+class test_dm : public std::front_insert_iterator<std::list<int> >
+{
+  container_type l;
+  container_type* p;
+public:
+  test_dm(): std::front_insert_iterator<std::list<int> >(l), p(container) { }
+};
+
 int main() 
 { 
   test01();

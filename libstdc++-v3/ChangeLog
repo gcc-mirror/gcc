@@ -1,4 +1,39 @@
 2002-01-16  Benjamin Kosnik  <bkoz@redhat.com>
+            Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* include/bits/stl_iterator.h (reverse_iterator::_M_current):
+	Deuglify, should be current.
+	(back_insert_iterator::_M_container): Deuglify, should be container.
+	(front_insert_iterator::_M_container): Same.	
+	(insert_iterator::_M_container): Same.
+	* testsuite/24_iterators/reverse_iterator.cc: Add check.
+	* testsuite/24_iterators/back_insert_iterator.cc: Add check.	
+	* testsuite/24_iterators/front_insert_iterator.cc: Same.
+	* testsuite/24_iterators/insert_iterator.cc: Same.
+	
+2002-01-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (ctype<char>::classic_table): Make
+	static.
+	(ctype<char>::_M_ctable): Make static, change name to _S_ctable.
+	* config/os/gnu-linux/bits/ctype_noninline.h: Define _S_ctable.
+	* config/os/solaris/solaris2.7/bits/ctype_noninline.h: Same.
+	* config/os/solaris/solaris2.6/bits/ctype_noninline.h: Same.
+	* config/os/solaris/solaris2.5/bits/ctype_noninline.h: Same.
+	* config/os/newlib/bits/ctype_noninline.h: Same.
+	* config/os/irix/irix6.5/bits/ctype_noninline.h: Same.
+	* config/os/irix/irix5.2/bits/ctype_noninline.h: Same.
+	* config/os/hpux/bits/ctype_noninline.h: Same.
+	* config/os/djgpp/bits/ctype_noninline.h: Same.
+	* config/os/bsd/netbsd/bits/ctype_noninline.h: Same.
+	* config/os/bsd/freebsd/bits/ctype_noninline.h: Same.
+	* config/os/aix/bits/ctype_noninline.h: Same.
+	
+	Testcase by Dietmar Kühl via Peter Schmid 
+	* testsuite/22_locale/ctype_members_char.cc (char>): Add test for
+	classic_table().
+
+2002-01-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libmath/signbitl.c: Copyright years as list, not range.	
 	* libmath/Makefile.am: Same.
