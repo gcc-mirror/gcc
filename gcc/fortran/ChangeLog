@@ -1,3 +1,7 @@
+2005-04-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsic.texi: BES?? functions are not in the f95 standard.
+
 2005-04-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.texi: Document COS, EXP, LOG, LOG10, SIN, SQRT, TAN.
