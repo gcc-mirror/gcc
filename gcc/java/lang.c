@@ -646,3 +646,13 @@ lang_print_xnode (file, node, indent)
      int indent __attribute ((__unused__));
 {
 }
+
+/* Return the typed-based alias set for T, which may be an expression
+   or a type.  Return -1 if we don't do anything special.  */
+
+HOST_WIDE_INT
+lang_get_alias_set (t)
+     tree t;
+{
+  return -1;
+}

@@ -6252,8 +6252,6 @@ init_decl_processing ()
   int wchar_type_size;
   tree array_domain_type;
 
-  lang_get_alias_set = c_get_alias_set;
-
   /* Check to see that the user did not specify an invalid combination
      of command-line options.  */
   if (flag_new_abi && !flag_vtable_thunks)

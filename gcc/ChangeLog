@@ -1,3 +1,12 @@
+2000-06-02  Richard Henderson  <rth@cygnus.com>
+
+	* alias.c (lang_get_alias_set): Remove.
+	(get_alias_set): Call it directly, not indirectly.
+	* c-common.c (lang_get_alias_set): Rename from c_get_alias_set.
+	* c-common.h (c_get_alias_set): Don't declare.
+	* c-decl.c (init_decl_processing): Don't set lang_get_alias_set.
+	* expr.h (lang_get_alias_set): Declare as function, not pointer.
+	
 2000-06-02  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/server.c(sig_handler):  resume closing server on SIGPIPE
