@@ -1,3 +1,18 @@
+Thu Jan 20 01:01:23 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (ix86_compute_frame_size): Remove prototype.
+	(ix86_initial_elimination_offset): Declare.
+	* i386.c (ix86_nsaved_regs): Break out from ...
+	(ix86_can_use_return_insn_p): ... here.
+	(ix86_emit_save_regs): Break out from ...
+	(ix86_expand_prologue): ... here.
+	(ix86_emit_epilogue_esp_adjustment, ix86_emit_restore_regs): Break
+	out from ...
+	(ix86_expand_epilogue): ... here.
+	(ix86_compute_frame_size): Make static, add prototype.
+	(ix86_initial_elimination_offset): Break out from ...
+	* i386.h (INITIAL_ELIMINATION_OFFSET): ... here.
+
 2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* recog.h (OUT_FCN): Delete.

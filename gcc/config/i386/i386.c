@@ -325,6 +325,11 @@ static void ix86_init_machine_status PARAMS ((struct function *));
 static void ix86_mark_machine_status PARAMS ((struct function *));
 static void ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_safe_length_prefix PARAMS ((rtx));
+static HOST_WIDE_INT ix86_compute_frame_size PARAMS((HOST_WIDE_INT, int *));
+static int ix86_nsaved_regs PARAMS((void));
+static void ix86_emit_save_regs PARAMS((void));
+static void ix86_emit_restore_regs PARAMS((void));
+static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
 
 struct ix86_address
 {
@@ -1434,13 +1439,6 @@ symbolic_reference_mentioned_p (op)
 int
 ix86_can_use_return_insn_p ()
 {
-  int regno;
-  int nregs = 0;
-  int reglimit = (frame_pointer_needed
-		  ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool);
-
 #ifdef NON_SAVING_SETJMP
   if (NON_SAVING_SETJMP && current_function_calls_setjmp)
     return 0;
@@ -1449,12 +1447,7 @@ ix86_can_use_return_insn_p ()
   if (! reload_completed)
     return 0;
 
-  for (regno = reglimit - 1; regno >= 0; regno--)
-    if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-      nregs++;
-
-  return nregs == 0 || ! frame_pointer_needed;
+  return ix86_nsaved_regs () == 0 || ! frame_pointer_needed;
 }
 
 static char *pic_label_name;
@@ -1547,6 +1540,61 @@ gen_push (arg)
 		      arg);
 }
 
+/* Return number of registers to be saved on the stack.  */
+
+static int
+ix86_nsaved_regs ()
+{
+  int nregs = 0;
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
+  int limit = (frame_pointer_needed
+	       ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+  int regno;
+
+  for (regno = limit - 1; regno >= 0; regno--)
+    if ((regs_ever_live[regno] && ! call_used_regs[regno])
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
+      {
+	nregs ++;
+      }
+  return nregs;
+}
+
+/* Return the offset between two registers, one to be eliminated, and the other
+   its replacement, at the start of a routine.  */
+
+HOST_WIDE_INT
+ix86_initial_elimination_offset (from, to)
+     int from;
+     int to;
+{
+  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+    return 8;			/* Skip saved PC and previous frame pointer */
+  else
+    {
+      int nregs;
+      int poffset;
+      int offset;
+      int preferred_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+      HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (),
+						     &nregs);
+
+      offset = (tsize + nregs * UNITS_PER_WORD);
+
+      poffset = 4;
+      if (frame_pointer_needed)
+	poffset += UNITS_PER_WORD;
+
+      if (from == ARG_POINTER_REGNUM)
+	offset += poffset;
+      else
+	offset -= ((poffset + preferred_alignment - 1)
+		   & -preferred_alignment) - poffset;
+      return offset;
+    }
+}
+
 /* Compute the size of local storage taking into consideration the
    desired stack alignment which is to be maintained.  Also determine
    the number of registers saved below the local storage.  */
@@ -1608,13 +1656,33 @@ ix86_compute_frame_size (size, nregs_on_stack)
   return size + padding;
 }
 
+/* Emit code to save registers in the prologue.  */
+
+static void
+ix86_emit_save_regs ()
+{
+  register int regno;
+  int limit;
+  rtx insn;
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
+  limit = (frame_pointer_needed
+	   ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+
+  for (regno = limit - 1; regno >= 0; regno--)
+    if ((regs_ever_live[regno] && !call_used_regs[regno])
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
+      {
+	insn = emit_insn (gen_push (gen_rtx_REG (SImode, regno)));
+	RTX_FRAME_RELATED_P (insn) = 1;
+      }
+}
+
 /* Expand the prologue into a bunch of separate insns. */
 
 void
 ix86_expand_prologue ()
 {
-  register int regno;
-  int limit;
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
   HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), (int *)0);
@@ -1664,15 +1732,7 @@ ix86_expand_prologue ()
 			     CALL_INSN_FUNCTION_USAGE (insn));
     }
 
-  limit = (frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
-  for (regno = limit - 1; regno >= 0; regno--)
-    if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-      {
-	insn = emit_insn (gen_push (gen_rtx_REG (SImode, regno)));
-	RTX_FRAME_RELATED_P (insn) = 1;
-      }
-
+  ix86_emit_save_regs ();
 #ifdef SUBTARGET_PROLOGUE
   SUBTARGET_PROLOGUE;
 #endif  
@@ -1687,14 +1747,80 @@ ix86_expand_prologue ()
     emit_insn (gen_blockage ());
 }
 
+/* Emit code to pop all registers from stack.  */
+
+static void
+ix86_emit_restore_regs ()
+{
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
+  int limit = (frame_pointer_needed
+	       ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+  int regno;
+
+  for (regno = 0; regno < limit; regno++)
+    if ((regs_ever_live[regno] && !call_used_regs[regno])
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
+      {
+	emit_insn (gen_popsi1 (gen_rtx_REG (SImode, regno)));
+      }
+}
+
+/* Emit code to add TSIZE to esp value.  Use POP instruction when
+   profitable.  */
+
+static void
+ix86_emit_epilogue_esp_adjustment (tsize)
+     int tsize;
+{
+  /* Intel's docs say that for 4 or 8 bytes of stack frame one should
+     use `pop' and not `add'.  */
+  int use_pop = tsize == 4;
+  rtx edx = 0, ecx;
+
+  /* Use two pops only for the Pentium processors.  */
+  if (tsize == 8 && !TARGET_386 && !TARGET_486)
+    {
+      rtx retval = current_function_return_rtx;
+
+      edx = gen_rtx_REG (SImode, 1);
+
+      /* This case is a bit more complex.  Since we cannot pop into
+         %ecx twice we need a second register.  But this is only
+         available if the return value is not of DImode in which
+         case the %edx register is not available.  */
+      use_pop = (retval == NULL
+		 || !reg_overlap_mentioned_p (edx, retval));
+    }
+
+  if (use_pop)
+    {
+      ecx = gen_rtx_REG (SImode, 2);
+
+      /* We have to prevent the two pops here from being scheduled.
+         GCC otherwise would try in some situation to put other
+         instructions in between them which has a bad effect.  */
+      emit_insn (gen_blockage ());
+      emit_insn (gen_popsi1 (ecx));
+      if (tsize == 8)
+	emit_insn (gen_popsi1 (edx));
+    }
+  else
+    {
+      /* If there is no frame pointer, we must still release the frame. */
+      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+			     GEN_INT (tsize)));
+    }
+}
+
 /* Restore function stack, frame, and registers. */
 
 void
 ix86_expand_epilogue ()
 {
-  register int regno;
-  register int limit;
+  int regno;
   int nregs;
+  int limit;
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
   int sp_valid = !frame_pointer_needed || current_function_sp_is_unchanging;
@@ -1710,9 +1836,6 @@ ix86_expand_epilogue ()
      less work than reloading sp and popping the register.  Otherwise,
      restore sp (if necessary) and pop the registers. */
 
-  limit = (frame_pointer_needed
-	   ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
-
   if (nregs > 1 || sp_valid)
     {
       if ( !sp_valid )
@@ -1724,15 +1847,12 @@ ix86_expand_epilogue ()
 	  emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx, addr_offset));
 	}
 
-      for (regno = 0; regno < limit; regno++)
-	if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-	  {
-	    emit_insn (gen_popsi1 (gen_rtx_REG (SImode, regno)));
-	  }
+      ix86_emit_restore_regs ();
     }
   else
     {
+      limit = (frame_pointer_needed
+	       ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
       for (regno = 0; regno < limit; regno++)
 	if ((regs_ever_live[regno] && ! call_used_regs[regno])
 	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
@@ -1756,46 +1876,7 @@ ix86_expand_epilogue ()
 	}
     }
   else if (tsize)
-    {
-      /* Intel's docs say that for 4 or 8 bytes of stack frame one should
-	 use `pop' and not `add'.  */
-      int use_pop = tsize == 4;
-      rtx edx = 0, ecx;
-
-      /* Use two pops only for the Pentium processors.  */
-      if (tsize == 8 && !TARGET_386 && !TARGET_486)
-	{
-	  rtx retval = current_function_return_rtx;
-
-	  edx = gen_rtx_REG (SImode, 1);
-
-	  /* This case is a bit more complex.  Since we cannot pop into
-	     %ecx twice we need a second register.  But this is only
-	     available if the return value is not of DImode in which
-	     case the %edx register is not available.  */
-	  use_pop = (retval == NULL
-		     || ! reg_overlap_mentioned_p (edx, retval));
-	}
-
-      if (use_pop)
-	{
-	  ecx = gen_rtx_REG (SImode, 2);
-
-	  /* We have to prevent the two pops here from being scheduled.
-	     GCC otherwise would try in some situation to put other
-	     instructions in between them which has a bad effect.  */
-	  emit_insn (gen_blockage ());
-	  emit_insn (gen_popsi1 (ecx));
-	  if (tsize == 8)
-	    emit_insn (gen_popsi1 (edx));
-	}
-      else
-	{
-	  /* If there is no frame pointer, we must still release the frame. */
-	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				 GEN_INT (tsize)));
-	}
-    }
+    ix86_emit_epilogue_esp_adjustment (tsize);
 
 #ifdef FUNCTION_BLOCK_PROFILER_EXIT
   if (profile_block_flag == 2)
