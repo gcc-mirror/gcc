@@ -522,12 +522,11 @@ static tree src_parse_roots[1];
 %type	 <node>		type_declaration compilation_unit
 			field_declaration method_declaration extends_interfaces
                         interfaces interface_type_list
-                        class_member_declaration
                         import_declarations package_declaration 
                         type_declarations interface_body
 			interface_member_declaration constant_declaration
 			interface_member_declarations interface_type
-			abstract_method_declaration interface_type_list
+			abstract_method_declaration
 %type	 <node>		class_body_declaration class_member_declaration
 			static_initializer constructor_declaration block
 %type	 <node>		class_body_declarations constructor_header
@@ -556,7 +555,7 @@ static tree src_parse_roots[1];
 			post_increment_expression post_decrement_expression
 			unary_expression_not_plus_minus unary_expression
 			pre_increment_expression pre_decrement_expression
-			unary_expression_not_plus_minus cast_expression
+			cast_expression
 			multiplicative_expression additive_expression
 			shift_expression relational_expression 
 			equality_expression and_expression 
@@ -852,9 +851,11 @@ class_declaration:
 	modifiers CLASS_TK identifier super interfaces
 		{ create_class ($1, $3, $4, $5); }
 	class_body
+		{;}
 |	CLASS_TK identifier super interfaces 
 		{ create_class (0, $2, $3, $4); }
 	class_body
+		{;}
 |	modifiers CLASS_TK error
 		{yyerror ("Missing class name"); RECOVER;}
 |	CLASS_TK error
@@ -1276,15 +1277,19 @@ interface_declaration:
 	INTERFACE_TK identifier
 		{ create_interface (0, $2, NULL_TREE); }
 	interface_body
+		{ ; }
 |	modifiers INTERFACE_TK identifier
 		{ create_interface ($1, $3, NULL_TREE); }
 	interface_body
+		{ ; }
 |	INTERFACE_TK identifier extends_interfaces
 		{ create_interface (0, $2, $3);	}
 	interface_body
+		{ ; }
 |	modifiers INTERFACE_TK identifier extends_interfaces
 		{ create_interface ($1, $3, $4); }
 	interface_body
+		{ ; }
 |	INTERFACE_TK identifier error
 		{yyerror ("'{' expected"); RECOVER;}
 |	modifiers INTERFACE_TK identifier error
@@ -1904,6 +1909,7 @@ catch_clause:
 		  exit_block ();
 		  $$ = $1;
 		}
+;
 
 catch_clause_parameter:
 	CATCH_TK OP_TK formal_parameter CP_TK
