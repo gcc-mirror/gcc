@@ -22,9 +22,13 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "flags.h"
+#include "tree.h"
 #include "rtl.h"
 #include "output.h"
 #include "dwarf2asm.h"
+#include "dwarf2.h"
+#include "splay-tree.h"
+#include "ggc.h"
 #include "tm_p.h"
 
 
@@ -646,4 +650,176 @@ dw2_asm_output_delta_sleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
   fputc ('\n', asm_out_file);
 
   va_end (ap);
+}
+
+static rtx dw2_force_const_mem PARAMS ((rtx));
+static int dw2_output_indirect_constant_1 PARAMS ((splay_tree_node, void *));
+
+static splay_tree indirect_pool;
+
+static rtx
+dw2_force_const_mem (x)
+     rtx x;
+{
+  splay_tree_node node;
+  const char *const_sym;
+
+  if (! indirect_pool)
+    indirect_pool = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+
+  if (GET_CODE (x) != SYMBOL_REF)
+    abort ();
+  node = splay_tree_lookup (indirect_pool, (splay_tree_key) XSTR (x, 0));
+  if (node)
+    const_sym = (const char *) node->value;
+  else
+    {
+      extern int const_labelno;
+      char label[32];
+      tree id;
+
+      ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
+      ++const_labelno;
+      const_sym = ggc_strdup (label);
+
+      id = maybe_get_identifier (XSTR (x, 0));
+      if (id)
+	TREE_SYMBOL_REFERENCED (id) = 1;
+
+      splay_tree_insert (indirect_pool, (splay_tree_key) XSTR (x, 0),
+			 (splay_tree_value) const_sym);
+    }
+
+  return gen_rtx_SYMBOL_REF (Pmode, const_sym);
+}
+
+static int
+dw2_output_indirect_constant_1 (node, data)
+     splay_tree_node node;
+     void* data ATTRIBUTE_UNUSED;
+{
+  const char *label, *sym;
+  rtx sym_ref;
+
+  label = (const char *) node->value;
+  sym = (const char *) node->key;
+  sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
+
+  ASM_OUTPUT_LABEL (asm_out_file, label);
+  assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, 1);
+
+  return 0;
+}
+
+void
+dw2_output_indirect_constants ()
+{
+  if (! indirect_pool)
+    return;
+
+  /* Assume that the whole reason we're emitting these symbol references
+     indirectly is that they contain dynamic relocations, and are thus
+     read-write.  If there was no possibility of a dynamic relocation, we
+     might as well have used a direct relocation.  */
+  data_section ();
+
+  /* Everything we're emitting is a pointer.  Align appropriately.  */
+  assemble_align (POINTER_SIZE);
+
+  splay_tree_foreach (indirect_pool, dw2_output_indirect_constant_1, NULL);
+}
+
+void
+dw2_asm_output_encoded_addr_rtx (encoding, addr)
+     int encoding;
+     rtx addr;
+{
+  int size;
+
+  switch (encoding & 0x07)
+    {
+    case DW_EH_PE_absptr:
+      size = POINTER_SIZE / BITS_PER_UNIT;
+      break;
+    case DW_EH_PE_udata2:
+      size = 2;
+      break;
+    case DW_EH_PE_udata4:
+      size = 4;
+      break;
+    case DW_EH_PE_udata8:
+      size = 8;
+      break;
+    default:
+      abort ();
+    }
+
+  /* NULL is _always_ represented as a plain zero.  */
+  if (addr == const0_rtx)
+    {
+      assemble_integer (addr, size, 1);
+      return;
+    }
+
+ restart:
+
+  /* Allow the target first crack at emitting this.  Some of the
+     special relocations require special directives instead of 
+     just ".4byte" or whatever.  */
+#ifdef ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
+  ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(asm_out_file, encoding, size, addr, done);
+#endif
+
+  /* Indirection is used to get dynamic relocations out of a read-only
+     section.  */
+  if (encoding & DW_EH_PE_indirect)
+    {
+      /* It is very tempting to use force_const_mem so that we share data
+	 with the normal constant pool.  However, we've already emitted
+	 the constant pool for this function.  Moreover, we'd like to share
+	 these constants across the entire unit of translation, or better,
+	 across the entire application (or DSO).  */
+      addr = dw2_force_const_mem (addr);
+      encoding &= ~DW_EH_PE_indirect;
+      goto restart;
+    }
+
+  switch (encoding & 0xF0)
+    {
+    case DW_EH_PE_absptr:
+#ifdef UNALIGNED_INT_ASM_OP
+      fputs (unaligned_integer_asm_op (size), asm_out_file);
+      output_addr_const (asm_out_file, addr);
+#else
+      assemble_integer (addr, size, 1);
+#endif
+      break;
+
+    case DW_EH_PE_pcrel:
+      if (GET_CODE (addr) != SYMBOL_REF)
+	abort ();
+#ifdef ASM_OUTPUT_DWARF_PCREL
+      ASM_OUTPUT_DWARF_PCREL (asm_out_file, size, XSTR (addr, 0));
+#else
+#ifdef UNALIGNED_INT_ASM_OP
+      fputs (unaligned_integer_asm_op (size), asm_out_file);
+      assemble_name (asm_out_file, XSTR (addr, 0));
+      fputc ('-', asm_out_file);
+      fputc ('.', asm_out_file);
+#else
+      abort ();
+#endif
+#endif
+      break;
+
+    default:
+      /* Other encodings should have been handled by 
+	 ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX.  */
+      abort ();
+    }
+
+#ifdef ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
+ done:
+#endif
+  fputc ('\n', asm_out_file);
 }

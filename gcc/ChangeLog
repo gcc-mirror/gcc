@@ -1,5 +1,57 @@
 2001-05-11  Richard Henderson  <rth@redhat.com>
 
+	* defaults.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
+	* dwarf2asm.c (dw2_force_const_mem, dw2_output_indirect_constant_1,
+	dw2_output_indirect_constants, dw2_asm_output_encoded_addr_rtx): New.
+	* dwarf2asm.h (dw2_asm_output_encoded_addr_rtx): Prototype.
+	(dw2_output_indirect_constants): Prototype.
+	* dwarf2out.c (dwarf2out_begin_prologue): Generate
+	current_function_func_begin_label if we'll need it for EH.  Exit
+	early for IA64_UNWIND_INFO.
+	* except.c: Get DW_EH_PE_* defines from dwarf2.h.
+	(eh_data_format_name): Update for indirect references.
+	(output_function_exception_table): Care for IA64_UNWIND_INFO.
+	Handle ASM_PREFERRED_EH_DATA_FORMAT.
+	* except.h (MUST_USE_SJLJ_EXCEPTIONS): IA64_UNWIND_INFO needn't
+	define HAVE_eh_return etc.
+	* final.c (final_start_function): Always call dwarf2out_begin_prologue.
+	(final_end_function): Don't call output_function_exception_table.
+	* toplev.c (compile_file): Call dw2_output_indirect_constants.
+	(rest_of_compilation): Invoke output_function_exception_table 
+	for ia64 before assemble_end_function.
+	* tm.texi (ASM_PREFERRED_EH_DATA_FORMAT): Document.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Document.
+
+	* unwind-dw2.c (_Unwind_GetTextRelBase, _Unwind_GetDataRelBase): New.
+	* unwind.h: Declare them.
+	* libgcc-std.ver: Export them.
+	* unwind-pe.h: New file.
+
+	* config/alpha/elf.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
+
+	* config/ia64/fde-glibc.c: Use "struct unw_table_entry"
+	instead of "fde".
+	(find_fde_for_dso): Extract DT_PLTGOT.
+	(_Unwind_FindTableEntry): Rename from __ia64_find_fde; return
+	the segment and gp as well.
+	* config/ia64/frame-ia64.c: Remove file.
+	* config/ia64/frame-ia64.h: Remove file.
+	* config/ia64/unwind-ia64.c: New file.
+	* config/ia64/unwind-ia64.h: New file.
+	* config/ia64/ia64.h (ASM_OUTPUT_EH_CHAR): Remove.
+	(ASM_OUTPUT_EH_SHORT, ASM_OUTPUT_EH_INT): Remove.
+	(ASM_OUTPUT_EH_DOUBLE_INT): Remove.
+	(ASM_PREFERRED_EH_DATA_FORMAT): New.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): New.
+	(IA64_UNWIND_INFO): Re-enable.
+	(HANDLER_SECTION): Remove.
+	(EH_RETURN_DATA_REGNO): New.
+	* config/ia64/ia64.md (exception_receiver): Remove.
+	* config/ia64/t-glibc (LIB2ADDEH): Re-enable.
+	* config/ia64/t-ia64 (LIB2ADDEH): Re-enable.
+
+2001-05-11  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.c (group_barrier_needed_p): Don't allow
 	calls and jumps to be bundled together.
 	(ia64_reorg): Emit a break after a noreturn call that ends

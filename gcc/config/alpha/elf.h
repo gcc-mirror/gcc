@@ -685,3 +685,16 @@ void FN ()					\
 #undef UNALIGNED_SHORT_ASM_OP
 #undef UNALIGNED_INT_ASM_OP
 #undef UNALIGNED_DOUBLE_INT_ASM_OP
+
+/* ??? This should be possible for ECOFF as well, since the relocations
+   exist.  But the assembler doesn't seem to create them.  */
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.
+
+   Since application size is already constrained to <2GB by the form of
+   the ldgp relocation, we can use a 32-bit pc-relative relocation to
+   static data.  Dynamic data is accessed indirectly to allow for read
+   only EH sections.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)       \
+  (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4)

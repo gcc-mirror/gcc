@@ -2553,6 +2553,33 @@ the @code{eh_return} instruction pattern should be used instead.
 If you want to support call frame exception handling, you must
 define either this macro or the @code{eh_return} instruction pattern.
 
+@findex ASM_PREFERRED_EH_DATA_FORMAT
+@item ASM_PREFERRED_EH_DATA_FORMAT(@var{CODE}, @var{GLOBAL})
+This macro chooses the encoding of pointers embedded in the exception
+handling sections.  If at all possible, this should be defined such
+that the exception handling section will not require dynamic relocations,
+and so may be read-only.
+
+@var{CODE} is 0 for data, 1 for code labels, 2 for function pointers.
+@var{GLOBAL} is true if the symbol may be affected by dynamic relocations.
+The macro should return a combination of the @code{DW_EH_PE_*} defines
+as found in @file{dwarf2.h}.
+
+If this macro is not defined, pointers will not be encoded but 
+represented directly.
+
+@findex ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
+@item ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(@var{FILE}, @var{ENCODING}, @var{SIZE}, @var{ADDR}, @var{DONE})
+This macro allows the target to emit whatever special magic is required
+to represent the encoding chosen by @code{ASM_PREFERRED_EH_DATA_FORMAT}.
+Generic code takes care of pc-relative and indirect encodings; this must
+be defined if the target uses text-relative or data-relative encodings.
+
+This is a C statement that branches to @var{DONE} if the format was
+handled.  @var{ENCODING} is the format chosen, @var{SIZE} is the number
+of bytes that the format occupies, @var{ADDR} is the @code{SYMBOL_REF}
+to be emitted.
+
 @findex SMALL_STACK
 @item SMALL_STACK
 Define this macro if the stack size for the target is very small.  This

@@ -318,5 +318,12 @@ do {								\
 #endif
 #endif
 
+/* Select a format to encode pointers in exception handling data.  We
+   prefer those that result in fewer dynamic relocations.  Assume no
+   special support here and encode direct references.  */
+#ifndef ASM_PREFERRED_EH_DATA_FORMAT
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  DW_EH_PE_absptr
+#endif
+
 #endif  /* GCC_DEFAULTS_H */
 

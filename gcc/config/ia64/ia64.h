@@ -2149,19 +2149,6 @@ do {									\
 } while (0)
 
 
-/* Output EH data to the unwind segment. */
-#define ASM_OUTPUT_EH_CHAR(FILE, VALUE)					\
-		ASM_OUTPUT_XDATA_CHAR(FILE, ".IA_64.unwind_info", VALUE)
-
-#define ASM_OUTPUT_EH_SHORT(FILE, VALUE)				\
-		ASM_OUTPUT_XDATA_SHORT(FILE, ".IA_64.unwind_info", VALUE)
-
-#define ASM_OUTPUT_EH_INT(FILE, VALUE)					\
-		ASM_OUTPUT_XDATA_INT(FILE, ".IA_64.unwind_info", VALUE)
-
-#define ASM_OUTPUT_EH_DOUBLE_INT(FILE, VALUE)				\
-		ASM_OUTPUT_XDATA_DOUBLE_INT(FILE, ".IA_64.unwind_info", VALUE)
-
 /* A C statement to output to the stdio stream STREAM an assembler instruction
    to assemble a single byte containing the number VALUE.  */
 
@@ -2473,26 +2460,6 @@ do {									\
 
 /* Assembler Commands for Exception Regions.  */
 
-/* ??? This entire section of ia64.h needs to be implemented and then cleaned
-   up.  */
-
-/* A C expression to output text to mark the start of an exception region.
-
-   This macro need not be defined on most platforms.  */
-/* #define ASM_OUTPUT_EH_REGION_BEG() */
-
-/* A C expression to output text to mark the end of an exception region.
-
-   This macro need not be defined on most platforms.  */
-/* #define ASM_OUTPUT_EH_REGION_END() */
-
-/* A C expression to switch to the section in which the main exception table is
-   to be placed.  The default is a section named `.gcc_except_table' on machines
-   that support named sections via `ASM_OUTPUT_SECTION_NAME', otherwise if `-fpic'
-   or `-fPIC' is in effect, the `data_section', otherwise the
-   `readonly_data_section'.  */
-/* #define EXCEPTION_SECTION() */
-
 /* If defined, a C string constant for the assembler operation to switch to the
    section for exception handling frame unwind information.  If not defined,
    GNU CC will provide a default definition if the target supports named
@@ -2503,26 +2470,34 @@ do {									\
    information and the default definition does not work.  */
 #define EH_FRAME_SECTION_ASM_OP "\t.section\t.IA_64.unwind,\"aw\""
 
-/* A C expression that is nonzero if the normal exception table output should
-   be omitted.
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)	\
+  (((CODE) == 1 ? DW_EH_PE_textrel : DW_EH_PE_datarel)	\
+   | ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_udata8)
 
-   This macro need not be defined on most platforms.  */
-/* #define OMIT_EH_TABLE() */
+/* Handle special EH pointer encodings.  Absolute, pc-relative, and
+   indirect are handled automatically.  */
+#define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE) \
+  do {									\
+    const char *reltag = NULL;						\
+    if (((ENCODING) & 0xF0) == DW_EH_PE_textrel)			\
+      reltag = "@segrel(";						\
+    else if (((ENCODING) & 0xF0) == DW_EH_PE_datarel)			\
+      reltag = "@gprel(";						\
+    if (reltag)								\
+      {									\
+	fputs (((SIZE) == 4 ? UNALIGNED_INT_ASM_OP			\
+	        : (SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP		\
+		: (abort (), "")), FILE);				\
+	fputs (reltag, FILE);						\
+	assemble_name (FILE, XSTR (ADDR, 0));				\
+	fputc (')', FILE);						\
+	goto DONE;							\
+      }									\
+  } while (0)
 
-/* Alternate runtime support for looking up an exception at runtime and finding
-   the associated handler, if the default method won't work.
-
-   This macro need not be defined on most platforms.  */
-/* #define EH_TABLE_LOOKUP() */
-
-/* A C expression that decides whether or not the current function needs to
-   have a function unwinder generated for it.  See the file `except.c' for
-   details on when to define this, and how.  */
-/* #define DOESNT_NEED_UNWINDER */
-
-/* An rtx used to mask the return address found via RETURN_ADDR_RTX, so that it
-   does not contain any extraneous set bits in it.  */
-/* #define MASK_RETURN_ADDR */
 
 /* Assembler Commands for Alignment.  */
 
@@ -2846,12 +2821,10 @@ do {									\
 
 extern int ia64_final_schedule;
 
-/* ??? Hack until frame-ia64.c is updated.
 #define IA64_UNWIND_INFO	1
-*/
-
-#define HANDLER_SECTION fprintf (asm_out_file, "\t.personality\t__ia64_personality_v1\n\t.handlerdata\n");
 #define IA64_UNWIND_EMIT(f,i)	process_for_unwind_directive (f,i)
+
+#define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 15 : INVALID_REGNUM)
 
 /* This function contains machine specific function data.  */
 struct machine_function

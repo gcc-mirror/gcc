@@ -1904,13 +1904,34 @@ dwarf2out_begin_prologue ()
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   register dw_fde_ref fde;
 
+  current_function_func_begin_label = 0;
+
+#ifdef IA64_UNWIND_INFO
+  /* ??? current_function_func_begin_label is also used by except.c
+     for call-site information.  We must emit this label if it might
+     be used.  */
+  if ((! flag_exceptions || USING_SJLJ_EXCEPTIONS)
+      && ! dwarf2out_do_frame ())
+    return;
+#else
+  if (! dwarf2out_do_frame ())
+    return;
+#endif
+
   ++current_funcdef_number;
 
   function_section (current_function_decl);
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_BEGIN_LABEL,
 			       current_funcdef_number);
-  ASM_OUTPUT_LABEL (asm_out_file, label);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, FUNC_BEGIN_LABEL,
+			  current_funcdef_number);
   current_function_func_begin_label = get_identifier (label);
+
+#ifdef IA64_UNWIND_INFO
+  /* We can elide the fde allocation if we're not emitting debug info.  */
+  if (! dwarf2out_do_frame ())
+    return;
+#endif
 
   /* Expand the fde table if necessary.  */
   if (fde_table_in_use == fde_table_allocated)

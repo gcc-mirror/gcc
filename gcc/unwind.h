@@ -161,6 +161,31 @@ extern _Unwind_Reason_Code _Unwind_SjLj_ForcedUnwind
      (struct _Unwind_Exception *, _Unwind_Stop_Fn, void *);
 extern void _Unwind_SjLj_Resume (struct _Unwind_Exception *);
 
+/* @@@ The following provide access to the base addresses for text
+   and data-relative addressing in the LDSA.  In order to stay link
+   compatible with the standard ABI for IA-64, we inline these.  */
+
+#ifdef __ia64__
+#include <stdlib.h>
+
+static inline _Unwind_Ptr
+_Unwind_GetDataRelBase (struct _Unwind_Context *_C)
+{
+  /* The GP is stored in R1.  */
+  return _Unwind_GetGR (_C, 1);
+}
+
+static inline _Unwind_Ptr
+_Unwind_GetTextRelBase (struct _Unwind_Context *_C)
+{
+  abort ();
+  return 0;
+}
+#else
+extern _Unwind_Ptr _Unwind_GetDataRelBase (struct _Unwind_Context *);
+extern _Unwind_Ptr _Unwind_GetTextRelBase (struct _Unwind_Context *);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

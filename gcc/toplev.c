@@ -2404,6 +2404,8 @@ compile_file (name)
 
   /* Output some stuff at end of file if nec.  */
 
+  dw2_output_indirect_constants ();
+
   end_final (dump_base_name);
 
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
@@ -3721,9 +3723,19 @@ rest_of_compilation (decl)
     final_start_function (insns, asm_out_file, optimize);
     final (insns, asm_out_file, optimize, 0);
     final_end_function (insns, asm_out_file, optimize);
+
+#ifdef IA64_UNWIND_INFO
+    /* ??? The IA-64 ".handlerdata" directive must be issued before
+       the ".endp" directive that closes the procedure descriptor.  */
+    output_function_exception_table ();
+#endif
+
     assemble_end_function (decl, fnname);
 
+#ifndef IA64_UNWIND_INFO
+    /* Otherwise, it feels unclean to switch sections in the middle.  */
     output_function_exception_table ();
+#endif
 
     if (! quiet_flag)
       fflush (asm_out_file);
