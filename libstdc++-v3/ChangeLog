@@ -1,3 +1,12 @@
+2003-06-26  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan C. Myers  <ncm-nospam@cantrip.org>
+
+	* include/bits/fstream.tcc (_M_underflow): When the actual
+	end of file is reached, set 'uncommitted' mode to allow a
+	next write without an intervening seek (see C++98 27.8.1.1,2
+	and C89 7.9.5.3).
+	* testsuite/27_io/basic_filebuf/underflow/char/2.cc: New.
+
 2003-06-25  Nathan C. Myers  <ncm-nospam@cantrip.org>
 
 	* include/bits/streambuf.tcc (sbumpc, sputbackc, sungetc,
