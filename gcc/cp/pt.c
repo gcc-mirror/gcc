@@ -4676,16 +4676,11 @@ type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 	      if (comptypes (parm, type, 1))
 		continue;
 	    }
-	  else if (arg)
-	    {
-	      if (can_convert_arg (parm, type, arg))
-		continue;
-	    }
 	  else
-	    {
-	      if (can_convert (parm, type))
-		continue;
-	    }
+	    /* It might work; we shouldn't check now, because we might
+	       get into infinite recursion.  Overload resolution will
+	       handle it.  */
+	    continue;
 
 	  return 1;
 	}

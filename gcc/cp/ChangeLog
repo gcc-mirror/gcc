@@ -1,3 +1,8 @@
+Tue Jan 27 01:44:02 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (type_unification_real): Just accept function parms that
+ 	don't use any template parms.
+
 Sun Jan 25 03:30:00 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (cp_finish_decl): When bailing on a comdat variable, also
