@@ -1,3 +1,9 @@
+2003-07-10  Kelley Cook  <kelleycook@wideopenwest.com>
+        
+	* Makefile.in (options.h): Depend on Makefile.  Add move-if-change
+	to opts.sh command line.
+	* opts.sh: Write to temporary files with a move-if-change at the end.
+
 2003-06-30  Denis Chertykov  <denisc@overta.ru>
             Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
 
