@@ -172,12 +172,11 @@
 
 
 ;; This reservation is for conditional move based on integer
-;; or floating point CC.  This could probably use some refinement
-;; as "move" type attr seems to be overloaded in rtl.
-(define_insn_reservation "ir_sr70_move"
+;; or floating point CC.
+(define_insn_reservation "ir_sr70_condmove"
                                4
                           (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "move"))
+                               (eq_attr "type" "condmove"))
                          "ri_insns")
 
 ;; Try to discriminate move-from-cp1 versus move-to-cp1 as latencies
@@ -206,7 +205,7 @@
 (define_insn_reservation "ir_sr70_arith"
                                1
                           (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "arith,darith,const"))
+                               (eq_attr "type" "move,arith,darith,const"))
                          "ri_insns")
 
 ;; emulate repeat (dispatch stall) by spending extra cycle(s) in

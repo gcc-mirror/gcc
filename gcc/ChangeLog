@@ -1,3 +1,13 @@
+2003-07-15  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (define_attr type): Add condmove.  Use it for
+	the conditional move patterns.
+	* config/mips/5400.md (ir_vr54_move): Rename to ir_vr54_condmove.
+	Check for condmove type.
+	(ir_vr54_arith): Add move type.
+	* config/mips/5500.md (ir_vr55_move, ir_vr55_arith): Likewise.
+	* config/mips/sr71k.md (ir_sr70_move, ir_sr70_arith): Likewise.
+
 2003-07-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (print_help): Remove.
