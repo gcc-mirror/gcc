@@ -1,3 +1,10 @@
+2001-11-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (.po.pox): Look both in srcdir and builddir
+	for $(PACKAGE).pot.
+	(po/$(PACKAGE).pot): Don't move-if-change the new potfile over
+	to the source directory.
+
 2001-11-09 Ben Elliston  <bje@redhat.com>
 	   Michael Meissner  <meissner@redhat.com>
            Andrew MacLeod  <amacleod@redhat.com>

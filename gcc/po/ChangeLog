@@ -1,3 +1,7 @@
+2001-11-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* exgettext: Deposit new potfile in po subdir.
+
 2001-10-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* EXCLUDES: New file.
