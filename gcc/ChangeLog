@@ -1,3 +1,10 @@
+2003-12-27  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR opt/13159
+	* cfgloopanal.c (mark_irreducible_loops): Fix the strongly connected
+	components detection.
+	* loop-unswitch.c (unswitch_loop): Preserve simple preheaders.
+
 2003-12-27  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/uclinux.h (LIB_SPEC): Add elf2flt magic required for

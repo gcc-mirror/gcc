@@ -402,5 +402,9 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on)
   fix_loop_placement (loop);
   fix_loop_placement (nloop);
 
+  /* Preserve the simple loop preheaders.  */
+  loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX, loops);
+  loop_split_edge_with (loop_preheader_edge (nloop), NULL_RTX, loops);
+
   return nloop;
 }

@@ -1,3 +1,7 @@
+2003-12-27  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.c-torture/compile/20031227-1.c: New test.
+
 2003-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/bprob/bprob.exp: Load target-supports.exp
