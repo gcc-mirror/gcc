@@ -2728,7 +2728,6 @@
 (define_expand "call"
  [(parallel [(call (match_operand:SI 0 "" "")
 		   (match_operand 1 "" ""))
-	     (clobber (reg:SI 31))
 	     (clobber (reg:SI 2))])]
  ""
  "
@@ -2753,7 +2752,6 @@
 (define_insn "call_internal"
  [(call (mem:SI (match_operand:SI 0 "call_operand_address" "r,S"))
 	(match_operand 1 "" "i,i"))
-  (clobber (reg:SI 31))
   (clobber (reg:SI 2))]
  ""
  "*
@@ -2773,7 +2771,6 @@
   [(parallel [(set (match_operand 0 "" "")
 		   (call (match_operand:SI 1 "" "")
 			 (match_operand 2 "" "")))
-	      (clobber (reg:SI 31))
 	      (clobber (reg:SI 2))])]
   ;;- Don't use operand 1 for most machines.
   ""
@@ -2800,7 +2797,6 @@
   [(set (match_operand 0 "" "=rfx,rfx")
 	(call (mem:SI (match_operand:SI 1 "call_operand_address" "r,S"))
 	      (match_operand 2 "" "i,i")))
-   (clobber (reg:SI 31))
    (clobber (reg:SI 2))]
   ;;- Don't use operand 1 for most machines.
   ""
