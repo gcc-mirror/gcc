@@ -222,6 +222,7 @@ simple_set_p (rtx lhs, rtx rhs)
     case PLUS:
     case MINUS:
     case MULT:
+    case ASHIFT:
       op0 = XEXP (rhs, 0);
       op1 = XEXP (rhs, 1);
 
@@ -236,6 +237,10 @@ simple_set_p (rtx lhs, rtx rhs)
       if (GET_CODE (rhs) == MULT
 	  && !CONSTANT_P (op0)
 	  && !CONSTANT_P (op1))
+	return false;
+
+      if (GET_CODE (rhs) == ASHIFT
+	  && CONSTANT_P (op0))
 	return false;
 
       return true;
@@ -584,6 +589,31 @@ iv_mult (struct rtx_iv *iv, rtx mby)
     {
       iv->delta = simplify_gen_binary (MULT, mode, iv->delta, mby);
       iv->mult = simplify_gen_binary (MULT, mode, iv->mult, mby);
+    }
+
+  return true;
+}
+
+/* Evaluates shift of IV by constant CST.  */
+
+static bool
+iv_shift (struct rtx_iv *iv, rtx mby)
+{
+  enum machine_mode mode = iv->extend_mode;
+
+  if (GET_MODE (mby) != VOIDmode
+      && GET_MODE (mby) != mode)
+    return false;
+
+  if (iv->extend == NIL)
+    {
+      iv->base = simplify_gen_binary (ASHIFT, mode, iv->base, mby);
+      iv->step = simplify_gen_binary (ASHIFT, mode, iv->step, mby);
+    }
+  else
+    {
+      iv->delta = simplify_gen_binary (ASHIFT, mode, iv->delta, mby);
+      iv->mult = simplify_gen_binary (ASHIFT, mode, iv->mult, mby);
     }
 
   return true;
@@ -1032,7 +1062,14 @@ iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
 	      mby = tmp;
 	    }
 	  break;
-	    
+
+	case ASHIFT:
+	  if (CONSTANT_P (XEXP (rhs, 0)))
+	    abort ();
+	  op0 = XEXP (rhs, 0);
+	  mby = XEXP (rhs, 1);
+	  break;
+
 	default:
 	  abort ();
 	}
@@ -1085,6 +1122,11 @@ iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
 
     case MULT:
       if (!iv_mult (&iv0, mby))
+	goto end;
+      break;
+
+    case ASHIFT:
+      if (!iv_shift (&iv0, mby))
 	goto end;
       break;
 
