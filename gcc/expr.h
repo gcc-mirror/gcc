@@ -75,23 +75,30 @@ struct args_size
 
 /* Add the value of the tree INC to the `struct args_size' TO.  */
 
-#define ADD_PARM_SIZE(TO, INC)	\
-{ tree inc = (INC);				\
-  if (host_integerp (inc, 0))			\
-    (TO).constant += tree_low_cst (inc, 0);	\
-  else if ((TO).var == 0)			\
-    (TO).var = inc;				\
-  else						\
-    (TO).var = size_binop (PLUS_EXPR, (TO).var, inc); }
+#define ADD_PARM_SIZE(TO, INC)				\
+do {							\
+  tree inc = (INC);					\
+  if (host_integerp (inc, 0))				\
+    (TO).constant += tree_low_cst (inc, 0);		\
+  else if ((TO).var == 0)				\
+    (TO).var = inc;					\
+  else							\
+    (TO).var = size_binop (PLUS_EXPR, (TO).var,		\
+			   convert (ssizetype, inc));	\
+} while (0)
 
-#define SUB_PARM_SIZE(TO, DEC)	\
-{ tree dec = (DEC);				\
-  if (host_integerp (dec, 0))			\
-    (TO).constant -= tree_low_cst (dec, 0);	\
-  else if ((TO).var == 0)			\
-    (TO).var = size_binop (MINUS_EXPR, ssize_int (0), dec); \
-  else						\
-    (TO).var = size_binop (MINUS_EXPR, (TO).var, dec); }
+#define SUB_PARM_SIZE(TO, DEC)				\
+do {							\
+  tree dec = (DEC);					\
+  if (host_integerp (dec, 0))				\
+    (TO).constant -= tree_low_cst (dec, 0);		\
+  else if ((TO).var == 0)				\
+    (TO).var = size_binop (MINUS_EXPR, ssize_int (0),	\
+			   convert (ssizetype, dec));	\
+  else							\
+    (TO).var = size_binop (MINUS_EXPR, (TO).var,	\
+			   convert (ssizetype, dec));	\
+} while (0)
 
 /* Convert the implicit sum in a `struct args_size' into a tree
    of type ssizetype.  */

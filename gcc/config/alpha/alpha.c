@@ -5805,6 +5805,17 @@ alpha_va_arg (valist, type)
   offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
 			valist, offset_field);
 
+  /* If the type could not be passed in registers, skip the block
+     reserved for the registers.  */
+  if (MUST_PASS_IN_STACK (TYPE_MODE (type), type))
+    {
+      t = build (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field,
+		 build (MAX_EXPR, TREE_TYPE (offset_field), 
+			offset_field, build_int_2 (6*8, 0)));
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
+
   wide_type = make_signed_type (64);
   wide_ofs = save_expr (build1 (CONVERT_EXPR, wide_type, offset_field));
 
