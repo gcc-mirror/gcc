@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -1118,7 +1118,7 @@ extern enum cmp_type hppa_branch_type;
   if (VAL_14_BITS_P (DELTA)) \
     fprintf (FILE, "\tb %s\n\tldo %d(%%r26),%%r26\n", target_name, DELTA); \
   else \
-    fprintf (FILE, "\taddil L%%%d,%r26\n\tb %s\n\tldo R%%%d(%%r1),%%r26\n", \
+    fprintf (FILE, "\taddil L%%%d,%%r26\n\tb %s\n\tldo R%%%d(%%r1),%%r26\n", \
 	     DELTA, target_name, DELTA); \
   fprintf (FILE, "\n\t.EXIT\n\t.PROCEND\n"); \
 }
