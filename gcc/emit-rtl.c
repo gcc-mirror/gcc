@@ -470,6 +470,25 @@ gen_rtvec_v (n, argp)
 
   return rt_val;
 }
+
+rtvec
+gen_rtvec_vv (n, argp)
+     int n;
+     rtunion *argp;
+{
+  register int i;
+  register rtvec rt_val;
+
+  if (n == 0)
+    return NULL_RTVEC;		/* Don't allocate an empty rtvec...	*/
+
+  rt_val = rtvec_alloc (n);	/* Allocate an rtvec...			*/
+
+  for (i = 0; i < n; i++)
+    rt_val->elem[i].rtx = (argp++)->rtx;
+
+  return rt_val;
+}
 
 /* Generate a REG rtx for a new pseudo register of mode MODE.
    This pseudo is assigned the next sequential register number.  */
@@ -1664,7 +1683,7 @@ copy_rtx_if_shared (orig)
 	      int len = XVECLEN (x, i);
 
 	      if (copied && len > 0)
-		XVEC (x, i) = gen_rtvec_v (len, &XVECEXP (x, i, 0));
+		XVEC (x, i) = gen_rtvec_vv (len, XVEC (x, i)->elem);
 	      for (j = 0; j < len; j++)
 		XVECEXP (x, i, j) = copy_rtx_if_shared (XVECEXP (x, i, j));
 	    }
