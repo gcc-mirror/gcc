@@ -1,3 +1,7 @@
+2004-07-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): Mention OpenPKG.
+
 2004-07-09  Diego Novillo  <dnovillo@redhat.com>
 
 	Fix PR tree-optimization/15555
