@@ -115,10 +115,6 @@ vms_fopen (fname, type)
 #define fopen vms_fopen
 #endif	/* VMS  */
 
-#if defined (HAVE_DECL_ENVIRON) && !HAVE_DECL_ENVIRON
-extern char **environ;
-#endif
-
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */
 
