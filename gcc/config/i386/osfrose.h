@@ -852,7 +852,7 @@ while (0)
 #define OBJECT_FORMAT_ROSE
 
 /* Tell collect where the appropriate binaries are.  */
-#define REAL_NM_FILE_NAME	"/usr/ccs/bin/nm"
+#define REAL_NM_FILE_NAME	"/usr/ccs/gcc/bfd-nm"
 #define REAL_STRIP_FILE_NAME	"/usr/ccs/bin/strip"
 
 /* Use atexit for static constructors/destructors, instead of defining
