@@ -103,6 +103,7 @@ sources = \
 	globals.cc \
 	io-inst.cc \
 	ios.cc \
+	ios_failure.cc \
 	istream-inst.cc \
 	limits.cc \
 	locale.cc \

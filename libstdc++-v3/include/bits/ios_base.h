@@ -29,7 +29,7 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 27.8  File-based streams
+// ISO C++ 14882: 27.4  Iostreams base classes
 //
 
 /** @file ios_base.h
@@ -178,8 +178,7 @@ namespace std
       what() const throw();
       
     private:
-      enum { _S_bufsize = 256 };
-      char _M_name[_S_bufsize];
+      string _M_msg;
 #endif
     };
 
