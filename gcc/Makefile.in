@@ -1404,9 +1404,9 @@ except.o : except.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    insn-config.h hard-reg-set.h $(BASIC_BLOCK_H) output.h \
    dwarf2asm.h dwarf2out.h toplev.h $(HASHTAB_H) intl.h $(GGC_H)
 expr.o : expr.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h function.h \
-   $(REGS_H) $(EXPR_H) $(OPTABS_H) libfuncs.h insn-config.h $(RECOG_H) \
-   output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h except.h \
-   reload.h $(GGC_H) intl.h $(TM_P_H)
+   $(REGS_H) $(EXPR_H) $(OPTABS_H) libfuncs.h insn-attr.h insn-config.h \
+   $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \
+   except.h reload.h $(GGC_H) intl.h $(TM_P_H)
 builtins.o : builtins.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    $(TARGET_H) function.h $(REGS_H) $(EXPR_H) $(OPTABS_H) insn-config.h \
    $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \

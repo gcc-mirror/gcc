@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"
 #include "function.h"
 #include "insn-config.h"
+#include "insn-attr.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
 #include "optabs.h"
@@ -5653,6 +5654,22 @@ force_operand (value, target)
       /* We give UNSIGNEDP = 0 to expand_binop
 	 because the only operations we are expanding here are signed ones.  */
     }
+
+#ifdef INSN_SCHEDULING
+  /* On machines that have insn scheduling, we want all memory reference to be
+     explicit, so we need to deal with such paradoxical SUBREGs.  */
+  if (GET_CODE (value) == SUBREG && GET_CODE (SUBREG_REG (value)) == MEM
+      && (GET_MODE_SIZE (GET_MODE (value))
+	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (value)))))
+    value
+      = simplify_gen_subreg (GET_MODE (value),
+			     force_reg (GET_MODE (SUBREG_REG (value)),
+					force_operand (SUBREG_REG (value),
+						       NULL_RTX)),
+			     GET_MODE (SUBREG_REG (value)),
+			     SUBREG_BYTE (value));
+#endif
+
   return value;
 }
 
@@ -5982,15 +5999,15 @@ highest_pow2_factor (exp)
   switch (TREE_CODE (exp))
     {
     case INTEGER_CST:
-      /* If the integer is expressable in a HOST_WIDE_INT, we can find
-	 the lowest bit that's a one.  If the result is zero or negative,
-	 pessimize by returning 1.  This is overly-conservative, but such
-	 things should not happen in the offset expressions that we are
-	 called with.  */
+      /* If the integer is expressable in a HOST_WIDE_INT, we can find the
+	 lowest bit that's a one.  If the result is zero, pessimize by
+	 returning 1.  This is overly-conservative, but such things should not
+	 happen in the offset expressions that we are called with.  */
       if (host_integerp (exp, 0))
 	{
 	  c0 = tree_low_cst (exp, 0);
-	  return c0 >= 0 ? c0 & -c0 : 1;
+	  c0 = c0 < 0 ? - c0 : c0;
+	  return c0 != 0 ? c0 & -c0 : 1;
 	}
       break;
 
@@ -7065,7 +7082,6 @@ expand_expr (exp, target, tmode, modifier)
 					       | TYPE_QUAL_CONST));
 		    rtx memloc = assign_temp (nt, 1, 1, 1);
 
-		    mark_temp_addr_taken (memloc);
 		    emit_move_insn (memloc, op0);
 		    op0 = memloc;
 		  }
@@ -8619,10 +8635,6 @@ expand_expr (exp, target, tmode, modifier)
       return expand_increment (exp, ! ignore, ignore);
 
     case ADDR_EXPR:
-      /* If nonzero, TEMP will be set to the address of something that might
-	 be a MEM corresponding to a stack slot.  */
-      temp = 0;
-
       /* Are we taking the address of a nested function?  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == FUNCTION_DECL
 	  && decl_function_context (TREE_OPERAND (exp, 0)) != 0
@@ -8670,12 +8682,6 @@ expand_expr (exp, target, tmode, modifier)
 	  if (CONSTANT_P (op0))
 	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
 				   op0);
-	  else if (GET_CODE (op0) == MEM)
-	    {
-	      mark_temp_addr_taken (op0);
-	      temp = XEXP (op0, 0);
-	    }
-
 	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF
 		   || GET_CODE (op0) == PARALLEL)
@@ -8688,28 +8694,29 @@ expand_expr (exp, target, tmode, modifier)
 					       | TYPE_QUAL_CONST));
 	      rtx memloc = assign_temp (nt, 1, 1, 1);
 
-	      mark_temp_addr_taken (memloc);
 	      if (GET_CODE (op0) == PARALLEL)
 		/* Handle calls that pass values in multiple non-contiguous
 		   locations.  The Irix 6 ABI has examples of this.  */
 		emit_group_store (memloc, op0, int_size_in_bytes (inner_type));
 	      else
 		emit_move_insn (memloc, op0);
+
 	      op0 = memloc;
 	    }
 
 	  if (GET_CODE (op0) != MEM)
 	    abort ();
 
+	  mark_temp_addr_taken (op0);
 	  if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
 	    {
-	      temp = XEXP (op0, 0);
+	      op0 = XEXP (op0, 0);
 #ifdef POINTERS_EXTEND_UNSIGNED
-	      if (GET_MODE (temp) == Pmode && GET_MODE (temp) != mode
+	      if (GET_MODE (op0) == Pmode && GET_MODE (op0) != mode
 		  && mode == ptr_mode)
-		temp = convert_memory_address (ptr_mode, temp);
+		op0 = convert_memory_address (ptr_mode, op0);
 #endif
-	      return temp;
+	      return op0;
 	    }
 
 	  op0 = force_operand (XEXP (op0, 0), target);
@@ -8721,11 +8728,6 @@ expand_expr (exp, target, tmode, modifier)
       if (GET_CODE (op0) == REG
 	  && ! REG_USERVAR_P (op0))
 	mark_reg_pointer (op0, TYPE_ALIGN (TREE_TYPE (type)));
-
-      /* If we might have had a temp slot, add an equivalent address
-	 for it.  */
-      if (temp != 0)
-	update_temp_slot_address (temp, op0);
 
 #ifdef POINTERS_EXTEND_UNSIGNED
       if (GET_MODE (op0) == Pmode && GET_MODE (op0) != mode
@@ -9084,7 +9086,6 @@ expand_expr_unaligned (exp, palign)
 						 | TYPE_QUAL_CONST));
 		rtx memloc = assign_temp (nt, 1, 1, 1);
 
-		mark_temp_addr_taken (memloc);
 		emit_move_insn (memloc, op0);
 		op0 = memloc;
 	      }
