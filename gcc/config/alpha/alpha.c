@@ -1053,6 +1053,23 @@ print_operand (file, x, code)
       fprintf (file, "%s", GET_RTX_NAME (reverse_condition (GET_CODE (x))));
       break;
 
+    case 'c':
+      /* Similar to `c', but swap.  We can't get unsigned here either.  */
+      if (GET_RTX_CLASS (GET_CODE (x)) != '<')
+	output_operand_lossage ("invalid %%D value");
+
+      fprintf (file, "%s", GET_RTX_NAME (swap_condition (GET_CODE (x))));
+      break;
+
+    case 'd':
+      /* Similar, but reverse and swap.  We can't get unsigned here either.  */
+      if (GET_RTX_CLASS (GET_CODE (x)) != '<')
+	output_operand_lossage ("invalid %%D value");
+
+      fprintf (file, "%s",
+	       GET_RTX_NAME (swap_condition (reverse_condition ((GET_CODE (x))))));
+      break;
+
     case 'E':
       /* Write the divide or modulus operator.  */
       switch (GET_CODE (x))
