@@ -1,7 +1,7 @@
 /* Definitions for "naked" Intel 386 using coff object format files
    and coff debugging info.
 
-   Copyright (C) 1994, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2000, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GCC.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Wind River Systems.
 
 This file is part of GCC.

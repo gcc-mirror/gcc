@@ -1,5 +1,6 @@
 /* Definitions for Intel 386 using GAS.
-   Copyright (C) 1988, 1993, 1994, 1996, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994, 1996, 2002, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
