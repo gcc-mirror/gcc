@@ -39,11 +39,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "function.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "target.h"
 #include "coverage.h"
-#include "libfuncs.h"
 #include "langhooks.h"
 #include "hashtab.h"
+#include "tree-iterator.h"
+#include "cgraph.h"
 
 #include "gcov-io.c"
 
@@ -904,69 +904,42 @@ build_gcov_info (void)
 static void
 create_coverage (void)
 {
-  tree gcov_info, gcov_info_value;
-  char name[20];
-  char *ctor_name;
-  tree ctor;
-  rtx gcov_info_address;
+  tree gcov_info, gcov_init, body, t;
+  char name_buf[32];
 
   no_coverage = 1; /* Disable any further coverage.  */
 
   if (!prg_ctr_mask)
     return;
 
-  gcov_info_value = build_gcov_info ();
+  t = build_gcov_info ();
 
-  gcov_info = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (gcov_info_value));
-  DECL_INITIAL (gcov_info) = gcov_info_value;
-
+  gcov_info = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (t));
   TREE_STATIC (gcov_info) = 1;
-  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 0);
-  DECL_NAME (gcov_info) = get_identifier (name);
+  ASM_GENERATE_INTERNAL_LABEL (name_buf, "LPBX", 0);
+  DECL_NAME (gcov_info) = get_identifier (name_buf);
+  DECL_INITIAL (gcov_info) = t;
 
   /* Build structure.  */
   assemble_variable (gcov_info, 0, 0, 0);
 
-  /* Build the constructor function to invoke __gcov_init.  */
-  ctor_name = concat (IDENTIFIER_POINTER (get_file_function_name ('I')),
-		      "_GCOV", NULL);
-  ctor = build_decl (FUNCTION_DECL, get_identifier (ctor_name),
-		     build_function_type (void_type_node, NULL_TREE));
-  free (ctor_name);
-  DECL_EXTERNAL (ctor) = 0;
+  /* Build a decl for __gcov_init.  */
+  t = build_pointer_type (TREE_TYPE (gcov_info));
+  t = build_function_type_list (void_type_node, t, NULL);
+  t = build_decl (FUNCTION_DECL, get_identifier ("__gcov_init"), t);
+  TREE_PUBLIC (t) = 1;
+  DECL_EXTERNAL (t) = 1;
+  gcov_init = t;
 
-  /* It can be a static function as long as collect2 does not have
-     to scan the object file to find its ctor/dtor routine.  */
-  TREE_PUBLIC (ctor) = ! targetm.have_ctors_dtors;
-  TREE_USED (ctor) = 1;
-  DECL_RESULT (ctor) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
-  DECL_UNINLINABLE (ctor) = 1;
+  /* Generate a call to __gcov_init(&gcov_info).  */
+  body = NULL;
+  t = build_fold_addr_expr (gcov_info);
+  t = tree_cons (NULL, t, NULL);
+  t = build_function_call_expr (gcov_init, t);
+  append_to_statement_list (t, &body);
 
-  rest_of_decl_compilation (ctor, 0, 1, 0);
-  announce_function (ctor);
-  current_function_decl = ctor;
-  make_decl_rtl (ctor, NULL);
-  init_function_start (ctor);
-  expand_function_start (ctor, 0);
-  /* Actually generate the code to call __gcov_init.  */
-  gcov_info_address = force_reg (Pmode, XEXP (DECL_RTL (gcov_info), 0));
-  emit_library_call (gcov_init_libfunc, LCT_NORMAL, VOIDmode, 1,
-		     gcov_info_address, Pmode);
-
-  expand_function_end ();
-  /* Create a dummy BLOCK.  */
-  DECL_INITIAL (ctor) = make_node (BLOCK);
-  TREE_USED (DECL_INITIAL (ctor)) = 1;
-
-  rest_of_compilation ();
-
-  if (! quiet_flag)
-    fflush (asm_out_file);
-  current_function_decl = NULL_TREE;
-
-  if (targetm.have_ctors_dtors)
-    targetm.asm_out.constructor (XEXP (DECL_RTL (ctor), 0),
-				 DEFAULT_INIT_PRIORITY);
+  /* Generate a constructor to run it.  */
+  cgraph_build_static_cdtor ('I', body);
 }
 
 /* Perform file-level initialization. Read in data file, generate name

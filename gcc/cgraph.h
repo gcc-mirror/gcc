@@ -192,5 +192,6 @@ void verify_cgraph (void);
 void verify_cgraph_node (struct cgraph_node *);
 void cgraph_mark_inline_edge (struct cgraph_edge *e);
 void cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate);
+void cgraph_build_static_cdtor (char which, tree body);
 
 #endif  /* GCC_CGRAPH_H  */

@@ -184,27 +184,20 @@ c_objc_common_init (void)
 
 /* Synthesize a function which calls all the global ctors or global dtors
    in this file.  */
+
 static void
 build_cdtor (int method_type, tree cdtors)
 {
-  tree fnname = get_file_function_name (method_type);
-  tree cs;
+  tree body;
 
-  start_function (void_list_node,
-		  build_nt (CALL_EXPR, fnname,
-			    tree_cons (NULL_TREE, NULL_TREE, void_list_node),
-			    NULL_TREE),
-		  NULL_TREE);
-  store_parm_decls ();
-
-  cs = c_begin_compound_stmt (true);
+  body = push_stmt_list ();
 
   for (; cdtors; cdtors = TREE_CHAIN (cdtors))
-    add_stmt (build_function_call (TREE_VALUE (cdtors), 0));
+    add_stmt (build_function_call (TREE_VALUE (cdtors), NULL_TREE));
 
-  add_stmt (c_end_compound_stmt (cs, true));
+  body = pop_stmt_list (body);
 
-  finish_function ();
+  cgraph_build_static_cdtor (method_type, body);
 }
 
 /* Called at end of parsing, but before end-of-file processing.  */

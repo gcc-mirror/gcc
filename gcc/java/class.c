@@ -43,6 +43,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "stdio.h"
 #include "target.h"
 #include "except.h"
+#include "tree-iterator.h"
 
 /* DOS brain-damage */
 #ifndef O_BINARY
@@ -61,8 +62,6 @@ static tree maybe_layout_super_class (tree, tree);
 static void add_miranda_methods (tree, tree);
 static int assume_compiled (const char *);
 static tree build_symbol_entry (tree);
-
-static GTY(()) rtx registerClass_libfunc;
 
 struct obstack temporary_obstack;
 
@@ -2276,14 +2275,19 @@ register_class (void)
 /* Emit something to register classes at start-up time.
 
    The preferred mechanism is through the .jcr section, which contain
-   a list of pointers to classes which get registered during
-   constructor invocation time.  The fallback mechanism is to generate
-   a `constructor' function which calls _Jv_RegisterClass for each
-   class in this file.  */
+   a list of pointers to classes which get registered during constructor
+   invocation time.
+
+   The fallback mechanism is to add statements to *LIST_P to call
+   _Jv_RegisterClass for each class in this file.  These statements will
+   be added to a static constructor function for this translation unit.  */
 
 void
-emit_register_classes (void)
+emit_register_classes (tree *list_p)
 {
+  if (registered_class == NULL)
+    return;
+
   /* ??? This isn't quite the correct test.  We also have to know
      that the target is using gcc's crtbegin/crtend objects rather
      than the ones that come with the operating system.  */
@@ -2302,48 +2306,21 @@ emit_register_classes (void)
     }
   else
     {
-      extern tree get_file_function_name (int);
-      tree init_name = get_file_function_name ('I');
-      tree init_type = build_function_type (void_type_node, end_params_node);
-      tree init_decl;
-      tree t;
-      location_t saved_loc = input_location;
-      
-      init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
-      SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
-      DECL_SOURCE_LINE (init_decl) = 0;
-      TREE_STATIC (init_decl) = 1;
-      current_function_decl = init_decl;
-      DECL_INLINE (init_decl) = 0;
-      DECL_UNINLINABLE (init_decl) = 1;
-      DECL_RESULT (init_decl) = build_decl (RESULT_DECL, NULL_TREE,
-					    void_type_node);
+      tree klass, t, register_class_fn;
 
-      /* It can be a static function as long as collect2 does not have
-         to scan the object file to find its ctor/dtor routine.  */
-      TREE_PUBLIC (init_decl) = ! targetm.have_ctors_dtors;
+      t = build_function_type_list (void_type_node, class_ptr_type, NULL);
+      t = build_decl (FUNCTION_DECL, get_identifier ("_Jv_RegisterClass"), t);
+      TREE_PUBLIC (t) = 1;
+      DECL_EXTERNAL (t) = 1;
+      register_class_fn = t;
 
-      /* Suppress spurious warnings.  */
-      TREE_USED (init_decl) = 1;
-
-      pushlevel (0);
-      make_decl_rtl (init_decl, NULL);
-      init_function_start (init_decl);
-      expand_function_start (init_decl, 0);
-
-      for ( t = registered_class; t; t = TREE_CHAIN (t))
-	emit_library_call (registerClass_libfunc, 0, VOIDmode, 1,
-			   XEXP (DECL_RTL (t), 0), Pmode);
-      input_location = DECL_SOURCE_LOCATION (init_decl);
-      expand_function_end ();
-      poplevel (1, 0, 1);
-      rest_of_compilation ();
-      current_function_decl = NULL_TREE;
-
-      if (targetm.have_ctors_dtors)
-	(* targetm.asm_out.constructor) (XEXP (DECL_RTL (init_decl), 0),
-					 DEFAULT_INIT_PRIORITY);
-      input_location = saved_loc;
+      for (klass = registered_class; klass; klass = TREE_CHAIN (klass))
+	{
+	  t = build_fold_addr_expr (klass);
+	  t = tree_cons (NULL, t, NULL);
+	  t = build_function_call_expr (register_class_fn, t);
+	  append_to_statement_list (t, list_p);
+	}
     }
 }
 
@@ -2483,9 +2460,9 @@ emit_catch_table (tree this_class)
 void
 init_class_processing (void)
 {
-  registerClass_libfunc = gen_rtx_SYMBOL_REF (Pmode, "_Jv_RegisterClass");
   fields_ident = get_identifier ("fields");
   info_ident = get_identifier ("info");
+
   gcc_obstack_init (&temporary_obstack);
 }
 

@@ -1,3 +1,19 @@
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
+	* class.c (registerClass_libfunc): Remove.
+	(init_class_processing): Don't set it.
+	(emit_register_classes): Take list_p parameter.  Fill it in
+	with _Jv_RegisterClass calls.
+	* decl.c (java_init_decl_processing): Don't call
+	init_resource_processing.
+	* jcf-parse.c (java_emit_static_constructor): New.
+	(java_parse_file): Call it.
+	* resource.c (registerResource_libfunc): Remove.
+	(init_resource_processing): Remove.
+	(write_resource_constructor): Take list_p parameter.  Fill it in
+	with _Jv_RegisterResource calls.
+	* java-tree.h: Update prototypes.
+
 2004-06-29  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/1262
