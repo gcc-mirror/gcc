@@ -2,6 +2,8 @@
 
 	* libgcc2.c (__bb_exit_func): Make static.
 
+	* config/alpha/alpha.md (trap): New.
+
 2002-03-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c (LIBGCC_SPEC): Folded %L and duplicate %G here...
