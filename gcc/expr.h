@@ -714,10 +714,10 @@ extern void move_block_from_reg PROTO((int, rtx, int, int));
 
 /* Load a BLKmode value into non-consecutive registers represented by a
    PARALLEL.  */
-extern void emit_group_load PROTO((rtx, rtx));
+extern void emit_group_load PROTO((rtx, rtx, int, int));
 /* Store a BLKmode value from non-consecutive registers represented by a
    PARALLEL.  */
-extern void emit_group_store PROTO((rtx, rtx));
+extern void emit_group_store PROTO((rtx, rtx, int, int));
 
 /* Mark REG as holding a parameter for the next CALL_INSN.  */
 extern void use_reg PROTO((rtx *, rtx));

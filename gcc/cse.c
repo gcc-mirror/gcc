@@ -1609,6 +1609,24 @@ invalidate (x, full_mode)
       return;
     }
 
+  /* If X is a parallel, invalidate all of its elements.  */
+
+  if (GET_CODE (x) == PARALLEL)
+    {
+      for (i = XVECLEN (x, 0) - 1; i >= 0 ; --i)
+	invalidate (XVECEXP (x, 0, i), VOIDmode);
+      return;
+    }
+
+  /* If X is an expr_list, this is part of a disjoint return value;
+     extract the location in question ignoring the offset.  */
+
+  if (GET_CODE (x) == EXPR_LIST)
+    {
+      invalidate (XEXP (x, 0), VOIDmode);
+      return;
+    }
+
   /* X is not a register; it must be a memory reference with
      a nonvarying address.  Remove all hash table elements
      that refer to overlapping pieces of memory.  */
