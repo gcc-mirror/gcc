@@ -1,3 +1,14 @@
+1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (CFILES): Add calloc.c and getpwd.c.
+	(REQUIRED_OFILES): Add getpwd.o.
+	(getpwd.o): Add target.
+
+	* configure.in (AC_PREREQ): Bump to 2.13.
+	(AC_CHECK_HEADERS): Add check for <sys/stat.h>.
+
+	* getpwd.c: New file, moved here from gcc.
+
 1999-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (gnu_special): Cast a `size_t' to `long' when
