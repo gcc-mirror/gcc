@@ -39,7 +39,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /* Forward declarations.  */
 
 static char *my_strerror		PROTO ((int));
-static void validate_else		PROTO ((cpp_reader *, char *));
+static void validate_else		PROTO ((cpp_reader *, const char *));
 static HOST_WIDEST_INT eval_if_expression	PROTO ((cpp_reader *));
 
 static void conditional_skip		PROTO ((cpp_reader *, int,
@@ -59,8 +59,8 @@ extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
 struct directive {
   int length;			/* Length of name */
   int (*func)			/* Function to handle directive */
-    PARAMS ((cpp_reader *, struct directive *));
-  char *name;			/* Name of directive */
+    PARAMS ((cpp_reader *, const struct directive *));
+  const char *name;		/* Name of directive */
   enum node_type type;		/* Code which describes which directive.  */
 };
 
@@ -68,53 +68,56 @@ struct directive {
    are going to be placed in a table and some old compilers have trouble with
    pointers to functions returning void.  */
 
-static int do_define PARAMS ((cpp_reader *, struct directive *));
-static int do_line PARAMS ((cpp_reader *, struct directive *));
-static int do_include PARAMS ((cpp_reader *, struct directive *));
-static int do_undef PARAMS ((cpp_reader *, struct directive *));
-static int do_error PARAMS ((cpp_reader *, struct directive *));
-static int do_pragma PARAMS ((cpp_reader *, struct directive *));
-static int do_ident PARAMS ((cpp_reader *, struct directive *));
-static int do_if PARAMS ((cpp_reader *, struct directive *));
-static int do_xifdef PARAMS ((cpp_reader *, struct directive *));
-static int do_else PARAMS ((cpp_reader *, struct directive *));
-static int do_elif PARAMS ((cpp_reader *, struct directive *));
-static int do_endif PARAMS ((cpp_reader *, struct directive *));
+static int do_define PARAMS ((cpp_reader *, const struct directive *));
+static int do_line PARAMS ((cpp_reader *, const struct directive *));
+static int do_include PARAMS ((cpp_reader *, const struct directive *));
+static int do_undef PARAMS ((cpp_reader *, const struct directive *));
+static int do_error PARAMS ((cpp_reader *, const struct directive *));
+static int do_pragma PARAMS ((cpp_reader *, const struct directive *));
+static int do_ident PARAMS ((cpp_reader *, const struct directive *));
+static int do_if PARAMS ((cpp_reader *, const struct directive *));
+static int do_xifdef PARAMS ((cpp_reader *, const struct directive *));
+static int do_else PARAMS ((cpp_reader *, const struct directive *));
+static int do_elif PARAMS ((cpp_reader *, const struct directive *));
+static int do_endif PARAMS ((cpp_reader *, const struct directive *));
 #ifdef SCCS_DIRECTIVE
-static int do_sccs PARAMS ((cpp_reader *, struct directive *));
+static int do_sccs PARAMS ((cpp_reader *, const struct directive *));
 #endif
-static int do_assert PARAMS ((cpp_reader *, struct directive *));
-static int do_unassert PARAMS ((cpp_reader *, struct directive *));
-static int do_warning PARAMS ((cpp_reader *, struct directive *));
+static int do_assert PARAMS ((cpp_reader *, const struct directive *));
+static int do_unassert PARAMS ((cpp_reader *, const struct directive *));
+static int do_warning PARAMS ((cpp_reader *, const struct directive *));
 
-#define IS_INCLUDE_DIRECTIVE_TYPE(t) \
-((int) T_INCLUDE <= (int) (t) && (int) (t) <= (int) T_IMPORT)
+/* Here is the actual list of #-directives.
+   This table is ordered by frequency of occurrence; the numbers
+   at the end are directive counts from all the source code I have
+   lying around (egcs and libc CVS as of 1999-05-18, plus grub-0.5.91,
+   linux-2.2.9, and pcmcia-cs-3.0.9).  */
 
-/* Here is the actual list of #-directives, most-often-used first.
-   The initialize_builtins function assumes #define is the very first.  */
+static const struct directive directive_table[] = {
+  /* In C89 */
+  {  6, do_define,   "define",       T_DEFINE },	/* 270554 */
+  {  7, do_include,  "include",      T_INCLUDE },	/*  52262 */
+  {  5, do_endif,    "endif",        T_ENDIF },		/*  45855 */
+  {  5, do_xifdef,   "ifdef",        T_IFDEF },		/*  22000 */
+  {  2, do_if,       "if",           T_IF },		/*  18162 */
+  {  4, do_else,     "else",         T_ELSE },		/*   9863 */
+  {  6, do_xifdef,   "ifndef",       T_IFNDEF },	/*   9675 */
+  {  5, do_undef,    "undef",        T_UNDEF },		/*   4837 */
+  {  4, do_line,     "line",         T_LINE },		/*   2465 */
+  {  4, do_elif,     "elif",         T_ELIF },		/*    610 */
+  {  5, do_error,    "error",        T_ERROR },		/*    475 */
+  {  6, do_pragma,   "pragma",       T_PRAGMA },	/*    195 */
 
-static struct directive directive_table[] = {
-  {  6, do_define,   "define",       T_DEFINE },
-  {  5, do_xifdef,   "ifdef",        T_IFDEF },
-  {  6, do_xifdef,   "ifndef",       T_IFNDEF },
-  {  7, do_include,  "include",      T_INCLUDE },
-  { 12, do_include,  "include_next", T_INCLUDE_NEXT },
-  {  6, do_include,  "import",       T_IMPORT },
-  {  5, do_endif,    "endif",        T_ENDIF },
-  {  4, do_else,     "else",         T_ELSE },
-  {  2, do_if,       "if",           T_IF },
-  {  4, do_elif,     "elif",         T_ELIF },
-  {  5, do_undef,    "undef",        T_UNDEF },
-  {  5, do_error,    "error",        T_ERROR },
-  {  7, do_warning,  "warning",      T_WARNING },
-  {  6, do_pragma,   "pragma",       T_PRAGMA },
-  {  4, do_line,     "line",         T_LINE },
-  {  5, do_ident,    "ident",        T_IDENT },
+  /* Extensions.  All deprecated except #warning and #include_next.  */
+  {  7, do_warning,  "warning",      T_WARNING },	/*     22 - GNU   */
+  { 12, do_include,  "include_next", T_INCLUDE_NEXT },	/*     19 - GNU   */
+  {  5, do_ident,    "ident",        T_IDENT },		/*     11 - SVR4  */
+  {  6, do_include,  "import",       T_IMPORT },	/*      0 - ObjC  */
+  {  6, do_assert,   "assert",       T_ASSERT },	/*      0 - SVR4  */
+  {  8, do_unassert, "unassert",     T_UNASSERT },	/*      0 - SVR4  */
 #ifdef SCCS_DIRECTIVE
-  {  4, do_sccs,     "sccs",         T_SCCS },
+  {  4, do_sccs,     "sccs",         T_SCCS },		/*      0 - SVR2? */
 #endif
-  {  6, do_assert,   "assert",       T_ASSERT },
-  {  8, do_unassert, "unassert",     T_UNASSERT },
   {  -1, 0, "", T_UNUSED }
 };
 
@@ -497,7 +500,7 @@ handle_directive (pfile)
      cpp_reader *pfile;
 {
   int c;
-  register struct directive *kt;
+  register const struct directive *kt;
   int ident_length;
   U_CHAR *ident;
   long old_written = CPP_WRITTEN (pfile);
@@ -557,7 +560,7 @@ pass_thru_directive (buf, len, pfile, keyword)
      U_CHAR *buf;
      size_t len;
      cpp_reader *pfile;
-     struct directive *keyword;
+     const struct directive *keyword;
 {
   register unsigned keyword_length = keyword->length;
 
@@ -610,7 +613,7 @@ or NULL for a "predefined" macro.  */
 static int
 do_define (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword;
+     const struct directive *keyword;
 {
   int hashcode;
   MACRODEF mdef;
@@ -968,7 +971,7 @@ get_directive_token (pfile)
 static int
 do_include (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword;
+     const struct directive *keyword;
 {
   int importing = (keyword->type == T_IMPORT);
   int skip_dirs = (keyword->type == T_INCLUDE_NEXT);
@@ -1243,7 +1246,7 @@ read_line_number (pfile, num)
 static int
 do_line (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
   int new_lineno;
@@ -1360,7 +1363,7 @@ do_line (pfile, keyword)
 static int
 do_undef (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword;
+     const struct directive *keyword;
 {
   int sym_length;
   HASHNODE *hp;
@@ -1435,7 +1438,7 @@ cpp_undef (pfile, macro)
 static int
 do_error (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   long here = CPP_WRITTEN (pfile);
   U_CHAR *text;
@@ -1456,7 +1459,7 @@ do_error (pfile, keyword)
 static int
 do_warning (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   U_CHAR *text;
   long here = CPP_WRITTEN(pfile);
@@ -1482,7 +1485,7 @@ do_warning (pfile, keyword)
 static int
 do_ident (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   /* Allow #ident in system headers, since that's not user's fault.  */
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
@@ -1501,7 +1504,7 @@ do_ident (pfile, keyword)
 static int
 do_pragma (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   long here;
   U_CHAR *buf;
@@ -1568,7 +1571,7 @@ do_pragma (pfile, keyword)
 static int
 do_sccs (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "ANSI C does not allow `#sccs'");
@@ -1668,7 +1671,7 @@ detect_if_not_defined (pfile)
 static int
 do_if (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   U_CHAR *control_macro = detect_if_not_defined (pfile);
   HOST_WIDEST_INT value = eval_if_expression (pfile);
@@ -1684,7 +1687,7 @@ do_if (pfile, keyword)
 static int
 do_elif (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack) {
     cpp_error (pfile, "`#elif' not within a conditional");
@@ -1748,7 +1751,7 @@ eval_if_expression (pfile)
 static int
 do_xifdef (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword;
+     const struct directive *keyword;
 {
   int skip;
   cpp_buffer *ip = CPP_BUFFER (pfile);
@@ -1866,7 +1869,7 @@ consider_directive_while_skipping (pfile, stack)
     IF_STACK_FRAME *stack; 
 {
   long ident_len, ident;
-  struct directive *kt;
+  const struct directive *kt;
   IF_STACK_FRAME *temp;
     
   cpp_skip_hspace (pfile);
@@ -2021,7 +2024,7 @@ skip_if_group (pfile)
 static int
 do_else (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
@@ -2063,7 +2066,7 @@ do_else (pfile, keyword)
 static int
 do_endif (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   if (CPP_PEDANTIC (pfile))
     validate_else (pfile, "#endif");
@@ -2118,7 +2121,7 @@ do_endif (pfile, keyword)
 static void
 validate_else (pfile, directive)
      cpp_reader *pfile;
-     char *directive;
+     const char *directive;
 {
   int c;
   cpp_skip_hspace (pfile);
@@ -2862,7 +2865,7 @@ parse_assertion (pfile)
 static int
 do_assert (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   char *sym;
   int ret, c;
@@ -2928,7 +2931,7 @@ do_assert (pfile, keyword)
 static int
 do_unassert (pfile, keyword)
      cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   int c, ret;
   char *sym;
