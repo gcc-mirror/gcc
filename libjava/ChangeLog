@@ -1,5 +1,7 @@
 2003-09-04  Tom Tromey  <tromey@redhat.com>
 
+	* configure.host: Removed erroneous comment.
+
 	* gnu/java/awt/natEmbeddedWindow.cc (setWindowPeer): Removed
 	lvalue cast; use correct rvalue cast.
 

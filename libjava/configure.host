@@ -113,7 +113,6 @@ case "${host}" in
 	IEEESPEC=-mieee
 	;;
   powerpc64*-*)
-	# libffi not ported.
 	with_libffi_default=yes
 	libgcj_interpreter=yes
 	libgcj_flags="${libgcj_flags} -mminimal-toc"
