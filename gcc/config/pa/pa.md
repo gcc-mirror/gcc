@@ -2237,6 +2237,8 @@
 			  "fG,*rG,f,*r,*r,RQ,o,Q"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
+   && ! (GET_CODE (operands[1]) == CONST_DOUBLE
+	 && GET_CODE (operands[0]) == MEM)
    && ! TARGET_SOFT_FLOAT"
   "*
 {
