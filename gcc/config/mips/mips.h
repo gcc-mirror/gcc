@@ -255,11 +255,11 @@ extern char	       *mktemp ();
 #define MASK_LONG_CALLS	0x00001000	/* Always call through a register */
 #define MASK_64BIT	0x00002000	/* Use 64 bit GP registers and insns */
 #define MASK_EMBEDDED_PIC 0x00004000	/* Generate embedded PIC code */
-#define MASK_UNUSED1	0x00008000
-#define MASK_UNUSED2	0x00010000
+#define MASK_EMBEDDED_DATA 0x00008000	/* Reduce RAM usage, not fast code */
+#define MASK_UNUSED4	0x00010000
 #define MASK_UNUSED3	0x00020000
-#define MASK_UNUSED4	0x00040000
-#define MASK_UNUSED5	0x00080000
+#define MASK_UNUSED2	0x00040000
+#define MASK_UNUSED1	0x00080000
 
 					/* Dummy switches used only in spec's*/
 #define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
@@ -331,6 +331,11 @@ extern char	       *mktemp ();
 					   requires gas.  */
 #define TARGET_EMBEDDED_PIC	(target_flags & MASK_EMBEDDED_PIC)
 
+					/* for embedded systems, optimize for
+					   reduced RAM space instead of for
+					   fastest code.  */
+#define TARGET_EMBEDDED_DATA	(target_flags & MASK_EMBEDDED_DATA)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -370,6 +375,8 @@ extern char	       *mktemp ();
   {"no-long-calls",	 -MASK_LONG_CALLS},				\
   {"embedded-pic",	  MASK_EMBEDDED_PIC},				\
   {"no-embedded-pic",	 -MASK_EMBEDDED_PIC},				\
+  {"embedded-data",	  MASK_EMBEDDED_DATA},				\
+  {"no-embedded-data",	 -MASK_EMBEDDED_DATA},				\
   {"debug",		  MASK_DEBUG},					\
   {"debuga",		  MASK_DEBUG_A},				\
   {"debugb",		  MASK_DEBUG_B},				\
@@ -3568,45 +3575,9 @@ rdata_section ()							\
 /* Given a decl node or constant node, choose the section to output it in
    and select that section.  */
 
-#define SELECT_RTX_SECTION(MODE,RTX)					\
-{									\
-  if (GET_MODE_SIZE (MODE) <= mips_section_threshold			\
-      && mips_section_threshold > 0)					\
-    sdata_section ();							\
-  else									\
-    rdata_section ();							\
-}									\
+#define SELECT_RTX_SECTION(MODE,RTX)	mips_select_rtx_section (MODE, RTX)
 
-#define SELECT_SECTION(DECL, RELOC)					\
-{									\
-  int size = int_size_in_bytes (TREE_TYPE (DECL));			\
-									\
-  if (size > 0 && size <= mips_section_threshold)			\
-    sdata_section ();							\
-									\
-  else if (RELOC)							\
-    data_section ();							\
-									\
-  else if (TREE_CODE (DECL) == STRING_CST)				\
-    {									\
-      if (flag_writable_strings)					\
-	data_section ();						\
-      else								\
-	rdata_section ();						\
-    }									\
-									\
-  else if (TREE_CODE (DECL) != VAR_DECL)				\
-    rdata_section ();							\
-									\
-  else if (!TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	   || !DECL_INITIAL (DECL)					\
-	   || (DECL_INITIAL (DECL) != error_mark_node			\
-	       && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
-    data_section ();							\
-									\
-  else									\
-    rdata_section ();							\
-}
+#define SELECT_SECTION(DECL, RELOC)	mips_select_section (DECL, RELOC)
 
 
 /* Store in OUTPUT a string (made with alloca) containing
