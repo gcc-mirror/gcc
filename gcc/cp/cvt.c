@@ -38,8 +38,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern tree static_aggregates;
 
-static tree build_thunk PROTO((tree, tree));
-static tree convert_fn_ptr PROTO((tree, tree));
 static tree cp_convert_to_pointer PROTO((tree, tree));
 static tree convert_to_pointer_force PROTO((tree, tree));
 static tree build_up_reference PROTO((tree, tree, int, int));
@@ -67,60 +65,6 @@ static tree build_type_conversion_1 PROTO((tree, tree, tree, tree,
    adjusting them by a delta stored within the class definition.  */
 
 /* Subroutines of `convert'.  */
-
-/* Build a thunk.  What it is, is an entry point that when called will
-   adjust the this pointer (the first argument) by offset, and then
-   goto the real address of the function given by REAL_ADDR that we
-   would like called.  What we return is the address of the thunk.  */
-
-static tree
-build_thunk (offset, real_addr)
-     tree offset, real_addr;
-{
-  if (TREE_CODE (real_addr) != ADDR_EXPR
-      || TREE_CODE (TREE_OPERAND (real_addr, 0)) != FUNCTION_DECL)
-    {
-      sorry ("MI pointer to member conversion too complex");
-      return error_mark_node;
-    }
-  sorry ("MI pointer to member conversion too complex");
-  return error_mark_node;
-}
-
-/* Convert a `pointer to member' (POINTER_TYPE to METHOD_TYPE) into
-   another `pointer to method'.  This may involved the creation of
-   a thunk to handle the this offset calculation.  */
-
-static tree
-convert_fn_ptr (type, expr)
-     tree type, expr;
-{
-#if 0				/* We don't use thunks for pmfs.  */
-  if (flag_vtable_thunks)
-    {
-      tree intype = TREE_TYPE (expr);
-      tree binfo = get_binfo (TYPE_METHOD_BASETYPE (TREE_TYPE (intype)),
-			      TYPE_METHOD_BASETYPE (TREE_TYPE (type)), 1);
-      if (binfo == error_mark_node)
-	{
-	  error ("  in pointer to member conversion");
-	  return error_mark_node;
-	}
-      if (binfo == NULL_TREE)
-	{
-	  /* ARM 4.8 restriction.  */
-	  error ("invalid pointer to member conversion");
-	  return error_mark_node;
-	}
-
-      if (BINFO_OFFSET_ZEROP (binfo))
-	return build1 (NOP_EXPR, type, expr);
-      return build1 (NOP_EXPR, type, build_thunk (BINFO_OFFSET (binfo), expr));
-    }
-  else
-#endif
-    return build_ptrmemfunc (type, expr, 1);
-}
 
 /* if converting pointer to pointer
      if dealing with classes, check for derived->base or vice versa
@@ -239,9 +183,11 @@ cp_convert_to_pointer (type, expr)
 		  tree path;
 
 		  if (code == PLUS_EXPR)
-		    get_base_distance (TREE_TYPE (type), TREE_TYPE (intype), 0, &path);
+		    get_base_distance (TREE_TYPE (type), TREE_TYPE (intype),
+				       0, &path);
 		  else
-		    get_base_distance (TREE_TYPE (intype), TREE_TYPE (type), 0, &path);
+		    get_base_distance (TREE_TYPE (intype), TREE_TYPE (type),
+				       0, &path);
 		  return build_vbase_path (code, type, expr, path, 0);
 		}
 	    }
@@ -249,7 +195,7 @@ cp_convert_to_pointer (type, expr)
       if (TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
-	return convert_fn_ptr (type, expr);
+	return build_ptrmemfunc (type, expr, 1);
 
       if (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
 	  && TREE_CODE (TREE_TYPE (intype)) == OFFSET_TYPE)
@@ -548,7 +494,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	  
       rval = build_unary_op (ADDR_EXPR, expr, 0);
       if (rval != error_mark_node)
-	rval = convert_force (build_pointer_type (TREE_TYPE (reftype)), rval, 0);
+	rval = convert_force (build_pointer_type (TREE_TYPE (reftype)),
+			      rval, 0);
       if (rval != error_mark_node)
 	rval = build1 (NOP_EXPR, reftype, rval);
     }
@@ -1033,230 +980,39 @@ build_expr_type_conversion (desires, expr, complain)
      int complain;
 {
   tree basetype = TREE_TYPE (expr);
-  tree conv;
-  tree winner = NULL_TREE;
 
   if (TREE_CODE (basetype) == OFFSET_TYPE)
     expr = resolve_offset_ref (expr);
   expr = convert_from_reference (expr);
   basetype = TREE_TYPE (expr);
 
-  if (! IS_AGGR_TYPE (basetype))
-    switch (TREE_CODE (basetype))
-      {
-      case INTEGER_TYPE:
-	if ((desires & WANT_NULL) && TREE_CODE (expr) == INTEGER_CST
-	    && integer_zerop (expr))
-	  return expr;
-	/* else fall through...  */
+  switch (TREE_CODE (basetype))
+    {
+    case INTEGER_TYPE:
+      if ((desires & WANT_NULL) && TREE_CODE (expr) == INTEGER_CST
+	  && integer_zerop (expr))
+	return expr;
+      /* else fall through...  */
 
-      case BOOLEAN_TYPE:
-	return (desires & WANT_INT) ? expr : NULL_TREE;
-      case ENUMERAL_TYPE:
-	return (desires & WANT_ENUM) ? expr : NULL_TREE;
-      case REAL_TYPE:
-	return (desires & WANT_FLOAT) ? expr : NULL_TREE;
-      case POINTER_TYPE:
-	return (desires & WANT_POINTER) ? expr : NULL_TREE;
+    case BOOLEAN_TYPE:
+      return (desires & WANT_INT) ? expr : NULL_TREE;
+    case ENUMERAL_TYPE:
+      return (desires & WANT_ENUM) ? expr : NULL_TREE;
+    case REAL_TYPE:
+      return (desires & WANT_FLOAT) ? expr : NULL_TREE;
+    case POINTER_TYPE:
+      return (desires & WANT_POINTER) ? expr : NULL_TREE;
 	
-      case FUNCTION_TYPE:
-      case ARRAY_TYPE:
-	return (desires & WANT_POINTER) ? default_conversion (expr)
-     	                                : NULL_TREE;
-      default:
-	return NULL_TREE;
-      }
+    case FUNCTION_TYPE:
+    case ARRAY_TYPE:
+      return ((desires & WANT_POINTER) ? default_conversion (expr)
+	      : NULL_TREE);
 
-  if (! TYPE_HAS_CONVERSION (basetype))
-    return NULL_TREE;
-
-  for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
-    {
-      int win = 0;
-      tree candidate;
-      tree cand = TREE_VALUE (conv);
-
-      if (winner && winner == cand)
-	continue;
-
-      candidate = TREE_TYPE (TREE_TYPE (cand));
-      if (TREE_CODE (candidate) == REFERENCE_TYPE)
-	candidate = TREE_TYPE (candidate);
-
-      switch (TREE_CODE (candidate))
-	{
-	case BOOLEAN_TYPE:
-	case INTEGER_TYPE:
-	  win = (desires & WANT_INT); break;
-	case ENUMERAL_TYPE:
-	  win = (desires & WANT_ENUM); break;
-	case REAL_TYPE:
-	  win = (desires & WANT_FLOAT); break;
-	case POINTER_TYPE:
-	  win = (desires & WANT_POINTER); break;
-
-	default:
-	  break;
-	}
-
-      if (win)
-	{
-	  if (winner)
-	    {
-	      if (complain)
-		{
-		  cp_error ("ambiguous default type conversion from `%T'",
-			    basetype);
-		  cp_error ("  candidate conversions include `%D' and `%D'",
-			    winner, cand);
-		}
-	      return error_mark_node;
-	    }
-	  else
-	    winner = cand;
-	}
-    }
-
-  if (winner)
-    {
-      tree type = TREE_TYPE (TREE_TYPE (winner));
-      if (TREE_CODE (type) == REFERENCE_TYPE)
-	type = TREE_TYPE (type);
-      return build_type_conversion_1 (type, basetype, expr,
-				      DECL_NAME (winner), 1);
+    default:
+      break;
     }
 
   return NULL_TREE;
-}
-
-/* Must convert two aggregate types to non-aggregate type.
-   Attempts to find a non-ambiguous, "best" type conversion.
-
-   Return 1 on success, 0 on failure.
-
-   @@ What are the real semantics of this supposed to be??? */
-
-int
-build_default_binary_type_conversion (code, arg1, arg2)
-     enum tree_code code;
-     tree *arg1, *arg2;
-{
-  switch (code)
-    {
-    case MULT_EXPR:
-    case TRUNC_DIV_EXPR:
-    case CEIL_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case ROUND_DIV_EXPR:
-    case EXACT_DIV_EXPR:
-      *arg1 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg1, 0);
-      *arg2 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg2, 0);
-      break;
-
-    case TRUNC_MOD_EXPR:
-    case FLOOR_MOD_EXPR:
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
-    case BIT_AND_EXPR:
-    case BIT_XOR_EXPR:
-    case BIT_IOR_EXPR:
-      *arg1 = build_expr_type_conversion (WANT_INT | WANT_ENUM, *arg1, 0);
-      *arg2 = build_expr_type_conversion (WANT_INT | WANT_ENUM, *arg2, 0);
-      break;
-
-    case PLUS_EXPR:
-      {
-	tree a1, a2, p1, p2;
-	int wins;
-
-	a1 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg1, 0);
-	a2 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg2, 0);
-	p1 = build_expr_type_conversion (WANT_POINTER, *arg1, 0);
-	p2 = build_expr_type_conversion (WANT_POINTER, *arg2, 0);
-
-	wins = (a1 && a2) + (a1 && p2) + (p1 && a2);
-
-	if (wins > 1)
-	  error ("ambiguous default type conversion for `operator +'");
-
-	if (a1 && a2)
-	  *arg1 = a1, *arg2 = a2;
-	else if (a1 && p2)
-	  *arg1 = a1, *arg2 = p2;
-	else
-	  *arg1 = p1, *arg2 = a2;
-	break;
-      }
-
-    case MINUS_EXPR:
-      {
-	tree a1, a2, p1, p2;
-	int wins;
-
-	a1 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg1, 0);
-	a2 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg2, 0);
-	p1 = build_expr_type_conversion (WANT_POINTER, *arg1, 0);
-	p2 = build_expr_type_conversion (WANT_POINTER, *arg2, 0);
-
-	wins = (a1 && a2) + (p1 && p2) + (p1 && a2);
-
-	if (wins > 1)
-	  error ("ambiguous default type conversion for `operator -'");
-
-	if (a1 && a2)
-	  *arg1 = a1, *arg2 = a2;
-	else if (p1 && p2)
-	  *arg1 = p1, *arg2 = p2;
-	else
-	  *arg1 = p1, *arg2 = a2;
-	break;
-      }
-
-    case GT_EXPR:
-    case LT_EXPR:
-    case GE_EXPR:
-    case LE_EXPR:
-    case EQ_EXPR:
-    case NE_EXPR:
-      {
-	tree a1, a2, p1, p2;
-	int wins;
-
-	a1 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg1, 0);
-	a2 = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, *arg2, 0);
-	p1 = build_expr_type_conversion (WANT_POINTER | WANT_NULL, *arg1, 0);
-	p2 = build_expr_type_conversion (WANT_POINTER | WANT_NULL, *arg2, 0);
-
-	wins = (a1 && a2) + (p1 && p2);
-
-	if (wins > 1)
-	  cp_error ("ambiguous default type conversion for `%O'", code);
-
-	if (a1 && a2)
-	  *arg1 = a1, *arg2 = a2;
-	else
-	  *arg1 = p1, *arg2 = p2;
-	break;
-      }
-
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-      *arg1 = cp_convert (boolean_type_node, *arg1);
-      *arg2 = cp_convert (boolean_type_node, *arg2);
-      break;
-
-    default:
-      *arg1 = NULL_TREE;
-      *arg2 = NULL_TREE;
-    }
-
-  if (*arg1 == error_mark_node || *arg2 == error_mark_node)
-    cp_error ("ambiguous default type conversion for `%O'", code);
-
-  if (*arg1 && *arg2)
-    return 1;
-
-  return 0;
 }
 
 /* Implements integral promotion (4.1) and float->double promotion.  */

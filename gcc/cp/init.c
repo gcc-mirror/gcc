@@ -1589,9 +1589,9 @@ build_member_call (type, name, parmlist)
 	  cp_error ("invalid use of member `%D'", t);
 	  return error_mark_node;
 	}
-      if (TYPE_LANG_SPECIFIC (TREE_TYPE (decl))
-	  && TYPE_OVERLOADS_CALL_EXPR (TREE_TYPE (decl)))
-	return build_opfncall (CALL_EXPR, LOOKUP_NORMAL, decl, parmlist, NULL_TREE);
+      if (TYPE_LANG_SPECIFIC (TREE_TYPE (decl)))
+	return build_opfncall (CALL_EXPR, LOOKUP_NORMAL, decl,
+			       parmlist, NULL_TREE);
       return build_function_call (decl, parmlist);
     }
   else
