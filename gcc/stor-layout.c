@@ -667,7 +667,7 @@ place_field (rli, field)
   /* Some targets (i.e. VMS) limit struct field alignment
      to a lower boundary than alignment of variables.  */
 #ifdef BIGGEST_FIELD_ALIGNMENT
-  desired_align = MIN (desired_align, BIGGEST_FIELD_ALIGNMENT);
+  desired_align = MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
 #endif
 #ifdef ADJUST_FIELD_ALIGN
   desired_align = ADJUST_FIELD_ALIGN (field, desired_align);

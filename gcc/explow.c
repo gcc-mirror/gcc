@@ -106,11 +106,12 @@ plus_constant_wide (x, c)
 
     case CONST_DOUBLE:
       {
-	HOST_WIDE_INT l1 = CONST_DOUBLE_LOW (x);
+	unsigned HOST_WIDE_INT l1 = CONST_DOUBLE_LOW (x);
 	HOST_WIDE_INT h1 = CONST_DOUBLE_HIGH (x);
-	HOST_WIDE_INT l2 = c;
+	unsigned HOST_WIDE_INT l2 = c;
 	HOST_WIDE_INT h2 = c < 0 ? ~0 : 0;
-	HOST_WIDE_INT lv, hv;
+	unsigned HOST_WIDE_INT lv;
+	HOST_WIDE_INT hv;
 
 	add_double (l1, h1, l2, h2, &lv, &hv);
 

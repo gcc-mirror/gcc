@@ -1824,13 +1824,13 @@ extern tree maybe_get_identifier	PARAMS ((const char *));
 /* Construct various types of nodes.  */
 
 #define build_int_2(LO,HI)  \
-  build_int_2_wide ((HOST_WIDE_INT) (LO), (HOST_WIDE_INT) (HI))
+  build_int_2_wide ((unsigned HOST_WIDE_INT) (LO), (HOST_WIDE_INT) (HI))
 
 extern tree build			PARAMS ((enum tree_code, tree, ...));
 extern tree build_nt			PARAMS ((enum tree_code, ...));
 extern tree build_parse_node		PARAMS ((enum tree_code, ...));
 
-extern tree build_int_2_wide		PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT));
+extern tree build_int_2_wide		PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT));
 extern tree build_real			PARAMS ((tree, REAL_VALUE_TYPE));
 extern tree build_real_from_int_cst 	PARAMS ((tree, tree));
 extern tree build_complex		PARAMS ((tree, tree, tree));

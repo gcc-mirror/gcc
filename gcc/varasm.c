@@ -2563,8 +2563,8 @@ compare_constant_1 (exp, p)
 	  int xlen = len = int_size_in_bytes (TREE_TYPE (exp));
 	  unsigned char *tmp = (unsigned char *) alloca (len);
 
-	  get_set_constructor_bytes (exp, (unsigned char *) tmp, len);
-	  strp = tmp;
+	  get_set_constructor_bytes (exp, tmp, len);
+	  strp = (char *) tmp;
 	  if (bcmp ((char *) &xlen, p, sizeof xlen))
 	    return 0;
 

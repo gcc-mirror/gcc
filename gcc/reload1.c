@@ -674,7 +674,7 @@ reload (first, global, dumpfile)
   reg_equiv_mem = (rtx *) xcalloc (max_regno, sizeof (rtx));
   reg_equiv_init = (rtx *) xcalloc (max_regno, sizeof (rtx));
   reg_equiv_address = (rtx *) xcalloc (max_regno, sizeof (rtx));
-  reg_max_ref_width = (int *) xcalloc (max_regno, sizeof (int));
+  reg_max_ref_width = (unsigned int *) xcalloc (max_regno, sizeof (int));
   reg_old_renumber = (short *) xcalloc (max_regno, sizeof (short));
   bcopy ((PTR) reg_renumber, (PTR) reg_old_renumber, max_regno * sizeof (short));
   pseudo_forbidden_regs
