@@ -1,3 +1,11 @@
+2005-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.ac: Do not invoke TL_AC_GCC_VERSION.
+	In all substitutions, expand gcc_version in Makefile.
+	* aclocal.m4, configure: Regenerate.
+	* Makefile.am: Set gcc_version.
+	* Makefile.in, testsuite/Makefile.in: Regenerate.
+
 2005-03-17  Frank Ch. Eigler  <fche@redhat.com>
 
 	* mf-runtime.c (__mfu_check): Respect ignore_reads configuration.
@@ -91,7 +99,7 @@
 	(fopen, setvbuf): New/revised hook functions for buffer overriding.
 	(setbuf,setlinebuf,fdopen,freopen,fopen64,freopen64,fclose): Ditto.
 	(fflush): Accept given NULL stream (means "all streams").
-	* mf-runtime.h.in: 
+	* mf-runtime.h.in:
 	* mf-runtime.c (__mfu_check): Accept accesses that span adjacent
 	HEAP/GUESS objects.
 	(LOOKUP_CACHE_SIZE_MAX): Raise to 64K entries tentatively.
@@ -140,7 +148,7 @@
 
 2004-08-03  Dale Johannesen  <dalej@apple.com>
 
-         * mf-runtime.c: Conditionalize POSIX_SOURCE for Darwin.
+	 * mf-runtime.c: Conditionalize POSIX_SOURCE for Darwin.
 
 2004-08-03  Frank Ch. Eigler  <fche@redhat.com>
 
