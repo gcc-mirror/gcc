@@ -162,6 +162,7 @@ static rtx *unfilled_firstobj;
 struct resources
 {
   char memory;			/* Insn sets or needs a memory location.  */
+  char unch_memory;		/* Insn sets of needs a "unchanging" MEM. */
   char volatil;			/* Insn sets or needs a volatile memory loc. */
   char cc;			/* Insn sets or needs the condition codes.  */
   HARD_REG_SET regs;		/* Which registers are set or needed.  */
@@ -169,7 +170,7 @@ struct resources
 
 /* Macro to clear all resources.  */
 #define CLEAR_RESOURCE(RES)	\
- do { (RES)->memory = (RES)->volatil = (RES)->cc = 0;	\
+ do { (RES)->memory = (RES)->unch_memory = (RES)->volatil = (RES)->cc = 0; \
       CLEAR_HARD_REG_SET ((RES)->regs); } while (0)
 
 /* Indicates what resources are required at the beginning of the epilogue.  */
@@ -310,7 +311,9 @@ mark_referenced_resources (x, res, include_delayed_effects)
     case MEM:
       /* If this memory shouldn't change, it really isn't referencing
 	 memory.  */
-      if (! RTX_UNCHANGING_P (x))
+      if (RTX_UNCHANGING_P (x))
+	res->unch_memory = 1;
+      else
 	res->memory = 1;
       res->volatil = MEM_VOLATILE_P (x);
 
@@ -616,6 +619,7 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
       if (in_dest)
 	{
 	  res->memory = 1;
+	  res->unch_memory = RTX_UNCHANGING_P (x);
 	  res->volatil = MEM_VOLATILE_P (x);
 	}
 
@@ -707,6 +711,7 @@ resource_conflicts_p (res1, res2)
      struct resources *res1, *res2;
 {
   if ((res1->cc && res2->cc) || (res1->memory && res2->memory)
+      || (res1->unch_memory && res2->unch_memory)
       || res1->volatil || res2->volatil)
     return 1;
 
@@ -2033,6 +2038,7 @@ redundant_insn (insn, target, delay_list)
   /* Insns we pass may not set either NEEDED or SET, so merge them for
      simpler tests.  */
   needed.memory |= set.memory;
+  needed.unch_memory |= set.unch_memory;
   IOR_HARD_REG_SET (needed.regs, set.regs);
 
   /* This insn isn't redundant if it conflicts with an insn that either is
@@ -2454,7 +2460,7 @@ mark_target_live_regs (target, res)
 
   /* We have to assume memory is needed, but the CC isn't.  */
   res->memory = 1;
-  res->volatil = 0;
+  res->volatil = res->unch_memory = 0;
   res->cc = 0;
 
   /* See if we have computed this value already.  */
@@ -3053,6 +3059,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 			(next_active_insn (JUMP_LABEL (trial_delay)),
 			 &needed_at_jump);
 		      needed.memory |= needed_at_jump.memory;
+		      needed.unch_memory |= needed_at_jump.unch_memory;
 		      IOR_HARD_REG_SET (needed.regs, needed_at_jump.regs);
 		    }
 		}
@@ -4260,6 +4267,7 @@ dbr_schedule (first, file)
 
   end_of_function_needs.cc = 0;
   end_of_function_needs.memory = 1;
+  end_of_function_needs.unch_memory = 0;
   CLEAR_HARD_REG_SET (end_of_function_needs.regs);
 
   if (frame_pointer_needed)
