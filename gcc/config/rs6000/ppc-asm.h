@@ -157,3 +157,8 @@ FUNC_NAME(name):
 GLUE(.L,name): \
 	.size FUNC_NAME(name),GLUE(.L,name)-FUNC_NAME(name)
 #endif
+
+#if defined __linux__ && !defined __powerpc64__
+	.section .note.GNU-stack
+	.previous
+#endif

@@ -1,3 +1,20 @@
+2003-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (trampolines_created): New variable.
+	(expand_function_end): Set it when doing INITIALIZE_TRAMPOLINE.
+	* function.h (trampolines_created): Add.
+	* config/s390/linux.h (ASM_FILE_END): Define.
+	* config/alpha/linux-elf.h (ASM_FILE_END): Define.
+	* config/m68k/linux.h (ASM_FILE_END): Define.
+	* config/rs6000/linux.h (ASM_FILE_END): Define.
+	* config/rs6000/linux64.h (ASM_FILE_END): Define.
+	* config/rs6000/ppc-asm.h: Add .note.GNU-stack on powerpc-linux.
+	* config/sparc/linux.h (ASM_FILE_END): Define.
+	* config/sparc/linux64.h (ASM_FILE_END): Define.
+	* config/i386/i386.c (ix86_asm_file_end): Use SUBTARGET_FILE_END.
+	* config/i386/linux.h (SUBTARGET_FILE_END): Define.
+	* config/i386/linux64.h (SUBTARGET_FILE_END): Define.
+
 Wed Jun  4 18:39:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (min_insn_size, k8_avoid_jump_misspredicts): New functions
