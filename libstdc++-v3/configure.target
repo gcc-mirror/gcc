@@ -87,7 +87,7 @@ case "${target_os}" in
   cygwin*)
     os_include_dir="config/os/newlib"
     ;;
-  linux*)
+  linux* | gnu*)
     os_include_dir="config/os/gnu-linux"
     ;;
   irix*)
