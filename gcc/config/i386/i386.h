@@ -2593,32 +2593,6 @@ do {									\
 } while (0)
 
 
-/* Helper macros to decide if the rtl of some instruction
-   will cause problems due to register shortage.  */
-
-/* ??? flags.h is not self-contained */
-extern int flag_omit_frame_pointer;
-/* ??? neither is function.h */
-extern struct function *outer_function_chain;
-/* ??? neither is expr.h */
-extern int current_function_calls_alloca;
-/* ??? No header file for  rtx_equal_function_value_matters */
-extern int rtx_equal_function_value_matters;
-
-#define N_REGS_USED(op) \
-  (GET_CODE (op) == MEM \
-   ? (GET_CODE (XEXP (op, 0)) == PLUS \
-      ? (rtx_varies_p (XEXP (XEXP (op, 0), 0)) \
-         + rtx_varies_p (XEXP (XEXP (op, 0), 1))) \
-      : rtx_varies_p (XEXP (op, 0))) \
-   : (GET_CODE (op) == REG ? HARD_REGNO_NREGS (REGNO (op), GET_MODE (op)) : 0))
-
-#define N_ALLOCATABLE_REGISTERS						\
-  (6 - (flag_pic != 0) - (outer_function_chain != 0)                    \
-   + (flag_omit_frame_pointer && ! rtx_equal_function_value_matters     \
-      && ! current_function_calls_alloca))
-
-
 /* Functions in i386.c */
 extern void override_options ();
 extern void order_regs_for_local_alloc ();
