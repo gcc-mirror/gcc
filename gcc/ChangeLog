@@ -1,3 +1,15 @@
+Fri Jan  4 11:45:05 2002  Jeffrey A Law  (law@redhat.com)
+
+        * c-common.c (c_expand_start_cond): Expect the IF_STMT node to
+        be passed in, do not build it.
+        (c_begin_if_stmt): New function.
+        (c_begin_while_stmt, c_finish_while_stmt_cond): Likewise.
+        * c-common.h (c_expand_start_cond): Update prototype.
+        (c_begin_if_stmt): Prototype new function.
+        (c_begin_while_stmt, c_finish_while_stmt_cond): Likewise.
+        * c-parse.in (if_prefix): Use c_begin_if_stmt,
+        c_begin_while_stmt and c_finish_while_stmt_cond.
+
 2002-01-04  William Cohen  <wcohen@redhat.com>
 
 	* config/pa/elf.h (ASM_FILE_START): Reverted to profile_flag.
