@@ -4428,15 +4428,26 @@ of these is when the application wishes to throw and catch exceptions
 across different shared libraries.  In that case, each of the libraries
 as well as the application itself should use the shared @file{libgcc}.
 
-Therefore, whenever you specify the @option{-shared} option, the GCC
-driver automatically adds @option{-shared-libgcc}, unless you explicitly
-specify @option{-static-libgcc}.  The G++ driver automatically adds
-@option{-shared-libgcc} when you build a main executable as well because
-for C++ programs that is typically the right thing to do.
-(Exception-handling will not work reliably otherwise.)
+Therefore, the G++ and GCJ drivers automatically add
+@option{-shared-libgcc} whenever you build a shared library or a main
+executable, because C++ and Java programs typically use exceptions, so
+this is the right thing to do.
 
-However, when linking a main executable written in C, you must
-explicitly say @option{-shared-libgcc} if you want to use the shared
+If, instead, you use the GCC driver to create shared libraries, you may
+find that they will not always be linked with the shared @file{libgcc}.
+If GCC finds, at its configuration time, that you have a GNU linker that
+does not support option @option{--eh-frame-hdr}, it will link the shared
+version of @file{libgcc} into shared libraries by default.  Otherwise,
+it will take advantage of the linker and optimize away the linking with
+the shared version of @file{libgcc}, linking with the static version of
+libgcc by default.  This allows exceptions to propagate through such
+shared libraries, without incurring relocation costs at library load
+time.
+
+However, if a library or main executable is supposed to throw or catch
+exceptions, you must link it using the G++ or GCJ driver, as appropriate
+for the languages used in the program, or using the option
+@option{-shared-libgcc}, such that it is linked with the shared
 @file{libgcc}.
 
 @item -symbolic

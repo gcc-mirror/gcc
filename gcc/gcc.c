@@ -1414,31 +1414,23 @@ init_gcc_specs (obstack, shared_name, static_name, eh_name)
      const char *static_name;
      const char *eh_name;
 {
-  char buffer[128];
-  const char *p;
+  char *buf;
 
-  /* If we see -shared-libgcc, then use the shared version.  */
-  sprintf (buffer, "%%{shared-libgcc:%s %s}", shared_name, static_name);
-  obstack_grow (obstack, buffer, strlen (buffer));
-  /* If we see -static-libgcc, then use the static version.  */
-  sprintf (buffer, "%%{static-libgcc:%s %s}", static_name, eh_name);
-  obstack_grow (obstack, buffer, strlen (buffer));
-  /* Otherwise, if we see -shared, then use the shared version
-     if using EH registration routines or static version without
-     exception handling routines otherwise.  */
-  p = "%{!shared-libgcc:%{!static-libgcc:%{shared:";
-  obstack_grow (obstack, p, strlen (p));
+  buf = concat ("%{!shared:%{!shared-libgcc:", static_name, " ",
+		eh_name, "}%{shared-libgcc:", shared_name, " ",
+		static_name, "}}",
+		"%{shared:%{static-libgcc:", static_name, " ",
+		eh_name, "}%{!static-libgcc:",
 #ifdef LINK_EH_SPEC
-  sprintf (buffer, "%s}}}", static_name);
+		"%{shared-libgcc:", shared_name,
+		"}%{!shared-libgcc:", static_name, "}",
 #else
-  sprintf (buffer, "%s}}}", shared_name);
+		shared_name,
 #endif
-  obstack_grow (obstack, buffer, strlen (buffer));
-  /* Otherwise, use the static version.  */
-  sprintf (buffer, 
-	   "%%{!shared-libgcc:%%{!static-libgcc:%%{!shared:%s %s}}}", 
-	   static_name, eh_name);
-  obstack_grow (obstack, buffer, strlen (buffer));
+		"}}", NULL);
+
+  obstack_grow (obstack, buf, strlen (buf));
+  free (buf);
 }
 #endif /* ENABLE_SHARED_LIBGCC */
 
