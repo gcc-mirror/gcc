@@ -31,26 +31,17 @@ Boston, MA 02111-1307, USA.  */
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 #if OBJC_WITH_GC
 
 #include <gc.h>
+#include <limits.h>
 
 /* gc_typed.h uses the following but doesn't declare them */
 typedef GC_word word;
 typedef GC_signed_word signed_word;
-
-#if BITS_PER_WORD == 32
-# define LOGWL	5
-# define modWORDSZ(n) ((n) & 0x1f)        /* n mod size of word	    */
-#endif
-
-#if BITS_PER_WORD == 64
-# define LOGWL 6
-# define modWORDSZ(n) ((n) & 0x3f)        /* n mod size of word	    */
-#endif
-
-#define divWORDSZ(n) ((n) >> LOGWL)	   /* divide n by size of word      */
+#define BITS_PER_WORD (CHAR_BIT * sizeof (word))
 
 #include <gc_typed.h>
 
