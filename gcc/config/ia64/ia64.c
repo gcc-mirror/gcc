@@ -1106,16 +1106,9 @@ ia64_move_ok (rtx dst, rtx src)
     return GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src);
 }
 
-/* Return 0 if we are doing C++ code.  This optimization fails with
-   C++ because of GNAT c++/6685.  */
-
 int
 addp4_optimize_ok (rtx op1, rtx op2)
 {
-
-  if (!strcmp (lang_hooks.name, "GNU C++"))
-    return 0;
-
   return (basereg_operand (op1, GET_MODE(op1)) !=
 	  basereg_operand (op2, GET_MODE(op2)));
 }
@@ -8360,6 +8353,18 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   emit_note (NOTE_INSN_PROLOGUE_END);
 
   this = gen_rtx_REG (Pmode, IN_REG (0));
+  if (TARGET_ILP32)
+    {
+      rtx tmp = gen_rtx_REG (ptr_mode, IN_REG (0));
+      REG_POINTER (tmp) = 1;
+      if (delta && CONST_OK_FOR_I (delta))
+	{
+	  emit_insn (gen_ptr_extend_plus_imm (this, tmp, GEN_INT (delta)));
+	  delta = 0;
+	}
+      else
+	emit_insn (gen_ptr_extend (this, tmp));
+    }
 
   /* Apply the constant offset, if required.  */
   if (delta)
@@ -8381,17 +8386,39 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       rtx vcall_offset_rtx = GEN_INT (vcall_offset);
       rtx tmp = gen_rtx_REG (Pmode, 2);
 
-      emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
-
-      if (!CONST_OK_FOR_J (vcall_offset))
+      if (TARGET_ILP32)
 	{
-	  rtx tmp2 = gen_rtx_REG (Pmode, next_scratch_gr_reg ());
-	  emit_move_insn (tmp2, vcall_offset_rtx);
-	  vcall_offset_rtx = tmp2;
+	  rtx t = gen_rtx_REG (ptr_mode, 2);
+	  REG_POINTER (t) = 1;
+	  emit_move_insn (t, gen_rtx_MEM (ptr_mode, this));
+	  if (CONST_OK_FOR_I (vcall_offset))
+	    {
+	      emit_insn (gen_ptr_extend_plus_imm (tmp, t, 
+						  vcall_offset_rtx));
+	      vcall_offset = 0;
+	    }
+	  else
+	    emit_insn (gen_ptr_extend (tmp, t));
 	}
-      emit_insn (gen_adddi3 (tmp, tmp, vcall_offset_rtx));
+      else
+	emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
 
-      emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
+      if (vcall_offset)
+	{
+	  if (!CONST_OK_FOR_J (vcall_offset))
+	    {
+	      rtx tmp2 = gen_rtx_REG (Pmode, next_scratch_gr_reg ());
+	      emit_move_insn (tmp2, vcall_offset_rtx);
+	      vcall_offset_rtx = tmp2;
+	    }
+	  emit_insn (gen_adddi3 (tmp, tmp, vcall_offset_rtx));
+	}
+
+      if (TARGET_ILP32)
+	emit_move_insn (gen_rtx_REG (ptr_mode, 2), 
+			gen_rtx_MEM (ptr_mode, tmp));
+      else
+	emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
 
       emit_insn (gen_adddi3 (this, this, tmp));
     }
