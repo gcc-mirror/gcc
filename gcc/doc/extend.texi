@@ -6588,7 +6588,8 @@ empty string.
 This pragma is similar in intent to to the asm labels extension
 (@pxref{Asm Labels}) in that the system programmer wants to change
 the assembly-level ABI without changing the source-level API.  The
-preprocessor defines @code{__EXTERN_PREFIX} if the pragma is available.
+preprocessor defines @code{__PRAGMA_EXTERN_PREFIX} if the pragma is
+available.
 @end table
 
 @node Unnamed Fields

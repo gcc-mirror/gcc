@@ -711,6 +711,43 @@ static const char* apzAlpha___AssertPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Alpha___Extern_Prefix fix
+ */
+tSCC zAlpha___Extern_PrefixName[] =
+     "alpha___extern_prefix";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zAlpha___Extern_PrefixList[] =
+  "|sys/stat.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzAlpha___Extern_PrefixMachs[] = {
+        "alpha*-dec-osf5*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zAlpha___Extern_PrefixSelect0[] =
+       "#[ \t]*if[ \t]*defined\\(__DECC\\)";
+
+#define    ALPHA___EXTERN_PREFIX_TEST_CT  1
+static tTestDesc aAlpha___Extern_PrefixTests[] = {
+  { TT_EGREP,    zAlpha___Extern_PrefixSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Alpha___Extern_Prefix
+ */
+static const char* apzAlpha___Extern_PrefixPatch[] = {
+    "format",
+    "%0 || defined(__PRAGMA_EXTERN_PREFIX)",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Alpha_Assert fix
  */
 tSCC zAlpha_AssertName[] =
@@ -5788,6 +5825,7 @@ typedef enum {
     AIX_SYSWAIT_FIXIDX,
     AIX_VOLATILE_FIXIDX,
     ALPHA___ASSERT_FIXIDX,
+    ALPHA___EXTERN_PREFIX_FIXIDX,
     ALPHA_ASSERT_FIXIDX,
     ALPHA_GETOPT_FIXIDX,
     ALPHA_PARENS_FIXIDX,
@@ -5992,6 +6030,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAlpha___AssertMachs,
      ALPHA___ASSERT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAlpha___AssertTests,   apzAlpha___AssertPatch, 0 },
+
+  {  zAlpha___Extern_PrefixName,    zAlpha___Extern_PrefixList,
+     apzAlpha___Extern_PrefixMachs,
+     ALPHA___EXTERN_PREFIX_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aAlpha___Extern_PrefixTests,   apzAlpha___Extern_PrefixPatch, 0 },
 
   {  zAlpha_AssertName,    zAlpha_AssertList,
      apzAlpha_AssertMachs,
