@@ -3712,19 +3712,9 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 	    if (cmp_mode == VOIDmode)
 	      cmp_mode = op0_mode;
 	  }
-	temp = simplify_relational_operation (code, cmp_mode,
+	temp = simplify_relational_operation (code, mode, cmp_mode,
 					      XEXP (x, 0), XEXP (x, 1));
       }
-#ifdef FLOAT_STORE_FLAG_VALUE
-      if (temp != 0 && GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (temp == const0_rtx)
-	    temp = CONST0_RTX (mode);
-	  else
-	    temp = CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE (mode),
-						 mode);
-	}
-#endif
       break;
     case RTX_COMM_ARITH:
     case RTX_BIN_ARITH:
@@ -4993,7 +4983,8 @@ simplify_set (rtx x)
 	tmp_mode = GET_MODE (op1);
       else
 	tmp_mode = compare_mode;
-      tmp = simplify_relational_operation (old_code, tmp_mode, op0, op1);
+      tmp = simplify_const_relational_operation (old_code, tmp_mode,
+						 op0, op1);
       if (tmp != NULL_RTX)
 	{
 	  rtx pat = PATTERN (other_insn);
@@ -10108,7 +10099,7 @@ gen_binary (enum rtx_code code, enum machine_mode mode, rtx op0, rtx op1)
 
       if (op_mode == VOIDmode)
 	op_mode = GET_MODE (op1);
-      result = simplify_relational_operation (code, op_mode, op0, op1);
+      result = simplify_relational_operation (code, mode, op_mode, op0, op1);
     }
   else
     result = simplify_binary_operation (code, mode, op0, op1);

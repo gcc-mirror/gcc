@@ -1751,8 +1751,10 @@ extern rtx simplify_binary_operation (enum rtx_code, enum machine_mode, rtx,
 				      rtx);
 extern rtx simplify_ternary_operation (enum rtx_code, enum machine_mode,
 				       enum machine_mode, rtx, rtx, rtx);
+extern rtx simplify_const_relational_operation (enum rtx_code,
+						enum machine_mode, rtx, rtx);
 extern rtx simplify_relational_operation (enum rtx_code, enum machine_mode,
-					  rtx, rtx);
+					  enum machine_mode, rtx, rtx);
 extern rtx simplify_gen_binary (enum rtx_code, enum machine_mode, rtx, rtx);
 extern rtx simplify_gen_unary (enum rtx_code, enum machine_mode, rtx,
 			       enum machine_mode);

@@ -3907,7 +3907,7 @@ fold_rtx (rtx x, rtx insn)
 	    }
 	}
 
-      new = simplify_relational_operation (code,
+      new = simplify_relational_operation (code, mode,
 					   (mode_arg0 != VOIDmode
 					    ? mode_arg0
 					    : (GET_MODE (const_arg0
@@ -3922,16 +3922,6 @@ fold_rtx (rtx x, rtx insn)
 							: folded_arg1)),
 					   const_arg0 ? const_arg0 : folded_arg0,
 					   const_arg1 ? const_arg1 : folded_arg1);
-#ifdef FLOAT_STORE_FLAG_VALUE
-      if (new != 0 && GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (new == const0_rtx)
-	    new = CONST0_RTX (mode);
-	  else
-	    new = (CONST_DOUBLE_FROM_REAL_VALUE
-		   (FLOAT_STORE_FLAG_VALUE (mode), mode));
-	}
-#endif
       break;
 
     case RTX_BIN_ARITH:
