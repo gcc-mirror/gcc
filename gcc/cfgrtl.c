@@ -2105,7 +2105,7 @@ rtl_verify_flow_info (void)
 	      break;
 
 	    case CODE_LABEL:
-	      /* An addr_vec is placed outside any block block.  */
+	      /* An addr_vec is placed outside any basic block.  */
 	      if (NEXT_INSN (x)
 		  && GET_CODE (NEXT_INSN (x)) == JUMP_INSN
 		  && (GET_CODE (PATTERN (NEXT_INSN (x))) == ADDR_DIFF_VEC

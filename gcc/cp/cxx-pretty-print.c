@@ -198,7 +198,7 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
 
 /* Pretty-print out the token sequence ":: template" in template codes
    where it is needed to "inline declare" the (following) member as
-   a template.  This situtation arises when SCOPE of T is dependent
+   a template.  This situation arises when SCOPE of T is dependent
    on template parameters.  */
 
 static inline void
@@ -242,7 +242,7 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
 
       /* In Standard C++, functions cannot possibly be used as
          nested-name-specifiers.  However, there are situations where
-         is "makes sense" to output the surrouding function name for the
+         is "makes sense" to output the surrounding function name for the
          purpose of emphasizing on the scope kind.  Just printing the
          function name might not be sufficient as it may be overloaded; so,
          we decorate the function with its signature too.

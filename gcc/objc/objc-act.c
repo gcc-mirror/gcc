@@ -3304,7 +3304,7 @@ build_objc_exception_stuff (void)
   finish_struct (objc_exception_data_template, field_decl_chain, NULL_TREE);
 
   /* int _setjmp(...); */
-  /* If the user includes <setjmp.h>, this shall be superceded by
+  /* If the user includes <setjmp.h>, this shall be superseded by
      'int _setjmp(jmp_buf);' */
   temp_type = build_function_type (integer_type_node, NULL_TREE);
   objc_setjmp_decl
@@ -5536,7 +5536,7 @@ receiver_is_class_object (tree receiver, int self, int super)
       && (exp = TREE_OPERAND (exp, 0))
       && TREE_CODE (exp) == FUNCTION_DECL
       /* For some reason, we sometimes wind up with multiple FUNCTION_DECL
-	 prototypes for objc_get_class().  Thankfuly, they seem to share the
+	 prototypes for objc_get_class().  Thankfully, they seem to share the
 	 same function type.  */
       && TREE_TYPE (exp) == TREE_TYPE (objc_get_class_decl)
       && !strcmp (IDENTIFIER_POINTER (DECL_NAME (exp)), TAG_GETCLASS)
@@ -9015,7 +9015,7 @@ handle_impent (struct imp_entry *impent)
     }
 }
 
-/* The Fix-and-Countinue functionality available in Mac OS X 10.3 and
+/* The Fix-and-Continue functionality available in Mac OS X 10.3 and
    later requires that ObjC translation units participating in F&C be
    specially marked.  The following routine accomplishes this.  */
 

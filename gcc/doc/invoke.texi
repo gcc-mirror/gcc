@@ -6653,7 +6653,7 @@ if the underlying ABI supports it.
 Specifying the larger number can produce faster, more efficient code, but
 can also increase the size of the program.  Different values are potentially
 incompatible.  Code compiled with one value cannot necessarily expect to
-work with code or libraries compiled with annother value, if they exchange
+work with code or libraries compiled with another value, if they exchange
 information using structures or unions.
 
 @item -mabort-on-noreturn
