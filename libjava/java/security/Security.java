@@ -37,10 +37,12 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.java.security.action.GetPropertyAction;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.security.AccessController;
 import java.security.Provider;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -68,9 +70,11 @@ public final class Security
   
   static
     {
-      String base = System.getProperty ("gnu.classpath.home.url");
-      String vendor = System.getProperty ("gnu.classpath.vm.shortname");
-    
+      GetPropertyAction getProp = new GetPropertyAction("gnu.classpath.home.url");
+      String base = (String) AccessController.doPrivileged(getProp);
+      getProp = new GetPropertyAction("gnu.classpath.vm.shortname");
+      String vendor = (String) AccessController.doPrivileged(getProp);
+
       // Try VM specific security file
       boolean loaded = loadProviders (base, vendor);
     
