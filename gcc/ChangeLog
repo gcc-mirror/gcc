@@ -1,3 +1,8 @@
+2004-02-17  James E Wilson  <wilson@specifixinc.com>
+
+	* caller-save.c (insert_restore): Pass mem through copy_rtx.
+	(insert_save): Likewise.
+
 2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_emit_stack_adjustment): Fix a
