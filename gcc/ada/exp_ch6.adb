@@ -1915,11 +1915,42 @@ package body Exp_Ch6 is
       then
          if Is_Inlined (Subp) then
 
-            declare
+            Inlined_Subprogram : declare
                Bod         : Node_Id;
                Must_Inline : Boolean := False;
                Spec        : constant Node_Id := Unit_Declaration_Node (Subp);
                Scop        : constant Entity_Id := Scope (Subp);
+
+               function In_Unfrozen_Instance return Boolean;
+               --  If the subprogram comes from an instance in the same
+               --  unit, and the instance is not yet frozen, inlining might
+               --  trigger order-of-elaboration problems in gigi.
+
+               --------------------------
+               -- In_Unfrozen_Instance --
+               --------------------------
+
+               function In_Unfrozen_Instance return Boolean is
+                  S : Entity_Id := Scop;
+
+               begin
+                  while Present (S)
+                    and then S /= Standard_Standard
+                  loop
+                     if Is_Generic_Instance (S)
+                       and then Present (Freeze_Node (S))
+                       and then not Analyzed (Freeze_Node (S))
+                     then
+                        return True;
+                     end if;
+
+                     S := Scope (S);
+                  end loop;
+
+                  return False;
+               end In_Unfrozen_Instance;
+
+            --  Start of processing for Inlined_Subprogram
 
             begin
                --  Verify that the body to inline has already been seen,
@@ -1943,14 +1974,7 @@ package body Exp_Ch6 is
                then
                   Must_Inline := False;
 
-               --  If the subprogram comes from an instance in the same
-               --  unit, and the instance is not yet frozen, inlining might
-               --  trigger order-of-elaboration problems in gigi.
-
-               elsif Is_Generic_Instance (Scop)
-                 and then Present (Freeze_Node (Scop))
-                 and then not Analyzed (Freeze_Node (Scop))
-               then
+               elsif In_Unfrozen_Instance then
                   Must_Inline := False;
 
                else
@@ -1998,7 +2022,7 @@ package body Exp_Ch6 is
                        N, Subp);
                   end if;
                end if;
-            end;
+            end Inlined_Subprogram;
          end if;
       end if;
 

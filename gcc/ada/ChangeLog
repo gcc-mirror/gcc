@@ -1,3 +1,31 @@
+2004-02-09  Albert Lee  <lee@gnat.com>
+
+	* errno.c: define _SGI_MP_SOURCE for task-safe errno on IRIX
+
+2004-02-09  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch3.adb (Build_Slice_Assignment): Handle properly case of null
+	slices.
+
+	* exp_ch6.adb (Expand_Call): Do not inline a call when the subprogram
+	is nested in an instance that is not frozen yet, to avoid
+	order-of-elaboration problems in gigi.
+
+	* sem_attr.adb (Analyze_Attribute, case 'Access): Within an inlined
+	body the attribute is legal.
+
+2004-02-09  Robert Dewar  <dewar@gnat.com>
+
+	* s-rident.ads: Minor comment correction
+
+	* targparm.adb: Remove dependence on uintp completely. There was
+	always a bug in Make in that it called Targparm before initializing
+	the Uint package. The old code appeared to get away with this, but
+	the new code did not! This caused an assertion error in gnatmake.
+
+	* targparm.ads: Fix bad comment, restriction pragmas with parameters
+	are indeed fully supported.
+
 2004-02-06  Alan Modra  <amodra@bigpond.net.au>
 
 	* misc.c (default_pass_by_ref): Update INIT_CUMULATIVE_ARGS call.

@@ -29,7 +29,6 @@ with Namet;  use Namet;
 with Opt;    use Opt;
 with Osint;  use Osint;
 with Output; use Output;
-with Uintp;  use Uintp;
 
 package body Targparm is
    use ASCII;
@@ -193,7 +192,7 @@ package body Targparm is
       Source_Last  : Source_Ptr)
    is
       P : Source_Ptr;
-      V : Uint;
+      --  Scans source buffer containing source of system.ads
 
       Fatal : Boolean := False;
       --  Set True if a fatal error is detected
@@ -221,7 +220,7 @@ package body Targparm is
          elsif System_Text (P .. P + 20) = "pragma Restrictions (" then
             P := P + 21;
 
-            Rloop : for K in Partition_Boolean_Restrictions loop
+            Rloop : for K in All_Boolean_Restrictions loop
                declare
                   Rname : constant String := Restriction_Id'Image (K);
 
@@ -249,6 +248,9 @@ package body Targparm is
                   Rname : constant String :=
                             All_Parameter_Restrictions'Image (K);
 
+                  V : Natural;
+                  --  Accumulates value
+
                begin
                   for J in Rname'Range loop
                      if Fold_Upper (System_Text (P + Source_Ptr (J - 1)))
@@ -262,22 +264,36 @@ package body Targparm is
                                                       " => "
                   then
                      P := P + Rname'Length + 4;
-                     V := Uint_0;
 
+                     V := 0;
                      loop
                         if System_Text (P) in '0' .. '9' then
-                           V := 10 * V + Character'Pos (System_Text (P)) - 48;
+                           declare
+                              pragma Unsuppress (Overflow_Check);
+
+                           begin
+                              --  Accumulate next digit
+
+                              V := 10 * V +
+                                   Character'Pos (System_Text (P)) -
+                                   Character'Pos ('0');
+
+                           exception
+                              --  On overflow, we just ignore the pragma since
+                              --  that is the standard handling in this case.
+
+                              when Constraint_Error =>
+                                 goto Line_Loop_Continue;
+                           end;
+
                         elsif System_Text (P) = '_' then
                            null;
+
                         elsif System_Text (P) = ')' then
-                           if UI_Is_In_Int_Range (V) then
-                              Restrictions_On_Target.Value (K) :=
-                                Integer (UI_To_Int (V));
-                              Restrictions_On_Target.Set (K) := True;
-                              goto Line_Loop_Continue;
-                           else
-                              exit Ploop;
-                           end if;
+                           Restrictions_On_Target.Value (K) := V;
+                           Restrictions_On_Target.Set (K) := True;
+                           goto Line_Loop_Continue;
+
                         else
                            exit Ploop;
                         end if;

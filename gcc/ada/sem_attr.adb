@@ -605,10 +605,14 @@ package body Sem_Attr is
          --  prefix may have been a tagged formal object, which is
          --  defined to be aliased even when the actual might not be
          --  (other instance cases will have been caught in the generic).
+         --  Similarly, within an inlined body we know that the attribute
+         --  is legal in the original subprogram, and therefore legal in
+         --  the expansion.
 
          if Aname /= Name_Unrestricted_Access
            and then not Is_Aliased_View (P)
            and then not In_Instance
+           and then not In_Inlined_Body
          then
             Error_Attr ("prefix of % attribute must be aliased", P);
          end if;
