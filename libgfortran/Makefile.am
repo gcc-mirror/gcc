@@ -53,6 +53,8 @@ intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
 intrinsics/exit.c \
+intrinsics/flush.c \
+intrinsics/fnum.c \
 intrinsics/getcwd.c \
 intrinsics/getXid.c \
 intrinsics/ishftc.c \
@@ -68,6 +70,7 @@ intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
 intrinsics/selected_int_kind.f90 \
 intrinsics/selected_real_kind.f90 \
+intrinsics/stat.c \
 intrinsics/system_clock.c \
 intrinsics/transpose_generic.c \
 intrinsics/umask.c \

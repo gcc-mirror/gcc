@@ -1,4 +1,20 @@
 2004-12-02  Steven G. Kargl  <kargls@comcast.net>
+	Paul Brook  <paul@codesourcery.com>
+
+	* check.c (gfc_check_flush, gfc_check_fnum): New functions.
+	(gfc_check_fstat, gfc_check_fstat_sub): New functions.
+	(gfc_check_stat, gfc_check_stat_sub): New functions.
+	* gfortran.h (GFC_ISYM_FNUM,GFC_ISYM_FSTAT,GFC_ISYM_STAT): New symbols
+	* intrinsic.c (add_functions,add_subroutines): Add flush, fnum,
+	fstat, and stat to intrinsics symbol tables.
+	* intrinsic.h (gfc_check_flush, gfc_resolve_stat_sub): Add prototypes.
+	(gfc_resolve_fstat_sub, gfc_resolve_stat): Ditto.
+	* iresolve.c (gfc_resolve_fnum, gfc_resolve_fstat): New functions.
+	(gfc_resolve_stat, gfc_resolve_flush): New functions.
+	(gfc_resolve_stat_sub,gfc_resolve_fstat_sub): New functions
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Add new intrinsics.
+
+2004-12-02  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.c: Fix and add comments, fix function declarations
 	(OPTIONAL,REQUIRED): New symbols

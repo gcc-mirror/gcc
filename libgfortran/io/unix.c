@@ -286,7 +286,6 @@ sys_exit (int code)
 }
 
 
-
 /*********************************************************************
     File descriptor stream functions
 *********************************************************************/
@@ -915,6 +914,22 @@ fd_to_stream (int fd, int prot)
 #endif
 
   return (stream *) s;
+}
+
+
+/* Given the Fortran unit number, convert it to a C file descriptor.  */
+
+int
+unit_to_fd(int unit)
+{
+
+  gfc_unit *us;
+
+  us = find_unit(unit);
+  if (us == NULL)
+    return -1;
+
+  return ((unix_stream *) us->s)->fd;
 }
 
 
