@@ -1,3 +1,8 @@
+2003-04-30  Andreas Schwab  <schwab@suse.de>
+
+	* doc/extend.texi (Other Builtins): Enclose multiple word data
+	type in braces for @deftypefn.
+
 2003-04-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* doc/install.texi (--enable-threads): Document "gnat" option.

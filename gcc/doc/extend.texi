@@ -4976,7 +4976,7 @@ ISO C macro @code{HUGE_VAL}.
 Similar to @code{__builtin_huge_val}, except the return type is @code{float}.
 @end deftypefn
 
-@deftypefn {Built-in Function} long double __builtin_huge_vall (void)
+@deftypefn {Built-in Function} {long double} __builtin_huge_vall (void)
 Similar to @code{__builtin_huge_val}, except the return
 type is @code{long double}.
 @end deftypefn
@@ -4991,7 +4991,7 @@ This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
 Similar to @code{__builtin_inf}, except the return type is @code{float}.
 @end deftypefn
 
-@deftypefn {Built-in Function} long double __builtin_infl (void)
+@deftypefn {Built-in Function} {long double} __builtin_infl (void)
 Similar to @code{__builtin_inf}, except the return
 type is @code{long double}.
 @end deftypefn
@@ -5016,7 +5016,7 @@ that it is considered a compile-time constant.
 Similar to @code{__builtin_nan}, except the return type is @code{float}.
 @end deftypefn
 
-@deftypefn {Built-in Function} long double __builtin_nanl (const char *str)
+@deftypefn {Built-in Function} {long double} __builtin_nanl (const char *str)
 Similar to @code{__builtin_nan}, except the return type is @code{long double}.
 @end deftypefn
 
@@ -5030,7 +5030,7 @@ to be a signaling NaN.  The @code{nans} function is proposed by
 Similar to @code{__builtin_nans}, except the return type is @code{float}.
 @end deftypefn
 
-@deftypefn {Built-in Function} long double __builtin_nansl (const char *str)
+@deftypefn {Built-in Function} {long double} __builtin_nansl (const char *str)
 Similar to @code{__builtin_nans}, except the return type is @code{long double}.
 @end deftypefn
 
