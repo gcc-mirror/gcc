@@ -1,3 +1,14 @@
+Fri Aug  6 16:53:55 EDT 1999  John Wehle  (john@feith.com)
+
+	* jump.c (delete_prior_computation): New function, broken
+	out of delete_computation.  Check for side effects with
+	side_effects_p instead of FIND_REG_INC_NOTE.  Handle
+	multi-word hard registers.
+	(delete_computation): Use it.  Check for side effects with
+	side_effects_p instead of FIND_REG_INC_NOTE.  Synthesize a
+	missing REG_DEAD note for a register which is both set and
+	used by an insn.
+
 Fri Aug  6 11:05:29 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* elf.h (TEXT_SPACE_P, FUNCTION_NAME_P): Delete.
