@@ -550,32 +550,38 @@ extern enum prog_mode_type arm_prgmode;
 
 /* What sort of floating point unit do we have? Hardware or software.
    If software, is it issue 2 or issue 3?  */
-enum floating_point_type
+enum fputype
 {
-  FP_HARD,
-  FP_SOFT2,
-  FP_SOFT3,
-  FP_CIRRUS
+  /* Software floating point, FPA style double fmt.  */
+  FPUTYPE_SOFT_FPA,
+  /* Full FPA support.  */
+  FPUTYPE_FPA,
+  /* Emulated FPA hardware, Issue 2 emulator (no LFM/SFM).  */
+  FPUTYPE_FPA_EMU2,
+  /* Emulated FPA hardware, Issue 3 emulator.  */
+  FPUTYPE_FPA_EMU3,
+  /* Cirrus Maverick floating point co-processor.  */
+  FPUTYPE_MAVERICK
 };
 
 /* Recast the floating point class to be the floating point attribute.  */
-#define arm_fpu_attr ((enum attr_fpu) arm_fpu)
+#define arm_fpu_attr ((enum attr_fpu) arm_fpu_tune)
 
 /* What type of floating point to tune for */
-extern enum floating_point_type arm_fpu;
+extern enum fputype arm_fpu_tune;
 
 /* What type of floating point instructions are available */
-extern enum floating_point_type arm_fpu_arch;
+extern enum fputype arm_fpu_arch;
 
 /* Default floating point architecture.  Override in sub-target if
    necessary.  */
-#ifndef FP_DEFAULT
-#define FP_DEFAULT FP_SOFT2
+#ifndef FPUTYPE_DEFAULT
+#define FPUTYPE_DEFAULT FPUTYPE_FPA_EMU2
 #endif
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_ep9312
-#undef  FP_DEFAULT
-#define FP_DEFAULT FP_CIRRUS
+#undef  FPUTYPE_DEFAULT
+#define FPUTYPE_DEFAULT FPUTYPE_MAVERICK
 #endif
 
 /* Nonzero if the processor has a fast multiply insn, and one that does
