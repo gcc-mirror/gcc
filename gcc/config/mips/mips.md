@@ -5092,17 +5092,17 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"4,8")])
 
 (define_insn "movdi_internal"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,R,o,*x,*d,*x")
-	(match_operand:DI 1 "general_operand" "d,iF,R,o,d,d,J,*x,*d"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,R,o,*x,*d,*x,*B*C*D,*B*C*D,*B*C*D,*d,*m,*R")
+	(match_operand:DI 1 "general_operand" "d,iF,R,o,d,d,J,*x,*d,*d,*m,*R,*B*C*D,*B*C*D,*B*C*D"))]
   "!TARGET_64BIT && !TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
        || operands[1] == CONST0_RTX (DImode))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,arith,load,load,store,store,hilo,hilo,hilo")
+  [(set_attr "type"	"move,arith,load,load,store,store,hilo,hilo,hilo,xfer,load,load,xfer,store,store")
    (set_attr "mode"	"DI")
-   (set_attr "length"   "8,16,8,16,8,16,8,8,8")])
+   (set_attr "length"   "8,16,8,16,8,16,8,8,8,8,8,8,8,8,8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,R,To,*d")
@@ -5128,17 +5128,17 @@ move\\t%0,%z4\\n\\
   "")
 
 (define_insn "movdi_internal2"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*x,*d,*x,*a")
-	(match_operand:DI 1 "movdi_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,J,*x,*d,*J"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*x,*d,*x,*a,*B*C*D,*B*C*D,*B*C*D,*d,*m,*R")
+	(match_operand:DI 1 "movdi_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,J,*x,*d,*J,*d,*m,*R,*B*C*D,*B*C*D,*B*C*D"))]
   "TARGET_64BIT && !TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || se_register_operand (operands[1], DImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
        || operands[1] == CONST0_RTX (DImode))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,hilo,hilo,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,hilo,hilo,hilo,hilo,xfer,load,load,xfer,store,store")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"4,8,4,8,4,8,4,8,4,4,4,8")])
+   (set_attr "length"	"4,8,4,8,4,8,4,8,4,4,4,8,8,8,8,8,8,8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,d,R,m,*d")
@@ -5524,28 +5524,28 @@ move\\t%0,%z4\\n\\
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movsi_internal1"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*f*z,*f,*f,*f,*R,*m,*x,*x,*d,*d")
-	(match_operand:SI 1 "move_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*f*z,*d,*f,*R,*m,*f,*f,J,*d,*x,*a"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*f*z,*f,*f,*f,*R,*m,*x,*x,*d,*d,*B*C*D,*B*C*D,*B*C*D,*d,*m,*R")
+	(match_operand:SI 1 "move_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*f*z,*d,*f,*R,*m,*f,*f,J,*d,*x,*a,*d,*m,*R,*B*C*D,*B*C*D,*B*C*D"))]
   "TARGET_DEBUG_H_MODE && !TARGET_MIPS16
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, FALSE);"
-  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo,hilo,hilo,xfer,load,load,xfer,store,store")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"4,8,4,8,4,8,4,8,4,4,4,4,8,4,8,4,4,4,4")])
+   (set_attr "length"	"4,8,4,8,4,8,4,8,4,4,4,4,8,4,8,4,4,4,4,4,4,8,4,4,8")])
 
 (define_insn "movsi_internal2"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*z,*x,*d,*x,*d")
-	(match_operand:SI 1 "move_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,J,*x,*d,*a"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*z,*x,*d,*x,*d,*B*C*D,*B*C*D,*B*C*D,*d,*m,*R")
+	(match_operand:SI 1 "move_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,J,*x,*d,*a,*d,*m,*R,*B*C*D,*B*C*D,*B*C*D"))]
   "!TARGET_DEBUG_H_MODE && !TARGET_MIPS16
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, FALSE);"
-  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,hilo,hilo,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,hilo,hilo,hilo,hilo,xfer,load,load,xfer,store,store")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"4,8,4,8,4,8,4,8,4,4,4,4,4,4")])
+   (set_attr "length"	"4,8,4,8,4,8,4,8,4,4,4,4,4,4,4,4,8,4,4,8")])
 
 ;; This is the mips16 movsi instruction.  We accept a small integer as
 ;; the source if the destination is a GP memory reference.  This is

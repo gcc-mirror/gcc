@@ -90,6 +90,10 @@ struct mips_arg_info;
 static enum internal_test map_test_to_internal_test	PARAMS ((enum rtx_code));
 static int mips16_simple_memory_operand		PARAMS ((rtx, rtx,
 							enum machine_mode));
+int coprocessor_operand 			PARAMS ((rtx,
+							enum machine_mode));
+int coprocessor2_operand 			PARAMS ((rtx,
+							enum machine_mode));
 static int m16_check_op				PARAMS ((rtx, int, int, int));
 static void block_move_loop			PARAMS ((rtx, rtx,
 							 unsigned int,
@@ -383,13 +387,25 @@ char mips_reg_names[][8] =
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
  "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
- "$fcc5","$fcc6","$fcc7","$rap"
+ "$fcc5","$fcc6","$fcc7","$rap", "",     "",     "",     "",
+ "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
+ "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
+ "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",
+ "$c0r24","$c0r25","$c0r26","$c0r27","$c0r28","$c0r29","$c0r30","$c0r31",
+ "$c2r0", "$c2r1", "$c2r2", "$c2r3", "$c2r4", "$c2r5", "$c2r6", "$c2r7",
+ "$c2r8", "$c2r9", "$c2r10","$c2r11","$c2r12","$c2r13","$c2r14","$c2r15",
+ "$c2r16","$c2r17","$c2r18","$c2r19","$c2r20","$c2r21","$c2r22","$c2r23",
+ "$c2r24","$c2r25","$c2r26","$c2r27","$c2r28","$c2r29","$c2r30","$c2r31",
+ "$c3r0", "$c3r1", "$c3r2", "$c3r3", "$c3r4", "$c3r5", "$c3r6", "$c3r7",
+ "$c3r8", "$c3r9", "$c3r10","$c3r11","$c3r12","$c3r13","$c3r14","$c3r15",
+ "$c3r16","$c3r17","$c3r18","$c3r19","$c3r20","$c3r21","$c3r22","$c3r23",
+ "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31"
 };
 
 /* Mips software names for the registers, used to overwrite the
    mips_reg_names array.  */
 
-static const char mips_sw_reg_names[][8] =
+char mips_sw_reg_names[][8] =
 {
   "$zero","$at",  "$v0",  "$v1",  "$a0",  "$a1",  "$a2",  "$a3",
   "$t0",  "$t1",  "$t2",  "$t3",  "$t4",  "$t5",  "$t6",  "$t7",
@@ -400,7 +416,19 @@ static const char mips_sw_reg_names[][8] =
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
   "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
-  "$fcc5","$fcc6","$fcc7","$rap"
+  "$fcc5","$fcc6","$fcc7","$rap", "",     "",     "",     "",
+  "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
+  "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
+  "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",
+  "$c0r24","$c0r25","$c0r26","$c0r27","$c0r28","$c0r29","$c0r30","$c0r31",
+  "$c2r0", "$c2r1", "$c2r2", "$c2r3", "$c2r4", "$c2r5", "$c2r6", "$c2r7",
+  "$c2r8", "$c2r9", "$c2r10","$c2r11","$c2r12","$c2r13","$c2r14","$c2r15",
+  "$c2r16","$c2r17","$c2r18","$c2r19","$c2r20","$c2r21","$c2r22","$c2r23",
+  "$c2r24","$c2r25","$c2r26","$c2r27","$c2r28","$c2r29","$c2r30","$c2r31",
+  "$c3r0", "$c3r1", "$c3r2", "$c3r3", "$c3r4", "$c3r5", "$c3r6", "$c3r7",
+  "$c3r8", "$c3r9", "$c3r10","$c3r11","$c3r12","$c3r13","$c3r14","$c3r15",
+  "$c3r16","$c3r17","$c3r18","$c3r19","$c3r20","$c3r21","$c3r22","$c3r23",
+  "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31"
 };
 
 /* Map hard register number to register class */
@@ -424,7 +452,32 @@ const enum reg_class mips_regno_to_class[] =
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   HI_REG,	LO_REG,		HILO_REG,	ST_REGS,
   ST_REGS,	ST_REGS,	ST_REGS,	ST_REGS,
-  ST_REGS,	ST_REGS,	ST_REGS,	GR_REGS
+  ST_REGS,	ST_REGS,	ST_REGS,	GR_REGS,
+  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
+  COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
+  COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
+  COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
+  COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
+  COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
+  COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
+  COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
+  COP2_REGS,	COP2_REGS,	COP2_REGS,	COP2_REGS,
+  COP2_REGS,	COP2_REGS,	COP2_REGS,	COP2_REGS,
+  COP2_REGS,	COP2_REGS,	COP2_REGS,	COP2_REGS,
+  COP2_REGS,	COP2_REGS,	COP2_REGS,	COP2_REGS,
+  COP2_REGS,	COP2_REGS,	COP2_REGS,	COP2_REGS,
+  COP2_REGS,	COP2_REGS,	COP2_REGS,	COP2_REGS,
+  COP2_REGS,	COP2_REGS,	COP2_REGS,	COP2_REGS,
+  COP2_REGS,	COP2_REGS,	COP2_REGS,	COP2_REGS,
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS
 };
 
 /* Map register constraint character to register class.  */
@@ -1284,6 +1337,29 @@ consttable_operand (op, mode)
   return CONSTANT_P (op);
 }
 
+/* Coprocessor operand; return true if rtx is a REG and refers to a
+   coprocessor.  */
+
+int
+coprocessor_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == REG
+	  && COP0_REG_FIRST <= REGNO (op)
+	  && REGNO (op) <= COP3_REG_LAST);
+}
+
+int
+coprocessor2_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == REG
+	  && COP2_REG_FIRST <= REGNO (op)
+	  && REGNO (op) <= COP2_REG_LAST);
+}
+
 /* Return nonzero if we split the address into high and low parts.  */
 
 /* ??? We should also handle reg+array somewhere.  We get four
@@ -1995,7 +2071,13 @@ mips_move_1word (operands, insn, unsignedp)
 		  delay = DELAY_LOAD;
 		  if (FP_REG_P (regno1))
 		    ret = "mfc1\t%0,%1";
+		  else if (ALL_COP_REG_P (regno1))
+		    {
+		      static char retval[] = "mfc_\t%0,%1";
 
+		      retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (regno1);
+		      ret = retval;
+		    }
 		  else if (regno1 == FPSW_REGNUM && ! ISA_HAS_8CC)
 		    ret = "cfc1\t%0,$31";
 		}
@@ -2029,6 +2111,21 @@ mips_move_1word (operands, insn, unsignedp)
 		{
 		  delay = DELAY_LOAD;
 		  ret = "ctc1\t%0,$31";
+		}
+	    }
+	  else if (ALL_COP_REG_P (regno0))
+	    {
+	      if (GP_REG_P (regno1))
+		{
+		  static char retval[] = "mtc_\t%1,%0";
+		  char cop = COPNUM_AS_CHAR_FROM_REGNUM (regno0);
+
+		  if (cop == '0')
+		    abort_with_insn (insn,
+				     "mtc0 not supported; it disturbs virtual address translation");
+		  delay = DELAY_LOAD;
+		  retval[3] = cop;
+		  ret = retval;
 		}
 	    }
 	}
@@ -2068,6 +2165,19 @@ mips_move_1word (operands, insn, unsignedp)
 
 	  else if (FP_REG_P (regno0) && (mode == SImode || mode == SFmode))
 	    ret = "l.s\t%0,%1";
+
+	  else if (ALL_COP_REG_P (regno0))
+	    {
+	      static char retval[] = "lwc_\t%0,%1";
+	      char cop = COPNUM_AS_CHAR_FROM_REGNUM (regno0);
+
+	      if (cop == '0')
+		abort_with_insn (insn,
+				 "loads from memory to COP0 are illegal");
+	      delay = DELAY_LOAD;
+	      retval[3] = cop;
+	      ret = retval;
+	    }
 
 	  if (ret != (char *)0 && MEM_VOLATILE_P (op1))
 	    {
@@ -2267,6 +2377,13 @@ mips_move_1word (operands, insn, unsignedp)
 
 	  else if (FP_REG_P (regno1) && (mode == SImode || mode == SFmode))
 	    ret = "s.s\t%1,%0";
+	  else if (ALL_COP_REG_P (regno1))
+	    {
+	      static char retval[] = "swc_\t%1,%0";
+
+	      retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (regno1);
+	      ret = retval;
+	    }
 	}
 
       else if (code1 == CONST_INT && INTVAL (op1) == 0)
@@ -2453,7 +2570,28 @@ mips_move_2words (operands, insn)
 	      else
 		ret = "mfhi\t%M0\n\tmflo\t%L0";
 	    }
+	  else if (GP_REG_P (regno0) && ALL_COP_REG_P (regno1)
+		   && TARGET_64BIT)
+	    {
+	      static char retval[] = "dmfc_\t%0,%1";
 
+	      delay = DELAY_LOAD;
+	      retval[4] = COPNUM_AS_CHAR_FROM_REGNUM (regno1);
+	      ret = retval;
+	    }
+	  else if (ALL_COP_REG_P (regno0) && GP_REG_P (regno1)
+		   && TARGET_64BIT)
+	    {
+	      static char retval[] = "dmtc_\t%1,%0";
+	      char cop = COPNUM_AS_CHAR_FROM_REGNUM (regno0);
+
+	      if (cop == '0')
+		abort_with_insn (insn,
+				 "dmtc0 not supported; it disturbs virtual address translation");
+	      delay = DELAY_LOAD;
+	      retval[4] = cop;
+	      ret = retval;
+	    }
 	  else if (TARGET_64BIT)
 	    ret = "move\t%0,%1";
 
@@ -2634,6 +2772,19 @@ mips_move_2words (operands, insn)
 	  if (FP_REG_P (regno0))
 	    ret = "l.d\t%0,%1";
 
+	  else if (ALL_COP_REG_P (regno0) && TARGET_64BIT)
+	    {
+	      static char retval[] = "ldc_\t%0,%1";
+	      char cop = COPNUM_AS_CHAR_FROM_REGNUM (regno0);
+
+	      if (cop == '0')
+		abort_with_insn (insn,
+				 "loads from memory to COP0 are illegal");
+	      delay = DELAY_LOAD;
+	      retval[3] = cop;
+	      ret = retval;
+	    }
+
 	  else if (TARGET_64BIT)
 	    {
 
@@ -2727,6 +2878,13 @@ mips_move_2words (operands, insn)
 	  if (FP_REG_P (regno1))
 	    ret = "s.d\t%1,%0";
 
+	  else if (ALL_COP_REG_P (regno1) && TARGET_64BIT)
+	    {
+	      static char retval[] = "sdc_\t%1,%0";
+
+	      retval[3] = COPNUM_AS_CHAR_FROM_REGNUM (regno1);
+	      ret = retval;
+	    }
 	  else if (TARGET_64BIT)
 	    {
 
@@ -5172,6 +5330,9 @@ override_options ()
   mips_char_to_class['b'] = ALL_REGS;
   mips_char_to_class['y'] = GR_REGS;
   mips_char_to_class['z'] = ST_REGS;
+  mips_char_to_class['B'] = COP0_REGS;
+  mips_char_to_class['C'] = COP2_REGS;
+  mips_char_to_class['D'] = COP3_REGS;
 
   /* Set up array to map GCC register number to debug register number.
      Ignore the special purpose register numbers.  */
@@ -5237,6 +5398,8 @@ override_options ()
 			|| (regno == MD_REG_FIRST
 			    && size == 2 * UNITS_PER_WORD)));
 
+	  else if (ALL_COP_REG_P (regno))
+	    temp = (class == MODE_INT && size <= UNITS_PER_WORD);
 	  else
 	    temp = 0;
 
@@ -8215,6 +8378,20 @@ mips_secondary_reload_class (class, mode, x, in_p)
 
   return NO_REGS;
 }
+
+/* This function returns the maximum number of consecutive registers
+   needed to represent mode MODE in registers of class CLASS.  */
+
+int
+mips_class_max_nregs (class, mode)
+     enum reg_class class;
+     enum machine_mode mode;
+{
+  if (class == FP_REGS)
+    return FP_INC;
+  else
+    return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+}
 
 /* For each mips16 function which refers to GP relative symbols, we
    use a pseudo register, initialized at the start of the function, to
@@ -9527,6 +9704,106 @@ highpart_shift_operator (x, mode)
 	  || code == ASHIFTRT
 	  || code == ROTATERT
 	  || code == ROTATE);
+}
+
+/* Return a number assessing the cost of moving a register in class
+   FROM to class TO.  The classes are expressed using the enumeration
+   values such as `GENERAL_REGS'.  A value of 2 is the default; other
+   values are interpreted relative to that.
+
+   It is not required that the cost always equal 2 when FROM is the
+   same as TO; on some machines it is expensive to move between
+   registers if they are not general registers.
+
+   If reload sees an insn consisting of a single `set' between two
+   hard registers, and if `REGISTER_MOVE_COST' applied to their
+   classes returns a value of 2, reload does not check to ensure that
+   the constraints of the insn are met.  Setting a cost of other than
+   2 will allow reload to verify that the constraints are met.  You
+   should do this if the `movM' pattern's constraints do not allow
+   such copying.
+
+   ??? We make make the cost of moving from HI/LO/HILO/MD into general
+   registers the same as for one of moving general registers to
+   HI/LO/HILO/MD for TARGET_MIPS16 in order to prevent allocating a
+   pseudo to HI/LO/HILO/MD.  This might hurt optimizations though, it
+   isn't clear if it is wise.  And it might not work in all cases.  We
+   could solve the DImode LO reg problem by using a multiply, just
+   like reload_{in,out}si.  We could solve the SImode/HImode HI reg
+   problem by using divide instructions.  divu puts the remainder in
+   the HI reg, so doing a divide by -1 will move the value in the HI
+   reg for all values except -1.  We could handle that case by using a
+   signed divide, e.g.  -1 / 2 (or maybe 1 / -2?).  We'd have to emit
+   a compare/branch to test the input value to see which instruction
+   we need to use.  This gets pretty messy, but it is feasible.  */
+
+int
+mips_register_move_cost (mode, to, from)
+     enum machine_mode mode;
+     enum reg_class to, from;
+{
+  if (from == M16_REGS && GR_REG_CLASS_P (to))
+    return 2;
+  else if (from == M16_NA_REGS && GR_REG_CLASS_P (to))
+    return 2;
+  else if (GR_REG_CLASS_P (from))
+    {
+      if (to == M16_REGS)
+	return 2;
+      else if (to == M16_NA_REGS)
+	return 2;
+      else if (GR_REG_CLASS_P (to))
+	{
+	  if (TARGET_MIPS16)
+	    return 4;
+	  else
+	    return 2;
+	}
+      else if (to == FP_REGS)
+	return 4;
+      else if (to == HI_REG || to == LO_REG || to == MD_REGS
+	       || to == HILO_REG)
+	{
+	  if (TARGET_MIPS16)
+	    return 12;
+	  else
+	    return 6;
+	}
+      else if (COP_REG_CLASS_P (to))
+	{
+	  return 5;
+	}
+    }  /* GR_REG_CLASS_P (from) */
+  else if (from == FP_REGS)
+    {
+      if (GR_REG_CLASS_P (to))
+	return 4;
+      else if (to == FP_REGS)
+	return 2;
+      else if (to == ST_REGS)
+	return 8;
+    }  /* from == FP_REGS */
+  else if (from == HI_REG || from == LO_REG || from == MD_REGS
+	   || from == HILO_REG)
+    {
+      if (GR_REG_CLASS_P (to))
+	{
+	  if (TARGET_MIPS16)
+	    return 12;
+	  else
+	    return 6;
+	}
+    }  /* from == HI_REG, etc. */
+  else if (from == ST_REGS && GR_REG_CLASS_P (to))
+    return 4;
+  else if (COP_REG_CLASS_P (from))
+    {
+      return 5;
+    }  /* COP_REG_CLASS_P (from) */
+
+  /* fallthru */
+
+  return 12;
 }
 
 /* Return the length of INSN.  LENGTH is the initial length computed by

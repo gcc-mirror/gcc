@@ -1,3 +1,66 @@
+2002-04-25  Matt Hiller  <hiller@redhat.com>
+
+	* mips.c (mips_class_max_nregs, mips_register_move_cost): New
+	functions.
+	* mips.h (CLASS_MAX_NREGS, REGISTER_MOVE_COST): Redefine as calls
+	of the corresponding functions.
+	* mips-protos.h (mips_class_max_nregs, mips_register_move_cost):
+	New prototypes.
+	
+2002-04-25  Matt Hiller  <hiller@redhat.com>
+
+	* config/mips/mips.h (mips_sw_reg_names): Declare as extern.
+
+	(ALL_COP_ADDITIONAL_REGISTER_NAMES): New macro.
+	(FIRST_PSEUDO_REGISTER): Redefine considering coprocessor
+	registers, adjust comment accordingly.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS,
+	reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGISTER_NAMES,
+	DEBUG_REGISTER_NAMES, REG_ALLOC_ORDER): Adjust to include entries
+	for coprocessor registers.
+	(ADDITIONAL_REGISTER_NAMES): Include
+	ALL_COP_ADDITIONAL_REGISTER_NAMES.
+	
+	(COP0_REG_FIRST, COP0_REG_LAST, COP0_REG_NUM,
+	COP2_REG_FIRST, COP2_REG_LAST, COP2_REG_NUM,
+	COP3_REG_FIRST, COP3_REG_LAST, COP3_REG_NUM,
+	COP0_REG_P, COP2_REG_P, COP3_REG_P, ALL_COP_REG_P,
+	COPNUM_AS_CHAR_FROM_REGNUM, COP_REG_CLASS_P): New macros.
+
+	(mips_char_to_class): Adjust comment to include coprocessor
+	constraint letters.
+
+	* config/mips/mips.c (coprocessor_operand, coprocessor2_operand):
+	New functions.
+	(mips_reg_names, mips_regno_to_class): Include coprocessor
+	information.
+	(mips_sw_reg_names): Ditto, make non-static.
+	(mips_move_1word): Handle moves to and from coprocessor registers.
+	(mips_move_2words): Handle moves to and from coprocessor
+	registers.
+	(mips_class_max_nregs, mips_register_move_cost): Handle
+	coprocessor register classes.
+	(override_options): Initialize mips_char_to_class and
+	mips_hard_regno_mode_ok properly for coprocessor registers.
+
+	* config/mips/mips.md (movdi_internal, movdi_internal2,
+	movsi_internal1, movsi_internal2): Add constraint-sets for
+	coprocessor registers.
+	* testsuite/gcc.c-torture/mipscop-1.c: New testcase.
+	* testsuite/gcc.c-torture/mipscop-1.x: Disable above if target
+	isn't mips.
+	* testsuite/gcc.c-torture/mipscop-2.c: New testcase.
+	* testsuite/gcc.c-torture/mipscop-2.x: Disable above if target
+	isn't mips.
+	* testsuite/gcc.c-torture/mipscop-3.c: New testcase.
+	* testsuite/gcc.c-torture/mipscop-3.x: Disable above if target
+	isn't mips.
+	* testsuite/gcc.c-torture/mipscop-4.c: New testcase.
+	* testsuite/gcc.c-torture/mipscop-4.x: Disable above if target
+	isn't mips.
+	
+	* doc/tm.texi: Document feature.
+
 2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* integrate.c (function_attribute_inlinable_p): Simplify.
