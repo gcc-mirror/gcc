@@ -96,13 +96,13 @@ namespace std
 
         // Process the next multi-index.  The loop ought to be
         // backward since we're making a lexicagraphical visit.
-        ++__t[__n-1];
-        for (size_t __k=__n-1; __k; --__k)
+        ++__t[__n - 1];
+        for (size_t __k2 = __n - 1; __k2; --__k2)
           {
-            if (__t[__k] >= __l[__k])
+            if (__t[__k2] >= __l[__k2])
               {
-                __t[__k] = 0;
-                ++__t[__k-1];
+                __t[__k2] = 0;
+                ++__t[__k2 - 1];
               }
           }
       }

@@ -110,47 +110,44 @@ namespace std
       size_t __pos = 0;
       do
         {
-          {
-            int __ti = 0;
-            for (;__ti < __remain &&
-                   __pos == __targets[__matches[__ti]].size(); ++__ti)
-              { }
-            if (__ti == __remain)
-              {
-                if (__pos == 0) __remain = 0;
-                return __s;
-              }
-          }
+	  int __ti = 0;
+	  while (__ti < __remain && __pos == __targets[__matches[__ti]].size())
+	    ++__ti;
+	  if (__ti == __remain)
+	    {
+	      if (__pos == 0) __remain = 0;
+	      return __s;
+	    }
           if (__s == __end)
             __eof = true;
           bool __matched = false;
-          for (int __ti = 0; __ti < __remain; )
+          for (int __ti2 = 0; __ti2 < __remain; )
             {
-              const __string_type& __target = __targets[__matches[__ti]];
+              const __string_type& __target = __targets[__matches[__ti2]];
               if (__pos < __target.size())
                 {
                   if (__eof || __target[__pos] != *__s)
                     {
-                      __matches[__ti] = __matches[--__remain];
+                      __matches[__ti2] = __matches[--__remain];
                       continue;
                     }
                   __matched = true;
                 }
-              ++__ti;
+              ++__ti2;
             }
           if (__matched)
             {
               ++__s;
               ++__pos;
             }
-          for (int __ti = 0; __ti < __remain;)
+          for (int __ti3 = 0; __ti3 < __remain;)
             {
-              if (__pos > __targets[__matches[__ti]].size())
+              if (__pos > __targets[__matches[__ti3]].size())
                 {
-                  __matches[__ti] = __matches[--__remain];
+                  __matches[__ti3] = __matches[--__remain];
                   continue;
                 }
-              ++__ti;
+              ++__ti3;
             }
         }
       while (__remain);
