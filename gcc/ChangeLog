@@ -1,3 +1,7 @@
+2005-04-04  Dale Johannesen  <dalej@apple.com>
+
+	* ChangeLog:  remove reference to ChangeLog.12.
+
 2005-04-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	CRIS epilogue as RTL.
@@ -10074,5 +10078,3 @@
 	* tree-cfg.c (remove_useless_stmts_warn_notreached): Only warn if
 	the source line is greater than 0.
 	(remove_bb): Likewise.
-
-See ChangeLog.12 for earlier changes.
