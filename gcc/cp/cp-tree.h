@@ -498,11 +498,14 @@ extern int flag_optional_diags;
 
 /* Nonzero means do not consider empty argument prototype to mean function
    takes no arguments.  */
-
 extern int flag_strict_prototype;
 
 /* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
 extern int flag_vtable_gc;
+
+/* Nonzero means make the default pedwarns warnings instead of errors.
+   The value of this flag is ignored if -pedantic is specified.  */
+int flag_permissive;
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
@@ -1286,6 +1289,11 @@ struct lang_decl
   (DECL_CONTEXT (NODE) \
    && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (NODE))) == 't')
 
+/* 1 iff NODE is function-local.  */
+#define DECL_FUNCTION_SCOPE_P(NODE) \
+  (DECL_CONTEXT (NODE) \
+   && TREE_CODE (DECL_CONTEXT (NODE)) == FUNCTION_DECL)
+     
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace
    that is the common ancestor. */

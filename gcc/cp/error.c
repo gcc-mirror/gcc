@@ -679,10 +679,10 @@ dump_simple_decl (t, type, v)
       dump_type_prefix (type, v, 0);
       OB_PUTC (' ');
     }
-  if (DECL_CLASS_SCOPE_P (t))
+  if (CP_DECL_CONTEXT (t) != global_namespace)
     {
-      dump_type (DECL_CONTEXT (t), 0);
-      OB_PUTC2 (':', ':');
+      dump_decl (DECL_CONTEXT (t), 0);
+      OB_PUTC2 (':',':');
     }
   if (DECL_NAME (t))
     dump_decl (DECL_NAME (t), v);
@@ -965,7 +965,7 @@ dump_function_decl (t, v)
   parmtypes = TYPE_ARG_TYPES (fntype);
 
   /* Friends have DECL_CLASS_CONTEXT set, but not DECL_CONTEXT.  */
-  if (DECL_CONTEXT (t))
+  if (DECL_CLASS_SCOPE_P (t))
     cname = DECL_CLASS_CONTEXT (t);
   /* this is for partially instantiated template methods */
   else if (TREE_CODE (fntype) == METHOD_TYPE)
@@ -996,6 +996,11 @@ dump_function_decl (t, v)
       if (DECL_CONSTRUCTOR_FOR_VBASE_P (t))
 	/* Skip past "in_charge" identifier.  */
 	parmtypes = TREE_CHAIN (parmtypes);
+    }
+  else if (CP_DECL_CONTEXT (t) != global_namespace)
+    {
+      dump_decl (DECL_CONTEXT (t), 0);
+      OB_PUTC2 (':',':');
     }
 
   if (DESTRUCTOR_NAME_P (name) && DECL_LANGUAGE (t) == lang_cplusplus)

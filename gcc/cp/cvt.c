@@ -468,13 +468,13 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	      else
 		msg = "conversion to non-const reference type `%#T'";
 
-	      cp_error (msg, reftype);
-	      cp_error ("from rvalue of type `%T'", intype);
+	      cp_pedwarn (msg, reftype);
+	      cp_pedwarn ("from rvalue of type `%T'", intype);
 	    }
 	  else if (! (convtype & CONV_CONST)
 		   && !at_least_as_qualified_p (ttl, ttr))
-	    cp_error ("conversion from `%T' to `%T' discards qualifiers",
-		      ttr, reftype);
+	    cp_pedwarn ("conversion from `%T' to `%T' discards qualifiers",
+			ttr, reftype);
 	}
 
       return build_up_reference (reftype, expr, flags);

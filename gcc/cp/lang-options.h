@@ -82,6 +82,8 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-operator-names", "" },
   { "-foptional-diags", "" },
   { "-fno-optional-diags", "Disable optional diagnostics" },
+  { "-fpermissive", "Downgrade conformance errors to warnings" },
+  { "-fno-permissive", "" },
   { "-frepo", "Enable automatic template instantiation" },
   { "-fno-repo", "" },
   { "-fsave-memoized", "" },

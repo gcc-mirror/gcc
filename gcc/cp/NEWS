@@ -1,3 +1,9 @@
+*** Changes since EGCS 1.1:
+
+* Messages about non-conformant code that we can still handle ("pedwarns")
+  are now errors by default, rather than warnings.  This can be reverted
+  with -fpermissive, and is overridden by -pedantic or -pedantic-errors.
+
 *** Changes in EGCS 1.1:
 
 * Namespaces are fully supported.  The library has not yet been converted 

@@ -4834,6 +4834,7 @@ build_typename_type (context, name, fullname, base_type)
   TYPE_NAME (TREE_TYPE (d)) = d;
   TYPE_STUB_DECL (TREE_TYPE (d)) = d;
   DECL_CONTEXT (d) = FROB_CONTEXT (context);
+  DECL_ARTIFICIAL (d) = 1;
 
   /* See if we already have this type.  */
   e = hash_lookup (&ht, t, /*create=*/false, /*copy=*/0);
@@ -5166,8 +5167,22 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 
   locval = classval = NULL_TREE;
 
-  if (! namespace_bindings_p ())
-    locval = qualify_lookup (IDENTIFIER_LOCAL_VALUE (name), flags);
+  if (! namespace_bindings_p () && IDENTIFIER_LOCAL_VALUE (name))
+    {
+      locval = qualify_lookup (IDENTIFIER_LOCAL_VALUE (name), flags);
+
+      /* Kludge kludge kludge */
+      if (locval == NULL_TREE && prefer_type)
+	{
+	  locval = REAL_IDENTIFIER_TYPE_VALUE (name);
+	  if (locval && locval != global_type_node
+	      && TYPE_NAME (locval)
+	      && DECL_FUNCTION_SCOPE_P (TYPE_NAME (locval)))
+	    locval = TYPE_NAME (locval);
+	  else
+	    locval = NULL_TREE;
+	}
+    }
 
   /* In C++ class fields are between local and global scope,
      just before the global scope.  */
@@ -5307,17 +5322,6 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	  if (! uses_template_parms (got_object))
 	    val = from_obj;
 	}
-
-      if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
-	  || TREE_CODE (val) == TYPE_DECL || prefer_type <= 0)
-	;
-      /* Caller wants a class-or-namespace-name. */
-      else if (prefer_type == 1 && TREE_CODE (val) == NAMESPACE_DECL)
-	;
-      else if (IDENTIFIER_HAS_TYPE_VALUE (name))
-	val = TYPE_MAIN_DECL (IDENTIFIER_TYPE_VALUE (name));
-      else if (TREE_TYPE (val) == error_mark_node)
-	val = error_mark_node;
 
       /* If we have a single function from a using decl, pull it out.  */
       if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
@@ -5620,6 +5624,8 @@ init_decl_processing ()
 
   if (flag_strict_prototype == 2)
     flag_strict_prototype = pedantic;
+  if (! flag_permissive && ! pedantic)
+    flag_pedantic_errors = 1;
 
   strict_prototypes_lang_c = flag_strict_prototype;
 
