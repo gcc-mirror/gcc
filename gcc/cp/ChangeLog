@@ -1,3 +1,11 @@
+2003-05-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9537
+	* call.c (conditional_conversion): Build an RVALUE_CONV if
+	we're just changing the cv-quals.
+	(build_conditional_expr): Don't call convert to change
+	cv-quals.
+
 2003-05-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10496
