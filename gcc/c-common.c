@@ -1240,7 +1240,7 @@ check_format_info (info, params)
   int i;
   int arg_num;
   int suppressed, wide, precise;
-  int length_char;
+  int length_char = 0;
   int format_char;
   int format_length;
   tree format_tree;
@@ -1249,7 +1249,7 @@ check_format_info (info, params)
   tree wanted_type;
   tree first_fillin_param;
   char *format_chars;
-  format_char_info *fci;
+  format_char_info *fci = NULL;
   char flag_chars[8];
   int has_operand_number = 0;
 

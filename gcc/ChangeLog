@@ -1,5 +1,8 @@
 Sat Jun 20 00:36:16 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* c-common.c (check_format_info): Initialize length_char and
+	fci to keep -Wall quiet.
+
 	* except.c (jumpif_rtx): Put declaration and definition
 	inside a suitable #ifdef.
 	(jumpifnot_rtx): Delete dead function.
