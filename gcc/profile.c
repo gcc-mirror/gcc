@@ -54,7 +54,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern char * xmalloc ();
 extern void free ();
-extern tree get_file_function_name ();
 
 /* One of these is dynamically created whenever we identify an arc in the
    function.  */
