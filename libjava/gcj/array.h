@@ -1,6 +1,6 @@
 // array.h - Header file for CNI arrays.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -17,11 +17,21 @@ extern "Java" {
 
 class __JArray : public java::lang::Object
 {
+protected:
+  // FIXME: this is a hack to work around a bug in the g++ Java
+  // support.  If we add a constructor with a jsize argument to
+  // JArray<T>, then g++ complains.
+  __JArray () : length (0)
+  {
+  }
 public:
-  // FIXME: we'd like this to be `const' but that causes problems with
-  // the C++ compiler.
-  jsize length;
+  const jsize length;
   friend jsize JvGetArrayLength (__JArray*);
+
+  // This probably shouldn't be public.
+  __JArray (jsize l) : length (l)
+  {
+  }
 };
 
 template<class T>
