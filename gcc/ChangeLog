@@ -1,3 +1,7 @@
+Mon Jun 30 15:36:29 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	(fyl2x_sfxf3, fyl2x_dfxf3, fscale_sfxf3, fscale_dfxf3): Fix condition.
+
 2003-06-30 Hartmut Penner  <hpenner@de.ibm.com>
 
         * config/rs6000/rs6000.c (rs6000_split_altivec_in_gprs): New function.
