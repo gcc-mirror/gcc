@@ -3540,6 +3540,11 @@ loop_find_equiv_value (loop, reg)
 		ret = XEXP (note, 0);
 	      else
 		ret = SET_SRC (set);
+
+	      /* We cannot do this if it changes between the
+		 assignment and loop start though.  */
+	      if (modified_between_p (ret, insn, loop_start))
+		ret = reg;
 	    }
 	  break;
 	}

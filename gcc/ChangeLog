@@ -1,3 +1,8 @@
+2000-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* unroll.c (loop_find_equiv_value): If ret is modified between
+	insn and loop_start, ret might not be equivalent to reg.
+
 2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (init_dollar_format_checking,
