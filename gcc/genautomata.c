@@ -6872,7 +6872,7 @@ process_state_longest_path_length (state)
     max_dfa_issue_rate = value;
 }
 
-/* The following nacro value is name of the corresponding global
+/* The following macro value is name of the corresponding global
    variable in the automaton based pipeline interface.  */
 
 #define MAX_DFA_ISSUE_RATE_VAR_NAME "max_dfa_issue_rate"
@@ -7960,13 +7960,32 @@ output_tables ()
 }
 
 /* The function outputs definition and value of PHR interface variable
-   `max_insn_queue_index' */
+   `max_insn_queue_index'.  Its value is not less than maximal queue
+   length needed for the insn scheduler.  */
 static void
 output_max_insn_queue_index_def ()
 {
-  int i;
+  int i, max, latency;
+  decl_t decl;
 
-  for (i = 0; (1 << i) <= description->max_insn_reserv_cycles; i++)
+  max = description->max_insn_reserv_cycles;
+  for (i = 0; i < description->decls_num; i++)
+    {
+      decl = description->decls [i];
+      if (decl->mode == dm_insn_reserv && decl != advance_cycle_insn_decl)
+	{
+	  latency = DECL_INSN_RESERV (decl)->default_latency;
+	  if (latency > max)
+	    max = latency;
+	}
+      else if (decl->mode == dm_bypass)
+	{
+	  latency = DECL_BYPASS (decl)->latency;
+	  if (latency > max)
+	    max = latency;
+	}
+    }
+  for (i = 0; (1 << i) <= max; i++)
     ;
   if (i < 0)
     abort ();
