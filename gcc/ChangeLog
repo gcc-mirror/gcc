@@ -1,3 +1,20 @@
+2000-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.c (output_restore_regs): Prototype.
+	(sparc_emit_float_lib_cmp): Constification.
+
+	* emit-rtl.c (const_int_htab_hash, const_int_htab_eq): Likewise.
+
+	* reload1.c (reload_cse_delete_noop_set, reload_cse_simplify):
+	Prototype.
+
+	* simplify-rtx.c (entry_and_rtx_equal_p): Constification.
+	(get_value_hash, hash_rtx): Likewise.
+
+	* ssa.c (compute_conservative_reg_partition): Prototype.
+
+	* tree.c (mark_hash_entry): Prototype.
+
 2000-04-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* bb-reorder.c (verify_insn_chain): #ifdef out unless ENABLE_CHECKING.

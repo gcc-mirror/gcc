@@ -451,6 +451,8 @@ static rtx gen_mode_int			PARAMS ((enum machine_mode,
 						 HOST_WIDE_INT));
 static void failed_reload		PARAMS ((rtx, int));
 static int set_reload_reg		PARAMS ((int, int));
+static void reload_cse_delete_noop_set	PARAMS ((rtx, rtx));
+static void reload_cse_simplify		PARAMS ((rtx));
 extern void dump_needs			PARAMS ((struct insn_chain *, FILE *));
 
 /* Initialize the reload pass once per compilation.  */

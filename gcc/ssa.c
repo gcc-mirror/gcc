@@ -121,7 +121,7 @@ static int make_regs_equivalent_over_bad_edges
 static int make_equivalent_phi_alternatives_equivalent 
   PARAMS ((int bb, partition reg_partition));
 static partition compute_conservative_reg_partition 
-  PARAMS (());
+  PARAMS ((void));
 static int rename_equivalent_regs_in_insn 
   PARAMS ((rtx *ptr, void *data));
 static void rename_equivalent_regs 

@@ -191,7 +191,7 @@ static hashval_t
 const_int_htab_hash (x)
      const void *x;
 {
-  return (hashval_t) INTVAL ((rtx) x);
+  return (hashval_t) INTVAL ((const struct rtx_def *) x);
 }
 
 /* Returns non-zero if the value represented by X (which is really a
@@ -203,7 +203,7 @@ const_int_htab_eq (x, y)
      const void *x;
      const void *y;
 {
-  return (INTVAL ((rtx) x) == *((HOST_WIDE_INT *) y));
+  return (INTVAL ((const struct rtx_def *) x) == *((const HOST_WIDE_INT *) y));
 }
 
 /* Mark the hash-table element X (which is really a pointer to an
