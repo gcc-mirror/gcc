@@ -3107,6 +3107,10 @@ for machine in $build $host $target; do
 		tm_file=arm/unknown-elf.h
 		tmake_file=arm/t-arm-elf
 		;;
+        arm*-*-oabi)
+		tm_file=arm/unknown-elf-oabi.h
+		tmake_file=arm/t-arm-elf
+		;;
 	c1-convex-*)			# Convex C1
 		target_cpu_default=1
 		use_collect2=yes
