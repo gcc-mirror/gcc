@@ -8048,7 +8048,7 @@
 	 (vec_concat:V2SF
 	  (vec_select:SF
 	   (match_dup 0)
-	   (parallel [(not:BI (match_operand 4 "const_int_operand" "n"))]))
+	   (parallel [(match_operand 7 "const_int_operand" "n")]))
 	  (match_operator:SF 3 "binary_float_operator"
 	    [(vec_select:SF (match_operand:V2SF 1 "fp_arith_reg_operand" "f")
 			    (parallel [(match_operand 5
@@ -8056,11 +8056,11 @@
 	     (vec_select:SF (match_operand:V2SF 2 "fp_arith_reg_operand" "f")
 			    (parallel [(match_operand 6
 					"const_int_operand" "n")]))]))
-	 (parallel [(not:BI (match_dup 4)) (match_dup 4)])))]
-  "TARGET_SHMEDIA_FPU"
+	 (parallel [(match_dup 7) (match_operand 4 "const_int_operand" "n")])))]
+  "TARGET_SHMEDIA_FPU && INTVAL (operands[4]) != INTVAL (operands[7])"
   "#"
-  "TARGET_SHMEDIA_FPU && reload_completed"
-  [(set (match_dup 7) (match_dup 8))]
+  "&& reload_completed"
+  [(set (match_dup 8) (match_dup 9))]
   "
 {
   int endian = TARGET_LITTLE_ENDIAN ? 0 : 1;
@@ -8071,10 +8071,10 @@
 			 (true_regnum (operands[2])
 			  + (INTVAL (operands[6]) ^ endian)));
 
-  operands[7] = gen_rtx_REG (SFmode,
+  operands[8] = gen_rtx_REG (SFmode,
 			     (true_regnum (operands[0])
 			      + (INTVAL (operands[4]) ^ endian)));
-  operands[8] = gen_rtx (GET_CODE (operands[3]), SFmode, op1, op2);
+  operands[9] = gen_rtx (GET_CODE (operands[3]), SFmode, op1, op2);
 }"
   [(set_attr "type" "fparith_media")])
 

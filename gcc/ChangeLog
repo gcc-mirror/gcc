@@ -1,3 +1,11 @@
+Fri Feb 21 20:41:29 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (OVERRIDE_OPTIONS): Fix code that clears 'e' register class.
+
+	* sh.md (binary_sf_op): Use extra constant operand instead of
+	negating constant operand 4.
+	* sh.c (sh_expand_binop_v2sf): Supply it.
+
 2003-02-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* cpphash.h (struct lexer_state): Add directive_wants_padding.
