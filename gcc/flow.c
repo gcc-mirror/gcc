@@ -3727,9 +3727,15 @@ init_propagate_block_info (bb, live, local_set, flags)
       if (bitmap_operation (diff, bb_true->global_live_at_start,
 			    bb_false->global_live_at_start, BITMAP_XOR))
 	{
-	  if (GET_CODE (XEXP (cond_true, 0)) != REG)
+	  rtx reg = XEXP (cond_true, 0);
+
+	  if (GET_CODE (reg) == SUBREG)
+	    reg = SUBREG_REG (reg);
+
+	  if (GET_CODE (reg) != REG)
 	    abort ();
-	  SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond_true, 0)));
+
+	  SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (reg));
 
 	  /* For each such register, mark it conditionally dead.  */
 	  EXECUTE_IF_SET_IN_REG_SET
