@@ -1,3 +1,7 @@
+2003-12-12  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/faq/index.txt: Regenerate after adding <link> tags.
+
 2003-12-11  Neil Ferguson  <nferguso@eso.org>
             Paolo Carlini  <pcarlini@suse.de>
 
