@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 93, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 95-98, 1999 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
