@@ -96,11 +96,6 @@ extern char *output_call ();
 #define TARGET_DEFAULT 0
 #endif
 
-/* Convex ships /tmp as a separate file system - thus it
-   usually has more free space than /usr/tmp */
-
-#define P_tmpdir	"/tmp/"
-
 /* Allow $ in identifiers. */
 
 #define DOLLARS_IN_IDENTIFIERS 2
