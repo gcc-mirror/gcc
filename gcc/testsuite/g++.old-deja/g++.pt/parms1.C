@@ -18,6 +18,7 @@ public:
     operator S () { return a*20; }
 };
 
+int
 main()
 {
     A<int, 5> a;

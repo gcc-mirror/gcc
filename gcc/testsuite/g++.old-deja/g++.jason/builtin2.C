@@ -1,6 +1,6 @@
 // Build don't link:
 
-inline void strlen (const char *) { }
+static inline void strlen (const char *) { }
 
 void f ()
 {
