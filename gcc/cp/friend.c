@@ -158,12 +158,8 @@ add_friend (tree type, tree decl, bool complain)
 	      if (decl == TREE_VALUE (friends))
 		{
 		  if (complain)
-		    {
-		      warning ("`%D' is already a friend of class `%T'",
-			       decl, type);
-		      cp_warning_at ("previous friend declaration of `%D'",
-				     TREE_VALUE (friends));
-		    }
+		    warning ("`%D' is already a friend of class `%T'",
+			     decl, type);
 		  return;
 		}
 	    }
