@@ -1,4 +1,11 @@
+2003-09-13  Richard Henderson  <rth@redhat.com>
+
+	* cgraphunit.c (cgraph_assemble_pending_functions): Export.
+	(cgraph_finalize_function): Revert TREE_ASM_WRITTEN check.
+	* cgraph.h: Update.
+
 2003-09-12  Dale Johannesen  <dalej@apple.com>
+
 	* config/rs6000/rs6000.c: Fix typos in previous.
 
 2003-09-12  Ziemowit Laski  <zlaski@apple.com>

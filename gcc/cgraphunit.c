@@ -122,7 +122,8 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
 
 /* When not doing unit-at-a-time, output all functions enqueued.
    Return true when such a functions were found.  */
-static bool
+
+bool
 cgraph_assemble_pending_functions (void)
 {
   bool output = false;
@@ -136,9 +137,12 @@ cgraph_assemble_pending_functions (void)
 
       cgraph_nodes_queue = cgraph_nodes_queue->next_needed;
       if (!n->origin && !DECL_EXTERNAL (n->decl))
-	cgraph_expand_function (n);
-      output = true;
+	{
+	  cgraph_expand_function (n);
+	  output = true;
+	}
     }
+
   return output;
 }
 
@@ -164,7 +168,13 @@ cgraph_finalize_function (tree decl, bool nested)
 	 ??? It may make more sense to use one body for inlining and other
 	 body for expanding the function but this is dificult to do.  */
 
-      if (TREE_ASM_WRITTEN (decl))
+      /* If node->output is set, then this is a unit-at-a-time compilation
+	 and we have already begun whole-unit analysis.  This is *not*
+	 testing for whether we've already emitted the function.  That
+	 case can be sort-of legitimately seen with real function 
+	 redefinition errors.  I would argue that the front end should
+	 never present us with such a case, but don't enforce that for now.  */
+      if (node->output)
 	abort ();
 
       /* Reset our datastructures so we can analyze the function again.  */

@@ -1,3 +1,8 @@
+2003-09-13  Richard Henderson  <rth@redhat.com>
+
+	* decl2.c (finish_file): Check cgraph_assemble_pending_functions
+	during relaxation loop.
+
 2003-09-11  David Edelsohn  <edelsohn@gnu.org>
 
 	* decl2.c (var_finalized_p): Swap arms of conditional.
