@@ -577,3 +577,92 @@ vax_rtx_cost (x)
     }
   return c;
 }
+
+#ifdef VMS
+/* Additional support code for VMS. */
+
+#ifdef QSORT_WORKAROUND
+  /*
+	Do not use VAXCRTL's qsort() due to a severe bug:  once you've
+	sorted something which has a size that's an exact multiple of 4
+	and is longword aligned, you cannot safely sort anything which
+	is either not a multiple of 4 in size or not longword aligned.
+	A static "move-by-longword" optimization flag inside qsort() is
+	never reset.  This is known of affect VMS V4.6 through VMS V5.5-1.
+
+	In this work-around an insertion sort is used for simplicity.
+	The qsort code from glibc should probably be used instead.
+   */
+void
+not_qsort (array, count, size, compare)
+     void *array;
+     unsigned count, size;
+     int (*compare)();
+{
+
+  if (size == sizeof (short))
+    {
+      register int i;
+      register short *next, *prev;
+      short tmp, *base = array;
+
+      for (next = base, i = count - 1; i > 0; i--)
+	{
+	  prev = next++;
+	  if ((*compare)(next, prev) < 0)
+	    {
+	      tmp = *next;
+	      do  *(prev + 1) = *prev;
+		while (--prev >= base ? (*compare)(&tmp, prev) < 0 : 0);
+	      *(prev + 1) = tmp;
+	    }
+	}
+    }
+  else if (size == sizeof (long))
+    {
+      register int i;
+      register long *next, *prev;
+      long tmp, *base = array;
+
+      for (next = base, i = count - 1; i > 0; i--)
+	{
+	  prev = next++;
+	  if ((*compare)(next, prev) < 0)
+	    {
+	      tmp = *next;
+	      do  *(prev + 1) = *prev;
+		while (--prev >= base ? (*compare)(&tmp, prev) < 0 : 0);
+	      *(prev + 1) = tmp;
+	    }
+	}
+    }
+  else  /* arbitrary size */
+    {
+#ifdef USE_C_ALLOCA
+      extern void *alloca ();
+#endif
+      register int i;
+      register char *next, *prev, *tmp = alloca (size), *base = array;
+
+      for (next = base, i = count - 1; i > 0; i--)
+	{   /* count-1 forward iterations */
+	  prev = next,  next += size;		/* increment front pointer */
+	  if ((*compare)(next, prev) < 0)
+	    {	/* found element out of order; move others up then re-insert */
+	      memcpy (tmp, next, size);		/* save smaller element */
+	      do { memcpy (prev + size, prev, size); /* move larger elem. up */
+		   prev -= size;		/* decrement back pointer */
+		 } while (prev >= base ? (*compare)(tmp, prev) < 0 : 0);
+	      memcpy (prev + size, tmp, size);	/* restore small element */
+	    }
+	}
+#ifdef USE_C_ALLOCA
+      alloca (0);
+#endif
+    }
+
+  return;
+}
+#endif /* QSORT_WORKAROUND */
+
+#endif /* VMS */
