@@ -369,7 +369,7 @@ gcov_read_bytes (unsigned bytes)
 	gcov_allocate (gcov_var.length + bytes);
       excess = gcov_var.alloc - gcov_var.length;
 #endif
-      excess = fread (gcov_var.buffer + gcov_var.offset,
+      excess = fread (gcov_var.buffer + gcov_var.length,
 		      1, excess, gcov_var.file);
       gcov_var.length += excess;
       if (gcov_var.length < bytes)
