@@ -1843,7 +1843,7 @@ clone_underlying_type (tree x)
     {
       tree tt = TREE_TYPE (x);
       DECL_ORIGINAL_TYPE (x) = tt;
-      tt = build_type_copy (tt);
+      tt = build_variant_type_copy (tt);
       TYPE_NAME (tt) = x;
       TREE_USED (tt) = TREE_USED (x);
       TREE_TYPE (x) = tt;
@@ -6198,7 +6198,7 @@ store_parm_decls_oldstyle (tree fndecl, tree arg_info)
 	 will be a variant of the main variant of the original function
 	 type.  */
 
-      TREE_TYPE (fndecl) = build_type_copy (TREE_TYPE (fndecl));
+      TREE_TYPE (fndecl) = build_variant_type_copy (TREE_TYPE (fndecl));
 
       TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = actual;
     }

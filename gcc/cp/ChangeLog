@@ -1,3 +1,9 @@
+2004-08-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* name-lookup.c (pushdecl): Rename build_type_copy call.
+	* tree.c (cp_build_qualified_type_real,
+	build_exception_variant, handle_java_interface_attribute): Likewise.
+
 2004-08-22  Andrew Pinski  <apinski@apple.com>
 
 	PR c++/14029

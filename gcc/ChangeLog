@@ -1,3 +1,25 @@
+2004-08-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (build_distinct_type_copy): New.
+	(build_type_copy): ... here.  Rename to ...
+	(build_variant_type_copy): ... here.
+	* tree.c (build_qualified_type): Rename build_type_copy call.
+	(build_distinct_type_copy): New, broken out of ...
+	(build_type_copy): ... here.  Rename to ...
+	(build_variant_type_copy): ... here.  Use
+	build_distinct_type_copy.
+	(build_common_tree_nodes_2): Rename build_type_copy call.
+	* c-common.c (c_common_nodes_and_builtins): Rename build_type_copy
+	call.
+	(handle_packed_attribute, handle_unused_attribute,
+	handle_transparanet_union_attribute, handle_aligned_attribute,
+	handle_deprecated_attribute): Likewise.
+	* c-decl.c (clone_underlying_type, store_parm_decls_oldstyle):
+	Likewise.
+	* config/arm/arm.c (arm_handle_isr_attribyte): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Use
+	build_distinct_type_copy.
+
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (mfhilo_[sd]i): Redefine using :GPR.  Add mode

@@ -2961,7 +2961,8 @@ extern tree build_qualified_type (tree, int);
 
 /* Make a copy of a type node.  */
 
-extern tree build_type_copy (tree);
+extern tree build_distinct_type_copy (tree);
+extern tree build_variant_type_copy (tree);
 
 /* Finish up a builtin RECORD_TYPE. Give it a name and provide its
    fields. Optionally specify an alignment, and then lay it out.  */

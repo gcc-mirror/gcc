@@ -2625,7 +2625,7 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 		   || TREE_CODE (TREE_TYPE (*node)) == METHOD_TYPE)
 	       && arm_isr_value (args) != ARM_FT_UNKNOWN)
 	{
-	  *node = build_type_copy (*node);
+	  *node = build_variant_type_copy (*node);
 	  TREE_TYPE (*node) = build_type_attribute_variant
 	    (TREE_TYPE (*node),
 	     tree_cons (name, args, TYPE_ATTRIBUTES (TREE_TYPE (*node))));

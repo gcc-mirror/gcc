@@ -850,7 +850,7 @@ pushdecl (tree x)
 		       || TYPE_NAME (type) != DECL_ABSTRACT_ORIGIN (x)))
             {
 	      DECL_ORIGINAL_TYPE (x) = type;
-              type = build_type_copy (type);
+              type = build_variant_type_copy (type);
 	      TYPE_STUB_DECL (type) = TYPE_STUB_DECL (DECL_ORIGINAL_TYPE (x));
               TYPE_NAME (type) = x;
               TREE_TYPE (x) = type;
