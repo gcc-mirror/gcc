@@ -5867,7 +5867,7 @@ do_ident (buf, limit)
 }
 
 /* #pragma and its argument line have already been copied to the output file.
-   Here just check for recognized pragmas.  */
+   Just check for some recognized pragmas that need validation here.  */
 
 static int
 do_pragma (buf, limit)
@@ -5882,6 +5882,29 @@ do_pragma (buf, limit)
       warning ("`#pragma once' is obsolete");
     do_once ();
   }
+
+  if (!strncmp (buf, "implementation", 14)) {
+    /* Be quiet about `#pragma implementation' for a file only if it hasn't
+       been included yet.  */
+    struct file_name_list *ptr;
+    char *p = buf + 14, *fname, *inc_fname;
+    SKIP_WHITE_SPACE (p);
+    if (*p == '\n' || *p != '\"')
+      return 0;
+
+    fname = p + 1;
+    if (p = (char *) strchr (fname, '\"'))
+      *p = '\0';
+    
+    for (ptr = all_include_files; ptr; ptr = ptr->next) {
+      inc_fname = (char *) strrchr (ptr->fname, '/');
+      inc_fname = inc_fname ? inc_fname + 1 : ptr->fname;
+      if (inc_fname && !strcmp (inc_fname, fname))
+	warning ("`#pragma implementation' for \"%s\" appears after its #include",
+		 fname);
+    }
+  }
+
   return 0;
 }
 
