@@ -521,7 +521,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      || ! modified_between_p (SET_SRC (temp4), p, temp2))
 		  /* Verify that registers used by the jump are not clobbered
 		     by the instruction being moved.  */
-		  && ! modified_between_p (PATTERN (temp), temp2,
+		  && ! regs_set_between_p (PATTERN (temp), temp2,
 					   NEXT_INSN (temp2)))
 		{
 		  emit_insn_after_with_line_notes (PATTERN (temp2), p, temp2);
@@ -622,7 +622,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  && ! modified_between_p (SET_SRC (temp4), insert_after, temp)
 		  /* Verify that registers used by the jump are not clobbered
 		     by the instruction being moved.  */
-		  && ! modified_between_p (PATTERN (temp), temp3,
+		  && ! regs_set_between_p (PATTERN (temp), temp3,
 					   NEXT_INSN (temp3))
 		  && invert_jump (temp, JUMP_LABEL (insn)))
 		{
