@@ -3983,7 +3983,7 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
   if (dest == bb)
     return false;
 
-  /* If the destination block consists of an nonlocal label, do not merge
+  /* If the destination block consists of a nonlocal label, do not merge
      it.  */
   label = first_stmt (dest);
   if (label
@@ -4171,7 +4171,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	      continue;
 	    }
 
-	  /* PHI arguemnts are different.  Create a forwarder block by
+	  /* PHI arguments are different.  Create a forwarder block by
 	     splitting E so that we can merge PHI arguments on E to
 	     DEST.  */
 	  e = EDGE_SUCC (split_edge (e), 0);
@@ -4233,8 +4233,8 @@ remove_forwarder_block_with_phi (basic_block bb)
   delete_basic_block (bb);
 }
 
-/* This pass performs merges PHI nodes if one feeds into another.  For
-   example, suppose we have the following:
+/* This pass merges PHI nodes if one feeds into another.  For example,
+   suppose we have the following:
 
   goto <bb 9> (<L9>);
 
