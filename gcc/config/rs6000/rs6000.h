@@ -1193,6 +1193,9 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 /* Define if normal loads of shorter-than-word items from memory clears
    the rest of the bigs in the register.  */
 #define BYTE_LOADS_ZERO_EXTEND
+
+/* Define if loading short immediate values into registers sign extends.  */
+#define SHORT_IMMEDIATES_SIGN_EXTEND
 
 /* The RS/6000 uses the XCOFF format.  */
 
