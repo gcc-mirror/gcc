@@ -496,12 +496,15 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
 
   dnl Tests for wide character functions.
   AC_REPLACE_STRINGFUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset)
+  AC_SUBST(libinst_wstring_la)
 
   AC_MSG_CHECKING([for wide character support])
   if test $has_weof = "yes" && test $has_wchar_minmax = "yes"; then
+    libinst_wstring_la="libinst-wstring.la"
     AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
     AC_MSG_RESULT(ok)
   else
+    libinst_wstring_la=""
     AC_MSG_RESULT("not specializing for wchar_t")
   fi
   ],[

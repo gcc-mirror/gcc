@@ -518,7 +518,8 @@ namespace std
              const basic_string<_CharT,_Traits,_Alloc>& __rhs)
     {
       typedef basic_string<_CharT,_Traits,_Alloc> __string_type;
-      __string_type::size_type __len = _Traits::length(__lhs);
+      typedef typename __string_type::size_type	  __size_type;
+      __size_type __len = _Traits::length(__lhs);
       __string_type __str;
       __str.reserve(__len + __rhs.size());
       __str.append(__lhs, __lhs + __len);
@@ -531,15 +532,14 @@ namespace std
     operator+(_CharT __lhs, const basic_string<_CharT,_Traits,_Alloc>& __rhs)
     {
       typedef basic_string<_CharT,_Traits,_Alloc> __string_type;
+      typedef typename __string_type::size_type	  __size_type;
       __string_type __str;
-      __string_type::size_type __len = __rhs.size();
+      __size_type __len = __rhs.size();
       __str.reserve(__len + 1);
       __str.append(__string_type::size_type(1), __lhs);
       __str.append(__rhs);
       return __str;
     }
-
-
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
@@ -555,7 +555,6 @@ namespace std
 	traits_type::assign(_M_data() + __off1, __n2, __c);
       return *this;
     }
-  
   
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::size_type

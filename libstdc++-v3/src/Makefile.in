@@ -99,6 +99,7 @@ WERRORSUPPRESS = @WERRORSUPPRESS@
 cpu_include_dir = @cpu_include_dir@
 ctype_include_dir = @ctype_include_dir@
 glibcpp_basedir = @glibcpp_basedir@
+libinst_wstring_la = @libinst_wstring_la@
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -110,6 +111,7 @@ MAINT_CHARSET = latin1
 @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = libstdc++.la
+EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 WERROR = -Werror
 # OPTIMIZE_CXXFLAGS =  -O3 -fstrict-aliasing -fsquangle -fnew-exceptions \
@@ -295,8 +297,7 @@ sources = \
 	complex.cc complexf.cc complexl.cc complex_io.cc \
 	stdexcept.cc ios.cc stdstreams.cc strstream.cc \
 	locale.cc localename.cc  \
-	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc \
-	$(string_sources) $(wstring_sources)
+	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc 
 
 VPATH =  $(top_srcdir) $(top_srcdir)/std $(top_srcdir)/src $(top_srcdir)/@ctype_include_dir@
 
@@ -305,9 +306,18 @@ EXTRA_sources = string-inst.cc
 
 libstdc___la_SOURCES = $(sources)
 
-libstdc___la_LIBADD = ../math/libmath.la ../libio/libio.la 
+libinst_string_la_SOURCES = $(string_sources)
+
+libinst_wstring_la_SOURCES = $(wstring_sources)
+
+libstdc___la_LIBADD = \
+	../math/libmath.la ../libio/libio.la \
+	libinst-string.la @libinst_wstring_la@
+
 
 libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
+
+libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
 
 # We cannot use the default rules to install headers since we cannot
 # statically decide which headers to install.  So we have our own special
@@ -323,11 +333,9 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libstdc___la_DEPENDENCIES =  ../math/libmath.la ../libio/libio.la
-libstdc___la_OBJECTS =  limitsMEMBERS.lo c++io.lo cmath.lo complex.lo \
-complexf.lo complexl.lo complex_io.lo stdexcept.lo ios.lo stdstreams.lo \
-strstream.lo locale.lo localename.lo locale-inst.lo stl-inst.lo \
-misc-inst.lo valarray-inst.lo stringMAIN.lo stringCTORNC.lo \
+libinst_string_la_LDFLAGS = 
+libinst_string_la_LIBADD = 
+libinst_string_la_OBJECTS =  stringMAIN.lo stringCTORNC.lo \
 stringCTORAL.lo stringCTORCPR.lo stringCTORCPRAL.lo stringCTORPRAL.lo \
 stringCTORPAL.lo stringCTORDUPAL.lo stringCTORPP.lo stringCTORII.lo \
 stringMUTATE.lo stringRESERVE.lo stringSWAP.lo stringSLOP.lo \
@@ -341,21 +349,28 @@ stringRFIND.lo stringRFINDC.lo stringFFO.lo stringFLO.lo stringFFNO.lo \
 stringFLNO.lo stringFLNOC.lo stringCOMPARE.lo stringCOMPARE2.lo \
 stringCOMPAREP.lo stringCOMPAREP2.lo stringADDPS.lo stringADDCS.lo \
 stringEXTRACT.lo stringINSERT.lo stringGETLINE.lo stringSCOPY.lo \
-stringEQ.lo wstringMAIN.lo wstringCTORNC.lo wstringCTORAL.lo \
-wstringCTORCPR.lo wstringCTORCPRAL.lo wstringCTORPRAL.lo \
-wstringCTORPAL.lo wstringCTORDUPAL.lo wstringCTORPP.lo wstringCTORII.lo \
-wstringMUTATE.lo wstringRESERVE.lo wstringSWAP.lo wstringSLOP.lo \
-wstringRESIZE.lo wstringAPPCOPY.lo wstringAPPCPR.lo wstringAPPPR.lo \
-wstringAPPDUP.lo wstringAPPII.lo wstringASSCP.lo wstringASSII.lo \
-wstringINSII.lo wstringREPRR.lo wstringREPIIDUP.lo wstringREPII.lo \
-wstringREPIII.lo wstringREP4I.lo wstringREPIIPP.lo wstringREPIIPP2.lo \
-wstringCOPY.lo wstringCONII.lo wstringCONIIF.lo wstringCONPPF.lo \
-wstringCONPPF2.lo wstringCONSC.lo wstringFIND.lo wstringFINDC.lo \
-wstringRFIND.lo wstringRFINDC.lo wstringFFO.lo wstringFLO.lo \
-wstringFFNO.lo wstringFLNO.lo wstringFLNOC.lo wstringCOMPARE.lo \
-wstringCOMPARE2.lo wstringCOMPAREP.lo wstringCOMPAREP2.lo \
-wstringADDPS.lo wstringADDCS.lo wstringEXTRACT.lo wstringINSERT.lo \
-wstringGETLINE.lo wstringSCOPY.lo wstringEQ.lo
+stringEQ.lo
+libinst_wstring_la_LDFLAGS = 
+libinst_wstring_la_LIBADD = 
+libinst_wstring_la_OBJECTS =  wstringMAIN.lo wstringCTORNC.lo \
+wstringCTORAL.lo wstringCTORCPR.lo wstringCTORCPRAL.lo \
+wstringCTORPRAL.lo wstringCTORPAL.lo wstringCTORDUPAL.lo \
+wstringCTORPP.lo wstringCTORII.lo wstringMUTATE.lo wstringRESERVE.lo \
+wstringSWAP.lo wstringSLOP.lo wstringRESIZE.lo wstringAPPCOPY.lo \
+wstringAPPCPR.lo wstringAPPPR.lo wstringAPPDUP.lo wstringAPPII.lo \
+wstringASSCP.lo wstringASSII.lo wstringINSII.lo wstringREPRR.lo \
+wstringREPIIDUP.lo wstringREPII.lo wstringREPIII.lo wstringREP4I.lo \
+wstringREPIIPP.lo wstringREPIIPP2.lo wstringCOPY.lo wstringCONII.lo \
+wstringCONIIF.lo wstringCONPPF.lo wstringCONPPF2.lo wstringCONSC.lo \
+wstringFIND.lo wstringFINDC.lo wstringRFIND.lo wstringRFINDC.lo \
+wstringFFO.lo wstringFLO.lo wstringFFNO.lo wstringFLNO.lo \
+wstringFLNOC.lo wstringCOMPARE.lo wstringCOMPARE2.lo wstringCOMPAREP.lo \
+wstringCOMPAREP2.lo wstringADDPS.lo wstringADDCS.lo wstringEXTRACT.lo \
+wstringINSERT.lo wstringGETLINE.lo wstringSCOPY.lo wstringEQ.lo
+libstdc___la_OBJECTS =  limitsMEMBERS.lo c++io.lo cmath.lo complex.lo \
+complexf.lo complexl.lo complex_io.lo stdexcept.lo ios.lo stdstreams.lo \
+strstream.lo locale.lo localename.lo locale-inst.lo stl-inst.lo \
+misc-inst.lo valarray-inst.lo
 CXXFLAGS = @CXXFLAGS@
 CXXLD = $(CXX)
 DIST_COMMON =  Makefile.am Makefile.in
@@ -365,8 +380,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libstdc___la_SOURCES)
-OBJECTS = $(libstdc___la_OBJECTS)
+SOURCES = $(libinst_string_la_SOURCES) $(libinst_wstring_la_SOURCES) $(libstdc___la_SOURCES)
+OBJECTS = $(libinst_string_la_OBJECTS) $(libinst_wstring_la_OBJECTS) $(libstdc___la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -441,6 +456,12 @@ clean-libtool:
 distclean-libtool:
 
 maintainer-clean-libtool:
+
+libinst-string.la: $(libinst_string_la_OBJECTS) $(libinst_string_la_DEPENDENCIES)
+	$(CXXLINK)  $(libinst_string_la_LDFLAGS) $(libinst_string_la_OBJECTS) $(libinst_string_la_LIBADD) $(LIBS)
+
+libinst-wstring.la: $(libinst_wstring_la_OBJECTS) $(libinst_wstring_la_DEPENDENCIES)
+	$(CXXLINK)  $(libinst_wstring_la_LDFLAGS) $(libinst_wstring_la_OBJECTS) $(libinst_wstring_la_LIBADD) $(LIBS)
 
 libstdc++.la: $(libstdc___la_OBJECTS) $(libstdc___la_DEPENDENCIES)
 	$(CXXLINK) -rpath $(toolexeclibdir) $(libstdc___la_LDFLAGS) $(libstdc___la_OBJECTS) $(libstdc___la_LIBADD) $(LIBS)

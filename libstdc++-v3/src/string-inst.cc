@@ -280,8 +280,7 @@ namespace std
 #ifdef CONSC
   template 
     C* 
-    S::_S_construct<S::iterator>
-    (S::size_type, C, const allocator<C>&);
+    S::_S_construct(S::size_type, C, S::allocator_type const&);
 #endif
 
 #ifdef FIND

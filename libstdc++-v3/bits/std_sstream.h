@@ -52,7 +52,7 @@ namespace std {
       // Non-standard types:
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_string<_CharT, _Traits, _Alloc> 	__string_type;
-      typedef __string_type::size_type			__size_type;
+      typedef typename __string_type::size_type		__size_type;
 
     private:
       // Data Members:
