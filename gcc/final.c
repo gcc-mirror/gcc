@@ -2299,8 +2299,14 @@ alter_subreg (x)
      register rtx x;
 {
   register rtx y = SUBREG_REG (x);
+
   if (GET_CODE (y) == SUBREG)
     y = alter_subreg (y);
+
+  /* If reload is operating, we may be replacing inside this SUBREG.
+     Check for that and make a new one if so.  */
+  if (reload_in_progress && find_replacement (&SUBREG_REG (x)) != 0)
+    x = copy_rtx (x);
 
   if (GET_CODE (y) == REG)
     {
