@@ -1030,6 +1030,9 @@ noop_move_p (insn)
 {
   rtx pat = PATTERN (insn);
 
+  if (INSN_CODE (insn) == NOOP_MOVE_INSN_CODE)
+    return 1;
+
   /* Insns carrying these notes are useful later on.  */
   if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
     return 0;
