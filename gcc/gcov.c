@@ -445,6 +445,7 @@ static const struct option options[] =
   { "object-directory",     required_argument, NULL, 'o' },
   { "object-file",          required_argument, NULL, 'o' },
   { "unconditional-branches", no_argument,     NULL, 'u' },
+  { 0, 0, 0, 0 }
 };
 
 /* Process args, return index to first non-arg.  */

@@ -55,6 +55,7 @@ static const struct option options[] =
   { "version",              no_argument,       NULL, 'v' },
   { "long",                 no_argument,       NULL, 'l' },
   { "positions",	    no_argument,       NULL, 'o' },
+  { 0, 0, 0, 0 }
 };
 
 static const tag_format_t tag_table[] =
