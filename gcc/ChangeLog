@@ -1,3 +1,10 @@
+
+Mon Feb 23 10:47:39 1998  Robert Lipe  <robertl@dgii.com>
+	* collect2.c (ldd_file_name): Bracket declaration with same
+	manifests as use.
+	(full_real_ld_suffix): Deleted.  Variable was calloced and
+	written into, but never read.
+
 1998-02-23  Mike Stump  <mrs@wrs.com>
 
 	* configure.in: Add support for i386-wrs-vxworks configuration.
