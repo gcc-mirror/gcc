@@ -1,5 +1,8 @@
 Wed Apr 14 19:42:02 1999  Donn Terry (donn@interix.com)
 
+	* alpha/lib1funcs.asm: New file.
+	* alpha/t-interix (lib1funcs.asm): Add to build.
+
 	* explow.c (allocate_dynamic_stack_space): Correctly convert TARGET
 	to Pmode.
 
