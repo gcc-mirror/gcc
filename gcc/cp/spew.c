@@ -1,6 +1,6 @@
 /* Type Analyzer for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Hacked... nay, bludgeoned... by Mark Eichin (eichin@cygnus.com)
 
 This file is part of GNU CC.
@@ -353,14 +353,9 @@ read_token (t)
       t->yychar = STRING;
       break;
 
-      /* These tokens should not survive translation phase 4.  */
-    case CPP_HASH:
-    case CPP_PASTE:
-      error ("syntax error before '#' token");
-      goto retry;
-
     default:
-      abort ();
+      yyerror ("parse error");
+      goto retry;
     }
 
   t->lineno = lineno;
