@@ -6808,8 +6808,7 @@ fold_unary (tree expr)
 	{
 	  /* Don't leave an assignment inside a conversion
 	     unless assigning a bitfield.  */
-	  tem = copy_node (t);
-	  TREE_OPERAND (tem, 0) = TREE_OPERAND (op0, 1);
+	  tem = build1 (code, type, TREE_OPERAND (op0, 1));
 	  /* First do the assignment, then return converted constant.  */
 	  tem = build2 (COMPOUND_EXPR, TREE_TYPE (tem), op0, fold (tem));
 	  TREE_NO_WARNING (tem) = 1;
