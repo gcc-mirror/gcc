@@ -342,11 +342,11 @@ extern void		mips_select_section ();
 #define MASK_DEBUG_B	0x10000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
 #define MASK_DEBUG_C	0x08000000	/* don't expand seq, etc. */
 #define MASK_DEBUG_D	0x04000000	/* don't do define_split's */
-#define MASK_DEBUG_E	0x02000000	/* function_arg debug */
+#define MASK_DEBUG_E	0		/* function_arg debug */
 #define MASK_DEBUG_F	0
 #define MASK_DEBUG_G	0		/* don't support 64 bit arithmetic */
 #define MASK_DEBUG_H	0               /* allow ints in FP registers */
-#define MASK_DEBUG_I	0x00200000	/* unused */
+#define MASK_DEBUG_I	0		/* unused */
 
 					/* r4000 64 bit sizes */
 #define TARGET_INT64		(target_flags & MASK_INT64)
@@ -570,12 +570,10 @@ extern void		mips_select_section ();
 #define SUBTARGET_TARGET_OPTIONS
 
 #define GENERATE_BRANCHLIKELY  (!TARGET_MIPS16 && (TARGET_MIPS3900 || (mips_isa >= 2)))
+
+/* Generate three-operand multiply instructions for both SImode and DImode.  */
 #define GENERATE_MULT3         (TARGET_MIPS3900				\
 				&& !TARGET_MIPS16)
-#define GENERATE_MADD          (TARGET_MIPS3900				\
-				&& !TARGET_MIPS16)
-
-
 
 /* Macros to decide whether certain features are available or not,
    depending on the instruction set architecture level.  */
@@ -1712,6 +1710,9 @@ enum reg_class
   LO_REG,			/* lo register */
   HILO_REG,			/* hilo register pair for 64 bit mode mult */
   MD_REGS,			/* multiply/divide registers (hi/lo) */
+  HI_AND_GR_REGS,		/* union classes */
+  LO_AND_GR_REGS,
+  HILO_AND_GR_REGS,
   ST_REGS,			/* status registers (fp status) */
   ALL_REGS,			/* all registers */
   LIM_REG_CLASSES		/* max value + 1 */
@@ -1738,6 +1739,9 @@ enum reg_class
   "LO_REG",								\
   "HILO_REG",								\
   "MD_REGS",								\
+  "HI_AND_GR_REGS",							\
+  "LO_AND_GR_REGS",							\
+  "HILO_AND_GR_REGS",							\
   "ST_REGS",								\
   "ALL_REGS"								\
 }
@@ -1766,6 +1770,9 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000002 },	/* lo register */	\
   { 0x00000000, 0x00000000, 0x00000004 },	/* hilo register */	\
   { 0x00000000, 0x00000000, 0x00000003 },	/* mul/div registers */	\
+  { 0xffffffff, 0x00000000, 0x00000001 },	/* union classes */     \
+  { 0xffffffff, 0x00000000, 0x00000002 },				\
+  { 0xffffffff, 0x00000000, 0x00000004 },				\
   { 0x00000000, 0x00000000, 0x000007f8 },	/* status registers */	\
   { 0xffffffff, 0xffffffff, 0x000007ff }	/* all registers */	\
 }

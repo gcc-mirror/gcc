@@ -1645,7 +1645,7 @@
   ""
   "
 {
-  if (GENERATE_MULT3)
+  if (HAVE_mulsi3_mult3)
     emit_insn (gen_mulsi3_mult3 (operands[0], operands[1], operands[2]));
   else if (mips_cpu != PROCESSOR_R4000 || TARGET_MIPS16)
     emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
@@ -1655,13 +1655,14 @@
 }")
 
 (define_insn "mulsi3_mult3"
-  [(set (match_operand:SI 0 "register_operand" "=d,?l")
+  [(set (match_operand:SI 0 "register_operand" "=d,l")
 	(mult:SI (match_operand:SI 1 "register_operand" "d,d")
 		 (match_operand:SI 2 "register_operand" "d,d")))
    (clobber (match_scratch:SI 3 "=h,h"))
    (clobber (match_scratch:SI 4 "=l,X"))
    (clobber (match_scratch:SI 5 "=a,a"))]
-  "GENERATE_MULT3"
+  "GENERATE_MULT3
+   || TARGET_MAD"
   "*
 {
   if (which_alternative == 1)
@@ -1709,22 +1710,29 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])		;; mult + mflo + delay
 
+;; Multiply-accumulate patterns
+
+;; For processors that can copy the output to a general register:
+;;
 ;; The all-d alternative is needed because the combiner will find this
 ;; pattern and then register alloc/reload will move registers around to
 ;; make them fit, and we don't want to trigger unnecessary loads to LO.
-;; For the moment, that seems to mostly disable the "macc" instruction
-;; though; some "?" marks may be needed.  Using "*d" helps, but causes
-;; stack spills in some cases.
+;;
+;; The last alternative should be made slightly less desirable, but adding
+;; "?" to the constraint is too strong, and causes values to be loaded into
+;; LO even when that's more costly.  For now, using "*d" mostly does the
+;; trick.
 (define_insn "*mul_acc_si"
-  [(set (match_operand:SI 0 "register_operand" "=l,d,d")
+  [(set (match_operand:SI 0 "register_operand" "=l,*d,*d")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d,d")
 			  (match_operand:SI 2 "register_operand" "d,d,d"))
-		 (match_operand:SI 3 "register_operand" "0,l,d")))
+		 (match_operand:SI 3 "register_operand" "0,l,*d")))
    (clobber (match_scratch:SI 4 "=h,h,h"))
    (clobber (match_scratch:SI 5 "=X,3,l"))
    (clobber (match_scratch:SI 6 "=a,a,a"))
    (clobber (match_scratch:SI 7 "=X,X,d"))]
-  "GENERATE_MADD"
+  "TARGET_MIPS3900
+   && !TARGET_MIPS16"
   "*
 {
   static char *const madd[] = { \"madd\\t%1,%2\",    \"madd\\t%0,%1,%2\" };
@@ -1736,6 +1744,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"1,1,2")])
 
+;; Split the above insn if we failed to get LO allocated.
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "")
@@ -1922,7 +1931,12 @@
 {
   rtx dummy = gen_rtx (SIGN_EXTEND, DImode, const0_rtx);
   rtx dummy2 = gen_rtx_LSHIFTRT (DImode, const0_rtx, const0_rtx);
-  rtx (*genfn)() = gen_xmulsi3_highpart_internal;
+#ifndef NO_MD_PROTOTYPES
+  rtx (*genfn) PROTO((rtx, rtx, rtx, rtx, rtx, rtx));
+#else
+  rtx (*genfn) ();
+#endif
+  genfn = gen_xmulsi3_highpart_internal;
   emit_insn ((*genfn) (operands[0], operands[1], operands[2], dummy,
 		       dummy, dummy2));
   DONE;
@@ -1939,7 +1953,12 @@
 {
   rtx dummy = gen_rtx (ZERO_EXTEND, DImode, const0_rtx);
   rtx dummy2 = gen_rtx_LSHIFTRT (DImode, const0_rtx, const0_rtx);
-  rtx (*genfn)() = gen_xmulsi3_highpart_internal;
+#ifndef NO_MD_PROTOTYPES
+  rtx (*genfn) PROTO((rtx, rtx, rtx, rtx, rtx, rtx));
+#else
+  rtx (*genfn) ();
+#endif
+  genfn = gen_xmulsi3_highpart_internal;
   emit_insn ((*genfn) (operands[0], operands[1], operands[2], dummy,
 		       dummy, dummy2));
   DONE;
@@ -2016,11 +2035,13 @@
   [(set (match_operand:DI 0 "register_operand" "+x")
 	(plus:DI (mult:DI (match_operator:DI 3 "extend_operator"
 			   [(match_operand:SI 1 "register_operand" "d")])
-			  (match_op_dup:DI 3
+			  (match_operator:DI 4 "extend_operator"
 			   [(match_operand:SI 2 "register_operand" "d")]))
 		 (match_dup 0)))
-   (clobber (match_scratch:SI 4 "=a"))]
-  "TARGET_MAD && ! TARGET_64BIT"
+   (clobber (match_scratch:SI 5 "=a"))]
+  "TARGET_MAD
+   && ! TARGET_64BIT
+   && GET_CODE (operands[3]) == GET_CODE (operands[4])"
   "*
 {
   if (GET_CODE (operands[3]) == SIGN_EXTEND)
@@ -2036,12 +2057,14 @@
   [(set (match_operand:DI 0 "register_operand" "+a")
 	(plus:DI (mult:DI (match_operator:DI 3 "extend_operator"
 			   [(match_operand:SI 1 "register_operand" "d")])
-			  (match_op_dup:DI 3
+			  (match_operator:DI 4 "extend_operator"
 			   [(match_operand:SI 2 "register_operand" "d")]))
 		 (match_dup 0)))
-   (clobber (match_scratch:DI 4 "=l"))
-   (clobber (match_scratch:DI 5 "=h"))]
-  "TARGET_MAD && TARGET_64BIT"
+   (clobber (match_scratch:SI 5 "=h"))
+   (clobber (match_scratch:SI 6 "=l"))]
+  "TARGET_MAD
+   && TARGET_64BIT
+   && GET_CODE (operands[3]) == GET_CODE (operands[4])"
   "*
 {
   if (GET_CODE (operands[3]) == SIGN_EXTEND)
@@ -5107,7 +5130,7 @@ move\\t%0,%z4\\n\\
       DONE;
     }
   /* FIXME: I don't know how to get a value into the HI register.  */
-  if (GET_CODE (operands[0]) == REG && GP_REG_P (operands[0]))
+  if (GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0])))
     {
       emit_move_insn (operands[0], operands[1]);
       DONE;
