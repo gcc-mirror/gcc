@@ -1,3 +1,7 @@
+2000-07-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* configure (topsrcdir): Don't use dirname.
+
 2000-07-22  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* MAINTAINERS: Add self to Write After Approval list.

@@ -86,7 +86,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.24 $"
+version="$Revision: 1.26 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -518,7 +518,8 @@ fi
 
 configsub=`echo ${progname} | sed 's/configure$/config.sub/'`
 moveifchange=`echo ${progname} | sed 's/configure$/move-if-change/'`
-topsrcdir=`cd \`dirname ${progname}\`; pwd`
+## the sed command below emulates the dirname command
+topsrcdir=`cd \`echo ${progname} | sed -e 's,[^/]*$,,;s,/$,,;s,^$,.,'\`; pwd`
 
 
 # this is a hack.  sun4 must always be a valid host alias or this will fail.
