@@ -89,7 +89,7 @@ match gfc_match_forall (gfc_statement *);
 
 /* Other functions.  */
 
-gfc_common_head *gfc_get_common (char *);
+gfc_common_head *gfc_get_common (const char *, int);
 
 /* decl.c */
 
