@@ -84,7 +84,14 @@ struct processor_costs size_cost = {	/* costs for tunning for size */
   3,					/* MMX or SSE register to integer */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
+  2,					/* cost of FADD and FSUB insns.  */
+  2,					/* cost of FMUL instruction.  */
+  2,					/* cost of FDIV instruction.  */
+  2,					/* cost of FABS instruction.  */
+  2,					/* cost of FCHS instruction.  */
+  2,					/* cost of FSQRT instruction.  */
 };
+
 /* Processor costs (relative to an add) */
 static const
 struct processor_costs i386_cost = {	/* 386 specific costs */
@@ -121,6 +128,12 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   3,					/* MMX or SSE register to integer */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
+  23,					/* cost of FADD and FSUB insns.  */
+  27,					/* cost of FMUL instruction.  */
+  88,					/* cost of FDIV instruction.  */
+  22,					/* cost of FABS instruction.  */
+  24,					/* cost of FCHS instruction.  */
+  122,					/* cost of FSQRT instruction.  */
 };
 
 static const
@@ -158,6 +171,12 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   3,					/* MMX or SSE register to integer */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
+  8,					/* cost of FADD and FSUB insns.  */
+  16,					/* cost of FMUL instruction.  */
+  73,					/* cost of FDIV instruction.  */
+  3,					/* cost of FABS instruction.  */
+  3,					/* cost of FCHS instruction.  */
+  83,					/* cost of FSQRT instruction.  */
 };
 
 static const
@@ -195,6 +214,12 @@ struct processor_costs pentium_cost = {
   3,					/* MMX or SSE register to integer */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
+  3,					/* cost of FADD and FSUB insns.  */
+  3,					/* cost of FMUL instruction.  */
+  39,					/* cost of FDIV instruction.  */
+  1,					/* cost of FABS instruction.  */
+  1,					/* cost of FCHS instruction.  */
+  70,					/* cost of FSQRT instruction.  */
 };
 
 static const
@@ -232,6 +257,12 @@ struct processor_costs pentiumpro_cost = {
   3,					/* MMX or SSE register to integer */
   32,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
+  3,					/* cost of FADD and FSUB insns.  */
+  5,					/* cost of FMUL instruction.  */
+  56,					/* cost of FDIV instruction.  */
+  2,					/* cost of FABS instruction.  */
+  2,					/* cost of FCHS instruction.  */
+  56,					/* cost of FSQRT instruction.  */
 };
 
 static const
@@ -269,6 +300,12 @@ struct processor_costs k6_cost = {
   6,					/* MMX or SSE register to integer */
   32,					/* size of prefetch block */
   1,					/* number of parallel prefetches */
+  2,					/* cost of FADD and FSUB insns.  */
+  2,					/* cost of FMUL instruction.  */
+  2,					/* cost of FDIV instruction.  */
+  56,					/* cost of FABS instruction.  */
+  2,					/* cost of FCHS instruction.  */
+  56,					/* cost of FSQRT instruction.  */
 };
 
 static const
@@ -306,6 +343,12 @@ struct processor_costs athlon_cost = {
   5,					/* MMX or SSE register to integer */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
+  4,					/* cost of FADD and FSUB insns.  */
+  4,					/* cost of FMUL instruction.  */
+  24,					/* cost of FDIV instruction.  */
+  2,					/* cost of FABS instruction.  */
+  2,					/* cost of FCHS instruction.  */
+  35,					/* cost of FSQRT instruction.  */
 };
 
 static const
@@ -343,6 +386,12 @@ struct processor_costs pentium4_cost = {
   10,					/* MMX or SSE register to integer */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
+  5,					/* cost of FADD and FSUB insns.  */
+  7,					/* cost of FMUL instruction.  */
+  43,					/* cost of FDIV instruction.  */
+  2,					/* cost of FABS instruction.  */
+  2,					/* cost of FCHS instruction.  */
+  43,					/* cost of FSQRT instruction.  */
 };
 
 const struct processor_costs *ix86_cost = &pentium_cost;
