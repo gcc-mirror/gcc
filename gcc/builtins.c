@@ -5656,19 +5656,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	}
       break;
 
-    case BUILT_IN_CONJ:
-    case BUILT_IN_CONJF:
-    case BUILT_IN_CONJL:
-    case BUILT_IN_CREAL:
-    case BUILT_IN_CREALF:
-    case BUILT_IN_CREALL:
-    case BUILT_IN_CIMAG:
-    case BUILT_IN_CIMAGF:
-    case BUILT_IN_CIMAGL:
-      /* expand_tree_builtin changes these into CONJ_EXPR, REALPART_EXPR
-	 and IMAGPART_EXPR.  */
-      abort ();
-
     case BUILT_IN_EXP:
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
@@ -7669,6 +7656,29 @@ fold_builtin_1 (tree exp)
     case BUILT_IN_LLABS:
     case BUILT_IN_IMAXABS:
       return fold_builtin_abs (arglist, type);
+
+    case BUILT_IN_CONJ:
+    case BUILT_IN_CONJF:
+    case BUILT_IN_CONJL:
+      if (validate_arglist (arglist, COMPLEX_TYPE, VOID_TYPE))
+	return fold (build1 (CONJ_EXPR, type, TREE_VALUE (arglist)));
+      break;
+
+    case BUILT_IN_CREAL:
+    case BUILT_IN_CREALF:
+    case BUILT_IN_CREALL:
+      if (validate_arglist (arglist, COMPLEX_TYPE, VOID_TYPE))
+        return non_lvalue (fold (build1 (REALPART_EXPR, type,
+					 TREE_VALUE (arglist))));
+      break;
+
+    case BUILT_IN_CIMAG:
+    case BUILT_IN_CIMAGF:
+    case BUILT_IN_CIMAGL:
+      if (validate_arglist (arglist, COMPLEX_TYPE, VOID_TYPE))
+        return non_lvalue (fold (build1 (IMAGPART_EXPR, type,
+					 TREE_VALUE (arglist))));
+      break;
 
     case BUILT_IN_CABS:
     case BUILT_IN_CABSF:
