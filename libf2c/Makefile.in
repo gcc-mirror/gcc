@@ -82,13 +82,51 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	secnds second sleep srand stat symlnk time ttynam umask unlink \
 	vxtidt vxttim alarm
 
-# These dependencies can be satisfied in parallel.  The [fiu]77
-# targets update stamp files which the $(LIBG2C) target checks in the
-# sub-make.  (Probably only one stamp file is really needed.)
-all: i77 f77 u77 s-libe77 $(LIBG2C)
-	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="all"
+.SUFFIXES:
+
+# The logic here is partly dictated by the desire to keep the lib?77
+# subdirs for compatibility with the Netlib version and because libU77
+# has a different copyright; then the libe77 bit (EXTERNALly-callable
+# versions) is funny.  Given that, as well as keeping things as simple
+# as possible we want (at least) the following:
+#  * Allow make to be run at the top level (all-target-libf2c), at this
+#    level, or the subdirs of this level.  In the latter case we only
+#    compile, rather than updating libg2c.a;
+#  * A robust set of dependencies, so that we rebuild (as little as
+#    possible) if a configuration file, g2c.h or any lib?77/*.c file
+#    changes;
+#  * Avoid unnecessary running of ar and ranlib;
+#  * Expose parallelism where reasonable, but not as a priority.
+
+# The intended top-level target here does a non-multilib build (via
+# the dependency) and then (perhaps) builds multilibs.
+
+all: all-unilib
+	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="all-unilib"
+
+# `all-unilib' is the overall target in the absence of multilibs,
+# meant to be invoked via multi-do for multilibs.
+
+# Its dependencies can be satisfied in parallel.  The [fiu]77 targets
+# update stamp files (see the subdir makefiles) which the $(LIBG2C)
+# target checks in the sub make to decide whether to run ar/ranlib.
+# (Probably only one stamp file is really needed.)  The stamp files
+# s-lib[fiu]77 are intentionally not targets, since we're only meant
+# to come in at the level of this target.  The [fiu]77 targets always
+# invoke sub makes to check dependencies in the subdirs, else we'd
+# have to maintain them at this level; we live with the overhead of
+# some recursive makes which may do nothing.
+
+all-unilib: i77 f77 u77 s-libe77
+	$(MAKE) $(FLAGS_TO_PASS) $(LIBG2C)
 
 i77 f77 u77: g2c.h
+
+# This target should normally only get invoked via `all-unilib' --
+# after all's well in the subdirs -- actually to assemble the library.
+# The stamp file dependencies are just to check whether libg2c.a is
+# up-to-date (to avoid running ar regardless) -- the files should
+# always have been created by a successful `all-unilib'.
 
 $(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
 	rm -f $(LIBG2C)
@@ -138,7 +176,7 @@ g2c.h: g2c.hin config.status Makefile
 #	$(srcdir)/../move-if-change g2c.h g2c.x && mv g2c.x g2c.h
 
 Makefile: Makefile.in config.status
-# Autoconf doc uses `./config.status'.  Is there a good reason to use 
+# Autoconf doc uses `./config.status'.  Is there a good reason to use $(SHELL)?
 	  $(SHELL) config.status
 
 config.status: configure $(gcc_version_trigger)
@@ -197,7 +235,7 @@ rebuilt: configure
 
 .PHONY: rebuilt mostlyclean clean distclean maintainer-clean all \
         i77 f77 u77 check uninstall install-strip dist \
-        installcheck installdirs
+        installcheck installdirs all-unilib
 
 subdir_do:
 	@rootpre=`pwd`/; export rootpre; \
@@ -214,3 +252,4 @@ subdir_do:
 	  else true; fi; \
 	done
 
+# multidoings may be added here by configure.
