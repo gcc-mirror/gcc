@@ -1,3 +1,7 @@
+2004-01-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (add_const_value_attribute): Remove incorrect comment.
+
 2004-01-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/xcoff.h (EXTRA_SECTION_FUNCTIONS): Split each
