@@ -10646,10 +10646,11 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 	  else if (GET_CODE (operand) == CONST_DOUBLE)
 	    {
 	      REAL_VALUE_TYPE r;
-	      long l[3];
+	      long l[4];
 
 	      REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
 	      real_to_target (l, &r, mode);
+
 	      /* Do not use shift by 32 to avoid warning on 32bit systems.  */
 	      if (HOST_BITS_PER_WIDE_INT >= 64)
 	        parts[0]
@@ -10659,6 +10660,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 		       DImode);
 	      else
 	        parts[0] = immed_double_const (l[0], l[1], DImode);
+
 	      if (upper_mode == SImode)
 	        parts[1] = gen_int_mode (l[2], SImode);
 	      else if (HOST_BITS_PER_WIDE_INT >= 64)
