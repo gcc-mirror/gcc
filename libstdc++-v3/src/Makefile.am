@@ -96,6 +96,7 @@ basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 
 # Sources present in the src directory.
 sources = \
+	bitmap_allocator.cc \
 	pool_allocator.cc \
 	mt_allocator.cc \
 	codecvt.cc \
