@@ -160,7 +160,7 @@ extern const struct real_format *
 /* Declare functions in real.c.  */
 
 /* Binary or unary arithmetic on tree_code.  */
-extern void real_arithmetic (REAL_VALUE_TYPE *, int, const REAL_VALUE_TYPE *,
+extern bool real_arithmetic (REAL_VALUE_TYPE *, int, const REAL_VALUE_TYPE *,
 			     const REAL_VALUE_TYPE *);
 
 /* Compare reals by tree_code.  */
