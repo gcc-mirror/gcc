@@ -1,3 +1,7 @@
+2002-05-31  Alan Lehotsky <apl@alum.mit.edu>
+	* varasm.c (mark_constant_pool): Walk epilogue delay list
+	checking the insn, not the chain for potential constants.
+	
 Fri May 31 12:38:43 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/sh/elf.h (ASM_SPEC): Use subtarget_endian_asm_spec.
