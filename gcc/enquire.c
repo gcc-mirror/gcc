@@ -26,6 +26,8 @@
    (fake_f_rep): Clear all of u, initially.  Make the ints in u unsigned.
    (f_define): Use ordinary constants for long double
    if it's same width as double.  Make __convert_long_double_i unsigned.
+   Richard Stallman, May 93:
+   In F_check, check NO_LONG_DOUBLE_IO.
 
    COMPILING
    With luck and a following wind, just the following will work:
@@ -2146,13 +2148,19 @@ Procedure F_check(precision, val1) int precision; Long_double val1; {
 	   that sscanf read the number back identically. Harsh yes, but
 	   sometimes you've got to be cruel to be kind.
 	*/
-	Long_double new1;
 	Number val, new, diff;
 	double rem;
 	int e;
 	char *rep;
 	char *f2;
 
+#ifdef NO_LONG_DOUBLE_IO
+	double new1;
+	/* On the Sun 3, sscanf clobbers 4 words,
+	   which leads to a crash when this function tries to return.  */
+	f2= "%le";   /* Input */
+#else
+	Long_double new1;
 	if (sizeof(double) == sizeof(Long_double)) {
 		/* Assume they're the same, and use non-stdc format */
 		/* This is for stdc compilers using non-stdc libraries */
@@ -2161,6 +2169,7 @@ Procedure F_check(precision, val1) int precision; Long_double val1; {
 		/* It had better support Le then */
 		f2= "%Le";
 	}
+#endif
 	val= val1;
 	rep= f_rep(precision, (Long_double) val);
 	if (setjmp(lab)==0) {
