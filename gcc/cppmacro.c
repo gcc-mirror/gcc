@@ -1508,10 +1508,10 @@ cpp_macro_definition (pfile, node)
   len = NODE_LEN (node) + 1;			/* ' ' */
   if (macro->fun_like)
     {
-      len += 3;		/* "()" plus possible final "." of named
-			   varargs (we have + 2 below).  */
+      len += 4;		/* "()" plus possible final ".." of named
+			   varargs (we have + 1 below).  */
       for (i = 0; i < macro->paramc; i++)
-	len += NODE_LEN (macro->params[i]) + 2; /* ", " */
+	len += NODE_LEN (macro->params[i]) + 1; /* "," */
     }
 
   for (i = 0; i < macro->count; i++)
@@ -1554,7 +1554,10 @@ cpp_macro_definition (pfile, node)
 	    }
 
 	  if (i + 1 < macro->paramc)
-	    *buffer++ = ',', *buffer++ = ' ';
+            /* Don't emit a space after the comma here; we're trying
+               to emit a Dwarf-friendly definition, and the Dwarf spec
+               forbids spaces in the argument list.  */
+	    *buffer++ = ',';
 	  else if (macro->variadic)
 	    *buffer++ = '.', *buffer++ = '.', *buffer++ = '.';
 	}

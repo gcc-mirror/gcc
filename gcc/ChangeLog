@@ -1,3 +1,8 @@
+2002-04-04  Jim Blandy  <jimb@redhat.com>
+
+	* cppmacro.c (cpp_macro_definition): Do not emit spaces after
+	macro formal parameter names.
+
 2002-04-04  David S. Miller  <davem@redhat.com>
 
 	* calls.c (store_one_arg): If ECF_SIBCALL, use tail_call_reg.
