@@ -1,5 +1,12 @@
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
+	* config/sh/rtemself.h (TARGET_OS_CPP_BUILTINS): Use instead of
+	CPP_PREDEFINES.
+	* config/sh/rtems.h (TARGET_OS_CPP_BUILTINS): Use instead of
+	CPP_PREDEFINES.
+
+2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+
 	* c-common.h (c_common_init, c_common_post_options): Update.
 	* c-objc-common.c (c_objc_common_init): Update for new prototype.
 	* c-opts.c (saved_lineno): New.
