@@ -4449,6 +4449,11 @@ handle_cp_pragma (pname)
 	    }
 	  main_filename = TREE_STRING_POINTER (yylval.ttype);
 	}
+
+#ifdef SUPPORTS_ONE_ONLY
+      if (SUPPORTS_ONE_ONLY > 1)
+	return 1;
+#endif
       
       while (token != END_OF_LINE)
 	{
@@ -4517,6 +4522,11 @@ handle_cp_pragma (pname)
 	    }
 	  token = real_yylex ();
 	}
+
+#ifdef SUPPORTS_ONE_ONLY
+      if (SUPPORTS_ONE_ONLY > 1)
+	return 1;
+#endif
 
       if (write_virtuals == 3)
 	{

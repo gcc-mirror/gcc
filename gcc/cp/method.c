@@ -39,6 +39,10 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 
+#ifndef SUPPORTS_ONE_ONLY
+#define SUPPORTS_ONE_ONLY 0
+#endif
+
 /* TREE_LIST of the current inline functions that need to be
    processed.  */
 struct pending_inline *pending_inlines;
@@ -1831,7 +1835,15 @@ make_thunk (function, delta)
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
       DECL_EXTERNAL (thunk) = 1;
-      TREE_PUBLIC (thunk) = 0;
+#ifdef DECL_ONE_ONLY
+      if (SUPPORTS_ONE_ONLY)
+	{
+	  DECL_ONE_ONLY (thunk) = 1;
+	  TREE_PUBLIC (thunk) = 1;
+	}
+      else
+#endif
+	TREE_PUBLIC (thunk) = 0;
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }
@@ -1868,19 +1880,23 @@ emit_thunk (thunk_fndecl)
 
   TREE_ASM_WRITTEN (thunk_fndecl) = 1;
 
+  TREE_ADDRESSABLE (function) = 1;
+  mark_used (function);
+
   decl_printable_name = thunk_printable_name;
   if (current_function_decl)
     abort ();
   current_function_decl = thunk_fndecl;
-  TREE_ADDRESSABLE (function) = 1;
-  mark_used (function);
 #ifdef ASM_OUTPUT_MI_THUNK
   assemble_start_function (thunk_fndecl, fnname);
   ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
+  assemble_end_function (thunk_fndecl, fnname);
 #else
   init_function_start (thunk_fndecl, input_filename, lineno);
   pushlevel (0);
   expand_start_bindings (1);
+
+  temporary_allocation ();
 
   /* Start updating where the next arg would go.  */
   INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (function), NULL_RTX, 0);
@@ -2053,10 +2069,10 @@ emit_thunk (thunk_fndecl)
 
   /* Cancel the effect of rtl_in_current_obstack.  */
 
-  resume_temporary_allocation ();
+  permanent_allocation (1);
+#endif /* ASM_OUTPUT_MI_THUNK */
 
   decl_printable_name = save_decl_printable_name;
-#endif /* ASM_OUTPUT_MI_THUNK */
   current_function_decl = 0;
 }
 
