@@ -1,3 +1,8 @@
+Wed Mar 17 21:29:12 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (eliminate_regs): Don't keep REG_DEAD notes around for
+	things that were eliminated.
+
 Wed Mar 17 12:16:26 1999  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (fixup_var_refs_1): First try moving the expression

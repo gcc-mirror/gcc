@@ -2914,7 +2914,17 @@ eliminate_regs (x, mem_mode, insn)
 	{
 	  new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
 	  if (new != XEXP (x, 0))
-	    x = gen_rtx_EXPR_LIST (REG_NOTE_KIND (x), new, XEXP (x, 1));
+	    {
+	      /* If this is a REG_DEAD note, it is not valid anymore.
+		 Using the eliminated version could result in creating a
+		 REG_DEAD note for the stack or frame pointer.  */
+	      if (GET_MODE (x) == REG_DEAD)
+		return (XEXP (x, 1)
+			? eliminate_regs (XEXP (x, 1), mem_mode, insn)
+			: NULL_RTX);
+
+	      x = gen_rtx_EXPR_LIST (REG_NOTE_KIND (x), new, XEXP (x, 1));
+	    }
 	}
 
       /* ... fall through ...  */
