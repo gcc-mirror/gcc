@@ -501,6 +501,10 @@ int flag_enforce_eh_specs = 1;
 
 void (*back_end_hook) PARAMS ((tree));
 
+/* The variant of the C language being processed.  */
+
+c_language_kind c_language = clk_cplusplus;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE

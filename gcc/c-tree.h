@@ -446,7 +446,8 @@ extern int system_header_p;
 
 /* Nonzero enables objc features.  */
 
-extern int doing_objc_thang;
+#define doing_objc_thang \
+  (c_language == clk_objective_c)
 
 /* In c-decl.c */
 extern void finish_incomplete_decl PARAMS ((tree));

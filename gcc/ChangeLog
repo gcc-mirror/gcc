@@ -1,3 +1,15 @@
+2000-06-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (c_language_kind): New type.
+	(c_language): New variab.e
+	* c-common.c (lang_get_alias_set): Don't put structures in
+	non-zero alias sets in C++.
+	* c-decl.c (c_language): Define it.
+	* c-lex.c (doing_objc_thang): Remove.
+	* c-tree.h (doing_objc_thang): Make it a macro.
+	* objc/objc-act.c (lang_decode_option): Set c_language, not
+	doing_objc_thang. 
+	
 2000-06-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (output_maximum_width): Remove.
