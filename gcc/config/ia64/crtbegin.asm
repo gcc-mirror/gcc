@@ -32,14 +32,6 @@ __DTOR_LIST__:
 dtor_ptr:
 	data8	__DTOR_LIST__# + 8
 
-#ifndef SHARED
-	.type __ia64_app_header#,@object
-	.size __ia64_app_header#,8
-	.global __ia64_app_header
-__ia64_app_header:
-	data8	@segrel(.Lsegrel_ref#)
-#endif
-
 	/* A handle for __cxa_finalize to manage c++ local destructors.  */
 	.global __dso_handle#
 	.type __dso_handle#,@object
@@ -84,30 +76,6 @@ __dso_handle:
 	  br.call.sptk.many b0 = b6
 	  ;;
 	}
-
-#ifndef SHARED
-/*
- * Fragment of the ELF _init routine that sets up __ia64_app_header
- */
-
-.section .init,"ax","progbits"
-.Lsegrel_ref:
-	{ .mmi
-	  addl r2 = @gprel(__ia64_app_header), gp
-	  mov r16 = ip
-	  ;;
-	}
-	{ .mmi
-	  ld8 r3 = [r2]
-	  ;;
-	  sub r16 = r16, r3
-	  ;;
-	}
-	{ .mfb
-	  st8 [r2] = r16
-	  ;;
-	}
-#endif
 
 .section .text
 	.align	16
