@@ -1,5 +1,8 @@
 2003-12-04  James A. Morrison  <ja2morri@uwaterloo.ca>
 
+	* lex.l: Add \t as a whitespace character.
+	* treelang.texi (Lexical Syntax): Document a tab as whitespace.
+
 	* treelang.texi (What is GNU Treelang?): Fix a typo.
 	(Lexical Syntax): Create an itemize list of keywords.  Add commas to
 	paragraph defining names.

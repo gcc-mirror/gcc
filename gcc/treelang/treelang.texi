@@ -399,8 +399,8 @@ Treelang programs consist of whitespace, comments, keywords and names.
 @itemize @bullet
 
 @item
-Whitespace consists of the space character and the end of line
-character. Tabs are not allowed. Line terminations are as defined by the
+Whitespace consists of the space character, a tab, and the end of line
+character.  Line terminations are as defined by the
 standard C library. Whitespace is ignored except within comments,
 and where it separates parts of the program. In the example below, A and
 B are two separate names separated by whitespace. 

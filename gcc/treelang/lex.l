@@ -78,7 +78,7 @@ static void dump_lex_value (int lexret);
    ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
  }
 
-[ \n]+ {
+[ \n\t]+ {
   update_lineno_charno ();
     NOT_RETURN (WHITESPACE);
 }
