@@ -1,3 +1,8 @@
+2002-03-15  Anthony Green  <green@redhat.com>
+
+	* jcf-parse.c (yyparse): Don't emit class registration
+	constructor when compiling resource files.
+
 2002-03-12  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (get_constant) [CONSTANT_String]: String values are
