@@ -4474,14 +4474,18 @@ tree
 std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   tree addr, t, type_size = NULL;
-  tree align, alignm1;
+  tree align, alignm1, malign;
   tree rounded_size;
+  tree valist_tmp;
   HOST_WIDE_INT boundary;
 
   /* Compute the rounded size of the type.  */
   align = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
   alignm1 = size_int (PARM_BOUNDARY / BITS_PER_UNIT - 1);
+  malign = size_int (-(PARM_BOUNDARY / BITS_PER_UNIT));
   boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+
+  valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
 
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */
@@ -4490,17 +4494,15 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
     {
       if (!PAD_VARARGS_DOWN)
 	{
-	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
-		      build2 (PLUS_EXPR, TREE_TYPE (valist), valist,
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		      build2 (PLUS_EXPR, TREE_TYPE (valist), valist_tmp,
 			      build_int_2 (boundary / BITS_PER_UNIT - 1, 0)));
-	  gimplify_stmt (&t);
-	  append_to_statement_list (t, pre_p);
+	  gimplify_and_add (t, pre_p);
 	}
-      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
-		  build2 (BIT_AND_EXPR, TREE_TYPE (valist), valist,
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  build2 (BIT_AND_EXPR, TREE_TYPE (valist), valist_tmp,
 			  build_int_2 (~(boundary / BITS_PER_UNIT - 1), -1)));
-      gimplify_stmt (&t);
-      append_to_statement_list (t, pre_p);
+      gimplify_and_add (t, pre_p);
     }
   if (type == error_mark_node
       || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
@@ -4509,17 +4511,15 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   else
     {
       rounded_size = fold (build2 (PLUS_EXPR, sizetype, type_size, alignm1));
-      rounded_size = fold (build2 (TRUNC_DIV_EXPR, sizetype,
-				   rounded_size, align));
-      rounded_size = fold (build2 (MULT_EXPR, sizetype,
-				   rounded_size, align));
+      rounded_size = fold (build2 (BIT_AND_EXPR, sizetype,
+				   rounded_size, malign));
     }
 
   /* Reduce rounded_size so it's sharable with the postqueue.  */
   gimplify_expr (&rounded_size, pre_p, post_p, is_gimple_val, fb_rvalue);
 
   /* Get AP.  */
-  addr = valist;
+  addr = valist_tmp;
   if (PAD_VARARGS_DOWN && ! integer_zerop (rounded_size))
     {
       /* Small args are padded downward.  */
@@ -4536,14 +4536,10 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
     }
 
   /* Compute new value for AP.  */
-  if (! integer_zerop (rounded_size))
-    {
-      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
-		  build2 (PLUS_EXPR, TREE_TYPE (valist), valist,
-			  rounded_size));
-      gimplify_stmt (&t);
-      append_to_statement_list (t, post_p);
-    }
+  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
+	      fold (build2 (PLUS_EXPR, TREE_TYPE (valist),
+			    valist_tmp, rounded_size)));
+  gimplify_and_add (t, pre_p);
 
   addr = fold_convert (build_pointer_type (type), addr);
   return build_fold_indirect_ref (addr);
