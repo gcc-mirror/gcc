@@ -868,7 +868,9 @@ java_init_decl_processing (void)
 
   t = tree_cons (NULL_TREE, object_ptr_type_node,
 		 tree_cons (NULL_TREE, ptr_type_node,
-			    tree_cons (NULL_TREE, ptr_type_node, endlink)));
+			    tree_cons (NULL_TREE, ptr_type_node, 
+			               tree_cons (NULL_TREE, int_type_node, 
+				                  endlink))));
   soft_lookupjnimethod_node
     = builtin_function ("_Jv_LookupJNIMethod",
 			build_function_type (ptr_type_node, t),
