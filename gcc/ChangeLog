@@ -544,7 +544,6 @@ Tue Nov 28 09:53:50 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Merge handling of -D and -U.  Update handling of pending
 	directives.  Free the memory after use.
 
->>>>>>> 1.8477
 2000-11-27  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* flow.c (entry_exit_blocks): Add entry for cond_local_set.
