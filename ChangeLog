@@ -1,3 +1,7 @@
+2002-02-08  Chris Demetriou  <cgd@broadcom.com>
+
+	* MAINTAINERS: Belatedly add myself to write after approval list.
+
 Thu Feb  7 12:40:58 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* MAINTAINERS: Put self in as maintainer for x86-64 port.
