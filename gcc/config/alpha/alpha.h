@@ -2309,8 +2309,10 @@ extern void alpha_output_lineno ();
   alpha_output_filename (STREAM, NAME)
 extern void alpha_output_filename ();
 
-/* mips-tfile.c limits us to strings of one page.  */
-#define DBX_CONTIN_LENGTH 4000
+/* mips-tfile.c limits us to strings of one page.  We must underestimate this
+   number, because the real length runs past this up to the next
+   continuation point.  This is really a dbxout.c bug.  */
+#define DBX_CONTIN_LENGTH 3000
 
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1
