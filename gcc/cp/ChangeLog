@@ -1,5 +1,10 @@
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
+        * mangle.c (write_expression): Exit gracefully when trying to
+        mangle a CALL_EXPR.
+
+2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
+
         PR c++/10750
         * parser.c (cp_parser_primary_expression): A VAR_DECL with a
         (value- or type-) dependent expression as DECL_INITIAL is a
