@@ -1,3 +1,8 @@
+2003-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ggc-common.c (ggc_rlimit_bound): Cast RLIM_INFINITY to avoid
+	warnings.
+
 2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_override_options): Don't enable
