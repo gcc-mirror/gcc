@@ -1444,7 +1444,9 @@ unemitted_tinfo_decl_p (t, data)
 {
   if (/* It's a var decl */
       TREE_CODE (t) == VAR_DECL
-      /* whos name points back to itself */
+      /* which has a name */
+      && DECL_NAME (t)
+      /* whose name points back to itself */
       && IDENTIFIER_GLOBAL_VALUE (DECL_NAME (t)) == t
       /* whose name's type is non-null */
       && TREE_TYPE (DECL_NAME (t))
