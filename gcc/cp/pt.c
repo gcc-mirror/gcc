@@ -6324,7 +6324,7 @@ tsubst (t, args, complain, in_decl)
 		 Attempting to create an array with a size that is
 		 zero or negative.  */
 	    if (complain)
-	      cp_error ("creating array with size `%E'", max);
+	      cp_error ("creating array with size zero (`%E')", max);
 
 	    return error_mark_node;
 	  }

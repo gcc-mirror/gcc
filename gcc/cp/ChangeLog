@@ -1,3 +1,10 @@
+1999-10-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lang_mark_tree): Mark NAMESPACE_LEVEL.
+
+	* pt.c (tsubst, case INTEGER_TYPE): Be more explicit in zero-size
+	array error.
+
 1999-10-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (make_rtl_for_local_static): Don't create register RTL
