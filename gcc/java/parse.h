@@ -669,13 +669,13 @@ typedef struct _jdeplist {
     TREE_SIDE_EFFECTS (WHERE) = 1;			\
   }
 
-#define BUILD_THROW(WHERE, WHAT)					    \
-  {									    \
-    (WHERE) = 								    \
-      build (CALL_EXPR, void_type_node,					    \
-	     build_address_of (throw_node[USING_SJLJ_EXCEPTIONS ? 1 : 0]), \
-	     build_tree_list (NULL_TREE, (WHAT)), NULL_TREE);		    \
-    TREE_SIDE_EFFECTS ((WHERE)) = 1;					    \
+#define BUILD_THROW(WHERE, WHAT)				\
+  {								\
+    (WHERE) = 							\
+      build (CALL_EXPR, void_type_node,				\
+	     build_address_of (throw_node),			\
+	     build_tree_list (NULL_TREE, (WHAT)), NULL_TREE);	\
+    TREE_SIDE_EFFECTS ((WHERE)) = 1;				\
   }
 
 /* Set wfl_operator for the most accurate error location */
