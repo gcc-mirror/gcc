@@ -1,3 +1,8 @@
+2002-04-02  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/Makefile.am (install-data-local):  Use mkinstalldirs.
+	* include/Makefile.in:  Regenerate.
+
 2002-02-20  Release Manager
 
 	* GCC 3.0.4 Released.

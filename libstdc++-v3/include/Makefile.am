@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.1.6.6 2001/08/29 00:41:56 ljrittle Exp $
+## $Id: Makefile.am,v 1.1.6.7 2002/01/15 23:55:57 ljrittle Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -423,25 +423,25 @@ ${thread_builddir}/gthr-default.h:
 gxx_include_dir = @gxx_include_dir@
 
 install-data-local:
-	$(INSTALL) -d ${gxx_include_dir}
-	$(INSTALL) -d ${gxx_include_dir}/${bits_builddir}
+	$(mkinstalldirs) ${gxx_include_dir}
+	$(mkinstalldirs) ${gxx_include_dir}/${bits_builddir}
 	for file in ${bits_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${bits_builddir}; done
-	$(INSTALL) -d ${gxx_include_dir}/${backward_builddir}
+	$(mkinstalldirs) ${gxx_include_dir}/${backward_builddir}
 	for file in ${backward_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${backward_builddir}; done
-	$(INSTALL) -d ${gxx_include_dir}/${ext_builddir}
+	$(mkinstalldirs) ${gxx_include_dir}/${ext_builddir}
 	for file in ${ext_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${ext_builddir}; done
-	$(INSTALL) -d ${gxx_include_dir}/${c_base_builddir}
+	$(mkinstalldirs) ${gxx_include_dir}/${c_base_builddir}
 	for file in ${c_base_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
-	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
+	$(mkinstalldirs) ${gxx_include_dir}/${std_builddir}
 	for file in ${std_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${std_builddir}; done
-	$(INSTALL) -d ${gxx_include_dir}/${target_builddir}
+	$(mkinstalldirs) ${gxx_include_dir}/${target_builddir}
 	for file in ${target_headers} ${extra_target_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${target_builddir}; done
-	$(INSTALL) -d ${gxx_include_dir}/${thread_builddir}
+	$(mkinstalldirs) ${gxx_include_dir}/${thread_builddir}
 	for file in ${thread_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${thread_builddir}; done
