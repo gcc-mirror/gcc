@@ -52,6 +52,7 @@ end function
 end subroutine
 
 subroutine test_dprod(fn)
+  double precision fn
   if (abs (fn (2.0, 3.0) - 6d0) .gt. 0.00001) call abort
 end subroutine
 
