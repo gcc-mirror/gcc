@@ -1,3 +1,18 @@
+Thu Mar 11 01:22:58 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* pexecute.c (__CYGWIN32__): Rename to
+	(__CYGWIN__): this.
+	* xmalloc.c: Likewise.
+
+	Changes to support i386-pc-uwin.
+	* configure.in (*-*-uwin*): Workaround for vfork bug.
+	* configure: Regenerate.
+	* pexecute.c (pexecute): Be like standard Unix.
+	(pwait): Likewise.
+	* xmalloc.c (first_break): Define.
+	(xmalloc_set_program_name): Use.
+	(xmalloc): Use.
+
 Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* config.table: Cleanup and add mh-*pic handling for alpha, arm, powerpc
