@@ -98,7 +98,6 @@ rtx get_addr				PARAMS ((rtx));
 static int memrefs_conflict_p		PARAMS ((int, rtx, int, rtx,
 						 HOST_WIDE_INT));
 static void record_set			PARAMS ((rtx, rtx, void *));
-static rtx find_base_term		PARAMS ((rtx));
 static int base_alias_check		PARAMS ((rtx, rtx, enum machine_mode,
 						 enum machine_mode));
 static rtx find_base_value		PARAMS ((rtx));
@@ -1299,7 +1298,7 @@ find_symbolic_term (x)
   return 0;
 }
 
-static rtx
+rtx
 find_base_term (x)
      rtx x;
 {

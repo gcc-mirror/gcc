@@ -7148,19 +7148,9 @@ find_moveable_store (insn, regs_set_before, regs_set_after)
   /* If we are handling exceptions, we must be careful with memory references
      that may trap. If we are not, the behavior is undefined, so we may just
      continue.  */
-  if (flag_exceptions && may_trap_p (dest))
+  if (flag_non_call_exceptions && may_trap_p (dest))
     return;
     
-  /* Do not consider MEMs that mention stack pointer; in the following
-     we rely on that constant functions do not read memory, which of course
-     does not include their arguments if passed on stack.
-     
-     Note that this is not quite correct -- we may use other registers
-     to address stack.  See store_killed_in_insn for handling of this
-     case.  */
-  if (reg_mentioned_p (stack_pointer_rtx, dest))
-    return;
-
   ptr = ldst_entry (dest);
   if (!ptr->pattern_regs)
     ptr->pattern_regs = extract_mentioned_regs (dest);
@@ -7411,6 +7401,8 @@ static bool
 store_killed_in_insn (x, x_regs, insn)
      rtx x, x_regs, insn;
 {
+  rtx reg, base;
+
   if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
     return false;
 
@@ -7421,11 +7413,17 @@ store_killed_in_insn (x, x_regs, insn)
       if (! CONST_OR_PURE_CALL_P (insn) || pure_call_p (insn))
 	return true;
 
-      /* But even a const call reads its parameters.  It is not trivial
-	 check that base of the mem is not related to stack pointer,
-	 so unless it contains no registers, just assume it may.  */
-      if (x_regs)
-	return true;
+      /* But even a const call reads its parameters.  Check whether the
+	 base of some of registers used in mem is stack pointer.  */
+      for (reg = x_regs; reg; reg = XEXP (reg, 1))
+	{
+	  base = find_base_term (reg);
+	  if (!base
+	      || (GET_CODE (base) == ADDRESS
+		  && GET_MODE (base) == Pmode
+		  && XEXP (base, 0) == stack_pointer_rtx))
+	    return true;
+	}
 
       return false;
     }
