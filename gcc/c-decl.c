@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4636,7 +4636,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	if (volatilep
 	    && TREE_TYPE (TREE_TYPE (decl)) != void_type_node)
-	  warning ("volatile function returns non-void value");
+	  warning ("`noreturn' function returns non-void value");
 
 	if (extern_ref)
 	  DECL_EXTERNAL (decl) = 1;
@@ -6481,7 +6481,7 @@ finish_function (nested)
   current_function_returns_null |= can_reach_end;
 
   if (TREE_THIS_VOLATILE (fndecl) && current_function_returns_null)
-    warning ("`volatile' function does return");
+    warning ("`noreturn' function does return");
   else if (warn_return_type && can_reach_end
 	   && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl))) != void_type_node)
     /* If this function returns non-void and control can drop through,
