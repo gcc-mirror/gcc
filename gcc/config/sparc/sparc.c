@@ -6439,7 +6439,8 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
   /* On UltraSPARC a flush flushes an entire cache line.  The trampoline is
      aligned on a 16 byte boundary so one flush clears it all.  */
   emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode, tramp))));
-  if (sparc_cpu != PROCESSOR_ULTRASPARC)
+  if (sparc_cpu != PROCESSOR_ULTRASPARC
+      && sparc_cpu != PROCESSOR_ULTRASPARC3)
     emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode,
 						     plus_constant (tramp, 8)))));
 }

@@ -9560,7 +9560,8 @@
    (set (pc) (label_ref (match_operand 3 "" "")))]
   "short_branch (INSN_UID (insn), INSN_UID (operands[3]))
    && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))
-   && sparc_cpu != PROCESSOR_ULTRASPARC"
+   && sparc_cpu != PROCESSOR_ULTRASPARC
+   && sparc_cpu != PROCESSOR_ULTRASPARC3"
   "call\\t%a1, %2\\n\\tadd\\t%%o7, (%l3-.-4), %%o7")
 
 (define_peephole
@@ -9570,7 +9571,8 @@
    (set (pc) (label_ref (match_operand 2 "" "")))]
   "short_branch (INSN_UID (insn), INSN_UID (operands[2]))
    && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))
-   && sparc_cpu != PROCESSOR_ULTRASPARC"
+   && sparc_cpu != PROCESSOR_ULTRASPARC
+   && sparc_cpu != PROCESSOR_ULTRASPARC3"
   "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
 
 ;; ??? UltraSPARC-III note: A memory operation loading into the floating point register
