@@ -1,3 +1,8 @@
+2004-07-10  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* calls.c (check_sibcall_argument_overlap_1): Handle pointers
+	to incoming args space correctly.
+
 2004-07-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_indirect_call): Only use %r2 as the link register in
