@@ -2106,7 +2106,7 @@ label:	  CASE expr_no_commas ':'
 
 		  stmt_count++;
 
-		  if (value != error_mark_node);
+		  if (value != error_mark_node)
 		    {
 		      tree duplicate;
 		      int success;
