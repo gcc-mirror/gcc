@@ -1,3 +1,9 @@
+Mon May 17 18:01:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (statement_nsi:): Pop `for' statement block.
+	(java_complete_lhs): Labelled blocks containing no statement are
+ 	marked as completing normally.
+
 Fri May 14 12:31:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* xref.c (xref_set_current_fp): New function, defined.
@@ -1545,7 +1551,7 @@ Sat Dec 12 20:13:19 1998  Per Bothner  <bothner@cygnus.com>
 	* parse.y (java_complete_expand_methods):  Call write_classfile
 	here, and not in java_expand_classes (which only gets first class).
 
-Sat Dec 12 19:46:04 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
+Sat Dec 12 19:46:04 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (<type_declaration>):  Do maybe_generate_clinit last.
 	(register_fields):  If a static fields has an initializer, just
@@ -1582,7 +1588,7 @@ Sat Dec 12 19:21:11 1998  Per Bothner  <bothner@cygnus.com>
 	* class.c (make_class_data): Renamed dtable -> vtable, and
 	dtable_method_count -> vtable_method_count.
 
-Thu Dec 10 20:00:54 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
+Thu Dec 10 20:00:54 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (long_zero_node, float_zero_node, double_zero_node): New
  	global variables, initialized.
@@ -3333,7 +3339,7 @@ Thu Sep  3 18:04:09 1998  Per Bothner  <bothner@cygnus.com>
 	* gjavah.c:  Support new -prepend -add -append flags.
 	(print_method_info):  Method is not virtual if class is final.	
 
-Thu Sep  3 12:03:53 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
+Thu Sep  3 12:03:53 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jv-scan.c: Fixed copyright assignment.
 	* keyword.gperf: Likewise.
