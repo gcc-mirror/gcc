@@ -1,5 +1,5 @@
 /* KeyStore.java --- Key Store Class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -92,9 +92,9 @@ public class KeyStore
   /** 
      Gets an instance of the KeyStore class representing
      the specified keystore. If the type is not 
-     found then, it throws CertificateException.
+     found then, it throws KeyStoreException.
 
-     @param type the type of certificate to choose
+     @param type the type of keystore to choose
 
      @return a KeyStore repesenting the desired type
 
@@ -117,25 +117,58 @@ public class KeyStore
   /** 
      Gets an instance of the KeyStore class representing
      the specified key store from the specified provider. 
-     If the type is not found then, it throws CertificateException. 
+     If the type is not found then, it throws KeyStoreException. 
      If the provider is not found, then it throws 
      NoSuchProviderException.
 
-     @param type the type of certificate to choose
+     @param type the type of keystore to choose
+     @param provider the provider name
 
      @return a KeyStore repesenting the desired type
 
-     @throws KeyStoreException if the type of keystore is not implemented by providers
+     @throws KeyStoreException if the type of keystore is not 
+              implemented by the given provider
      @throws NoSuchProviderException if the provider is not found
+     @throws IllegalArgumentException if the provider string is 
+               null or empty
    */
   public static KeyStore getInstance(String type, String provider)
     throws KeyStoreException, NoSuchProviderException
   {
+    if (provider == null || provider.length() == 0)
+      throw new IllegalArgumentException("Illegal provider");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException();
 
     return getInstance(p.getProperty("KeyStore." + type), type, p);
+  }
+
+  /** 
+     Gets an instance of the KeyStore class representing
+     the specified key store from the specified provider. 
+     If the type is not found then, it throws KeyStoreException. 
+     If the provider is not found, then it throws 
+     NoSuchProviderException.
+
+     @param type the type of keystore to choose
+     @param provider the keystore provider
+
+     @return a KeyStore repesenting the desired type
+
+     @throws KeyStoreException if the type of keystore is not 
+              implemented by the given provider
+     @throws IllegalArgumentException if the provider object is null
+     @since 1.4
+   */
+  public static KeyStore getInstance(String type, Provider provider)
+    throws KeyStoreException 
+  {
+    if (provider == null)
+      throw new IllegalArgumentException("Illegal provider");
+
+    return getInstance(provider.getProperty("KeyStore." + type),
+		       type, provider);
   }
 
   private static KeyStore getInstance(String classname,

@@ -1,3 +1,10 @@
+2002-11-18  Joerg Brunsmann  <joerg_brunsmann@yahoo.de>
+
+	* java/security/KeyStore.java (getInstance): Fix
+	comment and throw IllegalArgumentException if 
+	given provider is null.
+	(getInstance): New method for jdk1.4 compatibility.
+
 2002-11-18  Michael Koch <konqueror@gmx.de>
 
 	* java/net/PlainSocketImpl.java: Fix imports.
