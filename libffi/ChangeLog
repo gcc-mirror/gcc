@@ -1,3 +1,13 @@
+2003-01-31  Christian Cornelssen  <ccorn@cs.tu-berlin.de>,
+            Andreas Schwab  <schwab@suse.de>
+
+        * configure.in: Adjust command to source config-ml.in to account
+        for changes to the libffi_basedir definition.
+        (libffi_basedir): Remove ${srcdir} from value and include trailing
+        slash if nonempty.
+
+        * configure: Regenerate.
+
 2003-01-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* src/powerpc/ppc_closure.S: Recode to fit shared libs.
