@@ -1,5 +1,10 @@
 2004-06-17  Ben Elliston  <bje@au.ibm.com>
 
+	* tree-alias-common.c: Add whitespace.
+	* tree-inline.c: Correct comment about this file's purpose.
+	* tree-optimize.c: Likewise.
+	* tree-tailcall.c: Likewise.
+	
 	* tree-alias-ander.h: Add standard top-of-file comment.
 	* tree-alias-common.h: Likewise.
 	* tree-alias-type.h: Likewise.

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -26,10 +27,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "tree-alias-type.h"
 #include "bitmap.h"
 #include "tree-alias-common.h"
+
 /* If we have andersen's points-to analysis, include it.  */
 #ifdef HAVE_BANSHEE
 #include "tree-alias-ander.h"
 #endif
+
 #include "flags.h"
 #include "rtl.h"
 #include "tm_p.h"

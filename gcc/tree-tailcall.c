@@ -1,4 +1,4 @@
-/* Tail calls optimization on trees.
+/* Tail call optimization on trees.
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
