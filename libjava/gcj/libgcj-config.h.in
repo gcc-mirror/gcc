@@ -1,8 +1,0 @@
-/* The header derived from this file is installed, so this file should
-   only contain defines which are named safely.  */
-
-/* Define if hash synchronization is in use.  */
-#undef JV_HASH_SYNCHRONIZATION
-
-/* Define if <inttypes.h> is available.  */
-#undef JV_HAVE_INTTYPES_H

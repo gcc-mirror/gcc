@@ -1,9 +1,0 @@
-StreamEdit -e \Option-d
-  '/\Option-x/ \Option-d
-    Replace /\Option-d\SrcOption-d/ "\Option-d\Option-d" -c \Option-5 ; \Option-d
-    Replace /\Option-d\SrcOption-f/ "\Option-d\Option-f" -c \Option-5 ; \Option-d
-	Replace /\Option-d\SrcOption-8/ "\Option-d\Option-8" -c \Option-5 ; \Option-d
-	Replace /\Option-d\SrcOption-5/ "\Option-d\Option-5" -c \Option-5 ; \Option-d
-	Replace /\Option-d\SrcOption-x/ "\Option-d\Option-x" -c \Option-5 ; \Option-d
-	Replace /\Option-d\SrcOption-r/ "\Option-d\Option-r" -c \Option-5'  \Option-d
-  "{1}"

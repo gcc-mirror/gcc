@@ -1,4 +1,0 @@
-+++longlong zerofield inside struct starting with double:
-size=24,align=8
-offset-double=0,offset-last=16,
-align-double=8,align-last=4

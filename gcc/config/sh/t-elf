@@ -1,9 +1,0 @@
-EXTRA_MULTILIB_PARTS= crt1.o crti.o crtn.o \
-	crtbegin.o crtend.o crtbeginS.o crtendS.o
-
-# Compile crtbeginS.o and crtendS.o with pic.
-CRTSTUFF_T_CFLAGS_S = -fPIC
-
-# Don't compile libgcc with -fpic for now.  It's unlikely that we'll
-# build shared libraries for embedded SH.
-# TARGET_LIBGCC2_CFLAGS = -fpic

@@ -1,4 +1,0 @@
-+++longlong zerofield inside struct starting with float:
-size=12,align=4
-offset-float=0,offset-last=8,
-align-float=4,align-last=4

@@ -1,7 +1,0 @@
-# There are system headers elsewhere, but these are the ones that
-# we are most likely to want to apply any fixes to.
-SYSTEM_HEADER_DIR = /boot/develop/headers/posix
-CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include/posix
-
-# Don't run fixproto
-STMP_FIXPROTO =

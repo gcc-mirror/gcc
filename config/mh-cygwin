@@ -1,6 +1,0 @@
-EXTRA_TARGET_HOST_ALL_MODULES=all-libtermcap
-EXTRA_TARGET_HOST_INSTALL_MODULES=install-libtermcap
-
-all-gdb: all-libtermcap
-
-install-gdb: all-libtermcap
