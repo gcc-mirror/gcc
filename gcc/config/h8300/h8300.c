@@ -782,7 +782,9 @@ general_operand_src (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == POST_INC)
+  if (GET_MODE (op) == mode
+      && GET_CODE (op) == MEM
+      && GET_CODE (XEXP (op, 0)) == POST_INC)
     return 1;
   return general_operand (op, mode);
 }
@@ -795,7 +797,9 @@ general_operand_dst (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == PRE_DEC)
+  if (GET_MODE (op) == mode
+      && GET_CODE (op) == MEM
+      && GET_CODE (XEXP (op, 0)) == PRE_DEC)
     return 1;
   return general_operand (op, mode);
 }

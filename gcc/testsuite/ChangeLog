@@ -1,3 +1,7 @@
+2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/20030218-1.c: New.
+
 2003-02-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9704

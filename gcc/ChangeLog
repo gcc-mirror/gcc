@@ -1,3 +1,9 @@
+2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (general_operand_src): Always check
+	MODE.
+	(general_operand_dst): Likewise.
+
 2003-02-18  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (handle_used_attribute): Accept static data too.
