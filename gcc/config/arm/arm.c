@@ -2307,6 +2307,9 @@ soft_df_operand (op, mode)
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return FALSE;
 
+  if (GET_CODE (op) == SUBREG && CONSTANT_P (SUBREG_REG (op)))
+    return FALSE;
+  
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
   
