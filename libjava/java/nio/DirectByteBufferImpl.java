@@ -52,23 +52,25 @@ class DirectByteBufferImpl extends ByteBuffer
       }
   }
   
+  /** Used by MappedByteBufferImpl to prevent premature GC. */
+  protected Object owner;
+
   RawData address;
-  private int offset;
   private boolean readOnly;
 
   public DirectByteBufferImpl (RawData address, long len)
   {
-    this (address, 0, (int) len, (int) len, 0, -1, false);
+    this (null, address, (int) len, (int) len, 0, false);
   }
   
-  public DirectByteBufferImpl (RawData address, int offset, int capacity,
-                               int limit, int position, int mark,
-                               boolean readOnly)
+  public DirectByteBufferImpl (Object owner, RawData address,
+			       int capacity, int limit,
+			       int position, boolean readOnly)
   {
-    super (capacity, limit, position, mark);
+    super (capacity, limit, position, -1);
     this.address = address;
-    this.offset = offset;
     this.readOnly = readOnly;
+    this.owner = owner;
   }
 
   private static native RawData allocateImpl (int capacity);
@@ -79,41 +81,58 @@ class DirectByteBufferImpl extends ByteBuffer
     freeImpl (address);
   }
   
-  public static ByteBuffer allocateDirect (int capacity)
-  {
-    RawData address = allocateImpl (capacity);
-
-    if (address == null)
-      throw new InternalError ("Not enough memory to create direct buffer");
-    
-    return new DirectByteBufferImpl (address, 0, capacity, capacity, 0, -1, false);
-  }
-  
-  private native byte getImpl (int index);
-  private native void putImpl (int index, byte value);
+  static native byte getImpl (RawData address, int index);
+  static native void putImpl (RawData address, int index, byte value);
 
   public byte get ()
   {
-    byte result = getImpl (position () + offset);
-    position (position () + 1);
+    int pos = position();
+    if (pos >= limit())
+      throw new BufferUnderflowException();
+    byte result = getImpl (address, pos);
+    position (pos + 1);
     return result;
   }
 
   public byte get (int index)
   {
-    return getImpl (index);
+    if (index >= limit())
+      throw new BufferUnderflowException();
+    return getImpl (address, index);
+  }
+
+  static native void getImpl (RawData address, int index,
+			      byte[] dst, int offset, int length);
+
+  public ByteBuffer get (byte[] dst, int offset, int length)
+  {
+    if (offset < 0 || length < 0 || offset + length > dst.length)
+      throw new IndexOutOfBoundsException ();
+    if (length > remaining())
+      throw new BufferUnderflowException();
+
+    int index = position();
+    getImpl(address, index, dst, offset, length);
+    position(index+length);
+
+    return this;
   }
 
   public ByteBuffer put (byte value)
   {
-    putImpl (position (), value);
-    position (position () + 1);
+    int pos = position();
+    if (pos >= limit())
+      throw new BufferUnderflowException();
+    putImpl (address, pos, value);
+    position (pos + 1);
     return this;
   }
   
   public ByteBuffer put (int index, byte value)
   {
-    putImpl (index, value);
+    if (index >= limit())
+      throw new BufferUnderflowException();
+    putImpl (address, index, value);
     return this;
   }
   
@@ -132,21 +151,42 @@ class DirectByteBufferImpl extends ByteBuffer
     return this;
   }
 
-  public ByteBuffer duplicate ()
-  {
-    return new DirectByteBufferImpl (
-      address, offset, capacity (), limit (), position (), -1, isReadOnly ());
-  }
+  public static native RawData adjustAddress(RawData address, int offset);
 
   public ByteBuffer slice ()
   {
-    return new DirectByteBufferImpl (address, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+    int rem = remaining();
+    return new DirectByteBufferImpl (owner,
+				     adjustAddress(address, position()),
+				     rem, rem, 0, isReadOnly ());
+  }
+
+  private ByteBuffer duplicate (boolean readOnly)
+  {
+    int pos = position();
+    reset();
+    int mark = position();
+    position(pos);
+    DirectByteBufferImpl result
+      = new DirectByteBufferImpl (owner, address, capacity (), limit (),
+				  pos, readOnly);
+    if (mark != pos)
+      {
+	result.position(mark);
+	result.mark();
+	result.position(pos);
+      }
+    return result;
+  }
+
+  public ByteBuffer duplicate ()
+  {
+    return duplicate(isReadOnly());
   }
 
   public ByteBuffer asReadOnlyBuffer ()
   {
-    return new DirectByteBufferImpl (
-      address, offset, capacity (), limit (), position (), -1, true);
+    return duplicate(true);
   }
 
   public boolean isReadOnly ()
@@ -161,34 +201,34 @@ class DirectByteBufferImpl extends ByteBuffer
 
   public CharBuffer asCharBuffer ()
   {
-    return new CharViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
+    return new CharViewBufferImpl (this, remaining() >> 1);
   }
-  
-  public DoubleBuffer asDoubleBuffer ()
-  {
-    return new DoubleViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
-  }
-  
-  public FloatBuffer asFloatBuffer ()
-  {
-    return new FloatViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
-  }
-  
-  public IntBuffer asIntBuffer ()
-  {
-    return new IntViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
-  }
-  
-  public LongBuffer asLongBuffer ()
-  {
-    return new LongViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
-  }
-  
+
   public ShortBuffer asShortBuffer ()
   {
-    return new ShortViewBufferImpl (this, position (), remaining (), remaining (), 0, -1, isReadOnly (), order());
+    return new ShortViewBufferImpl (this, remaining() >> 1);
   }
-  
+
+  public IntBuffer asIntBuffer ()
+  {
+    return new IntViewBufferImpl (this, remaining() >> 2);
+  }
+
+  public LongBuffer asLongBuffer ()
+  {
+    return new LongViewBufferImpl (this, remaining() >> 3);
+  }
+
+  public FloatBuffer asFloatBuffer ()
+  {
+    return new FloatViewBufferImpl (this, remaining() >> 2);
+  }
+
+  public DoubleBuffer asDoubleBuffer ()
+  {
+    return new DoubleViewBufferImpl (this, remaining() >> 3);
+  }
+
   final public char getChar ()
   {
     return ByteBufferHelper.getChar(this, order());

@@ -144,32 +144,32 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public CharBuffer asCharBuffer ()
   {
-    return new CharViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new CharViewBufferImpl (this, remaining() >> 1);
   }
 
   public ShortBuffer asShortBuffer ()
   {
-    return new ShortViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new ShortViewBufferImpl (this, remaining() >> 1);
   }
 
   public IntBuffer asIntBuffer ()
   {
-    return new IntViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new IntViewBufferImpl (this, remaining() >> 2);
   }
-  
+
   public LongBuffer asLongBuffer ()
   {
-    return new LongViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new LongViewBufferImpl (this, remaining() >> 3);
   }
 
   public FloatBuffer asFloatBuffer ()
   {
-    return new FloatViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new FloatViewBufferImpl (this, remaining() >> 2);
   }
 
   public DoubleBuffer asDoubleBuffer ()
   {
-    return new DoubleViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly (), order());
+    return new DoubleViewBufferImpl (this, remaining() >> 3);
   }
 
   final public char getChar ()

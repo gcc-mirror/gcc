@@ -19,6 +19,40 @@
 	* java/nio/IntViewBufferImpl.java:  Likewise.
 	* java/nio/LongViewBufferImpl.java:  Likewise.
 	* java/nio/ShortViewBufferImpl.java:  Likewise.
+	
+	* java/nio/ByteBuffer.java (endian):  Make non-private so other
+	java.nio classes can inherit it.
+	(<init>):  Don't bother clearing array_offset.
+	* java/nio/ByteBuffer.java (allocate):  Re-implement using wrap.
+	* java/nio/ByteBuffer.java (get(byte[],int,int)):  Check underflow.
+	Remove redundant test.
+
+	* java/nio/ByteBufferImpl.java (asCharBuffer, asShortBuffer,
+	asIntBuffer, asLongBuffer, asFloatBuffer, asDoubleBuffer):
+	Use new XxxViewBufferImpl constructors.
+	* java/nio/MappedByteBufferImpl.java:  Likewise.
+	* java/nio/DirectByteBufferImpl.java:  Likewise.
+
+	* java/nio/ByteBufferImpl.java:  Remove one constructor.
+	Inline super in remaining constructor.
+	* java/nio/ByteBuffer.java:  Remove unused constructor.
+
+	* java/nio/ByteBufferImpl.java (shiftDown):  New optimized method.
+
+	* java/nio/ByteBufferImpl.java (get, put):  Add array_offset.
+	* java/nio/DirectByteBufferImpl.java (owner):  New field.
+	(offset):  Remove unused field.
+	(<init>):  Modify one and add another constructor.  Change callers.
+	(allocateDirect):  Removed - not used.
+	(getImpl, putImpl):  Make static and pass address explicitly,
+	to make them useful for MappedByteBufferImpl.
+	(get, put):  Check for underflow.  Modify for new getImpl.
+	(getImpl):  New native method where target is array.
+	(get(byte[],int,int)):  Use the above.
+	(adjustAddress):  New static native method.
+	(slice, duplicate, asReadOnly):  New implementations.
+	* java/nio/natDirectByteBufferImpl.cc (getImpl, putImpl, shiftDown,
+	adjustAddress):  New or updated native methods.
 
 2004-02-15  Ito Kazumitsu  <kaz@maczuka.gcd.org>
 
