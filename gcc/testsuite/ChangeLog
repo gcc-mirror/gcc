@@ -1,3 +1,7 @@
+2001-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/inline20.C: New test.
+
 Wed Feb 21 12:38:22 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc/execute/nested-1.m: Added (contributed by Nicola Pero).

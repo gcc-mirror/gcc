@@ -28,6 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "input.h"
 #include "integrate.h"
 #include "varray.h"
+#include "ggc.h"
 
 /* To Do:
 
@@ -62,6 +63,8 @@ typedef struct inline_data
   int in_target_cleanup_p;
   /* A stack of the TARGET_EXPRs that we are currently processing.  */
   varray_type target_exprs;
+  /* A list of the functions current function has inlined.  */
+  varray_type inlined_fns;
 } inline_data;
 
 /* Prototypes.  */
@@ -520,7 +523,7 @@ declare_return_variable (id, use_stmt)
      references to the RESULT into references to the target.  */
   if (aggregate_return_p)
     {
-      my_friendly_assert (id->target_exprs->elements_used != 0,
+      my_friendly_assert (VARRAY_ACTIVE_SIZE (id->target_exprs) != 0,
 			  20000430);
       var = TREE_OPERAND (VARRAY_TOP_TREE (id->target_exprs), 0);
       my_friendly_assert 
@@ -605,14 +608,23 @@ inlinable_function_p (fn, id)
     inlinable = 0;
 
   /* Don't do recursive inlining, either.  We don't record this in
-     DECL_UNLINABLE; we may be able to inline this function later.  */
+     DECL_UNINLINABLE; we may be able to inline this function later.  */
   if (inlinable)
     {
       size_t i;
 
-      for (i = 0; i < id->fns->elements_used; ++i)
+      for (i = 0; i < VARRAY_ACTIVE_SIZE (id->fns); ++i)
 	if (VARRAY_TREE (id->fns, i) == fn)
-	  inlinable = 0;
+	  return 0;
+
+      if (inlinable && DECL_LANG_SPECIFIC (fn) && DECL_INLINED_FNS (fn))
+	{
+	  struct lang_decl_inlined_fns *ifn = DECL_INLINED_FNS (fn);
+
+	  for (i = 0; i < ifn->num_fns; ++i)
+	    if (ifn->fns [i] == VARRAY_TREE (id->fns, 0))
+	      return 0;
+	}
     }
 
   /* Return the result.  */
@@ -727,6 +739,19 @@ expand_call_inline (tp, walk_subtrees, data)
   /* Record the function we are about to inline so that we can avoid
      recursing into it.  */
   VARRAY_PUSH_TREE (id->fns, fn);
+
+  /* Record the function we are about to inline if optimize_function
+     has not been called on it yet and we don't have it in the list.  */
+  if (DECL_LANG_SPECIFIC (fn) && !DECL_INLINED_FNS (fn))
+    {
+      int i;
+
+      for (i = VARRAY_ACTIVE_SIZE (id->inlined_fns) - 1; i >= 0; i--)
+	if (VARRAY_TREE (id->inlined_fns, i) == fn)
+	  break;
+      if (i < 0)
+	VARRAY_PUSH_TREE (id->inlined_fns, fn);
+    }
 
   /* Return statements in the function body will be replaced by jumps
      to the RET_LABEL.  */
@@ -874,6 +899,9 @@ optimize_function (fn)
       /* Create the stack of TARGET_EXPRs.  */
       VARRAY_TREE_INIT (id.target_exprs, 32, "target_exprs");
 
+      /* Create the list of functions this call will inline.  */
+      VARRAY_TREE_INIT (id.inlined_fns, 32, "inlined_fns");
+
       /* Replace all calls to inline functions with the bodies of those
 	 functions.  */
       expand_calls_inline (&DECL_SAVED_TREE (fn), &id);
@@ -881,6 +909,19 @@ optimize_function (fn)
       /* Clean up.  */
       VARRAY_FREE (id.fns);
       VARRAY_FREE (id.target_exprs);
+      if (DECL_LANG_SPECIFIC (fn))
+	{
+	  struct lang_decl_inlined_fns *ifn;
+
+	  ifn = ggc_alloc (sizeof (struct lang_decl_inlined_fns)
+			   + (VARRAY_ACTIVE_SIZE (id.inlined_fns) - 1)
+			     * sizeof (tree));
+	  ifn->num_fns = VARRAY_ACTIVE_SIZE (id.inlined_fns);
+	  memcpy (&ifn->fns[0], &VARRAY_TREE (id.inlined_fns, 0),
+		  ifn->num_fns * sizeof (tree));
+	  DECL_INLINED_FNS (fn) = ifn;
+	}
+      VARRAY_FREE (id.inlined_fns);
     }
 
   /* Undo the call to ggc_push_context above.  */
