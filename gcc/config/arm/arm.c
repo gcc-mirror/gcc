@@ -4261,7 +4261,7 @@ note_invalid_constants (insn, address)
   for (opno = 0; opno < recog_data.n_operands; opno++)
     {
       /* Things we need to fix can only occur in inputs */
-      if (recog_op_type[opno] != OP_IN)
+      if (recog_data.operand_type[opno] != OP_IN)
 	continue;
 
       /* If this alternative is a memory reference, then any mention

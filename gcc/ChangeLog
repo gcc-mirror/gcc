@@ -1,3 +1,8 @@
+Sun Sep 12 19:52:10 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* arm.c (note_invalid_constants): Use recog_data.operand_type
+	for recog_op_type.
+
 Sun Sep 12 15:53:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* tree.h (build_common_tree_nodes, build_common_tree_nodes_2):
