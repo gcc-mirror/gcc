@@ -395,6 +395,11 @@ static int print_include_names = 0;
 
 static int no_line_commands;
 
+/* Nonzero means output the text in failing conditionals,
+   inside #failed ... #endfailed.  */
+
+static int output_conditionals;
+
 /* dump_only means inhibit output of the preprocessed text
              and instead output the definitions of all user-defined
              macros in a form suitable for use as input to cccp.
@@ -1201,6 +1206,9 @@ main (argc, argv)
 	    fatal ("Filename missing after `-iprefix' option");
 	  else
 	    include_prefix = argv[++i];
+	}
+	if (!strcmp (argv[i], "-ifoutput")) {
+	  output_conditionals = 1;
 	}
 	if (!strcmp (argv[i], "-isystem")) {
 	  struct file_name_list *dirtmp;
@@ -2502,7 +2510,7 @@ do { ip = &instack[indepth];		\
      obp = op->bufp; } while (0)
 
   if (no_output && instack[indepth].fname != 0)
-    skip_if_group (&instack[indepth], 1);
+    skip_if_group (&instack[indepth], 1, NULL);
 
   obp = op->bufp;
   RECACHE;
@@ -2615,7 +2623,7 @@ do { ip = &instack[indepth];		\
 	  /* If not generating expanded output,
 	     what we do with ordinary text is skip it.
 	     Discard everything until next # directive.  */
-	  skip_if_group (&instack[indepth], 1);
+	  skip_if_group (&instack[indepth], 1, 0);
 	  RECACHE;
 	  beg_of_line = ibp;
 	  break;
@@ -2639,7 +2647,7 @@ do { ip = &instack[indepth];		\
       /* If not generating expanded output, ignore everything until
 	 next # directive.  */
       if (no_output && instack[indepth].fname)
-	skip_if_group (&instack[indepth], 1);
+	skip_if_group (&instack[indepth], 1, 0);
       obp = op->bufp;
       RECACHE;
       beg_of_line = ibp;
@@ -6686,7 +6694,7 @@ do_if (buf, limit, op, keyword)
   FILE_BUF *ip = &instack[indepth];
 
   value = eval_if_expression (buf, limit - buf);
-  conditional_skip (ip, value == 0, T_IF, NULL_PTR);
+  conditional_skip (ip, value == 0, T_IF, NULL_PTR, op);
   return 0;
 }
 
@@ -6720,11 +6728,11 @@ do_elif (buf, limit, op, keyword)
   }
 
   if (if_stack->if_succeeded)
-    skip_if_group (ip, 0);
+    skip_if_group (ip, 0, op);
   else {
     value = eval_if_expression (buf, limit - buf);
     if (value == 0)
-      skip_if_group (ip, 0);
+      skip_if_group (ip, 0, op);
     else {
       ++if_stack->if_succeeded;	/* continue processing input */
       output_line_command (ip, op, 1, same_file);
@@ -6846,7 +6854,7 @@ do_xifdef (buf, limit, op, keyword)
     }
   }
   
-  conditional_skip (ip, skip, T_IF, control_macro);
+  conditional_skip (ip, skip, T_IF, control_macro, op);
   return 0;
 }
 
@@ -6856,11 +6864,12 @@ do_xifdef (buf, limit, op, keyword)
    Otherwise, CONTROL_MACRO is 0.  */
 
 static void
-conditional_skip (ip, skip, type, control_macro)
+conditional_skip (ip, skip, type, control_macro, op)
      FILE_BUF *ip;
      int skip;
      enum node_type type;
      U_CHAR *control_macro;
+     FILE_BUF *op;
 {
   IF_STACK_FRAME *temp;
 
@@ -6874,7 +6883,7 @@ conditional_skip (ip, skip, type, control_macro)
   if_stack->type = type;
 
   if (skip != 0) {
-    skip_if_group (ip, 0);
+    skip_if_group (ip, 0, op);
     return;
   } else {
     ++if_stack->if_succeeded;
@@ -6888,9 +6897,10 @@ conditional_skip (ip, skip, type, control_macro)
  * If ANY is nonzero, return at next directive of any sort.
  */
 static void
-skip_if_group (ip, any)
+skip_if_group (ip, any, op)
      FILE_BUF *ip;
      int any;
+     FILE_BUF *op;
 {
   register U_CHAR *bp = ip->bufp, *cp;
   register U_CHAR *endb = ip->buf + ip->length;
@@ -6899,6 +6909,25 @@ skip_if_group (ip, any)
   U_CHAR *beg_of_line = bp;
   register int ident_length;
   U_CHAR *ident, *after_ident;
+  /* Save info about where the group starts.  */
+  U_CHAR *beg_of_group = bp;
+  int beg_lineno = ip->lineno;
+
+  if (output_conditionals && op != 0) {
+    char *ptr = "#failed\n";
+    int len = strlen (ptr);
+
+    if (op->bufp > op->buf && op->bufp[-1] != '\n')
+      {
+	*op->bufp++ = '\n';
+	op->lineno++;
+      }
+    check_expand (op, len);
+    bcopy (ptr, (char *) op->bufp, len);
+    op->bufp += len;
+    op->lineno++;
+    output_line_command (ip, op, 1, 0);
+  }
 
   while (bp < endb) {
     switch (*bp++) {
@@ -7050,7 +7079,7 @@ skip_if_group (ip, any)
 	    && strncmp (cp, kt->name, kt->length) == 0) {
 	  /* If we are asked to return on next directive, do so now.  */
 	  if (any)
-	    return;
+	    goto done;
 
 	  switch (kt->type) {
 	  case T_IF:
@@ -7073,7 +7102,7 @@ skip_if_group (ip, any)
 	      break;
 	    }
 	    else if (if_stack == save_if_stack)
-	      return;		/* found what we came for */
+	      goto done;		/* found what we came for */
 
 	    if (kt->type != T_ENDIF) {
 	      if (if_stack->type == T_ELSE)
@@ -7095,10 +7124,32 @@ skip_if_group (ip, any)
 	pedwarn ("invalid preprocessor directive name");
     }
   }
+
   ip->bufp = bp;
   /* after this returns, rescan will exit because ip->bufp
      now points to the end of the buffer.
      rescan is responsible for the error message also.  */
+
+ done:
+  if (output_conditionals && op != 0) {
+    char *ptr = "#endfailed\n";
+    int len = strlen (ptr);
+
+    if (op->bufp > op->buf && op->bufp[-1] != '\n')
+      {
+	*op->bufp++ = '\n';
+	op->lineno++;
+      }
+    check_expand (op, beg_of_line - beg_of_group);
+    bcopy ((char *) beg_of_group, (char *) op->bufp,
+	   beg_of_line - beg_of_group);
+    op->bufp += beg_of_line - beg_of_group;
+    op->lineno += ip->lineno - beg_lineno;
+    check_expand (op, len);
+    bcopy (ptr, (char *) op->bufp, len);
+    op->bufp += len;
+    op->lineno++;
+  }
 }
 
 /*
@@ -7141,7 +7192,7 @@ do_else (buf, limit, op, keyword)
   }
 
   if (if_stack->if_succeeded)
-    skip_if_group (ip, 0);
+    skip_if_group (ip, 0, op);
   else {
     ++if_stack->if_succeeded;	/* continue processing input */
     output_line_command (ip, op, 1, same_file);
