@@ -1,3 +1,24 @@
+Mon Mar 12 15:41:08 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (all XFmode patterns except swapxf): Disable for 64bit.
+
+	* i386.md (x86_sahf_1): Disable for 64bit.
+	(popsi*, pophi*): Likewise.
+	(pushqi, pushhi): Likewise.
+	(movdi, pushdi): Likewise.
+	(zero extend DImode splitter): Likewise.
+	(adddi, minusdi splitter): Likewise.
+	(umulsidi): Likewise.
+	(umulsi): New.
+	(mulsidi): Disable for 64bit
+	(lshift:DI/ashift:DI): Disable for 64bit.
+	(loop patterns): Likewise.
+	(call_pop, call_value_pop expanders and patterns): Likewise.
+	(prologue_get_pc): Likewise.
+	(leave): Likewise.
+	(fcmovDI pattern and splitter): Likewise.
+	(movdfcc_1_rex64): New.
+
 Mon Mar 12 15:16:36 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (VALID_FP_MODE_P): XFmode is invalid on x86_64.
