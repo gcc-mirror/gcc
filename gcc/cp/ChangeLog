@@ -1,3 +1,9 @@
+2003-11-15  Bernardo Innocenti  <bernie@develer.com>
+
+	PR c++/2294
+	* name-lookup.c: Revert previous patch for PR c++/2294 to prevent
+	build failure on libjava.
+
 2003-11-14  Giovanni Bajo  <giovannibajo@libero.it>
 
         PR c++/2294
