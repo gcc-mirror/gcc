@@ -2797,6 +2797,9 @@ do { ip = &instack[indepth];		\
 	char *lintcmd = get_lintcmd (ibp, limit, &argbp, &arglen, &cmdlen);
 
 	if (lintcmd != NULL) {
+	  op->bufp = obp;
+	  check_expand (op, 13 + cmdlen);
+	  obp = op->bufp;
 	  /* I believe it is always safe to emit this newline: */
 	  obp[-1] = '\n';
 	  bcopy ("#pragma lint ", (char *) obp, 13);
@@ -2811,10 +2814,12 @@ do { ip = &instack[indepth];		\
 	  }
 
 	  /* OK, now bring us back to the state we were in before we entered
-	     this branch.  We need #line b/c the newline for the pragma
-	     could fuck things up. */
+	     this branch.  We need #line because the #pragma's newline always
+	     messes up the line count.  */
+	  op->bufp = obp;
 	  output_line_command (ip, op, 0, same_file);
-	  *(obp++) = ' ';	/* just in case, if comments are copied thru */
+	  check_expand (op, ip->length - (ip->bufp - ip->buf));
+	  obp = op->bufp;
 	  *(obp++) = '/';
 	}
       }
