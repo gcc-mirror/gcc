@@ -1031,7 +1031,6 @@ cp_statement_code_p (code)
     {
     case SUBOBJECT:
     case CLEANUP_STMT:
-    case START_CATCH_STMT:
     case CTOR_STMT:
     case CTOR_INITIALIZER:
     case RETURN_INIT:

@@ -391,8 +391,6 @@ tree
 expand_start_catch_block (decl)
      tree decl;
 {
-  tree compound_stmt_1;
-  tree compound_stmt_2;
   tree exp = NULL_TREE;
   tree type;
   bool is_java;
@@ -404,16 +402,10 @@ expand_start_catch_block (decl)
   if (decl && !complete_ptr_ref_or_void_ptr_p (TREE_TYPE (decl), NULL_TREE))
     decl = NULL_TREE;
 
-  /* Create a binding level for the eh_info and the exception object
-     cleanup.  */
-  compound_stmt_1 = begin_compound_stmt (/*has_no_scope=*/0);
-  note_level_for_catch ();
-
   if (decl)
     type = prepare_eh_type (TREE_TYPE (decl));
   else
     type = NULL_TREE;
-  begin_catch_block (type);
 
   is_java = false;
   if (decl)
@@ -452,13 +444,10 @@ expand_start_catch_block (decl)
   if (! is_java)
     push_eh_cleanup (type);
 
-  /* Create a binding level for the parm.  */
-  compound_stmt_2 = begin_compound_stmt (/*has_no_scope=*/0);
-
   if (decl)
     initialize_handler_parm (decl, exp);
 
-  return build_tree_list (compound_stmt_1, compound_stmt_2);
+  return type;
 }
 
 
@@ -467,12 +456,8 @@ expand_start_catch_block (decl)
    the label to jump to if this catch block didn't match.  */
 
 void
-expand_end_catch_block (blocks)
-     tree blocks;
+expand_end_catch_block ()
 {
-  tree compound_stmt_1 = blocks ? TREE_PURPOSE (blocks): NULL_TREE;
-  tree compound_stmt_2 = blocks ? TREE_VALUE (blocks): NULL_TREE;
-
   if (! doing_eh (1))
     return;
 
@@ -482,11 +467,6 @@ expand_end_catch_block (blocks)
       && (DECL_CONSTRUCTOR_P (current_function_decl)
 	  || DECL_DESTRUCTOR_P (current_function_decl)))
     finish_expr_stmt (build_throw (NULL_TREE));
-
-  /* Cleanup the EH parameter.  */
-  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_2);
-  /* Cleanup the EH object.  */
-  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_1);
 }
 
 tree

@@ -3061,8 +3061,8 @@ enum ptrmemfunc_vbit_where_t
 #define FN_TRY_BLOCK_P(NODE)    TREE_LANG_FLAG_3 (TRY_BLOCK_CHECK (NODE))
 #define HANDLER_PARMS(NODE)     TREE_OPERAND (HANDLER_CHECK (NODE), 0)
 #define HANDLER_BODY(NODE)      TREE_OPERAND (HANDLER_CHECK (NODE), 1)
+#define HANDLER_TYPE(NODE)	TREE_TYPE (HANDLER_CHECK (NODE))
 #define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (SUBOBJECT_CHECK (NODE), 0)
-#define START_CATCH_TYPE(NODE)  TREE_TYPE (START_CATCH_STMT_CHECK (NODE))
 
 /* Nonzero if this CTOR_STMT is for the beginning of a constructor.  */
 #define CTOR_BEGIN_P(NODE) \
@@ -4005,7 +4005,7 @@ extern cp_printer *cp_printers[256];
 /* in except.c */
 extern void init_exception_processing		PARAMS ((void));
 extern tree expand_start_catch_block		PARAMS ((tree));
-extern void expand_end_catch_block		PARAMS ((tree));
+extern void expand_end_catch_block		PARAMS ((void));
 extern void expand_builtin_throw		PARAMS ((void));
 extern void expand_eh_spec_block	        PARAMS ((tree));
 extern void expand_exception_blocks		PARAMS ((void));
@@ -4271,9 +4271,9 @@ extern void finish_function_try_block           PARAMS ((tree));
 extern void finish_function_handler_sequence    PARAMS ((tree));
 extern void finish_cleanup_try_block            PARAMS ((tree));
 extern tree begin_handler                       PARAMS ((void));
-extern tree finish_handler_parms                PARAMS ((tree, tree));
+extern void finish_handler_parms                PARAMS ((tree, tree));
 extern void begin_catch_block                   PARAMS ((tree));
-extern void finish_handler                      PARAMS ((tree, tree));
+extern void finish_handler                      PARAMS ((tree));
 extern void finish_cleanup                      PARAMS ((tree, tree));
 extern tree begin_compound_stmt                 PARAMS ((int));
 extern tree finish_compound_stmt                PARAMS ((int, tree));

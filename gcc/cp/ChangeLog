@@ -1,3 +1,27 @@
+2001-05-21  Jason Merrill  <jason_merrill@redhat.com>
+
+	* cp-tree.def (START_CATCH_STMT): Lose.
+	* dump.c (cp_dump_tree): Don't dump it.  Do dump HANDLER_PARMS.
+	* tree.c (cp_statement_code_p): Don't case it.
+	* semantics.c (cp_expand_stmt): Likewise.
+	* cp-tree.h (START_CATCH_TYPE): Lose.
+	(HANDLER_TYPE): New.
+	* except.c (expand_start_catch_block): Don't start any blocks.
+	Return the type.
+	(expand_end_catch_block): Don't end any blocks.
+	* parse.y (handler): Don't pass anything from finish_handler_parms
+	to finish_handler.
+	* pt.c (tsubst_expr): Likewise.
+	* semantics.c (begin_handler): Call note_level_for_catch here.
+	(finish_handler_parms): Don't return anything.
+	(genrtl_catch_block, begin_catch_block): Lose.
+	(genrtl_handler): Call expand_start_catch here.
+
+2001-05-18  Jason Merrill  <jason_merrill@redhat.com>
+
+	* class.c (build_vtable): Set DECL_ASSEMBLER_NAME for vtables here.
+	(get_vtable_decl, build_vtt): Not here.
+
 2001-05-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/2781

@@ -7448,7 +7448,6 @@ tsubst_expr (t, args, complain, in_decl)
     case HANDLER:
       {
 	tree decl;
-	tree blocks;
 
 	prep_stmt (t);
 	stmt = begin_handler ();
@@ -7463,9 +7462,9 @@ tsubst_expr (t, args, complain, in_decl)
 	  }
 	else
 	  decl = NULL_TREE;
-	blocks = finish_handler_parms (decl, stmt);
+	finish_handler_parms (decl, stmt);
 	tsubst_expr (HANDLER_BODY (t), args, complain, in_decl);
-	finish_handler (blocks, stmt);
+	finish_handler (stmt);
       }
       break;
 
