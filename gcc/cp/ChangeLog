@@ -1,5 +1,10 @@
 2001-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* tree.c (cp_tree_equal): Adjust final switch formatting. Add
+	't' case.
+
+2001-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (dfs_unshared_virtual_bases): Add ATTRIBUTE_UNUSED.
 	(layout_empty_base): Return at end flag.
 	(build_base_field): Likewise.
