@@ -1,3 +1,7 @@
+2004-06-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.old-deja/g++.mike/p7325.C: Remove.
+
 2004-06-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/14963
@@ -126,7 +130,7 @@
 	to fix type error.
 	* gfortran.fortran-torture/execute/intrinsic_associated.f90:
 	Remove trailing spaces.
-	
+
 2004-06-21  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tree-ssa/20030714-1.c: Rename variables to avoid
