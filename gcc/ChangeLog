@@ -1,3 +1,9 @@
+Tue Sep 14 03:58:44 1999  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
+
+        * configure.in: Add crtbeginS.o, crtendS.o for mips-linux; add 
+        thread support.
+	* configure: Rebuilt.
+
 Tue Sep 14 03:47:23 1999  Joel Sherrill <joel@OARcorp.com>
 			  Charles-Antoine Gauthier <charles.gauthier@iit.nrc.ca>
 			  Rosimildo DaSilva <rdasilva@connecttel.com>

@@ -2507,9 +2507,12 @@ changequote([,])dnl
                        mipsel-*)  tm_file="mips/elfl.h mips/linux.h" ;;
                        *)         tm_file="mips/elf.h mips/linux.h" ;;
                esac
-		extra_parts="crtbegin.o crtend.o"
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gnu_ld=yes
 		gas=yes
+ 		if test x$enable_threads = xyes; then
+ 			thread_file='posix'
+ 		fi
 		;;
 	mips*el-*-openbsd*)	# mips little endian
 		target_cpu_default="MASK_GAS|MASK_ABICALLS"
