@@ -2254,17 +2254,33 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP, END)
 #endif
 
+  /* We deferred calling assemble_alias so that we could collect
+     other attributes such as visibility.  Emit the alias now.  */
+  {
+    tree alias;
+    alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl));
+    if (alias)
+      {
+	alias = TREE_VALUE (TREE_VALUE (alias));
+	alias = get_identifier (TREE_STRING_POINTER (alias));
+        assemble_alias (decl, alias);
+      }
+  }
+
   /* Forward declarations for nested functions are not "external",
      but we need to treat them as if they were.  */
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl)
       || TREE_CODE (decl) == FUNCTION_DECL)
     {
       timevar_push (TV_VARCONST);
-      if (asmspec)
-	make_decl_rtl (decl, asmspec);
-      /* Don't output anything
-	 when a tentative file-scope definition is seen.
-	 But at end of compilation, do output code for them.  */
+
+      /* If asmspec non-zero, we may be creating a global register variable.
+	 If asmspec zero, we may be making sure that ENCODE_SECTION_INFO is
+	 up-to-date.  */
+      make_decl_rtl (decl, asmspec);
+
+      /* Don't output anything when a tentative file-scope definition
+	 is seen.  But at end of compilation, do output code for them.  */
       if (at_end || !DECL_DEFER_OUTPUT (decl))
 	assemble_variable (decl, top_level, at_end, 0);
       if (decl == last_assemble_variable_decl)
@@ -2272,6 +2288,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 	  ASM_FINISH_DECLARE_OBJECT (asm_out_file, decl,
 				     top_level, at_end);
 	}
+
       timevar_pop (TV_VARCONST);
     }
   else if (DECL_REGISTER (decl) && asmspec != 0)
