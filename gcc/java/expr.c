@@ -206,7 +206,7 @@ static void
 flush_quick_stack (void)
 {
   int stack_index = stack_pointer;
-  register tree prev, cur, next;
+  tree prev, cur, next;
 
   /* First reverse the quick_stack, and count the number of slots it has. */
   for (cur = quick_stack, prev = NULL_TREE; cur != NULL_TREE; cur = next)

@@ -51,7 +51,7 @@ inline
 #endif
 #endif
 static unsigned int
-hash (register const char *str, register unsigned int len)
+hash (const char *str, unsigned int len)
 {
   static const unsigned char asso_values[] =
     {
@@ -82,7 +82,7 @@ hash (register const char *str, register unsigned int len)
       86, 86, 86, 86, 86, 86, 86, 86, 86, 86,
       86, 86, 86, 86, 86, 86
     };
-  register int hval = len;
+  int hval = len;
 
   switch (hval)
     {
@@ -102,7 +102,7 @@ hash (register const char *str, register unsigned int len)
 __inline
 #endif
 const struct java_keyword *
-java_keyword (register const char *str, register unsigned int len)
+java_keyword (const char *str, unsigned int len)
 {
   static const struct java_keyword wordlist[] =
     {
@@ -175,11 +175,11 @@ java_keyword (register const char *str, register unsigned int len)
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
-      register int key = hash (str, len);
+      int key = hash (str, len);
 
       if (key <= MAX_HASH_VALUE && key >= 0)
         {
-          register const char *s = wordlist[key].name;
+          const char *s = wordlist[key].name;
 
           if (*str == *s && !strcmp (str + 1, s + 1))
             return &wordlist[key];

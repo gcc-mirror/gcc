@@ -615,7 +615,7 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
       break;
     case CONSTANT_Utf8:
       {
-	register const unsigned char *str = JPOOL_UTF_DATA (jcf, index);
+	const unsigned char *str = JPOOL_UTF_DATA (jcf, index);
 	int length = JPOOL_UTF_LENGTH (jcf, index);
 	if (verbosity > 0)
 	  { /* Print as 8-bit bytes. */

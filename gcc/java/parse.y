@@ -5114,7 +5114,7 @@ create_jdep_list (struct parser_ctxt *ctxp)
 static jdeplist *
 reverse_jdep_list (struct parser_ctxt *ctxp)
 {
-  register jdeplist *prev = NULL, *current, *next;
+  jdeplist *prev = NULL, *current, *next;
   for (current = ctxp->classd_list; current; current = next)
     {
       next = current->next;
@@ -11242,7 +11242,7 @@ static GTY(()) tree m2_arg_cache;
 static int
 argument_types_convertible (tree m1, tree m2_or_arglist)
 {
-  register tree m1_arg, m2_arg;
+  tree m1_arg, m2_arg;
 
   SKIP_THIS_AND_ARTIFICIAL_PARMS (m1_arg, m1)
 

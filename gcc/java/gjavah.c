@@ -1370,7 +1370,7 @@ print_c_decl (FILE* stream, JCF* jcf, int name_index, int signature_index,
     {
       int length = JPOOL_UTF_LENGTH (jcf, signature_index);
       const unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
-      register const  unsigned char *str = str0;
+      const unsigned char *str = str0;
       const unsigned char *limit = str + length;
       int need_space = 0;
       int is_method = str[0] == '(';
@@ -1430,7 +1430,7 @@ print_full_cxx_name (FILE* stream, JCF* jcf, int name_index,
 {
   int length = JPOOL_UTF_LENGTH (jcf, signature_index);
   const unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
-  register const unsigned char *str = str0;
+  const unsigned char *str = str0;
   const unsigned char *limit = str + length;
   int need_space = 0;
   int is_method = str[0] == '(';
@@ -1541,7 +1541,7 @@ print_stub_or_jni (FILE* stream, JCF* jcf, int name_index,
     {
       int length = JPOOL_UTF_LENGTH (jcf, signature_index);
       const unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
-      register const unsigned char *str = str0;
+      const unsigned char *str = str0;
       const unsigned char *limit = str + length;
       int need_space = 0;
       int is_method = str[0] == '(';

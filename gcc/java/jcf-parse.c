@@ -753,8 +753,8 @@ parse_class_file (void)
       input_line = 0;
       if (DECL_LINENUMBERS_OFFSET (method))
 	{
-	  register int i;
-	  register unsigned char *ptr;
+	  int i;
+	  unsigned char *ptr;
 	  JCF_SEEK (jcf, DECL_LINENUMBERS_OFFSET (method));
 	  linenumber_count = i = JCF_readu2 (jcf);
 	  linenumber_table = ptr = jcf->read_ptr;
