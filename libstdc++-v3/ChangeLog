@@ -1,3 +1,11 @@
+Fri Feb  2 15:47:51 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* include/bits/ios_base.h (_S_ios_fmtflags_end): Initialize
+	correctly targets with 16bit ints.
+	(_S_ios_openmode_end): Similarly.
+	(_S_ios_iostate_end): Similarly.
+	(_S_ios_Seekdir_end): Similarly.
+	
 2001-02-02  Phil Edwards  <pme@sources.redhat.com>
 
 	* mkcheck.in:  Also limit virtual memory size, for mmap-based mallocs.

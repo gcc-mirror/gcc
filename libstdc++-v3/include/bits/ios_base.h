@@ -40,7 +40,7 @@ namespace std {
   // as permitted (but not required) in the standard, in order to provide
   // better type safety in iostream calls.  A side effect is that
   // expressions involving them are no longer compile-time constants.
-  enum _Ios_Fmtflags { _M_ios_fmtflags_end = 1 << 16 };
+  enum _Ios_Fmtflags { _M_ios_fmtflags_end = 1L << 16 };
 
   inline _Ios_Fmtflags 
   operator&(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
@@ -71,7 +71,7 @@ namespace std {
   { return _Ios_Fmtflags(~static_cast<int>(__a)); }
 
 
-  enum _Ios_Openmode { _M_ios_openmode_end = 1 << 16 };
+  enum _Ios_Openmode { _M_ios_openmode_end = 1L << 16 };
 
   inline _Ios_Openmode 
   operator&(_Ios_Openmode __a, _Ios_Openmode __b)
@@ -102,7 +102,7 @@ namespace std {
   { return _Ios_Openmode(~static_cast<int>(__a)); }
 
 
-  enum _Ios_Iostate { _M_ios_iostate_end = 1 << 16 };
+  enum _Ios_Iostate { _M_ios_iostate_end = 1L << 16 };
 
   inline _Ios_Iostate 
   operator&(_Ios_Iostate __a, _Ios_Iostate __b)
@@ -132,7 +132,7 @@ namespace std {
   operator~(_Ios_Iostate __a)
   { return _Ios_Iostate(~static_cast<int>(__a)); }
 
-  enum _Ios_Seekdir { _M_ios_seekdir_end = 1 << 16 };
+  enum _Ios_Seekdir { _M_ios_seekdir_end = 1L << 16 };
 
   // 27.4.2  Class ios_base
   class ios_base
