@@ -17,6 +17,9 @@ RANLIB_TEST = $(RANLIB_TEST_FOR_TARGET)
 # before we try to build libgcc.a.
 CROSS_TOOLS = install-cross-tools
 
+# Dir to search for system headers.  Normally /usr/include.
+SYSTEM_HEADER_DIR = $(libsubdir)/sys-include
+
 # Cause installation using install-cross.
 INSTALL_TARGET = install-cross
 
