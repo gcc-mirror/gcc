@@ -771,6 +771,8 @@ translate_options (argcp, argvp)
 			  arg = argv[++i];
 			}
 		    }
+		  else if (index (arginfo, '*') != 0)
+		    ;
 		  else if (index (arginfo, 'a') == 0)
 		    {
 		      if (arg != 0)
