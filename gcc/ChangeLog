@@ -1,3 +1,23 @@
+2001-05-11  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in: Exterminate all references to assert.h.
+	* cross-make: Likewise.
+	* assert.h: Delete.
+	* configure.in: Correct commentary.
+	* configure: Regenerate.
+
+	* libgcc-std.ver, libgcc2.c, libgcc2.h, sys-protos.h:
+	Remove __eprintf.
+
+	* config/t-freebsd, config/t-linux, config/t-linux-aout,
+	config/t-netbsd, config/t-rtems, config/x-linux,
+	config/i386/t-beos, config/mcore/t-mcore, config/mcore/t-mcore-pe:
+	No need to override INSTALL_ASSERT_H.
+
+	* fixinc/fixinc.dgux, fixinc/fixinc.interix, fixinc/fixinc.ptx,
+	fixinc/fixinc.svr4, fixinc/fixinc.winnt, fixinc/fixinc.wrap,
+	fixinc/fixincl.sh: Don't install assert.h into objdir/include.
+
 2001-05-11  Graham Stott  <grahams@redhat.com>
 
 	* combine.c (simplify_comparison): Fix typo.

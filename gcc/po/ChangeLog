@@ -1,3 +1,7 @@
+2001-05-11  Zack Weinberg  <zackw@stanford.edu>
+
+	* POTFILES.in: Remove assert.h.
+
 2001-05-07  Zack Weinberg  <zackw@stanford.edu>
 
 	* POTFILES.in: Remove config/i386/sco.h, config/i386/sco4.h,

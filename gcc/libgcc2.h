@@ -24,8 +24,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
 extern void __clear_cache (char *, char *);
-extern void __eprintf (const char *, const char *, unsigned int, const char *)
-  __attribute__ ((__noreturn__));
 
 struct bb;
 extern void __bb_exit_func (void);

@@ -50,7 +50,6 @@
 
 acconfig.h
 alias.c
-assert.h
 basic-block.h
 bb-reorder.c
 bitmap.c
