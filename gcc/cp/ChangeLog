@@ -1,3 +1,8 @@
+1998-10-06  Mark Mitchell  <mark@markmitchell.com>
+
+	* call.c (resolve_args): Resolve template specializations, if
+	possible.
+
 Tue Oct  6 07:57:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (spew.o): Depend on toplev.h.
