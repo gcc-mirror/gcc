@@ -1,3 +1,15 @@
+Wed Sep  2 02:03:23 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (movdf): Only generate special RTL for
+	LABEL_REFs when PIC.
+	(move_label_di): Remove
+	(movdi_pic_label_ref, movdi_high_pic_label_ref,
+	movdi_lo_sum_pic_label_ref): New patterns for 64-bit label
+	references when PIC.
+	* config/sparc/sparc.h (ASM_OUTPUT_ADDR_VEC_ELT,
+	ASM_OUTPUT_ADDR_DIFF_ELT): Don't do anything special for MEDLOW,
+	output an .xword for all 64-bit cases.
+	
 Tue Sep  1 15:55:17 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (finalize_pic): Don't output arbitrary

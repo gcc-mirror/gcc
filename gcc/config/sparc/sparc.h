@@ -2969,8 +2969,6 @@ do {									\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\
   if (Pmode == SImode)							\
     fprintf (FILE, "\t.word\t");					\
-  else if (TARGET_CM_MEDLOW)						\
-    fprintf (FILE, "\t.word\t0\n\t.word\t");				\
   else									\
     fprintf (FILE, "\t.xword\t");					\
   assemble_name (FILE, label);						\
@@ -2986,8 +2984,6 @@ do {									\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", (VALUE));			\
   if (Pmode == SImode)							\
     fprintf (FILE, "\t.word\t");					\
-  else if (TARGET_CM_MEDLOW)						\
-    fprintf (FILE, "\t.word\t0\n\t.word\t");				\
   else									\
     fprintf (FILE, "\t.xword\t");					\
   assemble_name (FILE, label);						\
