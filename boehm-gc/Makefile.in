@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -105,14 +105,31 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = $(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
-toolexeclib_LTLIBRARIES = $(target_all)
-EXTRA_LTLIBRARIES = libgcjgc.la
-libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c backgraph.c win32_threads.c
+toolexeclib_LTLIBRARIES = libgcjgc.la
+noinst_LTLIBRARIES = libgcjgc_convenience.la
 
+GC_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
+dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \
+linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
+solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c \
+backgraph.c win32_threads.c
+
+
+EXTRA_GC_SOURCES = alpha_mach_dep.s \
+mips_sgi_mach_dep.S mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
+rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
+sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
+
+
+libgcjgc_la_SOURCES = $(GC_SOURCES)
+libgcjgc_convenience_la_SOURCES = $(GC_SOURCES)
+EXTRA_libgcjgc_la_SOURCES = $(EXTRA_GC_SOURCES)
+EXTRA_libgcjgc_convenience_la_SOURCES = $(EXTRA_GC_SOURCES)
 
 # Include THREADLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
@@ -120,8 +137,8 @@ libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
-EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s mips_sgi_mach_dep.S mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
-
+libgcjgc_convenience_la_LIBADD = @addobjs@
+libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
 
 AM_CXXFLAGS = @GC_CFLAGS@
 
@@ -138,14 +155,52 @@ TESTS = gctest
 
 all_objs = @addobjs@ $(libgcjgc_la_OBJECTS)
 
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) 	$(AM_CPPFLAGS) $(CPPFLAGS) 	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
 
 LINK = $(LIBTOOL) --mode=link $(CC) $(AM_CFLAGS) $(MY_CFLAGS) $(LDFLAGS) -o $@
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"EXPECT=$(EXPECT)" 	"RUNTEST=$(RUNTEST)" 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"prefix=$(prefix)" 	"tooldir=$(tooldir)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"NM=$(NM)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"DESTDIR=$(DESTDIR)"
+AM_MAKEFLAGS = \
+	"AR_FLAGS=$(AR_FLAGS)" \
+	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
+	"CFLAGS=$(CFLAGS)" \
+	"CXXFLAGS=$(CXXFLAGS)" \
+	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
+	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+	"INSTALL=$(INSTALL)" \
+	"INSTALL_DATA=$(INSTALL_DATA)" \
+	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
+	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
+	"LDFLAGS=$(LDFLAGS)" \
+	"LIBCFLAGS=$(LIBCFLAGS)" \
+	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
+	"MAKE=$(MAKE)" \
+	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
+	"PICFLAG=$(PICFLAG)" \
+	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
+	"SHELL=$(SHELL)" \
+	"EXPECT=$(EXPECT)" \
+	"RUNTEST=$(RUNTEST)" \
+	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
+	"exec_prefix=$(exec_prefix)" \
+	"infodir=$(infodir)" \
+	"libdir=$(libdir)" \
+	"prefix=$(prefix)" \
+	"tooldir=$(tooldir)" \
+	"AR=$(AR)" \
+	"AS=$(AS)" \
+	"CC=$(CC)" \
+	"CXX=$(CXX)" \
+	"LD=$(LD)" \
+	"LIBCFLAGS=$(LIBCFLAGS)" \
+	"NM=$(NM)" \
+	"PICFLAG=$(PICFLAG)" \
+	"RANLIB=$(RANLIB)" \
+	"DESTDIR=$(DESTDIR)"
 
 
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
@@ -153,13 +208,21 @@ CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 MAKEOVERRIDES = 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 CONFIG_CLEAN_FILES = 
-LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES =  $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) 
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+libgcjgc_convenience_la_LDFLAGS = 
+libgcjgc_convenience_la_OBJECTS =  allchblk.lo alloc.lo blacklst.lo \
+checksums.lo dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
+headers.lo irix_threads.lo linux_threads.lo malloc.lo mallocx.lo \
+mark.lo mark_rts.lo misc.lo new_hblk.lo obj_map.lo os_dep.lo \
+pcr_interface.lo ptr_chck.lo real_malloc.lo reclaim.lo \
+solaris_pthreads.lo solaris_threads.lo specific.lo stubborn.lo \
+typd_mlc.lo backgraph.lo win32_threads.lo
 libgcjgc_la_OBJECTS =  allchblk.lo alloc.lo blacklst.lo checksums.lo \
 dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo headers.lo \
 irix_threads.lo linux_threads.lo malloc.lo mallocx.lo mark.lo \
@@ -179,10 +242,10 @@ ltmain.sh mkinstalldirs
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libgcjgc_la_SOURCES) $(EXTRA_libgcjgc_la_SOURCES)
-OBJECTS = $(libgcjgc_la_OBJECTS)
+SOURCES = $(libgcjgc_convenience_la_SOURCES) $(EXTRA_libgcjgc_convenience_la_SOURCES) $(libgcjgc_la_SOURCES) $(EXTRA_libgcjgc_la_SOURCES)
+OBJECTS = $(libgcjgc_convenience_la_OBJECTS) $(libgcjgc_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -197,10 +260,19 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.in  acinclude.m4
 	cd $(srcdir) && $(ACLOCAL)
 
-config.status: $(srcdir)/configure.in $(CONFIG_STATUS_DEPENDENCIES)
+config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
+
+mostlyclean-noinstLTLIBRARIES:
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+
+distclean-noinstLTLIBRARIES:
+
+maintainer-clean-noinstLTLIBRARIES:
 
 mostlyclean-toolexeclibLTLIBRARIES:
 
@@ -268,8 +340,11 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
+libgcjgc_convenience.la: $(libgcjgc_convenience_la_OBJECTS) $(libgcjgc_convenience_la_DEPENDENCIES)
+	$(LINK)  $(libgcjgc_convenience_la_LDFLAGS) $(libgcjgc_convenience_la_OBJECTS) $(libgcjgc_convenience_la_LIBADD) $(LIBS)
+
 libgcjgc.la: $(libgcjgc_la_OBJECTS) $(libgcjgc_la_DEPENDENCIES)
-	$(LINK)  $(libgcjgc_la_LDFLAGS) $(libgcjgc_la_OBJECTS) $(libgcjgc_la_LIBADD) $(LIBS)
+	$(LINK) -rpath $(toolexeclibdir) $(libgcjgc_la_LDFLAGS) $(libgcjgc_la_OBJECTS) $(libgcjgc_la_LIBADD) $(LIBS)
 
 mostlyclean-checkPROGRAMS:
 
@@ -496,19 +571,21 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
+mostlyclean-am:  mostlyclean-noinstLTLIBRARIES \
+		mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
 		mostlyclean-libtool mostlyclean-checkPROGRAMS \
 		mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-toolexeclibLTLIBRARIES clean-compile clean-libtool \
-		clean-checkPROGRAMS clean-tags clean-generic \
-		mostlyclean-am
+clean-am:  clean-noinstLTLIBRARIES clean-toolexeclibLTLIBRARIES \
+		clean-compile clean-libtool clean-checkPROGRAMS \
+		clean-tags clean-generic mostlyclean-am
 
 clean: clean-recursive
 
-distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
+distclean-am:  distclean-noinstLTLIBRARIES \
+		distclean-toolexeclibLTLIBRARIES distclean-compile \
 		distclean-libtool distclean-checkPROGRAMS \
 		distclean-tags distclean-generic clean-am
 	-rm -f libtool
@@ -516,7 +593,8 @@ distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
+maintainer-clean-am:  maintainer-clean-noinstLTLIBRARIES \
+		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-checkPROGRAMS maintainer-clean-tags \
 		maintainer-clean-generic distclean-am
@@ -526,9 +604,10 @@ maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-toolexeclibLTLIBRARIES \
-distclean-toolexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES \
-maintainer-clean-toolexeclibLTLIBRARIES \
+.PHONY: mostlyclean-noinstLTLIBRARIES distclean-noinstLTLIBRARIES \
+clean-noinstLTLIBRARIES maintainer-clean-noinstLTLIBRARIES \
+mostlyclean-toolexeclibLTLIBRARIES distclean-toolexeclibLTLIBRARIES \
+clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
 uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
