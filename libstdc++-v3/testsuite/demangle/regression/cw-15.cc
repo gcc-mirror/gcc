@@ -28,7 +28,7 @@ int main()
   using namespace __gnu_test;
 
   // cplus-dem CORE
-verify_demangle("_Z1xNiEE",
+verify_demangle("_Z1xINiEE",
 		"error code = -2: invalid mangled name");
 
   return 0;
