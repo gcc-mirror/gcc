@@ -478,7 +478,7 @@ fi
 
 # Fix AIX use of "XDPS.h" to refer to <DPS/XDPS.h>
 file=DPS/XDPSlib.h
-if [-r $file] && [ ! -r ${LIB}/$file ] ; then
+if [ -r $file] && [ ! -r ${LIB}/$file ] ; then
   cp $file ${LIB}/$file
 fi
 if [ -r ${LIB}/$file ] ; then
