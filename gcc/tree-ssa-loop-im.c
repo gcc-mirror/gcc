@@ -833,34 +833,118 @@ maybe_queue_var (tree var, struct loop *loop,
   queue[(*in_queue)++] = stmt;
 }
 
+/* If COMMON_REF is NULL, set COMMON_REF to *OP and return true.
+   Otherwise return true if the memory reference *OP is equal to COMMON_REF.
+   Record the reference OP to list MEM_REFS.  STMT is the statement in that
+   the reference occurs.  */
+
+struct sra_data
+{
+  struct mem_ref **mem_refs;
+  tree common_ref;
+  tree stmt;
+};
+
+static bool
+fem_single_reachable_address (tree *op, void *data)
+{
+  struct sra_data *sra_data = data;
+
+  if (sra_data->common_ref
+      && !operand_equal_p (*op, sra_data->common_ref, 0))
+    return false;
+  sra_data->common_ref = *op;
+
+  record_mem_ref (sra_data->mem_refs, sra_data->stmt, op);
+  return true;
+}
+
+/* Runs CALLBACK for each operand of STMT that is a memory reference.  DATA
+   is passed to the CALLBACK as well.  The traversal stops if CALLBACK
+   returns false, for_each_memref then returns false as well.  Otherwise
+   for_each_memref returns true.  */
+
+static bool
+for_each_memref (tree stmt, bool (*callback)(tree *, void *), void *data)
+{
+  tree *op;
+
+  if (TREE_CODE (stmt) == RETURN_EXPR)
+    stmt = TREE_OPERAND (stmt, 1);
+
+  if (TREE_CODE (stmt) == MODIFY_EXPR)
+    {
+      op = &TREE_OPERAND (stmt, 0);
+      if (TREE_CODE (*op) != SSA_NAME
+	  && !callback (op, data))
+	return false;
+
+      op = &TREE_OPERAND (stmt, 1);
+      if (TREE_CODE (*op) != SSA_NAME
+	  && is_gimple_lvalue (*op)
+	  && !callback (op, data))
+	return false;
+
+      stmt = TREE_OPERAND (stmt, 1);
+    }
+
+  if (TREE_CODE (stmt) == WITH_SIZE_EXPR)
+    stmt = TREE_OPERAND (stmt, 0);
+
+  if (TREE_CODE (stmt) == CALL_EXPR)
+    {
+      tree args;
+
+      for (args = TREE_OPERAND (stmt, 1); args; args = TREE_CHAIN (args))
+	{
+	  op = &TREE_VALUE (args);
+
+	  if (TREE_CODE (*op) != SSA_NAME
+	      && is_gimple_lvalue (*op)
+	      && !callback (op, data))
+	    return false;
+	}
+    }
+
+  return true;
+}
+
 /* Determine whether all memory references inside the LOOP that correspond
    to virtual ssa names defined in statement STMT are equal.
    If so, store the list of the references to MEM_REFS, and return one
-   of them.  Otherwise store NULL to MEM_REFS and return NULL_TREE.  */
+   of them.  Otherwise store NULL to MEM_REFS and return NULL_TREE.
+   *SEEN_CALL_STMT is set to true if the virtual operands suggest
+   that the reference might be clobbered by a call inside the LOOP.  */
 
 static tree
 single_reachable_address (struct loop *loop, tree stmt,
-			  struct mem_ref **mem_refs)
+			  struct mem_ref **mem_refs,
+			  bool *seen_call_stmt)
 {
   tree *queue = xmalloc (sizeof (tree) * max_uid);
   sbitmap seen = sbitmap_alloc (max_uid);
-  tree common_ref = NULL, *aref;
   unsigned in_queue = 1;
   dataflow_t df;
   unsigned i, n;
   v_may_def_optype v_may_defs;
   vuse_optype vuses;
+  struct sra_data sra_data;
+  tree call;
 
   sbitmap_zero (seen);
 
   *mem_refs = NULL;
+  sra_data.mem_refs = mem_refs;
+  sra_data.common_ref = NULL_TREE;
 
   queue[0] = stmt;
   SET_BIT (seen, stmt_ann (stmt)->uid);
+  *seen_call_stmt = false;
 
   while (in_queue)
     {
       stmt = queue[--in_queue];
+      sra_data.stmt = stmt;
 
       if (LIM_DATA (stmt)
 	  && LIM_DATA (stmt)->sm_done)
@@ -869,17 +953,20 @@ single_reachable_address (struct loop *loop, tree stmt,
       switch (TREE_CODE (stmt))
 	{
 	case MODIFY_EXPR:
-	  aref = &TREE_OPERAND (stmt, 0);
-	  if (is_gimple_reg (*aref)
-	      || !is_gimple_lvalue (*aref))
-	    aref = &TREE_OPERAND (stmt, 1);
-	  if (is_gimple_reg (*aref)
-	      || !is_gimple_lvalue (*aref)
-	      || (common_ref && !operand_equal_p (*aref, common_ref, 0)))
+	case CALL_EXPR:
+	case RETURN_EXPR:
+	  if (!for_each_memref (stmt, fem_single_reachable_address,
+				&sra_data))
 	    goto fail;
-	  common_ref = *aref;
 
-	  record_mem_ref (mem_refs, stmt, aref);
+	  /* If this is a function that may depend on the memory location,
+	     record the fact.  We cannot directly refuse call clobbered
+	     operands here, since sra_data.common_ref did not have
+	     to be set yet.  */
+	  call = get_call_expr_in (stmt);
+	  if (call
+	      && !(call_expr_flags (call) & ECF_CONST))
+	    *seen_call_stmt = true;
 
 	  /* Traverse also definitions of the VUSES (there may be other
 	     distinct from the one we used to get to this statement).  */
@@ -926,7 +1013,7 @@ single_reachable_address (struct loop *loop, tree stmt,
   free (queue);
   sbitmap_free (seen);
 
-  return common_ref;
+  return sra_data.common_ref;
 
 fail:
   free_mem_refs (*mem_refs);
@@ -994,6 +1081,13 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
   tree load, store;
   struct fmt_data fmt_data;
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Executing store motion of ");
+      print_generic_expr (dump_file, ref, 0);
+      fprintf (dump_file, " from loop %d\n", loop->num);
+    }
+
   tmp_var = make_rename_temp (TREE_TYPE (ref), "lsm_tmp");
 
   fmt_data.loop = loop;
@@ -1023,6 +1117,39 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
     }
 }
 
+/* Returns true if REF may be clobbered by calls.  */
+
+static bool
+is_call_clobbered_ref (tree ref)
+{
+  tree base;
+
+  base = get_base_address (ref);
+  if (!base)
+    return true;
+
+  if (DECL_P (base))
+    return is_call_clobbered (base);
+
+  if (TREE_CODE (base) == INDIRECT_REF)
+    {
+      /* Check whether the alias tags associated with the pointer
+	 are call clobbered.  */
+      tree ptr = TREE_OPERAND (base, 0);
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+      tree nmt = (pi) ? pi->name_mem_tag : NULL_TREE;
+      tree tmt = var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
+
+      if ((nmt && is_call_clobbered (nmt))
+	  || (tmt && is_call_clobbered (tmt)))
+	return true;
+
+      return false;
+    }
+
+  abort ();
+}
+
 /* Determine whether all memory references inside LOOP corresponding to the
    virtual ssa name REG are equal to each other, and whether the address of
    this common reference can be hoisted outside of the loop.  If this is true,
@@ -1037,19 +1164,28 @@ determine_lsm_reg (struct loop *loop, edge *exits, unsigned n_exits, tree reg)
   tree ref;
   struct mem_ref *mem_refs, *aref;
   struct loop *must_exec;
+  bool sees_call;
   
   if (is_gimple_reg (reg))
     return;
   
-  ref = single_reachable_address (loop, SSA_NAME_DEF_STMT (reg), &mem_refs);
+  ref = single_reachable_address (loop, SSA_NAME_DEF_STMT (reg), &mem_refs,
+				  &sees_call);
   if (!ref)
     return;
 
+  /* If we cannot create a ssa name for the result, give up.  */
+  if (!is_gimple_reg_type (TREE_TYPE (ref))
+      || TREE_THIS_VOLATILE (ref))
+    goto fail;
+
+  /* If there is a call that may use the location, give up as well.  */
+  if (sees_call
+      && is_call_clobbered_ref (ref))
+    goto fail;
+
   if (!for_each_index (&ref, may_move_till, loop))
-    {
-      free_mem_refs (mem_refs);
-      return;
-    }
+    goto fail;
 
   if (tree_could_trap_p (ref))
     {
@@ -1079,13 +1215,12 @@ determine_lsm_reg (struct loop *loop, edge *exits, unsigned n_exits, tree reg)
 	}
 
       if (!aref)
-	{
-	  free_mem_refs (mem_refs);
-	  return;
-	}
+	goto fail;
     }
 
   schedule_sm (loop, exits, n_exits, ref, mem_refs);
+
+fail: ;
   free_mem_refs (mem_refs);
 }
 
