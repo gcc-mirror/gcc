@@ -1,3 +1,10 @@
+2003-05-02  Tom Tromey  <tromey@redhat.com>
+
+	PR java/10459:
+	* parse.y (finish_for_loop): Do nothing if update expression is a
+	EXPR_WFL_NODE wrapping nothing.
+	(java_complete_lhs) <COMPOUND_EXPR>: Likewise.
+
 2003-04-20  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* jcf-io.c (find_class): use DIR_SEPARATOR instead of
