@@ -1,3 +1,8 @@
+Sun Jun 21 17:05:34 1998  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in (install-info): Use install-info program if
+	available, per GNU standard.
+
 Sun Jun 21 18:56:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (debug_ready_list): Make static.
