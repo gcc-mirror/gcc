@@ -1618,11 +1618,15 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 
   /* If this insn is a single set copying operand 1 to operand 0
      and one is a pseudo with the other a hard reg that is in its
-     own register class, set the cost of that register class to -1.  */
+     own register class, set the cost of that register class to -1.
+     Do this only when source dies to avoid stressing of register
+     allocator by preferrencing two coliding registers into single
+     place.  */
 
   if ((set = single_set (insn)) != 0
       && ops[0] == SET_DEST (set) && ops[1] == SET_SRC (set)
-      && GET_CODE (ops[0]) == REG && GET_CODE (ops[1]) == REG)
+      && GET_CODE (ops[0]) == REG && GET_CODE (ops[1]) == REG
+      && find_regno_note (insn, REG_DEAD, REGNO (ops[1])))
     for (i = 0; i <= 1; i++)
       if (REGNO (ops[i]) >= FIRST_PSEUDO_REGISTER)
 	{
