@@ -229,6 +229,7 @@ static void delete_scheduled_jump PROTO((rtx));
 static void note_delay_statistics PROTO((int, int));
 static rtx optimize_skip	PROTO((rtx));
 static int get_jump_flags PROTO((rtx, rtx));
+static int rare_destination PROTO((rtx));
 static int mostly_true_jump	PROTO((rtx, rtx));
 static rtx get_branch_condition	PROTO((rtx, rtx));
 static int condition_dominates_p PROTO((rtx, rtx));
@@ -1163,12 +1164,9 @@ get_jump_flags (insn, label)
 	  case 1:
 	    flags |= ATTR_FLAG_likely;
 	    break;
-
 	  case 0:
 	    flags |= ATTR_FLAG_unlikely;
 	    break;
-	  /* mostly_true_jump does not return -1 for very unlikely jumps
-	     yet, but it should in the future.  */
 	  case -1:
 	    flags |= (ATTR_FLAG_very_unlikely | ATTR_FLAG_unlikely);
 	    break;
@@ -1183,10 +1181,54 @@ get_jump_flags (insn, label)
   return flags;
 }
 
+/* Return 1 if DEST is a destination that will be branched to rarely (the
+   return point of a function); return 2 if DEST will be branched to very
+   rarely (a call to a function that doesn't return).  Otherwise,
+   return 0.  */
+
+static int
+rare_destination (insn)
+     rtx insn;
+{
+  int jump_count = 0;
+
+  for (; insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+	insn = XVECEXP (PATTERN (insn), 0, 0);
+
+      switch (GET_CODE (insn))
+	{
+	case CODE_LABEL:
+	  return 0;
+	case BARRIER:
+	  /* A BARRIER can either be after a JUMP_INSN or a CALL_INSN.  We 
+	     don't scan past JUMP_INSNs, so any barrier we find here must
+	     have been after a CALL_INSN and hence mean the call doesn't
+	     return.  */
+	  return 2;
+	case JUMP_INSN:
+	  if (GET_CODE (PATTERN (insn)) == RETURN)
+	    return 1;
+	  else if (simplejump_p (insn)
+		   && jump_count++ < 10)
+	    insn = JUMP_LABEL (insn);
+	  else
+	    return 0;
+	}
+    }
+
+  /* If we got here it means we hit the end of the function.  So this
+     is an unlikely destination.  */
+
+  return 1;
+}
+
 /* Return truth value of the statement that this branch
    is mostly taken.  If we think that the branch is extremely likely
    to be taken, we return 2.  If the branch is slightly more likely to be
-   taken, return 1.  Otherwise, return 0.
+   taken, return 1.  If the branch is slightly less likely to be taken,
+   return 0 and if the branch is highly unlikely to be taken, return -1.
 
    CONDITION, if non-zero, is the condition that JUMP_INSN is testing.  */
 
@@ -1196,42 +1238,57 @@ mostly_true_jump (jump_insn, condition)
 {
   rtx target_label = JUMP_LABEL (jump_insn);
   rtx insn;
+  int rare_dest = rare_destination (target_label);
+  int rare_fallthrough = rare_destination (NEXT_INSN (jump_insn));
 
-  /* If this is a conditional return insn, assume it won't return.  */
-  if (target_label == 0)
-    return 0;
+  /* If this is a branch outside a loop, it is highly unlikely.  */
+  if (GET_CODE (PATTERN (jump_insn)) == SET
+      && GET_CODE (SET_SRC (PATTERN (jump_insn))) == IF_THEN_ELSE
+      && ((GET_CODE (XEXP (SET_SRC (PATTERN (jump_insn)), 1)) == LABEL_REF
+	   && LABEL_OUTSIDE_LOOP_P (XEXP (SET_SRC (PATTERN (jump_insn)), 1)))
+	  || (GET_CODE (XEXP (SET_SRC (PATTERN (jump_insn)), 2)) == LABEL_REF
+	      && LABEL_OUTSIDE_LOOP_P (XEXP (SET_SRC (PATTERN (jump_insn)), 2)))))
+    return -1;
 
-  /* If TARGET_LABEL has no jumps between it and the end of the function,
-     this is essentially a conditional return, so predict it as false.  */
-  for (insn = NEXT_INSN (target_label); insn; insn = NEXT_INSN (insn))
+  if (target_label)
     {
-      if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = XVECEXP (PATTERN (insn), 0, 0);
-      if (GET_CODE (insn) == JUMP_INSN)
-	break;
+      /* If this is the test of a loop, it is very likely true.  We scan
+	 backwards from the target label.  If we find a NOTE_INSN_LOOP_BEG
+	 before the next real insn, we assume the branch is to the top of 
+	 the loop.  */
+      for (insn = PREV_INSN (target_label);
+	   insn && GET_CODE (insn) == NOTE;
+	   insn = PREV_INSN (insn))
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	  return 2;
+
+      /* If this is a jump to the test of a loop, it is likely true.  We scan
+	 forwards from the target label.  If we find a NOTE_INSN_LOOP_VTOP
+	 before the next real insn, we assume the branch is to the loop branch
+	 test.  */
+      for (insn = NEXT_INSN (target_label);
+	   insn && GET_CODE (insn) == NOTE;
+	   insn = PREV_INSN (insn))
+	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP)
+	  return 1;
     }
 
-  if (insn == 0)
-    return 0;
+  /* Look at the relative rarities of the fallthough and destination.  If
+     they differ, we can predict the branch that way. */
 
-  /* If this is the test of a loop, it is very likely true.  We scan backwards
-     from the target label.  If we find a NOTE_INSN_LOOP_BEG before the next
-     real insn, we assume the branch is to the top of the loop.  */
-  for (insn = PREV_INSN (target_label);
-       insn && GET_CODE (insn) == NOTE;
-       insn = PREV_INSN (insn))
-    if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-      return 2;
-
-  /* If this is a jump to the test of a loop, it is likely true.  We scan
-     forwards from the target label.  If we find a NOTE_INSN_LOOP_VTOP
-     before the next real insn, we assume the branch is to the loop branch
-     test.  */
-  for (insn = NEXT_INSN (target_label);
-       insn && GET_CODE (insn) == NOTE;
-       insn = PREV_INSN (insn))
-    if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP)
+  switch (rare_fallthrough - rare_dest)
+    {
+    case -2:
+      return -1;
+    case -1:
+      return 0;
+    case 0:
+      break;
+    case 1:
       return 1;
+    case 2:
+      return 2;
+    }
 
   /* If we couldn't figure out what this jump was, assume it won't be 
      taken.  This should be rare.  */
@@ -3349,7 +3406,7 @@ fill_eager_delay_slots (first)
 	 target, then our fallthrough insns.  If it is not, expected to branch,
 	 try the other order.  */
 
-      if (prediction)
+      if (prediction > 0)
 	{
 	  delay_list
 	    = fill_slots_from_thread (insn, condition, insn_at_target,
@@ -3492,9 +3549,9 @@ relax_delay_slots (first)
 	  && (other = prev_active_insn (insn)) != 0
 	  && condjump_p (other)
 	  && no_labels_between_p (other, insn)
-	  && ! mostly_true_jump (other,
-				 get_branch_condition (other,
-						       JUMP_LABEL (other))))
+	  && 0 < mostly_true_jump (other,
+				   get_branch_condition (other,
+							 JUMP_LABEL (other))))
 	{
 	  rtx other_target = JUMP_LABEL (other);
 
