@@ -20,17 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "m68k.h"
 
-/* Without STRUCTURE_SIZE_BOUNDARY, we can't ensure that structures are
-   aligned such that we can correctly extract bitfields from them.
-   Someone should check whether the usual compiler on this machine
-   provides the equivalent behavior of STRUCTURE_SIZE_BOUNDARY.  */
-/* Alternative solutions are (1) define PCC_BITFIELD_TYPE_MATTERS,
-   if that fits what the usual compiler does,
-   or disable the -m68000 and -mnobitfield options.  */
-#error This doesn't define STRUCTURE_SIZE_BOUNDARY
-
 /* See m68k.h.  7 means 68020 with 68881. */
-
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 7
 #endif
@@ -43,7 +33,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* If the 68881 is used, link must load libmc.a instead of libc.a */
 
-#define LIB_SPEC "%{g:-lg} %{msoft-float:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}%{!msoft-float:%{!p:%{!pg:-lmc}}%{p:-lmc_p}%{pg:-lmc_p}} %{g:-lg}"
+#define LIB_SPEC "%{msoft-float:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} \
+%{!msoft-float:%{!p:%{!pg:-lmc}}%{p:-lmc_p}%{pg:-lmc_p}} \
+%{g:-lg}"
 
 #else
 /* Define __HAVE_68881__ in preprocessor if -m68881 is specified.
@@ -53,7 +45,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* If the 68881 is used, link must load libmc.a instead of libc.a */
 
-#define LIB_SPEC "%{g:-lg} %{!m68881:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}%{m68881:%{!p:%{!pg:-lmc}}%{p:-lmc_p}%{pg:-lmc_p}}"
+#define LIB_SPEC "%{!m68881:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} \
+%{m68881:%{!p:%{!pg:-lmc}}%{p:-lmc_p}%{pg:-lmc_p}} \
+%{g:-lg}"
 #endif
 
 /* Names to predefine in the preprocessor for this target machine.  */
@@ -70,6 +64,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef LIBCALL_VALUE
 #undef FUNCTION_VALUE_REGNO_P
 #undef ASM_FILE_START
+
+/* Every structure or union's size must be a multiple of 2 bytes.  */
+
+#define STRUCTURE_SIZE_BOUNDARY 16
 
 /* If TARGET_68881, return SF and DF values in f0 instead of d0.  */
 
