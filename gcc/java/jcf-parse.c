@@ -650,7 +650,8 @@ load_class (class_or_name, verbose)
      tree class_or_name;
      int verbose;
 {
-  tree name;
+  tree name, saved;
+  int class_loaded;
 
   /* class_or_name can be the name of the class we want to load */
   if (TREE_CODE (class_or_name) == IDENTIFIER_NODE)
@@ -663,8 +664,31 @@ load_class (class_or_name, verbose)
   else
     name = DECL_NAME (TYPE_NAME (class_or_name));
 
-  if (read_class (name) == 0 && verbose)
-    error ("Cannot find file for class %s.", IDENTIFIER_POINTER (name));
+  saved = name;
+  while (1)
+    {
+      char *dollar;
+
+      if ((class_loaded = read_class (name)))
+	break;
+
+      /* We failed loading name. Now consider that we might be looking
+	 for a inner class but it's only available in source for in
+	 its enclosing context. */
+      if ((dollar = strrchr (IDENTIFIER_POINTER (name), '$')))
+	{
+	  int c = *dollar;
+	  *dollar = '\0';
+	  name = get_identifier (IDENTIFIER_POINTER (name));
+	  *dollar = c;
+	}
+      /* Otherwise, we failed, we bail. */
+      else
+	break;
+    }
+
+  if (!class_loaded && verbose)
+    error ("Cannot find file for class %s.", IDENTIFIER_POINTER (saved));
 }
 
 /* Parse the .class file JCF. */

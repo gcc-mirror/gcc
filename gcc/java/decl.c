@@ -541,10 +541,16 @@ init_decl_processing ()
   string_ptr_type_node = promote_type (string_type_node);
   class_type_node = lookup_class (get_identifier ("java.lang.Class"));
   throwable_type_node = lookup_class (get_identifier ("java.lang.Throwable"));
+  exception_type_node = lookup_class (get_identifier ("java.lang.Exception"));
   runtime_exception_type_node = 
     lookup_class (get_identifier ("java.lang.RuntimeException"));
   error_exception_type_node = 
     lookup_class (get_identifier ("java.lang.Error"));
+  class_not_found_type_node = 
+    lookup_class (get_identifier ("java.lang.ClassNotFoundException"));
+  no_class_def_found_type_node = 
+    lookup_class (get_identifier ("java.lang.NoClassDefFoundError"));
+
   rawdata_ptr_type_node
     = promote_type (lookup_class (get_identifier ("gnu.gcj.RawData")));
 
@@ -557,6 +563,9 @@ init_decl_processing ()
   predef_filenames [4] = get_identifier ("java/lang/String.java");
   predef_filenames [5] = get_identifier ("java/lang/Throwable.java");
   predef_filenames [6] = get_identifier ("gnu/gcj/RawData.java");
+  predef_filenames [7] = get_identifier ("java/lang/Exception");
+  predef_filenames [8] = get_identifier ("java/lang/ClassNotFoundException");
+  predef_filenames [9] = get_identifier ("java/lang/NoClassDefFoundError");
 
   methodtable_type = make_node (RECORD_TYPE);
   layout_type (methodtable_type);
@@ -572,6 +581,7 @@ init_decl_processing ()
   /* The new `finit$' special method identifier. This one is now
      generated in place of `$finit$'.  */
   finit_identifier_node = get_identifier ("finit$");
+  instinit_identifier_node = get_identifier ("instinit$");
   void_signature_node = get_identifier ("()V");
   length_identifier_node = get_identifier ("length");
   this_identifier_node = get_identifier ("this");

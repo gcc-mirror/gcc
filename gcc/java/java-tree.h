@@ -251,9 +251,12 @@ enum java_tree_index
   JTI_STRING_TYPE_NODE,
   JTI_STRING_PTR_TYPE_NODE,
   JTI_THROWABLE_TYPE_NODE,
+  JTI_EXCEPTION_TYPE_NODE,
   JTI_RUNTIME_EXCEPTION_TYPE_NODE,
   JTI_ERROR_EXCEPTION_TYPE_NODE,
   JTI_RAWDATA_PTR_TYPE_NODE,
+  JTI_CLASS_NOT_FOUND_TYPE_NODE,
+  JTI_NO_CLASS_DEF_FOUND_TYPE_NODE,
 
   JTI_BYTE_ARRAY_TYPE_NODE,
   JTI_SHORT_ARRAY_TYPE_NODE,
@@ -278,6 +281,7 @@ enum java_tree_index
   JTI_INIT_IDENTIFIER_NODE,      
   JTI_CLINIT_IDENTIFIER_NODE,      
   JTI_FINIT_IDENTIFIER_NODE,      
+  JTI_INSTINIT_IDENTIFIER_NODE,
   JTI_FINIT_LEG_IDENTIFIER_NODE,  
   JTI_VOID_SIGNATURE_NODE,       
   JTI_LENGTH_IDENTIFIER_NODE,  
@@ -408,12 +412,18 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_STRING_PTR_TYPE_NODE]
 #define throwable_type_node \
   java_global_trees[JTI_THROWABLE_TYPE_NODE]
+#define exception_type_node \
+  java_global_trees[JTI_EXCEPTION_TYPE_NODE]
 #define runtime_exception_type_node \
   java_global_trees[JTI_RUNTIME_EXCEPTION_TYPE_NODE]
 #define error_exception_type_node \
   java_global_trees[JTI_ERROR_EXCEPTION_TYPE_NODE]
 #define rawdata_ptr_type_node \
   java_global_trees[JTI_RAWDATA_PTR_TYPE_NODE]
+#define class_not_found_type_node \
+  java_global_trees[JTI_CLASS_NOT_FOUND_TYPE_NODE]
+#define no_class_def_found_type_node \
+  java_global_trees[JTI_NO_CLASS_DEF_FOUND_TYPE_NODE]
 
 #define byte_array_type_node \
   java_global_trees[JTI_BYTE_ARRAY_TYPE_NODE]
@@ -463,6 +473,8 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_FINIT_IDENTIFIER_NODE]      /* "finit$" */
 #define finit_leg_identifier_node \
   java_global_trees[JTI_FINIT_LEG_IDENTIFIER_NODE]  /* "$finit$" */
+#define instinit_identifier_node \
+  java_global_trees[JTI_INSTINIT_IDENTIFIER_NODE]  /* "instinit$" */
 #define void_signature_node \
   java_global_trees[JTI_VOID_SIGNATURE_NODE]       /* "()V" */
 #define length_identifier_node \
@@ -598,7 +610,7 @@ extern tree java_global_trees[JTI_MAX];
 #define nativecode_ptr_array_type_node \
   java_global_trees[JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE]
 
-#define PREDEF_FILENAMES_SIZE 7
+#define PREDEF_FILENAMES_SIZE 10
 extern tree predef_filenames[PREDEF_FILENAMES_SIZE];
 
 #define nativecode_ptr_type_node ptr_type_node
@@ -937,7 +949,7 @@ struct lang_decl_var
 #define TYPE_PACKAGE_LIST(T)     (TYPE_LANG_SPECIFIC(T)->package_list)
 #define TYPE_PRIVATE_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->pic)
 #define TYPE_PROTECTED_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->poic)
-#define TYPE_HAS_FINAL_VARIABLE(T) (TYPE_LANG_SPECIFIC(T)->afv)
+#define TYPE_HAS_FINAL_VARIABLE(T) (TYPE_LANG_SPECIFIC(T)->hfv)
 
 struct lang_type
 {
@@ -955,7 +967,7 @@ struct lang_type
   tree package_list;		/* List of package names, progressive */
   unsigned pic:1;		/* Private Inner Class. */
   unsigned poic:1;		/* Protected Inner Class. */
-  unsigned afv:1;		/* Has final variables */
+  unsigned hfv:1;		/* Has final variables */
 };
 
 #ifdef JAVA_USE_HANDLES
@@ -1197,6 +1209,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define DECL_INIT_P(DECL)   (ID_INIT_P (DECL_NAME (DECL)))
 #define DECL_FINIT_P(DECL)  (ID_FINIT_P (DECL_NAME (DECL)))
 #define DECL_CLINIT_P(DECL) (ID_CLINIT_P (DECL_NAME (DECL)))
+#define DECL_INSTINIT_P(DECL) (ID_INSTINIT_P (DECL_NAME (DECL)))
 
 /* Predicates on method identifiers. Kept close to other macros using
    them  */
@@ -1209,6 +1222,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 			 || (ID) == finit_leg_identifier_node)
 #define ID_CLINIT_P(ID) ((ID) == clinit_identifier_node)
 #define ID_CLASSDOLLAR_P(ID) ((ID) == classdollar_identifier_node)
+#define ID_INSTINIT_P(ID) ((ID) == instinit_identifier_node)
 
 /* Access flags etc for a variable/field (a FIELD_DECL): */
 

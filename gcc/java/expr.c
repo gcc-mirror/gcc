@@ -2505,8 +2505,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    }
 	  expand_expr (body, const0_rtx, VOIDmode, 0);
 	  emit_queue ();
-	  poplevel (1, 1, 0);
 	  expand_end_bindings (getdecls (), 1, 0);
+	  poplevel (1, 1, 0);
 	  return const0_rtx;
 	}
       return const0_rtx;
