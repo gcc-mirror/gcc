@@ -1861,6 +1861,43 @@ legitimize_address (x, oldx, mode)
   return x;
 }
 
+/* In the name of slightly smaller debug output, and to cater to
+   general assembler losage, recognize various UNSPEC sequences
+   and turn them back into a direct symbol reference.  */
+
+rtx
+s390_simplify_dwarf_addr (orig_x)
+     rtx orig_x;
+{
+  rtx x = orig_x, y;
+
+  if (GET_CODE (x) != MEM)
+    return orig_x;
+
+  x = XEXP (x, 0);
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == CONST
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO (XEXP (x, 0)) == PIC_OFFSET_TABLE_REGNUM)
+    {
+      y = XEXP (XEXP (x, 1), 0);
+      if (GET_CODE (y) == UNSPEC
+	  && XINT (y, 1) == 110)
+	return XVECEXP (y, 0, 0);
+      return orig_x;
+    }
+
+  if (GET_CODE (x) == CONST)
+    {
+      y = XEXP (x, 0);
+      if (GET_CODE (y) == UNSPEC
+	  && XINT (y, 1) == 111)
+	return XVECEXP (y, 0, 0);
+      return orig_x;
+    }
+
+  return orig_x;      
+}
 
 /* Output symbolic constant X in assembler syntax to 
    stdio stream FILE.  */

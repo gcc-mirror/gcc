@@ -2,6 +2,8 @@
 
 	* gcc.dg/altivec-5.c: New test.
 
+	* gcc.dg/20020415-1.c: New test.
+
 2002-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/lib/chill.exp: Remove.
