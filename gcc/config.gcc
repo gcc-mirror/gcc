@@ -224,6 +224,10 @@ enable_threads=$enable_threads_flag
 target_gtfiles=
 need_64bit_hwint=
 
+# Don't carry these over build->host->target.  Please.
+xm_file=
+md_file=
+
 # Obsolete configurations.
 case $machine in
  dummy)
