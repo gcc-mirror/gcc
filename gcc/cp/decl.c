@@ -5947,12 +5947,12 @@ push_overloaded_decl_1 (x)
 __inline
 #endif
 tree
-auto_function (name, type, code)
+auto_function (name, type)
      tree name, type;
-     enum built_in_function code;
+     enum built_in_function;
 {
   return define_function
-    (IDENTIFIER_POINTER (name), type, code, push_overloaded_decl_1,
+    (IDENTIFIER_POINTER (name), type, push_overloaded_decl_1,
      IDENTIFIER_POINTER (build_decl_overload (name, TYPE_ARG_TYPES (type),
 					      0)));
 }
@@ -6309,16 +6309,15 @@ init_decl_processing ()
     newtype = build_exception_variant
       (ptr_ftype_sizetype, add_exception_specifier (NULL_TREE, bad_alloc_type_node, -1));
     deltype = build_exception_variant (void_ftype_ptr, empty_except_spec);
-    auto_function (ansi_opname[(int) NEW_EXPR], newtype, NOT_BUILT_IN);
-    auto_function (ansi_opname[(int) VEC_NEW_EXPR], newtype, NOT_BUILT_IN);
-    global_delete_fndecl
-      = auto_function (ansi_opname[(int) DELETE_EXPR], deltype, NOT_BUILT_IN);
-    auto_function (ansi_opname[(int) VEC_DELETE_EXPR], deltype, NOT_BUILT_IN);
+    auto_function (ansi_opname[(int) NEW_EXPR], newtype);
+    auto_function (ansi_opname[(int) VEC_NEW_EXPR], newtype);
+    global_delete_fndecl = auto_function (ansi_opname[(int) DELETE_EXPR],
+					  deltype);
+    auto_function (ansi_opname[(int) VEC_DELETE_EXPR], deltype);
   }
 
   abort_fndecl
-    = define_function ("__pure_virtual", void_ftype,
-		       NOT_BUILT_IN, 0, 0);
+    = define_function ("__pure_virtual", void_ftype, 0, 0);
 
   /* Perform other language dependent initializations.  */
   init_class_processing ();
@@ -6401,17 +6400,14 @@ lang_print_error_function (file)
 
 /* Make a definition for a builtin function named NAME and whose data type
    is TYPE.  TYPE should be a function type with argument types.
-   FUNCTION_CODE tells later passes how to compile calls to this function.
-   See tree.h for its possible values.
 
    If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
    the name to be called if we can't opencode the function.  */
 
 tree
-define_function (name, type, function_code, pfn, library_name)
+define_function (name, type, pfn, library_name)
      const char *name;
      tree type;
-     enum built_in_function function_code;
      void (*pfn) PROTO((tree));
      const char *library_name;
 {
@@ -6430,13 +6426,14 @@ define_function (name, type, function_code, pfn, library_name)
   if (library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
   make_function_rtl (decl);
-  if (function_code != NOT_BUILT_IN)
-    {
-      DECL_BUILT_IN (decl) = 1;
-      DECL_FUNCTION_CODE (decl) = function_code;
-    }
   return decl;
 }
+
+
+/* Wrapper around define_function, for the benefit of 
+   c_common_nodes_and_builtins.
+   FUNCTION_CODE tells later passes how to compile calls to this function.
+   See tree.h for its possible values.  */
 
 tree
 builtin_function (name, type, code, libname)
@@ -6445,7 +6442,14 @@ builtin_function (name, type, code, libname)
      enum built_in_function code;
      const char *libname;
 {
-  return define_function (name, type, code, (void (*) PROTO((tree)))pushdecl, libname);
+  tree decl = define_function (name, type, (void (*) PROTO((tree)))pushdecl,
+			       libname);
+  if (code != NOT_BUILT_IN)
+    {
+      DECL_BUILT_IN (decl) = 1;
+      DECL_FUNCTION_CODE (decl) = code;
+    }
+  return decl;
 }
 
 /* When we call finish_struct for an anonymous union, we create
@@ -7906,9 +7910,7 @@ destroy_local_static (decl)
 	= define_function ("atexit",
 			   build_function_type (void_type_node,
 						pfvlist),
-			   NOT_BUILT_IN, 
-			   /*pfn=*/0,
-			   NULL_PTR);
+			   /*pfn=*/0, NULL_PTR);
       mark_used (atexit_fndecl);
       atexit_node = default_conversion (atexit_fndecl);
       pop_lang_context ();

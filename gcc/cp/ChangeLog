@@ -1,3 +1,12 @@
+1999-09-12  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* cp-tree.h (auto_function, define_function): Adjust prototypes.
+	* decl.c (define_function): Lose FUNCTION_CODE arg.  All callers
+	changed.
+	(auto_function): Likewise, for CODE arg.
+	Move code to set DECL_BUILT_IN and DECL_FUNCTION_CODE to...
+	(builtin_function): ... here.
+
 1999-09-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (CLEANUP_STMT): New node.
