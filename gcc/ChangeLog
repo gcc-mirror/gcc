@@ -1,3 +1,8 @@
+2001-08-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific, c4x): Fix cross-reference to the
+	main manual to work both for info and HTML versions.
+	
 2001-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
  
  	* glimits.h (__LONG_MAX__): Add s390x as 64-bit architecture.

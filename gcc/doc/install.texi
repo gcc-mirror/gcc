@@ -1687,9 +1687,15 @@ indicates that you should upgrade to a newer version of the binutils.
 
 Texas Instruments TMS320C3x and TMS320C4x Floating Point Digital Signal
 Processors.  These are used in embedded applications.  There are no
-standard Unix configurations.  @xref{C4x Options,, C4x Options, gcc,
-Using and Porting the GNU Compiler Collection (GCC)}, for the list of
-supported MCU types.
+standard Unix configurations.
+@ifnothtml
+@xref{TMS320C3x/C4x Options,, TMS320C3x/C4x Options, gcc, Using and
+Porting the GNU Compiler Collection (GCC)},
+@end ifnothtml
+@ifnotinfo
+See ``TMS320C3x/C4x Options'' in the main manual
+@end ifnotinfo
+for the list of supported MCU types.
 
 GCC can be configured as a cross compiler for both the C3x and C4x
 architectures on the same system.  Use @samp{configure --target=c4x
@@ -1701,7 +1707,7 @@ can also be obtained from:
 
 @itemize @bullet
 @item
-@uref{http://www.elec.canterbury.ac.nz/c4x,,http://www.elec.canterbury.ac.nz/c4x}
+@uref{http://www.elec.canterbury.ac.nz/c4x/,,http://www.elec.canterbury.ac.nz/c4x/}
 @end itemize
 
 @html
