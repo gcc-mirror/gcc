@@ -2010,8 +2010,8 @@ expand_units ()
 	    * sizeof (struct function_unit_op *));
 
   for (unit = units, i = 0; unit; i += unit->num_opclasses, unit = unit->next)
-    bcopy ((char *) unit_ops[unit->num], (char *) &op_array[i],
-	   unit->num_opclasses * sizeof (struct function_unit_op *));
+    memcpy (&op_array[i], unit_ops[unit->num],
+	    unit->num_opclasses * sizeof (struct function_unit_op *));
 
   /* Compute the ready cost function for each unit by computing the
      condition for each non-default value.  */

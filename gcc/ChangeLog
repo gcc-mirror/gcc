@@ -1,3 +1,9 @@
+2001-03-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* combine.c (try_combine): Use memcpy, not bcopy.
+
+	* genattrtab.c (expand_units): Likewise.
+
 Mon Mar 26 15:55:08 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (push mem DI peep2): New.
