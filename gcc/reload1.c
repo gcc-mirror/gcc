@@ -7288,7 +7288,7 @@ emit_reload_insns (chain)
 		     necessarily checked exactly in the code that moves
 		     notes, so just check both locations.  */
 		  rtx note = find_regno_note (insn, REG_DEAD, src_regno);
-		  if (! note)
+		  if (! note && store_insn)
 		    note = find_regno_note (store_insn, REG_DEAD, src_regno);
 		  while (nr-- > 0)
 		    {
