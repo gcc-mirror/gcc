@@ -761,6 +761,7 @@ init_parse (filename)
   opname_tab[(int) CEIL_MOD_EXPR] = "(ceiling %)";
   opname_tab[(int) FLOOR_MOD_EXPR] = "(floor %)";
   opname_tab[(int) ROUND_MOD_EXPR] = "(round %)";
+  opname_tab[(int) EXACT_DIV_EXPR] = "/";
   opname_tab[(int) NEGATE_EXPR] = "-";
   opname_tab[(int) MIN_EXPR] = "<?";
   opname_tab[(int) MAX_EXPR] = ">?";
