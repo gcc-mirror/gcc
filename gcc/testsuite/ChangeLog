@@ -1,3 +1,8 @@
+2002-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20021029-1.c: New test.
+	* gcc.dg/20021029-2.c: New test.
+
 2002-11-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* g++.dg/abi/vague1.C (dg-final): Return if target is hppa*-*-hpux*.
