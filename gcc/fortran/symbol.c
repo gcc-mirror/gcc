@@ -722,9 +722,13 @@ gfc_add_dummy (symbol_attribute * attr, locus * where)
 try
 gfc_add_common (symbol_attribute * attr, locus * where)
 {
-
+  /* TODO: We currently add common blocks into the same namespace as normal
+     variables.  This is wrong.  Disable the checks below as a temporary
+     hack.  See PR13249  */
+#if 0
   if (check_used (attr, where) || check_done (attr, where))
     return FAILURE;
+#endif
 
   attr->common = 1;
   return check_conflict (attr, where);
