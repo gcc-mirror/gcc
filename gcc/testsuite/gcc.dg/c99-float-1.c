@@ -125,9 +125,10 @@
 #endif
 
 #ifndef FLT_EVAL_METHOD
-#error "FLT_EVAL_METHOD undefined"
+#error "FLT_EVAL_METHOD undefined"	/* { dg-bogus "not c99 compliant" "FLT_EVAL_METHOD" { xfail *-*-irix* } } */
 #endif
 
 #ifndef DECIMAL_DIG
-#error "DECIMAL_DIG undefined"
+#error "DECIMAL_DIG undefined"	/* { dg-bogus "not c99 compliant" "DECIMAL_DIG" { xfail *-*-irix* } } */
+
 #endif
