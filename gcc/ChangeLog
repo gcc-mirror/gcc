@@ -1,3 +1,8 @@
+2002-02-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/sparc/sparc.c (sparc64_initialize_trampoline): Generate sign
+	extended constants.
+
 2002-02-28  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c: Fix formatting.
