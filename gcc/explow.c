@@ -267,7 +267,7 @@ break_out_memory_refs (x)
      register rtx x;
 {
   if (GET_CODE (x) == MEM
-      || (CONSTANT_P (x) && LEGITIMATE_CONSTANT_P (x)
+      || (CONSTANT_P (x) && CONSTANT_ADDRESS_P (x)
 	  && GET_MODE (x) != VOIDmode))
     {
       register rtx temp = force_reg (GET_MODE (x), x);
@@ -333,7 +333,7 @@ memory_address (mode, x)
 
   /* By passing constant addresses thru registers
      we get a chance to cse them.  */
-  if (! cse_not_expected && CONSTANT_P (x) && LEGITIMATE_CONSTANT_P (x))
+  if (! cse_not_expected && CONSTANT_P (x) && CONSTANT_ADDRESS_P (x))
     return force_reg (Pmode, x);
 
   /* Accept a QUEUED that refers to a REG
