@@ -1,5 +1,9 @@
 2005-04-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* bcmp.c: Fix warnings and implement using memcmp.
+	* bcopy.c: Fix warnings.
+	* bzero.c: Fix warnings and implement using memset.
+
 	* configure.ac (ac_libiberty_warn_cflags): Add -Wwrite-strings
 	-Wstrict-prototypes.
 	* configure, config.in: Regenerate.

@@ -12,12 +12,12 @@ is deprecated in favor of @code{memset}.
 
 */
 
+#include <stddef.h>
+
+extern void *memset(void *, int, size_t);
 
 void
-bzero (char *to, int count)
+bzero (void *to, size_t count)
 {
-  while (count-- > 0)
-    {
-      *to++ = 0;
-    }
+  memset (to, 0, count);
 }
