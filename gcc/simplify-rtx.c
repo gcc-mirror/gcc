@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"
+#include "target.h"
 
 /* Simplification and canonicalization of RTL.  */
 
@@ -106,12 +107,35 @@ rtx
 avoid_constant_pool_reference (x)
      rtx x;
 {
-  rtx c, addr;
+  rtx c, tmp, addr;
   enum machine_mode cmode;
 
-  if (GET_CODE (x) != MEM)
-    return x;
+  switch (GET_CODE (x))
+    {
+    case MEM:
+      break;
+
+    case FLOAT_EXTEND:
+      /* Handle float extensions of constant pool references.  */
+      tmp = XEXP (x, 0);
+      c = avoid_constant_pool_reference (tmp);
+      if (c != tmp && GET_CODE (c) == CONST_DOUBLE)
+	{
+	  REAL_VALUE_TYPE d;
+
+	  REAL_VALUE_FROM_CONST_DOUBLE (d, c);
+	  return CONST_DOUBLE_FROM_REAL_VALUE (d, GET_MODE (x));
+	}
+      return x;
+
+    default:
+      return x;
+    }
+
   addr = XEXP (x, 0);
+
+  /* Call target hook to avoid the effects of -fpic etc...  */
+  addr = (*targetm.delegitimize_address) (addr);
 
   if (GET_CODE (addr) == LO_SUM)
     addr = XEXP (addr, 1);

@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -44,5 +44,7 @@ bool default_can_output_mi_thunk_no_vcall
   PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 
 bool hook_bool_tree_tree_false PARAMS ((tree, tree));
+
+rtx hook_rtx_rtx_identity PARAMS ((rtx));
 
 #endif
