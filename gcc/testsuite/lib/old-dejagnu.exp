@@ -404,6 +404,11 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	remote_file build delete $output
 	return 1
     }
+    if [string match "*Internal compiler error*" $comp_output] then {
+        fail "$name caused compiler crash"
+	remote_file build delete $output
+	return 1
+    }
 
     #send_user "\nold_dejagnu.exp: comp_output1 = :$comp_output:\n\n"
     #send_user "\nold_dejagnu.exp: message = :$message:\n\n"
@@ -426,13 +431,7 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	}
 	set last_line $line
 
-	# If we crashed on this line, all tests fail.
-	if [regexp "(^|\n)\[^\n\]+:$line: Internal compiler error\[^\n\]*" $comp_output ] {
-	    regsub -all "(^|\n)\[^\n\]+:$line:\[^\n\]*" $comp_output "" comp_output
-            set comp_output [string trimleft $comp_output]
-	    set ok fail
-	    set uhoh fail
-	} elseif [regsub -all "(^|\n)\[^\n\]+:$line:\[^\n\]*" $comp_output "" comp_output] {
+	if [regsub -all "(^|\n)\[^\n\]+:$line:\[^\n\]*" $comp_output "" comp_output] {
             set comp_output [string trimleft $comp_output]
 	    set ok pass
 	    set uhoh fail
