@@ -97,7 +97,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector float) __builtin_altivec_vaddfp ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_addc(a1, a2) __builtin_altivec_vaddcuw (a1, a2)
 
@@ -126,7 +126,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vaddsws ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))))))))));
+    __altivec_link_error_invalid_argument ()))))))))))))
 
 #define vec_and(a1, a2) \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
@@ -159,7 +159,7 @@ __ch (__bin_args_eq (vector unsigned char, a1, vector signed char, a2), \
       (vector unsigned char) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))))
 
 #define vec_andc(a1, a2) \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
@@ -192,7 +192,7 @@ __ch (__bin_args_eq (vector unsigned char, a1, vector signed char, a2), \
       (vector unsigned char) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))))
 
 #define vec_avg(a1, a2) \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
@@ -207,7 +207,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vavguw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vavgsw ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))));
+    __altivec_link_error_invalid_argument ()))))))
 
 #define vec_ceil(a1) __builtin_altivec_vrfip (a1)
 
@@ -228,7 +228,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vcmpequw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpeqfp ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
 #define vec_cmpge(a1, a2) __builtin_altivec_vcmpgefp (a1, a2)
 
@@ -247,7 +247,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgtfp ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
 #define vec_cmple(a1, a2) __builtin_altivec_vcmpgefp (a1, a2)
 
@@ -266,14 +266,14 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgtfp ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
 #define vec_ctf(a1, a2) \
 __ch (__bin_args_eq (vector unsigned int, a1, const char, a2), \
       (vector float) __builtin_altivec_vcfux ((vector signed int) a1, (const char) a2), \
 __ch (__bin_args_eq (vector signed int, a1, const char, a2), \
       (vector float) __builtin_altivec_vcfsx ((vector signed int) a1, (const char) a2), \
-    __altivec_link_error_invalid_argument ()));
+    __altivec_link_error_invalid_argument ()))
 
 #define vec_cts(a1, a2) __builtin_altivec_vctsxs (a1, a2)
 
@@ -409,7 +409,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vmaxsw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector float) __builtin_altivec_vmaxfp ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_mergeh(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector signed char, a2), \
@@ -426,7 +426,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vmrghw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vmrghw ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
 #define vec_mergel(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector signed char, a2), \
@@ -443,9 +443,9 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vmrglw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vmrglw ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
-#define vec_mfvscr() __builtin_altivec_mfvscr ();
+#define vec_mfvscr() __builtin_altivec_mfvscr ()
 
 #define vec_min(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -474,7 +474,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vminsw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector float) __builtin_altivec_vminfp ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_mladd(a1, a2, a3) \
 __ch (__tern_args_eq (vector signed short, a1, vector signed short, a2, vector signed short, a3), \
@@ -485,7 +485,7 @@ __ch (__tern_args_eq (vector unsigned short, a1, vector signed short, a2, vector
       (vector signed short) __builtin_altivec_vmladduhm ((vector signed short) a1, (vector signed short) a2, (vector signed short) a3), \
 __ch (__tern_args_eq (vector unsigned short, a1, vector unsigned short, a2, vector unsigned short, a3), \
       (vector unsigned short) __builtin_altivec_vmladduhm ((vector signed short) a1, (vector signed short) a2, (vector signed short) a3), \
-    __altivec_link_error_invalid_argument ()))));
+    __altivec_link_error_invalid_argument ()))))
 
 #define vec_mradds(a1, a2, a3) __builtin_altivec_vmhraddshs (a1, a2, a3)
 
@@ -498,14 +498,14 @@ __ch (__tern_args_eq (vector unsigned short, a1, vector unsigned short, a2, vect
       (vector unsigned int) __builtin_altivec_vmsumuhm ((vector signed short) a1, (vector signed short) a2, (vector signed int) a3), \
 __ch (__tern_args_eq (vector signed short, a1, vector signed short, a2, vector signed int, a3), \
       (vector signed int) __builtin_altivec_vmsumshm ((vector signed short) a1, (vector signed short) a2, (vector signed int) a3), \
-    __altivec_link_error_invalid_argument ()))));
+    __altivec_link_error_invalid_argument ()))))
 
 #define vec_msums(a1, a2, a3) \
 __ch (__tern_args_eq (vector unsigned short, a1, vector unsigned short, a2, vector unsigned int, a3), \
       (vector unsigned int) __builtin_altivec_vmsumuhs ((vector signed short) a1, (vector signed short) a2, (vector signed int) a3), \
 __ch (__tern_args_eq (vector signed short, a1, vector signed short, a2, vector signed int, a3), \
       (vector signed int) __builtin_altivec_vmsumshs ((vector signed short) a1, (vector signed short) a2, (vector signed int) a3), \
-    __altivec_link_error_invalid_argument ()));
+    __altivec_link_error_invalid_argument ()))
 
 #define vec_mtvscr(a1) \
 __ch (__un_args_eq (vector signed int, a1), \
@@ -520,7 +520,7 @@ __ch (__un_args_eq (vector signed char, a1), \
       __builtin_altivec_mtvscr ((vector signed int) a1), \
 __ch (__un_args_eq (vector unsigned char, a1), \
       __builtin_altivec_mtvscr ((vector signed int) a1), \
-    __altivec_link_error_invalid_argument ()))))));
+    __altivec_link_error_invalid_argument ()))))))
 
 #define vec_mule(a1, a2) \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
@@ -531,7 +531,7 @@ __ch (__bin_args_eq (vector unsigned short, a1, vector unsigned short, a2), \
       (vector unsigned int) __builtin_altivec_vmuleuh ((vector signed short) a1, (vector signed short) a2), \
 __ch (__bin_args_eq (vector signed short, a1, vector signed short, a2), \
       (vector signed int) __builtin_altivec_vmulesh ((vector signed short) a1, (vector signed short) a2), \
-    __altivec_link_error_invalid_argument ()))));
+    __altivec_link_error_invalid_argument ()))))
 
 #define vec_mulo(a1, a2) \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
@@ -542,7 +542,7 @@ __ch (__bin_args_eq (vector unsigned short, a1, vector unsigned short, a2), \
       (vector unsigned int) __builtin_altivec_vmulouh ((vector signed short) a1, (vector signed short) a2), \
 __ch (__bin_args_eq (vector signed short, a1, vector signed short, a2), \
       (vector signed int) __builtin_altivec_vmulosh ((vector signed short) a1, (vector signed short) a2), \
-    __altivec_link_error_invalid_argument ()))));
+    __altivec_link_error_invalid_argument ()))))
 
 #define vec_nmsub(a1, a2, a3) __builtin_altivec_vnmsubfp (a1, a2, a3)
 
@@ -561,7 +561,7 @@ __ch (__bin_args_eq (vector signed char, a1, vector signed char, a2), \
       (vector signed char) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
 #define vec_or(a1, a2) \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
@@ -594,7 +594,7 @@ __ch (__bin_args_eq (vector unsigned char, a1, vector signed char, a2), \
       (vector unsigned char) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))))
 
 #define vec_pack(a1, a2) \
 __ch (__bin_args_eq (vector signed short, a1, vector signed short, a2), \
@@ -605,7 +605,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed short) __builtin_altivec_vpkuwum ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned short) __builtin_altivec_vpkuwum ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))));
+    __altivec_link_error_invalid_argument ()))))
 
 #define vec_packpx(a1, a2) __builtin_altivec_vpkpx (a1, a2)
 
@@ -618,7 +618,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned short) __builtin_altivec_vpkuwus ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed short) __builtin_altivec_vpkswss ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))));
+    __altivec_link_error_invalid_argument ()))))
 
 #define vec_packsu(a1, a2) \
 __ch (__bin_args_eq (vector unsigned short, a1, vector unsigned short, a2), \
@@ -629,7 +629,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned short) __builtin_altivec_vpkuwus ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector unsigned short) __builtin_altivec_vpkswus ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))));
+    __altivec_link_error_invalid_argument ()))))
 
 #define vec_perm(a1, a2, a3, a4) \
 __ch (__tern_args_eq (vector float, a1, vector float, a2, vector unsigned char, a3), \
@@ -646,7 +646,7 @@ __ch (__tern_args_eq (vector signed char, a1, vector signed char, a2, vector uns
       (vector signed char) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3), \
 __ch (__tern_args_eq (vector unsigned char, a1, vector unsigned char, a2, vector unsigned char, a3), \
       (vector unsigned char) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
 #define vec_re(a1) __builtin_altivec_vrefp (a1)
 
@@ -663,7 +663,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vrlw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vrlw ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))));
+    __altivec_link_error_invalid_argument ()))))))
 
 #define vec_round(a1) __builtin_altivec_vrfin (a1)
 
@@ -698,7 +698,7 @@ __ch (__tern_args_eq (vector unsigned char, a1, vector unsigned char, a2, vector
       (vector unsigned char) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3), \
 __ch (__tern_args_eq (vector unsigned char, a1, vector unsigned char, a2, vector unsigned char, a3), \
       (vector unsigned char) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3), \
-    __altivec_link_error_invalid_argument ()))))))))))))));
+    __altivec_link_error_invalid_argument ()))))))))))))))
 
 #define vec_sl(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -713,7 +713,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vslw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vslw ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))));
+    __altivec_link_error_invalid_argument ()))))))
 
 #define vec_sld(a1, a2, a3) \
 __ch (__tern_args_eq (vector float, a1, vector float, a2, const char, a3), \
@@ -730,7 +730,7 @@ __ch (__tern_args_eq (vector signed char, a1, vector signed char, a2, const char
       (vector signed char) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3), \
 __ch (__tern_args_eq (vector unsigned char, a1, vector unsigned char, a2, const char, a3), \
       (vector unsigned char) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
 #define vec_sll(a1, a2) \
 __ch (__bin_args_eq (vector signed int, a1, vector unsigned int, a2), \
@@ -769,7 +769,7 @@ __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned short, a2), \
       (vector unsigned char) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))))))))))))))));
+    __altivec_link_error_invalid_argument ()))))))))))))))))))
 
 #define vec_slo(a1, a2) \
 __ch (__bin_args_eq (vector float, a1, vector signed char, a2), \
@@ -800,7 +800,7 @@ __ch (__bin_args_eq (vector unsigned char, a1, vector signed char, a2), \
       (vector unsigned char) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))))))))))));
+    __altivec_link_error_invalid_argument ()))))))))))))))
 
 #define vec_splat(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, const char, a2), \
@@ -817,7 +817,7 @@ __ch (__bin_args_eq (vector signed int, a1, const char, a2), \
       (vector signed int) __builtin_altivec_vspltw ((vector signed int) a1, (const char) a2), \
 __ch (__bin_args_eq (vector unsigned int, a1, const char, a2), \
       (vector unsigned int) __builtin_altivec_vspltw ((vector signed int) a1, (const char) a2), \
-    __altivec_link_error_invalid_argument ())))))));
+    __altivec_link_error_invalid_argument ())))))))
 
 #define vec_splat_s8(a1) __builtin_altivec_vspltisb (a1)
 
@@ -844,7 +844,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vsrw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vsrw ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))));
+    __altivec_link_error_invalid_argument ()))))))
 
 #define vec_sra(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -859,7 +859,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vsraw ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vsraw ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))));
+    __altivec_link_error_invalid_argument ()))))))
 
 #define vec_srl(a1, a2) \
 __ch (__bin_args_eq (vector signed int, a1, vector unsigned int, a2), \
@@ -898,7 +898,7 @@ __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned short, a2), \
       (vector unsigned char) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))))))))))))))));
+    __altivec_link_error_invalid_argument ()))))))))))))))))))
 
 #define vec_sro(a1, a2) \
 __ch (__bin_args_eq (vector float, a1, vector signed char, a2), \
@@ -929,7 +929,7 @@ __ch (__bin_args_eq (vector unsigned char, a1, vector signed char, a2), \
       (vector unsigned char) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))))))))))));
+    __altivec_link_error_invalid_argument ()))))))))))))))
 
 #define vec_st(a1, a2, a3) \
   __builtin_altivec_stvx ((vector signed int) a1, a2, a3)
@@ -981,7 +981,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector float) __builtin_altivec_vsubfp ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_subc(a1, a2) __builtin_altivec_vsubcuw (a1, a2)
 
@@ -1010,7 +1010,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vsubsws ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ()))))))))))));
+    __altivec_link_error_invalid_argument ()))))))))))))
 
 #define vec_sum4s(a1, a2) \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned int, a2), \
@@ -1019,7 +1019,7 @@ __ch (__bin_args_eq (vector signed char, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vsum4sbs ((vector signed char) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector signed short, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vsum4shs ((vector signed short) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ())));
+    __altivec_link_error_invalid_argument ())))
 
 #define vec_sum2s(a1, a2) __builtin_altivec_vsum2sws (a1, a2)
 
@@ -1034,7 +1034,7 @@ __ch (__un_args_eq (vector signed short, a1), \
       (vector unsigned int) __builtin_altivec_vupkhpx ((vector signed short) a1), \
 __ch (__un_args_eq (vector signed short, a1), \
       (vector signed int) __builtin_altivec_vupkhsh ((vector signed short) a1), \
-    __altivec_link_error_invalid_argument ())));
+    __altivec_link_error_invalid_argument ())))
 
 #define vec_unpackl(a1) \
 __ch (__un_args_eq (vector signed char, a1), \
@@ -1043,7 +1043,7 @@ __ch (__un_args_eq (vector signed short, a1), \
       (vector unsigned int) __builtin_altivec_vupklpx ((vector signed short) a1), \
 __ch (__un_args_eq (vector signed short, a1), \
       (vector signed int) __builtin_altivec_vupklsh ((vector signed short) a1), \
-    __altivec_link_error_invalid_argument ())));
+    __altivec_link_error_invalid_argument ())))
 
 #define vec_xor(a1, a2) \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
@@ -1076,7 +1076,7 @@ __ch (__bin_args_eq (vector unsigned char, a1, vector signed char, a2), \
       (vector unsigned char) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector unsigned char, a1, vector unsigned char, a2), \
       (vector unsigned char) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))))
 
 #define vec_all_eq(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -1105,7 +1105,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vcmpequw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpeqfp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_all_ge(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -1134,7 +1134,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgefp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_all_gt(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -1163,7 +1163,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgtfp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_all_in(a1, a2) __builtin_altivec_vcmpbfp_p (a1, a2)
 
@@ -1194,7 +1194,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgefp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_all_lt(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -1223,7 +1223,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgtfp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_all_nan(a1) __builtin_altivec_vcmpeqfp_p (a1)
 
@@ -1254,7 +1254,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vcmpequw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpeqfp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_all_nge(a1, a2) __builtin_altivec_vcmpgefp_p (a1, a2)
 
@@ -1293,7 +1293,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vcmpequw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpeqfp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_any_ge(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -1322,7 +1322,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgefp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_any_gt(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -1351,7 +1351,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgtfp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_any_le(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -1380,7 +1380,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgefp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_any_lt(a1, a2) \
 __ch (__bin_args_eq (vector signed char, a1, vector unsigned char, a2), \
@@ -1409,7 +1409,7 @@ __ch (__bin_args_eq (vector signed int, a1, vector signed int, a2), \
       (vector signed int) __builtin_altivec_vcmpgtsw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpgtfp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_any_nan(a1) __builtin_altivec_vcmpeqfp_p (a1)
 
@@ -1440,7 +1440,7 @@ __ch (__bin_args_eq (vector unsigned int, a1, vector unsigned int, a2), \
       (vector signed int) __builtin_altivec_vcmpequw_p ((vector signed int) a1, (vector signed int) a2), \
 __ch (__bin_args_eq (vector float, a1, vector float, a2), \
       (vector signed int) __builtin_altivec_vcmpeqfp_p ((vector float) a1, (vector float) a2), \
-    __altivec_link_error_invalid_argument ())))))))))))));
+    __altivec_link_error_invalid_argument ())))))))))))))
 
 #define vec_any_nge(a1, a2) __builtin_altivec_vcmpgefp_p (a1, a2)
 
