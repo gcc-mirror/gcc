@@ -157,6 +157,12 @@ proc g++_target_compile { source dest type options } {
 
     set options [concat $options "$ALWAYS_CXXFLAGS"];
 
+    if { [regexp "(^| )-frepo( |$)" $options] && \
+	 [regexp "\.o(|bj)$" $dest] } then {
+	regsub "\.o(|bj)$" $dest ".rpo" rponame
+	exec rm -f $rponame
+    }
+
     return [target_compile $source $dest $type $options]
 }
 

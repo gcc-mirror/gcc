@@ -1,3 +1,10 @@
+1998-12-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* lib/old-dejagnu.exp (old-dejagnu): ignore collect recompiling
+	and relinking messages
+	* lib/g++.exp (g++_target_compile): remove .rpo file when
+	compiling with -frepo
+
 1998-12-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/lookup6.C: New test.

@@ -535,6 +535,7 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
     regsub -all "(^|\n)\[^\n\]*: At top level:\[^\n\]*" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $comp_output "" comp_output
+    regsub -all "(^|\n)collect: re(compiling|linking)\[^\n\]*" $comp_output "" comp_output
 
     set unsupported_message [${tool}_check_unsupported_p $comp_output]
     if { $unsupported_message != "" } {
