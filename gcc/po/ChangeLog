@@ -1,3 +1,7 @@
+2001-10-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* POTFILES.in: Add newly-added files.
+
 2001-09-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* POTFILES.in: Add all missing files.
