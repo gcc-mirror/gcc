@@ -483,10 +483,10 @@ EOF
 	echo ${UNAME_MACHINE}-unknown-openbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
 	exit 0 ;;
     i*:CYGWIN*:*)
-	echo i386-pc-cygwin32
+	echo ${UNAME_MACHINE}-pc-cygwin32
 	exit 0 ;;
     i*:MINGW*:*)
-	echo i386-pc-mingw32
+	echo ${UNAME_MACHINE}-pc-mingw32
 	exit 0 ;;
     p*:CYGWIN*:*)
 	echo powerpcle-unknown-cygwin32
