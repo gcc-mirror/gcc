@@ -1,3 +1,8 @@
+2004-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17936
+	* g++.dg/template/spec18.C: New test.
+
 2004-10-11  Steve Ellcey  <sje@cup.hp.com>
 
 	* testsuite/gcc.dg/ia64-asm-1.c: Add prototype for abort
