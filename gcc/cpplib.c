@@ -1897,7 +1897,7 @@ cpp_push_buffer (pfile, buffer, length)
 #ifdef STATIC_BUFFERS
   register cpp_buffer *buf = CPP_BUFFER (pfile);
   if (buf == pfile->buffer_stack)
-    fatal ("macro or `#include' recursion too deep");
+    fatal ("%s: macro or `#include' recursion too deep", buf->fname);
   buf--;
   bzero ((char *) buf, sizeof (cpp_buffer));
   CPP_BUFFER (pfile) = buf;
