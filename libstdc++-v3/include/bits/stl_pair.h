@@ -41,7 +41,12 @@ struct pair {
 
   _T1 first;
   _T2 second;
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+//265.  std::pair::pair() effects overly restrictive
+  pair() : first(), second() {}
+#else
   pair() : first(_T1()), second(_T2()) {}
+#endif
   pair(const _T1& __a, const _T2& __b) : first(__a), second(__b) {}
 
   template <class _U1, class _U2>
@@ -84,7 +89,7 @@ inline bool operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y) {
 template <class _T1, class _T2>
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 //181.  make_pair() unintended behavior
-inline pair<_T1, _T2> make_pair(const _T1 __x, const _T2 __y)
+inline pair<_T1, _T2> make_pair(_T1 __x, _T2 __y)
 #else
 inline pair<_T1, _T2> make_pair(const _T1& __x, const _T2& __y)
 #endif
