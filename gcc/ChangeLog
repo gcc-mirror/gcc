@@ -1,5 +1,16 @@
 2003-12-01  Roger Sayle  <roger@eyesopen.com>
 
+	PR optimization/11634
+	* recog.c (split_insn): Factor test of INSN_P and handling of
+	set_noop_p out of here into the two callers.
+	(split_all_insns): Add INSN_P test and set_noop_p handling here.
+	If deleting a no-op set after reload that has a REG_UNUSED note,
+	mark the basic block as changed and recalculate life information.
+	(split_all_insns_noflow): Add INSN_P test and set_noop_p handling
+	here.
+
+2003-12-01  Roger Sayle  <roger@eyesopen.com>
+
 	PR optimization/12322
 	* gcse.c (struct ls_expr): Change type of hash_index from int to
 	unsigned int.
