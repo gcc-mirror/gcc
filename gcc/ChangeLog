@@ -1,3 +1,10 @@
+2000-05-24  J. David Anglin  <dave@hiauly.hia.nrc.ca>
+
+	* configure.in: Check for -Wno-long-long option support and improve
+	handling of warning CFLAGS for stages 1 and 2.
+	* Makefile.in (WARN_CFLAGS): Move definition to configure.in.
+	* configure: Regenerate.
+
 Wed May 24 19:37:53 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.texi: Remove contributor list.  Instead include contrib.texi.
