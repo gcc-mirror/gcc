@@ -809,6 +809,8 @@ initialize_inlined_parameters (inline_data *id, tree args, tree static_chain,
 
   /* Initialize the static chain.  */
   p = DECL_STRUCT_FUNCTION (fn)->static_chain_decl;
+  if (fn == current_function_decl)
+    p = DECL_STRUCT_FUNCTION (fn)->saved_static_chain_decl;
   if (p)
     {
       /* No static chain?  Seems like a bug in tree-nested.c.  */

@@ -1,3 +1,8 @@
+2005-01-18  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/19337
+	* gcc.c-torture/compile/20050119-1.c: New test.
+
 2005-01-24  James E Wilson  <wilson@specifixinc.com>
 
 	* gcc.c-torture/execute/builtins/lib/strstr.c (strstr): Correct exit
