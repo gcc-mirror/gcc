@@ -1,5 +1,10 @@
 2003-09-25  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/reflect/Proxy.java
+	(getProxyClass): Remove workaround for gcj 3.0.x.
+
+2003-09-25  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/PlainDatagramSocketImpl.java
 	(finalize): Moved to directly after constructor.
 	(getNativeFD): New method.
