@@ -1,3 +1,8 @@
+Fri Oct 16 10:47:53 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h (TARGET_SWITCHES): Add --help documentation.
+	(TARGET_OPTIONS): Add --help documentation.
+
 Fri Oct 16 11:49:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.h (sets_cc0_p): Revert Oct 14 ATTRIBUTE_NORETURN change.
