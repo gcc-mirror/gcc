@@ -674,12 +674,15 @@ static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
 static const char *trad_capable_cpp =
 "%{traditional|ftraditional|traditional-cpp:trad}cpp0";
 
+/* We don't wrap .d files in %W{} since a missing .d file, and
+   therefore no dependency entry, confuses make into thinking a .o
+   file that happens to exist is up-to-date.  */
 static const char *cpp_unique_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
  %{nostdinc*} %{C} %{v} %{I*} %{P} %{$} %I\
- %{MD:-MD %W{!o: %b.d}%W{o*:%.d%*}}\
- %{MMD:-MMD %W{!o: %b.d}%W{o*:%.d%*}}\
- %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
+ %{MD:-MD %{!o:%b.d}%{o*:%.d%*}}\
+ %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
+ %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{!E:%{!M:%{!MM:%{MD|MMD:%{o*:-MQ %*}}}}}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3 -D__GXX_ABI_VERSION=102}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\

@@ -1,3 +1,10 @@
+2002-10-14  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/7862
+	PR preprocessor/8190
+	* gcc.c (cpp_unique_options): Don't delete .d files.
+	Remove stray whitespace.
+
 2002-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.h (ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP):
