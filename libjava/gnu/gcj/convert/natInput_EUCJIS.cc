@@ -31,7 +31,7 @@ gnu::gcj::convert::Input_EUCJIS::read(jcharArray outbuffer, jint outpos,
 	{
 	  if (b < 128)
 	    {
-#if 0
+#if 1
 	      // Technically, we should translate 0x5c to Yen symbol;
 	      // in practice, it is not clear.
 	      if (b == 0x5c)
