@@ -62,7 +62,7 @@ VPATH = @srcdir@
 build=@build@
 host=@host@
 target=@target@
-target_alias=@target_alias@
+target_noncanonical=@target_noncanonical@
 
 # Sed command to transform gcc to installed name.
 program_transform_name = @program_transform_name@
@@ -396,9 +396,9 @@ libexecdir = @libexecdir@
 # --------
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(target_alias)/$(version)
+libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(version)
 # Directory in which the compiler finds executables
-libexecsubdir = $(libexecdir)/gcc/$(target_alias)/$(version)
+libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(version)
 # Used to produce a relative $(gcc_tooldir) in gcc.o
 unlibsubdir = ../../..
 # Directory in which to find other cross-compilation tools and headers.
@@ -408,7 +408,7 @@ gcc_tooldir = @gcc_tooldir@
 # Used to install the shared libgcc.
 slibdir = @slibdir@
 # Since gcc_tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
-build_tooldir = $(exec_prefix)/$(target_alias)
+build_tooldir = $(exec_prefix)/$(target_noncanonical)
 # Directory in which the compiler finds target-independent g++ includes.
 gcc_gxx_include_dir = @gcc_gxx_include_dir@
 # Directory to search for site-specific includes.
@@ -570,7 +570,7 @@ BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME = `echo gcc|sed '$(program_transform_name)'`
-GCC_TARGET_INSTALL_NAME = $(target_alias)-`echo gcc|sed '$(program_transform_name)'`
+GCC_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcc|sed '$(program_transform_name)'`
 CPP_INSTALL_NAME = `echo cpp|sed '$(program_transform_name)'`
 PROTOIZE_INSTALL_NAME = `echo protoize|sed '$(program_transform_name)'`
 UNPROTOIZE_INSTALL_NAME = `echo unprotoize|sed '$(program_transform_name)'`
@@ -1316,7 +1316,7 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) gstab.h intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
-	-DTARGET_MACHINE=\"$(target_alias)\" \
+	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
 	-c $(srcdir)/collect2.c $(OUTPUT_OPTION)
 
 tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -1369,7 +1369,7 @@ DRIVER_DEFINES = \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
   -DSTANDARD_LIBEXEC_PREFIX=\"$(libexecdir)/gcc/\" \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
-  -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
+  -DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
   -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\" \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
@@ -1504,7 +1504,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_
    langhooks.h insn-flags.h cfglayout.h real.h cfgloop.h \
    hosthooks.h $(LANGHOOKS_DEF_H) cgraph.h $(COVERAGE_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DTARGET_NAME=\"$(target_alias)\" \
+	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
 main.o : main.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h
 
@@ -1839,7 +1839,7 @@ libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
   insn-config.h insn-flags.h insn-codes.h insn-constants.h \
   insn-attr.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DTARGET_NAME=\"$(target_alias)\" \
+	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(filter %.c,$^) -o $@
 
@@ -2313,7 +2313,7 @@ po-generated: $(parsedir)/c-parse.c options.c
 PREPROCESSOR_DEFINES = \
   -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
   -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
-  -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/$(target_alias)\" \
+  -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/$(target_noncanonical)\" \
   -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/backward\" \
   -DLOCAL_INCLUDE_DIR=\"$(local_includedir)\" \
   -DCROSS_INCLUDE_DIR=\"$(CROSS_SYSTEM_HEADER_DIR)\" \
@@ -2930,16 +2930,16 @@ install-common: native $(EXTRA_PARTS) lang.install-common installdirs
 	fi
 	$(INSTALL_SCRIPT) gccbug $(DESTDIR)$(bindir)/$(GCCBUG_INSTALL_NAME)
 
-# Install the driver program as $(target_alias)-gcc, 
-# $(target_alias)-gcc-$(version)
+# Install the driver program as $(target_noncanonical)-gcc, 
+# $(target_noncanonical)-gcc-$(version)
 # and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
 install-driver: installdirs xgcc$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(DESTDIR)$(bindir)/$(GCC_CROSS_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) gcc-cross$(exeext) $(DESTDIR)$(bindir)/$(GCC_CROSS_NAME)$(exeext); \
-	  rm -f $(DESTDIR)$(bindir)/$(target_alias)-gcc-$(version); \
+	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-$(version); \
 	  ( cd $(DESTDIR)$(bindir) && \
-	    $(LN) $(GCC_CROSS_NAME)$(exeext) $(target_alias)-gcc-$(version) ); \
+	    $(LN) $(GCC_CROSS_NAME)$(exeext) $(target_noncanonical)-gcc-$(version) ); \
 	  if [ -d $(DESTDIR)$(gcc_tooldir)/bin/. ] ; then \
 	    rm -f $(DESTDIR)$(gcc_tooldir)/bin/gcc$(exeext); \
 	    $(INSTALL_PROGRAM) gcc-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/gcc$(exeext); \
@@ -2947,13 +2947,13 @@ install-driver: installdirs xgcc$(exeext)
 	else \
 	  rm -f $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
-	  rm -f $(DESTDIR)$(bindir)/$(target_alias)-gcc-$(version); \
+	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-$(version); \
 	  ( cd $(DESTDIR)$(bindir) && \
-	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_alias)-gcc-$(version) ); \
-	  rm -f $(DESTDIR)$(bindir)/$(target_alias)-gcc-tmp$(exeext); \
+	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-$(version) ); \
+	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
 	  ( cd $(DESTDIR)$(bindir) && \
-	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_alias)-gcc-tmp$(exeext) && \
-	    mv -f $(target_alias)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
+	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
+	    mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
 	fi
 
 # Install the info files.
@@ -3145,7 +3145,6 @@ uninstall: lang.uninstall
 # These targets are for the dejagnu testsuites. The file site.exp
 # contains global variables that all the testsuites will use.
 
-# Set to $(target_alias).
 target_subdir = @target_subdir@
 
 site.exp: ./config.status Makefile
@@ -3161,7 +3160,7 @@ site.exp: ./config.status Makefile
 	@echo "set host_triplet $(host)" >> ./tmp0
 	@echo "set build_triplet $(build)" >> ./tmp0
 	@echo "set target_triplet $(target)" >> ./tmp0
-	@echo "set target_alias $(target_alias)" >> ./tmp0
+	@echo "set target_alias $(target_noncanonical)" >> ./tmp0
 # CFLAGS is set even though it's empty to show we reserve the right to set it.
 	@echo "set CFLAGS \"\"" >> ./tmp0
 	@echo "set CXXFLAGS \"\"" >> ./tmp0
@@ -3296,7 +3295,7 @@ ${QMTEST_DIR}/context: stamp-qmtest
 	echo "CompilerTable.cplusplus_kind=GCC" >> $@
 	echo "CompilerTable.cplusplus_path=${objdir}/g++" >> $@
 	echo "CompilerTable.cplusplus_options=-B${objdir}/" >> $@
-	echo "DejaGNUTest.target=${target_alias}" >> $@
+	echo "DejaGNUTest.target=${target_noncanonical}" >> $@
 
 # Run the G++ testsuite using QMTest.
 qmtest-g++: ${QMTEST_DIR}/context

@@ -32,6 +32,9 @@ AC_CONFIG_HEADER(auto-host.h:config.in)
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
+# Determine the noncanonical target name, for directory use.
+_GCC_TOPLEV_NONCANONICAL_TARGET
+
 # Determine the target- and build-specific subdirectories
 GCC_TOPLEV_SUBDIRS
 
@@ -519,7 +522,7 @@ AC_ARG_WITH(sysroot,
 [  --with-sysroot[=DIR] Search for usr/lib, usr/include, et al, within DIR.],
 [
  case ${with_sysroot} in
- yes) TARGET_SYSTEM_ROOT='${exec_prefix}/${target_alias}/sys-root' ;;
+ yes) TARGET_SYSTEM_ROOT='${exec_prefix}/${target_noncanonical}/sys-root' ;;
  *) TARGET_SYSTEM_ROOT=$with_sysroot ;;
  esac
    
@@ -1561,12 +1564,12 @@ if test "x$gcc_cv_as" = x; then
 		gcc_cv_as=`echo as | sed ${program_transform_name}`$host_exeext
 	fi
 
-	test_dirs="$test_prefix/lib/gcc-lib/$target_alias/$gcc_version \
-		   $test_prefix/lib/gcc-lib/$target_alias \
-		   /usr/lib/gcc/$target_alias/$gcc_version \
-		   /usr/lib/gcc/$target_alias \
-		   $test_prefix/$target_alias/bin/$target_alias/$gcc_version \
-		   $test_prefix/$target_alias/bin"
+	test_dirs="$test_prefix/lib/gcc-lib/$target_noncanonical/$gcc_version \
+		   $test_prefix/lib/gcc-lib/$target_noncanonical \
+		   /usr/lib/gcc/$target_noncanonical/$gcc_version \
+		   /usr/lib/gcc/$target_noncanonical \
+		   $test_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version \
+		   $test_prefix/$target_noncanonical/bin"
 
 	if test x$host = x$target; then
 	    test_dirs="$test_dirs \
@@ -1677,12 +1680,12 @@ if test "x$gcc_cv_ld" = x; then
 		gcc_cv_ld=`echo ld | sed ${program_transform_name}`$host_exeext
 	fi
 
-	test_dirs="$test_prefix/lib/gcc-lib/$target_alias/$gcc_version \
-		   $test_prefix/lib/gcc-lib/$target_alias \
-		   /usr/lib/gcc/$target_alias/$gcc_version \
-		   /usr/lib/gcc/$target_alias \
-		   $test_prefix/$target_alias/bin/$target_alias/$gcc_version \
-		   $test_prefix/$target_alias/bin"
+	test_dirs="$test_prefix/lib/gcc-lib/$target_noncanonical/$gcc_version \
+		   $test_prefix/lib/gcc-lib/$target_noncanonical \
+		   /usr/lib/gcc/$target_noncanonical/$gcc_version \
+		   /usr/lib/gcc/$target_noncanonical \
+		   $test_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version \
+		   $test_prefix/$target_noncanonical/bin"
 
 	if test x$host = x$target; then
 	    test_dirs="$test_dirs \
@@ -2521,7 +2524,7 @@ case "$target" in
     else
       test_prefix=$exec_prefix
     fi
-    for f in $gcc_cv_libgloss_srcdir/mips/idt.ld $test_prefix/$target_alias/lib/idt.ld
+    for f in $gcc_cv_libgloss_srcdir/mips/idt.ld $test_prefix/$target_noncanonical/lib/idt.ld
     do
       if grep '^STARTUP' $f > /dev/null 2>&1; then
         gcc_cv_mips_libgloss_startup=yes
@@ -2863,7 +2866,7 @@ echo "source ${srcdir}/gdbinit.in" >> .gdbinit
 # make and thus we'd get different behavior depending on where we built the
 # sources.
 if test x$exec_prefix = xNONE -o x$exec_prefix = x$prefix; then
-    gcc_tooldir='$(libsubdir)/$(unlibsubdir)/../$(target_alias)'
+    gcc_tooldir='$(libsubdir)/$(unlibsubdir)/../$(target_noncanonical)'
 else
 changequote(<<, >>)dnl
 # An explanation of the sed strings:
@@ -2888,7 +2891,7 @@ changequote(<<, >>)dnl
 #   /foo        /foo/bar/ugg      ../../
 #
     dollar='$$'
-    gcc_tooldir="\$(libsubdir)/\$(unlibsubdir)/\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/\$(dollar)||' -e 's|^[^/]|/|' -e 's|/[^/]*|../|g'\`\$(target_alias)"
+    gcc_tooldir="\$(libsubdir)/\$(unlibsubdir)/\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/\$(dollar)||' -e 's|^[^/]|/|' -e 's|/[^/]*|../|g'\`\$(target_noncanonical)"
 changequote([, ])dnl
 fi
 AC_SUBST(gcc_tooldir)
@@ -2978,7 +2981,7 @@ AC_SUBST(tm_p_include_list)
 AC_SUBST(xm_file_list)
 AC_SUBST(xm_include_list)
 AC_SUBST(xm_defines)
-AC_SUBST(target_alias)
+AC_SUBST(target_noncanonical)
 AC_SUBST(c_target_objs)
 AC_SUBST(cxx_target_objs)
 AC_SUBST(target_cpu_default)

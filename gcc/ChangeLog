@@ -1,3 +1,12 @@
+2003-10-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in, configure.in, config.host, mkheaders.in: Replace
+	uses of ${target_alias} for directory names (and other places which
+	won't like the empty string) with ${target_noncanonical}.  Introduce
+	call early in configure.in to _GCC_TOPLEV_NONCANONICAL_TARGET so it's
+	available.
+	* configure: Regenerate.
+
 2003-10-13  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* config/arm/iwmmxt.md (cond_iwmmxt_movsi_insn): New pattern.
