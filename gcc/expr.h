@@ -642,7 +642,7 @@ extern rtx adjust_automodify_address_1 PARAMS ((rtx, enum machine_mode,
 /* Return a memory reference like MEMREF, but whose address is changed by
    adding OFFSET, an RTX, to it.  POW2 is the highest power of two factor
    known to be in OFFSET (possibly 1).  */
-extern rtx offset_address PARAMS ((rtx, rtx, HOST_WIDE_INT));
+extern rtx offset_address PARAMS ((rtx, rtx, unsigned HOST_WIDE_INT));
 
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed

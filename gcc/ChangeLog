@@ -1,3 +1,9 @@
+2003-04-14  Olivier Hainque <hainque@act-europe.fr>
+
+        * expr.c (highest_pow2_factor): Return unsigned.
+        * expr.h (offset_address): Likewise.
+        * emit-rtl.c (offset_address): POW2 argument now unsigned.
+        
 2003-04-14  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_strlen):  Evaluate the lengths of

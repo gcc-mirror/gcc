@@ -2314,7 +2314,7 @@ rtx
 offset_address (memref, offset, pow2)
      rtx memref;
      rtx offset;
-     HOST_WIDE_INT pow2;
+     unsigned HOST_WIDE_INT pow2;
 {
   rtx new, addr = XEXP (memref, 0);
 
@@ -2342,8 +2342,7 @@ offset_address (memref, offset, pow2)
      we don't know.  */
   MEM_ATTRS (new)
     = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref), 0, 0,
-		     MIN (MEM_ALIGN (memref),
-			  (unsigned HOST_WIDE_INT) pow2 * BITS_PER_UNIT),
+		     MIN (MEM_ALIGN (memref), pow2 * BITS_PER_UNIT),
 		     GET_MODE (new));
   return new;
 }
