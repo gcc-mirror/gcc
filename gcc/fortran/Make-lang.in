@@ -81,7 +81,7 @@ F95_OBJS = $(F95_PARSER_OBJS) \
 # We rely on c-semantics to expand from GIMPLE to RTL.
 # This should go away once a real GIMPLE expander is available. 
 F95_ADDITIONAL_OBJS = \
-	tree-cfg.o tree-dfa.o tree-optimize.o tree-simple.o \
+	tree-cfg.o tree-dfa.o tree-optimize.o tree-gimple.o \
 	tree-ssa.o tree-ssa-ccp.o tree-ssa-dce.o \
 	tree-alias-common.o tree-alias-type.o gimplify.o stor-layout.o
 

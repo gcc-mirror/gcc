@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "hashtab.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "tree-ssa-operands.h"
 
 /* Forward declare structures for the garbage collector GTY markers.  */

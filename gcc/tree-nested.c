@@ -28,7 +28,7 @@
 #include "function.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "tree-iterator.h"
 #include "tree-flow.h"
 #include "cgraph.h"

@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "tree-inline.h"
 #include "tree-flow.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "tree-dump.h"
 #include "timevar.h"
 #include "fibheap.h"

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "coretypes.h"
 #include "tree.h"
 #include "tree-dump.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "tm.h"

@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "tree-simple.h"
+#include "tree-gimple.h"
 #include "flags.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
