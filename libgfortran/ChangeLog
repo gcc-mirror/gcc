@@ -1,3 +1,9 @@
+2005-02-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR libfortran/19302
+	* intrinsics/c99_functions.c (nextafterf): Special-case infinite
+	numbers.
+
 2005-02-21  Steven G. Kargl  <kargls@comcast.net>
 
 	* io/write.c (output_float):  Typo in error meesage.

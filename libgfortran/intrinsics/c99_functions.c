@@ -218,6 +218,8 @@ nextafterf(float x, float y)
     return x + y;
   if (x == y)
     return x;
+  if (!isfinite (x))
+    return x > 0 ? __FLT_MAX__ : - __FLT_MAX__;
 
   /* absx = fabsf (x);  */
   absx = (x < 0.0) ? -x : x;
