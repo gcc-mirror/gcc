@@ -1,5 +1,9 @@
 2005-02-01  James A. Morrison  <phython@gcc.gnu.org>
 
+	* (lex.l): Undef LINEMAP_POSITION_FOR_COLUMN before defining it.
+
+2005-02-01  James A. Morrison  <phython@gcc.gnu.org>
+
 	* parse.y: Reformat comments.
 	* treetree.c: Likewise.
 	* treetree.h: Likewise.
