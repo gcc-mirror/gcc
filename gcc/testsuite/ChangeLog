@@ -1,3 +1,8 @@
+2002-07-17  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
+
+	* gcc.c-torture/execute/20010122-1.x: Do not test with
+	-fomit-frame-pointer.
+
 2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/template/instantiate2.C: New test.
