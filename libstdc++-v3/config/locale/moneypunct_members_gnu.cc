@@ -322,11 +322,48 @@ namespace std
 	  _M_decimal_point = reinterpret_cast<wchar_t>(__nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc));
 	  _M_thousands_sep = reinterpret_cast<wchar_t>(__nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC,__cloc));
 	  _M_grouping = __nl_langinfo_l(GROUPING, __cloc);
-	  _M_positive_sign = reinterpret_cast<wchar_t*>(__nl_langinfo_l(__POSITIVE_SIGN, __cloc));
-	  _M_negative_sign = reinterpret_cast<wchar_t*>(__nl_langinfo_l(__NEGATIVE_SIGN, __cloc));
+
+	  mbstate_t __state;
+	  const char* __cs;
+	  string __cpossign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
+	  string __cnegsign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
+	  string __ccurr = __nl_langinfo_l(__INT_CURR_SYMBOL, __cloc);
+	  string::size_type __len = max(__cpossign.size(), __cnegsign.size());
+	  __len = max(__len, __ccurr.size()) + 1;
+	  wchar_t* __ws = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t) * __len));
+
+	  // NB: Should swich to __cloc's ctype info first.
+	  if (__cpossign.size())
+	    {
+	      memset(&__state, 0, sizeof(mbstate_t));
+	      __cs = __cpossign.c_str();
+	      mbsrtowcs(__ws, &__cs, __cpossign.size() + 1, &__state);
+	      _M_positive_sign = string_type(__ws);
+	    }
+	  else
+	    _M_positive_sign = string_type();
+
+	  if (__cnegsign.size())
+	    { 
+	      memset(&__state, 0, sizeof(mbstate_t));
+	      __cs = __cnegsign.c_str();
+	      mbsrtowcs(__ws, &__cs, __cnegsign.size() + 1, &__state);
+	      _M_negative_sign = string_type(__ws);
+	    }
+	  else
+	    _M_negative_sign = string_type();
 
 	  // _Intl == true.
-	  _M_curr_symbol = reinterpret_cast<wchar_t*>(__nl_langinfo_l(__INT_CURR_SYMBOL, __cloc));
+	  if (__ccurr.size())
+	    {
+	      memset(&__state, 0, sizeof(mbstate_t));
+	      __cs = __ccurr.c_str();
+	      mbsrtowcs(__ws, &__cs, __ccurr.size() + 1, &__state);
+	      _M_curr_symbol = string_type(__ws);
+	    }
+	  else
+	    _M_curr_symbol = string_type();
+
 	  _M_frac_digits = *(__nl_langinfo_l(__INT_FRAC_DIGITS, __cloc));
 	  char __ppreceeds = *(__nl_langinfo_l(__INT_P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__INT_P_SEP_BY_SPACE, __cloc));
@@ -364,11 +401,48 @@ namespace std
 	  _M_decimal_point = reinterpret_cast<wchar_t>(__nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc));
 	  _M_thousands_sep = reinterpret_cast<wchar_t>(__nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC,__cloc));
 	  _M_grouping = __nl_langinfo_l(GROUPING, __cloc);
-	  _M_positive_sign = reinterpret_cast<wchar_t*>(__nl_langinfo_l(__POSITIVE_SIGN, __cloc));
-	  _M_negative_sign = reinterpret_cast<wchar_t*>(__nl_langinfo_l(__NEGATIVE_SIGN, __cloc));
+
+	  mbstate_t __state;
+	  const char* __cs;
+	  string __cpossign = __nl_langinfo_l(__POSITIVE_SIGN, __cloc);
+	  string __cnegsign = __nl_langinfo_l(__NEGATIVE_SIGN, __cloc);
+	  string __ccurr = __nl_langinfo_l(__CURRENCY_SYMBOL, __cloc);
+	  string::size_type __len = max(__cpossign.size(), __cnegsign.size());
+	  __len = max(__len, __ccurr.size()) + 1;
+	  wchar_t* __ws = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t) * __len));
+
+	  // NB: Should swich to __cloc's ctype info first.
+	  if (__cpossign.size())
+	    {
+	      memset(&__state, 0, sizeof(mbstate_t));
+	      __cs = __cpossign.c_str();
+	      mbsrtowcs(__ws, &__cs, __cpossign.size() + 1, &__state);
+	      _M_positive_sign = string_type(__ws);
+	    }
+	  else
+	    _M_positive_sign = string_type();
+
+	  if (__cnegsign.size())
+	    { 
+	      memset(&__state, 0, sizeof(mbstate_t));
+	      __cs = __cnegsign.c_str();
+	      mbsrtowcs(__ws, &__cs, __cnegsign.size() + 1, &__state);
+	      _M_negative_sign = string_type(__ws);
+	    }
+	  else
+	    _M_negative_sign = string_type();
 
 	  // _Intl == false.
-	  _M_curr_symbol = reinterpret_cast<wchar_t*>(__nl_langinfo_l(__CURRENCY_SYMBOL, __cloc));
+	  if (__ccurr.size())
+	    {
+	      memset(&__state, 0, sizeof(mbstate_t));
+	      __cs = __ccurr.c_str();
+	      mbsrtowcs(__ws, &__cs, __ccurr.size() + 1, &__state);
+	      _M_curr_symbol = string_type(__ws);
+	    }
+	  else
+	    _M_curr_symbol = string_type();
+
 	  _M_frac_digits = *(__nl_langinfo_l(__FRAC_DIGITS, __cloc));
 	  char __ppreceeds = *(__nl_langinfo_l(__P_CS_PRECEDES, __cloc));
 	  char __pspace = *(__nl_langinfo_l(__P_SEP_BY_SPACE, __cloc));

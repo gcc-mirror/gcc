@@ -84,7 +84,6 @@ void test01()
   // input less than frac_digits
   const wstring digits4(L"-1");
   
-
   wostringstream oss;
   oss.imbue(loc_de);
   // cache the money_put facet
