@@ -307,13 +307,17 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    GPR 14: Return address register
    GPR 15: Stack pointer
 
-   Registers 32-34 are 'fake' hard registers that do not
+   Registers 32-35 are 'fake' hard registers that do not
    correspond to actual hardware:
    Reg 32: Argument pointer
    Reg 33: Condition code
-   Reg 34: Frame pointer  */
+   Reg 34: Frame pointer  
+   Reg 35: Return address pointer
 
-#define FIRST_PSEUDO_REGISTER 36
+   Registers 36 and 37 are mapped to access registers 
+   0 and 1, used to implement thread-local storage.  */
+
+#define FIRST_PSEUDO_REGISTER 38
 
 /* Standard register usage.  */
 #define GENERAL_REGNO_P(N)	((int)(N) >= 0 && (N) < 16)
@@ -321,17 +325,20 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 #define FP_REGNO_P(N)		((N) >= 16 && (N) < (TARGET_IEEE_FLOAT? 32 : 20))
 #define CC_REGNO_P(N)		((N) == 33)
 #define FRAME_REGNO_P(N)	((N) == 32 || (N) == 34 || (N) == 35)
+#define ACCESS_REGNO_P(N)	((N) == 36 || (N) == 37)
 
 #define GENERAL_REG_P(X)	(REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
 #define ADDR_REG_P(X)		(REG_P (X) && ADDR_REGNO_P (REGNO (X)))
 #define FP_REG_P(X)		(REG_P (X) && FP_REGNO_P (REGNO (X)))
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define FRAME_REG_P(X)		(REG_P (X) && FRAME_REGNO_P (REGNO (X)))
+#define ACCESS_REG_P(X)		(REG_P (X) && ACCESS_REGNO_P (REGNO (X)))
 
 #define SIBCALL_REGNUM 1
 #define BASE_REGNUM 13
 #define RETURN_REGNUM 14
 #define CC_REGNUM 33
+#define TP_REGNUM 36
 
 /* Set up fixed registers and calling convention:
 
@@ -342,6 +349,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    GPR 14 is always fixed on S/390 machines (as return address).
    GPR 15 is always fixed (as stack pointer).
    The 'fake' hard registers are call-clobbered and fixed.
+   The access registers are call-saved and fixed.
 
    On 31-bit, FPRs 18-19 are call-clobbered;
    on 64-bit, FPRs 24-31 are call-clobbered.
@@ -356,7 +364,8 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
   0, 0, 0, 0, 					\
   0, 0, 0, 0, 					\
   0, 0, 0, 0, 					\
-  1, 1, 1, 1 }
+  1, 1, 1, 1,					\
+  1, 1 }
 
 #define CALL_USED_REGISTERS			\
 { 1, 1, 1, 1, 					\
@@ -367,7 +376,8 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
-  1, 1, 1, 1 }
+  1, 1, 1, 1,					\
+  1, 1 }
 
 #define CALL_REALLY_USED_REGISTERS		\
 { 1, 1, 1, 1, 					\
@@ -378,7 +388,8 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
-  1, 1, 1, 1 }
+  1, 1, 1, 1,					\
+  0, 0 }
 
 #define CONDITIONAL_REGISTER_USAGE s390_conditional_register_usage ()
 
@@ -387,7 +398,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 {  1, 2, 3, 4, 5, 0, 13, 12, 11, 10, 9, 8, 7, 6, 14,            \
    16, 17, 18, 19, 20, 21, 22, 23,                              \
    24, 25, 26, 27, 28, 29, 30, 31,                              \
-   15, 32, 33, 34, 35 }
+   15, 32, 33, 34, 35, 36, 37 }
 
 
 /* Fitting values into registers.  */
@@ -411,6 +422,8 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
     (GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ? 2 : 1) :      \
    GENERAL_REGNO_P(REGNO)?                                      \
     ((GET_MODE_SIZE(MODE)+UNITS_PER_WORD-1) / UNITS_PER_WORD) : \
+   ACCESS_REGNO_P(REGNO)?					\
+    ((GET_MODE_SIZE(MODE)+32-1) / 32) : 			\
    1)
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)                             \
@@ -424,6 +437,9 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
      GET_MODE_CLASS (MODE) == MODE_CC :                             \
    FRAME_REGNO_P(REGNO)?                                            \
      (enum machine_mode) (MODE) == Pmode :                          \
+   ACCESS_REGNO_P(REGNO)?					    \
+     (((MODE) == SImode || ((enum machine_mode) (MODE) == Pmode))   \
+      && (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1))) :  \
    0)
 
 #define MODES_TIEABLE_P(MODE1, MODE2)		\
@@ -435,48 +451,54 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
      ((CLASS) == FP_REGS ? 						\
       (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT ? 2 : 1) :  		\
+      (CLASS) == ACCESS_REGS ?						\
+      (GET_MODE_SIZE (MODE) + 32 - 1) / 32 :				\
       (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* If a 4-byte value is loaded into a FPR, it is placed into the
    *upper* half of the register, not the lower.  Therefore, we
-   cannot use SUBREGs to switch between modes in FP registers.  */
+   cannot use SUBREGs to switch between modes in FP registers.
+   Likewise for access registers, since they have only half the
+   word size on 64-bit.  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
-   ? reg_classes_intersect_p (FP_REGS, CLASS) : 0)
+   ? reg_classes_intersect_p (FP_REGS, CLASS)			\
+     || reg_classes_intersect_p (ACCESS_REGS, CLASS) : 0)
 
 /* Register classes.  */
 
 /* We use the following register classes:
    GENERAL_REGS     All general purpose registers
-   CC_REGS          Contains only the condition code register
    ADDR_REGS        All general purpose registers except %r0
                     (These registers can be used in address generation)
-   ADDR_CC_REGS     Union of ADDR_REGS and CC_REGS
-   GENERAL_CC_REGS  Union of GENERAL_REGS and CC_REGS
    FP_REGS          All floating point registers
+   CC_REGS          The condition code register
+   ACCESS_REGS      The access registers
 
    GENERAL_FP_REGS  Union of GENERAL_REGS and FP_REGS
    ADDR_FP_REGS     Union of ADDR_REGS and FP_REGS
+   GENERAL_CC_REGS  Union of GENERAL_REGS and CC_REGS
+   ADDR_CC_REGS     Union of ADDR_REGS and CC_REGS
 
    NO_REGS          No registers
    ALL_REGS         All registers
 
    Note that the 'fake' frame pointer and argument pointer registers
-   are included amongst the address registers here.  The condition
-   code register is only included in ALL_REGS.  */
+   are included amongst the address registers here.  */
 
 enum reg_class
 {
-  NO_REGS, CC_REGS, ADDR_REGS, GENERAL_REGS, 
+  NO_REGS, CC_REGS, ADDR_REGS, GENERAL_REGS, ACCESS_REGS,
   ADDR_CC_REGS, GENERAL_CC_REGS, 
   FP_REGS, ADDR_FP_REGS, GENERAL_FP_REGS,
   ALL_REGS, LIM_REG_CLASSES
 };
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-#define REG_CLASS_NAMES                                                        \
-{ "NO_REGS", "CC_REGS", "ADDR_REGS", "GENERAL_REGS", "ADDR_CC_REGS",           \
-  "GENERAL_CC_REGS", "FP_REGS", "ADDR_FP_REGS", "GENERAL_FP_REGS", "ALL_REGS" }
+#define REG_CLASS_NAMES							\
+{ "NO_REGS", "CC_REGS", "ADDR_REGS", "GENERAL_REGS", "ACCESS_REGS",	\
+  "ADDR_CC_REGS", "GENERAL_CC_REGS",					\
+  "FP_REGS", "ADDR_FP_REGS", "GENERAL_FP_REGS", "ALL_REGS" }
 
 /* Class -> register mapping.  */
 #define REG_CLASS_CONTENTS \
@@ -485,12 +507,13 @@ enum reg_class
   { 0x00000000, 0x00000002 },	/* CC_REGS */		\
   { 0x0000fffe, 0x0000000d },	/* ADDR_REGS */		\
   { 0x0000ffff, 0x0000000d },	/* GENERAL_REGS */	\
+  { 0x00000000, 0x00000030 },	/* ACCESS_REGS */	\
   { 0x0000fffe, 0x0000000f },	/* ADDR_CC_REGS */	\
   { 0x0000ffff, 0x0000000f },	/* GENERAL_CC_REGS */	\
   { 0xffff0000, 0x00000000 },	/* FP_REGS */		\
   { 0xfffffffe, 0x0000000d },	/* ADDR_FP_REGS */	\
   { 0xffffffff, 0x0000000d },	/* GENERAL_FP_REGS */	\
-  { 0xffffffff, 0x0000000f },	/* ALL_REGS */		\
+  { 0xffffffff, 0x0000003f },	/* ALL_REGS */		\
 }
 
 /* Register -> class mapping.  */
@@ -543,7 +566,8 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
   ((C) == 'a' ? ADDR_REGS :                                             \
    (C) == 'd' ? GENERAL_REGS :                                          \
    (C) == 'f' ? FP_REGS :                                               \
-   (C) == 'c' ? CC_REGS : NO_REGS)
+   (C) == 'c' ? CC_REGS : 						\
+   (C) == 't' ? ACCESS_REGS : NO_REGS)
 
 #define CONST_OK_FOR_CONSTRAINT_P(VALUE, C, STR)                          \
   s390_const_ok_for_constraint_p ((VALUE), (C), (STR))
@@ -976,7 +1000,7 @@ extern int flag_pic;
   "%r8",  "%r9",  "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",	\
   "%f0",  "%f2",  "%f4",  "%f6",  "%f1",  "%f3",  "%f5",  "%f7",	\
   "%f8",  "%f10", "%f12", "%f14", "%f9",  "%f11", "%f13", "%f15",	\
-  "%ap",  "%cc",  "%fp",  "%rp"						\
+  "%ap",  "%cc",  "%fp",  "%rp",  "%a0",  "%a1"				\
 }
 
 /* Emit a dtp-relative reference to a TLS variable.  */

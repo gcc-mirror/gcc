@@ -1355,7 +1355,8 @@ const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
-  ADDR_REGS,    CC_REGS,   ADDR_REGS, ADDR_REGS
+  ADDR_REGS,    CC_REGS,   ADDR_REGS, ADDR_REGS,
+  ACCESS_REGS,	ACCESS_REGS
 };
 
 /* Return attribute type of insn.  */
@@ -2019,6 +2020,22 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return 1;
 }
 
+/* Split DImode access register reference REG (on 64-bit) into its constituent
+   low and high parts, and store them into LO and HI.  Note that gen_lowpart/
+   gen_highpart cannot be used as they assume all registers are word-sized,
+   while our access registers have only half that size.  */
+
+void
+s390_split_access_reg (rtx reg, rtx *lo, rtx *hi)
+{
+  gcc_assert (TARGET_64BIT);
+  gcc_assert (ACCESS_REG_P (reg));
+  gcc_assert (GET_MODE (reg) == DImode);
+  gcc_assert (!(REGNO (reg) & 1));
+
+  *lo = gen_rtx_REG (SImode, REGNO (reg) + 1);
+  *hi = gen_rtx_REG (SImode, REGNO (reg));
+}
 
 /* Return true if OP contains a symbol reference */
 
@@ -3033,10 +3050,9 @@ legitimize_pic_address (rtx orig, rtx reg)
 static rtx
 get_thread_pointer (void)
 {
-  rtx tp;
+  rtx tp = gen_reg_rtx (Pmode);
 
-  tp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx), UNSPEC_TP);
-  tp = force_reg (Pmode, tp);
+  emit_move_insn (tp, gen_rtx_REG (Pmode, TP_REGNUM));
   mark_reg_pointer (tp, BITS_PER_WORD);
 
   return tp;
