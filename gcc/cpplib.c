@@ -6429,20 +6429,10 @@ free_token_list (tokens)
   }
 }
 
-/* FIXME: savestring() should be renamed strdup() and both should
+/* FIXME: savestring() should be renamed strdup() and should
    be moved into cppalloc.c.  We can't do that right now because
    then we'd get multiple-symbol clashes with toplev.c and several
    other people. */
-PTR
-xcalloc (number, size)
-  size_t number, size;
-{
-  register unsigned total = number * size;
-  register PTR ptr = (PTR) xmalloc (total);
-  bzero (ptr, total);
-  return ptr;
-}
-
 char *
 savestring (input)
      char *input;
