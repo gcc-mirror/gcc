@@ -1,3 +1,8 @@
+Fri Jun 19 23:22:42 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* c-typeck.c (pop_init_level): Warn about implicit zero initialization
+	of struct members.
+
 Fri Jun 19 23:06:33 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* varasm.c (assemble_start_function): Add weak_global_object_name.

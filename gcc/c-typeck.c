@@ -5619,6 +5619,17 @@ pop_init_level (implicit)
   if (constructor_type != 0)
     size = int_size_in_bytes (constructor_type);
 
+  /* Warn when some struct elements are implicitly initialized to zero.  */
+  if (extra_warnings
+      && constructor_type
+      && TREE_CODE (constructor_type) == RECORD_TYPE
+      && constructor_unfilled_fields)
+    {
+      push_member_name (constructor_unfilled_fields);
+      warning_init ("missing initializer%s", " for `%s'", NULL);
+      RESTORE_SPELLING_DEPTH (constructor_depth);
+    }
+
   /* Now output all pending elements.  */
   output_pending_init_elements (1);
 
