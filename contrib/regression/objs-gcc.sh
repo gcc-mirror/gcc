@@ -19,8 +19,9 @@
 
 # INPUT:
 # btest <target> <source> <prefix> <state> <build>
-# TARGET is the target triplet.  It should be the same one
-# as used in constructing PREFIX.
+# TARGET is the target triplet.  It should be the same one as used in
+# constructing PREFIX.  Or it can be the keyword 'native', indicating
+# a target of whatever platform the script is running on.
 TARGET=$1
 # SOURCE is the directory containing the toplevel configure.
 SOURCE=$2
