@@ -1,5 +1,5 @@
 /* java.util.PropertyResourceBundle
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -111,7 +111,7 @@ public class PropertyResourceBundle extends ResourceBundle
    * @param key The key of the resource.
    * @return The resource for the key or null if it doesn't exists.
    */
-  protected Object handleGetObject(String key)
+  public Object handleGetObject(String key)
   {
     return properties.getProperty(key);
   }
