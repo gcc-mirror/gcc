@@ -925,7 +925,7 @@ init_alias_analysis ()
       reg_base_value_size = maxreg * 2;
       reg_base_value = (rtx *)oballoc (reg_base_value_size * sizeof (rtx));
       reg_seen = (char *)alloca (reg_base_value_size);
-      bzero (reg_base_value, reg_base_value_size * sizeof (rtx));
+      bzero ((char *) reg_base_value, reg_base_value_size * sizeof (rtx));
       bzero (reg_seen, reg_base_value_size);
 
       /* Mark all hard registers which may contain an address.

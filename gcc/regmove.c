@@ -152,7 +152,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      /* Must initialize this before the loop, because the code for
 		 the commutative case may set matches for operands other than
 		 the current one.  */
-	      bzero (matches, sizeof (matches));
+	      bzero ((char *)matches, sizeof (matches));
     
 	      for (operand_number = 0;
 		   operand_number < insn_n_operands[insn_code_number];
@@ -714,7 +714,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	  /* Must initialize this before the loop, because the code for
 	     the commutative case may set matches for operands other than
 	     the current one.  */
-	  bzero (matches, sizeof (matches));
+	  bzero ((char *) matches, sizeof (matches));
 
 	  for (operand_number = 0;
 	       operand_number < insn_n_operands[insn_code_number];

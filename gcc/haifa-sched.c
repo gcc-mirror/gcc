@@ -1628,7 +1628,7 @@ find_rgns ()
   /* function's inner arrays allocation and initialization */
   max_hdr = (int *) alloca (n_basic_blocks * sizeof (int));
   dfs_nr = (int *) alloca (n_basic_blocks * sizeof (int));
-  bzero ((int *) dfs_nr, n_basic_blocks * sizeof (int));
+  bzero ((char *) dfs_nr, n_basic_blocks * sizeof (int));
   stack = (int *) alloca (nr_edges * sizeof (int));
   queue = (int *) alloca (n_basic_blocks * sizeof (int));
 
@@ -6089,11 +6089,11 @@ print_value (buf, x, verbose)
 	strcpy (t, "fr");
       else
 	strcpy (t, "r");
-      sprintf (buf, "%s%d", t, (int) XEXP (x, 0));
+      sprintf (buf, "%s%d", t, !! XEXP (x, 0));
       break;
     case SUBREG:
       print_value (t, XEXP (x, 0), verbose);
-      sprintf (buf, "%s#%d", t, (int) XEXP (x, 1));
+      sprintf (buf, "%s#%d", t, !! XEXP (x, 1));
       break;
     case SCRATCH:
       sprintf (buf, "scratch");
