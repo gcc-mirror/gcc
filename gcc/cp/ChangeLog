@@ -1,3 +1,7 @@
+2004-09-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (unify): Replace gcc_unreachable with gcc_assert.
+
 2004-09-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16162
@@ -520,7 +524,6 @@
 
 2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
-
 	* call.c (convert_class_to_reference): Adjust build_int_cst calls.
 	(build_user_type_conversion_1, convert_like_real,
 	build_java_interface_fn_ref, build_special_member_call): Likewise.
@@ -546,6 +549,7 @@
 
 	* repo.c (extract_string): Reset backquote after one character.
 	(get_base_filename): Fix indentation.
+
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (cxx_init_decl_processing): Adjust
