@@ -1,3 +1,7 @@
+2002-09-18  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/18_support/numeric_limits.cc (test_epsilon): New.
+
 2002-09-18  Richard Henderson  <rth@redhat.com>
 
 	* testsuite/18_support/numeric_limits.cc: Add -mieee for alpha.

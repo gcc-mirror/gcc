@@ -94,6 +94,16 @@ void test_extrema<long double>()
 }
 #endif
 
+template<typename T>
+void test_epsilon()
+{
+  bool test = true;
+  T epsilon = std::numeric_limits<T>::epsilon();
+  T one = 1;
+
+  VERIFY( one != (one + epsilon) );
+}
+
 #ifdef __CHAR_UNSIGNED__
 #define char_is_signed false
 #else
@@ -313,6 +323,10 @@ int main()
   test_extrema<float>();
   test_extrema<double>();
   test_extrema<long double>();
+
+  test_epsilon<float>();
+  test_epsilon<double>();
+  test_epsilon<long double>();
 
   test_sign();
 
