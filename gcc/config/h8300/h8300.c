@@ -980,12 +980,8 @@ bit_operand (op, mode)
     return 1;
   if (GET_CODE (op) == SUBREG)
     return 1;
-  if (!rtx_equal_function_value_matters)
-    /* We're building rtl.  */
-    return GET_CODE (op) == MEM;
-  else
-    return (GET_CODE (op) == MEM
-	    && EXTRA_CONSTRAINT (op, 'U'));
+  return (GET_CODE (op) == MEM
+	  && EXTRA_CONSTRAINT (op, 'U'));
 }
 
 int

@@ -1,5 +1,10 @@
 2003-03-01  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (bit_operand): Accept MEM only if it
+	satisfies EXTRA_CONSTRAINT 'U'.
+
+2003-03-01  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (*tst_extzv_bitqi_1_n): Take a scratch
 	register.
 	(*tst_extzv_memqi_1_n): Change to a splitter.
