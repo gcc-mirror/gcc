@@ -1,5 +1,5 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002
-@c Free Software Foundation, Inc.
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,
+@c 2001,2002,2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -49,6 +49,9 @@ Geoff Berry for his Java object serialization work and various patches.
 @item
 Eric Blake for helping to make GCJ and libgcj conform to the
 specifications.
+
+@item
+Eric Botcazou for fixing middle- and backend bugs left and right.
 
 @item
 Hans-J. Boehm for his @uref{http://www.hpl.hp.com/personal/Hans_Boehm/gc/,,
@@ -158,7 +161,7 @@ that print a copy of their source.
 Russell Davidson for fstream and stringstream fixes in libstdc++.
 
 @item
-Mo DeJong for GCJ and libgcj bug fixes.
+Mo DeJong for GCJ and libgcj bugfixes.
 
 @item
 Gabriel Dos Reis for contributions to g++, contributions and
@@ -304,7 +307,7 @@ Andreas Jaeger for various fixes to the MIPS port
 
 @item
 Jakub Jelinek for his SPARC work and sibling call optimizations as well
-as lots of bug fixes and test cases, and for improving the Java build
+as lots of bugfixes and test cases, and for improving the Java build
 system.
 
 @item
@@ -619,6 +622,10 @@ Juha Sarlin for improvements to the H8 code generator.
 Greg Satz assisted in making GCC work on HP-UX for the 9000 series 300.
 
 @item
+Roger Sayle for improvements to constant folding and GCC's RTL optimizers
+as well as for fixing numerous bugs.
+
+@item
 Bradley Schatz for his work on the GCJ FAQ.
 
 @item
@@ -703,7 +710,7 @@ Mike Stump for his Elxsi port, g++ contributions over the years and more
 recently his vxworks contributions
 
 @item
-Jeff Sturm for Java porting help, bug fixes, and encouragement.
+Jeff Sturm for Java porting help, bugfixes, and encouragement.
 
 @item
 Shigeya Suzuki for this fixes for the bsdi platforms.
