@@ -1,5 +1,15 @@
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* ifcvt.c (noce_emit_move_insn): New.
+	(noce_try_store_flag, noce_try_store_flag_constants,
+	noce_try_store_flag_inc, noce_try_store_flag_mask,
+	noce_try_cmove, noce_try_cmove_arith, noce_try_minmax,
+	noce_try_abs): Use it.
+	(noce_process_if_block): Likewise.
+	For STRICT_LOW_PART, take mode from its SUBREG.
+
+2001-04-02  Jakub Jelinek  <jakub@redhat.com>
+
 	* fold-const.c (fold): Before optimizing unsigned comparison with
 	0x7fffffffU, make sure arg0 is integral type.
 

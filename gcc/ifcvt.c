@@ -96,6 +96,7 @@ static int find_if_case_2		PARAMS ((basic_block, edge, edge));
 static int find_memory			PARAMS ((rtx *, void *));
 static int dead_or_predicable		PARAMS ((basic_block, basic_block,
 						 basic_block, rtx, int));
+static void noce_emit_move_insn		PARAMS ((rtx, rtx));
 
 /* Abuse the basic_block AUX field to store the original block index,
    as well as a flag indicating that the block should be rescaned for
@@ -537,6 +538,34 @@ noce_emit_store_flag (if_info, x, reversep, normalize)
 			   || code == GEU || code == GTU), normalize);
 }
 
+/* Emit instruction to move a rtx into STRICT_LOW_PART.  */
+static void
+noce_emit_move_insn (x, y)
+     rtx x, y;
+{
+  enum machine_mode outmode, inmode;
+  rtx outer, inner;
+  int bitpos;
+
+  if (GET_CODE (x) != STRICT_LOW_PART)
+    {
+      emit_move_insn (x, y);
+      return;
+    }
+
+  outer = XEXP (x, 0);
+  inner = XEXP (outer, 0);
+  outmode = GET_MODE (outer);
+  inmode = GET_MODE (inner);
+  bitpos = SUBREG_WORD (outer) * BITS_PER_WORD;
+  if (BYTES_BIG_ENDIAN)
+    bitpos += (GET_MODE_BITSIZE (inmode) - GET_MODE_BITSIZE (outmode))
+	      % BITS_PER_WORD;
+  store_bit_field (inner, GET_MODE_BITSIZE (outmode),
+		   bitpos, outmode, y, GET_MODE_BITSIZE (inmode),
+		   GET_MODE_BITSIZE (inmode));
+}
+
 /* Convert "if (test) x = 1; else x = 0".
 
    Only try 0 and STORE_FLAG_VALUE here.  Other combinations will be
@@ -569,7 +598,7 @@ noce_try_store_flag (if_info)
   if (target)
     {
       if (target != if_info->x)
-	emit_move_insn (if_info->x, target);
+	noce_emit_move_insn (if_info->x, target);
 
       seq = get_insns ();
       end_sequence ();
@@ -692,7 +721,7 @@ noce_try_store_flag_constants (if_info)
 	}
 
       if (target != if_info->x)
-	emit_move_insn (if_info->x, target);
+	noce_emit_move_insn (if_info->x, target);
 
       seq = get_insns ();
       end_sequence ();
@@ -751,7 +780,7 @@ noce_try_store_flag_inc (if_info)
       if (target)
 	{
 	  if (target != if_info->x)
-	    emit_move_insn (if_info->x, target);
+	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = get_insns ();
 	  end_sequence ();
@@ -803,7 +832,7 @@ noce_try_store_flag_mask (if_info)
       if (target)
 	{
 	  if (target != if_info->x)
-	    emit_move_insn (if_info->x, target);
+	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = get_insns ();
 	  end_sequence ();
@@ -902,7 +931,7 @@ noce_try_cmove (if_info)
       if (target)
 	{
 	  if (target != if_info->x)
-	    emit_move_insn (if_info->x, target);
+	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = get_insns ();
 	  end_sequence ();
@@ -1059,10 +1088,10 @@ noce_try_cmove_arith (if_info)
       if (MEM_ALIAS_SET (if_info->a) == MEM_ALIAS_SET (if_info->b))
 	MEM_ALIAS_SET (tmp) = MEM_ALIAS_SET (if_info->a);
 
-      emit_move_insn (if_info->x, tmp);
+      noce_emit_move_insn (if_info->x, tmp);
     }
   else if (target != x)
-    emit_move_insn (x, target);
+    noce_emit_move_insn (x, target);
 
   tmp = get_insns ();
   end_sequence ();
@@ -1209,7 +1238,7 @@ noce_try_minmax (if_info)
       return FALSE;
     }
   if (target != if_info->x)
-    emit_move_insn (if_info->x, target);
+    noce_emit_move_insn (if_info->x, target);
 
   seq = get_insns ();
   end_sequence ();  
@@ -1327,7 +1356,7 @@ noce_try_abs (if_info)
     }
 
   if (target != if_info->x)
-    emit_move_insn (if_info->x, target);
+    noce_emit_move_insn (if_info->x, target);
 
   seq = get_insns ();
   end_sequence ();  
@@ -1532,7 +1561,8 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
     {
       if (no_new_pseudos)
 	return FALSE;
-      x = gen_reg_rtx (GET_MODE (x));
+      x = gen_reg_rtx (GET_MODE (GET_CODE (x) == STRICT_LOW_PART
+				 ? XEXP (x, 0) : x));
     }
 
   /* Don't operate on sources that may trap or are volatile.  */
@@ -1638,7 +1668,7 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
   if (orig_x != x)
     {
       start_sequence ();
-      emit_move_insn (orig_x, x);
+      noce_emit_move_insn (orig_x, x);
       insn_b = gen_sequence ();
       end_sequence ();
 
