@@ -246,16 +246,6 @@ extern int switch_table_difference_label_flag;
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
   fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
-
-/* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is an
-   operand of a function call.  */
-#undef LEGITIMATE_PIC_OPERAND_P
-
-#define LEGITIMATE_PIC_OPERAND_P(X)	\
-  (! symbolic_operand (X, VOIDmode)				\
-   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))	\
-   || PCREL_GENERAL_OPERAND_OK)
-
 /* end of stuff from m68kv4.h */
 
 #undef SGS_CMP_ORDER

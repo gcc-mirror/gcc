@@ -998,7 +998,7 @@ __transfer_from_trampoline ()					\
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-#define LEGITIMATE_CONSTANT_P(X) 1
+#define LEGITIMATE_CONSTANT_P(X) (GET_MODE (X) != XFmode)
 
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and 
@@ -1015,12 +1015,8 @@ __transfer_from_trampoline ()					\
 #endif
 
 #define LEGITIMATE_PIC_OPERAND_P(X)	\
-  ((! symbolic_operand (X, VOIDmode)				\
-    && ! (GET_CODE (X) == CONST_DOUBLE && mem_for_const_double (X) != 0	\
-	  && GET_CODE (mem_for_const_double (X)) == MEM			\
-	  && symbolic_operand (XEXP (mem_for_const_double (X), 0),	\
-			       VOIDmode))) 				\
-   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))		\
+  (! symbolic_operand (X, VOIDmode)				\
+   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))	\
    || PCREL_GENERAL_OPERAND_OK)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx

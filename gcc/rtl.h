@@ -1477,7 +1477,6 @@ extern void end_full_sequence (rtx*, rtx*);
 /* In varasm.c  */
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
-extern rtx mem_for_const_double (rtx);
 extern rtx force_const_mem (enum machine_mode, rtx);
 
 /* In varasm.c  */
