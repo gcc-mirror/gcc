@@ -1692,6 +1692,7 @@ This macro returns the attributes on the type @var{type}.
 @node Expression trees
 @section Expressions
 @cindex expression
+@findex TREE_TYPE
 @findex TREE_OPERAND
 @tindex INTEGER_CST
 @findex TREE_INT_CST_HIGH
@@ -1712,6 +1713,10 @@ This macro returns the attributes on the type @var{type}.
 @tindex ABS_EXPR
 @tindex BIT_NOT_EXPR
 @tindex TRUTH_NOT_EXPR
+@tindex PREDECREMENT_EXPR
+@tindex PREINCREMENT_EXPR
+@tindex POSTDECREMENT_EXPR
+@tindex POSTINCREMENT_EXPR
 @tindex ADDR_EXPR
 @tindex INDIRECT_REF
 @tindex FIX_TRUNC_EXPR
@@ -1720,6 +1725,7 @@ This macro returns the attributes on the type @var{type}.
 @tindex CONJ_EXPR
 @tindex REALPART_EXPR
 @tindex IMAGPART_EXPR
+@tindex NON_LVALUE_EXPR
 @tindex NOP_EXPR
 @tindex CONVERT_EXPR
 @tindex THROW_EXPR
@@ -1736,35 +1742,48 @@ This macro returns the attributes on the type @var{type}.
 @tindex PLUS_EXPR
 @tindex MINUS_EXPR
 @tindex MULT_EXPR
-@tindex TRUNC_DIV_EXPR
-@tindex TRUNC_MOD_EXPR
 @tindex RDIV_EXPR
+@tindex TRUNC_DIV_EXPR
+@tindex FLOOR_DIV_EXPR
+@tindex CEIL_DIV_EXPR
+@tindex ROUND_DIV_EXPR
+@tindex TRUNC_MOD_EXPR
+@tindex FLOOR_MOD_EXPR
+@tindex CEIL_MOD_EXPR
+@tindex ROUND_MOD_EXPR
+@tindex EXACT_DIV_EXPR
+@tindex ARRAY_REF
+@tindex ARRAY_RANGE_REF
 @tindex LT_EXPR
 @tindex LE_EXPR
 @tindex GT_EXPR
 @tindex GE_EXPR
 @tindex EQ_EXPR
 @tindex NE_EXPR
+@tindex ORDERED_EXPR
+@tindex UNORDERED_EXPR
 @tindex UNLT_EXPR
 @tindex UNLE_EXPR
 @tindex UNGT_EXPR
 @tindex UNGE_EXPR
 @tindex UNEQ_EXPR
 @tindex LTGT_EXPR
-@tindex INIT_EXPR
 @tindex MODIFY_EXPR
+@tindex INIT_EXPR
 @tindex COMPONENT_REF
 @tindex COMPOUND_EXPR
 @tindex COND_EXPR
 @tindex CALL_EXPR
-@tindex CONSTRUCTOR
-@tindex COMPOUND_LITERAL_EXPR
 @tindex STMT_EXPR
 @tindex BIND_EXPR
 @tindex LOOP_EXPR
 @tindex EXIT_EXPR
 @tindex CLEANUP_POINT_EXPR
-@tindex ARRAY_REF
+@tindex CONSTRUCTOR
+@tindex COMPOUND_LITERAL_EXPR
+@tindex SAVE_EXPR
+@tindex TARGET_EXPR
+@tindex AGGR_INIT_EXPR
 @tindex VTABLE_REF
 @tindex VA_ARG_EXPR
 
@@ -2063,24 +2082,49 @@ not matter.
 @itemx PLUS_EXPR
 @itemx MINUS_EXPR
 @itemx MULT_EXPR
-@itemx TRUNC_DIV_EXPR
-@itemx TRUNC_MOD_EXPR
-@itemx RDIV_EXPR
 These nodes represent various binary arithmetic operations.
 Respectively, these operations are addition, subtraction (of the second
-operand from the first), multiplication, integer division, integer
-remainder, and floating-point division.  The operands to the first three
-of these may have either integral or floating type, but there will never
-be case in which one operand is of floating type and the other is of
-integral type.
-
-The result of a @code{TRUNC_DIV_EXPR} is always rounded towards zero.
-The @code{TRUNC_MOD_EXPR} of two operands @code{a} and @code{b} is
-always @code{a - (a/b)*b} where the division is as if computed by a
-@code{TRUNC_DIV_EXPR}.
+operand from the first) and multiplication.  Their operands may have
+either integral or floating type, but there will never be case in which
+one operand is of floating type and the other is of integral type.
 
 The behavior of these operations on signed arithmetic overflow is
 controlled by the @code{flag_wrapv} and @code{flag_trapv} variables.
+
+@item RDIV_EXPR
+This node represents a floating point division operation.
+
+@item TRUNC_DIV_EXPR
+@itemx FLOOR_DIV_EXPR
+@itemx CEIL_DIV_EXPR
+@itemx ROUND_DIV_EXPR
+These nodes represent integer division operations that return an integer
+result.  @code{TRUNC_DIV_EXPR} rounds towards zero, @code{FLOOR_DIV_EXPR}
+rounds towards negative infinity, @code{CEIL_DIV_EXPR} rounds towards
+positive infinity and @code{ROUND_DIV_EXPR} rounds to the closest integer.
+Integer division in C and C++ is truncating, i.e@. @code{TRUNC_DIV_EXPR}.
+
+The behavior of these operations on signed arithmetic overflow, when
+dividing the minimum signed integer by minus one, is controlled by the
+@code{flag_wrapv} and @code{flag_trapv} variables.
+
+@item TRUNC_MOD_EXPR
+@itemx FLOOR_MOD_EXPR
+@itemx CEIL_MOD_EXPR
+@itemx ROUND_MOD_EXPR
+These nodes represent the integer remainder or modulus operation.
+The integer modulus of two operands @code{a} and @code{b} is
+defined as @code{a - (a/b)*b} where the division calculated using
+the corresponding division operator.  Hence for @code{TRUNC_MOD_EXPR}
+this definition assumes division using truncation towards zero, i.e@.
+@code{TRUNC_DIV_EXPR}.  Integer remainder in C and C++ uses truncating
+division, i.e@. @code{TRUNC_MOD_EXPR}.
+
+@item EXACT_DIV_EXPR
+The @code{EXACT_DIV_EXPR} code is used to represent integer divisions where
+the numerator is known to be an exact multiple of the denominator.  This
+allows the backend to choose between the faster of @code{TRUNC_DIV_EXPR},
+@code{CEIL_DIV_EXPR} and @code{FLOOR_DIV_EXPR} for the current target.
 
 @item ARRAY_REF
 These nodes represent array accesses.  The first operand is the array;
@@ -2096,54 +2140,53 @@ meanings.  The type of these expressions must be an array whose component
 type is the same as that of the first operand.  The range of that array
 type determines the amount of data these expressions access.
 
-@item EXACT_DIV_EXPR
-Document.
-
 @item LT_EXPR
 @itemx LE_EXPR
 @itemx GT_EXPR
 @itemx GE_EXPR
 @itemx EQ_EXPR
 @itemx NE_EXPR
-
 These nodes represent the less than, less than or equal to, greater
 than, greater than or equal to, equal, and not equal comparison
 operators.  The first and second operand with either be both of integral
 type or both of floating type.  The result type of these expressions
-will always be of integral or boolean type.
+will always be of integral or boolean type.  These operations return
+the result type's zero value for false, and the result type's one value
+for true.
 
-Floating-point comparison may have a fourth possible outcome for a
-comparison, other than less, greater or equal: this is @dfn{unordered},
-and two floating-point values are unordered if one of them is
-a @dfn{not-a-number} (@dfn{NaN}) value.  In this case, all of these
-nodes will be false but @code{NE_EXPR}, and the first four of these
-nodes will also raise an invalid operation trap.
+For floating point comparisons, if we honor IEEE NaNs and either operand
+is NaN, then @code{NE_EXPR} always returns true and the remaining operators
+always return false.  On some targets, comparisons against an IEEE NaN,
+other than equality and inequality, may generate a floating point exception.
 
 @item ORDERED_EXPR
 @itemx UNORDERED_EXPR
+These nodes represent non-trapping ordered and unordered comparison
+operators.  These operations take two floating point operands and
+determine whether they are ordered or unordered relative to each other.
+If either operand is an IEEE NaN, their comparison is defined to be
+unordered, otherwise the comparison is defined to be ordered.  The
+result type of these expressions will always be of integral or boolean
+type.  These operations return the result type's zero value for false,
+and the result type's one value for true.
+
 @item UNLT_EXPR
 @itemx UNLE_EXPR
 @itemx UNGT_EXPR
 @itemx UNGE_EXPR
 @itemx UNEQ_EXPR
 @itemx LTGT_EXPR
-
-These nodes represent other relational operations that are only used
-with floating types.
-
-If the outcome of the comparison is unordered, all of these special
-comparisons will be true but @code{ORDERED_EXPR} and @code{LTGT_EXPR}.
-Only @code{LTGT_EXPR} is expected to generate an invalid floating-point
-operation trap when the outcome is unordered.
-
-@code{ORDERED_EXPR} is true if neither of its operands is a NaN,
-while its negation @code{UNORDERED_EXPR} is true if at least one of
-its operands is a NaN.
-
-For floating operations, inverting one of the standard comparison nodes 
-will result in one of these nodes, with its name prefixed by
-@code{UN}---the only exception is @code{NE_EXPR}, whose negation is
-@code{LTGT_EXPR}.
+These nodes represent the unordered comparison operators.
+These operations take two floating point operands and determine whether
+the operands are unordered or are less than, less than or equal to,
+greater than, greater than or equal to, or equal respectively.  For
+example, @code{UNLT_EXPR} returns true if either operand is an IEEE
+NaN or the first operand is less than the second.  With the possible
+exception of @code{LTGT_EXPR}, all of these operations are guaranteed
+not to generate a floating point exception.  The result
+type of these expressions will always be of integral or boolean type.
+These operations return the result type's zero value for false,
+and the result type's one value for true.
 
 @item MODIFY_EXPR
 These nodes represent assignment.  The left-hand side is the first
