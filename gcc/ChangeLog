@@ -1,5 +1,16 @@
 2003-02-01  Richard Henderson  <rth@redhat.com>
 
+	* libgcc2.c: Include auto-host.h.
+	(ATTRIBUTE_HIDDEN): New.
+	(__clz_tab): Don't declare here for clz and ctz.
+	(__clzsi2, __clzdi2): Use count_leading_zeros.
+	(__ctzsi2, __ctzdi2): Use count_trailing_zeros.
+	(__popcount_tab): Mark ATTRIBUTE_HIDDEN.
+	(__paritysi2, __paritydi2): Use shifts instead of __popcount_tab.
+	* longlong.h (__clz_tab): Mark ATTRIBUTE_HIDDEN.
+
+2003-02-01  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.md (addsi_1_zext splitter): Add TARGET_64BIT
 	to the conditional.
 	(ashlsi3_1_zext splitter): Likewise.

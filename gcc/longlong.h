@@ -134,7 +134,7 @@ extern UDItype __udiv_qrnnd (UDItype *, UDItype, UDItype, UDItype);
   __asm__("cttz %1,%0" : "=r"(COUNT) : "r"(X))
 #define COUNT_LEADING_ZEROS_0 64
 #else
-extern const UQItype __clz_tab[];
+extern const UQItype __clz_tab[] ATTRIBUTE_HIDDEN;
 #define count_leading_zeros(COUNT,X) \
   do {									\
     UDItype __xr = (X), __t, __a;					\
@@ -1287,7 +1287,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #endif
 
 #if !defined (count_leading_zeros)
-extern const UQItype __clz_tab[];
+extern const UQItype __clz_tab[] ATTRIBUTE_HIDDEN;
 #define count_leading_zeros(count, x) \
   do {									\
     UWtype __xr = (x);							\
