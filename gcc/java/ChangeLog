@@ -1,5 +1,8 @@
 2001-12-08  Tom Tromey  <tromey@redhat.com>
 
+	* gjavah.c (decompile_method): Don't decompile to `return this'
+	for static methods.
+
 	* gjavah.c (cxx_keywords): Re-sorted.
 	* lex.c (cxx_keywords): Re-sorted.
 
