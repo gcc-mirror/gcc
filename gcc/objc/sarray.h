@@ -39,7 +39,11 @@ extern const char* __objc_sparse2_id;
 extern const char* __objc_sparse3_id;
 #endif
 
+#ifdef IN_GCC
 #include "gstddef.h"
+#else
+#include "stddef.h"
+#endif
 
 extern int nbuckets;		/* for stats */
 extern int nindices;
