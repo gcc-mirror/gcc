@@ -3337,13 +3337,18 @@ method_header (flags, type, mdecl, throws)
 {
   tree meth = TREE_VALUE (mdecl);
   tree id = TREE_PURPOSE (mdecl);
-  tree this_class = TREE_TYPE (ctxp->current_parsed_class);
   tree type_wfl = NULL_TREE;
-  tree meth_name = NULL_TREE, current, orig_arg;
+  tree meth_name = NULL_TREE;
+  tree current, orig_arg, this_class;
   int saved_lineno;
   int constructor_ok = 0, must_chain;
   
   check_modifiers_consistency (flags);
+
+  if (ctxp->current_parsed_class)
+    this_class = TREE_TYPE (ctxp->current_parsed_class);
+  else
+    return NULL_TREE;
   
   /* There are some forbidden modifiers for an abstract method and its
      class must be abstract as well.  */
@@ -3539,7 +3544,12 @@ static void
 finish_method_declaration (method_body)
      tree method_body;
 {
-  int flags = get_access_flags_from_decl (current_function_decl);
+  int flags;
+
+  if (!current_function_decl)
+    return;
+
+  flags = get_access_flags_from_decl (current_function_decl);
 
   /* 8.4.5 Method Body */
   if ((flags & ACC_ABSTRACT || flags & ACC_NATIVE) && method_body)
@@ -5516,6 +5526,9 @@ source_start_java_method (fndecl)
   tree parm_decl;
   int i;
 
+  if (!fndecl)
+    return;
+
   current_function_decl = fndecl;
 
   /* New scope for the function */
@@ -5634,6 +5647,9 @@ source_end_java_method ()
   tree fndecl = current_function_decl;
   int flag_asynchronous_exceptions = asynchronous_exceptions;
 
+  if (!fndecl)
+    return;
+
   java_parser_context_save_global ();
   lineno = ctxp->last_ccb_indent1;
 
@@ -5689,6 +5705,8 @@ tree
 java_method_add_stmt (fndecl, expr)
      tree fndecl, expr;
 {
+  if (!fndecl)
+    return NULL;
   return add_stmt_to_block (GET_CURRENT_BLOCK (fndecl), NULL_TREE, expr);
 }
 
