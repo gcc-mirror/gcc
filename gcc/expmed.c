@@ -2247,6 +2247,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   /* Indicate that no algorithm is yet found.  If no algorithm
      is found, this value will be returned and indicate failure.  */
   alg_out->cost.cost = cost_limit->cost + 1;
+  alg_out->cost.latency = cost_limit->latency + 1;
 
   if (cost_limit->cost < 0
       || (cost_limit->cost == 0 && cost_limit->latency <= 0))
@@ -2516,13 +2517,13 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	}
     }
 
+  /* If best_cost has not decreased, we have not found any algorithm.  */
+  if (!CHEAPER_MULT_COST (&best_cost, cost_limit))
+    return;
+
   /* If we are getting a too long sequence for `struct algorithm'
      to record, make this search fail.  */
   if (best_alg->ops == MAX_BITS_PER_WORD)
-    return;
-
-  /* If best_cost has not decreased, we have not found any algorithm.  */
-  if (!CHEAPER_MULT_COST (&best_cost, cost_limit))
     return;
 
   /* Copy the algorithm from temporary space to the space at alg_out.

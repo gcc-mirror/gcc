@@ -1,3 +1,8 @@
+2004-09-13  Daniel Jacobowitz  <dan@debian.org>
+
+	* expmed.c (synth_mult): Initialize latency.  Check cost before
+	checking ops count.
+
 2004-09-26  Kenneth Zadeck  <Kenneth.Zadeck@NaturalBridge.com>
 
 
