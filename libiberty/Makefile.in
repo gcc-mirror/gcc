@@ -125,7 +125,7 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c \
 # These are always included in the library.
 REQUIRED_OFILES = argv.o choose-temp.o concat.o cplus-dem.o \
   fdmatch.o fnmatch.o getopt.o getopt1.o getruntime.o hex.o \
-  floatformat.o mkstemp.o objalloc.o obstack.o pexecute.o spaces.o \
+  floatformat.o objalloc.o obstack.o pexecute.o spaces.o \
   splay-tree.o strerror.o strsignal.o xatexit.o xexit.o xmalloc.o \
   xstrdup.o xstrerror.o
 
