@@ -1,5 +1,8 @@
 Fri Nov  9 17:51:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alias.c (nonoverlapping_memrefs_p): New function.
+	(true_dependence, canon_true_depenence, write_dependence_p): Call it.
+
 	* emit-rtl.c (set_mem_attributes): Get alignments for constants.
 
 2001-11-09  Aldy Hernandez  <aldyh@redhat.com>
