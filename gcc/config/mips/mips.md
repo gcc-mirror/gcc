@@ -11202,7 +11202,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   [(set (match_operand:DI 0 "register_operand" "=d")
         (match_operand:DI 1 "address_operand" "p"))]
   "Pmode == DImode"
-  "la %0,%a1"
+  "dla %0,%a1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")
    (set_attr "length"	"40")])
