@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,6 @@
 #include <fstream>
 #include <testsuite_performance.h>
 
-// based on libstdc++/8761 poor fstream performance (converted to float)
 int main() 
 {
   using namespace std;
@@ -38,16 +37,25 @@ int main()
   resource_counter resource;
   const int iterations = 10000000;
 
-  ofstream out("tmp_perf_float.txt");
-  start_counters(time, resource);
-  for (int i = 0; i < iterations; ++i)
-    {
-      float f = i * 3.14159265358979323846;
-      out << f << "\n";
-    }
-  stop_counters(time, resource);
-  report_performance(__FILE__, "", time, resource);
+  {
+    ofstream out("tmp_perf_float.txt");
+    for (int i = 0; i < iterations; ++i)
+      {
+	float f = i * 3.14159265358979323846;
+	out << f << "\n";
+      }
+  }
 
-  unlink("tmp_perf_float.txt");
+  {
+    ifstream in("tmp_perf_float.txt");
+    float f;
+    start_counters(time, resource);  
+    for (int j, i = 0; i < iterations; ++i)
+      in >> f;
+    stop_counters(time, resource);
+    report_performance(__FILE__, "", time, resource);
+  }
+
+  unlink("tmp_perf_int.txt");
   return 0;
 };
