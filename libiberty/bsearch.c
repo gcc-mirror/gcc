@@ -79,7 +79,7 @@ bsearch (register const void *key, const void *base0,
 		p = base + (lim >> 1) * size;
 		cmp = (*compar)(key, p);
 		if (cmp == 0)
-			return (p);
+			return (void *)p;
 		if (cmp > 0) {	/* key > p: move right */
 			base = (const char *)p + size;
 			lim--;
