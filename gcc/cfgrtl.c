@@ -161,7 +161,15 @@ delete_insn (insn)
       int i;
 
       for (i = 0; i < len; i++)
-	LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0))--;
+	{
+	  rtx label = XEXP (XVECEXP (pat, diff_vec_p, i), 0);
+
+	  /* When deleting code in bulk (e.g. removing many unreachable
+	     blocks) we can delete a label that's a target of the vector
+	     before deleting the vector itself.  */
+	  if (GET_CODE (label) != NOTE)
+	    LABEL_NUSES (label)--;
+	}
     }
 
   return next;
