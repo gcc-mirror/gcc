@@ -1,3 +1,7 @@
+2003-06-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/format/asm_fprintf-1.c: Update width/precision checks.
+
 2003-06-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/gcc-dg.exp (dg-require-dll): New function.

@@ -1,3 +1,8 @@
+2003-06-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-format.c (format_types_orig): Disallow '*' width/precision in
+	asm_fprintf format checks.
+
 2003-06-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_va_arg): Fix alignment when retrieving 
