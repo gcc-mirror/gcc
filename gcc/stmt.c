@@ -3016,6 +3016,12 @@ expand_return (retval)
       rtx result_val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
       enum machine_mode tmpmode, result_reg_mode;
 
+      if (bytes == 0)
+	{
+	  expand_null_return ();
+	  return;
+	}
+
       /* Structures whose size is not a multiple of a word are aligned
 	 to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
 	 machine, this means we must skip the empty high order bytes when
@@ -3063,15 +3069,12 @@ expand_return (retval)
       /* Find the smallest integer mode large enough to hold the
 	 entire structure and use that mode instead of BLKmode
 	 on the USE insn for the return register.   */
-      bytes = int_size_in_bytes (TREE_TYPE (retval_rhs));
       for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	   tmpmode != VOIDmode;
 	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
-	{
-	  /* Have we found a large enough mode?  */
-	  if (GET_MODE_SIZE (tmpmode) >= bytes)
-	    break;
-	}
+	/* Have we found a large enough mode?  */
+	if (GET_MODE_SIZE (tmpmode) >= bytes)
+	  break;
 
       /* No suitable mode found.  */
       if (tmpmode == VOIDmode)
