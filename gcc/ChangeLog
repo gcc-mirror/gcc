@@ -1,3 +1,8 @@
+Thu Oct 22 15:46:23 1998  Per Bothner (bothner@cygnus.com)
+
+	* Makefile.in (distdir-cvs, distdir-start):  Clean up so it
+	works if "$(srcdir)" != ".".
+
 Wed Oct 21 19:23:59 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* expmed.c (store_bit_field): If need to add a SUBREG, then remove
