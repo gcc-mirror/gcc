@@ -4198,7 +4198,7 @@ cprop_insn (bb, insn, alter_jumps)
 		   && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
 		   && condjump_p (NEXT_INSN (insn))
 		   && ! simplejump_p (NEXT_INSN (insn))
-		   && cprop_cc0_jump (insn, reg_used, src))
+		   && cprop_cc0_jump (bb, insn, reg_used, src))
 	    {
 	      changed = 1;
 	      break;
