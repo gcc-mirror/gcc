@@ -1,5 +1,7 @@
 1998-07-27  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* call.c (build_over_call): Pass 1 to popclass.
+
 	* parse.y (direct_notype_declarator): Add precedence declaration
 	to notype_unqualified_id case.
 
