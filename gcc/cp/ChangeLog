@@ -1,3 +1,9 @@
+2003-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11928
+	* search.c (add_conversions): Avoid adding two conversion
+	operators for the same type.
+
 2003-08-29  Richard Henderson  <rth@redhat.com>
 	    Jason Merrill <jason@redhat.com>
 
