@@ -198,14 +198,7 @@ v_message_with_decl (decl, warn, msgid, ap)
     }
 
   if (p > _(msgid))			/* Print the left-hand substring.  */
-    {
-      char fmt[sizeof "%.255s"];
-      long width = p - _(msgid);
-             
-      if (width > 255L) width = 255L;	/* arbitrary */
-      sprintf (fmt, "%%.%lds", width);
-      fprintf (stderr, fmt, _(msgid));
-    }
+    fprintf (stderr, "%.*s", (int)(p - _(msgid)), _(msgid));
 
   if (*p == '%')		/* Print the name.  */
     {
