@@ -1673,18 +1673,33 @@ build_component_ref_1 (datum, field, protect)
     (build_component_ref (datum, field, NULL_TREE, protect));
 }
 
-/* Given a COND_EXPR in T, return it in a form that we can, for
-   example, use as an lvalue.  This code used to be in unary_complex_lvalue,
-   but we needed it to deal with `a = (d == c) ? b : c' expressions, where
-   we're dealing with aggregates.  So, we now call this in unary_complex_lvalue,
-   and in build_modify_expr.  The case (in particular) that led to this was
-   with CODE == ADDR_EXPR, since it's not an lvalue when we'd get it there.  */
+/* Given a COND_EXPR, MIN_EXPR, or MAX_EXPR in T, return it in a form that we
+   can, for example, use as an lvalue.  This code used to be in
+   unary_complex_lvalue, but we needed it to deal with `a = (d == c) ? b : c'
+   expressions, where we're dealing with aggregates.  But now it's again only
+   called from unary_complex_lvalue.  The case (in particular) that led to
+   this was with CODE == ADDR_EXPR, since it's not an lvalue when we'd
+   get it there.  */
 
 static tree
 rationalize_conditional_expr (code, t)
      enum tree_code code;
      tree t;
 {
+  /* For MIN_EXPR or MAX_EXPR, fold-const.c has arranged things so that
+     the first operand is always the one to be used if both operands
+     are equal, so we know what conditional expression this used to be.  */
+  if (TREE_CODE (t) == MIN_EXPR || TREE_CODE (t) == MAX_EXPR)
+    {
+      return
+	build_conditional_expr (build_x_binary_op ((TREE_CODE (t) == MIN_EXPR
+						    ? LE_EXPR : GE_EXPR),
+						   TREE_OPERAND (t, 0),
+						   TREE_OPERAND (t, 1)),
+			    build_unary_op (code, TREE_OPERAND (t, 0), 0),
+			    build_unary_op (code, TREE_OPERAND (t, 1), 0));
+    }
+
   return
     build_conditional_expr (TREE_OPERAND (t, 0),
 			    build_unary_op (code, TREE_OPERAND (t, 1), 0),
@@ -4553,7 +4568,8 @@ unary_complex_lvalue (code, arg)
     }
 
   /* Handle (a ? b : c) used as an "lvalue".  */
-  if (TREE_CODE (arg) == COND_EXPR)
+  if (TREE_CODE (arg) == COND_EXPR
+      || TREE_CODE (arg) == MIN_EXPR || TREE_CODE (arg) == MAX_EXPR)
     return rationalize_conditional_expr (code, arg);
 
   if (TREE_CODE (arg) == MODIFY_EXPR
