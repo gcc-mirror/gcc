@@ -1,3 +1,18 @@
+2004-04-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/rs6000.c (registers_ok_for_quad_peep):
+	Return false if we do not have fp register.
+	(addrs_ok_for_quad_peep): Rename to ...
+	(mems_ok_for_quad_peep): this.
+	Add check for volatile memory.
+	* config/rs6000/rs6000-protos.h (addrs_ok_for_quad_peep):
+	Rename to ...
+	(mems_ok_for_quad_peep): this.
+	* config/rs6000/rs6000.md: Change peephole's for lfq/stq
+	to peephole2's.
+	(lfq_power2): New instruction.
+	(stfq_power2): Likewise.
+
 2004-04-28  Jan Hubicka  <jh@suse.cz>
 
 	PR c/15004
