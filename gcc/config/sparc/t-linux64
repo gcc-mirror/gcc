@@ -1,7 +1,8 @@
 MULTILIB_OPTIONS = m64/m32 mno-app-regs|mcmodel=medany
 MULTILIB_DIRNAMES = 64 32 alt 
 MULTILIB_MATCHES = mcmodel?medany=mcmodel?medmid
-MULTILIB_EXCEPTIONS = *m32/*medany *m32/*mno-app-regs
+MULTILIB_EXCEPTIONS = m32/mno-app-regs* m32/mcmodel=*
+MULTILIB_EXCLUSIONS = m32/!m64/mno-app-regs m32/!m64/mcmodel=medany
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib

@@ -1,3 +1,15 @@
+1999-12-16  Ben Collins  <bcollins@debian.org>
+
+	* Makefile.in: Pass a new MULTILIB_EXCLUSIONS option as the sixth
+	argument to genmultilib.
+	* genmultilib: accept new MULTILIB_EXCLUSIONS option and output
+	the contents into the multilib.h header.
+	* gcc.c: Declare multilib_exclusions for the specs file.
+	(set_multilib_dir): Use it.
+	(print_multilib_info): Likewise.
+	* t-linux64: Declare arguments for new MULTILIB_EXCLUSIONS option
+	to pass to genmultilib.
+
 2000-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (built_in_class_names, built_in_names): Constify a
