@@ -205,15 +205,28 @@ static char *cwd;
 
 enum typestatus {TYPE_UNSEEN, TYPE_XREF, TYPE_DEFINED};
 
-/* Vector recording the status of describing C data types.
+/* Structure recording information about a C data type.
+   The status element says whether we have yet output
+   the definition of the type.  TYPE_XREF says we have
+   output it as a cross-reference only.
+   The file_number and type_number elements are used if DBX_USE_BINCL
+   is defined.  */
+
+struct typeinfo
+{
+  enum typestatus status;
+#ifdef DBX_USE_BINCL
+  int file_number;
+  int type_number;
+#endif
+};
+
+/* Vector recording information about C data types.
    When we first notice a data type (a tree node),
    we assign it a number using next_type_number.
-   That is its index in this vector.
-   The vector element says whether we have yet output
-   the definition of the type.  TYPE_XREF says we have
-   output it as a cross-reference only.  */
+   That is its index in this vector.  */
 
-enum typestatus *typevec;
+struct typeinfo *typevec;
 
 /* Number of elements of space allocated in `typevec'.  */
 
@@ -224,6 +237,29 @@ static int typevec_len;
    The number, once assigned, is in the TYPE_SYMTAB_ADDRESS field.  */
 
 static int next_type_number;
+
+#ifdef DBX_USE_BINCL
+
+/* When using N_BINCL in dbx output, each type number is actually a
+   pair of the file number and the type number within the file.
+   This is a stack of input files.  */
+
+struct dbx_file
+{
+  struct dbx_file *next;
+  int file_number;
+  int next_type_number;
+};
+
+/* This is the top of the stack.  */
+
+static struct dbx_file *current_file;
+
+/* This is the next file number to use.  */
+
+static int next_file_number;
+
+#endif /* DBX_USE_BINCL */
 
 /* In dbx output, we must assign symbol-blocks id numbers
    in the order in which their beginnings are encountered.
@@ -282,6 +318,7 @@ static void dbxout_symbol_name ();
 static void dbxout_symbol_location ();
 static void dbxout_prepare_symbol ();
 static void dbxout_finish_symbol ();
+static void dbxout_type_index ();
 static void dbxout_continue ();
 static void print_int_cst_octal ();
 static void print_octal ();
@@ -404,7 +441,7 @@ dbxout_init (asm_file, input_file_name, syms)
   asmfile = asm_file;
 
   typevec_len = 100;
-  typevec = (enum typestatus *) xmalloc (typevec_len * sizeof typevec[0]);
+  typevec = (struct typeinfo *) xmalloc (typevec_len * sizeof typevec[0]);
   bzero ((char *) typevec, typevec_len * sizeof typevec[0]);
 
   /* Convert Ltext into the appropriate format for local labels in case
@@ -464,6 +501,14 @@ dbxout_init (asm_file, input_file_name, syms)
   next_type_number = 1;
   next_block_number = 2;
 
+#ifdef DBX_USE_BINCL
+  current_file = (struct dbx_file *) xmalloc (sizeof *current_file);
+  current_file->next = NULL;
+  current_file->file_number = 0;
+  current_file->next_type_number = 1;
+  next_file_number = 1;
+#endif
+
   /* Make sure that types `int' and `char' have numbers 1 and 2.
      Definitions of other integer types will refer to those numbers.
      (Actually it should no longer matter what their numbers are.
@@ -503,6 +548,38 @@ dbxout_typedefs (syms)
 	    dbxout_symbol (TYPE_NAME (type), 0);
 	}
     }
+}
+
+/* Change to reading from a new source file.  Generate a N_BINCL stab.  */
+
+void
+dbxout_start_new_source_file (filename)
+     char *filename;
+{
+#ifdef DBX_USE_BINCL
+  struct dbx_file *n = (struct dbx_file *) xmalloc (sizeof *n);
+
+  n->next = current_file;
+  n->file_number = next_file_number++;
+  n->next_type_number = 1;
+  current_file = n;
+  fprintf (asmfile, "%s \"%s\",%d,0,0,0\n", ASM_STABS_OP, filename, N_BINCL);
+#endif
+}
+
+/* Revert to reading a previous source file.  Generate a N_EINCL stab.  */
+
+void
+dbxout_resume_previous_source_file ()
+{
+#ifdef DBX_USE_BINCL
+  struct dbx_file *next;
+
+  fprintf (asmfile, "%s %d,0,0,0\n", ASM_STABN_OP, N_EINCL);
+  next = current_file->next;
+  free (current_file);
+  current_file = next;
+#endif
 }
 
 /* Output debugging info to FILE to switch to sourcefile FILENAME.  */
@@ -566,6 +643,22 @@ dbxout_finish (file, filename)
 #ifdef DBX_OUTPUT_MAIN_SOURCE_FILE_END
   DBX_OUTPUT_MAIN_SOURCE_FILE_END (file, filename);
 #endif /* DBX_OUTPUT_MAIN_SOURCE_FILE_END */
+}
+
+/* Output the index of a type.  */
+
+static void
+dbxout_type_index (type)
+     tree type;
+{
+#ifndef DBX_USE_BINCL
+  fprintf (asmfile, "%d", TYPE_SYMTAB_ADDRESS (type));
+  CHARS (3);
+#else
+  struct typeinfo *t = &typevec[TYPE_SYMTAB_ADDRESS (type)];
+  fprintf (asmfile, "(%d,%d)", t->file_number, t->type_number);
+  CHARS (7);
+#endif
 }
 
 /* Continue a symbol-description that gets too big.
@@ -896,7 +989,7 @@ dbxout_range_type (type)
     {
       /* This used to say `r1' and we used to take care
 	 to make sure that `int' was type number 1.  */
-      fprintf (asmfile, "%d", TYPE_SYMTAB_ADDRESS (integer_type_node));
+      dbxout_type_index (integer_type_node);
     }
   if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
     fprintf (asmfile, ";%d", 
@@ -956,17 +1049,23 @@ dbxout_type (type, full, show_arg_types)
       if (next_type_number == typevec_len)
 	{
 	  typevec =
-	    (enum typestatus *) xrealloc (typevec,
+	    (struct typeinfo *) xrealloc (typevec,
 					  typevec_len * 2 * sizeof typevec[0]);
 	  bzero ((char *) (typevec + typevec_len),
 		 typevec_len * sizeof typevec[0]);
 	  typevec_len *= 2;
 	}
+
+#ifdef DBX_USE_BINCL
+      typevec[TYPE_SYMTAB_ADDRESS (type)].file_number =
+	current_file->file_number;
+      typevec[TYPE_SYMTAB_ADDRESS (type)].type_number =
+	current_file->next_type_number++;
+#endif
     }
 
   /* Output the number of this type, to refer to it.  */
-  fprintf (asmfile, "%d", TYPE_SYMTAB_ADDRESS (type));
-  CHARS (3);
+  dbxout_type_index (type);
 
 #ifdef DBX_TYPE_DEFINED
   if (DBX_TYPE_DEFINED (type))
@@ -976,7 +1075,7 @@ dbxout_type (type, full, show_arg_types)
   /* If this type's definition has been output or is now being output,
      that is all.  */
 
-  switch (typevec[TYPE_SYMTAB_ADDRESS (type)])
+  switch (typevec[TYPE_SYMTAB_ADDRESS (type)].status)
     {
     case TYPE_UNSEEN:
       break;
@@ -1014,7 +1113,7 @@ dbxout_type (type, full, show_arg_types)
 	/* No way in DBX fmt to describe a variable size.  */
 	|| TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
       {
-	typevec[TYPE_SYMTAB_ADDRESS (type)] = TYPE_XREF;
+	typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_XREF;
 	return;
       }
 #endif
@@ -1027,7 +1126,7 @@ dbxout_type (type, full, show_arg_types)
   /* Mark it as defined, so that if it is self-referent
      we will not get into an infinite recursion of definitions.  */
 
-  typevec[TYPE_SYMTAB_ADDRESS (type)] = TYPE_DEFINED;
+  typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_DEFINED;
 
   switch (TREE_CODE (type))
     {
@@ -1038,25 +1137,30 @@ dbxout_type (type, full, show_arg_types)
 	 without saying what it is.  The debugger will make it
 	 a void type when the reference is seen, and nothing will
 	 ever override that default.  */
-      fprintf (asmfile, "%d", TYPE_SYMTAB_ADDRESS (type));
-      CHARS (3);
+      dbxout_type_index (type);
       break;
 
     case INTEGER_TYPE:
       if (type == char_type_node && ! TREE_UNSIGNED (type))
-	/* Output the type `char' as a subrange of itself!
-	   I don't understand this definition, just copied it
-	   from the output of pcc.
-	   This used to use `r2' explicitly and we used to
-	   take care to make sure that `char' was type number 2.  */
-	fprintf (asmfile, "r%d;0;127;", TYPE_SYMTAB_ADDRESS (type));
+	{
+	  /* Output the type `char' as a subrange of itself!
+	     I don't understand this definition, just copied it
+	     from the output of pcc.
+	     This used to use `r2' explicitly and we used to
+	     take care to make sure that `char' was type number 2.  */
+	  fprintf (asmfile, "r");
+	  dbxout_type_index (type);
+	  fprintf (asmfile, ";0;127;");
+	}
       else if (use_gnu_debug_info_extensions
 	       && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
 		   || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT))
 	{
 	  /* This used to say `r1' and we used to take care
 	     to make sure that `int' was type number 1.  */
-	  fprintf (asmfile, "r%d;", TYPE_SYMTAB_ADDRESS (integer_type_node));
+	  fprintf (asmfile, "r");
+	  dbxout_type_index (integer_type_node);
+	  fprintf (asmfile, ";");
 	  print_int_cst_octal (TYPE_MIN_VALUE (type));
 	  fprintf (asmfile, ";");
 	  print_int_cst_octal (TYPE_MAX_VALUE (type));
@@ -1064,15 +1168,16 @@ dbxout_type (type, full, show_arg_types)
 	}
       else /* Output other integer types as subranges of `int'.  */
 	dbxout_range_type (type);
-      CHARS (25);
+      CHARS (22);
       break;
 
     case REAL_TYPE:
       /* This used to say `r1' and we used to take care
 	 to make sure that `int' was type number 1.  */
-      fprintf (asmfile, "r%d;%d;0;", TYPE_SYMTAB_ADDRESS (integer_type_node),
-	       int_size_in_bytes (type));
-      CHARS (16);
+      fprintf (asmfile, "r");
+      dbxout_type_index (integer_type_node);
+      fprintf (asmfile, ";%d;0;", int_size_in_bytes (type));
+      CHARS (13);
       break;
 
     case CHAR_TYPE:
@@ -1080,10 +1185,13 @@ dbxout_type (type, full, show_arg_types)
 	fprintf (asmfile, "@s%d;-20;",
 		 BITS_PER_UNIT * int_size_in_bytes (type));
       else
-	/* Output the type `char' as a subrange of itself.
-	   That is what pcc seems to do.  */
-      fprintf (asmfile, "r%d;0;%d;", TYPE_SYMTAB_ADDRESS (char_type_node),
-	       TREE_UNSIGNED (type) ? 255 : 127);
+	{
+	  /* Output the type `char' as a subrange of itself.
+	     That is what pcc seems to do.  */
+	  fprintf (asmfile, "r");
+	  dbxout_type_index (char_type_node);
+	  fprintf (asmfile, ";0;%d;", TREE_UNSIGNED (type) ? 255 : 127);
+	}
       CHARS (9);
       break;
 
@@ -1107,10 +1215,11 @@ dbxout_type (type, full, show_arg_types)
 
       if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
 	{
-	  fprintf (asmfile, "r%d;%d;0;",
-		   TYPE_SYMTAB_ADDRESS (type),
+	  fprintf (asmfile, "r");
+	  dbxout_type_index (type);
+	  fprintf (asmfile, ";%d;0;",
 		   int_size_in_bytes (TREE_TYPE (type)));
-	  CHARS (15);		/* The number is probably incorrect here.  */
+	  CHARS (12);		/* The number is probably incorrect here.  */
 	}
       else
 	{
@@ -1164,14 +1273,17 @@ dbxout_type (type, full, show_arg_types)
 	}
       tem = TYPE_DOMAIN (type);
       if (tem == NULL)
-	fprintf (asmfile, "ar%d;0;-1;",
-		 TYPE_SYMTAB_ADDRESS (integer_type_node));
+	{
+	  fprintf (asmfile, "ar");
+	  dbxout_type_index (integer_type_node);
+	  fprintf (asmfile, ";0;-1;");
+	}
       else
 	{
 	  fprintf (asmfile, "a");
 	  dbxout_range_type (tem);
 	}
-      CHARS (17);
+      CHARS (14);
       dbxout_type (TREE_TYPE (type), 0, 0);
       break;
 
@@ -1215,7 +1327,7 @@ dbxout_type (type, full, show_arg_types)
 	    else
 	      fprintf (asmfile, "$$%d", anonymous_type_number++);
 	    fprintf (asmfile, ":");
-	    typevec[TYPE_SYMTAB_ADDRESS (type)] = TYPE_XREF;
+	    typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_XREF;
 	    break;
 	  }
 
@@ -1312,7 +1424,7 @@ dbxout_type (type, full, show_arg_types)
 	  fprintf (asmfile, "xe");
 	  CHARS (3);
 	  dbxout_type_name (type);
-	  typevec[TYPE_SYMTAB_ADDRESS (type)] = TYPE_XREF;
+	  typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_XREF;
 	  fprintf (asmfile, ":");
 	  return;
 	}
@@ -1593,7 +1705,7 @@ dbxout_symbol (decl, local)
 
       /* If this typedef name was defined by outputting the type,
 	 don't duplicate it.  */
-      if (typevec[TYPE_SYMTAB_ADDRESS (type)] == TYPE_DEFINED
+      if (typevec[TYPE_SYMTAB_ADDRESS (type)].status == TYPE_DEFINED
 	  && TYPE_NAME (TREE_TYPE (decl)) == decl)
 	return;
 #endif
