@@ -176,6 +176,37 @@ smallest_mode_for_size (size, class)
   abort ();
 }
 
+/* Find an integer mode of the exact same size, or BLKmode on failure.  */
+
+enum machine_mode
+int_mode_for_mode (mode)
+     enum machine_mode mode;
+{
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_INT:
+    case MODE_PARTIAL_INT:
+      break;
+
+    case MODE_COMPLEX_INT:
+    case MODE_COMPLEX_FLOAT:
+    case MODE_FLOAT:
+      mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
+      break;
+
+    case MODE_RANDOM:
+      if (mode == BLKmode)
+        break;
+      /* FALLTHRU */
+
+    case MODE_CC:
+    default:
+      abort();
+    }
+
+  return mode;
+}
+
 /* Return the value of VALUE, rounded up to a multiple of DIVISOR.  */
 
 tree

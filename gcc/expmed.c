@@ -261,6 +261,21 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       op0 = SUBREG_REG (op0);
     }
 
+  /* Make sure we are playing with integral modes.  Pun with subregs
+     if we aren't.  */
+  {
+    enum machine_mode imode = int_mode_for_mode (GET_MODE (op0));
+    if (imode != GET_MODE (op0))
+      {
+	if (GET_CODE (op0) == MEM)
+	  op0 = change_address (op0, imode, NULL_RTX);
+	else if (imode != BLKmode)
+	  op0 = gen_lowpart (imode, op0);
+	else
+	  abort ();
+      }
+  }
+
   /* If OP0 is a register, BITPOS must count within a word.
      But as we have it, it counts within whatever size OP0 now has.
      On a bigendian machine, these are not the same, so convert.  */
@@ -287,6 +302,18 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	 can be done with just SUBREG.  */
       if (GET_MODE (op0) != fieldmode)
 	{
+	  if (GET_CODE (op0) == SUBREG)
+	    {
+	      if (GET_MODE (SUBREG_REG (op0)) == fieldmode
+		  || GET_MODE_CLASS (fieldmode) == MODE_INT
+		  || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT)
+		op0 = SUBREG_REG (op0);
+	      else
+		/* Else we've got some float mode source being extracted into
+		   a different float mode destination -- this combination of
+		   subregs results in Severe Tire Damage.  */
+		abort ();
+	    }
 	  if (GET_CODE (op0) == REG)
 	    op0 = gen_rtx_SUBREG (fieldmode, op0, offset);
 	  else
@@ -955,6 +982,21 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       op0 = SUBREG_REG (op0);
     }
 
+  /* Make sure we are playing with integral modes.  Pun with subregs
+     if we aren't.  */
+  {
+    enum machine_mode imode = int_mode_for_mode (GET_MODE (op0));
+    if (imode != GET_MODE (op0))
+      {
+	if (GET_CODE (op0) == MEM)
+	  op0 = change_address (op0, imode, NULL_RTX);
+	else if (imode != BLKmode)
+	  op0 = gen_lowpart (imode, op0);
+	else
+	  abort ();
+      }
+  }
+
   /* ??? We currently assume TARGET is at least as big as BITSIZE.
      If that's wrong, the solution is to test for it and set TARGET to 0
      if needed.  */
@@ -973,7 +1015,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
      So too extracting a subword value in
      the least significant part of the register.  */
 
-  if (((GET_CODE (op0) == REG
+  if (((GET_CODE (op0) != MEM
 	&& TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 				  GET_MODE_BITSIZE (GET_MODE (op0))))
        || (GET_CODE (op0) == MEM
@@ -996,6 +1038,18 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
       if (mode1 != GET_MODE (op0))
 	{
+	  if (GET_CODE (op0) == SUBREG)
+	    {
+	      if (GET_MODE (SUBREG_REG (op0)) == mode1
+		  || GET_MODE_CLASS (mode1) == MODE_INT
+		  || GET_MODE_CLASS (mode1) == MODE_PARTIAL_INT)
+		op0 = SUBREG_REG (op0);
+	      else
+		/* Else we've got some float mode source being extracted into
+		   a different float mode destination -- this combination of
+		   subregs results in Severe Tire Damage.  */
+		abort ();
+	    }
 	  if (GET_CODE (op0) == REG)
 	    op0 = gen_rtx_SUBREG (mode1, op0, offset);
 	  else
@@ -1088,12 +1142,12 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   /* OFFSET is the number of words or bytes (UNIT says which)
      from STR_RTX to the first word or byte containing part of the field.  */
 
-  if (GET_CODE (op0) == REG)
+  if (GET_CODE (op0) != MEM)
     {
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
-	op0 = gen_rtx_SUBREG (TYPE_MODE (type_for_size (BITS_PER_WORD, 0)),
-		       op0, offset);
+	op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
+		              op0, offset);
       offset = 0;
     }
   else
