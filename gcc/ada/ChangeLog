@@ -1,5 +1,14 @@
 2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/20255
+	Backport from mainline:
+
+	2005-03-15  Eric Botcazou  <ebotcazou@adacore.com>
+	* utils.c (convert) <UNION_TYPE>: Accept slight type variations when
+	converting to an unchecked union type.
+
+2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/18727
 	Backport from mainline:
 

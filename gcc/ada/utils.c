@@ -2919,10 +2919,13 @@ convert (tree type, tree expr)
 	    {
 	      if (TREE_TYPE (tem) == etype)
 		return build1 (CONVERT_EXPR, type, expr);
-	      else if (TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE
-		       && (TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (tem))
-			   || TYPE_IS_PADDING_P (TREE_TYPE (tem)))
-		       && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (tem))) == etype)
+
+	      /* Accept slight type variations.  */
+	      if (TREE_TYPE (tem) == TYPE_MAIN_VARIANT (etype)
+		  || (TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE
+		      && (TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (tem))
+			  || TYPE_IS_PADDING_P (TREE_TYPE (tem)))
+		      && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (tem))) == etype))
 		return build1 (CONVERT_EXPR, type,
 			       convert (TREE_TYPE (tem), expr));
 	    }
