@@ -1043,7 +1043,7 @@ process_init_constructor (type, init, elts)
 	{
 	  register tree next1;
 
-	  if (! DECL_NAME (field))
+	  if (! DECL_NAME (field) && DECL_C_BIT_FIELD (field))
 	    {
 	      members = expr_tree_cons (field, integer_zero_node, members);
 	      continue;
