@@ -1,3 +1,7 @@
+2003-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030225-2.c: New test.
+
 2003-05-18  Roger Sayle  <roger@eyesopen.com>
 	    Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
