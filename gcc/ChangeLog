@@ -1,3 +1,7 @@
+Mon Jun  7 19:27:07 1999  Jerry Quinn <jquinn@nortelnetworks.com>
+
+	* pa.md (fmpyfadd, fmpynfadd, fnegabs): New patterns.
+
 Sun Jun  6 11:58:34 1999  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* sparc.md (abstf2): This should be an expand.
