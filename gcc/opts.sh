@@ -33,6 +33,9 @@ SORT=sort		# Could be /bin/sort or /usr/bin/sort
 C_FILE=$1; shift
 H_FILE=$1; shift
 
+# Must unset this, so that the gawk extension RS="" works.
+unset POSIXLY_CORRECT
+
 ${AWK} '
 	BEGIN{ RS=""; FS="\n" }
 	# Ignore comments and blank lines
