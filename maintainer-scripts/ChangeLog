@@ -1,3 +1,8 @@
+2004-06-03  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc_release (maybe_build_tarfile): New function.
+	(build_tarfiles): Use maybe_build_tarfile.
+
 2004-05-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* gcc_release (build_sources): Generate the NEWS file in toplevel.
