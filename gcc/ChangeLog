@@ -1,3 +1,8 @@
+2002-07-12  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (test_hard_reg_class): Fix TEST_HARD_REG_BIT
+	usage on 64-bit hosts, return value was truncated to 32 bits.
+
 2002-07-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (adddi3): Change predicate of operand 2 to adddi3_operand.
