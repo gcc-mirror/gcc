@@ -287,7 +287,7 @@ case $machine in
 	;;
 *-*-openbsd*)
 	tm_file=${cpu_type}/openbsd.h
-	tmake_file="t-libc-ok t-openbsd"
+	tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
 	# avoid surprises, always provide an xm-openbsd file 
 	xm_file=${cpu_type}/xm-openbsd.h
 	# don't depend on processor x-fragments as well
@@ -1142,6 +1142,8 @@ i[34567]86-*-netbsd*)
 	use_collect2=yes
 	;;
 i[34567]86-*-openbsd*)
+	# needed to unconfuse gdb
+	tmake_file="t-libc-ok t-openbsd i386/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;
@@ -2039,6 +2041,8 @@ m68k*-*-netbsd*)
 	use_collect2=yes
 	;;
 m68k*-*-openbsd*)
+	# needed to unconfuse gdb
+	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
 	float_format=m68k
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
@@ -3030,6 +3034,8 @@ sparc-*-netbsd*)
 	use_collect2=yes
 	;;
 sparc-*-openbsd*)
+	# needed to unconfuse gdb
+	tmake_file="t-libc-ok t-openbsd sparc/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;

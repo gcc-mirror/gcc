@@ -1,3 +1,16 @@
+2001-07-13  Marc Espie  <espie@cvs.openbsd.org>
+
+	* config.gcc (*-*-openbsd*):  Add fragment to compile libgcc
+	correctly for shared configurations.
+	* config/t-libgcc-pic:  New.
+	* config/{i386,m68k,sparc}/t-openbsd:  New.
+	* config/openbsd.h:  Include cpu_spec in cpp_spec where needed.
+	Support -shared.  Support debugging libraries with -g.
+	* config/i386/openbsd.h:  Correct ASM_COMMENT_START.  Ensure dwarf2
+	frame information does not emit pointer diffs.
+	* config/sparc/openbsd.h:  Ensure dwarf2 frame information does not
+	emit pointer diffs.
+
 2001-07-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* combine.c (try_combine): Ensure const_int pow2 is positive.
