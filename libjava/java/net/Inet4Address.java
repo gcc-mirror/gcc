@@ -1,5 +1,5 @@
 /* Inet4Address.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ package java.net;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.util.Arrays;
 
 /**
  * @author Michael Koch
@@ -103,7 +104,7 @@ public final class Inet4Address extends InetAddress
   {
     byte[] anylocal = { 0, 0, 0, 0 };
     
-    return addr == anylocal;
+    return Arrays.equals(addr, anylocal);
   }
 
   /**

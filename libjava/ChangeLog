@@ -1,3 +1,11 @@
+2003-06-18  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/Inet6Address.java (isAnyLocalAddress): Don't use "=="
+	on arrays.
+	(isLoopbackAddress): Likewise.
+	* java/net/Inet4Address.java (isAnyLocalAddress): Don't use "=="
+	on arrays.
+
 2003-06-18  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* java/lang/natVMSecurityManager.cc (getClassContext):
