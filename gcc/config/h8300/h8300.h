@@ -790,11 +790,15 @@ struct rtx_def *function_arg();
 #endif
 
 /* Extra constraints - 'U' if for an operand valid for a bset
-   destination; i.e. a register or register indirect target.  */
+   destination; i.e. a register, register indirect, or the
+   eightbit memory region (a SYMBOL_REF with the SYMBOL_REF_FLAG
+   set.  */
 #define OK_FOR_U(OP) \
   ((GET_CODE (OP) == REG && REG_OK_FOR_BASE_P (OP)) \
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG \
-       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))) 
+       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))  \
+   || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF \
+       && SYMBOL_REF_FLAG (XEXP (OP, 0))))
  
 #define EXTRA_CONSTRAINT(OP, C) \
  ((C) == 'U' ? OK_FOR_U (OP) : 0)
@@ -1085,8 +1089,11 @@ dtors_section() 						\
    through the function vector, the SYMBOL_REF_FLAG in the rtl
    so the call patterns can generate the correct code.  */
 #define ENCODE_SECTION_INFO(DECL)  \
-  if (TREE_CODE (DECL) == FUNCTION_DECL \
-      && h8300_funcvec_function_p (DECL)) \
+  if ((TREE_CODE (DECL) == FUNCTION_DECL \
+       && h8300_funcvec_function_p (DECL)) \
+      || ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
+	  && TREE_CODE (DECL) == VAR_DECL \
+	  && h8300_tiny_data_p (DECL))) \
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
 
 /* How to refer to registers in assembler output.
