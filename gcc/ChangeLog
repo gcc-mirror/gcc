@@ -1,3 +1,8 @@
+2001-06-26  Daniel Berlin  <dan@cgsoftware.com>
+
+	* toplev.c (display_help): Fix param thinko.
+	* Makefile.in: Fix params.h dependencies.
+
 2001-06-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* toplev.c (decode_f_option): Adjust setting.
