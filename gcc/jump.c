@@ -544,7 +544,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	  rtx reallabelprev;
 	  rtx temp, temp1, temp2, temp3, temp4, temp5;
 	  rtx nlabel;
-	  int this_is_simplejump, this_is_condjump;
+	  int this_is_simplejump, this_is_condjump, reversep;
 #if 0
 	  /* If NOT the first iteration, if this is the last jump pass
 	     (just before final), do the special peephole optimizations.
@@ -802,12 +802,19 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		}
 	    }
 
-	  /* If we have  x = a; if (...) x = b;
-	     and either A or B is zero, or if we have  if (...) x = 0;
-	     and jumps are expensive, try to use a store-flag insn to
-	     avoid the jump.  (If the jump would be faster, the machine
-	     should not have defined the scc insns!).  These cases are often
-	     made by the previous optimization.
+	  /* We deal with four cases:
+
+	     1) x = a; if (...) x = b; and either A or B is zero,
+	     2) if (...) x = 0; and jumps are expensive,
+	     3) x = a; if (...) x = b; and A and B are constants where all the
+	        set bits in A are also set in B and jumps are expensive, and
+	     4) x = a; if (...) x = b; and A and B non-zero, and jumps are
+	        more expensive.
+
+	     In each of these try to use a store-flag insn to avoid the jump.
+	     (If the jump would be faster, the machine should not have
+	     defined the scc insns!).  These cases are often made by the
+	     previous optimization.
 
 	     INSN here is the jump around the store.  We set:
 
@@ -841,7 +848,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			)
 		       || GET_CODE (temp3) == CONST_INT))
 		  /* Make the latter case look like  x = x; if (...) x = 0;  */
-		  || ((temp3 = temp1, BRANCH_COST > 1)
+		  || ((temp3 = temp1, BRANCH_COST >= 2)
 		      && temp2 == const0_rtx))
 	      /* INSN must either branch to the insn after TEMP or the insn
 		 after TEMP must branch to the same place as INSN.  */
@@ -851,33 +858,47 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      && JUMP_LABEL (temp4) == JUMP_LABEL (insn)))
 	      && (temp4 = get_condition (insn, &temp5)) != 0
 
-	      /* If B is zero, OK; if A is zero, can only do this if we
-		 can reverse the condition.  */
-	      && (temp2 == const0_rtx
+	      /* If B is zero, OK; if A is zero, can only do (1) if we
+		 can reverse the condition.  See if (3) applies possibly
+		 by reversing the condition.  Prefer reversing to (4) when
+		 branches are very expensive.  */
+	      && ((reversep = 0, temp2 == const0_rtx)
 		  || (temp3 == const0_rtx
-		      && (can_reverse_comparison_p (temp4, insn)))))
+		      && (reversep = can_reverse_comparison_p (temp4, insn)))
+		  || (BRANCH_COST >= 2
+		      && GET_CODE (temp2) == CONST_INT
+		      && GET_CODE (temp3) == CONST_INT
+		      && ((INTVAL (temp2) & INTVAL (temp3)) == INTVAL (temp2)
+			  || ((INTVAL (temp2) & INTVAL (temp3)) == INTVAL (temp3)
+			      && (reversep = can_reverse_comparison_p (temp4,
+								       insn)))))
+		  || BRANCH_COST >= 3))
 	    {
 	      enum rtx_code code = GET_CODE (temp4);
-	      rtx yes = temp3, var = temp1;
+	      rtx uval, cval, var = temp1;
 	      int normalizep;
 	      rtx target;
 
 	      /* If necessary, reverse the condition.  */
-	      if (temp3 == const0_rtx)
-		code = reverse_condition (code), yes = temp2;
+	      if (reversep)
+		code = reverse_condition (code), uval = temp2, cval = temp3;
+	      else
+		uval = temp3, cval = temp2;
 
 	      /* See if we can do this with a store-flag insn. */
 	      start_sequence ();
 
-	      /* If YES is the constant 1, it is best to just compute
-		 the result directly.  If YES is constant and STORE_FLAG_VALUE
+	      /* If CVAL is non-zero, normalize to -1.  Otherwise,
+		 if UVAL is the constant 1, it is best to just compute
+		 the result directly.  If UVAL is constant and STORE_FLAG_VALUE
 		 includes all of its bits, it is best to compute the flag
-		 value unnormalized and `and' it with YES.  Otherwise,
-		 normalize to -1 and `and' with YES.  */
-	      normalizep = (yes == const1_rtx ? 1
-			    : (GET_CODE (yes) == CONST_INT
-			       && (INTVAL (yes) & ~ STORE_FLAG_VALUE) == 0) ? 0
-			    : -1);
+		 value unnormalized and `and' it with UVAL.  Otherwise,
+		 normalize to -1 and `and' with UVAL.  */
+	      normalizep = (cval != const0_rtx ? -1
+			    : (uval == const1_rtx ? 1
+			       : (GET_CODE (uval) == CONST_INT
+				  && (INTVAL (uval) & ~STORE_FLAG_VALUE) == 0)
+			       ? 0 : -1));
 
 	      /* We will be putting the store-flag insn immediately in
 		 front of the comparison that was originally being done,
@@ -899,10 +920,39 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		{
 		  rtx seq;
 
-		  if (normalizep != 1)
-		    target = expand_and (yes, target,
+		  /* Both CVAL and UVAL are non-zero.  */
+		  if (cval != const0_rtx && uval != const0_rtx)
+		    {
+		      rtx tem1, tem2;
+
+		      tem1 = expand_and (uval, target, NULL_RTX);
+		      if (GET_CODE (cval) == CONST_INT
+			  && GET_CODE (uval) == CONST_INT
+			  && (INTVAL (cval) & INTVAL (uval)) == INTVAL (cval))
+			tem2 = cval;
+		      else
+			{
+			  tem2 = expand_unop (GET_MODE (var), one_cmpl_optab,
+					      target, NULL_RTX, 0);
+			  tem2 = expand_and (cval, tem2, tem2);
+			}
+
+		      /* If we usually make new pseudos, do so here.  This
+			 turns out to help machines that have conditional
+			 move insns.  */
+
+		      if (flag_expensive_optimizations)
+			target = 0;
+
+		      target = expand_binop (GET_MODE (var), ior_optab,
+					     tem1, tem2, target,
+					     1, OPTAB_WIDEN);
+		    }
+		  else if (normalizep != 1)
+		    target = expand_and (uval, target,
 					 (GET_CODE (target) == REG
 					  ? target : NULL_RTX));
+		  
 		  seq = gen_sequence ();
 		  end_sequence ();
 		  emit_insn_before (seq, temp5);
