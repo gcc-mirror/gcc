@@ -1,5 +1,8 @@
 2003-11-07  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Remove
+	redundant parens.
+
 	* cppfiles.c (pch_open_file): New parameter 'invalid_pch', set it.
 	(find_file_in_dir): Likewise.
 	(_cpp_find_file): Print message if no header file is found
