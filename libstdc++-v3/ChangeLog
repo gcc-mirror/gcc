@@ -1,3 +1,9 @@
+2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* libmath/stubs.c (hypot, hypotf, hypotl): Don't divide by
+	zero.
+	Update copyright year.
+
 2003-05-20  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/close/char/4.cc: Fix typo.
