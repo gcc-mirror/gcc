@@ -1,3 +1,12 @@
+2003-05-08  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_expand_builtin_va_arg): Fix
+	to handle arguments for which MUST_PASS_IN_STACK is true (e.g.,
+	variable-sized types).
+	(xstormy16_function_arg): New.  Pass them that way too.
+	* config/stormy16/stormy16-protos.h (xstormy16_function_arg): New.
+	* config/stormy16/stormy16.h (FUNCTION_ARG): Call it.
+
 2003-05-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * mklibgcc.in: Use mkinstalldirs when installing multilib

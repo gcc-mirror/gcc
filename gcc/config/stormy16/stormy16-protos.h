@@ -35,6 +35,8 @@ extern void	xstormy16_function_profiler PARAMS ((void));
 #  if defined (HAVE_MACHINE_MODES)
 extern CUMULATIVE_ARGS xstormy16_function_arg_advance 
   PARAMS ((CUMULATIVE_ARGS, enum machine_mode, tree, int));
+extern rtx xstormy16_function_arg
+  PARAMS ((CUMULATIVE_ARGS, enum machine_mode, tree, int));
 #  endif
 extern void    xstormy16_setup_incoming_varargs 
   PARAMS ((CUMULATIVE_ARGS, int, tree, int *));

@@ -1245,10 +1245,8 @@ enum reg_class
    returns nonzero for such an argument, the compiler will abort.  If
    `REG_PARM_STACK_SPACE' is defined, the argument will be computed in the
    stack and then loaded into a register.  */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				  \
-  ((MODE) == VOIDmode ? const0_rtx					  \
-   : (CUM) + XSTORMY16_WORD_SIZE (TYPE, MODE) > NUM_ARGUMENT_REGISTERS ? 0 \
-   : gen_rtx_REG (MODE, (CUM) + 2))
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+	xstormy16_function_arg (CUM, MODE, TYPE, NAMED)
 
 /* Define this macro if the target machine has "register windows", so that the
    register in which a function sees an arguments is not necessarily the same
