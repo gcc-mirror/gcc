@@ -1558,16 +1558,25 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 			else
 			  dest_reg = XEXP (tv->dest_reg, 0);
 			
-			/* tv->dest_reg may actually be a (PLUS (REG) (CONST))
-			   here, so we must call plus_constant to add
-			   the const_adjust amount before calling
-			   emit_unrolled_add below.  */
-			value = plus_constant (tv->dest_reg, tv->const_adjust);
+			/* Check for shared address givs, and avoid
+			   incrementing the shared psuedo reg more than
+			   once.  */
+			if (! (tv != v && tv->insn == v->insn
+			       && tv->new_reg == v->new_reg))
+			  {
+			    /* tv->dest_reg may actually be a (PLUS (REG)
+			       (CONST)) here, so we must call plus_constant
+			       to add the const_adjust amount before calling
+			       emit_unrolled_add below.  */
+			    value = plus_constant (tv->dest_reg,
+						   tv->const_adjust);
 
-			/* The constant could be too large for an add
-			   immediate, so can't directly emit an insn here.  */
-			emit_unrolled_add (dest_reg, XEXP (value, 0),
-					   XEXP (value, 1));
+			    /* The constant could be too large for an add
+			       immediate, so can't directly emit an insn
+			       here.  */
+			    emit_unrolled_add (dest_reg, XEXP (value, 0),
+					       XEXP (value, 1));
+			  }
 			
 			/* Reset the giv to be just the register again, in case
 			   it is used after the set we have just emitted.
@@ -2602,8 +2611,23 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		 the work of simplifying multiple address givs to the
 		 following cse pass.  */
 	      
+	      /* As a special case, if we have multiple identical address givs
+		 within a single instruction, then we do use a single psuedo
+		 reg for both.  This is necessary in case one is a match_dup
+		 of the other.  */
+
 	      v->const_adjust = 0;
-	      if (unroll_type != UNROLL_COMPLETELY)
+
+	      if (v->same && v->same->insn == v->insn
+		  && v->new_reg == v->same->new_reg)
+		{
+		  v->dest_reg = v->same->dest_reg;
+		  if (loop_dump_stream)
+		    fprintf (loop_dump_stream,
+			     "Sharing address givs with reg %d\n",
+			     REGNO (v->dest_reg));
+		}
+	      else if (unroll_type != UNROLL_COMPLETELY)
 		{
 		  /* If not completely unrolling the loop, then create a new
 		     register to hold the split value of the DEST_ADDR giv.
