@@ -1,5 +1,10 @@
 2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (xref_tag): Remove extraneous %s on dependent name
+	lookup warning.
+
+2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (layout_vtable_decl): Fix off by one error on
 	build_index_type.
 	(build_vtt): Likewise.
