@@ -2413,7 +2413,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
       if (shift_type == SHIFT_ASHIFTRT && count == 7)
 	{
 	  info->special = "shll\t%X0\n\tsubx\t%X0,%X0";
-	  goto return_shift_special;
+	  goto end;
 	}
       abort ();
 
@@ -2423,31 +2423,31 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	  if (shift_type == SHIFT_ASHIFT && TARGET_H8300)
 	    {
 	      info->special = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.b\t%t0\n\trotr.b\t%s0\n\tand.b\t#0x80,%s0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 
 	  if (shift_type == SHIFT_ASHIFT && TARGET_H8300H)
 	    {
 	      info->special = "shar.b\t%t0\n\tmov.b\t%s0,%t0\n\trotxr.w\t%T0\n\tand.b\t#0x80,%s0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 
 	  if (shift_type == SHIFT_LSHIFTRT && TARGET_H8300)
 	    {
 	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\trotl.b\t%t0\n\tand.b\t#0x01,%t0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 
 	  if (shift_type == SHIFT_LSHIFTRT && TARGET_H8300H)
 	    {
 	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.w\t%T0\n\tand.b\t#0x01,%t0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 
 	  if (shift_type == SHIFT_ASHIFTRT)
 	    {
 	      info->special = "shal.b\t%s0\n\tmov.b\t%t0,%s0\n\trotxl.b\t%s0\n\tsubx\t%t0,%t0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 	}
       else if (8 <= count && count <= 12)
@@ -2460,12 +2460,12 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0";
 	      info->shift1  = "shal.b\t%t0";
 	      info->shift2  = "shal.b\t#2,%t0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0";
 	      info->shift1  = "shlr.b\t%s0";
 	      info->shift2  = "shlr.b\t#2,%s0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
 		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0";
@@ -2473,13 +2473,13 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0";
 	      info->shift1 = "shar.b\t%s0";
 	      info->shift2 = "shar.b\t#2,%s0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 	}
       else if (count == 15 && shift_type == SHIFT_ASHIFTRT)
 	{
 	  info->special = "shll\t%t0\n\tsubx\t%t0,%t0\n\tmov.b\t%t0,%s0";
-	  goto return_shift_special;
+	  goto end;
 	}
       abort ();
 
@@ -2490,13 +2490,13 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "mov.b\t%y0,%z0\n\tmov.b\t%x0,%y0\n\tmov.b\t%w0,%x0\n\tsub.b\t%w0,%w0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.b\t%x0,%w0\n\tmov.b\t%y0,%x0\n\tmov.b\t%z0,%y0\n\tsub.b\t%z0,%z0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.b\t%x0,%w0\n\tmov.b\t%y0,%x0\n\tmov.b\t%z0,%y0\n\tshll\t%z0\n\tsubx\t%z0,%z0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 	}
       else if (count == 8 && !TARGET_H8300)
@@ -2505,13 +2505,13 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%s4,%t4\n\tmov.b\t%t0,%s4\n\tmov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f4,%e0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\textu.w\t%f4\n\tmov.w\t%f4,%e0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\texts.w\t%f4\n\tmov.w\t%f4,%e0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 	}
       else if ((TARGET_H8300 && count == 16)
@@ -2526,12 +2526,12 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
 	      info->shift1  = "shll.l\t%S0";
 	      info->shift2  = "shll.l\t#2,%S0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0";
 	      info->shift1  = "shlr.l\t%S0";
 	      info->shift2  = "shlr.l\t#2,%S0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
 		info->special = "mov.w\t%e0,%f0\n\tshll\t%z0\n\tsubx\t%z0,%z0\n\tmov.b\t%z0,%y0";
@@ -2539,7 +2539,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0";
 	      info->shift1 = "shar.l\t%S0";
 	      info->shift2 = "shar.l\t#2,%S0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 	}
       else if (count == 24 && !TARGET_H8300)
@@ -2548,13 +2548,13 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0\n\textu.l\t%S0";
-	      goto return_shift_special;
+	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 	}
       else if (count == 31)
@@ -2565,7 +2565,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		info->special = "shll\t%z0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
 	      else
 		info->special = "shll\t%e0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
-	      goto return_shift_special;
+	      goto end;
 	    }
 	  else
 	    {
@@ -2575,7 +2575,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		    info->special = "sub.w\t%e0,%e0\n\tshlr\t%w0\n\tmov.w\t%e0,%f0\n\trotxr\t%z0";
 		  else
 		    info->special = "sub.w\t%f0,%f0\n\tshll\t%z0\n\tmov.w\t%f0,%e0\n\trotxl\t%w0";
-		  goto return_shift_special;
+		  goto end;
 		}
 	    }
 	}
@@ -2585,7 +2585,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
       abort ();
     }
 
- return_shift_special:
  end:
   if (!TARGET_H8300S)
     info->shift2 = NULL;
