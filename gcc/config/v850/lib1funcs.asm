@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL entire file v850/law */
 /* libgcc1 routines for NEC V850.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
@@ -1268,4 +1267,3 @@ __restore_all_interrupt:
 	jmp	[r10]
 	.size	__restore_all_interrupt,.-__restore_all_interrupt
 #endif /* L_save_all_interrupt */
-/* END CYGNUS LOCAL */
