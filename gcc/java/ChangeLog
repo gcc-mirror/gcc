@@ -1,3 +1,9 @@
+Wed Sep  9 13:33:39 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (java.all.build): Don't mention jvgenmain or gcjh.
+	(java.all.cross): Likewise.
+	(java.rest.encap): Likewise.
+
 Tue Sep  8 10:34:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gjavah.c (print_class_decls): Fix thinko in arglist
