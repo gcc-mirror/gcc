@@ -8515,6 +8515,7 @@ static tree
 start_cleanup_fn ()
 {
   static int counter = 0;
+  int old_interface_only = interface_only;
   int old_interface_unknown = interface_unknown;
   char name[32];
   tree parmtypes;
@@ -8526,6 +8527,7 @@ start_cleanup_fn ()
   /* No need to mangle this.  */
   push_lang_context (lang_name_c);
 
+  interface_only = 0;
   interface_unknown = 1;
 
   /* Build the parameter-types.  */
@@ -8567,6 +8569,7 @@ start_cleanup_fn ()
   start_function (/*specs=*/NULL_TREE, fndecl, NULL_TREE, SF_PRE_PARSED);
 
   interface_unknown = old_interface_unknown;
+  interface_only = old_interface_only;
 
   pop_lang_context ();
 
