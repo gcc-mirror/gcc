@@ -4234,7 +4234,9 @@ rtx_needs_barrier (x, flags, pred)
 	      update_set_flags (pat, &new_flags, &pred, &cond);
 	      need_barrier |= set_src_needs_barrier (pat, new_flags, pred, cond);
 	    }
-	  else if (GET_CODE (pat) == USE || GET_CODE (pat) == CALL)
+	  else if (GET_CODE (pat) == USE
+		   || GET_CODE (pat) == CALL
+		   || GET_CODE (pat) == ASM_OPERANDS)
 	    need_barrier |= rtx_needs_barrier (pat, flags, pred);
 	  else if (GET_CODE (pat) != CLOBBER && GET_CODE (pat) != RETURN)
 	    abort ();
