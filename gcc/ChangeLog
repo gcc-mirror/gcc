@@ -1,3 +1,9 @@
+Fri Oct 30 11:39:47 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* configure.in (gxx_include_dir): bitten by autoconf quoting
+	characters :-(
+	* configure: rebuilt
+
 Fri Oct 30 10:43:29 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* configure.in: Ignore non-absolute value in $AS.
