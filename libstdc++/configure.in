@@ -94,6 +94,13 @@ EXTRA_DISTCLEAN='target-mkfrag'
 
 (. ${srcdir}/${TO_TOPDIR}libio/config.shared) >${package_makefile_frag} 2>${package_makefile_rules_frag}
 
+. ${topsrcdir}/config.if
+echo "
+LIBSTDCXX_INTERFACE=${libstdcxx_interface}
+CXX_INTERFACE=${cxx_interface}
+LIBC_INTERFACE=${libc_interface}
+" >> ${package_makefile_frag}
+
 # post-target:
 
 # If cross-compiling, we install in $(tooldir).
