@@ -1,3 +1,15 @@
+2004-06-24  Frank Ch. Eigler  <fche@redhat.com>
+
+	Adopt splay trees for object database.
+	* Makefile.am: Copy splay-tree.* from libiberty.
+	* Makefile.in, testsuite/Makefile.in: Regenerated.
+	* mf-runtime.h.in (__mf_unregister): Add third parameter (type).
+	* mf-hooks[123].c (*): Add new third parameter to mf_unregister.
+	* mf-impl.h (BEGIN_PROTECT): Remove some trace text.
+	* mf-runtime.c: Rewrite code dealing with object database to use
+	libiberty splay trees.  Remove tree liveness aging option.
+	* testsuite/libmudflap.c/fail18-frag.c: Add volatile flag.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: New name of configure.in.  Update

@@ -50,7 +50,7 @@ DIST_COMMON = $(am__configure_deps) $(include_HEADERS) \
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/configure.in
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -818,10 +818,21 @@ uninstall-info: uninstall-info-recursive
 	uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 
 
+# Copy this out of libiberty's source tree, so it can be built here via libtool
+splay-tree.c:
+	rm -f $@
+	$(LN_S) $(srcdir)/../libiberty/splay-tree.c $@
+# Copy this so that top-level include/ does not have to be put into -I path
+splay-tree.h:
+	rm -f $@
+	$(LN_S) $(srcdir)/../include/splay-tree.h $@
+mf-runtime.lo: mf-runtime.c splay-tree.c splay-tree.h
+
 clean-local:
 	rm -f pth/*.o pth/*.lo
+	rm -f splay-tree.c splay-tree.h
 
-pth/mf-runtime.lo: mf-runtime.c mf-runtime.h mf-impl.h
+pth/mf-runtime.lo: mf-runtime.c mf-runtime.h mf-impl.h splay-tree.c splay-tree.h
 	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-runtime.c -o $@
 pth/mf-heuristics.lo: mf-heuristics.c mf-runtime.h mf-impl.h
 	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-heuristics.c -o $@

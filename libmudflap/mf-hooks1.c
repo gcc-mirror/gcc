@@ -199,7 +199,8 @@ WRAPPER(void *, realloc, void *buf, size_t c)
   __mf_opts.wipe_heap = 0;
 
   if (LIKELY(buf))
-    __mfu_unregister (buf, 0);
+    __mfu_unregister (buf, 0, __MF_TYPE_HEAP_I); 
+  /* NB: underlying region may have been __MF_TYPE_HEAP. */
   
   if (LIKELY(result))
     {
@@ -250,7 +251,8 @@ WRAPPER(void, free, void *buf)
     }
   UNLOCKTH ();
 
-  __mf_unregister (buf, 0);
+  __mf_unregister (buf, 0, __MF_TYPE_HEAP_I);
+  /* NB: underlying region may have been __MF_TYPE_HEAP. */
 
   if (UNLIKELY(__mf_opts.free_queue_length > 0))
     {
@@ -378,7 +380,7 @@ WRAPPER(int , munmap, void *start, size_t length)
       uintptr_t offset;
 
       for (offset=0; offset<length; offset+=ps)
-	__mf_unregister ((void *) CLAMPADD (base, offset), ps);
+	__mf_unregister ((void *) CLAMPADD (base, offset), ps, __MF_TYPE_HEAP_I);
     }
   return result;
 }
@@ -419,7 +421,7 @@ __mf_wrap_alloca_indirect (size_t c)
 	 ((uintptr_t) alloca_history->stack DEEPER_THAN (uintptr_t) stack))
     {
       struct alloca_tracking *next = alloca_history->next;
-      __mf_unregister (alloca_history->ptr, 0);
+      __mf_unregister (alloca_history->ptr, 0, __MF_TYPE_HEAP);
       CALL_REAL (free, alloca_history->ptr);
       CALL_REAL (free, alloca_history);
       alloca_history = next;
