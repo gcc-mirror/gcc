@@ -1,5 +1,5 @@
 /* com.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.
@@ -2362,6 +2362,11 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
   bool multi;			/* Master fn has multiple return types. */
   bool altreturning = FALSE;	/* This entry point has alternate returns. */
   int yes;
+  int old_lineno = lineno;
+  char *old_input_filename = input_filename;
+
+  input_filename = ffesymbol_where_filename (fn);
+  lineno = ffesymbol_where_filelinenum (fn);
 
   /* c-parse.y indeed does call suspend_momentary and not only ignores the
      return value, but also never calls resume_momentary, when starting an
@@ -2707,6 +2712,9 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
   ffecom_end_compstmt_ ();
 
   finish_function (0);
+
+  lineno = old_lineno;
+  input_filename = old_input_filename;
 
   ffecom_doing_entry_ = FALSE;
 }
@@ -6241,8 +6249,8 @@ ffecom_expr_power_integer_ (ffebld left, ffebld right)
      r are the "inputs":
 
      ({ typeof (r) rtmp = r;
-        typeof (l) ltmp = l;
-        typeof (l) result;
+	typeof (l) ltmp = l;
+	typeof (l) result;
 
 	if (rtmp == 0)
 	  result = 1;
@@ -7857,9 +7865,12 @@ ffecom_start_progunit_ ()
     }
 
   if (altentries)
-    id = ffecom_get_invented_identifier ("__g77_masterfun_%s",
-					 ffesymbol_text (fn),
-					 0);
+    {
+      id = ffecom_get_invented_identifier ("__g77_masterfun_%s",
+					   ffesymbol_text (fn),
+					   0);
+      IDENTIFIER_INVENTED (id) = 0;	/* Allow this to be debugged. */
+    }
 #if FFETARGET_isENFORCED_MAIN
   else if (main_program)
     id = get_identifier (FFETARGET_nameENFORCED_MAIN_NAME);

@@ -1282,15 +1282,13 @@ Returns the local time in seconds since midnight minus the value
 DEFDOC (SECOND_func, "Get CPU time for process in seconds.", "\
 Returns the process's runtime in seconds---the same value as the
 UNIX function @code{etime} returns.
-
-This routine is known from Cray Fortran.
 ")
 
 DEFDOC (SECOND_subr, "Get CPU time for process@99@in seconds.", "\
 Returns the process's runtime in seconds in @var{@1@}---the same value
 as the UNIX function @code{etime} returns.
 
-This routine is known from Cray Fortran.  @xref{Cpu_Time Intrinsic}
+This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic}
 for a standard equivalent.
 ")
 
@@ -1445,6 +1443,10 @@ If the @var{@2@} argument is supplied, it contains 0
 on success or a non-zero error code otherwise upon return.
 See @code{chdir(3)}.
 
+@emph{Caution:} Using this routine during I/O to a unit connected with a
+non-absolute file name can cause subsequent I/O on such a unit to fail
+because the I/O library may reopen files by name.
+
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{@2@} argument.
@@ -1454,6 +1456,10 @@ DEFDOC (CHDIR_func, "Change directory.", "\
 Sets the current working directory to be @var{@1@}.
 Returns 0 on success or a non-zero error code.
 See @code{chdir(3)}.
+
+@emph{Caution:} Using this routine during I/O to a unit connected with a
+non-absolute file name can cause subsequent I/O on such a unit to fail
+because the I/O library may reopen files by name.
 
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
@@ -2039,6 +2045,12 @@ trailing blanks in @var{@1@} are ignored.
 
 DEFDOC (GETLOG, "Get login name.", "\
 Returns the login name for the process in @var{@1@}.
+
+@emph{Caution:} On some systems, the @code{getlogin(3)}
+function, which this intrinsic calls at run time,
+is either not implemented or returns a null pointer.
+In the latter case, this intrinsic returns blanks
+in @var{@1@}.
 ")
 
 DEFDOC (HOSTNM_func, "Get host name.", "\

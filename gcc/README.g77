@@ -1,11 +1,20 @@
-1997-06-20
+1998-03-08
 
-This directory contains the version 0.5.21 release of the GNU Fortran
+This directory contains the version 0.5.22 release of the GNU Fortran
 compiler.  The GNU Fortran compiler is free software.  See the file
 COPYING.g77 for copying permission.
 
-* IMPORTANT: Things you _must_ do are marked with a * at the beginning of
+* IMPORTANT: Things you *must* do are marked with a * at the beginning of
   the line in this file!!!
+
+* DO NOT send any email (reporting bugs, asking questions, etc.) to
+  <fortran@gnu.org> without *first* reading the g77 documentation,
+  using `info', Info mode in GNU Emacs, or a text viewer such as `more'.
+  The g77 documentation is in the files named `g77.info', `g77.info-1',
+  `g77.info-2', and so on in g77 `f' directory.  If these files are
+  not present or you can't find them, contact the person or organization
+  that put together the g77 distribution you are using (probably not the
+  FSF), or ask your system administrator for help.
 
 This README is for GNU Fortran, and describes the files in the f/
 directory.  The f/ directory is intended to be a subdirectory of a
@@ -14,35 +23,29 @@ which is the top-level directory containing the gcc back end, the
 gcc C front end, and other non-Fortran files, and gcc/f/, which
 contains all of the Fortran files.
 
-* Note, if this is an egcs release, all the installation information
-  which follows is not needed.  It is provided for historical reference
-  only.
-
 * To build GNU Fortran, you must have a source distribution of gcc
-  version 2.7.2.2.  Do not attempt to use any other version
+  version 2.7.2.3.  Do not attempt to use any other version
   of gcc, because this version of g77 is designed to work only with
-  gcc version 2.7.2.2.
+  gcc version 2.7.2.3.
 
 * Note that you must have source copies of these gcc distributions!!
   You cannot build g77 just using binaries of gcc.  Also, unless you
   are an expert, avoid using any distribution of gcc not identical to
-  the one distributed by the FSF -- for example, using a special version
-  modified to produce better code for the Pentium (sometimes labeled
-  gcc-i2.6.3 -- note the `i') will not work with this distribution of g77.
+  the one distributed by the FSF.
 
 If you have just unpacked the g77 distribution, before proceeding,
 you must merge the contents of the g77 distribution with the appropriate
 gcc distribution on your system before proceeding.
 
-* Read and follow the instructions in g77-0.5.21/f/INSTALL that
+* Read and follow the instructions in g77-0.5.22/f/INSTALL that
   explain how to merge a g77 source directory into a gcc source
   directory.  You can use Info to read the same installation
   instructions via:
 
-    info -f g77-0.5.21/f/g77.info -n Unpacking
+    info -f g77-0.5.22/f/g77.info -n Unpacking
 
 The resulting directory layout includes the following, where gcc/ might be
-a link to, for example, gcc-2.7.2.2/:
+a link to, for example, gcc-2.7.2.3/:
 
     gcc/                    Non-Fortran files in gcc (not part of g77*.tar)
     gcc/README.g77          This file
@@ -54,7 +57,7 @@ a link to, for example, gcc-2.7.2.2/:
     gcc/f/runtime/libU77/   Additional interfaces to libc for libf2c
 
 gcc/f/ as a whole contains the program GNU Fortran (g77), plus a portion
-of the separate program f2c, which is in gcc/f/runtime.  NOTE: The f2c
+of the separate program f2c, which is in gcc/f/runtime.  NOTE: The libf2c
 code is not part of the program g77, just distributed with it.
 
 This directory is named gcc/f/ because it, along with its contents, is
@@ -72,9 +75,11 @@ distribution, normally in a gcc directory, before configuring, building,
 and installing g77.
 
 Applying g77 patches in the form of .diff files is done by typing
-"patch -p1 -d gcc" (where gcc/f/ is the active version).  That is,
+`patch -p1 -d gcc' (where gcc/f/ is the active version).  That is,
 g77 patches are distributed in the same form, and at the same directory
-level, as patches to the gcc distribution.
+level, as patches to the gcc distribution.  (Note: make sure you're
+using GNU patch, version 2.5 or later!  Other versions of patch
+have trouble with g77-related patches.)
 
 gcc/f/ has text files that document the Fortran compiler, source
 files for the GNU Fortran Front End (FFE), and some other stuff.
@@ -114,8 +119,9 @@ seen in gcc/f/DOC) listed in the ~fortran/.plan file.  Or:
 
 * Read gcc/f/BUGS, gcc/f/INSTALL, and gcc/f/NEWS at the very least!
   All users of g77 (not just installers) should read gcc/f/g77.info*
-  as well, using the "more" command if the "info" command is
-  unavailable or they aren't accustomed to using it.
+  as well, using the `more' command if neither the `info' command,
+  nor GNU Emacs (with its Info mode), are available, or if they
+  aren't yet accustomed to using these tools.
 
 If you want to get into the FFE code, which lives entirely in gcc/f/, here
 are a few clues.  The file g77.c is the stand-alone source file for the
@@ -167,4 +173,4 @@ the compiler is in the second pass, otherwise it is in the first.
 (This information might help you reduce a test case and/or work around
 a bug in g77 until a fix is available.)
 
-Any questions or comments on these topics, email egcs@cygnus.com
+Any questions or comments on these topics, email <fortran@gnu.org>.
