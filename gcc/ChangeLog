@@ -1,8 +1,8 @@
 2003-06-03  Douglas B Rupp  <rupp@gnat.com>
 
-	Makefile.in (TEXI_GCC_FILES): Remove vms.texi entry.
-	doc/gcc.texi: Remove vms.texi section.
-	doc/vms.texi: Remove obsolete file.
+	* Makefile.in (TEXI_GCC_FILES): Remove vms.texi entry.
+	* doc/gcc.texi: Remove vms.texi section.
+	* doc/vms.texi: Remove obsolete file.
 
 2003-05-23  J"orn Rennecke <joern.rennecke@superh.com>
 
