@@ -1,5 +1,10 @@
 2004-10-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* cfgrtl.c (rtl_verify_flow_info_1): When checking insns in a bb,
+	don't inspect BLOCK_FOR_INSN for barriers.
+	* emit-rtl.c (emit_barrier_before): Revert last change.
+	(emit_barrier_after, emit_barrier): Ditto.
+
 	* doc/extend.texi (Extended Asm): Warn and provide example
 	solution for using a call-clobbered asm register.
 	(Local Reg Vars): Similar.  Cross-reference example.

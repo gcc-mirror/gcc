@@ -2075,9 +2075,8 @@ rtl_verify_flow_info_1 (void)
 
       for (x = BB_HEAD (bb); x != NEXT_INSN (BB_END (bb)); x = NEXT_INSN (x))
 	/* We may have a barrier inside a basic block before dead code
-	   elimination.  They always have a NULL BLOCK_FOR_INSN.  */
-	if (BLOCK_FOR_INSN (x) != bb
-	    && !(BARRIER_P (x) && BLOCK_FOR_INSN (x) == NULL))
+	   elimination.  There is no BLOCK_FOR_INSN field in a barrier.  */
+	if (!BARRIER_P (x) && BLOCK_FOR_INSN (x) != bb)
 	  {
 	    debug_rtx (x);
 	    if (! BLOCK_FOR_INSN (x))
