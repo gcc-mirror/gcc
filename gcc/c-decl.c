@@ -2770,6 +2770,11 @@ init_decl_processing ()
 		    BUILT_IN_STRLEN, "strlen");
   builtin_function ("__builtin_fsqrt", double_ftype_double, 
 		    BUILT_IN_FSQRT, "sqrt");
+  builtin_function ("__builtin_sin", double_ftype_double, 
+		    BUILT_IN_SIN, "sin");
+  builtin_function ("__builtin_cos", double_ftype_double, 
+		    BUILT_IN_COS, "cos");
+
   /* In an ANSI C program, it is okay to supply built-in meanings
      for these functions, since applications cannot validly use them
      with any other meaning.
@@ -2788,6 +2793,8 @@ init_decl_processing ()
 			NULL_PTR);
       builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN, NULL_PTR);
       builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, NULL_PTR);
+      builtin_function ("sin", double_ftype_double, BUILT_IN_SIN, NULL_PTR);
+      builtin_function ("cos", double_ftype_double, BUILT_IN_COS, NULL_PTR);
 
       /* Declare these functions volatile
 	 to avoid spurious "control drops through" warnings.  */
