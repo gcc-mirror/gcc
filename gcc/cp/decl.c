@@ -2736,7 +2736,8 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
 
   if (TREE_CODE (newdecl) == TYPE_DECL
       || TREE_CODE (newdecl) == TEMPLATE_DECL
-      || TREE_CODE (newdecl) == CONST_DECL)
+      || TREE_CODE (newdecl) == CONST_DECL
+      || TREE_CODE (newdecl) == NAMESPACE_DECL)
     return;
 
   /* Don't get confused by static member functions; that's a different
@@ -3004,8 +3005,10 @@ duplicate_decls (tree newdecl, tree olddecl)
       else if (current_class_type == NULL_TREE
 	  || IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) != current_class_type)
 	{
-	  error ("conflicting types for `%#D'", newdecl);
-	  cp_error_at ("previous declaration as `%#D'", olddecl);
+	  error ("conflicting declaration '%#D'", newdecl);
+	  cp_error_at ("'%D' has a previous declaration as `%#D'",
+                       olddecl, olddecl);
+          return false;
 	}
     }
   else if (TREE_CODE (newdecl) == FUNCTION_DECL

@@ -1,3 +1,17 @@
+2003-09-07  Gabriel Dos Reis  <gcc@integrable-solutions.net>
+
+	PR c++/11762
+	* error.c (dump_decl): Handle namespace-alias-definition.
+	* decl.c (warn_extern_redeclared_static): There is no point in
+	checking changes in storage class specifier for a namespace
+	declaration. 
+	(duplicate_decls): Tidy diagnostic message.
+	* cxx-pretty-print.c (pp_cxx_left_brace): New macro.
+	(pp_cxx_right_brace): Likewise.
+	(pp_cxx_original_namespace_definition): New function.
+	(pp_cxx_namespace_alias_definition): Likewise.
+	(pp_cxx_declaration): Use them.  Handle NAMESPACE_DECLs.
+
 Sun Sep  7 13:15:14 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (maybe_emit_vtables, write_out_vars, finish_file):

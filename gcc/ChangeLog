@@ -1,3 +1,10 @@
+2003-09-07  Gabriel Dos Reis  <gcc@integrable-solutions.net>
+
+	* c-pretty-print.h (pp_c_left_brace): Declare.
+	(pp_c_right_brace): Likewise.
+	* c-pretty-print.c (pp_c_left_brace): Now a function
+	(pp_c_right_brace): Likewise.
+
 Sun Sep  7 14:50:03 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_simplify_condjump): Fix again the preivous patch.

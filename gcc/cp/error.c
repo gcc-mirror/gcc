@@ -831,11 +831,16 @@ dump_decl (tree t, int flags)
       break;
 
     case NAMESPACE_DECL:
-      dump_scope (CP_DECL_CONTEXT (t), flags);
-      if (DECL_NAME (t) == anonymous_namespace_name)
-	pp_identifier (cxx_pp, "<unnamed>");
+      if (flags & TFF_DECL_SPECIFIERS)
+        pp_cxx_declaration (cxx_pp, t);
       else
-	pp_tree_identifier (cxx_pp, DECL_NAME (t));
+        {
+          dump_scope (CP_DECL_CONTEXT (t), flags);
+          if (DECL_NAME (t) == anonymous_namespace_name)
+            pp_identifier (cxx_pp, "<unnamed>");
+          else
+            pp_tree_identifier (cxx_pp, DECL_NAME (t));
+        }
       break;
 
     case SCOPE_REF:

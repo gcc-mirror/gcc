@@ -157,6 +157,8 @@ extern void pp_c_pretty_printer_init (c_pretty_printer *);
 void pp_c_whitespace (c_pretty_printer *);
 void pp_c_left_paren (c_pretty_printer *);
 void pp_c_right_paren (c_pretty_printer *);
+void pp_c_left_brace (c_pretty_printer *);
+void pp_c_right_brace (c_pretty_printer *);
 void pp_c_dot (c_pretty_printer *);
 void pp_c_ampersand (c_pretty_printer *);
 void pp_c_arrow (c_pretty_printer *);

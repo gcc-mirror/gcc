@@ -3,10 +3,10 @@
 
 struct A;
 typedef struct A B;		// { dg-error "previous declaration" }
-struct B;			// { dg-error "conflicting types" }
+struct B;			// { dg-error "conflicting declaration" }
 
 typedef struct { int i; } C;	// { dg-error "previous declaration" }
-struct C;			// { dg-error "conflicting types" }
+struct C;			// { dg-error "conflicting declaration" }
 
 struct D;
 typedef struct D D;
