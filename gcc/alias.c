@@ -309,21 +309,24 @@ int
 objects_must_conflict_p (t1, t2)
      tree t1, t2;
 {
+  /* If one or the other has readonly fields or is readonly,
+     then they may not conflict.  */
+  if ((t1 != 0 && readonly_fields_p (t1))
+      || (t2 != 0 && readonly_fields_p (t2))
+      || (t1 != 0 && TYPE_READONLY (t1))
+      || (t2 != 0 && TYPE_READONLY (t2)))
+    return 0;
+
   /* If they are the same type, they must conflict.  */
   if (t1 == t2
       /* Likewise if both are volatile.  */
       || (t1 != 0 && TYPE_VOLATILE (t1) && t2 != 0 && TYPE_VOLATILE (t2)))
     return 1;
 
-  /* We now know they are different types.  If one or both has readonly fields
-     or if one is readonly and the other not, they may not conflict.
-     Likewise if one is aggregate and the other is scalar.  */
-  if ((t1 != 0 && readonly_fields_p (t1))
-      || (t2 != 0 && readonly_fields_p (t2))
-      || ((t1 != 0 && TYPE_READONLY (t1))
-	  != (t2 != 0 && TYPE_READONLY (t2)))
-      || ((t1 != 0 && AGGREGATE_TYPE_P (t1))
-	  != (t2 != 0 && AGGREGATE_TYPE_P (t2))))
+  /* If one is aggregate and the other is scalar then they may not
+     conflict.  */
+  if ((t1 != 0 && AGGREGATE_TYPE_P (t1))
+      != (t2 != 0 && AGGREGATE_TYPE_P (t2)))
     return 0;
 
   /* Otherwise they conflict only if the alias sets conflict. */
