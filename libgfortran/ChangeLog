@@ -1,3 +1,8 @@
+2004-12-06  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.am: Generate all m4 output under $(srcdir).
+	* Makefile.in: Regenerate.
+
 2004-12-02  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18710
