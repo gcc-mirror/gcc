@@ -3,7 +3,7 @@
 
 // { dg-do run }
 
-void* operator new    (unsigned int sz, void*) { return operator new (sz); }
+void* operator new    (__SIZE_TYPE__ sz, void*) { return operator new (sz); }
 void  operator delete (void* p, void*)         { operator delete (p); }
 
 struct A { A() { throw 1; } };
