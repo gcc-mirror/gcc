@@ -1,5 +1,13 @@
 2002-03-19  Richard Henderson  <rth@redhat.com>
 
+	PR 5879
+        * except.c (current_function_has_exception_handlers): New.
+        * except.h: Declare it.
+        * sibcall.c (optimize_sibling_and_tail_recursive_call): Use it.
+        Combine tests that disable all sibcalls for the function.
+
+2002-03-19  Richard Henderson  <rth@redhat.com>
+
 	PR 5977, 5991
 	* config/ia64/ia64.c: Revert 2002-03-01 patch.
 	* config/ia64/ia64.h (INIT_EXPANDERS): New.

@@ -120,6 +120,7 @@ extern void maybe_remove_eh_handler		PARAMS ((rtx));
 extern void convert_from_eh_region_ranges	PARAMS ((void));
 extern void convert_to_eh_region_ranges		PARAMS ((void));
 extern void find_exception_handler_labels	PARAMS ((void));
+extern bool current_function_has_exception_handlers PARAMS ((void));
 extern void output_function_exception_table	PARAMS ((void));
 
 extern void expand_builtin_unwind_init		PARAMS ((void));

@@ -1401,6 +1401,23 @@ find_exception_handler_labels ()
   exception_handler_labels = list;
 }
 
+bool
+current_function_has_exception_handlers ()
+{
+  int i;
+
+  for (i = cfun->eh->last_region_number; i > 0; --i)
+    {
+      struct eh_region *region = cfun->eh->region_array[i];
+
+      if (! region || region->region_number != i)
+	continue;
+      if (region->type != ERT_THROW)
+	return true;
+    }
+
+  return false;
+}
 
 static struct eh_region *
 duplicate_eh_region_1 (o, map)
