@@ -1,3 +1,9 @@
+2005-03-27  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.am (classes.stamp): Add gnu/gcj/tools/gcj_dbtool/Main.java
+	to fix a ONESTEP fallout.
+	* Makefile.in: Regenerate.
+
 2005-03-25  Mike Stump  <mrs@apple.com>
 
 	* configure.ac: Fix ZIP and GCJH at configure time to absolute
