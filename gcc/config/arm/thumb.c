@@ -358,8 +358,6 @@ broken_move (insn)
   return 0;
 }
 
-#ifdef DBX_DEBUGGING_INFO
-
 /* Recursively search through all of the blocks in a function
    checking to see if any of the variables created in that
    function match the RTX called 'orig'.  If they do then
@@ -391,7 +389,6 @@ replace_symbols_in_block (tree block, rtx orig, rtx new)
       replace_symbols_in_block (BLOCK_SUBBLOCKS (block), orig, new);
     }
 }
-#endif
 
 void
 thumb_reorg (first)
@@ -452,24 +449,31 @@ thumb_reorg (first)
 		  /* But it's still an ordinary insn */
 		  PUT_CODE (newinsn, INSN);
 
-#ifdef DBX_DEBUGGING_INFO
-		  /* If debugging information is going to be emitted then we must
-		     make sure that any refences to symbols which are removed by
-		     the above code are also removed in the descriptions of the
-		     function's variables.  Failure to do this means that the
-		     debugging information emitted could refer to symbols which
-		     are not emited by output_constant_pool() because
-		     mark_constant_pool() never sees them as being used.  */
+		  /* If debugging information is going to be emitted
+		     then we must make sure that any refences to
+		     symbols which are removed by the above code are
+		     also removed in the descriptions of the
+		     function's variables.  Failure to do this means
+		     that the debugging information emitted could
+		     refer to symbols which are not emited by
+		     output_constant_pool() because
+		     mark_constant_pool() never sees them as being
+		     used.  */
 		  
-		  if (optimize > 0			          /* These are the tests used in output_constant_pool() */
-		      && flag_expensive_optimizations             /*  to decide if the constant pool will be marked.  */
-		      && write_symbols == DBX_DEBUG               /* Only necessary if debugging info is being emitted.  */
-		      && GET_CODE (src) == MEM                    /* Only necessary for references to memory ... */
-		      && GET_CODE (XEXP (src, 0)) == SYMBOL_REF)  /*  ... whose address is given by a symbol.  */
-		    {
-		      replace_symbols_in_block (DECL_INITIAL (current_function_decl), src, newsrc);
-		    }
-#endif
+		  /* These are the tests used in
+		     output_constant_pool() to decide if the constant
+		     pool will be marked.  Only necessary if debugging
+		     info is being emitted.  Only necessary for
+		     references to memory whose address is given by a
+		     symbol. */
+
+		  if (optimize > 0
+		      && flag_expensive_optimizations
+		      && write_symbols != NO_DEBUG
+		      && GET_CODE (src) == MEM
+		      && GET_CODE (XEXP (src, 0)) == SYMBOL_REF)
+		    replace_symbols_in_block
+		      (DECL_INITIAL (current_function_decl), src, newsrc);
 		  
 		  /* Kill old insn */
 		  delete_insn (scan);

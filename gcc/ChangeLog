@@ -1,3 +1,10 @@
+Mon Jul 12 10:40:01 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
+
+	* config/arm/thumb.c (thumb_reorg): Call replace_symbols_in_block
+ 	always unless NO_DEBUG is used.  Compile this code
+ 	unconditionally.
+	(replace_symbols_in_block): Compile it unconditionally.
+	
 Sun Jul 11 12:32:32 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (i?86-*-elf*): New target.
