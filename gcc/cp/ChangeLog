@@ -1,5 +1,17 @@
 2004-05-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15083
+	* decl2.c (delete_sanity): Set TREE_SIDE_EFFECTS on a DELETE_EXPR,
+	even in a templat.e
+	* init.c (build_new): Likewise.
+
+	PR c++/15640
+	* name-lookup.c (arg_assoc): Robustify.
+
+	PR c++/15471
+	* typeck.c (unary_complex_lvalue): Use context_for_name_lookup
+	when determining the scope to use for a pointer to member.
+
 	PR c++/14668
 	* parser.c (cp_parser_simple_type_specifier): Call
 	maybe_note_name_used_in_class.

@@ -1,8 +1,14 @@
-/* PR middle-end/13325 */
-/* { dg-do compile } */
-/* { dg-options "-Wall" } */
+// { dg-options "-Wall" }
+// PR c++/15083
 
-void *memcpy(void *dest, const void *src, __SIZE_TYPE__ n);
-void f (void *dest, const void *src) {
-    memcpy (dest, src, 0);
+extern "C" int printf(const char*,...);
+struct Counter {
+  Counter(){printf("Hello World.\n");}
+};
+template< typename T >
+void resetData() {
+  new Counter();
 }
+int main() {
+  resetData<int>();
+} 

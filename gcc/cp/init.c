@@ -1797,6 +1797,7 @@ build_new (tree placement, tree decl, tree init, int use_global_new)
       rval = build_min (NEW_EXPR, build_pointer_type (type), 
 			placement, t, init);
       NEW_EXPR_USE_GLOBAL (rval) = use_global_new;
+      TREE_SIDE_EFFECTS (rval) = 1;
       return rval;
     }
 

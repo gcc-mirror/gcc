@@ -4226,7 +4226,8 @@ unary_complex_lvalue (enum tree_code code, tree arg)
 	      return error_mark_node;
 	    }
 
-	  type = build_ptrmem_type (DECL_FIELD_CONTEXT (t), TREE_TYPE (t));
+	  type = build_ptrmem_type (context_for_name_lookup (t), 
+				    TREE_TYPE (t));
 	  t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
 	  return t;
 	}

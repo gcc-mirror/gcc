@@ -449,6 +449,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete)
       t = build_min (DELETE_EXPR, void_type_node, exp, size);
       DELETE_EXPR_USE_GLOBAL (t) = use_global_delete;
       DELETE_EXPR_USE_VEC (t) = doing_vec;
+      TREE_SIDE_EFFECTS (t) = 1;
       return t;
     }
 
