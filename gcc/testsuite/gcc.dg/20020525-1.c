@@ -13,12 +13,12 @@ void foo (int *x, int y)
   
 int main ()
 {
-  int x[2] = { 0x5a5a5a5a, 0x5a5a5a5a };
+  int x[2] = { -1, -1 };
     
-  if (x[1] != 0x5a5a5a5a)
+  if (x[1] != -1)
     abort ();
   foo (x, sizeof (int) + 1);
-  if (x[1] == 0x5a5a5a5a)
+  if (x[1] == -1)
     abort ();
   exit (0);
 }

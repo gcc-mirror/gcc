@@ -1,3 +1,7 @@
+2003-06-03  Glen Nakamura  <glen@imodulo.com>
+
+ 	* gcc.dg/20020525-1.c: Replace 0x5a5a5a5a with -1.
+
 2003-06-03  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* g++.dg/abi/empty6.C (B): Request alignment of 8 bytes.
