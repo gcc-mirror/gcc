@@ -1,5 +1,10 @@
 2004-12-16  Uros Bizjak  <uros@kss-loka.si>
 
+	* config/i386/i386.md (*floathisf2_i387, *floathidf2_i387):
+	Also enable for TARGET_MIX_SSE_I387.
+
+2004-12-16  Uros Bizjak  <uros@kss-loka.si>
+
 	* config/i386/i386.md (sqrt{s,d}f2_1, sqrt{s,d}f2_1_sse_only,
 	sqrt{s,d}f2_i387): Unify enable constraint with respect to 
 	TARGET_SSE, TARGET_SSE2, TARGET_USE_FANCY_MATH_387,
