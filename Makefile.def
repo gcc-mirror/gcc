@@ -139,8 +139,6 @@ recursive_targets = { make_target= distclean; };
 recursive_targets = { make_target= maintainer-clean; };
 
 // Flags which need to be passed down.
-// special_cases=x,y,z indicates directories which do their own thing with
-// this flag
 
 // Directories etc.
 flags_to_pass = { flag= DESTDIR ; };
