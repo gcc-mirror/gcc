@@ -1,3 +1,9 @@
+1999-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (strsignal): Don't check HAVE_STRSIGNAL when
+	determining whether to provide a prototype.  Remove the
+	sys_siglist clause in the conditional.
+
 1999-12-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* fold-const.c (operand_equal_p): Use memcmp to compare string
