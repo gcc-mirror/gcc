@@ -3017,7 +3017,7 @@ extern tree hash_chainon			PROTO((tree, tree));
 extern tree get_decl_list			PROTO((tree));
 extern tree make_binfo				PROTO((tree, tree, tree, tree));
 extern tree binfo_value				PROTO((tree, tree));
-extern tree reverse_path			PROTO((tree, int));
+extern tree reverse_path			PROTO((tree));
 extern int count_functions			PROTO((tree));
 extern int is_overloaded_fn			PROTO((tree));
 extern tree get_first_fn			PROTO((tree));

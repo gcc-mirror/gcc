@@ -1,3 +1,25 @@
+1998-08-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Never change BINFO_INHERITANCE_CHAIN.
+	* init.c (emit_base_init): Change modification of
+	BINFO_INHERITANCE_CHAIN to an assert.
+	* search.c (get_base_distance_recursive): Likewise.
+	(get_base_distance): Likewise.
+	(lookup_member): Likewise.
+	(convert_pointer_to_single_level): Likewise.
+	(lookup_field): Likewise.  Lose setting TREE_VIA_* on TREE_LISTs.
+	(lookup_fnfields): Likewise.
+	* tree.c (propagate_binfo_offsets): Don't call unshare_base_binfos.
+	(unshare_base_binfos): Don't call propagate_binfo_offsets.
+	(layout_basetypes): Call propagate_binfo_offsets instead of 
+	unshare_base_binfos.
+	* decl.c (xref_basetypes): Call unshare_base_binfos.
+	* pt.c (instantiate_class_template): Likewise.
+	* tree.c (reverse_path): Remove 'copy' parm; always make a
+	temporary copy.
+	* class.c (build_vbase_path): Just call it.
+	* search.c (compute_access): Likewise.  Don't re-reverse.
+
 1998-08-27  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (build_vbase_path): Use reverse_path.

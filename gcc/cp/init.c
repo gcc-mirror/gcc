@@ -569,11 +569,8 @@ emit_base_init (t, immediately)
       if (TREE_VIA_VIRTUAL (base_binfo))
 	continue;
 
-#if 0 /* Once unsharing happens soon enough.  */
-      my_friendly_assert (BINFO_INHERITANCE_CHAIN (base_binfo) == t_binfo, 999);
-#else
-      BINFO_INHERITANCE_CHAIN (base_binfo) = t_binfo;
-#endif
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (base_binfo) == t_binfo,
+			  999);
 
       if (TREE_PURPOSE (rbase_init_list))
 	init = TREE_VALUE (rbase_init_list);

@@ -11764,6 +11764,10 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	  TREE_VIA_VIRTUAL (base_binfo) = via_virtual;
 	  BINFO_INHERITANCE_CHAIN (base_binfo) = TYPE_BINFO (ref);
 
+	  /* We need to unshare the binfos now so that lookups during class
+	     definition work.  */
+	  unshare_base_binfos (base_binfo);
+
 	  SET_CLASSTYPE_MARKED (basetype);
 
 	  /* We are free to modify these bits because they are meaningless
