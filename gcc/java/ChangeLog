@@ -1,3 +1,30 @@
+2002-03-02  Per Bothner  <per@bothner.com>
+
+	Make --CLASSPATH by a synonym for --classpath and -classpath.
+	Implement --bootclasspath.
+	* jcf-path.c (classpath_u):  Rename static variable to classpath_user.
+	(classpath_l):  Remove.
+	(jcf_path_CLASSPATH_arg):  Remove.
+	(jcf_path_bootclasspath_arg):  New function.
+	(jcf_path_seal):  Simplify accordingly.
+
+	* jcf.h (jcf_path_bootclasspath_arg):  New declarations.
+	(jcf_path_CLASSPATH):  Remove declaration.
+	* jvspec.c (jvgenmain_spec):  Also accept -fbootclasspath*.
+	(lang_specific_driver):  Translate -bootclasspath.
+	* lang-options.h:  Add --bootclasspath.  Update --CLASSPATH.
+	* lang.c (decode_lang_options):  Do jcf_path_init first.
+	Handle -fCLASSPATH same as -fclasspath.  Also process -fbootclasspath.
+	* gjavah.c:  Also handle --bootclasspath.
+	Handle --CLASSPATH as a synonum for --classpath.
+	* jcf-dump.c: Likewise.
+
+	"." is not part of system path, but is the default for --classpath.
+	* jcf-path.c (jcf_path_init):  Don't add "." to sys_dirs.
+	(jcf_path_seal):  Add "." if no CLASSPATH specified.
+
+	* gcj.texi:  Document changes.
+
 2002-03-01  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* expr.c (build_java_arraystore_check): Fix formatting.

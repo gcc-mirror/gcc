@@ -1,6 +1,6 @@
 /* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -66,8 +66,8 @@ static const char jvgenmain_spec[] =
 		   %{<femit-class-file} %{<femit-class-files} %{<fencoding*}\
 		   %{<fuse-boehm-gc} %{<fhash-synchronization} %{<fjni}\
 		   %{<findirect-dispatch} \
-		   %{<fno-store-check}\
-		   %{<fclasspath*} %{<fCLASSPATH*} %{<foutput-class-dir}\
+		   %{<fno-store-check} %{<foutput-class-dir}\
+		   %{<fclasspath*} %{<fCLASSPATH*} %{<fbootclasspath*}\
 		   %{<fuse-divide-subroutine} %{<fno-use-divide-subroutine}\
 		   %{<fcheck-references} %{<fno-check-references}\
 		   %{<ffilelist-file}\
@@ -329,6 +329,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      quote = argv[i];
 	    }
 	  else if (strcmp(argv[i], "-classpath") == 0
+		   || strcmp(argv[i], "-bootclasspath") == 0
 		   || strcmp(argv[i], "-CLASSPATH") == 0)
 	    {
 	      quote = argv[i];
@@ -522,6 +523,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	}
 
       if (strcmp (argv[i], "-classpath") == 0
+	  || strcmp (argv[i], "-bootclasspath") == 0
 	  || strcmp (argv[i], "-CLASSPATH") == 0)
 	{
 	  arglist[j] = concat ("-f", argv[i]+1, "=", argv[i+1], NULL);
