@@ -76,8 +76,8 @@ extern const unsigned char tree_code_length[];
 
 extern const char *const tree_code_name[];
 
-/* A vector of trees.  */
-DEF_VEC_P(tree);
+/* A garbage collected vector of trees.  */
+DEF_VEC_GC_P(tree);
 
 
 /* Classify which part of the compiler has defined a given builtin function.

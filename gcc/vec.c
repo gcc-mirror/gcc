@@ -39,11 +39,11 @@ struct vec_prefix
    VEC can be NULL, to create a new vector.  */
 
 void *
-vec_p_reserve (void *vec, int reserve MEM_STAT_DECL)
+vec_gc_p_reserve (void *vec, int reserve MEM_STAT_DECL)
 {
-  return vec_o_reserve (vec, reserve,
-			offsetof (struct vec_prefix, vec), sizeof (void *)
-			PASS_MEM_STAT);
+  return vec_gc_o_reserve (vec, reserve,
+			   offsetof (struct vec_prefix, vec), sizeof (void *)
+			   PASS_MEM_STAT);
 }
 
 /* Ensure there are at least RESERVE free slots in VEC, if RESERVE >=
@@ -53,8 +53,8 @@ vec_p_reserve (void *vec, int reserve MEM_STAT_DECL)
    ELT_SIZE sized elements.  */
 
 void *
-vec_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
-	       MEM_STAT_DECL)
+vec_gc_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
+		   MEM_STAT_DECL)
 {
   struct vec_prefix *pfx = vec;
   unsigned alloc = pfx ? pfx->num : 0;
@@ -75,6 +75,65 @@ vec_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
     ((struct vec_prefix *)vec)->num = 0;
   
   return vec;
+}
+
+/* Explicitly release a vector.  */
+
+void
+vec_gc_free (void *vec)
+{
+  ggc_free (vec);
+}
+
+/* Ensure there are at least RESERVE free slots in VEC, if RESERVE >=
+   0.  If RESERVE < 0 increase the current allocation exponentially.
+   VEC can be NULL, to create a new vector.  */
+
+void *
+vec_heap_p_reserve (void *vec, int reserve MEM_STAT_DECL)
+{
+  return vec_heap_o_reserve (vec, reserve,
+			     offsetof (struct vec_prefix, vec), sizeof (void *)
+			     PASS_MEM_STAT);
+}
+
+/* Ensure there are at least RESERVE free slots in VEC, if RESERVE >=
+   0.  If RESERVE < 0, increase the current allocation exponentially.
+   VEC can be NULL, in which case a new vector is created.  The
+   vector's trailing array is at VEC_OFFSET offset and consists of
+   ELT_SIZE sized elements.  */
+
+void *
+vec_heap_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
+		    MEM_STAT_DECL)
+{
+  struct vec_prefix *pfx = vec;
+  unsigned alloc = pfx ? pfx->num : 0;
+
+  if (reserve >= 0)
+    alloc += reserve;
+  else if (alloc)
+    alloc *= 2;
+  else
+    alloc = 4;
+
+  if (pfx && pfx->alloc >= alloc)
+    abort ();
+  
+  vec = xrealloc (vec, vec_offset + alloc * elt_size);
+  ((struct vec_prefix *)vec)->alloc = alloc;
+  if (!pfx)
+    ((struct vec_prefix *)vec)->num = 0;
+  
+  return vec;
+}
+
+/* Explicitly release a vector.  */
+
+void
+vec_heap_free (void *vec)
+{
+  free (vec);
 }
 
 #if ENABLE_CHECKING

@@ -66,7 +66,7 @@ struct histogram_value_t GTY(())
 
 typedef struct histogram_value_t *histogram_value;
 
-DEF_VEC_P(histogram_value);
+DEF_VEC_GC_P(histogram_value);
 
 typedef VEC(histogram_value) *histogram_values;
 

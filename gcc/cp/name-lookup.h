@@ -91,7 +91,7 @@ typedef struct cxx_saved_binding GTY(())
   tree real_type_value;
 } cxx_saved_binding;
 
-DEF_VEC_O(cxx_saved_binding);
+DEF_VEC_GC_O(cxx_saved_binding);
 
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
@@ -132,7 +132,7 @@ typedef struct cp_class_binding GTY(())
   tree identifier;
 } cp_class_binding;
 
-DEF_VEC_O(cp_class_binding);
+DEF_VEC_GC_O(cp_class_binding);
 
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
