@@ -2297,7 +2297,7 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
   return temp;
 }
 
-enum alg_code { alg_zero, alg_m, alg_shift,
+enum alg_code { alg_unknown, alg_zero, alg_m, alg_shift,
 		  alg_add_t_m2, alg_sub_t_m2,
 		  alg_add_factor, alg_sub_factor,
 		  alg_add_t2_m, alg_sub_t2_m };
@@ -2364,6 +2364,26 @@ struct algorithm
   char log[MAX_BITS_PER_WORD];
 };
 
+/* The entry for our multiplication cache/hash table.  */
+struct alg_hash_entry {
+  /* The number we are multiplying by.  */
+  unsigned int t;
+
+  /* The mode in which we are multiplying something by T.  */
+  enum machine_mode mode;
+
+  /* The best multiplication algorithm for t.  */
+  enum alg_code alg;
+};
+
+/* The number of cache/hash entries.  */
+#define NUM_ALG_HASH_ENTRIES 307
+
+/* Each entry of ALG_HASH caches alg_code for some integer.  This is
+   actually a hash table.  If we have a collision, that the older
+   entry is kicked out.  */
+static struct alg_hash_entry alg_hash[NUM_ALG_HASH_ENTRIES];
+
 /* Indicates the type of fixup needed after a constant multiplication.
    BASIC_VARIANT means no fixup is needed, NEGATE_VARIANT means that
    the result should be negated, and ADD_VARIANT means that the
@@ -2400,6 +2420,9 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   int op_cost, op_latency;
   unsigned HOST_WIDE_INT q;
   int maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (mode));
+  int hash_index;
+  bool cache_hit = false;
+  enum alg_code cache_alg = alg_zero;
 
   /* Indicate that no algorithm is yet found.  If no algorithm
      is found, this value will be returned and indicate failure.  */
@@ -2445,11 +2468,46 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   best_alg = alloca (sizeof (struct algorithm));
   best_cost = *cost_limit;
 
+  /* Compute the hash index.  */
+  hash_index = (t ^ (unsigned int) mode) % NUM_ALG_HASH_ENTRIES;
+
+  /* See if we already know what to do for T.  */
+  if (alg_hash[hash_index].t == t
+      && alg_hash[hash_index].mode == mode
+      && alg_hash[hash_index].alg != alg_unknown)
+    {
+      cache_hit = true;
+      cache_alg = alg_hash[hash_index].alg;
+      switch (cache_alg)
+	{
+	case alg_shift:
+	  goto do_alg_shift;
+
+	case alg_add_t_m2:
+	case alg_sub_t_m2:
+	  goto do_alg_addsub_t_m2;
+
+	case alg_add_factor:
+	case alg_sub_factor:
+	  goto do_alg_addsub_factor;
+
+	case alg_add_t2_m:
+	  goto do_alg_add_t2_m;
+
+	case alg_sub_t2_m:
+	  goto do_alg_sub_t2_m;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   /* If we have a group of zero bits at the low-order part of T, try
      multiplying by the remaining bits and then doing a shift.  */
 
   if ((t & 1) == 0)
     {
+    do_alg_shift:
       m = floor_log2 (t & -t);	/* m = number of low zero bits */
       if (m < maxm)
 	{
@@ -2475,6 +2533,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	      best_alg->op[best_alg->ops] = alg_shift;
 	    }
 	}
+      if (cache_hit)
+	goto done;
     }
 
   /* If we have an odd number, add or subtract one.  */
@@ -2482,6 +2542,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
     {
       unsigned HOST_WIDE_INT w;
 
+    do_alg_addsub_t_m2:
       for (w = 1; (w & t) != 0; w <<= 1)
 	;
       /* If T was -1, then W will be zero after the loop.  This is another
@@ -2533,6 +2594,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	      best_alg->op[best_alg->ops] = alg_add_t_m2;
 	    }
 	}
+      if (cache_hit)
+	goto done;
     }
 
   /* Look for factors of t of the form
@@ -2545,12 +2608,14 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
      good sequence quickly, and therefore be able to prune (by decreasing
      COST_LIMIT) the search.  */
 
+ do_alg_addsub_factor:
   for (m = floor_log2 (t - 1); m >= 2; m--)
     {
       unsigned HOST_WIDE_INT d;
 
       d = ((unsigned HOST_WIDE_INT) 1 << m) + 1;
-      if (t % d == 0 && t > d && m < maxm)
+      if (t % d == 0 && t > d && m < maxm
+	  && (!cache_hit || cache_alg == alg_add_factor))
 	{
 	  /* If the target has a cheap shift-and-add instruction use
 	     that in preference to a shift insn followed by an add insn.
@@ -2588,7 +2653,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	}
 
       d = ((unsigned HOST_WIDE_INT) 1 << m) - 1;
-      if (t % d == 0 && t > d && m < maxm)
+      if (t % d == 0 && t > d && m < maxm
+	  && (!cache_hit || cache_alg == alg_sub_factor))
 	{
 	  /* If the target has a cheap shift-and-subtract insn use
 	     that in preference to a shift insn followed by a sub insn.
@@ -2624,11 +2690,14 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	  break;
 	}
     }
+  if (cache_hit)
+    goto done;
 
   /* Try shift-and-add (load effective address) instructions,
      i.e. do a*3, a*5, a*9.  */
   if ((t & 1) != 0)
     {
+    do_alg_add_t2_m:
       q = t - 1;
       q = q & -q;
       m = exact_log2 (q);
@@ -2650,7 +2719,10 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	      best_alg->op[best_alg->ops] = alg_add_t2_m;
 	    }
 	}
+      if (cache_hit)
+	goto done;
 
+    do_alg_sub_t2_m:
       q = t + 1;
       q = q & -q;
       m = exact_log2 (q);
@@ -2672,11 +2744,22 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	      best_alg->op[best_alg->ops] = alg_sub_t2_m;
 	    }
 	}
+      if (cache_hit)
+	goto done;
     }
 
+ done:
   /* If best_cost has not decreased, we have not found any algorithm.  */
   if (!CHEAPER_MULT_COST (&best_cost, cost_limit))
     return;
+
+  /* Cache the result.  */
+  if (!cache_hit)
+    {
+      alg_hash[hash_index].t = t;
+      alg_hash[hash_index].mode = mode;
+      alg_hash[hash_index].alg = best_alg->op[best_alg->ops];
+    }
 
   /* If we are getting a too long sequence for `struct algorithm'
      to record, make this search fail.  */
