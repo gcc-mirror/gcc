@@ -80,6 +80,10 @@
 @c @end tex
 
 @ifinfo
+@dircategory Programming
+@direntry
+* gcc: (gcc).                  The GNU C compiler.
+@end direntry
 @ifset INTERNALS
 @ifset USING
 This file documents the use and the internals of the GNU compiler.
