@@ -81,10 +81,6 @@ compilation is specified by a string called a "spec".  */
 #include "prefix.h"
 #include "gcc.h"
 
-#ifdef VMS
-#define exit __posix_exit
-#endif
-
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
