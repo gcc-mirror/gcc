@@ -1,5 +1,11 @@
 2002-04-02  Richard Henderson  <rth@redhat.com>
 
+	PR opt/3967
+	* local-alloc.c (contains_replace_regs): LO_SUM may contain
+	replace regs.
+
+2002-04-02  Richard Henderson  <rth@redhat.com>
+
 	* doc/standards.texi: Document required freestanding libc entry points.
 
 2002-04-02  Alan Modra  <amodra@bigpond.net.au>
