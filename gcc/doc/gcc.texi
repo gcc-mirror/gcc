@@ -41,7 +41,7 @@
 
 @copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -79,7 +79,7 @@ This file documents the use of the GNU compilers.
 @sp 2
 @center by Richard M. Stallman and the GCC Developer Community
 @sp 3
-@center Last updated 23 May 2004
+@center Last updated 6 February 2005
 @sp 1
 
 @center for GCC @value{version-GCC}
