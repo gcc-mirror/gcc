@@ -1,3 +1,9 @@
+2003-11-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9810
+	* g++.dg/template/using8.C: New test.
+	* g++.old-deja/g++.other/access11.C: Adjust expected error location.
+
 2003-11-02  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/10817

@@ -1,3 +1,9 @@
+2003-11-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9810
+	* call.c (build_over_call): Check access using primary template
+	if FN is a member function template.
+
 2003-11-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/12796
