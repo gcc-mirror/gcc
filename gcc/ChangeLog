@@ -254,7 +254,7 @@ Sat May 2 17:47:17 PDT 1998 Jeff Law  (law@cygnus.com)
 Sat May  2 01:37:29 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): Emit USEs to mark where a pseudo
-	is reloaced with the MEM of its stack slot.
+	is reloaded with the MEM of its stack slot.
 	* reload1.c (cannot_omit_stores): Delete.
 	(reload): Don't initialize it.
 	Don't apply avoid_return_reg logic to USEs.
