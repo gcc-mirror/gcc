@@ -1,0 +1,568 @@
+#!/bin/sh
+# Configuration validation subroutine script, version 1.0.
+#   Copyright (C) 1991 Free Software Foundation, Inc.
+
+#This file is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2 of the License, or
+#(at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+# Configuration subroutine to validate and canonicalize a configuration type.
+# Supply the specified configuration type as an argument.
+# If it is invalid, we print an error message on stderr and exit with code 1.
+# Otherwise, we print the canonical config type on stdout and succeed.
+
+# This file is supposed to be the same for all GNU packages
+# and recognize all the CPU types, system types and aliases
+# that are meaningful with *any* GNU software.
+# Each package is responsible for reporting which valid configurations
+# it does not support.  The user should be able to distinguish
+# a failure to support a valid configuration from a meaningless
+# configuration.
+
+# The goal of this file is to map all the various variations of a given
+# machine specification into a single specification in the form:
+#	CPU_TYPE-MANUFACTURER-OPERATING_SYSTEM
+# it is wrong to echo any other type of specification
+
+# First pass through any local machine types.
+case $1 in
+	*local*)
+		echo $1
+		exit 0
+		;;
+	*)
+	;;
+esac
+
+# Separate what the user gave into CPU-COMPANY and OS (if any).
+basic_machine=`echo $1 | sed 's/-[^-]*$//'`
+if [ $basic_machine != $1 ]
+then os=`echo $1 | sed 's/.*-/-/'`
+else os=; fi
+
+# Lets recognize common machines as not being OS so that things like
+# config.subr decstation-3100 as legal.
+case $os in
+	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
+	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
+	-unicom* | -ibm* | -next* | -hp | -isi* | -apollo | -altos* | \
+	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -osf* | \
+	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
+	-harris | -dolphin)
+		os=
+		basic_machine=$1
+		;;
+	-sco*)
+		os=-scosysv322
+		basic_machine=i386-unknown
+		;;
+	-isc*)
+		os=-iscsysv
+		basic_machine=i386-unknown
+		;;
+esac
+
+# Decode aliases for certain CPU-COMPANY combinations.
+case $basic_machine in
+	# Recognize the basic CPU types with without company name.
+	# Some are omitted here because they have special meanings below.
+	tahoe | i386 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
+		| tron | a29k | 580 | i960 | h8300 | hppa)
+		basic_machine=$basic_machine-unknown
+		;;
+	# Recognize the basic CPU types with with company name.
+	vax-* | tahoe-* | i386-* | i860-* | m68k-* | m68000-* | m88k-* \
+	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
+	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
+	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
+	      | hppa-*)
+		;;
+	# Recognize the various machine names and aliases which stand
+	# for a CPU type and a company and sometimes even an OS.
+	vaxv)
+		basic_machine=vax-dec
+		os=-sysv
+		;;
+	vms)
+		basic_machine=vax-dec
+		os=-vms
+		;;
+	i386v32)
+		basic_machine=i386-unknown
+		os=-sysv32
+		;;
+	i386-sco* | i386sco | sco)
+		basic_machine=i386-unknown
+		os=-scosysv322
+		;;
+	i386-isc* | isc)
+		basic_machine=i386-unknown
+		os=-iscsysv
+		;;
+	i386v4*)
+		basic_machine=i386-unknown
+		os=-sysv4
+		;;
+	i386v)
+		basic_machine=i386-unknown
+		os=-sysv
+		;;
+	spur)
+		basic_machine=spur-unknown
+		;;
+	alliant | fx80)
+		basic_machine=fx80-alliant
+		;;
+	convex-c1)
+		basic_machine=c1-convex
+		os=-bsd
+		;;
+	convex-c2)
+		basic_machine=c2-convex
+		os=-bsd
+		;;
+	convex-c32)
+		basic_machine=c32-convex
+		os=-bsd
+		;;
+	convex-c34)
+		basic_machine=c34-convex
+		os=-bsd
+		;;
+	convex-c38)
+		basic_machine=c38-convex
+		os=-bsd
+		;;
+	m88k-omron*)
+		basic_machine=m88k-omron
+		;;
+	merlin)
+		basic_machine=ns32k-utek
+		os=-sysv
+		;;
+	crds | unos)
+		basic_machine=m68k-crds
+		;;
+	encore | umax | mmax)
+		basic_machine=ns32k-encore
+		os=-sysv
+		;;
+	genix)
+		basic_machine=ns32k-ns
+		;;
+	iris | iris4d)
+		basic_machine=mips-sgi
+		os=-irix
+		;;
+	news | news700 | news800 | news900)
+		basic_machine=m68k-sony
+		os=-newsos
+		;;
+	3b1 | 7300 | 7300-att | att-7300 | pc7300 | safari | unixpc)
+		basic_machine=m68000-att
+		;;
+	delta | 3300 | motorola-3300 | motorola-delta \
+	      | 3300-motorola | delta-motorola)
+		basic_machine=m68k-motorola
+		;;
+	balance)
+		basic_machine=ns32k-sequent
+		os=-dynix
+		;;
+        pc532)
+		basic_machine=ns32k-pc532
+		;;
+	symmetry)
+		basic_machine=i386-sequent
+		os=-dynix
+		;;
+	sun2)
+		basic_machine=m68000-sun
+		;;
+	sun2os3)
+		basic_machine=m68000-sun
+		os=-sunos3
+		;;
+	sun2os4)
+		basic_machine=m68000-sun
+		os=-sunos4
+		;;
+	sun3os3)
+		basic_machine=m68k-sun
+		os=-sunos3
+		;;
+	sun3os4)
+		basic_machine=m68k-sun
+		os=-sunos4
+		;;
+	sun4os3)
+		basic_machine=sparc-sun
+		os=-sunos3
+		;;
+	sun4os4)
+		basic_machine=sparc-sun
+		os=-sunos4
+		;;
+	sun3)
+		basic_machine=m68k-sun
+		;;
+	sun4)
+		basic_machine=sparc-sun
+		;;
+	pbd)
+		basic_machine=sparc-tti
+		;;
+	pbb)
+		basic_machine=m68k-tti
+		;;
+	sun386 | sun386i | roadrunner)
+		basic_machine=i386-sun
+		;;
+	ps2)
+		basic_machine=i386-ibm
+		;;
+	next)
+		basic_machine=m68k-next
+		os=-sysv
+		;;
+	amiga)
+		basic_machine=m68k-cbm
+		;;
+	hp9k3[2-9][0-9])
+		basic_machine=m68k-hp
+		;;
+	hp9k31[0-9] | hp9k2[0-9][0-9])
+		basic_machine=m68000-hp
+		;;
+	hp9k8[0-9][0-9] | hp9k7[0-9][0-9] | hp8[0-9][0-9] | hp7[0-9][0-9])
+		basic_machine=hp800-hp
+		;;
+	isi68 | isi)
+		basic_machine=m68k-isi
+		os=-sysv
+		;;
+	apollo68)
+		basic_machine=m68k-apollo
+		os=-sysv
+		;;
+	altos | altos3068)
+		basic_machine=m68k-altos
+		;;
+	miniframe)
+		basic_machine=m68000-convergent
+		;;
+	tower | tower-32)
+		basic_machine=m68k-ncr
+		;;
+	news-3600 | risc-news)
+		basic_machine=mips-sony
+		os=-newsos
+		;;
+	decstation-dec | decstation | decstation-3100 | pmax | pmin | dec3100 | decstatn)
+		basic_machine=mips-dec
+		;;
+	magnum | m3230)
+		basic_machine=mips-mips
+		os=-sysv
+		;;
+	gmicro)
+		basic_machine=tron-gmicro
+		os=-sysv
+		;;
+	rtpc | rtpc-*)
+		basic_machine=romp-ibm
+		;;
+	am29k)
+		basic_machine=a29k-none
+		os=-bsd
+		;;
+	amdahl)
+		basic_machine=580-amdahl
+		os=-sysv
+		;;
+	amigados)
+		basic_machine=m68k-cbm
+		os=-amigados
+		;;
+	amigaunix | amix)
+		basic_machine=m68k-cbm
+		os=-amix
+		;;
+	cray | ymp)
+		basic_machine=ymp-cray
+		os=-unicos
+		;;
+	cray2)
+		basic_machine=cray2-cray
+		os=-unicos
+		;;
+	xmp)
+		basic_machine=xmp-cray
+		os=-unicos
+		;;
+	delta88)
+		basic_machine=m88k-motorola
+		os=-m88kbcs
+		;;
+	dpx2)
+		basic_machine=m68k-bull
+		os=-sysv
+		;;
+	ebmon29k)
+		basic_machine=a29k-amd
+		os=-ebmon
+		;;
+	h8300hds)
+		basic_machine=h8300-hitachi
+		os=-hds
+		;;
+	harris)
+		basic_machine=m88k-harris
+		os=-m88kbcs
+		;;
+	hp300bsd)
+		basic_machine=m68k-hp
+		os=-bsd
+		;;
+	hp300hpux)
+		basic_machine=m68k-hp
+		os=-hpux
+		;;
+	hp9k2[0-9][0-9] | hp9k31[0-9])
+		basic_machine=m68000-hp
+		os=-hpux
+		;;
+	hp9k3[2-9][0-9])
+		basic_machine=m68k-hp
+		os=-hpux
+		;;
+	ncr3000)
+		basic_machine=i386-ncr
+		os=-sysv4
+		;;
+	news1000)
+		basic_machine=m68030-sony
+		os=-newsos
+		;;
+	nindy960)
+		basic_machine=i960-intel
+		os=-nindy
+		;;
+	pn)
+		basic_machine=pn-gould
+		os=-sysv
+		;;
+	np1)
+		basic_machine=np1-gould
+		os=-sysv
+		;;
+	ultra3)
+		basic_machine=a29k-nyu
+		os=-sym1
+		;;
+	vxworks960)
+		basic_machine=i960-wrs
+		os=-vxworks
+		;;
+	vxworks68)
+		basic_machine=m68k-wrs
+		os=-vxworks
+		;;
+	none)
+		basic_machine=none-none
+		os=-none
+		;;
+
+# Here we handle the default manufacturer of certain CPU types.  It is in
+# some cases the only manufacturer, in others, it is the most popular.
+	mips)
+		basic_machine=mips-mips
+		;;
+	romp)
+		basic_machine=romp-ibm
+		;;
+	rs6000)
+		basic_machine=rs6000-ibm
+		;;
+	vax)
+		basic_machine=vax-dec
+		;;
+	sparc)
+		basic_machine=sparc-sun
+		;;
+	fx2800)
+		basic_machine=i860-alliant
+		;;
+	*)
+		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
+		exit 1
+		;;
+esac
+
+# Here we canonicalize certain aliases for manufacturers.
+case $basic_machine in
+	*-digital*)
+		basic_machine=`echo $basic_machine | sed 's/digital.*/dec/'`
+		;;
+	*-commodore*)
+		basic_machine=`echo $basic_machine | sed 's/commodore.*/cbm/'`
+		;;
+	*)
+		;;
+esac
+
+# Decode manufacturer-specific aliases for certain operating systems.
+
+if [ "$os" ]
+then
+case $os in
+	# First accept the basic system types.
+	# The portable systems comes first.
+	# Each alternative must end in a *, to match a version number.
+	-bsd* | -sysv* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos* | -hpux* \
+	      | -unos* | -osf* | -luna* | -dgux* | -solari* | -sym* | -amix* \
+	      | -amigados* | -msdos* | -unicos* | -aos* \
+	      | -nindy* | -vxworks* | -ebmon* | -hds* | -m88kbcs*)
+		;;
+	-newsos*)
+		os=-bsd
+		;;
+	-osfrose*)
+		os=-osf
+		;;
+	-osf*)
+		os=-bsd
+		;;
+	-dynix*)
+		os=-bsd
+		;;
+	-acis*)
+		os=-aos
+		;;
+	-ctix* | -uts*)
+		os=-sysv
+		;;
+	-triton*)
+		os=-sysv3
+		;;
+	-oss*)
+		os=-sysv3
+		;;
+	-svr4)
+		os=-sysv4
+		;;
+	-svr3)
+		os=-sysv3
+		;;
+	*)
+		# Get rid of the `-' at the beginning of $os.
+		os=`echo $1 | sed 's/[^-]*-//'`
+		echo Invalid configuration \`$1\': system \`$os\' not recognized 1>&2
+		exit 1
+		;;
+esac
+else
+
+# Here we handle the default operating systems that come with various machines.
+# The value should be what the vendor currently ships out the door with their
+# machine or put another way, the most popular os provided with the machine.
+case $basic_machine in
+	*-dec | vax-*)
+		os=-ultrix42
+		;;
+	i386-sun)
+		os=-sunos402
+		;;
+	m68000-sun)
+		os=-sunos3
+		# This also exists in the configure program, but was not the
+		# default.
+		# os=-sunos4
+		;;
+	*-tti)	# must be before sparc entry or we get the wrong os.
+		os=-sysv3
+		;;
+	sparc-* | *-sun)
+		os=-sunos411
+		;;
+	*-ibm)
+		os=-aix
+		;;
+	*-hp)
+		os=-hpux
+		;;
+	*-sgi | i860-* | *-att | *-ncr | *-altos | *-motorola | *-convergent)
+		os=-sysv
+		;;
+	*-cbm)
+		os=-amigados
+		;;
+	*-dg)
+		os=-dgux
+		;;
+	*-dolphin)
+		os=-sysv3
+		;;
+	m88k-omron*)
+		os=-luna
+		;;
+	*-crds)
+		os=-unos
+		;;
+	*-ns)
+		os=-genix
+		;;
+	i386-*)
+		os=-scosysv322
+		;;
+	*)
+		os=-none
+		;;
+esac
+fi
+
+# Here we handle the case where we know the os, and the CPU type, but not the
+# manufacturer.  We pick the logical manufacturer.
+vendor=unknown
+case $basic_machine in
+	*-unknown)
+		case $os in
+			-sunos*)
+				vendor=sun
+				;;
+			-aix*)
+				vendor=ibm
+				;;
+			-hpux*)
+				vendor=hp
+				;;
+			-unos*)
+				vendor=crds
+				;;
+			-dgux*)
+				vendor=dg
+				;;
+			-luna*)
+				vendor=omron
+				;;
+			-genix*)
+				vendor=ns
+				;;
+		esac
+		basic_machine=`echo $basic_machine | sed "s/unknown/$vendor/"`
+		;;
+esac
+
+echo $basic_machine$os
