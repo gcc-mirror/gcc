@@ -1,3 +1,8 @@
+2004-06-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/14649
+	* gcc.dg/pr14649-1.c: New test case.
+
 2004-06-07  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tree-ssa/20030728-1.c: Fixup return value to not match
