@@ -677,7 +677,6 @@ init_cp_pragma ()
   cpp_register_pragma (parse_in, 0, "implementation",
 		       handle_pragma_implementation);
 
-  cpp_register_pragma_space (parse_in, "GCC");
   cpp_register_pragma (parse_in, "GCC", "interface", handle_pragma_interface);
   cpp_register_pragma (parse_in, "GCC", "implementation",
 		       handle_pragma_implementation);

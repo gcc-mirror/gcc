@@ -494,7 +494,6 @@ extern unsigned char *cpp_spell_token PARAMS ((cpp_reader *, const cpp_token *,
 extern void cpp_register_pragma PARAMS ((cpp_reader *,
 					 const char *, const char *,
 					 void (*) PARAMS ((cpp_reader *))));
-extern void cpp_register_pragma_space PARAMS ((cpp_reader *, const char *));
 
 extern int cpp_start_read PARAMS ((cpp_reader *, const char *));
 extern void cpp_finish PARAMS ((cpp_reader *));

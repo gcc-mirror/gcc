@@ -1503,7 +1503,6 @@ do { char dstr[30];					\
 
 /* Tell compiler we want to support GHS pragmas */
 #define REGISTER_TARGET_PRAGMAS(PFILE) do {				  \
-  cpp_register_pragma_space (PFILE, "ghs");				  \
   cpp_register_pragma (PFILE, "ghs", "interrupt", ghs_pragma_interrupt);  \
   cpp_register_pragma (PFILE, "ghs", "section",   ghs_pragma_section);    \
   cpp_register_pragma (PFILE, "ghs", "starttda",  ghs_pragma_starttda);   \

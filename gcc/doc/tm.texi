@@ -8485,10 +8485,10 @@ This macro is no longer supported.  You must use
 @findex pragma
 @item REGISTER_TARGET_PRAGMAS (@var{pfile})
 Define this macro if you want to implement any target-specific pragmas.
-If defined, it is a C expression which makes a series of calls to the
-@code{cpp_register_pragma} and/or @code{cpp_register_pragma_space}
-functions.  The @var{pfile} argument is the first argument to supply to
-these functions.  The macro may also do setup required for the pragmas.
+If defined, it is a C expression which makes a series of calls to
+@code{cpp_register_pragma} for each pragma, with @var{pfile} passed as
+the first argument to to these functions.  The macro may also do any
+setup required for the pragmas.
 
 The primary reason to define this macro is to provide compatibility with
 other compilers for the same target.  In general, we discourage
@@ -8511,14 +8511,12 @@ pragma of the form
 #pragma [@var{space}] @var{name} @dots{}
 @end smallexample
 
-@var{space} must have been the subject of a previous call to
-@code{cpp_register_pragma_space}, or else be a null pointer.  The
-callback routine receives @var{pfile} as its first argument, but must
-not use it for anything (this may change in the future).  It may read
-any text after the @var{name} by making calls to @code{c_lex}.  Text
-which is not read by the callback will be silently ignored.
-
-Note that both @var{space} and @var{name} are case sensitive.
+@var{space} is the case-sensitive namespace of the pragma, or
+@code{NULL} to put the pragma in the global namespace.  The callback
+routine receives @var{pfile} as its first argument, which can be passed
+on to cpplib's functions if necessary.  It may read any text after the
+@var{name} by making calls to @code{c_lex}.  Text which is not read by
+the callback will be silently ignored.
 
 For an example use of this routine, see @file{c4x.h} and the callback
 routines defined in @file{c4x.c}.
@@ -8534,15 +8532,6 @@ the target-specific, language-specific object file which contains the
 code that uses @code{c_lex}.  Note it will also be necessary to add a
 rule to the makefile fragment pointed to by @code{tmake_file} that shows
 how to build this object file.
-@end deftypefun
-
-@deftypefun void cpp_register_pragma_space (cpp_reader *@var{pfile}, const char *@var{space})
-This routine establishes a namespace for pragmas, which will be
-registered by subsequent calls to @code{cpp_register_pragma}.  For
-example, pragmas defined by the C standard are in the @samp{STDC}
-namespace, and pragmas specific to GCC are in the @samp{GCC} namespace.
-
-For an example use of this routine in a target header, see @file{v850.h}.
 @end deftypefun
 
 @findex HANDLE_SYSV_PRAGMA

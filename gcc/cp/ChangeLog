@@ -1,3 +1,7 @@
+2001-10-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp/lex.c (init_cp_pragma): Similarly.
+
 2001-10-13  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (lookup_template_class): Build complete template arguments

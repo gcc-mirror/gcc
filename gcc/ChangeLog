@@ -1,3 +1,19 @@
+2001-10-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-pragma.h (cpp_register_pragma_space): Remove.
+	* cpplib.h (cpp_register_pragma_space): Remove.
+	* cpplib.c (lookup_pragma_entry, insert_pragma_entry): New.
+	(cpp_register_pragma_space): Remove.
+	(cpp_register_pragma): Simplify using lookup_pragma_entry,
+	add sanity checks.
+	(do_pragma): Similarly.
+	(_cpp_init_internal_pragmas): Don't register namespaces.
+
+	* config/v850/v850.h (REGISTER_TARGET_PRAGMAS):
+	Don't register namespaces.
+	* cp/lex.c (init_cp_pragma): Similarly.
+	* doc/tm.texi: Update.
+
 2001-10-10  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR c/4157
