@@ -1365,7 +1365,7 @@
 				       (match_dup 0) (match_dup 1)))]
   "")
 
-(define_expand "smaxdi3"
+(define_expand "maxdi3"
   [(set (match_dup 3)
 	(le:DI (match_operand:DI 1 "reg_or_0_operand" "")
 	       (match_operand:DI 2 "reg_or_8bit_operand" "")))
@@ -1665,7 +1665,7 @@
    fcmov%D3 %R4,%R5,%0"
   [(set_attr "type" "fpop")])
 
-(define_expand "smaxdf3"
+(define_expand "maxdf3"
   [(set (match_dup 3)
 	(le:DF (match_operand:DF 1 "reg_or_fp0_operand" "")
 	       (match_operand:DF 2 "reg_or_fp0_operand" "")))
@@ -1677,7 +1677,7 @@
 { operands[3] = gen_reg_rtx (DFmode);
 }")
 
-(define_expand "smindf3"
+(define_expand "mindf3"
   [(set (match_dup 3)
 	(lt:DF (match_operand:DF 1 "reg_or_fp0_operand" "")
 	       (match_operand:DF 2 "reg_or_fp0_operand" "")))
@@ -1689,7 +1689,7 @@
 { operands[3] = gen_reg_rtx (DFmode);
 }")
 
-(define_expand "smaxsf3"
+(define_expand "maxsf3"
   [(set (match_dup 3)
 	(le:DF (match_operand:SF 1 "reg_or_fp0_operand" "")
 	       (float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" ""))))
@@ -1701,7 +1701,7 @@
 { operands[3] = gen_reg_rtx (SFmode);
 }")
 
-(define_expand "sminsf3"
+(define_expand "minsf3"
   [(set (match_dup 3)
 	(lt:DF (match_operand:SF 1 "reg_or_fp0_operand" "")
 	       (float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" ""))))
