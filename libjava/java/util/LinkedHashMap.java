@@ -412,7 +412,7 @@ public class LinkedHashMap extends HashMap
     e.next = buckets[idx];
     buckets[idx] = e;
     if (callRemove && removeEldestEntry(root))
-      remove(root);
+      remove(root.key);
   }
 
   /**
