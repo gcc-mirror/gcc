@@ -652,6 +652,16 @@ extern int flag_gcse_lm;
 
 extern int flag_gcse_sm;
 
+/* Perform branch target register optimization before prologue / epilogue
+   threading.  */
+
+extern int flag_branch_target_load_optimize;
+
+/* Perform branch target register optimization after prologue / epilogue
+   threading and jump2.  */
+
+extern int flag_branch_target_load_optimize2;
+
 
 /* Nonzero means we should do dwarf2 duplicate elimination.  */
 

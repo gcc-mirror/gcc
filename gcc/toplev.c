@@ -287,6 +287,7 @@ enum dump_file_index
   DFI_rnreg,
   DFI_bbro,
   DFI_ce3,
+  DFI_branch_target_load,
   DFI_sched2,
   DFI_stack,
   DFI_mach,
@@ -338,6 +339,7 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "rnreg",	'n', 1, 0, 0 },
   { "bbro",	'B', 1, 0, 0 },
   { "ce3",	'E', 1, 0, 0 },
+  { "btl",	'd', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
   { "sched2",	'R', 1, 0, 0 },
   { "stack",	'k', 1, 0, 0 },
   { "mach",	'M', 1, 0, 0 },
@@ -688,6 +690,16 @@ int flag_gcse_lm = 1;
    flag_gcse_lm.  */
 
 int flag_gcse_sm = 1;
+
+/* Perform target register optimization before prologue / epilogue
+   threading.  */
+
+int flag_branch_target_load_optimize = 0;
+
+/* Perform target register optimization after prologue / epilogue
+   threading and jump2.  */
+
+int flag_branch_target_load_optimize2 = 0;
 
 /* Nonzero means to rerun cse after loop optimization.  This increases
    compilation time about 20% and picks up a few more common expressions.  */
@@ -1118,6 +1130,10 @@ static const lang_independent_options f_options[] =
    N_("Perform enhanced load motion during global subexpression elimination") },
   {"gcse-sm", &flag_gcse_sm, 1,
    N_("Perform store motion after global subexpression elimination") },
+  {"branch-target-load-optimize", &flag_branch_target_load_optimize, 1,
+   N_("Perform branch target load optimization before prologue / epilogue threading") },
+  {"branch-target-load-optimize2", &flag_branch_target_load_optimize2, 1,
+   N_("Perform branch target load optimization after prologue / epilogue threading") },
   {"loop-optimize", &flag_loop_optimize, 1,
    N_("Perform the loop optimizations") },
   {"crossjumping", &flag_crossjumping, 1,
@@ -3761,6 +3777,17 @@ rest_of_compilation (tree decl)
 #endif
     split_all_insns (0);
 
+    if (flag_branch_target_load_optimize)
+      {
+	open_dump_file (DFI_branch_target_load, decl);
+
+	branch_target_load_optimize (insns, false);
+
+	close_dump_file (DFI_branch_target_load, print_rtl_with_bb, insns);
+
+	ggc_collect ();
+      }
+
   if (optimize)
     cleanup_cfg (CLEANUP_EXPENSIVE);
 
@@ -3769,6 +3796,7 @@ rest_of_compilation (tree decl)
      it and the rest of the code and also allows delayed branch
      scheduling to operate in the epilogue.  */
   thread_prologue_and_epilogue_insns (insns);
+  epilogue_completed = 1;
 
   if (optimize)
     {
@@ -3824,6 +3852,24 @@ rest_of_compilation (tree decl)
       close_dump_file (DFI_ce3, print_rtl_with_bb, insns);
       timevar_pop (TV_IFCVT2);
     }
+
+    if (flag_branch_target_load_optimize2)
+      {
+	/* Leave this a warning for now so that it is possible to experiment
+	   with running this pass twice.  In 3.6, we should either make this
+	   an error, or use separate dump files.  */
+	if (flag_branch_target_load_optimize)
+	  warning ("branch target register load optimization is not intended "
+		   "to be run twice");
+
+	open_dump_file (DFI_branch_target_load, decl);
+
+	branch_target_load_optimize (insns, true);
+
+	close_dump_file (DFI_branch_target_load, print_rtl_with_bb, insns);
+
+	ggc_collect ();
+      }
 
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_schedule_insns_after_reload)
@@ -3904,6 +3950,7 @@ rest_of_compilation (tree decl)
 #endif
 
   reload_completed = 0;
+  epilogue_completed = 0;
   flow2_completed = 0;
   no_new_pseudos = 0;
 

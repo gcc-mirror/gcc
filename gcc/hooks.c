@@ -41,6 +41,21 @@ hook_bool_void_false ()
   return false;
 }
 
+/* The same, but formally returning an enum reg_class.  */
+enum reg_class
+hook_reg_class_void_no_regs (void)
+{
+  return NO_REGS;
+}
+
+/* Generic hook that takes (bool) and returns false.  */
+bool
+hook_bool_bool_false (bool a ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
+
 /* Generic hook that takes (tree, int) and does nothing.  */
 void
 hook_void_tree_int (a, b)

@@ -150,6 +150,7 @@ extern int target_flags;
 #define PADSTRUCT_BIT  (1<<28)
 #define LITTLE_ENDIAN_BIT (1<<29)
 #define IEEE_BIT (1<<30)
+#define SAVE_ALL_TR_BIT (1<<2)
 
 /* Nonzero if we should dump out instruction size info.  */
 #define TARGET_DUMPISIZE  (target_flags & ISIZE_BIT)
@@ -256,6 +257,8 @@ extern int target_flags;
 
 /* Nonzero if we should prefer @GOT calls when generating PIC.  */
 #define TARGET_PREFERGOT	(target_flags & PREFERGOT_BIT)
+
+#define TARGET_SAVE_ALL_TARGET_REGS (target_flags & SAVE_ALL_TR_BIT)
 
 #define SELECT_SH1               (SH1_BIT)
 #define SELECT_SH2               (SH2_BIT | SELECT_SH1)
@@ -417,6 +420,12 @@ do {									\
     flag_omit_frame_pointer = -1;					\
   if (SIZE)								\
     target_flags |= SPACE_BIT;						\
+  if (TARGET_SHMEDIA && LEVEL > 1)					\
+    {									\
+      flag_branch_target_load_optimize = 1;				\
+      if (! (SIZE))							\
+	target_flags |= SAVE_ALL_TR_BIT;				\
+    }									\
 } while (0)
 
 #define ASSEMBLER_DIALECT assembler_dialect

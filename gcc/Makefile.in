@@ -822,7 +822,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  sibcall.o simplify-rtx.o sreal.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	   \
  stor-layout.o stringpool.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
  tree-inline.o unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o \
- alloc-pool.o et-forest.o cgraph.o cgraphunit.o cfghooks.o		   \
+ alloc-pool.o et-forest.o cgraph.o cgraphunit.o cfghooks.o bt-load.o	   \
  $(GGC) $(out_object_file) $(EXTRA_OBJS) $(host_hook_obj)
 
 BACKEND = main.o libbackend.a
@@ -1726,6 +1726,9 @@ reload1.o : reload1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) real.
 caller-save.o : caller-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    flags.h $(REGS_H) hard-reg-set.h insn-config.h $(BASIC_BLOCK_H) function.h \
    $(RECOG_H) reload.h $(EXPR_H) toplev.h $(TM_P_H)
+bt-load.o : bt-load.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(BASIC_BLOCK_H) $(RTL_H) hard-reg-set.h $(REGS_H) $(OBSTACK_H) \
+   $(FIBHEAP_H) output.h $(TARGET_H) $(EXPR_H) flags.h $(INSN_ATTR_H)
 reorg.o : reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) conditions.h \
    hard-reg-set.h $(BASIC_BLOCK_H) $(REGS_H) insn-config.h $(INSN_ATTR_H) except.h \
    $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h $(PARAMS_H) $(TM_P_H)

@@ -985,7 +985,7 @@ mark_regs_live_at_end (set)
 
   /* If exiting needs the right stack value, consider the stack pointer
      live at the end of the function.  */
-  if ((HAVE_epilogue && reload_completed)
+  if ((HAVE_epilogue && epilogue_completed)
       || ! EXIT_IGNORE_STACK
       || (! FRAME_POINTER_REQUIRED
 	  && ! current_function_calls_alloca
@@ -1025,7 +1025,7 @@ mark_regs_live_at_end (set)
     if (global_regs[i] || EPILOGUE_USES (i))
       SET_REGNO_REG_SET (set, i);
 
-  if (HAVE_epilogue && reload_completed)
+  if (HAVE_epilogue && epilogue_completed)
     {
       /* Mark all call-saved registers that we actually used.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -1046,7 +1046,7 @@ mark_regs_live_at_end (set)
       }
 #endif
 #ifdef EH_RETURN_STACKADJ_RTX
-  if ((! HAVE_epilogue || ! reload_completed)
+  if ((! HAVE_epilogue || ! epilogue_completed)
       && current_function_calls_eh_return)
     {
       rtx tmp = EH_RETURN_STACKADJ_RTX;
@@ -1055,7 +1055,7 @@ mark_regs_live_at_end (set)
     }
 #endif
 #ifdef EH_RETURN_HANDLER_RTX
-  if ((! HAVE_epilogue || ! reload_completed)
+  if ((! HAVE_epilogue || ! epilogue_completed)
       && current_function_calls_eh_return)
     {
       rtx tmp = EH_RETURN_HANDLER_RTX;

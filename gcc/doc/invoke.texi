@@ -258,7 +258,8 @@ in the following sections.
 @xref{Optimize Options,,Options that Control Optimization}.
 @gccoptlist{-falign-functions=@var{n}  -falign-jumps=@var{n} @gol
 -falign-labels=@var{n}  -falign-loops=@var{n}  @gol
--fbranch-probabilities  -fcaller-saves  -fcprop-registers @gol
+-fbranch-probabilities  -fbranch-target-load-optimize @gol
+-fbranch-target-load-optimize2 -fcaller-saves  -fcprop-registers @gol
 -fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
@@ -4419,6 +4420,19 @@ Perform Sparse Conditional Constant Propagation in SSA form.  Requires
 @opindex fssa-dce
 Perform aggressive dead-code elimination in SSA form.  Requires @option{-fssa}.
 Like @option{-fssa}, this is an experimental feature.
+
+@item -fbranch-target-load-optimize
+@opindex fbranch-target-load-optimize
+Perform branch target register load optimization before prologue / epilogue
+threading.
+The use of target registers can typically be exposed only during reload,
+thus hoisting loads out of loops and doing inter-block scheduling needs
+a separate optimization pass.
+
+@item -fbranch-target-load-optimize2
+@opindex fbranch-target-load-optimize2
+Perform branch target register load optimization after prologue / epilogue
+threading.
 
 
 

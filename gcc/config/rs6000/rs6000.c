@@ -12237,6 +12237,7 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   rtx this, insn, funexp;
 
   reload_completed = 1;
+  epilogue_completed = 1;
   no_new_pseudos = 1;
 
   /* Mark the end of the (empty) prologue.  */
@@ -12316,6 +12317,7 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   final_end_function ();
 
   reload_completed = 0;
+  epilogue_completed = 0;
   no_new_pseudos = 0;
 }
 
