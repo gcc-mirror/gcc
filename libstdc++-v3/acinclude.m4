@@ -1404,10 +1404,8 @@ enable_pch=GLIBCPP_ENABLE_PCH_DEFAULT)dnl
       AC_CACHE_VAL(glibcpp_pch_comp, [
         AC_LANG_SAVE
         AC_LANG_CPLUSPLUS
-        AC_TRY_COMPILE([#include <math.h>
-		     ],
-                     [ $1(0);],
-                     [glibcpp_pch_comp=yes], [glibcpp_pch_comp=no])
+        AC_TRY_COMPILE([#include <math.h>], ,
+                       [glibcpp_pch_comp=yes], [glibcpp_pch_comp=no])
         AC_LANG_RESTORE
       ])
     fi
