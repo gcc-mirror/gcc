@@ -324,6 +324,7 @@
 
 	* config/rs6000/aix51.h (ASM_CPU_SPEC): Add 970 and G5.
 	* config/rs6000/aix52.h (ASM_CPU_SPEC): Same.
+	(atoll): Declare.
 	* config/rs6000/t-aix52 (BOOT_LDFLAGS): Define.
 
 2004-11-14  Joseph Myers  <joseph@codesourcery.com>
