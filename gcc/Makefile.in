@@ -1477,7 +1477,7 @@ resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h $(SYSTEM_H) \
 lcm.o : lcm.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(INSN_ATTR_H) $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) \
    $(TM_P_H)
-ssa.o : ssa.c $(CONFIG_H) $(SYSTEM_H) $(REGS_H) varray.h			\
+ssa.o : ssa.c $(CONFIG_H) $(SYSTEM_H) $(REGS_H) varray.h $(EXPR_H) \
    hard-reg-set.h flags.h function.h real.h insn-config.h $(RECOG_H)	\
    $(BASIC_BLOCK_H) output.h ssa.h
 dce.o : dce.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H) \
@@ -1505,7 +1505,7 @@ combine.o : combine.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h function.h \
    $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h $(TM_P_H)
 regclass.o : regclass.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) hard-reg-set.h flags.h \
    $(BASIC_BLOCK_H) $(REGS_H) insn-config.h $(RECOG_H) reload.h real.h \
-   toplev.h function.h output.h $(GGC_H) $(TM_P_H)
+   toplev.h function.h output.h $(GGC_H) $(TM_P_H) $(EXPR_H)
 local-alloc.o : local-alloc.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h insn-config.h $(RECOG_H) \
    output.h function.h $(INSN_ATTR_H) toplev.h $(TM_P_H)

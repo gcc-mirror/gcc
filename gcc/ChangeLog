@@ -1,3 +1,12 @@
+2001-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (ssa.o, regclass.o): Depend on $(EXPR_H).
+
+	* regclass.c, ssa.c: Include expr.h.
+
+	* rtl.h (memory_address, force_reg, emit_queue, emit_move_insn,
+	gen_move_insn): Delete redundant declarations.
+
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
 	* pa.c (hppa_init_pic_save): Set rtx_unchanging for
