@@ -460,6 +460,8 @@ decode_options (unsigned int argc, const char **argv)
   /* Perform language-specific options initialization.  */
   lang_mask = (*lang_hooks.init_options) (argc, argv);
 
+  lang_hooks.initialize_diagnostics (global_dc);
+
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
   for (i = 1; i < argc; i++)

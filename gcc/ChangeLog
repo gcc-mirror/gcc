@@ -1,3 +1,24 @@
+2003-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* opts.c (decode_options): Do language-specific initialization for
+	the global diagnostic context.
+	* langhooks-def.h (lhd_initialize_diagnostics): Declare.
+	(LANG_HOOKS_INITIALIZE_DIAGNOSTITCS): New macro.
+	(LANG_HOOKS_INITIALIZER): Adjust.
+	* langhooks.h (struct lang_hooks): Add new field 
+	initialize_diagnostics. 
+	* langhooks.c (lhd_initialize_diagnostics): Define.
+
+2003-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h:   Adjust macro definitions.
+	* pretty-print.c (pp_newline): Rename to pp_base_newline.
+	(pp_character): Rename to pp_base_character.
+	(pp_string): Rename to pp_base_string.
+	* c-pretty-print.c (pp_buffer): Move to pretty-print.h
+	(pp_newline):  Likewise.  Adjust.
+	(pp_c_char): Adjust.
+
 2003-08-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (BUILT_IN_ABS, BUILT_IN_IMAXABS, BUILT_IN_LABS,
