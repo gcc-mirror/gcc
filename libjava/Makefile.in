@@ -387,6 +387,7 @@ java/awt/Label.java \
 java/awt/LayoutManager.java \
 java/awt/LayoutManager2.java \
 java/awt/List.java \
+java/awt/MediaTracker.java \
 java/awt/Menu.java \
 java/awt/MenuBar.java \
 java/awt/MenuComponent.java \
@@ -2021,11 +2022,12 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/Insets.P .deps/java/awt/ItemSelectable.P \
 .deps/java/awt/Label.P .deps/java/awt/LayoutManager.P \
 .deps/java/awt/LayoutManager2.P .deps/java/awt/List.P \
-.deps/java/awt/Menu.P .deps/java/awt/MenuBar.P \
-.deps/java/awt/MenuComponent.P .deps/java/awt/MenuContainer.P \
-.deps/java/awt/MenuItem.P .deps/java/awt/MenuShortcut.P \
-.deps/java/awt/Paint.P .deps/java/awt/PaintContext.P \
-.deps/java/awt/Panel.P .deps/java/awt/Point.P .deps/java/awt/Polygon.P \
+.deps/java/awt/MediaTracker.P .deps/java/awt/Menu.P \
+.deps/java/awt/MenuBar.P .deps/java/awt/MenuComponent.P \
+.deps/java/awt/MenuContainer.P .deps/java/awt/MenuItem.P \
+.deps/java/awt/MenuShortcut.P .deps/java/awt/Paint.P \
+.deps/java/awt/PaintContext.P .deps/java/awt/Panel.P \
+.deps/java/awt/Point.P .deps/java/awt/Polygon.P \
 .deps/java/awt/PopupMenu.P .deps/java/awt/PrintGraphics.P \
 .deps/java/awt/PrintJob.P .deps/java/awt/Rectangle.P \
 .deps/java/awt/RenderingHints.P .deps/java/awt/ScrollPane.P \
