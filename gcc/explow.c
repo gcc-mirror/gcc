@@ -1468,7 +1468,7 @@ probe_stack_range (first, size)
 rtx
 hard_function_value (valtype, func)
      tree valtype;
-     tree func;
+     tree func ATTRIBUTE_UNUSED;
 {
   rtx val = FUNCTION_VALUE (valtype, func);
   if (GET_CODE (val) == REG

@@ -264,7 +264,7 @@ void
 named_section (decl, name, reloc)
      tree decl;
      const char *name;
-     int reloc;
+     int reloc ATTRIBUTE_UNUSED;
 {
   if (decl != NULL_TREE
       && TREE_CODE_CLASS (TREE_CODE (decl)) != 'd')
@@ -1611,7 +1611,7 @@ contains_pointers_p (type)
 
 void
 assemble_external (decl)
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
 #ifdef ASM_OUTPUT_EXTERNAL
   if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd'
@@ -4336,7 +4336,7 @@ weak_finish ()
 
 void
 assemble_alias (decl, target)
-     tree decl, target;
+     tree decl, target ATTRIBUTE_UNUSED;
 {
   char *name;
 

@@ -4961,7 +4961,7 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
      enum machine_mode passed_mode;
      tree type;
      int in_regs;
-     tree fndecl;
+     tree fndecl ATTRIBUTE_UNUSED;
      struct args_size *initial_offset_ptr;
      struct args_size *offset_ptr;
      struct args_size *arg_size_ptr;

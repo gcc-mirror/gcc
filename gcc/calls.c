@@ -868,10 +868,10 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 				 actparms, fndecl, args_so_far,
 				 reg_parm_stack_space, old_stack_level,
 				 old_pending_adj, must_preallocate, is_const)
-     int num_actuals;
+     int num_actuals ATTRIBUTE_UNUSED;
      struct arg_data *args;
      struct args_size *args_size;
-     int n_named_args;
+     int n_named_args ATTRIBUTE_UNUSED;
      tree actparms;
      tree fndecl;
      CUMULATIVE_ARGS *args_so_far;
