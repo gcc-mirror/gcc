@@ -1,5 +1,5 @@
 /* Demangler for GNU C++ 
-   Copyright 1989, 1991, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright 1989, 1991, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    
@@ -94,6 +94,13 @@ set_cplus_marker_for_demangling (ch)
   cplus_markers[0] = ch;
 }
 
+typedef struct string		/* Beware: these aren't required to be */
+{				/*  '\0' terminated.  */
+  char *b;			/* pointer to start of string */
+  char *p;			/* pointer after last character */
+  char *e;			/* pointer after end of allocated space */
+} string;
+
 /* Stuff that is shared between sub-routines.
    Using a shared structure allows cplus_demangle to be reentrant.  */
 
@@ -113,8 +120,14 @@ struct work_stuff
   int destructor;
   int static_type;	/* A static member function */
   int const_type;	/* A const member function */
+  int volatile_type;    /* A volatile member function */
   char **tmpl_argvec;   /* Template function arguments. */
   int ntmpl_args;       /* The number of template function arguments. */
+  int forgetting_types; /* Nonzero if we are not remembering the types
+			   we see.  */
+  string* previous_argument; /* The last function argument demangled.  */
+  int nrepeats;         /* The number of times to repeat the previous
+			   argument.  */
 };
 
 #define PRINT_ANSI_QUALIFIERS (work -> options & DMGL_ANSI)
@@ -208,19 +221,15 @@ static const struct optable
 };
 
 
-typedef struct string		/* Beware: these aren't required to be */
-{				/*  '\0' terminated.  */
-  char *b;			/* pointer to start of string */
-  char *p;			/* pointer after last character */
-  char *e;			/* pointer after end of allocated space */
-} string;
-
 #define STRING_EMPTY(str)	((str) -> b == (str) -> p)
 #define PREPEND_BLANK(str)	{if (!STRING_EMPTY(str)) \
     string_prepend(str, " ");}
 #define APPEND_BLANK(str)	{if (!STRING_EMPTY(str)) \
     string_append(str, " ");}
 #define LEN_STRING(str)         ( (STRING_EMPTY(str))?0:((str)->p - (str)->b))
+
+/* The scope separator appropriate for the language being demangled.  */
+#define SCOPE_STRING(work) "::"
 
 #define ARM_VTABLE_STRING "__vtbl__"	/* Lucid/ARM virtual table prefix */
 #define ARM_VTABLE_STRLEN 8		/* strlen (ARM_VTABLE_STRING) */
@@ -247,7 +256,7 @@ demangle_template_template_parm PARAMS ((struct work_stuff *work,
 
 static int
 demangle_template PARAMS ((struct work_stuff *work, const char **, string *,
-			   string *, int));
+			   string *, int, int));
 
 static int
 arm_pt PARAMS ((struct work_stuff *, const char *, int, const char **,
@@ -324,6 +333,9 @@ consume_count_with_underscores PARAMS ((const char**));
 
 static int
 demangle_args PARAMS ((struct work_stuff *, const char **, string *));
+
+static int
+demangle_nested_args PARAMS ((struct work_stuff*, const char**, string*));
 
 static int
 do_type PARAMS ((struct work_stuff *, const char **, string *));
@@ -632,12 +644,15 @@ internal_cplus_demangle (work, mangled)
   int success = 0;
   char *demangled = NULL;
   int s1,s2,s3,s4;
+  int saved_volatile_type;
   s1 = work->constructor;
   s2 = work->destructor;
   s3 = work->static_type;
   s4 = work->const_type;
+  saved_volatile_type = work->volatile_type;
   work->constructor = work->destructor = 0;
   work->static_type = work->const_type = 0;
+  work->volatile_type = 0;
 
   if ((mangled != NULL) && (*mangled != '\0'))
     {
@@ -678,6 +693,7 @@ internal_cplus_demangle (work, mangled)
   work->destructor = s2;
   work->static_type = s3;
   work->const_type = s4;
+  work->volatile_type = saved_volatile_type;
   return (demangled);
 }
 
@@ -727,6 +743,11 @@ mop_up (work, declp, success)
       
       free ((char*) work->tmpl_argvec);
       work->tmpl_argvec = NULL;
+    }
+  if (work->previous_argument)
+    {
+      string_delete (work->previous_argument);
+      free ((char*) work->previous_argument);
     }
 
   /* If demangling was successful, ensure that the demangled string is null
@@ -796,13 +817,9 @@ demangle_signature (work, mangled, declp)
 	  oldmangled = *mangled;
 	  success = demangle_qualified (work, mangled, declp, 1, 0);
 	  if (success)
-	    {
-	      remember_type (work, oldmangled, *mangled - oldmangled);
-	    }
+	    remember_type (work, oldmangled, *mangled - oldmangled);
 	  if (AUTO_DEMANGLING || GNU_DEMANGLING)
-	    {
-	      expect_func = 1;
-	    }
+	    expect_func = 1;
 	  oldmangled = NULL;
 	  break;
 
@@ -827,13 +844,16 @@ demangle_signature (work, mangled, declp)
 	  break;
 
 	case 'C':
-	  /* a const member function */
+	case 'V':
+	  if (**mangled == 'C')
+	    work -> const_type = 1;
+	  else
+	    work->volatile_type = 1;
+
+	  /* a qualified member function */
 	  if (oldmangled == NULL)
-	    {
-	      oldmangled = *mangled;
-	    }
+	    oldmangled = *mangled;
 	  (*mangled)++;
-	  work -> const_type = 1;
 	  break;
 	  
 	case '0': case '1': case '2': case '3': case '4':
@@ -853,7 +873,21 @@ demangle_signature (work, mangled, declp)
 	    }
 	  oldmangled = NULL;
 	  break;
-	  
+
+	case 'B':
+	  {
+	    string s;
+	    success = do_type (work, mangled, &s);
+	    if (success)
+	      {
+		string_append (&s, SCOPE_STRING (work));
+		string_prepends (declp, &s);
+	      }
+	    oldmangled = NULL;
+	    expect_func = 1;
+	  }
+	  break;
+
 	case 'F':
 	  /* Function */
 	  /* ARM style demangling includes a specific 'F' character after
@@ -885,13 +919,13 @@ demangle_signature (work, mangled, declp)
 	    {
 	      oldmangled = *mangled;
 	    }
-	  success = demangle_template (work, mangled, &tname, &trawname, 1);
+	  success = demangle_template (work, mangled, &tname,
+				       &trawname, 1, 1);
 	  if (success)
 	    {
 	      remember_type (work, oldmangled, *mangled - oldmangled);
 	    }
-	    string_append (&tname, "::");
-
+	  string_append(&tname, SCOPE_STRING (work));
 	  string_prepends(declp, &tname);
 	  if (work -> destructor & 1)
 	    {
@@ -938,7 +972,8 @@ demangle_signature (work, mangled, declp)
 	  if (GNU_DEMANGLING) 
 	    {
 	      /* A G++ template function.  Read the template arguments. */
-	      success = demangle_template (work, mangled, declp, 0, 0);
+	      success = demangle_template (work, mangled, declp, 0, 0,
+					   0);
 	      if (!(work->constructor & 1))
 		expect_return_type = 1;
 	      (*mangled)++;
@@ -995,13 +1030,12 @@ demangle_signature (work, mangled, declp)
 	}
     }
   if (success && work -> static_type && PRINT_ARG_TYPES)
-    {
-      string_append (declp, " static");
-    }
+    string_append (declp, " static");
   if (success && work -> const_type && PRINT_ARG_TYPES)
-    {
-      string_append (declp, " const");
-    }
+    string_append (declp, " const");
+  else if (success && work->volatile_type && PRINT_ARG_TYPES)
+    string_append (declp, " volatile");
+
   return (success);
 }
 
@@ -1213,12 +1247,10 @@ demangle_template_value_parm (work, mangled, s)
 	  continue;
 	case 'E':       /* expression */
 	case 'Q':	/* qualified name */
-	case 'K':	/* qualified name */
+	case 'K':       /* qualified name */
 	  done = is_integral = 1;
 	  break;
-	case 'B':	/* squangled name */
-	  done = is_integral = 1;
-	  break;
+	case 'B':	/* remembered type */
 	case 'T':	/* remembered type */
 	  abort ();
 	  break;
@@ -1362,13 +1394,22 @@ demangle_template_value_parm (work, mangled, s)
   return success;
 }
 
+/* Demangle the template name in MANGLED.  The full name of the
+   template (e.g., S<int>) is placed in TNAME.  The name without the
+   template parameters (e.g. S) is placed in TRAWNAME if TRAWNAME is
+   non-NULL.  If IS_TYPE is nonzero, this template is a type template,
+   not a function template.  If both IS_TYPE and REMEMBER are nonzero,
+   the tmeplate is remembered in the list of back-referenceable
+   types.  */
+
 static int
-demangle_template (work, mangled, tname, trawname, is_type)
+demangle_template (work, mangled, tname, trawname, is_type, remember)
      struct work_stuff *work;
      const char **mangled;
      string *tname;
      string *trawname;
      int is_type;
+     int remember;
 {
   int i;
   int r;
@@ -1376,10 +1417,13 @@ demangle_template (work, mangled, tname, trawname, is_type)
   int success = 0;
   const char *start;
   string temp;
+  int bindex;
 
   (*mangled)++;
   if (is_type)
     {
+      if (remember)
+	bindex = register_Btype (work);
       start = *mangled;
       /* get template name */
       if (**mangled == 'z')
@@ -1392,9 +1436,8 @@ demangle_template (work, mangled, tname, trawname, is_type)
 	  if (idx == -1 
 	      || (work->tmpl_argvec && idx >= work->ntmpl_args)
 	      || consume_count_with_underscores (mangled) == -1)
-	    {
-	      return (0);
-	    }
+	    return (0);
+
 	  if (work->tmpl_argvec)
 	    {
 	      string_append (tname, work->tmpl_argvec[idx]);
@@ -1407,7 +1450,7 @@ demangle_template (work, mangled, tname, trawname, is_type)
 	      sprintf(buf, "T%d", idx);
 	      string_append (tname, buf);
 	      if (trawname)
-		string_append (trawname, work->tmpl_argvec[idx]);
+		string_append (trawname, buf);
 	    }
 	}
       else
@@ -1416,13 +1459,13 @@ demangle_template (work, mangled, tname, trawname, is_type)
 	    {
 	      return (0);
 	    }
+	  string_appendn (tname, *mangled, r);
 	  if (trawname)
 	    string_appendn (trawname, *mangled, r);
-	      string_appendn (tname, *mangled, r);
 	  *mangled += r;
 	}
     }
-    string_append (tname, "<");
+  string_append (tname, "<");
   /* get size of template parameter list */
   if (!get_count (mangled, &r))
     {
@@ -1549,12 +1592,13 @@ demangle_template (work, mangled, tname, trawname, is_type)
 	}
       need_comma = 1;
     }
-    {
-      if (tname->p[-1] == '>')
-	string_append (tname, " ");
-      string_append (tname, ">");
-    }
+  if (tname->p[-1] == '>')
+    string_append (tname, " ");
+  string_append (tname, ">");
   
+  if (is_type && remember)
+    remember_Btype (work, tname->b, LEN_STRING (tname), bindex);
+
   /*
     if (work -> static_type)
     {
@@ -1712,7 +1756,7 @@ demangle_class (work, mangled, declp)
 	}
       remember_Ktype (work, class_name.b, LEN_STRING(&class_name));
       remember_Btype (work, class_name.b, LEN_STRING(&class_name), btype);
-	string_prepend (declp, "::");
+      string_prepend (declp, SCOPE_STRING (work));
       string_prepends (declp, &class_name);
       success = 1;
     }
@@ -1986,7 +2030,8 @@ gnu_special (work, mangled, declp)
 	      success = demangle_qualified (work, mangled, declp, 0, 1);
 	      break;
 	    case 't':
-	      success = demangle_template (work, mangled, declp, 0, 1);
+	      success = demangle_template (work, mangled, declp, 0, 1,
+					   1);
 	      break;
 	    default:
 	      if (isdigit(*mangled[0]))
@@ -2014,7 +2059,7 @@ gnu_special (work, mangled, declp)
 	    {
 	      if (p != NULL)
 		{
-		    string_append (declp, "::");
+		  string_append (declp, SCOPE_STRING (work));
 		  (*mangled)++;
 		}
 	    }
@@ -2040,7 +2085,7 @@ gnu_special (work, mangled, declp)
 	  success = demangle_qualified (work, mangled, declp, 0, 1);
 	  break;
 	case 't':
-	  success = demangle_template (work, mangled, declp, 0, 1);
+	  success = demangle_template (work, mangled, declp, 0, 1, 1);
 	  break;
 	default:
 	  n = consume_count (mangled);
@@ -2052,7 +2097,7 @@ gnu_special (work, mangled, declp)
 	  /* Consumed everything up to the cplus_marker, append the
 	     variable name.  */
 	  (*mangled)++;
-	    string_append (declp, "::");
+	  string_append (declp, SCOPE_STRING (work));
 	  n = strlen (*mangled);
 	  string_appendn (declp, *mangled, n);
 	  (*mangled) += n;
@@ -2093,7 +2138,7 @@ gnu_special (work, mangled, declp)
 	  success = demangle_qualified (work, mangled, declp, 0, 1);
 	  break;
 	case 't':
-	  success = demangle_template (work, mangled, declp, 0, 1);
+	  success = demangle_template (work, mangled, declp, 0, 1, 1);
 	  break;
 	default:
 	  success = demangle_fund_type (work, mangled, declp);
@@ -2225,13 +2270,20 @@ demangle_qualified (work, mangled, result, isfuncname, append)
      int append;
 {
   int qualifiers = 0;
-  int namelength;
   int success = 1;
   const char *p;
   char num[2];
   string temp;
+  string last_name;
+  int bindex = register_Btype (work);
+
+  /* We only make use of ISFUNCNAME if the entity is a constructor or
+     destructor.  */
+  isfuncname = (isfuncname 
+		&& ((work->constructor & 1) || (work->destructor & 1)));
 
   string_init (&temp);
+  string_init (&last_name);
 
   if ((*mangled)[0] == 'K')
     {
@@ -2304,18 +2356,24 @@ demangle_qualified (work, mangled, result, isfuncname, append)
   while (qualifiers-- > 0)
     {
       int remember_K = 1;
+      string_clear (&last_name);
+
       if (*mangled[0] == '_') 
-	*mangled = *mangled + 1;
+	(*mangled)++;
+
       if (*mangled[0] == 't')
 	{
-	  success = demangle_template(work, mangled, &temp, 0, 1);
-	  if (!success) break;
-	}
-      else if (*mangled[0] == 'X')
-	{
-	  success = do_type (work, mangled, &temp);
-	  if (!success) break;
-	}
+	  /* Here we always append to TEMP since we will want to use
+	     the template name without the template parameters as a
+	     constructor or destructor name.  The appropriate
+	     (parameter-less) value is returned by demangle_template
+	     in LAST_NAME.  We do not remember the template type here,
+	     in order to match the G++ mangling algorithm.  */
+	  success = demangle_template(work, mangled, &temp, 
+				      &last_name, 1, 0);
+	  if (!success) 
+	    break;
+	} 
       else if (*mangled[0] == 'K')
 	{
           int idx;
@@ -2330,60 +2388,48 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 	  if (!success) break;
 	}
       else
-        {	
-	  namelength = consume_count (mangled);
-      	  if (strlen (*mangled) < namelength)
-	    {
-	      /* Simple sanity check failed */
-	      success = 0;
-	      break;
-	    }
-      	  string_appendn (&temp, *mangled, namelength);
-      	  *mangled += namelength;
+	{
+	  success = do_type (work, mangled, &last_name);
+	  if (!success)
+	    break;
+	  string_appends (&temp, &last_name);
 	}
 
       if (remember_K)
-        {
-        remember_Ktype (work, temp.b, LEN_STRING (&temp));
-        }
+	remember_Ktype (work, temp.b, LEN_STRING (&temp));
 
       if (qualifiers > 0)
-        {
-	    string_append (&temp, "::");
-        }
+	string_append (&temp, SCOPE_STRING (work));
     }
+
+  remember_Btype (work, temp.b, LEN_STRING (&temp), bindex);
 
   /* If we are using the result as a function name, we need to append
      the appropriate '::' separated constructor or destructor name.
      We do this here because this is the most convenient place, where
      we already have a pointer to the name and the length of the name.  */
 
-  if (isfuncname && (work->constructor & 1 || work->destructor & 1))
+  if (isfuncname) 
     {
-	string_append (&temp, "::");
+      string_append (&temp, SCOPE_STRING (work));
       if (work -> destructor & 1)
-	{
-	  string_append (&temp, "~");
-	}
-      string_appendn (&temp, (*mangled) - namelength, namelength);
+	string_append (&temp, "~");
+      string_appends (&temp, &last_name);
     }
 
   /* Now either prepend the temp buffer to the result, or append it, 
      depending upon the state of the append flag.  */
 
   if (append)
-    {
-      string_appends (result, &temp);
-    }
+    string_appends (result, &temp);
   else
     {
       if (!STRING_EMPTY (result))
-	{
-	    string_append (&temp, "::");
-	}
+	string_append (&temp, SCOPE_STRING (work));
       string_prepends (result, &temp);
     }
 
+  string_delete (&last_name);
   string_delete (&temp);
   return (success);
 }
@@ -2474,7 +2520,7 @@ do_type (work, mangled, result)
 	case 'P':
 	case 'p':
 	  (*mangled)++;
-	    string_prepend (&decl, "*");
+	  string_prepend (&decl, "*");
 	  break;
 
 	  /* A reference type */
@@ -2530,15 +2576,14 @@ do_type (work, mangled, result)
 	  /* After picking off the function args, we expect to either find the
 	     function return type (preceded by an '_') or the end of the
 	     string.  */
-	  if (!demangle_args (work, mangled, &decl)
+	  if (!demangle_nested_args (work, mangled, &decl)
 	      || (**mangled != '_' && **mangled != '\0'))
 	    {
 	      success = 0;
+	      break;
 	    }
 	  if (success && (**mangled == '_'))
-	    {
-	      (*mangled)++;
-	    }
+	    (*mangled)++;
 	  break;
 
 	case 'M':
@@ -2556,7 +2601,7 @@ do_type (work, mangled, result)
 	      }
 
 	    string_append (&decl, ")");
-	      string_prepend (&decl, "::");
+	    string_prepend (&decl, SCOPE_STRING (work));
 	    if (isdigit (**mangled)) 
 	      {
 		n = consume_count (mangled);
@@ -2572,7 +2617,8 @@ do_type (work, mangled, result)
 	      {
 		string temp;
 		string_init (&temp);
-		success = demangle_template (work, mangled, &temp, NULL, 1);
+		success = demangle_template (work, mangled, &temp,
+					     NULL, 1, 1);
 		if (success)
 		  {
 		    string_prependn (&decl, temp.b, temp.p - temp.b);
@@ -2600,7 +2646,7 @@ do_type (work, mangled, result)
 		    break;
 		  }
 	      }
-	    if ((member && !demangle_args (work, mangled, &decl))
+	    if ((member && !demangle_nested_args (work, mangled, &decl))
 		|| **mangled != '_')
 	      {
 		success = 0;
@@ -2661,10 +2707,7 @@ do_type (work, mangled, result)
     case 'Q':
     case 'K':
       {
-        int btype = register_Btype (work);
         success = demangle_qualified (work, mangled, result, 0, 1);
-        remember_Btype (work, result->b, LEN_STRING (result), btype);
-
         break;
       }
 
@@ -2894,9 +2937,7 @@ demangle_fund_type (work, mangled, result)
       }
     case 't':
       {
-        int bindex= register_Btype (work);
-        success = demangle_template (work, mangled, &btype, 0, 1);
-        remember_Btype (work, btype.b, LEN_STRING (&btype), bindex);
+        success = demangle_template (work, mangled, &btype, 0, 1, 1);
         string_appends (result, &btype);
         break;
       }
@@ -2908,7 +2949,9 @@ demangle_fund_type (work, mangled, result)
   return (success);
 }
 
-/* `result' will be initialized in do_type; it will be freed on failure */
+/* Demangle the next argument, given by MANGLED into RESULT, which
+   *should be an uninitialized* string.  It will be initialized here,
+   and free'd should anything go wrong.  */
 
 static int
 do_arg (work, mangled, result)
@@ -2916,17 +2959,67 @@ do_arg (work, mangled, result)
      const char **mangled;
      string *result;
 {
+  /* Remember where we started so that we can record the type, for
+     non-squangling type remembering.  */
   const char *start = *mangled;
 
-  if (!do_type (work, mangled, result))
+  string_init (result);
+
+  if (work->nrepeats > 0)
     {
-      return (0);
+      --work->nrepeats;
+
+      if (work->previous_argument == 0)
+	return 0;
+
+      /* We want to reissue the previous type in this argument list.  */ 
+      string_appends (result, work->previous_argument);
+      return 1;
     }
+
+  if (**mangled == 'n')
+    {
+      /* A squangling-style repeat.  */
+      (*mangled)++;
+      work->nrepeats = consume_count(mangled);
+
+      if (work->nrepeats == 0)
+	/* This was not a repeat count after all.  */
+	return 0;
+
+      if (work->nrepeats > 9)
+	{
+	  if (**mangled != '_')
+	    /* The repeat count should be followed by an '_' in this
+	       case.  */
+	    return 0;
+	  else
+	    (*mangled)++;
+	}
+      
+      /* Now, the repeat is all set up.  */
+      return do_arg (work, mangled, result);
+    }
+
+  /* Save the result in WORK->previous_argument so that we can find it
+     if it's repeated.  Note that saving START is not good enough: we
+     do not want to add additional types to the back-referenceable
+     type vector when processing a repeated type.  */
+  if (work->previous_argument)
+    string_clear (work->previous_argument);
   else
     {
-      remember_type (work, start, *mangled - start);
-      return (1);
+      work->previous_argument = (string*) xmalloc (sizeof (string));
+      string_init (work->previous_argument);
     }
+
+  if (!do_type (work, mangled, work->previous_argument))
+    return 0;
+
+  string_appends (result, work->previous_argument);
+
+  remember_type (work, start, *mangled - start);
+  return 1;
 }
 
 static void
@@ -2936,6 +3029,9 @@ remember_type (work, start, len)
      int len;
 {
   char *tem;
+
+  if (work->forgetting_types)
+    return;
 
   if (work -> ntypes >= work -> typevec_size)
     {
@@ -3116,8 +3212,8 @@ forget_types (work)
      foo__FiR3fooT1T2T1T2
      __ct__3fooFiR3fooT1T2T1T2
 
-   Note that g++ bases it's type numbers starting at zero and counts all
-   previously seen types, while lucid/ARM bases it's type numbers starting
+   Note that g++ bases its type numbers starting at zero and counts all
+   previously seen types, while lucid/ARM bases its type numbers starting
    at one and only considers types after it has seen the 'F' character
    indicating the start of the function args.  For lucid/ARM style, we
    account for this difference by discarding any previously seen types when
@@ -3148,7 +3244,8 @@ demangle_args (work, mangled, declp)
 	}
     }
 
-  while (**mangled != '_' && **mangled != '\0' && **mangled != 'e')
+  while ((**mangled != '_' && **mangled != '\0' && **mangled != 'e')
+	 || work->nrepeats > 0)
     {
       if ((**mangled == 'N') || (**mangled == 'T'))
 	{
@@ -3195,7 +3292,7 @@ demangle_args (work, mangled, declp)
 	    {
 	      return (0);
 	    }
-	  while (--r >= 0)
+	  while (work->nrepeats > 0 || --r >= 0)
 	    {
 	      tem = work -> typevec[t];
 	      if (need_comma && PRINT_ARG_TYPES)
@@ -3216,18 +3313,12 @@ demangle_args (work, mangled, declp)
 	}
       else
 	{
-	  if (need_comma & PRINT_ARG_TYPES)
-	    {
-	      string_append (declp, ", ");
-	    }
+	  if (need_comma && PRINT_ARG_TYPES)
+	    string_append (declp, ", ");
 	  if (!do_arg (work, mangled, &arg))
-	    {
-	      return (0);
-	    }
+	    return (0);
 	  if (PRINT_ARG_TYPES)
-	    {
-	      string_appends (declp, &arg);
-	    }
+	    string_appends (declp, &arg);
 	  string_delete (&arg);
 	  need_comma = 1;
 	}
@@ -3251,6 +3342,44 @@ demangle_args (work, mangled, declp)
       string_append (declp, ")");
     }
   return (1);
+}
+
+/* Like demangle_args, but for demangling the argument lists of function
+   and method pointers or references, not top-level declarations.  */
+
+int
+demangle_nested_args (work, mangled, declp)
+     struct work_stuff *work;
+     const char **mangled;
+     string *declp;
+{
+  string* saved_previous_argument;
+  int result;
+  int saved_nrepeats;
+
+  /* The G++ name-mangling algorithm does not remember types on nested
+     argument lists, unless -fsquangling is used, and in that case the
+     type vector updated by remember_type is not used.  So, we turn
+     off remembering of types here.  */
+  ++work->forgetting_types;
+
+  /* For the repeat codes used with -fsquangling, we must keep track of
+     the last argument.  */
+  saved_previous_argument = work->previous_argument;
+  saved_nrepeats = work->nrepeats;
+  work->previous_argument = 0;
+  work->nrepeats = 0;
+
+  /* Actually demangle the arguments.  */
+  result = demangle_args (work, mangled, declp);
+  
+  /* Restore the previous_argument field.  */
+  if (work->previous_argument)
+    string_delete (work->previous_argument);
+  work->previous_argument = saved_previous_argument;
+  work->nrepeats = saved_nrepeats;
+
+  return result;
 }
 
 static void
