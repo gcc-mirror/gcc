@@ -22,7 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-#include "hashtab.h"
 #include "cpphash.h"
 
 #ifndef CHAR_TYPE_SIZE

@@ -23,7 +23,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "intl.h"
-#include "hashtab.h"
 #include "cpplib.h"
 #include "cpphash.h"
 
@@ -1463,7 +1462,8 @@ maybe_macroexpand (pfile, written)
   size_t len = CPP_WRITTEN (pfile) - written;
   HASHNODE *hp = _cpp_lookup (pfile, macro, len);
 
-  if (!hp)
+  /* _cpp_lookup never returns null.  */
+  if (hp->type == T_VOID)
     return 0;
   if (hp->disabled || hp->type == T_IDENTITY)
     {

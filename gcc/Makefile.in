@@ -2064,7 +2064,7 @@ cppulp.o:   cppulp.c   $(CONFIG_H) system.h output.h
 cpperror.o: cpperror.c $(CONFIG_H) $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpplex.o:   cpplex.c   $(CONFIG_H) $(LIBCPP_DEPS)
-cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H)
+cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H)
 cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) mkdeps.h
 

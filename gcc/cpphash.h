@@ -210,16 +210,9 @@ extern unsigned char _cpp_IStable[256];
  (CPP_BUFFER(PFILE)->cur - CPP_BUFFER(PFILE)->mark == 1)
 
 /* In cpphash.c */
-extern HASHNODE *_cpp_make_hashnode	PARAMS ((const U_CHAR *, size_t,
-						 enum node_type,
-						 unsigned int));
 extern unsigned int _cpp_calc_hash	PARAMS ((const U_CHAR *, size_t));
 extern HASHNODE *_cpp_lookup		PARAMS ((cpp_reader *,
 						 const U_CHAR *, int));
-extern HASHNODE **_cpp_lookup_slot	PARAMS ((cpp_reader *,
-						 const U_CHAR *, int,
-						 enum insert_option,
-						 unsigned int));
 extern void _cpp_free_definition	PARAMS ((HASHNODE *));
 extern int _cpp_create_definition	PARAMS ((cpp_reader *,
 						 cpp_toklist *, HASHNODE *));
