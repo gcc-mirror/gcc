@@ -427,6 +427,7 @@ enum update_life_extent
 #define PROP_AUTOINC		32	/* Create autoinc mem references.  */
 #define PROP_FINAL		63	/* All of the above.  */
 
+extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern void update_life_info	PARAMS ((sbitmap, enum update_life_extent,
 					 int));
 extern int count_or_remove_death_notes	PARAMS ((sbitmap, int));

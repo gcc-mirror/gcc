@@ -2491,32 +2491,21 @@ calculate_loop_depth (dump)
 }
 
 /* Perform data flow analysis.
-   F is the first insn of the function and NREGS the number of register numbers
-   in use.  */
+   F is the first insn of the function; FLAGS is a set of PROP_* flags
+   to be used in accumulating flow info.  */
 
 void
-life_analysis (f, nregs, file, remove_dead_code)
+life_analysis (f, file, flags)
      rtx f;
-     int nregs;
      FILE *file;
-     int remove_dead_code;
+     int flags;
 {
 #ifdef ELIMINABLE_REGS
   register int i;
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
-  int flags;
   sbitmap all_blocks;
 
-  /* Dead code elimination changes basic block structure and therefore
-     breaks the SSA phi representation.  Particularly, a phi node
-     can have an alternative value for each incoming block, referenced
-     by the block number.  Removing dead code can bump entire blocks
-     and therefore cause blocks to be renumbered, invalidating the
-     numbering of phi alternatives.  */
-  if (remove_dead_code && in_ssa_form)
-    abort ();
- 
   /* Record which registers will be eliminated.  We use this in
      mark_used_regs.  */
 
@@ -2529,17 +2518,8 @@ life_analysis (f, nregs, file, remove_dead_code)
   SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
 #endif
 
-  /* We want alias analysis information for local dead store elimination.  */
-  init_alias_analysis ();
-
   if (! optimize)
-    flags = PROP_DEATH_NOTES | PROP_REG_INFO;
-  else
-    {
-      flags = PROP_FINAL;
-      if (! remove_dead_code)
-	flags &= ~(PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE);
-    }
+    flags &= PROP_DEATH_NOTES | PROP_REG_INFO;
 
   /* The post-reload life analysis have (on a global basis) the same
      registers live as was computed by reload itself.  elimination
@@ -2550,7 +2530,11 @@ life_analysis (f, nregs, file, remove_dead_code)
   if (reload_completed)
     flags &= ~PROP_REG_INFO;
 
-  max_regno = nregs;
+  /* We want alias analysis information for local dead store elimination.  */
+  if (flags & PROP_SCAN_DEAD_CODE)
+    init_alias_analysis ();
+
+  max_regno = max_reg_num ();
 
   /* Always remove no-op moves.  Do this before other processing so
      that we don't have to keep re-scanning them.  */
@@ -2582,7 +2566,9 @@ life_analysis (f, nregs, file, remove_dead_code)
 
   /* Clean up.  */
   sbitmap_free (all_blocks);
-  end_alias_analysis ();
+
+  if (flags & PROP_SCAN_DEAD_CODE)
+    end_alias_analysis ();
 
   if (file)
     dump_flow_info (file);

@@ -1,5 +1,17 @@
 2000-04-26  Richard Henderson  <rth@cygnus.com>
 
+	* basic-block.h (life_analysis): Declare here ...
+	* output.h: ... not here.
+	* flow.c (life_analysis): Remove nregs parameter; replace
+	remove_dead_code with flags.  Remove ssa dead code check.
+	Only init alias analysis if we'll use it.
+	* reg-stack.c (reg_to_stack): Update life_analysis arguments.
+	* ssa.c (convert_to_ssa): Likewise.
+	(convert_from_ssa): Likewise.
+	* toplev.c (rest_of_compilation): Likewise.
+
+2000-04-26  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (flow_delete_block): Rename from delete_block.  Export.
 	* basic-block.h (flow_delete_block): Declare.
 

@@ -435,7 +435,7 @@ reg_to_stack (first, file)
      build the CFG and run life analysis.  */
   find_basic_blocks (first, max_reg_num (), file);
   count_or_remove_death_notes (NULL, 1);
-  life_analysis (first, max_reg_num (), file, 0);
+  life_analysis (first, file, PROP_DEATH_NOTES);
 
   /* Set up block info for each basic block.  */
   bi = (block_info) xcalloc ((n_basic_blocks + 1), sizeof (*bi));
