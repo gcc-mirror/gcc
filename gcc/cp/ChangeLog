@@ -1,5 +1,9 @@
 2003-08-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11871
+	* decl.c (push_class_level_binding): Correct old_decl value from
+	my 2003-07-29 reorganization.
+
 	* call.c (build_call): Don't set TREE_SIDE_EFFECTS here.
 	(build_new_method_call): Add goto finish.
 	* semantics.c (simplify_aggr_init_exprs_r): Don't set

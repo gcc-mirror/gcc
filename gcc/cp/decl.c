@@ -4282,11 +4282,13 @@ push_class_level_binding (tree name, tree x)
 	  if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval)
 	      && !(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)))
 	    {
+	      old_decl = BINDING_TYPE (binding);
 	      BINDING_TYPE (binding) = bval;
 	      BINDING_VALUE (binding) = NULL_TREE;
 	      INHERITED_VALUE_BINDING_P (binding) = 0;
 	    }
-	  old_decl = bval;
+	  else
+	    old_decl = bval;
 	}
       else if (TREE_CODE (x) == OVERLOAD && is_overloaded_fn (bval))
 	old_decl = bval;

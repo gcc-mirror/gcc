@@ -1,5 +1,8 @@
 2003-08-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11871
+	* c++.dg/lookup/crash1.C: New test.
+
 	* c++.dg/warn/noeffect3.C: New test.
 
 2003-08-25  Janis Johnson  <janis187@us.ibm.com>
