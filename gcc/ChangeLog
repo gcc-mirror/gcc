@@ -1,3 +1,10 @@
+2005-04-03  Steven Bosscher  <stevenb@suse.de>
+
+	PR middle-end/20648
+	* bb-reorder.c (duplicate_computed_gotos): Do not unfactor
+	a computed goto if the edge to the computed goto block has
+	incoming abnormal edges.  Clarify how the function works.
+
 2005-04-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* params.c (set_param_value): Use gcc_assert & gcc_unreachable.
@@ -575,7 +582,7 @@
 	last_text_section_name as appropriate.
 	(function_section): Change test for 'unlikely' to depend on
 	first_function_block_is_cold (moved old test to 
-        current_function_section).
+	current_function_section).
 	(current_function_section): New function.
 	(assemble_start_function): Move code that frees 
 	unlikely_text_section_name; initialize hot_section_end_label; 
@@ -598,8 +605,8 @@
 
 2005-03-31  Olivier Hainque  <hainque@adacore.com>
 
-        * dwarf2out.c (dwarf2out_frame_finish): Honor DWARF2_FRAME_INFO
-        defined and non-zero.
+	* dwarf2out.c (dwarf2out_frame_finish): Honor DWARF2_FRAME_INFO
+	defined and non-zero.
 
 2005-03-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
