@@ -6,7 +6,7 @@
  *  void*.  The hashing function converts the key to
  *  an integer and computes it hash value.
  *
- * Copyright (C) 1991 Threaded Technologies Inc.
+ * Copyright  (C) 1991 Threaded Technologies Inc.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published
@@ -21,14 +21,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.5 1991/11/23 22:19:21 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.6 1991/11/24 01:20:02 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/23 22:19:21 $
+  $Date: 1991/11/24 01:20:02 $
   $Log: hash.h,v $
+ * Revision 0.6  1991/11/24  01:20:02  dennisg
+ * changed shorts back to ints.
+ * the efficiency gained didn't out weight the grossness of the code.
+ *
  * Revision 0.5  1991/11/23  22:19:21  dennisg
  * converted some entries in the hash structure from ints to shorts.
  * this was done to use a less expensive division instruction
- * in the hashIndex() routine.
+ * in the hashIndex () routine.
  *
  * Revision 0.4  1991/11/21  22:25:19  dennisg
  * deleted hash mask information from hash struct.
@@ -85,24 +89,25 @@ typedef struct cache_node {
  * This data structure is the cache.
  *
  * It must be passed to all of the hashing routines
- *  (except for new).
+ *   (except for new).
  */
 typedef struct cache {
   /*
    * Variables used to implement the
    *  hash itself.
    */
-  CacheNode_t (* theNodeTable )[];                /* Pointer to an array of
+  CacheNode_t  (* theNodeTable)[];                /* Pointer to an array of
                                                     hash nodes. */
 	/*
 	 * Variables used to track the size of the hash
 	 *	table so to determine when to resize it.
 	 */
-  u_int       sizeOfHash,                         /* Number of buckets 
+  u_int       sizeOfHash,                        /* Number of buckets 
                                                     allocated for the hash
-                                                    table (number of array
+                                                    table  (number of array
                                                     entries allocated for
-                                                    "theNodeTable"). */
+                                                    "theNodeTable").  Must be
+																										a power of two. */
 							entriesInHash;											/* Current number of entries
 																										in ther hash table. */
   /*
@@ -119,14 +124,12 @@ typedef struct cache {
                                                   functions. */
                                                 /* Allocate and initialize 
                                                   a hash table.  Hash table 
-                                                  size taken as a parameter. 
-                                                    A value of 0 is not 
-                                                  allowed. */ 
-Cache_t hash_new( u_int sizeOfHash );
+                                                  size taken as a parameter. */ 
+Cache_t hash_new (u_int sizeOfHash);
                                                 /* Deallocate all of the
                                                   hash nodes and the cache
                                                   itself. */
-void hash_delete( Cache_t theCache );
+void hash_delete (Cache_t theCache);
                                                 /* Add the key/value pair
                                                   to the hash table.  If the
 																									hash table reaches a 
@@ -135,12 +138,12 @@ void hash_delete( Cache_t theCache );
 																									 
 																									assert() if the key is 
 																									already in the hash. */
-void hash_add( Cache_t* theCache, void* aKey, void* aValue );
+void hash_add (Cache_t* theCache, void* aKey, void* aValue);
                                                 /* Remove the key/value pair
                                                   from the hash table.  
                                                   assert() if the key isn't 
                                                   in the table. */
-void hash_remove( Cache_t theCache, void* aKey );
+void hash_remove (Cache_t theCache, void* aKey);
                                                 /* Used to index through the
                                                   hash table.  Start with NULL
                                                   to get the first entry.
@@ -153,7 +156,7 @@ void hash_remove( Cache_t theCache, void* aKey );
                                                   Cache nodes are returned
                                                   such that key or value can
                                                   ber extracted. */
-CacheNode_t hash_next( Cache_t theCache, CacheNode_t aCacheNode );
+CacheNode_t hash_next (Cache_t theCache, CacheNode_t aCacheNode);
 
 
 #ifdef __cplusplus
