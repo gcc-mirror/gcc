@@ -1787,9 +1787,17 @@ javax/print/attribute/TextSyntax.java \
 javax/print/attribute/UnmodifiableSetException.java \
 javax/print/attribute/URISyntax.java \
 javax/print/attribute/standard/Copies.java \
+javax/print/attribute/standard/DateTimeAtCompleted.java \
+javax/print/attribute/standard/DateTimeAtCreation.java \
+javax/print/attribute/standard/DateTimeAtProcessing.java \
 javax/print/attribute/standard/JobImpressions.java \
+javax/print/attribute/standard/JobImpressionsCompleted.java \
+javax/print/attribute/standard/JobKOctets.java \
+javax/print/attribute/standard/JobKOctetsProcessed.java \
 javax/print/attribute/standard/JobMediaSheets.java \
+javax/print/attribute/standard/JobMediaSheetsCompleted.java \
 javax/print/attribute/standard/JobPriority.java \
+javax/print/attribute/standard/JobPrioritySupported.java \
 javax/print/attribute/standard/NumberOfDocuments.java \
 javax/print/attribute/standard/NumberOfInterveningJobs.java \
 javax/print/attribute/standard/NumberUp.java \
