@@ -1027,7 +1027,7 @@ shorten_branches (first)
 
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
-  label_align = (struct label_alignment **)
+  label_align = (struct label_alignment *)
     xcalloc ((max_labelno - min_labelno + 1), sizeof (struct label_alignment));
 
   uid_shuid = (int *) xmalloc (max_uid * sizeof *uid_shuid);
