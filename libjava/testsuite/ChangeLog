@@ -1,3 +1,10 @@
+2002-11-04  Anthony Green  <green@redhat.com>
+
+	* libjava.loader/dummy.java, libjava.loader/loader.exp,
+	libjava.loader/MyLoader.java, libjava.loader/TestLeak.java,
+	libjava.loader/TestLeak.out, libjava.loader/TestMultiple.java,
+	libjava.loader/TestMultiple.out: New files.
+
 2002-11-02  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/initexc.java (fail): Static initializers must be
