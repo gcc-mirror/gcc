@@ -1,3 +1,14 @@
+Tue Oct 23 19:00:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* misc.c (gnat_init, gnat_init_options, gnat_decode_option):
+	Now static.
+	(LANG_HOOKS_GET_ALIAS_SET): New macro.
+	(gnat_expand_expr, case NULL_EXPR): Always call set_mem_attributes.
+	(gnat_get_alias_set): Renamed from lang_get_alias_set.
+	* gigi.h (gnat_decode_option, gnat_init_option, gnat_init):
+	Delete declarations.
+	(gnat_get_alias_set): Likewise.
+
 2001-10-22  Geert Bosh  <bosch@gnat.com>
 
 	* Make-lang.in (gnattools, cross-gnattools): Remove gnatmem.

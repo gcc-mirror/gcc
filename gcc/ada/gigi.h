@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision: 1.2 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -34,18 +34,6 @@
 
 /* Declare all functions and types used by gigi.  */
 
-/* Decode all the language specific options that cannot be decoded by GCC. The
-   option decoding phase of GCC calls this routine on the flags that it cannot
-   decode. This routine returns 1 if it is successful, otherwise it
-   returns 0. */
-extern int gnat_decode_option	PARAMS ((int, char **));
-
-/* Perform all initialization steps for option processing.  */
-extern void gnat_init_options	PARAMS ((void));
-
-/* Perform all the initialization steps that are language-specific.  */
-extern void gnat_init		PARAMS ((void));
-
 /* See if DECL has an RTL that is indirect via a pseudo-register or a
    memory location and replace it with an indirect reference if so.
    This improves the debugger's ability to display the value.  */
@@ -67,9 +55,6 @@ extern tree make_transform_expr PARAMS ((Node_Id));
 /* Update the setjmp buffer BUF with the current stack pointer.  We assume
    here that a __builtin_setjmp was done to BUF.  */
 extern void update_setjmp_buf PARAMS ((tree));
-
-/* Get the alias set corresponding to a type or expression.  */
-extern HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
 
 /* GNU_TYPE is a type. Determine if it should be passed by reference by
    default.  */
