@@ -38,6 +38,7 @@ extern int gr_register_operand PARAMS((rtx, enum machine_mode));
 extern int fr_register_operand PARAMS((rtx, enum machine_mode));
 extern int grfr_register_operand PARAMS((rtx, enum machine_mode));
 extern int gr_nonimmediate_operand PARAMS((rtx, enum machine_mode));
+extern int fr_nonimmediate_operand PARAMS((rtx, enum machine_mode));
 extern int grfr_nonimmediate_operand PARAMS((rtx, enum machine_mode));
 extern int gr_reg_or_0_operand PARAMS((rtx, enum machine_mode));
 extern int gr_reg_or_5bit_operand PARAMS((rtx, enum machine_mode));

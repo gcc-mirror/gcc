@@ -63,6 +63,10 @@ extern int target_flags;
 
 #define MASK_AUTO_PIC	0x00000200	/* generate automatically PIC */
 
+#define MASK_INLINE_DIV_LAT 0x00000400	/* inline div, min latency.  */
+
+#define MASK_INLINE_DIV_THR 0x00000800	/* inline div, max throughput.  */
+
 #define MASK_DWARF2_ASM 0x40000000	/* test dwarf2 line info via gas.  */
 
 #define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
@@ -84,6 +88,13 @@ extern int target_flags;
 #define TARGET_CONST_GP		(target_flags & MASK_CONST_GP)
 
 #define TARGET_AUTO_PIC		(target_flags & MASK_AUTO_PIC)
+
+#define TARGET_INLINE_DIV_LAT	(target_flags & MASK_INLINE_DIV_LAT)
+
+#define TARGET_INLINE_DIV_THR	(target_flags & MASK_INLINE_DIV_THR)
+
+#define TARGET_INLINE_DIV \
+  (target_flags & (MASK_INLINE_DIV_LAT | MASK_INLINE_DIV_THR))
 
 #define TARGET_DWARF2_ASM	(target_flags & MASK_DWARF2_ASM)
 
@@ -123,6 +134,10 @@ extern int target_flags;
       N_("gp is constant (but save/restore gp on indirect calls)") },	\
   { "auto-pic",		MASK_AUTO_PIC,					\
       N_("Generate self-relocatable code") },				\
+  { "inline-divide-min-latency", MASK_INLINE_DIV_LAT,			\
+      N_("Generate inline division, optimize for latency") },		\
+  { "inline-divide-max-throughput", MASK_INLINE_DIV_THR,		\
+      N_("Generate inline division, optimize for throughput") },	\
   { "dwarf2-asm", 	MASK_DWARF2_ASM,				\
       N_("Enable Dwarf 2 line debug info via GNU as")},			\
   { "no-dwarf2-asm", 	-MASK_DWARF2_ASM,				\
@@ -2646,6 +2661,7 @@ do {									\
 { "fr_register_operand", {SUBREG, REG}},				\
 { "grfr_register_operand", {SUBREG, REG}},				\
 { "gr_nonimmediate_operand", {SUBREG, REG, MEM}},			\
+{ "fr_nonimmediate_operand", {SUBREG, REG, MEM}},			\
 { "grfr_nonimmediate_operand", {SUBREG, REG, MEM}},			\
 { "gr_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
 { "gr_reg_or_5bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\

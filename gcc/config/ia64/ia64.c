@@ -397,6 +397,26 @@ gr_nonimmediate_operand (op, mode)
   return 1;
 }
 
+/* Return 1 if OP is a nonimmediate operand that is (or could be) a FR reg.  */
+
+int
+fr_nonimmediate_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! nonimmediate_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  if (GET_CODE (op) == REG)
+    {
+      unsigned int regno = REGNO (op);
+      if (regno < FIRST_PSEUDO_REGISTER)
+	return FR_REGNO_P (regno);
+    }
+  return 1;
+}
+
 /* Return 1 if OP is a nonimmediate operand that is a GR/FR reg.  */
 
 int
@@ -3484,6 +3504,12 @@ ia64_override_options ()
   if (TARGET_AUTO_PIC)
     target_flags |= MASK_CONST_GP;
 
+  if (TARGET_INLINE_DIV_LAT && TARGET_INLINE_DIV_THR)
+    {
+      warning ("cannot optimize division for both latency and throughput");
+      target_flags &= ~MASK_INLINE_DIV_THR;
+    }
+
   if (ia64_fixed_range_string)
     fix_range (ia64_fixed_range_string);
 
@@ -3970,6 +3996,11 @@ rtx_needs_barrier (x, flags, pred)
 	case 20: /* mov = ar.bsp */
 	case 21: /* flushrs */
           break;
+
+	case 5: /* recip_approx */
+	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
+	  need_barrier |= rtx_needs_barrier (XVECEXP (x, 0, 1), flags, pred);
+	  break;
 
         case 13: /* cmpxchg_acq */
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 1), flags, pred);
