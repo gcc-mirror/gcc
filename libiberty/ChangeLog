@@ -1,3 +1,8 @@
+2000-09-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.c (splay_tree_predecessor): New function.
+	(splay_tree_successor): Likewise.
+
 2000-09-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/demangle-expected: Add four tests for type_info

@@ -1,5 +1,5 @@
 /* A splay-tree datatype.  
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -364,6 +364,72 @@ splay_tree_lookup (sp, key)
     return sp->root;
   else
     return 0;
+}
+
+/* Return the immediate predecessor KEY, or NULL if there is no
+   predecessor.  KEY need not be present in the tree.  */
+
+splay_tree_node
+splay_tree_predecessor (sp, key)
+     splay_tree sp;
+     splay_tree_key key;
+{
+  int comparison;
+  splay_tree_node node;
+
+  /* If the tree is empty, there is certainly no predecessor.  */
+  if (!sp->root)
+    return NULL;
+
+  /* Splay the tree around KEY.  That will leave either the KEY
+     itself, its predecessor, or its successor at the root.  */
+  splay_tree_splay (sp, key);
+  comparison = (*sp->comp)(sp->root->key, key);
+
+  /* If the predecessor is at the root, just return it.  */
+  if (comparison < 0)
+    return sp->root;
+
+  /* Otherwise, find the rightmost element of the left subtree.  */
+  node = sp->root->left;
+  if (node)
+    while (node->right)
+      node = node->right;
+
+  return node;
+}
+
+/* Return the immediate successor KEY, or NULL if there is no
+   predecessor.  KEY need not be present in the tree.  */
+
+splay_tree_node
+splay_tree_successor (sp, key)
+     splay_tree sp;
+     splay_tree_key key;
+{
+  int comparison;
+  splay_tree_node node;
+
+  /* If the tree is empty, there is certainly no predecessor.  */
+  if (!sp->root)
+    return NULL;
+
+  /* Splay the tree around KEY.  That will leave either the KEY
+     itself, its predecessor, or its successor at the root.  */
+  splay_tree_splay (sp, key);
+  comparison = (*sp->comp)(sp->root->key, key);
+
+  /* If the successor is at the root, just return it.  */
+  if (comparison > 0)
+    return sp->root;
+
+  /* Otherwise, find the rightmost element of the left subtree.  */
+  node = sp->root->right;
+  if (node)
+    while (node->left)
+      node = node->left;
+
+  return node;
 }
 
 /* Call FN, passing it the DATA, for every node in SP, following an

@@ -1,3 +1,7 @@
+2000-09-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.h (splay_tree_predecessor): Declare.
+
 2000-09-05  John David Anglin <dave@hiauly1.hia.nrc.ca>
 
 	* md5.h (md5_uint32): Choose via INT_MAX instead of UINT_MAX.
