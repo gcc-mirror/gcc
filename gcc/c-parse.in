@@ -2832,6 +2832,7 @@ struct resword
 
 static const struct resword reswords[] =
 {
+  { "_Bool",		RID_BOOL,	0 },
   { "_Complex",		RID_COMPLEX,	0 },
   { "__alignof",	RID_ALIGNOF,	0 },
   { "__alignof__",	RID_ALIGNOF,	0 },
@@ -3007,7 +3008,7 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_PTRVALUE */	PTR_VALUE,
 
   /* C++ */
-  /* RID_BOOL */	0,
+  /* RID_BOOL */	TYPESPEC,
   /* RID_WCHAR */	0,
   /* RID_CLASS */	0,
   /* RID_PUBLIC */	0,

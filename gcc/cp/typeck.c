@@ -4580,18 +4580,7 @@ build_unary_op (code, xarg, noconvert)
 	       my patch to expand_increment. (jason)  */
 	    val = build (code, TREE_TYPE (arg), arg, inc);
 #else
-	    if (code == POSTINCREMENT_EXPR)
-	      {
-		arg = stabilize_reference (arg);
-		val = build (MODIFY_EXPR, TREE_TYPE (arg), arg,
-			     boolean_true_node);
-		arg = save_expr (arg);
-		val = build (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
-		val = build (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
-	      }
-	    else
-	      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg,
-			   boolean_true_node);
+	    val = boolean_increment (code, arg);
 #endif
 	  }
 	else

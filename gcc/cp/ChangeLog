@@ -1,3 +1,8 @@
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* typeck.c (build_unary_op): Use boolean_increment from
+	c-common.c, moving the relevant code there.
+
 2000-11-11  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (mark_addressable): Don't call put_var_into_stack.

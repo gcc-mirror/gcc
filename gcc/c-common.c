@@ -6147,3 +6147,44 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
 		      (ignore ? const0_rtx : target),
 		      tmode, modifier);
 }
+
+
+/* Given a boolean expression ARG, return a tree representing an increment
+   or decrement (as indicated by CODE) of ARG.  The front end must check for
+   invalid cases (e.g., decrement in C++).  */
+tree
+boolean_increment (code, arg)
+     enum tree_code code;
+     tree arg;
+{
+  tree val;
+  tree true_res = (c_language == clk_cplusplus
+		   ? boolean_true_node
+		   : c_bool_true_node);
+  arg = stabilize_reference (arg);
+  switch (code)
+    {
+    case PREINCREMENT_EXPR:
+      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg, true_res);
+      break;
+    case POSTINCREMENT_EXPR:
+      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg, true_res);
+      arg = save_expr (arg);
+      val = build (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
+      val = build (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
+      break;
+    case PREDECREMENT_EXPR:
+      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg, invert_truthvalue (arg));
+      break;
+    case POSTDECREMENT_EXPR:
+      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg, invert_truthvalue (arg));
+      arg = save_expr (arg);
+      val = build (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
+      val = build (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
+      break;
+    default:
+      abort ();
+    }
+  TREE_SIDE_EFFECTS (val) = 1;
+  return val;
+}

@@ -3113,6 +3113,19 @@ init_decl_processing ()
   boolean_true_node = integer_one_node;
   boolean_false_node = integer_zero_node;
 
+  /* With GCC, C99's _Bool is always of size 1.  */
+  c_bool_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
+  TREE_SET_CODE (c_bool_type_node, BOOLEAN_TYPE);
+  TYPE_MAX_VALUE (c_bool_type_node) = build_int_2 (1, 0);
+  TREE_TYPE (TYPE_MAX_VALUE (c_bool_type_node)) = c_bool_type_node;
+  TYPE_PRECISION (c_bool_type_node) = 1;
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("_Bool"),
+			c_bool_type_node));
+  c_bool_false_node = build_int_2 (0, 0);
+  TREE_TYPE (c_bool_false_node) = c_bool_type_node;
+  c_bool_true_node = build_int_2 (1, 0);
+  TREE_TYPE (c_bool_true_node) = c_bool_type_node;
+
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node
     = build_pointer_type (build_type_variant (char_type_node, 1, 0));
@@ -5431,6 +5444,7 @@ finish_struct (t, fieldlist, attributes)
       /* Detect invalid bit-field type.  */
       if (DECL_INITIAL (x)
 	  && TREE_CODE (TREE_TYPE (x)) != INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (x)) != BOOLEAN_TYPE
 	  && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE)
 	{
 	  error_with_decl (x, "bit-field `%s' has invalid type");
@@ -5440,6 +5454,7 @@ finish_struct (t, fieldlist, attributes)
       if (DECL_INITIAL (x) && pedantic
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != integer_type_node
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != unsigned_type_node
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != c_bool_type_node
 	  /* Accept an enum that's equivalent to int or unsigned int.  */
 	  && !(TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
 	       && (TYPE_PRECISION (TREE_TYPE (x))
@@ -5450,10 +5465,14 @@ finish_struct (t, fieldlist, attributes)
 	 field widths.  */
       if (DECL_INITIAL (x))
 	{
+	  int max_width;
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (x)) == c_bool_type_node)
+	    max_width = CHAR_TYPE_SIZE;
+	  else
+	    max_width = TYPE_PRECISION (TREE_TYPE (x));
 	  if (tree_int_cst_sgn (DECL_INITIAL (x)) < 0)
 	    error_with_decl (x, "negative width in bit-field `%s'");
-	  else if (0 < compare_tree_int (DECL_INITIAL (x),
-					 TYPE_PRECISION (TREE_TYPE (x))))
+	  else if (0 < compare_tree_int (DECL_INITIAL (x), max_width))
 	    pedwarn_with_decl (x, "width of `%s' exceeds its type");
 	  else if (integer_zerop (DECL_INITIAL (x)) && DECL_NAME (x) != 0)
 	    error_with_decl (x, "zero width for bit-field `%s'");

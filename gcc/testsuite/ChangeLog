@@ -1,5 +1,9 @@
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/c99-bool-1.c: New test.
+
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/c99-scope-1.c: Remove xfail.
 	* gcc.dg/c99-scope-2.c: New test.
 

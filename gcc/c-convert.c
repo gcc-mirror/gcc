@@ -88,6 +88,8 @@ convert (type, expr)
 #endif
   if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
     return fold (convert_to_integer (type, e));
+  if (code == BOOLEAN_TYPE)
+    return fold (build1 (NOP_EXPR, type, truthvalue_conversion (expr)));
   if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)

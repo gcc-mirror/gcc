@@ -130,9 +130,14 @@ enum c_tree_index
     CTI_STRING_TYPE,
     CTI_CONST_STRING_TYPE,
 
+    /* Type for boolean expressions (bool in C++, int in C).  */
     CTI_BOOLEAN_TYPE,
     CTI_BOOLEAN_TRUE,
     CTI_BOOLEAN_FALSE,
+    /* C99's _Bool type.  */
+    CTI_C_BOOL_TYPE,
+    CTI_C_BOOL_TRUE,
+    CTI_C_BOOL_FALSE,
     CTI_DEFAULT_FUNCTION_TYPE,
     CTI_VOID_LIST,
 
@@ -171,6 +176,10 @@ enum c_tree_index
 #define boolean_type_node		c_global_trees[CTI_BOOLEAN_TYPE]
 #define boolean_true_node		c_global_trees[CTI_BOOLEAN_TRUE]
 #define boolean_false_node		c_global_trees[CTI_BOOLEAN_FALSE]
+
+#define c_bool_type_node		c_global_trees[CTI_C_BOOL_TYPE]
+#define c_bool_true_node		c_global_trees[CTI_C_BOOL_TRUE]
+#define c_bool_false_node		c_global_trees[CTI_C_BOOL_FALSE]
 
 #define char_array_type_node		c_global_trees[CTI_CHAR_ARRAY_TYPE]
 #define wchar_array_type_node		c_global_trees[CTI_WCHAR_ARRAY_TYPE]
@@ -712,6 +721,10 @@ extern tree common_type                         PARAMS ((tree, tree));
 extern tree expand_tree_builtin                 PARAMS ((tree, tree, tree));
 
 extern tree decl_constant_value		PARAMS ((tree));
+
+/* Handle increment and decrement of boolean types.  */
+extern tree boolean_increment			PARAMS ((enum tree_code,
+							 tree));
 
 /* Hook currently used only by the C++ front end to reset internal state
    after entering or leaving a header file.  */

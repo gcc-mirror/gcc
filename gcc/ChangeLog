@@ -1,5 +1,22 @@
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (boolean_increment): New function.
+	* c-common.h (enum c_tree_index): Add CTI_C_BOOL_TYPE,
+	CTI_C_BOOL_TRUE and CTI_C_BOOL_FALSE.
+	(c_bool_type_node, c_bool_true_node, c_bool_false_node): Define.
+	(boolean_increment): Declare.
+	* c-convert.c (convert): Allow for BOOLEAN_TYPE.
+	* c-decl.c (init_decl_processing): Create boolean nodes.
+	(finish_struct): Allow for _Bool bitfields.
+	* c-parse.in (reswords): Add _Bool.
+	(rid_to_yy): Allow for RID_BOOL.
+	* c-typeck.c (default_conversion): Make booleans promote to int.
+	(convert_arguments, build_unary_op, build_modify_expr,
+	convert_for_assignment): Allow for booleans.
+	* ginclude/stdbool.h: Make conforming to C99.
+
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-parse.in (c99_block_start, c99_block_end,
 	c99_block_lineno_labeled_stmt): New.
 	(simple_if, do_stmt_start): Use c99_block_lineno_labeled_stmt.
