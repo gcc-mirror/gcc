@@ -5119,15 +5119,26 @@ expand_fix (to, from, unsignedp)
      one plus the highest signed number, convert, and add it back.
 
      We only need to check all real modes, since we know we didn't find
-     anything with a wider integer mode.  */
+     anything with a wider integer mode.  
+
+     This code used to extend FP value into mode wider than the destination.
+     This is not needed.  Consider, for instance conversion from SFmode
+     into DImode.
+
+     The hot path trought the code is dealing with inputs smaller than 2^63
+     and doing just the conversion, so there is no bits to lose.
+
+     In the other path we know the value is positive in the range 2^63..2^64-1
+     inclusive.  (as for other imput overflow happens and result is undefined)
+     So we know that the most important bit set in mantisa corresponds to
+     2^63.  The subtraction of 2^63 should not generate any rounding as it
+     simply clears out that bit.  The rest is trivial.  */
 
   if (unsignedp && GET_MODE_BITSIZE (GET_MODE (to)) <= HOST_BITS_PER_WIDE_INT)
     for (fmode = GET_MODE (from); fmode != VOIDmode;
 	 fmode = GET_MODE_WIDER_MODE (fmode))
-      /* Make sure we won't lose significant bits doing this.  */
-      if (GET_MODE_BITSIZE (fmode) > GET_MODE_BITSIZE (GET_MODE (to))
-	  && CODE_FOR_nothing != can_fix_p (GET_MODE (to), fmode, 0,
-					    &must_trunc))
+      if (CODE_FOR_nothing != can_fix_p (GET_MODE (to), fmode, 0,
+					 &must_trunc))
 	{
 	  int bitsize;
 	  REAL_VALUE_TYPE offset;

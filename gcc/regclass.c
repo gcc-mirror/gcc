@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"
+#include "timevar.h"
 
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(m, x, y) 2
@@ -2338,6 +2339,8 @@ reg_scan (f, nregs, repeat)
   max_parallel = 3;
   max_set_parallel = 0;
 
+  timevar_push (TV_REG_SCAN);
+
   for (insn = f; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == INSN
 	|| GET_CODE (insn) == CALL_INSN
@@ -2353,6 +2356,8 @@ reg_scan (f, nregs, repeat)
       }
 
   max_parallel += max_set_parallel;
+
+  timevar_pop (TV_REG_SCAN);
 }
 
 /* Update 'regscan' information by looking at the insns

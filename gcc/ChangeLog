@@ -1,3 +1,27 @@
+Tue Feb 25 22:46:27 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* objc-act.c: Include cgraph.h
+	(mark_referenced_methods): New function.
+	(objc_init): Call it.
+	* objc-lang.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Set.
+
+	* c-decl.c (finish_function): Honor can_defer_p even in unit-at-a-time
+	mode.
+
+	* optabs.c (expand_fix): Do not widen the input operand.
+
+	* expr.c (emit_group_store):  Fix crash when converting single
+	register into complex register.
+
+	* Makefile.in (jump.o, regclass.o, alias.o): Add dependency on timevar.h
+	* alias.c: Include timevar.h
+	(init_alias_analysis):  Set timevar
+	* jump.c: Include timevar.h
+	(rebuild_jump_labels):  Set timevar
+	* regcalss.c: Include timevar.h
+	(reg_scan):  Set timevar
+	* timevar.def (TV_ALIAS_ANALYSIS, TV_REG_SCAN, TV_REBUILD_JUMP): New
+
 2003-02-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cse.c (count_reg_usage): Fix handling of REG_EQUAL notes.
