@@ -5816,7 +5816,7 @@ sparc_va_start (tree valist, rtx nextarg)
 
 /* Implement `va_arg' for stdarg.  */
 
-tree
+static tree
 sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   HOST_WIDE_INT size, rsize, align;
