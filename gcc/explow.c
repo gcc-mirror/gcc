@@ -863,8 +863,8 @@ emit_stack_save (save_level, psave, after)
 {
   rtx sa = *psave;
   /* The default is that we use a move insn and save in a Pmode object.  */
-  rtx (*fcn) ();
-  enum machine_mode mode;
+  rtx (*fcn) () = gen_move_insn;
+  enum machine_mode mode = Pmode;
 
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
@@ -897,8 +897,6 @@ emit_stack_save (save_level, psave, after)
       break;
 #endif
     default:
-      mode = Pmode;
-      fcn = gen_move_insn;
       break;
     }
 
@@ -956,7 +954,7 @@ emit_stack_restore (save_level, sa, after)
      rtx sa;
 {
   /* The default is that we use a move insn.  */
-  rtx (*fcn) ();
+  rtx (*fcn) () = gen_move_insn;
 
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
@@ -981,7 +979,6 @@ emit_stack_restore (save_level, sa, after)
       break;
 #endif
     default:
-      fcn = gen_move_insn;
       break;
     }
 
