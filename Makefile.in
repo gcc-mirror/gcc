@@ -747,8 +747,6 @@ INSTALL_MODULES = \
 # This is a list of the targets for all of the modules which are compiled
 # using $(X11_FLAGS_TO_PASS).
 ALL_X11_MODULES = \
-	all-emacs \
-	all-emacs19 \
 	all-gdb \
 	all-expect \
 	all-guile \
@@ -759,7 +757,6 @@ ALL_X11_MODULES = \
 # This is a list of the check targets for all of the modules which are
 # compiled using $(X11_FLAGS_TO_PASS).
 CHECK_X11_MODULES = \
-	check-emacs \
 	check-gdb \
 	check-guile \
 	check-expect \
@@ -770,8 +767,6 @@ CHECK_X11_MODULES = \
 # This is a list of the install targets for all the modules which are
 # compiled using $(X11_FLAGS_TO_PASS).
 INSTALL_X11_MODULES = \
-	install-emacs \
-	install-emacs19 \
 	install-gdb \
 	install-guile \
 	install-expect \
@@ -949,8 +944,6 @@ CLEAN_TARGET_MODULES = \
 
 # All of the x11 modules that can be cleaned
 CLEAN_X11_MODULES = \
-	clean-emacs \
-	clean-emacs19 \
 	clean-gdb \
 	clean-expect \
 	clean-guile \
@@ -1721,8 +1714,6 @@ all-target-cygmon: configure-target-cygmon all-target-libiberty all-target-libst
 all-db:
 all-dejagnu: all-tcl all-expect all-tk
 all-diff: all-libiberty
-all-emacs:
-all-emacs19: all-bison all-byacc
 all-etc:
 configure-target-examples: $(ALL_GCC_C)
 all-target-examples: configure-target-examples
@@ -1751,7 +1742,6 @@ all-hello: all-libiberty
 all-indent:
 all-inet: all-tcl all-send-pr all-perl
 all-intl:
-all-ispell: all-emacs19
 all-itcl: all-tcl all-tk
 all-ld: all-libiberty all-bfd all-opcodes all-bison all-byacc all-flex all-intl
 configure-target-libgloss: $(ALL_GCC)

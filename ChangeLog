@@ -1,3 +1,7 @@
+2002-07-01  Nathanael Nerode <neroden@twcny.rr.com>
+
+	* Makefile.in: Eliminate references to building emacs.
+
 2002-06-28  Graham Stott  <graham.stott@btinternet.com>
 
 	* MAINTAINERS: Update my email address.
