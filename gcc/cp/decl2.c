@@ -4811,16 +4811,15 @@ mark_used (decl)
      tree decl;
 {
   TREE_USED (decl) = 1;
-  if (processing_template_decl)
+  if (processing_template_decl || skip_evaluation)
     return;
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl)
       && !TREE_ASM_WRITTEN (decl))
     /* Remember it, so we can check it was defined.  */
     defer_fn (decl);
-  
-  if (!skip_evaluation)
-    assemble_external (decl);
+
+  assemble_external (decl);
 
   /* Is it a synthesized method that needs to be synthesized?  */
   if (TREE_CODE (decl) == FUNCTION_DECL
