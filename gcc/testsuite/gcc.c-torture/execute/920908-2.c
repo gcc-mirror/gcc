@@ -1,3 +1,12 @@
+/* The bit-field below would have a problem if __INT_MAX__ is too
+   small.  */
+#if __INT_MAX__ < 2147483647
+int
+main (void)
+{
+  exit (0);
+}
+#else
 /*
 CONF:m68k-sun-sunos4.1.1
 OPTIONS:-O
@@ -21,3 +30,4 @@ t.c=0xffff11;
 if(f(t)!=0x11)abort();
 exit(0);
 }
+#endif

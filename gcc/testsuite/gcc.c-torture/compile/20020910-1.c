@@ -1,3 +1,8 @@
+/* The bit-field below would have a problem if __INT_MAX__ is too
+   small.  */
+#if __INT_MAX__ < 2147483647
+int a;
+#else
 unsigned int  x0  = 0;
 
 typedef struct {
@@ -11,4 +16,4 @@ static void foo (void)
 {
   yy.field1 = (unsigned int ) (&x0);
 }
- 
+#endif
