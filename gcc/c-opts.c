@@ -1168,8 +1168,12 @@ c_common_post_options (const char **pfilename)
 
   *pfilename = this_input_filename
     = cpp_read_main_file (parse_in, in_fnames[0]);
+  /* Don't do any compilation or preprocessing if there is no input file.  */
   if (this_input_filename == NULL)
-    return true;
+    {
+      errorcount++;
+      return false;
+    }
 
   if (flag_working_directory
       && flag_preprocess_only && ! flag_no_line_commands)

@@ -1,6 +1,12 @@
 2005-03-08  James E Wilson  <wilson@specifixinc.com>
 
 	Backport from mainline
+	2004-04-13  James E Wilson  <wilson@specifixinc.com>
+	PR middle-end/20364
+	* c-opt.c (c_common_post_options): If this_input_filename is NULL,
+	increment errorcount and return false instead of true.
+
+	Backport from mainline
 	2005-02-21  James E Wilson  <wilson@specifixinc.com>
 	* toplev.c (backend_init): Don't call init_adjust_machine_modes here.
 	(do_compile): Do call it here.
