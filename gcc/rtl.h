@@ -1945,6 +1945,9 @@ extern rtx find_next_ref		PARAMS ((rtx, rtx));
 
 extern rtx output_constant_def		PARAMS ((tree, int));
 
+/* Called from integrate.c when a deferred constant is inlined.  */
+extern void notice_rtl_inlining_of_deferred_constant PARAMS ((void));
+
 /* Define a default value for STORE_FLAG_VALUE.  */
 
 #ifndef STORE_FLAG_VALUE
