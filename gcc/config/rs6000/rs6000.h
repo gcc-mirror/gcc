@@ -120,7 +120,8 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=801: -mppc} \
 %{mcpu=821: -mppc} \
 %{mcpu=823: -mppc} \
-%{mcpu=860: -mppc}"
+%{mcpu=860: -mppc} \
+%{maltivec: -maltivec}"
 
 #define CPP_DEFAULT_SPEC ""
 
