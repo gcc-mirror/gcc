@@ -1,3 +1,8 @@
+2002-02-01  Adam Megacz <adam@xwt.org>
+
+	* boehm-gc on win32 now automatically detects if it is being built
+	as a DLL; see http://gcc.gnu.org/ml/java/2001-12/msg00240.html
+	
 2002-01-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* include/gc.h (GC_INIT): Add DATASTART and DATAEND roots on AIX.
