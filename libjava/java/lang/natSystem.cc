@@ -306,7 +306,7 @@ java::lang::System::init_properties (void)
   // (introduced in 1.2), and earlier versioning properties.
   SET ("java.version", VERSION);
   SET ("java.vendor", "Free Software Foundation");
-  SET ("java.vendor.url", "http://sources.redhat.com/java/");
+  SET ("java.vendor.url", "http://gcc.gnu.org/java/");
   SET ("java.class.version", GCJVERSION);
   SET ("java.vm.specification.version", "1.1");
   SET ("java.vm.specification.name", "Java(tm) Virtual Machine Specification");

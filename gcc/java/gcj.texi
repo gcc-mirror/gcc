@@ -927,8 +927,7 @@ Machine Specification.  In addition we've used the online documentation
 at @uref{http://java.sun.com/}.
 
 The current @code{gcj} home page is
-@uref{http://sources.redhat.com/java/}.  This is likely to change in the
-near future.
+@uref{http://gcc.gnu.org/java/}.
 
 For more information on gcc, see @uref{http://gcc.gnu.org/}.
 

@@ -33,7 +33,7 @@ help ()
   printf ("  --ms=NUMBER       set initial heap size\n");
   printf ("  --mx=NUMBER       set maximum heap size\n");
   printf ("  --version         print version number, then exit\n");
-  printf ("\nSee http://sources.redhat.com/java/ for information on reporting bugs\n");
+  printf ("\nSee http://gcc.gnu.org/java/ for information on reporting bugs\n");
   exit (0);
 }
 

@@ -10,7 +10,7 @@ DOCUMENTATION
 All documentation, including detailed installation and usage instructions,
 can be found on the gcj web pages at this URL:
 
-		http://sourceware.cygnus.com/java/
+		http://gcc.gnu.org/java/
 
 
 REQUIREMENTS
@@ -51,5 +51,5 @@ BUGS
 
 Please submit bug reports via this URL:
 
-	http://sourceware.cygnus.com/cgi-bin/gnatsweb.pl?database=java
+	http://gcc.gnu.org/cgi-bin/gnatsweb.pl?database=gcc
 
