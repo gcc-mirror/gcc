@@ -1,3 +1,7 @@
+Tue Jun  9 12:57:32 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* invoke.texi: Add documentation for -mips4 and -mabi=*.
+
 Tue Jun  9 12:12:34 1998  Klaus Kaempf (kkaempf@progis.de)
 
 	* alpha/vms.h (EXTRA_SECTIONS): Add in_ctors and in_dtors.
