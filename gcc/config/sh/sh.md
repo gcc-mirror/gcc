@@ -222,10 +222,6 @@
   ""
   "movt	%0")
 
-;; ??? This combiner pattern does not work, because combine does not combine
-;; instructions that set a hard register when SMALL_REGISTER_CLASSES is
-;; defined.  Perhaps use a pseudo-reg for the T bit?
-
 (define_insn ""
   [(set (reg:SI 18)
 	(eq:SI (and:SI (match_operand:SI 0 "arith_reg_operand" "z,r")
@@ -2108,17 +2104,10 @@
 ;; Misc insns
 ;; ------------------------------------------------------------------------
 
-;; ??? This combiner pattern does not work, because combine does not combine
-;; instructions that set a hard register when SMALL_REGISTER_CLASSES is
-;; defined.  Perhaps use a pseudo-reg for the T bit?
-
 (define_insn "dect"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-		   (plus:SI (match_dup 0)
-			    (const_int -1)))
-	      (set (reg:SI 18)
-		   (eq:SI (plus:SI (match_dup 0) (const_int -1))
-			  (const_int 0)))])]
+  [(set (reg:SI 18)
+	(eq:SI (match_operand:SI 0 "arith_reg_operand" "+r") (const_int 1)))
+   (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))]
   "TARGET_SH2"
   "dt	%0")
 
