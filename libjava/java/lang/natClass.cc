@@ -43,6 +43,7 @@ details.  */
 #include <java/lang/NoSuchMethodException.h>
 #include <java/lang/Thread.h>
 #include <java/lang/NullPointerException.h>
+#include <java/lang/RuntimePermission.h>
 #include <java/lang/System.h>
 #include <java/lang/SecurityManager.h>
 #include <java/lang/StringBuffer.h>
@@ -100,6 +101,29 @@ java::lang::Class::forName (jstring className)
 {
   // FIXME: should use class loader from calling method.
   return forName (className, true, NULL);
+}
+
+java::lang::ClassLoader *
+java::lang::Class::getClassLoader (void)
+{
+#if 0
+  // FIXME: the checks we need to do are more complex.  See the spec.
+  // Currently we can't implement them.
+  java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
+  if (s != NULL)
+    s->checkPermission (new RuntimePermission (JvNewStringLatin1 ("getClassLoader")));
+#endif
+
+  // The spec requires us to return `null' for primitive classes.  In
+  // other cases we have the option of returning `null' for classes
+  // loaded with the bootstrap loader.  All gcj-compiled classes which
+  // are linked into the application used to return `null' here, but
+  // that confuses some poorly-written applications.  It is a useful
+  // and apparently harmless compatibility hack to simply never return
+  // `null' instead.
+  if (isPrimitive ())
+    return NULL;
+  return loader ? loader : ClassLoader::getSystemClassLoader ();
 }
 
 java::lang::reflect::Constructor *
@@ -373,6 +397,8 @@ java::lang::Class::getName (void)
 JArray<jclass> *
 java::lang::Class::getClasses (void)
 {
+  // FIXME: security checking.
+
   // Until we have inner classes, it always makes sense to return an
   // empty array.
   JArray<jclass> *result
@@ -440,6 +466,8 @@ java::lang::Class::_getFields (JArray<java::lang::reflect::Field *> *result,
 JArray<java::lang::reflect::Field *> *
 java::lang::Class::getFields (void)
 {
+  // FIXME: security checking.
+
   using namespace java::lang::reflect;
 
   int count = _getFields (NULL, 0);

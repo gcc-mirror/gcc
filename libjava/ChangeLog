@@ -1,3 +1,10 @@
+2001-12-21  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/2428:
+	* java/lang/natClass.cc: Include RuntimePermission.h.
+	(getClassLoader): Define.
+	* java/lang/Class.h (Class.getClassLoader): Only declare.
+
 2001-12-19  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/FlowLayout.java (FlowLayout(), FlowLayout(int)): Set
