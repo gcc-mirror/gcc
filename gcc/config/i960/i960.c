@@ -809,7 +809,7 @@ i960_function_name_declare (file, name, fndecl)
   /* Even if nobody uses extra parms, can't have leafroc or tail calls if
      argblock, because argblock uses g14 implicitly.  */
 
-  if (current_function_args_size > 48)
+  if (current_function_args_size != 0)
     {
       tail_call_ok = 0;
       leaf_proc_ok = 0;
@@ -1165,7 +1165,7 @@ i960_function_epilogue (file, size)
 
   /* Must clear g14 on return.  */
 
-  if (current_function_args_size > 48)
+  if (current_function_args_size != 0)
     fprintf (file, "\tmov	0,g14\n");
 
   fprintf (file, "\tret\n");
@@ -1221,7 +1221,7 @@ i960_output_ret_insn (insn)
       return lbuf;
     }
 
-  if (current_function_args_size > 48)
+  if (current_function_args_size != 0)
     output_asm_insn ("mov	0,g14", 0);
 
   if (i960_leaf_ret_reg >= 0)
@@ -2135,7 +2135,7 @@ i960_reg_parm_stack_space (fndecl)
 
   /* Otherwise, we have an arg block if the current function has more than
      48 bytes of parameters.  */
-  if (current_function_args_size > 48)
+  if (current_function_args_size != 0)
     return 48;
   else
     return 0;
@@ -2195,7 +2195,7 @@ i960_expand_call (first_operand, second_operand, target)
 	 function call.  If the current function has no argument block,
 	 then g14 is zero before and after the call.  */
 
-      if (current_function_args_size > 48)
+      if (current_function_args_size != 0)
 	{
 	  start_sequence ();
 	  seq_stack = sequence_stack;
@@ -2209,7 +2209,7 @@ i960_expand_call (first_operand, second_operand, target)
 	}
     }
 
-  if (current_function_args_size > 48)
+  if (current_function_args_size != 0)
     frob_g14 = 1;
 
   if (GET_CODE (second_operand) != CONST_INT || INTVAL (second_operand) > 48)
