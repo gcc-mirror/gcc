@@ -3422,7 +3422,7 @@ asm_fprintf (FILE *file, const char *p, ...)
 	    break;
 
 #ifdef ASM_FPRINTF_EXTENSIONS
-	    /* Upper case letters are reserved for general use by asm_fprintf
+	    /* Uppercase letters are reserved for general use by asm_fprintf
 	       and so are not available to target specific code.  In order to
 	       prevent the ASM_FPRINTF_EXTENSIONS macro from using them then,
 	       they are defined here.  As they get turned into real extensions

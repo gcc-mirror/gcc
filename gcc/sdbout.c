@@ -1058,7 +1058,7 @@ sdbout_one_type (tree type)
       /* This is reputed to cause trouble with the following case,
 	 but perhaps checking TYPE_SIZE above will fix it.  */
 
-      /* Here is a test case:
+      /* Here is a testcase:
 
 	struct foo {
 	  struct badstr *bbb;

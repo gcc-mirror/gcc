@@ -5716,7 +5716,7 @@ safe_from_p (rtx x, tree exp, int top_p)
   /* A SAVE_EXPR might appear many times in the expression passed to the
      top-level safe_from_p call, and if it has a complex subexpression,
      examining it multiple times could result in a combinatorial explosion.
-     E.g. on an Alpha running at least 200MHz, a Fortran test case compiled
+     E.g. on an Alpha running at least 200MHz, a Fortran testcase compiled
      with optimization took about 28 minutes to compile -- even though it was
      only a few lines long.  So we mark each SAVE_EXPR we see with TREE_PRIVATE
      and turn that off when we are done.  We keep a list of the SAVE_EXPRs
