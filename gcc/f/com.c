@@ -12518,7 +12518,7 @@ ffecom_init_0 ()
   /* Do "extern int xargc;".  */
 
   ffecom_tree_xargc_ = build_decl (VAR_DECL,
-				   get_identifier ("xargc"),
+				   get_identifier ("f__xargc"),
 				   integer_type_node);
   DECL_EXTERNAL (ffecom_tree_xargc_) = 1;
   TREE_STATIC (ffecom_tree_xargc_) = 1;
