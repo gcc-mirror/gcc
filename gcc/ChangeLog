@@ -1,3 +1,15 @@
+2002-04-30  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.c (emit_soft_tfmode_libcall,
+	emit_soft_tfmode_binop, emit_soft_tfmode_unop, emit_soft_tfmode_cvt,
+	emit_hard_tfmode_operation, emit_tfmode_binop, emit_tfmode_unop,
+	emit_tfmode_cvt): New.
+	* config/sparc/sparc.md (extendsftf2, extenddftf2, trunctfsf2,
+	trunctfdf2, floatsitf2, floatunssitf2, floatditf2, floatunsditf2,
+	fix_trunctfsi2, fixuns_trunctfsi2, fix_trunctfdi2, fixuns_trunctfdi2,
+	addtf3, subtf3, multf3, divtf3, sqrttf2): Use them.
+	* config/sparc/sparc-protos.h: Update.
+
 2002-04-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* config.gcc (hppa1.1-*-pro*, hppa1.1-*-osf*, hppa1.1-*-rtems*,
@@ -170,7 +182,7 @@ Mon Apr 29 14:48:33 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	portable runtime model.
 
 2002-04-26  David Edelsohn  <edelsohn@gnu.org>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.md (sCC pattern): Remove clobber and use
 	result as temporary value.
