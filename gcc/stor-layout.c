@@ -834,8 +834,12 @@ layout_type (type)
 	       size directly, rather than do some division thing below.
 	       This optimization helps Fortran assumed-size arrays
 	       (where the size of the array is determined at runtime)
-	       substantially.  */
-	    if (TYPE_SIZE_UNIT (element) != 0)
+	       substantially.
+	       Note that we can't do this in the case where the size of
+	       the elements is one bit since TYPE_SIZE_UNIT cannot be
+	       set correctly in that case.  */
+	    if (TYPE_SIZE_UNIT (element) != 0
+		&& element_size != integer_one_node)
 	      {
 	        TYPE_SIZE_UNIT (type)
 		  = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (element), length);
