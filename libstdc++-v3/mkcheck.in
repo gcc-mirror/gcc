@@ -68,16 +68,18 @@ fi
 #LIB_PATH == where to find the build library binaries.
 if [ $WHICH != "1" ]; then
   LIB_PATH="$BUILD_DIR/src/.libs"
-  CXX="../../gcc/g++ -B../../gcc/"
+  CXX="../../gcc/g++"
+  CXX_BASE="-B../../gcc/"
 elif [ $WHICH -eq 1 ]; then
   LIB_PATH="$PREFIX_DIR/lib"
   CXX="$PREFIX_DIR/bin/g++"
+  CXX_BASE=""
 fi
 
 # gcc compiler flags
 #CXX_FLAG="-fsquangle -fhonor-std -fnew-exceptions -g -O2 -DDEBUG_ASSERT "
 #CXX_FLAG="-g -O2 -DDEBUG_ASSERT "
-CXX_FLAG="-g -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
+CXX_FLAG="-g $CXX_BASE -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 
 # a specific flag(s) to force the use of shared libraries, if any
 SH_FLAG=""
@@ -146,7 +148,7 @@ chmod u+w $TEST_DIR/*.tst
 
 # Emit useful info about compiler and platform
 echo "host: $(uname -mrsv)" >> $RESULTS_FILE
-echo "compiler: $($CXX --version)" >> $RESULTS_FILE
+echo "compiler: $($CXX -v 2>&1 | tail -1)" >> $RESULTS_FILE
 echo "compiler flags: $CXX_FLAG" >> $RESULTS_FILE
 echo "date: $(date +%Y%m%d)" >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE

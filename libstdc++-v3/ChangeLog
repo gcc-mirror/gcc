@@ -16,6 +16,11 @@
 	c++threads.h instead of copying.
 	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Do link here.
 
+	* config/c_io_libio.cc (__basic_file::_M_open_mode): Consolidate.
+	* bits/basic_file.h: Declare.
+
+	* mkcheck.in (TESTS_FILE): Use -v instead of --version.
+
 2000-07-07   brent verner  <brent@rcfile.org> 
 
 	* testsuite/27_io/istream_unformatted.cc (test05): New test.
