@@ -1,5 +1,5 @@
 /* gnu.java.beans.BeanInfoEmbryo
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -130,14 +130,15 @@ public class BeanInfoEmbryo {
 	}
 
 	public boolean hasMethod(MethodDescriptor m) {
-		for(int i=0;i<methods.size();i++) {
-			Method thisMethod = ((MethodDescriptor)methods.elementAt(i)).getMethod();
-			if(m.getMethod().getName().equals(thisMethod.getName())
-			   && ArrayHelper.equalsArray(m.getMethod().getParameterTypes(), thisMethod.getParameterTypes())) {
-				return true;
-			}
-		}
-		return false;
+          for(int i=0;i<methods.size();i++) {
+            Method thisMethod = ((MethodDescriptor)methods.elementAt(i)).getMethod();
+            if(m.getMethod().getName().equals(thisMethod.getName())
+               && Arrays.equals(m.getMethod().getParameterTypes(),
+                                thisMethod.getParameterTypes())) {
+              return true;
+            }
+          }
+          return false;
 	}
 	public void addMethod(MethodDescriptor m) {
 		methods.addElement(m);

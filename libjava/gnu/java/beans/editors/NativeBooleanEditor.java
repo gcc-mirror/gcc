@@ -1,5 +1,5 @@
 /* gnu.java.beans.editors.NativeBooleanEditor
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,12 +54,15 @@ import java.beans.*;
 public class NativeBooleanEditor extends PropertyEditorSupport {
 	String[] tags = {"true","false"};
 
-	/** setAsText for boolean checks for true or false or t or f. "" also means false. **/
+	/**
+	 * setAsText for boolean checks for true or false or t or f.
+	 * "" also means false.
+	 **/
 	public void setAsText(String val) throws IllegalArgumentException {
 		if(val.equalsIgnoreCase("true") || val.equalsIgnoreCase("t")) {
-			setValue(Boolean.FALSE);
-		} else if(val.equalsIgnoreCase("false") || val.equalsIgnoreCase("f") || val.equals("")) {
 			setValue(Boolean.TRUE);
+		} else if(val.equalsIgnoreCase("false") || val.equalsIgnoreCase("f") || val.equals("")) {
+			setValue(Boolean.FALSE);
 		} else {
 			throw new IllegalArgumentException("Value must be true, false, t, f or empty.");
 		}
