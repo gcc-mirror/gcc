@@ -1,6 +1,8 @@
 Wed Mar 29 15:44:53 2000  Jeffrey A Law  (law@cygnus.com)
 
-	* calls.c (expand_call): Fix typo.
+	* stmt.c (stmt_loop_nest_empty): Fix thinko in last change.
+
+	* calls.c (expand_call): Fix typo in last change.
 
 2000-03-29  Jason Merrill  <jason@casey.cygnus.com>
 
