@@ -6251,6 +6251,8 @@ init_decl_processing ()
   int wchar_type_size;
   tree array_domain_type;
 
+  lang_get_alias_set = c_get_alias_set;
+
   /* Check to see that the user did not specify an invalid combination
      of command-line options.  */
   if (flag_new_abi && !flag_vtable_thunks)
@@ -6640,7 +6642,6 @@ init_decl_processing ()
   using_eh_for_cleanups ();
 
   print_error_function = lang_print_error_function;
-  lang_get_alias_set = &c_get_alias_set;
   valid_lang_attribute = cp_valid_lang_attribute;
 
   /* Maintain consistency.  Perhaps we should just complain if they

@@ -1,5 +1,9 @@
 2000-06-01  Richard Henderson  <rth@cygnus.com>
 
+	* decl.c (init_decl_processing): Set lang_get_alias_set first thing.
+
+2000-06-01  Richard Henderson  <rth@cygnus.com>
+
 	* decl2.c (unsupported_options): Fix typo, make const.
 	(lang_decode_option): Fix bsearch argument order.
 
