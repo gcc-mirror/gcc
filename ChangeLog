@@ -1,3 +1,7 @@
+2002-05-31  Olaf Hering  <olh@suse.de>
+
+	* config-ml.in: Propogate DESTDIR also.
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* configure.in (vax-*-netbsd*): Don't build gas for this
