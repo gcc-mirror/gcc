@@ -1,3 +1,8 @@
+2004-08-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (complete_array_type): Don't gratuitously copy
+	maxindex. Its type is always set.
+
 2004-08-04  Paul Brook  <paul@codesourcery.com>
 
 	* Make-lang.in (cp/semantics.o, cp/optimize.o): Depend on TARGET_H.

@@ -5272,7 +5272,6 @@ complete_array_type (tree type, tree initial_value, int do_default)
 	      else
 		maxindex = size_binop (PLUS_EXPR, maxindex, ssize_int (1));
 	    }
-	  maxindex = copy_node (maxindex);
 	}
       else
 	{
@@ -5303,8 +5302,6 @@ complete_array_type (tree type, tree initial_value, int do_default)
       domain = build_index_type (maxindex);
       TYPE_DOMAIN (type) = domain;
 
-      if (! TREE_TYPE (maxindex))
-	TREE_TYPE (maxindex) = domain;
       if (initial_value)
         itype = TREE_TYPE (initial_value);
       else
