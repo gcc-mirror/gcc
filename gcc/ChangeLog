@@ -1,3 +1,9 @@
+2004-09-10  Eric Christopher  <echristo@redhat.com>
+
+	PR c/16046
+	* c-parse.in (attribute): Add NULL_TREE for error case
+	for error recovery.
+
 2004-09-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-common.h (struct c_fileinfo): Comment moved here from cp-tree.h.
@@ -6,8 +12,8 @@
 	* c-lex.c (get_fileinfo): Initialize file_info_tree here, if
 	it's not already been done ...
 	(init_c_lex): ... not here.
-	(fe_file_change): Don't call extract_interface_info
-.
+	(fe_file_change): Don't call extract_interface_info.
+
 2004-09-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (struct c_declspecs): Remove typedef_decl.  Add

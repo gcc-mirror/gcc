@@ -1359,7 +1359,7 @@ attribute:
                 '(' '(' attribute_list ')' ')' start_string_translation
 		{ $$ = $5; }
       | ATTRIBUTE error start_string_translation
-                {}
+                { $$ = NULL_TREE; }
 	;
 
 attribute_list:
@@ -2048,9 +2048,9 @@ c99_block_lineno_labeled_stmt:
 
 lineno_stmt:
 	  save_location stmt
-		{ 
+		{
 		  /* Two cases cannot and do not have line numbers associated:
-		     If stmt is degenerate, such as "2;", then stmt is an 
+		     If stmt is degenerate, such as "2;", then stmt is an
 		     INTEGER_CST, which cannot hold line numbers.  But that's
 		     ok because the statement will either be changed to a
 		     MODIFY_EXPR during gimplification of the statement expr,
@@ -2831,7 +2831,7 @@ optparms:
 						     grokparm ($3)));
 		}
 	;
-	
+
 optellipsis:
 	  /* NULL */
 		{

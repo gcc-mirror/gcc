@@ -1,0 +1,2 @@
+/* Tests error recovery for invalid code.  */
+__attribute__((foo)  int f (){} /* { dg-error "syntax error before \"int\"" } */
