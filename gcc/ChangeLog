@@ -1,3 +1,18 @@
+2004-09-30  Jan Hubicka  <jh@suse.cz>
+
+	PR debug/13974
+	* cfgrtl.c (try_redirect_by_replacing_jump,
+	force_nonfallthru_and_redirect, commit_one_edge_insertion,
+	cfg_layout_merge_blocks):  Do not attach any line number information
+	to newly inserted instructions.
+	* emit-rtl.c (emit_insn*_before, emit_insn*_after): Rename to
+	emit_insn_*_noloc.
+	(emit_*insn_before, emit_insn*_after): New.
+	(emit_*insn_before_setloc, emit_*insn_after_setloc): Do not overwrite
+	existing locators.
+	* rtl.h (emit_*insn_before_noloc, emit_*insn_after_noloc): Declare.
+	(emit_*insn_before_sameloc, emit_*insn_after_sameloc): Kill.
+
 2004-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_arg_frame_offset): Remove.

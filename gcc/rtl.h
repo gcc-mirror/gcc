@@ -1455,19 +1455,25 @@ extern rtx assign_temp (tree, int, int, int);
 
 /* In emit-rtl.c */
 extern rtx emit_insn_before (rtx, rtx);
+extern rtx emit_insn_before_noloc (rtx, rtx);
 extern rtx emit_insn_before_setloc (rtx, rtx, int);
 extern rtx emit_jump_insn_before (rtx, rtx);
+extern rtx emit_jump_insn_before_noloc (rtx, rtx);
 extern rtx emit_jump_insn_before_setloc (rtx, rtx, int);
 extern rtx emit_call_insn_before (rtx, rtx);
+extern rtx emit_call_insn_before_noloc (rtx, rtx);
 extern rtx emit_call_insn_before_setloc (rtx, rtx, int);
 extern rtx emit_barrier_before (rtx);
 extern rtx emit_label_before (rtx, rtx);
 extern rtx emit_note_before (int, rtx);
 extern rtx emit_insn_after (rtx, rtx);
+extern rtx emit_insn_after_noloc (rtx, rtx);
 extern rtx emit_insn_after_setloc (rtx, rtx, int);
 extern rtx emit_jump_insn_after (rtx, rtx);
+extern rtx emit_jump_insn_after_noloc (rtx, rtx);
 extern rtx emit_jump_insn_after_setloc (rtx, rtx, int);
 extern rtx emit_call_insn_after (rtx, rtx);
+extern rtx emit_call_insn_after_noloc (rtx, rtx);
 extern rtx emit_call_insn_after_setloc (rtx, rtx, int);
 extern rtx emit_barrier_after (rtx);
 extern rtx emit_label_after (rtx, rtx);
@@ -1498,19 +1504,6 @@ extern rtx next_label (rtx);
 extern rtx skip_consecutive_labels (rtx);
 extern rtx next_cc0_user (rtx);
 extern rtx prev_cc0_setter (rtx);
-
-#define emit_insn_before_sameloc(INSN, BEFORE) \
-  emit_insn_before_setloc (INSN, BEFORE, INSN_LOCATOR (BEFORE))
-#define emit_jump_insn_before_sameloc(INSN, BEFORE) \
-  emit_jump_insn_before_setloc (INSN, BEFORE, INSN_LOCATOR (BEFORE))
-#define emit_call_insn_before_sameloc(INSN, BEFORE) \
-  emit_call_insn_before_setloc (INSN, BEFORE, INSN_LOCATOR (BEFORE))
-#define emit_insn_after_sameloc(INSN, AFTER) \
-  emit_insn_after_setloc (INSN, AFTER, INSN_LOCATOR (AFTER))
-#define emit_jump_insn_after_sameloc(INSN, AFTER) \
-  emit_jump_insn_after_setloc (INSN, AFTER, INSN_LOCATOR (AFTER))
-#define emit_call_insn_after_sameloc(INSN, AFTER) \
-  emit_call_insn_after_setloc (INSN, AFTER, INSN_LOCATOR (AFTER))
 
 /* In cfglayout.c  */
 extern tree choose_inner_scope (tree, tree);

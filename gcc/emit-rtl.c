@@ -3951,7 +3951,7 @@ remove_unnecessary_notes (void)
 /* Make X be output before the instruction BEFORE.  */
 
 rtx
-emit_insn_before (rtx x, rtx before)
+emit_insn_before_noloc (rtx x, rtx before)
 {
   rtx last = before;
   rtx insn;
@@ -3998,7 +3998,7 @@ emit_insn_before (rtx x, rtx before)
    and output it before the instruction BEFORE.  */
 
 rtx
-emit_jump_insn_before (rtx x, rtx before)
+emit_jump_insn_before_noloc (rtx x, rtx before)
 {
   rtx insn, last = NULL_RTX;
 
@@ -4041,7 +4041,7 @@ emit_jump_insn_before (rtx x, rtx before)
    and output it before the instruction BEFORE.  */
 
 rtx
-emit_call_insn_before (rtx x, rtx before)
+emit_call_insn_before_noloc (rtx x, rtx before)
 {
   rtx last = NULL_RTX, insn;
 
@@ -4171,7 +4171,7 @@ emit_insn_after_1 (rtx first, rtx after)
 /* Make X be output after the insn AFTER.  */
 
 rtx
-emit_insn_after (rtx x, rtx after)
+emit_insn_after_noloc (rtx x, rtx after)
 {
   rtx last = after;
 
@@ -4227,7 +4227,7 @@ emit_insn_after_with_line_notes (rtx x, rtx after, rtx from)
    and output it after the insn AFTER.  */
 
 rtx
-emit_jump_insn_after (rtx x, rtx after)
+emit_jump_insn_after_noloc (rtx x, rtx after)
 {
   rtx last;
 
@@ -4263,7 +4263,7 @@ emit_jump_insn_after (rtx x, rtx after)
    and output it after the instruction AFTER.  */
 
 rtx
-emit_call_insn_after (rtx x, rtx after)
+emit_call_insn_after_noloc (rtx x, rtx after)
 {
   rtx last;
 
@@ -4364,19 +4364,19 @@ emit_note_copy_after (rtx orig, rtx after)
   return note;
 }
 
-/* Like emit_insn_after, but set INSN_LOCATOR according to SCOPE.  */
+/* Like emit_insn_after_noloc, but set INSN_LOCATOR according to SCOPE.  */
 rtx
 emit_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
-  rtx last = emit_insn_after (pattern, after);
+  rtx last = emit_insn_after_noloc (pattern, after);
 
-  if (pattern == NULL_RTX)
+  if (pattern == NULL_RTX || !loc)
     return last;
 
   after = NEXT_INSN (after);
   while (1)
     {
-      if (active_insn_p (after))
+      if (active_insn_p (after) && !INSN_LOCATOR (after))
 	INSN_LOCATOR (after) = loc;
       if (after == last)
 	break;
@@ -4385,19 +4385,29 @@ emit_insn_after_setloc (rtx pattern, rtx after, int loc)
   return last;
 }
 
-/* Like emit_jump_insn_after, but set INSN_LOCATOR according to SCOPE.  */
+/* Like emit_insn_after_noloc, but set INSN_LOCATOR according to AFTER.  */
+rtx
+emit_insn_after (rtx pattern, rtx after)
+{
+  if (INSN_P (after))
+    return emit_insn_after_setloc (pattern, after, INSN_LOCATOR (after));
+  else
+    return emit_insn_after_noloc (pattern, after);
+}
+
+/* Like emit_jump_insn_after_noloc, but set INSN_LOCATOR according to SCOPE.  */
 rtx
 emit_jump_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
-  rtx last = emit_jump_insn_after (pattern, after);
+  rtx last = emit_jump_insn_after_noloc (pattern, after);
 
-  if (pattern == NULL_RTX)
+  if (pattern == NULL_RTX || !loc)
     return last;
 
   after = NEXT_INSN (after);
   while (1)
     {
-      if (active_insn_p (after))
+      if (active_insn_p (after) && !INSN_LOCATOR (after))
 	INSN_LOCATOR (after) = loc;
       if (after == last)
 	break;
@@ -4406,19 +4416,29 @@ emit_jump_insn_after_setloc (rtx pattern, rtx after, int loc)
   return last;
 }
 
-/* Like emit_call_insn_after, but set INSN_LOCATOR according to SCOPE.  */
+/* Like emit_jump_insn_after_noloc, but set INSN_LOCATOR according to AFTER.  */
+rtx
+emit_jump_insn_after (rtx pattern, rtx after)
+{
+  if (INSN_P (after))
+    return emit_jump_insn_after_setloc (pattern, after, INSN_LOCATOR (after));
+  else
+    return emit_jump_insn_after_noloc (pattern, after);
+}
+
+/* Like emit_call_insn_after_noloc, but set INSN_LOCATOR according to SCOPE.  */
 rtx
 emit_call_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
-  rtx last = emit_call_insn_after (pattern, after);
+  rtx last = emit_call_insn_after_noloc (pattern, after);
 
-  if (pattern == NULL_RTX)
+  if (pattern == NULL_RTX || !loc)
     return last;
 
   after = NEXT_INSN (after);
   while (1)
     {
-      if (active_insn_p (after))
+      if (active_insn_p (after) && !INSN_LOCATOR (after))
 	INSN_LOCATOR (after) = loc;
       if (after == last)
 	break;
@@ -4427,12 +4447,54 @@ emit_call_insn_after_setloc (rtx pattern, rtx after, int loc)
   return last;
 }
 
-/* Like emit_insn_before, but set INSN_LOCATOR according to SCOPE.  */
+/* Like emit_call_insn_after_noloc, but set INSN_LOCATOR according to AFTER.  */
+rtx
+emit_call_insn_after (rtx pattern, rtx after)
+{
+  if (INSN_P (after))
+    return emit_call_insn_after_setloc (pattern, after, INSN_LOCATOR (after));
+  else
+    return emit_call_insn_after_noloc (pattern, after);
+}
+
+/* Like emit_insn_before_noloc, but set INSN_LOCATOR according to SCOPE.  */
 rtx
 emit_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
   rtx first = PREV_INSN (before);
-  rtx last = emit_insn_before (pattern, before);
+  rtx last = emit_insn_before_noloc (pattern, before);
+
+  if (pattern == NULL_RTX || !loc)
+    return last;
+
+  first = NEXT_INSN (first);
+  while (1)
+    {
+      if (active_insn_p (first) && !INSN_LOCATOR (first))
+	INSN_LOCATOR (first) = loc;
+      if (first == last)
+	break;
+      first = NEXT_INSN (first);
+    }
+  return last;
+}
+
+/* Like emit_insn_before_noloc, but set INSN_LOCATOR according to BEFORE.  */
+rtx
+emit_insn_before (rtx pattern, rtx before)
+{
+  if (INSN_P (before))
+    return emit_insn_before_setloc (pattern, before, INSN_LOCATOR (before));
+  else
+    return emit_insn_before_noloc (pattern, before);
+}
+
+/* like emit_insn_before_noloc, but set insn_locator according to scope.  */
+rtx
+emit_jump_insn_before_setloc (rtx pattern, rtx before, int loc)
+{
+  rtx first = PREV_INSN (before);
+  rtx last = emit_jump_insn_before_noloc (pattern, before);
 
   if (pattern == NULL_RTX)
     return last;
@@ -4440,13 +4502,56 @@ emit_insn_before_setloc (rtx pattern, rtx before, int loc)
   first = NEXT_INSN (first);
   while (1)
     {
-      if (active_insn_p (first))
+      if (active_insn_p (first) && !INSN_LOCATOR (first))
 	INSN_LOCATOR (first) = loc;
       if (first == last)
 	break;
       first = NEXT_INSN (first);
     }
   return last;
+}
+
+/* Like emit_jump_insn_before_noloc, but set INSN_LOCATOR according to BEFORE.  */
+rtx
+emit_jump_insn_before (rtx pattern, rtx before)
+{
+  if (INSN_P (before))
+    return emit_jump_insn_before_setloc (pattern, before, INSN_LOCATOR (before));
+  else
+    return emit_jump_insn_before_noloc (pattern, before);
+}
+
+/* like emit_insn_before_noloc, but set insn_locator according to scope.  */
+rtx
+emit_call_insn_before_setloc (rtx pattern, rtx before, int loc)
+{
+  rtx first = PREV_INSN (before);
+  rtx last = emit_call_insn_before_noloc (pattern, before);
+
+  if (pattern == NULL_RTX)
+    return last;
+
+  first = NEXT_INSN (first);
+  while (1)
+    {
+      if (active_insn_p (first) && !INSN_LOCATOR (first))
+	INSN_LOCATOR (first) = loc;
+      if (first == last)
+	break;
+      first = NEXT_INSN (first);
+    }
+  return last;
+}
+
+/* like emit_call_insn_before_noloc,
+   but set insn_locator according to before.  */
+rtx
+emit_call_insn_before (rtx pattern, rtx before)
+{
+  if (INSN_P (before))
+    return emit_call_insn_before_setloc (pattern, before, INSN_LOCATOR (before));
+  else
+    return emit_call_insn_before_noloc (pattern, before);
 }
 
 /* Take X and emit it at the end of the doubly-linked
