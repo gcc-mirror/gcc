@@ -1,3 +1,10 @@
+2003-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR debug/6387
+	* dwarf2out.c (dwarf2out_decl): If we're at -g1, just stick nested
+	function DIEs at toplevel.
+	(decls_for_scope): At -g1, don't descend into subblocks.
+
 2003-03-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* varasm.c (struct rtx_const): Change type of un.addr member
