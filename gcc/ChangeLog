@@ -1,5 +1,13 @@
 2002-09-21  Richard Earnshaw  <rearnsha@arm.com>
 
+	* netbsd-aout.h (NETBSD_LINK_SPEC_AOUT): New, takes old definition of
+	LINK_SPEC.
+	(LINK_SPEC): Define to NETBSD_LINK_SPEC_AOUT.
+	* arm/netbsd.h (SUBTARGET_EXTRA_SEPCS): Add NETBSD_LINK_SPEC_AOUT.
+	(LINK_SPEC): Rework to use NETBSD_LINK_SPEC_AOUT).
+
+2002-09-21  Richard Earnshaw  <rearnsha@arm.com>
+
 	PR opt/7930
 	* cse.c (fold_rtx): Calculate old_cost before we fold each
 	operand.
