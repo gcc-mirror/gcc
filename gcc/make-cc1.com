@@ -153,33 +153,51 @@ $!
 $! Test and see if we need these messages or not.  The -1 switch gives it away.
 $!
 $gas := $gnu_cc:[000000]gcc-as.exe
-$if f$search(gas-"$").eqs."" then  goto gas_message	!must be VAXC
+$if f$search(gas-"$").eqs."" then  goto gas_missing_message	!must be VAXC
 $define/user sys$error sys$scratch:gas_test.tmp
 $gas -1 nla0: -o nla0:
 $size=f$file_attributes("sys$scratch:gas_test.tmp","ALQ")
 $delete/nolog sys$scratch:gas_test.tmp;*
-$if size.eq.0 then goto no_message
-$gas_message:
-$type sys$input
+$if size.eq.0 then goto skip_gas_message
+$type sys$input:	!an old version of gas was found
 
-	Note: GCC 2.x treats external variables differently than GCC 1.x does.
-Before you use GCC 2.x, you should obtain a version of the assembler which
-contains the patches to work with GCC 2.x (GCC-AS 1.38 does not contain
-these patches - whatever comes after this probably will).  The assembler
-in gcc-vms-1.42.tar.gz from prep does contain the proper patches.
+-----
+     Note:  you appear to have an old version of gas, the GNU assembler.
+GCC 2.x treats external variables differently than GCC 1.x does.  Before
+you use GCC 2.x, you should obtain a version of the assembler which works
+with GCC 2.x (gas-1.38 and earlier did not have the necessary support;
+gas-2.0 through gas-2.3 did not work reliably for vax/vms configuration).
+The assembler in gcc-vms-1.42 contained patches to provide the proper
+support, and more recent versions have an up to date version of gas which
+provides the support.  gas from binutils-2.5 or later is recommended.
 
-	If you do not update the assembler, the compiler will still work,
+     If you do not update the assembler, the compiler will still work,
 but `extern const' variables will be treated as `extern'.  This will result
 in linker warning messages about mismatched psect attributes, and these
 variables will be placed in read/write storage.
+-----
 
-$!
-$no_message:
+$goto skip_gas_message
+$gas_missing_message:
+$type sys$input:	!no version of gas was found
+
+-----
+     Note:  you appear to be missing gas, the GNU assembler.  Since
+GCC produces assembly code as output from compilation, you need the
+assembler to make full use of the compiler.  It should be put in place
+as GNU_CC:[000000]GCC-AS.EXE.
+
+     A prebuilt copy of gas is available from the "gcc-vms" distribution,
+and the gas source code is included in the GNU "binutils" distribution.
+Version 2.5.2 or later is recommended.
+-----
+
+$skip_gas_message:
 $!
 $!
 $ if DO_DEBUG.eq.1 then LDFLAGS = LDFLAGS + "/Debug"
 $!
-$if DO_LINK.eq.1 then goto compile_cc1
+$if DO_LINK.eq.1 then goto no_yfiles	!compile_cc1
 $!
 $! Build alloca if necessary (in 'LIBS for use with VAXC)
 $!
