@@ -1,3 +1,16 @@
+2004-09-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (SHORT): New mode macro.
+	(size): New mode attribute.
+	(extend[qh]i[sd]i2): Redefine using :GPR and :SHORT.
+	(*extend[qh]i[sd]i2): New define_insn_and_split, combining previous
+	*extend[qh]i[sd]i2 and *extend[qh]i[sd]i2_mem patterns.  Use only if
+	!ISA_HAS_SEB_SEH.
+	(*extend[qh]i[sd]i2_se[bh]): New pattern, combining previous
+	*extend[qh]isi2_hw patterns and extending them to di.
+	(extendqihi2): Implement as define_insn_and_split that produces
+	extendqisi2 after reload.
+
 2004-09-03  Devang Patel  <dpatel@apple.com>
 
 	* Makefile.in (OBJS-common): Add tree-if-conv.o
