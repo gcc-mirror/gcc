@@ -1,5 +1,9 @@
 2002-02-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa/t-pa, pa/t-pro, som.h: Revert last patch.
+
+2002-02-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* pa/t-pa (LIB2FUNCS_EXTRA): Don't build lib2funcs.asm.
 	* pa/t-pro (LIB2FUNCS_EXTRA): Likewise.
 	* som.h (DO_GLOBAL_DTORS_BODY): Delete define.
