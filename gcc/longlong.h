@@ -15,12 +15,12 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE 32
+#ifndef SI_TYPE_SIZE
+#define SI_TYPE_SIZE 32
 #endif
 
-#define __BITS4 (LONG_TYPE_SIZE / 4)
-#define __ll_B (1L << (LONG_TYPE_SIZE / 2))
+#define __BITS4 (SI_TYPE_SIZE / 4)
+#define __ll_B (1L << (SI_TYPE_SIZE / 2))
 #define __ll_lowpart(t) ((USItype) (t) % __ll_B)
 #define __ll_highpart(t) ((USItype) (t) / __ll_B)
 
@@ -915,7 +915,7 @@ extern const UQItype __clz_tab[];
     USItype __xr = (x);							\
     USItype __a;							\
 									\
-    if (LONG_TYPE_SIZE <= 32)						\
+    if (SI_TYPE_SIZE <= 32)						\
       {									\
 	__a = __xr < (1<<2*__BITS4)					\
 	  ? (__xr < (1<<__BITS4) ? 0 : __BITS4)				\
@@ -923,12 +923,12 @@ extern const UQItype __clz_tab[];
       }									\
     else								\
       {									\
-	for (__a = LONG_TYPE_SIZE - 8; __a > 0; __a -= 8)		\
+	for (__a = SI_TYPE_SIZE - 8; __a > 0; __a -= 8)		\
 	  if (((__xr >> __a) & 0xff) != 0)				\
 	    break;							\
       }									\
 									\
-    (count) = LONG_TYPE_SIZE - (__clz_tab[__xr >> __a] + __a);		\
+    (count) = SI_TYPE_SIZE - (__clz_tab[__xr >> __a] + __a);		\
   } while (0)
 #endif
 
