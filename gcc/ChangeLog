@@ -1,3 +1,29 @@
+2003-05-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* coverage.h (coverage_counter_alloc): New function.
+	* function.h (struct function): Remove arc_profile flag.
+	* coverage.c (fn_ident): Remove.
+	(fn_b_ctrs, no_coverage): New.
+	(get_coverage_counts): Use current_function_funcdef_no.
+	(coverage_counter_alloc): New.
+	(coverage_counter_ref): Adjust.
+	(coverage_begin_output): Check no_coverage. Use
+	current_function_funcdef_no.
+	(coverage_end_function): Likewise.
+	(create_coverage): Set no_coverage. Set DECL_UNINLINEABLE rather
+	than clearing flag_inline_functions. Do not clear arc_profile
+	flag.
+	* function.c (prepare_function_start): Do not set arc_profile
+	flag.
+	* profile.c (instrument_edges): Return number of instrumented
+	edges. Use a for loop.
+	(branch_prob): Call coverage_counter_alloc. Make BB_TO_GCOV_INDEX
+	local to here and simplify. Use profile_arc_flag not arc_profile
+	flag.
+	(find_spanning_tree): Reformat.
+	* toplev.c (rest_of_compilation): Use profile_arc_flags and
+	flag_test_coverage rather than arc_profile flag.
+
 2003-05-11  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* doc/invoke.texi (Wctor-dtor-privacy): Update documentation.

@@ -84,12 +84,6 @@ struct bb_info {
 #define EDGE_INFO(e)  ((struct edge_info *) (e)->aux)
 #define BB_INFO(b)  ((struct bb_info *) (b)->aux)
 
-/* Keep all basic block indexes nonnegative in the gcov output.  Index 0
-   is used for entry block, last block exit block.  */
-#define BB_TO_GCOV_INDEX(bb)  ((bb) == ENTRY_BLOCK_PTR ? 0		\
-			       : ((bb) == EXIT_BLOCK_PTR		\
-				  ? last_basic_block + 1 : (bb)->index + 1))
-
 /* Counter summary from the last set of coverage counts read. */
 
 const struct gcov_ctr_summary *profile_info;
@@ -111,7 +105,7 @@ static int total_num_branches;
 /* Forward declarations.  */
 static void find_spanning_tree PARAMS ((struct edge_list *));
 static rtx gen_edge_profiler PARAMS ((int));
-static void instrument_edges PARAMS ((struct edge_list *));
+static unsigned instrument_edges PARAMS ((struct edge_list *));
 static void compute_branch_probabilities PARAMS ((void));
 static gcov_type * get_exec_counts PARAMS ((void));
 static basic_block find_group PARAMS ((basic_block));
@@ -123,40 +117,45 @@ static void union_groups PARAMS ((basic_block, basic_block));
    F is the first insn of the chain.
    NUM_BLOCKS is the number of basic blocks found in F.  */
 
-static void
+static unsigned
 instrument_edges (el)
      struct edge_list *el;
 {
-  int num_instr_edges = 0;
+  unsigned num_instr_edges = 0;
   int num_edges = NUM_EDGES (el);
   basic_block bb;
+  
   remove_fake_edges ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
-      edge e = bb->succ;
-      while (e)
+      edge e;
+
+      for (e = bb->succ; e; e = e->succ_next)
 	{
 	  struct edge_info *inf = EDGE_INFO (e);
+	  
 	  if (!inf->ignore && !inf->on_tree)
 	    {
+	      rtx edge_profile;
+	      
 	      if (e->flags & EDGE_ABNORMAL)
 		abort ();
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file, "Edge %d to %d instrumented%s\n",
 			 e->src->index, e->dest->index,
 			 EDGE_CRITICAL_P (e) ? " (and split)" : "");
-	      insert_insn_on_edge (
-			 gen_edge_profiler (num_instr_edges++), e);
+	      edge_profile = gen_edge_profiler (num_instr_edges++);
+	      insert_insn_on_edge (edge_profile, e);
 	      rebuild_jump_labels (e->insns);
 	    }
-	  e = e->succ_next;
 	}
     }
 
   total_num_blocks_created += num_edges;
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "%d edges instrumented\n", num_instr_edges);
+  return num_instr_edges;
 }
 
 
@@ -353,9 +352,9 @@ compute_branch_probabilities ()
 		  for (e = bb->pred; e; e = e->pred_next)
 		    total += e->count;
 
-		  /* Seedgeh for the invalid edge, and set its count.  */
+		  /* Search for the invalid edge, and set its count.  */
 		  for (e = bb->pred; e; e = e->pred_next)
-		    if (! EDGE_INFO (e)->count_valid && ! EDGE_INFO (e)->ignore)
+		    if (!EDGE_INFO (e)->count_valid && !EDGE_INFO (e)->ignore)
 		      break;
 
 		  /* Calculate count for remaining edge by conservation.  */
@@ -552,6 +551,7 @@ branch_prob ()
   basic_block bb;
   unsigned i;
   unsigned num_edges, ignored_edges;
+  unsigned num_instrumented;
   struct edge_list *el;
 
   total_num_times_called++;
@@ -644,18 +644,23 @@ branch_prob ()
      as possible to minimize number of edge splits necessary.  */
 
   find_spanning_tree (el);
-
+  
   /* Fake edges that are not on the tree will not be instrumented, so
      mark them ignored.  */
-  for (i = 0; i < num_edges; i++)
+  for (num_instrumented = i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);
       struct edge_info *inf = EDGE_INFO (e);
-      if ((e->flags & EDGE_FAKE) && !inf->ignore && !inf->on_tree)
+
+      if (inf->ignore || inf->on_tree)
+	/*NOP*/;
+      else if (e->flags & EDGE_FAKE)
 	{
 	  inf->ignore = 1;
 	  ignored_edges++;
 	}
+      else
+	num_instrumented++;
     }
 
   total_num_blocks += n_basic_blocks + 2;
@@ -684,6 +689,13 @@ branch_prob ()
       gcov_write_length (offset);
     }
 
+   /* Keep all basic block indexes nonnegative in the gcov output.
+      Index 0 is used for entry block, last index is for exit block.
+      */
+  ENTRY_BLOCK_PTR->index = -1;
+  EXIT_BLOCK_PTR->index = last_basic_block;
+#define BB_TO_GCOV_INDEX(bb)  ((bb)->index + 1)
+  
   /* Arcs */
   if (coverage_begin_output ())
     {
@@ -788,15 +800,21 @@ branch_prob ()
 	    }
 	}
     }
+  ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
+  EXIT_BLOCK_PTR->index = EXIT_BLOCK;
+#undef BB_TO_GCOV_INDEX
 
   if (flag_branch_probabilities)
     compute_branch_probabilities ();
 
   /* For each edge not on the spanning tree, add counting code as rtl.  */
-
-  if (cfun->arc_profile && profile_arc_flag)
+  if (profile_arc_flag
+      && coverage_counter_alloc (GCOV_COUNTER_ARCS, num_instrumented))
     {
-      instrument_edges (el);
+      unsigned n_instrumented = instrument_edges (el);
+
+      if (n_instrumented != num_instrumented)
+	abort ();
 
       /* Commit changes done by instrumentation.  */
       commit_edge_insertions_watch_calls ();
@@ -880,8 +898,7 @@ find_spanning_tree (el)
     {
       edge e = INDEX_EDGE (el, i);
       if (((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_FAKE))
-	   || e->dest == EXIT_BLOCK_PTR
-	   )
+	   || e->dest == EXIT_BLOCK_PTR)
 	  && !EDGE_INFO (e)->ignore
 	  && (find_group (e->src) != find_group (e->dest)))
 	{
@@ -897,9 +914,8 @@ find_spanning_tree (el)
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);
-      if ((EDGE_CRITICAL_P (e))
-	  && !EDGE_INFO (e)->ignore
-	  && (find_group (e->src) != find_group (e->dest)))
+      if (EDGE_CRITICAL_P (e) && !EDGE_INFO (e)->ignore
+	  && find_group (e->src) != find_group (e->dest))
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Critical edge %d to %d put to tree\n",
@@ -913,8 +929,8 @@ find_spanning_tree (el)
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);
-      if (find_group (e->src) != find_group (e->dest)
-	  && !EDGE_INFO (e)->ignore)
+      if (!EDGE_INFO (e)->ignore
+	  && find_group (e->src) != find_group (e->dest))
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Normal edge %d to %d put to tree\n",

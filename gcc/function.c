@@ -6434,8 +6434,6 @@ prepare_function_start ()
 
   current_function_funcdef_no = funcdef_no++;
 
-  cfun->arc_profile = profile_arc_flag || flag_test_coverage;
-
   cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
 
   cfun->max_jumptable_ents = 0;
