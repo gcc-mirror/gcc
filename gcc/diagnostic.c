@@ -279,40 +279,6 @@ diagnostic_action_after_output (diagnostic_context *context,
     }
 }
 
-/* The default function to print out name of current function that caused
-   an error.  */
-void
-lhd_print_error_function (diagnostic_context *context, const char *file)
-{
-  if (diagnostic_last_function_changed (context))
-    {
-      const char *old_prefix = context->printer->prefix;
-      char *new_prefix = file ? build_message_string ("%s: ", file) : NULL;
-
-      pp_set_prefix (context->printer, new_prefix);
-
-      if (current_function_decl == NULL)
-	pp_string (context->printer, _("At top level:"));
-      else
-	{
-	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
-	    pp_printf
-	      (context->printer, "In member function `%s':",
-	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
-	  else
-	    pp_printf
-	      (context->printer, "In function `%s':",
-	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
-	}
-      pp_newline (context->printer);
-
-      diagnostic_set_last_function (context);
-      pp_flush (context->printer);
-      context->printer->prefix = old_prefix;
-      free ((char*) new_prefix);
-    }
-}
-
 /* Prints out, if necessary, the name of the current function
   that caused an error.  Called from all error and warning functions.
   We ignore the FILE parameter, as it cannot be relied upon.  */

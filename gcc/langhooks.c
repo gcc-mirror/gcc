@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "ggc.h"
+#include "diagnostic.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -491,6 +492,40 @@ write_global_declarations (void)
 void
 lhd_initialize_diagnostics (struct diagnostic_context *ctx ATTRIBUTE_UNUSED)
 {
+}
+
+/* The default function to print out name of current function that caused
+   an error.  */
+void
+lhd_print_error_function (diagnostic_context *context, const char *file)
+{
+  if (diagnostic_last_function_changed (context))
+    {
+      const char *old_prefix = context->printer->prefix;
+      char *new_prefix = file ? file_name_as_prefix (file) : NULL;
+
+      pp_set_prefix (context->printer, new_prefix);
+
+      if (current_function_decl == NULL)
+	pp_printf (context->printer, "At top level:");
+      else
+	{
+	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
+	    pp_printf
+	      (context->printer, "In member function `%s':",
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
+	  else
+	    pp_printf
+	      (context->printer, "In function `%s':",
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
+	}
+      pp_newline (context->printer);
+
+      diagnostic_set_last_function (context);
+      pp_flush (context->printer);
+      context->printer->prefix = old_prefix;
+      free ((char*) new_prefix);
+    }
 }
 
 #include "gt-langhooks.h"
