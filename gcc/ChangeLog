@@ -1,3 +1,8 @@
+2001-12-03  Geoff Keating  <geoffk@redhat.com>
+
+	* emit-rtl.c (gen_lowpart_common): Avoid unwanted sign-extension
+	of array elements.
+
 2001-12-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR c/4988
