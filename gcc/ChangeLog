@@ -1,3 +1,17 @@
+2000-08-21  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* diagnostic.c (context_as_prefix): Export.
+	(need_error_newline): Remove.
+	(lang_diagnostic_starter, lang_diagnostic_finalizer): New objects.
+	(error_module_changed, record_last_error_module,
+	error_function_changed, record_last_error_function): New functions.
+	(initialize_diagnostics): Default intialize
+	lang_diagnostic_starter, lang_diagnostic_finalizer.
+	(init_output_buffer): Tweak.
+	(file_name_as_prefix): New function.
+	(announce_function, default_print_error_function,
+	report_error_function, set_diagnostic_context): Tweak.
+
 2000-08-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* flow.c (init_propagate_block_info): Handle SUBREG in a jump
