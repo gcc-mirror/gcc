@@ -8022,9 +8022,27 @@ tree_expr_nonnegative_p (t)
       return ! REAL_VALUE_NEGATIVE (TREE_REAL_CST (t));
 
     case PLUS_EXPR:
-      return FLOAT_TYPE_P (TREE_TYPE (t))
-	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
-	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+      if (FLOAT_TYPE_P (TREE_TYPE (t)))
+	return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+	       && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+
+      /* zero_extend(x) + zero_extend(y) is non-negative is x and y are
+	 both unsigned and at atleast 2 bits shorter than the result.  */
+      if (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
+	  && TREE_CODE (TREE_OPERAND (t, 1)) == NOP_EXPR)
+	{
+	  tree inner1 = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	  tree inner2 = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0));
+	  if (TREE_CODE (inner1) == INTEGER_TYPE && TREE_UNSIGNED (inner1)
+	      && TREE_CODE (inner2) == INTEGER_TYPE && TREE_UNSIGNED (inner2))
+	    {
+	      unsigned int prec = MAX (TYPE_PRECISION (inner1),
+				       TYPE_PRECISION (inner2)) + 1;
+	      return prec < TYPE_PRECISION (TREE_TYPE (t));
+	    }
+	}
+      break;
 
     case MULT_EXPR:
       if (FLOAT_TYPE_P (TREE_TYPE (t)))
@@ -8035,6 +8053,20 @@ tree_expr_nonnegative_p (t)
 	  return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
 		 && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
 	}
+
+      /* zero_extend(x) * zero_extend(y) is non-negative is x and y are
+	 both unsigned and their total bits is shorter than the result.  */
+      if (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
+	  && TREE_CODE (TREE_OPERAND (t, 1)) == NOP_EXPR)
+	{
+	  tree inner1 = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	  tree inner2 = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0));
+	  if (TREE_CODE (inner1) == INTEGER_TYPE && TREE_UNSIGNED (inner1)
+	      && TREE_CODE (inner2) == INTEGER_TYPE && TREE_UNSIGNED (inner2))
+	    return TYPE_PRECISION (inner1) + TYPE_PRECISION (inner2)
+		   < TYPE_PRECISION (TREE_TYPE (t));
+	}
       return 0;
 
     case TRUNC_DIV_EXPR:
@@ -8042,12 +8074,45 @@ tree_expr_nonnegative_p (t)
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
-	&& tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+
     case TRUNC_MOD_EXPR:
     case CEIL_MOD_EXPR:
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
+
+    case RDIV_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+
+    case NOP_EXPR:
+      {
+	tree inner_type = TREE_TYPE (TREE_OPERAND (t, 0));
+	tree outer_type = TREE_TYPE (t);
+
+	if (TREE_CODE (outer_type) == REAL_TYPE)
+	  {
+	    if (TREE_CODE (inner_type) == REAL_TYPE)
+	      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
+	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
+	      {
+		if (TREE_UNSIGNED (inner_type))
+		  return 1;
+		return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
+	      }
+	  }
+	else if (TREE_CODE (outer_type) == INTEGER_TYPE)
+	  {
+	    if (TREE_CODE (inner_type) == REAL_TYPE)
+	      return tree_expr_nonnegative_p (TREE_OPERAND (t,0));
+	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
+	      return TYPE_PRECISION (inner_type) < TYPE_PRECISION (outer_type)
+		      && TREE_UNSIGNED (inner_type);
+	  }
+      }
+      break;
+
     case COND_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
 	&& tree_expr_nonnegative_p (TREE_OPERAND (t, 2));
@@ -8097,6 +8162,12 @@ tree_expr_nonnegative_p (t)
 	      case BUILT_IN_ATAN:
 	      case BUILT_IN_ATANF:
 	      case BUILT_IN_ATANL:
+	      case BUILT_IN_CEIL:
+	      case BUILT_IN_CEILF:
+	      case BUILT_IN_CEILL:
+	      case BUILT_IN_FLOOR:
+	      case BUILT_IN_FLOORF:
+	      case BUILT_IN_FLOORL:
 		return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
 	      case BUILT_IN_POW:
@@ -8115,10 +8186,10 @@ tree_expr_nonnegative_p (t)
       if (truth_value_p (TREE_CODE (t)))
 	/* Truth values evaluate to 0 or 1, which is nonnegative.  */
 	return 1;
-      else
-	/* We don't know sign of `t', so be conservative and return false.  */
-	return 0;
     }
+
+  /* We don't know sign of `t', so be conservative and return false.  */
+  return 0;
 }
 
 /* Return true if `r' is known to be non-negative.

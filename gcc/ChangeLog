@@ -1,3 +1,11 @@
+2003-06-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/168
+	* fold-const.c (tree_expr_nonnegative_p):  Handle addition
+	and multiplication of zero extensions, floating point division,
+	and integer<->fp, fp<->fp and zero extension conversions.
+	The built-in ceil and floor functions preserve signedness.
+
 2003-06-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Follow spelling conventions.
