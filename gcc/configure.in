@@ -3309,7 +3309,7 @@ changequote([,])dnl
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		case $machine in
 changequote(,)dnl
-		*-*-solaris2.[0-6]*) ;;
+		*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*) ;;
 changequote([,])dnl
 		*-*-solaris2*)
 			tm_file=sparc/sol2-sld-64.h
@@ -4324,49 +4324,87 @@ AC_MSG_RESULT($gcc_cv_as_subsections)
 
 case "$target" in 
   sparc*-*-*)
-    AC_MSG_CHECKING(assembler .register pseudo-op support)
-    gcc_cv_as_register_pseudo_op=
-    if test x$gcc_cv_as != x; then
-	# Check if we have .register
-	echo ".register %g2, #scratch" > conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+    AC_CACHE_CHECK([assembler .register pseudo-op support],
+	gcc_cv_as_register_pseudo_op, [
+	gcc_cv_as_register_pseudo_op=unknown
+	if test x$gcc_cv_as != x; then
+	    # Check if we have .register
+	    echo ".register %g2, #scratch" > conftest.s
+	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
 		gcc_cv_as_register_pseudo_op=yes
-		AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP)
+	    else
+		gcc_cv_as_register_pseudo_op=no
+	    fi
+	    rm -f conftest.s conftest.o
 	fi
-	rm -f conftest.s conftest.o
+    ])
+    if test "x$gcc_cv_as_register_pseudo_op" = xyes; then
+	AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP)
     fi
-    AC_MSG_RESULT($gcc_cv_as_register_pseudo_op)
 
-    AC_MSG_CHECKING([assembler offsetable %lo() support])
-    gcc_cv_as_offsetable_lo10=
-    if test x$gcc_cv_as != x; then
-	# Check if assembler has offsetable %lo()
-	echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
-	echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
-	gcc_cv_as_flags64="-xarch=v9"
-	if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
-		:
-	else	      
-		gcc_cv_as_flags64="-64"
-		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
-			:
-		else	      
-			gcc_cv_as_flags64=""
-		fi
-	fi
-	if test -n "$gcc_cv_as_flags64" ; then
-		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest1.o conftest1.s > /dev/null 2>&1; then
-			if cmp conftest.o conftest1.o > /dev/null 2>&1; then
-				:
-			else
-				gcc_cv_as_offsetable_lo10=yes
-				AC_DEFINE(HAVE_AS_OFFSETABLE_LO10)
+    case "$tm_file" in
+    *64*)
+	AC_CACHE_CHECK([for 64 bit support in assembler ($gcc_cv_as)],
+	    gcc_cv_as_flags64, [
+		if test -n "$gcc_cv_as"; then
+		    echo ".xword foo" > conftest.s
+		    gcc_cv_as_flags64=no
+		    for flag in "-xarch=v9" "64 -Av9"; do
+			if $gcc_cv_as $flag -o conftest.o conftest.s \
+			    > /dev/null 2>&1; then
+			    gcc_cv_as_flags64=$flag
+			    break
 			fi
+		    done
+		    rm -f conftest.s conftest.o
+		else
+		    if test "$gas" = yes; then
+			gcc_cv_as_flags64="-64 -Av9"
+		    else
+			gcc_cv_as_flags64="-xarch=v9"
+		    fi
 		fi
+	])
+	if test "x$gcc_cv_as_flags64" = xno; then
+changequote(, )
+	    tmake_file=`echo " $tmake_file " | sed -e 's, sparc/t-sol2-64 , ,' -e 's,^ ,,' -e 's, $,,'`
+	    dep_tmake_file=`echo " $dep_tmake_file " | sed -e 's, [^ ]*/config/sparc/t-sol2-64 , ,' -e 's,^ ,,' -e 's, $,,'`
+changequote([, ])
+	else
+	    AC_DEFINE_UNQUOTED(AS_SPARC64_FLAG, "$gcc_cv_as_flags64")
 	fi
-	rm -f conftest.s conftest.o conftest1.s conftest1.o
+	;;
+    *) gcc_cv_as_flags64=${gcc_cv_as_flags64-no}
+	;;
+    esac
+
+    if test "x$gcc_cv_as_flags64" != xno; then
+	AC_CACHE_CHECK([for assembler offsetable %lo() support],
+	    gcc_cv_as_offsetable_lo10, [
+	    gcc_cv_as_offsetable_lo10=unknown
+	    if test "x$gcc_cv_as" != x; then
+		# Check if assembler has offsetable %lo()
+		echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
+		echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
+		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s \
+			> /dev/null 2>&1 &&
+		   $gcc_cv_as $gcc_cv_as_flags64 -o conftest1.o conftest1.s \
+			> /dev/null 2>&1; then
+		    if cmp conftest.o conftest1.o > /dev/null 2>&1; then
+			gcc_cv_as_offsetable_lo10=no
+		    else
+			gcc_cv_as_offsetable_lo10=yes
+		    fi
+		else
+		    gcc_cv_as_offsetable_lo10=no
+		fi
+		rm -f conftest.s conftest.o conftest1.s conftest1.o
+	    fi
+	])
+	if test "x$gcc_cv_as_offsetable_lo10" = xyes; then
+	    AC_DEFINE(HAVE_AS_OFFSETABLE_LO10)
+	fi
     fi
-    AC_MSG_RESULT($gcc_cv_as_offsetable_lo10)
     ;;
 
 changequote(,)dnl
