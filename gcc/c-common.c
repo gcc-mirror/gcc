@@ -54,8 +54,7 @@ int skip_evaluation;
 enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_NO_CHECK_MEMORY_USAGE, A_NO_INSTRUMENT_FUNCTION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
-	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS,
-	    A_INIT_PRIORITY};
+	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS};
 
 enum format_type { printf_format_type, scanf_format_type,
 		   strftime_format_type };
@@ -68,6 +67,7 @@ static void record_function_format	PROTO((tree, tree, enum format_type,
 					       int, int));
 static void record_international_format	PROTO((tree, tree, int));
 static tree c_find_base_decl            PROTO((tree));
+static int default_valid_lang_attribute PROTO ((tree, tree, tree, tree));
 
 /* Keep a stack of if statements.  We record the number of compound
    statements seen up to the if keyword, as well as the line number
@@ -93,12 +93,6 @@ static int if_stack_pointer = 0;
 
 /* Generate RTL for the start of an if-then, and record the start of it
    for ambiguous else detection.  */
-
-/* A list of objects which have constructors or destructors which
-   reside in the global scope, and have an init_priority attribute
-   associated with them.  The decl is stored in the TREE_VALUE slot
-   and the priority number is stored in the TREE_PURPOSE slot.  */
-tree static_aggregates_initp;
 
 void
 c_expand_start_cond (cond, exitflag, compstmt_count)
@@ -398,11 +392,29 @@ init_attributes ()
   add_attribute (A_FORMAT_ARG, "format_arg", 1, 1, 1);
   add_attribute (A_WEAK, "weak", 0, 0, 1);
   add_attribute (A_ALIAS, "alias", 1, 1, 1);
-  add_attribute (A_INIT_PRIORITY, "init_priority", 0, 1, 0);
   add_attribute (A_NO_INSTRUMENT_FUNCTION, "no_instrument_function", 0, 0, 1);
   add_attribute (A_NO_CHECK_MEMORY_USAGE, "no_check_memory_usage", 0, 0, 1);
 }
 
+/* Default implementation of valid_lang_attribute, below.  By default, there
+   are no language-specific attributes.  */
+
+static int
+default_valid_lang_attribute (attr_name, attr_args, decl, type)
+  tree attr_name ATTRIBUTE_UNUSED;
+  tree attr_args ATTRIBUTE_UNUSED;
+  tree decl ATTRIBUTE_UNUSED;
+  tree type ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
+
+/* Return a 1 if ATTR_NAME and ATTR_ARGS denote a valid language-specific
+   attribute for either declaration DECL or type TYPE and 0 otherwise.  */
+
+int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree))
+     = default_valid_lang_attribute;
+
 /* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
    and install them in NODE, which is either a DECL (including a TYPE_DECL)
    or a TYPE.  PREFIX_ATTRIBUTES can appear after the declaration specifiers
@@ -455,7 +467,8 @@ decl_attributes (node, attributes, prefix_attributes)
 
       if (i == attrtab_idx)
 	{
-	  if (! valid_machine_attribute (name, args, decl, type))
+	  if (! valid_machine_attribute (name, args, decl, type)
+	      && ! (* valid_lang_attribute) (name, args, decl, type))
 	    warning ("`%s' attribute directive ignored",
 		     IDENTIFIER_POINTER (name));
 	  else if (decl != 0)
@@ -913,59 +926,6 @@ decl_attributes (node, attributes, prefix_attributes)
 	  else
 	    DECL_NO_CHECK_MEMORY_USAGE (decl) = 1;
 	  break;
-
-	case A_INIT_PRIORITY:
-	  {
-	    tree initp_expr = (args ? TREE_VALUE (args): NULL_TREE);
-	    int pri;
-
-	    if (initp_expr)
-	      STRIP_NOPS (initp_expr);
-	  
-	    if (!initp_expr || TREE_CODE (initp_expr) != INTEGER_CST)
-	      {
-		error ("requested init_priority is not an integer constant");
-		continue;
-	      }
-
-	    pri = TREE_INT_CST_LOW (initp_expr);
-	
-	    while (TREE_CODE (type) == ARRAY_TYPE)
-	      type = TREE_TYPE (type);
-
-	    if (is_type || TREE_CODE (decl) != VAR_DECL
-		|| ! TREE_STATIC (decl)
-		|| DECL_EXTERNAL (decl)
-		|| (TREE_CODE (type) != RECORD_TYPE
-		    && TREE_CODE (type) != UNION_TYPE)
-		/* Static objects in functions are initialized the
-                   first time control passes through that
-                   function. This is not precise enough to pin down an
-                   init_priority value, so don't allow it. */
-		|| current_function_decl) 
-	      {
-		error ("can only use init_priority attribute on file-scope definitions of objects of class type");
-		continue; 
-	      }
-
-	    if (pri > MAX_INIT_PRIORITY || pri <= 0)
-	      {
-		error ("requested init_priority is out of range");
-		continue;
-	      }
-
-	    /* Check for init_priorities that are reserved for
-               language and runtime support implementations.*/
-	    if (pri <= MAX_RESERVED_INIT_PRIORITY)
-	      {
-		warning 
-		  ("requested init_priority is reserved for internal use");
-	      }
-
-	    static_aggregates_initp
-	      = perm_tree_cons (initp_expr, decl, static_aggregates_initp);
-	    break;
-	  }
 
 	case A_NO_INSTRUMENT_FUNCTION:
 	  if (TREE_CODE (decl) != FUNCTION_DECL)

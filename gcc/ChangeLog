@@ -1,3 +1,10 @@
+Tue Apr 13 21:01:36 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-common.c (default_valid_lang_attribute): New fn.
+	(valid_lang_attribute): New callback ptr.
+	(decl_attributes): Call it.  Move init_priority support into
+	C++ frontend.
+
 Tue Apr 13 17:47:14 1999  John Wehle  (john@feith.com)
 
 	* i386.md (movdi): Add splitter.
