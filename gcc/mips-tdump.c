@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/file.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <a.out.h>
 #include "config.h"
