@@ -1403,36 +1403,36 @@ read_integral_parameter (p, pname, defval)
 
 /* Time accumulators, to count the total time spent in various passes.  */
 
-int parse_time;
-int varconst_time;
-int integration_time;
-int jump_time;
-int cse_time;
-int gcse_time;
-int loop_time;
-int cse2_time;
-int branch_prob_time;
-int flow_time;
-int combine_time;
-int regmove_time;
-int sched_time;
-int local_alloc_time;
-int global_alloc_time;
-int flow2_time;
-int peephole2_time;
-int sched2_time;
-int dbr_sched_time;
-int reorder_blocks_time;
-int rename_registers_time;
-int shorten_branch_time;
-int stack_reg_time;
-int to_ssa_time;
-int from_ssa_time;
-int final_time;
-int symout_time;
-int dump_time;
-int gc_time;
-int all_time;
+long parse_time;
+long varconst_time;
+long integration_time;
+long jump_time;
+long cse_time;
+long gcse_time;
+long loop_time;
+long cse2_time;
+long branch_prob_time;
+long flow_time;
+long combine_time;
+long regmove_time;
+long sched_time;
+long local_alloc_time;
+long global_alloc_time;
+long flow2_time;
+long peephole2_time;
+long sched2_time;
+long dbr_sched_time;
+long reorder_blocks_time;
+long rename_registers_time;
+long shorten_branch_time;
+long stack_reg_time;
+long to_ssa_time;
+long from_ssa_time;
+long final_time;
+long symout_time;
+long dump_time;
+long gc_time;
+long all_time;
 
 /* Return time used so far, in microseconds.  */
 
@@ -1503,18 +1503,23 @@ get_run_time ()
 #endif	/* __BEOS__ */
 }
 
-#define TIMEVAR(VAR, BODY)    \
-do { int otime = get_run_time (); BODY; VAR += get_run_time () - otime; } while (0)
+#define TIMEVAR(VAR, BODY)		\
+do {					\
+  long otime = get_run_time ();		\
+  BODY;					\
+  VAR += get_run_time () - otime;	\
+} while (0)
 
 void
 print_time (str, total)
      const char *str;
-     int total;
+     long total;
 {
   fprintf (stderr,
-	   "time in %s: %d.%06d (%d%%)\n",
+	   "time in %s: %ld.%06ld (%ld%%)\n",
 	   str, total / 1000000, total % 1000000,
-	   all_time == 0 ? 0 : (100 * total) / all_time);
+	   all_time == 0 ? 0
+	   : (long) (((100.0 * (double) total) / (double) all_time) + .5));
 }
 
 /* This is the default decl_printable_name function.  */
@@ -1528,6 +1533,7 @@ decl_name (decl, verbosity)
 }
 
 /* Mark P for GC.  Also mark main_input_filename and input_filename.  */
+
 static void
 mark_file_stack (p)
      void *p;

@@ -1,6 +1,13 @@
 Sat Apr 15 10:59:19 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* configure.in (alpha*-*-*): Aad config/alpha/t-alpha.
+	* toplev.c: Make *_time variable long to reduce chance of overflow.
+	(TIMEVAR): Likewise for `otime'.
+	(print_time): Arg is now long; compute percentage in FP and round.
+	* toplev.h (print_time): Arg is long.
+
+	* tree.c: Minor whitespace changes.
+
+	* configure.in (alpha*-*-*): Add config/alpha/t-alpha.
 	* configure: Rebuilt.
 	* libgcc2.c (__fixunstfDI): Renamed from __fixunstfdi.
 	(__fixunsxfDI): Renamed from __fixunsxfdi.

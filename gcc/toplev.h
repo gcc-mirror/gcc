@@ -30,7 +30,7 @@ extern int read_integral_parameter	PARAMS ((const char *, const char *,
 						const int));
 extern int count_error			PARAMS ((int));
 extern void strip_off_ending		PARAMS ((char *, int));
-extern void print_time			PARAMS ((const char *, int));
+extern void print_time			PARAMS ((const char *, long));
 extern void debug_start_source_file	PARAMS ((char *));
 extern void debug_end_source_file	PARAMS ((unsigned));
 extern void debug_define		PARAMS ((unsigned, char *));
