@@ -1,4 +1,4 @@
-/* C code produced by gperf version 2.7.1 (19981006 egcs) */
+/* C code produced by gperf version 2.7 */
 /* Command-line: gperf -L C -F , 0, 0 -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$ ./c-parse.gperf  */
 /* Command-line: gperf -L C -F ', 0, 0' -p -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,$ c-parse.gperf  */ 
 struct resword { const char *name; short token; enum rid rid; };

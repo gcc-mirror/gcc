@@ -3614,7 +3614,6 @@ ix86_expand_move (mode, operands)
      rtx operands[];
 {
   int strict = (reload_in_progress || reload_completed);
-  int want_clobber = 0;
   rtx insn;
 
   if (flag_pic && mode == Pmode && symbolic_operand (operands[1], Pmode))
@@ -3653,24 +3652,9 @@ ix86_expand_move (mode, operands)
 		   && ! standard_80387_constant_p (operands[1]))
 	    operands[1] = validize_mem (force_const_mem (mode, operands[1]));
 	}
-      else
-	{
-	  /* Try to guess when a cc clobber on the move might be fruitful.  */
-	  if (!strict
-	      && GET_CODE (operands[0]) == REG
-	      && operands[1] == const0_rtx
-	      && !flag_peephole2)
-	    want_clobber = 1;
-	}
     }
 
   insn = gen_rtx_SET (VOIDmode, operands[0], operands[1]);
-  if (want_clobber)
-    {
-      rtx clob;
-      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-      insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, insn, clob));
-    }
 
   emit_insn (insn);
 }
