@@ -1312,15 +1312,15 @@ while (0)
    with arguments ARGS is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */
 
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRTRIBUTES, NAME, ARGS) \
-  (i386_valid_decl_attribute_p (DECL, ATTRTRIBUTES, NAME, ARGS))
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
+  (i386_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
 
 /* If defined, a C expression whose value is nonzero if IDENTIFIER
    with arguments ARGS is a valid machine specific attribute for TYPE.
    The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
 
-#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRTRIBUTES, NAME, ARGS) \
-  (i386_valid_type_attribute_p (TYPE, ATTRTRIBUTES, NAME, ARGS))
+#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, NAME, ARGS) \
+  (i386_valid_type_attribute_p (TYPE, ATTRIBUTES, NAME, ARGS))
 
 /* If defined, a C expression whose value is zero if the attributes on
    TYPE1 and TYPE2 are incompatible, one if they are compatible, and
