@@ -1244,8 +1244,12 @@ emit_move_sequence (operands, mode, scratch_reg)
 	}
     }
 
-  /* Simplify the source if we need to.  */
+  /* Simplify the source if we need to.
+     Note we do have to handle function labels here, even though we do
+     not consider them legitimate constants.  Loop optimizations can
+     call the emit_move_xxx with one a function as a source.  */
   if ((GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
+      || function_label_operand (operand1, mode)
       || (GET_CODE (operand1) == HIGH
 	  && symbolic_operand (XEXP (operand1, 0), mode)))
     {
@@ -1263,9 +1267,10 @@ emit_move_sequence (operands, mode, scratch_reg)
 
 	     So we force the plabel into memory, load operand0 from
 	     the memory location, then add in the constant part.  */
-	  if (GET_CODE (operand1) == CONST
-	      && GET_CODE (XEXP (operand1, 0)) == PLUS
-	      && function_label_operand (XEXP (XEXP (operand1, 0), 0), Pmode))
+	  if ((GET_CODE (operand1) == CONST
+	       && GET_CODE (XEXP (operand1, 0)) == PLUS
+	       && function_label_operand (XEXP (XEXP (operand1, 0), 0), Pmode))
+	      || function_label_operand (operand1, mode))
 	    {
 	      rtx temp, const_part;
 
@@ -1275,13 +1280,25 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      else if (flag_pic)
 		scratch_reg = gen_reg_rtx (Pmode);
 
-	      /* Save away the constant part of the expression.  */
-	      const_part = XEXP (XEXP (operand1, 0), 1);
-	      if (GET_CODE (const_part) != CONST_INT)
-		abort ();
+	      if (GET_CODE (operand1) == CONST)
+		{
+		  /* Save away the constant part of the expression.  */
+		  const_part = XEXP (XEXP (operand1, 0), 1);
+		  if (GET_CODE (const_part) != CONST_INT)
+		    abort ();
 
-	      /* Force the function label into memory.  */
-	      temp = force_const_mem (mode, XEXP (XEXP (operand1, 0), 0));
+		  /* Force the function label into memory.  */
+		  temp = force_const_mem (mode, XEXP (XEXP (operand1, 0), 0));
+		}
+	      else
+		{
+		  /* No constant part.  */
+		  const_part = NULL_RTX;
+
+		  /* Force the function label into memory.  */
+		  temp = force_const_mem (mode, operand1);
+		}
+		
 
 	      /* Get the address of the memory location.  PIC-ify it if
 		 necessary.  */
@@ -1300,7 +1317,8 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      emit_move_sequence (operands, mode, scratch_reg);
 
 	      /* And add back in the constant part.  */
-	      expand_inc (operand0, const_part);
+	      if (const_part != NULL_RTX)
+		expand_inc (operand0, const_part);
 
 	      return 1;
 	    }
