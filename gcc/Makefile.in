@@ -2306,7 +2306,7 @@ stage1-start:
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
 	-for dir in . $(SUBDIRS) ; \
 	 do \
-	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi \
+	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage1
 	-rm -f stage1/libgcc.a
@@ -2318,7 +2318,7 @@ stage2-start:
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
 	-for dir in . $(SUBDIRS) ; \
 	 do \
-	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi \
+	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage2
 	-rm -f stage2/libgcc.a
@@ -2330,7 +2330,7 @@ stage3-start:
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
 	-for dir in . $(SUBDIRS) ; \
 	 do \
-	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi \
+	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage3
 	-rm -f stage3/libgcc.a
@@ -2342,7 +2342,7 @@ stage4-start:
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
 	-for dir in . $(SUBDIRS) ; \
 	 do \
-	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi \
+	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage4
 	-rm -f stage4/libgcc.a
