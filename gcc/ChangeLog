@@ -1,3 +1,18 @@
+2004-09-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (enum c_storage_class): New.
+	(struct c_declspecs): Add storage_class, inline_p and thread_p.
+	* c-decl.c (shadow_tag_warned): Give errors for "inline" in empty
+	declarations and "auto" or "register" in file scope empty
+	declarations.  Give more specific warnings for other cases of
+	storage class specifiers in empty declarations.
+	(grokdeclarator): Update for new structures.  Don't check for
+	multiple storage classes.  Diagnose file-scope "register" if
+	pedantic.
+	(build_null_declspecs): Update.
+	(declspecs_add_scspec): Update.  Diagnose multiple storage class
+	specifiers and invalid uses of "__thread".
+
 2004-09-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.c (tree_code_size): New function, bulk of code from tree_size.

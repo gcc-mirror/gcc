@@ -22,7 +22,7 @@ int; /* { dg-error "error: useless type name in empty declaration" } */
 long; /* { dg-warning "warning: useless keyword or type name in empty declaration" } */
 /* { dg-error "error: empty declaration" "long" { target *-*-* } 22 } */
 T; /* { dg-error "error: useless type name in empty declaration" } */
-static const; /* { dg-warning "warning: useless keyword or type name in empty declaration" } */
+static const; /* { dg-warning "warning: useless storage class specifier in empty declaration" } */
 /* { dg-error "error: empty declaration" "long" { target *-*-* } 25 } */
 union { long b; }; /* { dg-error "error: unnamed struct/union that defines no instances" } */
 
