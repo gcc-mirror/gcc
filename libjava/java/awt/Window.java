@@ -213,14 +213,14 @@ public class Window extends Container
       addNotify();
 
     validate();
-    setVisible (true);
+    super.show();
     toFront();
   }
 
   public void hide()
   {
     // FIXME: call hide() on any "owned" children here.
-    setVisible (false);
+    super.hide();
   }
 
   public boolean isDisplayable()
