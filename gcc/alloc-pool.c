@@ -75,7 +75,7 @@ static ALLOC_POOL_ID_TYPE last_id;
 
 #ifdef GATHER_STATISTICS
 
-/* Store infromation about each particular alloc_pool.  */
+/* Store information about each particular alloc_pool.  */
 struct alloc_pool_descriptor
 {
   const char *name;
