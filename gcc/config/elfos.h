@@ -709,7 +709,7 @@ dtors_section ()						\
       							\
       fprintf ((FILE), "\t%s\t\"", STRING_ASM_OP);	\
       							\
-      for (; ch = *_limited_str; _limited_str++)	\
+      for (; (ch = *_limited_str); _limited_str++)	\
         {						\
 	  register int escape;				\
 	  						\

@@ -2893,7 +2893,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
      rtx size;
      enum machine_mode *pmode;
      int *punsignedp;
-     int align;
+     int align ATTRIBUTE_UNUSED;
      enum can_compare_purpose purpose;
 {
   enum machine_mode mode = *pmode;

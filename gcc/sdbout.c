@@ -336,7 +336,7 @@ static struct sdb_file *current_file;
 
 void
 sdbout_init (asm_file, input_file_name, syms)
-     FILE *asm_file;
+     FILE *asm_file ATTRIBUTE_UNUSED;
      char *input_file_name;
      tree syms ATTRIBUTE_UNUSED;
 {
@@ -1524,7 +1524,7 @@ sdbout_reg_parms (parms)
 
 void
 sdbout_begin_block (file, line, n)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      int line;
      int n;
 {
@@ -1564,7 +1564,7 @@ sdbout_begin_block (file, line, n)
 
 void
 sdbout_end_block (file, line, n)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      int line;
      int n ATTRIBUTE_UNUSED;
 {

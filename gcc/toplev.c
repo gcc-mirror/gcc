@@ -2735,7 +2735,7 @@ rest_of_type_compilation (type, toplev)
 
 void
 note_deferral_of_defined_inline_function (decl)
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
 #ifdef DWARF_DEBUGGING_INFO
   /* Generate the DWARF info for the "abstract" instance of a function

@@ -2197,7 +2197,7 @@ peephole2%s (x0, insn, _plast_insn)\n\
       break;
     }
 
-  printf ("{\n  register rtx * const operands = &recog_data.operand[0];\n");
+  printf ("{\n  register rtx * const operands ATTRIBUTE_UNUSED = &recog_data.operand[0];\n");
   for (i = 1; i <= max_depth; i++)
     printf ("  register rtx x%d ATTRIBUTE_UNUSED;\n", i);
 
