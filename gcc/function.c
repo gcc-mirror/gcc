@@ -4278,9 +4278,9 @@ record_insns (insns)
   return vec;
 }
 
-/* Determine whether INSN is in the array of INSN_UIDs VEC.  */
+/* Determine how many INSN_UIDs in VEC are part of INSN.  */
 
-static rtx
+static int
 contains (insn, vec)
      rtx insn;
      int *vec;
@@ -4290,16 +4290,18 @@ contains (insn, vec)
   if (GET_CODE (insn) == INSN
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
+      int count = 0;
       for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
 	for (j = 0; vec[j]; j++)
 	  if (INSN_UID (XVECEXP (PATTERN (insn), 0, i)) == vec[j])
-	    return XVECEXP (PATTERN (insn), 0, i);
+	    count++;
+      return count;
     }
   else
     {
       for (j = 0; vec[j]; j++)
 	if (INSN_UID (insn) == vec[j])
-	  return insn;
+	  return 1;
     }
   return 0;
 }
@@ -4411,7 +4413,7 @@ reposition_prologue_and_epilogue_notes (f)
 		if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
 		  note = insn;
 	      }
-	    else if (contains (insn, prologue) && --len == 0)
+	    else if ((len -= contains (insn, prologue)) == 0)
 	      {
 		/* Find the prologue-end note if we haven't already, and
 		   move it to just after the last prologue insn.  */
@@ -4446,7 +4448,7 @@ reposition_prologue_and_epilogue_notes (f)
 		if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
 		  note = insn;
 	      }
-	    else if (contains (insn, epilogue) && --len == 0)
+	    else if ((len -= contains (insn, epilogue)) == 0)
 	      {
 		/* Find the epilogue-begin note if we haven't already, and
 		   move it to just before the first epilogue insn.  */
