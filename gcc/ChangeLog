@@ -1,3 +1,8 @@
+2002-08-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* expr.c (store_expr): In condition for checking if value is
+	generated in TARGET, move call to expr_size last.
+
 2002-08-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-common.c (c_common_init): Call preprocess_file instead.
