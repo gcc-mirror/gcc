@@ -1,4 +1,15 @@
+2000-09-23  Jason Merrill  <jason@redhat.com>
+
+	* config/rs6000/x-aix41 (CLIB): Define here.
+	* config/rs6000/t-aix43: Not here.
+	* config/rs6000/t-aix41: Or here.  Remove.
+	* configure.in: Don't use it.
+
 2000-09-22  Jason Merrill  <jason@redhat.com>
+
+	* configure.in: Add test for HAVE_LD_DWARF_LINKONCE.
+	* toplev.c: Use it to initialize flag_eliminate_dwarf2dups.
+	* config.in: Regenerate.
 
 	* configure.in: Fix checks for assembler features when using a
 	one-tree assembler that has not yet been built.
