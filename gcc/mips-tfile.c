@@ -685,13 +685,22 @@ main ()
 #undef index
 
 #include <sys/types.h>
-#include <a.out.h>
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
+
+#ifndef CROSS_COMPILE
+#include <a.out.h>
+#else
+#include "symconst.h"
+#define LANGUAGE_C
+#include "sym.h"
+#include "filehdr.h"
+#define ST_RFDESCAPE  0xfff
+#endif
 
 #if defined (USG) || defined (NO_STAB_H)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
