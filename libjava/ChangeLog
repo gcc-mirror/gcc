@@ -1,3 +1,8 @@
+2001-04-30  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* java/io/natFile.cc (performSetReadOnly): Fix #ifdef test.
+	(performDelete): Fix #endif placement.
+
 2001-04-27  Zack Weinberg  <zackw@stanford.edu>
 
 	* prims.cc (_Jv_ThisExecutable): Use _Jv_Malloc.
