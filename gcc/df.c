@@ -311,17 +311,20 @@ static inline bool read_modify_subreg_p PARAMS ((rtx));
 /* Local memory allocation/deallocation routines.  */
 
 
-/* Increase the insn info table by SIZE more elements.  */
+/* Increase the insn info table to have space for at least SIZE + 1
+   elements.  */
 static void
 df_insn_table_realloc (df, size)
      struct df *df;
      int size;
 {
-  /* Make table 25 percent larger by default.  */
-  if (! size)
-    size = df->insn_size / 4;
+  size++;
+  if (size <= df->insn_size)
+    return;
 
-  size += df->insn_size;
+  /* Make the table a little larger than requested, so we don't need
+     to enlarge it so often.  */
+  size += df->insn_size / 4;
 
   df->insns = (struct insn_info *)
     xrealloc (df->insns, size * sizeof (struct insn_info));
@@ -350,6 +353,8 @@ df_reg_table_realloc (df, size)
     size = df->reg_size / 4;
 
   size += df->reg_size;
+  if (size < max_reg_num ())
+    size = max_reg_num ();
 
   df->regs = (struct reg_info *)
     xrealloc (df->regs, size * sizeof (struct reg_info));
@@ -892,7 +897,11 @@ df_ref_record (df, reg, loc, insn, ref_type, ref_flags)
 	 are really referenced.  E.g. a (subreg:SI (reg:DI 0) 0) does _not_
 	 reference the whole reg 0 in DI mode (which would also include
 	 reg 1, at least, if 0 and 1 are SImode registers).  */
-      endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      endregno = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      if (GET_CODE (reg) == SUBREG)
+        regno += subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
+				      SUBREG_BYTE (reg), GET_MODE (reg));
+      endregno += regno;
 
       for (i = regno; i < endregno; i++)
 	df_ref_record_1 (df, regno_reg_rtx[i],
@@ -904,18 +913,23 @@ df_ref_record (df, reg, loc, insn, ref_type, ref_flags)
     }
 }
 
-/* Writes to SUBREG of inndermode wider than word and outermode shorter than
-   word are read-modify-write.  */
+/* Writes to paradoxical subregs, or subregs which are too narrow
+   are read-modify-write.  */
 
 static inline bool
 read_modify_subreg_p (x)
      rtx x;
 {
+  unsigned int isize, osize;
   if (GET_CODE (x) != SUBREG)
     return false;
-  if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) <= UNITS_PER_WORD)
+  isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
+  osize = GET_MODE_SIZE (GET_MODE (x));
+  if (isize <= osize)
+    return true;
+  if (isize <= UNITS_PER_WORD)
     return false;
-  if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
+  if (osize >= UNITS_PER_WORD)
     return false;
   return true;
 }
@@ -943,6 +957,13 @@ df_def_record_1 (df, x, bb, insn)
       return;
     }
 
+#ifdef CLASS_CANNOT_CHANGE_MODE
+  if (GET_CODE (dst) == SUBREG
+      && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
+				     GET_MODE (SUBREG_REG (dst))))
+    flags |= DF_REF_MODE_CHANGE;
+#endif
+
   /* May be, we should flag the use of strict_low_part somehow.  Might be
      handy for the reg allocator.  */
   while (GET_CODE (dst) == STRICT_LOW_PART
@@ -957,6 +978,12 @@ df_def_record_1 (df, x, bb, insn)
 	  loc = &XEXP (dst, 0);
 	  dst = *loc;
 	}
+#ifdef CLASS_CANNOT_CHANGE_MODE
+      if (GET_CODE (dst) == SUBREG
+	  && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
+				         GET_MODE (SUBREG_REG (dst))))
+        flags |= DF_REF_MODE_CHANGE;
+#endif
       loc = &XEXP (dst, 0);
       dst = *loc;
       flags |= DF_REF_READ_WRITE;
@@ -1052,6 +1079,11 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 	  df_uses_record (df, loc, ref_type, bb, insn, flags);
 	  return;
 	}
+#ifdef CLASS_CANNOT_CHANGE_MODE
+      if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (x),
+				      GET_MODE (SUBREG_REG (x))))
+        flags |= DF_REF_MODE_CHANGE;
+#endif
 
       /* ... Fall through ...  */
 
@@ -1068,16 +1100,24 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 
 	switch (GET_CODE (dst))
 	  {
+	    enum df_ref_flags use_flags;
 	    case SUBREG:
 	      if (read_modify_subreg_p (dst))
 		{
+		  use_flags = DF_REF_READ_WRITE;
+#ifdef CLASS_CANNOT_CHANGE_MODE
+		  if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
+						  GET_MODE (SUBREG_REG (dst))))
+		    use_flags |= DF_REF_MODE_CHANGE;
+#endif
 		  df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
-				  insn, DF_REF_READ_WRITE);
+				  insn, use_flags);
 		  break;
 		}
 	      /* ... FALLTHRU ...  */
 	    case REG:
 	    case PC:
+	    case PARALLEL:
 	      break;
 	    case MEM:
 	      df_uses_record (df, &XEXP (dst, 0),
@@ -1089,8 +1129,14 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 	      dst = XEXP (dst, 0);
 	      if (GET_CODE (dst) != SUBREG)
 		abort ();
+	      use_flags = DF_REF_READ_WRITE;
+#ifdef CLASS_CANNOT_CHANGE_MODE
+	      if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
+					      GET_MODE (SUBREG_REG (dst))))
+		use_flags |= DF_REF_MODE_CHANGE;
+#endif
 	      df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
-			     insn, DF_REF_READ_WRITE);
+			     insn, use_flags);
 	      break;
 	    case ZERO_EXTRACT:
 	    case SIGN_EXTRACT:
@@ -1345,6 +1391,11 @@ df_bb_reg_def_chain_create (df, bb)
 	{
 	  struct ref *def = link->ref;
 	  unsigned int dregno = DF_REF_REGNO (def);
+          /* Don't add ref's to the chain two times.  I.e. only add
+             new refs.  XXX the same could be done by testing if the current
+             insn is a modified (or a new) one.  This would be faster.  */
+          if (DF_REF_ID (def) < df->def_id_save)
+            continue;
 
 	  df->regs[dregno].defs
 	    = df_link_create (def, df->regs[dregno].defs);
@@ -1394,6 +1445,11 @@ df_bb_reg_use_chain_create (df, bb)
 	{
 	  struct ref *use = link->ref;
 	  unsigned int uregno = DF_REF_REGNO (use);
+          /* Don't add ref's to the chain two times.  I.e. only add
+             new refs.  XXX the same could be done by testing if the current
+             insn is a modified (or a new) one.  This would be faster.  */
+          if (DF_REF_ID (use) < df->use_id_save)
+            continue;
 
 	  df->regs[uregno].uses
 	    = df_link_create (use, df->regs[uregno].uses);
@@ -2218,8 +2274,6 @@ df_bb_refs_update (df, bb)
 	  /* Scan the insn for refs.  */
 	  df_insn_refs_record (df, bb, insn);
 
-
-	  bitmap_clear_bit (df->insns_modified, uid);
 	  count++;
 	}
       if (insn == bb->end)
@@ -2318,6 +2372,7 @@ df_analyse (df, blocks, flags)
 
 	  df_analyse_1 (df, blocks, flags, 1);
 	  bitmap_zero (df->bbs_modified);
+	  bitmap_zero (df->insns_modified);
 	}
     }
   return update;
@@ -2445,9 +2500,8 @@ df_insn_modify (df, bb, insn)
   unsigned int uid;
 
   uid = INSN_UID (insn);
-
   if (uid >= df->insn_size)
-    df_insn_table_realloc (df, 0);
+    df_insn_table_realloc (df, uid);
 
   bitmap_set_bit (df->bbs_modified, bb->index);
   bitmap_set_bit (df->insns_modified, uid);
@@ -2734,7 +2788,7 @@ df_insns_modify (df, bb, first_insn, last_insn)
       uid = INSN_UID (insn);
 
       if (uid >= df->insn_size)
-	df_insn_table_realloc (df, 0);
+	df_insn_table_realloc (df, uid);
 
       df_insn_modify (df, bb, insn);
 
