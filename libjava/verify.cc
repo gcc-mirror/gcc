@@ -56,6 +56,7 @@ private:
   struct state;
   struct type;
   struct subr_info;
+  struct subr_entry_info;
   struct linked_utf8;
 
   // The current PC.
@@ -83,6 +84,11 @@ private:
   // subroutine.  FIXME: this is inefficient.  We keep a linked list
   // of all calling `jsr's at at each jsr target.
   subr_info **jsr_ptrs;
+
+  // We keep a linked list of entries which map each `ret' instruction
+  // to its unique subroutine entry point.  We expect that there won't
+  // be many `ret' instructions, so a linked list is ok.
+  subr_entry_info *entry_points;
 
   // The current top of the stack, in terms of slots.
   int stacktop;
@@ -271,6 +277,18 @@ private:
     int pc;
     // Link.
     subr_info *next;
+  };
+
+  // This is used to keep track of which subroutine entry point
+  // corresponds to which `ret' instruction.
+  struct subr_entry_info
+  {
+    // PC of the subroutine entry point.
+    int pc;
+    // PC of the `ret' instruction.
+    int ret_pc;
+    // Link.
+    subr_entry_info *next;
   };
 
   // The `type' class is used to represent a single type in the
@@ -886,9 +904,9 @@ private:
       if (this_type.isinitialized ())
 	this_type = state_old->this_type;
 
-      // Merge subroutine states.  *THIS and *STATE_OLD must be in the
-      // same subroutine.  Also, recursive subroutine calls must be
-      // avoided.
+      // Merge subroutine states.  Here we just keep track of what
+      // subroutine we think we're in.  We only check for a merge
+      // (which is invalid) when we see a `ret'.
       if (subroutine == state_old->subroutine)
 	{
 	  // Nothing.
@@ -898,11 +916,13 @@ private:
 	  subroutine = state_old->subroutine;
 	  changed = true;
 	}
-      // If we're handling the result of an unmerged `ret', then we
-      // can't trust that it has the correct PC setting.  So in this
-      // case we ignore what might otherwise look like a merge error.
-      else if (! state_old->is_unmerged_ret_state (max_locals))
-	verifier->verify_fail ("subroutines merged");
+      else
+	{
+	  // If the subroutines differ, indicate that the state
+	  // changed.  This is needed to detect when subroutines have
+	  // merged.
+	  changed = true;
+	}
 
       // Merge stacks.
       if (state_old->stacktop != stacktop)
@@ -1328,6 +1348,24 @@ private:
     int csub = current_state->subroutine;
     if (csub == 0)
       verify_fail ("no subroutine");
+
+    // Check to see if we've merged subroutines.
+    subr_entry_info *entry;
+    for (entry = entry_points; entry != NULL; entry = entry->next)
+      {
+	if (entry->ret_pc == start_PC)
+	  break;
+      }
+    if (entry == NULL)
+      {
+	entry = (subr_entry_info *) _Jv_Malloc (sizeof (subr_entry_info));
+	entry->pc = csub;
+	entry->ret_pc = start_PC;
+	entry->next = entry_points;
+	entry_points = entry;
+      }
+    else if (entry->pc != csub)
+      verify_fail ("subroutines merged");
 
     for (subr_info *subr = jsr_ptrs[csub]; subr != NULL; subr = subr->next)
       {
@@ -2893,6 +2931,7 @@ public:
     flags = NULL;
     jsr_ptrs = NULL;
     utf8_list = NULL;
+    entry_points = NULL;
   }
 
   ~_Jv_BytecodeVerifier ()
@@ -2901,14 +2940,38 @@ public:
       _Jv_Free (states);
     if (flags)
       _Jv_Free (flags);
+
     if (jsr_ptrs)
-      _Jv_Free (jsr_ptrs);
+      {
+	for (int i = 0; i < current_method->code_length; ++i)
+	  {
+	    if (jsr_ptrs[i] != NULL)
+	      {
+		subr_info *info = jsr_ptrs[i];
+		while (info != NULL)
+		  {
+		    subr_info *next = info->next;
+		    _Jv_Free (info);
+		    info = next;
+		  }
+	      }
+	  }
+	_Jv_Free (jsr_ptrs);
+      }
+
     while (utf8_list != NULL)
       {
 	linked_utf8 *n = utf8_list->next;
 	_Jv_Free (utf8_list->val);
 	_Jv_Free (utf8_list);
 	utf8_list = n;
+      }
+
+    while (entry_points != NULL)
+      {
+	subr_entry_info *next = entry_points->next;
+	_Jv_Free (entry_points);
+	entry_points = next;
       }
   }
 };
