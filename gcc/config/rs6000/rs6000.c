@@ -2907,6 +2907,9 @@ rs6000_tls_symbol_ref (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 bool
 rs6000_tls_referenced_p (rtx x)
 {
+  if (! TARGET_HAVE_TLS)
+    return false;
+
   return for_each_rtx (&x, &rs6000_tls_symbol_ref_1, 0);
 }
 
