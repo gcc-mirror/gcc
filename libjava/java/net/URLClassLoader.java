@@ -858,7 +858,7 @@ public class URLClassLoader extends SecureClassLoader
 	    // Just try to read it in all at once
 	    data = new byte[length];
 	    int pos = 0;
-	    while(length - pos > 0)
+	    while (length - pos > 0)
 	      {
 		int len = in.read(data, pos, length - pos);
 		if (len == -1)
@@ -872,7 +872,7 @@ public class URLClassLoader extends SecureClassLoader
 	    // We don't know the data length.
 	    // Have to read it in chunks.
 	    ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-	    byte b[] = new byte[4096];
+	    byte[] b = new byte[4096];
 	    int l = 0;
 	    while (l != -1)
 	      {
