@@ -14188,9 +14188,6 @@ finish_function (int nested)
       /* Generate rtl for function exit.  */
       expand_function_end (input_filename, lineno, 0);
 
-      /* So we can tell if jump_optimize sets it to 1.  */
-      can_reach_end = 0;
-
       /* If this is a nested function, protect the local variables in the stack
 	 above us from being collected while we're compiling this function.  */
       if (ggc_p && nested)
