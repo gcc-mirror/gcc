@@ -1,3 +1,9 @@
+2004-05-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/15290
+	* config/i386/i386.c (ix86_split_to_parts): Use real_to_target
+	instead of REAL_VALUE_TO_TARGET_LONG_DOUBLE.
+
 2004-05-05  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-c.c (add_framework): Copy the directory name as it
