@@ -2749,29 +2749,26 @@ mips_output_move (rtx dest, rtx src)
   abort ();
 }
 
-/* Return instructions to restore the global pointer from the stack,
-   assuming TARGET_ABICALLS.  Used by exception_receiver to set up
-   the GP for exception handlers.
+/* Return an rtx for the gp save slot.  Valid only when using o32 or
+   o64 abicalls.  */
 
-   OPERANDS is an array of operands whose contents are undefined
-   on entry.  */
-
-const char *
-mips_restore_gp (rtx *operands)
+rtx
+mips_gp_save_slot (void)
 {
   rtx loc;
 
-  operands[0] = pic_offset_table_rtx;
+  if (!TARGET_ABICALLS || TARGET_NEWABI)
+    abort ();
+
   if (frame_pointer_needed)
     loc = hard_frame_pointer_rtx;
   else
     loc = stack_pointer_rtx;
   loc = plus_constant (loc, current_function_outgoing_args_size);
-  operands[1] = gen_rtx_MEM (ptr_mode, loc);
-
-  return mips_output_move (operands[0], operands[1]);
+  loc = gen_rtx_MEM (Pmode, loc);
+  RTX_UNCHANGING_P (loc) = 1;
+  return loc;
 }
-
 
 /* Make normal rtx_code into something we can index from an array */
 
