@@ -559,15 +559,6 @@ static struct table_elt *table[HASH_SIZE];
 
 static struct table_elt *free_element_chain;
 
-/* Number of `struct table_elt' structures made so far for this function.  */
-
-static int n_elements_made;
-
-/* Maximum value `n_elements_made' has had so far in this compilation
-   for functions previously processed.  */
-
-static int max_elements_made;
-
 /* Set to the cost of a constant pool reference if one was found for a
    symbolic constant.  If this was found, it means we should try to
    convert constants into constant pool entries if they don't fit in
@@ -1493,10 +1484,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
   if (elt)
     free_element_chain = elt->next_same_hash;
   else
-    {
-      n_elements_made++;
-      elt = xmalloc (sizeof (struct table_elt));
-    }
+    elt = xmalloc (sizeof (struct table_elt));
 
   elt->exp = x;
   elt->canon_exp = NULL_RTX;
@@ -6725,10 +6713,6 @@ cse_main (rtx f, int nregs, FILE *file)
 
   reg_eqv_table = xmalloc (nregs * sizeof (struct reg_eqv_elem));
 
-  /* Reset the counter indicating how many elements have been made
-     thus far.  */
-  n_elements_made = 0;
-
   /* Find the largest uid.  */
 
   max_uid = get_max_uid ();
@@ -6812,9 +6796,6 @@ cse_main (rtx f, int nregs, FILE *file)
       alloca (0);
 #endif
     }
-
-  if (max_elements_made < n_elements_made)
-    max_elements_made = n_elements_made;
 
   /* Clean up.  */
   end_alias_analysis ();
