@@ -1,3 +1,9 @@
+2002-08-31  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c: Don't set flag_finite_math_only by default.
+	* invoke.texi: Reverse the documentation of option
+	-ffinite-math-only to reflect the new default.
+
 2002-08-30  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* target.c (ffetarget_memcpy_): Don't test nonexistent

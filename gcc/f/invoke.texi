@@ -182,7 +182,7 @@ by type.  Explanations are in the following sections.
 -malign-double @gol
 -ffloat-store  -fforce-mem  -fforce-addr  -fno-inline @gol
 -ffast-math  -fstrength-reduce  -frerun-cse-after-loop @gol
--funsafe-math-optimizations -fno-finite-math-only -fno-trapping-math @gol
+-funsafe-math-optimizations -ffinite-math-only -fno-trapping-math @gol
 -fexpensive-optimizations  -fdelayed-branch @gol
 -fschedule-insns  -fschedule-insn2  -fcaller-saves @gol
 -funroll-loops  -funroll-all-loops @gol
@@ -1542,8 +1542,8 @@ Note that if you are not optimizing, no functions can be expanded inline.
 @cindex conformance, IEEE 754
 Might allow some programs designed to not be too dependent
 on IEEE behavior for floating-point to run faster, or die trying.
-Sets @option{-funsafe-math-optimizations}, and
-@option{-fno-trapping-math}.
+Sets @option{-funsafe-math-optimizations}, @option{-ffinite-math-only},
+and @option{-fno-trapping-math}.
 
 @cindex -funsafe-math-optimizations option
 @cindex options, -funsafe-math-optimizations
@@ -1551,14 +1551,17 @@ Sets @option{-funsafe-math-optimizations}, and
 Allow optimizations that may be give incorrect results
 for certain IEEE inputs.
 
-@cindex -fno-finite-math-only option
-@cindex options, -fno-finite-math-only
-@item -fno-finite-math-only
-Fortran specifies all arithmetic that can result in a NaN or an
-infinity as ``giving undefined results'', therefore the compiler
-by default operates in a way that assumes no NaNs or +-Inf can
-be generated.  If your program might generate or use NaNs or
-infinities, then you should use this option.
+@cindex -ffinite-math-only option
+@cindex options, -ffinite-math-only
+@item -ffinite-math-only
+Allow optimizations for floating-point arithmetic that assume
+that arguments and results are not NaNs or +-Infs.
+
+This option should never be turned on by any @option{-O} option since
+it can result in incorrect output for programs which depend on
+an exact implementation of IEEE or ISO rules/specifications.
+
+The default is @option{-fno-finite-math-only}.
 
 @cindex -fno-trapping-math option
 @cindex options, -fno-trapping-math
