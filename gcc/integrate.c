@@ -2518,13 +2518,26 @@ copy_rtx_and_substitute (orig, map)
 
     case SET:
       /* If this is setting fp or ap, it means that we have a nonlocal goto.
-	 Don't alter that.
+	 Adjust the setting by the offset of the area we made.
 	 If the nonlocal goto is into the current function,
 	 this will result in unnecessarily bad code, but should work.  */
       if (SET_DEST (orig) == virtual_stack_vars_rtx
 	  || SET_DEST (orig) == virtual_incoming_args_rtx)
-	return gen_rtx (SET, VOIDmode, SET_DEST (orig),
-			copy_rtx_and_substitute (SET_SRC (orig), map));
+	{
+	  /* In case a translation hasn't occurred already, make one now. */
+	  rtx junk = copy_rtx_and_substitute (SET_DEST (orig), map);
+	  rtx equiv_reg = map->reg_map[REGNO (SET_DEST (orig))];
+	  rtx equiv_loc = map->const_equiv_map[REGNO (equiv_reg)];
+	  HOST_WIDE_INT loc_offset
+	    = GET_CODE (equiv_loc) == REG ? 0 : INTVAL (XEXP (equiv_loc, 1));
+	      
+	  return gen_rtx (SET, VOIDmode, SET_DEST (orig),
+			  force_operand
+			  (plus_constant
+			   (copy_rtx_and_substitute (SET_SRC (orig), map),
+			    - loc_offset),
+			   NULL_RTX));
+	}
       break;
 
     case MEM:
@@ -2963,9 +2976,13 @@ mark_stores (dest, x)
 		      : regno + HARD_REGNO_NREGS (regno, mode) - 1);
       int i;
 
-      for (i = regno; i <= last_reg; i++)
-	if (i < global_const_equiv_map_size)
-	  global_const_equiv_map[i] = 0;
+      /* Ignore virtual stack var or virtual arg register since those
+	 are handled separately.  */
+      if (regno != VIRTUAL_INCOMING_ARGS_REGNUM
+	  && regno != VIRTUAL_STACK_VARS_REGNUM)
+	for (i = regno; i <= last_reg; i++)
+	  if (i < global_const_equiv_map_size)
+	    global_const_equiv_map[i] = 0;
     }
 }
 
