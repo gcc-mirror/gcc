@@ -1,5 +1,7 @@
 2003-01-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	g++.dg/parse/namespace2.C: New test.
+
 	g++.dg/parse/parens2.C: New test.
 
 2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
