@@ -1,3 +1,18 @@
+2002-10-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Add
+	var_mod_type_p.
+	* langhooks-def.h: Default for tree_inlining.var_mod_type_p is
+	hook_tree_bool_false.
+
+	* tree.c (variably_modified_type_p): Moved here from
+	cp/tree.c.  Use lang_hooks.tree_inlining.var_mod_type_p for
+	language-specific cases.  Due to this, must weaken some 'if
+	and only if' checks to merely 'if'.
+	* tree.h: Prototype variably_modified_type_p.
+
+	* tree-inline.c (walk_tree): #undef WALK_SUBTREE_TAIL at end.
+
 2002-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h (CC1_SPEC, CC1PLUS_SPEC): Remove.
@@ -9,7 +24,7 @@
 	("*movdi_lhi", "*movdi_lli", "*movdi_larl"): Likewise.
 	("movsi", "*movsi_lhi", "*movsi_lli"): Likewise.
 	(movdi_31, movdf_31 splitters): Likewise.
-	
+
 	* config/s390/s390.h (IEEE_FLOAT): Remove.
 	(TARGET_FLOAT_FORMAT): Define in terms of TARGET_IEEE_FLOAT.
 	(INT_REGNO_P): Rename to ...
@@ -33,7 +48,7 @@
 
 2002-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* libgcc2.c (__udiv_w_sdiv): Use attribute ((always_inline)) when 
+	* libgcc2.c (__udiv_w_sdiv): Use attribute ((always_inline)) when
 	inlining it into other libgcc2 routines.
 	(__udivmoddi4): Likewise.
 
@@ -100,7 +115,7 @@ Wed Oct 23 01:52:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Don't call
 	xcoffout_declare_function when using rs6000_output_mi_thunk.
 
-	* config/s390/s390.c (s390_output_mi_thunk): Rename from 
+	* config/s390/s390.c (s390_output_mi_thunk): Rename from
 	s390_output_mi_vcall_thunk.
 	(TARGET_ASM_OUTPUT_MI_THUNK): Remove.
 	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): New.
@@ -230,7 +245,7 @@ Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-10-21  Dale Johannesen  <dalej@apple.com>
 
-        * config/rs6000/rs6000.c (rs6000_reverse_condition): Handle
+	* config/rs6000/rs6000.c (rs6000_reverse_condition): Handle
 	    unsafe math reversals correctly for RTL generation.
 	  (output_cbranch):  Replace rs6000_reverse_condition call
 	    by its former definition.
@@ -396,7 +411,7 @@ Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	-fsched-verbose=n, -fno-branch-count-reg and -fbounds-check.
 
 2002-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-            Mark Mitchell  <mark@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
 
 	* alpha-protos.h (alpha_output_mi_thunk_osf): Update signature to
 	match target.h.
@@ -466,7 +481,7 @@ Sun Oct 20 00:31:31 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-10-19  Sebastian Pop  <s.pop@laposte.net>
 
 	* dependence.c : Removed.
-        * Makefile.in : Remove dependence.o.
+	* Makefile.in : Remove dependence.o.
 
 Sat Oct 19 10:46:52 CEST 2002  Jan Hubicka  <jh@suse.cz>
 

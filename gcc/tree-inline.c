@@ -1647,6 +1647,7 @@ walk_tree (tp, func, data, htab_)
   return NULL_TREE;
 
 #undef WALK_SUBTREE
+#undef WALK_SUBTREE_TAIL
 }
 
 /* Like walk_tree, but does not walk duplicate nodes more than

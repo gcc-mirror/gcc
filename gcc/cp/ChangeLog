@@ -1,3 +1,11 @@
+2002-10-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* cp-lang.c (cp_var_mod_type_p): New: C++ hook for
+	variably_modified_type_p.
+	* cp-tree.h: Remove prototype of variably_modified_type_p.
+	* tree.c (variably_modified_type_p): Remove; now implemented
+	in language-independent code.
+
 2002-10-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6579
@@ -37,7 +45,7 @@
 	* method.c (use_thunk): Compute the vcall index as a HOST_WIDE_INT.
 	* optimize.c (optimize_function): Replace ASM_OUTPUT_MI_THUNK with
 	TARGET_ASM_OUTPUT_MI_THUNK in comments.
-	
+
 2002-10-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c (start_decl): Point users of the old initialized-
