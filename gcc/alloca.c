@@ -45,7 +45,7 @@ lose
 /* If your stack is a linked list of frames, you have to
    provide an "address metric" ADDRESS_FUNCTION macro.  */
 
-#ifdef CRAY
+#if defined (CRAY) && defined (CRAY_STACKSEG_END)
 long i00afunc ();
 #define ADDRESS_FUNCTION(arg) (char *) i00afunc (&(arg))
 #else
@@ -204,7 +204,7 @@ alloca (size)
   }
 }
 
-#ifdef CRAY
+#if defined (CRAY) && defined (CRAY_STACKSEG_END)
 
 #ifdef DEBUG_I00AFUNC
 #include <stdio.h>
