@@ -1,3 +1,11 @@
+2002-11-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa64-hpux.h (LINK_SPEC): Move "+Accept TypeMismatch" switch to the
+	beginning of the spec.
+	(LDD_SUFFIX, PARSE_LDD_OUTPUT): Delete.
+	(LD_INIT_SWITCH, LD_FINI_SWITCH): Define but don't enable.  Add comment
+	regarding problems with global constructors when using GNU ld.
+
 2002-11-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gthr-solaris.h: Fix formatting.
