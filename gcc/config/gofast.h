@@ -52,19 +52,19 @@ gofast_maybe_init_libfuncs (void)
      libfuncs, we use our own functions, since GOFAST doesn't supply
      them.  */
 
-  eqsf2_libfunc = init_one_libfunc ("fpcmp");
-  nesf2_libfunc = init_one_libfunc ("fpcmp");
-  gtsf2_libfunc = NULL_RTX;
-  gesf2_libfunc = NULL_RTX;
-  ltsf2_libfunc = init_one_libfunc ("fpcmp");
-  lesf2_libfunc = init_one_libfunc ("fpcmp");
+  set_optab_libfunc (eq_optab, SFmode, "fpcmp");
+  set_optab_libfunc (ne_optab, SFmode, "fpcmp");
+  set_optab_libfunc (gt_optab, SFmode, 0);
+  set_optab_libfunc (ge_optab, SFmode, 0);
+  set_optab_libfunc (lt_optab, SFmode, "fpcmp");
+  set_optab_libfunc (le_optab, SFmode, "fpcmp");
 
-  eqdf2_libfunc = init_one_libfunc ("dpcmp");
-  nedf2_libfunc = init_one_libfunc ("dpcmp");
-  gtdf2_libfunc = NULL_RTX;
-  gedf2_libfunc = NULL_RTX;
-  ltdf2_libfunc = init_one_libfunc ("dpcmp");
-  ledf2_libfunc = init_one_libfunc ("dpcmp");
+  set_optab_libfunc (eq_optab, DFmode, "dpcmp");
+  set_optab_libfunc (ne_optab, DFmode, "dpcmp");
+  set_optab_libfunc (gt_optab, DFmode, 0);
+  set_optab_libfunc (ge_optab, DFmode, 0);
+  set_optab_libfunc (lt_optab, DFmode, "dpcmp");
+  set_optab_libfunc (le_optab, DFmode, "dpcmp");
 
   extendsfdf2_libfunc = init_one_libfunc ("fptodp");
   truncdfsf2_libfunc = init_one_libfunc ("dptofp");

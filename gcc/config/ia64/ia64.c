@@ -8313,12 +8313,19 @@ ia64_hpux_init_libfuncs (void)
 {
   set_optab_libfunc (add_optab, TFmode, "_U_Qfadd");
   set_optab_libfunc (sub_optab, TFmode, "_U_Qfsub");
-  set_optab_libfunc (smul_optab, TFmode, "_Q_Qfmpy");
+  set_optab_libfunc (smul_optab, TFmode, "_U_Qfmpy");
   set_optab_libfunc (sdiv_optab, TFmode, "_U_Qfdiv");
   set_optab_libfunc (smin_optab, TFmode, "_U_Qfmin");
   set_optab_libfunc (smax_optab, TFmode, "_U_Qfmax");
   set_optab_libfunc (abs_optab, TFmode, "_U_Qfabs");
   set_optab_libfunc (neg_optab, TFmode, "_U_Qfneg");
+
+  set_optab_libfunc (eq_optab, TFmode, "_U_Qfeq");
+  set_optab_libfunc (ne_optab, TFmode, "_U_Qfne");
+  set_optab_libfunc (gt_optab, TFmode, "_U_Qfgt");
+  set_optab_libfunc (ge_optab, TFmode, "_U_Qfge");
+  set_optab_libfunc (lt_optab, TFmode, "_U_Qflt");
+  set_optab_libfunc (le_optab, TFmode, "_U_Qfle");
 
   extendsftf2_libfunc = init_one_libfunc ("_U_Qfcnvff_sgl_to_quad");
   extenddftf2_libfunc = init_one_libfunc ("_U_Qfcnvff_dbl_to_quad");
@@ -8330,12 +8337,6 @@ ia64_hpux_init_libfuncs (void)
   fixtfdi_libfunc = init_one_libfunc ("_U_Qfcnvfxt_quad_to_dbl");
   fixunstfsi_libfunc = init_one_libfunc ("_U_Qfcnvfxut_quad_to_sgl");
   fixunstfdi_libfunc = init_one_libfunc ("_U_Qfcnvfxut_quad_to_dbl");
-  eqtf2_libfunc = init_one_libfunc ("_U_Qfeq");
-  netf2_libfunc = init_one_libfunc ("_U_Qfne");
-  gttf2_libfunc = init_one_libfunc ("_U_Qfgt");
-  getf2_libfunc = init_one_libfunc ("_U_Qfge");
-  lttf2_libfunc = init_one_libfunc ("_U_Qflt");
-  letf2_libfunc = init_one_libfunc ("_U_Qfle");
 }
 
 /* Switch to the section to which we should output X.  The only thing

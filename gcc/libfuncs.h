@@ -53,46 +53,6 @@ enum libfunc_index
   LTI_unwind_sjlj_register,
   LTI_unwind_sjlj_unregister,
 
-  LTI_eqhf2,
-  LTI_nehf2,
-  LTI_gthf2,
-  LTI_gehf2,
-  LTI_lthf2,
-  LTI_lehf2,
-  LTI_unordhf2,
-
-  LTI_eqsf2,
-  LTI_nesf2,
-  LTI_gtsf2,
-  LTI_gesf2,
-  LTI_ltsf2,
-  LTI_lesf2,
-  LTI_unordsf2,
-
-  LTI_eqdf2,
-  LTI_nedf2,
-  LTI_gtdf2,
-  LTI_gedf2,
-  LTI_ltdf2,
-  LTI_ledf2,
-  LTI_unorddf2,
-
-  LTI_eqxf2,
-  LTI_nexf2,
-  LTI_gtxf2,
-  LTI_gexf2,
-  LTI_ltxf2,
-  LTI_lexf2,
-  LTI_unordxf2,
-
-  LTI_eqtf2,
-  LTI_netf2,
-  LTI_gttf2,
-  LTI_getf2,
-  LTI_lttf2,
-  LTI_letf2,
-  LTI_unordtf2,
-
   LTI_floatsisf,
   LTI_floatdisf,
   LTI_floattisf,
@@ -184,46 +144,6 @@ extern GTY(()) rtx libfunc_table[LTI_MAX];
 #define unwind_sjlj_register_libfunc (libfunc_table[LTI_unwind_sjlj_register])
 #define unwind_sjlj_unregister_libfunc \
   (libfunc_table[LTI_unwind_sjlj_unregister])
-
-#define eqhf2_libfunc	(libfunc_table[LTI_eqhf2])
-#define nehf2_libfunc	(libfunc_table[LTI_nehf2])
-#define gthf2_libfunc	(libfunc_table[LTI_gthf2])
-#define gehf2_libfunc	(libfunc_table[LTI_gehf2])
-#define lthf2_libfunc	(libfunc_table[LTI_lthf2])
-#define lehf2_libfunc	(libfunc_table[LTI_lehf2])
-#define unordhf2_libfunc	(libfunc_table[LTI_unordhf2])
-
-#define eqsf2_libfunc	(libfunc_table[LTI_eqsf2])
-#define nesf2_libfunc	(libfunc_table[LTI_nesf2])
-#define gtsf2_libfunc	(libfunc_table[LTI_gtsf2])
-#define gesf2_libfunc	(libfunc_table[LTI_gesf2])
-#define ltsf2_libfunc	(libfunc_table[LTI_ltsf2])
-#define lesf2_libfunc	(libfunc_table[LTI_lesf2])
-#define unordsf2_libfunc	(libfunc_table[LTI_unordsf2])
-
-#define eqdf2_libfunc	(libfunc_table[LTI_eqdf2])
-#define nedf2_libfunc	(libfunc_table[LTI_nedf2])
-#define gtdf2_libfunc	(libfunc_table[LTI_gtdf2])
-#define gedf2_libfunc	(libfunc_table[LTI_gedf2])
-#define ltdf2_libfunc	(libfunc_table[LTI_ltdf2])
-#define ledf2_libfunc	(libfunc_table[LTI_ledf2])
-#define unorddf2_libfunc	(libfunc_table[LTI_unorddf2])
-
-#define eqxf2_libfunc	(libfunc_table[LTI_eqxf2])
-#define nexf2_libfunc	(libfunc_table[LTI_nexf2])
-#define gtxf2_libfunc	(libfunc_table[LTI_gtxf2])
-#define gexf2_libfunc	(libfunc_table[LTI_gexf2])
-#define ltxf2_libfunc	(libfunc_table[LTI_ltxf2])
-#define lexf2_libfunc	(libfunc_table[LTI_lexf2])
-#define unordxf2_libfunc	(libfunc_table[LTI_unordxf2])
-
-#define eqtf2_libfunc	(libfunc_table[LTI_eqtf2])
-#define netf2_libfunc	(libfunc_table[LTI_netf2])
-#define gttf2_libfunc	(libfunc_table[LTI_gttf2])
-#define getf2_libfunc	(libfunc_table[LTI_getf2])
-#define lttf2_libfunc	(libfunc_table[LTI_lttf2])
-#define letf2_libfunc	(libfunc_table[LTI_letf2])
-#define unordtf2_libfunc	(libfunc_table[LTI_unordtf2])
 
 #define floatsisf_libfunc	(libfunc_table[LTI_floatsisf])
 #define floatdisf_libfunc	(libfunc_table[LTI_floatdisf])

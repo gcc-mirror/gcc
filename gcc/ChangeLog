@@ -1,3 +1,44 @@
+2003-10-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* libfuncs.h
+	(LTI_eqhf2, LTI_nehf2, LTI_gthf2, LTI_gehf2, LTI_lthf2)
+	(LTI_lehf2, LTI_unordhf2, LTI_eqsf2, LTI_nesf2, LTI_gtsf2)
+	(LTI_gesf2, LTI_ltsf2, LTI_lesf2, LTI_unordsf2, LTI_eqdf2)
+	(LTI_nedf2, LTI_gtdf2, LTI_gedf2, LTI_ltdf2, LTI_ledf2)
+	(LTI_unorddf2, LTI_eqxf2, LTI_nexf2, LTI_gtxf2, LTI_gexf2)
+	(LTI_ltxf2, LTI_lexf2, LTI_unordxf2, LTI_eqtf2, LTI_netf2)
+	(LTI_gttf2, LTI_getf2, LTI_lttf2, LTI_letf2, LTI_unordtf2)
+	(eqhf2_libfunc, nehf2_libfunc, gthf2_libfunc, gehf2_libfunc)
+	(lthf2_libfunc, lehf2_libfunc, unordhf2_libfunc, eqsf2_libfunc)
+	(nesf2_libfunc, gtsf2_libfunc, gesf2_libfunc, ltsf2_libfunc)
+	(lesf2_libfunc, unordsf2_libfunc eqdf2_libfunc, nedf2_libfunc)
+	(gtdf2_libfunc, gedf2_libfunc, ltdf2_libfunc, ledf2_libfunc)
+	(unorddf2_libfunc eqxf2_libfunc, nexf2_libfunc, gtxf2_libfunc)
+	(gexf2_libfunc, ltxf2_libfunc, lexf2_libfunc, unordxf2_libfunc
+	(eqtf2_libfunc, netf2_libfunc, gttf2_libfunc, getf2_libfunc)
+	(lttf2_libfunc, letf2_libfunc, unordtf2_libfunc):
+	Delete.
+	* optabs.h (OTI_eq, OTI_ne, OTI_gt, OTI_ge, OTI_lt, OTI_le)
+	(OTI_unord, eq_optab, ne_optab, gt_optab, ge_optab, lt_optab)
+	(le_optab, unord_optab): New.
+
+	* optabs.c (prepare_float_lib_cmp): Rewrite.  Get the libfuncs
+	from the code_to_optab table, not a giant switch; use
+	swap_condition; do widening only if a comparison function that
+	we can call exists in a wider mode, not if a cmp_optab insn or
+	libfunc exists in a wider mode; call protect_from_queue
+	exactly once on each operand.
+	(init_optabs): Initialize the new optabs, not the deleted libfuncs.
+
+	* config/gofast.h, config/ia64/ia64.c, config/mips/mips.c
+	* config/pa/pa.c, config/rs6000/rs6000.c, config/sparc/sparc.c:
+	Set floating point comparison libfuncs using set_optab_libfunc
+	on the appropriate optab.
+
+	* config/ia64/ia64.c (ia64_hpux_init_libfuncs): Fix typo.
+	* config/rs6000/rs6000.c (rs6000_init_libfuncs): Correct ABI
+	selector conditionals.
+
 2003-10-04  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/t-m68hc11-gas (MULTILIB_MATCHES): m68hcs12 is
@@ -33,9 +74,9 @@
 
 2003-10-03  Robert Bowdidge <bowdidge@apple.com>
 
-        * ggc-page.c (ggc_pch_write_object): Replace fseek() with fwrite() in 
-        PCH generation, avoiding too-frequent flushes when writing to NFS 
-        file system.
+	* ggc-page.c (ggc_pch_write_object): Replace fseek() with fwrite() in
+	PCH generation, avoiding too-frequent flushes when writing to NFS
+	file system.
 
 2003-10-03  Ziemowit Laski  <zlaski@apple.com>
 
@@ -82,7 +123,7 @@
 	* config/mips/mips.md ("type" attr): Add new "prefetchx" value,
 	update comments.
 	(prefetch_indexed_di, prefetch_indexed_si): New insns.
-	
+
 2003-10-03  Jeff Sturm  <jsturm@one-point.com>
 	    Roger Sayle  <roger@eyesopen.com>
 
@@ -123,7 +164,7 @@
 	operand's constraint letter to 'I'.
 	(prefetch_di_address): Likewise.
 	(prefetch_si, prefetch_di): Set third operand to const0_rtx.
-	
+
 2003-10-02  Zack Weinberg  <zack@codesourcery.com>
 
 	* system.h: Poison macros obsoleted by earlier patch.

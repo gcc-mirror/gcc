@@ -9015,12 +9015,12 @@ mips_init_libfuncs (void)
       set_optab_libfunc (smul_optab, SFmode, "__mips16_mulsf3");
       set_optab_libfunc (sdiv_optab, SFmode, "__mips16_divsf3");
 
-      eqsf2_libfunc     = init_one_libfunc ("__mips16_eqsf2");
-      nesf2_libfunc     = init_one_libfunc ("__mips16_nesf2");
-      gtsf2_libfunc     = init_one_libfunc ("__mips16_gtsf2");
-      gesf2_libfunc     = init_one_libfunc ("__mips16_gesf2");
-      ltsf2_libfunc     = init_one_libfunc ("__mips16_ltsf2");
-      lesf2_libfunc     = init_one_libfunc ("__mips16_lesf2");
+      set_optab_libfunc (eq_optab, SFmode, "__mips16_eqsf2");
+      set_optab_libfunc (ne_optab, SFmode, "__mips16_nesf2");
+      set_optab_libfunc (gt_optab, SFmode, "__mips16_gtsf2");
+      set_optab_libfunc (ge_optab, SFmode, "__mips16_gesf2");
+      set_optab_libfunc (lt_optab, SFmode, "__mips16_ltsf2");
+      set_optab_libfunc (le_optab, SFmode, "__mips16_lesf2");
 
       floatsisf_libfunc = init_one_libfunc ("__mips16_floatsisf");
       fixsfsi_libfunc   = init_one_libfunc ("__mips16_fixsfsi");
@@ -9032,12 +9032,12 @@ mips_init_libfuncs (void)
 	  set_optab_libfunc (smul_optab, DFmode, "__mips16_muldf3");
 	  set_optab_libfunc (sdiv_optab, DFmode, "__mips16_divdf3");
 
-	  eqdf2_libfunc       = init_one_libfunc ("__mips16_eqdf2");
-	  nedf2_libfunc       = init_one_libfunc ("__mips16_nedf2");
-	  gtdf2_libfunc       = init_one_libfunc ("__mips16_gtdf2");
-	  gedf2_libfunc       = init_one_libfunc ("__mips16_gedf2");
-	  ltdf2_libfunc       = init_one_libfunc ("__mips16_ltdf2");
-	  ledf2_libfunc       = init_one_libfunc ("__mips16_ledf2");
+	  set_optab_libfunc (eq_optab, DFmode, "__mips16_eqdf2");
+	  set_optab_libfunc (ne_optab, DFmode, "__mips16_nedf2");
+	  set_optab_libfunc (gt_optab, DFmode, "__mips16_gtdf2");
+	  set_optab_libfunc (ge_optab, DFmode, "__mips16_gedf2");
+	  set_optab_libfunc (lt_optab, DFmode, "__mips16_ltdf2");
+	  set_optab_libfunc (le_optab, DFmode, "__mips16_ledf2");
 
 	  floatsidf_libfunc   = init_one_libfunc ("__mips16_floatsidf");
 	  fixdfsi_libfunc     = init_one_libfunc ("__mips16_fixdfsi");

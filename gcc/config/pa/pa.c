@@ -4973,12 +4973,12 @@ pa_hpux_init_libfuncs (void)
   set_optab_libfunc (abs_optab, TFmode, "_U_Qfabs");
   set_optab_libfunc (neg_optab, TFmode, "_U_Qfneg");
 
-  eqtf2_libfunc = init_one_libfunc ("_U_Qfeq");
-  netf2_libfunc = init_one_libfunc ("_U_Qfne");
-  gttf2_libfunc = init_one_libfunc ("_U_Qfgt");
-  getf2_libfunc = init_one_libfunc ("_U_Qfge");
-  lttf2_libfunc = init_one_libfunc ("_U_Qflt");
-  letf2_libfunc = init_one_libfunc ("_U_Qfle");
+  set_optab_libfunc (eq_optab, TFmode, "_U_Qfeq");
+  set_optab_libfunc (ne_optab, TFmode, "_U_Qfne");
+  set_optab_libfunc (gt_optab, TFmode, "_U_Qfgt");
+  set_optab_libfunc (ge_optab, TFmode, "_U_Qfge");
+  set_optab_libfunc (lt_optab, TFmode, "_U_Qflt");
+  set_optab_libfunc (le_optab, TFmode, "_U_Qfle");
 
   extendsftf2_libfunc = init_one_libfunc ("_U_Qfcnvff_sgl_to_quad");
   extenddftf2_libfunc = init_one_libfunc ("_U_Qfcnvff_dbl_to_quad");
