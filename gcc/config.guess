@@ -288,8 +288,11 @@ EOF
 	echo xmp-cray-unicos
         exit 0 ;;
     CRAY*Y-MP:*:*:*)
-      echo ymp-cray-unicos${UNAME_RELEASE}
-      exit 0 ;;
+	echo ymp-cray-unicos${UNAME_RELEASE}
+	exit 0 ;;
+    CRAY*C90:*:*:*)
+	echo c90-cray-unicos${UNAME_RELEASE}
+	exit 0 ;;
     CRAY-2:*:*:*)
 	echo cray2-cray-unicos
         exit 0 ;;
