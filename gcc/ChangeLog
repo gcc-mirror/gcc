@@ -1,3 +1,8 @@
+1999-08-26 09:42 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* tree.h: fancy_abort always takes three args.
+	* resource.c: Move include of system.h before toplev.h.
+
 Thu Aug 26 09:46:16 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Accept LABEL_REFs as well
