@@ -1,4 +1,8 @@
-1999-08-09  Anthony Green  <green@cygnus.com>
+1999-08-08  Anthony Green  <green@cygnus.com>
+
+	* include/ffi.h.in (FFI_FN): Remove `...'.
+
+1999-08-08  Anthony Green  <green@cygnus.com>
 
 	* Makefile.in: Rebuilt.
 	* Makefile.am (AM_CFLAGS): Compile with -fexceptions.
