@@ -246,7 +246,7 @@ static struct { int allocno1, allocno2;}
 static rtx *regs_set;
 static int n_regs_set;
 
-/* All register that can be eliminated.  */
+/* All registers that can be eliminated.  */
 
 static HARD_REG_SET eliminable_regset;
 
@@ -279,6 +279,13 @@ global_alloc (file)
 #ifdef ELIMINABLE_REGS
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
+  int need_fp
+    = (! flag_omit_frame_pointer
+#ifdef EXIT_IGNORE_STACK
+       || (current_function_calls_alloca && EXIT_IGNORE_STACK)
+#endif
+       || FRAME_POINTER_REQUIRED);
+
   register int i;
   rtx x;
 
@@ -302,20 +309,18 @@ global_alloc (file)
       SET_HARD_REG_BIT (eliminable_regset, eliminables[i].from);
 
       if (! CAN_ELIMINATE (eliminables[i].from, eliminables[i].to)
-	  || (eliminables[i].from == HARD_FRAME_POINTER_REGNUM
-	      && (! flag_omit_frame_pointer || FRAME_POINTER_REQUIRED)))
+	  || (eliminables[i].to == STACK_POINTER_REGNUM && need_fp))
 	SET_HARD_REG_BIT (no_global_alloc_regs, eliminables[i].from);
     }
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-  if (!flag_omit_frame_pointer || FRAME_POINTER_REQUIRED)
+  SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
+  if (need_fp)
     SET_HARD_REG_BIT (no_global_alloc_regs, HARD_FRAME_POINTER_REGNUM);
 #endif
+
 #else
   SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
-
-  /* If we know we will definitely not be eliminating the frame pointer,
-     don't allocate it.  */
-  if (! flag_omit_frame_pointer || FRAME_POINTER_REQUIRED)
+  if (need_fp)
     SET_HARD_REG_BIT (no_global_alloc_regs, FRAME_POINTER_REGNUM);
 #endif
 
