@@ -2342,8 +2342,10 @@ rs6000_init_expanders ()
 
 #if TARGET_ELF
 #define SMALL_DATA_RELOC ((rs6000_sdata == SDATA_EABI) ? "sda21" : "sdarel")
+#define SMALL_DATA_REG ((rs6000_sdata == SDATA_EABI) ? 0 : 13)
 #else
 #define SMALL_DATA_RELOC "sda21"
+#define SMALL_DATA_REG 0
 #endif
 
 void
@@ -2542,7 +2544,8 @@ print_operand (file, x, code)
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 4));
 	  if (small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC, reg_names[0]);
+	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
+		     reg_names[SMALL_DATA_REG]);
 	}
       return;
 			    
@@ -2770,7 +2773,8 @@ print_operand (file, x, code)
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 8));
 	  if (small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC, reg_names[0]);
+	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
+		     reg_names[SMALL_DATA_REG]);
 	}
       return;
 			    
@@ -2819,7 +2823,8 @@ print_operand (file, x, code)
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 12));
 	  if (small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC, reg_names[0]);
+	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
+		     reg_names[SMALL_DATA_REG]);
 	}
       return;
 			    
@@ -2861,7 +2866,8 @@ print_operand_address (file, x)
     {
       output_addr_const (file, x);
       if (small_data_operand (x, GET_MODE (x)))
-	fprintf (file, "@%s(%s)", SMALL_DATA_RELOC, reg_names[0]);
+	fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
+		 reg_names[SMALL_DATA_REG]);
 
 #ifdef TARGET_NO_TOC
       else if (TARGET_NO_TOC)

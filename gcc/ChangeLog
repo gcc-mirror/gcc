@@ -1,5 +1,13 @@
 Wed Nov 26 15:47:30 1997  Michael Meissner  <meissner@cygnus.com>
 
+	* rs6000.c (SMALL_DATA_REG): Register to use for small data relocs.
+	(print_operand): Use SMALL_DATA_REG for the register involved in
+	small data relocations.
+	(print_operand_address): Ditto.
+
+	* rs6000/linux.h (LINK_SPEC): Pass -dynamic-linker /lib/ld.so.1 if
+	-dynamic linker is not used.
+
 	* rs6000.md (call insns): For local calls, use @local suffix under
 	System V.  Don't use @plt under Solaris.
 
