@@ -22,7 +22,6 @@
 	* include/dwarf2-signal.h (INIT_SEGV, INIT_FPE): Don't use
 	__libc_sigaction on Sparc.
 
->>>>>>> 1.1197.2.110
 2002-04-25  David S. Miller  <davem@redhat.com>
 
 	PR target/6422
