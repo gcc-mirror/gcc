@@ -2812,42 +2812,17 @@ while (0)
    it uses this information.  Hence, the general register <-> floating point
    register information here is not used for SFmode.  */
 
-#define REGCLASS_HAS_GENERAL_REG(rclass) \
-((rclass)==GENERAL_REGS||(rclass)==R0_REGS||(rclass)==SIBCALL_REGS)
+#define REGCLASS_HAS_GENERAL_REG(CLASS) \
+  ((CLASS) == GENERAL_REGS || (CLASS) == R0_REGS \
+    || (! TARGET_SHMEDIA && (CLASS) == SIBCALL_REGS))
 /* NB SIBCALL_REGS are not strictly general, as they include TR0-TR4 */
 
+#define REGCLASS_HAS_FP_REG(CLASS) \
+  ((CLASS) == FP0_REGS || (CLASS) == FP_REGS \
+   || (CLASS) == DF_REGS || (CLASS) == DF_HI_REGS)
+
 #define REGISTER_MOVE_COST(MODE, SRCCLASS, DSTCLASS) \
- (((((DSTCLASS) == T_REGS) || ((DSTCLASS) == PR_REGS)) ? 10		\
-   : ((((DSTCLASS) == FP0_REGS || (DSTCLASS) == FP_REGS			\
-	|| (DSTCLASS) == DF_REGS || (DSTCLASS) == DF_HI_REGS)		\
-       && REGCLASS_HAS_GENERAL_REG (SRCCLASS))				\
-      || (REGCLASS_HAS_GENERAL_REG (DSTCLASS)				\
-	  && ((SRCCLASS) == FP0_REGS || (SRCCLASS) == FP_REGS		\
-	      || (SRCCLASS) == DF_REGS || (SRCCLASS) == DF_HI_REGS)))	\
-   ? (TARGET_SHMEDIA ? 4						\
-      : TARGET_FMOVD ? 8 : 12)						\
-   : (((DSTCLASS) == FPUL_REGS						\
-       && REGCLASS_HAS_GENERAL_REG (SRCCLASS))				\
-      || ((SRCCLASS) == FPUL_REGS					\
-	  && REGCLASS_HAS_GENERAL_REG (DSTCLASS)))			\
-   ? 5									\
-   : (((DSTCLASS) == FPUL_REGS						\
-       && ((SRCCLASS) == PR_REGS || (SRCCLASS) == MAC_REGS		\
-	    || (SRCCLASS) == T_REGS))					\
-      || ((SRCCLASS) == FPUL_REGS					\
-	  && ((DSTCLASS) == PR_REGS || (DSTCLASS) == MAC_REGS)))	\
-   ? 7									\
-   : (((SRCCLASS) == TARGET_REGS					\
-       && ! REGCLASS_HAS_GENERAL_REG (DSTCLASS))			\
-      || ((DSTCLASS) == TARGET_REGS					\
-	  && ! REGCLASS_HAS_GENERAL_REG (SRCCLASS)))			\
-   ? 20									\
-   : (((SRCCLASS) == FPSCR_REGS						\
-       && ! REGCLASS_HAS_GENERAL_REG (DSTCLASS))			\
-      || ((DSTCLASS) == FPSCR_REGS					\
-	   && ! REGCLASS_HAS_GENERAL_REG (SRCCLASS)))			\
-   ? 4									\
-   : 2) * ((MODE) == V16SFmode ? 8 : (MODE) == V4SFmode ? 2 : 1))
+  sh_register_move_cost ((MODE), (SRCCLASS), (DSTCLASS))
 
 /* ??? Perhaps make MEMORY_MOVE_COST depend on compiler option?  This
    would be so that people with slow memory systems could generate
