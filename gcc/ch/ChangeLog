@@ -1,3 +1,12 @@
+Wed Sep 30 19:03:02 1998  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+
+	* grant.c (decode_decl_selective): Cast switch's enum argument to
+	an int.
+	(really_grant_this): Add default case in switch.
+
+	* typeck.c (chill_resulting_class): Add default cases in switch.
+	Also add `break' statements after each case.
+
 Tue Sep 29 21:37:33 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ch-tree.h (build_compare_expr): Change first argument's type
