@@ -30,13 +30,13 @@ mingw_scan (int argc ATTRIBUTE_UNUSED,
             const char *const *argv,
             char **spec_machine)
 {
-  putenv ("GCC_CYGWIN_MINGW=0");
+  putenv (xstrdup ("GCC_CYGWIN_MINGW=0"));
  
   while (*++argv)
     if (strcmp (*argv, "-mno-win32") == 0)
-      putenv ("GCC_CYGWIN_WIN32=0");
+      putenv (xstrdup ("GCC_CYGWIN_WIN32=0"));
     else if (strcmp (*argv, "-mwin32") == 0)
-      putenv ("GCC_CYGWIN_WIN32=1");
+      putenv (xstrdup ("GCC_CYGWIN_WIN32=1"));
     else if (strcmp (*argv, "-mno-cygwin") == 0)
       {
 	char *p = strstr (*spec_machine, "-cygwin");
@@ -48,7 +48,7 @@ mingw_scan (int argc ATTRIBUTE_UNUSED,
 	    strcpy (s + len, "-mingw32");
 	    *spec_machine = s;
 	  }
-	putenv ("GCC_CYGWIN_MINGW=1");
+	putenv (xstrdup ("GCC_CYGWIN_MINGW=1"));
       }
   return;
 }
