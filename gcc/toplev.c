@@ -2411,6 +2411,9 @@ rest_of_compilation (decl)
 	    DECL_INITIAL (decl) = 0;
 	    goto exit_rest_of_compilation;
 	  }
+	else if (TYPE_P (parent))
+	  /* A function in a local class should be treated normally.  */
+	  break;
 
       /* If requested, consider whether to make this function inline.  */
       if ((DECL_INLINE (decl) && !flag_no_inline)

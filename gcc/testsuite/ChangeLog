@@ -1,3 +1,8 @@
+2002-11-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8391
+	* g++.dg/opt/local1.C: New test.
+
 2002-10-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8160
