@@ -61,8 +61,12 @@ struct floatformat
 
   unsigned int exp_start;
   unsigned int exp_len;
-  /* Amount added to "true" exponent.  0x3fff for many IEEE extendeds.  */
-  unsigned int exp_bias;
+  /* Bias added to a "true" exponent to form the biased exponent.  It
+     is intentionally signed as, otherwize, -exp_bias can turn into a
+     very large number (e.g., given the exp_bias of 0x3fff and a 64
+     bit long, the equation (long)(1 - exp_bias) evaluates to
+     4294950914) instead of -16382).  */
+  int exp_bias;
   /* Exponent value which indicates NaN.  This is the actual value stored in
      the float, not adjusted by the exp_bias.  This usually consists of all
      one bits.  */
