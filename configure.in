@@ -370,7 +370,7 @@ case "${target}" in
     esac
     ;;
   *-*-vxworks*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libiberty ${libgcj}"
     ;;
   alpha*-dec-osf*)
     # ld works, but does not support shared libraries.

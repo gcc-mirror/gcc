@@ -1,3 +1,8 @@
+2003-10-20  Phil Edwards  <phil@codesourcery.com>
+
+	* configure.in (*-*-vxworks):  Add target-libiberty to noconfdirs.
+	* configure:  Regenerate.
+
 2003-10-20  Nicolas Pitre <nico@cam.org>
 
 	* MAINTAINERS: Add myself to 'Write After Approval' section.
