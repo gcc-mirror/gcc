@@ -2026,6 +2026,33 @@ use_register_for_decl (tree decl)
   return (optimize || DECL_REGISTER (decl));
 }
 
+/* Return true if TYPE should be passed by invisible reference.  */
+
+bool
+pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   tree type, bool named_arg ATTRIBUTE_UNUSED)
+{
+  if (type)
+    {
+      /* If this type contains non-trivial constructors, then it is
+	 forbidden for the middle-end to create any new copies.  */
+      if (TREE_ADDRESSABLE (type))
+	return true;
+
+      /* If an object's size is dependent on itself, there's no way
+	 to *not* pass by reference.  */
+      if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type)))
+	return true;
+    }
+
+#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
+  return FUNCTION_ARG_PASS_BY_REFERENCE (*ca, mode, type, named_arg);
+#else
+  return false;
+#endif
+}
+
 /* Structures to communicate between the subroutines of assign_parms.
    The first holds data persistent across all parameters, the second
    is cleared out for each parameter.  */
@@ -2236,14 +2263,9 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
 	  && TYPE_TRANSPARENT_UNION (passed_type)))
     passed_type = TREE_TYPE (TYPE_FIELDS (passed_type));
 
-  /* See if this arg was passed by invisible reference.  It is if it is an
-     object whose size depends on the contents of the object itself or if
-     the machine requires these objects be passed that way.  */
-  if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (passed_type))
-      || TREE_ADDRESSABLE (passed_type)
-      || FUNCTION_ARG_PASS_BY_REFERENCE (all->args_so_far, passed_mode,
-					 passed_type, data->named_arg)
-      )
+  /* See if this arg was passed by invisible reference.  */
+  if (pass_by_reference (&all->args_so_far, passed_mode,
+			 passed_type, data->named_arg))
     {
       passed_type = nominal_type = build_pointer_type (passed_type);
       data->passed_pointer = true;

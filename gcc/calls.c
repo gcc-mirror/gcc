@@ -974,11 +974,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 with those made by function.c.  */
 
       /* See if this argument should be passed by invisible reference.  */
-      if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type))
-	  || TREE_ADDRESSABLE (type)
-	  || FUNCTION_ARG_PASS_BY_REFERENCE (*args_so_far, TYPE_MODE (type),
-					     type, argpos < n_named_args)
-	  )
+      if (pass_by_reference (args_so_far, TYPE_MODE (type),
+			     type, argpos < n_named_args))
 	{
 	  /* If we're compiling a thunk, pass through invisible
              references instead of making a copy.  */
@@ -3559,7 +3556,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
 	val = force_operand (val, NULL_RTX);
 
-      if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
+      if (pass_by_reference (&args_so_far, mode, NULL_TREE, 1))
 	{
 	  rtx slot;
 	  int must_copy = ! FUNCTION_ARG_CALLEE_COPIES (args_so_far, mode,

@@ -1,5 +1,14 @@
 2004-07-13  Richard Henderson  <rth@redhat.com>
 
+	* function.c (pass_by_reference): New.
+	(assign_parm_find_data_types): Use it.
+	* calls.c (initialize_argument_information): Likewise.
+	(emit_library_call_value_1): Likewise.
+	* expr.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* function.h (pass_by_reference): Declare.
+
+2004-07-13  Richard Henderson  <rth@redhat.com>
+
 	* target-def.h (TARGET_MUST_PASS_IN_STACK): New.
 	* target.h (struct gcc_target): Add calls.must_pass_in_stack.
 	* expr.h (MUST_PASS_IN_STACK): Remove.
