@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
 #define	TARGET_XL_CALL		(target_flags & MASK_XL_CALL)
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES					\
-  {"64", 		MASK_64BIT | MASK_POWERPC64 | MASK_POWERPC}, \
-  {"32",		- (MASK_64BIT | MASK_POWERPC64)},	\
+  {"aix64", 		MASK_64BIT | MASK_POWERPC64 | MASK_POWERPC}, \
+  {"aix32",		- (MASK_64BIT | MASK_POWERPC64)},	\
   {"xl-call", 		MASK_XL_CALL},				\
   {"no-xl-call",	- MASK_XL_CALL}, 			\
   {"threads",		0},					\
@@ -48,25 +48,25 @@ do {									\
   if (TARGET_64BIT && (target_flags & NON_POWERPC_MASKS))		\
     {									\
       target_flags &= ~NON_POWERPC_MASKS;				\
-      warning ("-m64 and POWER architecture are incompatible.");	\
+      warning ("-maix64 and POWER architecture are incompatible.");	\
     }									\
   if (TARGET_64BIT && ! (target_flags & MASK_POWERPC64))		\
     {									\
       target_flags |= MASK_POWERPC64;					\
-      warning ("-m64 requires PowerPC64 architecture remain enabled."); \
+      warning ("-maix64 requires PowerPC64 architecture remain enabled."); \
     }									\
 } while (0);
 
 #include "rs6000/rs6000.h"
 
 #undef ASM_SPEC
-#define ASM_SPEC "-u %{m64:-a64 -mppc64} %(asm_cpu)"
+#define ASM_SPEC "-u %{maix64:-a64 -mppc64} %(asm_cpu)"
 
 /* Common ASM definitions used by ASM_SPEC amonst the various targets
    for handling -mcpu=xxx switches.  */
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
-"%{!mcpu*: %{!m64: \
+"%{!mcpu*: %{!maix64: \
   %{mpower: %{!mpower2: -mpwr}} \
   %{mpower2: -mpwr2} \
   %{mpowerpc*: %{!mpowerpc64: -mppc}} \
@@ -104,7 +104,7 @@ do {									\
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
-   %{m64: -D__64BIT__ -D_ARCH_PPC}\
+   %{maix64: -D__64BIT__ -D_ARCH_PPC}\
    %{mpe: -I/usr/lpp/ppe.poe/include}\
    %{mthreads: -D_THREAD_SAFE}\
    %(cpp_cpu)"
@@ -113,7 +113,7 @@ do {									\
    for handling -mcpu=xxx switches.  */
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC \
-"%{!mcpu*: %{!m64: \
+"%{!mcpu*: %{!maix64: \
   %{mpower: %{!mpower2: -D_ARCH_PWR}} \
   %{mpower2: -D_ARCH_PWR2} \
   %{mpowerpc*: -D_ARCH_PPC} \
@@ -182,15 +182,15 @@ do {									\
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
    %{p:-L/lib/profiled -L/usr/lib/profiled}\
-   %{!m64:%{!shared:%{g*:-lg}}}\
+   %{!maix64:%{!shared:%{g*:-lg}}}\
    %{mpe:-L/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
    %{mthreads:-L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a}\
    %{!mthreads:-lc}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
-   %{static:-bnso %(link_syscalls) } %{!m64:%{!shared:%{g*: %(link_libg) }}}\
-   %{shared:-bM:SRE %{!e:-bnoentry}} %{m64:-b64}"
+   %{static:-bnso %(link_syscalls) } %{shared:-bM:SRE %{!e:-bnoentry}}\
+   %{!maix64:%{!shared:%{g*: %(link_libg) }}} %{maix64:-b64}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:\
@@ -198,8 +198,8 @@ do {									\
          %{!pg:%{p:/usr/lpp/ppe.poe/lib/mcrt0.o}\
                %{!p:/usr/lpp/ppe.poe/lib/crt0.o}}}\
    %{!mpe:\
-     %{m64:%{pg:gcrt0_64%O%s}%{!pg:%{p:mcrt0_64%O%s}%{!p:crt0_64%O%s}}}\
-     %{!m64:\
+     %{maix64:%{pg:gcrt0_64%O%s}%{!pg:%{p:mcrt0_64%O%s}%{!p:crt0_64%O%s}}}\
+     %{!maix64:\
        %{mthreads:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
        %{!mthreads:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}}"
 
@@ -213,3 +213,13 @@ do {									\
 
 #undef RS6000_CALL_GLUE
 #define RS6000_CALL_GLUE "{cror 31,31,31|nop}"
+
+#if 0
+/* AIX 4.2 and above provides initialization and finalization function
+   support from linker command line.  */
+#undef HAS_INIT_SECTION
+#define HAS_INIT_SECTION
+
+#undef LD_INIT_SWITCH
+#define LD_INIT_SWITCH "-binitfini"
+#endif

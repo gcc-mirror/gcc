@@ -884,7 +884,7 @@ main (argc, argv)
      set first, in case a diagnostic is issued.  */
 
   ld1 = (const char **)(ld1_argv = (char **) xcalloc(sizeof (char *), argc+3));
-  ld2 = (const char **)(ld2_argv = (char **) xcalloc(sizeof (char *), argc+6));
+  ld2 = (const char **)(ld2_argv = (char **) xcalloc(sizeof (char *), argc+10));
   object = (const char **)(object_lst = (char **) xcalloc(sizeof (char *), argc));
 
 #ifdef DEBUG
@@ -1263,7 +1263,7 @@ main (argc, argv)
   /* The AIX linker will discard static constructors in object files if
      nothing else in the file is referenced, so look at them first.  */
   {
-      char **export_object_lst = object_lst;
+      const char **export_object_lst = (const char **)object_lst;
 
       while (export_object_lst < object)
 	scan_prog_file (*export_object_lst++, PASS_OBJ);
@@ -1462,10 +1462,20 @@ main (argc, argv)
 
   /* Tell the linker that we have initializer and finalizer functions.  */
 #ifdef LD_INIT_SWITCH
+#ifdef COLLECT_EXPORT_LIST
+  {
+    /* option name + functions + colons + NULL */
+    char *buf = xmalloc (strlen (LD_INIT_SWITCH)
+			 + strlen(initname) + strlen(fininame) + 3);
+    sprintf (buf, "%s:%s:%s", LD_INIT_SWITCH, initname, fininame);
+    *ld2++ = buf;
+  }
+#else
   *ld2++ = LD_INIT_SWITCH;
   *ld2++ = initname;
   *ld2++ = LD_FINI_SWITCH;
   *ld2++ = fininame;
+#endif
 #endif
 
 #ifdef COLLECT_EXPORT_LIST
@@ -2786,7 +2796,8 @@ scan_prog_file (prog_name, which_pass)
 		      switch (is_ctor_dtor (name))
 			{
 			case 1:
-			  if (! is_shared) add_to_list (&constructors, name);
+			  if (! is_shared)
+			    add_to_list (&constructors, name);
 #ifdef COLLECT_EXPORT_LIST
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
@@ -2801,7 +2812,8 @@ scan_prog_file (prog_name, which_pass)
 			  break;
 
 			case 2:
-			  if (! is_shared) add_to_list (&destructors, name);
+			  if (! is_shared)
+			    add_to_list (&destructors, name);
 #ifdef COLLECT_EXPORT_LIST
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
@@ -2817,13 +2829,17 @@ scan_prog_file (prog_name, which_pass)
 
 #ifdef COLLECT_EXPORT_LIST
 			case 3:
+#ifndef LD_INIT_SWITCH
 			  if (is_shared)
 			    add_to_list (&constructors, name);
+#endif
 			  break;
 
 			case 4:
+#ifndef LD_INIT_SWITCH
 			  if (is_shared)
 			    add_to_list (&destructors, name);
+#endif
 			  break;
 #endif
 
@@ -2841,7 +2857,8 @@ scan_prog_file (prog_name, which_pass)
 			    {
 			      if (which_pass == PASS_OBJ && (! export_flag))
 				add_to_list (&exports, name);
-			      else if (! is_shared && which_pass == PASS_FIRST
+			      else if (! is_shared
+				       && which_pass == PASS_FIRST
 				       && import_flag
 				       && is_in_list(name, undefined.first))
 				add_to_list (&imports, name);
@@ -2850,14 +2867,13 @@ scan_prog_file (prog_name, which_pass)
 			  continue;
 			}
 
-#if !defined(EXTENDED_COFF)
 		      if (debug)
+#if !defined(EXTENDED_COFF)
 			fprintf (stderr, "\tsec=%d class=%d type=%s%o %s\n",
 				 symbol.n_scnum, symbol.n_sclass,
 				 (symbol.n_type ? "0" : ""), symbol.n_type,
 				 name);
 #else
-		      if (debug)
 			fprintf (stderr,
 				 "\tiss = %5d, value = %5ld, index = %5d, name = %s\n",
 				 symbol.iss, (long) symbol.value, symbol.index, name);

@@ -18,7 +18,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 # different processor models
 
 MULTILIB_OPTIONS	= msoft-float \
-			  mcpu=common/mcpu=power/mcpu=powerpc/m64
+			  mcpu=common/mcpu=power/mcpu=powerpc/maix64
 
 MULTILIB_DIRNAMES	= soft-float \
 			  common power powerpc ppc64
