@@ -511,6 +511,12 @@ cpp_create_reader (table, lang)
   /* Indicate date and time not yet calculated.  */
   pfile->date.type = CPP_EOF;
 
+  /* Create a token buffer for the lexer.  */
+  _cpp_init_tokenrun (&pfile->base_run, 250);
+  pfile->cur_run = &pfile->base_run;
+  pfile->cur_token = pfile->base_run.base;
+  pfile->state.bol = 1;
+
   /* Initialise the base context.  */
   pfile->context = &pfile->base_context;
   pfile->base_context.macro = 0;

@@ -1,3 +1,19 @@
+2001-09-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct tokenrun): New.
+	(struct cpp_context): New member bol.
+	(struct cpp_reader): New members.
+	(_cpp_init_tokenrun): New.
+	* cppinit.c (cpp_create_reader): Set up the token runs.
+	* cpplex.c (lex_directive, lex_token, next_tokenrun): New.
+	(lex_token): New internalised version of _cpp_lex_token.  Don't
+	handle directives or the multiple include opimisation here any
+	more.  Simply lex a token.
+	* cpplib.c (run_directive): Clear bol.
+	(_cpp_pop_buffer): Set bol.
+	* cppmacro.c (funlike_invocation_p): Keep tokens whilst parsing
+	arguments.
+
 2001-09-11  Michael Meissner  <meissner@redhat.com>
 
 	* config/mips/mips.h (CC1_SPEC): If -mgp32 default to -mfp32, and
