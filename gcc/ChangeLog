@@ -1,5 +1,6 @@
 2004-01-18  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR target/7618
 	* config/mips/mips.c: Include cfglayout.h.
 	(TARGET_ASM_OUTPUT_MI_THUNK, TARGET_ASM_CAN_OUTPUT_MI_THUNK): Define.
 	(mips_unspec_offset_high): Add temporary register argument.
