@@ -1032,7 +1032,7 @@ implicitly_declare_fn (kind, type, const_p)
 
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
-  DECL_THIS_INLINE (fn) = 1;
+  DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_INLINE (fn) = 1;
   defer_fn (fn);
   
